@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import test from 'tape-catch';
-import {loadBinaryFile, DRACOLoader} from 'loaders.gl';
+import {loadBinaryFile, _getMeshSize, DRACOLoader, DRACOEncoder} from 'loaders.gl';
 import path from 'path';
 
 const BUNNY_DRC =
@@ -15,6 +15,17 @@ test('DRACOEncoder#parseBinary', t => {
   t.equal(data.attributes.POSITION.length, 104502, 'position attribute was found');
 
   // Encode mesh
+  const dracoEncoder = new DRACOEncoder();
+  const compressedMesh = dracoEncoder.encodePointCloud(data.attributes);
+  dracoEncoder.destroy();
+  const meshSize = _getMeshSize(data.attributes);
+  const ratio = meshSize / compressedMesh.byteLength;
+  t.comment(`DRACO compression ratio: ${ratio.toFixed(1)}`);
+
+  // const data2 = DRACOLoader.parseBinary(compressedMesh.buffer);
+  // t.ok(data2.header, 'Documents were found');
+  // // t.comment(JSON.stringify(data));
+  // t.equal(data2.attributes.POSITION.length, 104502, 'position attribute was found');
 
   t.end();
 });

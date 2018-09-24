@@ -21,19 +21,6 @@ export default class DRACODecoder {
     this.decoderModule = draco3d.createDecoderModule({});
   }
 
-  // isVersionSupported(version, callback) {
-  //   DRACOLoader.getDecoderModule()
-  //     .then(function (module) {
-  //       callback(module.decoder.isVersionSupported(version));
-  //     });
-  // }
-
-  // getAttributeOptions(attributeName) {
-  //     if (typeof this.attributeOptions[attributeName] === 'undefined')
-  //       this.attributeOptions[attributeName] = {};
-  //     return this.attributeOptions[attributeName];
-  // }
-
   destroy() {
     // this.decoderModule.destroy();
   }
@@ -149,8 +136,7 @@ export default class DRACODecoder {
 
     const posTransform = new this.decoderModule.AttributeQuantizationTransform();
     if (posTransform.InitFromAttribute(positionAttribute)) {
-      // Quantized attribute. Store the quantization parameters into the
-      // THREE.js attribute.
+      // Quantized attribute. Store the quantization parameters into the attribute
       this.metadata.attributes.position.isQuantized = true;
       this.metadata.attributes.position.maxRange = posTransform.range();
       this.metadata.attributes.position.numQuantizationBits = posTransform.quantization_bits();
