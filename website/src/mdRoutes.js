@@ -54,7 +54,7 @@ export default [
             markdown: require('../../docs/api-reference/loaders/glb-loader.md')
           },
           {
-            name: 'GLBWrite',
+            name: 'GLBWriter',
             markdown: require('../../docs/api-reference/loaders/glb-writer.md')
           },
           {
