@@ -16,7 +16,7 @@ export {getMeshSize as _getMeshSize} from './common/mesh-utils/mesh-utils';
 
 // LOADERS
 
-// GLB LOADER & ENCODER
+// GLB LOADER & WRITER
 export {default as GLBLoader} from './glb-loader/glb-loader';
 export {default as GLBParser} from './glb-loader/glb-parser';
 
