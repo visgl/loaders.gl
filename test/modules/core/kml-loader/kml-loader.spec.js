@@ -34,11 +34,11 @@ test('KMLLoader#parseText', t => {
     t.equal(data.polygons.length, 9, 'Polygons were found');
     t.equal(data.overlays.length, 1, 'Overlay was found');
 
-    for (const key in data) {
-      for (const object of data[key]) {
-        t.comment(`${key}: ${JSON.stringify(object)}`);
-      }
-    }
+    // for (const key in data) {
+    //   for (const object of data[key]) {
+    //     t.comment(`${key}: ${JSON.stringify(object)}`);
+    //   }
+    // }
   }
 
   t.end();

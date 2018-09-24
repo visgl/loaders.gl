@@ -861,6 +861,12 @@ array-unique@^0.3.2:
   version "0.3.2"
   resolved "https://registry.yarnpkg.com/array-unique/-/array-unique-0.3.2.tgz#a894b75d4bc4f6cd679ef3244a9fd8f46ae2d428"
 
+arraybuffer-loader@^1.0.6:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/arraybuffer-loader/-/arraybuffer-loader-1.0.6.tgz#de0644c570a79ce2bbbc609c75a67c828f6362c7"
+  dependencies:
+    loader-utils "^1.1.0"
+
 arrify@^1.0.0, arrify@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/arrify/-/arrify-1.0.1.tgz#898508da2226f380df904728456849c1501a4b0d"
@@ -1618,6 +1624,10 @@ bignumber.js@^2.1.0:
 binary-extensions@^1.0.0:
   version "1.11.0"
   resolved "https://registry.yarnpkg.com/binary-extensions/-/binary-extensions-1.11.0.tgz#46aa1751fb6a2f93ee5e689bb1087d4b14c6c205"
+
+binary-loader@^0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/binary-loader/-/binary-loader-0.0.1.tgz#0c1f8e5afee48b28bda219567002b470e5996cec"
 
 binaryextensions@2:
   version "2.1.1"

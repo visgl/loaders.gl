@@ -1,42 +1,20 @@
-// const fs = require('fs');
-// const path = require('path');
-
-// import {DRACOEncoder} from 'loaders.gl';
-
+/* eslint-disable max-len */
 import test from 'tape-catch';
+import {loadBinaryFile, DRACOLoader} from 'loaders.gl';
+import path from 'path';
 
-test('pack-and-unpack-buffers', t => {
-  /*
-  const dracoCompressor = new DRACOEncoder();
+const BUNNY_DRC =
+  loadBinaryFile(path.resolve(__dirname, '../data/draco/bunny.drc')) ||
+  require('../data/draco/bunny.drc');
 
-  fs.readFile(path.resolve(__dirname, './bunny.drc'), (err, data) => {
-    if (err) {
-      console.log(err);
-      return;
-    }
-    console.log(`Decoding file of size ${data.byteLength}...`);
+test('DRACOEncoder#parseBinary', t => {
+  const data = DRACOLoader.parseBinary(BUNNY_DRC);
 
-    // Decode mesh
-    const decodedGeometry = dracoCompressor.decodeDracoData(data, decoder);
+  t.ok(data.header, 'Documents were found');
+  // t.comment(JSON.stringify(data));
+  t.equal(data.attributes.POSITION.length, 104502, 'position attribute was found');
 
-    // Encode mesh
-    const outputBuffer = dracoCompressor.encodeMesh(decodedGeometry, decoder);
+  // Encode mesh
 
-    // Write to file. You can view the the file using webgl_loader_draco.html
-    // example.
-    fs.writeFile('bunny_10.drc', Buffer(outputBuffer), 'binary', err => {
-      if (err) {
-        t.fail(err);
-      } else {
-        t.pass('The file was saved!');
-      }
-    });
-
-    decoderModule.destroy(decoder);
-    decoderModule.destroy(decodedGeometry);
-  });
-
-  t.deepEqual(BUFFERS, buffers2, 'should be deep equal');
-  */
   t.end();
 });

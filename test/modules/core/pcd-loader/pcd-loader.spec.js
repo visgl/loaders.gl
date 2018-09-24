@@ -1,12 +1,16 @@
 /* eslint-disable max-len */
 import test from 'tape-catch';
-import {PCDLoader} from 'loaders.gl';
-import {TextEncoder, toArrayBuffer} from 'loaders.gl/common/loader-utils';
+import {loadBinaryFile, PCDLoader, TextEncoder} from 'loaders.gl';
+import path from 'path';
 
-import PCD from '../data/pcd/simple-ascii.pcd.js';
+import PCD_ASCII from '../data/pcd/simple-ascii.pcd.js';
+
+const PCD_BINARY =
+  loadBinaryFile(path.resolve(__dirname, '../data/pcd/Zaghetto.pcd')) ||
+  require('../data/pcd/Zaghetto.pcd');
 
 test('PCDLoader#parseText', t => {
-  const binaryPCD = new TextEncoder().encode(PCD);
+  const binaryPCD = new TextEncoder().encode(PCD_ASCII);
 
   const data = PCDLoader.parseBinary(binaryPCD);
 
@@ -18,18 +22,7 @@ test('PCDLoader#parseText', t => {
 });
 
 test('PCDLoader#parseBinary', t => {
-  const path = require('path');
-  const fs = module.require && module.require('fs');
-  if (!fs) {
-    t.comment('binary data tests only available under Node.js');
-    t.end();
-    return;
-  }
-
-  const file = fs.readFileSync(path.resolve(__dirname, '../data/pcd/Zaghetto.pcd'));
-  const binaryPCD = toArrayBuffer(file);
-
-  const data = PCDLoader.parseBinary(binaryPCD);
+  const data = PCDLoader.parseBinary(PCD_BINARY);
 
   t.ok(data.header, 'Documents were found');
   t.equal(data.attributes.position.length, 179250, 'position attribute was found');
