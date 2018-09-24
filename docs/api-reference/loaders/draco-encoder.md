@@ -10,5 +10,3 @@ Encodes a mesh or point cloud (maps of attributes) using [DRACO](https://google.
 ### encodeAsMesh(attributes : Object) : ArrayBuffer
 
 ### encodeAsPointCloud(attributes: Object) : ArrayBuffer
-
-
