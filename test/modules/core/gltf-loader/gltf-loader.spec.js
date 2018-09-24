@@ -2,9 +2,12 @@
 import test from 'tape-catch';
 
 import {deepCopy} from 'loaders.gl/test/setup';
-import {GLBParser, GLTFLoader, GLTFParser, toArrayBuffer} from 'loaders.gl';
-
+import {loadBinaryFile, GLBParser, GLTFLoader, GLTFParser} from 'loaders.gl';
 import path from 'path';
+
+const GLTF_BINARY =
+  loadBinaryFile(path.resolve(__dirname, '../data/gltf-2.0/2CylinderEngine.glb')) ||
+  require('../data/gltf-2.0/2CylinderEngine.glb');
 
 const GLTF_JSON = deepCopy(require('../data/gltf-2.0/2CylinderEngine.gltf.json'));
 
@@ -26,17 +29,7 @@ test('GLTFParse#parse JSON', t => {
 });
 
 test('GLTFParse#parse binary', t => {
-  const fs = module.require && module.require('fs');
-  if (!fs) {
-    t.comment('binary data tests only available under Node.js');
-    t.end();
-    return;
-  }
-
-  const file = fs.readFileSync(path.resolve(__dirname, '../data/gltf-2.0/2CylinderEngine.glb'));
-  const glbArrayBuffer = toArrayBuffer(file);
-
-  const json = new GLBParser(glbArrayBuffer).parseWithMetadata({});
+  const json = new GLBParser(GLTF_BINARY).parseWithMetadata({});
   const gltf = new GLTFParser(json).resolve({});
   t.ok(gltf, 'GLTFParser returned parsed data');
 

@@ -1,11 +1,16 @@
 /* eslint-disable max-len */
 import test from 'tape-catch';
-import {PLYLoader} from 'loaders.gl';
+import {loadBinaryFile, PLYLoader} from 'loaders.gl';
+import path from 'path';
 
-import PLY from '../data/ply/cube_att.ply.js';
+import PLY_ASCII from '../data/ply/cube_att.ply.js';
+
+const PLY_BINARY =
+  loadBinaryFile(path.resolve(__dirname, '../data/ply/bun_zipper.ply')) ||
+  require('../data/ply/bun_zipper.ply');
 
 test('PLYLoader#parseText', t => {
-  const data = PLYLoader.parseText(PLY);
+  const data = PLYLoader.parseText(PLY_ASCII);
 
   t.ok(data.header, 'Documents were found');
   t.equal(data.attributes.vertices.length, 72, 'position attribute was found');
@@ -16,18 +21,7 @@ test('PLYLoader#parseText', t => {
 });
 
 test('PLYLoader#parseBinary', t => {
-  const path = require('path');
-  const fs = module.require && module.require('fs');
-  if (!fs) {
-    t.comment('binary data tests only available under Node.js');
-    t.end();
-    return;
-  }
-
-  const file = fs.readFileSync(path.resolve(__dirname, '../data/ply/bun_zipper.ply'));
-  // const binaryPLY = toArrayBuffer(file);
-
-  const data = PLYLoader.parseText(file);
+  const data = PLYLoader.parseText(PLY_BINARY);
 
   t.ok(data.header, 'Documents were found');
 

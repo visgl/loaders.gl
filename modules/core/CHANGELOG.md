@@ -2,6 +2,11 @@
 
 This is the CHANGELOG.md for loaders.gl.
 
+### 0.3.x -
+- Doc fixes
+- Binary file format tests now run in browser
+
+
 ### 0.3.4 - Aug 29
 - Add `--json` opt to glbdump
 

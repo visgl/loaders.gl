@@ -2,7 +2,7 @@
 
 A suite of framework-independent loaders (i.e. parsers) for 3D geometries and assets, as well as geospatial formats.
 
-Also includes a few "writers" (encoders) and some compression/decompression support.
+Also includes a few encoders for key formats to support saving data, as well some encoder/decoder pairs that provide compression/decompression support (e.g. [DRACO](https://google.github.io/draco/) compression).
 
 In addition to the loaders themselves which implement parsing of specific formats, loaders.gl also provides a core of functions that perform actual loading.
 

@@ -1,6 +1,7 @@
 // LOADING FUNCTIONS
 
 export {loadFile} from './common/loader';
+export {loadBinaryFile} from './common/load-binary-file';
 export {loadUri} from './common/loader-utils/load-uri.js';
 export {smartFetch, smartParse} from './common/smart-fetch';
 
@@ -11,9 +12,11 @@ export {toArrayBuffer, toBuffer} from './common/loader-utils/binary-utils';
 export {default as TextDecoder} from './common/loader-utils/text-decoder';
 export {default as TextEncoder} from './common/loader-utils/text-encoder';
 
+export {getMeshSize as _getMeshSize} from './common/mesh-utils/mesh-utils';
+
 // LOADERS
 
-// GLB LOADER & WRITER
+// GLB LOADER & ENCODER
 export {default as GLBLoader} from './glb-loader/glb-loader';
 export {default as GLBParser} from './glb-loader/glb-parser';
 

@@ -76,6 +76,10 @@ const TEST_CONFIG = Object.assign({}, COMMON_CONFIG, {
       {
         test: /\.kml$/,
         use: 'raw-loader'
+      },
+      {
+        test: /\.drc$|\.ply$|\.pcd$|\.glb$/,
+        use: 'arraybuffer-loader'
       }
     ]
   },
