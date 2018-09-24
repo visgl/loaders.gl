@@ -1,6 +1,6 @@
 window.website = true;
 
-// const RAW_GITHUB = 'https://raw.githubusercontent.com/uber/loaders.gl/master';
+// const RAW_GITHUB = 'https://raw.githubusermarkdown.crequire(o../../docs/m/uber/loaders.gl/master';)
 
 export default [
   {
@@ -47,31 +47,31 @@ export default [
         children: [
           {
             name: 'loadFile',
-            content: 'api-reference/loaders/load-file.md'
+            markdown: require('../../docs/api-reference/load-file.md')
           },
           {
             name: 'GLBLoader',
-            content: 'api-reference/loaders/glb-loader.md'
+            markdown: require('../../docs/api-reference/loaders/glb-loader.md')
           },
           {
             name: 'GLBWriter',
-            content: 'api-reference/loaders/glb-writer.md'
+            markdown: require('../../docs/api-reference/loaders/glb-writer.md')
           },
           {
             name: 'KMLLoader',
-            content: 'api-reference/loaders/kml-loader.md'
+            markdown: require('../../docs/api-reference/loaders/kml-loader.md')
           },
           {
             name: 'LASLoader',
-            content: 'api-reference/loaders/las-loader.md'
+            markdown: require('../../docs/api-reference/loaders/las-loader.md')
           },
           {
             name: 'PCDLoader',
-            content: 'api-reference/loaders/glb-loader.md'
+            markdown: require('../../docs/api-reference/loaders/glb-loader.md')
           },
           {
             name: 'PLYLoader',
-            content: 'api-reference/loaders/glb-loader.md'
+            markdown: require('../../docs/api-reference/loaders/glb-loader.md')
           }
         ]
       }
