@@ -1,7 +1,7 @@
 export const PROJECT_TYPE = 'github';
 
 export const PROJECT_NAME = 'loaders.gl';
-export const PROJECT_ORG = 'uber';
+export const PROJECT_ORG = 'uber-web';
 export const PROJECT_URL = `https://github.com/${PROJECT_ORG}/${PROJECT_NAME}`;
 export const PROJECT_DESC = 'JavaScript Components for WebGL 2';
 
