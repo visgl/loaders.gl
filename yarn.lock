@@ -1625,10 +1625,6 @@ binary-extensions@^1.0.0:
   version "1.11.0"
   resolved "https://registry.yarnpkg.com/binary-extensions/-/binary-extensions-1.11.0.tgz#46aa1751fb6a2f93ee5e689bb1087d4b14c6c205"
 
-binary-loader@^0.0.1:
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/binary-loader/-/binary-loader-0.0.1.tgz#0c1f8e5afee48b28bda219567002b470e5996cec"
-
 binaryextensions@2:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/binaryextensions/-/binaryextensions-2.1.1.tgz#3209a51ca4a4ad541a3b8d3d6a6d5b83a2485935"
