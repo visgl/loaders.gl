@@ -3,9 +3,15 @@ import unpackGLBBuffers from './unpack-glb-buffers';
 import unpackBinaryJson from './unpack-binary-json';
 import {padTo4Bytes} from '../common/loader-utils/array-utils';
 import TextDecoder from '../common/loader-utils/text-decoder';
+import DracoDecoder from '../draco-loader/draco-decoder';
 import assert from '../common/loader-utils/assert';
 
 // glTF CONSTANTS
+import {
+  ATTRIBUTE_TYPE_TO_COMPONENTS,
+  ATTRIBUTE_COMPONENT_TYPE_TO_BYTE_SIZE,
+  ATTRIBUTE_COMPONENT_TYPE_TO_ARRAY
+} from './glb-constants';
 
 const MAGIC_glTF = 0x676c5446; // glTF in Big-Endian ASCII
 
@@ -17,38 +23,6 @@ const GLB_CHUNK_TYPE_BIN = 0x004E4942;
 
 const LE = true; // Binary GLTF is little endian.
 const BE = false; // Magic needs to be written as BE
-
-// glTF ACCESSOR CONSTANTS
-
-/*
-const TYPE_COMPONENTS = {
-  SCALAR: 1,
-  VEC2: 2,
-  VEC3: 3,
-  VEC4: 4,
-  MAT2: 4,
-  MAT3: 9,
-  MAT4: 16
-};
-
-const COMPONENT_TYPE_BYTE_SIZE = {
-  5120: 1,
-  5121: 1,
-  5122: 2,
-  5123: 2,
-  5125: 4,
-  5126: 4
-};
-
-const COMPONENT_TYPE_ARRAY = {
-  5120: Int8Array,
-  5121: Uint8Array,
-  5122: Int16Array,
-  5123: Uint16Array,
-  5125: Uint32Array,
-  5126: Float32Array
-};
-*/
 
 function getMagicString(dataView) {
   return `\
@@ -137,28 +111,33 @@ export default class GLBParser {
     return {arrayBuffer: this.glbArrayBuffer, binaryByteOffset, json};
   }
 
-  /*
   unpackBinaryObjects() {
     const unpackedBinaryObjects = {
       images: [],
-      accessors: []
+      accessors: [],
+      meshes: []
     };
 
     const images = this.json.images || [];
     for (const glTFImage of images) {
-      unpackedBinaryObjects.images.push(this.unpackImage(glTFImage));
+      unpackedBinaryObjects.images.push(this._unpackImage(glTFImage));
     }
 
     const accessors = this.json.accessors || [];
     for (const glTFAccessor of accessors) {
-      unpackedBinaryObjects.accessors.push(this.unpackAccessor(glTFAccessor));
+      unpackedBinaryObjects.accessors.push(this._unpackAccessor(glTFAccessor));
+    }
+
+    const meshes = this.json.meshes || [];
+    for (const glTFMesh of meshes) {
+      unpackedBinaryObjects.meshes.push(this._unpackMesh(glTFMesh));
     }
 
     return unpackedBinaryObjects;
   }
 
-  unpackImage(glTFImage) {
-    /* global window, Blob, Image *
+  _unpackImage(glTFImage) {
+    /* global window, Blob, Image */
     const arrayBufferView = this.unpackBufferView(glTFImage.bufferView);
     const mimeType = glTFImage.mimeType || 'image/jpeg';
     const blob = new Blob([arrayBufferView], {type: mimeType});
@@ -169,11 +148,11 @@ export default class GLBParser {
     return img;
   }
 
-  unpackAccessor(glTFAccessor) {
+  _unpackAccessor(glTFAccessor) {
     // Decode the glTF accessor format
-    const ArrayType = COMPONENT_TYPE_ARRAY[glTFAccessor.componentType];
-    const components = TYPE_COMPONENTS[glTFAccessor.type];
-    const bytesPerComponent = COMPONENT_TYPE_BYTE_SIZE[glTFAccessor.componentType];
+    const ArrayType = ATTRIBUTE_COMPONENT_TYPE_TO_ARRAY[glTFAccessor.componentType];
+    const components = ATTRIBUTE_TYPE_TO_COMPONENTS[glTFAccessor.type];
+    const bytesPerComponent = ATTRIBUTE_COMPONENT_TYPE_TO_BYTE_SIZE[glTFAccessor.componentType];
     const length = glTFAccessor.count * components;
     const byteLength = glTFAccessor.count * components * bytesPerComponent;
 
@@ -186,9 +165,53 @@ export default class GLBParser {
   }
 
   // Create a new typed array as a view into the binary chunk
-  unpackBufferView(glTFBufferView) {
+  _unpackBufferView(glTFBufferView) {
     const byteOffset = glTFBufferView.byteOffset + this.binaryByteOffset;
     return new Uint8Array(byteOffset, glTFBufferView.byteLength);
   }
-  */
+
+  _unpackMesh(mesh) {
+    const unpackedPrimitives = [];
+
+    for (const primitive of mesh.primitives) {
+
+      const compressedMesh =
+        primitive.extensions && primitive.extensions.UBR_draco_mesh_compression;
+      const compressedPointCloud =
+        primitive.extensions && primitive.extensions.UBR_draco_point_cloud_compression;
+
+      const unpackedPrimitive = {
+        mode: primitive.mode,
+        material: primitive.material
+      };
+
+      if (compressedMesh) {
+        const dracoDecoder = new DracoDecoder();
+        const decodedData = dracoDecoder.decodeMesh(compressedMesh);
+        dracoDecoder.destroy();
+
+        Object.assign(unpackedPrimitive, {
+          indices: decodedData.indices,
+          attributes: decodedData.attributes
+        });
+
+      } else if (compressedPointCloud) {
+        const dracoDecoder = new DracoDecoder();
+        const decodedData = dracoDecoder.decodePointCloud(compressedPointCloud);
+        dracoDecoder.destroy();
+
+        Object.assign(unpackedPrimitive, {
+          mode: 0,
+          attributes: decodedData.attributes
+        });
+      } else {
+        // No compression - just a glTF mesh primitive
+        // TODO - Resolve all accessors
+      }
+
+      unpackedPrimitives.push(unpackedPrimitive);
+    }
+
+    return unpackedPrimitives.length === 1 ? unpackedPrimitives[0] : unpackedPrimitives;
+  }
 }

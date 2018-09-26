@@ -1,6 +1,7 @@
 /* eslint-disable camelcase, max-statements */
 import {getImageSize, padTo4Bytes, copyArrayBuffer, TextEncoder} from '../common/loader-utils';
 import {getAccessorType, getAccessorComponentType} from './glb-accessor-utils';
+import {DracoEncoder, DracoDecoder} from '../draco-encoder/draco-encoder';
 
 const MAGIC_glTF = 0x676c5446; // glTF in Big-Endian ASCII
 
@@ -26,7 +27,10 @@ export default class GLBBuilder {
       ],
       bufferViews: [],
       accessors: [],
-      images: []
+      images: [],
+      meshes: [],
+      extensionsUsed: [],
+      extensionsRequired: []
     };
 
     // list of binary buffers to be written to the BIN chunk
@@ -93,6 +97,125 @@ export default class GLBBuilder {
     return this.json.images.length - 1;
   }
 
+  // POINTS:  0x0000,
+  // LINES: 0x0001,
+  // LINE_LOOP: 0x0002,
+  // LINE_STRIP:  0x0003,
+  // TRIANGLES: 0x0004,
+  // TRIANGLE_STRIP:  0x0005,
+  // TRIANGLE_FAN:  0x0006,
+
+  addMesh(attributes, indices, mode = 4) {
+    const accessors = this._addAttributes(attributes);
+
+    const glTFMesh = {
+      primitives: [
+        {
+          attributes: accessors,
+          indices,
+          mode
+        }
+      ]
+    };
+
+    this.json.meshes.push(glTFMesh);
+    return this.json.meshes.length - 1;
+  }
+
+  addPointCloud(attributes) {
+    const accessorIndices = this._addAttributes(attributes);
+
+    const glTFMesh = {
+      primitives: [
+        {
+          attributes: accessorIndices,
+          mode: 0 // GL.POINTS
+        }
+      ]
+    };
+
+    this.json.meshes.push(glTFMesh);
+    return this.json.meshes.length - 1;
+  }
+
+  // https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/
+  //   KHR_draco_mesh_compression
+  // NOTE: in contrast to glTF spec, does not add fallback data
+  addCompressedMesh(attributes, mode = 4) {
+    // KHR_draco_mesh_compression requires uncompressed data?
+    const EXTENSION = 'UBR_draco_mesh_compression';
+
+    const dracoEncoder = new DracoEncoder();
+    const compressedData = dracoEncoder.encodeMesh(attributes);
+
+    // Draco compression may change the order and number of vertices in a mesh.
+    // To satisfy the requirement that accessors properties be correct for both
+    // compressed and uncompressed data, generators should create uncompressed
+    // attributes and indices using data that has been decompressed from the Draco buffer,
+    // rather than the original source data.
+    const dracoDecoder = new DracoDecoder();
+    const decodedData = dracoDecoder.decodeMesh(attributes);
+    const fauxAccessors = this._addFauxAttributes(decodedData.attributes);
+
+    const bufferViewIndex = this._addBufferView(compressedData);
+
+    const glTFMesh = {
+      primitives: [
+        {
+          attributes: fauxAccessors,
+          mode, // GL.POINTS
+          extensions: {
+            [EXTENSION]: {
+              bufferView: bufferViewIndex
+            }
+          }
+        }
+      ]
+    };
+
+    this._addRequiredExtension(EXTENSION);
+
+    this.json.meshes.push(glTFMesh);
+    return this.json.meshes.length - 1;
+  }
+
+  addCompressedPointCloud(attributes) {
+    const EXTENSION = 'UBR_draco_mesh_compression';
+
+    const dracoEncoder = new DracoEncoder();
+    const compressedData = dracoEncoder.encodePointCloud(attributes);
+
+    // Draco compression may change the order and number of vertices in a mesh.
+    // To satisfy the requirement that accessors properties be correct for both
+    // compressed and uncompressed data, generators should create uncompressed
+    // attributes and indices using data that has been decompressed from the Draco buffer,
+    // rather than the original source data.
+    const dracoDecoder = new DracoDecoder();
+    const decodedData = dracoDecoder.decodePointCloud(compressedData);
+    const fauxAccessors = this._addFauxAttributes(decodedData.attributes);
+
+    const bufferViewIndex = this._addBufferView(compressedData);
+
+    const glTFMesh = {
+      primitives: [
+        {
+          attributes: fauxAccessors,
+          mode: 0, // GL.POINTS
+          extensions: {
+            [EXTENSION]: {
+              bufferView: bufferViewIndex
+            }
+          }
+        }
+      ]
+    };
+
+    this._addRequiredExtension(EXTENSION);
+
+    this.json.meshes.push(glTFMesh);
+    return this.json.meshes.length - 1;
+  }
+
   pack() {
     this._packBinaryChunk();
     return {arrayBuffer: this.arrayBuffer, json: this.json};
@@ -103,6 +226,16 @@ export default class GLBBuilder {
   }
 
   // PRIVATE
+
+  _addRequiredExtension(extension) {
+    if (!this.json.extensionsUsed.find(ext => ext === extension)) {
+      this.json.extensionsUsed.push(extension);
+    }
+
+    if (!this.json.extensionsRequired.find(ext => ext === extension)) {
+      this.json.extensionsRequired.push(extension);
+    }
+  }
 
   // Add one source buffer, create a matchibng glTF `bufferView`, and return its index
   _addBufferView(buffer) {
