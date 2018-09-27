@@ -45,12 +45,12 @@ Creates a new `GLBBuilder` instance.
 
 ### encode(options : Object) : ArrayBuffer
 
-Combines any added and generated JavaScript JSON data structures and any binary subchunks into a GLB formatted `ArrayBuffer` that can be written directly to file.
+Combines your added JSON data structures (in extras, extensions etc) with any generated JavaScript and any binary subchunks, into a single GLB encoded `ArrayBuffer` that can be written directly to file.
 
 Note: `encode()` is a one time operation. It should only be called once all data and binary buffers have been added to the builder.
 
 
-### encodeWithMetadata(options : Object)
+### encodeWithMetadata(options : Object) : Object
 
 A version of `encode` that return the final arrayBuffer together with the generated JSON.
 
@@ -59,12 +59,12 @@ A version of `encode` that return the final arrayBuffer together with the genera
 
 Extracting binary fields from the supplied `json` data structure, placing these in compact binary chunks by calling the appropriate `add...` methods on the builder. The "stripped" JSON chunk will contain "JSON pointers" that the parser can use to restore the JSON structure on load.
 
-Note: While the extracted binary data IS added to the GLBBuilder instance, the resulting JSON chunk is not automatically added, since the application needs to decide where to store it. Normally it should be added using one of the `addExtras`, `addExtension` or `addRequiredExtension` methods.
+Note: While the extracted binary data IS added to the GLBBuilder instance, the returned JSON chunk IS NOT automatically added, since the application needs to decide where to store it. Normally it should be added using one of the `addExtras`, `addExtension` or `addRequiredExtension` methods.
 
 
 ### addExtras(extras : any)
 
-Populates the top-level glTF extension object, and marks it as used.
+Populates the top-level glTF `extras` field, which the glTF specification reserves for application specific data.
 
 
 ### addExtension(extensionName, extension)
@@ -74,12 +74,16 @@ Adds a top-level glTF extension object, and marks it as used.
 
 ### addRequiredExtension(extensionName : String, extension : any)
 
-Adds a top-level glTF extension object, and marks it as used and required. It is recommended to avoid using required extensions if possible, as they can dramatically reduce the ability to use glTF tooling with the resulting file.
+Adds a top-level glTF extension object, and marks it as used and required.
+
+Note: If possible, use `addExtension` instead of `addRequiredExtension`. It is recommended to avoid using required extensions if possible, as they can reduce the ability to use glTF tools on the resulting file.
 
 
 ### isImage(imageData)
 
-Returns `true` if the binary data represents a well-known binary image format. Provided to make it easier for decoders to choose whether a binary blob should be stored as an image or a buffer.
+Returns `true` if the binary data represents a well-known binary image format.
+
+Note: This is a utility that is provided to make it easier for decoders to choose whether a binary chunk of data should be stored as an "image" or a "buffer".
 
 
 ### addBuffer(typedArray : TypedArray, accessor = {size: 3} : Object) : Number
@@ -116,7 +120,4 @@ Adds a glTF mesh. The glTF Mesh will contain one primitive with the supplied att
 
 ### addCompressedPointCloud(attributes: Object) : Number
 
-Adds a glTF mesh. The glTF Mesh will contain one primitive with the supplied attributes, representing a point cloud (no `indices`, mode will default to `0` etc).
-
-The cloud will be compressed using DRACO compression.
-
+Adds a glTF mesh. The glTF Mesh will contain one primitive with the supplied attributes, representing a point cloud (no `indices`, mode will default to `0` etc). The point cloud will be compressed using DRACO compression.
