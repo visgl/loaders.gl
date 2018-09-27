@@ -34,13 +34,12 @@ function decodeJSONPointer(object, buffers) {
   if (pointer) {
     const [field, index] = pointer;
     const buffer = buffers[field] && buffers[field][index];
-    if (!buffer) {
-      console.error(`Invalid JSON pointer ${object}: #/${field}/${index}`); // eslint-disable-line
-      return null;
+    if (buffer) {
+      return buffer;
     }
-    return buffer;
+    console.error(`Invalid JSON pointer ${object}: #/${field}/${index}`); // eslint-disable-line
   }
-  return object;
+  return null;
 }
 
 function parseJSONPointer(value) {
@@ -50,7 +49,7 @@ function parseJSONPointer(value) {
       return value.slice(1);
     }
 
-    let matches = value.match(/\#\/[a-z]+\/([0-9]+)/);
+    let matches = value.match(/\#\/([a-z]+)\/([0-9]+)/);
     if (matches) {
       const index = parseInt(matches[2], 10);
       return [matches[1], index];

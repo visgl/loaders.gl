@@ -4,6 +4,7 @@ import './draco-loader/draco-loader.spec';
 import './draco-encoder/draco-encoder.spec';
 
 import './glb-writer';
+import './glb-loader';
 
 import './gltf-loader/gltf-loader.spec';
 

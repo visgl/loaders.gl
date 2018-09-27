@@ -383,6 +383,17 @@ export default class GLBBuilder {
 
     return glbArrayBuffer;
   }
+
+  // Report internal buffer sizes for debug and testing purposes
+  _getInternalCounts() {
+    return {
+      buffers: this.json.buffers.length,
+      bufferViews: this.json.bufferViews.length,
+      accessors: this.json.accessors.length,
+      images: this.json.images.length,
+      meshes: this.json.meshes.length
+    };
+  }
 }
 
 function convertObjectToJsonChunk(json) {

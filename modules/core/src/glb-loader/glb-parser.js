@@ -36,34 +36,49 @@ ${String.fromCharCode(dataView.getUint8(3))}`;
 export default class GLBParser {
   constructor(glbArrayBuffer) {
     this.glbArrayBuffer = glbArrayBuffer;
+    this.json = null;
+    this.binaryByteOffset = null;
   }
 
-  // Only returns application JSON
+  // Return the gltf JSON and the original arrayBuffer
   parse(options = {}) {
-    const {json, binaryByteOffset} = this._parseBinary(this.glbArrayBuffer, options);
-    const unpackedBuffers = unpackGLBBuffers(this.glbArrayBuffer, json, binaryByteOffset);
-    const unpackedJson = unpackBinaryJson(json, unpackedBuffers);
-    return this._getApplicationJSON(unpackedJson, options);
+    if (this.json === null && this.binaryByteOffset === null) {
+      this._parseBinary(this.glbArrayBuffer, options);
+    }
+
+    return {
+      arrayBuffer: this.glbArrayBuffer,
+      binaryByteOffset: this.binaryByteOffset,
+      json: this.json
+    };
   }
 
   // Returns both application JSON and glTF JSON, separated
+  // TODO(twojtasz): use extras or extension and not unpack here
   parseWithMetadata(options = {}) {
-    const {json, binaryByteOffset} = this._parseBinary(this.glbArrayBuffer, options);
-    const unpackedBuffers = unpackGLBBuffers(this.glbArrayBuffer, json, binaryByteOffset);
-    const unpackedJson = unpackBinaryJson(json, unpackedBuffers);
+    if (this.json === null || this.binaryByteOffset === null) {
+      this._parseBinary(this.glbArrayBuffer, options);
+    }
+
+    const unpackedBuffers = unpackGLBBuffers(this.glbArrayBuffer, this.json, this.binaryByteOffset);
+    const unpackedJson = unpackBinaryJson(this.json.json, unpackedBuffers);
+
+    // Return json that was reconstituted from the glbBuffers
+    this.json.json = unpackedJson;
+    return this.json;
+  }
+
+  unpackJSON(appJson, options = {}) {
+    if (this.json === null || this.binaryByteOffset === null) {
+      throw new Error('parse() must be called before the GLBParser can unpackJSON');
+    }
+
+    const unpackedBuffers = unpackGLBBuffers(this.glbArrayBuffer, this.json, this.binaryByteOffset);
+    const unpackedJson = unpackBinaryJson(appJson, unpackedBuffers);
     return unpackedJson;
   }
 
   // PRIVATE
-
-  // Get JSON from json key
-  _getApplicationJSON(json, options) {
-    const jsonKey = options.jsonKey || 'json';
-    // Create glTF metadata object, with deleted application json key
-    const glTF = Object.assign({}, json);
-    delete glTF[jsonKey];
-    return {json: json[jsonKey], glTF};
-  }
 
   _parseBinary(options = {}) {
     const {magic = MAGIC_glTF} = options;
@@ -98,17 +113,21 @@ export default class GLBParser {
     const jsonText = textDecoder.decode(jsonChunk);
 
     // Parse the JSON text into a JavaScript data structure
-    const json = JSON.parse(jsonText);
+    this.json = JSON.parse(jsonText);
 
     // TODO - BIN chunk can be optional
     const binaryChunkStart = jsonChunkOffset + padTo4Bytes(jsonChunkLength);
-    const binaryByteOffset = binaryChunkStart + GLB_CHUNK_HEADER_SIZE;
+    this.binaryByteOffset = binaryChunkStart + GLB_CHUNK_HEADER_SIZE;
 
     const binChunkFormat = dataView.getUint32(binaryChunkStart + 4, LE); // Chunk format as uint32
     valid = binChunkFormat === GLB_CHUNK_TYPE_BIN || binChunkFormat === 1; // Back compat
     assert(valid, `BIN chunk format ${binChunkFormat}`);
 
-    return {arrayBuffer: this.glbArrayBuffer, binaryByteOffset, json};
+    return {
+      arrayBuffer: this.glbArrayBuffer,
+      binaryByteOffset: this.binaryByteOffset,
+      json: this.json
+    };
   }
 
   unpackBinaryObjects() {
