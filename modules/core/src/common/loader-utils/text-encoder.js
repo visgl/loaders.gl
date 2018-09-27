@@ -1,6 +1,9 @@
-// The MIT License (MIT) Copyright (c) 2016 Till Affeldt
-/* global window */
+export {TextEncoder as default} from 'text-encoding';
 
+/*
+// The MIT License (MIT) Copyright (c) 2016 Till Affeldt
+
+// text-encoding: Comprehensive TextEncoding Polyfill module
 // allowed encoding strings for utf-8
 const utf8Encodings = ['utf8', 'utf-8', 'unicode-1-1-utf-8'];
 
@@ -30,4 +33,9 @@ class TextEncoderPolyfill {
   }
 }
 
-export default typeof window !== 'undefined' ? window.TextEncoder : TextEncoderPolyfill;
+const TextEncoder = (typeof window !== 'undefined' && window.TextEncoder) ||
+  (TextEncoding && TextEncoding.TextEncoder) ||
+  TextEncoderPolyfill;
+
+export default TextEncoder;
+*/

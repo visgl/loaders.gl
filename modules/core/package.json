@@ -27,12 +27,20 @@
     "dist",
     ".bin"
   ],
-  "sideEffects": false,
-  "browser": {
-    "fs": false
-  },
   "bin": {
     "glbdump" : "./.bin/glbdump"
+  },
+  "sideEffects": false,
+  "browser": {
+    "fs": false,
+    "./src/common/loader-utils/text-decoder.js": "./src/common/loader-utils/text-decoder.browser.js",
+    "./dist/es5/common/loader-utils/text-decoder.js": "./dist/es5/common/loader-utils/text-decoder.browser.js",
+    "./dist/esm/common/loader-utils/text-decoder.js": "./dist/esm/common/loader-utils/text-decoder.browser.js",
+    "./dist/es6/common/loader-utils/text-decoder.js": "./dist/es6/common/loader-utils/text-decoder.browser.js",
+    "./src/common/loader-utils/text-encoder.js": "./src/common/loader-utils/text-encoder.browser.js",
+    "./dist/es5/common/loader-utils/text-encoder.js": "./dist/es5/common/loader-utils/text-encoder.browser.js",
+    "./dist/esm/common/loader-utils/text-encoder.js": "./dist/esm/common/loader-utils/text-encoder.browser.js",
+    "./dist/es6/common/loader-utils/text-encoder.js": "./dist/es6/common/loader-utils/text-encoder.browser.js"
   },
   "scripts": {
     "start": "echo 'Please see loaders.gl website for how to run examples' && open http://uber.github.io/loaders.gl/#/documentation/getting-started/examples",
@@ -67,6 +75,7 @@
   "dependencies": {
     "d3-request": "^1.0.6",
     "draco3d": "^1.3.3",
+    "text-encoding": "^0.6.4",
     "webgl-obj-loader": "^1.1.3"
   }
 }
