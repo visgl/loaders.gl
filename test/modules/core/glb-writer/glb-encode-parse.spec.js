@@ -45,8 +45,8 @@ test('GLB#encode-and-parse', t => {
   for (const tcName in TEST_CASES) {
     const TEST_JSON = TEST_CASES[tcName];
 
-    const glbFileBuffer = new GLBBuilder().encode(TEST_JSON);
-    const json = GLBLoader.parseWithMetadata(glbFileBuffer);
+    const arrayBuffer = new GLBBuilder().addExtras(TEST_JSON).encode();
+    const json = GLBLoader.parseWithMetadata(arrayBuffer);
 
     t.ok(Array.isArray(json.buffers), `${tcName} Encoded and parsed GLB - has JSON buffers field`);
     t.ok(
@@ -59,7 +59,7 @@ test('GLB#encode-and-parse', t => {
     );
 
     t.deepEqual(
-      toLowPrecision(json.json),
+      toLowPrecision(json.extras),
       toLowPrecision(packBinaryJson(TEST_JSON)),
       `${tcName} Encoded and parsed GLB did not change data`
     );
@@ -72,8 +72,8 @@ test('GLBLoader#encode-and-parse#full', t => {
   const tcName = 'full';
   const TEST_JSON = TEST_CASES[tcName];
 
-  const glbFileBuffer = new GLBBuilder().encode(TEST_JSON);
-  const json = GLBLoader.parseWithMetadata(glbFileBuffer);
+  const arrayBuffer = new GLBBuilder().addExtension('UBER_extension', TEST_JSON).encode();
+  const json = GLBLoader.parseWithMetadata(arrayBuffer);
 
   // t.comment(JSON.stringify(TEST_JSON, null, 2));
   // t.comment(JSON.stringify(json, null, 2))
@@ -93,7 +93,7 @@ test('GLBLoader#encode-and-parse#full', t => {
   delete json.accessors;
 
   t.deepEqual(
-    json.json.state_updates[0].primitives.tracklets[0],
+    json.extensions.UBER_extension.state_updates[0].primitives.tracklets[0],
     packBinaryJson(TEST_JSON.state_updates[0].primitives.tracklets[0]),
     'Encoded and parsed GLB did not change data'
   );

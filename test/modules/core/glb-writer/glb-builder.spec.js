@@ -18,7 +18,7 @@ test('pack-and-unpack-binary-buffers', t => {
     glbBuilder.addBuffer(buffer, {size: 1});
   }
 
-  const {arrayBuffer, json} = glbBuilder.pack();
+  const {arrayBuffer, json} = glbBuilder._pack();
 
   t.equal(json.bufferViews[0].byteOffset, 0, 'should be equal');
   t.equal(json.bufferViews[0].byteLength, 3, 'should be equal');

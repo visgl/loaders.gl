@@ -1,21 +1,15 @@
 import GLBBuilder from './glb-builder';
-import {toBuffer} from '../common/loader-utils/binary-utils';
+import {saveBinaryFile} from '../common/file-utils/save-binary-file';
 
 function encodeGLB(json, options) {
   return new GLBBuilder().encode(json, options);
 }
 
-export function writeGLBtoFile(filePath, options, json) {
-  const glbFileBuffer = encodeGLB(json, options);
-  const fs = module.require('fs');
-  fs.writeFileSync(`${filePath}.glb`, toBuffer(glbFileBuffer), {flag: 'w'});
-  // console.log(`Wrote ${filePath}.glb`);
-  return glbFileBuffer;
-}
-
+// TODO - target writer structure not yet clear
 export default {
   name: 'GLB',
   extension: 'glb',
-  encodeToBinary: encodeGLB,
-  writeToFile: writeGLBtoFile
+  writeToFile: saveBinaryFile,
+  // TODO - encode standard format? Encode mesh to binary?
+  encodeToBinary: encodeGLB
 };

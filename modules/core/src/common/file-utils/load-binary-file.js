@@ -1,4 +1,4 @@
-import {toArrayBuffer} from './loader-utils/binary-utils';
+import {toArrayBuffer} from '../loader-utils/binary-utils';
 
 export function loadBinaryFile(path) {
   const fs = module.require && module.require('fs');
