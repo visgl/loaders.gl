@@ -20,14 +20,16 @@ test('GLB#encode-and-decode', t => {
     glbBuilder.addBuffer(buffer, {size: 1});
   }
 
-  const glbFileBuffer = glbBuilder.encode(TEST_JSON);
+  glbBuilder.addExtras(TEST_JSON);
 
-  t.equal(glbFileBuffer.byteLength, 1660, 'should be equal');
+  const glbFileBuffer = glbBuilder.encode();
+
+  t.equal(glbFileBuffer.byteLength, 1620, 'should be equal');
 
   const {arrayBuffer, json, binaryByteOffset} = new GLBParser(glbFileBuffer)._parseBinary();
 
-  t.equal(binaryByteOffset, 1632);
-  t.deepEqual(json.json, TEST_JSON, 'JSON is equal');
+  t.equal(binaryByteOffset, 1592);
+  t.deepEqual(json.extras, TEST_JSON, 'JSON is equal');
 
   const buffers2 = unpackGLBBuffers(arrayBuffer, json, binaryByteOffset);
 

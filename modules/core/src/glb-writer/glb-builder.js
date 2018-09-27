@@ -1,7 +1,8 @@
 /* eslint-disable camelcase, max-statements */
 import {getImageSize, padTo4Bytes, copyArrayBuffer, TextEncoder} from '../common/loader-utils';
-import {getAccessorType, getAccessorComponentType} from './glb-accessor-utils';
 import {DracoEncoder, DracoDecoder} from '../draco-encoder/draco-encoder';
+import {getAccessorType, getAccessorComponentType} from './glb-accessor-utils';
+import packBinaryJson from './pack-binary-json';
 
 const MAGIC_glTF = 0x676c5446; // glTF in Big-Endian ASCII
 
@@ -10,6 +11,10 @@ const BE = false; // Magic needs to be written as BE
 
 const GLB_FILE_HEADER_SIZE = 12;
 const GLB_CHUNK_HEADER_SIZE = 8;
+
+// Ideally we should just use KHR_draco_mesh_compression, but it requires saving uncompressed data?
+const UBER_MESH_EXTENSION = 'UBER_draco_mesh_compression';
+const UBER_POINT_CLOUD_EXTENSION = 'UBER_draco_point_cloud_compression';
 
 export default class GLBBuilder {
   constructor(rootPath) {
@@ -28,9 +33,7 @@ export default class GLBBuilder {
       bufferViews: [],
       accessors: [],
       images: [],
-      meshes: [],
-      extensionsUsed: [],
-      extensionsRequired: []
+      meshes: []
     };
 
     // list of binary buffers to be written to the BIN chunk
@@ -42,10 +45,41 @@ export default class GLBBuilder {
     return this.byteLength;
   }
 
-  copyToArrayBuffer(arrayBuffer, byteOffset) {
-    for (const {offset, contents} of this.parts) {
-      contents.copy(arrayBuffer, byteOffset + offset);
-    }
+  // Returns an ArrayBuffer that represents the complete GLB image that can be saved to file
+  encode(options = {}) {
+    return this._createGlbBuffer(options);
+  }
+
+  // Returns an arrayBuffer together with JSON etc data.
+  encodeWithMetadata(options = {}) {
+    const arrayBuffer = this._createGlbBuffer(options);
+    return {arrayBuffer, json: this.json};
+  }
+
+  // Packs JSON by extracting binary data and replacing it with JSON pointers
+  packJSON(json, options) {
+    return packBinaryJson(json, this, options);
+  }
+
+  // Standard GLTF field for storing application specific data
+  addExtras(extras) {
+    this.json.extras = extras;
+    return this;
+  }
+
+  // Add to standard GLTF top level extension object, mark as used
+  addExtension(extensionName, extension) {
+    this.json.extensions = this.json.extensions || {};
+    this.json.extensions[extensionName] = extension;
+    this._registerUsedExtension(extensionName);
+    return this;
+  }
+
+  // Standard GLTF top level extension object, mark as used and required
+  addRequiredExtension(extensionName, extension) {
+    this.addExtension(extensionName, extension);
+    this._registerRequiredExtension(extensionName);
+    return this;
   }
 
   // Add a binary buffer. Builds glTF "JSON metadata" and saves buffer reference
@@ -142,9 +176,6 @@ export default class GLBBuilder {
   //   KHR_draco_mesh_compression
   // NOTE: in contrast to glTF spec, does not add fallback data
   addCompressedMesh(attributes, mode = 4) {
-    // KHR_draco_mesh_compression requires uncompressed data?
-    const EXTENSION = 'UBR_draco_mesh_compression';
-
     const dracoEncoder = new DracoEncoder();
     const compressedData = dracoEncoder.encodeMesh(attributes);
 
@@ -165,7 +196,7 @@ export default class GLBBuilder {
           attributes: fauxAccessors,
           mode, // GL.POINTS
           extensions: {
-            [EXTENSION]: {
+            [UBER_MESH_EXTENSION]: {
               bufferView: bufferViewIndex
             }
           }
@@ -173,15 +204,13 @@ export default class GLBBuilder {
       ]
     };
 
-    this._addRequiredExtension(EXTENSION);
+    this._registerRequiredExtension(UBER_MESH_EXTENSION);
 
     this.json.meshes.push(glTFMesh);
     return this.json.meshes.length - 1;
   }
 
   addCompressedPointCloud(attributes) {
-    const EXTENSION = 'UBR_draco_mesh_compression';
-
     const dracoEncoder = new DracoEncoder();
     const compressedData = dracoEncoder.encodePointCloud(attributes);
 
@@ -202,7 +231,7 @@ export default class GLBBuilder {
           attributes: fauxAccessors,
           mode: 0, // GL.POINTS
           extensions: {
-            [EXTENSION]: {
+            [UBER_POINT_CLOUD_EXTENSION]: {
               bufferView: bufferViewIndex
             }
           }
@@ -210,28 +239,39 @@ export default class GLBBuilder {
       ]
     };
 
-    this._addRequiredExtension(EXTENSION);
+    this._registerRequiredExtension(UBER_POINT_CLOUD_EXTENSION);
 
     this.json.meshes.push(glTFMesh);
     return this.json.meshes.length - 1;
   }
 
-  pack() {
+  // For testing
+
+  _pack() {
     this._packBinaryChunk();
     return {arrayBuffer: this.arrayBuffer, json: this.json};
   }
 
-  encode(json, options = {}) {
-    return this._createGlbBuffer(json, options);
+  /*
+  copyToArrayBuffer(arrayBuffer, byteOffset) {
+    for (const {offset, contents} of this.parts) {
+      contents.copy(arrayBuffer, byteOffset + offset);
+    }
   }
+  */
 
   // PRIVATE
 
-  _addRequiredExtension(extension) {
+  _registerUsedExtension(extension) {
+    this.json.extensionsUsed = this.json.extensionsUsed || [];
     if (!this.json.extensionsUsed.find(ext => ext === extension)) {
       this.json.extensionsUsed.push(extension);
     }
+  }
 
+  _registerRequiredExtension(extension) {
+    this.json.extensionsRequired = this.json.extensionsRequired || [];
+    this._registerUsedExtension(extension);
     if (!this.json.extensionsRequired.find(ext => ext === extension)) {
       this.json.extensionsRequired.push(extension);
     }
@@ -298,11 +338,9 @@ export default class GLBBuilder {
   // Encode the full GLB buffer with header etc
   // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#
   // glb-file-format-specification
-  _createGlbBuffer(appJson, options = {}) {
+  _createGlbBuffer(options = {}) {
     // TODO - avoid double array buffer creation
     this._packBinaryChunk();
-
-    this.json.json = appJson;
 
     const binChunk = this.arrayBuffer;
     if (options.magic) {

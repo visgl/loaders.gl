@@ -1,9 +1,11 @@
 // LOADING FUNCTIONS
 
-export {loadFile} from './common/loader';
-export {loadBinaryFile} from './common/load-binary-file';
+export {loadFile} from './common/file-utils/loader';
+export {loadBinaryFile} from './common/file-utils/load-binary-file';
+export {smartFetch, smartParse} from './common/file-utils/smart-fetch';
+export {saveBinaryFile} from './common/file-utils/load-binary-file';
+
 export {loadUri} from './common/loader-utils/load-uri.js';
-export {smartFetch, smartParse} from './common/smart-fetch';
 
 // UTILS
 

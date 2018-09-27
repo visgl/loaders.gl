@@ -176,9 +176,9 @@ export default class GLBParser {
     for (const primitive of mesh.primitives) {
 
       const compressedMesh =
-        primitive.extensions && primitive.extensions.UBR_draco_mesh_compression;
+        primitive.extensions && primitive.extensions.UBER_draco_mesh_compression;
       const compressedPointCloud =
-        primitive.extensions && primitive.extensions.UBR_draco_point_cloud_compression;
+        primitive.extensions && primitive.extensions.UBER_draco_point_cloud_compression;
 
       const unpackedPrimitive = {
         mode: primitive.mode,
