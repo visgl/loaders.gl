@@ -8,7 +8,7 @@
 // Description: A loader for PCD ascii and binary files.
 // Limitations: Compressed binary files are not supported.
 
-import TextDecoder from '../common/loader-utils/text-decoder';
+import {TextDecoder} from '../common/loader-utils/text-encoding';
 
 const LITTLE_ENDIAN = true;
 

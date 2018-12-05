@@ -11,8 +11,7 @@ export {loadUri} from './common/loader-utils/load-uri.js';
 
 export {getImageSize} from './common/loader-utils/get-image-size';
 export {toArrayBuffer, toBuffer} from './common/loader-utils/binary-utils';
-export {default as TextDecoder} from './common/loader-utils/text-decoder';
-export {default as TextEncoder} from './common/loader-utils/text-encoder';
+export {TextDecoder, TextEncoder} from './common/loader-utils/text-encoding';
 
 export {getMeshSize as _getMeshSize} from './common/mesh-utils/mesh-utils';
 

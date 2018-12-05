@@ -21,7 +21,7 @@
 //   }
 // });
 
-import TextDecoder from '../common/loader-utils/text-decoder';
+import {TextDecoder} from '../common/loader-utils/text-encoding';
 
 export default function parsePLY(data, options = {}) {
   let attributes;

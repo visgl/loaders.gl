@@ -2,7 +2,7 @@
 import unpackGLBBuffers from './unpack-glb-buffers';
 import unpackBinaryJson from './unpack-binary-json';
 import {padTo4Bytes} from '../common/loader-utils/array-utils';
-import TextDecoder from '../common/loader-utils/text-decoder';
+import {TextDecoder} from '../common/loader-utils/text-encoding';
 import DracoDecoder from '../draco-loader/draco-decoder';
 import assert from '../common/loader-utils/assert';
 
