@@ -129,6 +129,14 @@ const CONFIGS = {
     plugins: [new HtmlWebpackPlugin()]
   }),
 
+  render: env => Object.assign({}, TEST_CONFIG, {
+    entry: {
+      'test-browser': resolve(__dirname, './render/index.js')
+    },
+
+    plugins: [new HtmlWebpackPlugin()]
+  }),
+
   size: env => {
     const dist = getDist(env);
 
@@ -193,6 +201,9 @@ const CONFIGS = {
 function getConfig(env) {
   if (env.test || env.testBrowser || env.test_browser) {
     return CONFIGS.test(env);
+  }
+  if (env.render) {
+    return CONFIGS.render(env);
   }
   if (env.bench) {
     return CONFIGS.bench(env);
