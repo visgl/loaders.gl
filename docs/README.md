@@ -2,16 +2,27 @@
 
 A suite of framework-independent loaders (i.e. parsers) for 3D geometries and assets, as well as geospatial formats.
 
-Also includes a few encoders for key formats to support saving data, as well some encoder/decoder pairs that provide compression/decompression support (e.g. [DRACO](https://google.github.io/draco/) compression).
+> In spite of the name loaders.gl, this itself does not have any WebGL dependencies. It does however load data in a way that is optimized for use with WebGL.
 
-In addition to the loaders themselves which implement parsing of specific formats, loaders.gl also provides a core of functions that perform actual loading.
 
-loaders.gl is to an extent an effort to "curate" some of the best existing loader code created by the open source community. The source is often based on loaders from other WebGL frameworks like THREE.js or individual github repos. Sometimes the core parser is just an installed npm module, and loaders.gl just provides a thin adaptor. Finally, some loaders are hand-crafted for loaders.gl.
+## Overview
+
+loaders.gl is effectively an effort to collect the best loaders created by the open source community and package them in a standardized, framework-independent way.
+
+Thus, the source code for these loaders is often based directly on open source loaders from other WebGL frameworks like THREE.js or individual github repos. Sometimes the core parsing is delegated to an installed npm module, and loaders.gl just provides a thin adaptor. Naturally, some loaders have been developed from scratch for loaders.gl.
+
+* **Loaders** - The core functionality is a set of loaders (parsers) for various major geometry formats.
+
+* **Encoders** - In addition encoders (or writers) for selected key formats to support saving data.
+
+* **Compression** - loaders.gl includes some encoder/decoder pairs that provide specialized compression/decompression support (e.g. [DRACO](https://google.github.io/draco/) compression).
+
+* **Utilities** - Since the loaders and writers themselves only implement parsing and encoding (typically from strings or array buffers), i.e. they don't actually "load" or "save" any data, loaders.gl also provides a set of optional utility functions that perform actual loading from files, urls etc.
 
 
 ## Main Features
 
-**Framework Agnosticism** - There is a wide range of excellent loaders for 3D formats available as open source under e.g. MIT and Apache license. However, many of these loaders were created for a specific 3D framework (e.g. THREE.js) and are not immediately usable outside of that framework.
+**Framework Agnosticism** - There is a wide range of excellent loaders for 3D formats available as open source under MIT license. However, many of these loaders were created for a specific 3D framework (e.g. THREE.js) and are not immediately usable outside of that framework.
 
 **Standard Format** - All 3D asset loaders return a "standardized" JavaScript objects with a header key-value map and a map of typed arrays representing binary data attributes. The binary attributes can be uploaded directly to GPU buffers and used for rendering or GPGPU calculations.
 
@@ -54,7 +65,7 @@ Finally, some "unusual" loaders may be included just for the fun of it, e.g. SVG
 
 ## Licenses
 
-loaders.gl contains a collection of MIT and Apache licensed loaders. Each loader comes with its own license, so if the distinction matters to you, please check and decide accordingly. However, loaders.gl will not include any loaders with commercial or copy-left licenses.
+loaders.gl contains a collection of MIT licensed loaders. Each loader comes with its own license, so if the distinction matters to you, please check and decide accordingly. However, loaders.gl will not include any loaders with commercial or copy-left licenses.
 
 
 ## Credits and Attributions
