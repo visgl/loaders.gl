@@ -22,9 +22,6 @@
   "workspaces": [
     "modules/*"
   ],
-  "browser": {
-    "fs": false
-  },
   "scripts": {
     "start": "echo 'Please see loaders.gl website for how to run examples' && open http://uber.github.io/loaders.gl/#/documentation/getting-started/examples",
     "clean": "rm -fr dist dist-es6 && (cd modules/core && npm run clean)",
@@ -37,6 +34,8 @@
     "publish-prod": "(cd modules/core && npm run publish-prod)",
     "publish-beta": "(cd modules/core && npm run publish-beta)",
     "test": "scripts/test.sh",
+    "test-browser": "webpack-dev-server --config test/webpack.config.js --env.testBrowser --progress --hot --open",
+    "test-render": "webpack-dev-server --config test/webpack.config.js --env.render --progress --hot --open",
     "test-ci": "scripts/test.sh cover && scripts/test.sh bench",
     "bench-browser": "webpack-dev-server --config test/webpack.config.js --env.bench --progress --hot --open",
     "collect-metrics": "scripts/collect-metrics.sh",
@@ -47,12 +46,14 @@
     "@babel/core": "^7.0.0",
     "@babel/preset-env": "^7.0.0",
     "@babel/register": "^7.0.0",
+    "@deck.gl/test-utils": "^6.3.1",
     "arraybuffer-loader": "^1.0.6",
     "babel-eslint": "^9.0.0",
     "babel-plugin-istanbul": "^5.0.0",
     "babel-plugin-version-inline": "^1.0.0",
     "codecov": "^3.1.0",
     "coveralls": "^2.13.0",
+    "deck.gl": "^6.3.1",
     "eslint": "^3.0",
     "eslint-config-uber-es2015": "^3.0.0",
     "eslint-plugin-babel": "^5.1.0",
@@ -65,6 +66,7 @@
     "probe.gl": "^1.0.4",
     "puppeteer": "^1.2.0",
     "raw-loader": "^0.5.1",
+    "react": "^16.6.3",
     "reify": "^0.4.4",
     "source-map-loader": "^0.2.1",
     "source-map-support": "^0.4.2",
