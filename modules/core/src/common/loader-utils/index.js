@@ -3,8 +3,7 @@ export {loadUri} from './load-uri.js';
 // Helper functions and classes, intended for other loaders
 
 // TextEncoder/Decoder polyfills for Node.js
-export {default as TextDecoder} from './text-decoder';
-export {default as TextEncoder} from './text-encoder';
+export {TextDecoder, TextEncoder} from './text-encoding';
 
 // Get MIME type and size from binary image data
 export {getImageSize} from './get-image-size';
