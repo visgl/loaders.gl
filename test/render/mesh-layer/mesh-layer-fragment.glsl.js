@@ -1,4 +1,4 @@
-const carLayerFragment = `
+export default `
 #define SHADER_NAME mesh-layer-fs
 
 #ifdef GL_ES
@@ -32,5 +32,3 @@ void main(void) {
   gl_FragColor = picking_filterPickingColor(gl_FragColor);
 }
 `;
-
-export default carLayerFragment;
