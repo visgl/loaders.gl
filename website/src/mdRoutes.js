@@ -41,6 +41,10 @@ export default [
             markdown: require('../../docs/developer-guide/about-loaders.md')
           },
           {
+            name: 'Standardized Formats',
+            markdown: require('../../docs/developer-guide/standard-formats.md')
+          },
+          {
             name: 'glbdump',
             markdown: require('../../docs/developer-guide/glbdump.md')
           }
