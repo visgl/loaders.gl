@@ -12,15 +12,19 @@ const PLY_BINARY =
 test('PLYLoader#parseText', t => {
   const data = PLYLoader.parseText(PLY_ASCII);
 
-  t.ok(data.originalHeader, 'Original header found');
+  // Check loader specific results
+  t.ok(data.loaderData.header, 'Original header found');
 
-  t.equal(data.originalAttributes.indices.length, 36, 'Index attribute was found');
-  t.equal(data.originalAttributes.vertices.length, 72, 'vertices attribute was found');
-  t.equal(data.originalAttributes.normals.length, 72, 'normals attribute was found');
+  t.equal(data.loaderData.attributes.indices.length, 36, 'Index attribute was found');
+  t.equal(data.loaderData.attributes.vertices.length, 72, 'vertices attribute was found');
+  t.equal(data.loaderData.attributes.normals.length, 72, 'normals attribute was found');
 
+  // Check loader specific results
+
+  t.ok(data.header, 'header found');
   t.equal(data.indices.length, 36, 'Indices found');
-  t.equal(data.attributes.POSITION.length, 72, 'POSITION attribute was found');
-  t.equal(data.attributes.NORMAL.length, 72, 'NORMAL attribute was found');
+  t.equal(data.attributes.POSITION.bufferView.length, 72, 'POSITION attribute was found');
+  t.equal(data.attributes.NORMAL.bufferView.length, 72, 'NORMAL attribute was found');
 
   t.end();
 });
@@ -28,7 +32,8 @@ test('PLYLoader#parseText', t => {
 test('PLYLoader#parseBinary', t => {
   const data = PLYLoader.parseText(PLY_BINARY);
 
-  t.ok(data.originalHeader, 'Original header found');
+  // Check loader specific results
+  t.ok(data.loaderData.header, 'Original header found');
 
   t.end();
 });

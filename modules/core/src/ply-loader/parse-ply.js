@@ -22,33 +22,34 @@
 // });
 
 import {TextDecoder} from '../common/loader-utils/text-encoding';
-import {getGLTFIndices, getGLTFAttributes} from '../common/mesh-utils/get-gltf-attributes';
+import {getGLTFIndices, getGLTFAttributes} from '../common/mesh-utils/gltf-get-attributes';
 
 export default function parsePLY(data, options = {}) {
-  let originalAttributes;
-  let originalHeader;
+  let header;
+  let attributes;
 
   if (data instanceof ArrayBuffer) {
     const text = new TextDecoder().decode(data);
-    originalHeader = parseHeader(text, options);
-    originalAttributes = originalHeader.format === 'ascii' ?
-      parseASCII(text, originalHeader) :
-      parseBinary(data, originalHeader);
+    header = parseHeader(text, options);
+    attributes = header.format === 'ascii' ? parseASCII(text, header) : parseBinary(data, header);
   } else {
-    originalHeader = parseHeader(data, options);
-    originalAttributes = parseASCII(data, originalHeader);
+    header = parseHeader(data, options);
+    attributes = parseASCII(data, header);
   }
 
   return {
-    originalHeader,
-    originalAttributes,
+    loaderData: {
+      header,
+      attributes
+    },
     // TODO - how to detect POINT CLOUDS?
     // TODO - PLY quadrangles must be split?
+    header: {},
     mode: 4, // TRIANGLES
-    indices: getGLTFIndices(originalAttributes),
-    attributes: getGLTFAttributes(originalAttributes),
+    indices: getGLTFIndices(attributes),
+    attributes: getGLTFAttributes(attributes),
     // TODO - this should probably be updated to match GLTF accessors
-    accessors: normalizeAttributes(originalAttributes)
+    accessors: normalizeAttributes(attributes)
   };
 }
 

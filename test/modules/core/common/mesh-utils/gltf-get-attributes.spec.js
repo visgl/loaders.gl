@@ -1,5 +1,5 @@
 import test from 'tape-catch';
-import {getGLTFIndices, getGLTFAttributes} from 'loaders.gl/common/mesh-utils/get-gltf-attributes';
+import {getGLTFIndices, getGLTFAttributes} from 'loaders.gl/common/mesh-utils/gltf-get-attributes';
 
 /*
 const PATTERNS = [
@@ -26,12 +26,12 @@ const PATTERNS = [
 // Check if an attribute contains indices
 
 const INDICES_TESTS = [
-  {attributes: {NOT: true}, containsIndices: false},
-  {attributes: {INDICES: true}, containsIndices: true},
-  {attributes: {INDEX: true}, containsIndices: true},
-  {attributes: {INDICES: true}, containsIndices: true},
-  {attributes: {ELEMENTS: true}, containsIndices: true},
-  {attributes: {ELEMENT_INDEX: true}, containsIndices: true}
+  {attributes: {NOT: [1, 2, 1]}, containsIndices: false},
+  {attributes: {INDICES: [1, 2, 1]}, containsIndices: true},
+  {attributes: {INDEX: [1, 2, 1]}, containsIndices: true},
+  {attributes: {INDICES: [1, 2, 1]}, containsIndices: true},
+  {attributes: {ELEMENTS: [1, 2, 1]}, containsIndices: true},
+  {attributes: {ELEMENT_INDEX: [1, 2, 1]}, containsIndices: true}
 ];
 
 test('getGLTFIndices', t => {

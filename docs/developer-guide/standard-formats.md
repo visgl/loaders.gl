@@ -1,28 +1,31 @@
 # Standardized Formats
 
-loaders.gl contains "categories" of loaders that load very similar data. When it is cheap to do so, it makes sense to offer the returned data in a standardized format, so that an application can support multiple formats with a single code path.
+
+loaders.gl defines "categories" of loaders that load very similar data (e.g. point clouds). When it is reasonably easy to do so, loaders.gl converts the returned data in a standardized format for that category. This allows an application to support multiple formats with a single code path, since all the loaders will return similar data structures.
 
 The returned data will be an object with a standardized payload, and a reference
 
 | Field | Type | Contents |
 | ---   | --- | --- |
-| `originalHeader` | `Object` | Optional format specific versions of the loaded data, such as the original header fields, attribute names etc |
-| `header`       | `Object` | Standardized header information can contain number of vertices, etc. |
+| `loaderData` | `Object` | Optional: Loader implementation specific versions of the loaded data, such as e.g. original header fields, attribute names etc. Can correspond one-to-one with the data in the format itself, or be defined by the loader. |
+| `header`       | `Object` | Standardized header information - can contain number of vertices, etc. |
 | `...`          | `*` | Standardized data based on which category the loader conforms to |
 
+> `loaderData` should not be considered stable between releases, since loaders.gl can choose to replace the underlying loader for performance or feature reasons.
 
-## Mesh and Point Cloud Category Conventions
 
-Loaders such as OBJ, PLY, PCD, LAZ etc all effectively load a "mesh" consisting of a set of "attributes", perhaps `positions`, `colors`, `normals` etc. These attributes are all typed arrays containing successive values for each "vertex".
+## Mesh-and-Point-Cloud Category Conventions
+
+Loaders such as `OBJ`, `PLY`, `PCD`, `LAZ` etc all effectively load a "mesh" consisting of a set of "attributes", perhaps `positions`, `colors`, `normals` etc. These attributes are all typed arrays containing successive values for each "vertex".
 
 To allow the application to handle the returned attributes in a standardized way, some naming convention must be chosen. loaders.gl follows [glTF 2.0 recommendations](https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#geometry) for standard names.
 
 
 | Field | Type | Contents |
-| ---   | --- | --- |
-| `originalHeader` | `Object` | Optional, format specific version of loaded data |
-| `header`       | `Object` | TBD |
-| `mode`         | `Number` | Aligned with [OpenGL/glTF primitive types](https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#primitive) |
+| ---   | ---  | --- |
+| `loaderData` | `Object` | Optional, format specific version of loaded data |
+| `header`     | `Object` | See below |
+| `mode`       | `Number` | Aligned with [OpenGL/glTF primitive types](https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#primitive) |
 | `indices`      | `Uint32Array` \| `Uint16Array` | If supplied, contains the indices/elements typed array.
 | `attributes`   | `Object` | Each key contains a typed array representing the contents of one attribute. Keys are named per [glTF 2.0 recommendations](https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#geometry). `POSITION` is expected to always be present. |
 | `originalAttributes` | each key contains an attribute, with name as loaded, see `attributes`. |
@@ -30,17 +33,39 @@ To allow the application to handle the returned attributes in a standardized way
 > TBD: material support
 
 
-### Primitive Modes
+The `header` fields are only recommended at this point, applications can not assume they will be present:
+
+| `header` Field   | Type | Contents |
+| ---              | ---  | --- |
+| `vertexCount`    | `Number` | |
+| `primitiveCount` | `Number` | |
+| `instanceCount`  | `Number` | |
+
+
+Primitive Modes are selected from the standard OpenGL list:
 
 | Value | Primitive Mode |
 | ---   | --- |
-| `0`   | POINTS |
-| `1`   | LINES |
-| `2`   | LINE_LOOP |
-| `3`   | LINE_STRIP |
-| `4`   | TRIANGLES |
-| `5`   | TRIANGLE_STRIP |
-| `6`   | TRIANGLE_FAN |
+| `0`   | `POINTS` |
+| `1`   | `LINES` |
+| `2`   | `LINE_LOOP` |
+| `3`   | `LINE_STRIP` |
+| `4`   | `TRIANGLES` |
+| `5`   | `TRIANGLE_STRIP` |
+| `6`   | `TRIANGLE_FAN` |
+
+
+Attributes are basically glTF accessor objects, with the bufferView resolved into a typed array:
+
+| Accessors Fields | glTF?  | Type     | Contents |
+| ---              | ---    | ---      | ---      |
+| `bufferView`     | Yes    | typed array | binary buffer containing attribute values |
+| `byteOffset`     | Yes    | `Number` | Currently always `0` |
+| `count`          | Yes    | | |
+| `type`           | Yes    | `SCALAR` etc | Number of components per vertex |
+| `componentType`  | Yes    | | |
+| `size`           | No     | 1-4         | Decoded number of components |
+| `value`          | No     | `TypedArray` | Same as `bufferView`. Deprecated, duplicate for backwards luma.gl compatibility |
 
 
 ### Attribute Names
@@ -64,4 +89,4 @@ A loader will return a map of `attributes` with loaded attributes mapped on a be
 
 ## Scenegraph Conventions
 
-For bigger scenegraphs loaders.gl currently focuses on glTF 2.0 support. It is assumed that other scenegraph loaders could convert their loaded data to a similar structure, essentially converting to glTF 2.0 on-the-fly as they load.
+For bigger scenegraph-capable loaders (i.e. loaders that don't just load single meshes), loaders.gl currently focuses on glTF 2.0 support. It is assumed that other scenegraph loaders could convert their loaded data to a similar structure, essentially converting to glTF 2.0 on-the-fly as they load.

@@ -1,1 +1,1 @@
-import './get-gltf-attributes.spec';
+import './gltf-get-attributes.spec';

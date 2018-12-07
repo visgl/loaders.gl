@@ -1,1 +1,1 @@
-export {getGLTFIndices, getGLTFAttributes} from './rename-attribute';
+export {getGLTFIndices, getGLTFAttributes} from './gltf-get-attributes';

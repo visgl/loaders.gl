@@ -1,17 +1,17 @@
 /* eslint-disable camelcase, max-statements */
 import unpackGLBBuffers from './unpack-glb-buffers';
 import unpackBinaryJson from './unpack-binary-json';
-import {padTo4Bytes} from '../common/loader-utils/array-utils';
-import {TextDecoder} from '../common/loader-utils/text-encoding';
-import DracoDecoder from '../draco-loader/draco-decoder';
-import assert from '../common/loader-utils/assert';
 
-// glTF CONSTANTS
+import DracoDecoder from '../draco-loader/draco-decoder';
+import {TextDecoder} from '../common/loader-utils/text-encoding';
+import {padTo4Bytes} from '../common/loader-utils/array-utils';
+// glTF CONSTANTS - TODO - merge with utility functions in common/mesh-utils
 import {
   ATTRIBUTE_TYPE_TO_COMPONENTS,
   ATTRIBUTE_COMPONENT_TYPE_TO_BYTE_SIZE,
   ATTRIBUTE_COMPONENT_TYPE_TO_ARRAY
-} from './glb-constants';
+} from '../common/mesh-utils/gltf-type-utils';
+import assert from '../common/loader-utils/assert';
 
 const MAGIC_glTF = 0x676c5446; // glTF in Big-Endian ASCII
 
