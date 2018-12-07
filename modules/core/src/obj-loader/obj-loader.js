@@ -1,5 +1,5 @@
 import OBJ from 'webgl-obj-loader';
-import {getGLTFAttributes, getGLTFIndices} from '../common/mesh-utils/gltf-accessor-utils';
+import {getGLTFAttributes, getGLTFIndices} from '../common/mesh-utils/gltf-type-utils';
 
 function testOBJFile(text) {
   // There could be comment line first

@@ -2,7 +2,7 @@
   "name": "loaders.gl",
   "description": "Framework-independent loaders for 3D graphics and geospatial formats",
   "license": "MIT",
-  "version": "0.4.0",
+  "private": "true",
   "repository": {
     "type": "git",
     "url": "https://github.com/uber-web/loaders.gl"
@@ -23,7 +23,7 @@
     "modules/*"
   ],
   "scripts": {
-    "start": "echo 'Please see loaders.gl website for how to run examples' && open http://uber.github.io/loaders.gl/#/documentation/getting-started/examples",
+    "start": "echo 'Please see loaders.gl website for how to run examples' && open https://uber-web.github.io/loaders.gl/#/docs/overview/introduction",
     "clean": "rm -fr dist dist-es6 && (cd modules/core && npm run clean)",
     "build": "(cd modules/core && npm run build)",
     "cover": "NODE_ENV=cover nyc node test/start",

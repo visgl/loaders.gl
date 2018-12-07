@@ -2,6 +2,9 @@
 
 This is the CHANGELOG.md for loaders.gl.
 
+### 0.4.0 -
+- Unification of mesh loaders output format
+
 ### 0.3.x -
 - Doc fixes
 - Binary file format tests now run in browser

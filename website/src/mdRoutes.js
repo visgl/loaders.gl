@@ -83,6 +83,10 @@ export default [
             markdown: require('../../docs/api-reference/loaders/glb-writer.md')
           },
           {
+            name: 'GLBBuilder (glTF)',
+            markdown: require('../../docs/api-reference/loaders/glb-writer.md')
+          },
+          {
             name: 'KMLLoader (Geospatial)',
             markdown: require('../../docs/api-reference/loaders/kml-loader.md')
           },
