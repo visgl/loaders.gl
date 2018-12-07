@@ -37,8 +37,12 @@ export default [
         name: 'Developer Guide',
         children: [
           {
-            name: 'Debugging',
+            name: 'About Loaders',
             markdown: require('../../docs/developer-guide/about-loaders.md')
+          },
+          {
+            name: 'glbdump',
+            markdown: require('../../docs/developer-guide/glbdump.md')
           }
         ]
       },
@@ -48,30 +52,51 @@ export default [
           {
             name: 'loadFile',
             markdown: require('../../docs/api-reference/load-file.md')
+          }
+        ]
+      },
+      {
+        name: 'Loaders',
+        children: [
+          {
+            name: 'DRACOLoader (glTF)',
+            markdown: require('../../docs/api-reference/loaders/draco-loader.md')
           },
           {
-            name: 'GLBLoader',
+            name: 'DRACOEncoder (glTF)',
+            markdown: require('../../docs/api-reference/loaders/draco-encoder.md')
+          },
+          {
+            name: 'GLTFLoader (glTF)',
+            markdown: require('../../docs/api-reference/loaders/gltf-loader.md')
+          },
+          {
+            name: 'GLBLoader (glTF)',
             markdown: require('../../docs/api-reference/loaders/glb-loader.md')
           },
           {
-            name: 'GLBWriter',
+            name: 'GLBWriter (glTF)',
             markdown: require('../../docs/api-reference/loaders/glb-writer.md')
           },
           {
-            name: 'KMLLoader',
+            name: 'KMLLoader (Geospatial)',
             markdown: require('../../docs/api-reference/loaders/kml-loader.md')
           },
           {
-            name: 'LASLoader',
+            name: 'LASLoader (PointCloud)',
             markdown: require('../../docs/api-reference/loaders/las-loader.md')
           },
           {
-            name: 'PCDLoader',
-            markdown: require('../../docs/api-reference/loaders/glb-loader.md')
+            name: 'OBJLoader (Mesh)',
+            markdown: require('../../docs/api-reference/loaders/obj-loader.md')
           },
           {
-            name: 'PLYLoader',
-            markdown: require('../../docs/api-reference/loaders/glb-loader.md')
+            name: 'PCDLoader (PointCloud)',
+            markdown: require('../../docs/api-reference/loaders/pcd-loader.md')
+          },
+          {
+            name: 'PLYLoader (Mesh/PointCloud)',
+            markdown: require('../../docs/api-reference/loaders/ply-loader.md')
           }
         ]
       }
