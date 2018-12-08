@@ -1,6 +1,5 @@
 import {OrbitView, COORDINATE_SYSTEM} from 'deck.gl';
 import {loadFile, PLYLoader} from 'loaders.gl';
-import path from 'path';
 
 import MeshLayer from './mesh-layer/mesh-layer';
 import {convertToMesh} from './test-utils';
@@ -32,7 +31,7 @@ export const TEST_CASES = [
         opacity: 0.5,
         coordinateSystem: COORDINATE_SYSTEM.IDENTITY,
         getPosition: d => d.position,
-        mesh: loadFile('test/modules/core/data/ply/bun_zipper.ply', PLYLoader).then(convertToMesh),
+        mesh: loadFile('test/modules/core/data/ply/bun_zipper.ply', PLYLoader).then(convertToMesh)
       })
     ],
     referenceImageUrl: './test/render/golden-images/ply-loader.png'
