@@ -1,4 +1,5 @@
 import OBJ from 'webgl-obj-loader';
+import {getGLTFAttributes, getGLTFIndices} from '../common/mesh-utils/gltf-type-utils';
 
 function testOBJFile(text) {
   // There could be comment line first
@@ -7,19 +8,30 @@ function testOBJFile(text) {
 
 function parseOBJMesh(text) {
   const mesh = new OBJ.Mesh(text);
-  const indices = new Uint16Array(mesh.indices);
-  const positions = new Float32Array(mesh.vertices);
-  const normals = new Float32Array(mesh.vertexNormals);
-  const texCoords = new Float32Array(mesh.textures);
+
+  const indices = getGLTFIndices(mesh);
+
+  const attributes = getGLTFAttributes({
+    POSITION: new Float32Array(mesh.vertices),
+    NORMAL: new Float32Array(mesh.vertexNormals),
+    TEXCOORD_0: new Float32Array(mesh.textures)
+  });
 
   return {
-    header: {},
-    attributes: {
-      indices,
-      positions,
-      normals,
-      texCoords
-    }
+    // Data return by this loader implementation
+    loaderData: {
+      header: {},
+      attributes: mesh
+    },
+    // Normalised data
+    header: {
+      indexCount: mesh.indices && mesh.indices.length,
+      vertexCount: mesh.vertices.length / 3,
+      primitiveCount: mesh.indices && mesh.indices.length / 3
+    },
+    mode: 4, // TRIANGLES
+    indices,
+    attributes
   };
 }
 

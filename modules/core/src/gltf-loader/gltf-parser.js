@@ -1,3 +1,6 @@
+import {getBytesFromComponentType, getSizeFromAccessorType}
+  from '../common/mesh-utils/gltf-type-utils';
+
 export default class GLTFParser {
   constructor(gltf) {
     this.gltf = gltf;
@@ -199,8 +202,8 @@ export default class GLTFParser {
     accessor.bufferView = this.getBufferView(accessor.bufferView);
 
     // Look up enums
-    accessor.bytesPerComponent = this.enumAccessorBytes(accessor);
-    accessor.components = this.enumAccessorType(accessor);
+    accessor.bytesPerComponent = getBytesFromComponentType(accessor);
+    accessor.components = getSizeFromAccessorType(accessor);
     accessor.bytesPerElement = accessor.bytesPerComponent * accessor.components;
   }
 
@@ -243,48 +246,5 @@ export default class GLTFParser {
     if (camera.orthographic) {
       camera.matrix = this.config.createOrthographicMatrix(camera.orthographic);
     }
-  }
-
-  // ENUM LOOKUP
-
-  enumAccessorBytes(componentType) {
-    const BYTES = {
-      5120: 1, // BYTE
-      5121: 1, // UNSIGNED_BYTE
-      5122: 2, // SHORT
-      5123: 2, // UNSIGNED_SHORT
-      5125: 4, // UNSIGNED_INT
-      5126: 4  // FLOAT
-    };
-    return BYTES[componentType];
-  }
-
-  enumAccessorType(type) {
-    const COMPONENTS = {
-      SCALAR: 1,
-      VEC2: 2,
-      VEC3: 3,
-      VEC4: 4,
-      MAT2: 4,
-      MAT3: 9,
-      MAT4: 16
-    };
-    return COMPONENTS[type];
-  }
-
-  enumSamplerParameter(parameter) {
-    const GL_TEXTURE_MAG_FILTER = 0x2800;
-    const GL_TEXTURE_MIN_FILTER = 0x2801;
-    const GL_TEXTURE_WRAP_S = 0x2802;
-    const GL_TEXTURE_WRAP_T = 0x2803;
-
-    const PARAMETER_MAP = {
-      magFilter: GL_TEXTURE_MAG_FILTER,
-      minFilter: GL_TEXTURE_MIN_FILTER,
-      wrapS: GL_TEXTURE_WRAP_S,
-      wrapT: GL_TEXTURE_WRAP_T
-    };
-
-    return PARAMETER_MAP[parameter];
   }
 }

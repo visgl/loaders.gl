@@ -41,6 +41,14 @@ export default [
             markdown: require('../../docs/developer-guide/about-loaders.md')
           },
           {
+            name: 'Loader Categories',
+            markdown: require('../../docs/developer-guide/standard-formats.md')
+          },
+          {
+            name: 'Mesh/PointCloud Category Loaders',
+            markdown: require('../../docs/developer-guide/standard-formats.md')
+          },
+          {
             name: 'glbdump',
             markdown: require('../../docs/developer-guide/glbdump.md')
           }
@@ -76,6 +84,10 @@ export default [
           },
           {
             name: 'GLBWriter (glTF)',
+            markdown: require('../../docs/api-reference/loaders/glb-writer.md')
+          },
+          {
+            name: 'GLBBuilder (glTF)',
             markdown: require('../../docs/api-reference/loaders/glb-writer.md')
           },
           {

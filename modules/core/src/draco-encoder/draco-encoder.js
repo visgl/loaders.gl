@@ -1,3 +1,5 @@
+// This code is based on example code from the DRACO repository
+
 // Copyright 2017 The Draco Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the 'License');

@@ -9,30 +9,53 @@
 // Limitations: Compressed binary files are not supported.
 
 import {TextDecoder} from '../common/loader-utils/text-encoding';
+import {getGLTFAttributes} from '../common/mesh-utils/gltf-get-attributes';
 
 const LITTLE_ENDIAN = true;
 
 export default function parsePCD(data, url, options) {
   // parse header (always ascii format)
   const textData = new TextDecoder().decode(data);
-  const PCDheader = parsePCDHeader(textData);
+  const header = parsePCDHeader(textData);
 
   let attributes;
 
   // parse data
-  switch (PCDheader.data) {
+  switch (header.data) {
   case 'ascii':
-    attributes = parsePCDASCII(PCDheader, textData);
-    return {header: PCDheader, attributes};
+    attributes = parsePCDASCII(header, textData);
+    break;
 
   case 'binary':
-    attributes = parsePCDBinary(PCDheader, data);
-    return {header: PCDheader, attributes};
+    attributes = parsePCDBinary(header, data);
+    break;
 
   case 'binary_compressed':
   default:
-    throw new Error(`PCD: ${PCDheader.data} files are not supported`);
+    throw new Error(`PCD: ${header.data} files are not supported`);
   }
+
+  return {
+    loaderData: {
+      header,
+      attributes
+    },
+    // TODO - how to detect point clouds?
+    header: getStandardizedHeader(header),
+    mode: 0, // POINTS
+    indices: null,
+    attributes: getGLTFAttributes(attributes),
+    // TODO - return GLTF style accessors...
+    accessors: attributes
+  };
+}
+
+function getStandardizedHeader(PCDheader) {
+  const pointCount = PCDheader.width * PCDheader.height; // Supports "organized" point sets
+  return {
+    primitiveCount: pointCount,
+    elementCount: pointCount
+  };
 }
 
 /* eslint-disable complexity, max-statements */

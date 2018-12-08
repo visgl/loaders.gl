@@ -1,7 +1,8 @@
 /* eslint-disable camelcase, max-statements */
 import {getImageSize, padTo4Bytes, copyArrayBuffer, TextEncoder} from '../common/loader-utils';
+import {getAccessorTypeFromSize, getComponentTypeFromArray}
+   from '../common/mesh-utils/gltf-type-utils';
 import {DracoEncoder, DracoDecoder} from '../draco-encoder/draco-encoder';
-import {getAccessorType, getAccessorComponentType} from './glb-accessor-utils';
 import packBinaryJson from './pack-binary-json';
 
 const MAGIC_glTF = 0x676c5446; // glTF in Big-Endian ASCII
@@ -90,8 +91,8 @@ export default class GLBBuilder {
     // Add an accessor pointing to the new buffer view
     const glTFAccessor = {
       bufferView: bufferViewIndex,
-      type: getAccessorType(accessor.size),
-      componentType: getAccessorComponentType(sourceBuffer),
+      type: getAccessorTypeFromSize(accessor.size),
+      componentType: getComponentTypeFromArray(sourceBuffer),
       count: Math.round(sourceBuffer.length / accessor.size)
     };
 
