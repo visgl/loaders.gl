@@ -41,7 +41,11 @@ export default [
             markdown: require('../../docs/developer-guide/about-loaders.md')
           },
           {
-            name: 'Standardized Formats',
+            name: 'Loader Categories',
+            markdown: require('../../docs/developer-guide/standard-formats.md')
+          },
+          {
+            name: 'Mesh/PointCloud Category Loaders',
             markdown: require('../../docs/developer-guide/standard-formats.md')
           },
           {
