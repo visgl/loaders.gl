@@ -2,7 +2,7 @@
   "name": "loaders.gl",
   "description": "Framework-independent loaders for 3D graphics and geospatial formats",
   "license": "MIT",
-  "version": "4.0.0",
+  "private": "true",
   "repository": {
     "type": "git",
     "url": "https://github.com/uber-web/loaders.gl"
