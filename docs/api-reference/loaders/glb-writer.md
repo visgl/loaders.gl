@@ -1,5 +1,8 @@
 # GLBWriter
 
-The `GLBWriter` is a small metadata object.
+The `GLBWriter` is the descriptor object for the GLB encoder.
 
-To build a binary GLB file that can be saved with the `GLBWriter`, use the `GLBBuilder` class
+
+Remarks:
+
+* To build a binary GLB file that can be saved with the `GLBWriter`, use the `GLBBuilder` class.

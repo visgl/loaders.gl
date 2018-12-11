@@ -1,6 +1,7 @@
 window.website = true;
 
-// const RAW_GITHUB = 'https://raw.githubusermarkdown.crequire(o../../docs/m/uber/loaders.gl/master';)
+// const RAW_GITHUB =
+// 'https://raw.githubusermarkdown.crequire(o../../docs/m/uber/loaders.gl/master';)
 
 export default [
   {
@@ -17,6 +18,10 @@ export default [
           {
             name: 'What\'s New',
             markdown: require('../../docs/whats-new.md')
+          },
+          {
+            name: 'Roadmap',
+            markdown: require('../../docs/roadmap.md')
           },
           {
             name: 'Upgrade Guide',
@@ -45,8 +50,8 @@ export default [
             markdown: require('../../docs/developer-guide/standard-formats.md')
           },
           {
-            name: 'Mesh/PointCloud Category Loaders',
-            markdown: require('../../docs/developer-guide/standard-formats.md')
+            name: 'PointCloud Category Loaders',
+            markdown: require('../../docs/developer-guide/category-pointcloud.md')
           },
           {
             name: 'glbdump',
