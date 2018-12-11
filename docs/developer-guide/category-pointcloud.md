@@ -1,6 +1,6 @@
-## Mesh and PointCloud Category
+## PointCloud and Mesh Category
 
-Loaders such as `OBJ`, `PLY`, `PCD`, `LAZ` etc. all effectively load a "mesh" consisting of a set of "attributes", perhaps `positions`, `colors`, `normals` etc. These attributes are all typed arrays containing successive values for each "vertex".
+Loaders such as `PCD`, `LAZ`, `PLY`, `OBJ` etc. all effectively load a "geometry" consisting of a set of "attributes", perhaps `positions`, `colors`, `normals` etc. These attributes are all typed arrays containing successive values for each "vertex".
 
 The mesh loaders do the following to standardize the loaded mesh
 
@@ -10,7 +10,7 @@ The mesh loaders do the following to standardize the loaded mesh
 * Provide a map of [glTF 2.0 standard attribute names](https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#geometry) in case the application desires to convert the loaded data into a fully glTF-compatible mesh.
 
 
-### Mesh/PointCloud Data Structure
+### PointCloud/Mesh Data Structure
 
 | Field | Type       | Contents |
 | ---   | ---        | --- |
@@ -18,8 +18,8 @@ The mesh loaders do the following to standardize the loaded mesh
 | `header`           | `Object` | See below |
 | `mode`             | `Number` | Aligned with [OpenGL/glTF primitive types](https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#primitive) |
 | `attributes`       | `Object` | Each key contains an "accessor" object representing the contents of one attribute. |
-| `indices`          | `Uint32Array` \| `Uint16Array` | If supplied, contains the indices/elements typed array. |
-| `glTFAttributeMap` | Each key contains the name of a loaded attribute. |
+| `indices`          | `Uint32Array` `Uint16Array` | If supplied, contains the indices/elements typed array. |
+| `glTFAttributeMap` | `Object` | Each key contains the name of a loaded attribute. |
 
 Note that glTF attributes (keys in the `glTFAttributeMap`) are named per [glTF 2.0 recommendations](https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#geometry) with standardized, captilalized names.
 
@@ -39,15 +39,15 @@ The `header` fields are only recommended at this point, applications can not ass
 
 Primitive Modes are selected from the standard OpenGL list:
 
-| Value | Primitive Mode   |
-| ---   | ---              |
-| `0`   | `POINTS`         |
-| `1`   | `LINES`          |
-| `2`   | `LINE_LOOP`      |
-| `3`   | `LINE_STRIP`     |
-| `4`   | `TRIANGLES`      |
-| `5`   | `TRIANGLE_STRIP` |
-| `6`   | `TRIANGLE_FAN`   |
+| Value | Primitive Mode   | Comment |
+| ---   | ---              | --- |
+| `0`   | `POINTS`         | Used for point cloud category data |
+| `1`   | `LINES`          | Lines are rarely used due to limitations in GPU-based rendering |
+| `2`   | `LINE_LOOP`      | - |
+| `3`   | `LINE_STRIP`     | - |
+| `4`   | `TRIANGLES`      | Used for most meshes. Indices attributes are often used to reuse vertex data in remaining attributes |
+| `5`   | `TRIANGLE_STRIP` | - |
+| `6`   | `TRIANGLE_FAN`   | - |
 
 
 ### Accessors

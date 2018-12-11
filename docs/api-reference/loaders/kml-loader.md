@@ -8,7 +8,7 @@ References:
 * [KML Tutorial - Google](https://developers.google.com/kml/documentation/kml_tut)
 
 
-## Structure of Data
+## Structure of Loaded Data
 
 The parser will return a JavaScript object with a number of top-level array-valued fields:
 

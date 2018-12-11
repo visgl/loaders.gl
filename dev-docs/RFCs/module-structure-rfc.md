@@ -73,13 +73,12 @@ Not yet clear how big the core module will become, we'll want to keep an eye on 
 
 We could define groups of related loaders, for apps that wanted to add support for all formats in a loader category
 
-| `@loaders.gl/point-clouds` | Point-Cloud and Mesh Category loaders (PLY, PCS, LAZ, OBJ) |
+| `@loaders.gl/point-clouds` | Point-Cloud and Mesh Category loaders (PLY, PCS, LAZ, OBJ, DRACO) |
+| `@loaders.gl/meshes`       | Mesh Category loaders (PLY, OBJ, DRACO) |
 | `@loaders.gl/geospatial`   | Geospatial format loaders (KML, TopoJSON, ...). |
-| `@loaders.gl/draco`        | DRACO compressed mesh and point cloud loader and encoder. DRACO dependency. |
-| `@loaders.gl/gltf`         | GLTF2 related loaders/writers (GLTFLoader, GLBLoader, GLBBuilder, ...) |
 
 Remarks
-:
+
 * It would be neat to split point clouds and meshes into separate categories although there is overlap. Maybe some format submodules could simply appear as dependencies in more then one category module.
 
 
