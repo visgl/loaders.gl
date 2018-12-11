@@ -1,6 +1,7 @@
 window.website = true;
 
-// const RAW_GITHUB = 'https://raw.githubusermarkdown.crequire(o../../docs/m/uber/loaders.gl/master';)
+// const RAW_GITHUB =
+// 'https://raw.githubusermarkdown.crequire(o../../docs/m/uber/loaders.gl/master';)
 
 export default [
   {
@@ -17,6 +18,10 @@ export default [
           {
             name: 'What\'s New',
             markdown: require('../../docs/whats-new.md')
+          },
+          {
+            name: 'Roadmap',
+            markdown: require('../../docs/roadmap.md')
           },
           {
             name: 'Upgrade Guide',
@@ -42,11 +47,11 @@ export default [
           },
           {
             name: 'Loader Categories',
-            markdown: require('../../docs/developer-guide/standard-formats.md')
+            markdown: require('../../docs/developer-guide/loader-categories.md')
           },
           {
-            name: 'Mesh/PointCloud Category Loaders',
-            markdown: require('../../docs/developer-guide/standard-formats.md')
+            name: 'PointCloud Category Loaders',
+            markdown: require('../../docs/developer-guide/category-pointcloud.md')
           },
           {
             name: 'glbdump',
@@ -67,11 +72,11 @@ export default [
         name: 'Loaders',
         children: [
           {
-            name: 'DRACOLoader (glTF)',
+            name: 'DRACOLoader (PointCloud / Mesh)',
             markdown: require('../../docs/api-reference/loaders/draco-loader.md')
           },
           {
-            name: 'DRACOEncoder (glTF)',
+            name: 'DRACOEncoder (PointCloud / Mesh)',
             markdown: require('../../docs/api-reference/loaders/draco-encoder.md')
           },
           {
@@ -88,7 +93,7 @@ export default [
           },
           {
             name: 'GLBBuilder (glTF)',
-            markdown: require('../../docs/api-reference/loaders/glb-writer.md')
+            markdown: require('../../docs/api-reference/loaders/glb-builder.md')
           },
           {
             name: 'KMLLoader (Geospatial)',
@@ -107,7 +112,7 @@ export default [
             markdown: require('../../docs/api-reference/loaders/pcd-loader.md')
           },
           {
-            name: 'PLYLoader (Mesh/PointCloud)',
+            name: 'PLYLoader (PointCloud / Mesh)',
             markdown: require('../../docs/api-reference/loaders/ply-loader.md')
           }
         ]
