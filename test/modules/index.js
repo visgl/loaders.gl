@@ -1,6 +1,5 @@
 import './core';
 import './draco';
-import './glb';
 import './gltf';
 import './kml';
 // import './las';

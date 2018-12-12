@@ -1,8 +1,8 @@
 /* eslint-disable max-len */
 import test from 'tape-catch';
 
-import {GLBBuilder, GLBParser} from '@loaders.gl/glb';
-import unpackGLBBuffers from '@loaders.gl/glb/unpack-glb-buffers';
+import {GLBBuilder, GLBParser} from '@loaders.gl/gltf';
+import unpackGLBBuffers from '@loaders.gl/gltf/glb-loader/unpack-glb-buffers';
 
 import TEST_JSON from 'test-data/glb/test-data.json';
 

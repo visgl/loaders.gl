@@ -1,7 +1,7 @@
 /* eslint-disable */
 import test from 'tape-catch';
 
-import {GLBParser, GLBBuilder} from '@loaders.gl/glb';
+import {GLBParser, GLBBuilder} from '@loaders.gl/gltf';
 
 test('GLBParser#parse', t => {
   const testJson = {nested: {typedArray: new Float32Array([10.0, 11.0, 12.0])}};

@@ -2,8 +2,8 @@
 import test from 'tape-catch';
 import {toLowPrecision} from 'loaders.gl/test/test-utils';
 
-import {GLBLoader, GLBBuilder} from '@loaders.gl/glb';
-import packBinaryJson from '@loaders.gl/glb/pack-binary-json';
+import {GLBLoader, GLBBuilder} from '@loaders.gl/gltf';
+import packBinaryJson from '@loaders.gl/gltf/glb-writer/pack-binary-json';
 
 const TEST_CASES = {
   flat: {

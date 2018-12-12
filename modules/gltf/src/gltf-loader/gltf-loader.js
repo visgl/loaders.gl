@@ -1,6 +1,6 @@
 // Binary container format for glTF
 
-import {GLBParser} from '@loaders.gl/glb';
+import GLBParser from '../glb-loader/glb-parser';
 import GLTFParser from './gltf-parser';
 
 export function parseTextGLTF(json, options = {}) {

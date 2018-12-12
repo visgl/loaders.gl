@@ -17,15 +17,7 @@ export {toArrayBuffer, toBuffer} from './common/loader-utils/binary-utils';
 export {TextDecoder, TextEncoder} from './common/loader-utils/text-encoding';
 
 export {getMeshSize as _getMeshSize} from './common/mesh-utils/mesh-utils';
-export {
-  getAccessorTypeFromSize,
-  getComponentTypeFromArray,
-  getBytesFromComponentType,
-  getSizeFromAccessorType,
-  ATTRIBUTE_TYPE_TO_COMPONENTS,
-  ATTRIBUTE_COMPONENT_TYPE_TO_BYTE_SIZE,
-  ATTRIBUTE_COMPONENT_TYPE_TO_ARRAY
-} from './common/mesh-utils/gltf-type-utils';
+export {getAccessorTypeFromSize, getComponentTypeFromArray} from './common/mesh-utils/gltf-type-utils';
 export {
   getGLTFAccessors,
   getGLTFIndices,

@@ -1,1 +1,3 @@
-import './gltf-loader.spec';
+import './glb-loader';
+import './glb-writer';
+import './gltf-loader';
