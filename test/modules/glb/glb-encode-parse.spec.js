@@ -1,6 +1,6 @@
 /* eslint-disable */
 import test from 'tape-catch';
-import {toLowPrecision} from '@loaders.gl/core/common/loader-utils';
+import {toLowPrecision} from 'loaders.gl/test/test-utils';
 
 import {GLBLoader, GLBBuilder} from '@loaders.gl/glb';
 import packBinaryJson from '@loaders.gl/glb/pack-binary-json';
