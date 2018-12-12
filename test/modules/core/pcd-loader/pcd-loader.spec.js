@@ -16,16 +16,17 @@ test('PCDLoader#parseText', t => {
 
   // Check internal loader data
   t.ok(data.loaderData.header, 'Original header was found');
-  t.equal(data.loaderData.attributes.position.length, 639, 'position attribute was found');
-  t.equal(data.loaderData.attributes.color.length, 639, 'color attribute was found');
 
   // Check normalized data
-  t.ok(data.header, 'Header was found');
+  t.ok(data.header, 'Normalized header was found');
 
   t.equal(data.mode, 0, 'mode is POINTS (0)');
   t.notOk(data.indices, 'INDICES attribute was not found');
-  t.equal(data.attributes.POSITION.bufferView.length, 639, 'POSITION attribute was found');
-  t.equal(data.attributes.COLOR_0.bufferView.length, 639, 'COLOR attribute was found');
+
+  const POSITION = data.glTFAttributeMap.POSITION;
+  const COLOR_0 = data.glTFAttributeMap.COLOR_0;
+  t.equal(data.attributes[POSITION].value.length, 639, 'POSITION attribute was found');
+  t.equal(data.attributes[COLOR_0].value.length, 639, 'COLOR attribute was found');
 
   t.end();
 });
@@ -35,13 +36,13 @@ test('PCDLoader#parseBinary', t => {
 
   // Check internal loader data
   t.ok(data.loaderData.header, 'Original header was found');
-  t.equal(data.loaderData.attributes.position.length, 179250, 'position attribute was found');
 
   // Check normalized data
-  t.ok(data.header, 'Header was found');
+  t.ok(data.header, 'Normalized header was found');
   t.equal(data.mode, 0, 'mode is POINTS (0)');
-  t.notOk(data.indices, 'INDICES attribute was not found');
-  t.equal(data.attributes.POSITION.bufferView.length, 179250, 'POSITION attribute was found');
+  t.notOk(data.indices, 'INDICES attribute was not preset');
+  const POSITION = data.glTFAttributeMap.POSITION;
+  t.equal(data.attributes[POSITION].value.length, 179250, 'POSITION attribute was found');
 
   t.end();
 });

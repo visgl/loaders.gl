@@ -2,7 +2,8 @@
 import {getImageSize, padTo4Bytes, copyArrayBuffer, TextEncoder} from '../common/loader-utils';
 import {getAccessorTypeFromSize, getComponentTypeFromArray}
    from '../common/mesh-utils/gltf-type-utils';
-import {DracoEncoder, DracoDecoder} from '../draco-encoder/draco-encoder';
+import DracoEncoder from '../draco-encoder/draco-encoder';
+import DracoDecoder from '../draco-loader/draco-decoder';
 import packBinaryJson from './pack-binary-json';
 
 const MAGIC_glTF = 0x676c5446; // glTF in Big-Endian ASCII

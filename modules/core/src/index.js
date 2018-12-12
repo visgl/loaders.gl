@@ -32,9 +32,9 @@ export {default as GLTFParser} from './gltf-loader/gltf-parser';
 export {default as OBJLoader} from './obj-loader/obj-loader';
 
 // POINT CLOUD LOADERS
-export {default as PLYLoader} from './ply-loader/ply-loader';
-export {default as LAZLoader} from './laz-loader/laz-loader';
 export {default as PCDLoader} from './pcd-loader/pcd-loader';
+export {default as LASLoader} from './las-loader/las-loader';
+export {default as PLYLoader} from './ply-loader/ply-loader';
 
 export {default as DRACOLoader} from './draco-loader/draco-loader';
 export {default as DRACODecoder} from './draco-loader/draco-decoder';
@@ -47,3 +47,6 @@ export {default as KMLLoader} from './kml-loader/kml-loader';
 export {default as JSONLoader} from './formats/json-loader/json-loader';
 export {default as CSVLoader} from './formats/csv-loader/csv-loader';
 export {default as XMLLoader} from './formats/xml-loader/xml-loader';
+
+// DEPRECATED
+export {default as LAZLoader} from './las-loader/las-loader';

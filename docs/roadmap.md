@@ -4,10 +4,10 @@ We are trying to make the loaders.gl roadmap as public as possible.
 
 We share information about the direction of the framework in the following ways:
 
-* **[RFCs](https://github.com/uber/loaders.gl/tree/master/dev-docs/RFCs)** - RFCs are technical writeups that describe proposed features in upcoming releases.
-* **[Roadmap Document](https://github.com/uber/loaders.gl/tree/master/docs/overview/roadmap)** - (this document) A high-level summary of our current direction for future releases.
+* **[RFCs](https://github.com/uber-web/loaders.gl/tree/master/dev-docs/RFCs)** - RFCs are technical writeups that describe proposed features in upcoming releases.
+* **[Roadmap Document](https://github.com/uber-web/loaders.gl/tree/master/docs/overview/roadmap)** - (this document) A high-level summary of our current direction for future releases.
 * **[Blog](https://medium.com/@vis.gl)** - We use the vis.gl blog to share information about what we are doing.
-* **[Github Issues](https://github.com/uber/loaders.gl/issues)** - The traditional way to start or join a discussion.
+* **[Github Issues](https://github.com/uber-web/loaders.gl/issues)** - The traditional way to start or join a discussion.
 
 
 ## Feature Roadmap

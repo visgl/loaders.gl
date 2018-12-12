@@ -1,5 +1,6 @@
-import OBJ from 'webgl-obj-loader';
-import {getGLTFAttributes, getGLTFIndices} from '../common/mesh-utils/gltf-type-utils';
+import {Mesh} from 'webgl-obj-loader';
+import {getGLTFAccessors, getGLTFIndices, getGLTFAttributeMap}
+  from '../common/mesh-utils/gltf-attribute-utils';
 
 function testOBJFile(text) {
   // There could be comment line first
@@ -7,21 +8,28 @@ function testOBJFile(text) {
 }
 
 function parseOBJMesh(text) {
-  const mesh = new OBJ.Mesh(text);
+  const mesh = new Mesh(text);
 
   const indices = getGLTFIndices(mesh);
 
-  const attributes = getGLTFAttributes({
-    POSITION: new Float32Array(mesh.vertices),
-    NORMAL: new Float32Array(mesh.vertexNormals),
-    TEXCOORD_0: new Float32Array(mesh.textures)
-  });
+  const accessors = {
+    positions: {value: new Float32Array(mesh.vertices), size: 3}
+  };
+  if (mesh.vertexNormals.length && mesh.vertexNormals[0] !== NaN) {
+    accessors.normals = {value: new Float32Array(mesh.vertexNormals), size: 3};
+  }
+  if (mesh.textures.length) {
+    accessors.texCoords = mesh.textures.length && {value: new Float32Array(mesh.textures), size: 2};
+  }
+
+  const attributes = getGLTFAccessors(accessors);
+
+  const glTFAttributeMap = getGLTFAttributeMap(attributes);
 
   return {
     // Data return by this loader implementation
     loaderData: {
-      header: {},
-      attributes: mesh
+      header: {}
     },
     // Normalised data
     header: {
@@ -31,7 +39,8 @@ function parseOBJMesh(text) {
     },
     mode: 4, // TRIANGLES
     indices,
-    attributes
+    attributes,
+    glTFAttributeMap
   };
 }
 

@@ -1,7 +1,7 @@
 window.website = true;
 
 // const RAW_GITHUB =
-// 'https://raw.githubusermarkdown.crequire(o../../docs/m/uber/loaders.gl/master';)
+// 'https://raw.githubusermarkdown.crequire(o../../docs/m/uber-web/loaders.gl/master';)
 
 export default [
   {

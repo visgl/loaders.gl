@@ -22,7 +22,8 @@
 // });
 
 import {TextDecoder} from '../common/loader-utils/text-encoding';
-import {getGLTFIndices, getGLTFAttributes} from '../common/mesh-utils/gltf-get-attributes';
+import {getGLTFIndices, getGLTFAccessors, getGLTFAttributeMap}
+  from '../common/mesh-utils/gltf-attribute-utils';
 
 export default function parsePLY(data, options = {}) {
   let header;
@@ -37,19 +38,19 @@ export default function parsePLY(data, options = {}) {
     attributes = parseASCII(data, header);
   }
 
+  const normalizedAttributes = normalizeAttributes(attributes);
+
   return {
     loaderData: {
-      header,
-      attributes
+      header
     },
-    // TODO - how to detect POINT CLOUDS?
-    // TODO - PLY quadrangles must be split?
+    // TODO - how to detect POINT CLOUDS vs MESHES?
+    // TODO - For Meshes, PLY quadrangles must be split?
     header: {},
-    mode: 4, // TRIANGLES
-    indices: getGLTFIndices(attributes),
-    attributes: getGLTFAttributes(attributes),
-    // TODO - this should probably be updated to match GLTF accessors
-    accessors: normalizeAttributes(attributes)
+    mode: 0, // POINTS
+    indices: getGLTFIndices(normalizedAttributes),
+    attributes: getGLTFAccessors(normalizedAttributes),
+    glTFAttributeMap: getGLTFAttributeMap(normalizedAttributes)
   };
 }
 
