@@ -28,7 +28,8 @@ const ATTRIBUTE_PATTERNS = [
 
 // Returns the indices array, if present
 export function getGLTFIndices(attributes) {
-  for (const [name, attribute] of Object.entries(attributes)) {
+  for (const name in attributes) {
+    const attribute = attributes[name];
     if (isGLTFIndices(name)) {
       const indices = toTypedArray(attribute, Uint32Array);
       return getGLTFAccessor(indices);
@@ -42,7 +43,8 @@ export function getGLTFIndices(attributes) {
 // Removes `indices` if present, as it should be stored separately from the attributes
 export function getGLTFAccessors(attributes) {
   const accessors = {};
-  for (const [name, attribute] of Object.entries(attributes)) {
+  for (const name in attributes) {
+    const attribute = attributes[name];
     if (!isGLTFIndices(name)) {
       const glTFAccessor = getGLTFAccessor(attribute);
       accessors[name] = glTFAccessor;
@@ -54,7 +56,7 @@ export function getGLTFAccessors(attributes) {
 // Returns an object with a map from glTF-standardized attributes names to loaded attribute names
 export function getGLTFAttributeMap(attributes) {
   const standardizedAttributes = {};
-  for (const [name] of Object.entries(attributes)) {
+  for (const name in attributes) {
     const standardizedName = getGLTFAttributeName(name);
     if (standardizedName && !isGLTFIndices(name)) {
       standardizedAttributes[standardizedName] = name;
