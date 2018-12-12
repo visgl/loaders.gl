@@ -1,8 +1,10 @@
 /* eslint-disable max-len */
 import test from 'tape-catch';
-import {OBJLoader, KMLLoader, smartParse} from 'loaders.gl';
+import {smartParse} from '@loaders.gl/core';
+import {OBJLoader} from '@loaders.gl/obj';
+import {KMLLoader} from '@loaders.gl/kml';
 
-import KML from '../data/kml/KML_Samples.kml';
+import KML from 'test-data/kml/KML_Samples.kml';
 
 const LOADERS = [
   OBJLoader, KMLLoader

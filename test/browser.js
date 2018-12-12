@@ -27,6 +27,6 @@ test.onFinish(() => callExposedFunction('testDone', {success: true}));
 test.onFailure(() => callExposedFunction('testDone', {success: false}));
 
 test('Browser tests', t => {
-  require('./modules/core');
+  require('./modules/index');
   t.end();
 });

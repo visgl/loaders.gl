@@ -1,6 +1,6 @@
 import test from 'tape-catch';
 import {getGLTFIndices, getGLTFAccessors, getGLTFAttributeMap}
-  from 'loaders.gl/common/mesh-utils/gltf-attribute-utils';
+  from '@loaders.gl/core/common/mesh-utils/gltf-attribute-utils';
 
 /*
 const PATTERNS = [

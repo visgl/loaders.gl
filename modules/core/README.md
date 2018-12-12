@@ -1,3 +1,3 @@
-# loaders.gl
+# @loaders.gl/core
 
-This module contains framework independent 3D and geospatial loaders (parsers).
+This module contains shared utilities for loaders.gl, a collection of framework independent 3D and geospatial loaders (parsers).

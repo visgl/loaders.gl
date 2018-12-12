@@ -1,0 +1,1 @@
+import './gltf-loader.spec';

@@ -22,7 +22,16 @@ const path = require('path');
 
 const ALIASES = {
   'loaders.gl/test': path.resolve(__dirname, './test'),
-  'loaders.gl': path.resolve(__dirname, './modules/core/src')
+  'test-data': path.resolve(__dirname, './test/data'),
+  '@loaders.gl/core': path.resolve(__dirname, './modules/core/src'),
+  '@loaders.gl/draco': path.resolve(__dirname, './modules/draco/src'),
+  '@loaders.gl/glb': path.resolve(__dirname, './modules/glb/src'),
+  '@loaders.gl/gltf': path.resolve(__dirname, './modules/gltf/src'),
+  '@loaders.gl/kml': path.resolve(__dirname, './modules/kml/src'),
+  '@loaders.gl/las': path.resolve(__dirname, './modules/las/src'),
+  '@loaders.gl/obj': path.resolve(__dirname, './modules/obj/src'),
+  '@loaders.gl/pcd': path.resolve(__dirname, './modules/pcd/src'),
+  '@loaders.gl/ply': path.resolve(__dirname, './modules/ply/src')
 };
 
 if (module.require) {

@@ -3,7 +3,7 @@
 
 /* eslint-disable max-len, max-statements */
 import test from 'tape-catch';
-import {getImageSize} from 'loaders.gl/common/loader-utils/get-image-size';
+import {getImageSize} from '@loaders.gl/core/common/loader-utils/get-image-size';
 
 import path from 'path';
 
@@ -14,7 +14,7 @@ function loadTestFiles() {
   const fs = module.require && module.require('fs');
   if (!testFiles && fs) {
     testFiles = new Map(['png', 'jpeg', 'gif', 'bmp', 'tiff'].map(type => {
-      const imagePath = path.resolve(__dirname, `../../data/images/img1-preview.${type}`);
+      const imagePath = path.resolve(__dirname, `../../../../data/images/img1-preview.${type}`);
       const image = fs.readFileSync(imagePath);
       return [type, image];
     }));

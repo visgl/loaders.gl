@@ -18,7 +18,7 @@ console.log(`Running test suite in "${mode}" mode...`); // eslint-disable-line
 switch (mode) {
 case 'fast':
 case 'test':
-  require('./modules/core');
+  require('./modules/index');
   break;
 
 case 'dist':
@@ -26,12 +26,12 @@ case 'dist':
   const dist = arg === 'default' ? 'es6' : arg;
   moduleAlias.addAlias('loaders.gl', path.resolve(`./dist/${dist}`));
 
-  require('./modules/core');
+  require('./modules/index');
   break;
 
 case 'cover':
   require('@babel/register');
-  require('./modules/core');
+  require('./modules/index');
   break;
 
 case 'browser':
@@ -64,5 +64,5 @@ case 'analyze-size':
 
 default:
   console.error(`Unknown test mode ${mode}`); // eslint-disable-line
-  require('./modules/core');
+  require('./modules/index');
 }

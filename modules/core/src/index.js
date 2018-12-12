@@ -9,44 +9,30 @@ export {loadUri} from './common/loader-utils/load-uri.js';
 
 // UTILS
 
+export {default as assert} from './common/loader-utils/assert';
+export {flattenToTypedArray} from './common/loader-utils/flatten';
 export {getImageSize} from './common/loader-utils/get-image-size';
+export {padTo4Bytes, copyArrayBuffer} from './common/loader-utils/array-utils';
 export {toArrayBuffer, toBuffer} from './common/loader-utils/binary-utils';
 export {TextDecoder, TextEncoder} from './common/loader-utils/text-encoding';
 
 export {getMeshSize as _getMeshSize} from './common/mesh-utils/mesh-utils';
-
-// LOADERS
-
-// GLB LOADER & WRITER
-export {default as GLBLoader} from './glb-loader/glb-loader';
-export {default as GLBParser} from './glb-loader/glb-parser';
-
-export {default as GLBWriter} from './glb-writer/glb-writer';
-export {default as GLBBuilder} from './glb-writer/glb-builder';
-
-// GLTF LOADER
-export {default as GLTFLoader} from './gltf-loader/gltf-loader';
-export {default as GLTFParser} from './gltf-loader/gltf-parser';
-
-// MESH/MODEL LOADERS
-export {default as OBJLoader} from './obj-loader/obj-loader';
-
-// POINT CLOUD LOADERS
-export {default as PCDLoader} from './pcd-loader/pcd-loader';
-export {default as LASLoader} from './las-loader/las-loader';
-export {default as PLYLoader} from './ply-loader/ply-loader';
-
-export {default as DRACOLoader} from './draco-loader/draco-loader';
-export {default as DRACODecoder} from './draco-loader/draco-decoder';
-export {default as DRACOEncoder} from './draco-encoder/draco-encoder';
-
-// GEOSPATIAL LOADERS
-export {default as KMLLoader} from './kml-loader/kml-loader';
+export {
+  getAccessorTypeFromSize,
+  getComponentTypeFromArray,
+  getBytesFromComponentType,
+  getSizeFromAccessorType,
+  ATTRIBUTE_TYPE_TO_COMPONENTS,
+  ATTRIBUTE_COMPONENT_TYPE_TO_BYTE_SIZE,
+  ATTRIBUTE_COMPONENT_TYPE_TO_ARRAY
+} from './common/mesh-utils/gltf-type-utils';
+export {
+  getGLTFAccessors,
+  getGLTFIndices,
+  getGLTFAttributeMap
+} from './common/mesh-utils/gltf-attribute-utils';
 
 // GENERAL FORMAT LOADERS
 export {default as JSONLoader} from './formats/json-loader/json-loader';
 export {default as CSVLoader} from './formats/csv-loader/csv-loader';
 export {default as XMLLoader} from './formats/xml-loader/xml-loader';
-
-// DEPRECATED
-export {default as LAZLoader} from './las-loader/las-loader';
