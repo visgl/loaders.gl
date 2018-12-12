@@ -21,16 +21,9 @@
 /* eslint-disable no-console, no-invalid-this */
 import {Bench} from 'probe.gl/bench';
 
-import shadersBench from './shaders.bench';
-import uniformsBench from './uniforms.bench';
-import arrayCopyBench from './array-copy.bench';
-
 const suite = new Bench();
 
 // add tests
-uniformsBench(suite);
-shadersBench(suite);
-arrayCopyBench(suite);
 
 // Run the suite
 suite.run();
