@@ -22,20 +22,17 @@
   "workspaces": [
     "modules/*"
   ],
-  "bin": {
-    "glbdump" : "./modules/core/.bin/glbdump"
-  },
   "scripts": {
     "start": "echo 'Please see loaders.gl website for how to run examples' && open https://uber-web.github.io/loaders.gl/#/docs/overview/introduction",
-    "clean": "rm -fr dist dist-es6 && (cd modules/core && npm run clean)",
-    "build": "(cd modules/core && npm run build)",
+    "bootstrap": "scripts/bootstrap.sh",
+    "build": "lerna run build",
     "cover": "NODE_ENV=cover nyc node test/start",
     "lint": "eslint modules test && npm run lint-yarn",
     "lint-examples": "eslint examples",
     "lint-yarn": "!(grep -q unpm.u yarn.lock) || (echo 'Please rebuild yarn.lock file using public npmrc' && false)",
     "lint-docs": "scripts/lint-markdown.sh",
-    "publish-prod": "(cd modules/core && npm run publish-prod)",
-    "publish-beta": "(cd modules/core && npm run publish-beta)",
+    "publish-prod": "lerna publish --cd-version patch",
+    "publish-beta": "lerna publish --npm-tag beta --cd-version prerelease",
     "test": "scripts/test.sh",
     "test-browser": "webpack-dev-server --config test/webpack.config.js --env.testBrowser --progress --hot --open",
     "test-render": "webpack-dev-server --config test/webpack.config.js --env.render --progress --hot --open",
@@ -53,7 +50,6 @@
     "arraybuffer-loader": "^1.0.6",
     "babel-eslint": "^9.0.0",
     "babel-plugin-istanbul": "^5.0.0",
-    "babel-plugin-version-inline": "^1.0.0",
     "codecov": "^3.1.0",
     "coveralls": "^2.13.0",
     "deck.gl": "^6.3.1",
@@ -61,6 +57,7 @@
     "eslint-config-uber-es2015": "^3.0.0",
     "eslint-plugin-babel": "^5.1.0",
     "html-webpack-plugin": "^3.0.7",
+    "lerna": "^2.9.1",
     "markdownlint-cli": "^0.8.1",
     "mkdirp": "^0.5.1",
     "module-alias": "^2.0.0",
