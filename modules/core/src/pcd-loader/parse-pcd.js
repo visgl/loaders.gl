@@ -9,7 +9,7 @@
 // Limitations: Compressed binary files are not supported.
 
 import {TextDecoder} from '../common/loader-utils/text-encoding';
-import {getGLTFAttributes} from '../common/mesh-utils/gltf-get-attributes';
+import {getGLTFAccessors, getGLTFAttributeMap} from '../common/mesh-utils/gltf-attribute-utils';
 
 const LITTLE_ENDIAN = true;
 
@@ -35,22 +35,23 @@ export default function parsePCD(data, url, options) {
     throw new Error(`PCD: ${header.data} files are not supported`);
   }
 
+  const accessors = getGLTFAccessors(attributes);
+  const glTFAttributeMap = getGLTFAttributeMap(accessors);
+
   return {
     loaderData: {
-      header,
-      attributes
+      header
     },
-    // TODO - how to detect point clouds?
-    header: getStandardizedHeader(header),
+    header: getNormalizedHeader(header),
     mode: 0, // POINTS
     indices: null,
-    attributes: getGLTFAttributes(attributes),
-    // TODO - return GLTF style accessors...
-    accessors: attributes
+    attributes: accessors,
+    glTFAttributeMap
   };
 }
 
-function getStandardizedHeader(PCDheader) {
+// Create a header that contains common data for PointCloud category loaders
+function getNormalizedHeader(PCDheader) {
   const pointCount = PCDheader.width * PCDheader.height; // Supports "organized" point sets
   return {
     primitiveCount: pointCount,

@@ -3,6 +3,8 @@
 The LASER (LAS) file format is a public format for the interchange of 3-dimensional point cloud data data, developed for LIDAR mapping purposes.
 
 * [LASER FILE FORMAT](https://www.asprs.org/divisions-committees/lidar-division/laser-las-file-format-exchange-activities)
+* Note: LAZ is the compressed version of LAS
+
 
 ## Usage
 

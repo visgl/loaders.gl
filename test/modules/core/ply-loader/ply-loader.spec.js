@@ -15,16 +15,15 @@ test('PLYLoader#parseText', t => {
   // Check loader specific results
   t.ok(data.loaderData.header, 'Original header found');
 
-  t.equal(data.loaderData.attributes.indices.length, 36, 'Index attribute was found');
-  t.equal(data.loaderData.attributes.vertices.length, 72, 'vertices attribute was found');
-  t.equal(data.loaderData.attributes.normals.length, 72, 'normals attribute was found');
-
-  // Check loader specific results
+  // Check normalized
 
   t.ok(data.header, 'header found');
-  t.equal(data.indices.length, 36, 'Indices found');
-  t.equal(data.attributes.POSITION.bufferView.length, 72, 'POSITION attribute was found');
-  t.equal(data.attributes.NORMAL.bufferView.length, 72, 'NORMAL attribute was found');
+  t.equal(data.indices.value.length, 36, 'Indices found');
+
+  const POSITION = data.glTFAttributeMap.POSITION;
+  const NORMAL = data.glTFAttributeMap.NORMAL;
+  t.equal(data.attributes[POSITION].value.length, 72, 'POSITION attribute was found');
+  t.equal(data.attributes[NORMAL].value.length, 72, 'NORMAL attribute was found');
 
   t.end();
 });

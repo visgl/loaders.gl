@@ -78,7 +78,7 @@ const TEST_CONFIG = Object.assign({}, COMMON_CONFIG, {
         use: 'raw-loader'
       },
       {
-        test: /\.drc$|\.ply$|\.pcd$|\.glb$/,
+        test: /\.drc$|\.ply$|\.pcd$|\.glb$|\.las$|\.laz$/,
         use: 'arraybuffer-loader'
       }
     ]
