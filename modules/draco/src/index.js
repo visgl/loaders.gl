@@ -1,3 +1,3 @@
-export {default as DRACOLoader} from './draco-loader';
-export {default as DRACODecoder} from './draco-decoder';
-export {default as DRACOEncoder} from './draco-encoder';
+export {default as DracoLoader} from './draco-loader';
+export {default as DracoDecoder} from './draco-decoder';
+export {default as DracoEncoder} from './draco-encoder';

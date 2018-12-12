@@ -3,7 +3,7 @@
 export {loadFile} from './common/file-utils/loader';
 export {loadBinaryFile} from './common/file-utils/load-binary-file';
 export {smartFetch, smartParse} from './common/file-utils/smart-fetch';
-export {saveBinaryFile} from './common/file-utils/load-binary-file';
+export {saveBinaryFile} from './common/file-utils/save-binary-file';
 
 export {loadUri} from './common/loader-utils/load-uri.js';
 
@@ -26,5 +26,4 @@ export {
 
 // GENERAL FORMAT LOADERS
 export {default as JSONLoader} from './formats/json-loader/json-loader';
-export {default as CSVLoader} from './formats/csv-loader/csv-loader';
 export {default as XMLLoader} from './formats/xml-loader/xml-loader';
