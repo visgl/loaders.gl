@@ -15,7 +15,7 @@ function parseOBJMesh(text) {
   const accessors = {
     positions: {value: new Float32Array(mesh.vertices), size: 3}
   };
-  if (mesh.vertexNormals.length && mesh.vertexNormals[0] !== NaN) {
+  if (mesh.vertexNormals.length && !isNaN(mesh.vertexNormals[0])) {
     accessors.normals = {value: new Float32Array(mesh.vertexNormals), size: 3};
   }
   if (mesh.textures.length) {
