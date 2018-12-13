@@ -1,8 +1,10 @@
-# `GLBBuilder` class
+# `GLTFBuilder` class (@loaders.gl/gltf)
 
-The `GLBBuilder` class supports the `GLBWriter` class. It that allows applications to dynamically build up a hybrid JSON/binary GLB file.
+The `GLTFBuilder` class allows applications to dynamically build up a hybrid JSON/binary GLB file.
 
-The `GLBBuilder` would normally be used if you want to save custom mixed JSON/binary data in a "GLB envelope".
+The `GLTFBuilder` would normally be used if you want to save custom mixed JSON/binary data in a "GLB envelope".
+
+The `GLTFBuilder` class supports the `GLTFWriter` class.
 
 
 ## Usage
@@ -10,26 +12,26 @@ The `GLBBuilder` would normally be used if you want to save custom mixed JSON/bi
 Adding binary data sub chunks to the GLB file, then calling encode to generate the complete `arrayBuffer`.
 
 ```js
-import {GLBBuilder, saveBinaryFile} from 'loaders.gl';
+import {GLTFBuilder, saveBinaryFile} from '@loaders.gl/gltf';
 
-const glbBuilder = new GLBBuilder();
+const gltfBuilder = new GLTFBuilder();
 
-const imageIndex = glbBuilder.addImage();
+const imageIndex = gltfBuilder.addImage();
 
 // Add custom JSON in glTF extras field
-glbBuilder.addExtras({...});
+gltfBuilder.addExtras({...});
 
 // Add custom JSON in glTF extension object
-glbBuilder.addExtension('UBER_extension_1', {...});
+gltfBuilder.addExtension('ORGNAME_extension_1', {...});
 
 // JSON can be "packed", extracting binary data and replacing it with tokens.
-const packedJSON = packJSON(glbBuilder, json);
+const packedJSON = packJSON(gltfBuilder, json);
 
 // Don't forget to add the packed JSON, it needs to be stored somewhere
-glbBuilder.addRequiredExtension('UBER_extension_2', packedJSON);
+gltfBuilder.addRequiredExtension('ORGNAME_extension_2', packedJSON);
 
 // All data added, we can encode
-const arrayBuffer = glbBuilder.encode();
+const arrayBuffer = gltfBuilder.encode();
 
 // The encoded `ArrayBuffer` represents a complete image of the data
 saveBinaryFile(filename, arrayBuffer);
@@ -40,26 +42,26 @@ saveBinaryFile(filename, arrayBuffer);
 
 ### constructor
 
-Creates a new `GLBBuilder` instance.
+Creates a new `GLTFBuilder` instance.
 
 
-### encode(options : Object) : ArrayBuffer
+### encodeAsGLB(options : Object) : ArrayBuffer
 
 Combines your added JSON data structures (in extras, extensions etc) with any generated JavaScript and any binary subchunks, into a single GLB encoded `ArrayBuffer` that can be written directly to file.
 
 Note: `encode()` is a one time operation. It should only be called once all data and binary buffers have been added to the builder.
 
 
-### encodeWithMetadata(options : Object) : Object
+### encodeAsGLBWithJSON(options : Object) : Object
 
-A version of `encode` that return the final arrayBuffer together with the generated JSON.
+A version of `encode` that returns the final arrayBuffer together with the generated JSON. Note that the returned `arrayBuffer` contains the JSON and is identical to the `encodeAsGLB`.
 
 
 ### packJSON(json : any [, options : Object]) : any
 
 Extracting binary fields from the supplied `json` data structure, placing these in compact binary chunks by calling the appropriate `add...` methods on the builder. The "stripped" JSON chunk will contain "JSON pointers" that the parser can use to restore the JSON structure on load.
 
-Note: While the extracted binary data IS added to the GLBBuilder instance, the returned JSON chunk IS NOT automatically added, since the application needs to decide where to store it. Normally it should be added using one of the `addExtras`, `addExtension` or `addRequiredExtension` methods.
+Note: While the extracted binary data IS added to the `GLTFBuilder` instance, the returned JSON chunk IS NOT automatically added, since the application needs to decide where to store it. Normally it should be added using one of the `addExtras`, `addExtension` or `addRequiredExtension` methods.
 
 
 ### addExtras(extras : any)
@@ -67,7 +69,7 @@ Note: While the extracted binary data IS added to the GLBBuilder instance, the r
 Populates the top-level glTF `extras` field, which the glTF specification reserves for application specific data.
 
 
-### addExtension(extensionName, extension)
+### addExtension(extensionName : String, extension :)
 
 Adds a top-level glTF extension object, and marks it as used.
 

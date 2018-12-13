@@ -1,4 +1,4 @@
-# PCDLoader
+# PCDLoader (@loaders.gl/pcd)
 
 A point cloud format defined by the Point Cloud Library
 
@@ -13,9 +13,10 @@ References
 ## Usage
 
 ```
-import {PCFLoader, loadFile} from 'loaders.gl';
+import {PCDLoader} from '@loaders.gl/pcd';
+import {loadFile} from '@loaders.gl/core';
 
-loadFile(url, PCFLoader)
+loadFile(url, PCFDoader)
 .then(({header, attributes}) => {
   // Application code here, e.g:
   // return new Geometry(attributes)
