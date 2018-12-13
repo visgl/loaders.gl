@@ -3,54 +3,32 @@ import {getBytesFromComponentType, getSizeFromAccessorType} from '../utils/gltf-
 export default class GLTFParser {
   constructor(gltf) {
     this.gltf = gltf;
+    this.json = gltf;
     this.log = console; // eslint-disable-line
     this.out = {};
   }
 
-  parse(options = {}) {
-    // Load all images
-    this.out.images = (this.gltf.images || [])
-      .map(image => this.parseImage(image))
-      .filter(Boolean);
+  // Accessors
 
-    // Parse all scenes
-    this.out.scenes = (this.gltf.scenes || [])
-      .map(scene => this.parseImage(scene))
-      .filter(Boolean);
-
-    if (this.gltf.scene) {
-      this.out.scene = this.gltf.scenes[this.gltf.scene];
-    }
+  getTopLevelData(key) {
+    return this.json.key;
   }
 
-  parseScene() {
-
+  getExtras(json) {
+    return this.json.extras;
   }
 
-  parseImage(image) {
-    return this.config.createImage(image);
+  getTopLevelExtension(extensionName) {
+    return this.json.extensions[extensionName];
   }
 
-  parseMesh(mesh) {
-    // Each primitive is intended to correspond to a draw call
-    const primitives = (mesh.primitives || []).map(primitive => this.parseMeshPrimitive(primitive));
-
-    return primitives.length === 1 ? primitives[0] : this.config.createGroup(primitives);
+  getRequiredExtensions() {
+    return this.json.requiredExtensions;
   }
 
-  parseMeshPrimitive(primitive) {
-    // if (!primitive.attributes)
-    //   this.log.warn(primitive without attributes`)
-    let attributes = primitive.attributes || {};
-    attributes = this.config.mapAttributes(attributes);
-    return attributes;
+  getUsedExtensions() {
+    return this.json.usedExtensions;
   }
-
-  parseAccessor(accessor) {
-    return this.config.createBuffer(accessor);
-  }
-
-  // ACCESSORS
 
   getScene(index) {
     return this._get('scenes', index);
@@ -95,6 +73,53 @@ export default class GLTFParser {
   getBuffer(index) {
     return this._get('buffers', index);
   }
+
+  // PARSING
+
+  parse(options = {}) {
+    // Load all images
+    this.out.images = (this.gltf.images || [])
+      .map(image => this.parseImage(image))
+      .filter(Boolean);
+
+    // Parse all scenes
+    this.out.scenes = (this.gltf.scenes || [])
+      .map(scene => this.parseImage(scene))
+      .filter(Boolean);
+
+    if (this.gltf.scene) {
+      this.out.scene = this.gltf.scenes[this.gltf.scene];
+    }
+  }
+
+  parseScene() {
+
+  }
+
+  parseImage(image) {
+    return this.config.createImage(image);
+  }
+
+  parseMesh(mesh) {
+    // Each primitive is intended to correspond to a draw call
+    const primitives = (mesh.primitives || []).map(primitive => this.parseMeshPrimitive(primitive));
+
+    return primitives.length === 1 ? primitives[0] : this.config.createGroup(primitives);
+  }
+
+  parseMeshPrimitive(primitive) {
+    // if (!primitive.attributes)
+    //   this.log.warn(primitive without attributes`)
+    let attributes = primitive.attributes || {};
+    attributes = this.config.mapAttributes(attributes);
+    return attributes;
+  }
+
+  parseAccessor(accessor) {
+    return this.config.createBuffer(accessor);
+  }
+
+  // PRIVATE
 
   _get(array, index) {
     const object = this.gltf[array] && this.gltf[array][index];

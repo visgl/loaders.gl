@@ -8,7 +8,8 @@ import {
   getAccessorTypeFromSize,
   getComponentTypeFromArray
 } from '@loaders.gl/core';
-import packBinaryJson from './glb-writer/pack-binary-json';
+import {DracoEncoder, DracoDecoder} from '@loaders.gl/draco';
+import packBinaryJson from './pack-binary-json';
 
 const MAGIC_glTF = 0x676c5446; // glTF in Big-Endian ASCII
 
@@ -83,7 +84,11 @@ export default class GLTFBuilder {
   }
 
   // Add an extra key to the top-level data structure
+<<<<<<< HEAD
   addApplicationData(key, data) {
+=======
+  addTopLevelData(key, data) {
+>>>>>>> wip
     this.json[key] = data;
   }
 
@@ -116,6 +121,7 @@ export default class GLTFBuilder {
     if (!this.json.extensionsUsed.find(ext => ext === extensionName)) {
       this.json.extensionsUsed.push(extensionName);
     }
+    return this;
   }
 
   registerRequiredExtension(extensionName) {
@@ -124,6 +130,7 @@ export default class GLTFBuilder {
     if (!this.json.extensionsRequired.find(ext => ext === extensionName)) {
       this.json.extensionsRequired.push(extensionName);
     }
+    return this;
   }
 
   // Add a binary buffer. Builds glTF "JSON metadata" and saves buffer reference
@@ -233,6 +240,7 @@ export default class GLTFBuilder {
     // attributes and indices using data that has been decompressed from the Draco buffer,
     // rather than the original source data.
     const dracoDecoder = new this.DracoDecoder();
+
     const decodedData = dracoDecoder.decodeMesh(attributes);
     const fauxAccessors = this._addFauxAttributes(decodedData.attributes);
 
@@ -264,6 +272,7 @@ export default class GLTFBuilder {
     }
 
     const dracoEncoder = new this.DracoEncoder();
+
     const compressedData = dracoEncoder.encodePointCloud(attributes);
 
     // Draco compression may change the order and number of vertices in a mesh.
@@ -272,6 +281,7 @@ export default class GLTFBuilder {
     // attributes and indices using data that has been decompressed from the Draco buffer,
     // rather than the original source data.
     const dracoDecoder = new this.DracoDecoder();
+
     const decodedData = dracoDecoder.decodePointCloud(compressedData);
     const fauxAccessors = this._addFauxAttributes(decodedData.attributes);
 

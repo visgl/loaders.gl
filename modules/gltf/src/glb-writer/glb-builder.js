@@ -67,9 +67,14 @@ export default class GLBBuilder {
     return packBinaryJson(json, this, options);
   }
 
-  // Standard GLTF field for storing application specific data
-  addExtras(extras) {
-    this.json.extras = extras;
+  // Add an extra key to the top-level data structure
+  addTopLevelData(key, data) {
+    this.json[key] = data;
+  }
+
+  // `extras` - Standard GLTF field for storing application specific data
+  addExtrasData(data) {
+    Object.assign(this.json.extras, data);
     return this;
   }
 
