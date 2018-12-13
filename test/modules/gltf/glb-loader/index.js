@@ -1,0 +1,1 @@
+import './glb-parser.spec';

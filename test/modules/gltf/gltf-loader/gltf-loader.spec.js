@@ -3,12 +3,11 @@ import test from 'tape-catch';
 
 import {deepCopy} from 'loaders.gl/test/setup';
 import {loadBinaryFile} from '@loaders.gl/core';
-import {GLBParser} from '@loaders.gl/glb';
-import {GLTFLoader, GLTFParser} from '@loaders.gl/gltf';
+import {GLBParser, GLTFLoader, GLTFParser} from '@loaders.gl/gltf';
 import path from 'path';
 
 const GLTF_BINARY =
-  loadBinaryFile(path.resolve(__dirname, '../../data/gltf-2.0/2CylinderEngine.glb')) ||
+  loadBinaryFile(path.resolve(__dirname, '../../../data/gltf-2.0/2CylinderEngine.glb')) ||
   require('test-data/gltf-2.0/2CylinderEngine.glb');
 
 const GLTF_JSON = deepCopy(require('test-data/gltf-2.0/2CylinderEngine.gltf.json'));

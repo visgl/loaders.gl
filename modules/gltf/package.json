@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/gltf",
   "version": "0.4.0",
-  "description": "Framework-independent loader for the GLTF format",
+  "description": "Framework-independent loader for the glTF format",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -13,7 +13,8 @@
     "3d",
     "mesh",
     "point cloud",
-    "GLTF"
+    "GLB",
+    "glTF"
   ],
   "main": "dist/es5/index.js",
   "module": "dist/esm/index.js",
@@ -21,8 +22,12 @@
   "files": [
     "src",
     "dist",
+    ".bin",
     "README.md"
   ],
+  "bin": {
+    "glbdump": "./.bin/glbdump"
+  },
   "scripts": {
     "clean": "rm -fr dist && mkdir -p dist",
     "build": "npm run clean && npm run build-es6 && npm run build-esm && npm run build-es5",
@@ -33,6 +38,6 @@
   "sideEffects": false,
   "dependencies": {
     "@loaders.gl/core": "^0.4.0",
-    "@loaders.gl/glb": "^0.4.0"
+    "@loaders.gl/draco": "^0.4.0"
   }
 }

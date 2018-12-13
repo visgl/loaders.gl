@@ -1,8 +1,8 @@
 /* eslint-disable max-len */
 import test from 'tape-catch';
 
-import {GLBBuilder} from '@loaders.gl/glb';
-import unpackGLBBuffers from '@loaders.gl/glb/unpack-glb-buffers';
+import {GLBBuilder} from '@loaders.gl/gltf';
+import unpackGLBBuffers from '@loaders.gl/gltf/glb-loader/unpack-glb-buffers';
 
 const BUFFERS = [
   new Int8Array([3, 2, 3]),

@@ -1,9 +1,9 @@
 /* eslint-disable max-len */
 import test from 'tape-catch';
 
-import {GLBBuilder} from '@loaders.gl/glb';
+import {GLBBuilder} from '@loaders.gl/gltf';
 
-import packBinaryJson from '@loaders.gl/glb/pack-binary-json';
+import packBinaryJson from '@loaders.gl/gltf/glb-writer/pack-binary-json';
 
 const inputJSONTypedArraysMixed = {
   slices: [

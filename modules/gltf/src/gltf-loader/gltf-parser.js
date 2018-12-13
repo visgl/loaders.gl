@@ -1,4 +1,4 @@
-import {getBytesFromComponentType, getSizeFromAccessorType} from '@loaders.gl/core';
+import {getBytesFromComponentType, getSizeFromAccessorType} from '../utils/gltf-type-utils';
 
 export default class GLTFParser {
   constructor(gltf) {

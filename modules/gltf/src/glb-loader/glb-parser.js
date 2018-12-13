@@ -3,15 +3,12 @@ import unpackGLBBuffers from './unpack-glb-buffers';
 import unpackBinaryJson from './unpack-binary-json';
 
 import {DracoDecoder} from '@loaders.gl/draco';
+import {TextDecoder, padTo4Bytes, assert} from '@loaders.gl/core';
 import {
-  TextDecoder,
-  padTo4Bytes,
-  assert,
-  // glTF CONSTANTS - TODO - merge with utility functions in common/mesh-utils
   ATTRIBUTE_TYPE_TO_COMPONENTS,
   ATTRIBUTE_COMPONENT_TYPE_TO_BYTE_SIZE,
   ATTRIBUTE_COMPONENT_TYPE_TO_ARRAY
-} from '@loaders.gl/core';
+} from '../utils/gltf-type-utils';
 
 const MAGIC_glTF = 0x676c5446; // glTF in Big-Endian ASCII
 
