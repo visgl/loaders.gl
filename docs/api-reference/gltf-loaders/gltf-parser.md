@@ -52,7 +52,7 @@ Once the `parse()` method has successfully completed the accessors in this class
 The `resolveScenegraphs` method resolves the index based linking between objects into a hierarchical javascript structure, making the scenegraphs 
 
 
-### getTopLevelData(key : String) : Object
+### getUserData(key : String) : Object
 
 Returns a top-level data field.
 

@@ -22,7 +22,7 @@ const GLB_CHUNK_HEADER_SIZE = 8;
 const UBER_MESH_EXTENSION = 'UBER_draco_mesh_compression';
 const UBER_POINT_CLOUD_EXTENSION = 'UBER_draco_point_cloud_compression';
 
-export default class GLBBuilder {
+export default class GLTFBuilder {
   constructor(rootPath) {
     // Lets us keep track of how large the body will be, as well as the offset for each of the
     // original buffers.
@@ -51,16 +51,27 @@ export default class GLBBuilder {
     return this.byteLength;
   }
 
+  // Encode the full glTF file as a binary GLB file
   // Returns an ArrayBuffer that represents the complete GLB image that can be saved to file
-  encode(options = {}) {
+  encodeAsGLB(options = {}) {
     return this._createGlbBuffer(options);
   }
 
   // Returns an arrayBuffer together with JSON etc data.
-  encodeWithMetadata(options = {}) {
+  encodeAsGLBWithMetadata(options = {}) {
     const arrayBuffer = this._createGlbBuffer(options);
     return {arrayBuffer, json: this.json};
   }
+
+  // Encode as a textual JSON file with binary data in base64 data URLs.
+  // encodeAsDataURLs(options) {
+  //   throw new Error('Not yet implemented');
+  // }
+
+  // Encode as a JSON with all images (and buffers?) in separate binary files
+  // encodeAsSeparateFiles(options) {
+  //   throw new Error('Not yet imlemented');
+  // }
 
   // Packs JSON by extracting binary data and replacing it with JSON pointers
   packJSON(json, options) {

@@ -64,9 +64,14 @@ Extracting binary fields from the supplied `json` data structure, placing these 
 Note: While the extracted binary data IS added to the `GLTFBuilder` instance, the returned JSON chunk IS NOT automatically added, since the application needs to decide where to store it. Normally it should be added using one of the `addExtras`, `addExtension` or `addRequiredExtension` methods.
 
 
-### addExtras(extras : any)
+### addApplicationData(key : String, data : any)
 
-Populates the top-level glTF `extras` field, which the glTF specification reserves for application specific data.
+Stores the supplied `data` in the given top-level field given by `key`.
+
+
+### addExtras(extras : Object)
+
+Populates (merges into) the top-level glTF `extras` field, which the glTF specification reserves for application specific data.
 
 
 ### addExtension(extensionName : String, extension :)
