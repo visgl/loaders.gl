@@ -3,7 +3,6 @@
 loaders.gl exports a suite of loaders. Each loader is an object that can be passed to other functions in the loaders.gl API.
 
 
-
 ## Structure of a Loader Object
 
 Each loader has a Loader object that provides metadata about that loader, and functions to parse and test data.

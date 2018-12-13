@@ -1,4 +1,4 @@
-# LASLoader
+# LASLoader (@loaders.gl/las)
 
 The LASER (LAS) file format is a public format for the interchange of 3-dimensional point cloud data data, developed for LIDAR mapping purposes.
 
@@ -9,9 +9,10 @@ The LASER (LAS) file format is a public format for the interchange of 3-dimensio
 ## Usage
 
 ```
-import {OBJLoader, loadFile} from 'loaders.gl';
+import {LASLoader} from '@loaders.gl/las';
+import {loadFile} from '@loaders.gl/core';
 
-loadFile(url, OBJLoader, options).then(data => {
+loadFile(url, LASLoader, options).then(data => {
   // Application code here
   ...
 });

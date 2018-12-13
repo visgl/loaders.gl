@@ -18,6 +18,7 @@ console.log(`Running test suite in "${mode}" mode...`); // eslint-disable-line
 switch (mode) {
 case 'fast':
 case 'test':
+case 'ci':
   require('./modules/index');
   break;
 
@@ -25,7 +26,6 @@ case 'dist':
   // Load deck.gl itself from the dist folder
   const dist = arg === 'default' ? 'es6' : arg;
   moduleAlias.addAlias('loaders.gl', path.resolve(`./dist/${dist}`));
-
   require('./modules/index');
   break;
 
