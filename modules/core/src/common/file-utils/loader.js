@@ -1,10 +1,18 @@
 /* global fetch */
 export function loadFile(url, loader, options = {}) {
+  // TODO: support progress and abort
+  let dataType;
+  let parser;
+
   if (loader.parseBinary) {
-    return fetch(url).then(res => res.arrayBuffer()).then(data => loader.parseBinary(data, options));
+    dataType = 'arrayBuffer';
+    parser = loader.parseBinary;
+  } else if (loader.parseText) {
+    dataType = 'text';
+    parser = loader.parseText;
+  } else {
+    return Promise.reject(new Error(`Could not load ${url} using ${loader.name} loader`));
   }
-  if (loader.parseText) {
-    return fetch(url).then(res => res.text()).then(text => loader.parseText(text, options));
-  }
-  return Promise.reject(new Error(`Could not load ${url} using ${loader.name} loader`));
+
+  return fetch(url, options).then(res => res[dataType]()).then(data => parser(data, options));
 }

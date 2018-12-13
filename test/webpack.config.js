@@ -83,10 +83,7 @@ const TEST_CONFIG = Object.assign({}, COMMON_CONFIG, {
   },
 
   plugins: [
-    new HtmlWebpackPlugin({title: 'loaders.gl tests'}),
-    new webpack.DefinePlugin({
-      TEST_DATA_DIR: JSON.stringify('./data')
-    })
+    new HtmlWebpackPlugin({title: 'loaders.gl tests'})
   ]
 });
 

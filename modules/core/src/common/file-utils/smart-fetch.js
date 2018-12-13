@@ -15,7 +15,7 @@ export function smartParse(text, url, loaders, options) {
   return loader.parseText(text, options);
 }
 
-const EXT_PATTERN = /[^\.]+$/
+const EXT_PATTERN = /[^\.]+$/;
 
 // Search the loaders array argument for a loader that matches extension or text
 function getLoader(url, text, loaders) {
