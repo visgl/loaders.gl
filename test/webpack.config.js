@@ -33,12 +33,6 @@ const COMMON_CONFIG = {
     warnings: false
   },
 
-  module: {
-    rules: []
-  },
-
-  plugins: [],
-
   node: {
     fs: 'empty'
   }
@@ -117,24 +111,18 @@ function getDist(env) {
 }
 
 const CONFIGS = {
-  test: env => Object.assign({}, TEST_CONFIG, {
-    plugins: [new HtmlWebpackPlugin()]
-  }),
+  test: env => TEST_CONFIG,
 
   bench: env => Object.assign({}, TEST_CONFIG, {
     entry: {
       'test-browser': resolve(__dirname, './bench/browser.js')
-    },
-
-    plugins: [new HtmlWebpackPlugin()]
+    }
   }),
 
   render: env => Object.assign({}, TEST_CONFIG, {
     entry: {
       'test-browser': resolve(__dirname, './render/index.js')
-    },
-
-    plugins: [new HtmlWebpackPlugin()]
+    }
   }),
 
   size: env => {

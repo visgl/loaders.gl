@@ -31,11 +31,9 @@
   },
   "sideEffects": false,
   "browser": {
-    "fs": false,
     "text-encoding": false
   },
   "dependencies": {
-    "d3-request": "^1.0.6",
     "text-encoding": "^0.6.4"
   }
 }
