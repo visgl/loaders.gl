@@ -32,7 +32,7 @@ export default class GLTFParser {
 
   // Accessors
 
-  getApplicationData(key) {
+  getAppData(key) {
     return this.json.key;
   }
 
