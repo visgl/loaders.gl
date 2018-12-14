@@ -37,6 +37,10 @@ export default class GLBParser {
     this.binaryByteOffset = null;
   }
 
+  parseAsJSON(options = {}) {
+    return parse(options).json;
+  }
+
   // Return the gltf JSON and the original arrayBuffer
   parse(options = {}) {
     if (this.json === null && this.binaryByteOffset === null) {

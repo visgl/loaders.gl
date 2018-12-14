@@ -39,6 +39,10 @@ export function toBuffer(binaryData) {
   return null;
 }
 
+export function toDataView(buffer) {
+  return new DataView(toArrayBuffer(buffer));
+}
+
 // Helper functions
 
 export function blobToArrayBuffer(blob) {

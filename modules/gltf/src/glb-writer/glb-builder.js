@@ -1,6 +1,6 @@
 /* eslint-disable camelcase, max-statements */
 import {
-  getImageSize,
+  isImage,
   padTo4Bytes,
   copyArrayBuffer,
   TextEncoder,
@@ -68,13 +68,13 @@ export default class GLBBuilder {
   }
 
   // Add an extra key to the top-level data structure
-  addTopLevelData(key, data) {
+  addApplicatioData(key, data) {
     this.json[key] = data;
   }
 
   // `extras` - Standard GLTF field for storing application specific data
-  addExtrasData(data) {
-    Object.assign(this.json.extras, data);
+  addExtras(data) {
+    this.json.extras = Object.assign(this.json.extras || {}, data);
     return this;
   }
 
@@ -113,12 +113,7 @@ export default class GLBBuilder {
 
   // Checks if a binary buffer is a recognized image format (PNG, JPG, GIF, ...)
   isImage(imageData) {
-    try {
-      getImageSize(imageData);
-      return true;
-    } catch (error) {
-      return false;
-    }
+    return isImage(imageData);
   }
 
   // Adds a binary image. Builds glTF "JSON metadata" and saves buffer reference
@@ -131,7 +126,7 @@ export default class GLBBuilder {
     };
 
     // Get the properties of the image to add as metadata.
-    const sizeAndType = getImageSize(imageData);
+    const sizeAndType = isImage(imageData);
     if (sizeAndType) {
       const {mimeType, width, height} = sizeAndType;
       Object.assign(glTFImage, {mimeType, width, height});

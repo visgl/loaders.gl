@@ -1,5 +1,6 @@
 /* eslint-disable camelcase, max-statements */
 import {
+  assert,
   getImageSize,
   padTo4Bytes,
   copyArrayBuffer,
@@ -8,7 +9,7 @@ import {
   getComponentTypeFromArray
 } from '@loaders.gl/core';
 import {DracoEncoder, DracoDecoder} from '@loaders.gl/draco';
-import packBinaryJson from './pack-binary-json';
+import packBinaryJson from './glb-writer/pack-binary-json';
 
 const MAGIC_glTF = 0x676c5446; // glTF in Big-Endian ASCII
 
@@ -79,29 +80,47 @@ export default class GLTFBuilder {
   }
 
   // Add an extra key to the top-level data structure
-  addTopLevelData(key, data) {
+  addApplicationData(key, data) {
     this.json[key] = data;
   }
 
   // `extras` - Standard GLTF field for storing application specific data
-  addExtrasData(data) {
-    Object.assign(this.json.extras, data);
+  addExtras(data) {
+    this.json.extras = Object.assign(this.json.extras || {}, data);
     return this;
   }
 
   // Add to standard GLTF top level extension object, mark as used
   addExtension(extensionName, extension) {
+    assert(extension);
     this.json.extensions = this.json.extensions || {};
     this.json.extensions[extensionName] = extension;
-    this._registerUsedExtension(extensionName);
+    this.registerUsedExtension(extensionName);
     return this;
   }
 
   // Standard GLTF top level extension object, mark as used and required
   addRequiredExtension(extensionName, extension) {
+    assert(extension);
     this.addExtension(extensionName, extension);
-    this._registerRequiredExtension(extensionName);
+    this.registerRequiredExtension(extensionName);
     return this;
+  }
+
+  // Add extensionName to list of used extensions
+  registerUsedExtension(extensionName) {
+    this.json.extensionsUsed = this.json.extensionsUsed || [];
+    if (!this.json.extensionsUsed.find(ext => ext === extensionName)) {
+      this.json.extensionsUsed.push(extensionName);
+    }
+  }
+
+  registerRequiredExtension(extensionName) {
+    this.registerUsedExtension(extensionName);
+    this.json.extensionsRequired = this.json.extensionsRequired || [];
+    if (!this.json.extensionsRequired.find(ext => ext === extensionName)) {
+      this.json.extensionsRequired.push(extensionName);
+    }
   }
 
   // Add a binary buffer. Builds glTF "JSON metadata" and saves buffer reference
@@ -226,7 +245,7 @@ export default class GLTFBuilder {
       ]
     };
 
-    this._registerRequiredExtension(UBER_MESH_EXTENSION);
+    this.registerRequiredExtension(UBER_MESH_EXTENSION);
 
     this.json.meshes.push(glTFMesh);
     return this.json.meshes.length - 1;
@@ -261,7 +280,7 @@ export default class GLTFBuilder {
       ]
     };
 
-    this._registerRequiredExtension(UBER_POINT_CLOUD_EXTENSION);
+    this.registerRequiredExtension(UBER_POINT_CLOUD_EXTENSION);
 
     this.json.meshes.push(glTFMesh);
     return this.json.meshes.length - 1;
@@ -283,21 +302,6 @@ export default class GLTFBuilder {
   */
 
   // PRIVATE
-
-  _registerUsedExtension(extension) {
-    this.json.extensionsUsed = this.json.extensionsUsed || [];
-    if (!this.json.extensionsUsed.find(ext => ext === extension)) {
-      this.json.extensionsUsed.push(extension);
-    }
-  }
-
-  _registerRequiredExtension(extension) {
-    this.json.extensionsRequired = this.json.extensionsRequired || [];
-    this._registerUsedExtension(extension);
-    if (!this.json.extensionsRequired.find(ext => ext === extension)) {
-      this.json.extensionsRequired.push(extension);
-    }
-  }
 
   // Add one source buffer, create a matchibng glTF `bufferView`, and return its index
   _addBufferView(buffer) {
