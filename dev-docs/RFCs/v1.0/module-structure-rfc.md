@@ -40,7 +40,7 @@ Note: We sometimes have both loaders and writers for the same format, but splitt
 | ---                        | ---       |
 | `loaders.gl`               | Umbrella module, simply imports and forwards exports from all other modules. |
 | `@loaders.gl/core`         | The user function library and common helper functions for loaders. |
-| `@loaders.gl/gltf`         | GLTF2 related loaders/writers (GLTFLoader, GLBLoader, GLBBuilder, ...) |
+| `@loaders.gl/gltf`         | GLTF2 loaders/writers (GLTFLoader, GLTFBBuilder, ...) |
 | `@loaders.gl/draco`        | DRACO compressed mesh and point cloud loader and encoder. DRACO lib dependency. |
 | `@loaders.gl/pcd`          | PCD point cloud loader. |
 | `@loaders.gl/las`          | LAS point cloud loader. |

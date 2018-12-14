@@ -41,9 +41,12 @@ saveBinaryFile(filename, arrayBuffer);
 
 ## Methods
 
-### constructor
+### constructor()
 
 Creates a new `GLTFBuilder` instance.
+
+* `options.DracoEncoder` - To enable DRACO encoding, the application needs to import and supply the `DracoEncoder` class.
+* `options.DracoDecoder` - To enable DRACO encoding, the application needs to import and supply the `DracoDecoder` class.
 
 
 ### encodeAsGLB(options : Object) : ArrayBuffer

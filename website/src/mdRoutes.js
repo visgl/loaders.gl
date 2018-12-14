@@ -82,16 +82,12 @@ export default [
                 markdown: require('../../docs/api-reference/gltf-loaders/gltf-builder.md')
               },
               {
-                name: 'GLBLoader',
-                markdown: require('../../docs/api-reference/gltf-loaders/glb-loader.md')
+                name: 'GLTFWriter',
+                markdown: require('../../docs/api-reference/gltf-loaders/gltf-writer.md')
               },
               {
-                name: 'GLBWriter',
-                markdown: require('../../docs/api-reference/gltf-loaders/glb-writer.md')
-              },
-              {
-                name: 'GLBBuilder',
-                markdown: require('../../docs/api-reference/gltf-loaders/glb-builder.md')
+                name: 'GLBParser',
+                markdown: require('../../docs/api-reference/gltf-loaders/glb-parser.md')
               }
             ]
           },

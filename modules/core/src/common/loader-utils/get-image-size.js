@@ -134,7 +134,7 @@ function getJpegSize(contents) {
   const dataView = toDataView(contents);
 
   // Check file contains the JPEG "start of image" (SOI) marker.
-  if (dataView.byteLength < 9 || dataView.getUint16(0, BIG_ENDIAN) !== 0xffd8) {
+  if (dataView.byteLength < 2 || dataView.getUint16(0, BIG_ENDIAN) !== 0xffd8) {
     return null;
   }
 
@@ -142,7 +142,7 @@ function getJpegSize(contents) {
 
   // Exclude the two byte SOI marker.
   let i = 2;
-  while (i < dataView.length) {
+  while (i < dataView.byteLength) {
     const marker = dataView.getUint16(i, BIG_ENDIAN);
 
     // The frame that contains the width and height of the JPEG image.
