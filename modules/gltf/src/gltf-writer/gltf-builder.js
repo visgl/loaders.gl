@@ -8,7 +8,6 @@ import {
   getAccessorTypeFromSize,
   getComponentTypeFromArray
 } from '@loaders.gl/core';
-import {DracoEncoder, DracoDecoder} from '@loaders.gl/draco';
 import packBinaryJson from '../glb-writer/pack-binary-json';
 
 const MAGIC_glTF = 0x676c5446; // glTF in Big-Endian ASCII
@@ -24,7 +23,11 @@ const UBER_MESH_EXTENSION = 'UBER_draco_mesh_compression';
 const UBER_POINT_CLOUD_EXTENSION = 'UBER_draco_point_cloud_compression';
 
 export default class GLTFBuilder {
-  constructor(rootPath) {
+  constructor(rootPath, options = {}) {
+    // Soft dependency on Draco, needs to be imported and supplied by app
+    this.DracoEncoder = options.DracoDecoder || options.DracoEncoder;
+    this.DracoDecoder = options.DracoDecoder;
+
     // Lets us keep track of how large the body will be, as well as the offset for each of the
     // original buffers.
     this.rootPath = rootPath;
@@ -217,7 +220,11 @@ export default class GLTFBuilder {
   //   KHR_draco_mesh_compression
   // NOTE: in contrast to glTF spec, does not add fallback data
   addCompressedMesh(attributes, mode = 4) {
-    const dracoEncoder = new DracoEncoder();
+    if (!this.DracoEncoder) {
+      throw new Error('DracoEncoder/Decoder not registered');
+    }
+
+    const dracoEncoder = new this.DracoEncoder();
     const compressedData = dracoEncoder.encodeMesh(attributes);
 
     // Draco compression may change the order and number of vertices in a mesh.
@@ -225,7 +232,7 @@ export default class GLTFBuilder {
     // compressed and uncompressed data, generators should create uncompressed
     // attributes and indices using data that has been decompressed from the Draco buffer,
     // rather than the original source data.
-    const dracoDecoder = new DracoDecoder();
+    const dracoDecoder = new this.DracoDecoder();
     const decodedData = dracoDecoder.decodeMesh(attributes);
     const fauxAccessors = this._addFauxAttributes(decodedData.attributes);
 
@@ -252,7 +259,11 @@ export default class GLTFBuilder {
   }
 
   addCompressedPointCloud(attributes) {
-    const dracoEncoder = new DracoEncoder();
+    if (!this.DracoEncoder) {
+      throw new Error('DracoEncoder/Decoder not registered');
+    }
+
+    const dracoEncoder = new this.DracoEncoder();
     const compressedData = dracoEncoder.encodePointCloud(attributes);
 
     // Draco compression may change the order and number of vertices in a mesh.
@@ -260,7 +271,7 @@ export default class GLTFBuilder {
     // compressed and uncompressed data, generators should create uncompressed
     // attributes and indices using data that has been decompressed from the Draco buffer,
     // rather than the original source data.
-    const dracoDecoder = new DracoDecoder();
+    const dracoDecoder = new this.DracoDecoder();
     const decodedData = dracoDecoder.decodePointCloud(compressedData);
     const fauxAccessors = this._addFauxAttributes(decodedData.attributes);
 
