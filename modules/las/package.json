@@ -1,8 +1,11 @@
 {
   "name": "@loaders.gl/las",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "Framework-independent loader for the LAS and LAZ formats",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/uber-web/loaders.gl"
@@ -33,6 +36,6 @@
   },
   "sideEffects": false,
   "dependencies": {
-    "@loaders.gl/core": "^0.4.2"
+    "@loaders.gl/core": "^0.4.3"
   }
 }
