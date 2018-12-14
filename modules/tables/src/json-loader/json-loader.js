@@ -4,8 +4,8 @@ function parseText(text, options) {
 }
 
 export default {
-  name: 'OBJ',
-  extension: 'obj',
+  name: 'JSON',
+  extension: 'json',
   testText: null,
   parseText
 };
