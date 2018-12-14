@@ -1,14 +1,14 @@
 /* eslint-disable */
 import test from 'tape-catch';
 
-import {GLBParser, GLBBuilder} from '@loaders.gl/gltf';
+import {GLBParser, GLTFBuilder} from '@loaders.gl/gltf';
 
 test('GLBParser#parse', t => {
   const testJson = {nested: {typedArray: new Float32Array([10.0, 11.0, 12.0])}};
-  const builder = new GLBBuilder();
+  const builder = new GLTFBuilder();
   const packedJSON = builder.packJSON(testJson);
   builder.addExtras(packedJSON);
-  const arrayBuffer = builder.encode();
+  const arrayBuffer = builder.encodeAsGLB();
 
   const parser = new GLBParser(arrayBuffer);
   const gltfData = parser.parse();

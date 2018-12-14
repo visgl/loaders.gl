@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 import test from 'tape-catch';
 
-import {GLBBuilder} from '@loaders.gl/gltf';
+import {GLTFBuilder} from '@loaders.gl/gltf';
 
 import packBinaryJson from '@loaders.gl/gltf/glb-writer/pack-binary-json';
 
@@ -61,17 +61,17 @@ test('pack-and-unpack-json', t => {
   let glbBuilder;
   let json;
 
-  glbBuilder = new GLBBuilder();
+  glbBuilder = new GLTFBuilder();
   json = packBinaryJson(inputJSONTypedArraysMixed, glbBuilder, {flattenArrays: true});
   t.comment(JSON.stringify(json));
   t.equals(glbBuilder.sourceBuffers.length, 3, 'Right number of buffers extracted');
 
-  glbBuilder = new GLBBuilder();
+  glbBuilder = new GLTFBuilder();
   json = packBinaryJson(inputJSONTypedArrays, glbBuilder, {flattenArrays: true});
   t.comment(JSON.stringify(json));
   t.equals(glbBuilder.sourceBuffers.length, 3, 'Right number of buffers extracted');
 
-  glbBuilder = new GLBBuilder();
+  glbBuilder = new GLTFBuilder();
   json = packBinaryJson(inputJSONClassicArrays, glbBuilder, {flattenArrays: true});
   t.comment(JSON.stringify(json));
   t.equals(glbBuilder.sourceBuffers.length, 3, 'Right number of buffers extracted');
@@ -80,7 +80,7 @@ test('pack-and-unpack-json', t => {
 });
 
 test('pack-and-unpack-json#flattenArrays:false', t => {
-  const glbBuilder = new GLBBuilder();
+  const glbBuilder = new GLTFBuilder();
   const json = packBinaryJson(flattenArraysFalse, glbBuilder, {flattenArrays: false});
   t.comment(JSON.stringify(json));
   t.equals(glbBuilder.sourceBuffers.length, 0, 'Right number of buffers extracted');

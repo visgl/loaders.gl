@@ -30,7 +30,10 @@ ${String.fromCharCode(dataView.getUint8(3))}`;
 
 // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#glb-file-format-specification
 export default class GLBParser {
-  constructor(glbArrayBuffer) {
+  constructor(glbArrayBuffer, options = {}) {
+    // Soft dependency on Draco, needs to be imported and supplied by app
+    this.DracoDecoder = options.DracoDecoder;
+
     this.glbArrayBuffer = glbArrayBuffer;
     this.json = null;
     this.binaryByteOffset = null;

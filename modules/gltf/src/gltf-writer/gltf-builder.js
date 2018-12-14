@@ -9,6 +9,7 @@ import {
   getComponentTypeFromArray
 } from '@loaders.gl/core';
 import packBinaryJson from './glb-writer/pack-binary-json';
+import packBinaryJson from '../glb-writer/pack-binary-json';
 
 const MAGIC_glTF = 0x676c5446; // glTF in Big-Endian ASCII
 

@@ -35,9 +35,11 @@ Calling the `resolveScenegraphs` method adds a hierarchical structure that makes
 
 ## Methods
 
-### constructor
+### constructor(options : Object)
 
 Creates a new `GLTFParser` instance.
+
+* `options.DracoDecoder` - To enable DRACO encoding, the application needs to import and supply the DracoEncoder class.
 
 
 ### parse(arrayBuffer : ArrayBuffer) : Object
