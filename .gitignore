@@ -22,6 +22,7 @@ yarn-error.log
 .DS_Store
 *.zip
 *.rar
+*.log
 TODO
 
 # editor files

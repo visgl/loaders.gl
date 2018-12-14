@@ -8,7 +8,6 @@ import {
   getAccessorTypeFromSize,
   getComponentTypeFromArray
 } from '@loaders.gl/core';
-import packBinaryJson from './glb-writer/pack-binary-json';
 import packBinaryJson from '../glb-writer/pack-binary-json';
 
 const MAGIC_glTF = 0x676c5446; // glTF in Big-Endian ASCII
@@ -244,7 +243,6 @@ export default class GLTFBuilder {
     // attributes and indices using data that has been decompressed from the Draco buffer,
     // rather than the original source data.
     const dracoDecoder = new this.DracoDecoder();
-
     const decodedData = dracoDecoder.decodeMesh(attributes);
     const fauxAccessors = this._addFauxAttributes(decodedData.attributes);
 
@@ -285,7 +283,6 @@ export default class GLTFBuilder {
     // attributes and indices using data that has been decompressed from the Draco buffer,
     // rather than the original source data.
     const dracoDecoder = new this.DracoDecoder();
-
     const decodedData = dracoDecoder.decodePointCloud(compressedData);
     const fauxAccessors = this._addFauxAttributes(decodedData.attributes);
 
