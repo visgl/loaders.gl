@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/gltf",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "description": "Framework-independent loader for the glTF format",
   "license": "MIT",
   "publishConfig": {
