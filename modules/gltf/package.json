@@ -1,8 +1,11 @@
 {
   "name": "@loaders.gl/gltf",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "Framework-independent loader for the glTF format",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/uber-web/loaders.gl"
@@ -37,7 +40,7 @@
   },
   "sideEffects": false,
   "dependencies": {
-    "@loaders.gl/core": "^0.4.2",
-    "@loaders.gl/draco": "^0.4.2"
+    "@loaders.gl/core": "^0.4.3",
+    "@loaders.gl/draco": "^0.4.3"
   }
 }
