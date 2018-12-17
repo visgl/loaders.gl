@@ -2,7 +2,7 @@
 import test from 'tape-catch';
 import {toLowPrecision} from 'loaders.gl/test/test-utils';
 
-import {GLBLoader, GLBBuilder} from '@loaders.gl/gltf';
+import {GLBLoader, GLTFBuilder} from '@loaders.gl/gltf';
 import packBinaryJson from '@loaders.gl/gltf/glb-writer/pack-binary-json';
 
 const TEST_CASES = {
@@ -45,7 +45,7 @@ test('GLB#encode-and-parse', t => {
   for (const tcName in TEST_CASES) {
     const TEST_JSON = TEST_CASES[tcName];
 
-    const arrayBuffer = new GLBBuilder().addExtras(TEST_JSON).encode();
+    const arrayBuffer = new GLTFBuilder().addExtras(TEST_JSON).encode();
     const json = GLBLoader.parseWithMetadata(arrayBuffer);
 
     t.ok(Array.isArray(json.buffers), `${tcName} Encoded and parsed GLB - has JSON buffers field`);
@@ -72,7 +72,7 @@ test('GLBLoader#encode-and-parse#full', t => {
   const tcName = 'full';
   const TEST_JSON = TEST_CASES[tcName];
 
-  const arrayBuffer = new GLBBuilder().addExtension('UBER_extension', TEST_JSON).encode();
+  const arrayBuffer = new GLTFBuilder().addExtension('UBER_extension', TEST_JSON).encode();
   const json = GLBLoader.parseWithMetadata(arrayBuffer);
 
   // t.comment(JSON.stringify(TEST_JSON, null, 2));

@@ -12,7 +12,8 @@ The `GLTFBuilder` class supports the `GLTFWriter` class.
 Adding binary data sub chunks to the GLB file, then calling encode to generate the complete `arrayBuffer`.
 
 ```js
-import {GLTFBuilder, saveBinaryFile} from '@loaders.gl/gltf';
+import {GLTFBuilder} from '@loaders.gl/gltf';
+import {saveBinaryFile} from '@loaders.gl/core';
 
 const gltfBuilder = new GLTFBuilder();
 
@@ -40,9 +41,12 @@ saveBinaryFile(filename, arrayBuffer);
 
 ## Methods
 
-### constructor
+### constructor()
 
 Creates a new `GLTFBuilder` instance.
+
+* `options.DracoEncoder` - To enable DRACO encoding, the application needs to import and supply the `DracoEncoder` class.
+* `options.DracoDecoder` - To enable DRACO encoding, the application needs to import and supply the `DracoDecoder` class.
 
 
 ### encodeAsGLB(options : Object) : ArrayBuffer
@@ -64,9 +68,14 @@ Extracting binary fields from the supplied `json` data structure, placing these 
 Note: While the extracted binary data IS added to the `GLTFBuilder` instance, the returned JSON chunk IS NOT automatically added, since the application needs to decide where to store it. Normally it should be added using one of the `addExtras`, `addExtension` or `addRequiredExtension` methods.
 
 
-### addExtras(extras : any)
+### addApplicationData(key : String, data : any)
 
-Populates the top-level glTF `extras` field, which the glTF specification reserves for application specific data.
+Stores the supplied `data` in the given top-level field given by `key`.
+
+
+### addExtras(extras : Object)
+
+Populates (merges into) the top-level glTF `extras` field, which the glTF specification reserves for application specific data.
 
 
 ### addExtension(extensionName : String, extension :)

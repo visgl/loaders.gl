@@ -35,9 +35,11 @@ Calling the `resolveScenegraphs` method adds a hierarchical structure that makes
 
 ## Methods
 
-### constructor
+### constructor(options : Object)
 
 Creates a new `GLTFParser` instance.
+
+* `options.DracoDecoder` - To enable DRACO encoding, the application needs to import and supply the DracoEncoder class.
 
 
 ### parse(arrayBuffer : ArrayBuffer) : Object
@@ -49,10 +51,10 @@ Once the `parse()` method has successfully completed the accessors in this class
 
 ### resolveScenegraphs() : Object
 
-The `resolveScenegraphs` method resolves the index based linking between objects into a hierarchical javascript structure, making the scenegraphs 
+The `resolveScenegraphs` method resolves the index based linking between objects into a hierarchical javascript structure, making scenegraph traversal simpler.
 
 
-### getTopLevelData(key : String) : Object
+### getApplicationData(key : String) : Object
 
 Returns a top-level data field.
 
@@ -62,19 +64,19 @@ Returns a top-level data field.
 Returns the top-level extras object
 
 
-### getExtension() : Object?
+### getExtension(name : String) : Object?
 
-Returns a top-level extension, if present.
-
-
-### getUsedExtensions() : String[]
-
-Returns an array of extensions used at any level of the glTF hierarchy.
+Returns the top-level extension by `name`, if present.
 
 
-### getRequiredExtensions() : String[]
+### getUsedExtensionNames() : String[]
 
-Returns an array of extensions at any level of the glTF hierarchy that are required to properly display this file.
+Returns an array of extension names (covering all extensions used at any level of the glTF hierarchy).
+
+
+### getRequiredExtensionNames() : String[]
+
+Returns an array of extensions at any level of the glTF hierarchy that are required to properly display this file (covering all extensions used at any level of the glTF hierarchy).
 
 
 ### getScenegraph([index : Number]) : Object?

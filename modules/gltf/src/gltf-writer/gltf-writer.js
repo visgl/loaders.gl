@@ -1,8 +1,8 @@
-import GLBBuilder from './glb-builder';
+import GLTFBuilder from './gltf-builder';
 import {saveBinaryFile} from '@loaders.gl/core';
 
 function encodeGLB(json, options) {
-  return new GLBBuilder().encode(json, options);
+  return new GLTFBuilder().encodeAsGLB(json, options);
 }
 
 // TODO - target writer structure not yet clear

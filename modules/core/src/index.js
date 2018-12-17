@@ -9,14 +9,33 @@ export {loadUri} from './common/loader-utils/load-uri.js';
 
 // UTILS
 
-export {default as assert} from './common/loader-utils/assert';
-export {flattenToTypedArray} from './common/loader-utils/flatten';
-export {getImageSize} from './common/loader-utils/get-image-size';
-export {padTo4Bytes, copyArrayBuffer} from './common/loader-utils/array-utils';
-export {toArrayBuffer, toBuffer} from './common/loader-utils/binary-utils';
-export {TextDecoder, TextEncoder} from './common/loader-utils/text-encoding';
+export {
+  isImage,
+  getImageSize
+} from './common/loader-utils/get-image-size';
 
-export {getMeshSize as _getMeshSize} from './common/mesh-utils/mesh-utils';
+export {
+  toArrayBuffer,
+  toBuffer,
+  toDataView
+} from './common/loader-utils/binary-utils';
+
+export {
+  TextDecoder,
+  TextEncoder
+} from './common/loader-utils/text-encoding';
+
+// LOADER UTILS
+
+export {default as assert} from './common/loader-utils/assert';
+
+export {flattenToTypedArray} from './common/loader-utils/flatten';
+
+export {
+  padTo4Bytes,
+  copyArrayBuffer
+} from './common/loader-utils/array-utils';
+
 export {
   getAccessorTypeFromSize,
   getComponentTypeFromArray
@@ -26,3 +45,5 @@ export {
   getGLTFIndices,
   getGLTFAttributeMap
 } from './common/mesh-utils/gltf-attribute-utils';
+
+export {getMeshSize as _getMeshSize} from './common/mesh-utils/mesh-utils';

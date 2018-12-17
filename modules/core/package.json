@@ -1,8 +1,11 @@
 {
   "name": "@loaders.gl/core",
-  "version": "0.4.0",
+  "version": "0.4.3",
   "description": "Framework-independent loaders for 3D graphics formats",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/uber-web/loaders.gl"

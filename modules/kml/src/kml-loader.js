@@ -1,4 +1,4 @@
-import {XMLLoader} from '@loaders.gl/tables';
+import {XMLLoader} from '@loaders.gl/experimental';
 import KMLParser from './kml-parser';
 import normalizeKML from './kml-normalizer';
 

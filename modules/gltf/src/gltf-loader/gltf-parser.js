@@ -1,8 +1,13 @@
 import {getBytesFromComponentType, getSizeFromAccessorType} from '../utils/gltf-type-utils';
+import GLBParser from '../glb-loader/glb-parser';
 
 export default class GLTFParser {
   constructor(gltf) {
+    if (gltf instanceof ArrayBuffer) {
+      gltf = new GLBParser(gltf).parse().json;
+    }
     this.gltf = gltf;
+    this.json = gltf;
     this.log = console; // eslint-disable-line
     this.out = {};
   }
@@ -21,36 +26,31 @@ export default class GLTFParser {
     if (this.gltf.scene) {
       this.out.scene = this.gltf.scenes[this.gltf.scene];
     }
+
+    return this;
   }
 
-  parseScene() {
+  // Accessors
 
+  getAppData(key) {
+    return this.json.key;
   }
 
-  parseImage(image) {
-    return this.config.createImage(image);
+  getExtras(json) {
+    return this.json.extras;
   }
 
-  parseMesh(mesh) {
-    // Each primitive is intended to correspond to a draw call
-    const primitives = (mesh.primitives || []).map(primitive => this.parseMeshPrimitive(primitive));
-
-    return primitives.length === 1 ? primitives[0] : this.config.createGroup(primitives);
+  getExtension(extensionName) {
+    return this.json.extensions[extensionName];
   }
 
-  parseMeshPrimitive(primitive) {
-    // if (!primitive.attributes)
-    //   this.log.warn(primitive without attributes`)
-    let attributes = primitive.attributes || {};
-    attributes = this.config.mapAttributes(attributes);
-    return attributes;
+  getRequiredExtensions() {
+    return this.json.extensionsRequired;
   }
 
-  parseAccessor(accessor) {
-    return this.config.createBuffer(accessor);
+  getUsedExtensions() {
+    return this.json.extensionsUsed;
   }
-
-  // ACCESSORS
 
   getScene(index) {
     return this._get('scenes', index);
@@ -96,12 +96,43 @@ export default class GLTFParser {
     return this._get('buffers', index);
   }
 
+  // PRIVATE
+
   _get(array, index) {
     const object = this.gltf[array] && this.gltf[array][index];
     if (!object) {
       console.warn(`glTF file error: Could not resolve ${array}[${index}]`); // eslint-disable-line
     }
     return object;
+  }
+
+  // PARSING HELPERS
+
+  parseScene() {
+
+  }
+
+  parseImage(image) {
+    return this.config.createImage(image);
+  }
+
+  parseMesh(mesh) {
+    // Each primitive is intended to correspond to a draw call
+    const primitives = (mesh.primitives || []).map(primitive => this.parseMeshPrimitive(primitive));
+
+    return primitives.length === 1 ? primitives[0] : this.config.createGroup(primitives);
+  }
+
+  parseMeshPrimitive(primitive) {
+    // if (!primitive.attributes)
+    //   this.log.warn(primitive without attributes`)
+    let attributes = primitive.attributes || {};
+    attributes = this.config.mapAttributes(attributes);
+    return attributes;
+  }
+
+  parseAccessor(accessor) {
+    return this.config.createBuffer(accessor);
   }
 
   // PREPARATION STEP: CROSS-LINK INDEX RESOLUTION, ENUM LOOKUP, CONVENIENCE CALCULATIONS

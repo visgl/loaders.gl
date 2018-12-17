@@ -1,5 +1,6 @@
 /* eslint-disable camelcase, max-statements */
 import {
+  assert,
   getImageSize,
   padTo4Bytes,
   copyArrayBuffer,
@@ -7,8 +8,7 @@ import {
   getAccessorTypeFromSize,
   getComponentTypeFromArray
 } from '@loaders.gl/core';
-import {DracoEncoder, DracoDecoder} from '@loaders.gl/draco';
-import packBinaryJson from './pack-binary-json';
+import packBinaryJson from '../glb-writer/pack-binary-json';
 
 const MAGIC_glTF = 0x676c5446; // glTF in Big-Endian ASCII
 
@@ -22,8 +22,12 @@ const GLB_CHUNK_HEADER_SIZE = 8;
 const UBER_MESH_EXTENSION = 'UBER_draco_mesh_compression';
 const UBER_POINT_CLOUD_EXTENSION = 'UBER_draco_point_cloud_compression';
 
-export default class GLBBuilder {
-  constructor(rootPath) {
+export default class GLTFBuilder {
+  constructor(rootPath, options = {}) {
+    // Soft dependency on DRACO, app needs to import and supply these
+    this.DracoEncoder = options.DracoEncoder;
+    this.DracoDecoder = options.DracoDecoder;
+
     // Lets us keep track of how large the body will be, as well as the offset for each of the
     // original buffers.
     this.rootPath = rootPath;
@@ -51,41 +55,76 @@ export default class GLBBuilder {
     return this.byteLength;
   }
 
+  // Encode the full glTF file as a binary GLB file
   // Returns an ArrayBuffer that represents the complete GLB image that can be saved to file
-  encode(options = {}) {
+  encodeAsGLB(options = {}) {
     return this._createGlbBuffer(options);
   }
 
   // Returns an arrayBuffer together with JSON etc data.
-  encodeWithMetadata(options = {}) {
+  encodeAsGLBWithMetadata(options = {}) {
     const arrayBuffer = this._createGlbBuffer(options);
     return {arrayBuffer, json: this.json};
   }
+
+  // Encode as a textual JSON file with binary data in base64 data URLs.
+  // encodeAsDataURLs(options) {
+  //   throw new Error('Not yet implemented');
+  // }
+
+  // Encode as a JSON with all images (and buffers?) in separate binary files
+  // encodeAsSeparateFiles(options) {
+  //   throw new Error('Not yet imlemented');
+  // }
 
   // Packs JSON by extracting binary data and replacing it with JSON pointers
   packJSON(json, options) {
     return packBinaryJson(json, this, options);
   }
 
-  // Standard GLTF field for storing application specific data
-  addExtras(extras) {
-    this.json.extras = extras;
+  // Add an extra key to the top-level data structure
+  addApplicationData(key, data) {
+    this.json[key] = data;
+  }
+
+  // `extras` - Standard GLTF field for storing application specific data
+  addExtras(data) {
+    this.json.extras = Object.assign(this.json.extras || {}, data);
     return this;
   }
 
   // Add to standard GLTF top level extension object, mark as used
   addExtension(extensionName, extension) {
+    assert(extension);
     this.json.extensions = this.json.extensions || {};
     this.json.extensions[extensionName] = extension;
-    this._registerUsedExtension(extensionName);
+    this.registerUsedExtension(extensionName);
     return this;
   }
 
   // Standard GLTF top level extension object, mark as used and required
   addRequiredExtension(extensionName, extension) {
+    assert(extension);
     this.addExtension(extensionName, extension);
-    this._registerRequiredExtension(extensionName);
+    this.registerRequiredExtension(extensionName);
     return this;
+  }
+
+  // Add extensionName to list of used extensions
+  registerUsedExtension(extensionName) {
+    this.json.extensionsUsed = this.json.extensionsUsed || [];
+    if (!this.json.extensionsUsed.find(ext => ext === extensionName)) {
+      this.json.extensionsUsed.push(extensionName);
+    }
+  }
+
+  // Add extensionName to list of required extensions
+  registerRequiredExtension(extensionName) {
+    this.registerUsedExtension(extensionName);
+    this.json.extensionsRequired = this.json.extensionsRequired || [];
+    if (!this.json.extensionsRequired.find(ext => ext === extensionName)) {
+      this.json.extensionsRequired.push(extensionName);
+    }
   }
 
   // Add a binary buffer. Builds glTF "JSON metadata" and saves buffer reference
@@ -181,8 +220,12 @@ export default class GLBBuilder {
   // https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/
   //   KHR_draco_mesh_compression
   // NOTE: in contrast to glTF spec, does not add fallback data
-  addCompressedMesh(attributes, mode = 4) {
-    const dracoEncoder = new DracoEncoder();
+  addCompressedMesh(attributes, indices, mode = 4) {
+    if (!this.DracoEncoder || !this.DracoDecoder) {
+      throw new Error('DracoEncoder/Decoder not available');
+    }
+
+    const dracoEncoder = new this.DracoEncoder();
     const compressedData = dracoEncoder.encodeMesh(attributes);
 
     // Draco compression may change the order and number of vertices in a mesh.
@@ -190,7 +233,7 @@ export default class GLBBuilder {
     // compressed and uncompressed data, generators should create uncompressed
     // attributes and indices using data that has been decompressed from the Draco buffer,
     // rather than the original source data.
-    const dracoDecoder = new DracoDecoder();
+    const dracoDecoder = new this.DracoDecoder();
     const decodedData = dracoDecoder.decodeMesh(attributes);
     const fauxAccessors = this._addFauxAttributes(decodedData.attributes);
 
@@ -210,14 +253,19 @@ export default class GLBBuilder {
       ]
     };
 
-    this._registerRequiredExtension(UBER_MESH_EXTENSION);
+    this.registerRequiredExtension(UBER_MESH_EXTENSION);
 
     this.json.meshes.push(glTFMesh);
     return this.json.meshes.length - 1;
   }
 
   addCompressedPointCloud(attributes) {
-    const dracoEncoder = new DracoEncoder();
+    if (!this.DracoEncoder || !this.DracoDecoder) {
+      throw new Error('DracoEncoder/Decoder not available');
+    }
+
+    const dracoEncoder = new this.DracoEncoder();
+
     const compressedData = dracoEncoder.encodePointCloud(attributes);
 
     // Draco compression may change the order and number of vertices in a mesh.
@@ -225,7 +273,7 @@ export default class GLBBuilder {
     // compressed and uncompressed data, generators should create uncompressed
     // attributes and indices using data that has been decompressed from the Draco buffer,
     // rather than the original source data.
-    const dracoDecoder = new DracoDecoder();
+    const dracoDecoder = new this.DracoDecoder();
     const decodedData = dracoDecoder.decodePointCloud(compressedData);
     const fauxAccessors = this._addFauxAttributes(decodedData.attributes);
 
@@ -245,7 +293,7 @@ export default class GLBBuilder {
       ]
     };
 
-    this._registerRequiredExtension(UBER_POINT_CLOUD_EXTENSION);
+    this.registerRequiredExtension(UBER_POINT_CLOUD_EXTENSION);
 
     this.json.meshes.push(glTFMesh);
     return this.json.meshes.length - 1;
@@ -267,21 +315,6 @@ export default class GLBBuilder {
   */
 
   // PRIVATE
-
-  _registerUsedExtension(extension) {
-    this.json.extensionsUsed = this.json.extensionsUsed || [];
-    if (!this.json.extensionsUsed.find(ext => ext === extension)) {
-      this.json.extensionsUsed.push(extension);
-    }
-  }
-
-  _registerRequiredExtension(extension) {
-    this.json.extensionsRequired = this.json.extensionsRequired || [];
-    this._registerUsedExtension(extension);
-    if (!this.json.extensionsRequired.find(ext => ext === extension)) {
-      this.json.extensionsRequired.push(extension);
-    }
-  }
 
   // Add one source buffer, create a matchibng glTF `bufferView`, and return its index
   _addBufferView(buffer) {
