@@ -2,7 +2,6 @@
 import unpackGLBBuffers from './unpack-glb-buffers';
 import unpackBinaryJson from './unpack-binary-json';
 
-import {DracoDecoder} from '@loaders.gl/draco';
 import {TextDecoder, padTo4Bytes, assert} from '@loaders.gl/core';
 import {
   ATTRIBUTE_TYPE_TO_COMPONENTS,
@@ -35,6 +34,10 @@ export default class GLBParser {
     this.glbArrayBuffer = glbArrayBuffer;
     this.json = null;
     this.binaryByteOffset = null;
+  }
+
+  parseAsJSON(options = {}) {
+    return this.parse(options).json;
   }
 
   // Return the gltf JSON and the original arrayBuffer
@@ -202,7 +205,7 @@ export default class GLBParser {
       };
 
       if (compressedMesh) {
-        const dracoDecoder = new DracoDecoder();
+        const dracoDecoder = new this.DracoDecoder();
         const decodedData = dracoDecoder.decodeMesh(compressedMesh);
         dracoDecoder.destroy();
 
@@ -212,7 +215,7 @@ export default class GLBParser {
         });
 
       } else if (compressedPointCloud) {
-        const dracoDecoder = new DracoDecoder();
+        const dracoDecoder = new this.DracoDecoder();
         const decodedData = dracoDecoder.decodePointCloud(compressedPointCloud);
         dracoDecoder.destroy();
 

@@ -1,6 +1,11 @@
 // Attributions
 // * Based on binary-gltf-utils under MIT license: Copyright (c) 2016-17 Karl Cheng
 
+import {toDataView} from './binary-utils';
+
+const BIG_ENDIAN = false;
+const LITTLE_ENDIAN = true;
+
 const mimeTypeMap = new Map([
   ['image/png', getPngSize],
   ['image/jpeg', getJpegSize],
@@ -11,6 +16,15 @@ const mimeTypeMap = new Map([
 const ERR_INVALID_TYPE = `Invalid MIME type. Supported MIME types are: ${Array.from(
   mimeTypeMap.keys()
 ).join(', ')}`;
+
+export function isImage(contents) {
+  const result = _getImageSize(contents);
+  if (result) {
+    // Seems not :(
+    return result.mimeType;
+  }
+  return false;
+}
 
 /**
  * Sniffs the contents of a file to attempt to deduce the image type and extract image size.
@@ -34,6 +48,15 @@ export function getImageSize(contents, mimeType) {
     return result;
   }
 
+  const result = _getImageSize(contents, mimeType);
+  if (!result) {
+    // Seems not :(
+    throw new Error(ERR_INVALID_TYPE);
+  }
+  return result;
+}
+
+function _getImageSize(contents, mimeType) {
   // Loop through each file type and see if they work.
   for (const [supportedMimeType, handler] of mimeTypeMap.entries()) {
     const result = handler(contents);
@@ -43,8 +66,7 @@ export function getImageSize(contents, mimeType) {
     }
   }
 
-  // Seems not :(
-  throw new Error(ERR_INVALID_TYPE);
+  return null;
 }
 
 /**
@@ -52,14 +74,16 @@ export function getImageSize(contents, mimeType) {
  * @param {Buffer} contents
  */
 function getPngSize(contents) {
+  const dataView = toDataView(contents);
+
   // Check file contains the first 4 bytes of the PNG signature.
-  if (contents.readUInt32BE(0) !== 0x89504e47) {
+  if (dataView.byteLength < 24 || dataView.getUint32(0, BIG_ENDIAN) !== 0x89504e47) {
     return null;
   }
 
   return {
-    width: contents.readUInt32BE(16),
-    height: contents.readUInt32BE(20)
+    width: dataView.getUint32(16, BIG_ENDIAN),
+    height: dataView.getUint32(20, BIG_ENDIAN)
   };
 }
 
@@ -69,15 +93,17 @@ function getPngSize(contents) {
  * TODO: GIF is not this simple
  */
 function getGifSize(contents) {
+  const dataView = toDataView(contents);
+
   // Check first 4 bytes of the GIF signature ("GIF8").
-  if (contents.readUInt32BE(0) !== 0x47494638) {
+  if (dataView.byteLength < 10 || dataView.getUint32(0, BIG_ENDIAN) !== 0x47494638) {
     return null;
   }
 
   // GIF is little endian.
   return {
-    width: contents.readUInt16LE(6),
-    height: contents.readUInt16LE(8)
+    width: dataView.getUint16(6, LITTLE_ENDIAN),
+    height: dataView.getUint16(8, LITTLE_ENDIAN)
   };
 }
 
@@ -86,15 +112,17 @@ function getGifSize(contents) {
  * TODO: BMP is not this simple
  */
 function getBmpSize(contents) {
+  const dataView = toDataView(contents);
+
   // Check magic number is valid (first 2 characters should be "BM").
-  if (contents.readUInt16BE(0) !== 0x424d) {
+  if (dataView.getUint16(0, BIG_ENDIAN) !== 0x424d) {
     return null;
   }
 
   // BMP is little endian.
   return {
-    width: contents.readUInt32LE(18),
-    height: contents.readUInt32LE(22)
+    width: dataView.getUint32(18, LITTLE_ENDIAN),
+    height: dataView.getUint32(22, LITTLE_ENDIAN)
   };
 }
 
@@ -103,8 +131,10 @@ function getBmpSize(contents) {
  * @param {Buffer} contents
  */
 function getJpegSize(contents) {
+  const dataView = toDataView(contents);
+
   // Check file contains the JPEG "start of image" (SOI) marker.
-  if (contents.readUInt16BE(0) !== 0xffd8) {
+  if (dataView.byteLength < 9 || dataView.getUint16(0, BIG_ENDIAN) !== 0xffd8) {
     return null;
   }
 
@@ -112,14 +142,14 @@ function getJpegSize(contents) {
 
   // Exclude the two byte SOI marker.
   let i = 2;
-  while (i < contents.length) {
-    const marker = contents.readUInt16BE(i);
+  while (i < dataView.length) {
+    const marker = dataView.getUint16(i, BIG_ENDIAN);
 
     // The frame that contains the width and height of the JPEG image.
     if (sofMarkers.has(marker)) {
       return {
-        height: contents.readUInt16BE(i + 5), // Number of lines
-        width: contents.readUInt16BE(i + 7) // Number of pixels per line
+        height: dataView.getUint16(i + 5, BIG_ENDIAN), // Number of lines
+        width: dataView.getUint16(i + 7, BIG_ENDIAN) // Number of pixels per line
       };
     }
 
@@ -130,7 +160,7 @@ function getJpegSize(contents) {
 
     // Length includes size of length parameter but not the two byte header.
     i += 2;
-    i += contents.readUInt16BE(i);
+    i += dataView.getUint16(i, BIG_ENDIAN);
   }
 
   return null;

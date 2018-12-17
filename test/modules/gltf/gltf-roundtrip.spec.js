@@ -17,15 +17,16 @@ test('GLTF roundtrip#extensions', t => {
   builder.addExtras(EXTRA_DATA);
   builder.addApplicationData('viz', APP_DATA);
 
-  builder.useExtension(USED_EXTENSION_1);
-  builder.requireExtension(REQUIRED_EXTENSION_1);
+  builder.registerUsedExtension(USED_EXTENSION_1);
+  builder.registerRequiredExtension(REQUIRED_EXTENSION_1);
   builder.addExtension(USED_EXTENSION_2, EXTENSION_DATA_1);
   builder.addRequiredExtension(REQUIRED_EXTENSION_2, EXTENSION_DATA_2);
 
   const arrayBuffer = builder.encodeAsGLB();
 
-  const parser = new GLTFParser().parse(arrayBuffer);
-  const usedExtensions = parser.getUsedExtensions(USED_EXTENSION_1);
+  const parser = new GLTFParser(arrayBuffer);
+  parser.parse();
+  const usedExtensions = parser.getUsedExtensions();
   const requiredExtensions = parser.getRequiredExtensions();
   const extension1 = parser.getExtension(USED_EXTENSION_2);
   const extension2 = parser.getExtension(REQUIRED_EXTENSION_2);

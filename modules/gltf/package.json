@@ -37,7 +37,6 @@
   },
   "sideEffects": false,
   "dependencies": {
-    "@loaders.gl/core": "^0.4.0",
-    "@loaders.gl/draco": "^0.4.0"
+    "@loaders.gl/core": "^0.4.0"
   }
 }

@@ -9,14 +9,37 @@ export {loadUri} from './common/loader-utils/load-uri.js';
 
 // UTILS
 
-export {default as assert} from './common/loader-utils/assert';
-export {flattenToTypedArray} from './common/loader-utils/flatten';
-export {getImageSize} from './common/loader-utils/get-image-size';
-export {padTo4Bytes, copyArrayBuffer} from './common/loader-utils/array-utils';
-export {toArrayBuffer, toBuffer} from './common/loader-utils/binary-utils';
-export {TextDecoder, TextEncoder} from './common/loader-utils/text-encoding';
+export {
+  isImage,
+  getImageSize
+} from './common/loader-utils/get-image-size';
 
+export {
+  toArrayBuffer,
+  toBuffer,
+  toDataView
+} from './common/loader-utils/binary-utils';
+
+export {
+  TextDecoder,
+  TextEncoder
+} from './common/loader-utils/text-encoding';
+
+// LOADER UTILS
+
+export {default as assert} from './common/loader-utils/assert';
+
+export {flattenToTypedArray} from './common/loader-utils/flatten';
+
+<<<<<<< HEAD
 export {getMeshSize as _getMeshSize} from './common/mesh-utils/mesh-utils';
+=======
+export {
+  padTo4Bytes,
+  copyArrayBuffer
+} from './common/loader-utils/array-utils';
+
+>>>>>>> GLTF Parser class, doc improvements
 export {
   getAccessorTypeFromSize,
   getComponentTypeFromArray
@@ -26,3 +49,13 @@ export {
   getGLTFIndices,
   getGLTFAttributeMap
 } from './common/mesh-utils/gltf-attribute-utils';
+<<<<<<< HEAD
+=======
+
+export {getMeshSize as _getMeshSize} from './common/mesh-utils/mesh-utils';
+
+// GENERAL FORMAT LOADERS
+export {default as JSONLoader} from './formats/json-loader/json-loader';
+export {default as CSVLoader} from './formats/csv-loader/csv-loader';
+export {default as XMLLoader} from './formats/xml-loader/xml-loader';
+>>>>>>> GLTF Parser class, doc improvements

@@ -6,3 +6,5 @@ export {default as GLBBuilder} from './glb-writer/glb-builder';
 
 export {default as GLTFLoader} from './gltf-loader/gltf-loader';
 export {default as GLTFParser} from './gltf-loader/gltf-parser';
+
+export {default as GLTFBuilder} from './gltf-builder';

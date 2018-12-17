@@ -99,11 +99,11 @@ export default [
             name: 'Point Cloud & Mesh Loaders',
             children: [
               {
-                name: 'DRACOLoader (PointCloud / Mesh)',
+                name: 'DracoLoader (PointCloud / Mesh)',
                 markdown: require('../../docs/api-reference/loaders/draco-loader.md')
               },
               {
-                name: 'DRACOEncoder (PointCloud / Mesh)',
+                name: 'DracoEncoder (PointCloud / Mesh)',
                 markdown: require('../../docs/api-reference/loaders/draco-encoder.md')
               },
               {

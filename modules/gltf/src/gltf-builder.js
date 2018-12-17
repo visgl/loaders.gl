@@ -8,8 +8,7 @@ import {
   getAccessorTypeFromSize,
   getComponentTypeFromArray
 } from '@loaders.gl/core';
-import {DracoEncoder, DracoDecoder} from '@loaders.gl/draco';
-import packBinaryJson from './pack-binary-json';
+import packBinaryJson from './glb-writer/pack-binary-json';
 
 const MAGIC_glTF = 0x676c5446; // glTF in Big-Endian ASCII
 
@@ -26,7 +25,7 @@ const UBER_POINT_CLOUD_EXTENSION = 'UBER_draco_point_cloud_compression';
 export default class GLTFBuilder {
   constructor(rootPath, options) {
     // Soft dependency on DRACO, app needs to import and supply these
-    this.DracoEncoder = options.DracoDecoder && options.DracoEncoder;
+    this.DracoEncoder = options.DracoEncoder;
     this.DracoDecoder = options.DracoDecoder;
 
     // Lets us keep track of how large the body will be, as well as the offset for each of the
@@ -85,10 +84,14 @@ export default class GLTFBuilder {
 
   // Add an extra key to the top-level data structure
 <<<<<<< HEAD
+<<<<<<< HEAD
   addApplicationData(key, data) {
 =======
   addTopLevelData(key, data) {
 >>>>>>> wip
+=======
+  addApplicationData(key, data) {
+>>>>>>> GLTF Parser class, doc improvements
     this.json[key] = data;
   }
 
@@ -121,16 +124,16 @@ export default class GLTFBuilder {
     if (!this.json.extensionsUsed.find(ext => ext === extensionName)) {
       this.json.extensionsUsed.push(extensionName);
     }
-    return this;
   }
 
+
+  // Add extensionName to list of required extensions
   registerRequiredExtension(extensionName) {
     this.registerUsedExtension(extensionName);
     this.json.extensionsRequired = this.json.extensionsRequired || [];
     if (!this.json.extensionsRequired.find(ext => ext === extensionName)) {
       this.json.extensionsRequired.push(extensionName);
     }
-    return this;
   }
 
   // Add a binary buffer. Builds glTF "JSON metadata" and saves buffer reference
@@ -227,8 +230,8 @@ export default class GLTFBuilder {
   //   KHR_draco_mesh_compression
   // NOTE: in contrast to glTF spec, does not add fallback data
   addCompressedMesh(attributes, indices, mode = 4) {
-    if (!this.DracoEncoder) {
-      throw new Error('DracoEncoder not available');
+    if (!this.DracoEncoder || !this.DracoDecoder) {
+      throw new Error('DracoEncoder/Decoder not available');
     }
 
     const dracoEncoder = new this.DracoEncoder();
@@ -267,8 +270,8 @@ export default class GLTFBuilder {
   }
 
   addCompressedPointCloud(attributes) {
-    if (!this.DracoEncoder) {
-      throw new Error('DracoEncoder not available');
+    if (!this.DracoEncoder || !this.DracoDecoder) {
+      throw new Error('DracoEncoder/Decoder not available');
     }
 
     const dracoEncoder = new this.DracoEncoder();

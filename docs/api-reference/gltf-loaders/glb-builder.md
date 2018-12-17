@@ -12,7 +12,8 @@ The `GLBBuilder` class supports the `GLBWriter` class.
 Adding binary data sub chunks to the GLB file, then calling encode to generate the complete `arrayBuffer`.
 
 ```js
-import {GLBBuilder, saveBinaryFile} from '@loaders.gl/gltf';
+import {GLBBuilder} from '@loaders.gl/gltf';
+import {saveBinaryFile} from '@loaders.gl/core';
 
 const glbBuilder = new GLBBuilder();
 
