@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/kml",
-  "version": "0.4.3",
+  "version": "0.4.5",
   "description": "Framework-independent loader for the KML format",
   "license": "MIT",
   "publishConfig": {
@@ -35,6 +35,6 @@
   },
   "sideEffects": false,
   "dependencies": {
-    "@loaders.gl/core": "^0.4.3"
+    "@loaders.gl/core": "^0.4.5"
   }
 }
