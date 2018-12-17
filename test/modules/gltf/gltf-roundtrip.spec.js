@@ -14,8 +14,8 @@ const USED_EXTENSION_2 = 'UBER_extension_4';
 
 test('GLTF roundtrip#extensions', t => {
   const builder = new GLTFBuilder();
-  builder.addExtras(EXTRA_DATA);
   builder.addApplicationData('viz', APP_DATA);
+  builder.addExtraData('test', EXTRA_DATA);
 
   builder.registerUsedExtension(USED_EXTENSION_1);
   builder.registerRequiredExtension(REQUIRED_EXTENSION_1);
@@ -26,6 +26,13 @@ test('GLTF roundtrip#extensions', t => {
 
   const parser = new GLTFParser(arrayBuffer);
   parser.parse();
+
+  const appData = parser.getApplicationData('viz');
+  const extraData = parser.getExtraData('test');
+
+  t.ok(appData, 'usedExtensions was found');
+  t.ok(extraData, 'requiredExtensions was found');
+
   const usedExtensions = parser.getUsedExtensions();
   const requiredExtensions = parser.getRequiredExtensions();
   const extension1 = parser.getExtension(USED_EXTENSION_2);

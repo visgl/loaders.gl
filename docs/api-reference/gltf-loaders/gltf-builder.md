@@ -19,20 +19,20 @@ const gltfBuilder = new GLTFBuilder();
 
 const imageIndex = gltfBuilder.addImage();
 
-// Add custom JSON in glTF extras field
-gltfBuilder.addExtras({...});
+// Add custom JSON in top-level glTF object
+gltfBuilder.addApplicationField('app-key', {...});
 
-// Add custom JSON in glTF extension object
+// Add custom JSON in glTF extras field
+gltfBuilder.addExtraData('app-key', {...});
+
+// Add custom JSON in an optional glTF extension object.
 gltfBuilder.addExtension('ORGNAME_extension_1', {...});
 
-// JSON can be "packed", extracting binary data and replacing it with tokens.
-const packedJSON = packJSON(gltfBuilder, json);
-
-// Don't forget to add the packed JSON, it needs to be stored somewhere
-gltfBuilder.addRequiredExtension('ORGNAME_extension_2', packedJSON);
+// Add custom JSON into a required glTF extension object.
+gltfBuilder.addRequiredExtension('ORGNAME_extension_2', {...});
 
 // All data added, we can encode
-const arrayBuffer = gltfBuilder.encode();
+const arrayBuffer = gltfBuilder.encodeAsGLB();
 
 // The encoded `ArrayBuffer` represents a complete image of the data
 saveBinaryFile(filename, arrayBuffer);
@@ -68,17 +68,17 @@ Extracting binary fields from the supplied `json` data structure, placing these 
 Note: While the extracted binary data IS added to the `GLTFBuilder` instance, the returned JSON chunk IS NOT automatically added, since the application needs to decide where to store it. Normally it should be added using one of the `addExtras`, `addExtension` or `addRequiredExtension` methods.
 
 
-### addApplicationData(key : String, data : any)
+### setApplicationData(key : String, data : any)
 
 Stores the supplied `data` in the given top-level field given by `key`.
 
 
-### addExtras(extras : Object)
+### setExtraData(key : String, data : any)
 
 Populates (merges into) the top-level glTF `extras` field, which the glTF specification reserves for application specific data.
 
 
-### addExtension(extensionName : String, extension :)
+### addExtension(extensionName : String, extension : any)
 
 Adds a top-level glTF extension object, and marks it as used.
 

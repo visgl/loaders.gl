@@ -1,6 +1,7 @@
 /* eslint-disable camelcase, max-statements */
 import {
   assert,
+  isImage,
   getImageSize,
   padTo4Bytes,
   copyArrayBuffer,
@@ -8,7 +9,7 @@ import {
   getAccessorTypeFromSize,
   getComponentTypeFromArray
 } from '@loaders.gl/core';
-import packBinaryJson from '../glb-writer/pack-binary-json';
+import packBinaryJson from '../packed-json/pack-binary-json';
 
 const MAGIC_glTF = 0x676c5446; // glTF in Big-Endian ASCII
 
@@ -24,13 +25,14 @@ const UBER_POINT_CLOUD_EXTENSION = 'UBER_draco_point_cloud_compression';
 
 export default class GLTFBuilder {
   constructor(rootPath, options = {}) {
+    this.rootPath = rootPath;
+
     // Soft dependency on DRACO, app needs to import and supply these
     this.DracoEncoder = options.DracoEncoder;
     this.DracoDecoder = options.DracoDecoder;
 
     // Lets us keep track of how large the body will be, as well as the offset for each of the
     // original buffers.
-    this.rootPath = rootPath;
     this.byteLength = 0;
 
     this.json = {
@@ -77,35 +79,39 @@ export default class GLTFBuilder {
   //   throw new Error('Not yet imlemented');
   // }
 
-  // Packs JSON by extracting binary data and replacing it with JSON pointers
-  packJSON(json, options) {
-    return packBinaryJson(json, this, options);
-  }
-
-  // Add an extra key to the top-level data structure
-  addApplicationData(key, data) {
-    this.json[key] = data;
+  // Add an extra application-defined key to the top-level data structure
+  // By default packs JSON by extracting binary data and replacing it with JSON pointers
+  addApplicationData(key, data, packOptions = {}) {
+    const packedJson = !packOptions.nopack && packBinaryJson(data, this, packOptions);
+    this.json[key] = packedJson;
   }
 
   // `extras` - Standard GLTF field for storing application specific data
-  addExtras(data) {
-    this.json.extras = Object.assign(this.json.extras || {}, data);
+  // By default packs JSON by extracting binary data and replacing it with JSON pointers
+  addExtraData(key, data, packOptions = {}) {
+    const packedJson = !packOptions.nopack && packBinaryJson(data, this, packOptions);
+    this.json.extras = this.json.extras || {};
+    this.json.extras[key] = packedJson;
     return this;
   }
 
   // Add to standard GLTF top level extension object, mark as used
-  addExtension(extensionName, extension) {
-    assert(extension);
+  // By default packs JSON by extracting binary data and replacing it with JSON pointers
+  addExtension(extensionName, data, packOptions = {}) {
+    assert(data);
+    const packedJson = !packOptions.nopack && packBinaryJson(data, this, packOptions);
     this.json.extensions = this.json.extensions || {};
-    this.json.extensions[extensionName] = extension;
+    this.json.extensions[extensionName] = packedJson;
     this.registerUsedExtension(extensionName);
     return this;
   }
 
   // Standard GLTF top level extension object, mark as used and required
-  addRequiredExtension(extensionName, extension) {
-    assert(extension);
-    this.addExtension(extensionName, extension);
+  // By default packs JSON by extracting binary data and replacing it with JSON pointers
+  addRequiredExtension(extensionName, data, packOptions = {}) {
+    assert(data);
+    const packedJson = !packOptions.nopack && packBinaryJson(data, this, packOptions);
+    this.addExtension(extensionName, packedJson);
     this.registerRequiredExtension(extensionName);
     return this;
   }
@@ -147,12 +153,7 @@ export default class GLTFBuilder {
 
   // Checks if a binary buffer is a recognized image format (PNG, JPG, GIF, ...)
   isImage(imageData) {
-    try {
-      getImageSize(imageData);
-      return true;
-    } catch (error) {
-      return false;
-    }
+    return isImage(imageData);
   }
 
   // Adds a binary image. Builds glTF "JSON metadata" and saves buffer reference

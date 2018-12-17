@@ -32,15 +32,20 @@ export default class GLTFParser {
 
   // Accessors
 
-  getAppData(key) {
-    return this.json.key;
+  getApplicationData(key) {
+    // TODO - Data is already unpacked by GLBParser
+    const data = this.json[key];
+    return data;
   }
 
-  getExtras(json) {
-    return this.json.extras;
+  getExtraData(key) {
+    // TODO - Data is already unpacked by GLBParser
+    const extras = this.json.extras || {};
+    return extras[key];
   }
 
   getExtension(extensionName) {
+    // TODO - Data is already unpacked by GLBParser
     return this.json.extensions[extensionName];
   }
 

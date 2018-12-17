@@ -56,12 +56,12 @@ The `resolveScenegraphs` method resolves the index based linking between objects
 
 ### getApplicationData(key : String) : Object
 
-Returns a top-level data field.
+Returns the given data field in the top-level glTF JSON object.
 
 
-### getExtras() : Object?
+### getExtraData(key : String) : Object?
 
-Returns the top-level extras object
+Returns a key in the top-level glTF `extras` JSON object.
 
 
 ### getExtension(name : String) : Object?
