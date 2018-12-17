@@ -1,6 +1,6 @@
 /* eslint-disable camelcase, max-statements */
 import unpackGLBBuffers from './unpack-glb-buffers';
-import unpackBinaryJson from './unpack-binary-json';
+import unpackBinaryJson from '../packed-json/unpack-binary-json';
 
 import {TextDecoder, padTo4Bytes, assert} from '@loaders.gl/core';
 import {
