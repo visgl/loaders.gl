@@ -34,7 +34,8 @@
   },
   "sideEffects": false,
   "browser": {
-    "text-encoding": false
+    "text-encoding": false,
+    "fs": false
   },
   "dependencies": {
     "text-encoding": "^0.6.4"
