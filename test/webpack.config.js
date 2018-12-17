@@ -20,7 +20,6 @@
 
 const {resolve} = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const webpack = require('webpack');
 
@@ -169,8 +168,7 @@ const CONFIGS = {
       plugins: [
         // leave minification to app
         // new webpack.optimize.UglifyJsPlugin({comments: false})
-        new webpack.DefinePlugin({NODE_ENV: JSON.stringify('production')}),
-        new UglifyJsPlugin()
+        new webpack.DefinePlugin({NODE_ENV: JSON.stringify('production')})
       ]
     });
 
