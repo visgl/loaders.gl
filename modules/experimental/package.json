@@ -3,6 +3,9 @@
   "version": "0.4.5",
   "description": "Framework-independent loaders for table formats (JSON, CSV, ...)",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/uber-web/loaders.gl"
