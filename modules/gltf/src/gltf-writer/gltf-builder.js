@@ -23,7 +23,7 @@ const UBER_MESH_EXTENSION = 'UBER_draco_mesh_compression';
 const UBER_POINT_CLOUD_EXTENSION = 'UBER_draco_point_cloud_compression';
 
 export default class GLTFBuilder {
-  constructor(rootPath, options) {
+  constructor(rootPath, options = {}) {
     // Soft dependency on DRACO, app needs to import and supply these
     this.DracoEncoder = options.DracoEncoder;
     this.DracoDecoder = options.DracoDecoder;
@@ -83,15 +83,7 @@ export default class GLTFBuilder {
   }
 
   // Add an extra key to the top-level data structure
-<<<<<<< HEAD
-<<<<<<< HEAD
   addApplicationData(key, data) {
-=======
-  addTopLevelData(key, data) {
->>>>>>> wip
-=======
-  addApplicationData(key, data) {
->>>>>>> GLTF Parser class, doc improvements
     this.json[key] = data;
   }
 
@@ -125,7 +117,6 @@ export default class GLTFBuilder {
       this.json.extensionsUsed.push(extensionName);
     }
   }
-
 
   // Add extensionName to list of required extensions
   registerRequiredExtension(extensionName) {

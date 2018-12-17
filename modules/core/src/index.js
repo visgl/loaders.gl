@@ -31,15 +31,11 @@ export {default as assert} from './common/loader-utils/assert';
 
 export {flattenToTypedArray} from './common/loader-utils/flatten';
 
-<<<<<<< HEAD
-export {getMeshSize as _getMeshSize} from './common/mesh-utils/mesh-utils';
-=======
 export {
   padTo4Bytes,
   copyArrayBuffer
 } from './common/loader-utils/array-utils';
 
->>>>>>> GLTF Parser class, doc improvements
 export {
   getAccessorTypeFromSize,
   getComponentTypeFromArray
@@ -49,13 +45,5 @@ export {
   getGLTFIndices,
   getGLTFAttributeMap
 } from './common/mesh-utils/gltf-attribute-utils';
-<<<<<<< HEAD
-=======
 
 export {getMeshSize as _getMeshSize} from './common/mesh-utils/mesh-utils';
-
-// GENERAL FORMAT LOADERS
-export {default as JSONLoader} from './formats/json-loader/json-loader';
-export {default as CSVLoader} from './formats/csv-loader/csv-loader';
-export {default as XMLLoader} from './formats/xml-loader/xml-loader';
->>>>>>> GLTF Parser class, doc improvements
