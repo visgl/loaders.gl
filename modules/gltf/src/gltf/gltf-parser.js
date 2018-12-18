@@ -1,5 +1,5 @@
 import {getBytesFromComponentType, getSizeFromAccessorType} from '../utils/gltf-type-utils';
-import GLBParser from '../glb-loader/glb-parser';
+import GLBParser from '../glb/glb-parser';
 
 export default class GLTFParser {
   constructor(gltf) {

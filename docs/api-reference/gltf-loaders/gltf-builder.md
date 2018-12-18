@@ -1,10 +1,9 @@
 # `GLTFBuilder` class (@loaders.gl/gltf)
 
-The `GLTFBuilder` class allows applications to dynamically build up a hybrid JSON/binary GLB file.
+The `GLTFBuilder` class allows applications to use a "fluent" API to dynamically build up a hybrid JSON/binary GLB file. The `GLTFBuilder` would normally be used if you want to save custom mixed JSON/binary data in a "GLB envelope".
 
-The `GLTFBuilder` would normally be used if you want to save custom mixed JSON/binary data in a "GLB envelope".
-
-The `GLTFBuilder` class supports the `GLTFWriter` class.
+References:
+* For more information, see [glTF and GLB support]() in the Developer's Guide.
 
 
 ## Usage
@@ -61,33 +60,38 @@ Note: `encode()` is a one time operation. It should only be called once all data
 A version of `encode` that returns the final arrayBuffer together with the generated JSON. Note that the returned `arrayBuffer` contains the JSON and is identical to the `encodeAsGLB`.
 
 
-### packJSON(json : any [, options : Object]) : any
-
-Extracting binary fields from the supplied `json` data structure, placing these in compact binary chunks by calling the appropriate `add...` methods on the builder. The "stripped" JSON chunk will contain "JSON pointers" that the parser can use to restore the JSON structure on load.
-
-Note: While the extracted binary data IS added to the `GLTFBuilder` instance, the returned JSON chunk IS NOT automatically added, since the application needs to decide where to store it. Normally it should be added using one of the `addExtras`, `addExtension` or `addRequiredExtension` methods.
-
-
-### setApplicationData(key : String, data : any)
+### setApplicationData(key : String, data : any [, options: Object])
 
 Stores the supplied `data` in the given top-level field given by `key`.
 
+* `options.nopack` - Don't pack any typed arrays
+* `options.flattenArrays` - Pack (and flatten nested) standard JavaScript arrays into the binary chunk.
 
-### setExtraData(key : String, data : any)
+
+### setExtraData(key : String, data : any [, options: Object])
 
 Populates (merges into) the top-level glTF `extras` field, which the glTF specification reserves for application specific data.
 
+* `options.nopack` - Don't pack any typed arrays
+* `options.flattenArrays` - Pack (and flatten nested) standard JavaScript arrays into the binary chunk.
 
-### addExtension(extensionName : String, extension : any)
+
+### addExtension(extensionName : String, extension : any [, options: Object])
 
 Adds a top-level glTF extension object, and marks it as used.
 
+* `options.nopack` - Don't pack any typed arrays
+* `options.flattenArrays` - Pack (and flatten nested) standard JavaScript arrays into the binary chunk.
 
-### addRequiredExtension(extensionName : String, extension : any)
+
+### addRequiredExtension(extensionName : String, extension : any [, options: Object])
 
 Adds a top-level glTF extension object, and marks it as used and required.
 
 Note: If possible, use `addExtension` instead of `addRequiredExtension`. It is recommended to avoid using required extensions if possible, as they can reduce the ability to use glTF tools on the resulting file.
+
+* `options.nopack` - Don't pack any typed arrays
+* `options.flattenArrays` - Pack (and flatten nested) standard JavaScript arrays into the binary chunk.
 
 
 ### isImage(imageData)

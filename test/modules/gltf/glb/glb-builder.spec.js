@@ -1,8 +1,8 @@
 /* eslint-disable max-len */
 import test from 'tape-catch';
 
-import {GLTFBuilder} from '@loaders.gl/gltf';
-import unpackGLBBuffers from '@loaders.gl/gltf/glb-loader/unpack-glb-buffers';
+import {GLBBuilder} from '@loaders.gl/gltf';
+import unpackGLBBuffers from '@loaders.gl/gltf/glb/unpack-glb-buffers';
 
 const BUFFERS = [
   new Int8Array([3, 2, 3]),
@@ -18,7 +18,7 @@ function validateGLBJsonFields(t, builder, {numBuffers = 1, numBufferViews = 0, 
   t.equal(counts.images, numImages, `images is ${numImages}`);
 }
 
-test('GLTFBuilder#encode with null json', t => {
+test('GLBBuilder#encode with null json', t => {
   //  20 - header
   // 100 - json {"buffers":[{"byteLength":0}],"bufferViews":[],"accessors":[],"images":[],"meshes":[],"extras":null}
   //   8 - header
@@ -26,8 +26,8 @@ test('GLTFBuilder#encode with null json', t => {
 
   const TEST_JSON = null;
 
-  const builder = new GLTFBuilder();
-  builder.addExtraData('test', TEST_JSON);
+  const builder = new GLBBuilder();
+  builder.addApplicationData('extras', TEST_JSON);
   const arrayBuffer = builder.encodeAsGLB();
   const resultJson = builder.json;
 
@@ -38,7 +38,7 @@ test('GLTFBuilder#encode with null json', t => {
   t.end();
 });
 
-test('GLTFBuilder#encode with empty object json', t => {
+test('GLBBuilder#encode with empty object json', t => {
   //  20 - header
   //  98 - json {"buffers":[{"byteLength":0}],"bufferViews":[],"accessors":[],"images":[],"meshes":[],"extras":{}}
   //   2 - padding
@@ -46,10 +46,10 @@ test('GLTFBuilder#encode with empty object json', t => {
   // 128
   const TEST_JSON = {};
 
-  const builder = new GLTFBuilder();
-  builder.addExtraData('test', TEST_JSON);
+  const builder = new GLBBuilder();
+  builder.addApplicationData('extras', TEST_JSON);
   const arrayBuffer = builder.encodeAsGLB();
-  const resultJson = builder.json;
+  const resultJson = builder.json.extras;
 
   t.equal(arrayBuffer.byteLength, 128, '[] json encoded with size of 128');
   t.equal(Object.keys(resultJson).length, 0, 'json has 0 keys in object');
@@ -58,7 +58,7 @@ test('GLTFBuilder#encode with empty object json', t => {
   t.end();
 });
 
-test('GLTFBuilder#encode with simple object json', t => {
+test('GLBBuilder#encode with simple object json', t => {
   //  20 - header
   // 105 - json {"buffers":[{"byteLength":0}],"bufferViews":[],"accessors":[],"images":[],"meshes":[],"extras":{"num":1}}
   //   3 - padding
@@ -67,10 +67,10 @@ test('GLTFBuilder#encode with simple object json', t => {
 
   const TEST_JSON = {num: 1};
 
-  const builder = new GLTFBuilder();
-  builder.addExtraData('test', TEST_JSON);
+  const builder = new GLBBuilder();
+  builder.addApplicationData('extras', TEST_JSON);
   const arrayBuffer = builder.encodeAsGLB();
-  const resultJson = builder.json;
+  const resultJson = builder.json.extras;
 
   t.equal(arrayBuffer.byteLength, 136, 'object with 1 scalar json encoded with size of 136');
   t.equal(Object.keys(resultJson).length, 1, 'json has 1 keys in object');
@@ -79,7 +79,7 @@ test('GLTFBuilder#encode with simple object json', t => {
   t.end();
 });
 
-test('GLTFBuilder#encode with typed array json', t => {
+test('GLBBuilder#encode with typed array json', t => {
   //  20 - header
   // 232 - json {"buffers":[{"byteLength":12}],"bufferViews":[{"buffer":0,"byteOffset":0,"byteLength":12}],"accessors":[{"bufferView":0,"type":"VEC3","componentType":5126,"count":1}],"images":[],,"meshes":[],"extras":{"typedArray":"#/accessors/0"}}
   //   8 - header
@@ -87,11 +87,11 @@ test('GLTFBuilder#encode with typed array json', t => {
   // 272
   const TEST_JSON = {typedArray: new Float32Array([10.0, 11.0, 12.0])};
 
-  const builder = new GLTFBuilder();
-  builder.addExtraData('test', TEST_JSON);
+  const builder = new GLBBuilder();
+  builder.addApplicationData('extras', TEST_JSON);
   const arrayBuffer = builder.encodeAsGLB();
 
-  const resultJson = builder.json;
+  const resultJson = builder.json.extras;
 
   t.equal(arrayBuffer.byteLength, 272, 'object with 1 typed array json encoded with size of 272');
   t.equal(Object.keys(resultJson).length, 1, 'json has 1 keys in object');
@@ -101,7 +101,7 @@ test('GLTFBuilder#encode with typed array json', t => {
   t.end();
 });
 
-test('GLTFBuilder#encode with nested typed array json', t => {
+test('GLBBuilder#encode with nested typed array json', t => {
   //  20 - header
   // 242 - json {"buffers":[{"byteLength":12}],"bufferViews":[{"buffer":0,"byteOffset":0,"byteLength":12}],"accessors":[{"bufferView":0,"type":"VEC3","componentType":5126,"count":1}],"images":[],"meshes":[],"extras":{"nested":{"typedArray":"#/accessors/0"}}}
   //   2 - padding
@@ -110,21 +110,20 @@ test('GLTFBuilder#encode with nested typed array json', t => {
   // 284
   const TEST_JSON = {nested: {typedArray: new Float32Array([10.0, 11.0, 12.0])}};
 
-  const builder = new GLTFBuilder();
-  builder.addExtraData('test', TEST_JSON);
-  builder.packJSON();
+  const builder = new GLBBuilder();
+  builder.addApplicationData('extras', TEST_JSON);
   const arrayBuffer = builder.encodeAsGLB();
 
-  const packedJSON = builder.json;
+  const resultJSON = builder.json.extras;
   t.equal(arrayBuffer.byteLength, 284, 'nested object with 1 typed array json encoded with size of 284');
-  t.equal(Object.keys(packedJSON).length, 1, 'json has 1 keys in object');
-  t.ok(typeof packedJSON.nested.typedArray === 'string', 'encoded array should be an accessor string');
+  t.equal(Object.keys(resultJSON).length, 1, 'json has 1 keys in object');
+  t.ok(typeof resultJSON.nested.typedArray === 'string', 'encoded array should be an accessor string');
   validateGLBJsonFields(t, builder, {numBufferViews: 1, numAccessors: 1, numImages: 0});
 
   t.end();
 });
 
-test('GLTFBuilder#encode complex', t => {
+test('GLBBuilder#encode complex', t => {
   // {
   // "buffers":[{"byteLength":36}],
   // "bufferViews":[{"buffer":0,"byteOffset":0,"byteLength":12},{"buffer":0,"byteOffset":12,"byteLength":12},{"buffer":0,"byteOffset":24,"byteLength":12}],
@@ -143,18 +142,18 @@ test('GLTFBuilder#encode complex', t => {
     nestedTypedArray: [new Float32Array([10.0, 11.0, 12.0]), new Float32Array([20.0, 21.0, 22.0])]
   };
 
-  const builder = new GLTFBuilder();
-  const packedJSON = builder.packJSON(TEST_JSON);
-  builder.addExtraData('test', packedJSON);
+  const builder = new GLBBuilder();
+  builder.addApplicationData('extras', TEST_JSON);
   const arrayBuffer = builder.encodeAsGLB();
 
+  const resultJSON = builder.json.extras;
   t.equal(arrayBuffer.byteLength, 680, 'complex json encoded with size of 680');
-  t.equal(Object.keys(packedJSON).length, 7, 'json has 7 keys in object');
+  t.equal(Object.keys(resultJSON).length, 7, 'json has 7 keys in object');
   t.end();
 });
 
 test('pack-and-unpack-binary-buffers', t => {
-  const glbBuilder = new GLTFBuilder();
+  const glbBuilder = new GLBBuilder();
 
   // Add buffers
   for (const buffer of BUFFERS) {

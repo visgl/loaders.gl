@@ -2,7 +2,7 @@
 import test from 'tape-catch';
 import {toLowPrecision} from 'loaders.gl/test/test-utils';
 
-import {GLBLoader, GLTFBuilder} from '@loaders.gl/gltf';
+import {GLBParser, GLBBuilder} from '@loaders.gl/gltf';
 import packBinaryJson from '@loaders.gl/gltf/packed-json/pack-binary-json';
 
 const TEST_CASES = {
@@ -45,8 +45,8 @@ test('GLB#encode-and-parse', t => {
   for (const tcName in TEST_CASES) {
     const TEST_JSON = TEST_CASES[tcName];
 
-    const arrayBuffer = new GLTFBuilder().addExtras(TEST_JSON).encode();
-    const json = GLBLoader.parseWithMetadata(arrayBuffer);
+    const arrayBuffer = new GLBBuilder().addApplicationData('extras', TEST_JSON).encodeAsGLB();
+    const json = new GLBParser(arrayBuffer).parseWithMetadata();
 
     t.ok(Array.isArray(json.buffers), `${tcName} Encoded and parsed GLB - has JSON buffers field`);
     t.ok(
@@ -68,12 +68,12 @@ test('GLB#encode-and-parse', t => {
   t.end();
 });
 
-test('GLBLoader#encode-and-parse#full', t => {
+test('GLB#encode-and-parse#full', t => {
   const tcName = 'full';
   const TEST_JSON = TEST_CASES[tcName];
 
-  const arrayBuffer = new GLTFBuilder().addExtension('UBER_extension', TEST_JSON).encode();
-  const json = GLBLoader.parseWithMetadata(arrayBuffer);
+  const arrayBuffer = new GLBBuilder().addApplicationData('extras', TEST_JSON).encodeAsGLB();
+  const json = new GLBParser(arrayBuffer).parseWithMetadata();
 
   // t.comment(JSON.stringify(TEST_JSON, null, 2));
   // t.comment(JSON.stringify(json, null, 2))
@@ -93,7 +93,7 @@ test('GLBLoader#encode-and-parse#full', t => {
   delete json.accessors;
 
   t.deepEqual(
-    json.extensions.UBER_extension.state_updates[0].primitives.tracklets[0],
+    json.extras.state_updates[0].primitives.tracklets[0],
     packBinaryJson(TEST_JSON.state_updates[0].primitives.tracklets[0]),
     'Encoded and parsed GLB did not change data'
   );

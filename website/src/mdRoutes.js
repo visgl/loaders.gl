@@ -54,6 +54,10 @@ export default [
             markdown: require('../../docs/developer-guide/category-pointcloud.md')
           },
           {
+            name: 'glTF/GLB Category Loaders',
+            markdown: require('../../docs/developer-guide/category-pointcloud.md')
+          },
+          {
             name: 'glbdump',
             markdown: require('../../docs/developer-guide/glbdump.md')
           }
@@ -63,8 +67,17 @@ export default [
         name: 'API Reference',
         children: [
           {
-            name: 'loadFile',
-            markdown: require('../../docs/api-reference/core/load-file.md')
+            name: 'Core Functions',
+            children: [
+              {
+                name: 'loadFile',
+                markdown: require('../../docs/api-reference/core/load-file.md')
+              },
+              {
+                name: 'Image Data Utilities',
+                markdown: require('../../docs/api-reference/core/image-data-utils.md')
+              }
+            ]
           },
           {
             name: 'GLTF Loaders',
