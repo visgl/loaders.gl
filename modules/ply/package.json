@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/ply",
-  "version": "0.4.5",
+  "version": "0.4.6",
   "description": "Framework-independent loader for the PLY format",
   "license": "MIT",
   "publishConfig": {
@@ -35,6 +35,6 @@
   },
   "sideEffects": false,
   "dependencies": {
-    "@loaders.gl/core": "^0.4.5"
+    "@loaders.gl/core": "^0.4.6"
   }
 }
