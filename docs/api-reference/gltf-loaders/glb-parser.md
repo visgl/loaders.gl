@@ -2,6 +2,9 @@
 
 The `GLBLoader` module exposes the `GLBParser` class with the following methods
 
+References:
+* For more information, see [glTF and GLB support]() in the Developer's Guide.
+
 
 ## Usage
 

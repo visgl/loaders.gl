@@ -2,7 +2,7 @@
 import test from 'tape-catch';
 
 import {GLBBuilder, GLBParser} from '@loaders.gl/gltf';
-import unpackGLBBuffers from '@loaders.gl/gltf/glb-loader/unpack-glb-buffers';
+import unpackGLBBuffers from '@loaders.gl/gltf/glb/unpack-glb-buffers';
 
 import TEST_JSON from 'test-data/glb/test-data.json';
 
@@ -20,9 +20,9 @@ test('GLB#encode-and-decode', t => {
     glbBuilder.addBuffer(buffer, {size: 1});
   }
 
-  glbBuilder.addExtras(TEST_JSON);
+  glbBuilder.addApplicationData('extras', TEST_JSON);
 
-  const glbFileBuffer = glbBuilder.encode();
+  const glbFileBuffer = glbBuilder.encodeAsGLB();
 
   t.equal(glbFileBuffer.byteLength, 1620, 'should be equal');
 
