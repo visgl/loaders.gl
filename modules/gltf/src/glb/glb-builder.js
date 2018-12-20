@@ -158,16 +158,25 @@ export default class GLBBuilder {
     const targetArray = new Uint8Array(arrayBuffer);
 
     // Copy each array into
-    let byteOffset = 0;
+    let dstByteOffset = 0;
     for (let i = 0; i < this.sourceBuffers.length; i++) {
       const sourceBuffer = this.sourceBuffers[i];
-      const byteLength = sourceBuffer.byteLength;
 
       // Pack buffer onto the big target array
-      const sourceArray = new Uint8Array(sourceBuffer.buffer);
-      targetArray.set(sourceArray, byteOffset);
+      //
+      // 'sourceBuffer.data.buffer' could be a view onto a larger buffer.
+      // We MUST use this constructor to ensure the byteOffset and byteLength is
+      // set to correct values from 'sourceBuffer.data' and not the underlying
+      // buffer for set() to work properly.
+      // TODO -replace with a copy util
+      const srcByteOffset = sourceBuffer.byteOffset;
+      const srcByteLength = sourceBuffer.byteLength;
+      const sourceArray = new Uint8Array(sourceBuffer.buffer, srcByteOffset, srcByteLength);
 
-      byteOffset += padTo4Bytes(byteLength);
+      // Pack buffer onto the big target array
+      targetArray.set(sourceArray, dstByteOffset);
+
+      dstByteOffset += padTo4Bytes(srcByteLength);
     }
 
     // Update the glTF BIN CHUNK byte length

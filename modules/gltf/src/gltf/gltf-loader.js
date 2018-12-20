@@ -8,7 +8,7 @@ export function parseTextGLTF(json, options = {}) {
 }
 
 export function parseBinaryGLTF(glbArrayBuffer, options = {}) {
-  const {json, arrayBuffer} = new GLBParser(glbArrayBuffer).parseWithMetadata(options);
+  const {json, arrayBuffer} = new GLBParser(glbArrayBuffer).parse(options);
   return new GLTFParser(json, arrayBuffer).parse(options);
 }
 

@@ -30,7 +30,7 @@ test('GLTFParse#parse JSON', t => {
 });
 
 test('GLTFParse#parse binary', t => {
-  const json = new GLBParser(GLTF_BINARY).parseWithMetadata({});
+  const json = new GLBParser(GLTF_BINARY).parse().getJSON();
   const gltf = new GLTFParser(json).resolve({});
   t.ok(gltf, 'GLTFParser returned parsed data');
 
