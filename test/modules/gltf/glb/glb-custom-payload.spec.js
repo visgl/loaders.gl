@@ -5,34 +5,23 @@ import {toLowPrecision} from 'loaders.gl/test/test-utils';
 import {GLTFBuilder, GLTFParser} from '@loaders.gl/gltf';
 import {toBuffer} from '@loaders.gl/core';
 
-const MAGIC_XVIZ = 0x5856495a; // XVIZ in Big-Endian ASCII
-const MAGIC_GLTF = 0x676c5446; // glTF in Big-Endian ASCII
-const BE = false; // Magic needs to be written as BE
+import CUSTOM_PAYLOAD from './custom-payload.json';
 
-function encodeToGLB(xvizJson, options) {
+function encodeToGLB(testJson, options) {
   const gltfBuilder = new GLTFBuilder();
 
-  // TODO/ib - the following options would break backwards compatibility
-  // gltfBuilder.addExtraData('xviz', xvizJson, options)
-  // gltfBuilder.addExtension('UBER_xviz', xvizJson, options);
-  // gltfBuilder.addRequiredExtension('UBER_xviz', xvizJson, options);
-
   // As permitted by glTF, we put all XVIZ data in a top-level subfield.
-  gltfBuilder.addApplicationData('xviz', xvizJson, options);
+  gltfBuilder.addApplicationData('test', testJson, options);
 
   return gltfBuilder.encodeAsGLB(options);
 }
 
 function parseFromGLB(arrayBuffer) {
   const gltfParser = new GLTFParser(arrayBuffer);
-  gltfParser.parse({magic: MAGIC_XVIZ});
-
-  // TODO/ib - the following options would break backwards compatibility
-  // return gltfParser.getExtras('xviz')
-  // return gltfParser.getExtension('UBER_xviz');
+  gltfParser.parse();
 
   // TODO/ib - Fix when loaders.gl API is fixed
-  return gltfParser.getApplicationData('xviz');
+  return gltfParser.getApplicationData('test');
 }
 
 const TEST_CASES = {
@@ -68,7 +57,7 @@ const TEST_CASES = {
     ]
   },
 
-  full: require('./sample.json')
+  full: CUSTOM_PAYLOAD
 };
 
 test('XVIZLoader#encode-and-parse', t => {
@@ -106,7 +95,7 @@ function almostEqual(a, b, tolerance = 0.00001) {
   return Math.abs(a - b) < tolerance;
 }
 
-function validateLidarData(t, lidarData) {
+function validateCustomPayload(t, lidarData) {
   t.equal(lidarData.vertices.length, 9, 'vertices has 9 floats');
   t.ok(almostEqual(lidarData.vertices[0], 1.0), 'vertices[0] is 1.0');
   t.ok(almostEqual(lidarData.vertices[1], 2.0), 'vertices[1] is 2.0');
@@ -138,21 +127,21 @@ test('pack-unpack-pack-json', t => {
     ]
   };
 
-  const xvizBinary = encodeToGLB(sample_lidar, options);
-  const xvizBinaryDecoded = parseFromGLB(xvizBinary);
+  const testBinary = encodeToGLB(sample_lidar, options);
+  const testBinaryDecoded = parseFromGLB(testBinary);
 
-  validateLidarData(t, xvizBinaryDecoded);
+  validateCustomPayload(t, testBinaryDecoded);
 
-  frame.state_updates[0].primitives.lidarPoints = xvizBinaryDecoded;
+  frame.state_updates[0].primitives.lidarPoints = testBinaryDecoded;
 
   const frameBinary = encodeToGLB(frame, options);
   // TODO/ib - investigate why byteLengh this has increased?
   // t.equal(frameBinary.byteLength, 664);
   t.equal(frameBinary.byteLength, 708);
 
-  const xvizBinaryDecoded2 = parseFromGLB(frameBinary);
-  const lidar = xvizBinaryDecoded2.state_updates[0].primitives.lidarPoints;
-  validateLidarData(t, xvizBinaryDecoded);
+  const testBinaryDecoded2 = parseFromGLB(frameBinary);
+  const lidar = testBinaryDecoded2.state_updates[0].primitives.lidarPoints;
+  validateCustomPayload(t, testBinaryDecoded);
 
   t.end();
 });
