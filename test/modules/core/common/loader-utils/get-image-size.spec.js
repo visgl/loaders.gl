@@ -3,31 +3,41 @@
 
 /* eslint-disable max-len, max-statements */
 import test from 'tape-catch';
-import {getImageSize} from '@loaders.gl/core/common/loader-utils/get-image-size';
-
 import path from 'path';
 
-let testFiles;
+import {getImageSize} from '@loaders.gl/core';
+import {loadBinaryFile} from '@loaders.gl/core';
 
-// only load test files under node.js for now
-function loadTestFiles() {
-  const fs = module.require && module.require('fs');
-  if (!testFiles && fs) {
-    testFiles = new Map(['png', 'jpeg', 'gif', 'bmp', 'tiff'].map(type => {
-      const imagePath = path.resolve(__dirname, `../../../../data/images/img1-preview.${type}`);
-      const image = fs.readFileSync(imagePath);
-      return [type, image];
-    }));
-  }
-  return testFiles;
-}
+const PNG_BINARY =
+  loadBinaryFile(path.resolve(__dirname, '../../../../data/images/img1-preview.png')) ||
+  require('test-data/images/img1-preview.png');
+
+const JPEG_BINARY =
+  loadBinaryFile(path.resolve(__dirname, '../../../../data/images/img1-preview.jpeg')) ||
+  require('test-data/images/img1-preview.jpeg');
+
+const GIF_BINARY =
+  loadBinaryFile(path.resolve(__dirname, '../../../../data/images/img1-preview.gif')) ||
+  require('test-data/images/img1-preview.gif');
+
+const BMP_BINARY =
+  loadBinaryFile(path.resolve(__dirname, '../../../../data/images/img1-preview.bmp')) ||
+  require('test-data/images/img1-preview.bmp');
+
+const TIFF_BINARY =
+  loadBinaryFile(path.resolve(__dirname, '../../../../data/images/img1-preview.tiff')) ||
+  require('test-data/images/img1-preview.png');
+
+const TEST_FILES = [
+  ['png', PNG_BINARY],
+  ['jpeg', JPEG_BINARY],
+  ['gif', GIF_BINARY],
+  ['bmp', BMP_BINARY],
+  ['tiff', TIFF_BINARY]
+];
 
 function testImage(t, typeToTest, acceptableTypes, canThrow) {
-  const files = loadTestFiles();
-  if (!files) {
-    t.comment('get-image-size tests currently only work under Node.js');
-    return;
-  }
+  const files = TEST_FILES;
 
   acceptableTypes = new Set(acceptableTypes);
   for (const [type, image] of files) {
