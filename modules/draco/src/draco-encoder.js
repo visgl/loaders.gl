@@ -185,7 +185,7 @@ export default class DRACOEncoder {
     // TODO - handle different attribute types
     default:
       console.log('DRACO adding attribute',
-        dracoMesh, dracoAttributeType, attribute.length, size, attribute);
+        dracoMesh, dracoAttributeType, attribute.length, size); // , attribute);
       this.dracoMeshBuilder.AddFloatAttributeToMesh(
         dracoMesh, dracoAttributeType, attribute.length, size, attribute
       );

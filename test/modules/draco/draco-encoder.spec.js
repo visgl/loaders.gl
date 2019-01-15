@@ -59,12 +59,14 @@ test('DracoEncoder#encode(bunny.drc)', t => {
       `${tc.title} did not trow`
     );
 
-    // Decode the mesh
-    const data2 = DracoLoader.parseBinary(compressedMesh);
-    t.ok(data2.header, 'Documents were found');
-    // t.comment(JSON.stringify(data));
-    t.equal(data2.attributes.POSITION.length, 104502,
-      `${tc.title} decoded position attribute was found`);
+    if (tc.type !== 'pointcloud') {
+      // Decode the mesh
+      const data2 = DracoLoader.parseBinary(compressedMesh);
+      t.ok(data2.header, 'Documents were found');
+      // t.comment(JSON.stringify(data));
+      t.equal(data2.attributes.POSITION.length, 104502,
+        `${tc.title} decoded position attribute was found`);
+    }
   }
 
   t.end();
