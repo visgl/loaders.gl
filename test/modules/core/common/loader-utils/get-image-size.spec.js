@@ -80,6 +80,6 @@ test('getImageSize#bmp', t => {
 });
 
 test('getImageSize#all', t => {
-  testImage(t, 'all', ['png', 'jpeg', 'gif', 'bmp'], true);
+  testImage(t, 'all', ['png', 'jpeg', 'gif', 'bmp']);
   t.end();
 });

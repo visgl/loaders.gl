@@ -36,6 +36,6 @@
   "sideEffects": false,
   "dependencies": {
     "@loaders.gl/core": "^0.4.6",
-    "draco3d": "^1.3.3"
+    "draco3d": "^1.3.4"
   }
 }

@@ -35,5 +35,8 @@ test('PLYLoader#parseBinary', t => {
   // Check loader specific results
   t.ok(data.loaderData.header, 'Original header found');
 
+  const POSITION = data.glTFAttributeMap.POSITION;
+  t.equal(data.attributes[POSITION].value.length, 107841, 'POSITION attribute was found');
+
   t.end();
 });
