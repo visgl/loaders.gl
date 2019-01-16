@@ -99,7 +99,7 @@ export default class DRACOEncoder {
       if (!(encodedLen > 0)) {
         throw new Error('Draco encoding failed.');
       }
-      
+
       this.log(`DRACO encoded ${dracoPointCloud.num_points()} points
         with ${dracoPointCloud.num_attributes()} attributes into ${encodedLen} bytes`);
 

@@ -114,8 +114,6 @@ export default class DRACODecoder {
 
     this.getPositionAttributeMetadata(positionAttribute);
 
-    attributes.POSITION = positionAttribute;
-
     // For meshes, we need indices to define the faces.
     if (geometryType === this.decoderModule.TRIANGULAR_MESH) {
       attributes.indices = this.drawMode === 'TRIANGLE_STRIP' ?
