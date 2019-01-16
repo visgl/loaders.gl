@@ -1,8 +1,14 @@
-import {OrbitView, COORDINATE_SYSTEM} from 'deck.gl';
-import {loadFile, PLYLoader} from 'loaders.gl';
+import {OrbitView, COORDINATE_SYSTEM} from '@deck.gl/core';
+import {loadFile, loadBinaryFile} from '@loaders.gl/core';
+import {PLYLoader} from '@loaders.gl/ply';
+import {DracoLoader} from '@loaders.gl/draco';
 
 import MeshLayer from './mesh-layer/mesh-layer';
 import {convertToMesh} from './test-utils';
+
+const PLY_BINARY =
+  // loadBinaryFile(path.resolve(__dirname, '../../data/ply/bun_zipper.ply')) ||
+  require('test-data/ply/bun_zipper.ply');
 
 export const WIDTH = 800;
 export const HEIGHT = 450;
@@ -26,14 +32,37 @@ export const TEST_CASES = [
     renderingTimes: 2,
     layers: [
       new MeshLayer({
-        id: 'obj-loader-test',
+        id: 'ply-loader-test',
         data: defaultData,
         opacity: 0.5,
         coordinateSystem: COORDINATE_SYSTEM.IDENTITY,
         getPosition: d => d.position,
-        mesh: loadFile('test/modules/core/data/ply/bun_zipper.ply', PLYLoader).then(convertToMesh)
+        mesh: convertToMesh(PLYLoader.parseBinary(PLY_BINARY))
       })
     ],
     referenceImageUrl: './test/render/golden-images/ply-loader.png'
   }
+  /*
+  ,
+  {
+    name: 'drc-loader-test',
+    views: defaultViews,
+    viewState: {
+      lookAt: [0, 0.1, 0],
+      distance: 0.3
+    },
+    renderingTimes: 2,
+    layers: [
+      new MeshLayer({
+        id: 'drc-loader-test',
+        data: defaultData,
+        opacity: 0.5,
+        coordinateSystem: COORDINATE_SYSTEM.IDENTITY,
+        getPosition: d => d.position,
+        mesh: loadFile('test/modules/core/data/drc/bunny.drc', PLYLoader).then(convertToMesh)
+      })
+    ],
+    referenceImageUrl: './test/render/golden-images/ply-loader.png'
+  }
+  */
 ];

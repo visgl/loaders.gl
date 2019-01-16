@@ -14,5 +14,9 @@ export function loadFile(url, loader, options = {}) {
     return Promise.reject(new Error(`Could not load ${url} using ${loader.name} loader`));
   }
 
-  return fetch(url, options).then(res => res[dataType]()).then(data => parser(data, options));
+  return fetch(url, options).then(res => res[dataType]()).then(data => {
+    // NOTE: keep this as two statements to facilitate breakpoint setting here when debugging
+    const result = parser(data, options);
+    return result;
+  });
 }

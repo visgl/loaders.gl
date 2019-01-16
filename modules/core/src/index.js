@@ -1,6 +1,6 @@
 // LOADING FUNCTIONS
 
-export {loadFile} from './common/file-utils/loader';
+export {loadFile} from './common/file-utils/load-file';
 export {loadBinaryFile} from './common/file-utils/load-binary-file';
 export {smartFetch, smartParse} from './common/file-utils/smart-fetch';
 export {saveBinaryFile} from './common/file-utils/save-binary-file';
