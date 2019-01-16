@@ -9,14 +9,14 @@ const GEOMETRY_TYPE = {
 };
 
 // Native Draco attribute names to GLTF attribute names.
-const ATTRIBUTE_MAP = {
+const DRACO_TO_GLTF_ATTRIBUTE_NAME_MAP = {
   POSITION: 'POSITION',
   NORMAL: 'NORMAL',
   COLOR: 'COLOR_0',
   TEX_COORD: 'TEXCOORD_0'
 };
 
-const DATA_TYPE = {
+const DRACO_DATA_TYPE_TO_TYPED_ARRAY_MAP = {
   1: Int8Array,
   2: Uint8Array,
   3: Int16Array,
@@ -152,7 +152,7 @@ export default class DRACODecoder {
     // const attributeUniqueIdMap = {};
 
     // Add native Draco attribute type to geometry.
-    for (const attributeName in ATTRIBUTE_MAP) {
+    for (const attributeName in DRACO_TO_GLTF_ATTRIBUTE_NAME_MAP) {
       // The native attribute type is only used when no unique Id is provided.
       // For example, loading .drc files.
 
@@ -164,7 +164,7 @@ export default class DRACODecoder {
         const {typedArray} = this.getAttributeTypedArray(
           decoder, dracoGeometry, dracoAttribute, attributeName
         );
-        attributes[ATTRIBUTE_MAP[attributeName]] = typedArray;
+        attributes[DRACO_TO_GLTF_ATTRIBUTE_NAME_MAP[attributeName]] = typedArray;
       }
       // }
     }
@@ -219,7 +219,7 @@ export default class DRACODecoder {
       throw new Error(message);
     }
 
-    const attributeType = DATA_TYPE[dracoAttribute.data_type()];
+    const attributeType = DRACO_DATA_TYPE_TO_TYPED_ARRAY_MAP[dracoAttribute.data_type()];
     const numComponents = dracoAttribute.num_components();
     const numPoints = dracoGeometry.num_points();
     const numValues = numPoints * numComponents;
