@@ -17,19 +17,20 @@
 
 const draco3d = require('draco3d');
 
-const DEFAULT_ENCODING_OPTIONS = {
-  speed: [5, 5],
-  method: 'MESH_EDGEBREAKER_ENCODING',
-  quantization: {
-    POSITION: 10
-  }
-};
+// const DEFAULT_ENCODING_OPTIONS = {
+//   method: 'MESH_EDGEBREAKER_ENCODING',
+//   speed: [5, 5],
+//   quantization: {
+//     POSITION: 10
+//   }
+// };
 
 export default class DRACOEncoder {
   constructor() {
     this.dracoEncoderModule = draco3d.createEncoderModule({});
     this.dracoEncoder = new this.dracoEncoderModule.Encoder();
     this.dracoMeshBuilder = new this.dracoEncoderModule.MeshBuilder();
+    // // this.setOptions(DEFAULT_ENCODING_OPTIONS);
   }
 
   destroy() {
@@ -47,30 +48,31 @@ export default class DRACOEncoder {
   }
 
   // Set encoding options.
-  setOptions(opts) {
-    if ('speed' in opts) {
-      this.dracoEncoder.SetSpeedOptions(...opts.speed);
-    }
-    if ('method' in opts) {
-      const dracoMethod = this.dracoEncoderModule[opts.method];
-      this.dracoEncoder.SetEncodingMethod(dracoMethod);
-    }
-    if ('quantization' in opts) {
-      for (const attribute in opts.quantization) {
-        const bits = opts.quantization[attribute];
-        const dracoPosition = this.dracoEncoderModule[attribute];
-        this.dracoEncoder.SetAttributeQuantization(dracoPosition, bits);
-      }
-    }
+  setOptions(opts = {}) {
+    // if ('speed' in opts) {
+    //   this.dracoEncoder.SetSpeedOptions(...opts.speed);
+    // }
+    // if ('method' in opts) {
+    //   const dracoMethod = this.dracoEncoderModule[opts.method];
+    //   // if (dracoMethod === undefined) {}
+    //   this.dracoEncoder.SetEncodingMethod(dracoMethod);
+    // }
+    // if ('quantization' in opts) {
+    //   for (const attribute in opts.quantization) {
+    //     const bits = opts.quantization[attribute];
+    //     const dracoPosition = this.dracoEncoderModule[attribute];
+    //     this.dracoEncoder.SetAttributeQuantization(dracoPosition, bits);
+    //   }
+    // }
   }
 
   encodePointCloud(attributes) {
+    // Build a `DracoPointCloud` from the input data
     const dracoPointCloud = this._createDracoPointCloud(attributes);
+
     const dracoData = new this.dracoEncoderModule.DracoInt8Array();
 
     try {
-      this.setOptions(DEFAULT_ENCODING_OPTIONS);
-
       const encodedLen =
         this.dracoEncoder.EncodePointCloudToDracoBuffer(dracoPointCloud, dracoData);
       if (!(encodedLen > 0)) {
@@ -84,7 +86,7 @@ export default class DRACOEncoder {
         outputData[i] = dracoData.GetValue(i);
       }
 
-      return outputData;
+      return outputBuffer;
 
     } finally {
       this.dracoEncoderModule.destroy(dracoData);
@@ -93,14 +95,15 @@ export default class DRACOEncoder {
   }
 
   encodeMesh(attributes) {
+    // Build a `DracoMesh` from the input data
     const dracoMesh = this._createDracoMesh(attributes);
+
     const dracoData = new this.dracoEncoderModule.DracoInt8Array();
 
     try {
       // this.setOptions(DEFAULT_ENCODING_OPTIONS);
-
       const encodedLen = this.dracoEncoder.EncodeMeshToDracoBuffer(dracoMesh, dracoData);
-      if (!(encodedLen > 0)) {
+      if (encodedLen <= 0) {
         throw new Error('Draco encoding failed.');
       }
 
@@ -111,7 +114,7 @@ export default class DRACOEncoder {
         outputData[i] = dracoData.GetValue(i);
       }
 
-      return outputData;
+      return outputBuffer;
 
     } finally {
       this.dracoEncoderModule.destroy(dracoData);
@@ -176,11 +179,13 @@ export default class DRACOEncoder {
     switch (dracoAttributeType) {
     case 'indices':
       const numFaces = attribute.length / 3;
-      this.dracoMeshBuilder.addFaces(dracoMesh, numFaces, attribute);
+      this.dracoMeshBuilder.AddFacesToMesh(dracoMesh, numFaces, attribute);
       break;
 
     // TODO - handle different attribute types
     default:
+      console.log('DRACO adding attribute',
+        dracoMesh, dracoAttributeType, attribute.length, size); // , attribute);
       this.dracoMeshBuilder.AddFloatAttributeToMesh(
         dracoMesh, dracoAttributeType, attribute.length, size, attribute
       );

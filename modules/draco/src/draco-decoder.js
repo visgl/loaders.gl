@@ -80,7 +80,7 @@ export default class DRACODecoder {
         throw new Error(message);
       }
 
-      this.extractDRACOGeometry(decoder, dracoGeometry, data);
+      this.extractDRACOGeometry(decoder, dracoGeometry, data, geometryType);
 
     } finally {
       this.decoderModule.destroy(decoder);
@@ -106,12 +106,11 @@ export default class DRACODecoder {
     // For meshes, we need indices to define the faces.
     if (geometryType === this.decoderModule.TRIANGULAR_MESH) {
       attributes.indices = this.drawMode === 'TRIANGLE_STRIP' ?
-        this.getMeshStripIndices() :
-        this.getMeshFaceIndices();
+        this.getMeshStripIndices(decoder, dracoGeometry) :
+        this.getMeshFaceIndices(decoder, dracoGeometry);
     }
 
-    attributes.drawMode = this.drawMode;
-
+    geometry.drawMode = this.drawMode;
     geometry.attributes = attributes;
 
     return geometry;
