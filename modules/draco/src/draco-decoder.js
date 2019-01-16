@@ -10,10 +10,20 @@ const GEOMETRY_TYPE = {
 
 // Native Draco attribute names to GLTF attribute names.
 const ATTRIBUTE_MAP = {
-  position: 'POSITION',
-  normal: 'NORMAL',
-  color: 'COLOR_0',
-  uv: 'TEXCOORD_0'
+  POSITION: 'POSITION',
+  NORMAL: 'NORMAL',
+  COLOR: 'COLOR_0',
+  TEX_COORD: 'TEXCOORD_0'
+};
+
+const DATA_TYPE = {
+  1: Int8Array,
+  2: Uint8Array,
+  3: Int16Array,
+  4: Uint16Array,
+  5: Int32Array,
+  6: Uint32Array,
+  9: Float32Array
 };
 
 export default class DRACODecoder {
@@ -97,7 +107,10 @@ export default class DRACODecoder {
     // Structure for converting to WebGL framework specific attributes later
     const attributes = this.getAttributes(decoder, dracoGeometry);
 
-    const positionAttribute = this.getPositionAttribute(decoder, dracoGeometry);
+    const positionAttribute = attributes.POSITION;
+    if (!positionAttribute) {
+      throw new Error('DRACO decompressor: No position attribute found.');
+    }
 
     this.getPositionAttributeMetadata(positionAttribute);
 
@@ -114,19 +127,6 @@ export default class DRACODecoder {
     geometry.attributes = attributes;
 
     return geometry;
-  }
-
-  getPositionAttribute(decoder, dracoGeometry) {
-    // Ensure we at least have position attribute.
-    const positionAttributeId = decoder.GetAttributeId(dracoGeometry, this.decoderModule.POSITION);
-    if (positionAttributeId === -1) {
-      throw new Error('DRACO decompressor: No position attribute found.');
-    }
-
-    const dracoAttribute = decoder.GetAttribute(dracoGeometry, positionAttributeId);
-    const {typedArray} = this.getAttributeTypedArray(
-      decoder, dracoGeometry, dracoAttribute, Float32Array, 'position');
-    return typedArray;
   }
 
   getPositionAttributeMetadata(positionAttribute) {
@@ -161,9 +161,10 @@ export default class DRACODecoder {
       const attributeId = decoder.GetAttributeId(dracoGeometry, attributeType);
       if (attributeId !== -1) {
         const dracoAttribute = decoder.GetAttribute(dracoGeometry, attributeId);
-        this.getAttributeTypedArray(
-          decoder, dracoGeometry, dracoAttribute, Float32Array, attributeName
+        const {typedArray} = this.getAttributeTypedArray(
+          decoder, dracoGeometry, dracoAttribute, attributeName
         );
+        attributes[ATTRIBUTE_MAP[attributeName]] = typedArray;
       }
       // }
     }
@@ -211,13 +212,14 @@ export default class DRACODecoder {
     return indices;
   }
 
-  getAttributeTypedArray(decoder, dracoGeometry, dracoAttribute, attributeType, attributeName) {
+  getAttributeTypedArray(decoder, dracoGeometry, dracoAttribute, attributeName) {
     if (dracoAttribute.ptr === 0) {
       const message = `DRACO decode bad attribute ${attributeName}`;
       // console.error(message);
       throw new Error(message);
     }
 
+    const attributeType = DATA_TYPE[dracoAttribute.data_type()];
     const numComponents = dracoAttribute.num_components();
     const numPoints = dracoGeometry.num_points();
     const numValues = numPoints * numComponents;

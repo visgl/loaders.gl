@@ -1,7 +1,5 @@
 import {OrbitView, COORDINATE_SYSTEM} from '@deck.gl/core';
-import {loadFile, loadBinaryFile} from '@loaders.gl/core';
 import {PLYLoader} from '@loaders.gl/ply';
-import {DracoLoader} from '@loaders.gl/draco';
 
 import MeshLayer from './mesh-layer/mesh-layer';
 import {convertToMesh} from './test-utils';

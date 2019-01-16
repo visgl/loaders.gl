@@ -19,11 +19,11 @@ new DracoEncoder();
 Creates a `DracoEncoder` instance
 
 
-### encodeAsMesh(attributes : Object) : ArrayBuffer
+### encodeMesh(attributes : Object) : ArrayBuffer
 
 Encodes attributes as a DRACO mesh.
 
 
-### encodeAsPointCloud(attributes: Object) : ArrayBuffer
+### encodePointCloud(attributes: Object) : ArrayBuffer
 
 Encodes attributes as a DRACO point cloud.

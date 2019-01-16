@@ -15,22 +15,29 @@
 // limitations under the License.
 //
 
+/* global console */
+/* eslint-disable no-console */
 const draco3d = require('draco3d');
 
-// const DEFAULT_ENCODING_OPTIONS = {
-//   method: 'MESH_EDGEBREAKER_ENCODING',
-//   speed: [5, 5],
-//   quantization: {
-//     POSITION: 10
-//   }
-// };
+const DEFAULT_ENCODING_OPTIONS = {
+  method: 'MESH_EDGEBREAKER_ENCODING',
+  speed: [5, 5],
+  quantization: {
+    POSITION: 10
+  }
+};
 
+/* Encoder API:
+https://github.com/google/draco/blob/master/src/draco/javascript/emscripten/draco_web_encoder.idl
+   Example:
+https://github.com/google/draco/blob/master/javascript/npm/draco3d/draco_nodejs_example.js
+ */
 export default class DRACOEncoder {
   constructor() {
     this.dracoEncoderModule = draco3d.createEncoderModule({});
     this.dracoEncoder = new this.dracoEncoderModule.Encoder();
     this.dracoMeshBuilder = new this.dracoEncoderModule.MeshBuilder();
-    // // this.setOptions(DEFAULT_ENCODING_OPTIONS);
+    this.setOptions(DEFAULT_ENCODING_OPTIONS);
   }
 
   destroy() {
@@ -49,21 +56,21 @@ export default class DRACOEncoder {
 
   // Set encoding options.
   setOptions(opts = {}) {
-    // if ('speed' in opts) {
-    //   this.dracoEncoder.SetSpeedOptions(...opts.speed);
-    // }
-    // if ('method' in opts) {
-    //   const dracoMethod = this.dracoEncoderModule[opts.method];
-    //   // if (dracoMethod === undefined) {}
-    //   this.dracoEncoder.SetEncodingMethod(dracoMethod);
-    // }
-    // if ('quantization' in opts) {
-    //   for (const attribute in opts.quantization) {
-    //     const bits = opts.quantization[attribute];
-    //     const dracoPosition = this.dracoEncoderModule[attribute];
-    //     this.dracoEncoder.SetAttributeQuantization(dracoPosition, bits);
-    //   }
-    // }
+    if ('speed' in opts) {
+      this.dracoEncoder.SetSpeedOptions(...opts.speed);
+    }
+    if ('method' in opts) {
+      const dracoMethod = this.dracoEncoderModule[opts.method];
+      // if (dracoMethod === undefined) {}
+      this.dracoEncoder.SetEncodingMethod(dracoMethod);
+    }
+    if ('quantization' in opts) {
+      for (const attribute in opts.quantization) {
+        const bits = opts.quantization[attribute];
+        const dracoPosition = this.dracoEncoderModule[attribute];
+        this.dracoEncoder.SetAttributeQuantization(dracoPosition, bits);
+      }
+    }
   }
 
   encodePointCloud(attributes) {
@@ -74,10 +81,13 @@ export default class DRACOEncoder {
 
     try {
       const encodedLen =
-        this.dracoEncoder.EncodePointCloudToDracoBuffer(dracoPointCloud, dracoData);
+        this.dracoEncoder.EncodePointCloudToDracoBuffer(dracoPointCloud, false, dracoData);
+
       if (!(encodedLen > 0)) {
         throw new Error('Draco encoding failed.');
       }
+      console.log(`DRACO encoded ${dracoPointCloud.num_points()} points
+        with ${dracoPointCloud.num_attributes()} attributes into ${encodedLen} bytes`);
 
       // Copy encoded data to buffer.
       const outputBuffer = new ArrayBuffer(encodedLen);
@@ -101,11 +111,12 @@ export default class DRACOEncoder {
     const dracoData = new this.dracoEncoderModule.DracoInt8Array();
 
     try {
-      // this.setOptions(DEFAULT_ENCODING_OPTIONS);
       const encodedLen = this.dracoEncoder.EncodeMeshToDracoBuffer(dracoMesh, dracoData);
       if (encodedLen <= 0) {
         throw new Error('Draco encoding failed.');
       }
+      console.log(`DRACO encoded ${dracoMesh.num_points()} points
+        with ${dracoMesh.num_attributes()} attributes into ${encodedLen} bytes`);
 
       // Copy encoded data to buffer.
       const outputBuffer = new ArrayBuffer(encodedLen);
@@ -184,11 +195,40 @@ export default class DRACOEncoder {
 
     // TODO - handle different attribute types
     default:
-      console.log('DRACO adding attribute',
-        dracoMesh, dracoAttributeType, attribute.length, size); // , attribute);
-      this.dracoMeshBuilder.AddFloatAttributeToMesh(
-        dracoMesh, dracoAttributeType, attribute.length, size, attribute
+      const dataType = this._getDataType(attribute);
+      console.log(`DRACO adding ${dataType} attribute ${attributeName}`,
+        dracoAttributeType, vertexCount, size); // , attribute);
+
+      this.dracoMeshBuilder[`Add${dataType}Attribute`](
+        dracoMesh, dracoAttributeType, vertexCount, size, attribute
       );
+    }
+  }
+
+  _getDataType(attribute) {
+    switch (attribute.constructor.name) {
+    case 'Int8Array':
+      return 'Int8';
+
+    case 'Int16Array':
+      return 'Int16';
+
+    case 'Int32Array':
+      return 'Int32';
+
+    case 'Uint8Array':
+    case 'Uint8ClampedArray':
+      return 'UInt8';
+
+    case 'Uint16Array':
+      return 'UInt16';
+
+    case 'Uint32Array':
+      return 'UInt32';
+
+    case 'Float32Array':
+    default:
+      return 'Float';
     }
   }
 
