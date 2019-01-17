@@ -6,6 +6,8 @@ const {toArrayBuffer} = require('@loaders.gl/core');
 
 const fs = require('fs');
 
+const MAX_LENGTH = 76;
+
 function printHelp() {
   console.log('glbdump: no glb files specified...');
   console.log('glbdump --json Pretty prints the JSON chunk...');
@@ -70,14 +72,22 @@ function dumpGLBSegments(data) {
 
 function logArray(key, array) {
   array.forEach((object, i) =>
-    console.log(`${key.toUpperCase()}-${i}: ${JSON.stringify(object).slice(0, 60)}...`)
+    console.log(`${key.toUpperCase()}-${i}: ${JSON.stringify(object).slice(0, MAX_LENGTH)}...`)
   );
 }
 
 function logObject(field, object) {
-  Object.keys(object).forEach((key, i) =>
-    console.log(`${field.toUpperCase()}-${i}: ${JSON.stringify(object[key]).slice(0, 60)}...`)
-  );
+  let prevHeading = null;
+  Object.keys(object).forEach((key, i) => {
+    // Write key once
+    const heading = field.toUpperCase();
+    if (heading !== prevHeading) {
+      console.log(heading);
+      prevHeading = heading;
+    }
+
+    console.log(` ${i}: ${JSON.stringify(object[key]).slice(0, MAX_LENGTH)}...`)
+  });
 }
 
 // GLTF
