@@ -70,22 +70,26 @@ function dumpGLBSegments(data) {
   }
 }
 
+// Writes heading once
+let prevHeading = null;
+
+function printHeading(heading) {
+  if (heading !== prevHeading) {
+    console.log(heading.toUpperCase());
+    prevHeading = heading;
+  }
+}
+
 function logArray(key, array) {
-  array.forEach((object, i) =>
-    console.log(`${key.toUpperCase()}-${i}: ${JSON.stringify(object).slice(0, MAX_LENGTH)}...`)
-  );
+  array.forEach((object, i) => {
+    printHeading(key);
+    console.log(` ${i}: ${JSON.stringify(object).slice(0, MAX_LENGTH)}...`)
+  });
 }
 
 function logObject(field, object) {
-  let prevHeading = null;
   Object.keys(object).forEach((key, i) => {
-    // Write key once
-    const heading = field.toUpperCase();
-    if (heading !== prevHeading) {
-      console.log(heading);
-      prevHeading = heading;
-    }
-
+    printHeading(field);
     console.log(` ${i}: ${JSON.stringify(object[key]).slice(0, MAX_LENGTH)}...`)
   });
 }
