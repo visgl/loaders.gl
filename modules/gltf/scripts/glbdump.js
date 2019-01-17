@@ -1,7 +1,8 @@
 /* global console, process */
 /* eslint-disable no-console */
 
-const {GLBParser, GLTFParser, toArrayBuffer} = require('../src');
+const {GLBParser, GLTFParser} = require('@loaders.gl/gltf');
+const {toArrayBuffer} = require('@loaders.gl/core');
 
 const fs = require('fs');
 
