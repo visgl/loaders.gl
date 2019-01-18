@@ -21,9 +21,12 @@
 /* eslint-disable no-console, no-invalid-this */
 import {Bench} from 'probe.gl/bench';
 
+import dracoBench from './draco.bench';
+
 const suite = new Bench();
 
 // add tests
+dracoBench(suite);
 
 // Run the suite
 suite.run();
