@@ -28,7 +28,7 @@ const testRendering = new RenderTest({
   // Max color delta in the YIQ difference metric for two pixels to be considered the same
   colorDeltaThreshold: 255 * 0.05,
   // Percentage of pixels that must be the same for the test to pass
-  testPassThreshold: 0.99
+  testPassThreshold: 0.98
 });
 
 testRendering.run();
