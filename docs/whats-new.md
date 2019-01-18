@@ -2,7 +2,13 @@
 
 This module is currently in unofficial "soft pre-release" stage. You are welcome to start using this module however be aware that APIs will be slightly fluent until version 1.0 is released.
 
+
 ## loaders.gl Pre-releases
+
+### v0.5
+
+* `GLBParser`/`GLTFParser` API changes.
+
 
 ### v0.4
 

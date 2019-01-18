@@ -45,8 +45,23 @@ export default class GLBBuilder {
     this.sourceBuffers = [];
   }
 
+  // ACCESSORS
+
   getByteLength() {
     return this.byteLength;
+  }
+
+  // Checks if a binary buffer is a recognized image format (PNG, JPG, GIF, ...)
+  isImage(imageData) {
+    return isImage(imageData);
+  }
+
+  // MODIFERS
+
+  // Encode the full glTF file as a binary GLB file
+  // Returns an ArrayBuffer that represents the complete GLB image that can be saved to file
+  encodeAsGLB(options = {}) {
+    return this._createGLBBuffer(options);
   }
 
   // Add an extra application-defined key to the top-level data structure
@@ -57,73 +72,8 @@ export default class GLBBuilder {
     return this;
   }
 
-  // Encode the full glTF file as a binary GLB file
-  // Returns an ArrayBuffer that represents the complete GLB image that can be saved to file
-  encodeAsGLB(options = {}) {
-    return this._createGlbBuffer(options);
-  }
-
-  // Returns an arrayBuffer together with JSON etc data.
-  encodeAsGLBWithMetadata(options = {}) {
-    const arrayBuffer = this._createGlbBuffer(options);
-    return {arrayBuffer, json: this.json};
-  }
-
-  // Add a binary buffer. Builds glTF "JSON metadata" and saves buffer reference
-  // Buffer will be copied into BIN chunk during "pack"
-  addBuffer(sourceBuffer, accessor = {size: 3}) {
-    const bufferViewIndex = this._addBufferView(sourceBuffer);
-
-    // Add an accessor pointing to the new buffer view
-    const glTFAccessor = {
-      bufferView: bufferViewIndex,
-      type: getAccessorTypeFromSize(accessor.size),
-      componentType: getComponentTypeFromArray(sourceBuffer),
-      count: Math.round(sourceBuffer.length / accessor.size)
-    };
-
-    this.json.accessors.push(glTFAccessor);
-
-    return this.json.accessors.length - 1;
-  }
-
-  // Checks if a binary buffer is a recognized image format (PNG, JPG, GIF, ...)
-  isImage(imageData) {
-    return isImage(imageData);
-  }
-
-  // Adds a binary image. Builds glTF "JSON metadata" and saves buffer reference
-  // Buffer will be copied into BIN chunk during "pack"
-  addImage(imageData) {
-    const bufferViewIndex = this._addBufferView(imageData);
-
-    const glTFImage = {
-      bufferView: bufferViewIndex
-    };
-
-    // Get the properties of the image to add as metadata.
-    const sizeAndType = getImageSize(imageData);
-    if (sizeAndType) {
-      const {mimeType, width, height} = sizeAndType;
-      Object.assign(glTFImage, {mimeType, width, height});
-    }
-
-    this.json.images.push(glTFImage);
-
-    return this.json.images.length - 1;
-  }
-
-  // For testing
-
-  _pack() {
-    this._packBinaryChunk();
-    return {arrayBuffer: this.arrayBuffer, json: this.json};
-  }
-
-  // PRIVATE
-
-  // Add one source buffer, create a matchibng glTF `bufferView`, and return its index
-  _addBufferView(buffer) {
+  // Add one untyped source buffer, create a matching glTF `bufferView`, and return its index
+  addBufferView(buffer) {
     const byteLength = buffer.byteLength || buffer.length;
 
     // Add a bufferView indicating start and length of this binary sub-chunk
@@ -143,6 +93,53 @@ export default class GLBBuilder {
 
     // Return the index to the just created bufferView
     return this.json.bufferViews.length - 1;
+  }
+
+  // Add a binary buffer. Builds glTF "JSON metadata" and saves buffer reference
+  // Buffer will be copied into BIN chunk during "pack"
+  addBuffer(sourceBuffer, accessor = {size: 3}) {
+    const bufferViewIndex = this.addBufferView(sourceBuffer);
+
+    // Add an accessor pointing to the new buffer view
+    const glTFAccessor = {
+      bufferView: bufferViewIndex,
+      type: getAccessorTypeFromSize(accessor.size),
+      componentType: getComponentTypeFromArray(sourceBuffer),
+      count: Math.round(sourceBuffer.length / accessor.size)
+    };
+
+    this.json.accessors.push(glTFAccessor);
+
+    return this.json.accessors.length - 1;
+  }
+
+  // Adds a binary image. Builds glTF "JSON metadata" and saves buffer reference
+  // Buffer will be copied into BIN chunk during "pack"
+  addImage(imageData) {
+    const bufferViewIndex = this.addBufferView(imageData);
+
+    const glTFImage = {
+      bufferView: bufferViewIndex
+    };
+
+    // Get the properties of the image to add as metadata.
+    const sizeAndType = getImageSize(imageData);
+    if (sizeAndType) {
+      const {mimeType, width, height} = sizeAndType;
+      Object.assign(glTFImage, {mimeType, width, height});
+    }
+
+    this.json.images.push(glTFImage);
+
+    return this.json.images.length - 1;
+  }
+
+  // PRIVATE
+
+  // For testing
+  _pack() {
+    this._packBinaryChunk();
+    return {arrayBuffer: this.arrayBuffer, json: this.json};
   }
 
   // Pack the binary chunk
@@ -192,7 +189,7 @@ export default class GLBBuilder {
   // Encode the full GLB buffer with header etc
   // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#
   // glb-file-format-specification
-  _createGlbBuffer(options = {}) {
+  _createGLBBuffer(options = {}) {
     // TODO - avoid double array buffer creation
     this._packBinaryChunk();
 

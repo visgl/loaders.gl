@@ -19,7 +19,7 @@ const gltfBuilder = new GLTFBuilder();
 const imageIndex = gltfBuilder.addImage();
 
 // Add custom JSON in top-level glTF object
-gltfBuilder.addApplicationField('app-key', {...});
+gltfBuilder.addApplicationData('app-key', {...});
 
 // Add custom JSON in glTF extras field
 gltfBuilder.addExtraData('app-key', {...});
@@ -40,7 +40,7 @@ saveBinaryFile(filename, arrayBuffer);
 
 ## Methods
 
-### constructor()
+### constructor(options : Object)
 
 Creates a new `GLTFBuilder` instance.
 

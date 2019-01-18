@@ -15,7 +15,7 @@ import {GLTFParser} from '@loaders.gl/gltf';
 
 ## Methods
 
-### constructor
+### constructor(options : Object)
 
 Creates a new `GLBParser` instance.
 
@@ -26,3 +26,5 @@ Parses an in-memory, GLB formatted `ArrayBuffer` into:
 * `arrayBuffer` - just returns the input array buffer
 * `binaryByteOffset` - offset to the first byte in the binary chunk
 * `json` - a JavaScript "JSON" data structure with inlined binary data fields.
+
+
