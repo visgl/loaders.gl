@@ -1,9 +1,12 @@
 /* global console, process */
 /* eslint-disable no-console */
 
-const {GLBParser, GLTFParser, toArrayBuffer} = require('../src');
+const {GLBParser, GLTFParser} = require('@loaders.gl/gltf');
+const {toArrayBuffer} = require('@loaders.gl/core');
 
 const fs = require('fs');
+
+const MAX_LENGTH = 76;
 
 function printHelp() {
   console.log('glbdump: no glb files specified...');
@@ -67,16 +70,28 @@ function dumpGLBSegments(data) {
   }
 }
 
+// Writes heading once
+let prevHeading = null;
+
+function printHeading(heading) {
+  if (heading !== prevHeading) {
+    console.log(heading.toUpperCase());
+    prevHeading = heading;
+  }
+}
+
 function logArray(key, array) {
-  array.forEach((object, i) =>
-    console.log(`${key.toUpperCase()}-${i}: ${JSON.stringify(object).slice(0, 60)}...`)
-  );
+  array.forEach((object, i) => {
+    printHeading(key);
+    console.log(` ${i}: ${JSON.stringify(object).slice(0, MAX_LENGTH)}...`)
+  });
 }
 
 function logObject(field, object) {
-  Object.keys(object).forEach((key, i) =>
-    console.log(`${field.toUpperCase()}-${i}: ${JSON.stringify(object[key]).slice(0, 60)}...`)
-  );
+  Object.keys(object).forEach((key, i) => {
+    printHeading(field);
+    console.log(` ${i}: ${JSON.stringify(object[key]).slice(0, MAX_LENGTH)}...`)
+  });
 }
 
 // GLTF
