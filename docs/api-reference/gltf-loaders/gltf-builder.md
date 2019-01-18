@@ -14,9 +14,11 @@ Adding binary data sub chunks to the GLB file, then calling encode to generate t
 import {GLTFBuilder} from '@loaders.gl/gltf';
 import {saveBinaryFile} from '@loaders.gl/core';
 
+
 const gltfBuilder = new GLTFBuilder();
 
-const imageIndex = gltfBuilder.addImage();
+const IMAGE_DATA = ...; // Image as ArrayBuffer
+const imageIndex = gltfBuilder.addImage(IMAGE_DATA);
 
 // Add custom JSON in top-level glTF object
 gltfBuilder.addApplicationData('app-key', {...});

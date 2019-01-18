@@ -16,7 +16,8 @@ import {saveBinaryFile} from '@loaders.gl/core';
 
 const gltfBuilder = new GLBBuilder();
 
-const imageIndex = gltfBuilder.addImage();
+const IMAGE_DATA = ...; // Image as ArrayBuffer
+const imageIndex = gltfBuilder.addImage(IMAGE_DATA);
 
 // Add custom JSON in top-level glTF object
 gltfBuilder.addApplicationData('app-key', {...});
@@ -24,7 +25,7 @@ gltfBuilder.addApplicationData('app-key', {...});
 // All data added, we can encode
 const arrayBuffer = gltfBuilder.encodeAsGLB();
 
-// The encoded `ArrayBuffer` represents a complete image of the data
+// The encoded `ArrayBuffer` represents a complete binary representation of the data that can be written atomically to file
 saveBinaryFile(filename, arrayBuffer);
 ```
 

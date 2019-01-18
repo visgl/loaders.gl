@@ -303,8 +303,9 @@ export default class GLTFParser {
     if (image.bufferView) {
       image.bufferView = this.getBufferView(image.bufferView);
     }
-    // TODO - Handle URIs etc
 
+    // TODO - Handle non-binary-chunk images, data URIs, URLs etc
+    // TODO - Image creation could be done on getImage instead of during load
     const {createImages = true} = options;
     if (createImages) {
       image.image = this.glbParser.unpackImage(image);

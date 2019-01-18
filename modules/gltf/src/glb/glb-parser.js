@@ -115,33 +115,6 @@ export default class GLBParser {
     return img;
   }
 
-  /*
-  unpackBinaryObjects() {
-    const unpackedBinaryObjects = {
-      images: [],
-      accessors: [],
-      meshes: []
-    };
-
-    const images = this.json.images || [];
-    for (const glTFImage of images) {
-      unpackedBinaryObjects.images.push(this.unpackImage(glTFImage));
-    }
-
-    const accessors = this.json.accessors || [];
-    for (const glTFAccessor of accessors) {
-      unpackedBinaryObjects.accessors.push(this.unpackAccessor(glTFAccessor));
-    }
-
-    const meshes = this.json.meshes || [];
-    for (const glTFMesh of meshes) {
-      unpackedBinaryObjects.meshes.push(this.unpackMesh(glTFMesh));
-    }
-
-    return unpackedBinaryObjects;
-  }
-  */
-
   // PRIVATE
 
   _parse(options) {

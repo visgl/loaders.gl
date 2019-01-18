@@ -15,17 +15,35 @@ References:
 
 ```
 import {GLTFParser} from '@loaders.gl/gltf';
+import {loadBinaryFile} from '@loaders.gl/core';
 
-const gltfWalker = new GLTFParse();
-gltfWalker.parse(...);
-gltfWalker.resolveScenegraphs();
+// Create a parser
+const gltfParser = new GLTFParser();
 
-const myExtension = gltfWalker.getExtension('ORGNAME_extensionName');
-if (myExtension) {
+// Load and parse a file
+const GLTF_BINARY = loadBinaryFile(...);
+gltfParser.parse(GLTF_BINARY);
+
+// Get the complete glTF JSON structure
+const gltfJson = gltfParser.getJSON();
+
+// Get specific top-level fields from the glTF JSON chunk
+const appData = gltfParser.getApplicationData('customData');
+
+// Get a top level extension from the glTF JSON chunk
+const topLevelExtension = gltfParser.getExtension('ORGNAME_extensionName');
+if (topLevelExtension) {
   ...
 }
 
-const scenegraph = gltfWalker.getScenegraph();
+// Get images from the binary chunk (together with metadata)
+const imageIndex = 0;
+const image = gltfParser.getImage(imageIndex);
+
+// Get default glTF scenegraph
+const scenegraph = gltfParser.getScenegraph();
+// Get specific glTF scenegraph
+const scenegraph = gltfParser.getScenegraph(2);
 ```
 
 
