@@ -21,9 +21,14 @@
 /* eslint-disable no-console, no-invalid-this */
 import {Bench} from 'probe.gl/bench';
 
-const suite = new Bench();
+import dracoBench from './draco.bench';
+
+const suite = new Bench({
+  minIterations: 10
+});
 
 // add tests
+dracoBench(suite);
 
 // Run the suite
 suite.run();

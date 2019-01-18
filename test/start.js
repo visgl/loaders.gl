@@ -54,6 +54,14 @@ case 'bench':
   require('./bench/index'); // Run the benchmarks
   break;
 
+case 'bench-browser':
+  new BrowserTestDriver().run({
+    process: 'webpack-dev-server',
+    parameters: ['--config', 'test/webpack.config.js', '--env.bench'],
+    exposeFunction: 'testDone'
+  });
+  break;
+
 case 'analyze':
 case 'analyze-size':
   const util = require('util');
