@@ -20,6 +20,8 @@ export default class GLTFBuilder extends GLBBuilder {
     });
   }
 
+  // TODO - support encoding to non-GLB versions of glTF format
+
   // Encode as a textual JSON file with binary data in base64 data URLs.
   // encodeAsDataURLs(options) {
   //   throw new Error('Not yet implemented');

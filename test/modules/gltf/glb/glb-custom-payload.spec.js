@@ -9,17 +9,14 @@ import CUSTOM_PAYLOAD from './custom-payload.json';
 
 function encodeToGLB(testJson, options) {
   const gltfBuilder = new GLTFBuilder();
-
-  // As permitted by glTF, we put all XVIZ data in a top-level subfield.
+  // As permitted by glTF, we put all custom data in a top-level subfield.
   gltfBuilder.addApplicationData('test', testJson, options);
-
   return gltfBuilder.encodeAsGLB(options);
 }
 
 function parseFromGLB(arrayBuffer) {
-  const gltfParser = new GLTFParser(arrayBuffer);
-  gltfParser.parse();
-
+  const gltfParser = new GLTFParser();
+  gltfParser.parse(arrayBuffer);
   // TODO/ib - Fix when loaders.gl API is fixed
   return gltfParser.getApplicationData('test');
 }
@@ -60,7 +57,7 @@ const TEST_CASES = {
   full: CUSTOM_PAYLOAD
 };
 
-test('XVIZLoader#encode-and-parse', t => {
+test('CustomLoader#encode-and-parse', t => {
   for (const tcName in TEST_CASES) {
     const TEST_JSON = TEST_CASES[tcName];
 
@@ -69,22 +66,22 @@ test('XVIZLoader#encode-and-parse', t => {
 
     t.ok(
       !Array.isArray(json.buffers),
-      `${tcName} Encoded and parsed XVIZ - has no JSON buffers field`
+      `${tcName} Encoded and parsed Custom - has no JSON buffers field`
     );
     t.ok(
       !Array.isArray(json.bufferViews),
-      `${tcName} Encoded and parsed XVIZ - has no JSON bufferViews field`
+      `${tcName} Encoded and parsed Custom - has no JSON bufferViews field`
     );
     t.ok(
       !Array.isArray(json.accessors),
-      `${tcName} Encoded and parsed XVIZ - has no JSON accessors field`
+      `${tcName} Encoded and parsed Custom - has no JSON accessors field`
     );
 
     // const reference = toLowPrecision(packJsonArrays(TEST_JSON));
     // t.deepEqual(
     //   toLowPrecision(json),
     //   reference,
-    //   `${tcName} Encoded and parsed XVIZ did not change data`
+    //   `${tcName} Encoded and parsed Custom did not change data`
     // );
   }
 

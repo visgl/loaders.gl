@@ -2,32 +2,32 @@ import {getBytesFromComponentType, getSizeFromAccessorType} from '../utils/gltf-
 import GLBParser from '../glb/glb-parser';
 
 export default class GLTFParser {
-  constructor(gltf) {
-    if (gltf instanceof ArrayBuffer) {
-      gltf = new GLBParser(gltf).parse().json;
-    }
-    this.gltf = gltf;
-    this.json = gltf;
+  constructor(options = {}) {
+    // TODO - move parsing to parse
     this.log = console; // eslint-disable-line
     this.out = {};
+
+    // Soft dependency on Draco, needs to be imported and supplied by app
+    this.DracoDecoder = options.DracoDecoder || null;
   }
 
-  parse(options = {}) {
-    // Load all images
-    this.out.images = (this.gltf.images || [])
-      .map(image => this.parseImage(image))
-      .filter(Boolean);
+  parse(gltf, options = {}) {
+    this.glbParser = new GLBParser();
 
-    // Parse all scenes
-    this.out.scenes = (this.gltf.scenes || [])
-      .map(scene => this.parseImage(scene))
-      .filter(Boolean);
-
-    if (this.gltf.scene) {
-      this.out.scene = this.gltf.scenes[this.gltf.scene];
+    // GLTF can be JSON or binary (GLB)
+    if (gltf instanceof ArrayBuffer) {
+      this.gltf = this.glbParser.parse(gltf).json;
+      this.json = this.gltf;
+    } else {
+      this.gltf = gltf;
+      this.json = gltf;
     }
 
-    return this;
+    this._loadLinkedAssets(options); // TODO - not implemented
+    // this._postProcessGLTF(options); TODO - remove done differently now
+    this._resolveToTree(options);
+
+    return this.gltf;
   }
 
   // Accessors
@@ -56,6 +56,52 @@ export default class GLTFParser {
   getUsedExtensions() {
     return this.json.extensionsUsed;
   }
+
+  // DATA UNPACKING
+
+  // Unpacks all the primitives in a mesh
+  unpackMesh(mesh) {
+    return mesh.primitives.map(this.unpackPrimitive.bind(this));
+  }
+
+  // Unpacks one mesh primitive
+  unpackPrimitive(primitive) {
+    const compressedMesh =
+      primitive.extensions && primitive.extensions.UBER_draco_mesh_compression;
+    const compressedPointCloud =
+      primitive.extensions && primitive.extensions.UBER_draco_point_cloud_compression;
+
+    const unpackedPrimitive = {
+      mode: primitive.mode,
+      material: primitive.material
+    };
+
+    if (compressedMesh) {
+      const dracoDecoder = new this.DracoDecoder();
+      const decodedData = dracoDecoder.decodeMesh(compressedMesh);
+      dracoDecoder.destroy();
+
+      Object.assign(unpackedPrimitive, {
+        indices: decodedData.indices,
+        attributes: decodedData.attributes
+      });
+
+    } else if (compressedPointCloud) {
+      const dracoDecoder = new this.DracoDecoder();
+      const decodedData = dracoDecoder.decodePointCloud(compressedPointCloud);
+      dracoDecoder.destroy();
+
+      Object.assign(unpackedPrimitive, {
+        mode: 0,
+        attributes: decodedData.attributes
+      });
+    } else {
+      // No compression - just a glTF mesh primitive
+      // TODO - Resolve all accessors
+    }
+  }
+
+  // PRIVATE
 
   getScene(index) {
     return this._get('scenes', index);
@@ -101,66 +147,61 @@ export default class GLTFParser {
     return this._get('buffers', index);
   }
 
-  // PRIVATE
-
   _get(array, index) {
     const object = this.gltf[array] && this.gltf[array][index];
     if (!object) {
-      console.warn(`glTF file error: Could not resolve ${array}[${index}]`); // eslint-disable-line
+      console.warn(`glTF file error: Could not find ${array}[${index}]`); // eslint-disable-line
     }
     return object;
   }
 
   // PARSING HELPERS
 
-  parseScene() {
-
+  // Start loading linked assets
+  _loadLinkedAssets(options) {
+    // TODO: Not implemented
+    // TODO: Return a promise?
   }
 
-  parseImage(image) {
-    return this.config.createImage(image);
+  _postProcessGLTF(options = {}) {
+    // Create all images (if requested)
+    this.out.images = (this.gltf.images || [])
+      .map(image => this.parseImage(image, options))
+      .filter(Boolean);
+
+    // Normalize all scenes
+    this.out.scenes = (this.gltf.scenes || [])
+      .map(scene => this.parseScene(scene, options))
+      .filter(Boolean);
+
+    if (this.gltf.scene) {
+      this.out.scene = this.gltf.scenes[this.gltf.scene];
+    }
+
+    return this;
   }
 
-  parseMesh(mesh) {
-    // Each primitive is intended to correspond to a draw call
-    const primitives = (mesh.primitives || []).map(primitive => this.parseMeshPrimitive(primitive));
-
-    return primitives.length === 1 ? primitives[0] : this.config.createGroup(primitives);
-  }
-
-  parseMeshPrimitive(primitive) {
-    // if (!primitive.attributes)
-    //   this.log.warn(primitive without attributes`)
-    let attributes = primitive.attributes || {};
-    attributes = this.config.mapAttributes(attributes);
-    return attributes;
-  }
-
-  parseAccessor(accessor) {
-    return this.config.createBuffer(accessor);
-  }
-
+  // Convert indexed glTF structure into tree structure
   // PREPARATION STEP: CROSS-LINK INDEX RESOLUTION, ENUM LOOKUP, CONVENIENCE CALCULATIONS
-
   /* eslint-disable complexity */
-  resolve(options = {}) {
+  _resolveToTree(options = {}) {
     const {gltf} = this;
 
-    (gltf.bufferViews || []).forEach((bufView, i) => this.resolveBufferView(bufView, i));
+    (gltf.bufferViews || []).forEach((bufView, i) => this._resolveBufferView(bufView, i));
 
-    (gltf.images || []).forEach((image, i) => this.resolveImage(image, i));
-    (gltf.samplers || []).forEach((sampler, i) => this.resolveSampler(sampler, i));
-    (gltf.textures || []).forEach((texture, i) => this.resolveTexture(texture, i));
+    (gltf.images || []).forEach((image, i) => this._resolveImage(image, i, options));
+    (gltf.samplers || []).forEach((sampler, i) => this._resolveSampler(sampler, i));
+    (gltf.textures || []).forEach((texture, i) => this._resolveTexture(texture, i));
 
-    (gltf.accessors || []).forEach((accessor, i) => this.resolveAccessor(accessor, i));
-    (gltf.materials || []).forEach((material, i) => this.resolveMaterial(material, i));
-    (gltf.meshes || []).forEach((mesh, i) => this.resolveMesh(mesh, i));
+    (gltf.accessors || []).forEach((accessor, i) => this._resolveAccessor(accessor, i));
+    (gltf.materials || []).forEach((material, i) => this._resolveMaterial(material, i));
+    (gltf.meshes || []).forEach((mesh, i) => this._resolveMesh(mesh, i));
 
-    (gltf.nodes || []).forEach((node, i) => this.resolveNode(node, i));
+    (gltf.nodes || []).forEach((node, i) => this._resolveNode(node, i));
 
-    (gltf.skins || []).forEach((skin, i) => this.resolveSkin(skin, i));
+    (gltf.skins || []).forEach((skin, i) => this._resolveSkin(skin, i));
 
-    (gltf.scenes || []).forEach((scene, i) => this.resolveScene(scene, i));
+    (gltf.scenes || []).forEach((scene, i) => this._resolveScene(scene, i));
 
     if (gltf.scene) {
       gltf.scene = gltf.scenes[this.gltf.scene];
@@ -170,12 +211,12 @@ export default class GLTFParser {
   }
   /* eslint-enable complexity */
 
-  resolveScene(scene, index) {
+  _resolveScene(scene, index) {
     scene.id = `scene-${index}`;
     scene.nodes = (scene.nodes || []).map(node => this.getNode(node));
   }
 
-  resolveNode(node, index) {
+  _resolveNode(node, index) {
     node.id = `node-${index}`;
     node.children = (node.children || []).map(child => this.getNode(child));
     if (node.mesh) {
@@ -189,12 +230,12 @@ export default class GLTFParser {
     }
   }
 
-  resolveSkin(skin, index) {
+  _resolveSkin(skin, index) {
     skin.id = `skin-${index}`;
     skin.inverseBindMatrices = this.getAccessor(skin.inverseBindMatrices);
   }
 
-  resolveMesh(mesh, index) {
+  _resolveMesh(mesh, index) {
     mesh.id = `mesh-${index}`;
     for (const primitive of mesh.primitives) {
       for (const attribute in primitive.attributes) {
@@ -209,7 +250,7 @@ export default class GLTFParser {
     }
   }
 
-  resolveMaterial(material, index) {
+  _resolveMaterial(material, index) {
     material.id = `material-${index}`;
     if (material.normalTexture) {
       this.normalTexture = this.getTexture(material.normalTexture);
@@ -232,23 +273,22 @@ export default class GLTFParser {
     }
   }
 
-  resolveAccessor(accessor, index) {
+  _resolveAccessor(accessor, index) {
     accessor.id = `accessor-${index}`;
     accessor.bufferView = this.getBufferView(accessor.bufferView);
-
     // Look up enums
     accessor.bytesPerComponent = getBytesFromComponentType(accessor);
     accessor.components = getSizeFromAccessorType(accessor);
     accessor.bytesPerElement = accessor.bytesPerComponent * accessor.components;
   }
 
-  resolveTexture(texture, index) {
+  _resolveTexture(texture, index) {
     texture.id = `texture-${index}`;
     texture.sampler = this.getSampler(texture.sampler);
     texture.source = this.getImage(texture.source);
   }
 
-  resolveSampler(sampler, index) {
+  _resolveSampler(sampler, index) {
     sampler.id = `sampler-${index}`;
     // Map textual parameters to GL parameter values
     this.parameters = {};
@@ -258,28 +298,35 @@ export default class GLTFParser {
     }
   }
 
-  resolveImage(image, index) {
+  _resolveImage(image, index, options) {
     image.id = `image-${index}`;
     if (image.bufferView) {
       image.bufferView = this.getBufferView(image.bufferView);
     }
-    // TODO - Handle URIs etc
+
+    // TODO - Handle non-binary-chunk images, data URIs, URLs etc
+    // TODO - Image creation could be done on getImage instead of during load
+    const {createImages = true} = options;
+    if (createImages) {
+      image.image = this.glbParser.unpackImage(image);
+    }
   }
 
-  resolveBufferView(bufferView, index) {
+  _resolveBufferView(bufferView, index) {
     bufferView.id = `bufferView-${index}`;
     bufferView.buffer = this.getBuffer(bufferView.buffer);
   }
 
   // PREPROC
 
-  resolveCamera(camera) {
-    // TODO - resolve step should not create
+  _resolveCamera(camera) {
+    // TODO - create 4x4 matrices
     if (camera.perspective) {
-      camera.matrix = this.config.createPerspectiveMatrix(camera.perspective);
+      // camera.matrix = createPerspectiveMatrix(camera.perspective);
     }
     if (camera.orthographic) {
-      camera.matrix = this.config.createOrthographicMatrix(camera.orthographic);
+      // camera.matrix = createOrthographicMatrix(camera.orthographic);
     }
   }
+
 }

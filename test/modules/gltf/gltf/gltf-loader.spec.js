@@ -22,16 +22,16 @@ test('GLTFLoader#imports', t => {
   t.end();
 });
 
-test('GLTFParse#parse JSON', t => {
-  const gltf = new GLTFParser(GLTF_JSON).resolve({});
+test('GLTFParser#parse JSON', t => {
+  const gltf = new GLTFParser().parse(GLTF_JSON);
   t.ok(gltf, 'GLTFParser returned parsed data');
 
   t.end();
 });
 
-test('GLTFParse#parse binary', t => {
-  const json = new GLBParser(GLTF_BINARY).parse().getJSON();
-  const gltf = new GLTFParser(json).resolve({});
+test('GLTFParser#parse binary', t => {
+  const json = new GLBParser().parse(GLTF_BINARY).getJSON();
+  const gltf = new GLTFParser().parse(json);
   t.ok(gltf, 'GLTFParser returned parsed data');
 
   t.end();
