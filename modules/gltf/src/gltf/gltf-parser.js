@@ -4,8 +4,6 @@ import GLBParser from '../glb/glb-parser';
 export default class GLTFParser {
   constructor(options = {}) {
     // TODO - move parsing to parse
-    this.gltf = gltf;
-    this.json = gltf;
     this.log = console; // eslint-disable-line
     this.out = {};
 
@@ -14,18 +12,22 @@ export default class GLTFParser {
   }
 
   parse(gltf, options = {}) {
-    this.glbParser = new GLBParser(gltf);
+    this.glbParser = new GLBParser();
 
     // GLTF can be JSON or binary (GLB)
     if (gltf instanceof ArrayBuffer) {
-      this.gltf = glbParser.parse().json;
+      this.gltf = this.glbParser.parse(gltf).json;
+      this.json = this.gltf;
     } else {
       this.gltf = gltf;
+      this.json = gltf;
     }
 
     this._loadLinkedAssets(options); // TODO - not implemented
-    this._postProcessGLTF(options);
-    this.gltf = this._resolveToTree(options);
+    // this._postProcessGLTF(options); TODO - remove done differently now
+    this._resolveToTree(options);
+
+    return this.gltf;
   }
 
   // Accessors
@@ -53,6 +55,50 @@ export default class GLTFParser {
 
   getUsedExtensions() {
     return this.json.extensionsUsed;
+  }
+
+  // DATA UNPACKING
+
+  // Unpacks all the primitives in a mesh
+  unpackMesh(mesh) {
+    return mesh.primitives.map(this.unpackPrimitive.bind(this));
+  }
+
+  // Unpacks one mesh primitive
+  unpackPrimitive(primitive) {
+    const compressedMesh =
+      primitive.extensions && primitive.extensions.UBER_draco_mesh_compression;
+    const compressedPointCloud =
+      primitive.extensions && primitive.extensions.UBER_draco_point_cloud_compression;
+
+    const unpackedPrimitive = {
+      mode: primitive.mode,
+      material: primitive.material
+    };
+
+    if (compressedMesh) {
+      const dracoDecoder = new this.DracoDecoder();
+      const decodedData = dracoDecoder.decodeMesh(compressedMesh);
+      dracoDecoder.destroy();
+
+      Object.assign(unpackedPrimitive, {
+        indices: decodedData.indices,
+        attributes: decodedData.attributes
+      });
+
+    } else if (compressedPointCloud) {
+      const dracoDecoder = new this.DracoDecoder();
+      const decodedData = dracoDecoder.decodePointCloud(compressedPointCloud);
+      dracoDecoder.destroy();
+
+      Object.assign(unpackedPrimitive, {
+        mode: 0,
+        attributes: decodedData.attributes
+      });
+    } else {
+      // No compression - just a glTF mesh primitive
+      // TODO - Resolve all accessors
+    }
   }
 
   // PRIVATE
@@ -120,12 +166,12 @@ export default class GLTFParser {
   _postProcessGLTF(options = {}) {
     // Create all images (if requested)
     this.out.images = (this.gltf.images || [])
-      _.map(image => this.parseImage(image, options))
+      .map(image => this.parseImage(image, options))
       .filter(Boolean);
 
     // Normalize all scenes
     this.out.scenes = (this.gltf.scenes || [])
-      _.map(scene => this.parseScene(scene, options))
+      .map(scene => this.parseScene(scene, options))
       .filter(Boolean);
 
     if (this.gltf.scene) {
@@ -133,21 +179,6 @@ export default class GLTFParser {
     }
 
     return this;
-  }
-
-  _parseScene(scene, options) {
-    return scene;
-  }
-
-  _parseMesh(mesh) {
-    // Each primitive is intended to correspond to a draw call
-    _const primitives = (mesh.primitives || []).map(primitive => this.parseMeshPrimitive(primitive));
-
-    return primitives.length === 1 ? primitives[0] : this.config.createGroup(primitives);
-  }
-
-  _parseAccessor(accessor) {
-    return this.config.createBuffer(accessor);
   }
 
   // Convert indexed glTF structure into tree structure
@@ -297,47 +328,4 @@ export default class GLTFParser {
     }
   }
 
-  // DATA UNPACKING
-
-  // Unpacks all the primitives in a mesh
-  unpackMesh(mesh) {
-    return mesh.primitives.map(this.unpackPrimitive.bind(this));
-  }
-
-  // Unpacks one mesh primitive
-  unpackPrimitive(primitive) {
-    const compressedMesh =
-      primitive.extensions && primitive.extensions.UBER_draco_mesh_compression;
-    const compressedPointCloud =
-      primitive.extensions && primitive.extensions.UBER_draco_point_cloud_compression;
-
-    const unpackedPrimitive = {
-      mode: primitive.mode,
-      material: primitive.material
-    };
-
-    if (compressedMesh) {
-      const dracoDecoder = new this.DracoDecoder();
-      const decodedData = dracoDecoder.decodeMesh(compressedMesh);
-      dracoDecoder.destroy();
-
-      Object.assign(unpackedPrimitive, {
-        indices: decodedData.indices,
-        attributes: decodedData.attributes
-      });
-
-    } else if (compressedPointCloud) {
-      const dracoDecoder = new this.DracoDecoder();
-      const decodedData = dracoDecoder.decodePointCloud(compressedPointCloud);
-      dracoDecoder.destroy();
-
-      Object.assign(unpackedPrimitive, {
-        mode: 0,
-        attributes: decodedData.attributes
-      });
-    } else {
-      // No compression - just a glTF mesh primitive
-      // TODO - Resolve all accessors
-    }
-  }
 }

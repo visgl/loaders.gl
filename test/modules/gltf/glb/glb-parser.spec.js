@@ -9,8 +9,8 @@ test('GLBParser#parse', t => {
   builder.addApplicationData('test', testJson);
   const arrayBuffer = builder.encodeAsGLB();
 
-  const parser = new GLBParser(arrayBuffer);
-  parser.parse();
+  const parser = new GLBParser();
+  parser.parse(arrayBuffer);
   const json = parser.getApplicationData('test');
   t.ok(json.nested.typedArray instanceof Float32Array, 'Float32Array present');
 

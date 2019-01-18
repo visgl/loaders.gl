@@ -83,14 +83,14 @@ function printHeading(heading) {
 function logArray(key, array) {
   array.forEach((object, i) => {
     printHeading(key);
-    console.log(` ${i}: ${JSON.stringify(object).slice(0, MAX_LENGTH)}...`)
+    console.log(` ${i}: ${JSON.stringify(object).slice(0, MAX_LENGTH)}...`);
   });
 }
 
 function logObject(field, object) {
   Object.keys(object).forEach((key, i) => {
     printHeading(field);
-    console.log(` ${i}: ${JSON.stringify(object[key]).slice(0, MAX_LENGTH)}...`)
+    console.log(` ${i}: ${JSON.stringify(object[key]).slice(0, MAX_LENGTH)}...`);
   });
 }
 
