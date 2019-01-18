@@ -1,4 +1,4 @@
-import {loadBinaryFile} from '@loaders.gl/core';
+import {loadBinaryFile, _getMeshSize} from '@loaders.gl/core';
 import {DracoEncoder, DracoLoader} from '@loaders.gl/draco';
 import path from 'path';
 
@@ -14,33 +14,34 @@ const attributes = {
   POSITIONS: new Float32Array(POSITIONS),
   COLORS: new Uint8ClampedArray(COLORS)
 };
+const rawSize = _getMeshSize(attributes);
 
-const dracoEncoder10 = new DracoEncoder({
-  quantization: {
-    POSITION: 10
+const OPTIONS = [
+  {
+    name: 'quantization=10',
+    quantization: {POSITION: 10}
+  },
+  {
+    name: 'quantization=14',
+    quantization: {POSITION: 14}
   }
-});
-const dracoEncoder14 = new DracoEncoder({
-  quantization: {
-    POSITION: 14
-  }
-});
-const compressedPointCloud10 = dracoEncoder10.encodePointCloud(attributes);
-const compressedPointCloud14 = dracoEncoder14.encodePointCloud(attributes);
+];
 
 export default function dracoBench(bench) {
-  return bench
-    .group('Draco Encode/Decode')
-    .add('DracoEncoder#encode point cloud#quantization=10', () => {
-      dracoEncoder10.encodePointCloud(attributes);
-    })
-    .add('DracoEncoder#encode point cloud#quantization=14', () => {
-      dracoEncoder14.encodePointCloud(attributes);
-    })
-    .add('DracoDecoder#decode point cloud#quantization=10', () => {
-      DracoLoader.parseBinary(compressedPointCloud10);
-    })
-    .add('DracoDecoder#decode point cloud#quantization=14', () => {
-      DracoLoader.parseBinary(compressedPointCloud14);
+  bench = bench.group('Draco Encode/Decode');
+
+  OPTIONS.forEach(option => {
+    const dracoEncoder = new DracoEncoder(option);
+    const compressedPointCloud = dracoEncoder.encodePointCloud(attributes);
+    console.log(`${option.name} compression rate:
+      ${(compressedPointCloud.byteLength / rawSize * 100).toFixed(2)}%`);
+
+    bench = bench.add(`DracoEncoder#encode point cloud#${option.name}`, () => {
+      dracoEncoder.encodePointCloud(attributes);
+    }).add(`DracoDecoder#decode point cloud#${option.name}`, () => {
+      DracoLoader.parseBinary(compressedPointCloud);
     });
+  });
+
+  return bench;
 }

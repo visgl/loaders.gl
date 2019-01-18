@@ -23,7 +23,9 @@ import {Bench} from 'probe.gl/bench';
 
 import dracoBench from './draco.bench';
 
-const suite = new Bench();
+const suite = new Bench({
+  minIterations: 10
+});
 
 // add tests
 dracoBench(suite);
