@@ -19,6 +19,7 @@ const dracoEncoder = new DracoEncoder({
 });
 const compressedMesh = dracoEncoder.encodePointCloud(kittiPointCloudRaw);
 dracoEncoder.destroy();
+// eslint-disable-next-line
 console.log(compressedMesh.byteLength);
 const kittiPointCloudFromDraco = DracoLoader.parseBinary(compressedMesh).attributes;
 
@@ -45,7 +46,7 @@ const layerProps = {
     diffuseRatio: 0,
     specularRatio: 0
   }
-}
+};
 
 export default [
   {

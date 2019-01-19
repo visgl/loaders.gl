@@ -36,7 +36,7 @@ export default [
       })
     ],
     referenceImageUrl: './test/render/golden-images/ply-loader.png'
-  },
+  }
   /*
   ,
   {

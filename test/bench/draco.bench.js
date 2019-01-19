@@ -33,6 +33,7 @@ export default function dracoBench(bench) {
   OPTIONS.forEach(option => {
     const dracoEncoder = new DracoEncoder(option);
     const compressedPointCloud = dracoEncoder.encodePointCloud(attributes);
+    // eslint-disable-next-line
     console.log(`${option.name} compression rate:
       ${(compressedPointCloud.byteLength / rawSize * 100).toFixed(2)}%`);
 
