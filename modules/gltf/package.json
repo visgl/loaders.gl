@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/gltf",
-  "version": "0.4.8",
+  "version": "0.5.0",
   "description": "Framework-independent loader for the glTF format",
   "license": "MIT",
   "publishConfig": {
@@ -40,6 +40,6 @@
   },
   "sideEffects": false,
   "dependencies": {
-    "@loaders.gl/core": "^0.4.6"
+    "@loaders.gl/core": "^0.5.0"
   }
 }
