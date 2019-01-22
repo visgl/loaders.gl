@@ -127,6 +127,10 @@ export default class GLTFParser {
     return this._get('accessors', index);
   }
 
+  getCamera(index) {
+    return null; // TODO: fix this
+  }
+
   getTexture(index) {
     return this._get('textures', index);
   }
@@ -174,7 +178,7 @@ export default class GLTFParser {
       .map(scene => this.parseScene(scene, options))
       .filter(Boolean);
 
-    if (this.gltf.scene) {
+    if (this.gltf.scene !== undefined) {
       this.out.scene = this.gltf.scenes[this.gltf.scene];
     }
 
@@ -203,7 +207,7 @@ export default class GLTFParser {
 
     (gltf.scenes || []).forEach((scene, i) => this._resolveScene(scene, i));
 
-    if (gltf.scene) {
+    if (gltf.scene !== undefined) {
       gltf.scene = gltf.scenes[this.gltf.scene];
     }
 
@@ -219,13 +223,13 @@ export default class GLTFParser {
   _resolveNode(node, index) {
     node.id = `node-${index}`;
     node.children = (node.children || []).map(child => this.getNode(child));
-    if (node.mesh) {
+    if (node.mesh !== undefined) {
       node.mesh = this.getMesh(node.mesh);
     }
-    if (node.camera) {
+    if (node.camera !== undefined) {
       node.camera = this.getCamera(node.camera);
     }
-    if (node.skin) {
+    if (node.skin !== undefined) {
       node.skin = this.getSkin(node.skin);
     }
   }
@@ -241,10 +245,10 @@ export default class GLTFParser {
       for (const attribute in primitive.attributes) {
         primitive.attributes[attribute] = this.getAccessor(primitive.attributes[attribute]);
       }
-      if (primitive.indices) {
+      if (primitive.indices !== undefined) {
         primitive.indices = this.getAccessor(primitive.indices);
       }
-      if (primitive.material) {
+      if (primitive.material !== undefined) {
         primitive.material = this.getMaterial(primitive.material);
       }
     }
@@ -252,13 +256,13 @@ export default class GLTFParser {
 
   _resolveMaterial(material, index) {
     material.id = `material-${index}`;
-    if (material.normalTexture) {
+    if (material.normalTexture !== undefined) {
       this.normalTexture = this.getTexture(material.normalTexture);
     }
-    if (material.occlusionTexture) {
+    if (material.occlusionTexture !== undefined) {
       this.occlusionTexture = this.getTexture(material.occlusionTexture);
     }
-    if (material.emissiveTexture) {
+    if (material.emissiveTexture !== undefined) {
       this.emissiveTexture = this.getTexture(material.emissiveTexture);
     }
 
@@ -300,7 +304,7 @@ export default class GLTFParser {
 
   _resolveImage(image, index, options) {
     image.id = `image-${index}`;
-    if (image.bufferView) {
+    if (image.bufferView !== undefined) {
       image.bufferView = this.getBufferView(image.bufferView);
     }
 
@@ -308,7 +312,7 @@ export default class GLTFParser {
     // TODO - Image creation could be done on getImage instead of during load
     const {createImages = true} = options;
     if (createImages) {
-      image.image = this.glbParser.unpackImage(image);
+      image.image = this.glbParser.getImage(image);
     }
   }
 
