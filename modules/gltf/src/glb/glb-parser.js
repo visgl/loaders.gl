@@ -81,8 +81,8 @@ export default class GLBParser {
 
   // Unpacks a bufferview into a new Uint8Array that is a view into the binary chunk
   getBufferView(glTFBufferView) {
-    const byteOffset = glTFBufferView.byteOffset + this.binaryByteOffset;
-    return new Uint8Array(byteOffset, glTFBufferView.byteLength);
+    const byteOffset = (glTFBufferView.byteOffset || 0) + this.binaryByteOffset;
+    return new Uint8Array(this.glbArrayBuffer, byteOffset, glTFBufferView.byteLength);
   }
 
   // Unpacks a glTF accessor into a new typed array that is a view into the binary chunk
