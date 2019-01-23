@@ -12,13 +12,14 @@ export default class GLTFParser {
   }
 
   parse(gltf, options = {}) {
-    this.glbParser = new GLBParser();
 
     // GLTF can be JSON or binary (GLB)
     if (gltf instanceof ArrayBuffer) {
+      this.glbParser = new GLBParser();
       this.gltf = this.glbParser.parse(gltf).json;
       this.json = this.gltf;
     } else {
+      this.glbParser = null;
       this.gltf = gltf;
       this.json = gltf;
     }
@@ -284,6 +285,12 @@ export default class GLTFParser {
     accessor.bytesPerComponent = getBytesFromComponentType(accessor);
     accessor.components = getSizeFromAccessorType(accessor);
     accessor.bytesPerElement = accessor.bytesPerComponent * accessor.components;
+
+    if (this.glbParser) {
+      // TODO: This should be moved to the buffer view
+      // TODO: We should also load data if URL is there instead of binary
+      accessor.data = this.glbParser.unpackedBuffers.accessors[index];
+    }
   }
 
   _resolveTexture(texture, index) {
