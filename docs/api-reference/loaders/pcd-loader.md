@@ -16,7 +16,7 @@ References
 import {PCDLoader} from '@loaders.gl/pcd';
 import {loadFile} from '@loaders.gl/core';
 
-loadFile(url, PCFDoader)
+loadFile(url, PCDLoader)
 .then(({header, attributes}) => {
   // Application code here, e.g:
   // return new Geometry(attributes)
