@@ -9,17 +9,15 @@ const LAS_BINARY =
   require('test-data/las/indoor.0.1.laz');
 
 test('LASLoader#parseBinary', t => {
-  LASLoader.parseBinary(LAS_BINARY, {skip: 10}).then(data => {
-    // Check normalized data
-    t.ok(data.header, 'Normalized header was found');
-    t.equal(data.drawMode, 0, 'mode is POINTS (0)');
+  const data = LASLoader.parseBinary(LAS_BINARY, {skip: 10});
 
-    t.notOk(data.attributes.INDICES, 'INDICES attribute was not preset');
-    t.equal(data.attributes.POSITION.length, 80804 * 3, 'POSITION attribute was found');
+  // Check normalized data
+  t.ok(data.header, 'Normalized header was found');
+  t.is(data.header.vertexCount, data.originalHeader.totalRead, 'Original header was found');
+  t.equal(data.drawMode, 0, 'mode is POINTS (0)');
 
-    t.end();
-  }).catch(error => {
-    t.fail(error);
-    t.end();
-  });
+  t.notOk(data.attributes.INDICES, 'INDICES attribute was not preset');
+  t.equal(data.attributes.POSITION.length, 80805 * 3, 'POSITION attribute was found');
+
+  t.end();
 });

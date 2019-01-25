@@ -5,25 +5,24 @@
 */
 
 // laslaz.js - treat as compiled code
-/* eslint-disable */
-import LAZParser from './laz-parser';
+import Module from './laz-perf';
 
-var POINT_FORMAT_READERS = {
-  0: function(dv) {
+const POINT_FORMAT_READERS = {
+  0: dv => {
     return {
       position: [dv.getInt32(0, true), dv.getInt32(4, true), dv.getInt32(8, true)],
       intensity: dv.getUint16(12, true),
       classification: dv.getUint8(15, true)
     };
   },
-  1: function(dv) {
+  1: dv => {
     return {
       position: [dv.getInt32(0, true), dv.getInt32(4, true), dv.getInt32(8, true)],
       intensity: dv.getUint16(12, true),
       classification: dv.getUint8(15, true)
     };
   },
-  2: function(dv) {
+  2: dv => {
     return {
       position: [dv.getInt32(0, true), dv.getInt32(4, true), dv.getInt32(8, true)],
       intensity: dv.getUint16(12, true),
@@ -31,7 +30,7 @@ var POINT_FORMAT_READERS = {
       color: [dv.getUint16(20, true), dv.getUint16(22, true), dv.getUint16(24, true)]
     };
   },
-  3: function(dv) {
+  3: dv => {
     return {
       position: [dv.getInt32(0, true), dv.getInt32(4, true), dv.getInt32(8, true)],
       intensity: dv.getUint16(12, true),
@@ -43,13 +42,15 @@ var POINT_FORMAT_READERS = {
 
 function readAs(buf, Type, offset, count) {
   count = count === undefined || count === 0 ? 1 : count;
-  var sub = buf.slice(offset, offset + Type.BYTES_PER_ELEMENT * count);
+  const sub = buf.slice(offset, offset + Type.BYTES_PER_ELEMENT * count);
 
-  var r = new Type(sub);
-  if (count === 1) return r[0];
+  const r = new Type(sub);
+  if (count === 1) {
+    return r[0];
+  }
 
-  var ret = [];
-  for (var i = 0; i < count; i++) {
+  const ret = [];
+  for (let i = 0; i < count; i++) {
     ret.push(r[i]);
   }
 
@@ -57,65 +58,26 @@ function readAs(buf, Type, offset, count) {
 }
 
 function parseLASHeader(arraybuffer) {
-  var o = {};
+  const o = {};
 
   o.pointsOffset = readAs(arraybuffer, Uint32Array, 32 * 3);
   o.pointsFormatId = readAs(arraybuffer, Uint8Array, 32 * 3 + 8);
   o.pointsStructSize = readAs(arraybuffer, Uint16Array, 32 * 3 + 8 + 1);
   o.pointsCount = readAs(arraybuffer, Uint32Array, 32 * 3 + 11);
 
-  var start = 32 * 3 + 35;
+  let start = 32 * 3 + 35;
   o.scale = readAs(arraybuffer, Float64Array, start, 3);
   start += 24; // 8*3
   o.offset = readAs(arraybuffer, Float64Array, start, 3);
   start += 24;
 
-  var bounds = readAs(arraybuffer, Float64Array, start, 6);
+  const bounds = readAs(arraybuffer, Float64Array, start, 6);
   start += 48; // 8*6;
   o.maxs = [bounds[0], bounds[2], bounds[4]];
   o.mins = [bounds[1], bounds[3], bounds[5]];
 
   return o;
 }
-
-var msgIndex = 0;
-var waitHandlers = {};
-
-// This method is scope-wide since the nacl module uses this fuction to notify
-// us of events
-export function handleMessage(message_event) {
-  var msg = message_event.data;
-  var resolver = waitHandlers[msg.id];
-  delete waitHandlers[msg.id];
-
-  // call the callback in a separate context, make sure we've cleaned our
-  // state out before the callback is invoked since it may queue more doExchanges
-  setTimeout(function() {
-    if (msg.error) return resolver.reject(new Error(msg.message || 'Unknown Error'));
-
-    if (msg.hasOwnProperty('count') && msg.hasOwnProperty('hasMoreData')) {
-      return resolver.resolve({
-        buffer: msg.result,
-        count: msg.count,
-        hasMoreData: msg.hasMoreData
-      });
-    }
-
-    resolver.resolve(msg.result);
-  }, 0);
-}
-
-function doDataExchange(cmd, callback) {
-  cmd.id = msgIndex.toString();
-  msgIndex++;
-
-  var resolver = Promise.defer();
-  waitHandlers[cmd.id] = resolver;
-
-  nacl_module.postMessage(cmd);
-
-  return resolver.promise.cancellable();
-};
 
 // LAS Loader
 // Loads uncompressed files
@@ -129,78 +91,66 @@ class LASLoader {
     // nothing needs to be done to open this file
     //
     this.readOffset = 0;
-    return new Promise(function(res, rej) {
-      setTimeout(res, 0);
-    });
+    return true;
   }
 
   getHeader() {
-    var o = this;
-
-    return new Promise(function(res, rej) {
-      setTimeout(function() {
-        o.header = parseLASHeader(o.arraybuffer);
-        res(o.header);
-      }, 0);
-    });
+    this.header = parseLASHeader(this.arraybuffer);
+    return this.header;
   }
 
   readData(count, offset, skip) {
-    var o = this;
+    const {header, arraybuffer} = this;
+    if (!header) {
+      throw new Error('Cannot start reading data till a header request is issued');
+    }
 
-    return new Promise(function(res, rej) {
-      setTimeout(function() {
-        if (!o.header)
-          return rej(new Error('Cannot start reading data till a header request is issued'));
+    let {readOffset} = this;
+    let start;
 
-        var start;
-        if (skip <= 1) {
-          count = Math.min(count, o.header.pointsCount - o.readOffset);
-          start = o.header.pointsOffset + o.readOffset * o.header.pointsStructSize;
-          var end = start + count * o.header.pointsStructSize;
-          res({
-            buffer: o.arraybuffer.slice(start, end),
-            count: count,
-            hasMoreData: o.readOffset + count < o.header.pointsCount
-          });
-          o.readOffset += count;
-        } else {
-          var pointsToRead = Math.min(count * skip, o.header.pointsCount - o.readOffset);
-          var bufferSize = Math.ceil(pointsToRead / skip);
-          var pointsRead = 0;
+    if (skip <= 1) {
+      count = Math.min(count, header.pointsCount - readOffset);
+      start = header.pointsOffset + readOffset * header.pointsStructSize;
+      const end = start + count * header.pointsStructSize;
+      readOffset += count;
+      this.readOffset = readOffset;
+      return {
+        buffer: arraybuffer.slice(start, end),
+        count,
+        hasMoreData: readOffset < header.pointsCount
+      };
+    }
 
-          var buf = new Uint8Array(bufferSize * o.header.pointsStructSize);
-          for (var i = 0; i < pointsToRead; i++) {
-            if (i % skip === 0) {
-              start = o.header.pointsOffset + o.readOffset * o.header.pointsStructSize;
-              var src = new Uint8Array(o.arraybuffer, start, o.header.pointsStructSize);
+    const pointsToRead = Math.min(count * skip, header.pointsCount - readOffset);
+    const bufferSize = Math.ceil(pointsToRead / skip);
+    let pointsRead = 0;
 
-              buf.set(src, pointsRead * o.header.pointsStructSize);
-              pointsRead++;
-            }
+    const buf = new Uint8Array(bufferSize * header.pointsStructSize);
+    for (let i = 0; i < pointsToRead; i++) {
+      if (i % skip === 0) {
+        start = header.pointsOffset + readOffset * header.pointsStructSize;
+        const src = new Uint8Array(arraybuffer, start, header.pointsStructSize);
 
-            o.readOffset++;
-          }
+        buf.set(src, pointsRead * header.pointsStructSize);
+        pointsRead++;
+      }
 
-          res({
-            buffer: buf.buffer,
-            count: pointsRead,
-            hasMoreData: o.readOffset < o.header.pointsCount
-          });
-        }
-      }, 0);
-    });
+      readOffset++;
+    }
+    this.readOffset = readOffset;
+
+    return {
+      buffer: buf.buffer,
+      count: pointsRead,
+      hasMoreData: readOffset < header.pointsCount
+    };
   }
 
   close() {
-    var o = this;
-    return new Promise(function(res, rej) {
-      o.arraybuffer = null;
-      setTimeout(res, 0);
-    });
+    this.arraybuffer = null;
+    return true;
   }
 }
-
 
 // LAZ Loader
 // Uses NaCL module to load LAZ files
@@ -208,75 +158,98 @@ class LASLoader {
 class LAZLoader {
   constructor(arraybuffer) {
     this.arraybuffer = arraybuffer;
-    this.ww = new LAZParser({onProgress: function(data) {
-      if (o.nextCB !== null) {
-        o.nextCB(data);
-        o.nextCB = null;
-      }
-    }});
-
-    this.nextCB = null;
-    var o = this;
-
-    this.dorr = function(req, cb) {
-      o.nextCB = cb;
-      o.ww.parse(req);
-    };
+    this.instance = null; // laz-perf this.instance
   }
 
   open() {
-    // nothing needs to be done to open this file
-    //
-    var o = this;
-    return new Promise(function(res, rej) {
-      o.dorr({type: 'open', arraybuffer: o.arraybuffer}, function(r) {
-        if (r.status !== 1) return rej(new Error('Failed to open file'));
+    try {
+      const {arraybuffer} = this;
+      this.instance = new Module.LASZip();
+      const abInt = new Uint8Array(arraybuffer);
+      const buf = Module._malloc(arraybuffer.byteLength);
 
-        res(true);
-      });
-    });
+      this.instance.arraybuffer = arraybuffer;
+      this.instance.buf = buf;
+      Module.HEAPU8.set(abInt, buf);
+      this.instance.open(buf, arraybuffer.byteLength);
+
+      this.instance.readOffset = 0;
+
+      return true;
+    } catch (e) {
+      throw new Error(`Failed to open file: ${e.message}`);
+    }
   }
 
   getHeader() {
-    var o = this;
+    if (!this.instance) {
+      throw new Error('You need to open the file before trying to read header');
+    }
 
-    return new Promise(function(res, rej) {
-      o.dorr({type: 'header'}, function(r) {
-        if (r.status !== 1) return rej(new Error('Failed to get header'));
-
-        res(r.header);
-      });
-    });
+    try {
+      const header = parseLASHeader(this.instance.arraybuffer);
+      header.pointsFormatId &= 0x3f;
+      this.header = header;
+      return header;
+    } catch (e) {
+      throw new Error(`Failed to get header: ${e.message}`);
+    }
   }
 
   readData(count, offset, skip) {
-    var o = this;
+    if (!this.instance) {
+      throw new Error('You need to open the file before trying to read stuff');
+    }
 
-    return new Promise(function(res, rej) {
-      o.dorr({type: 'read', count: count, offset: offset, skip: skip}, function(r) {
-        if (r.status !== 1) return rej(new Error('Failed to read data'));
-        res({
-          buffer: r.buffer,
-          count: r.count,
-          hasMoreData: r.hasMoreData
-        });
-      });
-    });
+    const {header, instance} = this;
+
+    if (!header) {
+      throw new Error(
+        'You need to query header before reading, I maintain state that way, sorry :('
+      );
+    }
+
+    try {
+      const pointsToRead = Math.min(count * skip, header.pointsCount - instance.readOffset);
+      const bufferSize = Math.ceil(pointsToRead / skip);
+      let pointsRead = 0;
+
+      const thisBuf = new Uint8Array(bufferSize * header.pointsStructSize);
+      const bufRead = Module._malloc(header.pointsStructSize);
+      for (let i = 0; i < pointsToRead; i++) {
+        instance.getPoint(bufRead);
+
+        if (i % skip === 0) {
+          const a = new Uint8Array(Module.HEAPU8.buffer, bufRead, header.pointsStructSize);
+          thisBuf.set(a, pointsRead * header.pointsStructSize, header.pointsStructSize);
+          pointsRead++;
+        }
+
+        instance.readOffset++;
+      }
+
+      return {
+        buffer: thisBuf.buffer,
+        count: pointsRead,
+        hasMoreData: instance.readOffset < header.pointsCount
+      };
+    } catch (e) {
+      throw new Error(`Failed to read data: ${e.message}`);
+    }
   }
 
   close() {
-    var o = this;
-
-    return new Promise(function(res, rej) {
-      o.dorr({type: 'close'}, function(r) {
-        if (r.status !== 1) return rej(new Error('Failed to close file'));
-
-        res(true);
-      });
-    });
+    try {
+      if (this.instance !== null) {
+        this.instance.delete();
+        this.instance = null;
+      }
+      return true;
+    } catch (e) {
+      throw new Error(`Failed to close file: ${e.message}`);
+    }
   }
 }
-
 
 // Helper class: Decodes LAS records into points
 //
@@ -293,50 +266,57 @@ class LASDecoder {
   }
 
   getPoint(index) {
-    if (index < 0 || index >= this.pointsCount) throw new Error('Point index out of range');
+    if (index < 0 || index >= this.pointsCount) {
+      throw new Error('Point index out of range');
+    }
 
-    var dv = new DataView(this.arrayb, index * this.pointSize, this.pointSize);
+    const dv = new DataView(this.arrayb, index * this.pointSize, this.pointSize);
     return this.decoder(dv);
   }
 }
 
-
 // A single consistent interface for loading LAS/LAZ files
 export class LASFile {
- constructor(arraybuffer) {
+  constructor(arraybuffer) {
     this.arraybuffer = arraybuffer;
 
     this.determineVersion();
-    if (this.version > 13) throw new Error('Only file versions <= 1.3 are supported at this time');
+    if (this.version > 13) {
+      throw new Error('Only file versions <= 1.3 are supported at this time');
+    }
 
     this.determineFormat();
-    if (POINT_FORMAT_READERS[this.formatId] === undefined)
+    if (POINT_FORMAT_READERS[this.formatId] === undefined) {
       throw new Error('The point format ID is not supported');
+    }
 
-    this.loader = this.isCompressed
-      ? new LAZLoader(this.arraybuffer)
-      : new LASLoader(this.arraybuffer);
+    this.loader = this.isCompressed ?
+      new LAZLoader(this.arraybuffer) : new LASLoader(this.arraybuffer);
   }
 
   determineFormat() {
-    var formatId = readAs(this.arraybuffer, Uint8Array, 32 * 3 + 8);
-    var bit_7 = (formatId & 0x80) >> 7;
-    var bit_6 = (formatId & 0x40) >> 6;
+    const formatId = readAs(this.arraybuffer, Uint8Array, 32 * 3 + 8);
+    const bit7 = (formatId & 0x80) >> 7;
+    const bit6 = (formatId & 0x40) >> 6;
 
-    if (bit_7 === 1 && bit_6 === 1) throw new Error('Old style compression not supported');
+    if (bit7 === 1 && bit6 === 1) {
+      throw new Error('Old style compression not supported');
+    }
 
     this.formatId = formatId & 0x3f;
-    this.isCompressed = bit_7 === 1 || bit_6 === 1;
+    this.isCompressed = bit7 === 1 || bit6 === 1;
   }
 
   determineVersion() {
-    var ver = new Int8Array(this.arraybuffer, 24, 2);
+    const ver = new Int8Array(this.arraybuffer, 24, 2);
     this.version = ver[0] * 10 + ver[1];
-    this.versionAsString = ver[0] + '.' + ver[1];
+    this.versionAsString = `${ver[0]}.${ver[1]}`;
   }
 
   open() {
-    return this.loader.open();
+    if (this.loader.open()) {
+      this.isOpen = true;
+    }
   }
 
   getHeader() {
@@ -348,7 +328,9 @@ export class LASFile {
   }
 
   close() {
-    return this.loader.close();
+    if (this.loader.close()) {
+      this.isOpen = false;
+    }
   }
 
   getUnpacker() {

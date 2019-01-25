@@ -8,13 +8,15 @@ export default function loadLAS(arraybuffer, options = {}) {
   let colors;
   let intensities;
   let classifications;
+  let originalHeader;
 
   const {skip = 1, onProgress} = options;
 
-  return parseLAS(arraybuffer, skip, (decoder, header, progress) => {
+  parseLAS(arraybuffer, skip, (decoder, header) => {
 
-    if (!positions) {
-      const total = header.vertexCount;
+    if (!originalHeader) {
+      originalHeader = header;
+      const total = header.totalToRead;
 
       positions = new Float32Array(total * 3);
       // laslaz-decoder.js `pointFormatReaders`
@@ -56,12 +58,16 @@ export default function loadLAS(arraybuffer, options = {}) {
           INTENSITY: intensities,
           CLASSIFICATION: classifications
         },
-        progress
+        progress: header.totalRead / header.totalToRead
       });
     }
+  });
 
-  }).then(header => ({
-    header,
+  return {
+    originalHeader,
+    header: {
+      vertexCount: originalHeader.totalToRead
+    },
     drawMode: 0,  // GL.POINTS
     attributes: {
       POSITION: positions,
@@ -69,7 +75,7 @@ export default function loadLAS(arraybuffer, options = {}) {
       INTENSITY: intensities,
       CLASSIFICATION: classifications
     }
-  }));
+  };
 }
 
 /**
@@ -79,62 +85,42 @@ export default function loadLAS(arraybuffer, options = {}) {
  */
 export function parseLAS(rawData, skip, onParseData) {
   const dataHandler = new LASFile(rawData);
-  return (
-    dataHandler
-      .open()
-      // open data
-      .then(() => {
-        dataHandler.isOpen = true;
-        return dataHandler;
-      })
-      // attch header
-      .then(data => data.getHeader().then(header => [data, header]))
-      // start loading
-      .then(([data, header]) => {
-        const Unpacker = data.getUnpacker();
 
-        const totalToRead = Math.floor(header.pointsCount / Math.max(1, skip));
-        header.vertexCount = totalToRead;
-        let totalRead = 0;
+  try {
+    // open data
+    dataHandler.open();
 
-        const reader = () =>
-          data.readData(1000 * 100, 0, skip).then(chunk => {
-            totalRead += chunk.count;
-            const unpacker = new Unpacker(chunk.buffer, chunk.count, header);
-            // surface unpacker and progress via call back
-            // use unpacker.pointsCount and unpacker.getPoint(i) to handle data in app
-            onParseData(unpacker, header, totalRead / totalToRead);
+    const header = dataHandler.getHeader();
+    // start loading
+    const Unpacker = dataHandler.getUnpacker();
 
-            if (chunk.hasMoreData && totalRead < totalToRead) {
-              return reader();
-            }
+    const totalToRead = Math.ceil(header.pointsCount / Math.max(1, skip));
+    header.totalToRead = totalToRead;
+    let totalRead = 0;
 
-            header.totalRead = totalRead;
-            header.versionAsString = chunk.versionAsString;
-            header.isCompressed = chunk.isCompressed;
-            return [chunk, header];
-          });
+    /* eslint-disable no-constant-condition */
+    while (true) {
+      const chunk = dataHandler.readData(1000 * 100, 0, skip);
 
-        return reader();
-      })
-      // done loading, close file
-      .then(([data, header]) => {
-        return dataHandler.close().then(() => {
-          dataHandler.isOpen = false;
-          // trim the LASFile which we don't really want to pass to the user
-          return header;
-        });
-      })
-      // handle exceptions
-      .catch(e => {
-        // make sure the data is closed, if the data is open close and then fail
-        if (dataHandler.isOpen) {
-          return dataHandler.close().then(() => {
-            dataHandler.isOpen = false;
-            throw e;
-          });
-        }
-        throw e;
-      })
-  );
+      totalRead += chunk.count;
+
+      header.totalRead = totalRead;
+      header.versionAsString = chunk.versionAsString;
+      header.isCompressed = chunk.isCompressed;
+
+      const unpacker = new Unpacker(chunk.buffer, chunk.count, header);
+
+      // surface unpacker and progress via call back
+      // use unpacker.pointsCount and unpacker.getPoint(i) to handle data in app
+      onParseData(unpacker, header);
+
+      if (!chunk.hasMoreData || totalRead >= totalToRead) {
+        break;
+      }
+    }
+  } catch (e) {
+    throw e;
+  } finally {
+    dataHandler.close();
+  }
 }
