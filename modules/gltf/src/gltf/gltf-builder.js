@@ -8,8 +8,8 @@ const UBER_MESH_EXTENSION = 'UBER_draco_mesh_compression';
 const UBER_POINT_CLOUD_EXTENSION = 'UBER_draco_point_cloud_compression';
 
 export default class GLTFBuilder extends GLBBuilder {
-  constructor(rootPath, options = {}) {
-    super(rootPath, options);
+  constructor(options = {}) {
+    super(options);
 
     // Soft dependency on DRACO, app needs to import and supply these
     this.DracoEncoder = options.DracoEncoder;
