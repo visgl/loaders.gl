@@ -134,6 +134,40 @@ export default class GLTFParser {
     return this._get('meshes', index);
   }
 
+  getDecompressedMesh(index) {
+    if (!this.DracoDecoder) {
+      throw new Error('DracoDecoder not available');
+    }
+
+    const mesh = this._get('meshes', index);
+
+    for (const primitive of mesh.primitives) {
+      // TODO: DracoMesh extension
+
+      const extensions = primitive.extensions;
+      if ('UBER_draco_point_cloud_compression' in extensions) {
+        const bufferViewIndex = extensions.UBER_draco_point_cloud_compression.bufferView;
+        const bufferView = this.getBufferView(bufferViewIndex);
+
+        // TODO: change to getArrayFromBufferView()
+        const compressedData = this.glbParser.getBufferView(bufferView);
+
+        const dracoDecoder = new this.DracoDecoder();
+        const decodedPrimitive = dracoDecoder.decode(compressedData);
+
+        // TODO: what to do about original attributes
+        primitive.attributes = decodedPrimitive.attributes;
+        // TODO: stashing header on primitive, not sure if necessary
+        primitive.header = decodedPrimitive.header;
+
+        // TODO: drawmode is currently undefined, look into dracodecoder to set to 0 for point cloud
+        primitive.drawMode = decodedPrimitive.drawMode || 0;
+      }
+    }
+
+    return mesh;
+  }
+
   getMaterial(index) {
     return this._get('materials', index);
   }
