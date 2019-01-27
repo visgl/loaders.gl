@@ -20,9 +20,7 @@ const GLB_FILE_HEADER_SIZE = 12;
 const GLB_CHUNK_HEADER_SIZE = 8;
 
 export default class GLBBuilder {
-  constructor(rootPath, options = {}) {
-    this.rootPath = rootPath;
-
+  constructor(options = {}) {
     // Lets us keep track of how large the body will be, as well as the offset for each of the
     // original buffers.
     this.byteLength = 0;
