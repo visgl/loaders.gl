@@ -1,24 +1,8 @@
-export function smartFetch(url, loaders, options) {
-  /* global fetch */
-  return fetch(url)
-    .then(response => response.text())
-    .then(text => smartParse(text, url));
-}
-
-// Find a loader that works for extension/text
-export function smartParse(text, url, loaders, options) {
-  const loader = getLoader(url, text, loaders);
-  if (!loader.parseText) {
-    throw new Error(`${loader.name} loader cannot handle text`);
-  }
-
-  return loader.parseText(text, options);
-}
-
 const EXT_PATTERN = /[^\.]+$/;
 
+// Find a loader that works for extension/text
 // Search the loaders array argument for a loader that matches extension or text
-function getLoader(url, text, loaders) {
+export function autoDetectLoader(url, text, loaders) {
   // Get extension without
   let extension = url.match(EXT_PATTERN) || url;
   if (extension.length && extension[0] === '.') {

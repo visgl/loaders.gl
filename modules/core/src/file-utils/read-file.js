@@ -1,5 +1,6 @@
 import {getPathPrefix} from './path-prefix';
-import decodeDataUri from '../loader-utils/decode-data-uri';
+import decodeDataUri from '../data-uri-utils/decode-data-uri';
+
 /* global fetch */
 /* global URL, location */
 /* global File, FileReader */
