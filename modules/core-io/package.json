@@ -1,11 +1,8 @@
 {
-  "name": "@loaders.gl/core",
+  "name": "@loaders.gl/core-io",
   "version": "0.5.0",
   "description": "Framework-independent loaders for 3D graphics formats",
   "license": "MIT",
-  "publishConfig": {
-    "access": "public"
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/uber-web/loaders.gl"
@@ -27,7 +24,7 @@
   ],
   "sideEffects": false,
   "browser": {
-    "text-encoding": false
+    "fs": false
   },
   "scripts": {
     "clean": "rm -fr dist && mkdir -p dist",
@@ -37,6 +34,7 @@
     "build-es5": "BABEL_ENV=es5 babel src --config-file ../../babel.config.js --out-dir dist/es5 --source-maps --ignore 'node_modules/'"
   },
   "dependencies": {
-    "text-encoding": "^0.6.4"
+    "@loaders.gl/core": "^0.5.0",
+    "filesaver.js": "^0.2.0"
   }
 }

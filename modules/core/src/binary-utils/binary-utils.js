@@ -1,5 +1,5 @@
 /* global FileReader, Blob, ArrayBuffer, Buffer */
-import assert from './assert';
+import assert from '../utils/assert';
 
 export function toArrayBuffer(binaryData) {
   if (binaryData instanceof ArrayBuffer) {

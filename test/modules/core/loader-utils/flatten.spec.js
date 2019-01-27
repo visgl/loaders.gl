@@ -19,7 +19,7 @@
 // THE SOFTWARE.
 
 import test from 'tape-catch';
-import {flattenToTypedArray} from '@loaders.gl/core/common/loader-utils/flatten';
+import {flattenToTypedArray} from '@loaders.gl/core';
 
 const FLATTEN_VERTICES_TEST_CASES = [
   {

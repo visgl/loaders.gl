@@ -1,6 +1,7 @@
 /* eslint-disable max-len */
 import test from 'tape-catch';
-import {loadBinaryFile, TextEncoder} from '@loaders.gl/core';
+import {TextEncoder} from '@loaders.gl/core';
+import {loadBinaryFile} from '@loaders.gl/core-io';
 import {PCDLoader} from '@loaders.gl/pcd';
 import path from 'path';
 

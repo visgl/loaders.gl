@@ -1,4 +1,8 @@
 import './core';
+// import './core-io';
+
+import './images';
+
 import './draco';
 
 import './obj';

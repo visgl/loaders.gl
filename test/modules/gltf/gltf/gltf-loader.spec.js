@@ -2,7 +2,7 @@
 import test from 'tape-catch';
 
 import {deepCopy} from 'loaders.gl/test/setup';
-import {loadBinaryFile} from '@loaders.gl/core';
+import {loadBinaryFile} from '@loaders.gl/core-io';
 import {GLBParser, GLTFLoader, GLTFParser} from '@loaders.gl/gltf';
 import path from 'path';
 

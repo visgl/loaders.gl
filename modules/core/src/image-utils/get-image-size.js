@@ -1,7 +1,7 @@
 // Attributions
 // * Based on binary-gltf-utils under MIT license: Copyright (c) 2016-17 Karl Cheng
 
-import {toDataView} from './binary-utils';
+import {toDataView} from '@loaders.gl/core';
 
 const BIG_ENDIAN = false;
 const LITTLE_ENDIAN = true;

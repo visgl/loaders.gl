@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import test from 'tape-catch';
-import {loadBinaryFile} from '@loaders.gl/core';
+import {loadBinaryFile} from '@loaders.gl/core-io';
 import {LASLoader} from '@loaders.gl/las';
 import path from 'path';
 

@@ -1,6 +1,8 @@
+// TODO consolidate with core-io
+
 // Based on binary-gltf-utils under MIT license: Copyright (c) 2016-17 Karl Cheng
-import path from 'path';
-const fs = module.require && module.require('fs');
+// import path from 'path';
+// const fs = module.require && module.require('fs');
 
 /* global Buffer */
 
@@ -13,12 +15,12 @@ export function loadUri(uri, rootFolder = '.') {
     return Promise.resolve(parseDataUri(uri));
   }
 
-  if (!fs) {
-    return Promise.reject(new Error('Cannot load file URIs in browser'));
-  }
+  // if (!fs) {
+  return Promise.reject(new Error('Cannot load file URIs in browser'));
+  // }
 
-  const filePath = path.join((rootFolder = '.'), uri);
-  return fs.readFileAsync(filePath).then(buffer => ({buffer}));
+  // const filePath = path.join((rootFolder = '.'), uri);
+  // return fs.readFileAsync(filePath).then(buffer => ({buffer}));
 }
 
 /**

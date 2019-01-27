@@ -1,49 +1,55 @@
-// LOADING FUNCTIONS
+// FILE LOADING FUNCTIONS
 
-export {loadFile} from './common/file-utils/load-file';
-export {loadBinaryFile} from './common/file-utils/load-binary-file';
-export {smartFetch, smartParse} from './common/file-utils/smart-fetch';
-export {saveBinaryFile} from './common/file-utils/save-binary-file';
+export {setPathPrefix, getPathPrefix} from './file-utils/path-prefix';
+export {loadFile} from './file-utils/load-file';
+export {loadImage} from './file-utils/load-image';
+export {smartFetch, smartParse} from './file-utils/smart-fetch';
+export {loadUri} from './loader-utils/load-uri.js';
 
-export {loadUri} from './common/loader-utils/load-uri.js';
-
-// UTILS
-
-export {
-  isImage,
-  getImageSize
-} from './common/loader-utils/get-image-size';
+// BINARY UTILS
 
 export {
   toArrayBuffer,
   toBuffer,
   toDataView
-} from './common/loader-utils/binary-utils';
+} from './binary-utils/binary-utils';
 
 export {
   TextDecoder,
   TextEncoder
-} from './common/loader-utils/text-encoding';
-
-// LOADER UTILS
-
-export {default as assert} from './common/loader-utils/assert';
-
-export {flattenToTypedArray} from './common/loader-utils/flatten';
+} from './binary-utils/text-encoding';
 
 export {
   padTo4Bytes,
   copyArrayBuffer
-} from './common/loader-utils/array-utils';
+} from './binary-utils/memory-copy-utils';
+
+export {
+  flattenToTypedArray
+} from './binary-utils/flatten-to-typed-array';
+
+// IMAGE UTILS
+
+export {
+  isImage,
+  getImageSize
+} from './image-utils/get-image-size';
+
+// MESH UTILS
 
 export {
   getAccessorTypeFromSize,
   getComponentTypeFromArray
-} from './common/mesh-utils/gltf-type-utils';
+} from './mesh-utils/gltf-type-utils';
+
 export {
   getGLTFAccessors,
   getGLTFIndices,
   getGLTFAttributeMap
-} from './common/mesh-utils/gltf-attribute-utils';
+} from './mesh-utils/gltf-attribute-utils';
 
-export {getMeshSize as _getMeshSize} from './common/mesh-utils/mesh-utils';
+export {getMeshSize as _getMeshSize} from './mesh-utils/mesh-utils';
+
+// CORE UTILS
+export {default as assert} from './utils/assert';
+export {isBrowser, self, window, global, document} from './utils/globals';

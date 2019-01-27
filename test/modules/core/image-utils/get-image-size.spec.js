@@ -6,26 +6,28 @@ import test from 'tape-catch';
 import path from 'path';
 
 import {getImageSize} from '@loaders.gl/core';
-import {loadBinaryFile} from '@loaders.gl/core';
+import {loadBinaryFile} from '@loaders.gl/core-io';
+
+const TEST_DATA_DIR = path.resolve(__dirname, '../../../data');
 
 const PNG_BINARY =
-  loadBinaryFile(path.resolve(__dirname, '../../../../data/images/img1-preview.png')) ||
+  loadBinaryFile(path.resolve(TEST_DATA_DIR, 'images/img1-preview.png')) ||
   require('test-data/images/img1-preview.png');
 
 const JPEG_BINARY =
-  loadBinaryFile(path.resolve(__dirname, '../../../../data/images/img1-preview.jpeg')) ||
+  loadBinaryFile(path.resolve(TEST_DATA_DIR, 'images/img1-preview.jpeg')) ||
   require('test-data/images/img1-preview.jpeg');
 
 const GIF_BINARY =
-  loadBinaryFile(path.resolve(__dirname, '../../../../data/images/img1-preview.gif')) ||
+  loadBinaryFile(path.resolve(TEST_DATA_DIR, 'images/img1-preview.gif')) ||
   require('test-data/images/img1-preview.gif');
 
 const BMP_BINARY =
-  loadBinaryFile(path.resolve(__dirname, '../../../../data/images/img1-preview.bmp')) ||
+  loadBinaryFile(path.resolve(TEST_DATA_DIR, 'images/img1-preview.bmp')) ||
   require('test-data/images/img1-preview.bmp');
 
 const TIFF_BINARY =
-  loadBinaryFile(path.resolve(__dirname, '../../../../data/images/img1-preview.tiff')) ||
+  loadBinaryFile(path.resolve(TEST_DATA_DIR, 'images/img1-preview.tiff')) ||
   require('test-data/images/img1-preview.png');
 
 const TEST_FILES = [

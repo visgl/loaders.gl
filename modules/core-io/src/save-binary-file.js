@@ -1,4 +1,4 @@
-import {toBuffer} from '../loader-utils/binary-utils';
+import {toBuffer} from '@loaders.gl/core';
 
 export function saveBinaryFile(filePath, arrayBuffer) {
   const fs = module.require('fs');

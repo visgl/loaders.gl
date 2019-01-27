@@ -18,6 +18,22 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+export function flattenToTypedArray(nestedArray, ArrayType = Float32Array) {
+  if (nestedArray.length === 0) {
+    return new Float32Array(0);
+  }
+
+  if (!checkVertices(nestedArray)) {
+    return null;
+  }
+
+  const count = countVertices(nestedArray);
+
+  const typedArray = new ArrayType(count);
+  flattenVerticesInPlace(nestedArray, typedArray);
+  return typedArray;
+}
+
 /**
  * Flattens a nested array into a single level array,
  * or a single value into an array with one value
@@ -89,22 +105,6 @@ export function flattenVertices(nestedArray, {result = [], dimensions = 3} = {})
     result.push(0);
   }
   return result;
-}
-
-export function flattenToTypedArray(nestedArray, ArrayType = Float32Array) {
-  if (nestedArray.length === 0) {
-    return new Float32Array(0);
-  }
-
-  if (!checkVertices(nestedArray)) {
-    return null;
-  }
-
-  const count = countVertices(nestedArray);
-
-  const typedArray = new ArrayType(count);
-  flattenVerticesInPlace(nestedArray, typedArray);
-  return typedArray;
 }
 
 function checkVertices(nestedArray, predicate = Number.isFinite) {
