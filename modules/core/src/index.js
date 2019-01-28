@@ -54,6 +54,3 @@ export {getMeshSize as _getMeshSize} from './mesh-utils/mesh-utils';
 
 export {default as assert} from './utils/assert';
 export {isBrowser, self, window, global, document} from './utils/globals';
-
-// DEPRECATED (as separate module export)
-export {default as readDataUri} from './data-uri-utils/decode-data-uri.js';

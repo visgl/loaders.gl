@@ -11,7 +11,7 @@ const LOADERS = [
   OBJLoader, KMLLoader
 ];
 
-test('loadFileSync#autoParse', t => {
+test('parseFileSync#autoParse', t => {
   if (!KMLLoader.supported) {
     t.comment('XML parsing not available');
   } else {

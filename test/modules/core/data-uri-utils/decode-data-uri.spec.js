@@ -4,38 +4,38 @@
 /* eslint-disable max-len, max-statements */
 /* global Buffer */
 import test from 'tape-catch';
-import parseDataUri from '@loaders.gl/core/loader-utils/decode-data-uri.js';
+import decodeDataUri from '@loaders.gl/core/data-uri-utils/decode-data-uri';
 
-test('parseDataUri', t => {
+test('decodeDataUri', t => {
   let obj;
   let buf;
 
-  obj = parseDataUri('data:text/html;base64,PGh0bWw+');
+  obj = decodeDataUri('data:text/html;base64,PGh0bWw+');
   t.equals(obj.mimeType, 'text/html', 'should record down correct MIME type');
 
-  obj = parseDataUri('data:text/plain;base64,SSBsb3ZlIHlvdSE');
+  obj = decodeDataUri('data:text/plain;base64,SSBsb3ZlIHlvdSE');
   buf = obj.buffer;
   t.ok(Buffer.isBuffer(buf));
   t.equals(buf.toString(), 'I love you!', 'should work with non-padded base64 data URIs');
 
-  obj = parseDataUri('data:text/plain;base64,SSBsb3ZlIHlvdSE=');
+  obj = decodeDataUri('data:text/plain;base64,SSBsb3ZlIHlvdSE=');
   buf = obj.buffer;
   t.ok(Buffer.isBuffer(buf));
   t.equals(buf.toString(), 'I love you!', 'should work with padded base64 data URIs');
 
-  obj = parseDataUri('data:text/plain,important content!');
+  obj = decodeDataUri('data:text/plain,important content!');
   buf = obj.buffer;
   t.ok(Buffer.isBuffer(buf));
   t.equals(buf.toString(), 'important content!', 'should work with plain data URIs');
 
-  obj = parseDataUri('data:,important content!');
+  obj = decodeDataUri('data:,important content!');
   t.equals(obj.mimeType, 'text/plain;charset=US-ASCII', 'should set default MIME type');
 
   buf = obj.buffer;
   t.ok(Buffer.isBuffer(buf));
   t.equals(buf.toString(), 'important content!', 'should work with default MIME type');
 
-  obj = parseDataUri('data:;charset=utf-8,important content!');
+  obj = decodeDataUri('data:;charset=utf-8,important content!');
   t.equals(
     obj.mimeType,
     'text/plain;charset=utf-8',
