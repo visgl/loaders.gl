@@ -1,9 +1,39 @@
 # About Loaders
 
-loaders.gl exports a suite of loaders. Each loader is an object that can be passed to other functions in the loaders.gl API.
+loaders.gl has parser functions that use so called "loaders" (or "loader objects") to convert the raw data loaded from files into parsed objects. Each loader object encapsulates a loader for one file format and essentially provides a parsing function and some metadata (like the loader name, common file extensions for the format etc). Loader object can be passed into utility functions in the loaders.gl core API to enable parsing of the chosen format.
+
+loaders.gl provides a suite of pre-built loader objects packaged as scoped npm modules. Your application can install and combine these as desired. It is also easy to create your own loader objects, e.g. if you have existing javascript loaders that you would like to use with the loaders.gl core utility functions.
 
 
-## Structure of a Loader Object
+## Structure of a v1.0 Loader Object
+
+### Common Fields
+
+| Field           | Type        | Default    | Description |
+| ---             | ---         | ---        | ---         |
+| `name`          | `String`    | Required   | Short name of the loader ('OBJ', 'PLY' etc) |
+| `extension`     | `String`    | Required   | Three letter (typically) extension used by files of this format |
+| `testText`      | `Function`  | `null`     | Guesses if a file is of this format by examining the first characters in the file |
+
+### Parser Function
+
+A loader must define a parser function for the format, a function that takes the loaded data and converts it into a parsed object. Depending on how the underlying loader works (whether it is synchronous or asynchronous and whether it expects text or binary data), the loader object can expose the parser in a couple of different ways, specified by provided one of the parser function fields.
+
+The loaders.gl utility functions will use the provided function. The preferred option is to provide a synchronous parser that works on loaded data (using the `parseBinarySync` or `parseTextSync` fields). The second preference is to provide an asynchronous parser that works on loaded data (`parseBinaryAsync`). Finally, some existing parsers (most notably the classic built-in browser image loading API) combine both loading and parsing, and loaders.gl provides an accommodation for packaging such loaders into loader options (`readAndParseBinaryAsync`).
+
+Note that only one parse function must be implemented by a loader object. loaders.gl utility functions examines what format the loader needs (text or binary), reads data into the required format, and then calls the parser with that data.
+
+| Parser function field | Type        | Default    | Description |
+| ---                   | ---         | ---        | ---         |
+| `parseTextSync`       | `Function`  | `null`     | Parses a text file synchronously (`String`) \* |
+| `parseSync`           | `Function`  | `null`     | Parses a binary file synchronously (`ArrayBuffer`) \* |
+| `parse`               | `Function`  | `null`     | Parses a binary file asynchronously (`ArrayBuffer`) \* |
+| `readAndParse`        | `Function`  | `null`     | Reads and parses a binary file asynchronously \* |
+
+> Future extension? | `loadStream`    | `Function`  | `null`     | Parses a text stream (`Stream`) \* |
+
+
+## Structure of a v0.5 Loader Objects (DEPRECATED)
 
 Each loader has a Loader object that provides metadata about that loader, and functions to parse and test data.
 
@@ -15,8 +45,10 @@ The loader object has the following fields:
 | `extension`     | `String`    | Required   | Three letter (typically) extension used by files of this format |
 | `testText`      | `Function`  | `null`     | Guesses if a file is of this format by examining the first characters in the file |
 | `loadText`      | `Function`  | `null`     | Parses a text file (`String`) \* |
-| `loadJSON`      | `Function`  | `null`     | Parses a JSON file (JavaScript data structure) \* |
 | `loadBinary`    | `Function`  | `null`     | Parses a binary file (`ArrayBuffer`) \* |
-| `loadStream`    | `Function`  | `null`     | Parses a text stream (`Stream`) \* |
 
-* Only one of the three `load...` fields must be implemented by a loader. The `loadFile` function examines what format the loader needs, loads that format, and calls the parser with the right type of input data.
+
+## Remarks
+
+* The reason synchronous parsers are preferred is e.g. that it is often easier to debug synchronous parsers, so it is nice to have the option to run things synchronously. And no functionality is lost, as loaders.gl core utlities will still transparently run these parsers asynchronously on worker threads or wrap them in promises if desired.
+* The reason pure parsers that don't read/reuqest data but just parse it are preferred is because it gives more freedom to the application to select how data is loaded.

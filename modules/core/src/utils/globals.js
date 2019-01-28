@@ -18,29 +18,24 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-const path = require('path');
+// Purpose: include this in your module to avoids adding dependencies on
+// micro modules like 'global' and 'is-browser';
 
-const ALIASES = {
-  'loaders.gl/test': path.resolve(__dirname, './test'),
-  'test-data': path.resolve(__dirname, './test/data'),
-  '@loaders.gl/core': path.resolve(__dirname, './modules/core/src'),
-  '@loaders.gl/core-node': path.resolve(__dirname, './modules/core-node/src'),
-  '@loaders.gl/draco': path.resolve(__dirname, './modules/draco/src'),
-  '@loaders.gl/experimental': path.resolve(__dirname, './modules/experimental/src'),
-  '@loaders.gl/gltf': path.resolve(__dirname, './modules/gltf/src'),
-  '@loaders.gl/kml': path.resolve(__dirname, './modules/kml/src'),
-  '@loaders.gl/las': path.resolve(__dirname, './modules/las/src'),
-  '@loaders.gl/obj': path.resolve(__dirname, './modules/obj/src'),
-  '@loaders.gl/pcd': path.resolve(__dirname, './modules/pcd/src'),
-  '@loaders.gl/ply': path.resolve(__dirname, './modules/ply/src')
+/* global process, window, global, document */
+const isBrowser =
+  typeof process !== 'object' || String(process) !== '[object process]' || process.browser;
+
+/* global self, window, global, document */
+const globals = {
+  self: typeof self !== 'undefined' && self,
+  window: typeof window !== 'undefined' && window,
+  global: typeof global !== 'undefined' && global,
+  document: typeof document !== 'undefined' && document
 };
 
-if (module.require) {
-  // Enables ES2015 import/export in Node.js
-  module.require('reify');
+const self_ = globals.self || globals.window || globals.global;
+const window_ = globals.window || globals.self || globals.global;
+const global_ = globals.global || globals.self || globals.window;
+const document_ = globals.document || {};
 
-  const moduleAlias = module.require('module-alias');
-  moduleAlias.addAliases(ALIASES);
-}
-
-module.exports = ALIASES;
+export {isBrowser, self_ as self, window_ as window, global_ as global, document_ as document};

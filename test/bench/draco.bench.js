@@ -1,4 +1,5 @@
-import {loadBinaryFile, _getMeshSize} from '@loaders.gl/core';
+import {_getMeshSize} from '@loaders.gl/core';
+import {loadBinaryFile} from '@loaders.gl/core-node';
 import {DracoEncoder, DracoLoader} from '@loaders.gl/draco';
 import path from 'path';
 

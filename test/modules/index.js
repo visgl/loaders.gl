@@ -1,4 +1,6 @@
 import './core';
+import './core-node';
+
 import './draco';
 
 import './obj';

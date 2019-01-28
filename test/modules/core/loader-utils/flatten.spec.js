@@ -18,29 +18,41 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-const path = require('path');
+import test from 'tape-catch';
+import {flattenToTypedArray} from '@loaders.gl/core';
 
-const ALIASES = {
-  'loaders.gl/test': path.resolve(__dirname, './test'),
-  'test-data': path.resolve(__dirname, './test/data'),
-  '@loaders.gl/core': path.resolve(__dirname, './modules/core/src'),
-  '@loaders.gl/core-node': path.resolve(__dirname, './modules/core-node/src'),
-  '@loaders.gl/draco': path.resolve(__dirname, './modules/draco/src'),
-  '@loaders.gl/experimental': path.resolve(__dirname, './modules/experimental/src'),
-  '@loaders.gl/gltf': path.resolve(__dirname, './modules/gltf/src'),
-  '@loaders.gl/kml': path.resolve(__dirname, './modules/kml/src'),
-  '@loaders.gl/las': path.resolve(__dirname, './modules/las/src'),
-  '@loaders.gl/obj': path.resolve(__dirname, './modules/obj/src'),
-  '@loaders.gl/pcd': path.resolve(__dirname, './modules/pcd/src'),
-  '@loaders.gl/ply': path.resolve(__dirname, './modules/ply/src')
-};
+const FLATTEN_VERTICES_TEST_CASES = [
+  {
+    title: 'empty array',
+    argument: [],
+    result: []
+  },
+  {
+    title: 'flat arrays',
+    argument: [1, 2, 3],
+    result: [1, 2, 3]
+  },
+  {
+    title: 'nested one level',
+    argument: [[1, 2], [1, 2, 3]],
+    result: [1, 2, 0, 1, 2, 3]
+  }
+  // {
+  //   title: 'nested empty',
+  //   argument: [1, [1, 2, 3], 3],
+  //   result: [1, 1, 2, 3, 3, 0]
+  // }
+];
 
-if (module.require) {
-  // Enables ES2015 import/export in Node.js
-  module.require('reify');
+test('flatten#import', t => {
+  t.ok(typeof flattenToTypedArray === 'function', 'flattenToTypedArray imported OK');
+  t.end();
+});
 
-  const moduleAlias = module.require('module-alias');
-  moduleAlias.addAliases(ALIASES);
-}
-
-module.exports = ALIASES;
+test('flatten#flattenToTypedArray', t => {
+  for (const tc of FLATTEN_VERTICES_TEST_CASES) {
+    const result = flattenToTypedArray(tc.argument);
+    t.deepEqual(result, tc.result, `flattenToTypedArray ${tc.title} returned expected result`);
+  }
+  t.end();
+});
