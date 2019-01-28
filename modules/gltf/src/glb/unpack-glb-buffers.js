@@ -100,9 +100,12 @@ function getArrayTypeAndLength(accessor, bufferView) {
   const ArrayType = COMPONENT_TYPE_ARRAY[accessor.componentType];
   const components = TYPE_COMPONENTS[accessor.type];
   const bytesPerComponent = COMPONENT_TYPE_BYTE_SIZE[accessor.componentType];
-  const length = accessor.count * components;
+
+  const length = bufferView.byteLength / bytesPerComponent;
   const byteLength = accessor.count * components * bytesPerComponent;
+
   assert(byteLength >= 0 && byteLength <= bufferView.byteLength);
+
   return {ArrayType, length, byteLength};
 }
 
