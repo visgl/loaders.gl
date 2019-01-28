@@ -1,7 +1,5 @@
 import './core';
-// import './core-io';
-
-import './images';
+import './core-node';
 
 import './draco';
 

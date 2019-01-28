@@ -24,7 +24,7 @@ const ALIASES = {
   'loaders.gl/test': path.resolve(__dirname, './test'),
   'test-data': path.resolve(__dirname, './test/data'),
   '@loaders.gl/core': path.resolve(__dirname, './modules/core/src'),
-  '@loaders.gl/core-io': path.resolve(__dirname, './modules/core-io/src'),
+  '@loaders.gl/core-node': path.resolve(__dirname, './modules/core-node/src'),
   '@loaders.gl/draco': path.resolve(__dirname, './modules/draco/src'),
   '@loaders.gl/experimental': path.resolve(__dirname, './modules/experimental/src'),
   '@loaders.gl/gltf': path.resolve(__dirname, './modules/gltf/src'),

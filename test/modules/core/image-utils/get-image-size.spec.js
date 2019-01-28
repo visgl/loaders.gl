@@ -6,7 +6,7 @@ import test from 'tape-catch';
 import path from 'path';
 
 import {getImageSize} from '@loaders.gl/core';
-import {loadBinaryFile} from '@loaders.gl/core-io';
+import {loadBinaryFile} from '@loaders.gl/core-node';
 
 const TEST_DATA_DIR = path.resolve(__dirname, '../../../data');
 

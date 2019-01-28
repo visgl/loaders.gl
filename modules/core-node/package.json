@@ -1,7 +1,7 @@
 {
-  "name": "@loaders.gl/core-io",
+  "name": "@loaders.gl/core-node",
   "version": "0.5.0",
-  "description": "Framework-independent loaders for 3D graphics formats",
+  "description": "Adds Node.js support to loaders.gl core utilities",
   "license": "MIT",
   "repository": {
     "type": "git",

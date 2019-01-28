@@ -1,27 +1,11 @@
-// TODO consolidate with core-io
-
 // Based on binary-gltf-utils under MIT license: Copyright (c) 2016-17 Karl Cheng
 // import path from 'path';
 // const fs = module.require && module.require('fs');
 
+// TODO consolidate with core-node
+// TODO - remove dependency on Buffer
+
 /* global Buffer */
-
-export function loadUri(uri, rootFolder = '.') {
-  if (uri.startsWith('http:') || uri.startsWith('https:')) {
-    return Promise.reject(new Error('request based loading of URIs not implemented'));
-  }
-
-  if (uri.startsWith('data:')) {
-    return Promise.resolve(parseDataUri(uri));
-  }
-
-  // if (!fs) {
-  return Promise.reject(new Error('Cannot load file URIs in browser'));
-  // }
-
-  // const filePath = path.join((rootFolder = '.'), uri);
-  // return fs.readFileAsync(filePath).then(buffer => ({buffer}));
-}
 
 /**
  * Parses a data URI into a buffer, as well as retrieving its declared MIME type.
@@ -29,7 +13,7 @@ export function loadUri(uri, rootFolder = '.') {
  * @param {string} uri - a data URI (assumed to be valid)
  * @returns {Object} { buffer, mimeType }
  */
-export function parseDataUri(uri) {
+export default function decodeDataUri(uri) {
   const dataIndex = uri.indexOf(',');
 
   let buffer;

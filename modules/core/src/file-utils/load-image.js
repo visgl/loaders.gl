@@ -1,23 +1,10 @@
-import {getPathPrefix} from './path-prefix';
-/* global Image */
+import {PlatformImageLoader} from '../image-utils/image-loader';
 
 /*
- * Loads images asynchronously (browser only)
- * image.crossOrigin can be set via options.crossOrigin, default to 'anonymous'
+ * Loads images asynchronously
+ * image.crossOrigin can be set via opts.crossOrigin, default to 'anonymous'
  * returns a promise tracking the load
  */
 export function loadImage(url, options) {
-  url = getPathPrefix() + url;
-
-  return new Promise((resolve, reject) => {
-    try {
-      const image = new Image();
-      image.onload = () => resolve(image);
-      image.onerror = () => reject(new Error(`Could not load image ${url}.`));
-      image.crossOrigin = (options && options.crossOrigin) || 'anonymous';
-      image.src = url;
-    } catch (error) {
-      reject(error);
-    }
-  });
+  return PlatformImageLoader.readAndParseImage(url, options);
 }

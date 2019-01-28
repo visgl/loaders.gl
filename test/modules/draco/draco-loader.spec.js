@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import test from 'tape-catch';
-import {loadBinaryFile} from '@loaders.gl/core-io';
+import {loadBinaryFile} from '@loaders.gl/core-node';
 import {DracoLoader} from '@loaders.gl/draco';
 import path from 'path';
 

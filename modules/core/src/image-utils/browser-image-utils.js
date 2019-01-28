@@ -1,4 +1,4 @@
-// TODO - only works in browser
+// TODO - currently only work in browser, great if could work on all platform image types
 /* global document */
 import {toArrayBuffer} from '@loaders.gl/core';
 

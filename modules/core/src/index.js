@@ -1,10 +1,13 @@
 // FILE LOADING FUNCTIONS
 
 export {setPathPrefix, getPathPrefix} from './file-utils/path-prefix';
-export {loadFile} from './file-utils/load-file';
+export {readFileAsync as readFile, readFileSync} from './file-utils/read-file';
+export {loadFileAsync as loadFile, loadFileSync} from './file-utils/load-file';
 export {loadImage} from './file-utils/load-image';
-export {smartFetch, smartParse} from './file-utils/smart-fetch';
-export {loadUri} from './loader-utils/load-uri.js';
+
+// DEPRECATED
+export {default as readDataUri} from './loader-utils/decode-data-uri.js';
+export {smartFetch, smartParse} from './deprecated/smart-fetch';
 
 // BINARY UTILS
 

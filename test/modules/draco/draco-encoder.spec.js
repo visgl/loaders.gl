@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 import test from 'tape-catch';
 import {_getMeshSize} from '@loaders.gl/core';
-import {loadBinaryFile} from '@loaders.gl/core-io';
+import {loadBinaryFile} from '@loaders.gl/core-node';
 import {DracoLoader, DracoEncoder} from '@loaders.gl/draco';
 import path from 'path';
 
