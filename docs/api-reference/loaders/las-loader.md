@@ -20,9 +20,10 @@ loadFile(url, LASLoader, options).then(data => {
 
 ## Options
 
-TBA
+### skip : Number
 
+Read one from every *n* points. Default `1`.
 
-## Data Loaded
+### onProgress : Function
 
-TBA
+Callback when a new chunk of data is read.

@@ -4,7 +4,7 @@ import './draco';
 import './obj';
 import './pcd';
 import './ply';
-// import './las';
+import './las';
 
 import './gltf';
 import './kml';
