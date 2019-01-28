@@ -45,7 +45,7 @@ case 'browser':
 case 'render':
   new BrowserTestDriver().run({
     process: 'webpack-dev-server',
-    parameters: ['--env.render'],
+    parameters: ['--config', 'test/webpack.config.js', '--env.render'],
     exposeFunction: 'testDone'
   });
   break;

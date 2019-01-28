@@ -16,7 +16,7 @@ run_full_test() {
   run_lint
   node test/start.js src
   node test/start.js browser
-  # node test/start.js render
+  node test/start.js render
 }
 
 case $MODE in
