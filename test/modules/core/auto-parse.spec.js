@@ -1,6 +1,7 @@
 /* eslint-disable max-len */
 import test from 'tape-catch';
-import {smartParse} from '@loaders.gl/core';
+import {parseFileSync} from '@loaders.gl/core';
+// import {autoParse} from '@loaders.gl/core/parser-utils/auto-parse';
 import {OBJLoader} from '@loaders.gl/obj';
 import {KMLLoader} from '@loaders.gl/kml';
 
@@ -10,11 +11,11 @@ const LOADERS = [
   OBJLoader, KMLLoader
 ];
 
-test('smartFetch', t => {
+test('parseFileSync#autoParse', t => {
   if (!KMLLoader.supported) {
     t.comment('XML parsing not available');
   } else {
-    const data = smartParse(KML, 'KML_Samples.kml', LOADERS);
+    const data = parseFileSync(KML, 'KML_Samples.kml', LOADERS);
     t.equal(data.documents.length, 2, 'Documents were found');
     t.equal(data.markers.length, 4, 'Markers were found');
     t.equal(data.lines.length, 6, 'Lines were found');

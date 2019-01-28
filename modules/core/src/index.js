@@ -1,13 +1,10 @@
 // FILE LOADING FUNCTIONS
 
 export {setPathPrefix, getPathPrefix} from './file-utils/path-prefix';
-export {readFileAsync as readFile, readFileSync} from './file-utils/read-file';
-export {loadFileAsync as loadFile, loadFileSync} from './file-utils/load-file';
+export {readFile, readFileSync} from './file-utils/read-file';
+export {parseFile, parseFileSync} from './file-utils/parse-file';
+export {loadFile, loadFileSync} from './file-utils/load-file';
 export {loadImage} from './file-utils/load-image';
-
-// DEPRECATED
-export {default as readDataUri} from './loader-utils/decode-data-uri.js';
-export {smartFetch, smartParse} from './deprecated/smart-fetch';
 
 // BINARY UTILS
 
@@ -54,5 +51,6 @@ export {
 export {getMeshSize as _getMeshSize} from './mesh-utils/mesh-utils';
 
 // CORE UTILS
+
 export {default as assert} from './utils/assert';
 export {isBrowser, self, window, global, document} from './utils/globals';
