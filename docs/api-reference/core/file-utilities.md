@@ -5,7 +5,43 @@ A set of file load and save utilities that (attempt to) work consistently across
 
 ## Functions
 
-### loadFile(url : String [, options : Object]) : ArrayBuffer
+### readFile(url : String [, options : Object]) : Promise<ArrayBuffer>
+
+Reads the raw data from a file asynchronously.
+
+Notes:
+* Any path prefix set by `setPathPrefix` will be appended to relative urls.
+
+
+### readFileSync(url : String [, options : Object]) : ArrayBuffer
+
+> Only works on Node.js or using data URLs.
+
+Reads the raw data from a "file" synchronously.
+
+Notes:
+* Any path prefix set by `setPathPrefix` will be appended to relative urls.
+
+
+### parseFile(fileData : ArrayBuffer | String, loader : Object [, options : Object]) : Promise<Any>
+
+Parses data asynchronously using the provided loader.
+
+
+### parseFileSync(fileData : ArrayBuffer | String, loader : Object, [, options : Object]) : any
+
+Parses data synchronously using the provided loader, if possible. If not, returns `null`, in which case asynchronous loading is  required.
+
+
+### loadFile(url : String [, options : Object]) : Promise<ArrayBuffer>
+
+Notes:
+* Any path prefix set by `setPathPrefix` will be appended to relative urls.
+
+
+### loadFileSync(url : String [, options : Object]) : Promise<ArrayBuffer>
+
+> Only works on Node.js or using data URLs.
 
 Notes:
 * Any path prefix set by `setPathPrefix` will be appended to relative urls.
@@ -17,18 +53,12 @@ Notes:
    <img src="https://img.shields.io/badge/browser-only-red.svg?style=flat-square" alt="browser only" />
 </p>
 
-This is a basic image loading function that only works in the browser. For image loading and writing that works across both browser and node, refer to the `@loaders.gl/images` module.
+This is a minimal basic image loading function that only works in the browser main threaqd. For image loading and writing that works across both browser and node, refer to the `@loaders.gl/images` module.
 
 `options.crossOrigin` - Provides control of the requests cross origin field.
 
-
-### readFile(file : File)
-
-<p class="badges">
-   <img src="https://img.shields.io/badge/browser-only-red.svg?style=flat-square" alt="browser only" />
-</p>
-
-Reads a file in the browser. The file must be a `File` object returned from file selection or drag-and-drop operations.
+Notes:
+* Any path prefix set by `setPathPrefix` will be appended to relative urls.
 
 
 ### setPathPrefix(prefix : String)
@@ -43,4 +73,5 @@ Returns the current path prefix set by `setPathPrefix`.
 
 ## Remarks
 
-* The path prefix support is intentionally designed as a limited scope mechanism that can help e.g. in situations like getting test cases to load data from the right place. It was not intended to support general application use cases.
+* The use of the loaders.gl `readFile` and `readFileAsync` functions is optional, loaders.gl loaders can be used with any data loaded via any mechanism the application prefers, e.g. `fetch`, `XMLHttpRequest` etc.
+* The "path prefix" support is intentended to be a simple mechanism to support certain work-arounds. It is intended to help e.g. in situations like getting test cases to load data from the right place, but was never intended to support general application use cases.
