@@ -1,6 +1,20 @@
 import {getBytesFromComponentType, getSizeFromAccessorType} from '../utils/gltf-type-utils';
 import GLBParser from '../glb/glb-parser';
 
+const GL_SAMPLER = {
+  TEXTURE_MAG_FILTER: 0x2800,
+  TEXTURE_MIN_FILTER: 0x2801,
+  TEXTURE_WRAP_S: 0x2802,
+  TEXTURE_WRAP_T: 0x2803
+};
+
+const SAMPLER_PARAMETER_GLTF_TO_GL = {
+  magFilter: GL_SAMPLER.TEXTURE_MAG_FILTER,
+  minFilter: GL_SAMPLER.TEXTURE_MIN_FILTER,
+  wrapS: GL_SAMPLER.TEXTURE_WRAP_S,
+  wrapT: GL_SAMPLER.TEXTURE_WRAP_T
+};
+
 export default class GLTFParser {
   constructor(options = {}) {
     // TODO - move parsing to parse
@@ -257,23 +271,23 @@ export default class GLTFParser {
 
   _resolveMaterial(material, index) {
     material.id = `material-${index}`;
-    if (material.normalTexture !== undefined) {
-      this.normalTexture = this.getTexture(material.normalTexture);
+    if (material.normalTexture) {
+      material.normalTexture.texture = this.getTexture(material.normalTexture.index);
     }
-    if (material.occlusionTexture !== undefined) {
-      this.occlusionTexture = this.getTexture(material.occlusionTexture);
+    if (material.occlusionTexture) {
+      material.occlusionTexture.texture = this.getTexture(material.occlusionTexture.index);
     }
-    if (material.emissiveTexture !== undefined) {
-      this.emissiveTexture = this.getTexture(material.emissiveTexture);
+    if (material.emissiveTexture) {
+      material.emissiveTexture.texture = this.getTexture(material.emissiveTexture.index);
     }
 
     if (material.pbrMetallicRoughness) {
       const mr = material.pbrMetallicRoughness;
       if (mr.baseColorTexture) {
-        mr.baseColorTexture = this.getTexture(mr.baseColorTexture);
+        mr.baseColorTexture.texture = this.getTexture(mr.baseColorTexture.index);
       }
       if (mr.metallicRoughnessTexture) {
-        mr.metallicRoughnessTexture = this.getTexture(mr.metallicRoughnessTexture);
+        mr.metallicRoughnessTexture.texture = this.getTexture(mr.metallicRoughnessTexture.index);
       }
     }
   }
@@ -302,11 +316,17 @@ export default class GLTFParser {
   _resolveSampler(sampler, index) {
     sampler.id = `sampler-${index}`;
     // Map textual parameters to GL parameter values
-    this.parameters = {};
+    sampler.parameters = {};
     for (const key in sampler) {
-      const glEnum = this.enumSamplerParameter(sampler[key]);
-      this.parameters[glEnum] = sampler[key];
+      const glEnum = this._enumSamplerParameter(key);
+      if (glEnum !== undefined) {
+        sampler.parameters[glEnum] = sampler[key];
+      }
     }
+  }
+
+  _enumSamplerParameter(key) {
+    return SAMPLER_PARAMETER_GLTF_TO_GL[key];
   }
 
   _resolveImage(image, index, options) {
