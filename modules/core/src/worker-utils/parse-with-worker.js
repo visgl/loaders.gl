@@ -4,7 +4,7 @@ const workerCache = new Map();
 
 /* global Worker, Blob, URL */
 function getWorker(workerSource) {
-  let workerURL = workerCache.get(workerSource)
+  let workerURL = workerCache.get(workerSource);
   if (!workerURL) {
     const blob = new Blob([workerSource], {type: 'application/javascript'});
     workerURL = URL.createObjectURL(blob);

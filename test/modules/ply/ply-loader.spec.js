@@ -2,7 +2,7 @@
 import test from 'tape-catch';
 import {loadBinaryFile} from '@loaders.gl/core-node';
 import {parseWithWorker} from '@loaders.gl/core';
-import {PLYLoader, PLYLoaderWorker} from '@loaders.gl/ply';
+import {PLYLoader, PLYWorkerLoader} from '@loaders.gl/ply';
 import path from 'path';
 
 import PLY_ASCII from 'test-data/ply/cube_att.ply.js';
@@ -49,7 +49,7 @@ test('PLYLoader#parseBinaryAsync', t => {
     return;
   }
 
-  parseWithWorker(PLYLoaderWorker)(PLY_BINARY).then(data => {
+  parseWithWorker(PLYWorkerLoader.worker)(PLY_BINARY).then(data => {
   // Check loader specific results
     t.ok(data.loaderData.header, 'Original header found');
 

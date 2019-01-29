@@ -31,4 +31,4 @@ export default function createWorker(loader) {
       self.postMessage({type: 'error', message: error.message});
     }
   };
-};
+}
