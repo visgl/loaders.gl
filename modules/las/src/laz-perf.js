@@ -449,7 +449,7 @@ function getModule() {
       if (stack !== 0) JSfuncs['stackRestore']();
       return ret;
     };
-    var sourceRegex = /^function\s*\(([^)]*)\)\s*{\s*([^*]*?)[\s;]*(?:return\s*(.*?)[;\s]*)?}$/;
+    var sourceRegex = /^function\s*[\w\s]*\(([^)]*)\)\s*{\s*([^*]*?)[\s;]*(?:return\s*(.*?)[;\s]*)?}$/;
     function parseJSFunc(jsfunc) {
       var parsed = jsfunc
         .toString()

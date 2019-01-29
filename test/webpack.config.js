@@ -22,6 +22,7 @@ const {resolve} = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const webpack = require('webpack');
+const BABEL_CONFIG = require('../babel.config').config;
 
 const ALIASES = require(resolve(__dirname, '../aliases'));
 
@@ -69,6 +70,17 @@ const TEST_CONFIG = Object.assign({}, COMMON_CONFIG, {
         test: /\.js$/,
         use: ['source-map-loader'],
         enforce: 'pre'
+      },
+      {
+        // Compile ES2015 using bable
+        test: /\.js$/,
+        exclude: /node_modules/,
+        use: [
+          {
+            loader: 'babel-loader',
+            options: BABEL_CONFIG
+          }
+        ]
       },
       {
         test: /\.kml$/,

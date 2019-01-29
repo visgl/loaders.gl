@@ -13,6 +13,16 @@ const CONFIG = {
       ['@babel/env', {
         targets: TARGETS
       }]
+    ],
+    plugins: [
+      ['babel-plugin-inline-import', {
+        extensions: [
+          '.worker.js'
+        ]
+      }]
+    ],
+    ignore: [
+      '**/*.worker.js'
     ]
   }
 };

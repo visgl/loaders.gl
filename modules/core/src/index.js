@@ -65,3 +65,8 @@ export {getMeshSize as _getMeshSize} from './mesh-utils/mesh-utils';
 
 export {default as assert} from './utils/assert';
 export {isBrowser, self, window, global, document} from './utils/globals';
+
+// WORKER UTILS
+
+export {default as createWorker} from './worker-utils/create-worker';
+export {default as parseWithWorker} from './worker-utils/parse-with-worker';
