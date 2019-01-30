@@ -4,6 +4,7 @@ import packBinaryJson from '../packed-json/pack-binary-json';
 import {assert} from '@loaders.gl/core';
 
 // Ideally we should just use KHR_draco_mesh_compression, but it requires saving uncompressed data?
+// TODO: until the ideal, we need to export these
 const UBER_MESH_EXTENSION = 'UBER_draco_mesh_compression';
 const UBER_POINT_CLOUD_EXTENSION = 'UBER_draco_point_cloud_compression';
 
@@ -148,7 +149,7 @@ export default class GLTFBuilder extends GLBBuilder {
     const decodedData = dracoDecoder.decodeMesh(attributes);
     const fauxAccessors = this._addFauxAttributes(decodedData.attributes);
 
-    const bufferViewIndex = this._addBufferView(compressedData);
+    const bufferViewIndex = this.addBufferView(compressedData);
 
     const glTFMesh = {
       primitives: [
@@ -176,24 +177,14 @@ export default class GLTFBuilder extends GLBBuilder {
     }
 
     const dracoEncoder = new this.DracoEncoder();
-
     const compressedData = dracoEncoder.encodePointCloud(attributes);
 
-    // Draco compression may change the order and number of vertices in a mesh.
-    // To satisfy the requirement that accessors properties be correct for both
-    // compressed and uncompressed data, generators should create uncompressed
-    // attributes and indices using data that has been decompressed from the Draco buffer,
-    // rather than the original source data.
-    const dracoDecoder = new this.DracoDecoder();
-    const decodedData = dracoDecoder.decodePointCloud(compressedData);
-    const fauxAccessors = this._addFauxAttributes(decodedData.attributes);
-
-    const bufferViewIndex = this._addBufferView(compressedData);
+    const bufferViewIndex = this.addBufferView(compressedData);
 
     const glTFMesh = {
       primitives: [
         {
-          attributes: fauxAccessors,
+          attributes: {}, // This will be populated after decompression
           mode: 0, // GL.POINTS
           extensions: {
             [UBER_POINT_CLOUD_EXTENSION]: {

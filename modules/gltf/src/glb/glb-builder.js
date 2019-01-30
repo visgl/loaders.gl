@@ -4,6 +4,7 @@ import {
   getImageSize,
   padTo4Bytes,
   copyArrayBuffer,
+  copyToArray,
   TextEncoder,
   getAccessorTypeFromSize,
   getComponentTypeFromArray
@@ -156,22 +157,7 @@ export default class GLBBuilder {
     let dstByteOffset = 0;
     for (let i = 0; i < this.sourceBuffers.length; i++) {
       const sourceBuffer = this.sourceBuffers[i];
-
-      // Pack buffer onto the big target array
-      //
-      // 'sourceBuffer.data.buffer' could be a view onto a larger buffer.
-      // We MUST use this constructor to ensure the byteOffset and byteLength is
-      // set to correct values from 'sourceBuffer.data' and not the underlying
-      // buffer for set() to work properly.
-      // TODO -replace with a copy util
-      const srcByteOffset = sourceBuffer.byteOffset;
-      const srcByteLength = sourceBuffer.byteLength;
-      const sourceArray = new Uint8Array(sourceBuffer.buffer, srcByteOffset, srcByteLength);
-
-      // Pack buffer onto the big target array
-      targetArray.set(sourceArray, dstByteOffset);
-
-      dstByteOffset += padTo4Bytes(srcByteLength);
+      dstByteOffset = copyToArray(sourceBuffer, targetArray, dstByteOffset);
     }
 
     // Update the glTF BIN CHUNK byte length
