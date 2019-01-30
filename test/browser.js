@@ -18,7 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-require('tap-browser-color')();
+// TODO - this interferes with render test by adding background color
+// require('tap-browser-color')();
 
 const test = require('tape');
 
@@ -27,5 +28,6 @@ test.onFailure(window.browserTestDriver_fail);
 
 test('Browser tests', t => {
   require('./modules/index');
+  require('./render/index');
   t.end();
 });

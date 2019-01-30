@@ -44,11 +44,10 @@ case 'browser-headless':
   break;
 
 case 'render':
-case 'render-headless':
   new BrowserTestDriver().run({
     command: 'webpack-dev-server',
     arguments: ['--config', 'test/webpack.config.js', '--env.render'],
-    headless: mode === 'render-headless'
+    headless: false
   });
   break;
 

@@ -16,7 +16,6 @@ run_full_test() {
   run_lint
   node test/start.js src
   node test/start.js browser-headless
-  node test/start.js render-headless
 }
 
 case $MODE in

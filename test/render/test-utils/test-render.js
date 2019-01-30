@@ -37,6 +37,10 @@ export default class TestRender {
     this.isRunning = false;
     this._testCases = [];
     this._testCaseData = null;
+
+    window.browserTestDriver_isHeadless().then(isHeadless => {
+      this.isHeadless = isHeadless;
+    });
   }
 
   /**
@@ -121,7 +125,11 @@ export default class TestRender {
         }
       }
       this.isDiffing = true;
-      window.browserTestDriver_captureAndDiffScreen(Object.assign({}, testCase, {
+      window.browserTestDriver_captureAndDiffScreen(Object.assign({
+        tolerance: this.isHeadless ? 0.25 : 0.1
+      }, testCase, {
+        // uncomment to save failed images
+        // saveOnFail: true,
         region: getBoundingBoxInPage(animationProps.canvas)
       })).then(result => {
         this.props.onTestResult(testCase, result);

@@ -22,11 +22,8 @@ import test from 'tape';
 import TestRender from './test-utils/test-render';
 import {TEST_CASES} from './test-cases';
 
-test.onFinish(window.browserTestDriver_finish);
-test.onFailure(window.browserTestDriver_fail);
-
 test('RenderTest', t => {
-  t.timeoutAfter(TEST_CASES.length * 1000);
+  t.timeoutAfter(TEST_CASES.length * 2000);
 
   new TestRender({
     width: 800,
