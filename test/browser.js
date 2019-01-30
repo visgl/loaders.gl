@@ -22,9 +22,8 @@ require('tap-browser-color')();
 
 const test = require('tape');
 
-const {callExposedFunction} = require('probe.gl/test-utils');
-test.onFinish(() => callExposedFunction('testDone', {success: true}));
-test.onFailure(() => callExposedFunction('testDone', {success: false}));
+test.onFinish(window.browserTestDriver_finish);
+test.onFailure(window.browserTestDriver_fail);
 
 test('Browser tests', t => {
   require('./modules/index');

@@ -35,18 +35,20 @@ case 'cover':
   break;
 
 case 'browser':
+case 'browser-headless':
   new BrowserTestDriver().run({
-    process: 'webpack-dev-server',
-    parameters: ['--config', 'test/webpack.config.js', '--env.testBrowser'],
-    exposeFunction: 'testDone'
+    command: 'webpack-dev-server',
+    arguments: ['--config', 'test/webpack.config.js', '--env.testBrowser'],
+    headless: mode === 'browser-headless'
   });
   break;
 
 case 'render':
+case 'render-headless':
   new BrowserTestDriver().run({
-    process: 'webpack-dev-server',
-    parameters: ['--config', 'test/webpack.config.js', '--env.render'],
-    exposeFunction: 'testDone'
+    command: 'webpack-dev-server',
+    arguments: ['--config', 'test/webpack.config.js', '--env.render'],
+    headless: mode === 'render-headless'
   });
   break;
 
@@ -56,9 +58,8 @@ case 'bench':
 
 case 'bench-browser':
   new BrowserTestDriver().run({
-    process: 'webpack-dev-server',
-    parameters: ['--config', 'test/webpack.config.js', '--env.bench'],
-    exposeFunction: 'testDone'
+    command: 'webpack-dev-server',
+    arguments: ['--config', 'test/webpack.config.js', '--env.bench']
   });
   break;
 

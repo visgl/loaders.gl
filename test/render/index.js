@@ -17,18 +17,31 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
+import test from 'tape';
 
+import TestRender from './test-utils/test-render';
 import {TEST_CASES} from './test-cases';
-import {RenderTest} from '@deck.gl/test-utils';
 
-const testRendering = new RenderTest({
-  testCases: TEST_CASES,
-  width: 800,
-  height: 450,
-  // Max color delta in the YIQ difference metric for two pixels to be considered the same
-  colorDeltaThreshold: 255 * 0.05,
-  // Percentage of pixels that must be the same for the test to pass
-  testPassThreshold: 0.98
+test.onFinish(window.browserTestDriver_finish);
+test.onFailure(window.browserTestDriver_fail);
+
+test('RenderTest', t => {
+  t.timeoutAfter(TEST_CASES.length * 1000);
+
+  new TestRender({
+    width: 800,
+    height: 450,
+    onTestStart: testCase => t.comment(testCase.name),
+    onTestResult: (testCase, result) => {
+      if (result.error) {
+        t.fail(result.error);
+      } else {
+        t.ok(result.success, `match: ${result.matchPercentage}`);
+      }
+    }
+  })
+    .add(TEST_CASES)
+    .run()
+    .catch(t.fail)
+    .finally(t.end);
 });
-
-testRendering.run();
