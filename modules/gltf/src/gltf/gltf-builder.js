@@ -184,7 +184,7 @@ export default class GLTFBuilder extends GLBBuilder {
     const glTFMesh = {
       primitives: [
         {
-          attributes: {},
+          attributes: {}, // This will be populated after decompression
           mode: 0, // GL.POINTS
           extensions: {
             [UBER_POINT_CLOUD_EXTENSION]: {

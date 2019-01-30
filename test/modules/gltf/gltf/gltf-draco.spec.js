@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 import test from 'tape-catch';
 
-import {loadBinaryFile} from '@loaders.gl/core';
+import {loadBinaryFile} from '@loaders.gl/core-node';
 import {GLTFBuilder, GLTFParser} from '@loaders.gl/gltf';
 import {DracoEncoder, DracoDecoder} from '@loaders.gl/draco';
 import path from 'path';
@@ -21,13 +21,7 @@ test('GLTFBuilder#addCompressedPointCloud', t => {
   };
   t.comment(`Encoding ${attributes.POSITIONS.length} positions, ${attributes.COLORS.length} colors...`);
 
-  // Encode mesh
-  const options = {
-    DracoEncoder,
-    DracoDecoder
-  };
-
-  const gltfBuilder = new GLTFBuilder(options);
+  const gltfBuilder = new GLTFBuilder({DracoEncoder, DracoDecoder});
   t.equal(gltfBuilder.addCompressedPointCloud(attributes), 0, 'valid index for point cloud data');
 
   const arrayBuffer = gltfBuilder.encodeAsGLB();

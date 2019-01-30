@@ -9,6 +9,7 @@ export {loadImage} from './file-utils/load-image';
 // BINARY UTILS
 
 export {
+  copyToArray,
   toArrayBuffer,
   toBuffer,
   toDataView

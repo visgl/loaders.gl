@@ -4,6 +4,7 @@ import {
   getImageSize,
   padTo4Bytes,
   copyArrayBuffer,
+  copyToArray,
   TextEncoder,
   getAccessorTypeFromSize,
   getComponentTypeFromArray
@@ -140,30 +141,6 @@ export default class GLBBuilder {
     return {arrayBuffer: this.arrayBuffer, json: this.json};
   }
 
-  // TODO: move to core bin utils
-  _copyBinaryChunk(source, target, targetOffset) {
-    let sourceArray;
-
-    if (source instanceof ArrayBuffer) {
-      sourceArray = new Uint8Array(source);
-    } else {
-      // Pack buffer onto the big target array
-      //
-      // 'sourceBuffer.data.buffer' could be a view onto a larger buffer.
-      // We MUST use this constructor to ensure the byteOffset and byteLength is
-      // set to correct values from 'sourceBuffer.data' and not the underlying
-      // buffer for set() to work properly.
-      const srcByteOffset = source.byteOffset;
-      const srcByteLength = source.byteLength;
-      sourceArray = new Uint8Array(source.buffer, srcByteOffset, srcByteLength);
-    }
-
-    // Pack buffer onto the big target array
-    target.set(sourceArray, targetOffset);
-
-    return targetOffset + padTo4Bytes(sourceArray.byteLength);
-  }
-
   // Pack the binary chunk
   _packBinaryChunk() {
     // Already packed
@@ -180,7 +157,7 @@ export default class GLBBuilder {
     let dstByteOffset = 0;
     for (let i = 0; i < this.sourceBuffers.length; i++) {
       const sourceBuffer = this.sourceBuffers[i];
-      dstByteOffset = this._copyBinaryChunk(sourceBuffer, targetArray, dstByteOffset);
+      dstByteOffset = copyToArray(sourceBuffer, targetArray, dstByteOffset);
     }
 
     // Update the glTF BIN CHUNK byte length

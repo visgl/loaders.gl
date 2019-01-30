@@ -146,22 +146,7 @@ export default class GLTFParser {
 
       const extensions = primitive.extensions;
       if ('UBER_draco_point_cloud_compression' in extensions) {
-        const bufferViewIndex = extensions.UBER_draco_point_cloud_compression.bufferView;
-        const bufferView = this.getBufferView(bufferViewIndex);
-
-        // TODO: change to getArrayFromBufferView()
-        const compressedData = this.glbParser.getBufferView(bufferView);
-
-        const dracoDecoder = new this.DracoDecoder();
-        const decodedPrimitive = dracoDecoder.decode(compressedData);
-
-        // TODO: what to do about original attributes
-        primitive.attributes = decodedPrimitive.attributes;
-        // TODO: stashing header on primitive, not sure if necessary
-        primitive.header = decodedPrimitive.header;
-
-        // TODO: drawmode is currently undefined, look into dracodecoder to set to 0 for point cloud
-        primitive.drawMode = decodedPrimitive.drawMode || 0;
+        this._decompressUberDracoPointCloud(primitive, extensions);
       }
     }
 
@@ -380,6 +365,25 @@ export default class GLTFParser {
   _resolveBufferView(bufferView, index) {
     bufferView.id = `bufferView-${index}`;
     bufferView.buffer = this.getBuffer(bufferView.buffer);
+  }
+
+  _decompressUberDracoPointCloud(primitive, extensions) {
+    const bufferViewIndex = extensions.UBER_draco_point_cloud_compression.bufferView;
+    const bufferView = this.getBufferView(bufferViewIndex);
+
+    // TODO: change to getArrayFromBufferView()
+    const compressedData = this.glbParser.getBufferView(bufferView);
+
+    const dracoDecoder = new this.DracoDecoder();
+    const decodedPrimitive = dracoDecoder.decode(compressedData);
+
+    // TODO: what to do about original attributes
+    primitive.attributes = decodedPrimitive.attributes;
+    // TODO: stashing header on primitive, not sure if necessary
+    primitive.header = decodedPrimitive.header;
+
+    // TODO: drawmode is currently undefined, look into dracodecoder to set to 0 for point cloud
+    primitive.drawMode = decodedPrimitive.drawMode || 0;
   }
 
   // PREPROC
