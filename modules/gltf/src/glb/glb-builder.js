@@ -76,11 +76,11 @@ export default class GLBBuilder {
   // Add a binary buffer. Builds glTF "JSON metadata" and saves buffer reference
   // Buffer will be copied into BIN chunk during "pack"
   // Currently encodes buffers as glTF accessors, but this could be optimized
-  addBuffer(sourceBuffer, accessor = {}) {
+  addBuffer(sourceBuffer, accessor = {size: 3}) {
     const bufferViewIndex = this.addBufferView(sourceBuffer);
 
     const accessorDefaults = {
-      size: 3,
+      size: accessor.size,
       componentType: getComponentTypeFromArray(sourceBuffer),
       count: Math.round(sourceBuffer.length / accessor.size)
     };
