@@ -42,6 +42,8 @@ export default class GLBBuilder {
     // list of binary buffers to be written to the BIN chunk
     // (Each call to addBuffer, addImage etc adds an entry here)
     this.sourceBuffers = [];
+
+    this.log = options.log || console; // eslint-disable-line
   }
 
   // ACCESSORS
@@ -71,6 +73,40 @@ export default class GLBBuilder {
     return this;
   }
 
+  // Add a binary buffer. Builds glTF "JSON metadata" and saves buffer reference
+  // Buffer will be copied into BIN chunk during "pack"
+  // Currently encodes buffers as glTF accessors, but this could be optimized
+  addBuffer(sourceBuffer, accessor = {}) {
+    const bufferViewIndex = this.addBufferView(sourceBuffer);
+
+    const accessorDefaults = {
+      size: 3,
+      componentType: getComponentTypeFromArray(sourceBuffer),
+      count: Math.round(sourceBuffer.length / accessor.size)
+    };
+
+    return this.addAccessor(bufferViewIndex, Object.assign(accessorDefaults, accessor));
+  }
+
+  // Adds a binary image. Builds glTF "JSON metadata" and saves buffer reference
+  // Buffer will be copied into BIN chunk during "pack"
+  // Currently encodes as glTF image
+  addImageData(imageData) {
+    const bufferViewIndex = this.addBufferView(imageData);
+
+    // Get the properties of the image to add as metadata.
+    const sizeAndType = getImageSize(imageData) || {};
+    if (sizeAndType) {
+      const {mimeType, width, height} = sizeAndType;
+      this.addImageObject(bufferViewIndex, {mimeType, width, height});
+    } else {
+      this.addImageObject(bufferViewIndex, {});
+    }
+  }
+
+  // Basic glTF adders: basic memory buffer/image type fields
+  // Scenegraph specific adders are placed in glTFBuilder
+
   // Add one untyped source buffer, create a matching glTF `bufferView`, and return its index
   addBufferView(buffer) {
     const byteLength = buffer.byteLength || buffer.length;
@@ -94,41 +130,35 @@ export default class GLBBuilder {
     return this.json.bufferViews.length - 1;
   }
 
-  // Add a binary buffer. Builds glTF "JSON metadata" and saves buffer reference
-  // Buffer will be copied into BIN chunk during "pack"
-  addBuffer(sourceBuffer, accessor = {size: 3}) {
-    const bufferViewIndex = this.addBufferView(sourceBuffer);
-
+  // Adds an accessor to a bufferView
+  addAccessor(bufferViewIndex, accessor) {
     // Add an accessor pointing to the new buffer view
-    const glTFAccessor = {
+    this.json.accessors.push({
       bufferView: bufferViewIndex,
       type: getAccessorTypeFromSize(accessor.size),
-      componentType: getComponentTypeFromArray(sourceBuffer),
-      count: Math.round(sourceBuffer.length / accessor.size)
-    };
-
-    this.json.accessors.push(glTFAccessor);
+      componentType: accessor.componentType,
+      count: accessor.count
+    });
 
     return this.json.accessors.length - 1;
   }
 
   // Adds a binary image. Builds glTF "JSON metadata" and saves buffer reference
   // Buffer will be copied into BIN chunk during "pack"
-  addImage(imageData) {
-    const bufferViewIndex = this.addBufferView(imageData);
-
-    const glTFImage = {
-      bufferView: bufferViewIndex
-    };
-
-    // Get the properties of the image to add as metadata.
-    const sizeAndType = getImageSize(imageData);
-    if (sizeAndType) {
-      const {mimeType, width, height} = sizeAndType;
-      Object.assign(glTFImage, {mimeType, width, height});
+  // TODO - this method should be renamed addImage
+  addImage(bufferViewIndex, {mimeType, width, height}) {
+    // DEPRECATED: We have renamed the addImage method, this is backwars compatibility
+    if (ArrayBuffer.isView(bufferViewIndex)) {
+      this.log.warn('GLBBuilder.addImage(): renamed to GLBBuilder.addImageData()');
+      return this.addImage(...arguments);
     }
 
-    this.json.images.push(glTFImage);
+    this.json.images.push({
+      bufferView: bufferViewIndex,
+      mimeType,
+      width,
+      height
+    });
 
     return this.json.images.length - 1;
   }
