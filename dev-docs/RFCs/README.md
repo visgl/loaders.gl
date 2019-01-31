@@ -23,4 +23,4 @@ Current direction for loaders.gl v1.0 is to focus on:
 | RFC | Author | Status | Description |
 | --- | ---    | ---    | ---         |
 | [**loaders.gl Module Structure**](v1.0/module-structure-rfc.md) | @ibgreen | **Draft** | Proposes npm module structure to group similar loader and reduce dependency size/bloat. |
-| [**New Loaders Module**](v6.1/loader-module-rfc.md) | @ibgreen | **Implemented** | New loaders.gl submodule collecting framework-agnostic, thread-capable 3D format loaders. Note: This was initially an RFC in luma.gl |
+| [**New Loaders Module**](v1.0/loader-module-rfc.md) | @ibgreen | **Implemented** | New loaders.gl submodule collecting framework-agnostic, thread-capable 3D format loaders. Note: This was initially an RFC in luma.gl |
