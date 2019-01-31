@@ -36,6 +36,10 @@ export {
   getImageSize
 } from './image-utils/get-image-size';
 
+export {
+  decodeImage
+} from './image-utils/image-utils-browser';
+
 // MESH UTILS
 
 export {

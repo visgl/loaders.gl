@@ -103,6 +103,13 @@ export default class GLBParser {
   }
 
   // Unpacks an image into an HTML image
+  getImageData(glTFImage) {
+    return {
+      typedArray: this.getBufferView(glTFImage.bufferView),
+      mimeType: glTFImage.mimeType || 'image/jpeg'
+    };
+  }
+
   getImage(glTFImage) {
     /* global window, Blob, Image */
     const arrayBufferView = this.getBufferView(glTFImage.bufferView);
