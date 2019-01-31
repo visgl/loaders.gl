@@ -2,18 +2,18 @@
 
 // Specifically loads an ImageBitmap (works on newer browser main and worker threads)
 export const ImageBitmapLoader = {
-  parseBinary: parseToImageBitmap
+  parse: parseToImageBitmap
 };
 
 // Specifically loads an HTMLImage (works on alls browser main threads but not on worker threads)
 export const HTMLImageLoader = {
-  readAndParse: readAndParseToHTMLImage
+  load: loadToHTMLImage
 };
 
 // Loads a platform-specific image type that can be used as input data to WebGL textures
 export const PlatformImageLoader = {
   parse: parseToPlatformImage,
-  readAndParse: readAndParseToPlatformImage
+  load: loadToPlatformImage
 };
 
 // TODO - export functions that work on "platform images",
@@ -25,7 +25,7 @@ function parseToImageBitmap(arrayBuffer) {
   return createImageBitmap(blob);
 }
 
-function readAndParseToHTMLImage(url, options) {
+function loadToHTMLImage(url, options) {
   return new Promise((resolve, reject) => {
     try {
       const image = new Image();
@@ -46,6 +46,6 @@ function parseToPlatformImage(arrayBuffer) {
   return parseToImageBitmap(arrayBuffer);
 }
 
-function readAndParseToPlatformImage(url, options) {
-  return readAndParseToHTMLImage(url, options);
+function loadToPlatformImage(url, options) {
+  return loadToHTMLImage(url, options);
 }
