@@ -36,6 +36,12 @@ export {
   getImageSize
 } from './image-utils/get-image-size';
 
+export {
+  ImageBitmapLoader,
+  HTMLImageLoader,
+  PlatformImageLoader
+} from './image-utils/image-loaders';
+
 // MESH UTILS
 
 export {

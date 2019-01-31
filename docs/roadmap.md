@@ -20,7 +20,7 @@ We share information about the direction of the framework in the following ways:
 
 **Format Auto-Discovery** - Each loader can optionally expose a test function that can examine the "head" of a file to test if it is likely to be in a format this loader will be able to parse.
 
-**Test Data** - Ideally loaders.gl will include test data for each format to ensure that the regression suite is as effective as possible.
+**Stream Support**  - Support stream based loaders... `loader.loadStream`
 
 
 ## Format Roadmap
@@ -32,3 +32,9 @@ Obviously we expect loaders.gl to have very solid glTF/GLB support. Also we will
 Still, for special data sets such as large point clouds or complex geospatial data, the need for special formats for (e.g. compactness or expressivity) is unchanged, so this is the direction we expect most new loaders.gl loaders to focus on.
 
 Finally, some "unusual" loaders may be included just for the fun of it, e.g. SVG tesselation.
+
+
+## Implemented
+
+**Test Data** - Ideally loaders.gl will include test data for each format to ensure that the regression suite is as effective as possible.
+

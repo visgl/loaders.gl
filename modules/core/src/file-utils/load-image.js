@@ -1,4 +1,4 @@
-import {PlatformImageLoader} from '../image-utils/image-loader';
+import {PlatformImageLoader} from '../image-utils/image-loaders';
 
 /*
  * Loads images asynchronously
@@ -6,5 +6,5 @@ import {PlatformImageLoader} from '../image-utils/image-loader';
  * returns a promise tracking the load
  */
 export function loadImage(url, options) {
-  return PlatformImageLoader.readAndParseImage(url, options);
+  return PlatformImageLoader.load(url, options);
 }
