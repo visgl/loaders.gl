@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/core",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "Framework-independent loaders for 3D graphics formats",
   "license": "MIT",
   "publishConfig": {

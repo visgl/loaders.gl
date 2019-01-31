@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/core-node",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "Adds Node.js support to loaders.gl core utilities",
   "license": "MIT",
   "repository": {
@@ -34,7 +34,7 @@
     "build-es5": "BABEL_ENV=es5 babel src --config-file ../../babel.config.js --out-dir dist/es5 --source-maps --ignore 'node_modules/'"
   },
   "dependencies": {
-    "@loaders.gl/core": "^0.5.2",
+    "@loaders.gl/core": "^0.5.3",
     "filesaver.js": "^0.2.0"
   }
 }
