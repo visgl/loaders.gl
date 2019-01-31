@@ -106,6 +106,8 @@ export default class GLBBuilder {
 
   // Basic glTF adders: basic memory buffer/image type fields
   // Scenegraph specific adders are placed in glTFBuilder
+  // TODO: These should be moved to glTFBuilder once addBuffer and addImageData
+  // have been rewritten to not depend on these.
 
   // Add one untyped source buffer, create a matching glTF `bufferView`, and return its index
   addBufferView(buffer) {
