@@ -41,3 +41,20 @@ The major complication when packing nested arrays is that the internal structure
 The GLB binary container format used by glTF addresses a general need to store a mix of JSON and binary data, and can potentially be used as a foundation for building custom loaders and writers.
 
 To allow for this (and also to generally improve the glTF code structure), the `GLTFLoader` and `GLTFBuilder` classes are built on top of GLB focused classes (`GLBLoader` and `GLBBuilder`) that can be used independently of the bigger glTF classes.
+
+
+## glTF Extension Support
+
+Certain glTF extensions are fully or partially supported by the glTF classes. For details on which extensions are supported, see [glTF Extensions](docs/api-reference/gltf-loaders/gltf-extensions).
+
+## Draco Mesh and Point Cloud Compression
+
+Draco encoding and decoding is supported by the `GLTFBuilder` and `GLTFParser` classes but requires the DracoEncoder and DracoDecoder dependencies to be "injected" by the application.
+
+```js
+import {GLTFBuilder} from '@loaders.gl/gltf';
+import {DracoEncoder, DracoDecoder} from '@loaders.gl/draco';
+
+const gltfBuilder = new GLTFBuilder({DracoEncoder, DracoDecoder});
+```
+

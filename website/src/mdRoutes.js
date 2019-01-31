@@ -55,7 +55,7 @@ export default [
           },
           {
             name: 'glTF/GLB Category Loaders',
-            markdown: require('../../docs/developer-guide/category-pointcloud.md')
+            markdown: require('../../docs/developer-guide/category-gltf.md')
           },
           {
             name: 'glbdump',
@@ -87,6 +87,10 @@ export default [
                 markdown: require('../../docs/api-reference/gltf-loaders/gltf-loader.md')
               },
               {
+                name: 'GLTFWriter',
+                markdown: require('../../docs/api-reference/gltf-loaders/gltf-writer.md')
+              },
+              {
                 name: 'GLTFParser',
                 markdown: require('../../docs/api-reference/gltf-loaders/gltf-parser.md')
               },
@@ -95,12 +99,16 @@ export default [
                 markdown: require('../../docs/api-reference/gltf-loaders/gltf-builder.md')
               },
               {
-                name: 'GLTFWriter',
-                markdown: require('../../docs/api-reference/gltf-loaders/gltf-writer.md')
-              },
-              {
                 name: 'GLBParser',
                 markdown: require('../../docs/api-reference/gltf-loaders/glb-parser.md')
+              },
+              {
+                name: 'GLBBuilder',
+                markdown: require('../../docs/api-reference/gltf-loaders/glb-builder.md')
+              },
+              {
+                name: 'GLTF Extensions',
+                markdown: require('../../docs/api-reference/gltf-loaders/gltf-extensions.md')
               }
             ]
           },
