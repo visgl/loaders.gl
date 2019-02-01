@@ -37,6 +37,10 @@ export {
 } from './image-utils/get-image-size';
 
 export {
+  decodeImage
+} from './image-utils/image-utils-browser';
+
+export {
   ImageBitmapLoader,
   HTMLImageLoader,
   PlatformImageLoader
