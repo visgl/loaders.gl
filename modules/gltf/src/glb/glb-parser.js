@@ -122,6 +122,20 @@ export default class GLBParser {
     return img;
   }
 
+  getImageAsync(glTFImage) {
+    /* global window, Blob, Image */
+    return new Promise(resolve => {
+      const arrayBufferView = this.getBufferView(glTFImage.bufferView);
+      const mimeType = glTFImage.mimeType || 'image/jpeg';
+      const blob = new Blob([arrayBufferView], {type: mimeType});
+      const urlCreator = window.URL || window.webkitURL;
+      const imageUrl = urlCreator.createObjectURL(blob);
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.src = imageUrl;
+    });
+  }
+
   // PRIVATE
 
   _parse(options) {

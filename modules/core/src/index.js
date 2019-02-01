@@ -40,6 +40,12 @@ export {
   decodeImage
 } from './image-utils/image-utils-browser';
 
+export {
+  ImageBitmapLoader,
+  HTMLImageLoader,
+  PlatformImageLoader
+} from './image-utils/image-loaders';
+
 // MESH UTILS
 
 export {
