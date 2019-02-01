@@ -318,12 +318,6 @@ export default class GLTFParser {
     accessor.bytesPerComponent = getBytesFromComponentType(accessor);
     accessor.components = getSizeFromAccessorType(accessor);
     accessor.bytesPerElement = accessor.bytesPerComponent * accessor.components;
-
-    if (this.glbParser) {
-      // TODO: This should be moved to the buffer view
-      // TODO: We should also load data if URL is there instead of binary
-      accessor.data = this.glbParser.unpackedBuffers.accessors[index];
-    }
   }
 
   _resolveTexture(texture, index) {
@@ -359,12 +353,18 @@ export default class GLTFParser {
     const {createImages = true} = options;
     if (createImages) {
       image.image = this.glbParser.getImage(image);
+    } else {
+      image.getImageAsync = () => this.glbParser.getImageAsync(image);
     }
   }
 
   _resolveBufferView(bufferView, index) {
     bufferView.id = `bufferView-${index}`;
     bufferView.buffer = this.getBuffer(bufferView.buffer);
+
+    if (this.glbParser) {
+      bufferView.data = this.glbParser.getBufferView(bufferView);
+    }
   }
 
   _decompressUberDracoPointCloud(primitive, extensions) {
