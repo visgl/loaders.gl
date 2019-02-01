@@ -42,6 +42,7 @@ export default function unpackGLBBuffers(arrayBuffer, json, binaryByteOffset) {
   }
 
   return {
+    // TODO: delete unpackAccessors and use buffer views only?
     accessors: unpackAccessors(arrayBuffer, bufferViews, json),
     images: unpackImages(arrayBuffer, bufferViews, json)
   };
