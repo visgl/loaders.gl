@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/experimental",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "description": "Framework-independent loaders for table formats (JSON, CSV, ...)",
   "license": "MIT",
   "publishConfig": {
@@ -35,7 +35,7 @@
   },
   "sideEffects": false,
   "dependencies": {
-    "@loaders.gl/core": "^0.5.3",
+    "@loaders.gl/core": "^0.5.4",
     "d3-dsv": "^1.0.10"
   }
 }
