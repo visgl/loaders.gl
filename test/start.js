@@ -9,7 +9,7 @@ require('../aliases');
 const path = require('path');
 const moduleAlias = require('module-alias');
 
-const {BrowserTestDriver} = require('probe.gl/test-utils');
+const {BrowserTestDriver} = require('@probe.gl/test-utils');
 
 const mode = process.argv.length >= 3 ? process.argv[2] : 'default';
 const arg = process.argv.length >= 4 ? process.argv[3] : 'default';

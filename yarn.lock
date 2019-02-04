@@ -620,6 +620,16 @@
     lodash "^4.17.10"
     to-fast-properties "^2.0.0"
 
+"@probe.gl/test-utils@^3.0.0-alpha.2":
+  version "3.0.0-alpha.2"
+  resolved "https://registry.yarnpkg.com/@probe.gl/test-utils/-/test-utils-3.0.0-alpha.2.tgz#3cd2810683ed2860157dbe7477581bad8571c888"
+  integrity sha512-64A3FL4CWG2ys0tr4rX1P6FJ1r1FIP+0DU8z/EI8dFiJBETn0qaL+NNk+UtZyr9qzUXTAgfwLtdNGEMTjYLgww==
+  dependencies:
+    "@babel/runtime" "^7.0.0"
+    pixelmatch "^4.0.2"
+    probe.gl "^3.0.0-alpha.1"
+    puppeteer "1.8.0"
+
 "@webassemblyjs/ast@1.7.11":
   version "1.7.11"
   resolved "https://registry.yarnpkg.com/@webassemblyjs/ast/-/ast-1.7.11.tgz#b988582cafbb2b095e8b556526f30c90d057cace"
@@ -5888,10 +5898,10 @@ probe.gl@^2.0.1:
   dependencies:
     "@babel/runtime" "^7.0.0"
 
-probe.gl@^2.2.0-beta.2:
-  version "2.2.0-beta.2"
-  resolved "https://registry.yarnpkg.com/probe.gl/-/probe.gl-2.2.0-beta.2.tgz#9cdffc3539509c5470b2b088d85215d96d135838"
-  integrity sha512-NPDIM2O+89Q0vU7006QSA0KD14IFkEt0x33hLlUDkm3+b1jbj5I0WIoINXDuIbaK3z/2LoZtKTbb/5M+WKoU+Q==
+probe.gl@^3.0.0-alpha.1:
+  version "3.0.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/probe.gl/-/probe.gl-3.0.0-alpha.1.tgz#13fa9d81b961fd537e374b247d87a44d3c55a3c7"
+  integrity sha512-TfdTAT/WCn9N5GW3qg5sQn43OtRgSyI5LrH8+4RMB3IsYOKJrLy+kWtmLvyr8U9qPT3XLDPLQFHuSLSRAJcaRw==
   dependencies:
     "@babel/runtime" "^7.0.0"
 
