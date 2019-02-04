@@ -15,8 +15,7 @@ run_lint() {
 run_full_test() {
   run_lint
   node test/start.js src
-  node test/start.js browser
-  node test/start.js render
+  node test/start.js browser-headless
 }
 
 case $MODE in
@@ -68,6 +67,7 @@ case $MODE in
     $BASEDIR/collect-metrics-fast.sh
     run_lint
     node --max-old-space-size=4069 test/start.js src
+    node test/start.js browser-headless
     break;;
 
 

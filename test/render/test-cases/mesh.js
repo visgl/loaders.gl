@@ -1,63 +1,18 @@
-import {OrbitView, COORDINATE_SYSTEM} from '@deck.gl/core';
 import {PLYLoader} from '@loaders.gl/ply';
 
-import MeshLayer from '../mesh-layer/mesh-layer';
-import {convertToMesh} from '../test-utils';
+import {getModel, drawModelInViewport} from '../test-utils/get-model';
 
 const PLY_BINARY =
   // loadBinaryFile(path.resolve(__dirname, '../../data/ply/bun_zipper.ply')) ||
   require('test-data/ply/bun_zipper.ply');
 
-const defaultViews = [new OrbitView({
-  fov: 30,
-  near: 0.001,
-  far: 100
-})];
-
-const defaultData = [{position: [0, 0, 0]}];
-
 export default [
   {
-    name: 'ply-loader-test',
-    views: defaultViews,
-    viewState: {
-      lookAt: [0, 0.1, 0],
-      distance: 0.3
-    },
-    renderingTimes: 1,
-    layers: [
-      new MeshLayer({
-        id: 'ply-loader-test',
-        data: defaultData,
-        opacity: 0.5,
-        coordinateSystem: COORDINATE_SYSTEM.IDENTITY,
-        getPosition: d => d.position,
-        mesh: convertToMesh(PLYLoader.parseBinary(PLY_BINARY))
-      })
-    ],
-    referenceImageUrl: './test/render/golden-images/ply-loader.png'
+    name: 'PLYLoader',
+    goldenImage: './test/render/golden-images/ply-loader.png',
+    onRender: ({gl}) => {
+      const model = getModel(gl, PLYLoader.parseBinary(PLY_BINARY));
+      drawModelInViewport(model, {zoom: 50, lookAt: [0, 0.11, 0]}, {opacity: 0.5});
+    }
   }
-  /*
-  ,
-  {
-    name: 'drc-loader-test',
-    views: defaultViews,
-    viewState: {
-      lookAt: [0, 0.1, 0],
-      distance: 0.3
-    },
-    renderingTimes: 2,
-    layers: [
-      new MeshLayer({
-        id: 'drc-loader-test',
-        data: defaultData,
-        opacity: 0.5,
-        coordinateSystem: COORDINATE_SYSTEM.IDENTITY,
-        getPosition: d => d.position,
-        mesh: loadFile('test/modules/core/data/drc/bunny.drc', PLYLoader).then(convertToMesh)
-      })
-    ],
-    referenceImageUrl: './test/render/golden-images/ply-loader.png'
-  }
-  */
 ];
