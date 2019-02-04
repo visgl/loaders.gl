@@ -10,4 +10,8 @@ export {default as GLTFBuilder} from './gltf/gltf-builder';
 export {default as GLBParser} from './glb/glb-parser';
 export {default as GLBBuilder} from './glb/glb-builder';
 
-export * from './utils/gltf-type-utils';
+export {
+  ATTRIBUTE_TYPE_TO_COMPONENTS,
+  ATTRIBUTE_COMPONENT_TYPE_TO_BYTE_SIZE,
+  ATTRIBUTE_COMPONENT_TYPE_TO_ARRAY
+} from './utils/gltf-type-utils';
