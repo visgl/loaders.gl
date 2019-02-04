@@ -66,7 +66,8 @@ case $MODE in
   "ci")
     # run by Travis CI
     $BASEDIR/collect-metrics-fast.sh
-    npm run cover
+    run_lint
+    node --max-old-space-size=4069 test/start.js src
     break;;
 
 
