@@ -15,17 +15,24 @@ const SAMPLER_PARAMETER_GLTF_TO_GL = {
   wrapT: GL_SAMPLER.TEXTURE_WRAP_T
 };
 
+const DEFAULT_OPTIONS = {
+  createImages: false
+};
+
 export default class GLTFParser {
   constructor(options = {}) {
     // TODO - move parsing to parse
     this.log = console; // eslint-disable-line
     this.out = {};
+    this.options = Object.assign({}, DEFAULT_OPTIONS, options);
 
     // Soft dependency on Draco, needs to be imported and supplied by app
-    this.DracoDecoder = options.DracoDecoder || null;
+    this.DracoDecoder = this.options.DracoDecoder || null;
   }
 
-  parse(gltf, options = {}) {
+  parse(gltf, optionsParam = {}) {
+
+    const options = Object.assign({}, this.options, optionsParam);
 
     // GLTF can be JSON or binary (GLB)
     if (gltf instanceof ArrayBuffer) {
