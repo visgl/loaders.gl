@@ -36,7 +36,6 @@
     "test": "scripts/test.sh",
     "test-browser": "webpack-dev-server --config test/webpack.config.js --env.testBrowser --progress --hot --open",
     "test-render": "webpack-dev-server --config test/webpack.config.js --env.render --progress --hot --open",
-    "test-ci": "scripts/test.sh cover && scripts/test.sh bench",
     "bench-browser": "webpack-dev-server --config test/webpack.config.js --env.bench --progress --hot --open",
     "collect-metrics": "scripts/collect-metrics.sh",
     "pre-commit": "scripts/test.sh fast"
