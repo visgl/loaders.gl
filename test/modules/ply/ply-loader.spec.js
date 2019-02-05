@@ -1,7 +1,8 @@
 /* eslint-disable max-len */
 import test from 'tape-catch';
 import {loadBinaryFile} from '@loaders.gl/core-node';
-import {PLYLoader} from '@loaders.gl/ply';
+import {parseWithWorker} from '@loaders.gl/core';
+import {PLYLoader, PLYWorkerLoader} from '@loaders.gl/ply';
 import path from 'path';
 
 import PLY_ASCII from 'test-data/ply/cube_att.ply.js';
@@ -39,4 +40,27 @@ test('PLYLoader#parseBinary', t => {
   t.equal(data.attributes[POSITION].value.length, 107841, 'POSITION attribute was found');
 
   t.end();
+});
+
+test('PLYLoader#parseBinaryAsync', t => {
+  if (typeof Worker === 'undefined') {
+    t.comment('Worker is not usable in non-browser environments');
+    t.end();
+    return;
+  }
+
+  // Once binary is transferred to worker it cannot be read from the main thread
+  // Duplicate it here to avoid breaking other tests
+  const plyBinary = PLY_BINARY.slice();
+  parseWithWorker(PLYWorkerLoader.worker)(plyBinary).then(data => {
+  // Check loader specific results
+    t.ok(data.loaderData.header, 'Original header found');
+
+    const POSITION = data.glTFAttributeMap.POSITION;
+    t.equal(data.attributes[POSITION].value.length, 107841, 'POSITION attribute was found');
+
+  }).catch(error => {
+    t.fail(error);
+
+  }).then(t.end);
 });

@@ -1,3 +1,5 @@
+import parseWithWorker from '../worker-utils/parse-with-worker';
+
 // TODO: support progress and abort
 // TODO: support moving loading to worker
 export function parseWithLoader(data, url, loader, options = {}) {
@@ -5,6 +7,10 @@ export function parseWithLoader(data, url, loader, options = {}) {
   normalizeLegacyLoaderObject(loader);
 
   options = Object.assign({}, options, {dataType: 'arrayBuffer'});
+
+  if (loader.worker) {
+    return parseWithWorker(loader.worker, data, options);
+  }
 
   // First check for synchronous text parser, wrap results in promises
   if (loader.parseTextSync && typeof data === 'string') {
