@@ -4,6 +4,7 @@ import {_getMeshSize} from '@loaders.gl/core';
 import {loadBinaryFile} from '@loaders.gl/core-node';
 import {DracoLoader, DracoEncoder} from '@loaders.gl/draco';
 import path from 'path';
+import {validateLoadedData, getAttribute} from '../conformance';
 
 const BUNNY_DRC =
   loadBinaryFile(path.resolve(__dirname, '../../data/draco/bunny.drc')) ||
@@ -28,12 +29,16 @@ const TEST_CASES = [
 test('DracoEncoder#encode(bunny.drc)', t => {
   // Decode Loaded Mesh and use as input data for encoders
   const data = DracoLoader.parseBinary(BUNNY_DRC);
-  t.ok(data.header, 'Documents were found');
-  // t.comment(JSON.stringify(data));
-  t.equal(data.attributes.POSITION.length, 104502, 'position attribute was found');
+  validateLoadedData(data);
 
-  const meshAttributes = data.attributes;
-  const pointCloudAttributes = Object.assign({}, data.attributes);
+  // t.comment(JSON.stringify(data));
+  t.equal(getAttribute(data, 'POSITION').value.length, 104502, 'position attribute was found');
+
+  const meshAttributes = {
+    POSITION: getAttribute(data, 'POSITION').value,
+    indices: data.indices.value
+  };
+  const pointCloudAttributes = Object.assign({}, meshAttributes);
   delete pointCloudAttributes.indices;
 
   for (const tc of TEST_CASES) {
@@ -63,9 +68,10 @@ test('DracoEncoder#encode(bunny.drc)', t => {
     if (tc.type !== 'pointcloud') {
       // Decode the mesh
       const data2 = DracoLoader.parseBinary(compressedMesh);
-      t.ok(data2.header, 'Documents were found');
+      validateLoadedData(data2);
+
       // t.comment(JSON.stringify(data));
-      t.equal(data2.attributes.POSITION.length, 104502,
+      t.equal(getAttribute(data2, 'POSITION').value.length, 104502,
         `${tc.title} decoded position attribute was found`);
     }
   }

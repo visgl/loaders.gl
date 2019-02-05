@@ -3,23 +3,18 @@ import test from 'tape-catch';
 import {OBJLoader} from '@loaders.gl/obj';
 
 import OBJ_ASCII from 'test-data/obj/bunny.obj.js';
+import {validateLoadedData, getAttribute} from '../conformance';
 
 test('OBJLoader#parseText', t => {
   const data = OBJLoader.parseText(OBJ_ASCII);
-
-  // Check internal loader data
-  t.ok(data.loaderData.header, 'Original header was found');
-
-  // Check normalized data
-  t.ok(data.header, 'Normalized header was found');
+  validateLoadedData(data);
 
   t.equal(data.mode, 4, 'mode is TRIANGLES (4)');
   t.equal(data.indices.value.length, 14904, 'INDICES attribute was found');
   t.equal(data.indices.count, 14904, 'INDICES attribute was found');
 
-  const POSITION = data.glTFAttributeMap.POSITION;
-  t.equal(data.attributes[POSITION].value.length, 7509, 'POSITION attribute was found');
-  t.equal(data.attributes[POSITION].size, 3, 'POSITION attribute was found');
+  t.equal(getAttribute(data, 'POSITION').value.length, 7509, 'POSITION attribute was found');
+  t.equal(getAttribute(data, 'POSITION').size, 3, 'POSITION attribute was found');
 
   // TODO - need OBJ test model with normals and uvs
   // const NORMAL = data.glTFAttributeMap.NORMAL;

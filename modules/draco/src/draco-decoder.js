@@ -1,4 +1,5 @@
 // DRACO decompressor
+import {getGLTFAccessors, getGLTFIndices, getGLTFAttributeMap} from '@loaders.gl/core';
 
 const draco3d = require('draco3d');
 // const assert = require('assert');
@@ -51,6 +52,7 @@ export default class DRACODecoder {
     const data = {};
     let dracoStatus;
     let dracoGeometry;
+    let header;
 
     try {
       const geometryType = decoder.GetEncodedGeometryType(buffer);
@@ -59,7 +61,7 @@ export default class DRACODecoder {
       case this.decoderModule.TRIANGULAR_MESH:
         dracoGeometry = new this.decoderModule.Mesh();
         dracoStatus = decoder.DecodeBufferToMesh(buffer, dracoGeometry);
-        data.header = {
+        header = {
           type: GEOMETRY_TYPE.TRIANGULAR_MESH,
           faceCount: dracoGeometry.num_faces(),
           attributeCount: dracoGeometry.num_attributes(),
@@ -70,7 +72,7 @@ export default class DRACODecoder {
       case this.decoderModule.POINT_CLOUD:
         dracoGeometry = new this.decoderModule.PointCloud();
         dracoStatus = decoder.DecodeBufferToPointCloud(buffer, dracoGeometry);
-        data.header = {
+        header = {
           type: GEOMETRY_TYPE.POINT_CLOUD,
           attributeCount: dracoGeometry.num_attributes(),
           vertexCount: dracoGeometry.num_points()
@@ -80,6 +82,11 @@ export default class DRACODecoder {
       default:
         throw new Error('Unknown DRACO geometry type.');
       }
+
+      data.header = {
+        vertexCount: header.vertexCount
+      };
+      data.loaderData = {header};
 
       if (!dracoStatus.ok() || !dracoGeometry.ptr) {
         const message = `DRACO decompression failed: ${dracoStatus.error_msg()}`;
@@ -119,10 +126,16 @@ export default class DRACODecoder {
       attributes.indices = this.drawMode === 'TRIANGLE_STRIP' ?
         this.getMeshStripIndices(decoder, dracoGeometry) :
         this.getMeshFaceIndices(decoder, dracoGeometry);
+      geometry.mode = this.drawMode === 'TRIANGLE_STRIP' ?
+        5 : // GL.TRIANGLE_STRIP
+        4;  // GL.TRIANGLES
+    } else {
+      geometry.mode = 0; // GL.POINTS
     }
 
-    geometry.drawMode = this.drawMode;
-    geometry.attributes = attributes;
+    geometry.indices = getGLTFIndices(attributes);
+    geometry.attributes = getGLTFAccessors(attributes);
+    geometry.glTFAttributeMap = getGLTFAttributeMap(geometry.attributes);
 
     return geometry;
   }
@@ -147,6 +160,7 @@ export default class DRACODecoder {
 
   getAttributes(decoder, dracoGeometry) {
     const attributes = {};
+    const numPoints = dracoGeometry.num_points();
     // const attributeUniqueIdMap = {};
 
     // Add native Draco attribute type to geometry.
@@ -162,7 +176,10 @@ export default class DRACODecoder {
         const {typedArray} = this.getAttributeTypedArray(
           decoder, dracoGeometry, dracoAttribute, attributeName
         );
-        attributes[DRACO_TO_GLTF_ATTRIBUTE_NAME_MAP[attributeName]] = typedArray;
+        attributes[DRACO_TO_GLTF_ATTRIBUTE_NAME_MAP[attributeName]] = {
+          value: typedArray,
+          size: typedArray.length / numPoints
+        };
       }
       // }
     }

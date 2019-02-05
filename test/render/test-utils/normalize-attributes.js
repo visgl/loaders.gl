@@ -4,16 +4,7 @@ const DEFAULT_TEX_COORDS = {constant: true, size: 2, value: new Float32Array([0,
 
 /* eslint-disable complexity */
 export function normalizeAttributes(data) {
-  const {attributes, indices} = data;
-
-  const positions = attributes.position || attributes.POSITION;
-  const colors = attributes.color || attributes.COLOR || attributes.COLOR_0;
-  const normals = attributes.normal || attributes.NORMAL;
-  const texCoords = attributes.uv || attributes.TEXCOORD || attributes.TEXCOORD_0;
-
-  if (!positions) {
-    throw new Error('Mesh without position');
-  }
+  const {attributes, glTFAttributeMap} = data;
 
   const mesh = {
     colors: DEFAULT_COLOR,
@@ -21,30 +12,26 @@ export function normalizeAttributes(data) {
     texCoords: DEFAULT_TEX_COORDS
   };
 
-  mesh.positions = arrayToType(positions, Float32Array);
+  if (!glTFAttributeMap) {
+    return Object.assign(mesh, attributes);
+  }
 
-  if (indices) {
-    mesh.indices = arrayToType(indices, Uint32Array);
+  mesh.positions = attributes[glTFAttributeMap.POSITION];
+
+  if (!mesh.positions) {
+    throw new Error('Mesh without position');
   }
-  if (colors) {
-    mesh.colors = {value: arrayToType(colors, Uint8ClampedArray), size: 4};
+  if (data.indices) {
+    mesh.indices = data.indices;
   }
-  if (normals) {
-    mesh.normals = {value: arrayToType(normals, Float32Array), size: 3};
+  if ('COLOR_0' in glTFAttributeMap) {
+    mesh.colors = attributes[glTFAttributeMap.COLOR_0];
   }
-  if (texCoords) {
-    mesh.texCoords = {value: arrayToType(texCoords, Float32Array), size: 2};
+  if ('NORMAL' in glTFAttributeMap) {
+    mesh.normals = attributes[glTFAttributeMap.NORMAL];
+  }
+  if ('TEXCOORD_0' in glTFAttributeMap) {
+    mesh.texCoords = attributes[glTFAttributeMap.TEXCOORD_0];
   }
   return mesh;
-}
-
-function arrayToType(array, Type) {
-  array = (array && array.value) || array;
-  if (!array || !array.length) {
-    return null;
-  }
-  if (array instanceof Type) {
-    return array;
-  }
-  return new Type(array);
 }

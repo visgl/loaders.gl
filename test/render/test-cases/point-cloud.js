@@ -32,11 +32,12 @@ export default [
     name: 'LAZ pointcloud',
     onRender: ({gl}) => {
       const model = getModel(gl, lazPointCloud);
+      const originalHeader = lazPointCloud.loaderData.header;
       const viewport = {
         lookAt: [
-          (lazPointCloud.originalHeader.mins[0] + lazPointCloud.originalHeader.maxs[0]) / 2,
-          (lazPointCloud.originalHeader.mins[1] + lazPointCloud.originalHeader.maxs[1]) / 2,
-          (lazPointCloud.originalHeader.mins[2] + lazPointCloud.originalHeader.maxs[2]) / 2
+          (originalHeader.mins[0] + originalHeader.maxs[0]) / 2,
+          (originalHeader.mins[1] + originalHeader.maxs[1]) / 2,
+          (originalHeader.mins[2] + originalHeader.maxs[2]) / 2
         ],
         distance: 50,
         zoom: 2
@@ -48,7 +49,13 @@ export default [
   {
     name: 'KITTI pointcloud raw',
     onRender: ({gl}) => {
-      const model = getModel(gl, {attributes: kittiPointCloudRaw});
+      const model = getModel(gl, {
+        attributes: {
+          positions: {value: kittiPointCloudRaw.POSITION, size: 3},
+          colors: {value: kittiPointCloudRaw.COLOR, size: 4}
+        },
+        mode: 0
+      });
       drawModelInViewport(model, {distance: 50, rotationZ: 90});
     },
     goldenImage: './test/render/golden-images/kitti-point-cloud.png'

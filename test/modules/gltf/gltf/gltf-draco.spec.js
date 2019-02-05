@@ -33,8 +33,8 @@ test('GLTFBuilder#addCompressedPointCloud', t => {
   t.ok(mesh.primitives[0].extensions.UBER_draco_point_cloud_compression);
   t.notEqual(mesh.primitives[0].extensions.UBER_draco_point_cloud_compression.bufferView, undefined);
 
-  t.equal(mesh.primitives[0].attributes.POSITION.length, attributes.POSITIONS.length, 'position attribute was found');
-  t.equal(mesh.primitives[0].attributes.COLOR_0.length, attributes.COLORS.length, 'color attribute was found');
+  t.equal(mesh.primitives[0].attributes.POSITION.value.length, attributes.POSITIONS.length, 'position attribute was found');
+  t.equal(mesh.primitives[0].attributes.COLOR_0.value.length, attributes.COLORS.length, 'color attribute was found');
 
   t.end();
 });

@@ -3,6 +3,7 @@ import test from 'tape-catch';
 import {loadBinaryFile} from '@loaders.gl/core-node';
 import {DracoLoader} from '@loaders.gl/draco';
 import path from 'path';
+import {validateLoadedData} from '../conformance';
 
 const BUNNY_DRC =
   loadBinaryFile(path.resolve(__dirname, '../../data/draco/bunny.drc')) ||
@@ -10,9 +11,10 @@ const BUNNY_DRC =
 
 test('DracoLoader#parse and encode', t => {
   const data = DracoLoader.parseBinary(BUNNY_DRC);
+  validateLoadedData(data);
 
-  t.ok(data.header, 'Documents were found');
-  t.equal(data.attributes.POSITION.length, 104502, 'position attribute was found');
+  const POSITION = data.glTFAttributeMap.POSITION;
+  t.equal(data.attributes[POSITION].value.length, 104502, 'position attribute was found');
 
   t.end();
 });

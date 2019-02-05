@@ -4,6 +4,7 @@ import {_getMeshSize} from '@loaders.gl/core';
 import {loadBinaryFile} from '@loaders.gl/core-node';
 import {DracoEncoder, DracoLoader} from '@loaders.gl/draco';
 import path from 'path';
+import {validateLoadedData} from '../conformance';
 
 const POSITIONS =
   loadBinaryFile(path.resolve(__dirname, '../../data/raw-attribute-buffers/lidar-positions.bin')) ||
@@ -30,9 +31,12 @@ test('DracoEncoder#compressRawBuffers', t => {
 
   // Ensure we can parse it
   const data2 = DracoLoader.parseBinary(compressedMesh);
-  t.ok(data2.header, 'Documents were found');
-  t.equal(data2.attributes.POSITION.length, attributes.POSITIONS.length, 'position attribute was found');
-  t.equal(data2.attributes.COLOR_0.length, attributes.COLORS.length, 'color attribute was found');
+  validateLoadedData(data2);
+
+  const POSITION = data2.glTFAttributeMap.POSITION;
+  const COLOR = data2.glTFAttributeMap.COLOR_0;
+  t.equal(data2.attributes[POSITION].value.length, attributes.POSITIONS.length, 'position attribute was found');
+  t.equal(data2.attributes[COLOR].value.length, attributes.COLORS.length, 'color attribute was found');
 
   t.end();
 });

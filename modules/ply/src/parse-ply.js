@@ -36,6 +36,7 @@ export default function parsePLY(data, options = {}) {
     attributes = parseASCII(data, header);
   }
 
+  const vertexCount = attributes.indices.length || attributes.vertices.length / 3;
   const normalizedAttributes = normalizeAttributes(attributes);
 
   return {
@@ -44,8 +45,12 @@ export default function parsePLY(data, options = {}) {
     },
     // TODO - how to detect POINT CLOUDS vs MESHES?
     // TODO - For Meshes, PLY quadrangles must be split?
-    header: {},
-    mode: 0, // POINTS
+    header: {
+      vertexCount
+    },
+    mode: normalizedAttributes.indices ?
+      4 : // TRIANGLES
+      0,  // POINTS
     indices: getGLTFIndices(normalizedAttributes),
     attributes: getGLTFAccessors(normalizedAttributes),
     glTFAttributeMap: getGLTFAttributeMap(normalizedAttributes)

@@ -6,6 +6,7 @@ import {PLYLoader, PLYWorkerLoader} from '@loaders.gl/ply';
 import path from 'path';
 
 import PLY_ASCII from 'test-data/ply/cube_att.ply.js';
+import {validateLoadedData, getAttribute} from '../conformance';
 
 const PLY_BINARY =
   loadBinaryFile(path.resolve(__dirname, '../../data/ply/bun_zipper.ply')) ||
@@ -14,30 +15,22 @@ const PLY_BINARY =
 test('PLYLoader#parseText', t => {
   const data = PLYLoader.parseText(PLY_ASCII);
 
-  // Check loader specific results
-  t.ok(data.loaderData.header, 'Original header found');
+  validateLoadedData(data);
 
-  // Check normalized
-
-  t.ok(data.header, 'header found');
   t.equal(data.indices.value.length, 36, 'Indices found');
 
-  const POSITION = data.glTFAttributeMap.POSITION;
-  const NORMAL = data.glTFAttributeMap.NORMAL;
-  t.equal(data.attributes[POSITION].value.length, 72, 'POSITION attribute was found');
-  t.equal(data.attributes[NORMAL].value.length, 72, 'NORMAL attribute was found');
+  t.equal(getAttribute(data, 'POSITION').value.length, 72, 'POSITION attribute was found');
+  t.equal(getAttribute(data, 'NORMAL').value.length, 72, 'NORMAL attribute was found');
 
   t.end();
 });
 
 test('PLYLoader#parseBinary', t => {
-  const data = PLYLoader.parseText(PLY_BINARY);
+  const data = PLYLoader.parseBinary(PLY_BINARY);
 
-  // Check loader specific results
-  t.ok(data.loaderData.header, 'Original header found');
+  validateLoadedData(data);
 
-  const POSITION = data.glTFAttributeMap.POSITION;
-  t.equal(data.attributes[POSITION].value.length, 107841, 'POSITION attribute was found');
+  t.equal(getAttribute(data, 'POSITION').value.length, 107841, 'POSITION attribute was found');
 
   t.end();
 });
@@ -53,11 +46,9 @@ test('PLYLoader#parseBinaryAsync', t => {
   // Duplicate it here to avoid breaking other tests
   const plyBinary = PLY_BINARY.slice();
   parseWithWorker(PLYWorkerLoader.worker)(plyBinary).then(data => {
-  // Check loader specific results
-    t.ok(data.loaderData.header, 'Original header found');
+    validateLoadedData(data);
 
-    const POSITION = data.glTFAttributeMap.POSITION;
-    t.equal(data.attributes[POSITION].value.length, 107841, 'POSITION attribute was found');
+    t.equal(getAttribute(data, 'POSITION').value.length, 107841, 'POSITION attribute was found');
 
   }).catch(error => {
     t.fail(error);

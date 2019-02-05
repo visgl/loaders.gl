@@ -31,7 +31,7 @@ export function getGLTFIndices(attributes) {
   for (const name in attributes) {
     const attribute = attributes[name];
     if (isGLTFIndices(name)) {
-      const indices = toTypedArray(attribute, Uint32Array);
+      const indices = toTypedArray(attribute.value || attribute, Uint32Array);
       return getGLTFAccessor(indices);
     }
   }
@@ -119,7 +119,9 @@ function getAccessorData(attribute, attributeName) {
   }
 
   if (buffer) {
-    buffer = toTypedArray(buffer, Float32Array);
+    if (!ArrayBuffer.isView(buffer)) {
+      buffer = toTypedArray(buffer, Float32Array);
+    }
     count = buffer.length / size;
   }
 
