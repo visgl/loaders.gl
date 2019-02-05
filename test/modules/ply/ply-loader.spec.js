@@ -49,7 +49,10 @@ test('PLYLoader#parseBinaryAsync', t => {
     return;
   }
 
-  parseWithWorker(PLYWorkerLoader.worker)(PLY_BINARY).then(data => {
+  // Once binary is transferred to worker it cannot be read from the main thread
+  // Duplicate it here to avoid breaking other tests
+  const plyBinary = PLY_BINARY.slice();
+  parseWithWorker(PLYWorkerLoader.worker)(plyBinary).then(data => {
   // Check loader specific results
     t.ok(data.loaderData.header, 'Original header found');
 
