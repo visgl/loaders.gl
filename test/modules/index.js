@@ -10,3 +10,5 @@ import './las';
 
 import './gltf';
 import './kml';
+
+import '@loaders.gl/arrow/../test';
