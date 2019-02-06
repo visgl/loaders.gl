@@ -1,18 +1,19 @@
 /* global fetch */
 /* global URL, location, File, FileReader */
 /* global Buffer */
-import {getPathPrefix} from './path-prefix';
-import {getFileAlias} from './file-aliases';
+import {resolvePath} from './file-aliases';
 import decodeDataUri from '../data-uri-utils/decode-data-uri';
 import {toArrayBuffer} from '../binary-utils/binary-utils';
+import {concatenateReadStream} from '../async-iterator-utils/stream-utils';
 import fs from 'fs'; // `fs` will be empty object in browsers (see package.json "browser" field).
 import http from 'http';
+import https from 'https';
 import util from 'util';
 
 const isNode = Boolean(fs && fs.readFile);
 
 const DEFAULT_OPTIONS = {
-  dataType: 'arraybuffer'
+  dataType: 'arrayBuffer'
 };
 
 function getReadFileOptions(options = {}) {
@@ -32,13 +33,8 @@ function getReadFileOptions(options = {}) {
 // etc?
 export function readFile(uri, options = {}) {
   try {
+    uri = resolvePath(uri);
     options = getReadFileOptions(options);
-    uri = getPathPrefix() + uri;
-
-    const alias = getFileAlias(uri);
-    if (alias) {
-      return Promise.resolve(alias);
-    }
 
     if (uri.startsWith('data:')) {
       return Promise.resolve(decodeDataUri(uri));
@@ -49,23 +45,31 @@ export function readFile(uri, options = {}) {
     }
 
     const isRequest = uri.startsWith('http:') || uri.startsWith('https:');
-    if (isRequest) {
-      if (isNode) {
-        return http.request(uri, options);
-      }
-      if (typeof createImageBitmap === 'undefined') {
-        // In a web worker: XMLHttpRequest throws invalid URL error if using relative path
-        // resolve url relative to original base
-        uri = new URL(uri, location.pathname).href;
-      }
-      return fetch(uri, options).then(res => res[options.dataType]());
-    }
 
     if (isNode) {
+      if (isRequest) {
+        return new Promise((resolve, reject) => {
+          options = {...new URL(uri), ...options};
+          const request = uri.startsWith('https:') ? https.request : http.request;
+          request(uri, response =>
+            concatenateReadStream(response)
+              .then(resolve, reject)
+          );
+        });
+      }
+
       return readFileNode(uri, options);
     }
 
-    return Promise.reject(new Error('Cannot load file URIs in browser'));
+    // Browser: Try to load all URLS via fetch, as they can be local requests (e.g. to a dev server)
+    if (typeof createImageBitmap === 'undefined') {
+      // In a web worker: XMLHttpRequest throws invalid URL error if using relative path
+      // resolve url relative to original base
+      uri = new URL(uri, location.pathname).href;
+    }
+    return fetch(uri, options).then(res => res[options.dataType]());
+
+    // return Promise.reject(new Error('Cannot load file URIs in browser'));
   } catch (error) {
     return Promise.reject(error.message);
   }
@@ -73,13 +77,8 @@ export function readFile(uri, options = {}) {
 
 // In a few cases (data URIs, node.js) "files" can be read synchronously
 export function readFileSync(uri, options = {}) {
+  uri = resolvePath(uri);
   options = getReadFileOptions(options);
-  uri = getPathPrefix() + uri;
-
-  const alias = getFileAlias(uri);
-  if (alias) {
-    return alias;
-  }
 
   if (uri.startsWith('data:')) {
     return decodeDataUri(uri);

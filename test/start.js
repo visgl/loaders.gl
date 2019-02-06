@@ -1,15 +1,19 @@
 // Launch script for various Node test configurations
 
-// Enables ES2015 import/export in Node.js
+// reify - Enables ES2015 import/export in Node.js
 require('reify');
-
-require('../aliases');
 
 /* global process */
 const path = require('path');
 const moduleAlias = require('module-alias');
-
 const {BrowserTestDriver} = require('@probe.gl/test-utils');
+
+// esm - Enables ES2015 import/export in Node.js.
+// TODO - can't get esm to work with module-alias
+// require = require('esm')(module, true); // true: read options from .esmrc.js
+
+// Sets up aliases in node
+require('../aliases');
 
 const mode = process.argv.length >= 3 ? process.argv[2] : 'default';
 const arg = process.argv.length >= 4 ? process.argv[3] : 'default';
@@ -23,6 +27,7 @@ case 'ci':
   break;
 
 case 'dist':
+  // TODO - all aliases need to be redefined
   // Load deck.gl itself from the dist folder
   const dist = arg === 'default' ? 'es6' : arg;
   moduleAlias.addAlias('loaders.gl', path.resolve(`./dist/${dist}`));

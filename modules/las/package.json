@@ -27,6 +27,10 @@
     "dist",
     "README.md"
   ],
+  "browser": {
+    "ws": false,
+    "crypto": false
+  },
   "scripts": {
     "clean": "rm -fr dist && mkdir -p dist",
     "build": "npm run clean && npm run build-worker && npm run build-es6 && npm run build-esm && npm run build-es5",

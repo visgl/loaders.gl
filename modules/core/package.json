@@ -29,6 +29,7 @@
   "browser": {
     "fs": false,
     "http": false,
+    "https": false,
     "text-encoding": false,
     "util": false
   },

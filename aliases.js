@@ -20,7 +20,8 @@
 
 const path = require('path');
 
-const ALIASES = {
+// TODO - Add option to make separate sets of aliases for dist testing
+const makeAliases = () => ({
   test: path.resolve(__dirname, './test'),
   '@loaders.gl/core': path.resolve(__dirname, './modules/core/src'),
   '@loaders.gl/draco': path.resolve(__dirname, './modules/draco/src'),
@@ -34,12 +35,11 @@ const ALIASES = {
   '@loaders.gl/ply': path.resolve(__dirname, './modules/ply/src'),
   '@loaders.gl/zip': path.resolve(__dirname, './modules/zip/src'),
   '@loaders.gl/arrow': path.resolve(__dirname, './modules/arrow/src')
-};
+});
+
+const ALIASES = makeAliases();
 
 if (module.require) {
-  // Enables ES2015 import/export in Node.js
-  module.require('reify');
-
   const moduleAlias = module.require('module-alias');
   moduleAlias.addAliases(ALIASES);
 }

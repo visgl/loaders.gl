@@ -1,10 +1,11 @@
 // FILE PARSING AND LOADING
 
-export {setPathPrefix, getPathPrefix} from './read-file/path-prefix';
-export {addFileAliases} from './read-file/file-aliases';
+export {addAliases, setPathPrefix, getPathPrefix, resolvePath} from './read-file/file-aliases.js';
 
-export {parseFile, parseFileSync} from './parse-file/parse-file';
 export {readFile, readFileSync} from './read-file/read-file';
+export {
+  parseFile, parseFileSync, parseFileAsIterator, parseFileAsAsyncIterator
+} from './parse-file/parse-file';
 export {loadFile, loadFileSync} from './load-file/load-file';
 export {loadImage} from './load-file/load-image';
 
@@ -64,8 +65,6 @@ export {
   getGLTFAttributeMap
 } from './mesh-utils/gltf-attribute-utils';
 
-export {getMeshSize as _getMeshSize} from './mesh-utils/mesh-utils';
-
 // CORE UTILS
 
 export {default as assert} from './utils/assert';
@@ -75,3 +74,7 @@ export {isBrowser, self, window, global, document} from './utils/globals';
 
 export {default as createWorker} from './worker-utils/create-worker';
 export {default as _parseWithWorker} from './worker-utils/parse-with-worker';
+
+// INTERNAL UTILS
+export {getMeshSize as _getMeshSize} from './mesh-utils/mesh-utils';
+export {autoDetectLoader as _autoDetectLoader} from './parse-file/auto-detect-loader';
