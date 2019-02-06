@@ -7,5 +7,4 @@ node_js:
   - '10'
 before_script:
   - npm run bootstrap
-  - npm run build
 script: npm run test ci

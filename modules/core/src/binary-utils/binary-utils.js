@@ -81,13 +81,47 @@ export function copyToArray(source, target, targetOffset) {
   return targetOffset + padTo4Bytes(sourceArray.byteLength);
 }
 
-export function concatenateArrayBuffers(source1, source2) {
+export function concatenateTypedArrays(source1, source2) {
   const sourceArray1 = source1 instanceof ArrayBuffer ? new Uint8Array(source1) : source1;
   const sourceArray2 = source2 instanceof ArrayBuffer ? new Uint8Array(source2) : source2;
   const temp = new Uint8Array(sourceArray1.byteLength + sourceArray2.byteLength);
   temp.set(sourceArray1, 0);
   temp.set(sourceArray2, sourceArray1.byteLength);
   return temp;
+}
+
+export function concatenateArrayBuffers(source1, source2) {
+  return concatenateArrayBuffers(source1, source2);
+}
+
+export function appendArrayBuffer(source1, source2) {
+
+}
+
+// Polyfill: The static ArrayBuffer.transfer() method returns a new ArrayBuffer
+// whose contents have been taken from the oldBuffer's data and then is either
+// truncated or zero-extended by newByteLength.
+// If newByteLength is undefined, the byteLength of the oldBuffer is used.
+// This operation leaves oldBuffer in a detached state.
+//
+// eslint-disable-next-line
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer/transfer
+
+export function transferArrayBuffer(source, length) {
+  if (ArrayBuffer.transfer) {
+    return ArrayBuffer.transfer(source, length);
+  }
+
+  // if (!(source instanceof ArrayBuffer))
+  //   throw new TypeError('Source must be an instance of ArrayBuffer');
+  if (length <= source.byteLength) {
+    return source.slice(0, length);
+  }
+
+  const sourceView = new Uint8Array(source);
+  const destView = new Uint8Array(new ArrayBuffer(length));
+  destView.set(sourceView);
+  return destView.buffer;
 }
 
 // Helper functions

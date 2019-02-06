@@ -1,14 +1,15 @@
 /* global fetch */
 /* global URL, location, File, FileReader */
 /* global Buffer */
-import {resolvePath} from './file-aliases';
-import decodeDataUri from '../data-uri-utils/decode-data-uri';
-import {toArrayBuffer} from '../binary-utils/binary-utils';
-import {concatenateReadStream} from '../async-iterator-utils/stream-utils';
 import fs from 'fs'; // `fs` will be empty object in browsers (see package.json "browser" field).
 import http from 'http';
 import https from 'https';
 import util from 'util';
+
+import {resolvePath} from './file-aliases';
+import decodeDataUri from '../data-uri-utils/decode-data-uri';
+import {toArrayBuffer} from '../binary-utils/binary-utils';
+import {concatenateReadStream} from '../async-iterator-utils/stream-utils';
 
 const isNode = Boolean(fs && fs.readFile);
 

@@ -1,6 +1,6 @@
-import {isBrowser, readFile, readFileSync} from '@loaders.gl/core';
-
 import test from 'tape-promise/tape';
+
+import {isBrowser, readFile, readFileSync} from '@loaders.gl/core';
 
 const DATA_URL = 'data:,important content!';
 const BINARY_URL = `${__dirname}/../../data/files/binary-data.bin`;
