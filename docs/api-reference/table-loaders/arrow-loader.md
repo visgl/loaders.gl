@@ -6,17 +6,19 @@ A simple non-streaming loader for the Apache Arrow columnar table format.
 | ---                        | ---            |
 | File Extension             | `.arrow`       |
 | File Type                  | Binary         |
-| File Format                | [Encapsulated message format](http://arrow.apache.org/docs/ipc.html) |
+| File Format                | [IPC: Encapsulated Message Format](http://arrow.apache.org/docs/ipc.html) |
 | Category                   | Columnar Table |
 | Parser Type                | Synchronous    |
 | Worker Thread Support      | Yes            |
 | Streaming Support          | Yes            |
 
-
 ## Options
 
 N/A
 
+## Background
+
+Apache Arrow is an emerging standard for large in-memory columnar data.
 
 ## Attributions
 
