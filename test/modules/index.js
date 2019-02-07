@@ -1,5 +1,5 @@
-import './core';
-import './core-node';
+import '@loaders.gl/core/../test';
+import '@loaders.gl/core-node/../test';
 
 import './draco';
 
