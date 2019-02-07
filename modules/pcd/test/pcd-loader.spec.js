@@ -1,7 +1,6 @@
 /* eslint-disable max-len */
 import test from 'tape-catch';
-import {parseFileSync, TextEncoder, getGLTFAttribute} from '@loaders.gl/core';
-import {loadBinaryFile} from '@loaders.gl/core-node';
+import {readFileSync, parseFileSync, TextEncoder, getGLTFAttribute} from '@loaders.gl/core';
 import {PCDLoader} from '@loaders.gl/pcd';
 import path from 'path';
 
@@ -9,7 +8,7 @@ import PCD_ASCII from '../data/simple-ascii.pcd.js';
 import {validateLoadedData} from 'test/common/conformance';
 
 const PCD_BINARY =
-  loadBinaryFile(path.resolve(__dirname, '../data/Zaghetto.pcd')) ||
+  readFileSync(path.resolve(__dirname, '../data/Zaghetto.pcd')) ||
   require('../data/Zaghetto.pcd');
 
 test('PCDLoader#parseText', t => {

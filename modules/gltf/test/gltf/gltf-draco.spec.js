@@ -1,17 +1,17 @@
 /* eslint-disable max-len */
 import test from 'tape-catch';
 
-import {loadBinaryFile} from '@loaders.gl/core-node';
+import {readFileSync} from '@loaders.gl/core';
 import {GLTFBuilder, GLTFParser} from '@loaders.gl/gltf';
 import {DracoEncoder, DracoDecoder} from '@loaders.gl/draco';
 import path from 'path';
 
 const POSITIONS =
-  loadBinaryFile(path.resolve(__dirname, '../../../draco/data/raw-attribute-buffers/lidar-positions.bin')) ||
+  readFileSync(path.resolve(__dirname, '../../../draco/data/raw-attribute-buffers/lidar-positions.bin')) ||
   require('../../../draco/data/raw-attribute-buffers/lidar-positions.bin');
 
 const COLORS =
-  loadBinaryFile(path.resolve(__dirname, '../../../draco/data/raw-attribute-buffers/lidar-colors.bin')) ||
+  readFileSync(path.resolve(__dirname, '../../../draco/data/raw-attribute-buffers/lidar-colors.bin')) ||
   require('../../../draco/data/raw-attribute-buffers/lidar-colors.bin');
 
 test('GLTFBuilder#addCompressedPointCloud', t => {

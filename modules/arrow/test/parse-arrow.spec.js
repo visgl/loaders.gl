@@ -9,15 +9,15 @@ import path from 'path';
 
 // Small Arrow Sample Files
 const ARROW_SIMPLE =
-  loadBinaryFile(path.resolve(__dirname, '../data/simple.arrow')) ||
+  loadFileSync(path.resolve(__dirname, '../data/simple.arrow')) ||
   require('../data/simple.arrow');
 
 const ARROW_DICTIONARY =
-  loadBinaryFile(path.resolve(__dirname, '../data/dictionary.arrow')) ||
+  loadFileSync(path.resolve(__dirname, '../data/dictionary.arrow')) ||
   require('../data/dictionary.arrow');
 
 const ARROW_STRUCT =
-  loadBinaryFile(path.resolve(__dirname, '../data/struct.arrow')) ||
+  loadFileSync(path.resolve(__dirname, '../data/struct.arrow')) ||
   require('../data/struct.arrow');
 
 test('ArrowWorkerLoader#parseFileSync(simple.arrow)', t => {

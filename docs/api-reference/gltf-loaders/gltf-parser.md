@@ -15,13 +15,13 @@ References:
 
 ```
 import {GLTFParser} from '@loaders.gl/gltf';
-import {loadBinaryFile} from '@loaders.gl/core';
+import {loadFileSync} from '@loaders.gl/core';
 
 // Create a parser
 const gltfParser = new GLTFParser();
 
 // Load and parse a file
-const GLTF_BINARY = loadBinaryFile(...);
+const GLTF_BINARY = loadFileSync(...);
 gltfParser.parse(GLTF_BINARY);
 
 // Get the complete glTF JSON structure

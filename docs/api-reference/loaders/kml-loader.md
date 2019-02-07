@@ -12,7 +12,7 @@ References:
 
 ```
 import {KMLLoader} from '@loaders.gl/kml';
-import {loadFile} from '@loaders.gl/core';
+import {loadFileSync} from '@loaders.gl/core';
 ```
 
 

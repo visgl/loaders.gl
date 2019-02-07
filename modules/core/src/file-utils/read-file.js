@@ -1,18 +1,24 @@
+/* global fetch */
+/* global URL, location, File, FileReader */
+/* global Buffer */
 import {getPathPrefix} from './path-prefix';
 import decodeDataUri from '../data-uri-utils/decode-data-uri';
-
-/* global fetch */
-/* global URL, location */
-/* global File, FileReader */
+import {toArrayBuffer} from '../binary-utils/binary-utils';
+import fs from 'fs'; // `fs` will be `false` in browsers (see package.json "browser" field).
+import http from 'http'; // `http` will be `false` in browsers (see package.json "browser" field).
+import util from 'util';
 
 const DEFAULT_OPTIONS = {
-  rootFolder: '.',
-  dataType: 'arrayBuffer'
+  dataType: 'arraybuffer'
 };
 
 function getReadFileOptions(options = {}) {
   options = Object.assign({}, DEFAULT_OPTIONS, options);
   options.responseType = options.responseType || options.dataType;
+  if (fs) {
+    // set encoding for fs.readFile
+    options.encoding = options.encoding || (options.dataType === 'text' ? 'utf8' : null);
+  }
   return options;
 }
 
@@ -22,31 +28,39 @@ function getReadFileOptions(options = {}) {
 // * File/Blob objects
 // etc?
 export function readFile(uri, options = {}) {
-  options = getReadFileOptions(options);
-  uri = getPathPrefix() + uri;
+  try {
+    options = getReadFileOptions(options);
+    uri = getPathPrefix() + uri;
 
-  if (uri.startsWith('http:') || uri.startsWith('https:')) {
-    if (typeof createImageBitmap === 'undefined') {
-      // In a web worker: XMLHttpRequest throws invalid URL error if using relative path
-      // resolve url relative to original base
-      uri = new URL(uri, location.pathname).href;
+    if (uri.startsWith('data:')) {
+      return Promise.resolve(decodeDataUri(uri));
     }
-    return fetch(uri, options).then(res => res[options.dataType]());
+
+    if (typeof File !== 'undefined' && uri instanceof File) {
+      readFileObject(uri, options);
+    }
+
+    const isRequest = uri.startsWith('http:') || uri.startsWith('https:');
+    if (isRequest) {
+      if (http) {
+        return http.request(uri, options);
+      }
+      if (typeof createImageBitmap === 'undefined') {
+        // In a web worker: XMLHttpRequest throws invalid URL error if using relative path
+        // resolve url relative to original base
+        uri = new URL(uri, location.pathname).href;
+      }
+      return fetch(uri, options).then(res => res[options.dataType]());
+    }
+
+    if (fs) {
+      return readFileNode(uri, options);
+    }
+
+    return Promise.reject(new Error('Cannot load file URIs in browser'));
+  } catch (error) {
+    return Promise.reject(error.message);
   }
-
-  if (uri.startsWith('data:')) {
-    return Promise.resolve(decodeDataUri(uri));
-  }
-
-  if (typeof File !== undefined && uri instanceof File) {
-    readFileObject(uri, options);
-  }
-
-  return Promise.reject(new Error('Cannot load file URIs in browser'));
-  // }
-
-  // const filePath = path.join((rootFolder = '.'), uri);
-  // return fs.readFileAsync(filePath).then(buffer => ({buffer}));
 }
 
 // In a few cases (data URIs, node.js) "files" can be read synchronously
@@ -58,7 +72,12 @@ export function readFileSync(uri, options = {}) {
     return decodeDataUri(uri);
   }
 
-  throw new Error('Cant load URI synchronously');
+  if (!fs) {
+    throw new Error('Cant load URI synchronously');
+  }
+
+  const buffer = fs.readFileSync(uri, options, () => {});
+  return buffer instanceof Buffer ? toArrayBuffer(buffer) : buffer;
 }
 
 // HELPERS
@@ -75,10 +94,21 @@ function readFileObject(file, options) {
       reader.onerror = error => reject(new Error(error));
       reader.onabort = () => reject(new Error('Read operation was aborted.'));
       reader.onload = () => resolve(reader.result);
-      // TODO - support binary?
-      reader.readAsText(file);
+      if (options.dataType !== 'arraybuffer') {
+        reader.readAsText(file);
+      } else {
+        reader.readAsArrayBuffer(file);
+      }
     } catch (error) {
       reject(error);
     }
   });
 }
+
+function readFileNode(filename, options) {
+  const readFileAsync = util.promisify(fs.readFile);
+  return readFileAsync(filename, options, () => {}).then(
+    buffer => buffer instanceof Buffer ? toArrayBuffer(buffer) : buffer
+  );
+}
+

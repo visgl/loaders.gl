@@ -1,13 +1,12 @@
 /* eslint-disable max-len */
 import test from 'tape-catch';
-import {parseFileSync, getGLTFAttribute, _getMeshSize} from '@loaders.gl/core';
-import {loadBinaryFile} from '@loaders.gl/core-node';
+import {readFileSync, parseFileSync, getGLTFAttribute, _getMeshSize} from '@loaders.gl/core';
 import {DracoLoader, DracoEncoder} from '@loaders.gl/draco';
 import path from 'path';
 import {validateLoadedData} from 'test/common/conformance';
 
 const BUNNY_DRC =
-  loadBinaryFile(path.resolve(__dirname, '../data/bunny.drc')) ||
+  readFileSync(path.resolve(__dirname, '../data/bunny.drc')) ||
   require('../data/bunny.drc');
 
 const TEST_CASES = [
