@@ -9,7 +9,6 @@ import './image-utils/image-loaders.spec';
 
 import './mesh-utils/gltf-attribute-utils.spec';
 
-import './parser-utils/auto-parse.spec';
-
-import './file-utils/read-file.spec';
-import './file-utils/load-image.spec';
+import './read-file/read-file.spec';
+import './parse-file/auto-parse.spec';
+import './load-file/load-image.spec';

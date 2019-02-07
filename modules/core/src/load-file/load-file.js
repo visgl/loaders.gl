@@ -1,5 +1,5 @@
-import {readFile, readFileSync} from './read-file';
-import {parseFile, parseFileSync} from './parse-file';
+import {readFile, readFileSync} from '../read-file/read-file';
+import {parseFile, parseFileSync} from '../parse-file/parse-file';
 
 export function loadFile(url, loaders, options) {
   return readFile(url, options)

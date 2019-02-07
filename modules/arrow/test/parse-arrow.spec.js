@@ -1,8 +1,9 @@
 /* eslint-disable max-len */
 /*
 import test from 'tape-catch';
+<<<<<<< HEAD
 import {loadBinaryFile} from '@loaders.gl/core-node';
-import {parseFileSync/} from '@loaders.gl/core';
+import {parseFileSync} from '@loaders.gl/core';
 import {ArrowLoader} from '@loaders.gl/arrow';
 // import {ArrowLoader, ArrowWorkerLoader} from '@loaders.gl/arrow';
 import path from 'path';
@@ -16,11 +17,7 @@ const ARROW_DICTIONARY =
   loadFileSync(path.resolve(__dirname, '../data/dictionary.arrow')) ||
   require('../data/dictionary.arrow');
 
-const ARROW_STRUCT =
-  loadFileSync(path.resolve(__dirname, '../data/struct.arrow')) ||
-  require('../data/struct.arrow');
-
-test('ArrowWorkerLoader#parseFileSync(simple.arrow)', t => {
+test('ArrowLoader#parseFileSync(simple.arrow)', t => {
   const columns = parseFileSync(ARROW_SIMPLE, 'simple.arrow', ArrowLoader);
   // Check loader specific results
   t.ok(columns.bar, 'bar column loaded');
@@ -29,14 +26,14 @@ test('ArrowWorkerLoader#parseFileSync(simple.arrow)', t => {
   t.end();
 });
 
-test('ArrowWorkerLoader#parseFileSync(dictionary.arrow)', t => {
+test('ArrowLoader#parseFileSync(dictionary.arrow)', t => {
   const columns = parseFileSync(ARROW_DICTIONARY, 'dictionary.arrow', ArrowLoader);
   // Check loader specific results
   t.ok(columns['example-csv'], 'example-csv loaded');
   t.end();
 });
 
-test('ArrowWorkerLoader#parseFileSync(struct.arrow)', t => {
+test('ArrowLoader#parseFileSync(struct.arrow)', t => {
   const columns = parseFileSync(ARROW_STRUCT, 'struct.arrow', ArrowLoader);
   // Check loader specific results
   t.ok(columns.struct_nullable, 'struct_nullable loaded');
@@ -54,7 +51,7 @@ test('ArrowLoader#parseWithWorker (WORKER)', t => {
   // Once binary is transferred to worker it cannot be read from the main thread
   // Duplicate it here to avoid breaking other tests
   const testData = ARROW_SIMPLE.slice();
-  parseWithWorker(ArrowWorkerLoader.worker)(testData).then(data => {
+  parseWithWorker(ArrowLoader.worker)(testData).then(data => {
     // Check loader specific results
     t.ok(data, 'Data returned');
   }).catch(error => {

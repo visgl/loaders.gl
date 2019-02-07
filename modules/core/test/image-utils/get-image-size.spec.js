@@ -4,8 +4,29 @@
 /* eslint-disable max-len, max-statements */
 import test from 'tape-catch';
 import path from 'path';
-
 import {readFileSync, getImageSize} from '@loaders.gl/core';
+
+/*
+import {addFileAliases, isBrowser} from '@loaders.gl/core';
+
+const TEST_DATA_DIR = path.resolve(__dirname, '../../data');
+
+// Makes sample files available to readFile in browser
+// These are bundled using webpack arraybuffer-loader
+addFileAliases(TEST_DATA_DIR, {
+  'images/img1-preview.png': isBrowser && require('../../data/images/img1-preview.png'),
+  'images/img1-preview.jpeg': isBrowser && require('../../data/images/img1-preview.jpeg'),
+  'images/img1-preview.gif': isBrowser && require('../../data/images/img1-preview.gif'),
+  'images/img1-preview.bmp': isBrowser && require('../../data/images/img1-preview.bmp'),
+  'images/img1-preview.tiff': isBrowser && require('../../data/images/img1-preview.tiff')
+});
+
+const PNG_BINARY = readFileSync(path.resolve(TEST_DATA_DIR, 'images/img1-preview.png'));
+const JPEG_BINARY = readFileSync(path.resolve(TEST_DATA_DIR, 'images/img1-preview.jpeg'));
+const GIF_BINARY = readFileSync(path.resolve(TEST_DATA_DIR, 'images/img1-preview.gif'));
+const BMP_BINARY = readFileSync(path.resolve(TEST_DATA_DIR, 'images/img1-preview.bmp'));
+const TIFF_BINARY = readFileSync(path.resolve(TEST_DATA_DIR, 'images/img1-preview.tiff'));
+*/
 
 const TEST_DATA_DIR = path.resolve(__dirname, '../../data');
 

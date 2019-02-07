@@ -1,7 +1,6 @@
 /* eslint-disable max-len */
 import test from 'tape-catch';
 import {parseFileSync} from '@loaders.gl/core';
-// import {autoParse} from '@loaders.gl/core/parser-utils/auto-parse';
 import {OBJLoader} from '@loaders.gl/obj';
 import {KMLLoader} from '@loaders.gl/kml';
 

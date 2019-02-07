@@ -1,5 +1,5 @@
-import {autoDetectLoader} from '../loader-utils/auto-detect-loader';
-import {parseWithLoader, parseWithLoaderSync} from '../loader-utils/parse-with-loader';
+import {autoDetectLoader} from './auto-detect-loader';
+import {parseWithLoader, parseWithLoaderSync} from './parse-with-loader';
 
 export function parseFile(data, loaders, options, url) {
   const loader = Array.isArray(loaders) ? autoDetectLoader(url, data, loaders) : loaders;

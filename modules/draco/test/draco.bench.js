@@ -10,6 +10,24 @@ const COLORS =
   readFileSync(path.resolve(__dirname, '../data/raw-attribute-buffers/lidar-positions.bin')) ||
   require('../data/raw-attribute-buffers/lidar-colors.bin');
 
+/*
+import {addFileAliases, isBrowser} from '@loaders.gl/core';
+
+const TEST_DATA_DIR = path.resolve(__dirname, '../data');
+
+addFileAliases(TEST_DATA_DIR, {
+  'raw-attribute-buffers/lidar-positions.bin':
+    isBrowser && require('test-data/raw-attribute-buffers/lidar-positions.bin'),
+  'raw-attribute-buffers/lidar-colors.bin':
+    isBrowser & require('test-data/raw-attribute-buffers/lidar-colors.bin')
+});
+
+const POSITIONS =
+  readFileSync(path.resolve(TEST_DATA_DIR, 'raw-attribute-buffers/lidar-positions.bin'));
+const COLORS =
+  readFileSync(path.resolve(TEST_DATA_DIR, '/raw-attribute-buffers/lidar-positions.bin'));
+*/
+
 const attributes = {
   POSITIONS: new Float32Array(POSITIONS),
   COLORS: new Uint8ClampedArray(COLORS)
