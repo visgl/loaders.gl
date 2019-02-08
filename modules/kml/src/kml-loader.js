@@ -7,7 +7,7 @@ const KML_HEADER = `\
 <kml xmlns="http://www.opengis.net/kml/2.2">
 `;
 
-const DEFAULT_KML_OPTIONS = {
+const DEFAULT_OPTIONS = {
   normalize: true
 };
 
@@ -15,10 +15,10 @@ function testText(text) {
   return text.startsWith(KML_HEADER);
 }
 
-function parseTextSync(text, options = DEFAULT_KML_OPTIONS) {
+function parseTextSync(text, options = DEFAULT_OPTIONS) {
   const xml = XMLLoader.parseText(text);
-  const kmlLoader = new KMLParser(xml);
-  const kml = kmlLoader.parse();
+  const kmlLoader = new KMLParser();
+  const kml = kmlLoader.parse(xml, options);
   return options.normalize ? normalizeKML(kml) : kml;
 }
 
@@ -29,6 +29,6 @@ export default {
   testText,
   parseTextSync,
   browserOnly: true,
-  worker: false
+  worker: false,
+  DEFAULT_OPTIONS
 };
-
