@@ -9,5 +9,12 @@
   "useWorkspaces": true,
   "packages": [
     "modules/*"
-  ]
+  ],
+  "command": {
+    "publish": {
+      "ignore": [
+        "@loaders.gl/arrow"
+      ]
+    }
+  }
 }
