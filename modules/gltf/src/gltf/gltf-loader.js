@@ -15,6 +15,6 @@ export function parseBinaryGLTF(glbArrayBuffer, options = {}) {
 export default {
   name: 'glTF',
   extension: ['gltf', 'glb'],
-  parseText: parseTextGLTF,
-  parseBinary: parseBinaryGLTF
+  parseTextSync: parseTextGLTF,
+  parseSync: parseBinaryGLTF
 };

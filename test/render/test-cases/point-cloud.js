@@ -1,3 +1,4 @@
+import {parseFileSync} from '@loaders.gl/core';
 import {DracoEncoder, DracoLoader} from '@loaders.gl/draco';
 import {LASLoader} from '@loaders.gl/las';
 
@@ -5,7 +6,7 @@ import {getModel, drawModelInViewport} from '../test-utils/get-model';
 
 // LAZ
 const LAS_BINARY = require('test-data/las/indoor.laz');
-const lazPointCloud = LASLoader.parseBinary(LAS_BINARY, {skip: 100});
+const lazPointCloud = parseFileSync(LAS_BINARY, LASLoader, {skip: 100});
 
 // Raw point cloud data
 const KITTI_POSITIONS = require('test-data/raw-attribute-buffers/lidar-positions.bin');

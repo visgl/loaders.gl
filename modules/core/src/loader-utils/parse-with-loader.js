@@ -2,7 +2,7 @@ import parseWithWorker from '../worker-utils/parse-with-worker';
 
 // TODO: support progress and abort
 // TODO: support moving loading to worker
-export function parseWithLoader(data, url, loader, options = {}) {
+export function parseWithLoader(data, loader, options = {}, url) {
   // v0.5 support
   normalizeLegacyLoaderObject(loader);
 
@@ -35,7 +35,7 @@ export function parseWithLoader(data, url, loader, options = {}) {
   return null;
 }
 
-export function parseWithLoaderSync(data, url, loader, options = {}) {
+export function parseWithLoaderSync(data, loader, options = {}, url) {
   // v0.5 support
   normalizeLegacyLoaderObject(loader);
 

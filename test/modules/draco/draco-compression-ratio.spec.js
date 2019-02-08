@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import test from 'tape-catch';
-import {_getMeshSize} from '@loaders.gl/core';
+import {parseFileSync, _getMeshSize} from '@loaders.gl/core';
 import {loadBinaryFile} from '@loaders.gl/core-node';
 import {DracoEncoder, DracoLoader} from '@loaders.gl/draco';
 import path from 'path';
@@ -30,7 +30,7 @@ test('DracoEncoder#compressRawBuffers', t => {
   t.comment(`Draco compression ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
 
   // Ensure we can parse it
-  const data2 = DracoLoader.parseBinary(compressedMesh);
+  const data2 = parseFileSync(compressedMesh, DracoLoader);
   validateLoadedData(t, data2);
 
   const POSITION = data2.glTFAttributeMap.POSITION;

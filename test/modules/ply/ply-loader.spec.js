@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 import test from 'tape-catch';
 import {loadBinaryFile} from '@loaders.gl/core-node';
-import {parseWithWorker, getGLTFAttribute} from '@loaders.gl/core';
+import {parseFileSync, parseWithWorker, getGLTFAttribute} from '@loaders.gl/core';
 import {PLYLoader, PLYWorkerLoader} from '@loaders.gl/ply';
 import path from 'path';
 
@@ -13,7 +13,7 @@ const PLY_BINARY =
   require('test-data/ply/bun_zipper.ply');
 
 test('PLYLoader#parseText', t => {
-  const data = PLYLoader.parseText(PLY_ASCII);
+  const data = parseFileSync(PLY_ASCII, PLYLoader);
 
   validateLoadedData(t, data);
 
@@ -26,7 +26,7 @@ test('PLYLoader#parseText', t => {
 });
 
 test('PLYLoader#parseBinary', t => {
-  const data = PLYLoader.parseBinary(PLY_BINARY);
+  const data = parseFileSync(PLY_BINARY, PLYLoader);
 
   validateLoadedData(t, data);
 

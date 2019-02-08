@@ -1,3 +1,4 @@
+import {parseFileSync} from '@loaders.gl/core';
 import {PLYLoader} from '@loaders.gl/ply';
 
 import {getModel, drawModelInViewport} from '../test-utils/get-model';
@@ -11,7 +12,7 @@ export default [
     name: 'PLYLoader',
     goldenImage: './test/render/golden-images/ply-loader.png',
     onRender: ({gl}) => {
-      const model = getModel(gl, PLYLoader.parseBinary(PLY_BINARY));
+      const model = getModel(gl, parseFileSync(PLY_BINARY, PLYLoader));
       drawModelInViewport(model, {zoom: 50, lookAt: [0, 0.11, 0]}, {opacity: 0.5});
     }
   }

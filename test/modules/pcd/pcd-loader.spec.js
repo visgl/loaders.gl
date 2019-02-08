@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import test from 'tape-catch';
-import {TextEncoder, getGLTFAttribute} from '@loaders.gl/core';
+import {parseFileSync, TextEncoder, getGLTFAttribute} from '@loaders.gl/core';
 import {loadBinaryFile} from '@loaders.gl/core-node';
 import {PCDLoader} from '@loaders.gl/pcd';
 import path from 'path';
@@ -15,7 +15,7 @@ const PCD_BINARY =
 test('PCDLoader#parseText', t => {
   const binaryPCD = new TextEncoder().encode(PCD_ASCII);
 
-  const data = PCDLoader.parseBinary(binaryPCD);
+  const data = parseFileSync(binaryPCD, PCDLoader);
   validateLoadedData(t, data);
 
   t.equal(data.mode, 0, 'mode is POINTS (0)');
@@ -28,7 +28,7 @@ test('PCDLoader#parseText', t => {
 });
 
 test('PCDLoader#parseBinary', t => {
-  const data = PCDLoader.parseBinary(PCD_BINARY);
+  const data = parseFileSync(PCD_BINARY, PCDLoader);
   validateLoadedData(t, data);
 
   // Check internal loader data

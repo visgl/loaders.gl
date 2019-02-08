@@ -14,8 +14,7 @@ const DEFAULT_OPTIONS = {
 export default {
   name: 'PLY',
   extension: 'ply',
-  format: 'text',
-  parseBinary: parsePLY,
-  parseText: parsePLY,
+  parseTextSync: parsePLY,
+  parseSync: parsePLY,
   DEFAULT_OPTIONS
 };

@@ -1,13 +1,13 @@
 /* eslint-disable max-len */
 import test from 'tape-catch';
-import {getGLTFAttribute} from '@loaders.gl/core';
+import {parseFileSync, getGLTFAttribute} from '@loaders.gl/core';
 import {OBJLoader} from '@loaders.gl/obj';
 
 import OBJ_ASCII from 'test-data/obj/bunny.obj.js';
 import {validateLoadedData} from '../conformance';
 
 test('OBJLoader#parseText', t => {
-  const data = OBJLoader.parseText(OBJ_ASCII);
+  const data = parseFileSync(OBJ_ASCII, OBJLoader);
   validateLoadedData(t, data);
 
   t.equal(data.mode, 4, 'mode is TRIANGLES (4)');
