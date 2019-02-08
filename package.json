@@ -1,6 +1,6 @@
 {
   "name": "loaders.gl",
-  "description": "Framework-independent loaders for 3D graphics and geospatial formats",
+  "description": "Framework-independent loaders for visualization, 3D graphics and geospatial formats",
   "license": "MIT",
   "private": "true",
   "repository": {

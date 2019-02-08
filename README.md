@@ -1,3 +1,3 @@
 # loaders.gl
 
-This module contains framework independent 3D and geospatial loaders (parsers).
+This module contains framework independent visualization focused file format loaders (parsers) with emphasis on 3D and geospatial formats.

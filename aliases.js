@@ -32,7 +32,8 @@ const ALIASES = {
   '@loaders.gl/las': path.resolve(__dirname, './modules/las/src'),
   '@loaders.gl/obj': path.resolve(__dirname, './modules/obj/src'),
   '@loaders.gl/pcd': path.resolve(__dirname, './modules/pcd/src'),
-  '@loaders.gl/ply': path.resolve(__dirname, './modules/ply/src')
+  '@loaders.gl/ply': path.resolve(__dirname, './modules/ply/src'),
+  '@loaders.gl/arrow': path.resolve(__dirname, './modules/arrow/src')
 };
 
 if (module.require) {
