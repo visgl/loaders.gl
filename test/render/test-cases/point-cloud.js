@@ -26,7 +26,7 @@ const compressedMesh = dracoEncoder.encodePointCloud(kittiPointCloudRaw);
 dracoEncoder.destroy();
 // eslint-disable-next-line
 // console.log(compressedMesh.byteLength);
-const kittiPointCloudFromDraco = DracoLoader.parseBinary(compressedMesh);
+const kittiPointCloudFromDraco = parseFileSync(compressedMesh, DracoLoader);
 
 export default [
   {
