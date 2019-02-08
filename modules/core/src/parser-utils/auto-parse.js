@@ -1,11 +1,11 @@
 // Find a loader that works for extension/text
 export function autoParse(text, url, loaders, options) {
   const loader = autoDetectLoader(url, text, loaders);
-  if (!loader.parseText) {
+  if (!loader.parseTextSync) {
     throw new Error(`${loader.name} loader cannot handle text`);
   }
 
-  return loader.parseText(text, options);
+  return loader.parseTextSync(text, options);
 }
 
 const EXT_PATTERN = /[^\.]+$/;

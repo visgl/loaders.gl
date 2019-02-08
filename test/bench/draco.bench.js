@@ -1,4 +1,4 @@
-import {_getMeshSize} from '@loaders.gl/core';
+import {parseFileSync, _getMeshSize} from '@loaders.gl/core';
 import {loadBinaryFile} from '@loaders.gl/core-node';
 import {DracoEncoder, DracoLoader} from '@loaders.gl/draco';
 import path from 'path';
@@ -41,7 +41,7 @@ export default function dracoBench(bench) {
     bench = bench.add(`DracoEncoder#encode point cloud#${option.name}`, () => {
       dracoEncoder.encodePointCloud(attributes);
     }).add(`DracoDecoder#decode point cloud#${option.name}`, () => {
-      DracoLoader.parseBinary(compressedPointCloud);
+      parseFileSync(compressedPointCloud, DracoLoader);
     });
   });
 

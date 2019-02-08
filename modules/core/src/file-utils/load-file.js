@@ -8,7 +8,7 @@ export function loadFile(url, loaders, options) {
 
 export function loadFileSync(url, loaders, options) {
   const data = readFileSync(url, options);
-  const result = parseFileSync(data, url, loaders, options);
+  const result = parseFileSync(data, loaders, options, url);
   // Separate return to facilitate breakpoint setting
   return result;
 }

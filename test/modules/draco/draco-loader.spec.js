@@ -1,5 +1,6 @@
 /* eslint-disable max-len */
 import test from 'tape-catch';
+import {parseFileSync} from '@loaders.gl/core';
 import {loadBinaryFile} from '@loaders.gl/core-node';
 import {DracoLoader} from '@loaders.gl/draco';
 import path from 'path';
@@ -10,7 +11,7 @@ const BUNNY_DRC =
   require('test-data/draco/bunny.drc');
 
 test('DracoLoader#parse and encode', t => {
-  const data = DracoLoader.parseBinary(BUNNY_DRC);
+  const data = parseFileSync(BUNNY_DRC, DracoLoader);
   validateLoadedData(t, data);
 
   const POSITION = data.glTFAttributeMap.POSITION;

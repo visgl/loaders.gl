@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import test from 'tape-catch';
-import {_getMeshSize, getGLTFAttribute} from '@loaders.gl/core';
+import {parseFileSync, getGLTFAttribute, _getMeshSize} from '@loaders.gl/core';
 import {loadBinaryFile} from '@loaders.gl/core-node';
 import {DracoLoader, DracoEncoder} from '@loaders.gl/draco';
 import path from 'path';
@@ -28,7 +28,7 @@ const TEST_CASES = [
 
 test('DracoEncoder#encode(bunny.drc)', t => {
   // Decode Loaded Mesh and use as input data for encoders
-  const data = DracoLoader.parseBinary(BUNNY_DRC);
+  const data = parseFileSync(BUNNY_DRC, DracoLoader);
   validateLoadedData(t, data);
 
   // t.comment(JSON.stringify(data));
@@ -67,7 +67,7 @@ test('DracoEncoder#encode(bunny.drc)', t => {
 
     if (tc.type !== 'pointcloud') {
       // Decode the mesh
-      const data2 = DracoLoader.parseBinary(compressedMesh);
+      const data2 = parseFileSync(compressedMesh, DracoLoader);
       validateLoadedData(t, data2);
 
       // t.comment(JSON.stringify(data));

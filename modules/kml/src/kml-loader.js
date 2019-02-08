@@ -15,7 +15,7 @@ function testText(text) {
   return text.startsWith(KML_HEADER);
 }
 
-function parseText(text, options = DEFAULT_KML_OPTIONS) {
+function parseTextSync(text, options = DEFAULT_KML_OPTIONS) {
   const xml = XMLLoader.parseText(text);
   const kmlLoader = new KMLParser(xml);
   const kml = kmlLoader.parse();
@@ -27,7 +27,7 @@ export default {
   extension: 'kml',
   supported: XMLLoader.supported,
   testText,
-  parseText,
+  parseTextSync,
   browserOnly: true,
   worker: false
 };

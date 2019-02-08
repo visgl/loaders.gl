@@ -8,5 +8,5 @@ function parseDRACO(arrayBuffer, options) {
 export default {
   name: 'DRACO',
   extension: 'drc',
-  parseBinary: parseDRACO
+  parseSync: parseDRACO
 };

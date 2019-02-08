@@ -9,5 +9,5 @@ export default {
   name: 'OBJ',
   extension: 'obj',
   testText: testOBJFile,
-  parseText: parseOBJ
+  parseTextSync: parseOBJ
 };

@@ -12,13 +12,13 @@ export default function createWorker(loader) {
     try {
       let data;
       let parser;
-      if (loader.parseBinary) {
+      if (loader.parseSync) {
         data = arraybuffer;
-        parser = loader.parseBinary;
-      } else if (loader.parseText) {
+        parser = loader.parseSync;
+      } else if (loader.parseTextSync) {
         const textDecoder = new TextDecoder();
         data = textDecoder.decode(arraybuffer);
-        parser = loader.parseText;
+        parser = loader.parseTextSync;
       } else {
         throw new Error(`Could not load data with ${loader.name} loader`);
       }

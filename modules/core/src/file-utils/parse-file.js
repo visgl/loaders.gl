@@ -1,18 +1,12 @@
 import {autoDetectLoader} from '../loader-utils/auto-detect-loader';
 import {parseWithLoader, parseWithLoaderSync} from '../loader-utils/parse-with-loader';
 
-export function parseFile(data, url, loaders, options) {
+export function parseFile(data, loaders, options, url) {
   const loader = Array.isArray(loaders) ? autoDetectLoader(url, data, loaders) : loaders;
-  // if (!loader.parseText) {
-  //   throw new Error(`${loader.name} loader cannot handle text`);
-  // }
-  return parseWithLoader(data, url, loader, options);
+  return parseWithLoader(data, loader, options, url);
 }
 
-export function parseFileSync(data, url, loaders, options) {
+export function parseFileSync(data, loaders, options, url) {
   const loader = Array.isArray(loaders) ? autoDetectLoader(url, data, loaders) : loaders;
-  // if (!loader.parseText) {
-  //   throw new Error(`${loader.name} loader cannot handle text`);
-  // }
-  return parseWithLoaderSync(data, url, loader, options);
+  return parseWithLoaderSync(data, loader, options, url);
 }

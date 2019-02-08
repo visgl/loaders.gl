@@ -2,7 +2,7 @@ const EXT_PATTERN = /[^\.]+$/;
 
 // Find a loader that works for extension/text
 // Search the loaders array argument for a loader that matches extension or text
-export function autoDetectLoader(url, text, loaders) {
+export function autoDetectLoader(url = '', text, loaders) {
   // Get extension without
   let extension = url.match(EXT_PATTERN) || url;
   if (extension.length && extension[0] === '.') {
