@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import test from 'tape-catch';
-import {parseFileSync} from '@loaders.gl/kml';
+import {parseFileSync} from '@loaders.gl/core';
 import {KMLLoader} from '@loaders.gl/kml';
 
 import KML from 'test-data/kml/KML_Samples.kml';
