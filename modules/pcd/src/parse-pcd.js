@@ -53,8 +53,7 @@ export default function parsePCD(data, url, options) {
 function getNormalizedHeader(PCDheader) {
   const pointCount = PCDheader.width * PCDheader.height; // Supports "organized" point sets
   return {
-    primitiveCount: pointCount,
-    elementCount: pointCount
+    vertexCount: pointCount
   };
 }
 

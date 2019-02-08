@@ -1,12 +1,12 @@
 /* eslint-disable max-len */
 import test from 'tape-catch';
 import {loadBinaryFile} from '@loaders.gl/core-node';
-import {parseWithWorker} from '@loaders.gl/core';
+import {parseWithWorker, getGLTFAttribute} from '@loaders.gl/core';
 import {PLYLoader, PLYWorkerLoader} from '@loaders.gl/ply';
 import path from 'path';
 
 import PLY_ASCII from 'test-data/ply/cube_att.ply.js';
-import {validateLoadedData, getAttribute} from '../conformance';
+import {validateLoadedData} from '../conformance';
 
 const PLY_BINARY =
   loadBinaryFile(path.resolve(__dirname, '../../data/ply/bun_zipper.ply')) ||
@@ -15,12 +15,12 @@ const PLY_BINARY =
 test('PLYLoader#parseText', t => {
   const data = PLYLoader.parseText(PLY_ASCII);
 
-  validateLoadedData(data);
+  validateLoadedData(t, data);
 
   t.equal(data.indices.value.length, 36, 'Indices found');
 
-  t.equal(getAttribute(data, 'POSITION').value.length, 72, 'POSITION attribute was found');
-  t.equal(getAttribute(data, 'NORMAL').value.length, 72, 'NORMAL attribute was found');
+  t.equal(getGLTFAttribute(data, 'POSITION').value.length, 72, 'POSITION attribute was found');
+  t.equal(getGLTFAttribute(data, 'NORMAL').value.length, 72, 'NORMAL attribute was found');
 
   t.end();
 });
@@ -28,9 +28,9 @@ test('PLYLoader#parseText', t => {
 test('PLYLoader#parseBinary', t => {
   const data = PLYLoader.parseBinary(PLY_BINARY);
 
-  validateLoadedData(data);
+  validateLoadedData(t, data);
 
-  t.equal(getAttribute(data, 'POSITION').value.length, 107841, 'POSITION attribute was found');
+  t.equal(getGLTFAttribute(data, 'POSITION').value.length, 107841, 'POSITION attribute was found');
 
   t.end();
 });
@@ -46,9 +46,9 @@ test('PLYLoader#parseBinaryAsync', t => {
   // Duplicate it here to avoid breaking other tests
   const plyBinary = PLY_BINARY.slice();
   parseWithWorker(PLYWorkerLoader.worker)(plyBinary).then(data => {
-    validateLoadedData(data);
+    validateLoadedData(t, data);
 
-    t.equal(getAttribute(data, 'POSITION').value.length, 107841, 'POSITION attribute was found');
+    t.equal(getGLTFAttribute(data, 'POSITION').value.length, 107841, 'POSITION attribute was found');
 
   }).catch(error => {
     t.fail(error);

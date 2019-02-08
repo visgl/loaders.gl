@@ -31,7 +31,7 @@ export function getGLTFIndices(attributes) {
   for (const name in attributes) {
     const attribute = attributes[name];
     if (isGLTFIndices(name)) {
-      const indices = toTypedArray(attribute.value || attribute, Uint32Array);
+      const indices = toTypedArray(attribute, Uint32Array);
       return getGLTFAccessor(indices);
     }
   }
@@ -86,6 +86,10 @@ export function getGLTFAccessor(attribute, gltfAttributeName) {
   };
 
   return glTFAccessor;
+}
+
+export function getGLTFAttribute(data, gltfAttributeName) {
+  return data.attributes[data.glTFAttributeMap[gltfAttributeName]];
 }
 
 // Check if an attribute contains indices

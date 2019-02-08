@@ -31,7 +31,7 @@ test('DracoEncoder#compressRawBuffers', t => {
 
   // Ensure we can parse it
   const data2 = DracoLoader.parseBinary(compressedMesh);
-  validateLoadedData(data2);
+  validateLoadedData(t, data2);
 
   const POSITION = data2.glTFAttributeMap.POSITION;
   const COLOR = data2.glTFAttributeMap.COLOR_0;

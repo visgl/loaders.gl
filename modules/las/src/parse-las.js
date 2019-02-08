@@ -35,9 +35,6 @@ export default function loadLAS(arraybuffer, options = {}) {
       });
       Object.assign(result, {
         loaderData: {header},
-        header: {
-          elementCount: header.totalToRead
-        },
         mode: 0,  // GL.POINTS
         attributes,
         glTFAttributeMap: getGLTFAttributeMap(attributes)
@@ -69,11 +66,17 @@ export default function loadLAS(arraybuffer, options = {}) {
 
     if (onProgress) {
       onProgress(Object.assign({
+        header: {
+          vertexCount: header.totalRead
+        },
         progress: header.totalRead / header.totalToRead
       }, result));
     }
   });
 
+  result.header = {    
+    vertexCount: originalHeader.totalToRead
+  };
   return result;
 }
 /* eslint-enable max-statements */

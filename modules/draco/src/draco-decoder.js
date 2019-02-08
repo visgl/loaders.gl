@@ -135,7 +135,7 @@ export default class DRACODecoder {
 
     geometry.indices = getGLTFIndices(attributes);
     geometry.attributes = getGLTFAccessors(attributes);
-    geometry.glTFAttributeMap = getGLTFAttributeMap(geometry.attributes);
+    geometry.glTFAttributeMap = getGLTFAttributeMap(attributes);
 
     return geometry;
   }

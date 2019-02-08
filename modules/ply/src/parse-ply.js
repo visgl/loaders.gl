@@ -63,7 +63,7 @@ function normalizeAttributes(attributes) {
   // mandatory attributes data
 
   if (attributes.indices.length > 0) {
-    accessors.indices = {value: attributes.indices, size: 1};
+    accessors.indices = attributes.indices;
   }
 
   accessors.position = {value: attributes.vertices, size: 3};

@@ -1,10 +1,10 @@
 /* eslint-disable max-len */
 import test from 'tape-catch';
-import {_getMeshSize} from '@loaders.gl/core';
+import {_getMeshSize, getGLTFAttribute} from '@loaders.gl/core';
 import {loadBinaryFile} from '@loaders.gl/core-node';
 import {DracoLoader, DracoEncoder} from '@loaders.gl/draco';
 import path from 'path';
-import {validateLoadedData, getAttribute} from '../conformance';
+import {validateLoadedData} from '../conformance';
 
 const BUNNY_DRC =
   loadBinaryFile(path.resolve(__dirname, '../../data/draco/bunny.drc')) ||
@@ -29,13 +29,13 @@ const TEST_CASES = [
 test('DracoEncoder#encode(bunny.drc)', t => {
   // Decode Loaded Mesh and use as input data for encoders
   const data = DracoLoader.parseBinary(BUNNY_DRC);
-  validateLoadedData(data);
+  validateLoadedData(t, data);
 
   // t.comment(JSON.stringify(data));
-  t.equal(getAttribute(data, 'POSITION').value.length, 104502, 'position attribute was found');
+  t.equal(getGLTFAttribute(data, 'POSITION').value.length, 104502, 'position attribute was found');
 
   const meshAttributes = {
-    POSITION: getAttribute(data, 'POSITION').value,
+    POSITION: getGLTFAttribute(data, 'POSITION').value,
     indices: data.indices.value
   };
   const pointCloudAttributes = Object.assign({}, meshAttributes);
@@ -68,10 +68,10 @@ test('DracoEncoder#encode(bunny.drc)', t => {
     if (tc.type !== 'pointcloud') {
       // Decode the mesh
       const data2 = DracoLoader.parseBinary(compressedMesh);
-      validateLoadedData(data2);
+      validateLoadedData(t, data2);
 
       // t.comment(JSON.stringify(data));
-      t.equal(getAttribute(data2, 'POSITION').value.length, 104502,
+      t.equal(getGLTFAttribute(data2, 'POSITION').value.length, 104502,
         `${tc.title} decoded position attribute was found`);
     }
   }

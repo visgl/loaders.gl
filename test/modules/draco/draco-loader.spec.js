@@ -11,7 +11,7 @@ const BUNNY_DRC =
 
 test('DracoLoader#parse and encode', t => {
   const data = DracoLoader.parseBinary(BUNNY_DRC);
-  validateLoadedData(data);
+  validateLoadedData(t, data);
 
   const POSITION = data.glTFAttributeMap.POSITION;
   t.equal(data.attributes[POSITION].value.length, 104502, 'position attribute was found');

@@ -1,41 +1,40 @@
-import assert from 'assert';
-
-export function getAttribute(data, gltfAttributeName) {
-  return data.attributes[data.glTFAttributeMap[gltfAttributeName]];
-}
-
 /**
  * Check if the returned data from loaders use the format specified in:
  *  /docs/developer-guide/category-pointcloud.md
  */
-export function validateLoadedData(data) {
-  assert(data.loaderData, 'data does not have loaderData');
-  assert(data.loaderData.header, 'data does not have original header');
+export function validateLoadedData(t, data) {
+  t.ok(data.loaderData && data.loaderData.header, 'data has original header');
 
-  assert(data.header, 'data does not have header');
-  assert(Number.isFinite(data.header.vertexCount || data.header.elementCount), 'header does not have vertexCount');
+  t.ok(data.header && Number.isFinite(data.header.vertexCount), 'data has normalized header');
 
-  assert(Number.isFinite(data.mode), 'data does not have mode');
+  t.ok(Number.isFinite(data.mode), 'data has draw mode');
 
+  let attributesError = data.attributes ? null : 'data does not have attributes';
   if (data.indices) {
-    validateAttribute('indices', data.indices);
+    attributesError = attributesError && validateAttribute('indices', data.indices);
   }
-
-  assert(data.attributes, 'data does not have attributes');
-
   for (const attributeName in data.attributes) {
-    validateAttribute(attributeName, data.attributes[attributeName]);
+    attributesError = attributesError && validateAttribute(attributeName, data.attributes[attributeName]);
   }
+  t.notOk(attributesError, 'data has valid attributes');
 
-  assert(data.glTFAttributeMap, 'data does not have glTFAttributeMap');
-
+  let glTFAttributeMapError = data.glTFAttributeMap ? null : 'data does not have glTFAttributeMap';
   for (const attributeName in data.glTFAttributeMap) {
-    assert(data.glTFAttributeMap[attributeName] in data.attributes);
+    glTFAttributeMapError = glTFAttributeMapError &&
+      (data.glTFAttributeMap[attributeName] in data.attributes ? null : `${attributeName} attribute is not found`);
   }
+  t.notOk(glTFAttributeMapError, 'data has valid glTFAttributeMap');
 }
 
 function validateAttribute(attributeName, attribute) {
-  assert(Number.isFinite(attribute.size), `${attributeName} does not have size`);
-  assert(Number.isFinite(attribute.componentType), `${attributeName} does not have type`);
-  assert(ArrayBuffer.isView(attribute.value), `${attributeName} does not have valid value`);
+  if(!Number.isFinite(attribute.size)) {
+    return `${attributeName} does not have size`;
+  }
+  if(!Number.isFinite(attribute.componentType)) {
+    return `${attributeName} does not have type`;
+  }
+  if(!ArrayBuffer.isView(attribute.value)) {
+    return `${attributeName} does not have valid value`;
+  }
+  return null;
 }
