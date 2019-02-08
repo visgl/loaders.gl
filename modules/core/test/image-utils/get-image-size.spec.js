@@ -12,23 +12,23 @@ const TEST_DATA_DIR = path.resolve(__dirname, '../../data');
 
 const PNG_BINARY =
   loadBinaryFile(path.resolve(TEST_DATA_DIR, 'images/img1-preview.png')) ||
-  require('../../data/img1-preview.png');
+  require('../../data/images/img1-preview.png');
 
 const JPEG_BINARY =
   loadBinaryFile(path.resolve(TEST_DATA_DIR, 'images/img1-preview.jpeg')) ||
-  require('../../data/img1-preview.jpeg');
+  require('../../data/images/img1-preview.jpeg');
 
 const GIF_BINARY =
   loadBinaryFile(path.resolve(TEST_DATA_DIR, 'images/img1-preview.gif')) ||
-  require('../../data/img1-preview.gif');
+  require('../../data/images/img1-preview.gif');
 
 const BMP_BINARY =
   loadBinaryFile(path.resolve(TEST_DATA_DIR, 'images/img1-preview.bmp')) ||
-  require('../../data/img1-preview.bmp');
+  require('../../data/images/img1-preview.bmp');
 
 const TIFF_BINARY =
   loadBinaryFile(path.resolve(TEST_DATA_DIR, 'images/img1-preview.tiff')) ||
-  require('../../data/img1-preview.png');
+  require('../../data/images/img1-preview.png');
 
 const TEST_FILES = [
   ['png', PNG_BINARY],
