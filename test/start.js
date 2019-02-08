@@ -19,19 +19,19 @@ switch (mode) {
 case 'fast':
 case 'test':
 case 'ci':
-  require('./modules/index');
+  require('./modules');
   break;
 
 case 'dist':
   // Load deck.gl itself from the dist folder
   const dist = arg === 'default' ? 'es6' : arg;
   moduleAlias.addAlias('loaders.gl', path.resolve(`./dist/${dist}`));
-  require('./modules/index');
+  require('./modules');
   break;
 
 case 'cover':
   require('@babel/register');
-  require('./modules/index');
+  require('./modules');
   break;
 
 case 'browser':
@@ -72,5 +72,5 @@ case 'analyze-size':
 
 default:
   console.error(`Unknown test mode ${mode}`); // eslint-disable-line
-  require('./modules/index');
+  require('./modules');
 }

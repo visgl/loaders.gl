@@ -21,7 +21,7 @@
 /* eslint-disable no-console, no-invalid-this */
 import {Bench} from 'probe.gl/bench';
 
-import dracoBench from './draco.bench';
+import dracoBench from '@loaders.gl/draco/../test/draco.bench';
 
 const suite = new Bench({
   minIterations: 10
