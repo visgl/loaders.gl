@@ -19,7 +19,7 @@ export function drawModelInViewport(model, viewport, uniforms = {}) {
   model.draw({uniforms});
 }
 
-export function getModel(gl, attributes) {
+export function getModel(gl, data) {
   if (!shaderCache[gl]) {
     shaderCache[gl] = new ShaderCache({gl, _cachePrograms: true});
   }
@@ -68,8 +68,8 @@ void main(void) {
 }
 `,
       geometry: new Geometry({
-        attributes: normalizeAttributes(attributes),
-        drawMode: attributes.indices ? gl.TRIANGLES : gl.POINTS
+        attributes: normalizeAttributes(data),
+        drawMode: data.mode
       }),
       shaderCache: shaderCache[gl]
     }

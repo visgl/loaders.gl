@@ -88,6 +88,10 @@ export function getGLTFAccessor(attribute, gltfAttributeName) {
   return glTFAccessor;
 }
 
+export function getGLTFAttribute(data, gltfAttributeName) {
+  return data.attributes[data.glTFAttributeMap[gltfAttributeName]];
+}
+
 // Check if an attribute contains indices
 function isGLTFIndices(name) {
   name = name.toLowerCase();
@@ -119,7 +123,9 @@ function getAccessorData(attribute, attributeName) {
   }
 
   if (buffer) {
-    buffer = toTypedArray(buffer, Float32Array);
+    if (!ArrayBuffer.isView(buffer)) {
+      buffer = toTypedArray(buffer, Float32Array);
+    }
     count = buffer.length / size;
   }
 

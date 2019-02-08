@@ -1,6 +1,8 @@
 // ported and es6-ified from https://github.com/verma/plasio/
+import {getGLTFAccessors, getGLTFAttributeMap} from '@loaders.gl/core';
 import {LASFile} from './laslaz-decoder';
 
+/* eslint-disable max-statements */
 export default function loadLAS(arraybuffer, options = {}) {
   let pointIndex = 0;
 
@@ -10,6 +12,7 @@ export default function loadLAS(arraybuffer, options = {}) {
   let classifications;
   let originalHeader;
 
+  const result = {};
   const {skip = 1, onProgress} = options;
 
   parseLAS(arraybuffer, skip, (decoder, header) => {
@@ -20,9 +23,22 @@ export default function loadLAS(arraybuffer, options = {}) {
 
       positions = new Float32Array(total * 3);
       // laslaz-decoder.js `pointFormatReaders`
-      colors = header.pointsFormatId >= 2 ? new Uint8ClampedArray(total * 4) : null;
+      colors = header.pointsFormatId >= 2 ? new Uint8Array(total * 4) : null;
       intensities = new Uint16Array(total);
       classifications = new Uint8Array(total);
+
+      const attributes = getGLTFAccessors({
+        positions: {value: positions, size: 3},
+        colors: {value: colors, size: 4},
+        intensities: {value: intensities, size: 1},
+        classifications: {value: classifications, size: 1}
+      });
+      Object.assign(result, {
+        loaderData: {header},
+        mode: 0,  // GL.POINTS
+        attributes,
+        glTFAttributeMap: getGLTFAttributeMap(attributes)
+      });
     }
 
     const batchSize = decoder.pointsCount;
@@ -49,34 +65,21 @@ export default function loadLAS(arraybuffer, options = {}) {
     }
 
     if (onProgress) {
-      onProgress({
-        header,
-        drawMode: 0,  // GL.POINTS
-        attributes: {
-          POSITION: positions,
-          COLOR_0: colors,
-          INTENSITY: intensities,
-          CLASSIFICATION: classifications
+      onProgress(Object.assign({
+        header: {
+          vertexCount: header.totalRead
         },
         progress: header.totalRead / header.totalToRead
-      });
+      }, result));
     }
   });
 
-  return {
-    originalHeader,
-    header: {
-      vertexCount: originalHeader.totalToRead
-    },
-    drawMode: 0,  // GL.POINTS
-    attributes: {
-      POSITION: positions,
-      COLOR_0: colors,
-      INTENSITY: intensities,
-      CLASSIFICATION: classifications
-    }
+  result.header = {
+    vertexCount: originalHeader.totalToRead
   };
+  return result;
 }
+/* eslint-enable max-statements */
 
 /**
  * parse laz data

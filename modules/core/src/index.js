@@ -54,6 +54,7 @@ export {
 } from './mesh-utils/gltf-type-utils';
 
 export {
+  getGLTFAttribute,
   getGLTFAccessors,
   getGLTFIndices,
   getGLTFAttributeMap
