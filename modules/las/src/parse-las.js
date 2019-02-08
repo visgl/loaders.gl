@@ -74,7 +74,7 @@ export default function loadLAS(arraybuffer, options = {}) {
     }
   });
 
-  result.header = {    
+  result.header = {
     vertexCount: originalHeader.totalToRead
   };
   return result;

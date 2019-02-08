@@ -27,13 +27,13 @@ export function validateLoadedData(t, data) {
 }
 
 function validateAttribute(attributeName, attribute) {
-  if(!Number.isFinite(attribute.size)) {
+  if (!Number.isFinite(attribute.size)) {
     return `${attributeName} does not have size`;
   }
-  if(!Number.isFinite(attribute.componentType)) {
+  if (!Number.isFinite(attribute.componentType)) {
     return `${attributeName} does not have type`;
   }
-  if(!ArrayBuffer.isView(attribute.value)) {
+  if (!ArrayBuffer.isView(attribute.value)) {
     return `${attributeName} does not have valid value`;
   }
   return null;
