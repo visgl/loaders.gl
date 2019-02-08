@@ -1,8 +1,10 @@
 /* eslint-disable max-len */
+/*
 import test from 'tape-catch';
 import {loadBinaryFile} from '@loaders.gl/core-node';
-import {parseFileSync/* , parseWithWorker */} from '@loaders.gl/core';
-import {ArrowLoader/* , ArrowWorkerLoader */} from '@loaders.gl/arrow';
+import {parseFileSync/} from '@loaders.gl/core';
+import {ArrowLoader} from '@loaders.gl/arrow';
+// import {ArrowLoader, ArrowWorkerLoader} from '@loaders.gl/arrow';
 import path from 'path';
 
 // Small Arrow Sample Files
@@ -42,7 +44,6 @@ test('ArrowWorkerLoader#parseFileSync(struct.arrow)', t => {
 });
 
 // TODO - Arrow worker seems to not bundle apache arrow lib?
-/*
 test('ArrowLoader#parseWithWorker (WORKER)', t => {
   if (typeof Worker === 'undefined') {
     t.comment('Worker is not usable in non-browser environments');

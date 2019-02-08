@@ -27,7 +27,7 @@ test.onFinish(window.browserTestDriver_finish);
 test.onFailure(window.browserTestDriver_fail);
 
 test('Browser tests', t => {
-  require('./modules/index');
-  require('./render/index');
+  require('./modules');
+  require('./render');
   t.end();
 });

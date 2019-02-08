@@ -5,7 +5,7 @@ import {getModel, drawModelInViewport} from '../test-utils/get-model';
 
 const PLY_BINARY =
   // loadBinaryFile(path.resolve(__dirname, '../../data/ply/bun_zipper.ply')) ||
-  require('test-data/ply/bun_zipper.ply');
+  require('@loaders.gl/ply/../data/bun_zipper.ply');
 
 export default [
   {
