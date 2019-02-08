@@ -1,10 +1,6 @@
 /* eslint-disable max-len */
 import test from 'tape-catch';
-<<<<<<< HEAD
-import {_getMeshSize, getGLTFAttribute} from '@loaders.gl/core';
-=======
-import {parseFileSync, _getMeshSize} from '@loaders.gl/core';
->>>>>>> Move tests to use parseFileSync instead of raw loader objects
+import {parseFileSync, getGLTFAttribute, _getMeshSize} from '@loaders.gl/core';
 import {loadBinaryFile} from '@loaders.gl/core-node';
 import {DracoLoader, DracoEncoder} from '@loaders.gl/draco';
 import path from 'path';
