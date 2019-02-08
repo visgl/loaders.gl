@@ -22,54 +22,54 @@ export default class KMLParser {
     this.log = options.log || console;
 
     return {
-      documents: this._filter(KMLParser.ParseDomDocuments(this.kml)),
-      folders: this._filter(KMLParser.ParseDomFolders(this.kml)),
-      markers: this._filter(KMLParser.ParseDomMarkers(this.kml)),
-      polygons: this._filter(KMLParser.ParseDomPolygons(this.kml)),
-      lines: this._filter(KMLParser.ParseDomLines(this.kml)),
-      overlays: this._filter(KMLParser.ParseDomGroundOverlays(this.kml)),
-      links: this._filter(KMLParser.ParseDomLinks(this.kml))
+      documents: this._filter(this.ParseDomDocuments(this.kml)),
+      folders: this._filter(this.ParseDomFolders(this.kml)),
+      markers: this._filter(this.ParseDomMarkers(this.kml)),
+      polygons: this._filter(this.ParseDomPolygons(this.kml)),
+      lines: this._filter(this.ParseDomLines(this.kml)),
+      overlays: this._filter(this.ParseDomGroundOverlays(this.kml)),
+      links: this._filter(this.ParseDomLinks(this.kml))
     };
   }
 
   parseDocuments(callback) {
-    const documentData = this._filter(KMLParser.ParseDomDocuments(this.kml));
+    const documentData = this._filter(this.ParseDomDocuments(this.kml));
     documentData.forEach((p, i) => callback(p, this.kml, documentData, i));
     return this;
   }
 
   parseFolders(callback) {
-    const folderData = this._filter(KMLParser.ParseDomFolders(this.kml));
+    const folderData = this._filter(this.ParseDomFolders(this.kml));
     folderData.forEach((p, i) => callback(p, this.kml, folderData, i));
     return this;
   }
 
   parseMarkers(callback) {
-    const markerData = this._filter(KMLParser.ParseDomMarkers(this.kml));
+    const markerData = this._filter(this.ParseDomMarkers(this.kml));
     markerData.forEach((p, i) => callback(p, this.kml, markerData, i));
     return this;
   }
 
   parsePolygons(callback) {
-    const polygonData = this._filter(KMLParser.ParseDomPolygons(this.kml));
+    const polygonData = this._filter(this.ParseDomPolygons(this.kml));
     polygonData.forEach((p, i) => callback(p, this.kml, polygonData, i));
     return this;
   }
 
   parseLines(callback) {
-    const lineData = this._filter(KMLParser.ParseDomLines(this.kml));
+    const lineData = this._filter(this.ParseDomLines(this.kml));
     lineData.forEach((p, i) => callback(p, this.kml, lineData, i));
     return this;
   }
 
   parseGroundOverlays(callback) {
-    const overlayData = this._filter(KMLParser.ParseDomGroundOverlays(this.kml));
+    const overlayData = this._filter(this.ParseDomGroundOverlays(this.kml));
     overlayData.forEach((o, i) => callback(o, this.kml, overlayData, i));
     return this;
   }
 
   parseNetworklinks(callback) {
-    const linkData = this._filter(KMLParser.ParseDomLinks(this.kml));
+    const linkData = this._filter(this.ParseDomLinks(this.kml));
     linkData.forEach((p, i) => callback(p, this.kml, linkData, i));
     return this;
   }
@@ -102,15 +102,15 @@ export default class KMLParser {
     return this;
   }
 
-  static ParseDomDocuments(xmlDom) {
+  ParseDomDocuments(xmlDom) {
     const docs = [];
     const docsDomNodes = xmlDom.getElementsByTagName('Document');
     for (let i = 0; i < docsDomNodes.length; i++) {
       const node = docsDomNodes.item(i);
       const docsData = Object.assign(
         {},
-        KMLParser.ParseDomDoc(node),
-        KMLParser.ParseNonSpatialDomData(node, {})
+        this.ParseDomDoc(node),
+        this.ParseNonSpatialDomData(node, {})
       );
 
       const transform = options => options;
@@ -119,21 +119,21 @@ export default class KMLParser {
     return docs;
   }
 
-  static ParseDomDoc(xmlDom) {
+  ParseDomDoc(xmlDom) {
     return {};
   }
 
-  static ParseDomFolders(xmlDom) {
+  ParseDomFolders(xmlDom) {
     const folders = [];
-    const folderDomNodes = KMLParser.ParseDomItems(xmlDom, 'Folder');
+    const folderDomNodes = this.ParseDomItems(xmlDom, 'Folder');
     for (let i = 0; i < folderDomNodes.length; i++) {
       const node = folderDomNodes[i];
       const folderData = Object.assign(
         {
           type: 'folder'
         },
-        KMLParser.ParseDomFolder(node),
-        KMLParser.ParseNonSpatialDomData(node, {})
+        this.ParseDomFolder(node),
+        this.ParseNonSpatialDomData(node, {})
       );
 
       const transform = options => options;
@@ -142,14 +142,14 @@ export default class KMLParser {
     return folders;
   }
 
-  static ParseDomLinks(xmlDom) {
+  ParseDomLinks(xmlDom) {
     const links = [];
     const linkDomNodes = xmlDom.getElementsByTagName('NetworkLink');
     for (let i = 0; i < linkDomNodes.length; i++) {
       const node = linkDomNodes.item(i);
       const linkData = Object.assign({},
-        KMLParser.ParseDomLink(node),
-        KMLParser.ParseNonSpatialDomData(node, {})
+        this.ParseDomLink(node),
+        this.ParseNonSpatialDomData(node, {})
       );
 
       const transform = options => options;
@@ -158,11 +158,11 @@ export default class KMLParser {
     return links;
   }
 
-  static ParseDomFolder(xmlDom) {
+  ParseDomFolder(xmlDom) {
     return {};
   }
 
-  static ParseDomLink(xmlDom) {
+  ParseDomLink(xmlDom) {
 
     const urls = xmlDom.getElementsByTagName('href');
     const link = {
@@ -170,14 +170,14 @@ export default class KMLParser {
     };
     if (urls.length > 0) {
       const url = urls.item(0);
-      link.url = KMLParser.Value(url);
+      link.url = this.Value(url);
     }
     return link;
   }
 
-  static ParseDomLines(xmlDom) {
+  ParseDomLines(xmlDom) {
     const lines = [];
-    const lineDomNodes = KMLParser.ParseDomItems(xmlDom, 'LineString');
+    const lineDomNodes = this.ParseDomItems(xmlDom, 'LineString');
     for (let i = 0; i < lineDomNodes.length; i++) {
 
       const node = lineDomNodes[i];
@@ -188,13 +188,13 @@ export default class KMLParser {
           lineColor: '#FF000000', // black
           lineWidth: 1,
           polyColor: '#77000000', // black semitransparent,
-          coordinates: KMLParser.ParseDomCoordinates(node) // returns an array of GLatLngs
+          coordinates: this.ParseDomCoordinates(node) // returns an array of GLatLngs
         },
-        KMLParser.ParseNonSpatialDomData(node, {}),
-        KMLParser.ResolveDomStyle(KMLParser.ParseDomStyle(node), xmlDom)
+        this.ParseNonSpatialDomData(node, {}),
+        this.ResolveDomStyle(this.ParseDomStyle(node), xmlDom)
       );
 
-      const rgb = KMLParser.convertKMLColorToRGB(polygonData.lineColor);
+      const rgb = this.convertKMLColorToRGB(polygonData.lineColor);
       polygonData.lineOpacity = rgb.opacity;
       polygonData.lineColor = rgb.color;
 
@@ -204,9 +204,9 @@ export default class KMLParser {
     return lines;
   }
 
-  static ParseDomGroundOverlays(xmlDom) {
+  ParseDomGroundOverlays(xmlDom) {
     const lines = [];
-    const lineDomNodes = KMLParser.ParseDomItems(xmlDom, 'GroundOverlay');
+    const lineDomNodes = this.ParseDomItems(xmlDom, 'GroundOverlay');
     for (let i = 0; i < lineDomNodes.length; i++) {
 
       const node = lineDomNodes[i];
@@ -214,10 +214,10 @@ export default class KMLParser {
       const polygonData = Object.assign(
         {
           type: 'imageoverlay',
-          icon: KMLParser.ParseDomIcon(node),
-          bounds: KMLParser.ParseDomBounds(node)
+          icon: this.ParseDomIcon(node),
+          bounds: this.ParseDomBounds(node)
         },
-        KMLParser.ParseNonSpatialDomData(node, {})
+        this.ParseNonSpatialDomData(node, {})
       );
 
       lines.push(polygonData);
@@ -226,9 +226,9 @@ export default class KMLParser {
     return lines;
   }
 
-  static ParseDomPolygons(xmlDom) {
+  ParseDomPolygons(xmlDom) {
     const polygons = [];
-    const polygonDomNodes = KMLParser.ParseDomItems(xmlDom, 'Polygon');
+    const polygonDomNodes = this.ParseDomItems(xmlDom, 'Polygon');
 
     for (let i = 0; i < polygonDomNodes.length; i++) {
 
@@ -241,18 +241,18 @@ export default class KMLParser {
           lineColor: '#FF000000', // black
           lineWidth: 1,
           polyColor: '#77000000', // black semitransparent,
-          coordinates: KMLParser.ParseDomCoordinates(node) // returns an array of google.maps.LatLng
+          coordinates: this.ParseDomCoordinates(node) // returns an array of google.maps.LatLng
         },
-        KMLParser.ParseNonSpatialDomData(node, {}),
-        KMLParser.ResolveDomStyle(KMLParser.ParseDomStyle(node), xmlDom)
+        this.ParseNonSpatialDomData(node, {}),
+        this.ResolveDomStyle(this.ParseDomStyle(node), xmlDom)
       );
 
-      const lineRGB = KMLParser.convertKMLColorToRGB(polygonData.lineColor);
+      const lineRGB = this.convertKMLColorToRGB(polygonData.lineColor);
 
       polygonData.lineOpacity = lineRGB.opacity;
       polygonData.lineColor = lineRGB.color;
 
-      const polyRGB = KMLParser.convertKMLColorToRGB(polygonData.polyColor);
+      const polyRGB = this.convertKMLColorToRGB(polygonData.polyColor);
 
       polygonData.polyOpacity = (polygonData.fill) ? polyRGB.opacity : 0;
       polygonData.polyColor = polyRGB.color;
@@ -262,24 +262,24 @@ export default class KMLParser {
     return polygons;
   }
 
-  static ParseDomMarkers(xmlDom) {
+  ParseDomMarkers(xmlDom) {
     const markers = [];
-    const markerDomNodes = KMLParser.ParseDomItems(xmlDom, 'Point');
+    const markerDomNodes = this.ParseDomItems(xmlDom, 'Point');
 
     for (let i = 0; i < markerDomNodes.length; i++) {
       const node = markerDomNodes[i];
-      const coords = KMLParser.ParseDomCoordinates(node);
+      const coords = this.ParseDomCoordinates(node);
       const marker = Object.assign(
         {
           type: 'point',
           coordinates: coords[0] // returns an array of google.maps.LatLng
         },
-        KMLParser.ParseNonSpatialDomData(node, {})
+        this.ParseNonSpatialDomData(node, {})
       );
 
-      let icon = KMLParser.ParseDomStyle(node);
+      let icon = this.ParseDomStyle(node);
       if (icon.charAt(0) === '#') {
-        icon = KMLParser.ResolveDomStyle(icon, xmlDom).icon;
+        icon = this.ResolveDomStyle(icon, xmlDom).icon;
       }
       if (icon) {
         // better to not have any hint of an icon (ie: icon:null) so default can be used by caller
@@ -290,16 +290,16 @@ export default class KMLParser {
     return markers;
   }
 
-  static ParseDomCoordinates(xmlDom) {
+  ParseDomCoordinates(xmlDom) {
     const coordNodes = xmlDom.getElementsByTagName('coordinates');
     if (!coordNodes.length) {
-      this.log.warn(['KMLParser. DOM Node did not contain coordinates!', {
+      this.log.warn(['this. DOM Node did not contain coordinates!', {
         node: xmlDom
       }]);
       return null;
     }
     const node = coordNodes.item(0);
-    let s = KMLParser.Value(node);
+    let s = this.Value(node);
     s = s.trim();
     const coordStrings = s.split(' ');
     const coordinates = [];
@@ -315,10 +315,10 @@ export default class KMLParser {
   }
 
   /* eslint-disable max-statements */
-  static ParseDomBounds(xmlDom) {
+  ParseDomBounds(xmlDom) {
     const coordNodes = xmlDom.getElementsByTagName('LatLonBox');
     if (!coordNodes.length) {
-      this.log.warn(['KMLParser. DOM Node did not contain coordinates!', {
+      this.log.warn(['this. DOM Node did not contain coordinates!', {
         node: xmlDom
       }]);
       return null;
@@ -335,32 +335,32 @@ export default class KMLParser {
     let west = null;
 
     if (!norths.length) {
-      this.log.warn(['KMLParser. DOM LatLngBox Node did not contain north!', {
+      this.log.warn(['this. DOM LatLngBox Node did not contain north!', {
         node: xmlDom
       }]);
     } else {
-      north = parseFloat(KMLParser.Value(norths.item(0)));
+      north = parseFloat(this.Value(norths.item(0)));
     }
     if (!souths.length) {
-      this.log.warn(['KMLParser. DOM LatLngBox Node did not contain south!', {
+      this.log.warn(['this. DOM LatLngBox Node did not contain south!', {
         node: xmlDom
       }]);
     } else {
-      south = parseFloat(KMLParser.Value(souths.item(0)));
+      south = parseFloat(this.Value(souths.item(0)));
     }
     if (!easts.length) {
-      this.log.warn(['KMLParser. DOM LatLngBox Node did not contain east!', {
+      this.log.warn(['this. DOM LatLngBox Node did not contain east!', {
         node: xmlDom
       }]);
     } else {
-      east = parseFloat(KMLParser.Value(easts.item(0)));
+      east = parseFloat(this.Value(easts.item(0)));
     }
     if (!wests.length) {
-      this.log.warn(['KMLParser. DOM LatLngBox Node did not contain west!', {
+      this.log.warn(['this. DOM LatLngBox Node did not contain west!', {
         node: xmlDom
       }]);
     } else {
-      west = parseFloat(KMLParser.Value(wests.item(0)));
+      west = parseFloat(this.Value(wests.item(0)));
     }
     return {
       north,
@@ -371,7 +371,7 @@ export default class KMLParser {
   }
   /* eslint-enable max-statements */
 
-  static ParseNonSpatialDomData(xmlDom, options) {
+  ParseNonSpatialDomData(xmlDom, options) {
     const config = Object.assign({}, {
       maxOffset: 2
     }, options);
@@ -384,16 +384,16 @@ export default class KMLParser {
 
     const names = xmlDom.getElementsByTagName('name');
     for (let i = 0; i < names.length; i++) {
-      if (KMLParser.WithinOffsetDom(xmlDom, names.item(i), config.maxOffset)) {
-        data.name = (KMLParser.Value(names.item(i)));
+      if (this.WithinOffsetDom(xmlDom, names.item(i), config.maxOffset)) {
+        data.name = (this.Value(names.item(i)));
         break;
       }
     }
 
     const descriptions = xmlDom.getElementsByTagName('description');
     for (let i = 0; i < descriptions.length; i++) {
-      if (KMLParser.WithinOffsetDom(xmlDom, descriptions.item(i), config.maxOffset)) {
-        data.description = (KMLParser.Value(descriptions.item(i)));
+      if (this.WithinOffsetDom(xmlDom, descriptions.item(i), config.maxOffset)) {
+        data.description = (this.Value(descriptions.item(i)));
         break;
       }
     }
@@ -404,10 +404,10 @@ export default class KMLParser {
 
     const extendedDatas = xmlDom.getElementsByTagName('ExtendedData');
     for (let i = 0; i < extendedDatas.length; i++) {
-      if (KMLParser.WithinOffsetDom(xmlDom, extendedDatas.item(i), config.maxOffset)) {
+      if (this.WithinOffsetDom(xmlDom, extendedDatas.item(i), config.maxOffset)) {
         for (let j = 0; j < extendedDatas.item(i).childNodes.length; j++) {
           const c = extendedDatas.item(i).childNodes.item(j);
-          const t = KMLParser.ParseTag(c);
+          const t = this.ParseTag(c);
           if (t.name !== '#text') { // eslint-disable-line
             data.tags[t.name] = t.value;
           }
@@ -417,7 +417,7 @@ export default class KMLParser {
     return data;
   }
 
-  static ParseTag(xmlDom) {
+  ParseTag(xmlDom) {
     const tags = {
       name: null,
       value: {}
@@ -430,18 +430,18 @@ export default class KMLParser {
       break;
     case 'ID':
       tags.name = 'ID';
-      tags.value = KMLParser.Value(xmlDom);
+      tags.value = this.Value(xmlDom);
       break;
     default:
       tags.name = xmlDom.nodeName;
-      tags.value = KMLParser.Value(xmlDom);
+      tags.value = this.Value(xmlDom);
       break;
     }
 
     return tags;
   }
 
-  static WithinOffsetDom(parent, child, max) {
+  WithinOffsetDom(parent, child, max) {
     let current = child.parentNode;
     for (let i = 0; i < max; i++) {
       if (current.nodeName === (typeof parent === 'string' ? parent : parent.nodeName)) {
@@ -449,7 +449,7 @@ export default class KMLParser {
       }
       current = current.parentNode;
     }
-    this.log.error(['KMLParser. Could not find parent node within expected bounds.', {
+    this.log.error(['this. Could not find parent node within expected bounds.', {
       parentNode: parent,
       childNode: child,
       bounds: max
@@ -457,7 +457,7 @@ export default class KMLParser {
     return false;
   }
 
-  static ParseDomStyle(xmlDom, options) {
+  ParseDomStyle(xmlDom, options) {
 
     const config = Object.assign({}, {
       defaultStyle: 'default'
@@ -466,18 +466,18 @@ export default class KMLParser {
     const styles = xmlDom.getElementsByTagName('styleUrl');
     let style = config.defaultStyle;
     if (styles.length === 0) {
-      this.log.warn(['KMLParser. DOM Node did not contain styleUrl!', {
+      this.log.warn(['this. DOM Node did not contain styleUrl!', {
         node: xmlDom,
         options: config
       }]);
     } else {
       const node = styles.item(0);
-      style = (KMLParser.Value(node));
+      style = (this.Value(node));
     }
     return style;
   }
 
-  static ParseDomIcon(xmlDom, options) {
+  ParseDomIcon(xmlDom, options) {
 
     const config = Object.assign({}, {
       defaultIcon: false,
@@ -488,7 +488,7 @@ export default class KMLParser {
     let icon = config.defaultStyle;
     let scale = config.defaultScale;
     if (icons.length === 0) {
-      this.log.warn(['KMLParser. DOM Node did not contain Icon!', {
+      this.log.warn(['this. DOM Node did not contain Icon!', {
         node: xmlDom,
         options: config
       }]);
@@ -496,25 +496,25 @@ export default class KMLParser {
       const node = icons.item(0);
       const urls = node.getElementsByTagName('href');
       if (urls.length === 0) {
-        this.log.warn(['KMLParser. DOM Icon Node did not contain href!', {
+        this.log.warn(['this. DOM Icon Node did not contain href!', {
           node: xmlDom,
           options: config
         }]);
       } else {
         const hrefNode = urls.item(0);
-        icon = (KMLParser.Value(hrefNode));
+        icon = (this.Value(hrefNode));
       }
 
       const scales = node.getElementsByTagName('viewBoundScale');
       if (scales.length === 0) {
-        this.log.warn(['KMLParser. DOM Icon Node did not contain viewBoundScale!', {
+        this.log.warn(['this. DOM Icon Node did not contain viewBoundScale!', {
           node: xmlDom,
           options: config
         }]);
 
       } else {
         const scaleNode = scales.item(0);
-        scale = parseFloat(KMLParser.Value(scaleNode));
+        scale = parseFloat(this.Value(scaleNode));
       }
     }
     return {
@@ -524,7 +524,7 @@ export default class KMLParser {
   }
 
   /* eslint-disable max-depth, max-statements */
-  static ResolveDomStyle(style, xmlDom) {
+  ResolveDomStyle(style, xmlDom) {
     const data = {};
     const name = (style.charAt(0) === '#' ? style.substring(1, style.length) : style);
     const styles = xmlDom.getElementsByTagName('Style');
@@ -541,12 +541,12 @@ export default class KMLParser {
           const colors = lineStyle.getElementsByTagName('color');
           if (colors.length > 0) {
             const color = colors.item(0);
-            data.lineColor = KMLParser.Value(color);
+            data.lineColor = this.Value(color);
           }
           const widths = lineStyle.getElementsByTagName('width');
           if (widths.length > 0) {
             const width = widths.item(0);
-            data.lineWidth = KMLParser.Value(width);
+            data.lineWidth = this.Value(width);
           }
         }
         if (polyStyles.length > 0) {
@@ -554,18 +554,18 @@ export default class KMLParser {
           const colors = polyStyle.getElementsByTagName('color');
           if (colors.length > 0) {
             const color = colors.item(0);
-            data.polyColor = KMLParser.Value(color);
+            data.polyColor = this.Value(color);
           }
           const outlines = polyStyle.getElementsByTagName('outline');
           if (outlines.length > 0) {
             const outline = outlines.item(0);
-            const o = KMLParser.Value(outline);
+            const o = this.Value(outline);
             data.outline = Boolean(o);
           }
         }
         if (iconStyles.length > 0) {
           const iconStyle = iconStyles.item(0);
-          const icon = KMLParser.Value(iconStyle);
+          const icon = this.Value(iconStyle);
           data.icon = icon;
         }
       }
@@ -575,7 +575,7 @@ export default class KMLParser {
   /* eslint-enable max-depth, max-statements */
 
   /* eslint-disable */
-  static ParseDomItems(xmlDom, tag) {
+  ParseDomItems(xmlDom, tag) {
     const tagName = tag || 'Point';
     const items = [];
     const markerDomNodes = xmlDom.getElementsByTagName(tagName);
@@ -603,7 +603,7 @@ export default class KMLParser {
 
   // KML Color is defined similar to RGB except it is in the opposite order and starts with opacity,
   // #OOBBGGRR
-  static convertKMLColorToRGB(colorString) {
+  convertKMLColorToRGB(colorString) {
     const colorStr = colorString.replace('#', '');
     while (colorStr.length < 6) {
       colorStr = '0' + colorStr;
@@ -625,7 +625,7 @@ export default class KMLParser {
     return rgbVal;
   }
 
-  static RGBColorToKML(rgb, opacity) {
+  RGBColorToKML(rgb, opacity) {
     const colorStr = rgb.replace('#', '');
     while (colorStr.length < 6) {
       colorStr = '0' + colorStr;
@@ -657,14 +657,14 @@ export default class KMLParser {
     return kmlStr;
   }
 
-  static Value(node) {
+  Value(node) {
     const value = node.nodeValue;
     if (value) return value;
     let str = '';
     try {
       if (node.childNodes && node.childNodes.length) {
-        Object.values(KMLParser.ChildNodesArray(node)).forEach(c => {
-          str += KMLParser.Value(c);
+        Object.values(this.ChildNodesArray(node)).forEach(c => {
+          str += this.Value(c);
         });
       }
     } catch (e) {
@@ -673,7 +673,7 @@ export default class KMLParser {
     return str;
   }
 
-  static ChildNodesArray(node) {
+  ChildNodesArray(node) {
     const array = [];
     if (node.childNodes && node.childNodes.length > 0) {
       for (let i = 0; i < node.childNodes.length; i++) {

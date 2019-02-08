@@ -1,11 +1,11 @@
 import parseWithWorker from '../worker-utils/parse-with-worker';
-import {NullLog} from '../log-utils/null-log';
+import NullLog from '../log-utils/null-log';
 
 // TODO: support progress and abort
 // TODO: support moving loading to worker
 export function parseWithLoader(data, loader, options = {}, url) {
   // Normalize options
-  options = addDefaultParserOptions(options);
+  options = addDefaultParserOptions(options, loader);
 
   // v0.5 support
   normalizeLegacyLoaderObject(loader);
@@ -38,6 +38,9 @@ export function parseWithLoader(data, loader, options = {}, url) {
 }
 
 export function parseWithLoaderSync(data, loader, options = {}, url) {
+  // Normalize options
+  options = addDefaultParserOptions(options, loader);
+
   // v0.5 support
   normalizeLegacyLoaderObject(loader);
 
@@ -67,9 +70,9 @@ function promisify(parserFunc, loader, url, data, options) {
   });
 }
 
-function addDefaultParserOptions(options) {
+function addDefaultParserOptions(options, loader) {
   // TODO - explain why this optionb is needed for parsing
-  options = Object.assign({}, options, {dataType: 'arraybuffer'});
+  options = Object.assign({}, loader.DEFAULT_OPTIONS, options, {dataType: 'arraybuffer'});
 
   // LOGGING
 
@@ -82,6 +85,8 @@ function addDefaultParserOptions(options) {
     /* global console */
     options.log = console;
   }
+
+  return options;
 }
 
 // Converts v0.5 loader object to v1.0
