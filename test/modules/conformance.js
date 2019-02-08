@@ -11,7 +11,7 @@ export function validateLoadedData(t, data) {
 
   let attributesError = data.attributes ? null : 'data does not have attributes';
   if (data.indices) {
-    attributesError = attributesError && validateAttribute('indices', data.indices);
+    attributesError = attributesError || validateAttribute('indices', data.indices);
   }
   for (const attributeName in data.attributes) {
     attributesError = attributesError && validateAttribute(attributeName, data.attributes[attributeName]);
@@ -20,7 +20,7 @@ export function validateLoadedData(t, data) {
 
   let glTFAttributeMapError = data.glTFAttributeMap ? null : 'data does not have glTFAttributeMap';
   for (const attributeName in data.glTFAttributeMap) {
-    glTFAttributeMapError = glTFAttributeMapError &&
+    glTFAttributeMapError = glTFAttributeMapError ||
       (data.glTFAttributeMap[attributeName] in data.attributes ? null : `${attributeName} attribute is not found`);
   }
   t.notOk(glTFAttributeMapError, 'data has valid glTFAttributeMap');
