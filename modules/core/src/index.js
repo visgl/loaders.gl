@@ -6,6 +6,8 @@ export {parseFile, parseFileSync} from './file-utils/parse-file';
 export {loadFile, loadFileSync} from './file-utils/load-file';
 export {loadImage} from './file-utils/load-image';
 
+export {NullLog} from './log-utils/null-log';
+
 // BINARY UTILS
 
 export {

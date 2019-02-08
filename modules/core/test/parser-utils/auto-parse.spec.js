@@ -15,7 +15,7 @@ test('parseFileSync#autoParse', t => {
   if (!KMLLoader.supported) {
     t.comment('XML parsing not available');
   } else {
-    const data = parseFileSync(KML, LOADERS);
+    const data = parseFileSync(KML, LOADERS, {log: null});
     t.equal(data.documents.length, 2, 'Documents were found');
     t.equal(data.markers.length, 4, 'Markers were found');
     t.equal(data.lines.length, 6, 'Lines were found');

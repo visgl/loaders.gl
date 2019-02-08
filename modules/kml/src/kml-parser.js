@@ -1,8 +1,8 @@
 /**
+ * Original Author Credentials:
+ *
  * Author - Nick Blackwell
  * License - MIT
- * Description - Defines a class, KMLParser which is a container for
- * static kml parsing methods.
  */
 
 /**
@@ -14,16 +14,13 @@
  * which will be transformed aswell as MapItems.
  */
 
-/* global console */
-/* eslint-disable no-console */
-
 export default class KMLParser {
+  parse(kml, options) {
+    this.kml = kml;
+    this.options = options;
+    /* global console */
+    this.log = options.log || console;
 
-  constructor(xml) {
-    this.kml = xml;
-  }
-
-  parse() {
     return {
       documents: this._filter(KMLParser.ParseDomDocuments(this.kml)),
       folders: this._filter(KMLParser.ParseDomFolders(this.kml)),
@@ -296,7 +293,7 @@ export default class KMLParser {
   static ParseDomCoordinates(xmlDom) {
     const coordNodes = xmlDom.getElementsByTagName('coordinates');
     if (!coordNodes.length) {
-      console.warn(['KMLParser. DOM Node did not contain coordinates!', {
+      this.log.warn(['KMLParser. DOM Node did not contain coordinates!', {
         node: xmlDom
       }]);
       return null;
@@ -321,7 +318,7 @@ export default class KMLParser {
   static ParseDomBounds(xmlDom) {
     const coordNodes = xmlDom.getElementsByTagName('LatLonBox');
     if (!coordNodes.length) {
-      console.warn(['KMLParser. DOM Node did not contain coordinates!', {
+      this.log.warn(['KMLParser. DOM Node did not contain coordinates!', {
         node: xmlDom
       }]);
       return null;
@@ -338,28 +335,28 @@ export default class KMLParser {
     let west = null;
 
     if (!norths.length) {
-      console.warn(['KMLParser. DOM LatLngBox Node did not contain north!', {
+      this.log.warn(['KMLParser. DOM LatLngBox Node did not contain north!', {
         node: xmlDom
       }]);
     } else {
       north = parseFloat(KMLParser.Value(norths.item(0)));
     }
     if (!souths.length) {
-      console.warn(['KMLParser. DOM LatLngBox Node did not contain south!', {
+      this.log.warn(['KMLParser. DOM LatLngBox Node did not contain south!', {
         node: xmlDom
       }]);
     } else {
       south = parseFloat(KMLParser.Value(souths.item(0)));
     }
     if (!easts.length) {
-      console.warn(['KMLParser. DOM LatLngBox Node did not contain east!', {
+      this.log.warn(['KMLParser. DOM LatLngBox Node did not contain east!', {
         node: xmlDom
       }]);
     } else {
       east = parseFloat(KMLParser.Value(easts.item(0)));
     }
     if (!wests.length) {
-      console.warn(['KMLParser. DOM LatLngBox Node did not contain west!', {
+      this.log.warn(['KMLParser. DOM LatLngBox Node did not contain west!', {
         node: xmlDom
       }]);
     } else {
@@ -452,7 +449,7 @@ export default class KMLParser {
       }
       current = current.parentNode;
     }
-    console.error(['KMLParser. Could not find parent node within expected bounds.', {
+    this.log.error(['KMLParser. Could not find parent node within expected bounds.', {
       parentNode: parent,
       childNode: child,
       bounds: max
@@ -469,7 +466,7 @@ export default class KMLParser {
     const styles = xmlDom.getElementsByTagName('styleUrl');
     let style = config.defaultStyle;
     if (styles.length === 0) {
-      console.warn(['KMLParser. DOM Node did not contain styleUrl!', {
+      this.log.warn(['KMLParser. DOM Node did not contain styleUrl!', {
         node: xmlDom,
         options: config
       }]);
@@ -491,7 +488,7 @@ export default class KMLParser {
     let icon = config.defaultStyle;
     let scale = config.defaultScale;
     if (icons.length === 0) {
-      console.warn(['KMLParser. DOM Node did not contain Icon!', {
+      this.log.warn(['KMLParser. DOM Node did not contain Icon!', {
         node: xmlDom,
         options: config
       }]);
@@ -499,7 +496,7 @@ export default class KMLParser {
       const node = icons.item(0);
       const urls = node.getElementsByTagName('href');
       if (urls.length === 0) {
-        console.warn(['KMLParser. DOM Icon Node did not contain href!', {
+        this.log.warn(['KMLParser. DOM Icon Node did not contain href!', {
           node: xmlDom,
           options: config
         }]);
@@ -510,7 +507,7 @@ export default class KMLParser {
 
       const scales = node.getElementsByTagName('viewBoundScale');
       if (scales.length === 0) {
-        console.warn(['KMLParser. DOM Icon Node did not contain viewBoundScale!', {
+        this.log.warn(['KMLParser. DOM Icon Node did not contain viewBoundScale!', {
           node: xmlDom,
           options: config
         }]);
@@ -593,7 +590,7 @@ export default class KMLParser {
         (node.parentNode.parentNode.nodeName === 'Placemark' ?
           node.parentNode.parentNode : null));
       if (parent === null) {
-        console.error(['Failed to find ParentNode for Element - ' + tagName, {
+        this.log.error(['Failed to find ParentNode for Element - ' + tagName, {
           node: xmlDom
         }]);
         //  ();
@@ -671,7 +668,7 @@ export default class KMLParser {
         });
       }
     } catch (e) {
-      console.error(['SimpleKML Parser Exception', e]);
+      this.log.error(['SimpleKML Parser Exception', e]);
     }
     return str;
   }
