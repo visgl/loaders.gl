@@ -8,11 +8,11 @@ import path from 'path';
 
 const POSITIONS =
   loadBinaryFile(path.resolve(__dirname, '../../../draco/data/raw-attribute-buffers/lidar-positions.bin')) ||
-  require('../../../draco/raw-attribute-buffers/lidar-positions.bin');
+  require('../../../draco/data/raw-attribute-buffers/lidar-positions.bin');
 
 const COLORS =
-  loadBinaryFile(path.resolve(__dirname, '../../../draco/data/raw-attribute-buffers/lidar-positions.bin')) ||
-  require('../../../draco/raw-attribute-buffers/lidar-colors.bin');
+  loadBinaryFile(path.resolve(__dirname, '../../../draco/data/raw-attribute-buffers/lidar-colors.bin')) ||
+  require('../../../draco/data/raw-attribute-buffers/lidar-colors.bin');
 
 test('GLTFBuilder#addCompressedPointCloud', t => {
   const attributes = {
