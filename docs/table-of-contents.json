@@ -11,6 +11,12 @@
       ]
     },
     {
+      "title": "Get Started",
+      "entries": [
+        {"entry": "docs/get-started/README"}
+      ]
+    },
+    {
       "title": "Developer Guide",
       "entries": [
         {"entry": "docs/developer-guide/about-loaders"},
