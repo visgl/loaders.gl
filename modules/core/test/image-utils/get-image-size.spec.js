@@ -5,8 +5,7 @@
 import test from 'tape-catch';
 import path from 'path';
 
-import {getImageSize} from '@loaders.gl/core';
-import {readFileSync} from '@loaders.gl/core';
+import {readFileSync, getImageSize} from '@loaders.gl/core';
 
 const TEST_DATA_DIR = path.resolve(__dirname, '../../data');
 

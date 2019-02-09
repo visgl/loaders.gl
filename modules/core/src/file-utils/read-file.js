@@ -42,7 +42,7 @@ export function readFile(uri, options = {}) {
 
     const isRequest = uri.startsWith('http:') || uri.startsWith('https:');
     if (isRequest) {
-      if (http) {
+      if (fs & fs.readFile) {
         return http.request(uri, options);
       }
       if (typeof createImageBitmap === 'undefined') {
@@ -53,7 +53,7 @@ export function readFile(uri, options = {}) {
       return fetch(uri, options).then(res => res[options.dataType]());
     }
 
-    if (fs) {
+    if (fs && fs.readFile) {
       return readFileNode(uri, options);
     }
 
@@ -72,8 +72,8 @@ export function readFileSync(uri, options = {}) {
     return decodeDataUri(uri);
   }
 
-  if (!fs) {
-    throw new Error('Cant load URI synchronously');
+  if (!fs || !fs.readFileSync) {
+    return null; // throw new Error('Cant load URI synchronously');
   }
 
   const buffer = fs.readFileSync(uri, options, () => {});

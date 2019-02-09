@@ -30,6 +30,7 @@ test('readFileSync#file (BINARY)', t => {
   if (typeof window !== 'undefined') {
     t.comment('Skip file read in browser');
     t.end();
+    return;
   }
 
   const data = readFileSync(BINARY_URL);
@@ -42,6 +43,7 @@ test('readFileSync#file (BINARY)', t => {
 //   if (typeof window !== 'undefined') {
 //     t.comment('Skip file read in browser');
 //     t.end();
+//     return;
 //   }
 
 //   return readFile(BINARY_URL).then(data => {
@@ -55,6 +57,7 @@ test('readFileSync#file (TEXT)', t => {
   if (typeof window !== 'undefined') {
     t.comment('Skip file read in browser');
     t.end();
+    return;
   }
 
   const data = readFileSync(TEXT_URL, {dataType: 'text'});
@@ -67,6 +70,7 @@ test('readFileSync#file (TEXT)', t => {
 //   if (typeof window !== 'undefined') {
 //     t.comment('Skip file read in browser');
 //     t.end();
+//     return;
 //   }
 
 //   readFile(TEXT_URL, {dataType: 'text'}).then(data => {
