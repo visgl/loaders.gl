@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-import test from 'tape-catch';
+import test from 'tape-promise/tape';
 import {TextEncoder, TextDecoder} from '@loaders.gl/core';
 
 test('TextEncoder', t => {

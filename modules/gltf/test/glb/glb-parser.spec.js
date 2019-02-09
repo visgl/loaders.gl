@@ -1,5 +1,5 @@
 /* eslint-disable */
-import test from 'tape-catch';
+import test from 'tape-promise/tape';
 
 import {GLBParser, GLBBuilder} from '@loaders.gl/gltf';
 

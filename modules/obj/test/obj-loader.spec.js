@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-import test from 'tape-catch';
+import test from 'tape-promise/tape';
 import {parseFileSync, getGLTFAttribute} from '@loaders.gl/core';
 import {OBJLoader} from '@loaders.gl/obj';
 

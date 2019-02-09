@@ -3,7 +3,7 @@
 
 /* eslint-disable max-len, max-statements */
 /* global Buffer */
-import test from 'tape-catch';
+import test from 'tape-promise/tape';
 import decodeDataUri from '@loaders.gl/core/data-uri-utils/decode-data-uri';
 
 test('decodeDataUri', t => {

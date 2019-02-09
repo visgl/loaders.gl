@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-import test from 'tape-catch';
+import test from 'tape-promise/tape';
 import {readFileSync, parseFileSync, _getMeshSize} from '@loaders.gl/core';
 import {DracoEncoder, DracoLoader} from '@loaders.gl/draco';
 import path from 'path';

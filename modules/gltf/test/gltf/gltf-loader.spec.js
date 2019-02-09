@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-import test from 'tape-catch';
+import test from 'tape-promise/tape';
 
 import {deepCopy} from 'test/setup';
 import {readFileSync} from '@loaders.gl/core';
