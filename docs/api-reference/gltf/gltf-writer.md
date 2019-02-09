@@ -1,4 +1,4 @@
-# GLTFWriter (@loaders.gl/gltf)
+# GLTFWriter
 
 The `GLTFWriter` is the descriptor object for the GLB encoder.
 

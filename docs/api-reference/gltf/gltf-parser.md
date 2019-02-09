@@ -8,7 +8,7 @@ To facilitiate working with the loaded data, the `GLTFParser` class provides:
 * A `resolveScenegraphs` method that resolves the index based linking between objects into a hierarchical javascript structure.
 
 References:
-* For more information, see [glTF and GLB support]() in the Developer's Guide.
+* For more information, see [glTF and GLB support](docs/) in the Developer's Guide.
 
 
 ## Usage

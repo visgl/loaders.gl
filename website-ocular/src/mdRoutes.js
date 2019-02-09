@@ -75,7 +75,7 @@ export default [
               },
               {
                 name: 'Image Data Utilities',
-                markdown: require('../../docs/api-reference/core/image-data-utils.md')
+                markdown: require('../../docs/api-reference/core/image-utilities.md')
               }
             ]
           },
@@ -84,31 +84,31 @@ export default [
             children: [
               {
                 name: 'GLTFLoader',
-                markdown: require('../../docs/api-reference/gltf-loaders/gltf-loader.md')
+                markdown: require('../../docs/api-reference/gltf/gltf-loader.md')
               },
               {
                 name: 'GLTFWriter',
-                markdown: require('../../docs/api-reference/gltf-loaders/gltf-writer.md')
+                markdown: require('../../docs/api-reference/gltf/gltf-writer.md')
               },
               {
                 name: 'GLTFParser',
-                markdown: require('../../docs/api-reference/gltf-loaders/gltf-parser.md')
+                markdown: require('../../docs/api-reference/gltf/gltf-parser.md')
               },
               {
                 name: 'GLTFBuilder',
-                markdown: require('../../docs/api-reference/gltf-loaders/gltf-builder.md')
+                markdown: require('../../docs/api-reference/gltf/gltf-builder.md')
               },
               {
                 name: 'GLBParser',
-                markdown: require('../../docs/api-reference/gltf-loaders/glb-parser.md')
+                markdown: require('../../docs/api-reference/gltf/glb-parser.md')
               },
               {
                 name: 'GLBBuilder',
-                markdown: require('../../docs/api-reference/gltf-loaders/glb-builder.md')
+                markdown: require('../../docs/api-reference/gltf/glb-builder.md')
               },
               {
                 name: 'GLTF Extensions',
-                markdown: require('../../docs/api-reference/gltf-loaders/gltf-extensions.md')
+                markdown: require('../../docs/api-reference/gltf/gltf-extensions.md')
               }
             ]
           },
@@ -117,27 +117,27 @@ export default [
             children: [
               {
                 name: 'DracoLoader (PointCloud / Mesh)',
-                markdown: require('../../docs/api-reference/loaders/draco-loader.md')
+                markdown: require('../../docs/api-reference/mesh-loaders/draco-loader.md')
               },
               {
                 name: 'DracoEncoder (PointCloud / Mesh)',
-                markdown: require('../../docs/api-reference/loaders/draco-encoder.md')
+                markdown: require('../../docs/api-reference/mesh-loaders/draco-encoder.md')
               },
               {
                 name: 'LASLoader (PointCloud)',
-                markdown: require('../../docs/api-reference/loaders/las-loader.md')
+                markdown: require('../../docs/api-reference/mesh-loaders/las-loader.md')
               },
               {
                 name: 'OBJLoader (Mesh)',
-                markdown: require('../../docs/api-reference/loaders/obj-loader.md')
+                markdown: require('../../docs/api-reference/mesh-loaders/obj-loader.md')
               },
               {
                 name: 'PCDLoader (PointCloud)',
-                markdown: require('../../docs/api-reference/loaders/pcd-loader.md')
+                markdown: require('../../docs/api-reference/mesh-loaders/pcd-loader.md')
               },
               {
                 name: 'PLYLoader (PointCloud / Mesh)',
-                markdown: require('../../docs/api-reference/loaders/ply-loader.md')
+                markdown: require('../../docs/api-reference/mesh-loaders/ply-loader.md')
               }
             ]
           },
@@ -146,7 +146,7 @@ export default [
             children: [
               {
                 name: 'KMLLoader',
-                markdown: require('../../docs/api-reference/loaders/kml-loader.md')
+                markdown: require('../../docs/api-reference/geojson-loaders/kml-loader.md')
               }
             ]
           }
