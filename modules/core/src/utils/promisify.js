@@ -6,7 +6,6 @@
  * @param {Function} func - function to wrap
  * @return {Function} promisified function
  */
-/* eslint-disable no-try-catch */
 export function promisify(func) {
   return function promisifiedFunction(...args) {
     return new Promise((resolve, reject) => {
@@ -25,4 +24,3 @@ export function promisify(func) {
     });
   };
 }
-/* eslint-enable no-try-catch */

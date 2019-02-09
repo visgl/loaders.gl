@@ -13,12 +13,12 @@ import ndarray from 'ndarray';
  * @param {String} opt.dataURI= - Whether to include a data URI header
  * @return {*} bytes
  */
-export function encodeImageNode(image, type = 'png') {
+export function encodeImageToStreamNode(image, options) {
   // Support MIME type strings
-  type = type.replace('image/', '');
+  const type = options.type ? options.type.replace('image/', '') : 'jpeg';
 
   const pixels = ndarray(image.data, [image.width, image.height, 4], [4, image.width * 4, 1], 0);
 
-  // TODO - does this return stream?
-  return savePixels(pixels, type);
+  // Note: savePixels returns a stream
+  return savePixels(pixels, type, options);
 }

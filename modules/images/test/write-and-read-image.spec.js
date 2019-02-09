@@ -1,6 +1,6 @@
-import test from 'tape-catch';
-import {isBrowser} from '@loaders.gl/core';
-import {loadImage, encodeImage} from '@loaders.gl/images';
+import test from 'tape-promise/tape';
+import {isBrowser, encodeToStream} from '@loaders.gl/core';
+import {loadImage, ImageWriter} from '@loaders.gl/images';
 import fs from 'fs';
 import path from 'path';
 
@@ -8,7 +8,7 @@ import path from 'path';
 // import mkdirp from 'mkdirp';
 // const TEST_DIR = path.join(__dirname, '..', 'data');
 
-const TEST_DIR = path.join(__dirname);
+const TEST_DIR = path.join(__dirname, '../data');
 const TEST_FILE = path.join(TEST_DIR, 'test.png');
 
 const IMAGE = {
@@ -47,7 +47,7 @@ test('images#write-and-read-image', t => {
   if (isBrowser) {
     t.comment('Skip read/write file in browser');
     t.end();
-    return;
+    return null;
   }
 
   // await promisify(mkdirp)(TEST_DIR);
@@ -57,8 +57,11 @@ test('images#write-and-read-image', t => {
     loadImage(TEST_FILE).then(result => {
       t.same(result, IMAGE);
       t.end();
+    }).catch(error => {
+      t.fail(error);
+      t.end();
     });
   });
 
-  encodeImage(IMAGE).pipe(file);
+  return encodeToStream(IMAGE, ImageWriter, {type: 'png'}).pipe(file);
 });
