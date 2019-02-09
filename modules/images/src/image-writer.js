@@ -1,11 +1,9 @@
-import {nodeEncodeImage} from './node-encode-image';
+import {encodeImage} from './write-image/encode-image';
 
 export default {
   name: 'Images',
   extension: 'jpeg',
-  // writeToFile: saveBinaryFile,
-  // TODO - encode standard format? Encode mesh to binary?
-  encodeToBinary: nodeEncodeImage,
+  encodeToBinary: encodeImage,
   DEFAULT_OPTIONS: {
     type: 'jpeg'
   }

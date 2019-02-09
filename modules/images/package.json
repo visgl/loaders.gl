@@ -35,7 +35,8 @@
     "get-pixels": false,
     "ndarray": false,
     "save-pixels": false,
-    "fs": false
+    "fs": false,
+    "util": false
   },
   "dependencies": {
     "@loaders.gl/core": "^0.5.0",

@@ -1,8 +1,8 @@
 // Use stackgl modules for DOM-less reading and writing of images
 // NOTE: These are not dependencies of luma.gl.
 // They need to be imported by the app.
-import {savePixels} from 'save-pixels';
-import {ndarray} from 'ndarray';
+import savePixels from 'save-pixels';
+import ndarray from 'ndarray';
 
 /**
  * Returns data bytes representing a compressed image in PNG or JPG format,
@@ -13,7 +13,7 @@ import {ndarray} from 'ndarray';
  * @param {String} opt.dataURI= - Whether to include a data URI header
  * @return {*} bytes
  */
-export function compressImage(image, type = 'png') {
+export function encodeImageNode(image, type = 'png') {
   // Support MIME type strings
   type = type.replace('image/', '');
 

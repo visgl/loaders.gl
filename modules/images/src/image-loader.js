@@ -1,5 +1,7 @@
-import parseImage from './parse-image-node';
+import {loadImage} from './load-image/load-image';
 
 export default {
-  parseBinary: parseImage
+  name: 'Images',
+  extension: [],
+  loadAndParse: loadImage
 };
