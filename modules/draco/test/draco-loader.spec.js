@@ -6,8 +6,8 @@ import path from 'path';
 import {validateLoadedData} from 'test/common/conformance';
 
 const BUNNY_DRC =
-  readFileSync(path.resolve(__dirname, '../../data/bunny.drc')) ||
-  require('test-data/bunny.drc');
+  readFileSync(path.resolve(__dirname, '../data/bunny.drc')) ||
+  require('../data/bunny.drc');
 
 test('DracoLoader#parse and encode', t => {
   const data = parseFileSync(BUNNY_DRC, DracoLoader);

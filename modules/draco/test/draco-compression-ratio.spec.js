@@ -6,11 +6,11 @@ import path from 'path';
 import {validateLoadedData} from 'test/common/conformance';
 
 const POSITIONS =
-  readFileSync(path.resolve(__dirname, '../../data/raw-attribute-buffers/lidar-positions.bin')) ||
+  readFileSync(path.resolve(__dirname, '../data/raw-attribute-buffers/lidar-positions.bin')) ||
   require('../data/raw-attribute-buffers/lidar-positions.bin');
 
 const COLORS =
-  readFileSync(path.resolve(__dirname, '../../data/raw-attribute-buffers/lidar-colors.bin')) ||
+  readFileSync(path.resolve(__dirname, '../data/raw-attribute-buffers/lidar-colors.bin')) ||
   require('../data/raw-attribute-buffers/lidar-colors.bin');
 
 test('DracoEncoder#compressRawBuffers', t => {

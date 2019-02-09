@@ -8,7 +8,7 @@ import PLY_ASCII from '../data/cube_att.ply.js';
 import {validateLoadedData} from 'test/common/conformance';
 
 const PLY_BINARY =
-  readFileSync(path.resolve(__dirname, '../../data/bun_zipper.ply')) ||
+  readFileSync(path.resolve(__dirname, '../data/bun_zipper.ply')) ||
   require('../data/bun_zipper.ply');
 
 test('PLYLoader#parseText', t => {
