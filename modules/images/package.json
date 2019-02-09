@@ -1,0 +1,48 @@
+{
+  "name": "@loaders.gl/images",
+  "version": "0.5.0",
+  "description": "Framework-independent loaders and writers for images (PNG, JPG, ...)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/uber-web/loaders.gl"
+  },
+  "keywords": [
+    "webgl",
+    "loader",
+    "3d",
+    "mesh",
+    "point cloud",
+    "PLY"
+  ],
+  "main": "dist/es5/index.js",
+  "module": "dist/esm/index.js",
+  "esnext": "dist/es6/index.js",
+  "files": [
+    "src",
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "clean": "rm -fr dist && mkdir -p dist",
+    "build": "npm run clean && npm run build-es6 && npm run build-esm && npm run build-es5",
+    "build-es6": "BABEL_ENV=es6 babel src --config-file ../../babel.config.js --out-dir dist/es6 --source-maps --ignore 'node_modules/'",
+    "build-esm": "BABEL_ENV=esm babel src --config-file ../../babel.config.js --out-dir dist/esm --source-maps --ignore 'node_modules/'",
+    "build-es5": "BABEL_ENV=es5 babel src --config-file ../../babel.config.js --out-dir dist/es5 --source-maps --ignore 'node_modules/'"
+  },
+  "sideEffects": false,
+  "browser": {
+    "get-pixels": false,
+    "ndarray": false,
+    "save-pixels": false,
+    "fs": false
+  },
+  "dependencies": {
+    "@loaders.gl/core": "^0.5.0",
+    "canvas-to-blob": "0.0.0",
+    "get-pixels": "^3.3.0",
+    "ndarray": "^1.0.18",
+    "save-pixels": "^2.3.2",
+    "through": "^2.3.8"
+  }
+}
