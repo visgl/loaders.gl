@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import test from 'tape-catch';
-import {readFileSync, parseFileSync, parseWithWorker, getGLTFAttribute} from '@loaders.gl/core';
+import {readFileSync, parseFileSync, parseFile, getGLTFAttribute} from '@loaders.gl/core';
 import {PLYLoader, PLYWorkerLoader} from '@loaders.gl/ply';
 import path from 'path';
 
@@ -44,7 +44,7 @@ test('PLYLoader#parseBinaryAsync', t => {
   // Once binary is transferred to worker it cannot be read from the main thread
   // Duplicate it here to avoid breaking other tests
   const plyBinary = PLY_BINARY.slice();
-  parseWithWorker(PLYWorkerLoader.worker)(plyBinary).then(data => {
+  parseFile(plyBinary, PLYWorkerLoader).then(data => {
     validateLoadedData(t, data);
 
     t.equal(getGLTFAttribute(data, 'POSITION').value.length, 107841, 'POSITION attribute was found');

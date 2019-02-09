@@ -3293,7 +3293,7 @@ flat-cache@^1.2.1:
     rimraf "~2.6.2"
     write "^0.2.1"
 
-"flatbuffers@github:trxcllnt/flatbuffers-esm":
+flatbuffers@trxcllnt/flatbuffers-esm:
   version "1.7.0"
   resolved "https://codeload.github.com/trxcllnt/flatbuffers-esm/tar.gz/0ed890546a45c361665b1778f856b4a48cc22c8a"
 

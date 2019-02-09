@@ -1,4 +1,4 @@
-import {readFile, readFileSync} from '@loaders.gl/core';
+import {isBrowser, readFile, readFileSync} from '@loaders.gl/core';
 
 import test from 'tape-catch';
 
@@ -27,7 +27,7 @@ test('readFileSync#dataUrl', t => {
 });
 
 test('readFileSync#file (BINARY)', t => {
-  if (typeof window !== 'undefined') {
+  if (isBrowser) {
     t.comment('Skip file read in browser');
     t.end();
     return;
@@ -40,7 +40,7 @@ test('readFileSync#file (BINARY)', t => {
 });
 
 // test('readFile#file (BINARY)', t => {
-//   if (typeof window !== 'undefined') {
+//   if (isBrowser) {
 //     t.comment('Skip file read in browser');
 //     t.end();
 //     return;
@@ -54,7 +54,7 @@ test('readFileSync#file (BINARY)', t => {
 // });
 
 test('readFileSync#file (TEXT)', t => {
-  if (typeof window !== 'undefined') {
+  if (isBrowser) {
     t.comment('Skip file read in browser');
     t.end();
     return;
@@ -67,7 +67,7 @@ test('readFileSync#file (TEXT)', t => {
 });
 
 // test('readFile#file (TEXT)', t => {
-//   if (typeof window !== 'undefined') {
+//   if (isBrowser) {
 //     t.comment('Skip file read in browser');
 //     t.end();
 //     return;

@@ -1,10 +1,11 @@
 // FILE LOADING FUNCTIONS
 
-export {setPathPrefix, getPathPrefix} from './file-utils/path-prefix';
-export {readFile, readFileSync} from './file-utils/read-file';
-export {parseFile, parseFileSync} from './file-utils/parse-file';
-export {loadFile, loadFileSync} from './file-utils/load-file';
-export {loadImage} from './file-utils/load-image';
+export {setPathPrefix, getPathPrefix} from './read-file/path-prefix';
+export {addFileAliases} from './read-file/file-aliases';
+export {readFile, readFileSync} from './read-file/read-file';
+export {parseFile, parseFileSync} from './parse-file/parse-file';
+export {loadFile, loadFileSync} from './load-file/load-file';
+export {loadImage} from './load-file/load-image';
 
 // BINARY UTILS
 
@@ -70,4 +71,4 @@ export {isBrowser, self, window, global, document} from './utils/globals';
 // WORKER UTILS
 
 export {default as createWorker} from './worker-utils/create-worker';
-export {default as parseWithWorker} from './worker-utils/parse-with-worker';
+export {default as _parseWithWorker} from './worker-utils/parse-with-worker';

@@ -16,6 +16,8 @@ function getWorker(workerSource) {
 export default function parseWithWorker(workerSource, data, options) {
   const worker = getWorker(workerSource);
 
+  options = removeNontransferableOptions(options);
+
   const parse = (arraybuffer, opts) => new Promise((resolve, reject) => {
     worker.onmessage = evt => {
       switch (evt.data.type) {
@@ -37,4 +39,14 @@ export default function parseWithWorker(workerSource, data, options) {
   });
 
   return data ? parse(data, options) : parse;
+}
+
+function removeNontransferableOptions(options) {
+  options = Object.assign({}, options);
+  // log object contains functions which cannot be transferred
+  // TODO - decide how to handle logging on workers
+  if (options.log !== null) {
+    delete options.log;
+  }
+  return options;
 }
