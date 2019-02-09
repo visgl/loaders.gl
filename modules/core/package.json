@@ -27,7 +27,10 @@
   ],
   "sideEffects": false,
   "browser": {
-    "text-encoding": false
+    "fs": false,
+    "http": false,
+    "text-encoding": false,
+    "util": false
   },
   "scripts": {
     "clean": "rm -fr dist && mkdir -p dist",

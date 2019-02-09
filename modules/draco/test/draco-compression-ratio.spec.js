@@ -1,17 +1,16 @@
 /* eslint-disable max-len */
 import test from 'tape-catch';
-import {parseFileSync, _getMeshSize} from '@loaders.gl/core';
-import {loadBinaryFile} from '@loaders.gl/core-node';
+import {readFileSync, parseFileSync, _getMeshSize} from '@loaders.gl/core';
 import {DracoEncoder, DracoLoader} from '@loaders.gl/draco';
 import path from 'path';
 import {validateLoadedData} from 'test/common/conformance';
 
 const POSITIONS =
-  loadBinaryFile(path.resolve(__dirname, '../data/raw-attribute-buffers/lidar-positions.bin')) ||
+  readFileSync(path.resolve(__dirname, '../data/raw-attribute-buffers/lidar-positions.bin')) ||
   require('../data/raw-attribute-buffers/lidar-positions.bin');
 
 const COLORS =
-  loadBinaryFile(path.resolve(__dirname, '../data/raw-attribute-buffers/lidar-positions.bin')) ||
+  readFileSync(path.resolve(__dirname, '../data/raw-attribute-buffers/lidar-colors.bin')) ||
   require('../data/raw-attribute-buffers/lidar-colors.bin');
 
 test('DracoEncoder#compressRawBuffers', t => {

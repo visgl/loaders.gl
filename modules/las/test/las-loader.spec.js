@@ -1,13 +1,12 @@
 /* eslint-disable max-len */
 import test from 'tape-catch';
-import {parseFileSync, getGLTFAttribute} from '@loaders.gl/core';
-import {loadBinaryFile} from '@loaders.gl/core-node';
+import {readFileSync, parseFileSync, getGLTFAttribute} from '@loaders.gl/core';
 import {LASLoader} from '@loaders.gl/las';
 import path from 'path';
 import {validateLoadedData} from 'test/common/conformance';
 
 const LAS_BINARY =
-  loadBinaryFile(path.resolve(__dirname, '../data/indoor.0.1.laz')) ||
+  readFileSync(path.resolve(__dirname, '../data/indoor.0.1.laz')) ||
   require('../data/indoor.0.1.laz');
 
 test('LASLoader#parseBinary', t => {
