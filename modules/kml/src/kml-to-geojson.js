@@ -14,7 +14,7 @@ export default function KMLtoGeoJson(kml, options) {
       properties: kmlMarker
     };
     delete feature.properties.type;
-    delete feature.properties.geometry.coordinates;
+    delete feature.properties.coordinates;
     geojson.features.push(feature);
   }
 
@@ -28,7 +28,7 @@ export default function KMLtoGeoJson(kml, options) {
       properties: kmlPolygon
     };
     delete feature.properties.type;
-    delete feature.properties.geometry.coordinates;
+    delete feature.properties.coordinates;
     geojson.features.push(feature);
   }
 
@@ -42,7 +42,7 @@ export default function KMLtoGeoJson(kml, options) {
       properties: kmlLine
     };
     delete feature.properties.type;
-    delete feature.properties.geometry.coordinates;
+    delete feature.properties.coordinates;
     geojson.features.push(feature);
   }
 
@@ -51,4 +51,6 @@ export default function KMLtoGeoJson(kml, options) {
   // - folders
   // - overlays
   // - links
+
+  return geojson;
 }

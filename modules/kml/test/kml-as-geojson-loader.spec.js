@@ -30,7 +30,7 @@ test('KMLasGeoJsonLoader#parseText', t => {
   } else {
     const data = parseFileSync(KML, KMLasGeoJsonLoader, {log: null});
     t.equal(data.type, 'FeatureCollection', 'FeatureCollection found');
-    t.equal(data.features.length, 2, 'Features were found');
+    t.equal(data.features.length, 19, 'Features were found');
   }
 
   t.end();
