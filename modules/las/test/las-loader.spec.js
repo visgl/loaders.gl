@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 import test from 'tape-catch';
-import {readFileSync, parseFileSync, getGLTFAttribute} from '@loaders.gl/core';
-import {LASLoader} from '@loaders.gl/las';
+import {readFileSync, parseFileSync, parseFile, getGLTFAttribute} from '@loaders.gl/core';
+import {LASLoader, LASWorkerLoader} from '@loaders.gl/las';
 import path from 'path';
 import {validateLoadedData} from 'test/common/conformance';
 
@@ -20,4 +20,25 @@ test('LASLoader#parseBinary', t => {
   t.equal(getGLTFAttribute(data, 'POSITION').value.length, 80805 * 3, 'POSITION attribute was found');
 
   t.end();
+});
+
+test('LASLoader#parseBinaryAsync', t => {
+  if (typeof Worker === 'undefined') {
+    t.comment('Worker is not usable in non-browser environments');
+    t.end();
+    return;
+  }
+
+  // Once binary is transferred to worker it cannot be read from the main thread
+  // Duplicate it here to avoid breaking other tests
+  const lasBinary = LAS_BINARY.slice();
+  parseFile(lasBinary, LASWorkerLoader, {skip: 10}).then(data => {
+    validateLoadedData(t, data);
+
+    t.equal(getGLTFAttribute(data, 'POSITION').value.length, 80805 * 3, 'POSITION attribute was found');
+
+  }).catch(error => {
+    t.fail(error);
+
+  }).then(t.end);
 });
