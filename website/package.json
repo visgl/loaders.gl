@@ -1,17 +1,20 @@
 {
-  "name": "loaders.gl-website",
-  "version": "1.0.0",
-  "description": "Website for loaders.gl",
+  "name": "ocular-website-gatsby",
+  "version": "0.0.0",
+  "description": "A website for Ocular, built with Ocular (Gatsby version)",
+  "license": "MIT",
+  "keywords": [
+    "ocular"
+  ],
   "main": "index.js",
   "scripts": {
-    "start": "ocular start open",
-    "start-local": "yarn start",
-    "build": "ocular build",
-    "lint": "ocular lint"
+    "start": "yarn clean && yarn develop",
+    "clean": "rm -rf ./.cache ./public",
+    "develop": "rm -fr .cache && gatsby develop --port=8001"
   },
   "dependencies": {
-    "ocular": "^0.6.2",
-    "stats.js": "^0.17.0"
+    "gatsby": "2.0.85",
+    "ocular-gatsby": "1.0.0-alpha.9"
   },
-  "license": "MIT"
+  "devDependencies": {}
 }

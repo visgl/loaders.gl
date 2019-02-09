@@ -3,7 +3,7 @@
 The `GLTFBuilder` class allows applications to use a "fluent" API to dynamically build up a hybrid JSON/binary GLB file. The `GLTFBuilder` would normally be used if you want to save custom mixed JSON/binary data in a "GLB envelope".
 
 References:
-* For more information, see [glTF and GLB support]() in the Developer's Guide.
+* For more information, see [glTF and GLB support](docs/) in the Developer's Guide.
 
 
 ## Usage

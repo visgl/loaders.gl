@@ -1,0 +1,17 @@
+{
+  "name": "loaders.gl-website",
+  "version": "1.0.0",
+  "description": "Website for loaders.gl",
+  "main": "index.js",
+  "scripts": {
+    "start": "ocular start open",
+    "start-local": "yarn start",
+    "build": "ocular build",
+    "lint": "ocular lint"
+  },
+  "dependencies": {
+    "ocular": "^0.6.2",
+    "stats.js": "^0.17.0"
+  },
+  "license": "MIT"
+}

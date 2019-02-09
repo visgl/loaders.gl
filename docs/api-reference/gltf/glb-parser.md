@@ -5,7 +5,7 @@ The `GLBParser` class lets the application access data encoded in a GLB binary "
 However, the GLB encoding can potentially also be used independently to save mixed JSON and binary data, in which case having access to the `GLBParser` class can be helpful.
 
 References:
-* For more information, see [GLB and GLB support]() in the Developer's Guide.
+* For more information, see [GLB and GLB support](docs/) in the Developer's Guide.
 
 ## Usage
 
