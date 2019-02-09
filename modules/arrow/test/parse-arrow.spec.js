@@ -1,7 +1,6 @@
 /* eslint-disable max-len */
 /*
 import test from 'tape-catch';
-<<<<<<< HEAD
 import {loadBinaryFile} from '@loaders.gl/core-node';
 import {parseFileSync} from '@loaders.gl/core';
 import {ArrowLoader} from '@loaders.gl/arrow';

@@ -86,7 +86,7 @@ export function readFileSync(uri, options = {}) {
   }
 
   if (!isNode) {
-    throw new Error('Cant load URI synchronously');
+    return null; // throw new Error('Cant load URI synchronously');
   }
 
   const buffer = fs.readFileSync(uri, options, () => {});
