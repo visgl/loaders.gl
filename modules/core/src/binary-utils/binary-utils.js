@@ -1,5 +1,6 @@
 /* global FileReader, Blob, ArrayBuffer, Buffer */
 import assert from '../utils/assert';
+import {TextEncoder} from './text-encoding';
 import {padTo4Bytes} from './memory-copy-utils';
 
 export function toArrayBuffer(binaryData) {
@@ -14,6 +15,10 @@ export function toArrayBuffer(binaryData) {
   // if (ArrayBuffer.isView(binaryData)) {
   //   return binaryData.buffer;
   // }
+
+  if (typeof binaryData === 'string') {
+    return stringToArrayBuffer(binaryData);
+  }
 
   return nodeBufferToArrayBuffer(binaryData);
   // assert(false);
@@ -89,6 +94,11 @@ export function blobToArrayBuffer(blob) {
     fileReader.onerror = reject;
     fileReader.readAsArrayBuffer(blob);
   });
+}
+
+export function stringToArrayBuffer(text) {
+  const uint8Array = new TextEncoder().encode(text);
+  return uint8Array.buffer;
 }
 
 function nodeBufferToArrayBuffer(buffer) {

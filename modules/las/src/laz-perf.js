@@ -6,7 +6,7 @@
 */
 
 // laz-perf.js
-function getModule() {
+export default function getModule() {
   var Module = {};
 
   var ENVIRONMENT_IS_WEB = typeof window === 'object';
@@ -83220,5 +83220,3 @@ function getModule() {
   /* eslint no-use-before-define: 2 */
   return Module;
 }
-
-export default getModule();

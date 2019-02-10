@@ -22,7 +22,7 @@ test('LASLoader#parseBinary', t => {
   t.end();
 });
 
-test('LASLoader#parseBinaryAsync', t => {
+test('LASWorkerLoader#parseBinary', t => {
   if (typeof Worker === 'undefined') {
     t.comment('Worker is not usable in non-browser environments');
     t.end();

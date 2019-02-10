@@ -32,10 +32,7 @@ const ALIASES = {
   '@loaders.gl/obj': path.resolve(__dirname, './modules/obj/src'),
   '@loaders.gl/pcd': path.resolve(__dirname, './modules/pcd/src'),
   '@loaders.gl/ply': path.resolve(__dirname, './modules/ply/src'),
-  '@loaders.gl/arrow': path.resolve(__dirname, './modules/arrow/src'),
-
-  // Cannot import this without inline-import babel plugin
-  './las-worker-loader': path.resolve(__dirname, './modules/las/dist/esm/las-worker-loader'),
+  '@loaders.gl/arrow': path.resolve(__dirname, './modules/arrow/src')
 };
 
 if (module.require) {

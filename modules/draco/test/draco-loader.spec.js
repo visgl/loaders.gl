@@ -18,7 +18,7 @@ test('DracoLoader#parse and encode', t => {
   t.end();
 });
 
-test('DracoLoader#parse async', t => {
+test('DracoWorkerLoader#parse', t => {
   if (typeof Worker === 'undefined') {
     t.comment('Worker is not usable in non-browser environments');
     t.end();

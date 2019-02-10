@@ -5,7 +5,9 @@
 */
 
 // laslaz.js - treat as compiled code
-import Module from './laz-perf';
+import getModule from './laz-perf';
+
+let Module = null;
 
 const POINT_FORMAT_READERS = {
   0: dv => {
@@ -158,7 +160,12 @@ class LASLoader {
 class LAZLoader {
   constructor(arraybuffer) {
     this.arraybuffer = arraybuffer;
-    this.instance = null; // laz-perf this.instance
+    this.instance = null; // LASZip instance
+
+    if (!Module) {
+      // Avoid executing laz-perf on import
+      Module = getModule();
+    }
   }
 
   open() {

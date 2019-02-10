@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import test from 'tape-catch';
-import {parseFileSync, parseFile, getGLTFAttribute, TextEncoder} from '@loaders.gl/core';
+import {parseFileSync, parseFile, getGLTFAttribute} from '@loaders.gl/core';
 import {OBJLoader, OBJWorkerLoader} from '@loaders.gl/obj';
 
 import OBJ_ASCII from '../data/bunny.obj.js';
@@ -28,15 +28,14 @@ test('OBJLoader#parseText', t => {
   t.end();
 });
 
-test('OBJLoader#parseTextAsync', t => {
+test('OBJWorkerLoader#parseText', t => {
   if (typeof Worker === 'undefined') {
     t.comment('Worker is not usable in non-browser environments');
     t.end();
     return;
   }
 
-  const objBinary = new TextEncoder().encode(OBJ_ASCII);
-  parseFile(objBinary, OBJWorkerLoader).then(data => {
+  parseFile(OBJ_ASCII, OBJWorkerLoader).then(data => {
     validateLoadedData(t, data);
 
     t.equal(data.mode, 4, 'mode is TRIANGLES (4)');
