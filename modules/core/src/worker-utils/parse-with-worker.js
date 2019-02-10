@@ -1,4 +1,4 @@
-import getTransferList from './get-transfer-list';
+import {toArrayBuffer} from '../binary-utils/binary-utils';
 
 const workerCache = new Map();
 
@@ -18,7 +18,7 @@ export default function parseWithWorker(workerSource, data, options) {
 
   options = removeNontransferableOptions(options);
 
-  const parse = (arraybuffer, opts) => new Promise((resolve, reject) => {
+  const parse = (rawData, opts) => new Promise((resolve, reject) => {
     worker.onmessage = evt => {
       switch (evt.data.type) {
       case 'done':
@@ -34,8 +34,8 @@ export default function parseWithWorker(workerSource, data, options) {
       }
     };
 
-    const transferList = getTransferList(arraybuffer);
-    worker.postMessage({arraybuffer, opts}, transferList);
+    const arraybuffer = toArrayBuffer(rawData);
+    worker.postMessage({arraybuffer, opts}, [arraybuffer]);
   });
 
   return data ? parse(data, options) : parse;
