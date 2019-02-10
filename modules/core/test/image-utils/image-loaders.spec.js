@@ -4,7 +4,7 @@ import {
   PlatformImageLoader
 } from '@loaders.gl/core';
 
-import test from 'tape-catch';
+import test from 'tape-promise/tape';
 
 test('image loaders#imports', t => {
   t.ok(ImageBitmapLoader, 'ImageBitmapLoader defined');

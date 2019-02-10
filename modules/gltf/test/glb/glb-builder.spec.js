@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-import test from 'tape-catch';
+import test from 'tape-promise/tape';
 
 import {GLBBuilder} from '@loaders.gl/gltf';
 import unpackGLBBuffers from '@loaders.gl/gltf/glb/unpack-glb-buffers';
