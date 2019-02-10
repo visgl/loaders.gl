@@ -11,4 +11,5 @@ import '@loaders.gl/las/../test';
 import '@loaders.gl/gltf/../test';
 import '@loaders.gl/kml/../test';
 
+import '@loaders.gl/zip/../test';
 import '@loaders.gl/arrow/../test';
