@@ -2,7 +2,7 @@
 // Copyright (c) 2016-17 Karl Cheng, MIT license
 
 /* eslint-disable max-len, max-statements */
-import test from 'tape-catch';
+import test from 'tape-promise/tape';
 import path from 'path';
 import {readFileSync, getImageSize} from '@loaders.gl/core';
 

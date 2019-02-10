@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-import test from 'tape-catch';
+import test from 'tape-promise/tape';
 import {readFileSync, parseFileSync, getGLTFAttribute} from '@loaders.gl/core';
 import {LASLoader} from '@loaders.gl/las';
 import path from 'path';

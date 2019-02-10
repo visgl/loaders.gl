@@ -5,8 +5,8 @@ import {getPathPrefix} from './path-prefix';
 import {getFileAlias} from './file-aliases';
 import decodeDataUri from '../data-uri-utils/decode-data-uri';
 import {toArrayBuffer} from '../binary-utils/binary-utils';
-import fs from 'fs'; // `fs` will be `false` in browsers (see package.json "browser" field).
-import http from 'http'; // `http` will be `false` in browsers (see package.json "browser" field).
+import fs from 'fs'; // `fs` will be empty object in browsers (see package.json "browser" field).
+import http from 'http';
 import util from 'util';
 
 const isNode = Boolean(fs && fs.readFile);
@@ -120,7 +120,7 @@ function readFileObject(file, options) {
 
 function readFileNode(filename, options) {
   const readFileAsync = util.promisify(fs.readFile);
-  return readFileAsync(filename, options, () => {}).then(
+  return readFileAsync(filename, options).then(
     buffer => buffer instanceof Buffer ? toArrayBuffer(buffer) : buffer
   );
 }

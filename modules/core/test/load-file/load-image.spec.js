@@ -1,6 +1,6 @@
 import {loadImage} from '@loaders.gl/core';
 
-import test from 'tape-catch';
+import test from 'tape-promise/tape';
 
 const DATA_URL = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAA
 Bytg0kAAAAFElEQVQIW2P8z/D/PwMDAwMjjAEAQOwF/W1Dp54AAAAASUVORK5CYII=`;

@@ -5,7 +5,7 @@
 ## Usage
 
 ```
-import {TextEncoder, TextDecoder} from '@loader.gl/core';
+import {TextEncoder, TextDecoder} from '@loaders.gl/core';
 ```
 
 ## Remarks

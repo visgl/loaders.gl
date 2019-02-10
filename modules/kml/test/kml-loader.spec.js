@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-import test from 'tape-catch';
+import test from 'tape-promise/tape';
 import {parseFileSync} from '@loaders.gl/core';
 import {KMLLoader} from '@loaders.gl/kml';
 

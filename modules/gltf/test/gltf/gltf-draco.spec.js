@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-import test from 'tape-catch';
+import test from 'tape-promise/tape';
 
 import {readFileSync} from '@loaders.gl/core';
 import {GLTFBuilder, GLTFParser} from '@loaders.gl/gltf';
