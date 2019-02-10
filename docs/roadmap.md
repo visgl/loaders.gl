@@ -1,8 +1,6 @@
 # Roadmap
 
-We are trying to make the loaders.gl roadmap as public as possible.
-
-We share information about the direction of the framework in the following ways:
+We are trying to make the loaders.gl roadmap as public as possible. We share information about the direction of the framework in the following ways:
 
 * **[RFCs](https://github.com/uber-web/loaders.gl/tree/master/dev-docs/RFCs)** - RFCs are technical writeups that describe proposed features in upcoming releases.
 * **[Roadmap Document](https://github.com/uber-web/loaders.gl/tree/master/docs/overview/roadmap)** - (this document) A high-level summary of our current direction for future releases.
@@ -31,7 +29,7 @@ Obviously we expect loaders.gl to have very solid glTF/GLB support. Also we will
 
 Still, for special data sets such as large point clouds or complex geospatial data, the need for special formats for (e.g. compactness or expressivity) is unchanged, so this is the direction we expect most new loaders.gl loaders to focus on.
 
-Finally, some "unusual" loaders may be included just for the fun of it, e.g. SVG tesselation.
+Finally, some "unusual" loaders may be included just for fun, e.g. SVG tesselation.
 
 
 ## Implemented
