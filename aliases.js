@@ -23,7 +23,6 @@ const path = require('path');
 const ALIASES = {
   test: path.resolve(__dirname, './test'),
   '@loaders.gl/core': path.resolve(__dirname, './modules/core/src'),
-  '@loaders.gl/core-node': path.resolve(__dirname, './modules/core-node/src'),
   '@loaders.gl/draco': path.resolve(__dirname, './modules/draco/src'),
   '@loaders.gl/experimental': path.resolve(__dirname, './modules/experimental/src'),
   '@loaders.gl/gltf': path.resolve(__dirname, './modules/gltf/src'),

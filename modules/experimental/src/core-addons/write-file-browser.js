@@ -1,6 +1,6 @@
 // A browser implementation of the Node.js `fs` module's `fs.writeFile` method.
 
-import {isBrowser} from '../../utils';
+import {isBrowser} from '@loaders.gl/core';
 
 // TODO hack - trick filesaver.js to skip loading under node
 /* global global*/

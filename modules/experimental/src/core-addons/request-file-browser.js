@@ -1,23 +1,7 @@
-import {getPathPrefix} from './path-prefix';
-
-export function requestFile(url, opts) {
-  if (typeof url !== 'string' && !opts) {
-    // TODO - warn for deprecated mode
-    opts = url;
-    url = opts.url;
-  }
-  const pathPrefix = getPathPrefix();
-  opts.url = pathPrefix ? pathPrefix + url : url;
-  const xhr = new XHR(opts);
-  return xhr.sendAsync();
-}
+/* global XMLHttpRequest */
+import {getPathPrefix} from '@loaders.gl/core';
 
 // Supports loading (requesting) assets with XHR (XmlHttpRequest)
-/* eslint-disable guard-for-in, complexity, no-try-catch */
-
-/* global XMLHttpRequest */
-function noop() {}
-
 const XHR_STATES = {
   UNINITIALIZED: 0,
   LOADING: 1,
@@ -36,10 +20,10 @@ class XHR {
     // body = null,
     sendAsBinary = false,
     responseType = false,
-    onProgress = noop,
-    onError = noop,
-    onAbort = noop,
-    onComplete = noop
+    onProgress = () => {},
+    onError = () => {},
+    onAbort = () => {},
+    onComplete = () => {}
   }) {
     this.url = path ? path.join(path, url) : url;
     this.method = method;
@@ -67,7 +51,6 @@ class XHR {
     return this;
   }
 
-  // /* eslint-disable max-statements */
   sendAsync(body = this.body || null) {
     return new Promise((resolve, reject) => {
       try {
@@ -113,5 +96,16 @@ class XHR {
       }
     });
   }
-  /* eslint-enable max-statements */
+}
+
+export function requestFile(url, opts) {
+  if (typeof url !== 'string' && !opts) {
+    // TODO - warn for deprecated mode
+    opts = url;
+    url = opts.url;
+  }
+  const pathPrefix = getPathPrefix();
+  opts.url = pathPrefix ? pathPrefix + url : url;
+  const xhr = new XHR(opts);
+  return xhr.sendAsync();
 }
