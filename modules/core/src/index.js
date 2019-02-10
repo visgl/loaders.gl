@@ -1,4 +1,4 @@
-// FILE LOADING FUNCTIONS
+// FILE PARSING AND LOADING
 
 export {setPathPrefix, getPathPrefix} from './read-file/path-prefix';
 export {addFileAliases} from './read-file/file-aliases';
@@ -6,6 +6,12 @@ export {readFile, readFileSync} from './read-file/read-file';
 export {parseFile, parseFileSync} from './parse-file/parse-file';
 export {loadFile, loadFileSync} from './load-file/load-file';
 export {loadImage} from './load-file/load-image';
+
+// FILE ENCODING AND SAVING
+
+export {encodeFile, encodeFileSync, encodeToStream} from './encode-file/encode-file';
+export {writeFile, writeFileSync} from './write-file/write-file';
+export {saveFile, saveFileSync} from './save-file/save-file';
 
 // BINARY UTILS
 

@@ -1,7 +1,7 @@
 
 /* eslint-disable max-len */
 import test from 'tape-catch';
-import {encodeFile, parseFile} from '@loaders.gl/core';
+import {encodeFile, parseFile, TextDecoder} from '@loaders.gl/core';
 import {ZipWriter, ZipLoader} from '@loaders.gl/zip';
 
 const FILE_MAP = {
@@ -16,7 +16,8 @@ test('Zip#encode/decode', t => {
     .then(arrayBuffer => parseFile(arrayBuffer, ZipLoader))
     .then(fileMap => {
       for (const key in FILE_MAP) {
-        t.equal(FILE_MAP[key], fileMap[key], `Subfile ${key} encoded/decoded correctly`);
+        const text = new TextDecoder().decode(fileMap[key]);
+        t.equal(text, FILE_MAP[key], `Subfile ${key} encoded/decoded correctly`);
       }
       t.end();
     })

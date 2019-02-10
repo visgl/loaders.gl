@@ -1,9 +1,15 @@
 import JSZip from 'jszip';
 
-// components
+export const ZipWriter = {
+  name: 'Zip Archive',
+  extension: 'zip',
+  category: 'archive',
+  mimeType: 'application/zip',
+  encode: encodeZipAsync
+};
 
 function encodeZipAsync(fileMap, options) {
-  const jsZip = new JSZip(options);
+  const jsZip = new JSZip();
   // add files to the zip
   for (const subFileName in fileMap) {
     const subFileData = fileMap[subFileName];
@@ -26,12 +32,3 @@ function encodeZipAsync(fileMap, options) {
   });
 }
 
-const ZipWriter = {
-  name: 'Zip Archive',
-  extension: 'zip',
-  category: 'archive',
-  mimeType: 'application/zip',
-  encodeAsync: encodeZipAsync
-};
-
-export default ZipWriter;
