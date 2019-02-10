@@ -1,6 +1,6 @@
 import {getPathPrefix} from './path-prefix';
 
-export function loadFile(url, opts) {
+export function requestFile(url, opts) {
   if (typeof url !== 'string' && !opts) {
     // TODO - warn for deprecated mode
     opts = url;
@@ -8,7 +8,8 @@ export function loadFile(url, opts) {
   }
   const pathPrefix = getPathPrefix();
   opts.url = pathPrefix ? pathPrefix + url : url;
-  return requestFile(opts);
+  const xhr = new XHR(opts);
+  return xhr.sendAsync();
 }
 
 // Supports loading (requesting) assets with XHR (XmlHttpRequest)
@@ -113,9 +114,4 @@ class XHR {
     });
   }
   /* eslint-enable max-statements */
-}
-
-export function requestFile(opts) {
-  const xhr = new XHR(opts);
-  return xhr.sendAsync();
 }
