@@ -13,9 +13,12 @@ To be compatible with `@loaders.gl/core` functions, writer objects need to confo
 | `category`      | `String`    | Optional   | Indicates the type/shape of data |
 
 
-### Test Function
+### Encoder Function
 
 | Field           | Type        | Default    | Description |
 | ---             | ---         | ---        | ---         |
 | `encodeSync`    | `Function`  | `null`     | Encodes synchronously |
 | `encode`        | `Function`  | `null`     | Encodes asynchronously |
+| `encodeToStream`| `Function`  | `null`     | Encodes to a stream |
+
+Note: The format of the input data to the encoders depends on the loader. Several loader categories are defined to provided standardized data formats for similar loaders.

@@ -27,9 +27,9 @@ When creating a new loader object, at least one of the parser functions needs to
 | Parser function field | Type        | Default    | Description |
 | ---                   | ---         | ---        | ---         |
 | `parseTextSync`       | `Function`  | `null`     | Parses a text file synchronously (`String`) |
-| `parseSync`           | `Function`  | `null`     | Parses a binary file synchronously (`ArrayBuffer`) |
-| `parse`               | `Function`  | `null`     | Parses a binary file asynchronously (`ArrayBuffer`) |
-| `load`                | `Function`  | `null`     | Reads and parses a binary file asynchronously |
+| `parseSync`           | `Function`  | `null`     | Parses binary data (e.g. file contents) synchronously (`ArrayBuffer`) |
+| `parse`               | `Function`  | `null`     | Parses binary data (e.g. file contents) asynchronously (`ArrayBuffer`) |
+| `loadAndParse`        | `Function`  | `null`     | Reads a binary file and parses its contents asynchronously |
 
 
 * The preferred option is to provide a synchronous parser that works on loaded data (using the `parseSync` or `parseTextSync` fields). This allows the use of the `loadFileSync` and `parseFileSync` functions with your loader.
