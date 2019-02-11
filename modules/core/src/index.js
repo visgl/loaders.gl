@@ -2,8 +2,9 @@
 
 export {setPathPrefix, getPathPrefix} from './read-file/path-prefix';
 export {addFileAliases} from './read-file/file-aliases';
-export {readFile, readFileSync} from './read-file/read-file';
+
 export {parseFile, parseFileSync} from './parse-file/parse-file';
+export {readFile, readFileSync} from './read-file/read-file';
 export {loadFile, loadFileSync} from './load-file/load-file';
 export {loadImage} from './load-file/load-image';
 
@@ -42,10 +43,6 @@ export {
   isImage,
   getImageSize
 } from './image-utils/get-image-size';
-
-export {
-  decodeImage
-} from './image-utils/image-utils-browser';
 
 export {
   ImageBitmapLoader,
