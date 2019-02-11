@@ -22,8 +22,7 @@ if (!isBrowser) {
 }
 // END hack
 
-const window = require('global/window');
-const Blob = window.Blob;
+/* global Blob */
 
 /**
  * File system write function for the browser, similar to Node's fs.writeFile
