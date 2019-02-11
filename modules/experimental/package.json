@@ -36,6 +36,7 @@
   "sideEffects": false,
   "dependencies": {
     "@loaders.gl/core": "^0.5.4",
-    "d3-dsv": "^1.0.10"
+    "d3-dsv": "^1.0.10",
+    "filesaver.js": "^0.2.0"
   }
 }
