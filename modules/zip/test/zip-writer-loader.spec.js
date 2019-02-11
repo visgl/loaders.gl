@@ -1,6 +1,4 @@
-
-/* eslint-disable max-len */
-import test from 'tape-catch';
+import test from 'tape-promise/tape';
 import {encodeFile, parseFile, TextDecoder} from '@loaders.gl/core';
 import {ZipWriter, ZipLoader} from '@loaders.gl/zip';
 
