@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/arrow",
-  "version": "0.5.4",
+  "version": "0.6.1",
   "description": "Simple columnar table loader for the Apache Arrow format",
   "license": "MIT",
   "repository": {
@@ -34,6 +34,6 @@
   },
   "dependencies": {
     "@apache-arrow/es5-cjs": "^0.3.1",
-    "@loaders.gl/core": "^0.5.4"
+    "@loaders.gl/core": "^0.6.1"
   }
 }
