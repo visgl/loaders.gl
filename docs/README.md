@@ -1,32 +1,35 @@
 # loaders.gl
 
-A suite of portable, framework-independent loaders (parsers) for 3D point clouds, geometries, assets and geospatial formats.
+A suite of portable, framework-independent loaders (parsers) and writers (encoders), including loaders for 3D point clouds, geometries, assets and geospatial formats. In spite of the name, loaders.gl does not have any WebGL dependencies, however the format of data returned by various loaders is optimized for use with WebGL.
+
+> Note that loaders.gl is still a Work-in-Progress. We have chose to develop loaders.gl in the open because many of the loaders are already stable and useful, and we like to share direction and intentions around what we are building. You are welcome to use loaders.gl, but be aware that APIs and designs are still being fine-tuned.
+
 
 
 ## Why loaders.gl?
 
-There is today wide range of excellent open source loaders for 3D and geospatial formats available under MIT license on github and other places.
+There are many excellent open source loaders for 3D and geospatial formats available under MIT license on github etc.
 
-However, many of these loaders were created for specific 3D frameworks (e.g. THREE.js) and contains code that create framework specific classes (e.g. `THREE.Mesh`) meaning that the returned objects are not immediately usable in Javascript c.
+However, many of these loaders were created for specific frameworks (e.g. THREE.js) and contain code that depejnd on framework specific classes (e.g. a loader might do 90% framework independent work but end by creating a `THREE.Mesh`, meaning that the returned objects are not immediately usable in Javascript applications that don't use that framework).
 
-In addition, the functionality offered by each loader can vary quite a bit, e.g. in terms of the format of data they output for similar file formats, and whether they run under both browser and Node.js and worker threads etc.
+In addition, the functionality offered by each loader can vary quite a bit. The format of the parsed data is usually different, even when parsing very similar file formats, making it harder to write applications that support loading point clouds in multiple formats. Other things that differs is whether they run under both browser and Node.js and worker threads, support streaming etc, what APIs and options they provide, error handling and logging support etc.
 
-loaders.gl is an effort to collect the best loaders created by the open source community and package them in a standardized, portable, framework-independent way.
+loaders.gl is an effort to collect some of the best loaders created by the open source community and package them in a unified, portable, framework-independent way.
 
 
-## Overview
+## Contents of Loaders.gl
 
 * **Loaders** - The core functionality is a set of loaders (parsers) for various major geometry formats.
 
-* **Encoders** - In addition encoders (or writers) for selected key formats to support saving data.
+* **Writers** - A number of formats also provide writers (or encoders for selected key formats to support saving data.
 
-* **Compression** - loaders.gl includes some encoder/decoder pairs that provide specialized compression/decompression support (e.g. [DRACO](https://google.github.io/draco/) compression).
-
-* **Utilities** - Since the loaders and writers themselves only implement parsing and encoding (typically from strings or array buffers), i.e. they don't actually "load" or "save" any data, loaders.gl also provides a set of optional utility functions that perform actual loading from files, urls etc.
+* **Utilities** - Since the loaders and writers themselves only implement parsing and encoding (typically from strings or array buffers), i.e. they don't actually "load" or "save" any data, loaders.gl also provides a set of utility functions that accept loader objects perform actual loading from files, urls etc.
 
 
 
-## Main Features
+## Main Design Goals
+
+Some of the key design goals for loaders.gl.
 
 **Framework Agnosticism** - loaders.gl is not tied to any specific framework. They load data from supported file formats into clearly documented JavaScript data structures, but stops short of creating e.g. a `Mesh` object from loaded attributes. This means that in contrast to a number of other good open source loaders, loaders.gl can be used with any JavaScript framework or application.
 
@@ -34,20 +37,11 @@ loaders.gl is an effort to collect the best loaders created by the open source c
 
 **Binary Data** - Contiguous numeric arrays (e.g. mesh attributes) will be loaded using JavaScript typed arrays rather than native Arrays. Such binary arrays can be uploaded directly to GPU buffers and used for rendering or GPGPU calculations.
 
-**Loader Descriptors** - Loaders are exported as objects that include metadata such as the name of the loader, the default extension, an optional test function and of course the parser function for the format. This allows applications to work with multiple loaders in a unified way, even allowing loaders.gl to automatically pick the right loader for a file.
+**Loader Objects** - Loaders are exported as objects that include metadata such as the name of the loader, the default extension, an optional test function and of course the parser function for the format. This allows applications to work with multiple loaders in a unified way, even allowing loaders.gl to automatically pick the right loader for a file.
 
 **Optimized for Tree Shaking** - Each loader's metadata object is an independent named export, meaning that any loaders not explicitly imported by the application will be removed from the application bundle during tree-shaking.
 
-**Works both on Browsers and Node.js** - TextEncoder polyfills? ArrayBuffers vs Buffers? Whether working with isomorpic applications, writing test suites etc, it is always great to know that running under Node is supported.
-
-
-## Advantages
-
-Some secondary attributes of loaders in this framework:
-
-**Separates Parsing from Loading** - Applications can take full control of how data is requested/loaded and still use loader.gl's parsers.
-
-**Data Normalization** - Especially for geospatial formats, the raw loaded data can have a lot of variations (e.g. `[lng, lat]` vs `{lat, lng}`). loaders.gl offers `normalize` options that lets your application work with data in a more consistent format across multiple loaders.
+**Works in Browsers, Worker Threads and Node.js** - TextEncoder polyfills? ArrayBuffers vs Buffers? Whether optimizing interactivity, working with isomorpic applications, writing test suites etc, you'll know that running loaders on worker threads and Node is supported.
 
 
 ## Licenses
@@ -64,9 +58,9 @@ Also check each loader directory for additional details, we strive to keep intac
 
 ## Support
 
-loaders.gl are part of the vis.gl framework ecosystem, and were mainly created to support various frameworks and apps within these frameworks.
+loaders.gl is part of the vis.gl framework ecosystem, and was mainly created to support various frameworks and apps within these frameworks such as luma.gl and deck.gl, but is intentionally designed in a framework-agnostic way.
 
 
 ## Contributions
 
-Warmly welcomed, as long as they are reasonably aligned with the goals and principles outlined above.
+Warmly welcomed, as long as they are reasonably aligned with the goals and principles outlined above. PRs and discussions around making loaders.gl more generally useful to non-vis.gl are welcome.
