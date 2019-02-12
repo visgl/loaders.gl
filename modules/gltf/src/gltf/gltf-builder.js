@@ -1,7 +1,10 @@
 /* eslint-disable camelcase, max-statements */
 import GLBBuilder from '../glb/glb-builder';
 import packBinaryJson from '../packed-json/pack-binary-json';
-import {assert} from '@loaders.gl/core';
+import {
+  assert,
+  getImageSize
+} from '@loaders.gl/core';
 
 // Ideally we should just use KHR_draco_mesh_compression, but it requires saving uncompressed data?
 // TODO: until the ideal, we need to export these
@@ -36,8 +39,8 @@ export default class GLTFBuilder extends GLBBuilder {
   // Add an extra application-defined key to the top-level data structure
   // By default packs JSON by extracting binary data and replacing it with JSON pointers
   addApplicationData(key, data, packOptions = {}) {
-    const packedJson = !packOptions.nopack && packBinaryJson(data, this, packOptions);
-    this.json[key] = packedJson;
+    const jsonData = packOptions.nopack ? data : packBinaryJson(data, this, packOptions);
+    this.json[key] = jsonData;
     return this;
   }
 
@@ -199,5 +202,34 @@ export default class GLTFBuilder extends GLBBuilder {
 
     this.json.meshes.push(glTFMesh);
     return this.json.meshes.length - 1;
+  }
+
+  // Adds a binary image. Builds glTF "JSON metadata" and saves buffer reference
+  // Buffer will be copied into BIN chunk during "pack"
+  // Currently encodes as glTF image
+  addImage(imageData) {
+    const bufferViewIndex = this.addBufferView(imageData);
+
+    // Get the properties of the image to add as metadata.
+    const sizeAndType = getImageSize(imageData) || {};
+    if (sizeAndType) {
+      // width and height are non-spec fields
+      const {mimeType, width, height} = sizeAndType;
+      this.json.images.push({
+        bufferView: bufferViewIndex,
+        mimeType,
+        width,
+        height
+      });
+    } else {
+      // TODO: Spec violation, if we are using a bufferView, mimeType must be defined
+      //       https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#images
+      //       "a reference to a bufferView; in that case mimeType must be defined."
+      this.json.images.push({
+        bufferView: bufferViewIndex
+      });
+    }
+
+    return this.json.images.length - 1;
   }
 }

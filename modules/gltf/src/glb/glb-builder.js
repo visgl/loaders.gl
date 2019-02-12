@@ -1,7 +1,6 @@
 /* eslint-disable camelcase, max-statements */
 import {
   isImage,
-  getImageSize,
   padTo4Bytes,
   copyArrayBuffer,
   copyToArray,
@@ -68,8 +67,8 @@ export default class GLBBuilder {
   // Add an extra application-defined key to the top-level data structure
   // By default packs JSON by extracting binary data and replacing it with JSON pointers
   addApplicationData(key, data, packOptions = {}) {
-    const packedJson = !packOptions.nopack && packBinaryJson(data, this, packOptions);
-    this.json[key] = packedJson;
+    const jsonData = packOptions.nopack ? data : packBinaryJson(data, this, packOptions);
+    this.json[key] = jsonData;
     return this;
   }
 
@@ -88,25 +87,9 @@ export default class GLBBuilder {
     return this.addAccessor(bufferViewIndex, Object.assign(accessorDefaults, accessor));
   }
 
-  // Adds a binary image. Builds glTF "JSON metadata" and saves buffer reference
-  // Buffer will be copied into BIN chunk during "pack"
-  // Currently encodes as glTF image
-  addImageData(imageData) {
-    const bufferViewIndex = this.addBufferView(imageData);
-
-    // Get the properties of the image to add as metadata.
-    const sizeAndType = getImageSize(imageData) || {};
-    if (sizeAndType) {
-      const {mimeType, width, height} = sizeAndType;
-      this.addImageObject(bufferViewIndex, {mimeType, width, height});
-    } else {
-      this.addImageObject(bufferViewIndex, {});
-    }
-  }
-
   // Basic glTF adders: basic memory buffer/image type fields
   // Scenegraph specific adders are placed in glTFBuilder
-  // TODO: These should be moved to glTFBuilder once addBuffer and addImageData
+  // TODO: These should be moved to glTFBuilder once addBuffer
   // have been rewritten to not depend on these.
 
   // Add one untyped source buffer, create a matching glTF `bufferView`, and return its index
@@ -143,26 +126,6 @@ export default class GLBBuilder {
     });
 
     return this.json.accessors.length - 1;
-  }
-
-  // Adds a binary image. Builds glTF "JSON metadata" and saves buffer reference
-  // Buffer will be copied into BIN chunk during "pack"
-  // TODO - this method should be renamed addImage
-  addImage(bufferViewIndex, {mimeType, width, height}) {
-    // DEPRECATED: We have renamed the addImage method, this is backwars compatibility
-    if (ArrayBuffer.isView(bufferViewIndex)) {
-      this.log.warn('GLBBuilder.addImage(): renamed to GLBBuilder.addImageData()');
-      return this.addImage(...arguments);
-    }
-
-    this.json.images.push({
-      bufferView: bufferViewIndex,
-      mimeType,
-      width,
-      height
-    });
-
-    return this.json.images.length - 1;
   }
 
   // PRIVATE
