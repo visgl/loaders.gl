@@ -111,11 +111,11 @@ export default class GLBParser {
   }
 
   getImage(glTFImage) {
-    /* global window, Blob, Image */
+    /* global self, Blob, Image */
     const arrayBufferView = this.getBufferView(glTFImage.bufferView);
     const mimeType = glTFImage.mimeType || 'image/jpeg';
     const blob = new Blob([arrayBufferView], {type: mimeType});
-    const urlCreator = window.URL || window.webkitURL;
+    const urlCreator = self.URL || self.webkitURL;
     const imageUrl = urlCreator.createObjectURL(blob);
     const img = new Image();
     img.src = imageUrl;
@@ -123,12 +123,12 @@ export default class GLBParser {
   }
 
   getImageAsync(glTFImage) {
-    /* global window, Blob, Image */
+    /* global self, Blob, Image */
     return new Promise(resolve => {
       const arrayBufferView = this.getBufferView(glTFImage.bufferView);
       const mimeType = glTFImage.mimeType || 'image/jpeg';
       const blob = new Blob([arrayBufferView], {type: mimeType});
-      const urlCreator = window.URL || window.webkitURL;
+      const urlCreator = self.URL || self.webkitURL;
       const imageUrl = urlCreator.createObjectURL(blob);
       const img = new Image();
       img.onload = () => resolve(img);
