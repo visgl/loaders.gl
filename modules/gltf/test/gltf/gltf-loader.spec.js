@@ -2,7 +2,7 @@
 import test from 'tape-promise/tape';
 
 import {deepCopy} from 'test/setup';
-import {readFileSync} from '@loaders.gl/core';
+import {parseFileSync, readFileSync} from '@loaders.gl/core';
 import {GLBParser, GLTFLoader, GLTFParser} from '@loaders.gl/gltf';
 import path from 'path';
 
@@ -34,5 +34,17 @@ test('GLTFParser#parse binary', t => {
   const gltf = new GLTFParser().parse(json);
   t.ok(gltf, 'GLTFParser returned parsed data');
 
+  t.end();
+});
+
+test('GLTFParser#parseFileSync binary', t => {
+  const data = parseFileSync(GLTF_BINARY, GLTFLoader);
+  t.ok(data.asset, 'GLTFLoader returned parsed data');
+  t.end();
+});
+
+test('GLTFParser#parseFileSync text', t => {
+  const data = parseFileSync(GLTF_JSON, GLTFLoader);
+  t.ok(data.asset, 'GLTFLoader returned parsed data');
   t.end();
 });
