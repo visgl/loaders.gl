@@ -44,7 +44,7 @@ function dumpFile(filename) {
 
   const arrayBuffer = toArrayBuffer(binary);
 
-  const data = new GLBParser(arrayBuffer).parse({ignoreMagic: true}).getJSON();
+  const data = new GLBParser().parse(arrayBuffer, {ignoreMagic: true}).getJSON();
 
   if (options.dumpGLTF) {
     dumpGLTFScenes(data);
@@ -97,8 +97,8 @@ function logObject(field, object) {
 // GLTF
 
 function dumpGLTFScenes(data) {
-  const gltfParser = new GLTFParser(data);
-  const gltf = gltfParser.resolve();
+  const gltfParser = new GLTFParser();
+  const gltf = gltfParser.parse(data);
   if (gltf.asset) {
     console.log(JSON.stringify(gltf.asset, null, 2));
   }

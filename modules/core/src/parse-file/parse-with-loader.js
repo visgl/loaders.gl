@@ -45,7 +45,7 @@ export function parseWithLoaderSync(data, loader, options = {}, url) {
   normalizeLegacyLoaderObject(loader);
 
   // First check for synchronous parsers
-  if (loader.parseTextSync) {
+  if (loader.parseTextSync && typeof data === 'string') {
     return loader.parseTextSync(data, options);
   }
   if (loader.parseSync) {
