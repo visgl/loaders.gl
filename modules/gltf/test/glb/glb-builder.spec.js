@@ -152,6 +152,26 @@ test('GLBBuilder#encode complex', t => {
   t.end();
 });
 
+// TODO(twojtasz): I removed the addImageEntry as this is a GLTF property change
+// I think this test may be redundant with GLTF tests
+test.skip('GLBBuilder#addImageEntry', t => {
+  const builder = new GLBBuilder();
+  const firstImageIndex = builder.addImageEntry(3, {mimeType: 'image/png', width: 100, height: 101});
+  const secondImageIndex = builder.addImageEntry(2, {mimeType: 'image/png', width: 200, height: 201});
+
+  t.equal(builder.json.images.length, 2, 'images has 2 entries');
+
+  t.equal(firstImageIndex, 0, 'first addImageEntry has image index of 0');
+  const expectedFirst = {bufferView: 3, width: 100, height: 101, mimeType: 'image/png'};
+  t.deepEqual(builder.json.images[0], expectedFirst, 'first images entry matches');
+
+  t.equal(secondImageIndex, 1, 'second addImageEntry has image index of 1');
+  const expectedSecond = {bufferView: 2, width: 200, height: 201, mimeType: 'image/png'};
+  t.deepEqual(builder.json.images[1], expectedSecond, 'second images entry matches');
+
+  t.end();
+});
+
 test('pack-and-unpack-binary-buffers', t => {
   const glbBuilder = new GLBBuilder();
 
