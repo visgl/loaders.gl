@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/images",
-  "version": "0.5.0",
+  "version": "0.6.2",
   "description": "Framework-independent loaders and writers for images (PNG, JPG, ...)",
   "license": "MIT",
   "repository": {

@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/las",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "Framework-independent loader for the LAS and LAZ formats",
   "license": "MIT",
   "publishConfig": {
@@ -37,6 +37,6 @@
   },
   "sideEffects": false,
   "dependencies": {
-    "@loaders.gl/core": "^0.6.1"
+    "@loaders.gl/core": "^0.6.2"
   }
 }
