@@ -1,3 +1,5 @@
+import './async-iterator-utils/async-iterator.spec';
+
 import './binary-utils/text-encoder.spec';
 import './binary-utils/binary-utils.spec';
 import './binary-utils/flatten.spec';

@@ -1,9 +1,12 @@
 import parseWithWorker from '../worker-utils/parse-with-worker';
 import NullLog from '../log-utils/null-log';
+import assert from '../utils/assert';
 
 // TODO: support progress and abort
 // TODO: support moving loading to worker
 export function parseWithLoader(data, loader, options = {}, url) {
+  validateLoaderObject(loader);
+
   // Normalize options
   options = addDefaultParserOptions(options, loader);
 
@@ -38,6 +41,8 @@ export function parseWithLoader(data, loader, options = {}, url) {
 }
 
 export function parseWithLoaderSync(data, loader, options = {}, url) {
+  validateLoaderObject(loader);
+
   // Normalize options
   options = addDefaultParserOptions(options, loader);
 
@@ -87,6 +92,13 @@ function addDefaultParserOptions(options, loader) {
   }
 
   return options;
+}
+
+function validateLoaderObject(loader) {
+  const hasParser = loader.parseTextSync || loader.parseText ||
+    loader.parseSync || loader.parse || loader.loadAndParse ||
+    loader.parseStream || loader.worker;
+  assert(hasParser);
 }
 
 // Converts v0.5 loader object to v1.0

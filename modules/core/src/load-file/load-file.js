@@ -2,14 +2,15 @@ import {readFile, readFileSync} from '../read-file/read-file';
 import {parseFile, parseFileSync} from '../parse-file/parse-file';
 import {autoDetectLoader} from '../parse-file/auto-detect-loader';
 
-export function loadFile(url, loaders, options) {
+export async function loadFile(url, loaders, options) {
   const loader = Array.isArray(loaders) ? autoDetectLoader(url, null, loaders) : loaders;
   // Some loaders can not separate reading and parsing of data (e.g ImageLoader)
   if (loader.loadAndParse) {
-    return loader.loadAndParse(url, options);
+    return await loader.loadAndParse(url, options);
   }
-  return readFile(url, options)
-    .then(text => parseFile(text, url, loaders, options));
+  // at this point, data can be binary or text
+  const data = await readFile(url, options);
+  return parseFile(data, loaders, options, url);
 }
 
 export function loadFileSync(url, loaders, options) {

@@ -1,26 +1,30 @@
-// Simple file alias mechanism for tests. Usage:
-//
-// addFileAliases(TEST_DATA_DIR, {
-//   'img1-preview.png': isBrowser && require('../../data/images/img1-preview.png'),
-//   'img1-preview.jpeg': isBrowser && require('../../data/images/img1-preview.jpeg'),
-//   'img1-preview.gif': isBrowser && require('../../data/images/img1-preview.gif'),
-//   'img1-preview.bmp': isBrowser && require('../../data/images/img1-preview.bmp'),
-//   'img1-preview.tiff': isBrowser && require('../../data/images/img1-preview.tiff')
-// });
+// Simple file alias mechanisms for tests.
 
+let pathPrefix = '';
 const fileAliases = {};
 
-export function addFileAliases(path, aliases) {
-  for (const key in aliases) {
-    const data = aliases[key];
-    if (data) {
-      // Concatenate path
-      const filename = `${path}/${key}`.replace('//', '/');
-      fileAliases[filename] = aliases[key];
-    }
-  }
+/*
+ * Set a relative path prefix
+ */
+export function setPathPrefix(prefix) {
+  pathPrefix = prefix;
 }
 
-export function getFileAlias(uri) {
-  return fileAliases[uri];
+export function getPathPrefix() {
+  return pathPrefix;
+}
+
+export function addAliases(aliases) {
+  Object.assign(fileAliases, aliases);
+}
+
+export function resolvePath(filename) {
+  for (const alias in fileAliases) {
+    if (filename.startsWith(alias)) {
+      const replacement = fileAliases[alias];
+      return filename.replace(alias, replacement);
+    }
+  }
+  filename += pathPrefix;
+  return filename;
 }

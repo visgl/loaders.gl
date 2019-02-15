@@ -5,6 +5,7 @@ dist-min/*
 dist-buble/*
 **/dist/*
 
+.reify-cache
 _docs/
 .nyc_output/
 coverage/
@@ -27,3 +28,4 @@ TODO
 
 # editor files
 .idea
+

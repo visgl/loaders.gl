@@ -1,5 +1,5 @@
 /* global XMLHttpRequest */
-import {getPathPrefix} from '@loaders.gl/core';
+import {resolvePath} from '@loaders.gl/core';
 
 // Supports loading (requesting) assets with XHR (XmlHttpRequest)
 const XHR_STATES = {
@@ -104,8 +104,7 @@ export function requestFile(url, opts) {
     opts = url;
     url = opts.url;
   }
-  const pathPrefix = getPathPrefix();
-  opts.url = pathPrefix ? pathPrefix + url : url;
+  opts.url = resolvePath(url);
   const xhr = new XHR(opts);
   return xhr.sendAsync();
 }
