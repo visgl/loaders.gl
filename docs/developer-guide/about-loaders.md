@@ -1,16 +1,27 @@
-# About Loaders
+# Creating New Loaders
+
+> This is an overview, see the  a detailed specification of the [loader object format API reference](docs/api-reference/specifications/writer-object-formats).
 
 loaders.gl has parser functions that use so called "loaders" (or "loader objects") to convert the raw data loaded from files into parsed objects. Each loader object encapsulates a loader for one file format and essentially provides a parsing function and some metadata (like the loader name, common file extensions for the format etc). Loader object can be passed into utility functions in the loaders.gl core API to enable parsing of the chosen format.
 
 loaders.gl provides a suite of pre-built loader objects packaged as scoped npm modules. Your application can install and combine these as desired. It is also easy to create your own loader objects, e.g. if you have existing javascript loaders that you would like to use with the loaders.gl core utility functions.
 
-
 ### Common Fields
+
+You would give a name to the loader object, define what file extension(s) it uses.
+
 
 | Field           | Type        | Default    | Description |
 | ---             | ---         | ---        | ---         |
 | `name`          | `String`    | Required   | Short name of the loader ('OBJ', 'PLY' etc) |
 | `extension`     | `String`    | Required   | Three letter (typically) extension used by files of this format |
+
+
+
+### Test Function
+
+| Field           | Type        | Default    | Description |
+| ---             | ---         | ---        | ---         |
 | `testText`      | `Function`  | `null`     | Guesses if a file is of this format by examining the first characters in the file |
 
 

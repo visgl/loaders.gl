@@ -2,33 +2,34 @@
 
 Decodes a mesh or point cloud (maps of attributes) using [DRACO compression](https://google.github.io/draco/) compression.
 
+| Loader                     | Characteristic |
+| ---                        | ---            |
+| File Extension             | `.drc`         |
+| File Type                  | Binary         |
+| File Format                | [Draco(https://google.github.io/draco/)] |
+| Parser Category            | [Mesh](docs/api-reference/mesh-loaders/category-mesh.md) |
+| Parser Type                | Synchronous    |
+| Worker Thread Support      | Yes            |
+| Streaming Support          | No             |
+
 
 ## Usage
 
 ```
 import {DracoLoader} from `@loaders.gl/draco';
+import {loadFile} from '@loaders.gl/core';
 
-new DracoLoader();
+const data = await loadFile(url, DracoLoader, options);
 ```
 
+## Options
+
+N/A
 
 ## Structure of Loaded Data
 
 `DracoLoader` loads a single primitive geometry for a point cloud or mesh and the return data follows the conventions for those categories.
 
+## Attribution/Credits
 
-## Methods
-
-### constructor
-
-Creates a `DracoLoader` instance.
-
-
-### decodeMesh(dracoMesh: ArrayBuffer) : Object
-
-Decodes an encoded DRACO mesh into a map of attributes
-
-
-### decodePointCloud(dracoPointCloud: ArrayBuffer) : Object
-
-Decodes an encoded DRACO point cloud into a map of attributes
+Based on Draco examples

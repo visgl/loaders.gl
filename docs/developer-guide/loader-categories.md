@@ -5,10 +5,8 @@ loaders.gl defines "categories" of loaders that load very similar data (e.g. poi
 
 Currently defined categories:
 
-* GLTF
-* Point Clouds
-* Meshes (overlaps with Point Clouds and shares format)
-* Geospatial
+* Meshes/Point Cloud (overlaps with Point Clouds and shares format)
+* GeoJSON
 
 
 ## Common Format of Loaded Data

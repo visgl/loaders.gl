@@ -9,8 +9,8 @@ Decodes a Zip Archive into a file map.
 | Category         | Archive        |
 | Data             | "File Map"     |
 | Parser Type      | Asynchronous   |
-| Worker Thread    | TBD            |
-| Streaming        | TBD            |
+| Worker Thread    | No             |
+| Streaming        | No             |
 
 
 ## Usage
@@ -19,14 +19,11 @@ Decodes a Zip Archive into a file map.
 import {parseFile} from '@loaders.gl/core';
 import {ZipLoader} from '@loaders.gl/zip';
 
-parseFile(arrayBuffer, ZipLoader))
-.then(fileMap => {
-  for (const fileName in FILE_MAP) {
-    const fileData = fileMap[key];
-    // Do something with the subfile
-  }
-})
-.catch(error => ...);
+const fileMap =  await parseFile(arrayBuffer, ZipLoader);
+for (const fileName in FILE_MAP) {
+  const fileData = fileMap[key];
+  // Do something with the subfile
+}
 ```
 
 
@@ -47,4 +44,4 @@ Options are forwarded to [JSZip.loadAsync](https://stuk.github.io/jszip/document
 
 ## Attributions
 
-This loader object is a wrapper for the [JSZip module](https://stuk.github.io/jszip/). JSZip has extensive documentation on options (and more functionality than this loader object can expose).
+ZipLoader is a wrapper around the [JSZip module](https://stuk.github.io/jszip/). JSZip has extensive documentation on options (and more functionality than this loader object can expose).

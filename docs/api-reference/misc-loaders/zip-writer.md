@@ -5,30 +5,28 @@ Encodes a filemap into a Zip Archive. Returns an `ArrayBuffer` that is a valid Z
 | Loader           | Characteristic |
 | ---              | ---            |
 | File Extension   | `.zip`         |
-| File Format      | Binary         |
+| File Type        | Binary         |
+| File Format      | [Zip Format](https://en.wikipedia.org/wiki/Zip_(file_format)) |
 | Category         | Archive        |
 | Data             | "File Map"     |
 | Parser Type      | Asynchronous   |
-| Worker Thread    | No - TBD       |
-| Streaming        | No - TBD       |
+| Worker Thread    | No             |
+| Streaming        | No             |
 
 
 ## Usage
 
-
-```
-import {encodeFile} from '@loaders.gl/core';
+```js
+import {encodeFile, writeFile} from '@loaders.gl/core';
 import {ZipWriter} from '@loaders.gl/zip';
 
 const FILEMAP = {
-	filename1: arrayBuffer1,
-	'directory/filename2': ...
+  filename1: arrayBuffer1,
+  'directory/filename2': ...
 };
 
-encodeFile(FILE_MAP, ZipWriter)
-	.then(arrayBuffer => writeFile(zipFileName, arrayBuffer))
-	.catch(error => ...);
-});
+const arrayBuffer = await encodeFile(FILE_MAP, ZipWriter)
+writeFile(zipFileName, arrayBuffer);
 ```
 
 
@@ -36,8 +34,6 @@ encodeFile(FILE_MAP, ZipWriter)
 
 The file map is an object with keys representing file names or relative paths in the zip file, and values being the contents of each sub file (either `ArrayBuffer` or `String`).
 
-
-## Output
 
 
 ## Options
@@ -47,4 +43,4 @@ Options are forwarded to [JSZip.generateAsync](https://stuk.github.io/jszip/docu
 
 ## Attributions
 
-This writer object is a wrapper for the [JSZip module](https://stuk.github.io/jszip/). JSZip has extensive documentation on options (and more functionality than this writer object can expose).
+ZipWriter is a wrapper around the [JSZip module](https://stuk.github.io/jszip/). JSZip has extensive documentation on options (and more functionality than this writer object can expose).
