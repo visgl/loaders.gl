@@ -19,26 +19,24 @@
 // THE SOFTWARE.
 import test from 'tape';
 
-import TestRender from './test-utils/test-render';
+import {setParameters} from 'luma.gl';
+import {SnapshotTestRunner} from '@luma.gl/test-utils';
 import {TEST_CASES} from './test-cases';
 
-test('RenderTest', t => {
-  t.timeoutAfter(TEST_CASES.length * 2000);
+const TOTAL_TIMEOUT = TEST_CASES.reduce((t, testCase) => t + (testCase.timeout || 2000), 0);
 
-  new TestRender({
-    width: 800,
-    height: 450,
-    onTestStart: testCase => t.comment(testCase.name),
-    onTestResult: (testCase, result) => {
-      if (result.error) {
-        t.fail(result.error);
-      } else {
-        t.ok(result.success, `match: ${result.matchPercentage}`);
-      }
-    }
-  })
+test.only('RenderTest', t => {
+  t.timeoutAfter(TOTAL_TIMEOUT);
+
+  new SnapshotTestRunner({width: 800, height: 450})
     .add(TEST_CASES)
-    .run()
+    .run({
+      onTestStart: testCase => t.comment(testCase.name),
+      onTestPass: (testCase, result) =>
+        t.pass(`match: ${result.matchPercentage}`),
+      onTestFail: (testCase, result) =>
+        t.fail(result.error || `match: ${result.matchPercentage}`)
+    })
     .catch(t.fail)
     .finally(t.end);
 });
