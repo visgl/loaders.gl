@@ -1,4 +1,5 @@
 /* global Image, Blob, createImageBitmap */
+import {readFile} from '../read-file/read-file';
 
 // Specifically loads an ImageBitmap (works on newer browser main and worker threads)
 export const ImageBitmapLoader = {
@@ -26,17 +27,25 @@ function parseToImageBitmap(arrayBuffer) {
 }
 
 function loadToHTMLImage(url, options) {
-  return new Promise((resolve, reject) => {
+  let promise;
+  if (/\.svg((\?|#).*)?$/.test(url)) {
+    // is SVG
+    promise = readFile(url, {dataType: 'text'})
+      .then(xml => `data:image/svg+xml;charset=utf-8,${xml}`);
+  } else {
+    promise = Promise.resolve(url);
+  }
+  return promise.then(src => new Promise((resolve, reject) => {
     try {
       const image = new Image();
       image.onload = () => resolve(image);
-      image.onerror = () => reject(new Error(`Could not load image ${url}.`));
+      image.onerror = (err) => reject(new Error(`Could not load image ${url}: ${err}`));
       image.crossOrigin = (options && options.crossOrigin) || 'anonymous';
-      image.src = url;
+      image.src = src;
     } catch (error) {
       reject(error);
     }
-  });
+  }));
 }
 
 function parseToPlatformImage(arrayBuffer) {
