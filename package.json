@@ -22,6 +22,9 @@
   "workspaces": [
     "modules/*"
   ],
+  "browser": {
+    "module-alias": false
+  },
   "scripts": {
     "start": "echo 'Please see loaders.gl website for how to run examples' && open https://uber-web.github.io/loaders.gl/#/docs/overview/introduction",
     "bootstrap": "scripts/bootstrap.sh",
