@@ -1,6 +1,6 @@
 # ArrowLoader (Experimental)
 
-A simple non-streaming loader for the Apache Arrow columnar table format.
+A simple non-streaming loader for the Apache Arrow columnar table format. Apache Arrow is an emerging standard for large in-memory columnar data.
 
 | Loader                     | Characteristic |
 | ---                        | ---            |

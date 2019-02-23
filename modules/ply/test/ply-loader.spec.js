@@ -1,10 +1,10 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
 import {
-  readFile, parseFileSync, parseFile, loadFile,
+  readFile, parseFileSync, parseFile, loadFile, createReadStream, getStreamIterator,
   getGLTFAttribute
 } from '@loaders.gl/core';
-import {PLYLoader, PLYWorkerLoader} from '@loaders.gl/ply';
+import {PLYLoader, PLYWorkerLoader, PLYStreamingLoader} from '@loaders.gl/ply';
 
 import {validateLoadedData} from 'test/common/conformance';
 
@@ -62,5 +62,17 @@ test('PLYLoader#parse(WORKER)', async t => {
 
   validateLoadedData(t, data);
   t.equal(getGLTFAttribute(data, 'POSITION').value.length, 107841, 'POSITION attribute was found');
+  t.end();
+});
+
+test('PLYLoader#parseStream(text)', async t => {
+  const stream = await createReadStream('@loaders.gl/ply/../data/cube_att.ply');
+
+  const data = await PLYStreamingLoader.parseAsIterator(getStreamIterator(stream));
+
+  validateLoadedData(t, data);
+  t.equal(data.indices.value.length, 36, 'Indices found');
+  t.equal(getGLTFAttribute(data, 'POSITION').value.length, 72, 'POSITION attribute was found');
+  t.equal(getGLTFAttribute(data, 'NORMAL').value.length, 72, 'NORMAL attribute was found');
   t.end();
 });

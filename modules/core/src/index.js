@@ -97,3 +97,16 @@ export {
 // INTERNAL UTILS
 export {getMeshSize as _getMeshSize} from './mesh-utils/mesh-utils';
 export {autoDetectLoader as _autoDetectLoader} from './parse-file/auto-detect-loader';
+
+export {
+  isPromise, isIterable, isAsyncIterable,
+  forEach,
+  concatenateAsyncIterator,
+  lineIterator, lineAsyncIterator,
+  textDecoderIterator, textDecoderAsyncIterator,
+  numberedLineIterator
+} from './async-iterator-utils/async-iterator-utils';
+
+export {
+  getStreamIterator
+} from './async-iterator-utils/stream-utils';
