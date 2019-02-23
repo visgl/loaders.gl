@@ -7,7 +7,7 @@ Encodes a mesh or point cloud (maps of attributes) using [DRACO](https://google.
 | ---                        | ---            |
 | File Extension             | `.drc`         |
 | File Typoe                 | Binary         |
-| File Format                | [Draco(https://google.github.io/draco/)] |
+| File Format                | [Draco](https://google.github.io/draco/) |
 | Data Format                | [Standardized Mesh](docs/api-reference/mesh-loaders/category-mesh.md) |
 | Encoder Type               | Synchronous    |
 | Worker Thread Support      | Yes            |

@@ -6,7 +6,7 @@ This loader handles the OBJ half of the classic Wavefront OBJ/MTL format. The OB
 | ---                        | ---            |
 | File Extension             | `.obj`         |
 | File Type                  | Text           |
-| File Format                | [Wavefront OBJ file (Wikipedia)](https://en.wikipedia.org/wiki/Wavefront_.obj_file) |
+| File Format                | [Wavefront OBJ file](https://en.wikipedia.org/wiki/Wavefront_.obj_file) |
 | Data Format                | [Standardized Mesh](docs/api-reference/mesh-loaders/category-mesh.md) |
 | Encoder Type               | Synchronous    |
 | Worker Thread Support      | Yes            |

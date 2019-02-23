@@ -6,7 +6,7 @@ PLY is a computer file format known as the Polygon File Format or the Stanford T
 | ---                        | ---            |
 | File Extension             | `.ply`         |
 | File Type                  | Binary/Text    |
-| File Format                | [PLY format (Wikipedia)](https://en.wikipedia.org/wiki/PLY_(file_format)) |
+| File Format                | [PLY format](https://en.wikipedia.org/wiki/PLY_(file_format)) |
 | Data Format                | [Standardized Mesh](docs/api-reference/mesh-loaders/category-mesh.md) |
 | Encoder Type               | Synchronous    |
 | Worker Thread Support      | Yes            |

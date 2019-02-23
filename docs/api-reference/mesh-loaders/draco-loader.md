@@ -6,8 +6,8 @@ Decodes a mesh or point cloud (maps of attributes) using [DRACO compression](htt
 | ---                        | ---            |
 | File Extension             | `.drc`         |
 | File Type                  | Binary         |
-| File Format                | [Draco(https://google.github.io/draco/)] |
-| Parser Category            | [Mesh](docs/api-reference/mesh-loaders/category-mesh.md) |
+| File Format                | [Draco](https://google.github.io/draco/) |
+| Parser Category            | [Standardized Mesh](docs/api-reference/mesh-loaders/category-mesh.md) |
 | Parser Type                | Synchronous    |
 | Worker Thread Support      | Yes            |
 | Streaming Support          | No             |

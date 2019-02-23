@@ -7,7 +7,7 @@ A point cloud format defined by the [Point Cloud Library](https://en.wikipedia.o
 | ---                        | ---            |
 | File Extension             | `.pcd`         |
 | File Type                  | Text/Binary    |
-| File Format                | [PointClouds.org](http://pointclouds.org/documentation/tutorials/pcd_file_format.php) |
+| File Format                | [Point Cloud Library](http://pointclouds.org/documentation/tutorials/pcd_file_format.php) |
 | Data Format                | [Standardized Mesh](docs/api-reference/mesh-loaders/category-mesh.md) |
 | Encoder Type               | Synchronous    |
 | Worker Thread Support      | Yes            |
