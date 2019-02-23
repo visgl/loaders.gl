@@ -3,11 +3,11 @@
 Loaders such as `PCD`, `LAZ`, `PLY`, `OBJ` etc. all effectively load a "geometry" consisting of a set of "attributes", perhaps `positions`, `colors`, `normals` etc. These attributes are all typed arrays containing successive values for each "vertex".
 
 The mesh loaders do the following to standardize the loaded mesh
-
 * Provide a primitive drawing mode as a valid WebGL constant.
 * Separate indices (elements) into a separate array
 * Map all attributes and indices into a common accessor object format.
-* Provide a map of [glTF 2.0 standard attribute names](https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#geometry) in case the application desires to convert the loaded data into a fully glTF-compatible mesh.
+
+Also, to help applications manage different attribute names, mesh loaders provide a map of [glTF 2.0 standard attribute names](https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#geometry). This map could also be used to convert the loaded data into a fully glTF-compatible mesh.
 
 
 ### PointCloud/Mesh Data Structure

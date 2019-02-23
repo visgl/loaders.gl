@@ -1,13 +1,20 @@
 # PCDLoader (@loaders.gl/pcd)
 
-A point cloud format defined by the Point Cloud Library
+A point cloud format defined by the [Point Cloud Library](https://en.wikipedia.org/wiki/Point_Cloud_Library).
 
-Currently only `ascii` and `binary` subformats are supported. Compressed binary files are currently not supported.
 
-References
+| Loader                     | Characteristic |
+| ---                        | ---            |
+| File Extension             | `.pcd`         |
+| File Type                  | Text/Binary    |
+| File Format                | [Point Cloud Library](http://pointclouds.org/documentation/tutorials/pcd_file_format.php) |
+| Data Format                | [Standardized Mesh](docs/api-reference/mesh-loaders/category-mesh.md) |
+| Encoder Type               | Synchronous    |
+| Worker Thread Support      | Yes            |
+| Streaming Support          | No             |
 
-* [Point Cloud Library](https://en.wikipedia.org/wiki/Point_Cloud_Library)
-* [PointClouds.org](http://pointclouds.org/documentation/tutorials/pcd_file_format.php)
+
+Note: Currently only `ascii` and `binary` subformats are supported. Compressed binary files are currently not supported.
 
 
 ## Usage
@@ -16,11 +23,9 @@ References
 import {PCDLoader} from '@loaders.gl/pcd';
 import {loadFile} from '@loaders.gl/core';
 
-loadFile(url, PCDLoader)
-.then(({header, attributes}) => {
-  // Application code here, e.g:
-  // return new Geometry(attributes)
-});
+const {header, attributes} =  await loadFile(url, PCDLoader);
+// Application code here, e.g:
+// return new Geometry(attributes)
 ```
 
 Loads `position`, `normal`, `color` attributes.
@@ -28,7 +33,7 @@ Loads `position`, `normal`, `color` attributes.
 
 ## Attribution/Credits
 
-This loader is a light adaption of the PCDLoader example in the THREE.js code base. The THREE.js source files contain the following attributions:
+PCDLoader loader is a fork of the THREE.js PCDLoader under MIT License. The THREE.js source files contained the following attributions:
 
 * @author Filipe Caixeta / http://filipecaixeta.com.br
 * @author Mugen87 / https://github.com/Mugen87
