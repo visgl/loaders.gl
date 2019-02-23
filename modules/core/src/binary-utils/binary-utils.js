@@ -66,6 +66,3 @@ export function toBuffer(binaryData) {
 export function toDataView(buffer) {
   return new DataView(toArrayBuffer(buffer));
 }
-
-// Helper functions
-

@@ -32,7 +32,7 @@
     "build-es6": "BABEL_ENV=es6 babel src --config-file ../../babel.config.js --out-dir dist/es6 --source-maps",
     "build-esm": "BABEL_ENV=esm babel src --config-file ../../babel.config.js --out-dir dist/esm --source-maps",
     "build-es5": "BABEL_ENV=es5 babel src --config-file ../../babel.config.js --out-dir dist/es5 --source-maps",
-    "build-worker": "webpack --entry ./src/ply-loader.worker.js --output ./dist/ply-loader.worker.js --config ../../scripts/worker-webpack-config.js"
+    "build-worker": "webpack --entry ./src/workers/ply-loader.worker.js --output ./dist/ply-loader.worker.js --config ../../scripts/worker-webpack-config.js"
   },
   "sideEffects": false,
   "dependencies": {

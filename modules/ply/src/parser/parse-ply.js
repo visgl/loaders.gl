@@ -21,7 +21,8 @@
 //   }
 // });
 
-import {TextDecoder, getGLTFIndices, getGLTFAccessors, getGLTFAttributeMap} from '@loaders.gl/core';
+import {TextDecoder} from '@loaders.gl/core';
+import {standardizePLYMesh} from './normalize-ply';
 
 export default function parsePLY(data, options = {}) {
   let header;
@@ -36,53 +37,7 @@ export default function parsePLY(data, options = {}) {
     attributes = parseASCII(data, header);
   }
 
-  const vertexCount = attributes.indices.length || attributes.vertices.length / 3;
-  const normalizedAttributes = normalizeAttributes(attributes);
-
-  return {
-    loaderData: {
-      header
-    },
-    // TODO - how to detect POINT CLOUDS vs MESHES?
-    // TODO - For Meshes, PLY quadrangles must be split?
-    header: {
-      vertexCount
-    },
-    mode: normalizedAttributes.indices ?
-      4 : // TRIANGLES
-      0,  // POINTS
-    indices: getGLTFIndices(normalizedAttributes),
-    attributes: getGLTFAccessors(normalizedAttributes),
-    glTFAttributeMap: getGLTFAttributeMap(normalizedAttributes)
-  };
-}
-
-function normalizeAttributes(attributes) {
-  const accessors = {};
-
-  // mandatory attributes data
-
-  if (attributes.indices.length > 0) {
-    accessors.indices = attributes.indices;
-  }
-
-  accessors.position = {value: attributes.vertices, size: 3};
-
-  // optional attributes data
-
-  if (attributes.normals.length > 0) {
-    accessors.normal = {value: attributes.normals, size: 3};
-  }
-
-  if (attributes.uvs.length > 0) {
-    accessors.uv = {value: attributes.uvs, size: 2};
-  }
-
-  if (attributes.colors.length > 0) {
-    accessors.color = {value: attributes.colors, size: 3};
-  }
-
-  return accessors;
+  return standardizePLYMesh(header, attributes);
 }
 
 function parseHeader(data, options) {

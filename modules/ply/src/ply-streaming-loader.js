@@ -2,15 +2,13 @@
 // links: ['http://paulbourke.net/dataformats/ply/',
 // 'https://en.wikipedia.org/wiki/PLY_(file_format)']
 
-import parsePLY from './parser/parse-ply';
+import parsePLYStream from './parser/parse-ply-stream';
 
 const DEFAULT_OPTIONS = {};
 
 export default {
   name: 'PLY',
   extension: 'ply',
-  // Note: parsePLY supports both text and binary
-  parseTextSync: parsePLY,
-  parseSync: parsePLY,
+  parseAsIterator: parsePLYStream,
   DEFAULT_OPTIONS
 };
