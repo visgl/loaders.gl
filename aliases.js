@@ -40,8 +40,13 @@ const makeAliases = () => ({
 const ALIASES = makeAliases();
 
 if (module.require) {
-  const moduleAlias = module.require('module-alias');
-  moduleAlias.addAliases(ALIASES);
+  try {
+    // Note: ignored in browsers through top-level package.json
+    const moduleAlias = module.require('module-alias');
+    moduleAlias.addAliases(ALIASES);
+    // eslint-disable-next-line
+  } catch (error) {
+  }
 }
 
 module.exports = ALIASES;

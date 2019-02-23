@@ -22,6 +22,9 @@
   "workspaces": [
     "modules/*"
   ],
+  "browser": {
+    "module-alias": false
+  },
   "scripts": {
     "start": "echo 'Please see loaders.gl website for how to run examples' && open https://uber-web.github.io/loaders.gl/#/docs/overview/introduction",
     "bootstrap": "scripts/bootstrap.sh",
@@ -45,8 +48,8 @@
     "@babel/core": "^7.0.0",
     "@babel/preset-env": "^7.0.0",
     "@babel/register": "^7.0.0",
+    "@babel/plugin-transform-runtime": "^7.0.0",
     "@probe.gl/test-utils": "^3.0.0-alpha.2",
-    "@std/esm": "^0.26.0",
     "arraybuffer-loader": "^1.0.6",
     "babel-eslint": "^9.0.0",
     "babel-loader": "^8.0.0",
@@ -57,7 +60,6 @@
     "eslint": "^3.0",
     "eslint-config-uber-es2015": "^3.0.0",
     "eslint-plugin-babel": "^5.1.0",
-    "esm": "^3.2.4",
     "html-webpack-plugin": "^3.0.7",
     "lerna": "^2.9.1",
     "luma.gl": "^6.4.0",
