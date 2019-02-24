@@ -1,15 +1,12 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
 import {parseFileSync} from '@loaders.gl/core';
-// import {OBJLoader} from '@loaders.gl/obj';
+import {OBJLoader} from '@loaders.gl/obj';
 import {KMLLoader} from '@loaders.gl/kml';
 
 import KML from '@loaders.gl/kml/../data/KML_Samples.kml';
 
-const LOADERS = [
-  // OBJLoader,
-  KMLLoader
-];
+const LOADERS = [OBJLoader, KMLLoader];
 
 test('parseFileSync#autoParse', t => {
   if (!KMLLoader.supported) {
