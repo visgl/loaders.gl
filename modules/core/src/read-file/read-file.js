@@ -51,10 +51,7 @@ export function readFile(uri, options = {}) {
         return new Promise((resolve, reject) => {
           options = {...new URL(uri), ...options};
           const request = uri.startsWith('https:') ? https.request : http.request;
-          request(uri, response =>
-            concatenateReadStream(response)
-              .then(resolve, reject)
-          );
+          request(uri, response => concatenateReadStream(response).then(resolve, reject));
         });
       }
 

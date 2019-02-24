@@ -20,19 +20,23 @@ export {saveFile, saveFileSync} from './save-file/save-file';
 // BINARY UTILS
 
 export {
-  copyToArray,
-  toArrayBuffer,
-  toBuffer,
-  toDataView
-} from './binary-utils/binary-utils';
-
-export {
   TextDecoder,
   TextEncoder
 } from './binary-utils/text-encoding';
 
 export {
+  isArrayBuffer,
+  isBuffer,
+  isBlob,
+  toArrayBuffer,
+  blobToArrayBuffer,
+  toBuffer,
+  toDataView
+} from './binary-utils/binary-utils';
+
+export {
   padTo4Bytes,
+  copyToArray,
   copyArrayBuffer
 } from './binary-utils/memory-copy-utils';
 
@@ -77,19 +81,19 @@ export {isBrowser, self, window, global, document} from './utils/globals';
 export {default as createWorker} from './worker-utils/create-worker';
 export {default as _parseWithWorker} from './worker-utils/parse-with-worker';
 
-// INTERNAL UTILS
-export {getMeshSize as _getMeshSize} from './mesh-utils/mesh-utils';
-export {autoDetectLoader as _autoDetectLoader} from './parse-file/auto-detect-loader';
-
 export {
   isPromise, isIterable, isAsyncIterable,
   forEach,
   concatenateAsyncIterator,
-  lineIterator, lineAsyncIterator,
-  textDecoderIterator, textDecoderAsyncIterator,
-  numberedLineIterator
+  lineAsyncIterator,
+  textDecoderAsyncIterator,
+  numberedLineAsyncIterator
 } from './async-iterator-utils/async-iterator-utils';
 
 export {
   getStreamIterator
 } from './async-iterator-utils/stream-utils';
+
+// INTERNAL UTILS
+export {getMeshSize as _getMeshSize} from './mesh-utils/mesh-utils';
+export {autoDetectLoader as _autoDetectLoader} from './parse-file/auto-detect-loader';
