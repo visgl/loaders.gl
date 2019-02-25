@@ -3,6 +3,9 @@
   "version": "0.6.2",
   "description": "Framework-independent loaders and writers for images (PNG, JPG, ...)",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/uber-web/loaders.gl"
