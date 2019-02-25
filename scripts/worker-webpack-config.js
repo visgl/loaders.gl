@@ -16,7 +16,8 @@
 const ALIASES = require('../aliases');
 
 const BABEL_CONFIG = {
-  presets: [['@babel/env', {modules: 'commonjs'}]]
+  presets: [['@babel/env', {modules: 'commonjs'}]],
+  plugins: [['@babel/plugin-transform-runtime', {useESModules: false}]]
 };
 
 module.exports = {
@@ -31,7 +32,7 @@ module.exports = {
   module: {
     rules: [
       {
-        // Compile ES2015 using bable
+        // Compile ES2015 using babel
         test: /\.js$/,
         exclude: /node_modules/,
         use: [
@@ -43,7 +44,7 @@ module.exports = {
       }
     ]
   },
-  
+
   node: {
     fs: 'empty'
   }

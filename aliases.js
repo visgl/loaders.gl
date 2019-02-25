@@ -39,9 +39,4 @@ const makeAliases = () => ({
 
 const ALIASES = makeAliases();
 
-if (module.require) {
-  const moduleAlias = module.require('module-alias');
-  moduleAlias.addAliases(ALIASES);
-}
-
 module.exports = ALIASES;

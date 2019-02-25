@@ -10,16 +10,9 @@ const TARGETS = {
 const CONFIG = {
   default: {
     presets: [
-      ['@babel/env', {
-        targets: TARGETS
-      }]
+      // Rewritten by each target
     ],
     plugins: [
-      ['babel-plugin-inline-import', {
-        extensions: [
-          '.worker.js'
-        ]
-      }]
     ],
     ignore: [
       '**/*.worker.js'
@@ -27,13 +20,24 @@ const CONFIG = {
   }
 };
 
+const PLUGINS = [
+  ['babel-plugin-inline-import', {
+    extensions: [
+      '.worker.js'
+    ]
+  }]
+];
+
 CONFIG.es6 = Object.assign({}, CONFIG.default, {
   presets: [
     ['@babel/env', {
       targets: TARGETS,
       modules: false
     }]
-  ]
+  ],
+  plugins: PLUGINS.concat([
+    ['@babel/plugin-transform-runtime', {useESModules: true}]
+  ])
 });
 
 CONFIG.esm = Object.assign({}, CONFIG.default, {
@@ -41,7 +45,10 @@ CONFIG.esm = Object.assign({}, CONFIG.default, {
     ['@babel/env', {
       modules: false
     }]
-  ]
+  ],
+  plugins: PLUGINS.concat([
+    ['@babel/plugin-transform-runtime', {useESModules: true}]
+  ])
 });
 
 CONFIG.es5 = Object.assign({}, CONFIG.default, {
@@ -50,7 +57,10 @@ CONFIG.es5 = Object.assign({}, CONFIG.default, {
       forceAllTransforms: true,
       modules: 'commonjs'
     }]
-  ]
+  ],
+  plugins: PLUGINS.concat([
+    ['@babel/plugin-transform-runtime', {useESModules: false}]
+  ])
 });
 
 CONFIG.cover = Object.assign({}, CONFIG.default);
@@ -65,7 +75,8 @@ module.exports = function getConfig(api) {
   const config = CONFIG[env] || CONFIG.default;
   // Uncomment to debug
   // eslint-disable-next-line
-  // console.error(env, config.plugins);
+  // console.error(env, JSON.stringify(config, null, 2));
+  // throw new Error(JSON.stringify(config, null, 2));
   return config;
 };
 
