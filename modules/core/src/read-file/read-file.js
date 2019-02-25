@@ -44,9 +44,8 @@ export function readFile(uri, options = {}) {
       readFileObject(uri, options);
     }
 
-    const isRequest = uri.startsWith('http:') || uri.startsWith('https:');
-
     if (isNode) {
+      const isRequest = uri.startsWith('http:') || uri.startsWith('https:');
       if (isRequest) {
         return new Promise((resolve, reject) => {
           options = {...new URL(uri), ...options};
@@ -62,11 +61,9 @@ export function readFile(uri, options = {}) {
     }
 
     // Browser: Try to load all URLS via fetch, as they can be local requests (e.g. to a dev server)
-    if (typeof createImageBitmap === 'undefined') {
-      // In a web worker: XMLHttpRequest throws invalid URL error if using relative path
-      // resolve url relative to original base
-      uri = new URL(uri, location.pathname).href;
-    }
+    // In a web worker, XMLHttpRequest throws invalid URL error if using relative path
+    // resolve url relative to original base
+    uri = new URL(uri, location.href).href;
     return fetch(uri, options).then(res => res[options.dataType]());
 
     // return Promise.reject(new Error('Cannot load file URIs in browser'));
