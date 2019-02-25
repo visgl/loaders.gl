@@ -8,12 +8,9 @@ const path = require('path');
 const moduleAlias = require('module-alias');
 const {BrowserTestDriver} = require('@probe.gl/test-utils');
 
-// esm - Enables ES2015 import/export in Node.js.
-// TODO - can't get esm to work with module-alias
-// require = require('esm')(module, true); // true: read options from .esmrc.js
-
 // Sets up aliases in node
-require('../aliases');
+const ALIASES = require('../aliases');
+moduleAlias.addAliases(ALIASES);
 
 const mode = process.argv.length >= 3 ? process.argv[2] : 'default';
 const arg = process.argv.length >= 4 ? process.argv[3] : 'default';
