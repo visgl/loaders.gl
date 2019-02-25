@@ -47,7 +47,6 @@ const TEST_CONFIG = Object.assign({}, COMMON_CONFIG, {
     stats: {
       warnings: false
     },
-    contentBase: resolve(__dirname, '../modules'),
     quiet: true
   },
 

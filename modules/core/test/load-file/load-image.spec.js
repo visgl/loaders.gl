@@ -1,6 +1,8 @@
-import {loadImage} from '@loaders.gl/core';
+import {loadImage, resolvePath} from '@loaders.gl/core';
 
 import test from 'tape-promise/tape';
+
+const CONTENT_BASE = '@loaders.gl/core/../data/';
 
 const TEST_CASES = [
   {
@@ -12,37 +14,37 @@ Bytg0kAAAAFElEQVQIW2P8z/D/PwMDAwMjjAEAQOwF/W1Dp54AAAAASUVORK5CYII=`,
   },
   {
     title: 'PNG',
-    url: '/core/data/images/img1-preview.png',
+    url: 'images/img1-preview.png',
     width: 480,
     height: 320
   },
   {
     title: 'BMP',
-    url: '/core/data/images/img1-preview.bmp',
+    url: 'images/img1-preview.bmp',
     width: 480,
     height: 320
   },
   {
     title: 'GIF',
-    url: '/core/data/images/img1-preview.gif',
+    url: 'images/img1-preview.gif',
     width: 480,
     height: 320
   },
   {
     title: 'JPEG',
-    url: '/core/data/images/img1-preview.jpeg',
+    url: 'images/img1-preview.jpeg',
     width: 480,
     height: 320
   },
   // {
   //   title: 'TIFF',
-  //   url: '/core/data/images/img1-preview.tiff',
+  //   url: 'images/img1-preview.tiff',
   //   width: 480,
   //   height: 320
   // },
   {
     title: 'SVG',
-    url: '/core/data/images/camera.svg',
+    url: 'images/camera.svg',
     width: 72,
     height: 72
   }
@@ -50,6 +52,7 @@ Bytg0kAAAAFElEQVQIW2P8z/D/PwMDAwMjjAEAQOwF/W1Dp54AAAAASUVORK5CYII=`,
 
 function testLoadImage({title, url, width, height}) {
   test(title, t => {
+    url = url.startsWith('data:') ? url : resolvePath(CONTENT_BASE + url);
     loadImage(url).then(image => {
       t.ok(image, 'loadImage loaded data url');
       t.ok(

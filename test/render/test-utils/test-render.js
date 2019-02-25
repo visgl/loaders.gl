@@ -38,9 +38,7 @@ export default class TestRender {
     this._testCases = [];
     this._testCaseData = null;
 
-    window.browserTestDriver_isHeadless().then(isHeadless => {
-      this.isHeadless = isHeadless;
-    });
+    this.isHeadless = Boolean(window.browserTestDriver_isHeadless);
   }
 
   /**
