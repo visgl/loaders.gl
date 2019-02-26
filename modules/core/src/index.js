@@ -1,6 +1,6 @@
 // FILE PARSING AND LOADING
 
-export {addAliases, setPathPrefix, getPathPrefix, resolvePath} from './read-file/file-aliases.js';
+export {setPathPrefix, getPathPrefix, resolvePath} from './read-file/file-aliases.js';
 
 export {readFile, readFileSync} from './read-file/read-file';
 export {createReadStream} from './read-file/create-stream';

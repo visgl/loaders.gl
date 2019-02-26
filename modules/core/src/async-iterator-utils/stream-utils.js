@@ -1,5 +1,5 @@
 import {isBrowser} from '../utils/globals';
-import {concatenateArrayBuffers} from '../binary-utils/binary-utils';
+import {concatenateArrayBuffers} from '../binary-utils/memory-copy-utils';
 
 export function getStreamIterator(stream) {
   // NODE 10+: stream is an asyncIterator

@@ -1,4 +1,4 @@
-import {concatenateArrayBuffers} from '../binary-utils/binary-utils';
+import {concatenateArrayBuffers} from '../binary-utils/memory-copy-utils';
 import {TextDecoder, TextEncoder} from '../binary-utils/text-encoding';
 
 export const isPromise = x => x && (typeof x === 'object' || typeof x === 'function') &&
@@ -98,7 +98,7 @@ export async function* lineAsyncIterator(textIterator) {
  */
 // See http://2ality.com/2018/04/async-iter-nodejs.html
 // eslint-disable-next-line no-shadow
-export async function* numberedLineIterator(lineIterator) {
+export async function* numberedLineAsyncIterator(lineIterator) {
   let counter = 1;
   for await (const line of lineIterator) {
     yield {counter, line};

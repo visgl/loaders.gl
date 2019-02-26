@@ -1,6 +1,6 @@
 // Sets up aliases in loaders.gl
 const ALIASES = require('../aliases');
-const {addAliases} = require('@loaders.gl/core');
+const {addAliases} = require('@loaders.gl/core/read-file/file-aliases');
 addAliases(ALIASES);
 
 import '@loaders.gl/core/../test';
