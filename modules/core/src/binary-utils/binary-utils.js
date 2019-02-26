@@ -11,14 +11,15 @@ export function toArrayBuffer(data) {
     return data;
   }
 
-  if (ArrayBuffer.isView(data)) {
-    return data.buffer;
-  }
-
+  // TODO - per docs we should just be able to call buffer.buffer, but there are issues
   if (isBuffer(data)) {
-    // TODO - per docs we should just be able to call buffer.buffer, but there are issues
     const typedArray = new Uint8Array(data);
     return typedArray.buffer;
+  }
+
+  // Careful - Node Buffers will look like ArrayBuffers (keep after isBuffer)
+  if (ArrayBuffer.isView(data)) {
+    return data.buffer;
   }
 
   if (typeof data === 'string') {
