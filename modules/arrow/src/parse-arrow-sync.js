@@ -1,8 +1,7 @@
-// https://github.com/apache/arrow/tree/master/js#packaging
-import {Table} from '@apache-arrow/es5-cjs';
+import {Table} from 'apache-arrow';
 
 // Parses arrow to a columnar table
-export default function parseArrow(arrayBuffer, options) {
+export default function parseArrowSync(arrayBuffer, options) {
   const arrowTable = Table.from([new Uint8Array(arrayBuffer)]);
 
   // Extract columns
@@ -12,7 +11,10 @@ export default function parseArrow(arrayBuffer, options) {
   const columnarTable = {};
 
   arrowTable.schema.fields.forEach(field => {
-    columnarTable[field.name] = arrowTable.getColumn(field.name);
+    // This (is intended to) coalesce all record batches into a single typed array
+    const arrowColumn = arrowTable.getColumn(field.name);
+    const values = arrowColumn.toArray();
+    columnarTable[field.name] = values;
   });
 
   return columnarTable;
