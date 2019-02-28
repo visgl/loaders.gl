@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
 import {parseFileSync} from '@loaders.gl/core';
-// import {OBJLoader} from '@loaders.gl/obj';
+import {OBJLoader} from '@loaders.gl/obj';
 import {KMLLoader} from '@loaders.gl/kml';
 
 import KML from '@loaders.gl/kml/../data/KML_Samples.kml';
