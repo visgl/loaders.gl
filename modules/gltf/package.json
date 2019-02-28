@@ -25,6 +25,7 @@
   "files": [
     "src",
     "dist",
+    "bin",
     "README.md"
   ],
   "bin": {
