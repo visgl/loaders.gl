@@ -1,10 +1,10 @@
-import {isBrowser, readFile, readFileSync} from '@loaders.gl/core';
-
 import test from 'tape-promise/tape';
 
+import {isBrowser, readFile, readFileSync} from '@loaders.gl/core';
+
 const DATA_URL = 'data:,important content!';
-const BINARY_URL = `${__dirname}/../../data/files/binary-data.bin`;
-const TEXT_URL = `${__dirname}/../../data/files/hello-world.txt`;
+const BINARY_URL = '@loaders.gl/core/../data/files/binary-data.bin';
+const TEXT_URL = '@loaders.gl/core/../data/files/hello-world.txt';
 
 test('readFile#imports', t => {
   t.ok(readFile, 'readFile defined');
@@ -34,8 +34,8 @@ test('readFileSync#file (BINARY)', t => {
   }
 
   const data = readFileSync(BINARY_URL);
-  t.ok(data instanceof ArrayBuffer, 'readFile loaded local file into ArrayBuffer');
-  t.equals(data.byteLength, 4, 'readFile loaded local file length correctly');
+  t.ok(data instanceof ArrayBuffer, 'readFileSync loaded local file into ArrayBuffer');
+  t.equals(data.byteLength, 4, 'readFileSync loaded local file length correctly');
   t.end();
 });
 

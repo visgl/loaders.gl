@@ -28,7 +28,7 @@ Caveat: typed arrays that are partial views (e.g. with offsets) sometimes need s
 
 Use `TextEncoder` and `TextDecoder` in the JavaScript [string encoding/decoding library](https://github.com/inexorabletash/text-encoding).
 
-Since these class are central to using arraybuffers correctly, loaders.gl re-exports these symbols, transparently polyfilling them under Node.js.
+Since these classes are central to using ArrayBuffers correctly, loaders.gl re-exports these symbols, transparently polyfilling them under Node.js.
 
 
 ## Converting between ArrayBuffers and other Binary Formats.
@@ -45,3 +45,8 @@ Examples of semi-"binary" formats in JS:
 * array: Array of bytes (numbers between 0 and 255).
 * string (binary): string in “binary” form, 1 byte per char (2 bytes).
 * string (base64): string containing the binary data encoded in a base64 form.
+
+
+## Utilities
+
+* [BufferReader/BufferWriter](https://github.com/yuntonyx/arraybuffer-utils) - Helps keep track of current position when working with DataView's through a tightly packed binary object.

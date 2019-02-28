@@ -6,9 +6,7 @@ import {KMLLoader} from '@loaders.gl/kml';
 
 import KML from '@loaders.gl/kml/../data/KML_Samples.kml';
 
-const LOADERS = [
-  OBJLoader, KMLLoader
-];
+const LOADERS = [OBJLoader, KMLLoader];
 
 test('parseFileSync#autoParse', t => {
   if (!KMLLoader.supported) {

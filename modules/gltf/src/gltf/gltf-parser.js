@@ -193,6 +193,10 @@ export default class GLTFParser {
   }
 
   _get(array, index) {
+    // check if already resolved
+    if (typeof index === 'object') {
+      return index;
+    }
     const object = this.gltf[array] && this.gltf[array][index];
     if (!object) {
       console.warn(`glTF file error: Could not find ${array}[${index}]`); // eslint-disable-line
