@@ -31,7 +31,6 @@ export default class GLTFParser {
   }
 
   parse(gltf, optionsParam = {}) {
-
     const options = Object.assign({}, this.options, optionsParam);
 
     // GLTF can be JSON or binary (GLB)
@@ -45,11 +44,30 @@ export default class GLTFParser {
       this.json = gltf;
     }
 
-    this._loadLinkedAssets(options); // TODO - not implemented
-    // this._postProcessGLTF(options); TODO - remove done differently now
     this._resolveToTree(options);
 
     return this.gltf;
+  }
+
+  parseAsync(gltf, optionsParam = {}) {
+    const options = Object.assign({}, this.options, optionsParam);
+
+    // GLTF can be JSON or binary (GLB)
+    if (gltf instanceof ArrayBuffer) {
+      this.glbParser = new GLBParser();
+      this.gltf = this.glbParser.parse(gltf).json;
+      this.json = this.gltf;
+    } else {
+      this.glbParser = null;
+      this.gltf = gltf;
+      this.json = gltf;
+    }
+
+    // TODO: consider using async
+    return this._loadLinkedAssets(options).then(() => {
+      this._resolveToTree(options);
+      return this.gltf;
+    });
   }
 
   // Accessors
@@ -206,10 +224,34 @@ export default class GLTFParser {
 
   // PARSING HELPERS
 
+  _getFullUri(uri, base) {
+    if (uri.startsWith('data:') || uri.startsWith('http:') || uri.startsWith('https:')) {
+      return uri;
+    }
+
+    return base.substr(0, base.lastIndexOf('/') + 1) + uri;
+  }
+
   // Start loading linked assets
   _loadLinkedAssets(options) {
-    // TODO: Not implemented
-    // TODO: Return a promise?
+    const promises = [];
+
+    if (!this.glbParser) {
+      this.gltf.buffers.forEach(buffer => {
+        // TODO: handle base64 encoded files in the non-async path
+        if (buffer.uri) {
+          // TODO: Use loaders.gl readFile API so that this works on node.js as well
+          promises.push(window
+            .fetch(this._getFullUri(buffer.uri, options.uri))
+            .then(res => res.arrayBuffer())
+            .then(data => {
+              buffer.data = data;
+            }));
+        }
+      });
+    }
+
+    return Promise.all(promises);
   }
 
   _postProcessGLTF(options = {}) {
@@ -365,7 +407,24 @@ export default class GLTFParser {
     if (createImages) {
       image.image = this.glbParser.getImage(image);
     } else {
-      image.getImageAsync = () => this.glbParser.getImageAsync(image);
+      image.getImageAsync = () => {
+        if (this.glbParser) {
+          return this.glbParser.getImageAsync(image);
+        } else if (image.uri) {
+          // TODO: Maybe just return the URL?
+          // TODO: Maybe use loaders.gl/core loadImage?
+          return new Promise(resolve => {
+            /* global Image */
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => resolve(img);
+            img.src = this._getFullUri(image.uri, options.uri);
+          });
+        }
+
+        // cannot get image
+        return null;
+      };
     }
   }
 
@@ -375,6 +434,9 @@ export default class GLTFParser {
 
     if (this.glbParser) {
       bufferView.data = this.glbParser.getBufferView(bufferView);
+    } else {
+      const byteOffset = bufferView.byteOffset || 0;
+      bufferView.data = new Uint8Array(bufferView.buffer.data, byteOffset, bufferView.byteLength);
     }
   }
 
