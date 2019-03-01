@@ -2,14 +2,9 @@
 // links: ['http://paulbourke.net/dataformats/ply/',
 // 'https://en.wikipedia.org/wiki/PLY_(file_format)']
 
-import parsePLY from './parse-ply';
+import parsePLY from './parser/parse-ply';
 
-const DEFAULT_OPTIONS = {
-  normalize: true,
-  faceNormal: true,
-  vertexNormal: true,
-  flip: true
-};
+const DEFAULT_OPTIONS = {};
 
 export default {
   name: 'PLY',
