@@ -22,15 +22,3 @@ test('async-iterator', async t => {
     }
   }
 });
-
-/*
-test('async-iterator#chained', async t => {
-  const asyncIterator = asyncNumbers();
-  for await (const number of asyncIterator) {
-    t.comment(`async iterating over first ${number}`);
-    if (number > 2) {
-      break;
-    }
-  }
-}
-*/
