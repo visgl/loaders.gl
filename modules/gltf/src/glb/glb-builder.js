@@ -211,7 +211,7 @@ export default class GLBBuilder {
     dataView.setUint32(binChunkOffset + 4, MAGIC_BIN, LE); // Chunk type
     copyArrayBuffer(glbArrayBuffer, binChunk, binChunkOffset + GLB_CHUNK_HEADER_SIZE);
     for (let i = 0; i < binChunkLengthPadded - binChunk.byteLength; ++i) {
-      // json chunk is padded with spaces (ASCII 0x20)
+      // bin chunk is padded with zeroes
       dataView.setUint8(binChunkOffset + GLB_CHUNK_HEADER_SIZE + binChunk.byteLength + i, 0);
     }
 
