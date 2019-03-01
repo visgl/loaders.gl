@@ -1,5 +1,5 @@
-import {readFile, loadFile, createReadStream, getStreamIterator} from '@loaders.gl/core';
-import {PLYLoader, PLYWorkerLoader, PLYStreamingLoader} from '@loaders.gl/ply';
+import {readFile, loadFile} from '@loaders.gl/core';
+import {PLYLoader, PLYWorkerLoader} from '@loaders.gl/ply';
 
 export default function PLYLoaderBench(bench) {
 
@@ -15,10 +15,6 @@ export default function PLYLoaderBench(bench) {
       // Duplicate it here to avoid breaking other tests
       const arrayBuffer = await readFile('@loaders.gl/ply/../data/bun_zipper.ply');
       await loadFile(arrayBuffer, PLYWorkerLoader);
-    })
-    .addAsync('Stream parsing', async () => {
-      const stream = await createReadStream('@loaders.gl/ply/../data/cube_att.ply');
-      await PLYStreamingLoader.parseAsIterator(getStreamIterator(stream));
     })
 
     .group('PLYLoader (Binary)')
