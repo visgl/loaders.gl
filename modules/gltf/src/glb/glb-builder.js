@@ -11,7 +11,9 @@ import {
 
 import packBinaryJson from '../packed-json/pack-binary-json';
 
-const MAGIC_glTF = 0x676c5446; // glTF in Big-Endian ASCII
+const MAGIC_glTF = 0x46546C67; // glTF in Little-Endian ASCII
+const MAGIC_JSON = 0x4E4F534A; // JSON in Little-Endian ASCII
+const MAGIC_BIN = 0x004E4942; // BIN\0 in Little-Endian ASCII
 
 const LE = true; // Binary GLTF is little endian.
 const BE = false; // Magic needs to be written as BE
@@ -191,25 +193,26 @@ export default class GLBBuilder {
     const dataView = new DataView(glbArrayBuffer);
 
     // GLB Header
-    dataView.setUint32(0, MAGIC_glTF, BE); // Magic number (the ASCII string 'glTF').
+    dataView.setUint32(0, MAGIC_glTF, LE); // Magic number (the ASCII string 'glTF').
     dataView.setUint32(4, 2, LE); // Version 2 of binary glTF container format uint32
     dataView.setUint32(8, fileLength, LE); // Total byte length of generated file (uint32)
 
     // Write the JSON chunk
     dataView.setUint32(12, jsonChunk.byteLength, LE); // Byte length of json chunk (uint32)
-    dataView.setUint32(16, 0, LE); // Chunk format as uint32 (JSON is 0)
+    dataView.setUint32(16, MAGIC_JSON, LE); // Chunk type
     copyArrayBuffer(glbArrayBuffer, jsonChunk, jsonChunkOffset);
-
-    // TODO - Add spaces as padding to ensure scene is a multiple of 4 bytes.
-    // for (let i = jsonChunkLength + 20; i < binChunkOffset; ++i) {
-    //   glbFileArray[i] = 0x20;
-    // }
+    for (let i = 0; i < jsonChunkLength - jsonChunk.byteLength; ++i) {
+      dataView.setUint8(jsonChunkOffset + jsonChunk.byteLength + i, 0x20); // json chunk is padded with spaces (ASCII 0x20)
+    }
 
     // Write the BIN chunk
     const binChunkLengthPadded = padTo4Bytes(binChunk.byteLength);
     dataView.setUint32(binChunkOffset + 0, binChunkLengthPadded, LE); // Byte length BIN (uint32)
-    dataView.setUint32(binChunkOffset + 4, 1, LE); // Chunk format as uint32 (BIN is 1)
+    dataView.setUint32(binChunkOffset + 4, MAGIC_BIN, LE); // Chunk type
     copyArrayBuffer(glbArrayBuffer, binChunk, binChunkOffset + GLB_CHUNK_HEADER_SIZE);
+    for (let i = 0; i < binChunkLengthPadded - binChunk.byteLength; ++i) {
+      dataView.setUint8(binChunkOffset + GLB_CHUNK_HEADER_SIZE + binChunk.byteLength + i, 0); // bin chunk is padded with 0x0
+    }
 
     return glbArrayBuffer;
   }
