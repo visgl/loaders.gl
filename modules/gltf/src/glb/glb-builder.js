@@ -16,7 +16,6 @@ const MAGIC_JSON = 0x4E4F534A; // JSON in Little-Endian ASCII
 const MAGIC_BIN = 0x004E4942; // BIN\0 in Little-Endian ASCII
 
 const LE = true; // Binary GLTF is little endian.
-const BE = false; // Magic needs to be written as BE
 
 const GLB_FILE_HEADER_SIZE = 12;
 const GLB_CHUNK_HEADER_SIZE = 8;
@@ -202,7 +201,8 @@ export default class GLBBuilder {
     dataView.setUint32(16, MAGIC_JSON, LE); // Chunk type
     copyArrayBuffer(glbArrayBuffer, jsonChunk, jsonChunkOffset);
     for (let i = 0; i < jsonChunkLength - jsonChunk.byteLength; ++i) {
-      dataView.setUint8(jsonChunkOffset + jsonChunk.byteLength + i, 0x20); // json chunk is padded with spaces (ASCII 0x20)
+      // json chunk is padded with spaces (ASCII 0x20)
+      dataView.setUint8(jsonChunkOffset + jsonChunk.byteLength + i, 0x20);
     }
 
     // Write the BIN chunk
@@ -211,7 +211,8 @@ export default class GLBBuilder {
     dataView.setUint32(binChunkOffset + 4, MAGIC_BIN, LE); // Chunk type
     copyArrayBuffer(glbArrayBuffer, binChunk, binChunkOffset + GLB_CHUNK_HEADER_SIZE);
     for (let i = 0; i < binChunkLengthPadded - binChunk.byteLength; ++i) {
-      dataView.setUint8(binChunkOffset + GLB_CHUNK_HEADER_SIZE + binChunk.byteLength + i, 0); // bin chunk is padded with 0x0
+      // json chunk is padded with spaces (ASCII 0x20)
+      dataView.setUint8(binChunkOffset + GLB_CHUNK_HEADER_SIZE + binChunk.byteLength + i, 0);
     }
 
     return glbArrayBuffer;
