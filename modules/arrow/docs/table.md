@@ -2,8 +2,13 @@
 
 Logical table as sequence of chunked arrays
 
-
 Extends `Chunked`
+
+## Overview
+
+The JavaScript `Table` class is not part of the Apache Arrow specification as such, but is rather a tool to help with wrangling multiple record batches and array pieces as a single logical dataset. As a relevant example, we may receive multiple small record batches in a socket stream, then need to concatenate them into contiguous memory for use in NumPy or pandas. The Table object makes this efficient without requiring additional memory copying.
+
+A Table’s columns are instances of `Column`, which is a container for one or more arrays of the same type.
 
 
 ## Static Methods

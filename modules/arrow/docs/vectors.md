@@ -1,5 +1,12 @@
 # Types and Vectors
 
+## Overview
+
+### Dictionary Arrays
+
+The Dictionary type is a special array type that is similar to a factor in R or a pandas.Categorical in Python. It enables one or more record batches in a file or stream to transmit integer indices referencing a shared dictionary containing the distinct values in the logical array. This is particularly often used with strings to save memory and improve performance.
+
+
 ### BoolVector
 
 ### BinaryVector

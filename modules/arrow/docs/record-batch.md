@@ -1,5 +1,23 @@
 # RecordBatch
 
+## Overview
+
+A Record Batch in Apache Arrow is a collection of equal-length array instances.
+
+Let’s consider a collection of arrays:
+
+```
+In [66]: data = [
+   ....:     pa.array([1, 2, 3, 4]),
+   ....:     pa.array(['foo', 'bar', 'baz', None]),
+   ....:     pa.array([True, None, False, True])
+   ....: ]
+   ....:
+```
+
+A record batch can be created from this list of arrays using RecordBatch.from_arrays:
+
+
 ## Static Methods
 
 ### RecordBatch.from(vectors: Array, names: String[] = []) : RecordBatch
