@@ -1,4 +1,4 @@
-/* global Image, Blob, createImageBitmap */
+/* global Image, Blob, createImageBitmap, btoa */
 import {readFile} from '../read-file/read-file';
 
 // Specifically loads an ImageBitmap (works on newer browser main and worker threads)
