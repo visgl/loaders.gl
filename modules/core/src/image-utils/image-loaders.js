@@ -31,7 +31,7 @@ function loadToHTMLImage(url, options) {
   if (/\.svg((\?|#).*)?$/.test(url)) {
     // is SVG
     promise = readFile(url, {dataType: 'text'})
-      .then(xml => `data:image/svg+xml;charset=utf-8,${xml}`);
+      .then(xml => `data:image/svg+xml;base64,${btoa(xml)}`);
   } else {
     promise = Promise.resolve(url);
   }
