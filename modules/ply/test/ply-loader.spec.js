@@ -4,7 +4,7 @@ import {
   readFile, parseFileSync, parseFile, loadFile, createReadStream, getStreamIterator,
   getGLTFAttribute
 } from '@loaders.gl/core';
-import {PLYLoader, PLYWorkerLoader, PLYStreamingLoader} from '@loaders.gl/ply';
+import {PLYLoader, PLYWorkerLoader, _PLYStreamLoader} from '@loaders.gl/ply';
 
 import {validateLoadedData} from 'test/common/conformance';
 
@@ -68,7 +68,7 @@ test('PLYLoader#parse(WORKER)', async t => {
 test('PLYLoader#parseStream(text)', async t => {
   const stream = await createReadStream('@loaders.gl/ply/../data/cube_att.ply');
 
-  const data = await PLYStreamingLoader.parseAsIterator(getStreamIterator(stream));
+  const data = await _PLYStreamLoader.parseAsIterator(getStreamIterator(stream));
 
   validateLoadedData(t, data);
   t.equal(data.indices.value.length, 36, 'Indices found');
