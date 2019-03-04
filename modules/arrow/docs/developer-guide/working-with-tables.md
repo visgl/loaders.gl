@@ -95,17 +95,11 @@ function toDate(timestamp) {
 
 ### Getting Column Data Stats
 
-latitude = Object {min: 41.644606368000005, max: 42.022547568, range: 0.3779411999999951}
-longitude = Object {min: -87.928909442, max: -87.524532645, range: 0.40437679700001183}
-dates = Object {min: 2016-12-31T15:18:25.032, max: 2017-08-25T16:40, range: 20478094968}
-Our custom numeric and date column stats functions:
 
-columnStats = ƒ(columnName)
-dateStats = ƒ(columnName)
-Column Data Vectors
-Appache arrow stores columns in typed arrays and vectors:
+### Column Data Vectors
 
-timestampVector = Vector<Timestamp> {data: M, type: Timestamp, length: 165567, view: we}
+Apache Arrow stores columns in typed arrays and vectors:
+
 Typed vectors have convinience methods to convert Int32 arrays data to JS values you can work with.
 
 For example, to get timestamps in milliseconds:
