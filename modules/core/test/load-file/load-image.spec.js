@@ -92,6 +92,7 @@ test('loadImage#worker', t => {
   }
 
   const worker = new LoadImageWorker();
+  let testIndex = 0;
 
   const runTest = (index) => {
     const testCase = TEST_CASES[index];
@@ -128,6 +129,5 @@ test('loadImage#worker', t => {
     worker.postMessage(url);
   };
 
-  let testIndex = 0;
   runTest(testIndex++);
 });
