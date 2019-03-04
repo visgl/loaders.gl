@@ -5,21 +5,21 @@ Sequence of arrow::Field objects describing the columns of a record batch or tab
 
 ## Accessors
 
-### fields : Field[]
+### fields : Field[] \(readonly)
 
 Return the list of fields (columns) in the schema.
 
-### metadata
+### metadata (readonly)
 
 The custom key-value metadata, if any. metadata may be null.
 
-### dictionaries
+### dictionaries (readonly)
 
-TBD?
+TBD - List of dictionaries (each dictionary is associated with a column that is dictionary encoded).
 
-### dictionaryFields
+### dictionaryFields (readonly)
 
-TBD?
+TBD - List of fields
 
 
 ## Methods

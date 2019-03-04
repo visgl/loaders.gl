@@ -38,6 +38,8 @@
 
 ### concat(...others: Vector<T>[])
 
+
+
 ### slice(begin?: number, end?: number)
 
 // Adjust args similar to Array.prototype.slice. Normalize begin/end to

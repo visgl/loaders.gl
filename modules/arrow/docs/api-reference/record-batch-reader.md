@@ -4,7 +4,9 @@ The RecordBatchReader is the IPC reader for reading chunks from a stream or file
 
 ## Usage
 
-An arrow file can contain multiple tables, each with its own set of record batches. To read all batches from all tables in the data source:
+The JavaScript API supports streaming multiple arrow tables over a single socket.
+
+To read all batches from all tables in a data source:
 
 ```js
 const readers = RecordBatchReader.readAll(fetch(path, {credentials: 'omit'}));
@@ -20,34 +22,6 @@ If you only have one table (the normal case), then there'll only be one RecordBa
 ```js
 const reader = await RecordBatchReader.from(fetch(path, {credentials: 'omit'}));
 ```
-
-A more complicated example of using Arrow to go from node -> python -> node:
-
-```js
-const { AsyncIterable } = require('ix');
-const { spawn } = require('@graphistry/node-util/process');
-const { RecordBatchStreamWriter } = require('apache-arrow');
-
-const compute_degrees_via_gpu_accelerated_sql = ((scriptPath) => (edgeListColumnName) =>
-    spawn('python3', [scriptPath, edgeListColumnName], {
-        env: process.env,
-        stdio: ['pipe', 'pipe', 'inherit']
-    })
-)(require('path').resolve(__dirname, 'compute_degrees.py'));
-
-module.exports = compute_degrees;
-
-function compute_degrees(colName, recordBatchReaders) {
-    return AsyncIterable
-        .as(recordBatchReaders).mergeAll()
-        .pipe(RecordBatchStreamWriter.throughNode())
-        .pipe(compute_degrees_via_gpu_accelerated_sql(colName));
-}
-```
-
-`compute_degrees_via_gpu_accelerated_sql` returns a node `child_process` that is also a duplex stream, similar to the [`event-stream#child()` method](https://www.npmjs.com/package/event-stream#child-child_process)
-
-construct pipes of streams of events and that python process just reads from stdin, does a GPU-dataframe operation, and writes the results to stdout. (This example uses Rx/IxJS style functional streaming pipelines).
 
 
 ## Methods
