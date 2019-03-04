@@ -1,8 +1,8 @@
 # Arrow JavaScript API
 
-The Arrow JavaScript API is designed to helps applications tap into the full power of workign with Arrow formatted data. It supports typical use cases such as loading, inspecting, creating and writing Arrow encoded data, as well as doing data frame style manipulations on Arrow data.
+> This Arrow API documentation is intended to be temporary, it will be removed when official docs for the Arrow JavaScript API become available.
 
-> This is temporary Arrow API documentation, it may be phased out when official docs for the Arrow JavaScript API become available...
+The Arrow JavaScript API is designed to helps applications tap into the full power of workign with Arrow formatted data. It supports typical use cases such as loading, inspecting, creating and writing Arrow encoded data, as well as doing data frame style manipulations on Arrow data.
 
 Note: The JavaScript Arrow API is designed to be close match to the C++ Arrow API, although some differences have been made where it makes sense. There are some unique capabilities as well as some missing features.
 
