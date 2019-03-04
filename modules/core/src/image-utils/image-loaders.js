@@ -1,4 +1,4 @@
-/* global Image, Blob, createImageBitmap */
+/* global Image, Blob, createImageBitmap, btoa */
 import {readFile} from '../read-file/read-file';
 
 // Specifically loads an ImageBitmap (works on newer browser main and worker threads)
@@ -31,7 +31,8 @@ function loadToHTMLImage(url, options) {
   if (/\.svg((\?|#).*)?$/.test(url)) {
     // is SVG
     promise = readFile(url, {dataType: 'text'})
-      .then(xml => `data:image/svg+xml;charset=utf-8,${xml}`);
+      // base64 encoding is safer. utf-8 fails in some browsers
+      .then(xml => `data:image/svg+xml;base64,${btoa(xml)}`);
   } else {
     promise = Promise.resolve(url);
   }
