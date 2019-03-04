@@ -31,6 +31,7 @@ function loadToHTMLImage(url, options) {
   if (/\.svg((\?|#).*)?$/.test(url)) {
     // is SVG
     promise = readFile(url, {dataType: 'text'})
+      // base64 encoding is safer. utf-8 fails in some browsers
       .then(xml => `data:image/svg+xml;base64,${btoa(xml)}`);
   } else {
     promise = Promise.resolve(url);
