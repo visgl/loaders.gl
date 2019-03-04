@@ -57,5 +57,9 @@ function parseToPlatformImage(arrayBuffer) {
 }
 
 function loadToPlatformImage(url, options) {
+  if (typeof Image === 'undefined') {
+    return readFile(url, Object.assign({}, options, {dataType: 'arrayBuffer'}))
+      .then(parseToPlatformImage);
+  }
   return loadToHTMLImage(url, options);
 }
