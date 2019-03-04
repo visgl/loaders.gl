@@ -84,7 +84,7 @@ test('loadImage#formats', t => {
   t.end();
 });
 
-test.only('loadImage#worker', t => {
+test('loadImage#worker', t => {
   if (typeof Worker === 'undefined') {
     t.comment('loadImage only works under browser');
     t.end();
