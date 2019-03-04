@@ -124,20 +124,20 @@ TBD
 
 Checks if the element at `index` in the logical array is valid.
 
-### get(index: number): T['TValue'] | null
+### get(index: number): Type | null
 
 Returns the element at `index` in the logical array, or `null` if no such element exists (e.e.g if `index` is out of range).
 
-### set(index: number, value: T['TValue'] | null): void
+### set(index: number, value: Type | null): void
 
 Returns the element at `index` in the logical array, or `null` if no such element exists (e.e.g if `index` is out of range).
 
-### indexOf(element: T['TValue'], offset?: number): number
+### indexOf(element: Type, offset?: number): number
 
 Returns the index of the first element with value `element`
 
 * `offset` - the index to start searching from.
 
-### toArray(): T['TArray']
+### toArray(): Type[]
 
 Returns a JavaScript Array by flattening the chunks

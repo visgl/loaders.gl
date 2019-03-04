@@ -84,10 +84,10 @@ TBD
 
 TBD - Returns the number of elements.
 
-### select(...columnNames: string[])
+### select(...columnNames: string[]) : Table
 
 Returns a new Table with the specified subset of columns, in the specified order.
 
-### countBy(name : Col | String) : DataFrame
+### countBy(name : Col | String) : Table
 
-Returns a new Table that contains two columns.
+Returns a new Table that contains two columns (`values` and `counts`).
