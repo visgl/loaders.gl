@@ -25,7 +25,7 @@ test('GLTF roundtrip#extensions', t => {
   const arrayBuffer = builder.encodeAsGLB();
 
   const parser = new GLTFParser();
-  parser.parse(arrayBuffer);
+  parser.parseSync(arrayBuffer);
 
   const appData = parser.getApplicationData('viz');
   const extraData = parser.getExtraData('test');

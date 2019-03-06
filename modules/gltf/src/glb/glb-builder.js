@@ -68,7 +68,7 @@ export default class GLBBuilder {
   // Add an extra application-defined key to the top-level data structure
   // By default packs JSON by extracting binary data and replacing it with JSON pointers
   addApplicationData(key, data, packOptions = {}) {
-    const jsonData = packOptions.nopack ? data : packBinaryJson(data, this, packOptions);
+    const jsonData = packOptions.packTypedArrays ? packBinaryJson(data, this, packOptions) : data;
     this.json[key] = jsonData;
     return this;
   }

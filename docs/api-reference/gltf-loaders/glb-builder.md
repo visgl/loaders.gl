@@ -58,7 +58,7 @@ Stores the supplied `data` in the given top-level field given by `key`.
 
 The data object will be encoded as JSON before being stored. By default, any typed arrays in the data object will be removed fromn the data payload and packed in the binary chunk.
 
-* `packOptions.nopack` - Don't pack any typed arrays
+* `packOptions.packTypedArrays` - Packs typed arrays into the binary chunk
 * `packOptions.flattenArrays` - Flatten "nested" standard JavaScript arrays into typed arrays (and then pack them into the binary chunk).
 
 

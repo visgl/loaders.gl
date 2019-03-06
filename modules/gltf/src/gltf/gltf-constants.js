@@ -1,32 +1,8 @@
-// glTF ACCESSOR CONSTANTS
+// GLTF extension
 
-export const ATTRIBUTE_TYPE_TO_COMPONENTS = {
-  SCALAR: 1,
-  VEC2: 2,
-  VEC3: 3,
-  VEC4: 4,
-  MAT2: 4,
-  MAT3: 9,
-  MAT4: 16
-};
-
-export const ATTRIBUTE_COMPONENT_TYPE_TO_BYTE_SIZE = {
-  5120: 1,
-  5121: 1,
-  5122: 2,
-  5123: 2,
-  5125: 4,
-  5126: 4
-};
-
-export const ATTRIBUTE_COMPONENT_TYPE_TO_ARRAY = {
-  5120: Int8Array,
-  5121: Uint8Array,
-  5122: Int16Array,
-  5123: Uint16Array,
-  5125: Uint32Array,
-  5126: Float32Array
-};
+// Ideally we should just use KHR_draco_mesh_compression, but it does not support point clouds
+export const KHR_DRACO_MESH_COMPRESSION = 'KHR_draco_mesh_compression';
+export const UBER_POINT_CLOUD_EXTENSION = 'UBER_draco_point_cloud_compression';
 
 const COMPONENTS = {
   SCALAR: 1,

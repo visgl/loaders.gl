@@ -7,7 +7,7 @@ import {
   ATTRIBUTE_TYPE_TO_COMPONENTS,
   ATTRIBUTE_COMPONENT_TYPE_TO_BYTE_SIZE,
   ATTRIBUTE_COMPONENT_TYPE_TO_ARRAY
-} from '../utils/gltf-type-utils';
+} from './gltf-types';
 
 const MAGIC_glTF = 0x676c5446; // glTF in Big-Endian ASCII
 

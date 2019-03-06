@@ -66,7 +66,7 @@ A version of `encode` that returns the final arrayBuffer together with the gener
 
 Stores the supplied `data` in the given top-level field given by `key`.
 
-* `options.nopack` - Don't pack any typed arrays
+* `options.packTypedArrays` - Packs typed arrays into the binary chunk
 * `options.flattenArrays` - Pack (and flatten nested) standard JavaScript arrays into the binary chunk.
 
 
@@ -74,7 +74,7 @@ Stores the supplied `data` in the given top-level field given by `key`.
 
 Populates (merges into) the top-level glTF `extras` field, which the glTF specification reserves for application specific data.
 
-* `options.nopack` - Don't pack any typed arrays
+* `options.packTypedArrays` - Packs typed arrays into the binary chunk
 * `options.flattenArrays` - Pack (and flatten nested) standard JavaScript arrays into the binary chunk.
 
 
@@ -82,7 +82,7 @@ Populates (merges into) the top-level glTF `extras` field, which the glTF specif
 
 Adds a top-level glTF extension object, and marks it as used.
 
-* `options.nopack` - Don't pack any typed arrays
+* `options.packTypedArrays` - Packs typed arrays into the binary chunk
 * `options.flattenArrays` - Pack (and flatten nested) standard JavaScript arrays into the binary chunk.
 
 
@@ -92,7 +92,7 @@ Adds a top-level glTF extension object, and marks it as used and required.
 
 Note: If possible, use `addExtension` instead of `addRequiredExtension`. It is recommended to avoid using required extensions if possible, as they can reduce the ability to use glTF tools on the resulting file.
 
-* `options.nopack` - Don't pack any typed arrays
+* `options.packTypedArrays` - Packs typed arrays into the binary chunk
 * `options.flattenArrays` - Pack (and flatten nested) standard JavaScript arrays into the binary chunk.
 
 

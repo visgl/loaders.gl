@@ -48,7 +48,7 @@ test('GLB#encode-and-parse', t => {
     const TEST_JSON = TEST_CASES[tcName];
 
     const arrayBuffer = new GLBBuilder().addApplicationData('extras', TEST_JSON).encodeAsGLB();
-    const json = new GLBParser().parse(arrayBuffer).getJSON();
+    const json = new GLBParser().parseSync(arrayBuffer).getJSON();
 
     t.ok(Array.isArray(json.buffers), `${tcName} Encoded and parsed GLB - has JSON buffers field`);
     t.ok(
@@ -75,7 +75,7 @@ test('GLB#encode-and-parse#full', t => {
   const TEST_JSON = TEST_CASES[tcName];
 
   const arrayBuffer = new GLBBuilder().addApplicationData('extras', TEST_JSON).encodeAsGLB();
-  const json = new GLBParser().parse(arrayBuffer).getJSON();
+  const json = new GLBParser().parseSync(arrayBuffer).getJSON();
 
   // t.comment(JSON.stringify(TEST_JSON, null, 2));
   // t.comment(JSON.stringify(json, null, 2))

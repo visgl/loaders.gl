@@ -44,7 +44,7 @@ function dumpFile(filename) {
 
   const arrayBuffer = toArrayBuffer(binary);
 
-  const data = new GLBParser().parse(arrayBuffer, {ignoreMagic: true}).getJSON();
+  const data = new GLBParser().parseSync(arrayBuffer, {ignoreMagic: true}).getJSON();
 
   if (options.dumpGLTF) {
     dumpGLTFScenes(data);

@@ -1,15 +1,7 @@
-/* eslint-disable camelcase, max-statements */
 import GLBBuilder from '../glb/glb-builder';
 import packBinaryJson from '../packed-json/pack-binary-json';
-import {
-  assert,
-  getImageSize
-} from '@loaders.gl/core';
-
-// Ideally we should just use KHR_draco_mesh_compression, but it requires saving uncompressed data?
-// TODO: until the ideal, we need to export these
-const UBER_MESH_EXTENSION = 'UBER_draco_mesh_compression';
-const UBER_POINT_CLOUD_EXTENSION = 'UBER_draco_point_cloud_compression';
+import {KHR_DRACO_MESH_COMPRESSION, UBER_POINT_CLOUD_EXTENSION} from './gltf-constants';
+import {assert, getImageSize} from '@loaders.gl/core';
 
 export default class GLTFBuilder extends GLBBuilder {
   constructor(options = {}) {
@@ -18,28 +10,20 @@ export default class GLTFBuilder extends GLBBuilder {
     // Soft dependency on DRACO, app needs to import and supply these
     this.DracoEncoder = options.DracoEncoder;
     this.DracoDecoder = options.DracoDecoder;
-
-    Object.assign(this.json, {
-      meshes: []
-    });
   }
 
+  // NOTE: encode() inherited from GLBBuilder
+
   // TODO - support encoding to non-GLB versions of glTF format
-
   // Encode as a textual JSON file with binary data in base64 data URLs.
-  // encodeAsDataURLs(options) {
-  //   throw new Error('Not yet implemented');
-  // }
-
+  // encodeAsDataURLs(options)
   // Encode as a JSON with all images (and buffers?) in separate binary files
-  // encodeAsSeparateFiles(options) {
-  //   throw new Error('Not yet imlemented');
-  // }
+  // encodeAsSeparateFiles(options)
 
   // Add an extra application-defined key to the top-level data structure
   // By default packs JSON by extracting binary data and replacing it with JSON pointers
   addApplicationData(key, data, packOptions = {}) {
-    const jsonData = packOptions.nopack ? data : packBinaryJson(data, this, packOptions);
+    const jsonData = packOptions.packTypeArrays ? packBinaryJson(data, this, packOptions) : data;
     this.json[key] = jsonData;
     return this;
   }
@@ -47,7 +31,8 @@ export default class GLTFBuilder extends GLBBuilder {
   // `extras` - Standard GLTF field for storing application specific data
   // By default packs JSON by extracting binary data and replacing it with JSON pointers
   addExtraData(key, data, packOptions = {}) {
-    const packedJson = !packOptions.nopack && packBinaryJson(data, this, packOptions);
+    const packedJson =
+      packOptions.packedTypedArrays ? packBinaryJson(data, this, packOptions) : data;
     this.json.extras = this.json.extras || {};
     this.json.extras[key] = packedJson;
     return this;
@@ -57,7 +42,7 @@ export default class GLTFBuilder extends GLBBuilder {
   // By default packs JSON by extracting binary data and replacing it with JSON pointers
   addExtension(extensionName, data, packOptions = {}) {
     assert(data);
-    const packedJson = !packOptions.nopack && packBinaryJson(data, this, packOptions);
+    const packedJson = packOptions.packTypedArrays ? packBinaryJson(data, this, packOptions) : data;
     this.json.extensions = this.json.extensions || {};
     this.json.extensions[extensionName] = packedJson;
     this.registerUsedExtension(extensionName);
@@ -68,7 +53,7 @@ export default class GLTFBuilder extends GLBBuilder {
   // By default packs JSON by extracting binary data and replacing it with JSON pointers
   addRequiredExtension(extensionName, data, packOptions = {}) {
     assert(data);
-    const packedJson = !packOptions.nopack && packBinaryJson(data, this, packOptions);
+    const packedJson = packOptions.packTypedArrays ? packBinaryJson(data, this, packOptions) : data;
     this.addExtension(extensionName, packedJson);
     this.registerRequiredExtension(extensionName);
     return this;
@@ -91,6 +76,7 @@ export default class GLTFBuilder extends GLBBuilder {
     }
   }
 
+  // mode:
   // POINTS:  0x0000,
   // LINES: 0x0001,
   // LINE_LOOP: 0x0002,
@@ -112,6 +98,7 @@ export default class GLTFBuilder extends GLBBuilder {
       ]
     };
 
+    this.json.meshes = this.json.meshes || [];
     this.json.meshes.push(glTFMesh);
     return this.json.meshes.length - 1;
   }
@@ -128,17 +115,21 @@ export default class GLTFBuilder extends GLBBuilder {
       ]
     };
 
+    this.json.meshes = this.json.meshes || [];
     this.json.meshes.push(glTFMesh);
     return this.json.meshes.length - 1;
   }
 
-  // https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/
-  //   KHR_draco_mesh_compression
-  // NOTE: in contrast to glTF spec, does not add fallback data
+  // eslint-disable-next-line max-len
+  // https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_draco_mesh_compression
+  // Only TRIANGLES: 0x0004 and TRIANGLE_STRIP: 0x0005 are supported
   addCompressedMesh(attributes, indices, mode = 4) {
     if (!this.DracoEncoder || !this.DracoDecoder) {
       throw new Error('DracoEncoder/Decoder not available');
     }
+
+    // Since we do not add fallback data
+    this.registerRequiredExtension(KHR_DRACO_MESH_COMPRESSION);
 
     const dracoEncoder = new this.DracoEncoder();
     const compressedData = dracoEncoder.encodeMesh(attributes);
@@ -157,19 +148,19 @@ export default class GLTFBuilder extends GLBBuilder {
     const glTFMesh = {
       primitives: [
         {
-          attributes: fauxAccessors,
+          attributes: fauxAccessors, // TODO - verify with spec
           mode, // GL.POINTS
           extensions: {
-            [UBER_MESH_EXTENSION]: {
-              bufferView: bufferViewIndex
+            [KHR_DRACO_MESH_COMPRESSION]: {
+              bufferView: bufferViewIndex,
+              attributes: fauxAccessors  // TODO - verify with spec
             }
           }
         }
       ]
     };
 
-    this.registerRequiredExtension(UBER_MESH_EXTENSION);
-
+    this.json.meshes = this.json.meshes || [];
     this.json.meshes.push(glTFMesh);
     return this.json.meshes.length - 1;
   }
@@ -200,6 +191,7 @@ export default class GLTFBuilder extends GLBBuilder {
 
     this.registerRequiredExtension(UBER_POINT_CLOUD_EXTENSION);
 
+    this.json.meshes = this.json.meshes || [];
     this.json.meshes.push(glTFMesh);
     return this.json.meshes.length - 1;
   }
@@ -222,9 +214,9 @@ export default class GLTFBuilder extends GLBBuilder {
         height
       });
     } else {
-      // TODO: Spec violation, if we are using a bufferView, mimeType must be defined
-      //       https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#images
-      //       "a reference to a bufferView; in that case mimeType must be defined."
+      // TODO: Spec violation, if we are using a bufferView, mimeType must be defined:
+      //   https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#images
+      //   "a reference to a bufferView; in that case mimeType must be defined."
       this.json.images.push({
         bufferView: bufferViewIndex
       });
