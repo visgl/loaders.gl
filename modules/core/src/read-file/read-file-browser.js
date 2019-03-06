@@ -4,13 +4,15 @@ import assert from '../utils/assert';
 import {resolvePath} from './file-aliases';
 
 const DEFAULT_OPTIONS = {
-  dataType: 'arrayBuffer'
+  dataType: 'arrayBuffer',
+  // TODO - this was mostly set to true to make test cases work
+  nothrow: true
 };
 
 // Returns a promise that resolves to a response object
 export async function fetchFile(url, options) {
   url = resolvePath(url);
-  return fetch(url, options);
+  return await fetch(url, options);
 }
 
 // Creates a readable stream to

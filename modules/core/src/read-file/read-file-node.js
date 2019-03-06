@@ -25,17 +25,31 @@ const DEFAULT_OPTIONS = {
 // Apps that require more complete fech emulation in Node
 // are encouraged to use dedicated fetch polyfill modules.
 
+// See https://developer.mozilla.org/en-US/docs/Web/API/Response
 class MockFetchResponseObject {
   constructor(url, options) {
     this.url = url;
     this.options = options;
+    this.bodyUsed = false;
   }
 
-  async headers() {
+  // Subset of Properties
+
+  get headers() {
     return {};
   }
 
+  // Returns a readable stream to the "body" of the response (or file)
+  get body() {
+    const {url, options} = this;
+    this.bodyUsed = true;
+    return createReadStream(url, options);
+  }
+
+  // Subset of Methods
+
   async arrayBuffer() {
+    this.bodyUsed = true;
     return readFile(this.url, this.options);
   }
 
@@ -48,12 +62,6 @@ class MockFetchResponseObject {
   async json() {
     const text = await this.text();
     return JSON.parse(text);
-  }
-
-  // Returns a readable stream to the "body" of the response (or file)
-  async body() {
-    const {url, options} = this;
-    return createReadStream(url, options);
   }
 }
 

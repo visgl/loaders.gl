@@ -67,7 +67,7 @@ test('PLYLoader#parse(WORKER)', async t => {
 
 test('PLYLoader#parseStream(text)', async t => {
   const response = await fetchFile('@loaders.gl/ply/../data/cube_att.ply');
-  const stream = await response.body();
+  const stream = await response.body;
 
   const data = await _PLYStreamLoader.parseAsIterator(getStreamIterator(stream));
 

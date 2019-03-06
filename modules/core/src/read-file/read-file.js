@@ -12,13 +12,13 @@ import {
 import node from './read-file-node';
 
 export async function fetchFile(url, options) {
-  const func = isBrowser ? browserFetchFile() : node.fetchFile;
+  const func = isBrowser ? browserFetchFile : node.fetchFile;
   return func(url, options);
 }
 
 // Returns a promise that resolves to a readable stream
 export async function createReadStream(url, options) {
-  const func = isBrowser ? browserCreateReadStream() : node.createReadStream;
+  const func = isBrowser ? browserCreateReadStream : node.createReadStream;
   return func(url, options);
 }
 
@@ -28,12 +28,12 @@ export async function createReadStream(url, options) {
 // * File/Blob objects
 // etc?
 export async function readFile(url, options = {}) {
-  const func = isBrowser ? browserReadFile() : node.readFile;
+  const func = isBrowser ? browserReadFile : node.readFile;
   return func(url, options);
 }
 
 // In a few cases (data URIs, node.js) "files" can be read synchronously
 export function readFileSync(url, options = {}) {
-  const func = isBrowser ? browserReadFileSync() : node.readFileSync;
+  const func = isBrowser ? browserReadFileSync : node.readFileSync;
   return func(url, options);
 }
