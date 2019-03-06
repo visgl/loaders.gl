@@ -83,6 +83,13 @@ const TEST_CONFIG = Object.assign({}, COMMON_CONFIG, {
         ]
       },
       {
+        // Load worker tests
+        test: /\.worker\.js$/,
+        use: {
+          loader: 'worker-loader'
+        }
+      },
+      {
         test: /\.kml$/,
         use: 'raw-loader'
       },

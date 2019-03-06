@@ -39,7 +39,7 @@ case 'cover':
 case 'browser':
   new BrowserTestDriver().run({
     command: 'webpack-dev-server',
-    arguments: ['--config', 'test/webpack.config.js', '--hot', '--env.testBrowser'],
+    arguments: ['--config', 'test/webpack.config.js', '--env.testBrowser'],
     headless: mode === 'browser-headless'
   });
   break;

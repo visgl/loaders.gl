@@ -2,6 +2,8 @@ import {loadImage, resolvePath} from '@loaders.gl/core';
 
 import test from 'tape-promise/tape';
 
+import LoadImageWorker from './load-image.worker';
+
 const CONTENT_BASE = '@loaders.gl/core/../data/';
 
 const TEST_CASES = [
@@ -10,7 +12,8 @@ const TEST_CASES = [
     url: `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAA
 Bytg0kAAAAFElEQVQIW2P8z/D/PwMDAwMjjAEAQOwF/W1Dp54AAAAASUVORK5CYII=`,
     width: 2,
-    height: 2
+    height: 2,
+    worker: false
   },
   {
     title: 'PNG',
@@ -46,7 +49,8 @@ Bytg0kAAAAFElEQVQIW2P8z/D/PwMDAwMjjAEAQOwF/W1Dp54AAAAASUVORK5CYII=`,
     title: 'SVG',
     url: 'images/camera.svg',
     width: 72,
-    height: 72
+    height: 72,
+    worker: false
   }
 ];
 
@@ -78,4 +82,52 @@ test('loadImage#formats', t => {
 
   TEST_CASES.forEach(testLoadImage);
   t.end();
+});
+
+test('loadImage#worker', t => {
+  if (typeof Worker === 'undefined') {
+    t.comment('loadImage only works under browser');
+    t.end();
+    return;
+  }
+
+  const worker = new LoadImageWorker();
+  let testIndex = 0;
+
+  const runTest = (index) => {
+    const testCase = TEST_CASES[index];
+    if (!testCase) {
+      t.end();
+      return;
+    }
+    if (testCase.worker === false) {
+      // the current loader does not support loading from dataURL in a worker
+      runTest(testIndex++);
+      return;
+    }
+
+    const {title, width, height} = testCase;
+    t.comment(title);
+
+    let {url} = testCase;
+    url = url.startsWith('data:') ? url : resolvePath(CONTENT_BASE + url);
+
+    worker.onmessage = ({data}) => {
+      if (data.error) {
+        t.fail(data.error);
+      } else {
+        t.ok(data.image, 'loadImage loaded data from url');
+        t.ok(
+          data.image.width === width && data.image.height === height,
+          'loaded image has correct content'
+        );
+      }
+
+      runTest(testIndex++);
+    };
+
+    worker.postMessage(url);
+  };
+
+  runTest(testIndex++);
 });
