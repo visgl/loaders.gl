@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
 import {
-  readFile, parseFileSync, parseFile, loadFile, createReadStream, getStreamIterator,
+  fetchFile, readFile, parseFileSync, parseFile, loadFile, getStreamIterator,
   getGLTFAttribute
 } from '@loaders.gl/core';
 import {PLYLoader, PLYWorkerLoader, _PLYStreamLoader} from '@loaders.gl/ply';
@@ -66,7 +66,8 @@ test('PLYLoader#parse(WORKER)', async t => {
 });
 
 test('PLYLoader#parseStream(text)', async t => {
-  const stream = await createReadStream('@loaders.gl/ply/../data/cube_att.ply');
+  const response = await fetchFile('@loaders.gl/ply/../data/cube_att.ply');
+  const stream = await response.body();
 
   const data = await _PLYStreamLoader.parseAsIterator(getStreamIterator(stream));
 
