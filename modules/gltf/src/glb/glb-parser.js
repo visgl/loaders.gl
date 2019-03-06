@@ -31,11 +31,10 @@ ${String.fromCharCode(dataView.getUint8(3))}`;
 // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#glb-file-format-specification
 export default class GLBParser {
 
-  static isGLB(glbArrayBuffer, options = {}) {
-    const {magic = MAGIC_glTF} = options;
-
+  static isGLB(arrayBuffer, options = {}) {
     // Check that GLB Header starts with the magic number
-    const dataView = new DataView(glbArrayBuffer);
+    const {magic = MAGIC_glTF} = options;
+    const dataView = new DataView(arrayBuffer);
     const magic1 = dataView.getUint32(0, BE);
     return magic1 === magic || magic1 === MAGIC_glTF;
   }
@@ -47,16 +46,20 @@ export default class GLBParser {
     this.json = null;
   }
 
-  // Return the gltf JSON and the original arrayBuffer
-  parse(glbArrayBuffer, options = {}) {
+  parseSync(arrayBuffer, options = {}) {
     // Input
-    this.glbArrayBuffer = glbArrayBuffer;
+    this.glbArrayBuffer = arrayBuffer;
 
     // Only parse once
     if (this.json === null && this.binaryByteOffset === null) {
       this.result = this._parse(options);
     }
     return this;
+  }
+
+  // Return the gltf JSON and the original arrayBuffer
+  parse(arrayBuffer, options = {}) {
+    return this.parseSync(arrayBuffer, options);
   }
 
   // Returns application JSON data stored in `key`
