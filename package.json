@@ -34,7 +34,7 @@
     "lint-examples": "eslint examples",
     "lint-yarn": "!(grep -q unpm.u yarn.lock) || (echo 'Please rebuild yarn.lock file using public npmrc' && false)",
     "lint-docs": "scripts/lint-markdown.sh",
-    "publish-prod": "npm run bootstrap && npm run test && npm run test dist && lerna publish --cd-version patch",
+    "publish-prod": "npm run bootstrap && npm run test && npm run test dist && lerna publish",
     "publish-beta": "npm run bootstrap && npm run build && npm run test && npm run test dist && lerna publish --npm-tag beta --cd-version prerelease",
     "test": "scripts/test.sh",
     "test-browser": "node test/start.js browser",
