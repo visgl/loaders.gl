@@ -88,7 +88,7 @@ test('GLBBuilder#encode with typed array json', t => {
   const TEST_JSON = {typedArray: new Float32Array([10.0, 11.0, 12.0])};
 
   const builder = new GLBBuilder();
-  builder.addApplicationData('extras', TEST_JSON);
+  builder.addApplicationData('extras', TEST_JSON, {packTypedArrays: true});
   const arrayBuffer = builder.encodeAsGLB();
 
   const resultJson = builder.json.extras;
@@ -111,7 +111,7 @@ test('GLBBuilder#encode with nested typed array json', t => {
   const TEST_JSON = {nested: {typedArray: new Float32Array([10.0, 11.0, 12.0])}};
 
   const builder = new GLBBuilder();
-  builder.addApplicationData('extras', TEST_JSON);
+  builder.addApplicationData('extras', TEST_JSON, {packTypedArrays: true});
   const arrayBuffer = builder.encodeAsGLB();
 
   const resultJSON = builder.json.extras;
@@ -143,7 +143,7 @@ test('GLBBuilder#encode complex', t => {
   };
 
   const builder = new GLBBuilder();
-  builder.addApplicationData('extras', TEST_JSON);
+  builder.addApplicationData('extras', TEST_JSON, {packTypedArrays: true});
   const arrayBuffer = builder.encodeAsGLB();
 
   const resultJSON = builder.json.extras;

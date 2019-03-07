@@ -31,7 +31,7 @@ test('GLTF roundtrip#extensions', t => {
   const extraData = parser.getExtraData('test');
 
   t.ok(appData, 'usedExtensions was found');
-  t.ok(extraData, 'requiredExtensions was found');
+  t.ok(extraData, 'extraData was found');
 
   const usedExtensions = parser.getUsedExtensions();
   const requiredExtensions = parser.getRequiredExtensions();

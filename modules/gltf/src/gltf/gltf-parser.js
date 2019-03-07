@@ -98,13 +98,14 @@ export default class GLTFParser {
   }
 
   getExtension(extensionName) {
-    // TODO - Data is already unpacked by GLBParser
-    return this.getUsedExtensions()[extensionName];
+    const isExtension = this.getUsedExtensions().find(name => name === extensionName);
+    const extensions = this.json.extensions || {};
+    return isExtension ? extensions[extensionName] || true : null;
   }
 
   getRequiredExtension(extensionName) {
     const isRequired = this.getRequiredExtensions().find(name => name === extensionName);
-    return isRequired && this.getExtension(extensionName);
+    return isRequired ? this.getExtension(extensionName) : null;
   }
 
   getRequiredExtensions() {
@@ -112,7 +113,7 @@ export default class GLTFParser {
   }
 
   getUsedExtensions() {
-    return this.json.extensionsUsed || {};
+    return this.json.extensionsUsed || [];
   }
 
   getScene(index) {
@@ -221,8 +222,8 @@ export default class GLTFParser {
     }
 
     // We have now decompressed all primitives, we can remove the top-level extensions
-    // this._removeExtension(KHR_DRACO_MESH_COMPRESSION);
-    // this._removeExtension(UBER_POINT_CLOUD_EXTENSION);
+    this._removeExtension(KHR_DRACO_MESH_COMPRESSION);
+    this._removeExtension(UBER_POINT_CLOUD_EXTENSION);
   }
 
   // Unpacks one mesh primitive and removes the extension from the primitive
@@ -238,7 +239,7 @@ export default class GLTFParser {
     }
 
     // Extension will be processed, delete it
-    // delete primitive.extensions[KHR_DRACO_MESH_COMPRESSION];
+    delete primitive.extensions[KHR_DRACO_MESH_COMPRESSION];
 
     const dracoDecoder = new options.DracoDecoder();
 
@@ -270,7 +271,7 @@ export default class GLTFParser {
     }
 
     // Extension will be processed, delete it
-    // delete primitive.extensions[UBER_POINT_CLOUD_EXTENSION];
+    delete primitive.extensions[UBER_POINT_CLOUD_EXTENSION];
 
     const dracoDecoder = new options.DracoDecoder();
     try {
@@ -293,19 +294,28 @@ export default class GLTFParser {
     return new Uint8Array(bufferView.buffer.data, byteOffset, bufferView.byteLength);
   }
 
-  // Removes a required extension from the top-level list
+  // Removes an extension from the top-level list
   _removeExtension(extensionName) {
     if (this.json.extensionsRequired) {
-      let found = true;
-      while (found) {
-        const index = this.json.extensionsRequired.indexOf(extensionName);
-        if (index > -1) {
-          this.json.extensionsRequired.splice(index, 1);
-        } else {
-          found = false;
-        }
+      this._removeStringFromArray(this.json.extensionsRequired, extensionName);
+    }
+    if (this.json.extensionsUsed) {
+      this._removeStringFromArray(this.json.extensionsUsed, extensionName);
+    }
+    if (this.json.extensions) {
+      delete this.json.extensions[extensionName];
+    }
+  }
+
+  _removeStringFromArray(array, string) {
+    let found = true;
+    while (found) {
+      const index = array.indexOf(string);
+      if (index > -1) {
+        array.splice(index, 1);
+      } else {
+        found = false;
       }
     }
-    delete this.json.extensionsUsed[extensionName];
   }
 }

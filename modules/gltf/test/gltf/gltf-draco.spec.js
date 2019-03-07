@@ -29,14 +29,16 @@ test('GLTFBuilder#addCompressedPointCloud', t => {
   const parser = new GLTFParser();
   parser.parseSync(arrayBuffer, {DracoDecoder, decompress: false});
   // TODO - verify that requiredExtensions contain UBER_draco_point_cloud_compression
-  t.ok(parser.getRequiredExtension('UBER_draco_point_cloud_compression'), 'toplevel extension has not been removed');
+  let dracoExtension = parser.getRequiredExtension('UBER_draco_point_cloud_compression');
+  t.ok(dracoExtension, 'toplevel extension has not been removed');
   let mesh = parser.getMesh(0);
   t.ok(mesh.primitives[0].extensions.UBER_draco_point_cloud_compression);
   t.notEqual(mesh.primitives[0].extensions.UBER_draco_point_cloud_compression.bufferView, undefined);
 
   parser.parseSync(arrayBuffer, {DracoDecoder, decompress: true});
   mesh = parser.getMesh(0);
-  t.notOk(parser.getRequiredExtension('UBER_draco_point_cloud_compression'), 'toplevel extension has not been removed');
+  dracoExtension = parser.getRequiredExtension('UBER_draco_point_cloud_compression');
+  t.notOk(dracoExtension, 'toplevel extension has been removed');
   t.equal(mesh.primitives[0].mode, 0, 'mesh mode ok');
   t.notOk(mesh.primitives[0].extensions.UBER_draco_point_cloud_compression, 'extension has been removed');
   t.equal(mesh.primitives[0].attributes.POSITION.value.length, attributes.POSITIONS.length, 'position attribute was found');
