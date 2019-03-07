@@ -71,16 +71,17 @@ Once the `parse()` method has successfully completed the accessors in this class
 
 Notes:
 * linked binary resources will be loaded and resolved (if url is available).
-* base64 encoded binary data inside the JSON payload will be decodec
+* base64 encoded binary data inside the JSON payload will be decoded
 
 
-### async parseSync(arrayBuffer : ArrayBuffer) : Object
+### parseSync(arrayBuffer : ArrayBuffer) : Object
 
 Parses an in-memory, glTF/GLB formatted `ArrayBuffer` a JSON tree with binary typed arrays and image nodes.
 
 Once the `parseSync()` method has successfully completed the accessors in this class can be used.
 
-Synchronous parsing does not handle linked resources
+Notes:
+* **Synchronous parsing does not handle linked resources**
 
 
 ### resolveScenegraphs() : Object

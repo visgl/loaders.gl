@@ -9,7 +9,7 @@ This module is currently in unofficial "soft pre-release" stage. You are welcome
 
 * `fetchFile` - New function supports fetch API under browser and Node.js
 * `glTFLoader` - improvements, supports async loading of linked resources and base64 encoded buffer.
-* `glTFParser` - API changes: `parse()` is now async and better featured, and `parseSync()` is provided to cover the old async case.
+* `glTFParser` - API changes: `parse()` is now async and supports linked resource loading, and a separate `parseSync()` method is provided for applications that depend on the old sync behavior and do not need the new features.
 
 
 ## v0.7

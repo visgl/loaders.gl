@@ -23,7 +23,7 @@ const gltf = await loadFile(url, GLTFLoader);
 
 ## Options
 
-* `DracoEncoder` - supply this to enable decoding of Draco compressed meshes.
+* `DracoEncoder` - supply this to enable decoding of Draco compressed meshes. `import {DracoEncoder} from '@loaders.gl/draco'`
 
 
 ## Structure of Loaded Data
@@ -42,7 +42,7 @@ Can load both binary `.glb` files and JSON `.gltf` files.
 
 When parsed asynchronously (not using `loadSync` or `parseSync`):
 * linked binary resources will be loaded and resolved (if url is available).
-* base64 encoded binary data inside the JSON payload will be decodec
+* base64 encoded binary data inside the JSON payload will be decoded
 
 To support decoding of Draco compressed meshes:
 ```
