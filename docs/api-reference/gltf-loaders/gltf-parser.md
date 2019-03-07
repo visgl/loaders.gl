@@ -22,7 +22,7 @@ const gltfParser = new GLTFParser();
 
 // Load and parse a file
 const GLTF_BINARY = loadFileSync(...);
-gltfParser.parse(GLTF_BINARY);
+gltfParser.parseSync(GLTF_BINARY);
 
 // Get the complete glTF JSON structure
 const gltfJson = gltfParser.getJSON();
@@ -63,11 +63,24 @@ Creates a new `GLTFParser` instance.
 * `options.DracoDecoder` - To enable DRACO encoding, the application needs to import and supply the DracoEncoder class.
 
 
-### parse(arrayBuffer : ArrayBuffer) : Object
+### async parse(arrayBuffer : ArrayBuffer) : Promise<Object>
 
 Parses an in-memory, glTF/GLB formatted `ArrayBuffer` a JSON tree with binary typed arrays and image nodes.
 
 Once the `parse()` method has successfully completed the accessors in this class can be used.
+
+Notes:
+* linked binary resources will be loaded and resolved (if url is available).
+* base64 encoded binary data inside the JSON payload will be decodec
+
+
+### async parseSync(arrayBuffer : ArrayBuffer) : Object
+
+Parses an in-memory, glTF/GLB formatted `ArrayBuffer` a JSON tree with binary typed arrays and image nodes.
+
+Once the `parseSync()` method has successfully completed the accessors in this class can be used.
+
+Synchronous parsing does not handle linked resources
 
 
 ### resolveScenegraphs() : Object

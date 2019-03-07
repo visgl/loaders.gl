@@ -5,6 +5,13 @@ This module is currently in unofficial "soft pre-release" stage. You are welcome
 
 ## loaders.gl Pre-releases
 
+## v0.8
+
+* `fetchFile` - New function supports fetch API under browser and Node.js
+* `glTFLoader` - improvements, supports async loading of linked resources and base64 encoded buffer.
+* `glTFParser` - API changes: `parse()` is now async and better featured, and `parseSync()` is provided to cover the old async case.
+
+
 ## v0.7
 
 * Arrow batch loader (#96)
