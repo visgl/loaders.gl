@@ -6,7 +6,7 @@ import {KHR_DRACO_MESH_COMPRESSION, UBER_POINT_CLOUD_EXTENSION} from './gltf-con
 const DEFAULT_OPTIONS = {
   fetchLinkedResources: true, // Fetch any linked .BIN buffers, decode base64
   fetch: fetchFile,
-  decompress: true,    // Decompress Draco compressed meshes (if DracoDecoder available)
+  decompress: false,    // Decompress Draco compressed meshes (if DracoDecoder available)
   DracoDecoder: null,
   postProcess: true,
   createImages: false,  // Create image objects
@@ -42,7 +42,6 @@ export default class GLTFParser {
   // gtlf - input can be arrayBuffer (GLB or UTF8 encoded JSON), string (JSON), or parsed JSON.
   parseSync(gltf, options = {}) {
     options = Object.assign({}, DEFAULT_OPTIONS, options);
-
 
     // If binary is not starting with magic bytes, convert to string
     if (gltf instanceof ArrayBuffer && !GLBParser.isGLB(gltf, options)) {
@@ -100,15 +99,20 @@ export default class GLTFParser {
 
   getExtension(extensionName) {
     // TODO - Data is already unpacked by GLBParser
-    return this.json.extensions[extensionName];
+    return this.getUsedExtensions()[extensionName];
+  }
+
+  getRequiredExtension(extensionName) {
+    const isRequired = this.getRequiredExtensions().find(name => name === extensionName);
+    return isRequired && this.getExtension(extensionName);
   }
 
   getRequiredExtensions() {
-    return this.json.extensionsRequired;
+    return this.json.extensionsRequired || [];
   }
 
   getUsedExtensions() {
-    return this.json.extensionsUsed;
+    return this.json.extensionsUsed || {};
   }
 
   getScene(index) {
@@ -207,23 +211,22 @@ export default class GLTFParser {
 
     for (const mesh of this.gltf.meshes || []) {
       // Decompress all the primitives in a mesh
-      mesh.primitives = mesh.primitives.map(primitive => {
-        primitive = this._decompressKhronosDracoPrimitive(primitive, options);
-        primitive = this._decompressUberDracoPrimitive(primitive, options);
+      for (const primitive of mesh.primitives) {
+        this._decompressKhronosDracoPrimitive(primitive, options);
+        this._decompressUberDracoPrimitive(primitive, options);
         if (!primitive.attributes || Object.keys(primitive.attributes).length === 0) {
           throw new Error('Empty glTF primitive: decompression failure?');
         }
-        return primitive;
-      });
+      }
     }
 
-    // We have now decompressed all primitives, we can remove the extensions
-    this._removeRequiredExtension(KHR_DRACO_MESH_COMPRESSION);
-    this._removeRequiredExtension(UBER_POINT_CLOUD_EXTENSION);
+    // We have now decompressed all primitives, we can remove the top-level extensions
+    // this._removeExtension(KHR_DRACO_MESH_COMPRESSION);
+    // this._removeExtension(UBER_POINT_CLOUD_EXTENSION);
   }
 
   // Unpacks one mesh primitive and removes the extension from the primitive
-  // TODO - Implement fallback behavior per spec
+  // TODO - Implement fallback behavior per KHR_DRACO_MESH_COMPRESSION spec
   // TODO - Decompression could be threaded: Use DracoWorkerLoader?
   //
   // eslint-disable-next-line max-len
@@ -231,58 +234,53 @@ export default class GLTFParser {
   _decompressKhronosDracoPrimitive(primitive, options) {
     const compressedMesh = primitive.extensions && primitive.extensions[KHR_DRACO_MESH_COMPRESSION];
     if (!compressedMesh) {
-      return primitive;
+      return;
     }
 
-    const unpackedPrimitive = {
-      mode: primitive.mode,
-      material: primitive.material
-    };
+    // Extension will be processed, delete it
+    // delete primitive.extensions[KHR_DRACO_MESH_COMPRESSION];
 
     const dracoDecoder = new options.DracoDecoder();
 
     try {
       const buffer = this._getBufferViewArray(compressedMesh.bufferView);
       const decodedData = dracoDecoder.decodeMesh(buffer);
-      unpackedPrimitive.attributes = decodedData.attributes;
+      primitive.attributes = decodedData.attributes;
       if (decodedData.indices) {
-        unpackedPrimitive.indices = decodedData.indices;
+        primitive.indices = decodedData.indices;
+      } else {
+        delete primitive.indices;
       }
     } finally {
       dracoDecoder.destroy();
     }
 
-    return unpackedPrimitive;
+    // Extension has been processed, delete it
   }
 
   // Unpacks one mesh primitive and removes the extension from the primitive
   _decompressUberDracoPrimitive(primitive, options) {
-    const compressedPointCloud =
-      primitive.extensions && primitive.extensions[UBER_POINT_CLOUD_EXTENSION];
-
-    if (!compressedPointCloud) {
-      return primitive;
+    const compressedMesh = primitive.extensions && primitive.extensions[UBER_POINT_CLOUD_EXTENSION];
+    if (!compressedMesh) {
+      return;
     }
 
     if (primitive.mode !== 0) {
       throw new Error(UBER_POINT_CLOUD_EXTENSION);
     }
 
-    const unpackedPrimitive = {
-      mode: 0,
-      material: primitive.material
-    };
+    // Extension will be processed, delete it
+    // delete primitive.extensions[UBER_POINT_CLOUD_EXTENSION];
 
     const dracoDecoder = new options.DracoDecoder();
     try {
-      const buffer = this._getBufferViewArray(compressedPointCloud.bufferView);
+      const buffer = this._getBufferViewArray(compressedMesh.bufferView);
       const decodedData = dracoDecoder.decode(buffer);
-      unpackedPrimitive.attributes = decodedData.attributes;
+      primitive.attributes = decodedData.attributes;
     } finally {
       dracoDecoder.destroy();
     }
 
-    return unpackedPrimitive;
   }
 
   _getBufferViewArray(bufferViewIndex) {
@@ -296,7 +294,7 @@ export default class GLTFParser {
   }
 
   // Removes a required extension from the top-level list
-  _removeRequiredExtension(extensionName) {
+  _removeExtension(extensionName) {
     if (this.json.extensionsRequired) {
       let found = true;
       while (found) {
@@ -308,5 +306,6 @@ export default class GLTFParser {
         }
       }
     }
+    delete this.json.extensionsUsed[extensionName];
   }
 }
