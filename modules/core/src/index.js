@@ -2,8 +2,7 @@
 
 export {setPathPrefix, getPathPrefix, resolvePath} from './read-file/file-aliases.js';
 
-export {readFile, readFileSync} from './read-file/read-file';
-export {createReadStream} from './read-file/create-stream';
+export {fetchFile, readFile, readFileSync, createReadStream} from './read-file/read-file';
 
 export {
   parseFile, parseFileSync, parseFileAsIterator, parseFileAsAsyncIterator

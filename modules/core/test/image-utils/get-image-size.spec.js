@@ -3,63 +3,24 @@
 
 /* eslint-disable max-len, max-statements */
 import test from 'tape-promise/tape';
-import path from 'path';
-import {readFileSync, getImageSize} from '@loaders.gl/core';
+import {readFile, getImageSize} from '@loaders.gl/core';
 
-/*
-import {addFileAliases, isBrowser} from '@loaders.gl/core';
+let TEST_FILES = null;
 
-const TEST_DATA_DIR = path.resolve(__dirname, '../../data');
+async function getTestFiles() {
+  TEST_FILES = TEST_FILES || [
+    ['png', await readFile('@loaders.gl/core/../data/images/img1-preview.png')],
+    ['jpeg', await readFile('@loaders.gl/core/../data/images/img1-preview.jpeg')],
+    ['gif', await readFile('@loaders.gl/core/../data/images/img1-preview.gif')],
+    ['bmp', await readFile('@loaders.gl/core/../data/images/img1-preview.bmp')],
+    ['tiff', await readFile('@loaders.gl/core/../data/images/img1-preview.png')]
+  ];
 
-// Makes sample files available to readFile in browser
-// These are bundled using webpack arraybuffer-loader
-addFileAliases(TEST_DATA_DIR, {
-  'images/img1-preview.png': isBrowser && require('../../data/images/img1-preview.png'),
-  'images/img1-preview.jpeg': isBrowser && require('../../data/images/img1-preview.jpeg'),
-  'images/img1-preview.gif': isBrowser && require('../../data/images/img1-preview.gif'),
-  'images/img1-preview.bmp': isBrowser && require('../../data/images/img1-preview.bmp'),
-  'images/img1-preview.tiff': isBrowser && require('../../data/images/img1-preview.tiff')
-});
+  return TEST_FILES;
+}
 
-const PNG_BINARY = readFileSync(path.resolve(TEST_DATA_DIR, 'images/img1-preview.png'));
-const JPEG_BINARY = readFileSync(path.resolve(TEST_DATA_DIR, 'images/img1-preview.jpeg'));
-const GIF_BINARY = readFileSync(path.resolve(TEST_DATA_DIR, 'images/img1-preview.gif'));
-const BMP_BINARY = readFileSync(path.resolve(TEST_DATA_DIR, 'images/img1-preview.bmp'));
-const TIFF_BINARY = readFileSync(path.resolve(TEST_DATA_DIR, 'images/img1-preview.tiff'));
-*/
-
-const TEST_DATA_DIR = path.resolve(__dirname, '../../data');
-
-const PNG_BINARY =
-  readFileSync(path.resolve(TEST_DATA_DIR, 'images/img1-preview.png')) ||
-  require('../../data/images/img1-preview.png');
-
-const JPEG_BINARY =
-  readFileSync(path.resolve(TEST_DATA_DIR, 'images/img1-preview.jpeg')) ||
-  require('../../data/images/img1-preview.jpeg');
-
-const GIF_BINARY =
-  readFileSync(path.resolve(TEST_DATA_DIR, 'images/img1-preview.gif')) ||
-  require('../../data/images/img1-preview.gif');
-
-const BMP_BINARY =
-  readFileSync(path.resolve(TEST_DATA_DIR, 'images/img1-preview.bmp')) ||
-  require('../../data/images/img1-preview.bmp');
-
-const TIFF_BINARY =
-  readFileSync(path.resolve(TEST_DATA_DIR, 'images/img1-preview.tiff')) ||
-  require('../../data/images/img1-preview.png');
-
-const TEST_FILES = [
-  ['png', PNG_BINARY],
-  ['jpeg', JPEG_BINARY],
-  ['gif', GIF_BINARY],
-  ['bmp', BMP_BINARY],
-  ['tiff', TIFF_BINARY]
-];
-
-function testImage(t, typeToTest, acceptableTypes, canThrow) {
-  const files = TEST_FILES;
+async function testImage(t, typeToTest, acceptableTypes, canThrow) {
+  const files = await getTestFiles();
 
   acceptableTypes = new Set(acceptableTypes);
   for (const [type, image] of files) {
@@ -74,34 +35,31 @@ function testImage(t, typeToTest, acceptableTypes, canThrow) {
     } else if (canThrow) {
       t.throws(() => getImageSize(buffer, mimeType),
         `should not work with ${type.toUpperCase()} files`);
-    // } else {
-    //   t.equals(getImageSize[typeToTest](buffer), null,
-    //     `should not work with ${type.toUpperCase()} files`);
     }
   }
 }
 
-test('getImageSize#png', t => {
-  testImage(t, 'png', ['png']);
+test('getImageSize#png', async t => {
+  await testImage(t, 'png', ['png']);
   t.end();
 });
 
-test('getImageSize#jpeg', t => {
-  testImage(t, 'jpeg', ['jpeg']);
+test('getImageSize#jpeg', async t => {
+  await testImage(t, 'jpeg', ['jpeg']);
   t.end();
 });
 
-test('getImageSize#gif', t => {
-  testImage(t, 'gif', ['gif']);
+test('getImageSize#gif', async t => {
+  await testImage(t, 'gif', ['gif']);
   t.end();
 });
 
-test('getImageSize#bmp', t => {
-  testImage(t, 'bmp', ['bmp']);
+test('getImageSize#bmp', async t => {
+  await testImage(t, 'bmp', ['bmp']);
   t.end();
 });
 
-test('getImageSize#all', t => {
-  testImage(t, 'all', ['png', 'jpeg', 'gif', 'bmp']);
+test('getImageSize#all', async t => {
+  await testImage(t, 'all', ['png', 'jpeg', 'gif', 'bmp']);
   t.end();
 });

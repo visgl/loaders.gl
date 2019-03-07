@@ -31,7 +31,8 @@
     "http": false,
     "https": false,
     "text-encoding": false,
-    "util": false
+    "util": false,
+    "./src/read-file/read-file-node.js": false
   },
   "scripts": {
     "clean": "rm -fr dist && mkdir -p dist",
