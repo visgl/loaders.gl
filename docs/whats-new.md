@@ -7,9 +7,15 @@ This module is currently in unofficial "soft pre-release" stage. You are welcome
 
 ## v0.8
 
+New Features:
 * `fetchFile` - New function supports fetch API under browser and Node.js
-* `glTFLoader` - improvements, supports async loading of linked resources and base64 encoded buffer.
-* `glTFParser` - API changes: `parse()` is now async and supports linked resource loading, and a separate `parseSync()` method is provided for applications that depend on the old sync behavior and do not need the new features.
+* `GLTFLoader` - improvements, supports async loading of linked resources and base64 encoded buffer.
+* `GLTFParser` - `parse()` now supports the following inputs: ArrayBuffer containg GLB, ArrayBuffer containing UTF8 encoded JSON, string containing JSON as well as decoded JSON.
+* `GLTFParser` - API changes: `parse()` now supports linked resource loading and base64 URI decoding.
+
+Breaking Changes:
+* `GLTFParser` - API changes: `parse()` is now async and supports linked resource loading, and a separate `parseSync()` method is provided for applications that depend on the old sync behavior and do not need the new features.
+ * `GLBBuilder`,`GLTFBuilder` - `nopack` option renamed to `packTypedArrays`. This option must now explicitly be set to `true` to enable packing.
 
 
 ## v0.7

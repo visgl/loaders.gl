@@ -16,8 +16,7 @@ function encodeToGLB(testJson, options) {
 
 function parseFromGLB(arrayBuffer) {
   const gltfParser = new GLTFParser();
-  gltfParser.parse(arrayBuffer);
-  // TODO/ib - Fix when loaders.gl API is fixed
+  gltfParser.parseSync(arrayBuffer);
   return gltfParser.getApplicationData('test');
 }
 
@@ -104,7 +103,6 @@ function validateCustomPayload(t, lidarData) {
 }
 
 test('pack-unpack-pack-json', t => {
-  const options = {flattenArrays: true};
   // Must have 2 buffers since they will be read in as
   // one, and then the sub-buffers will be "copied" out.
   const sample_lidar = {
@@ -124,14 +122,16 @@ test('pack-unpack-pack-json', t => {
     ]
   };
 
-  const testBinary = encodeToGLB(sample_lidar, options);
+  const OPTIONS = {flattenArrays: true, packTypedArrays: true};
+
+  const testBinary = encodeToGLB(sample_lidar, OPTIONS);
   const testBinaryDecoded = parseFromGLB(testBinary);
 
   validateCustomPayload(t, testBinaryDecoded);
 
   frame.state_updates[0].primitives.lidarPoints = testBinaryDecoded;
 
-  const frameBinary = encodeToGLB(frame, options);
+  const frameBinary = encodeToGLB(frame, OPTIONS);
   // TODO/ib - investigate why byteLengh this has increased?
   // t.equal(frameBinary.byteLength, 664);
   t.equal(frameBinary.byteLength, 708);

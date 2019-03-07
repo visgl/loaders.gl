@@ -1,4 +1,31 @@
-import {getBytesFromComponentType, getSizeFromAccessorType} from '../utils/gltf-type-utils';
+// This is a post processor for loaded glTF files
+// The goal is to make the loaded data easier to use in WebGL applications
+//
+// Functions:
+// * Resolve indexed arrays structure of glTF into a linked tree.
+// * Translate stringified enum keys and values into WebGL constants.
+// * Load images (optional)
+
+// ENUM LOOKUP
+
+const COMPONENTS = {
+  SCALAR: 1,
+  VEC2: 2,
+  VEC3: 3,
+  VEC4: 4,
+  MAT2: 4,
+  MAT3: 9,
+  MAT4: 16
+};
+
+const BYTES = {
+  5120: 1, // BYTE
+  5121: 1, // UNSIGNED_BYTE
+  5122: 2, // SHORT
+  5123: 2, // UNSIGNED_SHORT
+  5125: 4, // UNSIGNED_INT
+  5126: 4  // FLOAT
+};
 
 const GL_SAMPLER = {
   TEXTURE_MAG_FILTER: 0x2800,
@@ -14,30 +41,20 @@ const SAMPLER_PARAMETER_GLTF_TO_GL = {
   wrapT: GL_SAMPLER.TEXTURE_WRAP_T
 };
 
+function getBytesFromComponentType(componentType) {
+  return BYTES[componentType];
+}
+
+function getSizeFromAccessorType(type) {
+  return COMPONENTS[type];
+}
+
 export default class GLTFPostProcessor {
 
   postProcess(gltf, options = {}) {
     this.gltf = gltf;
     this._resolveToTree(options);
     return this.gltf;
-  }
-
-  _postProcessGLTF(options = {}) {
-    // Create all images (if requested)
-    this.out.images = (this.gltf.images || [])
-      .map(image => this.parseImage(image, options))
-      .filter(Boolean);
-
-    // Normalize all scenes
-    this.out.scenes = (this.gltf.scenes || [])
-      .map(scene => this.parseScene(scene, options))
-      .filter(Boolean);
-
-    if (this.gltf.scene !== undefined) {
-      this.out.scene = this.gltf.scenes[this.gltf.scene];
-    }
-
-    return this;
   }
 
   // Convert indexed glTF structure into tree structure
@@ -69,33 +86,6 @@ export default class GLTFPostProcessor {
     return gltf;
   }
   /* eslint-enable complexity */
-
-  // Accessors
-
-  getApplicationData(key) {
-    // TODO - Data is already unpacked by GLBParser
-    const data = this.json[key];
-    return data;
-  }
-
-  getExtraData(key) {
-    // TODO - Data is already unpacked by GLBParser
-    const extras = this.json.extras || {};
-    return extras[key];
-  }
-
-  getExtension(extensionName) {
-    // TODO - Data is already unpacked by GLBParser
-    return this.json.extensions[extensionName];
-  }
-
-  getRequiredExtensions() {
-    return this.json.extensionsRequired;
-  }
-
-  getUsedExtensions() {
-    return this.json.extensionsUsed;
-  }
 
   getScene(index) {
     return this._get('scenes', index);
@@ -306,5 +296,4 @@ export default class GLTFPostProcessor {
       // camera.matrix = createOrthographicMatrix(camera.orthographic);
     }
   }
-
 }
