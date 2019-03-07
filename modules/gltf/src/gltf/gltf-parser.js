@@ -255,8 +255,6 @@ export default class GLTFParser {
     } finally {
       dracoDecoder.destroy();
     }
-
-    // Extension has been processed, delete it
   }
 
   // Unpacks one mesh primitive and removes the extension from the primitive
