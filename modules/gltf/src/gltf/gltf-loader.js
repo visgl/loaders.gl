@@ -2,17 +2,17 @@
 
 import GLTFParser from './gltf-parser';
 
-export function parseTextGLTF(json, options = {}) {
-  return new GLTFParser().parse(json, options);
+export function parseGLTF(arrayBuffer, options = {}) {
+  return new GLTFParser().parse(arrayBuffer, options);
 }
 
-export function parseBinaryGLTF(glbArrayBuffer, options = {}) {
-  return new GLTFParser().parse(glbArrayBuffer, options);
+export function parseGLTFSync(arrayBuffer, options = {}) {
+  return new GLTFParser().parseSync(arrayBuffer, options);
 }
 
 export default {
   name: 'glTF',
   extension: ['gltf', 'glb'],
-  parseTextSync: parseTextGLTF,
-  parseSync: parseBinaryGLTF
+  parse: parseGLTF,
+  parseSync: parseGLTFSync
 };

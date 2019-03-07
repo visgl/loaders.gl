@@ -23,7 +23,7 @@ test('GLTFLoader#imports', t => {
 });
 
 test('GLTFParser#parse JSON', t => {
-  const gltf = new GLTFParser().parse(GLTF_JSON);
+  const gltf = new GLTFParser().parseSync(GLTF_JSON);
   t.ok(gltf, 'GLTFParser returned parsed data');
 
   t.end();
@@ -31,7 +31,7 @@ test('GLTFParser#parse JSON', t => {
 
 test('GLTFParser#parse binary', t => {
   const json = new GLBParser().parse(GLTF_BINARY).getJSON();
-  const gltf = new GLTFParser().parse(json);
+  const gltf = new GLTFParser().parseSync(json);
   t.ok(gltf, 'GLTFParser returned parsed data');
 
   t.end();

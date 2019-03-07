@@ -98,7 +98,7 @@ function logObject(field, object) {
 
 function dumpGLTFScenes(data) {
   const gltfParser = new GLTFParser();
-  const gltf = gltfParser.parse(data);
+  const gltf = gltfParser.parseSync(data);
   if (gltf.asset) {
     console.log(JSON.stringify(gltf.asset, null, 2));
   }

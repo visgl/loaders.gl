@@ -26,8 +26,8 @@ test('GLTFBuilder#addCompressedPointCloud', t => {
 
   const arrayBuffer = gltfBuilder.encodeAsGLB();
 
-  const parser = new GLTFParser({DracoDecoder});
-  parser.parse(arrayBuffer);
+  const parser = new GLTFParser();
+  parser.parse(arrayBuffer, {DracoDecoder});
   const mesh = parser.getDecompressedMesh(0);
   t.equal(mesh.primitives[0].mode, 0, 'mesh index ok');
   t.ok(mesh.primitives[0].extensions.UBER_draco_point_cloud_compression);
