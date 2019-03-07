@@ -1,5 +1,4 @@
-/* global fetch */
-/* global URL, location, File, FileReader */
+/* global URL */
 /* global Buffer */
 import fs from 'fs'; // `fs` will be empty object in browsers (see package.json "browser" field).
 import http from 'http';
