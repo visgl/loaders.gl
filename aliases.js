@@ -18,26 +18,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-const path = require("path");
+const path = require('path');
 
 // TODO - Add option to make separate sets of aliases for dist testing
 const makeAliases = () => ({
-  test: path.resolve(__dirname, "./test"),
-  "@loaders.gl/core": path.resolve(__dirname, "./modules/core/src"),
-  "@loaders.gl/draco": path.resolve(__dirname, "./modules/draco/src"),
-  "@loaders.gl/experimental": path.resolve(
-    __dirname,
-    "./modules/experimental/src"
-  ),
-  "@loaders.gl/images": path.resolve(__dirname, "./modules/images/src"),
-  "@loaders.gl/gltf": path.resolve(__dirname, "./modules/gltf/src"),
-  "@loaders.gl/kml": path.resolve(__dirname, "./modules/kml/src"),
-  "@loaders.gl/las": path.resolve(__dirname, "./modules/las/src"),
-  "@loaders.gl/obj": path.resolve(__dirname, "./modules/obj/src"),
-  "@loaders.gl/pcd": path.resolve(__dirname, "./modules/pcd/src"),
-  "@loaders.gl/ply": path.resolve(__dirname, "./modules/ply/src"),
-  "@loaders.gl/zip": path.resolve(__dirname, "./modules/zip/src"),
-  "@loaders.gl/arrow": path.resolve(__dirname, "./modules/arrow/src")
+  test: path.resolve(__dirname, './test'),
+  '@loaders.gl/core': path.resolve(__dirname, './modules/core/src'),
+  '@loaders.gl/draco': path.resolve(__dirname, './modules/draco/src'),
+  '@loaders.gl/experimental': path.resolve(__dirname, './modules/experimental/src'),
+  '@loaders.gl/images': path.resolve(__dirname, './modules/images/src'),
+  '@loaders.gl/gltf': path.resolve(__dirname, './modules/gltf/src'),
+  '@loaders.gl/kml': path.resolve(__dirname, './modules/kml/src'),
+  '@loaders.gl/las': path.resolve(__dirname, './modules/las/src'),
+  '@loaders.gl/obj': path.resolve(__dirname, './modules/obj/src'),
+  '@loaders.gl/pcd': path.resolve(__dirname, './modules/pcd/src'),
+  '@loaders.gl/ply': path.resolve(__dirname, './modules/ply/src'),
+  '@loaders.gl/zip': path.resolve(__dirname, './modules/zip/src'),
+  '@loaders.gl/arrow': path.resolve(__dirname, './modules/arrow/src')
 });
 
 const ALIASES = makeAliases();

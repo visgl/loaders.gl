@@ -1,7 +1,7 @@
 const getBabelConfig = require("ocular-dev-tools/config/babel.config");
 
 module.exports = api => {
-  return getBabelConfig(api, {
+  const config = getBabelConfig(api, {
     plugins: [
       [
         "babel-plugin-inline-import",
@@ -11,4 +11,10 @@ module.exports = api => {
       ]
     ]
   });
+
+  config.ignore = [
+    '**/*.worker.js'
+  ];
+
+  return config;
 };
