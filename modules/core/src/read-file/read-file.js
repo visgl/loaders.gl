@@ -9,7 +9,7 @@ import {
 } from './read-file-browser';
 
 // read-file-node is excluded from build under browser so don't do indivdual imports
-import node from './read-file-node';
+import * as node from './read-file-node';
 
 export async function fetchFile(url, options) {
   const func = isBrowser ? browserFetchFile : node.fetchFile;

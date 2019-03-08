@@ -1,4 +1,5 @@
 const { resolve } = require("path");
+const ALIASES = require('./aliases');
 
 module.exports = {
   lint: {
@@ -6,9 +7,7 @@ module.exports = {
     extensions: ["js"]
   },
 
-  aliases: {
-    test: resolve(__dirname, "./test")
-  },
+  aliases: ALIASES,
 
   entry: {
     test: "test/modules.js",
