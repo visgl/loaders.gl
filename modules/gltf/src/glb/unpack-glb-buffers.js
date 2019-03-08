@@ -59,14 +59,15 @@ function unpackAccessors(arrayBuffer, bufferViews, json) {
     assert(accessor);
 
     const bufferView = bufferViews[accessor.bufferView];
-    assert(bufferView);
-
-    // Create a new typed array as a view into the combined buffer
-    const {ArrayType, length} = getArrayTypeAndLength(accessor, bufferView);
-    const array = new ArrayType(arrayBuffer, bufferView.byteOffset, length);
-    // Store the metadata on the array (e.g. needed to determine number of components per element)
-    array.accessor = accessor;
-    accessorBuffers.push(array);
+    // Draco encoded meshes don't have bufferView in accessor
+    if (bufferView) {
+      // Create a new typed array as a view into the combined buffer
+      const {ArrayType, length} = getArrayTypeAndLength(accessor, bufferView);
+      const array = new ArrayType(arrayBuffer, bufferView.byteOffset, length);
+      // Store the metadata on the array (e.g. needed to determine number of components per element)
+      array.accessor = accessor;
+      accessorBuffers.push(array);
+    }
   }
 
   return accessorBuffers;

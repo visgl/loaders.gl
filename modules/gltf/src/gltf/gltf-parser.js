@@ -2,6 +2,7 @@ import {TextDecoder, fetchFile} from '@loaders.gl/core';
 import GLBParser from '../glb/glb-parser';
 import GLTFPostProcessor from './gltf-post-processor';
 import {KHR_DRACO_MESH_COMPRESSION, UBER_POINT_CLOUD_EXTENSION} from './gltf-constants';
+import {getFullUri} from './gltf-utils';
 
 const DEFAULT_OPTIONS = {
   fetchLinkedResources: true, // Fetch any linked .BIN buffers, decode base64
@@ -32,7 +33,7 @@ export default class GLTFParser {
 
     if (options.postProcess) {
       const postProcessor = new GLTFPostProcessor();
-      postProcessor.postProcess(gltf, options);
+      postProcessor.postProcess(this.gltf, this.glbParser, options);
     }
 
     return this.gltf;
@@ -77,7 +78,7 @@ export default class GLTFParser {
 
     if (options.postProcess) {
       const postProcessor = new GLTFPostProcessor();
-      postProcessor.postProcess(gltf, options);
+      postProcessor.postProcess(this.gltf, this.glbParser, options);
     }
 
     return this.gltf;
@@ -188,17 +189,12 @@ export default class GLTFParser {
   async _loadBuffer(buffer, options) {
     if (buffer.uri) {
       const fetch = options.fetch || window.fetch;
-      const uri = this._getFullUri(buffer.uri, options.uri);
+      const uri = getFullUri(buffer.uri, options.uri);
       const response = await fetch(uri);
       const arrayBuffer = await response.arrayBuffer();
       buffer.data = arrayBuffer;
       buffer.uri = null;
     }
-  }
-
-  _getFullUri(uri, base) {
-    const absolute = uri.startsWith('data:') || uri.startsWith('http:') || uri.startsWith('https:');
-    return absolute ? uri : base.substr(0, base.lastIndexOf('/') + 1) + uri;
   }
 
   // POST PROCESSING
@@ -245,7 +241,7 @@ export default class GLTFParser {
 
     try {
       const buffer = this._getBufferViewArray(compressedMesh.bufferView);
-      const decodedData = dracoDecoder.decodeMesh(buffer);
+      const decodedData = dracoDecoder.decode(buffer);
       primitive.attributes = decodedData.attributes;
       if (decodedData.indices) {
         primitive.indices = decodedData.indices;
@@ -283,13 +279,14 @@ export default class GLTFParser {
   }
 
   _getBufferViewArray(bufferViewIndex) {
+    const bufferView = this.gltf.bufferViews[bufferViewIndex];
     if (this.glbParser) {
-      return this.glbParser.getBufferView(bufferViewIndex);
+      return this.glbParser.getBufferView(bufferView);
     }
 
-    const bufferView = this.gltf.bufferViews[bufferViewIndex];
+    const buffer = this.gltf.buffers[bufferView.buffer].data;
     const byteOffset = bufferView.byteOffset || 0;
-    return new Uint8Array(bufferView.buffer.data, byteOffset, bufferView.byteLength);
+    return new Uint8Array(buffer, byteOffset, bufferView.byteLength);
   }
 
   // Removes an extension from the top-level list
