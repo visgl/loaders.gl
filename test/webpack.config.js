@@ -18,27 +18,27 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-const {resolve} = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
-const webpack = require('webpack');
-const BABEL_CONFIG = require('../babel.config').config;
+const { resolve } = require("path");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const BundleAnalyzerPlugin = require("webpack-bundle-analyzer")
+  .BundleAnalyzerPlugin;
+const webpack = require("webpack");
+const BABEL_CONFIG = require("../babel.config").config;
 
-const ALIASES = require(resolve(__dirname, '../aliases'));
+const ALIASES = require(resolve(__dirname, "../aliases"));
 
 // The following files will be imported/required as array buffers via arraybuffer-loader
-const BINARY_FILE_EXTENSIONS =
-  /\.drc$|\.ply$|\.pcd$|\.glb$|\.las$|\.laz$|\.png$|\.jpeg$|\.gif$|\.bmp$|\.tiff$|\.bin|\.arrow/;
+const BINARY_FILE_EXTENSIONS = /\.drc$|\.ply$|\.pcd$|\.glb$|\.las$|\.laz$|\.png$|\.jpeg$|\.gif$|\.bmp$|\.tiff$|\.bin|\.arrow/;
 
 const COMMON_CONFIG = {
-  mode: 'development',
+  mode: "development",
 
   stats: {
     warnings: false
   },
 
   node: {
-    fs: 'empty'
+    fs: "empty"
   }
 };
 
@@ -52,24 +52,24 @@ const TEST_CONFIG = Object.assign({}, COMMON_CONFIG, {
 
   // Bundle the tests for running in the browser
   entry: {
-    'test-browser': resolve(__dirname, './browser.js')
+    "test-browser": resolve(__dirname, "./browser.js")
   },
 
   // Generate a bundle in dist folder
   output: {
-    path: resolve('./dist'),
-    filename: '[name]-bundle.js'
+    path: resolve("./dist"),
+    filename: "[name]-bundle.js"
   },
 
-  devtool: '#source-maps',
+  devtool: "#source-maps",
 
   module: {
     rules: [
       {
         // Unfortunately, webpack doesn't import library sourcemaps on its own...
         test: /\.js$/,
-        use: ['source-map-loader'],
-        enforce: 'pre'
+        use: ["source-map-loader"],
+        enforce: "pre"
       },
       {
         // Compile ES2015 using bable
@@ -77,7 +77,7 @@ const TEST_CONFIG = Object.assign({}, COMMON_CONFIG, {
         exclude: /node_modules/,
         use: [
           {
-            loader: 'babel-loader',
+            loader: "babel-loader",
             options: BABEL_CONFIG
           }
         ]
@@ -86,16 +86,16 @@ const TEST_CONFIG = Object.assign({}, COMMON_CONFIG, {
         // Load worker tests
         test: /\.worker\.js$/,
         use: {
-          loader: 'worker-loader'
+          loader: "worker-loader"
         }
       },
       {
         test: /\.kml$/,
-        use: 'raw-loader'
+        use: "raw-loader"
       },
       {
         test: BINARY_FILE_EXTENSIONS,
-        use: 'arraybuffer-loader'
+        use: "arraybuffer-loader"
       }
     ]
   },
@@ -104,9 +104,7 @@ const TEST_CONFIG = Object.assign({}, COMMON_CONFIG, {
     alias: Object.assign({}, ALIASES)
   },
 
-  plugins: [
-    new HtmlWebpackPlugin({title: 'loaders.gl tests'})
-  ]
+  plugins: [new HtmlWebpackPlugin({ title: "loaders.gl tests" })]
 });
 
 // Get first key in an object
@@ -124,28 +122,30 @@ function getApp(env) {
 
 function getDist(env) {
   if (env.esm) {
-    return 'esm';
+    return "esm";
   }
   if (env.es5) {
-    return 'es5';
+    return "es5";
   }
-  return 'es6';
+  return "es6";
 }
 
 const CONFIGS = {
   test: env => TEST_CONFIG,
 
-  bench: env => Object.assign({}, TEST_CONFIG, {
-    entry: {
-      'test-browser': resolve(__dirname, './bench/browser.js')
-    }
-  }),
+  bench: env =>
+    Object.assign({}, TEST_CONFIG, {
+      entry: {
+        "test-browser": resolve(__dirname, "./bench/browser.js")
+      }
+    }),
 
-  render: env => Object.assign({}, TEST_CONFIG, {
-    entry: {
-      'test-browser': resolve(__dirname, './render/index.js')
-    }
-  }),
+  render: env =>
+    Object.assign({}, TEST_CONFIG, {
+      entry: {
+        "test-browser": resolve(__dirname, "./render/index.js")
+      }
+    }),
 
   size: env => {
     const dist = getDist(env);
@@ -153,20 +153,20 @@ const CONFIGS = {
     const config = Object.assign({}, TEST_CONFIG, {
       resolve: {
         alias: Object.assign({}, ALIASES, {
-          'loaders.gl': resolve(__dirname, '../modules/core/')
+          "loaders.gl": resolve(__dirname, "../modules/core/")
         })
       }
     });
 
     switch (dist) {
-    case 'es6':
-      config.resolve.mainFields = ['esnext', 'browser', 'module', 'main'];
-      break;
-    case 'es5':
-      config.resolve.mainFields = ['browser', 'main'];
-      break;
-    case 'esm':
-    default:
+      case "es6":
+        config.resolve.mainFields = ["esnext", "browser", "module", "main"];
+        break;
+      case "es5":
+        config.resolve.mainFields = ["browser", "main"];
+        break;
+      case "esm":
+      default:
     }
     return config;
   },
@@ -178,20 +178,20 @@ const CONFIGS = {
     const config = CONFIGS.size(env);
 
     Object.assign(config, {
-      mode: env.development ? 'development' : 'production',
+      mode: env.development ? "development" : "production",
 
       // Replace the entry point for webpack-dev-server
       entry: {
-        'test-browser': resolve(__dirname, './size', `${app}.js`)
+        "test-browser": resolve(__dirname, "./size", `${app}.js`)
       },
       output: {
-        path: resolve('/tmp'),
-        filename: 'bundle.js'
+        path: resolve("/tmp"),
+        filename: "bundle.js"
       },
       plugins: [
         // leave minification to app
         // new webpack.optimize.UglifyJsPlugin({comments: false})
-        new webpack.DefinePlugin({NODE_ENV: JSON.stringify('production')})
+        new webpack.DefinePlugin({ NODE_ENV: JSON.stringify("production") })
       ]
     });
 

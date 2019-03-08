@@ -25,6 +25,8 @@ module.exports = {
 
   devtool: false,
 
+  stats: 'minimal',
+
   resolve: {
     alias: ALIASES
   },
