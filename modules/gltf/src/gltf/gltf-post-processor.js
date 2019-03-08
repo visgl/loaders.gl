@@ -1,3 +1,5 @@
+import {getFullUri} from './gltf-utils';
+
 // This is a post processor for loaded glTF files
 // The goal is to make the loaded data easier to use in WebGL applications
 //
@@ -51,8 +53,10 @@ function getSizeFromAccessorType(type) {
 
 export default class GLTFPostProcessor {
 
-  postProcess(gltf, options = {}) {
+  postProcess(gltf, glbParser, options = {}) {
     this.gltf = gltf;
+    this.glbParser = glbParser;
+
     this._resolveToTree(options);
     return this.gltf;
   }
@@ -213,7 +217,11 @@ export default class GLTFPostProcessor {
 
   _resolveAccessor(accessor, index) {
     accessor.id = `accessor-${index}`;
-    accessor.bufferView = this.getBufferView(accessor.bufferView);
+    if (accessor.bufferView !== undefined) {
+      // Draco encoded meshes don't have bufferView
+      accessor.bufferView = this.getBufferView(accessor.bufferView);
+    }
+
     // Look up enums
     accessor.bytesPerComponent = getBytesFromComponentType(accessor);
     accessor.components = getSizeFromAccessorType(accessor);
@@ -265,7 +273,7 @@ export default class GLTFPostProcessor {
             const img = new Image();
             img.crossOrigin = 'anonymous';
             img.onload = () => resolve(img);
-            img.src = this._getFullUri(image.uri, options.uri);
+            img.src = getFullUri(image.uri, options.uri);
           });
         }
 
