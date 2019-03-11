@@ -3,28 +3,33 @@
 This is the CHANGELOG.md for loaders.gl.
 
 ### 0.4.0 -
+
 - Unification of mesh loaders output format
 
 ### 0.3.x -
+
 - Doc fixes
 - Binary file format tests now run in browser
 
-
 ### 0.3.4 - Aug 29
+
 - Add `--json` opt to glbdump
 
 ### 0.3.3 - Aug 29
+
 - Publish ".bin" directory
 
 ### 0.3.2 - Aug 29
+
 - Publish "scripts" directory
 
 ### 0.3.1 - Aug 29
+
 - Add `bin` field to package.json, attempt to export `glbdump`
 - Parser doesn't fail hard on magic `glTF` first four bytes
 
-
 ### 0.3.0 - Aug 28
+
 - Support for glTF `image` encode
 - Refactor GLBParser
 

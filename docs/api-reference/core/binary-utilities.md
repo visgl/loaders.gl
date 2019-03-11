@@ -8,16 +8,14 @@ loaders.gl provides a set of functions to simplify working with binary data. The
 import {toArrayBuffer} from '@loaders.gl/core';
 ```
 
-
 ## Functions
 
 ### toArrayBuffer(binaryData : \*) : ArrayBuffer
 
 "Repackages" a binary data in non-array-buffer form as an `ArrayBuffer`.
 
-* binaryData - ArrayBuffer, Buffer (Node.js), typed array, blob, ...
-
+- binaryData - ArrayBuffer, Buffer (Node.js), typed array, blob, ...
 
 ## Remarks
 
-* Most functions in loaders.gl that accept binary data call `toArrayBuffer(...)` on input parameters before starting processing, thus ensuring that functions work on all types of input data.
+- Most functions in loaders.gl that accept binary data call `toArrayBuffer(...)` on input parameters before starting processing, thus ensuring that functions work on all types of input data.

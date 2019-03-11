@@ -2,15 +2,15 @@
 
 A simple non-streaming loader for the Apache Arrow columnar table format.
 
-| Loader                     | Characteristic |
-| ---                        | ---            |
-| File Extension             | `.arrow`       |
-| File Type                  | Binary         |
-| File Format                | [IPC: Encapsulated Message Format](http://arrow.apache.org/docs/ipc.html) |
-| Category                   | Columnar Table |
-| Parser Type                | Synchronous    |
-| Worker Thread Support      | Yes            |
-| Streaming Support          | Yes            |
+| Loader                | Characteristic                                                            |
+| --------------------- | ------------------------------------------------------------------------- |
+| File Extension        | `.arrow`                                                                  |
+| File Type             | Binary                                                                    |
+| File Format           | [IPC: Encapsulated Message Format](http://arrow.apache.org/docs/ipc.html) |
+| Category              | Columnar Table                                                            |
+| Parser Type           | Synchronous                                                               |
+| Worker Thread Support | Yes                                                                       |
+| Streaming Support     | Yes                                                                       |
 
 ## Options
 

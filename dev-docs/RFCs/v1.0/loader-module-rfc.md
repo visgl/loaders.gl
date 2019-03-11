@@ -1,14 +1,12 @@
 # RFC: Loaders Sub-Module
 
-* **Authors**: Ib Green
-* **Date**: Aug 2018
-* **Status**: For Review
-
+- **Authors**: Ib Green
+- **Date**: Aug 2018
+- **Status**: For Review
 
 ## Proposal
 
 To minimize the need to write separate RFC and documentation text, this RFC is written as a README.md for the new module, explaining the design principles.
-
 
 ## Overview
 
@@ -19,7 +17,6 @@ Also includes a few "writers" (encoders) and some compression/decompression supp
 Supporting functionality that can perform actual loading.
 
 Most of the loaders have been "curated" from the open source community, often from WebGL frameworks like THREE.js or from individual github repos.
-
 
 ## Main Features
 
@@ -37,7 +34,6 @@ Most of the loaders have been "curated" from the open source community, often fr
 
 **Permissive Licenses** - Loaders in `loaders.gl` have permissive licenses. No commercial or copy-left requirements.
 
-
 ## Feature Roadmap
 
 **Off-thread parsing support** - Off thread parsing is an obvious optimization however it has some major complications that often eat up any performance gains: and serialization/deserialization overhead. loaders.gl is designed to avoid serialization through direct transfer of typed arrays.
@@ -50,7 +46,6 @@ Most of the loaders have been "curated" from the open source community, often fr
 
 **Test Data** - Ideally loaders.gl will include test data for each format to ensure that the regression suite is as effective as possible.
 
-
 ## Format Roadmap
 
 The emergence of glTF as a major Khronos standard with the ensuing massive industry adoption is a huge deal for the WebGL/3D community. The need to support long list of obscure loaders for e.g. various 3D asset authoring packages is quickly becoming a thing of the past as most major applications have started to offer high-quality, maintained glTF exporters.
@@ -61,11 +56,9 @@ Still, for special data sets such as large point clouds or complex geospatial da
 
 Finally, some "unusual" loaders may be included just for the fun of it, e.g. SVG tesselation.
 
-
 ## Licenses
 
 loaders.gl contains a collection of MIT and Apache licensed loaders. Each loader comes with its own license, so if the distinction matters to you, please check and decide accordingly. However, loaders.gl will not include any loaders with commercial or copy-left licenses.
-
 
 ## Credits and Attributions
 
@@ -73,11 +66,9 @@ loaders.gl is to a large extent just a simple curation and repackaging of the su
 
 Also check each loader directory for additional details, we strive to keep intact any comments inside the source code relating to authorship and contributions.
 
-
 ## Contributions
 
 Warmly welcomed, as long as they are reasonably aligned with the goals and principles outlined above.
-
 
 ## Long Term
 

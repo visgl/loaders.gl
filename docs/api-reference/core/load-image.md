@@ -13,4 +13,5 @@ This is a minimal basic image loading function that only works in the browser ma
 `options.crossOrigin` - Provides control of the requests cross origin field.
 
 Notes:
-* Any path prefix set by `setPathPrefix` will be appended to relative urls.
+
+- Any path prefix set by `setPathPrefix` will be appended to relative urls.

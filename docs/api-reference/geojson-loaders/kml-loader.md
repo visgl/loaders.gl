@@ -4,9 +4,8 @@ KML (Keyhole Markup Language) is an XML-based file format used to display geogra
 
 References:
 
-* [Keyhole Markup Language - Wikipedia](https://en.wikipedia.org/wiki/Keyhole_Markup_Language)
-* [KML Tutorial - Google](https://developers.google.com/kml/documentation/kml_tut)
-
+- [Keyhole Markup Language - Wikipedia](https://en.wikipedia.org/wiki/Keyhole_Markup_Language)
+- [KML Tutorial - Google](https://developers.google.com/kml/documentation/kml_tut)
 
 ## Usage
 
@@ -15,36 +14,32 @@ import {KMLLoader} from '@loaders.gl/kml';
 import {loadFileSync} from '@loaders.gl/core';
 ```
 
-
 ## Structure of Loaded Data
 
 The parser will return a JavaScript object with a number of top-level array-valued fields:
 
-| Field           | Description |
-| ---             | ---         |
-| `documents`     |    |
-| `folders`       |    |
-| `links`         |    |
-| `points`        | Points |
-| `lines`         | Lines |
-| `polygons`      | Polygons |
+| Field           | Description                        |
+| --------------- | ---------------------------------- |
+| `documents`     |                                    |
+| `folders`       |                                    |
+| `links`         |                                    |
+| `points`        | Points                             |
+| `lines`         | Lines                              |
+| `polygons`      | Polygons                           |
 | `imageoverlays` | Urls and bounds of bitmap overlays |
-
 
 ## Parser Options
 
 > Work in progress
 
-| Option            | Default  | Description    |
-| ---               | ---      | ---            |
-| `useLngLatFormat` | `true`   | KML longitudes and latitudes are specified as `[lat, lng]`. This option "normalizes" them to `[lng, lat]`. |
-| `useColorArrays`  | `true`   | Convert color strings to arrays |
-
+| Option            | Default | Description                                                                                                |
+| ----------------- | ------- | ---------------------------------------------------------------------------------------------------------- |
+| `useLngLatFormat` | `true`  | KML longitudes and latitudes are specified as `[lat, lng]`. This option "normalizes" them to `[lng, lat]`. |
+| `useColorArrays`  | `true`  | Convert color strings to arrays                                                                            |
 
 ## Limitations
 
-* Currently XML parsing is only implemented in browsers, not in Node.js. Check `KMLLoader.supported` to check at run-time.
-
+- Currently XML parsing is only implemented in browsers, not in Node.js. Check `KMLLoader.supported` to check at run-time.
 
 ## License/Credits/Attributions
 
