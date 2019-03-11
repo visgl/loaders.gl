@@ -3,7 +3,7 @@ import test from 'tape-promise/tape';
 import {parseFileSync} from '@loaders.gl/core';
 import {KMLLoader} from '@loaders.gl/kml';
 
-import KML from '../data/KML_Samples.kml';
+import KML from './data/KML_Samples.kml';
 
 const INVALID_KML = `\
 <?xml version="1.0" encoding="UTF-8"?>
@@ -24,7 +24,6 @@ test('KMLLoader#testText', t => {
 });
 
 test('KMLLoader#parseText', t => {
-
   if (!KMLLoader.supported) {
     t.comment('XML parsing not available');
   } else {

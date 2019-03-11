@@ -7,10 +7,10 @@ import {getFullUri} from './gltf-utils';
 const DEFAULT_OPTIONS = {
   fetchLinkedResources: true, // Fetch any linked .BIN buffers, decode base64
   fetch: fetchFile,
-  decompress: false,    // Decompress Draco compressed meshes (if DracoDecoder available)
+  decompress: false, // Decompress Draco compressed meshes (if DracoDecoder available)
   DracoDecoder: null,
   postProcess: true,
-  createImages: false,  // Create image objects
+  createImages: false, // Create image objects
   log: console // eslint-disable-line
 };
 
@@ -275,7 +275,6 @@ export default class GLTFParser {
     } finally {
       dracoDecoder.destroy();
     }
-
   }
 
   _getBufferViewArray(bufferViewIndex) {

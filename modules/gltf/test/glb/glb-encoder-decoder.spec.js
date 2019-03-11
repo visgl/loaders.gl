@@ -3,7 +3,7 @@ import test from 'tape-promise/tape';
 
 import {GLBBuilder, GLBParser} from '@loaders.gl/gltf';
 
-import TEST_JSON from '../../data/glb/test-data.json';
+import TEST_JSON from '../data/glb/test-data.json';
 
 const BUFFERS = [
   new Int8Array([3, 2, 3]),

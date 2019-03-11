@@ -3,7 +3,7 @@ import test from 'tape-promise/tape';
 import {parseFileSync, parseFile, getGLTFAttribute} from '@loaders.gl/core';
 import {OBJLoader, OBJWorkerLoader} from '@loaders.gl/obj';
 
-import OBJ_ASCII from '../data/bunny.obj.js';
+import OBJ_ASCII from './data/bunny.obj.js';
 import {validateLoadedData} from 'test/common/conformance';
 
 test('OBJLoader#parseText', t => {
@@ -35,18 +35,23 @@ test('OBJWorkerLoader#parseText', t => {
     return;
   }
 
-  parseFile(OBJ_ASCII, OBJWorkerLoader).then(data => {
-    validateLoadedData(t, data);
+  parseFile(OBJ_ASCII, OBJWorkerLoader)
+    .then(data => {
+      validateLoadedData(t, data);
 
-    t.equal(data.mode, 4, 'mode is TRIANGLES (4)');
-    t.equal(data.indices.value.length, 14904, 'INDICES attribute was found');
-    t.equal(data.indices.count, 14904, 'INDICES attribute was found');
+      t.equal(data.mode, 4, 'mode is TRIANGLES (4)');
+      t.equal(data.indices.value.length, 14904, 'INDICES attribute was found');
+      t.equal(data.indices.count, 14904, 'INDICES attribute was found');
 
-    t.equal(getGLTFAttribute(data, 'POSITION').value.length, 7509, 'POSITION attribute was found');
-    t.equal(getGLTFAttribute(data, 'POSITION').size, 3, 'POSITION attribute was found');
-
-  }).catch(error => {
-    t.fail(error);
-
-  }).then(t.end);
+      t.equal(
+        getGLTFAttribute(data, 'POSITION').value.length,
+        7509,
+        'POSITION attribute was found'
+      );
+      t.equal(getGLTFAttribute(data, 'POSITION').size, 3, 'POSITION attribute was found');
+    })
+    .catch(error => {
+      t.fail(error);
+    })
+    .then(t.end);
 });

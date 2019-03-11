@@ -36,17 +36,20 @@ function loadToHTMLImage(url, options) {
   } else {
     promise = Promise.resolve(url);
   }
-  return promise.then(src => new Promise((resolve, reject) => {
-    try {
-      const image = new Image();
-      image.onload = () => resolve(image);
-      image.onerror = (err) => reject(new Error(`Could not load image ${url}: ${err}`));
-      image.crossOrigin = (options && options.crossOrigin) || 'anonymous';
-      image.src = src;
-    } catch (error) {
-      reject(error);
-    }
-  }));
+  return promise.then(
+    src =>
+      new Promise((resolve, reject) => {
+        try {
+          const image = new Image();
+          image.onload = () => resolve(image);
+          image.onerror = err => reject(new Error(`Could not load image ${url}: ${err}`));
+          image.crossOrigin = (options && options.crossOrigin) || 'anonymous';
+          image.src = src;
+        } catch (error) {
+          reject(error);
+        }
+      })
+  );
 }
 
 function parseToPlatformImage(arrayBuffer) {
@@ -58,8 +61,9 @@ function parseToPlatformImage(arrayBuffer) {
 
 function loadToPlatformImage(url, options) {
   if (typeof Image === 'undefined') {
-    return readFile(url, Object.assign({}, options, {dataType: 'arrayBuffer'}))
-      .then(parseToPlatformImage);
+    return readFile(url, Object.assign({}, options, {dataType: 'arrayBuffer'})).then(
+      parseToPlatformImage
+    );
   }
   return loadToHTMLImage(url, options);
 }

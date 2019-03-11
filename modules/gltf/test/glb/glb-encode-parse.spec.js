@@ -5,7 +5,7 @@ import {toLowPrecision} from 'test/test-utils';
 import {GLBParser, GLBBuilder} from '@loaders.gl/gltf';
 import packBinaryJson from '@loaders.gl/gltf/packed-json/pack-binary-json';
 
-import TEST_JSON from '../../data/glb/test-data.json';
+import TEST_JSON from '../data/glb/test-data.json';
 
 const TEST_CASES = {
   flat: {

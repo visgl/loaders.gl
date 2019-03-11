@@ -7,11 +7,14 @@ const DEFAULT_TEX_COORDS = {constant: true, size: 2, value: new Float32Array([0,
 /* eslint-disable complexity */
 export function normalizeAttributes(data) {
   if (!data.glTFAttributeMap) {
-    return Object.assign({
-      colors: DEFAULT_COLOR,
-      normals: DEFAULT_NORMAL,
-      texCoords: DEFAULT_TEX_COORDS
-    }, data.attributes);
+    return Object.assign(
+      {
+        colors: DEFAULT_COLOR,
+        normals: DEFAULT_NORMAL,
+        texCoords: DEFAULT_TEX_COORDS
+      },
+      data.attributes
+    );
   }
 
   const mesh = {

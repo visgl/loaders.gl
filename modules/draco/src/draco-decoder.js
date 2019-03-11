@@ -57,30 +57,29 @@ export default class DRACODecoder {
     try {
       const geometryType = decoder.GetEncodedGeometryType(buffer);
       switch (geometryType) {
+        case this.decoderModule.TRIANGULAR_MESH:
+          dracoGeometry = new this.decoderModule.Mesh();
+          dracoStatus = decoder.DecodeBufferToMesh(buffer, dracoGeometry);
+          header = {
+            type: GEOMETRY_TYPE.TRIANGULAR_MESH,
+            faceCount: dracoGeometry.num_faces(),
+            attributeCount: dracoGeometry.num_attributes(),
+            vertexCount: dracoGeometry.num_points()
+          };
+          break;
 
-      case this.decoderModule.TRIANGULAR_MESH:
-        dracoGeometry = new this.decoderModule.Mesh();
-        dracoStatus = decoder.DecodeBufferToMesh(buffer, dracoGeometry);
-        header = {
-          type: GEOMETRY_TYPE.TRIANGULAR_MESH,
-          faceCount: dracoGeometry.num_faces(),
-          attributeCount: dracoGeometry.num_attributes(),
-          vertexCount: dracoGeometry.num_points()
-        };
-        break;
+        case this.decoderModule.POINT_CLOUD:
+          dracoGeometry = new this.decoderModule.PointCloud();
+          dracoStatus = decoder.DecodeBufferToPointCloud(buffer, dracoGeometry);
+          header = {
+            type: GEOMETRY_TYPE.POINT_CLOUD,
+            attributeCount: dracoGeometry.num_attributes(),
+            vertexCount: dracoGeometry.num_points()
+          };
+          break;
 
-      case this.decoderModule.POINT_CLOUD:
-        dracoGeometry = new this.decoderModule.PointCloud();
-        dracoStatus = decoder.DecodeBufferToPointCloud(buffer, dracoGeometry);
-        header = {
-          type: GEOMETRY_TYPE.POINT_CLOUD,
-          attributeCount: dracoGeometry.num_attributes(),
-          vertexCount: dracoGeometry.num_points()
-        };
-        break;
-
-      default:
-        throw new Error('Unknown DRACO geometry type.');
+        default:
+          throw new Error('Unknown DRACO geometry type.');
       }
 
       data.header = {
@@ -98,7 +97,6 @@ export default class DRACODecoder {
       }
 
       this.extractDRACOGeometry(decoder, dracoGeometry, data, geometryType);
-
     } finally {
       this.decoderModule.destroy(decoder);
       this.decoderModule.destroy(buffer);
@@ -123,12 +121,14 @@ export default class DRACODecoder {
 
     // For meshes, we need indices to define the faces.
     if (geometryType === this.decoderModule.TRIANGULAR_MESH) {
-      attributes.indices = this.drawMode === 'TRIANGLE_STRIP' ?
-        this.getMeshStripIndices(decoder, dracoGeometry) :
-        this.getMeshFaceIndices(decoder, dracoGeometry);
-      geometry.mode = this.drawMode === 'TRIANGLE_STRIP' ?
-        5 : // GL.TRIANGLE_STRIP
-        4;  // GL.TRIANGLES
+      attributes.indices =
+        this.drawMode === 'TRIANGLE_STRIP'
+          ? this.getMeshStripIndices(decoder, dracoGeometry)
+          : this.getMeshFaceIndices(decoder, dracoGeometry);
+      geometry.mode =
+        this.drawMode === 'TRIANGLE_STRIP'
+          ? 5 // GL.TRIANGLE_STRIP
+          : 4; // GL.TRIANGLES
     } else {
       geometry.mode = 0; // GL.POINTS
     }
@@ -174,7 +174,10 @@ export default class DRACODecoder {
       if (attributeId !== -1) {
         const dracoAttribute = decoder.GetAttribute(dracoGeometry, attributeId);
         const {typedArray} = this.getAttributeTypedArray(
-          decoder, dracoGeometry, dracoAttribute, attributeName
+          decoder,
+          dracoGeometry,
+          dracoAttribute,
+          attributeName
         );
         attributes[DRACO_TO_GLTF_ATTRIBUTE_NAME_MAP[attributeName]] = {
           value: typedArray,
@@ -243,54 +246,52 @@ export default class DRACODecoder {
     let typedArray;
 
     switch (attributeType) {
+      case Float32Array:
+        dracoArray = new this.decoderModule.DracoFloat32Array();
+        decoder.GetAttributeFloatForAllPoints(dracoGeometry, dracoAttribute, dracoArray);
+        typedArray = new Float32Array(numValues);
+        break;
 
-    case Float32Array:
-      dracoArray = new this.decoderModule.DracoFloat32Array();
-      decoder.GetAttributeFloatForAllPoints(dracoGeometry, dracoAttribute, dracoArray);
-      typedArray = new Float32Array(numValues);
-      break;
+      case Int8Array:
+        dracoArray = new this.decoderModule.DracoInt8Array();
+        decoder.GetAttributeInt8ForAllPoints(dracoGeometry, dracoAttribute, dracoArray);
+        typedArray = new Int8Array(numValues);
+        break;
 
-    case Int8Array:
-      dracoArray = new this.decoderModule.DracoInt8Array();
-      decoder.GetAttributeInt8ForAllPoints(dracoGeometry, dracoAttribute, dracoArray);
-      typedArray = new Int8Array(numValues);
-      break;
+      case Int16Array:
+        dracoArray = new this.decoderModule.DracoInt16Array();
+        decoder.GetAttributeInt16ForAllPoints(dracoGeometry, dracoAttribute, dracoArray);
+        typedArray = new Int16Array(numValues);
+        break;
 
-    case Int16Array:
-      dracoArray = new this.decoderModule.DracoInt16Array();
-      decoder.GetAttributeInt16ForAllPoints(dracoGeometry, dracoAttribute, dracoArray);
-      typedArray = new Int16Array(numValues);
-      break;
+      case Int32Array:
+        dracoArray = new this.decoderModule.DracoInt32Array();
+        decoder.GetAttributeInt32ForAllPoints(dracoGeometry, dracoAttribute, dracoArray);
+        typedArray = new Int32Array(numValues);
+        break;
 
-    case Int32Array:
-      dracoArray = new this.decoderModule.DracoInt32Array();
-      decoder.GetAttributeInt32ForAllPoints(dracoGeometry, dracoAttribute, dracoArray);
-      typedArray = new Int32Array(numValues);
-      break;
+      case Uint8Array:
+        dracoArray = new this.decoderModule.DracoUInt8Array();
+        decoder.GetAttributeUInt8ForAllPoints(dracoGeometry, dracoAttribute, dracoArray);
+        typedArray = new Uint8Array(numValues);
+        break;
 
-    case Uint8Array:
-      dracoArray = new this.decoderModule.DracoUInt8Array();
-      decoder.GetAttributeUInt8ForAllPoints(dracoGeometry, dracoAttribute, dracoArray);
-      typedArray = new Uint8Array(numValues);
-      break;
+      case Uint16Array:
+        dracoArray = new this.decoderModule.DracoUInt16Array();
+        decoder.GetAttributeUInt16ForAllPoints(dracoGeometry, dracoAttribute, dracoArray);
+        typedArray = new Uint16Array(numValues);
+        break;
 
-    case Uint16Array:
-      dracoArray = new this.decoderModule.DracoUInt16Array();
-      decoder.GetAttributeUInt16ForAllPoints(dracoGeometry, dracoAttribute, dracoArray);
-      typedArray = new Uint16Array(numValues);
-      break;
+      case Uint32Array:
+        dracoArray = new this.decoderModule.DracoUInt32Array();
+        decoder.GetAttributeUInt32ForAllPoints(dracoGeometry, dracoAttribute, dracoArray);
+        typedArray = new Uint32Array(numValues);
+        break;
 
-    case Uint32Array:
-      dracoArray = new this.decoderModule.DracoUInt32Array();
-      decoder.GetAttributeUInt32ForAllPoints(dracoGeometry, dracoAttribute, dracoArray);
-      typedArray = new Uint32Array(numValues);
-      break;
-
-    default:
-      const errorMsg = 'DRACO decoder: unexpected attribute type.';
-      // console.error(errorMsg);
-      throw new Error(errorMsg);
-
+      default:
+        const errorMsg = 'DRACO decoder: unexpected attribute type.';
+        // console.error(errorMsg);
+        throw new Error(errorMsg);
     }
 
     // Copy data from decoder.

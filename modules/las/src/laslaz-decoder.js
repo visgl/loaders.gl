@@ -297,8 +297,9 @@ export class LASFile {
       throw new Error('The point format ID is not supported');
     }
 
-    this.loader = this.isCompressed ?
-      new LAZLoader(this.arraybuffer) : new LASLoader(this.arraybuffer);
+    this.loader = this.isCompressed
+      ? new LAZLoader(this.arraybuffer)
+      : new LASLoader(this.arraybuffer);
   }
 
   determineFormat() {

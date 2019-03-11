@@ -2,12 +2,11 @@
 import test from 'tape-promise/tape';
 import {readFileSync, parseFileSync, getGLTFAttribute, _getMeshSize} from '@loaders.gl/core';
 import {DracoLoader, DracoEncoder} from '@loaders.gl/draco';
-import path from 'path';
 import {validateLoadedData} from 'test/common/conformance';
 
 const BUNNY_DRC =
-  readFileSync(path.resolve(__dirname, '../data/bunny.drc')) ||
-  require('../data/bunny.drc');
+  readFileSync('@loaders.gl/draco/test/data/bunny.drc') ||
+  require('@loaders.gl/draco/test/data/bunny.drc');
 
 const TEST_CASES = [
   {
@@ -43,26 +42,23 @@ test('DracoEncoder#encode(bunny.drc)', t => {
   for (const tc of TEST_CASES) {
     let compressedMesh;
 
-    t.doesNotThrow(
-      () => {
-        const dracoEncoder = new DracoEncoder();
-        dracoEncoder.setOptions(tc.method);
+    t.doesNotThrow(() => {
+      const dracoEncoder = new DracoEncoder();
+      dracoEncoder.setOptions(tc.method);
 
-        let meshSize;
-        if (tc.type === 'pointcloud') {
-          compressedMesh = dracoEncoder.encodePointCloud(pointCloudAttributes);
-          meshSize = _getMeshSize(pointCloudAttributes);
-        } else {
-          compressedMesh = dracoEncoder.encodeMesh(meshAttributes);
-          meshSize = _getMeshSize(meshAttributes);
-        }
+      let meshSize;
+      if (tc.type === 'pointcloud') {
+        compressedMesh = dracoEncoder.encodePointCloud(pointCloudAttributes);
+        meshSize = _getMeshSize(pointCloudAttributes);
+      } else {
+        compressedMesh = dracoEncoder.encodeMesh(meshAttributes);
+        meshSize = _getMeshSize(meshAttributes);
+      }
 
-        const ratio = meshSize / compressedMesh.byteLength;
-        t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
-        dracoEncoder.destroy();
-      },
-      `${tc.title} did not trow`
-    );
+      const ratio = meshSize / compressedMesh.byteLength;
+      t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
+      dracoEncoder.destroy();
+    }, `${tc.title} did not trow`);
 
     if (tc.type !== 'pointcloud') {
       // Decode the mesh
@@ -70,8 +66,11 @@ test('DracoEncoder#encode(bunny.drc)', t => {
       validateLoadedData(t, data2);
 
       // t.comment(JSON.stringify(data));
-      t.equal(getGLTFAttribute(data2, 'POSITION').value.length, 104502,
-        `${tc.title} decoded position attribute was found`);
+      t.equal(
+        getGLTFAttribute(data2, 'POSITION').value.length,
+        104502,
+        `${tc.title} decoded position attribute was found`
+      );
     }
   }
 

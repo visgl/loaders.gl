@@ -78,7 +78,6 @@ export default class KMLParser {
     const filtered = [];
     if (this._filters && a && a.length) {
       a.forEach(item => {
-
         let bool = true;
         this._filters.forEach(f => {
           if (f(item) === false) {
@@ -147,7 +146,8 @@ export default class KMLParser {
     const linkDomNodes = xmlDom.getElementsByTagName('NetworkLink');
     for (let i = 0; i < linkDomNodes.length; i++) {
       const node = linkDomNodes.item(i);
-      const linkData = Object.assign({},
+      const linkData = Object.assign(
+        {},
         this.ParseDomLink(node),
         this.ParseNonSpatialDomData(node, {})
       );
@@ -163,7 +163,6 @@ export default class KMLParser {
   }
 
   ParseDomLink(xmlDom) {
-
     const urls = xmlDom.getElementsByTagName('href');
     const link = {
       type: 'link'
@@ -179,7 +178,6 @@ export default class KMLParser {
     const lines = [];
     const lineDomNodes = this.ParseDomItems(xmlDom, 'LineString');
     for (let i = 0; i < lineDomNodes.length; i++) {
-
       const node = lineDomNodes[i];
 
       const polygonData = Object.assign(
@@ -208,7 +206,6 @@ export default class KMLParser {
     const lines = [];
     const lineDomNodes = this.ParseDomItems(xmlDom, 'GroundOverlay');
     for (let i = 0; i < lineDomNodes.length; i++) {
-
       const node = lineDomNodes[i];
 
       const polygonData = Object.assign(
@@ -231,7 +228,6 @@ export default class KMLParser {
     const polygonDomNodes = this.ParseDomItems(xmlDom, 'Polygon');
 
     for (let i = 0; i < polygonDomNodes.length; i++) {
-
       const node = polygonDomNodes[i];
 
       const polygonData = Object.assign(
@@ -254,7 +250,7 @@ export default class KMLParser {
 
       const polyRGB = this.convertKMLColorToRGB(polygonData.polyColor);
 
-      polygonData.polyOpacity = (polygonData.fill) ? polyRGB.opacity : 0;
+      polygonData.polyOpacity = polygonData.fill ? polyRGB.opacity : 0;
       polygonData.polyColor = polyRGB.color;
 
       polygons.push(polygonData);
@@ -293,9 +289,12 @@ export default class KMLParser {
   ParseDomCoordinates(xmlDom) {
     const coordNodes = xmlDom.getElementsByTagName('coordinates');
     if (!coordNodes.length) {
-      this.log.warn(['this. DOM Node did not contain coordinates!', {
-        node: xmlDom
-      }]);
+      this.log.warn([
+        'this. DOM Node did not contain coordinates!',
+        {
+          node: xmlDom
+        }
+      ]);
       return null;
     }
     const node = coordNodes.item(0);
@@ -318,9 +317,12 @@ export default class KMLParser {
   ParseDomBounds(xmlDom) {
     const coordNodes = xmlDom.getElementsByTagName('LatLonBox');
     if (!coordNodes.length) {
-      this.log.warn(['this. DOM Node did not contain coordinates!', {
-        node: xmlDom
-      }]);
+      this.log.warn([
+        'this. DOM Node did not contain coordinates!',
+        {
+          node: xmlDom
+        }
+      ]);
       return null;
     }
     const node = coordNodes.item(0);
@@ -335,30 +337,42 @@ export default class KMLParser {
     let west = null;
 
     if (!norths.length) {
-      this.log.warn(['this. DOM LatLngBox Node did not contain north!', {
-        node: xmlDom
-      }]);
+      this.log.warn([
+        'this. DOM LatLngBox Node did not contain north!',
+        {
+          node: xmlDom
+        }
+      ]);
     } else {
       north = parseFloat(this.Value(norths.item(0)));
     }
     if (!souths.length) {
-      this.log.warn(['this. DOM LatLngBox Node did not contain south!', {
-        node: xmlDom
-      }]);
+      this.log.warn([
+        'this. DOM LatLngBox Node did not contain south!',
+        {
+          node: xmlDom
+        }
+      ]);
     } else {
       south = parseFloat(this.Value(souths.item(0)));
     }
     if (!easts.length) {
-      this.log.warn(['this. DOM LatLngBox Node did not contain east!', {
-        node: xmlDom
-      }]);
+      this.log.warn([
+        'this. DOM LatLngBox Node did not contain east!',
+        {
+          node: xmlDom
+        }
+      ]);
     } else {
       east = parseFloat(this.Value(easts.item(0)));
     }
     if (!wests.length) {
-      this.log.warn(['this. DOM LatLngBox Node did not contain west!', {
-        node: xmlDom
-      }]);
+      this.log.warn([
+        'this. DOM LatLngBox Node did not contain west!',
+        {
+          node: xmlDom
+        }
+      ]);
     } else {
       west = parseFloat(this.Value(wests.item(0)));
     }
@@ -372,9 +386,13 @@ export default class KMLParser {
   /* eslint-enable max-statements */
 
   ParseNonSpatialDomData(xmlDom, options) {
-    const config = Object.assign({}, {
-      maxOffset: 2
-    }, options);
+    const config = Object.assign(
+      {},
+      {
+        maxOffset: 2
+      },
+      options
+    );
 
     const data = {
       name: '',
@@ -385,7 +403,7 @@ export default class KMLParser {
     const names = xmlDom.getElementsByTagName('name');
     for (let i = 0; i < names.length; i++) {
       if (this.WithinOffsetDom(xmlDom, names.item(i), config.maxOffset)) {
-        data.name = (this.Value(names.item(i)));
+        data.name = this.Value(names.item(i));
         break;
       }
     }
@@ -393,7 +411,7 @@ export default class KMLParser {
     const descriptions = xmlDom.getElementsByTagName('description');
     for (let i = 0; i < descriptions.length; i++) {
       if (this.WithinOffsetDom(xmlDom, descriptions.item(i), config.maxOffset)) {
-        data.description = (this.Value(descriptions.item(i)));
+        data.description = this.Value(descriptions.item(i));
         break;
       }
     }
@@ -408,7 +426,8 @@ export default class KMLParser {
         for (let j = 0; j < extendedDatas.item(i).childNodes.length; j++) {
           const c = extendedDatas.item(i).childNodes.item(j);
           const t = this.ParseTag(c);
-          if (t.name !== '#text') { // eslint-disable-line
+          if (t.name !== '#text') {
+            // eslint-disable-line
             data.tags[t.name] = t.value;
           }
         }
@@ -424,18 +443,18 @@ export default class KMLParser {
     };
 
     switch (xmlDom.nodeName) {
-    case 'Data':
-    case 'data':
-      // TODO: add data tags...
-      break;
-    case 'ID':
-      tags.name = 'ID';
-      tags.value = this.Value(xmlDom);
-      break;
-    default:
-      tags.name = xmlDom.nodeName;
-      tags.value = this.Value(xmlDom);
-      break;
+      case 'Data':
+      case 'data':
+        // TODO: add data tags...
+        break;
+      case 'ID':
+        tags.name = 'ID';
+        tags.value = this.Value(xmlDom);
+        break;
+      default:
+        tags.name = xmlDom.nodeName;
+        tags.value = this.Value(xmlDom);
+        break;
     }
 
     return tags;
@@ -449,69 +468,89 @@ export default class KMLParser {
       }
       current = current.parentNode;
     }
-    this.log.error(['this. Could not find parent node within expected bounds.', {
-      parentNode: parent,
-      childNode: child,
-      bounds: max
-    }]);
+    this.log.error([
+      'this. Could not find parent node within expected bounds.',
+      {
+        parentNode: parent,
+        childNode: child,
+        bounds: max
+      }
+    ]);
     return false;
   }
 
   ParseDomStyle(xmlDom, options) {
-
-    const config = Object.assign({}, {
-      defaultStyle: 'default'
-    }, options);
+    const config = Object.assign(
+      {},
+      {
+        defaultStyle: 'default'
+      },
+      options
+    );
 
     const styles = xmlDom.getElementsByTagName('styleUrl');
     let style = config.defaultStyle;
     if (styles.length === 0) {
-      this.log.warn(['this. DOM Node did not contain styleUrl!', {
-        node: xmlDom,
-        options: config
-      }]);
+      this.log.warn([
+        'this. DOM Node did not contain styleUrl!',
+        {
+          node: xmlDom,
+          options: config
+        }
+      ]);
     } else {
       const node = styles.item(0);
-      style = (this.Value(node));
+      style = this.Value(node);
     }
     return style;
   }
 
   ParseDomIcon(xmlDom, options) {
-
-    const config = Object.assign({}, {
-      defaultIcon: false,
-      defaultScale: 1.0
-    }, options);
+    const config = Object.assign(
+      {},
+      {
+        defaultIcon: false,
+        defaultScale: 1.0
+      },
+      options
+    );
 
     const icons = xmlDom.getElementsByTagName('Icon');
     let icon = config.defaultStyle;
     let scale = config.defaultScale;
     if (icons.length === 0) {
-      this.log.warn(['this. DOM Node did not contain Icon!', {
-        node: xmlDom,
-        options: config
-      }]);
+      this.log.warn([
+        'this. DOM Node did not contain Icon!',
+        {
+          node: xmlDom,
+          options: config
+        }
+      ]);
     } else {
       const node = icons.item(0);
       const urls = node.getElementsByTagName('href');
       if (urls.length === 0) {
-        this.log.warn(['this. DOM Icon Node did not contain href!', {
-          node: xmlDom,
-          options: config
-        }]);
+        this.log.warn([
+          'this. DOM Icon Node did not contain href!',
+          {
+            node: xmlDom,
+            options: config
+          }
+        ]);
       } else {
         const hrefNode = urls.item(0);
-        icon = (this.Value(hrefNode));
+        icon = this.Value(hrefNode);
       }
 
       const scales = node.getElementsByTagName('viewBoundScale');
       if (scales.length === 0) {
-        this.log.warn(['this. DOM Icon Node did not contain viewBoundScale!', {
-          node: xmlDom,
-          options: config
-        }]);
-
+        this.log.warn([
+          'this. DOM Icon Node did not contain viewBoundScale!',
+          {
+            node: xmlDom,
+            options: config
+          }
+        ]);
       } else {
         const scaleNode = scales.item(0);
         scale = parseFloat(this.Value(scaleNode));
@@ -526,10 +565,9 @@ export default class KMLParser {
   /* eslint-disable max-depth, max-statements */
   ResolveDomStyle(style, xmlDom) {
     const data = {};
-    const name = (style.charAt(0) === '#' ? style.substring(1, style.length) : style);
+    const name = style.charAt(0) === '#' ? style.substring(1, style.length) : style;
     const styles = xmlDom.getElementsByTagName('Style');
     for (let i = 0; i < styles.length; i++) {
-
       const node = styles.item(i);
       const id = node.getAttribute('id');
       if (id === name) {
@@ -585,14 +623,19 @@ export default class KMLParser {
         items.push(node);
         continue;
       }
-      const parent = (node.parentNode.nodeName === 'Placemark' ?
-        node.parentNode :
-        (node.parentNode.parentNode.nodeName === 'Placemark' ?
-          node.parentNode.parentNode : null));
+      const parent =
+        node.parentNode.nodeName === 'Placemark'
+          ? node.parentNode
+          : node.parentNode.parentNode.nodeName === 'Placemark'
+            ? node.parentNode.parentNode
+            : null;
       if (parent === null) {
-        this.log.error(['Failed to find ParentNode for Element - ' + tagName, {
-          node: xmlDom
-        }]);
+        this.log.error([
+          'Failed to find ParentNode for Element - ' + tagName,
+          {
+            node: xmlDom
+          }
+        ]);
         //  ();
       } else {
         items.push(parent);
@@ -615,12 +658,12 @@ export default class KMLParser {
       colorStr = colorStr.substring(0, 8);
     }
     const color = colorStr.substring(6, 8) + colorStr.substring(4, 6) + colorStr.substring(2, 4);
-    const opacity = ((parseInt(colorStr.substring(0, 2), 16)) * 1.000) / (parseInt('FF', 16));
+    const opacity = (parseInt(colorStr.substring(0, 2), 16) * 1.0) / parseInt('FF', 16);
 
     const rgbVal = {
       color: '#' + color,
       opacity: opacity
-    }
+    };
 
     return rgbVal;
   }
@@ -634,22 +677,23 @@ export default class KMLParser {
       colorStr = colorStr.substring(0, 6);
     }
 
-    if ((opacity != null)) {
+    if (opacity != null) {
       if (opacity >= 0.0 && opacity <= 1.0) {
         const opacityNum = opacity;
       } else if (parseInt(opacity) >= 0.0 && parseInt(opacity) <= 1.0) {
         const opacityNum = parseInt(opacity);
       }
     }
-    if ((opacityNum === null)) {
+    if (opacityNum === null) {
       const opacityNum = 1.0;
     }
 
-    const opacityNum = (opacityNum * 255.0);
+    const opacityNum = opacityNum * 255.0;
     const opacityStr = opacityNum.toString(16);
 
     const kmlStr =
-      opacityStr.substring(0, 2) + '' +
+      opacityStr.substring(0, 2) +
+      '' +
       colorStr.substring(4, 6) +
       colorStr.substring(2, 4) +
       colorStr.substring(0, 2);
@@ -679,7 +723,6 @@ export default class KMLParser {
       for (let i = 0; i < node.childNodes.length; i++) {
         array.push(node.childNodes.item(i));
       }
-
     }
     return array;
   }

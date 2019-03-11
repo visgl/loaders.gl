@@ -9,11 +9,11 @@ let TEST_FILES = null;
 
 async function getTestFiles() {
   TEST_FILES = TEST_FILES || [
-    ['png', await readFile('@loaders.gl/core/../data/images/img1-preview.png')],
-    ['jpeg', await readFile('@loaders.gl/core/../data/images/img1-preview.jpeg')],
-    ['gif', await readFile('@loaders.gl/core/../data/images/img1-preview.gif')],
-    ['bmp', await readFile('@loaders.gl/core/../data/images/img1-preview.bmp')],
-    ['tiff', await readFile('@loaders.gl/core/../data/images/img1-preview.png')]
+    ['png', await readFile('@loaders.gl/core/test/data/images/img1-preview.png')],
+    ['jpeg', await readFile('@loaders.gl/core/test/data/images/img1-preview.jpeg')],
+    ['gif', await readFile('@loaders.gl/core/test/data/images/img1-preview.gif')],
+    ['bmp', await readFile('@loaders.gl/core/test/data/images/img1-preview.bmp')],
+    ['tiff', await readFile('@loaders.gl/core/test/data/images/img1-preview.png')]
   ];
 
   return TEST_FILES;
@@ -33,8 +33,10 @@ async function testImage(t, typeToTest, acceptableTypes, canThrow) {
       t.equals(dimensions.width, 480, `width, should work with ${type.toUpperCase()} files`);
       t.equals(dimensions.height, 320, `height, should work with ${type.toUpperCase()} files`);
     } else if (canThrow) {
-      t.throws(() => getImageSize(buffer, mimeType),
-        `should not work with ${type.toUpperCase()} files`);
+      t.throws(
+        () => getImageSize(buffer, mimeType),
+        `should not work with ${type.toUpperCase()} files`
+      );
     }
   }
 }

@@ -18,25 +18,26 @@ export default function parseWithWorker(workerSource, data, options) {
 
   options = removeNontransferableOptions(options);
 
-  const parse = (rawData, opts) => new Promise((resolve, reject) => {
-    worker.onmessage = evt => {
-      switch (evt.data.type) {
-      case 'done':
-        resolve(evt.data.result);
-        worker.terminate();
-        break;
+  const parse = (rawData, opts) =>
+    new Promise((resolve, reject) => {
+      worker.onmessage = evt => {
+        switch (evt.data.type) {
+          case 'done':
+            resolve(evt.data.result);
+            worker.terminate();
+            break;
 
-      case 'error':
-        reject(new Error(evt.data.message));
-        break;
+          case 'error':
+            reject(new Error(evt.data.message));
+            break;
 
-      default:
-      }
-    };
+          default:
+        }
+      };
 
-    const arraybuffer = toArrayBuffer(rawData);
-    worker.postMessage({arraybuffer, opts}, [arraybuffer]);
-  });
+      const arraybuffer = toArrayBuffer(rawData);
+      worker.postMessage({arraybuffer, opts}, [arraybuffer]);
+    });
 
   return data ? parse(data, options) : parse;
 }

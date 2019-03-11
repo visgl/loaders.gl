@@ -10,7 +10,4 @@ export {default as GLTFBuilder} from './gltf/gltf-builder';
 export {default as GLBParser} from './glb/glb-parser';
 export {default as GLBBuilder} from './glb/glb-builder';
 
-export {
-  KHR_DRACO_MESH_COMPRESSION,
-  UBER_POINT_CLOUD_EXTENSION
-} from './gltf/gltf-constants';
+export {KHR_DRACO_MESH_COMPRESSION, UBER_POINT_CLOUD_EXTENSION} from './gltf/gltf-constants';

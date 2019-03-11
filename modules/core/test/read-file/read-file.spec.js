@@ -3,8 +3,8 @@ import test from 'tape-promise/tape';
 import {isBrowser, readFile, readFileSync} from '@loaders.gl/core';
 
 const DATA_URL = 'data:,important content!';
-const BINARY_URL = '@loaders.gl/core/../data/files/binary-data.bin';
-const TEXT_URL = '@loaders.gl/core/../data/files/hello-world.txt';
+const BINARY_URL = '@loaders.gl/core/test/data/files/binary-data.bin';
+const TEXT_URL = '@loaders.gl/core/test/data/files/hello-world.txt';
 
 test('readFile#imports', t => {
   t.ok(readFile, 'readFile defined');
@@ -13,11 +13,13 @@ test('readFile#imports', t => {
 });
 
 test('readFile#dataUrl', t => {
-  readFile(DATA_URL).then(data => {
-    t.ok(data, 'readFileSync loaded data url');
-    // t.equals(data, 'important content!', 'readFile loaded data url');
-    t.end();
-  }).catch(_ => t.end());
+  readFile(DATA_URL)
+    .then(data => {
+      t.ok(data, 'readFileSync loaded data url');
+      // t.equals(data, 'important content!', 'readFile loaded data url');
+      t.end();
+    })
+    .catch(_ => t.end());
 });
 
 test('readFileSync#dataUrl', t => {
@@ -46,14 +48,16 @@ test('readFile#file (BINARY)', t => {
     return null;
   }
 
-  return readFile(BINARY_URL).then(data => {
-    t.ok(data instanceof ArrayBuffer, 'readFile loaded local file into ArrayBuffer');
-    t.equals(data.byteLength, 4, 'readFile loaded local file length correctly');
-    t.end();
-  }).catch(error => {
-    t.fail(error);
-    t.end();
-  });
+  return readFile(BINARY_URL)
+    .then(data => {
+      t.ok(data instanceof ArrayBuffer, 'readFile loaded local file into ArrayBuffer');
+      t.equals(data.byteLength, 4, 'readFile loaded local file length correctly');
+      t.end();
+    })
+    .catch(error => {
+      t.fail(error);
+      t.end();
+    });
 });
 
 test('readFileSync#file (TEXT)', t => {
@@ -76,12 +80,14 @@ test('readFile#file (TEXT)', t => {
     return null;
   }
 
-  return readFile(TEXT_URL, {dataType: 'text'}).then(data => {
-    t.equals(typeof data, 'string', 'readFile loaded local file into string');
-    t.equals(data, 'Hello world!', 'readFile loaded local file data correctly');
-    t.end();
-  }).catch(error => {
-    t.fail(error);
-    t.end();
-  });
+  return readFile(TEXT_URL, {dataType: 'text'})
+    .then(data => {
+      t.equals(typeof data, 'string', 'readFile loaded local file into string');
+      t.equals(data, 'Hello world!', 'readFile loaded local file data correctly');
+      t.end();
+    })
+    .catch(error => {
+      t.fail(error);
+      t.end();
+    });
 });

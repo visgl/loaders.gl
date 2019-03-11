@@ -13,7 +13,11 @@
 // limitations under the License.
 
 // Config for bundling workers
-const ALIASES = require('../aliases');
+const {resolve} = require('path');
+const ALIASES = require('ocular-dev-tools/config/ocular.config')({
+  aliasMode: 'src',
+  root: resolve(__dirname, '..')
+}).aliases;
 
 const BABEL_CONFIG = {
   presets: [['@babel/env', {modules: 'commonjs'}]],
@@ -24,6 +28,8 @@ module.exports = {
   mode: 'production',
 
   devtool: false,
+
+  stats: 'minimal',
 
   resolve: {
     alias: ALIASES

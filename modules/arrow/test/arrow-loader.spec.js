@@ -6,12 +6,12 @@ import {ArrowWorkerLoader} from '@loaders.gl/arrow';
 import path from 'path';
 
 // Small Arrow Sample Files
-const ARROW_SIMPLE = '@loaders.gl/arrow/../data/simple.arrow';
-const ARROW_DICTIONARY = '@loaders.gl/arrow/../data/dictionary.arrow';
-const ARROW_STRUCT = '@loaders.gl/arrow/../data/struct.arrow';
+const ARROW_SIMPLE = '@loaders.gl/arrow/test/data/simple.arrow';
+const ARROW_DICTIONARY = '@loaders.gl/arrow/test/data/dictionary.arrow';
+const ARROW_STRUCT = '@loaders.gl/arrow/test/data/struct.arrow';
 
 // Bigger, batched sample file
-const ARROW_BIOGRID_NODES = '@loaders.gl/arrow/../data/biogrid-nodes.arrow';
+const ARROW_BIOGRID_NODES = '@loaders.gl/arrow/test/data/biogrid-nodes.arrow';
 
 test('ArrowLoader#parseFileSync(simple.arrow)', async t => {
   const columns = await loadFile(ARROW_SIMPLE, ArrowLoader);
@@ -76,7 +76,7 @@ test('ArrowLoader#parseAsyncIterator(async input)', async t => {
     return;
   }
   const fs = require('fs');
-  const data = fs.createReadStream(path.resolve(__dirname, '../data/biogrid-nodes.arrow'));
+  const data = fs.createReadStream(path.resolve(__dirname, './data/biogrid-nodes.arrow'));
 
   // const {Table} = require('apache-arrow');
   // const values = Table.from(data);

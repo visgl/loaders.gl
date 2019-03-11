@@ -65,7 +65,6 @@ function parseHeader(data, options) {
   let lineValues;
 
   for (let i = 0; i < lines.length; i++) {
-
     let line = lines[i];
     line = line.trim();
 
@@ -79,37 +78,36 @@ function parseHeader(data, options) {
     line = lineValues.join(' ');
 
     switch (lineType) {
-    case 'format':
-      header.format = lineValues[0];
-      header.version = lineValues[1];
-      break;
+      case 'format':
+        header.format = lineValues[0];
+        header.version = lineValues[1];
+        break;
 
-    case 'comment':
-      header.comments.push(line);
-      break;
+      case 'comment':
+        header.comments.push(line);
+        break;
 
-    case 'element':
-      if (currentElement !== undefined) {
-        header.elements.push(currentElement);
-      }
+      case 'element':
+        if (currentElement !== undefined) {
+          header.elements.push(currentElement);
+        }
 
-      currentElement = {};
-      currentElement.name = lineValues[0];
-      currentElement.count = parseInt(lineValues[1], 10);
-      currentElement.properties = [];
-      break;
+        currentElement = {};
+        currentElement.name = lineValues[0];
+        currentElement.count = parseInt(lineValues[1], 10);
+        currentElement.properties = [];
+        break;
 
-    case 'property':
-      currentElement.properties.push(
-        makePLYElementProperty(lineValues, options.propertyNameMapping)
-      );
-      break;
+      case 'property':
+        currentElement.properties.push(
+          makePLYElementProperty(lineValues, options.propertyNameMapping)
+        );
+        break;
 
-    default:
-      // eslint-disable-next-line
-      console.log('unhandled', lineType, lineValues);
+      default:
+        // eslint-disable-next-line
+        console.log('unhandled', lineType, lineValues);
     }
-
   }
 
   if (currentElement !== undefined) {
@@ -142,41 +140,38 @@ function makePLYElementProperty(propertValues, propertyNameMapping) {
 // eslint-disable-next-line complexity
 function parseASCIINumber(n, type) {
   switch (type) {
-  case 'char':
-  case 'uchar':
-  case 'short':
-  case 'ushort':
-  case 'int':
-  case 'uint':
-  case 'int8':
-  case 'uint8':
-  case 'int16':
-  case 'uint16':
-  case 'int32':
-  case 'uint32':
-    return parseInt(n, 10);
+    case 'char':
+    case 'uchar':
+    case 'short':
+    case 'ushort':
+    case 'int':
+    case 'uint':
+    case 'int8':
+    case 'uint8':
+    case 'int16':
+    case 'uint16':
+    case 'int32':
+    case 'uint32':
+      return parseInt(n, 10);
 
-  case 'float':
-  case 'double':
-  case 'float32':
-  case 'float64':
-    return parseFloat(n);
+    case 'float':
+    case 'double':
+    case 'float32':
+    case 'float64':
+      return parseFloat(n);
 
-  default:
-    throw new Error(type);
+    default:
+      throw new Error(type);
   }
 }
 
 function parseASCIIElement(properties, line) {
-
   const values = line.split(/\s+/);
 
   const element = {};
 
   for (let i = 0; i < properties.length; i++) {
-
     if (properties[i].type === 'list') {
-
       const list = [];
       const n = parseASCIINumber(values.shift(), properties[i].countType);
 
@@ -185,20 +180,15 @@ function parseASCIIElement(properties, line) {
       }
 
       element[properties[i].name] = list;
-
     } else {
-
       element[properties[i].name] = parseASCIINumber(values.shift(), properties[i].type);
-
     }
-
   }
 
   return element;
 }
 
 function parseASCII(data, header) {
-
   // PLY ascii format specification, as per http://en.wikipedia.org/wiki/PLY_(file_format)
 
   const attributes = {
@@ -241,9 +231,7 @@ function parseASCII(data, header) {
 }
 
 function handleElement(buffer, elementName, element) {
-
   if (elementName === 'vertex') {
-
     buffer.vertices.push(element.x, element.y, element.z);
 
     if ('nx' in element && 'ny' in element && 'nz' in element) {
@@ -271,39 +259,36 @@ function handleElement(buffer, elementName, element) {
 
 // eslint-disable-next-line complexity
 function binaryRead(dataview, at, type, littleEndian) {
-
   switch (type) {
+    // corespondences for non-specific length types here match rply:
+    case 'int8':
+    case 'char':
+      return [dataview.getInt8(at), 1];
+    case 'uint8':
+    case 'uchar':
+      return [dataview.getUint8(at), 1];
+    case 'int16':
+    case 'short':
+      return [dataview.getInt16(at, littleEndian), 2];
+    case 'uint16':
+    case 'ushort':
+      return [dataview.getUint16(at, littleEndian), 2];
+    case 'int32':
+    case 'int':
+      return [dataview.getInt32(at, littleEndian), 4];
+    case 'uint32':
+    case 'uint':
+      return [dataview.getUint32(at, littleEndian), 4];
+    case 'float32':
+    case 'float':
+      return [dataview.getFloat32(at, littleEndian), 4];
+    case 'float64':
+    case 'double':
+      return [dataview.getFloat64(at, littleEndian), 8];
 
-  // corespondences for non-specific length types here match rply:
-  case 'int8':
-  case 'char':
-    return [dataview.getInt8(at), 1];
-  case 'uint8':
-  case 'uchar':
-    return [dataview.getUint8(at), 1];
-  case 'int16':
-  case 'short':
-    return [dataview.getInt16(at, littleEndian), 2];
-  case 'uint16':
-  case 'ushort':
-    return [dataview.getUint16(at, littleEndian), 2];
-  case 'int32':
-  case 'int':
-    return [dataview.getInt32(at, littleEndian), 4];
-  case 'uint32':
-  case 'uint':
-    return [dataview.getUint32(at, littleEndian), 4];
-  case 'float32':
-  case 'float':
-    return [dataview.getFloat32(at, littleEndian), 4];
-  case 'float64':
-  case 'double':
-    return [dataview.getFloat64(at, littleEndian), 8];
-
-  default:
-    throw new Error(type);
+    default:
+      throw new Error(type);
   }
-
 }
 
 function binaryReadElement(dataview, at, properties, littleEndian) {
@@ -312,9 +297,7 @@ function binaryReadElement(dataview, at, properties, littleEndian) {
   let read = 0;
 
   for (let i = 0; i < properties.length; i++) {
-
     if (properties[i].type === 'list') {
-
       const list = [];
 
       result = binaryRead(dataview, at + read, properties[i].countType, littleEndian);
@@ -328,19 +311,14 @@ function binaryReadElement(dataview, at, properties, littleEndian) {
       }
 
       element[properties[i].name] = list;
-
     } else {
-
       result = binaryRead(dataview, at + read, properties[i].type, littleEndian);
       element[properties[i].name] = result[0];
       read += result[1];
-
     }
-
   }
 
   return [element, read];
-
 }
 
 function parseBinary(data, header) {
@@ -352,7 +330,7 @@ function parseBinary(data, header) {
     colors: []
   };
 
-  const littleEndian = (header.format === 'binary_littleEndian');
+  const littleEndian = header.format === 'binary_littleEndian';
   const body = new DataView(data, header.headerLength);
   let result;
   let loc = 0;
@@ -360,16 +338,17 @@ function parseBinary(data, header) {
   for (let currentElement = 0; currentElement < header.elements.length; currentElement++) {
     const count = header.elements[currentElement].count;
     for (let currentElementCount = 0; currentElementCount < count; currentElementCount++) {
-
       result = binaryReadElement(
-        body, loc, header.elements[currentElement].properties, littleEndian);
+        body,
+        loc,
+        header.elements[currentElement].properties,
+        littleEndian
+      );
       loc += result[1];
       const element = result[0];
 
       handleElement(attributes, header.elements[currentElement].name, element);
-
     }
-
   }
 
   return attributes;

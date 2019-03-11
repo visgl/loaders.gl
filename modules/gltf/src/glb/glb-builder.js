@@ -11,9 +11,9 @@ import {
 
 import packBinaryJson from '../packed-json/pack-binary-json';
 
-const MAGIC_glTF = 0x46546C67; // glTF in Little-Endian ASCII
-const MAGIC_JSON = 0x4E4F534A; // JSON in Little-Endian ASCII
-const MAGIC_BIN = 0x004E4942; // BIN\0 in Little-Endian ASCII
+const MAGIC_glTF = 0x46546c67; // glTF in Little-Endian ASCII
+const MAGIC_JSON = 0x4e4f534a; // JSON in Little-Endian ASCII
+const MAGIC_BIN = 0x004e4942; // BIN\0 in Little-Endian ASCII
 
 const LE = true; // Binary GLTF is little endian.
 
@@ -234,4 +234,3 @@ export default class GLBBuilder {
     return textEncoder.encode(jsonChunkString);
   }
 }
-

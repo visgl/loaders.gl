@@ -95,9 +95,14 @@ function addDefaultParserOptions(options, loader) {
 }
 
 function validateLoaderObject(loader) {
-  const hasParser = loader.parseTextSync || loader.parseText ||
-    loader.parseSync || loader.parse || loader.loadAndParse ||
-    loader.parseStream || loader.worker;
+  const hasParser =
+    loader.parseTextSync ||
+    loader.parseText ||
+    loader.parseSync ||
+    loader.parse ||
+    loader.loadAndParse ||
+    loader.parseStream ||
+    loader.worker;
   assert(hasParser);
 }
 

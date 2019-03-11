@@ -8,8 +8,7 @@ import path from 'path';
 // import mkdirp from 'mkdirp';
 // const TEST_DIR = path.join(__dirname, '..', 'data');
 
-const TEST_DIR = path.join(__dirname, '../data');
-const TEST_FILE = path.join(TEST_DIR, 'test.png');
+const TEST_FILE = path.join(__dirname, './data/test.png');
 
 const IMAGE = {
   width: 2,
@@ -54,13 +53,15 @@ test('images#write-and-read-image', t => {
   const file = fs.createWriteStream(TEST_FILE);
 
   file.on('close', () => {
-    loadImage(TEST_FILE).then(result => {
-      t.same(result, IMAGE);
-      t.end();
-    }).catch(error => {
-      t.fail(error);
-      t.end();
-    });
+    loadImage(TEST_FILE)
+      .then(result => {
+        t.same(result, IMAGE);
+        t.end();
+      })
+      .catch(error => {
+        t.fail(error);
+        t.end();
+      });
   });
 
   return encodeToStream(IMAGE, ImageWriter, {type: 'png'}).pipe(file);

@@ -11,7 +11,8 @@
     "generator-star-spacing": 0,
     "func-names": 0,
     "no-inline-comments": 0,
-    "no-multi-str": 0
+    "no-multi-str": 0,
+    "space-before-function-paren": 0
   },
   "globals": {
     "window": false,
