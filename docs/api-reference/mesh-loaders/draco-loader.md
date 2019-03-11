@@ -2,16 +2,15 @@
 
 Decodes a mesh or point cloud (maps of attributes) using [DRACO compression](https://google.github.io/draco/) compression.
 
-| Loader                     | Characteristic |
-| ---                        | ---            |
-| File Extension             | `.drc`         |
-| File Type                  | Binary         |
-| File Format                | [Draco](https://google.github.io/draco/) |
-| Parser Category            | [Standardized Mesh](docs/api-reference/mesh-loaders/category-mesh.md) |
-| Parser Type                | Synchronous    |
-| Worker Thread Support      | Yes            |
-| Streaming Support          | No             |
-
+| Loader                | Characteristic                                                        |
+| --------------------- | --------------------------------------------------------------------- |
+| File Extension        | `.drc`                                                                |
+| File Type             | Binary                                                                |
+| File Format           | [Draco](https://google.github.io/draco/)                              |
+| Parser Category       | [Standardized Mesh](docs/api-reference/mesh-loaders/category-mesh.md) |
+| Parser Type           | Synchronous                                                           |
+| Worker Thread Support | Yes                                                                   |
+| Streaming Support     | No                                                                    |
 
 ## Usage
 

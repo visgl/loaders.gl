@@ -8,5 +8,5 @@ The `core` module makes efforts to minimize dependencies, and optimize for tree-
 
 While all the utilities in the core module are tested under Node.js, the provided loading functions mainly supports browser use cases.
 
-* If you are interested in a set of general file loader/writer functions that work somewhat consistently between browser and Node.js, look at `@loaders.gl/core-io`.
-* If you need image loading/encoding functions that workin both browsers and Node.js, look at `@loaders.gl/images`.
+- If you are interested in a set of general file loader/writer functions that work somewhat consistently between browser and Node.js, look at `@loaders.gl/core-io`.
+- If you need image loading/encoding functions that workin both browsers and Node.js, look at `@loaders.gl/images`.

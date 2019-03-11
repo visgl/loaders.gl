@@ -4,8 +4,6 @@ A suite of portable, framework-independent loaders (parsers) and writers (encode
 
 > Note that loaders.gl is still a Work-in-Progress. We have chose to develop loaders.gl in the open because many of the loaders are already stable and useful, and we like to share direction and intentions around what we are building. You are welcome to use loaders.gl, but be aware that APIs and designs are still being fine-tuned.
 
-
-
 ## Why loaders.gl?
 
 There are many excellent open source loaders for 3D and geospatial formats available under MIT license on github etc.
@@ -16,16 +14,13 @@ In addition, the functionality offered by each loader can vary quite a bit. The 
 
 loaders.gl is an effort to collect some of the best loaders created by the open source community and package them in a unified, portable, framework-independent way.
 
-
 ## Contents of Loaders.gl
 
-* **Loaders** - The core functionality is a set of loaders (parsers) for various major geometry formats.
+- **Loaders** - The core functionality is a set of loaders (parsers) for various major geometry formats.
 
-* **Writers** - A number of formats also provide writers (or encoders for selected key formats to support saving data.
+- **Writers** - A number of formats also provide writers (or encoders for selected key formats to support saving data.
 
-* **Utilities** - Since the loaders and writers themselves only implement parsing and encoding (typically from strings or array buffers), i.e. they don't actually "load" or "save" any data, loaders.gl also provides a set of utility functions that accept loader objects perform actual loading from files, urls etc.
-
-
+- **Utilities** - Since the loaders and writers themselves only implement parsing and encoding (typically from strings or array buffers), i.e. they don't actually "load" or "save" any data, loaders.gl also provides a set of utility functions that accept loader objects perform actual loading from files, urls etc.
 
 ## Main Design Goals
 
@@ -43,11 +38,9 @@ Some of the key design goals for loaders.gl.
 
 **Works in Browsers, Worker Threads and Node.js** - TextEncoder polyfills? ArrayBuffers vs Buffers? Whether optimizing interactivity, working with isomorpic applications, writing test suites etc, you'll know that running loaders on worker threads and Node is supported.
 
-
 ## Licenses
 
 loaders.gl currently contains a collection of MIT licensed loaders. Each loader comes with its own license, so if the distinction matters to you, please check and decide accordingly. However, loaders.gl will not include any loaders with non-permissive, commercial or copy-left licenses.
-
 
 ## Credits and Attributions
 
@@ -55,11 +48,9 @@ loaders.gl is to a large extent just a simple curation and repackaging of the su
 
 Also check each loader directory for additional details, we strive to keep intact any comments inside the source code relating to authorship and contributions.
 
-
 ## Support
 
 loaders.gl is part of the vis.gl framework ecosystem, and was mainly created to support various frameworks and apps within these frameworks such as luma.gl and deck.gl, but is intentionally designed in a framework-agnostic way.
-
 
 ## Contributions
 

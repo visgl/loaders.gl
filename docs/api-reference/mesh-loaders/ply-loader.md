@@ -2,16 +2,15 @@
 
 PLY is a computer file format known as the Polygon File Format or the Stanford Triangle Format. It was principally designed to store three-dimensional data from 3D scanners.
 
-| Loader                     | Characteristic |
-| ---                        | ---            |
-| File Extension             | `.ply`         |
-| File Type                  | Binary/Text    |
-| File Format                | [PLY format](https://en.wikipedia.org/wiki/PLY_(file_format)) |
-| Data Format                | [Standardized Mesh](docs/api-reference/mesh-loaders/category-mesh.md) |
-| Encoder Type               | Synchronous    |
-| Worker Thread Support      | Yes            |
-| Streaming Support          | No             |
-
+| Loader                | Characteristic                                                        |
+| --------------------- | --------------------------------------------------------------------- |
+| File Extension        | `.ply`                                                                |
+| File Type             | Binary/Text                                                           |
+| File Format           | [PLY format](<https://en.wikipedia.org/wiki/PLY_(file_format)>)       |
+| Data Format           | [Standardized Mesh](docs/api-reference/mesh-loaders/category-mesh.md) |
+| Encoder Type          | Synchronous                                                           |
+| Worker Thread Support | Yes                                                                   |
+| Streaming Support     | No                                                                    |
 
 ## Usage
 

@@ -1,11 +1,12 @@
 ## `GLBParser` class
 
-The `GLBParser` class lets the application access data encoded in a GLB binary "envelope".  Most applications would use the `glTFParser` class instead (which uses the `GLBParser` class under the hood to parse GLB-encoded glTF files).
+The `GLBParser` class lets the application access data encoded in a GLB binary "envelope". Most applications would use the `glTFParser` class instead (which uses the `GLBParser` class under the hood to parse GLB-encoded glTF files).
 
 However, the GLB encoding can potentially also be used independently to save mixed JSON and binary data, in which case having access to the `GLBParser` class can be helpful.
 
 References:
-* For more information, see [GLB and GLB support](docs/) in the Developer's Guide.
+
+- For more information, see [GLB and GLB support](docs/) in the Developer's Guide.
 
 ## Usage
 
@@ -37,6 +38,6 @@ Creates a new `GLBParser` instance.
 
 Parses an in-memory, GLB formatted `ArrayBuffer` into:
 
-* `arrayBuffer` - just returns the input array buffer
-* `binaryByteOffset` - offset to the first byte in the binary chunk
-* `json` - a JavaScript "JSON" data structure with inlined binary data fields.
+- `arrayBuffer` - just returns the input array buffer
+- `binaryByteOffset` - offset to the first byte in the binary chunk
+- `json` - a JavaScript "JSON" data structure with inlined binary data fields.
