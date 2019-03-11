@@ -4,7 +4,7 @@ import test from 'tape-promise/tape';
 
 import LoadImageWorker from './load-image.worker';
 
-const CONTENT_BASE = '@loaders.gl/core/../data/';
+const CONTENT_BASE = '@loaders.gl/core/test/data/';
 
 const TEST_CASES = [
   {
@@ -57,14 +57,16 @@ Bytg0kAAAAFElEQVQIW2P8z/D/PwMDAwMjjAEAQOwF/W1Dp54AAAAASUVORK5CYII=`,
 function testLoadImage({title, url, width, height}) {
   test(title, t => {
     url = url.startsWith('data:') ? url : resolvePath(CONTENT_BASE + url);
-    loadImage(url).then(image => {
-      t.ok(image, 'loadImage loaded data url');
-      t.ok(
-        image.naturalWidth === width && image.naturalHeight === height,
-        'loaded image has correct content'
-      );
-    }).catch(t.fail)
-    .finally(() => t.end());
+    loadImage(url)
+      .then(image => {
+        t.ok(image, 'loadImage loaded data url');
+        t.ok(
+          image.naturalWidth === width && image.naturalHeight === height,
+          'loaded image has correct content'
+        );
+      })
+      .catch(t.fail)
+      .finally(() => t.end());
   });
 }
 
@@ -94,7 +96,7 @@ test('loadImage#worker', t => {
   const worker = new LoadImageWorker();
   let testIndex = 0;
 
-  const runTest = (index) => {
+  const runTest = index => {
     const testCase = TEST_CASES[index];
     if (!testCase) {
       t.end();

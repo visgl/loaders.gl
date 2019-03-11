@@ -3,7 +3,7 @@ import test from 'tape-promise/tape';
 import {parseFileSync} from '@loaders.gl/core';
 import {KMLasGeoJsonLoader} from '@loaders.gl/kml';
 
-import KML from '../data/KML_Samples.kml';
+import KML from './data/KML_Samples.kml';
 
 const INVALID_KML = `\
 <?xml version="1.0" encoding="UTF-8"?>
@@ -24,7 +24,6 @@ test('KMLasGeoJsonLoader#testText', t => {
 });
 
 test('KMLasGeoJsonLoader#parseText', t => {
-
   if (!KMLasGeoJsonLoader.supported) {
     t.comment('XML parsing not available');
   } else {

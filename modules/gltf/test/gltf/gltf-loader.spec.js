@@ -7,10 +7,10 @@ import {GLBParser, GLTFLoader, GLTFParser} from '@loaders.gl/gltf';
 import path from 'path';
 
 const GLTF_BINARY =
-  readFileSync(path.resolve(__dirname, '../../data/gltf-2.0/2CylinderEngine.glb')) ||
-  require('../../data/gltf-2.0/2CylinderEngine.glb');
+  readFileSync(path.resolve(__dirname, '../data/gltf-2.0/2CylinderEngine.glb')) ||
+  require('../data/gltf-2.0/2CylinderEngine.glb');
 
-const GLTF_JSON = deepCopy(require('../../data/gltf-2.0/2CylinderEngine.gltf.json'));
+const GLTF_JSON = deepCopy(require('../data/gltf-2.0/2CylinderEngine.gltf.json'));
 
 test('GLTFLoader#imports', t => {
   t.ok(GLTFLoader, 'GLTFLoader was imported');

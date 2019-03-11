@@ -1,7 +1,12 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
 import {
-  fetchFile, readFile, parseFileSync, parseFile, loadFile, getStreamIterator,
+  fetchFile,
+  readFile,
+  parseFileSync,
+  parseFile,
+  loadFile,
+  getStreamIterator,
   getGLTFAttribute
 } from '@loaders.gl/core';
 import {PLYLoader, PLYWorkerLoader, _PLYStreamLoader} from '@loaders.gl/ply';
@@ -15,7 +20,7 @@ function validateTextPLY(t, data) {
 }
 
 test('PLYLoader#parse(textFile loaded as text)', async t => {
-  const data = await loadFile('@loaders.gl/ply/../data/cube_att.ply', PLYLoader, {});
+  const data = await loadFile('@loaders.gl/ply/test/data/cube_att.ply', PLYLoader, {});
 
   validateLoadedData(t, data);
   validateTextPLY(t, data);
@@ -23,7 +28,7 @@ test('PLYLoader#parse(textFile loaded as text)', async t => {
 });
 
 test('PLYLoader#parse(textFile loaded as binary)', async t => {
-  const data = await loadFile('@loaders.gl/ply/../data/cube_att.ply', PLYLoader);
+  const data = await loadFile('@loaders.gl/ply/test/data/cube_att.ply', PLYLoader);
 
   validateLoadedData(t, data);
   validateTextPLY(t, data);
@@ -31,7 +36,7 @@ test('PLYLoader#parse(textFile loaded as binary)', async t => {
 });
 
 test('PLYLoader#parseFileSync(binary)', async t => {
-  const arrayBuffer = await readFile('@loaders.gl/ply/../data/bun_zipper.ply');
+  const arrayBuffer = await readFile('@loaders.gl/ply/test/data/bun_zipper.ply');
   const data = parseFileSync(arrayBuffer, PLYLoader);
 
   validateLoadedData(t, data);
@@ -40,7 +45,7 @@ test('PLYLoader#parseFileSync(binary)', async t => {
 });
 
 test('PLYLoader#parse(binary)', async t => {
-  const arrayBuffer = await readFile('@loaders.gl/ply/../data/bun_zipper.ply');
+  const arrayBuffer = await readFile('@loaders.gl/ply/test/data/bun_zipper.ply');
   const data = await parseFile(arrayBuffer, PLYLoader);
 
   validateLoadedData(t, data);
@@ -57,7 +62,7 @@ test('PLYLoader#parse(WORKER)', async t => {
 
   // Once binary is transferred to worker it cannot be read from the main thread
   // Duplicate it here to avoid breaking other tests
-  const arrayBuffer = await readFile('@loaders.gl/ply/../data/bun_zipper.ply');
+  const arrayBuffer = await readFile('@loaders.gl/ply/test/data/bun_zipper.ply');
   const data = await parseFile(arrayBuffer, PLYWorkerLoader);
 
   validateLoadedData(t, data);
@@ -66,7 +71,7 @@ test('PLYLoader#parse(WORKER)', async t => {
 });
 
 test('PLYLoader#parseStream(text)', async t => {
-  const response = await fetchFile('@loaders.gl/ply/../data/cube_att.ply');
+  const response = await fetchFile('@loaders.gl/ply/test/data/cube_att.ply');
   const stream = await response.body;
 
   const data = await _PLYStreamLoader.parseAsIterator(getStreamIterator(stream));

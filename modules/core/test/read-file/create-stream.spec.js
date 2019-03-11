@@ -1,7 +1,7 @@
 import test from 'tape-promise/tape';
 import {createReadStream, getStreamIterator} from '@loaders.gl/core';
 
-const DATA_URL = '@loaders.gl/draco/../data/raw-attribute-buffers/lidar-positions.bin';
+const DATA_URL = '@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-positions.bin';
 
 test('createReadStream#parseStream(text)', async t => {
   const stream = await createReadStream(DATA_URL);

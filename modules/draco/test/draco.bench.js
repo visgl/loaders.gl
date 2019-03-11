@@ -3,12 +3,12 @@ import {DracoEncoder, DracoLoader} from '@loaders.gl/draco';
 import path from 'path';
 
 const POSITIONS =
-  readFileSync(path.resolve(__dirname, '../data/raw-attribute-buffers/lidar-positions.bin')) ||
-  require('../data/raw-attribute-buffers/lidar-positions.bin');
+  readFileSync(path.resolve(__dirname, './data/raw-attribute-buffers/lidar-positions.bin')) ||
+  require('./data/raw-attribute-buffers/lidar-positions.bin');
 
 const COLORS =
-  readFileSync(path.resolve(__dirname, '../data/raw-attribute-buffers/lidar-positions.bin')) ||
-  require('../data/raw-attribute-buffers/lidar-colors.bin');
+  readFileSync(path.resolve(__dirname, './data/raw-attribute-buffers/lidar-positions.bin')) ||
+  require('./data/raw-attribute-buffers/lidar-colors.bin');
 
 /*
 import {addFileAliases, isBrowser} from '@loaders.gl/core';
@@ -53,13 +53,15 @@ export default function dracoBench(bench) {
     const compressedPointCloud = dracoEncoder.encodePointCloud(attributes);
     // eslint-disable-next-line
     console.log(`${option.name} compression rate:
-      ${(compressedPointCloud.byteLength / rawSize * 100).toFixed(2)}%`);
+      ${((compressedPointCloud.byteLength / rawSize) * 100).toFixed(2)}%`);
 
-    bench = bench.add(`DracoEncoder#encode point cloud#${option.name}`, () => {
-      dracoEncoder.encodePointCloud(attributes);
-    }).add(`DracoDecoder#decode point cloud#${option.name}`, () => {
-      parseFileSync(compressedPointCloud, DracoLoader);
-    });
+    bench = bench
+      .add(`DracoEncoder#encode point cloud#${option.name}`, () => {
+        dracoEncoder.encodePointCloud(attributes);
+      })
+      .add(`DracoDecoder#decode point cloud#${option.name}`, () => {
+        parseFileSync(compressedPointCloud, DracoLoader);
+      });
   });
 
   return bench;
