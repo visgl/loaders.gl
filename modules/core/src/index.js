@@ -5,7 +5,10 @@ export {setPathPrefix, getPathPrefix, resolvePath} from './read-file/file-aliase
 export {fetchFile, readFile, readFileSync, createReadStream} from './read-file/read-file';
 
 export {
-  parseFile, parseFileSync, parseFileAsIterator, parseFileAsAsyncIterator
+  parseFile,
+  parseFileSync,
+  parseFileAsIterator,
+  parseFileAsAsyncIterator
 } from './parse-file/parse-file';
 export {loadFile, loadFileSync} from './load-file/load-file';
 export {loadImage} from './load-file/load-image';
@@ -18,10 +21,7 @@ export {saveFile, saveFileSync} from './save-file/save-file';
 
 // BINARY UTILS
 
-export {
-  TextDecoder,
-  TextEncoder
-} from './binary-utils/text-encoding';
+export {TextDecoder, TextEncoder} from './binary-utils/text-encoding';
 
 export {
   isArrayBuffer,
@@ -33,35 +33,19 @@ export {
   toDataView
 } from './binary-utils/binary-utils';
 
-export {
-  padTo4Bytes,
-  copyToArray,
-  copyArrayBuffer
-} from './binary-utils/memory-copy-utils';
+export {padTo4Bytes, copyToArray, copyArrayBuffer} from './binary-utils/memory-copy-utils';
 
-export {
-  flattenToTypedArray
-} from './binary-utils/flatten-to-typed-array';
+export {flattenToTypedArray} from './binary-utils/flatten-to-typed-array';
 
 // IMAGE UTILS
 
-export {
-  isImage,
-  getImageSize
-} from './image-utils/get-image-size';
+export {isImage, getImageSize} from './image-utils/get-image-size';
 
-export {
-  ImageBitmapLoader,
-  HTMLImageLoader,
-  PlatformImageLoader
-} from './image-utils/image-loaders';
+export {ImageBitmapLoader, HTMLImageLoader, PlatformImageLoader} from './image-utils/image-loaders';
 
 // MESH UTILS
 
-export {
-  getAccessorTypeFromSize,
-  getComponentTypeFromArray
-} from './mesh-utils/gltf-type-utils';
+export {getAccessorTypeFromSize, getComponentTypeFromArray} from './mesh-utils/gltf-type-utils';
 
 export {
   getGLTFAttribute,
@@ -81,7 +65,9 @@ export {default as createWorker} from './worker-utils/create-worker';
 export {default as _parseWithWorker} from './worker-utils/parse-with-worker';
 
 export {
-  isPromise, isIterable, isAsyncIterable,
+  isPromise,
+  isIterable,
+  isAsyncIterable,
   forEach,
   concatenateAsyncIterator,
   lineAsyncIterator,
@@ -89,9 +75,7 @@ export {
   numberedLineAsyncIterator
 } from './async-iterator-utils/async-iterator-utils';
 
-export {
-  getStreamIterator
-} from './async-iterator-utils/stream-utils';
+export {getStreamIterator} from './async-iterator-utils/stream-utils';
 
 // INTERNAL UTILS
 export {getMeshSize as _getMeshSize} from './mesh-utils/mesh-utils';

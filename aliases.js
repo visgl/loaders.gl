@@ -20,7 +20,7 @@
 
 const path = require('path');
 
-// TODO - Add option to make separate sets of aliases for dist testing
+// NOTE - this cannot be replaced with ocular-dev-tools because it is required in browser
 const makeAliases = () => ({
   test: path.resolve(__dirname, './test'),
   '@loaders.gl/core': path.resolve(__dirname, './modules/core/src'),

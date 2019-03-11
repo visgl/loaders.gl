@@ -25,10 +25,8 @@ function encodeZipAsync(fileMap, options) {
   });
   const {onUpdate = () => {}} = options;
 
-  return jsZip.generateAsync(options, onUpdate)
-  .catch(error => {
+  return jsZip.generateAsync(options, onUpdate).catch(error => {
     options.log.error(`Unable to write zip archive: ${error}`);
     throw error;
   });
 }
-

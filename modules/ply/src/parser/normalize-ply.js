@@ -13,9 +13,9 @@ export function standardizePLYMesh(header, attributes) {
     header: {
       vertexCount
     },
-    mode: normalizedAttributes.indices ?
-      4 : // TRIANGLES
-      0,  // POINTS
+    mode: normalizedAttributes.indices
+      ? 4 // TRIANGLES
+      : 0, // POINTS
     indices: getGLTFIndices(normalizedAttributes),
     attributes: getGLTFAccessors(normalizedAttributes),
     glTFAttributeMap: getGLTFAttributeMap(normalizedAttributes)

@@ -62,14 +62,16 @@ export default class TestRender {
 
   // Returns a promise that resolves when all the test cases are done
   run() {
-    return new Promise((resolve) => {
-      this._animationLoop = new AnimationLoop(Object.assign({}, this.props, {
-        onRender: this.onRender.bind(this),
-        onFinalize: () => {
-          this.isRunning = false;
-          resolve();
-        }
-      }));
+    return new Promise(resolve => {
+      this._animationLoop = new AnimationLoop(
+        Object.assign({}, this.props, {
+          onRender: this.onRender.bind(this),
+          onFinalize: () => {
+            this.isRunning = false;
+            resolve();
+          }
+        })
+      );
       this._animationLoop.start(this.props);
 
       this.isRunning = true;
@@ -123,17 +125,25 @@ export default class TestRender {
         }
       }
       this.isDiffing = true;
-      window.browserTestDriver_captureAndDiffScreen(Object.assign({
-        tolerance: this.isHeadless ? 0.25 : 0.1
-      }, testCase, {
-        // uncomment to save failed images
-        // saveOnFail: true,
-        region: getBoundingBoxInPage(animationProps.canvas)
-      })).then(result => {
-        this.props.onTestResult(testCase, result);
-        this.currentTestCase = null;
-        this.isDiffing = false;
-      });
+      window
+        .browserTestDriver_captureAndDiffScreen(
+          Object.assign(
+            {
+              tolerance: this.isHeadless ? 0.25 : 0.1
+            },
+            testCase,
+            {
+              // uncomment to save failed images
+              // saveOnFail: true,
+              region: getBoundingBoxInPage(animationProps.canvas)
+            }
+          )
+        )
+        .then(result => {
+          this.props.onTestResult(testCase, result);
+          this.currentTestCase = null;
+          this.isDiffing = false;
+        });
     }
   }
 }

@@ -21,13 +21,13 @@
 // TODO - this interferes with render test by adding background color
 // require('tap-browser-color')();
 
-const test = require("tape");
+const test = require('tape');
 
 test.onFinish(window.browserTestDriver_finish);
 test.onFailure(window.browserTestDriver_fail);
 
-test("Browser tests", t => {
-  require("./modules");
-  require("./render");
+test('Browser tests', t => {
+  require('./modules');
+  require('./render');
   t.end();
 });

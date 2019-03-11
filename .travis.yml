@@ -5,6 +5,9 @@ dist: trusty
 addons:
 node_js:
   - '10'
-before_script:
-  - npm run bootstrap
-script: npm run test ci
+install:
+  - yarn bootstrap
+script:
+  - npm run test ci
+after_success:
+  - cat coverage/lcov.info | coveralls

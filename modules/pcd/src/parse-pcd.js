@@ -21,17 +21,17 @@ export default function parsePCD(data, url, options) {
 
   // parse data
   switch (header.data) {
-  case 'ascii':
-    attributes = parsePCDASCII(header, textData);
-    break;
+    case 'ascii':
+      attributes = parsePCDASCII(header, textData);
+      break;
 
-  case 'binary':
-    attributes = parsePCDBinary(header, data);
-    break;
+    case 'binary':
+      attributes = parsePCDBinary(header, data);
+      break;
 
-  case 'binary_compressed':
-  default:
-    throw new Error(`PCD: ${header.data} files are not supported`);
+    case 'binary_compressed':
+    default:
+      throw new Error(`PCD: ${header.data} files are not supported`);
   }
 
   const accessors = getGLTFAccessors(attributes);
@@ -61,7 +61,7 @@ function getNormalizedHeader(PCDheader) {
 function parsePCDHeader(data) {
   const PCDheader = {};
   const result1 = data.search(/[\r\n]DATA\s(\S*)\s/i);
-  const result2 = (/[\r\n]DATA\s(\S*)\s/i).exec(data.substr(result1 - 1));
+  const result2 = /[\r\n]DATA\s(\S*)\s/i.exec(data.substr(result1 - 1));
 
   PCDheader.data = result2[1];
   PCDheader.headerLen = result2[0].length + result1;
@@ -73,15 +73,15 @@ function parsePCDHeader(data) {
 
   // parse
 
-  PCDheader.version = (/VERSION (.*)/i).exec(PCDheader.str);
-  PCDheader.fields = (/FIELDS (.*)/i).exec(PCDheader.str);
-  PCDheader.size = (/SIZE (.*)/i).exec(PCDheader.str);
-  PCDheader.type = (/TYPE (.*)/i).exec(PCDheader.str);
-  PCDheader.count = (/COUNT (.*)/i).exec(PCDheader.str);
-  PCDheader.width = (/WIDTH (.*)/i).exec(PCDheader.str);
-  PCDheader.height = (/HEIGHT (.*)/i).exec(PCDheader.str);
-  PCDheader.viewpoint = (/VIEWPOINT (.*)/i).exec(PCDheader.str);
-  PCDheader.points = (/POINTS (.*)/i).exec(PCDheader.str);
+  PCDheader.version = /VERSION (.*)/i.exec(PCDheader.str);
+  PCDheader.fields = /FIELDS (.*)/i.exec(PCDheader.str);
+  PCDheader.size = /SIZE (.*)/i.exec(PCDheader.str);
+  PCDheader.type = /TYPE (.*)/i.exec(PCDheader.str);
+  PCDheader.count = /COUNT (.*)/i.exec(PCDheader.str);
+  PCDheader.width = /WIDTH (.*)/i.exec(PCDheader.str);
+  PCDheader.height = /HEIGHT (.*)/i.exec(PCDheader.str);
+  PCDheader.viewpoint = /VIEWPOINT (.*)/i.exec(PCDheader.str);
+  PCDheader.points = /POINTS (.*)/i.exec(PCDheader.str);
 
   // evaluate
 
@@ -160,16 +160,13 @@ function parsePCDASCII(PCDheader, textData) {
   const lines = pcdData.split('\n');
 
   for (let i = 0; i < lines.length; i++) {
-
     if (lines[i] !== '') {
       const line = lines[i].split(' ');
 
       if (offset.x !== undefined) {
-
         position.push(parseFloat(line[offset.x]));
         position.push(parseFloat(line[offset.y]));
         position.push(parseFloat(line[offset.z]));
-
       }
 
       if (offset.rgb !== undefined) {
@@ -200,7 +197,6 @@ function parsePCDBinary(PCDheader, data) {
   const offset = PCDheader.offset;
 
   for (let i = 0, row = 0; i < PCDheader.points; i++, row += PCDheader.rowSize) {
-
     if (offset.x !== undefined) {
       position.push(dataview.getFloat32(row + offset.x, LITTLE_ENDIAN));
       position.push(dataview.getFloat32(row + offset.y, LITTLE_ENDIAN));

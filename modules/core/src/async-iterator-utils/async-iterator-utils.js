@@ -1,8 +1,8 @@
 import {concatenateArrayBuffers} from '../binary-utils/memory-copy-utils';
 import {TextDecoder, TextEncoder} from '../binary-utils/text-encoding';
 
-export const isPromise = x => x && (typeof x === 'object' || typeof x === 'function') &&
-  typeof x.then === 'function';
+export const isPromise = x =>
+  x && (typeof x === 'object' || typeof x === 'function') && typeof x.then === 'function';
 
 export const isIterable = x => x && typeof x[Symbol.iterator] === 'function';
 
@@ -53,8 +53,9 @@ export async function concatenateAsyncIterator(asyncIterator) {
 export async function* textDecoderAsyncIterator(arrayBufferIterator, options) {
   const textDecoder = new TextDecoder(options);
   for await (const arrayBuffer of arrayBufferIterator) {
-    yield typeof arrayBuffer === 'string' ?
-      arrayBuffer : textDecoder.decode(arrayBuffer, {stream: true});
+    yield typeof arrayBuffer === 'string'
+      ? arrayBuffer
+      : textDecoder.decode(arrayBuffer, {stream: true});
   }
 }
 

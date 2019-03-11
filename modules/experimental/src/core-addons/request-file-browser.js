@@ -56,9 +56,9 @@ class XHR {
       try {
         const {req, method, noCache, sendAsBinary, responseType} = this;
 
-        const url = noCache ?
-          this.url + (this.url.indexOf('?') >= 0 ? '&' : '?') + Date.now() :
-          this.url;
+        const url = noCache
+          ? this.url + (this.url.indexOf('?') >= 0 ? '&' : '?') + Date.now()
+          : this.url;
 
         req.open(method, url, this.async);
 

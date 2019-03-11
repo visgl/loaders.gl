@@ -60,4 +60,3 @@ export function concatenateArrayBuffers(source1, source2) {
   temp.set(sourceArray2, sourceArray1.byteLength);
   return temp;
 }
-

@@ -16,7 +16,6 @@ export default function loadLAS(arraybuffer, options = {}) {
   const {skip = 1, onProgress} = options;
 
   parseLAS(arraybuffer, skip, (decoder, header) => {
-
     if (!originalHeader) {
       originalHeader = header;
       const total = header.totalToRead;
@@ -35,14 +34,17 @@ export default function loadLAS(arraybuffer, options = {}) {
       });
       Object.assign(result, {
         loaderData: {header},
-        mode: 0,  // GL.POINTS
+        mode: 0, // GL.POINTS
         attributes,
         glTFAttributeMap: getGLTFAttributeMap(attributes)
       });
     }
 
     const batchSize = decoder.pointsCount;
-    const {scale: [scaleX, scaleY, scaleZ], offset: [offsetX, offsetY, offsetZ]} = header;
+    const {
+      scale: [scaleX, scaleY, scaleZ],
+      offset: [offsetX, offsetY, offsetZ]
+    } = header;
 
     for (let i = 0; i < batchSize; i++) {
       const {position, color, intensity, classification} = decoder.getPoint(i);
@@ -65,12 +67,17 @@ export default function loadLAS(arraybuffer, options = {}) {
     }
 
     if (onProgress) {
-      onProgress(Object.assign({
-        header: {
-          vertexCount: header.totalRead
-        },
-        progress: header.totalRead / header.totalToRead
-      }, result));
+      onProgress(
+        Object.assign(
+          {
+            header: {
+              vertexCount: header.totalRead
+            },
+            progress: header.totalRead / header.totalToRead
+          },
+          result
+        )
+      );
     }
   });
 

@@ -1,20 +1,20 @@
-const getWebpackConfig = require("ocular-dev-tools/config/webpack.config");
+const getWebpackConfig = require('ocular-dev-tools/config/webpack.config');
 
 // The following files will be imported/required as array buffers via arraybuffer-loader
 const BINARY_FILE_EXTENSIONS = /\.drc$|\.ply$|\.pcd$|\.glb$|\.las$|\.laz$|\.png$|\.jpeg$|\.gif$|\.bmp$|\.tiff$|\.bin|\.arrow/;
 
 const BABEL_CONFIG = {
-  presets: [
-    '@babel/env'
-  ],
+  presets: ['@babel/env'],
   plugins: [
-    ['babel-plugin-inline-import', {
-      extensions: [
-        '.worker.js'
-      ]
-    }],
+    [
+      'babel-plugin-inline-import',
+      {
+        extensions: ['.worker.js']
+      }
+    ],
     ['@babel/plugin-transform-runtime', {useESModules: true}]
-  ]
+  ],
+  ignore: ['**/*.worker.js']
 };
 
 module.exports = (env = {}) => {
@@ -27,7 +27,7 @@ module.exports = (env = {}) => {
       exclude: /node_modules/,
       use: [
         {
-          loader: "babel-loader",
+          loader: 'babel-loader',
           options: BABEL_CONFIG
         }
       ]
@@ -36,16 +36,16 @@ module.exports = (env = {}) => {
       // Load worker tests
       test: /\.worker\.js$/,
       use: {
-        loader: "worker-loader"
+        loader: 'worker-loader'
       }
     },
     {
       test: /\.kml$/,
-      use: "raw-loader"
+      use: 'raw-loader'
     },
     {
       test: BINARY_FILE_EXTENSIONS,
-      use: "arraybuffer-loader"
+      use: 'arraybuffer-loader'
     }
   );
 

@@ -24,11 +24,9 @@ export function getModel(gl, data) {
     shaderCache[gl] = new ShaderCache({gl, _cachePrograms: true});
   }
 
-  return new Model(
-    gl,
-    {
-      id: 'mesh',
-      vs: `
+  return new Model(gl, {
+    id: 'mesh',
+    vs: `
 #define SHADER_NAME mesh-model-vs
 
 uniform mat4 viewMatrix;
@@ -54,7 +52,7 @@ void main(void) {
   }
 }
 `,
-      fs: `
+    fs: `
 #define SHADER_NAME mesh-model-fs
 
 #ifdef GL_ES
@@ -67,13 +65,12 @@ void main(void) {
   gl_FragColor = vColor;
 }
 `,
-      geometry: new Geometry({
-        attributes: normalizeAttributes(data),
-        drawMode: data.mode
-      }),
-      shaderCache: shaderCache[gl]
-    }
-  );
+    geometry: new Geometry({
+      attributes: normalizeAttributes(data),
+      drawMode: data.mode
+    }),
+    shaderCache: shaderCache[gl]
+  });
 }
 
 function getViewMatrix({
@@ -83,7 +80,6 @@ function getViewMatrix({
   lookAt = [0, 0, 0],
   distance = 10
 }) {
-
   const rotationMatrix = mat4.rotateX([], mat4.create(), (-rotationX / 180) * Math.PI);
   mat4.rotateZ(rotationMatrix, rotationMatrix, (-rotationZ / 180) * Math.PI);
 
@@ -101,12 +97,6 @@ function getViewMatrix({
   return viewMatrix;
 }
 
-function getProjectionMatrix({
-  width,
-  height,
-  near = 1,
-  far = 100,
-  fov = 50
-}) {
-  return mat4.perspective([], fov * Math.PI / 180, width / height, near, far);
+function getProjectionMatrix({width, height, near = 1, far = 100, fov = 50}) {
+  return mat4.perspective([], (fov * Math.PI) / 180, width / height, near, far);
 }

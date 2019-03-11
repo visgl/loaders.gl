@@ -31,8 +31,9 @@ export default class GLTFBuilder extends GLBBuilder {
   // `extras` - Standard GLTF field for storing application specific data
   // By default packs JSON by extracting binary data and replacing it with JSON pointers
   addExtraData(key, data, packOptions = {}) {
-    const packedJson =
-      packOptions.packedTypedArrays ? packBinaryJson(data, this, packOptions) : data;
+    const packedJson = packOptions.packedTypedArrays
+      ? packBinaryJson(data, this, packOptions)
+      : data;
     this.json.extras = this.json.extras || {};
     this.json.extras[key] = packedJson;
     return this;
@@ -153,7 +154,7 @@ export default class GLTFBuilder extends GLBBuilder {
           extensions: {
             [KHR_DRACO_MESH_COMPRESSION]: {
               bufferView: bufferViewIndex,
-              attributes: fauxAccessors  // TODO - verify with spec
+              attributes: fauxAccessors // TODO - verify with spec
             }
           }
         }

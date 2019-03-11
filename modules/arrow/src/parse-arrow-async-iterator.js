@@ -2,8 +2,8 @@ import {RecordBatchReader} from 'apache-arrow';
 
 const isIterable = x => x && typeof x[Symbol.iterator] === 'function';
 
-const isPromise = x => x && (typeof x === 'object' || typeof x === 'function') &&
-  typeof x.then === 'function';
+const isPromise = x =>
+  x && (typeof x === 'object' || typeof x === 'function') && typeof x.then === 'function';
 
 export function parseArrowAsIterator(inputIterator, options, onUpdate) {
   const reader = RecordBatchReader.from(inputIterator);
@@ -13,11 +13,11 @@ export function parseArrowAsIterator(inputIterator, options, onUpdate) {
     throw new Error('arrow data source cannot be parsed using a synchronous iterator');
   }
 
-  return (function *arrowIterator() {
+  return (function* arrowIterator() {
     for (const batch of reader) {
       yield processBatch(batch);
     }
-  }());
+  })();
 }
 
 export async function parseArrowAsAsyncIterator(asyncIterator, options, onUpdate) {
@@ -28,22 +28,22 @@ export async function parseArrowAsAsyncIterator(asyncIterator, options, onUpdate
   // Check
   if (isIterable(readers)) {
     for (const reader of readers) {
-      return (function *arrowIterator() {
+      return (function* arrowIterator() {
         for (const batch of reader) {
           yield processBatch(batch);
         }
-      }());
+      })();
     }
   }
 
-  return (async function *arrowAsyncIterator() {
+  return (async function* arrowAsyncIterator() {
     for await (const reader of readers) {
       for await (const batch of reader) {
         yield processBatch(batch);
       }
       break; // only processing one stream of batches
     }
-  }());
+  })();
 }
 
 function processBatch(batch, on) {

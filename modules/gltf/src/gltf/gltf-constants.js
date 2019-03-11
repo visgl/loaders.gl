@@ -20,7 +20,7 @@ const BYTES = {
   5122: 2, // SHORT
   5123: 2, // UNSIGNED_SHORT
   5125: 4, // UNSIGNED_INT
-  5126: 4  // FLOAT
+  5126: 4 // FLOAT
 };
 
 // ENUM LOOKUP

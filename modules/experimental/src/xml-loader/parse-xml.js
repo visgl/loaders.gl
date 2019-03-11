@@ -51,4 +51,3 @@ function isXMLParseError(parsedDocument) {
 
   return parsedDocument.getElementsByTagNameNS(parsererrorNS, 'parsererror').length > 0;
 }
-

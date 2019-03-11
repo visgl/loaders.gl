@@ -14,8 +14,8 @@ const MAGIC_glTF = 0x676c5446; // glTF in Big-Endian ASCII
 const GLB_FILE_HEADER_SIZE = 12;
 const GLB_CHUNK_HEADER_SIZE = 8;
 
-const GLB_CHUNK_TYPE_JSON = 0x4E4F534A;
-const GLB_CHUNK_TYPE_BIN = 0x004E4942;
+const GLB_CHUNK_TYPE_JSON = 0x4e4f534a;
+const GLB_CHUNK_TYPE_BIN = 0x004e4942;
 
 const LE = true; // Binary GLTF is little endian.
 const BE = false; // Magic needs to be written as BE
@@ -30,7 +30,6 @@ ${String.fromCharCode(dataView.getUint8(3))}`;
 
 // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#glb-file-format-specification
 export default class GLBParser {
-
   static isGLB(arrayBuffer, options = {}) {
     // Check that GLB Header starts with the magic number
     const {magic = MAGIC_glTF} = options;
@@ -144,8 +143,7 @@ export default class GLBParser {
   _parse(options) {
     const result = this._parseBinary(options);
     this.packedJson = result.json;
-    this.unpackedBuffers =
-      unpackGLBBuffers(this.glbArrayBuffer, this.json, this.binaryByteOffset);
+    this.unpackedBuffers = unpackGLBBuffers(this.glbArrayBuffer, this.json, this.binaryByteOffset);
     this.json = unpackBinaryJson(this.json, this.unpackedBuffers);
   }
 

@@ -24,7 +24,6 @@ export default function packBinaryJson(json, glbBuilder, options = {}) {
 
   // Typed arrays, pack them as binary
   if (ArrayBuffer.isView(object) && glbBuilder) {
-
     if (glbBuilder.isImage(object)) {
       const imageIndex = glbBuilder.addImage(object);
       return `#/images/${imageIndex}`;

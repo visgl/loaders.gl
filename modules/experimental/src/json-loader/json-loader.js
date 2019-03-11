@@ -1,4 +1,3 @@
-
 function parseText(text, options) {
   return JSON.parse(text);
 }

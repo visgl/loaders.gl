@@ -11,7 +11,11 @@ export default function getModule() {
 
   var ENVIRONMENT_IS_WEB = typeof window === 'object';
   var ENVIRONMENT_IS_WORKER = typeof importScripts === 'function';
-  var ENVIRONMENT_IS_NODE = !ENVIRONMENT_IS_WEB && !ENVIRONMENT_IS_WORKER && typeof process === 'object' && typeof require === 'function';
+  var ENVIRONMENT_IS_NODE =
+    !ENVIRONMENT_IS_WEB &&
+    !ENVIRONMENT_IS_WORKER &&
+    typeof process === 'object' &&
+    typeof require === 'function';
   var ENVIRONMENT_IS_SHELL = !ENVIRONMENT_IS_WEB && !ENVIRONMENT_IS_NODE && !ENVIRONMENT_IS_WORKER;
   if (ENVIRONMENT_IS_NODE) {
     if (!Module['print'])
@@ -401,7 +405,9 @@ export default function getModule() {
     }
     assert(
       func,
-      'Cannot call unknown function ' + ident + ' (perhaps LLVM optimizations or closure removed it?)'
+      'Cannot call unknown function ' +
+        ident +
+        ' (perhaps LLVM optimizations or closure removed it?)'
     );
     return func;
   }
@@ -31126,7 +31132,10 @@ export default function getModule() {
           if (ENVIRONMENT_IS_NODE) {
             result = process['stdin']['read']();
             if (!result) {
-              if (process['stdin']['_readableState'] && process['stdin']['_readableState']['ended']) {
+              if (
+                process['stdin']['_readableState'] &&
+                process['stdin']['_readableState']['ended']
+              ) {
                 return null;
               }
               return undefined;
@@ -31483,7 +31492,8 @@ export default function getModule() {
       if (typeof indexedDB !== 'undefined') return indexedDB;
       var ret = null;
       if (typeof window === 'object')
-        ret = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
+        ret =
+          window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
       assert(ret, 'IDBFS used, but indexedDB not supported');
       return ret;
     },
@@ -32616,7 +32626,8 @@ export default function getModule() {
         FS.hashAddNode(old_node);
       }
       try {
-        if (FS.trackingDelegate['onMovePath']) FS.trackingDelegate['onMovePath'](old_path, new_path);
+        if (FS.trackingDelegate['onMovePath'])
+          FS.trackingDelegate['onMovePath'](old_path, new_path);
       } catch (e) {
         console.log(
           "FS.trackingDelegate['onMovePath']('" +
@@ -32741,7 +32752,10 @@ export default function getModule() {
       if (!node.node_ops.setattr) {
         throw new FS.ErrnoError(ERRNO_CODES.EPERM);
       }
-      node.node_ops.setattr(node, {mode: (mode & 4095) | (node.mode & ~4095), timestamp: Date.now()});
+      node.node_ops.setattr(node, {
+        mode: (mode & 4095) | (node.mode & ~4095),
+        timestamp: Date.now()
+      });
     },
     lchmod: function(path, mode) {
       FS.chmod(path, mode, true);
@@ -32902,7 +32916,10 @@ export default function getModule() {
         }
       } catch (e) {
         console.log(
-          "FS.trackingDelegate['onOpenFile']('" + path + "', flags) threw an exception: " + e.message
+          "FS.trackingDelegate['onOpenFile']('" +
+            path +
+            "', flags) threw an exception: " +
+            e.message
         );
       }
       return stream;
@@ -33392,7 +33409,8 @@ export default function getModule() {
           throw new Error("Couldn't load " + url + '. Status: ' + xhr.status);
         var datalength = Number(xhr.getResponseHeader('Content-length'));
         var header;
-        var hasByteServing = (header = xhr.getResponseHeader('Accept-Ranges')) && header === 'bytes';
+        var hasByteServing =
+          (header = xhr.getResponseHeader('Accept-Ranges')) && header === 'bytes';
         var chunkSize = 1024 * 1024;
         if (!hasByteServing) chunkSize = datalength;
         var doXHR = function(from, to) {
@@ -33548,7 +33566,9 @@ export default function getModule() {
       }
     },
     indexedDB: function() {
-      return window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
+      return (
+        window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB
+      );
     },
     DB_NAME: function() {
       return 'EM_FS_' + window.location.pathname;
@@ -34076,7 +34096,10 @@ export default function getModule() {
         if (buffer instanceof Array || buffer instanceof ArrayBuffer) {
           data = buffer.slice(offset, offset + length);
         } else {
-          data = buffer.buffer.slice(buffer.byteOffset + offset, buffer.byteOffset + offset + length);
+          data = buffer.buffer.slice(
+            buffer.byteOffset + offset,
+            buffer.byteOffset + offset + length
+          );
         }
         if (sock.type === 2) {
           if (!dest || dest.socket.readyState !== dest.socket.OPEN) {
@@ -34590,10 +34613,12 @@ export default function getModule() {
             var currAbsArg = Math.abs(currArg);
             var prefix = '';
             if (next == 100 || next == 105) {
-              if (argSize == 8 && i64Math) argText = i64Math.stringify(origArg[0], origArg[1], null);
+              if (argSize == 8 && i64Math)
+                argText = i64Math.stringify(origArg[0], origArg[1], null);
               else argText = reSign(currArg, 8 * argSize, 1).toString(10);
             } else if (next == 117) {
-              if (argSize == 8 && i64Math) argText = i64Math.stringify(origArg[0], origArg[1], true);
+              if (argSize == 8 && i64Math)
+                argText = i64Math.stringify(origArg[0], origArg[1], true);
               else argText = unSign(currArg, 8 * argSize, 1).toString(10);
               currArg = Math.abs(currArg);
             } else if (next == 111) {
@@ -34686,7 +34711,10 @@ export default function getModule() {
               if (next == 103 || next == 71) {
                 isGeneral = true;
                 precision = precision || 1;
-                var exponent = parseInt(currArg.toExponential(effectivePrecision).split('e')[1], 10);
+                var exponent = parseInt(
+                  currArg.toExponential(effectivePrecision).split('e')[1],
+                  10
+                );
                 if (precision > exponent && exponent >= -4) {
                   next = (next == 103 ? 'f' : 'F').charCodeAt(0);
                   precision -= exponent + 1;
@@ -35780,7 +35808,8 @@ export default function getModule() {
       }
       var name = 'dynCall_' + signature + '_' + rawFunction;
       var body = 'return function ' + name + '(' + args.join(', ') + ') {\n';
-      body += '    return dynCall(rawFunction' + (args.length ? ', ' : '') + args.join(', ') + ');\n';
+      body +=
+        '    return dynCall(rawFunction' + (args.length ? ', ' : '') + args.join(', ') + ');\n';
       body += '};\n';
       return new Function('dynCall', 'rawFunction', body)(dynCall, rawFunction);
     }
@@ -35800,7 +35829,9 @@ export default function getModule() {
       fp = makeDynCaller(dc);
     }
     if (typeof fp !== 'function') {
-      throwBindingError('unknown function pointer with signature ' + signature + ': ' + rawFunction);
+      throwBindingError(
+        'unknown function pointer with signature ' + signature + ': ' + rawFunction
+      );
     }
     return fp;
   }
@@ -35851,7 +35882,9 @@ export default function getModule() {
     rawDestructor = requireFunction(destructorSignature, rawDestructor);
     var legalFunctionName = makeLegalFunctionName(name);
     exposePublicSymbol(legalFunctionName, function() {
-      throwUnboundTypeError('Cannot construct ' + name + ' due to unbound types', [baseClassRawType]);
+      throwUnboundTypeError('Cannot construct ' + name + ' due to unbound types', [
+        baseClassRawType
+      ]);
     });
     whenDependentTypesAreResolved(
       [rawType, rawPointerType, rawConstPointerType],
@@ -36129,7 +36162,9 @@ export default function getModule() {
             Browser.mainLoop.remainingBlockers = (8 * remaining + next) / 9;
           }
         }
-        console.log('main loop blocker "' + blocker.name + '" took ' + (Date.now() - start) + ' ms');
+        console.log(
+          'main loop blocker "' + blocker.name + '" took ' + (Date.now() - start) + ' ms'
+        );
         Browser.mainLoop.updateStatus();
         setTimeout(Browser.mainLoop.runner, 0);
         return;
@@ -36639,7 +36674,11 @@ export default function getModule() {
         var ch = Module['canvas'].height;
         var scrollX = typeof window.scrollX !== 'undefined' ? window.scrollX : window.pageXOffset;
         var scrollY = typeof window.scrollY !== 'undefined' ? window.scrollY : window.pageYOffset;
-        if (event.type === 'touchstart' || event.type === 'touchend' || event.type === 'touchmove') {
+        if (
+          event.type === 'touchstart' ||
+          event.type === 'touchend' ||
+          event.type === 'touchmove'
+        ) {
           var touch = event.touch;
           if (touch === undefined) {
             return;
@@ -43312,7 +43351,8 @@ export default function getModule() {
           w = c[b >> 2] | 0;
           if (!((x ^ u) & v)) break a;
           q = c[(w + 12) >> 2] | 0;
-          if ((q | 0) == (c[(w + 16) >> 2] | 0)) q = md[c[((c[w >> 2] | 0) + 36) >> 2] & 127](w) | 0;
+          if ((q | 0) == (c[(w + 16) >> 2] | 0))
+            q = md[c[((c[w >> 2] | 0) + 36) >> 2] & 127](w) | 0;
           else q = d[q >> 0] | 0;
           u = q & 255;
           if (!k) u = vd[c[((c[h >> 2] | 0) + 12) >> 2] & 63](h, u) | 0;
@@ -45390,7 +45430,8 @@ export default function getModule() {
           v = c[b >> 2] | 0;
           if (!((u ^ w) & t)) break a;
           p = c[(v + 12) >> 2] | 0;
-          if ((p | 0) == (c[(v + 16) >> 2] | 0)) u = md[c[((c[v >> 2] | 0) + 36) >> 2] & 127](v) | 0;
+          if ((p | 0) == (c[(v + 16) >> 2] | 0))
+            u = md[c[((c[v >> 2] | 0) + 36) >> 2] & 127](v) | 0;
           else u = c[p >> 2] | 0;
           if (!j) u = vd[c[((c[g >> 2] | 0) + 28) >> 2] & 63](g, u) | 0;
           p = (q + 1) | 0;
@@ -45458,7 +45499,8 @@ export default function getModule() {
       do
         if (v) {
           j = c[(v + 12) >> 2] | 0;
-          if ((j | 0) == (c[(v + 16) >> 2] | 0)) j = md[c[((c[v >> 2] | 0) + 36) >> 2] & 127](v) | 0;
+          if ((j | 0) == (c[(v + 16) >> 2] | 0))
+            j = md[c[((c[v >> 2] | 0) + 36) >> 2] & 127](v) | 0;
           else j = c[j >> 2] | 0;
           if ((j | 0) == -1) {
             c[b >> 2] = 0;
@@ -45575,7 +45617,8 @@ export default function getModule() {
           u = 0;
         } else {
           y = c[(u + 12) >> 2] | 0;
-          if ((y | 0) == (c[(u + 16) >> 2] | 0)) y = md[c[((c[u >> 2] | 0) + 36) >> 2] & 127](u) | 0;
+          if ((y | 0) == (c[(u + 16) >> 2] | 0))
+            y = md[c[((c[u >> 2] | 0) + 36) >> 2] & 127](u) | 0;
           else y = c[y >> 2] | 0;
           A = (y | 0) == -1;
           y = A ? 1 : 0;
@@ -45583,7 +45626,8 @@ export default function getModule() {
         }
         if (w) {
           z = c[(w + 12) >> 2] | 0;
-          if ((z | 0) == (c[(w + 16) >> 2] | 0)) z = md[c[((c[w >> 2] | 0) + 36) >> 2] & 127](w) | 0;
+          if ((z | 0) == (c[(w + 16) >> 2] | 0))
+            z = md[c[((c[w >> 2] | 0) + 36) >> 2] & 127](w) | 0;
           else z = c[z >> 2] | 0;
           if ((z | 0) != -1) {
             if (!y) break;
@@ -45735,7 +45779,8 @@ export default function getModule() {
           u = 0;
         } else {
           y = c[(u + 12) >> 2] | 0;
-          if ((y | 0) == (c[(u + 16) >> 2] | 0)) y = md[c[((c[u >> 2] | 0) + 36) >> 2] & 127](u) | 0;
+          if ((y | 0) == (c[(u + 16) >> 2] | 0))
+            y = md[c[((c[u >> 2] | 0) + 36) >> 2] & 127](u) | 0;
           else y = c[y >> 2] | 0;
           A = (y | 0) == -1;
           y = A ? 1 : 0;
@@ -45743,7 +45788,8 @@ export default function getModule() {
         }
         if (w) {
           z = c[(w + 12) >> 2] | 0;
-          if ((z | 0) == (c[(w + 16) >> 2] | 0)) z = md[c[((c[w >> 2] | 0) + 36) >> 2] & 127](w) | 0;
+          if ((z | 0) == (c[(w + 16) >> 2] | 0))
+            z = md[c[((c[w >> 2] | 0) + 36) >> 2] & 127](w) | 0;
           else z = c[z >> 2] | 0;
           if ((z | 0) != -1) {
             if (!y) break;
@@ -45898,7 +45944,8 @@ export default function getModule() {
           v = 0;
         } else {
           z = c[(v + 12) >> 2] | 0;
-          if ((z | 0) == (c[(v + 16) >> 2] | 0)) z = md[c[((c[v >> 2] | 0) + 36) >> 2] & 127](v) | 0;
+          if ((z | 0) == (c[(v + 16) >> 2] | 0))
+            z = md[c[((c[v >> 2] | 0) + 36) >> 2] & 127](v) | 0;
           else z = c[z >> 2] | 0;
           B = (z | 0) == -1;
           z = B ? 1 : 0;
@@ -45906,7 +45953,8 @@ export default function getModule() {
         }
         if (x) {
           A = c[(x + 12) >> 2] | 0;
-          if ((A | 0) == (c[(x + 16) >> 2] | 0)) A = md[c[((c[x >> 2] | 0) + 36) >> 2] & 127](x) | 0;
+          if ((A | 0) == (c[(x + 16) >> 2] | 0))
+            A = md[c[((c[x >> 2] | 0) + 36) >> 2] & 127](x) | 0;
           else A = c[A >> 2] | 0;
           if ((A | 0) != -1) {
             if (!z) break;
@@ -46058,7 +46106,8 @@ export default function getModule() {
           u = 0;
         } else {
           y = c[(u + 12) >> 2] | 0;
-          if ((y | 0) == (c[(u + 16) >> 2] | 0)) y = md[c[((c[u >> 2] | 0) + 36) >> 2] & 127](u) | 0;
+          if ((y | 0) == (c[(u + 16) >> 2] | 0))
+            y = md[c[((c[u >> 2] | 0) + 36) >> 2] & 127](u) | 0;
           else y = c[y >> 2] | 0;
           A = (y | 0) == -1;
           y = A ? 1 : 0;
@@ -46066,7 +46115,8 @@ export default function getModule() {
         }
         if (w) {
           z = c[(w + 12) >> 2] | 0;
-          if ((z | 0) == (c[(w + 16) >> 2] | 0)) z = md[c[((c[w >> 2] | 0) + 36) >> 2] & 127](w) | 0;
+          if ((z | 0) == (c[(w + 16) >> 2] | 0))
+            z = md[c[((c[w >> 2] | 0) + 36) >> 2] & 127](w) | 0;
           else z = c[z >> 2] | 0;
           if ((z | 0) != -1) {
             if (!y) break;
@@ -46218,7 +46268,8 @@ export default function getModule() {
           u = 0;
         } else {
           y = c[(u + 12) >> 2] | 0;
-          if ((y | 0) == (c[(u + 16) >> 2] | 0)) y = md[c[((c[u >> 2] | 0) + 36) >> 2] & 127](u) | 0;
+          if ((y | 0) == (c[(u + 16) >> 2] | 0))
+            y = md[c[((c[u >> 2] | 0) + 36) >> 2] & 127](u) | 0;
           else y = c[y >> 2] | 0;
           A = (y | 0) == -1;
           y = A ? 1 : 0;
@@ -46226,7 +46277,8 @@ export default function getModule() {
         }
         if (w) {
           z = c[(w + 12) >> 2] | 0;
-          if ((z | 0) == (c[(w + 16) >> 2] | 0)) z = md[c[((c[w >> 2] | 0) + 36) >> 2] & 127](w) | 0;
+          if ((z | 0) == (c[(w + 16) >> 2] | 0))
+            z = md[c[((c[w >> 2] | 0) + 36) >> 2] & 127](w) | 0;
           else z = c[z >> 2] | 0;
           if ((z | 0) != -1) {
             if (!y) break;
@@ -46378,7 +46430,8 @@ export default function getModule() {
           u = 0;
         } else {
           y = c[(u + 12) >> 2] | 0;
-          if ((y | 0) == (c[(u + 16) >> 2] | 0)) y = md[c[((c[u >> 2] | 0) + 36) >> 2] & 127](u) | 0;
+          if ((y | 0) == (c[(u + 16) >> 2] | 0))
+            y = md[c[((c[u >> 2] | 0) + 36) >> 2] & 127](u) | 0;
           else y = c[y >> 2] | 0;
           A = (y | 0) == -1;
           y = A ? 1 : 0;
@@ -46386,7 +46439,8 @@ export default function getModule() {
         }
         if (w) {
           z = c[(w + 12) >> 2] | 0;
-          if ((z | 0) == (c[(w + 16) >> 2] | 0)) z = md[c[((c[w >> 2] | 0) + 36) >> 2] & 127](w) | 0;
+          if ((z | 0) == (c[(w + 16) >> 2] | 0))
+            z = md[c[((c[w >> 2] | 0) + 36) >> 2] & 127](w) | 0;
           else z = c[z >> 2] | 0;
           if ((z | 0) != -1) {
             if (!y) break;
@@ -46544,7 +46598,8 @@ export default function getModule() {
           y = 0;
         } else {
           B = c[(y + 12) >> 2] | 0;
-          if ((B | 0) == (c[(y + 16) >> 2] | 0)) B = md[c[((c[y >> 2] | 0) + 36) >> 2] & 127](y) | 0;
+          if ((B | 0) == (c[(y + 16) >> 2] | 0))
+            B = md[c[((c[y >> 2] | 0) + 36) >> 2] & 127](y) | 0;
           else B = c[B >> 2] | 0;
           D = (B | 0) == -1;
           B = D ? 1 : 0;
@@ -46552,7 +46607,8 @@ export default function getModule() {
         }
         if (z) {
           C = c[(z + 12) >> 2] | 0;
-          if ((C | 0) == (c[(z + 16) >> 2] | 0)) C = md[c[((c[z >> 2] | 0) + 36) >> 2] & 127](z) | 0;
+          if ((C | 0) == (c[(z + 16) >> 2] | 0))
+            C = md[c[((c[z >> 2] | 0) + 36) >> 2] & 127](z) | 0;
           else C = c[C >> 2] | 0;
           if ((C | 0) != -1) {
             if (!B) break;
@@ -46709,7 +46765,8 @@ export default function getModule() {
           y = 0;
         } else {
           B = c[(y + 12) >> 2] | 0;
-          if ((B | 0) == (c[(y + 16) >> 2] | 0)) B = md[c[((c[y >> 2] | 0) + 36) >> 2] & 127](y) | 0;
+          if ((B | 0) == (c[(y + 16) >> 2] | 0))
+            B = md[c[((c[y >> 2] | 0) + 36) >> 2] & 127](y) | 0;
           else B = c[B >> 2] | 0;
           D = (B | 0) == -1;
           B = D ? 1 : 0;
@@ -46717,7 +46774,8 @@ export default function getModule() {
         }
         if (z) {
           C = c[(z + 12) >> 2] | 0;
-          if ((C | 0) == (c[(z + 16) >> 2] | 0)) C = md[c[((c[z >> 2] | 0) + 36) >> 2] & 127](z) | 0;
+          if ((C | 0) == (c[(z + 16) >> 2] | 0))
+            C = md[c[((c[z >> 2] | 0) + 36) >> 2] & 127](z) | 0;
           else C = c[C >> 2] | 0;
           if ((C | 0) != -1) {
             if (!B) break;
@@ -46874,7 +46932,8 @@ export default function getModule() {
           y = 0;
         } else {
           B = c[(y + 12) >> 2] | 0;
-          if ((B | 0) == (c[(y + 16) >> 2] | 0)) B = md[c[((c[y >> 2] | 0) + 36) >> 2] & 127](y) | 0;
+          if ((B | 0) == (c[(y + 16) >> 2] | 0))
+            B = md[c[((c[y >> 2] | 0) + 36) >> 2] & 127](y) | 0;
           else B = c[B >> 2] | 0;
           D = (B | 0) == -1;
           B = D ? 1 : 0;
@@ -46882,7 +46941,8 @@ export default function getModule() {
         }
         if (z) {
           C = c[(z + 12) >> 2] | 0;
-          if ((C | 0) == (c[(z + 16) >> 2] | 0)) C = md[c[((c[z >> 2] | 0) + 36) >> 2] & 127](z) | 0;
+          if ((C | 0) == (c[(z + 16) >> 2] | 0))
+            C = md[c[((c[z >> 2] | 0) + 36) >> 2] & 127](z) | 0;
           else C = c[C >> 2] | 0;
           if ((C | 0) != -1) {
             if (!B) break;
@@ -47037,7 +47097,8 @@ export default function getModule() {
       a: while (1) {
         if (u) {
           x = c[(u + 12) >> 2] | 0;
-          if ((x | 0) == (c[(u + 16) >> 2] | 0)) x = md[c[((c[u >> 2] | 0) + 36) >> 2] & 127](u) | 0;
+          if ((x | 0) == (c[(u + 16) >> 2] | 0))
+            x = md[c[((c[u >> 2] | 0) + 36) >> 2] & 127](u) | 0;
           else x = c[x >> 2] | 0;
           if ((x | 0) == -1) {
             c[e >> 2] = 0;
@@ -47123,7 +47184,8 @@ export default function getModule() {
       do
         if (x) {
           j = c[(x + 12) >> 2] | 0;
-          if ((j | 0) == (c[(x + 16) >> 2] | 0)) j = md[c[((c[x >> 2] | 0) + 36) >> 2] & 127](x) | 0;
+          if ((j | 0) == (c[(x + 16) >> 2] | 0))
+            j = md[c[((c[x >> 2] | 0) + 36) >> 2] & 127](x) | 0;
           else j = c[j >> 2] | 0;
           if ((j | 0) != -1)
             if (e) break;
@@ -48491,7 +48553,9 @@ export default function getModule() {
             break;
           }
           Uq(e);
-          if ((k | 0) >= 0 ? ((g = (k + 1) | 0), (h = Tq(g) | 0), (c[a >> 2] = h), (h | 0) != 0) : 0)
+          if (
+            (k | 0) >= 0 ? ((g = (k + 1) | 0), (h = Tq(g) | 0), (c[a >> 2] = h), (h | 0) != 0) : 0
+          )
             k = fr(h, g, d, j) | 0;
           else k = -1;
         } else k = -1;
@@ -50248,7 +50312,8 @@ export default function getModule() {
                   C = (g + 12) | 0;
                   D = c[C >> 2] | 0;
                   B = (g + 16) | 0;
-                  if ((D | 0) == (c[B >> 2] | 0)) D = md[c[((c[g >> 2] | 0) + 36) >> 2] & 127](g) | 0;
+                  if ((D | 0) == (c[B >> 2] | 0))
+                    D = md[c[((c[g >> 2] | 0) + 36) >> 2] & 127](g) | 0;
                   else D = d[D >> 0] | 0;
                   if (((D & 255) << 24) >> 24 <= -1) {
                     g = y;
@@ -51298,7 +51363,11 @@ export default function getModule() {
               K = c[(E + 4) >> 2] | 0;
               J = (((K | 0) < 0) << 31) >> 31;
               E = (E + 12) | 0;
-              if (((L | 0) > (J | 0)) | (((L | 0) == (J | 0)) & (F >>> 0 >= K >>> 0)) | ((L | 0) < 0))
+              if (
+                ((L | 0) > (J | 0)) |
+                (((L | 0) == (J | 0)) & (F >>> 0 >= K >>> 0)) |
+                ((L | 0) < 0)
+              )
                 a[E >> 0] = 1;
               else {
                 a[E >> 0] = 0;
@@ -51545,7 +51614,10 @@ export default function getModule() {
             w = c[f >> 2] | 0;
             u = (f + 116) | 0;
             v =
-              d[u >> 0] | (d[(u + 1) >> 0] << 8) | (d[(u + 2) >> 0] << 16) | (d[(u + 3) >> 0] << 24);
+              d[u >> 0] |
+              (d[(u + 1) >> 0] << 8) |
+              (d[(u + 2) >> 0] << 16) |
+              (d[(u + 3) >> 0] << 24);
             L = c[(w + 4) >> 2] | 0;
             K = (((L | 0) < 0) << 31) >> 31;
             if ((0 < (K | 0)) | ((0 == (K | 0)) & (v >>> 0 < L >>> 0))) c[(w + 8) >> 2] = v;
@@ -57662,7 +57734,11 @@ export default function getModule() {
       s = c[m >> 2] | 0;
       o = (g + 4620) | 0;
       q =
-        (($f(o, h, ((c[(g + 4656) >> 2] | 0) + ((((s >>> 0 < 20 ? s & -2 : 20) | k) * 44) | 0)) | 0) |
+        (($f(
+          o,
+          h,
+          ((c[(g + 4656) >> 2] | 0) + ((((s >>> 0 < 20 ? s & -2 : 20) | k) * 44) | 0)) | 0
+        ) |
           0) +
           q) |
         0;
@@ -57751,7 +57827,8 @@ export default function getModule() {
       if (m >>> 0 < 36) m = (m >>> 1) & 2147483646;
       else m = 18;
       k =
-        (($f((g + 4700) | 0, h, ((c[(g + 4736) >> 2] | 0) + (((m | k) * 44) | 0)) | 0) | 0) + n) | 0;
+        (($f((g + 4700) | 0, h, ((c[(g + 4736) >> 2] | 0) + (((m | k) * 44) | 0)) | 0) | 0) + n) |
+        0;
       h = c[(g + 4724) >> 2] | 0;
       if ((k | 0) < 0) h = (k + h) | 0;
       else h = (k - (k >>> 0 < h >>> 0 ? 0 : h)) | 0;
@@ -57825,7 +57902,10 @@ export default function getModule() {
             c[h >> 2] = ((c[h >> 2] | 0) + 1) & 3;
             j = (b + (c[g >> 2] << 3) + 104) | 0;
             j =
-              d[j >> 0] | (d[(j + 1) >> 0] << 8) | (d[(j + 2) >> 0] << 16) | (d[(j + 3) >> 0] << 24);
+              d[j >> 0] |
+              (d[(j + 1) >> 0] << 8) |
+              (d[(j + 2) >> 0] << 16) |
+              (d[(j + 3) >> 0] << 24);
             j = (($f((b + 244) | 0, e, ((c[(b + 280) >> 2] | 0) + 352) | 0) | 0) + j) | 0;
             k = c[(b + 268) >> 2] | 0;
             if ((j | 0) < 0) j = (j + k) | 0;
@@ -57845,7 +57925,10 @@ export default function getModule() {
             k = (b + (c[h >> 2] << 3) + 100) | 0;
             m = k;
             m =
-              d[m >> 0] | (d[(m + 1) >> 0] << 8) | (d[(m + 2) >> 0] << 16) | (d[(m + 3) >> 0] << 24);
+              d[m >> 0] |
+              (d[(m + 1) >> 0] << 8) |
+              (d[(m + 2) >> 0] << 16) |
+              (d[(m + 3) >> 0] << 24);
             j = k;
             a[j >> 0] = 0;
             a[(j + 1) >> 0] = 0;
@@ -57887,7 +57970,10 @@ export default function getModule() {
             k = n;
             n = (n + 4) | 0;
             n =
-              d[n >> 0] | (d[(n + 1) >> 0] << 8) | (d[(n + 2) >> 0] << 16) | (d[(n + 3) >> 0] << 24);
+              d[n >> 0] |
+              (d[(n + 1) >> 0] << 8) |
+              (d[(n + 2) >> 0] << 16) |
+              (d[(n + 3) >> 0] << 24);
             l =
               d[k >> 0] |
               (d[(k + 1) >> 0] << 8) |
@@ -58007,7 +58093,10 @@ export default function getModule() {
             c[h >> 2] = ((c[h >> 2] | 0) + 1) & 3;
             k = (b + (c[g >> 2] << 3) + 104) | 0;
             k =
-              d[k >> 0] | (d[(k + 1) >> 0] << 8) | (d[(k + 2) >> 0] << 16) | (d[(k + 3) >> 0] << 24);
+              d[k >> 0] |
+              (d[(k + 1) >> 0] << 8) |
+              (d[(k + 2) >> 0] << 16) |
+              (d[(k + 3) >> 0] << 24);
             k = (($f((b + 244) | 0, e, ((c[(b + 280) >> 2] | 0) + 352) | 0) | 0) + k) | 0;
             j = c[(b + 268) >> 2] | 0;
             if ((k | 0) < 0) j = (k + j) | 0;
@@ -58027,7 +58116,10 @@ export default function getModule() {
             k = (b + (c[h >> 2] << 3) + 100) | 0;
             o = k;
             o =
-              d[o >> 0] | (d[(o + 1) >> 0] << 8) | (d[(o + 2) >> 0] << 16) | (d[(o + 3) >> 0] << 24);
+              d[o >> 0] |
+              (d[(o + 1) >> 0] << 8) |
+              (d[(o + 2) >> 0] << 16) |
+              (d[(o + 3) >> 0] << 24);
             l = k;
             a[l >> 0] = 0;
             a[(l + 1) >> 0] = 0;
@@ -58069,7 +58161,10 @@ export default function getModule() {
             l = m;
             m = (m + 4) | 0;
             m =
-              d[m >> 0] | (d[(m + 1) >> 0] << 8) | (d[(m + 2) >> 0] << 16) | (d[(m + 3) >> 0] << 24);
+              d[m >> 0] |
+              (d[(m + 1) >> 0] << 8) |
+              (d[(m + 2) >> 0] << 16) |
+              (d[(m + 3) >> 0] << 24);
             l =
               d[l >> 0] |
               (d[(l + 1) >> 0] << 8) |
@@ -58391,7 +58486,9 @@ export default function getModule() {
             l = (b + 5) | 0;
             r =
               ((((d[l >> 0] | (d[(l + 1) >> 0] << 8)) & 65535) >>> 8) +
-                ((((((r >>> 8) & 255) + o - (((d[u >> 0] | (d[(u + 1) >> 0] << 8)) & 65535) >>> 8)) |
+                ((((((r >>> 8) & 255) +
+                  o -
+                  (((d[u >> 0] | (d[(u + 1) >> 0] << 8)) & 65535) >>> 8)) |
                   0) /
                   2) |
                   0)) |
@@ -61709,7 +61806,8 @@ export default function getModule() {
             break;
           }
           o = c[(n + 12) >> 2] | 0;
-          if ((o | 0) == (c[(n + 16) >> 2] | 0)) n = md[c[((c[n >> 2] | 0) + 36) >> 2] & 127](n) | 0;
+          if ((o | 0) == (c[(n + 16) >> 2] | 0))
+            n = md[c[((c[n >> 2] | 0) + 36) >> 2] & 127](n) | 0;
           else n = d[o >> 0] | 0;
           o = n & 255;
           if ((o << 24) >> 24 <= -1) {
@@ -61986,7 +62084,8 @@ export default function getModule() {
                   u = (d + 12) | 0;
                   y = c[u >> 2] | 0;
                   x = (d + 16) | 0;
-                  if ((y | 0) == (c[x >> 2] | 0)) y = md[c[((c[d >> 2] | 0) + 36) >> 2] & 127](d) | 0;
+                  if ((y | 0) == (c[x >> 2] | 0))
+                    y = md[c[((c[d >> 2] | 0) + 36) >> 2] & 127](d) | 0;
                   else y = c[y >> 2] | 0;
                   if (!(fd[c[((c[s >> 2] | 0) + 12) >> 2] & 31](s, 8192, y) | 0)) {
                     d = t;
@@ -62691,7 +62790,8 @@ export default function getModule() {
       do
         if (k) {
           j = c[(k + 12) >> 2] | 0;
-          if ((j | 0) == (c[(k + 16) >> 2] | 0)) j = md[c[((c[k >> 2] | 0) + 36) >> 2] & 127](k) | 0;
+          if ((j | 0) == (c[(k + 16) >> 2] | 0))
+            j = md[c[((c[k >> 2] | 0) + 36) >> 2] & 127](k) | 0;
           else j = c[j >> 2] | 0;
           if ((j | 0) == -1) {
             c[a >> 2] = 0;
@@ -62771,7 +62871,8 @@ export default function getModule() {
           n = 1;
         } else {
           j = c[(l + 12) >> 2] | 0;
-          if ((j | 0) == (c[(l + 16) >> 2] | 0)) j = md[c[((c[l >> 2] | 0) + 36) >> 2] & 127](l) | 0;
+          if ((j | 0) == (c[(l + 16) >> 2] | 0))
+            j = md[c[((c[l >> 2] | 0) + 36) >> 2] & 127](l) | 0;
           else j = c[j >> 2] | 0;
           n = (j | 0) == -1;
           j = n ? 0 : k;
@@ -62788,7 +62889,8 @@ export default function getModule() {
           break;
         }
         b =
-          ((((fd[c[((c[e >> 2] | 0) + 52) >> 2] & 31](e, k, 0) | 0) << 24) >> 24) + ((b * 10) | 0)) |
+          ((((fd[c[((c[e >> 2] | 0) + 52) >> 2] & 31](e, k, 0) | 0) << 24) >> 24) +
+            ((b * 10) | 0)) |
           0;
         m = c[a >> 2] | 0;
         n = (m + 12) | 0;
@@ -62810,7 +62912,8 @@ export default function getModule() {
       do
         if (k) {
           e = c[(k + 12) >> 2] | 0;
-          if ((e | 0) == (c[(k + 16) >> 2] | 0)) e = md[c[((c[k >> 2] | 0) + 36) >> 2] & 127](k) | 0;
+          if ((e | 0) == (c[(k + 16) >> 2] | 0))
+            e = md[c[((c[k >> 2] | 0) + 36) >> 2] & 127](k) | 0;
           else e = c[e >> 2] | 0;
           if ((e | 0) == -1) {
             c[a >> 2] = 0;
@@ -64008,7 +64111,10 @@ export default function getModule() {
                     } else W = d[Z >> 0] | 0;
                     _ = (X + 12) | 0;
                     Y = (Z | 0) == (Y | 0);
-                    if (((W & 255) << 24) >> 24 == (a[((V & 1) == 0 ? H : c[z >> 2] | 0) >> 0] | 0)) {
+                    if (
+                      ((W & 255) << 24) >> 24 ==
+                      (a[((V & 1) == 0 ? H : c[z >> 2] | 0) >> 0] | 0)
+                    ) {
                       if (Y) md[c[((c[X >> 2] | 0) + 40) >> 2] & 127](X) | 0;
                       else c[_ >> 2] = Z + 1;
                       V = a[t >> 0] | 0;
@@ -65033,7 +65139,8 @@ export default function getModule() {
       do
         if (p) {
           q = c[(p + 12) >> 2] | 0;
-          if ((q | 0) == (c[(p + 16) >> 2] | 0)) p = md[c[((c[p >> 2] | 0) + 36) >> 2] & 127](p) | 0;
+          if ((q | 0) == (c[(p + 16) >> 2] | 0))
+            p = md[c[((c[p >> 2] | 0) + 36) >> 2] & 127](p) | 0;
           else p = c[q >> 2] | 0;
           if ((p | 0) != -1)
             if (k) break;
@@ -65327,7 +65434,8 @@ export default function getModule() {
         while (0);
         if (e) {
           R = c[(e + 12) >> 2] | 0;
-          if ((R | 0) == (c[(e + 16) >> 2] | 0)) R = md[c[((c[e >> 2] | 0) + 36) >> 2] & 127](e) | 0;
+          if ((R | 0) == (c[(e + 16) >> 2] | 0))
+            R = md[c[((c[e >> 2] | 0) + 36) >> 2] & 127](e) | 0;
           else R = c[R >> 2] | 0;
           if ((R | 0) != -1) {
             if (!Q) {
@@ -66232,7 +66340,8 @@ export default function getModule() {
       do
         if (p) {
           q = c[(p + 12) >> 2] | 0;
-          if ((q | 0) == (c[(p + 16) >> 2] | 0)) p = md[c[((c[p >> 2] | 0) + 36) >> 2] & 127](p) | 0;
+          if ((q | 0) == (c[(p + 16) >> 2] | 0))
+            p = md[c[((c[p >> 2] | 0) + 36) >> 2] & 127](p) | 0;
           else p = c[q >> 2] | 0;
           if ((p | 0) != -1)
             if (e) break;
@@ -67566,7 +67675,8 @@ export default function getModule() {
                 G = g;
                 while (1) {
                   H = (G + 4) | 0;
-                  if (!(fd[c[((c[j >> 2] | 0) + 12) >> 2] & 31](j, 2048, c[G >> 2] | 0) | 0)) break a;
+                  if (!(fd[c[((c[j >> 2] | 0) + 12) >> 2] & 31](j, 2048, c[G >> 2] | 0) | 0))
+                    break a;
                   if (H >>> 0 < h >>> 0) G = H;
                   else {
                     G = H;
@@ -68092,7 +68202,16 @@ export default function getModule() {
           while (1) {
             c[j >> 2] = p;
             v =
-              (rd[c[(q + 16) >> 2] & 15](d, o, p, ((g - p) | 0) > 32 ? (p + 32) | 0 : e, j, l, f, k) |
+              (rd[c[(q + 16) >> 2] & 15](
+                d,
+                o,
+                p,
+                ((g - p) | 0) > 32 ? (p + 32) | 0 : e,
+                j,
+                l,
+                f,
+                k
+              ) |
                 0) ==
               2;
             q = c[j >> 2] | 0;
@@ -70299,7 +70418,10 @@ export default function getModule() {
                   break a;
                 }
                 p =
-                  (((q & 255) << 12) & 258048) | ((p << 18) & 1835008) | ((r << 6) & 4032) | (s & 63);
+                  (((q & 255) << 12) & 258048) |
+                  ((p << 18) & 1835008) |
+                  ((r << 6) & 4032) |
+                  (s & 63);
                 if (p >>> 0 > 1114111) {
                   g = 2;
                   break a;
@@ -73723,7 +73845,9 @@ export default function getModule() {
           return;
         }
       }
-      if ((c[(d + 16) >> 2] | 0) != (e | 0) ? ((j = (d + 20) | 0), (c[j >> 2] | 0) != (e | 0)) : 0) {
+      if (
+        (c[(d + 16) >> 2] | 0) != (e | 0) ? ((j = (d + 20) | 0), (c[j >> 2] | 0) != (e | 0)) : 0
+      ) {
         c[(d + 32) >> 2] = f;
         m = (d + 44) | 0;
         if ((c[m >> 2] | 0) == 4) {
@@ -73887,7 +74011,9 @@ export default function getModule() {
         i = h;
         return;
       }
-      if ((c[(d + 16) >> 2] | 0) != (e | 0) ? ((k = (d + 20) | 0), (c[k >> 2] | 0) != (e | 0)) : 0) {
+      if (
+        (c[(d + 16) >> 2] | 0) != (e | 0) ? ((k = (d + 20) | 0), (c[k >> 2] | 0) != (e | 0)) : 0
+      ) {
         c[(d + 32) >> 2] = f;
         f = (d + 44) | 0;
         if ((c[f >> 2] | 0) == 4) {
@@ -73962,7 +74088,9 @@ export default function getModule() {
         i = g;
         return;
       }
-      if ((c[(d + 16) >> 2] | 0) != (e | 0) ? ((h = (d + 20) | 0), (c[h >> 2] | 0) != (e | 0)) : 0) {
+      if (
+        (c[(d + 16) >> 2] | 0) != (e | 0) ? ((h = (d + 20) | 0), (c[h >> 2] | 0) != (e | 0)) : 0
+      ) {
         c[(d + 32) >> 2] = f;
         c[h >> 2] = e;
         b = (d + 40) | 0;
@@ -77537,7 +77665,8 @@ export default function getModule() {
                   return +O;
                 }
                 if ((J | 0) < 9) {
-                  O = (+(e | 0) * +((c[m >> 2] | 0) >>> 0)) / +(c[(29408 + ((8 - J) << 2)) >> 2] | 0);
+                  O =
+                    (+(e | 0) * +((c[m >> 2] | 0) >>> 0)) / +(c[(29408 + ((8 - J) << 2)) >> 2] | 0);
                   i = g;
                   return +O;
                 }
@@ -79288,7 +79417,9 @@ export default function getModule() {
                     do
                       if (cb >>> 0 < va >>> 0) gb = 0.5;
                       else {
-                        if ((cb | 0) == (va | 0) ? ((Ta + ((bb + -1022) << 2)) | 0) == (Wa | 0) : 0) {
+                        if (
+                          (cb | 0) == (va | 0) ? ((Ta + ((bb + -1022) << 2)) | 0) == (Wa | 0) : 0
+                        ) {
                           gb = 1.0;
                           break;
                         }
@@ -80847,7 +80978,8 @@ export default function getModule() {
           o = (p >> 31) | (((p | 0) < 0 ? -1 : 0) << 1);
           i = o & 1;
           b =
-            jr(m, n, o & h, ((((p | 0) < 0 ? -1 : 0) >> 31) | (((p | 0) < 0 ? -1 : 0) << 1)) & g) | 0;
+            jr(m, n, o & h, ((((p | 0) < 0 ? -1 : 0) >> 31) | (((p | 0) < 0 ? -1 : 0) << 1)) & g) |
+            0;
           a = H;
           j = (j - 1) | 0;
         } while ((j | 0) != 0);
@@ -81995,10 +82127,13 @@ export default function getModule() {
     };
     goog.math.Long.TWO_PWR_16_DBL_ = 1 << 16;
     goog.math.Long.TWO_PWR_24_DBL_ = 1 << 24;
-    goog.math.Long.TWO_PWR_32_DBL_ = goog.math.Long.TWO_PWR_16_DBL_ * goog.math.Long.TWO_PWR_16_DBL_;
+    goog.math.Long.TWO_PWR_32_DBL_ =
+      goog.math.Long.TWO_PWR_16_DBL_ * goog.math.Long.TWO_PWR_16_DBL_;
     goog.math.Long.TWO_PWR_31_DBL_ = goog.math.Long.TWO_PWR_32_DBL_ / 2;
-    goog.math.Long.TWO_PWR_48_DBL_ = goog.math.Long.TWO_PWR_32_DBL_ * goog.math.Long.TWO_PWR_16_DBL_;
-    goog.math.Long.TWO_PWR_64_DBL_ = goog.math.Long.TWO_PWR_32_DBL_ * goog.math.Long.TWO_PWR_32_DBL_;
+    goog.math.Long.TWO_PWR_48_DBL_ =
+      goog.math.Long.TWO_PWR_32_DBL_ * goog.math.Long.TWO_PWR_16_DBL_;
+    goog.math.Long.TWO_PWR_64_DBL_ =
+      goog.math.Long.TWO_PWR_32_DBL_ * goog.math.Long.TWO_PWR_32_DBL_;
     goog.math.Long.TWO_PWR_63_DBL_ = goog.math.Long.TWO_PWR_64_DBL_ / 2;
     goog.math.Long.ZERO = goog.math.Long.fromInt(0);
     goog.math.Long.ONE = goog.math.Long.fromInt(1);
@@ -82792,7 +82927,8 @@ export default function getModule() {
       while (x.t <= this.mt2) x[x.t++] = 0;
       for (var i = 0; i < this.m.t; ++i) {
         var j = x[i] & 32767;
-        var u0 = (j * this.mpl + (((j * this.mph + (x[i] >> 15) * this.mpl) & this.um) << 15)) & x.DM;
+        var u0 =
+          (j * this.mpl + (((j * this.mph + (x[i] >> 15) * this.mpl) & this.um) << 15)) & x.DM;
         j = i + this.m.t;
         x[j] += this.m.am(0, u0, x, i, 0, this.m.t);
         while (x[j] >= x.DV) {

@@ -14,14 +14,18 @@ export function validateLoadedData(t, data) {
     attributesError = attributesError || validateAttribute('indices', data.indices);
   }
   for (const attributeName in data.attributes) {
-    attributesError = attributesError && validateAttribute(attributeName, data.attributes[attributeName]);
+    attributesError =
+      attributesError && validateAttribute(attributeName, data.attributes[attributeName]);
   }
   t.notOk(attributesError, 'data has valid attributes');
 
   let glTFAttributeMapError = data.glTFAttributeMap ? null : 'data does not have glTFAttributeMap';
   for (const attributeName in data.glTFAttributeMap) {
-    glTFAttributeMapError = glTFAttributeMapError ||
-      (data.glTFAttributeMap[attributeName] in data.attributes ? null : `${attributeName} attribute is not found`);
+    glTFAttributeMapError =
+      glTFAttributeMapError ||
+      (data.glTFAttributeMap[attributeName] in data.attributes
+        ? null
+        : `${attributeName} attribute is not found`);
   }
   t.notOk(glTFAttributeMapError, 'data has valid glTFAttributeMap');
 }

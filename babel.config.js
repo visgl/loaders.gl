@@ -1,20 +1,17 @@
-const getBabelConfig = require("ocular-dev-tools/config/babel.config");
+const getBabelConfig = require('ocular-dev-tools/config/babel.config');
 
 module.exports = api => {
-  const config = getBabelConfig(api, {
-    plugins: [
-      [
-        "babel-plugin-inline-import",
-        {
-          extensions: [".worker.js"]
-        }
-      ]
-    ]
-  });
+  const config = getBabelConfig(api);
 
-  config.ignore = [
-    '**/*.worker.js'
-  ];
+  config.plugins = config.plugins || [];
+  config.plugins.push([
+    'babel-plugin-inline-import',
+    {
+      extensions: ['.worker.js']
+    }
+  ]);
+
+  config.ignore = ['**/*.worker.js'];
 
   return config;
 };
