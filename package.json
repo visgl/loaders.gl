@@ -37,14 +37,14 @@
     "metrics": "ocular-metrics"
   },
   "devDependencies": {
-    "@luma.gl/test-utils": "7.0.0-alpha.14",
+    "@luma.gl/test-utils": "7.0.0-alpha.15",
     "@probe.gl/test-utils": "^3.0.0-alpha.6",
     "arraybuffer-loader": "^1.0.6",
     "babel-loader": "^8.0.0",
     "babel-plugin-inline-import": "^3.0.0",
     "coveralls": "^3.0.0",
     "eslint-plugin-babel": "^5.1.0",
-    "luma.gl": "7.0.0-alpha.14",
+    "luma.gl": "7.0.0-alpha.15",
     "mkdirp": "^0.5.1",
     "ocular-dev-tools": "0.0.14",
     "pre-commit": "^1.2.2",
