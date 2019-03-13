@@ -37,7 +37,7 @@ export default [
       drawModelInViewport(model, viewport);
       done();
     },
-    timeout: 10000,
+    timeout: 20000,
     goldenImage: './test/render/golden-images/laz-indoor.png'
   },
   {
