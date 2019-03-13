@@ -16,7 +16,15 @@ export function drawModelInViewport(model, viewport, uniforms = {}) {
   uniforms.opacity = uniforms.opacity || 1;
   uniforms.projectionMatrix = getProjectionMatrix(viewport);
   uniforms.viewMatrix = getViewMatrix(viewport);
-  model.draw({uniforms});
+  model.draw({
+    uniforms,
+    parameters: {
+      blend: true,
+      blendFunc: [gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA],
+      depthTest: true,
+      depthFunc: gl.LEQUAL
+    }
+  });
 }
 
 export function getModel(gl, data) {
@@ -55,7 +63,7 @@ void main(void) {
     fs: `
 #define SHADER_NAME mesh-model-fs
 
-#ifdef GL_ES
+#ifdef gl_ES
 precision highp float;
 #endif
 

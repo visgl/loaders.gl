@@ -6,7 +6,6 @@ import {getModel, drawModelInViewport} from '../test-utils/get-model';
 
 // LAZ
 const LAS_BINARY = require('@loaders.gl/las/test/data/indoor.laz');
-const lazPointCloud = parseFileSync(LAS_BINARY, LASLoader, {skip: 100});
 
 // Raw point cloud data
 const KITTI_POSITIONS = require('@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-positions.bin');
@@ -16,23 +15,15 @@ const kittiPointCloudRaw = {
   COLOR: new Uint8ClampedArray(KITTI_COLORS)
 };
 
-// Encode/decode mesh with Draco
-const dracoEncoder = new DracoEncoder({
-  quantization: {
-    POSITION: 14
-  }
-});
-const compressedMesh = dracoEncoder.encodePointCloud(kittiPointCloudRaw);
-dracoEncoder.destroy();
-// eslint-disable-next-line
-// console.log(compressedMesh.byteLength);
-const kittiPointCloudFromDraco = parseFileSync(compressedMesh, DracoLoader);
-
 export default [
   {
     name: 'LAZ pointcloud',
-    onRender: ({gl}) => {
+    onInitialize: ({gl}) => {
+      const lazPointCloud = parseFileSync(LAS_BINARY, LASLoader, {skip: 10});
       const model = getModel(gl, lazPointCloud);
+      return {model, lazPointCloud};
+    },
+    onRender: ({model, lazPointCloud, done}) => {
       const originalHeader = lazPointCloud.loaderData.header;
       const viewport = {
         lookAt: [
@@ -44,12 +35,14 @@ export default [
         zoom: 2
       };
       drawModelInViewport(model, viewport);
+      done();
     },
+    timeout: 10000,
     goldenImage: './test/render/golden-images/laz-indoor.png'
   },
   {
     name: 'KITTI pointcloud raw',
-    onRender: ({gl}) => {
+    onInitialize: ({gl}) => {
       const model = getModel(gl, {
         attributes: {
           positions: {value: kittiPointCloudRaw.POSITION, size: 3},
@@ -57,15 +50,34 @@ export default [
         },
         mode: 0
       });
+      return {model};
+    },
+    onRender: ({model, done}) => {
       drawModelInViewport(model, {distance: 50, rotationZ: 90});
+      done();
     },
     goldenImage: './test/render/golden-images/kitti-point-cloud.png'
   },
   {
     name: 'Draco pointcloud',
-    onRender: ({gl}) => {
+    onInitialize: ({gl}) => {
+      // Encode/decode mesh with Draco
+      const dracoEncoder = new DracoEncoder({
+        quantization: {
+          POSITION: 14
+        }
+      });
+      const compressedMesh = dracoEncoder.encodePointCloud(kittiPointCloudRaw);
+      dracoEncoder.destroy();
+      // eslint-disable-next-line
+      // console.log(compressedMesh.byteLength);
+      const kittiPointCloudFromDraco = parseFileSync(compressedMesh, DracoLoader);
       const model = getModel(gl, kittiPointCloudFromDraco);
+      return {model};
+    },
+    onRender: ({model, done}) => {
       drawModelInViewport(model, {distance: 50, rotationZ: 90});
+      done();
     },
     goldenImage: './test/render/golden-images/kitti-point-cloud.png'
   }

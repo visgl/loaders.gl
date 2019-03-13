@@ -6,8 +6,7 @@ import path from 'path';
 import {validateLoadedData} from 'test/common/conformance';
 
 const LAS_BINARY =
-  readFileSync(path.resolve(__dirname, './data/indoor.0.1.laz')) ||
-  require('./data/indoor.0.1.laz');
+  readFileSync(path.resolve(__dirname, './data/indoor.laz')) || require('./data/indoor.laz');
 
 test('LASLoader#parseBinary', t => {
   const data = parseFileSync(LAS_BINARY, LASLoader, {skip: 10});

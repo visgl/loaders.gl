@@ -11,9 +11,13 @@ export default [
   {
     name: 'PLYLoader',
     goldenImage: './test/render/golden-images/ply-loader.png',
-    onRender: ({gl}) => {
+    onInitialize: ({gl}) => {
       const model = getModel(gl, parseFileSync(PLY_BINARY, PLYLoader));
+      return {model};
+    },
+    onRender: ({model, done}) => {
       drawModelInViewport(model, {zoom: 50, lookAt: [0, 0.11, 0]}, {opacity: 0.5});
+      done();
     }
   }
 ];
