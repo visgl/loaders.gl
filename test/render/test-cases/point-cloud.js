@@ -19,7 +19,7 @@ export default [
   {
     name: 'LAZ pointcloud',
     onInitialize: ({gl}) => {
-      const lazPointCloud = parseFileSync(LAS_BINARY, LASLoader, {skip: 100});
+      const lazPointCloud = parseFileSync(LAS_BINARY, LASLoader, {skip: 10});
       const model = getModel(gl, lazPointCloud);
       return {model, lazPointCloud};
     },
@@ -37,7 +37,7 @@ export default [
       drawModelInViewport(model, viewport);
       done();
     },
-    timeout: 20000,
+    timeout: 10000,
     goldenImage: './test/render/golden-images/laz-indoor.png'
   },
   {
