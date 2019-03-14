@@ -2,7 +2,6 @@
 
 An immutable column data structure consisting of a field (type metadata) and a chunked data array.
 
-
 ## Usage
 
 Copy a column
@@ -26,7 +25,7 @@ for (const value of column) {
 ```
 
 
-## Extends
+## Inheritance
 
 Column extends [`Chunked`](modules/arrow/docs/api-reference/chunked.md)
 
@@ -41,12 +40,10 @@ The name of the column (short for `field.name`)
 
 ### field : Field
 
-Returns the field description for the column. A `Field` describes an individual constituents of a nested DataType or a `Schema`.
+Returns the `Field` instance that describes for the column.
 
 
 ## Methods
-
-In addition to fields inherited from `Chunked`, Colum also defines
 
 
 ### constructor(field : Field, vectors: Vector, offsets?: Uint32Array)
@@ -57,7 +54,6 @@ In addition to fields inherited from `Chunked`, Colum also defines
 Returns a new `Column` instance with the same properties.
 
 
-### getChildAt(index : Number) : Column
+### getChildAt(index : Number) : Vector
 
-TBD
-
+Returns the `Vector` that contains the element with 
