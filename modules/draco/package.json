@@ -26,6 +26,9 @@
     "dist",
     "README.md"
   ],
+  "browser": {
+    "fs": false
+  },
   "scripts": {
     "pre-build": "npm run build-worker",
     "build-worker": "webpack --entry ./src/draco-loader.worker.js --output ./dist/draco-loader.worker.js --config ../../scripts/worker-webpack-config.js"

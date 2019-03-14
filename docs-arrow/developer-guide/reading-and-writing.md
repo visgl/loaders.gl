@@ -53,11 +53,20 @@ The `RecordStreamWriter` class allows you to write Arrow `Table` and `RecordBatc
 
 ## Using Transform Streams
 
+
+### Connecting to Node Processes
+
+A 
+
+
+### Connecting to Python Processes
+
 A more complicated example of using Arrow to go from node -> python -> node:
 
 ```js
 const { AsyncIterable } = require('ix');
-const { spawn } = require('@graphistry/node-util/process');
+const { child } = require('event-stream');
+const { fork } = require('child_process');
 const { RecordBatchStreamWriter } = require('apache-arrow');
 
 const compute_degrees_via_gpu_accelerated_sql = ((scriptPath) => (edgeListColumnName) =>
@@ -67,14 +76,15 @@ const compute_degrees_via_gpu_accelerated_sql = ((scriptPath) => (edgeListColumn
     })
 )(require('path').resolve(__dirname, 'compute_degrees.py'));
 
-module.exports = compute_degrees;
-
 function compute_degrees(colName, recordBatchReaders) {
     return AsyncIterable
         .as(recordBatchReaders).mergeAll()
         .pipe(RecordBatchStreamWriter.throughNode())
         .pipe(compute_degrees_via_gpu_accelerated_sql(colName));
 }
+
+module.exports = compute_degrees;
+
 ```
 
 This example construct pipes of streams of events and that python process just reads from stdin, does a GPU-dataframe operation, and writes the results to stdout. (This example uses Rx/IxJS style functional streaming pipelines).

@@ -11,3 +11,6 @@ There are a lot of features we'd like to add over the next few Javascript releas
 * **node.js ↔ (Python, C++, Java, ...) interaction**: A big benefit of Arrow's common in-memory format is that different tools can operate on the same memory. Unfortunately we're pretty closed off in the browser, but node doesn't have that problem! Finishing ARROW-1700, node.js Plasma store client should make this type of interaction possible.
 
 Have an idea? Tell us! Generally JIRAs are preferred but we'll take GitHub issues too. If you just want to discuss something, reach out on the mailing list or slack. But PRs are the best of all, we can always use more contributors!
+
+- **Tensors** - Not yet implemented.
+

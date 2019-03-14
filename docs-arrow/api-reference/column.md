@@ -2,17 +2,20 @@
 
 An immutable column data structure consisting of a field (type metadata) and a chunked data array.
 
-Many useful methods are inherited from [`Chunked`](modules/arrow/docs/api-reference/chunked.md).
-
 
 ## Usage
 
-To get a contiguous typed array from a column
+Copy a column
 ```js
 const typedArray = column.slice();
 ```
 
-You can of course iterate over a column:
+Get a contiguous typed array from a `Column` (creates a new typed array unless only one chunk)
+```js
+const typedArray = column.toArray();
+```
+
+columns are iterable
 ```js
 let max = column.get(0);
 let min = max;
@@ -22,9 +25,10 @@ for (const value of column) {
 }
 ```
 
+
 ## Extends
 
-Column extends [`Chunked`](modules/arrow/docs/api-referencechunked.md)
+Column extends [`Chunked`](modules/arrow/docs/api-reference/chunked.md)
 
 
 ## Fields
@@ -56,3 +60,4 @@ Returns a new `Column` instance with the same properties.
 ### getChildAt(index : Number) : Column
 
 TBD
+
