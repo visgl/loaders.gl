@@ -53,7 +53,11 @@ test('decodeDataUri', t => {
 
   arrayBuffer = result.arrayBuffer;
   t.ok(isArrayBuffer(arrayBuffer));
-  t.equals(toString(arrayBuffer), 'important content!', 'should allow implicit text/plain with charset');
+  t.equals(
+    toString(arrayBuffer),
+    'important content!',
+    'should allow implicit text/plain with charset'
+  );
 
   t.end();
 });

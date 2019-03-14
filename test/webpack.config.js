@@ -27,8 +27,7 @@ const BABEL_CONFIG = require('../babel.config').config;
 const ALIASES = require(resolve(__dirname, '../aliases'));
 
 // The following files will be imported/required as array buffers via arraybuffer-loader
-const BINARY_FILE_EXTENSIONS =
-  /\.drc$|\.ply$|\.pcd$|\.glb$|\.las$|\.laz$|\.png$|\.jpeg$|\.gif$|\.bmp$|\.tiff$|\.bin|\.arrow/;
+const BINARY_FILE_EXTENSIONS = /\.drc$|\.ply$|\.pcd$|\.glb$|\.las$|\.laz$|\.png$|\.jpeg$|\.gif$|\.bmp$|\.tiff$|\.bin|\.arrow/;
 
 const COMMON_CONFIG = {
   mode: 'development',
@@ -104,9 +103,7 @@ const TEST_CONFIG = Object.assign({}, COMMON_CONFIG, {
     alias: Object.assign({}, ALIASES)
   },
 
-  plugins: [
-    new HtmlWebpackPlugin({title: 'loaders.gl tests'})
-  ]
+  plugins: [new HtmlWebpackPlugin({title: 'loaders.gl tests'})]
 });
 
 // Get first key in an object
@@ -135,17 +132,19 @@ function getDist(env) {
 const CONFIGS = {
   test: env => TEST_CONFIG,
 
-  bench: env => Object.assign({}, TEST_CONFIG, {
-    entry: {
-      'test-browser': resolve(__dirname, './bench/browser.js')
-    }
-  }),
+  bench: env =>
+    Object.assign({}, TEST_CONFIG, {
+      entry: {
+        'test-browser': resolve(__dirname, './bench/browser.js')
+      }
+    }),
 
-  render: env => Object.assign({}, TEST_CONFIG, {
-    entry: {
-      'test-browser': resolve(__dirname, './render/index.js')
-    }
-  }),
+  render: env =>
+    Object.assign({}, TEST_CONFIG, {
+      entry: {
+        'test-browser': resolve(__dirname, './render/index.js')
+      }
+    }),
 
   size: env => {
     const dist = getDist(env);
@@ -159,14 +158,14 @@ const CONFIGS = {
     });
 
     switch (dist) {
-    case 'es6':
-      config.resolve.mainFields = ['esnext', 'browser', 'module', 'main'];
-      break;
-    case 'es5':
-      config.resolve.mainFields = ['browser', 'main'];
-      break;
-    case 'esm':
-    default:
+      case 'es6':
+        config.resolve.mainFields = ['esnext', 'browser', 'module', 'main'];
+        break;
+      case 'es5':
+        config.resolve.mainFields = ['browser', 'main'];
+        break;
+      case 'esm':
+      default:
     }
     return config;
   },
