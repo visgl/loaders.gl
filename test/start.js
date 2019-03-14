@@ -73,8 +73,7 @@ case 'bench-browser':
 
 case 'analyze':
 case 'analyze-size':
-  // const util = require('util');
-  const {exec} =require('child_process');
+  const {exec} = require('child_process');
   const childProcess = exec(
     'webpack --config test/webpack.config.js --hide-modules --env.import-nothing --env.analyze --env.es6');
   childProcess.stdout.pipe(process.stdout);

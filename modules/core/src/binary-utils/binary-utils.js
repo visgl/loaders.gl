@@ -4,20 +4,21 @@ import {TextEncoder} from './text-encoding';
 
 export const isArrayBuffer = x => x && x instanceof ArrayBuffer;
 export const isBlob = x => x && typeof Blob !== 'undefined' && x instanceof Blob;
-// export const isBuffer = x => x && x instanceof Buffer;
+// TODO/ib - this causes buffer polyfill to be included by webpack
+export const isBuffer = x => x && x instanceof Buffer;
 
 export function toArrayBuffer(data) {
   if (isArrayBuffer(data)) {
     return data;
   }
 
-  // TODO - 
+  // TODO - Ensure buffer does not get bundled in browser
   // per docs we should just be able to call buffer.buffer, but there are issues
   // e.g. slice works differently
-  // if (isBuffer(data)) {
-  //   const typedArray = new Uint8Array(data);
-  //   return typedArray.buffer;
-  // }
+  if (isBuffer(data)) {
+    const typedArray = new Uint8Array(data);
+    return typedArray.buffer;
+  }
 
   // Careful - Node Buffers will look like ArrayBuffers (keep after isBuffer)
   if (ArrayBuffer.isView(data)) {

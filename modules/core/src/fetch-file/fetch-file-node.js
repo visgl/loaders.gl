@@ -75,7 +75,7 @@ export async function createReadStream(url, options) {
   // HANDLE DATA URLS IN NODE
   if (url.startsWith('data:')) {
     // TODO - need to return a stream wrapper
-    return decodeDataUri(url);
+    return decodeDataUri(url).arrayBuffer;
   }
 
   const isRequest = url.startsWith('http:') || url.startsWith('https:');
@@ -104,7 +104,7 @@ export async function readFile(url, options = {}) {
   options = getReadFileOptions(options);
 
   if (url.startsWith('data:')) {
-    return Promise.resolve(decodeDataUri(url));
+    return Promise.resolve(toArrayBuffer(decodeDataUri(url).arrayBuffer));
   }
 
   const isRequest = url.startsWith('http:') || url.startsWith('https:');
@@ -127,7 +127,7 @@ export function readFileSync(url, options = {}) {
   options = getReadFileOptions(options);
 
   if (url.startsWith('data:')) {
-    return decodeDataUri(url);
+    return decodeDataUri(url).arrayBuffer;
   }
 
   if (!isNode) {
@@ -176,5 +176,5 @@ export function decodeDataUri(uri) {
     mimeType = `text/plain${mimeType}`;
   }
 
-  return {buffer, mimeType};
+  return {arrayBuffer: toArrayBuffer(buffer), mimeType};
 }

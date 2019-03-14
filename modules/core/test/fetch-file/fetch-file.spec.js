@@ -26,6 +26,7 @@ test('readFileSync#dataUrl', t => {
   if (isBrowser) {
     t.comment('dataUri sync parsing only implemented in node.js');
     t.end();
+    return;
   }
 
   const data = readFileSync(DATA_URL);

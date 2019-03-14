@@ -37,7 +37,7 @@ print_size() {
 build_bundle() {
   ENV=$1
   DEVELOPMENT=$2
-  NODE_ENV=production webpack --config test/webpack.config.js --hide-modules --env.import-nothing --env.bundle --env.$ENV --env.$DEVELOPMENT
+  NODE_ENV=production webpack --config test/webpack.config.js --hide-modules --env.import-nothing --env.bundle --env.$ENV --env.$DEVELOPMENT> /dev/null
 
   print_size $ENV $DEVELOPMENT
 }
