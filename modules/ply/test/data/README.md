@@ -4,5 +4,5 @@
 
 Samples from Google Draco `testdata`:
 
-* bun_zipper.ply
-* cube_att.ply
+- bun_zipper.ply
+- cube_att.ply

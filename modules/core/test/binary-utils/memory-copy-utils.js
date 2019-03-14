@@ -1,6 +1,9 @@
 import test from 'tape-promise/tape';
 import {
-  padTo4Bytes, copyArrayBuffer, copyToArray, concatenateArrayBuffers
+  padTo4Bytes,
+  copyArrayBuffer,
+  copyToArray,
+  concatenateArrayBuffers
 } from '../src/binary-utils/memory-copy-utils';
 
 test('padTo4Bytes', t => {

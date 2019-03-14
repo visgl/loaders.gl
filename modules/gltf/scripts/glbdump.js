@@ -18,7 +18,7 @@ function printHelp() {
 let options;
 
 function main() {
-  const [,, ...args] = process.argv;
+  const [, , ...args] = process.argv;
 
   if (args.length === 0) {
     printHelp();
@@ -118,17 +118,17 @@ function parseOptions(args) {
   for (const arg of args) {
     if (arg.indexOf('--') === 0) {
       switch (arg) {
-      case '--json':
-        opts.dumpJSON = true;
-        break;
-      case '--gltf':
-        opts.dumpGLTF = true;
-        break;
-      case '--help':
-        printHelp();
-        break;
-      default:
-        console.warn(`Unknown option ${arg}`);
+        case '--json':
+          opts.dumpJSON = true;
+          break;
+        case '--gltf':
+          opts.dumpGLTF = true;
+          break;
+        case '--help':
+          printHelp();
+          break;
+        default:
+          console.warn(`Unknown option ${arg}`);
       }
     }
   }
