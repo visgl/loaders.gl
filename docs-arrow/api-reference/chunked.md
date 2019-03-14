@@ -2,6 +2,17 @@
 
 Holds a "chunked array" that allows a number of array fragments (represented by `Vector` instnces) to be treated logically as a single vector. `Array` instances can be concatenated into a `Chunked` without any memory beind copied.
 
+
+## Usage
+
+Get a contiguous typed array from a Chunked (note that this creates a new typed array unless only one chunk)
+```js
+const typedArray = column.toArray();
+```
+
+
+
+
 A `Chunked` array supports iteration, random access element access and mutation.
 
 extends Vector
@@ -138,6 +149,11 @@ Returns the index of the first element with value `element`
 
 * `offset` - the index to start searching from.
 
-### toArray(): Type[]
+### toArray(): TypedArray
 
-Returns a JavaScript Array by flattening the chunks
+Returns a single contiguous typed array containing data in all the chunks (effectively "flattening" the chunks.
+
+Notes:
+* Calling this function creates a new typed array unless there is only one chunk.
+
+

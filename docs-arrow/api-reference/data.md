@@ -1,5 +1,11 @@
 # Data
 
+Untyped storage backing for `Vector`.
+
+Can be thought of as array of `ArrayBuffer` instances.
+
+Also contains slice offset (including null bitmaps).
+
 
 ## Fields
 
@@ -73,8 +79,8 @@ Convenience methods for creating Data instances for each of the Arrow Vector typ
 ### Data.Union<T extends DenseUnion>(type: T, offset: Number, length: Number, nullCount: Number, nullBitmap: NullBuffer, typeIds: TypeIdsBuffer, valueOffsets: ValueOffsetsBuffer, children: (Data | Vector)[]) : Data
 }
 
-## Methods
 
+## Methods
 
 ### constructor(type: T, offset: Number, length: Number, nullCount?: Number, buffers?: Partial<Buffers<T>> | Data<T>, childData?: (Data | Vector)[]);
 

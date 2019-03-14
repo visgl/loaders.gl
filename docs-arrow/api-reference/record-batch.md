@@ -18,6 +18,11 @@ const recordBatch = RecordBatch.from(arrays);
 ```
 
 
+## Inheritance
+
+`RecordBatch` extends `StructVector` extends `BaseVector`
+
+
 ## Members
 
 ### schema : Schema (readonly)
@@ -33,31 +38,40 @@ Returns number of fields/columns in the schema (shorthand for `this.schema.field
 
 ### RecordBatch.from(vectors: Array, names: String[] = []) : RecordBatch
 
-Creates a record batch.
+Creates a `RecordBatch`, see `RecordBatch.new()`.
 
-TBD
-- Schema is auto inferred.
+
+### RecordBatch.new(vectors: Array, names: String[] = []) : RecordBatch
+
+Creates new a record batch.
+
+Schema is auto inferred, using names or index positions if `names` are not supplied.
 
 
 ## Methods
 
 ### constructor(schema: Schema, numRows: Number, childData: (Data | Vector)[])
 
-Create a new RecordBatch instance with `numRows` rows of child data.
+Create a new `RecordBatch` instance with `numRows` rows of child data.
+
+* `numRows` - 
+* `childData` - 
 
 
 ### constructor(schema: Schema, data: Data, children?: Vector[])
 
+Create a new `RecordBatch` instance with `numRows` rows of child data.
 
 ### constructor(...args: any[])
 
-
 ### clone(data: Data, children?: Array) : RecordBatch
+
+Returns a newly allocated copy of this `RecordBatch`
 
 ### concat(...others: Vector[]) : Table
 
-Concatenates a number of Vectors
+Concatenates a number of `Vector` instances.
 
 ### select(...columnNames: K[]) : RecordBatch
 
-Return a new RecordBatch with a subset of columns
+Return a new `RecordBatch` with a subset of columns.

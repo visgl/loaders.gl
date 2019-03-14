@@ -1,5 +1,13 @@
 # Vector
 
+Holds a non-chunked vector.
+
+Also referred to as `BaseVector`
+
+
+## Inheritance
+
+
 
 ## Fields
 
@@ -42,12 +50,12 @@
 
 ### slice(begin?: number, end?: number)
 
-// Adjust args similar to Array.prototype.slice. Normalize begin/end to
-// clamp between 0 and length, and wrap around on negative indices, e.g.
-// slice(-1, 5) or slice(5, -1)
+Adjust args similar to Array.prototype.slice. Normalize begin/end to clamp between 0 and length, and wrap around on negative indices, e.g. slice(-1, 5) or slice(5, -1)
 
 ### isValid(index: number): boolean
 
 ### getChildAt<R extends DataType = any>(index: number): Vector<R> | null
+
+
 
 ### toJSON(): any
