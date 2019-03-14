@@ -10,7 +10,11 @@ const BUFFERS = [
   new Float32Array([8, 2, 4, 5])
 ];
 
-function validateGLBJsonFields(t, builder, {numBuffers = 1, numBufferViews = 0, numAccessors = 0, numImages = 0} = {}) {
+function validateGLBJsonFields(
+  t,
+  builder,
+  {numBuffers = 1, numBufferViews = 0, numAccessors = 0, numImages = 0} = {}
+) {
   const counts = builder._getInternalCounts();
   t.equal(counts.buffers, numBuffers, `buffers ${numBufferViews}`);
   t.equal(counts.bufferViews, numBufferViews, `bufferViews is ${numBufferViews}`);
@@ -115,9 +119,16 @@ test('GLBBuilder#encode with nested typed array json', t => {
   const arrayBuffer = builder.encodeAsGLB();
 
   const resultJSON = builder.json.extras;
-  t.equal(arrayBuffer.byteLength, 284, 'nested object with 1 typed array json encoded with size of 284');
+  t.equal(
+    arrayBuffer.byteLength,
+    284,
+    'nested object with 1 typed array json encoded with size of 284'
+  );
   t.equal(Object.keys(resultJSON).length, 1, 'json has 1 keys in object');
-  t.ok(typeof resultJSON.nested.typedArray === 'string', 'encoded array should be an accessor string');
+  t.ok(
+    typeof resultJSON.nested.typedArray === 'string',
+    'encoded array should be an accessor string'
+  );
   validateGLBJsonFields(t, builder, {numBufferViews: 1, numAccessors: 1, numImages: 0});
 
   t.end();
@@ -156,8 +167,16 @@ test('GLBBuilder#encode complex', t => {
 // I think this test may be redundant with GLTF tests
 test.skip('GLBBuilder#addImageEntry', t => {
   const builder = new GLBBuilder();
-  const firstImageIndex = builder.addImageEntry(3, {mimeType: 'image/png', width: 100, height: 101});
-  const secondImageIndex = builder.addImageEntry(2, {mimeType: 'image/png', width: 200, height: 201});
+  const firstImageIndex = builder.addImageEntry(3, {
+    mimeType: 'image/png',
+    width: 100,
+    height: 101
+  });
+  const secondImageIndex = builder.addImageEntry(2, {
+    mimeType: 'image/png',
+    width: 200,
+    height: 201
+  });
 
   t.equal(builder.json.images.length, 2, 'images has 2 entries');
 

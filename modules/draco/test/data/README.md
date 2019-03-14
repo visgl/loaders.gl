@@ -3,5 +3,3 @@
 ## DRC
 
 Samples from Google Draco `testdata`:
-
-

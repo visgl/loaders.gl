@@ -55,4 +55,3 @@ test('getGLTFAttributeMap', t => {
   t.ok(getGLTFAttributeMap);
   t.end();
 });
-
