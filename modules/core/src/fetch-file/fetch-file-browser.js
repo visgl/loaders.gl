@@ -1,5 +1,4 @@
 /* global fetch, location, URL, File, FileReader */
-import decodeDataUri from '../data-uri-utils/decode-data-uri';
 import assert from '../utils/assert';
 import {resolvePath} from './file-aliases';
 
@@ -55,9 +54,10 @@ export function readFileSync(uri, options = {}) {
   uri = resolvePath(uri);
   options = getReadFileOptions(options);
 
-  if (uri.startsWith('data:')) {
-    return decodeDataUri(uri);
-  }
+  // TODO: Commented out, avoids dependency on Node.js Buffer in decodeDataUri implementation
+  // if (uri.startsWith('data:')) {
+  //   return decodeDataUri(uri);
+  // }
 
   if (!options.nothrow) {
     // throw new Error('Cant load URI synchronously');

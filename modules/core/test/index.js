@@ -11,8 +11,8 @@ import './image-utils/image-loaders.spec';
 
 import './mesh-utils/gltf-attribute-utils.spec';
 
-import './read-file/read-file.spec';
-import './read-file/create-stream.spec';
+import './fetch-file/fetch-file.spec';
+import './fetch-file/create-stream.spec';
 
 import './parse-file/auto-parse.spec';
 import './load-file/load-image.spec';

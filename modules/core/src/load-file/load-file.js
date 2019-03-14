@@ -1,4 +1,4 @@
-import {readFile, readFileSync} from '../read-file/read-file';
+import {readFile, readFileSync} from '../fetch-file/fetch-file';
 import {parseFile, parseFileSync} from '../parse-file/parse-file';
 import {autoDetectLoader} from '../parse-file/auto-detect-loader';
 

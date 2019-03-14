@@ -1,8 +1,10 @@
+// PORTABLE FETCH & WRITE
+
+export {setPathPrefix, getPathPrefix, resolvePath} from './fetch-file/file-aliases.js';
+export {fetchFile, readFile, readFileSync, createReadStream} from './fetch-file/fetch-file';
+export {writeFile, writeFileSync} from './write-file/write-file';
+
 // FILE PARSING AND LOADING
-
-export {setPathPrefix, getPathPrefix, resolvePath} from './read-file/file-aliases.js';
-
-export {fetchFile, readFile, readFileSync, createReadStream} from './read-file/read-file';
 
 export {
   parseFile,
@@ -16,7 +18,6 @@ export {loadImage} from './load-file/load-image';
 // FILE ENCODING AND SAVING
 
 export {encodeFile, encodeFileSync, encodeToStream} from './encode-file/encode-file';
-export {writeFile, writeFileSync} from './write-file/write-file';
 export {saveFile, saveFileSync} from './save-file/save-file';
 
 // BINARY UTILS

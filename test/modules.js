@@ -1,5 +1,7 @@
-// Sets up aliases for file reader
-require('./aliases');
+// Sets up aliases in loaders.gl
+const ALIASES = require('../aliases');
+const {addAliases} = require('@loaders.gl/core/fetch-file/file-aliases');
+addAliases(ALIASES);
 
 require('@loaders.gl/core/test');
 

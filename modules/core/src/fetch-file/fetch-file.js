@@ -6,7 +6,7 @@ import {
   createReadStream as browserCreateReadStream,
   readFile as browserReadFile,
   readFileSync as browserReadFileSync
-} from './read-file-browser';
+} from './fetch-file-browser';
 
 // read-file-node is excluded from build under browser so don't do indivdual imports
 import * as node from './read-file-node';
