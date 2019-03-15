@@ -86,6 +86,9 @@ export default class GLTFPostProcessor {
       gltf.scene = gltf.scenes[this.gltf.scene];
     }
 
+    // EXTENSIONS
+    this._process_extension_KHR_lights_punctual();
+
     return gltf;
   }
   /* eslint-enable complexity */
@@ -301,6 +304,58 @@ export default class GLTFPostProcessor {
     }
     if (camera.orthographic) {
       // camera.matrix = createOrthographicMatrix(camera.orthographic);
+    }
+  }
+
+  // EXTENSIONS
+
+  // eslint-disable-next-line camelcase
+  _process_extension_KHR_lights_punctual() {
+    const {gltf} = this;
+
+    // Move the light array out of the extension and remove the extension
+    const extension = gltf.extensions && gltf.extensions.KHR_lights_punctual;
+    if (extension) {
+      gltf.lights = extension.lights;
+    }
+
+    this._removeExtension('KHR_lights_punctual');
+
+    // Any nodes that have the extension, add lights field pointing to light object
+    // and remove the extension
+    for (const node of gltf.nodes || []) {
+      const nodeExtension = node.extensions && node.extensions.KHR_lights_punctual;
+      if (nodeExtension) {
+        node.light = this._get('lights', nodeExtension.light);
+        delete node.extensions.KHR_lights_punctual;
+      }
+    }
+
+    delete gltf.lights;
+  }
+
+  // Removes an extension from the top-level list
+  _removeExtension(extensionName) {
+    if (this.gltf.extensionsRequired) {
+      this._removeStringFromArray(this.gltf.extensionsRequired, extensionName);
+    }
+    if (this.gltf.extensionsUsed) {
+      this._removeStringFromArray(this.gltf.extensionsUsed, extensionName);
+    }
+    if (this.gltf.extensions) {
+      delete this.gltf.extensions[extensionName];
+    }
+  }
+
+  _removeStringFromArray(array, string) {
+    let found = true;
+    while (found) {
+      const index = array.indexOf(string);
+      if (index > -1) {
+        array.splice(index, 1);
+      } else {
+        found = false;
+      }
     }
   }
 }

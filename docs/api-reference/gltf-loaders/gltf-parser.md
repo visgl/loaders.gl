@@ -7,6 +7,8 @@ To facilitiate working with the loaded data, the `GLTFParser` class provides:
 - A set of accessor methods to facilitate traversal the parsed glTF data.
 - A `resolveScenegraphs` method that resolves the index based linking between objects into a hierarchical javascript structure.
 
+Certain glTF extensions can be fully or partially processed by the `GLTFParser`. See [glTF Extensions](docs/api-reference/gltf-loaders/gltf-extensions.md).
+
 References:
 
 - For more information, see [glTF and GLB support](docs/) in the Developer's Guide.
@@ -54,24 +56,24 @@ Calling the `resolveScenegraphs` method adds a hierarchical structure that makes
 
 ## Methods
 
-### constructor(options : Object)
+### constructor()
 
 Creates a new `GLTFParser` instance.
 
-- `options.DracoDecoder` - To enable DRACO encoding, the application needs to import and supply the DracoEncoder class.
+### async parse(arrayBuffer : ArrayBuffer, options : Object) : Promise<Object>
 
-### async parse(arrayBuffer : ArrayBuffer) : Promise<Object>
+Parses an in-memory, glTF/GLB formatted `ArrayBuffer` a JSON tree with binary typed arrays and image nodes. Once the `Promise` returned by the `parse()` method has successfully resolved, the accessors in this class can be used.
 
-Parses an in-memory, glTF/GLB formatted `ArrayBuffer` a JSON tree with binary typed arrays and image nodes.
-
-Once the `parse()` method has successfully completed the accessors in this class can be used.
+- `options.url`= - Supplies a base URL that is used to resolve relative file names to linked resources. Only needed when loading glTF files that have linked resources (e.g. typically not the case for `.glb` encoded files).
+- `options.decompress`=`false` - Decompresses any Draco encoded meshes
+- `options.DracoDecoder` - To enable Draco encoding, the application also needs to import and supply the `DracoEncoder` class.
 
 Notes:
 
 - linked binary resources will be loaded and resolved (if url is available).
 - base64 encoded binary data inside the JSON payload will be decoded
 
-### parseSync(arrayBuffer : ArrayBuffer) : Object
+### parseSync(arrayBuffer : ArrayBuffer, options : Object) : Object
 
 Parses an in-memory, glTF/GLB formatted `ArrayBuffer` a JSON tree with binary typed arrays and image nodes.
 

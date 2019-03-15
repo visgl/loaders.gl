@@ -10,3 +10,4 @@ import './gltf/gltf-builder.spec';
 import './gltf/gltf-loader.spec';
 import './gltf/gltf-roundtrip.spec';
 import './gltf/gltf-draco.spec';
+import './gltf/gltf-post-processor.spec';
