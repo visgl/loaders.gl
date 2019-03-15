@@ -45,7 +45,7 @@ Holds nested fields.
 | `Float64Vector`         | `Float64Array`  | Holds 64 bit floats       |
 
 
-### FloatVector Methods
+### Static FloatVector Methods
 
 ### FloatVector.from(data: Uint16Array): Float16Vector;
 ### FloatVector.from(data: Float32Array): Float32Vector;
@@ -58,11 +58,13 @@ Holds nested fields.
 
 ## Float16Vector Methods
 
-Since JS doesn't have half floats, `Float16Vector` is backed by a `Uint16Array` integer array.
+Since JS doesn't have half floats, `Float16Vector` is backed by a `Uint16Array` integer array. To make it practical to work with these arrays in JS, some extra methods are added.
 
 ### toArray() : `Uint16Array`
 
-Returns a zero-copy slice of the underlying `Uint16Array` data. This avoids incurring extra compute or copies if you're calling `toArray()` in order to create a buffer for something like WebGL, but makes it hard to use the returned data as floating point values in JS.
+Returns a zero-copy view of the underlying `Uint16Array` data.
+
+Note: Avoids incurring extra compute or copies if you're calling `toArray()` in order to create a buffer for something like WebGL, but makes it hard to use the returned data as floating point values in JS.
 
 ### toFloat32Array() : Float32Array
 
@@ -87,6 +89,8 @@ This method will convert values to 64 bit floats. Allocates a new Array.
 | `Uint64Vector`          | `BigUint64Array`   |
 
 
+## Static IntVector Methods
+
 ### IntVector.from(data: Int8Array): Int8Vector;
 ### IntVector.from(data: Int16Array): Int16Vector;
 ### IntVector.from(data: Int32Array, is64?): Int32Vector | Int64Vector;
@@ -106,9 +110,7 @@ This method will convert values to 64 bit floats. Allocates a new Array.
 
 ## Date Vectors
 
-| Date Vectors            |
-| ---                     |
-| `DateDayVector`         |
-| `DateMillisecondVector` |
-
-
+| Date Vectors            | Backing       |                     |
+| ---                     | ---           | ---                 |
+| `DateDayVector`         | `Int32Array`  |                     |
+| `DateMillisecondVector` | `Int32Array`  | TBD - stride: 2?    |
