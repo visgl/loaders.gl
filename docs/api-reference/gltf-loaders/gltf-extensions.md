@@ -6,7 +6,6 @@ Many glTF extensions affect e.g. rendering which is outside of the scope of load
 
 ## Official Extensions
 
-
 ### KHR_draco_mesh_compression
 
 Supports compression of mesh attributes (geometry).
@@ -15,14 +14,13 @@ Specification: [KHR_draco_mesh_compression](https://github.com/KhronosGroup/glTF
 
 Parsing Support:
 
-* By adding the `decompress: true` options to the `GLTFParser` any decompressed by the `GLTFParser`.
-* The expanded attributes are placed in the mesh object (effectively making it look as if it had never been compressed).
-* The extension objects are removed from the glTF file.
+- By adding the `decompress: true` options to the `GLTFParser` any decompressed by the `GLTFParser`.
+- The expanded attributes are placed in the mesh object (effectively making it look as if it had never been compressed).
+- The extension objects are removed from the glTF file.
 
 Encoding Support:
 
-* Meshes can be compressed as they are added to the `GLTFBuilder`.
-
+- Meshes can be compressed as they are added to the `GLTFBuilder`.
 
 ### KHR_lights_punctual
 
@@ -32,13 +30,13 @@ Specification: [KHR_lights_punctual](https://github.com/KhronosGroup/glTF/tree/m
 
 Parsing Support:
 
-* Removal of extension wrappers (happens during glTF postprocessing)
-* A `lights` array will be added to the list of glTF arrays.
-* Any nodes with a light extension will get a `light` field with value set to the light definition object (from the `lights` array).
+- Any nodes with a `KHR_lights_punctual` extension will get a `light` field with value containing a light definition object with properties defining the light (this object will be resolved by index from the global `KHR_lights_punctual` extension object's `lights` array) .
+- The `KHR_lights_punctual` extensions will be removed from all nodes.
+- Finally, the global `KHR_lights_punctual` extension (including its light list)) will be removed.
 
 Encoding Support:
 
-* N/A
+- N/A
 
 ## Custom Extensions
 
@@ -48,9 +46,9 @@ Specification: Similar to `KHR_draco_mesh_compression`, but supports point cloud
 
 Parsing support:
 
-* The primitive's accessors field will be populated after decompression.
-* After decompression, the extension will be removed (as if the point cloud was never compressed).
+- The primitive's accessors field will be populated after decompression.
+- After decompression, the extension will be removed (as if the point cloud was never compressed).
 
 Encoding support:
 
-* Point clouds can be compressed as they are added to the `GLTFBuilder` and decompressed by the `GLTFParser`.
+- Point clouds can be compressed as they are added to the `GLTFBuilder` and decompressed by the `GLTFParser`.
