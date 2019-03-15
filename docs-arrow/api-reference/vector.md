@@ -1,35 +1,54 @@
 # Vector
 
-Holds a non-chunked vector.
+Also referred to as `BaseVector`. An abstract base class for vector types.
 
-Also referred to as `BaseVector`
+* Can support a null map
+* ...
+* TBD
 
 
 ## Inheritance
-
 
 
 ## Fields
 
 ### data: Data<T> (readonly)
 
+
 ### numChildren: number (readonly)
+
+TBD - Used by chunked
 
 ### type : ?
 
+The type of elements in the vector.
+
 ### typeId : ?
 
-### length : ?
+
+### length : Number
+
+Number of elements in the `Vector`
 
 ### offset : ?
 
+Offset to the first element in the underlying data.
+
 ### stride : ?
 
-### nullCount : ?
+Stride between successive elements in the the underlying data.
 
-### VectorName : ?
+### nullCount : Number
+
+Number of `null` values in this `Vector` instance (`null` values require a null map to be present).
+
+### VectorName : String
+
+Returns the name of the Vector
 
 ### ArrayType : ?
+
+Returns the constructor of the underlying typed array.
 
 ### values : ?
 
