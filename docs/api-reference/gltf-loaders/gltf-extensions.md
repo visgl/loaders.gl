@@ -6,16 +6,51 @@ Many glTF extensions affect e.g. rendering which is outside of the scope of load
 
 ## Official Extensions
 
+
 ### KHR_draco_mesh_compression
 
-Description: [KHR_draco_mesh_compression](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_draco_mesh_compression).
+Supports compression of mesh attributes (geometry).
 
-This extension is partially implemented. Meshes can be compressed as they are added to the `GLTFBuilder` and decompressed by the `GLTFParser`.
+Specification: [KHR_draco_mesh_compression](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_draco_mesh_compression).
+
+Parsing Support:
+
+* By adding the `decompress: true` options to the `GLTFParser` any decompressed by the `GLTFParser`.
+* The expanded attributes are placed in the mesh object (effectively making it look as if it had never been compressed).
+* The extension objects are removed from the glTF file.
+
+Encoding Support:
+
+* Meshes can be compressed as they are added to the `GLTFBuilder`.
+
+
+### KHR_lights_punctual
+
+Supports specification of point light sources and addition of such sources to the scenegraph node.
+
+Specification: [KHR_lights_punctual](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_lights_punctual)
+
+Parsing Support:
+
+* Removal of extension wrappers (happens during glTF postprocessing)
+* A `lights` array will be added to the list of glTF arrays.
+* Any nodes with a light extension will get a `light` field with value set to the light definition object (from the `lights` array).
+
+Encoding Support:
+
+* N/A
 
 ## Custom Extensions
 
 ### UBER_draco_point_cloud_compression
 
-Description: Similar to `KHR_draco_mesh_compression`, but does not contain any accessors and does not support any fallback or non-compressed accessors/attributes. The primitive's accessors field will be populated after decompression.
+Specification: Similar to `KHR_draco_mesh_compression`, but supports point clouds (draw mode 0). Also does not support any fallback or non-compressed accessors/attributes.
 
-Point clouds can be compressed as they are added to the `GLTFBuilder` and decompressed by the `GLTFParser`.
+Parsing support:
+
+* The primitive's accessors field will be populated after decompression.
+* After decompression, the extension will be removed (as if the point cloud was never compressed).
+
+Encoding support:
+
+* Point clouds can be compressed as they are added to the `GLTFBuilder` and decompressed by the `GLTFParser`.
