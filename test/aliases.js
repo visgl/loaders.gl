@@ -24,18 +24,18 @@ const {addAliases} = require('@loaders.gl/core/read-file/file-aliases');
 // NOTE - this cannot be replaced with ocular-dev-tools because it is required in browser
 const makeAliases = () => ({
   test: path.resolve(__dirname, '../test'),
-  '@loaders.gl/core': path.resolve(__dirname, '../modules/core'),
-  '@loaders.gl/draco': path.resolve(__dirname, '../modules/draco'),
-  '@loaders.gl/experimental': path.resolve(__dirname, '../modules/experimental'),
-  '@loaders.gl/images': path.resolve(__dirname, '../modules/images'),
-  '@loaders.gl/gltf': path.resolve(__dirname, '../modules/gltf'),
-  '@loaders.gl/kml': path.resolve(__dirname, '../modules/kml'),
-  '@loaders.gl/las': path.resolve(__dirname, '../modules/las'),
-  '@loaders.gl/obj': path.resolve(__dirname, '../modules/obj'),
-  '@loaders.gl/pcd': path.resolve(__dirname, '../modules/pcd'),
-  '@loaders.gl/ply': path.resolve(__dirname, '../modules/ply'),
-  '@loaders.gl/zip': path.resolve(__dirname, '../modules/zip'),
-  '@loaders.gl/arrow': path.resolve(__dirname, '../modules/arrow')
+  '@loaders.gl/core/test': path.resolve(__dirname, '../modules/core/test'),
+  '@loaders.gl/draco/test': path.resolve(__dirname, '../modules/draco/test'),
+  '@loaders.gl/experimental/test': path.resolve(__dirname, '../modules/experimental/test'),
+  '@loaders.gl/images/test': path.resolve(__dirname, '../modules/images/test'),
+  '@loaders.gl/gltf/test': path.resolve(__dirname, '../modules/gltf/test'),
+  '@loaders.gl/kml/test': path.resolve(__dirname, '../modules/kml/test'),
+  '@loaders.gl/las/test': path.resolve(__dirname, '../modules/las/test'),
+  '@loaders.gl/obj/test': path.resolve(__dirname, '../modules/obj/test'),
+  '@loaders.gl/pcd/test': path.resolve(__dirname, '../modules/pcd/test'),
+  '@loaders.gl/ply/test': path.resolve(__dirname, '../modules/ply/test'),
+  '@loaders.gl/zip/test': path.resolve(__dirname, '../modules/zip/test'),
+  '@loaders.gl/arrow/test': path.resolve(__dirname, '../modules/arrow/test')
 });
 
 const ALIASES = makeAliases();

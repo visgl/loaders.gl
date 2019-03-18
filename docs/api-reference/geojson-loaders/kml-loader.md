@@ -9,7 +9,7 @@ References:
 
 ## Usage
 
-```
+```js
 import {KMLLoader} from '@loaders.gl/kml';
 import {loadFileSync} from '@loaders.gl/core';
 ```

@@ -19,10 +19,10 @@
 // THE SOFTWARE.
 
 /* eslint-disable no-console, no-invalid-this */
-import {Bench} from 'probe.gl/bench';
+import {Bench} from '@probe.gl/bench';
 
-import coreBench from '@loaders.gl/core/../test/bench';
-import dracoBench from '@loaders.gl/draco/../test/draco.bench';
+import coreBench from '@loaders.gl/core/test/bench';
+import dracoBench from '@loaders.gl/draco/test/draco.bench';
 
 const suite = new Bench({
   minIterations: 10

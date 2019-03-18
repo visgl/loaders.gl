@@ -16,9 +16,9 @@ The `GLTFWriter` is a writer for glTF scenegraphs.
 
 ## Usage
 
-```
-import {GLTFWriter} from `@loaders.gl/gltf';
-import {saveFile} from `@loaders.gl/core';
+```js
+import {GLTFWriter} from '@loaders.gl/gltf';
+import {saveFile} from '@loaders.gl/core';
 const gltf = ...;
 saveFile(gltf, GLTFWriter);
 ```

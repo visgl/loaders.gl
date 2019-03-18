@@ -1,6 +1,33 @@
 # parseFile
 
+## Usage
+
+The return value from `fetch` or `fetchFile` is a `Promise` that resolves to the fetch response object and can be passed directly to the (non-sync) parser functions:
+
+```js
+import {fetchFile, parseFile} from '@loaders.gl/core';
+import {OBJLoader} from '@loaders.gl/obj';
+
+data = await parseFile(fetchFile(url), OBJLoader);
+// Application code here
+...
+```
+
 ## Functions
+
+### parseFileInBatches(file : any, loader : Object | Array [, options : Object [, url : String]]) : AsyncIterator
+
+A
+
+- `file`: This parameter can be any of the following types, or a `Promise` that resolves into one of these types.
+  - `Response` - i.e. a `fetch` response object returned by `fetchFile` or `fetch`.
+  - `ArrayBuffer` -
+  - `Iterator` -
+  - `AsyncIterator` -
+  - `ReadableStream` -
+  - `Promise` - A promise will be resolved and if result
+
+Notes:
 
 ### parseFile(fileData : ArrayBuffer | String, loader : Object | Array [, options : Object [, url : String]]) : Promise<Any>
 

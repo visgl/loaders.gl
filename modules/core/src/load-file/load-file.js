@@ -1,6 +1,11 @@
-import {readFile, readFileSync} from '../read-file/read-file';
-import {parseFile, parseFileSync} from '../parse-file/parse-file';
+import {fetchFile, readFileSync} from '../read-file/read-file';
+import {parseFile, parseFileSync, parseFileInBatches} from '../parse-file/parse-file';
 import {autoDetectLoader} from '../parse-file/auto-detect-loader';
+
+export async function loadFileInBatches(url, loaders, options) {
+  const response = await fetchFile(url, options);
+  return parseFileInBatches(response, loaders, options, url);
+}
 
 export async function loadFile(url, loaders, options) {
   const loader = Array.isArray(loaders) ? autoDetectLoader(url, null, loaders) : loaders;
@@ -9,8 +14,8 @@ export async function loadFile(url, loaders, options) {
     return await loader.loadAndParse(url, options);
   }
   // at this point, data can be binary or text
-  const data = await readFile(url, options);
-  return parseFile(data, loaders, options, url);
+  const response = await fetchFile(url, options);
+  return parseFile(response, loaders, options, url);
 }
 
 export function loadFileSync(url, loaders, options) {

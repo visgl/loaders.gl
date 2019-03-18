@@ -9,7 +9,7 @@ import {resolvePath} from './file-aliases';
 import decodeDataUri from '../data-uri-utils/decode-data-uri';
 import {toArrayBuffer} from '../binary-utils/binary-utils';
 import {TextDecoder} from '../binary-utils/text-encoding';
-import {concatenateReadStream} from '../async-iterator-utils/stream-utils';
+import {concatenateReadStream} from '../iterator-utils/stream-utils';
 
 const isNode = Boolean(fs && fs.readFile);
 
@@ -55,7 +55,7 @@ class MockFetchResponseObject {
   async text() {
     const arrayBuffer = await this.arrayBuffer();
     const textDecoder = new TextDecoder();
-    return textDecoder.parse(arrayBuffer);
+    return textDecoder.decode(arrayBuffer);
   }
 
   async json() {

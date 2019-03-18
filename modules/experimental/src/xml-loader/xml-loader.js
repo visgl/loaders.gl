@@ -11,7 +11,7 @@ export default {
   extension: 'kml',
   supported: parseXMLSupported(),
   testText,
-  parseText: parseXML,
+  parseTextSync: parseXML,
   browserOnly: true,
   worker: false
 };

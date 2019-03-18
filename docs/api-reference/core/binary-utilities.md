@@ -4,7 +4,7 @@ loaders.gl provides a set of functions to simplify working with binary data. The
 
 ## Usage
 
-```
+```js
 import {toArrayBuffer} from '@loaders.gl/core';
 ```
 

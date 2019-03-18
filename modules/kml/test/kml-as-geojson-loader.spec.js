@@ -23,7 +23,7 @@ test('KMLasGeoJsonLoader#testText', t => {
   t.end();
 });
 
-test('KMLasGeoJsonLoader#parseText', t => {
+test('KMLasGeoJsonLoader#parse(text)', t => {
   if (!KMLasGeoJsonLoader.supported) {
     t.comment('XML parsing not available');
   } else {

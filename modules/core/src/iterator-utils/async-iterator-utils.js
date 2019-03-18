@@ -1,13 +1,6 @@
 import {concatenateArrayBuffers} from '../binary-utils/memory-copy-utils';
 import {TextDecoder, TextEncoder} from '../binary-utils/text-encoding';
 
-export const isPromise = x =>
-  x && (typeof x === 'object' || typeof x === 'function') && typeof x.then === 'function';
-
-export const isIterable = x => x && typeof x[Symbol.iterator] === 'function';
-
-export const isAsyncIterable = x => x && typeof x[Symbol.asyncIterator] === 'function';
-
 // GENERAL UTILITIES
 
 // Iterate over async iterator, without resetting iterator if end is not reached

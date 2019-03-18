@@ -1,6 +1,6 @@
 import test from 'tape-promise/tape';
 import {isBrowser, readFile, loadFile} from '@loaders.gl/core';
-import {parseFileAsIterator, parseFileAsAsyncIterator} from '@loaders.gl/core';
+import {parseFileInBatches, parseFileInBatchesSync} from '@loaders.gl/core';
 import {ArrowLoader} from '@loaders.gl/arrow';
 import {ArrowWorkerLoader} from '@loaders.gl/arrow';
 import path from 'path';
@@ -49,20 +49,22 @@ test('ArrowLoader#parseFile (WORKER)', async t => {
   t.end();
 });
 
-test('ArrowLoader#parseIterator(sync input)', async t => {
+/*
+test('ArrowLoader#parseFileInBatches(sync input)', async t => {
   const data = await readFile(ARROW_BIOGRID_NODES);
 
-  const iterator = parseFileAsIterator(data, ArrowLoader);
+  const iterator = parseFileInBatchesSync(data, ArrowLoader);
   for (const batch of iterator) {
     t.ok(batch, 'received batch');
     t.end();
   }
 });
+*/
 
-test('ArrowLoader#parseAsyncIterator(sync input)', async t => {
+test('ArrowLoader#parseFileInBatches(async input)', async t => {
   const data = await readFile(ARROW_BIOGRID_NODES);
 
-  const asyncIterator = await parseFileAsAsyncIterator(data, ArrowLoader);
+  const asyncIterator = await parseFileInBatches(data, ArrowLoader);
   for await (const batch of asyncIterator) {
     t.ok(batch, 'received batch');
     t.end();
@@ -81,7 +83,7 @@ test('ArrowLoader#parseAsyncIterator(async input)', async t => {
   // const {Table} = require('apache-arrow');
   // const values = Table.from(data);
 
-  const asyncIterator = await parseFileAsAsyncIterator(data, ArrowLoader);
+  const asyncIterator = await parseFileInBatches(data, ArrowLoader);
   for await (const batch of asyncIterator) {
     t.ok(batch, 'received batch');
     t.end();

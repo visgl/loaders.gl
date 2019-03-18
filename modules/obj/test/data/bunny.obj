@@ -1,4 +1,3 @@
-export default `\
 # OBJ file format with ext .obj
 # vertex count = 2503
 # face count = 4968
@@ -7472,5 +7471,4 @@ f 2411 1493 2503
 f 1493 1487 2503
 f 1487 1318 2503
 f 1318 1320 2503
-f 1320 2443 2503\
-`;
+f 1320 2443 2503

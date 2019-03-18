@@ -17,7 +17,7 @@ function testText(text) {
 }
 
 function parseTextSync(text, options = DEFAULT_OPTIONS) {
-  const xml = XMLLoader.parseText(text);
+  const xml = XMLLoader.parseTextSync(text);
   const kmlLoader = new KMLParser();
   let kml = kmlLoader.parse(xml, options);
   kml = normalizeKML(kml);

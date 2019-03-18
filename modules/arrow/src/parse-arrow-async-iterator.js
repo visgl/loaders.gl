@@ -1,49 +1,51 @@
 import {RecordBatchReader} from 'apache-arrow';
+import {isIterable, isIterator, assert} from '@loaders.gl/core';
 
-const isIterable = x => x && typeof x[Symbol.iterator] === 'function';
-
-const isPromise = x =>
-  x && (typeof x === 'object' || typeof x === 'function') && typeof x.then === 'function';
-
-export function parseArrowAsIterator(inputIterator, options, onUpdate) {
-  const reader = RecordBatchReader.from(inputIterator);
-
-  // Check if a Promise or an AsyncIterable was returned
-  if (isPromise(reader) || !isIterable(reader)) {
-    throw new Error('arrow data source cannot be parsed using a synchronous iterator');
-  }
-
-  return (function* arrowIterator() {
-    for (const batch of reader) {
-      yield processBatch(batch);
-    }
-  })();
-}
-
-export async function parseArrowAsAsyncIterator(asyncIterator, options, onUpdate) {
+export async function parseArrowInBatches(asyncIterator, options, onUpdate) {
   // Creates the appropriate RecordBatchReader subclasses from the input
   // This will also close the underlying source in case of early termination or errors
-  const readers = RecordBatchReader.readAll(asyncIterator);
+  const readers = await RecordBatchReader.readAll(asyncIterator);
 
-  // Check
+  // As an optimization, return a non-async iterator
   if (isIterable(readers)) {
-    for (const reader of readers) {
-      return (function* arrowIterator() {
+    return (function* arrowIterator() {
+      for (const reader of readers) {
         for (const batch of reader) {
-          yield processBatch(batch);
+          yield processBatch(batch, reader);
         }
-      })();
-    }
+        break; // only processing one stream of batches
+      }
+    })();
   }
 
   return (async function* arrowAsyncIterator() {
     for await (const reader of readers) {
       for await (const batch of reader) {
-        yield processBatch(batch);
+        yield processBatch(batch, reader);
       }
       break; // only processing one stream of batches
     }
   })();
+}
+
+export async function parseArrowInBatchesSync(iterator, options, onUpdate) {
+  // Creates the appropriate RecordBatchReader subclasses from the input
+  // This will also close the underlying source in case of early termination or errors
+  const readers = RecordBatchReader.readAll(iterator);
+
+  // Check that `readers` is not a Promise, and is iterable
+  if (isIterable(readers) || isIterator(readers)) {
+    return (function* arrowIterator() {
+      for (const reader of readers) {
+        for (const batch of reader) {
+          yield processBatch(batch);
+        }
+        break; // only processing one stream of batches
+      }
+    })();
+  }
+
+  return assert(false);
 }
 
 function processBatch(batch, on) {

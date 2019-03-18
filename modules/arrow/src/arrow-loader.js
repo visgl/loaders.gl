@@ -1,13 +1,11 @@
 import parseSync from './parse-arrow-sync';
-import {parseArrowAsIterator, parseArrowAsAsyncIterator} from './parse-arrow-async-iterator';
-
-const DEFAULT_OPTIONS = {};
+import {parseArrowInBatches, parseArrowInBatchesSync} from './parse-arrow-async-iterator';
 
 export default {
   name: 'Apache Arrow',
   extension: 'arrow',
   parseSync,
-  parseIterator: parseArrowAsIterator,
-  parseAsyncIterator: parseArrowAsAsyncIterator,
-  DEFAULT_OPTIONS
+  parseInBatches: parseArrowInBatches,
+  parseInBatchesSync: parseArrowInBatchesSync,
+  DEFAULT_OPTIONS: {}
 };
