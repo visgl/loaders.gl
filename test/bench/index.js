@@ -22,6 +22,7 @@
 import {Bench} from '@probe.gl/bench';
 
 import coreBench from '@loaders.gl/core/test/bench';
+import csvBench from '@loaders.gl/csv/test/csv.bench';
 import dracoBench from '@loaders.gl/draco/test/draco.bench';
 
 const suite = new Bench({
@@ -30,6 +31,7 @@ const suite = new Bench({
 
 // add tests
 coreBench(suite);
+csvBench(suite);
 dracoBench(suite);
 
 // Run the suite
