@@ -14,7 +14,7 @@ This loader handles the OBJ half of the classic Wavefront OBJ/MTL format. The OB
 
 ## Usage
 
-```
+```js
 import {OBJLoader} from '@loaders.gl/obj';
 import {loadFile} from '@loaders.gl/core';
 

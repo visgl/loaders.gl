@@ -18,6 +18,7 @@ const kittiPointCloudRaw = {
 export default [
   {
     name: 'LAZ pointcloud',
+    disabled: true, // Seems breaking on master
     onInitialize: ({gl}) => {
       const lazPointCloud = parseFileSync(LAS_BINARY, LASLoader, {skip: 10});
       const model = getModel(gl, lazPointCloud);

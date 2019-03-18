@@ -15,7 +15,7 @@ References:
 
 ## Usage
 
-```
+```js
 import {GLTFParser} from '@loaders.gl/gltf';
 import {loadFileSync} from '@loaders.gl/core';
 

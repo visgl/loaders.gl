@@ -14,7 +14,7 @@ PLY is a computer file format known as the Polygon File Format or the Stanford T
 
 ## Usage
 
-```
+```js
 import {PLYLoader} from '@loaders.gl/ply';
 import {loadFile} from '@loaders.gl/core';
 

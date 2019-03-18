@@ -13,6 +13,8 @@ export function parseGLTFSync(arrayBuffer, options = {}) {
 export default {
   name: 'glTF',
   extension: ['gltf', 'glb'],
+  text: true,
+  binary: true,
   parse: parseGLTF,
-  parseSync: parseGLTFSync
+  parseSync: parseGLTFSync // Less features
 };

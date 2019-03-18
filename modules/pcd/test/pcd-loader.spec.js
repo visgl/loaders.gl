@@ -16,7 +16,7 @@ import {validateLoadedData} from 'test/common/conformance';
 const PCD_BINARY =
   readFileSync(path.resolve(__dirname, './data/Zaghetto.pcd')) || require('./data/Zaghetto.pcd');
 
-test('PCDLoader#parseText', t => {
+test('PCDLoader#parse(text)', t => {
   const binaryPCD = new TextEncoder().encode(PCD_ASCII);
 
   const data = parseFileSync(binaryPCD, PCDLoader);
@@ -31,7 +31,7 @@ test('PCDLoader#parseText', t => {
   t.end();
 });
 
-test('PCDLoader#parseBinary', t => {
+test('PCDLoader#parse(binary)', t => {
   const data = parseFileSync(PCD_BINARY, PCDLoader);
   validateLoadedData(t, data);
 
@@ -42,7 +42,7 @@ test('PCDLoader#parseBinary', t => {
   t.end();
 });
 
-test('PCDWorkerLoader#parseBinary', t => {
+test('PCDWorkerLoader#parse(binary)', t => {
   if (typeof Worker === 'undefined') {
     t.comment('Worker is not usable in non-browser environments');
     t.end();

@@ -14,7 +14,7 @@ Decodes a mesh or point cloud (maps of attributes) using [DRACO compression](htt
 
 ## Usage
 
-```
+```js
 import {DracoLoader} from `@loaders.gl/draco';
 import {loadFile} from '@loaders.gl/core';
 

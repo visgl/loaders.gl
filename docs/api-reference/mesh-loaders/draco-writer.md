@@ -14,7 +14,7 @@ Encodes a mesh or point cloud (maps of attributes) using [DRACO](https://google.
 
 ## Usage
 
-```
+```js
 import {DracoWriter} from `@loaders.gl/draco';
 import {writeFile} from '@loaders.gl/core';
 

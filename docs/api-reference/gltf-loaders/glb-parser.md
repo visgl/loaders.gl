@@ -10,7 +10,7 @@ References:
 
 ## Usage
 
-```
+```js
 import {GLBParser} from '@loaders.gl/gltf';
 import {loadFileSync} from '@loaders.gl/core';
 

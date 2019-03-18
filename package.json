@@ -38,6 +38,7 @@
   },
   "devDependencies": {
     "@luma.gl/test-utils": "7.0.0-alpha.15",
+    "@probe.gl/bench": "^3.0.0-alpha.1",
     "@probe.gl/test-utils": "^3.0.0-alpha.6",
     "arraybuffer-loader": "^1.0.6",
     "babel-loader": "^8.0.0",

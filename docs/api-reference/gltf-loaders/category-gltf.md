@@ -6,7 +6,7 @@ This section describes glTF and GLB Support.
 
 A glTF file can be built programmatically using the GLTFBuilder's "fluent API":
 
-```
+```js
 const builder = new GLTFBuilder(...)
   .addApplicationData(...);
   .addExtras(...);

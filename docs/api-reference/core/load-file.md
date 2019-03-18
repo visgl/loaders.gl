@@ -4,7 +4,7 @@
 
 ## Functions
 
-### loadFile(url : String | File, loader : Object [, options : Object]) : Promise<ArrayBuffer | String>
+### fetchFile(url : String | File, loader : Object [, options : Object]) : Promise<Response>
 
 The `loadFile` function can be used with any loader.
 

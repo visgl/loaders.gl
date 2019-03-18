@@ -16,7 +16,7 @@ Note: LAZ is the compressed version of LAS
 
 ## Usage
 
-```
+```js
 import {LASLoader} from '@loaders.gl/las';
 import {loadFile} from '@loaders.gl/core';
 

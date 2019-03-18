@@ -6,14 +6,11 @@ A set of file load and save utilities that (attempt to) work consistently across
 
 ## Usage
 
-```
-import {loadFile} from '@loaders.gl/core';
-import {OBJLoader} from '@loaders.gl/obj';
+```js
+import {writeFile} from '@loaders.gl/core';
+import {DracoWriter} from '@loaders.gl/draco';
 
-loadFile(url, OBJLoader).then(data => {
-  // Application code here
-  ...
-});
+await writeFile(url, DracoWriter);
 ```
 
 ## Functions

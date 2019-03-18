@@ -1,13 +1,15 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
-import {parseFileSync, parseFile, getGLTFAttribute} from '@loaders.gl/core';
+import {loadFile, getGLTFAttribute} from '@loaders.gl/core';
 import {OBJLoader, OBJWorkerLoader} from '@loaders.gl/obj';
 
-import OBJ_ASCII from './data/bunny.obj.js';
+// Note: The Sublime Text Editor hides OBJ files from the file tree...
 import {validateLoadedData} from 'test/common/conformance';
 
-test('OBJLoader#parseText', t => {
-  const data = parseFileSync(OBJ_ASCII, OBJLoader);
+const OBJ_ASCII_URL = '@loaders.gl/obj/test/data/bunny.obj';
+
+test('OBJLoader#parseText', async t => {
+  const data = await loadFile(OBJ_ASCII_URL, OBJLoader);
   validateLoadedData(t, data);
 
   t.equal(data.mode, 4, 'mode is TRIANGLES (4)');
@@ -28,30 +30,22 @@ test('OBJLoader#parseText', t => {
   t.end();
 });
 
-test('OBJWorkerLoader#parseText', t => {
+test('OBJWorkerLoader#parse(text)', async t => {
   if (typeof Worker === 'undefined') {
     t.comment('Worker is not usable in non-browser environments');
     t.end();
     return;
   }
 
-  parseFile(OBJ_ASCII, OBJWorkerLoader)
-    .then(data => {
-      validateLoadedData(t, data);
+  const data = await loadFile(OBJ_ASCII_URL, OBJWorkerLoader);
 
-      t.equal(data.mode, 4, 'mode is TRIANGLES (4)');
-      t.equal(data.indices.value.length, 14904, 'INDICES attribute was found');
-      t.equal(data.indices.count, 14904, 'INDICES attribute was found');
+  validateLoadedData(t, data);
 
-      t.equal(
-        getGLTFAttribute(data, 'POSITION').value.length,
-        7509,
-        'POSITION attribute was found'
-      );
-      t.equal(getGLTFAttribute(data, 'POSITION').size, 3, 'POSITION attribute was found');
-    })
-    .catch(error => {
-      t.fail(error);
-    })
-    .then(t.end);
+  t.equal(data.mode, 4, 'mode is TRIANGLES (4)');
+  t.equal(data.indices.value.length, 14904, 'INDICES attribute was found');
+  t.equal(data.indices.count, 14904, 'INDICES attribute was found');
+
+  t.equal(getGLTFAttribute(data, 'POSITION').value.length, 7509, 'POSITION attribute was found');
+  t.equal(getGLTFAttribute(data, 'POSITION').size, 3, 'POSITION attribute was found');
+  t.end();
 });

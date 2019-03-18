@@ -4,7 +4,7 @@
 
 ## Usage
 
-```
+```js
 import {TextEncoder, TextDecoder} from '@loaders.gl/core';
 ```
 
