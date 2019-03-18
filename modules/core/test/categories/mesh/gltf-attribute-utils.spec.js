@@ -1,28 +1,6 @@
 import test from 'tape-promise/tape';
 import {getGLTFIndices, getGLTFAccessors, getGLTFAttributeMap} from '@loaders.gl/core';
 
-/*
-const PATTERNS = [
-  pos/i, POSITION,
-  vertex/i, POSITION,
-  vertices/i, POSITION,
-  pickingColor/i, 'COLOR_1',
-  color/i, 'COLOR_0',
-  normal/i, 'NORMAL',
-  tangent/i, 'TANGENT',
-  [(/texCoord1/i: TEXCOORD_0)],
-  [(/texCoord2/i: TEXCOORD_1)],
-  [(/texCoord3/i: TEXCOORD_2)],
-  [(/texCoord/i: TEXCOORD_0)],
-  [(/uv1/i: TEXCOORD_0)],
-  [(/uv2/i: TEXCOORD_1)],
-  [(/uv3/i: TEXCOORD_2)],
-  [(/uv/i: TEXCOORD_0)],
-  [(/joints/i: 'JOINTS_0')],
-  [(/weights/i: 'WEIGHTS_0')]
-];
-*/
-
 // Check if an attribute contains indices
 
 const INDICES_TESTS = [
