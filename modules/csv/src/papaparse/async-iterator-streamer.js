@@ -1,10 +1,15 @@
+// A custom papaparse `Streamer` for async iterators
+// Ideally this can be contributed back to papaparse
+// Or papaparse can expose Streamer API so we can extend without forking.
+
 /* eslint-disable no-invalid-this */
 /* global TextDecoder */
 
-// TODO - sort out import mess
+// Note: papaparse is not an ES6 module
 import Papa from './papaparse';
 const {ChunkStreamer} = Papa;
 
+// eslint-disable-next-line consistent-this
 function bindFunction(f, self) {
   return function() {
     f.apply(self, arguments);
