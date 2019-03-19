@@ -15,25 +15,32 @@ data = await parseFile(fetchFile(url), OBJLoader);
 
 ## Functions
 
-### parseFileInBatches(file : any, loader : Object | Array [, options : Object [, url : String]]) : AsyncIterator
+### parseFileInBatches(data : any, loader : Object | Array [, options : Object [, url : String]]) : AsyncIterator
 
-A
+- `data`: loaded data or an object that allows data to be loaded. This parameter can be any of the following types:
+  - `Response` - `fetch` response object returned by `fetchFile` or `fetch`.
+  - `ArrayBuffer` - Parse from binary data in an array buffer
+  - `String` - Parse from text data in a string. (Only works for loaders that support textual input).
+  - `Iterator` - Iterator that yeilds binary (`ArrayBuffer`) chunks or string chunks (string chunks only work for loaders that support textual input).
+  - `AsyncIterator` - iterator that yeilds promises that resolve to binary (`ArrayBuffer`) chunks or string chunks.
+  - `ReadableStream` - A DOM or Node stream.
+  - `Promise` - A promise that resolves to any of the other supported data types can also be supplied.
+- `loader` - can be a single loader or an array of loaders.
+- `options` - optional, options for the loader (see documentation of the specific loader).
+- `url` - optional, assists in the autoselection of a loader if multiple loaders are supplied to `loader`.
 
-- `file`: This parameter can be any of the following types, or a `Promise` that resolves into one of these types.
-  - `Response` - i.e. a `fetch` response object returned by `fetchFile` or `fetch`.
-  - `ArrayBuffer` -
-  - `Iterator` -
-  - `AsyncIterator` -
-  - `ReadableStream` -
-  - `Promise` - A promise will be resolved and if result
-
-Notes:
-
-### parseFile(fileData : ArrayBuffer | String, loader : Object | Array [, options : Object [, url : String]]) : Promise<Any>
+### parseFile(data : ArrayBuffer | String, loader : Object | Array [, options : Object [, url : String]]) : Promise<Any>
 
 Parses data asynchronously using the provided loader.
 
-- `data` - loaded data, either in binary or text format.
+- `data`: loaded data or an object that allows data to be loaded. This parameter can be any of the following types:
+  - `Response` - `fetch` response object returned by `fetchFile` or `fetch`.
+  - `ArrayBuffer` - Parse from binary data in an array buffer
+  - `String` - Parse from text data in a string. (Only works for loaders that support textual input).
+  - `Iterator` - Iterator that yeilds binary (`ArrayBuffer`) chunks or string chunks (string chunks only work for loaders that support textual input).
+  - `AsyncIterator` - iterator that yeilds promises that resolve to binary (`ArrayBuffer`) chunks or string chunks.
+  - `ReadableStream` - A DOM or Node stream.
+  - `Promise` - A promise that resolves to any of the other supported data types can also be supplied.
 - `loader` - can be a single loader or an array of loaders.
 - `options` - optional, options for the loader (see documentation of the specific loader).
 - `url` - optional, assists in the autoselection of a loader if multiple loaders are supplied to `loader`.
@@ -44,7 +51,8 @@ Parses data asynchronously using the provided loader.
 
 Parses data synchronously using the provided loader, if possible. If not, returns `null`, in which case asynchronous loading is required.
 
-- `data` - loaded data, either in binary or text format.
+- `data` - already loaded data, either in binary or text format. This parameter can be any of the following types: - `Response` - `fetch` response object returned by `fetchFile` or `fetch`. - `ArrayBuffer` - Parse from binary data in an array buffer - `String` - Parse from text data in a string. (Only works for loaders that support textual input). - `Iterator` - Iterator that yeilds binary (`ArrayBuffer`) chunks or string chunks (string chunks only work for loaders that support textual input).
+  can also be supplied.
 - `loader` - can be a single loader or an array of loaders.
 - `options` - optional, options for the loader (see documentation of the specific loader).
 - `url` - optional, assists in the autoselection of a loader if multiple loaders are supplied to `loader`.
