@@ -22,7 +22,6 @@ The following options are passed on to [papaparse](https://www.papaparse.com/doc
 | `newline`=               | The newline sequence. By default auto-detects. Must be `\r`, `\n`, or `\r\n`.                                                                                                                                                                                                                   |
 | `quoteChar`=`"`          | The character used to quote fields. (Note: unquoted fields are parsed correctly).                                                                                                                                                                                                               |
 | `escapeChar`=`"`         | The character used to escape the quote character within a field.                                                                                                                                                                                                                                |
-| `header`=`false`         | If true, the first row of parsed data will be interpreted as field names. \*                                                                                                                                                                                                                    |
 | `dynamicTyping`=`false`  | If true, numeric and boolean data values will be converted to their type (instead if strings).                                                                                                                                                                                                  |
 | `preview`=`0`            | If > 0, only that many rows will be parsed.                                                                                                                                                                                                                                                     |
 | `encoding`=              | The encoding to use when reading files. Defaults to UTF8.                                                                                                                                                                                                                                       |
@@ -41,15 +40,16 @@ Note that the following `papaparse` options are NOT supported by `CSVLoader` (th
 
 | Option             | Description                                            | Reason/Replacement                                                                                                      |
 | ------------------ | ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| `header`=`false`         | If true, the first row of parsed data will be interpreted as field names. \*               |
 | `transformHeader`= | Function to apply on each header.                      | (Only available in version 5.0)                                                                                         |
 | `worker`           | Whether to use a worker thread.                        | Use `CSVWorkerLoader` instead.                                                                                          |
-| `step`             | Callback function for streaming.                       | Use `CSVStreamingLoader` instead.                                                                                       |
-| `complete`         | Callback function for streaming.                       | Use `CSVStreamingLoader` instead.                                                                                       |
+| `step`             | Callback function for streaming.                       | Use `loadFileInBatches` instead.                                                                                       |
+| `complete`         | Callback function for streaming.                       | Use `loadFileInBatches` instead.                                                                                       |
 | `error`            | Callback function for error.                           | Errors will be handled by `CSVLoader`.                                                                                  |
 | `download`         | First argument is URL from which to download a file.   | Use external functions to load data (such as `fetch` or `fetchFile`).                                                   |
-| `chunk`            | Callback executed after every chunk is loaded.         | Use `CSVStreamingLoader` instead.                                                                                       |
-| `beforeFirstChunk` | Callback executed before parsing of first chunk.       | Use `CSVStreamingLoader` instead.                                                                                       |
-| `withCredentials`  | Passed to `XMLHttpRequest` `withCredentials` property. | Use external functions to load data (such as `fetch` or `fetchFile`) and control any credentials using those functions. |
+| `chunk`            | Callback executed after every chunk is loaded.         | Use `loadFileInBatches` instead.                                                                                       |
+| `beforeFirstChunk` | Callback executed before parsing of first chunk.       | Use `loadFileInBatches` instead.                                                                                       |
+| `withCredentials`  | `XMLHttpRequest.withCredentials` property. | Control credentials using your loading functions (e.g. `fetch` or `fetchFile`). |
 
 ## Attributions
 

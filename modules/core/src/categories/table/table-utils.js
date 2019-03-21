@@ -8,17 +8,6 @@ export function deduceTableSchema(table, schema = null) {
   return Object.assign(deducedSchema, schema);
 }
 
-function deduceTypeFromValue(value) {
-  if (value instanceof Date) {
-    return Date;
-  } else if (value instanceof Number) {
-    return Float32Array;
-  } else if (typeof value === 'string') {
-    return String;
-  }
-  return null;
-}
-
 function deduceSchemaForColumnarTable(columnarTable) {
   const schema = {};
   for (const field in columnarTable) {
@@ -65,3 +54,14 @@ function deduceSchemaForRowTable(rowTable) {
 
 //   }
 // }
+
+function deduceTypeFromValue(value) {
+  if (value instanceof Date) {
+    return Date;
+  } else if (value instanceof Number) {
+    return Float32Array;
+  } else if (typeof value === 'string') {
+    return String;
+  }
+  return null;
+}

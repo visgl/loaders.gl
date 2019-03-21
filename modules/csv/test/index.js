@@ -1,2 +1,2 @@
-import './papaparse/papaparse.spec';
+// import './papaparse/papaparse.spec';
 import './csv-loader.spec';

@@ -11,22 +11,14 @@ import {TextDecoder} from '@loaders.gl/core';
 import Papa from './papaparse';
 const {ChunkStreamer} = Papa;
 
-// eslint-disable-next-line consistent-this
-function bindFunction(f, self) {
-  return function() {
-    f.apply(self, arguments);
-  };
-}
-
 export default function AsyncIteratorStreamer(config) {
   config = config || {};
 
   ChunkStreamer.call(this, config);
 
   this.textDecoder = new TextDecoder(this._config.encoding);
-  const queue = [];
-  let parseOnData = true;
-  let streamHasEnded = false;
+
+  // Implement ChunkStreamer base class methods
 
   // this.pause = function() {
   //   ChunkStreamer.prototype.pause.apply(this, arguments);
@@ -41,63 +33,40 @@ export default function AsyncIteratorStreamer(config) {
     this._input = asyncIterator;
 
     try {
-      // TODO - check for abort flag?
+      // ES2018 version
+      // TODO - check for pause and abort flags?
       for await (const chunk of asyncIterator) {
-        this._streamData(chunk);
+        this.parseChunk(this.getStringChunk(chunk));
       }
-    } catch (error) {
-      this._streamError(error);
-    } finally {
-      this._streamEnd();
-    }
-  };
 
-  this._checkIsFinished = function() {
-    if (streamHasEnded && queue.length === 1) {
+      // ES5 VERSION
+      // while (true) {
+      //   asyncIterator.next().then(function(value) {
+      //     if (value.done) {
+      //       // finalize iterator?
+      //     }
+      //   }
+      //   const  = await ;
+      //   if (done) return total;
+      //   total += value.length;
+      // }
+
       this._finished = true;
-    }
-  };
-
-  this._nextChunk = function() {
-    this._checkIsFinished();
-    if (queue.length) {
-      this.parseChunk(queue.shift());
-    } else {
-      parseOnData = true;
-    }
-  };
-
-  this._streamData = bindFunction(function(chunk) {
-    try {
-      let stringChunk = chunk;
-      if (typeof chunk !== 'string') {
-        stringChunk = this.textDecoder.decode(chunk, {stream: true});
-      }
-      queue.push(stringChunk);
-
-      if (parseOnData) {
-        parseOnData = false;
-        this._checkIsFinished();
-        this.parseChunk(queue.shift());
-      }
+      this.parseChunk('');
     } catch (error) {
-      this._streamError(error);
+      // Inform ChunkStreamer base class of error
+      this._sendError(error);
     }
-  }, this);
+  };
 
-  this._streamError = bindFunction(function(error) {
-    // this._streamCleanUp();
-    this._sendError(error);
-  }, this);
+  this._nextChunk = function nextChunk() {
+    // Left empty, as async iterator automatically pulls next chunk
+  };
 
-  this._streamEnd = bindFunction(function() {
-    // this._streamCleanUp();
-    streamHasEnded = true;
-    this._streamData('');
-  }, this);
-
-  // this._streamCleanUp = bindFunction(function() {
-  // }, this);
+  // HELPER METHODS
+  this.getStringChunk = function(chunk) {
+    return typeof chunk === 'string' ? chunk : this.textDecoder.decode(chunk, {stream: true});
+  };
 }
 
 AsyncIteratorStreamer.prototype = Object.create(ChunkStreamer.prototype);

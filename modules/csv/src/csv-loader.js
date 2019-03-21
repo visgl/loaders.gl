@@ -1,4 +1,7 @@
 import {AsyncQueue} from '@loaders.gl/core';
+import {
+  TableBatchBuilder, RowTableBatch, ColumnarTableBatch
+} from '@loaders.gl/core/categories/table';
 import Papa from './papaparse/papaparse';
 import AsyncIteratorStreamer from './papaparse/async-iterator-streamer';
 
@@ -6,27 +9,105 @@ export default {
   name: 'CSV',
   extension: 'csv',
   testText: null,
-  parseInBatches: parseCSVStream
+  parseInBatches,
+  options: {
+    columnar: false
+  }
 };
 
-function parseCSVStream(asyncIterator, options) {
+function parseInBatches(asyncIterator, loader, options) {
+  const TableBatchType = options.columnar ? ColumnarTableBatch : RowTableBatch;
+  return parseCSVInBatches(asyncIterator, loader, {...options, TableBatchType});
+}
+
+function parseCSVInBatches(asyncIterator, loader, options) {
+  const {batchSize = 10, TableBatchType} = options;
+
   const asyncQueue = new AsyncQueue();
 
+  let isFirstRow = true;
+  let headerRow = null;
+  let tableBatchBuilder = null;
+  let schema = null;
+
   const config = {
-    download: true,
-    step(row) {
-      // TODO batch before adding to queue.
-      // console.log('Row:', row.data);
-      asyncQueue.enqueue(row);
+    download: false, // We handle loading, no need for papaparse to do it for us
+    dynamicTyping: true, // Convert numbers and boolean values in rows from strings
+    header: false, // Unfortunately, header detection is not automatic and does not infer types
+
+    // chunk(results, parser) {
+    //   // TODO batch before adding to queue.
+    //   console.log('Chunk:', results, parser);
+    //   asyncQueue.enqueue(results.data);
+    // },
+
+    // step is called on every row
+    step(results, parser) {
+      const row = results.data;
+
+      // Check if we need to save a header row
+      if (isFirstRow && !headerRow) {
+        if (isHeaderRow(row)) {
+          headerRow = row;
+          return;
+        }
+      }
+
+      // If first data row, we can deduce the schema
+      if (isFirstRow) {
+        isFirstRow = false;
+        schema = deduceSchema(row, headerRow);
+      }
+
+      // Add the row
+      tableBatchBuilder =
+        tableBatchBuilder || new TableBatchBuilder(TableBatchType, schema, batchSize);
+
+      tableBatchBuilder.addRow(row);
+      // If a batch has been completed, emit it
+      if (tableBatchBuilder.isFull()) {
+        asyncQueue.enqueue(tableBatchBuilder.getNormalizedBatch());
+      }
     },
-    complete() {
-      // console.log('All done!');
+
+    // complete is called when all rows have been read
+    complete(results, file) {
+      // Ensure any final (partial) batch gets emitted
+      const batch = tableBatchBuilder.getNormalizedBatch();
+      if (batch) {
+        asyncQueue.enqueue(batch);
+      }
       asyncQueue.close();
     }
   };
 
   Papa.parse(asyncIterator, config, AsyncIteratorStreamer);
 
+  // TODO - Does it matter if we return asyncIterable or asyncIterator
   // return asyncQueue[Symbol.asyncIterator]();
   return asyncQueue;
 }
+
+function isHeaderRow(row) {
+  return row.every(value => typeof value === 'string');
+}
+
+function deduceSchema(row, headerRow) {
+  const schema = {};
+  for (let i = 0; i < row.length; i++) {
+    const columnName = (headerRow && headerRow[i]) || String(i);
+    switch (typeof value) {
+    case 'number':
+    case 'boolean':
+      // TODO - booleans could be handled differently...
+      schema[columnName] = {name: columnName, type: Float32Array};
+      break;
+    case 'string':
+    default:
+      schema[columnName] = {name: columnName, type: Array};
+      // We currently only handle numeric rows
+      // TODO we could offer a function to map strings to numbers?
+    }
+  }
+}
+
