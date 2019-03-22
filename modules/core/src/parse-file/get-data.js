@@ -10,6 +10,13 @@ import {TextDecoder} from '../binary-utils/text-encoding';
 
 const ERR_DATA = 'Cannot convert supplied data type';
 
+export function getUrlFromData(data) {
+  return isFetchResponse(data) ? data.url : null;
+}
+
+export function getSizeFromData(data) {
+  return isFetchResponse(data) ? data.headers.get('Content-Length') : null;
+}
 export function getArrayBufferOrStringFromDataSync(data, loader) {
   if (loader.text && typeof data === 'string') {
     return data;
