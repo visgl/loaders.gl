@@ -92,6 +92,10 @@ export {
 
 // TABLE CATEGORY UTILS
 
+export {default as TableBatchBuilder} from './categories/table/table-batch-builder';
+export {default as RowTableBatch} from './categories/table/row-table-batch';
+export {default as ColumnarTableBatch} from './categories/table/columnar-table-batch';
+
 export {
   // convertTableToColumns,
   // convertTableToRows,

@@ -18,19 +18,26 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+// Sets up aliases for file reader
+require('.../aliases');
+
 /* eslint-disable no-console, no-invalid-this */
 import {Bench} from '@probe.gl/bench';
 
 import coreBench from '@loaders.gl/core/test/bench';
+import csvBench from '@loaders.gl/csv/test/csv-loader.bench';
 import dracoBench from '@loaders.gl/draco/test/draco.bench';
 
 const suite = new Bench({
   minIterations: 10
 });
 
-// add tests
-coreBench(suite);
-dracoBench(suite);
+(async function bench() {
+  // add tests
+  await coreBench(suite);
+  await csvBench(suite);
+  await dracoBench(suite);
 
-// Run the suite
-suite.run();
+  // Run the suite
+  suite.run();
+})();

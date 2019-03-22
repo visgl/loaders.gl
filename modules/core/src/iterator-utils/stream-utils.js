@@ -43,6 +43,9 @@ async function* makeBrowserStreamIterator(stream) {
 // See https://github.com/bustle/streaming-iterables, MIT license
 
 async function* makeNodeStreamIterator(stream) {
+  // Node createStream will return promises to handle http requests
+  stream = await stream;
+
   // eslint-disable-next-line no-constant-condition
   while (true) {
     const data = stream.read();

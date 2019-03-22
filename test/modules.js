@@ -7,6 +7,7 @@ require('@loaders.gl/images/test');
 
 // Table Formats
 require('@loaders.gl/arrow/test');
+require('@loaders.gl/csv/test');
 require('@loaders.gl/experimental/test');
 
 // Archive Formats

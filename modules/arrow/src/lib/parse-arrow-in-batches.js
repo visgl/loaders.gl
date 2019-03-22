@@ -1,7 +1,7 @@
 import {RecordBatchReader} from 'apache-arrow';
 import {isIterable, isIterator, assert} from '@loaders.gl/core';
 
-export async function parseArrowInBatches(asyncIterator, options, onUpdate) {
+export async function parseArrowInBatches(asyncIterator, options) {
   // Creates the appropriate RecordBatchReader subclasses from the input
   // This will also close the underlying source in case of early termination or errors
   const readers = await RecordBatchReader.readAll(asyncIterator);
@@ -28,7 +28,7 @@ export async function parseArrowInBatches(asyncIterator, options, onUpdate) {
   })();
 }
 
-export async function parseArrowInBatchesSync(iterator, options, onUpdate) {
+export async function parseArrowInBatchesSync(iterator, options) {
   // Creates the appropriate RecordBatchReader subclasses from the input
   // This will also close the underlying source in case of early termination or errors
   const readers = RecordBatchReader.readAll(iterator);

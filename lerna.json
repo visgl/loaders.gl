@@ -7,14 +7,8 @@
   },
   "npmClient": "yarn",
   "useWorkspaces": true,
+  "exact": true,
   "packages": [
     "modules/*"
-  ],
-  "command": {
-    "publish": {
-      "ignore": [
-        "@loaders.gl/arrow"
-      ]
-    }
-  }
+  ]
 }

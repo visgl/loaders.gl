@@ -1,5 +1,5 @@
-import parseSync from './parse-arrow-sync';
-import {parseArrowInBatches, parseArrowInBatchesSync} from './parse-arrow-async-iterator';
+import parseSync from './lib/parse-arrow-sync';
+import {parseArrowInBatches, parseArrowInBatchesSync} from './lib/parse-arrow-in-batches';
 
 export default {
   name: 'Apache Arrow',

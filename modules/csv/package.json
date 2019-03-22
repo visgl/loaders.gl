@@ -1,7 +1,7 @@
 {
-  "name": "@loaders.gl/experimental",
+  "name": "@loaders.gl/csv",
   "version": "0.8.0",
-  "description": "Framework-independent loaders for table formats (JSON, CSV, ...)",
+  "description": "Framework-independent loader for CSV and DSV table formats",
   "license": "MIT",
   "publishConfig": {
     "access": "public"
@@ -13,10 +13,8 @@
   "keywords": [
     "webgl",
     "loader",
-    "3d",
-    "mesh",
-    "point cloud",
-    "PLY"
+    "table",
+    "CSV"
   ],
   "main": "dist/es5/index.js",
   "module": "dist/esm/index.js",
@@ -26,10 +24,8 @@
     "dist",
     "README.md"
   ],
-  "scripts": {},
   "sideEffects": false,
   "dependencies": {
-    "@loaders.gl/core": "^0.8.0",
-    "filesaver.js": "^0.2.0"
+    "@loaders.gl/core": "^0.8.0"
   }
 }
