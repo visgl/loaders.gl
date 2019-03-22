@@ -1,5 +1,5 @@
 /* global Image, Blob, createImageBitmap, btoa */
-import {readFile} from '../read-file/read-file';
+import {readFile} from '../fetch-file/fetch-file';
 
 // Specifically loads an ImageBitmap (works on newer browser main and worker threads)
 export const ImageBitmapLoader = {

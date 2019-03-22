@@ -14,8 +14,9 @@ import './categories/mesh/mesh-utils.spec';
 import './categories/mesh/gltf-attribute-utils.spec';
 import './categories/table/table-utils.spec';
 
-import './read-file/read-file.spec';
-import './read-file/create-stream.spec';
+import './fetch-file/file-aliases.spec';
+import './fetch-file/create-stream.spec';
+import './fetch-file/fetch-file.spec';
 
 import './parse-file/auto-parse.spec';
 import './load-file/load-image.spec';

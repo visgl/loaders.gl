@@ -1,9 +1,33 @@
 import assert from '../utils/assert';
 
-export function normalizeLoader(loader) {
-  validateLoaderObject(loader);
+export function isLoaderObject(loader) {
+  if (Array.isArray(loader)) {
+    loader = loader[0];
+  }
 
-  normalizeLegacyLoaderObject(loader);
+  const hasParser =
+    loader.parseTextSync ||
+    loader.parseSync ||
+    loader.parse ||
+    loader.loadAndParse ||
+    loader.parseStream || // TODO Replace with parseInBatches
+    loader.parseInBatches ||
+    // loader.parseInBatchesSync || // Optimization only, parseInBatches needed
+    loader.worker;
+
+  return hasParser;
+}
+
+export function normalizeLoader(loader) {
+  assert(isLoaderObject(loader));
+
+  // If [loader, options], create a new loaders object with options merged in
+  let options;
+  if (Array.isArray(loader)) {
+    loader = loader[0];
+    options = loader[1];
+    loader = {...loader, options: {...loader.options, options}};
+  }
 
   // Ensure at least one of text/binary flags are properly set
   if (loader.parseTextSync) {
@@ -11,32 +35,5 @@ export function normalizeLoader(loader) {
   }
   if (!loader.text) {
     loader.binary = true;
-  }
-}
-
-function validateLoaderObject(loader) {
-  const hasParser =
-    loader.parseTextSync ||
-    loader.parseSync ||
-    loader.parse ||
-    loader.loadAndParse ||
-    loader.parseStream || // Replace with parseInBatches
-    loader.parseInBatches ||
-    // loader.parseInBatchesSync || // Optimization only, parseInBatches needed
-    loader.worker;
-  assert(hasParser);
-}
-
-// Converts v0.5 loader object to v1.0
-// TODO - update all loaders and remove this function
-function normalizeLegacyLoaderObject(loader) {
-  if (loader.parseBinary) {
-    loader.parseSync = loader.parseBinary;
-    // delete loader.parseBinary;
-  }
-
-  if (loader.parseText) {
-    loader.parseTextSync = loader.parseText;
-    // delete loader.parseText;
   }
 }

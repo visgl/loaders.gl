@@ -32,7 +32,7 @@
     "https": false,
     "text-encoding": false,
     "util": false,
-    "./src/read-file/read-file-node.js": false
+    "./src/fetch-file/fetch-file-node.js": false
   },
   "scripts": {
   },
