@@ -1,0 +1,4 @@
+# Types
+
+Objects representing types.
+
