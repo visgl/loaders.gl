@@ -1,9 +1,19 @@
 import {autoDetectLoader} from './auto-detect-loader';
+import {getRegisteredLoaders} from './register-loaders';
 import {normalizeLoader, isLoaderObject} from './normalize-loader';
 import {parseWithLoader, parseWithLoaderInBatches, parseWithLoaderSync} from './parse-with-loader';
 import NullLog from '../log-utils/null-log';
 
 export async function parseFile(data, loaders, options, url) {
+  // Signature: parseFile(data, options, url)
+  // Uses registered loaders
+  if (!Array.isArray(loaders) && !isLoaderObject(loaders)) {
+    url = options;
+    options = loaders;
+    loaders = null;
+  }
+
+  loaders = loaders || getRegisteredLoaders();
   const loader = Array.isArray(loaders) ? autoDetectLoader(url, data, loaders) : loaders;
   normalizeLoader(loader);
 
@@ -14,7 +24,16 @@ export async function parseFile(data, loaders, options, url) {
 }
 
 export function parseFileSync(data, loaders, options, url) {
+  // Signature: parseFileSync(data, options, url)
+  // Uses registered loaders
+  if (!Array.isArray(loaders) && !isLoaderObject(loaders)) {
+    url = options;
+    options = loaders;
+    loaders = null;
+  }
+
   // Choose loader and normalize it
+  loaders = loaders || getRegisteredLoaders();
   const loader = Array.isArray(loaders) ? autoDetectLoader(url, data, loaders) : loaders;
   normalizeLoader(loader);
 
@@ -25,7 +44,16 @@ export function parseFileSync(data, loaders, options, url) {
 }
 
 export async function parseFileInBatches(data, loaders, options, url) {
+  // Signature: parseFileInBatches(data, options, url)
+  // Uses registered loaders
+  if (!Array.isArray(loaders) && !isLoaderObject(loaders)) {
+    url = options;
+    options = loaders;
+    loaders = null;
+  }
+
   // Choose loader and normalize it
+  loaders = loaders || getRegisteredLoaders();
   const loader = Array.isArray(loaders) ? autoDetectLoader(url, null, loaders) : loaders;
   normalizeLoader(loader);
 
@@ -36,7 +64,16 @@ export async function parseFileInBatches(data, loaders, options, url) {
 }
 
 export async function parseFileInBatchesSync(data, loaders, options, url) {
+  // Signature: parseFileInBatchesSync(data, options, url)
+  // Uses registered loaders
+  if (!Array.isArray(loaders) && !isLoaderObject(loaders)) {
+    url = options;
+    options = loaders;
+    loaders = null;
+  }
+
   // Choose loader and normalize it
+  loaders = loaders || getRegisteredLoaders();
   const loader = Array.isArray(loaders) ? autoDetectLoader(url, null, loaders) : loaders;
   normalizeLoader(loader);
 

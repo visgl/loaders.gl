@@ -1,6 +1,7 @@
 import test from 'tape-promise/tape';
 import {isBrowser, readFile, loadFile} from '@loaders.gl/core';
-import {parseFileInBatches, parseFileInBatchesSync} from '@loaders.gl/core';
+import {parseFileInBatches} from '@loaders.gl/core';
+// import {parseFileInBatchesSync} from '@loaders.gl/core';
 import {ArrowLoader} from '@loaders.gl/arrow';
 import {ArrowWorkerLoader} from '@loaders.gl/arrow';
 import path from 'path';

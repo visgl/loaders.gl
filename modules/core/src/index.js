@@ -4,6 +4,7 @@ export {fetchFile, readFileSync} from './fetch-file/fetch-file';
 export {writeFile, writeFileSync} from './fetch-file/write-file';
 
 // FILE PARSING
+export {registerLoaders} from './parse-file/register-loaders';
 export {
   parseFile,
   parseFileSync,
