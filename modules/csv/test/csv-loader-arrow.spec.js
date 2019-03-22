@@ -17,10 +17,13 @@ test('CSVLoader#loadFileInBatches(numbers-100.csv, arrow)', async t => {
 
   t.ok(isIterator(iterator) || isAsyncIterable(iterator), 'loadFileInBatches returned iterator');
 
+  let batchCount = 0;
   for await (const batch of iterator) {
     t.ok(batch instanceof RecordBatch, 'returns arrow RecordBatch');
-    t.comment(`BATCH: ${batch.numRows}`);
+    t.comment(`BATCH: ${batch.length}`);
+    batchCount++;
   }
+  t.equal(batchCount, 3, 'Correct number of batches received');
 
   t.end();
 });
@@ -32,10 +35,13 @@ test('CSVLoader#loadFileInBatches(numbers-10000.csv, arrow)', async t => {
   });
   t.ok(isIterator(iterator) || isAsyncIterable(iterator), 'loadFileInBatches returned iterator');
 
+  let batchCount = 0;
   for await (const batch of iterator) {
     t.ok(batch instanceof RecordBatch, 'returns arrow RecordBatch');
-    t.comment(`BATCH: ${batch.numRows}`);
+    t.comment(`BATCH: ${batch.length}`);
+    batchCount++;
   }
+  t.equal(batchCount, 5, 'Correct number of batches received');
 
   t.end();
 });
