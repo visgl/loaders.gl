@@ -15,12 +15,12 @@ export async function parseWithLoader(data, loader, options = {}, url) {
   // First check for synchronous text parser, wrap results in promises
   if (loader.parseTextSync && typeof data === 'string') {
     options.dataType = 'text';
-    return await promisify(loader.parseTextSync, options, url, loader);
+    return loader.parseTextSync(data, options, url, loader);
   }
 
   // Now check for synchronous binary data parser, wrap results in promises
   if (loader.parseSync) {
-    return await promisify(loader.parseSync, options, url, loader);
+    return loader.parseSync(data, options, url, loader);
   }
 
   // Check for asynchronous parser
@@ -49,6 +49,7 @@ export function parseWithLoaderSync(data, loader, options = {}, url) {
   }
 
   // TBD - If synchronous parser not available, return null
+  // new Error(`Could not parse ${url || 'data'} using ${loader.name} loader`);
   return assert(false);
 }
 
@@ -73,19 +74,4 @@ export async function parseWithLoaderInBatchesSync(data, loader, options = {}, u
   }
 
   return assert(false);
-}
-
-// Helper function to wrap parser result/error in promise
-// TODO - align with Node.js promisify
-function promisify(parserFunc, loader, url, data, options) {
-  return new Promise((resolve, reject) => {
-    try {
-      const result = resolve(parserFunc(data, options));
-      // NOTE: return on separate statement to facilitate breakpoint setting here when debugging
-      resolve(result);
-    } catch (error) {
-      console.error(error); // eslint-disable-line
-      reject(new Error(`Could not parse ${url || 'data'} using ${loader.name} loader`));
-    }
-  });
 }
