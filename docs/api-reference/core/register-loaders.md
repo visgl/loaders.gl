@@ -18,7 +18,7 @@ Some other file that needs to load CSV:
 ```js
 import {loadFile} from '@loaders.gl/core';
 
-// The pre-registered SVLoader gets auto selected based on file extension...
+// The pre-registered CSVLoader gets auto selected based on file extension...
 const data = await loadFile('data.csv');
 ```
 
