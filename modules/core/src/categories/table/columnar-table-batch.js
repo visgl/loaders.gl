@@ -28,21 +28,19 @@ export default class ColumnarTableBatch {
     const columns = this.columns;
     this.columns = null;
     // TODO - Ensure column lengths are set to the actual loaded size
+    // this.pruneColumns();
     return {data: columns, schema: this.schema, length: this.length};
   }
 
   // HELPERS
 
-  getColumns() {
-    this.pruneColumns();
-    return this.columns;
-  }
-
-  // Grow columns if they are "full", allocate if not already allocated
   reallocateColumns() {
-    if (this.length === this.allocated) {
-      this.allocated = this.allocated > 0 ? this.allocated *= 2 : this.batchSize;
+    if (this.length < this.allocated) {
+      return;
     }
+
+    this.allocated = this.allocated > 0 ? (this.allocated *= 2) : this.batchSize;
+    this.columns = {};
 
     for (const fieldName in this.schema) {
       const field = this.schema[fieldName];
@@ -57,4 +55,7 @@ export default class ColumnarTableBatch {
     }
   }
 
+  pruneColumns() {
+    return this.columns;
+  }
 }

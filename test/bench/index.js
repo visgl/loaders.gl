@@ -40,4 +40,4 @@ const suite = new Bench({
 
   // Run the suite
   suite.run();
-}());
+})();

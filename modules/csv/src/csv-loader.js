@@ -1,7 +1,5 @@
 import {AsyncQueue} from '@loaders.gl/core';
-import {
-  TableBatchBuilder, RowTableBatch, ColumnarTableBatch
-} from '@loaders.gl/core/categories/table';
+import {TableBatchBuilder, RowTableBatch} from '@loaders.gl/core/categories/table';
 import Papa from './papaparse/papaparse';
 import AsyncIteratorStreamer from './papaparse/async-iterator-streamer';
 
@@ -9,20 +7,18 @@ export default {
   name: 'CSV',
   extension: 'csv',
   testText: null,
-  parseInBatches,
+  parseInBatches: parseCSVInBatches,
   options: {
-    columnar: false
+    TableBatch: RowTableBatch
   }
 };
 
-function parseInBatches(asyncIterator, loader, options) {
-  const TableBatchType = options.columnar ? ColumnarTableBatch : RowTableBatch;
-  return parseCSVInBatches(asyncIterator, loader, {...options, TableBatchType});
-}
+// TODO - support batch size 0 = no batching/single batch?
+function parseCSVInBatches(asyncIterator, options) {
+  // options
+  const {batchSize = 10} = options;
 
-function parseCSVInBatches(asyncIterator, loader, options) {
-  const {batchSize = 10, TableBatchType} = options;
-
+  const TableBatchType = options.TableBatch;
   const asyncQueue = new AsyncQueue();
 
   let isFirstRow = true;
@@ -96,18 +92,19 @@ function deduceSchema(row, headerRow) {
   const schema = {};
   for (let i = 0; i < row.length; i++) {
     const columnName = (headerRow && headerRow[i]) || String(i);
+    const value = row[i];
     switch (typeof value) {
-    case 'number':
-    case 'boolean':
-      // TODO - booleans could be handled differently...
-      schema[columnName] = {name: columnName, type: Float32Array};
-      break;
-    case 'string':
-    default:
-      schema[columnName] = {name: columnName, type: Array};
+      case 'number':
+      case 'boolean':
+        // TODO - booleans could be handled differently...
+        schema[columnName] = {name: columnName, type: Float32Array};
+        break;
+      case 'string':
+      default:
+        schema[columnName] = {name: columnName, type: Array};
       // We currently only handle numeric rows
       // TODO we could offer a function to map strings to numbers?
     }
   }
+  return schema;
 }
-

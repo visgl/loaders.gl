@@ -16,7 +16,7 @@ export default class RowTableBatch {
   }
 
   isFull() {
-    return this.rows && (this.length >= this.batchSize);
+    return this.rows && this.length >= this.batchSize;
   }
 
   getNormalizedBatch() {

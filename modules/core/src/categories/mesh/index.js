@@ -1,7 +1,4 @@
-export {
-  getAccessorTypeFromSize,
-  getComponentTypeFromArray
-} from './gltf-type-utils';
+export {getAccessorTypeFromSize, getComponentTypeFromArray} from './gltf-type-utils';
 
 export {
   getGLTFAttribute,
