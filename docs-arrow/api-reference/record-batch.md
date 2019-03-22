@@ -20,7 +20,7 @@ const recordBatch = RecordBatch.from(arrays);
 
 ## Inheritance
 
-`RecordBatch` extends `StructVector` extends `BaseVector`
+`RecordBatch` extends [`StructVector`](docs-arrow/api-reference/struct-vector) extends [`BaseVector`](docs-arrow/api-reference/vector)
 
 
 ## Members

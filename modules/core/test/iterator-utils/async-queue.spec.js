@@ -32,15 +32,11 @@ async function takeAsync(asyncIterable, count = Infinity) {
   const result = [];
   const iterator = asyncIterable[Symbol.asyncIterator]();
   while (result.length < count) {
-    try {
-      const {value, done} = await iterator.next();
-      if (done) {
-        break;
-      }
-      result.push(value);
-    } catch (error) {
-      debugger;
+    const {value, done} = await iterator.next();
+    if (done) {
+      break;
     }
+    result.push(value);
   }
   return result;
 }

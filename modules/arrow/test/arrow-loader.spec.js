@@ -14,7 +14,6 @@ const ARROW_STRUCT = '@loaders.gl/arrow/test/data/struct.arrow';
 const ARROW_BIOGRID_NODES = '@loaders.gl/arrow/test/data/biogrid-nodes.arrow';
 
 test('ArrowLoader#parseFileSync(simple.arrow)', async t => {
-  debugger
   const columns = await loadFile(ARROW_SIMPLE, ArrowLoader);
   // Check loader specific results
   t.ok(columns.bar, 'bar column loaded');
