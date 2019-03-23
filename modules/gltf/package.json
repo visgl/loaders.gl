@@ -37,6 +37,7 @@
   },
   "sideEffects": false,
   "dependencies": {
-    "@loaders.gl/core": "^0.8.0"
+    "@loaders.gl/core": "^0.8.0",
+    "@loaders.gl/images": "^0.7.1"
   }
 }
