@@ -1,3 +1,4 @@
+// TODO - remove
 import {getAccessorTypeFromSize, getComponentTypeFromArray} from './gltf-type-utils';
 
 // Patters that map known names to GLTF counterparts

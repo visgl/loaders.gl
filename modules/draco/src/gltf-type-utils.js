@@ -1,3 +1,4 @@
+// TODO - remove
 const TYPES = ['SCALAR', 'VEC2', 'VEC3', 'VEC4'];
 
 const ARRAY_TO_COMPONENT_TYPE = new Map([

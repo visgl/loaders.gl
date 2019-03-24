@@ -1,5 +1,5 @@
 import test from 'tape-promise/tape';
-import {getGLTFIndices, getGLTFAccessors} from '@loaders.gl/core';
+import {getGLTFIndices, getGLTFAccessors} from '@loaders.gl/draco/gltf-attribute-utils';
 
 // Check if an attribute contains indices
 

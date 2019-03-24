@@ -1,5 +1,5 @@
 // DRACO decompressor
-import {getGLTFAccessors, getGLTFIndices} from '@loaders.gl/core';
+import {getGLTFAccessors, getGLTFIndices} from './gltf-attribute-utils';
 
 const draco3d = require('draco3d');
 // const assert = require('assert');

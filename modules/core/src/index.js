@@ -69,25 +69,13 @@ export {isImage, getImageSize} from './image-utils/get-image-size';
 export {ImageBitmapLoader, HTMLImageLoader, PlatformImageLoader} from './image-utils/image-loaders';
 
 // MESH CATEGORY UTILS
-export {
-  getAccessorTypeFromSize,
-  getComponentTypeFromArray
-} from './categories/mesh/gltf-type-utils';
-
-export {
-  getGLTFAttribute,
-  getGLTFAccessors,
-  getGLTFIndices
-} from './categories/mesh/gltf-attribute-utils';
+export {getMeshSize as _getMeshSize} from './categories/mesh/mesh-utils';
 
 // TABLE CATEGORY UTILS
 export {default as TableBatchBuilder} from './categories/table/table-batch-builder';
 export {default as RowTableBatch} from './categories/table/row-table-batch';
 export {default as ColumnarTableBatch} from './categories/table/columnar-table-batch';
 export {deduceTableSchema} from './categories/table/table-utils';
-
-// INTERNAL UTILS
-export {getMeshSize as _getMeshSize} from './categories/mesh/mesh-utils';
 
 // DEPRECATED
 export {readFile, createReadStream} from './fetch-file/fetch-file';
