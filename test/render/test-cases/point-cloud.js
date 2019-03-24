@@ -68,7 +68,6 @@ export default [
           POSITION: 14
         }
       });
-      debugger;
       const compressedMesh = dracoEncoder.encodePointCloud(kittiPointCloudRaw);
       dracoEncoder.destroy();
       // eslint-disable-next-line

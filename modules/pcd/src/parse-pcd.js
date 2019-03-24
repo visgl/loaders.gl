@@ -74,7 +74,7 @@ function getNormalizedAttributes(attributes) {
 function parsePCDHeader(data) {
   const PCDheader = {};
   const result1 = data.search(/[\r\n]DATA\s(\S*)\s/i);
-  const result2 = (/[\r\n]DATA\s(\S*)\s/i).exec(data.substr(result1 - 1));
+  const result2 = /[\r\n]DATA\s(\S*)\s/i.exec(data.substr(result1 - 1));
 
   PCDheader.data = result2[1];
   PCDheader.headerLen = result2[0].length + result1;
@@ -86,15 +86,15 @@ function parsePCDHeader(data) {
 
   // parse
 
-  PCDheader.version = (/VERSION (.*)/i).exec(PCDheader.str);
-  PCDheader.fields = (/FIELDS (.*)/i).exec(PCDheader.str);
-  PCDheader.size = (/SIZE (.*)/i).exec(PCDheader.str);
-  PCDheader.type = (/TYPE (.*)/i).exec(PCDheader.str);
-  PCDheader.count = (/COUNT (.*)/i).exec(PCDheader.str);
-  PCDheader.width = (/WIDTH (.*)/i).exec(PCDheader.str);
-  PCDheader.height = (/HEIGHT (.*)/i).exec(PCDheader.str);
-  PCDheader.viewpoint = (/VIEWPOINT (.*)/i).exec(PCDheader.str);
-  PCDheader.points = (/POINTS (.*)/i).exec(PCDheader.str);
+  PCDheader.version = /VERSION (.*)/i.exec(PCDheader.str);
+  PCDheader.fields = /FIELDS (.*)/i.exec(PCDheader.str);
+  PCDheader.size = /SIZE (.*)/i.exec(PCDheader.str);
+  PCDheader.type = /TYPE (.*)/i.exec(PCDheader.str);
+  PCDheader.count = /COUNT (.*)/i.exec(PCDheader.str);
+  PCDheader.width = /WIDTH (.*)/i.exec(PCDheader.str);
+  PCDheader.height = /HEIGHT (.*)/i.exec(PCDheader.str);
+  PCDheader.viewpoint = /VIEWPOINT (.*)/i.exec(PCDheader.str);
+  PCDheader.points = /POINTS (.*)/i.exec(PCDheader.str);
 
   // evaluate
 

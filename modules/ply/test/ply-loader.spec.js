@@ -59,7 +59,6 @@ test('PLYLoader#parse(WORKER)', async t => {
   // Once binary is transferred to worker it cannot be read from the main thread
   // Duplicate it here to avoid breaking other tests
   const arrayBuffer = await readFile(PLY_BUN_ZIPPER_URL);
-  debugger
   const data = await parseFile(arrayBuffer, PLYWorkerLoader);
 
   validateLoadedData(t, data);

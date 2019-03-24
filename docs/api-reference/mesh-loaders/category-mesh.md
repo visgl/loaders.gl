@@ -12,13 +12,13 @@ The mesh loaders do the following to standardize the loaded mesh
 
 ### PointCloud/Mesh Data Structure
 
-| Field              | Type                        | Contents                                                                                                                 |
-| ------------------ | --------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `loaderData`       | `Object` (Optional)         | Loader and format specific data                                                                                          |
-| `header`           | `Object`                    | See below                                                                                                                |
-| `mode`             | `Number`                    | Aligned with [OpenGL/glTF primitive types](https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#primitive) |
-| `attributes`       | `Object`                    | Each key contains an "accessor" object representing the contents of one attribute.                                       |
-| `indices`          | `Object` (Optional)         | If present, contains the indices (elements) typed array (`Uint32Array` or `Uint16Array`).                            |
+| Field        | Type                | Contents                                                                                                                 |
+| ------------ | ------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `loaderData` | `Object` (Optional) | Loader and format specific data                                                                                          |
+| `header`     | `Object`            | See below                                                                                                                |
+| `mode`       | `Number`            | Aligned with [OpenGL/glTF primitive types](https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#primitive) |
+| `attributes` | `Object`            | Each key contains an "accessor" object representing the contents of one attribute.                                       |
+| `indices`    | `Object` (Optional) | If present, contains the indices (elements) typed array (`Uint32Array` or `Uint16Array`).                                |
 
 Note that glTF attributes (keys in the `glTFAttributeMap`) are named per [glTF 2.0 recommendations](https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#geometry) with standardized, captilalized names.
 
@@ -26,10 +26,9 @@ Note that glTF attributes (keys in the `glTFAttributeMap`) are named per [glTF 2
 
 The `header` fields are only recommended at this point, applications can not assume they will be present:
 
-| `header` Field   | Type     | Contents |
-| ---------------- | -------- | -------- |
-| `vertexCount`    | `Number` |          |
-
+| `header` Field | Type     | Contents |
+| -------------- | -------- | -------- |
+| `vertexCount`  | `Number` |          |
 
 ### Primitive Mode
 
@@ -49,14 +48,13 @@ Primitive modes are the usual standard WebGL/OpenGL constants:
 
 `attributes` and `indices` are represented by glTF "accessor objects" with the binary data for that attribute resolved into a typed array of the proper type.
 
-| Accessors Fields | glTF? | Type                | Contents                                                                                                                                                  |
-| ---------------- | ----- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `value`          | No    | `TypedArray`        | Contains the typed array (corresponds to `bufferView`). The type of the array will match the GL constant in `componentType`.                              |
-| `size`           | No    | `1`-`4`             | Decoded "type". i.e. number of components                                                                                                                 |
-| `byteOffset`     | Yes   | `Number`            | Starting offset into the bufferView. Currently always `0`                                                                                                 |
-| `count`          | Yes   | `Number`            | The number of elements/vertices in the attribute data                                                                                                     |
-| `originalName`   | No    | `String` (Optional) | If this was a named attribute in the original file, the original name (before substitution with glTF attribute names) will be made available here.                                 |
-
+| Accessors Fields | glTF? | Type                | Contents                                                                                                                                           |
+| ---------------- | ----- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `value`          | No    | `TypedArray`        | Contains the typed array (corresponds to `bufferView`). The type of the array will match the GL constant in `componentType`.                       |
+| `size`           | No    | `1`-`4`             | Decoded "type". i.e. number of components                                                                                                          |
+| `byteOffset`     | Yes   | `Number`            | Starting offset into the bufferView. Currently always `0`                                                                                          |
+| `count`          | Yes   | `Number`            | The number of elements/vertices in the attribute data                                                                                              |
+| `originalName`   | No    | `String` (Optional) | If this was a named attribute in the original file, the original name (before substitution with glTF attribute names) will be made available here. |
 
 ### GLTF Attribute Name Mapping
 
@@ -77,7 +75,6 @@ When a loader can map an attribute name, it will replace ir with the glTF equiva
 
 > Note that for efficiency reasons, mesh loaders are not required to convert the format of an attribute's binary data to match the glTF specifications (i.e. if normals were encoded using BYTES then that is what will be returned even though glTF calls out for FLOAT32). Any such alignment needs to be done by the application as a second step.
 
-
 ## Scenegraph Format Support
 
 For more complex, scenegraph-type formats (i.e. formats that don't just contain single geometric primitives), loaders.gl currently focuses on glTF 2.0 support.
@@ -85,7 +82,6 @@ For more complex, scenegraph-type formats (i.e. formats that don't just contain 
 It is assumed that other scenegraph-type format loaders (e.g. a hyptothetical COLLADA loader) could convert their loaded data to a similar structure, essentially converting to glTF 2.0 on-the-fly as they load.
 
 For now it is best to convert such assets off-line to glTF before attempting to loade them with loaders.gl.
-
 
 ### Material support
 
