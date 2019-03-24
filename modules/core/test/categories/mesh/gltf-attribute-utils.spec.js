@@ -1,5 +1,5 @@
 import test from 'tape-promise/tape';
-import {getGLTFIndices, getGLTFAccessors, getGLTFAttributeMap} from '@loaders.gl/core';
+import {getGLTFIndices, getGLTFAccessors} from '@loaders.gl/core';
 
 // Check if an attribute contains indices
 
@@ -26,10 +26,5 @@ test('getGLTFIndices', t => {
 
 test('getGLTFAccessors', t => {
   t.ok(getGLTFAccessors);
-  t.end();
-});
-
-test('getGLTFAttributeMap', t => {
-  t.ok(getGLTFAttributeMap);
   t.end();
 });

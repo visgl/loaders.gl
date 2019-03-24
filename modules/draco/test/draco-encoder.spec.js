@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
-import {readFileSync, parseFileSync, getGLTFAttribute, _getMeshSize} from '@loaders.gl/core';
+import {readFileSync, parseFileSync, _getMeshSize} from '@loaders.gl/core';
 import {DracoLoader, DracoEncoder} from '@loaders.gl/draco';
 import {validateLoadedData} from 'test/common/conformance';
 
@@ -30,10 +30,10 @@ test('DracoEncoder#encode(bunny.drc)', t => {
   validateLoadedData(t, data);
 
   // t.comment(JSON.stringify(data));
-  t.equal(getGLTFAttribute(data, 'POSITION').value.length, 104502, 'position attribute was found');
+  t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
 
   const meshAttributes = {
-    POSITION: getGLTFAttribute(data, 'POSITION').value,
+    POSITION: data.attributes.POSITION.value,
     indices: data.indices.value
   };
   const pointCloudAttributes = Object.assign({}, meshAttributes);
@@ -66,11 +66,7 @@ test('DracoEncoder#encode(bunny.drc)', t => {
       validateLoadedData(t, data2);
 
       // t.comment(JSON.stringify(data));
-      t.equal(
-        getGLTFAttribute(data2, 'POSITION').value.length,
-        104502,
-        `${tc.title} decoded position attribute was found`
-      );
+      t.equal(data2.attributes.POSITION.value.length, 104502, `${tc.title} decoded POSITION found`);
     }
   }
 

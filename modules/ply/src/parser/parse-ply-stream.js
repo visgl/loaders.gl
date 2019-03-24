@@ -22,7 +22,7 @@
 // });
 
 import {lineAsyncIterator, textDecoderAsyncIterator, forEach} from '@loaders.gl/core';
-import {standardizePLYMesh} from './normalize-ply';
+import normalizePLY from './normalize-ply';
 
 // PARSER
 
@@ -40,7 +40,7 @@ export default async function parsePLYStream(iterator, options = {}) {
     // attributes = await parseBinary(lineIterator, header);
   }
 
-  return standardizePLYMesh(header, attributes);
+  return normalizePLY(header, attributes, options);
 }
 
 async function parseHeader(lineIterator, options) {

@@ -77,8 +77,7 @@ export {
 export {
   getGLTFAttribute,
   getGLTFAccessors,
-  getGLTFIndices,
-  getGLTFAttributeMap
+  getGLTFIndices
 } from './categories/mesh/gltf-attribute-utils';
 
 // TABLE CATEGORY UTILS

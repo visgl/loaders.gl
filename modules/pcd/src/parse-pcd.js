@@ -8,7 +8,7 @@
 // Description: A loader for PCD ascii and binary files.
 // Limitations: Compressed binary files are not supported.
 
-import {TextDecoder, getGLTFAccessors, getGLTFAttributeMap} from '@loaders.gl/core';
+import {TextDecoder} from '@loaders.gl/core';
 
 const LITTLE_ENDIAN = true;
 
@@ -34,9 +34,6 @@ export default function parsePCD(data, url, options) {
       throw new Error(`PCD: ${header.data} files are not supported`);
   }
 
-  const accessors = getGLTFAccessors(attributes);
-  const glTFAttributeMap = getGLTFAttributeMap(accessors);
-
   return {
     loaderData: {
       header
@@ -44,8 +41,7 @@ export default function parsePCD(data, url, options) {
     header: getNormalizedHeader(header),
     mode: 0, // POINTS
     indices: null,
-    attributes: accessors,
-    glTFAttributeMap
+    attributes: getNormalizedAttributes(attributes)
   };
 }
 
@@ -57,11 +53,28 @@ function getNormalizedHeader(PCDheader) {
   };
 }
 
+function getNormalizedAttributes(attributes) {
+  return {
+    POSITION: {
+      value: new Float32Array(attributes.position),
+      size: 3
+    },
+    NORMAL: {
+      value: new Float32Array(attributes.normal),
+      size: 3
+    },
+    COLOR_0: {
+      value: new Uint8Array(attributes.color),
+      size: 3
+    }
+  };
+}
+
 /* eslint-disable complexity, max-statements */
 function parsePCDHeader(data) {
   const PCDheader = {};
   const result1 = data.search(/[\r\n]DATA\s(\S*)\s/i);
-  const result2 = /[\r\n]DATA\s(\S*)\s/i.exec(data.substr(result1 - 1));
+  const result2 = (/[\r\n]DATA\s(\S*)\s/i).exec(data.substr(result1 - 1));
 
   PCDheader.data = result2[1];
   PCDheader.headerLen = result2[0].length + result1;
@@ -73,15 +86,15 @@ function parsePCDHeader(data) {
 
   // parse
 
-  PCDheader.version = /VERSION (.*)/i.exec(PCDheader.str);
-  PCDheader.fields = /FIELDS (.*)/i.exec(PCDheader.str);
-  PCDheader.size = /SIZE (.*)/i.exec(PCDheader.str);
-  PCDheader.type = /TYPE (.*)/i.exec(PCDheader.str);
-  PCDheader.count = /COUNT (.*)/i.exec(PCDheader.str);
-  PCDheader.width = /WIDTH (.*)/i.exec(PCDheader.str);
-  PCDheader.height = /HEIGHT (.*)/i.exec(PCDheader.str);
-  PCDheader.viewpoint = /VIEWPOINT (.*)/i.exec(PCDheader.str);
-  PCDheader.points = /POINTS (.*)/i.exec(PCDheader.str);
+  PCDheader.version = (/VERSION (.*)/i).exec(PCDheader.str);
+  PCDheader.fields = (/FIELDS (.*)/i).exec(PCDheader.str);
+  PCDheader.size = (/SIZE (.*)/i).exec(PCDheader.str);
+  PCDheader.type = (/TYPE (.*)/i).exec(PCDheader.str);
+  PCDheader.count = (/COUNT (.*)/i).exec(PCDheader.str);
+  PCDheader.width = (/WIDTH (.*)/i).exec(PCDheader.str);
+  PCDheader.height = (/HEIGHT (.*)/i).exec(PCDheader.str);
+  PCDheader.viewpoint = (/VIEWPOINT (.*)/i).exec(PCDheader.str);
+  PCDheader.points = (/POINTS (.*)/i).exec(PCDheader.str);
 
   // evaluate
 

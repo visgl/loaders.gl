@@ -1,9 +1,8 @@
 // ported and es6-ified from https://github.com/verma/plasio/
-import {getGLTFAccessors, getGLTFAttributeMap} from '@loaders.gl/core';
 import {LASFile} from './laslaz-decoder';
 
 /* eslint-disable max-statements */
-export default function loadLAS(arraybuffer, options = {}) {
+export default function parseLAS(arraybuffer, options = {}) {
   let pointIndex = 0;
 
   let positions;
@@ -15,7 +14,7 @@ export default function loadLAS(arraybuffer, options = {}) {
   const result = {};
   const {skip = 1, onProgress} = options;
 
-  parseLAS(arraybuffer, skip, (decoder, header) => {
+  parseLASChunked(arraybuffer, skip, (decoder, header) => {
     if (!originalHeader) {
       originalHeader = header;
       const total = header.totalToRead;
@@ -26,18 +25,20 @@ export default function loadLAS(arraybuffer, options = {}) {
       intensities = new Uint16Array(total);
       classifications = new Uint8Array(total);
 
-      const attributes = getGLTFAccessors({
-        positions: {value: positions, size: 3},
-        colors: {value: colors, size: 4},
-        intensities: {value: intensities, size: 1},
-        classifications: {value: classifications, size: 1}
-      });
       Object.assign(result, {
         loaderData: {header},
         mode: 0, // GL.POINTS
-        attributes,
-        glTFAttributeMap: getGLTFAttributeMap(attributes)
+        attributes: {
+          POSITION: {value: positions, size: 3},
+          // non-gltf attributes, use non-capitalized names for now
+          intensity: {value: intensities, size: 1},
+          classification: {value: classifications, size: 1}
+        }
       });
+
+      if (colors) {
+        result.attributes.COLOR_0 = {value: colors, size: 4};
+      }
     }
 
     const batchSize = decoder.pointsCount;
@@ -93,7 +94,7 @@ export default function loadLAS(arraybuffer, options = {}) {
  * @param {Binary} data
  * @return {*} parsed point cloud
  */
-export function parseLAS(rawData, skip, onParseData) {
+export function parseLASChunked(rawData, skip, onParseData) {
   const dataHandler = new LASFile(rawData);
 
   try {

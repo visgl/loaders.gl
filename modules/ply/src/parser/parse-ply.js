@@ -22,7 +22,7 @@
 // });
 
 import {TextDecoder} from '@loaders.gl/core';
-import {standardizePLYMesh} from './normalize-ply';
+import normalizePLY from './normalize-ply';
 
 export default function parsePLY(data, options = {}) {
   let header;
@@ -37,7 +37,7 @@ export default function parsePLY(data, options = {}) {
     attributes = parseASCII(data, header);
   }
 
-  return standardizePLYMesh(header, attributes);
+  return normalizePLY(header, attributes, options);
 }
 
 function parseHeader(data, options) {

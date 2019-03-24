@@ -12,7 +12,7 @@ const KITTI_POSITIONS = require('@loaders.gl/draco/test/data/raw-attribute-buffe
 const KITTI_COLORS = require('@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-colors.bin');
 const kittiPointCloudRaw = {
   POSITION: new Float32Array(KITTI_POSITIONS),
-  COLOR: new Uint8ClampedArray(KITTI_COLORS)
+  COLOR_0: new Uint8ClampedArray(KITTI_COLORS)
 };
 
 export default [
@@ -46,8 +46,8 @@ export default [
     onInitialize: ({gl}) => {
       const model = getModel(gl, {
         attributes: {
-          positions: {value: kittiPointCloudRaw.POSITION, size: 3},
-          colors: {value: kittiPointCloudRaw.COLOR, size: 4}
+          POSITION: {value: kittiPointCloudRaw.POSITION, size: 3},
+          COLOR_0: {value: kittiPointCloudRaw.COLOR_0, size: 4}
         },
         mode: 0
       });
@@ -68,6 +68,7 @@ export default [
           POSITION: 14
         }
       });
+      debugger;
       const compressedMesh = dracoEncoder.encodePointCloud(kittiPointCloudRaw);
       dracoEncoder.destroy();
       // eslint-disable-next-line
