@@ -1,6 +1,6 @@
 # parseFile
 
-This function parses already loaded data. As a special case, it can also load (and then parse) data from  `fetch` or `fetchFile` response object).
+This function parses already loaded data. As a special case, it can also load (and then parse) data from `fetch` or `fetchFile` response object).
 
 ## Usage
 
@@ -25,20 +25,21 @@ const batchIterator = await parseFileInBatches(fetchFile(url), CSVLoader);
 for await (const batch of batchIterator) {
   console.log(batch.length);
 }
-````
+```
 
 ## Functions
 
 ### parseFileInBatches(data : any, loaders : Object | Object\[] [, options : Object [, url : String]]) : AsyncIterator
+
 ### parseFileInBatches(data : any [, options : Object [, url : String]]) : AsyncIterator
 
-> Batched loading is not supported by all *loader objects*
+> Batched loading is not supported by all _loader objects_
 
 Parses data in batches from a stream, releasing each batch to the application while the stream is still being read.
 
-Parses data with the selected *loader object*. An array of `loaders` can be provided, in which case an attempt will be made to autodetect which loader is appropriate for the file (using url extension and header matching).
+Parses data with the selected _loader object_. An array of `loaders` can be provided, in which case an attempt will be made to autodetect which loader is appropriate for the file (using url extension and header matching).
 
-The `loaders` parameter can also be ommitted, in which case any *loader objects* previously registered with [`registerLoaders`](docs/api-reference/core/register-loaders) will be used.
+The `loaders` parameter can also be ommitted, in which case any _loader objects_ previously registered with [`registerLoaders`](docs/api-reference/core/register-loaders) will be used.
 
 - `data`: loaded data or an object that allows data to be loaded. This parameter can be any of the following types:
   - `Response` - `fetch` response object returned by `fetchFile` or `fetch`.
@@ -54,16 +55,16 @@ The `loaders` parameter can also be ommitted, in which case any *loader objects*
 
 Returns:
 
-- Returns an async iterator that yields batches of data. The exact format for the batches depends on the *loader object* category.
-
+- Returns an async iterator that yields batches of data. The exact format for the batches depends on the _loader object_ category.
 
 ### parseFile(data : ArrayBuffer | String, loaders : Object | Object\[] [, options : Object [, url : String]]) : Promise<Any>
+
 ### parseFile(data : ArrayBuffer | String, [, options : Object [, url : String]]) : Promise<Any>
 
 Parses data asynchronously using the provided loader.
-Used to parse data with a selected *loader object*. An array of `loaders` can be provided, in which case an attempt will be made to autodetect which loader is appropriate for the file (using url extension and header matching).
+Used to parse data with a selected _loader object_. An array of `loaders` can be provided, in which case an attempt will be made to autodetect which loader is appropriate for the file (using url extension and header matching).
 
-The `loaders` parameter can also be ommitted, in which case any *loader objects* previously registered with [`registerLoaders`](docs/api-reference/core/register-loaders) will be used.
+The `loaders` parameter can also be ommitted, in which case any _loader objects_ previously registered with [`registerLoaders`](docs/api-reference/core/register-loaders) will be used.
 
 - `data`: loaded data or an object that allows data to be loaded. This parameter can be any of the following types:
   - `Response` - `fetch` response object returned by `fetchFile` or `fetch`.
@@ -81,13 +82,13 @@ The `loaders` parameter can also be ommitted, in which case any *loader objects*
 
 Returns:
 
-- Return value depends on the *loader object* category
-
+- Return value depends on the _loader object_ category
 
 ### parseFileSync(fileData : ArrayBuffer | String, loaders : Object | Object\[], [, options : Object [, url : String]]) : any
+
 ### parseFileSync(fileData : ArrayBuffer | String, [, options : Object [, url : String]]) : any
 
-> Synchronous parsing is not supported by all *loader objects*
+> Synchronous parsing is not supported by all _loader objects_
 
 Parses data synchronously using the provided loader, if possible. If not, returns `null`, in which case asynchronous parsing is required.
 
@@ -103,4 +104,4 @@ Parses data synchronously using the provided loader, if possible. If not, return
 
 Returns:
 
-- Return value depends on the *loader object* category
+- Return value depends on the _loader object_ category

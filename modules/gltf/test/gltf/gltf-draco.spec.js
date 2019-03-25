@@ -1,18 +1,20 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
 
-import {readFileSync} from '@loaders.gl/core';
+import {fetchFile} from '@loaders.gl/core';
 import {GLTFBuilder, GLTFParser} from '@loaders.gl/gltf';
 import {DracoEncoder, DracoDecoder} from '@loaders.gl/draco';
 
-const POSITIONS =
-  readFileSync('@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-positions.bin') ||
-  require('@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-positions.bin');
-const COLORS =
-  readFileSync('@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-colors.bin') ||
-  require('@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-colors.bin');
+test('GLTFBuilder#addCompressedPointCloud', async t => {
+  let response = await fetchFile(
+    '@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-positions.bin'
+  );
+  const POSITIONS = await response.arrayBuffer();
+  response = await fetchFile(
+    '@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-positions.bin'
+  );
+  const COLORS = await response.arrayBuffer();
 
-test('GLTFBuilder#addCompressedPointCloud', t => {
   const attributes = {
     POSITIONS: new Float32Array(POSITIONS),
     COLORS: new Uint8ClampedArray(COLORS)

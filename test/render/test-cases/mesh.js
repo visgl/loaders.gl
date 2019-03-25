@@ -1,18 +1,15 @@
-import {parseFileSync} from '@loaders.gl/core';
+import {loadFile} from '@loaders.gl/core';
 import {PLYLoader} from '@loaders.gl/ply';
-
 import {getModel, drawModelInViewport} from '../test-utils/get-model';
 
-const PLY_BINARY =
-  // loadBinaryFile(path.resolve(__dirname, '../../ply/data/bun_zipper.ply')) ||
-  require('@loaders.gl/ply/test/data/bun_zipper.ply');
+const PLY_BINARY_URL = '@loaders.gl/ply/test/data/bun_zipper.ply';
 
 export default [
   {
     name: 'PLYLoader',
     goldenImage: './test/render/golden-images/ply-loader.png',
-    onInitialize: ({gl}) => {
-      const model = getModel(gl, parseFileSync(PLY_BINARY, PLYLoader));
+    onInitialize: async ({gl}) => {
+      const model = getModel(gl, await loadFile(PLY_BINARY_URL, PLYLoader));
       return {model};
     },
     onRender: ({model, done}) => {

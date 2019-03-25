@@ -79,4 +79,4 @@ export {default as ColumnarTableBatch} from './categories/table/columnar-table-b
 export {deduceTableSchema} from './categories/table/table-utils';
 
 // DEPRECATED
-export {readFile, createReadStream} from './fetch-file/fetch-file';
+export {createReadStream} from './fetch-file/fetch-file';

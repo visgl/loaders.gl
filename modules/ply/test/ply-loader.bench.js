@@ -1,4 +1,4 @@
-import {readFile, loadFile, createReadStream, getStreamIterator} from '@loaders.gl/core';
+import {fetchFile, loadFile, createReadStream, getStreamIterator} from '@loaders.gl/core';
 import {PLYLoader, PLYWorkerLoader, _PLYStreamLoader} from '@loaders.gl/ply';
 
 export default function PLYLoaderBench(bench) {
@@ -13,7 +13,8 @@ export default function PLYLoaderBench(bench) {
       .addAsync('Worker parsing', async () => {
         // Once binary is transferred to worker it cannot be read from the main thread
         // Duplicate it here to avoid breaking other tests
-        const arrayBuffer = await readFile('@loaders.gl/ply/test/data/bun_zipper.ply');
+        const response = await fetchFile('@loaders.gl/ply/test/data/bun_zipper.ply');
+        const arrayBuffer = await response.arrayBuffer();
         await loadFile(arrayBuffer, PLYWorkerLoader);
       })
       .addAsync('Stream parsing', async () => {
@@ -26,7 +27,8 @@ export default function PLYLoaderBench(bench) {
         await loadFile('@loaders.gl/ply/test/data/cube_att.ply', PLYLoader);
       })
       .addAsync('Worker parsing', async () => {
-        const arrayBuffer = await readFile('@loaders.gl/ply/test/data/bun_zipper.ply');
+        const response = await fetchFile('@loaders.gl/ply/test/data/bun_zipper.ply');
+        const arrayBuffer = await response.arrayBuffer();
         await loadFile(arrayBuffer, PLYWorkerLoader);
       })
   );

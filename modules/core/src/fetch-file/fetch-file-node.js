@@ -93,7 +93,7 @@ class NodeFetchResponse {
   // PRIVATE
 
   _getHeaders() {
-    if (response.isRequesURL(this.url)) {
+    if (isRequestURL(this.url)) {
       return new NodeHeaders(this);
     }
 
@@ -112,13 +112,55 @@ class NodeFetchResponse {
     return {
       'Content-Length': stats.size
     };
-    return this._contentLength;
   }
 }
 
 export async function fetchFile(url, options) {
   url = resolvePath(url);
   return new NodeFetchResponse(url, options);
+}
+
+// In a few cases (data URIs, node.js) "files" can be read synchronously
+export function readFileSync(url, options = {}) {
+  url = resolvePath(url);
+  options = getReadFileOptions(options);
+
+  if (isDataURL(url)) {
+    return decodeDataUri(url);
+  }
+
+  if (!isNode) {
+    return null; // throw new Error('Cant load URI synchronously');
+  }
+
+  const buffer = fs.readFileSync(url, options, () => {});
+  return buffer instanceof Buffer ? toArrayBuffer(buffer) : buffer;
+}
+
+// Reads raw file data from:
+// * http/http urls
+// * data urls
+// * File/Blob objects
+// etc?
+async function readFile(url, options = {}) {
+  url = resolvePath(url);
+  options = getReadFileOptions(options);
+
+  if (isDataURL(url)) {
+    return Promise.resolve(decodeDataUri(url));
+  }
+
+  if (isRequestURL(url)) {
+    return new Promise((resolve, reject) => {
+      options = {...new URL(url), ...options};
+      const request = url.startsWith('https:') ? https.request : http.request;
+      request(url, response => concatenateReadStream(response).then(resolve, reject));
+    });
+  }
+
+  const readFileAsync = util.promisify(fs.readFile);
+  const buffer = await readFileAsync(url, options);
+  return buffer instanceof Buffer ? toArrayBuffer(buffer) : buffer;
 }
 
 // Returns a promise that resolves to a readable stream
@@ -143,49 +185,6 @@ export async function createReadStream(url, options) {
     const request = url.startsWith('https:') ? https.request : http.request;
     request(url, response => resolve(response));
   });
-}
-
-// Reads raw file data from:
-// * http/http urls
-// * data urls
-// * File/Blob objects
-// etc?
-export async function readFile(url, options = {}) {
-  url = resolvePath(url);
-  options = getReadFileOptions(options);
-
-  if (isDataURL(url)) {
-    return Promise.resolve(decodeDataUri(url));
-  }
-
-  if (isRequestURL(url)) {
-    return new Promise((resolve, reject) => {
-      options = {...new URL(url), ...options};
-      const request = url.startsWith('https:') ? https.request : http.request;
-      request(url, response => concatenateReadStream(response).then(resolve, reject));
-    });
-  }
-
-  const readFileAsync = util.promisify(fs.readFile);
-  const buffer = await readFileAsync(url, options);
-  return buffer instanceof Buffer ? toArrayBuffer(buffer) : buffer;
-}
-
-// In a few cases (data URIs, node.js) "files" can be read synchronously
-export function readFileSync(url, options = {}) {
-  url = resolvePath(url);
-  options = getReadFileOptions(options);
-
-  if (isDataURL(url)) {
-    return decodeDataUri(url);
-  }
-
-  if (!isNode) {
-    return null; // throw new Error('Cant load URI synchronously');
-  }
-
-  const buffer = fs.readFileSync(url, options, () => {});
-  return buffer instanceof Buffer ? toArrayBuffer(buffer) : buffer;
 }
 
 // HELPERS

@@ -1,7 +1,7 @@
 const getWebpackConfig = require('ocular-dev-tools/config/webpack.config');
 
 // The following files will be imported/required as array buffers via arraybuffer-loader
-const BINARY_FILE_EXTENSIONS = /\.drc$|\.ply$|\.pcd$|\.glb$|\.las$|\.laz$|\.png$|\.jpeg$|\.gif$|\.bmp$|\.tiff$|\.bin|\.arrow/;
+const BINARY_FILE_EXTENSIONS = /\.glb$|\.png$|\.jpeg$|\.gif$|\.bmp$|\.tiff$|\.bin/;
 
 const BABEL_CONFIG = {
   presets: ['@babel/env'],

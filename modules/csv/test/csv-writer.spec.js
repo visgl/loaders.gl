@@ -11,7 +11,7 @@ License: MIT
 
 /* eslint-disable quotes */
 import test from 'tape-promise/tape';
-import {isBrowser, readFile, loadFile} from '@loaders.gl/core';
+import {isBrowser, loadFile} from '@loaders.gl/core';
 import {parseFileAsIterator, parseFileAsAsyncIterator} from '@loaders.gl/core';
 import {CSVWriter} from '@loaders.gl/experimental';
 
