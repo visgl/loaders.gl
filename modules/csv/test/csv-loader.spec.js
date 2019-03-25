@@ -1,5 +1,10 @@
 import test from 'tape-promise/tape';
-import {loadFileInBatches, isIterator, isAsyncIterable, ColumnarTableBatch} from '@loaders.gl/experimental';
+import {
+  loadFileInBatches,
+  isIterator,
+  isAsyncIterable,
+  ColumnarTableBatch
+} from '@loaders.gl/experimental';
 import {CSVLoader} from '@loaders.gl/csv';
 
 // Small CSV Sample Files

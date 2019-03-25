@@ -1,5 +1,5 @@
 import test from 'tape-promise/tape';
-import {AsyncQueue} from '@loaders.gl/core';
+import {AsyncQueue} from '@loaders.gl/experimental';
 
 test('Enqueue before dequeue', async t => {
   const queue = new AsyncQueue();
