@@ -4,9 +4,16 @@
 /* eslint-disable max-len, max-statements */
 /* global Buffer */
 import test from 'tape-promise/tape';
+import {isBrowser} from '@loaders.gl/core';
 import decodeDataUri from '@loaders.gl/core/fetch-and-write/node/decode-data-uri';
 
 test('decodeDataUri', t => {
+  if (isBrowser) {
+    t.comment('decodeDataUri() currently only works in Node.js');
+    t.end();
+    return;
+  }
+
   let obj;
   let buf;
 
