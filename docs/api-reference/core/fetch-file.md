@@ -1,6 +1,6 @@
 # File Utilities
 
-Small optional file utilities that work consistently across browser main thread, worker threads and node. The main function is `fetchFile` which can be used as a slightly more featured/portable version of fetch.
+Small optional file reading utilities that work consistently across browser (both main thread and worker threads) as well as under Node. The main function is `fetchFile` which can be used as a slightly more featured/portable version of fetch.
 
 ## Usage
 
@@ -15,7 +15,7 @@ data = await parseFile(fetchFile(url), OBJLoader);
 ...
 ```
 
-Note that if you don't care about Node.js compatibility, you can use the browser's built-in `fetch` directly.
+Note that if you don't care about Node.js compatibility, you can just use the browser's built-in `fetch` directly.
 
 ```js
 import {parseFile} from '@loaders.gl/core';
