@@ -13,6 +13,12 @@ test('fetchFile#imports', t => {
 });
 
 test('readFileSync#dataUrl', t => {
+  if (isBrowser) {
+    t.comment('Skip readFileSync in browser');
+    t.end();
+    return;
+  }
+
   const data = readFileSync(DATA_URL);
   t.ok(data, 'readFileSync loaded data url');
   t.end();
@@ -33,7 +39,7 @@ test('readFileSync#file (BINARY)', t => {
 
 test('readFileSync#file (TEXT)', t => {
   if (isBrowser) {
-    t.comment('Skip file read in browser');
+    t.comment('Skip readFileSync in browser');
     t.end();
     return;
   }
