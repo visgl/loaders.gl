@@ -8,7 +8,7 @@
 // Description: A loader for PCD ascii and binary files.
 // Limitations: Compressed binary files are not supported.
 
-import {TextDecoder, getGLTFAccessors, getGLTFAttributeMap} from '@loaders.gl/core';
+import {TextDecoder} from '@loaders.gl/core';
 
 const LITTLE_ENDIAN = true;
 
@@ -34,9 +34,6 @@ export default function parsePCD(data, url, options) {
       throw new Error(`PCD: ${header.data} files are not supported`);
   }
 
-  const accessors = getGLTFAccessors(attributes);
-  const glTFAttributeMap = getGLTFAttributeMap(accessors);
-
   return {
     loaderData: {
       header
@@ -44,8 +41,7 @@ export default function parsePCD(data, url, options) {
     header: getNormalizedHeader(header),
     mode: 0, // POINTS
     indices: null,
-    attributes: accessors,
-    glTFAttributeMap
+    attributes: getNormalizedAttributes(attributes)
   };
 }
 
@@ -54,6 +50,23 @@ function getNormalizedHeader(PCDheader) {
   const pointCount = PCDheader.width * PCDheader.height; // Supports "organized" point sets
   return {
     vertexCount: pointCount
+  };
+}
+
+function getNormalizedAttributes(attributes) {
+  return {
+    POSITION: {
+      value: new Float32Array(attributes.position),
+      size: 3
+    },
+    NORMAL: {
+      value: new Float32Array(attributes.normal),
+      size: 3
+    },
+    COLOR_0: {
+      value: new Uint8Array(attributes.color),
+      size: 3
+    }
   };
 }
 

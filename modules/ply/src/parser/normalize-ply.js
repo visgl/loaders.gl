@@ -1,50 +1,41 @@
-import {getGLTFIndices, getGLTFAccessors, getGLTFAttributeMap} from '@loaders.gl/core';
-
-export function standardizePLYMesh(header, attributes) {
-  const vertexCount = attributes.indices.length || attributes.vertices.length / 3;
-  const normalizedAttributes = normalizeAttributes(attributes);
-
-  return {
+export default function normalizePLY(header, attributes, options) {
+  const result = {
     loaderData: {
       header
     },
     // TODO - how to detect POINT CLOUDS vs MESHES?
     // TODO - For Meshes, PLY quadrangles must be split?
     header: {
-      vertexCount
+      vertexCount: attributes.indices.length || attributes.vertices.length / 3
     },
-    mode: normalizedAttributes.indices
-      ? 4 // TRIANGLES
-      : 0, // POINTS
-    indices: getGLTFIndices(normalizedAttributes),
-    attributes: getGLTFAccessors(normalizedAttributes),
-    glTFAttributeMap: getGLTFAttributeMap(normalizedAttributes)
+    mode: attributes.indices && attributes.indices.length > 0 ? 4 : 0, // TRIANGLES vs POINTS
+    attributes: normalizeAttributes(attributes, options)
   };
+
+  if (attributes.indices && attributes.indices.length > 0) {
+    result.indices = {value: new Uint32Array(attributes.indices), size: 1};
+  }
+
+  return result;
 }
 
 function normalizeAttributes(attributes) {
   const accessors = {};
 
-  // mandatory attributes data
-
-  if (attributes.indices.length > 0) {
-    accessors.indices = attributes.indices;
-  }
-
-  accessors.position = {value: attributes.vertices, size: 3};
+  accessors.POSITION = {value: new Float32Array(attributes.vertices), size: 3};
 
   // optional attributes data
 
   if (attributes.normals.length > 0) {
-    accessors.normal = {value: attributes.normals, size: 3};
+    accessors.NORMAL = {value: new Float32Array(attributes.normals), size: 3};
   }
 
   if (attributes.uvs.length > 0) {
-    accessors.uv = {value: attributes.uvs, size: 2};
+    accessors.TEXCOORD_0 = {value: new Float32Array(attributes.uvs), size: 2};
   }
 
   if (attributes.colors.length > 0) {
-    accessors.color = {value: attributes.colors, size: 3};
+    accessors.COLOR_0 = {value: new Uint8Array(attributes.colors), size: 3};
   }
 
   return accessors;

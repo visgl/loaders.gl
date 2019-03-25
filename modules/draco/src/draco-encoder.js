@@ -25,6 +25,14 @@ const DEFAULT_ENCODING_OPTIONS = {
   }
 };
 
+// Native Draco attribute names to GLTF attribute names.
+const GLTF_TO_DRACO_ATTRIBUTE_NAME_MAP = {
+  POSITION: 'POSITION',
+  NORMAL: 'NORMAL',
+  COLOR_0: 'COLOR',
+  TEXCOORD_0: 'TEX_COORD'
+};
+
 function noop() {}
 
 // Copy encoded data to buffer
@@ -145,8 +153,9 @@ export default class DRACOEncoder {
       }
       const vertexCount = positions.length / 3;
 
-      for (const attributeName in attributes) {
+      for (let attributeName in attributes) {
         const attribute = attributes[attributeName];
+        attributeName = GLTF_TO_DRACO_ATTRIBUTE_NAME_MAP[attributeName] || attributeName;
         this._addAttributeToMesh(dracoMesh, attributeName, attribute, vertexCount);
       }
     } catch (error) {
@@ -167,8 +176,9 @@ export default class DRACOEncoder {
       }
       const vertexCount = positions.length / 3;
 
-      for (const attributeName in attributes) {
+      for (let attributeName in attributes) {
         const attribute = attributes[attributeName];
+        attributeName = GLTF_TO_DRACO_ATTRIBUTE_NAME_MAP[attributeName] || attributeName;
         this._addAttributeToMesh(dracoPointCloud, attributeName, attribute, vertexCount);
       }
     } catch (error) {

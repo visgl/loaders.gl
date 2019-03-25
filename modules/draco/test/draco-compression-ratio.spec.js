@@ -1,26 +1,27 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
-import {readFileSync, parseFileSync, _getMeshSize} from '@loaders.gl/core';
+import {fetchFile, parseFileSync, _getMeshSize} from '@loaders.gl/core';
 import {DracoEncoder, DracoLoader} from '@loaders.gl/draco';
 import {validateLoadedData} from 'test/common/conformance';
 
-const POSITIONS =
-  readFileSync('@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-positions.bin') ||
-  require('@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-positions.bin');
-const COLORS =
-  readFileSync('@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-colors.bin') ||
-  require('@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-colors.bin');
+const POSITIONS_URL = '@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-positions.bin';
+const COLORS_URL = '@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-colors.bin';
 
-test('DracoEncoder#compressRawBuffers', t => {
+test('DracoEncoder#compressRawBuffers', async t => {
+  const POSITIONS = await fetchFile(POSITIONS_URL).then(response => response.arrayBuffer());
+  const COLORS = await fetchFile(COLORS_URL).then(response => response.arrayBuffer());
+
   const attributes = {
-    POSITIONS: new Float32Array(POSITIONS),
-    COLORS: new Uint8ClampedArray(COLORS)
+    POSITION: new Float32Array(POSITIONS),
+    COLOR_0: new Uint8ClampedArray(COLORS)
   };
+
   t.comment(
-    `Encoding ${attributes.POSITIONS.length} positions, ${attributes.COLORS.length} colors...`
+    `Encoding ${attributes.POSITION.length} positions, ${attributes.COLOR_0.length} colors...`
   );
 
   // Encode mesh
+  // TODO - Replace with draco writer
   const dracoEncoder = new DracoEncoder();
   const compressedMesh = dracoEncoder.encodePointCloud(attributes);
   dracoEncoder.destroy();
@@ -32,18 +33,8 @@ test('DracoEncoder#compressRawBuffers', t => {
   const data2 = parseFileSync(compressedMesh, DracoLoader);
   validateLoadedData(t, data2);
 
-  const POSITION = data2.glTFAttributeMap.POSITION;
-  const COLOR = data2.glTFAttributeMap.COLOR_0;
-  t.equal(
-    data2.attributes[POSITION].value.length,
-    attributes.POSITIONS.length,
-    'position attribute was found'
-  );
-  t.equal(
-    data2.attributes[COLOR].value.length,
-    attributes.COLORS.length,
-    'color attribute was found'
-  );
+  t.equal(data2.attributes.POSITION.value.length, attributes.POSITION.length, 'POSITION matched');
+  t.equal(data2.attributes.COLOR_0.value.length, attributes.COLOR_0.length, 'COLOR matched');
 
   t.end();
 });

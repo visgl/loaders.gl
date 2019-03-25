@@ -11,7 +11,7 @@ import './image-utils/get-image-size.spec';
 import './image-utils/image-loaders.spec';
 
 import './categories/mesh/mesh-utils.spec';
-import './categories/mesh/gltf-attribute-utils.spec';
+
 import './categories/table/table-utils.spec';
 
 import './fetch-file/file-aliases.spec';

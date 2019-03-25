@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
-import {loadFile, getGLTFAttribute} from '@loaders.gl/core';
+import {loadFile} from '@loaders.gl/core';
 import {OBJLoader, OBJWorkerLoader} from '@loaders.gl/obj';
 
 // Note: The Sublime Text Editor hides OBJ files from the file tree...
@@ -14,10 +14,9 @@ test('OBJLoader#parseText', async t => {
 
   t.equal(data.mode, 4, 'mode is TRIANGLES (4)');
   t.equal(data.indices.value.length, 14904, 'INDICES attribute was found');
-  t.equal(data.indices.count, 14904, 'INDICES attribute was found');
 
-  t.equal(getGLTFAttribute(data, 'POSITION').value.length, 7509, 'POSITION attribute was found');
-  t.equal(getGLTFAttribute(data, 'POSITION').size, 3, 'POSITION attribute was found');
+  t.equal(data.attributes.POSITION.value.length, 7509, 'POSITION attribute was found');
+  t.equal(data.attributes.POSITION.size, 3, 'POSITION attribute was found');
 
   // TODO - need OBJ test model with normals and uvs
   // const NORMAL = data.glTFAttributeMap.NORMAL;
@@ -43,9 +42,8 @@ test('OBJWorkerLoader#parse(text)', async t => {
 
   t.equal(data.mode, 4, 'mode is TRIANGLES (4)');
   t.equal(data.indices.value.length, 14904, 'INDICES attribute was found');
-  t.equal(data.indices.count, 14904, 'INDICES attribute was found');
 
-  t.equal(getGLTFAttribute(data, 'POSITION').value.length, 7509, 'POSITION attribute was found');
-  t.equal(getGLTFAttribute(data, 'POSITION').size, 3, 'POSITION attribute was found');
+  t.equal(data.attributes.POSITION.value.length, 7509, 'POSITION attribute was found');
+  t.equal(data.attributes.POSITION.size, 3, 'POSITION attribute was found');
   t.end();
 });

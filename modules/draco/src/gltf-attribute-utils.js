@@ -1,3 +1,4 @@
+// TODO - remove
 import {getAccessorTypeFromSize, getComponentTypeFromArray} from './gltf-type-utils';
 
 // Patters that map known names to GLTF counterparts
@@ -51,18 +52,6 @@ export function getGLTFAccessors(attributes) {
     }
   }
   return accessors;
-}
-
-// Returns an object with a map from glTF-standardized attributes names to loaded attribute names
-export function getGLTFAttributeMap(attributes) {
-  const standardizedAttributes = {};
-  for (const name in attributes) {
-    const standardizedName = getGLTFAttributeName(name);
-    if (standardizedName && !isGLTFIndices(name)) {
-      standardizedAttributes[standardizedName] = name;
-    }
-  }
-  return standardizedAttributes;
 }
 
 // Fix up a single accessor.
