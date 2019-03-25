@@ -3,9 +3,8 @@ import {isBrowser} from '../utils/globals';
 // Import individual symbols for browser version to ensure tree-shaking is enabled
 import {
   fetchFile as browserFetchFile,
-  createReadStream as browserCreateReadStream,
-  readFile as browserReadFile,
-  readFileSync as browserReadFileSync
+  readFileSync as browserReadFileSync,
+  createReadStream as browserCreateReadStream
 } from './fetch-file-browser';
 
 // fetch-file-node is excluded from build under browser so don't do indivdual imports
@@ -32,9 +31,5 @@ export function readFileSync(url, options = {}) {
 // Returns a promise that resolves to a readable stream
 export async function createReadStream(url, options) {
   const func = isBrowser ? browserCreateReadStream : node.createReadStream;
-  return func(url, options);
-}
-export async function readFile(url, options = {}) {
-  const func = isBrowser ? browserReadFile : node.readFile;
   return func(url, options);
 }

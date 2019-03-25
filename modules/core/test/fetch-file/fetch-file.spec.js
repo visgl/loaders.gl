@@ -45,7 +45,7 @@ test('readFileSync#file (TEXT)', t => {
 });
 
 test('fetchFile#dataUrl', async t => {
-  const response = await fetchFile(DATA_URL)
+  const response = await fetchFile(DATA_URL);
   const data = await response.arrayBuffer();
   t.ok(data, 'readFileSync loaded data url');
   // t.equals(data, 'important content!', 'fetchFile loaded data url');

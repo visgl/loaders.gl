@@ -49,8 +49,8 @@ test('ArrowLoader#parseFile (WORKER)', async t => {
   t.end();
 });
 
-// TODO - 
 test('ArrowLoader#parseFileInBatches(async input)', async t => {
+  // TODO - parseFileInBatches should accept fetch response directly
   const response = await fetchFile(ARROW_BIOGRID_NODES);
   const data = await response.arrayBuffer();
   const asyncIterator = await parseFileInBatches(data, ArrowLoader);
