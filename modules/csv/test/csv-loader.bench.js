@@ -1,4 +1,4 @@
-import {readFile, parseFile} from '@loaders.gl/core';
+import {fetchFile, parseFile} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/csv';
 
 const SAMPLE_CSV_URL = '@loaders.gl/csv/test/data/sample-very-long.csv';
@@ -16,7 +16,7 @@ const D3CSVLoader = {
 */
 
 export default async function csvBench(bench) {
-  const sample = await readFile(SAMPLE_CSV_URL, CSVLoader);
+  const sample = await fetchFile(SAMPLE_CSV_URL);
 
   bench = bench.group('CSV Decode');
 

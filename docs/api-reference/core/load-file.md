@@ -1,13 +1,14 @@
 # loadFile
 
-`loadFile` and `loadFileSync` function can be used with any *loader object*. They takes a `url` and one or more *loader objects*, checks what type of data that loader prefers to work on (e.g. text, JSON, binary, stream, ...), loads the data in the appropriate way, and passes it to the loader.
+`loadFile` and `loadFileSync` function can be used with any _loader object_. They takes a `url` and one or more _loader objects_, checks what type of data that loader prefers to work on (e.g. text, JSON, binary, stream, ...), loads the data in the appropriate way, and passes it to the loader.
 
-### loadFile(url : String | File, loaders : Object | Object[] [, options : Object]) : Promise<Response>
+### loadFile(url : String | File, loaders : Object | Object[][, options : object]) : Promise<Response>
+
 ### loadFile(url : String | File [, options : Object]) : Promise<Response>
 
-The `loadFile` function is used to load and parse data with a specific *loader object*. An array of loader objects can be provided, in which case `loadFile` will attempt to autodetect which loader is appropriate for the file.
+The `loadFile` function is used to load and parse data with a specific _loader object_. An array of loader objects can be provided, in which case `loadFile` will attempt to autodetect which loader is appropriate for the file.
 
-The `loaders` parameter can also be ommitted, in which case any *loader objects* previously registered with [`registerLoaders`](docs/api-reference/core/register-loaders) will be used.
+The `loaders` parameter can also be ommitted, in which case any _loader objects_ previously registered with [`registerLoaders`](docs/api-reference/core/register-loaders) will be used.
 
 - `url` - Can be a string, either a data url or a request url, or in Node.js, a file name, or in the browser, a File object.
 - `data` - loaded data, either in binary or text format.
@@ -17,7 +18,7 @@ The `loaders` parameter can also be ommitted, in which case any *loader objects*
 
 Returns:
 
-- Return value depends on the *loader object* category
+- Return value depends on the _loader object_ category
 
 Notes:
 

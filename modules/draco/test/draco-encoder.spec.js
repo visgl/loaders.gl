@@ -1,12 +1,8 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
-import {readFileSync, parseFileSync, _getMeshSize} from '@loaders.gl/core';
+import {fetchFile, parseFileSync, _getMeshSize} from '@loaders.gl/core';
 import {DracoLoader, DracoEncoder} from '@loaders.gl/draco';
 import {validateLoadedData} from 'test/common/conformance';
-
-const BUNNY_DRC =
-  readFileSync('@loaders.gl/draco/test/data/bunny.drc') ||
-  require('@loaders.gl/draco/test/data/bunny.drc');
 
 const TEST_CASES = [
   {
@@ -24,7 +20,10 @@ const TEST_CASES = [
   }
 ];
 
-test('DracoEncoder#encode(bunny.drc)', t => {
+test('DracoEncoder#encode(bunny.drc)', async t => {
+  const response = await fetchFile('@loaders.gl/draco/test/data/bunny.drc');
+  const BUNNY_DRC = await response.arrayBuffer();
+
   // Decode Loaded Mesh and use as input data for encoders
   const data = parseFileSync(BUNNY_DRC, DracoLoader);
   validateLoadedData(t, data);

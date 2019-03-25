@@ -1,5 +1,5 @@
 /* global Image, Blob, createImageBitmap, btoa */
-import {readFile} from '../fetch-file/fetch-file';
+import {fetchFile} from '../fetch-file/fetch-file';
 
 // Specifically loads an ImageBitmap (works on newer browser main and worker threads)
 export const ImageBitmapLoader = {
@@ -26,30 +26,29 @@ function parseToImageBitmap(arrayBuffer) {
   return createImageBitmap(blob);
 }
 
-function loadToHTMLImage(url, options) {
-  let promise;
+async function loadToHTMLImage(url, options) {
+  let src;
   if (/\.svg((\?|#).*)?$/.test(url)) {
     // is SVG
-    promise = readFile(url, {dataType: 'text'})
-      // base64 encoding is safer. utf-8 fails in some browsers
-      .then(xml => `data:image/svg+xml;base64,${btoa(xml)}`);
+    const response = await fetchFile(url, options);
+    const xml = await response.text();
+    // base64 encoding is safer. utf-8 fails in some browsers
+    src = `data:image/svg+xml;base64,${btoa(xml)}`;
   } else {
-    promise = Promise.resolve(url);
+    src = await url;
   }
-  return promise.then(
-    src =>
-      new Promise((resolve, reject) => {
-        try {
-          const image = new Image();
-          image.onload = () => resolve(image);
-          image.onerror = err => reject(new Error(`Could not load image ${url}: ${err}`));
-          image.crossOrigin = (options && options.crossOrigin) || 'anonymous';
-          image.src = src;
-        } catch (error) {
-          reject(error);
-        }
-      })
-  );
+
+  return await new Promise((resolve, reject) => {
+    try {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.onerror = err => reject(new Error(`Could not load image ${url}: ${err}`));
+      image.crossOrigin = (options && options.crossOrigin) || 'anonymous';
+      image.src = src;
+    } catch (error) {
+      reject(error);
+    }
+  });
 }
 
 function parseToPlatformImage(arrayBuffer) {
@@ -59,11 +58,11 @@ function parseToPlatformImage(arrayBuffer) {
   return parseToImageBitmap(arrayBuffer);
 }
 
-function loadToPlatformImage(url, options) {
+async function loadToPlatformImage(url, options) {
   if (typeof Image === 'undefined') {
-    return readFile(url, Object.assign({}, options, {dataType: 'arrayBuffer'})).then(
-      parseToPlatformImage
-    );
+    const response = await fetchFile(url, options);
+    const arrayBuffer = await response.arrayBuffer();
+    return parseToPlatformImage(arrayBuffer);
   }
-  return loadToHTMLImage(url, options);
+  return await loadToHTMLImage(url, options);
 }

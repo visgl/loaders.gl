@@ -1,5 +1,5 @@
 import test from 'tape-promise/tape';
-import {isBrowser, readFile, loadFile} from '@loaders.gl/core';
+import {isBrowser, fetchFile, loadFile} from '@loaders.gl/core';
 import {loadImage, ImageLoader} from '@loaders.gl/images';
 import path from 'path';
 
@@ -26,57 +26,40 @@ test('images#loadImage', t => {
   });
 });
 
-test('readFile#file (BINARY)', t => {
+test('fetchFile#arrayBuffer()', async t => {
   if (isBrowser) {
     t.comment('Skip file read in browser');
     t.end();
-    return null;
+    return;
   }
 
-  return readFile(TEST_URL)
-    .then(data => {
-      t.ok(data instanceof ArrayBuffer, 'readFile loaded local file into ArrayBuffer');
-      t.equals(data.byteLength, 168465, 'readFile loaded local file length correctly');
-      t.end();
-    })
-    .catch(error => {
-      t.fail(error);
-      t.end();
-    });
+  const response = await fetchFile(TEST_URL);
+  const data = await response.arrayBuffer();
+  t.ok(data instanceof ArrayBuffer, 'fetchFile loaded local file into ArrayBuffer');
+  t.equals(data.byteLength, 168465, 'fetchFile loaded local file length correctly');
+  t.end();
 });
 
-test('images#loadImage (NODE)', t => {
+test('images#loadImage (NODE)', async t => {
   if (isBrowser) {
     t.comment('Skip loadImage file in browser');
     t.end();
-    return null;
+    return;
   }
 
-  return loadImage(TEST_URL)
-    .then(result => {
-      t.ok(result, 'image loaded successfully');
-      t.end();
-    })
-    .catch(error => {
-      t.fail(error);
-      t.end();
-    });
+  const result = await loadImage(TEST_URL);
+  t.ok(result, 'image loaded successfully');
+  t.end();
 });
 
-test('images#loadFile(ImageLoader) (NODE)', t => {
+test('images#loadFile(ImageLoader) (NODE)', async t => {
   if (isBrowser) {
     t.comment('Skip loadImage file in browser');
     t.end();
-    return null;
+    return;
   }
 
-  return loadFile(TEST_URL, ImageLoader)
-    .then(result => {
-      t.ok(result, 'image loaded successfully');
-      t.end();
-    })
-    .catch(error => {
-      t.fail(error);
-      t.end();
-    });
+  const result = await loadFile(TEST_URL, ImageLoader);
+  t.ok(result, 'image loaded successfully');
+  t.end();
 });

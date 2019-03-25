@@ -93,7 +93,7 @@ class NodeFetchResponse {
   // PRIVATE
 
   _getHeaders() {
-    if (response.isRequesURL(this.url)) {
+    if (isRequestURL(this.url)) {
       return new NodeHeaders(this);
     }
 
@@ -112,7 +112,6 @@ class NodeFetchResponse {
     return {
       'Content-Length': stats.size
     };
-    return this._contentLength;
   }
 }
 

@@ -3,7 +3,9 @@
 
 /* eslint-disable max-len, max-statements */
 import test from 'tape-promise/tape';
-import {readFile, getImageSize} from '@loaders.gl/core';
+import {fetchFile, getImageSize} from '@loaders.gl/core';
+
+const readFile = url => fetchFile(url).then(response => response.arrayBuffer());
 
 let TEST_FILES = null;
 
