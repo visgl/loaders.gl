@@ -19,7 +19,7 @@
 // THE SOFTWARE.
 
 const path = require('path');
-const {addAliases} = require('@loaders.gl/core/fetch-file/file-aliases');
+const {addAliases} = require('@loaders.gl/core/fetch-and-write/file-aliases');
 
 // NOTE - this cannot be replaced with ocular-dev-tools because it is required in browser
 const makeAliases = () => ({

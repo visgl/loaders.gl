@@ -1,4 +1,4 @@
-import {toArrayBuffer} from '../binary-utils/binary-utils';
+import {toArrayBuffer} from '../javascript-utils/binary-utils';
 
 const workerCache = new Map();
 

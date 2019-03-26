@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "@loaders.gl/core": "^0.8.0",
+    "@loaders.gl/experimental": "^0.8.0",
     "apache-arrow": "^0.4.0"
   }
 }

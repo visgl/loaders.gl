@@ -1,5 +1,5 @@
 import {Schema, Field, RecordBatch, Float32Vector, Float32} from 'apache-arrow';
-import {ColumnarTableBatch} from '@loaders.gl/core';
+import {ColumnarTableBatch} from '@loaders.gl/experimental';
 
 export default class ArrowTableBatch extends ColumnarTableBatch {
   constructor(schema, batchSize) {

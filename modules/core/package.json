@@ -32,7 +32,9 @@
     "https": false,
     "text-encoding": false,
     "util": false,
-    "./src/fetch-file/fetch-file-node.js": false
+    "./src/fetch-and-write/node/decode-data-uri.js": false,
+    "./src/fetch-and-write/node/fetch-file-node.js": false,
+    "./src/fetch-and-write/node/write-file-node.js": false
   },
   "scripts": {
   },

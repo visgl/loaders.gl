@@ -1,5 +1,5 @@
-import {AsyncQueue} from '@loaders.gl/core';
-import {TableBatchBuilder, RowTableBatch} from '@loaders.gl/core/categories/table';
+import {AsyncQueue} from '@loaders.gl/experimental';
+import {TableBatchBuilder, RowTableBatch} from '@loaders.gl/experimental/categories/table';
 import Papa from './papaparse/papaparse';
 import AsyncIteratorStreamer from './papaparse/async-iterator-streamer';
 
