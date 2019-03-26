@@ -4,7 +4,7 @@ if (typeof self !== 'undefined') {
   /* global self */
   self.onmessage = evt => {
     const url = evt.data;
-
+    debugger
     loadImage(url)
       .then(image => {
         self.postMessage({image}, [image]);

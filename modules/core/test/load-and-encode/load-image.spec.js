@@ -4,7 +4,7 @@ import test from 'tape-promise/tape';
 
 import LoadImageWorker from './load-image.worker';
 
-const CONTENT_BASE = '@loaders.gl/core/test/data/';
+const CONTENT_BASE = '@loaders.gl/images/test/data/';
 
 const TEST_CASES = [
   {
@@ -17,37 +17,37 @@ Bytg0kAAAAFElEQVQIW2P8z/D/PwMDAwMjjAEAQOwF/W1Dp54AAAAASUVORK5CYII=`,
   },
   {
     title: 'PNG',
-    url: 'images/img1-preview.png',
+    url: 'img1-preview.png',
     width: 480,
     height: 320
   },
   {
     title: 'BMP',
-    url: 'images/img1-preview.bmp',
+    url: 'img1-preview.bmp',
     width: 480,
     height: 320
   },
   {
     title: 'GIF',
-    url: 'images/img1-preview.gif',
+    url: 'img1-preview.gif',
     width: 480,
     height: 320
   },
   {
     title: 'JPEG',
-    url: 'images/img1-preview.jpeg',
+    url: 'img1-preview.jpeg',
     width: 480,
     height: 320
   },
   // {
   //   title: 'TIFF',
-  //   url: 'images/img1-preview.tiff',
+  //   url: 'img1-preview.tiff',
   //   width: 480,
   //   height: 320
   // },
   {
     title: 'SVG',
-    url: 'images/camera.svg',
+    url: 'camera.svg',
     width: 72,
     height: 72,
     worker: false
