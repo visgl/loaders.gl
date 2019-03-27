@@ -14,3 +14,4 @@ import './loader-encoder-utils/auto-parse.spec';
 
 import './load-and-encode/image-loaders.spec';
 import './load-and-encode/load-image.spec';
+import './load-and-encode/load-file.spec';
