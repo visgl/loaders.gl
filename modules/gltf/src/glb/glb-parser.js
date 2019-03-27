@@ -98,10 +98,10 @@ export default class GLBParser {
 
     // Get the boundaries of the binary sub-chunk for this bufferView
     const glTFBufferView = this.json.bufferViews[glTFAccessor.bufferView];
-    assert(byteLength >= 0 && byteLength <= glTFBufferView.byteLength);
+    assert(byteLength >= 0 && glTFAccessor.byteOffset + byteLength <= glTFBufferView.byteLength);
 
-    const byteOffset = glTFBufferView.byteOffset + this.binaryByteOffset;
-    return new ArrayType(this.arrayBuffer, byteOffset, length);
+    const byteOffset = glTFBufferView.byteOffset + this.binaryByteOffset + glTFAccessor.byteOffset;
+    return new ArrayType(this.glbArrayBuffer, byteOffset, length);
   }
 
   // Unpacks an image into an HTML image
