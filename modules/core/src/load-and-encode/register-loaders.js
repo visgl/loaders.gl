@@ -1,12 +1,16 @@
 import {normalizeLoader} from '../loader-encoder-utils/normalize-loader';
 
-const registeredLoaders = [];
+const registeredLoaders = {};
 
 export function registerLoaders(loaders) {
   loaders = Array.isArray(loaders) ? loaders : [loaders];
-  registeredLoaders.push(loaders.map(loader => normalizeLoader(loader)));
+  loaders.forEach(loader => {
+    normalizeLoader(loader);
+    const key = loader.name || loader.extension;
+    registeredLoaders[key] = loader;
+  });
 }
 
 export function getRegisteredLoaders() {
-  return registeredLoaders;
+  return Object.values(registeredLoaders);
 }

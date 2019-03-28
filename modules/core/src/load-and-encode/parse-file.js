@@ -15,6 +15,12 @@ export async function parseFile(data, loaders, options, url) {
 
   loaders = loaders || getRegisteredLoaders();
   const loader = Array.isArray(loaders) ? autoDetectLoader(url, data, loaders) : loaders;
+  if (!loader) {
+    // no loader available
+    // TODO: throw error?
+    return null;
+  }
+
   normalizeLoader(loader);
 
   // Normalize options

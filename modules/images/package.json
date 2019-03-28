@@ -36,7 +36,7 @@
     "util": false
   },
   "dependencies": {
-    "@loaders.gl/core": "^0.5.0",
+    "@loaders.gl/core": "1.0.0-alpha.1",
     "canvas-to-blob": "0.0.0",
     "get-pixels": "^3.3.0",
     "ndarray": "^1.0.18",

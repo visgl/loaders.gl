@@ -1,6 +1,10 @@
 import assert from '../utils/assert';
 
 export function isLoaderObject(loader) {
+  if (!loader) {
+    return false;
+  }
+
   if (Array.isArray(loader)) {
     loader = loader[0];
   }
@@ -33,7 +37,10 @@ export function normalizeLoader(loader) {
   if (loader.parseTextSync) {
     loader.text = true;
   }
+
   if (!loader.text) {
     loader.binary = true;
   }
+
+  return loader;
 }
