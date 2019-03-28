@@ -17,6 +17,7 @@ export async function parseFile(data, loaders, options, url) {
   const loader = Array.isArray(loaders) ? autoDetectLoader(url, data, loaders) : loaders;
   if (!loader) {
     // no loader available
+    // TODO: throw error?
     return null;
   }
 

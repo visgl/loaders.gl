@@ -4,8 +4,8 @@ const EXT_PATTERN = /[^\.]+$/;
 // Search the loaders array argument for a loader that matches extension or text
 export function autoDetectLoader(url = '', text, loaders) {
   // Get extension
-  let extension = url.match(EXT_PATTERN) || url;
-  if (extension) {
+  let extension = url.match(EXT_PATTERN);
+  if (extension && extension[0]) {
     extension = extension[0].toLowerCase();
 
     for (const loader of loaders) {
