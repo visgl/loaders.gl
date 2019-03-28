@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/core",
-  "version": "0.8.0",
+  "version": "1.0.0-alpha.1",
   "description": "Framework-independent loaders for 3D graphics formats",
   "license": "MIT",
   "publishConfig": {
@@ -36,8 +36,7 @@
     "./src/fetch-and-write/node/fetch-file-node.js": false,
     "./src/fetch-and-write/node/write-file-node.js": false
   },
-  "scripts": {
-  },
+  "scripts": {},
   "dependencies": {
     "@babel/runtime": "^7.3.1",
     "text-encoding": "^0.6.4"

@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/pcd",
-  "version": "0.8.0",
+  "version": "1.0.0-alpha.1",
   "description": "Framework-independent loader for the PCD format",
   "license": "MIT",
   "publishConfig": {
@@ -32,6 +32,6 @@
   },
   "sideEffects": false,
   "dependencies": {
-    "@loaders.gl/core": "^0.8.0"
+    "@loaders.gl/core": "1.0.0-alpha.1"
   }
 }
