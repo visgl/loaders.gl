@@ -7,8 +7,8 @@ import {getFullUri} from './gltf-utils';
 const DEFAULT_OPTIONS = {
   fetchLinkedResources: true, // Fetch any linked .BIN buffers, decode base64
   fetch: fetchFile,
-  decompress: false, // Decompress Draco compressed meshes (if DracoDecoder available)
-  DracoDecoder: null,
+  decompress: false, // Decompress Draco compressed meshes (if DracoLoader available)
+  DracoLoader: null,
   postProcess: true,
   createImages: false, // Create image objects
   log: console // eslint-disable-line
@@ -202,7 +202,7 @@ export default class GLTFParser {
   _decompressMeshes(options) {
     // We have a "soft dependency" on Draco to avoid bundling it when not needed
     // DracoEncoder needs to be imported and supplied by app
-    if (!options.DracoDecoder || !options.decompress) {
+    if (!options.DracoLoader || !options.decompress) {
       return;
     }
 
@@ -237,19 +237,13 @@ export default class GLTFParser {
     // Extension will be processed, delete it
     delete primitive.extensions[KHR_DRACO_MESH_COMPRESSION];
 
-    const dracoDecoder = new options.DracoDecoder();
-
-    try {
-      const buffer = this._getBufferViewArray(compressedMesh.bufferView);
-      const decodedData = dracoDecoder.decode(buffer);
-      primitive.attributes = decodedData.attributes;
-      if (decodedData.indices) {
-        primitive.indices = decodedData.indices;
-      } else {
-        delete primitive.indices;
-      }
-    } finally {
-      dracoDecoder.destroy();
+    const buffer = this._getBufferViewArray(compressedMesh.bufferView);
+    const decodedData = options.DracoLoader.parseSync(buffer);
+    primitive.attributes = decodedData.attributes;
+    if (decodedData.indices) {
+      primitive.indices = decodedData.indices;
+    } else {
+      delete primitive.indices;
     }
   }
 
@@ -267,14 +261,9 @@ export default class GLTFParser {
     // Extension will be processed, delete it
     delete primitive.extensions[UBER_POINT_CLOUD_EXTENSION];
 
-    const dracoDecoder = new options.DracoDecoder();
-    try {
-      const buffer = this._getBufferViewArray(compressedMesh.bufferView);
-      const decodedData = dracoDecoder.decode(buffer);
-      primitive.attributes = decodedData.attributes;
-    } finally {
-      dracoDecoder.destroy();
-    }
+    const buffer = this._getBufferViewArray(compressedMesh.bufferView);
+    const dracoDecoder = new options.DracoLoader.parseSync(buffer);
+    primitive.attributes = decodedData.attributes;
   }
 
   _getBufferViewArray(bufferViewIndex) {

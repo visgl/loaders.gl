@@ -1,7 +1,5 @@
 # GLTFWriter
 
-> `GLTFWriter` is still a work-in-progress. In the mean time, it is strongly recommended to directly use the `GLTFBuilder` class.
-
 The `GLTFWriter` is a writer for glTF scenegraphs.
 
 | Writer                | Characteristic                                                             |
@@ -18,16 +16,16 @@ The `GLTFWriter` is a writer for glTF scenegraphs.
 
 ```js
 import {GLTFWriter} from '@loaders.gl/gltf';
-import {saveFile} from '@loaders.gl/core';
-const gltf = ...;
-saveFile(gltf, GLTFWriter);
+import {encodeFileSync} from '@loaders.gl/core';
+
+const arrayBuffer = encodeFileSync(gltf, GLTFWriter);
 ```
 
 ## Options
 
 - `packTypedArrays` - Packs typed arrays
-- `DracoEncoder` - To enable DRACO encoding, the application needs to import and supply the `DracoEncoder` class.
-- `DracoDecoder` - To enable DRACO encoding, the application needs to import and supply the `DracoDecoder` class.
+- `DracoWriter` - To enable DRACO encoding, the application needs to import and supply the `DracoWriter` class.
+- `DracoLoader` - To enable DRACO encoding, the application needs to import and supply the `DracoLoader` class.
 
 ## Attributions
 

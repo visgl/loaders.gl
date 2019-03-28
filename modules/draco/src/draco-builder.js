@@ -51,14 +51,12 @@ https://github.com/google/draco/blob/master/src/draco/javascript/emscripten/drac
    Example:
 https://github.com/google/draco/blob/master/javascript/npm/draco3d/draco_nodejs_example.js
  */
-export default class DRACOEncoder {
-  constructor(opts = {}) {
+export default class DracoBuilder {
+  constructor(options = {}) {
     this.dracoEncoderModule = draco3d.createEncoderModule({});
     this.dracoEncoder = new this.dracoEncoderModule.Encoder();
     this.dracoMeshBuilder = new this.dracoEncoderModule.MeshBuilder();
-    this.setOptions(Object.assign({}, DEFAULT_ENCODING_OPTIONS, opts));
-
-    this.log = opts.log || noop;
+    this.log = options.log || noop;
   }
 
   destroy() {
@@ -69,29 +67,29 @@ export default class DRACOEncoder {
     this.dracoEncoderModule = null;
   }
 
+  // TBD - when does this need to be called?
   destroyEncodedObject(object) {
     if (object) {
       this.dracoEncoderModule.destroy(object);
     }
   }
 
-  // Set encoding options.
-  setOptions(opts = {}) {
-    if ('speed' in opts) {
-      this.dracoEncoder.SetSpeedOptions(...opts.speed);
+  // Encode mesh=({})
+  encodeSync(mesh, options) {
+    this._setOptions(options);
+
+    if (options.pointCloud) {
+      const {attributes} = mesh;
+      return this.encodePointCloud(attributes);
     }
-    if ('method' in opts) {
-      const dracoMethod = this.dracoEncoderModule[opts.method];
-      // if (dracoMethod === undefined) {}
-      this.dracoEncoder.SetEncodingMethod(dracoMethod);
+
+    // Fold indices into the attributes
+    // TODO - Change the encodePointCloud interface instead?
+    const attributes = {...mesh.attributes};
+    if (mesh.indices) {
+      attributes.indices = mesh.indices;
     }
-    if ('quantization' in opts) {
-      for (const attribute in opts.quantization) {
-        const bits = opts.quantization[attribute];
-        const dracoPosition = this.dracoEncoderModule[attribute];
-        this.dracoEncoder.SetAttributeQuantization(dracoPosition, bits);
-      }
-    }
+    return this.encodeMesh(attributes);
   }
 
   encodePointCloud(attributes) {
@@ -140,6 +138,25 @@ export default class DRACOEncoder {
     } finally {
       this.destroyEncodedObject(dracoData);
       this.destroyEncodedObject(dracoMesh);
+    }
+  }
+
+  // Set encoding options.
+  _setOptions(opts = {}) {
+    if ('speed' in opts) {
+      this.dracoEncoder.SetSpeedOptions(...opts.speed);
+    }
+    if ('method' in opts) {
+      const dracoMethod = this.dracoEncoderModule[opts.method];
+      // if (dracoMethod === undefined) {}
+      this.dracoEncoder.SetEncodingMethod(dracoMethod);
+    }
+    if ('quantization' in opts) {
+      for (const attribute in opts.quantization) {
+        const bits = opts.quantization[attribute];
+        const dracoPosition = this.dracoEncoderModule[attribute];
+        this.dracoEncoder.SetAttributeQuantization(dracoPosition, bits);
+      }
     }
   }
 

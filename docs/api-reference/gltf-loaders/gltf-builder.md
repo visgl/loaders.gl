@@ -45,14 +45,14 @@ saveBinaryFile(filename, arrayBuffer);
 
 Creates a new `GLTFBuilder` instance.
 
-- `options.DracoEncoder` - To enable DRACO encoding, the application needs to import and supply the `DracoEncoder` class.
-- `options.DracoDecoder` - To enable DRACO encoding, the application needs to import and supply the `DracoDecoder` class.
-
-### encodeAsGLB(options : Object) : ArrayBuffer
+### encodeSync(options : Object) : ArrayBuffer
 
 Combines your added JSON data structures (in extras, extensions etc) with any generated JavaScript and any binary subchunks, into a single GLB encoded `ArrayBuffer` that can be written directly to file.
 
-Note: `encode()` is a one time operation. It should only be called once all data and binary buffers have been added to the builder.
+- `options.DracoWriter` - To enable DRACO encoding, the application needs to import and supply the `DracoWriter` _writer object_.
+- `options.DracoLoader` - To enable DRACO encoding, the application needs to import and supply the `DracoLoader` _loader object_.
+
+Note: `encodeSync()` is a one time operation. It should only be called once all data and binary buffers have been added to the builder.
 
 ### encodeAsGLBWithJSON(options : Object) : Object
 

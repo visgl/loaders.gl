@@ -11,7 +11,7 @@ export function encodeFile(data, writer, options, url) {
 
 export function encodeFileSync(data, writer, options, url) {
   if (writer.encodeSync) {
-    return Promise.resolve(writer.encodeSync(data, options));
+    return writer.encodeSync(data, options);
   }
   throw new Error('Writer could not synchronously encode data');
 }

@@ -9,8 +9,8 @@ export default class GLTFBuilder extends GLBBuilder {
     super(options);
 
     // Soft dependency on DRACO, app needs to import and supply these
-    this.DracoEncoder = options.DracoEncoder;
-    this.DracoDecoder = options.DracoDecoder;
+    this.DracoWriter = options.DracoWriter;
+    this.DracoLoader = options.DracoLoader;
   }
 
   // NOTE: encode() inherited from GLBBuilder
@@ -126,23 +126,21 @@ export default class GLTFBuilder extends GLBBuilder {
   // https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_draco_mesh_compression
   // Only TRIANGLES: 0x0004 and TRIANGLE_STRIP: 0x0005 are supported
   addCompressedMesh(attributes, indices, mode = 4) {
-    if (!this.DracoEncoder || !this.DracoDecoder) {
-      throw new Error('DracoEncoder/Decoder not available');
+    if (!this.DracoWriter || !this.DracoLoader) {
+      throw new Error('DracoWriter/DracoLoader not available');
     }
 
     // Since we do not add fallback data
     this.registerRequiredExtension(KHR_DRACO_MESH_COMPRESSION);
 
-    const dracoEncoder = new this.DracoEncoder();
-    const compressedData = dracoEncoder.encodeMesh(attributes);
+    const compressedData = this.DracoWriter.encodeSync({attributes});
 
     // Draco compression may change the order and number of vertices in a mesh.
     // To satisfy the requirement that accessors properties be correct for both
     // compressed and uncompressed data, generators should create uncompressed
     // attributes and indices using data that has been decompressed from the Draco buffer,
     // rather than the original source data.
-    const dracoDecoder = new this.DracoDecoder();
-    const decodedData = dracoDecoder.decodeMesh(attributes);
+    const decodedData = this.DracoLoader.parseSync({attributes});
     const fauxAccessors = this._addFauxAttributes(decodedData.attributes);
 
     const bufferViewIndex = this.addBufferView(compressedData);
@@ -168,11 +166,11 @@ export default class GLTFBuilder extends GLBBuilder {
   }
 
   addCompressedPointCloud(attributes) {
-    if (!this.DracoEncoder || !this.DracoDecoder) {
-      throw new Error('DracoEncoder/Decoder not available');
+    if (!this.DracoWriter || !this.DracoLoader) {
+      throw new Error('DracoWriter/DracoLoader not available');
     }
 
-    const dracoEncoder = new this.DracoEncoder();
+    const dracoEncoder = new this.DracoWriter();
     const compressedData = dracoEncoder.encodePointCloud(attributes);
 
     const bufferViewIndex = this.addBufferView(compressedData);

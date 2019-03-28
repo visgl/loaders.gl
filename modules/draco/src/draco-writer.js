@@ -1,12 +1,19 @@
-import DRACOEncoder from './draco-encoder';
+import DRACOBuilder from './draco-builder';
 
-function encodeDRACO(arrayBuffer, options) {
-  const dracoDecoder = new DRACOEncoder();
-  return dracoDecoder.encode(arrayBuffer, options);
+function encodeSync(data, options) {
+  const dracoBuilder = new DRACOBuilder();
+  try {
+    return dracoBuilder.encodeSync(data, options);
+  } finally {
+    dracoBuilder.destroy();
+  }
 }
 
 export default {
   name: 'DRACO',
   extension: 'drc',
-  encodeSync: encodeDRACO
+  encodeSync,
+  options: {
+    pointcloud: false // Set to true if pointcloud (mode: 0, no indices)
+  }
 };

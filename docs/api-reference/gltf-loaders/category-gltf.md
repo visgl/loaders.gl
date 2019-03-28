@@ -43,11 +43,11 @@ Certain glTF extensions are fully or partially supported by the glTF classes. Fo
 
 ## Draco Mesh and Point Cloud Compression
 
-Draco encoding and decoding is supported by the `GLTFBuilder` and `GLTFParser` classes but requires the DracoEncoder and DracoDecoder dependencies to be "injected" by the application.
+Draco encoding and decoding is supported by the `GLTFBuilder` and `GLTFParser` classes but requires the DracoWriter and DracoLoader dependencies to be "injected" by the application.
 
 ```js
 import {GLTFBuilder} from '@loaders.gl/gltf';
-import {DracoEncoder, DracoDecoder} from '@loaders.gl/draco';
+import {DracoWriter, DracoLoader} from '@loaders.gl/draco';
 
-const gltfBuilder = new GLTFBuilder({DracoEncoder, DracoDecoder});
+const gltfBuilder = new GLTFBuilder({DracoWriter, DracoLoader});
 ```
