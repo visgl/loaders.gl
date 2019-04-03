@@ -47,7 +47,7 @@
     "eslint-plugin-babel": "^5.1.0",
     "luma.gl": "7.0.0-alpha.15",
     "mkdirp": "^0.5.1",
-    "ocular-dev-tools": "0.0.15",
+    "ocular-dev-tools": "0.0.19",
     "pre-commit": "^1.2.2",
     "raw-loader": "^0.5.1",
     "reify": "^0.18.1",

@@ -230,6 +230,7 @@ function parseASCII(data, header) {
   return attributes;
 }
 
+// eslint-disable-next-line complexity
 function handleElement(buffer, elementName, element) {
   if (elementName === 'vertex') {
     buffer.vertices.push(element.x, element.y, element.z);

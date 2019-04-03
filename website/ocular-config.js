@@ -47,17 +47,30 @@ module.exports = {
   GITHUB_KEY: null,
 
   // TODO/ib - from gatsby starter, clean up
-  siteTitle: 'loaders.gl', // Site title.
-  siteTitleAlt: 'loaders.gl', // Alternative site title for SEO.
-  siteLogo: '/logos/logo-1024.png', // Logo used for SEO and manifest.
-  siteUrl: 'https://ocular', // Domain of your website without pathPrefix.
-  pathPrefix: '/luma', // Prefixes all links. For cases when deployed to example.github.io/gatsby-advanced-starter/.
-  siteDescription: 'WebGL2 Components', // Website description used for RSS feeds/meta description tag.
-  siteRss: '/rss.xml', // Path to the RSS file.
-  dateFromFormat: 'YYYY-MM-DD', // Date format used in the frontmatter.
-  dateFormat: 'DD/MM/YYYY', // Date format for display.
-  userName: 'WebGL User', // Username to display in the author segment.
-  copyright: 'Copyright © 2017 Uber. MIT Licensed', // Copyright string for the footer of the website and RSS feed.
-  themeColor: '#c62828', // Used for setting manifest and progress theme colors.
-  backgroundColor: '#e0e0e0' // Used for setting manifest background color.
+  // Site title.
+  siteTitle: 'loaders.gl',
+  // Alternative site title for SEO.
+  siteTitleAlt: 'loaders.gl',
+  // Logo used for SEO and manifest.
+  siteLogo: '/logos/logo-1024.png',
+  // Domain of your website without pathPrefix.
+  siteUrl: 'https://ocular',
+  // Prefixes all links. For cases when deployed to example.github.io/gatsby-advanced-starter/.
+  pathPrefix: '/luma',
+  // Website description used for RSS feeds/meta description tag.
+  siteDescription: 'WebGL2 Components',
+  // Path to the RSS file.
+  siteRss: '/rss.xml',
+  // Date format used in the frontmatter.
+  dateFromFormat: 'YYYY-MM-DD',
+  // Date format for display.
+  dateFormat: 'DD/MM/YYYY',
+  // Username to display in the author segment.
+  userName: 'WebGL User',
+  // Copyright string for the footer of the website and RSS feed.
+  copyright: 'Copyright © 2017 Uber. MIT Licensed',
+  // Used for setting manifest and progress theme colors.
+  themeColor: '#c62828',
+  // Used for setting manifest background color.
+  backgroundColor: '#e0e0e0'
 };

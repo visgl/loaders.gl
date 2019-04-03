@@ -626,13 +626,6 @@
     lodash "^4.17.11"
     to-fast-properties "^2.0.0"
 
-"@loaders.gl/core@^0.5.0":
-  version "0.5.4"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/core/-/core-0.5.4.tgz#5dbc37aba832114f1d55ee363bf00c9d6f3ffb76"
-  integrity sha512-9r6OjGDngQjIEAIUTjSSqt9Smm76+9kHugEIyTIuqqzBP42zkTi8M4kNJ0KfNNWIMzfsOLbLpA/KrP8MngQ9CQ==
-  dependencies:
-    text-encoding "^0.6.4"
-
 "@luma.gl/constants@^7.0.0-alpha.15":
   version "7.0.0-alpha.15"
   resolved "https://registry.yarnpkg.com/@luma.gl/constants/-/constants-7.0.0-alpha.15.tgz#eca7e19466ebfd07d88e18bc966880779a6f9fd4"
@@ -5423,10 +5416,10 @@ obuf@^1.0.0, obuf@^1.1.2:
   resolved "https://registry.yarnpkg.com/obuf/-/obuf-1.1.2.tgz#09bea3343d41859ebd446292d11c9d4db619084e"
   integrity sha512-PX1wu0AmAdPqOL1mWhqmlOd8kOIZQwGZw6rh7uby9fTc5lhaOWFLX3I6R1hrF9k3zUY40e6igsLGkDXK92LJNg==
 
-ocular-dev-tools@0.0.15:
-  version "0.0.15"
-  resolved "https://registry.yarnpkg.com/ocular-dev-tools/-/ocular-dev-tools-0.0.15.tgz#c6a938d756f4e199fc29dfbe9391134b850f6d3f"
-  integrity sha512-j4IBYwTbmGs3yTXjJE6RsVqlYXWNn1nPhn4heAqafpEDfuR4v4ou4iI4vU1/AUUWPRXqNZZd71QpyvJbT+kRMA==
+ocular-dev-tools@0.0.19:
+  version "0.0.19"
+  resolved "https://registry.yarnpkg.com/ocular-dev-tools/-/ocular-dev-tools-0.0.19.tgz#cedcfe12ea85367d6997ff7753013d00d6b74652"
+  integrity sha512-4VE7BUwjP78NyFdyi3FbiZPDMpWZ3ZnXcv/n0KCnmAKEDum80pUq/vtPa5/Crm6SIvlu+zNbZuJXkrKeeWweeg==
   dependencies:
     "@babel/cli" "^7.0.0"
     "@babel/core" "^7.0.0"

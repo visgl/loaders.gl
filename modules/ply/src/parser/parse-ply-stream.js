@@ -222,7 +222,7 @@ function parseASCIIElement(properties, line) {
 }
 
 // HELPER FUNCTIONS
-
+// eslint-disable-next-line complexity
 function handleElement(buffer, elementName, element) {
   switch (elementName) {
     case 'vertex':

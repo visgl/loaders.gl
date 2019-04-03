@@ -4,7 +4,8 @@
     "ecmaVersion": 2018
   },
   "extends": [
-    "eslint-config-uber-es2015"
+    "eslint-config-uber-es2015",
+    'prettier'
   ],
   "rules": {
     "guard-for-in": 0,

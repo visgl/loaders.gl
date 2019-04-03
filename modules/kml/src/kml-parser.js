@@ -421,6 +421,7 @@ export default class KMLParser {
     }
 
     const extendedDatas = xmlDom.getElementsByTagName('ExtendedData');
+    /* eslint-disable max-depth */
     for (let i = 0; i < extendedDatas.length; i++) {
       if (this.WithinOffsetDom(xmlDom, extendedDatas.item(i), config.maxOffset)) {
         for (let j = 0; j < extendedDatas.item(i).childNodes.length; j++) {
@@ -433,6 +434,7 @@ export default class KMLParser {
         }
       }
     }
+    /* eslint-enable max-depth */
     return data;
   }
 
