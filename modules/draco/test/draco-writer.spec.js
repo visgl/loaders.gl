@@ -103,7 +103,7 @@ test('DracoParser#encode(bunny.drc)', async t => {
 
       const ratio = meshSize / compressedMesh.byteLength;
       t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
-      dracoEncoder.destroy();
+      dracoBuilder.destroy();
     }, `${tc.title} did not trow`);
 
     if (!tc.options.pointcloud) {

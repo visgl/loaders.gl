@@ -262,7 +262,7 @@ export default class GLTFParser {
     delete primitive.extensions[UBER_POINT_CLOUD_EXTENSION];
 
     const buffer = this._getBufferViewArray(compressedMesh.bufferView);
-    const dracoDecoder = new options.DracoLoader.parseSync(buffer);
+    const decodedData = options.DracoLoader.parseSync(buffer);
     primitive.attributes = decodedData.attributes;
   }
 

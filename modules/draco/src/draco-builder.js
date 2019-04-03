@@ -17,13 +17,13 @@
 
 const draco3d = require('draco3d');
 
-const DEFAULT_ENCODING_OPTIONS = {
-  method: 'MESH_EDGEBREAKER_ENCODING',
-  speed: [5, 5],
-  quantization: {
-    POSITION: 10
-  }
-};
+// const DEFAULT_ENCODING_OPTIONS = {
+//   method: 'MESH_EDGEBREAKER_ENCODING',
+//   speed: [5, 5],
+//   quantization: {
+//     POSITION: 10
+//   }
+// };
 
 // Native Draco attribute names to GLTF attribute names.
 const GLTF_TO_DRACO_ATTRIBUTE_NAME_MAP = {
@@ -77,22 +77,24 @@ export default class DracoBuilder {
   // Encode mesh=({})
   encodeSync(mesh, options) {
     this._setOptions(options);
+    return options.pointcloud ? this._encodePointCloud(mesh) : this._encodeMesh(mesh);
+  }
 
-    if (options.pointCloud) {
-      const {attributes} = mesh;
-      return this.encodePointCloud(attributes);
-    }
+  // PRIVATE
 
-    // Fold indices into the attributes
+  _getAttributesFromMesh(mesh) {
     // TODO - Change the encodePointCloud interface instead?
-    const attributes = {...mesh.attributes};
+    const attributes = {...mesh, ...mesh.attributes};
+    // Fold indices into the attributes
     if (mesh.indices) {
       attributes.indices = mesh.indices;
     }
-    return this.encodeMesh(attributes);
+    return attributes;
   }
 
-  encodePointCloud(attributes) {
+  _encodePointCloud(pointcloud) {
+    const attributes = this._getAttributesFromMesh(pointcloud);
+
     // Build a `DracoPointCloud` from the input data
     const dracoPointCloud = this._createDracoPointCloud(attributes);
 
@@ -119,7 +121,8 @@ export default class DracoBuilder {
     }
   }
 
-  encodeMesh(attributes) {
+  _encodeMesh(mesh) {
+    const attributes = this._getAttributesFromMesh(mesh);
     // Build a `DracoMesh` from the input data
     const dracoMesh = this._createDracoMesh(attributes);
 

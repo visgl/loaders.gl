@@ -170,8 +170,8 @@ export default class GLTFBuilder extends GLBBuilder {
       throw new Error('DracoWriter/DracoLoader not available');
     }
 
-    const dracoEncoder = new this.DracoWriter();
-    const compressedData = dracoEncoder.encodePointCloud(attributes);
+    attributes.mode = 0;
+    const compressedData = this.DracoWriter.encodeSync(attributes, {pointcloud: true});
 
     const bufferViewIndex = this.addBufferView(compressedData);
 

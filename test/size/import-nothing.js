@@ -1,3 +1,3 @@
-import {Model, AnimationLoop} from '@luma.gl/core';
+import {parseFile} from '@loaders.gl/core';
 
-console.log(Model, AnimationLoop); // eslint-disable-line
+console.log(parseFile); // eslint-disable-line
