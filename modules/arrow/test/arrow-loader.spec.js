@@ -3,7 +3,6 @@ import {isBrowser, resolvePath, fetchFile, parseFile, parseFileInBatches} from '
 // import {parseFileInBatchesSync} from '@loaders.gl/core';
 import {ArrowLoader} from '@loaders.gl/arrow';
 import {ArrowWorkerLoader} from '@loaders.gl/arrow';
-import path from 'path';
 
 // Small Arrow Sample Files
 const ARROW_SIMPLE = '@loaders.gl/arrow/test/data/simple.arrow';

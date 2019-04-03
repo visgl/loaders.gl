@@ -43,8 +43,8 @@ class NodeHeaders {
   }
 
   _getContentLength() {
-    if (this._contentLength === undefined) {
-    }
+    // if (this._contentLength === undefined) {
+    // }
     return this._contentLength;
   }
 }
