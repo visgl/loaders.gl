@@ -1,6 +1,9 @@
 // Sets up aliases for file reader
 require('./aliases');
 
+require('@loaders.gl/3d-tiles/test');
+
+/*
 // Core
 require('@loaders.gl/core/test');
 require('@loaders.gl/images/test');
@@ -28,3 +31,4 @@ require('@loaders.gl/3d-tiles/test');
 
 // Geospatial Formats
 require('@loaders.gl/kml/test');
+*/

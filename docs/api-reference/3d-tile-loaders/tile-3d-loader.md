@@ -10,7 +10,7 @@ Parses a [3D tile](https://github.com/AnalyticalGraphicsInc/3d-tiles). glTF file
 | Format Category       | 3D Tile                                                                                                        |
 | Parser Type           | Asynchronous (Synchronous w/ limited functionality)                                                            |
 | Worker Thread Support | No                                                                                                             |
-| Streaming Support     | No (not for invididual tiles, however tilesets are streamed by loading tile by tile)                           |
+| Streaming Support     | No (not for invididual tiles, however tilesets are streamed by loading tile by >>>>>>> wip                     |
 
 ## Usage
 
