@@ -626,6 +626,11 @@
     lodash "^4.17.11"
     to-fast-properties "^2.0.0"
 
+"@luma.gl/constants@7.0.0-beta.3":
+  version "7.0.0-beta.3"
+  resolved "https://registry.yarnpkg.com/@luma.gl/constants/-/constants-7.0.0-beta.3.tgz#92e3a0b7d9124c0cf3cbcf1fa199c77516826e3b"
+  integrity sha512-kFp72OwJrrDBOQcR57D6hZZ25mNpkyz12NHKJvTK61QmzJwzHdNepDwB9IQebU5X2DxFsiYICl1ProwtnN906Q==
+
 "@luma.gl/constants@^7.0.0-alpha.15":
   version "7.0.0-alpha.15"
   resolved "https://registry.yarnpkg.com/@luma.gl/constants/-/constants-7.0.0-alpha.15.tgz#eca7e19466ebfd07d88e18bc966880779a6f9fd4"
@@ -645,6 +650,29 @@
     probe.gl "3.0.0-alpha.6"
     seer "^0.2.4"
 
+"@luma.gl/core@^7.0.0-beta.2":
+  version "7.0.0-beta.3"
+  resolved "https://registry.yarnpkg.com/@luma.gl/core/-/core-7.0.0-beta.3.tgz#d7b7fbd89568d870a50670e524b9c4ad77e8e4a9"
+  integrity sha512-ba8dKuQ7qhr1CNmVJFvxW3U5F7xDSMIPo1xkFhr5aYIxewfe33Y+/UJpYyVuJAM9JRYelGfAsiWa7dwCQBR2cw==
+  dependencies:
+    "@babel/runtime" "^7.0.0"
+    "@luma.gl/constants" "7.0.0-beta.3"
+    "@luma.gl/shadertools" "7.0.0-beta.3"
+    "@luma.gl/webgl" "7.0.0-beta.3"
+    "@luma.gl/webgl-state-tracker" "7.0.0-beta.3"
+    "@luma.gl/webgl2-polyfill" "7.0.0-beta.3"
+    math.gl "^2.3.0"
+    probe.gl "^3.0.1"
+    seer "^0.2.4"
+
+"@luma.gl/shadertools@7.0.0-beta.3":
+  version "7.0.0-beta.3"
+  resolved "https://registry.yarnpkg.com/@luma.gl/shadertools/-/shadertools-7.0.0-beta.3.tgz#33a844bf8cf627992f6df88925ea96057facaf93"
+  integrity sha512-ST1mFQBMzbi9CGa7kmyCn0KPSJ0TwjgZ7wu7/TVhmC9n4hlkkxkqwneE2n+eeUekjbAAQQZvQrZqGLmQPel3+A==
+  dependencies:
+    "@babel/runtime" "^7.0.0"
+    math.gl "^2.3.0"
+
 "@luma.gl/shadertools@^7.0.0-alpha.15":
   version "7.0.0-alpha.15"
   resolved "https://registry.yarnpkg.com/@luma.gl/shadertools/-/shadertools-7.0.0-alpha.15.tgz#3b32c97ed7edff81466385edb767dd0b29c74f36"
@@ -661,6 +689,14 @@
     "@luma.gl/core" "^7.0.0-alpha.15"
     "@luma.gl/webgl-state-tracker" "^7.0.0-alpha.15"
 
+"@luma.gl/webgl-state-tracker@7.0.0-beta.3":
+  version "7.0.0-beta.3"
+  resolved "https://registry.yarnpkg.com/@luma.gl/webgl-state-tracker/-/webgl-state-tracker-7.0.0-beta.3.tgz#0a4b3d8d50d9f9651ec8fd9020f7f4ab187e5c48"
+  integrity sha512-hlvK21TkzkShmwsJnRT48f1tBmksYydfQeS7ciTWH5EGF1HNI1PU00ioBLqBo2KhDsimn9HzWAyu4Qin5JjD3Q==
+  dependencies:
+    "@babel/runtime" "^7.0.0"
+    "@luma.gl/constants" "7.0.0-beta.3"
+
 "@luma.gl/webgl-state-tracker@^7.0.0-alpha.15":
   version "7.0.0-alpha.15"
   resolved "https://registry.yarnpkg.com/@luma.gl/webgl-state-tracker/-/webgl-state-tracker-7.0.0-alpha.15.tgz#2ebc6a3be9a8f4a495993014361798221cb3747f"
@@ -669,6 +705,14 @@
     "@babel/runtime" "^7.0.0"
     "@luma.gl/constants" "^7.0.0-alpha.15"
 
+"@luma.gl/webgl2-polyfill@7.0.0-beta.3":
+  version "7.0.0-beta.3"
+  resolved "https://registry.yarnpkg.com/@luma.gl/webgl2-polyfill/-/webgl2-polyfill-7.0.0-beta.3.tgz#ef2a32efca07dba12cbd13fb7fb5f80445f17a06"
+  integrity sha512-HorcUH13DQePEMANmSJG4374lf5kXTzfj5zCytXZgSLhlmxWL98VO2JcKHqRGTxz7naKBbaAdhItm1IL28AkVA==
+  dependencies:
+    "@babel/runtime" "^7.0.0"
+    "@luma.gl/constants" "7.0.0-beta.3"
+
 "@luma.gl/webgl2-polyfill@^7.0.0-alpha.15":
   version "7.0.0-alpha.15"
   resolved "https://registry.yarnpkg.com/@luma.gl/webgl2-polyfill/-/webgl2-polyfill-7.0.0-alpha.15.tgz#8caa0efd23328ee306c1a36ecf3bc912b2b96016"
@@ -676,6 +720,17 @@
   dependencies:
     "@babel/runtime" "^7.0.0"
     "@luma.gl/constants" "^7.0.0-alpha.15"
+
+"@luma.gl/webgl@7.0.0-beta.3":
+  version "7.0.0-beta.3"
+  resolved "https://registry.yarnpkg.com/@luma.gl/webgl/-/webgl-7.0.0-beta.3.tgz#c91e3dbdd89744bea29d219436d04c4c97bcb6e6"
+  integrity sha512-tgccePZ1M83rBH+mMhMfPvIzv7MMFlXigVgMnHJduwl65cRrxzl+DxULDFVZWe2Ey3fjHuXtpx9wwSIeqThvcw==
+  dependencies:
+    "@babel/runtime" "^7.0.0"
+    "@luma.gl/constants" "7.0.0-beta.3"
+    "@luma.gl/webgl-state-tracker" "7.0.0-beta.3"
+    "@luma.gl/webgl2-polyfill" "7.0.0-beta.3"
+    probe.gl "^3.0.1"
 
 "@probe.gl/bench@^3.0.0-alpha.1":
   version "3.0.0-alpha.1"
@@ -4758,13 +4813,6 @@ lru-cache@^5.1.1:
   dependencies:
     yallist "^3.0.2"
 
-luma.gl@7.0.0-alpha.15:
-  version "7.0.0-alpha.15"
-  resolved "https://registry.yarnpkg.com/luma.gl/-/luma.gl-7.0.0-alpha.15.tgz#0c50ccb67ad3ac7e5c1bc3939ebf876fbe3375eb"
-  integrity sha512-fAuBPDllPRMcSl7anf6uQmavErJTBQm33UPvHioCvAoSityC8SJSzt3WJz5/+ohlL5pl6kaMXOyQ07+lYXECcQ==
-  dependencies:
-    "@luma.gl/core" "^7.0.0-alpha.15"
-
 make-dir@^1.0.0, make-dir@^1.3.0:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/make-dir/-/make-dir-1.3.0.tgz#79c1033b80515bd6d24ec9933e860ca75ee27f0c"
@@ -4814,7 +4862,7 @@ map-visit@^1.0.0:
   dependencies:
     object-visit "^1.0.0"
 
-math.gl@^2.2.0:
+math.gl@^2.2.0, math.gl@^2.3.0:
   version "2.3.1"
   resolved "https://registry.yarnpkg.com/math.gl/-/math.gl-2.3.1.tgz#4099e0e34f03dbc458e57945583badb3a517ce8f"
   integrity sha512-364xFXawzGCp46BmaEcKMAYgDLsaSqXO3ki4XAh+8aJAFNcdJFeORpoZFRLdZMZzwdOepwfcc+rk3LhDNJZF1Q==
@@ -5956,6 +6004,13 @@ probe.gl@^3.0.0-alpha.1:
   version "3.0.0-alpha.7"
   resolved "https://registry.yarnpkg.com/probe.gl/-/probe.gl-3.0.0-alpha.7.tgz#c8dae03faa322af7cb0ac6681884ae641768f117"
   integrity sha512-t1zCnD4iAsw2j7ir4DdmRtFS+t/XLbHg6f/znK4qcj4QBhdOd+lrnnH0bUvBILAaJeQz2jSxQz0oqMPcr87c8Q==
+  dependencies:
+    "@babel/runtime" "^7.0.0"
+
+probe.gl@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/probe.gl/-/probe.gl-3.0.1.tgz#5b0693f6c0b970e0d39ecba5e5a90acc92e638f3"
+  integrity sha512-Ub7pHdey+boUJ5m46tpA8sl9hwDEZTOgGtvikPd4jRqzBWvulA5tPGXvnM1TB+eJP8JoOxM34Vh6uFbSuSdQIQ==
   dependencies:
     "@babel/runtime" "^7.0.0"
 

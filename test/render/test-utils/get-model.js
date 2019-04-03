@@ -1,4 +1,4 @@
-import {Model, Geometry, _ShaderCache as ShaderCache} from 'luma.gl';
+import {Model, Geometry, _ShaderCache as ShaderCache} from '@luma.gl/core';
 import * as mat4 from 'gl-matrix/mat4';
 
 import {normalizeAttributes} from './normalize-attributes';

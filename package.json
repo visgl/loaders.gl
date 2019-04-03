@@ -45,7 +45,7 @@
     "babel-plugin-inline-import": "^3.0.0",
     "coveralls": "^3.0.0",
     "eslint-plugin-babel": "^5.1.0",
-    "luma.gl": "7.0.0-alpha.15",
+    "@luma.gl/core": "^7.0.0-beta.2",
     "mkdirp": "^0.5.1",
     "ocular-dev-tools": "0.0.19",
     "pre-commit": "^1.2.2",
