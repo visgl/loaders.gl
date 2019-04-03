@@ -8,6 +8,7 @@ import {validateLoadedData} from 'test/common/conformance';
 
 const PLY_CUBE_ATT_URL = '@loaders.gl/ply/test/data/cube_att.ply';
 const PLY_BUN_ZIPPER_URL = '@loaders.gl/ply/test/data/bun_zipper.ply';
+const PLY_LUCY_URL = '@loaders.gl/ply/test/data/lucy100k.ply';
 
 function validateTextPLY(t, data) {
   t.equal(data.indices.value.length, 36, 'Indices found');
@@ -20,6 +21,14 @@ test('PLYLoader#parse(textFile)', async t => {
 
   validateLoadedData(t, data);
   validateTextPLY(t, data);
+  t.end();
+});
+
+test('PLYLoader#parse(point cloud)', async t => {
+  const data = await parseFile(fetchFile(PLY_LUCY_URL), PLYLoader);
+
+  validateLoadedData(t, data);
+  t.equal(data.attributes.POSITION.value.length, 150006, 'POSITION attribute was found');
   t.end();
 });
 

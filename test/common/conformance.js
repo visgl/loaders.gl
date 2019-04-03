@@ -15,14 +15,17 @@ export function validateLoadedData(t, data) {
   }
   for (const attributeName in data.attributes) {
     attributesError =
-      attributesError && validateAttribute(attributeName, data.attributes[attributeName]);
+      attributesError || validateAttribute(attributeName, data.attributes[attributeName]);
   }
   t.notOk(attributesError, 'data has valid attributes');
 }
 
 function validateAttribute(attributeName, attribute) {
   if (!ArrayBuffer.isView(attribute.value)) {
-    return `${attributeName} does not have valid value`;
+    return `${attributeName} value is not typed array`;
+  }
+  if (attribute.value.slice(0, 10).some(x => !Number.isFinite(x))) {
+    return `${attributeName} contains invalid value`;
   }
   if (!Number.isFinite(attribute.size)) {
     return `${attributeName} does not have size`;
