@@ -12,5 +12,7 @@ export default {
   // Note: parsePLY supports both text and binary
   parseTextSync: parsePLY,
   parseSync: parsePLY,
+  text: true,
+  binary: true,
   DEFAULT_OPTIONS
 };
