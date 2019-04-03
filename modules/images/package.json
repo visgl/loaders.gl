@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/images",
-  "version": "1.0.0-alpha.2",
+  "version": "1.0.0-alpha.3",
   "description": "Framework-independent loaders and writers for images (PNG, JPG, ...)",
   "license": "MIT",
   "publishConfig": {
@@ -36,7 +36,7 @@
     "util": false
   },
   "dependencies": {
-    "@loaders.gl/core": "1.0.0-alpha.2",
+    "@loaders.gl/core": "1.0.0-alpha.3",
     "canvas-to-blob": "0.0.0",
     "get-pixels": "^3.3.0",
     "ndarray": "^1.0.18",
