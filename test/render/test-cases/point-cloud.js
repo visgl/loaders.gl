@@ -1,5 +1,5 @@
-import {loadFile, fetchFile, parseFileSync} from '@loaders.gl/core';
-import {DracoEncoder, DracoLoader} from '@loaders.gl/draco';
+import {loadFile, fetchFile, parseFileSync, encodeFileSync} from '@loaders.gl/core';
+import {DracoWriter, DracoLoader} from '@loaders.gl/draco';
 import {LASLoader} from '@loaders.gl/las';
 
 import {getModel, drawModelInViewport} from '../test-utils/get-model';
@@ -12,20 +12,20 @@ const KITTI_POSITIONS_URL = '@loaders.gl/draco/test/data/raw-attribute-buffers/l
 const KITTI_COLORS_URL = '@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-colors.bin';
 
 // Load big cloud only once...
-let kittyPointCloud;
+let kittiPointCloud;
 
 async function loadKittiPointCloud() {
   const KITTI_POSITIONS = await fetchFile(KITTI_POSITIONS_URL).then(res => res.arrayBuffer());
   const KITTI_COLORS = await fetchFile(KITTI_COLORS_URL).then(res => res.arrayBuffer());
 
-  if (!kittyPointCloud) {
-    kittyPointCloud = {
+  if (!kittiPointCloud) {
+    kittiPointCloud = {
       POSITION: new Float32Array(KITTI_POSITIONS),
       COLOR_0: new Uint8ClampedArray(KITTI_COLORS)
     };
   }
 
-  return kittyPointCloud;
+  return kittiPointCloud;
 }
 
 export default [
@@ -78,13 +78,12 @@ export default [
     onInitialize: async ({gl}) => {
       const kittiPointCloudRaw = await loadKittiPointCloud();
       // Encode/decode mesh with Draco
-      const dracoEncoder = new DracoEncoder({
+      const compressedMesh = encodeFileSync({attributes: kittiPointCloudRaw}, DracoWriter, {
+        pointcloud: true,
         quantization: {
           POSITION: 14
         }
       });
-      const compressedMesh = dracoEncoder.encodePointCloud(kittiPointCloudRaw);
-      dracoEncoder.destroy();
 
       // eslint-disable-next-line
       // console.log(compressedMesh.byteLength);

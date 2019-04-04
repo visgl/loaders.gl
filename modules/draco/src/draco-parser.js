@@ -27,7 +27,7 @@ const DRACO_DATA_TYPE_TO_TYPED_ARRAY_MAP = {
   9: Float32Array
 };
 
-export default class DRACODecoder {
+export default class DracoParser {
   constructor() {
     this.decoderModule = draco3d.createDecoderModule({});
   }
@@ -43,7 +43,7 @@ export default class DRACODecoder {
   }
 
   // NOTE: caller must call `destroyGeometry` on the return value after using it
-  decode(arrayBuffer) {
+  parseSync(arrayBuffer) {
     const buffer = new this.decoderModule.DecoderBuffer();
     buffer.Init(new Int8Array(arrayBuffer), arrayBuffer.byteLength);
 
@@ -301,5 +301,11 @@ export default class DRACODecoder {
     this.decoderModule.destroy(dracoArray);
 
     return {typedArray, components: numComponents};
+  }
+
+  // DEPRECATED
+
+  decode(arrayBuffer, options) {
+    return this.parseSync(arrayBuffer, options);
   }
 }

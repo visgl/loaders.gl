@@ -25,13 +25,13 @@ To decompress Draco compressed meshes:
 ```
 import {loadFile} from '@loaders.gl/core';
 import {GLTFLoader} from '@loaders.gl/gltf';
-import {DracoDecoder} from '@loaders.gl/draco';
-const gltf = loadFile(url, GLTFLoader, {DracoDecoder, decompress: true});
+import {DracoLoader} from '@loaders.gl/draco';
+const gltf = loadFile(url, GLTFLoader, {DracoLoader, decompress: true});
 ```
 
 ## Options
 
-- `DracoEncoder` - supply this to enable decoding of Draco compressed meshes. `import {DracoEncoder} from '@loaders.gl/draco'`
+- `DracoWriter` - supply this to enable decoding of Draco compressed meshes. `import {DracoWriter} from '@loaders.gl/draco'`
 
 ## Options
 
@@ -39,8 +39,8 @@ const gltf = loadFile(url, GLTFLoader, {DracoDecoder, decompress: true});
 | ---------------------- | ----------- | ------------------------------------------------------------------------------------------------ |
 | `fetchLinkedResources` | `true`      | Fetch any linked .BIN files, decode base64 encoded URIS. Only supported in asynchronous parsing. |
 | `fetch`                | `fetchFile` | Function used to fetch linked resources                                                          |
-| `decompress`           | `true`      | Decompress Draco compressed meshes (if DracoDecoder available)                                   |
-| `DracoDecoder`         | `null`      | Supply to enable decoding of Draco compressed meshes.                                            |
+| `decompress`           | `true`      | Decompress Draco compressed meshes (if DracoLoader available)                                    |
+| `DracoLoader`          | `null`      | Supply to enable decoding of Draco compressed meshes.                                            |
 | `postProcess`          | `false`     | Perform additional post processing to simplify use in WebGL libraries                            |
 | `createImages`         | `false`     | Create image objects from loaded image data                                                      |
 

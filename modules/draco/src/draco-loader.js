@@ -1,12 +1,16 @@
-import DRACODecoder from './draco-decoder';
+import DracoParser from './draco-parser';
 
-function parseDRACO(arrayBuffer, options) {
-  const dracoDecoder = new DRACODecoder();
-  return dracoDecoder.decode(arrayBuffer, options);
+function parseSync(arrayBuffer, options) {
+  const dracoParser = new DracoParser();
+  try {
+    return dracoParser.parseSync(arrayBuffer, options);
+  } finally {
+    dracoParser.destroy();
+  }
 }
 
 export default {
   name: 'DRACO',
   extension: 'drc',
-  parseSync: parseDRACO
+  parseSync
 };

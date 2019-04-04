@@ -31,12 +31,9 @@ saveBinaryFile(filename, arrayBuffer);
 
 ## Methods
 
-### constructor(options: Object)
+### constructor()
 
 Creates a new `GLBBuilder` instance.
-
-- `options.DracoEncoder` - To enable DRACO encoding, the application needs to import and supply the `DracoEncoder` class.
-- `options.DracoDecoder` - To enable DRACO encoding, the application needs to import and supply the `DracoDecoder` class.
 
 ### encodeAsGLB(options : Object) : ArrayBuffer
 

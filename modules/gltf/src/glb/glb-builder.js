@@ -52,6 +52,9 @@ export default class GLBBuilder {
   }
 
   // MODIFERS
+  encodeSync(options = {}) {
+    return this.encodeAsGLB(options);
+  }
 
   // Encode the full glTF file as a binary GLB file
   // Returns an ArrayBuffer that represents the complete GLB image that can be saved to file

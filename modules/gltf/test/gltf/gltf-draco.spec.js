@@ -3,7 +3,7 @@ import test from 'tape-promise/tape';
 
 import {fetchFile} from '@loaders.gl/core';
 import {GLTFBuilder, GLTFParser} from '@loaders.gl/gltf';
-import {DracoEncoder, DracoDecoder} from '@loaders.gl/draco';
+import {DracoWriter, DracoLoader} from '@loaders.gl/draco';
 
 test('GLTFBuilder#addCompressedPointCloud', async t => {
   let response = await fetchFile(
@@ -23,13 +23,13 @@ test('GLTFBuilder#addCompressedPointCloud', async t => {
     `Encoding ${attributes.POSITIONS.length} positions, ${attributes.COLORS.length} colors...`
   );
 
-  const gltfBuilder = new GLTFBuilder({DracoEncoder, DracoDecoder});
+  const gltfBuilder = new GLTFBuilder({DracoWriter, DracoLoader});
   t.equal(gltfBuilder.addCompressedPointCloud(attributes), 0, 'valid index for point cloud data');
 
   const arrayBuffer = gltfBuilder.encodeAsGLB();
 
   const parser = new GLTFParser();
-  parser.parseSync(arrayBuffer, {DracoDecoder, decompress: false});
+  parser.parseSync(arrayBuffer, {DracoLoader, decompress: false});
   // TODO - verify that requiredExtensions contain UBER_draco_point_cloud_compression
   let dracoExtension = parser.getRequiredExtension('UBER_draco_point_cloud_compression');
   t.ok(dracoExtension, 'toplevel extension has not been removed');
@@ -40,7 +40,7 @@ test('GLTFBuilder#addCompressedPointCloud', async t => {
     undefined
   );
 
-  parser.parseSync(arrayBuffer, {DracoDecoder, decompress: true});
+  parser.parseSync(arrayBuffer, {DracoLoader, decompress: true});
   mesh = parser.getMesh(0);
   dracoExtension = parser.getRequiredExtension('UBER_draco_point_cloud_compression');
   t.notOk(dracoExtension, 'toplevel extension has been removed');

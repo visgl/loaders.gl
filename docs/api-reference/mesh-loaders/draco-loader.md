@@ -15,7 +15,7 @@ Decodes a mesh or point cloud (maps of attributes) using [DRACO compression](htt
 ## Usage
 
 ```js
-import {DracoLoader} from `@loaders.gl/draco';
+import {DracoLoader} from '@loaders.gl/draco';
 import {loadFile} from '@loaders.gl/core';
 
 const data = await loadFile(url, DracoLoader, options);
@@ -25,7 +25,7 @@ const data = await loadFile(url, DracoLoader, options);
 
 N/A
 
-## Structure of Loaded Data
+## Data Format
 
 `DracoLoader` loads a single primitive geometry for a point cloud or mesh and the return data follows the conventions for those categories.
 
