@@ -1,4 +1,4 @@
-import {normalizeLoader} from '../loader-encoder-utils/normalize-loader';
+import {normalizeLoader} from './loader-utils/normalize-loader';
 
 const registeredLoaders = {};
 

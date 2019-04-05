@@ -1,5 +1,5 @@
 /* global fetch */
-import assert from '../utils/assert';
+import assert from '../../utils/assert';
 import {resolvePath} from './file-aliases';
 
 const DEFAULT_OPTIONS = {
