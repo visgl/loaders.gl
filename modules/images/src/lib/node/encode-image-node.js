@@ -1,8 +1,9 @@
 // Use stackgl modules for DOM-less reading and writing of images
-// NOTE: These are not dependencies of luma.gl.
-// They need to be imported by the app.
+
+/* global Buffer */
 import savePixels from 'save-pixels';
 import ndarray from 'ndarray';
+import {bufferToArrayBuffer} from './buffer-to-array-buffer';
 
 /**
  * Returns data bytes representing a compressed image in PNG or JPG format,
@@ -16,9 +17,22 @@ import ndarray from 'ndarray';
 export function encodeImageToStreamNode(image, options) {
   // Support MIME type strings
   const type = options.type ? options.type.replace('image/', '') : 'jpeg';
-
   const pixels = ndarray(image.data, [image.width, image.height, 4], [4, image.width * 4, 1], 0);
 
   // Note: savePixels returns a stream
   return savePixels(pixels, type, options);
+}
+
+export function encodeImageNode(image, options) {
+  const imageStream = encodeImageToStreamNode(image, options);
+
+  return new Promise(resolve => {
+    const buffers = [];
+    imageStream.on('data', buffer => buffers.push(buffer));
+    // TODO - convert to arraybuffer?
+    imageStream.on('end', () => {
+      const buffer = Buffer.concat(buffers);
+      resolve(bufferToArrayBuffer(buffer));
+    });
+  });
 }

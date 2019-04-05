@@ -5,9 +5,9 @@ export {writeFile, writeFileSync} from './lib/fetch/write-file';
 
 // FILE PARSING AND ENCODING
 export {registerLoaders} from './lib/register-loaders';
-export {parse, parseSync, parseInBatches, parseInBatchesSync} from './lib/parse';
 
 // LOADING (READING + PARSING)
+export {parse, parseSync, parseInBatches, parseInBatchesSync} from './lib/parse';
 export {load, loadInBatches} from './lib/load';
 
 // ENCODING AND SAVING
@@ -59,8 +59,6 @@ export {default as assert} from './utils/assert';
 export {getMeshSize as _getMeshSize} from './categories/mesh/mesh-utils';
 
 // DEPRECATED
-export {loadImage} from './lib/load-image';
-
 export {createReadStream} from './lib/fetch/fetch-file';
 
 import {parse, parseSync} from './lib/parse';

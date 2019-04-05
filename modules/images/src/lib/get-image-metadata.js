@@ -1,7 +1,8 @@
 // Attributions
 // * Based on binary-gltf-utils under MIT license: Copyright (c) 2016-17 Karl Cheng
 
-import {toDataView} from '@loaders.gl/core';
+// Quarantine references to Buffer to prevent bundler from adding big polyfills
+import {bufferToArrayBufferNode} from './node/buffer-to-array-buffer';
 
 const BIG_ENDIAN = false;
 const LITTLE_ENDIAN = true;
@@ -17,23 +18,22 @@ const ERR_INVALID_TYPE = `Invalid MIME type. Supported MIME types are: ${Array.f
   mimeTypeMap.keys()
 ).join(', ')}`;
 
-export function isImage(contents) {
-  const result = _getImageSize(contents);
-  if (result) {
-    // Seems not :(
-    return result.mimeType;
-  }
-  return false;
+/**
+ * Sniffs the contents of a file to attempt to deduce the image type and extract image type.
+ * Supported image types are PNG, JPEG, GIF and BMP.
+ */
+export function isImage(arrayBuffer) {
+  const result = guessImageMetadata(arrayBuffer);
+  return result ? result.mimeType : false;
 }
 
 /**
- * Sniffs the contents of a file to attempt to deduce the image type and extract image size.
+ * Sniffs the contents of a file to attempt to deduce the image type and size.
  * Supported image types are PNG, JPEG, GIF and BMP.
- *
- * @param {Buffer} contents
+ * @param {ArrayBuffer} arrayBuffer
  * @param {string} [mimeType]
  */
-export function getImageSize(contents, mimeType) {
+export function getImageMetadata(arrayBuffer, mimeType = null) {
   // Looking for only a specific MIME type.
   if (mimeType) {
     const handler = mimeTypeMap.get(mimeType);
@@ -41,14 +41,14 @@ export function getImageSize(contents, mimeType) {
       throw new Error(ERR_INVALID_TYPE);
     }
 
-    const result = handler(contents);
+    const result = handler(arrayBuffer);
     if (!result) {
       throw new Error(`invalid image data for type: ${mimeType}`);
     }
     return result;
   }
 
-  const result = _getImageSize(contents, mimeType);
+  const result = guessImageMetadata(arrayBuffer, mimeType);
   if (!result) {
     // Seems not :(
     throw new Error(ERR_INVALID_TYPE);
@@ -56,10 +56,10 @@ export function getImageSize(contents, mimeType) {
   return result;
 }
 
-function _getImageSize(contents, mimeType) {
+function guessImageMetadata(arrayBuffer, mimeType) {
   // Loop through each file type and see if they work.
   for (const [supportedMimeType, handler] of mimeTypeMap.entries()) {
-    const result = handler(contents);
+    const result = handler(arrayBuffer);
     if (result) {
       result.mimeType = supportedMimeType;
       return result;
@@ -73,8 +73,8 @@ function _getImageSize(contents, mimeType) {
  * Extract size from a binary PNG file
  * @param {Buffer} contents
  */
-function getPngSize(contents) {
-  const dataView = toDataView(contents);
+function getPngSize(arrayBuffer) {
+  const dataView = toDataView(arrayBuffer);
 
   // Check file contains the first 4 bytes of the PNG signature.
   if (dataView.byteLength < 24 || dataView.getUint32(0, BIG_ENDIAN) !== 0x89504e47) {
@@ -92,8 +92,8 @@ function getPngSize(contents) {
  * @param {Buffer} contents
  * TODO: GIF is not this simple
  */
-function getGifSize(contents) {
-  const dataView = toDataView(contents);
+function getGifSize(arrayBuffer) {
+  const dataView = toDataView(arrayBuffer);
 
   // Check first 4 bytes of the GIF signature ("GIF8").
   if (dataView.byteLength < 10 || dataView.getUint32(0, BIG_ENDIAN) !== 0x47494638) {
@@ -111,8 +111,8 @@ function getGifSize(contents) {
  * @param {Buffer} contents
  * TODO: BMP is not this simple
  */
-function getBmpSize(contents) {
-  const dataView = toDataView(contents);
+function getBmpSize(arrayBuffer) {
+  const dataView = toDataView(arrayBuffer);
 
   // Check magic number is valid (first 2 characters should be "BM").
   if (dataView.getUint16(0, BIG_ENDIAN) !== 0x424d) {
@@ -130,8 +130,8 @@ function getBmpSize(contents) {
  * Extract size from a binary JPEG file
  * @param {Buffer} contents
  */
-function getJpegSize(contents) {
-  const dataView = toDataView(contents);
+function getJpegSize(arrayBuffer) {
+  const dataView = toDataView(arrayBuffer);
 
   // Check file contains the JPEG "start of image" (SOI) marker.
   if (dataView.byteLength < 2 || dataView.getUint16(0, BIG_ENDIAN) !== 0xffd8) {
@@ -194,4 +194,23 @@ function getJpegMarkers() {
   ]);
 
   return {tableMarkers, sofMarkers};
+}
+
+function toDataView(data) {
+  if (bufferToArrayBufferNode) {
+    data = bufferToArrayBufferNode(data);
+  }
+
+  // Careful - Node Buffers will look like ArrayBuffers (keep after isBuffer)
+  if (data instanceof ArrayBuffer || ArrayBuffer.isView(data)) {
+    return new DataView(data.buffer || data);
+  }
+
+  throw new Error('toDataView');
+}
+
+// DEPRECEATED
+
+export function getImageSize(arrayBuffer, mimeType = null) {
+  return getImageMetadata(arrayBuffer);
 }

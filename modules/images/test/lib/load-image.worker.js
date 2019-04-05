@@ -1,4 +1,4 @@
-import {loadImage} from '@loaders.gl/core';
+import {loadImage} from '@loaders.gl/images';
 
 if (typeof self !== 'undefined') {
   /* global self */

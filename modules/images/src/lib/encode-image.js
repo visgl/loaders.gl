@@ -1,9 +1,8 @@
 // Image loading/saving for browser
 /* global document, HTMLCanvasElement, Image */
 
-/* global process, Buffer */
 import {assert} from '@loaders.gl/core';
-import through from 'through'; // Note: through adds stream support
+import {encodeImageNode} from './node/encode-image-node';
 
 /*
  * Returns data bytes representing a compressed image in PNG or JPG format,
@@ -13,7 +12,11 @@ import through from 'through'; // Note: through adds stream support
  * @param {String} opt.type='png' - png, jpg or image/png, image/jpg are valid
  * @param {String} opt.dataURI= - Whether to include a data URI header
  */
-export function encodeImageBrowser(image, type) {
+export function encodeImage(image, type) {
+  if (encodeImageNode) {
+    return encodeImageNode(image, type);
+  }
+
   if (image instanceof HTMLCanvasElement) {
     const canvas = image;
     return canvas.toDataURL(type);
@@ -27,9 +30,5 @@ export function encodeImageBrowser(image, type) {
 
   // Get raw image data
   const data = canvas.toDataURL(type || 'png').replace(/^data:image\/(png|jpg);base64,/, '');
-
-  // Dump data into stream and return
-  const result = through();
-  process.nextTick(() => result.end(new Buffer(data, 'base64')));
-  return result;
+  return Promise.resolve(data);
 }

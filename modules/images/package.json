@@ -32,6 +32,9 @@
     "build-bundle": "webpack --config ../../scripts/bundle.config.js"
   },
   "browser": {
+    "./src/lib/node/buffer-to-array-buffer": false,
+    "./src/lib/node/encode-image-node": false,
+    "./src/lib/node/load-image-node": false,
     "get-pixels": false,
     "ndarray": false,
     "save-pixels": false,
@@ -39,9 +42,8 @@
     "util": false
   },
   "dependencies": {
-    "@loaders.gl/core": "1.0.0-alpha.4",
     "canvas-to-blob": "0.0.0",
-    "get-pixels": "^3.3.0",
+    "get-pixels": "^3.3.2",
     "ndarray": "^1.0.18",
     "save-pixels": "^2.3.2",
     "through": "^2.3.8"

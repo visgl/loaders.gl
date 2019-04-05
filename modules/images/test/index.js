@@ -1,3 +1,5 @@
-import './image-utils/get-image-size.spec';
-import './load-image/load-image.spec.js';
-// import './write-image/write-and-read-image.spec.js';
+import './lib/get-image-metadata.spec';
+import './lib/load-image.spec.js';
+import './lib/write-and-read-image.spec.js';
+
+import './image-loaders.spec';
