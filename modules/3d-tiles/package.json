@@ -1,0 +1,37 @@
+{
+  "name": "@loaders.gl/3d-tiles",
+  "version": "1.0.0-alpha.3",
+  "description": "3D Tiles, an open standard for streaming massive heterogeneous 3D geospatial datasets.",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/uber-web/loaders.gl"
+  },
+  "keywords": [
+    "webgl",
+    "loader",
+    "3d tile",
+    "tile",
+    "mesh",
+    "gltf",
+    "point cloud",
+    "pointcloud"
+  ],
+  "main": "dist/es5/index.js",
+  "module": "dist/esm/index.js",
+  "esnext": "dist/es6/index.js",
+  "files": [
+    "src",
+    "dist",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "scripts": {
+  },
+  "dependencies": {
+    "@loaders.gl/core": "1.0.0-alpha.3"
+  }
+}
