@@ -17,7 +17,7 @@
     "tile",
     "mesh",
     "gltf",
-    "point cloud"
+    "point cloud",
     "pointcloud"
   ],
   "main": "dist/es5/index.js",
