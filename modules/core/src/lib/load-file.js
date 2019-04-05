@@ -1,6 +1,6 @@
-import {fetchFile, readFileSync} from '../fetch-and-write/fetch-file';
-import {isLoaderObject} from '../loader-encoder-utils/normalize-loader';
-import {autoDetectLoader} from '../loader-encoder-utils/auto-detect-loader';
+import {fetchFile, readFileSync} from './fetch/fetch-file';
+import {isLoaderObject} from './loader-utils/normalize-loader';
+import {autoDetectLoader} from './loader-utils/auto-detect-loader';
 
 import {parseFile, parseFileSync, parseFileInBatches} from './parse-file';
 import {getRegisteredLoaders} from './register-loaders';

@@ -1,5 +1,5 @@
 import assert from '../utils/assert';
-import parseWithWorker from '../worker-utils/parse-with-worker';
+import parseWithWorker from './parse-with-worker';
 import {
   getArrayBufferOrStringFromDataSync,
   getArrayBufferOrStringFromData,
@@ -7,7 +7,7 @@ import {
   getIteratorFromData,
   // getLengthFromData,
   getUrlFromData
-} from '../loader-encoder-utils/get-data';
+} from './loader-utils/get-data';
 
 // TODO: support progress and abort
 // TODO: support moving loading to worker

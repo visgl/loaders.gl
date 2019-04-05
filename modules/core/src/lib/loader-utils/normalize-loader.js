@@ -1,4 +1,4 @@
-import assert from '../utils/assert';
+import assert from '../../utils/assert';
 
 export function isLoaderObject(loader) {
   if (!loader) {

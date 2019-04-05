@@ -5,9 +5,9 @@ import http from 'http';
 import https from 'https';
 import util from 'util';
 
-import {toArrayBuffer} from '../../javascript-utils/binary-utils';
-import {TextDecoder} from '../../javascript-utils/text-encoding';
-import {concatenateReadStream} from '../../javascript-utils/stream-utils';
+import {toArrayBuffer} from '../../../javascript-utils/binary-utils';
+import {TextDecoder} from '../../../javascript-utils/text-encoding';
+import {concatenateReadStream} from '../../../javascript-utils/stream-utils';
 import {resolvePath} from '../file-aliases';
 import decodeDataUri from './decode-data-uri';
 

@@ -1,5 +1,5 @@
-import {encodeFile, encodeFileSync} from '../load-and-encode/encode-file';
-import {writeFile, writeFileSync} from '../fetch-and-write/write-file';
+import {encodeFile, encodeFileSync} from './encode-file';
+import {writeFile, writeFileSync} from './fetch/write-file';
 
 export function saveFile(data, url, writer) {
   const encodedData = encodeFile(data, writer, url);

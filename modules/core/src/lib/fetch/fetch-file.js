@@ -1,4 +1,4 @@
-import {isBrowser} from '../utils/globals';
+import {isBrowser} from '../../utils/globals';
 
 // fetch-file-node is excluded from build under browser so don't do indivdual imports
 import * as node from './node/fetch-file-node';

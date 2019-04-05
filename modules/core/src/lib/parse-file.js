@@ -1,6 +1,6 @@
-import {autoDetectLoader} from '../loader-encoder-utils/auto-detect-loader';
-import {normalizeLoader, isLoaderObject} from '../loader-encoder-utils/normalize-loader';
-import NullLog from '../loader-encoder-utils/null-log';
+import {autoDetectLoader} from './loader-utils/auto-detect-loader';
+import {normalizeLoader, isLoaderObject} from './loader-utils/normalize-loader';
+import NullLog from './loader-utils/null-log';
 import {getRegisteredLoaders} from './register-loaders';
 import {parseWithLoader, parseWithLoaderInBatches, parseWithLoaderSync} from './parse-with-loader';
 

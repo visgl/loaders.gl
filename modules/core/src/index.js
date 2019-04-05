@@ -1,29 +1,25 @@
 // FILE READING AND WRITING
-export {setPathPrefix, getPathPrefix, resolvePath} from './fetch-and-write/file-aliases.js';
-export {fetchFile, readFileSync} from './fetch-and-write/fetch-file';
-export {writeFile, writeFileSync} from './fetch-and-write/write-file';
+export {setPathPrefix, getPathPrefix, resolvePath} from './lib/fetch/file-aliases.js';
+export {fetchFile, readFileSync} from './lib/fetch/fetch-file';
+export {writeFile, writeFileSync} from './lib/fetch/write-file';
 
 // FILE PARSING AND ENCODING
-export {registerLoaders} from './load-and-encode/register-loaders';
+export {registerLoaders} from './lib/register-loaders';
 export {
   parseFile,
   parseFileSync,
   parseFileInBatches,
   parseFileInBatchesSync
-} from './load-and-encode/parse-file';
+} from './lib/parse-file';
 
 // LOADING (READING + PARSING)
-export {loadFileInBatches, loadFile, loadFileSync} from './load-and-encode/load-file';
-export {loadImage} from './load-and-encode/load-image';
-export {
-  ImageBitmapLoader,
-  HTMLImageLoader,
-  PlatformImageLoader
-} from './load-and-encode/image-loaders';
+export {loadFileInBatches, loadFile, loadFileSync} from './lib/load-file';
+export {loadImage} from './lib/load-image';
+export {ImageBitmapLoader, HTMLImageLoader, PlatformImageLoader} from './lib/image-loaders';
 
 // ENCODING AND SAVING
-export {encodeFile, encodeFileSync, encodeToStream} from './load-and-encode/encode-file';
-export {saveFile, saveFileSync} from './load-and-encode/save-file';
+export {encodeFile, encodeFileSync, encodeToStream} from './lib/encode-file';
+export {saveFile, saveFileSync} from './lib/save-file';
 
 // "JAVASCRIPT" UTILS
 export {
@@ -70,4 +66,4 @@ export {default as assert} from './utils/assert';
 export {getMeshSize as _getMeshSize} from './categories/mesh/mesh-utils';
 
 // DEPRECATED
-export {createReadStream} from './fetch-and-write/fetch-file';
+export {createReadStream} from './lib/fetch/fetch-file';

@@ -3,15 +3,15 @@ import './javascript-utils/text-encoder.spec';
 import './javascript-utils/binary-utils.spec';
 import './javascript-utils/flatten.spec';
 
-import './fetch-and-write/node/decode-data-uri.spec';
-import './fetch-and-write/file-aliases.spec';
-import './fetch-and-write/create-stream.spec';
-import './fetch-and-write/fetch-file.spec';
-
 import './categories/mesh/mesh-utils.spec';
 
-import './loader-encoder-utils/auto-parse.spec';
+import './lib/fetch/node/decode-data-uri.spec';
+import './lib/fetch/file-aliases.spec';
+import './lib/fetch/create-stream.spec';
+import './lib/fetch/fetch-file.spec';
 
-import './load-and-encode/image-loaders.spec';
-import './load-and-encode/load-image.spec';
-import './load-and-encode/load-file.spec';
+import './lib/loader-utils/auto-parse.spec';
+
+import './lib/image-loaders.spec';
+import './lib/load-image.spec';
+import './lib/load-file.spec';
