@@ -331,7 +331,7 @@ function parseBinary(data, header) {
     colors: []
   };
 
-  const littleEndian = header.format === 'binary_littleEndian';
+  const littleEndian = header.format === 'binary_little_endian';
   const body = new DataView(data, header.headerLength);
   let result;
   let loc = 0;
