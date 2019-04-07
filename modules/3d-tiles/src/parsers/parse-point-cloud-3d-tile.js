@@ -1,315 +1,255 @@
-/**
- * Represents the contents of a
- * {@link https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification/TileFormats/PointCloud|Point Cloud}
- * tile in a {@link https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification|3D Tiles} tileset.
- * <p>
- * Implements the {@link Cesium3DTileContent} interface.
- * </p>
- *
- * @alias PointCloud3DTileContent
- * @constructor
- *
- * @private
- */
-function PointCloud3DTileContent(tileset, tile, resource, arrayBuffer, byteOffset) {
-  this._tileset = tileset;
-  this._tile = tile;
-  this._resource = resource;
-  this._pickId = undefined; // Only defined when batchTable is undefined
-  this._batchTable = undefined; // Used when feature table contains BATCH_ID semantic
-  this._styleDirty = false;
-  this._features = undefined;
+import {GL} from '../constants';
+import Tile3DFeatureTable from '../tile-3d-feature-table';
+import Tile3DBatchTable from '../tile-3d-batch-table';
+import {parse3DTileHeaderSync} from './parse-3d-file-header';
+import {parse3DTileHeaderSync} from './parse-3d-file-header';
+import {parse3DTileTablesHeaderSync, parse3DTileTablesSync} from './parse-3d-file-header';
+import {parse3DTileGLTFViewSync} from './parse-3d-gltf-view';
 
-  /**
-   * @inheritdoc Cesium3DTileContent#featurePropertiesDirty
-   */
-  this.featurePropertiesDirty = false;
+const defined = x => x !== undefined;
 
-  this._pointCloud = new PointCloud({
-    arrayBuffer: arrayBuffer,
-    byteOffset: byteOffset,
-    cull: false,
-    opaquePass: Pass.CESIUM_3D_TILE,
-    vertexShaderLoaded: getVertexShaderLoaded(this),
-    fragmentShaderLoaded: getFragmentShaderLoaded(this),
-    uniformMapLoaded: getUniformMapLoaded(this),
-    batchTableLoaded: getBatchTableLoaded(this),
-    pickIdLoaded: getPickIdLoaded(this)
-  });
+const DECODING_STATE = {
+  NEEDS_DECODE : 0,
+  DECODING : 1,
+  READY : 2,
+  FAILED : 3
+};
+
+// Reference code
+// https://github.com/AnalyticalGraphicsInc/cesium/blob/master/Source/Scene/PointCloud.js#L254
+export default function parsePointCloud3DTile(tile, arrayBuffer, byteOffset, options) {
+  byteOffset = parse3DTileHeaderSync(tile, arrayBuffer, byteOffset, options);
+  byteOffset = parse3DTileTablesHeaderSync(tile, arrayBuffer, byteOffset, options);
+  byteOffset = parse3DTileTablesSync(tile, arrayBuffer, byteOffset, options);
+
+  extractPointCloud(tile);
+
+  return byteOffset;
 }
 
-defineProperties(PointCloud3DTileContent.prototype, {
-  featuresLength: {
-    get: function() {
-      if (defined(this._batchTable)) {
-        return this._batchTable.featuresLength;
+// eslint-disable-next-line max-statements, complexity
+function extractPointCloud(tile) {
+  const featureTable = new Tile3DFeatureTable(tile);
+
+  const pointsLength = featureTable.getGlobalProperty('POINTS_LENGTH');
+  tile.featureTable.featuresLength = pointsLength;
+
+  if (!Number.isFinite(pointsLength)) {
+    throw new Error('POINTS_LENGTH must be defined');
+  }
+
+  tile.rtcCenter = featureTable.getGlobalProperty('RTC_CENTER', GL.FLOAT, 3);
+
+  // Initialize point cloud tile defaults
+  tile.positions = null;
+  tile.colors = null;
+  tile.normals = null;
+  tile.batchIds = null;
+  tile.isQuantized = false;
+  tile.isTranslucent = false;
+  tile.isRGB565 = false;
+  tile.isOctEncoded16P = false;
+
+  const batchTable = new Tile3DBatchTable(tile);
+
+  parseDracoBuffer(tile, featureTable, batchTable);
+
+  if (!tile.positions) {
+    if (featureTable.hasProperty('POSITION')) {
+
+      tile.positions = tile.featureTable.getPropertyArray('POSITION', GL.FLOAT, 3);
+
+    } else if (featureTable.hasProperty('POSITION_QUANTIZED')) {
+
+      tile.positions = featureTable.getPropertyArray('POSITION_QUANTIZED', GL.UNSIGNED_SHORT, 3);
+
+      tile.isQuantized = true;
+      tile.quantizedRange = (1 << 16) - 1;
+
+      tile.quantizedVolumeScale = featureTable.getGlobalProperty('QUANTIZED_VOLUME_SCALE', GL.FLOAT, 3);
+      if (tile.quantizedVolumeScale) {
+        throw new Error('QUANTIZED_VOLUME_SCALE must be defined for quantized positions.');
       }
-      return 0;
-    }
-  },
 
-  pointsLength: {
-    get: function() {
-      return this._pointCloud.pointsLength;
-    }
-  },
-
-  trianglesLength: {
-    get: function() {
-      return 0;
-    }
-  },
-
-  geometryByteLength: {
-    get: function() {
-      return this._pointCloud.geometryByteLength;
-    }
-  },
-
-  texturesByteLength: {
-    get: function() {
-      return 0;
-    }
-  },
-
-  batchTableByteLength: {
-    get: function() {
-      if (defined(this._batchTable)) {
-        return this._batchTable.memorySizeInBytes;
+      tile.quantizedVolumeOffset = featureTable.getGlobalProperty('QUANTIZED_VOLUME_OFFSET', GL.FLOAT, 3);
+      if (!tile.quantizedVolumeOffset) {
+        throw new Error('QUANTIZED_VOLUME_OFFSET must be defined for quantized positions.');
       }
-      return 0;
-    }
-  },
 
-  innerContents: {
-    get: function() {
-      return undefined;
-    }
-  },
-
-  readyPromise: {
-    get: function() {
-      return this._pointCloud.readyPromise;
-    }
-  },
-
-  tileset: {
-    get: function() {
-      return this._tileset;
-    }
-  },
-
-  tile: {
-    get: function() {
-      return this._tile;
-    }
-  },
-
-  url: {
-    get: function() {
-      return this._resource.getUrlComponent(true);
-    }
-  },
-
-  batchTable: {
-    get: function() {
-      return this._batchTable;
     }
   }
-});
 
-function getVertexShaderLoaded(content) {
-  return function(vs) {
-    if (defined(content._batchTable)) {
-      return content._batchTable.getVertexShaderCallback(false, 'a_batchId', undefined)(vs);
+  if (!tile.colors) {
+    if (featureTable.hasProperty('RGBA')) {
+
+      tile.colors = featureTable.getPropertyArray('RGBA', GL.UNSIGNED_BYTE, 4);
+      tile.isTranslucent = true;
+
+    } else if (featureTable.hasProperty('RGB')) {
+
+      tile.colors = featureTable.getPropertyArray('RGB', GL.UNSIGNED_BYTE, 3);
+
+    } else if (featureTable.hasPropertry('RGB565')) {
+
+      tile.colors = featureTable.getPropertyArray('RGB565', GL.UNSIGNED_SHORT, 1);
+      tile.isRGB565 = true;
+
     }
-    return vs;
-  };
+  }
+
+  if (!tile.normals) {
+    if (featureTable.getPropertry('NORMAL')) {
+
+      tile.normals = featureTable.getPropertyArray('NORMAL', GL.FLOAT, 3);
+
+    } else if (featureTable.getProperty('NORMAL_OCT16P')) {
+
+      tile.normals = featureTable.getPropertyArray('NORMAL_OCT16P', GL.UNSIGNED_BYTE, 2);
+      tile.isOctEncoded16P = true;
+
+    }
+  }
+
+  if (!tile.batchIds) {
+    if (featureTable.hasProperty('BATCH_ID')) {
+      tile.batchIds = featureTable.getPropertyArray('BATCH_ID', GL.UNSIGNED_SHORT, 1);
+    }
+  }
+
+  if (!tile.positions) {
+    throw new Error('Either POSITION or POSITION_QUANTIZED must be defined.');
+  }
+
+  if (featureTable.getPropertry('CONSTANT_RGBA')) {
+    tile.constantRGBA = featureTable.getGlobalProperty('CONSTANT_RGBA', GL.UNSIGNED_BYTE, 4);
+  }
+
+  if (tile.batchIds) {
+    const batchLength = featureTable.getGlobalProperty('BATCH_LENGTH');
+    if (!defined(batchLength)) {
+      throw new Error('Global property: BATCH_LENGTH must be defined when BATCH_ID is defined.');
+    }
+
+    if (defined(batchTableBinary)) {
+      // Copy the batchTableBinary section and let the underlying ArrayBuffer be freed
+      batchTableBinary = new Uint8Array(batchTableBinary);
+    }
+
+    if (defined(pointCloud._batchTableLoaded)) {
+      pointCloud._batchTableLoaded(batchLength, batchTableJson, batchTableBinary);
+    }
+  }
+
+  // If points are not batched and there are per-point properties, use these properties for styling purposes
+  var styleableProperties;
+  if (!hasBatchIds && defined(batchTableBinary)) {
+    tile.styleableProperties = Cesium3DTileBatchTable.getBinaryProperties(pointsLength, batchTableJson, batchTableBinary);
+  }
+
+  tile.draco = draco;
 }
 
-function getFragmentShaderLoaded(content) {
-  return function(fs) {
-    if (defined(content._batchTable)) {
-      return content._batchTable.getFragmentShaderCallback(false, undefined)(fs);
+// Separate parsing and decoding of Draco
+function parseDracoBuffer(tile, featureTable, batchTable) {
+
+  let dracoBuffer;
+  let dracoFeatureTableProperties;
+  let dracoBatchTableProperties;
+
+  const batchTableDraco = batchTable.getExtension('3DTILES_draco_point_compression');
+  if (batchTableDraco) {
+    dracoBatchTableProperties = batchTableDraco.properties;
+  }
+
+  const featureTableDraco = featureTable.getExtension('3DTILES_draco_point_compression');
+  if (featureTableDraco) {
+    dracoFeatureTableProperties = featureTableDraco.properties;
+    const dracoByteOffset = featureTableDraco.byteOffset;
+    const dracoByteLength = featureTableDraco.byteLength;
+    if (!dracoFeatureTableProperties || !dracoByteOffset || !dracoByteLength) {
+      throw new Error('Draco properties, byteOffset, and byteLength must be defined');
     }
-    return 'uniform vec4 czm_pickColor;\n' + fs;
-  };
+
+    dracoBuffer = arraySlice(featureTableBinary, dracoByteOffset, dracoByteOffset + dracoByteLength);
+    tile.hasPositions = dracoFeatureTableProperties.POSITION;
+    tile.hasColors = dracoFeatureTableProperties.RGB || dracoFeatureTableProperties.RGBA;
+    tile.hasNormals = dracoFeatureTableProperties.NORMAL;
+    tile.hasBatchIds = dracoFeatureTableProperties.BATCH_ID;
+    tile.isTranslucent = dracoFeatureTableProperties.RGBA;
+  }
+
+  if (dracoBuffer) {
+    tile.draco = {
+      buffer : dracoBuffer,
+      properties: {...dracoFeatureTableProperties, ...dracoBatchTableProperties},
+      featureTableProperties: dracoFeatureTableProperties,
+      batchTableProperties: dracoBatchTableProperties,
+      dequantizeInShader: false
+    };
+
+    tile.decodingState = DECODING_STATE.NEEDS_DECODE;
+  }
 }
 
-function getUniformMapLoaded(content) {
-  return function(uniformMap) {
-    if (defined(content._batchTable)) {
-      return content._batchTable.getUniformMapCallback()(uniformMap);
+/*
+function decodeDraco(tile, context) {
+  if (tile.decodingState === DECODING_STATE.READY) {
+    return false;
+  }
+  if (tile.decodingState === DECODING_STATE.NEEDS_DECODE) {
+    var parsedContent = tile._parsedContent;
+    var draco = parsedContent.draco;
+    var decodePromise = DracoLoader.decodePointCloud(draco, context);
+    if (defined(decodePromise)) {
+      tile.decodingState = DECODING_STATE.DECODING;
+      decodePromise.then(function(result) {
+        tile.decodingState = DECODING_STATE.READY;
+        var decodedPositions = defined(result.POSITION) ? result.POSITION.array : undefined;
+        var decodedRgb = defined(result.RGB) ? result.RGB.array : undefined;
+        var decodedRgba = defined(result.RGBA) ? result.RGBA.array : undefined;
+        var decodedNormals = defined(result.NORMAL) ? result.NORMAL.array : undefined;
+        var decodedBatchIds = defined(result.BATCH_ID) ? result.BATCH_ID.array : undefined;
+        var isQuantizedDraco = defined(decodedPositions) && defined(result.POSITION.data.quantization);
+        var isOctEncodedDraco = defined(decodedNormals) && defined(result.NORMAL.data.quantization);
+        if (isQuantizedDraco) {
+          // Draco quantization range == quantized volume scale - size in meters of the quantized volume
+          // Internal quantized range is the range of values of the quantized data, e.g. 255 for 8-bit, 1023 for 10-bit, etc
+          var quantization = result.POSITION.data.quantization;
+          var range = quantization.range;
+          tile._quantizedVolumeScale = Cartesian3.fromElements(range, range, range);
+          tile._quantizedVolumeOffset = Cartesian3.unpack(quantization.minValues);
+          tile._quantizedRange = (1 << quantization.quantizationBits) - 1.0;
+          tile._isQuantizedDraco = true;
+        }
+        if (isOctEncodedDraco) {
+          tile._octEncodedRange = (1 << result.NORMAL.data.quantization.quantizationBits) - 1.0;
+          tile._isOctEncodedDraco = true;
+        }
+        var styleableProperties = parsedContent.styleableProperties;
+        var batchTableProperties = draco.batchTableProperties;
+        for (var name in batchTableProperties) {
+          if (batchTableProperties.hasOwnProperty(name)) {
+            var property = result[name];
+            if (!defined(styleableProperties)) {
+              styleableProperties = {};
+            }
+            styleableProperties[name] = {
+              typedArray : property.array,
+              componentCount : property.data.componentsPerAttribute
+            };
+          }
+        }
+        parsedContent.positions = defaultValue(decodedPositions, parsedContent.positions);
+        parsedContent.colors = defaultValue(defaultValue(decodedRgba, decodedRgb), parsedContent.colors);
+        parsedContent.normals = defaultValue(decodedNormals, parsedContent.normals);
+        parsedContent.batchIds = defaultValue(decodedBatchIds, parsedContent.batchIds);
+        parsedContent.styleableProperties = styleableProperties;
+      }).otherwise(function(error) {
+        tile.decodingState = DECODING_STATE.FAILED;
+        tile._readyPromise.reject(error);
+      });
     }
-    return combine(uniformMap, {
-      czm_pickColor: function() {
-        return content._pickId.color;
-      }
-    });
-  };
+  }
+  return true;
 }
-
-function getBatchTableLoaded(content) {
-  return function(batchLength, batchTableJson, batchTableBinary) {
-    content._batchTable = new Cesium3DTileBatchTable(
-      content,
-      batchLength,
-      batchTableJson,
-      batchTableBinary
-    );
-  };
-}
-
-function getPickIdLoaded(content) {
-  return function() {
-    return defined(content._batchTable) ? content._batchTable.getPickId() : 'czm_pickColor';
-  };
-}
-
-function getGeometricError(content) {
-  var pointCloudShading = content._tileset.pointCloudShading;
-  var sphereVolume = content._tile.contentBoundingVolume.boundingSphere.volume();
-  var baseResolutionApproximation = CesiumMath.cbrt(sphereVolume / content.pointsLength);
-
-  var geometricError = content._tile.geometricError;
-  if (geometricError === 0) {
-    if (defined(pointCloudShading) && defined(pointCloudShading.baseResolution)) {
-      geometricError = pointCloudShading.baseResolution;
-    } else {
-      geometricError = baseResolutionApproximation;
-    }
-  }
-  return geometricError;
-}
-
-function createFeatures(content) {
-  var featuresLength = content.featuresLength;
-  if (!defined(content._features) && featuresLength > 0) {
-    var features = new Array(featuresLength);
-    for (var i = 0; i < featuresLength; ++i) {
-      features[i] = new Cesium3DTileFeature(content, i);
-    }
-    content._features = features;
-  }
-}
-
-PointCloud3DTileContent.prototype.hasProperty = function(batchId, name) {
-  if (defined(this._batchTable)) {
-    return this._batchTable.hasProperty(batchId, name);
-  }
-  return false;
-};
-
-/**
- * Part of the {@link Cesium3DTileContent} interface.
- *
- * In this context a feature refers to a group of points that share the same BATCH_ID.
- * For example all the points that represent a door in a house point cloud would be a feature.
- *
- * Features are backed by a batch table and can be colored, shown/hidden, picked, etc like features
- * in b3dm and i3dm.
- *
- * When the BATCH_ID semantic is omitted and the point cloud stores per-point properties, they
- * are not accessible by getFeature. They are only used for dynamic styling.
- */
-PointCloud3DTileContent.prototype.getFeature = function(batchId) {
-  if (!defined(this._batchTable)) {
-    return undefined;
-  }
-  var featuresLength = this.featuresLength;
-  //>>includeStart('debug', pragmas.debug);
-  if (!defined(batchId) || batchId < 0 || batchId >= featuresLength) {
-    throw new DeveloperError(
-      'batchId is required and between zero and featuresLength - 1 (' + (featuresLength - 1) + ').'
-    );
-  }
-  //>>includeEnd('debug');
-  createFeatures(this);
-  return this._features[batchId];
-};
-
-PointCloud3DTileContent.prototype.applyDebugSettings = function(enabled, color) {
-  this._pointCloud.color = enabled ? color : Color.WHITE;
-};
-
-PointCloud3DTileContent.prototype.applyStyle = function(style) {
-  if (defined(this._batchTable)) {
-    this._batchTable.applyStyle(style);
-  } else {
-    this._styleDirty = true;
-  }
-};
-
-var defaultShading = new PointCloudShading();
-
-PointCloud3DTileContent.prototype.update = function(tileset, frameState) {
-  var pointCloud = this._pointCloud;
-  var pointCloudShading = defaultValue(tileset.pointCloudShading, defaultShading);
-  var tile = this._tile;
-  var batchTable = this._batchTable;
-  var mode = frameState.mode;
-  var clippingPlanes = tileset.clippingPlanes;
-
-  if (!defined(this._pickId) && !defined(batchTable)) {
-    this._pickId = frameState.context.createPickId({
-      primitive: tileset,
-      content: this
-    });
-  }
-
-  if (defined(batchTable)) {
-    batchTable.update(tileset, frameState);
-  }
-
-  var boundingSphere;
-  if (defined(tile._contentBoundingVolume)) {
-    boundingSphere =
-      mode === SceneMode.SCENE3D
-        ? tile._contentBoundingVolume.boundingSphere
-        : tile._contentBoundingVolume2D.boundingSphere;
-  } else {
-    boundingSphere =
-      mode === SceneMode.SCENE3D
-        ? tile._boundingVolume.boundingSphere
-        : tile._boundingVolume2D.boundingSphere;
-  }
-
-  var styleDirty = this._styleDirty;
-  this._styleDirty = false;
-
-  pointCloud.clippingPlanesOriginMatrix = tileset.clippingPlanesOriginMatrix;
-  pointCloud.style = defined(batchTable) ? undefined : tileset.style;
-  pointCloud.styleDirty = styleDirty;
-  pointCloud.modelMatrix = tile.computedTransform;
-  pointCloud.time = tileset.timeSinceLoad;
-  pointCloud.shadows = tileset.shadows;
-  pointCloud.boundingSphere = boundingSphere;
-  pointCloud.clippingPlanes = clippingPlanes;
-  pointCloud.isClipped = defined(clippingPlanes) && clippingPlanes.enabled && tile._isClipped;
-  pointCloud.clippingPlanesDirty = tile.clippingPlanesDirty;
-  pointCloud.attenuation = pointCloudShading.attenuation;
-  pointCloud.backFaceCulling = pointCloudShading.backFaceCulling;
-  pointCloud.normalShading = pointCloudShading.normalShading;
-  pointCloud.geometricError = getGeometricError(this);
-  pointCloud.geometricErrorScale = pointCloudShading.geometricErrorScale;
-  if (defined(pointCloudShading) && defined(pointCloudShading.maximumAttenuation)) {
-    pointCloud.maximumAttenuation = pointCloudShading.maximumAttenuation;
-  } else if (tile.refine === Cesium3DTileRefine.ADD) {
-    pointCloud.maximumAttenuation = 5.0;
-  } else {
-    pointCloud.maximumAttenuation = tileset.maximumScreenSpaceError;
-  }
-
-  pointCloud.update(frameState);
-};
-
-PointCloud3DTileContent.prototype.isDestroyed = function() {
-  return false;
-};
-
-PointCloud3DTileContent.prototype.destroy = function() {
-  this._pickId = this._pickId && this._pickId.destroy();
-  this._pointCloud = this._pointCloud && this._pointCloud.destroy();
-  this._batchTable = this._batchTable && this._batchTable.destroy();
-  return destroyObject(this);
-};
+*/

@@ -1,67 +1,30 @@
-import {
-  parse3DTileHeaderSync,
-  parse3DTileTablesSync,
-  parsePointCloudTileSync
-} from './parse-3d-file-header';
+import {MAGIC} from '../constants';
+import {getMagicString} from './parse-utils';
 
-const MAGIC = {
-  COMPOSITE: 'cmpt',
-  BATCHED_3D_MODEL: 'b3dm',
-  INSTANCED_3D_MODEL: 'i3dm',
-  POINT_CLOUD: 'pnts'
-};
+import parsePointCloud3DTileSync from './parse-point-cloud-3d-tile';
+import parseBatchedModel3DTileSync from './parse-batched-model-3d-tile';
+import parseInstancedModel3DTileSync from './parse-instanced-model-3d-tile';
+import parseComposite3DTileSync from './parse-composite-3d-tile';
 
-export default function parse3DTileSync(arrayBuffer, byteOffset = 0, options = {}) {
-  let header = parse3DTileHeaderSync(arrayBuffer, byteOffset);
+// Extracts
+export default function parse3DTileSync(arrayBuffer, byteOffset = 0, options = {}, tile = {}) {
+  const magicString = getMagicString(arrayBuffer, byteOffset);
 
-  switch (header.magic) {
+  switch (magicString) {
     case MAGIC.COMPOSITE:
-      return parseComposite3DTileSync(header, arrayBuffer, header.byteOffset);
+      // Note: We pass this function as argument so that embedded tiles can be parsed recursively
+      return parseComposite3DTileSync(tile, arrayBuffer, byteOffset, options, parse3DTileSync);
 
     case MAGIC.BATCHED_3D_MODEL:
-      header = parse3DTileTablesSync(header, arrayBuffer, header.byteOffset);
-      return parseBatchedModel3DTileSync(header, arrayBuffer, header.byteOffset);
+      return parseBatchedModel3DTileSync(tile, arrayBuffer, byteOffset, options);
 
     case MAGIC.INSTANCED_3D_MODEL:
-      header = parse3DTileTablesSync(header, arrayBuffer, header.byteOffset);
-      return parseInstancedModel3DTileSync(header, arrayBuffer, header.byteOffset);
+      return parseInstancedModel3DTileSync(tile, arrayBuffer, byteOffset, options);
 
     case MAGIC.POINTCLOUD:
-      header = parse3DTileTablesSync(header, arrayBuffer, header.byteOffset);
-      return parsePointCloudTileSync(header, arrayBuffer, header.byteOffset);
+      return parsePointCloud3DTileSync(tile, arrayBuffer, byteOffset, options);
 
     default:
-      // Ignore unknown tiles
-      // log.warn('Unknown magicx')
-      return null;
+      throw new Error(`Unknown tile type ${magicString}`); // eslint-disable-line
   }
-}
-
-function parseComposite3DTileSync(header, arrayBuffer, byteOffset) {
-  const view = new DataView(arrayBuffer);
-
-  const tilesLength = view.getUint32(byteOffset, true);
-  byteOffset += 4;
-
-  const tiles = [];
-
-  // extract views of the tiles;
-  while (header.byteLength - byteOffset > 12) {
-    const tileHeader = parse3DTileHeaderSync(arrayBuffer, byteOffset);
-    tileView = new Uint8Array();
-    // parse3DTile()
-    tiles.push({
-      ...tileHeader,
-      tileView
-    });
-  }
-
-  return {
-    ...header,
-    tilesLength,
-    tiles,
-
-    // Update byteOffset
-    byteOffset // TODO - should be 8 byte aligned?
-  };
 }

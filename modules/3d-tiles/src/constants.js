@@ -16,3 +16,10 @@ export const GL = {
   UNSIGNED_INT: 5125,
   FLOAT: 5126
 };
+
+export const MAGIC = {
+  COMPOSITE: 'cmpt',
+  BATCHED_3D_MODEL: 'b3dm',
+  INSTANCED_3D_MODEL: 'i3dm',
+  POINT_CLOUD: 'pnts'
+};
