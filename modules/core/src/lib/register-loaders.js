@@ -4,11 +4,12 @@ const registeredLoaders = {};
 
 export function registerLoaders(loaders) {
   loaders = Array.isArray(loaders) ? loaders : [loaders];
-  loaders.forEach(loader => {
+  for (const loader of loaders) {
     normalizeLoader(loader);
-    const key = loader.name || loader.extension;
-    registeredLoaders[key] = loader;
-  });
+    for (const extension of loader.extensions) {
+      registeredLoaders[extension] = loader;
+    }
+  }
 }
 
 export function getRegisteredLoaders() {

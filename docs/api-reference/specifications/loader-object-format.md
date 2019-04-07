@@ -6,11 +6,14 @@ To be compatible with the parsing/loading functions in `@loaders.gl/core`, a par
 
 ### Common Fields
 
-| Field       | Type     | Default  | Description                                                     |
-| ----------- | -------- | -------- | --------------------------------------------------------------- |
-| `name`      | `String` | Required | Short name of the loader ('OBJ', 'PLY' etc)                     |
-| `extension` | `String` | Required | Three letter (typically) extension used by files of this format |
-| `category`  | `String` | Optional | Indicates the type/shape of data                                |
+| Field        | Type       | Default  | Description                                                     |
+| ------------ | ---------- | -------- | --------------------------------------------------------------- |
+| `name`       | `String`   | Required | Short name of the loader ('OBJ', 'PLY' etc)                     |
+| `extension`  | `String`   | Required | Three letter (typically) extension used by files of this format |
+| `extensions` | `String[]` | Required | Array of file extension strings supported by this loader        |
+| `category`   | `String`   | Optional | Indicates the type/shape of data                                |
+
+Note: Only one of `extension` or `extensions` is required. If both are supplied, `extensions` will be used.
 
 ### Test Function
 
