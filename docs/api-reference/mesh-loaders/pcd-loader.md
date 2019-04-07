@@ -18,9 +18,9 @@ Note: Currently only `ascii` and `binary` subformats are supported. Compressed b
 
 ```js
 import {PCDLoader} from '@loaders.gl/pcd';
-import {loadFile} from '@loaders.gl/core';
+import {load} from '@loaders.gl/core';
 
-const {header, attributes} = await loadFile(url, PCDLoader);
+const {header, attributes} = await load(url, PCDLoader);
 // Application code here, e.g:
 // return new Geometry(attributes)
 ```

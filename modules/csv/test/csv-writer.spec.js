@@ -11,8 +11,8 @@ License: MIT
 
 /* eslint-disable quotes */
 import test from 'tape-promise/tape';
-import {isBrowser, loadFile} from '@loaders.gl/core';
-import {parseFileAsIterator, parseFileAsAsyncIterator} from '@loaders.gl/core';
+import {isBrowser, load} from '@loaders.gl/core';
+import {parseAsIterator, parseAsAsyncIterator} from '@loaders.gl/core';
 import {CSVWriter} from '@loaders.gl/experimental';
 
 // Tests for Papa.unparse() function (JSON to CSV)

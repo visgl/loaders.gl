@@ -16,9 +16,9 @@ The `GLTFWriter` is a writer for glTF scenegraphs.
 
 ```js
 import {GLTFWriter} from '@loaders.gl/gltf';
-import {encodeFileSync} from '@loaders.gl/core';
+import {encodeSync} from '@loaders.gl/core';
 
-const arrayBuffer = encodeFileSync(gltf, GLTFWriter);
+const arrayBuffer = encodeSync(gltf, GLTFWriter);
 ```
 
 ## Options

@@ -1,13 +1,13 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
-import {fetchFile, parseFile, loadFile} from '@loaders.gl/core';
+import {fetchFile, parse, load} from '@loaders.gl/core';
 import {LASLoader, LASWorkerLoader} from '@loaders.gl/las';
 import {validateLoadedData} from 'test/common/conformance';
 
 const LAS_BINARY_URL = '@loaders.gl/las/test/data/indoor.laz';
 
 test('LASLoader#parseBinary', async t => {
-  const data = await parseFile(fetchFile(LAS_BINARY_URL), LASLoader, {skip: 10});
+  const data = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {skip: 10});
   validateLoadedData(t, data);
 
   t.is(data.header.vertexCount, data.loaderData.header.totalRead, 'Original header was found');
@@ -26,7 +26,7 @@ test('LASWorkerLoader#parseBinary', async t => {
     return;
   }
 
-  const data = await loadFile(LAS_BINARY_URL, LASWorkerLoader, {skip: 10});
+  const data = await load(LAS_BINARY_URL, LASWorkerLoader, {skip: 10});
   validateLoadedData(t, data);
 
   t.equal(data.attributes.POSITION.value.length, 80805 * 3, 'POSITION attribute was found');

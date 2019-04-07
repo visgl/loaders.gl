@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
-import {parseFileSync} from '@loaders.gl/core';
+import {parseSync} from '@loaders.gl/core';
 import {KMLasGeoJsonLoader} from '@loaders.gl/kml';
 
 import KML from './data/KML_Samples.kml';
@@ -27,7 +27,7 @@ test('KMLasGeoJsonLoader#parse(text)', t => {
   if (!KMLasGeoJsonLoader.supported) {
     t.comment('XML parsing not available');
   } else {
-    const data = parseFileSync(KML, KMLasGeoJsonLoader, {log: null});
+    const data = parseSync(KML, KMLasGeoJsonLoader, {log: null});
     t.equal(data.type, 'FeatureCollection', 'FeatureCollection found');
     t.equal(data.features.length, 19, 'Features were found');
   }

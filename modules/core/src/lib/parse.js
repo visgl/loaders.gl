@@ -4,8 +4,8 @@ import NullLog from './loader-utils/null-log';
 import {getRegisteredLoaders} from './register-loaders';
 import {parseWithLoader, parseWithLoaderInBatches, parseWithLoaderSync} from './parse-with-loader';
 
-export async function parseFile(data, loaders, options, url) {
-  // Signature: parseFile(data, options, url)
+export async function parse(data, loaders, options, url) {
+  // Signature: parse(data, options, url)
   // Uses registered loaders
   if (!Array.isArray(loaders) && !isLoaderObject(loaders)) {
     url = options;
@@ -29,8 +29,8 @@ export async function parseFile(data, loaders, options, url) {
   return await parseWithLoader(data, loader, options, url);
 }
 
-export function parseFileSync(data, loaders, options, url) {
-  // Signature: parseFileSync(data, options, url)
+export function parseSync(data, loaders, options, url) {
+  // Signature: parseSync(data, options, url)
   // Uses registered loaders
   if (!Array.isArray(loaders) && !isLoaderObject(loaders)) {
     url = options;
@@ -49,8 +49,8 @@ export function parseFileSync(data, loaders, options, url) {
   return parseWithLoaderSync(data, loader, options, url);
 }
 
-export async function parseFileInBatches(data, loaders, options, url) {
-  // Signature: parseFileInBatches(data, options, url)
+export async function parseInBatches(data, loaders, options, url) {
+  // Signature: parseInBatches(data, options, url)
   // Uses registered loaders
   if (!Array.isArray(loaders) && !isLoaderObject(loaders)) {
     url = options;
@@ -69,8 +69,8 @@ export async function parseFileInBatches(data, loaders, options, url) {
   return parseWithLoaderInBatches(data, loader, options, url);
 }
 
-export async function parseFileInBatchesSync(data, loaders, options, url) {
-  // Signature: parseFileInBatchesSync(data, options, url)
+export async function parseInBatchesSync(data, loaders, options, url) {
+  // Signature: parseInBatchesSync(data, options, url)
   // Uses registered loaders
   if (!Array.isArray(loaders) && !isLoaderObject(loaders)) {
     url = options;

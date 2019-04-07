@@ -11,7 +11,7 @@ References:
 
 ```js
 import {KMLLoader} from '@loaders.gl/kml';
-import {loadFileSync} from '@loaders.gl/core';
+import {load} from '@loaders.gl/core';
 ```
 
 ## Structure of Loaded Data

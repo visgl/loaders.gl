@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
-import {fetchFile, parseFile, loadFile} from '@loaders.gl/core';
+import {fetchFile, parse, load} from '@loaders.gl/core';
 import {PCDLoader, PCDWorkerLoader} from '@loaders.gl/pcd';
 
 import {validateLoadedData} from 'test/common/conformance';
@@ -9,7 +9,7 @@ const PCD_ASCII_URL = '@loaders.gl/pcd/test/data/simple-ascii.pcd';
 const PCD_BINARY_URL = '@loaders.gl/pcd/test/data/Zaghetto.pcd';
 
 test('PCDLoader#parse(text)', async t => {
-  const data = await parseFile(fetchFile(PCD_ASCII_URL), PCDLoader);
+  const data = await parse(fetchFile(PCD_ASCII_URL), PCDLoader);
   validateLoadedData(t, data);
 
   t.equal(data.mode, 0, 'mode is POINTS (0)');
@@ -22,7 +22,7 @@ test('PCDLoader#parse(text)', async t => {
 });
 
 test('PCDLoader#parse(binary)', async t => {
-  const data = await parseFile(fetchFile(PCD_BINARY_URL), PCDLoader);
+  const data = await parse(fetchFile(PCD_BINARY_URL), PCDLoader);
   validateLoadedData(t, data);
 
   t.equal(data.mode, 0, 'mode is POINTS (0)');
@@ -39,7 +39,7 @@ test('PCDWorkerLoader#parse(binary)', async t => {
     return;
   }
 
-  const data = await loadFile(PCD_BINARY_URL, PCDWorkerLoader);
+  const data = await load(PCD_BINARY_URL, PCDWorkerLoader);
   validateLoadedData(t, data);
 
   t.equal(data.mode, 0, 'mode is POINTS (0)');

@@ -1,5 +1,5 @@
 import test from 'tape-promise/tape';
-import {isBrowser, fetchFile, loadFile} from '@loaders.gl/core';
+import {isBrowser, fetchFile, load} from '@loaders.gl/core';
 import {loadImage, ImageLoader} from '@loaders.gl/images';
 import path from 'path';
 
@@ -52,14 +52,14 @@ test('images#loadImage (NODE)', async t => {
   t.end();
 });
 
-test('images#loadFile(ImageLoader) (NODE)', async t => {
+test('images#load(ImageLoader) (NODE)', async t => {
   if (isBrowser) {
     t.comment('Skip loadImage file in browser');
     t.end();
     return;
   }
 
-  const result = await loadFile(TEST_URL, ImageLoader);
+  const result = await load(TEST_URL, ImageLoader);
   t.ok(result, 'image loaded successfully');
   t.end();
 });

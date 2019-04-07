@@ -1,4 +1,4 @@
-import {loadFile} from '@loaders.gl/core';
+import {load} from '@loaders.gl/core';
 import {PLYLoader} from '@loaders.gl/ply';
 import {getModel, drawModelInViewport} from '../test-utils/get-model';
 
@@ -9,7 +9,7 @@ export default [
     name: 'PLYLoader',
     goldenImage: './test/render/golden-images/ply-loader.png',
     onInitialize: async ({gl}) => {
-      const model = getModel(gl, await loadFile(PLY_BINARY_URL, PLYLoader));
+      const model = getModel(gl, await load(PLY_BINARY_URL, PLYLoader));
       return {model};
     },
     onRender: ({model, done}) => {

@@ -1,5 +1,5 @@
 import test from 'tape-promise/tape';
-import {encodeFile, parseFile, TextDecoder} from '@loaders.gl/core';
+import {encode, parse, TextDecoder} from '@loaders.gl/core';
 import {ZipWriter, ZipLoader} from '@loaders.gl/zip';
 
 const FILE_MAP = {
@@ -10,8 +10,8 @@ const FILE_MAP = {
 };
 
 test('Zip#encode/decode', t => {
-  encodeFile(FILE_MAP, ZipWriter)
-    .then(arrayBuffer => parseFile(arrayBuffer, ZipLoader))
+  encode(FILE_MAP, ZipWriter)
+    .then(arrayBuffer => parse(arrayBuffer, ZipLoader))
     .then(fileMap => {
       for (const key in FILE_MAP) {
         const text = new TextDecoder().decode(fileMap[key]);

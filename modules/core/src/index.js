@@ -5,21 +5,14 @@ export {writeFile, writeFileSync} from './lib/fetch/write-file';
 
 // FILE PARSING AND ENCODING
 export {registerLoaders} from './lib/register-loaders';
-export {
-  parseFile,
-  parseFileSync,
-  parseFileInBatches,
-  parseFileInBatchesSync
-} from './lib/parse-file';
+export {parse, parseSync, parseInBatches, parseInBatchesSync} from './lib/parse';
 
 // LOADING (READING + PARSING)
-export {loadFileInBatches, loadFile, loadFileSync} from './lib/load-file';
-export {loadImage} from './lib/load-image';
-export {ImageBitmapLoader, HTMLImageLoader, PlatformImageLoader} from './lib/image-loaders';
+export {load, loadInBatches} from './lib/load';
 
 // ENCODING AND SAVING
-export {encodeFile, encodeFileSync, encodeToStream} from './lib/encode-file';
-export {saveFile, saveFileSync} from './lib/save-file';
+export {encode, encodeSync, encodeInBatches} from './lib/encode';
+export {save, saveSync} from './lib/save';
 
 // "JAVASCRIPT" UTILS
 export {
@@ -66,4 +59,24 @@ export {default as assert} from './utils/assert';
 export {getMeshSize as _getMeshSize} from './categories/mesh/mesh-utils';
 
 // DEPRECATED
+export {loadImage} from './lib/load-image';
+
 export {createReadStream} from './lib/fetch/fetch-file';
+
+import {parse, parseSync} from './lib/parse';
+import {load} from './lib/load';
+
+export function parseFile(...args) {
+  console.warn('parseFile() deprecated, use parse()'); // eslint-disable-line
+  return parse(...args);
+}
+
+export function parseFileSync(...args) {
+  console.warn('parseFileSync() deprecated, use parseSync()'); // eslint-disable-line
+  return parseSync(...args);
+}
+
+export function loadFile(...args) {
+  console.warn('loadFile() deprecated, use load()'); // eslint-disable-line
+  return load(...args);
+}

@@ -12,13 +12,13 @@ References:
 
 ```js
 import {GLBParser} from '@loaders.gl/gltf';
-import {loadFileSync} from '@loaders.gl/core';
+import {load} from '@loaders.gl/core';
 
 // Create a parser
 const glbParser = new GLBParser();
 
 // Load and parse a file
-const GLB_BINARY = loadFileSync(...);
+const GLB_BINARY = await load(...);
 glbParser.parse(GLB_BINARY);
 
 // Get the complete GLB JSON structure

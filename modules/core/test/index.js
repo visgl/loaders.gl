@@ -12,6 +12,4 @@ import './lib/fetch/fetch-file.spec';
 
 import './lib/loader-utils/auto-parse.spec';
 
-import './lib/image-loaders.spec';
-import './lib/load-image.spec';
-import './lib/load-file.spec';
+import './lib/load.spec';

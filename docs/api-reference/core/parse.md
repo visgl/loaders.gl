@@ -1,16 +1,16 @@
-# parseFile
+# parse
 
-This function parses already loaded data. As a special case, it can also load (and then parse) data from `fetch` or `fetchFile` response object).
+This function parses already loaded data. As a special case, it can also load (and then parse) data from a `fetch` or `fetchFile` response object).
 
 ## Usage
 
 The return value from `fetch` or `fetchFile` is a `Promise` that resolves to the fetch response object and can be passed directly to the non-sync parser functions:
 
 ```js
-import {fetchFile, parseFile} from '@loaders.gl/core';
+import {fetchFile, parse} from '@loaders.gl/core';
 import {OBJLoader} from '@loaders.gl/obj';
 
-data = await parseFile(fetchFile(url), OBJLoader);
+data = await parse(fetchFile(url), OBJLoader);
 // Application code here
 ...
 ```
@@ -18,10 +18,10 @@ data = await parseFile(fetchFile(url), OBJLoader);
 Batched (streaming) parsing is supported by some loaders
 
 ```js
-import {fetchFile, parseFileInBatches} from '@loaders.gl/core';
+import {fetchFile, parseInBatches} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/obj';
 
-const batchIterator = await parseFileInBatches(fetchFile(url), CSVLoader);
+const batchIterator = await parseInBatches(fetchFile(url), CSVLoader);
 for await (const batch of batchIterator) {
   console.log(batch.length);
 }
@@ -29,9 +29,9 @@ for await (const batch of batchIterator) {
 
 ## Functions
 
-### parseFileInBatches(data : any, loaders : Object | Object\[] [, options : Object [, url : String]]) : AsyncIterator
+### parseInBatches(data : any, loaders : Object | Object\[] [, options : Object [, url : String]]) : AsyncIterator
 
-### parseFileInBatches(data : any [, options : Object [, url : String]]) : AsyncIterator
+### parseInBatches(data : any [, options : Object [, url : String]]) : AsyncIterator
 
 > Batched loading is not supported by all _loader objects_
 
@@ -57,9 +57,9 @@ Returns:
 
 - Returns an async iterator that yields batches of data. The exact format for the batches depends on the _loader object_ category.
 
-### parseFile(data : ArrayBuffer | String, loaders : Object | Object\[] [, options : Object [, url : String]]) : Promise<Any>
+### parse(data : ArrayBuffer | String, loaders : Object | Object\[] [, options : Object [, url : String]]) : Promise<Any>
 
-### parseFile(data : ArrayBuffer | String, [, options : Object [, url : String]]) : Promise<Any>
+### parse(data : ArrayBuffer | String, [, options : Object [, url : String]]) : Promise<Any>
 
 Parses data asynchronously using the provided loader.
 Used to parse data with a selected _loader object_. An array of `loaders` can be provided, in which case an attempt will be made to autodetect which loader is appropriate for the file (using url extension and header matching).
@@ -84,9 +84,9 @@ Returns:
 
 - Return value depends on the _loader object_ category
 
-### parseFileSync(fileData : ArrayBuffer | String, loaders : Object | Object\[], [, options : Object [, url : String]]) : any
+### parseSync(fileData : ArrayBuffer | String, loaders : Object | Object\[], [, options : Object [, url : String]]) : any
 
-### parseFileSync(fileData : ArrayBuffer | String, [, options : Object [, url : String]]) : any
+### parseSync(fileData : ArrayBuffer | String, [, options : Object [, url : String]]) : any
 
 > Synchronous parsing is not supported by all _loader objects_
 

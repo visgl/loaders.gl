@@ -16,7 +16,7 @@ Encodes a mesh or point cloud (maps of attributes) using [Draco3D](https://googl
 
 ```js
 import {DracoWriter} from '@loaders.gl/draco';
-import {encodeFile} from '@loaders.gl/core';
+import {encode} from '@loaders.gl/core';
 
 const mesh = {
   attributes: {
@@ -24,7 +24,7 @@ const mesh = {
   }
 };
 
-const data = await encodeFile(mesh, DracoWriter, options);
+const data = await encode(mesh, DracoWriter, options);
 ```
 
 ## Options

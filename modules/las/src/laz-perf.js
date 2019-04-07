@@ -33575,7 +33575,7 @@ export default function getModule() {
     },
     DB_VERSION: 20,
     DB_STORE_NAME: 'FILE_DATA',
-    saveFilesToDB: function(paths, onload, onerror) {
+    savesToDB: function(paths, onload, onerror) {
       onload = onload || function() {};
       onerror = onerror || function() {};
       var indexedDB = FS.indexedDB();
@@ -33615,7 +33615,7 @@ export default function getModule() {
       };
       openRequest.onerror = onerror;
     },
-    loadFilesFromDB: function(paths, onload, onerror) {
+    loadsFromDB: function(paths, onload, onerror) {
       onload = onload || function() {};
       onerror = onerror || function() {};
       var indexedDB = FS.indexedDB();

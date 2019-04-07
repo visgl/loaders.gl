@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
-import {loadFile} from '@loaders.gl/core';
+import {load} from '@loaders.gl/core';
 import {OBJLoader, OBJWorkerLoader} from '@loaders.gl/obj';
 
 // Note: The Sublime Text Editor hides OBJ files from the file tree...
@@ -9,7 +9,7 @@ import {validateLoadedData} from 'test/common/conformance';
 const OBJ_ASCII_URL = '@loaders.gl/obj/test/data/bunny.obj';
 
 test('OBJLoader#parseText', async t => {
-  const data = await loadFile(OBJ_ASCII_URL, OBJLoader);
+  const data = await load(OBJ_ASCII_URL, OBJLoader);
   validateLoadedData(t, data);
 
   t.equal(data.mode, 4, 'mode is TRIANGLES (4)');
@@ -36,7 +36,7 @@ test('OBJWorkerLoader#parse(text)', async t => {
     return;
   }
 
-  const data = await loadFile(OBJ_ASCII_URL, OBJWorkerLoader);
+  const data = await load(OBJ_ASCII_URL, OBJWorkerLoader);
 
   validateLoadedData(t, data);
 

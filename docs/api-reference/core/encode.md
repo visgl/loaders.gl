@@ -1,10 +1,10 @@
-# encodeFile
+# encode
 
 > Needs update
 
 ## Functions
 
-### encodeFile(fileData : ArrayBuffer | String, writer : Object | Array [, options : Object [, url : String]]) : Promise<Any>
+### encode(fileData : ArrayBuffer | String, writer : Object | Array [, options : Object [, url : String]]) : Promise<Any>
 
 Encodes data asynchronously using the provided writer.
 
@@ -15,7 +15,7 @@ Encodes data asynchronously using the provided writer.
 
 - `options.log`=`console` Any object with methods `log`, `info`, `warn` and `error`. By default set to `console`. Setting log to `null` will turn off logging.
 
-### encodeFileSync(fileData : ArrayBuffer | String, writer : Object | Array, [, options : Object [, url : String]]) : any
+### encodeSync(fileData : ArrayBuffer | String, writer : Object | Array, [, options : Object [, url : String]]) : any
 
 Encodes data synchronously using the provided writer, if possible. If not, returns `null`, in which case asynchronous loading is required.
 

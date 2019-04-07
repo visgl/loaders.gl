@@ -16,7 +16,7 @@ Encodes a filemap into a Zip Archive. Returns an `ArrayBuffer` that is a valid Z
 ## Usage
 
 ```js
-import {encodeFile, writeFile} from '@loaders.gl/core';
+import {encode, writeFile} from '@loaders.gl/core';
 import {ZipWriter} from '@loaders.gl/zip';
 
 const FILEMAP = {
@@ -24,7 +24,7 @@ const FILEMAP = {
   'directory/filename2': ...
 };
 
-const arrayBuffer = await encodeFile(FILE_MAP, ZipWriter)
+const arrayBuffer = await encode(FILE_MAP, ZipWriter)
 writeFile(zipFileName, arrayBuffer);
 ```
 

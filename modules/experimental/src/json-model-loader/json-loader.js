@@ -1,11 +1,11 @@
-import {loadFile} from './browser-load-file';
+import {load} from './browser-load-file';
 import {Program} from '../webgl';
 import {Model} from '../core';
 import {Geometry} from '../geometry';
 
 // Loads a simple JSON format
 export function loadModel(gl, opts = {}) {
-  return loadFile(opts).then(([file]) => parseModel(gl, Object.assign({file}, opts)));
+  return load(opts).then(([file]) => parseModel(gl, Object.assign({file}, opts)));
 }
 
 export function parseModel(gl, opts = {}) {
