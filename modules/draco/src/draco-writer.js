@@ -11,7 +11,7 @@ function encodeSync(data, options) {
 
 export default {
   name: 'DRACO',
-  extension: 'drc',
+  extensions: ['drc'],
   encodeSync,
   options: {
     pointcloud: false // Set to true if pointcloud (mode: 0, no indices)

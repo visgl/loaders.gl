@@ -8,7 +8,7 @@ function testText(text) {
 
 export default {
   name: 'KML',
-  extension: 'kml',
+  extensions: ['kml'],
   supported: parseXMLSupported(),
   testText,
   parseTextSync: parseXML,

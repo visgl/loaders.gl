@@ -8,7 +8,7 @@ const DEFAULT_OPTIONS = {};
 
 export default {
   name: 'PLY',
-  extension: 'ply',
+  extensions: ['ply'],
   parseAsIterator: parsePLYStream,
   DEFAULT_OPTIONS
 };

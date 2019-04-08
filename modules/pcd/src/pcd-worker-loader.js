@@ -3,6 +3,6 @@ import worker from '../dist/pcd-loader.worker.js';
 
 export default {
   name: 'PCD',
-  extension: 'pcd',
+  extensions: ['pcd'],
   worker
 };

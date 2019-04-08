@@ -7,7 +7,7 @@ function testOBJFile(text) {
 
 export default {
   name: 'OBJ',
-  extension: 'obj',
+  extensions: ['obj'],
   testText: testOBJFile,
   parseTextSync: parseOBJ
 };

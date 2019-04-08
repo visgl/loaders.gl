@@ -3,6 +3,6 @@ import worker from '../dist/ply-loader.worker.js';
 
 export default {
   name: 'PLY',
-  extension: 'ply',
+  extensions: ['ply'],
   worker
 };

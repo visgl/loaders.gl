@@ -2,7 +2,7 @@ import JSZip from 'jszip';
 
 export const ZipWriter = {
   name: 'Zip Archive',
-  extension: 'zip',
+  extensions: ['zip'],
   category: 'archive',
   mimeType: 'application/zip',
   encode: encodeZipAsync

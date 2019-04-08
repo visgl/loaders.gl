@@ -3,6 +3,6 @@ import worker from '../dist/obj-loader.worker.js';
 
 export default {
   name: 'OBJ',
-  extension: 'obj',
+  extensions: ['obj'],
   worker
 };

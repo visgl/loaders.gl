@@ -4,7 +4,7 @@ import {encodeImageToStreamNode} from './write-image/encode-image-node';
 
 export default {
   name: 'Images',
-  extension: 'jpeg',
+  extensions: ['jpeg'],
   encode: isBrowser && encodeImageBrowser,
   encodeToStream: !isBrowser && encodeImageToStreamNode,
   DEFAULT_OPTIONS: {

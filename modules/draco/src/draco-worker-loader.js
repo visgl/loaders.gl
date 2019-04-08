@@ -3,6 +3,6 @@ import worker from '../dist/draco-loader.worker.js';
 
 export default {
   name: 'DRACO',
-  extension: 'drc',
+  extensions: ['drc'],
   worker
 };

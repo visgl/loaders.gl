@@ -4,7 +4,7 @@ function parseTextSync(text, options) {
 
 export default {
   name: 'JSON',
-  extension: 'json',
+  extensions: ['json'],
   testText: null,
   parseTextSync
 };

@@ -5,7 +5,7 @@ import AsyncIteratorStreamer from './papaparse/async-iterator-streamer';
 
 export default {
   name: 'CSV',
-  extension: 'csv',
+  extensions: ['csv'],
   testText: null,
   parseInBatches: parseCSVInBatches,
   options: {

@@ -13,6 +13,7 @@ test('load#load', t => {
 test('load#auto detect loader', t => {
   registerLoaders({
     name: 'JSON',
+    extensions: ['json'],
     parse: data => {
       t.ok(data instanceof ArrayBuffer, 'Got ArrayBuffer');
       t.end();
