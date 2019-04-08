@@ -3,6 +3,6 @@ import worker from '../dist/arrow-loader.worker.js';
 
 export default {
   name: 'Apache Arrow',
-  extension: 'arrow',
+  extensions: ['arrow'],
   worker
 };

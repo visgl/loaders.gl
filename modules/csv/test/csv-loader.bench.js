@@ -9,7 +9,7 @@ import {csvParseRows} from 'd3-dsv';
 
 const D3CSVLoader = {
   name: 'CSV',
-  extension: 'csv',
+  extensions: ['csv'],
   testText: null,
   parseTextSync: csvParseRows
 };

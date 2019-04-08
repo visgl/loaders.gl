@@ -26,7 +26,7 @@ function parseTextSync(text, options = DEFAULT_OPTIONS) {
 
 export default {
   name: 'KML',
-  extension: 'kml',
+  extensions: ['kml'],
   category: 'geojson',
   supported: XMLLoader.supported,
   testText,

@@ -25,12 +25,7 @@ export function isLoaderObject(loader) {
 export function normalizeLoader(loader) {
   assert(isLoaderObject(loader));
 
-  // Ensure loader.extensions is an array
-  const extensions = loader.extensions || loader.extension;
-  assert(extensions);
-  loader.extensions = Array.isArray(extensions) ? extensions : [extensions];
-  assert(loader.extensions.length > 0);
-  delete loader.extension;
+  // NORMALIZE [LOADER, OPTIONS] => LOADER
 
   // If [loader, options], create a new loaders object with options merged in
   let options;
@@ -42,6 +37,23 @@ export function normalizeLoader(loader) {
       options: {...loader.options, options}
     };
   }
+
+  // NORMALIZE LOADER.EXTENSIONS
+
+  // Remove `extension`` prop, replace with `extensions``
+  if (loader.extension) {
+    loader.extensions = loader.extensions || [loader.extension];
+    delete loader.extension;
+  }
+
+  // Ensure loader.extensions is an array
+  if (!Array.isArray(loader.extensions)) {
+    loader.extensions = [loader.extensions];
+  }
+
+  assert(loader.extensions && loader.extensions.length > 0 && loader.extensions[0]);
+
+  // NORMALIZE text and binary flags
 
   // Ensure at least one of text/binary flags are properly set
   if (loader.parseTextSync) {
