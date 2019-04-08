@@ -30,6 +30,7 @@ export function normalizeLoader(loader) {
   assert(extensions);
   loader.extensions = Array.isArray(extensions) ? extensions : [extensions];
   assert(loader.extensions.length > 0);
+  delete loader.extension;
 
   // If [loader, options], create a new loaders object with options merged in
   let options;
