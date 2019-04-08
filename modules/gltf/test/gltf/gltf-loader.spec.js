@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
 
-import {loadFile, parseFileSync, fetchFile} from '@loaders.gl/core';
+import {load, parseSync, fetchFile} from '@loaders.gl/core';
 import {GLTFLoader, GLBParser, GLTFParser} from '@loaders.gl/gltf';
 
 const GLTF_BINARY_URL = '@loaders.gl/gltf/test/data/gltf-2.0/2CylinderEngine.glb';
@@ -21,7 +21,7 @@ test('GLTFParser#parseSync(text/JSON)', async t => {
   const response = await fetchFile(GLTF_JSON_URL);
   const data = await response.text();
 
-  let gltf = parseFileSync(data, GLTFLoader);
+  let gltf = parseSync(data, GLTFLoader);
   t.ok(gltf, 'GLTFLoader returned parsed data');
 
   gltf = new GLTFParser().parseSync(data);
@@ -34,7 +34,7 @@ test('GLTFParser#parseSync(binary)', async t => {
   const response = await fetchFile(GLTF_BINARY_URL);
   const data = await response.arrayBuffer();
 
-  let gltf = parseFileSync(data, GLTFLoader);
+  let gltf = parseSync(data, GLTFLoader);
   t.ok(gltf, 'GLTFLoader returned parsed data');
 
   gltf = new GLTFParser().parseSync(data);
@@ -47,14 +47,14 @@ test('GLTFParser#parseSync(binary)', async t => {
   t.end();
 });
 
-test('GLTFLoader#loadFile(binary)', async t => {
-  const data = await loadFile(GLTF_BINARY_URL, GLTFLoader);
+test('GLTFLoader#load(binary)', async t => {
+  const data = await load(GLTF_BINARY_URL, GLTFLoader);
   t.ok(data.asset, 'GLTFLoader returned parsed data');
   t.end();
 });
 
-test('GLTFLoader#loadFile(text)', async t => {
-  const data = await loadFile(GLTF_JSON_URL, GLTFLoader);
+test('GLTFLoader#load(text)', async t => {
+  const data = await load(GLTF_JSON_URL, GLTFLoader);
   t.ok(data.asset, 'GLTFLoader returned parsed data');
   t.end();
 });

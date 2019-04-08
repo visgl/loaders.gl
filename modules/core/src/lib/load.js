@@ -1,17 +1,17 @@
-import {fetchFile, readFileSync} from './fetch/fetch-file';
+import {fetchFile} from './fetch/fetch-file';
 import {isLoaderObject} from './loader-utils/normalize-loader';
 import {autoDetectLoader} from './loader-utils/auto-detect-loader';
 
-import {parseFile, parseFileSync, parseFileInBatches} from './parse-file';
+import {parse, parseInBatches} from './parse';
 import {getRegisteredLoaders} from './register-loaders';
 
-export async function loadFileInBatches(url, loaders, options) {
+export async function loadInBatches(url, loaders, options) {
   const response = await fetchFile(url, options);
-  return parseFileInBatches(response, loaders, options, url);
+  return parseInBatches(response, loaders, options, url);
 }
 
-export async function loadFile(url, loaders, options) {
-  // Signature: loadFile(url, options)
+export async function load(url, loaders, options) {
+  // Signature: load(url, options)
   // Uses registered loaders
   if (!Array.isArray(loaders) && !isLoaderObject(loaders)) {
     options = loaders;
@@ -28,12 +28,5 @@ export async function loadFile(url, loaders, options) {
 
   // at this point, data can be binary or text
   const response = await fetchFile(url, options);
-  return parseFile(response, loaders, options, url);
-}
-
-export function loadFileSync(url, loaders, options) {
-  const data = readFileSync(url, options);
-  const result = parseFileSync(data, loaders, options, url);
-  // Separate return to facilitate breakpoint setting
-  return result;
+  return parse(response, loaders, options, url);
 }

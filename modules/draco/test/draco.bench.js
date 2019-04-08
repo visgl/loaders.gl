@@ -1,4 +1,4 @@
-import {fetchFile, parseFileSync, encodeFile, _getMeshSize} from '@loaders.gl/core';
+import {fetchFile, parseSync, encode, _getMeshSize} from '@loaders.gl/core';
 import {DracoLoader, DracoWriter} from '@loaders.gl/draco';
 
 const OPTIONS = [
@@ -31,7 +31,7 @@ export default async function dracoBench(bench) {
   const rawSize = _getMeshSize(attributes);
 
   OPTIONS.forEach(options => {
-    const dracoEncoder = encodeFile({attributes}, DracoWriter, options);
+    const dracoEncoder = encode({attributes}, DracoWriter, options);
     const compressedPointCloud = dracoEncoder.encodePointCloud(attributes);
     // eslint-disable-next-line
     console.log(`${options.name} compression rate:
@@ -42,7 +42,7 @@ export default async function dracoBench(bench) {
         dracoEncoder.encodePointCloud(attributes);
       })
       .add(`DracoDecoder#decode point cloud#${options.name}`, () => {
-        parseFileSync(compressedPointCloud, DracoLoader);
+        parseSync(compressedPointCloud, DracoLoader);
       });
   });
 

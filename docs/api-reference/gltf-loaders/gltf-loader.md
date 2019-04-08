@@ -15,18 +15,18 @@ Parses a glTF file into a hierarchical scenegraph description that can be used t
 ## Usage
 
 ```
-import {loadFile} from '@loaders.gl/core';
+import {load} from '@loaders.gl/core';
 import {GLTFLoader} from '@loaders.gl/gltf';
-const gltf = await loadFile(url, GLTFLoader);
+const gltf = await load(url, GLTFLoader);
 ```
 
 To decompress Draco compressed meshes:
 
 ```
-import {loadFile} from '@loaders.gl/core';
+import {load} from '@loaders.gl/core';
 import {GLTFLoader} from '@loaders.gl/gltf';
 import {DracoLoader} from '@loaders.gl/draco';
-const gltf = loadFile(url, GLTFLoader, {DracoLoader, decompress: true});
+const gltf = load(url, GLTFLoader, {DracoLoader, decompress: true});
 ```
 
 ## Options

@@ -18,9 +18,9 @@ Note: LAZ is the compressed version of LAS
 
 ```js
 import {LASLoader} from '@loaders.gl/las';
-import {loadFile} from '@loaders.gl/core';
+import {load} from '@loaders.gl/core';
 
-const data = await loadFile(url, LASLoader, options);
+const data = await load(url, LASLoader, options);
 ```
 
 ## Options

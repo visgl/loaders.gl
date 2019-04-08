@@ -16,9 +16,9 @@ Decodes a mesh or point cloud (maps of attributes) using [DRACO compression](htt
 
 ```js
 import {DracoLoader} from '@loaders.gl/draco';
-import {loadFile} from '@loaders.gl/core';
+import {load} from '@loaders.gl/core';
 
-const data = await loadFile(url, DracoLoader, options);
+const data = await load(url, DracoLoader, options);
 ```
 
 ## Options

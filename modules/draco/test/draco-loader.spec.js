@@ -1,13 +1,13 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
-import {loadFile} from '@loaders.gl/core';
+import {load} from '@loaders.gl/core';
 import {DracoLoader, DracoWorkerLoader} from '@loaders.gl/draco';
 import {validateLoadedData} from 'test/common/conformance';
 
 const BUNNY_DRC_URL = '@loaders.gl/draco/test/data/bunny.drc';
 
 test('DracoLoader#parse and encode', async t => {
-  const data = await loadFile(BUNNY_DRC_URL, DracoLoader);
+  const data = await load(BUNNY_DRC_URL, DracoLoader);
   validateLoadedData(t, data);
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
 
@@ -21,7 +21,7 @@ test('DracoWorkerLoader#parse', async t => {
     return;
   }
 
-  const data = await loadFile(BUNNY_DRC_URL, DracoWorkerLoader);
+  const data = await load(BUNNY_DRC_URL, DracoWorkerLoader);
   validateLoadedData(t, data);
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
 

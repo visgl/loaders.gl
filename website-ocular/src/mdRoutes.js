@@ -70,7 +70,7 @@ export default [
             name: 'Core Functions',
             children: [
               {
-                name: 'loadFile',
+                name: 'load',
                 markdown: require('../../docs/api-reference/core/load-file.md')
               },
               {

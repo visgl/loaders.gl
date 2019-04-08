@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
-import {fetchFile, parseFile, parseFileSync, loadFile} from '@loaders.gl/core';
+import {fetchFile, parse, parseSync, load} from '@loaders.gl/core';
 import {getStreamIterator} from '@loaders.gl/core';
 
 import {PLYLoader, PLYWorkerLoader, _PLYStreamLoader} from '@loaders.gl/ply';
@@ -17,7 +17,7 @@ function validateTextPLY(t, data) {
 }
 
 test('PLYLoader#parse(textFile)', async t => {
-  const data = await parseFile(fetchFile(PLY_CUBE_ATT_URL), PLYLoader, {});
+  const data = await parse(fetchFile(PLY_CUBE_ATT_URL), PLYLoader, {});
 
   validateLoadedData(t, data);
   validateTextPLY(t, data);
@@ -25,7 +25,7 @@ test('PLYLoader#parse(textFile)', async t => {
 });
 
 test('PLYLoader#parse(binary)', async t => {
-  const data = await parseFile(fetchFile(PLY_BUN_BINARY_URL), PLYLoader);
+  const data = await parse(fetchFile(PLY_BUN_BINARY_URL), PLYLoader);
 
   validateLoadedData(t, data);
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
@@ -33,16 +33,16 @@ test('PLYLoader#parse(binary)', async t => {
 });
 
 test('PLYLoader#parse(ascii)', async t => {
-  const data = await parseFile(fetchFile(PLY_BUN_ZIPPER_URL), PLYLoader);
+  const data = await parse(fetchFile(PLY_BUN_ZIPPER_URL), PLYLoader);
 
   validateLoadedData(t, data);
   t.equal(data.attributes.POSITION.value.length, 107841, 'POSITION attribute was found');
   t.end();
 });
 
-test('PLYLoader#parseFileSync(binary)', async t => {
+test('PLYLoader#parseSync(binary)', async t => {
   const arrayBuffer = await fetchFile(PLY_BUN_ZIPPER_URL).then(res => res.arrayBuffer());
-  const data = parseFileSync(arrayBuffer, PLYLoader);
+  const data = parseSync(arrayBuffer, PLYLoader);
 
   validateLoadedData(t, data);
   t.equal(data.attributes.POSITION.value.length, 107841, 'POSITION attribute was found');
@@ -56,7 +56,7 @@ test('PLYLoader#parse(WORKER)', async t => {
     return;
   }
 
-  const data = await loadFile(PLY_BUN_ZIPPER_URL, PLYWorkerLoader);
+  const data = await load(PLY_BUN_ZIPPER_URL, PLYWorkerLoader);
 
   validateLoadedData(t, data);
   t.equal(data.attributes.POSITION.value.length, 107841, 'POSITION attribute was found');

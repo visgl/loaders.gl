@@ -15,10 +15,10 @@ Decodes a Zip Archive into a file map.
 ## Usage
 
 ```js
-import {parseFile} from '@loaders.gl/core';
+import {parse} from '@loaders.gl/core';
 import {ZipLoader} from '@loaders.gl/zip';
 
-const fileMap = await parseFile(arrayBuffer, ZipLoader);
+const fileMap = await parse(arrayBuffer, ZipLoader);
 for (const fileName in FILE_MAP) {
   const fileData = fileMap[key];
   // Do something with the subfile

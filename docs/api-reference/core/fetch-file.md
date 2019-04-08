@@ -7,10 +7,10 @@ Small optional file reading utilities that work consistently across browser (bot
 Use the `fetchFile` function as follows:
 
 ```js
-import {fetchFile, parseFile} from '@loaders.gl/core';
+import {fetchFile, parse} from '@loaders.gl/core';
 import {OBJLoader} from '@loaders.gl/obj';
 
-data = await parseFile(fetchFile(url), OBJLoader);
+data = await parse(fetchFile(url), OBJLoader);
 // Application code here
 ...
 ```
@@ -18,10 +18,10 @@ data = await parseFile(fetchFile(url), OBJLoader);
 Note that if you don't care about Node.js compatibility, you can just use the browser's built-in `fetch` directly.
 
 ```js
-import {parseFile} from '@loaders.gl/core';
+import {parse} from '@loaders.gl/core';
 import {OBJLoader} from '@loaders.gl/obj';
 
-data = await parseFile(fetch(url), OBJLoader);
+data = await parse(fetch(url), OBJLoader);
 // Application code here
 ...
 ```

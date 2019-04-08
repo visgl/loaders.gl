@@ -17,13 +17,13 @@ References:
 
 ```js
 import {GLTFParser} from '@loaders.gl/gltf';
-import {loadFileSync} from '@loaders.gl/core';
+import {load} from '@loaders.gl/core';
 
 // Create a parser
 const gltfParser = new GLTFParser();
 
 // Load and parse a file
-const GLTF_BINARY = loadFileSync(...);
+const GLTF_BINARY = await load(...);
 gltfParser.parseSync(GLTF_BINARY);
 
 // Get the complete glTF JSON structure

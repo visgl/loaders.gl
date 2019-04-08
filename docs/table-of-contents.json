@@ -31,10 +31,12 @@
         {
           "title": "Core Functions",
           "entries": [
-            {"entry": "docs/api-reference/core/load-file"},
             {"entry": "docs/api-reference/core/load-image"},
-            {"entry": "docs/api-reference/core/parse-file"},
-            {"entry": "docs/api-reference/core/read-file"},
+            {"entry": "docs/api-reference/core/load"},
+            {"entry": "docs/api-reference/core/parse"},
+            {"entry": "docs/api-reference/core/encode"},
+            {"entry": "docs/api-reference/core/fetch-file"},
+            {"entry": "docs/api-reference/core/save"},
             {"entry": "docs/api-reference/core/set-path-prefix"},
             {"entry": "docs/api-reference/core/image-utilities"},
             {"entry": "docs/api-reference/core/binary-utilities"},

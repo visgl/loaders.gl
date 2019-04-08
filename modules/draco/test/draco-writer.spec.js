@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
-import {encodeFileSync, fetchFile, parseFileSync, _getMeshSize} from '@loaders.gl/core';
+import {encodeSync, fetchFile, parseSync, _getMeshSize} from '@loaders.gl/core';
 import {DracoLoader, DracoWriter, DracoBuilder} from '@loaders.gl/draco';
 import {validateLoadedData} from 'test/common/conformance';
 
@@ -31,10 +31,10 @@ async function loadBunny() {
   const response = await fetchFile(BUNNY_DRC_URL);
   const arrayBuffer = await response.arrayBuffer();
   // Decode Loaded Mesh to use as input data for encoders
-  return parseFileSync(arrayBuffer, DracoLoader);
+  return parseSync(arrayBuffer, DracoLoader);
 }
 
-test('DracoWriter#encodeFileSync(bunny.drc)', async t => {
+test('DracoWriter#encodeSync(bunny.drc)', async t => {
   const data = await loadBunny();
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
 
@@ -56,14 +56,14 @@ test('DracoWriter#encodeFileSync(bunny.drc)', async t => {
 
     let compressedMesh;
     t.doesNotThrow(() => {
-      compressedMesh = encodeFileSync(mesh, DracoWriter, tc.options);
+      compressedMesh = encodeSync(mesh, DracoWriter, tc.options);
       const ratio = meshSize / compressedMesh.byteLength;
       t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
     }, `${tc.title} did not trow`);
 
     if (!tc.options.pointcloud) {
       // Decode the mesh
-      const data2 = parseFileSync(compressedMesh, DracoLoader);
+      const data2 = parseSync(compressedMesh, DracoLoader);
       validateLoadedData(t, data2);
 
       // t.comment(JSON.stringify(data));
@@ -108,7 +108,7 @@ test('DracoParser#encode(bunny.drc)', async t => {
 
     if (!tc.options.pointcloud) {
       // Decode the mesh
-      const data2 = parseFileSync(compressedMesh, DracoLoader);
+      const data2 = parseSync(compressedMesh, DracoLoader);
       validateLoadedData(t, data2);
 
       // t.comment(JSON.stringify(data));

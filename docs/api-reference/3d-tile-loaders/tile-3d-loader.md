@@ -15,18 +15,18 @@ Parses a [3D tile](https://github.com/AnalyticalGraphicsInc/3d-tiles). glTF file
 ## Usage
 
 ```
-import {loadFile} from '@loaders.gl/core';
+import {load} from '@loaders.gl/core';
 import {Tile3DLoader} from '@loaders.gl/3d-tiles';
-const gltf = await loadFile(url, Tile3DLoader);
+const gltf = await load(url, Tile3DLoader);
 ```
 
 To decompress tiles containing Draco compressed glTF models or Draco compressed point clouds:
 
 ```
-import {loadFile} from '@loaders.gl/core';
+import {load} from '@loaders.gl/core';
 import {Tile3DLoader} from '@loaders.gl/3d-tiles';
 import {DracoDecoder} from '@loaders.gl/draco';
-const gltf = loadFile(url, Tile3DLoader, {DracoDecoder, decompress: true});
+const gltf = load(url, Tile3DLoader, {DracoDecoder, decompress: true});
 ```
 
 ## Options
@@ -48,7 +48,7 @@ const gltf = loadFile(url, Tile3DLoader, {DracoDecoder, decompress: true});
 
 Returns a JSON object with "embedded" binary data in the form of typed javascript arrays.
 
-When parsed asynchronously (not using `loadSync` or `parseSync`):
+When parsed asynchronously (i.e. not using `parseSync`):
 
 - linked binary resources will be loaded and resolved (if url is available).
 - base64 encoded binary data inside the JSON payload will be decoded

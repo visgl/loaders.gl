@@ -1,4 +1,4 @@
-import {loadFile, fetchFile, parseFileSync, encodeFileSync} from '@loaders.gl/core';
+import {load, fetchFile, parseSync, encodeSync} from '@loaders.gl/core';
 import {DracoWriter, DracoLoader} from '@loaders.gl/draco';
 import {LASLoader} from '@loaders.gl/las';
 
@@ -33,7 +33,7 @@ export default [
     name: 'LAZ pointcloud',
     disabled: true, // Seems breaking on master
     onInitialize: async ({gl}) => {
-      const lazPointCloud = await loadFile(LAS_BINARY_URL, LASLoader, {skip: 10});
+      const lazPointCloud = await load(LAS_BINARY_URL, LASLoader, {skip: 10});
       const model = getModel(gl, lazPointCloud);
       return {model, lazPointCloud};
     },
@@ -78,7 +78,7 @@ export default [
     onInitialize: async ({gl}) => {
       const kittiPointCloudRaw = await loadKittiPointCloud();
       // Encode/decode mesh with Draco
-      const compressedMesh = encodeFileSync({attributes: kittiPointCloudRaw}, DracoWriter, {
+      const compressedMesh = encodeSync({attributes: kittiPointCloudRaw}, DracoWriter, {
         pointcloud: true,
         quantization: {
           POSITION: 14
@@ -87,7 +87,7 @@ export default [
 
       // eslint-disable-next-line
       // console.log(compressedMesh.byteLength);
-      const kittiPointCloudFromDraco = parseFileSync(compressedMesh, DracoLoader);
+      const kittiPointCloudFromDraco = parseSync(compressedMesh, DracoLoader);
       const model = getModel(gl, kittiPointCloudFromDraco);
       return {model};
     },

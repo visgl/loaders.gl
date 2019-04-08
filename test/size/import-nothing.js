@@ -1,3 +1,3 @@
-import {parseFile} from '@loaders.gl/core';
+import {parse} from '@loaders.gl/core';
 
-console.log(parseFile); // eslint-disable-line
+console.log(parse); // eslint-disable-line

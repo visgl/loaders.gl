@@ -40,12 +40,12 @@ Note that the following `papaparse` options are NOT supported by `CSVLoader` (th
 | `header`=`false`   | If true, the first row of parsed data will be interpreted as field names. \* | Header is detected and parsed by `CSVLoader`                                    |
 | `transformHeader`= | Function to apply on each header.                                            | (Only available in version 5.0)                                                 |
 | `worker`           | Whether to use a worker thread.                                              | Use `CSVWorkerLoader` instead.                                                  |
-| `step`             | Callback function for streaming.                                             | Use `loadFileInBatches` instead.                                                |
-| `complete`         | Callback function for streaming.                                             | Use `loadFileInBatches` instead.                                                |
+| `step`             | Callback function for streaming.                                             | Use `loadInBatches` instead.                                                    |
+| `complete`         | Callback function for streaming.                                             | Use `loadInBatches` instead.                                                    |
 | `error`            | Callback function for error.                                                 | Errors will be handled by `CSVLoader`.                                          |
 | `download`         | First argument is URL from which to download a file.                         | Use external functions to load data (such as `fetch` or `fetchFile`).           |
-| `chunk`            | Callback executed after every chunk is loaded.                               | Use `loadFileInBatches` instead.                                                |
-| `beforeFirstChunk` | Callback executed before parsing of first chunk.                             | Use `loadFileInBatches` instead.                                                |
+| `chunk`            | Callback executed after every chunk is loaded.                               | Use `loadInBatches` instead.                                                    |
+| `beforeFirstChunk` | Callback executed before parsing of first chunk.                             | Use `loadInBatches` instead.                                                    |
 | `withCredentials`  | `XMLHttpRequest.withCredentials` property.                                   | Control credentials using your loading functions (e.g. `fetch` or `fetchFile`). |
 
 ## Attributions
