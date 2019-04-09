@@ -55,9 +55,8 @@ test('OBJWorkerLoader#parse(text)', async t => {
   validateLoadedData(t, data);
 
   t.equal(data.mode, 4, 'mode is TRIANGLES (4)');
-  t.equal(data.indices.value.length, 14904, 'INDICES attribute was found');
 
-  t.equal(data.attributes.POSITION.value.length, 7509, 'POSITION attribute was found');
+  t.equal(data.attributes.POSITION.value.length, 14904 * 3, 'POSITION attribute was found');
   t.equal(data.attributes.POSITION.size, 3, 'POSITION attribute was found');
   t.end();
 });
