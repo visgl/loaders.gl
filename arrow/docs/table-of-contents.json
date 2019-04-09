@@ -1,0 +1,52 @@
+{
+  "id": "table-of-contents",
+  "chapters": [
+    {
+      "title": "Overview",
+      "entries": [
+        {"entry": "docs/README"},
+        {"entry": "docs/whats-new"},
+        {"entry": "docs/roadmap"},
+        {"entry": "docs/notes"}
+      ]
+    },
+    {
+      "title": "Developer Guide",
+      "entries": [
+        {"entry": "docs/developer-guide/big-ints"},
+        {"entry": "docs/developer-guide/converting-data"},
+        {"entry": "docs/developer-guide/data-frame-operations"},
+        {"entry": "docs/developer-guide/data-sources"},
+        {"entry": "docs/developer-guide/data-types"},
+        {"entry": "docs/developer-guide/getting-started"},
+        {"entry": "docs/developer-guide/memory-management"},
+        {"entry": "docs/developer-guide/predicates"},
+        {"entry": "docs/developer-guide/reading-and-writing"},
+        {"entry": "docs/developer-guide/tables"},
+        {"entry": "docs/developer-guide/typescript"}
+      ]
+    },
+    {
+      "title": "API Reference",
+      "entries": [
+        {"entry": "docs/api-reference/README"},
+        {"entry": "docs/api-reference/chunked"},
+        {"entry": "docs/api-reference/column"},
+        {"entry": "docs/api-reference/data-frame"},
+        {"entry": "docs/api-reference/data"},
+        {"entry": "docs/api-reference/dictionary"},
+        {"entry": "docs/api-reference/field"},
+        {"entry": "docs/api-reference/predicates"},
+        {"entry": "docs/api-reference/record-batch-reader"},
+        {"entry": "docs/api-reference/record-batch-writer"},
+        {"entry": "docs/api-reference/record-batch"},
+        {"entry": "docs/api-reference/row"},
+        {"entry": "docs/api-reference/schema"},
+        {"entry": "docs/api-reference/table"},
+        {"entry": "docs/api-reference/types"},
+        {"entry": "docs/api-reference/vector"},
+        {"entry": "docs/api-reference/vectors"}
+      ]
+    }
+  ]
+}
