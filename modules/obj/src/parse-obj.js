@@ -1,41 +1,67 @@
-import {Mesh} from 'webgl-obj-loader';
+import Mesh from './mesh';
 
 export default function parseOBJ(text) {
-  const mesh = new Mesh(text);
+  const objMesh = new Mesh(text);
 
-  const data = {
+  const vertexCount = objMesh.meshes.reduce((s, mesh) => s + mesh.header.vertexCount, 0);
+
+  return {
     // Data return by this loader implementation
     loaderData: {
       header: {}
     },
     // Normalised data
     header: {
-      indexCount: mesh.indices && mesh.indices.length,
-      vertexCount: mesh.vertices.length / 3,
-      primitiveCount: mesh.indices && mesh.indices.length / 3
+      vertexCount
     },
     mode: 4, // TRIANGLES
-    attributes: getNormalizedAttributes(mesh)
+
+    // TODO - render objects separately
+    attributes: mergeAttributes(objMesh.meshes, vertexCount)
   };
-
-  if (mesh.indices) {
-    data.indices = {
-      value: new Uint32Array(mesh.indices),
-      size: 1
-    };
-  }
-
-  return data;
 }
 
-function getNormalizedAttributes(mesh) {
-  const accessors = {};
-  accessors.POSITION = {value: new Float32Array(mesh.vertices), size: 3};
-  if (mesh.vertexNormals.length && !isNaN(mesh.vertexNormals[0])) {
-    accessors.NORMAL = {value: new Float32Array(mesh.vertexNormals), size: 3};
+// eslint-disable-next-line max-statements
+function mergeAttributes(meshes, vertexCount) {
+  const positions = new Float32Array(vertexCount * 3);
+  let normals;
+  let colors;
+  let uvs;
+  let i = 0;
+
+  for (const mesh of meshes) {
+    const {POSITION, NORMAL, COLOR_0, TEXCOORD_0} = mesh.attributes;
+
+    positions.set(POSITION.value, i * 3);
+
+    if (NORMAL) {
+      normals = normals || new Float32Array(vertexCount * 3);
+      normals.set(NORMAL.value, i * 3);
+    }
+    if (COLOR_0) {
+      colors = colors || new Float32Array(vertexCount * 3);
+      colors.set(COLOR_0.value, i * 3);
+    }
+    if (TEXCOORD_0) {
+      uvs = uvs || new Float32Array(vertexCount * 2);
+      uvs.set(TEXCOORD_0.value, i * 2);
+    }
+
+    i += POSITION.value.length / 3;
   }
-  if (mesh.textures.length) {
-    accessors.TEXCOORD_0 = {value: new Float32Array(mesh.textures), size: 2};
+
+  const attributes = {};
+  attributes.POSITION = {value: positions, size: 3};
+
+  if (normals) {
+    attributes.NORMAL = {value: normals, size: 3};
   }
-  return accessors;
+  if (colors) {
+    attributes.COLOR_0 = {value: colors, size: 3};
+  }
+  if (uvs) {
+    attributes.TEXCOORD_0 = {value: uvs, size: 2};
+  }
+
+  return attributes;
 }
