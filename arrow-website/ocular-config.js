@@ -1,7 +1,7 @@
 const DOCS = require('../docs/table-of-contents.json');
 
 module.exports = {
-  DOC_FOLDER: `${__dirname}/../docs/`,
+  DOC_FOLDER: `${__dirname}/../arrow-docs/`,
   ROOT_FOLDER: `${__dirname}/../`,
 
   EXAMPLES: [],
@@ -14,7 +14,7 @@ module.exports = {
   PROJECT_ORG: 'uber-web',
   PROJECT_URL: 'https://github.com/uber-web/loaders.gl',
   PROJECT_DESC: 'Apache Arrow JavaScript Bindings',
-  WEBSITE_PATH: '/website/',
+  WEBSITE_PATH: '/arrow-website/',
 
   FOOTER_LOGO: '',
 

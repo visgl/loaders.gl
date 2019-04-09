@@ -18,7 +18,7 @@ module.exports = {
 
   FOOTER_LOGO: '',
 
-  PROJECTS: {},
+  PROJECTS: [],
 
   HOME_PATH: '/',
 
