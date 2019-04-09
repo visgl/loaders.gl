@@ -20,7 +20,10 @@ const ALIASES = require('ocular-dev-tools/config/ocular.config')({
 }).aliases;
 
 const BABEL_CONFIG = {
-  presets: [['@babel/env', {modules: 'commonjs'}]],
+  presets: [
+    // We must transpile to es6 to enable tree shaking
+    ['@babel/env', {modules: false}]
+  ],
   plugins: [['@babel/plugin-transform-runtime', {useESModules: false}]]
 };
 
@@ -52,6 +55,7 @@ module.exports = {
   },
 
   node: {
-    fs: 'empty'
+    fs: 'empty',
+    Buffer: false
   }
 };
