@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/csv",
-  "version": "1.0.0-alpha.3",
+  "version": "1.0.0-alpha.4",
   "description": "Framework-independent loader for CSV and DSV table formats",
   "license": "MIT",
   "publishConfig": {
@@ -26,7 +26,7 @@
   ],
   "sideEffects": false,
   "dependencies": {
-    "@loaders.gl/core": "1.0.0-alpha.3",
-    "@loaders.gl/experimental": "1.0.0-alpha.3"
+    "@loaders.gl/core": "1.0.0-alpha.4",
+    "@loaders.gl/experimental": "1.0.0-alpha.4"
   }
 }
