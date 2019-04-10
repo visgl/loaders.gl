@@ -7743,11 +7743,6 @@ wcwidth@^1.0.0:
   dependencies:
     defaults "^1.0.3"
 
-webgl-obj-loader@^1.1.3:
-  version "1.1.3"
-  resolved "https://registry.yarnpkg.com/webgl-obj-loader/-/webgl-obj-loader-1.1.3.tgz#80ad1232328c99e8cb81c20bfc1a7559dfb3043e"
-  integrity sha512-4S6PQKwW8L2kPoZilvpNFYFFqZxfYvCWaGyVMXgETLfrqjbrD0RzNIlcAZPOiJx1/GqtNM9ibje47kSSd+Jn/w==
-
 webpack-bundle-analyzer@^3.0.3:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/webpack-bundle-analyzer/-/webpack-bundle-analyzer-3.1.0.tgz#2f19cbb87bb6d4f3cb4e59cb67c837bd9436e89d"

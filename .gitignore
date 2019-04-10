@@ -1,31 +1,29 @@
-build/*
+# tests
+test/data/test.png
+
+# dists
 dist/*
-dist-es6/*
-dist-min/*
-dist-buble/*
 **/dist/*
+dist.js
+dist.min.js
+
 
 .reify-cache
-_docs/
 .nyc_output/
 coverage/
 node_modules/
 npm-debug.log
 stats.json
-
-test/data/test.png
-
 package-lock.json
 */**/yarn.lock
 yarn-error.log
 
-.project
-.DS_Store
+# Misc files
 *.zip
 *.rar
 *.log
-TODO
 
 # editor files
 .idea
-
+.project
+.DS_Store

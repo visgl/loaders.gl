@@ -22,20 +22,23 @@
   "main": "dist/es5/index.js",
   "module": "dist/esm/index.js",
   "esnext": "dist/es6/index.js",
+  "sideEffects": false,
+  "bin": {
+    "glbdump": "./bin/glbdump.js"
+  },
   "files": [
     "src",
     "dist",
     "bin",
-    "README.md"
+    "README.md",
+    "dist.js",
+    "dist.min.js"
   ],
-  "bin": {
-    "glbdump": "./bin/glbdump.js"
-  },
   "scripts": {
-    "pre-build": "npm run build-bin",
+    "pre-build": "npm run build-bin && npm run build-bundle && npm run build-bundle -- --env.dev",
+    "build-bundle": "webpack --display=minimal --config ../../scripts/bundle.config.js",
     "build-bin": "BABEL_ENV=es5 babel scripts --config-file ../../babel.config.js --out-dir dist/scripts"
   },
-  "sideEffects": false,
   "dependencies": {
     "@loaders.gl/core": "1.0.0-alpha.4",
     "@loaders.gl/images": "1.0.0-alpha.4"
