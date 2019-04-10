@@ -20,23 +20,28 @@
   "main": "dist/es5/index.js",
   "module": "dist/esm/index.js",
   "esnext": "dist/es6/index.js",
-  "files": [
-    "src",
-    "dist",
-    "README.md"
-  ],
   "sideEffects": false,
   "browser": {
+    "./src/lib/fetch/node/decode-data-uri.js": false,
+    "./src/lib/fetch/node/fetch-file-node.js": false,
+    "./src/lib/fetch/node/write-file-node.js": false,
     "fs": false,
     "http": false,
     "https": false,
     "text-encoding": false,
-    "util": false,
-    "./src/lib/fetch/node/decode-data-uri.js": false,
-    "./src/lib/fetch/node/fetch-file-node.js": false,
-    "./src/lib/fetch/node/write-file-node.js": false
+    "util": false
   },
-  "scripts": {},
+  "files": [
+    "src",
+    "dist",
+    "README.md",
+    "dist.js",
+    "dist.min.js"
+  ],
+  "scripts": {
+    "pre-build": "npm run build-bundle && npm run build-bundle -- --env.dev",
+    "build-bundle": "webpack --display=minimal --config ../../scripts/bundle.config.js"
+  },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
     "text-encoding": "^0.6.4"
