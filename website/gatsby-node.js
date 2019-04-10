@@ -27,17 +27,15 @@ callbacks.onCreateWebpackConfig = function onCreateWebpackConfigOverride(opts) {
   onCreateWebpackConfig(opts);
 
   const {
-    stage,     // build stage: ‘develop’, ‘develop-html’, ‘build-javascript’, or ‘build-html’
+    stage, // build stage: ‘develop’, ‘develop-html’, ‘build-javascript’, or ‘build-html’
     getConfig, // Function that returns the current webpack config
-    rules,     // Object (map): set of preconfigured webpack config rules
-    loaders,   // Object (map): set of preconfigured webpack config loaders
-    plugins,    // Object (map): A set of preconfigured webpack config plugins
+    rules, // Object (map): set of preconfigured webpack config rules
+    loaders, // Object (map): set of preconfigured webpack config loaders
+    plugins, // Object (map): A set of preconfigured webpack config plugins
     actions
   } = opts;
 
-
   console.log(`App rewriting gatsby webpack config`);
-
 
   const config = getConfig();
 
@@ -60,7 +58,7 @@ callbacks.onCreateWebpackConfig = function onCreateWebpackConfigOverride(opts) {
     // Exclude all node_modules from transpilation, except for ocular
     exclude: modulePath =>
       /node_modules/.test(modulePath) &&
-      !/node_modules\/(ocular|ocular-gatsby|gatsby-plugin-ocular)/.test(modulePath),
+      !/node_modules\/(ocular|ocular-gatsby|gatsby-plugin-ocular)/.test(modulePath)
   });
 
   const newConfig = {
@@ -71,14 +69,13 @@ callbacks.onCreateWebpackConfig = function onCreateWebpackConfigOverride(opts) {
       ]
     },
     node: {
-    	fs: 'empty'
+      fs: 'empty'
     }
   };
-
 
   // Completely replace the webpack config for the current stage.
   // This can be dangerous and break Gatsby if certain configuration options are changed.
   // Generally only useful for cases where you need to handle config merging logic yourself,
   // in which case consider using webpack-merge.
   actions.setWebpackConfig(newConfig);
-}
+};
