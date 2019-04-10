@@ -14,10 +14,10 @@
 // exports.createPages = ({ graphql, actions }) =>
 //   ocular.createPages({ graphql, actions });
 
-const config = require('./ocular-config');
+const ocularConfig = require('./ocular-config');
 const getGatsbyNodeCallbacks = require('ocular-gatsby/gatsby-node');
 
-const callbacks = getGatsbyNodeCallbacks(config);
+const callbacks = getGatsbyNodeCallbacks(ocularConfig);
 
 module.exports = callbacks;
 
@@ -27,17 +27,15 @@ callbacks.onCreateWebpackConfig = function onCreateWebpackConfigOverride(opts) {
   onCreateWebpackConfig(opts);
 
   const {
-    stage, // build stage: ‘develop’, ‘develop-html’, ‘build-javascript’, or ‘build-html’
+    // stage, // build stage: ‘develop’, ‘develop-html’, ‘build-javascript’, or ‘build-html’
+    // rules, // Object (map): set of preconfigured webpack config rules
+    // plugins, // Object (map): A set of preconfigured webpack config plugins
     getConfig, // Function that returns the current webpack config
-    rules, // Object (map): set of preconfigured webpack config rules
     loaders, // Object (map): set of preconfigured webpack config loaders
-    plugins, // Object (map): A set of preconfigured webpack config plugins
     actions
   } = opts;
 
-  console.log(`App rewriting gatsby webpack config`);
-
-  const config = getConfig();
+  console.log(`App rewriting gatsby webpack config`); // eslint-disable-line
 
   // Recreate it with custom exclude filter
   const newJSRule = Object.assign(loaders.js(), {
