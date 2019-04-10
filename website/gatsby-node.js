@@ -30,7 +30,7 @@ callbacks.onCreateWebpackConfig = function onCreateWebpackConfigOverride(opts) {
     // stage, // build stage: ‘develop’, ‘develop-html’, ‘build-javascript’, or ‘build-html’
     // rules, // Object (map): set of preconfigured webpack config rules
     // plugins, // Object (map): A set of preconfigured webpack config plugins
-    getConfig, // Function that returns the current webpack config
+    // getConfig, // Function that returns the current webpack config
     loaders, // Object (map): set of preconfigured webpack config loaders
     actions
   } = opts;
