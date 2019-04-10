@@ -1,0 +1,52 @@
+{
+  "id": "table-of-contents",
+  "chapters": [
+    {
+      "title": "Overview",
+      "entries": [
+        {"entry": "arrow-docs/README"},
+        {"entry": "arrow-docs/whats-new"},
+        {"entry": "arrow-docs/roadmap"},
+        {"entry": "arrow-docs/notes"}
+      ]
+    },
+    {
+      "title": "Developer Guide",
+      "entries": [
+        {"entry": "arrow-docs/developer-guide/big-ints"},
+        {"entry": "arrow-docs/developer-guide/converting-data"},
+        {"entry": "arrow-docs/developer-guide/data-frame-operations"},
+        {"entry": "arrow-docs/developer-guide/data-sources"},
+        {"entry": "arrow-docs/developer-guide/data-types"},
+        {"entry": "arrow-docs/developer-guide/getting-started"},
+        {"entry": "arrow-docs/developer-guide/memory-management"},
+        {"entry": "arrow-docs/developer-guide/predicates"},
+        {"entry": "arrow-docs/developer-guide/reading-and-writing"},
+        {"entry": "arrow-docs/developer-guide/tables"},
+        {"entry": "arrow-docs/developer-guide/typescript"}
+      ]
+    },
+    {
+      "title": "API Reference",
+      "entries": [
+        {"entry": "arrow-docs/api-reference/README"},
+        {"entry": "arrow-docs/api-reference/chunked"},
+        {"entry": "arrow-docs/api-reference/column"},
+        {"entry": "arrow-docs/api-reference/data-frame"},
+        {"entry": "arrow-docs/api-reference/data"},
+        {"entry": "arrow-docs/api-reference/dictionary"},
+        {"entry": "arrow-docs/api-reference/field"},
+        {"entry": "arrow-docs/api-reference/predicates"},
+        {"entry": "arrow-docs/api-reference/record-batch-reader"},
+        {"entry": "arrow-docs/api-reference/record-batch-writer"},
+        {"entry": "arrow-docs/api-reference/record-batch"},
+        {"entry": "arrow-docs/api-reference/row"},
+        {"entry": "arrow-docs/api-reference/schema"},
+        {"entry": "arrow-docs/api-reference/table"},
+        {"entry": "arrow-docs/api-reference/types"},
+        {"entry": "arrow-docs/api-reference/vector"},
+        {"entry": "arrow-docs/api-reference/vectors"}
+      ]
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 const DOCS = require('../docs/table-of-contents.json');
 
 module.exports = {
-  DOC_FOLDER: `${__dirname}/../docs/`,
+  DOC_FOLDER: `${__dirname}/../arrow-docs/`,
   ROOT_FOLDER: `${__dirname}/../`,
 
   EXAMPLES: [],
@@ -10,15 +10,15 @@ module.exports = {
   // TODO/ib - from ocular, deduplicate with above settings
   PROJECT_TYPE: 'github',
 
-  PROJECT_NAME: 'loaders.gl',
+  PROJECT_NAME: 'arrow/js',
   PROJECT_ORG: 'uber-web',
   PROJECT_URL: 'https://github.com/uber-web/loaders.gl',
-  PROJECT_DESC: 'Framework agnostic loaders for visualization assets',
-  WEBSITE_PATH: '/website/',
+  PROJECT_DESC: 'Apache Arrow JavaScript Bindings',
+  WEBSITE_PATH: '/arrow-website/',
 
   FOOTER_LOGO: '',
 
-  PROJECTS: [],
+  PROJECTS: {},
 
   HOME_PATH: '/',
 
@@ -27,15 +27,6 @@ module.exports = {
   HOME_RIGHT: null,
 
   HOME_BULLETS: [
-    {
-      text: 'Designed for Interoperability',
-      desc: 'Seamless integration.',
-      img: 'images/icon-react.svg'
-    },
-    {
-      text: 'Totally ready for production',
-      img: 'images/icon-layers.svg'
-    }
   ],
 
   ADDITIONAL_LINKS: [],
@@ -60,17 +51,5 @@ module.exports = {
   // Website description used for RSS feeds/meta description tag.
   siteDescription: 'WebGL2 Components',
   // Path to the RSS file.
-  siteRss: '/rss.xml',
-  // Date format used in the frontmatter.
-  dateFromFormat: 'YYYY-MM-DD',
-  // Date format for display.
-  dateFormat: 'DD/MM/YYYY',
-  // Username to display in the author segment.
-  userName: 'WebGL User',
-  // Copyright string for the footer of the website and RSS feed.
-  copyright: 'Copyright © 2017 Uber. MIT Licensed',
-  // Used for setting manifest and progress theme colors.
-  themeColor: '#c62828',
-  // Used for setting manifest background color.
-  backgroundColor: '#e0e0e0'
+  siteRss: '/rss.xml'
 };

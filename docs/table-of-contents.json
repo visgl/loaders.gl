@@ -19,10 +19,16 @@
     {
       "title": "Developer Guide",
       "entries": [
+        {"entry": "docs/developer-guide/README"},
         {"entry": "docs/developer-guide/about-loaders"},
+        {"entry": "docs/developer-guide/about-writers"},
         {"entry": "docs/developer-guide/loader-categories"},
-        {"entry": "docs/developer-guide/category-pointcloud"},
-        {"entry": "docs/developer-guide/category-gltf"}
+        {"entry": "docs/developer-guide/image-loaders"},
+        {"entry": "docs/developer-guide/inspecting-files"},
+        {"entry": "docs/developer-guide/streaming"},
+        {"entry": "docs/developer-guide/array-buffers"},
+        {"entry": "docs/developer-guide/async-iterators"},
+        {"entry": "docs/developer-guide/worker-threads"}
       ]
     },
     {
@@ -31,36 +37,39 @@
         {
           "title": "Core Functions",
           "entries": [
-            {"entry": "docs/api-reference/core/load-image"},
-            {"entry": "docs/api-reference/core/load"},
             {"entry": "docs/api-reference/core/parse"},
+            {"entry": "docs/api-reference/core/load"},
             {"entry": "docs/api-reference/core/encode"},
-            {"entry": "docs/api-reference/core/fetch-file"},
             {"entry": "docs/api-reference/core/save"},
+            {"entry": "docs/api-reference/core/fetch-file"},
+            {"entry": "docs/api-reference/core/write-file"},
             {"entry": "docs/api-reference/core/set-path-prefix"},
-            {"entry": "docs/api-reference/core/image-utilities"},
+            {"entry": "docs/api-reference/core/register-loaders"},
             {"entry": "docs/api-reference/core/binary-utilities"},
-            {"entry": "docs/api-reference/core/text-utilities"}
+            {"entry": "docs/api-reference/core/text-utilities"},
+            {"entry": "docs/api-reference/core/iterator-utilities"}
           ]
         },
         {
           "title": "GLTF Loaders",
           "entries": [
-            {"entry": "docs/api-reference/gltf/gltf-loader"},
-            {"entry": "docs/api-reference/gltf/gltf-writer"},
-            {"entry": "docs/api-reference/gltf/gltf-parser"},
-            {"entry": "docs/api-reference/gltf/gltf-builder"},
-            {"entry": "docs/api-reference/gltf/glb-parser"},
-            {"entry": "docs/api-reference/gltf/glb-builder"},
-            {"entry": "docs/api-reference/gltf/gltf-extensions"},
-            {"entry": "docs/developer-guide/glbdump"}
+            {"entry": "docs/api-reference/gltf-loaders/category-gltf"},
+            {"entry": "docs/api-reference/gltf-loaders/gltf-loader"},
+            {"entry": "docs/api-reference/gltf-loaders/gltf-writer"},
+            {"entry": "docs/api-reference/gltf-loaders/gltf-parser"},
+            {"entry": "docs/api-reference/gltf-loaders/gltf-builder"},
+            {"entry": "docs/api-reference/gltf-loaders/glb-parser"},
+            {"entry": "docs/api-reference/gltf-loaders/glb-builder"},
+            {"entry": "docs/api-reference/gltf-loaders/gltf-extensions"},
+            {"entry": "docs/api-reference/gltf-loaders/glbdump"}
           ]
         },
         {
           "title": "Point Cloud & Mesh Loaders",
           "entries": [
+            {"entry": "docs/api-reference/mesh-loaders/category-mesh"},
             {"entry": "docs/api-reference/mesh-loaders/draco-loader"},
-            {"entry": "docs/api-reference/mesh-loaders/draco-encoder"},
+            {"entry": "docs/api-reference/mesh-loaders/draco-writer"},
             {"entry": "docs/api-reference/mesh-loaders/las-loader"},
             {"entry": "docs/api-reference/mesh-loaders/obj-loader"},
             {"entry": "docs/api-reference/mesh-loaders/pcd-loader"},
@@ -68,9 +77,42 @@
           ]
         },
         {
+          "title": "Image Loaders",
+          "entries": [
+            {"entry": "docs/api-reference/core/load-image"},
+            {"entry": "docs/api-reference/images/load-image"},
+            {"entry": "docs/api-reference/images/image-loader"},
+            {"entry": "docs/api-reference/images/image-utilities"},
+            {"entry": "docs/api-reference/images/image-writer"}
+          ]
+        },
+        {
           "title": "Geospatial Loaders",
           "entries": [
+            {"entry": "docs/api-reference/geojson-loaders/category-geojson"},
             {"entry": "docs/api-reference/geojson-loaders/kml-loader"}
+          ]
+        },
+        {
+          "title": "Miscellaneous Loaders",
+          "entries": [
+            {"entry": "docs/api-reference/misc-loaders/zip-loader"},
+            {"entry": "docs/api-reference/misc-loaders/zip-writer"}
+          ]
+        },
+        {
+          "title": "Table Loaders",
+          "entries": [
+            {"entry": "docs/api-reference/table-loaders/category-table"},
+            {"entry": "docs/api-reference/table-loaders/arrow-loader"},
+            {"entry": "docs/api-reference/table-loaders/csv-loader"}
+          ]
+        },
+        {
+          "title": "Specifications",
+          "entries": [
+            {"entry": "docs/api-reference/specifications/loader-object-format"},
+            {"entry": "docs/api-reference/specifications/writer-object-format"}
           ]
         }
       ]

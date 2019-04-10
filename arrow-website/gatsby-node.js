@@ -14,10 +14,10 @@
 // exports.createPages = ({ graphql, actions }) =>
 //   ocular.createPages({ graphql, actions });
 
-const ocularConfig = require('./ocular-config');
+const config = require('./ocular-config');
 const getGatsbyNodeCallbacks = require('ocular-gatsby/gatsby-node');
 
-const callbacks = getGatsbyNodeCallbacks(ocularConfig);
+const callbacks = getGatsbyNodeCallbacks(config);
 
 module.exports = callbacks;
 
@@ -27,15 +27,19 @@ callbacks.onCreateWebpackConfig = function onCreateWebpackConfigOverride(opts) {
   onCreateWebpackConfig(opts);
 
   const {
-    // stage, // build stage: ‘develop’, ‘develop-html’, ‘build-javascript’, or ‘build-html’
-    // rules, // Object (map): set of preconfigured webpack config rules
-    // plugins, // Object (map): A set of preconfigured webpack config plugins
-    // getConfig, // Function that returns the current webpack config
-    loaders, // Object (map): set of preconfigured webpack config loaders
+    stage,     // build stage: ‘develop’, ‘develop-html’, ‘build-javascript’, or ‘build-html’
+    getConfig, // Function that returns the current webpack config
+    rules,     // Object (map): set of preconfigured webpack config rules
+    loaders,   // Object (map): set of preconfigured webpack config loaders
+    plugins,    // Object (map): A set of preconfigured webpack config plugins
     actions
   } = opts;
 
-  console.log(`App rewriting gatsby webpack config`); // eslint-disable-line
+
+  console.log(`App rewriting gatsby webpack config`);
+
+
+  const config = getConfig();
 
   // Recreate it with custom exclude filter
   const newJSRule = Object.assign(loaders.js(), {
@@ -56,7 +60,7 @@ callbacks.onCreateWebpackConfig = function onCreateWebpackConfigOverride(opts) {
     // Exclude all node_modules from transpilation, except for ocular
     exclude: modulePath =>
       /node_modules/.test(modulePath) &&
-      !/node_modules\/(ocular|ocular-gatsby|gatsby-plugin-ocular)/.test(modulePath)
+      !/node_modules\/(ocular|ocular-gatsby|gatsby-plugin-ocular)/.test(modulePath),
   });
 
   const newConfig = {
@@ -67,13 +71,14 @@ callbacks.onCreateWebpackConfig = function onCreateWebpackConfigOverride(opts) {
       ]
     },
     node: {
-      fs: 'empty'
+    	fs: 'empty'
     }
   };
+
 
   // Completely replace the webpack config for the current stage.
   // This can be dangerous and break Gatsby if certain configuration options are changed.
   // Generally only useful for cases where you need to handle config merging logic yourself,
   // in which case consider using webpack-merge.
   actions.setWebpackConfig(newConfig);
-};
+}
