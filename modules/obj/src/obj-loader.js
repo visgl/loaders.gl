@@ -1,4 +1,4 @@
-import parseOBJ from './parse-obj';
+import loadOBJ from './load-obj';
 
 function testOBJFile(text) {
   // There could be comment line first
@@ -9,5 +9,5 @@ export default {
   name: 'OBJ',
   extensions: ['obj'],
   testText: testOBJFile,
-  parseTextSync: parseOBJ
+  parseTextSync: loadOBJ
 };
