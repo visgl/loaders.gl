@@ -1,4 +1,4 @@
-/* global */
+/* global global */
 // Ensure window is defined
 global.window = global.window || global;
 
