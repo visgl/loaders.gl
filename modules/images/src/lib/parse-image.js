@@ -1,5 +1,4 @@
 /* global Image, Blob, createImageBitmap, btoa, fetch */
-
 import {parseImageNode} from './node/parse-image-node';
 
 export const canParseImage = parseImageNode || typeof ImageBitmap !== 'undefined';
@@ -17,10 +16,6 @@ export function parseImage(arrayBuffer, options) {
 // TODO - investigate Image.decode()
 // https://medium.com/dailyjs/image-loading-with-image-decode-b03652e7d2d2
 export async function loadImage(url, options) {
-  if (parseImageNode) {
-    throw new Error('loadImage');
-  }
-
   if (typeof Image === 'undefined') {
     const response = await fetch(url, options);
     const arrayBuffer = await response.arrayBuffer();
