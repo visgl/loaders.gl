@@ -1,6 +1,6 @@
 /* global Buffer */
 
-export function bufferToArrayBufferNode(buffer) {
+export function bufferToArrayBuffer(buffer) {
   // TODO - per docs we should just be able to call buffer.buffer, but there are issues
   if (Buffer.isBuffer(buffer)) {
     const typedArray = new Uint8Array(buffer);

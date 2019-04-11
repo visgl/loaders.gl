@@ -14,7 +14,7 @@ This loader returns HTMLImage (Image) objects.
 
 Loads an `ImageBitmap` object containing data for the object.
 
-## ImageLoader (PlatformImageLoader)
+## ImageLoader
 
 > This image loader works on all platforms
 

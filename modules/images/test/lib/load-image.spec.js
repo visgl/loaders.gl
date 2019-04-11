@@ -1,4 +1,5 @@
-import {loadImage, resolvePath} from '@loaders.gl/core';
+import {loadImage} from '@loaders.gl/images';
+import {resolvePath} from '@loaders.gl/core';
 
 import test from 'tape-promise/tape';
 

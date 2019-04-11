@@ -1,8 +1,13 @@
-export {default as ImageLoader} from './image-loader';
+export {default as ImageLoader, HTMLImageLoader, ImageBitmapLoader} from './image-loader';
 export {default as ImageWriter} from './image-writer';
 
-export {loadImage} from './load-image/load-image';
-export {decodeImage} from './image-utils/image-utils-browser';
+export {loadImage} from './lib/parse-image';
 
 // UTILS
-export {isImage, getImageSize} from './image-utils/get-image-size';
+export {isImage, getImageMetadata} from './lib/get-image-metadata';
+
+// Experimental
+export {decodeImage} from './lib/image-utils-browser';
+
+// Deprecated
+export {getImageSize} from './lib/get-image-metadata';

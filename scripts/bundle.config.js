@@ -34,11 +34,12 @@ function getExternals(packageInfo) {
 }
 
 const NODE = {
-  fs: false,
-  http: false,
-  https: false,
-  path: false,
-  crypto: false
+  Buffer: false,
+  fs: 'empty',
+  http: 'empty',
+  https: 'empty',
+  path: 'empty',
+  crypto: 'empty'
 };
 
 const config = {

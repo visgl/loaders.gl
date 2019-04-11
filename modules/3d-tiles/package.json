@@ -27,9 +27,7 @@
   "files": [
     "src",
     "dist",
-    "README.md",
-    "dist.js",
-    "dist.min.js"
+    "README.md"
   ],
   "scripts": {
     "build-bundle": "webpack --display=minimal --config ../../scripts/bundle.config.js",

@@ -25,13 +25,11 @@
   "files": [
     "src",
     "dist",
-    "README.md",
-    "dist.js",
-    "dist.min.js"
+    "README.md"
   ],
   "scripts": {
     "pre-build": "npm run build-bundle && npm run build-bundle -- --env.dev",
-    "build-bundle": "webpack --config ../../scripts/bundle.config.js"
+    "build-bundle": "webpack --display=minimal --config ../../scripts/bundle.config.js"
   },
   "dependencies": {
     "@loaders.gl/core": "1.0.0-alpha.4"
