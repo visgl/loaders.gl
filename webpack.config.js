@@ -1,8 +1,5 @@
 const getWebpackConfig = require('ocular-dev-tools/config/webpack.config');
 
-// The following files will be imported/required as array buffers via arraybuffer-loader
-const BINARY_FILE_EXTENSIONS = /\.glb$|\.png$|\.jpeg$|\.gif$|\.bmp$|\.tiff$|\.bin/;
-
 const BABEL_CONFIG = {
   presets: ['@babel/env'],
   plugins: [
@@ -38,14 +35,6 @@ module.exports = (env = {}) => {
       use: {
         loader: 'worker-loader'
       }
-    },
-    {
-      test: /\.kml$/,
-      use: 'raw-loader'
-    },
-    {
-      test: BINARY_FILE_EXTENSIONS,
-      use: 'arraybuffer-loader'
     }
   );
 
