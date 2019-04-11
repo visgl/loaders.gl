@@ -1,18 +1,6 @@
 // TODO - remove
 import {getAccessorTypeFromSize, getComponentTypeFromArray} from './gltf-type-utils';
 
-// Returns the indices array, if present
-export function getGLTFIndices(attributes) {
-  for (const name in attributes) {
-    const attribute = attributes[name];
-    if (isGLTFIndices(name)) {
-      const indices = toTypedArray(attribute, Uint32Array);
-      return getGLTFAccessor(indices);
-    }
-  }
-  return null;
-}
-
 // Returns a fresh attributes object with glTF-standardized attributes names
 // Attributes that cannot be identified will not be included
 // Removes `indices` if present, as it should be stored separately from the attributes
@@ -53,14 +41,6 @@ export function getGLTFAccessor(attribute, gltfAttributeName) {
 
 export function getGLTFAttribute(data, gltfAttributeName) {
   return data.attributes[data.glTFAttributeMap[gltfAttributeName]];
-}
-
-// Check if an attribute contains indices
-function isGLTFIndices(name) {
-  name = name.toLowerCase();
-  return (
-    name.indexOf('index') !== -1 || name.indexOf('indices') !== -1 || name.indexOf('element') !== -1
-  );
 }
 
 function getAccessorData(attribute, attributeName) {

@@ -1,6 +1,4 @@
-// DRACO decompressor
 const draco3d = require('draco3d');
-// const assert = require('assert');
 
 const GEOMETRY_TYPE = {
   TRIANGULAR_MESH: 0,
@@ -41,7 +39,7 @@ export default class DracoParser {
   }
 
   // NOTE: caller must call `destroyGeometry` on the return value after using it
-  parseSync(arrayBuffer, options) {
+  parseSync(arrayBuffer) {
     const buffer = new this.decoderModule.DecoderBuffer();
     buffer.Init(new Int8Array(arrayBuffer), arrayBuffer.byteLength);
 
@@ -80,11 +78,6 @@ export default class DracoParser {
           throw new Error('Unknown DRACO geometry type.');
       }
 
-      data.header = {
-        vertexCount: header.vertexCount
-      };
-      data.loaderData = {header};
-
       if (!dracoStatus.ok() || !dracoGeometry.ptr) {
         const message = `DRACO decompression failed: ${dracoStatus.error_msg()}`;
         // console.error(message);
@@ -94,8 +87,12 @@ export default class DracoParser {
         throw new Error(message);
       }
 
-      const geometry = this.extractDRACOGeometry(decoder, dracoGeometry, geometryType, options);
-      Object.assign(data, geometry);
+      data.header = {
+        vertexCount: header.vertexCount
+      };
+      data.loaderData = {header};
+
+      this.extractDRACOGeometry(decoder, dracoGeometry, geometryType, data);
     } finally {
       this.decoderModule.destroy(decoder);
       this.decoderModule.destroy(buffer);
@@ -104,7 +101,7 @@ export default class DracoParser {
     return data;
   }
 
-  extractDRACOGeometry(decoder, dracoGeometry, geometryType, options) {
+  extractDRACOGeometry(decoder, dracoGeometry, geometryType, geometry) {
     // const numPoints = dracoGeometry.num_points();
     // const numAttributes = dracoGeometry.num_attributes();
 
@@ -117,8 +114,6 @@ export default class DracoParser {
     }
 
     this.getPositionAttributeMetadata(positionAttribute);
-
-    const geometry = {};
 
     // For meshes, we need indices to define the faces.
     if (geometryType === this.decoderModule.TRIANGULAR_MESH) {
@@ -135,24 +130,12 @@ export default class DracoParser {
     }
 
     if (attributes.indices) {
-      geometry.indices = attributes.indices;
+      geometry.indices = {value: attributes.indices, size: 1}
       delete attributes.indices;
     }
     geometry.attributes = attributes;
 
     return geometry;
-  }
-
-  normalizeDracoAttribute(attribute, attributeName) {
-    let value = attribute;
-    let size = 1;
-
-    if (attribute && attribute.value) {
-      value = attribute.value;
-      size = attribute.size || 1;
-    }
-
-    return {value, size};
   }
 
   getPositionAttributeMetadata(positionAttribute) {
