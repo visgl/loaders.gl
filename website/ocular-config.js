@@ -1,10 +1,28 @@
+const resolve = require('path').resolve;
+
 const DOCS = require('../docs/table-of-contents.json');
+const DEPENDENCIES = require('./package.json').dependencies;
+// eslint-disable-next-line import/no-extraneous-dependencies
+const ALIASES = require('ocular-dev-tools/config/ocular.config')({
+  root: resolve(__dirname, '..')
+}).aliases;
+
+// When duplicating example dependencies in website, autogenerate
+// aliases to ensure the website version is picked up
+// NOTE: luma.gl module dependencies are automatically injected
+// TODO - should this be automatically done by ocular-gatsby?
+const dependencyAliases = {};
+for (const dependency in DEPENDENCIES) {
+  dependencyAliases[dependency] = `${__dirname}/node_modules/${dependency}`;
+}
 
 module.exports = {
+  logLevel: 3, // Adjusts amount of debug information from ocular-gatsby
+
   DOC_FOLDER: `${__dirname}/../docs/`,
   ROOT_FOLDER: `${__dirname}/../`,
+  DIR_NAME: `${__dirname}`,
 
-  EXAMPLES: [],
   DOCS,
 
   // TODO/ib - from ocular, deduplicate with above settings
@@ -18,7 +36,11 @@ module.exports = {
 
   FOOTER_LOGO: '',
 
-  PROJECTS: [],
+  GA_TRACKING: null,
+
+  // For showing star counts and contributors.
+  // Should be like btoa('YourUsername:YourKey') and should be readonly.
+  GITHUB_KEY: null,
 
   HOME_PATH: '/',
 
@@ -38,13 +60,29 @@ module.exports = {
     }
   ],
 
+  PROJECTS: [],
+
   ADDITIONAL_LINKS: [],
 
-  GA_TRACKING: null,
+  EXAMPLES: [
+    {
+      title: 'GLTF',
+      path: 'examples/gltf',
+      image: 'images/example-gltf.jpg'
+    }
+  ],
 
-  // For showing star counts and contributors.
-  // Should be like btoa('YourUsername:YourKey') and should be readonly.
-  GITHUB_KEY: null,
+  // Avoids duplicate conflicting inputs when importing from examples folders
+  // Ocular adds this to gatsby's webpack config
+  webpack: {
+    resolve: {
+      alias: Object.assign({}, ALIASES, dependencyAliases, {
+        '@luma.gl/addons': `${__dirname}/node_modules/@luma.gl/addons/dist/esm`,
+        '@luma.gl/core': `${__dirname}/node_modules/@luma.gl/core/dist/esm`,
+        '@luma.gl/constants': `${__dirname}/node_modules/@luma.gl/constants/dist/esm`
+      })
+    }
+  },
 
   // TODO/ib - from gatsby starter, clean up
   // Site title.

@@ -13,6 +13,10 @@
     "develop": "rm -fr .cache && gatsby develop --port=8001"
   },
   "dependencies": {
+    "@luma.gl/addons": "^7.0.0-beta",
+    "@luma.gl/core": "^7.0.0-beta",
+    "@luma.gl/constants": "^7.0.0-beta",
+    "@probe.gl/stats-widget": "^3.0.1"
   },
   "devDependencies": {
     "gatsby": "2.2.0-rc.2",

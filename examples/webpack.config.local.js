@@ -85,6 +85,6 @@ module.exports = (baseConfig, opts = {}) => env => {
     config = addLocalDevSettings(config, opts);
   }
 
-  // console.warn(JSON.stringify(config, null, 2));
+  console.warn(JSON.stringify(config, null, 2));
   return config;
 };
