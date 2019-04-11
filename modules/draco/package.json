@@ -28,9 +28,7 @@
   "files": [
     "src",
     "dist",
-    "README.md",
-    "dist.js",
-    "dist.min.js"
+    "README.md"
   ],
   "scripts": {
     "pre-build": "npm run build-worker",

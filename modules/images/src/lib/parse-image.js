@@ -5,7 +5,7 @@ export const canParseImage = parseImageNode || typeof ImageBitmap !== 'undefined
 
 // Parse to platform defined type (ndarray on node, ImageBitmap on browser)
 export function parseImage(arrayBuffer, options) {
-  if (parseImageNode(arrayBuffer, options)) {
+  if (parseImageNode) {
     return parseImageNode(arrayBuffer, options);
   }
 
