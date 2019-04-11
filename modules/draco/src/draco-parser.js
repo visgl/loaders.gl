@@ -130,7 +130,7 @@ export default class DracoParser {
     }
 
     if (attributes.indices) {
-      geometry.indices = {value: attributes.indices, size: 1}
+      geometry.indices = {value: attributes.indices, size: 1};
       delete attributes.indices;
     }
     geometry.attributes = attributes;
