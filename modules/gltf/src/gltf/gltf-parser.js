@@ -1,8 +1,9 @@
 import {TextDecoder, fetchFile} from '@loaders.gl/core';
 import GLBParser from '../glb/glb-parser';
 import GLTFPostProcessor from './gltf-post-processor';
-import {KHR_DRACO_MESH_COMPRESSION, UBER_POINT_CLOUD_EXTENSION} from './gltf-constants';
 import {getFullUri} from './gltf-utils';
+import {KHR_DRACO_MESH_COMPRESSION, UBER_POINT_CLOUD_EXTENSION} from './gltf-constants';
+import {getGLTFAccessors, getGLTFAccessor} from './gltf-attribute-utils';
 
 const DEFAULT_OPTIONS = {
   fetchLinkedResources: true, // Fetch any linked .BIN buffers, decode base64
@@ -239,11 +240,9 @@ export default class GLTFParser {
 
     const buffer = this._getBufferViewArray(compressedMesh.bufferView);
     const decodedData = options.DracoLoader.parseSync(buffer);
-    primitive.attributes = decodedData.attributes;
+    primitive.attributes = getGLTFAccessors(decodedData.attributes);
     if (decodedData.indices) {
-      primitive.indices = decodedData.indices;
-    } else {
-      delete primitive.indices;
+      primitive.indices = getGLTFAccessor(decodedData.indices);
     }
   }
 

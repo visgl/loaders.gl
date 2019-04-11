@@ -1,8 +1,4 @@
-// DRACO decompressor
-import {getGLTFAccessors, getGLTFIndices} from './gltf-attribute-utils';
-
 const draco3d = require('draco3d');
-// const assert = require('assert');
 
 const GEOMETRY_TYPE = {
   TRIANGULAR_MESH: 0,
@@ -82,11 +78,6 @@ export default class DracoParser {
           throw new Error('Unknown DRACO geometry type.');
       }
 
-      data.header = {
-        vertexCount: header.vertexCount
-      };
-      data.loaderData = {header};
-
       if (!dracoStatus.ok() || !dracoGeometry.ptr) {
         const message = `DRACO decompression failed: ${dracoStatus.error_msg()}`;
         // console.error(message);
@@ -96,7 +87,12 @@ export default class DracoParser {
         throw new Error(message);
       }
 
-      this.extractDRACOGeometry(decoder, dracoGeometry, data, geometryType);
+      data.header = {
+        vertexCount: header.vertexCount
+      };
+      data.loaderData = {header};
+
+      this.extractDRACOGeometry(decoder, dracoGeometry, geometryType, data);
     } finally {
       this.decoderModule.destroy(decoder);
       this.decoderModule.destroy(buffer);
@@ -105,7 +101,7 @@ export default class DracoParser {
     return data;
   }
 
-  extractDRACOGeometry(decoder, dracoGeometry, geometry, geometryType) {
+  extractDRACOGeometry(decoder, dracoGeometry, geometryType, geometry) {
     // const numPoints = dracoGeometry.num_points();
     // const numAttributes = dracoGeometry.num_attributes();
 
@@ -133,8 +129,11 @@ export default class DracoParser {
       geometry.mode = 0; // GL.POINTS
     }
 
-    geometry.indices = getGLTFIndices(attributes);
-    geometry.attributes = getGLTFAccessors(attributes);
+    if (attributes.indices) {
+      geometry.indices = {value: attributes.indices, size: 1};
+      delete attributes.indices;
+    }
+    geometry.attributes = attributes;
 
     return geometry;
   }
