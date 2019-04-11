@@ -6,6 +6,7 @@ import './glb/glb-encode-parse.spec';
 import './glb/glb-encoder-decoder.spec';
 import './glb/glb-custom-payload.spec';
 
+import './gltf/gltf-attribute-utils.spec';
 import './gltf/gltf-builder.spec';
 import './gltf/gltf-loader.spec';
 import './gltf/gltf-roundtrip.spec';
