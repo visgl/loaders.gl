@@ -79,7 +79,6 @@
         {
           "title": "Image Loaders",
           "entries": [
-            {"entry": "docs/api-reference/core/load-image"},
             {"entry": "docs/api-reference/images/load-image"},
             {"entry": "docs/api-reference/images/image-loader"},
             {"entry": "docs/api-reference/images/image-utilities"},
