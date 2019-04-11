@@ -1,6 +1,4 @@
 // DRACO decompressor
-import {getGLTFAccessors, getGLTFIndices} from './gltf-attribute-utils';
-
 const draco3d = require('draco3d');
 // const assert = require('assert');
 
@@ -43,7 +41,7 @@ export default class DracoParser {
   }
 
   // NOTE: caller must call `destroyGeometry` on the return value after using it
-  parseSync(arrayBuffer) {
+  parseSync(arrayBuffer, options) {
     const buffer = new this.decoderModule.DecoderBuffer();
     buffer.Init(new Int8Array(arrayBuffer), arrayBuffer.byteLength);
 
@@ -96,7 +94,8 @@ export default class DracoParser {
         throw new Error(message);
       }
 
-      this.extractDRACOGeometry(decoder, dracoGeometry, data, geometryType);
+      const geometry = this.extractDRACOGeometry(decoder, dracoGeometry, geometryType, options);
+      Object.assign(data, geometry);
     } finally {
       this.decoderModule.destroy(decoder);
       this.decoderModule.destroy(buffer);
@@ -105,7 +104,7 @@ export default class DracoParser {
     return data;
   }
 
-  extractDRACOGeometry(decoder, dracoGeometry, geometry, geometryType) {
+  extractDRACOGeometry(decoder, dracoGeometry, geometryType, options) {
     // const numPoints = dracoGeometry.num_points();
     // const numAttributes = dracoGeometry.num_attributes();
 
@@ -118,6 +117,8 @@ export default class DracoParser {
     }
 
     this.getPositionAttributeMetadata(positionAttribute);
+
+    const geometry = {};
 
     // For meshes, we need indices to define the faces.
     if (geometryType === this.decoderModule.TRIANGULAR_MESH) {
@@ -133,10 +134,25 @@ export default class DracoParser {
       geometry.mode = 0; // GL.POINTS
     }
 
-    geometry.indices = getGLTFIndices(attributes);
-    geometry.attributes = getGLTFAccessors(attributes);
+    if (attributes.indices) {
+      geometry.indices = attributes.indices;
+      delete attributes.indices;
+    }
+    geometry.attributes = attributes;
 
     return geometry;
+  }
+
+  normalizeDracoAttribute(attribute, attributeName) {
+    let value = attribute;
+    let size = 1;
+
+    if (attribute && attribute.value) {
+      value = attribute.value;
+      size = attribute.size || 1;
+    }
+
+    return {value, size};
   }
 
   getPositionAttributeMetadata(positionAttribute) {
