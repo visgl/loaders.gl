@@ -41,8 +41,8 @@ export default class ExampleRunner extends Component {
     const exampleApp = example.app;
 
     // Ensure the example can find its images
-    // TODO - ideally ocular-gatsvy should extract images from example source?
-    const RAW_GITHUB = 'https://raw.githubusercontent.com/uber/luma.gl/master';
+    // TODO - ideally ocular-gatsby should extract images from example source?
+    const RAW_GITHUB = 'https://raw.githubusercontent.com/uber/loaders.gl/master';
     setPathPrefix(`${RAW_GITHUB}/${example.path}`);
 
     // Start the actual example

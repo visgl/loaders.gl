@@ -1,6 +1,5 @@
 {
-  "name": "luma.gl-examples-gltf",
-  "description": "glTF for luma.gl.",
+  "description": "glTF loader using luma.gl for rendering.",
   "contributors": [
     "Georgios Karnas <georgios@uber.com>"
   ],
