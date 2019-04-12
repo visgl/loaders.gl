@@ -77,26 +77,49 @@ This method will convert values to 64 bit floats. Allocates a new Array.
 
 ## IntVectors
 
-| Int Vectors             | Backing            |
-| ---                     | ---                |
-| `Int8Vector`            | `Int8Array`        |
-| `Int16Vector`           | `Int16Array`       |
-| `Int32Vector`           | `Int32Array`       |
-| `Int64Vector`           | `BigInt64Array`    |
-| `Uint8Vector`           | `Uint8Array`       |
-| `Uint16Vector`          | `Uint16Array `     |
-| `Uint32Vector`          | `Uint32Array `     |
-| `Uint64Vector`          | `BigUint64Array`   |
+| Int Vectors             | Backing         | Comments                  |
+| ---                     | ---             | ---                       |
+| `Int8Vector`            | `Int8Array`     |                           |
+| `Int16Vector`           | `Int16Array`    |                           |
+| `Int32Vector`           | `Int32Array`    |                           |
+| `Int64Vector`           | `Int32Array`    | 64-bit values stored as pairs of `lo, hi` 32-bit values for engines without BigInt support, extra methods available |
+| `Uint8Vector`           | `Uint8Array`    |                           |
+| `Uint16Vector`          | `Uint16Array `  |                           |
+| `Uint32Vector`          | `Uint32Array `  |                           |
+| `Uint64Vector`          | `Uint32Array`   | 64-bit values stored as pairs of `lo, hi` 32-bit values for engines without BigInt support, extra methods available |
 
+## Int64Vector Methods
+
+### toArray() : `Int32Array`
+
+Returns a zero-copy view of the underlying pairs of `lo, hi` 32-bit values as an `Int32Array`. This Array's length is twice the logical length of the `Int64Vector`.
+
+### toBigInt64Array(): `BigInt64Array`
+
+Returns a zero-copy view of the underlying 64-bit integers as a `BigInt64Array`. This Array has the samne length as the length of the original `Int64Vector`.
+
+Note: as of 03/2019, `BigInt64Array` is only available in v8/Chrome. In JS runtimes without support for `BigInt`, this method throws an unsupported error.
+
+## Uint64Vector Methods
+
+### toArray() : `Uint32Array`
+
+Returns a zero-copy view of the underlying pairs of `lo, hi` 32-bit values as a `Uint32Array`. This Array's length is twice the logical length of the `Uint64Vector`.
+
+### toBigUint64Array(): `BigUint64Array`
+
+Returns a zero-copy view of the underlying 64-bit integers as a `BigUint64Array`. This Array has the samne length as the length of the original `Uint64Vector`.
+
+Note: as of 03/2019, `BigUint64Array` is only available in v8/Chrome. In JS runtimes without support for `BigInt`, this method throws an unsupported error.
 
 ## Static IntVector Methods
 
 ### IntVector.from(data: Int8Array): Int8Vector;
 ### IntVector.from(data: Int16Array): Int16Vector;
-### IntVector.from(data: Int32Array, is64?): Int32Vector | Int64Vector;
+### IntVector.from(data: Int32Array, is64?: boolean): Int32Vector | Int64Vector;
 ### IntVector.from(data: Uint8Array): Uint8Vector;
 ### IntVector.from(data: Uint16Array): Uint16Vector;
-### IntVector.from(data: Uint32Array, is64?): Uint32Vector | Uint64Vector;
+### IntVector.from(data: Uint32Array, is64?: boolean): Uint32Vector | Uint64Vector;
 
 ### Int8Vector.from(this: typeof Int8Vector,   data: Int8Array   | Iterable<number>): Int8Vector;
 ### Int16Vector.from(this: typeof Int16Vector,  data: Int16Array  | Iterable<number>): Int16Vector;
