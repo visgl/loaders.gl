@@ -37,7 +37,7 @@
     "metrics": "./scripts/metrics.sh && ocular-metrics"
   },
   "devDependencies": {
-    "@luma.gl/test-utils": "7.0.0-beta",
+    "@luma.gl/test-utils": "^7.0.0-beta",
     "@probe.gl/bench": "^3.0.0",
     "@probe.gl/test-utils": "^3.0.0",
     "babel-loader": "^8.0.0",
