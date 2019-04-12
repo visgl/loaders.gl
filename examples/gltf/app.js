@@ -26,6 +26,8 @@ const GLTF_ENV_BASE_URL =
   'https://raw.githubusercontent.com/KhronosGroup/glTF-WebGL-PBR/master/textures';
 const GLTF_MODEL_INDEX = `${GLTF_BASE_URL}model-index.json`;
 
+const GLTF_DEFAULT_MODEL = 'DamagedHelmet/glTF-Binary/DamagedHelmet.glb';
+
 const INFO_HTML = `
 <p><b>glTF</b> rendering.</p>
 <p>A luma.gl <code>glTF</code> renderer.</p>
@@ -33,7 +35,7 @@ const INFO_HTML = `
 <div>
   Model
   <select id="modelSelector">
-    <option value="DamagedHelmet/glTF-Binary/DamagedHelmet.glb">Default</option>
+    <option value="${GLTF_DEFAULT_MODEL}">Default</option>
   </select>
   <br>
 </div>
@@ -189,6 +191,10 @@ function loadModelList() {
 }
 
 function addModelsToDropdown(models, modelDropdown) {
+  if (!modelDropdown) {
+    return;
+  }
+
   const VARIANTS = ['glTF-Draco', 'glTF-Binary', 'glTF-Embedded', 'glTF'];
 
   models.forEach(({name, variants}) => {
@@ -310,16 +316,20 @@ export class DemoApp {
       loadGLTF(this.modelFile, this.gl, options).then(result => Object.assign(this, result));
     } else {
       const modelSelector = document.getElementById('modelSelector');
-      loadGLTF(GLTF_BASE_URL + modelSelector.value, this.gl, this.loadOptions).then(result =>
+      const modelUrl = (modelSelector && modelSelector.value) || GLTF_DEFAULT_MODEL;
+      loadGLTF(GLTF_BASE_URL + modelUrl, this.gl, this.loadOptions).then(result =>
         Object.assign(this, result)
       );
 
-      modelSelector.onchange = event => {
-        this._deleteScenes();
-        loadGLTF(GLTF_BASE_URL + modelSelector.value, this.gl, this.loadOptions).then(result =>
-          Object.assign(this, result)
-        );
-      };
+      if (modelSelector) {
+        modelSelector.onchange = event => {
+          this._deleteScenes();
+          const modelUrl2 = (modelSelector && modelSelector.value) || GLTF_DEFAULT_MODEL;
+          loadGLTF(GLTF_BASE_URL + modelUrl2, this.gl, this.loadOptions).then(result =>
+            Object.assign(this, result)
+          );
+        };
+      }
 
       loadModelList().then(models => addModelsToDropdown(models, modelSelector));
     }

@@ -5,7 +5,7 @@ import Stats from 'stats.js';
 import ExampleRunner from './example-runner';
 import examples from './examples';
 
-const HeroExample = examples.Instancing;
+const HeroExample = examples.GLTF;
 
 export default class Hero extends Component {
 
@@ -37,8 +37,8 @@ export default class Hero extends Component {
           <ExampleRunner example={HeroExample} sourceLink={HeroExample.path} noPanel noStats />
         </div>
         <div className="container" style={{background: 'transparent'}}>
-          <h1>luma.gl</h1>
-          <p>A WebGL2-Powered Framework for GPU-based Visualization and Computation</p>
+          <h1>loaders.gl</h1>
+          <p>Framework-independent loaders for visualization, 3D graphics and geospatial formats</p>
           <Link to="/docs/get-started" className="btn">
             GET STARTED
           </Link>
