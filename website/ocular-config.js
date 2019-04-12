@@ -76,10 +76,11 @@ module.exports = {
   // Ocular adds this to gatsby's webpack config
   webpack: {
     resolve: {
+      modules: [resolve(__dirname, './node_modules')],
       alias: Object.assign({}, ALIASES, dependencyAliases, {
-        '@luma.gl/addons': `${__dirname}/node_modules/@luma.gl/addons/dist/esm`,
-        '@luma.gl/core': `${__dirname}/node_modules/@luma.gl/core/dist/esm`,
-        '@luma.gl/constants': `${__dirname}/node_modules/@luma.gl/constants/dist/esm`
+        '@luma.gl/addons': `${__dirname}/node_modules/@luma.gl/addons/src`,
+        '@luma.gl/core': `${__dirname}/node_modules/@luma.gl/core/src`,
+        '@luma.gl/constants': `${__dirname}/node_modules/@luma.gl/constants/src`
       })
     }
   },
@@ -94,7 +95,7 @@ module.exports = {
   // Domain of your website without pathPrefix.
   siteUrl: 'https://ocular',
   // Prefixes all links. For cases when deployed to example.github.io/gatsby-advanced-starter/.
-  pathPrefix: '/luma',
+  pathPrefix: '/loaders.gl',
   // Website description used for RSS feeds/meta description tag.
   siteDescription: 'WebGL2 Components',
   // Path to the RSS file.
