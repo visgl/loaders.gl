@@ -77,13 +77,11 @@ module.exports = {
   webpack: {
     resolve: {
       modules: [resolve(__dirname, './node_modules')],
-      alias: Object.assign({}, ALIASES
-        , dependencyAliases, {
+      alias: Object.assign({}, ALIASES, dependencyAliases, {
         '@luma.gl/addons': `${__dirname}/node_modules/@luma.gl/addons/src`,
         '@luma.gl/core': `${__dirname}/node_modules/@luma.gl/core/src`,
         '@luma.gl/constants': `${__dirname}/node_modules/@luma.gl/constants/src`
-        }
-      )
+      })
     }
   },
 
