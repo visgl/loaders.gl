@@ -10,7 +10,8 @@
   "scripts": {
     "start": "yarn clean && yarn develop",
     "clean": "rm -rf ./.cache ./public",
-    "develop": "rm -fr .cache && gatsby develop --port=8001"
+    "develop": "rm -fr .cache && gatsby develop --port=8001",
+    "build": "gatsby build"
   },
   "dependencies": {
     "@luma.gl/addons": "^7.0.0-beta",

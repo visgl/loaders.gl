@@ -3,10 +3,7 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 2018
   },
-  extends: [
-    'eslint-config-uber-es2015',
-    'prettier'
-  ],
+  extends: ['eslint-config-uber-es2015', 'prettier'],
   rules: {
     'guard-for-in': 0,
     'generator-star-spacing': 0,
@@ -16,6 +13,6 @@ module.exports = {
     'space-before-function-paren': 0
   },
   globals: {
-    window: false,
-  },
-}
+    window: false
+  }
+};
