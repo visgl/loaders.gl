@@ -1,10 +1,9 @@
 import {GL} from '../constants';
-import Tile3DFeatureTable from '../tile-3d-feature-table';
-// import Tile3DBatchTable from '../tile-3d-batch-table';
-import {parse3DTileHeaderSync} from './parse-3d-tile-header';
-import {parse3DTileTablesHeaderSync, parse3DTileTablesSync} from './parse-3d-file-header';
-import {parse3DTileGLTFViewSync} from './parse-3d-gltf-view';
-
+import Tile3DFeatureTable from '../classes/tile-3d-feature-table';
+// import Tile3DBatchTable from '../classes/tile-3d-batch-table';
+import {parse3DTileHeaderSync} from './helpers/parse-3d-tile-header';
+import {parse3DTileTablesHeaderSync, parse3DTileTablesSync} from './helpers/parse-3d-tile-tables';
+import {parse3DTileGLTFViewSync} from './helpers/parse-3d-tile-gltf-view';
 
 // Compare with:
 // https://github.com/AnalyticalGraphicsInc/cesium/blob/master/Source/Scene/Batched3DModel3DTileContent.js#L230

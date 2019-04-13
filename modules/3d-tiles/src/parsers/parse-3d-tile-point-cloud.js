@@ -1,19 +1,15 @@
 import {GL} from '../constants';
-import Tile3DFeatureTable from '../tile-3d-feature-table';
-import Tile3DBatchTable from '../tile-3d-batch-table';
-import {parse3DTileHeaderSync} from './parse-3d-file-header';
-import {parse3DTileHeaderSync} from './parse-3d-file-header';
-import {parse3DTileTablesHeaderSync, parse3DTileTablesSync} from './parse-3d-file-header';
-import {parse3DTileGLTFViewSync} from './parse-3d-gltf-view';
+import Tile3DFeatureTable from '../classes/tile-3d-feature-table';
+// import Tile3DBatchTable from '../classes/tile-3d-batch-table';
+import {parse3DTileHeaderSync} from './helpers/parse-3d-tile-header';
+import {parse3DTileTablesHeaderSync, parse3DTileTablesSync} from './helpers/parse-3d-tile-tables';
 
-const defined = x => x !== undefined;
-
-const DECODING_STATE = {
-  NEEDS_DECODE : 0,
-  DECODING : 1,
-  READY : 2,
-  FAILED : 3
-};
+// const DECODING_STATE = {
+//   NEEDS_DECODE: 0,
+//   DECODING: 1,
+//   READY: 2,
+//   FAILED: 3
+// };
 
 // Reference code
 // https://github.com/AnalyticalGraphicsInc/cesium/blob/master/Source/Scene/PointCloud.js#L254
@@ -32,7 +28,9 @@ function extractPointCloud(tile) {
   const featureTable = new Tile3DFeatureTable(tile);
 
   const pointsLength = featureTable.getGlobalProperty('POINTS_LENGTH');
-  tile.featureTable.featuresLength = pointsLength;
+  tile.featuresLength = pointsLength;
+
+  featureTable.featuresLength = pointsLength;
 
   if (!Number.isFinite(pointsLength)) {
     throw new Error('POINTS_LENGTH must be defined');
@@ -49,64 +47,59 @@ function extractPointCloud(tile) {
   tile.isTranslucent = false;
   tile.isRGB565 = false;
   tile.isOctEncoded16P = false;
-
+}
+/*
   const batchTable = new Tile3DBatchTable(tile);
 
   parseDracoBuffer(tile, featureTable, batchTable);
 
   if (!tile.positions) {
     if (featureTable.hasProperty('POSITION')) {
-
       tile.positions = tile.featureTable.getPropertyArray('POSITION', GL.FLOAT, 3);
-
     } else if (featureTable.hasProperty('POSITION_QUANTIZED')) {
-
       tile.positions = featureTable.getPropertyArray('POSITION_QUANTIZED', GL.UNSIGNED_SHORT, 3);
 
       tile.isQuantized = true;
       tile.quantizedRange = (1 << 16) - 1;
 
-      tile.quantizedVolumeScale = featureTable.getGlobalProperty('QUANTIZED_VOLUME_SCALE', GL.FLOAT, 3);
+      tile.quantizedVolumeScale = featureTable.getGlobalProperty(
+        'QUANTIZED_VOLUME_SCALE',
+        GL.FLOAT,
+        3
+      );
       if (tile.quantizedVolumeScale) {
         throw new Error('QUANTIZED_VOLUME_SCALE must be defined for quantized positions.');
       }
 
-      tile.quantizedVolumeOffset = featureTable.getGlobalProperty('QUANTIZED_VOLUME_OFFSET', GL.FLOAT, 3);
+      tile.quantizedVolumeOffset = featureTable.getGlobalProperty(
+        'QUANTIZED_VOLUME_OFFSET',
+        GL.FLOAT,
+        3
+      );
       if (!tile.quantizedVolumeOffset) {
         throw new Error('QUANTIZED_VOLUME_OFFSET must be defined for quantized positions.');
       }
-
     }
   }
 
   if (!tile.colors) {
     if (featureTable.hasProperty('RGBA')) {
-
       tile.colors = featureTable.getPropertyArray('RGBA', GL.UNSIGNED_BYTE, 4);
       tile.isTranslucent = true;
-
     } else if (featureTable.hasProperty('RGB')) {
-
       tile.colors = featureTable.getPropertyArray('RGB', GL.UNSIGNED_BYTE, 3);
-
     } else if (featureTable.hasPropertry('RGB565')) {
-
       tile.colors = featureTable.getPropertyArray('RGB565', GL.UNSIGNED_SHORT, 1);
       tile.isRGB565 = true;
-
     }
   }
 
   if (!tile.normals) {
     if (featureTable.getPropertry('NORMAL')) {
-
       tile.normals = featureTable.getPropertyArray('NORMAL', GL.FLOAT, 3);
-
     } else if (featureTable.getProperty('NORMAL_OCT16P')) {
-
       tile.normals = featureTable.getPropertyArray('NORMAL_OCT16P', GL.UNSIGNED_BYTE, 2);
       tile.isOctEncoded16P = true;
-
     }
   }
 
@@ -143,15 +136,18 @@ function extractPointCloud(tile) {
   // If points are not batched and there are per-point properties, use these properties for styling purposes
   var styleableProperties;
   if (!hasBatchIds && defined(batchTableBinary)) {
-    tile.styleableProperties = Cesium3DTileBatchTable.getBinaryProperties(pointsLength, batchTableJson, batchTableBinary);
+    tile.styleableProperties = Cesium3DTileBatchTable.getBinaryProperties(
+      pointsLength,
+      batchTableJson,
+      batchTableBinary
+    );
   }
 
   tile.draco = draco;
 }
 
 // Separate parsing and decoding of Draco
-function parseDracoBuffer(tile, featureTable, batchTable) {
-
+export function parseDracoBuffer(tile, featureTable, batchTable) {
   let dracoBuffer;
   let dracoFeatureTableProperties;
   let dracoBatchTableProperties;
@@ -170,7 +166,11 @@ function parseDracoBuffer(tile, featureTable, batchTable) {
       throw new Error('Draco properties, byteOffset, and byteLength must be defined');
     }
 
-    dracoBuffer = arraySlice(featureTableBinary, dracoByteOffset, dracoByteOffset + dracoByteLength);
+    dracoBuffer = arraySlice(
+      featureTableBinary,
+      dracoByteOffset,
+      dracoByteOffset + dracoByteLength
+    );
     tile.hasPositions = dracoFeatureTableProperties.POSITION;
     tile.hasColors = dracoFeatureTableProperties.RGB || dracoFeatureTableProperties.RGBA;
     tile.hasNormals = dracoFeatureTableProperties.NORMAL;
@@ -180,7 +180,7 @@ function parseDracoBuffer(tile, featureTable, batchTable) {
 
   if (dracoBuffer) {
     tile.draco = {
-      buffer : dracoBuffer,
+      buffer: dracoBuffer,
       properties: {...dracoFeatureTableProperties, ...dracoBatchTableProperties},
       featureTableProperties: dracoFeatureTableProperties,
       batchTableProperties: dracoBatchTableProperties,

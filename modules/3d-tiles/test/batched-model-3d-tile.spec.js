@@ -6,44 +6,49 @@
 
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
-import {fetchFile, parseFile, parseFileSync} from '@loaders.gl/core';
-import {encodeBatchedModel3DTile} from '@loaders.gl/3d-tiles';
+import {parseSync} from '@loaders.gl/core';
+import {Tile3DLoader, encodeBatchedModel3DTile} from '@loaders.gl/3d-tiles';
+import {loadRootTileFromTileset} from './utils/load-utils';
 
-const WITH_BATCH_TABLE_URL = './Data/Cesium3DTiles/Batched/BatchedWithBatchTable/tileset.json';
+const WITH_BATCH_TABLE_URL =
+  '@loaders.gl/3d-tiles/test/data/Batched/BatchedWithBatchTable/tileset.json';
 const WITH_BATCH_TABLE_BINARY_URL =
-  './Data/Cesium3DTiles/Batched/BatchedWithBatchTableBinary/tileset.json';
+  '@loaders.gl/3d-tiles/test/data/Batched/BatchedWithBatchTableBinary/tileset.json';
 const WITHOUT_BATCH_TABLE_URL =
-  './Data/Cesium3DTiles/Batched/BatchedWithoutBatchTable/tileset.json';
-const TRANSLUCENT_URL = './Data/Cesium3DTiles/Batched/BatchedTranslucent/tileset.json';
+  '@loaders.gl/3d-tiles/test/data/Batched/BatchedWithoutBatchTable/tileset.json';
+const TRANSLUCENT_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedTranslucent/tileset.json';
 const TRANSLUCENT_OPAQUE_MIX_URL =
-  './Data/Cesium3DTiles/Batched/BatchedTranslucentOpaqueMix/tileset.json';
-const WITH_TRANSFORM_BOX_URL = './Data/Cesium3DTiles/Batched/BatchedWithTransformBox/tileset.json';
+  '@loaders.gl/3d-tiles/test/data/Batched/BatchedTranslucentOpaqueMix/tileset.json';
+const WITH_TRANSFORM_BOX_URL =
+  '@loaders.gl/3d-tiles/test/data/Batched/BatchedWithTransformBox/tileset.json';
 const WITH_TRANSFORM_SPHERE_URL =
-  './Data/Cesium3DTiles/Batched/BatchedWithTransformSphere/tileset.json';
+  '@loaders.gl/3d-tiles/test/data/Batched/BatchedWithTransformSphere/tileset.json';
 const WITH_TRANSFORM_REGION_URL =
-  './Data/Cesium3DTiles/Batched/BatchedWithTransformRegion/tileset.json';
-const TEXTURED_URL = './Data/Cesium3DTiles/Batched/BatchedTextured/tileset.json';
-const DEPRECATED1_URL = './Data/Cesium3DTiles/Batched/BatchedDeprecated1/tileset.json';
-const DEPRECATED2_URL = './Data/Cesium3DTiles/Batched/BatchedDeprecated2/tileset.json';
-// const WITH_RTC_CENTER_URL = './Data/Cesium3DTiles/Batched/BatchedWithRtcCenter/tileset.json';
+  '@loaders.gl/3d-tiles/test/data/Batched/BatchedWithTransformRegion/tileset.json';
+const TEXTURED_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedTextured/tileset.json';
+// const DEPRECATED1_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedDeprecated1/tileset.json';
+// const DEPRECATED2_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedDeprecated2/tileset.json';
+// const WITH_RTC_CENTER_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedWithRtcCenter/tileset.json';
 
 test('batched model tile#throws with invalid version', t => {
   const arrayBuffer = encodeBatchedModel3DTile({
     version: 2
   });
-  t.throws(() => parseFileSync(arrayBuffer), 'throws on invalid version');
+  t.throws(() => parseSync(arrayBuffer, Tile3DLoader), 'throws on invalid version');
   t.end();
 });
 
+/*
 test('batched model tile#recognizes the legacy 20-byte header', t => {
-  t.throws(() => parseFile(fetchFile(DEPRECATED1_URL)), 'throws on legacy header');
+  t.throws(() => parse(fetchFile(DEPRECATED1_URL), Tile3DLoader), 'throws on legacy header');
   t.end();
 });
 
 test('batched model tile#recognizes the legacy 24-byte header', t => {
-  t.throws(() => parseFile(fetchFile(DEPRECATED2_URL)), 'throws on legacy header');
+  t.throws(() => parse(fetchFile(DEPRECATED2_URL), Tile3DLoader), 'throws on legacy header');
   t.end();
 });
+*/
 
 // test('batched model tile#logs deprecation warning for use of BATCHID without prefixed underscore', t => {
 //   return Cesium3DTilesTester.loadTileset(scene, DEPRECATED1_URL)
@@ -56,72 +61,82 @@ test('batched model tile#recognizes the legacy 24-byte header', t => {
 test('batched model tile#empty gltf', t => {
   // Expect to throw DeveloperError in Model due to invalid gltf magic
   const arrayBuffer = encodeBatchedModel3DTile();
-  t.throws(() => parseFileSync(arrayBuffer), 'Throws with empty glTF');
+  t.throws(() => parseSync(arrayBuffer, Tile3DLoader), 'Throws with empty glTF');
   t.end();
 });
 
 test('batched model tile#without batch table', async t => {
-  const tile = await parseFile(fetchFile(WITHOUT_BATCH_TABLE_URL));
+  const tileData = await loadRootTileFromTileset(t, WITHOUT_BATCH_TABLE_URL);
+  const tile = parseSync(tileData, Tile3DLoader);
   t.ok(tile, 'loaded tile without batch table');
   t.end();
 });
 
 test('batched model tile#with batch table', async t => {
-  const tile = await parseFile(fetchFile(WITH_BATCH_TABLE_URL));
+  const tileData = await loadRootTileFromTileset(t, WITH_BATCH_TABLE_URL);
+  const tile = parseSync(tileData, Tile3DLoader);
   t.ok(tile, 'loaded tile with batch table');
   t.end();
 });
 
 test('batched model tile#with batch table binary', async t => {
-  const tile = await parseFile(fetchFile(WITH_BATCH_TABLE_BINARY_URL));
+  const tileData = await loadRootTileFromTileset(t, WITH_BATCH_TABLE_BINARY_URL);
+  const tile = parseSync(tileData, Tile3DLoader);
   t.ok(tile, 'loaded tile with batch table binary');
   t.end();
 });
 
 test('batched model tile#without batch table', async t => {
-  const tile = await parseFile(fetchFile(WITHOUT_BATCH_TABLE_URL));
+  const tileData = await loadRootTileFromTileset(t, WITHOUT_BATCH_TABLE_URL);
+  const tile = parseSync(tileData, Tile3DLoader);
   t.ok(tile, 'loaded tile with batch table binary');
   t.end();
 });
 
 // TODO this should be a render test
 test('batched model tile#with all features translucent', async t => {
-  const tile = await parseFile(fetchFile(TRANSLUCENT_URL));
+  const tileData = await loadRootTileFromTileset(t, TRANSLUCENT_URL);
+  const tile = parseSync(tileData, Tile3DLoader);
   t.ok(tile, 'loaded tile with all features translucent');
   t.end();
 });
 
 // TODO this should be a render test
 test('batched model tile#with a mix of opaque and translucent features', async t => {
-  const tile = await parseFile(fetchFile(TRANSLUCENT_OPAQUE_MIX_URL));
+  const tileData = await loadRootTileFromTileset(t, TRANSLUCENT_OPAQUE_MIX_URL);
+  const tile = parseSync(tileData, Tile3DLoader);
   t.ok(tile, 'loaded tile with a mix of opaque and translucent features');
   t.end();
 });
 
 // TODO this should be a render test
 test('batched model tile#with textures', async t => {
-  const tile = await parseFile(fetchFile(TEXTURED_URL));
+  const tileData = await loadRootTileFromTileset(t, TEXTURED_URL);
+  const tile = parseSync(tileData, Tile3DLoader);
   t.ok(tile, 'loaded tile with a mix of opaque and translucent features');
   t.end();
 });
 
 // TODO this should be a render test
 test('batched model tile#with a tile transform and box bounding volume', async t => {
-  const tile = await parseFile(fetchFile(WITH_TRANSFORM_BOX_URL));
+  const tileData = await loadRootTileFromTileset(t, WITH_TRANSFORM_BOX_URL);
+  const tile = parseSync(tileData, Tile3DLoader);
   t.ok(tile, 'loaded tile with a tile transform and box bounding volume');
   t.end();
 });
 
 // TODO this should be a render test
 test('batched model tile#with a tile transform and sphere bounding volume', async t => {
-  const tile = await parseFile(fetchFile(WITH_TRANSFORM_SPHERE_URL));
+  const tileData = await loadRootTileFromTileset(t, WITH_TRANSFORM_SPHERE_URL);
+  const tile = parseSync(tileData, Tile3DLoader);
   t.ok(tile, 'loaded tile with a tile transform and sphere bounding volume');
   t.end();
 });
 
 // TODO this should be a render test
 test('batched model tile#with a tile transform and region bounding volume', async t => {
-  const tile = await parseFile(fetchFile(WITH_TRANSFORM_REGION_URL));
+  const tileData = await loadRootTileFromTileset(t, WITH_TRANSFORM_REGION_URL);
+  const tile = parseSync(tileData, Tile3DLoader);
   t.ok(tile, 'loaded tile with a tile transform and region bounding volume');
   t.end();
 });

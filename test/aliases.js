@@ -21,10 +21,13 @@
 const path = require('path');
 const {addAliases} = require('@loaders.gl/core/lib/fetch/file-aliases');
 
-// NOTE - this cannot be replaced with ocular-dev-tools because it is required in browser
+// NOTE - Replace with a transform of ocular-dev-tools aliases?
 const makeAliases = () => ({
   test: path.resolve(__dirname, '../test'),
+  '@loaders.gl/3d-tiles/test': path.resolve(__dirname, '../modules/3d-tiles/test'),
+  '@loaders.gl/arrow/test': path.resolve(__dirname, '../modules/arrow/test'),
   '@loaders.gl/core/test': path.resolve(__dirname, '../modules/core/test'),
+  '@loaders.gl/csv/test': path.resolve(__dirname, '../modules/csv/test'),
   '@loaders.gl/draco/test': path.resolve(__dirname, '../modules/draco/test'),
   '@loaders.gl/experimental/test': path.resolve(__dirname, '../modules/experimental/test'),
   '@loaders.gl/images/test': path.resolve(__dirname, '../modules/images/test'),
@@ -34,9 +37,7 @@ const makeAliases = () => ({
   '@loaders.gl/obj/test': path.resolve(__dirname, '../modules/obj/test'),
   '@loaders.gl/pcd/test': path.resolve(__dirname, '../modules/pcd/test'),
   '@loaders.gl/ply/test': path.resolve(__dirname, '../modules/ply/test'),
-  '@loaders.gl/zip/test': path.resolve(__dirname, '../modules/zip/test'),
-  '@loaders.gl/arrow/test': path.resolve(__dirname, '../modules/arrow/test'),
-  '@loaders.gl/csv/test': path.resolve(__dirname, '../modules/csv/test')
+  '@loaders.gl/zip/test': path.resolve(__dirname, '../modules/zip/test')
 });
 
 const ALIASES = makeAliases();

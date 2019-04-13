@@ -1,91 +1,17 @@
 /*
-define([
-    '../Core/arrayFill',
-    '../Core/Cartesian2',
-    '../Core/Cartesian4',
-    '../Core/Check',
-    '../Core/clone',
-    '../Core/Color',
-    '../Core/combine',
-    '../Core/ComponentDatatype',
-    '../Core/defaultValue',
-    '../Core/defined',
-    '../Core/defineProperties',
-    '../Core/deprecationWarning',
-    '../Core/destroyObject',
-    '../Core/DeveloperError',
-    '../Core/Math',
-    '../Core/PixelFormat',
-    '../Core/RuntimeError',
-    '../Renderer/ContextLimits',
-    '../Renderer/DrawCommand',
-    '../Renderer/Pass',
-    '../Renderer/PixelDatatype',
-    '../Renderer/RenderState',
-    '../Renderer/Sampler',
-    '../Renderer/ShaderSource',
-    '../Renderer/Texture',
-    '../Renderer/TextureMagnificationFilter',
-    '../Renderer/TextureMinificationFilter',
-    './AttributeType',
-    './BlendingState',
-    './Cesium3DTileColorBlendMode',
-    './CullFace',
-    './getBinaryAccessor',
-    './StencilFunction',
-    './StencilOperation'
-  ], function(
-    arrayFill,
-    Cartesian2,
-    Cartesian4,
-    Check,
-    clone,
-    Color,
-    combine,
-    ComponentDatatype,
-    defaultValue,
-    defined,
-    defineProperties,
-    deprecationWarning,
-    destroyObject,
-    DeveloperError,
-    CesiumMath,
-    PixelFormat,
-    RuntimeError,
-    ContextLimits,
-    DrawCommand,
-    Pass,
-    PixelDatatype,
-    RenderState,
-    Sampler,
-    ShaderSource,
-    Texture,
-    TextureMagnificationFilter,
-    TextureMinificationFilter,
-    AttributeType,
-    BlendingState,
-    Cesium3DTileColorBlendMode,
-    CullFace,
-    getBinaryAccessor,
-    StencilFunction,
-    StencilOperation) {
-  'use strict';
-
 const DEFAULT_COLOR_VALUE = Color.WHITE;
 const DEFAULT_SHOW_VALUE = true;
 */
 
-export default class TileBatchTable {
-  constructor({batchTableJson, batchTableBinary, featuresLength}) {
+export default class Tile3DBatchTable {
+  constructor(batchTableJson, batchTableBinary, featuresLength) {
     this.json = batchTableJson;
     this.binary = batchTableBinary;
   }
 
-
   getExtension(extensionName) {
     return this.json.extensions && this.json.extensions[extensionName];
   }
-
 }
 /*
     this.featuresLength = featuresLength;

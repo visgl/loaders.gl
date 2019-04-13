@@ -5,50 +5,55 @@
 // which is under Apache 2 license
 
 import test from 'tape-promise/tape';
-import {fetchFile, parseFile, parseFileSync} from '@loaders.gl/core';
-import {encodePointcloud3DTile} from '@loaders.gl/3d-tiles';
+import {parseSync} from '@loaders.gl/core';
+import {Tile3DLoader, encodePointCloud3DTile} from '@loaders.gl/3d-tiles';
+import {loadRootTileFromTileset} from './utils/load-utils';
 
-const POINTCLOUD_RGB_URL = './Data/Cesium3DTiles/PointCloud/PointCloudRGB/tileset.json';
-const POINTCLOUD_RGBA_URL = './Data/Cesium3DTiles/PointCloud/PointCloudRGBA/tileset.json';
-const POINTCLOUD_RGB565_URL = './Data/Cesium3DTiles/PointCloud/PointCloudRGB565/tileset.json';
-const POINTCLOUD_NO_COLOR_URL = './Data/Cesium3DTiles/PointCloud/PointCloudNoColor/tileset.json';
+const POINTCLOUD_RGB_URL = '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudRGB/tileset.json';
+const POINTCLOUD_RGBA_URL = '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudRGBA/tileset.json';
+const POINTCLOUD_RGB565_URL =
+  '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudRGB565/tileset.json';
+const POINTCLOUD_NO_COLOR_URL =
+  '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudNoColor/tileset.json';
 const POINTCLOUD_CONSTANT_COLOR_URL =
-  './Data/Cesium3DTiles/PointCloud/PointCloudConstantColor/tileset.json';
-const POINTCLOUD_NORMALS_URL = './Data/Cesium3DTiles/PointCloud/PointCloudNormals/tileset.json';
+  '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudConstantColor/tileset.json';
+const POINTCLOUD_NORMALS_URL =
+  '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudNormals/tileset.json';
 const POINTCLOUD_NORMALS_OCT_ENCODED_URL =
-  './Data/Cesium3DTiles/PointCloud/PointCloudNormalsOctEncoded/tileset.json';
-const POINTCLOUD_QUANTIZED_URL = './Data/Cesium3DTiles/PointCloud/PointCloudQuantized/tileset.json';
+  '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudNormalsOctEncoded/tileset.json';
+const POINTCLOUD_QUANTIZED_URL =
+  '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudQuantized/tileset.json';
 const POINTCLOUD_QUANTIZED_OCT_ENCODED_URL =
-  './Data/Cesium3DTiles/PointCloud/PointCloudQuantizedOctEncoded/tileset.json';
+  '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudQuantizedOctEncoded/tileset.json';
 /*
-const POINTCLOUD_DRACO_URL = './Data/Cesium3DTiles/PointCloud/PointCloudDraco/tileset.json';
-const POINTCLOUD_DRACO_PARTIAL_URL = './Data/Cesium3DTiles/PointCloud/PointCloudDracoPartial/tileset.json';
-const POINTCLOUD_DRACO_BATCHED_URL = './Data/Cesium3DTiles/PointCloud/PointCloudDracoBatched/tileset.json';
-const POINTCLOUD_WGS84_URL = './Data/Cesium3DTiles/PointCloud/PointCloudWGS84/tileset.json';
-const POINTCLOUD_BATCHED_URL = './Data/Cesium3DTiles/PointCloud/PointCloudBatched/tileset.json';
-const POINTCLOUD_WITH_PER_POINT_PROPERTIES_URL = './Data/Cesium3DTiles/PointCloud/PointCloudWithPerPointProperties/tileset.json';
-const POINTCLOUD_WITH_TRANSFORM_URL = './Data/Cesium3DTiles/PointCloud/PointCloudWithTransform/tileset.json';
-const POINTCLOUD_TILESET_URL = './Data/Cesium3DTiles/Tilesets/TilesetPoints/tileset.json';
+const POINTCLOUD_DRACO_URL = '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudDraco/tileset.json';
+const POINTCLOUD_DRACO_PARTIAL_URL = '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudDracoPartial/tileset.json';
+const POINTCLOUD_DRACO_BATCHED_URL = '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudDracoBatched/tileset.json';
+const POINTCLOUD_WGS84_URL = '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudWGS84/tileset.json';
+const POINTCLOUD_BATCHED_URL = '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudBatched/tileset.json';
+const POINTCLOUD_WITH_PER_POINT_PROPERTIES_URL = '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudWithPerPointProperties/tileset.json';
+const POINTCLOUD_WITH_TRANSFORM_URL = '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudWithTransform/tileset.json';
+const POINTCLOUD_TILESET_URL = '@loaders.gl/3d-tiles/test/data/Tilesets/TilesetPoints/tileset.json';
 */
 
 test('point cloud tile#throws with invalid version', t => {
-  const arrayBuffer = encodePointcloud3DTile({
+  const arrayBuffer = encodePointCloud3DTile({
     version: 2
   });
-  t.throws(() => parseFileSync(arrayBuffer), 'throws on invalid version');
+  t.throws(() => parseSync(arrayBuffer), 'throws on invalid version');
   t.end();
 });
 
 test('point cloud tile#throws if featureTableJsonByteLength is 0', t => {
-  const arrayBuffer = encodePointcloud3DTile({
+  const arrayBuffer = encodePointCloud3DTile({
     featureTableJsonByteLength: 0
   });
-  t.throws(() => parseFileSync(arrayBuffer), 'throws if featureTableJsonByteLength is 0');
+  t.throws(() => parseSync(arrayBuffer), 'throws if featureTableJsonByteLength is 0');
   t.end();
 });
 
 test('point cloud tile#throws if the feature table does not contain POINTS_LENGTH', t => {
-  const arrayBuffer = encodePointcloud3DTile({
+  const arrayBuffer = encodePointCloud3DTile({
     featureTableJson: {
       POSITION: {
         byteOffset: 0
@@ -56,27 +61,27 @@ test('point cloud tile#throws if the feature table does not contain POINTS_LENGT
     }
   });
   t.throws(
-    () => parseFileSync(arrayBuffer),
+    () => parseSync(arrayBuffer),
     'throws if the feature table does not contain POINTS_LENGTH'
   );
   t.end();
 });
 
 test('point cloud tile#throws if the feature table does not contain POSITION or POSITION_QUANTIZED', t => {
-  const arrayBuffer = encodePointcloud3DTile({
+  const arrayBuffer = encodePointCloud3DTile({
     featureTableJson: {
       POINTS_LENGTH: 1
     }
   });
   t.throws(
-    () => parseFileSync(arrayBuffer),
+    () => parseSync(arrayBuffer),
     'throws if the feature table does not contain POSITION or POSITION_QUANTIZED'
   );
   t.end();
 });
 
 test('point cloud tile#throws if the positions are quantized and the feature table does not contain QUANTIZED_VOLUME_SCALE', t => {
-  const arrayBuffer = encodePointcloud3DTile({
+  const arrayBuffer = encodePointCloud3DTile({
     featureTableJson: {
       POINTS_LENGTH: 1,
       POSITION_QUANTIZED: {
@@ -86,14 +91,14 @@ test('point cloud tile#throws if the positions are quantized and the feature tab
     }
   });
   t.throws(
-    () => parseFileSync(arrayBuffer),
+    () => parseSync(arrayBuffer),
     'throws if the positions are quantized and the feature table does not contain QUANTIZED_VOLUME_SCALE'
   );
   t.end();
 });
 
 test('point cloud tile#throws if the positions are quantized and the feature table does not contain QUANTIZED_VOLUME_OFFSET', t => {
-  const arrayBuffer = encodePointcloud3DTile({
+  const arrayBuffer = encodePointCloud3DTile({
     featureTableJson: {
       POINTS_LENGTH: 1,
       POSITION_QUANTIZED: {
@@ -103,14 +108,14 @@ test('point cloud tile#throws if the positions are quantized and the feature tab
     }
   });
   t.throws(
-    () => parseFileSync(arrayBuffer),
+    () => parseSync(arrayBuffer),
     'throws if the positions are quantized and the feature table does not contain QUANTIZED_VOLUME_OFFSET'
   );
   t.end();
 });
 
 test('point cloud tile#throws if the BATCH_ID semantic is defined but BATCHES_LENGTH is not', t => {
-  const arrayBuffer = encodePointcloud3DTile({
+  const arrayBuffer = encodePointCloud3DTile({
     featureTableJson: {
       POINTS_LENGTH: 2,
       POSITION: [0.0, 0.0, 0.0, 1.0, 1.0, 1.0],
@@ -118,14 +123,14 @@ test('point cloud tile#throws if the BATCH_ID semantic is defined but BATCHES_LE
     }
   });
   t.throws(
-    () => parseFileSync(arrayBuffer),
+    () => parseSync(arrayBuffer),
     'throws if the BATCH_ID semantic is defined but BATCHES_LENGTH is not'
   );
   t.end();
 });
 
 test('point cloud tile#BATCH_ID semantic uses componentType of UNSIGNED_SHORT by default', t => {
-  const arrayBuffer = encodePointcloud3DTile({
+  const arrayBuffer = encodePointCloud3DTile({
     featureTableJson: {
       POINTS_LENGTH: 2,
       POSITION: [0.0, 0.0, 0.0, 1.0, 1.0, 1.0],
@@ -134,7 +139,7 @@ test('point cloud tile#BATCH_ID semantic uses componentType of UNSIGNED_SHORT by
     }
   });
   t.throws(
-    () => parseFileSync(arrayBuffer),
+    () => parseSync(arrayBuffer),
     'throws if the BATCH_ID semantic is defined but BATCHES_LENGTH is not'
   );
   // const content = Cesium3DTilesTester.loadTile(scene, arrayBuffer, 'pnts');
@@ -143,7 +148,8 @@ test('point cloud tile#BATCH_ID semantic uses componentType of UNSIGNED_SHORT by
 });
 
 test('point cloud tile#gets tileset properties', async t => {
-  const tile = await parseFile(fetchFile(POINTCLOUD_RGB_URL));
+  const tileData = await loadRootTileFromTileset(t, POINTCLOUD_RGB_URL);
+  const tile = parseSync(tileData, Tile3DLoader);
   t.ok(tile, 'loaded point cloud with rgb colors');
 
   // const root = tileset.root;
@@ -157,63 +163,72 @@ test('point cloud tile#gets tileset properties', async t => {
 
 // TODO - this should be a render test
 test('point cloud tile#renders point cloud with rgb colors', async t => {
-  const tile = await parseFile(fetchFile(POINTCLOUD_RGB_URL));
+  const tileData = await loadRootTileFromTileset(t, POINTCLOUD_RGB_URL);
+  const tile = parseSync(tileData, Tile3DLoader);
   t.ok(tile, 'loaded point cloud with rgb colors');
   t.end();
 });
 
 // TODO - this should be a render test
 test('point cloud tile#renders point cloud with rgba colors', async t => {
-  const tile = await parseFile(fetchFile(POINTCLOUD_RGBA_URL));
+  const tileData = await loadRootTileFromTileset(t, POINTCLOUD_RGBA_URL);
+  const tile = parseSync(tileData, Tile3DLoader);
   t.ok(tile, 'loaded point cloud with rgba colors');
   t.end();
 });
 
 // TODO - this should be a render test
 test('point cloud tile#renders point cloud with rgb565 colors', async t => {
-  const tile = await parseFile(fetchFile(POINTCLOUD_RGB565_URL));
+  const tileData = await loadRootTileFromTileset(t, POINTCLOUD_RGB565_URL);
+  const tile = parseSync(tileData, Tile3DLoader);
   t.ok(tile, 'loaded point cloud with rgb565 colors');
   t.end();
 });
 
 // TODO - this should be a render test
 test('point cloud tile#renders point cloud with no colors', async t => {
-  const tile = await parseFile(fetchFile(POINTCLOUD_NO_COLOR_URL));
+  const tileData = await loadRootTileFromTileset(t, POINTCLOUD_NO_COLOR_URL);
+  const tile = parseSync(tileData, Tile3DLoader);
   t.ok(tile, 'loaded point cloud with no colors');
   t.end();
 });
 
 // TODO - this should be a render test
 test('point cloud tile#renders point cloud with constant colors', async t => {
-  const tile = await parseFile(fetchFile(POINTCLOUD_CONSTANT_COLOR_URL));
+  const tileData = await loadRootTileFromTileset(t, POINTCLOUD_CONSTANT_COLOR_URL);
+  const tile = parseSync(tileData, Tile3DLoader);
   t.ok(tile, 'loaded point cloud with constant colors');
   t.end();
 });
 
 // TODO - this should be a render test
 test('point cloud tile#renders point cloud with normals', async t => {
-  const tile = await parseFile(fetchFile(POINTCLOUD_NORMALS_URL));
+  const tileData = await loadRootTileFromTileset(t, POINTCLOUD_NORMALS_URL);
+  const tile = parseSync(tileData, Tile3DLoader);
   t.ok(tile, 'loaded point cloud with normals');
   t.end();
 });
 
 // TODO - this should be a render test
 test('point cloud tile#renders point cloud with oct encoded normals', async t => {
-  const tile = await parseFile(fetchFile(POINTCLOUD_NORMALS_OCT_ENCODED_URL));
+  const tileData = await loadRootTileFromTileset(t, POINTCLOUD_NORMALS_OCT_ENCODED_URL);
+  const tile = parseSync(tileData, Tile3DLoader);
   t.ok(tile, 'loaded point cloud with oct encoded normals');
   t.end();
 });
 
 // TODO - this should be a render test
 test('point cloud tile#renders point cloud with quantized positions', async t => {
-  const tile = await parseFile(fetchFile(POINTCLOUD_QUANTIZED_URL));
+  const tileData = await loadRootTileFromTileset(t, POINTCLOUD_QUANTIZED_URL);
+  const tile = parseSync(tileData, Tile3DLoader);
   t.ok(tile, 'loaded point cloud with quantized positions');
   t.end();
 });
 
 // TODO - this should be a render test
 test('point cloud tile#renders point cloud with quantized positions and oct-encoded normals', async t => {
-  const tile = await parseFile(fetchFile(POINTCLOUD_QUANTIZED_OCT_ENCODED_URL));
+  const tileData = await loadRootTileFromTileset(t, POINTCLOUD_QUANTIZED_OCT_ENCODED_URL);
+  const tile = parseSync(tileData, Tile3DLoader);
   t.ok(tile, 'loaded point cloud with quantized positions and oct-encoded normals');
   t.end();
 });
