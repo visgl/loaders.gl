@@ -1,5 +1,9 @@
+modules/core/src/node/text-encoding
+
 **/dist/*
 node_modules/
 *.min.js
 .cache
 public
+
+
