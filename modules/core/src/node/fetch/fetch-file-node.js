@@ -159,7 +159,6 @@ async function readFile(url, options = {}) {
 
 // Returns a promise that resolves to a readable stream
 export async function createReadStream(url, options) {
-
   // Handle data urls in node, to match `fetch``
   if (isDataURL(url)) {
     // TODO - need to return a stream wrapper
