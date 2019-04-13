@@ -5,10 +5,9 @@ import http from 'http';
 import https from 'https';
 import util from 'util';
 
-import {toArrayBuffer} from '../../../javascript-utils/binary-utils';
-import {TextDecoder} from '../../../javascript-utils/text-encoding';
-import {concatenateReadStream} from '../../../javascript-utils/stream-utils';
-import {resolvePath} from '../file-aliases';
+import {toArrayBuffer} from '../../javascript-utils/binary-utils';
+import {TextDecoder} from '../../javascript-utils/text-encoding';
+import {concatenateReadStream} from '../../javascript-utils/stream-utils';
 import decodeDataUri from './decode-data-uri';
 
 const DEFAULT_OPTIONS = {
@@ -114,13 +113,11 @@ class NodeFetchResponse {
 }
 
 export async function fetchFile(url, options) {
-  url = resolvePath(url);
   return new NodeFetchResponse(url, options);
 }
 
 // In a few cases (data URIs, node.js) "files" can be read synchronously
 export function readFileSync(url, options = {}) {
-  url = resolvePath(url);
   options = getReadFileOptions(options);
 
   if (isDataURL(url)) {
@@ -141,7 +138,6 @@ export function readFileSync(url, options = {}) {
 // * File/Blob objects
 // etc?
 async function readFile(url, options = {}) {
-  url = resolvePath(url);
   options = getReadFileOptions(options);
 
   if (isDataURL(url)) {
@@ -163,8 +159,6 @@ async function readFile(url, options = {}) {
 
 // Returns a promise that resolves to a readable stream
 export async function createReadStream(url, options) {
-  url = resolvePath(url);
-
   // Handle data urls in node, to match `fetch``
   if (isDataURL(url)) {
     // TODO - need to return a stream wrapper

@@ -5,7 +5,8 @@ import './javascript-utils/flatten.spec';
 
 import './categories/mesh/mesh-utils.spec';
 
-import './lib/fetch/node/decode-data-uri.spec';
+import './node/fetch/decode-data-uri.spec';
+
 import './lib/fetch/file-aliases.spec';
 import './lib/fetch/create-stream.spec';
 import './lib/fetch/fetch-file.spec';
