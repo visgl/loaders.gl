@@ -27,11 +27,8 @@ const LOCAL_DEVELOPMENT_CONFIG = {
   },
 
   resolve: {
-    // Imports the luma.gl library from its src directory in this repo
+    // Imports the library from its src directory in this repo
     alias: ALIASES
-    // For bundle size testing
-    // 'luma.gl': resolve(LIB_DIR, './dist/es6'),
-    // 'math.gl': resolve(LIB_DIR, './node_modules/math.gl')
   },
 
   module: {
@@ -46,14 +43,11 @@ const LOCAL_DEVELOPMENT_CONFIG = {
   }
 };
 
-function addLocalDevSettings(config, {libAlias}) {
+function addLocalDevSettings(config) {
   config = Object.assign({}, LOCAL_DEVELOPMENT_CONFIG, config);
   config.resolve = config.resolve || {};
   config.resolve.alias = config.resolve.alias || {};
   Object.assign(config.resolve.alias, LOCAL_DEVELOPMENT_CONFIG.resolve.alias);
-  if (libAlias) {
-    config.resolve.alias['luma.gl'] = libAlias;
-  }
 
   config.module = config.module || {};
   config.module.rules = config.module.rules || [];
@@ -66,7 +60,7 @@ function addAnalyzerSettings(config) {
   config.mode = 'production';
 
   config.resolve = config.resolve || {};
-  // 'esnext' picks up luma.gl's ES6 dist for smaller bundles
+  // 'esnext' picks up ES6 dist for smaller bundles
   config.resolve.mainFields = ['esnext', 'browser', 'module', 'main'];
 
   config.plugins = config.plugins || [];

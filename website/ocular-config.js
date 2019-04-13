@@ -9,7 +9,7 @@ const ALIASES = require('ocular-dev-tools/config/ocular.config')({
 
 // When duplicating example dependencies in website, autogenerate
 // aliases to ensure the website version is picked up
-// NOTE: luma.gl module dependencies are automatically injected
+// NOTE: module dependencies are automatically injected
 // TODO - should this be automatically done by ocular-gatsby?
 const dependencyAliases = {};
 for (const dependency in DEPENDENCIES) {

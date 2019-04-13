@@ -1,6 +1,6 @@
 # RFCs and Roadmaps (loaders.gl)
 
-Implementation of non-trivial new luma.gl features should typically be started off with the creation of an RFC (Request for Comments). For more details see [RFC Guidelines](../RFC-GUIDELINES.md) .
+Implementation of non-trivial new features should typically be started off with the creation of an RFC (Request for Comments). For more details see [RFC Guidelines](../RFC-GUIDELINES.md) .
 
 ## Roadmaps
 
