@@ -1,6 +1,6 @@
 import fs from 'fs';
 import {promisify} from 'util';
-import assert from '../../../utils/assert';
+import assert from '../../utils/assert';
 
 export function writeFile(filePath, arrayBufferOrString) {
   return promisify(fs.writeFile)(`${filePath}`, toBuffer(arrayBufferOrString), {flag: 'w'});

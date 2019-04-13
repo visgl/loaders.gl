@@ -1,6 +1,5 @@
 /* global fetch */
 import assert from '../../utils/assert';
-import {resolvePath} from './file-aliases';
 
 const DEFAULT_OPTIONS = {
   dataType: 'arrayBuffer',
@@ -13,7 +12,6 @@ const isDataURL = url => url.startsWith('data:');
 
 // Returns a promise that resolves to a response object
 export async function fetchFile(url, options) {
-  url = resolvePath(url);
   return await fetch(url, options);
 
   // TODO - SUPPORT reading from `File` objects
@@ -24,7 +22,6 @@ export async function fetchFile(url, options) {
 
 // In a few cases (data URIs, files under Node) "files" can be read synchronously
 export function readFileSync(uri, options = {}) {
-  uri = resolvePath(uri);
   options = getReadFileOptions(options);
 
   if (isDataURL(uri)) {
@@ -47,7 +44,6 @@ export function readFileSync(uri, options = {}) {
 // * data urls
 // TODO - does not support opening a stream on a `File` objects
 export async function createReadStream(url, options) {
-  url = resolvePath(url);
   return fetch(url, options).then(res => res.body);
 }
 
@@ -89,7 +85,6 @@ function readFileObject(file, options) {
 // * File/Blob objects
 // etc?
 async function readFile(uri, options = {}) {
-  uri = resolvePath(uri);
   options = getReadFileOptions(options);
 
   // NOTE: data URLs are decoded by fetch

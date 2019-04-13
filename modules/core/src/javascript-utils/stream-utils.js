@@ -1,5 +1,5 @@
 import {isBrowser} from '../utils/globals';
-import {concatenateArrayBuffers} from '../javascript-utils/memory-copy-utils';
+import {concatenateArrayBuffers} from './memory-copy-utils';
 
 export function getStreamIterator(stream) {
   // NODE 10+: stream is an asyncIterator

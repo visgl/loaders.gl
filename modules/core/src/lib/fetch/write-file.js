@@ -1,6 +1,6 @@
 import {isBrowser} from '../../utils/globals';
 import assert from '../../utils/assert';
-import * as node from './node/write-file-node';
+import * as node from '../../node/fetch/write-file-node';
 
 export function writeFile(filePath, arrayBufferOrString, options) {
   if (!isBrowser) {
