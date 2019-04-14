@@ -66,11 +66,11 @@ module.exports = {
   ADDITIONAL_LINKS: [],
 
   EXAMPLES: [
-//    {
-//      title: 'GLTF',
-//      path: 'examples/gltf',
-//      image: 'images/example-gltf.jpg'
-//    }
+    //    {
+    //      title: 'GLTF',
+    //      path: 'examples/gltf',
+    //      image: 'images/example-gltf.jpg'
+    //    }
   ],
 
   // Avoids duplicate conflicting inputs when importing from examples folders
