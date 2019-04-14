@@ -1,15 +1,12 @@
+/* eslint-disable camelcase */
 /* global document, window */
-import {loadFile, parseFile, registerLoaders} from '@loaders.gl/core';
-import {AnimationLoop, setParameters, clear, log, lumaStats} from '@luma.gl/core';
-import {
-  createGLTFObjects,
-  GLBScenegraphLoader,
-  GLTFScenegraphLoader,
-  GLTFEnvironment,
-  VRDisplay
-} from '@luma.gl/addons';
+import {load} from '@loaders.gl/core';
+import {DracoLoader} from '@loaders.gl/draco';
 import GL from '@luma.gl/constants';
+import {AnimationLoop, setParameters, clear, log, lumaStats} from '@luma.gl/core';
+import {createGLTFObjects, GLTFEnvironment, VRDisplay} from '@luma.gl/addons';
 import {Matrix4, radians} from 'math.gl';
+import GLTFScenegraphLoader from './gltf-scenegraph-loader';
 
 const CUBE_FACE_TO_DIRECTION = {
   [GL.TEXTURE_CUBE_MAP_POSITIVE_X]: 'right',
@@ -29,9 +26,8 @@ const GLTF_MODEL_INDEX = `${GLTF_BASE_URL}model-index.json`;
 const GLTF_DEFAULT_MODEL = 'DamagedHelmet/glTF-Binary/DamagedHelmet.glb';
 
 const INFO_HTML = `
-<p><b>glTF</b> rendering.</p>
-<p>A luma.gl <code>glTF</code> renderer.</p>
-<p><img src="https://img.shields.io/badge/WebVR-Supported-orange.svg" /></p>
+<p><b>glTF Loader</b>.</p>
+<p>Rendered using luma.gl.</p>
 <div>
   Model
   <select id="modelSelector">
@@ -77,6 +73,7 @@ const INFO_HTML = `
   </select>
   <br>
 </div>
+<p><img src="https://img.shields.io/badge/WebVR-Supported-orange.svg" /></p>
 `;
 
 const LIGHT_SOURCES = {
@@ -163,26 +160,14 @@ const DEFAULT_OPTIONS = {
   lights: false
 };
 
-registerLoaders([GLBScenegraphLoader, GLTFScenegraphLoader]);
-
 async function loadGLTF(urlOrPromise, gl, options) {
-  let loadResult;
-  if (urlOrPromise instanceof Promise) {
-    const url = 'file:///.glb';
-    loadResult = await parseFile(await urlOrPromise, Object.assign({gl}, options), url);
-  } else {
-    loadResult = await loadFile(urlOrPromise, Object.assign({gl}, options));
-  }
-
-  const {gltfParser, gltf, scenes, animator} = loadResult;
-
-  log.info(4, 'gltfParser: ', gltfParser)();
-  log.info(4, 'scenes: ', scenes)();
-
-  scenes[0].traverse((node, {worldMatrix}) => {
-    log.info(4, 'Using model: ', node)();
+  const loadResult = await load(urlOrPromise, GLTFScenegraphLoader, {
+    ...options,
+    gl,
+    DracoLoader
   });
-
+  const {gltf, scenes, animator} = loadResult;
+  scenes[0].traverse((node, {worldMatrix}) => log.info(4, 'Using model: ', node)());
   return {scenes, animator, gltf};
 }
 
@@ -276,12 +261,14 @@ export class DemoApp {
       e.preventDefault();
       if (e.dataTransfer.files && e.dataTransfer.files.length === 1) {
         this._deleteScenes();
+        const readPromise = new Promise(resolve => {
+          const reader = new window.FileReader();
+          reader.onload = ev => resolve(ev.target.result);
+          reader.readAsArrayBuffer(e.dataTransfer.files[0]);
+        });
+
         loadGLTF(
-          new Promise(resolve => {
-            const reader = new window.FileReader();
-            reader.onload = ev => resolve(ev.target.result);
-            reader.readAsArrayBuffer(e.dataTransfer.files[0]);
-          }),
+          readPromise,
           this.gl,
           this.loadOptions
         ).then(result => Object.assign(this, result));
@@ -354,7 +341,7 @@ export class DemoApp {
     if (iblSelector) {
       iblSelector.onchange = event => {
         this._updateLightSettings(iblSelector.value);
-        this._reloadModel();
+        this._rebuildModel();
       };
     }
 
@@ -389,7 +376,7 @@ export class DemoApp {
     }
   }
 
-  _reloadModel() {
+  _rebuildModel() {
     // Clean and regenerate model so we have new "#defines"
     // TODO: Find better way to do this
     (this.gltf.meshes || []).forEach(mesh => delete mesh._mesh);

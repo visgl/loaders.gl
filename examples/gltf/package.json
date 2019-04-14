@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@loaders.gl/core": "v1.0.0-alpha.2",
+    "@loaders.gl/draco": "v1.0.0-alpha.2",
     "@luma.gl/addons": "^7.0.0-beta",
     "@luma.gl/constants": "^7.0.0-beta",
     "@luma.gl/core": "^7.0.0-beta",
