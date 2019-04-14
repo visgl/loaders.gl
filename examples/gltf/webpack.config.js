@@ -9,11 +9,10 @@ const CONFIG = {
     app: resolve('./app.js')
   },
 
-  plugins: [new HtmlWebpackPlugin({title: 'glTF'})],
+  plugins: [new HtmlWebpackPlugin({title: 'GLTFLoader'})],
 
-  // TODO - fix in loaders.gl
   node: {
-    fs: false
+    fs: 'empty'
   }
 };
 
