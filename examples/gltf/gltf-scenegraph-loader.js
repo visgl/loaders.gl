@@ -1,6 +1,7 @@
 /* global window */
 import {assert} from '@loaders.gl/core';
 import {GLTFLoader} from '@loaders.gl/gltf';
+import {DracoLoader} from '@loaders.gl/draco';
 import {createGLTFObjects} from '@luma.gl/addons';
 
 async function parse(data, options, uri, loader) {
@@ -8,7 +9,8 @@ async function parse(data, options, uri, loader) {
 
   const gltf = await GLTFLoader.parse(data, {
     uri,
-    decompress: true
+    decompress: true,
+    DracoLoader
   });
 
   const gltfObjects = createGLTFObjects(options.gl, gltf, options);

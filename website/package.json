@@ -14,8 +14,8 @@
     "build": "gatsby build"
   },
   "dependencies": {
-    "@luma.gl/core": "^7.0.0-beta",
-    "@luma.gl/constants": "^7.0.0-beta",
+    "@luma.gl/core": "^7.0.0-rc",
+    "@luma.gl/constants": "^7.0.0-rc",
     "@probe.gl/stats-widget": "^3.0.1"
   },
   "devDependencies": {

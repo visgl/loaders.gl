@@ -4,9 +4,8 @@ import {load} from '@loaders.gl/core';
 import {DracoLoader} from '@loaders.gl/draco';
 import GL from '@luma.gl/constants';
 import {AnimationLoop, setParameters, clear, log, lumaStats} from '@luma.gl/core';
-import {createGLTFObjects, GLTFEnvironment, VRDisplay} from '@luma.gl/addons';
+import {GLTFScenegraphLoader, createGLTFObjects, GLTFEnvironment, VRDisplay} from '@luma.gl/addons';
 import {Matrix4, radians} from 'math.gl';
-import GLTFScenegraphLoader from './gltf-scenegraph-loader';
 
 const CUBE_FACE_TO_DIRECTION = {
   [GL.TEXTURE_CUBE_MAP_POSITIVE_X]: 'right',
