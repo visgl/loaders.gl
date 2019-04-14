@@ -2,8 +2,6 @@
 
 A suite of portable, framework-independent loaders (parsers) and writers (encoders), including loaders for 3D point clouds, geometries, assets and geospatial formats. In spite of the name, loaders.gl does not have any WebGL dependencies, however the format of data returned by various loaders is optimized for use with WebGL.
 
-> Note that loaders.gl is still a Work-in-Progress. We have chose to develop loaders.gl in the open because many of the loaders are already stable and useful, and we like to share direction and intentions around what we are building. You are welcome to use loaders.gl, but be aware that APIs and designs are still being fine-tuned.
-
 ## Why loaders.gl?
 
 There are many excellent open source loaders for 3D and geospatial formats available under MIT license on github etc.
