@@ -1,7 +1,6 @@
 // Sets up aliases for file reader
 require('./aliases');
 
-
 // Core
 require('@loaders.gl/core/test');
 require('@loaders.gl/images/test');
