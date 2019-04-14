@@ -40,4 +40,104 @@
         }
       }
     })
-  </script><link as="script" rel="preload" href="/webpack-runtime-2d513ee0e7ec8274f747.js"/><link as="script" rel="preload" href="/styles-75ab527957a64e91685a.js"/><link as="script" rel="preload" href="/app-1a3fca14aee6fb7d3335.js"/><link as="script" rel="preload" href="/component---node-modules-ocular-gatsby-src-templates-index-jsx-e3c0fb54b673ad819bdd.js"/><link as="fetch" rel="preload" href="/static/d/234/path---index-6a9-BawJvyh36KKFwbrWPg4a4aYuc8.json" crossorigin="use-credentials"/></head><body><noscript id="gatsby-noscript">This app works best with JavaScript enabled.</noscript><div id="___gatsby"><div style="outline:none" tabindex="-1" role="group"><main><div class="fg"><section class="banner"><div class="f hero"></div><div class="container"><h1></h1><p></p><a class="btn" href="/docs/">GET STARTED</a></div></section><div class="fg p4"><div class="container f fw"><div class="f1 p" style="min-width:10rem"><h2></h2><hr class="short"/></div><div class="f1 p" style="min-width:10rem">...</div></div></div></div></main></div></div><script id="gatsby-script-loader">/*<![CDATA[*/window.page={"componentChunkName":"component---node-modules-ocular-gatsby-src-templates-index-jsx","jsonName":"index","path":"/"};window.dataPath="234/path---index-6a9-BawJvyh36KKFwbrWPg4a4aYuc8";/*]]>*/</script><script id="gatsby-chunk-mapping">/*<![CDATA[*/window.___chunkMapping={"app":["/app-1a3fca14aee6fb7d3335.js"],"component---node-modules-ocular-gatsby-src-templates-index-jsx":["/component---node-modules-ocular-gatsby-src-templates-index-jsx-e3c0fb54b673ad819bdd.js"],"component---node-modules-ocular-gatsby-src-templates-doc-n-jsx":["/component---node-modules-ocular-gatsby-src-templates-doc-n-jsx-4a55cadd6ff0c3b7ba6c.js"],"component---node-modules-ocular-gatsby-src-templates-search-jsx":["/component---node-modules-ocular-gatsby-src-templates-search-jsx-dce7bb1ff833b534a5f2.js"],"pages-manifest":["/pages-manifest-014d0554027592a87f74.js"]};/*]]>*/</script><script src="/component---node-modules-ocular-gatsby-src-templates-index-jsx-e3c0fb54b673ad819bdd.js" async=""></script><script src="/app-1a3fca14aee6fb7d3335.js" async=""></script><script src="/styles-75ab527957a64e91685a.js" async=""></script><script src="/webpack-runtime-2d513ee0e7ec8274f747.js" async=""></script></body></html>
+  </script><link as="script" rel="preload" href="/webpack-runtime-2d513ee0e7ec8274f747.js"/><link as="script" rel="preload" href="/styles-75ab527957a64e91685a.js"/><link as="script" rel="preload" href="/app-1a3fca14aee6fb7d3335.js"/><link as="script" rel="preload" href="/component---node-modules-ocular-gatsby-src-templates-doc-n-jsx-4a55cadd6ff0c3b7ba6c.js"/><link as="fetch" rel="preload" href="/static/d/316/path---docs-developer-guide-about-loaders-2-c-1-28f-oVvWGvJYx51RR9It02nhRbiT1s.json" crossorigin="use-credentials"/></head><body><noscript id="gatsby-noscript">This app works best with JavaScript enabled.</noscript><div id="___gatsby"><div style="outline:none" tabindex="-1" role="group"><div><div class="markdown-body"><h1 id="creating-new-loaders"><a href="#creating-new-loaders" aria-label="creating new loaders permalink" class="anchor"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Creating New Loaders</h1>
+<blockquote>
+<p>This is an overview, see the a detailed specification of the <a href="undefined">loader object format API reference</a>.</p>
+</blockquote>
+<p>loaders.gl has parser functions that use so called "loaders" (or "loader objects") to convert the raw data loaded from files into parsed objects. Each loader object encapsulates a loader for one file format and essentially provides a parsing function and some metadata (like the loader name, common file extensions for the format etc). Loader object can be passed into utility functions in the loaders.gl core API to enable parsing of the chosen format.</p>
+<p>loaders.gl provides a suite of pre-built loader objects packaged as scoped npm modules. Your application can install and combine these as desired. It is also easy to create your own loader objects, e.g. if you have existing javascript loaders that you would like to use with the loaders.gl core utility functions.</p>
+<h3 id="common-fields"><a href="#common-fields" aria-label="common fields permalink" class="anchor"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Common Fields</h3>
+<p>You would give a name to the loader object, define what file extension(s) it uses.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="language-text">name</code></td>
+<td><code class="language-text">String</code></td>
+<td>Required</td>
+<td>Short name of the loader ('OBJ', 'PLY' etc)</td>
+</tr>
+<tr>
+<td><code class="language-text">extension</code></td>
+<td><code class="language-text">String</code></td>
+<td>Required</td>
+<td>Three letter (typically) extension used by files of this format</td>
+</tr>
+</tbody>
+</table>
+<h3 id="test-function"><a href="#test-function" aria-label="test function permalink" class="anchor"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Test Function</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="language-text">testText</code></td>
+<td><code class="language-text">Function</code></td>
+<td><code class="language-text">null</code></td>
+<td>Guesses if a file is of this format by examining the first characters in the file</td>
+</tr>
+</tbody>
+</table>
+<h3 id="parser-function"><a href="#parser-function" aria-label="parser function permalink" class="anchor"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Parser Function</h3>
+<p>A loader must define a parser function for the format, a function that takes the loaded data and converts it into a parsed object. Depending on how the underlying loader works (whether it is synchronous or asynchronous and whether it expects text or binary data), the loader object can expose the parser in a couple of different ways, specified by provided one of the parser function fields.</p>
+<p>The loaders.gl <code class="language-text">load</code> and <code class="language-text">parse</code> functions accept one or more loader objects. These functions examines what format the loader needs (text or binary), reads data into the required format, and then calls one of the loader object's parser functions with that data.</p>
+<p>When creating a new loader object, at least one of the parser functions needs to be defined:</p>
+<table>
+<thead>
+<tr>
+<th>Parser function field</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="language-text">parseTextSync</code></td>
+<td><code class="language-text">Function</code></td>
+<td><code class="language-text">null</code></td>
+<td>Parses a text file synchronously (<code class="language-text">String</code>)</td>
+</tr>
+<tr>
+<td><code class="language-text">parseSync</code></td>
+<td><code class="language-text">Function</code></td>
+<td><code class="language-text">null</code></td>
+<td>Parses a binary file synchronously (<code class="language-text">ArrayBuffer</code>)</td>
+</tr>
+<tr>
+<td><code class="language-text">parse</code></td>
+<td><code class="language-text">Function</code></td>
+<td><code class="language-text">null</code></td>
+<td>Parses a binary file asynchronously (<code class="language-text">ArrayBuffer</code>)</td>
+</tr>
+<tr>
+<td><code class="language-text">load</code></td>
+<td><code class="language-text">Function</code></td>
+<td><code class="language-text">null</code></td>
+<td>Reads and parses a binary file asynchronously</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>The preferred option is to provide a synchronous parser that works on loaded data (using the <code class="language-text">parseSync</code> or <code class="language-text">parseTextSync</code> fields). This allows the use of the <code class="language-text">parseSync</code> function with your loader.</li>
+<li>The second preference is to provide an asynchronous parser that works on loaded data (<code class="language-text">parse</code>). This allows the user to load the data using any preferred mechanism, and only use loaders.gl for parsing by calling <code class="language-text">parse</code> on the loaded data.</li>
+<li>Finally, some existing parsers combine both loading and parsing, and loaders.gl provides an accommodation for packaging such loaders into loader options (<code class="language-text">load</code>). The <code class="language-text">load</code> parser field is for instance used to define a loader object using the classic browser image loading technique of creating a new <code class="language-text">Image</code> and setting its <code class="language-text">src</code> and <code class="language-text">onload</code> fields.</li>
+</ul>
+<h2 id="remarks"><a href="#remarks" aria-label="remarks permalink" class="anchor"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Remarks</h2>
+<ul>
+<li>The reason synchronous parsers are preferred is e.g. that it is often easier to debug synchronous parsers, so it is nice to have the option to run things synchronously. And no functionality is lost, as loaders.gl core utlities will still transparently run these parsers asynchronously on worker threads or wrap them in promises if desired.</li>
+<li>The reason pure parsers that don't read/reuqest data but just parse it are preferred is because it gives more freedom to the application to select how data is loaded.</li>
+</ul></div></div></div></div><script id="gatsby-script-loader">/*<![CDATA[*/window.page={"componentChunkName":"component---node-modules-ocular-gatsby-src-templates-doc-n-jsx","jsonName":"docs-developer-guide-about-loaders-2c1","path":"/docs/developer-guide/about-loaders"};window.dataPath="316/path---docs-developer-guide-about-loaders-2-c-1-28f-oVvWGvJYx51RR9It02nhRbiT1s";/*]]>*/</script><script id="gatsby-chunk-mapping">/*<![CDATA[*/window.___chunkMapping={"app":["/app-1a3fca14aee6fb7d3335.js"],"component---node-modules-ocular-gatsby-src-templates-index-jsx":["/component---node-modules-ocular-gatsby-src-templates-index-jsx-e3c0fb54b673ad819bdd.js"],"component---node-modules-ocular-gatsby-src-templates-doc-n-jsx":["/component---node-modules-ocular-gatsby-src-templates-doc-n-jsx-4a55cadd6ff0c3b7ba6c.js"],"component---node-modules-ocular-gatsby-src-templates-search-jsx":["/component---node-modules-ocular-gatsby-src-templates-search-jsx-dce7bb1ff833b534a5f2.js"],"pages-manifest":["/pages-manifest-014d0554027592a87f74.js"]};/*]]>*/</script><script src="/component---node-modules-ocular-gatsby-src-templates-doc-n-jsx-4a55cadd6ff0c3b7ba6c.js" async=""></script><script src="/app-1a3fca14aee6fb7d3335.js" async=""></script><script src="/styles-75ab527957a64e91685a.js" async=""></script><script src="/webpack-runtime-2d513ee0e7ec8274f747.js" async=""></script></body></html>

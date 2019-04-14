@@ -40,4 +40,233 @@
         }
       }
     })
-  </script><link as="script" rel="preload" href="/webpack-runtime-2d513ee0e7ec8274f747.js"/><link as="script" rel="preload" href="/styles-75ab527957a64e91685a.js"/><link as="script" rel="preload" href="/app-1a3fca14aee6fb7d3335.js"/><link as="script" rel="preload" href="/component---node-modules-ocular-gatsby-src-templates-index-jsx-e3c0fb54b673ad819bdd.js"/><link as="fetch" rel="preload" href="/static/d/234/path---index-6a9-BawJvyh36KKFwbrWPg4a4aYuc8.json" crossorigin="use-credentials"/></head><body><noscript id="gatsby-noscript">This app works best with JavaScript enabled.</noscript><div id="___gatsby"><div style="outline:none" tabindex="-1" role="group"><main><div class="fg"><section class="banner"><div class="f hero"></div><div class="container"><h1></h1><p></p><a class="btn" href="/docs/">GET STARTED</a></div></section><div class="fg p4"><div class="container f fw"><div class="f1 p" style="min-width:10rem"><h2></h2><hr class="short"/></div><div class="f1 p" style="min-width:10rem">...</div></div></div></div></main></div></div><script id="gatsby-script-loader">/*<![CDATA[*/window.page={"componentChunkName":"component---node-modules-ocular-gatsby-src-templates-index-jsx","jsonName":"index","path":"/"};window.dataPath="234/path---index-6a9-BawJvyh36KKFwbrWPg4a4aYuc8";/*]]>*/</script><script id="gatsby-chunk-mapping">/*<![CDATA[*/window.___chunkMapping={"app":["/app-1a3fca14aee6fb7d3335.js"],"component---node-modules-ocular-gatsby-src-templates-index-jsx":["/component---node-modules-ocular-gatsby-src-templates-index-jsx-e3c0fb54b673ad819bdd.js"],"component---node-modules-ocular-gatsby-src-templates-doc-n-jsx":["/component---node-modules-ocular-gatsby-src-templates-doc-n-jsx-4a55cadd6ff0c3b7ba6c.js"],"component---node-modules-ocular-gatsby-src-templates-search-jsx":["/component---node-modules-ocular-gatsby-src-templates-search-jsx-dce7bb1ff833b534a5f2.js"],"pages-manifest":["/pages-manifest-014d0554027592a87f74.js"]};/*]]>*/</script><script src="/component---node-modules-ocular-gatsby-src-templates-index-jsx-e3c0fb54b673ad819bdd.js" async=""></script><script src="/app-1a3fca14aee6fb7d3335.js" async=""></script><script src="/styles-75ab527957a64e91685a.js" async=""></script><script src="/webpack-runtime-2d513ee0e7ec8274f747.js" async=""></script></body></html>
+  </script><link as="script" rel="preload" href="/webpack-runtime-2d513ee0e7ec8274f747.js"/><link as="script" rel="preload" href="/styles-75ab527957a64e91685a.js"/><link as="script" rel="preload" href="/app-1a3fca14aee6fb7d3335.js"/><link as="script" rel="preload" href="/component---node-modules-ocular-gatsby-src-templates-doc-n-jsx-4a55cadd6ff0c3b7ba6c.js"/><link as="fetch" rel="preload" href="/static/d/181/path---docs-api-reference-mesh-loaders-category-mesh-4-f-4-39b-tLxFfb1hC4VB7yyATtpb8G6et0.json" crossorigin="use-credentials"/></head><body><noscript id="gatsby-noscript">This app works best with JavaScript enabled.</noscript><div id="___gatsby"><div style="outline:none" tabindex="-1" role="group"><div><div class="markdown-body"><h2 id="pointcloud-and-mesh-category"><a href="#pointcloud-and-mesh-category" aria-label="pointcloud and mesh category permalink" class="anchor"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>PointCloud and Mesh Category</h2>
+<p>Loaders such as <code class="language-text">PCD</code>, <code class="language-text">LAZ</code>, <code class="language-text">PLY</code>, <code class="language-text">OBJ</code> etc. all load a "single geometry primitive" consisting of a set of "attributes", perhaps <code class="language-text">positions</code>, <code class="language-text">colors</code>, <code class="language-text">normals</code> etc. These attributes are all typed arrays containing successive values for each "vertex".</p>
+<p>The mesh loaders do the following to standardize the loaded mesh</p>
+<ul>
+<li>Provide a primitive drawing <code class="language-text">mode</code> (the numeric values matches the corresponding WebGL constants).</li>
+<li>Unpacks attributes (and indices if present) into typed arrays.</li>
+<li>Wrap all attributes (and indices if present) into common "accessor objects": <code class="language-text">{size: 1-4, value: typedArray}</code>.</li>
+<li>Maps known attribute names to glTF attribute names.</li>
+<li>Add <code class="language-text">indices</code> field to the result (only if indices are present in the loaded geometry).</li>
+</ul>
+<h3 id="pointcloudmesh-data-structure"><a href="#pointcloudmesh-data-structure" aria-label="pointcloudmesh data structure permalink" class="anchor"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>PointCloud/Mesh Data Structure</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="language-text">loaderData</code></td>
+<td><code class="language-text">Object</code> (Optional)</td>
+<td>Loader and format specific data</td>
+</tr>
+<tr>
+<td><code class="language-text">header</code></td>
+<td><code class="language-text">Object</code></td>
+<td>See below</td>
+</tr>
+<tr>
+<td><code class="language-text">mode</code></td>
+<td><code class="language-text">Number</code></td>
+<td>Aligned with <a href="https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#primitive">OpenGL/glTF primitive types</a></td>
+</tr>
+<tr>
+<td><code class="language-text">attributes</code></td>
+<td><code class="language-text">Object</code></td>
+<td>Each key contains an "accessor" object representing the contents of one attribute.</td>
+</tr>
+<tr>
+<td><code class="language-text">indices</code></td>
+<td><code class="language-text">Object</code> (Optional)</td>
+<td>If present, contains the indices (elements) typed array (<code class="language-text">Uint32Array</code> or <code class="language-text">Uint16Array</code>).</td>
+</tr>
+</tbody>
+</table>
+<p>Note that glTF attributes (keys in the <code class="language-text">glTFAttributeMap</code>) are named per <a href="https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#geometry">glTF 2.0 recommendations</a> with standardized, captilalized names.</p>
+<h3 id="header-object"><a href="#header-object" aria-label="header object permalink" class="anchor"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Header Object</h3>
+<p>The <code class="language-text">header</code> fields are only recommended at this point, applications can not assume they will be present:</p>
+<table>
+<thead>
+<tr>
+<th><code class="language-text">header</code> Field</th>
+<th>Type</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="language-text">vertexCount</code></td>
+<td><code class="language-text">Number</code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="primitive-mode"><a href="#primitive-mode" aria-label="primitive mode permalink" class="anchor"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Primitive Mode</h3>
+<p>Primitive modes are the usual standard WebGL/OpenGL constants:</p>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Primitive Mode</th>
+<th>Comment</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="language-text">0</code></td>
+<td><code class="language-text">POINTS</code></td>
+<td>Used for point cloud category data</td>
+</tr>
+<tr>
+<td><code class="language-text">1</code></td>
+<td><code class="language-text">LINES</code></td>
+<td>Lines are rarely used due to limitations in GPU-based rendering</td>
+</tr>
+<tr>
+<td><code class="language-text">2</code></td>
+<td><code class="language-text">LINE_LOOP</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td><code class="language-text">3</code></td>
+<td><code class="language-text">LINE_STRIP</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td><code class="language-text">4</code></td>
+<td><code class="language-text">TRIANGLES</code></td>
+<td>Used for most meshes. Indices attributes are often used to reuse vertex data in remaining attributes</td>
+</tr>
+<tr>
+<td><code class="language-text">5</code></td>
+<td><code class="language-text">TRIANGLE_STRIP</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td><code class="language-text">6</code></td>
+<td><code class="language-text">TRIANGLE_FAN</code></td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+<h3 id="accessors"><a href="#accessors" aria-label="accessors permalink" class="anchor"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Accessors</h3>
+<p><code class="language-text">attributes</code> and <code class="language-text">indices</code> are represented by glTF "accessor objects" with the binary data for that attribute resolved into a typed array of the proper type.</p>
+<table>
+<thead>
+<tr>
+<th>Accessors Fields</th>
+<th>glTF?</th>
+<th>Type</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="language-text">value</code></td>
+<td>No</td>
+<td><code class="language-text">TypedArray</code></td>
+<td>Contains the typed array (corresponds to <code class="language-text">bufferView</code>). The type of the array will match the GL constant in <code class="language-text">componentType</code>.</td>
+</tr>
+<tr>
+<td><code class="language-text">size</code></td>
+<td>No</td>
+<td><code class="language-text">1</code>-<code class="language-text">4</code></td>
+<td>Decoded "type". i.e. number of components</td>
+</tr>
+<tr>
+<td><code class="language-text">byteOffset</code></td>
+<td>Yes</td>
+<td><code class="language-text">Number</code></td>
+<td>Starting offset into the bufferView. Currently always <code class="language-text">0</code></td>
+</tr>
+<tr>
+<td><code class="language-text">count</code></td>
+<td>Yes</td>
+<td><code class="language-text">Number</code></td>
+<td>The number of elements/vertices in the attribute data</td>
+</tr>
+<tr>
+<td><code class="language-text">originalName</code></td>
+<td>No</td>
+<td><code class="language-text">String</code> (Optional)</td>
+<td>If this was a named attribute in the original file, the original name (before substitution with glTF attribute names) will be made available here.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="gltf-attribute-name-mapping"><a href="#gltf-attribute-name-mapping" aria-label="gltf attribute name mapping permalink" class="anchor"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>GLTF Attribute Name Mapping</h3>
+<p>Also, to help applications manage attribute name differences between various formats, mesh loaders map known attribute names to <a href="https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#geometry">glTF 2.0 standard attribute names</a> a best-effort basis.</p>
+<p>When a loader can map an attribute name, it will replace ir with the glTF equivalent. This allows applications to use common code to handle meshes and point clouds from different formats.</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Accessor Type(s)</th>
+<th>Component Type(s)</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="language-text">POSITION</code></td>
+<td><code class="language-text">&quot;VEC3&quot;</code></td>
+<td><code class="language-text">5126</code> (FLOAT)</td>
+<td>XYZ vertex positions</td>
+</tr>
+<tr>
+<td><code class="language-text">NORMAL</code></td>
+<td><code class="language-text">&quot;VEC3&quot;</code></td>
+<td><code class="language-text">5126</code> (FLOAT)</td>
+<td>Normalized XYZ vertex normals</td>
+</tr>
+<tr>
+<td><code class="language-text">TANGENT</code></td>
+<td><code class="language-text">&quot;VEC4&quot;</code></td>
+<td><code class="language-text">5126</code> (FLOAT)</td>
+<td>XYZW vertex tangents where the <em>w</em> component is a sign value (-1 or +1) indicating handedness of the tangent basis</td>
+</tr>
+<tr>
+<td><code class="language-text">TEXCOORD_0</code></td>
+<td><code class="language-text">&quot;VEC2&quot;</code></td>
+<td><code class="language-text">5126</code> (FLOAT)<br><code class="language-text">5121</code> (UNSIGNED<em>BYTE) normalized<br><code class="language-text">5123</code> (UNSIGNED</em>SHORT) normalized</td>
+<td>UV texture coordinates for the first set</td>
+</tr>
+<tr>
+<td><code class="language-text">TEXCOORD_1</code></td>
+<td><code class="language-text">&quot;VEC2&quot;</code></td>
+<td><code class="language-text">5126</code> (FLOAT)<br><code class="language-text">5121</code> (UNSIGNED<em>BYTE) normalized<br><code class="language-text">5123</code> (UNSIGNED</em>SHORT) normalized</td>
+<td>UV texture coordinates for the second set</td>
+</tr>
+<tr>
+<td><code class="language-text">COLOR_0</code></td>
+<td><code class="language-text">&quot;VEC3&quot;</code><br><code class="language-text">&quot;VEC4&quot;</code></td>
+<td><code class="language-text">5126</code> (FLOAT)<br><code class="language-text">5121</code> (UNSIGNED<em>BYTE) normalized<br><code class="language-text">5123</code> (UNSIGNED</em>SHORT) normalized</td>
+<td>RGB or RGBA vertex color</td>
+</tr>
+<tr>
+<td><code class="language-text">JOINTS_0</code></td>
+<td><code class="language-text">&quot;VEC4&quot;</code></td>
+<td><code class="language-text">5121</code> (UNSIGNED<em>BYTE)<br><code class="language-text">5123</code> (UNSIGNED</em>SHORT)</td>
+<td>See <a href="#skinned-mesh-attributes">Skinned Mesh Attributes</a></td>
+</tr>
+<tr>
+<td><code class="language-text">WEIGHTS_0</code></td>
+<td><code class="language-text">&quot;VEC4&quot;</code></td>
+<td><code class="language-text">5126</code> (FLOAT)<br><code class="language-text">5121</code> (UNSIGNED<em>BYTE) normalized<br><code class="language-text">5123</code> (UNSIGNED</em>SHORT) normalized</td>
+<td>See <a href="#skinned-mesh-attributes">Skinned Mesh Attributes</a></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>Note that for efficiency reasons, mesh loaders are not required to convert the format of an attribute's binary data to match the glTF specifications (i.e. if normals were encoded using BYTES then that is what will be returned even though glTF calls out for FLOAT32). Any such alignment needs to be done by the application as a second step.</p>
+</blockquote>
+<h2 id="scenegraph-format-support"><a href="#scenegraph-format-support" aria-label="scenegraph format support permalink" class="anchor"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Scenegraph Format Support</h2>
+<p>For more complex, scenegraph-type formats (i.e. formats that don't just contain single geometric primitives), loaders.gl currently focuses on glTF 2.0 support.</p>
+<p>It is assumed that other scenegraph-type format loaders (e.g. a hyptothetical COLLADA loader) could convert their loaded data to a similar structure, essentially converting to glTF 2.0 on-the-fly as they load.</p>
+<p>For now it is best to convert such assets off-line to glTF before attempting to loade them with loaders.gl.</p>
+<h3 id="material-support"><a href="#material-support" aria-label="material support permalink" class="anchor"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Material support</h3>
+<p>Material support is provided by some mesh formats (e.g. OBJ/MTL) and is currently not implemented by loaders.gl, however the glTF loader has full support for PBR (Physically-Based Rendering) materials.</p></div></div></div></div><script id="gatsby-script-loader">/*<![CDATA[*/window.page={"componentChunkName":"component---node-modules-ocular-gatsby-src-templates-doc-n-jsx","jsonName":"docs-api-reference-mesh-loaders-category-mesh-4f4","path":"/docs/api-reference/mesh-loaders/category-mesh"};window.dataPath="181/path---docs-api-reference-mesh-loaders-category-mesh-4-f-4-39b-tLxFfb1hC4VB7yyATtpb8G6et0";/*]]>*/</script><script id="gatsby-chunk-mapping">/*<![CDATA[*/window.___chunkMapping={"app":["/app-1a3fca14aee6fb7d3335.js"],"component---node-modules-ocular-gatsby-src-templates-index-jsx":["/component---node-modules-ocular-gatsby-src-templates-index-jsx-e3c0fb54b673ad819bdd.js"],"component---node-modules-ocular-gatsby-src-templates-doc-n-jsx":["/component---node-modules-ocular-gatsby-src-templates-doc-n-jsx-4a55cadd6ff0c3b7ba6c.js"],"component---node-modules-ocular-gatsby-src-templates-search-jsx":["/component---node-modules-ocular-gatsby-src-templates-search-jsx-dce7bb1ff833b534a5f2.js"],"pages-manifest":["/pages-manifest-014d0554027592a87f74.js"]};/*]]>*/</script><script src="/component---node-modules-ocular-gatsby-src-templates-doc-n-jsx-4a55cadd6ff0c3b7ba6c.js" async=""></script><script src="/app-1a3fca14aee6fb7d3335.js" async=""></script><script src="/styles-75ab527957a64e91685a.js" async=""></script><script src="/webpack-runtime-2d513ee0e7ec8274f747.js" async=""></script></body></html>

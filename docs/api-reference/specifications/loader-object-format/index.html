@@ -40,4 +40,114 @@
         }
       }
     })
-  </script><link as="script" rel="preload" href="/webpack-runtime-2d513ee0e7ec8274f747.js"/><link as="script" rel="preload" href="/styles-75ab527957a64e91685a.js"/><link as="script" rel="preload" href="/app-1a3fca14aee6fb7d3335.js"/><link as="script" rel="preload" href="/component---node-modules-ocular-gatsby-src-templates-index-jsx-e3c0fb54b673ad819bdd.js"/><link as="fetch" rel="preload" href="/static/d/234/path---index-6a9-BawJvyh36KKFwbrWPg4a4aYuc8.json" crossorigin="use-credentials"/></head><body><noscript id="gatsby-noscript">This app works best with JavaScript enabled.</noscript><div id="___gatsby"><div style="outline:none" tabindex="-1" role="group"><main><div class="fg"><section class="banner"><div class="f hero"></div><div class="container"><h1></h1><p></p><a class="btn" href="/docs/">GET STARTED</a></div></section><div class="fg p4"><div class="container f fw"><div class="f1 p" style="min-width:10rem"><h2></h2><hr class="short"/></div><div class="f1 p" style="min-width:10rem">...</div></div></div></div></main></div></div><script id="gatsby-script-loader">/*<![CDATA[*/window.page={"componentChunkName":"component---node-modules-ocular-gatsby-src-templates-index-jsx","jsonName":"index","path":"/"};window.dataPath="234/path---index-6a9-BawJvyh36KKFwbrWPg4a4aYuc8";/*]]>*/</script><script id="gatsby-chunk-mapping">/*<![CDATA[*/window.___chunkMapping={"app":["/app-1a3fca14aee6fb7d3335.js"],"component---node-modules-ocular-gatsby-src-templates-index-jsx":["/component---node-modules-ocular-gatsby-src-templates-index-jsx-e3c0fb54b673ad819bdd.js"],"component---node-modules-ocular-gatsby-src-templates-doc-n-jsx":["/component---node-modules-ocular-gatsby-src-templates-doc-n-jsx-4a55cadd6ff0c3b7ba6c.js"],"component---node-modules-ocular-gatsby-src-templates-search-jsx":["/component---node-modules-ocular-gatsby-src-templates-search-jsx-dce7bb1ff833b534a5f2.js"],"pages-manifest":["/pages-manifest-014d0554027592a87f74.js"]};/*]]>*/</script><script src="/component---node-modules-ocular-gatsby-src-templates-index-jsx-e3c0fb54b673ad819bdd.js" async=""></script><script src="/app-1a3fca14aee6fb7d3335.js" async=""></script><script src="/styles-75ab527957a64e91685a.js" async=""></script><script src="/webpack-runtime-2d513ee0e7ec8274f747.js" async=""></script></body></html>
+  </script><link as="script" rel="preload" href="/webpack-runtime-2d513ee0e7ec8274f747.js"/><link as="script" rel="preload" href="/styles-75ab527957a64e91685a.js"/><link as="script" rel="preload" href="/app-1a3fca14aee6fb7d3335.js"/><link as="script" rel="preload" href="/component---node-modules-ocular-gatsby-src-templates-doc-n-jsx-4a55cadd6ff0c3b7ba6c.js"/><link as="fetch" rel="preload" href="/static/d/796/path---docs-api-reference-specifications-loader-object-format-cd-8-443-X18Qtrbwknn7U4mlcCDHenvpo.json" crossorigin="use-credentials"/></head><body><noscript id="gatsby-noscript">This app works best with JavaScript enabled.</noscript><div id="___gatsby"><div style="outline:none" tabindex="-1" role="group"><div><div class="markdown-body"><h1 id="loader-object-specification"><a href="#loader-object-specification" aria-label="loader object specification permalink" class="anchor"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Loader Object Specification</h1>
+<p>To be compatible with the parsing/loading functions in <code class="language-text">@loaders.gl/core</code>, a parser needs to be described by a "loader object" conforming to the following specification.</p>
+<h2 id="loader-object-format-v10"><a href="#loader-object-format-v10" aria-label="loader object format v10 permalink" class="anchor"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Loader Object Format v1.0</h2>
+<h3 id="common-fields"><a href="#common-fields" aria-label="common fields permalink" class="anchor"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Common Fields</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="language-text">name</code></td>
+<td><code class="language-text">String</code></td>
+<td>Required</td>
+<td>Short name of the loader ('OBJ', 'PLY' etc)</td>
+</tr>
+<tr>
+<td><code class="language-text">extension</code></td>
+<td><code class="language-text">String</code></td>
+<td>Required</td>
+<td>Three letter (typically) extension used by files of this format</td>
+</tr>
+<tr>
+<td><code class="language-text">extensions</code></td>
+<td><code class="language-text">String[]</code></td>
+<td>Required</td>
+<td>Array of file extension strings supported by this loader</td>
+</tr>
+<tr>
+<td><code class="language-text">category</code></td>
+<td><code class="language-text">String</code></td>
+<td>Optional</td>
+<td>Indicates the type/shape of data</td>
+</tr>
+</tbody>
+</table>
+<p>Note: Only one of <code class="language-text">extension</code> or <code class="language-text">extensions</code> is required. If both are supplied, <code class="language-text">extensions</code> will be used.</p>
+<h3 id="test-function"><a href="#test-function" aria-label="test function permalink" class="anchor"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Test Function</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="language-text">testText</code></td>
+<td><code class="language-text">Function</code></td>
+<td><code class="language-text">null</code></td>
+<td>Guesses if a file is of this format by examining the first characters in the file</td>
+</tr>
+</tbody>
+</table>
+<h3 id="parser-function"><a href="#parser-function" aria-label="parser function permalink" class="anchor"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Parser Function</h3>
+<p>When creating a new loader object, at least one of the parser functions needs to be defined.</p>
+<table>
+<thead>
+<tr>
+<th>Parser function field</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="language-text">parseInBatches</code> (Experimental)</td>
+<td><code class="language-text">Function</code></td>
+<td><code class="language-text">null</code></td>
+<td>Parses binary data chunks (<code class="language-text">ArrayBuffer</code>) to output data "batches"</td>
+</tr>
+<tr>
+<td><code class="language-text">parseInBatchesSync</code> (Experimental)</td>
+<td><code class="language-text">Function</code></td>
+<td><code class="language-text">null</code></td>
+<td>Synchronously parses binary data chunks (<code class="language-text">ArrayBuffer</code>) to output data "batches"</td>
+</tr>
+<tr>
+<td><code class="language-text">parseSync</code></td>
+<td><code class="language-text">Function</code></td>
+<td><code class="language-text">null</code></td>
+<td>Atomically and synchronously parses binary data (e.g. file contents) (<code class="language-text">ArrayBuffer</code>)</td>
+</tr>
+<tr>
+<td><code class="language-text">parseTextSync</code></td>
+<td><code class="language-text">Function</code></td>
+<td><code class="language-text">null</code></td>
+<td>Atomically and synchronously parses a text file (<code class="language-text">String</code>)</td>
+</tr>
+<tr>
+<td><code class="language-text">parse</code></td>
+<td><code class="language-text">Function</code></td>
+<td><code class="language-text">null</code></td>
+<td>Asynchronously parses binary data (e.g. file contents) asynchronously (<code class="language-text">ArrayBuffer</code>).</td>
+</tr>
+<tr>
+<td><code class="language-text">loadAndParse</code></td>
+<td><code class="language-text">Function</code></td>
+<td><code class="language-text">null</code></td>
+<td>Asynchronously reads a binary file and parses its contents.</td>
+</tr>
+</tbody>
+</table>
+<p>Note: Only one parser function is required. Synchronous parsers are more flexible as they can support synchronous parsing in addition to asynchronous parsing, and iterator-based parsers are more flexible as they can support batched loading in addition to atomic loading. You are encouraged to provide the most capable parser function you can (e.g. <code class="language-text">parseSync</code> or <code class="language-text">parseToIterator</code> if possible). Unless you are writing a completely new loader, the appropriate choice usually depends on the loader you are encapsulating.</p></div></div></div></div><script id="gatsby-script-loader">/*<![CDATA[*/window.page={"componentChunkName":"component---node-modules-ocular-gatsby-src-templates-doc-n-jsx","jsonName":"docs-api-reference-specifications-loader-object-format-cd8","path":"/docs/api-reference/specifications/loader-object-format"};window.dataPath="796/path---docs-api-reference-specifications-loader-object-format-cd-8-443-X18Qtrbwknn7U4mlcCDHenvpo";/*]]>*/</script><script id="gatsby-chunk-mapping">/*<![CDATA[*/window.___chunkMapping={"app":["/app-1a3fca14aee6fb7d3335.js"],"component---node-modules-ocular-gatsby-src-templates-index-jsx":["/component---node-modules-ocular-gatsby-src-templates-index-jsx-e3c0fb54b673ad819bdd.js"],"component---node-modules-ocular-gatsby-src-templates-doc-n-jsx":["/component---node-modules-ocular-gatsby-src-templates-doc-n-jsx-4a55cadd6ff0c3b7ba6c.js"],"component---node-modules-ocular-gatsby-src-templates-search-jsx":["/component---node-modules-ocular-gatsby-src-templates-search-jsx-dce7bb1ff833b534a5f2.js"],"pages-manifest":["/pages-manifest-014d0554027592a87f74.js"]};/*]]>*/</script><script src="/component---node-modules-ocular-gatsby-src-templates-doc-n-jsx-4a55cadd6ff0c3b7ba6c.js" async=""></script><script src="/app-1a3fca14aee6fb7d3335.js" async=""></script><script src="/styles-75ab527957a64e91685a.js" async=""></script><script src="/webpack-runtime-2d513ee0e7ec8274f747.js" async=""></script></body></html>
