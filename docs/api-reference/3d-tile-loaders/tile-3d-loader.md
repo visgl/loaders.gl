@@ -2,15 +2,15 @@
 
 Parses a [3D tile](https://github.com/AnalyticalGraphicsInc/3d-tiles). glTF file into a hirearchical scenegraph description that can be used to instantiate an actual Scenegraph in most WebGL libraries. Can load both binary `.glb` files and JSON `.gltf` files.
 
-| Loader                | Characteristic                                                                                                 |
-| --------------------- | -------------------------------------------------------------------------------------------------------------- |
-| File Extensions       | `.b3dm`,`.i3dm`, `.pnts`, `.cmpt`                                                                              |
-| File Types            | Binary (with linked assets)                                                                                    |
-| File Format           | [glTF](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#tile-format-specifications) |
-| Format Category       | 3D Tile                                                                                                        |
-| Parser Type           | Asynchronous (Synchronous w/ limited functionality)                                                            |
-| Worker Thread Support | No                                                                                                             |
-| Streaming Support     | No (not for invididual tiles, however tilesets are streamed by loading tile by tile)                           |
+| Loader                | Characteristic                                                                                                    |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| File Extensions       | `.b3dm`,`.i3dm`, `.pnts`, `.cmpt`                                                                                 |
+| File Types            | Binary (with linked assets)                                                                                       |
+| File Format           | [glTF](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#tile-format-specifications)    |
+| Format Category       | 3D Tile                                                                                                           |
+| Parser Type           | Asynchronous (Synchronous w/ limited functionality)                                                               |
+| Worker Thread Support | No                                                                                                                |
+| Streaming Support     | No (not for invididual tiles, however tilesets are streamed by loading only the tiles needed for the current view |
 
 ## Usage
 
@@ -25,8 +25,8 @@ To decompress tiles containing Draco compressed glTF models or Draco compressed 
 ```
 import {load} from '@loaders.gl/core';
 import {Tile3DLoader} from '@loaders.gl/3d-tiles';
-import {DracoDecoder} from '@loaders.gl/draco';
-const gltf = load(url, Tile3DLoader, {DracoDecoder, decompress: true});
+import {DracoLoader} from '@loaders.gl/draco';
+const gltf = load(url, Tile3DLoader, {DracoLoader, decompress: true});
 ```
 
 ## Options
@@ -39,8 +39,8 @@ const gltf = load(url, Tile3DLoader, {DracoDecoder, decompress: true});
 | ---------------------- | ----------- | ------------------------------------------------------------------------------------------------ |
 | `fetchLinkedResources` | `true`      | Fetch any linked .BIN files, decode base64 encoded URIS. Only supported in asynchronous parsing. |
 | `fetch`                | `fetchFile` | Function used to fetch linked resources                                                          |
-| `decompress`           | `true`      | Decompress Draco compressed meshes (if DracoDecoder available)                                   |
-| `DracoDecoder`         | `null`      | Supply to enable decoding of Draco compressed meshes.                                            |
+| `decompress`           | `true`      | Decompress Draco compressed meshes (if DracoLoader available)                                    |
+| `DracoLoader`          | `null`      | Supply to enable decoding of Draco compressed meshes.                                            |
 | `postProcess`          | `false`     | Perform additional post processing to simplify use in WebGL libraries                            |
 | `createImages`         | `false`     | Create image objects from loaded image data                                                      |
 

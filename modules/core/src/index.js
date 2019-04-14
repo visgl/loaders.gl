@@ -65,12 +65,12 @@ import {parse, parseSync} from './lib/parse';
 import {load} from './lib/load';
 
 export function parseFile(...args) {
-  console.warn('parseFile() deprecated, use parse()'); // eslint-disable-line
+  console.warn('parse() deprecated, use parse()'); // eslint-disable-line
   return parse(...args);
 }
 
 export function parseFileSync(...args) {
-  console.warn('parseFileSync() deprecated, use parseSync()'); // eslint-disable-line
+  console.warn('parseSync() deprecated, use parseSync()'); // eslint-disable-line
   return parseSync(...args);
 }
 
