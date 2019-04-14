@@ -2,7 +2,7 @@
 // * Based on binary-gltf-utils under MIT license: Copyright (c) 2016-17 Karl Cheng
 
 // Quarantine references to Buffer to prevent bundler from adding big polyfills
-import {bufferToArrayBufferNode} from './node/buffer-to-array-buffer';
+import {bufferToArrayBuffer} from '../node/buffer-to-array-buffer';
 
 const BIG_ENDIAN = false;
 const LITTLE_ENDIAN = true;
@@ -197,8 +197,8 @@ function getJpegMarkers() {
 }
 
 function toDataView(data) {
-  if (bufferToArrayBufferNode) {
-    data = bufferToArrayBufferNode(data);
+  if (bufferToArrayBuffer) {
+    data = bufferToArrayBuffer(data);
   }
 
   // Careful - Node Buffers will look like ArrayBuffers (keep after isBuffer)

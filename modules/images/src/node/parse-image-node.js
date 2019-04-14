@@ -1,7 +1,7 @@
 /* global Buffer */
 import getPixels from 'get-pixels';
 import util from 'util';
-import {getImageMetadata} from '../get-image-metadata';
+import {getImageMetadata} from '../lib/get-image-metadata';
 
 export async function parseImageNode(arrayBuffer, options) {
   // TODO - check if getPixels callback is asynchronous if provided with buffer input

@@ -2,7 +2,7 @@
 /* global document, HTMLCanvasElement, Image */
 
 import {assert} from '@loaders.gl/core';
-import {encodeImageNode} from './node/encode-image-node';
+import {encodeImageNode} from '../node/encode-image-node';
 
 /*
  * Returns data bytes representing a compressed image in PNG or JPG format,
