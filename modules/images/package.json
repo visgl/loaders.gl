@@ -32,9 +32,9 @@
     "build-bundle": "webpack  --display=minimal --config ../../scripts/bundle.config.js"
   },
   "browser": {
-    "./src/lib/node/buffer-to-array-buffer": false,
-    "./src/lib/node/encode-image-node": false,
-    "./src/lib/node/parse-image-node": false,
+    "./src/node/buffer-to-array-buffer": false,
+    "./src/node/encode-image-node": false,
+    "./src/node/parse-image-node": false,
     "get-pixels": false,
     "ndarray": false,
     "save-pixels": false,

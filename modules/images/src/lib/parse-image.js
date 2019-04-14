@@ -1,5 +1,5 @@
 /* global Image, Blob, createImageBitmap, btoa, fetch */
-import {parseImageNode} from './node/parse-image-node';
+import {parseImageNode} from '../node/parse-image-node';
 
 export const canParseImage = parseImageNode || typeof ImageBitmap !== 'undefined';
 
