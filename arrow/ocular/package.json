@@ -10,7 +10,9 @@
   "scripts": {
     "start": "yarn clean && yarn develop",
     "clean": "rm -rf ./.cache ./public",
-    "develop": "rm -fr .cache && gatsby develop --port=8001"
+    "develop": "rm -fr .cache && gatsby develop --port=8001",
+    "build": "gatsby build",
+    "serve": "gatsby serve"
   },
   "dependencies": {
   },
