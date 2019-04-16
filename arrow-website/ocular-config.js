@@ -16,7 +16,7 @@ module.exports = {
   PROJECT_URL: 'https://github.com/uber-web/loaders.gl',
   PROJECT_DESC: 'Apache Arrow JavaScript Bindings',
   WEBSITE_PATH: '/arrow-website/',
-  PATH_PREFIX: '/arrowjs',
+  PATH_PREFIX: '/loaders.gl/arrowjs',
 
   FOOTER_LOGO: '',
 
