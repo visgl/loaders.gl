@@ -10,14 +10,18 @@
   "scripts": {
     "start": "yarn clean && yarn develop",
     "clean": "rm -rf ./.cache ./public",
-    "develop": "rm -fr .cache && gatsby develop --port=8001"
+    "develop": "rm -fr .cache && gatsby develop --port=8001",
+    "build": "gatsby build",
+    "serve": "gatsby serve"
   },
   "dependencies": {
   },
   "devDependencies": {
-    "gatsby": "2.2.0-rc.2",
+    "gatsby": "2.3.0",
     "gatsby-plugin-styletron": "^3.0.5",
-    "ocular-gatsby": "1.0.0-alpha.16",
-    "sharp": "0.21.1"
+    "ocular-gatsby": "1.0.0-alpha.20",
+    "react": "^16.6.0",
+    "react-dom": "^16.6.0",
+    "sharp": "0.22.0"
   }
 }
