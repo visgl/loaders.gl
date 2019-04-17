@@ -1,7 +1,5 @@
 # encode
 
-> Needs update
-
 ## Functions
 
 ### encode(fileData : ArrayBuffer | String, writer : Object | Array [, options : Object [, url : String]]) : Promise<Any>

@@ -1,4 +1,4 @@
-# ImageWriter (Experimental)
+# ImageWriter
 
 The `ImageWriter` class can encode an image into `ArrayBuffer` both under browser and Node.js
 

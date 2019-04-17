@@ -1,4 +1,4 @@
-# PLYLoader (@loaders.gl/ply)
+# PLYLoader
 
 PLY is a computer file format known as the Polygon File Format or the Stanford Triangle Format. It was principally designed to store three-dimensional data from 3D scanners.
 

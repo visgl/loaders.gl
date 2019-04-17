@@ -1,4 +1,4 @@
-# ImageLoader (Experimental)
+# ImageLoader
 
 An image loader that works under both Node.js and the browser.
 

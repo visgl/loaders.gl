@@ -1,4 +1,4 @@
-## PointCloud and Mesh Category
+## Mesh (PointCloud) Loader Category
 
 Loaders such as `PCD`, `LAZ`, `PLY`, `OBJ` etc. all load a "single geometry primitive" consisting of a set of "attributes", perhaps `positions`, `colors`, `normals` etc. These attributes are all typed arrays containing successive values for each "vertex".
 

@@ -1,4 +1,4 @@
-# OBJLoader (@loaders.gl/obj)
+# OBJLoader
 
 This loader handles the OBJ half of the classic Wavefront OBJ/MTL format. The OBJ format is a simple ASCII format that lists vertices, normals and faces on successive lines.
 

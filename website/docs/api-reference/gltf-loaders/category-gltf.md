@@ -1,6 +1,12 @@
-# glTF/GLB Category Loaders
+# GLTF Loader Category
 
-This section describes glTF and GLB Support.
+## Data format
+
+A gltf scenegraph is described by a parsed JSON object (with top level arrays for `scenes`, `nodes` etc) together with a list of `ArrayBuffer`s representing binary blocks into which `bufferViews` and `images` in the JSON point).
+
+At their core glTF and GLB loaders extract this information, however additional classes are provided to make processing of the returned data easier.
+
+While the glTF "category" is obviously quite specific glTF, loaders for other scenegraph formats (e.g. COLLADA) could potentially also choose to "convert" the loaded data to this glTF format and thus enable interoperabiity with applications that are already designed to use the `GLTFLoader`.
 
 ## GLTFBuilder API
 

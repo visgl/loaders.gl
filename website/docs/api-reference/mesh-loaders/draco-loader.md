@@ -1,4 +1,4 @@
-# DracoLoader (@loaders.gl/draco)
+# DracoLoader
 
 Decodes a mesh or point cloud (maps of attributes) using [DRACO compression](https://google.github.io/draco/) compression.
 
