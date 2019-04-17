@@ -11,7 +11,7 @@
     "start": "NODE_OPTIONS=--max-old-space-size=20000 yarn clean && yarn develop",
     "clean": "rm -rf ./.cache ./public",
     "develop": "rm -fr .cache && gatsby develop --port=8001",
-    "build": "gatsby build",
+    "build": "gatsby build --prefix-paths",
     "serve": "gatsby serve"
   },
   "dependencies": {
