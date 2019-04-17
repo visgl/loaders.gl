@@ -1,4 +1,4 @@
-# KMLLoader (@loaders.gl/kml)
+# KMLLoader
 
 KML (Keyhole Markup Language) is an XML-based file format used to display geographic data in an Earth browser such as Google Earth (originally named "Keyhole Earth Viewer"). It can be used with any 2D or 3D maps.
 

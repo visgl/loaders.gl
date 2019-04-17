@@ -1,4 +1,4 @@
-# LASLoader (@loaders.gl/las)
+# LASLoader
 
 The LASER (LAS) file format is a public format for the interchange of 3-dimensional point cloud data data, developed for LIDAR mapping purposes.
 

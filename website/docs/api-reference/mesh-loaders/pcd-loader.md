@@ -1,4 +1,4 @@
-# PCDLoader (@loaders.gl/pcd)
+# PCDLoader
 
 A point cloud format defined by the [Point Cloud Library](https://en.wikipedia.org/wiki/Point_Cloud_Library).
 

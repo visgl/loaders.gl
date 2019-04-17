@@ -1,6 +1,6 @@
 # Loader Object Specification
 
-To be compatible with the parsing/loading functions in `@loaders.gl/core`, a parser needs to be described by a "loader object" conforming to the following specification.
+To be compatible with the parsing/loading functions in `@loaders.gl/core` such as `parse` and `load`, a parser needs to be described by a "loader object" conforming to the following specification.
 
 ## Loader Object Format v1.0
 

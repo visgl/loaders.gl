@@ -23,7 +23,6 @@
         {"entry": "docs/developer-guide/about-loaders"},
         {"entry": "docs/developer-guide/about-writers"},
         {"entry": "docs/developer-guide/loader-categories"},
-        {"entry": "docs/developer-guide/image-loaders"},
         {"entry": "docs/developer-guide/inspecting-files"},
         {"entry": "docs/developer-guide/streaming"},
         {"entry": "docs/developer-guide/array-buffers"},
@@ -37,14 +36,19 @@
         {
           "title": "Core Functions",
           "entries": [
+            {"entry": "docs/api-reference/core/register-loaders"},
             {"entry": "docs/api-reference/core/parse"},
-            {"entry": "docs/api-reference/core/load"},
             {"entry": "docs/api-reference/core/encode"},
+            {"entry": "docs/api-reference/core/load"},
             {"entry": "docs/api-reference/core/save"},
             {"entry": "docs/api-reference/core/fetch-file"},
             {"entry": "docs/api-reference/core/write-file"},
-            {"entry": "docs/api-reference/core/set-path-prefix"},
-            {"entry": "docs/api-reference/core/register-loaders"},
+            {"entry": "docs/api-reference/core/set-path-prefix"}
+          ]
+        },
+        {
+          "title": "Core Utilities",
+          "entries": [
             {"entry": "docs/api-reference/core/binary-utilities"},
             {"entry": "docs/api-reference/core/text-utilities"},
             {"entry": "docs/api-reference/core/iterator-utilities"}
@@ -79,10 +83,10 @@
         {
           "title": "Image Loaders",
           "entries": [
-            {"entry": "docs/api-reference/images/load-image"},
-            {"entry": "docs/api-reference/images/image-loader"},
-            {"entry": "docs/api-reference/images/image-utilities"},
-            {"entry": "docs/api-reference/images/image-writer"}
+            {"entry": "docs/api-reference/image-loaders/load-image"},
+            {"entry": "docs/api-reference/image-loaders/image-loader"},
+            {"entry": "docs/api-reference/image-loaders/image-utilities"},
+            {"entry": "docs/api-reference/image-loaders/image-writer"}
           ]
         },
         {

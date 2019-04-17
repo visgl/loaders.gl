@@ -1,6 +1,6 @@
 # Creating New Loaders
 
-> This is an overview, see the a detailed specification of the [loader object format API reference](docs/api-reference/specifications/writer-object-formats).
+> This is an overview, see the a detailed specification of the [loader object format API reference](docs/api-reference/specifications/loader-object-formats).
 
 loaders.gl has parser functions that use so called "loaders" (or "loader objects") to convert the raw data loaded from files into parsed objects. Each loader object encapsulates a loader for one file format and essentially provides a parsing function and some metadata (like the loader name, common file extensions for the format etc). Loader object can be passed into utility functions in the loaders.gl core API to enable parsing of the chosen format.
 

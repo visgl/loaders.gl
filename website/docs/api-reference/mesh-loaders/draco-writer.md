@@ -1,4 +1,4 @@
-# DracoWriter (@loaders.gl/draco)
+# DracoWriter
 
 Encodes a mesh or point cloud (maps of attributes) using [Draco3D](https://google.github.io/draco/) compression.
 
