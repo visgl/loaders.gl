@@ -221,7 +221,7 @@ export class DemoApp {
     this.onRender = this.onRender.bind(this);
   }
 
-  initalizeEventHandling(canvas) {
+  initializeEventHandling(canvas) {
     canvas.onwheel = e => {
       this.translate += e.deltaY / 10;
       if (this.translate < 0.5) {
@@ -266,11 +266,9 @@ export class DemoApp {
           reader.readAsArrayBuffer(e.dataTransfer.files[0]);
         });
 
-        loadGLTF(
-          readPromise,
-          this.gl,
-          this.loadOptions
-        ).then(result => Object.assign(this, result));
+        loadGLTF(readPromise, this.gl, this.loadOptions).then(result =>
+          Object.assign(this, result)
+        );
       }
     };
   }
@@ -344,7 +342,7 @@ export class DemoApp {
       };
     }
 
-    this.initalizeEventHandling(canvas);
+    this.initializeEventHandling(canvas);
   }
 
   _updateLightSettings(value) {
