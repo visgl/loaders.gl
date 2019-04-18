@@ -7,7 +7,7 @@
 import test from 'tape-promise/tape';
 import {parseSync} from '@loaders.gl/core';
 import {Tile3DLoader, encodeInstancedModel3DTile} from '@loaders.gl/3d-tiles';
-import {loadRootTileFromTileset} from './utils/load-utils';
+import {loadRootTileFromTileset} from '../utils/load-utils';
 
 const GLTF_EXTERNAL_URL =
   '@loaders.gl/3d-tiles/test/data/Instanced/InstancedGltfExternal/tileset.json';

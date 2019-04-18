@@ -7,7 +7,7 @@
 import test from 'tape-promise/tape';
 import {parseSync} from '@loaders.gl/core';
 import {Tile3DLoader, encodePointCloud3DTile} from '@loaders.gl/3d-tiles';
-import {loadRootTileFromTileset} from './utils/load-utils';
+import {loadRootTileFromTileset} from '../utils/load-utils';
 
 const POINTCLOUD_RGB_URL = '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudRGB/tileset.json';
 const POINTCLOUD_RGBA_URL = '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudRGBA/tileset.json';

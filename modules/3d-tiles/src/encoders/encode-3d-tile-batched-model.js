@@ -1,9 +1,10 @@
 import {MAGIC_ARRAY} from '../constants';
-import {encode3DTileHeader} from './helpers/encode-3d-tile-header';
+import {encode3DTileHeader, encode3DTileByteLength} from './helpers/encode-3d-tile-header';
+import {copyStringToDataView} from './helpers/encode-utils';
 
-// Procedurally encode the tile array buffer for testing purposes
-export function encodeBatchedModel3DTile(options = {}) {
-  const {featuresLength = 1} = options;
+// Procedurally encode the tile array dataView for testing purposes
+export function encodeBatchedModel3DTile(tile, dataView, byteOffset, options) {
+  const {featuresLength = 1} = tile;
 
   const featureTableJson = {
     BATCH_LENGTH: featuresLength
@@ -14,22 +15,35 @@ export function encodeBatchedModel3DTile(options = {}) {
   const headerByteLength = 28;
   const byteLength = headerByteLength + featureTableJsonByteLength;
 
-  const buffer = new ArrayBuffer(byteLength);
-
-  encode3DTileHeader(buffer, 0, {magic: MAGIC_ARRAY.BATCHED_MODEL, byteLength, ...options});
-
-  const view = new DataView(buffer);
-
-  view.setUint32(12, featureTableJsonByteLength, true); // featureTableJsonByteLength
-  view.setUint32(16, 0, true); // featureTableBinaryByteLength
-  view.setUint32(20, 0, true); // batchTableJsonByteLength
-  view.setUint32(24, 0, true); // batchTableBinaryByteLength
-
-  let byteOffset = headerByteLength;
-  for (let i = 0; i < featureTableJsonByteLength; i++) {
-    view.setUint8(byteOffset, featureTableJsonString.charCodeAt(i));
-    byteOffset++;
+  const byteOffsetStart = byteOffset;
+  if (!dataView) {
+    return byteLength;
   }
 
-  return buffer;
+  // Add default magic for this tile type
+  tile = {magic: MAGIC_ARRAY.BATCHED_MODEL, byteLength, ...tile};
+
+  byteOffset = encode3DTileHeader(tile, dataView, byteOffset);
+
+  if (dataView) {
+    dataView.setUint32(12, featureTableJsonByteLength, true); // featureTableJsonByteLength
+    dataView.setUint32(16, 0, true); // featureTableBinaryByteLength
+    dataView.setUint32(20, 0, true); // batchTableJsonByteLength
+    dataView.setUint32(24, 0, true); // batchTableBinaryByteLength
+  }
+  byteOffset += 16;
+
+  // TODO feature table binary
+  byteOffset += copyStringToDataView(
+    dataView,
+    byteOffset,
+    featureTableJsonString,
+    featureTableJsonByteLength
+  );
+  // TODO batch table
+
+  // Go "back" and rewrite the tile's `byteLength` now that we know the value
+  encode3DTileByteLength(dataView, byteOffsetStart, byteOffset - byteOffsetStart);
+
+  return byteOffset;
 }

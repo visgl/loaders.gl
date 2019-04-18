@@ -1,6 +1,19 @@
 import {fetchFile} from '@loaders.gl/core';
 import {dirname} from 'path';
 
+export async function loadTileset(t, tilesetUrl) {
+  try {
+    // Load tileset
+    const response = await fetchFile(tilesetUrl);
+    const tileset = await response.json();
+
+    return tileset;
+  } catch (error) {
+    t.fail(`Failed to load tile from ${tilesetUrl}: ${error}`);
+    throw error;
+  }
+}
+
 export async function loadRootTileFromTileset(t, tilesetUrl) {
   try {
     // Load tileset

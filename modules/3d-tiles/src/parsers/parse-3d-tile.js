@@ -1,4 +1,4 @@
-import {MAGIC} from '../constants';
+import {TILE3D_TYPE} from '../constants';
 import {getMagicString} from './helpers/parse-utils';
 
 import parsePointCloud3DTileSync from './parse-3d-tile-point-cloud';
@@ -12,20 +12,20 @@ export default function parse3DTileSync(arrayBuffer, byteOffset = 0, options = {
   tile.type = getMagicString(arrayBuffer, byteOffset);
 
   switch (tile.type) {
-    case MAGIC.COMPOSITE:
+    case TILE3D_TYPE.COMPOSITE:
       // Note: We pass this function as argument so that embedded tiles can be parsed recursively
       parseComposite3DTileSync(tile, arrayBuffer, byteOffset, options, parse3DTileSync);
       break;
 
-    case MAGIC.BATCHED_3D_MODEL:
+    case TILE3D_TYPE.BATCHED_3D_MODEL:
       parseBatchedModel3DTileSync(tile, arrayBuffer, byteOffset, options);
       break;
 
-    case MAGIC.INSTANCED_3D_MODEL:
+    case TILE3D_TYPE.INSTANCED_3D_MODEL:
       parseInstancedModel3DTileSync(tile, arrayBuffer, byteOffset, options);
       break;
 
-    case MAGIC.POINT_CLOUD:
+    case TILE3D_TYPE.POINT_CLOUD:
       parsePointCloud3DTileSync(tile, arrayBuffer, byteOffset, options);
       break;
 

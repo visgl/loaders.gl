@@ -25,7 +25,7 @@ export default function parsePointCloud3DTile(tile, arrayBuffer, byteOffset, opt
 
 // eslint-disable-next-line max-statements, complexity
 function extractPointCloud(tile) {
-  const featureTable = new Tile3DFeatureTable(tile);
+  const featureTable = new Tile3DFeatureTable(tile.featureTableJson, tile.featureTableBinary);
 
   const pointsLength = featureTable.getGlobalProperty('POINTS_LENGTH');
   tile.featuresLength = pointsLength;

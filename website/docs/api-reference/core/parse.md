@@ -28,6 +28,7 @@ for await (const batch of batchIterator) {
 ```
 
 ## Functions
+
 ### parse(data : ArrayBuffer | String, loaders : Object | Object\[] [, options : Object [, url : String]]) : Promise<Any>
 
 ### parse(data : ArrayBuffer | String, [, options : Object [, url : String]]) : Promise<Any>
@@ -76,7 +77,6 @@ Parses data synchronously using the provided loader, if possible. If not, return
 Returns:
 
 - Return value depends on the _loader object_ category
-
 
 ### parseInBatches(data : any, loaders : Object | Object\[] [, options : Object [, url : String]]) : AsyncIterator
 
