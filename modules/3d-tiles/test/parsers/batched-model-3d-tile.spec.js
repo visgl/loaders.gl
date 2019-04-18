@@ -60,7 +60,7 @@ test('batched model tile#recognizes the legacy 24-byte header', t => {
 //     });
 // });
 
-test('batched model tile#empty gltf', t => {
+test.skip('batched model tile#empty gltf', t => {
   // Expect to throw DeveloperError in Model due to invalid gltf magic
   const TILE = {
     type: TILE3D_TYPE.BATCHED_3D_MODEL

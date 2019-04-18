@@ -18,7 +18,7 @@ export const MAGIC_ARRAY = {
 
 // TILE CONSTANTS
 
-// TODO - so we need this?
+// TODO - do we need this?
 export const TILE3D_CONTENT_STATE = {
   UNLOADED: 0, // Has never been requested
   LOADING: 1, // Is waiting on a pending request
@@ -27,7 +27,6 @@ export const TILE3D_CONTENT_STATE = {
   EXPIRED: 4, // Is expired and will be unloaded once new content is loaded.
   FAILED: 5 // Request failed.
 };
-
 export const TILE3D_OPTIMIZATION_HINT = {
   NOT_COMPUTED: -1,
   USE_OPTIMIZATION: 1,
@@ -43,14 +42,4 @@ export const TILE3D_COLOR_BLEND_MODE = {
 export const TILE3D_REFINE = {
   ADD: 0, // Render tile and, if screen space error exceeded, also refine to its children.
   REPLACE: 1 // Render tile or, if screen space error exceeded, refine to its descendants instead.
-};
-// SUBSET OF GL CONSTANTS - CAN BE USED DIRECTLY WITH WEBGL
-
-export const GL = {
-  BYTE: 5120,
-  UNSIGNED_BYTE: 5121,
-  SHORT: 5122,
-  UNSIGNED_SHORT: 5123,
-  UNSIGNED_INT: 5125,
-  FLOAT: 5126
 };

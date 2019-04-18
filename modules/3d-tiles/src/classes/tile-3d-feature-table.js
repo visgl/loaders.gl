@@ -1,9 +1,10 @@
-import {GL} from '../constants';
+import GL from '../math/gl-constants';
+import GLType from '../math/gl-type';
 
 // Reference:
 // https://github.com/AnalyticalGraphicsInc/cesium/blob/1de96d087f0b17575eb1a3f736407b348c765d59/Source/Scene/Cesium3DTileFeatureTable.js
 export default class Tile3DFeatureTable {
-  constructor({featureTableJson, featureTableBinary}) {
+  constructor(featureTableJson, featureTableBinary) {
     this.json = featureTableJson;
     this.buffer = featureTableBinary;
     this.featuresLength = 0;
@@ -42,7 +43,6 @@ export default class Tile3DFeatureTable {
         // componentType = ComponentDatatype.fromName(jsonValue.componentType);
       }
       return this._getTypedArrayFromBinary(
-        this,
         propertyName,
         componentType,
         componentLength,
@@ -51,7 +51,7 @@ export default class Tile3DFeatureTable {
       );
     }
 
-    return this._getTypedArrayFromArray(this, propertyName, componentType, jsonValue);
+    return this._getTypedArrayFromArray(propertyName, componentType, jsonValue);
   }
 
   getProperty(propertyName, componentType, componentLength, featureId, result) {
@@ -76,27 +76,27 @@ export default class Tile3DFeatureTable {
   // HELPERS
 
   _getTypedArrayFromBinary(propertyName, componentType, componentLength, count, byteOffset) {
-    // const cachedTypedArrays = this._cachedTypedArrays;
-    // let typedArray = cachedTypedArrays[propertyName];
-    // if (!typedArray) {
-    //   typedArray = ComponentDatatype.createArrayBufferView(
-    //     componentType,
-    //     this.buffer.buffer,
-    //     this.buffer.byteOffset + byteOffset,
-    //     count * componentLength
-    //   );
-    //   cachedTypedArrays[propertyName] = typedArray;
-    // }
-    // return typedArray;
+    const cachedTypedArrays = this._cachedTypedArrays;
+    let typedArray = cachedTypedArrays[propertyName];
+    if (!typedArray) {
+      typedArray = GLType.createTypedArray(
+        componentType,
+        this.buffer.buffer,
+        this.buffer.byteOffset + byteOffset,
+        count * componentLength
+      );
+      cachedTypedArrays[propertyName] = typedArray;
+    }
+    return typedArray;
   }
 
   _getTypedArrayFromArray(propertyName, componentType, array) {
-    // const cachedTypedArrays = this._cachedTypedArrays;
-    // const typedArray = cachedTypedArrays[propertyName];
-    // if (!typedArray) {
-    //   typedArray = ComponentDatatype.createTypedArray(componentType, array);
-    //   cachedTypedArrays[propertyName] = typedArray;
-    // }
-    // return typedArray;
+    const cachedTypedArrays = this._cachedTypedArrays;
+    let typedArray = cachedTypedArrays[propertyName];
+    if (!typedArray) {
+      typedArray = GLType.createTypedArray(componentType, array);
+      cachedTypedArrays[propertyName] = typedArray;
+    }
+    return typedArray;
   }
 }
