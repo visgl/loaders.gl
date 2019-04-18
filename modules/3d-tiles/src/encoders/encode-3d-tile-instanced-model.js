@@ -1,9 +1,11 @@
 import {MAGIC_ARRAY} from '../constants';
-import {encode3DTileHeader} from './helpers/encode-3d-tile-header';
+import {encode3DTileHeader, encode3DTileByteLength} from './helpers/encode-3d-tile-header';
+import {copyStringToDataView} from './helpers/encode-utils';
 
 // Procedurally encode the tile array buffer for testing purposes
-export function encodeInstancedModel3DTile(options = {}) {
-  const {featuresLength = 1, gltfFormat = 1, gltfUri = ''} = options;
+// eslint-disable-next-line max-statements
+export function encodeInstancedModel3DTile(tile, dataView, byteOffset, options) {
+  const {featuresLength = 1, gltfFormat = 1, gltfUri = ''} = tile;
 
   const gltfUriByteLength = gltfUri.length;
 
@@ -14,28 +16,31 @@ export function encodeInstancedModel3DTile(options = {}) {
   const featureTableJsonString = JSON.stringify(featureTableJson);
   const featureTableJsonByteLength = featureTableJsonString.length;
 
-  const headerByteLength = 32;
-  const uriByteLength = gltfUri.length;
-  const byteLength = headerByteLength + featureTableJsonByteLength + uriByteLength;
-  const buffer = new ArrayBuffer(byteLength);
-  const view = new DataView(buffer);
+  // Add default magic for this tile type
+  tile = {magic: MAGIC_ARRAY.INSTANCED_MODEL, ...tile};
 
-  encode3DTileHeader(buffer, 0, {magic: MAGIC_ARRAY.INSTANCED_MODEL, byteLength, ...options});
+  const byteOffsetStart = byteOffset;
 
-  view.setUint32(12, featureTableJsonByteLength, true); // featureTableJsonByteLength
-  view.setUint32(16, 0, true); // featureTableBinaryByteLength
-  view.setUint32(20, 0, true); // batchTableJsonByteLength
-  view.setUint32(24, 0, true); // batchTableBinaryByteLength
-  view.setUint32(28, gltfFormat, true); // gltfFormat
+  encode3DTileHeader(tile, dataView, 0);
 
-  let byteOffset = headerByteLength;
-  for (let i = 0; i < featureTableJsonByteLength; i++) {
-    view.setUint8(byteOffset, featureTableJsonString.charCodeAt(i));
-    byteOffset++;
+  if (dataView) {
+    dataView.setUint32(12, featureTableJsonByteLength, true); // featureTableJsonByteLength
+    dataView.setUint32(16, 0, true); // featureTableBinaryByteLength
+    dataView.setUint32(20, 0, true); // batchTableJsonByteLength
+    dataView.setUint32(24, 0, true); // batchTableBinaryByteLength
+    dataView.setUint32(28, gltfFormat, true); // gltfFormat
   }
-  for (let i = 0; i < gltfUriByteLength; i++) {
-    view.setUint8(byteOffset, gltfUri.charCodeAt(i));
-    byteOffset++;
-  }
-  return buffer;
+
+  byteOffset += copyStringToDataView(
+    dataView,
+    byteOffset,
+    featureTableJsonString,
+    featureTableJsonByteLength
+  );
+  byteOffset += copyStringToDataView(dataView, byteOffset, gltfUri, gltfUriByteLength);
+
+  // Go "back" and rewrite the tile's `byteLength` now that we know the value
+  encode3DTileByteLength(dataView, byteOffsetStart, byteOffset - byteOffsetStart);
+
+  return byteOffset;
 }

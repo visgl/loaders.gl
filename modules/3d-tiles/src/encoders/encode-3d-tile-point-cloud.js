@@ -1,45 +1,59 @@
 import {MAGIC_ARRAY} from '../constants';
-import {encode3DTileHeader} from './helpers/encode-3d-tile-header';
-import {padStringToByteAlignment} from './helpers/encode-utils';
+import {encode3DTileHeader, encode3DTileByteLength} from './helpers/encode-3d-tile-header';
+import {
+  padStringToByteAlignment,
+  copyStringToDataView,
+  copyBinaryToDataView
+} from './helpers/encode-utils';
 
-// Procedurally encode the tile array buffer for testing purposes
-export function encodePointCloud3DTile(options = {}) {
-  const DEFAULT_FEATURE_TABLE_JSON = {
-    POINTS_LENGTH: 1,
-    POSITIONS: {
-      byteOffset: 0
-    }
-  };
+const DEFAULT_FEATURE_TABLE_JSON = {
+  POINTS_LENGTH: 1,
+  POSITIONS: {
+    byteOffset: 0
+  }
+};
 
-  const {featureTableJson = DEFAULT_FEATURE_TABLE_JSON} = options;
+export function encodePointCloud3DTile(tile, dataView, byteOffset, options) {
+  const {featureTableJson = DEFAULT_FEATURE_TABLE_JSON} = tile;
 
   let featureTableJsonString = JSON.stringify(featureTableJson);
   featureTableJsonString = padStringToByteAlignment(featureTableJsonString, 4);
-  const {featureTableJsonByteLength = featureTableJsonString.length} = options;
+
+  const {featureTableJsonByteLength = featureTableJsonString.length} = tile;
 
   const featureTableBinary = new ArrayBuffer(12); // Enough space to hold 3 floats
   const featureTableBinaryByteLength = featureTableBinary.byteLength;
 
-  const headerByteLength = 28;
-  const byteLength = headerByteLength + featureTableJsonByteLength + featureTableBinaryByteLength;
-  const buffer = new ArrayBuffer(byteLength);
+  // Add default magic for this tile type
+  tile = {magic: MAGIC_ARRAY.POINT_CLOUD, ...tile};
 
-  encode3DTileHeader(buffer, 0, {magic: MAGIC_ARRAY.POINT_CLOUD, ...options, byteLength});
+  const byteOffsetStart = byteOffset;
 
-  const view = new DataView(buffer);
-  view.setUint32(12, featureTableJsonByteLength, true); // featureTableJsonByteLength
-  view.setUint32(16, featureTableBinaryByteLength, true); // featureTableBinaryByteLength
-  view.setUint32(20, 0, true); // batchTableJsonByteLength
-  view.setUint32(24, 0, true); // batchTableBinaryByteLength
+  byteOffset += encode3DTileHeader(tile, dataView, 0);
 
-  let byteOffset = headerByteLength;
-  for (let i = 0; i < featureTableJsonByteLength; i++) {
-    view.setUint8(byteOffset, featureTableJsonString.charCodeAt(i));
-    byteOffset++;
+  if (dataView) {
+    dataView.setUint32(byteOffset + 0, featureTableJsonByteLength, true); // featureTableJsonByteLength
+    dataView.setUint32(byteOffset + 4, featureTableBinaryByteLength, true); // featureTableBinaryByteLength
+    dataView.setUint32(byteOffset + 8, 0, true); // batchTableJsonByteLength
+    dataView.setUint32(byteOffset + 12, 0, true); // batchTableBinaryByteLength
   }
-  for (let i = 0; i < featureTableBinaryByteLength; i++) {
-    view.setUint8(byteOffset, featureTableBinary[i]);
-    byteOffset++;
-  }
-  return buffer;
+  byteOffset += 16;
+
+  byteOffset += copyStringToDataView(
+    dataView,
+    byteOffset,
+    featureTableJsonString,
+    featureTableJsonByteLength
+  );
+  byteOffset += copyBinaryToDataView(
+    dataView,
+    byteOffset,
+    featureTableBinary,
+    featureTableBinaryByteLength
+  );
+
+  // Go "back" and rewrite the tile's `byteLength` now that we know the value
+  encode3DTileByteLength(dataView, byteOffsetStart, byteOffset - byteOffsetStart);
+
+  return byteOffset;
 }

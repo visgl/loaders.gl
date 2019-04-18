@@ -5,9 +5,9 @@
 // which is under Apache 2 license
 
 import test from 'tape-promise/tape';
-import {parseSync} from '@loaders.gl/core';
-import {Tile3DLoader, encodeInstancedModel3DTile} from '@loaders.gl/3d-tiles';
-import {loadRootTileFromTileset} from './utils/load-utils';
+import {parseSync, encodeSync} from '@loaders.gl/core';
+import {Tile3DLoader, Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/3d-tiles';
+import {loadRootTileFromTileset} from '../utils/load-utils';
 
 const GLTF_EXTERNAL_URL =
   '@loaders.gl/3d-tiles/test/data/Instanced/InstancedGltfExternal/tileset.json';
@@ -36,24 +36,31 @@ const WITH_BATCH_IDS_URL =
 const TEXTURED_URL = '@loaders.gl/3d-tiles/test/data/Instanced/InstancedTextured/tileset.json';
 
 test('instanced model tile#throws with invalid format', t => {
-  const arrayBuffer = encodeInstancedModel3DTile({
+  const TILE = {
+    type: TILE3D_TYPE.INSTANCED_3D_MODEL,
     gltfFormat: 2
-  });
+  };
+  const arrayBuffer = encodeSync(TILE, Tile3DWriter);
   t.throws(() => parseSync(arrayBuffer), 'throws on invalid version');
   t.end();
 });
 
 test('instanced model tile#throws with invalid version', t => {
-  const arrayBuffer = encodeInstancedModel3DTile({
+  const TILE = {
+    type: TILE3D_TYPE.INSTANCED_3D_MODEL,
     version: 2
-  });
+  };
+  const arrayBuffer = encodeSync(TILE, Tile3DWriter);
   t.throws(() => parseSync(arrayBuffer), 'throws on invalid version');
   t.end();
 });
 
 test('instanced model tile#throws with empty gltf', t => {
   // Expect to throw DeveloperError in Model due to invalid gltf magic
-  const arrayBuffer = encodeInstancedModel3DTile();
+  const TILE = {
+    type: TILE3D_TYPE.INSTANCED_3D_MODEL
+  };
+  const arrayBuffer = encodeSync(TILE, Tile3DWriter);
   t.throws(() => parseSync(arrayBuffer), 'throws with empty gltf');
   t.end();
 });
@@ -62,10 +69,12 @@ test('instanced model tile#throws on invalid url', async t => {
   // Try loading a tile with an invalid url.
   // Expect promise to be rejected in Model, then in ModelInstanceCollection, and
   // finally in Instanced3DModel3DTileContent.
-  const arrayBuffer = encodeInstancedModel3DTile({
+  const TILE = {
+    type: TILE3D_TYPE.INSTANCED_3D_MODEL,
     gltfFormat: 0,
     gltfUri: 'not-a-real-path'
-  });
+  };
+  const arrayBuffer = encodeSync(TILE, Tile3DWriter);
   t.throws(() => parseSync(arrayBuffer), 'throws on invalid url');
   t.end();
 });

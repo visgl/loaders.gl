@@ -1,5 +1,4 @@
-import {GL} from '../constants';
-import Tile3DFeatureTable from '../classes/tile-3d-feature-table';
+// import Tile3DFeatureTable from '../classes/tile-3d-feature-table';
 // import Tile3DBatchTable from '../classes/tile-3d-batch-table';
 import {parse3DTileHeaderSync} from './helpers/parse-3d-tile-header';
 import {parse3DTileTablesHeaderSync, parse3DTileTablesSync} from './helpers/parse-3d-tile-tables';
@@ -16,8 +15,8 @@ export default function parseBatchedModel3DTileSync(tile, arrayBuffer, byteOffse
 
   byteOffset = parse3DTileGLTFViewSync(tile, arrayBuffer, byteOffset, options);
 
-  const featureTable = new Tile3DFeatureTable(tile);
-  tile.rtcCenter = featureTable.getGlobalProperty('RTC_CENTER', GL.FLOAT, 3);
+  // const featureTable = new Tile3DFeatureTable(tile.featureTableJson, tile.featureTableBinary);
+  // tile.rtcCenter = featureTable.getGlobalProperty('RTC_CENTER', GL.FLOAT, 3);
 
   return byteOffset;
 }

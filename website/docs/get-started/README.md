@@ -14,13 +14,11 @@ Installing loaders.gl makes the `glbdump` command line tool available. It can be
 $ npx glbdump <filename>
 ```
 
-
 ## Building
 
 loaders.gl is designed to leverage modern JavaScript (ES2018) and to optimize functionality and performance on evergreen browsers.
 
 That saud, the default distribution is completely transpiled to ES5 so using loaders.gl with older or "slower moving" browsers such as IE11 and Edge is possible if polyfills are added.
-
 
 To build on Edge, `TextEncoder` and `TextDecoder` must be polyfilled. There are several polyfills available on `npm`.
 
