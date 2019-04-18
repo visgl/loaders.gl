@@ -24,17 +24,11 @@ export function encodePointCloud3DTile(tile, dataView, byteOffset, options) {
   const featureTableBinary = new ArrayBuffer(12); // Enough space to hold 3 floats
   const featureTableBinaryByteLength = featureTableBinary.byteLength;
 
-  const headerByteLength = 28;
-  const byteLength = headerByteLength + featureTableJsonByteLength + featureTableBinaryByteLength;
-
   // Add default magic for this tile type
   tile = {magic: MAGIC_ARRAY.POINT_CLOUD, ...tile};
 
-  if (!dataView) {
-    return byteLength;
-  }
-
   const byteOffsetStart = byteOffset;
+
   byteOffset += encode3DTileHeader(tile, dataView, 0);
 
   if (dataView) {

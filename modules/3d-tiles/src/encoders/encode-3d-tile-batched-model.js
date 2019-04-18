@@ -12,16 +12,10 @@ export function encodeBatchedModel3DTile(tile, dataView, byteOffset, options) {
   const featureTableJsonString = JSON.stringify(featureTableJson);
   const featureTableJsonByteLength = featureTableJsonString.length;
 
-  const headerByteLength = 28;
-  const byteLength = headerByteLength + featureTableJsonByteLength;
+  // Add default magic for this tile type
+  tile = {magic: MAGIC_ARRAY.BATCHED_MODEL, ...tile};
 
   const byteOffsetStart = byteOffset;
-  if (!dataView) {
-    return byteLength;
-  }
-
-  // Add default magic for this tile type
-  tile = {magic: MAGIC_ARRAY.BATCHED_MODEL, byteLength, ...tile};
 
   byteOffset = encode3DTileHeader(tile, dataView, byteOffset);
 

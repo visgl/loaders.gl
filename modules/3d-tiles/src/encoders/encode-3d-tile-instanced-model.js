@@ -16,17 +16,10 @@ export function encodeInstancedModel3DTile(tile, dataView, byteOffset, options) 
   const featureTableJsonString = JSON.stringify(featureTableJson);
   const featureTableJsonByteLength = featureTableJsonString.length;
 
-  const headerByteLength = 32;
-  const uriByteLength = gltfUri.length;
-  const byteLength = headerByteLength + featureTableJsonByteLength + uriByteLength;
+  // Add default magic for this tile type
+  tile = {magic: MAGIC_ARRAY.INSTANCED_MODEL, ...tile};
 
   const byteOffsetStart = byteOffset;
-  if (!dataView) {
-    return byteLength;
-  }
-
-  // Add default magic for this tile type
-  tile = {magic: MAGIC_ARRAY.INSTANCED_MODEL, byteLength, ...tile};
 
   encode3DTileHeader(tile, dataView, 0);
 
