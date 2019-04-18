@@ -6,8 +6,8 @@
 
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
-import {parseSync} from '@loaders.gl/core';
-import {Tile3DLoader, encodeBatchedModel3DTile} from '@loaders.gl/3d-tiles';
+import {parseSync, encodeSync} from '@loaders.gl/core';
+import {Tile3DLoader, Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/3d-tiles';
 import {loadRootTileFromTileset} from '../utils/load-utils';
 
 const WITH_BATCH_TABLE_URL =
@@ -31,9 +31,11 @@ const TEXTURED_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedTextured/til
 // const WITH_RTC_CENTER_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedWithRtcCenter/tileset.json';
 
 test('batched model tile#throws with invalid version', t => {
-  const arrayBuffer = encodeBatchedModel3DTile({
+  const TILE = {
+    type: TILE3D_TYPE.BATCHED_3D_MODEL,
     version: 2
-  });
+  };
+  const arrayBuffer = encodeSync(TILE, Tile3DWriter);
   t.throws(() => parseSync(arrayBuffer, Tile3DLoader), 'throws on invalid version');
   t.end();
 });
@@ -60,7 +62,10 @@ test('batched model tile#recognizes the legacy 24-byte header', t => {
 
 test('batched model tile#empty gltf', t => {
   // Expect to throw DeveloperError in Model due to invalid gltf magic
-  const arrayBuffer = encodeBatchedModel3DTile();
+  const TILE = {
+    type: TILE3D_TYPE.BATCHED_3D_MODEL
+  };
+  const arrayBuffer = encodeSync(TILE, Tile3DWriter);
   t.throws(() => parseSync(arrayBuffer, Tile3DLoader), 'Throws with empty glTF');
   t.end();
 });

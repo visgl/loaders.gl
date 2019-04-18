@@ -5,8 +5,8 @@
 // which is under Apache 2 license
 
 import test from 'tape-promise/tape';
-import {parseSync} from '@loaders.gl/core';
-import {Tile3DLoader, encodePointCloud3DTile} from '@loaders.gl/3d-tiles';
+import {parseSync, encodeSync} from '@loaders.gl/core';
+import {Tile3DLoader, Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/3d-tiles';
 import {loadRootTileFromTileset} from '../utils/load-utils';
 
 const POINTCLOUD_RGB_URL = '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudRGB/tileset.json';
@@ -37,51 +37,60 @@ const POINTCLOUD_TILESET_URL = '@loaders.gl/3d-tiles/test/data/Tilesets/TilesetP
 */
 
 test('point cloud tile#throws with invalid version', t => {
-  const arrayBuffer = encodePointCloud3DTile({
+  const TILE = {
+    type: TILE3D_TYPE.POINT_CLOUD,
     version: 2
-  });
-  t.throws(() => parseSync(arrayBuffer), 'throws on invalid version');
+  };
+  const arrayBuffer = encodeSync(TILE, Tile3DWriter);
+  t.throws(() => parseSync(arrayBuffer, Tile3DLoader), 'throws on invalid version');
   t.end();
 });
 
 test('point cloud tile#throws if featureTableJsonByteLength is 0', t => {
-  const arrayBuffer = encodePointCloud3DTile({
+  const TILE = {
+    type: TILE3D_TYPE.POINT_CLOUD,
     featureTableJsonByteLength: 0
-  });
-  t.throws(() => parseSync(arrayBuffer), 'throws if featureTableJsonByteLength is 0');
+  };
+  const arrayBuffer = encodeSync(TILE, Tile3DWriter);
+  t.throws(() => parseSync(arrayBuffer, Tile3DLoader), 'throws if featureTableJsonByteLength is 0');
   t.end();
 });
 
 test('point cloud tile#throws if the feature table does not contain POINTS_LENGTH', t => {
-  const arrayBuffer = encodePointCloud3DTile({
+  const TILE = {
+    type: TILE3D_TYPE.POINT_CLOUD,
     featureTableJson: {
       POSITION: {
         byteOffset: 0
       }
     }
-  });
+  };
+  const arrayBuffer = encodeSync(TILE, Tile3DWriter);
   t.throws(
-    () => parseSync(arrayBuffer),
+    () => parseSync(arrayBuffer, Tile3DLoader),
     'throws if the feature table does not contain POINTS_LENGTH'
   );
   t.end();
 });
 
 test('point cloud tile#throws if the feature table does not contain POSITION or POSITION_QUANTIZED', t => {
-  const arrayBuffer = encodePointCloud3DTile({
+  const TILE = {
+    type: TILE3D_TYPE.POINT_CLOUD,
     featureTableJson: {
       POINTS_LENGTH: 1
     }
-  });
+  };
+  const arrayBuffer = encodeSync(TILE, Tile3DWriter);
   t.throws(
-    () => parseSync(arrayBuffer),
+    () => parseSync(arrayBuffer, Tile3DLoader),
     'throws if the feature table does not contain POSITION or POSITION_QUANTIZED'
   );
   t.end();
 });
 
 test('point cloud tile#throws if the positions are quantized and the feature table does not contain QUANTIZED_VOLUME_SCALE', t => {
-  const arrayBuffer = encodePointCloud3DTile({
+  const TILE = {
+    type: TILE3D_TYPE.POINT_CLOUD,
     featureTableJson: {
       POINTS_LENGTH: 1,
       POSITION_QUANTIZED: {
@@ -89,16 +98,18 @@ test('point cloud tile#throws if the positions are quantized and the feature tab
       },
       QUANTIZED_VOLUME_OFFSET: [0.0, 0.0, 0.0]
     }
-  });
+  };
+  const arrayBuffer = encodeSync(TILE, Tile3DWriter);
   t.throws(
-    () => parseSync(arrayBuffer),
+    () => parseSync(arrayBuffer, Tile3DLoader),
     'throws if the positions are quantized and the feature table does not contain QUANTIZED_VOLUME_SCALE'
   );
   t.end();
 });
 
 test('point cloud tile#throws if the positions are quantized and the feature table does not contain QUANTIZED_VOLUME_OFFSET', t => {
-  const arrayBuffer = encodePointCloud3DTile({
+  const TILE = {
+    type: TILE3D_TYPE.POINT_CLOUD,
     featureTableJson: {
       POINTS_LENGTH: 1,
       POSITION_QUANTIZED: {
@@ -106,40 +117,45 @@ test('point cloud tile#throws if the positions are quantized and the feature tab
       },
       QUANTIZED_VOLUME_SCALE: [1.0, 1.0, 1.0]
     }
-  });
+  };
+  const arrayBuffer = encodeSync(TILE, Tile3DWriter);
   t.throws(
-    () => parseSync(arrayBuffer),
+    () => parseSync(arrayBuffer, Tile3DLoader),
     'throws if the positions are quantized and the feature table does not contain QUANTIZED_VOLUME_OFFSET'
   );
   t.end();
 });
 
 test('point cloud tile#throws if the BATCH_ID semantic is defined but BATCHES_LENGTH is not', t => {
-  const arrayBuffer = encodePointCloud3DTile({
+  const TILE = {
+    type: TILE3D_TYPE.POINT_CLOUD,
     featureTableJson: {
       POINTS_LENGTH: 2,
       POSITION: [0.0, 0.0, 0.0, 1.0, 1.0, 1.0],
       BATCH_ID: [0, 1]
     }
-  });
+  };
+  const arrayBuffer = encodeSync(TILE, Tile3DWriter);
   t.throws(
-    () => parseSync(arrayBuffer),
+    () => parseSync(arrayBuffer, Tile3DLoader),
     'throws if the BATCH_ID semantic is defined but BATCHES_LENGTH is not'
   );
   t.end();
 });
 
 test('point cloud tile#BATCH_ID semantic uses componentType of UNSIGNED_SHORT by default', t => {
-  const arrayBuffer = encodePointCloud3DTile({
+  const TILE = {
+    type: TILE3D_TYPE.POINT_CLOUD,
     featureTableJson: {
       POINTS_LENGTH: 2,
       POSITION: [0.0, 0.0, 0.0, 1.0, 1.0, 1.0],
       BATCH_ID: [0, 1],
       BATCH_LENGTH: 2
     }
-  });
+  };
+  const arrayBuffer = encodeSync(TILE, Tile3DWriter);
   t.throws(
-    () => parseSync(arrayBuffer),
+    () => parseSync(arrayBuffer, Tile3DLoader),
     'throws if the BATCH_ID semantic is defined but BATCHES_LENGTH is not'
   );
   // const content = Cesium3DTilesTester.loadTile(scene, arrayBuffer, 'pnts');
