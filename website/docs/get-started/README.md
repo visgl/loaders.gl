@@ -22,7 +22,7 @@ loaders.gl is designed to leverage modern JavaScript (ES2018) and to optimize fu
 That saud, the default distribution is completely transpiled to ES5 so using loaders.gl with older or "slower moving" browsers such as IE11 and Edge is possible if polyfills are added.
 
 
-To build on Edge, `TextEncoder` and `TextDecoder` must be polyfilled.
+To build on Edge, `TextEncoder` and `TextDecoder` must be polyfilled. There are several polyfills available on `npm`.
 
 ```
 yarn add text-encoding
