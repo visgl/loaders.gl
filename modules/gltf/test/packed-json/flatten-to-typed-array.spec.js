@@ -19,7 +19,7 @@
 // THE SOFTWARE.
 
 import test from 'tape-promise/tape';
-import {flattenToTypedArray} from '@loaders.gl/gltf/utils/flatten-to-typed-array';
+import {flattenToTypedArray} from '@loaders.gl/gltf/packed-json/flatten-to-typed-array';
 
 const FLATTEN_VERTICES_TEST_CASES = [
   {

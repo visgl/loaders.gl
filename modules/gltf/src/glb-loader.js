@@ -1,6 +1,6 @@
 // Binary container format for glTF
 
-import parseGLBSync from './glb/parser-glb';
+import parseGLBSync from './glb/parse-glb';
 
 export default {
   name: 'GLB',
