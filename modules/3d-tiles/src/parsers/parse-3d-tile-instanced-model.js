@@ -1,5 +1,5 @@
-// import {GL} from '../constants';
-// import Tile3DFeatureTable from '../classes/tile-3d-feature-table';
+import GL from '../math/gl-constants';
+import Tile3DFeatureTable from '../classes/tile-3d-feature-table';
 // import Tile3DBatchTable from '../classes/tile-3d-batch-table';
 
 import {parse3DTileHeaderSync} from './helpers/parse-3d-tile-header';
@@ -31,14 +31,14 @@ export default function parseInstancedModel3DTileSync(tile, arrayBuffer, byteOff
     throw new Error('i3dm parser: featureTableJsonByteLength is zero.');
   }
 
-  // const featureTable = new Tile3DFeatureTable(tile.featureTableJson, tile.featureTableBinary);
+  const featureTable = new Tile3DFeatureTable(tile.featureTableJson, tile.featureTableBinary);
 
-  // const instancesLength = featureTable.getGlobalProperty('INSTANCES_LENGTH');
-  // featureTable.featuresLength = instancesLength;
+  const instancesLength = featureTable.getGlobalProperty('INSTANCES_LENGTH');
+  featureTable.featuresLength = instancesLength;
 
-  // if (!Number.isFinite(instancesLength)) {
-  //   throw new Error('i3dm parser: INSTANCES_LENGTH must be defined');
-  // }
+  if (!Number.isFinite(instancesLength)) {
+    throw new Error('i3dm parser: INSTANCES_LENGTH must be defined');
+  }
 
   /*
   const batchTable = new Tile3DBatchTable(tile, instancesLength);
@@ -57,12 +57,12 @@ export default function parseInstancedModel3DTileSync(tile, arrayBuffer, byteOff
     default:
       throw new Error(`i3dm: glTF format ${tile.gltfFormat}: Must be 0 (uri) or 1 (embedded)`);
   }
+  */
 
   tile.eastNorthUp = featureTable.getGlobalProperty('EAST_NORTH_UP');
   tile.rtcCenter = featureTable.getGlobalProperty('RTC_CENTER', GL.FLOAT, 3);
 
-  extractInstancedAttributes(tile, featureTable);
-  */
+  // extractInstancedAttributes(tile, featureTable);
 
   return byteOffset;
 }

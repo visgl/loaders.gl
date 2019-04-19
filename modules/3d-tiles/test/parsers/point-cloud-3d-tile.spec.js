@@ -7,8 +7,9 @@
 import test from 'tape-promise/tape';
 import {parseSync, encodeSync} from '@loaders.gl/core';
 import {Tile3DLoader, Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/3d-tiles';
-import {loadRootTileFromTileset} from '../utils/load-utils';
+// import {loadRootTileFromTileset} from '../utils/load-utils';
 
+/*
 const POINTCLOUD_RGB_URL = '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudRGB/tileset.json';
 const POINTCLOUD_RGBA_URL = '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudRGBA/tileset.json';
 const POINTCLOUD_RGB565_URL =
@@ -25,7 +26,6 @@ const POINTCLOUD_QUANTIZED_URL =
   '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudQuantized/tileset.json';
 const POINTCLOUD_QUANTIZED_OCT_ENCODED_URL =
   '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudQuantizedOctEncoded/tileset.json';
-/*
 const POINTCLOUD_DRACO_URL = '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudDraco/tileset.json';
 const POINTCLOUD_DRACO_PARTIAL_URL = '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudDracoPartial/tileset.json';
 const POINTCLOUD_DRACO_BATCHED_URL = '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudDracoBatched/tileset.json';
@@ -88,6 +88,7 @@ test('point cloud tile#throws if the feature table does not contain POSITION or 
   t.end();
 });
 
+/*
 test('point cloud tile#throws if the positions are quantized and the feature table does not contain QUANTIZED_VOLUME_SCALE', t => {
   const TILE = {
     type: TILE3D_TYPE.POINT_CLOUD,
@@ -162,7 +163,9 @@ test('point cloud tile#BATCH_ID semantic uses componentType of UNSIGNED_SHORT by
   // expect(content._pointCloud._drawCommand._vertexArray._attributes[1].componentDatatype).toEqual(ComponentDatatype.UNSIGNED_SHORT);
   t.end();
 });
+*/
 
+/*
 test('point cloud tile#gets tileset properties', async t => {
   const tileData = await loadRootTileFromTileset(t, POINTCLOUD_RGB_URL);
   const tile = parseSync(tileData, Tile3DLoader);
@@ -248,6 +251,7 @@ test('point cloud tile#renders point cloud with quantized positions and oct-enco
   t.ok(tile, 'loaded point cloud with quantized positions and oct-encoded normals');
   t.end();
 });
+*/
 
 /*
 // TODO - this should be a render test

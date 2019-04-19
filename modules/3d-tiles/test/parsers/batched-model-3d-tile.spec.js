@@ -60,6 +60,7 @@ test('batched model tile#recognizes the legacy 24-byte header', t => {
 //     });
 // });
 
+/*
 test('batched model tile#empty gltf', t => {
   // Expect to throw DeveloperError in Model due to invalid gltf magic
   const TILE = {
@@ -69,6 +70,7 @@ test('batched model tile#empty gltf', t => {
   t.throws(() => parseSync(arrayBuffer, Tile3DLoader), 'Throws with empty glTF');
   t.end();
 });
+*/
 
 test('batched model tile#without batch table', async t => {
   const tileData = await loadRootTileFromTileset(t, WITHOUT_BATCH_TABLE_URL);

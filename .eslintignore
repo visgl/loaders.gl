@@ -1,3 +1,4 @@
 **/dist/*
+**/wip/*
 node_modules/
 *.min.js
