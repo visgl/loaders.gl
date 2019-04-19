@@ -314,7 +314,10 @@ test('Tile3DBatchTableParser#getProperty and setProperty work for binary propert
   t.deepEquals(batchTable.getProperty(1, 'propertyVec3'), [10, 11, 12]);
   t.deepEquals(batchTable.getProperty(1, 'propertyVec4'), [17, 18, 19, 20]);
   t.deepEquals(batchTable.getProperty(1, 'propertyMat2'), transpose([25, 27, 26, 28]));
-  t.deepEquals(batchTable.getProperty(1, 'propertyMat3'), transpose([38, 41, 44, 39, 42, 45, 40, 43, 46]));
+  t.deepEquals(
+    batchTable.getProperty(1, 'propertyMat3'),
+    transpose([38, 41, 44, 39, 42, 45, 40, 43, 46])
+  );
   // prettier-ignore
   t.deepEquals(batchTable.getProperty(1, 'propertyMat4'), transpose([
     63, 67, 71, 75, 64, 68, 72, 76, 65, 69, 73, 77, 66, 70, 74, 78

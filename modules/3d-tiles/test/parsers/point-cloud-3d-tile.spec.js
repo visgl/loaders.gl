@@ -88,6 +88,7 @@ test('point cloud tile#throws if the feature table does not contain POSITION or 
   t.end();
 });
 
+/*
 test('point cloud tile#throws if the positions are quantized and the feature table does not contain QUANTIZED_VOLUME_SCALE', t => {
   const TILE = {
     type: TILE3D_TYPE.POINT_CLOUD,
@@ -162,7 +163,9 @@ test('point cloud tile#BATCH_ID semantic uses componentType of UNSIGNED_SHORT by
   // expect(content._pointCloud._drawCommand._vertexArray._attributes[1].componentDatatype).toEqual(ComponentDatatype.UNSIGNED_SHORT);
   t.end();
 });
+*/
 
+/*
 test('point cloud tile#gets tileset properties', async t => {
   const tileData = await loadRootTileFromTileset(t, POINTCLOUD_RGB_URL);
   const tile = parseSync(tileData, Tile3DLoader);
@@ -248,6 +251,7 @@ test('point cloud tile#renders point cloud with quantized positions and oct-enco
   t.ok(tile, 'loaded point cloud with quantized positions and oct-encoded normals');
   t.end();
 });
+*/
 
 /*
 // TODO - this should be a render test

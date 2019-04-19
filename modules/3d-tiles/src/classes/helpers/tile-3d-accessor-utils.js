@@ -90,7 +90,7 @@ const PACKER = {
     values[16 * i + 12] = x[12];
     values[16 * i + 13] = x[13];
     values[16 * i + 14] = x[14];
-    values[16 * i + 15]= x[15];
+    values[16 * i + 15] = x[15];
   }
 };
 

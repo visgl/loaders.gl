@@ -36,6 +36,8 @@ function extractPointCloud(tile) {
     throw new Error('POINTS_LENGTH must be defined');
   }
 
+  // const batchTable = new Tile3DBatchTable(tile);
+
   tile.rtcCenter = featureTable.getGlobalProperty('RTC_CENTER', GL.FLOAT, 3);
 
   // Initialize point cloud tile defaults
@@ -47,11 +49,8 @@ function extractPointCloud(tile) {
   tile.isTranslucent = false;
   tile.isRGB565 = false;
   tile.isOctEncoded16P = false;
-}
-/*
-  const batchTable = new Tile3DBatchTable(tile);
 
-  parseDracoBuffer(tile, featureTable, batchTable);
+  // parseDracoBuffer(tile, featureTable, batchTable);
 
   if (!tile.positions) {
     if (featureTable.hasProperty('POSITION')) {
@@ -81,6 +80,19 @@ function extractPointCloud(tile) {
       }
     }
   }
+
+  if (!tile.positions) {
+    throw new Error('Either POSITION or POSITION_QUANTIZED must be defined.');
+  }
+}
+/*
+
+  if (!tile.positions) {
+    if (featureTable.hasProperty('POSITION')) {
+      tile.positions = tile.featureTable.getPropertyArray('POSITION', GL.FLOAT, 3);
+    } else if (featureTable.hasProperty('POSITION_QUANTIZED')) {
+      tile.positions = featureTable.getPropertyArray('POSITION_QUANTIZED', GL.UNSIGNED_SHORT, 3);
+
 
   if (!tile.colors) {
     if (featureTable.hasProperty('RGBA')) {
