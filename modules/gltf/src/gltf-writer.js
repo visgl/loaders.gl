@@ -6,7 +6,8 @@ function encodeSync(json, options) {
 
 // TODO - target writer structure not yet clear
 export default {
-  name: 'GLB',
+  name: 'glTF',
   extensions: ['glb'],
-  encodeSync
+  encodeSync,
+  binary: true
 };

@@ -1,6 +1,6 @@
-## `GLTFParser` class (@loaders.gl/gltf)
+# GLTFParser
 
-the `GLTFParser` class parses GLB-encoded glTF files. glTF files can contain complex scenegraphs with extensions and application defined data annotations.
+The `GLTFParser` class parses GLB-encoded glTF files. glTF files can contain complex scenegraphs with extensions and application defined data annotations.
 
 To facilitiate working with the loaded data, the `GLTFParser` class provides:
 

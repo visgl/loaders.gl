@@ -1,6 +1,9 @@
 // glTF loader/writer definition objects
-export {default as GLTFLoader} from './gltf/gltf-loader';
-export {default as GLTFWriter} from './gltf/gltf-writer';
+export {default as GLTFLoader} from './gltf-loader';
+export {default as GLTFWriter} from './gltf-writer';
+
+export {default as GLBLoader} from './glb-loader';
+export {default as GLBWriter} from './glb-writer';
 
 // glTF Parser & Builder
 export {default as GLTFParser} from './gltf/gltf-parser';
@@ -12,4 +15,6 @@ export {default as GLBBuilder} from './glb/glb-builder';
 
 export {KHR_DRACO_MESH_COMPRESSION, UBER_POINT_CLOUD_EXTENSION} from './gltf/gltf-constants';
 
-export {parseGLBSync as _parseGLBSync} from './glb/parse-glb';
+// For 3D Tiles
+export {default as _parseGLBSync} from './glb/parse-glb';
+export {default as _encodeGLBSync} from './glb/encode-glb';
