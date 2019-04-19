@@ -23,7 +23,7 @@ export async function loadRootTileFromTileset(t, tilesetUrl) {
     // Load binary data for root tile
     const tileDirectory = dirname(tilesetUrl);
     const tileUrl = `${tileDirectory}/${tileset.root.content.uri}`;
-    t.comment(`Loading ${tileUrl} from ${tileDirectory} for ${tilesetUrl}`);
+    // t.comment(`Loading ${tileUrl} from ${tileDirectory} for ${tilesetUrl}`);
     response = await fetchFile(tileUrl);
     const tile = await response.arrayBuffer();
     return tile;

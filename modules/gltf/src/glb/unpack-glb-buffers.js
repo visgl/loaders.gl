@@ -1,5 +1,6 @@
 import {assert} from '@loaders.gl/core';
 
+// TODO - use ../utils/gltf-type-utils
 const TYPE_COMPONENTS = {
   SCALAR: 1,
   VEC2: 2,

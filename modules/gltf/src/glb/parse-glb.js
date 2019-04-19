@@ -41,7 +41,7 @@ Returns {
   binChunkLength: number
 }
 */
-export function parseGLBSync(glb, arrayBuffer, byteOffset = 0, options = {}) {
+export default function parseGLBSync(glb, arrayBuffer, byteOffset = 0, options = {}) {
   // Check that GLB Header starts with the magic number
   const dataView = new DataView(arrayBuffer);
 

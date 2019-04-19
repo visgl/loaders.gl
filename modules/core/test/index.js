@@ -1,7 +1,6 @@
 import './javascript-utils/async-iterator.spec';
 import './javascript-utils/text-encoder.spec';
 import './javascript-utils/binary-utils.spec';
-import './javascript-utils/flatten.spec';
 
 import './categories/mesh/mesh-utils.spec';
 

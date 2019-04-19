@@ -1,4 +1,4 @@
-import {flattenToTypedArray} from '@loaders.gl/core';
+import {flattenToTypedArray} from '../utils/flatten-to-typed-array';
 
 // Recursively packs (replaces) binary objects
 // Replaces "typed arrays" with "JSON pointers" to binary chunks tracked by glbBuilder
