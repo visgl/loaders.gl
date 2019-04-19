@@ -1,6 +1,6 @@
 import GL from '../math/gl-constants';
 import Tile3DFeatureTable from '../classes/tile-3d-feature-table';
-import Tile3DBatchTable from '../classes/tile-3d-batch-table';
+// import Tile3DBatchTable from '../classes/tile-3d-batch-table';
 
 import {parse3DTileHeaderSync} from './helpers/parse-3d-tile-header';
 import {parse3DTileTablesHeaderSync, parse3DTileTablesSync} from './helpers/parse-3d-tile-tables';

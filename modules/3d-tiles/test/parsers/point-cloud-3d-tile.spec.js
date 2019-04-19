@@ -7,8 +7,9 @@
 import test from 'tape-promise/tape';
 import {parseSync, encodeSync} from '@loaders.gl/core';
 import {Tile3DLoader, Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/3d-tiles';
-import {loadRootTileFromTileset} from '../utils/load-utils';
+// import {loadRootTileFromTileset} from '../utils/load-utils';
 
+/*
 const POINTCLOUD_RGB_URL = '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudRGB/tileset.json';
 const POINTCLOUD_RGBA_URL = '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudRGBA/tileset.json';
 const POINTCLOUD_RGB565_URL =
@@ -25,7 +26,6 @@ const POINTCLOUD_QUANTIZED_URL =
   '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudQuantized/tileset.json';
 const POINTCLOUD_QUANTIZED_OCT_ENCODED_URL =
   '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudQuantizedOctEncoded/tileset.json';
-/*
 const POINTCLOUD_DRACO_URL = '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudDraco/tileset.json';
 const POINTCLOUD_DRACO_PARTIAL_URL = '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudDracoPartial/tileset.json';
 const POINTCLOUD_DRACO_BATCHED_URL = '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudDracoBatched/tileset.json';

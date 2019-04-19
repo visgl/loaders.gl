@@ -1,12 +1,12 @@
 import test from 'tape-promise/tape';
 import Tile3DBatchTableParser from '@loaders.gl/3d-tiles/classes/tile-3d-batch-table';
 import {concatTypedArrays} from '@loaders.gl/3d-tiles/math/typed-array-utils';
-import {loadTileset} from '../utils/load-utils';
+// import {loadTileset} from '../utils/load-utils';
 
 // const WITH_BATCH_TABLE_URL =
 //  '@loaders.gl/3d-tiles/test/data//Batched/BatchedWithBatchTable/tileset.json';
-const WITHOUT_BATCH_TABLE_URL =
-  '@loaders.gl/3d-tiles/test/data//Batched/BatchedWithoutBatchTable/tileset.json';
+// const WITHOUT_BATCH_TABLE_URL =
+//   '@loaders.gl/3d-tiles/test/data//Batched/BatchedWithoutBatchTable/tileset.json';
 // const NO_BATCH_IDS_URL = '@loaders.gl/3d-tiles/test/data//Batched/BatchedNoBatchIds/tileset.json';
 
 const MOCK_TILESET = {
