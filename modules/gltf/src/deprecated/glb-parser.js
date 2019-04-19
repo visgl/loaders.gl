@@ -1,25 +1,20 @@
 /* eslint-disable camelcase, max-statements */
-import unpackGLBBuffers from './unpack-glb-buffers';
+import unpackGLTFBuffers from '../gltf/unpack-gltf-buffers';
 import unpackBinaryJson from '../packed-json/unpack-binary-json';
 import assert from '../utils/assert';
-import parseGLBSync from './parse-glb';
+import parseGLBSync, {isGLB} from '../glb/parse-glb';
 
 import {
   ATTRIBUTE_TYPE_TO_COMPONENTS,
   ATTRIBUTE_COMPONENT_TYPE_TO_BYTE_SIZE,
   ATTRIBUTE_COMPONENT_TYPE_TO_ARRAY
-} from '../utils/gltf-type-utils';
+} from '../gltf/gltf-type-utils';
 
-const MAGIC_glTF = 0x676c5446; // glTF in Big-Endian ASCII
-
-// https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#glb-file-format-specification
 export default class GLBParser {
   static isGLB(arrayBuffer, options = {}) {
-    // Check that GLB Header starts with the magic number
-    const {magic = MAGIC_glTF} = options;
     const dataView = new DataView(arrayBuffer);
-    const magic1 = dataView.getUint32(0, false);
-    return magic1 === magic || magic1 === MAGIC_glTF;
+    const byteOffset = 0;
+    return isGLB(dataView, byteOffset);
   }
 
   // Return the gltf JSON and the original arrayBuffer
@@ -46,7 +41,7 @@ export default class GLBParser {
 
       // Unpack binary JSON
       this.packedJson = this.json;
-      this.unpackedBuffers = unpackGLBBuffers(
+      this.unpackedBuffers = unpackGLTFBuffers(
         this.glbArrayBuffer,
         this.json,
         this.binaryByteOffset
