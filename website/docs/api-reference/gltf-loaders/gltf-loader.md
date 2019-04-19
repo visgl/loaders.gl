@@ -1,4 +1,4 @@
-# GLTFLoader (@loaders.gl/gltf)
+# GLTFLoaders
 
 Parses a glTF file into a hierarchical scenegraph description that can be used to instantiate an actual Scenegraph in most WebGL libraries. Can load both binary `.glb` files and JSON `.gltf` files.
 

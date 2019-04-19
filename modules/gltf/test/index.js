@@ -1,3 +1,6 @@
+import './utils/encode-utils.spec';
+
+import './packed-json/flatten-to-typed-array.spec';
 import './packed-json/pack-binary-json.spec';
 
 import './glb/glb-parser.spec';

@@ -34,7 +34,6 @@ export {
 } from './javascript-utils/binary-utils';
 
 export {padTo4Bytes, copyToArray, copyArrayBuffer} from './javascript-utils/memory-copy-utils';
-export {flattenToTypedArray} from './javascript-utils/flatten-to-typed-array';
 export {TextDecoder, TextEncoder} from './javascript-utils/text-encoding';
 
 // ITERATOR UTILS

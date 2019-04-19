@@ -1,4 +1,4 @@
-# GLBBuilder
+# GLBBuilder (Experimental)
 
 The `GLBBuilder` class allows applications to use a "fluent" API to dynamically build up a hybrid JSON/binary GLB file. The `GLBBuilder` would normally be used if you want to save custom mixed JSON/binary data in a "GLB envelope".
 

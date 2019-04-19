@@ -1,18 +1,10 @@
 /* eslint-disable camelcase, max-statements */
-import {padTo4Bytes, copyArrayBuffer, copyToArray, TextEncoder} from '@loaders.gl/core';
 import {isImage} from '@loaders.gl/images';
-import {getAccessorTypeFromSize, getComponentTypeFromArray} from './gltf-type-utils';
-
 import packBinaryJson from '../packed-json/pack-binary-json';
-
-const MAGIC_glTF = 0x46546c67; // glTF in Little-Endian ASCII
-const MAGIC_JSON = 0x4e4f534a; // JSON in Little-Endian ASCII
-const MAGIC_BIN = 0x004e4942; // BIN\0 in Little-Endian ASCII
-
-const LE = true; // Binary GLTF is little endian.
-
-const GLB_FILE_HEADER_SIZE = 12;
-const GLB_CHUNK_HEADER_SIZE = 8;
+import {padTo4Bytes} from '../utils/encode-utils';
+import {getAccessorTypeFromSize, getComponentTypeFromArray} from '../utils/gltf-type-utils';
+import {copyToArray} from '../utils/encode-utils';
+import encodeGLBSync from './encode-glb';
 
 export default class GLBBuilder {
   constructor(options = {}) {
@@ -58,8 +50,32 @@ export default class GLBBuilder {
 
   // Encode the full glTF file as a binary GLB file
   // Returns an ArrayBuffer that represents the complete GLB image that can be saved to file
+  // Encode the full GLB buffer with header etc
+  // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#
+  // glb-file-format-specification
   encodeAsGLB(options = {}) {
-    return this._createGLBBuffer(options);
+    // TODO - avoid double array buffer creation
+    this._packBinaryChunk();
+
+    if (options.magic) {
+      console.warn('Custom glTF magic number no longer supported'); // eslint-disable-line
+    }
+
+    const glb = {
+      version: 2,
+      json: this.json,
+      binary: this.arrayBuffer
+    };
+
+    // Calculate length and allocate buffer
+    const byteLength = encodeGLBSync(glb, null, 0, options);
+    const glbArrayBuffer = new ArrayBuffer(byteLength);
+
+    // Encode into buffer
+    const dataView = new DataView(glbArrayBuffer);
+    encodeGLBSync(glb, dataView, 0, options);
+
+    return glbArrayBuffer;
   }
 
   // Add an extra application-defined key to the top-level data structure
@@ -163,58 +179,6 @@ export default class GLBBuilder {
     this.sourceBuffers = [];
   }
 
-  // Encode the full GLB buffer with header etc
-  // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#
-  // glb-file-format-specification
-  _createGLBBuffer(options = {}) {
-    // TODO - avoid double array buffer creation
-    this._packBinaryChunk();
-
-    const binChunk = this.arrayBuffer;
-    if (options.magic) {
-      console.warn('Custom glTF magic number no longer supported'); // eslint-disable-line
-    }
-
-    const jsonChunkOffset = GLB_FILE_HEADER_SIZE + GLB_CHUNK_HEADER_SIZE; // First headers: 20 bytes
-
-    const jsonChunk = this._convertObjectToJsonChunk(this.json);
-    // As body is 4-byte aligned, the scene length must be padded to have a multiple of 4.
-    const jsonChunkLength = padTo4Bytes(jsonChunk.byteLength);
-
-    const binChunkOffset = jsonChunkLength + jsonChunkOffset;
-    const fileLength = binChunkOffset + GLB_CHUNK_HEADER_SIZE + padTo4Bytes(binChunk.byteLength);
-
-    // Length is know, we can create the GLB memory buffer!
-    const glbArrayBuffer = new ArrayBuffer(fileLength);
-    const dataView = new DataView(glbArrayBuffer);
-
-    // GLB Header
-    dataView.setUint32(0, MAGIC_glTF, LE); // Magic number (the ASCII string 'glTF').
-    dataView.setUint32(4, 2, LE); // Version 2 of binary glTF container format uint32
-    dataView.setUint32(8, fileLength, LE); // Total byte length of generated file (uint32)
-
-    // Write the JSON chunk
-    dataView.setUint32(12, jsonChunk.byteLength, LE); // Byte length of json chunk (uint32)
-    dataView.setUint32(16, MAGIC_JSON, LE); // Chunk type
-    copyArrayBuffer(glbArrayBuffer, jsonChunk, jsonChunkOffset);
-    for (let i = 0; i < jsonChunkLength - jsonChunk.byteLength; ++i) {
-      // json chunk is padded with spaces (ASCII 0x20)
-      dataView.setUint8(jsonChunkOffset + jsonChunk.byteLength + i, 0x20);
-    }
-
-    // Write the BIN chunk
-    const binChunkLengthPadded = padTo4Bytes(binChunk.byteLength);
-    dataView.setUint32(binChunkOffset + 0, binChunkLengthPadded, LE); // Byte length BIN (uint32)
-    dataView.setUint32(binChunkOffset + 4, MAGIC_BIN, LE); // Chunk type
-    copyArrayBuffer(glbArrayBuffer, binChunk, binChunkOffset + GLB_CHUNK_HEADER_SIZE);
-    for (let i = 0; i < binChunkLengthPadded - binChunk.byteLength; ++i) {
-      // bin chunk is padded with zeroes
-      dataView.setUint8(binChunkOffset + GLB_CHUNK_HEADER_SIZE + binChunk.byteLength + i, 0);
-    }
-
-    return glbArrayBuffer;
-  }
-
   // Report internal buffer sizes for debug and testing purposes
   _getInternalCounts() {
     return {
@@ -223,11 +187,5 @@ export default class GLBBuilder {
       accessors: this.json.accessors.length,
       images: this.json.images.length
     };
-  }
-
-  _convertObjectToJsonChunk(json) {
-    const jsonChunkString = JSON.stringify(json);
-    const textEncoder = new TextEncoder('utf8');
-    return textEncoder.encode(jsonChunkString);
   }
 }

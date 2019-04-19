@@ -1,6 +1,6 @@
 // Binary container format for glTF
 
-import GLTFParser from './gltf-parser';
+import GLTFParser from './gltf/gltf-parser';
 
 export function parseGLTF(arrayBuffer, options = {}) {
   return new GLTFParser().parse(arrayBuffer, options);
