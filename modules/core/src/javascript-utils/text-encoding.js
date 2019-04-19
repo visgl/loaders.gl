@@ -4,4 +4,3 @@ if (typeof TextDecoder === 'undefined') {
 } else {
   module.exports = {TextEncoder, TextDecoder};
 }
-
