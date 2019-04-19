@@ -1,7 +1,7 @@
 {
-  "name": "@loaders.gl/zip",
+  "name": "@loaders.gl/polyfills",
   "version": "1.0.1",
-  "description": "Zip Archive Loader",
+  "description": "Polyfills for TextEncoder/TextDecoder",
   "license": "MIT",
   "publishConfig": {
     "access": "public"
@@ -13,8 +13,9 @@
   "keywords": [
     "webgl",
     "loader",
-    "archive",
-    "ZIP"
+    "polyfill",
+    "TextEncoder",
+    "TextDecoder"
   ],
   "main": "dist/es5/index.js",
   "module": "dist/esm/index.js",
@@ -30,7 +31,5 @@
     "build-bundle": "webpack --display=minimal --config ../../scripts/bundle.config.js"
   },
   "dependencies": {
-    "@loaders.gl/core": "1.0.1",
-    "jszip": "^3.1.5"
   }
 }

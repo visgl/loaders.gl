@@ -2,7 +2,7 @@
 
 /* global TextEncoder,TextDecoder */
 if (typeof TextDecoder === 'undefined') {
-  module.exports = require('../node/text-encoding/encoding');
-} else {
-  module.exports = {TextEncoder, TextDecoder};
+  require('@loaders.gl/polyfills');
 }
+
+module.exports = {TextEncoder, TextDecoder};
