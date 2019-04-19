@@ -1,6 +1,6 @@
 import {assert} from '@loaders.gl/core';
 import {getImageSize} from '@loaders.gl/images';
-import GLBBuilder from '../glb/glb-builder';
+import GLBBuilder from '../deprecated/glb-builder';
 import packBinaryJson from '../packed-json/pack-binary-json';
 import {KHR_DRACO_MESH_COMPRESSION, UBER_POINT_CLOUD_EXTENSION} from './gltf-constants';
 

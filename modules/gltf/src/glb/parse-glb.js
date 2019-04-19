@@ -20,6 +20,14 @@ ${String.fromCharCode(dataView.getUint8(2))}\
 ${String.fromCharCode(dataView.getUint8(3))}`;
 }
 
+// Check if a data view is a GLB
+export function isGLB(dataView, byteOffset = 0, options = {}) {
+  // Check that GLB Header starts with the magic number
+  const {magic = MAGIC_glTF} = options;
+  const magic1 = dataView.getUint32(byteOffset, false);
+  return magic1 === magic || magic1 === MAGIC_glTF;
+}
+
 // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#glb-file-format-specification
 /*
 Returns {

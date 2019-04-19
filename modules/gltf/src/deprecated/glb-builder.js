@@ -2,9 +2,9 @@
 import {isImage} from '@loaders.gl/images';
 import packBinaryJson from '../packed-json/pack-binary-json';
 import {padTo4Bytes} from '../utils/encode-utils';
-import {getAccessorTypeFromSize, getComponentTypeFromArray} from '../utils/gltf-type-utils';
+import {getAccessorTypeFromSize, getComponentTypeFromArray} from '../gltf/gltf-type-utils';
 import {copyToArray} from '../utils/encode-utils';
-import encodeGLBSync from './encode-glb';
+import encodeGLBSync from '../glb/encode-glb';
 
 export default class GLBBuilder {
   constructor(options = {}) {

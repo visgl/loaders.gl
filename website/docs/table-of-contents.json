@@ -60,11 +60,11 @@
             {"entry": "docs/api-reference/gltf-loaders/category-gltf"},
             {"entry": "docs/api-reference/gltf-loaders/gltf-loader"},
             {"entry": "docs/api-reference/gltf-loaders/gltf-writer"},
+            {"entry": "docs/api-reference/gltf-loaders/gltf-extensions"},
             {"entry": "docs/api-reference/gltf-loaders/gltf-parser"},
             {"entry": "docs/api-reference/gltf-loaders/gltf-builder"},
-            {"entry": "docs/api-reference/gltf-loaders/glb-parser"},
-            {"entry": "docs/api-reference/gltf-loaders/glb-builder"},
-            {"entry": "docs/api-reference/gltf-loaders/gltf-extensions"},
+            {"entry": "docs/api-reference/gltf-loaders/glb-loader"},
+            {"entry": "docs/api-reference/gltf-loaders/glb-writer"},
             {"entry": "docs/api-reference/gltf-loaders/glbdump"}
           ]
         },

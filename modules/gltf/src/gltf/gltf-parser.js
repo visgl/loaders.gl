@@ -1,5 +1,5 @@
 import {TextDecoder, fetchFile} from '@loaders.gl/core';
-import GLBParser from '../glb/glb-parser';
+import GLBParser from '../deprecated/glb-parser';
 import GLTFPostProcessor from './gltf-post-processor';
 import {getFullUri} from './gltf-utils';
 import {KHR_DRACO_MESH_COMPRESSION, UBER_POINT_CLOUD_EXTENSION} from './gltf-constants';
