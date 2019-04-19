@@ -11,7 +11,7 @@ const globals = {
 const global_ = globals.global || globals.self || globals.window;
 
 /* global TextEncoder, TextDecoder */
-if (typeof TextDecoder === 'undefined' || typeof TextyEncoder === 'undefined') {
+if (typeof TextDecoder === 'undefined' || typeof TextEncoder === 'undefined') {
   const {TextDecoder, TextEncoder} = require('./text-encoding/encoding');
   global_.TextDecoder = TextDecoder;
   global_.TextEncoder = TextEncoder;
