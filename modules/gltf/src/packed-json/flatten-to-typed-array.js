@@ -34,42 +34,7 @@ export function flattenToTypedArray(nestedArray, ArrayType = Float32Array) {
   return typedArray;
 }
 
-/**
- * Flattens a nested array into a single level array,
- * or a single value into an array with one value
- * @example flatten([[1, [2]], [3], 4]) => [1, 2, 3, 4]
- * @example flatten(1) => [1]
- * @param {Array} array The array to flatten.
- * @param {Function} filter= - Optional predicate called on each `value` to
- *   determine if it should be included (pushed onto) the resulting array.
- * @param {Function} map= - Optional transform applied to each array elements.
- * @param {Array} result=[] - Optional array to push value into
- * @return {Array} Returns the new flattened array (new array or `result` if provided)
- */
-export function flatten(array, {filter = () => true, map = x => x, result = []} = {}) {
-  // Wrap single object in array
-  if (!Array.isArray(array)) {
-    return filter(array) ? [map(array)] : [];
-  }
-  // Deep flatten and filter the array
-  return flattenArray(array, filter, map, result);
-}
-
-// Deep flattens an array. Helper to `flatten`, see its parameters
-function flattenArray(array, filter, map, result) {
-  let index = -1;
-  while (++index < array.length) {
-    const value = array[index];
-    if (Array.isArray(value)) {
-      flattenArray(value, filter, map, result);
-    } else if (filter(value)) {
-      result.push(map(value));
-    }
-  }
-  return result;
-}
-
-export function countVertices(nestedArray, dimensions = 3) {
+function countVertices(nestedArray, dimensions = 3) {
   let nestedCount = 0;
   let localCount = 0;
   let index = -1;
@@ -82,29 +47,6 @@ export function countVertices(nestedArray, dimensions = 3) {
     }
   }
   return nestedCount + (nestedCount === 0 && localCount < dimensions ? dimensions : localCount);
-}
-
-// Flattens nested array of vertices, padding third coordinate as needed
-export function flattenVertices(nestedArray, {result = [], dimensions = 3} = {}) {
-  let index = -1;
-  let vertexLength = 0;
-  while (++index < nestedArray.length) {
-    const value = nestedArray[index];
-    if (Array.isArray(value) || ArrayBuffer.isView(value)) {
-      flattenVertices(value, {result, dimensions});
-    } else {
-      // eslint-disable-next-line
-      if (vertexLength < dimensions) {
-        result.push(value);
-        vertexLength++;
-      }
-    }
-  }
-  // Add a third coordinate if needed
-  if (vertexLength > 0 && vertexLength < dimensions) {
-    result.push(0);
-  }
-  return result;
 }
 
 function checkVertices(nestedArray, predicate = Number.isFinite) {
