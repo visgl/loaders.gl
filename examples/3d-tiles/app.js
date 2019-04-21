@@ -6,12 +6,34 @@ import DeckGL, {COORDINATE_SYSTEM, PointCloudLayer, OrbitView, LinearInterpolato
 import {Tile3DLoader} from '@loaders.gl/3d-tiles';
 import {load, registerLoaders} from '@loaders.gl/core';
 
+function parseSync(arrayBuffer, options, url, loader) {
+  const result = Tile3DLoader.parseSync(arrayBuffer, options, url, loader);
+  return result;
+}
+
 export const MeshTile3DLoader = {
   name: '3D Tile Pointloud',
-  extensions: ['pnts', 'laz'],
+  extensions: ['pnts'],
   parseSync,
   binary: true
 };
+
+registerLoaders(MeshTile3DLoader);
+
+const PNTS_URL = `./PointCloudNormals/PointCloudNormals.pnts`;
+
+const INITIAL_VIEW_STATE = {
+  target: [0, 0, 0],
+  rotationX: 0,
+  rotationOrbit: 0,
+  orbitAxis: 'Y',
+  fov: 50,
+  minZoom: 0,
+  maxZoom: 10,
+  zoom: 1
+};
+
+const transitionInterpolator = new LinearInterpolator(['rotationOrbit']);
 
 function getDataRange(data, step = 3) {
   const mins = [Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY];
@@ -30,28 +52,11 @@ function getDataRange(data, step = 3) {
   return {mins, maxs};
 }
 
-function parseSync(arrayBuffer, options, url, loader) {
-  const result = Tile3DLoader.parseSync(arrayBuffer, options, url, loader);
-  // console.log(result);
-  return result;
+function parseDataObject(input, output, index, count) {
+  output[0] = input[index * 3];
+  output[1] = input[index * count + 1];
+  output[2] = input[index * count + 2];
 }
-
-registerLoaders(MeshTile3DLoader);
-
-const PNTS_URL = `./PointCloudRGB/PointCloudRGB.pnts`;
-
-const INITIAL_VIEW_STATE = {
-  target: [0, 0, 0],
-  rotationX: 0,
-  rotationOrbit: 0,
-  orbitAxis: 'Y',
-  fov: 50,
-  minZoom: 0,
-  maxZoom: 10,
-  zoom: 1
-};
-
-const transitionInterpolator = new LinearInterpolator(['rotationOrbit']);
 
 export class App extends PureComponent {
   constructor(props) {
@@ -88,7 +93,7 @@ export class App extends PureComponent {
     });
   }
 
-  _onLoad({positions, colors, featureTableJson}) {
+  _onLoad({positions, colors, normals, featureTableJson}) {
     const {mins, maxs} = getDataRange(positions);
     let {viewState} = this.state;
 
@@ -107,6 +112,7 @@ export class App extends PureComponent {
         pointsCount: featureTableJson.POINTS_LENGTH,
         positions,
         colors,
+        normals,
         viewState
       },
       this._rotateCamera
@@ -114,22 +120,38 @@ export class App extends PureComponent {
   }
 
   _renderLayers() {
-    const {pointsCount, positions} = this.state;
+    const {pointsCount, positions, colors, normals} = this.state;
 
-    return [
+    return (
       positions &&
-        new PointCloudLayer({
-          id: '3d-point-cloud-layer',
-          coordinateSystem: COORDINATE_SYSTEM.IDENTITY,
-          numInstances: pointsCount,
-          instancePositions: positions,
-          // instanceColors: colors,
-          getNormal: [0, 1, 0],
-          getColor: [255, 255, 255],
-          opacity: 0.5,
-          pointSize: 0.5
-        })
-    ];
+      new PointCloudLayer({
+        data: {positions, colors, normals, length: positions.length / 3},
+        id: '3d-point-cloud-layer',
+        coordinateSystem: COORDINATE_SYSTEM.IDENTITY,
+        numInstances: pointsCount,
+        getPosition: (object, {index, data, target}) => {
+          target[0] = data.positions[index * 3];
+          target[1] = data.positions[index * 3 + 1];
+          target[2] = data.positions[index * 3 + 2];
+          return target;
+        },
+        getColor: (object, {index, data, target}) => {
+          target[0] = data.colors[index * 3];
+          target[1] = data.colors[index * 3 + 1];
+          target[2] = data.colors[index * 3 + 2];
+          target[3] = 255;
+          return target;
+        },
+        getNormal: (object, {index, data, target}) => {
+          target[0] = data.normals[index * 3];
+          target[1] = data.normals[index * 3 + 1];
+          target[2] = data.normals[index * 3 + 2];
+          return target;
+        },
+        opacity: 0.5,
+        pointSize: 1.5
+      })
+    );
   }
 
   render() {

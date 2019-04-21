@@ -1,8 +1,6 @@
 import GL from '../math/gl-constants';
 import GLType from '../math/gl-type';
 
-// import {fromName, createArrayBufferView, createTypedArray} from './data-type';
-
 // Reference:
 // https://github.com/AnalyticalGraphicsInc/cesium/blob/1de96d087f0b17575eb1a3f736407b348c765d59/Source/Scene/Cesium3DTileFeatureTable.js
 export default class Tile3DFeatureTable {

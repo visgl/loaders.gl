@@ -27,7 +27,6 @@ export default function parsePointCloud3DTile(tile, arrayBuffer, byteOffset, opt
 function extractPointCloud(tile) {
   const featureTable = new Tile3DFeatureTable(tile.featureTableJson, tile.featureTableBinary);
 
-  tile.featureTable = featureTable;
   const pointsLength = featureTable.getGlobalProperty('POINTS_LENGTH');
   tile.featuresLength = pointsLength;
 
@@ -51,17 +50,15 @@ function extractPointCloud(tile) {
   tile.isRGB565 = false;
   tile.isOctEncoded16P = false;
 
-  parsePositions(tile);
-  parseColors(tile);
-  parseNormals(tile);
+  parsePositions(tile, featureTable);
+  parseColors(tile, featureTable);
+  parseNormals(tile, featureTable);
 }
 
-function parsePositions(tile) {
-  const featureTable = tile.featureTable;
-
+function parsePositions(tile, featureTable) {
   if (!tile.positions) {
     if (featureTable.hasProperty('POSITION')) {
-      tile.positions = tile.featureTable.getPropertyArray('POSITION', GL.FLOAT, 3);
+      tile.positions = featureTable.getPropertyArray('POSITION', GL.FLOAT, 3);
     } else if (featureTable.hasProperty('POSITION_QUANTIZED')) {
       tile.positions = featureTable.getPropertyArray('POSITION_QUANTIZED', GL.UNSIGNED_SHORT, 3);
       tile.isQuantized = true;
@@ -86,11 +83,13 @@ function parsePositions(tile) {
       }
     }
   }
+
+  if (!tile.positions) {
+    throw new Error('Either POSITION or POSITION_QUANTIZED must be defined.');
+  }
 }
 
-function parseColors(tile) {
-  const featureTable = tile.featureTable;
-
+function parseColors(tile, featureTable) {
   if (!tile.colors) {
     if (featureTable.hasProperty('RGBA')) {
       tile.colors = featureTable.getPropertyArray('RGBA', GL.UNSIGNED_BYTE, 4);
@@ -108,13 +107,11 @@ function parseColors(tile) {
   }
 }
 
-function parseNormals(tile) {
-  const featureTable = tile.featureTable;
-
+function parseNormals(tile, featureTable) {
   if (!tile.normals) {
-    if (featureTable.getProperty('NORMAL')) {
+    if (featureTable.hasProperty('NORMAL')) {
       tile.normals = featureTable.getPropertyArray('NORMAL', GL.FLOAT, 3);
-    } else if (featureTable.getProperty('NORMAL_OCT16P')) {
+    } else if (featureTable.hasProperty('NORMAL_OCT16P')) {
       tile.normals = featureTable.getPropertyArray('NORMAL_OCT16P', GL.UNSIGNED_BYTE, 2);
       tile.isOctEncoded16P = true;
     }
