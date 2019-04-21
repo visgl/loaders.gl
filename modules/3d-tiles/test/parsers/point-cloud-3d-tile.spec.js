@@ -73,7 +73,7 @@ test('point cloud tile#throws if the feature table does not contain POINTS_LENGT
   t.end();
 });
 
-test.only('point cloud tile#throws if the feature table does not contain POSITION or POSITION_QUANTIZED', t => {
+test('point cloud tile#throws if the feature table does not contain POSITION or POSITION_QUANTIZED', t => {
   const TILE = {
     type: TILE3D_TYPE.POINT_CLOUD,
     featureTableJson: {
