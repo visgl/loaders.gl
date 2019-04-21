@@ -36,8 +36,6 @@ function extractPointCloud(tile) {
     throw new Error('POINTS_LENGTH must be defined');
   }
 
-  // const batchTable = new Tile3DBatchTable(tile);
-
   tile.rtcCenter = featureTable.getGlobalProperty('RTC_CENTER', GL.FLOAT, 3);
 
   // Initialize point cloud tile defaults
@@ -69,7 +67,7 @@ function parsePositions(tile, featureTable) {
         GL.FLOAT,
         3
       );
-      if (tile.quantizedVolumeScale) {
+      if (!tile.quantizedVolumeScale) {
         throw new Error('QUANTIZED_VOLUME_SCALE must be defined for quantized positions.');
       }
 
@@ -102,7 +100,7 @@ function parseColors(tile, featureTable) {
     }
   }
 
-  if (featureTable.getProperty('CONSTANT_RGBA')) {
+  if (featureTable.hasProperty('CONSTANT_RGBA')) {
     tile.constantRGBA = featureTable.getGlobalProperty('CONSTANT_RGBA', GL.UNSIGNED_BYTE, 4);
   }
 }

@@ -28,7 +28,7 @@ const INITIAL_VIEW_STATE = {
   rotationOrbit: 0,
   orbitAxis: 'Y',
   fov: 50,
-  minZoom: 0,
+  minZoom: -10,
   maxZoom: 10,
   zoom: 1
 };
@@ -52,12 +52,6 @@ function getDataRange(data, step = 3) {
   return {mins, maxs};
 }
 
-function parseDataObject(input, output, index, count) {
-  output[0] = input[index * 3];
-  output[1] = input[index * count + 1];
-  output[2] = input[index * count + 2];
-}
-
 export class App extends PureComponent {
   constructor(props) {
     super(props);
@@ -65,6 +59,7 @@ export class App extends PureComponent {
     this.state = {
       viewState: INITIAL_VIEW_STATE,
       pointsCount: 0,
+      constantRGBA: null,
       colors: null,
       positions: null
     };
@@ -93,7 +88,7 @@ export class App extends PureComponent {
     });
   }
 
-  _onLoad({positions, colors, normals, featureTableJson}) {
+  _onLoad({positions, colors, normals, constantRGBA, featureTableJson}) {
     const {mins, maxs} = getDataRange(positions);
     let {viewState} = this.state;
 
@@ -112,6 +107,7 @@ export class App extends PureComponent {
         pointsCount: featureTableJson.POINTS_LENGTH,
         positions,
         colors,
+        constantRGBA,
         normals,
         viewState
       },
@@ -120,34 +116,45 @@ export class App extends PureComponent {
   }
 
   _renderLayers() {
-    const {pointsCount, positions, colors, normals} = this.state;
+    const {pointsCount, positions, colors, constantRGBA, normals} = this.state;
 
     return (
       positions &&
       new PointCloudLayer({
-        data: {positions, colors, normals, length: positions.length / 3},
+        data: {
+          positions: {value: positions, size: 3},
+          colors: {value: positions, size: 4},
+          normals: {value: positions, size: 3},
+          length: positions.length / 3
+        },
         id: '3d-point-cloud-layer',
         coordinateSystem: COORDINATE_SYSTEM.IDENTITY,
         numInstances: pointsCount,
         getPosition: (object, {index, data, target}) => {
-          target[0] = data.positions[index * 3];
-          target[1] = data.positions[index * 3 + 1];
-          target[2] = data.positions[index * 3 + 2];
+          target[0] = data.positions.value[index * 3];
+          target[1] = data.positions.value[index * 3 + 1];
+          target[2] = data.positions.value[index * 3 + 2];
           return target;
         },
-        getColor: (object, {index, data, target}) => {
-          target[0] = data.colors[index * 3];
-          target[1] = data.colors[index * 3 + 1];
-          target[2] = data.colors[index * 3 + 2];
-          target[3] = 255;
-          return target;
-        },
-        getNormal: (object, {index, data, target}) => {
-          target[0] = data.normals[index * 3];
-          target[1] = data.normals[index * 3 + 1];
-          target[2] = data.normals[index * 3 + 2];
-          return target;
-        },
+        getColor: colors
+          ? (object, {index, data, target}) => {
+              target[0] = data.colors.value[index * 3];
+              target[1] = data.colors.value[index * 3 + 1];
+              target[2] = data.colors.value[index * 3 + 2];
+              target[3] = data.colors.size === 4 ? data.colors[index * 3 + 4] : 255;
+              return target;
+            }
+          : constantRGBA
+            ? constantRGBA
+            : [255, 255, 255],
+        getNormal: normals
+          ? (object, {index, data, target}) => {
+              target[0] = data.normals[index * 3];
+              target[1] = data.normals[index * 3 + 1];
+              target[2] = data.normals[index * 3 + 2];
+              return target;
+            }
+          : [0, 1, 0],
         opacity: 0.5,
         pointSize: 1.5
       })
