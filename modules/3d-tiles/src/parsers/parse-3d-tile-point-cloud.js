@@ -36,8 +36,6 @@ function extractPointCloud(tile) {
     throw new Error('POINTS_LENGTH must be defined');
   }
 
-  // const batchTable = new Tile3DBatchTable(tile);
-
   tile.rtcCenter = featureTable.getGlobalProperty('RTC_CENTER', GL.FLOAT, 3);
 
   // Initialize point cloud tile defaults
@@ -49,6 +47,77 @@ function extractPointCloud(tile) {
   tile.isTranslucent = false;
   tile.isRGB565 = false;
   tile.isOctEncoded16P = false;
+
+  parsePositions(tile, featureTable);
+  parseColors(tile, featureTable);
+  parseNormals(tile, featureTable);
+}
+
+function parsePositions(tile, featureTable) {
+  if (!tile.positions) {
+    if (featureTable.hasProperty('POSITION')) {
+      tile.positions = featureTable.getPropertyArray('POSITION', GL.FLOAT, 3);
+    } else if (featureTable.hasProperty('POSITION_QUANTIZED')) {
+      tile.positions = featureTable.getPropertyArray('POSITION_QUANTIZED', GL.UNSIGNED_SHORT, 3);
+      tile.isQuantized = true;
+      tile.quantizedRange = (1 << 16) - 1;
+
+      tile.quantizedVolumeScale = featureTable.getGlobalProperty(
+        'QUANTIZED_VOLUME_SCALE',
+        GL.FLOAT,
+        3
+      );
+      if (!tile.quantizedVolumeScale) {
+        throw new Error('QUANTIZED_VOLUME_SCALE must be defined for quantized positions.');
+      }
+
+      tile.quantizedVolumeOffset = featureTable.getGlobalProperty(
+        'QUANTIZED_VOLUME_OFFSET',
+        GL.FLOAT,
+        3
+      );
+      if (!tile.quantizedVolumeOffset) {
+        throw new Error('QUANTIZED_VOLUME_OFFSET must be defined for quantized positions.');
+      }
+    }
+  }
+
+  if (!tile.positions) {
+    throw new Error('Either POSITION or POSITION_QUANTIZED must be defined.');
+  }
+}
+
+function parseColors(tile, featureTable) {
+  if (!tile.colors) {
+    if (featureTable.hasProperty('RGBA')) {
+      tile.colors = featureTable.getPropertyArray('RGBA', GL.UNSIGNED_BYTE, 4);
+      tile.isTranslucent = true;
+    } else if (featureTable.hasProperty('RGB')) {
+      tile.colors = featureTable.getPropertyArray('RGB', GL.UNSIGNED_BYTE, 3);
+    } else if (featureTable.hasProperty('RGB565')) {
+      tile.colors = featureTable.getPropertyArray('RGB565', GL.UNSIGNED_SHORT, 1);
+      tile.isRGB565 = true;
+    }
+  }
+
+  if (featureTable.hasProperty('CONSTANT_RGBA')) {
+    tile.constantRGBA = featureTable.getGlobalProperty('CONSTANT_RGBA', GL.UNSIGNED_BYTE, 4);
+  }
+}
+
+function parseNormals(tile, featureTable) {
+  if (!tile.normals) {
+    if (featureTable.hasProperty('NORMAL')) {
+      tile.normals = featureTable.getPropertyArray('NORMAL', GL.FLOAT, 3);
+    } else if (featureTable.hasProperty('NORMAL_OCT16P')) {
+      tile.normals = featureTable.getPropertyArray('NORMAL_OCT16P', GL.UNSIGNED_BYTE, 2);
+      tile.isOctEncoded16P = true;
+    }
+  }
+}
+
+/*
+  const batchTable = new Tile3DBatchTable(tile);
 
   // parseDracoBuffer(tile, featureTable, batchTable);
 

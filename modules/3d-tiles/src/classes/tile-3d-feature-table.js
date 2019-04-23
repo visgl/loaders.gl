@@ -40,7 +40,7 @@ export default class Tile3DFeatureTable {
 
     if (jsonValue && Number.isFinite(jsonValue.byteOffset)) {
       if ('componentType' in jsonValue) {
-        // componentType = ComponentDatatype.fromName(jsonValue.componentType);
+        componentType = GLType.fromName(jsonValue.componentType);
       }
       return this._getTypedArrayFromBinary(
         propertyName,
