@@ -26,6 +26,7 @@
     "start": "echo 'Please see loaders.gl website for how to run examples' && open https://uber-web.github.io/loaders.gl/#/docs/overview/introduction",
     "bootstrap": "yarn && ocular-bootstrap",
     "build": "ocular-clean && lerna run pre-build && ocular-build",
+    "clean": "ocular-clean",
     "cover": "ocular-test cover",
     "lint": "ocular-lint",
     "publish": "ocular-publish",

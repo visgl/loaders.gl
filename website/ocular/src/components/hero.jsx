@@ -2,11 +2,6 @@ import React, {Component} from 'react';
 import {Link} from 'gatsby';
 import Stats from 'stats.js';
 
-import ExampleRunner from './example-runner';
-import examples from './examples';
-
-const HeroExample = examples.GLTF;
-
 export default class Hero extends Component {
 
   componentDidMount() {
