@@ -1,6 +1,7 @@
 modules/core/src/node/text-encoding
 
 **/dist/*
+**/wip/*
 node_modules/
 *.min.js
 .cache

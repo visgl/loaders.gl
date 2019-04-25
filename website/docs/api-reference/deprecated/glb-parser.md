@@ -1,4 +1,4 @@
-# GLBParser (Experimental)
+# GLBParser (Deprecated)
 
 The `GLBParser` class lets the application access data encoded in a GLB binary "envelope". Most applications would use the `glTFParser` class instead (which uses the `GLBParser` class under the hood to parse GLB-encoded glTF files).
 

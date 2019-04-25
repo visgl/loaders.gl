@@ -1,4 +1,4 @@
-import GL from '@luma.gl/constants';
+import GL from './gl-constants';
 
 const GL_TYPE_TO_ARRAY_TYPE = {
   [GL.DOUBLE]: Float64Array,
