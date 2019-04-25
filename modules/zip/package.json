@@ -13,10 +13,8 @@
   "keywords": [
     "webgl",
     "loader",
-    "3d",
-    "mesh",
-    "point cloud",
-    "PCD"
+    "archive",
+    "ZIP"
   ],
   "main": "dist/es5/index.js",
   "module": "dist/esm/index.js",
