@@ -1,12 +1,14 @@
-/* eslint-disable no-unused-vars */
+/* global fetch */
 import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
 import DeckGL from '@deck.gl/react';
 import {COORDINATE_SYSTEM, OrbitView, LinearInterpolator} from '@deck.gl/core';
 import {PointCloudLayer} from '@deck.gl/layers';
 
-import {Tile3DLoader} from '@loaders.gl/3d-tiles';
+import {Tile3DLoader, Tile3DFeatureTable, Tile3DBatchTable} from '@loaders.gl/3d-tiles';
 import {load, registerLoaders} from '@loaders.gl/core';
+
+import ControlPanel from './control-panel';
 
 function parseSync(arrayBuffer, options, url, loader) {
   const result = Tile3DLoader.parseSync(arrayBuffer, options, url, loader);
@@ -22,9 +24,8 @@ export const MeshTile3DLoader = {
 
 registerLoaders(MeshTile3DLoader);
 
-const URL_PREFIX =
-  'https://raw.githubusercontent.com/uber-web/loaders.gl/master/modules/3d-tiles/test/data';
-const PNTS_URL = `${URL_PREFIX}/PointCloud/PointCloudNormals/pointCloudNormals.pnts`;
+// eslint-disable-next-line no-undef
+const INDEX_FILE = `${DATA_URI}/modules/3d-tiles/test/data/index.json`;
 
 const INITIAL_VIEW_STATE = {
   target: [0, 0, 0],
@@ -62,17 +63,33 @@ export default class App extends PureComponent {
 
     this.state = {
       viewState: INITIAL_VIEW_STATE,
-      pointsCount: 0,
-      constantRGBA: null,
-      colors: null,
-      positions: null
+      featureTable: null,
+      batchTable: null,
+      tile: null,
+      example: 'PointCloudNormals',
+      category: 'PointCloud'
     };
+
+    this._deckRef = null;
 
     this._onLoad = this._onLoad.bind(this);
     this._onViewStateChange = this._onViewStateChange.bind(this);
     this._rotateCamera = this._rotateCamera.bind(this);
+    this._getColor = this._getColor.bind(this);
 
-    load(PNTS_URL).then(this._onLoad);
+    this._loadExample = this._loadExample.bind(this);
+    this._onSelectExample = this._onSelectExample.bind(this);
+  }
+
+  componentDidMount() {
+    // fetch index file
+    fetch(INDEX_FILE)
+      .then(resp => resp.json())
+      .then(data => {
+        this.setState({data});
+        const {category, example} = this.state;
+        this._loadExample(category, example);
+      });
   }
 
   _onViewStateChange({viewState}) {
@@ -92,8 +109,30 @@ export default class App extends PureComponent {
     });
   }
 
-  _onLoad({positions, colors, normals, constantRGBA, featureTableJson}) {
-    const {mins, maxs} = getDataRange(positions);
+  _loadExample(category, example) {
+    const {data} = this.state;
+    this.setState({tile: null});
+    if (data && category && example) {
+      const selectedExample = data[category].examples[example];
+      // eslint-disable-next-line no-undef
+      const url = `${DATA_URI}/${selectedExample.path}/${selectedExample.files[0]}`;
+      load(url).then(this._onLoad);
+    }
+  }
+
+  _onLoad(tile) {
+    const featureTable = new Tile3DFeatureTable(tile.featureTableJson, tile.featureTableBinary);
+    let batchTable = null;
+    if (tile.batchTableBinaryByteLength) {
+      const {batchTableJson, batchTableBinary} = tile;
+      batchTable = new Tile3DBatchTable(
+        batchTableJson,
+        batchTableBinary,
+        featureTable.getGlobalProperty('BATCH_LENGTH')
+      );
+    }
+
+    const {mins, maxs} = getDataRange(tile.positions);
     let {viewState} = this.state;
 
     if (mins && maxs) {
@@ -106,51 +145,85 @@ export default class App extends PureComponent {
       };
     }
 
+    tile.pointsCount = tile.featureTableJson.POINTS_LENGTH;
+
     this.setState(
       {
-        pointsCount: featureTableJson.POINTS_LENGTH,
-        positions,
-        colors,
-        constantRGBA,
-        normals,
+        tile,
+        featureTable,
+        batchTable,
         viewState
       },
       this._rotateCamera
     );
   }
 
+  /* eslint-disable max-statements */
+  _getColor(object, {index, data, target}) {
+    if (!this.state.tile) {
+      return null;
+    }
+
+    const {
+      tile: {colors, isRGB565, constantRGBA, batchIds},
+      batchTable
+    } = this.state;
+    if (colors) {
+      if (isRGB565) {
+        const color16 = data.colors.value[index];
+        const r5 = color16 & 31;
+        const g6 = (color16 >> 5) & 63;
+        const b5 = (color16 >> 11) & 31;
+        target[0] = Math.round((r5 * 255) / 32);
+        target[1] = Math.round((g6 * 255) / 64);
+        target[2] = Math.round((b5 * 255) / 32);
+        target[3] = 255;
+      } else {
+        target[0] = data.colors.value[index * 3];
+        target[1] = data.colors.value[index * 3 + 1];
+        target[2] = data.colors.value[index * 3 + 2];
+        target[3] = data.colors.size === 4 ? data.colors[index * 3 + 4] : 255;
+      }
+
+      return target;
+    }
+
+    if (constantRGBA) {
+      return constantRGBA;
+    }
+
+    if (batchIds && batchTable) {
+      const batchId = batchIds[index];
+      // TODO figure out what is `dimensions` used for
+      const dimensions = batchTable.getProperty(batchId, 'dimensions');
+      const color = dimensions.map(d => d * 255);
+      return [...color, 255];
+    }
+
+    return [255, 255, 255];
+  }
+  /* eslint-enable max-statements */
+
   _renderLayers() {
-    const {pointsCount, positions, colors, constantRGBA, normals} = this.state;
+    if (!this.state.tile) {
+      return null;
+    }
+
+    const {pointsCount, positions, colors, normals} = this.state.tile;
 
     return (
       positions &&
       new PointCloudLayer({
         data: {
-          positions: {value: positions, size: 3},
-          colors: {value: positions, size: 4},
+          colors: {value: colors, size: 4},
           normals: {value: positions, size: 3},
           length: positions.length / 3
         },
         id: '3d-point-cloud-layer',
         coordinateSystem: COORDINATE_SYSTEM.IDENTITY,
         numInstances: pointsCount,
-        getPosition: (object, {index, data, target}) => {
-          target[0] = data.positions.value[index * 3];
-          target[1] = data.positions.value[index * 3 + 1];
-          target[2] = data.positions.value[index * 3 + 2];
-          return target;
-        },
-        getColor: colors
-          ? (object, {index, data, target}) => {
-              target[0] = data.colors.value[index * 3];
-              target[1] = data.colors.value[index * 3 + 1];
-              target[2] = data.colors.value[index * 3 + 2];
-              target[3] = data.colors.size === 4 ? data.colors[index * 3 + 4] : 255;
-              return target;
-            }
-          : constantRGBA
-            ? constantRGBA
-            : [255, 255, 255],
+        instancePositions: positions,
+        getColor: this._getColor,
         getNormal: normals
           ? (object, {index, data, target}) => {
               target[0] = data.normals[index * 3];
@@ -165,11 +238,21 @@ export default class App extends PureComponent {
     );
   }
 
+  _onSelectExample({category, example}) {
+    this.setState({category, example}, () => {
+      const {data} = this.state;
+      if (data && category && example) {
+        this._loadExample(category, example);
+      }
+    });
+  }
+
   render() {
-    const {viewState} = this.state;
+    const {viewState, data, example, category} = this.state;
 
     return (
       <DeckGL
+        ref={_ => (this._deckRef = _)}
         views={new OrbitView()}
         viewState={viewState}
         controller={true}
@@ -178,7 +261,14 @@ export default class App extends PureComponent {
         parameters={{
           clearColor: [0.07, 0.14, 0.19, 1]
         }}
-      />
+      >
+        <ControlPanel
+          data={data}
+          category={category}
+          example={example}
+          onChange={this._onSelectExample}
+        />
+      </DeckGL>
     );
   }
 }

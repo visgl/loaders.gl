@@ -1,6 +1,6 @@
-const resolve = require('path').resolve;
+const webpack = require('webpack');
 
-const CONFIG = {
+const COMMON_CONFIG = {
   mode: 'development',
 
   entry: {
@@ -9,10 +9,6 @@ const CONFIG = {
 
   output: {
     library: 'App'
-  },
-
-  devServer: {
-    contentBase: [resolve('.'), resolve('../../modules/3d-tiles/test/data/PointCloud')]
   },
 
   module: {
@@ -31,5 +27,39 @@ const CONFIG = {
   }
 };
 
-// This line enables bundling against src in this repo rather than installed module
-module.exports = env => (env ? require('../webpack.config.local')(CONFIG)(env) : CONFIG);
+function addDevConfig(config, env) {
+  config = require('../webpack.config.local')(config)(env);
+  return config;
+}
+
+function addProdConfig(config) {
+  config.plugins = config.plugins || [];
+  config.plugins = config.plugins.concat(
+    new webpack.DefinePlugin({
+      DATA_URI: JSON.stringify('https://raw.githubusercontent.com/uber-web/loaders.gl/master/')
+    })
+  );
+
+  return Object.assign(config, {
+    mode: 'production'
+  });
+}
+
+module.exports = env => {
+  env = env || {};
+
+  let config = COMMON_CONFIG;
+
+  if (env.local) {
+    config = addDevConfig(config, env);
+  }
+
+  if (env.prod) {
+    config = addProdConfig(config);
+  }
+
+  // Enable to debug config
+  // console.warn(JSON.stringify(config, null, 2));
+
+  return config;
+};

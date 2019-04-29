@@ -1,15 +1,15 @@
 import GL from '../math/gl-constants';
 import Tile3DFeatureTable from '../classes/tile-3d-feature-table';
-// import Tile3DBatchTable from '../classes/tile-3d-batch-table';
+import Tile3DBatchTable from '../classes/tile-3d-batch-table';
 import {parse3DTileHeaderSync} from './helpers/parse-3d-tile-header';
 import {parse3DTileTablesHeaderSync, parse3DTileTablesSync} from './helpers/parse-3d-tile-tables';
 
-// const DECODING_STATE = {
-//   NEEDS_DECODE: 0,
-//   DECODING: 1,
-//   READY: 2,
-//   FAILED: 3
-// };
+const DECODING_STATE = {
+  NEEDS_DECODE: 0,
+  DECODING: 1,
+  READY: 2,
+  FAILED: 3
+};
 
 // Reference code
 // https://github.com/AnalyticalGraphicsInc/cesium/blob/master/Source/Scene/PointCloud.js#L254
@@ -51,6 +51,9 @@ function extractPointCloud(tile) {
   parsePositions(tile, featureTable);
   parseColors(tile, featureTable);
   parseNormals(tile, featureTable);
+
+  const batchTable = parseBatch(tile, featureTable);
+  parseDracoBuffer(tile, featureTable, batchTable);
 }
 
 function parsePositions(tile, featureTable) {
@@ -114,6 +117,82 @@ function parseNormals(tile, featureTable) {
       tile.isOctEncoded16P = true;
     }
   }
+}
+
+function parseBatch(tile, featureTable) {
+  let batchTable = null;
+  if (featureTable.hasProperty('BATCH_ID')) {
+    tile.batchIds = featureTable.getPropertyArray('BATCH_ID', GL.UNSIGNED_SHORT, 1);
+
+    if (tile.batchIds) {
+      const batchFeatureLength = featureTable.getGlobalProperty('BATCH_LENGTH');
+      if (!batchFeatureLength) {
+        throw new Error('Global property: BATCH_LENGTH must be defined when BATCH_ID is defined.');
+      }
+      const {batchTableJson, batchTableBinary} = tile;
+      batchTable = new Tile3DBatchTable(batchTableJson, batchTableBinary, batchFeatureLength);
+    }
+  }
+
+  return batchTable;
+}
+
+// function parseStyles(tile, featureTable) {
+//   const batchTable = tile.batchTable;
+//   if (!tile.batchIds && tile.batchTableBinary) {
+//     tile.styleableProperties = Cesium3DTileBatchTable.getBinaryProperties(
+//       pointsLength,
+//       batchTableJson,
+//       batchTableBinary
+//     );
+//   }
+// }
+
+export function parseDracoBuffer(tile, featureTable, batchTable) {
+  let dracoBuffer;
+  let dracoFeatureTableProperties;
+  let dracoBatchTableProperties;
+  const batchTableDraco = batchTable && batchTable.getExtension('3DTILES_draco_point_compression');
+  if (batchTableDraco) {
+    dracoBatchTableProperties = batchTableDraco.properties;
+  }
+
+  const featureTableDraco = featureTable.getExtension('3DTILES_draco_point_compression');
+  if (featureTableDraco) {
+    dracoFeatureTableProperties = featureTableDraco.properties;
+    const dracoByteOffset = featureTableDraco.byteOffset;
+    const dracoByteLength = featureTableDraco.byteLength;
+    if (!dracoFeatureTableProperties || !Number.isFinite(dracoByteOffset) || !dracoByteLength) {
+      throw new Error('Draco properties, byteOffset, and byteLength must be defined');
+    }
+
+    dracoBuffer = tile.featureTableBinary.slice(dracoByteOffset, dracoByteOffset + dracoByteLength);
+
+    tile.hasPositions = dracoFeatureTableProperties.POSITION;
+    tile.hasColors = dracoFeatureTableProperties.RGB || dracoFeatureTableProperties.RGBA;
+    tile.hasNormals = dracoFeatureTableProperties.NORMAL;
+    tile.hasBatchIds = dracoFeatureTableProperties.BATCH_ID;
+    tile.isTranslucent = dracoFeatureTableProperties.RGBA;
+  }
+
+  if (dracoBuffer) {
+    tile.draco = {
+      buffer: dracoBuffer,
+      properties: {...dracoFeatureTableProperties, ...dracoBatchTableProperties},
+      featureTableProperties: dracoFeatureTableProperties,
+      batchTableProperties: dracoBatchTableProperties,
+      dequantizeInShader: false
+    };
+
+    tile.decodingState = DECODING_STATE.NEEDS_DECODE;
+  }
+}
+
+export function parseRGB565(rgb565) {
+  const r5 = rgb565 & 31;
+  const g6 = (rgb565 >> 5) & 63;
+  const b5 = (rgb565 >> 11) & 31;
+  return [Math.round((r5 * 255) / 32), Math.round((g6 * 255) / 64), Math.round((b5 * 255) / 32)];
 }
 
 /*
