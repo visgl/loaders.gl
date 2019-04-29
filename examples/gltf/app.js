@@ -1,7 +1,6 @@
 /* eslint-disable camelcase */
 /* global document, window */
 import {load} from '@loaders.gl/core';
-// import {DracoLoader} from '@loaders.gl/draco';
 import GL from '@luma.gl/constants';
 import {AnimationLoop, setParameters, clear, log, lumaStats} from '@luma.gl/core';
 import {GLTFScenegraphLoader, createGLTFObjects, GLTFEnvironment, VRDisplay} from '@luma.gl/addons';
@@ -16,27 +15,49 @@ const CUBE_FACE_TO_DIRECTION = {
   [GL.TEXTURE_CUBE_MAP_NEGATIVE_Z]: 'back'
 };
 
-const GLTF_BASE_URL =
+const GLTF_ENV_BASE_URL =
   'https://raw.githubusercontent.com/uber-common/deck.gl-data/master/luma.gl/examples/gltf/';
-const GLTF_ENV_BASE_URL = GLTF_BASE_URL;
-  // 'https://raw.githubusercontent.com/KhronosGroup/glTF-WebGL-PBR/master/textures';
-// const GLTF_MODEL_INDEX = `${GLTF_BASE_URL}model-index.json`;
 
-const GLTF_DEFAULT_MODEL = 'DamagedHelmet.glb';
+const GLTF_BASE_URL =
+  'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/';
+const GLTF_MODEL_INDEX = `${GLTF_BASE_URL}model-index.json`;
+
+const GLTF_DEFAULT_MODEL = 'DamagedHelmet/glTF-Binary/DamagedHelmet.glb';
+
+function loadModelList() {
+  return window.fetch(GLTF_MODEL_INDEX).then(res => res.json());
+}
+
+function addModelsToDropdown(models, modelDropdown) {
+  if (!modelDropdown) {
+    return;
+  }
+
+  const VARIANTS = ['glTF-Binary', 'glTF-Embedded', 'glTF'];
+
+  models.forEach(({name, variants}) => {
+    const variant = VARIANTS.find(v => variants[v]);
+
+    const option = document.createElement('option');
+    option.text = `${name} (${variant})`;
+    option.value = `${name}/${variant}/${variants[variant]}`;
+    modelDropdown.appendChild(option);
+  });
+}
 
 const INFO_HTML = `
 <p><b>glTF Loader</b>.</p>
 <p>Rendered using luma.gl.</p>
 <div>
-  Model
-  <select id="modelSelector">
+  Model<br/>
+  <select id="modelSelector" style="border: 1px solid gray;">
     <option value="${GLTF_DEFAULT_MODEL}">Default</option>
   </select>
   <br>
 </div>
 <div>
-  Show
-  <select id="showSelector">
+  Show<br/>
+  <select id="showSelector" style="border: 1px solid gray;">
     <option value="0 0 0 0 0 0 0 0">Final Result</option>
 
     <option value="0 1 0 0 0 0 0 0">Base Color</option>
@@ -52,8 +73,8 @@ const INFO_HTML = `
   <br>
 </div>
 <div>
-  Regular Lights
-  <select id="lightSelector">
+  Regular Lights<br/>
+  <select id="lightSelector" style="border: 1px solid gray;">
     <option value="default">Default</option>
     <option value="ambient">Ambient Only</option>
     <option value="directional1">1x Directional (Red) + Ambient</option>
@@ -64,13 +85,13 @@ const INFO_HTML = `
   <br>
 </div>
 <div>
-  Image-Based Light
-  <select id="iblSelector">
+  Image-Based Light<br/>
+  <select id="iblSelector" style="border: 1px solid gray;">
     <option value="exclusive">On (Exclusive)</option>
     <option value="addition">On (Addition to Regular)</option>
     <option value="off">Off (Only Regular)</option>
   </select>
-  <br>
+  <br/>
 </div>
 <p><img src="https://img.shields.io/badge/WebVR-Supported-orange.svg" /></p>
 `;
@@ -170,27 +191,6 @@ async function loadGLTF(urlOrPromise, gl, options) {
   return {scenes, animator, gltf};
 }
 
-async function loadModelList() {
-  return []; // window.fetch(GLTF_MODEL_INDEX).then(res => res.json());
-}
-
-function addModelsToDropdown(models, modelDropdown) {
-  if (!modelDropdown) {
-    return;
-  }
-
-  const VARIANTS = ['glTF-Draco', 'glTF-Binary', 'glTF-Embedded', 'glTF'];
-
-  models.forEach(({name, variants}) => {
-    const variant = VARIANTS.find(v => variants[v]);
-
-    const option = document.createElement('option');
-    option.text = `${name} (${variant})`;
-    option.value = `${name}/${variant}/${variants[variant]}`;
-    modelDropdown.appendChild(option);
-  });
-}
-
 export class DemoApp {
   constructor({modelFile = null, initialZoom = 2} = {}) {
     this.scenes = [];
@@ -283,7 +283,7 @@ export class DemoApp {
     this.environment = new GLTFEnvironment(gl, {
       brdfLutUrl: `${GLTF_ENV_BASE_URL}/brdfLUT.png`,
       getTexUrl: (type, dir, mipLevel) =>
-        `${GLTF_BASE_URL}/papermill/${type}/${type}_${
+        `${GLTF_ENV_BASE_URL}/papermill/${type}/${type}_${
           CUBE_FACE_TO_DIRECTION[dir]
         }_${mipLevel}.jpg`
     });
