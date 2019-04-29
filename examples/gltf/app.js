@@ -3,7 +3,7 @@
 import {load} from '@loaders.gl/core';
 import GL from '@luma.gl/constants';
 import {AnimationLoop, setParameters, clear, log, lumaStats} from '@luma.gl/core';
-import {GLTFScenegraphLoader, createGLTFObjects, GLTFEnvironment, VRDisplay} from '@luma.gl/addons';
+import {GLTFScenegraphLoader, createGLTFObjects, GLTFEnvironment} from '@luma.gl/addons';
 import {Matrix4, radians} from 'math.gl';
 
 const CUBE_FACE_TO_DIRECTION = {
@@ -191,8 +191,14 @@ async function loadGLTF(urlOrPromise, gl, options) {
   return {scenes, animator, gltf};
 }
 
-export class DemoApp {
+export default class AppAnimationLoop extends AnimationLoop {
+  static getInfo() {
+    return INFO_HTML;
+  }
+
   constructor({modelFile = null, initialZoom = 2} = {}) {
+    super();
+
     this.scenes = [];
     this.animator = null;
     this.gl = null;
@@ -452,14 +458,8 @@ export class DemoApp {
   }
 }
 
-const animationLoop = new AnimationLoop(new DemoApp());
-
-animationLoop._setDisplay(new VRDisplay());
-animationLoop.getInfo = () => INFO_HTML;
-
-export default animationLoop;
-
 if (typeof window !== 'undefined' && !window.website) {
+  const animationLoop = new AppAnimationLoop();
   animationLoop.start();
 
   const infoDiv = document.createElement('div');

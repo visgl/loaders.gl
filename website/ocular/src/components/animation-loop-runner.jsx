@@ -1,6 +1,7 @@
 import React, {Component} from 'react'; // eslint-disable-line
 import PropTypes from 'prop-types';
 import {lumaStats} from '@luma.gl/core';
+import {VRDisplay} from '@luma.gl/addons';
 import StatsWidget from '@probe.gl/stats-widget';
 
 import InfoPanel from './info-panel';
@@ -44,9 +45,17 @@ const defaultProps = {
 
 const DEFAULT_ALT_TEXT = 'THIS EXAMPLE IS NOT SUPPORTED';
 
-export default class AnimationLoop extends Component {
+export default class AnimationLoopRunner extends Component {
+  constructor(props) {
+    super(props);
+    const {AnimationLoop} = this.props;
+    this.animationLoop = new AnimationLoop();
+  }
+
   componentDidMount() {
-    const {animationLoop, showStats} = this.props;
+    const {showStats} = this.props;
+
+    this.animationLoop._setDisplay(new VRDisplay());
 
     // Ensure the example can find its images
     // TODO - ideally ocular-gatsby should extract images from example source?
@@ -54,18 +63,19 @@ export default class AnimationLoop extends Component {
     // setPathPrefix(`${RAW_GITHUB}/${example.path}`);
 
     // Start the actual example
-    animationLoop.start(this.props);
+    this.animationLoop.start(this.props);
 
     // animationLoop.stats.reset();
 
     if (showStats) {
-      this._showStats(animationLoop);
+      this._showStats(this.animationLoop);
     }
   }
 
   componentWillUnmount() {
-    const {animationLoop} = this.props;
-    animationLoop.stop(this.props);
+    this.animationLoop.stop(this.props);
+    this.animationLoop.finalize();
+    this.animationLoop = null;
     // this._stopStats();
   }
 
@@ -122,12 +132,12 @@ export default class AnimationLoop extends Component {
   }
 
   render() {
-    const {animationLoop, name, panel = true, stats, sourceLink} = this.props;
+    const {name, panel = true, stats, sourceLink} = this.props;
 
-    const notSupported = animationLoop.isSupported && !animationLoop.isSupported();
+    const notSupported = this.animationLoop.isSupported && !this.animationLoop.isSupported();
 
     if (notSupported) {
-      const altText = animationLoop.getAltText ? animationLoop.getAltText() : DEFAULT_ALT_TEXT;
+      const altText = this.animationLoop.getAltText ? this.animationLoop.getAltText() : DEFAULT_ALT_TEXT;
       return (
         <div style={STYLES.EXAMPLE_NOT_SUPPPORTED}>
           <h2> {altText} </h2>
@@ -136,7 +146,8 @@ export default class AnimationLoop extends Component {
     }
 
     // HTML is stored on the app
-    const controls = animationLoop.getInfo && animationLoop.getInfo();
+    const controls = this.props.AnimationLoop.getInfo() ||
+      (this.animationLoop.getInfo && this.animationLoop.getInfo());
 
     return (
       <div className="fg" style={{width: '100%', height: '100%', padding: 0, border: 0}}>
@@ -157,7 +168,6 @@ export default class AnimationLoop extends Component {
   }
 }
 
-AnimationLoop.propTypes = propTypes;
-AnimationLoop.defaultProps = defaultProps;
-AnimationLoop.displayName = 'AnimationLoop';
-
+AnimationLoopRunner.propTypes = propTypes;
+AnimationLoopRunner.defaultProps = defaultProps;
+AnimationLoopRunner.displayName = 'AnimationLoop';
