@@ -1,0 +1,13 @@
+{
+  "scripts": {
+    "build": "npx webpack"
+  },
+  "dependencies": {
+    "@luma.gl/addons": "^7.0.0",
+    "@luma.gl/core": "^7.0.0"
+  },
+  "devDependencies": {
+    "webpack": "^4.30.0",
+    "webpack-cli": "^3.3.1"
+  }
+}

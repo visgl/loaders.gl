@@ -65,22 +65,39 @@ module.exports = {
   ADDITIONAL_LINKS: [],
 
   EXAMPLES: [
-    //    {
-    //      title: 'GLTF',
-    //      path: 'examples/gltf',
-    //      image: 'images/example-gltf.jpg'
-    //    }
+    {
+      title: 'Point Clouds & Meshes',
+      image: 'images/example-pointcloud.png',
+      componentUrl: resolve(__dirname, './examples/pointcloud/app.js'),
+      path: 'examples/pointcloud'
+    },
+    {
+      title: '3D Tiles',
+      image: 'images/example-gltf.jpg',
+      componentUrl: resolve(__dirname, './examples/3d-tiles/app.js'),
+      path: 'examples/3d-tiles'
+    },
+    {
+      title: 'GLTF',
+      image: 'images/example-gltf.jpg',
+      componentUrl: resolve(__dirname, './templates/example-gltf.jsx'),
+      path: 'examples/gltf'
+    }
   ],
 
   // Avoids duplicate conflicting inputs when importing from examples folders
   // Ocular adds this to gatsby's webpack config
   webpack: {
     resolve: {
-      modules: [resolve(__dirname, './node_modules')],
+      // modules: [resolve(__dirname, './node_modules')],
       alias: Object.assign({}, ALIASES, dependencyAliases, {
-        '@luma.gl/addons': `${__dirname}/node_modules/@luma.gl/addons/src`,
-        '@luma.gl/core': `${__dirname}/node_modules/@luma.gl/core/src`,
-        '@luma.gl/constants': `${__dirname}/node_modules/@luma.gl/constants/src`
+        //   '@luma.gl/addons': `${__dirname}/node_modules/@luma.gl/addons/src`,
+        //   '@luma.gl/core': `${__dirname}/node_modules/@luma.gl/core/src`,
+        //   '@luma.gl/constants': `${__dirname}/node_modules/@luma.gl/constants/src`,
+        //   '@luma.gl/webgl': `${__dirname}/node_modules/@luma.gl/webgl/src`,
+        //   '@deck.gl/core': `${__dirname}/node_modules/@deck.gl/core/src`,
+        //   '@deck.gl/layers': `${__dirname}/node_modules/@deck.gl/layers/src`,
+        //   '@deck.gl/react': `${__dirname}/node_modules/@deck.gl/react/src`
       })
     }
   }

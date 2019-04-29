@@ -1,6 +1,8 @@
 const DOCS = require('../docs/table-of-contents.json');
 
 module.exports = {
+  logLevel: 4,
+
   DIR_NAME: `${__dirname}`,
   DOC_FOLDER: `${__dirname}/../docs/`,
   ROOT_FOLDER: `${__dirname}/../../`,

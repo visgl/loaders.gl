@@ -122,35 +122,6 @@ function parseNormals(tile, featureTable) {
   // parseDracoBuffer(tile, featureTable, batchTable);
 
   if (!tile.positions) {
-    if (featureTable.hasProperty('POSITION')) {
-      tile.positions = tile.featureTable.getPropertyArray('POSITION', GL.FLOAT, 3);
-    } else if (featureTable.hasProperty('POSITION_QUANTIZED')) {
-      tile.positions = featureTable.getPropertyArray('POSITION_QUANTIZED', GL.UNSIGNED_SHORT, 3);
-
-      tile.isQuantized = true;
-      tile.quantizedRange = (1 << 16) - 1;
-
-      tile.quantizedVolumeScale = featureTable.getGlobalProperty(
-        'QUANTIZED_VOLUME_SCALE',
-        GL.FLOAT,
-        3
-      );
-      if (tile.quantizedVolumeScale) {
-        throw new Error('QUANTIZED_VOLUME_SCALE must be defined for quantized positions.');
-      }
-
-      tile.quantizedVolumeOffset = featureTable.getGlobalProperty(
-        'QUANTIZED_VOLUME_OFFSET',
-        GL.FLOAT,
-        3
-      );
-      if (!tile.quantizedVolumeOffset) {
-        throw new Error('QUANTIZED_VOLUME_OFFSET must be defined for quantized positions.');
-      }
-    }
-  }
-
-  if (!tile.positions) {
     throw new Error('Either POSITION or POSITION_QUANTIZED must be defined.');
   }
 }
@@ -158,7 +129,7 @@ function parseNormals(tile, featureTable) {
 
   if (!tile.positions) {
     if (featureTable.hasProperty('POSITION')) {
-      tile.positions = tile.featureTable.getPropertyArray('POSITION', GL.FLOAT, 3);
+      tile.positions = featureTable.getPropertyArray('POSITION', GL.FLOAT, 3);
     } else if (featureTable.hasProperty('POSITION_QUANTIZED')) {
       tile.positions = featureTable.getPropertyArray('POSITION_QUANTIZED', GL.UNSIGNED_SHORT, 3);
 

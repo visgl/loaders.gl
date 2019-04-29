@@ -1,6 +1,7 @@
 /* eslint-disable camelcase */
 /* global document, window */
-import {load} from '@loaders.gl/core';
+import {parse} from '@loaders.gl/core';
+// eslint-disable-next-line import/no-unresolved
 // import {DracoLoader} from '@loaders.gl/draco';
 import GL from '@luma.gl/constants';
 import {AnimationLoop, setParameters, clear, log, lumaStats} from '@luma.gl/core';
@@ -16,24 +17,16 @@ const CUBE_FACE_TO_DIRECTION = {
   [GL.TEXTURE_CUBE_MAP_NEGATIVE_Z]: 'back'
 };
 
+// Damaged helmet model used under creative commons: https://github.com/KhronosGroup/glTF-Sample-Models/tree/1ba47770292486e66ca1e1161857a6e5695c2631/2.0/DamagedHelmet
+// Papermill textures used under Apache 2.0: https://github.com/KhronosGroup/glTF-Sample-Viewer/blob/e2d487693fa2e6148bd29d05bc82586f5a002a45/LICENSE.md
+
 const GLTF_BASE_URL =
   'https://raw.githubusercontent.com/uber-common/deck.gl-data/master/luma.gl/examples/gltf/';
-const GLTF_ENV_BASE_URL = GLTF_BASE_URL;
-  // 'https://raw.githubusercontent.com/KhronosGroup/glTF-WebGL-PBR/master/textures';
-// const GLTF_MODEL_INDEX = `${GLTF_BASE_URL}model-index.json`;
-
 const GLTF_DEFAULT_MODEL = 'DamagedHelmet.glb';
 
 const INFO_HTML = `
 <p><b>glTF Loader</b>.</p>
 <p>Rendered using luma.gl.</p>
-<div>
-  Model
-  <select id="modelSelector">
-    <option value="${GLTF_DEFAULT_MODEL}">Default</option>
-  </select>
-  <br>
-</div>
 <div>
   Show
   <select id="showSelector">
@@ -160,50 +153,38 @@ const DEFAULT_OPTIONS = {
 };
 
 async function loadGLTF(urlOrPromise, gl, options) {
-  const loadResult = await load(urlOrPromise, GLTFScenegraphLoader, {
+  const data = typeof urlOrPromise === 'string' ? window.fetch(urlOrPromise) : urlOrPromise;
+  const {gltf, scenes, animator} = await parse(data, GLTFScenegraphLoader, {
     ...options,
     gl
     // DracoLoader
   });
-  const {gltf, scenes, animator} = loadResult;
+
   scenes[0].traverse((node, {worldMatrix}) => log.info(4, 'Using model: ', node)());
   return {scenes, animator, gltf};
 }
 
-async function loadModelList() {
-  return []; // window.fetch(GLTF_MODEL_INDEX).then(res => res.json());
-}
-
-function addModelsToDropdown(models, modelDropdown) {
-  if (!modelDropdown) {
-    return;
+export default class AppAnimationLoop extends AnimationLoop {
+  static getInfo() {
+    return INFO_HTML;
   }
+  constructor(opts = {}) {
+    super({
+      ...opts,
+      glOptions: {
+        // Use to test gltf with webgl 1.0 and 2.0
+        webgl1: true,
+        webgl2: true,
+        // alpha causes issues with some glTF demos
+        alpha: false
+      }
+    });
 
-  const VARIANTS = ['glTF-Draco', 'glTF-Binary', 'glTF-Embedded', 'glTF'];
-
-  models.forEach(({name, variants}) => {
-    const variant = VARIANTS.find(v => variants[v]);
-
-    const option = document.createElement('option');
-    option.text = `${name} (${variant})`;
-    option.value = `${name}/${variant}/${variants[variant]}`;
-    modelDropdown.appendChild(option);
-  });
-}
-
-export class DemoApp {
-  constructor({modelFile = null, initialZoom = 2} = {}) {
+    const {modelFile = null, initialZoom = 2} = opts;
     this.scenes = [];
     this.animator = null;
     this.gl = null;
     this.modelFile = modelFile;
-
-    this.glOptions = {
-      // Use to test gltf with webgl 1.0 and 2.0
-      webgl2: true,
-      // alpha causes issues with some glTF demos
-      alpha: false
-    };
 
     this.mouse = {
       lastX: 0,
@@ -219,9 +200,10 @@ export class DemoApp {
 
     this.onInitialize = this.onInitialize.bind(this);
     this.onRender = this.onRender.bind(this);
+    this._setDisplay(new VRDisplay());
   }
 
-  initializeEventHandling(canvas) {
+  initalizeEventHandling(canvas) {
     canvas.onwheel = e => {
       this.translate += e.deltaY / 10;
       if (this.translate < 0.5) {
@@ -281,11 +263,9 @@ export class DemoApp {
 
     this.loadOptions = Object.assign({}, DEFAULT_OPTIONS);
     this.environment = new GLTFEnvironment(gl, {
-      brdfLutUrl: `${GLTF_ENV_BASE_URL}/brdfLUT.png`,
+      brdfLutUrl: `${GLTF_BASE_URL}/brdfLUT.png`,
       getTexUrl: (type, dir, mipLevel) =>
-        `${GLTF_BASE_URL}/papermill/${type}/${type}_${
-          CUBE_FACE_TO_DIRECTION[dir]
-        }_${mipLevel}.jpg`
+        `${GLTF_BASE_URL}/papermill/${type}/${type}_${CUBE_FACE_TO_DIRECTION[dir]}_${mipLevel}.jpg`
     });
     this.loadOptions.imageBasedLightingEnvironment = this.environment;
 
@@ -299,23 +279,10 @@ export class DemoApp {
       };
       loadGLTF(this.modelFile, this.gl, options).then(result => Object.assign(this, result));
     } else {
-      const modelSelector = document.getElementById('modelSelector');
-      const modelUrl = (modelSelector && modelSelector.value) || GLTF_DEFAULT_MODEL;
+      const modelUrl = GLTF_DEFAULT_MODEL;
       loadGLTF(GLTF_BASE_URL + modelUrl, this.gl, this.loadOptions).then(result =>
         Object.assign(this, result)
       );
-
-      if (modelSelector) {
-        modelSelector.onchange = event => {
-          this._deleteScenes();
-          const modelUrl2 = (modelSelector && modelSelector.value) || GLTF_DEFAULT_MODEL;
-          loadGLTF(GLTF_BASE_URL + modelUrl2, this.gl, this.loadOptions).then(result =>
-            Object.assign(this, result)
-          );
-        };
-      }
-
-      loadModelList().then(models => addModelsToDropdown(models, modelSelector));
     }
 
     const showSelector = document.getElementById('showSelector');
@@ -342,7 +309,7 @@ export class DemoApp {
       };
     }
 
-    this.initializeEventHandling(canvas);
+    this.initalizeEventHandling(canvas);
   }
 
   _updateLightSettings(value) {
@@ -452,17 +419,11 @@ export class DemoApp {
   }
 }
 
-const animationLoop = new AnimationLoop(new DemoApp());
-
-animationLoop._setDisplay(new VRDisplay());
-animationLoop.getInfo = () => INFO_HTML;
-
-export default animationLoop;
-
 if (typeof window !== 'undefined' && !window.website) {
+  const animationLoop = new AppAnimationLoop();
   animationLoop.start();
 
   const infoDiv = document.createElement('div');
-  infoDiv.innerHTML = animationLoop.getInfo();
+  infoDiv.innerHTML = AppAnimationLoop.getInfo();
   document.body.appendChild(infoDiv);
 }

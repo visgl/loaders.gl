@@ -38,18 +38,19 @@ callbacks.onCreateWebpackConfig = function onCreateWebpackConfigOverride(opts) {
   console.log(`App rewriting gatsby webpack config`); // eslint-disable-line
 
   // Recreate it with custom exclude filter
-  const newJSRule = Object.assign(loaders.js(), {
-    // Called without any arguments, `loaders.js` will return an
-    // object like:
-    // {
-    //   options: undefined,
-    //   loader: '/path/to/node_modules/gatsby/dist/utils/babel-loader.js',
-    // }
-    // Unless you're replacing Babel with a different transpiler, you probably
-    // want this so that Gatsby will apply its required Babel
-    // presets/plugins.  This will also merge in your configuration from
-    // `babel.config.js`.
+  // Called without any arguments, `loaders.js` will return an
+  // object like:
+  // {
+  //   options: undefined,
+  //   loader: '/path/to/node_modules/gatsby/dist/utils/babel-loader.js',
+  // }
+  // Unless you're replacing Babel with a different transpiler, you probably
+  // want this so that Gatsby will apply its required Babel
+  // presets/plugins.  This will also merge in your configuration from
+  // `babel.config.js`.
+  const newJSRule = loaders.js();
 
+  Object.assign(newJSRule, {
     // JS and JSX
     test: /\.jsx?$/,
 

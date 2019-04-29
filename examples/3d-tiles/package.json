@@ -1,6 +1,4 @@
 {
-  "name": "point-cloud-3d-tiles",
-  "version": "0.0.0",
   "license": "MIT",
   "scripts": {
     "start": "webpack-dev-server --progress --hot --open",
