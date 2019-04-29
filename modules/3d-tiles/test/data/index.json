@@ -1,0 +1,1177 @@
+{
+  "Batched": {
+    "name": "Batched",
+    "path": "../../modules/3d-tiles/test/data/Batched",
+    "examples": {
+      "BatchedColors": {
+        "name": "BatchedColors",
+        "path": "../../modules/3d-tiles/test/data/Batched/BatchedColors",
+        "files": [
+          "batchedColors.b3dm",
+          "tileset.json"
+        ]
+      },
+      "BatchedColorsMix": {
+        "name": "BatchedColorsMix",
+        "path": "../../modules/3d-tiles/test/data/Batched/BatchedColorsMix",
+        "files": [
+          "batchedColorsMix.b3dm",
+          "tileset.json"
+        ]
+      },
+      "BatchedColorsTranslucent": {
+        "name": "BatchedColorsTranslucent",
+        "path": "../../modules/3d-tiles/test/data/Batched/BatchedColorsTranslucent",
+        "files": [
+          "batchedColorsTranslucent.b3dm",
+          "tileset.json"
+        ]
+      },
+      "BatchedDeprecated1": {
+        "name": "BatchedDeprecated1",
+        "path": "../../modules/3d-tiles/test/data/Batched/BatchedDeprecated1",
+        "files": [
+          "batchedDeprecated1.b3dm",
+          "tileset.json"
+        ]
+      },
+      "BatchedDeprecated2": {
+        "name": "BatchedDeprecated2",
+        "path": "../../modules/3d-tiles/test/data/Batched/BatchedDeprecated2",
+        "files": [
+          "batchedDeprecated2.b3dm",
+          "tileset.json"
+        ]
+      },
+      "BatchedExpiration": {
+        "name": "BatchedExpiration",
+        "path": "../../modules/3d-tiles/test/data/Batched/BatchedExpiration",
+        "files": [
+          "batchedExpiration.b3dm",
+          "tileset.json"
+        ]
+      },
+      "BatchedNoBatchIds": {
+        "name": "BatchedNoBatchIds",
+        "path": "../../modules/3d-tiles/test/data/Batched/BatchedNoBatchIds",
+        "files": [
+          "batchedNoBatchIds.b3dm",
+          "tileset.json"
+        ]
+      },
+      "BatchedTextured": {
+        "name": "BatchedTextured",
+        "path": "../../modules/3d-tiles/test/data/Batched/BatchedTextured",
+        "files": [
+          "batchedTextured.b3dm",
+          "tileset.json"
+        ]
+      },
+      "BatchedTranslucent": {
+        "name": "BatchedTranslucent",
+        "path": "../../modules/3d-tiles/test/data/Batched/BatchedTranslucent",
+        "files": [
+          "batchedTranslucent.b3dm",
+          "tileset.json"
+        ]
+      },
+      "BatchedTranslucentOpaqueMix": {
+        "name": "BatchedTranslucentOpaqueMix",
+        "path": "../../modules/3d-tiles/test/data/Batched/BatchedTranslucentOpaqueMix",
+        "files": [
+          "batchedTranslucentOpaqueMix.b3dm",
+          "tileset.json"
+        ]
+      },
+      "BatchedWGS84": {
+        "name": "BatchedWGS84",
+        "path": "../../modules/3d-tiles/test/data/Batched/BatchedWGS84",
+        "files": [
+          "batchedWGS84.b3dm",
+          "tileset.json"
+        ]
+      },
+      "BatchedWithBatchTable": {
+        "name": "BatchedWithBatchTable",
+        "path": "../../modules/3d-tiles/test/data/Batched/BatchedWithBatchTable",
+        "files": [
+          "batchedWithBatchTable.b3dm",
+          "tileset.json"
+        ]
+      },
+      "BatchedWithBatchTableBinary": {
+        "name": "BatchedWithBatchTableBinary",
+        "path": "../../modules/3d-tiles/test/data/Batched/BatchedWithBatchTableBinary",
+        "files": [
+          "batchedWithBatchTableBinary.b3dm",
+          "tileset.json"
+        ]
+      },
+      "BatchedWithBoundingSphere": {
+        "name": "BatchedWithBoundingSphere",
+        "path": "../../modules/3d-tiles/test/data/Batched/BatchedWithBoundingSphere",
+        "files": [
+          "batchedWithBoundingSphere.b3dm",
+          "tileset.json"
+        ]
+      },
+      "BatchedWithContentDataUri": {
+        "name": "BatchedWithContentDataUri",
+        "path": "../../modules/3d-tiles/test/data/Batched/BatchedWithContentDataUri",
+        "files": [
+          "tileset.json"
+        ]
+      },
+      "BatchedWithRtcCenter": {
+        "name": "BatchedWithRtcCenter",
+        "path": "../../modules/3d-tiles/test/data/Batched/BatchedWithRtcCenter",
+        "files": [
+          "batchedWithRtcCenter.b3dm",
+          "tileset.json"
+        ]
+      },
+      "BatchedWithTransformBox": {
+        "name": "BatchedWithTransformBox",
+        "path": "../../modules/3d-tiles/test/data/Batched/BatchedWithTransformBox",
+        "files": [
+          "batchedWithTransformBox.b3dm",
+          "tileset.json"
+        ]
+      },
+      "BatchedWithTransformRegion": {
+        "name": "BatchedWithTransformRegion",
+        "path": "../../modules/3d-tiles/test/data/Batched/BatchedWithTransformRegion",
+        "files": [
+          "batchedWithTransformRegion.b3dm",
+          "tileset.json"
+        ]
+      },
+      "BatchedWithTransformSphere": {
+        "name": "BatchedWithTransformSphere",
+        "path": "../../modules/3d-tiles/test/data/Batched/BatchedWithTransformSphere",
+        "files": [
+          "batchedWithTransformSphere.b3dm",
+          "tileset.json"
+        ]
+      },
+      "BatchedWithVertexColors": {
+        "name": "BatchedWithVertexColors",
+        "path": "../../modules/3d-tiles/test/data/Batched/BatchedWithVertexColors",
+        "files": [
+          "batchedWithVertexColors.b3dm",
+          "tileset.json"
+        ]
+      },
+      "BatchedWithoutBatchTable": {
+        "name": "BatchedWithoutBatchTable",
+        "path": "../../modules/3d-tiles/test/data/Batched/BatchedWithoutBatchTable",
+        "files": [
+          "batchedWithoutBatchTable.b3dm",
+          "tileset.json"
+        ]
+      }
+    }
+  },
+  "Composite": {
+    "name": "Composite",
+    "path": "../../modules/3d-tiles/test/data/Composite",
+    "examples": {
+      "Composite": {
+        "name": "Composite",
+        "path": "../../modules/3d-tiles/test/data/Composite/Composite",
+        "files": [
+          "composite.cmpt",
+          "tileset.json"
+        ]
+      },
+      "CompositeOfComposite": {
+        "name": "CompositeOfComposite",
+        "path": "../../modules/3d-tiles/test/data/Composite/CompositeOfComposite",
+        "files": [
+          "compositeOfComposite.cmpt",
+          "tileset.json"
+        ]
+      },
+      "CompositeOfInstanced": {
+        "name": "CompositeOfInstanced",
+        "path": "../../modules/3d-tiles/test/data/Composite/CompositeOfInstanced",
+        "files": [
+          "box.glb",
+          "compositeOfInstanced.cmpt",
+          "tileset.json"
+        ]
+      }
+    }
+  },
+  "Geometry": {
+    "name": "Geometry",
+    "path": "../../modules/3d-tiles/test/data/Geometry",
+    "examples": {
+      "GeometryTileAll": {
+        "name": "GeometryTileAll",
+        "path": "../../modules/3d-tiles/test/data/Geometry/GeometryTileAll",
+        "files": [
+          "ll.geom",
+          "lr.geom",
+          "parent.geom",
+          "tileset.json",
+          "ul.geom",
+          "ur.geom"
+        ]
+      },
+      "GeometryTileAllBatchedChildren": {
+        "name": "GeometryTileAllBatchedChildren",
+        "path": "../../modules/3d-tiles/test/data/Geometry/GeometryTileAllBatchedChildren",
+        "files": [
+          "children.geom",
+          "parent.geom",
+          "tileset.json"
+        ]
+      },
+      "GeometryTileAllBatchedChildrenWithBatchTable": {
+        "name": "GeometryTileAllBatchedChildrenWithBatchTable",
+        "path": "../../modules/3d-tiles/test/data/Geometry/GeometryTileAllBatchedChildrenWithBatchTable",
+        "files": [
+          "children.geom",
+          "parent.geom",
+          "tileset.json"
+        ]
+      },
+      "GeometryTileAllWithBatchIds": {
+        "name": "GeometryTileAllWithBatchIds",
+        "path": "../../modules/3d-tiles/test/data/Geometry/GeometryTileAllWithBatchIds",
+        "files": [
+          "children.geom",
+          "parent.geom",
+          "tileset.json"
+        ]
+      },
+      "GeometryTileAllWithBatchTable": {
+        "name": "GeometryTileAllWithBatchTable",
+        "path": "../../modules/3d-tiles/test/data/Geometry/GeometryTileAllWithBatchTable",
+        "files": [
+          "ll.geom",
+          "lr.geom",
+          "parent.geom",
+          "tileset.json",
+          "ul.geom",
+          "ur.geom"
+        ]
+      },
+      "GeometryTileBoxes": {
+        "name": "GeometryTileBoxes",
+        "path": "../../modules/3d-tiles/test/data/Geometry/GeometryTileBoxes",
+        "files": [
+          "ll.geom",
+          "lr.geom",
+          "parent.geom",
+          "tileset.json",
+          "ul.geom",
+          "ur.geom"
+        ]
+      },
+      "GeometryTileBoxesBatchedChildren": {
+        "name": "GeometryTileBoxesBatchedChildren",
+        "path": "../../modules/3d-tiles/test/data/Geometry/GeometryTileBoxesBatchedChildren",
+        "files": [
+          "children.geom",
+          "parent.geom",
+          "tileset.json"
+        ]
+      },
+      "GeometryTileBoxesBatchedChildrenWithBatchTable": {
+        "name": "GeometryTileBoxesBatchedChildrenWithBatchTable",
+        "path": "../../modules/3d-tiles/test/data/Geometry/GeometryTileBoxesBatchedChildrenWithBatchTable",
+        "files": [
+          "children.geom",
+          "parent.geom",
+          "tileset.json"
+        ]
+      },
+      "GeometryTileBoxesWithBatchIds": {
+        "name": "GeometryTileBoxesWithBatchIds",
+        "path": "../../modules/3d-tiles/test/data/Geometry/GeometryTileBoxesWithBatchIds",
+        "files": [
+          "children.geom",
+          "parent.geom",
+          "tileset.json"
+        ]
+      },
+      "GeometryTileBoxesWithBatchTable": {
+        "name": "GeometryTileBoxesWithBatchTable",
+        "path": "../../modules/3d-tiles/test/data/Geometry/GeometryTileBoxesWithBatchTable",
+        "files": [
+          "ll.geom",
+          "lr.geom",
+          "parent.geom",
+          "tileset.json",
+          "ul.geom",
+          "ur.geom"
+        ]
+      },
+      "GeometryTileCylinders": {
+        "name": "GeometryTileCylinders",
+        "path": "../../modules/3d-tiles/test/data/Geometry/GeometryTileCylinders",
+        "files": [
+          "ll.geom",
+          "lr.geom",
+          "parent.geom",
+          "tileset.json",
+          "ul.geom",
+          "ur.geom"
+        ]
+      },
+      "GeometryTileCylindersBatchedChildren": {
+        "name": "GeometryTileCylindersBatchedChildren",
+        "path": "../../modules/3d-tiles/test/data/Geometry/GeometryTileCylindersBatchedChildren",
+        "files": [
+          "children.geom",
+          "parent.geom",
+          "tileset.json"
+        ]
+      },
+      "GeometryTileCylindersBatchedChildrenWithBatchTable": {
+        "name": "GeometryTileCylindersBatchedChildrenWithBatchTable",
+        "path": "../../modules/3d-tiles/test/data/Geometry/GeometryTileCylindersBatchedChildrenWithBatchTable",
+        "files": [
+          "children.geom",
+          "parent.geom",
+          "tileset.json"
+        ]
+      },
+      "GeometryTileCylindersWithBatchIds": {
+        "name": "GeometryTileCylindersWithBatchIds",
+        "path": "../../modules/3d-tiles/test/data/Geometry/GeometryTileCylindersWithBatchIds",
+        "files": [
+          "children.geom",
+          "parent.geom",
+          "tileset.json"
+        ]
+      },
+      "GeometryTileCylindersWithBatchTable": {
+        "name": "GeometryTileCylindersWithBatchTable",
+        "path": "../../modules/3d-tiles/test/data/Geometry/GeometryTileCylindersWithBatchTable",
+        "files": [
+          "ll.geom",
+          "lr.geom",
+          "parent.geom",
+          "tileset.json",
+          "ul.geom",
+          "ur.geom"
+        ]
+      },
+      "GeometryTileEllipsoids": {
+        "name": "GeometryTileEllipsoids",
+        "path": "../../modules/3d-tiles/test/data/Geometry/GeometryTileEllipsoids",
+        "files": [
+          "ll.geom",
+          "lr.geom",
+          "parent.geom",
+          "tileset.json",
+          "ul.geom",
+          "ur.geom"
+        ]
+      },
+      "GeometryTileEllipsoidsBatchedChildren": {
+        "name": "GeometryTileEllipsoidsBatchedChildren",
+        "path": "../../modules/3d-tiles/test/data/Geometry/GeometryTileEllipsoidsBatchedChildren",
+        "files": [
+          "children.geom",
+          "parent.geom",
+          "tileset.json"
+        ]
+      },
+      "GeometryTileEllipsoidsBatchedChildrenWithBatchTable": {
+        "name": "GeometryTileEllipsoidsBatchedChildrenWithBatchTable",
+        "path": "../../modules/3d-tiles/test/data/Geometry/GeometryTileEllipsoidsBatchedChildrenWithBatchTable",
+        "files": [
+          "children.geom",
+          "parent.geom",
+          "tileset.json"
+        ]
+      },
+      "GeometryTileEllipsoidsWithBatchIds": {
+        "name": "GeometryTileEllipsoidsWithBatchIds",
+        "path": "../../modules/3d-tiles/test/data/Geometry/GeometryTileEllipsoidsWithBatchIds",
+        "files": [
+          "children.geom",
+          "parent.geom",
+          "tileset.json"
+        ]
+      },
+      "GeometryTileEllipsoidsWithBatchTable": {
+        "name": "GeometryTileEllipsoidsWithBatchTable",
+        "path": "../../modules/3d-tiles/test/data/Geometry/GeometryTileEllipsoidsWithBatchTable",
+        "files": [
+          "ll.geom",
+          "lr.geom",
+          "parent.geom",
+          "tileset.json",
+          "ul.geom",
+          "ur.geom"
+        ]
+      },
+      "GeometryTileSpheres": {
+        "name": "GeometryTileSpheres",
+        "path": "../../modules/3d-tiles/test/data/Geometry/GeometryTileSpheres",
+        "files": [
+          "ll.geom",
+          "lr.geom",
+          "parent.geom",
+          "tileset.json",
+          "ul.geom",
+          "ur.geom"
+        ]
+      },
+      "GeometryTileSpheresBatchedChildren": {
+        "name": "GeometryTileSpheresBatchedChildren",
+        "path": "../../modules/3d-tiles/test/data/Geometry/GeometryTileSpheresBatchedChildren",
+        "files": [
+          "children.geom",
+          "parent.geom",
+          "tileset.json"
+        ]
+      },
+      "GeometryTileSpheresBatchedChildrenWithBatchTable": {
+        "name": "GeometryTileSpheresBatchedChildrenWithBatchTable",
+        "path": "../../modules/3d-tiles/test/data/Geometry/GeometryTileSpheresBatchedChildrenWithBatchTable",
+        "files": [
+          "children.geom",
+          "parent.geom",
+          "tileset.json"
+        ]
+      },
+      "GeometryTileSpheresWithBatchIds": {
+        "name": "GeometryTileSpheresWithBatchIds",
+        "path": "../../modules/3d-tiles/test/data/Geometry/GeometryTileSpheresWithBatchIds",
+        "files": [
+          "children.geom",
+          "parent.geom",
+          "tileset.json"
+        ]
+      },
+      "GeometryTileSpheresWithBatchTable": {
+        "name": "GeometryTileSpheresWithBatchTable",
+        "path": "../../modules/3d-tiles/test/data/Geometry/GeometryTileSpheresWithBatchTable",
+        "files": [
+          "ll.geom",
+          "lr.geom",
+          "parent.geom",
+          "tileset.json",
+          "ul.geom",
+          "ur.geom"
+        ]
+      }
+    }
+  },
+  "Hierarchy": {
+    "name": "Hierarchy",
+    "path": "../../modules/3d-tiles/test/data/Hierarchy",
+    "examples": {
+      "BatchTableHierarchy": {
+        "name": "BatchTableHierarchy",
+        "path": "../../modules/3d-tiles/test/data/Hierarchy/BatchTableHierarchy",
+        "files": [
+          "tile.b3dm",
+          "tileset.json"
+        ]
+      },
+      "BatchTableHierarchyBinary": {
+        "name": "BatchTableHierarchyBinary",
+        "path": "../../modules/3d-tiles/test/data/Hierarchy/BatchTableHierarchyBinary",
+        "files": [
+          "tile.b3dm",
+          "tileset.json"
+        ]
+      },
+      "BatchTableHierarchyLegacy": {
+        "name": "BatchTableHierarchyLegacy",
+        "path": "../../modules/3d-tiles/test/data/Hierarchy/BatchTableHierarchyLegacy",
+        "files": [
+          "tile.b3dm",
+          "tileset.json"
+        ]
+      },
+      "BatchTableHierarchyMultipleParents": {
+        "name": "BatchTableHierarchyMultipleParents",
+        "path": "../../modules/3d-tiles/test/data/Hierarchy/BatchTableHierarchyMultipleParents",
+        "files": [
+          "tile.b3dm",
+          "tileset.json"
+        ]
+      },
+      "BatchTableHierarchyNoParents": {
+        "name": "BatchTableHierarchyNoParents",
+        "path": "../../modules/3d-tiles/test/data/Hierarchy/BatchTableHierarchyNoParents",
+        "files": [
+          "tile.b3dm",
+          "tileset.json"
+        ]
+      }
+    }
+  },
+  "Instanced": {
+    "name": "Instanced",
+    "path": "../../modules/3d-tiles/test/data/Instanced",
+    "examples": {
+      "InstancedGltfExternal": {
+        "name": "InstancedGltfExternal",
+        "path": "../../modules/3d-tiles/test/data/Instanced/InstancedGltfExternal",
+        "files": [
+          "box.glb",
+          "instancedGltfExternal.i3dm",
+          "tileset.json"
+        ]
+      },
+      "InstancedOct32POrientation": {
+        "name": "InstancedOct32POrientation",
+        "path": "../../modules/3d-tiles/test/data/Instanced/InstancedOct32POrientation",
+        "files": [
+          "instancedOct32POrientation.i3dm",
+          "tileset.json"
+        ]
+      },
+      "InstancedOrientation": {
+        "name": "InstancedOrientation",
+        "path": "../../modules/3d-tiles/test/data/Instanced/InstancedOrientation",
+        "files": [
+          "instancedOrientation.i3dm",
+          "tileset.json"
+        ]
+      },
+      "InstancedQuantized": {
+        "name": "InstancedQuantized",
+        "path": "../../modules/3d-tiles/test/data/Instanced/InstancedQuantized",
+        "files": [
+          "instancedQuantized.i3dm",
+          "tileset.json"
+        ]
+      },
+      "InstancedQuantizedOct32POrientation": {
+        "name": "InstancedQuantizedOct32POrientation",
+        "path": "../../modules/3d-tiles/test/data/Instanced/InstancedQuantizedOct32POrientation",
+        "files": [
+          "instancedQuantizedOct32POrientation.i3dm",
+          "tileset.json"
+        ]
+      },
+      "InstancedRTC": {
+        "name": "InstancedRTC",
+        "path": "../../modules/3d-tiles/test/data/Instanced/InstancedRTC",
+        "files": [
+          "instancedRTC.i3dm",
+          "tileset.json"
+        ]
+      },
+      "InstancedRedMaterial": {
+        "name": "InstancedRedMaterial",
+        "path": "../../modules/3d-tiles/test/data/Instanced/InstancedRedMaterial",
+        "files": [
+          "instancedRedMaterial.i3dm",
+          "tileset.json"
+        ]
+      },
+      "InstancedScale": {
+        "name": "InstancedScale",
+        "path": "../../modules/3d-tiles/test/data/Instanced/InstancedScale",
+        "files": [
+          "instancedScale.i3dm",
+          "tileset.json"
+        ]
+      },
+      "InstancedScaleNonUniform": {
+        "name": "InstancedScaleNonUniform",
+        "path": "../../modules/3d-tiles/test/data/Instanced/InstancedScaleNonUniform",
+        "files": [
+          "instancedScaleNonUniform.i3dm",
+          "tileset.json"
+        ]
+      },
+      "InstancedTextured": {
+        "name": "InstancedTextured",
+        "path": "../../modules/3d-tiles/test/data/Instanced/InstancedTextured",
+        "files": [
+          "instancedTextured.i3dm",
+          "tileset.json"
+        ]
+      },
+      "InstancedWithBatchIds": {
+        "name": "InstancedWithBatchIds",
+        "path": "../../modules/3d-tiles/test/data/Instanced/InstancedWithBatchIds",
+        "files": [
+          "instancedWithBatchIds.i3dm",
+          "tileset.json"
+        ]
+      },
+      "InstancedWithBatchTable": {
+        "name": "InstancedWithBatchTable",
+        "path": "../../modules/3d-tiles/test/data/Instanced/InstancedWithBatchTable",
+        "files": [
+          "instancedWithBatchTable.i3dm",
+          "tileset.json"
+        ]
+      },
+      "InstancedWithBatchTableBinary": {
+        "name": "InstancedWithBatchTableBinary",
+        "path": "../../modules/3d-tiles/test/data/Instanced/InstancedWithBatchTableBinary",
+        "files": [
+          "instancedWithBatchTableBinary.i3dm",
+          "tileset.json"
+        ]
+      },
+      "InstancedWithTransform": {
+        "name": "InstancedWithTransform",
+        "path": "../../modules/3d-tiles/test/data/Instanced/InstancedWithTransform",
+        "files": [
+          "instancedWithTransform.i3dm",
+          "tileset.json"
+        ]
+      },
+      "InstancedWithoutBatchTable": {
+        "name": "InstancedWithoutBatchTable",
+        "path": "../../modules/3d-tiles/test/data/Instanced/InstancedWithoutBatchTable",
+        "files": [
+          "instancedWithoutBatchTable.i3dm",
+          "tileset.json"
+        ]
+      }
+    }
+  },
+  "PointCloud": {
+    "name": "PointCloud",
+    "path": "../../modules/3d-tiles/test/data/PointCloud",
+    "examples": {
+      "PointCloudBatched": {
+        "name": "PointCloudBatched",
+        "path": "../../modules/3d-tiles/test/data/PointCloud/PointCloudBatched",
+        "files": [
+          "pointCloudBatched.pnts",
+          "tileset.json"
+        ]
+      },
+      "PointCloudConstantColor": {
+        "name": "PointCloudConstantColor",
+        "path": "../../modules/3d-tiles/test/data/PointCloud/PointCloudConstantColor",
+        "files": [
+          "pointCloudConstantColor.pnts",
+          "tileset.json"
+        ]
+      },
+      "PointCloudDraco": {
+        "name": "PointCloudDraco",
+        "path": "../../modules/3d-tiles/test/data/PointCloud/PointCloudDraco",
+        "files": [
+          "pointCloudDraco.pnts",
+          "tileset.json"
+        ]
+      },
+      "PointCloudDracoBatched": {
+        "name": "PointCloudDracoBatched",
+        "path": "../../modules/3d-tiles/test/data/PointCloud/PointCloudDracoBatched",
+        "files": [
+          "pointCloudDracoBatched.pnts",
+          "tileset.json"
+        ]
+      },
+      "PointCloudDracoPartial": {
+        "name": "PointCloudDracoPartial",
+        "path": "../../modules/3d-tiles/test/data/PointCloud/PointCloudDracoPartial",
+        "files": [
+          "pointCloudDracoPartial.pnts",
+          "tileset.json"
+        ]
+      },
+      "PointCloudNoColor": {
+        "name": "PointCloudNoColor",
+        "path": "../../modules/3d-tiles/test/data/PointCloud/PointCloudNoColor",
+        "files": [
+          "pointCloudNoColor.pnts",
+          "tileset.json"
+        ]
+      },
+      "PointCloudNormals": {
+        "name": "PointCloudNormals",
+        "path": "../../modules/3d-tiles/test/data/PointCloud/PointCloudNormals",
+        "files": [
+          "pointCloudNormals.pnts",
+          "tileset.json"
+        ]
+      },
+      "PointCloudNormalsOctEncoded": {
+        "name": "PointCloudNormalsOctEncoded",
+        "path": "../../modules/3d-tiles/test/data/PointCloud/PointCloudNormalsOctEncoded",
+        "files": [
+          "pointCloudNormalsOctEncoded.pnts",
+          "tileset.json"
+        ]
+      },
+      "PointCloudQuantized": {
+        "name": "PointCloudQuantized",
+        "path": "../../modules/3d-tiles/test/data/PointCloud/PointCloudQuantized",
+        "files": [
+          "pointCloudQuantized.pnts",
+          "tileset.json"
+        ]
+      },
+      "PointCloudQuantizedOctEncoded": {
+        "name": "PointCloudQuantizedOctEncoded",
+        "path": "../../modules/3d-tiles/test/data/PointCloud/PointCloudQuantizedOctEncoded",
+        "files": [
+          "pointCloudQuantizedOctEncoded.pnts",
+          "tileset.json"
+        ]
+      },
+      "PointCloudRGB": {
+        "name": "PointCloudRGB",
+        "path": "../../modules/3d-tiles/test/data/PointCloud/PointCloudRGB",
+        "files": [
+          "pointCloudRGB.pnts",
+          "tileset.json"
+        ]
+      },
+      "PointCloudRGB565": {
+        "name": "PointCloudRGB565",
+        "path": "../../modules/3d-tiles/test/data/PointCloud/PointCloudRGB565",
+        "files": [
+          "pointCloudRGB565.pnts",
+          "tileset.json"
+        ]
+      },
+      "PointCloudRGBA": {
+        "name": "PointCloudRGBA",
+        "path": "../../modules/3d-tiles/test/data/PointCloud/PointCloudRGBA",
+        "files": [
+          "pointCloudRGBA.pnts",
+          "tileset.json"
+        ]
+      },
+      "PointCloudTimeDynamic": {
+        "name": "PointCloudTimeDynamic",
+        "path": "../../modules/3d-tiles/test/data/PointCloud/PointCloudTimeDynamic",
+        "files": [
+          "0.pnts",
+          "1.pnts",
+          "2.pnts",
+          "3.pnts",
+          "4.pnts"
+        ]
+      },
+      "PointCloudTimeDynamicDraco": {
+        "name": "PointCloudTimeDynamicDraco",
+        "path": "../../modules/3d-tiles/test/data/PointCloud/PointCloudTimeDynamicDraco",
+        "files": [
+          "0.pnts",
+          "1.pnts",
+          "2.pnts",
+          "3.pnts",
+          "4.pnts"
+        ]
+      },
+      "PointCloudTimeDynamicWithTransform": {
+        "name": "PointCloudTimeDynamicWithTransform",
+        "path": "../../modules/3d-tiles/test/data/PointCloud/PointCloudTimeDynamicWithTransform",
+        "files": [
+          "0.pnts",
+          "1.pnts",
+          "2.pnts",
+          "3.pnts",
+          "4.pnts"
+        ]
+      },
+      "PointCloudWGS84": {
+        "name": "PointCloudWGS84",
+        "path": "../../modules/3d-tiles/test/data/PointCloud/PointCloudWGS84",
+        "files": [
+          "pointCloudWGS84.pnts",
+          "tileset.json"
+        ]
+      },
+      "PointCloudWithPerPointProperties": {
+        "name": "PointCloudWithPerPointProperties",
+        "path": "../../modules/3d-tiles/test/data/PointCloud/PointCloudWithPerPointProperties",
+        "files": [
+          "pointCloudWithPerPointProperties.pnts",
+          "tileset.json"
+        ]
+      },
+      "PointCloudWithTransform": {
+        "name": "PointCloudWithTransform",
+        "path": "../../modules/3d-tiles/test/data/PointCloud/PointCloudWithTransform",
+        "files": [
+          "pointCloudWithTransform.pnts",
+          "tileset.json"
+        ]
+      }
+    }
+  },
+  "Style": {
+    "name": "Style",
+    "path": "../../modules/3d-tiles/test/data/Style",
+    "examples": {}
+  },
+  "Tilesets": {
+    "name": "Tilesets",
+    "path": "../../modules/3d-tiles/test/data/Tilesets",
+    "examples": {
+      "Tileset": {
+        "name": "Tileset",
+        "path": "../../modules/3d-tiles/test/data/Tilesets/Tileset",
+        "files": [
+          "ll.b3dm",
+          "lr.b3dm",
+          "parent.b3dm",
+          "tileset.json",
+          "ul.b3dm",
+          "ur.b3dm"
+        ]
+      },
+      "TilesetEmptyRoot": {
+        "name": "TilesetEmptyRoot",
+        "path": "../../modules/3d-tiles/test/data/Tilesets/TilesetEmptyRoot",
+        "files": [
+          "ll.b3dm",
+          "lr.b3dm",
+          "tileset.json",
+          "ul.b3dm",
+          "ur.b3dm"
+        ]
+      },
+      "TilesetOfTilesets": {
+        "name": "TilesetOfTilesets",
+        "path": "../../modules/3d-tiles/test/data/Tilesets/TilesetOfTilesets",
+        "files": [
+          "lr.b3dm",
+          "parent.b3dm",
+          "tileset.json",
+          "tileset2.json",
+          "tileset3",
+          "ul.b3dm",
+          "ur.b3dm"
+        ]
+      },
+      "TilesetPoints": {
+        "name": "TilesetPoints",
+        "path": "../../modules/3d-tiles/test/data/Tilesets/TilesetPoints",
+        "files": [
+          "0.pnts",
+          "1.pnts",
+          "2.pnts",
+          "3.pnts",
+          "4.pnts",
+          "5.pnts",
+          "6.pnts",
+          "7.pnts",
+          "parent.pnts",
+          "tileset.json"
+        ]
+      },
+      "TilesetRefinementMix": {
+        "name": "TilesetRefinementMix",
+        "path": "../../modules/3d-tiles/test/data/Tilesets/TilesetRefinementMix",
+        "files": [
+          "ll.b3dm",
+          "lr.b3dm",
+          "parent.b3dm",
+          "tileset.json",
+          "ul.b3dm",
+          "ur.b3dm"
+        ]
+      },
+      "TilesetReplacement1": {
+        "name": "TilesetReplacement1",
+        "path": "../../modules/3d-tiles/test/data/Tilesets/TilesetReplacement1",
+        "files": [
+          "ll.b3dm",
+          "lr.b3dm",
+          "parent.b3dm",
+          "tileset.json",
+          "ul.b3dm",
+          "ur.b3dm"
+        ]
+      },
+      "TilesetReplacement2": {
+        "name": "TilesetReplacement2",
+        "path": "../../modules/3d-tiles/test/data/Tilesets/TilesetReplacement2",
+        "files": [
+          "ll.b3dm",
+          "parent.b3dm",
+          "tileset.json",
+          "ur.b3dm"
+        ]
+      },
+      "TilesetReplacement3": {
+        "name": "TilesetReplacement3",
+        "path": "../../modules/3d-tiles/test/data/Tilesets/TilesetReplacement3",
+        "files": [
+          "ll.b3dm",
+          "lr.b3dm",
+          "parent.b3dm",
+          "tileset.json",
+          "tileset2.json",
+          "ul.b3dm",
+          "ur.b3dm"
+        ]
+      },
+      "TilesetReplacementWithViewerRequestVolume": {
+        "name": "TilesetReplacementWithViewerRequestVolume",
+        "path": "../../modules/3d-tiles/test/data/Tilesets/TilesetReplacementWithViewerRequestVolume",
+        "files": [
+          "ll.b3dm",
+          "lr.b3dm",
+          "parent.b3dm",
+          "tileset.json",
+          "ul.b3dm",
+          "ur.b3dm"
+        ]
+      },
+      "TilesetSubtreeExpiration": {
+        "name": "TilesetSubtreeExpiration",
+        "path": "../../modules/3d-tiles/test/data/Tilesets/TilesetSubtreeExpiration",
+        "files": [
+          "ll.b3dm",
+          "lr.b3dm",
+          "parent.b3dm",
+          "subtree.json",
+          "tileset.json",
+          "ul.b3dm",
+          "ur.b3dm"
+        ]
+      },
+      "TilesetUniform": {
+        "name": "TilesetUniform",
+        "path": "../../modules/3d-tiles/test/data/Tilesets/TilesetUniform",
+        "files": [
+          "0_0_0.b3dm",
+          "1_0_0.b3dm",
+          "1_0_1.b3dm",
+          "1_0_2.b3dm",
+          "1_1_0.b3dm",
+          "1_1_1.b3dm",
+          "1_1_2.b3dm",
+          "1_2_0.b3dm",
+          "1_2_1.b3dm",
+          "1_2_2.b3dm",
+          "2_3_3.b3dm",
+          "2_3_4.b3dm",
+          "2_3_5.b3dm",
+          "2_4_3.b3dm",
+          "2_4_4.b3dm",
+          "2_4_5.b3dm",
+          "2_5_3.b3dm",
+          "2_5_4.b3dm",
+          "2_5_5.b3dm",
+          "tileset.json",
+          "tileset2.json"
+        ]
+      },
+      "TilesetWithExternalResources": {
+        "name": "TilesetWithExternalResources",
+        "path": "../../modules/3d-tiles/test/data/Tilesets/TilesetWithExternalResources",
+        "files": [
+          "embed.i3dm",
+          "external.b3dm",
+          "external.i3dm",
+          "textured_box_separate",
+          "tileset.json",
+          "tileset2"
+        ]
+      },
+      "TilesetWithTransforms": {
+        "name": "TilesetWithTransforms",
+        "path": "../../modules/3d-tiles/test/data/Tilesets/TilesetWithTransforms",
+        "files": [
+          "buildings.b3dm",
+          "instances.i3dm",
+          "tileset.json"
+        ]
+      },
+      "TilesetWithViewerRequestVolume": {
+        "name": "TilesetWithViewerRequestVolume",
+        "path": "../../modules/3d-tiles/test/data/Tilesets/TilesetWithViewerRequestVolume",
+        "files": [
+          "ll.b3dm",
+          "lr.b3dm",
+          "points.pnts",
+          "tileset.json",
+          "ul.b3dm",
+          "ur.b3dm"
+        ]
+      }
+    }
+  },
+  "Vector": {
+    "name": "Vector",
+    "path": "../../modules/3d-tiles/test/data/Vector",
+    "examples": {
+      "VectorTileCombined": {
+        "name": "VectorTileCombined",
+        "path": "../../modules/3d-tiles/test/data/Vector/VectorTileCombined",
+        "files": [
+          "tile.vctr",
+          "tileset.json"
+        ]
+      },
+      "VectorTileCombinedWithBatchIds": {
+        "name": "VectorTileCombinedWithBatchIds",
+        "path": "../../modules/3d-tiles/test/data/Vector/VectorTileCombinedWithBatchIds",
+        "files": [
+          "tile.vctr",
+          "tileset.json"
+        ]
+      },
+      "VectorTilePoints": {
+        "name": "VectorTilePoints",
+        "path": "../../modules/3d-tiles/test/data/Vector/VectorTilePoints",
+        "files": [
+          "ll.vctr",
+          "lr.vctr",
+          "parent.vctr",
+          "tileset.json",
+          "ul.vctr",
+          "ur.vctr"
+        ]
+      },
+      "VectorTilePointsBatchedChildren": {
+        "name": "VectorTilePointsBatchedChildren",
+        "path": "../../modules/3d-tiles/test/data/Vector/VectorTilePointsBatchedChildren",
+        "files": [
+          "children.vctr",
+          "parent.vctr",
+          "tileset.json"
+        ]
+      },
+      "VectorTilePointsBatchedChildrenWithBatchTable": {
+        "name": "VectorTilePointsBatchedChildrenWithBatchTable",
+        "path": "../../modules/3d-tiles/test/data/Vector/VectorTilePointsBatchedChildrenWithBatchTable",
+        "files": [
+          "children.vctr",
+          "parent.vctr",
+          "tileset.json"
+        ]
+      },
+      "VectorTilePointsWithBatchIds": {
+        "name": "VectorTilePointsWithBatchIds",
+        "path": "../../modules/3d-tiles/test/data/Vector/VectorTilePointsWithBatchIds",
+        "files": [
+          "children.vctr",
+          "parent.vctr",
+          "tileset.json"
+        ]
+      },
+      "VectorTilePointsWithBatchTable": {
+        "name": "VectorTilePointsWithBatchTable",
+        "path": "../../modules/3d-tiles/test/data/Vector/VectorTilePointsWithBatchTable",
+        "files": [
+          "ll.vctr",
+          "lr.vctr",
+          "parent.vctr",
+          "tileset.json",
+          "ul.vctr",
+          "ur.vctr"
+        ]
+      },
+      "VectorTilePolygons": {
+        "name": "VectorTilePolygons",
+        "path": "../../modules/3d-tiles/test/data/Vector/VectorTilePolygons",
+        "files": [
+          "ll.vctr",
+          "lr.vctr",
+          "parent.vctr",
+          "tileset.json",
+          "ul.vctr",
+          "ur.vctr"
+        ]
+      },
+      "VectorTilePolygonsBatchedChildren": {
+        "name": "VectorTilePolygonsBatchedChildren",
+        "path": "../../modules/3d-tiles/test/data/Vector/VectorTilePolygonsBatchedChildren",
+        "files": [
+          "children.vctr",
+          "parent.vctr",
+          "tileset.json"
+        ]
+      },
+      "VectorTilePolygonsBatchedChildrenWithBatchTable": {
+        "name": "VectorTilePolygonsBatchedChildrenWithBatchTable",
+        "path": "../../modules/3d-tiles/test/data/Vector/VectorTilePolygonsBatchedChildrenWithBatchTable",
+        "files": [
+          "children.vctr",
+          "parent.vctr",
+          "tileset.json"
+        ]
+      },
+      "VectorTilePolygonsWithBatchIds": {
+        "name": "VectorTilePolygonsWithBatchIds",
+        "path": "../../modules/3d-tiles/test/data/Vector/VectorTilePolygonsWithBatchIds",
+        "files": [
+          "children.vctr",
+          "parent.vctr",
+          "tileset.json"
+        ]
+      },
+      "VectorTilePolygonsWithBatchTable": {
+        "name": "VectorTilePolygonsWithBatchTable",
+        "path": "../../modules/3d-tiles/test/data/Vector/VectorTilePolygonsWithBatchTable",
+        "files": [
+          "ll.vctr",
+          "lr.vctr",
+          "parent.vctr",
+          "tileset.json",
+          "ul.vctr",
+          "ur.vctr"
+        ]
+      },
+      "VectorTilePolylines": {
+        "name": "VectorTilePolylines",
+        "path": "../../modules/3d-tiles/test/data/Vector/VectorTilePolylines",
+        "files": [
+          "ll.vctr",
+          "lr.vctr",
+          "parent.vctr",
+          "tileset.json",
+          "ul.vctr",
+          "ur.vctr"
+        ]
+      },
+      "VectorTilePolylinesBatchedChildren": {
+        "name": "VectorTilePolylinesBatchedChildren",
+        "path": "../../modules/3d-tiles/test/data/Vector/VectorTilePolylinesBatchedChildren",
+        "files": [
+          "children.vctr",
+          "parent.vctr",
+          "tileset.json"
+        ]
+      },
+      "VectorTilePolylinesBatchedChildrenWithBatchTable": {
+        "name": "VectorTilePolylinesBatchedChildrenWithBatchTable",
+        "path": "../../modules/3d-tiles/test/data/Vector/VectorTilePolylinesBatchedChildrenWithBatchTable",
+        "files": [
+          "children.vctr",
+          "parent.vctr",
+          "tileset.json"
+        ]
+      },
+      "VectorTilePolylinesWithBatchIds": {
+        "name": "VectorTilePolylinesWithBatchIds",
+        "path": "../../modules/3d-tiles/test/data/Vector/VectorTilePolylinesWithBatchIds",
+        "files": [
+          "children.vctr",
+          "parent.vctr",
+          "tileset.json"
+        ]
+      },
+      "VectorTilePolylinesWithBatchTable": {
+        "name": "VectorTilePolylinesWithBatchTable",
+        "path": "../../modules/3d-tiles/test/data/Vector/VectorTilePolylinesWithBatchTable",
+        "files": [
+          "ll.vctr",
+          "lr.vctr",
+          "parent.vctr",
+          "tileset.json",
+          "ul.vctr",
+          "ur.vctr"
+        ]
+      }
+    }
+  }
+}
