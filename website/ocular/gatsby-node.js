@@ -51,7 +51,6 @@ callbacks.onCreateWebpackConfig = function onCreateWebpackConfigOverride(opts) {
   const newJSRule = loaders.js();
 
   Object.assign(newJSRule, {
-
     // JS and JSX
     test: /\.jsx?$/,
 
