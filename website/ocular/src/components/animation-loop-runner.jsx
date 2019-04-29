@@ -122,7 +122,7 @@ export default class AnimationLoop extends Component {
   }
 
   render() {
-    const {animationLoop, width, height, name, panel, stats, sourceLink} = this.props;
+    const {animationLoop, name, panel = true, stats, sourceLink} = this.props;
 
     const notSupported = animationLoop.isSupported && !animationLoop.isSupported();
 
@@ -139,7 +139,7 @@ export default class AnimationLoop extends Component {
     const controls = animationLoop.getInfo && animationLoop.getInfo();
 
     return (
-      <div className="fg" style={{width, height, padding: 0, border: 0}}>
+      <div className="fg" style={{width: '100%', height: '100%', padding: 0, border: 0}}>
         {
           stats ?
           <div ref="stats" className="stats" style={STAT_STYLES}>
