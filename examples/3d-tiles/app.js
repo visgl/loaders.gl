@@ -76,6 +76,7 @@ export default class App extends PureComponent {
     this._onViewStateChange = this._onViewStateChange.bind(this);
     this._rotateCamera = this._rotateCamera.bind(this);
     this._getColor = this._getColor.bind(this);
+    this._getControlPanel = this._getControlPanel.bind(this);
 
     this._loadExample = this._loadExample.bind(this);
     this._onSelectExample = this._onSelectExample.bind(this);
@@ -141,7 +142,7 @@ export default class App extends PureComponent {
         ...viewState,
         target: [(mins[0] + maxs[0]) / 2, (mins[1] + maxs[1]) / 2, (mins[2] + maxs[2]) / 2],
         /* global window */
-        zoom: Math.log2(window.innerWidth / (maxs[0] - mins[0])) - 1
+        zoom: Math.log2(window.innerWidth / (maxs[0] - mins[0])) - 1.5
       };
     }
 
@@ -202,6 +203,7 @@ export default class App extends PureComponent {
 
     return [255, 255, 255];
   }
+
   /* eslint-enable max-statements */
 
   _renderLayers() {
@@ -247,8 +249,20 @@ export default class App extends PureComponent {
     });
   }
 
+  _getControlPanel() {
+    const {data, example, category} = this.state;
+    return (
+      <ControlPanel
+        data={data}
+        category={category}
+        example={example}
+        onChange={this._onSelectExample}
+      />
+    );
+  }
+
   render() {
-    const {viewState, data, example, category} = this.state;
+    const {viewState} = this.state;
 
     return (
       <DeckGL
@@ -261,14 +275,7 @@ export default class App extends PureComponent {
         parameters={{
           clearColor: [0.07, 0.14, 0.19, 1]
         }}
-      >
-        <ControlPanel
-          data={data}
-          category={category}
-          example={example}
-          onChange={this._onSelectExample}
-        />
-      </DeckGL>
+      />
     );
   }
 }

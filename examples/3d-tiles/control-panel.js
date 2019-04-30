@@ -22,7 +22,7 @@ const Container = styled.div`
 
 export default class ControlPanel extends PureComponent {
   _renderByCategories() {
-    const {category, example, onChange, data} = this.props;
+    const {category, example, onChange, data = {}} = this.props;
     const categories = Object.keys(data);
 
     return (
