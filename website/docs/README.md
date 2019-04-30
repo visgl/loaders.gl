@@ -1,16 +1,25 @@
-# Overview
+# Introduction
 
-A suite of portable, framework-independent loaders (parsers) and writers (encoders), including loaders for 3D point clouds, geometries, assets and geospatial formats. In spite of the name, loaders.gl does not have any WebGL dependencies, however the format of data returned by various loaders is optimized for use with WebGL.
+loaders.gl is suite of portable, framework-independent loaders (parsers) and writers (encoders). The suite including loaders for 3D point clouds, geometries, 3D assets, geospatial formats as well as tabular data.
+
+In spite of the name, loaders.gl does not have any WebGL dependencies, however the format of data returned by various loaders is optimized for use with WebGL (e.g. by using typed arrays when possible, enabling data to be directly uploaded to the GPU without additional processing).
 
 ## Why loaders.gl?
 
-There are many excellent open source loaders for 3D and geospatial formats available under MIT license on github etc.
+The open source community has already created many excellent loaders for 3D and geospatial formats available under permissive licenses on github, npm and similar sources, and loaders.gl is an effort to collect some of the best of those and package them in a unified, portable, framework-independent way.
 
-However, many of these loaders were created for specific frameworks (e.g. THREE.js) and contain code that depejnd on framework specific classes (e.g. a loader might do 90% framework independent work but end by creating a `THREE.Mesh`, meaning that the returned objects are not immediately usable in Javascript applications that don't use that framework).
+Many of these loaders were created for specific use cases (e.g. as part of a frameworks like THREE.js) and contain code that depend on use-case specific classes (e.g. a loader might be 90% framework independent work but end by creating a `THREE.Mesh`, meaning that the returned objects are not easoly usable in Javascript applications that don't use that framework).
 
-In addition, the functionality offered by each loader can vary quite a bit. The format of the parsed data is usually different, even when parsing very similar file formats, making it harder to write applications that support loading point clouds in multiple formats. Other things that differs is whether they run under both browser and Node.js and worker threads, support streaming etc, what APIs and options they provide, error handling and logging support etc.
+In addition, the functionality offered by open source loaders can vary quite a bit:
 
-loaders.gl is an effort to collect some of the best loaders created by the open source community and package them in a unified, portable, framework-independent way.
+- The API, where e.g. some loaders accept URLs and implements the loading themselves, and then return promises or take callbacks, others are synchronous and just parse already loaded data, leaving more flexibility (and work) to the application.
+- Installation procedures can vary.
+- The format of the parsed data is usually different, even when parsing very similar file formats. This makes it harder to write applications that can accept data from multiple similar formats (e.g. an app that can load point clouds in PCD, PLY, LAS, Draco formats would need to deal with the idiosynchracies of multiple loaders).
+- Does the loader can run under both browser and Node.js and worker threads, or does it e.g. need to be "commented out" in Node-based unit tests?
+- Does the loader support streaming?
+- What options does the loader accept?
+- How is error handling implemented.
+- etc.
 
 ## Contents of Loaders.gl
 

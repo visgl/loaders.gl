@@ -4,18 +4,15 @@ Contributions are welcome, assuming that they align with the general design goal
 
 Unless you just want to contribute a small bug fix, it is a good idea to start by opening an issue and discuss your idea with the maintainers. This maximizes the chances that your contribution will be accepted once you open a pull request.
 
-
 ## Configuring Your Development Environment
 
 To contribute, you will likely want to clone the loaders.gl repository and make sure you can install, build and run tests.
 
 Our primary development environment is MacOS, but it is possible to build loaders.gl on Linux and Windows (using a Linux environment).
 
-
 ### Setting up Linux Environment on Windows 10
 
 Install [WSL (Windows Subsystem for Linux)](https://docs.microsoft.com/en-us/windows/wsl/install-win10) on Windows 10.
-
 
 ### Install Node and NPM
 
@@ -57,7 +54,6 @@ On Linux Systems Install packages
 - libxi-dev
 
 To get the headless tests working: export DISPLAY=:99.0; sh -e /etc/init.d/xvfb start
-
 
 ## Running Tests
 
