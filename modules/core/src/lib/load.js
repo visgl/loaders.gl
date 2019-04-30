@@ -27,6 +27,9 @@ export async function load(url, loaders, options) {
   }
 
   // at this point, data can be binary or text
-  const response = await fetchFile(url, options);
-  return parse(response, loaders, options, url);
+  let data = url;
+  if (typeof data === 'string') {
+    data = await fetchFile(url, options);
+  }
+  return parse(data, loaders, options, url);
 }

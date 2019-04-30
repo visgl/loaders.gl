@@ -5,10 +5,16 @@ import DeckGL from '@deck.gl/react';
 import {COORDINATE_SYSTEM, OrbitView, LinearInterpolator} from '@deck.gl/core';
 import {PointCloudLayer} from '@deck.gl/layers';
 
-import {Tile3DLoader, Tile3DFeatureTable, Tile3DBatchTable} from '@loaders.gl/3d-tiles';
+import {
+  Tile3DLoader,
+  Tile3DFeatureTable,
+  Tile3DBatchTable,
+  parseRGB565
+} from '@loaders.gl/3d-tiles';
 import {load, registerLoaders} from '@loaders.gl/core';
 
 import ControlPanel from './control-panel';
+import fileDrop from './file-drop';
 
 function parseSync(arrayBuffer, options, url, loader) {
   const result = Tile3DLoader.parseSync(arrayBuffer, options, url, loader);
@@ -66,6 +72,7 @@ export default class App extends PureComponent {
       featureTable: null,
       batchTable: null,
       tile: null,
+      droppedFile: null,
       example: 'PointCloudNormals',
       category: 'PointCloud'
     };
@@ -82,6 +89,11 @@ export default class App extends PureComponent {
   }
 
   componentDidMount() {
+    fileDrop(this._deckRef.deckCanvas, (promise, file) => {
+      this.setState({droppedFile: file, tile: null});
+      load(promise, MeshTile3DLoader).then(this._onLoad);
+    });
+
     // fetch index file
     fetch(INDEX_FILE)
       .then(resp => resp.json())
@@ -112,6 +124,7 @@ export default class App extends PureComponent {
   _loadExample(category, example) {
     const {data} = this.state;
     this.setState({tile: null});
+
     if (data && category && example) {
       const selectedExample = data[category].examples[example];
       // eslint-disable-next-line no-undef
@@ -170,13 +183,10 @@ export default class App extends PureComponent {
     } = this.state;
     if (colors) {
       if (isRGB565) {
-        const color16 = data.colors.value[index];
-        const r5 = color16 & 31;
-        const g6 = (color16 >> 5) & 63;
-        const b5 = (color16 >> 11) & 31;
-        target[0] = Math.round((r5 * 255) / 32);
-        target[1] = Math.round((g6 * 255) / 64);
-        target[2] = Math.round((b5 * 255) / 32);
+        const color = parseRGB565(data.colors.value[index]);
+        target[0] = color[0];
+        target[1] = color[1];
+        target[2] = color[2];
         target[3] = 255;
       } else {
         target[0] = data.colors.value[index * 3];
@@ -264,19 +274,22 @@ export default class App extends PureComponent {
     const {viewState} = this.state;
 
     return (
-      <DeckGL
-        ref={_ => (this._deckRef = _)}
-        width="100%"
-        height="100%"
-        views={new OrbitView()}
-        viewState={viewState}
-        controller={true}
-        onViewStateChange={this._onViewStateChange}
-        layers={this._renderLayers()}
-        parameters={{
-          clearColor: [0.07, 0.14, 0.19, 1]
-        }}
-      />
+      <div>
+        <DeckGL
+          ref={_ => (this._deckRef = _)}
+          width="100%"
+          height="100%"
+          views={new OrbitView()}
+          viewState={viewState}
+          controller={true}
+          onViewStateChange={this._onViewStateChange}
+          layers={this._renderLayers()}
+          parameters={{
+            clearColor: [0.07, 0.14, 0.19, 1]
+          }}
+        />
+        {this._renderControlPanel()}
+      </div>
     );
   }
 }

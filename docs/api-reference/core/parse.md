@@ -36,7 +36,7 @@ for await (const batch of batchIterator) {
 Parses data asynchronously using the provided loader.
 Used to parse data with a selected _loader object_. An array of `loaders` can be provided, in which case an attempt will be made to autodetect which loader is appropriate for the file (using url extension and header matching).
 
-The `loaders` parameter can also be ommitted, in which case any _loader objects_ previously registered with [`registerLoaders`](docs/api-reference/core/register-loaders) will be used.
+The `loaders` parameter can also be omitted, in which case any _loader objects_ previously registered with [`registerLoaders`](docs/api-reference/core/register-loaders) will be used.
 
 - `data`: loaded data or an object that allows data to be loaded. This parameter can be any of the following types:
   - `Response` - `fetch` response object returned by `fetchFile` or `fetch`.

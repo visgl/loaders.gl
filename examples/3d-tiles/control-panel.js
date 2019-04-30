@@ -14,20 +14,23 @@ const Container = styled.div`
   margin: 20px;
   font-size: 13px;
   line-height: 2;
-  color: #6b6b76;
-  text-transform: uppercase;
   outline: none;
   z-index: 100;
+`;
+
+const DropDown = styled.select`
+  margin-bottom: 6px;
 `;
 
 export default class ControlPanel extends PureComponent {
   _renderByCategories() {
     const {category, example, onChange, data = {}} = this.props;
     const categories = Object.keys(data);
+    const selectedValue = `${category}.${example}`;
 
     return (
-      <select
-        defaultValue={`${category}.${example}`}
+      <DropDown
+        value={selectedValue}
         onChange={evt => {
           const categoryExample = evt.target.value;
           const value = categoryExample.split('.');
@@ -39,8 +42,9 @@ export default class ControlPanel extends PureComponent {
           return (
             <optgroup key={i} label={c}>
               {Object.keys(categoryExamples).map((e, j) => {
+                const value = `${c}.${e}`;
                 return (
-                  <option key={j} value={`${c}.${e}`}>
+                  <option key={j} value={value}>
                     {e}
                   </option>
                 );
@@ -48,11 +52,21 @@ export default class ControlPanel extends PureComponent {
             </optgroup>
           );
         })}
-      </select>
+      </DropDown>
     );
   }
 
+  _renderDropped() {
+    const {droppedFile} = this.props;
+    return droppedFile ? <div>Dropped file: {JSON.stringify(droppedFile.name)}</div> : null;
+  }
+
   render() {
-    return <Container>{this._renderByCategories()}</Container>;
+    return (
+      <Container>
+        {this._renderByCategories()}
+        {this._renderDropped()}
+      </Container>
+    );
   }
 }
