@@ -6,8 +6,9 @@
       "entries": [
         {"entry": "docs/README"},
         {"entry": "docs/whats-new"},
+        {"entry": "docs/upgrade-guide"},
         {"entry": "docs/roadmap"},
-        {"entry": "docs/upgrade-guide"}
+        {"entry": "docs/contributing"}
       ]
     },
     {

@@ -50,6 +50,6 @@ Also check each loader directory for additional details, we strive to keep intac
 
 loaders.gl is part of the vis.gl framework ecosystem, and was mainly created to support various frameworks and apps within these frameworks such as luma.gl and deck.gl, but is intentionally designed in a framework-agnostic way.
 
-## Contributions
+Our intention is for loaders.gl to work well on recent versions of the major evergreen browsers (Chrome, Firefox, Safari) and Node.js (v10+).
 
-Warmly welcomed, as long as they are reasonably aligned with the goals and principles outlined above. PRs and discussions around making loaders.gl more generally useful to non-vis.gl are welcome.
+Assuming appropriate polyfills are installed, we also want loaders.gl to run on Edge, IE11 and Node.js v8.
