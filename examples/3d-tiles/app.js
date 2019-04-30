@@ -76,7 +76,6 @@ export default class App extends PureComponent {
     this._onViewStateChange = this._onViewStateChange.bind(this);
     this._rotateCamera = this._rotateCamera.bind(this);
     this._getColor = this._getColor.bind(this);
-    this._getControlPanel = this._getControlPanel.bind(this);
 
     this._loadExample = this._loadExample.bind(this);
     this._onSelectExample = this._onSelectExample.bind(this);
@@ -249,7 +248,7 @@ export default class App extends PureComponent {
     });
   }
 
-  _getControlPanel() {
+  _renderControlPanel() {
     const {data, example, category} = this.state;
     return (
       <ControlPanel
