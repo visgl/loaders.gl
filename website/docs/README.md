@@ -11,7 +11,6 @@ The open source community has already created many excellent loaders for 3D and 
 Many of these loaders were created for specific use cases (e.g. as part of a frameworks like THREE.js) and contain code that depend on use-case specific classes (e.g. a loader might be 90% framework independent work but end by creating a `THREE.Mesh`, meaning that the returned objects are not easoly usable in Javascript applications that don't use that framework).
 
 In addition, the functionality offered by open source loaders can vary quite a bit:
-
 - The API, where e.g. some loaders accept URLs and implements the loading themselves, and then return promises or take callbacks, others are synchronous and just parse already loaded data, leaving more flexibility (and work) to the application.
 - Installation procedures can vary.
 - The format of the parsed data is usually different, even when parsing very similar file formats. This makes it harder to write applications that can accept data from multiple similar formats (e.g. an app that can load point clouds in PCD, PLY, LAS, Draco formats would need to deal with the idiosynchracies of multiple loaders).
@@ -21,21 +20,24 @@ In addition, the functionality offered by open source loaders can vary quite a b
 - How is error handling implemented.
 - etc.
 
-## Contents of Loaders.gl
+## Major Components
 
-- **Loaders** - The core functionality is a set of loaders (parsers) for various major geometry formats.
+- **Loaders** - The primary offering is a growing set of loaders (parsers) for various major geometry formats.
 
-- **Writers** - A number of formats also provide writers (or encoders for selected key formats to support saving data.
+- **Writers** - A secondary offering is a smaller set of writers (encoders) for selected key formats to support saving data.
 
-- **Utilities** - Since the loaders and writers themselves only implement parsing and encoding (typically from strings or array buffers), i.e. they don't actually "load" or "save" any data, loaders.gl also provides a set of utility functions that accept loader objects perform actual loading from files, urls etc.
+- **Core Functions** - Since the loaders and writers themselves only implement parsing and encoding (typically from strings or array buffers), i.e. they don't actually "load" or "save" any data, loaders.gl also provides a set of utility functions that accept loader objects perform actual loading from files, urls etc.
+
+- **Polyfills** - Since the loaders are written in modern JavaScript, it depends on some features like `TextDecoder`, `fetch` etc that are not availble in all browsers/Node.js versions. A polyfill module is provided to help when support for older environments.
+
 
 ## Main Design Goals
 
 Some of the key design goals for loaders.gl.
 
-**Framework Agnosticism** - loaders.gl is not tied to any specific framework. They load data from supported file formats into clearly documented JavaScript data structures, but stops short of creating e.g. a `Mesh` object from loaded attributes. This means that in contrast to a number of other good open source loaders, loaders.gl can be used with any JavaScript framework or application.
+**Framework Agnostic** - loaders.gl is not tied to any specific framework or use case. The provided loaders parse data from supported file formats into clearly documented, pure JavaScript data structures, but stops short of creating any rendering specific objects. This means that loaders.gl can be used with any JavaScript framework or application.
 
-**Unified Formats for Loaded Data** - All loaders in the same category return a "standardized" JavaScript object. For instance point cloud loaders use a header key-value map and a map of glTF2-style accessor objecs with typed arrays representing binary data attributes. This can significantly simplify applications that want to support multiple similar data formats.
+**Unified Data Structure for Similar Formats** - All loaders in the same category return a "standardized" JavaScript object. For instance point cloud loaders use a header key-value map and a map of glTF2-style accessor objecs with typed arrays representing binary data attributes. This can significantly simplify applications that want to support multiple similar data formats.
 
 **Binary Data** - Contiguous numeric arrays (e.g. mesh attributes) will be loaded using JavaScript typed arrays rather than native Arrays. Such binary arrays can be uploaded directly to GPU buffers and used for rendering or GPGPU calculations.
 
