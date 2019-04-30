@@ -25,6 +25,7 @@
     "@luma.gl/core": "^7.0.0",
     "@luma.gl/webgl": "^7.0.0",
     "@probe.gl/stats-widget": "^3.0.1",
+    "gl": "^4.2.2",
     "react": "^16.6.0",
     "react-dom": "^16.6.0",
     "styled-components": "^4.2.0"
