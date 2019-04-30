@@ -13,7 +13,7 @@ function main({root, inputDir, outputFilePath}) {
       indexMap[cat] = {
         name: cat,
         path: catDir.replace(ROOT_DIR, '.'),
-        examples: examples.slice().reduce((resMap, e) => {
+        examples: examples.reduce((resMap, e) => {
           const exampleDir = path.join(catDir, e);
           if (fs.lstatSync(exampleDir).isDirectory()) {
             const files = fs.readdirSync(exampleDir);
