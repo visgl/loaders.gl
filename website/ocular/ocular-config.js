@@ -32,7 +32,7 @@ module.exports = {
   PROJECT_ORG: 'uber-web',
   PROJECT_URL: 'https://github.com/uber-web/loaders.gl',
   PROJECT_DESC: 'Framework agnostic loaders for visualization assets',
-  PATH_PREFIX: '/loaders.gl',
+  PATH_PREFIX: '/',
 
   FOOTER_LOGO: '',
 
@@ -65,24 +65,24 @@ module.exports = {
   ADDITIONAL_LINKS: [],
 
   EXAMPLES: [
-    {
-      title: 'Point Clouds & Meshes',
-      image: 'images/example-pointcloud.png',
-      componentUrl: resolve(__dirname, './examples/pointcloud/app.js'),
-      path: 'examples/pointcloud'
-    },
-    {
-      title: '3D Tiles',
-      image: 'images/example-gltf.jpg',
-      componentUrl: resolve(__dirname, './examples/3d-tiles/app.js'),
-      path: 'examples/3d-tiles'
-    },
-    {
-      title: 'GLTF',
-      image: 'images/example-gltf.jpg',
-      componentUrl: resolve(__dirname, './templates/example-gltf.jsx'),
-      path: 'examples/gltf'
-    }
+    // {
+    //   title: 'Point Clouds & Meshes',
+    //   image: 'images/example-pointcloud.png',
+    //   componentUrl: resolve(__dirname, './examples/pointcloud/app.js'),
+    //   path: 'examples/pointcloud'
+    // },
+    // {
+    //   title: '3D Tiles',
+    //   image: 'images/example-gltf.jpg',
+    //   componentUrl: resolve(__dirname, './examples/3d-tiles/app.js'),
+    //   path: 'examples/3d-tiles'
+    // },
+    // {
+    //   title: 'GLTF',
+    //   image: 'images/example-gltf.jpg',
+    //   componentUrl: resolve(__dirname, './templates/example-gltf.jsx'),
+    //   path: 'examples/gltf'
+    // }
   ],
 
   // Avoids duplicate conflicting inputs when importing from examples folders

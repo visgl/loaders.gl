@@ -266,6 +266,8 @@ export default class App extends PureComponent {
     return (
       <DeckGL
         ref={_ => (this._deckRef = _)}
+        width="100%"
+        height="100%"
         views={new OrbitView()}
         viewState={viewState}
         controller={true}
