@@ -32,7 +32,7 @@ module.exports = {
   PROJECT_ORG: 'uber-web',
   PROJECT_URL: 'https://github.com/uber-web/loaders.gl',
   PROJECT_DESC: 'Framework agnostic loaders for visualization assets',
-  PATH_PREFIX: '/loaders.gl',
+  PATH_PREFIX: '/',
 
   FOOTER_LOGO: '',
 

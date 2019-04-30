@@ -1,9 +1,8 @@
-# Contributing to loaders.gl
+# Contributing
 
 Contributions are welcome, assuming that they align with the general design goals and philosophy of the repo.
 
-Unless you just want to contribute a small bug fix, it is a good idea to start by opening a PR.
-
+Unless you just want to contribute a small bug fix, it is a good idea to start by opening an issue and discuss your idea with the maintainers. This maximizes the chances that your contribution will be accepted once you open a pull request.
 
 
 ## Configuring Your Development Environment
@@ -15,7 +14,7 @@ Our primary development environment is MacOS, but it is possible to build loader
 
 ### Setting up Linux Environment on Windows 10
 
-* Install [WSL (Windows Subsystem for Linux)](https://docs.microsoft.com/en-us/windows/wsl/install-win10) on Windows 10.
+Install [WSL (Windows Subsystem for Linux)](https://docs.microsoft.com/en-us/windows/wsl/install-win10) on Windows 10.
 
 
 ### Install Node and NPM
