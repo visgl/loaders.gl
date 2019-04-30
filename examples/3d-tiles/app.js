@@ -141,7 +141,7 @@ export default class App extends PureComponent {
         ...viewState,
         target: [(mins[0] + maxs[0]) / 2, (mins[1] + maxs[1]) / 2, (mins[2] + maxs[2]) / 2],
         /* global window */
-        zoom: Math.log2(window.innerWidth / (maxs[0] - mins[0])) - 1
+        zoom: Math.log2(window.innerWidth / (maxs[0] - mins[0])) - 1.5
       };
     }
 
@@ -202,6 +202,7 @@ export default class App extends PureComponent {
 
     return [255, 255, 255];
   }
+
   /* eslint-enable max-statements */
 
   _renderLayers() {
@@ -247,8 +248,20 @@ export default class App extends PureComponent {
     });
   }
 
+  _renderControlPanel() {
+    const {data, example, category} = this.state;
+    return (
+      <ControlPanel
+        data={data}
+        category={category}
+        example={example}
+        onChange={this._onSelectExample}
+      />
+    );
+  }
+
   render() {
-    const {viewState, data, example, category} = this.state;
+    const {viewState} = this.state;
 
     return (
       <DeckGL
@@ -261,14 +274,7 @@ export default class App extends PureComponent {
         parameters={{
           clearColor: [0.07, 0.14, 0.19, 1]
         }}
-      >
-        <ControlPanel
-          data={data}
-          category={category}
-          example={example}
-          onChange={this._onSelectExample}
-        />
-      </DeckGL>
+      />
     );
   }
 }
