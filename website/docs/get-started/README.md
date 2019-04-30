@@ -2,31 +2,37 @@
 
 ## Installing
 
-```
-yarn add loaders.gl
-```
+Install loaders.gl core and loader for any modules you would like to use.
 
-## Running glbdump
+Each format is published as a separate npm module.
 
-Installing loaders.gl makes the `glbdump` command line tool available. It can be run using `npx`.
-
-```
-$ npx glbdump <filename>
+```bash
+yarn add @loaders.gl/core
+yarn add @loaders.gl/gltf
+...
 ```
 
 ## Building
 
 loaders.gl is designed to leverage modern JavaScript (ES2018) and to optimize functionality and performance on evergreen browsers.
 
-That saud, the default distribution is completely transpiled to ES5 so using loaders.gl with older or "slower moving" browsers such as IE11 and Edge is possible if polyfills are added.
+However, the default distribution is completely transpiled to ES5 so using loaders.gl with older or "slower moving" browsers such as IE11 and Edge is possible if polyfills are added.
 
-To build on Edge, `TextEncoder` and `TextDecoder` must be polyfilled. There are several polyfills available on `npm`.
 
-```
-yarn add text-encoding
-```
+## Supporting Older Browsers
+
+To build on Edge and IE11, `TextEncoder` and `TextDecoder` must be polyfilled. There are several polyfills available on `npm`, but you can also use the polyfills provided by loaders.gl
 
 ```js
-import 'text-encoding'; // Polyfills TextEncoder and TextDecoder for IE11 and Edge
-import '@loaders.gl/core';
+import '@loaders.gl/polyfills';
 ```
+
+
+## Running glbdump
+
+Installing `@loaders.gl/gltf` makes the `glbdump` command line tool available to inspect content of gltf files. It can be run using `npx`.
+
+```bash
+npx glbdump <filename>
+```
+

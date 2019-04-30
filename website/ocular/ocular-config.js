@@ -50,13 +50,19 @@ module.exports = {
 
   HOME_BULLETS: [
     {
-      text: 'Designed for Interoperability',
-      desc: 'Seamless integration.',
-      img: 'images/icon-react.svg'
+      text: 'A collection of the best open source loaders',
+      desc: 'Parsers and encoders for many major 3D, geospatial and tabular formats.',
+      img: 'images/icon-high-prevision.svg'
     },
     {
-      text: 'Totally ready for production',
-      img: 'images/icon-layers.svg'
+      text: 'Framework Agnostic',
+      desc: 'Parsers and encoders can be used with any framework.',
+      img: 'images/icon-high-prevision.svg'
+    },
+    {
+      text: 'Works in Browser, Worker Threads and Node.js',
+      desc: 'Move your code around and rely on your loaders to keep working.',
+      img: 'images/icon-high-prevision.svg'
     }
   ],
 
