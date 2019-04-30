@@ -24,7 +24,7 @@ export const MeshTile3DLoader = {
 
 registerLoaders(MeshTile3DLoader);
 
-// eslint-disable-next-line no-undef
+const DATA_URI = 'https://raw.githubusercontent.com/uber-web/loaders.gl/master';
 const INDEX_FILE = `${DATA_URI}/modules/3d-tiles/test/data/index.json`;
 
 const INITIAL_VIEW_STATE = {

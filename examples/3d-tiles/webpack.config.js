@@ -1,5 +1,3 @@
-const webpack = require('webpack');
-
 const COMMON_CONFIG = {
   mode: 'development',
 
@@ -34,11 +32,6 @@ function addDevConfig(config, env) {
 
 function addProdConfig(config) {
   config.plugins = config.plugins || [];
-  config.plugins = config.plugins.concat(
-    new webpack.DefinePlugin({
-      DATA_URI: JSON.stringify('https://raw.githubusercontent.com/uber-web/loaders.gl/master/')
-    })
-  );
 
   return Object.assign(config, {
     mode: 'production'

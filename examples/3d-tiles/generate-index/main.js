@@ -1,23 +1,25 @@
 import fs from 'fs';
 import path from 'path';
 
-function main({inputDir, outputFilePath}) {
+const ROOT_DIR = path.resolve(__dirname, '../../../');
+
+function main({root, inputDir, outputFilePath}) {
   const indexMap = {};
   const categories = fs.readdirSync(inputDir);
   categories.forEach(cat => {
-    const catDir = path.join(inputDir, cat);
+    const catDir = path.resolve(inputDir, cat);
     if (fs.lstatSync(catDir).isDirectory()) {
       const examples = fs.readdirSync(catDir);
       indexMap[cat] = {
         name: cat,
-        path: catDir,
+        path: catDir.replace(ROOT_DIR, '.'),
         examples: examples.reduce((resMap, e) => {
           const exampleDir = path.join(catDir, e);
           if (fs.lstatSync(exampleDir).isDirectory()) {
             const files = fs.readdirSync(exampleDir);
             resMap[e] = {
               name: e,
-              path: exampleDir,
+              path: exampleDir.replace(ROOT_DIR, '.'),
               files
             };
           }

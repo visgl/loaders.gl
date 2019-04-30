@@ -5,7 +5,6 @@
 // This enables using the examples to debug the main library source
 // without publishing or npm linking, with conveniences such hot reloading etc.
 const resolve = require('path').resolve;
-const webpack = require('webpack');
 // eslint-disable-next-line import/no-extraneous-dependencies
 const ALIASES = require('ocular-dev-tools/config/ocular.config')({
   root: resolve(__dirname, '..')
@@ -31,12 +30,6 @@ const LOCAL_DEVELOPMENT_CONFIG = {
     // Imports the library from its src directory in this repo
     alias: ALIASES
   },
-
-  plugins: [
-    new webpack.DefinePlugin({
-      DATA_URI: JSON.stringify('.')
-    })
-  ],
 
   module: {
     rules: [
