@@ -1,3 +1,6 @@
+import {parse, parseSync} from './lib/parse';
+import {load} from './lib/load';
+
 // FILE READING AND WRITING
 export {setPathPrefix, getPathPrefix, resolvePath} from './lib/fetch/file-aliases.js';
 export {fetchFile, readFileSync} from './lib/fetch/fetch-file';
@@ -59,9 +62,6 @@ export {getMeshSize as _getMeshSize} from './categories/mesh/mesh-utils';
 
 // DEPRECATED
 export {createReadStream} from './lib/fetch/fetch-file';
-
-import {parse, parseSync} from './lib/parse';
-import {load} from './lib/load';
 
 export function parseFile(...args) {
   console.warn('parse() deprecated, use parse()'); // eslint-disable-line

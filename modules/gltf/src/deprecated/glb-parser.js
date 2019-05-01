@@ -1,4 +1,4 @@
-/* eslint-disable camelcase, max-statements */
+/* eslint-disable camelcase, max-statements, no-restricted-globals */
 import unpackGLTFBuffers from '../gltf/unpack-gltf-buffers';
 import unpackBinaryJson from '../packed-json/unpack-binary-json';
 import assert from '../utils/assert';
