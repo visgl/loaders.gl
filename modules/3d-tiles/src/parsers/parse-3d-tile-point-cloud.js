@@ -189,10 +189,15 @@ export function parseDracoBuffer(tile, featureTable, batchTable) {
 }
 
 export function parseRGB565(rgb565) {
-  const r5 = rgb565 & 31;
-  const g6 = (rgb565 >> 5) & 63;
-  const b5 = (rgb565 >> 11) & 31;
-  return [Math.round((r5 * 255) / 32), Math.round((g6 * 255) / 64), Math.round((b5 * 255) / 32)];
+  let r5 = rgb565 & 31;
+  let g6 = (rgb565 >> 5) & 63;
+  let b5 = (rgb565 >> 11) & 31;
+
+  r5 = Math.round((r5 * 255) / 32);
+  g6 = Math.round((g6 * 255) / 64);
+  b5 = Math.round((b5 * 255) / 32);
+
+  return [r5, g6, b5];
 }
 
 /*
