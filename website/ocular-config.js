@@ -4,7 +4,7 @@ const DOCS = require('../docs/table-of-contents.json');
 const DEPENDENCIES = require('./package.json').dependencies;
 // eslint-disable-next-line import/no-extraneous-dependencies
 const ALIASES = require('ocular-dev-tools/config/ocular.config')({
-  root: resolve(__dirname, '../..')
+  root: resolve(__dirname, '..')
 }).aliases;
 
 // When duplicating example dependencies in website, autogenerate
@@ -71,24 +71,24 @@ module.exports = {
   ADDITIONAL_LINKS: [],
 
   EXAMPLES: [
-    // {
-    //   title: 'Point Clouds & Meshes',
-    //   image: 'images/example-pointcloud.png',
-    //   componentUrl: resolve(__dirname, './examples/pointcloud/app.js'),
-    //   path: 'examples/pointcloud'
-    // },
-    // {
-    //   title: '3D Tiles',
-    //   image: 'images/example-gltf.jpg',
-    //   componentUrl: resolve(__dirname, './examples/3d-tiles/app.js'),
-    //   path: 'examples/3d-tiles'
-    // },
-    // {
-    //   title: 'GLTF',
-    //   image: 'images/example-gltf.jpg',
-    //   componentUrl: resolve(__dirname, './templates/example-gltf.jsx'),
-    //   path: 'examples/gltf'
-    // }
+    {
+      title: 'Point Clouds & Meshes',
+      image: 'images/example-pointcloud.png',
+      componentUrl: resolve(__dirname, './examples/pointcloud/app.js'),
+      path: 'examples/pointcloud'
+    },
+    {
+      title: '3D Tiles',
+      image: 'images/example-gltf.jpg',
+      componentUrl: resolve(__dirname, './examples/3d-tiles/app.js'),
+      path: 'examples/3d-tiles'
+    },
+    {
+      title: 'GLTF',
+      image: 'images/example-gltf.jpg',
+      componentUrl: resolve(__dirname, './templates/example-gltf.jsx'),
+      path: 'examples/gltf'
+    }
   ],
 
   // Avoids duplicate conflicting inputs when importing from examples folders
@@ -96,15 +96,8 @@ module.exports = {
   webpack: {
     resolve: {
       // modules: [resolve(__dirname, './node_modules')],
-      alias: Object.assign({}, ALIASES, dependencyAliases, {
-        //   '@luma.gl/addons': `${__dirname}/node_modules/@luma.gl/addons/src`,
-        //   '@luma.gl/core': `${__dirname}/node_modules/@luma.gl/core/src`,
-        //   '@luma.gl/constants': `${__dirname}/node_modules/@luma.gl/constants/src`,
-        //   '@luma.gl/webgl': `${__dirname}/node_modules/@luma.gl/webgl/src`,
-        //   '@deck.gl/core': `${__dirname}/node_modules/@deck.gl/core/src`,
-        //   '@deck.gl/layers': `${__dirname}/node_modules/@deck.gl/layers/src`,
-        //   '@deck.gl/react': `${__dirname}/node_modules/@deck.gl/react/src`
-      })
+      alias: Object.assign({}, ALIASES, dependencyAliases)
+      // Local aliases need to be set in local gatsby node!
     }
   }
 };

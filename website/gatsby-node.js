@@ -14,6 +14,7 @@
 // exports.createPages = ({ graphql, actions }) =>
 //   ocular.createPages({ graphql, actions });
 
+const resolve = require('path').resolve;
 const ocularConfig = require('./ocular-config');
 const getGatsbyNodeCallbacks = require('ocular-gatsby/gatsby-node');
 
@@ -69,12 +70,28 @@ callbacks.onCreateWebpackConfig = function onCreateWebpackConfigOverride(opts) {
     },
     node: {
       fs: 'empty'
+    },
+    resolve: {
+      alias: {
+        '@loaders.gl/3d-tiles': '/Users/ib/Documents/loaders.gl/modules/3d-tiles/src',
+        '@loaders.gl/arrow': '/Users/ib/Documents/loaders.gl/modules/arrow/src',
+        '@loaders.gl/core': '/Users/ib/Documents/loaders.gl/modules/core/src',
+        '@loaders.gl/csv': '/Users/ib/Documents/loaders.gl/modules/csv/src',
+        '@loaders.gl/draco': '/Users/ib/Documents/loaders.gl/modules/draco/src',
+        '@loaders.gl/experimental': '/Users/ib/Documents/loaders.gl/modules/experimental/src',
+        '@loaders.gl/gltf': '/Users/ib/Documents/loaders.gl/modules/gltf/src',
+        '@loaders.gl/images': '/Users/ib/Documents/loaders.gl/modules/images/src',
+        '@loaders.gl/kml': '/Users/ib/Documents/loaders.gl/modules/kml/src',
+        '@loaders.gl/las': '/Users/ib/Documents/loaders.gl/modules/las/src',
+        '@loaders.gl/obj': '/Users/ib/Documents/loaders.gl/modules/obj/src',
+        '@loaders.gl/pcd': '/Users/ib/Documents/loaders.gl/modules/pcd/src',
+        '@loaders.gl/ply': '/Users/ib/Documents/loaders.gl/modules/ply/src',
+        '@loaders.gl/polyfills': '/Users/ib/Documents/loaders.gl/modules/polyfills/src',
+        '@loaders.gl/zip': '/Users/ib/Documents/loaders.gl/modules/zip/src',
+      }
     }
   };
 
-  // Completely replace the webpack config for the current stage.
-  // This can be dangerous and break Gatsby if certain configuration options are changed.
-  // Generally only useful for cases where you need to handle config merging logic yourself,
-  // in which case consider using webpack-merge.
+  // Merges into the webpack config
   actions.setWebpackConfig(newConfig);
 };

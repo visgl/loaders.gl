@@ -29,10 +29,11 @@
     "react-dom": "^16.6.0"
   },
   "devDependencies": {
+    "eslint-import-resolver-alias": "^1.1.2",
     "gatsby": "^2.3.0",
     "gatsby-plugin-styletron": "^3.0.5",
     "gh-pages": "^2.0.1",
-    "ocular-gatsby": "1.0.0-alpha.21",
+    "ocular-gatsby": "1.0.0-alpha.22",
     "sharp": "0.22"
   }
 }

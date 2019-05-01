@@ -1,6 +1,6 @@
 import React, {Component} from 'react'; // eslint-disable-line
 import PropTypes from 'prop-types';
-import {lumaStats} from '@luma.gl/core';
+import {lumaStats, setPathPrefix} from '@luma.gl/core';
 import {VRDisplay} from '@luma.gl/addons';
 import StatsWidget from '@probe.gl/stats-widget';
 
@@ -55,12 +55,17 @@ export default class AnimationLoopRunner extends Component {
   componentDidMount() {
     const {showStats} = this.props;
 
+    console.log(this.props);
+
     this.animationLoop._setDisplay(new VRDisplay());
 
     // Ensure the example can find its images
     // TODO - ideally ocular-gatsby should extract images from example source?
-    // const RAW_GITHUB = 'https://raw.githubusercontent.com/uber/loaders.gl/master';
-    // setPathPrefix(`${RAW_GITHUB}/${example.path}`);
+    const {path} = this.props;
+    if (path) {
+      const RAW_GITHUB = 'https://raw.githubusercontent.com/uber/loaders.gl/master';
+      setPathPrefix(`${RAW_GITHUB}/${path}`);
+    }
 
     // Start the actual example
     this.animationLoop.start(this.props);
@@ -74,7 +79,7 @@ export default class AnimationLoopRunner extends Component {
 
   componentWillUnmount() {
     this.animationLoop.stop(this.props);
-    this.animationLoop.finalize();
+    this.animationLoop.delete();
     this.animationLoop = null;
     // this._stopStats();
   }
