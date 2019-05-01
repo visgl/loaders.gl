@@ -14,7 +14,6 @@
 // exports.createPages = ({ graphql, actions }) =>
 //   ocular.createPages({ graphql, actions });
 
-const resolve = require('path').resolve;
 const ocularConfig = require('./ocular-config');
 const getGatsbyNodeCallbacks = require('ocular-gatsby/gatsby-node');
 
