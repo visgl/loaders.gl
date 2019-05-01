@@ -13,7 +13,7 @@
     "develop": "gatsby develop --port=8001",
     "build": "yarn copy-examples && gatsby build",
     "serve": "gatsby serve",
-    "deploy": "gh-pages -d public",
+    "deploy": "NODE_DEBUG=gh-pages gh-pages -d public",
     "copy-examples": "rm -rf examples ; find ../examples -name node_modules -exec rm -r {} \\; ; cp -r ../examples . "
   },
   "dependencies": {

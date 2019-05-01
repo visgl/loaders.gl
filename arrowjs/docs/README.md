@@ -1,4 +1,4 @@
-# Arrow JavaScript API
+# Introduction
 
 The Arrow JavaScript API is designed to helps applications tap into the full power of working with Apache Arrow formatted data. It supports typical use cases such as loading, processing, generating and writing Arrow encoded data, as well as doing data frame style manipulations on Arrow data.
 
