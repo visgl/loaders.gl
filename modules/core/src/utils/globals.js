@@ -21,6 +21,7 @@
 // Purpose: include this in your module to avoids adding dependencies on
 // micro modules like 'global' and 'is-browser';
 
+/* eslint-disable no-restricted-globals */
 /* global process, window, global, document */
 const isBrowser =
   typeof process !== 'object' || String(process) !== '[object process]' || process.browser;

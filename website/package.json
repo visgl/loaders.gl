@@ -8,13 +8,13 @@
   ],
   "main": "index.js",
   "scripts": {
-    "start": "yarn copy-examples && yarn clean && yarn develop",
+    "start": "yarn clean-examples && yarn clean && yarn develop",
     "clean": "rm -rf ./.cache ./public",
+    "clean-examples": "find ../examples -name node_modules -exec rm -r {} \\;",
     "develop": "gatsby develop --port=8001",
-    "build": "yarn copy-examples && gatsby build",
+    "build": "yarn clean-examples && gatsby build",
     "serve": "gatsby serve",
-    "deploy": "NODE_DEBUG=gh-pages gh-pages -d public",
-    "copy-examples": "rm -rf examples ; find ../examples -name node_modules -exec rm -r {} \\; ; cp -r ../examples . "
+    "deploy": "NODE_DEBUG=gh-pages gh-pages -d public"
   },
   "dependencies": {
     "@deck.gl/core": "^7.0.2",
@@ -26,13 +26,15 @@
     "@luma.gl/webgl": "^7.0.0",
     "@probe.gl/stats-widget": "^3.0.1",
     "react": "^16.6.0",
-    "react-dom": "^16.6.0"
+    "react-dom": "^16.6.0",
+    "styled-components": "^4.2.0"
   },
   "devDependencies": {
+    "eslint-import-resolver-alias": "^1.1.2",
     "gatsby": "^2.3.0",
     "gatsby-plugin-styletron": "^3.0.5",
     "gh-pages": "^2.0.1",
-    "ocular-gatsby": "1.0.0-alpha.21",
+    "ocular-gatsby": "1.0.0-alpha.22",
     "sharp": "0.22"
   }
 }

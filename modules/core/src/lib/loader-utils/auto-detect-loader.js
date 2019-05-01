@@ -1,6 +1,6 @@
 import {normalizeLoader} from './normalize-loader';
 
-const EXT_PATTERN = /[^\.]+$/;
+const EXT_PATTERN = /[^.]+$/;
 
 // Find a loader that works for extension/text
 // Search the loaders array argument for a loader that matches extension or text

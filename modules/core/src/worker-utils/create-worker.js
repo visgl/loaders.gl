@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-globals */
 /* global TextDecoder, self */
 import getTransferList from './get-transfer-list';
 

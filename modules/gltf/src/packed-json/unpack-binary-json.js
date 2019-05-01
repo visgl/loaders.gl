@@ -48,7 +48,7 @@ function parseJSONPointer(value) {
       return value.slice(1);
     }
 
-    let matches = value.match(/\#\/([a-z]+)\/([0-9]+)/);
+    let matches = value.match(/#\/([a-z]+)\/([0-9]+)/);
     if (matches) {
       const index = parseInt(matches[2], 10);
       return [matches[1], index];
