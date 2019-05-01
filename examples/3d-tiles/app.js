@@ -274,22 +274,19 @@ export default class App extends PureComponent {
     const {viewState} = this.state;
 
     return (
-      <div>
-        <DeckGL
-          ref={_ => (this._deckRef = _)}
-          width="100%"
-          height="100%"
-          views={new OrbitView()}
-          viewState={viewState}
-          controller={true}
-          onViewStateChange={this._onViewStateChange}
-          layers={this._renderLayers()}
-          parameters={{
-            clearColor: [0.07, 0.14, 0.19, 1]
-          }}
-        />
-        {this._renderControlPanel()}
-      </div>
+      <DeckGL
+        ref={_ => (this._deckRef = _)}
+        width="100%"
+        height="100%"
+        views={new OrbitView()}
+        viewState={viewState}
+        controller={true}
+        onViewStateChange={this._onViewStateChange}
+        layers={this._renderLayers()}
+        parameters={{
+          clearColor: [0.07, 0.14, 0.19, 1]
+        }}
+      />
     );
   }
 }
