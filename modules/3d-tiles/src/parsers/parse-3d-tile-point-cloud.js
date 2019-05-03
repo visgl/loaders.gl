@@ -124,7 +124,7 @@ function parseNormals(tile, featureTable) {
 
 function parseBatch(tile, featureTable) {
   let batchTable = null;
-  if (featureTable.hasProperty('BATCH_ID')) {
+  if (!tile.batchIds && featureTable.hasProperty('BATCH_ID')) {
     tile.batchIds = featureTable.getPropertyArray('BATCH_ID', GL.UNSIGNED_SHORT, 1);
 
     if (tile.batchIds) {
@@ -140,18 +140,7 @@ function parseBatch(tile, featureTable) {
   return batchTable;
 }
 
-// function parseStyles(tile, featureTable) {
-//   const batchTable = tile.batchTable;
-//   if (!tile.batchIds && tile.batchTableBinary) {
-//     tile.styleableProperties = Cesium3DTileBatchTable.getBinaryProperties(
-//       pointsLength,
-//       batchTableJson,
-//       batchTableBinary
-//     );
-//   }
-// }
-
-/* eslint-disable complexity */
+// eslint-disable-next-line complexity
 export function parseDraco(tile, featureTable, batchTable) {
   let dracoBuffer;
   let dracoFeatureTableProperties;
@@ -230,29 +219,17 @@ export function decodeDraco(tile) {
       tile.octEncodedRange = (1 << data.NORMAL.data.quantization.quantizationBits) - 1.0;
       tile.isOctEncodedDraco = true;
     }
-    // const styleableProperties = tile.styleableProperties;
-    // for (const name in batchTableProperties) {
-    //   if (batchTableProperties.hasOwnProperty(name)) {
-    //     const property = result[name];
-    //     if (!defined(styleableProperties)) {
-    //       styleableProperties = {};
-    //     }
-    //     styleableProperties[name] = {
-    //       typedArray : property.array,
-    //       componentCount : property.data.componentsPerAttribute
-    //     };
-    //   }
-    // }
-    //
-    // tile.styleableProperties = styleableProperties;
-    tile.positions = decodedPositions || tile.positions;
-    tile.colors = decodedColors || tile.colors;
-    tile.normals = decodedNormals || tile.normals;
-    tile.batchIds = decodedBatchIds || tile.batchIds;
+
+    tile.positions = decodedPositions;
+    tile.colors = decodedColors;
+    tile.normals = decodedNormals;
+    tile.batchIds = decodedBatchIds;
+
+    delete tile.draco;
   }
+
   return true;
 }
-/* eslint-enable complexity */
 
 /*
   const batchTable = new Tile3DBatchTable(tile);

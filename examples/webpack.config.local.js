@@ -27,6 +27,7 @@ const LOCAL_DEVELOPMENT_CONFIG = {
     contentBase: [resolve('.'), resolve('../../')]
   },
 
+  // this is required by draco
   node: {
     fs: 'empty'
   },

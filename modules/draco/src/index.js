@@ -6,6 +6,7 @@ export {default as DracoBuilder} from './draco-builder';
 
 // DEPRECATED
 
+// eslint-disable-next-line import/first
 import DracoParser from './draco-parser';
 
 const DEPRECATION_WARNING = `\
