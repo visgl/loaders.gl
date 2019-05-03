@@ -127,7 +127,6 @@ export default class App extends PureComponent {
 
     if (data && category && example) {
       const selectedExample = data[category].examples[example];
-      // eslint-disable-next-line no-undef
       const url = `${DATA_URI}/${selectedExample.path}/${selectedExample.files[0]}`;
       load(url).then(this._onLoad);
     }
@@ -136,7 +135,7 @@ export default class App extends PureComponent {
   _onLoad(tile) {
     const featureTable = new Tile3DFeatureTable(tile.featureTableJson, tile.featureTableBinary);
     let batchTable = null;
-    if (tile.batchTableBinaryByteLength) {
+    if (tile.batchIds) {
       const {batchTableJson, batchTableBinary} = tile;
       batchTable = new Tile3DBatchTable(
         batchTableJson,

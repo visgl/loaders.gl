@@ -9,6 +9,7 @@ const resolve = require('path').resolve;
 const ALIASES = require('ocular-dev-tools/config/ocular.config')({
   root: resolve(__dirname, '..')
 }).aliases;
+
 // eslint-disable-next-line import/no-extraneous-dependencies
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
@@ -24,6 +25,11 @@ const LOCAL_DEVELOPMENT_CONFIG = {
       warnings: false
     },
     contentBase: [resolve('.'), resolve('../../')]
+  },
+
+  // this is required by draco
+  node: {
+    fs: 'empty'
   },
 
   resolve: {
