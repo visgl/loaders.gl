@@ -10,8 +10,6 @@ const ALIASES = require('ocular-dev-tools/config/ocular.config')({
   root: resolve(__dirname, '..')
 }).aliases;
 
-delete ALIASES['@loaders.gl/draco'];
-
 // eslint-disable-next-line import/no-extraneous-dependencies
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
