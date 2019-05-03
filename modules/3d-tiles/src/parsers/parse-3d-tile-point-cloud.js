@@ -1,15 +1,18 @@
+import {Vector3} from 'math.gl';
+
+import {DracoParser} from '@loaders.gl/draco';
 import GL from '../math/gl-constants';
 import Tile3DFeatureTable from '../classes/tile-3d-feature-table';
 import Tile3DBatchTable from '../classes/tile-3d-batch-table';
 import {parse3DTileHeaderSync} from './helpers/parse-3d-tile-header';
 import {parse3DTileTablesHeaderSync, parse3DTileTablesSync} from './helpers/parse-3d-tile-tables';
 
-const DECODING_STATE = {
-  NEEDS_DECODE: 0,
-  DECODING: 1,
-  READY: 2,
-  FAILED: 3
-};
+// const DECODING_STATE = {
+//   NEEDS_DECODE: 0,
+//   DECODING: 1,
+//   READY: 2,
+//   FAILED: 3
+// };
 
 // Reference code
 // https://github.com/AnalyticalGraphicsInc/cesium/blob/master/Source/Scene/PointCloud.js#L254
@@ -48,12 +51,12 @@ function extractPointCloud(tile) {
   tile.isRGB565 = false;
   tile.isOctEncoded16P = false;
 
+  const batchTable = parseBatch(tile, featureTable);
+  parseDraco(tile, featureTable, batchTable);
+
   parsePositions(tile, featureTable);
   parseColors(tile, featureTable);
   parseNormals(tile, featureTable);
-
-  const batchTable = parseBatch(tile, featureTable);
-  parseDracoBuffer(tile, featureTable, batchTable);
 }
 
 function parsePositions(tile, featureTable) {
@@ -148,7 +151,8 @@ function parseBatch(tile, featureTable) {
 //   }
 // }
 
-export function parseDracoBuffer(tile, featureTable, batchTable) {
+/* eslint-disable complexity */
+export function parseDraco(tile, featureTable, batchTable) {
   let dracoBuffer;
   let dracoFeatureTableProperties;
   let dracoBatchTableProperties;
@@ -168,11 +172,13 @@ export function parseDracoBuffer(tile, featureTable, batchTable) {
 
     dracoBuffer = tile.featureTableBinary.slice(dracoByteOffset, dracoByteOffset + dracoByteLength);
 
-    tile.hasPositions = dracoFeatureTableProperties.POSITION;
-    tile.hasColors = dracoFeatureTableProperties.RGB || dracoFeatureTableProperties.RGBA;
-    tile.hasNormals = dracoFeatureTableProperties.NORMAL;
-    tile.hasBatchIds = dracoFeatureTableProperties.BATCH_ID;
-    tile.isTranslucent = dracoFeatureTableProperties.RGBA;
+    tile.hasPositions = Number.isFinite(dracoFeatureTableProperties.POSITION);
+    tile.hasColors =
+      Number.isFinite(dracoFeatureTableProperties.RGB) ||
+      Number.isFinite(dracoFeatureTableProperties.RGBA);
+    tile.hasNormals = Number.isFinite(dracoFeatureTableProperties.NORMAL);
+    tile.hasBatchIds = Number.isFinite(dracoFeatureTableProperties.BATCH_ID);
+    tile.isTranslucent = Number.isFinite(dracoFeatureTableProperties.RGBA);
   }
 
   if (dracoBuffer) {
@@ -184,7 +190,7 @@ export function parseDracoBuffer(tile, featureTable, batchTable) {
       dequantizeInShader: false
     };
 
-    tile.decodingState = DECODING_STATE.NEEDS_DECODE;
+    decodeDraco(tile);
   }
 }
 
@@ -199,6 +205,54 @@ export function parseRGB565(rgb565) {
 
   return [r5, g6, b5];
 }
+
+export function decodeDraco(tile) {
+  const draco = tile.draco;
+  if (draco && draco.buffer) {
+    const data = new DracoParser().decode(draco.buffer);
+    const decodedPositions = data.attributes.POSITION && data.attributes.POSITION.value;
+    const decodedColors = data.attributes.COLOR_0 && data.attributes.COLOR_0.value;
+    const decodedNormals = data.attributes.NORMAL && data.attributes.NORMAL.value;
+    const decodedBatchIds = data.attributes.BATCH_ID && data.attributes.BATCH_ID.value;
+    const isQuantizedDraco = decodedPositions && data.attributes.POSITION.value.quantization;
+    const isOctEncodedDraco = decodedNormals && data.attributes.NORMAL.value.quantization;
+    if (isQuantizedDraco) {
+      // Draco quantization range == quantized volume scale - size in meters of the quantized volume
+      // Internal quantized range is the range of values of the quantized data, e.g. 255 for 8-bit, 1023 for 10-bit, etc
+      const quantization = data.POSITION.data.quantization;
+      const range = quantization.range;
+      tile.quantizedVolumeScale = new Vector3(range, range, range);
+      tile.quantizedVolumeOffset = new Vector3(quantization.minValues);
+      tile.quantizedRange = (1 << quantization.quantizationBits) - 1.0;
+      tile.isQuantizedDraco = true;
+    }
+    if (isOctEncodedDraco) {
+      tile.octEncodedRange = (1 << data.NORMAL.data.quantization.quantizationBits) - 1.0;
+      tile.isOctEncodedDraco = true;
+    }
+    // const styleableProperties = tile.styleableProperties;
+    // for (const name in batchTableProperties) {
+    //   if (batchTableProperties.hasOwnProperty(name)) {
+    //     const property = result[name];
+    //     if (!defined(styleableProperties)) {
+    //       styleableProperties = {};
+    //     }
+    //     styleableProperties[name] = {
+    //       typedArray : property.array,
+    //       componentCount : property.data.componentsPerAttribute
+    //     };
+    //   }
+    // }
+    //
+    // tile.styleableProperties = styleableProperties;
+    tile.positions = decodedPositions || tile.positions;
+    tile.colors = decodedColors || tile.colors;
+    tile.normals = decodedNormals || tile.normals;
+    tile.batchIds = decodedBatchIds || tile.batchIds;
+  }
+  return true;
+}
+/* eslint-enable complexity */
 
 /*
   const batchTable = new Tile3DBatchTable(tile);

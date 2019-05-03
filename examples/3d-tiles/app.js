@@ -127,7 +127,6 @@ export default class App extends PureComponent {
 
     if (data && category && example) {
       const selectedExample = data[category].examples[example];
-      // eslint-disable-next-line no-undef
       const url = `${DATA_URI}/${selectedExample.path}/${selectedExample.files[0]}`;
       load(url).then(this._onLoad);
     }
@@ -136,7 +135,7 @@ export default class App extends PureComponent {
   _onLoad(tile) {
     const featureTable = new Tile3DFeatureTable(tile.featureTableJson, tile.featureTableBinary);
     let batchTable = null;
-    if (tile.batchTableBinaryByteLength) {
+    if (tile.batchIds) {
       const {batchTableJson, batchTableBinary} = tile;
       batchTable = new Tile3DBatchTable(
         batchTableJson,
@@ -274,19 +273,22 @@ export default class App extends PureComponent {
     const {viewState} = this.state;
 
     return (
-      <DeckGL
-        ref={_ => (this._deckRef = _)}
-        width="100%"
-        height="100%"
-        views={new OrbitView()}
-        viewState={viewState}
-        controller={true}
-        onViewStateChange={this._onViewStateChange}
-        layers={this._renderLayers()}
-        parameters={{
-          clearColor: [0.07, 0.14, 0.19, 1]
-        }}
-      />
+      <div>
+        <DeckGL
+          ref={_ => (this._deckRef = _)}
+          width="100%"
+          height="100%"
+          views={new OrbitView()}
+          viewState={viewState}
+          controller={true}
+          onViewStateChange={this._onViewStateChange}
+          layers={this._renderLayers()}
+          parameters={{
+            clearColor: [0.07, 0.14, 0.19, 1]
+          }}
+        />
+        {this._renderControlPanel()}
+      </div>
     );
   }
 }

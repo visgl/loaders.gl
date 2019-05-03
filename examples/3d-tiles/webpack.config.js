@@ -45,9 +45,7 @@ module.exports = env => {
 
   if (env.local) {
     config = addDevConfig(config, env);
-  }
-
-  if (env.prod) {
+  } else {
     config = addProdConfig(config);
   }
 
