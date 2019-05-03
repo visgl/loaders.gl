@@ -27,6 +27,10 @@ const LOCAL_DEVELOPMENT_CONFIG = {
     contentBase: [resolve('.'), resolve('../../')]
   },
 
+  node: {
+    fs: 'empty'
+  },
+
   resolve: {
     // Imports the library from its src directory in this repo
     alias: ALIASES

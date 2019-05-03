@@ -15,6 +15,9 @@
     "react-dom": "^16.3.0",
     "styled-components": "^4.2.0"
   },
+  "browser": {
+    "fs": false
+  },
   "devDependencies": {
     "@babel/core": "^7.4.0",
     "@babel/plugin-proposal-class-properties": "^7.4.0",
