@@ -6,7 +6,7 @@
     "generate": "node ./generate-index/index.js"
   },
   "dependencies": {
-    "@loaders.gl/3d-tiles": "1.0.1",
+    "@loaders.gl/3d-tiles": "1.1.0-alpha.0",
     "@loaders.gl/core": "^1.0.1",
     "@deck.gl/react": "^7.0.4",
     "@deck.gl/core": "^7.0.4",

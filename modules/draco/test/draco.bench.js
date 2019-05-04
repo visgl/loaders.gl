@@ -1,4 +1,5 @@
-import {fetchFile, parseSync, encode, _getMeshSize} from '@loaders.gl/core';
+import {fetchFile, parseSync, encode} from '@loaders.gl/core';
+import {_getMeshSize} from '@loaders.gl/loader-utils';
 import {DracoLoader, DracoWriter} from '@loaders.gl/draco';
 
 const OPTIONS = [

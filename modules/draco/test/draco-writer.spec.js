@@ -1,6 +1,7 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
-import {encodeSync, fetchFile, parseSync, _getMeshSize} from '@loaders.gl/core';
+import {encodeSync, fetchFile, parseSync} from '@loaders.gl/core';
+import {_getMeshSize} from '@loaders.gl/loader-utils';
 import {DracoLoader, DracoWriter, DracoBuilder} from '@loaders.gl/draco';
 import {validateLoadedData} from 'test/common/conformance';
 

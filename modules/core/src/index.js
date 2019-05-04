@@ -50,15 +50,9 @@ export {
   numberedLineAsyncIterator
 } from './javascript-utils/async-iterator-utils';
 
-// WORKER UTILS
-export {default as createWorker} from './worker-utils/create-worker';
-
 // CORE UTILS
 export {isBrowser, self, window, global, document} from './utils/globals';
 export {default as assert} from './utils/assert';
-
-// MESH CATEGORY UTILS
-export {getMeshSize as _getMeshSize} from './categories/mesh/mesh-utils';
 
 // DEPRECATED
 export {createReadStream} from './lib/fetch/fetch-file';

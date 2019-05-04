@@ -2,8 +2,6 @@ import './javascript-utils/async-iterator.spec';
 import './javascript-utils/text-encoder.spec';
 import './javascript-utils/binary-utils.spec';
 
-import './categories/mesh/mesh-utils.spec';
-
 import './node/fetch/decode-data-uri.spec';
 
 import './lib/fetch/file-aliases.spec';
