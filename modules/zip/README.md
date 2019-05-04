@@ -2,4 +2,6 @@
 
 [loaders.gl](https://uber-web.github.io/loaders.gl/#/docs) is a collection of framework independent 3D and geospatial parsers and encoders.
 
-This module contains loader for the Zip Archive format.
+This module contains loaders and writers for the Zip Archive format.
+
+For documentation please visit the [website](https://loaders.gl).

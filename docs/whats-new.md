@@ -4,6 +4,10 @@ This module is currently in unofficial "soft pre-release" stage. You are welcome
 
 ## v1.1
 
+### @loaders.gl/loader-utils: New module
+
+Helper functions for loaders have been broken out from `@loaders.gl/core`. Individual loaders no longer depend on @loaders.gl/core but only on @loaders.gl/loader-utils.
+
 ### GLTF
 
 - New: `GLBLoader`/`GLBWriter` objects for custom GLB-formatted data

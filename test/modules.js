@@ -5,6 +5,7 @@ require('@loaders.gl/polyfills');
 
 // Core
 require('@loaders.gl/core/test');
+require('@loaders.gl/loader-utils/test');
 require('@loaders.gl/images/test');
 
 // Table Formats

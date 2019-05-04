@@ -4,7 +4,9 @@
 
 This module contains loader for the OBJ format.
 
-The OBJ parser in this module is a port of [three.js](https://github.com/mrdoob/three.js)'s OBJLoader.
+For documentation please visit the [website](https://loaders.gl).
+
+Note: The OBJ parser in this module is a port of [three.js](https://github.com/mrdoob/three.js)'s OBJLoader.
 
 The MIT License
 

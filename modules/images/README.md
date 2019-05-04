@@ -4,6 +4,4 @@
 
 This module contains loader and writers for images that follow loaders.gl conventions and work under both node and browser.
 
-More advanced IO support that handles e.g. stream support in browsers is being developed in this separate module.
-
-> These IO functions require dependencies that can signficantly increase the size of an application bundle.
+For documentation please visit the [website](https://loaders.gl).
