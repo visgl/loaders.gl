@@ -1,18 +1,7 @@
-import fs from 'fs';
-import {promisify} from 'util';
 import assert from '../../utils/assert';
 
-export function writeFile(filePath, arrayBufferOrString) {
-  return promisify(fs.writeFile)(`${filePath}`, toBuffer(arrayBufferOrString), {flag: 'w'});
-}
-
-export function writeFileSync(filePath, arrayBufferOrString) {
-  return fs.writeFileSync(`${filePath}`, toBuffer(arrayBufferOrString), {flag: 'w'});
-}
-
 // Convert (copy) ArrayBuffer to Buffer
-// EXPORTED FOR TEST ONLY
-function toBuffer(binaryData) {
+export default function toBuffer(binaryData) {
   if (ArrayBuffer.isView(binaryData)) {
     binaryData = binaryData.buffer;
   }

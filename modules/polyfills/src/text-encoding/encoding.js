@@ -13,7 +13,7 @@
 
   // If we're in node require encoding-indexes and attach it to the global.
   if (typeof module !== 'undefined' && module.exports && !global['encoding-indexes']) {
-    // indices are half a megabyte, but we only want the built-in UTF...
+    // FORK: indices add half a megabyte to bundle. Ignore, since we only want the built-in UTF8...
     // global['encoding-indexes'] = require('./encoding-indexes.js')['encoding-indexes'];
     global['encoding-indexes'] = {};
   }
@@ -3087,14 +3087,16 @@
     return new XUserDefinedDecoder(options);
   };
 
-  if (!global['TextEncoder']) global['TextEncoder'] = TextEncoder;
-  if (!global['TextDecoder']) global['TextDecoder'] = TextDecoder;
+  // FORK
+  // if (!global['TextEncoder']) global['TextEncoder'] = TextEncoder;
+  // if (!global['TextDecoder']) global['TextDecoder'] = TextDecoder;
 
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
       TextEncoder: global['TextEncoder'],
-      TextDecoder: global['TextDecoder'],
-      EncodingIndexes: global['encoding-indexes']
+      TextDecoder: global['TextDecoder']
+      // FORK
+      // EncodingIndexes: global['encoding-indexes']
     };
   }
 

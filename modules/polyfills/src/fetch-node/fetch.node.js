@@ -5,16 +5,18 @@ import http from 'http';
 import https from 'https';
 import util from 'util';
 
-import {toArrayBuffer} from '../../javascript-utils/binary-utils';
-import {TextDecoder} from '../../javascript-utils/text-encoding';
-import {concatenateReadStream} from '../../javascript-utils/stream-utils';
-import decodeDataUri from './decode-data-uri';
+/* global TextDecoder */
+
+import {toArrayBuffer} from './utils/to-array-buffer.node';
+import decodeDataUri from './utils/decode-data-uri.node';
+import {concatenateReadStream} from './utils/stream-utils.node';
 
 const DEFAULT_OPTIONS = {
   dataType: 'arrayBuffer'
 };
 
-const isNode = Boolean(fs && fs.readFile);
+// const isNode = Boolean(fs && fs.readFile);
+
 const isDataURL = url => url.startsWith('data:');
 const isRequestURL = url => url.startsWith('http:') || url.startsWith('https:');
 
@@ -112,24 +114,20 @@ class NodeFetchResponse {
   }
 }
 
-export async function fetchFile(url, options) {
+export default function fetchNode(url, options) {
   return new NodeFetchResponse(url, options);
 }
 
-// In a few cases (data URIs, node.js) "files" can be read synchronously
-export function readFileSync(url, options = {}) {
-  options = getReadFileOptions(options);
+// HELPERS
 
-  if (isDataURL(url)) {
-    return decodeDataUri(url);
+function getReadFileOptions(options = {}) {
+  options = Object.assign({}, DEFAULT_OPTIONS, options);
+  options.responseType = options.responseType || options.dataType;
+  if (fs) {
+    // set encoding for fs.readFile
+    options.encoding = options.encoding || (options.dataType === 'text' ? 'utf8' : null);
   }
-
-  if (!isNode) {
-    return null; // throw new Error('Cant load URI synchronously');
-  }
-
-  const buffer = fs.readFileSync(url, options, () => {});
-  return buffer instanceof Buffer ? toArrayBuffer(buffer) : buffer;
+  return options;
 }
 
 // Reads raw file data from:
@@ -158,7 +156,7 @@ async function readFile(url, options = {}) {
 }
 
 // Returns a promise that resolves to a readable stream
-export async function createReadStream(url, options) {
+async function createReadStream(url, options) {
   // Handle data urls in node, to match `fetch``
   if (isDataURL(url)) {
     // TODO - need to return a stream wrapper
@@ -177,16 +175,4 @@ export async function createReadStream(url, options) {
     const request = url.startsWith('https:') ? https.request : http.request;
     request(url, response => resolve(response));
   });
-}
-
-// HELPERS
-
-function getReadFileOptions(options = {}) {
-  options = Object.assign({}, DEFAULT_OPTIONS, options);
-  options.responseType = options.responseType || options.dataType;
-  if (fs) {
-    // set encoding for fs.readFile
-    options.encoding = options.encoding || (options.dataType === 'text' ? 'utf8' : null);
-  }
-  return options;
 }

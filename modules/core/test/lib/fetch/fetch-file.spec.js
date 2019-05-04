@@ -12,7 +12,8 @@ test('fetchFile#imports', t => {
   t.end();
 });
 
-test('readFileSync#dataUrl', t => {
+// Only support this if we can also support sync data URL decoding in browser
+test.skip('readFileSync#dataUrl', t => {
   if (isBrowser) {
     t.comment('Skip readFileSync in browser');
     t.end();

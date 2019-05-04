@@ -1,5 +1,4 @@
 import {isBrowser} from '../utils/globals';
-import {concatenateArrayBuffers} from './memory-copy-utils';
 
 export function getStreamIterator(stream) {
   // NODE 10+: stream is an asyncIterator
@@ -64,30 +63,5 @@ async function* makeNodeStreamIterator(stream) {
 async function onceReadable(stream) {
   return new Promise(resolve => {
     stream.once('readable', resolve);
-  });
-}
-
-// TODO - remove? can this be handled via corresponding AsyncIterator function?
-export function concatenateReadStream(readStream) {
-  let arrayBuffer = new ArrayBuffer();
-  let string = '';
-
-  return new Promise((resolve, reject) => {
-    readStream.data(chunk => {
-      if (typeof chunk === 'string') {
-        string += chunk;
-      } else {
-        arrayBuffer = concatenateArrayBuffers(arrayBuffer, chunk);
-      }
-    });
-    readStream.on('error', error => reject(error));
-
-    readStream.on('end', () => {
-      if (readStream.complete) {
-        resolve(arrayBuffer || string);
-      } else {
-        reject('The connection was terminated while the message was still being sent');
-      }
-    });
   });
 }
