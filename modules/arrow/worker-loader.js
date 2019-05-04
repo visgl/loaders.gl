@@ -1,7 +1,7 @@
 // The bundled worker is imported as an inline string
-import worker from '../dist/arrow-loader.worker.js';
+import worker from './dist/arrow-loader.worker.js';
 
-export default {
+module.exports = {
   name: 'Apache Arrow',
   extensions: ['arrow'],
   worker

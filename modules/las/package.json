@@ -32,6 +32,7 @@
   "files": [
     "src",
     "dist",
+    "worker-loader.js",
     "README.md"
   ],
   "scripts": {

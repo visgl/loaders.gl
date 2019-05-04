@@ -14,7 +14,7 @@ DracoWorkerLoader must be imported from @loaders.gl/draco/worker-loader. \
 Using DracoLoader instead`;
 
 function parseSync(arrayBuffer, options) {
-  // eslint-disable-next-line
+  // eslint-disable-next-line no-console, no-undef
   console.warn(DEPRECATION_WARNING);
   const dracoParser = new DracoParser();
   try {
