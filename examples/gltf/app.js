@@ -7,8 +7,6 @@ import {AnimationLoop, setParameters, clear, log, lumaStats} from '@luma.gl/core
 import {GLTFScenegraphLoader, createGLTFObjects, GLTFEnvironment} from '@luma.gl/addons';
 import {Matrix4, radians} from 'math.gl';
 
-// import GLTFScenegraphLoader from './gltf-scenegraph-loader';
-
 const CUBE_FACE_TO_DIRECTION = {
   [GL.TEXTURE_CUBE_MAP_POSITIVE_X]: 'right',
   [GL.TEXTURE_CUBE_MAP_NEGATIVE_X]: 'left',
