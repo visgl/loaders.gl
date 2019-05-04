@@ -1,9 +1,11 @@
 // Sets up aliases for file reader
 require('./aliases');
 
+// Install polyfills (primarily for Node)
 require('@loaders.gl/polyfills');
 
 // Core
+require('@loaders.gl/polyfills/test');
 require('@loaders.gl/core/test');
 require('@loaders.gl/loader-utils/test');
 require('@loaders.gl/images/test');

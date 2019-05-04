@@ -1,20 +1,19 @@
 // Image loading/saving for browser
 /* global document, HTMLCanvasElement, Image */
 
-import {assert} from '@loaders.gl/core';
-import {encodeImageNode} from '../node/encode-image-node';
+import {assert} from '../utils/assert';
+import {global} from '../utils/globals';
 
-/*
- * Returns data bytes representing a compressed image in PNG or JPG format,
- * This data can be saved using file system (f) methods or
- * used in a request.
- * @param {Image}  image - Image or Canvas
- * @param {String} opt.type='png' - png, jpg or image/png, image/jpg are valid
- * @param {String} opt.dataURI= - Whether to include a data URI header
- */
+// Returns data bytes representing a compressed image in PNG or JPG format,
+// This data can be saved using file system (f) methods or
+// used in a request.
+// @param {Image}  image - Image or Canvas
+// @param {String} opt.type='png' - png, jpg or image/png, image/jpg are valid
+// @param {String} opt.dataURI= - Whether to include a data URI header
+
 export function encodeImage(image, type) {
-  if (encodeImageNode) {
-    return encodeImageNode(image, type);
+  if (global._encodeImageNode) {
+    return global._encodeImageNode(image, type);
   }
 
   if (image instanceof HTMLCanvasElement) {
