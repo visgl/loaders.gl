@@ -10,5 +10,3 @@ import './lib/fetch/fetch-file.spec';
 import './lib/loader-utils/auto-parse.spec';
 
 import './lib/load.spec';
-
-import './categories/mesh/mesh-utils.spec';

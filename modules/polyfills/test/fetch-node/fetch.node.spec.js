@@ -1,9 +1,10 @@
 /* global fetch */
 import test from 'tape-promise/tape';
+import '@loaders.gl/polyfills';
 import {isBrowser} from '@loaders.gl/core';
-import '@loaders.gl/polyfills/';
+import {resolvePath} from '@loaders.gl/core/lib/fetch/file-aliases';
 
-const PLY_CUBE_ATT_URL = '@loaders.gl/ply/test/data/cube_att.ply';
+const PLY_CUBE_ATT_URL = resolvePath('@loaders.gl/ply/test/data/cube_att.ply');
 
 test('fetch polyfill (Node.js)#fetch()', async t => {
   if (!isBrowser) {

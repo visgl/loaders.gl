@@ -12,20 +12,18 @@ import {parseImageNode} from './images-node/parse-image.node';
 // - Node: v11 introduces these classes, for lower versions we use these polyfills
 // - Browser: Edge, IE11 do not have these
 
-if (typeof global['TextEncoder'] === 'undefined' || typeof global['TextDecoder'] === 'undefined') {
-  if (!global['TextEncoder']) {
-    global['TextEncoder'] = TextEncoder;
-  }
-  if (!global['TextDecoder']) {
-    global['TextDecoder'] = TextDecoder;
-  }
+if (!('TextEncoder' in global) && TextEncoder) {
+  global['TextEncoder'] = TextEncoder;
+}
+if (!('TextDecoder' in global) && TextDecoder) {
+  global['TextDecoder'] = TextDecoder;
 }
 
 // POLYFILL: fetch
-// - Node:
-// - Browser: IE11 etc, This polyfill is node only, use external polyfil
+// - Node: Yes
+// - Browser: No. For This polyfill is node only, IE11 etc, install external polyfill
 
-if (!isBrowser && typeof global['fetch'] === 'undefined') {
+if (!isBrowser && !('fetch' in global) && fetchNode) {
   global['fetch'] = fetchNode;
 }
 
@@ -33,10 +31,10 @@ if (!isBrowser && typeof global['fetch'] === 'undefined') {
 // These are not official polyfills but used by the @loaders.gl/images module if installed
 // TODO - is there an appropriate Image API we could polyfill using an adapter?
 
-if (!isBrowser && typeof global['_encodeImageNode'] === 'undefined') {
+if (!isBrowser && !('_encodeImageNode' in global) && encodeImageNode) {
   global['_encodeImageNode'] = encodeImageNode;
 }
 
-if (!isBrowser && typeof global['_parseImageNode'] === 'undefined') {
+if (!isBrowser && !('_parseImageNode' in global) && parseImageNode) {
   global['_parseImageNode'] = parseImageNode;
 }
