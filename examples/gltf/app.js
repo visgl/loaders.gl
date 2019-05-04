@@ -1,6 +1,7 @@
 /* eslint-disable camelcase */
 /* global document, window */
 import {load} from '@loaders.gl/core';
+import {DracoLoader} from '@loaders.gl/draco';
 import GL from '@luma.gl/constants';
 import {AnimationLoop, setParameters, clear, log, lumaStats} from '@luma.gl/core';
 import {GLTFScenegraphLoader, createGLTFObjects, GLTFEnvironment} from '@luma.gl/addons';
@@ -33,7 +34,7 @@ function addModelsToDropdown(models, modelDropdown) {
     return;
   }
 
-  const VARIANTS = ['glTF-Binary', 'glTF-Embedded', 'glTF'];
+  const VARIANTS = ['glTF-Draco', 'glTF-Binary', 'glTF-Embedded', 'glTF'];
 
   models.forEach(({name, variants}) => {
     const variant = VARIANTS.find(v => variants[v]);
@@ -183,8 +184,8 @@ const DEFAULT_OPTIONS = {
 async function loadGLTF(urlOrPromise, gl, options) {
   const loadResult = await load(urlOrPromise, GLTFScenegraphLoader, {
     ...options,
-    gl
-    // DracoLoader
+    gl,
+    DracoLoader
   });
   const {gltf, scenes, animator} = loadResult;
   scenes[0].traverse((node, {worldMatrix}) => log.info(4, 'Using model: ', node)());

@@ -68,6 +68,7 @@ const config = {
         test: /\.js$/,
         loader: 'babel-loader',
         include: /src/
+        // exclude: /transpiled/
       }
     ]
   },

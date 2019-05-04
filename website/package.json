@@ -20,20 +20,24 @@
     "@deck.gl/core": "^7.0.2",
     "@deck.gl/layers": "^7.0.2",
     "@deck.gl/react": "^7.0.2",
+    "@loaders.gl/draco": "^1.0.3",
+    "@loaders.gl/las": "^1.0.3",
     "@luma.gl/addons": "^7.0.0",
     "@luma.gl/constants": "^7.0.0",
     "@luma.gl/core": "^7.0.0",
     "@luma.gl/webgl": "^7.0.0",
     "@probe.gl/stats-widget": "^3.0.1",
+    "gl": "^4.2.2",
     "react": "^16.6.0",
     "react-dom": "^16.6.0",
     "styled-components": "^4.2.0"
   },
   "devDependencies": {
     "gatsby": "^2.3.0",
+    "gatsby-plugin-no-sourcemaps": "^2.0.2",
     "gatsby-plugin-styletron": "^3.0.5",
     "gh-pages": "^2.0.1",
-    "ocular-gatsby": "1.0.0-alpha.23",
-    "sharp": "0.22"
+    "ocular-gatsby": "1.0.0-alpha.25",
+    "sharp": "0.22.1"
   }
 }

@@ -43,11 +43,24 @@ module.exports = {
       {
         // Compile ES2015 using babel
         test: /\.js$/,
-        exclude: /node_modules/,
+        // exclude: /node_modules|transpiled/,
+        exclude: /node_modules|transpiled|minified/,
         use: [
           {
             loader: 'babel-loader',
             options: BABEL_CONFIG
+          }
+        ]
+      },
+      {
+        // Compile ES2015 using babel
+        test: /\.transpiled.js$|\.minified.js$/,
+        // exclude: /node_modules|transpiled/,
+        exclude: /node_modules|/,
+        use: [
+          {
+            loader: 'babel-loader',
+            options: {}
           }
         ]
       }
