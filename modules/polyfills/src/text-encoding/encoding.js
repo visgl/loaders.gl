@@ -13,7 +13,9 @@
 
   // If we're in node require encoding-indexes and attach it to the global.
   if (typeof module !== 'undefined' && module.exports && !global['encoding-indexes']) {
-    global['encoding-indexes'] = require('./encoding-indexes.js')['encoding-indexes'];
+    // indices are half a megabyte, but we only want the built-in UTF...
+    // global['encoding-indexes'] = require('./encoding-indexes.js')['encoding-indexes'];
+    global['encoding-indexes'] = {};
   }
 
   //

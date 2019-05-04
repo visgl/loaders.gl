@@ -96,7 +96,11 @@ module.exports = {
   webpack: {
     resolve: {
       // modules: [resolve(__dirname, './node_modules')],
-      alias: Object.assign({}, ALIASES, dependencyAliases)
+      alias: Object.assign({}, ALIASES, dependencyAliases, {
+        // Do not build big dependencies from source
+        // '@loaders.gl/las': '/Users/ib/Documents/loaders.gl/modules/las',
+        // '@loaders.gl/draco': '/Users/ib/Documents/loaders.gl/modules/draco',
+      })
       // Local aliases need to be set in local gatsby node!
     }
   }

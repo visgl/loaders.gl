@@ -5,21 +5,22 @@ import DeckGL from '@deck.gl/react';
 import {COORDINATE_SYSTEM, OrbitView, LinearInterpolator} from '@deck.gl/core';
 import {PointCloudLayer} from '@deck.gl/layers';
 
-// import {LASLoader} from '@loaders.gl/las';
-// TODO fix LasWorkerLoader
-// import {LASWorkerLoader} from '@loaders.gl/las';
 import {PLYLoader} from '@loaders.gl/ply';
+import {LASLoader} from '@loaders.gl/las';
+// TODO fix LasWorkerLoader
+// import {LASWorkerLoader} from '@loaders.gl/las/worker-loader';
 import {load, registerLoaders} from '@loaders.gl/core';
 
 // Additional format support can be added here, see
 registerLoaders(PLYLoader);
+registerLoaders(LASLoader);
 
 // Data source: kaarta.com
-// const LAZ_SAMPLE =
-//   'https://raw.githubusercontent.com/uber-common/deck.gl-data/master/examples/point-cloud-laz/indoor.0.1.laz';
+const LAZ_SAMPLE =
+  'https://raw.githubusercontent.com/uber-common/deck.gl-data/master/examples/point-cloud-laz/indoor.0.1.laz';
 // Data source: The Stanford 3D Scanning Repository
-const PLY_SAMPLE =
-  'https://raw.githubusercontent.com/uber-common/deck.gl-data/master/examples/point-cloud-ply/lucy800k.ply';
+// const PLY_SAMPLE =
+//   'https://raw.githubusercontent.com/uber-common/deck.gl-data/master/examples/point-cloud-ply/lucy800k.ply';
 
 const INITIAL_VIEW_STATE = {
   target: [0, 0, 0],
@@ -48,7 +49,7 @@ export default class App extends PureComponent {
     this._onViewStateChange = this._onViewStateChange.bind(this);
     this._rotateCamera = this._rotateCamera.bind(this);
 
-    load(PLY_SAMPLE).then(this._onLoad);
+    load(LAZ_SAMPLE).then(this._onLoad);
   }
 
   _onViewStateChange({viewState}) {
