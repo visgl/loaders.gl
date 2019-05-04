@@ -1,12 +1,14 @@
 /* global Image, Blob, createImageBitmap, btoa, fetch */
-import {parseImageNode} from '../node/parse-image-node';
+import {global} from '../utils/globals';
+import {getImageMetadata} from './get-image-metadata';
 
-export const canParseImage = parseImageNode || typeof ImageBitmap !== 'undefined';
+export const canParseImage = global._parseImageNode || typeof ImageBitmap !== 'undefined';
 
 // Parse to platform defined type (ndarray on node, ImageBitmap on browser)
 export function parseImage(arrayBuffer, options) {
-  if (parseImageNode) {
-    return parseImageNode(arrayBuffer, options);
+  if (global._parseImageNode) {
+    const {mimeType} = getImageMetadata(arrayBuffer);
+    return global._parseImageNode(arrayBuffer, mimeType, options);
   }
 
   return parseToImageBitmap(arrayBuffer);

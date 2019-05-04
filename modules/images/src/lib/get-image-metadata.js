@@ -1,8 +1,9 @@
 // Attributions
 // * Based on binary-gltf-utils under MIT license: Copyright (c) 2016-17 Karl Cheng
 
+// TODO - this should be handled in @loaders.gl/polyfills
 // Quarantine references to Buffer to prevent bundler from adding big polyfills
-import {bufferToArrayBuffer} from '../node/buffer-to-array-buffer';
+// import {bufferToArrayBuffer} from '../node/buffer-to-array-buffer';
 
 const BIG_ENDIAN = false;
 const LITTLE_ENDIAN = true;
@@ -197,9 +198,9 @@ function getJpegMarkers() {
 }
 
 function toDataView(data) {
-  if (bufferToArrayBuffer) {
-    data = bufferToArrayBuffer(data);
-  }
+  // if (bufferToArrayBuffer) {
+  //   data = bufferToArrayBuffer(data);
+  // }
 
   // Careful - Node Buffers will look like ArrayBuffers (keep after isBuffer)
   if (data instanceof ArrayBuffer || ArrayBuffer.isView(data)) {
