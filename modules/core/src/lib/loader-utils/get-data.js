@@ -1,3 +1,4 @@
+/* global TextDecoder */
 import {
   isFetchResponse,
   isReadableStream,
@@ -6,7 +7,6 @@ import {
   isIterator
 } from '../../javascript-utils/is-type';
 import {getStreamIterator} from '../../javascript-utils/stream-utils';
-import {TextDecoder} from '../../javascript-utils/text-encoding';
 
 const ERR_DATA = 'Cannot convert supplied data type';
 

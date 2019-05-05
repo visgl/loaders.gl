@@ -22,14 +22,11 @@
   "esnext": "dist/es6/index.js",
   "sideEffects": false,
   "browser": {
-    "./src/node/utils/buffer-to-array-buffer.js": false,
-    "./src/node/fetch/decode-data-uri.js": false,
-    "./src/node/fetch/fetch-file-node.js": false,
-    "./src/node/fetch/write-file-node.js": false,
-    "fs": false,
-    "http": false,
-    "https": false,
-    "util": false
+    "./src/node/utils/to-array-buffer.node.js": false,
+    "./src/node/utils/to-buffer.node.js": false,
+    "./src/node/write-file.node.js": false,
+    "./src/node/read-file-sync.node.js": false,
+    "fs": false
   },
   "files": [
     "src",

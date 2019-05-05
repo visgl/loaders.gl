@@ -5,7 +5,7 @@
 /* global Buffer */
 import test from 'tape-promise/tape';
 import {isBrowser} from '@loaders.gl/core';
-import decodeDataUri from '@loaders.gl/core/node/fetch/decode-data-uri';
+import decodeDataUri from '@loaders.gl/polyfills/fetch-node/utils/decode-data-uri.node';
 
 test('decodeDataUri', t => {
   if (isBrowser) {

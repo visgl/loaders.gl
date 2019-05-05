@@ -27,7 +27,8 @@
         {"entry": "docs/developer-guide/streaming"},
         {"entry": "docs/developer-guide/array-buffers"},
         {"entry": "docs/developer-guide/async-iterators"},
-        {"entry": "docs/developer-guide/worker-threads"}
+        {"entry": "docs/developer-guide/worker-threads"},
+        {"entry": "docs/developer-guide/polyfills"}
       ]
     },
     {
@@ -43,15 +44,16 @@
             {"entry": "docs/api-reference/core/save"},
             {"entry": "docs/api-reference/core/fetch-file"},
             {"entry": "docs/api-reference/core/write-file"},
-            {"entry": "docs/api-reference/core/set-path-prefix"}
-          ]
-        },
-        {
-          "title": "Core Utilities",
-          "entries": [
+            {"entry": "docs/api-reference/core/set-path-prefix"},
             {"entry": "docs/api-reference/core/binary-utilities"},
             {"entry": "docs/api-reference/core/text-utilities"},
             {"entry": "docs/api-reference/core/iterator-utilities"}
+          ]
+        },
+        {
+          "title": "Polyfills",
+          "entries": [
+            {"entry": "docs/api-reference/polyfills/README"}
           ]
         },
         {

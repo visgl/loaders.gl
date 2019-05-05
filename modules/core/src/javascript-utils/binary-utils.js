@@ -1,6 +1,5 @@
-/* global FileReader, Blob, ArrayBuffer, Buffer */
+/* global FileReader, Blob, ArrayBuffer, Buffer, TextEncoder */
 import assert from '../utils/assert';
-import {TextEncoder} from './text-encoding';
 
 export const isArrayBuffer = x => x && x instanceof ArrayBuffer;
 export const isBlob = x => x && typeof Blob !== 'undefined' && x instanceof Blob;
