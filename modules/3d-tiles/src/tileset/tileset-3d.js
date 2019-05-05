@@ -148,40 +148,40 @@ export default class Tileset3D {
     this._url = options.url;
     this._basePath = options.basePath || '';
 
-    this._root = this.loadTileset(resource, tilesetJson);
-    const gltfUpAxis = defined(tilesetJson.asset.gltfUpAxis)
-      ? Axis.fromName(tilesetJson.asset.gltfUpAxis)
-      : Axis.Y;
+    // this._root = this.loadTileset(resource, tilesetJson);
+    // const gltfUpAxis = defined(tilesetJson.asset.gltfUpAxis)
+    //   ? Axis.fromName(tilesetJson.asset.gltfUpAxis)
+    //   : Axis.Y;
     const asset = tilesetJson.asset;
     this._asset = asset;
     this._properties = tilesetJson.properties;
     this._geometricError = tilesetJson.geometricError;
     this._extensionsUsed = tilesetJson.extensionsUsed;
-    this._gltfUpAxis = gltfUpAxis;
+    // this._gltfUpAxis = gltfUpAxis;
     this._extras = tilesetJson.extras;
 
     this._credits = this._getCredits();
 
     // Save the original, untransformed bounding volume position so we can apply
     // the tile transform and model matrix at run time
-    const boundingVolume = this._root.createBoundingVolume(
-      tilesetJson.root.boundingVolume,
-      Matrix4.IDENTITY
-    );
-    const clippingPlanesOrigin = boundingVolume.boundingSphere.center;
+    // const boundingVolume = this._root.createBoundingVolume(
+    //   tilesetJson.root.boundingVolume,
+    //   Matrix4.IDENTITY
+    // );
+    // const clippingPlanesOrigin = boundingVolume.boundingSphere.center;
     // If this origin is above the surface of the earth
     // we want to apply an ENU orientation as our best guess of orientation.
     // Otherwise, we assume it gets its position/orientation completely from the
     // root tile transform and the tileset's model matrix
-    const originCartographic = this._ellipsoid.cartesianToCartographic(clippingPlanesOrigin);
-    if (
-      defined(originCartographic) &&
-      originCartographic.height > ApproximateTerrainHeights._defaultMinTerrainHeight
-    ) {
-      this._initialClippingPlanesOriginMatrix = Transforms.eastNorthUpToFixedFrame(
-        clippingPlanesOrigin
-      );
-    }
+    // const originCartographic = this._ellipsoid.cartesianToCartographic(clippingPlanesOrigin);
+    // if (
+    //   originCartographic &&
+    //   originCartographic.height > ApproximateTerrainHeights._defaultMinTerrainHeight
+    // ) {
+    //   this._initialClippingPlanesOriginMatrix = Transforms.eastNorthUpToFixedFrame(
+    //     clippingPlanesOrigin
+    //   );
+    // }
 
     this._clippingPlanesOriginMatrix = Matrix4.clone(this._initialClippingPlanesOriginMatrix);
     this._readyPromise.resolve(this);
@@ -221,6 +221,7 @@ export default class Tileset3D {
 
   // The base path this non-absolute paths in tileset JSON file are relative to.
   get basePath() {
+    // eslint-disable-next-line
     console.warn('Tileset3D.basePath is deprecated. Tiles are relative to the tileset JSON url');
     return this._basePath;
   }
@@ -320,7 +321,7 @@ export default class Tileset3D {
 
     // A tileset JSON file referenced from a tile may exist in a different directory than the root tileset.
     // Get the basePath relative to the external tileset.
-    const rootTile = new Tile3DHeader(tilesetJson.root, parentTile, this, resource);
+    const rootTile = new Tile3DHeader(tilesetJson.root, parentTile, this, {}); // resource
 
     // If there is a parentTile, add the root of the currently loading tileset
     // to parentTile's children, and update its _depth.
@@ -333,20 +334,17 @@ export default class Tileset3D {
     stack.push(rootTile);
 
     while (stack.length > 0) {
-      const tile = stack.pop();
+      // const tile = stack.pop();
       ++statistics.numberOfTilesTotal;
-      this._allTilesAdditive = this._allTilesAdditive && tile.refine === TILE_3D_REFINE.ADD;
-      const children = tile._header.children;
-      if (defined(children)) {
-        const length = children.length;
-        for (const i = 0; i < length; ++i) {
-          const childHeader = children[i];
-          const childTile = new Tile3D(this, resource, childHeader, tile);
-          tile.children.push(childTile);
-          childTile._depth = tile._depth + 1;
-          stack.push(childTile);
-        }
-      }
+      // this._allTilesAdditive = this._allTilesAdditive && tile.refine === TILE_3D_REFINE.ADD;
+
+      // const children = tile._header.children || [];
+      // for (const childHeader of children) {
+      //   const childTile = new Tile3D(this, resource, childHeader, tile);
+      //   tile.children.push(childTile);
+      //   childTile._depth = tile._depth + 1;
+      //   stack.push(childTile);
+      // }
 
       // TODO:
       // if (this._cullWithChildrenBounds) {

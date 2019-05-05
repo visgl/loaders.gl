@@ -1,6 +1,6 @@
 // import {TILE3D_REFINEMENT, TILE3D_OPTIMIZATION_HINT} from '../constants';
-import {Vector3, Matrix4, config} from 'math.gl';
-import {TILE_3D_REFINEMENT} from '../contents';
+import {Vector3, Matrix4} from 'math.gl';
+import {TILE_3D_REFINEMENT} from '../constants';
 
 /* eslint-disable */
 const scratchDate = new Date();

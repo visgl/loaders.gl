@@ -1,8 +1,9 @@
-import {TILE3D_REFINEMENT, TILE3D_OPTIMIZATION_HINT} from '../constants';
-import ManagedArray from '../utils/managed-array';
-import assert from '../utils/assert';
+// import {TILE3D_REFINEMENT, TILE3D_OPTIMIZATION_HINT} from '../constants';
+// import ManagedArray from '../utils/managed-array';
+// import assert from '../utils/assert';
 
 export default class Tileset3DTraverser {
+  /*
   constructor() {
     this.traversal = {
       stack: new ManagedArray(),
@@ -591,4 +592,5 @@ export default class Tileset3DTraverser {
       }
     }
   }
+  */
 }

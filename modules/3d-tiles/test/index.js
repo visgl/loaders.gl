@@ -1,4 +1,4 @@
-import './math.gl';
+// import './math';
 
 import './classes/tile-3d-feature-table.spec';
 import './classes/tile-3d-batch-table.spec';
