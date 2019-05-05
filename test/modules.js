@@ -22,6 +22,7 @@ require('@loaders.gl/gltf/test');
 
 // 3D Tile Formats
 require('@loaders.gl/3d-tiles/test');
+require('@loaders.gl/math/test');
 
 // Geospatial Formats
 require('@loaders.gl/kml/test');

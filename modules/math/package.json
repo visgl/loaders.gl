@@ -1,0 +1,37 @@
+{
+  "name": "@loaders.gl/math",
+  "version": "1.1.0-alpha.0",
+  "description": "Experimental math classes for loaders.gl",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/uber-web/loaders.gl"
+  },
+  "keywords": [
+    "3d",
+    "geospatial",
+    "math",
+    "GLB",
+    "glTF"
+  ],
+  "main": "dist/es5/index.js",
+  "module": "dist/esm/index.js",
+  "esnext": "dist/es6/index.js",
+  "sideEffects": false,
+  "files": [
+    "src",
+    "dist",
+    "bin",
+    "README.md"
+  ],
+  "scripts": {
+    "pre-build": "echo \"Nothing to build in @loaders.gl/math\""
+  },
+  "dependencies": {
+    "@loaders.gl/core": "1.1.0-alpha.0",
+    "@loaders.gl/images": "1.1.0-alpha.0"
+  }
+}

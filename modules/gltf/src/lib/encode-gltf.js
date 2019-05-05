@@ -27,7 +27,7 @@ import encodeGLBSync from './encode-glb';
 // glb-file-format-specification
 // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#
 
-export default function encodeGLTFSync(gltf, arrayBuffer, byteOffset, options) {
+export function encodeGLTFSync(gltf, arrayBuffer, byteOffset, options) {
   convertBuffersToBase64(gltf);
 
   // TODO: Copy buffers to binary

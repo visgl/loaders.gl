@@ -1,4 +1,4 @@
-import encodeGLTFSync from './lib/encode-gltf';
+import {encodeGLTFSync} from './lib/encode-gltf';
 
 function encodeSync(gltf, options = {}) {
   const {byteOffset = 0} = options;

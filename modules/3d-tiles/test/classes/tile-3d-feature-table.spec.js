@@ -1,6 +1,6 @@
 import test from 'tape-promise/tape';
 import Tile3DFeatureTable from '@loaders.gl/3d-tiles/classes/tile-3d-feature-table';
-import GL from '@loaders.gl/3d-tiles/math/gl-constants';
+import {GL} from '@loaders.gl/math'; // '@math.gl/geometry';
 
 test('Tile3DFeatureTable#loads from JSON', t => {
   const featureTable = new Tile3DFeatureTable({
