@@ -5,6 +5,7 @@ dist: trusty
 addons:
 node_js:
   - '10'
+  - '12'
 install:
   - yarn bootstrap
 script:
