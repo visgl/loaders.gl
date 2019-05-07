@@ -66,7 +66,24 @@ module.exports = {
     }
   ],
 
-  PROJECTS: [],
+  PROJECTS: [
+    {
+      name: 'deck.gl',
+      url: 'https://deck.gl'
+    },
+    {
+      name: 'luma.gl',
+      url: 'https://luma.gl'
+    },
+    {
+      name: 'react-map-gl',
+      url: 'https://uber.github.io/react-map-gl'
+    },
+    {
+      name: 'react-vis',
+      url: 'https://uber.github.io/react-vis'
+    }
+  ],
 
   ADDITIONAL_LINKS: [],
 
