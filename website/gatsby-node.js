@@ -14,6 +14,9 @@
 // exports.createPages = ({ graphql, actions }) =>
 //   ocular.createPages({ graphql, actions });
 
+// TODO - hack to avoid fetch being undefined during page generation
+const ocularConfig = require('../modules/polyfills');
+
 const ocularConfig = require('./ocular-config');
 const getGatsbyNodeCallbacks = require('ocular-gatsby/gatsby-node');
 
