@@ -7,7 +7,14 @@
         {"entry": "docs/README"},
         {"entry": "docs/whats-new"},
         {"entry": "docs/roadmap"},
-        {"entry": "docs/notes"}
+        {"entry": "docs/contributing"}
+      ]
+    },
+    {
+      "title": "Get Started",
+      "entries": [
+        {"entry": "docs/get-started/installing"},
+        {"entry": "docs/get-started/examples"}
       ]
     },
     {
@@ -18,7 +25,6 @@
         {"entry": "docs/developer-guide/data-frame-operations"},
         {"entry": "docs/developer-guide/data-sources"},
         {"entry": "docs/developer-guide/data-types"},
-        {"entry": "docs/developer-guide/getting-started"},
         {"entry": "docs/developer-guide/memory-management"},
         {"entry": "docs/developer-guide/predicates"},
         {"entry": "docs/developer-guide/reading-and-writing"},

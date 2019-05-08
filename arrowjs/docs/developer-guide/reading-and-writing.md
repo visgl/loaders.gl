@@ -53,12 +53,6 @@ The `RecordStreamWriter` class allows you to write Arrow `Table` and `RecordBatc
 
 ## Using Transform Streams
 
-
-### Connecting to Node Processes
-
-A 
-
-
 ### Connecting to Python Processes
 
 A more complicated example of using Arrow to go from node -> python -> node:
