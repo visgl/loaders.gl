@@ -4,7 +4,7 @@
 
 // because this is a StaticQuery it needs to be in the local tree so that its graphQl can be
 // run by gatsby. Rather, a file of the same name must have the same query in the local tree.
-// During the init process, ocular copies this file over to the local tree. 
+// During the init process, ocular copies this file over to the local tree.
 
 
 import React from 'react';
@@ -18,6 +18,7 @@ const QUERY = graphql`
         PROJECT_NAME
         PROJECT_TYPE
         PROJECT_DESC
+        PROJECT_URL
         HOME_HEADING
         HOME_BULLETS {
           text
