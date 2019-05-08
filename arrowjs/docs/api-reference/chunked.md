@@ -1,6 +1,6 @@
 # Chunked
 
-Holds a "chunked array" that allows a number of array fragments (represented by `Vector` instances) to be treated logically as a single vector. `Vector` instances can be concatenated into a `Chunked` without any memory beind copied.
+Holds a "chunked array" that allows a number of array fragments (represented by `Vector` instances) to be treated logically as a single vector. `Vector` instances can be concatenated into a `Chunked` without any memory being copied.
 
 
 ## Usage
