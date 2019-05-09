@@ -1,21 +1,6 @@
-# Getting Started
+# Examples
 
-
-## Installing Apache Arrow
-
-The Apache Arrow JS bindings are published as an npm module.
-
-```sh
-npm install apache-arrow
-```
-or
-```sh
-yarn add apache-arrow
-```
-
-
-## Usage Examples
-
+Some short examples
 
 ### Get a table from an Arrow file on disk (in IPC format)
 

@@ -9,7 +9,10 @@ It is of course also possible to write custom predicates, however the performanc
 
 > Note that calling `filter()` on a `DataFrame` doesn't actually do anything (other than store the predicates). It's not until you call `countBy()` or `scan()` on the resulting object that Arrow actually scans through all of the data.
 
-
 ```js
 table = table.filter(arrow.predicate.col('winnername').eq(winner));
+
+for (const row of table) {
+  // only returns rows that match criteria
+}
 ```

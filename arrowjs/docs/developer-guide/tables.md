@@ -32,9 +32,9 @@ const fieldNames = table.schema.fields.map(f => f.name);
 const fieldTypes = tables.schema.fields.map(f => f.type)
 // Array(3) [Float, Float, Timestamp]
 
-const fieldTypeNames = 
+const fieldTypeNames = ...;
 // Array(3) ["Float64", "Float64", "Timestamp<MICROSECOND>"]
-
+```
 
 ### Accessing Arrow Table Row Data
 
@@ -93,9 +93,6 @@ function toDate(timestamp) {
 ```
 
 
-### Getting Column Data Stats
-
-
 ### Column Data Vectors
 
 Apache Arrow stores columns in typed arrays and vectors:
@@ -135,10 +132,3 @@ function filterByDate(startDate, endDate) {
 ```
 
 Our custom filter by date method uses custom arrow table predicate filter and scan methods to generate JS friendly data you can map or graph:
-
-
-### Filtering by Days
-
-
-### Mapping Arrow Data
-

@@ -1,5 +1,12 @@
 const DOCS = require('../docs/table-of-contents.json');
 
+const DEPENDENCIES = require('./package.json').dependencies;
+
+const dependencyAliases = {};
+for (const dependency in DEPENDENCIES) {
+  dependencyAliases[dependency] = `${__dirname}/node_modules/${dependency}`;
+}
+
 module.exports = {
   logLevel: 4,
 
@@ -17,6 +24,7 @@ module.exports = {
   PROJECT_ORG: 'uber-web',
   PROJECT_URL: 'https://github.com/uber-web/loaders.gl',
   PROJECT_DESC: 'Apache Arrow JavaScript Bindings',
+
   PATH_PREFIX: '/arrowjs',
 
   FOOTER_LOGO: '',
@@ -38,4 +46,11 @@ module.exports = {
   // For showing star counts and contributors.
   // Should be like btoa('YourUsername:YourKey') and should be readonly.
   GITHUB_KEY: null,
+
+  // Ocular adds this to gatsby's webpack config
+  webpack: {
+    resolve: {
+      alias: dependencyAliases
+    }
+  }
 };

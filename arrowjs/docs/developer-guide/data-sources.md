@@ -5,7 +5,7 @@ The Arrow JavaScript API is designed to make it easy to work with data sources b
 
 ## Streams
 
-Both Node and DOM/WhatWG Streams can be used directly
+Both Node and DOM/WhatWG Streams can be used directly as input sources by the Arrow JS API.
 
 ## Fetch Responses
 

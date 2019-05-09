@@ -1,4 +1,6 @@
-# What's Next for Apache Arrow in Javascript
+# Roadmap
+
+What's Next for Apache Arrow in Javascript
 
 There are a lot of features we'd like to add over the next few Javascript releases:
 
@@ -12,5 +14,12 @@ There are a lot of features we'd like to add over the next few Javascript releas
 
 Have an idea? Tell us! Generally JIRAs are preferred but we'll take GitHub issues too. If you just want to discuss something, reach out on the mailing list or slack. But PRs are the best of all, we can always use more contributors!
 
-- **Tensors** - Not yet implemented.
 
+## Feature Completeness
+
+Ideally each Apache Arrow language binding would offer the same set of features, at least to the extent that the language/platform in question allows. In practice however, not all features have been implemented in all language bindings.
+
+In comparison with the C++ Arrow API bindings, there are some missing features in the JavaScript bindings:
+
+- Tensors are not yet supported.
+- No explicit support for Apache Arrow Flight

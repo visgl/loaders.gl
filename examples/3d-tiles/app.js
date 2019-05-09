@@ -5,13 +5,14 @@ import DeckGL from '@deck.gl/react';
 import {COORDINATE_SYSTEM, OrbitView, LinearInterpolator} from '@deck.gl/core';
 import {PointCloudLayer} from '@deck.gl/layers';
 
+import '@loaders.gl/polyfills';
+import {load, registerLoaders} from '@loaders.gl/core';
 import {
   Tile3DLoader,
   Tile3DFeatureTable,
   Tile3DBatchTable,
   parseRGB565
 } from '@loaders.gl/3d-tiles';
-import {load, registerLoaders} from '@loaders.gl/core';
 
 import ControlPanel from './control-panel';
 import fileDrop from './file-drop';

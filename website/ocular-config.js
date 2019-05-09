@@ -17,7 +17,7 @@ for (const dependency in DEPENDENCIES) {
 }
 
 module.exports = {
-  logLevel: 3, // Adjusts amount of debug information from ocular-gatsby
+  logLevel: 4, // Adjusts amount of debug information from ocular-gatsby
 
   DOC_FOLDER: `${__dirname}/../docs/`,
   ROOT_FOLDER: `${__dirname}/../`,
@@ -108,17 +108,14 @@ module.exports = {
     }
   ],
 
-  // Avoids duplicate conflicting inputs when importing from examples folders
   // Ocular adds this to gatsby's webpack config
   webpack: {
     resolve: {
-      // modules: [resolve(__dirname, './node_modules')],
       alias: Object.assign({}, ALIASES, dependencyAliases, {
         // Do not build big dependencies from source
         // '@loaders.gl/las': '/Users/ib/Documents/loaders.gl/modules/las',
         // '@loaders.gl/draco': '/Users/ib/Documents/loaders.gl/modules/draco',
       })
-      // Local aliases need to be set in local gatsby node!
     }
   }
 };
