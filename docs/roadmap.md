@@ -15,20 +15,32 @@ We are trying to make the loaders.gl roadmap as public as possible. We share inf
 
 **Progress Tracking** - loaders can provide progress callbacks and a `ProgressTracker` class is provided to track the progress of a set of parallel loads.
 
-**Format Auto-Discovery** - Each loader can optionally expose a test function that can examine the "head" of a file to test if it is likely to be in a format this loader will be able to parse.
-
-**Stream Support** - Support stream based loaders... `loader.loadStream`
+**Improved Format Auto-Discovery** - Each loader can optionally expose a test function that can examine the "head" of a file to test if it is likely to be in a format this loader will be able to parse.
 
 ## Format Roadmap
 
-The emergence of glTF as a major Khronos standard with the ensuing massive industry adoption is a huge deal for the WebGL/3D community. The need to support long list of obscure loaders for e.g. various 3D asset authoring packages is quickly becoming a thing of the past as most major applications have started to offer high-quality, maintained glTF exporters.
+### Scenegraph Formats
 
-Obviously we expect loaders.gl to have very solid glTF/GLB support. Also we will most likely not try to pursue "competing" scene/mesh description formats.
+- We expect loaders.gl to have very solid ("reference caliber") glTF/GLB implementation.
+- Support for glTF extensions that can be handled during the load phase (many can only be handled during rendering).
+- Given the emergence of glTF as a major Khronos standard, and availability of good glTF conversion tools and exporters, we will most likely not implement any other scene/mesh description formats such as COLLADA.
+
+### Point Clouds
 
 Still, for special data sets such as large point clouds or complex geospatial data, the need for special formats for (e.g. compactness or expressivity) is unchanged, so this is the direction we expect most new loaders.gl loaders to focus on.
 
+### Meshes
+
+- Currently no support beyond OBJ.
+- For OBJ, should we support MTL?
+
+### Massive Point Clouds/Data Sets
+
+* 3D Tiles
+* potree?
+
+These critically need to include traversal and tile loading caches
+
+### Other loaders
+
 Finally, some "unusual" loaders may be included just for fun, e.g. SVG tesselation.
-
-## Implemented
-
-**Test Data** - Ideally loaders.gl will include test data for each format to ensure that the regression suite is as effective as possible.
