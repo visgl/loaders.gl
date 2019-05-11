@@ -10,6 +10,10 @@ This module is currently in unofficial "soft pre-release" stage. You are welcome
 - New: `GLBLoader`/`GLBWriter` objects that support loading/saving custom GLB-formatted data.
 - The `GLTFLoader` can now return a pure JavaScript object (rather than an instance of the `GLTFParser` class), if the new `GLTFParser` option is set to false.
 
+### @loaders.gl/images
+
+- New function: `getImageMIMEType(arrayBuffer)` returns the MIME type of the image in the supplied `ArrayBuffer`.
+
 ### @loaders.gl/3d-tiles: New module
 
 - Support for the 3D tiles format is being developed in the new `@loaders.gl/3d-tiles` module.

@@ -4,7 +4,7 @@
 /* eslint-disable max-len, max-statements */
 import test from 'tape-promise/tape';
 import {fetchFile} from '@loaders.gl/core';
-import {getImageSize} from '@loaders.gl/images';
+import {getImageMIMEType, getImageSize} from '@loaders.gl/images';
 
 const readFile = url => fetchFile(url).then(response => response.arrayBuffer());
 
@@ -31,6 +31,9 @@ async function testImage(t, typeToTest, acceptableTypes, canThrow) {
     const buffer = image;
 
     const mimeType = typeToTest !== 'all' ? `image/${typeToTest}` : undefined;
+
+    t.assert(getImageMIMEType(buffer), mimeType);
+
     if (shouldPass) {
       const dimensions = getImageSize(buffer, mimeType);
       t.equals(dimensions.width, 480, `width, should work with ${type.toUpperCase()} files`);

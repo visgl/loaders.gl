@@ -1,5 +1,0 @@
-docs/** -diff -merge
-docs/** linguist-generated=true
-docs/**/*.js linguist-generated=true
-
-
