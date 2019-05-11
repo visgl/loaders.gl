@@ -4,6 +4,7 @@ import {render} from 'react-dom';
 import DeckGL from '@deck.gl/react';
 import {COORDINATE_SYSTEM, OrbitView, LinearInterpolator} from '@deck.gl/core';
 import {PointCloudLayer} from '@deck.gl/layers';
+import {createGLTFObjects} from '@luma.gl/addons';
 
 import '@loaders.gl/polyfills';
 import {load, registerLoaders} from '@loaders.gl/core';
@@ -17,19 +18,19 @@ import {
 import ControlPanel from './control-panel';
 import fileDrop from './file-drop';
 
-function parseSync(arrayBuffer, options, url, loader) {
-  const result = Tile3DLoader.parseSync(arrayBuffer, options, url, loader);
-  return result;
-}
+// function parseSync(arrayBuffer, options, url, loader) {
+//   const result = Tile3DLoader.parseSync(arrayBuffer, options, url, loader);
+//   return result;
+// }
 
-export const MeshTile3DLoader = {
-  name: '3D Tile Pointloud',
-  extensions: ['pnts'],
-  parseSync,
-  binary: true
-};
+// export const MeshTile3DLoader = {
+//   name: '3D Tile Pointloud',
+//   extensions: ['pnts'],
+//   parseSync,
+//   binary: true
+// };
 
-registerLoaders(MeshTile3DLoader);
+registerLoaders(Tile3DLoader);
 
 const DATA_URI = 'https://raw.githubusercontent.com/uber-web/loaders.gl/master';
 const INDEX_FILE = `${DATA_URI}/modules/3d-tiles/test/data/index.json`;
@@ -92,7 +93,7 @@ export default class App extends PureComponent {
   componentDidMount() {
     fileDrop(this._deckRef.deckCanvas, (promise, file) => {
       this.setState({droppedFile: file, tile: null});
-      load(promise, MeshTile3DLoader).then(this._onLoad);
+      load(promise, Tile3DLoader).then(this._onLoad);
     });
 
     // fetch index file
@@ -134,6 +135,25 @@ export default class App extends PureComponent {
   }
 
   _onLoad(tile) {
+
+    switch (tile.type) {
+      case 'pnts':
+        return this._unpackPointCloud3DTile(tile);
+      case 'i3dm':
+        return this._unpackInstanced3DTile(tile);
+      default:
+        console.error('Error unpacking', tile.type, tile);
+    }
+  }
+
+  _unpackInstanced3DTile(tile) {
+    const {gl} = this._deckRef;
+    this.setState({
+      scenegraph: createGLTFObjects(gl, tile.gltf)
+    });
+  }
+
+  _unpackPointCloud3DTile(tile) {
     const featureTable = new Tile3DFeatureTable(tile.featureTableJson, tile.featureTableBinary);
     let batchTable = null;
     if (tile.batchIds) {
@@ -215,11 +235,7 @@ export default class App extends PureComponent {
 
   /* eslint-enable max-statements */
 
-  _renderLayers() {
-    if (!this.state.tile) {
-      return null;
-    }
-
+  _renderPointCloud3DTile() {
     const {pointsCount, positions, colors, normals} = this.state.tile;
 
     return (
@@ -249,6 +265,53 @@ export default class App extends PureComponent {
     );
   }
 
+  _renderInstanced3DTile() {
+    const {pointsCount, positions, colors, normals} = this.state.tile;
+
+    return (
+      positions &&
+      new PointCloudLayer({
+        data: {
+          colors: {value: colors, size: 4},
+          normals: {value: positions, size: 3},
+          length: positions.length / 3
+        },
+        id: '3d-point-cloud-layer',
+        coordinateSystem: COORDINATE_SYSTEM.IDENTITY,
+        numInstances: pointsCount,
+        instancePositions: positions,
+        getColor: this._getColor,
+        getNormal: normals
+          ? (object, {index, data, target}) => {
+              target[0] = data.normals[index * 3];
+              target[1] = data.normals[index * 3 + 1];
+              target[2] = data.normals[index * 3 + 2];
+              return target;
+            }
+          : [0, 1, 0],
+        opacity: 0.5,
+        pointSize: 1.5
+      })
+    );
+  }
+
+  _renderLayers() {
+    const {tile} = this.state;
+    if (!tile) {
+      return null;
+    }
+
+
+    switch (tile.type) {
+      case 'pnts':
+        return this._renderPointCloud3DTile();
+      case 'i3dm':
+        return this._renderInstanced3DTile();
+      default:
+        console.error('Error rendering', tile.type, tile);
+    }
+  }
+
   _onSelectExample({category, example}) {
     this.setState({category, example}, () => {
       const {data} = this.state;
@@ -274,19 +337,22 @@ export default class App extends PureComponent {
     const {viewState} = this.state;
 
     return (
-      <DeckGL
-        ref={_ => (this._deckRef = _)}
-        width="100%"
-        height="100%"
-        views={new OrbitView()}
-        viewState={viewState}
-        controller={true}
-        onViewStateChange={this._onViewStateChange}
-        layers={this._renderLayers()}
-        parameters={{
-          clearColor: [0.07, 0.14, 0.19, 1]
-        }}
-      />
+      <div>
+        {this._renderControlPanel()}
+        <DeckGL
+          ref={_ => (this._deckRef = _)}
+          width="100%"
+          height="100%"
+          views={new OrbitView()}
+          viewState={viewState}
+          controller={true}
+          onViewStateChange={this._onViewStateChange}
+          layers={this._renderLayers()}
+          parameters={{
+            clearColor: [0.07, 0.14, 0.19, 1]
+          }}
+        />
+      </div>
     );
   }
 }
