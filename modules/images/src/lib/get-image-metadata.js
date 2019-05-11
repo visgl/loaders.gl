@@ -13,9 +13,14 @@ const ERR_INVALID_MIME_TYPE = `Invalid MIME type. Supported MIME types are: ${Ar
 ).join(', ')}`;
 
 // Supported image types are PNG, JPEG, GIF and BMP.
-export function isImage(arrayBuffer) {
-  const mimeType = getImageMIMEType(arrayBuffer);
-  return Boolean(mimeType);
+export function isImage(arrayBuffer, mimeType) {
+  if (mimeType) {
+    const {test} = getImageTypeHandlers(mimeType);
+    const dataView = toDataView(arrayBuffer);
+    return test(dataView);
+  }
+  // check if known type
+  return Boolean(getImageMIMEType(arrayBuffer));
 }
 
 // Sniffs the contents of a file to attempt to deduce the image type
