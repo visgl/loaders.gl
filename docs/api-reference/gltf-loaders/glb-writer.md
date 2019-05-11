@@ -25,17 +25,15 @@ const arrayBuffer = encodeSync(gltf, GLBWriter, options);
 
 ## Data Format
 
-```js
-{
-  version: Number,
-  json: Object,
-  binary: ArrayBuffer
-}
-```
+Returns an object with the following fields:
 
-## Options
+| Field     | Type          | Default   | Description |
+| ---       | ---           | ---       | --- |
+| `magic`   | `Number`      | glTF      | The first four bytes of the file |
+| `version` | `Number`      | `2`       | The version number |
+| `json`    | `Object`      | `{}`      | The JSON chunk  |
+| `binary`  | `ArrayBuffer` | `null`    | The binary chunk, or `null` |
 
-- `magic` - The first four bytes of the file
 
 ## Attributions
 

@@ -1,5 +1,5 @@
 // Constants
-export {KHR_DRACO_MESH_COMPRESSION, UBER_POINT_CLOUD_EXTENSION} from './gltf/gltf-constants';
+export {KHR_DRACO_MESH_COMPRESSION, UBER_POINT_CLOUD_EXTENSION} from './lib/gltf-constants';
 
 // glTF loader/writer definition objects
 export {default as GLTFLoader} from './gltf-loader';
@@ -9,14 +9,19 @@ export {default as GLTFWriter} from './gltf-writer';
 export {default as GLBLoader} from './glb-loader';
 export {default as GLBWriter} from './glb-writer';
 
-// glTF Parser & Builder
-export {default as GLTFParser} from './gltf/gltf-parser';
-export {default as GLTFBuilder} from './gltf/gltf-builder';
+// glTF Data Access Helper Class
+export {default as GLTFScenegraph} from './lib/gltf-scenegraph';
 
 // For 3D Tiles
-export {default as _parseGLBSync} from './glb/parse-glb';
-export {default as _encodeGLBSync} from './glb/encode-glb';
+export {default as _parseGLBSync} from './lib/parse-glb';
+export {default as _encodeGLBSync} from './lib/encode-glb';
 
 // DEPRECATED
-export {default as GLBParser} from './deprecated/glb-parser';
-export {default as GLBBuilder} from './deprecated/glb-builder';
+export {default as packBinaryJson} from './lib/deprecated/packed-json/pack-binary-json';
+export {default as unpackBinaryJson} from './lib/deprecated/packed-json/unpack-binary-json';
+
+export {default as GLBParser} from './lib/deprecated/glb-parser';
+export {default as GLBBuilder} from './lib/deprecated/glb-builder';
+
+export {default as GLTFParser} from './lib/deprecated/gltf-parser';
+export {default as GLTFBuilder} from './lib/deprecated/gltf-builder';

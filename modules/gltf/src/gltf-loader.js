@@ -1,13 +1,33 @@
 // Binary container format for glTF
 
-import GLTFParser from './gltf/gltf-parser';
+import {parseGLTFSync, parseGLTF} from './lib/parse-gltf';
+import GLTFParser from './lib/deprecated/gltf-parser';
 
-export function parseGLTF(arrayBuffer, options = {}) {
-  return new GLTFParser().parse(arrayBuffer, options);
+export async function parse(arrayBuffer, options = {}) {
+  // Deprecated: Return GLTFParser instance
+  if (options.useGLTFParser) {
+    const gltfParser = new GLTFParser();
+    return gltfParser.parse(arrayBuffer, options);
+  }
+
+  // Return pure javascript object
+  const {byteOffset = 0} = options;
+  const gltf = {};
+  await parseGLTF(gltf, arrayBuffer, byteOffset, options);
+  return gltf;
 }
 
-export function parseGLTFSync(arrayBuffer, options = {}) {
-  return new GLTFParser().parseSync(arrayBuffer, options);
+export function parseSync(arrayBuffer, options = {}) {
+  // Deprecated: Return GLTFParser instance
+  if (options.useGLTFParser) {
+    return new GLTFParser().parseSync(arrayBuffer, options);
+  }
+
+  // Return pure javascript object
+  const {byteOffset = 0} = options;
+  const gltf = {};
+  parseGLTFSync(gltf, arrayBuffer, byteOffset, options);
+  return gltf;
 }
 
 export default {
@@ -15,6 +35,9 @@ export default {
   extension: ['gltf', 'glb'],
   text: true,
   binary: true,
-  parse: parseGLTF,
-  parseSync: parseGLTFSync // Less features
+  parse,
+  parseSync, // Less features when parsing synchronously
+  defaultOptions: {
+    useGLTFParser: true // GLTFParser will be removed in v2.
+  }
 };

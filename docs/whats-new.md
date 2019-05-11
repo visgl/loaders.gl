@@ -1,14 +1,20 @@
 # What's New
 
-This module is currently in unofficial "soft pre-release" stage. You are welcome to start using this module however be aware that APIs will be slightly fluent until version 1.0 is released.
-
 ## v1.1
 
 ### @loaders.gl/gltf
 
-- New: `GLTF` class - Provides methods for structured access and modification of glTF data.
+- New: `GLTFScenegraph` class - Provides methods for structured access and modification of glTF data.
 - New: `GLBLoader`/`GLBWriter` objects that support loading/saving custom GLB-formatted data.
-- The `GLTFLoader` can now return a pure JavaScript object (rather than an instance of the `GLTFParser` class), if the new `GLTFParser` option is set to false.
+- The `GLTFLoader` now returns a pure JavaScript object, rather than an instance of the `GLTFParser` class (by setting `options.GLTFParser: false`).
+
+### @loaders.gl/images
+
+- New function: `getImageMIMEType(arrayBuffer)` returns the MIME type of the image in the supplied `ArrayBuffer`.
+
+### @loaders.gl/images
+
+- New function: `getImageMIMEType(arrayBuffer)` returns the MIME type of the image in the supplied `ArrayBuffer`.
 
 ### @loaders.gl/images
 

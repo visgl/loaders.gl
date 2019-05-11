@@ -91,9 +91,16 @@ export async function parseInBatchesSync(data, loaders, options, url) {
 
 function mergeLoaderAndUserOptions(options, loader) {
   // TODO - explain why this optionb is needed for parsing
-  options = Object.assign({}, loader.DEFAULT_OPTIONS, loader.options, options, {
-    dataType: 'arraybuffer'
-  });
+  options = Object.assign(
+    {},
+    loader.DEFAULT_OPTIONS,
+    loader.defaultOptions,
+    loader.options,
+    options,
+    {
+      dataType: 'arraybuffer'
+    }
+  );
 
   // LOGGING
 

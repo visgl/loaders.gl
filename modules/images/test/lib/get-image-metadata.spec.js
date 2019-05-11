@@ -4,6 +4,7 @@
 /* eslint-disable max-len, max-statements */
 import test from 'tape-promise/tape';
 import {fetchFile} from '@loaders.gl/core';
+
 import {isImage, getImageMIMEType, getImageSize, getImageMetadata} from '@loaders.gl/images';
 
 const readFile = url => fetchFile(url).then(response => response.arrayBuffer());

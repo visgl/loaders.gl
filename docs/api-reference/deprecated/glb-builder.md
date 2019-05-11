@@ -1,4 +1,6 @@
-# GLBBuilder (Experimental)
+# GLBBuilder (Deprecated)
+
+> This class will be removed in v2.0. Use the `GLBWriter` or the `GLTFScenegraph` class instead.
 
 The `GLBBuilder` class allows applications to use a "fluent" API to dynamically build up a hybrid JSON/binary GLB file. The `GLBBuilder` would normally be used if you want to save custom mixed JSON/binary data in a "GLB envelope".
 
@@ -35,9 +37,12 @@ saveBinaryFile(filename, arrayBuffer);
 
 Creates a new `GLBBuilder` instance.
 
+### encodeSync(options : Object) : ArrayBuffer
 ### encodeAsGLB(options : Object) : ArrayBuffer
 
 Combines your added JSON data structures () with any generated JavaScript and any binary subchunks, into a single GLB encoded `ArrayBuffer` that can be written directly to file.
+
+- `options.packTypedArrays` - Packs typed arrays
 
 Note: `encode()` is a one time operation. It should only be called once all data and binary buffers have been added to the builder.
 

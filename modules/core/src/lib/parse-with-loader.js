@@ -12,7 +12,7 @@ import {
 // TODO: support progress and abort
 // TODO: support moving loading to worker
 // TODO - should accept loader.parseAsyncIterator and concatenate.
-export async function parseWithLoader(data, loader, options = {}, url) {
+export async function parseWithLoader(data, loader, options, url) {
   url = url || getUrlFromData(data);
   data = await getArrayBufferOrStringFromData(data, loader);
 
@@ -42,7 +42,7 @@ export async function parseWithLoader(data, loader, options = {}, url) {
 }
 
 // TODO - should accept loader.parseSync/parse and generate 1 chunk asyncIterator
-export function parseWithLoaderSync(data, loader, options = {}, url) {
+export function parseWithLoaderSync(data, loader, options, url) {
   data = getArrayBufferOrStringFromDataSync(data, loader);
 
   if (loader.parseTextSync && typeof data === 'string') {
@@ -58,7 +58,7 @@ export function parseWithLoaderSync(data, loader, options = {}, url) {
   return assert(false);
 }
 
-export async function parseWithLoaderInBatches(data, loader, options = {}, url) {
+export async function parseWithLoaderInBatches(data, loader, options, url) {
   // Create async iterator adapter for data, and concatenate result
   if (loader.parseInBatches) {
     const inputIterator = await getAsyncIteratorFromData(data);
@@ -70,7 +70,7 @@ export async function parseWithLoaderInBatches(data, loader, options = {}, url) 
   return null;
 }
 
-export async function parseWithLoaderInBatchesSync(data, loader, options = {}, url) {
+export async function parseWithLoaderInBatchesSync(data, loader, options, url) {
   // Create async iterator adapter for data, and concatenate result
   if (loader.parseInBatchesSync) {
     const inputIterator = getIteratorFromData(data);

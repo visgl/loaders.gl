@@ -23,7 +23,6 @@ const arrayBuffer = encodeSync(gltf, GLTFWriter, options);
 
 ## Options
 
-- `packTypedArrays` - Packs typed arrays
 - `DracoWriter` - To enable DRACO encoding, the application needs to import and supply the `DracoWriter` class.
 - `DracoLoader` - To enable DRACO encoding, the application needs to import and supply the `DracoLoader` class.
 

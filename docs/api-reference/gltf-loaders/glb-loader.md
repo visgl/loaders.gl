@@ -26,6 +26,7 @@ const gltf = await load(url, GLBLoader);
 
 ```js
 {
+  type: String,
   magic: Number,
   version: Number,
   json: Object,
@@ -35,9 +36,9 @@ const gltf = await load(url, GLBLoader);
 
 ## Options
 
-| Option  | Default | Description                              |
-| ------- | ------- | ---------------------------------------- |
-| `magic` | GLTF    | The magic number to be save in the file. |
+| Option  | Default   | Description                              |
+| ------- | -------   | ---------------------------------------- |
+| `magic` | `glTF`    | The magic number to be save in the file. |
 
 ## Attributions
 
