@@ -1,5 +1,5 @@
 import {assert} from '@loaders.gl/core';
-import {getImageSize} from '@loaders.gl/images';
+import {getImageMetadata} from '@loaders.gl/images';
 import GLBBuilder from '../deprecated/glb-builder';
 import packBinaryJson from '../packed-json/pack-binary-json';
 import {KHR_DRACO_MESH_COMPRESSION, UBER_POINT_CLOUD_EXTENSION} from './gltf-constants';
@@ -203,7 +203,7 @@ export default class GLTFBuilder extends GLBBuilder {
     const bufferViewIndex = this.addBufferView(imageData);
 
     // Get the properties of the image to add as metadata.
-    const sizeAndType = getImageSize(imageData) || {};
+    const sizeAndType = getImageMetadata(imageData) || {};
     if (sizeAndType) {
       // width and height are non-spec fields
       const {mimeType, width, height} = sizeAndType;

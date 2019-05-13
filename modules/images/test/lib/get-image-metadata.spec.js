@@ -4,67 +4,60 @@
 /* eslint-disable max-len, max-statements */
 import test from 'tape-promise/tape';
 import {fetchFile} from '@loaders.gl/core';
-import {getImageSize} from '@loaders.gl/images';
+import {isImage, getImageMIMEType, getImageSize, getImageMetadata} from '@loaders.gl/images';
 
 const readFile = url => fetchFile(url).then(response => response.arrayBuffer());
 
-let TEST_FILES = null;
+const IMAGES = {};
+const IMAGES_PROMISE = Promise.all([
+  readFile('@loaders.gl/images/test/data/img1-preview.png').then(data => (IMAGES.png = data)),
+  readFile('@loaders.gl/images/test/data/img1-preview.jpeg').then(data => (IMAGES.jpeg = data)),
+  readFile('@loaders.gl/images/test/data/img1-preview.gif').then(data => (IMAGES.gif = data)),
+  readFile('@loaders.gl/images/test/data/img1-preview.bmp').then(data => (IMAGES.bmp = data))
+  // readFile('@loaders.gl/images/test/data/img1-preview.tiff').then(data => IMAGES.tiff = data)
+]).then(() => IMAGES);
 
-async function getTestFiles() {
-  TEST_FILES = TEST_FILES || [
-    ['png', await readFile('@loaders.gl/images/test/data/img1-preview.png')],
-    ['jpeg', await readFile('@loaders.gl/images/test/data/img1-preview.jpeg')],
-    ['gif', await readFile('@loaders.gl/images/test/data/img1-preview.gif')],
-    ['bmp', await readFile('@loaders.gl/images/test/data/img1-preview.bmp')],
-    ['tiff', await readFile('@loaders.gl/images/test/data/img1-preview.png')]
-  ];
-
-  return TEST_FILES;
-}
-
-async function testImage(t, typeToTest, acceptableTypes, canThrow) {
-  const files = await getTestFiles();
-
-  acceptableTypes = new Set(acceptableTypes);
-  for (const [type, image] of files) {
-    const shouldPass = acceptableTypes.has(type);
-    const buffer = image;
-
-    const mimeType = typeToTest !== 'all' ? `image/${typeToTest}` : undefined;
-    if (shouldPass) {
-      const dimensions = getImageSize(buffer, mimeType);
-      t.equals(dimensions.width, 480, `width, should work with ${type.toUpperCase()} files`);
-      t.equals(dimensions.height, 320, `height, should work with ${type.toUpperCase()} files`);
-    } else if (canThrow) {
-      t.throws(
-        () => getImageSize(buffer, mimeType),
-        `should not work with ${type.toUpperCase()} files`
-      );
-    }
+test('isImage', async t => {
+  const images = await IMAGES_PROMISE;
+  for (const imageType in images) {
+    t.equals(isImage(images[imageType]), true, `isImage(${imageType})`);
   }
-}
-
-test('getImageSize#png', async t => {
-  await testImage(t, 'png', ['png']);
+  t.equals(isImage(images.png, 'image/png'), true, 'isImage(png, png)');
+  t.equals(isImage(images.png, 'image/jpeg'), false, 'isImage(png, jpeg)');
+  t.equals(isImage(images.jpeg, 'image/png'), false, 'isImage(jpeg, png)');
+  t.equals(isImage(images.jpeg, 'image/jpeg'), true, 'isImage(jpeg, jpeg)');
   t.end();
 });
 
-test('getImageSize#jpeg', async t => {
-  await testImage(t, 'jpeg', ['jpeg']);
+test('getImageMIMEType', async t => {
+  const images = await IMAGES_PROMISE;
+  for (const imageType in images) {
+    t.equals(
+      getImageMIMEType(images[imageType]),
+      `image/${imageType}`,
+      `getImageMIMEType(${imageType})`
+    );
+  }
   t.end();
 });
 
-test('getImageSize#gif', async t => {
-  await testImage(t, 'gif', ['gif']);
+test('getImageSize', async t => {
+  const images = await IMAGES_PROMISE;
+  for (const imageType in images) {
+    const dimensions = getImageSize(images[imageType]);
+    t.equals(dimensions.width, 480, `width, should work with ${imageType.toUpperCase()} files`);
+    t.equals(dimensions.height, 320, `height, should work with ${imageType.toUpperCase()} files`);
+  }
   t.end();
 });
 
-test('getImageSize#bmp', async t => {
-  await testImage(t, 'bmp', ['bmp']);
-  t.end();
-});
-
-test('getImageSize#all', async t => {
-  await testImage(t, 'all', ['png', 'jpeg', 'gif', 'bmp']);
+test('getImageMetadata', async t => {
+  const images = await IMAGES_PROMISE;
+  for (const imageType in images) {
+    const metadata = getImageMetadata(images[imageType]);
+    t.equals(metadata.width, 480, `width, should work with ${imageType.toUpperCase()} files`);
+    t.equals(metadata.height, 320, `height, should work with ${imageType.toUpperCase()} files`);
+    t.equals(metadata.mimeType, `image/${imageType}`, `mimeType = ${imageType}`);
+  }
   t.end();
 });
