@@ -10,10 +10,10 @@ const readFile = url => fetchFile(url).then(response => response.arrayBuffer());
 
 const IMAGES = {};
 const IMAGES_PROMISE = Promise.all([
-  readFile('@loaders.gl/images/test/data/img1-preview.png').then(data => IMAGES.png = data),
-  readFile('@loaders.gl/images/test/data/img1-preview.jpeg').then(data => IMAGES.jpeg = data),
-  readFile('@loaders.gl/images/test/data/img1-preview.gif').then(data => IMAGES.gif = data),
-  readFile('@loaders.gl/images/test/data/img1-preview.bmp').then(data => IMAGES.bmp = data)
+  readFile('@loaders.gl/images/test/data/img1-preview.png').then(data => (IMAGES.png = data)),
+  readFile('@loaders.gl/images/test/data/img1-preview.jpeg').then(data => (IMAGES.jpeg = data)),
+  readFile('@loaders.gl/images/test/data/img1-preview.gif').then(data => (IMAGES.gif = data)),
+  readFile('@loaders.gl/images/test/data/img1-preview.bmp').then(data => (IMAGES.bmp = data))
   // readFile('@loaders.gl/images/test/data/img1-preview.tiff').then(data => IMAGES.tiff = data)
 ]).then(() => IMAGES);
 
@@ -32,7 +32,11 @@ test('isImage', async t => {
 test('getImageMIMEType', async t => {
   const images = await IMAGES_PROMISE;
   for (const imageType in images) {
-    t.equals(getImageMIMEType(images[imageType]), `image/${imageType}`, `getImageMIMEType(${imageType})`);
+    t.equals(
+      getImageMIMEType(images[imageType]),
+      `image/${imageType}`,
+      `getImageMIMEType(${imageType})`
+    );
   }
   t.end();
 });
