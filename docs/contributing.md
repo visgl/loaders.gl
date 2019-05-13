@@ -12,6 +12,8 @@ Our primary development environment is MacOS, but it is possible to build loader
 
 ### Setting up Linux Environment on Windows 10
 
+It is possible to build under Windows, but not directly in the Windows command prompt. You will need to install a Linux command line environment.
+
 Install [WSL (Windows Subsystem for Linux)](https://docs.microsoft.com/en-us/windows/wsl/install-win10) on Windows 10.
 
 ### Install Node and NPM

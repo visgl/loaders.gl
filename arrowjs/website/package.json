@@ -13,6 +13,7 @@
     "develop": "rm -fr .cache && gatsby develop --port=8001",
     "build": "gatsby build --prefix-paths",
     "serve": "gatsby serve --prefix-paths",
+    "deploy": "mv public ../../website/public/arrowjs",
     "publish-docs": "yarn build && mkdir -p ../../docs/arrowjs && rm -rf ../../docs/arrowjs/* && mv public/* ../../docs/arrowjs"
   },
   "dependencies": {

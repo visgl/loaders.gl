@@ -9,10 +9,10 @@
   "main": "index.js",
   "scripts": {
     "start": "yarn clean-examples && yarn clean && yarn develop",
+    "build": "yarn clean-examples && yarn clean && gatsby build",
     "clean": "rm -rf ./.cache ./public",
-    "clean-examples": "find ../examples -name node_modules -exec rm -r {} \\;",
+    "clean-examples": "find ../examples -name node_modules -exec rm -r {} \\; || true",
     "develop": "gatsby develop --port=8001",
-    "build": "yarn clean-examples && gatsby build",
     "serve": "gatsby serve",
     "deploy": "NODE_DEBUG=gh-pages gh-pages -d public"
   },
@@ -37,7 +37,7 @@
     "gatsby-plugin-no-sourcemaps": "^2.0.2",
     "gatsby-plugin-styletron": "^3.0.5",
     "gh-pages": "^2.0.1",
-    "ocular-gatsby": "1.0.0-alpha.27",
+    "ocular-gatsby": "1.0.0-alpha.28",
     "sharp": "0.22.1"
   }
 }
