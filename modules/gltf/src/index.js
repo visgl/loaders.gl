@@ -13,8 +13,8 @@ export {default as GLBWriter} from './glb-writer';
 export {default as GLTFScenegraph} from './lib/gltf-scenegraph';
 
 // For 3D Tiles
-export {default as _parseGLBSync} from './lib/parse-glb';
-export {default as _encodeGLBSync} from './lib/encode-glb';
+export {parseGLTFSync} from './lib/parse-gltf';
+export {encodeGLTFSync} from './lib/encode-gltf';
 
 // DEPRECATED
 export {default as packBinaryJson} from './lib/deprecated/packed-json/pack-binary-json';

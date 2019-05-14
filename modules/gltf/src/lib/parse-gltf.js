@@ -47,7 +47,7 @@ export function parseGLTFSync(gltf, arrayBufferOrString, byteOffset = 0, options
   let data = arrayBufferOrString;
 
   // If binary is not starting with magic bytes, assume JSON and convert to string
-  if (data instanceof ArrayBuffer && !isGLB(data, options)) {
+  if (data instanceof ArrayBuffer && !isGLB(data, byteOffset, options)) {
     const textDecoder = new TextDecoder();
     data = textDecoder.decode(data);
   }

@@ -4,7 +4,7 @@ import Tile3DFeatureTable from '../classes/tile-3d-feature-table';
 
 import {parse3DTileHeaderSync} from './helpers/parse-3d-tile-header';
 import {parse3DTileTablesHeaderSync, parse3DTileTablesSync} from './helpers/parse-3d-tile-tables';
-import {parse3DTileGLTFViewSync} from './helpers/parse-3d-tile-gltf-view';
+import {parse3DTileGLTFViewSync, extractGLTF} from './helpers/parse-3d-tile-gltf-view';
 
 // Reference code:
 // https://github.com/AnalyticalGraphicsInc/cesium/blob/master/Source/Scene/Instanced3DModel3DTileContent.js#L190
@@ -24,7 +24,7 @@ export default function parseInstancedModel3DTileSync(tile, arrayBuffer, byteOff
   // PARSE FEATURE TABLE
   byteOffset = parse3DTileTablesSync(tile, arrayBuffer, byteOffset, options);
 
-  byteOffset = parse3DTileGLTFViewSync(tile, byteOffset);
+  byteOffset = parse3DTileGLTFViewSync(tile, arrayBuffer, byteOffset, options);
 
   // TODO - Is the feature table sometimes optional or can check be moved into table header parser?
   if (tile.featureTableJsonByteLength === 0) {
@@ -40,27 +40,12 @@ export default function parseInstancedModel3DTileSync(tile, arrayBuffer, byteOff
     throw new Error('i3dm parser: INSTANCES_LENGTH must be defined');
   }
 
-  /*
-  const batchTable = new Tile3DBatchTable(tile, instancesLength);
-
-  switch (tile.gltfFormat) {
-    case 0:
-      const gltfUrl = getStringFromTypedArray(tile.gltfView);
-      // We need to remove padding from the end of the model URL in case this tile was part of a composite tile.
-      // This removes all white space and null characters from the end of the string.
-      tile.url = gltfUrl.replace(/[\s\0]+$/, '');
-      throw new Error('i3dm: glTF format 0 (uri) not yet implemented');
-      break;
-    case 1:
-      tile.gltf = gltfView;
-      break;
-    default:
-      throw new Error(`i3dm: glTF format ${tile.gltfFormat}: Must be 0 (uri) or 1 (embedded)`);
-  }
-  */
-
   tile.eastNorthUp = featureTable.getGlobalProperty('EAST_NORTH_UP');
   tile.rtcCenter = featureTable.getGlobalProperty('RTC_CENTER', GL.FLOAT, 3);
+
+  // const batchTable = new Tile3DBatchTable(tile, instancesLength);
+
+  extractGLTF(tile, tile.gltfFormat, options);
 
   // extractInstancedAttributes(tile, featureTable);
 

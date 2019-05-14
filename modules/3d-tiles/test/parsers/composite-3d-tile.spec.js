@@ -86,7 +86,7 @@ test('composite tile#loads composite of composite', async t => {
 });
 
 // TODO  should be a render test
-test('renders multiple instanced tilesets', async t => {
+test.skip('renders multiple instanced tilesets', async t => {
   const tileData = await loadRootTileFromTileset(t, COMPOSITE_OF_INSTANCED_URL);
   const tile = parseSync(tileData, Tile3DLoader);
   t.ok(tile, 'loaded');

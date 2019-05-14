@@ -89,7 +89,7 @@ test('instanced model tile#loaded tile without batch table', async t => {
 });
 
 // TODO - this should be a render test
-test('instanced model tile#renders with external gltf', async t => {
+test.skip('instanced model tile#renders with external gltf', async t => {
   const tileData = await loadRootTileFromTileset(t, GLTF_EXTERNAL_URL);
   const tile = parseSync(tileData, Tile3DLoader);
   t.ok(tile, 'loaded tile with external gltf');
