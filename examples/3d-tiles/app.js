@@ -14,6 +14,7 @@ import {
   Tile3DBatchTable,
   parseRGB565
 } from '@loaders.gl/3d-tiles';
+import {GLTFScenegraph} from '@loaders.gl/gltf';
 
 import ControlPanel from './control-panel';
 import fileDrop from './file-drop';
@@ -147,7 +148,14 @@ export default class App extends PureComponent {
   }
 
   _unpackInstanced3DTile(tile) {
-    const {gl} = this._deckRef;
+    const {gl} = this._deckRef.deck.animationLoop;
+
+    const gltfScenegraph = new GLTFScenegraph(tile.gltf);
+
+    // TODO - Need to be implemented/copied from GLTFParser/GLTFPostprocessor
+    gltfScenegraph.unpackBuffers();
+    gltfScenegraph.resolveTree();
+
     this.setState({
       scenegraph: createGLTFObjects(gl, tile.gltf)
     });
