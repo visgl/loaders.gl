@@ -1,6 +1,6 @@
 // Binary container format for glTF
 
-import parseGLBSync from './glb/parse-glb';
+import parseGLBSync from './lib/parse-glb';
 
 export default {
   name: 'GLB',
@@ -11,8 +11,8 @@ export default {
 };
 
 function parseSync(arrayBuffer, options) {
+  const {byteOffset = 0} = options;
   const glb = {};
-  const byteOffset = 0;
   parseGLBSync(glb, arrayBuffer, byteOffset, options);
   return glb;
 }

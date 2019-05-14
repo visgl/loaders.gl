@@ -8,6 +8,30 @@ At their core glTF and GLB loaders extract this information, however additional 
 
 While the glTF "category" is obviously quite specific glTF, loaders for other scenegraph formats (e.g. COLLADA) could potentially also choose to "convert" the loaded data to this glTF format and thus enable interoperabiity with applications that are already designed to use the `GLTFLoader`.
 
+### GLB Data Format
+
+An object with the following top-level fields:
+
+| Field     | Type          | Default   | Description |
+| ---       | ---           | ---       | --- |
+| `magic`   | `Number`      | glTF      | The first four bytes of the file |
+| `version` | `Number`      | `2`       | The version number |
+| `json`    | `Object`      | `{}`      | The JSON chunk  |
+| `binary`  | `ArrayBuffer` | `null`    | The binary chunk, or `null` |
+
+
+### GLTF Data Format
+
+An object with the following fields
+
+| Field     | Type            | Default   | Description |
+| ---       | ---             | ---       | --- |
+| `magic`   | `Number`        | glTF      | The first four bytes of the file |
+| `version` | `Number`        | `2`       | The version number |
+| `json`    | `Object`        | `{}`      | The JSON chunk (glTF formatted)  |
+| `buffers` | `ArrayBuffer[]` | `[]`      | The BIN chunk plus any base64 or BIN file buffers |
+
+
 ## GLTFBuilder API
 
 A glTF file can be built programmatically using the GLTFBuilder's "fluent API":

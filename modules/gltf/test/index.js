@@ -1,17 +1,28 @@
-import './utils/encode-utils.spec';
+// import './lib/utils/encode-utils.spec';
 
-import './packed-json/flatten-to-typed-array.spec';
-import './packed-json/pack-binary-json.spec';
+import './lib/glb/glb-encode-parse.spec';
+import './lib/glb/glb-encoder-decoder.spec';
+import './lib/glb/glb-custom-payload.spec';
 
-import './glb/glb-parser.spec';
-import './glb/glb-builder.spec';
-import './glb/glb-encode-parse.spec';
-import './glb/glb-encoder-decoder.spec';
-import './glb/glb-custom-payload.spec';
+import './lib/gltf-attribute-utils.spec';
+import './lib/gltf-roundtrip.spec';
 
-import './gltf/gltf-attribute-utils.spec';
-import './gltf/gltf-builder.spec';
-import './gltf/gltf-loader.spec';
-import './gltf/gltf-roundtrip.spec';
-import './gltf/gltf-draco.spec';
-import './gltf/gltf-post-processor.spec';
+import './lib/gltf-scenegraph-modifiers.spec';
+
+import './glb-loader.spec';
+import './gltf-loader.spec';
+import './gltf-writer.spec';
+
+import './lib/extensions/KHR_draco_mesh_compression.spec';
+import './lib/extensions/KHR_lights_punctual.spec';
+
+import './lib/deprecated/packed-json/flatten-to-typed-array.spec';
+import './lib/deprecated/packed-json/pack-binary-json.spec';
+
+import './lib/deprecated/glb-parser.spec';
+import './lib/deprecated/glb-builder.spec';
+
+import './lib/deprecated/gltf-parser.spec';
+import './lib/deprecated/gltf-builder.spec';
+import './lib/deprecated/gltf-roundtrip.spec';
+import './lib/deprecated/gltf-post-processor.spec';

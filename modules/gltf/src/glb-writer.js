@@ -1,4 +1,4 @@
-import encodeGLBSync from './glb/encode-glb';
+import encodeGLBSync from './lib/encode-glb';
 
 export default {
   name: 'GLB',
@@ -8,13 +8,15 @@ export default {
 };
 
 function encodeSync(glb, options) {
+  const {byteOffset = 0} = options;
+
   // Calculate length and allocate buffer
-  const byteLength = encodeGLBSync(glb, null, 0, options);
+  const byteLength = encodeGLBSync(glb, null, byteOffset, options);
   const arrayBuffer = new ArrayBuffer(byteLength);
 
   // Encode into buffer
   const dataView = new DataView(arrayBuffer);
-  encodeGLBSync(glb, dataView, 0, options);
+  encodeGLBSync(glb, dataView, byteOffset, options);
 
   return arrayBuffer;
 }
