@@ -1,4 +1,4 @@
-import {getFullUri} from '../gltf-utils/gltf-utils';
+import {getFullUri} from './gltf-utils/gltf-utils';
 
 // This is a post processor for loaded glTF files
 // The goal is to make the loaded data easier to use in WebGL applications
@@ -51,43 +51,53 @@ function getSizeFromAccessorType(type) {
   return COMPONENTS[type];
 }
 
-export default class GLTFScenegraphResolver {
-  postProcess(gltf, options = {}) {
-    this.gltf = gltf;
-    this._resolveToTree(options);
-    return this.gltf;
+class GLTFScenegraphToTree {
+  getResolvedJson(gltf, options = {}) {
+    this.json = gltf.json;
+    return this._resolveTree(gltf.json, gltf.buffers, options);
   }
 
   // Convert indexed glTF structure into tree structure
-  // PREPARATION STEP: CROSS-LINK INDEX RESOLUTION, ENUM LOOKUP, CONVENIENCE CALCULATIONS
-  /* eslint-disable complexity */
-  _resolveToTree(options = {}) {
-    const {gltf} = this;
-
-    (gltf.bufferViews || []).forEach((bufView, i) => this._resolveBufferView(bufView, i));
-
-    (gltf.images || []).forEach((image, i) => this._resolveImage(image, i, options));
-    (gltf.samplers || []).forEach((sampler, i) => this._resolveSampler(sampler, i));
-    (gltf.textures || []).forEach((texture, i) => this._resolveTexture(texture, i));
-
-    (gltf.accessors || []).forEach((accessor, i) => this._resolveAccessor(accessor, i));
-    (gltf.materials || []).forEach((material, i) => this._resolveMaterial(material, i));
-    (gltf.meshes || []).forEach((mesh, i) => this._resolveMesh(mesh, i));
-
-    (gltf.nodes || []).forEach((node, i) => this._resolveNode(node, i));
-
-    (gltf.skins || []).forEach((skin, i) => this._resolveSkin(skin, i));
-
-    (gltf.scenes || []).forEach((scene, i) => this._resolveScene(scene, i));
-
-    if (gltf.scene !== undefined) {
-      gltf.scene = gltf.scenes[this.gltf.scene];
+  // cross-link index resolution, enum lookup, convenience calculations
+  // eslint-disable-next-line complexity
+  _resolveTree(json, buffers, options = {}) {
+    if (json.bufferViews) {
+      json.bufferViews = json.bufferViews.map((bufView, i) => this._resolveBufferView(bufView, i));
+    }
+    if (json.images) {
+      json.images = json.images.map((image, i) => this._resolveImage(image, i, options));
+    }
+    if (json.samplers) {
+      json.samplers = json.samplers.map((sampler, i) => this._resolveSampler(sampler, i));
+    }
+    if (json.textures) {
+      json.textures = json.textures.map((texture, i) => this._resolveTexture(texture, i));
+    }
+    if (json.accessors) {
+      json.accessors = json.accessors.map((accessor, i) => this._resolveAccessor(accessor, i));
+    }
+    if (json.materials) {
+      json.materials = json.materials.map((material, i) => this._resolveMaterial(material, i));
+    }
+    if (json.meshes) {
+      json.meshes = json.meshes.map((mesh, i) => this._resolveMesh(mesh, i));
+    }
+    if (json.nodes) {
+      json.nodes = json.nodes.map((node, i) => this._resolveNode(node, i));
+    }
+    if (json.skins) {
+      json.skins = json.skins.map((skin, i) => this._resolveSkin(skin, i));
+    }
+    if (json.scenes) {
+      json.scenes = json.scenes.map((scene, i) => this._resolveScene(scene, i));
+    }
+    if (json.scene !== undefined) {
+      json.scene = json.scenes[this.json.scene];
     }
 
-    // EXTENSIONS
-    this._process_extension_KHR_lights_punctual();
+    // TODO arrays added by extensions, e.g. lights
 
-    return gltf;
+    return json;
   }
   /* eslint-enable complexity */
 
@@ -144,7 +154,7 @@ export default class GLTFScenegraphResolver {
     if (typeof index === 'object') {
       return index;
     }
-    const object = this.gltf[array] && this.gltf[array][index];
+    const object = this.json[array] && this.json[array][index];
     if (!object) {
       console.warn(`glTF file error: Could not find ${array}[${index}]`); // eslint-disable-line
     }
@@ -154,13 +164,18 @@ export default class GLTFScenegraphResolver {
   // PARSING HELPERS
 
   _resolveScene(scene, index) {
-    scene.id = `scene-${index}`;
+    scene = {...scene};
+    scene.id = scene.id || `scene-${index}`;
     scene.nodes = (scene.nodes || []).map(node => this.getNode(node));
+    return scene;
   }
 
   _resolveNode(node, index) {
-    node.id = `node-${index}`;
-    node.children = (node.children || []).map(child => this.getNode(child));
+    node = {...node};
+    node.id = node.id || `node-${index}`;
+    if (node.children) {
+      node.children = node.children.map(child => this.getNode(child))
+    }
     if (node.mesh !== undefined) {
       node.mesh = this.getMesh(node.mesh);
     }
@@ -170,53 +185,71 @@ export default class GLTFScenegraphResolver {
     if (node.skin !== undefined) {
       node.skin = this.getSkin(node.skin);
     }
+    return node;
   }
 
   _resolveSkin(skin, index) {
-    skin.id = `skin-${index}`;
+    skin = {...skin};
+    skin.id = skin.id || `skin-${index}`;
     skin.inverseBindMatrices = this.getAccessor(skin.inverseBindMatrices);
+    return skin;
   }
 
   _resolveMesh(mesh, index) {
-    mesh.id = `mesh-${index}`;
-    for (const primitive of mesh.primitives) {
-      for (const attribute in primitive.attributes) {
-        primitive.attributes[attribute] = this.getAccessor(primitive.attributes[attribute]);
-      }
-      if (primitive.indices !== undefined) {
-        primitive.indices = this.getAccessor(primitive.indices);
-      }
-      if (primitive.material !== undefined) {
-        primitive.material = this.getMaterial(primitive.material);
-      }
+    mesh = {...mesh};
+    mesh.id = mesh.id || `mesh-${index}`;
+    if (mesh.primitives) {
+      mesh.primitives = mesh.primitives.map(primitive => {
+        const attributes = primitive.attributes;
+        primitive.attributes = {};
+        for (const attribute in attributes) {
+          primitive.attributes[attribute] = this.getAccessor(primitive.attributes[attribute]);
+        }
+        if (primitive.indices !== undefined) {
+          primitive.indices = this.getAccessor(primitive.indices);
+        }
+        if (primitive.material !== undefined) {
+          primitive.material = this.getMaterial(primitive.material);
+        }
+      });
     }
+    return mesh;
   }
 
   _resolveMaterial(material, index) {
-    material.id = `material-${index}`;
+    material = {...material};
+    material.id = material.id || `material-${index}`;
     if (material.normalTexture) {
+      material.normalTexture = {...material.normalTexture};
       material.normalTexture.texture = this.getTexture(material.normalTexture.index);
     }
     if (material.occlusionTexture) {
+      material.occlustionTexture = {...material.occlustionTexture};
       material.occlusionTexture.texture = this.getTexture(material.occlusionTexture.index);
     }
     if (material.emissiveTexture) {
+      material.emmisiveTexture = {...material.emmisiveTexture};
       material.emissiveTexture.texture = this.getTexture(material.emissiveTexture.index);
     }
 
     if (material.pbrMetallicRoughness) {
+      material.pbrMetallicRoughness = {...material.pbrMetallicRoughness};
       const mr = material.pbrMetallicRoughness;
       if (mr.baseColorTexture) {
+        mr.baseColorTexture = {...mr.baseColorTexture};
         mr.baseColorTexture.texture = this.getTexture(mr.baseColorTexture.index);
       }
       if (mr.metallicRoughnessTexture) {
+        mr.metallicRoughnessTexture = {...mr.metallicRoughnessTexture};
         mr.metallicRoughnessTexture.texture = this.getTexture(mr.metallicRoughnessTexture.index);
       }
     }
+    return material;
   }
 
   _resolveAccessor(accessor, index) {
-    accessor.id = `accessor-${index}`;
+    accessor = {...accessor};
+    accessor.id = accessor.id || `accessor-${index}`;
     if (accessor.bufferView !== undefined) {
       // Draco encoded meshes don't have bufferView
       accessor.bufferView = this.getBufferView(accessor.bufferView);
@@ -226,16 +259,20 @@ export default class GLTFScenegraphResolver {
     accessor.bytesPerComponent = getBytesFromComponentType(accessor);
     accessor.components = getSizeFromAccessorType(accessor);
     accessor.bytesPerElement = accessor.bytesPerComponent * accessor.components;
+    return accessor;
   }
 
   _resolveTexture(texture, index) {
-    texture.id = `texture-${index}`;
+    texture = {...texture};
+    texture.id = texture.id || `texture-${index}`;
     texture.sampler = this.getSampler(texture.sampler);
     texture.source = this.getImage(texture.source);
+    return texture;
   }
 
   _resolveSampler(sampler, index) {
-    sampler.id = `sampler-${index}`;
+    sampler = {...sampler};
+    sampler.id = sampler.id || `sampler-${index}`;
     // Map textual parameters to GL parameter values
     sampler.parameters = {};
     for (const key in sampler) {
@@ -244,54 +281,53 @@ export default class GLTFScenegraphResolver {
         sampler.parameters[glEnum] = sampler[key];
       }
     }
+    return sampler;
   }
 
   _enumSamplerParameter(key) {
     return SAMPLER_PARAMETER_GLTF_TO_GL[key];
   }
 
+  // TODO - Handle non-binary-chunk images, data URIs, URLs etc
+  // TODO - Image creation could be done on getImage instead of during load
   _resolveImage(image, index, options) {
-    image.id = `image-${index}`;
+    image = {...image};
+    image.id = image.id || `image-${index}`;
     if (image.bufferView !== undefined) {
       image.bufferView = this.getBufferView(image.bufferView);
     }
 
-    // TODO - Handle non-binary-chunk images, data URIs, URLs etc
-    // TODO - Image creation could be done on getImage instead of during load
-    const {createImages = true} = options;
-    if (createImages) {
-      image.image = this.glbParser.getImage(image);
-    } else {
-      image.getImageAsync = () => {
-        if (this.glbParser) {
-          return this.glbParser.getImageAsync(image);
-        } else if (image.uri) {
-          // TODO: Maybe just return the URL?
-          // TODO: Maybe use loaders.gl/core loadImage?
-          return new Promise(resolve => {
-            /* global Image */
-            const img = new Image();
-            img.crossOrigin = 'anonymous';
-            img.onload = () => resolve(img);
-            img.src = getFullUri(image.uri, options.uri);
-          });
-        }
-
-        // cannot get image
-        return null;
-      };
+    function getImageAsync() {
+      if (image.uri) {
+        // TODO: Maybe just return the URL?
+        // TODO: Maybe use loaders.gl/core loadImage?
+        return new Promise(resolve => {
+          /* global Image */
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.onload = () => resolve(img);
+          img.src = getFullUri(image.uri, options.uri);
+        });
+      }
+      // cannot get image
+      return null;
     }
+
+    image.getImageAsync = getImageAsync;
   }
 
   _resolveBufferView(bufferView, index) {
-    bufferView.id = `bufferView-${index}`;
+    bufferView = {...bufferView};
+    bufferView.id = bufferView.id || `bufferView-${index}`;
     bufferView.buffer = this.getBuffer(bufferView.buffer);
 
     const byteOffset = bufferView.byteOffset || 0;
     bufferView.data = new Uint8Array(bufferView.buffer.data, byteOffset, bufferView.byteLength);
+    return bufferView;
   }
 
-  _resolveCamera(camera) {
+  _resolveCamera(camera, index) {
+    camera.id = camera.id || `camera-${index}`;
     // TODO - create 4x4 matrices
     if (camera.perspective) {
       // camera.matrix = createPerspectiveMatrix(camera.perspective);
@@ -299,5 +335,10 @@ export default class GLTFScenegraphResolver {
     if (camera.orthographic) {
       // camera.matrix = createOrthographicMatrix(camera.orthographic);
     }
+    return camera;
   }
+}
+
+export default function getResolvedJson(gltf, options) {
+  return new GLTFScenegraphToTree().getResolvedJson(gltf, options);
 }

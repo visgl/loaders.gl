@@ -6,9 +6,6 @@
 /* eslint-disable max-len, camelcase */
 /*
 import test from 'tape-promise/tape';
-
-import getResolvedJson from '@loaders.gl/gltf/lib/gltf';
-
 const TEST_CASES = [
   {
     name: 'KHR_lights_punctual',
@@ -61,4 +58,8 @@ test('GLTF roundtrip#extensions', t => {
   }
   t.end();
 });
+<<<<<<< HEAD
 */
+=======
+*/
+>>>>>>> testpass
