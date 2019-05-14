@@ -4,6 +4,7 @@ import parse3DTileSync from './parsers/parse-3d-tile';
 export default {
   name: '3D Tiles',
   extensions: ['cmpt', 'pnts', 'b3dm', 'i3dm'],
+  mimeType: 'application/octet-stream',
   parseSync,
   binary: true
 };

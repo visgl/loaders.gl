@@ -4,7 +4,7 @@ import Tile3DFeatureTable from '../classes/tile-3d-feature-table';
 
 import {parse3DTileHeaderSync} from './helpers/parse-3d-tile-header';
 import {parse3DTileTablesHeaderSync, parse3DTileTablesSync} from './helpers/parse-3d-tile-tables';
-import {parse3DTileGLTFViewSync} from './helpers/parse-3d-tile-gltf-view';
+import {parse3DTileGLTFViewSync, extractGLTF, GLTF_FORMAT} from './helpers/parse-3d-tile-gltf-view';
 
 // eslint-disable-next-line max-statements
 export default function parseBatchedModel3DTileSync(tile, arrayBuffer, byteOffset, options) {
@@ -17,6 +17,8 @@ export default function parseBatchedModel3DTileSync(tile, arrayBuffer, byteOffse
 
   const featureTable = new Tile3DFeatureTable(tile.featureTableJson, tile.featureTableBinary);
   tile.rtcCenter = featureTable.getGlobalProperty('RTC_CENTER', GL.FLOAT, 3);
+
+  extractGLTF(tile, GLTF_FORMAT.EMBEDDED, options);
 
   return byteOffset;
 }

@@ -35,6 +35,7 @@
   },
   "dependencies": {
     "@loaders.gl/core": "1.1.0-alpha.0",
+    "@loaders.gl/gltf": "1.1.0-alpha.0",
     "math.gl": "^2.3.0"
   }
 }

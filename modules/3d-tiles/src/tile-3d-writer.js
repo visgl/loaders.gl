@@ -4,7 +4,7 @@ import encode3DTile from './encoders/encode-3d-tile';
 export default {
   name: 'GLB',
   extensions: ['cmpt', 'pnts', 'b3dm', 'i3dm'],
-  // TODO - need extension selector for save...
+  mimeType: 'application/octet-stream',
   encodeSync,
   binary: true
 };
