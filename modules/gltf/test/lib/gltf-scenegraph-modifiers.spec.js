@@ -13,25 +13,25 @@ const PNG1x1 = new Uint8Array([
 ]);
 
 test('GLTFScenegraph#ctor', t => {
-  const gltfBuilder = new GLTFScenegraph();
-  t.ok(gltfBuilder);
+  const gltfScenegraph = new GLTFScenegraph();
+  t.ok(gltfScenegraph);
   t.end();
 });
 
 test('GLTFScenegraph#addImage', t => {
   // Smallest valid png
-  const gltfBuilder = new GLTFScenegraph();
+  const gltfScenegraph = new GLTFScenegraph();
 
-  // t.throws(() => gltfBuilder.addImage(PNG1x1), 'addImage() throws if no MIMEType');
+  // t.throws(() => gltfScenegraph.addImage(PNG1x1), 'addImage() throws if no MIMEType');
 
-  const imageIndex = gltfBuilder.addImage(PNG1x1);
+  const imageIndex = gltfScenegraph.addImage(PNG1x1);
   t.equal(imageIndex, 0, 'Image index should be 0');
 
-  // t.equals(gltfBuilder.json.buffers.length, 1, 'gltf buffer added as expected');
-  t.equals(gltfBuilder.json.bufferViews.length, 1, 'gltf bufferView added as expected');
-  t.equals(gltfBuilder.json.images.length, 1, 'gltf image set as expected');
+  // t.equals(gltfScenegraph.json.buffers.length, 1, 'gltf buffer added as expected');
+  t.equals(gltfScenegraph.json.bufferViews.length, 1, 'gltf bufferView added as expected');
+  t.equals(gltfScenegraph.json.images.length, 1, 'gltf image set as expected');
 
-  const {bufferView, mimeType} = gltfBuilder.json.images[0];
+  const {bufferView, mimeType} = gltfScenegraph.json.images[0];
   t.equal(bufferView, 0, 'bufferView index is 0');
   t.equal(mimeType, 'image/png', 'mimeType is png');
 
