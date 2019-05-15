@@ -49,7 +49,7 @@ const builder = new GLTFBuilder(...)
 
 glTF provides multiple mechanisms for adding custom data to a glTF conformant file. The application just needs to decide where to store it. Normally it should be added using one of the `addApplicationData`, `addExtras`, `addExtension` or `addRequiredExtension` methods.
 
-## Binary Packing of Typed Arrays in JSON Data
+### Binary Packing of Typed Arrays in JSON Data
 
 The `GLTFLoader` and `GLTFBuilder` classes include support for moving (packing) typed arrays in the application JSON into the binary GLB chunk.
 
