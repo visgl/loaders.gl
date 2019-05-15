@@ -7,7 +7,7 @@
 /*
 import test from 'tape-promise/tape';
 
-import getResolvedJson from '@loaders.gl/gltf/lib/gltf-scenegraph-to-tree';
+import getResolvedJson from '@loaders.gl/gltf/lib/gltf';
 
 const TEST_CASES = [
   {

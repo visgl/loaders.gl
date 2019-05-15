@@ -3,7 +3,7 @@ import {getFullUri} from '../gltf-utils/gltf-utils';
 import {getGLTFAccessors, getGLTFAccessor} from '../gltf-utils/gltf-attribute-utils';
 import {KHR_DRACO_MESH_COMPRESSION, UBER_POINT_CLOUD_EXTENSION} from '../gltf-constants';
 import GLBParser from './glb-parser';
-import GLTFPostProcessor from './gltf-post-processor';
+import GLTFPostProcessorOld from './gltf-post-processor-old';
 
 const DEFAULT_OPTIONS = {
   fetchLinkedResources: true, // Fetch any linked .BIN buffers, decode base64
@@ -33,7 +33,7 @@ export default class GLTFParser {
     }
 
     if (options.postProcess) {
-      const postProcessor = new GLTFPostProcessor();
+      const postProcessor = new GLTFPostProcessorOld();
       postProcessor.postProcess(this.gltf, this.glbParser, options);
     }
 
@@ -78,7 +78,7 @@ export default class GLTFParser {
     }
 
     if (options.postProcess) {
-      const postProcessor = new GLTFPostProcessor();
+      const postProcessor = new GLTFPostProcessorOld();
       postProcessor.postProcess(this.gltf, this.glbParser, options);
     }
 

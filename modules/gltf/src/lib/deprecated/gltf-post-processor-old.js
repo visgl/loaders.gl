@@ -51,7 +51,7 @@ function getSizeFromAccessorType(type) {
   return COMPONENTS[type];
 }
 
-export default class GLTFPostProcessor {
+export default class GLTFPostProcessorOld {
   postProcess(gltf, glbParser, options = {}) {
     this.gltf = gltf;
     this.glbParser = glbParser;

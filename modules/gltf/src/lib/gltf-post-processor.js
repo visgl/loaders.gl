@@ -51,7 +51,7 @@ function getSizeFromAccessorType(type) {
   return COMPONENTS[type];
 }
 
-class GLTFScenegraphToTree {
+export default class GLTFPostProcessor {
   getResolvedJson(gltf, options = {}) {
     this.json = gltf.json;
     return this._resolveTree(gltf.json, gltf.buffers, options);
@@ -174,7 +174,7 @@ class GLTFScenegraphToTree {
     node = {...node};
     node.id = node.id || `node-${index}`;
     if (node.children) {
-      node.children = node.children.map(child => this.getNode(child))
+      node.children = node.children.map(child => this.getNode(child));
     }
     if (node.mesh !== undefined) {
       node.mesh = this.getMesh(node.mesh);
@@ -337,8 +337,4 @@ class GLTFScenegraphToTree {
     }
     return camera;
   }
-}
-
-export default function getResolvedJson(gltf, options) {
-  return new GLTFScenegraphToTree().getResolvedJson(gltf, options);
 }
