@@ -1,6 +1,6 @@
 import test from 'tape-promise/tape';
 import Tile3DBatchTableParser from '@loaders.gl/3d-tiles/classes/tile-3d-batch-table';
-import {concatTypedArrays} from '@loaders.gl/3d-tiles/math/typed-array-utils';
+import {concatTypedArrays} from '@loaders.gl/math'; // '@math.gl/geometry';
 // import {loadTileset} from '../utils/load-utils';
 
 // const WITH_BATCH_TABLE_URL =

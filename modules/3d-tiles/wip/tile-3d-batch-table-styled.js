@@ -1,4 +1,4 @@
-import GL from '../math/gl-constants';
+import {GL} from '@loaders.gl/math'; // 'math.gl/geometry';
 import assert from '../utils/assert';
 
 /*

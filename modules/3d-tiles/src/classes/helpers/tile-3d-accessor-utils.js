@@ -1,4 +1,4 @@
-import GLType from '../../math/gl-type';
+import {GLType} from '@loaders.gl/math'; // '@math.gl/geometry';
 import assert from '../../utils/assert';
 
 const COMPONENTS_PER_ATTRIBUTE = {

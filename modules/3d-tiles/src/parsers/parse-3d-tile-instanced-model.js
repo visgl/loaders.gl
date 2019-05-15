@@ -1,4 +1,4 @@
-import GL from '../math/gl-constants';
+import {GL} from '@loaders.gl/math'; // 'math.gl/geometry';
 import Tile3DFeatureTable from '../classes/tile-3d-feature-table';
 // import Tile3DBatchTable from '../classes/tile-3d-batch-table';
 
