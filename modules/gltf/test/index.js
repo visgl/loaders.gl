@@ -8,7 +8,7 @@ import './lib/gltf-attribute-utils.spec';
 import './lib/gltf-roundtrip.spec';
 
 import './lib/gltf-scenegraph-modifiers.spec';
-import './lib/gltf-post-processor-old.spec';
+import './lib/gltf-post-processor.spec';
 
 import './glb-loader.spec';
 import './gltf-loader.spec';
@@ -26,4 +26,4 @@ import './lib/deprecated/glb-builder.spec';
 import './lib/deprecated/gltf-parser.spec';
 import './lib/deprecated/gltf-builder.spec';
 import './lib/deprecated/gltf-roundtrip.spec';
-import './lib/deprecated/gltf-post-processor.spec';
+import './lib/deprecated/gltf-post-processor-old.spec';

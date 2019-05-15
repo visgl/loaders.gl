@@ -1,7 +1,7 @@
 /* eslint-disable max-len, camelcase */
 import test from 'tape-promise/tape';
 
-import GLTFPostProcessor from '@loaders.gl/gltf/lib/deprecated/gltf-post-processor';
+import GLTFPostProcessor from '@loaders.gl/gltf/lib/deprecated/gltf-post-processor-old';
 
 const TEST_CASES = [
   {

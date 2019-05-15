@@ -11,7 +11,7 @@ export {default as GLBWriter} from './glb-writer';
 
 // glTF Data Access Helper Class
 export {default as GLTFScenegraph} from './lib/gltf-scenegraph';
-export {default as GLTFPostProcessor} from './lib/gltf-scenegraph';
+export {default as GLTFPostProcessor} from './lib/gltf-post-processor';
 
 // For 3D Tiles
 export {parseGLTFSync} from './lib/parse-gltf';

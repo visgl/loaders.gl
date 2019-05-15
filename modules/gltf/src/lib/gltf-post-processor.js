@@ -52,7 +52,7 @@ function getSizeFromAccessorType(type) {
 }
 
 export default class GLTFPostProcessor {
-  getResolvedJson(gltf, options = {}) {
+  postProcess(gltf, options = {}) {
     this.json = gltf.json;
     return this._resolveTree(gltf.json, gltf.buffers, options);
   }
