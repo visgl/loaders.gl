@@ -2,6 +2,7 @@
 import {isBrowser, global} from './utils/globals';
 
 import {TextDecoder, TextEncoder} from './text-encoding/encoding';
+import * as base64 from './text-encoding/btoa.node';
 
 import fetchNode from './fetch-node/fetch.node';
 
@@ -17,6 +18,16 @@ if (!('TextEncoder' in global) && TextEncoder) {
 }
 if (!('TextDecoder' in global) && TextDecoder) {
   global['TextDecoder'] = TextDecoder;
+}
+
+// POLYFILLS: btoa, atob
+// - Node: Yes
+// - Browser: No
+if (!isBrowser && !('atob' in global) && base64.atob) {
+  global['atob'] = base64.atob;
+}
+if (!isBrowser && !('btoa' in global) && base64.btoa) {
+  global['btoa'] = base64.btoa;
 }
 
 // POLYFILL: fetch

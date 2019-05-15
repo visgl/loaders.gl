@@ -1,6 +1,10 @@
 // import {TILE3D_REFINEMENT, TILE3D_OPTIMIZATION_HINT} from '../constants';
 import {Vector3, Matrix4} from 'math.gl';
-import {TILE_3D_REFINEMENT} from '../constants';
+import assert from '../utils/assert';
+import {TILE3D_REFINEMENT, TILE3D_CONTENT_STATE, TILE3D_OPTIMIZATION_HINT} from '../constants';
+import {createBoundingVolume} from './helpers/bounding-volume';
+
+const defined = x => x !== undefined;
 
 /* eslint-disable */
 const scratchDate = new Date();
@@ -11,11 +15,17 @@ const scratchToTileCenter = new Vector3();
 // the content is loaded on-demand when needed based on the view.
 // Do not construct this directly, instead access tiles through {@link Tileset3D#tileVisible}.
 export default class Tile3DHeader {
-  constructor(header, parentHeader, tileset, baseResource) {
-    this._initialize(tileset, parentheader, tileset, baseResource);
+  constructor(tileset, baseResource, header, parentHeader) {
+    this._initialize(header, parentHeader, tileset, baseResource);
   }
 
-  destroy() {}
+  destroy() {
+    this._header = null;
+  }
+
+  isDestroyed() {
+    return this._header === null;
+  }
 
   // The tileset containing this tile.
   get tileset() {
@@ -84,10 +94,15 @@ export default class Tile3DHeader {
     return this._contentState === TILE3D_CONTENT_STATE.FAILED;
   }
 
+  get uri() {
+    return this.contentUri ? this.tileset.basePath + this.contentUri : '';
+  }
+
   // Get the tile's screen space error.
   getScreenSpaceError({frustum, width, height}, useParentGeometricError) {
     const tileset = this._tileset;
-    const parentGeometricError = this.parent ? this.parent.geometricError : tileset._geometricError;
+    const parentGeometricError =
+      (this.parent && this.parent.geometricError) || tileset._geometricError;
     const geometricError = useParentGeometricError ? parentGeometricError : this.geometricError;
 
     // Leaf tiles do not have any error so save the computation
@@ -333,8 +348,8 @@ export default class Tile3DHeader {
 
   // PRIVATE
 
-  _initialize(tileset, header, parentTile, baseResource) {
-    assert(tileset._asset);
+  _initialize(header, parentHeader, tileset, baseResource) {
+    // assert(tileset._asset);
     assert(typeof header === 'object');
 
     this._tileset = tileset;
@@ -343,7 +358,7 @@ export default class Tile3DHeader {
     // Gets the tile's children.
     this.children = [];
     // This tile's parent or <code>undefined</code> if this tile is the root.
-    this.parent = parent;
+    this.parent = parentHeader;
 
     // Specifies the type of refine that is used when traversing this tile for rendering.
     this.refine = this._getRefine(header.refine);
@@ -353,7 +368,7 @@ export default class Tile3DHeader {
     if ('geometricError' in header) {
       this.geometricError = header.geometricError;
     } else {
-      this.geometricError = this.parent ? this.parent.geometricError : tileset._geometricError;
+      this.geometricError = (this.parent && this.parent.geometricError) || tileset._geometricError;
       console.warn('3D Tile: Required prop geometricError is undefined. Using parent error');
     }
 
@@ -361,7 +376,7 @@ export default class Tile3DHeader {
 
     this._initializeBoundingVolumes(header);
 
-    this._initializeContent(contentheader);
+    this._initializeContent(header);
 
     // The node in the tileset's LRU cache, used to determine when to unload a tile's content.
     this.cacheNode = undefined;
@@ -385,8 +400,8 @@ export default class Tile3DHeader {
     this.expireDate = expireDate;
 
     // Marks whether the tile's children bounds are fully contained within the tile's bounds
-    // @type {TILE_3D_OPTIMIZATION_HINT}
-    this._optimChildrenWithinParent = TILE_3D_OPTIMIZATION_HINT.NOT_COMPUTED;
+    // @type {TILE3D_OPTIMIZATION_HINT}
+    this._optimChildrenWithinParent = TILE3D_OPTIMIZATION_HINT.NOT_COMPUTED;
 
     this._initializeRenderingState();
 
@@ -400,20 +415,22 @@ export default class Tile3DHeader {
     const parent = this.parent;
     const tileset = this._tileset;
 
-    const parentTransform = parent ? parent.computedTransform.clone() : tileset.modelMatrix.clone();
-    this.computedTransform = parentTransform.multiplyRight(this.transform);
+    const parentTransform =
+      parent && parent.computedTransform
+        ? parent.computedTransform.clone()
+        : tileset.modelMatrix.clone();
+    this.computedTransform = new Matrix4(parentTransform).multiplyRight(this.transform);
 
-    const parentInitialTransform = parent ? parent._initialTransform.clone() : new Matrix4();
-    this._initialTransform = Matrix4.multiplyRight(parentInitialTransform, this.transform);
+    const parentInitialTransform =
+      parent && parent._initialTransform ? parent._initialTransform.clone() : new Matrix4();
+    this._initialTransform = new Matrix4(parentInitialTransform).multiplyRight(this.transform);
 
-    this.computedTransform = computedTransform;
+    // TODO ?
+    this.computedTransform = new Matrix4(); // computedTransform;
   }
 
   _initializeBoundingVolumes(tileHeader) {
-    this._boundingVolume = this.createBoundingVolume(
-      tileHeader.boundingVolume,
-      this.computedTransform
-    );
+    this._boundingVolume = createBoundingVolume(tileHeader.boundingVolume, this.computedTransform);
 
     this._contentBoundingVolume = null;
     this._viewerRequestVolume = null;
@@ -424,14 +441,14 @@ export default class Tile3DHeader {
     // since it only bounds features in the tile, not the entire tile, children may be
     // outside of this box.
     if (tileHeader.content && tileHeader.content.boundingVolume) {
-      this._contentBoundingVolume = this.createBoundingVolume(
+      this._contentBoundingVolume = createBoundingVolume(
         tileHeader.boundingVolume,
         this.computedTransform
       );
     }
 
     if (tileHeader.viewerRequestVolume) {
-      this._viewerRequestVolume = this.createBoundingVolume(
+      this._viewerRequestVolume = createBoundingVolume(
         tileHeader.viewerRequestVolume,
         this.computedTransform
       );
@@ -440,7 +457,7 @@ export default class Tile3DHeader {
 
   _initializeContent(tileHeader) {
     // Empty tile by default
-    this._content = {_tileset: tileset, _tile: this};
+    this._content = {_tileset: this._tileset, _tile: this};
     this.hasEmptyContent = true;
     this.contentState = TILE3D_CONTENT_STATE.READY;
     this._expiredContent = undefined;
@@ -451,8 +468,8 @@ export default class Tile3DHeader {
     this.hasTilesetContent = false;
 
     // If a content tileHeader
-    if (tileHeader) {
-      this.contentUri = tileHeader.uri;
+    if (tileHeader.content) {
+      this.contentUri = tileHeader.content.uri;
       if ('url' in tileHeader) {
         console.warn('Tileset 3D: "content.url" property deprecated. Use "content.uri" instead.');
         this.contentUri = tileHeader.url;
@@ -495,13 +512,13 @@ export default class Tile3DHeader {
     switch (refine) {
       case 'REPLACE':
       case 'replace':
-        return TILE_3D_REFINEMENT.REPLACE;
+        return TILE3D_REFINEMENT.REPLACE;
       case 'ADD':
       case 'add':
-        return TILE_3D_REFINEMENT.ADD;
+        return TILE3D_REFINEMENT.ADD;
       default:
         // Inherit from parent tile if omitted.
-        return this.parent ? this.parent.refine : TILE_3D_REFINEMENT.REPLACE;
+        return this.parent ? this.parent.refine : TILE3D_REFINEMENT.REPLACE;
     }
   }
 
@@ -541,20 +558,20 @@ export default class Tile3DHeader {
     const header = this._header;
 
     const content = this._header.content;
-    this._boundingVolume = this.createBoundingVolume(
+    this._boundingVolume = createBoundingVolume(
       header.boundingVolume,
       this.computedTransform,
       this._boundingVolume
     );
     if (this._contentBoundingVolume) {
-      this._contentBoundingVolume = this.createBoundingVolume(
+      this._contentBoundingVolume = createBoundingVolume(
         content.boundingVolume,
         this.computedTransform,
         this._contentBoundingVolume
       );
     }
     if (this._viewerRequestVolume) {
-      this._viewerRequestVolume = this.createBoundingVolume(
+      this._viewerRequestVolume = createBoundingVolume(
         header.viewerRequestVolume,
         this.computedTransform,
         this._viewerRequestVolume
@@ -596,6 +613,7 @@ function updateExpireDate(tile) {
     }
   }
 }
+
 function createPriorityFunction(tile) {
   return function() {
     return tile._priority;

@@ -15,11 +15,19 @@ import '@loaders.gl/core';
 
 ## Included Polyfills
 
-| Polyfill  | Platforms | Comments |
+| Polyfill  | Node   | Browser  | Comments |
 | ---       | ---       | ---      |
-| `TextEncoder`/`TextDecoder` | Node.js < 11 and older Browsers | Only UTF8 is guaranteed to be supported |
-| `fetch` | Node.js  | A subset of the fetch API is supported. `Response.body`, `.text()`, `.arrayBuffer()` are supported. |
+| `TextEncoder`/`TextDecoder` | Node.js < 11 | Yes (Older browsers) | Only UTF8 is guaranteed to be supported |
+| `atob`/`btoa` | All versions | No | Note: these functions are [not unicode safe](https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding#The_Unicode_Problem), but OK to use for test cases. |
+| `fetch` | All versions | No | A subset of the fetch API is supported, see below. |
 
+## fetch Polyfilled API
+
+The Node.js `fetch` polyfill supports a subset of the browser fetch API, including:
+- `Response.text()`, `Response.arrayBuffer()`.
+- `Response.body` stream
+- limited support for `headers`
+- data uri / base64 decoding
 
 ## Remarks
 

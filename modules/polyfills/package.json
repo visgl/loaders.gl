@@ -33,14 +33,15 @@
     "fs": false,
     "http": false,
     "https": false,
-    "./src/images-node/to-array-buffer.node": false,
-    "./src/images-node/encode-image.node": false,
-    "./src/images-node/parse-image.node": false,
+    "./src/images-node/to-array-buffer.node.js": false,
+    "./src/images-node/encode-image.node.js": false,
+    "./src/images-node/parse-image.node.js": false,
     "get-pixels": false,
     "ndarray": false,
     "save-pixels": false,
     "fs": false,
-    "util": false
+    "util": false,
+    "./src/text-encoding/btoa.node.js": false
   },
   "scripts": {
     "pre-build": "npm run build-bundle && npm run build-bundle -- --env.dev",

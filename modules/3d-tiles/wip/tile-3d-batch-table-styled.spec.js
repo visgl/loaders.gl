@@ -9,27 +9,20 @@ import {loadTileset} from '../utils/load-utils';
 // Cesium3DTileStyle,
 // Cesium3DTilesTester,
 // createScene) {_
-const WITH_BATCH_TABLE_URL =
-  '@loaders.gl/3d-tiles/test/data//Batched/BatchedWithBatchTable/tileset.json';
-const WITHOUT_BATCH_TABLE_URL =
-  '@loaders.gl/3d-tiles/test/data//Batched/BatchedWithoutBatchTable/tileset.json';
+const WITH_BATCH_TABLE_URL = '@loaders.gl/3d-tiles/test/data//Batched/BatchedWithBatchTable/tileset.json';
+const WITHOUT_BATCH_TABLE_URL = '@loaders.gl/3d-tiles/test/data//Batched/BatchedWithoutBatchTable/tileset.json';
 const NO_BATCH_IDS_URL = '@loaders.gl/3d-tiles/test/data//Batched/BatchedNoBatchIds/tileset.json';
-const BATCH_TABLE_HIERARCHY_URL =
-  '@loaders.gl/3d-tiles/test/data//Hierarchy/BatchTableHierarchy/tileset.json';
-const BATCH_TABLE_HIERARCHY_BINARY_URL =
-  '@loaders.gl/3d-tiles/test/data//Hierarchy/BatchTableHierarchyBinary/tileset.json';
-const batchTableHierarchyMultipleParentsUrl =
-  '@loaders.gl/3d-tiles/test/data//Hierarchy/BatchTableHierarchyMultipleParents/tileset.json';
-const BATCH_TABLE_HIERARCHY_NO_PARENTS_URL =
-  '@loaders.gl/3d-tiles/test/data//Hierarchy/BatchTableHierarchyNoParents/tileset.json';
-const BATCH_TABLE_HIERARCHY_LEGACY_URL =
-  '@loaders.gl/3d-tiles/test/data//Hierarchy/BatchTableHierarchyLegacy/tileset.json';
+const BATCH_TABLE_HIERARCHY_URL = '@loaders.gl/3d-tiles/test/data//Hierarchy/BatchTableHierarchy/tileset.json';
+const BATCH_TABLE_HIERARCHY_BINARY_URL = '@loaders.gl/3d-tiles/test/data//Hierarchy/BatchTableHierarchyBinary/tileset.json';
+const batchTableHierarchyMultipleParentsUrl = '@loaders.gl/3d-tiles/test/data//Hierarchy/BatchTableHierarchyMultipleParents/tileset.json';
+const BATCH_TABLE_HIERARCHY_NO_PARENTS_URL = '@loaders.gl/3d-tiles/test/data//Hierarchy/BatchTableHierarchyNoParents/tileset.json';
+const BATCH_TABLE_HIERARCHY_LEGACY_URL = '@loaders.gl/3d-tiles/test/data//Hierarchy/BatchTableHierarchyLegacy/tileset.json';
 
 // const result = new Color();
 
 const mockTileset = {
-  _statistics: {
-    texturesByteLength: 0
+  _statistics : {
+    texturesByteLength : 0
   },
   getFeature(batchId) {
     return {
@@ -231,7 +224,7 @@ test('Tile3DBatchTable#renders tileset with batch table', async t => {
   t.deepEquals(content.getFeature(2).getProperty('rooms'), ['room2_a', 'room2_b', 'room2_c']);
 
   // Check that a property can be an object
-  t.deepEquals(content.getFeature(2).getProperty('info'), {name: 'building2', year: 2});
+  t.deepEquals(content.getFeature(2).getProperty('info'), {name : 'building2', year : 2});
 
   Cesium3DTilesTester.expectRenderTileset(scene, tileset);
 });
@@ -360,63 +353,49 @@ test('Tile3DBatchTable#getExactClassName throws with invalid batchId', t => {
 
 function checkHierarchyStyling(t, tileset) {
   // Check that a feature is colored from a generic batch table property.
-  tileset.style = new Cesium3DTileStyle({
-    color: "${height} === 6.0 ? color('red') : color('green')"
-  });
+  tileset.style = new Cesium3DTileStyle({color : "${height} === 6.0 ? color('red') : color('green')"});
   expect(scene).toRenderAndCall(function(rgba) {
     expect(rgba[0]).toBeGreaterThan(0); // Expect red
   });
 
   // Check that a feature is colored from a class property.
-  tileset.style = new Cesium3DTileStyle({
-    color: "${roof_name} === 'roof2' ? color('red') : color('green')"
-  });
+  tileset.style = new Cesium3DTileStyle({color : "${roof_name} === 'roof2' ? color('red') : color('green')"});
   expect(scene).toRenderAndCall(function(rgba) {
     expect(rgba[0]).toBeGreaterThan(0); // Expect red
   });
 
   // Check that a feature is colored from an inherited property.
-  tileset.style = new Cesium3DTileStyle({
-    color: "${building_name} === 'building2' ? color('red') : color('green')"
-  });
+  tileset.style = new Cesium3DTileStyle({color : "${building_name} === 'building2' ? color('red') : color('green')"});
   expect(scene).toRenderAndCall(function(rgba) {
     expect(rgba[0]).toBeGreaterThan(0); // Expect red
   });
 
   // Check isExactClass
-  tileset.style = new Cesium3DTileStyle({
-    color: "isExactClass('roof') ? color('red') : color('green')"
-  });
+  tileset.style = new Cesium3DTileStyle({color : "isExactClass('roof') ? color('red') : color('green')"});
   expect(scene).toRenderAndCall(function(rgba) {
     expect(rgba[0]).toBeGreaterThan(0); // Expect red
   });
-  tileset.style = new Cesium3DTileStyle({
-    color: "isExactClass('door') ? color('red') : color('green')"
-  });
+  tileset.style = new Cesium3DTileStyle({color : "isExactClass('door') ? color('red') : color('green')"});
   expect(scene).toRenderAndCall(function(rgba) {
     expect(rgba[1]).toBeGreaterThan(1); // Expect green
   });
 
   // Check isClass
-  tileset.style = new Cesium3DTileStyle({color: "isClass('roof') ? color('red') : color('green')"});
+  tileset.style = new Cesium3DTileStyle({color : "isClass('roof') ? color('red') : color('green')"});
   expect(scene).toRenderAndCall(function(rgba) {
     expect(rgba[0]).toBeGreaterThan(0); // Expect red
   });
-  tileset.style = new Cesium3DTileStyle({color: "isClass('zone') ? color('red') : color('green')"});
+  tileset.style = new Cesium3DTileStyle({color : "isClass('zone') ? color('red') : color('green')"});
   expect(scene).toRenderAndCall(function(rgba) {
     expect(rgba[0]).toBeGreaterThan(0); // Expect red
   });
 
   // Check getExactClassName
-  tileset.style = new Cesium3DTileStyle({
-    color: "getExactClassName() === 'roof' ? color('red') : color('green')"
-  });
+  tileset.style = new Cesium3DTileStyle({color : "getExactClassName() === 'roof' ? color('red') : color('green')"});
   expect(scene).toRenderAndCall(function(rgba) {
     expect(rgba[0]).toBeGreaterThan(0); // Expect red
   });
-  tileset.style = new Cesium3DTileStyle({
-    color: "getExactClassName() === 'zone' ? color('red') : color('green')"
-  });
+  tileset.style = new Cesium3DTileStyle({color : "getExactClassName() === 'zone' ? color('red') : color('green')"});
   expect(scene).toRenderAndCall(function(rgba) {
     expect(rgba[1]).toBeGreaterThan(0); // Expect green
   });
@@ -424,39 +403,31 @@ function checkHierarchyStyling(t, tileset) {
 
 function checkHierarchyStylingNoParents(t, tileset) {
   // Check that a feature is colored from a generic batch table property.
-  tileset.style = new Cesium3DTileStyle({
-    color: "${height} === 6.0 ? color('red') : color('green')"
-  });
+  tileset.style = new Cesium3DTileStyle({color : "${height} === 6.0 ? color('red') : color('green')"});
   expect(scene).toRenderAndCall(function(rgba) {
     expect(rgba[0]).toBeGreaterThan(0); // Expect red
   });
 
   // Check that a feature is colored from a class property.
-  tileset.style = new Cesium3DTileStyle({
-    color: "${roof_name} === 'roof2' ? color('red') : color('green')"
-  });
+  tileset.style = new Cesium3DTileStyle({color : "${roof_name} === 'roof2' ? color('red') : color('green')"});
   expect(scene).toRenderAndCall(function(rgba) {
     expect(rgba[0]).toBeGreaterThan(0); // Expect red
   });
 
   // Check isExactClass
-  tileset.style = new Cesium3DTileStyle({
-    color: "isExactClass('roof') ? color('red') : color('green')"
-  });
+  tileset.style = new Cesium3DTileStyle({color : "isExactClass('roof') ? color('red') : color('green')"});
   expect(scene).toRenderAndCall(function(rgba) {
     expect(rgba[0]).toBeGreaterThan(0); // Expect red
   });
 
   // Check isClass
-  tileset.style = new Cesium3DTileStyle({color: "isClass('roof') ? color('red') : color('green')"});
+  tileset.style = new Cesium3DTileStyle({color : "isClass('roof') ? color('red') : color('green')"});
   expect(scene).toRenderAndCall(function(rgba) {
     expect(rgba[0]).toBeGreaterThan(0); // Expect red
   });
 
   // Check getExactClassName
-  tileset.style = new Cesium3DTileStyle({
-    color: "getExactClassName() === 'roof' ? color('red') : color('green')"
-  });
+  tileset.style = new Cesium3DTileStyle({color : "getExactClassName() === 'roof' ? color('red') : color('green')"});
   expect(scene).toRenderAndCall(function(rgba) {
     expect(rgba[0]).toBeGreaterThan(0); // Expect red
   });
@@ -480,17 +451,7 @@ function checkHierarchyProperties(t, tileset, multipleParents) {
   t.equals(doorFeature.hasProperty('height'), true);
 
   // Includes batch table properties and hierarchy properties from all inherited classes
-  const expectedPropertyNames = [
-    'height',
-    'area',
-    'door_mass',
-    'door_width',
-    'door_name',
-    'building_area',
-    'building_name',
-    'zone_buildings',
-    'zone_name'
-  ];
+  const expectedPropertyNames = ['height', 'area', 'door_mass', 'door_width', 'door_name', 'building_area', 'building_name', 'zone_buildings', 'zone_name'];
 
   // door0 has two parents - building0 and classifier_old
   // building0 has two parents - zone0 and classifier_new
@@ -623,42 +584,34 @@ test('Tile3DBatchTable#validates hierarchy with multiple parents', t => {
   //     \      /
   //      window0
   const BATCH_TABLE_JSON = {
-    HIERARCHY: {
-      instancesLength: 4,
-      classIds: [0, 1, 1, 2],
-      parentCounts: [2, 1, 1, 0],
-      parentIds: [1, 2, 3, 3],
-      classes: [
-        {
-          name: 'window',
-          length: 1,
-          instances: {
-            window_name: ['window0']
-          }
-        },
-        {
-          name: 'door',
-          length: 2,
-          instances: {
-            door_name: ['door0', 'door1']
-          }
-        },
-        {
-          name: 'building',
-          length: 1,
-          instances: {
-            building_name: ['building0']
-          }
+    HIERARCHY : {
+      instancesLength : 4,
+      classIds : [0, 1, 1, 2],
+      parentCounts : [2, 1, 1, 0],
+      parentIds : [1, 2, 3, 3],
+      classes : [{
+        name : 'window',
+        length : 1,
+        instances : {
+          window_name : ['window0']
         }
-      ]
+      }, {
+        name : 'door',
+        length : 2,
+        instances : {
+          door_name : ['door0', 'door1']
+        }
+      }, {
+        name : 'building',
+        length : 1,
+        instances : {
+          building_name : ['building0']
+        }
+      }]
     }
   };
   const batchTable = new Tile3DBatchTable(mockTileset, 4, BATCH_TABLE_JSON);
-  t.deepEquals(batchTable.getPropertyNames(0).sort(), [
-    'building_name',
-    'door_name',
-    'window_name'
-  ]);
+  t.deepEquals(batchTable.getPropertyNames(0).sort(), ['building_name', 'door_name', 'window_name']);
 });
 
 test('Tile3DBatchTable#validates hierarchy with multiple parents (2)', t => {
@@ -670,50 +623,40 @@ test('Tile3DBatchTable#validates hierarchy with multiple parents (2)', t => {
   //        \    |     /
   //           window0
   const BATCH_TABLE_JSON = {
-    HIERARCHY: {
-      instancesLength: 4,
-      classIds: [0, 1, 1, 2, 3],
-      parentCounts: [3, 1, 2, 1, 0],
-      parentIds: [1, 2, 4, 3, 3, 4, 4],
-      classes: [
-        {
-          name: 'window',
-          length: 1,
-          instances: {
-            window_name: ['window0']
-          }
-        },
-        {
-          name: 'door',
-          length: 2,
-          instances: {
-            door_name: ['door0', 'door1']
-          }
-        },
-        {
-          name: 'building',
-          length: 1,
-          instances: {
-            building_name: ['building0']
-          }
-        },
-        {
-          name: 'zone',
-          length: 1,
-          instances: {
-            zone_name: ['zone0']
-          }
+    HIERARCHY : {
+      instancesLength : 4,
+      classIds : [0, 1, 1, 2, 3],
+      parentCounts : [3, 1, 2, 1, 0],
+      parentIds : [1, 2, 4, 3, 3, 4, 4],
+      classes : [{
+        name : 'window',
+        length : 1,
+        instances : {
+          window_name : ['window0']
         }
-      ]
+      }, {
+        name : 'door',
+        length : 2,
+        instances : {
+          door_name : ['door0', 'door1']
+        }
+      }, {
+        name : 'building',
+        length : 1,
+        instances : {
+          building_name : ['building0']
+        }
+      }, {
+        name : 'zone',
+        length : 1,
+        instances : {
+          zone_name : ['zone0']
+        }
+      }]
     }
   };
   const batchTable = new Tile3DBatchTable(mockTileset, 5, BATCH_TABLE_JSON);
-  t.deepEquals(batchTable.getPropertyNames(0).sort(), [
-    'building_name',
-    'door_name',
-    'window_name',
-    'zone_name'
-  ]); // check window
+  t.deepEquals(batchTable.getPropertyNames(0).sort(), ['building_name', 'door_name', 'window_name', 'zone_name']); // check window
   t.deepEqualsls(batchTable.hasProperty(1, 'zone_name'), true); // check door0
   t.deepEqualsls(batchTable.hasProperty(2, 'zone_name'), true); // check door1
   t.end();
@@ -724,115 +667,90 @@ test('Tile3DBatchTable#validates hierarchy with multiple parents (2)', t => {
 test('Tile3DBatchTable#throws if hierarchy has a circular dependency', t => {
   // window0 -> door0 -> building0 -> window0
   const BATCH_TABLE_JSON = {
-    HIERARCHY: {
-      instancesLength: 3,
-      classIds: [0, 1, 2],
-      parentIds: [1, 2, 0],
-      classes: [
-        {
-          name: 'window',
-          length: 1,
-          instances: {
-            window_name: ['window0']
-          }
-        },
-        {
-          name: 'door',
-          length: 1,
-          instances: {
-            door_name: ['door0']
-          }
-        },
-        {
-          name: 'building',
-          length: 1,
-          instances: {
-            building_name: ['building0']
-          }
+    HIERARCHY : {
+      instancesLength : 3,
+      classIds : [0, 1, 2],
+      parentIds : [1, 2, 0],
+      classes : [{
+        name : 'window',
+        length : 1,
+        instances : {
+          window_name : ['window0']
         }
-      ]
+      }, {
+        name : 'door',
+        length : 1,
+        instances : {
+          door_name : ['door0']
+        }
+      }, {
+        name : 'building',
+        length : 1,
+        instances : {
+          building_name : ['building0']
+        }
+      }]
     }
   };
-  t.throws(
-    () => new Tile3DBatchTable(mockTileset, 3, BATCH_TABLE_JSON),
-    'throws if hierarchy has a circular dependency'
-  );
+  t.throws(() => new Tile3DBatchTable(mockTileset, 3, BATCH_TABLE_JSON), 'throws if hierarchy has a circular dependency');
   t.end();
 });
 
 test('Tile3DBatchTable#throws if hierarchy has a circular dependency (2)', t => {
   // window0 -> door0 -> building0 -> window1 -> door0
   const BATCH_TABLE_JSON = {
-    HIERARCHY: {
-      instancesLength: 4,
-      classIds: [0, 1, 2, 0],
-      parentIds: [1, 2, 3, 1],
-      classes: [
-        {
-          name: 'window',
-          length: 2,
-          instances: {
-            window_name: ['window0', 'window1']
-          }
-        },
-        {
-          name: 'door',
-          length: 1,
-          instances: {
-            door_name: ['door0']
-          }
-        },
-        {
-          name: 'building',
-          length: 1,
-          instances: {
-            building_name: ['building0']
-          }
+    HIERARCHY : {
+      instancesLength : 4,
+      classIds : [0, 1, 2, 0],
+      parentIds : [1, 2, 3, 1],
+      classes : [{
+        name : 'window',
+        length : 2,
+        instances : {
+          window_name : ['window0', 'window1']
         }
-      ]
+      }, {
+        name : 'door',
+        length : 1,
+        instances : {
+          door_name : ['door0']
+        }
+      }, {
+        name : 'building',
+        length : 1,
+        instances : {
+          building_name : ['building0']
+        }
+      }]
     }
   };
-  t.throws(
-    () => new Tile3DBatchTable(mockTileset, 4, BATCH_TABLE_JSON),
-    'throws if hierarchy has a circular dependency'
-  );
+  t.throws(() => new Tile3DBatchTable(mockTileset, 4, BATCH_TABLE_JSON), 'throws if hierarchy has a circular dependency');
   t.end();
 });
 //>>includeEnd('debug');
 
-test("Tile3DBatchTable#throws if an instance's parentId exceeds instancesLength", t => {
+test('Tile3DBatchTable#throws if an instance\'s parentId exceeds instancesLength', t => {
   const BATCH_TABLE_JSON = {
-    HIERARCHY: {
-      instancesLength: 2,
-      classIds: [0, 1],
-      parentIds: [1, 2],
-      classes: [
-        {
-          name: 'window',
-          length: 1,
-          instances: {
-            window_name: ['window0']
-          }
-        },
-        {
-          name: 'door',
-          length: 1,
-          instances: {
-            door_name: ['door0']
-          }
+    HIERARCHY : {
+      instancesLength : 2,
+      classIds : [0, 1],
+      parentIds : [1, 2],
+      classes : [{
+        name : 'window',
+        length : 1,
+        instances : {
+          window_name : ['window0']
         }
-      ]
+      }, {
+        name : 'door',
+        length : 1,
+        instances : {
+          door_name : ['door0']
+        }
+      }]
     }
   };
-  t.throws(
-    () =>
-      new Tile3DBatchTable(
-        mockTileset,
-        2,
-        BATCH_TABLE_JSON,
-        "throws if an instance's parentId exceeds instancesLength"
-      )
-  );
+  t.throws(() => new Tile3DBatchTable(mockTileset, 2, BATCH_TABLE_JSON, 'throws if an instance\'s parentId exceeds instancesLength'));
   t.end();
 });
 

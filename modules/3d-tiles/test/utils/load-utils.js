@@ -1,13 +1,12 @@
-import {fetchFile} from '@loaders.gl/core';
-import {dirname} from 'path';
+import {fetchFile, parse} from '@loaders.gl/core';
+import {Tileset3DLoader, Tileset3D} from '@loaders.gl/3d-tiles';
 
 export async function loadTileset(t, tilesetUrl) {
   try {
     // Load tileset
-    const response = await fetchFile(tilesetUrl);
-    const tileset = await response.json();
-
-    return tileset;
+    const tileset = await parse(fetchFile(tilesetUrl), Tileset3DLoader);
+    const tileset3d = new Tileset3D(tileset, tilesetUrl);
+    return tileset3d;
   } catch (error) {
     t.fail(`Failed to load tile from ${tilesetUrl}: ${error}`);
     throw error;
@@ -17,16 +16,15 @@ export async function loadTileset(t, tilesetUrl) {
 export async function loadRootTileFromTileset(t, tilesetUrl) {
   try {
     // Load tileset
-    let response = await fetchFile(tilesetUrl);
-    const tileset = await response.json();
+    const tileset = await parse(fetchFile(tilesetUrl), Tileset3DLoader);
+    const tileset3d = new Tileset3D(tileset, tilesetUrl);
 
     // Load binary data for root tile
-    const tileDirectory = dirname(tilesetUrl);
-    const tileUrl = `${tileDirectory}/${tileset.root.content.uri}`;
-    // t.comment(`Loading ${tileUrl} from ${tileDirectory} for ${tilesetUrl}`);
-    response = await fetchFile(tileUrl);
-    const tile = await response.arrayBuffer();
-    return tile;
+    const response = await fetchFile(tileset3d.root.uri);
+    return response.arrayBuffer();
+
+    // const tile = await parse(response, Tile3DLoader);
+    // return tile;
   } catch (error) {
     t.fail(`Failed to load tile from ${tilesetUrl}: ${error}`);
     throw error;
