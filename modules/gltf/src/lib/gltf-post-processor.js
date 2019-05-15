@@ -54,13 +54,14 @@ function getSizeFromAccessorType(type) {
 export default class GLTFPostProcessor {
   postProcess(gltf, options = {}) {
     this.json = gltf.json;
-    return this._resolveTree(gltf.json, gltf.buffers, options);
+    this.buffers = gltf.buffers;
+    return this._resolveTree(gltf.json, options);
   }
 
   // Convert indexed glTF structure into tree structure
   // cross-link index resolution, enum lookup, convenience calculations
   // eslint-disable-next-line complexity
-  _resolveTree(json, buffers, options = {}) {
+  _resolveTree(json, options = {}) {
     if (json.bufferViews) {
       json.bufferViews = json.bufferViews.map((bufView, i) => this._resolveBufferView(bufView, i));
     }
@@ -319,10 +320,17 @@ export default class GLTFPostProcessor {
   _resolveBufferView(bufferView, index) {
     bufferView = {...bufferView};
     bufferView.id = bufferView.id || `bufferView-${index}`;
-    bufferView.buffer = this.getBuffer(bufferView.buffer);
+    const bufferIndex = bufferView.buffer;
+    bufferView.buffer = this.getBuffer(bufferIndex);
 
-    const byteOffset = bufferView.byteOffset || 0;
-    bufferView.data = new Uint8Array(bufferView.buffer.data, byteOffset, bufferView.byteLength);
+    const arrayBuffer = this.buffers[bufferIndex].arrayBuffer;
+    let byteOffset = this.buffers[bufferIndex].byteOffset || 0;
+
+    if ('byteOffset' in bufferView) {
+      byteOffset += bufferView.byteOffset;
+    }
+
+    bufferView.data = new Uint8Array(arrayBuffer, byteOffset, bufferView.byteLength);
     return bufferView;
   }
 
