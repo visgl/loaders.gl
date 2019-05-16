@@ -79,6 +79,10 @@ export function parseGLTFSync(gltf, arrayBufferOrString, byteOffset = 0, options
     gltf.json = data;
   }
 
+  if (options.uri) {
+    gltf.baseUri = options.uri;
+  }
+
   // TODO: we could synchronously decode base64 encoded URIs in the non-async path
   if (options.fetchLinkedResources) {
     for (const buffer of gltf.json.buffers || []) {
@@ -98,7 +102,7 @@ export async function parseGLTF(gltf, arrayBufferOrString, byteOffset = 0, optio
 
   // Postpone decompressing/postprocessing to make sure we load any linked files first
   // TODO - is this really needed?
-  parseGLTFSync(gltf, {
+  parseGLTFSync(gltf, arrayBufferOrString, byteOffset, {
     ...options,
     fetchLinkedResources: false, // We'll handle it if needed
     postProcess: false, // We'll handle it if needed

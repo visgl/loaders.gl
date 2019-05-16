@@ -58,8 +58,4 @@ test('GLTF roundtrip#extensions', t => {
   }
   t.end();
 });
-<<<<<<< HEAD
 */
-=======
-*/
->>>>>>> testpass

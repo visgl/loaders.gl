@@ -2,8 +2,10 @@
 import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
 import DeckGL from '@deck.gl/react';
+
 import {COORDINATE_SYSTEM, OrbitView, LinearInterpolator} from '@deck.gl/core';
 import {PointCloudLayer} from '@deck.gl/layers';
+import {ScenegraphLayer} from '@deck.gl/mesh-layers';
 import {createGLTFObjects} from '@luma.gl/addons';
 
 import '@loaders.gl/polyfills';
@@ -14,22 +16,10 @@ import {
   Tile3DBatchTable,
   parseRGB565
 } from '@loaders.gl/3d-tiles';
-import {GLTFScenegraph} from '@loaders.gl/gltf';
+import {postProcessGLTF} from '@loaders.gl/gltf';
 
 import ControlPanel from './control-panel';
 import fileDrop from './file-drop';
-
-// function parseSync(arrayBuffer, options, url, loader) {
-//   const result = Tile3DLoader.parseSync(arrayBuffer, options, url, loader);
-//   return result;
-// }
-
-// export const MeshTile3DLoader = {
-//   name: '3D Tile Pointloud',
-//   extensions: ['pnts'],
-//   parseSync,
-//   binary: true
-// };
 
 registerLoaders(Tile3DLoader);
 
@@ -136,28 +126,32 @@ export default class App extends PureComponent {
   }
 
   _onLoad(tile) {
-
     switch (tile.type) {
       case 'pnts':
-        return this._unpackPointCloud3DTile(tile);
+        this._unpackPointCloud3DTile(tile);
+        break;
       case 'i3dm':
-        return this._unpackInstanced3DTile(tile);
+      case 'b3dm':
+        this._unpackInstanced3DTile(tile);
+        break;
       default:
+        // eslint-disable-next-line
         console.error('Error unpacking', tile.type, tile);
     }
+    this.setState({
+      tile
+    });
   }
 
   _unpackInstanced3DTile(tile) {
     const {gl} = this._deckRef.deck.animationLoop;
 
-    const gltfScenegraph = new GLTFScenegraph(tile.gltf);
+    const json = postProcessGLTF(tile.gltf);
 
-    // TODO - Need to be implemented/copied from GLTFParser/GLTFPostprocessor
-    gltfScenegraph.unpackBuffers();
-    gltfScenegraph.resolveTree();
+    const gltfObjects = createGLTFObjects(gl, json);
 
     this.setState({
-      scenegraph: createGLTFObjects(gl, tile.gltf)
+      scenegraph: gltfObjects
     });
   }
 
@@ -190,7 +184,6 @@ export default class App extends PureComponent {
 
     this.setState(
       {
-        tile,
         featureTable,
         batchTable,
         viewState
@@ -242,19 +235,18 @@ export default class App extends PureComponent {
   }
 
   /* eslint-enable max-statements */
-
   _renderPointCloud3DTile() {
     const {pointsCount, positions, colors, normals} = this.state.tile;
 
     return (
       positions &&
       new PointCloudLayer({
+        id: '3d-point-cloud-tile-layer',
         data: {
           colors: {value: colors, size: 4},
           normals: {value: positions, size: 3},
           length: positions.length / 3
         },
-        id: '3d-point-cloud-layer',
         coordinateSystem: COORDINATE_SYSTEM.IDENTITY,
         numInstances: pointsCount,
         instancePositions: positions,
@@ -267,56 +259,47 @@ export default class App extends PureComponent {
               return target;
             }
           : [0, 1, 0],
-        opacity: 0.5,
+        opacity: 0.8,
         pointSize: 1.5
       })
     );
   }
 
   _renderInstanced3DTile() {
-    const {pointsCount, positions, colors, normals} = this.state.tile;
+    // const {pointsCount, positions, normals} = this.state.tile;
 
     return (
-      positions &&
-      new PointCloudLayer({
-        data: {
-          colors: {value: colors, size: 4},
-          normals: {value: positions, size: 3},
-          length: positions.length / 3
-        },
-        id: '3d-point-cloud-layer',
+      new ScenegraphLayer({
+        id: '3d-model-tile-layer',
+        scenegraph: this.state.scenegraph,
+        data: [0],
         coordinateSystem: COORDINATE_SYSTEM.IDENTITY,
-        numInstances: pointsCount,
-        instancePositions: positions,
-        getColor: this._getColor,
-        getNormal: normals
-          ? (object, {index, data, target}) => {
-              target[0] = data.normals[index * 3];
-              target[1] = data.normals[index * 3 + 1];
-              target[2] = data.normals[index * 3 + 2];
-              return target;
-            }
-          : [0, 1, 0],
-        opacity: 0.5,
-        pointSize: 1.5
+        getPosition: row => [0, 0, 0],
+        // getColor: this._getColor,
+        // getNormal: normals
+        //   ? (object, {index, data, target}) => {
+        //       target[0] = data.normals[index * 3];
+        //       target[1] = data.normals[index * 3 + 1];
+        //       target[2] = data.normals[index * 3 + 2];
+        //       return target;
+        //     }
+        //   : [0, 1, 0],
+        opacity: 0.8
       })
     );
   }
 
   _renderLayers() {
     const {tile} = this.state;
-    if (!tile) {
-      return null;
-    }
 
-
-    switch (tile.type) {
+    switch (tile && tile.type) {
       case 'pnts':
         return this._renderPointCloud3DTile();
       case 'i3dm':
+      case 'b3dm':
         return this._renderInstanced3DTile();
       default:
-        console.error('Error rendering', tile.type, tile);
+        return null;
     }
   }
 

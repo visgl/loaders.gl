@@ -1,6 +1,6 @@
 # GLTF Loader Category
 
-## Data format
+## Data Format
 
 A gltf scenegraph is described by a parsed JSON object (with top level arrays for `scenes`, `nodes` etc) together with a list of `ArrayBuffer`s representing binary blocks into which `bufferViews` and `images` in the JSON point).
 
@@ -22,7 +22,7 @@ An object with the following top-level fields:
 
 ### GLTF Data Format
 
-An object with the following fields
+In loaders.gl, glTF data is a pure JavaScript object with the following fields:
 
 | Field     | Type            | Default   | Description |
 | ---       | ---             | ---       | --- |
@@ -31,35 +31,35 @@ An object with the following fields
 | `json`    | `Object`        | `{}`      | The JSON chunk (glTF formatted)  |
 | `buffers` | `ArrayBuffer[]` | `[]`      | The BIN chunk plus any base64 or BIN file buffers |
 
+Buffers can be objects with `{buffer, byteOffset, byteLength}`.
 
-## GLTFBuilder API
 
-A glTF file can be built programmatically using the GLTFBuilder's "fluent API":
+## GLTFScenegraph API
+
+To simplify traversing and building glTF data objects, the [`GLTFScenegraph`](docs/api-reference/gltf/gltf-scenegraph) class can be used.
+
+A gltf
+
+
+A glTF data object can also be built programmatically using the GLTFScenegraph's "fluent API":
 
 ```js
-const builder = new GLTFBuilder(...)
-  .addApplicationData(...);
-  .addExtras(...);
-  .addExtension(...);
-  .addRequiredExtension(...)
-  .encodeAsGLB(...);
+import {encode} from '@loaders.gl/gltf';
+import {GLTFScenegraph, GLTFWriter} from '@loaders.gl/gltf';
+const gltfScenegraph = new GLTFScenegraph()
+  .addApplicationData(...)
+  .addExtras(...)
+  .addExtension(...)
+  .addRequiredExtension(...);
+
+const arrayBuffer = encode(gltfScenegraph, GLTFWriter);
 ```
 
-## Adding Custom Payloads to glTF files
+## GLTF Post Processing
 
-glTF provides multiple mechanisms for adding custom data to a glTF conformant file. The application just needs to decide where to store it. Normally it should be added using one of the `addApplicationData`, `addExtras`, `addExtension` or `addRequiredExtension` methods.
+The [`postProcessGLTF`](docs/api-reference/gltf/post-process-gltf) function implements a number of transformations on the loaded glTF data that would typically need to be performed by the application after loading the data, and is provided as an optional function that applications can call after loading glTF data. Refer to the reference page for details on what transformations are performed.
 
-### Binary Packing of Typed Arrays in JSON Data
-
-The `GLTFLoader` and `GLTFBuilder` classes include support for moving (packing) typed arrays in the application JSON into the binary GLB chunk.
-
-The packing process extracts binary (typed) arrays from the supplied `json` data structure, placing these in compact binary chunks (by calling the appropriate `add...` methods on the builder). The "stripped" JSON chunk will contain "JSON pointers" that the `GLTFParser` can later use to restore the JSON structure on load.
-
-### Flattening Nested Numeric Arrays
-
-As an option, standard JavaScript arrays can also be stored in the binary chunk under certain conditions. This feature supports arrays that contain only numbers. It also supports arrays that also contain nested arrays that only contain numbers.
-
-The major complication when packing nested arrays is that the internal structure is lost. For instance, a coordinate array `[[1, 2, 0], [2, 1, 0]]` will be packed and unpacked as `[1, 2, 0, 2, 1, 0]`. To assist with recovering this information, the flattening process estimates the `size` of top-level elements and stored as a named field on the typed array.
+Context: the glTF data object returned by the GLTF loader contains the "raw" glTF JSON structure (to ensure generality and "data fidelity" reasons). However, most applications that are going to use the glTF data to visualize it in (typically in WebGL) will need to do some processing of the loaded data before using it.
 
 ## Using GLB as a "Binary Container" for Arbitrary Data
 
@@ -81,3 +81,4 @@ import {DracoWriter, DracoLoader} from '@loaders.gl/draco';
 
 const gltfBuilder = new GLTFBuilder({DracoWriter, DracoLoader});
 ```
+

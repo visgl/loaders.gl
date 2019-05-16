@@ -1,18 +1,19 @@
-# GLTFPostProcessor
+# postProcessGLTF
 
-The `GLTFPostProcessor` class transforms the GLTF JSON to make it easier to use.
+The `postProcessGLTF` function transforms parsed GLTF JSON to make it easier to use.
 
 ## Usage
 
 To post process just pass a gltf object to the `GLTFPostProcessor`
 ```js
+import {GLTFLoader, postProcessGLTF} from '@loaders.gl/gltf';
 const gltf = await parse(..., GLTFLoader);
-const gltfPostProcessor = new GLTFPostProcessor();
-const processedGLTF = new gltfPostProcessor.postProcesss(gltf);
+const processedGLTF = postProcesssGLTF(gltf);
 ````
 
 After post-processing, the gltf scenegraphs are now easier to iterate over
 ```js
+const scenegraph = processedGLTF.scenegraphs[0];
 for (const node of scenegraph.nodes) { // no need to resolve indices
   if (node.mesh.primitives) { // Ditto
   	// ...
@@ -20,15 +21,14 @@ for (const node of scenegraph.nodes) { // no need to resolve indices
 }
 ```
 
-## Methods
+## Functions
 
-### constructor()
+### postProcessGLTF(gltf, options = {})
 
-Creates a new `GLTFPostProcessor` instance.
+- `gltf` is expected to have `json` and `buffers` fields per the GLTF Data Format Category.
+- `options.uri` - Set base URI (for image loading)
 
-### postProcess(gltf, options = {})
-
-The GLTF post processor copies objects as necessary to avoid modifying the input JSON, but does not do a deep copy on sub-objects that do not need to be modified.
+The GLTF post processor copies objects in the input gltf json field as necessary to avoid modifying the input JSON, but does not do a deep copy on sub-objects that do not need to be modified.
 
 
 ## General Post Processing

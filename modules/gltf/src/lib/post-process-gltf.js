@@ -51,8 +51,9 @@ function getSizeFromAccessorType(type) {
   return COMPONENTS[type];
 }
 
-export default class GLTFPostProcessor {
+class GLTFPostProcessor {
   postProcess(gltf, options = {}) {
+    this.gltf = gltf;
     this.json = gltf.json;
     this.buffers = gltf.buffers;
     return this._resolveTree(gltf.json, options);
@@ -201,10 +202,11 @@ export default class GLTFPostProcessor {
     mesh.id = mesh.id || `mesh-${index}`;
     if (mesh.primitives) {
       mesh.primitives = mesh.primitives.map(primitive => {
+        primitive = {...primitive};
         const attributes = primitive.attributes;
         primitive.attributes = {};
         for (const attribute in attributes) {
-          primitive.attributes[attribute] = this.getAccessor(primitive.attributes[attribute]);
+          primitive.attributes[attribute] = this.getAccessor(attributes[attribute]);
         }
         if (primitive.indices !== undefined) {
           primitive.indices = this.getAccessor(primitive.indices);
@@ -212,6 +214,7 @@ export default class GLTFPostProcessor {
         if (primitive.material !== undefined) {
           primitive.material = this.getMaterial(primitive.material);
         }
+        return primitive;
       });
     }
     return mesh;
@@ -257,8 +260,8 @@ export default class GLTFPostProcessor {
     }
 
     // Look up enums
-    accessor.bytesPerComponent = getBytesFromComponentType(accessor);
-    accessor.components = getSizeFromAccessorType(accessor);
+    accessor.bytesPerComponent = getBytesFromComponentType(accessor.componentType);
+    accessor.components = getSizeFromAccessorType(accessor.type);
     accessor.bytesPerElement = accessor.bytesPerComponent * accessor.components;
     return accessor;
   }
@@ -298,6 +301,14 @@ export default class GLTFPostProcessor {
       image.bufferView = this.getBufferView(image.bufferView);
     }
 
+    if ('uri' in image) {
+      const baseUri = options.uri || this.gltf.baseUri;
+      if (baseUri) {
+        image.baseUri = baseUri;
+        image.fullUri = getFullUri(image.uri, baseUri);
+      }
+    }
+
     function getImageAsync() {
       if (image.uri) {
         // TODO: Maybe just return the URL?
@@ -307,7 +318,7 @@ export default class GLTFPostProcessor {
           const img = new Image();
           img.crossOrigin = 'anonymous';
           img.onload = () => resolve(img);
-          img.src = getFullUri(image.uri, options.uri);
+          img.src = image.fullUri || image.uri;
         });
       }
       // cannot get image
@@ -315,6 +326,7 @@ export default class GLTFPostProcessor {
     }
 
     image.getImageAsync = getImageAsync;
+    return image;
   }
 
   _resolveBufferView(bufferView, index) {
@@ -345,4 +357,8 @@ export default class GLTFPostProcessor {
     }
     return camera;
   }
+}
+
+export default function postProcessGLTF(gltf, options) {
+  return new GLTFPostProcessor().postProcess(gltf, options);
 }

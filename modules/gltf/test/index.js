@@ -8,7 +8,7 @@ import './lib/gltf-attribute-utils.spec';
 import './lib/gltf-roundtrip.spec';
 
 import './lib/gltf-scenegraph-modifiers.spec';
-import './lib/gltf-post-processor.spec';
+import './lib/post-process-gltf.spec';
 
 import './glb-loader.spec';
 import './gltf-loader.spec';
