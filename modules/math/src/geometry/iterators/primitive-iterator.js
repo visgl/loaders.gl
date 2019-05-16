@@ -1,6 +1,6 @@
 import {GL} from '../constants';
 import {getPrimitiveModeType} from '../primitives/modes';
-import {assert} from '../../utils/assert';
+import assert from '../../utils/assert';
 
 // Will iterate over each primitive, expanding (dereferencing) indices
 // eslint-disable-next-line complexity

@@ -1,5 +1,5 @@
 /* eslint-disable */
-import {Vector3, toDegrees, toRadians} from 'math.gl';
+import {Vector3, degrees as toDegrees, radians as toRadians} from 'math.gl';
 import assert from '../utils/assert';
 import {WGS84_RADIUS_X, WGS84_RADIUS_Y, WGS84_RADIUS_Z} from './constants';
 import scaleToGeodeticSurface from './scale-to-geodetic-surface';

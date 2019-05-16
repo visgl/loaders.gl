@@ -62,7 +62,7 @@
             "title": "Deprecated",
             "entries": [
               {"entry": "docs/api-reference/deprecated/gltf-parser"},
-              {"entry": "docs/api-reference/deprecated/gltf-builder"}
+              {"entry": "docs/api-reference/deprecated/gltf-builder"},
               {"entry": "docs/api-reference/deprecated/glb-parser"},
               {"entry": "docs/api-reference/deprecated/glb-builder"}
             ]
@@ -71,11 +71,11 @@
             {"entry": "docs/api-reference/gltf-loaders/category-gltf"},
             {"entry": "docs/api-reference/gltf-loaders/gltf-loader"},
             {"entry": "docs/api-reference/gltf-loaders/gltf-writer"},
+            {"entry": "docs/api-reference/gltf-loaders/glb-loader"},
+            {"entry": "docs/api-reference/gltf-loaders/glb-writer"},
             {"entry": "docs/api-reference/gltf-loaders/gltf-extensions"},
             {"entry": "docs/api-reference/gltf-loaders/gltf-senegraph"},
             {"entry": "docs/api-reference/gltf-loaders/post-process-gltf"},
-            {"entry": "docs/api-reference/gltf-loaders/glb-loader"},
-            {"entry": "docs/api-reference/gltf-loaders/glb-writer"},
             {"entry": "docs/api-reference/gltf-loaders/glbdump"}
           ]
         },
@@ -127,7 +127,7 @@
           "entries": [
             {"entry": "docs/api-reference/3d-tile-loaders/category-3d-tile"},
             {"entry": "docs/api-reference/3d-tile-loaders/tile-3d-loader"},
-            {"entry": "docs/api-reference/3d-tile-loaders/tileset-3d"}
+            {"entry": "docs/api-reference/3d-tile-loaders/tileset-3d"},
             {"entry": "docs/api-reference/3d-tile-loaders/tile-3d-header"}
           ]
         },
