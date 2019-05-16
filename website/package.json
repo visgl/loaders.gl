@@ -17,9 +17,10 @@
     "deploy": "NODE_DEBUG=gh-pages gh-pages -d public"
   },
   "dependencies": {
-    "@deck.gl/core": "^7.0.2",
-    "@deck.gl/layers": "^7.0.2",
-    "@deck.gl/react": "^7.0.2",
+    "@deck.gl/core": "^7.0.6",
+    "@deck.gl/layers": "^7.0.6",
+    "@deck.gl/mesh-layers": "^7.0.6",
+    "@deck.gl/react": "^7.0.6",
     "@loaders.gl/draco": "^1.0.3",
     "@loaders.gl/las": "^1.0.3",
     "@luma.gl/addons": "^7.0.0",
@@ -38,6 +39,6 @@
     "gatsby-plugin-styletron": "^3.0.5",
     "gh-pages": "^2.0.1",
     "ocular-gatsby": "1.0.0-alpha.28",
-    "sharp": "0.22.1"
+    "sharp": "0.22.0"
   }
 }

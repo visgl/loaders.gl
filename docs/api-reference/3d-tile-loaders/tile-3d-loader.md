@@ -1,5 +1,7 @@
 # Tile3DLoader (Experimental)
 
+> The 3D tile loaders are still under development. If you are interested in early access, please open an issue.
+
 Parses a [3D tile](https://github.com/AnalyticalGraphicsInc/3d-tiles). glTF file into a hirearchical scenegraph description that can be used to instantiate an actual Scenegraph in most WebGL libraries. Can load both binary `.glb` files and JSON `.gltf` files.
 
 | Loader                | Characteristic                                                                                                    |

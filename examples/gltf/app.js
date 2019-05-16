@@ -4,7 +4,9 @@ import {load} from '@loaders.gl/core';
 import {DracoLoader} from '@loaders.gl/draco';
 import GL from '@luma.gl/constants';
 import {AnimationLoop, setParameters, clear, log, lumaStats} from '@luma.gl/core';
-import {GLTFScenegraphLoader, createGLTFObjects, GLTFEnvironment} from '@luma.gl/addons';
+import {createGLTFObjects, GLTFEnvironment} from '@luma.gl/addons';
+import {GLTFScenegraphLoader} from '@luma.gl/addons';
+// import GLTFScenegraphLoader from './gltf-scenegraph-loader';
 import {Matrix4, radians} from 'math.gl';
 
 const CUBE_FACE_TO_DIRECTION = {
@@ -193,7 +195,12 @@ async function loadGLTF(urlOrPromise, gl, options) {
 }
 
 export default class AppAnimationLoop extends AnimationLoop {
+  // TODO - do we need both?
   static getInfo() {
+    return INFO_HTML;
+  }
+
+  getInfo() {
     return INFO_HTML;
   }
 

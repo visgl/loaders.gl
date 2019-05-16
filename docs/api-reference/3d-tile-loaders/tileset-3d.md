@@ -1,4 +1,6 @@
-# Tileset3D
+# Tileset3D (Experimental)
+
+> The 3D tiles loaders are still under development. If you are interested in early access, please open an issue.
 
 A [3D Tiles tileset](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification), used for streaming massive heterogeneous 3D geospatial datasets.
 
@@ -97,71 +99,6 @@ Debug Options:
 @param {String} extensionName The name of the extension to check. \*
 @returns {Boolean} <code>true</code> if the tileset JSON file lists the extension in extensionsUsed; otherwise, <code>false</code>.
 
-export default class Tileset3D {
-constructor(options = {}) {
-const {
-url,
-cullWithChildrenBounds = true,
-maximumScreenSpaceError = 16,
-maximumMemoryUsage = 512
-} = options;
-
-    assert(options.url);
-
-    this._url = undefined;
-    this._basePath = undefined;
-    this._root = undefined;
-    this._asset = undefined; // Metadata for the entire tileset
-    this._properties = undefined; // Metadata for per-model/point/etc properties
-    this._geometricError = undefined; // Geometric error when the tree is not rendered at all
-    this._extensionsUsed = undefined;
-    this._gltfUpAxis = undefined;
-    this._cache = new Tileset3DCache();
-    this._processingQueue = [];
-    this._selectedTiles = [];
-    this._emptyTiles = [];
-    this._requestedTiles = [];
-    this._selectedTilesToStyle = [];
-    this._loadTimestamp = undefined;
-    this._timeSinceLoad = 0.0;
-    this._updatedVisibilityFrame = 0;
-    this._extras = undefined;
-    this._credits = undefined;
-
-    this._cullWithChildrenBounds = cullWithChildrenBounds;
-    this._allTilesAdditive = true;
-
-    this._hasMixedContent = false;
-
-    this._stencilClearCommand = undefined;
-    this._backfaceCommands = new ManagedArray();
-
-    this._maximumScreenSpaceError = options.maximumScreenSpaceError;
-    this._maximumMemoryUsage = options.maximumMemoryUsage;
-
-    this._styleEngine = new Cesium3DTileStyleEngine();
-
-    this._modelMatrix = defined(options.modelMatrix) ? Matrix4.clone(options.modelMatrix) : Matrix4.clone(Matrix4.IDENTITY);
-
-    this._statistics = new Tileset3DStatistics();
-    this._statisticsLastRender = new Tileset3DStatistics();
-    this._statisticsLastPick = new Tileset3DStatistics();
-    this._statisticsLastAsync = new Tileset3DStatistics();
-
-    this._tilesLoaded = false;
-    this._initialTilesLoaded = false;
-
-    this._tileDebugLabels = undefined;
-
-    this._readyPromise = when.defer();
-
-    this._classificationType = options.classificationType;
-
-    this._ellipsoid = defaultValue(options.ellipsoid, Ellipsoid.WGS84);
-
-    this._initialClippingPlanesOriginMatrix = Matrix4.IDENTITY; // Computed from the tileset JSON.
-    this._clippingPlanesOriginMatrix = undefined; // Combines the above with any run-time transforms.
-    this._clippingPlanesOriginMatrixDirty = true;
 
 ## Option
 

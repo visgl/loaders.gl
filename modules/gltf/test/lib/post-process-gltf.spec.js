@@ -1,7 +1,7 @@
 /* eslint-disable max-len, camelcase */
 import test from 'tape-promise/tape';
 
-import {GLTFPostProcessor} from '@loaders.gl/gltf';
+import {postProcessGLTF} from '@loaders.gl/gltf';
 
 const TEST_CASES = [
   {
@@ -31,9 +31,8 @@ const TEST_CASES = [
 ];
 
 test('GLTF roundtrip#extensions', t => {
-  const gltfPostProcessor = new GLTFPostProcessor();
   for (const testCase of TEST_CASES) {
-    const json = gltfPostProcessor.postProcess(testCase.input);
+    const json = postProcessGLTF(testCase.input);
     t.deepEqual(json, testCase.output, testCase.name);
   }
   t.end();

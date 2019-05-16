@@ -1,6 +1,6 @@
 # Upgrade Guide
 
-## v1.1
+## v1.1 (In Development)
 
 A couple of functions have been deprecated and will be removed in v2.0. They now emit console warnings. Start replacing your use of these functions now to remove the console warnings and ensure a smooth future upgrade to v2.0.
 
