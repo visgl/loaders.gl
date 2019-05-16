@@ -5,8 +5,8 @@ import {DracoLoader} from '@loaders.gl/draco';
 import GL from '@luma.gl/constants';
 import {AnimationLoop, setParameters, clear, log, lumaStats} from '@luma.gl/core';
 import {createGLTFObjects, GLTFEnvironment} from '@luma.gl/addons';
-// import {GLTFScenegraphLoader} from '@luma.gl/addons';
-import GLTFScenegraphLoader from './gltf-scenegraph-loader';
+import {GLTFScenegraphLoader} from '@luma.gl/addons';
+// import GLTFScenegraphLoader from './gltf-scenegraph-loader';
 import {Matrix4, radians} from 'math.gl';
 
 const CUBE_FACE_TO_DIRECTION = {
