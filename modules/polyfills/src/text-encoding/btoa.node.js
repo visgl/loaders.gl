@@ -1,7 +1,8 @@
 // btoa, atob polyfills for Node.js
-// Note: These functions are not unicode safe
-/* global Buffer */
+// Note: The atob and btoa functions (not just the polyfills!) are not unicode safe
+// But still useful for unit testing
 
+/* global Buffer */
 export function atob(string) {
   return Buffer.from(string).toString('base64');
 }

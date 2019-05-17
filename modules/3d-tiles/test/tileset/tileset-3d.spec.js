@@ -111,7 +111,7 @@ test('Tileset3D#throws with undefined url', t => {
   t.end();
 });
 
-test('Tileset3D#loads json from base64 URL', async t => {
+test.skip('Tileset3D#loads json from base64 URL', async t => {
   const tilesetJson = {
     asset: {
       version: 2.0
@@ -125,7 +125,7 @@ test('Tileset3D#loads json from base64 URL', async t => {
   t.end();
 });
 
-test('Tileset3D#rejects invalid tileset version', async t => {
+test.skip('Tileset3D#rejects invalid tileset version', async t => {
   const tilesetJson = {
     asset: {
       version: 2.0
