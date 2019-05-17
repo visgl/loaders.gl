@@ -259,9 +259,8 @@ export default class Tileset3D {
     this._maximumMemoryUsage = value;
   }
 
-  // The root tile.
+  // The root tile header.
   get root() {
-    this._checkReady();
     return this._root;
   }
 
@@ -446,9 +445,5 @@ export default class Tileset3D {
       this.onTileUnload(tile);
       tile.unloadContent();
     });
-  }
-
-  _checkReady() {
-    assert(this.ready, '3D Tileset is not loaded. Wait for Tileset3D.ready to be true.');
   }
 }

@@ -38,27 +38,10 @@ export default class Tile3DHeader {
     return this._content;
   }
 
-  // Get the tile's bounding volume.
-  get boundingVolume() {
-    return this._boundingVolume;
-  }
-
-  // Get the bounding volume of the tile's contents.  This defaults to the
-  // tile's bounding volume when the content's bounding volume is <code>undefined</code>.
-  get contentBoundingVolume() {
-    return this._contentBoundingVolume || this._boundingVolume;
-  }
-
-  // Get the bounding sphere derived from the tile's bounding volume.
-  get boundingSphere() {
-    return this._boundingVolume.boundingSphere;
-  }
-
-  // Returns the <code>extras</code> property in the tileset JSON for this tile, which contains application specific metadata.
-  // Returns <code>undefined</code> if <code>extras</code> does not exist.
-  // @see {@link https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#specifying-extensions-and-application-specific-extras|Extras in the 3D Tiles specification.}
-  get extras() {
-    return this._header.extras;
+  // Determines if the tile's content is ready. This is automatically <code>true</code> for
+  // tile's with empty content.
+  get contentReady() {
+    return this._contentState === TILE3D_CONTENT_STATE.READY;
   }
 
   // Determines if the tile has available content to render.  <code>true</code> if the tile's
@@ -68,12 +51,6 @@ export default class Tile3DHeader {
       (this.contentReady && !this.hasEmptyContent && !this.hasTilesetContent) ||
       (defined(this._expiredContent) && !this.contentFailed)
     );
-  }
-
-  // Determines if the tile's content is ready. This is automatically <code>true</code> for
-  // tile's with empty content.
-  get contentReady() {
-    return this._contentState === TILE3D_CONTENT_STATE.READY;
   }
 
   // Determines if the tile's content has not be requested. <code>true</code> if tile's
@@ -96,6 +73,29 @@ export default class Tile3DHeader {
 
   get uri() {
     return this.contentUri ? this.tileset.basePath + this.contentUri : '';
+  }
+
+  // Get the tile's bounding volume.
+  get boundingVolume() {
+    return this._boundingVolume;
+  }
+
+  // Get the bounding volume of the tile's contents.  This defaults to the
+  // tile's bounding volume when the content's bounding volume is <code>undefined</code>.
+  get contentBoundingVolume() {
+    return this._contentBoundingVolume || this._boundingVolume;
+  }
+
+  // Get the bounding sphere derived from the tile's bounding volume.
+  get boundingSphere() {
+    return this._boundingVolume.boundingSphere;
+  }
+
+  // Returns the <code>extras</code> property in the tileset JSON for this tile, which contains application specific metadata.
+  // Returns <code>undefined</code> if <code>extras</code> does not exist.
+  // @see {@link https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#specifying-extensions-and-application-specific-extras|Extras in the 3D Tiles specification.}
+  get extras() {
+    return this._header.extras;
   }
 
   // Get the tile's screen space error.
@@ -142,6 +142,82 @@ export default class Tile3DHeader {
     return 0;
   }
 
+  // Requests the tile's content.
+  // The request may not be made if the Request Scheduler can't prioritize it.
+  async loadContent() {
+    if (this.hasEmptyContent) {
+      return false;
+    }
+
+    if (this._content) {
+      return true;
+    }
+
+    return this.requestContent();
+  }
+
+  async requestContent() {
+    if (this.hasEmptyContent) {
+      return false;
+    }
+
+    const expired = this.contentExpired;
+
+    // Append a query parameter of the tile expiration date to prevent caching
+    // if (expired) {
+    //   expired: this.expireDate.toString()
+    // const request = new Request({
+    //   throttle: true,
+    //   throttleByServer: true,
+    //   type: RequestType.TILES3D,
+    //   priorityFunction: createPriorityFunction(this),
+    //   serverKey: this._serverKey
+    // });
+
+
+    if (expired) {
+      this.expireDate = undefined;
+    }
+
+    const contentUri = this.uri;
+    const response = await fetch(contentUri);
+
+    try {
+      this._contentState = TILE3D_CONTENT_STATE.LOADING;
+
+      // TODO: The content can be a binary tile ot a JSON tileset
+      // const content = await parse(arrayBuffer, [Tile3DLoader, Tileset3DLoader]);
+      // this.content =  Tile3D.isTile(content) ?
+      //   new Tile3D(content, contentUri) :
+      //   new Tileset3D(content, contentUri);
+
+      const content = await parse(arrayBuffer, Tile3DLoader);
+      this.content = content, contentUri;
+
+      this._contentState = TILE3D_CONTENT_STATE.READY;
+      this._contentLoaded(content);
+
+    } catch (error) {
+       // Tile is unloaded before the content finishes loading
+        this._contentState = TILE3D_CONTENT_STATE.FAILED;
+        //  contentFailedFunction();
+      return;
+    }
+  }
+
+  // Unloads the tile's content.
+  unloadContent() {
+    if (this.hasEmptyContent || this.hasTilesetContent) {
+      return;
+    }
+
+    if (this._content && this._content.destroy) {
+      this._content.destroy();
+    }
+    this._content = null;
+    this._contentState = TILE3D_CONTENT_STATE.UNLOADED;
+  }
+
   // _getOrthograhicScreenSpaceError() {
   // if (frustum instanceof OrthographicFrustum) {
   //   const pixelSize = Math.max(frustum.top - frustum.bottom, frustum.right - frustum.left) / Math.max(width, height);
@@ -173,73 +249,6 @@ export default class Tile3DHeader {
         this._expiredContent = this._content;
       }
     }
-  }
-
-  // Requests the tile's content.
-  // The request may not be made if the Request Scheduler can't prioritize it.
-  async requestContent() {
-    if (this.hasEmptyContent) {
-      return false;
-    }
-
-    const tileset = this._tileset;
-
-    requestTile;
-    resource.request = request;
-
-    // Append a query parameter of the tile expiration date to prevent caching
-    // const expired = this.contentExpired;
-    // if (expired) {
-    //   expired: this.expireDate.toString()
-    // const request = new Request({
-    //   throttle: true,
-    //   throttleByServer: true,
-    //   type: RequestType.TILES3D,
-    //   priorityFunction: createPriorityFunction(this),
-    //   serverKey: this._serverKey
-    // });
-
-    this._contentState = TILE3D_CONTENT_STATE.LOADING;
-
-    if (expired) {
-      this.expireDate = undefined;
-    }
-
-    const response = await fetch(url);
-
-    // The content can be a binary tile ot a  JSON/
-    let content;
-    try {
-      content = parse(arrayBuffer, [Tile3DLoader, Tileset3DLoader]);
-    } catch (error) {
-      // Tile is unloaded before the content finishes loading
-      this._contentState = TILE3D_CONTENT_STATE.FAILED;
-      return;
-    }
-
-    // Tile is unloaded before the content finishes processing
-    // return content.readyPromise.then(function(content) {
-    //   if (this.isDestroyed()) {
-    //     contentFailedFunction();
-    //     return;
-    //   }
-    //   updateExpireDate(this);
-    //   this._contentState = TILE3D_CONTENT_STATE.READY;
-    // });
-
-    this._contentState = TILE3D_CONTENT_STATE.READY;
-
-    this._contentLoaded(content);
-  }
-
-  // Unloads the tile's content.
-  unloadContent() {
-    if (this.hasEmptyContent || this.hasTilesetContent) {
-      return;
-    }
-
-    this._content = this._content && this._content.destroy && this._content.destroy();
-    this._contentState = TILE3D_CONTENT_STATE.UNLOADED;
   }
 
   // Determines whether the tile's bounding volume intersects the culling volume.
@@ -355,6 +364,9 @@ export default class Tile3DHeader {
     this._tileset = tileset;
     this._header = header;
 
+    this._content = null;
+    this._contentState = TILE3D_CONTENT_STATE.UNLOADED;
+
     // Gets the tile's children.
     this.children = [];
     // This tile's parent or <code>undefined</code> if this tile is the root.
@@ -459,7 +471,7 @@ export default class Tile3DHeader {
     // Empty tile by default
     this._content = {_tileset: this._tileset, _tile: this};
     this.hasEmptyContent = true;
-    this.contentState = TILE3D_CONTENT_STATE.READY;
+    this.contentState = TILE3D_CONTENT_STATE.UNLOADED;
     this._expiredContent = undefined;
     this._serverKey = null;
 
