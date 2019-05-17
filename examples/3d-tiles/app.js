@@ -271,19 +271,16 @@ export default class App extends PureComponent {
     return (
       new ScenegraphLayer({
         id: '3d-model-tile-layer',
-        scenegraph: this.state.scenegraph,
-        data: [0],
-        coordinateSystem: COORDINATE_SYSTEM.IDENTITY,
+        data: [{}, {}],
+        coordinateSystem: COORDINATE_SYSTEM.METERS,
+        pickable: true,
+        scenegraph: this.state.scenegraph.scenes[0],
+        sizeScale: 2,
         getPosition: row => [0, 0, 0],
-        // getColor: this._getColor,
-        // getNormal: normals
-        //   ? (object, {index, data, target}) => {
-        //       target[0] = data.normals[index * 3];
-        //       target[1] = data.normals[index * 3 + 1];
-        //       target[2] = data.normals[index * 3 + 2];
-        //       return target;
-        //     }
-        //   : [0, 1, 0],
+        getOrientation: d => [0, 0, 0],
+        getTranslation: [0, 0, 0],
+        getScale: [1, 1, 1],
+        getColor: [255, 255, 255, 255],
         opacity: 0.8
       })
     );

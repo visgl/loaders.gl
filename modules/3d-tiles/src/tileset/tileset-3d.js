@@ -1,7 +1,7 @@
 import {Matrix4} from 'math.gl';
 import assert from '../utils/assert';
 import Tile3DHeader from './tile-3d-header';
-import Tileset3DCache from './tileset-3d-cache';
+// import Tileset3DCache from './tileset-3d-cache';
 
 const Ellipsoid = {
   WGS84: ''
@@ -49,6 +49,11 @@ const DEFAULT_OPTIONS = {
   onTileVisible: () => {} // Called once for each visible tile in a frame. E.g manual styling
 };
 
+function getBasePath(url) {
+  const slashIndex = url && url.lastIndexOf('/');
+  return slashIndex >= 0 ? url.substr(0, slashIndex + 1) : '';
+}
+
 export default class Tileset3D {
   // eslint-disable-next-line max-statements
   constructor(json, url, options = {}) {
@@ -59,8 +64,11 @@ export default class Tileset3D {
 
     assert(json);
 
-    this._url = undefined;
-    this._basePath = undefined;
+    this._url = url;
+    this._basePath = getBasePath(url);
+    // eslint-disable-next-line
+    // console.warn('Tileset3D.basePath is deprecated. Tiles are relative to the tileset JSON url');
+
     this._root = undefined;
 
     this._asset = undefined; // Metadata for the entire tileset
@@ -69,7 +77,7 @@ export default class Tileset3D {
     this._extensionsUsed = undefined;
     this._gltfUpAxis = undefined;
 
-    this._cache = new Tileset3DCache();
+    // this._cache = new Tileset3DCache();
     this._processingQueue = [];
     this._selectedTiles = [];
     this._emptyTiles = [];
@@ -94,7 +102,7 @@ export default class Tileset3D {
     this._tilesLoaded = false;
     this._initialTilesLoaded = false;
 
-    this._readyPromise = new Promise();
+    this._readyPromise = Promise.resolve();
 
     this._classificationType = options.classificationType;
     this._ellipsoid = options.ellipsoid;
@@ -145,10 +153,12 @@ export default class Tileset3D {
     // ion resources have a credits property we can use for additional attribution.
     // this._credits = resource.credits;
 
-    this._url = options.url;
-    this._basePath = options.basePath || '';
+    // this._url = options.url;
+    // this._basePath = options.basePath || '';
+    // eslint-disable-next-line
+    // console.warn('Tileset3D.basePath is deprecated. Tiles are relative to the tileset JSON url');
 
-    // this._root = this.loadTileset(resource, tilesetJson);
+    this._root = this.installTileset(tilesetJson, null);
     // const gltfUpAxis = defined(tilesetJson.asset.gltfUpAxis)
     //   ? Axis.fromName(tilesetJson.asset.gltfUpAxis)
     //   : Axis.Y;
@@ -160,7 +170,7 @@ export default class Tileset3D {
     // this._gltfUpAxis = gltfUpAxis;
     this._extras = tilesetJson.extras;
 
-    this._credits = this._getCredits();
+    this._credits = {}; // this._getCredits();
 
     // Save the original, untransformed bounding volume position so we can apply
     // the tile transform and model matrix at run time
@@ -183,8 +193,8 @@ export default class Tileset3D {
     //   );
     // }
 
-    this._clippingPlanesOriginMatrix = Matrix4.clone(this._initialClippingPlanesOriginMatrix);
-    this._readyPromise.resolve(this);
+    // this._clippingPlanesOriginMatrix = Matrix4.clone(this._initialClippingPlanesOriginMatrix);
+    // this._readyPromise.resolve(this);
   }
 
   // Gets the tileset's asset object property, which contains metadata about the tileset.
@@ -221,10 +231,9 @@ export default class Tileset3D {
 
   // The base path this non-absolute paths in tileset JSON file are relative to.
   get basePath() {
-    // eslint-disable-next-line
-    console.warn('Tileset3D.basePath is deprecated. Tiles are relative to the tileset JSON url');
     return this._basePath;
-  }
+  } // eslint-disable-next-line
+  // console.warn('Tileset3D.basePath is deprecated. Tiles are relative to the tileset JSON url');
 
   // The maximum screen space error used to drive level of detail refinement.
   get maximumScreenSpaceError() {
@@ -301,9 +310,9 @@ export default class Tileset3D {
     return Boolean(this._extensionsUsed && this._extensionsUsed.indexOf(extensionName) > -1);
   }
 
-  // Loads the main tileset JSON file or a tileset JSON file referenced from a tile.
+  // Installs the main tileset JSON file or a tileset JSON file referenced from a tile.
   // eslint-disable-next-line max-statements
-  loadTileset(tilesetJson, parentTile) {
+  installTileset(tilesetJson, parentTile) {
     const asset = tilesetJson.asset;
     if (!asset) {
       throw new Error('Tileset must have an asset property.');
@@ -312,16 +321,19 @@ export default class Tileset3D {
       throw new Error('The tileset must be 3D Tiles version 0.0 or 1.0.');
     }
 
-    const statistics = this._statistics;
+    // const statistics = this._statistics;
 
     if ('tilesetVersion' in asset) {
       // Append the tileset version to the resource
       this._basePath += `?v=${asset.tilesetVersion}`;
-    }
+    } // eslint-disable-next-line
+    // console.warn('Tileset3D.basePath is deprecated. Tiles are relative to the tileset JSON url');
+
+    const resource = null;
 
     // A tileset JSON file referenced from a tile may exist in a different directory than the root tileset.
     // Get the basePath relative to the external tileset.
-    const rootTile = new Tile3DHeader(tilesetJson.root, parentTile, this, {}); // resource
+    const rootTile = new Tile3DHeader(this, resource, tilesetJson.root, parentTile); // resource
 
     // If there is a parentTile, add the root of the currently loading tileset
     // to parentTile's children, and update its _depth.
@@ -334,17 +346,17 @@ export default class Tileset3D {
     stack.push(rootTile);
 
     while (stack.length > 0) {
-      // const tile = stack.pop();
-      ++statistics.numberOfTilesTotal;
+      const tile = stack.pop();
+      // ++statistics.numberOfTilesTotal;
       // this._allTilesAdditive = this._allTilesAdditive && tile.refine === TILE_3D_REFINE.ADD;
 
-      // const children = tile._header.children || [];
-      // for (const childHeader of children) {
-      //   const childTile = new Tile3D(this, resource, childHeader, tile);
-      //   tile.children.push(childTile);
-      //   childTile._depth = tile._depth + 1;
-      //   stack.push(childTile);
-      // }
+      const children = tile._header.children || [];
+      for (const childHeader of children) {
+        const childTile = new Tile3DHeader(this, resource, childHeader, tile);
+        tile.children.push(childTile);
+        childTile._depth = tile._depth + 1;
+        stack.push(childTile);
+      }
 
       // TODO:
       // if (this._cullWithChildrenBounds) {

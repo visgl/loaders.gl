@@ -7,3 +7,4 @@ import './parsers/point-cloud-3d-tile.spec';
 import './parsers/composite-3d-tile.spec';
 
 import './tileset/tile-3d-header.spec';
+import './tileset/tileset-3d.spec';

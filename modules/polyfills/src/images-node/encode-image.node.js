@@ -3,7 +3,7 @@
 /* global Buffer */
 import savePixels from 'save-pixels';
 import ndarray from 'ndarray';
-import {bufferToArrayBuffer} from './to-array-buffer.node';
+import {bufferToArrayBuffer} from '../utils/to-array-buffer.node';
 
 /**
  * Returns data bytes representing a compressed image in PNG or JPG format,

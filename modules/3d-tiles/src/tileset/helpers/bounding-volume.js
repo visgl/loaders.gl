@@ -1,6 +1,7 @@
 /* eslint-disable */
 import {Vector3, Matrix3, Matrix4} from 'math.gl';
-import {BoundingSphere} from '';
+import {BoundingSphere, OrientedBoundingBox} from '@loaders.gl/math';
+import assert from '../../utils/assert';
 
 // const scratchProjectedBoundingSphere = new BoundingSphere();
 
@@ -8,8 +9,8 @@ const scratchMatrix = new Matrix3();
 const scratchScale = new Vector3();
 const scratchHalfAxes = new Matrix3();
 const scratchCenter = new Vector3();
-const scratchRectangle = new Rectangle();
-const scratchOrientedBoundingBox = new OrientedBoundingBox();
+// const scratchRectangle = new Rectangle();
+// const scratchOrientedBoundingBox = new OrientedBoundingBox();
 const scratchTransform = new Matrix4();
 
 /**
@@ -22,20 +23,25 @@ const scratchTransform = new Matrix4();
 export function createBoundingVolume(boundingVolumeHeader, transform, result) {
   assert(boundingVolumeHeader, '3D Tile: boundingVolume must be defined');
   if (boundingVolumeHeader.box) {
-    return createBox(boundingVolumeHeader.box, transform, result);
+    return null;
+    // return createBox(boundingVolumeHeader.box, transform, result);
   }
   if (boundingVolumeHeader.region) {
-    return createRegion(boundingVolumeHeader.region, transform, this._initialTransform, result);
+    return null;
+    // return createRegion(boundingVolumeHeader.region, transform, this._initialTransform, result);
   }
   if (boundingVolumeHeader.sphere) {
-    return createSphere(boundingVolumeHeader.sphere, transform, result);
+    return null;
+    // return createSphere(boundingVolumeHeader.sphere, transform, result);
   }
   throw new Error('3D Tile: boundingVolume must contain a sphere, region, or box');
 }
 
 function createBox(box, transform, result) {
-  const center = Vector3.fromElements(box[0], box[1], box[2], scratchCenter);
-  const halfAxes = Matrix3.fromArray(box, 3, scratchHalfAxes);
+  return null;
+
+  const center = new Vector3(box[0], box[1], box[2], scratchCenter);
+  const halfAxes = new Matrix3(); // Matrix3.fromArray(box, 3, scratchHalfAxes);
 
   // Find the transformed center and halfAxes
   center = Matrix4.multiplyByPoint(transform, center, center);
