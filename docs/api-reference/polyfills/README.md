@@ -21,13 +21,27 @@ import '@loaders.gl/core';
 | `atob`/`btoa` | All versions | No | Note: these functions are [not unicode safe](https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding#The_Unicode_Problem), but OK to use for test cases. |
 | `fetch` | All versions | No | A subset of the fetch API is supported, see below. |
 
-## fetch Polyfilled API
+## fetch Polyfill
 
 The Node.js `fetch` polyfill supports a subset of the browser fetch API, including:
 - `Response.text()`, `Response.arrayBuffer()`.
 - `Response.body` stream
 - limited support for `headers`
 - data uri / base64 decoding
+
+
+# TextEncoder and TextDecoder Polyfills
+
+`TextEncoder` and `TextDecoder` polyfills are provided to ensure these APIs are always available. In modern browsers these will evaluate to the built-in objects of the same name, however under Node.js polyfills are transparently installed.
+
+Note: The polyfill only guarantees UTF8 support.
+
+## Remarks
+
+- Refer to browser documentation for the usage of these classes, e.g. MDN.
+- In the browser, overhead of using these imports is very low, as they refer to built-in classes.
+- If working under older browsers, e.g. IE11, you may need to install your own TextEncoder/TextDecoder polyfills before loading this library (to be confirmed...)
+
 
 ## Remarks
 

@@ -1,4 +1,4 @@
-# 3D Tiles Category (Under Development)
+# 3D Tiles Category (Experimental)
 
 > The 3D tile loaders are still under development. If you are interested in early access, please open an issue.
 

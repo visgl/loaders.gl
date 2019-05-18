@@ -1,4 +1,4 @@
-# Streaming Support
+# Streaming
 
 > Streaming support in loaders.gl is a work-in-progress. The ambition is that many loaders would support streaming from both Node and DOM streams, through a consistent API and set of conventions (for both applications and loader/writer objects).
 

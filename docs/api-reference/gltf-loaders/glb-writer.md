@@ -1,4 +1,4 @@
-# GLBWriter (Deprecated)
+# GLBWriter
 
 The `GLBWriter` is a writer for the GLB binary "envelope".
 

@@ -1,4 +1,4 @@
-# Worker Thread Loading
+# Worker Threads
 
 Reasons for moving loading to workers:
 

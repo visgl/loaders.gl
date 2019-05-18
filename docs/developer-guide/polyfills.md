@@ -1,14 +1,16 @@
 ## Polyfills
 
-Older browsers (mainly Edge and IE11) as well as Node.js versions prior to v11 do not provide certain classes that loaders.gl depends on.
+Older browsers (mainly Edge and IE11) as well as Node.js do not provide certain APIs (`TextEncoder`, `fetch` etc) that loaders.gl depends on.
 
-While there are many good polyfill modules available on `npm`, to make the search for a version that works directly with loaders.gl a little easier, a polyfill module is provided.
+The good news is that these APIs can be provided by the application using the [polyfill](https://en.wikipedia.org/wiki/Polyfill_(programming)) technique.
 
-To install the polyfills, just import it before you start using loaders.gl.
+While there are many good polyfill modules for these classes available on `npm`, to make the search for a version that is guaranteed to work with loaders.gl a little easier, the `@loaders.gl/polyfills` module is provided.
+
+To install these polyfills, just `import` the polyfills module before start using loaders.gl.
 
 ```js
 import '@loaders.gl/polyfills';
-import {fetchFile} from '@loaders.gl/core';
+import {parse} from '@loaders.gl/core';
 ```
 
 ## Combining with other Polyfills

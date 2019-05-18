@@ -1,8 +1,6 @@
-# File Utilities
+# writeFile
 
-> Needs update
-
-A set of file load and save utilities that (attempt to) work consistently across browser and node.
+A file save utilities that (attempts to) work consistently across browser and node.
 
 ## Usage
 

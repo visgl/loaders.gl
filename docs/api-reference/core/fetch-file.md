@@ -1,6 +1,6 @@
-# File Utilities
+# fetchFile
 
-Small optional file reading utilities that work consistently across browser (both main thread and worker threads) as well as under Node. The main function is `fetchFile` which can be used as a slightly more featured/portable version of fetch.
+The `fetchFile` function is a wrapper around `fetch` which provides support for path prefixes and some additional loading capabilities.
 
 ## Usage
 
@@ -15,7 +15,7 @@ data = await parse(fetchFile(url), OBJLoader);
 ...
 ```
 
-Note that if you don't care about Node.js compatibility, you can just use the browser's built-in `fetch` directly.
+If you don't care about the extra features in `fetchFile` just use the browders built-in `fetch` method.
 
 ```js
 import {parse} from '@loaders.gl/core';
@@ -32,7 +32,6 @@ data = await parse(fetch(url), OBJLoader);
 
 A version of [`fetch`](https://developer.mozilla.org/en-US/docs/Web/API/Response) that:
 
-- can be used in both the browser and Node.js.
 - Supports `setPathPrefix`: If path prefix has been set, it will be appended if `url` is relative (e.g. does not start with a `/`).
 
 Returns:
