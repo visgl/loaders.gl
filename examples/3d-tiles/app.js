@@ -18,8 +18,8 @@ import {
 } from '@loaders.gl/3d-tiles';
 import {postProcessGLTF} from '@loaders.gl/gltf';
 
-import ControlPanel from './control-panel';
-import fileDrop from './file-drop';
+import ControlPanel from './components/control-panel';
+import fileDrop from './components/file-drop';
 
 registerLoaders(Tile3DLoader);
 

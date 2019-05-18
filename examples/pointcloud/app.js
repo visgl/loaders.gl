@@ -5,22 +5,31 @@ import DeckGL from '@deck.gl/react';
 import {COORDINATE_SYSTEM, OrbitView, LinearInterpolator} from '@deck.gl/core';
 import {PointCloudLayer} from '@deck.gl/layers';
 
-import {PLYLoader} from '@loaders.gl/ply';
+import {DracoLoader} from '@loaders.gl/draco';
 import {LASLoader} from '@loaders.gl/las';
+import {PLYLoader} from '@loaders.gl/ply';
+import {PCDLoader} from '@loaders.gl/pcd';
+import {OBJLoader} from '@loaders.gl/obj';
 // TODO fix LasWorkerLoader
 // import {LASWorkerLoader} from '@loaders.gl/las/worker-loader';
+
 import {load, registerLoaders} from '@loaders.gl/core';
 
-// Additional format support can be added here, see
-registerLoaders(PLYLoader);
-registerLoaders(LASLoader);
+import ControlPanel from './components/control-panel';
+import fileDrop from './components/file-drop';
 
-// Data source: kaarta.com
-const LAZ_SAMPLE =
-  'https://raw.githubusercontent.com/uber-common/deck.gl-data/master/examples/point-cloud-laz/indoor.0.1.laz';
-// Data source: The Stanford 3D Scanning Repository
-// const PLY_SAMPLE =
-//   'https://raw.githubusercontent.com/uber-common/deck.gl-data/master/examples/point-cloud-ply/lucy800k.ply';
+import FILE_INDEX from './file-index';
+
+const LAZ_SAMPLE = FILE_INDEX[1].uri;
+
+// Additional format support can be added here, see
+registerLoaders([
+  DracoLoader,
+  LASLoader,
+  PLYLoader,
+  PCDLoader,
+  OBJLoader
+]);
 
 const INITIAL_VIEW_STATE = {
   target: [0, 0, 0],
@@ -42,8 +51,12 @@ export default class App extends PureComponent {
     this.state = {
       viewState: INITIAL_VIEW_STATE,
       pointsCount: 0,
-      points: null
-    };
+      points: null,
+      // control panel
+      droppedFile: null,
+      example: 'PointCloudNormals',
+      category: 'PointCloud'
+   };
 
     this._onLoad = this._onLoad.bind(this);
     this._onViewStateChange = this._onViewStateChange.bind(this);
@@ -116,20 +129,36 @@ export default class App extends PureComponent {
     ];
   }
 
+  _renderControlPanel() {
+    const {data, example, category, pointsCount} = this.state;
+    return (
+      <ControlPanel
+        data={data}
+        vertexCount={pointsCount}
+        category={category}
+        example={example}
+        onChange={this._onSelectExample}
+      />
+    );
+  }
+
   render() {
     const {viewState} = this.state;
 
     return (
-      <DeckGL
-        views={new OrbitView()}
-        viewState={viewState}
-        controller={true}
-        onViewStateChange={this._onViewStateChange}
-        layers={this._renderLayers()}
-        parameters={{
-          clearColor: [0.07, 0.14, 0.19, 1]
-        }}
-      />
+      <div>
+        {this._renderControlPanel()}
+        <DeckGL
+          views={new OrbitView()}
+          viewState={viewState}
+          controller={true}
+          onViewStateChange={this._onViewStateChange}
+          layers={this._renderLayers()}
+          parameters={{
+            clearColor: [0.07, 0.14, 0.19, 1]
+          }}
+        />
+      </div>
     );
   }
 }

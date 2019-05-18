@@ -22,6 +22,9 @@ const CONFIG = {
         }
       }
     ]
+  },
+  node: {
+    fs: 'empty'
   }
 };
 
