@@ -4,19 +4,6 @@ loaders.gl is a growing suite of portable, framework-independent loaders and wri
 
 loaders.gl is part of the [vis.gl](https://vis.gl) framework ecosystem, and while all loaders and writers in loaders.gl are framework-independent, frameworks like [deck.gl](https://deck.gl) and [luma.gl](https://luma.gl) are designed to easily consume data returned by loaders.gl loaders.
 
-## Code Example
-
-Applications import loaders and use them with the `parse` function as follows:
-
-```js
-import {parse} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/csv';
-
-const data = await parse(fetch('data.csv'), CSVLoader);
-```
-
-Data will now be a an array of objects representing the parsed rows from the CSV file.
-
 ## Major Components
 
 - **Loaders and Writers** - The primary offering is a set of loaders (parsers) for various file formats. loaders.gl also offers of writers (encoders) for subset of those formats to support saving data.
@@ -46,6 +33,19 @@ Some of the key design goals for loaders.gl.
 **Node Support** - All loaders are tested to work under Node.js.
 
 **Bundle Size Conscious** - Each format is published as an independent npm module, and additionally, individual exports from each module are will be removed during tree-shaking if not imported by the app.
+
+## Code Example
+
+Applications import loaders and use them with the `parse` function as follows:
+
+```js
+import {parse} from '@loaders.gl/core';
+import {CSVLoader} from '@loaders.gl/csv';
+
+const data = await parse(fetch('data.csv'), CSVLoader);
+```
+
+Data will now be a an array of objects representing the parsed rows from the CSV file.
 
 ## Licenses
 
