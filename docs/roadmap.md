@@ -17,6 +17,13 @@ We are trying to make the loaders.gl roadmap as public as possible. We share inf
 
 **Improved Format Auto-Discovery** - Each loader can optionally expose a test function that can examine the "head" of a file to test if it is likely to be in a format this loader will be able to parse.
 
+**Automatic Timing** - objects returned from loaders could contain a `stats` object with timing stats.
+
+**Default Settings** - Set `setDefaultOptions({stats: true})` to enable stats collection, etc.
+
+**MIME types** - Allow MIME types (e.g. from response headers) to be provided to assist in loader auto-selection. Enable Writers to return recommended MIMEtypes.
+
+
 ## Format Roadmap
 
 ### Scenegraph Formats

@@ -20,7 +20,7 @@ import fileDrop from './components/file-drop';
 
 import FILE_INDEX from './file-index';
 
-const LAZ_SAMPLE = FILE_INDEX[1].uri;
+const LAZ_SAMPLE = FILE_INDEX.PLY[0].uri;
 
 // Additional format support can be added here, see
 registerLoaders([
@@ -53,16 +53,15 @@ export default class App extends PureComponent {
       pointsCount: 0,
       points: null,
       // control panel
-      droppedFile: null,
-      example: 'PointCloudNormals',
-      category: 'PointCloud'
+      droppedFile: null
+      // example: 'Indoor',
+      // category: 'LAZ'
    };
 
     this._onLoad = this._onLoad.bind(this);
-    this._onViewStateChange = this._onViewStateChange.bind(this);
     this._rotateCamera = this._rotateCamera.bind(this);
-
-    load(LAZ_SAMPLE).then(this._onLoad);
+    this._onViewStateChange = this._onViewStateChange.bind(this);
+    this._onExampleChange = this._onExampleChange.bind(this);
   }
 
   _onViewStateChange({viewState}) {
@@ -82,6 +81,18 @@ export default class App extends PureComponent {
     });
   }
 
+  _onExampleChange({category, example}) {
+    const {uri} = example;
+    // TODO - timing could be done automatically by `load`.
+    load(uri).then(this._onLoad.bind(this));
+    this._loadStartMs = Date.now();
+    this.setState({
+      selectedCategory: category,
+      selectedExample: example,
+      loadTimeMs: undefined
+    });
+  }
+
   _onLoad({header, loaderData, attributes, progress}) {
     // metadata from LAZ file header
     const {mins, maxs} = loaderData.header;
@@ -90,19 +101,20 @@ export default class App extends PureComponent {
     if (mins && maxs) {
       // File contains bounding box info
       viewState = {
-        ...viewState,
+        ...INITIAL_VIEW_STATE,
         target: [(mins[0] + maxs[0]) / 2, (mins[1] + maxs[1]) / 2, (mins[2] + maxs[2]) / 2],
         /* global window */
         zoom: Math.log2(window.innerWidth / (maxs[0] - mins[0])) - 1
       };
     }
 
-    if (this.props.onLoad) {
-      this.props.onLoad({count: header.vertexCount, progress: 1});
-    }
+    // if (this.props.onLoad) {
+    //   this.props.onLoad({count: header.vertexCount, progress: 1});
+    // }
 
     this.setState(
       {
+        loadTimeMs: Date.now() - this._loadStartMs,
         pointsCount: header.vertexCount,
         points: attributes.POSITION.value,
         viewState
@@ -112,12 +124,13 @@ export default class App extends PureComponent {
   }
 
   _renderLayers() {
-    const {pointsCount, points} = this.state;
+    const {pointsCount, points, selectedExample} = this.state;
 
     return [
       points &&
         new PointCloudLayer({
-          id: 'laz-point-cloud-layer',
+          // Layers can't reinitialize with new binary data
+          id: `point-cloud-layer-${selectedExample.name}`,
           coordinateSystem: COORDINATE_SYSTEM.IDENTITY,
           numInstances: pointsCount,
           instancePositions: points,
@@ -130,14 +143,16 @@ export default class App extends PureComponent {
   }
 
   _renderControlPanel() {
-    const {data, example, category, pointsCount} = this.state;
+    const {selectedExample, selectedCategory, pointsCount, loadTimeMs} = this.state;
     return (
       <ControlPanel
-        data={data}
+        examples={FILE_INDEX}
+        selectedCategory={selectedCategory}
+        selectedExample={selectedExample}
+        onExampleChange={this._onExampleChange}
+        // Stats - put in separate stats panel?
         vertexCount={pointsCount}
-        category={category}
-        example={example}
-        onChange={this._onSelectExample}
+        loadTimeMs={loadTimeMs}
       />
     );
   }

@@ -23,10 +23,58 @@ const DropDown = styled.select`
 `;
 
 export default class ControlPanel extends PureComponent {
-  _renderByCategories() {
-    const {category, example, onChange, data = {}} = this.props;
-    const categories = Object.keys(data);
-    const selectedValue = `${category}.${example}`;
+  // _renderByCategories() {
+  //   const {examples = {}, onChange, data = {}} = this.props;
+  //   const selectedValue = `${this.props.selectedCategory}.${this.props.selectedExample}`;
+
+  //   return (
+  //     <DropDown
+  //       value={selectedValue}
+  //       onChange={evt => {
+  //         const categoryExample = evt.target.value;
+  //         const value = categoryExample.split('.');
+  //         onChange({category: value[0], example: value[1]});
+  //       }}
+  //     >
+  //       {categories.map((c, i) => {
+  //         const categoryExamples = data[c].examples;
+  //         return (
+  //           <optgroup key={i} label={c}>
+  //             {Object.keys(categoryExamples).map((e, j) => {
+  //               const value = `${c}.${e}`;
+  //               return (
+  //                 <option key={j} value={value}>
+  //                   {e}
+  //                 </option>
+  //               );
+  //             })}
+  //           </optgroup>
+  //         );
+  //       })}
+  //     </DropDown>
+  //   );
+  // }
+
+  componentDidMount() {
+    const {examples = {}, selectedCategory, selectedExample, onExampleChange} = this.props;
+
+    // Auto select first example if app didn't provide
+    if ((!selectedCategory || !selectedExample) && !this._autoSelected) {
+      const firstCategory = Object.keys(examples)[0];
+      const firstExample = examples[firstCategory][0];
+      this._autoSelected = true;
+      onExampleChange({category: firstCategory, example: firstExample});
+    }
+  }
+
+  _renderList() {
+    const {examples = {}, selectedCategory, selectedExample, onExampleChange} = this.props;
+
+    if ((!selectedCategory || !selectedExample)) {
+      return false;
+    }
+
+    const selectedValue = `${selectedCategory}.${selectedExample.name}`;
 
     return (
       <DropDown
@@ -34,18 +82,20 @@ export default class ControlPanel extends PureComponent {
         onChange={evt => {
           const categoryExample = evt.target.value;
           const value = categoryExample.split('.');
-          onChange({category: value[0], example: value[1]});
+          const category = value[0];
+          const example = examples[category].find(x => x.name === value[1]);
+          onExampleChange({category, example});
         }}
       >
-        {categories.map((c, i) => {
-          const categoryExamples = data[c].examples;
+        {Object.keys(examples).map((categoryName, categoryIndex) => {
+          const categoryExamples = examples[categoryName];
           return (
-            <optgroup key={i} label={c}>
-              {Object.keys(categoryExamples).map((e, j) => {
-                const value = `${c}.${e}`;
+            <optgroup key={categoryIndex} label={categoryName}>
+              {categoryExamples.map((example, exampleIndex) => {
+                const value = `${categoryName}.${example.name}`;
                 return (
-                  <option key={j} value={value}>
-                    {e}
+                  <option key={exampleIndex} value={value}>
+                    {example.name}
                   </option>
                 );
               })}
@@ -56,13 +106,33 @@ export default class ControlPanel extends PureComponent {
     );
   }
 
+  _renderHeader() {
+    const {selectedCategory, selectedExample} = this.props;
+    if (!selectedCategory || !selectedExample) {
+      return null;
+    }
+
+    return (
+      <div>
+        <h3>{selectedExample.name} <b>{selectedCategory}</b> </h3>
+      </div>
+    );
+  }
+
+  _renderDropDown() {
+    // TODO - unify category and list between examples?
+    // return this._renderByCategories();
+    // this._renderByCategories();
+    return this._renderList();
+  }
+
   _renderDropped() {
     const {droppedFile} = this.props;
     return droppedFile ? <div>Dropped file: {JSON.stringify(droppedFile.name)}</div> : null;
   }
 
   _renderStats() {
-    const {vertexCount} = this.props;
+    const {vertexCount, loadTimeMs} = this.props;
     let message;
     if (vertexCount >= 1e7) {
       message = `${(vertexCount / 1e6).toFixed(0)}M`;
@@ -77,7 +147,12 @@ export default class ControlPanel extends PureComponent {
     }
     return (
       <div>
-        {Number.isFinite(vertexCount) ? `Points: ${message}` : null}
+        <div>
+          {Number.isFinite(vertexCount) ? `Points: ${message}` : null}
+        </div>
+        <div>
+          {Number.isFinite(loadTimeMs) ? `Load time: ${(loadTimeMs / 1000).toFixed(1)}s` : null}
+        </div>
       </div>
     );
   }
@@ -85,7 +160,8 @@ export default class ControlPanel extends PureComponent {
   render() {
     return (
       <Container>
-        {this._renderByCategories()}
+        {this._renderHeader()}
+        {this._renderDropDown()}
         {this._renderDropped()}
         {this._renderStats()}
       </Container>
