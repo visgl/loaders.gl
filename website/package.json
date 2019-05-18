@@ -39,6 +39,6 @@
     "gatsby-plugin-styletron": "^3.0.5",
     "gh-pages": "^2.0.1",
     "ocular-gatsby": "1.0.0-alpha.28",
-    "sharp": "0.22.0"
+    "sharp": "0.22.1"
   }
 }
