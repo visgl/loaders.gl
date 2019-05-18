@@ -20,8 +20,6 @@ import fileDrop from './components/file-drop';
 
 import FILE_INDEX from './file-index';
 
-const LAZ_SAMPLE = FILE_INDEX.PLY[0].uri;
-
 // Additional format support can be added here, see
 registerLoaders([
   DracoLoader,
@@ -81,14 +79,14 @@ export default class App extends PureComponent {
     });
   }
 
-  _onExampleChange({category, example}) {
+  _onExampleChange({selectedCategory, selectedExample, example}) {
     const {uri} = example;
     // TODO - timing could be done automatically by `load`.
     load(uri).then(this._onLoad.bind(this));
     this._loadStartMs = Date.now();
     this.setState({
-      selectedCategory: category,
-      selectedExample: example,
+      selectedCategory,
+      selectedExample,
       loadTimeMs: undefined
     });
   }
@@ -130,7 +128,7 @@ export default class App extends PureComponent {
       points &&
         new PointCloudLayer({
           // Layers can't reinitialize with new binary data
-          id: `point-cloud-layer-${selectedExample.name}`,
+          id: `point-cloud-layer-${selectedExample}`,
           coordinateSystem: COORDINATE_SYSTEM.IDENTITY,
           numInstances: pointsCount,
           instancePositions: points,

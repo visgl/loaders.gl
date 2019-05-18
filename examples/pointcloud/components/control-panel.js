@@ -58,12 +58,13 @@ export default class ControlPanel extends PureComponent {
   componentDidMount() {
     const {examples = {}, selectedCategory, selectedExample, onExampleChange} = this.props;
 
-    // Auto select first example if app didn't provide
+    // CONVENIENCE: Auto select first example if app didn't provide
     if ((!selectedCategory || !selectedExample) && !this._autoSelected) {
       const firstCategory = Object.keys(examples)[0];
-      const firstExample = examples[firstCategory][0];
+      const firstExample = Object.keys(examples[firstCategory])[0];
+      const example = examples[firstCategory][firstExample];
       this._autoSelected = true;
-      onExampleChange({category: firstCategory, example: firstExample});
+      onExampleChange({selectedCategory: firstCategory, selectedExample: firstExample, example});
     }
   }
 
@@ -74,7 +75,7 @@ export default class ControlPanel extends PureComponent {
       return false;
     }
 
-    const selectedValue = `${selectedCategory}.${selectedExample.name}`;
+    const selectedValue = `${selectedCategory}.${selectedExample}`;
 
     return (
       <DropDown
@@ -82,20 +83,21 @@ export default class ControlPanel extends PureComponent {
         onChange={evt => {
           const categoryExample = evt.target.value;
           const value = categoryExample.split('.');
-          const category = value[0];
-          const example = examples[category].find(x => x.name === value[1]);
-          onExampleChange({category, example});
+          const categoryName = value[0];
+          const exampleName = value[1];
+          const example = examples[selectedCategory][selectedExample];
+          onExampleChange({selectedCategory: categoryName, selectedExample: exampleName, example});
         }}
       >
         {Object.keys(examples).map((categoryName, categoryIndex) => {
           const categoryExamples = examples[categoryName];
           return (
             <optgroup key={categoryIndex} label={categoryName}>
-              {categoryExamples.map((example, exampleIndex) => {
-                const value = `${categoryName}.${example.name}`;
+              {Object.keys(categoryExamples).map((exampleName, exampleIndex) => {
+                const value = `${categoryName}.${exampleName}`;
                 return (
                   <option key={exampleIndex} value={value}>
-                    {example.name}
+                    {`${exampleName} (${categoryName})`}
                   </option>
                 );
               })}
@@ -114,7 +116,7 @@ export default class ControlPanel extends PureComponent {
 
     return (
       <div>
-        <h3>{selectedExample.name} <b>{selectedCategory}</b> </h3>
+        <h3>{selectedExample} <b>{selectedCategory}</b> </h3>
       </div>
     );
   }
