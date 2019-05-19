@@ -6,7 +6,8 @@
 
 ## Functions
 
-### save(url : String | File, writer : Object [, options : Object]) : Promise<ArrayBuffer | String>
+### save(url : String | File, writer : Object [, options : Object]) : Promise.ArrayBuffer| Promi
+se.String
 
 The `save` function can be used with any writer.
 

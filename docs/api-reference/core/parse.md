@@ -29,9 +29,9 @@ for await (const batch of batchIterator) {
 
 ## Functions
 
-### parse(data : ArrayBuffer | String, loaders : Object | Object\[] [, options : Object [, url : String]]) : Promise<Any>
+### parse(data : ArrayBuffer | String, loaders : Object | Object\[] [, options : Object [, url : String]]) : Promise.Any
 
-### parse(data : ArrayBuffer | String, [, options : Object [, url : String]]) : Promise<Any>
+### parse(data : ArrayBuffer | String, [, options : Object [, url : String]]) : Promise.Any
 
 Parses data asynchronously using the provided loader.
 Used to parse data with a selected _loader object_. An array of `loaders` can be provided, in which case an attempt will be made to autodetect which loader is appropriate for the file (using url extension and header matching).

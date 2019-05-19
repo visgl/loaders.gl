@@ -51,7 +51,7 @@ However, the default distribution is completely transpiled to ES5 so using loade
 
 To build on Edge and IE11, `TextEncoder` and `TextDecoder` must be polyfilled. There are several polyfills available on `npm`, but you can also use the polyfills provided by loaders.gl:
 
-```sh
+```bash
 yarn install @loaders.gl/polyfills
 ```
 

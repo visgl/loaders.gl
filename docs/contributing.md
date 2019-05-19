@@ -18,7 +18,7 @@ Install [WSL (Windows Subsystem for Linux)](https://docs.microsoft.com/en-us/win
 
 ### Install Node and NPM
 
-```sh
+```bash
 sudo apt update
 sudo apt install nodejs
 ```
@@ -32,7 +32,7 @@ sudo apt install nodejs
 
 https://www.hostinger.com/tutorials/how-to-install-yarn-on-ubuntu/
 
-```sh
+```bash
 sudo apt update
 sudo apt install yarn nodejs
 yarn –version
@@ -40,7 +40,7 @@ yarn –version
 
 ### Install jq
 
-```sh
+```bash
 sudo apt-get install jq
 ```
 

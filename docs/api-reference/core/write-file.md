@@ -13,7 +13,7 @@ await writeFile(url, DracoWriter);
 
 ## Functions
 
-### writeFile(url : String [, options : Object]) : Promise<ArrayBuffer>
+### writeFile(url : String [, options : Object]) : Promise.ArrayBuffer
 
 Reads the raw data from a file asynchronously.
 

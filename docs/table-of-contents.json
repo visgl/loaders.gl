@@ -68,7 +68,7 @@
             {"entry": "docs/api-reference/gltf-loaders/gltf-writer"},
             {"entry": "docs/api-reference/gltf-loaders/glb-loader"},
             {"entry": "docs/api-reference/gltf-loaders/glb-writer"},
-            {"entry": "docs/api-reference/gltf-loaders/gltf-senegraph"},
+            {"entry": "docs/api-reference/gltf-loaders/gltf-scenegraph"},
             {"entry": "docs/api-reference/gltf-loaders/post-process-gltf"},
             {"entry": "docs/api-reference/gltf-loaders/glbdump"},
             {"entry": "docs/api-reference/deprecated/gltf-parser"},

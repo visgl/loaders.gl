@@ -28,7 +28,7 @@ data = await parse(fetch(url), OBJLoader);
 
 ## Functions
 
-### fetchFile(url : String [, options : Object]) : Promise<Response>
+### fetchFile(url : String [, options : Object]) : Promise.Response
 
 A version of [`fetch`](https://developer.mozilla.org/en-US/docs/Web/API/Response) that:
 
@@ -37,8 +37,8 @@ A version of [`fetch`](https://developer.mozilla.org/en-US/docs/Web/API/Response
 Returns:
 
 - A promise that resolves into a fetch `Response` object, with the following methods/fields:
-  - `arrayBuffer() : Promise<ArrayBuffer>` - Loads the file as an `ArrayBuffer`.
-  - `text() : Promise<String>` - Loads the file and decodes it into text.
+  - `arrayBuffer() : Promise.ArrayBuffer` - Loads the file as an `ArrayBuffer`.
+  - `text() : Promise.String` - Loads the file and decodes it into text.
   - `body : ReadableStream` - A stream that can be used to incrementally read the contents of the file.
 
 Options:
