@@ -12,23 +12,27 @@
       ]
     },
     {
-      "title": "Get Started",
-      "entries": [
-        {"entry": "docs/get-started/README"}
-      ]
-    },
-    {
       "title": "Developer Guide",
-      "entries": [
-        {"entry": "docs/developer-guide/about-loaders"},
-        {"entry": "docs/developer-guide/about-writers"},
-        {"entry": "docs/developer-guide/loader-categories"},
-        {"entry": "docs/developer-guide/inspecting-files"},
-        {"entry": "docs/developer-guide/streaming"},
-        {"entry": "docs/developer-guide/array-buffers"},
-        {"entry": "docs/developer-guide/async-iterators"},
-        {"entry": "docs/developer-guide/worker-threads"},
-        {"entry": "docs/developer-guide/polyfills"}
+      "chapters": [
+        {
+          "title": "Guides",
+          "entries": [
+            {"entry": "docs/developer-guide/get-started"},
+            {"entry": "docs/developer-guide/about-loaders"},
+            {"entry": "docs/developer-guide/about-writers"},
+            {"entry": "docs/developer-guide/loader-categories"},
+            {"entry": "docs/developer-guide/polyfills"}
+          ]
+        },
+        {
+          "title": "Concepts",
+          "entries": [
+            {"entry": "docs/developer-guide/concepts/streaming"},
+            {"entry": "docs/developer-guide/concepts/array-buffers"},
+            {"entry": "docs/developer-guide/concepts/async-iterators"},
+            {"entry": "docs/developer-guide/concepts/worker-threads"}
+          ]
+        }
       ]
     },
     {
@@ -37,16 +41,15 @@
         {
           "title": "Core Functions",
           "entries": [
-            {"entry": "docs/api-reference/core/register-loaders"},
             {"entry": "docs/api-reference/core/parse"},
-            {"entry": "docs/api-reference/core/encode"},
             {"entry": "docs/api-reference/core/load"},
+            {"entry": "docs/api-reference/core/encode"},
             {"entry": "docs/api-reference/core/save"},
             {"entry": "docs/api-reference/core/fetch-file"},
             {"entry": "docs/api-reference/core/write-file"},
+            {"entry": "docs/api-reference/core/register-loaders"},
             {"entry": "docs/api-reference/core/set-path-prefix"},
             {"entry": "docs/api-reference/core/binary-utilities"},
-            {"entry": "docs/api-reference/core/text-utilities"},
             {"entry": "docs/api-reference/core/iterator-utilities"}
           ]
         },
@@ -58,25 +61,20 @@
         },
         {
           "title": "GLTF Loaders",
-          "chapters": {
-            "title": "Deprecated",
-            "entries": [
-              {"entry": "docs/api-reference/deprecated/gltf-parser"},
-              {"entry": "docs/api-reference/deprecated/gltf-builder"},
-              {"entry": "docs/api-reference/deprecated/glb-parser"},
-              {"entry": "docs/api-reference/deprecated/glb-builder"}
-            ]
-          },
           "entries": [
             {"entry": "docs/api-reference/gltf-loaders/category-gltf"},
+            {"entry": "docs/api-reference/gltf-loaders/gltf-extensions"},
             {"entry": "docs/api-reference/gltf-loaders/gltf-loader"},
             {"entry": "docs/api-reference/gltf-loaders/gltf-writer"},
             {"entry": "docs/api-reference/gltf-loaders/glb-loader"},
             {"entry": "docs/api-reference/gltf-loaders/glb-writer"},
-            {"entry": "docs/api-reference/gltf-loaders/gltf-extensions"},
-            {"entry": "docs/api-reference/gltf-loaders/gltf-senegraph"},
+            {"entry": "docs/api-reference/gltf-loaders/gltf-scenegraph"},
             {"entry": "docs/api-reference/gltf-loaders/post-process-gltf"},
-            {"entry": "docs/api-reference/gltf-loaders/glbdump"}
+            {"entry": "docs/api-reference/gltf-loaders/glbdump"},
+            {"entry": "docs/api-reference/deprecated/gltf-parser"},
+            {"entry": "docs/api-reference/deprecated/gltf-builder"},
+            {"entry": "docs/api-reference/deprecated/glb-parser"},
+            {"entry": "docs/api-reference/deprecated/glb-builder"}
           ]
         },
         {
@@ -125,7 +123,7 @@
         {
           "title": "3D Tile Loaders",
           "entries": [
-            {"entry": "docs/api-reference/3d-tile-loaders/category-3d-tile"},
+            {"entry": "docs/api-reference/3d-tile-loaders/category-3d-tiles"},
             {"entry": "docs/api-reference/3d-tile-loaders/tile-3d-loader"},
             {"entry": "docs/api-reference/3d-tile-loaders/tileset-3d"},
             {"entry": "docs/api-reference/3d-tile-loaders/tile-3d-header"}

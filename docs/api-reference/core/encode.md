@@ -2,7 +2,7 @@
 
 ## Functions
 
-### encode(fileData : ArrayBuffer | String, writer : Object | Array [, options : Object [, url : String]]) : Promise<Any>
+### encode(fileData : ArrayBuffer | String, writer : Object | Array [, options : Object [, url : String]]) : Promise.Any
 
 Encodes data asynchronously using the provided writer.
 

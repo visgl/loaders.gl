@@ -1,4 +1,4 @@
-# Loader Registry
+# registerLoaders
 
 The loader registry allows applications to cherry-pick which loaders to include in their application bundle by importing just the loaders they need and registering them during initialization.
 

@@ -27,7 +27,7 @@ Get the tile's bounding volume.
 
 Get the bounding volume of the tile's contents. This defaults to the
 tile's bounding volume when the content's bounding volume is
-<code>undefined</code>.
+`undefined`.
 
 ### boundingSphere : BoundingSphere
 
@@ -35,37 +35,37 @@ Get the bounding sphere derived from the tile's bounding volume.
 
 ### extras : any
 
-Returns the <code>extras</code> property in the tileset JSON for this tile, which contains application specific metadata.
-Returns <code>undefined</code> if <code>extras</code> does not exist.
+Returns the `extras` property in the tileset JSON for this tile, which contains application specific metadata.
+Returns `undefined` if `extras` does not exist.
 
 See [Extras in the 3D Tiles specification](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#specifying-extensions-and-application-specific-extras)
 
 ### contentAvailable : Boolean
 
-Determines if the tile has available content to render. <code>true</code> if the tile's
+Determines if the tile has available content to render. `true` if the tile's
 content is ready or if it has expired content that renders while new content loads; otherwise,
-<code>false</code>.
+`false`.
 
 ### contentReady : Boolean
 
-Determines if the tile's content is ready. This is automatically <code>true</code> for
+Determines if the tile's content is ready. This is automatically `true` for
 tile's with empty content.
 
 ### contentUnloaded : Boolean
 
-Determines if the tile's content has not be requested. <code>true</code> if tile's
-content has not be requested; otherwise, <code>false</code>.
+Determines if the tile's content has not be requested. `true` if tile's
+content has not be requested; otherwise, `false`.
 
 
 ### contentExpired : Boolean
 
-Determines if the tile's content is expired. <code>true</code> if tile's
-content is expired; otherwise, <code>false</code>.
+Determines if the tile's content is expired. `true` if tile's
+content is expired; otherwise, `false`.
 
 ### contentFailed : Boolean
 
-Determines if the tile's content failed to load. <code>true</code> if the tile's
-content failed to load; otherwise, <code>false</code>.
+Determines if the tile's content failed to load. `true` if the tile's
+content failed to load; otherwise, `false`.
 
 ### contentReadyToProcessPromise : Promise
 
@@ -73,13 +73,13 @@ Gets the promise that will be resolved when the tile's content is ready to proce
 This happens after the content is downloaded but before the content is ready
 to render.
 
-The promise remains <code>undefined</code> until the tile's content is requested.
+The promise remains `undefined` until the tile's content is requested.
 
-### contentReadyPromise : Promise.<Tile3DContent>
+### contentReadyPromise : Promise.Tile3DContent
 
 Gets the promise that will be resolved when the tile's content is ready to render.
 
-The promise remains <code>undefined</code> until the tile's content is requested.
+The promise remains `undefined` until the tile's content is requested.
 
 ### commandsLength : Number
 
@@ -159,51 +159,10 @@ Create a bounding volume from the tile's bounding volume header.
 @returns {TileBoundingVolume} The modified result parameter or a new TileBoundingVolume instance if none was provided.
 
 
-### updateTransform(parentTransform) {
+### updateTransform(parentTransform)
 
 Update the tile's transform. The transform is applied to the tile's bounding volumes.
--
-@private
-  \*/
-  parentTransform = defaultValue(parentTransform, Matrix4.IDENTITY);
-  const computedTransform = Matrix4.multiply(parentTransform, this.transform, scratchTransform);
-  const transformChanged = !Matrix4.equals(computedTransform, this.computedTransform);
 
-  if (!transformChanged) {
-  return;
-  }
-
-  Matrix4.clone(computedTransform, this.computedTransform);
-
-  // Update the bounding volumes
-  const header = this.\_header;
-  const content = this.\_header.content;
-  this.\_boundingVolume = this.createBoundingVolume(header.boundingVolume, this.computedTransform, this.\_boundingVolume);
-  if (defined(this.\_contentBoundingVolume)) {
-  this.\_contentBoundingVolume = this.createBoundingVolume(content.boundingVolume, this.computedTransform, this.\_contentBoundingVolume);
-  }
-  if (defined(this.\_viewerRequestVolume)) {
-  this.\_viewerRequestVolume = this.createBoundingVolume(header.viewerRequestVolume, this.computedTransform, this.\_viewerRequestVolume);
-  }
-
-  // Destroy the debug bounding volumes. They will be generated fresh.
-  this.\_debugBoundingVolume = this.\_debugBoundingVolume && this.\_debugBoundingVolume.destroy();
-  this.\_debugContentBoundingVolume = this.\_debugContentBoundingVolume && this.\_debugContentBoundingVolume.destroy();
-  this.\_debugViewerRequestVolume = this.\_debugViewerRequestVolume && this.\_debugViewerRequestVolume.destroy();
-  };
-
-/\*\*
-
-- Get the draw commands needed to render this tile.
--
-- @private
-  \*/
-  update(tileset, frameState) {
-  const initCommandLength = frameState.commandList.length;
-  updateClippingPlanes(this, tileset);
-  applyDebugSettings(this, tileset, frameState);
-  updateContent(this, tileset, frameState);
-  this.\_commandsLength = frameState.commandList.length - initCommandLength;
 ### transform
 
 The local transform of this tile.
@@ -231,19 +190,19 @@ Gets the tile's children.
 
 ### parent : Tile3DHeader | null;
 
-This tile's parent or <code>undefined</code> if this tile is the root.
+This tile's parent or `undefined` if this tile is the root.
 
-When a tile's content points to an external tileset JSON file, the external tileset's root tile's parent is not <code>undefined</code>; instead, the parent references the tile (with its content pointing to an external tileset JSON file) as if the two tilesets were merged.
+When a tile's content points to an external tileset JSON file, the external tileset's root tile's parent is not `undefined`; instead, the parent references the tile (with its content pointing to an external tileset JSON file) as if the two tilesets were merged.
 
 
 ### hasEmptyContent : boolean
-When <code>true</code>, the tile has no content.
+When `true`, the tile has no content.
 
 ### hasTilesetContent : boolean
 
-When <code>true</code>, the tile's content points to an external tileset.
+When `true`, the tile's content points to an external tileset.
 
-This is <code>false</code> until the tile's content is loaded.
+This is `false` until the tile's content is loaded.
 
 
 

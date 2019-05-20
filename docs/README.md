@@ -34,6 +34,19 @@ Some of the key design goals for loaders.gl.
 
 **Bundle Size Conscious** - Each format is published as an independent npm module, and additionally, individual exports from each module are will be removed during tree-shaking if not imported by the app.
 
+## Code Example
+
+Applications import loaders and use them with the `parse` function as follows:
+
+```js
+import {parse} from '@loaders.gl/core';
+import {CSVLoader} from '@loaders.gl/csv';
+
+const data = await parse(fetch('data.csv'), CSVLoader);
+```
+
+Data will now be a an array of objects representing the parsed rows from the CSV file.
+
 ## Licenses
 
 loaders.gl currently contains a collection of MIT and Apache licensed loaders. Each loader comes with its own license, so if the distinction matters to you, please check and decide accordingly. However, loaders.gl will not include any loaders with non-permissive, commercial or copy-left licenses.

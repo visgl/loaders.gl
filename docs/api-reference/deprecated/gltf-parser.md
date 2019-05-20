@@ -62,7 +62,7 @@ Calling the `resolveScenegraphs` method adds a hierarchical structure that makes
 
 Creates a new `GLTFParser` instance.
 
-### async parse(arrayBuffer : ArrayBuffer, options : Object) : Promise<Object>
+### async parse(arrayBuffer : ArrayBuffer, options : Object) : Promise.Object
 
 Parses an in-memory, glTF/GLB formatted `ArrayBuffer` a JSON tree with binary typed arrays and image nodes. Once the `Promise` returned by the `parse()` method has successfully resolved, the accessors in this class can be used.
 
