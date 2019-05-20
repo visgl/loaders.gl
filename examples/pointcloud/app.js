@@ -5,22 +5,29 @@ import DeckGL from '@deck.gl/react';
 import {COORDINATE_SYSTEM, OrbitView, LinearInterpolator} from '@deck.gl/core';
 import {PointCloudLayer} from '@deck.gl/layers';
 
-import {PLYLoader} from '@loaders.gl/ply';
+import {DracoLoader} from '@loaders.gl/draco';
 import {LASLoader} from '@loaders.gl/las';
+import {PLYLoader} from '@loaders.gl/ply';
+import {PCDLoader} from '@loaders.gl/pcd';
+import {OBJLoader} from '@loaders.gl/obj';
 // TODO fix LasWorkerLoader
 // import {LASWorkerLoader} from '@loaders.gl/las/worker-loader';
+
 import {load, registerLoaders} from '@loaders.gl/core';
 
-// Additional format support can be added here, see
-registerLoaders(PLYLoader);
-registerLoaders(LASLoader);
+import ControlPanel from './components/control-panel';
+import fileDrop from './components/file-drop';
 
-// Data source: kaarta.com
-const LAZ_SAMPLE =
-  'https://raw.githubusercontent.com/uber-common/deck.gl-data/master/examples/point-cloud-laz/indoor.0.1.laz';
-// Data source: The Stanford 3D Scanning Repository
-// const PLY_SAMPLE =
-//   'https://raw.githubusercontent.com/uber-common/deck.gl-data/master/examples/point-cloud-ply/lucy800k.ply';
+import FILE_INDEX from './file-index';
+
+// Additional format support can be added here, see
+registerLoaders([
+  DracoLoader,
+  LASLoader,
+  PLYLoader,
+  PCDLoader,
+  OBJLoader
+]);
 
 const INITIAL_VIEW_STATE = {
   target: [0, 0, 0],
@@ -42,14 +49,17 @@ export default class App extends PureComponent {
     this.state = {
       viewState: INITIAL_VIEW_STATE,
       pointsCount: 0,
-      points: null
-    };
+      points: null,
+      // control panel
+      droppedFile: null
+      // example: 'Indoor',
+      // category: 'LAZ'
+   };
 
     this._onLoad = this._onLoad.bind(this);
-    this._onViewStateChange = this._onViewStateChange.bind(this);
     this._rotateCamera = this._rotateCamera.bind(this);
-
-    load(LAZ_SAMPLE).then(this._onLoad);
+    this._onViewStateChange = this._onViewStateChange.bind(this);
+    this._onExampleChange = this._onExampleChange.bind(this);
   }
 
   _onViewStateChange({viewState}) {
@@ -69,6 +79,18 @@ export default class App extends PureComponent {
     });
   }
 
+  _onExampleChange({selectedCategory, selectedExample, example}) {
+    const {uri} = example;
+    // TODO - timing could be done automatically by `load`.
+    load(uri).then(this._onLoad.bind(this));
+    this._loadStartMs = Date.now();
+    this.setState({
+      selectedCategory,
+      selectedExample,
+      loadTimeMs: undefined
+    });
+  }
+
   _onLoad({header, loaderData, attributes, progress}) {
     // metadata from LAZ file header
     const {mins, maxs} = loaderData.header;
@@ -77,19 +99,20 @@ export default class App extends PureComponent {
     if (mins && maxs) {
       // File contains bounding box info
       viewState = {
-        ...viewState,
+        ...INITIAL_VIEW_STATE,
         target: [(mins[0] + maxs[0]) / 2, (mins[1] + maxs[1]) / 2, (mins[2] + maxs[2]) / 2],
         /* global window */
         zoom: Math.log2(window.innerWidth / (maxs[0] - mins[0])) - 1
       };
     }
 
-    if (this.props.onLoad) {
-      this.props.onLoad({count: header.vertexCount, progress: 1});
-    }
+    // if (this.props.onLoad) {
+    //   this.props.onLoad({count: header.vertexCount, progress: 1});
+    // }
 
     this.setState(
       {
+        loadTimeMs: Date.now() - this._loadStartMs,
         pointsCount: header.vertexCount,
         points: attributes.POSITION.value,
         viewState
@@ -99,12 +122,13 @@ export default class App extends PureComponent {
   }
 
   _renderLayers() {
-    const {pointsCount, points} = this.state;
+    const {pointsCount, points, selectedExample} = this.state;
 
     return [
       points &&
         new PointCloudLayer({
-          id: 'laz-point-cloud-layer',
+          // Layers can't reinitialize with new binary data
+          id: `point-cloud-layer-${selectedExample}`,
           coordinateSystem: COORDINATE_SYSTEM.IDENTITY,
           numInstances: pointsCount,
           instancePositions: points,
@@ -116,20 +140,38 @@ export default class App extends PureComponent {
     ];
   }
 
+  _renderControlPanel() {
+    const {selectedExample, selectedCategory, pointsCount, loadTimeMs} = this.state;
+    return (
+      <ControlPanel
+        examples={FILE_INDEX}
+        selectedCategory={selectedCategory}
+        selectedExample={selectedExample}
+        onExampleChange={this._onExampleChange}
+        // Stats - put in separate stats panel?
+        vertexCount={pointsCount}
+        loadTimeMs={loadTimeMs}
+      />
+    );
+  }
+
   render() {
     const {viewState} = this.state;
 
     return (
-      <DeckGL
-        views={new OrbitView()}
-        viewState={viewState}
-        controller={true}
-        onViewStateChange={this._onViewStateChange}
-        layers={this._renderLayers()}
-        parameters={{
-          clearColor: [0.07, 0.14, 0.19, 1]
-        }}
-      />
+      <div>
+        {this._renderControlPanel()}
+        <DeckGL
+          views={new OrbitView()}
+          viewState={viewState}
+          controller={true}
+          onViewStateChange={this._onViewStateChange}
+          layers={this._renderLayers()}
+          parameters={{
+            clearColor: [0.07, 0.14, 0.19, 1]
+          }}
+        />
+      </div>
     );
   }
 }

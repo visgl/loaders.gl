@@ -10,7 +10,8 @@
     "@loaders.gl/ply": "^1.0.1",
     "deck.gl": "^7.0.0-beta",
     "react": "^16.3.0",
-    "react-dom": "^16.3.0"
+    "react-dom": "^16.3.0",
+    "styled-components": "^4.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.4.0",
