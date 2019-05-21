@@ -1,8 +1,11 @@
 /* eslint-disable */
-import {Vector3} from 'math.gl';
+import {Vector3, radians as toRadians} from 'math.gl';
+import * as vec3 from 'gl-matrix/vec3';
 
+import assert from '../utils/assert';
 import {WGS84_RADIUS_X, WGS84_RADIUS_Y, WGS84_RADIUS_Z} from './constants';
-import scaleToGeodeticSurface from './scale-to-geodetic-surface';
+import scaleToGeodeticSurface from './helpers/scale-to-geodetic-surface';
+import MathUtils from './helpers/math-utils';
 
 const LUNAR_RADIUS = 1737400.0;
 
@@ -70,16 +73,10 @@ export default class Ellipsoid {
     this.initialize(this, x, y, z);
   }
 
-  initialize(ellipsoid, x, y, z) {
-    x = defaultValue(x, 0.0);
-    y = defaultValue(y, 0.0);
-    z = defaultValue(z, 0.0);
-
-    //>>includeStart('debug', pragmas.debug);
-    Check.typeOf.number.greaterThanOrEquals('x', x, 0.0);
-    Check.typeOf.number.greaterThanOrEquals('y', y, 0.0);
-    Check.typeOf.number.greaterThanOrEquals('z', z, 0.0);
-    //>>includeEnd('debug');
+  initialize(ellipsoid, x = 0.0, y = 0.0, z = 0.0) {
+    assert(x >= 0.0);
+    assert(y >= 0.0);
+    assert(z >= 0.0);
 
     ellipsoid._radii = new Vector3(x, y, z);
 
@@ -103,7 +100,7 @@ export default class Ellipsoid {
 
     ellipsoid._maximumRadius = Math.max(x, y, z);
 
-    ellipsoid._centerToleranceSquared = CesiumMath.EPSILON1;
+    ellipsoid._centerToleranceSquared = MathUtils.EPSILON1;
 
     if (ellipsoid._radiiSquared.z !== 0) {
       ellipsoid._squaredXOverSquaredZ = ellipsoid._radiiSquared.x / ellipsoid._radiiSquared.z;
@@ -123,13 +120,8 @@ export default class Ellipsoid {
    * @see Ellipsoid.WGS84
    * @see Ellipsoid.UNIT_SPHERE
    */
-  fromVector3(cartesian) {
-    if (!defined(cartesian)) {
-      return result;
-    }
-
-    initialize(result, cartesian.x, cartesian.y, cartesian.z);
-    return result;
+  static fromVector3([x, y, z]) {
+    return new Ellipsoid(x, y, z);
   }
 
   /**
@@ -262,26 +254,24 @@ export default class Ellipsoid {
    * @param {Vector3} [result] The object onto which to store the result.
    * @returns {Vector3} The modified result parameter or a new Vector3 instance if none was provided.
    */
-  geodeticSurfaceNormalCartographic(cartographic, result) {
-    //>>includeStart('debug', pragmas.debug);
-    Check.typeOf.object('cartographic', cartographic);
-    //>>includeEnd('debug');
+  geodeticSurfaceNormalCartographic(cartographic, result = new Vector3()) {
+    // var longitude = cartographic.longitude;
+    // var latitude = cartographic.latitude;
 
-    var longitude = cartographic.longitude;
-    var latitude = cartographic.latitude;
+    const longitude = toRadians(cartographic[0]);
+    const latitude = toRadians(cartographic[1]);
+
     var cosLatitude = Math.cos(latitude);
 
     var x = cosLatitude * Math.cos(longitude);
     var y = cosLatitude * Math.sin(longitude);
     var z = Math.sin(latitude);
 
-    if (!defined(result)) {
-      result = new Vector3();
-    }
     result.x = x;
     result.y = y;
     result.z = z;
-    return Vector3.normalize(result, result);
+
+    return result.normalize();
   }
 
   /**
@@ -291,12 +281,9 @@ export default class Ellipsoid {
    * @param {Vector3} [result] The object onto which to store the result.
    * @returns {Vector3} The modified result parameter or a new Vector3 instance if none was provided.
    */
-  geodeticSurfaceNormal(cartesian, result) {
-    if (!defined(result)) {
-      result = new Vector3();
-    }
-    result = Vector3.multiplyComponents(cartesian, this._oneOverRadiiSquared, result);
-    return Vector3.normalize(result, result);
+  geodeticSurfaceNormal(cartesian, result = [0, 0, 0]) {
+    vec3.multiply(result, cartesian, this._oneOverRadiiSquared);
+    return vec3.normalize(result, result);
   }
 
   /**
@@ -308,52 +295,49 @@ export default class Ellipsoid {
    *
    */
   cartographicToCartesian(cartographic, result = new Vector3()) {
-    //`cartographic is required` is thrown from geodeticSurfaceNormalCartographic.
-    var n = cartographicToCartesianNormal;
-    var k = cartographicToCartesianK;
-    this.geodeticSurfaceNormalCartographic(cartographic, n);
-    Vector3.multiplyComponents(this._radiiSquared, n, k);
-    var gamma = Math.sqrt(Vector3.dot(n, k));
-    Vector3.divideByScalar(k, gamma, k);
-    Vector3.multiplyByScalar(n, cartographic.height, n);
+    const [, , height] = cartographic;
 
-    return Vector3.add(k, n, result);
+    //`cartographic is required` is thrown from geodeticSurfaceNormalCartographic.
+    var normal = cartographicToCartesianNormal;
+    var k = cartographicToCartesianK;
+
+    this.geodeticSurfaceNormalCartographic(cartographic, normal);
+    k.copy(this._radiiSquared).scale(normal);
+
+    var gamma = Math.sqrt(vec3.dot(normal, k));
+
+    k.scale(1 / gamma);
+    normal.scale(height);
+
+    k.add(normal);
+
+    vec3.copy(result, k);
+
+    return result;
   }
 
-  /**
-   * Converts the provided cartesian to cartographic representation.
-   * The cartesian is undefined at the center of the ellipsoid.
-   *
-   * @param {Vector3} cartesian The Cartesian position to convert to cartographic representation.
-   * @param {Cartographic} [result] The object onto which to store the result.
-   * @returns {Cartographic} The modified result parameter, new Cartographic instance if none was provided, or undefined if the cartesian is at the center of the ellipsoid.
-   *
-   * @example
-   * //Create a Cartesian and determine it's Cartographic representation on a WGS84 ellipsoid.
-   * var position = new Cesium.Vector3(17832.12, 83234.52, 952313.73);
-   * var cartographicPosition = Cesium.Ellipsoid.WGS84.cartesianToCartographic(position);
-   */
-  cartesianToCartographic(cartesian, result) {
-    //`cartesian is required.` is thrown from scaleToGeodeticSurface
-    var p = this.scaleToGeodeticSurface(cartesian, cartesianToCartographicP);
+  // Converts the provided cartesian to cartographic (lng/lat/z) representation.
+  // The cartesian is undefined at the center of the ellipsoid.
+  cartesianToCartographic(cartesian, result = [0, 0, 0]) {
+    const point = this.scaleToGeodeticSurface(cartesian, cartesianToCartographicP);
 
-    if (!defined(p)) {
+    if (!point) {
       return undefined;
     }
 
-    var n = this.geodeticSurfaceNormal(p, cartesianToCartographicN);
-    var h = Vector3.subtract(cartesian, p, cartesianToCartographicH);
+    const normal = cartesianToCartographicN;
+    this.geodeticSurfaceNormal(p, normal);
 
-    var longitude = Math.atan2(n.y, n.x);
-    var latitude = Math.asin(n.z);
-    var height = CesiumMath.sign(Vector3.dot(h, cartesian)) * Vector3.magnitude(h);
+    const h = cartesianToCartographicH;
+    h.copy(cartesian).subtract(p);
 
-    if (!defined(result)) {
-      return new Cartographic(longitude, latitude, height);
-    }
-    result.longitude = longitude;
-    result.latitude = latitude;
-    result.height = height;
+    const longitude = Math.atan2(n.y, n.x);
+    const latitude = Math.asin(n.z);
+    const height = Math.sign(vec3.dot(h, cartesian)) * vec3.length(h);
+
+    result[0] = longitude;
+    result[1] = latitude;
+    result[2] = height;
     return result;
   }
 
@@ -367,13 +351,7 @@ export default class Ellipsoid {
    * @returns {Vector3} The modified result parameter, a new Vector3 instance if none was provided, or undefined if the position is at the center.
    */
   scaleToGeodeticSurface(cartesian, result) {
-    return scaleToGeodeticSurface(
-      cartesian,
-      this._oneOverRadii,
-      this._oneOverRadiiSquared,
-      this._centerToleranceSquared,
-      result
-    );
+    return scaleToGeodeticSurface(cartesian, this, result);
   }
 
   /**
@@ -457,7 +435,7 @@ export default class Ellipsoid {
     //>>includeStart('debug', pragmas.debug);
     Check.typeOf.object('position', position);
 
-    if (!CesiumMath.equalsEpsilon(this._radii.x, this._radii.y, CesiumMath.EPSILON15)) {
+    if (!CesiumMath.equalsEpsilon(this._radii.x, this._radii.y, MathUtils.EPSILON15)) {
       throw new DeveloperError('Ellipsoid must be an ellipsoid of revolution (radii.x == radii.y)');
     }
 
