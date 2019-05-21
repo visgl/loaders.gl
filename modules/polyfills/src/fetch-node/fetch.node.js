@@ -150,6 +150,10 @@ async function readFile(url, options = {}) {
     });
   }
 
+  // Remove any query parameters when loading from file
+  const queryIndex = url && url.lastIndexOf('?');
+  url = queryIndex >= 0 ? url.substr(0, queryIndex) : url;
+
   const readFileAsync = util.promisify(fs.readFile);
   const buffer = await readFileAsync(url, options);
   return buffer instanceof Buffer ? toArrayBuffer(buffer) : buffer;

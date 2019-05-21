@@ -370,16 +370,17 @@ test('Tileset3D#handles failed tile processing', t => {
   });
   t.end();
 });
+*/
 
-test('Tileset3D#renders tileset', t => {
-  const tileset = await loadTileset(scene, TILESET_URL);
-    const statistics = tileset._statistics;
-    t.equals(statistics.visited, 5);
-    t.equals(statistics.numberOfCommands, 5);
-  });
+test('Tileset3D#loads tiles in tileset', async t => {
+  const tilesetJson = await parse(fetchFile(TILESET_URL), Tileset3DLoader);
+  const tileset = new Tileset3D(tilesetJson, TILESET_URL);
+  await tileset.root.loadContent();
+  t.ok(tileset.root.content);
   t.end();
 });
 
+/*
 test('Tileset3D#does not render during morph', t => {
   const tileset = await loadTileset(scene, TILESET_URL);
     const commandList = scene.frameState.commandList;

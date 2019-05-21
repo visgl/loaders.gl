@@ -1,8 +1,12 @@
 // import {TILE3D_REFINEMENT, TILE3D_OPTIMIZATION_HINT} from '../constants';
 import {Vector3, Matrix4} from 'math.gl';
-import assert from '../utils/assert';
+import Tile3DLoader from '../tile-3d-loader';
+// import Tileset3DLoader from '../tileset-3d-loader';
 import {TILE3D_REFINEMENT, TILE3D_CONTENT_STATE, TILE3D_OPTIMIZATION_HINT} from '../constants';
+import assert from '../utils/assert';
 import {createBoundingVolume} from './helpers/bounding-volume';
+// TODO - inject this dependency?
+import {fetchFile} from '@loaders.gl/core';
 
 const defined = x => x !== undefined;
 
@@ -17,6 +21,7 @@ const scratchToTileCenter = new Vector3();
 export default class Tile3DHeader {
   constructor(tileset, baseResource, header, parentHeader) {
     this._initialize(header, parentHeader, tileset, baseResource);
+    Object.seal(this);
   }
 
   destroy() {
@@ -36,6 +41,47 @@ export default class Tile3DHeader {
   // not the content's metadata in the tileset JSON file.
   get content() {
     return this._content;
+  }
+
+  // Determines if the tile's content is ready. This is automatically <code>true</code> for
+  // tile's with empty content.
+  get contentReady() {
+    return this._contentState === TILE3D_CONTENT_STATE.READY;
+  }
+
+  // Determines if the tile has available content to render.  <code>true</code> if the tile's
+  // content is ready or if it has expired content this renders while new content loads; otherwise,
+  get contentAvailable() {
+    return (
+      (this.contentReady && !this.hasEmptyContent && !this.hasTilesetContent) ||
+      (defined(this._expiredContent) && !this.contentFailed)
+    );
+  }
+
+  // Determines if the tile's content has not be requested. <code>true</code> if tile's
+  // content has not be requested; otherwise, <code>false</code>.
+  get contentUnloaded() {
+    return this._contentState === TILE3D_CONTENT_STATE.UNLOADED;
+  }
+
+  // Determines if the tile's content is expired. <code>true</code> if tile's
+  // content is expired; otherwise, <code>false</code>.
+  get contentExpired() {
+    return this._contentState === TILE3D_CONTENT_STATE.EXPIRED;
+  }
+
+  // Determines if the tile's content failed to load.  <code>true</code> if the tile's
+  // content failed to load; otherwise, <code>false</code>.
+  get contentFailed() {
+    return this._contentState === TILE3D_CONTENT_STATE.FAILED;
+  }
+
+  get url() {
+    return this.tileset.getTileUrl(this.contentUri);
+  }
+
+  get uri() {
+    return this.tileset.getTileUrl(this.contentUri);
   }
 
   // Get the tile's bounding volume.
@@ -59,43 +105,6 @@ export default class Tile3DHeader {
   // @see {@link https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#specifying-extensions-and-application-specific-extras|Extras in the 3D Tiles specification.}
   get extras() {
     return this._header.extras;
-  }
-
-  // Determines if the tile has available content to render.  <code>true</code> if the tile's
-  // content is ready or if it has expired content this renders while new content loads; otherwise,
-  get contentAvailable() {
-    return (
-      (this.contentReady && !this.hasEmptyContent && !this.hasTilesetContent) ||
-      (defined(this._expiredContent) && !this.contentFailed)
-    );
-  }
-
-  // Determines if the tile's content is ready. This is automatically <code>true</code> for
-  // tile's with empty content.
-  get contentReady() {
-    return this._contentState === TILE3D_CONTENT_STATE.READY;
-  }
-
-  // Determines if the tile's content has not be requested. <code>true</code> if tile's
-  // content has not be requested; otherwise, <code>false</code>.
-  get contentUnloaded() {
-    return this._contentState === TILE3D_CONTENT_STATE.UNLOADED;
-  }
-
-  // Determines if the tile's content is expired. <code>true</code> if tile's
-  // content is expired; otherwise, <code>false</code>.
-  get contentExpired() {
-    return this._contentState === TILE3D_CONTENT_STATE.EXPIRED;
-  }
-
-  // Determines if the tile's content failed to load.  <code>true</code> if the tile's
-  // content failed to load; otherwise, <code>false</code>.
-  get contentFailed() {
-    return this._contentState === TILE3D_CONTENT_STATE.FAILED;
-  }
-
-  get uri() {
-    return this.contentUri ? this.tileset.basePath + this.contentUri : '';
   }
 
   // Get the tile's screen space error.
@@ -142,6 +151,78 @@ export default class Tile3DHeader {
     return 0;
   }
 
+  // Requests the tile's content.
+  // The request may not be made if the Request Scheduler can't prioritize it.
+  async loadContent() {
+    if (this.hasEmptyContent) {
+      return false;
+    }
+
+    if (this._content) {
+      return true;
+    }
+
+    return this.requestContent();
+  }
+
+  async requestContent() {
+    if (this.hasEmptyContent) {
+      return false;
+    }
+
+    const expired = this.contentExpired;
+
+    // Append a query parameter of the tile expiration date to prevent caching
+    // if (expired) {
+    //   expired: this.expireDate.toString()
+    // const request = new Request({
+    //   throttle: true,
+    //   throttleByServer: true,
+    //   type: RequestType.TILES3D,
+    //   priorityFunction: createPriorityFunction(this),
+    //   serverKey: this._serverKey
+    // });
+
+    if (expired) {
+      this.expireDate = undefined;
+    }
+
+    const contentUri = this.uri;
+    const response = await fetchFile(contentUri);
+    const arrayBuffer = await response.arrayBuffer();
+
+    try {
+      this._contentState = TILE3D_CONTENT_STATE.LOADING;
+
+      // TODO: The content can be a binary tile ot a JSON tileset
+      // const content = await parse(arrayBuffer, [Tile3DLoader, Tileset3DLoader]);
+      // this.content =  Tile3D.isTile(content) ?
+      //   new Tile3D(content, contentUri) :
+      //   new Tileset3D(content, contentUri);
+      this._content = Tile3DLoader.parseSync(arrayBuffer);
+
+      this._contentState = TILE3D_CONTENT_STATE.READY;
+      this._contentLoaded();
+    } catch (error) {
+      // Tile is unloaded before the content finishes loading
+      this._contentState = TILE3D_CONTENT_STATE.FAILED;
+      return;
+    }
+  }
+
+  // Unloads the tile's content.
+  unloadContent() {
+    if (this.hasEmptyContent || this.hasTilesetContent) {
+      return;
+    }
+
+    if (this._content && this._content.destroy) {
+      this._content.destroy();
+    }
+    this._content = null;
+    this._contentState = TILE3D_CONTENT_STATE.UNLOADED;
+  }
+
   // _getOrthograhicScreenSpaceError() {
   // if (frustum instanceof OrthographicFrustum) {
   //   const pixelSize = Math.max(frustum.top - frustum.bottom, frustum.right - frustum.left) / Math.max(width, height);
@@ -173,73 +254,6 @@ export default class Tile3DHeader {
         this._expiredContent = this._content;
       }
     }
-  }
-
-  // Requests the tile's content.
-  // The request may not be made if the Request Scheduler can't prioritize it.
-  async requestContent() {
-    if (this.hasEmptyContent) {
-      return false;
-    }
-
-    const tileset = this._tileset;
-
-    requestTile;
-    resource.request = request;
-
-    // Append a query parameter of the tile expiration date to prevent caching
-    // const expired = this.contentExpired;
-    // if (expired) {
-    //   expired: this.expireDate.toString()
-    // const request = new Request({
-    //   throttle: true,
-    //   throttleByServer: true,
-    //   type: RequestType.TILES3D,
-    //   priorityFunction: createPriorityFunction(this),
-    //   serverKey: this._serverKey
-    // });
-
-    this._contentState = TILE3D_CONTENT_STATE.LOADING;
-
-    if (expired) {
-      this.expireDate = undefined;
-    }
-
-    const response = await fetch(url);
-
-    // The content can be a binary tile ot a  JSON/
-    let content;
-    try {
-      content = parse(arrayBuffer, [Tile3DLoader, Tileset3DLoader]);
-    } catch (error) {
-      // Tile is unloaded before the content finishes loading
-      this._contentState = TILE3D_CONTENT_STATE.FAILED;
-      return;
-    }
-
-    // Tile is unloaded before the content finishes processing
-    // return content.readyPromise.then(function(content) {
-    //   if (this.isDestroyed()) {
-    //     contentFailedFunction();
-    //     return;
-    //   }
-    //   updateExpireDate(this);
-    //   this._contentState = TILE3D_CONTENT_STATE.READY;
-    // });
-
-    this._contentState = TILE3D_CONTENT_STATE.READY;
-
-    this._contentLoaded(content);
-  }
-
-  // Unloads the tile's content.
-  unloadContent() {
-    if (this.hasEmptyContent || this.hasTilesetContent) {
-      return;
-    }
-
-    this._content = this._content && this._content.destroy && this._content.destroy();
-    this._contentState = TILE3D_CONTENT_STATE.UNLOADED;
   }
 
   // Determines whether the tile's bounding volume intersects the culling volume.
@@ -355,6 +369,9 @@ export default class Tile3DHeader {
     this._tileset = tileset;
     this._header = header;
 
+    this._content = null;
+    this._contentState = TILE3D_CONTENT_STATE.UNLOADED;
+
     // Gets the tile's children.
     this.children = [];
     // This tile's parent or <code>undefined</code> if this tile is the root.
@@ -404,8 +421,6 @@ export default class Tile3DHeader {
     this._optimChildrenWithinParent = TILE3D_OPTIMIZATION_HINT.NOT_COMPUTED;
 
     this._initializeRenderingState();
-
-    Object.seal(this);
   }
 
   _initializeTransforms(tileHeader) {
@@ -459,7 +474,7 @@ export default class Tile3DHeader {
     // Empty tile by default
     this._content = {_tileset: this._tileset, _tile: this};
     this.hasEmptyContent = true;
-    this.contentState = TILE3D_CONTENT_STATE.READY;
+    this.contentState = TILE3D_CONTENT_STATE.UNLOADED;
     this._expiredContent = undefined;
     this._serverKey = null;
 
@@ -526,19 +541,17 @@ export default class Tile3DHeader {
     return 'tilesetVersion' in content;
   }
 
-  _contentLoaded(content) {
+  _contentLoaded() {
     // Vector and Geometry tile rendering do not support the skip LOD optimization.
-    switch (content.type) {
+    switch (this._content.type) {
       case 'vctr':
       case 'geom':
         tileset._disableSkipLevelOfDetail = true;
       default:
     }
 
-    this._content = content;
-
     // The content may be tileset json
-    if (this._isTileset(content)) {
+    if (this._isTileset(this._content)) {
       this.hasTilesetContent = true;
     }
   }
