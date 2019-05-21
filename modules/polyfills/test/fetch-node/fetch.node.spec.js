@@ -14,3 +14,12 @@ test('fetch polyfill (Node.js)#fetch()', async t => {
   }
   t.end();
 });
+
+test('fetch polyfill (Node.js)#fetch() ignores url query params when loading file', async t => {
+  if (!isBrowser) {
+    const response = await fetch(`${PLY_CUBE_ATT_URL}?v=1.2.3`);
+    const data = await response.text();
+    t.ok(data, 'fetch polyfill successfully loaded data under Node.js');
+  }
+  t.end();
+});
