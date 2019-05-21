@@ -1,6 +1,7 @@
 import {Matrix4} from 'math.gl';
 import assert from '../utils/assert';
 import Tile3DHeader from './tile-3d-header';
+
 // import Tileset3DCache from './tileset-3d-cache';
 
 const Ellipsoid = {
@@ -51,7 +52,7 @@ const DEFAULT_OPTIONS = {
 
 function getBasePath(url) {
   const slashIndex = url && url.lastIndexOf('/');
-  return slashIndex >= 0 ? url.substr(0, slashIndex + 1) : '';
+  return slashIndex >= 0 ? url.substr(0, slashIndex) : '';
 }
 
 export default class Tileset3D {
@@ -235,6 +236,14 @@ export default class Tileset3D {
   } // eslint-disable-next-line
   // console.warn('Tileset3D.basePath is deprecated. Tiles are relative to the tileset JSON url');
 
+  get queryParams() {
+    const queryParams = [];
+    for (const key of Object.keys(this._queryParams)) {
+      queryParams.push(`${key}=${this._queryParams[key]}`);
+    }
+    return queryParams.length ? `?${queryParams.join('&')}` : '';
+  }
+
   // The maximum screen space error used to drive level of detail refinement.
   get maximumScreenSpaceError() {
     return this._maximumScreenSpaceError;
@@ -304,6 +313,10 @@ export default class Tileset3D {
     return this._extras;
   }
 
+  getTileUrl(tilePath) {
+    return `${this.basePath}/${tilePath}${this.queryParams}`;
+  }
+
   // true if the tileset JSON file lists the extension in extensionsUsed
   hasExtension(extensionName) {
     return Boolean(this._extensionsUsed && this._extensionsUsed.indexOf(extensionName) > -1);
@@ -322,10 +335,12 @@ export default class Tileset3D {
 
     // const statistics = this._statistics;
 
+    this._queryParams = {};
     if ('tilesetVersion' in asset) {
       // Append the tileset version to the resource
-      this._basePath += `?v=${asset.tilesetVersion}`;
+      this._queryParams.v = asset.tilesetVersion;
     } // eslint-disable-next-line
+
     // console.warn('Tileset3D.basePath is deprecated. Tiles are relative to the tileset JSON url');
 
     const resource = null;

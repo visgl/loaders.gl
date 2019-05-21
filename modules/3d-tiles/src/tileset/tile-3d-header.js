@@ -1,8 +1,12 @@
 // import {TILE3D_REFINEMENT, TILE3D_OPTIMIZATION_HINT} from '../constants';
 import {Vector3, Matrix4} from 'math.gl';
-import assert from '../utils/assert';
+import Tile3DLoader from '../tile-3d-loader';
+// import Tileset3DLoader from '../tileset-3d-loader';
 import {TILE3D_REFINEMENT, TILE3D_CONTENT_STATE, TILE3D_OPTIMIZATION_HINT} from '../constants';
+import assert from '../utils/assert';
 import {createBoundingVolume} from './helpers/bounding-volume';
+// TODO - inject this dependency?
+import {fetchFile} from '@loaders.gl/core';
 
 const defined = x => x !== undefined;
 
@@ -17,6 +21,7 @@ const scratchToTileCenter = new Vector3();
 export default class Tile3DHeader {
   constructor(tileset, baseResource, header, parentHeader) {
     this._initialize(header, parentHeader, tileset, baseResource);
+    Object.seal(this);
   }
 
   destroy() {
@@ -71,8 +76,12 @@ export default class Tile3DHeader {
     return this._contentState === TILE3D_CONTENT_STATE.FAILED;
   }
 
+  get url() {
+    return this.tileset.getTileUrl(this.contentUri);
+  }
+
   get uri() {
-    return this.contentUri ? this.tileset.basePath + this.contentUri : '';
+    return this.tileset.getTileUrl(this.contentUri);
   }
 
   // Get the tile's bounding volume.
@@ -174,13 +183,13 @@ export default class Tile3DHeader {
     //   serverKey: this._serverKey
     // });
 
-
     if (expired) {
       this.expireDate = undefined;
     }
 
     const contentUri = this.uri;
-    const response = await fetch(contentUri);
+    const response = await fetchFile(contentUri);
+    const arrayBuffer = await response.arrayBuffer();
 
     try {
       this._contentState = TILE3D_CONTENT_STATE.LOADING;
@@ -190,17 +199,13 @@ export default class Tile3DHeader {
       // this.content =  Tile3D.isTile(content) ?
       //   new Tile3D(content, contentUri) :
       //   new Tileset3D(content, contentUri);
-
-      const content = await parse(arrayBuffer, Tile3DLoader);
-      this.content = content, contentUri;
+      this._content = Tile3DLoader.parseSync(arrayBuffer);
 
       this._contentState = TILE3D_CONTENT_STATE.READY;
-      this._contentLoaded(content);
-
+      this._contentLoaded();
     } catch (error) {
-       // Tile is unloaded before the content finishes loading
-        this._contentState = TILE3D_CONTENT_STATE.FAILED;
-        //  contentFailedFunction();
+      // Tile is unloaded before the content finishes loading
+      this._contentState = TILE3D_CONTENT_STATE.FAILED;
       return;
     }
   }
@@ -416,8 +421,6 @@ export default class Tile3DHeader {
     this._optimChildrenWithinParent = TILE3D_OPTIMIZATION_HINT.NOT_COMPUTED;
 
     this._initializeRenderingState();
-
-    Object.seal(this);
   }
 
   _initializeTransforms(tileHeader) {
@@ -538,19 +541,17 @@ export default class Tile3DHeader {
     return 'tilesetVersion' in content;
   }
 
-  _contentLoaded(content) {
+  _contentLoaded() {
     // Vector and Geometry tile rendering do not support the skip LOD optimization.
-    switch (content.type) {
+    switch (this._content.type) {
       case 'vctr':
       case 'geom':
         tileset._disableSkipLevelOfDetail = true;
       default:
     }
 
-    this._content = content;
-
     // The content may be tileset json
-    if (this._isTileset(content)) {
+    if (this._isTileset(this._content)) {
       this.hasTilesetContent = true;
     }
   }
