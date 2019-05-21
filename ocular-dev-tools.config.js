@@ -11,7 +11,7 @@ module.exports = {
   },
 
   entry: {
-    test: 'test/modules.js',
+    test: 'test/node.js',
     'test-browser': 'test/browser.js',
     bench: 'test/bench/index.js',
     'bench-browser': 'test/bench/browser.js',
