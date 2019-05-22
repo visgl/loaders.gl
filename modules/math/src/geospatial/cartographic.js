@@ -11,7 +11,34 @@ const scratchK = new Vector3();
 // const cartesianToCartographicP = new Vector3();
 // const cartesianToCartographicH = new Vector3();
 
-export default class Cartographic {
+export default class Cartographic extends Vector3 {
+  get longitude() {
+    return this[0];
+  }
+
+  set longitude(value) {
+    this[0] = value;
+    return value;
+  }
+
+  get latitude() {
+    return this[1];
+  }
+
+  set latitude(value) {
+    this[1] = value;
+    return value;
+  }
+
+  get height() {
+    return this[2];
+  }
+
+  set height(value) {
+    this[2] = value;
+    return value;
+  }
+
   // Returns longitude and latitude values in radians (from degrees)
   static toRadians([longitude, latitude, z = 0], result = [0, 0, 0]) {
     assert(Number.isFinite(longitude));

@@ -1,144 +1,137 @@
 # Plane
 
 A plane in Hessian Normal Form defined by
-
 <pre>
 ax + by + cz + d = 0
 </pre>
+where (a, b, c) is the plane's `normal`, d is the signed `distance` to the plane, and (x, y, z) is any point on the plane.
 
-where (a, b, c) is the plane's <code>normal</code>, d is the signed
-<code>distance</code> to the plane, and (x, y, z) is any point on
-the plane.
+## Usage
 
 ```js
+// The plane x=0
+var plane = new Plane(`Vector3`.UNIT_X, 0.0);
+```
+
+```js
+var point = `Vector3`.fromDegrees(-72.0, 40.0);
+var normal = ellipsoid.geodeticSurfaceNormal(point);
+var tangentPlane = Plane.fromPointNormal(point, normal);
 ```
 
 ## Static Fields
 
-### ORIGIN_XY_PLANE: Plane (readonly)
+#### ORIGIN\_XY\_PLANE: Plane (readonly)
 
 The XY plane passing through the origin, with normal in positive Z.
 
-### ORIGIN_YZ_PLANE: Plane (readonly)
+#### ORIGIN\_YZ\_PLANE: Plane (readonly)
 
 The YZ plane passing through the origin, with normal in positive X.
 
-### ORIGIN_ZX_PLANE: Plane (readonly)
+#### ORIGIN\_ZX\_PLANE: Plane (readonly)
 
 The ZX plane passing through the origin, with normal in positive Y.
 
 ## Fields
 
-### normal: Vector3
+#### normal: Vector3
 
 The plane's normal.
 
-### distance: Vector3
+#### distance: Number
 
-The shortest distance from the origin to the plane. The sign of
-<code>distance</code> determines which side of the plane the origin
-is on. If <code>distance</code> is positive, the origin is in the half-space
-in the direction of the normal; if negative, the origin is in the half-space
-opposite to the normal; if zero, the plane passes through the origin.
+The shortest distance from the origin to the plane. The sign of `distance` determines which side of the plane the origin is on. If `distance` is positive, the origin is in the half-space in the direction of the normal; if negative, the origin is in the half-space opposite to the normal; if zero, the plane passes through the origin.
 
 ## Methods
 
-###constructor
+#### constructor(normal : Number[3], distance : Number)
 
-@param {Cartesian3} normal The plane's normal (normalized).
-@param {Number} distance The shortest distance from the origin to the plane. The sign of
-<code>distance</code> determines which side of the plane the origin
-is on. If <code>distance</code> is positive, the origin is in the half-space
-in the direction of the normal; if negative, the origin is in the half-space
-opposite to the normal; if zero, the plane passes through the origin.
+- `Vector3` normal The plane's normal (normalized).
+- Number distance The shortest distance from the origin to the plane. The sign of `distance` determines which side of the plane the origin is on. If `distance` is positive, the origin is in the half-space in the direction of the normal; if negative, the origin is in the half-space opposite to the normal; if zero, the plane passes through the origin.
 
-@example
-// The plane x=0
-var plane = new Cesium.Plane(Cesium.Cartesian3.UNIT_X, 0.0);
+Throws
+- Normal must be normalized
 
-@exception {DeveloperError} Normal must be normalized
 
-export default function Plane(normal, distance) {
-assert(Number.isFinite(distance));
-
-    @type {Number}
-
-    	this.distance = distance;
-
-}
-
-Plane.fromPointNormal = function(point, normal, result) {
+#### Plane.fromPointNormal(point, normal, result)
 
 Creates a plane from a normal and a point on the plane.
 
-@param {Cartesian3} point The point on the plane.
-@param {Cartesian3} normal The plane's normal (normalized).
-@param {Plane} [result] The object onto which to store the result.
-@returns {Plane} A new plane instance or the modified result parameter.
+- `Vector3` point The point on the plane.
+- `Vector3` normal The plane's normal (normalized).
+- Plane [result] The object onto which to store the result.
 
-@example
-var point = Cesium.Cartesian3.fromDegrees(-72.0, 40.0);
-var normal = ellipsoid.geodeticSurfaceNormal(point);
-var tangentPlane = Cesium.Plane.fromPointNormal(point, normal);
+Returns
+- Plane A new plane instance or the modified result parameter.
 
-@exception {DeveloperError} Normal must be normalized
+Throws
+- Normal must be normalized
 
-Plane.fromCartesian4 = function(coefficients, result) {
+#### Plane.fromCartesian4(coefficients, result)
 
 Creates a plane from the general equation
 
-@param {Cartesian4} coefficients The plane's normal (normalized).
-@param {Plane} [result] The object onto which to store the result.
-@returns {Plane} A new plane instance or the modified result parameter.
+- Cartesian4 coefficients The plane's normal (normalized).
+- Plane [result] The object onto which to store the result.
 
-@exception {DeveloperError} Normal must be normalized
+Returns
+- Plane A new plane instance or the modified result parameter.
 
-### Plane.clone = function(plane, result) {
+Throws
+- Normal must be normalized
+
+#### Plane.clone(plane, result)
 
 Duplicates a Plane instance.
 
-@param {Plane} plane The plane to duplicate.
-@param {Plane} [result] The object onto which to store the result.
-@returns {Plane} The modified result parameter or a new Plane instance if one was not provided.
+- Plane plane The plane to duplicate.
+- Plane [result] The object onto which to store the result.
 
-### Plane.getPointDistance = function(plane, point) {
+Returns
+- Plane The modified result parameter or a new Plane instance if one was not provided.
 
-Computes the signed shortest distance of a point to a plane.
-The sign of the distance determines which side of the plane the point
-is on. If the distance is positive, the point is in the half-space
-in the direction of the normal; if negative, the point is in the half-space
-opposite to the normal; if zero, the plane passes through the point.
+#### Plane.equals(left, right)
 
-@param {Plane} plane The plane.
-@param {Cartesian3} point The point.
-@returns {Number} The signed shortest distance of the point to the plane.
+Compares the provided Planes by normal and distance and returns `true` if they are equal, `false` otherwise.
 
-### Plane.projectPointOntoPlane = function(plane, point, result) {
+- Plane left The first plane.
+- Plane right The second plane.
+
+Returns
+- Boolean `true` if left and right are equal, `false` otherwise.
+
+#### getPointDistance(point) : Number
+
+Computes the signed shortest distance of a point to a plane. The sign of the distance determines which side of the plane the point is on. If the distance is positive, the point is in the half-space in the direction of the normal; if negative, the point is in the half-space opposite to the normal; if zero, the plane passes through the point.
+
+- Plane plane The plane.
+- `Vector3` point The point.
+
+Returns
+- Number The signed shortest distance of the point to the plane.
+
+#### projectPointOntoPlane(point : Number[3] [, result : Number[3]]) : Number[3]
 
 Projects a point onto the plane.
-@param {Plane} plane The plane to project the point onto
-@param {Cartesian3} point The point to project onto the plane
-@param {Cartesian3} [result] The result point. If undefined, a new Cartesian3 will be created.
-@returns {Cartesian3} The modified result parameter or a new Cartesian3 instance if one was not provided.
+- Plane plane The plane to project the point onto
+- `point` The point to project onto the plane
+- `result` The result point. If undefined, a new `Vector3` will be created.
 
-### Plane.transform = function(plane, transform, result) {
+Returns
+- The modified result parameter or a new `Vector3` instance if one was not provided.
+
+#### transform(transform, result) : Plane
 
 Transforms the plane by the given transformation matrix.
 
-@param {Plane} plane The plane.
-@param {Matrix4} transform The transformation matrix.
-@param {Plane} [result] The object into which to store the result.
-@returns {Plane} The plane transformed by the given transformation matrix.
+- Plane plane The plane.
+- Matrix4 transform The transformation matrix.
+- Plane [result] The object into which to store the result.
 
-### Plane.equals = function(left, right) {
-
-Compares the provided Planes by normal and distance and returns
-<code>true</code> if they are equal, <code>false</code> otherwise.
-
-@param {Plane} left The first plane.
-@param {Plane} right The second plane.
-@returns {Boolean} <code>true</code> if left and right are equal, <code>false</code> otherwise.
+Returns
+- Plane The plane transformed by the given transformation matrix.
 
 ## Attribution
 
-This class was ported from Cesium under the Apache 2 License.
+This class was ported from [Cesium](https://github.com/AnalyticalGraphicsInc/cesium) under the Apache 2 License.

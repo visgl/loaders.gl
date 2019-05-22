@@ -14,25 +14,37 @@ Helper functions to work with WebGL data type constants.
 | `GL.SHORT`          | `Int16Array`           |                                       |
 | `GL.INT`            | `Int32Array`           |                                       |
 
+## Usage
+
+```js
+import {GL, GLType} from '@math.gl/geometry';
+// Returns Int8Array.BYTES_PER_ELEMENT
+var size = GLType.getSizeInBytes(GL.BYTE);
+```
+
 ## Static Methods
 
 ### GLType.fromTypedArray(typedArray: Typed Array | Function) : Number
 
 Returns the size, in bytes, of the corresponding datatype.
 
-@param {ComponentDatatype} glType The component datatype to get the size of.
-@returns {Number} The size in bytes.
+- `glType` The component datatype to get the size of.
 
-@exception {DeveloperError} glType is not a valid value.
+Returns
 
-@example
-// Returns Int8Array.BYTES_PER_ELEMENT
-var size = Cesium.ComponentDatatype.getSizeInBytes(Cesium.ComponentDatatype.BYTE);
+The size in bytes.
+
+Throws
+- glType is not a valid value.
+
 
 Gets the {@link ComponentDatatype} for the provided TypedArray instance.
 
-@param {TypedArray} array The typed array.
-@returns {ComponentDatatype} The ComponentDatatype for the provided array, or undefined if the array is not a TypedArray.
+-  array The typed array.
+
+Returns
+
+The ComponentDatatype for the provided array, or undefined if the array is not a TypedArray.
 
 ### GLType.getArrayType(glType: Number) : Function
 
@@ -48,15 +60,18 @@ Equivalent to `GLType.getArrayType(glType).BYTES_PER_ELEMENT`.
 
 Returns `true` if `glType` is a valid WebGL data type.
 
-### static GLType.createTypedArray(glType, buffer [, byteOffset = 0 [, length]]) : TypedArray
+### static GLType.createTypedArray(glType : Number, buffer : ArrayBuffer [, byteOffset : Number [, length : Number]]) : TypedArray
 
 Creates a typed view of an array of bytes.
 
-- `glType` (`Number`) - The type of typed array (ArrayBuffer view) to create.
-- `buffer` (`ArrayBuffer`) - The buffer storage to use for the view.
-- `byteOffset`=`0` (`Number`) - The offset, in bytes, to the first element in the view.
-- `length`= (`Number`) - The number of elements in the view.
+- `glType` The type of typed array (ArrayBuffer view) to create.
+- `buffer` The buffer storage to use for the view.
+- `byteOffset`=`0` The offset, in bytes, to the first element in the view.
+- `length`= The number of elements in the view. Defaults to buffer length.
 
-Returns {Int8Array|Uint8Array|Int16Array|Uint16Array|Int32Array|Uint32Array|Float32Array|Float64Array} A typed array view of the buffer.
+Returns
 
-Throws: `glType` is not a valid value.
+`Int8Array`|`Uint8Array`|`Int16Array`|`Uint16Array`|`Int32Array`|`Uint32Array`|`Float32Array`|`Float64Array` A typed array view of the buffer.
+
+Throws
+- `glType` is not a valid value.

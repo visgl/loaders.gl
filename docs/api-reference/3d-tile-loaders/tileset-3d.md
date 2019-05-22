@@ -1,17 +1,8 @@
-export const myVariable = 'Yay!'
-import CodeExample, {Test} from './example.jsx';
-
 # Tileset3D (Experimental)
 
 > The 3D tiles loaders are still under development. If you are interested in early access, please open an issue.
 
 A [3D Tiles tileset](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification), used for streaming massive heterogeneous 3D geospatial datasets.
-
-<div>{myVariable}</div>
-
-<CodeExample />
-
-<Test />
 
 ## Usage
 
@@ -208,7 +199,7 @@ The loaded `Tile3D` is passed to the event listener.
 
 This event is fired during the tileset traversal while the frame is being rendered
 so that updates to the tile take effect in the same frame.  Do not create or modify
-Cesium entities or primitives during the event listener.
+entities or primitives during the event listener.
 
 ```js
     tileset.tileLoad.addEventListener(function(tile) {
@@ -224,7 +215,7 @@ The unloaded `Tile3D` is passed to the event listener.
 
 This event is fired immediately before the tile's content is unloaded while the frame is being
 rendered so that the event listener has access to the tile's content.  Do not create
-or modify Cesium entities or primitives during the event listener.
+or modify entities or primitives during the event listener.
 
 ```js
 tileset.tileUnload.addEventListener(function(tile) {
@@ -267,7 +258,7 @@ The visible 3DTile is passed to the event listener.
 
 This event is fired during the tileset traversal while the frame is being rendered
 so that updates to the tile take effect in the same frame.  Do not create or modify
-Cesium entities or primitives during the event listener.
+entities or primitives during the event listener.
  *
 ^type {Event}
 ^default new Event()
@@ -275,7 +266,7 @@ Cesium entities or primitives during the event listener.
 ^example
 ```js
 tileset.tileVisible.addEventListener(function(tile) {
-    if (tile.content instanceof Cesium.Batched3DModel3DTileContent) {
+    if (tile.content instanceof Batched3DModel3DTileContent) {
         console.log('A Batched 3D Model tile is visible.');
     }
 });
@@ -365,7 +356,7 @@ This promise is resolved at the end of the frame before the first frame the tile
 tileset.readyPromise.then(function(tileset) {
     // tile.properties is not defined until readyPromise resolves.
     var properties = tileset.properties;
-    if (Cesium.defined(properties)) {
+    if (defined(properties)) {
         for (var name in properties) {
             console.log(properties[name]);
         }
@@ -439,13 +430,13 @@ The tileset's bounding sphere.
 
 
 ```js
-var tileset = viewer.scene.primitives.add(new Cesium.Tileset3D({
+var tileset = viewer.scene.primitives.add(new Tileset3D({
 url : 'http://localhost:8002/tilesets/Seattle/tileset.json'
 }));
 
 tileset.readyPromise.then(function(tileset) {
 // Set the camera to view the newly added tileset
-viewer.camera.viewBoundingSphere(tileset.boundingSphere, new Cesium.HeadingPitchRange(0, -0.5, 0));
+viewer.camera.viewBoundingSphere(tileset.boundingSphere, new HeadingPitchRange(0, -0.5, 0));
 });
 ```
 
@@ -457,11 +448,11 @@ A 4x4 transformation matrix that transforms the entire tileset.
 // Adjust a tileset's height from the globe's surface.
 var heightOffset = 20.0;
 var boundingSphere = tileset.boundingSphere;
-var cartographic = Cesium.Cartographic.fromCartesian(boundingSphere.center);
-var surface = Cesium.Cartesian3.fromRadians(cartographic.longitude, cartographic.latitude, 0.0);
-var offset = Cesium.Cartesian3.fromRadians(cartographic.longitude, cartographic.latitude, heightOffset);
-var translation = Cesium.Cartesian3.subtract(offset, surface, new Cesium.Cartesian3());
-tileset.modelMatrix = Cesium.Matrix4.fromTranslation(translation);
+var cartographic = Cartographic.fromCartesian(boundingSphere.center);
+var surface = Cartesian3.fromRadians(cartographic.longitude, cartographic.latitude, 0.0);
+var offset = Cartesian3.fromRadians(cartographic.longitude, cartographic.latitude, heightOffset);
+var translation = Cartesian3.subtract(offset, surface, new Cartesian3());
+tileset.modelMatrix = Matrix4.fromTranslation(translation);
 ```
 
 
@@ -500,7 +491,7 @@ When enabled for batched 3D model tilesets, there are a few requirements/limitat
     <li>Only one primitive per mesh is supported.</li>
 </ul>
 
-This feature is using part of the 3D Tiles spec that is not final and is subject to change without Cesium's standard deprecation policy.
+This feature is using part of the 3D Tiles spec that is not final and is subject to change without the standard deprecation policy.
 
 
 ### ellipsoid : Ellipsoid

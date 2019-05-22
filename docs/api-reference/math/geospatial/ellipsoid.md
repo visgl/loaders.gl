@@ -226,4 +226,4 @@ Notes:
 
 ## Attribution
 
-This class was ported from Cesium under the Apache 2 License.
+This class was ported from [Cesium](https://github.com/AnalyticalGraphicsInc/cesium) under the Apache 2 License.

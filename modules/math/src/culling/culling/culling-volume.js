@@ -10,6 +10,7 @@ const scratchPlaneCenter = new Vector3();
 const scratchPlaneNormal = new Vector3();
 const scratchPlane = new Plane(new Vector3(1.0, 0.0, 0.0), 0.0);
 
+// A culling volume defined by planes.
 export default class CullingVolume {
   // For plane masks (as used in {@link CullingVolume#computeVisibilityWithPlaneMask}), this special value
   // represents the case where the object bounding volume is entirely outside the culling volume.
@@ -29,14 +30,7 @@ export default class CullingVolume {
     return 0x7fffffff;
   }
 
-  /**
-   * The culling volume defined by planes.
-   *
-   * @alias CullingVolume
-   * @constructor
-   *
-   * @param {Cartesian4[]} [planes] An array of clipping planes.
-   */
+  // {Cartesian4[]} [planes] An array of clipping planes.
   /**
    * Each plane is represented by a Cartesian4 object, where the x, y, and z components
    * define the unit vector normal to the plane, and the w component is the distance of the

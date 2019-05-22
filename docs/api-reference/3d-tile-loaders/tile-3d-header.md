@@ -113,50 +113,62 @@ The request may not be made if the Request Scheduler can't prioritize it.
 
 Unloads the tile's content.
 
-### visibility(frameState, parentVisibilityPlaneMask) {
+### visibility(frameState, parentVisibilityPlaneMask)
 
 Determines whether the tile's bounding volume intersects the culling volume.
 
-@param {FrameState} frameState The frame state.
-@param {Number} parentVisibilityPlaneMask The parent's plane mask to speed up the visibility check.
-@returns {Number} A plane mask as described above in {@link CullingVolume#computeVisibilityWithPlaneMask}.
+- FrameState frameState The frame state.
+- Number parentVisibilityPlaneMask The parent's plane mask to speed up the visibility check.
+
+Returns
+{Number} A plane mask as described above in {@link CullingVolume#computeVisibilityWithPlaneMask}.
 
 
 ### contentVisibility(frameState)
 
 Assuming the tile's bounding volume intersects the culling volume, determines
 whether the tile's content's bounding volume intersects the culling volume.
-@param {FrameState} frameState The frame state.
-@returns {Intersect} The result of the intersection: the tile's content is completely outside, completely inside, or intersecting the culling volume.
+- FrameState frameState The frame state.
+
+Returns
+{Intersect} The result of the intersection: the tile's content is completely outside, completely inside, or intersecting the culling volume.
 
 ### distanceToTile(frameState) : Number
 
 Computes the (potentially approximate) distance from the closest point of the tile's bounding volume to the camera.
-@param {FrameState} frameState The frame state.
-@returns {Number} The distance, in meters, or zero if the camera is inside the bounding volume.
+- FrameState frameState The frame state.
+
+Returns
+{Number} The distance, in meters, or zero if the camera is inside the bounding volume.
 
 ### distanceToTileCenter(frameState)
 
 Computes the distance from the center of the tile's bounding volume to the camera.
-@param {FrameState} frameState The frame state.
-@returns {Number} The distance, in meters.
+- FrameState frameState The frame state.
+
+Returns
+{Number} The distance, in meters.
 
 ### insideViewerRequestVolume(frameState) : Boolean
 
 Checks if the camera is inside the viewer request volume.
 
-@param {FrameState} frameState The frame state.
-@returns {Boolean} Whether the camera is inside the volume.
+- FrameState frameState The frame state.
+
+Returns
+{Boolean} Whether the camera is inside the volume.
 
 ### createBoundingVolume(boundingVolumeHeader, transform, result) {
 
 Create a bounding volume from the tile's bounding volume header.
 
-@param {Object} boundingVolumeHeader The tile's bounding volume header.
-@param {Matrix4} transform The transform to apply to the bounding volume.
-@param {TileBoundingVolume} [result] The object onto which to store the result.
+- Object boundingVolumeHeader The tile's bounding volume header.
+- Matrix4 transform The transform to apply to the bounding volume.
+- TileBoundingVolume [result] The object onto which to store the result.
 
-@returns {TileBoundingVolume} The modified result parameter or a new TileBoundingVolume instance if none was provided.
+
+Returns
+{TileBoundingVolume} The modified result parameter or a new TileBoundingVolume instance if none was provided.
 
 
 ### updateTransform(parentTransform)
