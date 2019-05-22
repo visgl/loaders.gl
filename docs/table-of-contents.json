@@ -130,6 +130,20 @@
           ]
         },
         {
+          "title": "Math Library (Experimental)",
+          "entries": [
+            {"entry": "docs/api-reference/math/geospatial/README"},
+            {"entry": "docs/api-reference/math/geospatial/ellipsoid"},
+            {"entry": "docs/api-reference/math/culling/README"},
+            {"entry": "docs/api-reference/math/culling/bounding-sphere"},
+            {"entry": "docs/api-reference/math/culling/culling-volume"},
+            {"entry": "docs/api-reference/math/culling/oriented-bounding-box"},
+            {"entry": "docs/api-reference/math/culling/plane"},
+            {"entry": "docs/api-reference/math/geometry/README"},
+            {"entry": "docs/api-reference/math/geometry/gl-type"}
+          ]
+        },
+        {
           "title": "Loader and Writer Objects",
           "entries": [
             {"entry": "docs/api-reference/specifications/loader-object-format"},

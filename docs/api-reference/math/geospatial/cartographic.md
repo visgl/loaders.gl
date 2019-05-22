@@ -85,4 +85,4 @@ The values in the resulting object will be in degrees.
 
 ## Attribution
 
-This class is based on Cesium source code under the Apache 2 License.
+This class is based on [Cesium](https://github.com/AnalyticalGraphicsInc/cesium) source code under the Apache 2 License.

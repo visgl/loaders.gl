@@ -57,4 +57,4 @@ When parsed asynchronously (i.e. not using `parseSync`):
 
 ## Attributions
 
-The `Tile3DLoader` is a fork of 3d tile related code in Cesium (https://github.com/AnalyticalGraphicsInc/cesium) under Apache 2 License, in collabration with Sean Lilley and Patrick Cozzi at Cesium.
+The `Tile3DLoader` is a fork of 3d tile related code in Cesium (https://github.com/AnalyticalGraphicsInc/cesium) under Apache 2 License, in collabration with Sean Lilley, Josh Lawrence and Patrick Cozzi at Cesium.
