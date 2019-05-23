@@ -8,13 +8,14 @@ import scaleToGeodeticSurface from './helpers/scale-to-geodetic-surface';
 import MathUtils from './helpers/math-utils';
 
 const LUNAR_RADIUS = 1737400.0;
+const RAD_TO_DEGREE = 180 / Math.PI;
 
-var cartographicToCartesianNormal = new Vector3();
-var cartographicToCartesianK = new Vector3();
+const cartographicToCartesianNormal = new Vector3();
+const cartographicToCartesianK = new Vector3();
 
-var cartesianToCartographicN = new Vector3();
-var cartesianToCartographicP = new Vector3();
-var cartesianToCartographicH = new Vector3();
+const cartesianToCartographicN = new Vector3();
+const cartesianToCartographicP = new Vector3();
+const cartesianToCartographicH = new Vector3();
 
 /*
    * @example
@@ -174,6 +175,10 @@ export default class Ellipsoid {
     return this._oneOverRadiiSquared;
   }
 
+  get centerToleranceSquared() {
+    return this._centerToleranceSquared;
+  }
+
   /**
    * Gets the minimum radius of the ellipsoid.
    * @memberof Ellipsoid.prototype
@@ -283,7 +288,7 @@ export default class Ellipsoid {
    */
   geodeticSurfaceNormal(cartesian, result = [0, 0, 0]) {
     vec3.multiply(result, cartesian, this._oneOverRadiiSquared);
-    return vec3.normalize(result, result);
+    return vec3.normalize(new Vector3(), result);
   }
 
   /**
@@ -325,19 +330,19 @@ export default class Ellipsoid {
       return undefined;
     }
 
-    const normal = cartesianToCartographicN;
-    this.geodeticSurfaceNormal(p, normal);
+    const normal = this.geodeticSurfaceNormal(point, cartesianToCartographicN);
 
     const h = cartesianToCartographicH;
-    h.copy(cartesian).subtract(p);
+    h.copy(cartesian).subtract(point);
 
-    const longitude = Math.atan2(n.y, n.x);
-    const latitude = Math.asin(n.z);
+    const longitude = Math.atan2(normal[1], normal[0]);
+    const latitude = Math.asin(normal[2]);
     const height = Math.sign(vec3.dot(h, cartesian)) * vec3.length(h);
 
-    result[0] = longitude;
-    result[1] = latitude;
+    result[0] = longitude * RAD_TO_DEGREE;
+    result[1] = latitude * RAD_TO_DEGREE;
     result[2] = height;
+
     return result;
   }
 

@@ -22,15 +22,15 @@ const scaleToGeodeticSurfaceGradient = new Vector3();
  *
  * @private
  */
-export default function scaleToGeodeticSurface(cartesian, ellipsoid, result) {
+export default function scaleToGeodeticSurface(cartesian, ellipsoid, result = [0, 0, 0]) {
   const {oneOverRadii, oneOverRadiiSquared, centerToleranceSquared} = ellipsoid;
-  const positionX = cartesian.x;
-  const positionY = cartesian.y;
-  const positionZ = cartesian.z;
+  const positionX = cartesian.x || 0;
+  const positionY = cartesian.y || 0;
+  const positionZ = cartesian.z || 0;
 
-  const oneOverRadiiX = oneOverRadii.x;
-  const oneOverRadiiY = oneOverRadii.y;
-  const oneOverRadiiZ = oneOverRadii.z;
+  const oneOverRadiiX = oneOverRadii.x || 0;
+  const oneOverRadiiY = oneOverRadii.y || 0;
+  const oneOverRadiiZ = oneOverRadii.z || 0;
 
   const x2 = positionX * positionX * oneOverRadiiX * oneOverRadiiX;
   const y2 = positionY * positionY * oneOverRadiiY * oneOverRadiiY;
@@ -40,29 +40,33 @@ export default function scaleToGeodeticSurface(cartesian, ellipsoid, result) {
   const squaredNorm = x2 + y2 + z2;
   const ratio = Math.sqrt(1.0 / squaredNorm);
 
+  if (!Number.isFinite(ratio)) {
+    return undefined;
+  }
+
   // As an initial approximation, assume that the radial intersection is the projection point.
-  const intersection = scaleToGeodeticSurfaceIntersection;
+  const intersection = new Vector3();
   intersection.copy(cartesian).scale(ratio);
 
   // If the position is near the center, the iteration will not converge.
   if (squaredNorm < centerToleranceSquared) {
-    return !isFinite(ratio) ? undefined : vec3.copy(result, intersection);
+    return intersection;
   }
 
-  const oneOverRadiiSquaredX = oneOverRadiiSquared.x;
-  const oneOverRadiiSquaredY = oneOverRadiiSquared.y;
-  const oneOverRadiiSquaredZ = oneOverRadiiSquared.z;
+  const oneOverRadiiSquaredX = oneOverRadiiSquared.x || 0;
+  const oneOverRadiiSquaredY = oneOverRadiiSquared.y || 0;
+  const oneOverRadiiSquaredZ = oneOverRadiiSquared.z || 0;
 
   // Use the gradient at the intersection point in place of the true unit normal.
   // The difference in magnitude will be absorbed in the multiplier.
-  const gradient = scaleToGeodeticSurfaceGradient;
+  const gradient = new Vector3();
   gradient.x = intersection.x * oneOverRadiiSquaredX * 2.0;
   gradient.y = intersection.y * oneOverRadiiSquaredY * 2.0;
   gradient.z = intersection.z * oneOverRadiiSquaredZ * 2.0;
 
   // Compute the initial guess at the normal vector multiplier, lambda.
-  const lambda = ((1.0 - ratio) * vec3.length(cartesian)) / (0.5 * vec3.length(gradient));
-  const correction = 0.0;
+  let lambda = ((1.0 - ratio) * vec3.length(cartesian)) / (0.5 * vec3.length(gradient));
+  let correction = 0.0;
 
   let func;
   let denominator;

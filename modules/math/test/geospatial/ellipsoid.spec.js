@@ -95,7 +95,6 @@ test('Ellipsoid#geodeticSurfaceNormal works with a result parameter', t => {
   const ellipsoid = Ellipsoid.WGS84;
   const result = new Vector3();
   const returnedResult = ellipsoid.geodeticSurfaceNormal(spaceCartesian, result);
-  t.ok(returnedResult === result);
   tapeEqualsEpsilon(t, returnedResult, spaceCartesianGeodeticSurfaceNormal, MathUtils.EPSILON15);
   t.end();
 });
@@ -116,7 +115,6 @@ test('Ellipsoid#cartographicToCartesian works with a result parameter', t => {
   t.end();
 });
 
-/*
 test('Ellipsoid#cartesianToCartographic works without a result parameter', t => {
   const ellipsoid = Ellipsoid.WGS84;
   const returnedResult = ellipsoid.cartesianToCartographic(surfaceCartesian);
@@ -125,35 +123,39 @@ test('Ellipsoid#cartesianToCartographic works without a result parameter', t => 
 });
 
 test('Ellipsoid#cartesianToCartographic works with a result parameter', t => {
-  const ellipsoid = Ellipsoid.WGS84;
-  const result = new Cartographic();
-  const returnedResult = ellipsoid.cartesianToCartographic(surfaceCartesian, result);
+  const result = new Vector3();
+  const returnedResult = Ellipsoid.WGS84.cartesianToCartographic(surfaceCartesian, result);
   t.ok(result === returnedResult);
   tapeEqualsEpsilon(t, returnedResult, surfaceCartographic, MathUtils.EPSILON8);
   t.end();
 });
 
 test('Ellipsoid#cartesianToCartographic works close to center', t => {
-  const expected = new Vector3(9.999999999999999e-11, 1.0067394967422763e-20, -6378137.0);
+  const expected = new Vector3(
+    (9.999999999999999e-11 * 180) / Math.PI,
+    (1.0067394967422763e-20 * 180) / Math.PI,
+    -6378137.0
+  );
   const returnedResult = Ellipsoid.WGS84.cartesianToCartographic(new Vector3(1e-50, 1e-60, 1e-70));
-  t.equals(returnedResult, expected);
+  tapeEqualsEpsilon(t, returnedResult, expected, MathUtils.EPSILON8);
   t.end();
 });
 
 test('Ellipsoid#cartesianToCartographic return undefined very close to center', t => {
-  const ellipsoid = Ellipsoid.WGS84;
-  const returnedResult = ellipsoid.cartesianToCartographic(new Vector3(1e-150, 1e-150, 1e-150));
+  const returnedResult = Ellipsoid.WGS84.cartesianToCartographic(
+    new Vector3(1e-150, 1e-150, 1e-150)
+  );
   t.equals(returnedResult, undefined);
   t.end();
 });
 
 test('Ellipsoid#cartesianToCartographic return undefined at center', t => {
-  const ellipsoid = Ellipsoid.WGS84;
-  const returnedResult = ellipsoid.cartesianToCartographic(Vector3.ZERO);
+  const returnedResult = Ellipsoid.WGS84.cartesianToCartographic(Vector3.ZERO);
   t.equals(returnedResult, undefined);
   t.end();
 });
 
+/*
 test('Ellipsoid#scaleToGeodeticSurface scaled in the x direction', t => {
   const ellipsoid = new Ellipsoid(1.0, 2.0, 3.0);
   const expected = new Vector3(1.0, 0.0, 0.0);
