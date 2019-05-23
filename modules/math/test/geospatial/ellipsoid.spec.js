@@ -1,10 +1,10 @@
 /* eslint-disable */
 import test from 'tape-catch';
-import {Vector3, radians as toRadians} from 'math.gl';
+import {Vector3, radians as toRadians, degrees as toDegrees} from 'math.gl';
 import {Cartographic, Ellipsoid, MathUtils} from '@loaders.gl/math';
 import {tapeEquals, tapeEqualsEpsilon} from '../test-utils/tape-assertions';
 
-Vector3.ZERO = [0, 0, 0];
+Vector3.ZERO = new Vector3(0, 0, 0);
 
 const radii = new Vector3(1.0, 2.0, 3.0);
 const radiiSquared = new Vector3(radii).multiply(radii);
@@ -95,6 +95,7 @@ test('Ellipsoid#geodeticSurfaceNormal works with a result parameter', t => {
   const ellipsoid = Ellipsoid.WGS84;
   const result = new Vector3();
   const returnedResult = ellipsoid.geodeticSurfaceNormal(spaceCartesian, result);
+  t.ok(returnedResult === result);
   tapeEqualsEpsilon(t, returnedResult, spaceCartesianGeodeticSurfaceNormal, MathUtils.EPSILON15);
   t.end();
 });
@@ -132,12 +133,12 @@ test('Ellipsoid#cartesianToCartographic works with a result parameter', t => {
 
 test('Ellipsoid#cartesianToCartographic works close to center', t => {
   const expected = new Vector3(
-    (9.999999999999999e-11 * 180) / Math.PI,
-    (1.0067394967422763e-20 * 180) / Math.PI,
+    toDegrees(9.999999999999999e-11),
+    toDegrees(1.0067394967422763e-20),
     -6378137.0
   );
   const returnedResult = Ellipsoid.WGS84.cartesianToCartographic(new Vector3(1e-50, 1e-60, 1e-70));
-  tapeEqualsEpsilon(t, returnedResult, expected, MathUtils.EPSILON8);
+  t.ok(returnedResult, expected);
   t.end();
 });
 

@@ -1,5 +1,5 @@
 /* eslint-disable */
-import {Vector3, radians as toRadians} from 'math.gl';
+import {Vector3, radians as toRadians, degrees as toDegrees} from 'math.gl';
 import * as vec3 from 'gl-matrix/vec3';
 
 import assert from '../utils/assert';
@@ -8,7 +8,6 @@ import scaleToGeodeticSurface from './helpers/scale-to-geodetic-surface';
 import MathUtils from './helpers/math-utils';
 
 const LUNAR_RADIUS = 1737400.0;
-const RAD_TO_DEGREE = 180 / Math.PI;
 
 const cartographicToCartesianNormal = new Vector3();
 const cartographicToCartesianK = new Vector3();
@@ -286,9 +285,9 @@ export default class Ellipsoid {
    * @param {Vector3} [result] The object onto which to store the result.
    * @returns {Vector3} The modified result parameter or a new Vector3 instance if none was provided.
    */
-  geodeticSurfaceNormal(cartesian, result = [0, 0, 0]) {
+  geodeticSurfaceNormal(cartesian, result = new Vector3()) {
     vec3.multiply(result, cartesian, this._oneOverRadiiSquared);
-    return vec3.normalize(new Vector3(), result);
+    return vec3.normalize(result, result);
   }
 
   /**
@@ -323,7 +322,7 @@ export default class Ellipsoid {
 
   // Converts the provided cartesian to cartographic (lng/lat/z) representation.
   // The cartesian is undefined at the center of the ellipsoid.
-  cartesianToCartographic(cartesian, result = [0, 0, 0]) {
+  cartesianToCartographic(cartesian, result = new Vector3()) {
     const point = this.scaleToGeodeticSurface(cartesian, cartesianToCartographicP);
 
     if (!point) {
@@ -335,12 +334,12 @@ export default class Ellipsoid {
     const h = cartesianToCartographicH;
     h.copy(cartesian).subtract(point);
 
-    const longitude = Math.atan2(normal[1], normal[0]);
-    const latitude = Math.asin(normal[2]);
+    const longitude = Math.atan2(normal.y, normal.x);
+    const latitude = Math.asin(normal.z);
     const height = Math.sign(vec3.dot(h, cartesian)) * vec3.length(h);
 
-    result[0] = longitude * RAD_TO_DEGREE;
-    result[1] = latitude * RAD_TO_DEGREE;
+    result[0] = toDegrees(longitude);
+    result[1] = toDegrees(latitude);
     result[2] = height;
 
     return result;

@@ -2,6 +2,7 @@
 import {Vector3} from 'math.gl';
 import MathUtils from './math-utils';
 import * as vec3 from 'gl-matrix/vec3';
+import assert from '../../utils/assert';
 
 const scaleToGeodeticSurfaceIntersection = new Vector3();
 const scaleToGeodeticSurfaceGradient = new Vector3();
@@ -22,15 +23,28 @@ const scaleToGeodeticSurfaceGradient = new Vector3();
  *
  * @private
  */
-export default function scaleToGeodeticSurface(cartesian, ellipsoid, result = [0, 0, 0]) {
+export default function scaleToGeodeticSurface(cartesian, ellipsoid, result = new Vector3()) {
   const {oneOverRadii, oneOverRadiiSquared, centerToleranceSquared} = ellipsoid;
-  const positionX = cartesian.x || 0;
-  const positionY = cartesian.y || 0;
-  const positionZ = cartesian.z || 0;
 
-  const oneOverRadiiX = oneOverRadii.x || 0;
-  const oneOverRadiiY = oneOverRadii.y || 0;
-  const oneOverRadiiZ = oneOverRadii.z || 0;
+  assert(Number.isFinite(cartesian.x));
+  assert(Number.isFinite(cartesian.y));
+  assert(Number.isFinite(cartesian.z));
+
+  assert(Number.isFinite(oneOverRadii.x));
+  assert(Number.isFinite(oneOverRadii.y));
+  assert(Number.isFinite(oneOverRadii.z));
+
+  assert(Number.isFinite(oneOverRadiiSquared.x));
+  assert(Number.isFinite(oneOverRadiiSquared.y));
+  assert(Number.isFinite(oneOverRadiiSquared.z));
+
+  const positionX = cartesian.x;
+  const positionY = cartesian.y;
+  const positionZ = cartesian.z;
+
+  const oneOverRadiiX = oneOverRadii.x;
+  const oneOverRadiiY = oneOverRadii.y;
+  const oneOverRadiiZ = oneOverRadii.z;
 
   const x2 = positionX * positionX * oneOverRadiiX * oneOverRadiiX;
   const y2 = positionY * positionY * oneOverRadiiY * oneOverRadiiY;
@@ -40,26 +54,27 @@ export default function scaleToGeodeticSurface(cartesian, ellipsoid, result = [0
   const squaredNorm = x2 + y2 + z2;
   const ratio = Math.sqrt(1.0 / squaredNorm);
 
+  // When very close to center or at center
   if (!Number.isFinite(ratio)) {
     return undefined;
   }
 
   // As an initial approximation, assume that the radial intersection is the projection point.
-  const intersection = new Vector3();
+  const intersection = scaleToGeodeticSurfaceIntersection;
   intersection.copy(cartesian).scale(ratio);
 
   // If the position is near the center, the iteration will not converge.
   if (squaredNorm < centerToleranceSquared) {
-    return intersection;
+    return vec3.copy(result, intersection);
   }
 
-  const oneOverRadiiSquaredX = oneOverRadiiSquared.x || 0;
-  const oneOverRadiiSquaredY = oneOverRadiiSquared.y || 0;
-  const oneOverRadiiSquaredZ = oneOverRadiiSquared.z || 0;
+  const oneOverRadiiSquaredX = oneOverRadiiSquared.x;
+  const oneOverRadiiSquaredY = oneOverRadiiSquared.y;
+  const oneOverRadiiSquaredZ = oneOverRadiiSquared.z;
 
   // Use the gradient at the intersection point in place of the true unit normal.
   // The difference in magnitude will be absorbed in the multiplier.
-  const gradient = new Vector3();
+  const gradient = scaleToGeodeticSurfaceGradient;
   gradient.x = intersection.x * oneOverRadiiSquaredX * 2.0;
   gradient.y = intersection.y * oneOverRadiiSquaredY * 2.0;
   gradient.z = intersection.z * oneOverRadiiSquaredZ * 2.0;
