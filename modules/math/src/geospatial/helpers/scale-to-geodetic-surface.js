@@ -2,6 +2,7 @@
 import {Vector3} from 'math.gl';
 import MathUtils from './math-utils';
 import * as vec3 from 'gl-matrix/vec3';
+import assert from '../../utils/assert';
 
 const scaleToGeodeticSurfaceIntersection = new Vector3();
 const scaleToGeodeticSurfaceGradient = new Vector3();
@@ -22,8 +23,21 @@ const scaleToGeodeticSurfaceGradient = new Vector3();
  *
  * @private
  */
-export default function scaleToGeodeticSurface(cartesian, ellipsoid, result) {
+export default function scaleToGeodeticSurface(cartesian, ellipsoid, result = new Vector3()) {
   const {oneOverRadii, oneOverRadiiSquared, centerToleranceSquared} = ellipsoid;
+
+  assert(Number.isFinite(cartesian.x));
+  assert(Number.isFinite(cartesian.y));
+  assert(Number.isFinite(cartesian.z));
+
+  assert(Number.isFinite(oneOverRadii.x));
+  assert(Number.isFinite(oneOverRadii.y));
+  assert(Number.isFinite(oneOverRadii.z));
+
+  assert(Number.isFinite(oneOverRadiiSquared.x));
+  assert(Number.isFinite(oneOverRadiiSquared.y));
+  assert(Number.isFinite(oneOverRadiiSquared.z));
+
   const positionX = cartesian.x;
   const positionY = cartesian.y;
   const positionZ = cartesian.z;
@@ -40,13 +54,18 @@ export default function scaleToGeodeticSurface(cartesian, ellipsoid, result) {
   const squaredNorm = x2 + y2 + z2;
   const ratio = Math.sqrt(1.0 / squaredNorm);
 
+  // When very close to center or at center
+  if (!Number.isFinite(ratio)) {
+    return undefined;
+  }
+
   // As an initial approximation, assume that the radial intersection is the projection point.
   const intersection = scaleToGeodeticSurfaceIntersection;
   intersection.copy(cartesian).scale(ratio);
 
   // If the position is near the center, the iteration will not converge.
   if (squaredNorm < centerToleranceSquared) {
-    return !isFinite(ratio) ? undefined : vec3.copy(result, intersection);
+    return vec3.copy(result, intersection);
   }
 
   const oneOverRadiiSquaredX = oneOverRadiiSquared.x;
@@ -61,8 +80,8 @@ export default function scaleToGeodeticSurface(cartesian, ellipsoid, result) {
   gradient.z = intersection.z * oneOverRadiiSquaredZ * 2.0;
 
   // Compute the initial guess at the normal vector multiplier, lambda.
-  const lambda = ((1.0 - ratio) * vec3.length(cartesian)) / (0.5 * vec3.length(gradient));
-  const correction = 0.0;
+  let lambda = ((1.0 - ratio) * vec3.length(cartesian)) / (0.5 * vec3.length(gradient));
+  let correction = 0.0;
 
   let func;
   let denominator;

@@ -1,5 +1,5 @@
 /* eslint-disable */
-import {Vector3, radians as toRadians} from 'math.gl';
+import {Vector3, radians as toRadians, degrees as toDegrees} from 'math.gl';
 import * as vec3 from 'gl-matrix/vec3';
 
 import assert from '../utils/assert';
@@ -9,12 +9,12 @@ import MathUtils from './helpers/math-utils';
 
 const LUNAR_RADIUS = 1737400.0;
 
-var cartographicToCartesianNormal = new Vector3();
-var cartographicToCartesianK = new Vector3();
+const cartographicToCartesianNormal = new Vector3();
+const cartographicToCartesianK = new Vector3();
 
-var cartesianToCartographicN = new Vector3();
-var cartesianToCartographicP = new Vector3();
-var cartesianToCartographicH = new Vector3();
+const cartesianToCartographicN = new Vector3();
+const cartesianToCartographicP = new Vector3();
+const cartesianToCartographicH = new Vector3();
 
 /*
    * @example
@@ -174,6 +174,10 @@ export default class Ellipsoid {
     return this._oneOverRadiiSquared;
   }
 
+  get centerToleranceSquared() {
+    return this._centerToleranceSquared;
+  }
+
   /**
    * Gets the minimum radius of the ellipsoid.
    * @memberof Ellipsoid.prototype
@@ -281,7 +285,7 @@ export default class Ellipsoid {
    * @param {Vector3} [result] The object onto which to store the result.
    * @returns {Vector3} The modified result parameter or a new Vector3 instance if none was provided.
    */
-  geodeticSurfaceNormal(cartesian, result = [0, 0, 0]) {
+  geodeticSurfaceNormal(cartesian, result = new Vector3()) {
     vec3.multiply(result, cartesian, this._oneOverRadiiSquared);
     return vec3.normalize(result, result);
   }
@@ -318,26 +322,26 @@ export default class Ellipsoid {
 
   // Converts the provided cartesian to cartographic (lng/lat/z) representation.
   // The cartesian is undefined at the center of the ellipsoid.
-  cartesianToCartographic(cartesian, result = [0, 0, 0]) {
+  cartesianToCartographic(cartesian, result = new Vector3()) {
     const point = this.scaleToGeodeticSurface(cartesian, cartesianToCartographicP);
 
     if (!point) {
       return undefined;
     }
 
-    const normal = cartesianToCartographicN;
-    this.geodeticSurfaceNormal(p, normal);
+    const normal = this.geodeticSurfaceNormal(point, cartesianToCartographicN);
 
     const h = cartesianToCartographicH;
-    h.copy(cartesian).subtract(p);
+    h.copy(cartesian).subtract(point);
 
-    const longitude = Math.atan2(n.y, n.x);
-    const latitude = Math.asin(n.z);
+    const longitude = Math.atan2(normal.y, normal.x);
+    const latitude = Math.asin(normal.z);
     const height = Math.sign(vec3.dot(h, cartesian)) * vec3.length(h);
 
-    result[0] = longitude;
-    result[1] = latitude;
+    result[0] = toDegrees(longitude);
+    result[1] = toDegrees(latitude);
     result[2] = height;
+
     return result;
   }
 
