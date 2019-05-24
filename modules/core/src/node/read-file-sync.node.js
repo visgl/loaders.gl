@@ -3,7 +3,7 @@ import fs from 'fs';
 import {toArrayBuffer} from './utils/to-array-buffer.node';
 
 const DEFAULT_OPTIONS = {
-  dataType: 'arrayBuffer',
+  dataType: 'arraybuffer',
   // TODO - this was mostly set to true to make test cases work
   nothrow: true
 };

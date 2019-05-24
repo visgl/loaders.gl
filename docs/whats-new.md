@@ -4,6 +4,16 @@
 
 Target Release Date: May 30, 2019
 
+### @loaders.gl/core
+
+- `fetchFile` function - Can now read browser `File` objects (from drag and drop or file selection dialogs).
+- `isImage(arrayBuffer [, mimeType])` function <sup>ENHANCED</sup> - can now accept a MIME type as second argument.
+
+### @loaders.gl/images
+
+- `getImageMIMEType(arrayBuffer)` function <sup>NEW</sup> - returns the MIME type of the image in the supplied `ArrayBuffer`.
+- `isImage(arrayBuffer [, mimeType])` function <sup>ENHANCED</sup> - can now accept a MIME type as second argument.
+
 ### @loaders.gl/gltf
 
 The glTF module has been refactored with the aim of simplifying the loaded data and orthogonalizing the API, as well as allowing 'embedded' GLB data inside other binary formats to be parsed (e.g. the glTF parser can now extract embedded glTF inside 3D tile files).
@@ -12,11 +22,6 @@ The glTF module has been refactored with the aim of simplifying the loaded data 
 - [`postProcessGLTF`](/docs/api-reference/gltf/post-process-gltf) function <sup>NEW</sup> - Function that performs a set of transformations on loaded glTF data that simplify application processing.
 - [`GLBLoader`](/docs/api-reference/gltf/glb-loader)/[`GLBWriter`] <sup>NEW</sup> - loader/writer pair that enables loading/saving custom (non-glTF) data in the binary GLB format.
 - [`GLTFLoader`](/docs/api-reference/gltf/gltf-loader) <sup>ENHANCED</sup> - can now return the pure JavaScript object defined by the [GLTF category](/docs/api-reference/gltf/category-gltf), letting application separately handle post-processing etc.
-
-### @loaders.gl/images
-
-- `getImageMIMEType(arrayBuffer)` function <sup>NEW</sup> - returns the MIME type of the image in the supplied `ArrayBuffer`.
-- `isImage(arrayBuffer [, mimeType])` function <sup>ENHANCED</sup> - can now accept a MIME type as second argument.
 
 ### @loaders.gl/3d-tiles <sup>NEW MODULE</sup>
 

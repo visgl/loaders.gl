@@ -33,10 +33,7 @@ for await (const batch of batchIterator) {
 
 ### parse(data : ArrayBuffer | String, [, options : Object [, url : String]]) : Promise.Any
 
-Parses data asynchronously using the provided loader.
-Used to parse data with a selected _loader object_. An array of `loaders` can be provided, in which case an attempt will be made to autodetect which loader is appropriate for the file (using url extension and header matching).
-
-The `loaders` parameter can also be omitted, in which case any _loader objects_ previously registered with [`registerLoaders`](docs/api-reference/core/register-loaders) will be used.
+Parses data asynchronously either using the provided loader or loaders, or using the pre-registered loaders (see `register-loaders`).
 
 - `data`: loaded data or an object that allows data to be loaded. This parameter can be any of the following types:
   - `Response` - `fetch` response object returned by `fetchFile` or `fetch`.
@@ -45,16 +42,27 @@ The `loaders` parameter can also be omitted, in which case any _loader objects_ 
   - `Iterator` - Iterator that yeilds binary (`ArrayBuffer`) chunks or string chunks (string chunks only work for loaders that support textual input).
   - `AsyncIterator` - iterator that yeilds promises that resolve to binary (`ArrayBuffer`) chunks or string chunks.
   - `ReadableStream` - A DOM or Node stream.
+  - `File` - A browser file object (from drag-and-drop or file selection operations).
   - `Promise` - A promise that resolves to any of the other supported data types can also be supplied.
-- `loaders` - can be a single loader or an array of loaders. If ommitted, will use the list of registered loaders (see `registerLoaders`)
+
+- `loaders` - can be a single loader or an array of loaders. If ommitted, will use the list of pre-registered loaders (see `registerLoaders`)
+
 - `options`: optional, options for the loader (see documentation of the specific loader).
+
 - `url`: optional, assists in the autoselection of a loader if multiple loaders are supplied to `loader`.
+
+Options:
 
 - `options.log`=`console` Any object with methods `log`, `info`, `warn` and `error`. By default set to `console`. Setting log to `null` will turn off logging.
 
 Returns:
 
 - Return value depends on the _loader object_ category
+
+Notes:
+
+- If multiple `loaders` are provided (or pre-registered), an attempt will be made to autodetect which loader is appropriate for the file (using url extension and header matching).
+
 
 ### parseSync(fileData : ArrayBuffer | String, loaders : Object | Object\[], [, options : Object [, url : String]]) : any
 

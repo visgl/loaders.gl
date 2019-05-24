@@ -1,6 +1,7 @@
+import {isFile} from '../javascript-utils/is-type';
 import {autoDetectLoader} from './loader-utils/auto-detect-loader';
 import {normalizeLoader, isLoaderObject} from './loader-utils/normalize-loader';
-import NullLog from './loader-utils/null-log';
+import {mergeLoaderAndUserOptions} from './loader-utils/normalize-options';
 import {getRegisteredLoaders} from './register-loaders';
 import {parseWithLoader, parseWithLoaderInBatches, parseWithLoaderSync} from './parse-with-loader';
 
@@ -13,8 +14,11 @@ export async function parse(data, loaders, options, url) {
     loaders = null;
   }
 
+  // Extract a url for auto detection
+  const autoUrl = isFile(url) ? url.name : url;
+
   loaders = loaders || getRegisteredLoaders();
-  const loader = Array.isArray(loaders) ? autoDetectLoader(url, data, loaders) : loaders;
+  const loader = Array.isArray(loaders) ? autoDetectLoader(autoUrl, data, loaders) : loaders;
   if (!loader) {
     // no loader available
     // TODO: throw error?
@@ -26,7 +30,7 @@ export async function parse(data, loaders, options, url) {
   // Normalize options
   options = mergeLoaderAndUserOptions(options, loader);
 
-  return await parseWithLoader(data, loader, options, url);
+  return await parseWithLoader(data, loader, options, autoUrl);
 }
 
 export function parseSync(data, loaders, options, url) {
@@ -87,32 +91,4 @@ export async function parseInBatchesSync(data, loaders, options, url) {
   options = mergeLoaderAndUserOptions(options, loader);
 
   return parseWithLoaderInBatches(data, loader, options, url);
-}
-
-function mergeLoaderAndUserOptions(options, loader) {
-  // TODO - explain why this optionb is needed for parsing
-  options = Object.assign(
-    {},
-    loader.DEFAULT_OPTIONS,
-    loader.defaultOptions,
-    loader.options,
-    options,
-    {
-      dataType: 'arraybuffer'
-    }
-  );
-
-  // LOGGING
-
-  // options.log can be set to `null` to defeat logging
-  if (options.log === null) {
-    options.log = new NullLog();
-  }
-  // log defaults to console
-  if (!('log' in options)) {
-    /* global console */
-    options.log = console;
-  }
-
-  return options;
 }

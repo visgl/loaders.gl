@@ -9,7 +9,7 @@ import {ScenegraphLayer} from '@deck.gl/mesh-layers';
 import {createGLTFObjects} from '@luma.gl/addons';
 
 import '@loaders.gl/polyfills';
-import {load, registerLoaders} from '@loaders.gl/core';
+import {load, parse, registerLoaders} from '@loaders.gl/core';
 import {
   Tile3DLoader,
   Tile3DFeatureTable,
@@ -81,20 +81,19 @@ export default class App extends PureComponent {
     this._onSelectExample = this._onSelectExample.bind(this);
   }
 
-  componentDidMount() {
-    fileDrop(this._deckRef.deckCanvas, (promise, file) => {
+  async componentDidMount() {
+    fileDrop(this._deckRef.deckCanvas, file => {
       this.setState({droppedFile: file, tile: null});
-      load(promise, Tile3DLoader).then(this._onLoad);
+      parse(file, Tile3DLoader).then(this._onLoad);
     });
 
     // fetch index file
-    fetch(INDEX_FILE)
-      .then(resp => resp.json())
-      .then(data => {
-        this.setState({data});
-        const {category, example} = this.state;
-        this._loadExample(category, example);
-      });
+    const response = await fetch(INDEX_FILE);
+    const data = await response.json();
+    this.setState({data}); // eslint-disable-line
+
+    const {category, example} = this.state;
+    this._loadExample(category, example);
   }
 
   _onViewStateChange({viewState}) {

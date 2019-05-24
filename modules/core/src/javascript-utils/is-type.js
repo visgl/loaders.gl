@@ -1,3 +1,5 @@
+/* global File */
+
 const isBoolean = x => typeof x === 'boolean';
 const isFunction = x => typeof x === 'function';
 const isObject = x => x !== null && typeof x === 'object';
@@ -13,6 +15,8 @@ export const isIterator = x => isObject(x) && 'done' in x && 'value' in x;
 export const isFetchResponse = x =>
   (typeof window !== 'undefined' && x instanceof window.Response) ||
   (x.arrayBuffer && x.json && x.body);
+
+export const isFile = x => typeof File !== 'undefined' && x instanceof File;
 
 export const isWritableDOMStream = x => {
   return isObject(x) && isFunction(x.abort) && isFunction(x.getWriter);
