@@ -13,31 +13,6 @@ const DEFAULT_OPTIONS = {
 const isDataURL = url => url.startsWith('data:');
 const isFileURL = url => typeof File !== 'undefined' && url instanceof File;
 
-// Reads raw file data from:
-// * http/http urls
-// * data urls
-// * File/Blob objects
-// etc?
-export async function readFile(uri, options = {}) {
-  options = getReadFileOptions(options);
-
-  // NOTE: data URLs are decoded by fetch
-
-  // SUPPORT reading from `File` objects
-  if (isFileURL(uri)) {
-    readFileObject(uri, options);
-  }
-
-  // In a web worker, XMLHttpRequest throws invalid URL error if using relative path
-  // resolve url relative to original base
-  // TODO - merge this into `resolvePath?
-  // uri = new URL(uri, location.href).href;
-
-  // Browser: Try to load all URLS via fetch, as they can be local requests (e.g. to a dev server)
-  const response = await fetch(uri, options);
-  return response[options.dataType]();
-}
-
 // File reader function for the browser
 // @param {File|Blob} file  HTML File or Blob object to read as string
 // @returns {Promise.string}  Resolves to a string containing file contents
@@ -82,4 +57,31 @@ function getReadFileOptions(options = {}) {
   options = Object.assign({}, DEFAULT_OPTIONS, options);
   options.responseType = options.responseType || options.dataType;
   return options;
+}
+
+// DEPRECATED
+
+// Reads raw file data from:
+// * http/http urls
+// * data urls
+// * File/Blob objects
+// etc?
+export async function readFile(uri, options = {}) {
+  options = getReadFileOptions(options);
+
+  // NOTE: data URLs are decoded by fetch
+
+  // SUPPORT reading from `File` objects
+  if (isFileURL(uri)) {
+    readFileObject(uri, options);
+  }
+
+  // In a web worker, XMLHttpRequest throws invalid URL error if using relative path
+  // resolve url relative to original base
+  // TODO - merge this into `resolvePath?
+  // uri = new URL(uri, location.href).href;
+
+  // Browser: Try to load all URLS via fetch, as they can be local requests (e.g. to a dev server)
+  const response = await fetch(uri, options);
+  return response[options.dataType]();
 }

@@ -270,19 +270,14 @@ export default class AppAnimationLoop extends AnimationLoop {
       e.preventDefault();
     };
 
-    canvas.ondrop = e => {
-      e.preventDefault();
-      if (e.dataTransfer.files && e.dataTransfer.files.length === 1) {
-        this._deleteScenes();
-        const readPromise = new Promise(resolve => {
-          const reader = new window.FileReader();
-          reader.onload = ev => resolve(ev.target.result);
-          reader.readAsArrayBuffer(e.dataTransfer.files[0]);
-        });
+    canvas.ondrop = async event => {
+      event.preventDefault();
+      if (event.dataTransfer.files && event.dataTransfer.files.length === 1) {
+        const file = event.dataTransfer.files[0]
 
-        loadGLTF(readPromise, this.gl, this.loadOptions).then(result =>
-          Object.assign(this, result)
-        );
+        this._deleteScenes();
+        const result = await loadGLTF(file, this.gl, this.loadOptions);
+        Object.assign(this, result)
       }
     };
   }

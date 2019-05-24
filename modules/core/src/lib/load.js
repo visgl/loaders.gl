@@ -1,3 +1,4 @@
+import {isFile} from '../javascript-utils/is-type';
 import {fetchFile} from './fetch/fetch-file';
 import {isLoaderObject} from './loader-utils/normalize-loader';
 import {autoDetectLoader} from './loader-utils/auto-detect-loader';
@@ -28,7 +29,7 @@ export async function load(url, loaders, options) {
 
   // at this point, data can be binary or text
   let data = url;
-  if (typeof data === 'string') {
+  if (isFile(data) || typeof data === 'string') {
     data = await fetchFile(url, options);
   }
   return parse(data, loaders, options, url);
