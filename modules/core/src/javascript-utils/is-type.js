@@ -16,7 +16,7 @@ export const isFetchResponse = x =>
   (typeof window !== 'undefined' && x instanceof window.Response) ||
   (x.arrayBuffer && x.json && x.body);
 
-export const isFile = x => typeof File !== 'undefined';
+export const isFile = x => typeof File !== 'undefined' && x instanceof File;
 
 export const isWritableDOMStream = x => {
   return isObject(x) && isFunction(x.abort) && isFunction(x.getWriter);

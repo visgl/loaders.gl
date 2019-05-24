@@ -12,7 +12,7 @@ import decodeDataUri from './utils/decode-data-uri.node';
 import {concatenateReadStream} from './utils/stream-utils.node';
 
 const DEFAULT_OPTIONS = {
-  dataType: 'arrayBuffer'
+  dataType: 'arraybuffer'
 };
 
 // const isNode = Boolean(fs && fs.readFile);

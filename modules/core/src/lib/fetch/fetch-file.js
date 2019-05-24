@@ -1,4 +1,5 @@
-/* global fetch, File */
+/* global fetch */
+import {isFile} from '../../javascript-utils/is-type';
 import {resolvePath} from './file-aliases';
 import {readFileObject} from './read-file-browser';
 
@@ -8,8 +9,8 @@ import {readFileObject} from './read-file-browser';
 // * http/http urls
 // * File/Blob objects
 export async function fetchFile(url, options) {
-  if (typeof File !== 'undefined' && url instanceof File) {
-    readFileObject(url, options);
+  if (isFile(url)) {
+    return readFileObject(url, options);
   }
   url = resolvePath(url);
   // TODO - SUPPORT reading from `File` objects

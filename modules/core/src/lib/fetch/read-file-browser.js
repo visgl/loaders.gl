@@ -5,7 +5,7 @@
 import assert from '../../utils/assert';
 
 const DEFAULT_OPTIONS = {
-  dataType: 'arrayBuffer',
+  dataType: 'arraybuffer',
   // TODO - this was mostly set to true to make test cases work
   nothrow: true
 };

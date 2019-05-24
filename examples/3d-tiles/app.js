@@ -9,7 +9,7 @@ import {ScenegraphLayer} from '@deck.gl/mesh-layers';
 import {createGLTFObjects} from '@luma.gl/addons';
 
 import '@loaders.gl/polyfills';
-import {load, registerLoaders} from '@loaders.gl/core';
+import {load, parse, registerLoaders} from '@loaders.gl/core';
 import {
   Tile3DLoader,
   Tile3DFeatureTable,
@@ -84,7 +84,7 @@ export default class App extends PureComponent {
   async componentDidMount() {
     fileDrop(this._deckRef.deckCanvas, file => {
       this.setState({droppedFile: file, tile: null});
-      load(file, Tile3DLoader).then(this._onLoad);
+      parse(file, Tile3DLoader).then(this._onLoad);
     });
 
     // fetch index file
