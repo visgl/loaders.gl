@@ -8,7 +8,7 @@ import {
   isFile
 } from '../../javascript-utils/is-type';
 import {getStreamIterator} from '../../javascript-utils/stream-utils';
-import {readFileObject} from '../fetch/read-file-browser';
+import {readFileObject} from '../fetch/read-file.browser';
 
 const ERR_DATA = 'Cannot convert supplied data type';
 

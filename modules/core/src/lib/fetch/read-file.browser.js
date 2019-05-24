@@ -1,8 +1,8 @@
 // TODO - this file is not tested
-
 /* global fetch */
-/* global File, FileReader */
 import assert from '../../utils/assert';
+import {isFile} from '../../javascript-utils/is-type';
+import fetchFileObject from './fetch-file.browser';
 
 const DEFAULT_OPTIONS = {
   dataType: 'arraybuffer',
@@ -11,27 +11,10 @@ const DEFAULT_OPTIONS = {
 };
 
 const isDataURL = url => url.startsWith('data:');
-const isFileURL = url => typeof File !== 'undefined' && url instanceof File;
 
-// File reader function for the browser
-// @param {File|Blob} file  HTML File or Blob object to read as string
-// @returns {Promise.string}  Resolves to a string containing file contents
 export async function readFileObject(file, options) {
-  return new Promise((resolve, reject) => {
-    try {
-      const reader = new FileReader();
-      reader.onerror = error => reject(new Error(error));
-      reader.onabort = () => reject(new Error('Read aborted.'));
-      reader.onload = () => resolve(reader.result);
-      if (options.dataType !== 'arraybuffer') {
-        reader.readAsText(file);
-      } else {
-        reader.readAsArrayBuffer(file);
-      }
-    } catch (error) {
-      reject(error);
-    }
-  });
+  const response = fetchFileObject(file, options);
+  return options.dataType === 'text' ? response.text() : response.arrayBuffer();
 }
 
 // In a few cases (data URIs, files under Node) "files" can be read synchronously
@@ -72,7 +55,7 @@ export async function readFile(uri, options = {}) {
   // NOTE: data URLs are decoded by fetch
 
   // SUPPORT reading from `File` objects
-  if (isFileURL(uri)) {
+  if (isFile(uri)) {
     readFileObject(uri, options);
   }
 

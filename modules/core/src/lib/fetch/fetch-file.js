@@ -1,7 +1,7 @@
 /* global fetch */
 import {isFile} from '../../javascript-utils/is-type';
 import {resolvePath} from './file-aliases';
-import {readFileObject} from './read-file-browser';
+import {readFileObject} from './read-file.browser';
 
 // As fetch but respects pathPrefix and file aliases
 // Reads file data from:
