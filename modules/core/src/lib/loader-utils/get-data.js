@@ -5,10 +5,10 @@ import {
   isAsyncIterable,
   isIterable,
   isIterator,
-  isFile
+  isFileReadable
 } from '../../javascript-utils/is-type';
 import {getStreamIterator} from '../../javascript-utils/stream-utils';
-import {readFileObject} from '../fetch/read-file.browser';
+import fetchFileReadable from '../fetch/fetch-file.browser';
 
 const ERR_DATA = 'Cannot convert supplied data type';
 
@@ -46,12 +46,13 @@ export async function getArrayBufferOrStringFromData(data, loader) {
     return getArrayBufferOrStringFromDataSync(data, loader);
   }
 
-  if (isFetchResponse(data)) {
-    return loader.binary ? await data.arrayBuffer() : data.text();
+  // Blobs and files are FileReader compatible
+  if (isFileReadable(data)) {
+    data = await fetchFileReadable(data);
   }
 
-  if (isFile(data)) {
-    return await readFileObject(data, {dataType: 'arraybuffer'});
+  if (isFetchResponse(data)) {
+    return loader.binary ? await data.arrayBuffer() : data.text();
   }
 
   // if (isIterable(data) || isAsyncIterable(data)) {
@@ -68,7 +69,8 @@ export async function getAsyncIteratorFromData(data, loader) {
     return data;
   }
 
-  if (isFetchResponse(data)) {
+  // TODO: Our fetchFileReaderObject response does not yet support a body stream
+  if (isFetchResponse(data) && data.body) {
     return getStreamIterator(data.body);
   }
 

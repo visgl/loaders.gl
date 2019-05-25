@@ -1,6 +1,16 @@
-import {load, registerLoaders} from '@loaders.gl/core';
+/* global Blob */
+import {isBrowser, load, registerLoaders} from '@loaders.gl/core';
 
 import test from 'tape-promise/tape';
+
+const JSON_DATA = [{col1: 22, col2: 'abc'}];
+
+const JSONLoader = {
+  name: 'JSON',
+  extensions: ['json'],
+  testText: null,
+  parseTextSync: JSON.parse
+};
 
 test('load#load', t => {
   t.ok(load, 'load defined');
@@ -20,4 +30,21 @@ test('load#auto detect loader', t => {
     }
   });
   load('package.json');
+});
+
+test('load#Blob (text)', async t => {
+  if (!isBrowser) {
+    t.comment('Skipping load(Blob) tests in Node.js');
+    t.end();
+    return;
+  }
+
+  const TEXT_DATA = JSON.stringify(JSON_DATA);
+  const blob = new Blob([TEXT_DATA]);
+
+  const data = await load(blob, JSONLoader);
+
+  t.deepEquals(data, JSON_DATA, 'load(Blob) returned data');
+
+  t.end();
 });

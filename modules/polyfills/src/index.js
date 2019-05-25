@@ -4,6 +4,7 @@ import {isBrowser, global} from './utils/globals';
 import {TextDecoder, TextEncoder} from './text-encoding/encoding';
 import * as base64 from './text-encoding/btoa.node';
 
+import HeadersNode from './fetch-node/headers.node';
 import fetchNode from './fetch-node/fetch.node';
 
 import {encodeImageNode} from './images-node/encode-image.node';
@@ -33,6 +34,10 @@ if (!isBrowser && !('btoa' in global) && base64.btoa) {
 // POLYFILL: fetch
 // - Node: Yes
 // - Browser: No. For This polyfill is node only, IE11 etc, install external polyfill
+
+if (!isBrowser && !('Headers' in global) && HeadersNode) {
+  global['Headers'] = HeadersNode;
+}
 
 if (!isBrowser && !('fetch' in global) && fetchNode) {
   global['fetch'] = fetchNode;

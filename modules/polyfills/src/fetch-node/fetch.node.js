@@ -10,6 +10,7 @@ import util from 'util';
 import {toArrayBuffer} from './utils/to-array-buffer.node';
 import decodeDataUri from './utils/decode-data-uri.node';
 import {concatenateReadStream} from './utils/stream-utils.node';
+import Headers from './headers.node';
 
 const DEFAULT_OPTIONS = {
   dataType: 'arraybuffer'
@@ -26,27 +27,6 @@ const isRequestURL = url => url.startsWith('http:') || url.startsWith('https:');
 // Note: This is intended to be a lightweight implementation and will have limitations.
 // Apps that require more complete fech emulation in Node
 // are encouraged to use dedicated fetch polyfill modules.
-class NodeHeaders {
-  constructor(response) {
-    this.reponse = response;
-  }
-
-  get(header) {
-    if (this.response.httpResponse) {
-      return this.response.httpResponse.getHeaders()[header];
-    }
-    switch (header) {
-      case 'Content-Length':
-        return this._getContentLength();
-      default:
-    }
-    return undefined;
-  }
-
-  _getContentLength() {
-    return this._contentLength;
-  }
-}
 
 // See https://developer.mozilla.org/en-US/docs/Web/API/Response
 class NodeFetchResponse {
@@ -92,25 +72,42 @@ class NodeFetchResponse {
   // PRIVATE
 
   _getHeaders() {
+    // Under Node.js we return a mock "fetch response object"
+    // so that apps can use the same API as in the browser.
+    //
+    // Note: This is intended to be a lightweight implementation and will have limitations.
+    // Apps that require more complete fech emulation in Node
+    // are encouraged to use dedicated fetch polyfill modules.
+
+    const headers = {};
+
+    if (this.httpResponse) {
+      const httpHeaders = this.httpResponse.getHeaders();
+      for (const name in httpHeaders) {
+        const header = headers[name];
+        headers[name] = String(header);
+      }
+    } else {
+      const contentLength = this._getContentLength();
+      if (Number.isFinite(contentLength)) {
+        headers['Content-Length'] = contentLength;
+      }
+    }
+
+    return new Headers(headers);
+  }
+
+  _getContentLength() {
     if (isRequestURL(this.url)) {
-      return new NodeHeaders(this);
+      // Needs to be read from actual headers
+      return null;
+    } else if (isDataURL(this.url)) {
+      return this.url.length - 'data://'.length;
     }
-
-    if (isDataURL(this.url)) {
-      return {
-        'Content-Length': this.url.length
-      };
-    }
-    if (isRequestURL(this.repsonse.url)) {
-      return {};
-    }
-
     // File URL
     // TODO - how to handle non-existing file, this presumably just throws
-    const stats = fs.statSync(this.response.url);
-    return {
-      'Content-Length': stats.size
-    };
+    const stats = fs.statSync(this.url);
+    return stats.size;
   }
 }
 

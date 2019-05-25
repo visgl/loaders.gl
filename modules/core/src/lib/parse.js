@@ -1,4 +1,4 @@
-import {isFile} from '../javascript-utils/is-type';
+import {isFileReadable} from '../javascript-utils/is-type';
 import {autoDetectLoader} from './loader-utils/auto-detect-loader';
 import {normalizeLoader, isLoaderObject} from './loader-utils/normalize-loader';
 import {mergeLoaderAndUserOptions} from './loader-utils/normalize-options';
@@ -15,7 +15,7 @@ export async function parse(data, loaders, options, url) {
   }
 
   // Extract a url for auto detection
-  const autoUrl = isFile(url) ? url.name : url;
+  const autoUrl = isFileReadable(url) ? url.name : url;
 
   loaders = loaders || getRegisteredLoaders();
   const loader = Array.isArray(loaders) ? autoDetectLoader(autoUrl, data, loaders) : loaders;
