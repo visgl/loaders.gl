@@ -1,6 +1,6 @@
 import {getImageMIMEType} from '@loaders.gl/images';
+import {padTo4Bytes, copyToArray} from '@loaders.gl/loader-utils';
 import assert from './utils/assert';
-import {padTo4Bytes, copyToArray} from './utils/encode-utils';
 import {
   getAccessorArrayTypeAndLength,
   getAccessorTypeFromSize,

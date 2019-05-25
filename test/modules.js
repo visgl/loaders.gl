@@ -12,8 +12,8 @@ require('@loaders.gl/images/test');
 
 // Pointcloud/Mesh Formats
 require('@loaders.gl/draco/test');
-require('@loaders.gl/las/test');
-require('@loaders.gl/obj/test');
+// require('@loaders.gl/las/test');
+// require('@loaders.gl/obj/test');
 require('@loaders.gl/pcd/test');
 require('@loaders.gl/ply/test');
 

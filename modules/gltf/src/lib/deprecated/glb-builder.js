@@ -1,8 +1,7 @@
 /* eslint-disable camelcase, max-statements */
+import {padTo4Bytes, copyToArray} from '@loaders.gl/loader-utils';
 import {isImage} from '@loaders.gl/images';
 import {getAccessorTypeFromSize, getComponentTypeFromArray} from '../gltf-utils/gltf-utils';
-import {padTo4Bytes} from '../utils/encode-utils';
-import {copyToArray} from '../utils/encode-utils';
 import encodeGLBSync from '../encode-glb';
 import packBinaryJson from './packed-json/pack-binary-json';
 

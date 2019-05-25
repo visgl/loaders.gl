@@ -1,5 +1,8 @@
 /* eslint-disable camelcase, max-statements */
-import {copyPaddedStringToDataView, copyPaddedArrayBufferToDataView} from './utils/encode-utils';
+import {
+  copyPaddedStringToDataView,
+  copyPaddedArrayBufferToDataView
+} from '@loaders.gl/loader-utils';
 
 const MAGIC_glTF = 0x46546c67; // glTF in ASCII
 const MAGIC_JSON = 0x4e4f534a; // JSON in ASCII
