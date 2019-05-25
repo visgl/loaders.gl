@@ -2,7 +2,7 @@ import {getImageMIMEType} from '@loaders.gl/images';
 import assert from './utils/assert';
 import {padTo4Bytes, copyToArray} from './utils/encode-utils';
 import {
-  getArrayTypeAndLength,
+  getAccessorArrayTypeAndLength,
   getAccessorTypeFromSize,
   getComponentTypeFromArray
 } from './gltf-utils/gltf-utils';
@@ -151,7 +151,7 @@ export default class GLTFScenegraph {
     const arrayBuffer = buffer.data;
 
     // Create a new typed array as a view into the combined buffer
-    const {ArrayType, length} = getArrayTypeAndLength(accessor, bufferView);
+    const {ArrayType, length} = getAccessorArrayTypeAndLength(accessor, bufferView);
     const byteOffset = bufferView.byteOffset + accessor.byteOffset;
     return new ArrayType(arrayBuffer, byteOffset, length);
   }
