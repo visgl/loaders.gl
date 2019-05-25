@@ -1,33 +1,5 @@
-import {assert} from '@loaders.gl/core';
-
-// TODO - use ./gltf-type-utils.js
-const TYPE_COMPONENTS = {
-  SCALAR: 1,
-  VEC2: 2,
-  VEC3: 3,
-  VEC4: 4,
-  MAT2: 4,
-  MAT3: 9,
-  MAT4: 16
-};
-
-const COMPONENT_TYPE_BYTE_SIZE = {
-  5120: 1,
-  5121: 1,
-  5122: 2,
-  5123: 2,
-  5125: 4,
-  5126: 4
-};
-
-const COMPONENT_TYPE_ARRAY = {
-  5120: Int8Array,
-  5121: Uint8Array,
-  5122: Int16Array,
-  5123: Uint16Array,
-  5125: Uint32Array,
-  5126: Float32Array
-};
+import assert from '../../utils/assert';
+import {getAccessorArrayTypeAndLength} from '../../gltf-utils/gltf-utils';
 
 export default function unpackGLBBuffers(arrayBuffer, json, binaryByteOffset) {
   // TODO - really inefficient, should just use the offset into the original array buffer
@@ -63,7 +35,7 @@ function unpackAccessors(arrayBuffer, bufferViews, json) {
     // Draco encoded meshes don't have bufferView in accessor
     if (bufferView) {
       // Create a new typed array as a view into the combined buffer
-      const {ArrayType, length} = getArrayTypeAndLength(accessor, bufferView);
+      const {ArrayType, length} = getAccessorArrayTypeAndLength(accessor, bufferView);
       const array = new ArrayType(arrayBuffer, bufferView.byteOffset, length);
       // Store the metadata on the array (e.g. needed to determine number of components per element)
       array.accessor = accessor;
@@ -98,16 +70,6 @@ function unpackImages(arrayBuffer, bufferViews, json) {
 }
 
 // Helper methods
-
-function getArrayTypeAndLength(accessor, bufferView) {
-  const ArrayType = COMPONENT_TYPE_ARRAY[accessor.componentType];
-  const components = TYPE_COMPONENTS[accessor.type];
-  const bytesPerComponent = COMPONENT_TYPE_BYTE_SIZE[accessor.componentType];
-  const length = accessor.count * components;
-  const byteLength = accessor.count * components * bytesPerComponent;
-  assert(byteLength >= 0 && byteLength <= bufferView.byteLength);
-  return {ArrayType, length, byteLength};
-}
 
 // json.accessors = json.accessors || [];
 // json.bufferViews = json.bufferViews || [];

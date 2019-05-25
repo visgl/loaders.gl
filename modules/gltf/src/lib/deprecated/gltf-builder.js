@@ -1,5 +1,5 @@
-import {assert} from '@loaders.gl/core';
 import {getImageMetadata} from '@loaders.gl/images';
+import assert from '../utils/assert';
 import {KHR_DRACO_MESH_COMPRESSION, UBER_POINT_CLOUD_EXTENSION} from '../gltf-constants';
 import GLBBuilder from './glb-builder';
 import packBinaryJson from './packed-json/pack-binary-json';

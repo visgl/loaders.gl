@@ -1,7 +1,6 @@
 /* eslint-disable camelcase, max-statements, no-restricted-globals */
 /* global TextDecoder */
 import {fetchFile} from '@loaders.gl/core';
-import unpackGLTFBuffers from './gltf-utils/unpack-gltf-buffers';
 import assert from './utils/assert';
 import {getFullUri} from './gltf-utils/gltf-utils';
 import parseGLBSync, {isGLB} from './parse-glb';
@@ -12,7 +11,7 @@ import * as EXTENSIONS from './extensions';
 //   ATTRIBUTE_TYPE_TO_COMPONENTS,
 //   ATTRIBUTE_COMPONENT_TYPE_TO_BYTE_SIZE,
 //   ATTRIBUTE_COMPONENT_TYPE_TO_ARRAY
-// } from '../gltf/gltf-type-utils';
+// } from '../gltf/gltf-utils';
 
 const DEFAULT_SYNC_OPTIONS = {
   fetchLinkedResources: false, // Fetch any linked .BIN buffers, decode base64
@@ -60,19 +59,13 @@ export function parseGLTFSync(gltf, arrayBufferOrString, byteOffset = 0, options
   } else if (data instanceof ArrayBuffer) {
     // Populates JSON and some bin chunk info
     byteOffset = parseGLBSync(gltf, data, byteOffset, options);
+
     if (gltf.hasBinChunk) {
       gltf.buffers.push({
         arrayBuffer: data,
         byteOffset: gltf.binChunkByteOffset,
         byteLength: gltf.binChunkLength
       });
-
-      // TODO - unpack across all buffers
-      gltf.unpackedBuffers = unpackGLTFBuffers(
-        gltf.buffers[0].arrayBuffer,
-        gltf.json,
-        gltf.buffers[0].byteOffset
-      );
     }
   } else {
     // Assume parsed JSON
