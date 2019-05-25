@@ -1,5 +1,5 @@
 // TODO - remove
-import {getAccessorTypeFromSize, getComponentTypeFromArray} from './gltf-type-utils';
+import {getAccessorTypeFromSize, getComponentTypeFromArray} from './gltf-utils';
 
 // Returns a fresh attributes object with glTF-standardized attributes names
 // Attributes that cannot be identified will not be included

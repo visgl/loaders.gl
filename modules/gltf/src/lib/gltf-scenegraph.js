@@ -1,7 +1,11 @@
 import {getImageMIMEType} from '@loaders.gl/images';
 import assert from './utils/assert';
-import {padTo4Bytes} from './utils/encode-utils';
-import {getAccessorTypeFromSize, getComponentTypeFromArray} from './gltf-utils/gltf-type-utils';
+import {padTo4Bytes, copyToArray} from './utils/encode-utils';
+import {
+  getArrayTypeAndLength,
+  getAccessorTypeFromSize,
+  getComponentTypeFromArray
+} from './gltf-utils/gltf-utils';
 
 // Class for structured access to GLTF data
 export default class GLTFScenegraph {
@@ -127,28 +131,52 @@ export default class GLTFScenegraph {
     return object;
   }
 
-  getBufferViewArray(bufferViewIndex) {
-    const bufferView = this.gltf.bufferViews[bufferViewIndex];
-    if (this.glbParser) {
-      return this.glbParser.getBufferView(bufferView);
-    }
+  // accepts buffer view index or buffer view object
+  // returns a `Uint8Array`
+  getTypedArrayForBufferView(bufferView) {
+    bufferView = this.getBufferView(bufferView);
+    const buffer = this.getBuffer(bufferView.buffer);
+    const arrayBuffer = buffer.data;
 
-    const buffer = this.gltf.buffers[bufferView.buffer].data;
     const byteOffset = bufferView.byteOffset || 0;
-    return new Uint8Array(buffer, byteOffset, bufferView.byteLength);
+    return new Uint8Array(arrayBuffer, byteOffset, bufferView.byteLength);
+  }
+
+  // accepts accessor index or accessor object
+  // returns a typed array with type that matches the types
+  getTypedArrayForAccessor(accessor) {
+    accessor = this.getAccessor(accessor);
+    const bufferView = this.getBuffer(accessor.bufferView);
+    const buffer = this.getBuffer(bufferView.buffer);
+    const arrayBuffer = buffer.data;
+
+    // Create a new typed array as a view into the combined buffer
+    const {ArrayType, length} = getArrayTypeAndLength(accessor, bufferView);
+    const byteOffset = bufferView.byteOffset + accessor.byteOffset;
+    return new ArrayType(arrayBuffer, byteOffset, length);
+  }
+
+  // accepts accessor index or accessor object
+  // returns a `Uint8Array`
+  getTypedArrayForImageData(image) {
+    image = this.getAccessor(image);
+    const bufferView = this.getBuffer(image.bufferView);
+    const buffer = this.getBuffer(bufferView.buffer);
+    const arrayBuffer = buffer.data;
+
+    const byteOffset = bufferView.byteOffset || 0;
+    return new Uint8Array(arrayBuffer, byteOffset, bufferView.byteLength);
   }
 
   // MODIFERS
 
   // Add an extra application-defined key to the top-level data structure
-  // By default packs JSON by extracting binary data and replacing it with JSON pointers
   addApplicationData(key, data) {
     this.json[key] = data;
     return this;
   }
 
   // `extras` - Standard GLTF field for storing application specific data
-  // By default packs JSON by extracting binary data and replacing it with JSON pointers
   addExtraData(key, data) {
     this.json.extras = this.json.extras || {};
     this.json.extras[key] = data;
@@ -156,7 +184,6 @@ export default class GLTFScenegraph {
   }
 
   // Add to standard GLTF top level extension object, mark as used
-  // By default packs JSON by extracting binary data and replacing it with JSON pointers
   addExtension(extensionName, data) {
     assert(data);
     this.json.extensions = this.json.extensions || {};
@@ -166,7 +193,6 @@ export default class GLTFScenegraph {
   }
 
   // Standard GLTF top level extension object, mark as used and required
-  // By default packs JSON by extracting binary data and replacing it with JSON pointers
   addRequiredExtension(extensionName, data) {
     assert(data);
     this.addExtension(extensionName, data);
@@ -207,6 +233,7 @@ export default class GLTFScenegraph {
   setObjectExtension(object, extensionName, data) {
     const extensions = object.extensions || {};
     extensions[extensionName] = data;
+    // TODO - add to usedExtensions...
   }
 
   addMesh(attributes, indices, mode = 4) {
@@ -319,6 +346,35 @@ export default class GLTFScenegraph {
     return this.addAccessor(bufferViewIndex, Object.assign(accessorDefaults, accessor));
   }
 
+  // Pack the binary chunk
+  createBinaryChunk() {
+    // Already packed
+    if (this.arrayBuffer) {
+      return;
+    }
+
+    // Allocate total array
+    const totalByteLength = this.byteLength;
+    const arrayBuffer = new ArrayBuffer(totalByteLength);
+    const targetArray = new Uint8Array(arrayBuffer);
+
+    // Copy each array into
+    let dstByteOffset = 0;
+    for (let i = 0; i < this.sourceBuffers.length; i++) {
+      const sourceBuffer = this.sourceBuffers[i];
+      dstByteOffset = copyToArray(sourceBuffer, targetArray, dstByteOffset);
+    }
+
+    // Update the glTF BIN CHUNK byte length
+    this.json.buffers[0].byteLength = totalByteLength;
+
+    // Save generated arrayBuffer
+    this.arrayBuffer = arrayBuffer;
+
+    // Clear out sourceBuffers
+    this.sourceBuffers = [];
+  }
+
   // PRIVATE
 
   _removeStringFromArray(array, string) {
@@ -332,12 +388,4 @@ export default class GLTFScenegraph {
       }
     }
   }
-
-  // _checkOptions(options) {
-  //   // Warn if GLBBuilder options are used
-  //   if ('packTypedArrays' in options || 'flattenArrays' in options) {
-  //     // eslint-disable-next-line
-  //     console.warn('packTypedArrays and flattenArrays options not supported');
-  //   }
-  // }
 }

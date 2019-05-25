@@ -2,7 +2,7 @@
 import test from 'tape-promise/tape';
 
 import {GLBBuilder} from '@loaders.gl/gltf';
-import unpackGLBBuffers from '@loaders.gl/gltf/lib/gltf-utils/unpack-gltf-buffers';
+import unpackGLBBuffers from '@loaders.gl/gltf/lib/deprecated/packed-json/unpack-gltf-buffers';
 
 const BUFFERS = [
   new Int8Array([3, 2, 3]),

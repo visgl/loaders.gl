@@ -1,13 +1,13 @@
 /* eslint-disable camelcase, max-statements, no-restricted-globals */
-import unpackGLTFBuffers from '../gltf-utils/unpack-gltf-buffers';
 import assert from '../utils/assert';
 import parseGLBSync, {isGLB} from '../parse-glb';
 import {
   ATTRIBUTE_TYPE_TO_COMPONENTS,
   ATTRIBUTE_COMPONENT_TYPE_TO_BYTE_SIZE,
   ATTRIBUTE_COMPONENT_TYPE_TO_ARRAY
-} from '../gltf-utils/gltf-type-utils';
+} from '../gltf-utils/gltf-utils';
 import unpackBinaryJson from './packed-json/unpack-binary-json';
+import unpackGLTFBuffers from './packed-json/unpack-gltf-buffers';
 
 export default class GLBParser {
   static isGLB(arrayBuffer, options = {}) {
@@ -39,12 +39,15 @@ export default class GLBParser {
 
       // Unpack binary JSON
       this.packedJson = this.json;
-      this.unpackedBuffers = unpackGLTFBuffers(
+
+      const unpackedBuffers = unpackGLTFBuffers(
         this.glbArrayBuffer,
         this.json,
         this.binaryByteOffset
       );
-      this.json = unpackBinaryJson(this.json, this.unpackedBuffers);
+      this.json = unpackBinaryJson(this.json, unpackedBuffers);
+
+      this.unpackedBuffers = unpackedBuffers;
     }
 
     return this;

@@ -3,7 +3,7 @@ import {assert} from '@loaders.gl/core';
 import {getImageSize} from '@loaders.gl/images';
 import {isImage} from '@loaders.gl/images';
 
-import {getAccessorTypeFromSize, getComponentTypeFromArray} from './gltf-utils/gltf-type-utils';
+import {getAccessorTypeFromSize, getComponentTypeFromArray} from './gltf-utils/gltf-utils';
 import {KHR_DRACO_MESH_COMPRESSION, UBER_POINT_CLOUD_EXTENSION} from './gltf-constants';
 
 const DEFAULT_GTLF = {
