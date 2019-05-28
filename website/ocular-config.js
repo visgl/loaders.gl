@@ -68,19 +68,19 @@ module.exports = {
 
   PROJECTS: [
     {
-      name: 'deck.gl',
+      title: 'deck.gl',
       url: 'https://deck.gl'
     },
     {
-      name: 'luma.gl',
+      title: 'luma.gl',
       url: 'https://luma.gl'
     },
     {
-      name: 'react-map-gl',
+      title: 'react-map-gl',
       url: 'https://uber.github.io/react-map-gl'
     },
     {
-      name: 'react-vis',
+      title: 'react-vis',
       url: 'https://uber.github.io/react-vis'
     }
   ],
