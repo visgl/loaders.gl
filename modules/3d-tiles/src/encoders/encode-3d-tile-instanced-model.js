@@ -1,6 +1,6 @@
+import {copyStringToDataView} from '@loaders.gl/loader-utils';
 import {MAGIC_ARRAY} from '../constants';
 import {encode3DTileHeader, encode3DTileByteLength} from './helpers/encode-3d-tile-header';
-import {copyStringToDataView} from './helpers/encode-utils';
 
 // Procedurally encode the tile array buffer for testing purposes
 // eslint-disable-next-line max-statements

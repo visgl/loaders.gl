@@ -1,6 +1,9 @@
-import {TextEncoder} from '@loaders.gl/core';
+export function padTo4Bytes(byteLength) {
+  return (byteLength + 3) & ~3;
+}
 
-/* Copies two different ArrayBuffers
+/* Creates a new Uint8Array based on two different ArrayBuffers
+ * @private
  * @param {ArrayBuffers} buffer1 The first buffer.
  * @param {ArrayBuffers} buffer2 The second buffer.
  * @return {ArrayBuffers} The new ArrayBuffer created out of the two.
@@ -15,45 +18,6 @@ export function copyArrayBuffer(
   const sourceArray = new Uint8Array(sourceBuffer);
   targetArray.set(sourceArray);
   return targetBuffer;
-}
-
-export function copyPaddedArrayBufferToDataView(dataView, byteOffset, sourceBuffer, padding) {
-  const paddedLength = padTo4Bytes(sourceBuffer.byteLength);
-  const padLength = paddedLength - sourceBuffer.byteLength;
-
-  if (dataView) {
-    // Copy array
-    const targetArray = new Uint8Array(
-      dataView.buffer,
-      dataView.byteOffset + byteOffset,
-      sourceBuffer.byteLength
-    );
-    const sourceArray = new Uint8Array(sourceBuffer);
-    targetArray.set(sourceArray);
-
-    // Add PADDING
-    for (let i = 0; i < padLength; ++i) {
-      // json chunk is padded with spaces (ASCII 0x20)
-      dataView.setUint8(byteOffset + sourceBuffer.byteLength + i, 0x20);
-    }
-  }
-  byteOffset += paddedLength;
-  return byteOffset;
-}
-
-export function copyPaddedStringToDataView(dataView, byteOffset, string, padding) {
-  const textEncoder = new TextEncoder('utf8');
-  // PERFORMANCE IDEA: We encode twice, once to get size and once to store
-  // PERFORMANCE IDEA: Use TextEncoder.encodeInto() to avoid temporary copy
-  const stringBuffer = textEncoder.encode(string);
-
-  byteOffset = copyPaddedArrayBufferToDataView(dataView, byteOffset, stringBuffer, padding);
-
-  return byteOffset;
-}
-
-export function padTo4Bytes(byteLength) {
-  return (byteLength + 3) & ~3;
 }
 
 /**
