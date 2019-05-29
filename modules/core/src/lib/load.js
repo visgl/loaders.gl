@@ -1,4 +1,4 @@
-import {isFile} from '../javascript-utils/is-type';
+import {isFileReadable} from '../javascript-utils/is-type';
 import {fetchFile} from './fetch/fetch-file';
 import {isLoaderObject} from './loader-utils/normalize-loader';
 import {mergeLoaderAndUserOptions} from './loader-utils/normalize-options';
@@ -24,7 +24,7 @@ export async function load(url, loaders, options) {
   }
 
   // Extract a url for auto detection
-  const autoUrl = isFile(url) ? url.name : url;
+  const autoUrl = isFileReadable(url) ? url.name : url;
 
   loaders = loaders || getRegisteredLoaders();
   const loader = Array.isArray(loaders) ? autoDetectLoader(autoUrl, null, loaders) : loaders;
@@ -38,7 +38,7 @@ export async function load(url, loaders, options) {
 
   // at this point, data can be binary or text
   let data = url;
-  if (isFile(data) || typeof data === 'string') {
+  if (isFileReadable(data) || typeof data === 'string') {
     data = await fetchFile(url, options);
   }
   return parse(data, loaders, options, autoUrl);

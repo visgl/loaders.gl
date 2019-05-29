@@ -1,4 +1,4 @@
-/* global File */
+/* global File, Blob */
 
 const isBoolean = x => typeof x === 'boolean';
 const isFunction = x => typeof x === 'function';
@@ -14,9 +14,11 @@ export const isIterator = x => isObject(x) && 'done' in x && 'value' in x;
 
 export const isFetchResponse = x =>
   (typeof window !== 'undefined' && x instanceof window.Response) ||
-  (x.arrayBuffer && x.json && x.body);
+  (x.arrayBuffer && x.text && x.json);
 
 export const isFile = x => typeof File !== 'undefined' && x instanceof File;
+export const isBlob = x => typeof Blob !== 'undefined' && x instanceof Blob;
+export const isFileReadable = x => isFile(x) || isBlob(x); // Blob & File are FileReader compatible
 
 export const isWritableDOMStream = x => {
   return isObject(x) && isFunction(x.abort) && isFunction(x.getWriter);

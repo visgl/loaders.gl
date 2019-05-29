@@ -29,6 +29,7 @@
     "./src/fetch-node/utils/decode-data-uri.node.js": false,
     "./src/fetch-node/utils/stream-utils.node.js": false,
     "./src/fetch-node/utils/to-array-buffer.node.js": false,
+    "./src/fetch-node/headers.node.js": false,
     "./src/fetch-node/fetch.node.js": false,
     "fs": false,
     "http": false,

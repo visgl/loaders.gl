@@ -1,56 +1,74 @@
-/* global FileReader */
+/* global FileReader, Headers */
 import assert from '../../utils/assert';
 
 // File reader fetch "polyfill" for the browser
-class FileResponse {
-  constructor(file) {
-    this._file = file;
-    this._promise = new Promise((resolve, reject) => {
+class FileReadableResponse {
+  constructor(fileOrBlob) {
+    this._fileOrBlob = fileOrBlob;
+    this.bodyUsed = false;
+  }
+
+  get headers() {
+    return new Headers({
+      'Content-Length': this._fileOrBlob.size,
+      'Content-Type': this._fileOrBlob.type
+    });
+  }
+
+  url() {
+    // Note: This is just the file name without path information
+    // Note: File has `name` field but the Blob baseclass does not
+    return this._fileOrBlob.name || '';
+  }
+
+  async arrayBuffer() {
+    const {reader, promise} = this._getFileReader();
+    reader.readAsArrayBuffer(this._fileOrBlob);
+    return promise;
+  }
+
+  async text() {
+    const {reader, promise} = this._getFileReader();
+    reader.readAsText(this._fileOrBlob);
+    return promise;
+  }
+
+  async json() {
+    const text = await this.text();
+    return JSON.parse(text);
+  }
+
+  // TODO - body, how to support stream?
+  // Can this be portable?
+  // eslint-disable-next-line
+  // https://developer.mozilla.org/en-US/docs/Web/API/Streams_API/Using_readable_streams#Creating_your_own_custom_readable_stream
+  // get body() {
+  //   assert(false);
+  // }
+
+  // PRIVATE
+
+  _getFileReader() {
+    assert(!this.bodyUsed);
+    this.bodyUsed = true;
+
+    let reader;
+    const promise = new Promise((resolve, reject) => {
       try {
-        this._reader = new FileReader();
-        this._reader.onerror = error => reject(new Error(error));
-        this._reader.onabort = () => reject(new Error('Read aborted.'));
-        this._reader.onload = () => resolve(this._reader.result);
+        reader = new FileReader();
+        reader.onerror = error => reject(new Error(error));
+        reader.onabort = () => reject(new Error('Read aborted.'));
+        reader.onload = () => resolve(reader.result);
       } catch (error) {
         reject(error);
       }
     });
-  }
-
-  headers() {
-    return {};
-  }
-
-  url() {
-    return this._file.name;
-  }
-
-  async arrayBuffer() {
-    this.bodyUsed = true;
-    this._reader.readAsArrayBuffer(this._file);
-    return this._promise;
-  }
-
-  async text() {
-    this.bodyUsed = true;
-    this._reader.readAsText(this._file);
-    return this._promise;
-  }
-
-  async json() {
-    return JSON.parse(this.text());
-  }
-
-  get body() {
-    // TODO - body, how to support stream?
-    // eslint-disable-next-line
-    // https://developer.mozilla.org/en-US/docs/Web/API/Streams_API/Using_readable_streams#Creating_your_own_custom_readable_stream
-    assert(false);
+    return {reader, promise};
   }
 }
 
 // @param {File|Blob} file  HTML File or Blob object to read as string
 // @returns {Promise.string}  Resolves to a string containing file contents
-export default function fetchFileObject(file, options) {
-  return new FileResponse(file, options);
+export default function fetchFileReadable(fileOrBlob, options) {
+  return Promise.resolve(new FileReadableResponse(fileOrBlob, options));
 }

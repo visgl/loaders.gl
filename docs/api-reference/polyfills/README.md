@@ -34,15 +34,15 @@ The Node.js `fetch` polyfill supports a subset of the browser fetch API, includi
 
 `TextEncoder` and `TextDecoder` polyfills are provided to ensure these APIs are always available. In modern browsers these will evaluate to the built-in objects of the same name, however under Node.js polyfills are transparently installed.
 
-Note: The polyfill only guarantees UTF8 support.
+Note: The provided polyfills only guarantee UTF8 support.
 
 ## Remarks
 
+- Applications should only install this module if they need to run under older environments. While the polyfills are only installed at runtime if the platform does not already support them, importing this module will increase the application's bundle size.
 - Refer to browser documentation for the usage of these classes, e.g. MDN.
-- In the browser, overhead of using these imports is very low, as they refer to built-in classes.
-- If working under older browsers, e.g. IE11, you may need to install your own TextEncoder/TextDecoder polyfills before loading this library (to be confirmed...)
+- In the browser, overhead of using these imports is very low, as most polyfills are only bundled under Node.js.
+- If working under older browsers, e.g. IE11, you may need to install your own TextEncoder/TextDecoder polyfills before loading this library
 
+## Attribution
 
-## Remarks
-
-Note: Applications should only install this module if they need to run under older environments. While the polyfills are only installed at runtime if the platform does not already support them, importing this module will increase the application's bundle size.
+The `Header` polyfill (for Node.js `fetch`) is a fork of the implementation in https://github.com/github/fetch (MIT license).

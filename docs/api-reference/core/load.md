@@ -10,17 +10,22 @@ The `load` function is used to load and parse data with a specific _loader objec
 
 The `loaders` parameter can also be omitted, in which case any _loader objects_ previously registered with [`registerLoaders`](docs/api-reference/core/register-loaders) will be used.
 
-- `url` - Can be a string, either a data url or a request url, or in Node.js, a file name, or in the browser, a File object. Or any format that could be accepted by [`parse`](https://github.com/uber-web/loaders.gl/blob/master/docs/api-reference/core/parse.md#parsedata--arraybuffer--string--options--object--url--string--promise). If `url` is not a `string`, will call `parse` directly.
-- `data` - loaded data, either in binary or text format.
+- `url` - Urls can be data urls (`data://`) or a request (`http://` or `https://`) urls, or a file name (Node.js only). Also accepts `File` or `Blob` object (Browser only). Can also accept any format that is accepted by [`parse`](https://github.com/uber-web/loaders.gl/blob/master/docs/api-reference/core/parse.md), with the exception of strings that are interpreted as urls.
 - `loaders` - can be a single loader or an array of loaders. If ommitted, will use the list of registered loaders (see `registerLoaders`)
 - `options` - optional, contains both options for the read process and options for the loader (see documentation of the specific loader).
-- `options.dataType`=`arraybuffer` - By default reads as binary. Set to 'text' to read as text.
+
+- `options.dataType`=`arraybuffer` - Default depends on loader object. Set to 'text' to read as text.
+
+`url` values
 
 Returns:
 
-- Return value depends on the _loader object_ category
+- Return value depends on the _loader category_.
 
 Notes:
 
+- If `url` is not a `string`, `load` will call `parse` directly.
 - Any path prefix set by `setPathPrefix` will be appended to relative urls.
 - `load` takes a `url` and a loader object, checks what type of data that loader prefers to work on (e.g. text, binary, stream, ...), loads the data in the appropriate way, and passes it to the loader.
+- If `@loaders.gl/polyfills` is installed, `load` will work under Node.js as well.
+
