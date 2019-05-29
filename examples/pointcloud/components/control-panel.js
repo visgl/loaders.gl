@@ -71,7 +71,7 @@ export default class ControlPanel extends PureComponent {
   _renderList() {
     const {examples = {}, selectedCategory, selectedExample, onExampleChange} = this.props;
 
-    if ((!selectedCategory || !selectedExample)) {
+    if (!selectedCategory || !selectedExample) {
       return false;
     }
 
@@ -116,7 +116,9 @@ export default class ControlPanel extends PureComponent {
 
     return (
       <div>
-        <h3>{selectedExample} <b>{selectedCategory}</b> </h3>
+        <h3>
+          {selectedExample} <b>{selectedCategory}</b>{' '}
+        </h3>
       </div>
     );
   }
@@ -145,13 +147,11 @@ export default class ControlPanel extends PureComponent {
     } else if (vertexCount >= 1e3) {
       message = `${(vertexCount / 1e3).toFixed(1)}K`;
     } else {
-       message = `${vertexCount}`;
+      message = `${vertexCount}`;
     }
     return (
       <div>
-        <div>
-          {Number.isFinite(vertexCount) ? `Points: ${message}` : null}
-        </div>
+        <div>{Number.isFinite(vertexCount) ? `Points: ${message}` : null}</div>
         <div>
           {Number.isFinite(loadTimeMs) ? `Load time: ${(loadTimeMs / 1000).toFixed(1)}s` : null}
         </div>

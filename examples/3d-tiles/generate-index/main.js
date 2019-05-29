@@ -17,9 +17,18 @@ function main({root, inputDir, outputFilePath}) {
           const exampleDir = path.join(catDir, e);
           if (fs.lstatSync(exampleDir).isDirectory()) {
             const files = fs.readdirSync(exampleDir);
+            const tilesetIndex = files.findIndex(f => f === 'tileset.json');
+
+            let tileset = null;
+            if (tilesetIndex !== -1) {
+              tileset = files[tilesetIndex];
+              files.splice(tilesetIndex, 1);
+            }
+
             resMap[e] = {
               name: e,
               path: exampleDir.replace(ROOT_DIR, '.'),
+              tileset,
               files
             };
           }

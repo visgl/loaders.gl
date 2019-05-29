@@ -1,4 +1,3 @@
-
 const DECK_DATA_URI = 'https://raw.githubusercontent.com/uber-common/deck.gl-data/master';
 const LOADERS_URI = 'https://raw.githubusercontent.com/uber-web/loaders.gl/master';
 
@@ -29,13 +28,13 @@ export default {
   },
 
   Draco: {
-    'Bunny': {
+    Bunny: {
       uri: `${LOADERS_URI}/modules/draco/bunny.drc`
     }
   },
 
   PCD: {
-    'Zaghetto': {
+    Zaghetto: {
       uri: `${LOADERS_URI}/modules/pcd/Zaghetto.pcd`
     },
     'Simple (Text)': {

@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import React, {PureComponent} from 'react';
+import PropTypes from 'prop-types';
 
 const Container = styled.div`
   display: flex;
@@ -22,19 +23,32 @@ const DropDown = styled.select`
   margin-bottom: 6px;
 `;
 
+const propTypes = {
+  category: PropTypes.string.isRequired,
+  name: PropTypes.string.isRequired,
+  data: PropTypes.object.isRequired,
+  droppedFile: PropTypes.string,
+  onChange: PropTypes.func
+};
+
+const defaultProps = {
+  droppedFile: null,
+  onChange: () => {}
+};
+
 export default class ControlPanel extends PureComponent {
   _renderByCategories() {
-    const {category, example, onChange, data = {}} = this.props;
+    const {category, name, onChange, data} = this.props;
     const categories = Object.keys(data);
-    const selectedValue = `${category}.${example}`;
+    const selectedValue = `${category}.${name}`;
 
     return (
       <DropDown
         value={selectedValue}
         onChange={evt => {
-          const categoryExample = evt.target.value;
-          const value = categoryExample.split('.');
-          onChange({category: value[0], example: value[1]});
+          const selected = evt.target.value;
+          const value = selected.split('.');
+          onChange({category: value[0], name: value[1]});
         }}
       >
         {categories.map((c, i) => {
@@ -70,3 +84,6 @@ export default class ControlPanel extends PureComponent {
     );
   }
 }
+
+ControlPanel.propTypes = propTypes;
+ControlPanel.defaultProps = defaultProps;

@@ -2,7 +2,7 @@ This is a standalone web app using `@loaders.gl/las`.
 
 ### Usage
 
-Copy the content of this folder to your project. 
+Copy the content of this folder to your project.
 
 ```bash
 # install dependencies
@@ -16,4 +16,3 @@ npm start
 ### Data Source
 
 The sample data is from [kaarta.com](https://kaarta.com)
-

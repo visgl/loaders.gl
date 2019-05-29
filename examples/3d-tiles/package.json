@@ -12,9 +12,12 @@
     "@deck.gl/react": "^7.0.6",
     "@loaders.gl/3d-tiles": "^1.0.3",
     "@loaders.gl/core": "^1.0.3",
+    "@loaders.gl/math": "^1.1.0-alpha.1",
     "@luma.gl/addons": "^7.0.1",
+    "prop-types": "^15.7.2",
     "react": "^16.3.0",
     "react-dom": "^16.3.0",
+    "react-map-gl": "^4.1.2",
     "styled-components": "^4.2.0"
   },
   "devDependencies": {
@@ -25,8 +28,10 @@
     "@babel/preset-react": "^7.0.0",
     "@babel/register": "^7.4.0",
     "argparse": "^1.0.10",
+    "babel-eslint": "^10.0.1",
     "babel-loader": "^8.0.5",
     "babel-polyfill": "^6.26.0",
+    "eslint-plugin-react": "^7.10",
     "webpack": "^4.20.2",
     "webpack-cli": "^3.1.2",
     "webpack-dev-server": "^3.1.11"

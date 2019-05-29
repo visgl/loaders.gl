@@ -2,7 +2,7 @@ This is a standalone web app using `@loaders.gl/3d-tiles`.
 
 ### Usage
 
-Copy the content of this folder to your project. 
+Copy the content of this folder to your project.
 
 ```bash
 # install dependencies

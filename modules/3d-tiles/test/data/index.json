@@ -6,168 +6,167 @@
       "BatchedColors": {
         "name": "BatchedColors",
         "path": "./modules/3d-tiles/test/data/Batched/BatchedColors",
+        "tileset": "tileset.json",
         "files": [
-          "batchedColors.b3dm",
-          "tileset.json"
+          "batchedColors.b3dm"
         ]
       },
       "BatchedColorsMix": {
         "name": "BatchedColorsMix",
         "path": "./modules/3d-tiles/test/data/Batched/BatchedColorsMix",
+        "tileset": "tileset.json",
         "files": [
-          "batchedColorsMix.b3dm",
-          "tileset.json"
+          "batchedColorsMix.b3dm"
         ]
       },
       "BatchedColorsTranslucent": {
         "name": "BatchedColorsTranslucent",
         "path": "./modules/3d-tiles/test/data/Batched/BatchedColorsTranslucent",
+        "tileset": "tileset.json",
         "files": [
-          "batchedColorsTranslucent.b3dm",
-          "tileset.json"
+          "batchedColorsTranslucent.b3dm"
         ]
       },
       "BatchedDeprecated1": {
         "name": "BatchedDeprecated1",
         "path": "./modules/3d-tiles/test/data/Batched/BatchedDeprecated1",
+        "tileset": "tileset.json",
         "files": [
-          "batchedDeprecated1.b3dm",
-          "tileset.json"
+          "batchedDeprecated1.b3dm"
         ]
       },
       "BatchedDeprecated2": {
         "name": "BatchedDeprecated2",
         "path": "./modules/3d-tiles/test/data/Batched/BatchedDeprecated2",
+        "tileset": "tileset.json",
         "files": [
-          "batchedDeprecated2.b3dm",
-          "tileset.json"
+          "batchedDeprecated2.b3dm"
         ]
       },
       "BatchedExpiration": {
         "name": "BatchedExpiration",
         "path": "./modules/3d-tiles/test/data/Batched/BatchedExpiration",
+        "tileset": "tileset.json",
         "files": [
-          "batchedExpiration.b3dm",
-          "tileset.json"
+          "batchedExpiration.b3dm"
         ]
       },
       "BatchedNoBatchIds": {
         "name": "BatchedNoBatchIds",
         "path": "./modules/3d-tiles/test/data/Batched/BatchedNoBatchIds",
+        "tileset": "tileset.json",
         "files": [
-          "batchedNoBatchIds.b3dm",
-          "tileset.json"
+          "batchedNoBatchIds.b3dm"
         ]
       },
       "BatchedTextured": {
         "name": "BatchedTextured",
         "path": "./modules/3d-tiles/test/data/Batched/BatchedTextured",
+        "tileset": "tileset.json",
         "files": [
-          "batchedTextured.b3dm",
-          "tileset.json"
+          "batchedTextured.b3dm"
         ]
       },
       "BatchedTranslucent": {
         "name": "BatchedTranslucent",
         "path": "./modules/3d-tiles/test/data/Batched/BatchedTranslucent",
+        "tileset": "tileset.json",
         "files": [
-          "batchedTranslucent.b3dm",
-          "tileset.json"
+          "batchedTranslucent.b3dm"
         ]
       },
       "BatchedTranslucentOpaqueMix": {
         "name": "BatchedTranslucentOpaqueMix",
         "path": "./modules/3d-tiles/test/data/Batched/BatchedTranslucentOpaqueMix",
+        "tileset": "tileset.json",
         "files": [
-          "batchedTranslucentOpaqueMix.b3dm",
-          "tileset.json"
+          "batchedTranslucentOpaqueMix.b3dm"
         ]
       },
       "BatchedWGS84": {
         "name": "BatchedWGS84",
         "path": "./modules/3d-tiles/test/data/Batched/BatchedWGS84",
+        "tileset": "tileset.json",
         "files": [
-          "batchedWGS84.b3dm",
-          "tileset.json"
+          "batchedWGS84.b3dm"
         ]
       },
       "BatchedWithBatchTable": {
         "name": "BatchedWithBatchTable",
         "path": "./modules/3d-tiles/test/data/Batched/BatchedWithBatchTable",
+        "tileset": "tileset.json",
         "files": [
-          "batchedWithBatchTable.b3dm",
-          "tileset.json"
+          "batchedWithBatchTable.b3dm"
         ]
       },
       "BatchedWithBatchTableBinary": {
         "name": "BatchedWithBatchTableBinary",
         "path": "./modules/3d-tiles/test/data/Batched/BatchedWithBatchTableBinary",
+        "tileset": "tileset.json",
         "files": [
-          "batchedWithBatchTableBinary.b3dm",
-          "tileset.json"
+          "batchedWithBatchTableBinary.b3dm"
         ]
       },
       "BatchedWithBoundingSphere": {
         "name": "BatchedWithBoundingSphere",
         "path": "./modules/3d-tiles/test/data/Batched/BatchedWithBoundingSphere",
+        "tileset": "tileset.json",
         "files": [
-          "batchedWithBoundingSphere.b3dm",
-          "tileset.json"
+          "batchedWithBoundingSphere.b3dm"
         ]
       },
       "BatchedWithContentDataUri": {
         "name": "BatchedWithContentDataUri",
         "path": "./modules/3d-tiles/test/data/Batched/BatchedWithContentDataUri",
-        "files": [
-          "tileset.json"
-        ]
+        "tileset": "tileset.json",
+        "files": []
       },
       "BatchedWithRtcCenter": {
         "name": "BatchedWithRtcCenter",
         "path": "./modules/3d-tiles/test/data/Batched/BatchedWithRtcCenter",
+        "tileset": "tileset.json",
         "files": [
-          "batchedWithRtcCenter.b3dm",
-          "tileset.json"
+          "batchedWithRtcCenter.b3dm"
         ]
       },
       "BatchedWithTransformBox": {
         "name": "BatchedWithTransformBox",
         "path": "./modules/3d-tiles/test/data/Batched/BatchedWithTransformBox",
+        "tileset": "tileset.json",
         "files": [
-          "batchedWithTransformBox.b3dm",
-          "tileset.json"
+          "batchedWithTransformBox.b3dm"
         ]
       },
       "BatchedWithTransformRegion": {
         "name": "BatchedWithTransformRegion",
         "path": "./modules/3d-tiles/test/data/Batched/BatchedWithTransformRegion",
+        "tileset": "tileset.json",
         "files": [
-          "batchedWithTransformRegion.b3dm",
-          "tileset.json"
+          "batchedWithTransformRegion.b3dm"
         ]
       },
       "BatchedWithTransformSphere": {
         "name": "BatchedWithTransformSphere",
         "path": "./modules/3d-tiles/test/data/Batched/BatchedWithTransformSphere",
+        "tileset": "tileset.json",
         "files": [
-          "batchedWithTransformSphere.b3dm",
-          "tileset.json"
+          "batchedWithTransformSphere.b3dm"
         ]
       },
       "BatchedWithVertexColors": {
         "name": "BatchedWithVertexColors",
         "path": "./modules/3d-tiles/test/data/Batched/BatchedWithVertexColors",
+        "tileset": "tileset.json",
         "files": [
-          "batchedWithVertexColors.b3dm",
-          "tileset.json"
+          "batchedWithVertexColors.b3dm"
         ]
       },
       "BatchedWithoutBatchTable": {
         "name": "BatchedWithoutBatchTable",
         "path": "./modules/3d-tiles/test/data/Batched/BatchedWithoutBatchTable",
+        "tileset": "tileset.json",
         "files": [
-          "batchedWithoutBatchTable.b3dm",
-          "tileset.json"
+          "batchedWithoutBatchTable.b3dm"
         ]
       }
     }
@@ -179,26 +178,26 @@
       "Composite": {
         "name": "Composite",
         "path": "./modules/3d-tiles/test/data/Composite/Composite",
+        "tileset": "tileset.json",
         "files": [
-          "composite.cmpt",
-          "tileset.json"
+          "composite.cmpt"
         ]
       },
       "CompositeOfComposite": {
         "name": "CompositeOfComposite",
         "path": "./modules/3d-tiles/test/data/Composite/CompositeOfComposite",
+        "tileset": "tileset.json",
         "files": [
-          "compositeOfComposite.cmpt",
-          "tileset.json"
+          "compositeOfComposite.cmpt"
         ]
       },
       "CompositeOfInstanced": {
         "name": "CompositeOfInstanced",
         "path": "./modules/3d-tiles/test/data/Composite/CompositeOfInstanced",
+        "tileset": "tileset.json",
         "files": [
           "box.glb",
-          "compositeOfInstanced.cmpt",
-          "tileset.json"
+          "compositeOfInstanced.cmpt"
         ]
       }
     }
@@ -210,11 +209,11 @@
       "GeometryTileAll": {
         "name": "GeometryTileAll",
         "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileAll",
+        "tileset": "tileset.json",
         "files": [
           "ll.geom",
           "lr.geom",
           "parent.geom",
-          "tileset.json",
           "ul.geom",
           "ur.geom"
         ]
@@ -222,38 +221,38 @@
       "GeometryTileAllBatchedChildren": {
         "name": "GeometryTileAllBatchedChildren",
         "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileAllBatchedChildren",
+        "tileset": "tileset.json",
         "files": [
           "children.geom",
-          "parent.geom",
-          "tileset.json"
+          "parent.geom"
         ]
       },
       "GeometryTileAllBatchedChildrenWithBatchTable": {
         "name": "GeometryTileAllBatchedChildrenWithBatchTable",
         "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileAllBatchedChildrenWithBatchTable",
+        "tileset": "tileset.json",
         "files": [
           "children.geom",
-          "parent.geom",
-          "tileset.json"
+          "parent.geom"
         ]
       },
       "GeometryTileAllWithBatchIds": {
         "name": "GeometryTileAllWithBatchIds",
         "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileAllWithBatchIds",
+        "tileset": "tileset.json",
         "files": [
           "children.geom",
-          "parent.geom",
-          "tileset.json"
+          "parent.geom"
         ]
       },
       "GeometryTileAllWithBatchTable": {
         "name": "GeometryTileAllWithBatchTable",
         "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileAllWithBatchTable",
+        "tileset": "tileset.json",
         "files": [
           "ll.geom",
           "lr.geom",
           "parent.geom",
-          "tileset.json",
           "ul.geom",
           "ur.geom"
         ]
@@ -261,11 +260,11 @@
       "GeometryTileBoxes": {
         "name": "GeometryTileBoxes",
         "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileBoxes",
+        "tileset": "tileset.json",
         "files": [
           "ll.geom",
           "lr.geom",
           "parent.geom",
-          "tileset.json",
           "ul.geom",
           "ur.geom"
         ]
@@ -273,38 +272,38 @@
       "GeometryTileBoxesBatchedChildren": {
         "name": "GeometryTileBoxesBatchedChildren",
         "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileBoxesBatchedChildren",
+        "tileset": "tileset.json",
         "files": [
           "children.geom",
-          "parent.geom",
-          "tileset.json"
+          "parent.geom"
         ]
       },
       "GeometryTileBoxesBatchedChildrenWithBatchTable": {
         "name": "GeometryTileBoxesBatchedChildrenWithBatchTable",
         "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileBoxesBatchedChildrenWithBatchTable",
+        "tileset": "tileset.json",
         "files": [
           "children.geom",
-          "parent.geom",
-          "tileset.json"
+          "parent.geom"
         ]
       },
       "GeometryTileBoxesWithBatchIds": {
         "name": "GeometryTileBoxesWithBatchIds",
         "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileBoxesWithBatchIds",
+        "tileset": "tileset.json",
         "files": [
           "children.geom",
-          "parent.geom",
-          "tileset.json"
+          "parent.geom"
         ]
       },
       "GeometryTileBoxesWithBatchTable": {
         "name": "GeometryTileBoxesWithBatchTable",
         "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileBoxesWithBatchTable",
+        "tileset": "tileset.json",
         "files": [
           "ll.geom",
           "lr.geom",
           "parent.geom",
-          "tileset.json",
           "ul.geom",
           "ur.geom"
         ]
@@ -312,11 +311,11 @@
       "GeometryTileCylinders": {
         "name": "GeometryTileCylinders",
         "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileCylinders",
+        "tileset": "tileset.json",
         "files": [
           "ll.geom",
           "lr.geom",
           "parent.geom",
-          "tileset.json",
           "ul.geom",
           "ur.geom"
         ]
@@ -324,38 +323,38 @@
       "GeometryTileCylindersBatchedChildren": {
         "name": "GeometryTileCylindersBatchedChildren",
         "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileCylindersBatchedChildren",
+        "tileset": "tileset.json",
         "files": [
           "children.geom",
-          "parent.geom",
-          "tileset.json"
+          "parent.geom"
         ]
       },
       "GeometryTileCylindersBatchedChildrenWithBatchTable": {
         "name": "GeometryTileCylindersBatchedChildrenWithBatchTable",
         "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileCylindersBatchedChildrenWithBatchTable",
+        "tileset": "tileset.json",
         "files": [
           "children.geom",
-          "parent.geom",
-          "tileset.json"
+          "parent.geom"
         ]
       },
       "GeometryTileCylindersWithBatchIds": {
         "name": "GeometryTileCylindersWithBatchIds",
         "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileCylindersWithBatchIds",
+        "tileset": "tileset.json",
         "files": [
           "children.geom",
-          "parent.geom",
-          "tileset.json"
+          "parent.geom"
         ]
       },
       "GeometryTileCylindersWithBatchTable": {
         "name": "GeometryTileCylindersWithBatchTable",
         "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileCylindersWithBatchTable",
+        "tileset": "tileset.json",
         "files": [
           "ll.geom",
           "lr.geom",
           "parent.geom",
-          "tileset.json",
           "ul.geom",
           "ur.geom"
         ]
@@ -363,11 +362,11 @@
       "GeometryTileEllipsoids": {
         "name": "GeometryTileEllipsoids",
         "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileEllipsoids",
+        "tileset": "tileset.json",
         "files": [
           "ll.geom",
           "lr.geom",
           "parent.geom",
-          "tileset.json",
           "ul.geom",
           "ur.geom"
         ]
@@ -375,38 +374,38 @@
       "GeometryTileEllipsoidsBatchedChildren": {
         "name": "GeometryTileEllipsoidsBatchedChildren",
         "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileEllipsoidsBatchedChildren",
+        "tileset": "tileset.json",
         "files": [
           "children.geom",
-          "parent.geom",
-          "tileset.json"
+          "parent.geom"
         ]
       },
       "GeometryTileEllipsoidsBatchedChildrenWithBatchTable": {
         "name": "GeometryTileEllipsoidsBatchedChildrenWithBatchTable",
         "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileEllipsoidsBatchedChildrenWithBatchTable",
+        "tileset": "tileset.json",
         "files": [
           "children.geom",
-          "parent.geom",
-          "tileset.json"
+          "parent.geom"
         ]
       },
       "GeometryTileEllipsoidsWithBatchIds": {
         "name": "GeometryTileEllipsoidsWithBatchIds",
         "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileEllipsoidsWithBatchIds",
+        "tileset": "tileset.json",
         "files": [
           "children.geom",
-          "parent.geom",
-          "tileset.json"
+          "parent.geom"
         ]
       },
       "GeometryTileEllipsoidsWithBatchTable": {
         "name": "GeometryTileEllipsoidsWithBatchTable",
         "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileEllipsoidsWithBatchTable",
+        "tileset": "tileset.json",
         "files": [
           "ll.geom",
           "lr.geom",
           "parent.geom",
-          "tileset.json",
           "ul.geom",
           "ur.geom"
         ]
@@ -414,11 +413,11 @@
       "GeometryTileSpheres": {
         "name": "GeometryTileSpheres",
         "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileSpheres",
+        "tileset": "tileset.json",
         "files": [
           "ll.geom",
           "lr.geom",
           "parent.geom",
-          "tileset.json",
           "ul.geom",
           "ur.geom"
         ]
@@ -426,38 +425,38 @@
       "GeometryTileSpheresBatchedChildren": {
         "name": "GeometryTileSpheresBatchedChildren",
         "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileSpheresBatchedChildren",
+        "tileset": "tileset.json",
         "files": [
           "children.geom",
-          "parent.geom",
-          "tileset.json"
+          "parent.geom"
         ]
       },
       "GeometryTileSpheresBatchedChildrenWithBatchTable": {
         "name": "GeometryTileSpheresBatchedChildrenWithBatchTable",
         "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileSpheresBatchedChildrenWithBatchTable",
+        "tileset": "tileset.json",
         "files": [
           "children.geom",
-          "parent.geom",
-          "tileset.json"
+          "parent.geom"
         ]
       },
       "GeometryTileSpheresWithBatchIds": {
         "name": "GeometryTileSpheresWithBatchIds",
         "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileSpheresWithBatchIds",
+        "tileset": "tileset.json",
         "files": [
           "children.geom",
-          "parent.geom",
-          "tileset.json"
+          "parent.geom"
         ]
       },
       "GeometryTileSpheresWithBatchTable": {
         "name": "GeometryTileSpheresWithBatchTable",
         "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileSpheresWithBatchTable",
+        "tileset": "tileset.json",
         "files": [
           "ll.geom",
           "lr.geom",
           "parent.geom",
-          "tileset.json",
           "ul.geom",
           "ur.geom"
         ]
@@ -471,41 +470,41 @@
       "BatchTableHierarchy": {
         "name": "BatchTableHierarchy",
         "path": "./modules/3d-tiles/test/data/Hierarchy/BatchTableHierarchy",
+        "tileset": "tileset.json",
         "files": [
-          "tile.b3dm",
-          "tileset.json"
+          "tile.b3dm"
         ]
       },
       "BatchTableHierarchyBinary": {
         "name": "BatchTableHierarchyBinary",
         "path": "./modules/3d-tiles/test/data/Hierarchy/BatchTableHierarchyBinary",
+        "tileset": "tileset.json",
         "files": [
-          "tile.b3dm",
-          "tileset.json"
+          "tile.b3dm"
         ]
       },
       "BatchTableHierarchyLegacy": {
         "name": "BatchTableHierarchyLegacy",
         "path": "./modules/3d-tiles/test/data/Hierarchy/BatchTableHierarchyLegacy",
+        "tileset": "tileset.json",
         "files": [
-          "tile.b3dm",
-          "tileset.json"
+          "tile.b3dm"
         ]
       },
       "BatchTableHierarchyMultipleParents": {
         "name": "BatchTableHierarchyMultipleParents",
         "path": "./modules/3d-tiles/test/data/Hierarchy/BatchTableHierarchyMultipleParents",
+        "tileset": "tileset.json",
         "files": [
-          "tile.b3dm",
-          "tileset.json"
+          "tile.b3dm"
         ]
       },
       "BatchTableHierarchyNoParents": {
         "name": "BatchTableHierarchyNoParents",
         "path": "./modules/3d-tiles/test/data/Hierarchy/BatchTableHierarchyNoParents",
+        "tileset": "tileset.json",
         "files": [
-          "tile.b3dm",
-          "tileset.json"
+          "tile.b3dm"
         ]
       }
     }
@@ -517,122 +516,122 @@
       "InstancedGltfExternal": {
         "name": "InstancedGltfExternal",
         "path": "./modules/3d-tiles/test/data/Instanced/InstancedGltfExternal",
+        "tileset": "tileset.json",
         "files": [
           "box.glb",
-          "instancedGltfExternal.i3dm",
-          "tileset.json"
+          "instancedGltfExternal.i3dm"
         ]
       },
       "InstancedOct32POrientation": {
         "name": "InstancedOct32POrientation",
         "path": "./modules/3d-tiles/test/data/Instanced/InstancedOct32POrientation",
+        "tileset": "tileset.json",
         "files": [
-          "instancedOct32POrientation.i3dm",
-          "tileset.json"
+          "instancedOct32POrientation.i3dm"
         ]
       },
       "InstancedOrientation": {
         "name": "InstancedOrientation",
         "path": "./modules/3d-tiles/test/data/Instanced/InstancedOrientation",
+        "tileset": "tileset.json",
         "files": [
-          "instancedOrientation.i3dm",
-          "tileset.json"
+          "instancedOrientation.i3dm"
         ]
       },
       "InstancedQuantized": {
         "name": "InstancedQuantized",
         "path": "./modules/3d-tiles/test/data/Instanced/InstancedQuantized",
+        "tileset": "tileset.json",
         "files": [
-          "instancedQuantized.i3dm",
-          "tileset.json"
+          "instancedQuantized.i3dm"
         ]
       },
       "InstancedQuantizedOct32POrientation": {
         "name": "InstancedQuantizedOct32POrientation",
         "path": "./modules/3d-tiles/test/data/Instanced/InstancedQuantizedOct32POrientation",
+        "tileset": "tileset.json",
         "files": [
-          "instancedQuantizedOct32POrientation.i3dm",
-          "tileset.json"
+          "instancedQuantizedOct32POrientation.i3dm"
         ]
       },
       "InstancedRTC": {
         "name": "InstancedRTC",
         "path": "./modules/3d-tiles/test/data/Instanced/InstancedRTC",
+        "tileset": "tileset.json",
         "files": [
-          "instancedRTC.i3dm",
-          "tileset.json"
+          "instancedRTC.i3dm"
         ]
       },
       "InstancedRedMaterial": {
         "name": "InstancedRedMaterial",
         "path": "./modules/3d-tiles/test/data/Instanced/InstancedRedMaterial",
+        "tileset": "tileset.json",
         "files": [
-          "instancedRedMaterial.i3dm",
-          "tileset.json"
+          "instancedRedMaterial.i3dm"
         ]
       },
       "InstancedScale": {
         "name": "InstancedScale",
         "path": "./modules/3d-tiles/test/data/Instanced/InstancedScale",
+        "tileset": "tileset.json",
         "files": [
-          "instancedScale.i3dm",
-          "tileset.json"
+          "instancedScale.i3dm"
         ]
       },
       "InstancedScaleNonUniform": {
         "name": "InstancedScaleNonUniform",
         "path": "./modules/3d-tiles/test/data/Instanced/InstancedScaleNonUniform",
+        "tileset": "tileset.json",
         "files": [
-          "instancedScaleNonUniform.i3dm",
-          "tileset.json"
+          "instancedScaleNonUniform.i3dm"
         ]
       },
       "InstancedTextured": {
         "name": "InstancedTextured",
         "path": "./modules/3d-tiles/test/data/Instanced/InstancedTextured",
+        "tileset": "tileset.json",
         "files": [
-          "instancedTextured.i3dm",
-          "tileset.json"
+          "instancedTextured.i3dm"
         ]
       },
       "InstancedWithBatchIds": {
         "name": "InstancedWithBatchIds",
         "path": "./modules/3d-tiles/test/data/Instanced/InstancedWithBatchIds",
+        "tileset": "tileset.json",
         "files": [
-          "instancedWithBatchIds.i3dm",
-          "tileset.json"
+          "instancedWithBatchIds.i3dm"
         ]
       },
       "InstancedWithBatchTable": {
         "name": "InstancedWithBatchTable",
         "path": "./modules/3d-tiles/test/data/Instanced/InstancedWithBatchTable",
+        "tileset": "tileset.json",
         "files": [
-          "instancedWithBatchTable.i3dm",
-          "tileset.json"
+          "instancedWithBatchTable.i3dm"
         ]
       },
       "InstancedWithBatchTableBinary": {
         "name": "InstancedWithBatchTableBinary",
         "path": "./modules/3d-tiles/test/data/Instanced/InstancedWithBatchTableBinary",
+        "tileset": "tileset.json",
         "files": [
-          "instancedWithBatchTableBinary.i3dm",
-          "tileset.json"
+          "instancedWithBatchTableBinary.i3dm"
         ]
       },
       "InstancedWithTransform": {
         "name": "InstancedWithTransform",
         "path": "./modules/3d-tiles/test/data/Instanced/InstancedWithTransform",
+        "tileset": "tileset.json",
         "files": [
-          "instancedWithTransform.i3dm",
-          "tileset.json"
+          "instancedWithTransform.i3dm"
         ]
       },
       "InstancedWithoutBatchTable": {
         "name": "InstancedWithoutBatchTable",
         "path": "./modules/3d-tiles/test/data/Instanced/InstancedWithoutBatchTable",
+        "tileset": "tileset.json",
         "files": [
-          "instancedWithoutBatchTable.i3dm",
-          "tileset.json"
+          "instancedWithoutBatchTable.i3dm"
         ]
       }
     }
@@ -644,110 +643,111 @@
       "PointCloudBatched": {
         "name": "PointCloudBatched",
         "path": "./modules/3d-tiles/test/data/PointCloud/PointCloudBatched",
+        "tileset": "tileset.json",
         "files": [
-          "pointCloudBatched.pnts",
-          "tileset.json"
+          "pointCloudBatched.pnts"
         ]
       },
       "PointCloudConstantColor": {
         "name": "PointCloudConstantColor",
         "path": "./modules/3d-tiles/test/data/PointCloud/PointCloudConstantColor",
+        "tileset": "tileset.json",
         "files": [
-          "pointCloudConstantColor.pnts",
-          "tileset.json"
+          "pointCloudConstantColor.pnts"
         ]
       },
       "PointCloudDraco": {
         "name": "PointCloudDraco",
         "path": "./modules/3d-tiles/test/data/PointCloud/PointCloudDraco",
+        "tileset": "tileset.json",
         "files": [
-          "pointCloudDraco.pnts",
-          "tileset.json"
+          "pointCloudDraco.pnts"
         ]
       },
       "PointCloudDracoBatched": {
         "name": "PointCloudDracoBatched",
         "path": "./modules/3d-tiles/test/data/PointCloud/PointCloudDracoBatched",
+        "tileset": "tileset.json",
         "files": [
-          "pointCloudDracoBatched.pnts",
-          "tileset.json"
+          "pointCloudDracoBatched.pnts"
         ]
       },
       "PointCloudDracoPartial": {
         "name": "PointCloudDracoPartial",
         "path": "./modules/3d-tiles/test/data/PointCloud/PointCloudDracoPartial",
+        "tileset": "tileset.json",
         "files": [
-          "pointCloudDracoPartial.pnts",
-          "tileset.json"
+          "pointCloudDracoPartial.pnts"
         ]
       },
       "PointCloudNoColor": {
         "name": "PointCloudNoColor",
         "path": "./modules/3d-tiles/test/data/PointCloud/PointCloudNoColor",
+        "tileset": "tileset.json",
         "files": [
-          "pointCloudNoColor.pnts",
-          "tileset.json"
+          "pointCloudNoColor.pnts"
         ]
       },
       "PointCloudNormals": {
         "name": "PointCloudNormals",
         "path": "./modules/3d-tiles/test/data/PointCloud/PointCloudNormals",
+        "tileset": "tileset.json",
         "files": [
-          "pointCloudNormals.pnts",
-          "tileset.json"
+          "pointCloudNormals.pnts"
         ]
       },
       "PointCloudNormalsOctEncoded": {
         "name": "PointCloudNormalsOctEncoded",
         "path": "./modules/3d-tiles/test/data/PointCloud/PointCloudNormalsOctEncoded",
+        "tileset": "tileset.json",
         "files": [
-          "pointCloudNormalsOctEncoded.pnts",
-          "tileset.json"
+          "pointCloudNormalsOctEncoded.pnts"
         ]
       },
       "PointCloudQuantized": {
         "name": "PointCloudQuantized",
         "path": "./modules/3d-tiles/test/data/PointCloud/PointCloudQuantized",
+        "tileset": "tileset.json",
         "files": [
-          "pointCloudQuantized.pnts",
-          "tileset.json"
+          "pointCloudQuantized.pnts"
         ]
       },
       "PointCloudQuantizedOctEncoded": {
         "name": "PointCloudQuantizedOctEncoded",
         "path": "./modules/3d-tiles/test/data/PointCloud/PointCloudQuantizedOctEncoded",
+        "tileset": "tileset.json",
         "files": [
-          "pointCloudQuantizedOctEncoded.pnts",
-          "tileset.json"
+          "pointCloudQuantizedOctEncoded.pnts"
         ]
       },
       "PointCloudRGB": {
         "name": "PointCloudRGB",
         "path": "./modules/3d-tiles/test/data/PointCloud/PointCloudRGB",
+        "tileset": "tileset.json",
         "files": [
-          "pointCloudRGB.pnts",
-          "tileset.json"
+          "pointCloudRGB.pnts"
         ]
       },
       "PointCloudRGB565": {
         "name": "PointCloudRGB565",
         "path": "./modules/3d-tiles/test/data/PointCloud/PointCloudRGB565",
+        "tileset": "tileset.json",
         "files": [
-          "pointCloudRGB565.pnts",
-          "tileset.json"
+          "pointCloudRGB565.pnts"
         ]
       },
       "PointCloudRGBA": {
         "name": "PointCloudRGBA",
         "path": "./modules/3d-tiles/test/data/PointCloud/PointCloudRGBA",
+        "tileset": "tileset.json",
         "files": [
-          "pointCloudRGBA.pnts",
-          "tileset.json"
+          "pointCloudRGBA.pnts"
         ]
       },
       "PointCloudTimeDynamic": {
         "name": "PointCloudTimeDynamic",
         "path": "./modules/3d-tiles/test/data/PointCloud/PointCloudTimeDynamic",
+        "tileset": null,
         "files": [
           "0.pnts",
           "1.pnts",
@@ -759,6 +759,7 @@
       "PointCloudTimeDynamicDraco": {
         "name": "PointCloudTimeDynamicDraco",
         "path": "./modules/3d-tiles/test/data/PointCloud/PointCloudTimeDynamicDraco",
+        "tileset": null,
         "files": [
           "0.pnts",
           "1.pnts",
@@ -770,6 +771,7 @@
       "PointCloudTimeDynamicWithTransform": {
         "name": "PointCloudTimeDynamicWithTransform",
         "path": "./modules/3d-tiles/test/data/PointCloud/PointCloudTimeDynamicWithTransform",
+        "tileset": null,
         "files": [
           "0.pnts",
           "1.pnts",
@@ -781,25 +783,25 @@
       "PointCloudWGS84": {
         "name": "PointCloudWGS84",
         "path": "./modules/3d-tiles/test/data/PointCloud/PointCloudWGS84",
+        "tileset": "tileset.json",
         "files": [
-          "pointCloudWGS84.pnts",
-          "tileset.json"
+          "pointCloudWGS84.pnts"
         ]
       },
       "PointCloudWithPerPointProperties": {
         "name": "PointCloudWithPerPointProperties",
         "path": "./modules/3d-tiles/test/data/PointCloud/PointCloudWithPerPointProperties",
+        "tileset": "tileset.json",
         "files": [
-          "pointCloudWithPerPointProperties.pnts",
-          "tileset.json"
+          "pointCloudWithPerPointProperties.pnts"
         ]
       },
       "PointCloudWithTransform": {
         "name": "PointCloudWithTransform",
         "path": "./modules/3d-tiles/test/data/PointCloud/PointCloudWithTransform",
+        "tileset": "tileset.json",
         "files": [
-          "pointCloudWithTransform.pnts",
-          "tileset.json"
+          "pointCloudWithTransform.pnts"
         ]
       }
     }
@@ -816,11 +818,11 @@
       "Tileset": {
         "name": "Tileset",
         "path": "./modules/3d-tiles/test/data/Tilesets/Tileset",
+        "tileset": "tileset.json",
         "files": [
           "ll.b3dm",
           "lr.b3dm",
           "parent.b3dm",
-          "tileset.json",
           "ul.b3dm",
           "ur.b3dm"
         ]
@@ -828,10 +830,10 @@
       "TilesetEmptyRoot": {
         "name": "TilesetEmptyRoot",
         "path": "./modules/3d-tiles/test/data/Tilesets/TilesetEmptyRoot",
+        "tileset": "tileset.json",
         "files": [
           "ll.b3dm",
           "lr.b3dm",
-          "tileset.json",
           "ul.b3dm",
           "ur.b3dm"
         ]
@@ -839,10 +841,10 @@
       "TilesetOfTilesets": {
         "name": "TilesetOfTilesets",
         "path": "./modules/3d-tiles/test/data/Tilesets/TilesetOfTilesets",
+        "tileset": "tileset.json",
         "files": [
           "lr.b3dm",
           "parent.b3dm",
-          "tileset.json",
           "tileset2.json",
           "tileset3",
           "ul.b3dm",
@@ -852,6 +854,7 @@
       "TilesetPoints": {
         "name": "TilesetPoints",
         "path": "./modules/3d-tiles/test/data/Tilesets/TilesetPoints",
+        "tileset": "tileset.json",
         "files": [
           "0.pnts",
           "1.pnts",
@@ -861,18 +864,17 @@
           "5.pnts",
           "6.pnts",
           "7.pnts",
-          "parent.pnts",
-          "tileset.json"
+          "parent.pnts"
         ]
       },
       "TilesetRefinementMix": {
         "name": "TilesetRefinementMix",
         "path": "./modules/3d-tiles/test/data/Tilesets/TilesetRefinementMix",
+        "tileset": "tileset.json",
         "files": [
           "ll.b3dm",
           "lr.b3dm",
           "parent.b3dm",
-          "tileset.json",
           "ul.b3dm",
           "ur.b3dm"
         ]
@@ -880,11 +882,11 @@
       "TilesetReplacement1": {
         "name": "TilesetReplacement1",
         "path": "./modules/3d-tiles/test/data/Tilesets/TilesetReplacement1",
+        "tileset": "tileset.json",
         "files": [
           "ll.b3dm",
           "lr.b3dm",
           "parent.b3dm",
-          "tileset.json",
           "ul.b3dm",
           "ur.b3dm"
         ]
@@ -892,21 +894,21 @@
       "TilesetReplacement2": {
         "name": "TilesetReplacement2",
         "path": "./modules/3d-tiles/test/data/Tilesets/TilesetReplacement2",
+        "tileset": "tileset.json",
         "files": [
           "ll.b3dm",
           "parent.b3dm",
-          "tileset.json",
           "ur.b3dm"
         ]
       },
       "TilesetReplacement3": {
         "name": "TilesetReplacement3",
         "path": "./modules/3d-tiles/test/data/Tilesets/TilesetReplacement3",
+        "tileset": "tileset.json",
         "files": [
           "ll.b3dm",
           "lr.b3dm",
           "parent.b3dm",
-          "tileset.json",
           "tileset2.json",
           "ul.b3dm",
           "ur.b3dm"
@@ -915,11 +917,11 @@
       "TilesetReplacementWithViewerRequestVolume": {
         "name": "TilesetReplacementWithViewerRequestVolume",
         "path": "./modules/3d-tiles/test/data/Tilesets/TilesetReplacementWithViewerRequestVolume",
+        "tileset": "tileset.json",
         "files": [
           "ll.b3dm",
           "lr.b3dm",
           "parent.b3dm",
-          "tileset.json",
           "ul.b3dm",
           "ur.b3dm"
         ]
@@ -927,12 +929,12 @@
       "TilesetSubtreeExpiration": {
         "name": "TilesetSubtreeExpiration",
         "path": "./modules/3d-tiles/test/data/Tilesets/TilesetSubtreeExpiration",
+        "tileset": "tileset.json",
         "files": [
           "ll.b3dm",
           "lr.b3dm",
           "parent.b3dm",
           "subtree.json",
-          "tileset.json",
           "ul.b3dm",
           "ur.b3dm"
         ]
@@ -940,6 +942,7 @@
       "TilesetUniform": {
         "name": "TilesetUniform",
         "path": "./modules/3d-tiles/test/data/Tilesets/TilesetUniform",
+        "tileset": "tileset.json",
         "files": [
           "0_0_0.b3dm",
           "1_0_0.b3dm",
@@ -960,39 +963,38 @@
           "2_5_3.b3dm",
           "2_5_4.b3dm",
           "2_5_5.b3dm",
-          "tileset.json",
           "tileset2.json"
         ]
       },
       "TilesetWithExternalResources": {
         "name": "TilesetWithExternalResources",
         "path": "./modules/3d-tiles/test/data/Tilesets/TilesetWithExternalResources",
+        "tileset": "tileset.json",
         "files": [
           "embed.i3dm",
           "external.b3dm",
           "external.i3dm",
           "textured_box_separate",
-          "tileset.json",
           "tileset2"
         ]
       },
       "TilesetWithTransforms": {
         "name": "TilesetWithTransforms",
         "path": "./modules/3d-tiles/test/data/Tilesets/TilesetWithTransforms",
+        "tileset": "tileset.json",
         "files": [
           "buildings.b3dm",
-          "instances.i3dm",
-          "tileset.json"
+          "instances.i3dm"
         ]
       },
       "TilesetWithViewerRequestVolume": {
         "name": "TilesetWithViewerRequestVolume",
         "path": "./modules/3d-tiles/test/data/Tilesets/TilesetWithViewerRequestVolume",
+        "tileset": "tileset.json",
         "files": [
           "ll.b3dm",
           "lr.b3dm",
           "points.pnts",
-          "tileset.json",
           "ul.b3dm",
           "ur.b3dm"
         ]
@@ -1006,27 +1008,27 @@
       "VectorTileCombined": {
         "name": "VectorTileCombined",
         "path": "./modules/3d-tiles/test/data/Vector/VectorTileCombined",
+        "tileset": "tileset.json",
         "files": [
-          "tile.vctr",
-          "tileset.json"
+          "tile.vctr"
         ]
       },
       "VectorTileCombinedWithBatchIds": {
         "name": "VectorTileCombinedWithBatchIds",
         "path": "./modules/3d-tiles/test/data/Vector/VectorTileCombinedWithBatchIds",
+        "tileset": "tileset.json",
         "files": [
-          "tile.vctr",
-          "tileset.json"
+          "tile.vctr"
         ]
       },
       "VectorTilePoints": {
         "name": "VectorTilePoints",
         "path": "./modules/3d-tiles/test/data/Vector/VectorTilePoints",
+        "tileset": "tileset.json",
         "files": [
           "ll.vctr",
           "lr.vctr",
           "parent.vctr",
-          "tileset.json",
           "ul.vctr",
           "ur.vctr"
         ]
@@ -1034,38 +1036,38 @@
       "VectorTilePointsBatchedChildren": {
         "name": "VectorTilePointsBatchedChildren",
         "path": "./modules/3d-tiles/test/data/Vector/VectorTilePointsBatchedChildren",
+        "tileset": "tileset.json",
         "files": [
           "children.vctr",
-          "parent.vctr",
-          "tileset.json"
+          "parent.vctr"
         ]
       },
       "VectorTilePointsBatchedChildrenWithBatchTable": {
         "name": "VectorTilePointsBatchedChildrenWithBatchTable",
         "path": "./modules/3d-tiles/test/data/Vector/VectorTilePointsBatchedChildrenWithBatchTable",
+        "tileset": "tileset.json",
         "files": [
           "children.vctr",
-          "parent.vctr",
-          "tileset.json"
+          "parent.vctr"
         ]
       },
       "VectorTilePointsWithBatchIds": {
         "name": "VectorTilePointsWithBatchIds",
         "path": "./modules/3d-tiles/test/data/Vector/VectorTilePointsWithBatchIds",
+        "tileset": "tileset.json",
         "files": [
           "children.vctr",
-          "parent.vctr",
-          "tileset.json"
+          "parent.vctr"
         ]
       },
       "VectorTilePointsWithBatchTable": {
         "name": "VectorTilePointsWithBatchTable",
         "path": "./modules/3d-tiles/test/data/Vector/VectorTilePointsWithBatchTable",
+        "tileset": "tileset.json",
         "files": [
           "ll.vctr",
           "lr.vctr",
           "parent.vctr",
-          "tileset.json",
           "ul.vctr",
           "ur.vctr"
         ]
@@ -1073,11 +1075,11 @@
       "VectorTilePolygons": {
         "name": "VectorTilePolygons",
         "path": "./modules/3d-tiles/test/data/Vector/VectorTilePolygons",
+        "tileset": "tileset.json",
         "files": [
           "ll.vctr",
           "lr.vctr",
           "parent.vctr",
-          "tileset.json",
           "ul.vctr",
           "ur.vctr"
         ]
@@ -1085,38 +1087,38 @@
       "VectorTilePolygonsBatchedChildren": {
         "name": "VectorTilePolygonsBatchedChildren",
         "path": "./modules/3d-tiles/test/data/Vector/VectorTilePolygonsBatchedChildren",
+        "tileset": "tileset.json",
         "files": [
           "children.vctr",
-          "parent.vctr",
-          "tileset.json"
+          "parent.vctr"
         ]
       },
       "VectorTilePolygonsBatchedChildrenWithBatchTable": {
         "name": "VectorTilePolygonsBatchedChildrenWithBatchTable",
         "path": "./modules/3d-tiles/test/data/Vector/VectorTilePolygonsBatchedChildrenWithBatchTable",
+        "tileset": "tileset.json",
         "files": [
           "children.vctr",
-          "parent.vctr",
-          "tileset.json"
+          "parent.vctr"
         ]
       },
       "VectorTilePolygonsWithBatchIds": {
         "name": "VectorTilePolygonsWithBatchIds",
         "path": "./modules/3d-tiles/test/data/Vector/VectorTilePolygonsWithBatchIds",
+        "tileset": "tileset.json",
         "files": [
           "children.vctr",
-          "parent.vctr",
-          "tileset.json"
+          "parent.vctr"
         ]
       },
       "VectorTilePolygonsWithBatchTable": {
         "name": "VectorTilePolygonsWithBatchTable",
         "path": "./modules/3d-tiles/test/data/Vector/VectorTilePolygonsWithBatchTable",
+        "tileset": "tileset.json",
         "files": [
           "ll.vctr",
           "lr.vctr",
           "parent.vctr",
-          "tileset.json",
           "ul.vctr",
           "ur.vctr"
         ]
@@ -1124,11 +1126,11 @@
       "VectorTilePolylines": {
         "name": "VectorTilePolylines",
         "path": "./modules/3d-tiles/test/data/Vector/VectorTilePolylines",
+        "tileset": "tileset.json",
         "files": [
           "ll.vctr",
           "lr.vctr",
           "parent.vctr",
-          "tileset.json",
           "ul.vctr",
           "ur.vctr"
         ]
@@ -1136,38 +1138,38 @@
       "VectorTilePolylinesBatchedChildren": {
         "name": "VectorTilePolylinesBatchedChildren",
         "path": "./modules/3d-tiles/test/data/Vector/VectorTilePolylinesBatchedChildren",
+        "tileset": "tileset.json",
         "files": [
           "children.vctr",
-          "parent.vctr",
-          "tileset.json"
+          "parent.vctr"
         ]
       },
       "VectorTilePolylinesBatchedChildrenWithBatchTable": {
         "name": "VectorTilePolylinesBatchedChildrenWithBatchTable",
         "path": "./modules/3d-tiles/test/data/Vector/VectorTilePolylinesBatchedChildrenWithBatchTable",
+        "tileset": "tileset.json",
         "files": [
           "children.vctr",
-          "parent.vctr",
-          "tileset.json"
+          "parent.vctr"
         ]
       },
       "VectorTilePolylinesWithBatchIds": {
         "name": "VectorTilePolylinesWithBatchIds",
         "path": "./modules/3d-tiles/test/data/Vector/VectorTilePolylinesWithBatchIds",
+        "tileset": "tileset.json",
         "files": [
           "children.vctr",
-          "parent.vctr",
-          "tileset.json"
+          "parent.vctr"
         ]
       },
       "VectorTilePolylinesWithBatchTable": {
         "name": "VectorTilePolylinesWithBatchTable",
         "path": "./modules/3d-tiles/test/data/Vector/VectorTilePolylinesWithBatchTable",
+        "tileset": "tileset.json",
         "files": [
           "ll.vctr",
           "lr.vctr",
           "parent.vctr",
-          "tileset.json",
           "ul.vctr",
           "ur.vctr"
         ]
