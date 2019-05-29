@@ -20,7 +20,7 @@ module.exports = (env = {}) => {
   config.module.rules.push(
     {
       // This is required to handle inline worker!
-      test: /\.worker.js$/,
+      test: /worker.*\.js$/,
       exclude: /node_modules/,
       use: [
         {
