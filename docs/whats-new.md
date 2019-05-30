@@ -1,8 +1,8 @@
 # What's New
 
-## v1.1 (In Development)
+## v1.1
 
-Target Release Date: May 30, 2019
+Release Date: May 30, 2019
 
 ### @loaders.gl/core
 
