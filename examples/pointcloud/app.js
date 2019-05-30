@@ -21,13 +21,7 @@ import fileDrop from './components/file-drop';
 import FILE_INDEX from './file-index';
 
 // Additional format support can be added here, see
-registerLoaders([
-  DracoLoader,
-  LASLoader,
-  PLYLoader,
-  PCDLoader,
-  OBJLoader
-]);
+registerLoaders([DracoLoader, LASLoader, PLYLoader, PCDLoader, OBJLoader]);
 
 const INITIAL_VIEW_STATE = {
   target: [0, 0, 0],
@@ -54,7 +48,7 @@ export default class App extends PureComponent {
       droppedFile: null
       // example: 'Indoor',
       // category: 'LAZ'
-   };
+    };
 
     this._onLoad = this._onLoad.bind(this);
     this._rotateCamera = this._rotateCamera.bind(this);

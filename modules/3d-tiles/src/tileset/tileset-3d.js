@@ -386,6 +386,15 @@ export default class Tileset3D {
     this._cache.trim();
   }
 
+  traverse(visitor, tile = this.root) {
+    visitor(tile);
+    if (tile && tile.children) {
+      for (const child of tile.children) {
+        this.traverse(visitor, child);
+      }
+    }
+  }
+
   _requestTiles() {
     // Sort requests by priority before making any requests.
     // This makes it less likely this requests will be cancelled after being issued.

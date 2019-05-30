@@ -4,6 +4,7 @@
 //
 // This enables using the examples to debug the main library source
 // without publishing or npm linking, with conveniences such hot reloading etc.
+const webpack = require('webpack');
 const resolve = require('path').resolve;
 // eslint-disable-next-line import/no-extraneous-dependencies
 const ALIASES = require('ocular-dev-tools/config/ocular.config')({
@@ -46,7 +47,9 @@ const LOCAL_DEVELOPMENT_CONFIG = {
         enforce: 'pre'
       }
     ]
-  }
+  },
+
+  plugins: [new webpack.EnvironmentPlugin(['MapboxAccessToken'])]
 };
 
 function addLocalDevSettings(config) {
@@ -58,6 +61,9 @@ function addLocalDevSettings(config) {
   config.module = config.module || {};
   config.module.rules = config.module.rules || [];
   config.module.rules = config.module.rules.concat(LOCAL_DEVELOPMENT_CONFIG.module.rules);
+
+  config.plugins = config.plugins || [];
+  config.plugins = config.plugins.concat(LOCAL_DEVELOPMENT_CONFIG.plugins);
 
   return config;
 }

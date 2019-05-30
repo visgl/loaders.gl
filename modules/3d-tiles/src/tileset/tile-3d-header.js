@@ -20,7 +20,48 @@ const scratchToTileCenter = new Vector3();
 // Do not construct this directly, instead access tiles through {@link Tileset3D#tileVisible}.
 export default class Tile3DHeader {
   constructor(tileset, baseResource, header, parentHeader) {
-    this._initialize(header, parentHeader, tileset, baseResource);
+    // assert(tileset._asset);
+    assert(typeof header === 'object');
+
+    this._tileset = tileset;
+    this._header = header;
+
+    this._content = null;
+    this._contentState = TILE3D_CONTENT_STATE.UNLOADED;
+
+    // Gets the tile's children.
+    this.children = [];
+    // This tile's parent or <code>undefined</code> if this tile is the root.
+    this.parent = parentHeader;
+
+    // Specifies the type of refine that is used when traversing this tile for rendering.
+    this.refine = this._getRefine(header.refine);
+
+    this.userData = null;
+
+    // The error, in meters, introduced if this tile is rendered and its children are not.
+    // This is used to compute screen space error, i.e., the error measured in pixels.
+    if ('geometricError' in header) {
+      this.geometricError = header.geometricError;
+    } else {
+      this.geometricError = (this.parent && this.parent.geometricError) || tileset._geometricError;
+      console.warn('3D Tile: Required prop geometricError is undefined. Using parent error');
+    }
+
+    this._initializeTransforms(header);
+
+    this._initializeBoundingVolumes(header);
+
+    this._initializeContent(header);
+
+    this._initializeCache(header);
+
+    // Marks whether the tile's children bounds are fully contained within the tile's bounds
+    // @type {TILE3D_OPTIMIZATION_HINT}
+    this._optimChildrenWithinParent = TILE3D_OPTIMIZATION_HINT.NOT_COMPUTED;
+
+    this._initializeRenderingState();
+
     Object.seal(this);
   }
 
@@ -162,7 +203,7 @@ export default class Tile3DHeader {
       return true;
     }
 
-    return this.requestContent();
+    return await this.requestContent();
   }
 
   async requestContent() {
@@ -187,12 +228,12 @@ export default class Tile3DHeader {
       this.expireDate = undefined;
     }
 
-    const contentUri = this.uri;
-    const response = await fetchFile(contentUri);
-    const arrayBuffer = await response.arrayBuffer();
-
     try {
       this._contentState = TILE3D_CONTENT_STATE.LOADING;
+
+      const contentUri = this.uri;
+      const response = await fetchFile(contentUri);
+      const arrayBuffer = await response.arrayBuffer();
 
       // TODO: The content can be a binary tile ot a JSON tileset
       // const content = await parse(arrayBuffer, [Tile3DLoader, Tileset3DLoader]);
@@ -203,10 +244,9 @@ export default class Tile3DHeader {
 
       this._contentState = TILE3D_CONTENT_STATE.READY;
       this._contentLoaded();
-    } catch (error) {
+    } finally {
       // Tile is unloaded before the content finishes loading
       this._contentState = TILE3D_CONTENT_STATE.FAILED;
-      return;
     }
   }
 
@@ -362,39 +402,7 @@ export default class Tile3DHeader {
 
   // PRIVATE
 
-  _initialize(header, parentHeader, tileset, baseResource) {
-    // assert(tileset._asset);
-    assert(typeof header === 'object');
-
-    this._tileset = tileset;
-    this._header = header;
-
-    this._content = null;
-    this._contentState = TILE3D_CONTENT_STATE.UNLOADED;
-
-    // Gets the tile's children.
-    this.children = [];
-    // This tile's parent or <code>undefined</code> if this tile is the root.
-    this.parent = parentHeader;
-
-    // Specifies the type of refine that is used when traversing this tile for rendering.
-    this.refine = this._getRefine(header.refine);
-
-    // The error, in meters, introduced if this tile is rendered and its children are not.
-    // This is used to compute screen space error, i.e., the error measured in pixels.
-    if ('geometricError' in header) {
-      this.geometricError = header.geometricError;
-    } else {
-      this.geometricError = (this.parent && this.parent.geometricError) || tileset._geometricError;
-      console.warn('3D Tile: Required prop geometricError is undefined. Using parent error');
-    }
-
-    this._initializeTransforms(header);
-
-    this._initializeBoundingVolumes(header);
-
-    this._initializeContent(header);
-
+  _initializeCache(header) {
     // The node in the tileset's LRU cache, used to determine when to unload a tile's content.
     this.cacheNode = undefined;
 
@@ -415,12 +423,6 @@ export default class Tile3DHeader {
     // The date when the content expires and new content is requested.
     // @type {Date}
     this.expireDate = expireDate;
-
-    // Marks whether the tile's children bounds are fully contained within the tile's bounds
-    // @type {TILE3D_OPTIMIZATION_HINT}
-    this._optimChildrenWithinParent = TILE3D_OPTIMIZATION_HINT.NOT_COMPUTED;
-
-    this._initializeRenderingState();
   }
 
   _initializeTransforms(tileHeader) {
