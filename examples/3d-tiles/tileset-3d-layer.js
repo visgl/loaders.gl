@@ -39,18 +39,22 @@ export default class Tileset3DLayer extends CompositeLayer {
 
   updateState({props, oldProps, changeFlags}) {
     if (props.tilesetJson !== oldProps.tilesetJson) {
+      const {tilesetJson, tilesetUrl} = props;
+      const tileset3d = new Tileset3D(tilesetJson, tilesetUrl);
       this.setState({
         layerMap: {},
-        layers: []
+        layers: [],
+        tileset3d
       });
-      this._loadTileset(props.tilesetJson, props.tilesetUrl);
+      this._loadTileset();
     }
+    // const {tileset3d} = this.state;
+    // tileset3d.traverse(tileHeader => this._loadTile3D(tileHeader));
   }
 
-  _loadTileset(tilesetJson, tilesetUrl) {
-    const tileset3d = new Tileset3D(tilesetJson, tilesetUrl);
+  _loadTileset() {
+    const {tileset3d} = this.state;
     tileset3d.traverse(tileHeader => this._loadTile3D(tileHeader));
-    this.setState({tileset3d});
   }
 
   async _loadTile3D(tileHeader) {
