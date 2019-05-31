@@ -38,26 +38,26 @@ export default class Tileset3DLayer extends CompositeLayer {
   }
 
   updateState({props, oldProps, changeFlags}) {
+
     if (props.tilesetJson !== oldProps.tilesetJson) {
-      const {tilesetJson, tilesetUrl} = props;
-      const tileset3d = new Tileset3D(tilesetJson, tilesetUrl);
+      const tileset3d = new Tileset3D(props.tilesetJson, props.tilesetUrl);
       this.setState({
         layerMap: {},
         layers: [],
         tileset3d
       });
-      this._loadTileset();
     }
-    // const {tileset3d} = this.state;
-    // tileset3d.traverse(tileHeader => this._loadTile3D(tileHeader));
-  }
 
-  _loadTileset() {
-    const {tileset3d} = this.state;
-    tileset3d.traverse(tileHeader => this._loadTile3D(tileHeader));
+    // traverse, proceess requested tiles, process selected tiles
+    const {tileset3d, zoom} = this.state;
+    tileset3d.traverse(tileHeader => this._loadTile3D(tileHeader), tileset3d.root, zoom);
   }
 
   async _loadTile3D(tileHeader) {
+    if (!tileHeader.contentUnloaded) {
+      return;
+    }
+
     await tileHeader.loadContent();
     this._unpackTile(tileHeader);
 

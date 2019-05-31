@@ -73,17 +73,10 @@ export default class App extends PureComponent {
     const selectedExample = examplesByCategory[category].examples[name];
     const tilesetUrl = `${DATA_URI}/${selectedExample.path}/${selectedExample.tileset}`;
     let tilesetJson = null;
-    let tileset3dLayer = null;
     if (selectedExample.tileset) {
       tilesetJson = await load(tilesetUrl);
-      tileset3dLayer = new Tileset3DLayer({
-        id: 'tileset-layer',
-        tilesetJson,
-        tilesetUrl,
-        onTileLoaded: tileHeader => this.forceUpdate()
-      });
     }
-    this.setState({tilesetJson, tilesetUrl, tileset3dLayer});
+    this.setState({tilesetJson, tilesetUrl});
   }
 
   // CONTROL PANEL
@@ -114,16 +107,17 @@ export default class App extends PureComponent {
   }
 
   _renderLayers() {
-    const {tilesetJson, tilesetUrl, tileset3dLayer, viewState} = this.state;
+    const {tilesetJson, tilesetUrl, viewState} = this.state;
+    const {zoom} = viewState;
 
     return (
       tilesetJson &&
-      // tileset3dLayer
       new Tileset3DLayer({
         id: 'tileset-layer',
         tilesetJson,
         tilesetUrl,
-        onTileLoaded: tileHeader => this.forceUpdate()
+        onTileLoaded: tileHeader => this.forceUpdate(),
+        zoom
       })
     );
   }

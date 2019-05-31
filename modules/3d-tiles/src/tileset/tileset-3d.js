@@ -386,11 +386,11 @@ export default class Tileset3D {
     this._cache.trim();
   }
 
-  traverse(visitor, tile = this.root) {
+  traverse(visitor, tile, zoom) {
     visitor(tile);
     if (tile && tile.children) {
       for (const child of tile.children) {
-        this.traverse(visitor, child);
+        this.traverse(visitor, child, zoom);
       }
     }
   }
