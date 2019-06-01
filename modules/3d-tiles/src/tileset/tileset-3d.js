@@ -388,34 +388,7 @@ export default class Tileset3D {
   }
 
   update(frameState) {
-    // Get this to do full traversal first
-    // this._traverser.traverse(this, frameState);
-
-    let stack = [this.root];
-    let requestedTiles = this._requestedTiles;
-    let selectedTiles = this._selectedTiles;
-    requestedTiles.length = 0;
-    selectedTiles.length = 0;
-    while (stack.length > 0) {
-      const tile = stack.pop();
-      const {tileset, parent, refine} = tile;
-      const parentRefines = !parent || parent._refines;
-
-      const refines = canTraverse(tileset, tile) &&
-                      updateAndPushChildren(tileset, tile, stack, frameState) &&
-                      parentRefines;
-
-      const stoppedRefining = !refines && parentRefines;
-
-      if (tile.contentUnloaded) {
-        requestedTiles.push(tile);
-      }
-
-      if (tile.contentAvailable) {
-        selectedTiles.push(tile);
-      }
-    }
-
+    this._traverser.traverse(this, frameState);
     this._requestTiles();
   }
 
