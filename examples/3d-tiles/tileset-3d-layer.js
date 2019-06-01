@@ -51,11 +51,17 @@ export default class Tileset3DLayer extends CompositeLayer {
     const {tileset3d, zoom} = this.state;
     const frameState = {zoom};
     tileset3d.update(frameState);
+
     const requestedTiles = tileset3d._requestedTiles;
     for (const tile of requestedTiles) {
       this._loadTile3D(tile);
     }
 
+    const selectedTiles = tileset3d._selectedTiles;
+    console.log(selectedTiles.length);
+    for (const tile of selectedTiles) {
+      this._createLayer(tile);
+    }
   }
 
   async _loadTile3D(tileHeader) {
@@ -64,6 +70,12 @@ export default class Tileset3DLayer extends CompositeLayer {
     }
 
     await tileHeader.loadContent();
+
+    // React apps can call forceUpdate to trigger a rerender
+    this.props.onTileLoaded(tileHeader);
+  }
+
+  _createLayer(tileHeader) {
     this._unpackTile(tileHeader);
 
     const layer = this._create3DTileLayer(tileHeader);
@@ -77,9 +89,6 @@ export default class Tileset3DLayer extends CompositeLayer {
       layerMap,
       layers: Object.values(layerMap).filter(Boolean)
     });
-
-    // React apps can call forceUpdate to trigger a rerender
-    this.props.onTileLoaded(tileHeader);
   }
 
   _unpackTile(tileHeader) {

@@ -251,7 +251,7 @@ export default class Tile3DHeader {
       this._contentLoaded();
     } finally {
       // Tile is unloaded before the content finishes loading
-      this._contentState = TILE3D_CONTENT_STATE.FAILED;
+      // this._contentState = TILE3D_CONTENT_STATE.FAILED;
     }
   }
 

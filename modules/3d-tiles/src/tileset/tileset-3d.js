@@ -408,7 +408,13 @@ export default class Tileset3D {
 
       const stoppedRefining = !refines && parentRefines;
 
-      requestedTiles.push(tile);
+      if (tile.contentUnloaded) {
+        requestedTiles.push(tile);
+      }
+
+      if (tile.contentAvailable) {
+        selectedTiles.push(tile);
+      }
     }
   }
 
