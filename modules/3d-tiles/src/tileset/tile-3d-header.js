@@ -199,21 +199,13 @@ export default class Tile3DHeader {
 
   // Requests the tile's content.
   // The request may not be made if the Request Scheduler can't prioritize it.
-  async loadContent() {
+  async requestContent() {
     if (this.hasEmptyContent) {
       return false;
     }
 
     if (this._content) {
       return true;
-    }
-
-    return await this.requestContent();
-  }
-
-  async requestContent() {
-    if (this.hasEmptyContent) {
-      return false;
     }
 
     const expired = this.contentExpired;

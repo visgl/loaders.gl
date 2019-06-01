@@ -417,41 +417,26 @@ export default class Tileset3D {
       }
     }
 
-    // Request tiles
-    for (const tile of requestedTiles) {
-      this._loadTile3D(tile);
-    }
-  }
-
-  async _loadTile3D(tile) {
-    if (!tile.contentUnloaded) {
-      return;
-    }
-
-    await tile.loadContent();
-    this.onTileLoad(tile);
+    this._requestTiles();
   }
 
   _requestTiles() {
     // Sort requests by priority before making any requests.
     // This makes it less likely this requests will be cancelled after being issued.
-    // this._requestedTiles.sort((a, b) => a._priority - b._priority);
-    for (const requestedTile of this._requestedTiles) {
-      this._requestContent(this, requestedTile);
+    const requestedTiles = this._requestedTiles;
+    // requestedTiles.sort((a, b) => a._priority - b._priority);
+    for (const tile of requestedTiles) {
+      this._requestContent(tile);
     }
   }
 
   async _requestContent(tile) {
-    if (tile.hasEmptyContent) {
-      return;
-    }
-
     const expired = tile.contentExpired;
-    const requested = tile.requestContent();
+    const requested = await tile.requestContent();
 
-    if (!requested) {
-      return;
-    }
+    // if (!requested) {
+    //   return;
+    // }
 
     if (expired) {
       if (tile.hasTilesetContent) {
@@ -460,11 +445,11 @@ export default class Tileset3D {
     }
 
     try {
-      await tile.contentReadyPromise;
-      if (!tile.hasTilesetContent) {
-        // Add to the tile cache. Previously expired tiles are already in the cache and won't get re-added.
-        this._cache.add(tile);
-      }
+      // await tile.contentReadyPromise;
+      // if (!tile.hasTilesetContent) {
+      //   // Add to the tile cache. Previously expired tiles are already in the cache and won't get re-added.
+      //   this._cache.add(tile);
+      // }
 
       this.onTileLoad(tile);
     } catch (error) {
