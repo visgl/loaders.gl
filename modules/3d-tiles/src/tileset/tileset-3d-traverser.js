@@ -34,34 +34,34 @@ export default class Tileset3DTraverser {
     return tile._visible && tile._inRequestVolume;
   }
 
-  traverse(frameState) {
-    this._requestedTiles.length = 0;
+  traverse(tileset, frameState) {
+    tileset._requestedTiles.length = 0;
 
-    this._selectedTiles.length = 0;
-    this._selectedTilesToStyle.length = 0;
-    this._emptyTiles.length = 0;
-    this._hasMixedContent = false;
+    tileset._selectedTiles.length = 0;
+    tileset._emptyTiles.length = 0;
+    // tileset._selectedTilesToStyle.length = 0;
+    // tileset._hasMixedContent = false;
 
-    const root = this.root;
-    this.updateTile(root, frameState);
+    const root = tileset.root;
+    this.updateTile(tileset, root, frameState);
 
-    // The root tile is not visible
-    if (!this.isVisible(root)) {
-      return false;
-    }
+    // // The root tile is not visible
+    // if (!this.isVisible(root)) {
+    //   return false;
+    // }
+    //
+    // // The this doesn't meet the SSE requirement, therefore the tree does not need to be rendered
+    // if (root.getScreenSpaceError(frameState, true) <= tileset._maximumScreenSpaceError) {
+    //   return false;
+    // }
 
-    // The this doesn't meet the SSE requirement, therefore the tree does not need to be rendered
-    if (root.getScreenSpaceError(frameState, true) <= this._maximumScreenSpaceError) {
-      return false;
-    }
-
-    if (!this.skipLevelOfDetail()) {
-      this.executeBaseTraversal(root, frameState);
-    } else if (this.immediatelyLoadDesiredLevelOfDetail) {
-      this.executeSkipTraversal(root, frameState);
-    } else {
-      this.executeBaseAndSkipTraversal(root, frameState);
-    }
+    // if (!tileset._skipLevelOfDetail) {
+      this.executeBaseTraversal(tileset, frameState);
+    // } else if (tileset.immediatelyLoadDesiredLevelOfDetail) {
+    //   this.executeSkipTraversal(tileset, frameState);
+    // } else {
+    //   this.executeBaseAndSkipTraversal(tileset, frameState);
+    // }
 
     this.traversal.stack.trim(this.traversal.stackMaximumLength);
     this.emptyTraversal.stack.trim(this.emptyTraversal.stackMaximumLength);
@@ -72,79 +72,72 @@ export default class Tileset3DTraverser {
     return true;
   }
 
-  executeBaseTraversal(root, frameState) {
-    const baseScreenSpaceError = this._maximumScreenSpaceError;
-    const maximumScreenSpaceError = this._maximumScreenSpaceError;
-    this.executeTraversal(this, root, baseScreenSpaceError, maximumScreenSpaceError, frameState);
+  executeBaseTraversal(tileset, frameState) {
+    const baseScreenSpaceError = tileset.maximumScreenSpaceError;
+    this.executeTraversal(tileset, baseScreenSpaceError, frameState);
   }
 
-  executeSkipTraversal(root, frameState) {
-    const baseScreenSpaceError = Number.MAX_VALUE;
-    const maximumScreenSpaceError = this._maximumScreenSpaceError;
-    this.executeTraversal(this, root, baseScreenSpaceError, maximumScreenSpaceError, frameState);
-    this.traverseAndSelect(this, root, frameState);
+  // executeSkipTraversal(tileset, frameState) {
+  //   const baseScreenSpaceError = Number.MAX_VALUE;
+  //   this.executeTraversal(tileset, baseScreenSpaceError, maximumScreenSpaceError, frameState);
+  //   this.traverseAndSelect(tileset, frameState);
+  // }
+  //
+  // executeBaseAndSkipTraversal(tileset, frameState) {
+  //   const baseScreenSpaceError = Math.max(tileset.baseScreenSpaceError, tileset.maximumScreenSpaceError);
+  //   this.executeTraversal(tileset, baseScreenSpaceError, maximumScreenSpaceError, frameState);
+  //   this.traverseAndSelect(tileset, frameState);
+  // }
+
+  addEmptyTile(tileset, tile) {
+    tileset._emptyTiles.push(tile);
   }
 
-  executeBaseAndSkipTraversal(root, frameState) {
-    const baseScreenSpaceError = Math.max(this.baseScreenSpaceError, this.maximumScreenSpaceError);
-    const maximumScreenSpaceError = this.maximumScreenSpaceError;
-    this.executeTraversal(root, baseScreenSpaceError, maximumScreenSpaceError, frameState);
-    this.traverseAndSelect(root, frameState);
-  }
-
-  skipLevelOfDetail() {
-    return this._skipLevelOfDetail;
-  }
-
-  addEmptyTile(tile) {
-    this._emptyTiles.push(tile);
-  }
-
-  selectTile(tile, frameState) {
+  selectTile(tileset, tile, frameState) {
     if (tile.contentVisibility(frameState) !== Intersect.OUTSIDE) {
       if (tile.content.featurePropertiesDirty) {
         // A feature's property in this tile changed, the tile needs to be re-styled.
         tile.content.featurePropertiesDirty = false;
         tile.lastStyleTime = 0; // Force applying the style to this tile
-        this._selectedTilesToStyle.push(tile);
+        tileset._selectedTilesToStyle.push(tile);
       } else if (tile._selectedFrame < frameState.frameNumber - 1) {
         // Tile is newly selected; it is selected this frame, but was not selected last frame.
-        this._selectedTilesToStyle.push(tile);
+        tileset._selectedTilesToStyle.push(tile);
       }
       tile._selectedFrame = frameState.frameNumber;
-      this._selectedTiles.push(tile);
+      tileset._selectedTiles.push(tile);
     }
   }
 
-  selectDescendants(root, frameState) {
-    const stack = descendantTraversal.stack;
-    stack.push(root);
-    while (stack.length > 0) {
-      descendantTraversal.stackMaximumLength = Math.max(
-        descendantTraversal.stackMaximumLength,
-        stack.length
-      );
-      const tile = stack.pop();
-      for (const child of this.children) {
-        if (this.isVisible(child)) {
-          if (child.contentAvailable) {
-            this.updateTile(child, frameState);
-            this.touchTile(child, frameState);
-            this.selectTile(child, frameState);
-          } else if (child._depth - root._depth < descendantSelectionDepth) {
-            // Continue traversing, but not too far
-            stack.push(child);
-          }
-        }
-      }
-    }
-  }
+  // selectDescendants(tileset, root, frameState) {
+  //   const stack = this.descendantTraversal.stack;
+  //   stack.push(root);
+  //   while (stack.length > 0) {
+  //     stack.stackMaximumLength = Math.max(
+  //       stack.stackMaximumLength,
+  //       stack.length
+  //     );
+  //     const tile = stack.pop();
+  //     for (const child of tile.children) {
+  //       if (this.isVisible(child)) {
+  //         if (child.contentAvailable) {
+  //           this.updateTile(tileset, child, frameState);
+  //           this.touchTile(tileset, child, frameState);
+  //           this.selectTile(tileset, child, frameState);
+  //         } else if (child._depth - root._depth < this.descendantSelectionDepth) {
+  //           // Continue traversing, but not too far
+  //           stack.push(child);
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
 
-  selectDesiredTile(tile, frameState) {
-    if (!this.skipLevelOfDetail()) {
+  selectDesiredTile(tileset, tile, frameState) {
+    if (!tileset._skipLevelOfDetail) {
       if (tile.contentAvailable) {
         // The tile can be selected right away and does not require traverseAndSelect
-        this.selectTile(tile, frameState);
+        this.selectTile(tileset, tile, frameState);
       }
       return;
     }
@@ -158,21 +151,21 @@ export default class Tileset3DTraverser {
       // If no ancestors are ready traverse down and select tiles to minimize empty regions.
       // This happens often for immediatelyLoadDesiredLevelOfDetail where parent tiles
       // are not necessarily loaded before zooming out.
-      this.selectDescendants(tile, frameState);
+      this.selectDescendants(tileset, tile, frameState);
     }
   }
 
-  visitTile(tile, frameState) {
-    ++this._statistics.visited;
+  visitTile(tileset, tile, frameState) {
+    ++tileset._statistics.visited;
     tile._visitedFrame = frameState.frameNumber;
   }
 
-  touchTile(tile, frameState) {
+  touchTile(tileset, tile, frameState) {
     if (tile._touchedFrame === frameState.frameNumber) {
       // Prevents another pass from touching the frame again
       return;
     }
-    this._cache.touch(tile);
+    tileset._cache.touch(tile);
     tile._touchedFrame = frameState.frameNumber;
   }
 
@@ -181,7 +174,7 @@ export default class Tileset3DTraverser {
   // Replacement tiles are prioritized by screen space error.
   // A tileset that has both additive and replacement tiles may not prioritize tiles as effectively since SSE and distance
   // are different types of values. Maybe all priorities need to be normalized to 0-1 range.
-  getPriority(tile) {
+  getPriority(tileset, tile) {
     switch (tile.refine) {
       case TILE3D_REFINEMENT.ADD:
         return tile._distanceToCamera;
@@ -190,11 +183,11 @@ export default class Tileset3DTraverser {
         const {parent} = tile;
         const useParentScreenSpaceError =
           parent &&
-          (!this.skipLevelOfDetail() || tile._screenSpaceError === 0.0 || parent.hasTilesetContent);
+          (!tileset._skipLevelOfDetail || tile._screenSpaceError === 0.0 || parent.hasTilesetContent);
         const screenSpaceError = useParentScreenSpaceError
           ? parent._screenSpaceError
           : tile._screenSpaceError;
-        const rootScreenSpaceError = this.root._screenSpaceError;
+        const rootScreenSpaceError = tileset.root._screenSpaceError;
         return rootScreenSpaceError - screenSpaceError; // Map higher SSE to lower values (e.g. root tile is highest priority)
 
       default:
@@ -202,46 +195,46 @@ export default class Tileset3DTraverser {
     }
   }
 
-  loadTile(tile, frameState) {
+  loadTile(tileset, tile, frameState) {
     if (this.hasUnloadedContent(tile) || tile.contentExpired) {
       tile._requestedFrame = frameState.frameNumber;
-      tile._priority = this.getPriority(this, tile);
-      this._requestedTiles.push(tile);
+      tile._priority = this.getPriority(tileset, tile);
+      tileset._requestedTiles.push(tile);
     }
   }
 
-  updateVisibility(tile, frameState) {
-    if (tile._updatedVisibilityFrame === this._updatedVisibilityFrame) {
+  updateVisibility(tileset, tile, frameState) {
+    if (tile._updatedVisibilityFrame === tileset._updatedVisibilityFrame) {
       // Return early if visibility has already been checked during the traversal.
       // The visibility may have already been checked if the cullWithChildrenBounds optimization is used.
       return;
     }
 
     tile.updateVisibility(frameState);
-    tile._updatedVisibilityFrame = this._updatedVisibilityFrame;
+    tile._updatedVisibilityFrame = tileset._updatedVisibilityFrame;
   }
 
-  anyChildrenVisible(tile, frameState) {
+  anyChildrenVisible(tileset, tile, frameState) {
     let anyVisible = false;
-    for (const child of this.children) {
-      this.updateVisibility(child, frameState);
+    for (const child of tile.children) {
+      this.updateVisibility(tileset, child, frameState);
       anyVisible = anyVisible || this.isVisible(child);
     }
     return anyVisible;
   }
 
-  meetsScreenSpaceErrorEarly(tile, frameState) {
+  meetsScreenSpaceErrorEarly(tileset, tile, frameState) {
     const {parent} = tile;
     if (!parent || parent.hasTilesetContent || parent.refine !== TILE3D_REFINEMENT.ADD) {
       return false;
     }
 
     // Use parent's geometric error with child's box to see if the tile already meet the SSE
-    return tile.getScreenSpaceError(frameState, true) <= this._maximumScreenSpaceError;
+    return tile.getScreenSpaceError(frameState, true) <= tileset.maximumScreenSpaceError;
   }
 
-  updateTileVisibility(tile, frameState) {
-    this.updateVisibility(tile, frameState);
+  updateTileVisibility(tileset, tile, frameState) {
+    this.updateVisibility(tileset, tile, frameState);
 
     if (!this.isVisible(tile)) {
       return;
@@ -258,7 +251,7 @@ export default class Tileset3DTraverser {
       return;
     }
 
-    if (this.meetsScreenSpaceErrorEarly(tile, frameState)) {
+    if (this.meetsScreenSpaceErrorEarly(tileset, tile, frameState)) {
       tile._visible = false;
       return;
     }
@@ -268,15 +261,15 @@ export default class Tileset3DTraverser {
     const useOptimization =
       tile._optimChildrenWithinParent === TILE3D_OPTIMIZATION_HINT.USE_OPTIMIZATION;
     if (replace && useOptimization && hasChildren) {
-      if (!this.anyChildrenVisible(tile, frameState)) {
-        ++this._statistics.numberOfTilesCulledWithChildrenUnion;
+      if (!this.anyChildrenVisible(tileset, tile, frameState)) {
+        ++tileset._statistics.numberOfTilesCulledWithChildrenUnion;
         tile._visible = false;
         return;
       }
     }
   }
 
-  updateTile(tile, frameState) {
+  updateTile(tileset, tile, frameState) {
     this.updateTileVisibility(tile, frameState);
     tile.updateExpiration();
 
@@ -304,25 +297,25 @@ export default class Tileset3DTraverser {
     return tile.hasEmptyContent || tile.hasTilesetContent;
   }
 
+  // Move to tile?
   hasUnloadedContent(tile) {
     return !this.hasEmptyContent(tile) && tile.contentUnloaded;
   }
 
-  // reachedSkippingThreshold(tile) {
-  //   const ancestor = tile._ancestorWithContent;
-  //   return (
-  //     !this.immediatelyLoadDesiredLevelOfDetail &&
-  //     ancestor &&
-  //     tile._screenSpaceError < ancestor._screenSpaceError / this.skipScreenSpaceErrorFactor &&
-  //     tile._depth > ancestor._depth + this.skipLevels
-  //   );
-  // }
+  reachedSkippingThreshold(tileset, tile) {
+    const ancestor = tile._ancestorWithContent;
+    return (
+      !tileset.immediatelyLoadDesiredLevelOfDetail &&
+      ancestor &&
+      tile._screenSpaceError < ancestor._screenSpaceError / tileset.skipScreenSpaceErrorFactor &&
+      tile._depth > (ancestor._depth + tileset.skipLevels)
+    );
+  }
 
   // eslint-disable-next-line complexity
-  updateAndPushChildren(tile, stack, frameState) {
-    const replace = tile.refine === TILE3D_REFINEMENT.REPLACE;
-
-    for (const child of this.children) {
+  updateAndPushChildren(tileset, tile, stack, frameState) {
+    const {children} = tile;
+    for (const child of children) {
       this.updateTile(child, frameState);
     }
 
@@ -334,19 +327,19 @@ export default class Tileset3DTraverser {
     }
 
     // Sort by distance to take advantage of early Z and reduce artifacts for skipLevelOfDetail
-    this.children.sort(compareDistanceToCamera);
+    children.sort(compareDistanceToCamera);
 
     // For traditional replacement refinement only refine if all children are loaded.
     // Empty tiles are exempt since it looks better if children stream in as they are loaded to fill the empty space.
-    const checkRefines = !this.skipLevelOfDetail() && replace && !this.hasEmptyContent(tile);
+    const checkRefines = !this.skipLevelOfDetail() && tile.refine === TILE3D_REFINEMENT.REPLACE && !this.hasEmptyContent(tile);
     let refines = true;
 
     let anyChildrenVisible = false;
-    for (const child of this.children) {
+    for (const child of children) {
       if (this.isVisible(child)) {
         stack.push(child);
         anyChildrenVisible = true;
-      } else if (checkRefines || this.loadSiblings) {
+      } else if (checkRefines || tileset.loadSiblings) {
         // Keep non-visible children loaded since they are still needed before the parent can refine.
         // Or loadSiblings is true so always load tiles regardless of visibility.
         this.loadTile(child, frameState);
@@ -372,11 +365,11 @@ export default class Tileset3DTraverser {
     return refines;
   }
 
-  inBaseTraversal(tile, baseScreenSpaceError) {
-    if (!this.skipLevelOfDetail()) {
+  inBaseTraversal(tileset, tile, baseScreenSpaceError) {
+    if (!tileset._skipLevelOfDetail) {
       return true;
     }
-    if (this.immediatelyLoadDesiredLevelOfDetail) {
+    if (tileset.immediatelyLoadDesiredLevelOfDetail) {
       return false;
     }
     if (!tile._ancestorWithContent) {
@@ -390,7 +383,7 @@ export default class Tileset3DTraverser {
     return tile._screenSpaceError > baseScreenSpaceError;
   }
 
-  canTraverse(tile) {
+  canTraverse(tileset, tile) {
     if (tile.children.length === 0) {
       return false;
     }
@@ -399,7 +392,7 @@ export default class Tileset3DTraverser {
       // Don't traverse if the subtree is expired because it will be destroyed
       return !tile.contentExpired;
     }
-    return tile._screenSpaceError > this._maximumScreenSpaceError;
+    return tile._screenSpaceError > tileset.maximumScreenSpaceError;
   }
 
   // Depth-first traversal that traverses all visible tiles and marks tiles for selection.
@@ -410,22 +403,21 @@ export default class Tileset3DTraverser {
   // and rendering children and parent tiles simultaneously.
 
   // eslint-disable-next-line max-statements, complexity
-  executeTraversal(root, baseScreenSpaceError, maximumScreenSpaceError, frameState) {
-    const {stack} = traversal;
-    stack.push(root);
+  executeTraversal(tileset, baseScreenSpaceError, frameState) {
+    const {stack} = this.traversal;
+    stack.push(tileset.root);
 
     while (stack.length > 0) {
       traversal.stackMaximumLength = Math.max(traversal.stackMaximumLength, stack.length);
 
       const tile = stack.pop();
-      const baseTraversal = this.inBaseTraversal(tile, baseScreenSpaceError);
       const add = tile.refine === TILE3D_REFINEMENT.ADD;
       const replace = tile.refine === TILE3D_REFINEMENT.REPLACE;
       const parent = tile.parent;
-      const parentRefines = !defined(parent) || parent._refines;
+      const parentRefines = !parent || parent._refines;
       let refines = false;
 
-      if (this.canTraverse(tile)) {
+      if (this.canTraverse(tileset, tile)) {
         refines = this.updateAndPushChildren(tile, stack, frameState) && parentRefines;
       }
 
@@ -435,35 +427,35 @@ export default class Tileset3DTraverser {
         // Add empty tile just to show its debug bounding volume
         // If the tile has this content load the external this
         // If the tile cannot refine further select its nearest loaded ancestor
-        this.addEmptyTile(tile, frameState);
-        this.loadTile(tile, frameState);
+        this.addEmptyTile(tileset, tile, frameState);
+        this.loadTile(tileset, tile, frameState);
         if (stoppedRefining) {
-          this.selectDesiredTile(tile, frameState);
+          this.selectDesiredTile(tileset, tile, frameState);
         }
       } else if (add) {
         // Additive tiles are always loaded and selected
-        this.selectDesiredTile(tile, frameState);
-        this.loadTile(tile, frameState);
+        this.loadTile(tileset, tile, frameState);
+        this.selectDesiredTile(tileset, tile, frameState);
       } else if (replace) {
-        if (baseTraversal) {
+        if (this.inBaseTraversal(tileset, tile, baseScreenSpaceError)) {
           // Always load tiles in the base traversal
           // Select tiles that can't refine further
-          this.loadTile(tile, frameState);
+          this.loadTile(tileset, tile, frameState);
           if (stoppedRefining) {
-            this.selectDesiredTile(tile, frameState);
+            this.selectDesiredTile(tileset, tile, frameState);
           }
         } else if (stoppedRefining) {
           // In skip traversal, load and select tiles that can't refine further
-          this.selectDesiredTile(tile, frameState);
-          this.loadTile(tile, frameState);
-        } else if (this.reachedSkippingThreshold(tile)) {
+          this.loadTile(tileset, tile, frameState);
+          this.selectDesiredTile(tileset, tile, frameState);
+        } else if (this.reachedSkippingThreshold(tileset, tile)) {
           // In skip traversal, load tiles that aren't skipped. In practice roughly half the tiles stay unloaded.
-          this.loadTile(tile, frameState);
+          this.loadTile(tileset, tile, frameState);
         }
       }
 
-      this.visitTile(tile, frameState);
-      this.touchTile(tile, frameState);
+      this.visitTile(tileset, tile, frameState);
+      this.touchTile(tileset, tile, frameState);
       tile._refines = refines;
     }
   }

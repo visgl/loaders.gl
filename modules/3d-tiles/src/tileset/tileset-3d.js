@@ -27,7 +27,7 @@ const DEFAULT_OPTIONS = {
   dynamicScreenSpaceErrorHeightFalloff: 0.25,
 
   // Optimization option. Determines if level of detail skipping should be applied during the traversal.
-  skipLevelOfDetail: true,
+  skipLevelOfDetail: false,
   // The screen space error this must be reached before skipping levels of detail.
   baseScreenSpaceError: 1024,
   // Multiplier defining the minimum screen space error to skip.
@@ -111,8 +111,7 @@ export default class Tileset3D {
     this._ellipsoid = options.ellipsoid;
 
     this._dynamicScreenSpaceErrorComputedDensity = 0.0; // Updated based on the camera position and direction
-    this._skipLevelOfDetail = this.skipLevelOfDetail;
-    this._disableSkipLevelOfDetail = false;
+    this._disableSkipLevelOfDetail = true;
 
     this.onLoadProgress = options.onLoadProgress;
     this.onAllTilesLoaded = options.onAllTilesLoaded;
@@ -389,7 +388,7 @@ export default class Tileset3D {
   }
 
   update(frameState) {
-    // // Get this to do full traversal first have layer proccess the requested and selected tile arrays
+    // Get this to do full traversal first
     // this._traverser.traverse(this, frameState);
 
     let stack = [this.root];
@@ -403,8 +402,8 @@ export default class Tileset3D {
       const parentRefines = !parent || parent._refines;
 
       const refines = canTraverse(tileset, tile) &&
-                    updateAndPushChildren(tileset, tile, stack, frameState) &&
-                    parentRefines;
+                      updateAndPushChildren(tileset, tile, stack, frameState) &&
+                      parentRefines;
 
       const stoppedRefining = !refines && parentRefines;
 
