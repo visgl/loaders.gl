@@ -65,12 +65,18 @@ export default class Tileset3DLayer extends CompositeLayer {
 
 
   _addLayer(tileHeader) {
+    // Check if already in map
+    let {layerMap} = this.state;
+    if (layerMap[tileHeader.contentUri] !== undefined) {
+      return;
+    }
+
     this._unpackTile(tileHeader);
 
     const layer = this._create3DTileLayer(tileHeader);
 
-    const layerMap = {
-      ...this.state.layerMap,
+    layerMap = {
+      ...layerMap,
       [tileHeader.contentUri]: layer
     };
 
