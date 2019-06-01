@@ -116,7 +116,7 @@ export default class App extends PureComponent {
         id: 'tileset-layer',
         tilesetJson,
         tilesetUrl,
-        onTileLoaded: tileHeader => this.forceUpdate(),
+        onTileLoad: tileHeader => this.forceUpdate(),
         zoom
       })
     );

@@ -26,7 +26,7 @@ const defaultProps = {
   // TODO - the tileset json should be an async prop.
   tilesetJson: null,
   tilesetUrl: null,
-  onTileLoaded: () => {}
+  onTileLoad: () => {}
 };
 
 export default class Tileset3DLayer extends CompositeLayer {
@@ -39,7 +39,11 @@ export default class Tileset3DLayer extends CompositeLayer {
 
   updateState({props, oldProps, changeFlags}) {
     if (props.tilesetJson !== oldProps.tilesetJson) {
-      const tileset3d = new Tileset3D(props.tilesetJson, props.tilesetUrl);
+      const options = {
+          onTileLoad: this.props.onTileLoad,
+      };
+
+      const tileset3d = new Tileset3D(props.tilesetJson, props.tilesetUrl, options);
       this.setState({
         layerMap: {},
         layers: [],
@@ -47,35 +51,20 @@ export default class Tileset3DLayer extends CompositeLayer {
       });
     }
 
-    // iterative traversal, proceess requested tiles, process selected tiles
+    // Traverse and and request. Update _selectedTiles so that we know what to render.
     const {tileset3d, zoom} = this.state;
     const frameState = {zoom};
     tileset3d.update(frameState);
 
-    const requestedTiles = tileset3d._requestedTiles;
-    for (const tile of requestedTiles) {
-      this._loadTile3D(tile);
-    }
-
+    // Add layer for any renderable tile
     const selectedTiles = tileset3d._selectedTiles;
-    console.log(selectedTiles.length);
     for (const tile of selectedTiles) {
-      this._createLayer(tile);
+      this._addLayer(tile);
     }
   }
 
-  async _loadTile3D(tileHeader) {
-    if (!tileHeader.contentUnloaded) {
-      return;
-    }
 
-    await tileHeader.loadContent();
-
-    // React apps can call forceUpdate to trigger a rerender
-    this.props.onTileLoaded(tileHeader);
-  }
-
-  _createLayer(tileHeader) {
+  _addLayer(tileHeader) {
     this._unpackTile(tileHeader);
 
     const layer = this._create3DTileLayer(tileHeader);

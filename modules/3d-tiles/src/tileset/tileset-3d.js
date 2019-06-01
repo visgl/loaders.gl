@@ -416,6 +416,20 @@ export default class Tileset3D {
         selectedTiles.push(tile);
       }
     }
+
+    // Request tiles
+    for (const tile of requestedTiles) {
+      this._loadTile3D(tile);
+    }
+  }
+
+  async _loadTile3D(tile) {
+    if (!tile.contentUnloaded) {
+      return;
+    }
+
+    await tile.loadContent();
+    this.onTileLoad(tile);
   }
 
   _requestTiles() {
