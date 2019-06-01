@@ -50,11 +50,12 @@ export default class Tileset3DLayer extends CompositeLayer {
     // iterative traversal, proceess requested tiles, process selected tiles
     const {tileset3d, zoom} = this.state;
     const frameState = {zoom};
-    tileset3d.update(tileHeader => this._loadTile3D(tileHeader), frameState);
-    // const requestedTiles = tileset3d._requestedTiles;
-    // for (const tile of requestedTiles) {
-    //   this._loadTile3D(tile);
-    // }
+    tileset3d.update(frameState);
+    const requestedTiles = tileset3d._requestedTiles;
+    for (const tile of requestedTiles) {
+      this._loadTile3D(tile);
+    }
+
   }
 
   async _loadTile3D(tileHeader) {

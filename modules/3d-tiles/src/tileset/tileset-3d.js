@@ -388,7 +388,7 @@ export default class Tileset3D {
     this._cache.trim();
   }
 
-  update(visitor, frameState) {
+  update(frameState) {
     // // Get this to do full traversal first have layer proccess the requested and selected tile arrays
     // this._traverser.traverse(this, frameState);
 
@@ -408,12 +408,7 @@ export default class Tileset3D {
 
       const stoppedRefining = !refines && parentRefines;
 
-      // visitor(tile);
       requestedTiles.push(tile);
-    }
-
-    for (const tile of requestedTiles) {
-      visitor(tile);
     }
   }
 
