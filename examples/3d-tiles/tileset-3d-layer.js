@@ -48,9 +48,14 @@ export default class Tileset3DLayer extends CompositeLayer {
       });
     }
 
-    // traverse, proceess requested tiles, process selected tiles
+    // iterative traversal, proceess requested tiles, process selected tiles
     const {tileset3d, zoom} = this.state;
-    tileset3d.traverse(tileHeader => this._loadTile3D(tileHeader), tileset3d.root, zoom);
+    const frameState = {zoom};
+    tileset3d.update(tileHeader => this._loadTile3D(tileHeader), frameState);
+    // const requestedTiles = tileset3d._requestedTiles;
+    // for (const tile of requestedTiles) {
+    //   this._loadTile3D(tile);
+    // }
   }
 
   async _loadTile3D(tileHeader) {

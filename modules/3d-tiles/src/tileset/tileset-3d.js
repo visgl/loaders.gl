@@ -1,6 +1,7 @@
 import {Matrix4} from 'math.gl';
 import assert from '../utils/assert';
 import Tile3DHeader from './tile-3d-header';
+import Tileset3DTraverser from './tileset-3d-traverser';
 
 // import Tileset3DCache from './tileset-3d-cache';
 
@@ -77,6 +78,7 @@ export default class Tileset3D {
     this._geometricError = undefined; // Geometric error when the tree is not rendered at all
     this._extensionsUsed = undefined;
     this._gltfUpAxis = undefined;
+    this._traverser = new Tileset3DTraverser();
 
     // this._cache = new Tileset3DCache();
     this._processingQueue = [];
@@ -386,19 +388,39 @@ export default class Tileset3D {
     this._cache.trim();
   }
 
-  traverse(visitor, tile, zoom) {
-    visitor(tile);
-    if (tile && tile.children) {
-      for (const child of tile.children) {
-        this.traverse(visitor, child, zoom);
-      }
+  update(visitor, frameState) {
+    // // Get this to do full traversal first have layer proccess the requested and selected tile arrays
+    // this._traverser.traverse(this, frameState);
+
+    let stack = [this.root];
+    let requestedTiles = this._requestedTiles;
+    let selectedTiles = this._selectedTiles;
+    requestedTiles.length = 0;
+    selectedTiles.length = 0;
+    while (stack.length > 0) {
+      const tile = stack.pop();
+      const {tileset, parent, refine} = tile;
+      const parentRefines = !parent || parent._refines;
+
+      const refines = canTraverse(tileset, tile) &&
+                    updateAndPushChildren(tileset, tile, stack, frameState) &&
+                    parentRefines;
+
+      const stoppedRefining = !refines && parentRefines;
+
+      // visitor(tile);
+      requestedTiles.push(tile);
+    }
+
+    for (const tile of requestedTiles) {
+      visitor(tile);
     }
   }
 
   _requestTiles() {
     // Sort requests by priority before making any requests.
     // This makes it less likely this requests will be cancelled after being issued.
-    this._requestedTiles.sort((a, b) => a._priority - b._priority);
+    // this._requestedTiles.sort((a, b) => a._priority - b._priority);
     for (const requestedTile of this._requestedTiles) {
       this._requestContent(this, requestedTile);
     }
@@ -469,5 +491,16 @@ export default class Tileset3D {
       this.onTileUnload(tile);
       tile.unloadContent();
     });
+  }
+}
+
+function canTraverse(tileset, tile) {
+  return true;
+}
+
+function updateAndPushChildren(tileset, tile, stack, frameState) {
+  const {children} = tile;
+  for (const child of children) {
+    stack.push(child);
   }
 }
