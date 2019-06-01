@@ -240,7 +240,7 @@ export default class Tile3DHeader {
       // this.content =  Tile3D.isTile(content) ?
       //   new Tile3D(content, contentUri) :
       //   new Tileset3D(content, contentUri);
-      this._content = Tile3DLoader.parseSync(arrayBuffer);
+      this._content = await Tile3DLoader.parse(arrayBuffer);
 
       this._contentState = TILE3D_CONTENT_STATE.READY;
       this._contentLoaded();
