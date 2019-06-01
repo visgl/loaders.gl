@@ -38,7 +38,6 @@ export default class Tileset3DLayer extends CompositeLayer {
   }
 
   updateState({props, oldProps, changeFlags}) {
-
     if (props.tilesetJson !== oldProps.tilesetJson) {
       const tileset3d = new Tileset3D(props.tilesetJson, props.tilesetUrl);
       this.setState({
@@ -66,7 +65,7 @@ export default class Tileset3DLayer extends CompositeLayer {
     await tileHeader.loadContent();
     this._unpackTile(tileHeader);
 
-    const layer = this._render3DTileLayer(tileHeader);
+    const layer = this._create3DTileLayer(tileHeader);
 
     const layerMap = {
       ...this.state.layerMap,
@@ -139,23 +138,23 @@ export default class Tileset3DLayer extends CompositeLayer {
     tileHeader.userData = {gltfObjects};
   }
 
-  _render3DTileLayer(tileHeader) {
+  _create3DTileLayer(tileHeader) {
     if (!tileHeader.content || !tileHeader.userData) {
       return null;
     }
 
     switch (tileHeader.content.type) {
       case 'pnts':
-        return this._renderPointCloud3DTileLayer(tileHeader);
+        return this._createPointCloud3DTileLayer(tileHeader);
       case 'i3dm':
       case 'b3dm':
-        return this._renderInstanced3DTileLayer(tileHeader);
+        return this._createInstanced3DTileLayer(tileHeader);
       default:
         return null;
     }
   }
 
-  _renderInstanced3DTileLayer(tileHeader) {
+  _createInstanced3DTileLayer(tileHeader) {
     const {gltfObjects} = tileHeader.userData;
 
     return new ScenegraphLayer({
@@ -197,7 +196,7 @@ export default class Tileset3DLayer extends CompositeLayer {
     return coordinateProps;
   }
 
-  _renderPointCloud3DTileLayer(tileHeader) {
+  _createPointCloud3DTileLayer(tileHeader) {
     const {positions, colors, normals} = tileHeader.content;
     const {pointsCount, transform} = tileHeader.userData;
 
