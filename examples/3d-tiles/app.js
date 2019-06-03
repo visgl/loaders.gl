@@ -108,7 +108,6 @@ export default class App extends PureComponent {
 
   _renderLayers() {
     const {tilesetJson, tilesetUrl, viewState} = this.state;
-    const {zoom} = viewState;
 
     return (
       tilesetJson &&
@@ -116,8 +115,7 @@ export default class App extends PureComponent {
         id: 'tileset-layer',
         tilesetJson,
         tilesetUrl,
-        onTileLoad: tileHeader => this.forceUpdate(),
-        zoom
+        onTileLoad: tileHeader => this.forceUpdate()
       })
     );
   }

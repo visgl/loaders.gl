@@ -391,14 +391,12 @@ export default class Tileset3D {
   }
 
   update(frameState) {
+    this._updatedVisibilityFrame++; // TODO: only update when camera or culling volume from last update moves (could be render camera change or prefetch camera)
     this._traverser.traverse(this, frameState);
-    this._requestTiles();
-  }
 
-  _requestTiles() {
+    const requestedTiles = this._requestedTiles;
     // Sort requests by priority before making any requests.
     // This makes it less likely this requests will be cancelled after being issued.
-    const requestedTiles = this._requestedTiles;
     // requestedTiles.sort((a, b) => a._priority - b._priority);
     for (const tile of requestedTiles) {
       this._requestContent(tile);
@@ -466,16 +464,5 @@ export default class Tileset3D {
       this.onTileUnload(tile);
       tile.unloadContent();
     });
-  }
-}
-
-function canTraverse(tileset, tile) {
-  return true;
-}
-
-function updateAndPushChildren(tileset, tile, stack, frameState) {
-  const {children} = tile;
-  for (const child of children) {
-    stack.push(child);
   }
 }

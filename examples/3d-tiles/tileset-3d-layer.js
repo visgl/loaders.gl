@@ -54,9 +54,30 @@ export default class Tileset3DLayer extends CompositeLayer {
       });
     }
 
+
+    /*
+            From cesium:
+            frustum.fov = CesiumMath.toRadians(60.0);
+            frustum._fovy = (frustum.aspectRatio <= 1) ? frustum.fov : Math.atan(Math.tan(frustum.fov * 0.5) / frustum.aspectRatio) * 2.0;
+            frustum._sseDenominator = 2.0 * Math.tan(0.5 * frustum._fovy);
+
+     */
+
     // Traverse and and request. Update _selectedTiles so that we know what to render.
-    const {tileset3d, zoom} = this.state;
-    const frameState = {zoom};
+    const {tileset3d} = this.state;
+    const {aspect, height, tick} = context.animationProps;
+    const {cameraPosition, cameraDirection, cameraUp} = context.viewport;
+    const frameState = {
+      camera: {
+        position: cameraPosition,
+        direction: cameraDirection,
+        up: cameraUp,
+      },
+      aspect: aspect,
+      height: height,
+      frameNumber: tick,
+    };
+
     tileset3d.update(frameState);
 
     // Add layer for any renderable tile
