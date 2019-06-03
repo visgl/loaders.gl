@@ -121,7 +121,7 @@ export default class Tileset3DLayer extends CompositeLayer {
   }
 
   _unpackInstanced3DTile(tileHeader) {
-    const {gl} = this._deckRef.deck.animationLoop;
+    const {gl} = this.context.animationProps;
 
     const json = postProcessGLTF(tileHeader.content.gltf);
 
