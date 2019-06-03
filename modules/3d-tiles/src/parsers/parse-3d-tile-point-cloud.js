@@ -1,3 +1,8 @@
+// This file is derived from the Cesium code base under Apache 2 license
+// See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
+
+// https://github.com/AnalyticalGraphicsInc/cesium/blob/master/Source/Scene/PointCloud.js#L254
+
 import {Vector3} from 'math.gl';
 import {GL} from '@loaders.gl/math'; // 'math.gl/geometry';
 
@@ -14,9 +19,7 @@ import {parse3DTileTablesHeaderSync, parse3DTileTablesSync} from './helpers/pars
 //   FAILED: 3
 // };
 
-// Reference code
-// https://github.com/AnalyticalGraphicsInc/cesium/blob/master/Source/Scene/PointCloud.js#L254
-export default async function parsePointCloud3DTile(tile, arrayBuffer, byteOffset, options) {
+export async function parsePointCloud3DTile(tile, arrayBuffer, byteOffset, options) {
   byteOffset = parse3DTileHeaderSync(tile, arrayBuffer, byteOffset, options);
   byteOffset = parse3DTileTablesHeaderSync(tile, arrayBuffer, byteOffset, options);
   byteOffset = parse3DTileTablesSync(tile, arrayBuffer, byteOffset, options);
@@ -26,8 +29,36 @@ export default async function parsePointCloud3DTile(tile, arrayBuffer, byteOffse
   return byteOffset;
 }
 
+export function parsePointCloud3DTileSync(tile, arrayBuffer, byteOffset, options) {
+  byteOffset = parse3DTileHeaderSync(tile, arrayBuffer, byteOffset, options);
+  byteOffset = parse3DTileTablesHeaderSync(tile, arrayBuffer, byteOffset, options);
+  byteOffset = parse3DTileTablesSync(tile, arrayBuffer, byteOffset, options);
+
+  extractPointCloudSync(tile);
+
+  return byteOffset;
+}
+
 // eslint-disable-next-line max-statements, complexity
 async function extractPointCloud(tile) {
+  const {featureTable, batchTable} = parsePointCloudTables(tile);
+
+  await parseDraco(tile, featureTable, batchTable);
+
+  parsePositions(tile, featureTable);
+  parseColors(tile, featureTable);
+  parseNormals(tile, featureTable);
+}
+
+function extractPointCloudSync(tile) {
+  const {featureTable} = parsePointCloudTables(tile);
+
+  parsePositions(tile, featureTable);
+  parseColors(tile, featureTable);
+  parseNormals(tile, featureTable);
+}
+
+function parsePointCloudTables(tile) {
   const featureTable = new Tile3DFeatureTable(tile.featureTableJson, tile.featureTableBinary);
 
   const pointsLength = featureTable.getGlobalProperty('POINTS_LENGTH');
@@ -53,11 +84,7 @@ async function extractPointCloud(tile) {
 
   const batchTable = parseBatch(tile, featureTable);
 
-  await parseDraco(tile, featureTable, batchTable);
-
-  parsePositions(tile, featureTable);
-  parseColors(tile, featureTable);
-  parseNormals(tile, featureTable);
+  return {featureTable, batchTable};
 }
 
 function parsePositions(tile, featureTable) {

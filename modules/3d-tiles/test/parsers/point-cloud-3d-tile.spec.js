@@ -1,3 +1,6 @@
+// This file is derived from the Cesium code base under Apache 2 license
+// See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
+
 /* eslint-disable max-len */
 
 // NOTICE: This file was forked from
@@ -5,7 +8,7 @@
 // which is under Apache 2 license
 
 import test from 'tape-promise/tape';
-import {parseSync, encodeSync} from '@loaders.gl/core';
+import {parse, parseSync, encodeSync} from '@loaders.gl/core';
 import {Tile3DLoader, Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/3d-tiles';
 // import {loadRootTileFromTileset} from '../utils/load-utils';
 
@@ -83,7 +86,7 @@ test('point cloud tile#throws if the feature table does not contain POSITION or 
   const arrayBuffer = encodeSync(TILE, Tile3DWriter);
   t.throws(
     () => parseSync(arrayBuffer, Tile3DLoader),
-    'throws if the feature table does not contain POSITION or POSITION_QUANTIZED'
+    'throws if feature table has no POSITION or POSITION_QUANTIZED'
   );
   t.end();
 });
@@ -102,7 +105,7 @@ test('point cloud tile#throws if the positions are quantized and the feature tab
   };
   const arrayBuffer = encodeSync(TILE, Tile3DWriter);
   t.throws(
-    () => parseSync(arrayBuffer, Tile3DLoader),
+    () => await parse(arrayBuffer, Tile3DLoader),
     'throws if the positions are quantized and the feature table does not contain QUANTIZED_VOLUME_SCALE'
   );
   t.end();
@@ -121,7 +124,7 @@ test('point cloud tile#throws if the positions are quantized and the feature tab
   };
   const arrayBuffer = encodeSync(TILE, Tile3DWriter);
   t.throws(
-    () => parseSync(arrayBuffer, Tile3DLoader),
+    () => await parse(arrayBuffer, Tile3DLoader),
     'throws if the positions are quantized and the feature table does not contain QUANTIZED_VOLUME_OFFSET'
   );
   t.end();
@@ -138,7 +141,7 @@ test('point cloud tile#throws if the BATCH_ID semantic is defined but BATCHES_LE
   };
   const arrayBuffer = encodeSync(TILE, Tile3DWriter);
   t.throws(
-    () => parseSync(arrayBuffer, Tile3DLoader),
+    () => await parse(arrayBuffer, Tile3DLoader),
     'throws if the BATCH_ID semantic is defined but BATCHES_LENGTH is not'
   );
   t.end();
@@ -156,7 +159,7 @@ test('point cloud tile#BATCH_ID semantic uses componentType of UNSIGNED_SHORT by
   };
   const arrayBuffer = encodeSync(TILE, Tile3DWriter);
   t.throws(
-    () => parseSync(arrayBuffer, Tile3DLoader),
+    () => await parse(arrayBuffer, Tile3DLoader),
     'throws if the BATCH_ID semantic is defined but BATCHES_LENGTH is not'
   );
   // const content = Cesium3DTilesTester.loadTile(scene, arrayBuffer, 'pnts');
@@ -168,7 +171,7 @@ test('point cloud tile#BATCH_ID semantic uses componentType of UNSIGNED_SHORT by
 /*
 test('point cloud tile#gets tileset properties', async t => {
   const tileData = await loadRootTileFromTileset(t, POINTCLOUD_RGB_URL);
-  const tile = parseSync(tileData, Tile3DLoader);
+  const tile = await parse(tileData, Tile3DLoader);
   t.ok(tile, 'loaded point cloud with rgb colors');
 
   // const root = tileset.root;
@@ -183,7 +186,7 @@ test('point cloud tile#gets tileset properties', async t => {
 // TODO - this should be a render test
 test('point cloud tile#renders point cloud with rgb colors', async t => {
   const tileData = await loadRootTileFromTileset(t, POINTCLOUD_RGB_URL);
-  const tile = parseSync(tileData, Tile3DLoader);
+  const tile = await parse(tileData, Tile3DLoader);
   t.ok(tile, 'loaded point cloud with rgb colors');
   t.end();
 });
@@ -191,7 +194,7 @@ test('point cloud tile#renders point cloud with rgb colors', async t => {
 // TODO - this should be a render test
 test('point cloud tile#renders point cloud with rgba colors', async t => {
   const tileData = await loadRootTileFromTileset(t, POINTCLOUD_RGBA_URL);
-  const tile = parseSync(tileData, Tile3DLoader);
+  const tile = await parse(tileData, Tile3DLoader);
   t.ok(tile, 'loaded point cloud with rgba colors');
   t.end();
 });
@@ -199,7 +202,7 @@ test('point cloud tile#renders point cloud with rgba colors', async t => {
 // TODO - this should be a render test
 test('point cloud tile#renders point cloud with rgb565 colors', async t => {
   const tileData = await loadRootTileFromTileset(t, POINTCLOUD_RGB565_URL);
-  const tile = parseSync(tileData, Tile3DLoader);
+  const tile = await parse(tileData, Tile3DLoader);
   t.ok(tile, 'loaded point cloud with rgb565 colors');
   t.end();
 });
@@ -207,7 +210,7 @@ test('point cloud tile#renders point cloud with rgb565 colors', async t => {
 // TODO - this should be a render test
 test('point cloud tile#renders point cloud with no colors', async t => {
   const tileData = await loadRootTileFromTileset(t, POINTCLOUD_NO_COLOR_URL);
-  const tile = parseSync(tileData, Tile3DLoader);
+  const tile = await parse(tileData, Tile3DLoader);
   t.ok(tile, 'loaded point cloud with no colors');
   t.end();
 });
@@ -215,7 +218,7 @@ test('point cloud tile#renders point cloud with no colors', async t => {
 // TODO - this should be a render test
 test('point cloud tile#renders point cloud with constant colors', async t => {
   const tileData = await loadRootTileFromTileset(t, POINTCLOUD_CONSTANT_COLOR_URL);
-  const tile = parseSync(tileData, Tile3DLoader);
+  const tile = await parse(tileData, Tile3DLoader);
   t.ok(tile, 'loaded point cloud with constant colors');
   t.end();
 });
@@ -223,7 +226,7 @@ test('point cloud tile#renders point cloud with constant colors', async t => {
 // TODO - this should be a render test
 test('point cloud tile#renders point cloud with normals', async t => {
   const tileData = await loadRootTileFromTileset(t, POINTCLOUD_NORMALS_URL);
-  const tile = parseSync(tileData, Tile3DLoader);
+  const tile = await parse(tileData, Tile3DLoader);
   t.ok(tile, 'loaded point cloud with normals');
   t.end();
 });
@@ -231,7 +234,7 @@ test('point cloud tile#renders point cloud with normals', async t => {
 // TODO - this should be a render test
 test('point cloud tile#renders point cloud with oct encoded normals', async t => {
   const tileData = await loadRootTileFromTileset(t, POINTCLOUD_NORMALS_OCT_ENCODED_URL);
-  const tile = parseSync(tileData, Tile3DLoader);
+  const tile = await parse(tileData, Tile3DLoader);
   t.ok(tile, 'loaded point cloud with oct encoded normals');
   t.end();
 });
@@ -239,7 +242,7 @@ test('point cloud tile#renders point cloud with oct encoded normals', async t =>
 // TODO - this should be a render test
 test('point cloud tile#renders point cloud with quantized positions', async t => {
   const tileData = await loadRootTileFromTileset(t, POINTCLOUD_QUANTIZED_URL);
-  const tile = parseSync(tileData, Tile3DLoader);
+  const tile = await parse(tileData, Tile3DLoader);
   t.ok(tile, 'loaded point cloud with quantized positions');
   t.end();
 });
@@ -247,7 +250,7 @@ test('point cloud tile#renders point cloud with quantized positions', async t =>
 // TODO - this should be a render test
 test('point cloud tile#renders point cloud with quantized positions and oct-encoded normals', async t => {
   const tileData = await loadRootTileFromTileset(t, POINTCLOUD_QUANTIZED_OCT_ENCODED_URL);
-  const tile = parseSync(tileData, Tile3DLoader);
+  const tile = await parse(tileData, Tile3DLoader);
   t.ok(tile, 'loaded point cloud with quantized positions and oct-encoded normals');
   t.end();
 });

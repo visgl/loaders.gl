@@ -1,3 +1,6 @@
+// This file is derived from the Cesium code base under Apache 2 license
+// See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
+
 import test from 'tape-promise/tape';
 import {Matrix4} from 'math.gl';
 import {TILE3D_REFINEMENT} from '@loaders.gl/3d-tiles/constants';

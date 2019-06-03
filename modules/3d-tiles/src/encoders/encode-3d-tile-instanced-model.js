@@ -1,3 +1,6 @@
+// This file is derived from the Cesium code base under Apache 2 license
+// See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
+
 import {copyStringToDataView} from '@loaders.gl/loader-utils';
 import {MAGIC_ARRAY} from '../constants';
 import {encode3DTileHeader, encode3DTileByteLength} from './helpers/encode-3d-tile-header';
