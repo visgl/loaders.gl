@@ -1,3 +1,6 @@
+// This file is derived from the Cesium code base under Apache 2 license
+// See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
+
 /* eslint-disable */
 import {Vector3, Matrix3, Matrix4} from 'math.gl';
 import {BoundingSphere, OrientedBoundingBox} from '@loaders.gl/math';

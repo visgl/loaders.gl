@@ -1,3 +1,6 @@
+// This file is derived from the Cesium code base under Apache 2 license
+// See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
+
 // import {TILE3D_REFINEMENT, TILE3D_OPTIMIZATION_HINT} from '../constants';
 // import ManagedArray from '../utils/managed-array';
 // import assert from '../utils/assert';
