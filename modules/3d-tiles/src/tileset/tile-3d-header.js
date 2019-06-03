@@ -95,13 +95,23 @@ export default class Tile3DHeader {
     return this._contentState === TILE3D_CONTENT_STATE.READY;
   }
 
+  // Returns true if tile is an empty tile or an external tileset
+  get hasRenderContent() {
+    return (!this.hasEmptyContent && !this.hasTilesetContent);
+  }
+
   // Determines if the tile has available content to render.  <code>true</code> if the tile's
   // content is ready or if it has expired content this renders while new content loads; otherwise,
   get contentAvailable() {
     return (
-      (this.contentReady && !this.hasEmptyContent && !this.hasTilesetContent) ||
+      (this.contentReady && this.hasRenderContent) ||
       (defined(this._expiredContent) && !this.contentFailed)
     );
+  }
+
+  // Returns true if tile has renderable content but it's unloaded
+  get hasUnloadedContent() {
+    return (this.hasRenderContent && this.contentUnloaded);
   }
 
   // Determines if the tile's content has not be requested. <code>true</code> if tile's
@@ -249,7 +259,7 @@ export default class Tile3DHeader {
 
   // Unloads the tile's content.
   unloadContent() {
-    if (this.hasEmptyContent || this.hasTilesetContent) {
+    if (this.hasRenderContent) {
       return;
     }
 
@@ -268,18 +278,29 @@ export default class Tile3DHeader {
 
   // Update the tile's visibility.
   updateVisibility(frameState) {
-    const parent = this.parent;
-    const parentTransform = defined(parent) ? parent.computedTransform : this._tileset.modelMatrix;
-    // const parentVisibilityPlaneMask = defined(parent)
-    //   ? parent._visibilityPlaneMask
-    //   : CullingVolume.MASK_INDETERMINATE;
-    this._updateTransform(parentTransform);
-    this._distanceToCamera = this.distanceToTile(frameState);
-    this._centerZDepth = this.distanceToTileCenter(frameState);
-    this._screenSpaceError = this.getScreenSpaceError(frameState, false);
-    this._visibilityPlaneMask = this.visibility(frameState, parentVisibilityPlaneMask); // Use parent's plane mask to speed up visibility test
-    this._visible = this._visibilityPlaneMask !== CullingVolume.MASK_OUTSIDE;
-    this._inRequestVolume = this.insideViewerRequestVolume(frameState);
+    // const tileset = this._tileset;
+    // if (this._updatedVisibilityFrame === tileset._updatedVisibilityFrame) {
+    //   // Return early if visibility has already been checked during the traversal.
+    //   // The visibility may have already been checked if the cullWithChildrenBounds optimization is used.
+    //   return;
+    // }
+
+    // const parent = this.parent;
+    // const parentTransform = defined(parent) ? parent.computedTransform : this._tileset.modelMatrix;
+    // // const parentVisibilityPlaneMask = defined(parent)
+    // //   ? parent._visibilityPlaneMask
+    // //   : CullingVolume.MASK_INDETERMINATE;
+    // this._updateTransform(parentTransform);
+    // this._distanceToCamera = this.distanceToTile(frameState);
+    // this._centerZDepth = this.distanceToTileCenter(frameState);
+    // this._screenSpaceError = this.getScreenSpaceError(frameState, false);
+    // this._visibilityPlaneMask = this.visibility(frameState, parentVisibilityPlaneMask); // Use parent's plane mask to speed up visibility test
+    // this._visible = this._visibilityPlaneMask !== CullingVolume.MASK_OUTSIDE;
+    this._visible = true;
+    // this._inRequestVolume = this.insideViewerRequestVolume(frameState);
+    this._inRequestVolume = true;
+
+    // tile._updatedVisibilityFrame = tileset._updatedVisibilityFrame;
   }
 
   // Update whether the tile has expired.
