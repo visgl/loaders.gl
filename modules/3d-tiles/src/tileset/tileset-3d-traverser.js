@@ -283,6 +283,7 @@ export default class Tileset3DTraverser {
     }
   }
 
+  // Used for SkipLOD
   reachedSkippingThreshold(tileset, tile) {
     const ancestor = tile._ancestorWithContent;
     return (
@@ -371,16 +372,15 @@ export default class Tileset3DTraverser {
   }
 
   canTraverse(tileset, tile) {
-    return tile.children.length > 0;
-
-    // if (tile.children.length === 0) {
-    //   return false;
-    // }
-    // if (tile.hasTilesetContent) {
-    //   // Traverse external this to visit its root tile
-    //   // Don't traverse if the subtree is expired because it will be destroyed
-    //   return !tile.contentExpired;
-    // }
+    if (tile.children.length === 0) {
+      return false;
+    }
+    if (tile.hasTilesetContent) {
+      // Traverse external this to visit its root tile
+      // Don't traverse if the subtree is expired because it will be destroyed
+      return !tile.contentExpired;
+    }
+    return true;
     // return tile._screenSpaceError > tileset.maximumScreenSpaceError;
   }
 
