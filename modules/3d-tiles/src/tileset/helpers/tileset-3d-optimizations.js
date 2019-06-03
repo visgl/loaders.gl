@@ -1,3 +1,6 @@
+// This file is derived from the Cesium code base under Apache 2 license
+// See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
+
 // TODO - Evaluates support for the childrenWithinParent optimization.
 // This is used to more tightly cull tilesets if
 // children bounds are fully contained within the parent.

@@ -1,3 +1,6 @@
+// This file is derived from the Cesium code base under Apache 2 license
+// See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
+
 // import {TILE3D_REFINEMENT, TILE3D_OPTIMIZATION_HINT} from '../constants';
 import {Vector3, Matrix4} from 'math.gl';
 import Tile3DLoader from '../tile-3d-loader';
@@ -247,7 +250,7 @@ export default class Tile3DHeader {
       // this.content =  Tile3D.isTile(content) ?
       //   new Tile3D(content, contentUri) :
       //   new Tileset3D(content, contentUri);
-      this._content = Tile3DLoader.parseSync(arrayBuffer);
+      this._content = await Tile3DLoader.parse(arrayBuffer);
 
       this._contentState = TILE3D_CONTENT_STATE.READY;
       this._contentLoaded();

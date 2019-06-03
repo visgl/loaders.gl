@@ -1,3 +1,6 @@
+// This file is derived from the Cesium code base under Apache 2 license
+// See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
+
 /* eslint-disable max-len */
 
 // NOTICE: This file was forked from
@@ -6,7 +9,7 @@
 
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
-import {parseSync, encodeSync} from '@loaders.gl/core';
+import {parse, encodeSync} from '@loaders.gl/core';
 import {Tile3DLoader, Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/3d-tiles';
 import {loadRootTileFromTileset} from '../utils/load-utils';
 
@@ -30,13 +33,13 @@ const TEXTURED_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedTextured/til
 // const DEPRECATED2_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedDeprecated2/tileset.json';
 // const WITH_RTC_CENTER_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedWithRtcCenter/tileset.json';
 
-test('batched model tile#throws with invalid version', t => {
+test('batched model tile#throws with invalid version', async t => {
   const TILE = {
     type: TILE3D_TYPE.BATCHED_3D_MODEL,
     version: 2
   };
   const arrayBuffer = encodeSync(TILE, Tile3DWriter);
-  t.throws(() => parseSync(arrayBuffer, Tile3DLoader), 'throws on invalid version');
+  t.rejects(parse(arrayBuffer, Tile3DLoader), 'throws on invalid version');
   t.end();
 });
 
@@ -61,41 +64,41 @@ test('batched model tile#recognizes the legacy 24-byte header', t => {
 // });
 
 /*
-test('batched model tile#empty gltf', t => {
+test('batched model tile#empty gltf', async t => {
   // Expect to throw DeveloperError in Model due to invalid gltf magic
   const TILE = {
     type: TILE3D_TYPE.BATCHED_3D_MODEL
   };
   const arrayBuffer = encodeSync(TILE, Tile3DWriter);
-  t.throws(() => parseSync(arrayBuffer, Tile3DLoader), 'Throws with empty glTF');
+  t.throws(() => await parse(arrayBuffer, Tile3DLoader), 'Throws with empty glTF');
   t.end();
 });
 */
 
 test('batched model tile#without batch table', async t => {
   const tileData = await loadRootTileFromTileset(t, WITHOUT_BATCH_TABLE_URL);
-  const tile = parseSync(tileData, Tile3DLoader);
+  const tile = await parse(tileData, Tile3DLoader);
   t.ok(tile, 'loaded tile without batch table');
   t.end();
 });
 
 test('batched model tile#with batch table', async t => {
   const tileData = await loadRootTileFromTileset(t, WITH_BATCH_TABLE_URL);
-  const tile = parseSync(tileData, Tile3DLoader);
+  const tile = await parse(tileData, Tile3DLoader);
   t.ok(tile, 'loaded tile with batch table');
   t.end();
 });
 
 test('batched model tile#with batch table binary', async t => {
   const tileData = await loadRootTileFromTileset(t, WITH_BATCH_TABLE_BINARY_URL);
-  const tile = parseSync(tileData, Tile3DLoader);
+  const tile = await parse(tileData, Tile3DLoader);
   t.ok(tile, 'loaded tile with batch table binary');
   t.end();
 });
 
 test('batched model tile#without batch table', async t => {
   const tileData = await loadRootTileFromTileset(t, WITHOUT_BATCH_TABLE_URL);
-  const tile = parseSync(tileData, Tile3DLoader);
+  const tile = await parse(tileData, Tile3DLoader);
   t.ok(tile, 'loaded tile with batch table binary');
   t.end();
 });
@@ -103,7 +106,7 @@ test('batched model tile#without batch table', async t => {
 // TODO this should be a render test
 test('batched model tile#with all features translucent', async t => {
   const tileData = await loadRootTileFromTileset(t, TRANSLUCENT_URL);
-  const tile = parseSync(tileData, Tile3DLoader);
+  const tile = await parse(tileData, Tile3DLoader);
   t.ok(tile, 'loaded tile with all features translucent');
   t.end();
 });
@@ -111,7 +114,7 @@ test('batched model tile#with all features translucent', async t => {
 // TODO this should be a render test
 test('batched model tile#with a mix of opaque and translucent features', async t => {
   const tileData = await loadRootTileFromTileset(t, TRANSLUCENT_OPAQUE_MIX_URL);
-  const tile = parseSync(tileData, Tile3DLoader);
+  const tile = await parse(tileData, Tile3DLoader);
   t.ok(tile, 'loaded tile with a mix of opaque and translucent features');
   t.end();
 });
@@ -119,7 +122,7 @@ test('batched model tile#with a mix of opaque and translucent features', async t
 // TODO this should be a render test
 test('batched model tile#with textures', async t => {
   const tileData = await loadRootTileFromTileset(t, TEXTURED_URL);
-  const tile = parseSync(tileData, Tile3DLoader);
+  const tile = await parse(tileData, Tile3DLoader);
   t.ok(tile, 'loaded tile with a mix of opaque and translucent features');
   t.end();
 });
@@ -127,7 +130,7 @@ test('batched model tile#with textures', async t => {
 // TODO this should be a render test
 test('batched model tile#with a tile transform and box bounding volume', async t => {
   const tileData = await loadRootTileFromTileset(t, WITH_TRANSFORM_BOX_URL);
-  const tile = parseSync(tileData, Tile3DLoader);
+  const tile = await parse(tileData, Tile3DLoader);
   t.ok(tile, 'loaded tile with a tile transform and box bounding volume');
   t.end();
 });
@@ -135,7 +138,7 @@ test('batched model tile#with a tile transform and box bounding volume', async t
 // TODO this should be a render test
 test('batched model tile#with a tile transform and sphere bounding volume', async t => {
   const tileData = await loadRootTileFromTileset(t, WITH_TRANSFORM_SPHERE_URL);
-  const tile = parseSync(tileData, Tile3DLoader);
+  const tile = await parse(tileData, Tile3DLoader);
   t.ok(tile, 'loaded tile with a tile transform and sphere bounding volume');
   t.end();
 });
@@ -143,7 +146,7 @@ test('batched model tile#with a tile transform and sphere bounding volume', asyn
 // TODO this should be a render test
 test('batched model tile#with a tile transform and region bounding volume', async t => {
   const tileData = await loadRootTileFromTileset(t, WITH_TRANSFORM_REGION_URL);
-  const tile = parseSync(tileData, Tile3DLoader);
+  const tile = await parse(tileData, Tile3DLoader);
   t.ok(tile, 'loaded tile with a tile transform and region bounding volume');
   t.end();
 });

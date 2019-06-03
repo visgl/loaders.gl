@@ -1,3 +1,6 @@
+// This file is derived from the Cesium code base under Apache 2 license
+// See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
+
 /* eslint-disable max-len */
 
 // NOTICE: This file was forked from
@@ -5,7 +8,7 @@
 // which is under Apache 2 license
 
 import test from 'tape-promise/tape';
-import {parseSync, encodeSync} from '@loaders.gl/core';
+import {parse, parseSync, encodeSync} from '@loaders.gl/core';
 import {Tile3DLoader, Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/3d-tiles';
 import {loadRootTileFromTileset} from '../utils/load-utils';
 
@@ -62,12 +65,12 @@ test('instanced model tile#throws with empty gltf', t => {
     type: TILE3D_TYPE.INSTANCED_3D_MODEL
   };
   const arrayBuffer = encodeSync(TILE, Tile3DWriter);
-  t.throws(() => parseSync(arrayBuffer), 'throws with empty gltf');
+  t.throws(() => parse(arrayBuffer), 'throws with empty gltf');
   t.end();
 });
 */
 
-test('instanced model tile#throws on invalid url', async t => {
+test('instanced model tile#throws on invalid url', t => {
   // Try loading a tile with an invalid url.
   // Expect promise to be rejected in Model, then in ModelInstanceCollection, and
   // finally in Instanced3DModel3DTileContent.
@@ -77,13 +80,13 @@ test('instanced model tile#throws on invalid url', async t => {
     gltfUri: 'not-a-real-path'
   };
   const arrayBuffer = encodeSync(TILE, Tile3DWriter);
-  t.throws(() => parseSync(arrayBuffer), 'throws on invalid url');
+  t.throws(() => parseSync(arrayBuffer, Tile3DLoader), 'throws on invalid url');
   t.end();
 });
 
 test('instanced model tile#loaded tile without batch table', async t => {
   const tileData = await loadRootTileFromTileset(t, WITHOUT_BATCH_TABLE_URL);
-  const tile = parseSync(tileData, Tile3DLoader);
+  const tile = await parse(tileData, Tile3DLoader);
   t.ok(tile, 'loaded tile without batch table');
   t.end();
 });
@@ -91,7 +94,7 @@ test('instanced model tile#loaded tile without batch table', async t => {
 // TODO - this should be a render test
 test.skip('instanced model tile#renders with external gltf', async t => {
   const tileData = await loadRootTileFromTileset(t, GLTF_EXTERNAL_URL);
-  const tile = parseSync(tileData, Tile3DLoader);
+  const tile = await parse(tileData, Tile3DLoader);
   t.ok(tile, 'loaded tile with external gltf');
   t.end();
 });
@@ -99,7 +102,7 @@ test.skip('instanced model tile#renders with external gltf', async t => {
 // TODO - this should be a render test
 test('instanced model tile#renders with batch table', async t => {
   const tileData = await loadRootTileFromTileset(t, WITH_BATCH_TABLE_URL);
-  const tile = parseSync(tileData, Tile3DLoader);
+  const tile = await parse(tileData, Tile3DLoader);
   t.ok(tile, 'loaded tile with batch table');
   t.end();
 });
@@ -107,7 +110,7 @@ test('instanced model tile#renders with batch table', async t => {
 // TODO - this should be a render test
 test('instanced model tile#renders with batch table binary', async t => {
   const tileData = await loadRootTileFromTileset(t, WITH_BATCH_TABLE_BINARY_URL);
-  const tile = parseSync(tileData, Tile3DLoader);
+  const tile = await parse(tileData, Tile3DLoader);
   t.ok(tile, 'loaded tile without batch table binary');
   t.end();
 });
@@ -115,7 +118,7 @@ test('instanced model tile#renders with batch table binary', async t => {
 // TODO - this should be a render test
 test('instanced model tile#renders without batch table', async t => {
   const tileData = await loadRootTileFromTileset(t, WITHOUT_BATCH_TABLE_URL);
-  const tile = parseSync(tileData, Tile3DLoader);
+  const tile = await parse(tileData, Tile3DLoader);
   t.ok(tile, 'loaded tile without batch table');
   t.end();
 });
@@ -123,7 +126,7 @@ test('instanced model tile#renders without batch table', async t => {
 // TODO - this should be a render test
 test('instanced model tile#renders with feature defined orientation', async t => {
   const tileData = await loadRootTileFromTileset(t, ORIENTATION_URL);
-  const tile = parseSync(tileData, Tile3DLoader);
+  const tile = await parse(tileData, Tile3DLoader);
   t.ok(tile, 'loaded tile with feature defined orientation');
   t.end();
 });
@@ -131,7 +134,7 @@ test('instanced model tile#renders with feature defined orientation', async t =>
 // TODO - this should be a render test
 test('instanced model tile#renders with feature defined Oct32P encoded orientation', async t => {
   const tileData = await loadRootTileFromTileset(t, OCT16P_ORIENTATION_URL);
-  const tile = parseSync(tileData, Tile3DLoader);
+  const tile = await parse(tileData, Tile3DLoader);
   t.ok(tile, 'loaded tile with feature defined Oct32P encoded orientation');
   t.end();
 });
@@ -139,7 +142,7 @@ test('instanced model tile#renders with feature defined Oct32P encoded orientati
 // TODO - this should be a render test
 test('instanced model tile#renders with feature defined scale', async t => {
   const tileData = await loadRootTileFromTileset(t, SCALE_URL);
-  const tile = parseSync(tileData, Tile3DLoader);
+  const tile = await parse(tileData, Tile3DLoader);
   t.ok(tile, 'loaded tile with feature defined scale');
   t.end();
 });
@@ -147,7 +150,7 @@ test('instanced model tile#renders with feature defined scale', async t => {
 // TODO - this should be a render test
 test('instanced model tile#renders with feature defined non-uniform scale', async t => {
   const tileData = await loadRootTileFromTileset(t, SCALE_NON_UNIFORM_URL);
-  const tile = parseSync(tileData, Tile3DLoader);
+  const tile = await parse(tileData, Tile3DLoader);
   t.ok(tile, 'loaded tile with feature defined non-uniform scale');
   t.end();
 });
@@ -155,7 +158,7 @@ test('instanced model tile#renders with feature defined non-uniform scale', asyn
 // TODO - this should be a render test
 test('instanced model tile#renders with RTC_CENTER semantic', async t => {
   const tileData = await loadRootTileFromTileset(t, RTC_URL);
-  const tile = parseSync(tileData, Tile3DLoader);
+  const tile = await parse(tileData, Tile3DLoader);
   t.ok(tile, 'loaded tile with RTC_CENTER semantic');
   t.end();
 });
@@ -163,7 +166,7 @@ test('instanced model tile#renders with RTC_CENTER semantic', async t => {
 // TODO - this should be a render test
 test('instanced model tile#renders with feature defined quantized position', async t => {
   const tileData = await loadRootTileFromTileset(t, QUANTIZED_URL);
-  const tile = parseSync(tileData, Tile3DLoader);
+  const tile = await parse(tileData, Tile3DLoader);
   t.ok(tile, 'loaded tile with feature defined quantized position');
   t.end();
 });
@@ -171,7 +174,7 @@ test('instanced model tile#renders with feature defined quantized position', asy
 // TODO - this should be a render test
 test('instanced model tile#renders with feature defined quantized position and Oct32P encoded orientation', async t => {
   const tileData = await loadRootTileFromTileset(t, QUANTIZED_OCT32_PORIENTATION_URL);
-  const tile = parseSync(tileData, Tile3DLoader);
+  const tile = await parse(tileData, Tile3DLoader);
   t.ok(tile, 'loaded tile with feature defined quantized position and Oct32P encoded orientation');
   t.end();
 });
@@ -179,7 +182,7 @@ test('instanced model tile#renders with feature defined quantized position and O
 // TODO - this should be a render test
 test('instanced model tile#renders with batch ids', async t => {
   const tileData = await loadRootTileFromTileset(t, WITH_BATCH_IDS_URL);
-  const tile = parseSync(tileData, Tile3DLoader);
+  const tile = await parse(tileData, Tile3DLoader);
   t.ok(tile, 'loaded tile with batch ids');
   t.end();
 });
@@ -187,7 +190,7 @@ test('instanced model tile#renders with batch ids', async t => {
 // TODO - this should be a render test
 test('instanced model tile#renders with tile transform', async t => {
   const tileData = await loadRootTileFromTileset(t, WITH_TRANSFORM_URL);
-  const tile = parseSync(tileData, Tile3DLoader);
+  const tile = await parse(tileData, Tile3DLoader);
   t.ok(tile, 'loaded tile with tile transform');
   t.end();
   /*
@@ -212,7 +215,7 @@ test('instanced model tile#renders with tile transform', async t => {
 // TODO - this should be a render test
 test('instanced model tile#renders with textures', async t => {
   const tileData = await loadRootTileFromTileset(t, TEXTURED_URL);
-  const tile = parseSync(tileData, Tile3DLoader);
+  const tile = await parse(tileData, Tile3DLoader);
   t.ok(tile, 'loaded tile with textures');
   t.end();
 });

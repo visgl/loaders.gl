@@ -23,39 +23,8 @@ const DropDown = styled.select`
 `;
 
 export default class ControlPanel extends PureComponent {
-  // _renderByCategories() {
-  //   const {examples = {}, onChange, data = {}} = this.props;
-  //   const selectedValue = `${this.props.selectedCategory}.${this.props.selectedExample}`;
-
-  //   return (
-  //     <DropDown
-  //       value={selectedValue}
-  //       onChange={evt => {
-  //         const categoryExample = evt.target.value;
-  //         const value = categoryExample.split('.');
-  //         onChange({category: value[0], example: value[1]});
-  //       }}
-  //     >
-  //       {categories.map((c, i) => {
-  //         const categoryExamples = data[c].examples;
-  //         return (
-  //           <optgroup key={i} label={c}>
-  //             {Object.keys(categoryExamples).map((e, j) => {
-  //               const value = `${c}.${e}`;
-  //               return (
-  //                 <option key={j} value={value}>
-  //                   {e}
-  //                 </option>
-  //               );
-  //             })}
-  //           </optgroup>
-  //         );
-  //       })}
-  //     </DropDown>
-  //   );
-  // }
-
   componentDidMount() {
+    // eslint-disable-next-line react/prop-types
     const {examples = {}, selectedCategory, selectedExample, onExampleChange} = this.props;
 
     // CONVENIENCE: Auto select first example if app didn't provide
@@ -68,7 +37,8 @@ export default class ControlPanel extends PureComponent {
     }
   }
 
-  _renderList() {
+  _renderDropDown() {
+    // eslint-disable-next-line react/prop-types
     const {examples = {}, selectedCategory, selectedExample, onExampleChange} = this.props;
 
     if (!selectedCategory || !selectedExample) {
@@ -109,6 +79,7 @@ export default class ControlPanel extends PureComponent {
   }
 
   _renderHeader() {
+    // eslint-disable-next-line react/prop-types
     const {selectedCategory, selectedExample} = this.props;
     if (!selectedCategory || !selectedExample) {
       return null;
@@ -123,19 +94,14 @@ export default class ControlPanel extends PureComponent {
     );
   }
 
-  _renderDropDown() {
-    // TODO - unify category and list between examples?
-    // return this._renderByCategories();
-    // this._renderByCategories();
-    return this._renderList();
-  }
-
   _renderDropped() {
+    // eslint-disable-next-line react/prop-types
     const {droppedFile} = this.props;
     return droppedFile ? <div>Dropped file: {JSON.stringify(droppedFile.name)}</div> : null;
   }
 
   _renderStats() {
+    // eslint-disable-next-line react/prop-types
     const {vertexCount, loadTimeMs} = this.props;
     let message;
     if (vertexCount >= 1e7) {

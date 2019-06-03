@@ -1,3 +1,8 @@
+// This file is derived from the Cesium code base under Apache 2 license
+// See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
+
+// https://github.com/AnalyticalGraphicsInc/cesium/blob/master/Source/Scene/PointCloud.js#L254
+
 import {Vector3} from 'math.gl';
 import {GL} from '@loaders.gl/math'; // 'math.gl/geometry';
 
@@ -14,20 +19,46 @@ import {parse3DTileTablesHeaderSync, parse3DTileTablesSync} from './helpers/pars
 //   FAILED: 3
 // };
 
-// Reference code
-// https://github.com/AnalyticalGraphicsInc/cesium/blob/master/Source/Scene/PointCloud.js#L254
-export default function parsePointCloud3DTile(tile, arrayBuffer, byteOffset, options) {
+export async function parsePointCloud3DTile(tile, arrayBuffer, byteOffset, options) {
   byteOffset = parse3DTileHeaderSync(tile, arrayBuffer, byteOffset, options);
   byteOffset = parse3DTileTablesHeaderSync(tile, arrayBuffer, byteOffset, options);
   byteOffset = parse3DTileTablesSync(tile, arrayBuffer, byteOffset, options);
 
-  extractPointCloud(tile);
+  await extractPointCloud(tile);
+
+  return byteOffset;
+}
+
+export function parsePointCloud3DTileSync(tile, arrayBuffer, byteOffset, options) {
+  byteOffset = parse3DTileHeaderSync(tile, arrayBuffer, byteOffset, options);
+  byteOffset = parse3DTileTablesHeaderSync(tile, arrayBuffer, byteOffset, options);
+  byteOffset = parse3DTileTablesSync(tile, arrayBuffer, byteOffset, options);
+
+  extractPointCloudSync(tile);
 
   return byteOffset;
 }
 
 // eslint-disable-next-line max-statements, complexity
-function extractPointCloud(tile) {
+async function extractPointCloud(tile) {
+  const {featureTable, batchTable} = parsePointCloudTables(tile);
+
+  await parseDraco(tile, featureTable, batchTable);
+
+  parsePositions(tile, featureTable);
+  parseColors(tile, featureTable);
+  parseNormals(tile, featureTable);
+}
+
+function extractPointCloudSync(tile) {
+  const {featureTable} = parsePointCloudTables(tile);
+
+  parsePositions(tile, featureTable);
+  parseColors(tile, featureTable);
+  parseNormals(tile, featureTable);
+}
+
+function parsePointCloudTables(tile) {
   const featureTable = new Tile3DFeatureTable(tile.featureTableJson, tile.featureTableBinary);
 
   const pointsLength = featureTable.getGlobalProperty('POINTS_LENGTH');
@@ -52,11 +83,8 @@ function extractPointCloud(tile) {
   tile.isOctEncoded16P = false;
 
   const batchTable = parseBatch(tile, featureTable);
-  parseDraco(tile, featureTable, batchTable);
 
-  parsePositions(tile, featureTable);
-  parseColors(tile, featureTable);
-  parseNormals(tile, featureTable);
+  return {featureTable, batchTable};
 }
 
 function parsePositions(tile, featureTable) {
@@ -141,7 +169,7 @@ function parseBatch(tile, featureTable) {
 }
 
 // eslint-disable-next-line complexity
-export function parseDraco(tile, featureTable, batchTable) {
+async function parseDraco(tile, featureTable, batchTable) {
   let dracoBuffer;
   let dracoFeatureTableProperties;
   let dracoBatchTableProperties;
@@ -179,7 +207,7 @@ export function parseDraco(tile, featureTable, batchTable) {
       dequantizeInShader: false
     };
 
-    decodeDraco(tile);
+    await loadDraco(tile);
   }
 }
 
@@ -195,7 +223,7 @@ export function parseRGB565(rgb565) {
   return [r5, g6, b5];
 }
 
-export function decodeDraco(tile) {
+export async function loadDraco(tile) {
   const draco = tile.draco;
   if (draco && draco.buffer) {
     const data = new DracoParser().decode(draco.buffer);
@@ -227,8 +255,6 @@ export function decodeDraco(tile) {
 
     delete tile.draco;
   }
-
-  return true;
 }
 
 /*

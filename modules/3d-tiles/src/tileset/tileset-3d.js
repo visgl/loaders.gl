@@ -1,3 +1,6 @@
+// This file is derived from the Cesium code base under Apache 2 license
+// See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
+
 import {Matrix4} from 'math.gl';
 import assert from '../utils/assert';
 import Tile3DHeader from './tile-3d-header';
