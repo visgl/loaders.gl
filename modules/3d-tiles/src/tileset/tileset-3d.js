@@ -389,11 +389,11 @@ export default class Tileset3D {
     this._cache.trim();
   }
 
-  traverse(visitor, tile = this.root) {
+  traverse(visitor, depthLimit = Number.MAX_SAFE_INTEGER, tile = this.root) {
     visitor(tile);
-    if (tile && tile.children) {
+    if (tile && tile.children && tile._depth < depthLimit) {
       for (const child of tile.children) {
-        this.traverse(visitor, child);
+        this.traverse(visitor, depthLimit, child);
       }
     }
   }

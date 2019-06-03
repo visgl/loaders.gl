@@ -13,7 +13,7 @@ export default {
 async function parse(arrayBuffer, options, url, loader) {
   const tile = {};
   const byteOffset = 0;
-  parse3DTile(arrayBuffer, byteOffset, options, tile);
+  await parse3DTile(arrayBuffer, byteOffset, options, tile);
   return tile;
 }
 

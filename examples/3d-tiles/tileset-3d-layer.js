@@ -1,5 +1,5 @@
 import {CompositeLayer} from '@deck.gl/core';
-import {Vector3, Matrix4} from 'math.gl';
+import {Matrix4} from 'math.gl';
 
 import {COORDINATE_SYSTEM} from '@deck.gl/core';
 import {PointCloudLayer} from '@deck.gl/layers';
@@ -8,8 +8,9 @@ import {ScenegraphLayer} from '@deck.gl/mesh-layers';
 import {createGLTFObjects} from '@luma.gl/addons';
 
 import '@loaders.gl/polyfills';
+import {load, registerLoaders} from '@loaders.gl/core';
 import {postProcessGLTF} from '@loaders.gl/gltf';
-import {registerLoaders} from '@loaders.gl/core';
+import {DracoWorkerLoader} from '@loaders.gl/draco';
 import {Ellipsoid} from '@loaders.gl/math';
 import {
   Tileset3D,
@@ -24,8 +25,11 @@ registerLoaders([Tile3DLoader, Tileset3DLoader]);
 
 const defaultProps = {
   // TODO - the tileset json should be an async prop.
-  tilesetJson: null,
   tilesetUrl: null,
+  isWGS84: false,
+  depthLimit: Number.MAX_SAFE_INTEGER,
+  coordinateSystem: null,
+  coordinateOrigin: null,
   onTileLoaded: () => {}
 };
 
@@ -38,23 +42,28 @@ export default class Tileset3DLayer extends CompositeLayer {
   }
 
   updateState({props, oldProps, changeFlags}) {
-    if (props.tilesetJson !== oldProps.tilesetJson) {
+    if (props.tilesetUrl !== oldProps.tilesetUrl) {
       this.setState({
         layerMap: {},
         layers: []
       });
-      this._loadTileset(props.tilesetJson, props.tilesetUrl);
+      this._loadTileset(props.tilesetUrl);
     }
   }
 
-  _loadTileset(tilesetJson, tilesetUrl) {
-    const tileset3d = new Tileset3D(tilesetJson, tilesetUrl);
-    tileset3d.traverse(tileHeader => this._loadTile3D(tileHeader));
+  async _loadTileset(tilesetUrl) {
+    const {depthLimit} = this.props;
+    let tileset3d = null;
+    if (tilesetUrl) {
+      const tilesetJson = await load(tilesetUrl);
+      tileset3d = new Tileset3D(tilesetJson, tilesetUrl);
+      tileset3d.traverse(tileHeader => this._loadTile3D(tileHeader), depthLimit);
+    }
     this.setState({tileset3d});
   }
 
   async _loadTile3D(tileHeader) {
-    await tileHeader.loadContent();
+    await tileHeader.loadContent(DracoWorkerLoader);
     this._unpackTile(tileHeader);
 
     const layer = this._render3DTileLayer(tileHeader);
@@ -68,7 +77,6 @@ export default class Tileset3DLayer extends CompositeLayer {
       layerMap,
       layers: Object.values(layerMap).filter(Boolean)
     });
-
     // React apps can call forceUpdate to trigger a rerender
     this.props.onTileLoaded(tileHeader);
   }
@@ -86,7 +94,7 @@ export default class Tileset3DLayer extends CompositeLayer {
           break;
         default:
           // eslint-disable-next-line
-          console.error('Error unpacking 3D tile', content.type, content);
+          console.warn('Error unpacking 3D tile', content.type, content);
           return;
       }
     }
@@ -165,34 +173,72 @@ export default class Tileset3DLayer extends CompositeLayer {
     });
   }
 
-  _resolveCoordinateProps(tileHeader) {
+  /* eslint-disable-next-line complexity */
+  _resolveTransformProps(tileHeader) {
     if (!tileHeader || !tileHeader.content) {
       return {};
     }
 
-    const {coordinateSystem, coordinateOrigin} = this.props;
+    const {coordinateSystem, coordinateOrigin, isWGS84} = this.props;
     const {rtcCenter} = tileHeader.content;
+    const {transform} = tileHeader.userData;
 
-    const coordinateProps = {
-      coordinateSystem: coordinateSystem || COORDINATE_SYSTEM.LNGLAT,
-      coordinateOrigin
-    };
+    const transformProps = {};
 
-    if (rtcCenter) {
-      coordinateProps.coordinateSystem = COORDINATE_SYSTEM.METER_OFFSETS;
-      coordinateProps.coordinateOrigin = Ellipsoid.WGS84.cartesianToCartographic(
-        new Vector3(rtcCenter)
-      );
+    if (coordinateSystem) {
+      transformProps.coordinateSystem = coordinateSystem;
+    }
+    if (coordinateOrigin) {
+      transformProps.coordinateOrigin = coordinateOrigin;
     }
 
-    return coordinateProps;
+    if (isWGS84) {
+      transformProps.coordinateSystem = transformProps.coordinateSystem || COORDINATE_SYSTEM.LNGLAT;
+      return transformProps;
+    }
+
+    if (rtcCenter) {
+      transformProps.coordinateSystem =
+        transformProps.coordinateSystem || COORDINATE_SYSTEM.METER_OFFSETS;
+    }
+
+    let modelMatrix;
+    if (transform) {
+      modelMatrix = new Matrix4(transform);
+    }
+    if (rtcCenter) {
+      modelMatrix = modelMatrix
+        ? modelMatrix.translate(rtcCenter)
+        : new Matrix4().translate(rtcCenter);
+    }
+
+    if (modelMatrix) {
+      transformProps.modelMatrix = modelMatrix;
+    }
+
+    return transformProps;
+  }
+
+  _getPositionProps(tileHeader) {
+    const {isWGS84} = this.props;
+    if (isWGS84) {
+      return {
+        getPosition: (...args) => this._getPosition(tileHeader, ...args)
+      };
+    }
+    return {
+      instancePositions: tileHeader.content && tileHeader.content.positions
+    };
   }
 
   _renderPointCloud3DTileLayer(tileHeader) {
+    const {color} = this.props;
     const {positions, colors, normals} = tileHeader.content;
-    const {pointsCount, transform} = tileHeader.userData;
+    const {pointsCount} = tileHeader.userData;
 
-    const coordinateProps = this._resolveCoordinateProps(tileHeader);
+    const transformProps = this._resolveTransformProps(tileHeader);
+    const positionProps = this._getPositionProps(tileHeader);
+
     return (
       positions &&
       new PointCloudLayer({
@@ -203,43 +249,55 @@ export default class Tileset3DLayer extends CompositeLayer {
           normals: {value: positions, size: 3},
           length: positions.length / 3
         },
-        ...coordinateProps,
         numInstances: pointsCount,
-        getPosition: (object, {index, data, target}) => {
-          target[0] = data.positions[index * 3];
-          target[1] = data.positions[index * 3 + 1];
-          target[2] = data.positions[index * 3 + 2];
-
-          if (transform && coordinateProps.coordinateSystem === COORDINATE_SYSTEM.LNGLAT) {
-            target = new Matrix4().multiplyRight(transform).transformVector3(target);
-            Ellipsoid.WGS84.cartesianToCartographic(target, target);
-          }
-
-          return target;
-        },
-        getColor: (...args) => {
-          return this._getColor(tileHeader, ...args);
-        },
-        getNormal: normals
-          ? (object, {index, data, target}) => {
-              target[0] = data.normals[index * 3];
-              target[1] = data.normals[index * 3 + 1];
-              target[2] = data.normals[index * 3 + 2];
-              return target;
+        ...positionProps,
+        getColor: colors
+          ? (...args) => {
+              return this._getColor(tileHeader, ...args);
             }
-          : [0, 1, 0],
+          : color || [255, 255, 0, 200],
+        getNormal: normals ? (...args) => this._getNormal(...args) : [0, 1, 0],
         opacity: 0.8,
-        pointSize: 1.5
+        pointSize: 1.5,
+        ...transformProps
       })
     );
   }
 
-  /* eslint-disable max-statements */
-  _getColor(tileHeader, object, {index, data, target}) {
-    if (!tileHeader) {
-      return null;
+  _getPosition(tileHeader, object, {index, data, target}) {
+    const {transform} = tileHeader.userData;
+    const {rtcCenter} = tileHeader.content;
+    const {isWGS84} = this.props;
+    target[0] = data.positions[index * 3];
+    target[1] = data.positions[index * 3 + 1];
+    target[2] = data.positions[index * 3 + 2];
+
+    // TODO
+    // How to tell if this is WGS84 crs or not?
+    // How to transform data point using GPU?
+    if (isWGS84) {
+      let matrix = new Matrix4();
+      if (transform) {
+        matrix = matrix.multiplyRight(transform);
+      }
+      if (rtcCenter) {
+        matrix = matrix.translate(rtcCenter);
+      }
+      target = matrix.transformVector3(target);
+      Ellipsoid.WGS84.cartesianToCartographic(target, target);
     }
 
+    return target;
+  }
+
+  _getNormal(object, {index, data, target}) {
+    target[0] = data.normals.value[index * 3];
+    target[1] = data.normals.value[index * 3 + 1];
+    target[2] = data.normals.value[index * 3 + 2];
+  }
+
+  /* eslint-disable max-statements */
+  _getColor(tileHeader, object, {index, data, target}) {
     const {colors, isRGB565, constantRGBA} = tileHeader.content;
     const {batchIds, batchTable} = tileHeader.userData;
 
