@@ -33,7 +33,8 @@ export default class Tileset3DLayer extends CompositeLayer {
   initializeState() {
     this.state = {
       layerMap: {},
-      layers: []
+      layers: [],
+      lastUpdateStateTick: -1
     };
   }
 
@@ -83,11 +84,9 @@ export default class Tileset3DLayer extends CompositeLayer {
       },
       height: height,
       frameNumber: tick,
-      distanceMagic: zoomMod * 1000,
+      distanceMagic: zoomMod * 1000, // zoom doesn't seem to update accurately? like it stays at the same number after a scroll wheel tick
       sseDenominator: 1.15, // Assumes fovy = 60 degrees
     };
-
-    // console.log(zoom + ' ' + zoomMod + ' ' + frameState.distanceMagic);
 
     tileset3d.update(frameState);
 
@@ -102,30 +101,31 @@ export default class Tileset3DLayer extends CompositeLayer {
 
   // Grab only those layers who were seleted this frame
   _selectLayers(frameState) {
-    // selectLayers
     const {layerMap} = this.state;
+    const {frameNumber} = frameState;
     const selectedLayers = [];
     const layerMapValues = Object.values(layerMap);
     for (const value of layerMapValues) {
-      if (value.selectedFrame === frameState.frameNumber) {
+      if (value.selectedFrame === frameNumber) {
         selectedLayers.push(value.layer);
       }
     }
     this.setState({
-      layers: selectedLayers
+      layers: selectedLayers,
+      lastUpdateStateTick: frameNumber
     });
   }
-
 
   // Layer is created and added to the map if it doesn't exist in map
   // If it exists, update its selected frame.
   _updateLayer(tileHeader, frameState) {
     // Check if already in map
     let {layerMap} = this.state;
+    const {lastUpdateStateTick} = this.state;
     const {frameNumber} = frameState;
     if (tileHeader.contentUri in layerMap) {
         const value  = layerMap[tileHeader.contentUri];
-        if (value.selectedFrame >= (frameNumber - 1)) {
+        if (tileHeader._selectedFrame === frameNumber && value.selectedFrame === lastUpdateStateTick) { // Was rendered last frame and needs to render again
           value.selectedFrame = frameNumber;
           return;
         }
