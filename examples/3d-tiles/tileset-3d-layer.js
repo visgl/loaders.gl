@@ -94,23 +94,41 @@ export default class Tileset3DLayer extends CompositeLayer {
     // Add layer for any renderable tile
     const selectedTiles = tileset3d._selectedTiles;
     for (const tile of selectedTiles) {
-      this._addLayer(tile);
+      this._updateLayer(tile, frameState);
     }
 
-    // Update layers
+    this._selectLayers(frameState);
+  }
+
+  // Grab only those layers who were seleted this frame
+  _selectLayers(frameState) {
+    // selectLayers
     const {layerMap} = this.state;
+    const selectedLayers = [];
+    const layerMapValues = Object.values(layerMap);
+    for (const value of layerMapValues) {
+      if (value.selectedFrame === frameState.frameNumber) {
+        selectedLayers.push(value.layer);
+      }
+    }
     this.setState({
-      layers: Object.values(layerMap).filter(Boolean)
-      // layers: Object.values(layerMap).filter(layer => b)
+      layers: selectedLayers
     });
   }
 
 
-  _addLayer(tileHeader) {
+  // Layer is created and added to the map if it doesn't exist in map
+  // If it exists, update its selected frame.
+  _updateLayer(tileHeader, frameState) {
     // Check if already in map
     let {layerMap} = this.state;
+    const {frameNumber} = frameState;
     if (tileHeader.contentUri in layerMap) {
-      return;
+        const value  = layerMap[tileHeader.contentUri];
+        if (value.selectedFrame >= (frameNumber - 1)) {
+          value.selectedFrame = frameNumber;
+          return;
+        }
     }
 
     this._unpackTile(tileHeader);
@@ -119,7 +137,10 @@ export default class Tileset3DLayer extends CompositeLayer {
 
     layerMap = {
       ...layerMap,
-      [tileHeader.contentUri]: layer
+      [tileHeader.contentUri]: {
+        layer: layer,
+        selectedFrame: tileHeader._selectedFrame
+      }
     };
 
     this.setState({
