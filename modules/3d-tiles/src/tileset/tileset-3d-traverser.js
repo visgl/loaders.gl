@@ -49,14 +49,14 @@ export default class Tileset3DTraverser {
     this.updateTile(tileset, root, frameState);
 
     // The root tile is not visible
-    // if (!this.isVisible(root)) {
-    //   return false;
-    // }
+    if (!this.isVisible(root)) {
+      return false;
+    }
 
-    // // The this doesn't meet the SSE requirement, therefore the tree does not need to be rendered
-    // if (root.getScreenSpaceError(frameState, true) <= tileset.maximumScreenSpaceError) {
-    //   return false;
-    // }
+    // The this doesn't meet the SSE requirement, therefore the tree does not need to be rendered
+    if (root.getScreenSpaceError(frameState, true) <= tileset.maximumScreenSpaceError) {
+      return false;
+    }
 
     // if (!tileset._skipLevelOfDetail) {
       this.executeBaseTraversal(tileset, frameState);
@@ -93,6 +93,7 @@ export default class Tileset3DTraverser {
   // }
 
   selectTile(tileset, tile, frameState) {
+    tile._selectedFrame = frameState.frameNumber;
     tileset._selectedTiles.push(tile);
 
     // if (tile.contentVisibility(frameState) !== Intersect.OUTSIDE) {
@@ -382,8 +383,8 @@ export default class Tileset3DTraverser {
       // Don't traverse if the subtree is expired because it will be destroyed
       return !tile.contentExpired;
     }
-    return true;
-    // return tile._screenSpaceError > tileset.maximumScreenSpaceError;
+
+    return tile._screenSpaceError > tileset.maximumScreenSpaceError;
   }
 
   // Depth-first traversal that traverses all visible tiles and marks tiles for selection.

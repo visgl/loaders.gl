@@ -66,17 +66,28 @@ export default class Tileset3DLayer extends CompositeLayer {
     // Traverse and and request. Update _selectedTiles so that we know what to render.
     const {tileset3d} = this.state;
     const {aspect, height, tick} = context.animationProps;
-    const {cameraPosition, cameraDirection, cameraUp} = context.viewport;
+    const {cameraPosition, cameraDirection, cameraUp, zoom} = context.viewport;
+
+    // Map zoom 0-1
+    const min = 12;
+    const max = 24;
+    let zoomMod = Math.max(Math.min(zoom, max), min);
+    zoomMod = (zoomMod - min) / (max - min);
+    zoomMod = Math.max(Math.min(1.0 - zoomMod, 1), 0);
+
     const frameState = {
       camera: {
         position: cameraPosition,
         direction: cameraDirection,
         up: cameraUp,
       },
-      aspect: aspect,
       height: height,
       frameNumber: tick,
+      distanceMagic: zoomMod * 1000,
+      sseDenominator: 1.15, // Assumes fovy = 60 degrees
     };
+
+    // console.log(zoom + ' ' + zoomMod + ' ' + frameState.distanceMagic);
 
     tileset3d.update(frameState);
 
@@ -85,6 +96,13 @@ export default class Tileset3DLayer extends CompositeLayer {
     for (const tile of selectedTiles) {
       this._addLayer(tile);
     }
+
+    // Update layers
+    const {layerMap} = this.state;
+    this.setState({
+      layers: Object.values(layerMap).filter(Boolean)
+      // layers: Object.values(layerMap).filter(layer => b)
+    });
   }
 
 
@@ -97,7 +115,7 @@ export default class Tileset3DLayer extends CompositeLayer {
 
     this._unpackTile(tileHeader);
 
-    const layer = this._create3DTileLayer(tileHeader);
+    let layer = this._create3DTileLayer(tileHeader);
 
     layerMap = {
       ...layerMap,
@@ -105,8 +123,7 @@ export default class Tileset3DLayer extends CompositeLayer {
     };
 
     this.setState({
-      layerMap,
-      layers: Object.values(layerMap).filter(Boolean)
+      layerMap
     });
   }
 

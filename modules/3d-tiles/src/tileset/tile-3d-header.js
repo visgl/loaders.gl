@@ -167,7 +167,7 @@ export default class Tile3DHeader {
   }
 
   // Get the tile's screen space error.
-  getScreenSpaceError({frustum, height}, useParentGeometricError) {
+  getScreenSpaceError(frameState, useParentGeometricError) {
     const tileset = this._tileset;
     const parentGeometricError =
       (this.parent && this.parent.geometricError) || tileset._geometricError;
@@ -183,7 +183,8 @@ export default class Tile3DHeader {
 
     // Avoid divide by zero when viewer is inside the tile
     const distance = Math.max(this._distanceToCamera, 1e-7);
-    const sseDenominator = frustum.sseDenominator;
+    // const sseDenominator = frustum.sseDenominator;
+    const {height, sseDenominator} = frameState;
     let error = (geometricError * height) / (distance * sseDenominator);
 
     error -= this._getDynamicScreenSpaceError(distance);
@@ -294,9 +295,9 @@ export default class Tile3DHeader {
     // //   ? parent._visibilityPlaneMask
     // //   : CullingVolume.MASK_INDETERMINATE;
     // this._updateTransform(parentTransform);
-    // this._distanceToCamera = this.distanceToTile(frameState);
+    this._distanceToCamera = this.distanceToTile(frameState);
     // this._centerZDepth = this.cameraSpaceZDepth(frameState);
-    // this._screenSpaceError = this.getScreenSpaceError(frameState, false);
+    this._screenSpaceError = this.getScreenSpaceError(frameState, false);
     // this._visibilityPlaneMask = this.visibility(frameState, parentVisibilityPlaneMask); // Use parent's plane mask to speed up visibility test
     // this._visible = this._visibilityPlaneMask !== CullingVolume.MASK_OUTSIDE;
     this._visible = true;
@@ -389,10 +390,10 @@ export default class Tile3DHeader {
   // Computes the (potentially approximate) distance from the closest point of the tile's bounding volume to the camera.
   // @param {FrameState} frameState The frame state.
   // @returns {Number} The distance, in meters, or zero if the camera is inside the bounding volume.
-  distanceToTile({frameState}) {
+  distanceToTile(frameState) {
     // const boundingVolume = this._boundingVolume;
     // return boundingVolume.distanceToCamera(frameState);
-    return 10.0;
+    return frameState.distanceMagic;
   }
 
   // Computes the tile's camera-space z-depth.
