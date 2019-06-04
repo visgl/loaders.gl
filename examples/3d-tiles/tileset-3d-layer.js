@@ -133,7 +133,7 @@ export default class Tileset3DLayer extends CompositeLayer {
 
     this._unpackTile(tileHeader);
 
-    let layer = this._create3DTileLayer(tileHeader);
+    const layer = this._create3DTileLayer(tileHeader);
 
     layerMap = {
       ...layerMap,
