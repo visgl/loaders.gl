@@ -87,6 +87,8 @@ module.exports = {
 
   ADDITIONAL_LINKS: [],
 
+  INDEX_PAGE_URL: resolve(__dirname, './templates/index.jsx'),
+
   EXAMPLES: [
     {
       title: 'Point Clouds & Meshes',
