@@ -41,10 +41,10 @@ export function parsePointCloud3DTileSync(tile, arrayBuffer, byteOffset, options
 }
 
 // eslint-disable-next-line max-statements, complexity
-async function extractPointCloud(tile) {
+async function extractPointCloud(tile, options) {
   const {featureTable, batchTable} = parsePointCloudTables(tile);
 
-  await parseDraco(tile, featureTable, batchTable);
+  await parseDraco(tile, featureTable, batchTable, options);
 
   parsePositions(tile, featureTable);
   parseColors(tile, featureTable);

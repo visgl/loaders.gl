@@ -33,9 +33,13 @@ const ADDITIONAL_EXAMPLES = {
   }
 };
 
-export const INITIAL_VIEW_STATE = {
+const EXAMPLES_VIEWSTATE = {
   latitude: 40.04248558075302,
-  longitude: -75.61213987669433,
+  longitude: -75.61213987669433
+};
+
+export const INITIAL_VIEW_STATE = {
+  ...EXAMPLES_VIEWSTATE,
   pitch: 60,
   bearing: 0,
   minZoom: 2,
@@ -55,7 +59,7 @@ export default class App extends PureComponent {
       batchTable: null,
       droppedFile: null,
       examplesByCategory: null,
-      layerProps: null,
+      tileset3dLayerProps: {},
       name: 'TilesetPoints',
       category: 'Tilesets'
     };
@@ -92,28 +96,28 @@ export default class App extends PureComponent {
     const {examplesByCategory} = this.state;
 
     let tilesetUrl;
-    let layerProps = {};
+    let tileset3dLayerProps = {};
     if (category === 'additional') {
-      layerProps = ADDITIONAL_EXAMPLES.examples[name];
+      tileset3dLayerProps = ADDITIONAL_EXAMPLES.examples[name];
+      const {coordinateOrigin} = tileset3dLayerProps;
       this.setState({
         viewState: {
           ...this.state.viewState,
-          longitude: 144.97212,
-          latitude: -37.805177
+          longitude: coordinateOrigin[0],
+          latitude: coordinateOrigin[1]
         }
       });
     } else {
       this.setState({
         viewState: {
           ...this.state.viewState,
-          latitude: 40.04248558075302,
-          longitude: -75.61213987669433
+          ...EXAMPLES_VIEWSTATE
         }
       });
       const selectedExample = examplesByCategory[category].examples[name];
       if (selectedExample && selectedExample.tileset) {
         tilesetUrl = `${DATA_URI}/${selectedExample.path}/${selectedExample.tileset}`;
-        layerProps = {
+        tileset3dLayerProps = {
           tilesetUrl,
           isWGS84: true
         };
@@ -121,7 +125,7 @@ export default class App extends PureComponent {
     }
 
     this.setState({
-      layerProps
+      tileset3dLayerProps
     });
   }
 
@@ -153,12 +157,25 @@ export default class App extends PureComponent {
   }
 
   _renderLayer() {
-    const {layerProps} = this.state;
+    const {tileset3dLayerProps} = this.state;
+    const {
+      tilesetUrl,
+      coordinateSystem,
+      coordinateOrigin,
+      isWGS84,
+      depthLimit,
+      color
+    } = tileset3dLayerProps;
     return (
-      layerProps &&
+      tileset3dLayerProps &&
       new Tileset3DLayer({
         id: 'tileset-layer',
-        ...layerProps,
+        tilesetUrl,
+        coordinateSystem,
+        coordinateOrigin,
+        isWGS84,
+        depthLimit,
+        color,
         onTileLoaded: tileHeader => this.forceUpdate()
       })
     );

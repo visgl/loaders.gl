@@ -23,10 +23,13 @@ import {
 
 registerLoaders([Tile3DLoader, Tileset3DLoader]);
 
+const DEFAULT_POINT_COLOR = [255, 0, 0, 255];
+
 const defaultProps = {
   // TODO - the tileset json should be an async prop.
   tilesetUrl: null,
   isWGS84: false,
+  color: DEFAULT_POINT_COLOR,
   depthLimit: Number.MAX_SAFE_INTEGER,
   coordinateSystem: null,
   coordinateOrigin: null,
@@ -126,6 +129,57 @@ export default class Tileset3DLayer extends CompositeLayer {
       // TODO figure out what is the correct way to extract transform from tileHeader
       transform: tileHeader._initialTransform
     };
+
+    this._loadColors(tileHeader);
+  }
+
+  /* eslint-disable max-statements, complexity */
+  _loadColors(tileHeader) {
+    const {batchIds, colors, isRGB565, constantRGBA} = tileHeader.content;
+
+    if (constantRGBA) {
+      tileHeader.userData.color = constantRGBA;
+    }
+
+    const {batchTable, pointsCount} = tileHeader.userData;
+    let parsedColors = colors;
+    if (!colors || colors.length !== pointsCount * 4) {
+      parsedColors = new Uint8Array(pointsCount * 4);
+    }
+
+    if (isRGB565) {
+      for (let i = 0; i < pointsCount; i++) {
+        const color = parseRGB565(colors[i]);
+        parsedColors[i * 4] = color[0];
+        parsedColors[i * 4 + 1] = color[1];
+        parsedColors[i * 4 + 2] = color[2];
+        parsedColors[i * 4 + 3] = 255;
+      }
+    }
+
+    if (colors && colors.length === pointsCount * 3) {
+      for (let i = 0; i < pointsCount; i++) {
+        parsedColors[i * 4] = colors[i * 3];
+        parsedColors[i * 4 + 1] = colors[i * 3 + 1];
+        parsedColors[i * 4 + 2] = colors[i * 3 + 2];
+        parsedColors[i * 4 + 3] = 255;
+      }
+    }
+
+    if (batchIds && batchTable) {
+      for (let i = 0; i < pointsCount; i++) {
+        const batchId = batchIds[i];
+        // TODO figure out what is `dimensions` used for
+        const dimensions = batchTable.getProperty(batchId, 'dimensions');
+        const color = dimensions.map(d => d * 255);
+        parsedColors[i * 4] = color[0];
+        parsedColors[i * 4 + 1] = color[1];
+        parsedColors[i * 4 + 2] = color[2];
+        parsedColors[i * 4 + 3] = 255;
+      }
+    }
+
+    tileHeader.userData.colors = parsedColors;
   }
 
   _unpackInstanced3DTile(tileHeader) {
@@ -192,16 +246,6 @@ export default class Tileset3DLayer extends CompositeLayer {
       transformProps.coordinateOrigin = coordinateOrigin;
     }
 
-    if (isWGS84) {
-      transformProps.coordinateSystem = transformProps.coordinateSystem || COORDINATE_SYSTEM.LNGLAT;
-      return transformProps;
-    }
-
-    if (rtcCenter) {
-      transformProps.coordinateSystem =
-        transformProps.coordinateSystem || COORDINATE_SYSTEM.METER_OFFSETS;
-    }
-
     let modelMatrix;
     if (transform) {
       modelMatrix = new Matrix4(transform);
@@ -211,126 +255,65 @@ export default class Tileset3DLayer extends CompositeLayer {
         ? modelMatrix.translate(rtcCenter)
         : new Matrix4().translate(rtcCenter);
     }
-
     if (modelMatrix) {
       transformProps.modelMatrix = modelMatrix;
+    }
+
+    if (isWGS84) {
+      transformProps.coordinateSystem = coordinateSystem || COORDINATE_SYSTEM.METER_OFFSETS;
+      transformProps.coordinateOrigin = coordinateOrigin;
+      if (!coordinateOrigin) {
+        const origin = new Matrix4()
+          .multiplyRight(transformProps.modelMatrix)
+          .transformVector3([0, 0, 0]);
+        transformProps.coordinateOrigin = Ellipsoid.WGS84.cartesianToCartographic(origin, origin);
+        delete transformProps.modelMatrix;
+      }
+    }
+
+    if (rtcCenter) {
+      transformProps.coordinateSystem =
+        transformProps.coordinateSystem || COORDINATE_SYSTEM.METER_OFFSETS;
     }
 
     return transformProps;
   }
 
-  _getPositionProps(tileHeader) {
-    const {isWGS84} = this.props;
-    if (isWGS84) {
+  _getColorProps(tileHeader) {
+    const {colors, color} = tileHeader.userData;
+    if (colors) {
       return {
-        getPosition: (...args) => this._getPosition(tileHeader, ...args)
+        instanceColors: colors
       };
     }
     return {
-      instancePositions: tileHeader.content && tileHeader.content.positions
+      getColor: () => color || DEFAULT_POINT_COLOR
     };
   }
 
   _renderPointCloud3DTileLayer(tileHeader) {
-    const {color} = this.props;
-    const {positions, colors, normals} = tileHeader.content;
+    const {positions, normals} = tileHeader.content;
     const {pointsCount} = tileHeader.userData;
 
     const transformProps = this._resolveTransformProps(tileHeader);
-    const positionProps = this._getPositionProps(tileHeader);
+    const colorProps = this._getColorProps(tileHeader);
 
     return (
       positions &&
       new PointCloudLayer({
         id: `3d-point-cloud-tile-layer-${tileHeader.contentUri}`,
         data: {
-          positions,
-          colors: {value: colors, size: 4},
-          normals: {value: positions, size: 3},
           length: positions.length / 3
         },
         numInstances: pointsCount,
-        ...positionProps,
-        getColor: colors
-          ? (...args) => {
-              return this._getColor(tileHeader, ...args);
-            }
-          : color || [255, 255, 0, 200],
-        getNormal: normals ? (...args) => this._getNormal(...args) : [0, 1, 0],
+        instancePositions: positions,
+        ...colorProps,
+        instanceNormals: normals,
         opacity: 0.8,
         pointSize: 1.5,
         ...transformProps
       })
     );
-  }
-
-  _getPosition(tileHeader, object, {index, data, target}) {
-    const {transform} = tileHeader.userData;
-    const {rtcCenter} = tileHeader.content;
-    const {isWGS84} = this.props;
-    target[0] = data.positions[index * 3];
-    target[1] = data.positions[index * 3 + 1];
-    target[2] = data.positions[index * 3 + 2];
-
-    // TODO
-    // How to tell if this is WGS84 crs or not?
-    // How to transform data point using GPU?
-    if (isWGS84) {
-      let matrix = new Matrix4();
-      if (transform) {
-        matrix = matrix.multiplyRight(transform);
-      }
-      if (rtcCenter) {
-        matrix = matrix.translate(rtcCenter);
-      }
-      target = matrix.transformVector3(target);
-      Ellipsoid.WGS84.cartesianToCartographic(target, target);
-    }
-
-    return target;
-  }
-
-  _getNormal(object, {index, data, target}) {
-    target[0] = data.normals.value[index * 3];
-    target[1] = data.normals.value[index * 3 + 1];
-    target[2] = data.normals.value[index * 3 + 2];
-  }
-
-  /* eslint-disable max-statements */
-  _getColor(tileHeader, object, {index, data, target}) {
-    const {colors, isRGB565, constantRGBA} = tileHeader.content;
-    const {batchIds, batchTable} = tileHeader.userData;
-
-    if (colors) {
-      if (isRGB565) {
-        const color = parseRGB565(data.colors.value[index]);
-        target[0] = color[0];
-        target[1] = color[1];
-        target[2] = color[2];
-        target[3] = 255;
-      } else {
-        target[0] = data.colors.value[index * 3];
-        target[1] = data.colors.value[index * 3 + 1];
-        target[2] = data.colors.value[index * 3 + 2];
-        target[3] = data.colors.size === 4 ? data.colors[index * 3 + 4] : 255;
-      }
-
-      return target;
-    }
-
-    if (constantRGBA) {
-      return constantRGBA;
-    }
-
-    if (batchIds && batchTable) {
-      const batchId = batchIds[index];
-      // TODO figure out what is `dimensions` used for
-      const dimensions = batchTable.getProperty(batchId, 'dimensions');
-      const color = dimensions.map(d => d * 255);
-      return [...color, 255];
-    }
-
-    return [255, 255, 255];
   }
 
   renderLayers() {
