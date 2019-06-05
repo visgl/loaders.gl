@@ -7,6 +7,7 @@ import {Vector3} from 'math.gl';
 import {GL} from '@loaders.gl/math'; // 'math.gl/geometry';
 
 import {DracoParser} from '@loaders.gl/draco';
+import {parse} from '@loaders.gl/core';
 import Tile3DFeatureTable from '../classes/tile-3d-feature-table';
 import Tile3DBatchTable from '../classes/tile-3d-batch-table';
 import {parse3DTileHeaderSync} from './helpers/parse-3d-tile-header';
@@ -24,7 +25,7 @@ export async function parsePointCloud3DTile(tile, arrayBuffer, byteOffset, optio
   byteOffset = parse3DTileTablesHeaderSync(tile, arrayBuffer, byteOffset, options);
   byteOffset = parse3DTileTablesSync(tile, arrayBuffer, byteOffset, options);
 
-  await extractPointCloud(tile);
+  await extractPointCloud(tile, options);
 
   return byteOffset;
 }
@@ -40,10 +41,10 @@ export function parsePointCloud3DTileSync(tile, arrayBuffer, byteOffset, options
 }
 
 // eslint-disable-next-line max-statements, complexity
-async function extractPointCloud(tile) {
+async function extractPointCloud(tile, options) {
   const {featureTable, batchTable} = parsePointCloudTables(tile);
 
-  await parseDraco(tile, featureTable, batchTable);
+  await parseDraco(tile, featureTable, batchTable, options);
 
   parsePositions(tile, featureTable);
   parseColors(tile, featureTable);
@@ -169,7 +170,7 @@ function parseBatch(tile, featureTable) {
 }
 
 // eslint-disable-next-line complexity
-async function parseDraco(tile, featureTable, batchTable) {
+async function parseDraco(tile, featureTable, batchTable, options) {
   let dracoBuffer;
   let dracoFeatureTableProperties;
   let dracoBatchTableProperties;
@@ -207,7 +208,7 @@ async function parseDraco(tile, featureTable, batchTable) {
       dequantizeInShader: false
     };
 
-    await loadDraco(tile);
+    await loadDraco(tile, options);
   }
 }
 
@@ -223,10 +224,16 @@ export function parseRGB565(rgb565) {
   return [r5, g6, b5];
 }
 
-export async function loadDraco(tile) {
+/* eslint-disable complexity, max-statements */
+export async function loadDraco(tile, options) {
   const draco = tile.draco;
   if (draco && draco.buffer) {
-    const data = new DracoParser().decode(draco.buffer);
+    let data = null;
+    if (options.DracoLoader) {
+      data = await parse(draco.buffer, options.DracoLoader);
+    } else {
+      data = new DracoParser().parseSync(draco.buffer);
+    }
     const decodedPositions = data.attributes.POSITION && data.attributes.POSITION.value;
     const decodedColors = data.attributes.COLOR_0 && data.attributes.COLOR_0.value;
     const decodedNormals = data.attributes.NORMAL && data.attributes.NORMAL.value;

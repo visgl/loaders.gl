@@ -29,7 +29,7 @@ export async function parse3DTile(arrayBuffer, byteOffset = 0, options = {}, til
       return parseInstancedModel3DTile(tile, arrayBuffer, byteOffset, options);
 
     case TILE3D_TYPE.POINT_CLOUD:
-      return parsePointCloud3DTile(tile, arrayBuffer, byteOffset, options);
+      return await parsePointCloud3DTile(tile, arrayBuffer, byteOffset, options);
 
     default:
       throw new Error(`3DTileLoader: unknown type ${tile.type}`); // eslint-disable-line

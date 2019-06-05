@@ -1,5 +1,5 @@
 import {CompositeLayer} from '@deck.gl/core';
-import {Vector3, Matrix4} from 'math.gl';
+import {Matrix4} from 'math.gl';
 
 import {COORDINATE_SYSTEM} from '@deck.gl/core';
 import {PointCloudLayer} from '@deck.gl/layers';
@@ -8,8 +8,9 @@ import {ScenegraphLayer} from '@deck.gl/mesh-layers';
 import {createGLTFObjects} from '@luma.gl/addons';
 
 import '@loaders.gl/polyfills';
+import {load, registerLoaders} from '@loaders.gl/core';
 import {postProcessGLTF} from '@loaders.gl/gltf';
-import {registerLoaders} from '@loaders.gl/core';
+import {DracoWorkerLoader} from '@loaders.gl/draco';
 import {Ellipsoid} from '@loaders.gl/math';
 import {
   Tileset3D,
@@ -22,10 +23,16 @@ import {
 
 registerLoaders([Tile3DLoader, Tileset3DLoader]);
 
+const DEFAULT_POINT_COLOR = [255, 0, 0, 255];
+
 const defaultProps = {
   // TODO - the tileset json should be an async prop.
-  tilesetJson: null,
   tilesetUrl: null,
+  isWGS84: false,
+  color: DEFAULT_POINT_COLOR,
+  depthLimit: Number.MAX_SAFE_INTEGER,
+  coordinateSystem: null,
+  coordinateOrigin: null,
   onTileLoaded: () => {}
 };
 
@@ -38,23 +45,28 @@ export default class Tileset3DLayer extends CompositeLayer {
   }
 
   updateState({props, oldProps, changeFlags}) {
-    if (props.tilesetJson !== oldProps.tilesetJson) {
+    if (props.tilesetUrl !== oldProps.tilesetUrl) {
       this.setState({
         layerMap: {},
         layers: []
       });
-      this._loadTileset(props.tilesetJson, props.tilesetUrl);
+      this._loadTileset(props.tilesetUrl);
     }
   }
 
-  _loadTileset(tilesetJson, tilesetUrl) {
-    const tileset3d = new Tileset3D(tilesetJson, tilesetUrl);
-    tileset3d.traverse(tileHeader => this._loadTile3D(tileHeader));
+  async _loadTileset(tilesetUrl) {
+    const {depthLimit} = this.props;
+    let tileset3d = null;
+    if (tilesetUrl) {
+      const tilesetJson = await load(tilesetUrl);
+      tileset3d = new Tileset3D(tilesetJson, tilesetUrl);
+      tileset3d.traverse(tileHeader => this._loadTile3D(tileHeader), depthLimit);
+    }
     this.setState({tileset3d});
   }
 
   async _loadTile3D(tileHeader) {
-    await tileHeader.loadContent();
+    await tileHeader.loadContent(DracoWorkerLoader);
     this._unpackTile(tileHeader);
 
     const layer = this._render3DTileLayer(tileHeader);
@@ -68,7 +80,6 @@ export default class Tileset3DLayer extends CompositeLayer {
       layerMap,
       layers: Object.values(layerMap).filter(Boolean)
     });
-
     // React apps can call forceUpdate to trigger a rerender
     this.props.onTileLoaded(tileHeader);
   }
@@ -86,7 +97,7 @@ export default class Tileset3DLayer extends CompositeLayer {
           break;
         default:
           // eslint-disable-next-line
-          console.error('Error unpacking 3D tile', content.type, content);
+          console.warn('Error unpacking 3D tile', content.type, content);
           return;
       }
     }
@@ -118,6 +129,57 @@ export default class Tileset3DLayer extends CompositeLayer {
       // TODO figure out what is the correct way to extract transform from tileHeader
       transform: tileHeader._initialTransform
     };
+
+    this._loadColors(tileHeader);
+  }
+
+  /* eslint-disable max-statements, complexity */
+  _loadColors(tileHeader) {
+    const {batchIds, colors, isRGB565, constantRGBA} = tileHeader.content;
+
+    if (constantRGBA) {
+      tileHeader.userData.color = constantRGBA;
+    }
+
+    const {batchTable, pointsCount} = tileHeader.userData;
+    let parsedColors = colors;
+    if (!colors || colors.length !== pointsCount * 4) {
+      parsedColors = new Uint8Array(pointsCount * 4);
+    }
+
+    if (isRGB565) {
+      for (let i = 0; i < pointsCount; i++) {
+        const color = parseRGB565(colors[i]);
+        parsedColors[i * 4] = color[0];
+        parsedColors[i * 4 + 1] = color[1];
+        parsedColors[i * 4 + 2] = color[2];
+        parsedColors[i * 4 + 3] = 255;
+      }
+    }
+
+    if (colors && colors.length === pointsCount * 3) {
+      for (let i = 0; i < pointsCount; i++) {
+        parsedColors[i * 4] = colors[i * 3];
+        parsedColors[i * 4 + 1] = colors[i * 3 + 1];
+        parsedColors[i * 4 + 2] = colors[i * 3 + 2];
+        parsedColors[i * 4 + 3] = 255;
+      }
+    }
+
+    if (batchIds && batchTable) {
+      for (let i = 0; i < pointsCount; i++) {
+        const batchId = batchIds[i];
+        // TODO figure out what is `dimensions` used for
+        const dimensions = batchTable.getProperty(batchId, 'dimensions');
+        const color = dimensions.map(d => d * 255);
+        parsedColors[i * 4] = color[0];
+        parsedColors[i * 4 + 1] = color[1];
+        parsedColors[i * 4 + 2] = color[2];
+        parsedColors[i * 4 + 3] = 255;
+      }
+    }
+
+    tileHeader.userData.colors = parsedColors;
   }
 
   _unpackInstanced3DTile(tileHeader) {
@@ -165,114 +227,93 @@ export default class Tileset3DLayer extends CompositeLayer {
     });
   }
 
-  _resolveCoordinateProps(tileHeader) {
+  /* eslint-disable-next-line complexity */
+  _resolveTransformProps(tileHeader) {
     if (!tileHeader || !tileHeader.content) {
       return {};
     }
 
-    const {coordinateSystem, coordinateOrigin} = this.props;
+    const {coordinateSystem, coordinateOrigin, isWGS84} = this.props;
     const {rtcCenter} = tileHeader.content;
+    const {transform} = tileHeader.userData;
 
-    const coordinateProps = {
-      coordinateSystem: coordinateSystem || COORDINATE_SYSTEM.LNGLAT,
-      coordinateOrigin
-    };
+    const transformProps = {};
 
-    if (rtcCenter) {
-      coordinateProps.coordinateSystem = COORDINATE_SYSTEM.METER_OFFSETS;
-      coordinateProps.coordinateOrigin = Ellipsoid.WGS84.cartesianToCartographic(
-        new Vector3(rtcCenter)
-      );
+    if (coordinateSystem) {
+      transformProps.coordinateSystem = coordinateSystem;
+    }
+    if (coordinateOrigin) {
+      transformProps.coordinateOrigin = coordinateOrigin;
     }
 
-    return coordinateProps;
+    let modelMatrix;
+    if (transform) {
+      modelMatrix = new Matrix4(transform);
+    }
+    if (rtcCenter) {
+      modelMatrix = modelMatrix
+        ? modelMatrix.translate(rtcCenter)
+        : new Matrix4().translate(rtcCenter);
+    }
+    if (modelMatrix) {
+      transformProps.modelMatrix = modelMatrix;
+    }
+
+    if (isWGS84) {
+      transformProps.coordinateSystem = coordinateSystem || COORDINATE_SYSTEM.METER_OFFSETS;
+      transformProps.coordinateOrigin = coordinateOrigin;
+      if (!coordinateOrigin) {
+        const origin = new Matrix4()
+          .multiplyRight(transformProps.modelMatrix)
+          .transformVector3([0, 0, 0]);
+        transformProps.coordinateOrigin = Ellipsoid.WGS84.cartesianToCartographic(origin, origin);
+        delete transformProps.modelMatrix;
+      }
+    }
+
+    if (rtcCenter) {
+      transformProps.coordinateSystem =
+        transformProps.coordinateSystem || COORDINATE_SYSTEM.METER_OFFSETS;
+    }
+
+    return transformProps;
+  }
+
+  _getColorProps(tileHeader) {
+    const {colors, color} = tileHeader.userData;
+    if (colors) {
+      return {
+        instanceColors: colors
+      };
+    }
+    return {
+      getColor: () => color || DEFAULT_POINT_COLOR
+    };
   }
 
   _renderPointCloud3DTileLayer(tileHeader) {
-    const {positions, colors, normals} = tileHeader.content;
-    const {pointsCount, transform} = tileHeader.userData;
+    const {positions, normals} = tileHeader.content;
+    const {pointsCount} = tileHeader.userData;
 
-    const coordinateProps = this._resolveCoordinateProps(tileHeader);
+    const transformProps = this._resolveTransformProps(tileHeader);
+    const colorProps = this._getColorProps(tileHeader);
+
     return (
       positions &&
       new PointCloudLayer({
         id: `3d-point-cloud-tile-layer-${tileHeader.contentUri}`,
         data: {
-          positions,
-          colors: {value: colors, size: 4},
-          normals: {value: positions, size: 3},
           length: positions.length / 3
         },
-        ...coordinateProps,
         numInstances: pointsCount,
-        getPosition: (object, {index, data, target}) => {
-          target[0] = data.positions[index * 3];
-          target[1] = data.positions[index * 3 + 1];
-          target[2] = data.positions[index * 3 + 2];
-
-          if (transform && coordinateProps.coordinateSystem === COORDINATE_SYSTEM.LNGLAT) {
-            target = new Matrix4().multiplyRight(transform).transformVector3(target);
-            Ellipsoid.WGS84.cartesianToCartographic(target, target);
-          }
-
-          return target;
-        },
-        getColor: (...args) => {
-          return this._getColor(tileHeader, ...args);
-        },
-        getNormal: normals
-          ? (object, {index, data, target}) => {
-              target[0] = data.normals[index * 3];
-              target[1] = data.normals[index * 3 + 1];
-              target[2] = data.normals[index * 3 + 2];
-              return target;
-            }
-          : [0, 1, 0],
+        instancePositions: positions,
+        ...colorProps,
+        instanceNormals: normals,
         opacity: 0.8,
-        pointSize: 1.5
+        pointSize: 1.5,
+        ...transformProps
       })
     );
-  }
-
-  /* eslint-disable max-statements */
-  _getColor(tileHeader, object, {index, data, target}) {
-    if (!tileHeader) {
-      return null;
-    }
-
-    const {colors, isRGB565, constantRGBA} = tileHeader.content;
-    const {batchIds, batchTable} = tileHeader.userData;
-
-    if (colors) {
-      if (isRGB565) {
-        const color = parseRGB565(data.colors.value[index]);
-        target[0] = color[0];
-        target[1] = color[1];
-        target[2] = color[2];
-        target[3] = 255;
-      } else {
-        target[0] = data.colors.value[index * 3];
-        target[1] = data.colors.value[index * 3 + 1];
-        target[2] = data.colors.value[index * 3 + 2];
-        target[3] = data.colors.size === 4 ? data.colors[index * 3 + 4] : 255;
-      }
-
-      return target;
-    }
-
-    if (constantRGBA) {
-      return constantRGBA;
-    }
-
-    if (batchIds && batchTable) {
-      const batchId = batchIds[index];
-      // TODO figure out what is `dimensions` used for
-      const dimensions = batchTable.getProperty(batchId, 'dimensions');
-      const color = dimensions.map(d => d * 255);
-      return [...color, 255];
-    }
-
-    return [255, 255, 255];
   }
 
   renderLayers() {

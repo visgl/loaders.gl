@@ -8,8 +8,8 @@ import '@loaders.gl/polyfills';
 import Tileset3DLayer from './tileset-3d-layer';
 
 import ControlPanel from './components/control-panel';
-import fileDrop from './components/file-drop';
-import {load} from '@loaders.gl/core';
+// import fileDrop from './components/file-drop';
+import {COORDINATE_SYSTEM} from '@deck.gl/core';
 
 const DATA_URI = 'https://raw.githubusercontent.com/uber-web/loaders.gl/master';
 const INDEX_FILE = `${DATA_URI}/modules/3d-tiles/test/data/index.json`;
@@ -18,14 +18,33 @@ const INDEX_FILE = `${DATA_URI}/modules/3d-tiles/test/data/index.json`;
 const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
 const MAPBOX_STYLE = 'mapbox://styles/mapbox/light-v9';
 
-export const INITIAL_VIEW_STATE = {
+const ADDITIONAL_EXAMPLES = {
+  name: 'additional',
+  examples: {
+    royalExhibitionBuilding: {
+      tilesetUrl:
+        'https://raw.githubusercontent.com/uber-common/deck.gl-data/master/3d-tiles/RoyalExhibitionBuilding/tileset.json',
+      coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS,
+      coordinateOrigin: [144.97212, -37.805177],
+      isWGS84: false,
+      depthLimit: 5,
+      color: [115, 101, 152, 200]
+    }
+  }
+};
+
+const EXAMPLES_VIEWSTATE = {
   latitude: 40.04248558075302,
-  longitude: -75.61213987669433,
-  pitch: 45,
+  longitude: -75.61213987669433
+};
+
+export const INITIAL_VIEW_STATE = {
+  ...EXAMPLES_VIEWSTATE,
+  pitch: 60,
   bearing: 0,
   minZoom: 2,
   maxZoom: 30,
-  zoom: 17,
+  zoom: 17.5,
   height: window.innerHeight,
   width: window.innerWidth
 };
@@ -40,7 +59,7 @@ export default class App extends PureComponent {
       batchTable: null,
       droppedFile: null,
       examplesByCategory: null,
-      tiles: [],
+      tileset3dLayerProps: {},
       name: 'TilesetPoints',
       category: 'Tilesets'
     };
@@ -49,10 +68,10 @@ export default class App extends PureComponent {
   }
 
   componentDidMount() {
-    fileDrop(this._deckRef.deckCanvas, (promise, file) => {
-      this.setState({droppedFile: file, tile: null});
-      // load(promise, Tile3DLoader).then(this._onLoad);
-    });
+    // fileDrop(this._deckRef.deckCanvas, (promise, file) => {
+    //   this.setState({ droppedFile: file, tile: null });
+    // load(promise, Tile3DLoader).then(this._onLoad);
+    // });
 
     this._loadIndexAndDefaultTileset();
   }
@@ -61,7 +80,12 @@ export default class App extends PureComponent {
     // load the index file that lists example tilesets
     const response = await fetch(INDEX_FILE);
     const data = await response.json();
-    this.setState({examplesByCategory: data});
+    this.setState({
+      examplesByCategory: {
+        ...data,
+        additional: ADDITIONAL_EXAMPLES
+      }
+    });
 
     // load the default tileset
     const {category, name} = this.state;
@@ -70,13 +94,39 @@ export default class App extends PureComponent {
 
   async _loadSelectedTileset(category, name) {
     const {examplesByCategory} = this.state;
-    const selectedExample = examplesByCategory[category].examples[name];
-    const tilesetUrl = `${DATA_URI}/${selectedExample.path}/${selectedExample.tileset}`;
-    let tilesetJson = null;
-    if (selectedExample.tileset) {
-      tilesetJson = await load(tilesetUrl);
+
+    let tilesetUrl;
+    let tileset3dLayerProps = {};
+    if (category === 'additional') {
+      tileset3dLayerProps = ADDITIONAL_EXAMPLES.examples[name];
+      const {coordinateOrigin} = tileset3dLayerProps;
+      this.setState({
+        viewState: {
+          ...this.state.viewState,
+          longitude: coordinateOrigin[0],
+          latitude: coordinateOrigin[1]
+        }
+      });
+    } else {
+      this.setState({
+        viewState: {
+          ...this.state.viewState,
+          ...EXAMPLES_VIEWSTATE
+        }
+      });
+      const selectedExample = examplesByCategory[category].examples[name];
+      if (selectedExample && selectedExample.tileset) {
+        tilesetUrl = `${DATA_URI}/${selectedExample.path}/${selectedExample.tileset}`;
+        tileset3dLayerProps = {
+          tilesetUrl,
+          isWGS84: true
+        };
+      }
     }
-    this.setState({tilesetJson, tilesetUrl});
+
+    this.setState({
+      tileset3dLayerProps
+    });
   }
 
   // CONTROL PANEL
@@ -106,14 +156,26 @@ export default class App extends PureComponent {
     this.setState({viewState});
   }
 
-  _renderLayers() {
-    const {tilesetJson, tilesetUrl} = this.state;
+  _renderLayer() {
+    const {tileset3dLayerProps} = this.state;
+    const {
+      tilesetUrl,
+      coordinateSystem,
+      coordinateOrigin,
+      isWGS84,
+      depthLimit,
+      color
+    } = tileset3dLayerProps;
     return (
-      tilesetJson &&
+      tileset3dLayerProps &&
       new Tileset3DLayer({
         id: 'tileset-layer',
-        tilesetJson,
         tilesetUrl,
+        coordinateSystem,
+        coordinateOrigin,
+        isWGS84,
+        depthLimit,
+        color,
         onTileLoaded: tileHeader => this.forceUpdate()
       })
     );
@@ -121,13 +183,14 @@ export default class App extends PureComponent {
 
   render() {
     const {viewState} = this.state;
+    const layer = this._renderLayer();
 
     return (
       <div>
         {this._renderControlPanel()}
         <DeckGL
           ref={_ => (this._deckRef = _)}
-          layers={[this._renderLayers()]}
+          layers={[layer]}
           initialViewState={INITIAL_VIEW_STATE}
           viewState={viewState}
           onViewStateChange={this._onViewStateChange.bind(this)}
