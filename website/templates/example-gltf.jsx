@@ -6,7 +6,7 @@ import AnimationLoop from '../../examples/gltf/app';
 export default class Example extends React.Component {
   render() {
     return (
-      <AnimationLoopRunner AnimationLoop={AnimationLoop} />
+      <AnimationLoopRunner AnimationLoop={AnimationLoop} {...this.props}/>
     );
   }
 }
