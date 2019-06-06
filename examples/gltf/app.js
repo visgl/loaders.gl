@@ -53,14 +53,14 @@ const INFO_HTML = `
 <p>Rendered using luma.gl.</p>
 <div>
   Model<br/>
-  <select id="modelSelector" style="border: 1px solid gray;">
+  <select id="modelSelector" style="border: 1px solid gray; width: 200px;">
     <option value="${GLTF_DEFAULT_MODEL}">Default</option>
   </select>
   <br>
 </div>
 <div>
   Show<br/>
-  <select id="showSelector" style="border: 1px solid gray;">
+  <select id="showSelector" style="border: 1px solid gray; width: 200px;">
     <option value="0 0 0 0 0 0 0 0">Final Result</option>
 
     <option value="0 1 0 0 0 0 0 0">Base Color</option>
@@ -77,7 +77,7 @@ const INFO_HTML = `
 </div>
 <div>
   Regular Lights<br/>
-  <select id="lightSelector" style="border: 1px solid gray;">
+  <select id="lightSelector" style="border: 1px solid gray; width: 200px;">
     <option value="default">Default</option>
     <option value="ambient">Ambient Only</option>
     <option value="directional1">1x Directional (Red) + Ambient</option>
@@ -89,7 +89,7 @@ const INFO_HTML = `
 </div>
 <div>
   Image-Based Light<br/>
-  <select id="iblSelector" style="border: 1px solid gray;">
+  <select id="iblSelector" style="border: 1px solid gray; width: 200px;">
     <option value="exclusive">On (Exclusive)</option>
     <option value="addition">On (Addition to Regular)</option>
     <option value="off">Off (Only Regular)</option>
@@ -227,6 +227,7 @@ export default class AppAnimationLoop extends AnimationLoop {
     this.translate = initialZoom;
     this.rotation = [0, 0];
     this.rotationStart = [0, 0];
+    this.rotationAnimation = true;
 
     this.u_ScaleDiffBaseMR = [0, 0, 0, 0];
     this.u_ScaleFGDSpec = [0, 0, 0, 0];
@@ -253,6 +254,8 @@ export default class AppAnimationLoop extends AnimationLoop {
 
       canvas.setPointerCapture(e.pointerId);
       e.preventDefault();
+
+      this.rotationAnimation = false;
     };
 
     canvas.onpointermove = e => {
@@ -411,6 +414,10 @@ export default class AppAnimationLoop extends AnimationLoop {
 
   onRender({gl, time, aspect, viewMatrix, projectionMatrix}) {
     clear(gl, {color: [0.2, 0.2, 0.2, 1.0], depth: true});
+
+    if (this.rotationAnimation) {
+      this.rotation[1] = time / 3600;
+    }
 
     const [pitch, roll] = this.rotation;
     const cameraPos = [
