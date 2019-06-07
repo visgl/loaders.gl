@@ -156,7 +156,7 @@ export default class App extends PureComponent {
     this.setState({viewState});
   }
 
-  _renderLayers() {
+  _renderLayer() {
     // const {tilesetJson, tilesetUrl} = this.state;
     const {tileset3dLayerProps} = this.state;
     const {

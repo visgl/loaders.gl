@@ -73,7 +73,7 @@ export default class Tileset3DLayer extends CompositeLayer {
 
     // Traverse and and request. Update _selectedTiles so that we know what to render.
     const {tileset3d} = this.state;
-    const {aspect, height, tick} = context.animationProps;
+    const {height, tick} = context.animationProps;
     const {cameraPosition, cameraDirection, cameraUp, zoom} = context.viewport;
 
     // Map zoom 0-1
