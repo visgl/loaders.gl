@@ -45,21 +45,30 @@ export default class Tileset3DLayer extends CompositeLayer {
     };
   }
 
+  async _loadTileset(tilesetUrl, options) {
+    const {depthLimit} = this.props;
+    let tileset3d = null;
+    if (tilesetUrl) {
+      const tilesetJson = await load(tilesetUrl);
+      tileset3d = new Tileset3D(tilesetJson, tilesetUrl, options);
+      // tileset3d.traverse(tileHeader => this._loadTile3D(tileHeader), depthLimit);
+    }
+    this.setState({tileset3d});
+  }
+
   // context.animationProps.tick should have something like frameState.frameNumber
   // animationProps.aspect, width, and height holds screen info
   // context.viewport.cameraPosition, cameraDirection, cameraUp
   updateState({props, oldProps, context, changeFlags}) {
-    if (props.tilesetJson !== oldProps.tilesetJson) {
+    if (props.tilesetUrl !== oldProps.tilesetUrl) {
+      this.setState({
+        layerMap: {},
+        layers: []
+      });
       const options = {
           onTileLoad: this.props.onTileLoaded,
       };
-
-      const tileset3d = new Tileset3D(props.tilesetJson, props.tilesetUrl, options);
-      this.setState({
-        layerMap: {},
-        layers: [],
-        tileset3d
-      });
+      this._loadTileset(props.tilesetUrl, options);
     }
 
     // Traverse and and request. Update _selectedTiles so that we know what to render.
