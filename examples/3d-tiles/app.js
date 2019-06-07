@@ -157,7 +157,7 @@ export default class App extends PureComponent {
   }
 
   _renderLayers() {
-    const {tilesetJson, tilesetUrl} = this.state;
+    // const {tilesetJson, tilesetUrl} = this.state;
     const {
       tilesetUrl,
       coordinateSystem,
