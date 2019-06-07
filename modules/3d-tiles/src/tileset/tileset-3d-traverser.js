@@ -302,6 +302,7 @@ export default class Tileset3DTraverser {
     const {children} = tile;
 
     for (const child of children) {
+      this.updateTile(tileset, child, frameState);
       stack.push(child);
     }
     return true;

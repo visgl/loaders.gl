@@ -81,8 +81,9 @@ export default class Tileset3DLayer extends CompositeLayer {
     const {cameraPosition, cameraDirection, cameraUp, zoom} = viewport;
 
     // Map zoom 0-1
-    const min = 12;
-    const max = 24;
+    // const min = 12; const max = 24; const zoomMagic = 1000;// tilesetpoints
+    const min = 15; const max = 20; const zoomMagic = 10000;// royalexhibition
+
     let zoomMap = Math.max(Math.min(zoom, max), min);
     zoomMap = (zoomMap - min) / (max - min);
     zoomMap = Math.max(Math.min(1.0 - zoomMap, 1), 0);
@@ -96,7 +97,7 @@ export default class Tileset3DLayer extends CompositeLayer {
       },
       height: height,
       frameNumber: tick,
-      distanceMagic: zoomMap * 1000, // zoom doesn't seem to update accurately? like it stays at the same number after a scroll wheel tick
+      distanceMagic: zoomMap * zoomMagic, // zoom doesn't seem to update accurately? like it stays at the same number after a scroll wheel tick
       sseDenominator: 1.15, // Assumes fovy = 60 degrees
       /*******************************************
         From cesium:
@@ -115,6 +116,7 @@ export default class Tileset3DLayer extends CompositeLayer {
     }
 
     this._selectLayers(frameState);
+    console.log(zoom + ' ' + this.state.layers.length);
   }
 
   // Grab only those layers who were seleted this frame
