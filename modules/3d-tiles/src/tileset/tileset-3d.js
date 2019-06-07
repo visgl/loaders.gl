@@ -390,7 +390,16 @@ export default class Tileset3D {
     this._cache.trim();
   }
 
-  update(frameState) {
+  traverse(visitor, depthLimit = Number.MAX_SAFE_INTEGER, tile = this.root) {
+    visitor(tile);
+    if (tile && tile.children && tile._depth < depthLimit) {
+      for (const child of tile.children) {
+        this.traverse(visitor, depthLimit, child);
+      }
+    }
+  }
+
+  update(frameState, DracoLoader) {
     this._updatedVisibilityFrame++; // TODO: only update when camera or culling volume from last update moves (could be render camera change or prefetch camera)
     this._traverser.traverse(this, frameState);
 
@@ -399,13 +408,13 @@ export default class Tileset3D {
     // This makes it less likely this requests will be cancelled after being issued.
     // requestedTiles.sort((a, b) => a._priority - b._priority);
     for (const tile of requestedTiles) {
-      this._requestContent(tile);
+      this._requestContent(tile, DracoLoader);
     }
   }
 
-  async _requestContent(tile) {
+  async _requestContent(tile, DracoLoader) {
     const expired = tile.contentExpired;
-    const requested = await tile.requestContent();
+    const requested = await tile.requestContent(DracoLoader);
 
     // if (!requested) {
     //   return;

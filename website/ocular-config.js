@@ -68,24 +68,26 @@ module.exports = {
 
   PROJECTS: [
     {
-      title: 'deck.gl',
+      name: 'deck.gl',
       url: 'https://deck.gl'
     },
     {
-      title: 'luma.gl',
+      name: 'luma.gl',
       url: 'https://luma.gl'
     },
     {
-      title: 'react-map-gl',
+      name: 'react-map-gl',
       url: 'https://uber.github.io/react-map-gl'
     },
     {
-      title: 'react-vis',
-      url: 'https://uber.github.io/react-vis'
+      name: 'nebula.gl',
+      url: 'https://nebula.gl/'
     }
   ],
 
   ADDITIONAL_LINKS: [],
+
+  INDEX_PAGE_URL: resolve(__dirname, './templates/index.jsx'),
 
   EXAMPLES: [
     {
