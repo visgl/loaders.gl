@@ -82,7 +82,7 @@ export default class Tileset3DLayer extends CompositeLayer {
 
     // Map zoom 0-1
     // const min = 12; const max = 24; const zoomMagic = 1000;// tilesetpoints
-    const min = 15; const max = 20; const zoomMagic = 10000;// royalexhibition
+    const min = 15; const max = 20; const zoomMagic = 10000;// royalexhibition 15, 19, 1000 got intermediate to load around zoom18
 
     let zoomMap = Math.max(Math.min(zoom, max), min);
     zoomMap = (zoomMap - min) / (max - min);
