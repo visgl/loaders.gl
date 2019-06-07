@@ -10,7 +10,7 @@ export default {
       uri: `${DECK_DATA_URI}/examples/point-cloud-ply/lucy100k.ply`
     },
     Bunny: {
-      uri: `${LOADERS_URI}/modules/obj/test/data/bunny.obj`
+      uri: `${LOADERS_URI}/modules/ply/test/data/bunny.ply`
     },
     'Bun Zipper (Text)': {
       uri: `${LOADERS_URI}/modules/ply/test/data/bun_zipper.ply`
