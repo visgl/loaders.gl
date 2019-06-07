@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import React, {PureComponent} from 'react';
+import PropTypes from 'prop-types';
 
 const Container = styled.div`
   display: flex;
@@ -22,18 +23,36 @@ const DropDown = styled.select`
   margin-bottom: 6px;
 `;
 
+const propTypes = {
+  examples: PropTypes.object,
+  selectedCategory: PropTypes.string,
+  selectedExample: PropTypes.string,
+  onExampleChange: PropTypes.func
+};
+
+const defaultProps = {
+  examples: {},
+  selectedCategory: null,
+  selectedExample: null,
+  onExampleChange: () => {}
+};
+
 export default class ControlPanel extends PureComponent {
   componentDidMount() {
-    // eslint-disable-next-line react/prop-types
-    const {examples = {}, selectedCategory, selectedExample, onExampleChange} = this.props;
+    const {examples = {}, onExampleChange} = this.props;
 
+    let selectedCategory = this.props.selectedCategory;
+    let selectedExample = this.props.selectedExample;
     // CONVENIENCE: Auto select first example if app didn't provide
     if ((!selectedCategory || !selectedExample) && !this._autoSelected) {
-      const firstCategory = Object.keys(examples)[0];
-      const firstExample = Object.keys(examples[firstCategory])[0];
-      const example = examples[firstCategory][firstExample];
+      selectedCategory = Object.keys(examples)[0];
+      selectedExample = Object.keys(examples[selectedCategory])[0];
       this._autoSelected = true;
-      onExampleChange({selectedCategory: firstCategory, selectedExample: firstExample, example});
+    }
+
+    if (selectedCategory && selectedExample) {
+      const example = examples[selectedCategory][selectedExample];
+      onExampleChange({selectedCategory, selectedExample, example});
     }
   }
 
@@ -55,7 +74,7 @@ export default class ControlPanel extends PureComponent {
           const value = categoryExample.split('.');
           const categoryName = value[0];
           const exampleName = value[1];
-          const example = examples[selectedCategory][selectedExample];
+          const example = examples[categoryName][exampleName];
           onExampleChange({selectedCategory: categoryName, selectedExample: exampleName, example});
         }}
       >
@@ -136,3 +155,6 @@ export default class ControlPanel extends PureComponent {
     );
   }
 }
+
+ControlPanel.propTypes = propTypes;
+ControlPanel.defaultProps = defaultProps;
