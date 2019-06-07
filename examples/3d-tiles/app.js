@@ -58,8 +58,8 @@ export default class App extends PureComponent {
       droppedFile: null,
       examplesByCategory: null,
       tileset3dLayerProps: {},
-      name: 'TilesetPoints',
-      category: 'Tilesets'
+      name: 'royalExhibitionBuilding',
+      category: 'additional'
     };
 
     this._deckRef = null;

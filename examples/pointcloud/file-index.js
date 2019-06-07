@@ -10,10 +10,10 @@ export default {
       uri: `${DECK_DATA_URI}/examples/point-cloud-ply/lucy100k.ply`
     },
     Bunny: {
-      uri: `${LOADERS_URI}/modules/obj/bunny.ply`
+      uri: `${LOADERS_URI}/modules/obj/test/data/bunny.obj`
     },
     'Bun Zipper (Text)': {
-      uri: `${LOADERS_URI}/modules/ply/bun_zipper.ply`
+      uri: `${LOADERS_URI}/modules/ply/test/data/bun_zipper.ply`
     }
   },
 
@@ -29,28 +29,28 @@ export default {
 
   Draco: {
     Bunny: {
-      uri: `${LOADERS_URI}/modules/draco/bunny.drc`
+      uri: `${LOADERS_URI}/modules/draco/test/data/bunny.drc`
     }
   },
 
   PCD: {
     Zaghetto: {
-      uri: `${LOADERS_URI}/modules/pcd/Zaghetto.pcd`
+      uri: `${LOADERS_URI}/modules/pcd/test/data/Zaghetto.pcd`
     },
     'Simple (Text)': {
-      uri: `${LOADERS_URI}/modules/obj/simple-ascii.pcd`
+      uri: `${LOADERS_URI}/modules/pcd/test/data/simple-ascii.pcd`
     }
   },
 
   OBJ: {
     Magnolia: {
-      uri: `${LOADERS_URI}/modules/obj/magnolia.obj`
+      uri: `${LOADERS_URI}/modules/obj/test/data/magnolia.obj`
     },
     Bunny: {
-      uri: `${LOADERS_URI}/modules/obj/bunny.obj`
+      uri: `${LOADERS_URI}/modules/obj/test/data/bunny.obj`
     },
     Cube: {
-      uri: `${LOADERS_URI}/modules/obj/cube.obj`
+      uri: `${LOADERS_URI}/modules/obj/test/data/cube.obj`
     }
   }
 };
