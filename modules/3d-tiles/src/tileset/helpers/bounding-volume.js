@@ -2,9 +2,10 @@
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
 /* eslint-disable */
-import {Vector3, Matrix3, Matrix4} from 'math.gl';
+import {Vector3, Matrix3, Matrix4, degrees} from 'math.gl';
 import {BoundingSphere, OrientedBoundingBox} from '@loaders.gl/math';
 import assert from '../../utils/assert';
+import {Ellipsoid} from '@loaders.gl/math';
 
 // const scratchProjectedBoundingSphere = new BoundingSphere();
 
@@ -26,15 +27,44 @@ const scratchTransform = new Matrix4();
 export function createBoundingVolume(boundingVolumeHeader, transform, result) {
   assert(boundingVolumeHeader, '3D Tile: boundingVolume must be defined');
   if (boundingVolumeHeader.box) {
-    return null;
+    // The first three elements define the x, y, and z values for the center of the box.
+    const [x, y, z] = boundingVolumeHeader.box;
+    let center = new Vector3(x, y, z);
+    center = new Matrix4(transform).transformVector(center);
+    center = Ellipsoid.WGS84.cartesianToCartographic(center, center);
+
+    Object.assign(boundingVolumeHeader, {center});
+
+    return boundingVolumeHeader;
     // return createBox(boundingVolumeHeader.box, transform, result);
   }
   if (boundingVolumeHeader.region) {
-    return null;
+    // [west, south, east, north, minimum height, maximum height]
+    // Latitudes and longitudes are in the WGS 84 datum as defined in EPSG 4979 and are in radians.
+    // Heights are in meters above (or below) the WGS 84 ellipsoid.
+    const [west, south, east, north, minHeight, maxHeight] = boundingVolumeHeader.region;
+
+    const center = new Vector3(
+      degrees((west + east) / 2),
+      degrees((north + south) / 2),
+      (minHeight + maxHeight) / 2
+    );
+    Object.assign(boundingVolumeHeader, {center});
+
+    return boundingVolumeHeader;
     // return createRegion(boundingVolumeHeader.region, transform, this._initialTransform, result);
   }
   if (boundingVolumeHeader.sphere) {
-    return null;
+    // The first three elements define the x, y, and z values for the center of the sphere in a right-handed 3-axis (x, y, z)
+    const [x, y, z] = boundingVolumeHeader.sphere;
+    let center = new Vector3(x, y, z);
+
+    center = new Matrix4(transform).transformVector(center);
+    center = Ellipsoid.WGS84.cartesianToCartographic(center, center);
+
+    Object.assign(boundingVolumeHeader, {center});
+
+    return boundingVolumeHeader;
     // return createSphere(boundingVolumeHeader.sphere, transform, result);
   }
   throw new Error('3D Tile: boundingVolume must contain a sphere, region, or box');

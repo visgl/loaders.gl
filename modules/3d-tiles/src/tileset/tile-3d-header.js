@@ -139,6 +139,16 @@ export default class Tile3DHeader {
     return this._contentBoundingVolume || this._boundingVolume;
   }
 
+  // Get the bounding region derived from the tile's bounding volume.
+  get boundingRegion() {
+    return this._boundingVolume.boundingBox;
+  }
+
+  // Get the bounding box derived from the tile's bounding volume.
+  get boundingBox() {
+    return this._boundingVolume.boundingRegion;
+  }
+
   // Get the bounding sphere derived from the tile's bounding volume.
   get boundingSphere() {
     return this._boundingVolume.boundingSphere;
@@ -149,6 +159,14 @@ export default class Tile3DHeader {
   // @see {@link https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#specifying-extensions-and-application-specific-extras|Extras in the 3D Tiles specification.}
   get extras() {
     return this._header.extras;
+  }
+
+  get depth() {
+    return this._depth;
+  }
+
+  get viewState() {
+    return this._viewState;
   }
 
   // Get the tile's screen space error.
@@ -446,7 +464,7 @@ export default class Tile3DHeader {
     this._initialTransform = new Matrix4(parentInitialTransform).multiplyRight(this.transform);
 
     // TODO ?
-    this.computedTransform = new Matrix4(); // computedTransform;
+    // this.computedTransform = new Matrix4(); // computedTransform;
   }
 
   _initializeBoundingVolumes(tileHeader) {
@@ -569,6 +587,8 @@ export default class Tile3DHeader {
     if (!didTransformChange) {
       return;
     }
+
+    this.computedTransform = computedTransform;
 
     // Matrix4.clone(computedTransform, this.computedTransform);
 
