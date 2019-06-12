@@ -25,6 +25,7 @@ const scratchTransform = new Matrix4();
  * @returns {TileBoundingVolume} The modified result parameter or a new TileBoundingVolume instance if none was provided.
  */
 export function createBoundingVolume(boundingVolumeHeader, transform, result) {
+  result = result || {};
   assert(boundingVolumeHeader, '3D Tile: boundingVolume must be defined');
   if (boundingVolumeHeader.box) {
     // The first three elements define the x, y, and z values for the center of the box.
@@ -33,9 +34,9 @@ export function createBoundingVolume(boundingVolumeHeader, transform, result) {
     center = new Matrix4(transform).transformVector(center);
     center = Ellipsoid.WGS84.cartesianToCartographic(center, center);
 
-    Object.assign(boundingVolumeHeader, {center});
+    Object.assign(result, boundingVolumeHeader, {center});
 
-    return boundingVolumeHeader;
+    return result;
     // return createBox(boundingVolumeHeader.box, transform, result);
   }
   if (boundingVolumeHeader.region) {
@@ -49,9 +50,9 @@ export function createBoundingVolume(boundingVolumeHeader, transform, result) {
       degrees((north + south) / 2),
       (minHeight + maxHeight) / 2
     );
-    Object.assign(boundingVolumeHeader, {center});
+    Object.assign(result, boundingVolumeHeader, {center});
 
-    return boundingVolumeHeader;
+    return result;
     // return createRegion(boundingVolumeHeader.region, transform, this._initialTransform, result);
   }
   if (boundingVolumeHeader.sphere) {
@@ -62,9 +63,9 @@ export function createBoundingVolume(boundingVolumeHeader, transform, result) {
     center = new Matrix4(transform).transformVector(center);
     center = Ellipsoid.WGS84.cartesianToCartographic(center, center);
 
-    Object.assign(boundingVolumeHeader, {center});
+    Object.assign(result, boundingVolumeHeader, {center});
 
-    return boundingVolumeHeader;
+    return result;
     // return createSphere(boundingVolumeHeader.sphere, transform, result);
   }
   throw new Error('3D Tile: boundingVolume must contain a sphere, region, or box');
