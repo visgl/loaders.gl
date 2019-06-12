@@ -145,7 +145,7 @@ export default class Tileset3DLayer extends CompositeLayer {
     let parsedColors = colors;
 
     if (isRGB565) {
-      parsedColors = new Uint8Array(pointsCount * 4);
+      parsedColors = new Uint8ClampedArray(pointsCount * 4);
       for (let i = 0; i < pointsCount; i++) {
         const color = parseRGB565(colors[i]);
         parsedColors[i * 4] = color[0];
@@ -156,7 +156,7 @@ export default class Tileset3DLayer extends CompositeLayer {
     }
 
     if (colors && colors.length === pointsCount * 3) {
-      parsedColors = new Uint8Array(pointsCount * 4);
+      parsedColors = new Uint8ClampedArray(pointsCount * 4);
       for (let i = 0; i < pointsCount; i++) {
         parsedColors[i * 4] = colors[i * 3];
         parsedColors[i * 4 + 1] = colors[i * 3 + 1];
@@ -166,7 +166,7 @@ export default class Tileset3DLayer extends CompositeLayer {
     }
 
     if (batchIds && batchTable) {
-      parsedColors = new Uint8Array(pointsCount * 4);
+      parsedColors = new Uint8ClampedArray(pointsCount * 4);
       for (let i = 0; i < pointsCount; i++) {
         const batchId = batchIds[i];
         // TODO figure out what is `dimensions` used for

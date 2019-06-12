@@ -106,12 +106,6 @@ export default class App extends PureComponent {
         }
       });
     } else {
-      this.setState({
-        viewState: {
-          ...this.state.viewState,
-          ...EXAMPLES_VIEWSTATE
-        }
-      });
       const selectedExample = examplesByCategory[category].examples[name];
       if (selectedExample && selectedExample.tileset) {
         tilesetUrl = `${DATA_URI}/${selectedExample.path}/${selectedExample.tileset}`;
@@ -174,7 +168,21 @@ export default class App extends PureComponent {
         isWGS84,
         depthLimit,
         color,
-        onTileLoaded: tileHeader => this.forceUpdate()
+        onTileLoaded: tileHeader => {
+          const {name} = this.state;
+          // cannot parse the center from royalExhibitionBuilding dataset
+          if (tileHeader.depth === 0 && name !== 'royalExhibitionBuilding') {
+            const {center} = tileHeader.boundingVolume;
+            this.setState({
+              viewState: {
+                ...this.state.viewState,
+                longitude: center[0],
+                latitude: center[1]
+              }
+            });
+          }
+          this.forceUpdate();
+        }
       })
     );
   }
