@@ -36,7 +36,10 @@
   "dependencies": {
     "@loaders.gl/core": "1.1.0",
     "@loaders.gl/gltf": "1.1.0",
+    "@loaders.gl/math": "1.1.0",
     "@loaders.gl/loader-utils": "1.1.0",
-    "math.gl": "^2.3.0"
+    "math.gl": "^3.0.0-alpha.3",
+    "@math.gl/geospatial": "^3.0.0-alpha.3",
+    "@math.gl/culling": "^3.0.0-alpha.3"
   }
 }

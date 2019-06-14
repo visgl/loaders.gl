@@ -1391,6 +1391,24 @@
     "@luma.gl/webgl2-polyfill" "7.1.1"
     probe.gl "^3.0.2"
 
+"@math.gl/culling@^3.0.0-alpha.3":
+  version "3.0.0-alpha.3"
+  resolved "https://registry.yarnpkg.com/@math.gl/culling/-/culling-3.0.0-alpha.3.tgz#d233b469607eaf57bf915615ac501d7307c5ede1"
+  integrity sha512-PLmFPmYIoTCaR2aQluA74gL44B+AHK09GMAo9UTWbg1Cei5tYjdCOUBQZAV+js8d6l3LTXuPQ49NEYhNpunIUA==
+  dependencies:
+    "@babel/runtime" "^7.0.0"
+    gl-matrix "^3.0.0"
+    math.gl "3.0.0-alpha.3"
+
+"@math.gl/geospatial@^3.0.0-alpha.3":
+  version "3.0.0-alpha.3"
+  resolved "https://registry.yarnpkg.com/@math.gl/geospatial/-/geospatial-3.0.0-alpha.3.tgz#3f7db6801d56ad9ebac92379d954d3bdc3805317"
+  integrity sha512-2dVFNOw+/Cy/Z9XaH4BxD11LKnZN8k/v1SENSz+6K1dgBnIglER5FE39f3IH/QsmuDHFPVRWxGcYR9dkoiywsA==
+  dependencies:
+    "@babel/runtime" "^7.0.0"
+    gl-matrix "^3.0.0"
+    math.gl "3.0.0-alpha.3"
+
 "@mrmlnc/readdir-enhanced@^2.2.1":
   version "2.2.1"
   resolved "https://registry.yarnpkg.com/@mrmlnc/readdir-enhanced/-/readdir-enhanced-2.2.1.tgz#524af240d1a360527b730475ecfa1344aa540dde"
@@ -5912,6 +5930,14 @@ map-visit@^1.0.0:
   integrity sha1-7Nyo8TFE5mDxtb1B8S80edmN+48=
   dependencies:
     object-visit "^1.0.0"
+
+math.gl@3.0.0-alpha.3, math.gl@^3.0.0-alpha.3:
+  version "3.0.0-alpha.3"
+  resolved "https://registry.yarnpkg.com/math.gl/-/math.gl-3.0.0-alpha.3.tgz#4a102cbad869cb6a03b40f622e3f6f87d6c65dad"
+  integrity sha512-PqqKSpk0e4X1OYTkgxR0iv/8EwTnen1VYKdK6LyG4OgTqAfUVw71vL3ZOrcXNWNzJ64dPl4d+SuclW4zFQ8Drg==
+  dependencies:
+    "@babel/runtime" "^7.0.0"
+    gl-matrix "^3.0.0"
 
 math.gl@^2.3.0:
   version "2.3.1"
