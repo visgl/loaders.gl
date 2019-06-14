@@ -11,7 +11,7 @@ import '@loaders.gl/polyfills';
 import {load, registerLoaders} from '@loaders.gl/core';
 import {postProcessGLTF} from '@loaders.gl/gltf';
 import {DracoWorkerLoader} from '@loaders.gl/draco';
-import {Ellipsoid} from '@loaders.gl/math';
+import {Ellipsoid} from '@math.gl/geospatial';
 import {
   Tileset3D,
   Tile3DLoader,
@@ -263,9 +263,7 @@ export default class Tileset3DLayer extends CompositeLayer {
       transformProps.coordinateSystem = coordinateSystem || COORDINATE_SYSTEM.METER_OFFSETS;
       transformProps.coordinateOrigin = coordinateOrigin;
       if (!coordinateOrigin) {
-        const origin = new Matrix4()
-          .multiplyRight(transformProps.modelMatrix)
-          .transformVector3([0, 0, 0]);
+        const origin = new Matrix4().multiplyRight(transformProps.modelMatrix).transform([0, 0, 0]);
         transformProps.coordinateOrigin = Ellipsoid.WGS84.cartesianToCartographic(origin, origin);
         delete transformProps.modelMatrix;
       }

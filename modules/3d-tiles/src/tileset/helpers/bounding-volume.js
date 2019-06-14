@@ -3,9 +3,9 @@
 
 /* eslint-disable */
 import {Vector3, Matrix3, Matrix4, degrees} from 'math.gl';
-import {BoundingSphere, OrientedBoundingBox} from '@loaders.gl/math';
+import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
+import {Ellipsoid} from '@math.gl/geospatial';
 import assert from '../../utils/assert';
-import {Ellipsoid} from '@loaders.gl/math';
 
 // const scratchProjectedBoundingSphere = new BoundingSphere();
 
@@ -31,7 +31,7 @@ export function createBoundingVolume(boundingVolumeHeader, transform, result) {
     // The first three elements define the x, y, and z values for the center of the box.
     const [x, y, z] = boundingVolumeHeader.box;
     let center = new Vector3(x, y, z);
-    center = new Matrix4(transform).transformVector(center);
+    center = new Matrix4(transform).transform(center);
     center = Ellipsoid.WGS84.cartesianToCartographic(center, center);
 
     Object.assign(result, boundingVolumeHeader, {center});
@@ -60,7 +60,7 @@ export function createBoundingVolume(boundingVolumeHeader, transform, result) {
     const [x, y, z] = boundingVolumeHeader.sphere;
     let center = new Vector3(x, y, z);
 
-    center = new Matrix4(transform).transformVector(center);
+    center = new Matrix4(transform).transform(center);
     center = Ellipsoid.WGS84.cartesianToCartographic(center, center);
 
     Object.assign(result, boundingVolumeHeader, {center});
