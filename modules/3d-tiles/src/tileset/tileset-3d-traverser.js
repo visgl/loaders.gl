@@ -376,7 +376,8 @@ export default class Tileset3DTraverser {
   }
 
   canTraverse(tileset, tile) {
-    if (tile.children.length === 0 || tileset._depthLimit < tile.depth) {
+    // TODO: remove the depthLimit check once real sse is working
+    if (tile.children.length === 0 || tileset.depthLimit < tile.depth) {
       return false;
     }
     if (tile.hasTilesetContent) {

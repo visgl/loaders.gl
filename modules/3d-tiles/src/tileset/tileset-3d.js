@@ -83,10 +83,6 @@ export default class Tileset3D {
     this._gltfUpAxis = undefined;
     this._traverser = new Tileset3DTraverser();
 
-    // TODO: Remove this after sse traversal is working since this is just to prevent full load of tileset
-    this._depthLimit = options.depthLimit === undefined ? Number.MAX_SAFE_INTEGER : options.depthLimit;
-    console.log('depthLimit: ' + this._depthLimit);
-
     // this._cache = new Tileset3DCache();
     this._processingQueue = [];
     this._selectedTiles = [];

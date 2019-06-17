@@ -50,6 +50,9 @@ export default class Tileset3DLayer extends CompositeLayer {
     if (tilesetUrl) {
       const tilesetJson = await load(tilesetUrl);
       tileset3d = new Tileset3D(tilesetJson, tilesetUrl, options);
+
+      // TODO: Remove this after sse traversal is working since this is just to prevent full load of tileset
+      tileset3d.depthLimit = this.props.depthLimit;
     }
     this.setState({tileset3d});
   }
@@ -65,7 +68,6 @@ export default class Tileset3DLayer extends CompositeLayer {
       });
       const options = {
         onTileLoad: this.props.onTileLoaded,
-        depthLimit: this.props.depthLimit,
       };
       this._loadTileset(props.tilesetUrl, options);
     }
