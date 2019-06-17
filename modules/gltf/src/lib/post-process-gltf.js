@@ -30,10 +30,16 @@ const BYTES = {
 };
 
 const GL_SAMPLER = {
+  // Sampler parameters
   TEXTURE_MAG_FILTER: 0x2800,
   TEXTURE_MIN_FILTER: 0x2801,
   TEXTURE_WRAP_S: 0x2802,
-  TEXTURE_WRAP_T: 0x2803
+  TEXTURE_WRAP_T: 0x2803,
+
+  // Sampler default values
+  REPEAT: 0x2901,
+  LINEAR: 0x2601,
+  NEAREST_MIPMAP_LINEAR: 0x2702
 };
 
 const SAMPLER_PARAMETER_GLTF_TO_GL = {
@@ -41,6 +47,15 @@ const SAMPLER_PARAMETER_GLTF_TO_GL = {
   minFilter: GL_SAMPLER.TEXTURE_MIN_FILTER,
   wrapS: GL_SAMPLER.TEXTURE_WRAP_S,
   wrapT: GL_SAMPLER.TEXTURE_WRAP_T
+};
+
+// When undefined, a sampler with repeat wrapping and auto filtering should be used.
+// https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#texture
+const DEFAULT_SAMPLER = {
+  [GL_SAMPLER.TEXTURE_MAG_FILTER]: GL_SAMPLER.LINEAR,
+  [GL_SAMPLER.TEXTURE_MIN_FILTER]: GL_SAMPLER.NEAREST_MIPMAP_LINEAR,
+  [GL_SAMPLER.TEXTURE_WRAP_S]: GL_SAMPLER.REPEAT,
+  [GL_SAMPLER.TEXTURE_WRAP_]: GL_SAMPLER.REPEAT
 };
 
 function getBytesFromComponentType(componentType) {
@@ -269,7 +284,7 @@ class GLTFPostProcessor {
   _resolveTexture(texture, index) {
     texture = {...texture};
     texture.id = texture.id || `texture-${index}`;
-    texture.sampler = this.getSampler(texture.sampler);
+    texture.sampler = 'sampler' in texture ? this.getSampler(texture.sampler) : DEFAULT_SAMPLER;
     texture.source = this.getImage(texture.source);
     return texture;
   }
