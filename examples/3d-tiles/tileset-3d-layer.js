@@ -74,7 +74,7 @@ export default class Tileset3DLayer extends CompositeLayer {
 
     const {tileset3d} = this.state;
     const {animationProps, viewport} = context;
-    if (!context.animationProps || !context.viewport || !tileset3d) {
+    if (!animationProps || !viewport || !tileset3d) {
       return;
     }
 
