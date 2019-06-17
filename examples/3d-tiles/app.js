@@ -27,7 +27,7 @@ const ADDITIONAL_EXAMPLES = {
       coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS,
       coordinateOrigin: [144.97212, -37.805177],
       isWGS84: false,
-      depthLimit: 5,
+      depthLimit: 2,
       color: [115, 101, 152, 200]
     }
   }

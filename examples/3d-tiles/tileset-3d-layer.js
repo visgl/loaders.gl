@@ -46,7 +46,6 @@ export default class Tileset3DLayer extends CompositeLayer {
   }
 
   async _loadTileset(tilesetUrl, options) {
-    const {depthLimit} = this.props;
     let tileset3d = null;
     if (tilesetUrl) {
       const tilesetJson = await load(tilesetUrl);
@@ -65,7 +64,8 @@ export default class Tileset3DLayer extends CompositeLayer {
         layers: []
       });
       const options = {
-          onTileLoad: this.props.onTileLoaded,
+        onTileLoad: this.props.onTileLoaded,
+        depthLimit: this.props.depthLimit,
       };
       this._loadTileset(props.tilesetUrl, options);
     }
