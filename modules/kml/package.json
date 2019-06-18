@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/kml",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Framework-independent loader for the KML format",
   "license": "MIT",
   "publishConfig": {
@@ -32,6 +32,6 @@
     "build-bundle": "webpack --display=minimal --config ../../scripts/bundle.config.js"
   },
   "dependencies": {
-    "@loaders.gl/core": "1.1.1"
+    "@loaders.gl/core": "1.1.2"
   }
 }
