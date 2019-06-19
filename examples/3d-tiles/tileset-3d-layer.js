@@ -79,19 +79,20 @@ export default class Tileset3DLayer extends CompositeLayer {
     }
 
     // Traverse and and request. Update _selectedTiles so that we know what to render.
-    const {lastUpdateStateTick} = this.state;
+    const {lastUpdateStateTick, layerMap} = this.state;
     const {height, tick} = animationProps;
     const {cameraPosition, cameraDirection, cameraUp, zoom} = viewport;
 
     // Map zoom 0-1
     // const min = 12; const max = 24; const zoomMagic = 1000;// tilesetpoints
-    const min = 15; const max = 20; const zoomMagic = 10000;// royalexhibition 15, 19, 1000 got intermediate to load around zoom18
+    const min = 15; const max = 20; const zoomMagic = 10000; // royalexhibition
 
     let zoomMap = Math.max(Math.min(zoom, max), min);
     zoomMap = (zoomMap - min) / (max - min);
     zoomMap = Math.max(Math.min(1.0 - zoomMap, 1), 0);
 
-    // setup frameState so that tileset-3d-traverser can do it's job
+    // Setup frameState so that tileset-3d-traverser can do it's job
+    // TODO: make a file for this and document what needs to be attached to this so that traversal can function
     const frameState = {
       camera: {
         position: cameraPosition,
@@ -101,14 +102,20 @@ export default class Tileset3DLayer extends CompositeLayer {
       height: height,
       frameNumber: tick,
       lastFrameNumber: lastUpdateStateTick,
-      distanceMagic: zoomMap * zoomMagic, // zoom doesn't seem to update accurately? like it stays at the same number after a scroll wheel tick
+      distanceMagic: zoomMap * zoomMagic, // TODO: zoom doesn't seem to update accurately? like it stays at the same number after a scroll wheel tick
       sseDenominator: 1.15, // Assumes fovy = 60 degrees
-      /*******************************************
-        From cesium:
-        frustum.fov = CesiumMath.toRadians(60.0);
-        frustum._fovy = (frustum.aspectRatio <= 1) ? frustum.fov : Math.atan(Math.tan(frustum.fov * 0.5) / frustum.aspectRatio) * 2.0;
-        frustum._sseDenominator = 2.0 * Math.tan(0.5 * frustum._fovy);
-       *******************************************/
+      tileGpuResourceMap: layerMap,
+      hasGpuResource: function (tileHeader, frameState) {
+        const {frameNumber, lastFrameNumber, layerMap} = frameState;
+        if (tileHeader.contentUri in layerMap) {
+            const value  = layerMap[tileHeader.contentUri];
+            if (tileHeader._selectedFrame === frameNumber && value.selectedFrame === lastFrameNumber) { // Was rendered last frame and needs to render again
+              value.selectedFrame = frameNumber;
+              return true;
+            }
+        }
+        return false;
+      }
     };
 
     tileset3d.update(frameState, DracoWorkerLoader);
