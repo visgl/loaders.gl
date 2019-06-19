@@ -115,7 +115,6 @@ export default class Tileset3D {
     this._ellipsoid = options.ellipsoid;
 
     this._dynamicScreenSpaceErrorComputedDensity = 0.0; // Updated based on the camera position and direction
-    this._disableSkipLevelOfDetail = true;
 
     this.onLoadProgress = options.onLoadProgress;
     this.onAllTilesLoaded = options.onAllTilesLoaded;
