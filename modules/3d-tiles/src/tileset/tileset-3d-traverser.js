@@ -1,4 +1,5 @@
-import {TILE3D_REFINEMENT, TILE3D_OPTIMIZATION_HINT} from '../constants';
+// import {TILE3D_REFINEMENT, TILE3D_OPTIMIZATION_HINT} from '../constants';
+import {TILE3D_REFINEMENT} from '../constants';
 import ManagedArray from '../utils/managed-array';
 import assert from '../utils/assert';
 // This file is derived from the Cesium code base under Apache 2 license

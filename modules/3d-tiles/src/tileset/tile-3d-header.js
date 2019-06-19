@@ -228,6 +228,7 @@ export default class Tile3DHeader {
     return await this.requestContent(DracoLoader);
   }
 
+  // TODO: This is the fuctiong causing lint to crash
   async requestContent(DracoLoader) {
     if (this.hasEmptyContent) {
       return false;
@@ -267,9 +268,15 @@ export default class Tile3DHeader {
       this._contentState = TILE3D_CONTENT_STATE.READY;
       this._contentLoaded();
       return true;
-    } catch {
+    } catch (error) {
       // Tile is unloaded before the content finishes loading
       this._contentState = TILE3D_CONTENT_STATE.FAILED;
+
+      this.tileset.onTileLoadFailed({
+        tile: this,
+        url: this.url,
+        message: error.message || error.toString()
+      });
       return false;
     }
   }
