@@ -104,7 +104,7 @@ export default class Tile3DHeader {
 
   // Returns true if tile is an empty tile or an external tileset
   get hasRenderContent() {
-    return (!this.hasEmptyContent && !this.hasTilesetContent);
+    return !this.hasEmptyContent && !this.hasTilesetContent;
   }
 
   // Determines if the tile has available content to render.  <code>true</code> if the tile's
@@ -118,7 +118,7 @@ export default class Tile3DHeader {
 
   // Returns true if tile has renderable content but it's unloaded
   get hasUnloadedContent() {
-    return (this.hasRenderContent && this.contentUnloaded);
+    return this.hasRenderContent && this.contentUnloaded;
   }
 
   // Determines if the tile's content has not be requested. <code>true</code> if tile's
@@ -415,12 +415,8 @@ export default class Tile3DHeader {
   cameraSpaceZDepth({camera}) {
     const tileBoundingVolume = this._boundingVolume;
     const boundingVolume = tileBoundingVolume.boundingVolume; // Gets the underlying OrientedBoundingBox or BoundingSphere
-    const toCenter = Vector3.subtract(
-      boundingVolume.center,
-      camera.position,
-      scratchToTileCenter
-    );
-    return Vector3.dot(camera.direction, toCenter);;
+    const toCenter = Vector3.subtract(boundingVolume.center, camera.position, scratchToTileCenter);
+    return Vector3.dot(camera.direction, toCenter);
   }
 
   /**

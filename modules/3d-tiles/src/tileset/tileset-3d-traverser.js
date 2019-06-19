@@ -5,7 +5,6 @@ import assert from '../utils/assert';
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
 export default class Tileset3DTraverser {
-
   constructor() {
     this.traversal = {
       stack: new ManagedArray(),
@@ -117,7 +116,9 @@ export default class Tileset3DTraverser {
         const {parent} = tile;
         const useParentScreenSpaceError =
           parent &&
-          (!tileset._skipLevelOfDetail || tile._screenSpaceError === 0.0 || parent.hasTilesetContent);
+          (!tileset._skipLevelOfDetail ||
+            tile._screenSpaceError === 0.0 ||
+            parent.hasTilesetContent);
         const screenSpaceError = useParentScreenSpaceError
           ? parent._screenSpaceError
           : tile._screenSpaceError;

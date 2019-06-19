@@ -70,7 +70,7 @@ export default class Tileset3DLayer extends CompositeLayer {
         layers: []
       });
       const options = {
-        onTileLoad: this.props.onTileLoaded,
+        onTileLoad: this.props.onTileLoaded
       };
       this._loadTileset(props.tilesetUrl, options);
     }
@@ -88,7 +88,9 @@ export default class Tileset3DLayer extends CompositeLayer {
 
     // Map zoom 0-1
     // const min = 12; const max = 24; const zoomMagic = 1000;// tilesetpoints
-    const min = 15; const max = 20; const zoomMagic = 10000; // royalexhibition
+    const min = 15;
+    const max = 20;
+    const zoomMagic = 10000; // royalexhibition
     let zoomMap = Math.max(Math.min(zoom, max), min);
     zoomMap = (zoomMap - min) / (max - min);
     zoomMap = Math.max(Math.min(1.0 - zoomMap, 1), 0);
@@ -99,20 +101,21 @@ export default class Tileset3DLayer extends CompositeLayer {
       camera: {
         position: cameraPosition,
         direction: cameraDirection,
-        up: cameraUp,
+        up: cameraUp
       },
-      height: height,
+      height,
       frameNumber: tick,
       lastFrameNumber: lastUpdateStateTick,
       distanceMagic: zoomMap * zoomMagic, // TODO: zoom doesn't seem to update accurately? like it stays at the same number after a scroll wheel tick
       sseDenominator: 1.15, // Assumes fovy = 60 degrees
       tileGPUResourceMap: layerMap,
-      hasGPUResource: function (tileHeader, frameState) {
-        const {frameNumber, lastFrameNumber, tileGPUResourceMap} = frameState;
+      hasGPUResource(tileHeader) {
+        const {frameNumber, lastFrameNumber, tileGPUResourceMap} = this;
         if (tileHeader.contentUri in tileGPUResourceMap) {
-          const value  = tileGPUResourceMap[tileHeader.contentUri];
+          const value = tileGPUResourceMap[tileHeader.contentUri];
           // TODO: actual way to check if resource exists? value.layer.?
-          if (value.selectedFrame === lastFrameNumber) { // Check if rendered last frame and needs to render again
+          if (value.selectedFrame === lastFrameNumber) {
+            // Check if rendered last frame and needs to render again
             value.selectedFrame = frameNumber;
             return true;
           }
@@ -156,7 +159,7 @@ export default class Tileset3DLayer extends CompositeLayer {
       const layer = this._render3DTileLayer(tile);
 
       this.state.layerMap[tile.contentUri] = {
-        layer: layer,
+        layer,
         selectedFrame: frameNumber // Using selected frame to see if it was selected last update as a proxy for whether it has a gpu resource
       };
     }
