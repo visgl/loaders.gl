@@ -79,6 +79,7 @@ export default class Tileset3DLayer extends CompositeLayer {
     }
 
     // Traverse and and request. Update _selectedTiles so that we know what to render.
+    const {lastUpdateStateTick} = this.state;
     const {height, tick} = animationProps;
     const {cameraPosition, cameraDirection, cameraUp, zoom} = viewport;
 
@@ -99,6 +100,7 @@ export default class Tileset3DLayer extends CompositeLayer {
       },
       height: height,
       frameNumber: tick,
+      lastFrameNumber: lastUpdateStateTick,
       distanceMagic: zoomMap * zoomMagic, // zoom doesn't seem to update accurately? like it stays at the same number after a scroll wheel tick
       sseDenominator: 1.15, // Assumes fovy = 60 degrees
       /*******************************************
@@ -142,12 +144,13 @@ export default class Tileset3DLayer extends CompositeLayer {
   // If it exists, update its selected frame.
   _updateLayer(tileHeader, frameState) {
     // Check if already in map
+    // TODO: move into tileset.update
+    // need to pass in the map, save tile's that need gpu resources to _selectedTilesNeedingGPUResource
     let {layerMap} = this.state;
-    const {lastUpdateStateTick} = this.state;
-    const {frameNumber} = frameState;
+    const {frameNumber, lastFrameNumber} = frameState;
     if (tileHeader.contentUri in layerMap) {
         const value  = layerMap[tileHeader.contentUri];
-        if (tileHeader._selectedFrame === frameNumber && value.selectedFrame === lastUpdateStateTick) { // Was rendered last frame and needs to render again
+        if (tileHeader._selectedFrame === frameNumber && value.selectedFrame === lastFrameNumber) { // Was rendered last frame and needs to render again
           value.selectedFrame = frameNumber;
           return;
         }
