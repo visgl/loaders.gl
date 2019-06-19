@@ -36,7 +36,7 @@ export default class Tileset3DTraverser {
   traverse(tileset, frameState) {
     tileset._requestedTiles.length = 0;
     tileset._selectedTiles.length = 0;
-    tileset._selectedTilesNeedingGPUResource.length = 0;
+    tileset.selectedTilesNeedingGPUResource.length = 0;
     tileset._emptyTiles.length = 0;
     tileset._selectedTilesToStyle.length = 0;
     tileset._hasMixedContent = false;
