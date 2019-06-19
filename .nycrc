@@ -1,4 +1,4 @@
 {
   "extends": "node_modules/ocular-dev-tools/templates/.nycrc",
-  "exclude": ["**/bundle.js", "**/text-encoding.js", "**/encoding.js", "**/laz-perf.js"]
+  "exclude": ["**/bundle.js", "**/text-encoding.js", "**/encoding.js", "**/laz-perf.js", "**/wip/**", "**/test/**"]
 }
