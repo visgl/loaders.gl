@@ -86,6 +86,7 @@ export default class Tileset3D {
     // this._cache = new Tileset3DCache();
     this._processingQueue = [];
     this._selectedTiles = [];
+    this._selectedTilesNeedingGPUResource = [];
     this._emptyTiles = [];
     this._requestedTiles = [];
     this._selectedTilesToStyle = [];
@@ -410,6 +411,7 @@ export default class Tileset3D {
     for (const tile of requestedTiles) {
       this._requestContent(tile, DracoLoader);
     }
+    // Push any tiles that need gpu resources onto _selectedTilesNeedingGPUResource
   }
 
   async _requestContent(tile, DracoLoader) {

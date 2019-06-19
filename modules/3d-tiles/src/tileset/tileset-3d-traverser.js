@@ -32,15 +32,11 @@ export default class Tileset3DTraverser {
     this.descendantSelectionDepth = 2;
   }
 
-  // TODO: Move to tile, rename?
-  isVisible(tile) {
-    return tile._visible && tile._inRequestVolume;
-  }
 
   traverse(tileset, frameState) {
     tileset._requestedTiles.length = 0;
-
     tileset._selectedTiles.length = 0;
+    tileset._selectedTilesNeedingGPUResource.length = 0;
     tileset._emptyTiles.length = 0;
     tileset._selectedTilesToStyle.length = 0;
     tileset._hasMixedContent = false;
@@ -49,7 +45,7 @@ export default class Tileset3DTraverser {
     this.updateTile(tileset, root, frameState);
 
     // The root tile is not visible
-    if (!this.isVisible(root)) {
+    if (!root.isVisibleAndInRequestVolume) {
       return false;
     }
 
@@ -122,7 +118,7 @@ export default class Tileset3DTraverser {
   //     );
   //     const tile = stack.pop();
   //     for (const child of tile.children) {
-  //       if (this.isVisible(child)) {
+  //       if (child.isVisibleAndInRequestVolume) {
   //         if (child.contentAvailable) {
   //           this.updateTile(tileset, child, frameState);
   //           this.touchTile(tileset, child, frameState);
@@ -210,7 +206,7 @@ export default class Tileset3DTraverser {
     let anyVisible = false;
     for (const child of tile.children) {
       child.updateVisibility(frameState);
-      anyVisible = anyVisible || this.isVisible(child);
+      anyVisible = anyVisible || child.isVisibleAndInRequestVolume;
     }
     return anyVisible;
   }
@@ -228,7 +224,7 @@ export default class Tileset3DTraverser {
   updateTileVisibility(tileset, tile, frameState) {
     tile.updateVisibility(frameState);
 
-    // if (!this.isVisible(tile)) {
+    // if (!tile.isVisibleAndInRequestVolume) {
     //   return;
     // }
     //
@@ -328,7 +324,7 @@ export default class Tileset3DTraverser {
     //
     // let anyChildrenVisible = false;
     // for (const child of children) {
-    //   if (this.isVisible(child)) {
+    //   if (child.isVisibleAndInRequestVolume) {
     //     stack.push(child);
     //     anyChildrenVisible = true;
     //   } else if (checkRefines || tileset.loadSiblings) {
@@ -478,7 +474,7 @@ export default class Tileset3DTraverser {
   //     }
   //
   //     this.updateTile(tile, frameState);
-  //     if (!this.isVisible(tile)) {
+  //     if (!tile.isVisibleAndInRequestVolume) {
   //       // Load tiles that aren't visible since they are still needed for the parent to refine
   //       this.loadTile(tile, frameState);
   //       this.touchTile(tile, frameState);
@@ -572,7 +568,7 @@ export default class Tileset3DTraverser {
   //     if (traverse) {
   //       for (var i = 0; i < childrenLength; ++i) {
   //         var child = children[i];
-  //         if (isVisible(child)) {
+  //         if (child.isVisibleAndInRequestVolume) {
   //           stack.push(child);
   //         }
   //       }

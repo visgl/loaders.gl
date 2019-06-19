@@ -86,6 +86,10 @@ export default class Tile3DHeader {
     return this._depth;
   }
 
+  get isVisibleAndInRequestVolume() {
+    return this._visible && this._inRequestVolume;
+  }
+
   // The tile's content.  This represents the actual tile's payload,
   // not the content's metadata in the tileset JSON file.
   get content() {
