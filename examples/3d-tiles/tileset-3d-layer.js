@@ -33,7 +33,8 @@ const defaultProps = {
   depthLimit: Number.MAX_SAFE_INTEGER,
   coordinateSystem: null,
   coordinateOrigin: null,
-  onTileLoaded: () => {}
+  onTileLoaded: () => {},
+  onTilesetLoaded: () => {}
 };
 
 export default class Tileset3DLayer extends CompositeLayer {
@@ -54,7 +55,12 @@ export default class Tileset3DLayer extends CompositeLayer {
       // TODO: Remove this after sse traversal is working since this is just to prevent full load of tileset
       tileset3d.depthLimit = this.props.depthLimit;
     }
+
     this.setState({tileset3d});
+
+    if (tileset3d) {
+      this.props.onTilesetLoaded();
+    }
   }
 
   // context.animationProps.tick should have something like frameState.frameNumber

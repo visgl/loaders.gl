@@ -177,7 +177,8 @@ export default class App extends PureComponent {
         isWGS84,
         depthLimit,
         color,
-        onTileLoaded: tileHeader => this.forceUpdate()
+        onTileLoaded: tileHeader => this.forceUpdate(),
+        onTilesetLoaded: () => this.forceUpdate()
       })
     );
   }
