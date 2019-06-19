@@ -426,9 +426,9 @@ export default class Tileset3D {
     const expired = tile.contentExpired;
     const requested = await tile.requestContent(DracoLoader);
 
-    // if (!requested) {
-    //   return;
-    // }
+    if (!requested) {
+      return;
+    }
 
     if (expired) {
       if (tile.hasTilesetContent) {

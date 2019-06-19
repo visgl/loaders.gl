@@ -63,9 +63,6 @@ export default class Tileset3DLayer extends CompositeLayer {
     }
   }
 
-  // context.animationProps.tick should have something like frameState.frameNumber
-  // animationProps.aspect, width, and height holds screen info
-  // context.viewport.cameraPosition, cameraDirection, cameraUp
   updateState({props, oldProps, context, changeFlags}) {
     if (props.tilesetUrl !== oldProps.tilesetUrl) {
       this.setState({
@@ -92,7 +89,6 @@ export default class Tileset3DLayer extends CompositeLayer {
     // Map zoom 0-1
     // const min = 12; const max = 24; const zoomMagic = 1000;// tilesetpoints
     const min = 15; const max = 20; const zoomMagic = 10000; // royalexhibition
-
     let zoomMap = Math.max(Math.min(zoom, max), min);
     zoomMap = (zoomMap - min) / (max - min);
     zoomMap = Math.max(Math.min(1.0 - zoomMap, 1), 0);

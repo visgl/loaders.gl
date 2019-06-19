@@ -187,7 +187,6 @@ export default class Tile3DHeader {
 
     // Avoid divide by zero when viewer is inside the tile
     const distance = Math.max(this._distanceToCamera, 1e-7);
-    // const sseDenominator = frustum.sseDenominator;
     const {height, sseDenominator} = frameState;
     let error = (geometricError * height) / (distance * sseDenominator);
 
@@ -267,9 +266,11 @@ export default class Tile3DHeader {
 
       this._contentState = TILE3D_CONTENT_STATE.READY;
       this._contentLoaded();
-    } finally {
+      return true;
+    } catch {
       // Tile is unloaded before the content finishes loading
-      // this._contentState = TILE3D_CONTENT_STATE.FAILED;
+      this._contentState = TILE3D_CONTENT_STATE.FAILED;
+      return false;
     }
   }
 
