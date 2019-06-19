@@ -262,6 +262,7 @@ export default class Tileset3DTraverser {
     if (tile.children.length === 0 || tileset.depthLimit < tile.depth) {
       return false;
     }
+
     if (tile.hasTilesetContent) {
       // Traverse external this to visit its root tile
       // Don't traverse if the subtree is expired because it will be destroyed

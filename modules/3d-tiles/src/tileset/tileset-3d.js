@@ -391,15 +391,6 @@ export default class Tileset3D {
     this._cache.trim();
   }
 
-  traverse(visitor, depthLimit = Number.MAX_SAFE_INTEGER, tile = this.root) {
-    visitor(tile);
-    if (tile && tile.children && tile._depth < depthLimit) {
-      for (const child of tile.children) {
-        this.traverse(visitor, depthLimit, child);
-      }
-    }
-  }
-
   update(frameState, DracoLoader) {
     this._updatedVisibilityFrame++; // TODO: only update when camera or culling volume from last update moves (could be render camera change or prefetch camera)
     this._traverser.traverse(this, frameState);
