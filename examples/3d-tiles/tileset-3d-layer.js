@@ -157,17 +157,10 @@ export default class Tileset3DLayer extends CompositeLayer {
 
     const layer = this._render3DTileLayer(tileHeader);
 
-    layerMap = {
-      ...layerMap,
-      [tileHeader.contentUri]: {
-        layer: layer,
-        selectedFrame: tileHeader._selectedFrame
-      }
+    layerMap[tileHeader.contentUri] = {
+      layer: layer,
+      selectedFrame: tileHeader._selectedFrame
     };
-
-    this.setState({
-      layerMap
-    });
   }
 
   _unpackTile(tileHeader) {
