@@ -85,8 +85,7 @@ export default class Tileset3D {
 
     // this._cache = new Tileset3DCache();
     this._processingQueue = [];
-    this._selectedTiles = [];
-    this.selectedTilesNeedingGPUResource = [];
+    this.selectedTiles = [];
     this._emptyTiles = [];
     this._requestedTiles = [];
     this._selectedTilesToStyle = [];
@@ -400,15 +399,6 @@ export default class Tileset3D {
     // requestedTiles.sort((a, b) => a._priority - b._priority);
     for (const tile of requestedTiles) {
       this._requestContent(tile, DracoLoader);
-    }
-
-    // Push any tiles that need gpu resources onto selectedTilesNeedingGPUResource
-    const selectedTiles = this._selectedTiles;
-    const selectedTilesNeedingGPUResource = this.selectedTilesNeedingGPUResource;
-    for (const tile of selectedTiles) {
-      if (!frameState.hasGPUResource(tile, frameState)) {
-        selectedTilesNeedingGPUResource.push(tile);
-      }
     }
   }
 

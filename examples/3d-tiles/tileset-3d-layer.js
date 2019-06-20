@@ -41,8 +41,7 @@ export default class Tileset3DLayer extends CompositeLayer {
   initializeState() {
     this.state = {
       layerMap: {},
-      layers: [],
-      lastUpdateStateTick: -1
+      layers: []
     };
   }
 
@@ -82,7 +81,6 @@ export default class Tileset3DLayer extends CompositeLayer {
     }
 
     // Traverse and and request. Update _selectedTiles so that we know what to render.
-    const {lastUpdateStateTick, layerMap} = this.state;
     const {height, tick} = animationProps;
     const {cameraPosition, cameraDirection, cameraUp, zoom} = viewport;
 
@@ -105,62 +103,63 @@ export default class Tileset3DLayer extends CompositeLayer {
       },
       height,
       frameNumber: tick,
-      lastFrameNumber: lastUpdateStateTick,
       distanceMagic: zoomMap * zoomMagic, // TODO: zoom doesn't seem to update accurately? like it stays at the same number after a scroll wheel tick
-      sseDenominator: 1.15, // Assumes fovy = 60 degrees
-      tileGPUResourceMap: layerMap,
-      hasGPUResource(tileHeader) {
-        const {frameNumber, lastFrameNumber, tileGPUResourceMap} = this;
-        if (tileHeader.contentUri in tileGPUResourceMap) {
-          const value = tileGPUResourceMap[tileHeader.contentUri];
-          // TODO: actual way to check if resource exists? value.layer.?
-          if (value.selectedFrame === lastFrameNumber) {
-            // Check if rendered last frame and needs to render again
-            value.selectedFrame = frameNumber;
-            return true;
-          }
-        }
-        return false;
-      }
+      sseDenominator: 1.15 // Assumes fovy = 60 degrees
     };
 
     tileset3d.update(frameState, DracoWorkerLoader);
     this._updateLayers(frameState);
-
     this._selectLayers(frameState);
   }
 
-  // Grab only those layers who were selected this frame
+  // Grab only those layers who were selected this frame.
   _selectLayers(frameState) {
     const {layerMap} = this.state;
     const {frameNumber} = frameState;
     const selectedLayers = [];
     const layerMapValues = Object.values(layerMap);
+
     for (const value of layerMapValues) {
-      if (value.selectedFrame === frameNumber) {
-        selectedLayers.push(value.layer);
+      const {tile} = value;
+      let {layer} = value;
+
+      if (tile.selectedFrame === frameNumber) {
+        if (!layer.visible) {
+          layer = layer.clone({visible: true});
+          layerMap[tile.contentUri].layer = layer;
+        }
+        selectedLayers.push(layer);
+      } else if (tile.contentUnloaded) {
+        // Was cleaned up from tileset cache. We no longer need to track it.
+        layerMap.delete(tile.contentUri);
+      } else if (layer.visible) {
+        // Still in tileset cache, keep the GPU resource bound but don't render it.
+        layer = layer.clone({visible: false});
+        layerMap[tile.contentUri].layer = layer;
       }
     }
+
     this.setState({
-      layers: selectedLayers,
-      lastUpdateStateTick: frameNumber
+      layers: selectedLayers
     });
   }
 
-  // Layer is created and added to the map from the tileset's selectedTilesNeedingGPUResource
+  // Layer is created and added to the map if it doesn't exist yet.
   _updateLayers(frameState) {
     const {tileset3d} = this.state;
-    const {selectedTilesNeedingGPUResource} = tileset3d;
-    const {frameNumber} = frameState;
+    const {layerMap} = this.state;
+    const {selectedTiles} = tileset3d;
 
-    for (const tile of selectedTilesNeedingGPUResource) {
+    const tilesWithoutLayer = selectedTiles.filter(tile => !(tile.contentUri in layerMap));
+
+    for (const tile of tilesWithoutLayer) {
       this._unpackTile(tile);
 
       const layer = this._render3DTileLayer(tile);
 
-      this.state.layerMap[tile.contentUri] = {
+      layerMap[tile.contentUri] = {
         layer,
-        selectedFrame: frameNumber // Using selected frame to see if it was selected last update as a proxy for whether it has a gpu resource
+        tile
       };
     }
   }

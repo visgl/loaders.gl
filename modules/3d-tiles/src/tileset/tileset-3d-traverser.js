@@ -20,8 +20,7 @@ export default class Tileset3DTraverser {
 
   traverse(tileset, frameState) {
     tileset._requestedTiles.length = 0;
-    tileset._selectedTiles.length = 0;
-    tileset.selectedTilesNeedingGPUResource.length = 0;
+    tileset.selectedTiles.length = 0;
     tileset._emptyTiles.length = 0;
     tileset._selectedTilesToStyle.length = 0;
     tileset._hasMixedContent = false;
@@ -50,7 +49,7 @@ export default class Tileset3DTraverser {
 
   selectTile(tileset, tile, frameState) {
     tile._selectedFrame = frameState.frameNumber;
-    tileset._selectedTiles.push(tile);
+    tileset.selectedTiles.push(tile);
 
     // if (tile.contentVisibility(frameState) !== Intersect.OUTSIDE) {
     //   if (tile.content.featurePropertiesDirty) {
@@ -63,7 +62,7 @@ export default class Tileset3DTraverser {
     //     tileset._selectedTilesToStyle.push(tile);
     //   }
     //   tile._selectedFrame = frameState.frameNumber;
-    //   tileset._selectedTiles.push(tile);
+    //   tileset.selectedTiles.push(tile);
     // }
   }
 

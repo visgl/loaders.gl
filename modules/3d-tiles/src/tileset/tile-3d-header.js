@@ -86,6 +86,11 @@ export default class Tile3DHeader {
     return this._depth;
   }
 
+  // The most recent frame that the tile was selected
+  get selectedFrame() {
+    return this._selectedFrame;
+  }
+
   get isVisibleAndInRequestVolume() {
     return this._visible && this._inRequestVolume;
   }
