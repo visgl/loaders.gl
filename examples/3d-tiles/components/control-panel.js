@@ -28,7 +28,8 @@ const propTypes = {
   name: PropTypes.string.isRequired,
   data: PropTypes.object.isRequired,
   droppedFile: PropTypes.string,
-  onChange: PropTypes.func
+  onChange: PropTypes.func,
+  children: PropTypes.node
 };
 
 const defaultProps = {
@@ -80,6 +81,7 @@ export default class ControlPanel extends PureComponent {
       <Container>
         {this._renderByCategories()}
         {this._renderDropped()}
+        {this.props.children}
       </Container>
     );
   }
