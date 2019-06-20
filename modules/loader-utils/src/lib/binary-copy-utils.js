@@ -26,7 +26,7 @@ export function copyPaddedArrayBufferToDataView(dataView, byteOffset, sourceBuff
 }
 
 export function copyPaddedStringToDataView(dataView, byteOffset, string, padding) {
-  const textEncoder = new TextEncoder('utf8');
+  const textEncoder = new TextEncoder();
   // PERFORMANCE IDEA: We encode twice, once to get size and once to store
   // PERFORMANCE IDEA: Use TextEncoder.encodeInto() to avoid temporary copy
   const stringBuffer = textEncoder.encode(string);
