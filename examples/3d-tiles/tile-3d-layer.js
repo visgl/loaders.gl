@@ -63,6 +63,10 @@ export default class Tile3DLayer extends CompositeLayer {
     }
   }
 
+  shouldUpdateState({changeFlags}) {
+    return changeFlags.somethingChanged;
+  }
+
   updateState({props, oldProps, context, changeFlags}) {
     if (props.tilesetUrl !== oldProps.tilesetUrl) {
       this.setState({
