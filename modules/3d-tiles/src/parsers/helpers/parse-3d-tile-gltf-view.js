@@ -1,6 +1,7 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
+/* global TextDecoder */
 import {parseGLTFSync} from '@loaders.gl/gltf';
 
 export const GLTF_FORMAT = {
@@ -39,10 +40,11 @@ export function extractGLTF(tile, gltfFormat, options) {
     case GLTF_FORMAT.URI:
       // We need to remove padding from the end of the model URL in case this tile was part of a composite tile.
       // This removes all white space and null characters from the end of the string.
-      // const gltfUrl = getStringFromTypedArray(tile.gltfView);
-      // tile.url = gltfUrl.replace(/[\s\0]+$/, '');
-      // break;
-      throw new Error('i3dm: glTF format 0 (uri) not yet implemented');
+      const gltfUrlBytes = new Uint8Array(tile.gltfArrayBuffer, tile.gltfByteOffset);
+      const textDecoder = new TextDecoder();
+      const gltfUrl = textDecoder.decode(gltfUrlBytes);
+      tile.gltfUrl = gltfUrl.replace(/[\s\0]+$/, '');
+      break;
     case GLTF_FORMAT.EMBEDDED:
       tile.gltf = {};
       parseGLTFSync(tile.gltf, tile.gltfArrayBuffer, tile.gltfByteOffset, options);
