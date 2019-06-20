@@ -63,14 +63,13 @@ function parsePointCloudTables(tile) {
   const featureTable = new Tile3DFeatureTable(tile.featureTableJson, tile.featureTableBinary);
 
   const pointsLength = featureTable.getGlobalProperty('POINTS_LENGTH');
-  tile.featuresLength = pointsLength;
-
-  featureTable.featuresLength = pointsLength;
-
   if (!Number.isFinite(pointsLength)) {
     throw new Error('POINTS_LENGTH must be defined');
   }
+  featureTable.featuresLength = pointsLength;
 
+  tile.featuresLength = pointsLength;
+  tile.pointsLength = pointsLength;
   tile.rtcCenter = featureTable.getGlobalProperty('RTC_CENTER', GL.FLOAT, 3);
 
   // Initialize point cloud tile defaults

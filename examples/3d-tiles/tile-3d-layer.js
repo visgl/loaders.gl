@@ -9,7 +9,7 @@ import {createGLTFObjects, GLTFScenegraphLoader} from '@luma.gl/addons';
 
 import '@loaders.gl/polyfills';
 import {load, registerLoaders} from '@loaders.gl/core';
-import {postProcessGLTF} from '@loaders.gl/gltf';
+// import {postProcessGLTF} from '@loaders.gl/gltf';
 import {DracoWorkerLoader} from '@loaders.gl/draco';
 import {Ellipsoid} from '@math.gl/geospatial';
 
@@ -23,6 +23,47 @@ import {
 } from '@loaders.gl/3d-tiles';
 
 registerLoaders([Tile3DLoader, Tileset3DLoader, GLTFScenegraphLoader]);
+
+addVersionToShader(source) {
+  if (isWebGL2(this.context.gl)) {
+    return `#version 300 es\n${source}`;
+  }
+
+  return source;
+}
+
+
+function getLoadOptions(props = {}) {
+  const modules = ['project32', 'picking'];
+  const {_lighting, _imageBasedLightingEnvironment} = this.props;
+
+  if (_lighting === 'pbr') {
+    modules.push(pbr);
+  }
+
+  let env = null;
+  if (_imageBasedLightingEnvironment) {
+    if (typeof _imageBasedLightingEnvironment === 'function') {
+      env = _imageBasedLightingEnvironment({gl: this.context.gl, layer: this});
+    } else {
+      env = _imageBasedLightingEnvironment;
+    }
+  }
+
+  return {
+    gl: this.context.gl,
+    waitForFullLoad: true,
+    imageBasedLightingEnvironment: env,
+    modelOptions: {
+      vs: this.addVersionToShader(vs),
+      fs: this.addVersionToShader(fs),
+      modules,
+      isInstanced: true
+    },
+    // tangents are not supported
+    useTangents: false
+  };
+}
 
 const DEFAULT_POINT_COLOR = [255, 0, 0, 255];
 
@@ -269,12 +310,11 @@ export default class Tile3DLayer extends CompositeLayer {
   }
 
   _unpackInstanced3DTile(tileHeader) {
-    const {gl} = this.context.animationProps;
-
     if (tileHeader.content.gltf) {
-      const json = postProcessGLTF(tileHeader.content.gltf);
-      const gltfObjects = createGLTFObjects(gl, json);
-      tileHeader.userData = {gltfObjects};
+      // const {gl} = this.context.animationProps;
+      // const json = postProcessGLTF(tileHeader.content.gltf);
+      // const gltfObjects = createGLTFObjects(gl, json);
+      // tileHeader.userData = {gltfObjects};
     }
 
     if (tileHeader.content.gltfUrl) {
@@ -284,10 +324,10 @@ export default class Tile3DLayer extends CompositeLayer {
   }
 
   _unpackBatched3DTile(tileHeader) {
-    const {gl} = this.context.animationProps;
-    const json = postProcessGLTF(tileHeader.content.gltf);
-    const gltfObjects = createGLTFObjects(gl, json);
-    tileHeader.userData = {gltfObjects};
+    // const {gl} = this.context.animationProps;
+    // const json = postProcessGLTF(tileHeader.content.gltf);
+    // const gltfObjects = createGLTFObjects(gl, json);
+    // tileHeader.userData = {gltfObjects};
   }
 
   /* eslint-disable-next-line complexity */
@@ -313,28 +353,33 @@ export default class Tile3DLayer extends CompositeLayer {
     if (transform) {
       modelMatrix = new Matrix4(transform);
     }
+
     if (rtcCenter) {
-      modelMatrix = modelMatrix
-        ? modelMatrix.translate(rtcCenter)
-        : new Matrix4().translate(rtcCenter);
-    }
-    if (modelMatrix) {
-      transformProps.modelMatrix = modelMatrix;
+      modelMatrix = modelMatrix || new Matrix4();
+      modelMatrix.translate(rtcCenter);
+      transformProps.coordinateSystem =
+        transformProps.coordinateSystem || COORDINATE_SYSTEM.METER_OFFSETS;
     }
 
     if (isWGS84) {
       transformProps.coordinateSystem = coordinateSystem || COORDINATE_SYSTEM.METER_OFFSETS;
       transformProps.coordinateOrigin = coordinateOrigin;
+      // TODO - Heuristics to get a coordinateOrigin from the tile
+      // verify with spec
       if (!coordinateOrigin) {
-        const origin = new Matrix4().multiplyRight(transformProps.modelMatrix).transform([0, 0, 0]);
-        transformProps.coordinateOrigin = Ellipsoid.WGS84.cartesianToCartographic(origin, origin);
-        delete transformProps.modelMatrix;
+        if (modelMatrix) {
+          const origin = modelMatrix.transform([0, 0, 0]);
+          transformProps.coordinateOrigin = Ellipsoid.WGS84.cartesianToCartographic(origin, origin);
+          modelMatrix = null;
+        } else {
+          // No model matrix, so assume bounding volume center
+          transformProps.coordinateOrigin = tileHeader.boundingVolume.center;
+        }
       }
     }
 
-    if (rtcCenter) {
-      transformProps.coordinateSystem =
-        transformProps.coordinateSystem || COORDINATE_SYSTEM.METER_OFFSETS;
+    if (modelMatrix) {
+      transformProps.modelMatrix = modelMatrix;
     }
 
     return transformProps;
@@ -373,17 +418,36 @@ export default class Tile3DLayer extends CompositeLayer {
 
     const transformProps = this._resolveTransformProps(tileHeader);
 
+    let scenegraphProps = { scenegraph: gltfUrl };
+
+    const { gltfArrayBuffer } = tileHeader.content;
+
+
+    if (!gltfUrl) {
+      scenegraphProps = {
+        scenegraph: '3d-tile',
+        fetch: (url, { propName, layer }) => {
+          if (url === '3d-tile') {
+            // return Promise.resolve(gltfArrayBuffer);
+            const blob = new Blob([gltfArrayBuffer]);
+            const blobUrl = URL.createObjectURL(blob);
+            load(blobUrl, GLTFScenegraphLoader, layer.getLoadOptions());
+          }
+        }
+      };
+    }
+
     return new ScenegraphLayer({
       id: `3d-model-tile-layer-${tileHeader.contentUri}`,
       data: [{}, {}],
       coordinateSystem: COORDINATE_SYSTEM.METERS,
       pickable: true,
-      scenegraph: gltfUrl ? gltfUrl : gltfObjects.scenes[0],
+      ...scenegraphProps,
       sizeScale: 2,
       getPosition: row => [0, 0, 0],
       getOrientation: d => [0, 0, 0],
       getTranslation: [0, 0, 0],
-      getScale: [1, 1, 1],
+      getScale: [10000, 10000, 1000],
       getColor: [255, 255, 255, 255],
       opacity: 0.8,
       ...transformProps
