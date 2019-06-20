@@ -4,6 +4,7 @@
 import {Matrix4} from 'math.gl';
 import assert from '../utils/assert';
 import Tile3DHeader from './tile-3d-header';
+import Tileset3DTraverser from './tileset-3d-traverser';
 
 // import Tileset3DCache from './tileset-3d-cache';
 
@@ -29,7 +30,7 @@ const DEFAULT_OPTIONS = {
   dynamicScreenSpaceErrorHeightFalloff: 0.25,
 
   // Optimization option. Determines if level of detail skipping should be applied during the traversal.
-  skipLevelOfDetail: true,
+  skipLevelOfDetail: false,
   // The screen space error this must be reached before skipping levels of detail.
   baseScreenSpaceError: 1024,
   // Multiplier defining the minimum screen space error to skip.
@@ -80,10 +81,11 @@ export default class Tileset3D {
     this._geometricError = undefined; // Geometric error when the tree is not rendered at all
     this._extensionsUsed = undefined;
     this._gltfUpAxis = undefined;
+    this._traverser = new Tileset3DTraverser();
 
     // this._cache = new Tileset3DCache();
     this._processingQueue = [];
-    this._selectedTiles = [];
+    this.selectedTiles = [];
     this._emptyTiles = [];
     this._requestedTiles = [];
     this._selectedTilesToStyle = [];
@@ -112,8 +114,6 @@ export default class Tileset3D {
     this._ellipsoid = options.ellipsoid;
 
     this._dynamicScreenSpaceErrorComputedDensity = 0.0; // Updated based on the camera position and direction
-    this._skipLevelOfDetail = this.skipLevelOfDetail;
-    this._disableSkipLevelOfDetail = false;
 
     this.onLoadProgress = options.onLoadProgress;
     this.onAllTilesLoaded = options.onAllTilesLoaded;
@@ -389,31 +389,22 @@ export default class Tileset3D {
     this._cache.trim();
   }
 
-  traverse(visitor, depthLimit = Number.MAX_SAFE_INTEGER, tile = this.root) {
-    visitor(tile);
-    if (tile && tile.children && tile._depth < depthLimit) {
-      for (const child of tile.children) {
-        this.traverse(visitor, depthLimit, child);
-      }
-    }
-  }
+  update(frameState, DracoLoader) {
+    this._updatedVisibilityFrame++; // TODO: only update when camera or culling volume from last update moves (could be render camera change or prefetch camera)
+    this._traverser.traverse(this, frameState);
 
-  _requestTiles() {
+    const requestedTiles = this._requestedTiles;
     // Sort requests by priority before making any requests.
     // This makes it less likely this requests will be cancelled after being issued.
-    this._requestedTiles.sort((a, b) => a._priority - b._priority);
-    for (const requestedTile of this._requestedTiles) {
-      this._requestContent(this, requestedTile);
+    // requestedTiles.sort((a, b) => a._priority - b._priority);
+    for (const tile of requestedTiles) {
+      this._requestContent(tile, DracoLoader);
     }
   }
 
-  async _requestContent(tile) {
-    if (tile.hasEmptyContent) {
-      return;
-    }
-
+  async _requestContent(tile, DracoLoader) {
     const expired = tile.contentExpired;
-    const requested = tile.requestContent();
+    const requested = await tile.requestContent(DracoLoader);
 
     if (!requested) {
       return;
@@ -426,11 +417,11 @@ export default class Tileset3D {
     }
 
     try {
-      await tile.contentReadyPromise;
-      if (!tile.hasTilesetContent) {
-        // Add to the tile cache. Previously expired tiles are already in the cache and won't get re-added.
-        this._cache.add(tile);
-      }
+      // await tile.contentReadyPromise;
+      // if (!tile.hasTilesetContent) {
+      //   // Add to the tile cache. Previously expired tiles are already in the cache and won't get re-added.
+      //   this._cache.add(tile);
+      // }
 
       this.onTileLoad(tile);
     } catch (error) {

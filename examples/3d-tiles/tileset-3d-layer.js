@@ -5,13 +5,13 @@ import {COORDINATE_SYSTEM} from '@deck.gl/core';
 import {PointCloudLayer} from '@deck.gl/layers';
 import {ScenegraphLayer} from '@deck.gl/mesh-layers';
 
-import {createGLTFObjects, GLTFScenegraphLoader} from '@luma.gl/addons';
+import {createGLTFObjects} from '@luma.gl/addons';
 
 import '@loaders.gl/polyfills';
 import {load, registerLoaders} from '@loaders.gl/core';
 import {postProcessGLTF} from '@loaders.gl/gltf';
 import {DracoWorkerLoader} from '@loaders.gl/draco';
-import {Ellipsoid} from '@math.gl/geospatial';
+import {Ellipsoid} from '@loaders.gl/math';
 
 import {
   Tileset3D,
@@ -22,7 +22,7 @@ import {
   Tileset3DLoader
 } from '@loaders.gl/3d-tiles';
 
-registerLoaders([Tile3DLoader, Tileset3DLoader, GLTFScenegraphLoader]);
+registerLoaders([Tile3DLoader, Tileset3DLoader]);
 
 const DEFAULT_POINT_COLOR = [255, 0, 0, 255];
 
@@ -38,7 +38,7 @@ const defaultProps = {
   onTilesetLoaded: () => {}
 };
 
-export default class Tile3DLayer extends CompositeLayer {
+export default class Tileset3DLayer extends CompositeLayer {
   initializeState() {
     this.state = {
       layerMap: {},
@@ -147,7 +147,8 @@ export default class Tile3DLayer extends CompositeLayer {
 
   // Layer is created and added to the map if it doesn't exist yet.
   _updateLayers(frameState) {
-    const {tileset3d, layerMap} = this.state;
+    const {tileset3d} = this.state;
+    const {layerMap} = this.state;
     const {selectedTiles} = tileset3d;
 
     const tilesWithoutLayer = selectedTiles.filter(tile => !(tile.contentUri in layerMap));
@@ -172,10 +173,8 @@ export default class Tile3DLayer extends CompositeLayer {
           this._unpackPointCloud3DTile(tileHeader);
           break;
         case 'i3dm':
-          this._unpackInstanced3DTile(tileHeader);
-          break;
         case 'b3dm':
-          this._unpackBatched3DTile(tileHeader);
+          this._unpackInstanced3DTile(tileHeader);
           break;
         default:
           // eslint-disable-next-line
@@ -227,7 +226,7 @@ export default class Tile3DLayer extends CompositeLayer {
     let parsedColors = colors;
 
     if (isRGB565) {
-      parsedColors = new Uint8ClampedArray(pointsCount * 4);
+      parsedColors = new Uint8Array(pointsCount * 4);
       for (let i = 0; i < pointsCount; i++) {
         const color = parseRGB565(colors[i]);
         parsedColors[i * 4] = color[0];
@@ -238,7 +237,7 @@ export default class Tile3DLayer extends CompositeLayer {
     }
 
     if (colors && colors.length === pointsCount * 3) {
-      parsedColors = new Uint8ClampedArray(pointsCount * 4);
+      parsedColors = new Uint8Array(pointsCount * 4);
       for (let i = 0; i < pointsCount; i++) {
         parsedColors[i * 4] = colors[i * 3];
         parsedColors[i * 4 + 1] = colors[i * 3 + 1];
@@ -248,7 +247,7 @@ export default class Tile3DLayer extends CompositeLayer {
     }
 
     if (batchIds && batchTable) {
-      parsedColors = new Uint8ClampedArray(pointsCount * 4);
+      parsedColors = new Uint8Array(pointsCount * 4);
       for (let i = 0; i < pointsCount; i++) {
         const batchId = batchIds[i];
         // TODO figure out what is `dimensions` used for
@@ -267,23 +266,46 @@ export default class Tile3DLayer extends CompositeLayer {
   _unpackInstanced3DTile(tileHeader) {
     const {gl} = this.context.animationProps;
 
-    if (tileHeader.content.gltf) {
-      const json = postProcessGLTF(tileHeader.content.gltf);
-      const gltfObjects = createGLTFObjects(gl, json);
-      tileHeader.userData = {gltfObjects};
+    const json = postProcessGLTF(tileHeader.content.gltf);
+
+    const gltfObjects = createGLTFObjects(gl, json);
+
+    tileHeader.userData = {gltfObjects};
+  }
+
+  _render3DTileLayer(tileHeader) {
+    if (!tileHeader.content || !tileHeader.userData) {
+      return null;
     }
 
-    if (tileHeader.content.gltfUrl) {
-      const gltfUrl = tileHeader.tileset.getTileUrl(tileHeader.content.gltfUrl);
-      tileHeader.userData = {gltfUrl};
+    switch (tileHeader.content.type) {
+      case 'pnts':
+        return this._renderPointCloud3DTileLayer(tileHeader);
+      case 'i3dm':
+      case 'b3dm':
+        return this._renderInstanced3DTileLayer(tileHeader);
+      default:
+        return null;
     }
   }
 
-  _unpackBatched3DTile(tileHeader) {
-    const {gl} = this.context.animationProps;
-    const json = postProcessGLTF(tileHeader.content.gltf);
-    const gltfObjects = createGLTFObjects(gl, json);
-    tileHeader.userData = {gltfObjects};
+  _renderInstanced3DTileLayer(tileHeader) {
+    const {gltfObjects} = tileHeader.userData;
+
+    return new ScenegraphLayer({
+      id: `3d-model-tile-layer-${tileHeader.contentUri}`,
+      data: [{}, {}],
+      coordinateSystem: COORDINATE_SYSTEM.METERS,
+      pickable: true,
+      scenegraph: gltfObjects.scenes[0],
+      sizeScale: 2,
+      getPosition: row => [0, 0, 0],
+      getOrientation: d => [0, 0, 0],
+      getTranslation: [0, 0, 0],
+      getScale: [1, 1, 1],
+      getColor: [255, 255, 255, 255],
+      opacity: 0.8
+    });
   }
 
   /* eslint-disable-next-line complexity */
@@ -322,7 +344,9 @@ export default class Tile3DLayer extends CompositeLayer {
       transformProps.coordinateSystem = coordinateSystem || COORDINATE_SYSTEM.METER_OFFSETS;
       transformProps.coordinateOrigin = coordinateOrigin;
       if (!coordinateOrigin) {
-        const origin = new Matrix4().multiplyRight(transformProps.modelMatrix).transform([0, 0, 0]);
+        const origin = new Matrix4()
+          .multiplyRight(transformProps.modelMatrix)
+          .transformVector3([0, 0, 0]);
         transformProps.coordinateOrigin = Ellipsoid.WGS84.cartesianToCartographic(origin, origin);
         delete transformProps.modelMatrix;
       }
@@ -346,44 +370,6 @@ export default class Tile3DLayer extends CompositeLayer {
     return {
       getColor: () => color || this.props.color || DEFAULT_POINT_COLOR
     };
-  }
-
-  _render3DTileLayer(tileHeader) {
-    if (!tileHeader.content || !tileHeader.userData) {
-      return null;
-    }
-
-    switch (tileHeader.content.type) {
-      case 'pnts':
-        return this._renderPointCloud3DTileLayer(tileHeader);
-      case 'i3dm':
-      case 'b3dm':
-        return this._renderInstanced3DTileLayer(tileHeader);
-      default:
-        return null;
-    }
-  }
-
-  _renderInstanced3DTileLayer(tileHeader) {
-    const {gltfObjects, gltfUrl} = tileHeader.userData;
-
-    const transformProps = this._resolveTransformProps(tileHeader);
-
-    return new ScenegraphLayer({
-      id: `3d-model-tile-layer-${tileHeader.contentUri}`,
-      data: [{}, {}],
-      coordinateSystem: COORDINATE_SYSTEM.METERS,
-      pickable: true,
-      scenegraph: gltfUrl ? gltfUrl : gltfObjects.scenes[0],
-      sizeScale: 2,
-      getPosition: row => [0, 0, 0],
-      getOrientation: d => [0, 0, 0],
-      getTranslation: [0, 0, 0],
-      getScale: [1, 1, 1],
-      getColor: [255, 255, 255, 255],
-      opacity: 0.8,
-      ...transformProps
-    });
   }
 
   _renderPointCloud3DTileLayer(tileHeader) {
@@ -417,5 +403,5 @@ export default class Tile3DLayer extends CompositeLayer {
   }
 }
 
-Tile3DLayer.layerName = 'Tile3DLayer';
-Tile3DLayer.defaultProps = defaultProps;
+Tileset3DLayer.layerName = 'Tileset3DLayer';
+Tileset3DLayer.defaultProps = defaultProps;

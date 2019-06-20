@@ -81,6 +81,20 @@ export default class Tile3DHeader {
     return this._tileset;
   }
 
+  // The depth of the tile in the tileset tree.
+  get depth() {
+    return this._depth;
+  }
+
+  // The most recent frame that the tile was selected
+  get selectedFrame() {
+    return this._selectedFrame;
+  }
+
+  get isVisibleAndInRequestVolume() {
+    return this._visible && this._inRequestVolume;
+  }
+
   // The tile's content.  This represents the actual tile's payload,
   // not the content's metadata in the tileset JSON file.
   get content() {
@@ -93,13 +107,23 @@ export default class Tile3DHeader {
     return this._contentState === TILE3D_CONTENT_STATE.READY;
   }
 
+  // Returns true if tile is an empty tile or an external tileset
+  get hasRenderContent() {
+    return !this.hasEmptyContent && !this.hasTilesetContent;
+  }
+
   // Determines if the tile has available content to render.  <code>true</code> if the tile's
   // content is ready or if it has expired content this renders while new content loads; otherwise,
   get contentAvailable() {
     return (
-      (this.contentReady && !this.hasEmptyContent && !this.hasTilesetContent) ||
+      (this.contentReady && this.hasRenderContent) ||
       (defined(this._expiredContent) && !this.contentFailed)
     );
+  }
+
+  // Returns true if tile has renderable content but it's unloaded
+  get hasUnloadedContent() {
+    return this.hasRenderContent && this.contentUnloaded;
   }
 
   // Determines if the tile's content has not be requested. <code>true</code> if tile's
@@ -156,7 +180,7 @@ export default class Tile3DHeader {
   }
 
   // Get the tile's screen space error.
-  getScreenSpaceError({frustum, width, height}, useParentGeometricError) {
+  getScreenSpaceError(frameState, useParentGeometricError) {
     const tileset = this._tileset;
     const parentGeometricError =
       (this.parent && this.parent.geometricError) || tileset._geometricError;
@@ -172,7 +196,7 @@ export default class Tile3DHeader {
 
     // Avoid divide by zero when viewer is inside the tile
     const distance = Math.max(this._distanceToCamera, 1e-7);
-    const sseDenominator = frustum.sseDenominator;
+    const {height, sseDenominator} = frameState;
     let error = (geometricError * height) / (distance * sseDenominator);
 
     error -= this._getDynamicScreenSpaceError(distance);
@@ -213,6 +237,7 @@ export default class Tile3DHeader {
     return await this.requestContent(DracoLoader);
   }
 
+  // TODO: This is the fuctiong causing lint to crash
   async requestContent(DracoLoader) {
     if (this.hasEmptyContent) {
       return false;
@@ -251,15 +276,23 @@ export default class Tile3DHeader {
 
       this._contentState = TILE3D_CONTENT_STATE.READY;
       this._contentLoaded();
-    } finally {
+      return true;
+    } catch (error) {
       // Tile is unloaded before the content finishes loading
       this._contentState = TILE3D_CONTENT_STATE.FAILED;
+
+      this.tileset.onTileLoadFailed({
+        tile: this,
+        url: this.url,
+        message: error.message || error.toString()
+      });
+      return false;
     }
   }
 
   // Unloads the tile's content.
   unloadContent() {
-    if (this.hasEmptyContent || this.hasTilesetContent) {
+    if (this.hasRenderContent) {
       return;
     }
 
@@ -278,18 +311,29 @@ export default class Tile3DHeader {
 
   // Update the tile's visibility.
   updateVisibility(frameState) {
-    const parent = this.parent;
-    const parentTransform = defined(parent) ? parent.computedTransform : this._tileset.modelMatrix;
-    // const parentVisibilityPlaneMask = defined(parent)
-    //   ? parent._visibilityPlaneMask
-    //   : CullingVolume.MASK_INDETERMINATE;
-    this._updateTransform(parentTransform);
+    const tileset = this._tileset;
+    if (this._updatedVisibilityFrame === tileset._updatedVisibilityFrame) {
+      // Return early if visibility has already been checked during the traversal.
+      // The visibility may have already been checked if the cullWithChildrenBounds optimization is used.
+      return;
+    }
+
+    // const parent = this.parent;
+    // const parentTransform = defined(parent) ? parent.computedTransform : this._tileset.modelMatrix;
+    // // const parentVisibilityPlaneMask = defined(parent)
+    // //   ? parent._visibilityPlaneMask
+    // //   : CullingVolume.MASK_INDETERMINATE;
+    // this._updateTransform(parentTransform);
     this._distanceToCamera = this.distanceToTile(frameState);
-    this._centerZDepth = this.distanceToTileCenter(frameState);
+    // this._centerZDepth = this.cameraSpaceZDepth(frameState);
     this._screenSpaceError = this.getScreenSpaceError(frameState, false);
-    this._visibilityPlaneMask = this.visibility(frameState, parentVisibilityPlaneMask); // Use parent's plane mask to speed up visibility test
-    this._visible = this._visibilityPlaneMask !== CullingVolume.MASK_OUTSIDE;
-    this._inRequestVolume = this.insideViewerRequestVolume(frameState);
+    // this._visibilityPlaneMask = this.visibility(frameState, parentVisibilityPlaneMask); // Use parent's plane mask to speed up visibility test
+    // this._visible = this._visibilityPlaneMask !== CullingVolume.MASK_OUTSIDE;
+    this._visible = true;
+    // this._inRequestVolume = this.insideViewerRequestVolume(frameState);
+    this._inRequestVolume = true;
+
+    this._updatedVisibilityFrame = tileset._updatedVisibilityFrame;
   }
 
   // Update whether the tile has expired.
@@ -375,26 +419,20 @@ export default class Tile3DHeader {
   // Computes the (potentially approximate) distance from the closest point of the tile's bounding volume to the camera.
   // @param {FrameState} frameState The frame state.
   // @returns {Number} The distance, in meters, or zero if the camera is inside the bounding volume.
-  distanceToTile({frameState}) {
-    const boundingVolume = this._boundingVolume;
-    return boundingVolume.distanceToCamera(frameState);
+  distanceToTile(frameState) {
+    // const boundingVolume = this._boundingVolume;
+    // return boundingVolume.distanceToCamera(frameState);
+    return frameState.distanceMagic;
   }
 
-  // Computes the distance from the center of the tile's bounding volume to the camera.
+  // Computes the tile's camera-space z-depth.
   // @param {FrameState} frameState The frame state.
   // @returns {Number} The distance, in meters.
-  distanceToTileCenter({camera}) {
+  cameraSpaceZDepth({camera}) {
     const tileBoundingVolume = this._boundingVolume;
     const boundingVolume = tileBoundingVolume.boundingVolume; // Gets the underlying OrientedBoundingBox or BoundingSphere
-    const toCenter = Vector3.subtract(
-      boundingVolume.center,
-      camera.positionWC,
-      scratchToTileCenter
-    );
-    const distance = Vector3.magnitude(toCenter);
-    Vector3.divideByScalar(toCenter, distance, toCenter);
-    const dot = Vector3.dot(camera.directionWC, toCenter);
-    return distance * dot;
+    const toCenter = Vector3.subtract(boundingVolume.center, camera.position, scratchToTileCenter);
+    return Vector3.dot(camera.direction, toCenter);
   }
 
   /**

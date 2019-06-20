@@ -34,7 +34,7 @@ const ADDITIONAL_EXAMPLES = {
       coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS,
       coordinateOrigin: [144.97212, -37.805177],
       isWGS84: false,
-      depthLimit: 5,
+      depthLimit: 2, // TODO: Remove this after sse traversal is working since this is just to prevent full load of tileset
       color: [115, 101, 152, 200]
     }
   }
@@ -210,7 +210,8 @@ export default class App extends PureComponent {
         isWGS84,
         depthLimit,
         color,
-        onTileLoaded: this._onTileLoaded.bind(this)
+        onTileLoaded: this._onTileLoaded.bind(this),
+        onTilesetLoaded: () => this.forceUpdate()
       })
     );
   }
