@@ -5,6 +5,7 @@ import {TextDecoder, TextEncoder} from './text-encoding/encoding';
 import * as base64 from './text-encoding/btoa.node';
 
 import HeadersNode from './fetch-node/headers.node';
+import ResponseNode from './fetch-node/response.node';
 import fetchNode from './fetch-node/fetch.node';
 
 import {encodeImageNode} from './images-node/encode-image.node';
@@ -24,6 +25,7 @@ if (!('TextDecoder' in global) && TextDecoder) {
 // POLYFILLS: btoa, atob
 // - Node: Yes
 // - Browser: No
+
 if (!isBrowser && !('atob' in global) && base64.atob) {
   global['atob'] = base64.atob;
 }
@@ -37,6 +39,10 @@ if (!isBrowser && !('btoa' in global) && base64.btoa) {
 
 if (!isBrowser && !('Headers' in global) && HeadersNode) {
   global['Headers'] = HeadersNode;
+}
+
+if (!isBrowser && !('Response' in global) && ResponseNode) {
+  global['Respone'] = ResponseNode;
 }
 
 if (!isBrowser && !('fetch' in global) && fetchNode) {
