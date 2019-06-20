@@ -16,7 +16,7 @@ import {OBJLoader} from '@loaders.gl/obj';
 import {load, registerLoaders} from '@loaders.gl/core';
 
 import ControlPanel from './components/control-panel';
-import fileDrop from './components/file-drop';
+// import fileDrop from './components/file-drop';
 
 import FILE_INDEX from './file-index';
 
@@ -45,9 +45,9 @@ export default class App extends PureComponent {
       pointsCount: 0,
       points: null,
       // control panel
-      droppedFile: null
-      // example: 'Indoor',
-      // category: 'LAZ'
+      droppedFile: null,
+      selectedExample: 'Indoor Scan 800K',
+      selectedCategory: 'LAZ'
     };
 
     this._onLoad = this._onLoad.bind(this);
@@ -76,13 +76,15 @@ export default class App extends PureComponent {
   _onExampleChange({selectedCategory, selectedExample, example}) {
     const {uri} = example;
     // TODO - timing could be done automatically by `load`.
-    load(uri).then(this._onLoad.bind(this));
     this._loadStartMs = Date.now();
     this.setState({
       selectedCategory,
       selectedExample,
+      pointsCount: null,
+      points: null,
       loadTimeMs: undefined
     });
+    load(uri).then(this._onLoad.bind(this));
   }
 
   _onLoad({header, loaderData, attributes, progress}) {

@@ -175,6 +175,10 @@ export default class Tile3DHeader {
     return this._header.extras;
   }
 
+  get depth() {
+    return this._depth;
+  }
+
   // Get the tile's screen space error.
   getScreenSpaceError(frameState, useParentGeometricError) {
     const tileset = this._tileset;
@@ -484,7 +488,7 @@ export default class Tile3DHeader {
     this._initialTransform = new Matrix4(parentInitialTransform).multiplyRight(this.transform);
 
     // TODO ?
-    this.computedTransform = new Matrix4(); // computedTransform;
+    // this.computedTransform = new Matrix4(); // computedTransform;
   }
 
   _initializeBoundingVolumes(tileHeader) {
@@ -607,6 +611,8 @@ export default class Tile3DHeader {
     if (!didTransformChange) {
       return;
     }
+
+    this.computedTransform = computedTransform;
 
     // Matrix4.clone(computedTransform, this.computedTransform);
 

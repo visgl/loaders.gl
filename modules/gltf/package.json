@@ -39,6 +39,7 @@
   },
   "dependencies": {
     "@loaders.gl/core": "1.1.0",
-    "@loaders.gl/images": "1.1.0"
+    "@loaders.gl/images": "1.1.0",
+    "@loaders.gl/loader-utils": "1.1.0"
   }
 }
