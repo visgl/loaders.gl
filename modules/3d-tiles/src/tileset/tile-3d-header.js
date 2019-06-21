@@ -422,7 +422,7 @@ export default class Tile3DHeader {
   // @returns {Number} The distance, in meters, or zero if the camera is inside the bounding volume.
   distanceToTile(frameState) {
     // const boundingVolume = this._boundingVolume;
-    // return boundingVolume.distanceToCamera(frameState);
+    // return boundingVolume.distanceTo(frameState.camera.position);
     return frameState.distanceMagic;
   }
 
