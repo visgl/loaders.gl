@@ -1391,7 +1391,7 @@
     "@luma.gl/webgl2-polyfill" "7.1.1"
     probe.gl "^3.0.2"
 
-"@math.gl/culling@^3.0.0-alpha.3":
+"@math.gl/culling@3.0.0-alpha.3", "@math.gl/culling@^3.0.0-alpha.3":
   version "3.0.0-alpha.3"
   resolved "https://registry.yarnpkg.com/@math.gl/culling/-/culling-3.0.0-alpha.3.tgz#d233b469607eaf57bf915615ac501d7307c5ede1"
   integrity sha512-PLmFPmYIoTCaR2aQluA74gL44B+AHK09GMAo9UTWbg1Cei5tYjdCOUBQZAV+js8d6l3LTXuPQ49NEYhNpunIUA==

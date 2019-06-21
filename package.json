@@ -38,18 +38,18 @@
     "metrics": "./scripts/metrics.sh && ocular-metrics"
   },
   "devDependencies": {
-    "@luma.gl/test-utils": "^7.1.0",
     "@luma.gl/core": "^7.1.0",
     "@luma.gl/debug": "^7.1.0",
+    "@luma.gl/test-utils": "^7.1.0",
     "@probe.gl/bench": "^3.0.3",
     "@probe.gl/test-utils": "^3.0.3",
     "arraybuffer-loader": "^1.0.7",
     "babel-loader": "^8.0.6",
     "babel-plugin-inline-import": "^3.0.0",
-    "eslint-config-uber-jsx": "^3.3.3",
-    "eslint-plugin-react": "^7.13",
     "coveralls": "^3.0.3",
+    "eslint-config-uber-jsx": "^3.3.3",
     "eslint-plugin-babel": "^5.3.0",
+    "eslint-plugin-react": "^7.13",
     "mkdirp": "^0.5.1",
     "ocular-dev-tools": "0.0.27",
     "pre-commit": "^1.2.2",
@@ -61,5 +61,8 @@
   },
   "pre-commit": [
     "test-fast"
-  ]
+  ],
+  "dependencies": {
+    "@math.gl/culling": "3.0.0-alpha.3"
+  }
 }

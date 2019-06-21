@@ -9,6 +9,8 @@ import assert from '../../utils/assert';
 
 // const scratchProjectedBoundingSphere = new BoundingSphere();
 
+const defined = x => x !== undefined;
+
 const scratchMatrix = new Matrix3();
 const scratchScale = new Vector3();
 const scratchHalfAxes = new Matrix3();
@@ -29,15 +31,15 @@ export function createBoundingVolume(boundingVolumeHeader, transform, result) {
   assert(boundingVolumeHeader, '3D Tile: boundingVolume must be defined');
   if (boundingVolumeHeader.box) {
     // The first three elements define the x, y, and z values for the center of the box.
-    const [x, y, z] = boundingVolumeHeader.box;
-    let center = new Vector3(x, y, z);
-    center = new Matrix4(transform).transform(center);
-    center = Ellipsoid.WGS84.cartesianToCartographic(center, center);
-
-    Object.assign(result, boundingVolumeHeader, {center});
-
-    return result;
-    // return createBox(boundingVolumeHeader.box, transform, result);
+    // const [x, y, z] = boundingVolumeHeader.box;
+    // let center = new Vector3(x, y, z);
+    // center = new Matrix4(transform).transform(center);
+    // center = Ellipsoid.WGS84.cartesianToCartographic(center, center);
+    //
+    // Object.assign(result, boundingVolumeHeader, {center});
+    //
+    // return result;
+    return createBox(boundingVolumeHeader.box, transform, result);
   }
   if (boundingVolumeHeader.region) {
     // [west, south, east, north, minimum height, maximum height]
@@ -72,21 +74,31 @@ export function createBoundingVolume(boundingVolumeHeader, transform, result) {
 }
 
 function createBox(box, transform, result) {
-  return null;
+  // return null;
 
   const center = new Vector3(box[0], box[1], box[2], scratchCenter);
-  const halfAxes = new Matrix3(); // Matrix3.fromArray(box, 3, scratchHalfAxes);
+  // const halfAxes = new Matrix3(); // Matrix3.fromArray(box, 3, scratchHalfAxes);
+  let halfAxes = new Matrix3(box.slice(3, box.length));
 
   // Find the transformed center and halfAxes
-  center = Matrix4.multiplyByPoint(transform, center, center);
-  const rotationScale = Matrix4.getRotation(transform, scratchMatrix);
-  halfAxes = Matrix3.multiply(rotationScale, halfAxes, halfAxes);
+  // center = Matrix4.multiplyByPoint(transform, center, center);
+  transform.transformPoint(center, center); // (in, out)
 
-  if (defined(result)) {
-    result.update(center, halfAxes);
-    return result;
-  }
-  return new TileOrientedBoundingBox(center, halfAxes);
+  // Need to do halfAxes = transform3x3 * halfAxes
+  // const rotationScale = Matrix4.getRotation(transform, scratchMatrix);
+  // halfAxes = Matrix3.multiply(rotationScale, halfAxes, halfAxes);
+  halfAxes = new Matrix3(
+    transform[0], transform[1], transform[2],
+    transform[4], transform[5], transform[6],
+    transform[8], transform[9], transform[10]
+  ).multiplyRight(halfAxes);
+
+  // if (defined(result)) {
+  //   result.update(center, halfAxes);
+  //   return result;
+  // }
+
+  return new OrientedBoundingBox(center, halfAxes);
 }
 
 function createBoxFromTransformedRegion(region, transform, initialTransform, result) {
