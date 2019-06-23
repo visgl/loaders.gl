@@ -8,14 +8,43 @@
 
 ## Summary
 
-This RFC proposes allowing loader name strings to specify what loader to use, without importing that loader or knowing if that loaders has been registered, eliminating the need to pass in optional loaders as arguments.
+This RFC would enable loader name strings to specify a loader, without importing the loader object or even knowing if that loader has been registered, eliminating the need to import and reference loader objects in use cases like conditional reference to other loader.
 
 
-## Problem
+### Allowing Loaders to be named
 
-Since loaders can be quite big, we don't always want a loader to always import another loader that it only occasionally depends on.
+Using the loader name.
 
-For instance, we do not want the glTF loader to automatically import the 1.5MB Draco loader.
+- 'draco' - would resolve to the "preferred" loader supporting Draco.
+- 'las' - would resolve to the "preferred" loader supporting LAZ.
+
+```js
+parse(arrayBuffer, 'draco', ...); // throws if draco loader not available...
+```
+
+```js
+import {isLoaderAvailable} from `@loaders.gl/core`;
+```
+
+
+## The JSON problem
+
+`json` could cover a lot of formats. Should we define this to mean the JSON "table" loader specifically?
+
+
+## Problems
+
+### Proposal: Loader naming conventions
+
+It is convenient if the names are valid JS strings, so that they can used as object keys without quoting. Lower case, removing spaces, hyphens and underscores:
+
+- draco
+- tileset3d
+- tile3d
+
+All loaders for the same format (WorkerLoader, StreamingLoader) would be referenced by the same name.
+
+The user would need to decide the names for custom loaders.
 
 
 ## The loader specification problem
@@ -31,16 +60,32 @@ In such cases, a parse call without a specified loader might look successful but
 The loaders.gl name appears to be the remaining option.
 
 
-### Allowing Loaders to be named
+### Use-Case Specifying Options to Individual Loaders with having access to the loaders
 
-Using the loader name.
+Since loaders can be pre-registered by other parts of the code, there may not be access to them when we want to use them.
 
-- 'DRACO' or 'DracoLoader' - would resolve to any loader supporting Draco.
-- 'LAS' or 'LASLoader' - would resolve to any loader supporting LAZ.
+Being able to do something like the follows would look very pretty.
 
 ```js
-parse(arrayBuffer, 'DracoLoader', ...); // throws if draco loader not available...
+load(url, {
+  json: {...},
+  csv: {...},
+  '3d-tiles': {...},
+  gltf: {...}
+});
 ```
+
+But how are these names resolved? The loaders objects have different names, different capitalizations etc.
+
+A bunch of loaders will use the `json` extension (this particular issue is also discussed in a separate RFC).
+
+
+### Use-Case: Conditional invocation of supporting loaders
+
+Since loaders can be quite big, we don't always want a loader to always unconditionally `import` another loader that it does not always depend on.
+
+For instance, we do not want the glTF loader to automatically import the 1.5MB Draco loader.
+
 
 
 ## Open Issues
