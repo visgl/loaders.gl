@@ -9,6 +9,8 @@ export const TILE3D_TYPE = {
   VECTOR: 'vect'
 };
 
+export const TILE3D_TYPES = Object.keys(TILE3D_TYPE);
+
 export const MAGIC_ARRAY = {
   BATCHED_MODEL: [98, 51, 100, 109],
   INSTANCED_MODEL: [105, 51, 100, 109],

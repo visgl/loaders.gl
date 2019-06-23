@@ -27,7 +27,7 @@ export async function load(url, loaders, options) {
   const autoUrl = isFileReadable(url) ? url.name : url;
 
   loaders = loaders || getRegisteredLoaders();
-  const loader = Array.isArray(loaders) ? autoDetectLoader(autoUrl, null, loaders) : loaders;
+  const loader = Array.isArray(loaders) ? autoDetectLoader(null, loaders, {url: autoUrl}) : loaders;
 
   options = mergeLoaderAndUserOptions(options, loader);
 
