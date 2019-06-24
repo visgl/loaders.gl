@@ -2,7 +2,14 @@
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
 /* global TextDecoder */
-import {parseGLTFSync} from '@loaders.gl/gltf';
+
+// TODO - should we automatically parse the embedded glTF or leave it to the app?
+// - I.e. some apps might work directly on a GLB, in that case no need for us to decode...
+// - And if we decode, do we still keep the GLB in case it is needed?
+// - Do we add an option to control this?
+// - Also, should we have hard dependency on gltf module or use injection or auto-discovery for gltf parser?
+//
+// import {parseGLTFSync} from '@loaders.gl/gltf';
 
 export const GLTF_FORMAT = {
   URI: 0,

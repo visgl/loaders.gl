@@ -160,7 +160,10 @@ export default class App extends PureComponent {
           Loaded {this.state.tileCount | 0} tiles {(this.state.pointCount / 1e6).toFixed(2)} M
           points
         </div>
-        <div> {viewState.longitude.toFixed(5)} {viewState.latitude.toFixed(5)} {viewState.zoom} </div>
+        <div>
+          {' '}
+          {viewState.longitude.toFixed(5)} {viewState.latitude.toFixed(5)} {viewState.zoom}{' '}
+        </div>
       </ControlPanel>
     );
   }

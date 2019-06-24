@@ -5,7 +5,7 @@ import {COORDINATE_SYSTEM} from '@deck.gl/core';
 import {PointCloudLayer} from '@deck.gl/layers';
 import {ScenegraphLayer} from '@deck.gl/mesh-layers';
 
-import {createGLTFObjects, GLTFScenegraphLoader} from '@luma.gl/addons';
+import {GLTFScenegraphLoader} from '@luma.gl/addons';
 
 import '@loaders.gl/polyfills';
 import {load, registerLoaders} from '@loaders.gl/core';
@@ -373,21 +373,24 @@ export default class Tile3DLayer extends CompositeLayer {
   }
 
   _renderInstanced3DTileLayer(tileHeader) {
-    const {gltfObjects, gltfUrl} = tileHeader.userData;
+    const {gltfUrl} = tileHeader.userData;
 
     const transformProps = this._resolveTransformProps(tileHeader);
 
-    let scenegraphProps = { scenegraph: gltfUrl };
+    let scenegraphProps = {scenegraph: gltfUrl};
 
-    const { gltfArrayBuffer } = tileHeader.content;
+    const {gltfArrayBuffer} = tileHeader.content;
 
-
+    // TODO - Currently scenegraph layer mainly works with async URLs
+    // So try to make our embedded array buffer look like an async URL
     if (!gltfUrl) {
+      // const {gltfObjects} = tileHeader.userData;
       scenegraphProps = {
         scenegraph: '3d-tile',
-        fetch: (url, { propName, layer }) => {
+        fetch: (url, {propName, layer}) => {
           if (url === '3d-tile') {
             // return Promise.resolve(gltfArrayBuffer);
+            /* global Blob, URL */
             const blob = new Blob([gltfArrayBuffer]);
             const blobUrl = URL.createObjectURL(blob);
             load(blobUrl, GLTFScenegraphLoader, layer.getLoadOptions());
@@ -408,7 +411,7 @@ export default class Tile3DLayer extends CompositeLayer {
       // getTranslation: [0, 0, 0],
       // getScale: [1, 1, 1],
       // white is a bit hard to see
-      getColor: [0, 0, 100, 255],
+      getColor: [0, 0, 100, 100],
       opacity: 0.6,
       ...transformProps
     });
