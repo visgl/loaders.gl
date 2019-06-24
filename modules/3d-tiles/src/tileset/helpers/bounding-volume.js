@@ -76,27 +76,30 @@ export function createBoundingVolume(boundingVolumeHeader, transform, result) {
 function createBox(box, transform, result) {
   // return null;
 
-  const center = new Vector3(box[0], box[1], box[2], scratchCenter);
   // const halfAxes = new Matrix3(); // Matrix3.fromArray(box, 3, scratchHalfAxes);
-  let halfAxes = new Matrix3(box.slice(3, box.length));
 
   // Find the transformed center and halfAxes
   // center = Matrix4.multiplyByPoint(transform, center, center);
-  transform.transformPoint(center, center); // (in, out)
 
   // Need to do halfAxes = transform3x3 * halfAxes
   // const rotationScale = Matrix4.getRotation(transform, scratchMatrix);
   // halfAxes = Matrix3.multiply(rotationScale, halfAxes, halfAxes);
-  halfAxes = new Matrix3(
-    transform[0], transform[1], transform[2],
-    transform[4], transform[5], transform[6],
-    transform[8], transform[9], transform[10]
-  ).multiplyRight(halfAxes);
 
   // if (defined(result)) {
   //   result.update(center, halfAxes);
   //   return result;
   // }
+
+  const center = new Vector3(box[0], box[1], box[2]);
+  let halfAxes = new Matrix3(box.slice(3, box.length));
+
+  transform.transformPoint(center, center); // (in, out), transformVector and Point have been removed in 3.0?
+
+  halfAxes = new Matrix3(
+    transform[0], transform[1], transform[2],
+    transform[4], transform[5], transform[6],
+    transform[8], transform[9], transform[10]
+  ).multiplyRight(halfAxes);
 
   return new OrientedBoundingBox(center, halfAxes);
 }

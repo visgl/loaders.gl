@@ -1391,7 +1391,16 @@
     "@luma.gl/webgl2-polyfill" "7.1.1"
     probe.gl "^3.0.2"
 
-"@math.gl/culling@3.0.0-alpha.3", "@math.gl/culling@^3.0.0-alpha.3":
+"@math.gl/culling@3.0.0-alpha.4":
+  version "3.0.0-alpha.4"
+  resolved "https://registry.yarnpkg.com/@math.gl/culling/-/culling-3.0.0-alpha.4.tgz#848aa020c69c9a9f6d0da08df33063cffa8ecf4c"
+  integrity sha512-iN2x8/L1gWKrSjUPtleyyMAKMzuiEkpccu85zUCVZrk8+QsK5J1TkzzjqDQTfL5u9tUNM3i9Dnb4UyIOSm8RQg==
+  dependencies:
+    "@babel/runtime" "^7.0.0"
+    gl-matrix "^3.0.0"
+    math.gl "3.0.0-alpha.4"
+
+"@math.gl/culling@^3.0.0-alpha.3":
   version "3.0.0-alpha.3"
   resolved "https://registry.yarnpkg.com/@math.gl/culling/-/culling-3.0.0-alpha.3.tgz#d233b469607eaf57bf915615ac501d7307c5ede1"
   integrity sha512-PLmFPmYIoTCaR2aQluA74gL44B+AHK09GMAo9UTWbg1Cei5tYjdCOUBQZAV+js8d6l3LTXuPQ49NEYhNpunIUA==
@@ -5935,6 +5944,14 @@ math.gl@3.0.0-alpha.3, math.gl@^3.0.0-alpha.3:
   version "3.0.0-alpha.3"
   resolved "https://registry.yarnpkg.com/math.gl/-/math.gl-3.0.0-alpha.3.tgz#4a102cbad869cb6a03b40f622e3f6f87d6c65dad"
   integrity sha512-PqqKSpk0e4X1OYTkgxR0iv/8EwTnen1VYKdK6LyG4OgTqAfUVw71vL3ZOrcXNWNzJ64dPl4d+SuclW4zFQ8Drg==
+  dependencies:
+    "@babel/runtime" "^7.0.0"
+    gl-matrix "^3.0.0"
+
+math.gl@3.0.0-alpha.4:
+  version "3.0.0-alpha.4"
+  resolved "https://registry.yarnpkg.com/math.gl/-/math.gl-3.0.0-alpha.4.tgz#bc779a04e66bdc848a50606f381274fa8a661847"
+  integrity sha512-vKOLZCXA2ZJOwagZUzxCULjpRII+YWcbgXXUrmHVGZsqfly+Mq2GWE5SAwsRIb+5WJL0GDqW1mvkX3/8f6TPMA==
   dependencies:
     "@babel/runtime" "^7.0.0"
     gl-matrix "^3.0.0"
