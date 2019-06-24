@@ -88,6 +88,8 @@ export default class Tile3DLayer extends CompositeLayer {
     // Traverse and and request. Update _selectedTiles so that we know what to render.
     const {height, tick} = animationProps;
     const {cameraPosition, cameraDirection, cameraUp, zoom} = viewport;
+    // console.log('CAM POS:' + cameraPosition);
+    // TODO: Why is the camera so far away from the origin when the points its model matrix, and the header's bounding box is near the origin
 
     // Map zoom 0-1
     // const min = 12; const max = 24; const zoomMagic = 1000;// tilesetpoints
@@ -99,7 +101,7 @@ export default class Tile3DLayer extends CompositeLayer {
     zoomMap = Math.max(Math.min(1.0 - zoomMap, 1), 0);
 
     // Setup frameState so that tileset-3d-traverser can do it's job
-    // TODO: make a file for this and document what needs to be attached to this so that traversal can function
+    // TODO: make a file/class for frameState and document what needs to be attached to this so that traversal can function
     const frameState = {
       camera: {
         position: cameraPosition,
@@ -108,7 +110,7 @@ export default class Tile3DLayer extends CompositeLayer {
       },
       height,
       frameNumber: tick,
-      distanceMagic: zoomMap * zoomMagic, // TODO: zoom doesn't seem to update accurately? like it stays at the same number after a scroll wheel tick
+      distanceMagic: zoomMap * zoomMagic,
       sseDenominator: 1.15 // Assumes fovy = 60 degrees
     };
 

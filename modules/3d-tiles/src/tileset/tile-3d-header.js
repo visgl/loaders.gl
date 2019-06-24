@@ -425,8 +425,8 @@ export default class Tile3DHeader {
     const actualDist = boundingVolume.distanceTo(frameState.camera.position);
     const zoomDist = frameState.distanceMagic;
     // console.log('ZOOM DISTANCE: ' + zoomDist);
-    console.log('CAM POS: ' + frameState.camera.position);
-    console.log('ACTU DISTANCE: ' + actualDist);
+    // console.log('CAM POS: ' + frameState.camera.position);
+    // console.log('ACTU DISTANCE: ' + actualDist);
     return zoomDist;
   }
 
