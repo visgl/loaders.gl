@@ -10,7 +10,6 @@
 
 This RFC would enable loader name strings to specify a loader, without importing the loader object or even knowing if that loader has been registered, eliminating the need to import and reference loader objects in use cases like conditional reference to other loader.
 
-
 ### Allowing Loaders to be named
 
 Using the loader name.
@@ -26,11 +25,9 @@ parse(arrayBuffer, 'draco', ...); // throws if draco loader not available...
 import {isLoaderAvailable} from `@loaders.gl/core`;
 ```
 
-
 ## The JSON problem
 
 `json` could cover a lot of formats. Should we define this to mean the JSON "table" loader specifically?
-
 
 ## Problems
 
@@ -46,7 +43,6 @@ All loaders for the same format (WorkerLoader, StreamingLoader) would be referen
 
 The user would need to decide the names for custom loaders.
 
-
 ## The loader specification problem
 
 How does another part of the code reference a pre-registered loader without actually importing it?
@@ -58,7 +54,6 @@ Auto detection via file format sniffing, if improved, would work in many cases, 
 In such cases, a parse call without a specified loader might look successful but actually returned something unexpected.
 
 The loaders.gl name appears to be the remaining option.
-
 
 ### Use-Case Specifying Options to Individual Loaders with having access to the loaders
 
@@ -79,14 +74,11 @@ But how are these names resolved? The loaders objects have different names, diff
 
 A bunch of loaders will use the `json` extension (this particular issue is also discussed in a separate RFC).
 
-
 ### Use-Case: Conditional invocation of supporting loaders
 
 Since loaders can be quite big, we don't always want a loader to always unconditionally `import` another loader that it does not always depend on.
 
 For instance, we do not want the glTF loader to automatically import the 1.5MB Draco loader.
-
-
 
 ## Open Issues
 

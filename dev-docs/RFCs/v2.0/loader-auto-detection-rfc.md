@@ -10,7 +10,6 @@
 
 This RFC proposes improved ways for loaders.gl to auto-detect formats.
 
-
 ## Problem
 
 Successful auto detection of loaders depends on multiple contextual pieces of information being available to the load or parse function.
@@ -37,7 +36,6 @@ import {parse, Response} from '@loaders.gl/core';
 const data = await parse(arrayBuffer, {url, mimeType}));
 ```
 
-
 ### Proposal 1b: Provide a mock Response class for annotating a file:
 
 ```js
@@ -46,7 +44,6 @@ const data = await parse(new Response({arrayBuffer, url, mimeType}));
 ```
 
 An issue could be if we wanted to override the headers and or url of an actual `Response` object.
-
 
 ### MIME types
 
@@ -57,7 +54,6 @@ An issue could be if we wanted to override the headers and or url of an actual `
 - Many binary formats start with a few magic bytes, simply having code that checks for these.
 
 The `test` field of the loader can be set to a string, which is then assume to be a magic string that must be equal to the first bytes in the file.
-
 
 A complication is streaming, where we need a mechanism to peek into the first array buffer chunk of the stream and then put it back. A custom async iterator wrapper could handle this.
 
@@ -71,4 +67,3 @@ async function*(asyncIterator) {
   yield *asyncIterator;
 }
 ```
-

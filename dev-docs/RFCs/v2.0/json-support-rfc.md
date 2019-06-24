@@ -4,7 +4,6 @@
 - **Date**: Jun 2019
 - **Status**: Draft
 
-
 ## Problem: Distinguishing between JSON-based loaders
 
 Is there a real value in allowing loaders.gl to distinguish between separate JSON based formats, especially those that all use the `.json` extension?
@@ -35,7 +34,6 @@ In particular, distinguishing between JSON format variants seems valuable if the
 
 In some cases (e.g. glTF) we have a JSON based format that uses a different extension. Since extension is often (but not always!) available, this dramatically mitigates the issue for those formats. But different JSON based formats often keep JSON extension (e.g. `tileset3d.json`), or perhaps supports both `.json` and a custom extension (e.g. `.geojson`).
 
-
 ## Proposals
 
 ### Proposal: Add json field to loaders
@@ -50,9 +48,7 @@ By letting loaders.gl handle the JSON parsing we could replace the default `JSON
 
 If we mark loaders as `json` we can do an initial JSON parse (possible sniffing for well-structured JSON first `{`, `[` etc), and then sniff the contents of the parsed json by peeking at fields (`type`: `FeatureCollection` etc) with a new `loader.testJSON` method.
 
-
 ## Open Issues
 
 - No metadata for
 - Default JSON loader. It is probably desirable to have a default loader for json files.
-

@@ -12,13 +12,12 @@ Writeups of directions in major areas of interest
 
 ## v2.0 RFCs
 
-| RFC                                                             | Author   | Status          | Description                                                                                                                          |
-| --------------------------------------------------------------- | -------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| [****](v2.0/json-support-rfc.md)             | @ibgreen | **Draft**       | Integrated support for JSON formats         |
-| [****](v2.0/loader-auto-detection-rfc.md)    | @ibgreen | **Draft**       | Improved support for loader auto detection         |
-| [****](v2.0/loader-auto-registration-rfc.md) | @ibgreen | **Draft**       | Loader auto registration  at import         |
-| [****](v2.0/loader-lookup-by-namerfc.md)            | @ibgreen | **Draft**       | Loader lookup among pre-registered loaders        |
-
+| RFC                                              | Author   | Status    | Description                                |
+| ------------------------------------------------ | -------- | --------- | ------------------------------------------ |
+| [\*\*\*\*](v2.0/json-support-rfc.md)             | @ibgreen | **Draft** | Integrated support for JSON formats        |
+| [\*\*\*\*](v2.0/loader-auto-detection-rfc.md)    | @ibgreen | **Draft** | Improved support for loader auto detection |
+| [\*\*\*\*](v2.0/loader-auto-registration-rfc.md) | @ibgreen | **Draft** | Loader auto registration at import         |
+| [\*\*\*\*](v2.0/loader-lookup-by-namerfc.md)     | @ibgreen | **Draft** | Loader lookup among pre-registered loaders |
 
 ## v1.0 RFCs
 
