@@ -24,47 +24,6 @@ import {
 
 registerLoaders([Tile3DLoader, Tileset3DLoader, GLTFScenegraphLoader]);
 
-addVersionToShader(source) {
-  if (isWebGL2(this.context.gl)) {
-    return `#version 300 es\n${source}`;
-  }
-
-  return source;
-}
-
-
-function getLoadOptions(props = {}) {
-  const modules = ['project32', 'picking'];
-  const {_lighting, _imageBasedLightingEnvironment} = this.props;
-
-  if (_lighting === 'pbr') {
-    modules.push(pbr);
-  }
-
-  let env = null;
-  if (_imageBasedLightingEnvironment) {
-    if (typeof _imageBasedLightingEnvironment === 'function') {
-      env = _imageBasedLightingEnvironment({gl: this.context.gl, layer: this});
-    } else {
-      env = _imageBasedLightingEnvironment;
-    }
-  }
-
-  return {
-    gl: this.context.gl,
-    waitForFullLoad: true,
-    imageBasedLightingEnvironment: env,
-    modelOptions: {
-      vs: this.addVersionToShader(vs),
-      fs: this.addVersionToShader(fs),
-      modules,
-      isInstanced: true
-    },
-    // tangents are not supported
-    useTangents: false
-  };
-}
-
 const DEFAULT_POINT_COLOR = [255, 0, 0, 255];
 
 const defaultProps = {
@@ -443,13 +402,14 @@ export default class Tile3DLayer extends CompositeLayer {
       coordinateSystem: COORDINATE_SYSTEM.METERS,
       pickable: true,
       ...scenegraphProps,
-      sizeScale: 2,
-      getPosition: row => [0, 0, 0],
-      getOrientation: d => [0, 0, 0],
-      getTranslation: [0, 0, 0],
-      getScale: [10000, 10000, 1000],
-      getColor: [255, 255, 255, 255],
-      opacity: 0.8,
+      sizeScale: 1,
+      // getPosition: row => [0, 0, 0],
+      // getOrientation: d => [0, 45, 0],
+      // getTranslation: [0, 0, 0],
+      // getScale: [1, 1, 1],
+      // white is a bit hard to see
+      getColor: [0, 0, 100, 255],
+      opacity: 0.6,
       ...transformProps
     });
   }
@@ -480,7 +440,8 @@ export default class Tile3DLayer extends CompositeLayer {
   }
 
   renderLayers() {
-    const {layers} = this.state;
+    const layers = Object.values(this.state.layerMap).map(layer => layer.layer);
+    // const {layers} = this.state;
     return layers;
   }
 }
