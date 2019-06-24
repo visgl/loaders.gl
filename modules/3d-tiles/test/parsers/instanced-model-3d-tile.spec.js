@@ -58,7 +58,7 @@ test('instanced model tile#throws with invalid version', t => {
   t.end();
 });
 
-test('instanced model tile#throws with empty gltf', t => {
+test.skip('instanced model tile#throws with empty gltf', t => {
   // Expect to throw DeveloperError in Model due to invalid gltf magic
   const TILE = {
     type: TILE3D_TYPE.INSTANCED_3D_MODEL
