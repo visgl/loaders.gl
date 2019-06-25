@@ -58,8 +58,7 @@ test('instanced model tile#throws with invalid version', t => {
   t.end();
 });
 
-/*
-test('instanced model tile#throws with empty gltf', t => {
+test.skip('instanced model tile#throws with empty gltf', t => {
   // Expect to throw DeveloperError in Model due to invalid gltf magic
   const TILE = {
     type: TILE3D_TYPE.INSTANCED_3D_MODEL
@@ -68,7 +67,6 @@ test('instanced model tile#throws with empty gltf', t => {
   t.throws(() => parse(arrayBuffer), 'throws with empty gltf');
   t.end();
 });
-*/
 
 test('instanced model tile#throws on invalid url', t => {
   // Try loading a tile with an invalid url.
@@ -92,7 +90,7 @@ test('instanced model tile#loaded tile without batch table', async t => {
 });
 
 // TODO - this should be a render test
-test.skip('instanced model tile#renders with external gltf', async t => {
+test('instanced model tile#renders with external gltf', async t => {
   const tileData = await loadRootTileFromTileset(t, GLTF_EXTERNAL_URL);
   const tile = await parse(tileData, Tile3DLoader);
   t.ok(tile, 'loaded tile with external gltf');

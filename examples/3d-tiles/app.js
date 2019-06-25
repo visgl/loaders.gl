@@ -20,10 +20,10 @@ const INDEX_FILE = `${DATA_URI}/modules/3d-tiles/test/data/index.json`;
 const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
 const MAPBOX_STYLE = 'mapbox://styles/mapbox/light-v9';
 
-const INITIAL_EXAMPLE_CATEGORY = 'additional';
-const INITIAL_EXAMPLE_NAME = 'royalExhibitionBuilding';
-// const INITIAL_EXAMPLE_CATEGORY = 'Instanced';
-// const INITIAL_EXAMPLE_NAME = 'InstancedGltfExternal';
+// const INITIAL_EXAMPLE_CATEGORY = 'additional';
+// const INITIAL_EXAMPLE_NAME = 'royalExhibitionBuilding';
+const INITIAL_EXAMPLE_CATEGORY = 'Instanced';
+const INITIAL_EXAMPLE_NAME = 'InstancedGltfExternal';
 
 const ADDITIONAL_EXAMPLES = {
   name: 'additional',
@@ -34,6 +34,7 @@ const ADDITIONAL_EXAMPLES = {
       coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS,
       coordinateOrigin: [144.97212, -37.805177],
       isWGS84: false,
+      // depthLimit: 5,
       depthLimit: 2, // TODO: Remove this after sse traversal is working since this is just to prevent full load of tileset
       color: [115, 101, 152, 200]
     }
@@ -143,7 +144,7 @@ export default class App extends PureComponent {
   }
 
   _renderControlPanel() {
-    const {examplesByCategory, category, name} = this.state;
+    const {examplesByCategory, category, name, viewState} = this.state;
     if (!examplesByCategory) {
       return null;
     }
@@ -158,6 +159,10 @@ export default class App extends PureComponent {
         <div>
           Loaded {this.state.tileCount | 0} tiles {(this.state.pointCount / 1e6).toFixed(2)} M
           points
+        </div>
+        <div>
+          {' '}
+          {viewState.longitude.toFixed(5)} {viewState.latitude.toFixed(5)} {viewState.zoom}{' '}
         </div>
       </ControlPanel>
     );
@@ -177,7 +182,7 @@ export default class App extends PureComponent {
       });
     }
 
-    const pointCount = (tileHeader.userData && tileHeader.userData.pointsCount) || 0;
+    const pointCount = tileHeader.content.pointsLength || 0;
     this.setState({
       tileCount: this.state.tileCount + 1,
       pointCount: this.state.pointCount + pointCount
