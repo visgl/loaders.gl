@@ -42,7 +42,7 @@ export function normalizeLoader(loader) {
 
   // Remove `extension`` prop, replace with `extensions``
   if (loader.extension) {
-    loader.extensions = loader.extensions || [loader.extension];
+    loader.extensions = loader.extensions || loader.extension;
     delete loader.extension;
   }
 
