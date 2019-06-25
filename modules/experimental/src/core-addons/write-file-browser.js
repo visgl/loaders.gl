@@ -1,9 +1,10 @@
 // A browser implementation of the Node.js `fs` module's `fs.writeFile` method.
-
+/*
+/* global global *
+/* global Blob *
 import {isBrowser} from '@loaders.gl/core';
 
 // TODO hack - trick filesaver.js to skip loading under node
-/* global global*/
 const savedNavigatorExists = 'navigator' in global;
 const savedNavigator = global.navigator;
 if (!isBrowser) {
@@ -22,8 +23,6 @@ if (!isBrowser) {
 }
 // END hack
 
-/* global Blob */
-
 /**
  * File system write function for the browser, similar to Node's fs.writeFile
  *
@@ -34,7 +33,7 @@ if (!isBrowser) {
  * @param {String|Object} options -
  * @param {Function} callback - Standard node (err, data) callback
  * @return {Promise} - promise, can be used instead of callback
- */
+ *
 export function writeFile(file, data, options, callback = () => {}) {
   // options is optional
   if (callback === undefined && typeof options === 'function') {
@@ -56,3 +55,4 @@ export function writeFile(file, data, options, callback = () => {}) {
     return callback(null, result);
   });
 }
+*/
