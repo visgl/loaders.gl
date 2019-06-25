@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/experimental",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "Framework-independent loaders for table formats (JSON, CSV, ...)",
   "license": "MIT",
   "publishConfig": {
@@ -32,7 +32,7 @@
     "build-bundle": "webpack --display=minimal --config ../../scripts/bundle.config.js"
   },
   "dependencies": {
-    "@loaders.gl/core": "1.1.4",
+    "@loaders.gl/core": "1.1.5",
     "filesaver.js": "^0.2.0"
   },
   "gitHead": "82249f7f603510662706271bb58246c8f9c77148"
