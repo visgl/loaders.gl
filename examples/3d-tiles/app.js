@@ -210,7 +210,7 @@ export default class App extends PureComponent {
     if (tileHeader.depth === 0 && name !== 'royalExhibitionBuilding') {
       const {center} = tileHeader.boundingVolume;
       if (!center) {
-        console.warn("center was not pre-calculated for the root tile");
+        console.warn('center was not pre-calculated for the root tile');
       } else {
         this.setState({
           viewState: {
