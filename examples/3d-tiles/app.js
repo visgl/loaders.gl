@@ -81,6 +81,7 @@ export default class App extends PureComponent {
 
   async componentDidMount() {
     fileDrop(this._deckRef.deckCanvas, (promise, file) => {
+      // eslint-disable-next-line
       alert('File drop of tilesets not yet implemented');
       // this.setState({ droppedFile: file, tile: null });
       // load(promise, Tile3DLoader).then(this._onLoad);
@@ -159,7 +160,6 @@ export default class App extends PureComponent {
     /* global URL */
     const parsedUrl = new URL(window.location.href);
     const tilesetUrl = parsedUrl.searchParams.get('tileset');
-    console.log(tilesetUrl);
     return tilesetUrl;
   }
 
@@ -210,6 +210,7 @@ export default class App extends PureComponent {
     if (tileHeader.depth === 0 && name !== 'royalExhibitionBuilding') {
       const {center} = tileHeader.boundingVolume;
       if (!center) {
+        // eslint-disable-next-line
         console.warn('center was not pre-calculated for the root tile');
       } else {
         this.setState({
