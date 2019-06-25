@@ -116,6 +116,7 @@ export default class ControlPanel extends PureComponent {
   _renderDropped() {
     // eslint-disable-next-line react/prop-types
     const {droppedFile} = this.props;
+    // eslint-disable-next-line react/prop-types
     return droppedFile ? <div>Dropped file: {JSON.stringify(droppedFile.name)}</div> : null;
   }
 
