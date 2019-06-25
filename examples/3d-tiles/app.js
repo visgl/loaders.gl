@@ -3,7 +3,7 @@ import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
 import DeckGL from '@deck.gl/react';
-import { COORDINATE_SYSTEM, MapController } from '@deck.gl/core';
+import {COORDINATE_SYSTEM, MapController} from '@deck.gl/core';
 // import '@loaders.gl/polyfills';
 // import '@luma.gl/debug';
 
@@ -170,7 +170,7 @@ export default class App extends PureComponent {
       },
       category: 'custom',
       name: 'Custom Tileset'
-  });
+    });
   }
 
   // CONTROL PANEL
@@ -208,9 +208,9 @@ export default class App extends PureComponent {
     const {name} = this.state;
     // cannot parse the center from royalExhibitionBuilding dataset
     if (tileHeader.depth === 0 && name !== 'royalExhibitionBuilding') {
-      const { center } = tileHeader.boundingVolume;
+      const {center} = tileHeader.boundingVolume;
       if (!center) {
-        console.warn('Root tile doesn\'t have center');
+        console.warn("center was not pre-calculated for the root tile");
       } else {
         this.setState({
           viewState: {
