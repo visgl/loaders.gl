@@ -41,7 +41,7 @@ export function parseSync(arrayBuffer, options = {}) {
 
 export default {
   name: 'glTF',
-  extension: ['gltf', 'glb'],
+  extensions: ['gltf', 'glb'],
   text: true,
   binary: true,
   parse,
