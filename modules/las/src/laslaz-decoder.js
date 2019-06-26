@@ -5,7 +5,7 @@
 */
 
 // laslaz.js - treat as compiled code
-import getModule from './laz-perf';
+import getModule from './laz-perf.transpiled';
 
 let Module = null;
 

@@ -3,7 +3,7 @@ import {resolvePath} from '@loaders.gl/core';
 
 import test from 'tape-promise/tape';
 
-import LoadImageWorker from './load-image.worker';
+import LoadImageWorker from './load-image-worker';
 
 const CONTENT_BASE = '@loaders.gl/images/test/data/';
 
