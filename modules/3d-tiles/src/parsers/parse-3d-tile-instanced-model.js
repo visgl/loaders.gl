@@ -1,7 +1,7 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
-import { Vector3, Matrix3, Matrix4, Quaternion } from 'math.gl';
+import {Vector3, Matrix3, Matrix4, Quaternion} from 'math.gl';
 import {Ellipsoid} from '@math.gl/geospatial'; // 'math.gl/geometry';
 import {GL} from '@loaders.gl/math'; // 'math.gl/geometry';
 import Tile3DFeatureTable from '../classes/tile-3d-feature-table';
@@ -52,7 +52,11 @@ export function parseInstancedModel3DTileSync(tile, arrayBuffer, byteOffset, opt
   tile.eastNorthUp = featureTable.getGlobalProperty('EAST_NORTH_UP');
   tile.rtcCenter = featureTable.getGlobalProperty('RTC_CENTER', GL.FLOAT, 3);
 
-  const batchTable = new Tile3DBatchTable(tile.batchTableJson, tile.batchTableBinary, instancesLength);
+  const batchTable = new Tile3DBatchTable(
+    tile.batchTableJson,
+    tile.batchTableBinary,
+    instancesLength
+  );
 
   extractGLTF(tile, tile.gltfFormat, options);
 
@@ -75,7 +79,7 @@ function extractInstancedAttributes(tile, featureTable, batchTable, instancesLen
     incrementallyLoadTextures: false,
     // TODO - tileset is not available at this stage, tile is parsed independently
     // upAxis: (tileset && tileset._gltfUpAxis) || [0, 1, 0],
-    forwardAxis: [1, 0, 0],
+    forwardAxis: [1, 0, 0]
 
     // Cesium internals
     // opaquePass: Pass.CESIUM_3D_TILE, // Draw opaque portions during the 3D Tiles pass
@@ -104,25 +108,42 @@ function extractInstancedAttributes(tile, featureTable, batchTable, instancesLen
   const scratchVector2 = new Vector3();
 
   for (let i = 0; i < instancesLength; i++) {
-
     let position;
 
     // Get the instance position
     if (featureTable.hasProperty('POSITION')) {
       position = featureTable.getProperty('POSITION', GL.FLOAT, 3, i, instancePosition);
     } else if (featureTable.hasProperty('POSITION_QUANTIZED')) {
-      position = featureTable.getProperty('POSITION_QUANTIZED', GL.UNSIGNED_SHORT, 3, i, instancePosition);
+      position = featureTable.getProperty(
+        'POSITION_QUANTIZED',
+        GL.UNSIGNED_SHORT,
+        3,
+        i,
+        instancePosition
+      );
 
-      const quantizedVolumeOffset =
-          featureTable.getGlobalProperty('QUANTIZED_VOLUME_OFFSET', GL.FLOAT, 3, scratchVector1);
+      const quantizedVolumeOffset = featureTable.getGlobalProperty(
+        'QUANTIZED_VOLUME_OFFSET',
+        GL.FLOAT,
+        3,
+        scratchVector1
+      );
       if (!quantizedVolumeOffset) {
-        throw new Error('i3dm parser: QUANTIZED_VOLUME_OFFSET must be defined for quantized positions.');
+        throw new Error(
+          'i3dm parser: QUANTIZED_VOLUME_OFFSET must be defined for quantized positions.'
+        );
       }
 
-      const quantizedVolumeScale =
-          featureTable.getGlobalProperty('QUANTIZED_VOLUME_SCALE', GL.FLOAT, 3, scratchVector2);
+      const quantizedVolumeScale = featureTable.getGlobalProperty(
+        'QUANTIZED_VOLUME_SCALE',
+        GL.FLOAT,
+        3,
+        scratchVector2
+      );
       if (!quantizedVolumeScale) {
-        throw new Error('i3dm parser: QUANTIZED_VOLUME_SCALE must be defined for quantized positions.');
+        throw new Error(
+          'i3dm parser: QUANTIZED_VOLUME_SCALE must be defined for quantized positions.'
+        );
       }
 
       for (let j = 0; j < 3; j++) {
@@ -154,12 +175,24 @@ function extractInstancedAttributes(tile, featureTable, batchTable, instancesLen
       // Vector3.unpack(normalRight, 0, instanceNormalRight);
       tile.hasCustomOrientation = true;
     } else {
-      tile.octNormalUp = featureTable.getProperty('NORMAL_UP_OCT32P', GL.UNSIGNED_SHORT, 2, scratch1);
-      tile.octNormalRight = featureTable.getProperty('NORMAL_RIGHT_OCT32P', GL.UNSIGNED_SHORT, 2, scratch2);
+      tile.octNormalUp = featureTable.getProperty(
+        'NORMAL_UP_OCT32P',
+        GL.UNSIGNED_SHORT,
+        2,
+        scratch1
+      );
+      tile.octNormalRight = featureTable.getProperty(
+        'NORMAL_RIGHT_OCT32P',
+        GL.UNSIGNED_SHORT,
+        2,
+        scratch2
+      );
 
       if (tile.octNormalUp) {
         if (!tile.octNormalRight) {
-          throw new Error('i3dm: oct-encoded orientation requires NORMAL_UP_OCT32P and NORMAL_RIGHT_OCT32P');
+          throw new Error(
+            'i3dm: oct-encoded orientation requires NORMAL_UP_OCT32P and NORMAL_RIGHT_OCT32P'
+          );
         }
 
         throw new Error('i3dm: oct-encoded orientation not implemented');
@@ -177,7 +210,10 @@ function extractInstancedAttributes(tile, featureTable, batchTable, instancesLen
     }
 
     if (hasCustomOrientation) {
-      instanceNormalForward.copy(instanceNormalRight).cross(instanceNormalUp).normalize();
+      instanceNormalForward
+        .copy(instanceNormalRight)
+        .cross(instanceNormalUp)
+        .normalize();
       instanceRotation.setColumn(0, instanceNormalRight);
       instanceRotation.setColumn(1, instanceNormalUp);
       instanceRotation.setColumn(2, instanceNormalForward);
