@@ -53,6 +53,7 @@ export default class Tile3DLayer extends CompositeLayer {
       tileset3d = new Tileset3D(tilesetJson, tilesetUrl, options);
 
       // TODO: Remove these after sse traversal is working since this is just to prevent full load of tileset and loading of root
+      // The alwaysLoadRoot is better solved by moving the camera to the newly selected asset.
       tileset3d.depthLimit = this.props.depthLimit;
       tileset3d.alwaysLoadRoot = true;
     }
@@ -127,21 +128,20 @@ export default class Tile3DLayer extends CompositeLayer {
 
     for (const value of layerMapValues) {
       const {tile} = value;
-      let {layer} = value;
+      const {layer} = value;
 
       if (tile.selectedFrame === frameNumber) {
         if (!layer.props.visible) {
-          layer = layer.clone({visible: true});
-          layerMap[tile.contentUri].layer = layer;
+          // Still has GPU resource but visibilty is turned off so turn it back on so we can render it.
+          layerMap[tile.contentUri].layer = layer.clone({visible: true});
         }
         selectedLayers.push(layer);
       } else if (tile.contentUnloaded) {
         // Was cleaned up from tileset cache. We no longer need to track it.
         layerMap.delete(tile.contentUri);
       } else if (layer.props.visible) {
-        // Still in tileset cache but doesn't need to render this frame, keep the GPU resource bound but don't render it.
-        layer = layer.clone({visible: false});
-        layerMap[tile.contentUri].layer = layer;
+        // Still in tileset cache but doesn't need to render this frame. Keep the GPU resource bound but don't render it.
+        layerMap[tile.contentUri].layer = layer.clone({visible: false});
       }
     }
 
