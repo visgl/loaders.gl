@@ -130,7 +130,7 @@ test('instanced model tile#renders with feature defined orientation', async t =>
 });
 
 // TODO - this should be a render test
-test('instanced model tile#renders with feature defined Oct32P encoded orientation', async t => {
+test.skip('instanced model tile#renders with feature defined Oct32P encoded orientation', async t => {
   const tileData = await loadRootTileFromTileset(t, OCT16P_ORIENTATION_URL);
   const tile = await parse(tileData, Tile3DLoader);
   t.ok(tile, 'loaded tile with feature defined Oct32P encoded orientation');
@@ -170,7 +170,7 @@ test('instanced model tile#renders with feature defined quantized position', asy
 });
 
 // TODO - this should be a render test
-test('instanced model tile#renders with feature defined quantized position and Oct32P encoded orientation', async t => {
+test.skip('instanced model tile#renders with feature defined quantized position and Oct32P encoded orientation', async t => {
   const tileData = await loadRootTileFromTileset(t, QUANTIZED_OCT32_PORIENTATION_URL);
   const tile = await parse(tileData, Tile3DLoader);
   t.ok(tile, 'loaded tile with feature defined quantized position and Oct32P encoded orientation');
