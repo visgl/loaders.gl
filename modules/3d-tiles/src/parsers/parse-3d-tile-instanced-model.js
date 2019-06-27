@@ -2,7 +2,7 @@
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
 import {Vector3, Matrix3, Matrix4, Quaternion} from 'math.gl';
-import {Ellipsoid} from '@math.gl/geospatial'; // 'math.gl/geometry';
+import {Ellipsoid} from '@math.gl/geospatial';
 import {GL} from '@loaders.gl/math'; // 'math.gl/geometry';
 import Tile3DFeatureTable from '../classes/tile-3d-feature-table';
 import Tile3DBatchTable from '../classes/tile-3d-batch-table';
@@ -93,7 +93,6 @@ function extractInstancedAttributes(tile, featureTable, batchTable, instancesLen
 
   const instances = collectionOptions.instances;
   const instancePosition = new Vector3();
-  const instancePositionArray = new Array(3);
   const instanceNormalRight = new Vector3();
   const instanceNormalUp = new Vector3();
   const instanceNormalForward = new Vector3();
@@ -146,8 +145,10 @@ function extractInstancedAttributes(tile, featureTable, batchTable, instancesLen
         );
       }
 
+      const MAX_UNSIGNED_SHORT = 65535.0;
       for (let j = 0; j < 3; j++) {
-        position[j] = (position[j] / 65535.0) * quantizedVolumeScale[j] + quantizedVolumeOffset[j];
+        position[j] =
+          (position[j] / MAX_UNSIGNED_SHORT) * quantizedVolumeScale[j] + quantizedVolumeOffset[j];
       }
     }
 
