@@ -329,7 +329,7 @@ export default class Tile3DLayer extends CompositeLayer {
       if (!coordinateOrigin) {
         if (modelMatrix) {
           const origin = new Vector3();
-          modelMatrix.transformVector3([0, 0, 0], origin);
+          modelMatrix.transform(origin, origin);
           transformProps.coordinateOrigin = Ellipsoid.WGS84.cartesianToCartographic(origin, origin);
           modelMatrix = null;
         } else {
