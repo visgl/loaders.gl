@@ -7,7 +7,7 @@ import {LASLoader} from '@loaders.gl/las';
 import {Tile3DLoader} from '@loaders.gl/3d-tiles';
 
 const DRACO_URL = '@loaders.gl/draco/test/data/bunny.drc';
-const TILE_3D_URL = '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudRGB/PointCloudRGB.pnts';
+const TILE_3D_URL = '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudRGB/pointCloudRGB.pnts';
 
 test('parseSync#auto-detect-loader', async t => {
   let response = await fetchFile(DRACO_URL);
