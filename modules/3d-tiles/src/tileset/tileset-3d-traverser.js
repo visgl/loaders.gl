@@ -34,7 +34,11 @@ export default class Tileset3DTraverser {
     }
 
     // The this doesn't meet the SSE requirement, therefore the tree does not need to be rendered
-    if (root.getScreenSpaceError(frameState, true) <= tileset.maximumScreenSpaceError) {
+    // TODO: remove the alwaysLoadRoot after sse working
+    if (
+      !tileset.alwaysLoadRoot &&
+      root.getScreenSpaceError(frameState, true) <= tileset.maximumScreenSpaceError
+    ) {
       return false;
     }
 

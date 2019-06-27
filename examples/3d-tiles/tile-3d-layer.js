@@ -1,5 +1,5 @@
 import {CompositeLayer} from '@deck.gl/core';
-import {Matrix4} from 'math.gl';
+import {Matrix4, Vector3} from 'math.gl';
 
 import {COORDINATE_SYSTEM} from '@deck.gl/core';
 import {PointCloudLayer} from '@deck.gl/layers';
@@ -52,8 +52,9 @@ export default class Tile3DLayer extends CompositeLayer {
       const tilesetJson = await load(tilesetUrl);
       tileset3d = new Tileset3D(tilesetJson, tilesetUrl, options);
 
-      // TODO: Remove this after sse traversal is working since this is just to prevent full load of tileset
+      // TODO: Remove these after sse traversal is working since this is just to prevent full load of tileset and loading of root
       tileset3d.depthLimit = this.props.depthLimit;
+      tileset3d.alwaysLoadRoot = true;
     }
 
     this.setState({tileset3d});
@@ -108,7 +109,7 @@ export default class Tile3DLayer extends CompositeLayer {
       },
       height,
       frameNumber: tick,
-      distanceMagic: zoomMap * zoomMagic, // TODO: zoom doesn't seem to update accurately? like it stays at the same number after a scroll wheel tick
+      distanceMagic: zoomMap * zoomMagic,
       sseDenominator: 1.15 // Assumes fovy = 60 degrees
     };
 
@@ -129,7 +130,7 @@ export default class Tile3DLayer extends CompositeLayer {
       let {layer} = value;
 
       if (tile.selectedFrame === frameNumber) {
-        if (!layer.visible) {
+        if (!layer.props.visible) {
           layer = layer.clone({visible: true});
           layerMap[tile.contentUri].layer = layer;
         }
@@ -137,8 +138,8 @@ export default class Tile3DLayer extends CompositeLayer {
       } else if (tile.contentUnloaded) {
         // Was cleaned up from tileset cache. We no longer need to track it.
         layerMap.delete(tile.contentUri);
-      } else if (layer.visible) {
-        // Still in tileset cache, keep the GPU resource bound but don't render it.
+      } else if (layer.props.visible) {
+        // Still in tileset cache but doesn't need to render this frame, keep the GPU resource bound but don't render it.
         layer = layer.clone({visible: false});
         layerMap[tile.contentUri].layer = layer;
       }
@@ -327,7 +328,8 @@ export default class Tile3DLayer extends CompositeLayer {
       // verify with spec
       if (!coordinateOrigin) {
         if (modelMatrix) {
-          const origin = modelMatrix.transform([0, 0, 0]);
+          const origin = new Vector3();
+          modelMatrix.transformVector3([0, 0, 0], origin);
           transformProps.coordinateOrigin = Ellipsoid.WGS84.cartesianToCartographic(origin, origin);
           modelMatrix = null;
         } else {
