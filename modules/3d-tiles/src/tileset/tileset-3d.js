@@ -317,7 +317,8 @@ export default class Tileset3D {
   }
 
   getTileUrl(tilePath) {
-    return `${this.basePath}/${tilePath}${this.queryParams}`;
+    const isDataUrl = url => url.startsWith('data:');
+    return isDataUrl(tilePath) ? tilePath : `${this.basePath}/${tilePath}${this.queryParams}`;
   }
 
   // true if the tileset JSON file lists the extension in extensionsUsed

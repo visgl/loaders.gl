@@ -1851,10 +1851,10 @@ anymatch@^2.0.0:
     micromatch "^3.1.4"
     normalize-path "^2.1.1"
 
-apache-arrow@^0.4.0:
-  version "0.4.1"
-  resolved "https://registry.yarnpkg.com/apache-arrow/-/apache-arrow-0.4.1.tgz#1a8fffb242061108ed7f753eb9971e593864647e"
-  integrity sha512-zjST/y1CjUb7StvrEqKoziZkRj43hfTKT21yhIoo9ECCPuRsql5PlTFCgpvYcdZMXdnI0dmO8E+yBErUtieXPw==
+apache-arrow@^0.13.0:
+  version "0.13.0"
+  resolved "https://registry.yarnpkg.com/apache-arrow/-/apache-arrow-0.13.0.tgz#08b16aca0d6159539f1c7e2d9ccb5e43c76d50cd"
+  integrity sha512-+RlJzbOLFdegb76e39QJJsX1DtIzqJXJpsuQh3xmsjwU6ksnEyGI9WolO78yHz8akaJ8BFNC8A8MgEmc1O6FFw==
   dependencies:
     "@types/flatbuffers" "^1.9.0"
     "@types/node" "^10.12.18"

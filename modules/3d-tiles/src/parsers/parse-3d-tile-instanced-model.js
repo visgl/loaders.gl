@@ -54,44 +54,44 @@ export function parseInstancedModel3DTileSync(tile, arrayBuffer, byteOffset, opt
 
   extractGLTF(tile, tile.gltfFormat, options);
 
-  // extractInstancedAttributes(tile, featureTable);
+  extractInstancedAttributes(tile, featureTable);
 
   return byteOffset;
 }
 
-/*
 // eslint-disable-next-line max-statements, complexity
 function extractInstancedAttributes(tile, featureTable, batchTable) {
+  /*
   // Create model instance collection
-  // const collectionOptions = {
-  //   instances: new Array(instancesLength),
-  //   batchTable: tile._batchTable,
-  //   cull: false, // Already culled by 3D Tiles
-  //   url: undefined,
-  //   requestType: RequestType.TILES3D,
-  //   gltf: undefined,
-  //   basePath: undefined,
-  //   incrementallyLoadTextures: false,
-  //   upAxis: tileset._gltfUpAxis,
-  //   forwardAxis: Axis.X,
-  //   opaquePass: Pass.CESIUM_3D_TILE, // Draw opaque portions during the 3D Tiles pass
-  //   pickIdLoaded: getPickIdCallback(tile),
-  //   imageBasedLightingFactor: tileset.imageBasedLightingFactor,
-  //   lightColor: tileset.lightColor,
-  //   luminanceAtZenith: tileset.luminanceAtZenith,
-  //   sphericalHarmonicCoefficients: tileset.sphericalHarmonicCoefficients,
-  //   specularEnvironmentMaps: tileset.specularEnvironmentMaps
-  // };
+  const collectionOptions = {
+    instances: new Array(instancesLength),
+    batchTable: tile._batchTable,
+    cull: false, // Already culled by 3D Tiles
+    url: undefined,
+    requestType: RequestType.TILES3D,
+    gltf: undefined,
+    basePath: undefined,
+    incrementallyLoadTextures: false,
+    upAxis: tileset._gltfUpAxis,
+    forwardAxis: Axis.X,
+    opaquePass: Pass.CESIUM_3D_TILE, // Draw opaque portions during the 3D Tiles pass
+    pickIdLoaded: getPickIdCallback(tile),
+    imageBasedLightingFactor: tileset.imageBasedLightingFactor,
+    lightColor: tileset.lightColor,
+    luminanceAtZenith: tileset.luminanceAtZenith,
+    sphericalHarmonicCoefficients: tileset.sphericalHarmonicCoefficients,
+    specularEnvironmentMaps: tileset.specularEnvironmentMaps
+  };
 
   const instances = collectionOptions.instances;
-  const instancePosition = new Cartesian3();
+  const instancePosition = new Vector3();
   const instancePositionArray = new Array(3);
-  const instanceNormalRight = new Cartesian3();
-  const instanceNormalUp = new Cartesian3();
-  const instanceNormalForward = new Cartesian3();
+  const instanceNormalRight = new Vector3();
+  const instanceNormalUp = new Vector3();
+  const instanceNormalForward = new Vector3();
   const instanceRotation = new Matrix3();
   const instanceQuaternion = new Quaternion();
-  const instanceScale = new Cartesian3();
+  const instanceScale = new Vector3();
   const instanceTranslationRotationScale = new TranslationRotationScale();
   const instanceTransform = new Matrix4();
   const scratch1 = new Array();
@@ -142,9 +142,9 @@ function extractInstancedAttributes(tile, featureTable, batchTable) {
       throw new Error('i3dm: POSITION or POSITION_QUANTIZED must be defined for each instance.');
     }
 
-    Cartesian3.unpack(position, 0, instancePosition);
+    Vector3.unpack(position, 0, instancePosition);
     if (defined(rtcCenter)) {
-      Cartesian3.add(instancePosition, rtcCenter, instancePosition);
+      Vector3.add(instancePosition, rtcCenter, instancePosition);
     }
     instanceTranslationRotationScale.translation = instancePosition;
 
@@ -157,8 +157,8 @@ function extractInstancedAttributes(tile, featureTable, batchTable) {
       if (!tile.normalRight) {
         throw new Error('i3dm: Custom orientation requires both NORMAL_UP and NORMAL_RIGHT.');
       }
-      // Cartesian3.unpack(normalUp, 0, instanceNormalUp);
-      // Cartesian3.unpack(normalRight, 0, instanceNormalRight);
+      // Vector3.unpack(normalUp, 0, instanceNormalUp);
+      // Vector3.unpack(normalRight, 0, instanceNormalRight);
       tile.hasCustomOrientation = true;
     } else {
       tile.octNormalUp = featureTable.getProperty(
@@ -205,8 +205,8 @@ function extractInstancedAttributes(tile, featureTable, batchTable) {
     }
 
     if (hasCustomOrientation) {
-      Cartesian3.cross(instanceNormalRight, instanceNormalUp, instanceNormalForward);
-      Cartesian3.normalize(instanceNormalForward, instanceNormalForward);
+      Vector3.cross(instanceNormalRight, instanceNormalUp, instanceNormalForward);
+      Vector3.normalize(instanceNormalForward, instanceNormalForward);
       Matrix3.setColumn(instanceRotation, 0, instanceNormalRight, instanceRotation);
       Matrix3.setColumn(instanceRotation, 1, instanceNormalUp, instanceRotation);
       Matrix3.setColumn(instanceRotation, 2, instanceNormalForward, instanceRotation);
@@ -216,10 +216,10 @@ function extractInstancedAttributes(tile, featureTable, batchTable) {
     instanceTranslationRotationScale.rotation = instanceQuaternion;
 
     // Get the instance scale
-    instanceScale = Cartesian3.fromElements(1.0, 1.0, 1.0, instanceScale);
+    instanceScale = Vector3.fromElements(1.0, 1.0, 1.0, instanceScale);
     const scale = featureTable.getProperty('SCALE', GL.FLOAT, 1, i);
     if (defined(scale)) {
-      Cartesian3.multiplyByScalar(instanceScale, scale, instanceScale);
+      Vector3.multiplyByScalar(instanceScale, scale, instanceScale);
     }
     const nonUniformScale = featureTable.getProperty('SCALE_NON_UNIFORM', GL.FLOAT, 3, i, scratch1);
     if (defined(nonUniformScale)) {
@@ -244,7 +244,6 @@ function extractInstancedAttributes(tile, featureTable, batchTable) {
       batchId: batchId
     };
   }
-
   tile._modelInstanceCollection = new ModelInstanceCollection(collectionOptions);
+  */
 }
-*/

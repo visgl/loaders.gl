@@ -1,15 +1,15 @@
 import {CompositeLayer} from '@deck.gl/core';
-import {Matrix4} from 'math.gl';
+import {Matrix4, Vector3} from 'math.gl';
 
 import {COORDINATE_SYSTEM} from '@deck.gl/core';
 import {PointCloudLayer} from '@deck.gl/layers';
 import {ScenegraphLayer} from '@deck.gl/mesh-layers';
 
-import {createGLTFObjects, GLTFScenegraphLoader} from '@luma.gl/addons';
+import {GLTFScenegraphLoader} from '@luma.gl/addons';
 
 import '@loaders.gl/polyfills';
 import {load, registerLoaders} from '@loaders.gl/core';
-import {postProcessGLTF} from '@loaders.gl/gltf';
+// import {postProcessGLTF} from '@loaders.gl/gltf';
 import {DracoWorkerLoader} from '@loaders.gl/draco';
 import {Ellipsoid} from '@math.gl/geospatial';
 
@@ -52,8 +52,10 @@ export default class Tile3DLayer extends CompositeLayer {
       const tilesetJson = await load(tilesetUrl);
       tileset3d = new Tileset3D(tilesetJson, tilesetUrl, options);
 
-      // TODO: Remove this after sse traversal is working since this is just to prevent full load of tileset
+      // TODO: Remove these after sse traversal is working since this is just to prevent full load of tileset and loading of root
+      // The alwaysLoadRoot is better solved by moving the camera to the newly selected asset.
       tileset3d.depthLimit = this.props.depthLimit;
+      tileset3d.alwaysLoadRoot = true;
     }
 
     this.setState({tileset3d});
@@ -128,21 +130,20 @@ export default class Tile3DLayer extends CompositeLayer {
 
     for (const value of layerMapValues) {
       const {tile} = value;
-      let {layer} = value;
+      const {layer} = value;
 
       if (tile.selectedFrame === frameNumber) {
-        if (!layer.visible) {
-          layer = layer.clone({visible: true});
-          layerMap[tile.contentUri].layer = layer;
+        if (!layer.props.visible) {
+          // Still has GPU resource but visibilty is turned off so turn it back on so we can render it.
+          layerMap[tile.contentUri].layer = layer.clone({visible: true});
         }
         selectedLayers.push(layer);
       } else if (tile.contentUnloaded) {
         // Was cleaned up from tileset cache. We no longer need to track it.
         layerMap.delete(tile.contentUri);
-      } else if (layer.visible) {
-        // Still in tileset cache, keep the GPU resource bound but don't render it.
-        layer = layer.clone({visible: false});
-        layerMap[tile.contentUri].layer = layer;
+      } else if (layer.props.visible) {
+        // Still in tileset cache but doesn't need to render this frame. Keep the GPU resource bound but don't render it.
+        layerMap[tile.contentUri].layer = layer.clone({visible: false});
       }
     }
 
@@ -271,12 +272,11 @@ export default class Tile3DLayer extends CompositeLayer {
   }
 
   _unpackInstanced3DTile(tileHeader) {
-    const {gl} = this.context.animationProps;
-
     if (tileHeader.content.gltf) {
-      const json = postProcessGLTF(tileHeader.content.gltf);
-      const gltfObjects = createGLTFObjects(gl, json);
-      tileHeader.userData = {gltfObjects};
+      // const {gl} = this.context.animationProps;
+      // const json = postProcessGLTF(tileHeader.content.gltf);
+      // const gltfObjects = createGLTFObjects(gl, json);
+      // tileHeader.userData = {gltfObjects};
     }
 
     if (tileHeader.content.gltfUrl) {
@@ -286,10 +286,10 @@ export default class Tile3DLayer extends CompositeLayer {
   }
 
   _unpackBatched3DTile(tileHeader) {
-    const {gl} = this.context.animationProps;
-    const json = postProcessGLTF(tileHeader.content.gltf);
-    const gltfObjects = createGLTFObjects(gl, json);
-    tileHeader.userData = {gltfObjects};
+    // const {gl} = this.context.animationProps;
+    // const json = postProcessGLTF(tileHeader.content.gltf);
+    // const gltfObjects = createGLTFObjects(gl, json);
+    // tileHeader.userData = {gltfObjects};
   }
 
   /* eslint-disable-next-line complexity */
@@ -315,28 +315,34 @@ export default class Tile3DLayer extends CompositeLayer {
     if (transform) {
       modelMatrix = new Matrix4(transform);
     }
+
     if (rtcCenter) {
-      modelMatrix = modelMatrix
-        ? modelMatrix.translate(rtcCenter)
-        : new Matrix4().translate(rtcCenter);
-    }
-    if (modelMatrix) {
-      transformProps.modelMatrix = modelMatrix;
+      modelMatrix = modelMatrix || new Matrix4();
+      modelMatrix.translate(rtcCenter);
+      transformProps.coordinateSystem =
+        transformProps.coordinateSystem || COORDINATE_SYSTEM.METER_OFFSETS;
     }
 
     if (isWGS84) {
       transformProps.coordinateSystem = coordinateSystem || COORDINATE_SYSTEM.METER_OFFSETS;
       transformProps.coordinateOrigin = coordinateOrigin;
+      // TODO - Heuristics to get a coordinateOrigin from the tile
+      // verify with spec
       if (!coordinateOrigin) {
-        const origin = new Matrix4().multiplyRight(transformProps.modelMatrix).transform([0, 0, 0]);
-        transformProps.coordinateOrigin = Ellipsoid.WGS84.cartesianToCartographic(origin, origin);
-        delete transformProps.modelMatrix;
+        if (modelMatrix) {
+          const origin = new Vector3();
+          modelMatrix.transform(origin, origin);
+          transformProps.coordinateOrigin = Ellipsoid.WGS84.cartesianToCartographic(origin, origin);
+          modelMatrix = null;
+        } else {
+          // No model matrix, so assume bounding volume center
+          transformProps.coordinateOrigin = tileHeader.boundingVolume.center;
+        }
       }
     }
 
-    if (rtcCenter) {
-      transformProps.coordinateSystem =
-        transformProps.coordinateSystem || COORDINATE_SYSTEM.METER_OFFSETS;
+    if (modelMatrix) {
+      transformProps.modelMatrix = modelMatrix;
     }
 
     return transformProps;
@@ -371,23 +377,46 @@ export default class Tile3DLayer extends CompositeLayer {
   }
 
   _renderInstanced3DTileLayer(tileHeader) {
-    const {gltfObjects, gltfUrl} = tileHeader.userData;
+    const {gltfUrl} = tileHeader.userData;
 
     const transformProps = this._resolveTransformProps(tileHeader);
+
+    let scenegraphProps = {scenegraph: gltfUrl};
+
+    const {gltfArrayBuffer} = tileHeader.content;
+
+    // TODO - Currently scenegraph layer mainly works with async URLs
+    // So try to make our embedded array buffer look like an async URL
+    if (!gltfUrl) {
+      // const {gltfObjects} = tileHeader.userData;
+      scenegraphProps = {
+        scenegraph: '3d-tile',
+        fetch: (url, {propName, layer}) => {
+          if (url === '3d-tile') {
+            // return Promise.resolve(gltfArrayBuffer);
+            /* global Blob, URL */
+            const blob = new Blob([gltfArrayBuffer]);
+            const blobUrl = URL.createObjectURL(blob);
+            load(blobUrl, GLTFScenegraphLoader, layer.getLoadOptions());
+          }
+        }
+      };
+    }
 
     return new ScenegraphLayer({
       id: `3d-model-tile-layer-${tileHeader.contentUri}`,
       data: [{}, {}],
       coordinateSystem: COORDINATE_SYSTEM.METERS,
       pickable: true,
-      scenegraph: gltfUrl ? gltfUrl : gltfObjects.scenes[0],
-      sizeScale: 2,
-      getPosition: row => [0, 0, 0],
-      getOrientation: d => [0, 0, 0],
-      getTranslation: [0, 0, 0],
-      getScale: [1, 1, 1],
-      getColor: [255, 255, 255, 255],
-      opacity: 0.8,
+      ...scenegraphProps,
+      sizeScale: 1,
+      // getPosition: row => [0, 0, 0],
+      // getOrientation: d => [0, 45, 0],
+      // getTranslation: [0, 0, 0],
+      // getScale: [1, 1, 1],
+      // white is a bit hard to see
+      getColor: [0, 0, 100, 100],
+      opacity: 0.6,
       ...transformProps
     });
   }
@@ -418,7 +447,8 @@ export default class Tile3DLayer extends CompositeLayer {
   }
 
   renderLayers() {
-    const {layers} = this.state;
+    const layers = Object.values(this.state.layerMap).map(layer => layer.layer);
+    // const {layers} = this.state;
     return layers;
   }
 }
