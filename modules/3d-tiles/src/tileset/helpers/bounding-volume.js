@@ -93,12 +93,18 @@ function createBox(box, transform, result) {
   const center = new Vector3(box[0], box[1], box[2]);
   let halfAxes = new Matrix3(box.slice(3, box.length));
 
-  transform.transformPoint(center, center); // (in, out), transformVector and Point have been removed in 3.0?
+  transform.transform(center, center);
 
   halfAxes = new Matrix3(
-    transform[0], transform[1], transform[2],
-    transform[4], transform[5], transform[6],
-    transform[8], transform[9], transform[10]
+    transform[0],
+    transform[1],
+    transform[2],
+    transform[4],
+    transform[5],
+    transform[6],
+    transform[8],
+    transform[9],
+    transform[10]
   ).multiplyRight(halfAxes);
 
   return new OrientedBoundingBox(center, halfAxes);

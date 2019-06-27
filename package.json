@@ -62,7 +62,5 @@
   "pre-commit": [
     "test-fast"
   ],
-  "dependencies": {
-    "@math.gl/culling": "3.0.0-alpha.4"
-  }
+  "dependencies": {}
 }

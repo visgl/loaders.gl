@@ -26,6 +26,8 @@ registerLoaders([Tile3DLoader, Tileset3DLoader, GLTFScenegraphLoader]);
 
 const DEFAULT_POINT_COLOR = [255, 0, 0, 255];
 
+// const scratchCameraToTileset = new Vector3();
+
 const defaultProps = {
   // TODO - the tileset json should be an async prop.
   tilesetUrl: null,
@@ -37,7 +39,6 @@ const defaultProps = {
   onTileLoaded: () => {},
   onTilesetLoaded: () => {}
 };
-
 export default class Tile3DLayer extends CompositeLayer {
   initializeState() {
     this.state = {
@@ -90,8 +91,6 @@ export default class Tile3DLayer extends CompositeLayer {
     // Traverse and and request. Update _selectedTiles so that we know what to render.
     const {height, tick} = animationProps;
     const {cameraPosition, cameraDirection, cameraUp, zoom} = viewport;
-    // console.log('CAM POS:' + cameraPosition);
-    // TODO: Why is the camera so far away from the origin when the points its model matrix, and the header's bounding box is near the origin
 
     // Map zoom 0-1
     // const min = 12; const max = 24; const zoomMagic = 1000;// tilesetpoints
@@ -102,10 +101,16 @@ export default class Tile3DLayer extends CompositeLayer {
     zoomMap = (zoomMap - min) / (max - min);
     zoomMap = Math.max(Math.min(1.0 - zoomMap, 1), 0);
 
-    // Setup frameState so that tileset-3d-traverser can do it's job
+    // const {coordinateOrigin} = this.props;
+    // // Take coordinateOrigin and get a cartesian
+    // const cameraTranslatedToTileset = scratchCameraToTileset.copy(cameraPosition).subtract(coordinateOrigin);
+    // console.log('COORD ORIG:' + coordinateOrigin);
+    // console.log('CAM POS:' + cameraPosition);
+    // console.log('CAM POS TO TILESET:' + cameraTranslatedToTileset);
     // TODO: make a file/class for frameState and document what needs to be attached to this so that traversal can function
     const frameState = {
       camera: {
+        // position: cameraTranslatedToTileset,
         position: cameraPosition,
         direction: cameraDirection,
         up: cameraUp
