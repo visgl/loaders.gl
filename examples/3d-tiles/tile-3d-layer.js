@@ -128,12 +128,12 @@ export default class Tile3DLayer extends CompositeLayer {
 
     for (const value of layerMapValues) {
       const {tile} = value;
-      let { layer } = value;
+      let {layer} = value;
 
       if (tile.selectedFrame === frameNumber) {
         if (!layer.props.visible) {
           // Still has GPU resource but visibilty is turned off so turn it back on so we can render it.
-          layer = layer.clone({ visible: true });
+          layer = layer.clone({visible: true});
           layerMap[tile.contentUri].layer = layer;
         }
         selectedLayers.push(layer);
@@ -142,7 +142,7 @@ export default class Tile3DLayer extends CompositeLayer {
         layerMap.delete(tile.contentUri);
       } else if (layer.props.visible) {
         // Still in tileset cache but doesn't need to render this frame. Keep the GPU resource bound but don't render it.
-        layer = layer.clone({ visible: false });
+        layer = layer.clone({visible: false});
         layerMap[tile.contentUri].layer = layer;
       }
     }
@@ -273,7 +273,7 @@ export default class Tile3DLayer extends CompositeLayer {
 
   _unpackInstanced3DTile(tileHeader) {
     if (tileHeader.content.gltfArrayBuffer) {
-      tileHeader.userData = { gltfUrl: parse(tileHeader.content.gltfArrayBuffer) };
+      tileHeader.userData = {gltfUrl: parse(tileHeader.content.gltfArrayBuffer)};
     }
 
     if (tileHeader.content.gltfUrl) {
