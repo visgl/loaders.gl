@@ -12,6 +12,7 @@ import Tile3DLayer from './tile-3d-layer';
 import ControlPanel from './components/control-panel';
 import fileDrop from './components/file-drop';
 import {updateStatWidgets} from './components/stats-widgets';
+import {Ellipsoid} from '@math.gl/geospatial';
 
 const DATA_URI = 'https://raw.githubusercontent.com/uber-web/loaders.gl/master';
 const INDEX_FILE = `${DATA_URI}/modules/3d-tiles/test/data/index.json`;
@@ -34,9 +35,7 @@ const ADDITIONAL_EXAMPLES = {
       tilesetUrl:
         'https://raw.githubusercontent.com/uber-common/deck.gl-data/master/3d-tiles/RoyalExhibitionBuilding/tileset.json',
       coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS,
-      coordinateOrigin: [144.97212, -37.805177],
-      isWGS84: false,
-      // depthLimit: 5,
+      isWGS84: true,
       depthLimit: 2, // TODO: Remove this after sse traversal is working since this is just to prevent full load of tileset
       color: [115, 101, 152, 200]
     }
@@ -207,17 +206,22 @@ export default class App extends PureComponent {
   _onTileLoaded(tileHeader) {
     const {name} = this.state;
     // cannot parse the center from royalExhibitionBuilding dataset
-    if (tileHeader.depth === 0 && name !== 'royalExhibitionBuilding') {
+    const isRoyal = name === 'royalExhibitionBuilding' && tileHeader.depth === 1;
+    if (tileHeader.depth === 0 || isRoyal) {
       const {center} = tileHeader.boundingVolume;
       if (!center) {
         // eslint-disable-next-line
         console.warn('center was not pre-calculated for the root tile');
       } else {
+        const longLat = center.clone();
+        if (isRoyal) {
+          Ellipsoid.WGS84.cartesianToCartographic(center, longLat);
+        }
         this.setState({
           viewState: {
             ...this.state.viewState,
-            longitude: center[0],
-            latitude: center[1]
+            longitude: longLat[0],
+            latitude: longLat[1]
           }
         });
       }

@@ -51,6 +51,29 @@ export default class Tile3DLayer extends CompositeLayer {
     let tileset3d = null;
     if (tilesetUrl) {
       const tilesetJson = await load(tilesetUrl);
+
+      if (tilesetUrl.includes('RoyalExhibitionBuilding')) {
+        // ECEF transform to the coordinateOrigin long lat position (60m height offset from ellipsoid) -0.5739749660092391,-0.8188728462922024,0.0,0.0,-0.5019514247607851,0.3518342967041723,0.7900996107094966,0.0,-0.6469911170760465,0.4534973972008964,-0.6129784703859522,0.0,-4131756.7389703253,2896175.013126114,-3888472.663125889,1.0
+        tilesetJson.root.transform = new Matrix4([
+          -0.5739749660092391,
+          -0.8188728462922024,
+          0.0,
+          0.0,
+          -0.5019514247607851,
+          0.3518342967041723,
+          0.7900996107094966,
+          0.0,
+          -0.6469911170760465,
+          0.4534973972008964,
+          -0.6129784703859522,
+          0.0,
+          -4131756.7389703253,
+          2896175.013126114,
+          -3888472.663125889,
+          1.0
+        ]);
+      }
+
       tileset3d = new Tileset3D(tilesetJson, tilesetUrl, options);
 
       // TODO: Remove these after sse traversal is working since this is just to prevent full load of tileset and loading of root
@@ -321,7 +344,9 @@ export default class Tile3DLayer extends CompositeLayer {
       modelMatrix = new Matrix4(transform);
     }
 
-    if (rtcCenter) {
+    // TODO: remove rtcCenter from royal .content
+    const isRoyal = tileHeader._tileset._url.includes('Royal');
+    if (rtcCenter && !isRoyal) {
       modelMatrix = modelMatrix || new Matrix4();
       modelMatrix.translate(rtcCenter);
       transformProps.coordinateSystem =
