@@ -477,6 +477,7 @@ export default class Tile3DHeader {
   _initializeTransforms(tileHeader) {
     // The local transform of this tile.
     this.transform = tileHeader.transform ? new Matrix4(tileHeader.transform) : new Matrix4();
+    console.log(this.transform);
 
     const parent = this.parent;
     const tileset = this._tileset;

@@ -22,12 +22,12 @@ const INDEX_FILE = `${DATA_URI}/modules/3d-tiles/test/data/index.json`;
 const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
 const MAPBOX_STYLE = 'mapbox://styles/mapbox/light-v9';
 
-// const INITIAL_EXAMPLE_CATEGORY = 'additional';
-// const INITIAL_EXAMPLE_NAME = 'royalExhibitionBuilding';
+const INITIAL_EXAMPLE_CATEGORY = 'additional';
+const INITIAL_EXAMPLE_NAME = 'royalExhibitionBuilding';
 // const INITIAL_EXAMPLE_CATEGORY = 'Instanced';
 // const INITIAL_EXAMPLE_NAME = 'InstancedGltfExternal';
-const INITIAL_EXAMPLE_CATEGORY = 'PointCloud';
-const INITIAL_EXAMPLE_NAME = 'PointCloudRGB';
+// const INITIAL_EXAMPLE_CATEGORY = 'PointCloud';
+// const INITIAL_EXAMPLE_NAME = 'PointCloudRGB';
 
 const scratchLongLat = new Vector3();
 
