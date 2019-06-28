@@ -1,5 +1,12 @@
 import test from 'tape-promise/tape';
-import {isBrowser, resolvePath, fetchFile, getStreamIterator, parse, parseInBatches} from '@loaders.gl/core';
+import {
+  isBrowser,
+  resolvePath,
+  fetchFile,
+  getStreamIterator,
+  parse,
+  parseInBatches
+} from '@loaders.gl/core';
 // import {parseInBatchesSync} from '@loaders.gl/core';
 import {ArrowLoader} from '@loaders.gl/arrow';
 import {ArrowWorkerLoader} from '@loaders.gl/arrow';
