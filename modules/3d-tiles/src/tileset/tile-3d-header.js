@@ -1,8 +1,8 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
-
 // import {TILE3D_REFINEMENT, TILE3D_OPTIMIZATION_HINT} from '../constants';
 import {Vector3, Matrix4} from 'math.gl';
+// import {CullingVolume} from '@math.gl/culling';
 import Tile3DLoader from '../tile-3d-loader';
 // import Tileset3DLoader from '../tileset-3d-loader';
 import {TILE3D_REFINEMENT, TILE3D_CONTENT_STATE, TILE3D_OPTIMIZATION_HINT} from '../constants';
@@ -420,9 +420,13 @@ export default class Tile3DHeader {
   // @param {FrameState} frameState The frame state.
   // @returns {Number} The distance, in meters, or zero if the camera is inside the bounding volume.
   distanceToTile(frameState) {
-    // const boundingVolume = this._boundingVolume;
-    // return boundingVolume.distanceToCamera(frameState);
-    return frameState.distanceMagic;
+    const boundingVolume = this._boundingVolume;
+    // const actualDist = boundingVolume.distanceTo(frameState.camera.position);
+    const zoomDist = frameState.distanceMagic;
+    // console.log('ZOOM DISTANCE: ' + zoomDist);
+    // console.log('CAM POS: ' + frameState.camera.position);
+    // console.log('ACTU DISTANCE: ' + actualDist);
+    return zoomDist;
   }
 
   // Computes the tile's camera-space z-depth.

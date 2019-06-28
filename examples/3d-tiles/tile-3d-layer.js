@@ -91,17 +91,17 @@ export default class Tile3DLayer extends CompositeLayer {
     const {height, tick} = animationProps;
     const {cameraPosition, cameraDirection, cameraUp, zoom} = viewport;
 
-    // Map zoom 0-1
-    // const min = 12; const max = 24; const zoomMagic = 1000;// tilesetpoints
-    const min = 15;
-    const max = 20;
+    // TODO: remove after sse traversal working
+    const minZoom = 14;
+    const maxZoom = 21;
     const zoomMagic = 10000; // royalexhibition
-    let zoomMap = Math.max(Math.min(zoom, max), min);
-    zoomMap = (zoomMap - min) / (max - min);
-    zoomMap = Math.max(Math.min(1.0 - zoomMap, 1), 0);
+    let zoomMap = Math.max(Math.min(zoom, maxZoom), minZoom);
+    zoomMap = (zoomMap - minZoom) / (maxZoom - minZoom);
+    let expMap = 1 - Math.exp(-zoomMap * 6); // Use exposure tone mapping to smooth out the sensitivity in the zoom mapping
+    expMap = Math.max(Math.min(1.0 - expMap, 1), 0);
+    const distanceMagic = expMap * zoomMagic;
 
-    // Setup frameState so that tileset-3d-traverser can do it's job
-    // TODO: make a file for this and document what needs to be attached to this so that traversal can function
+    // TODO: make a file/class for frameState and document what needs to be attached to this so that traversal can function
     const frameState = {
       camera: {
         position: cameraPosition,
@@ -110,7 +110,7 @@ export default class Tile3DLayer extends CompositeLayer {
       },
       height,
       frameNumber: tick,
-      distanceMagic: zoomMap * zoomMagic,
+      distanceMagic,
       sseDenominator: 1.15 // Assumes fovy = 60 degrees
     };
 

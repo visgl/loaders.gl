@@ -6,7 +6,7 @@ import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
 import DeckGL from '@deck.gl/react';
 import {COORDINATE_SYSTEM, MapController} from '@deck.gl/core';
-
+import {Vector3} from 'math.gl';
 // import '@loaders.gl/polyfills';
 // import '@luma.gl/debug';
 
@@ -15,6 +15,7 @@ import Tile3DLayer from './tile-3d-layer';
 import ControlPanel from './components/control-panel';
 import fileDrop from './components/file-drop';
 import {updateStatWidgets} from './components/stats-widgets';
+import {Ellipsoid} from '@math.gl/geospatial';
 
 const DATA_URI = 'https://raw.githubusercontent.com/uber-web/loaders.gl/master';
 const INDEX_FILE = `${DATA_URI}/modules/3d-tiles/test/data/index.json`;
@@ -23,12 +24,14 @@ const INDEX_FILE = `${DATA_URI}/modules/3d-tiles/test/data/index.json`;
 const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
 const MAPBOX_STYLE = 'mapbox://styles/mapbox/light-v9';
 
-// const INITIAL_EXAMPLE_CATEGORY = 'additional';
-// const INITIAL_EXAMPLE_NAME = 'royalExhibitionBuilding';
+const INITIAL_EXAMPLE_CATEGORY = 'additional';
+const INITIAL_EXAMPLE_NAME = 'royalExhibitionBuilding';
 // const INITIAL_EXAMPLE_CATEGORY = 'Instanced';
 // const INITIAL_EXAMPLE_NAME = 'InstancedGltfExternal';
-const INITIAL_EXAMPLE_CATEGORY = 'PointCloud';
-const INITIAL_EXAMPLE_NAME = 'PointCloudRGB';
+// const INITIAL_EXAMPLE_CATEGORY = 'PointCloud';
+// const INITIAL_EXAMPLE_NAME = 'PointCloudRGB';
+
+const scratchLongLat = new Vector3();
 
 const ADDITIONAL_EXAMPLES = {
   name: 'additional',
@@ -37,9 +40,7 @@ const ADDITIONAL_EXAMPLES = {
       tilesetUrl:
         'https://raw.githubusercontent.com/uber-common/deck.gl-data/master/3d-tiles/RoyalExhibitionBuilding/tileset.json',
       coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS,
-      coordinateOrigin: [144.97212, -37.805177],
-      isWGS84: false,
-      // depthLimit: 5,
+      isWGS84: true,
       depthLimit: 2, // TODO: Remove this after sse traversal is working since this is just to prevent full load of tileset
       color: [115, 101, 152, 200]
     }
@@ -210,17 +211,22 @@ export default class App extends PureComponent {
   _onTileLoaded(tileHeader) {
     const {name} = this.state;
     // cannot parse the center from royalExhibitionBuilding dataset
-    if (tileHeader.depth === 0 && name !== 'royalExhibitionBuilding') {
+    const isRoyal = name === 'royalExhibitionBuilding' && tileHeader.depth === 1;
+    if (tileHeader.depth === 0 || isRoyal) {
       const {center} = tileHeader.boundingVolume;
       if (!center) {
         // eslint-disable-next-line
         console.warn('center was not pre-calculated for the root tile');
       } else {
+        scratchLongLat.copy(center);
+        if (isRoyal || name === 'TilesetPoints') {
+          Ellipsoid.WGS84.cartesianToCartographic(center, scratchLongLat);
+        }
         this.setState({
           viewState: {
             ...this.state.viewState,
-            longitude: center[0],
-            latitude: center[1]
+            longitude: scratchLongLat[0],
+            latitude: scratchLongLat[1]
           }
         });
       }
