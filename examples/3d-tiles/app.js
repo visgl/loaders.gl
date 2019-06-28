@@ -4,6 +4,7 @@ import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
 import DeckGL from '@deck.gl/react';
 import {COORDINATE_SYSTEM, MapController} from '@deck.gl/core';
+import {Vector3} from 'math.gl';
 // import '@loaders.gl/polyfills';
 // import '@luma.gl/debug';
 
@@ -213,8 +214,9 @@ export default class App extends PureComponent {
         // eslint-disable-next-line
         console.warn('center was not pre-calculated for the root tile');
       } else {
-        const longLat = center.clone();
-        if (isRoyal) {
+        const longLat = new Vector3();
+        longLat.copy(center);
+        if (this.state.tilesetExampleProps.isWGS84) {
           Ellipsoid.WGS84.cartesianToCartographic(center, longLat);
         }
         this.setState({
