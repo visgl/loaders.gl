@@ -5,10 +5,10 @@ import {COORDINATE_SYSTEM} from '@deck.gl/core';
 import {PointCloudLayer} from '@deck.gl/layers';
 import {ScenegraphLayer} from '@deck.gl/mesh-layers';
 
-import {GLTFScenegraphLoader} from '@luma.gl/addons';
+import {GLTFLoader} from '@loaders.gl/gltf';
 
 import '@loaders.gl/polyfills';
-import {load, registerLoaders} from '@loaders.gl/core';
+import {load, parse, registerLoaders} from '@loaders.gl/core';
 // import {postProcessGLTF} from '@loaders.gl/gltf';
 import {DracoWorkerLoader} from '@loaders.gl/draco';
 import {Ellipsoid} from '@math.gl/geospatial';
@@ -22,7 +22,7 @@ import {
   Tileset3DLoader
 } from '@loaders.gl/3d-tiles';
 
-registerLoaders([Tile3DLoader, Tileset3DLoader, GLTFScenegraphLoader]);
+registerLoaders([Tile3DLoader, Tileset3DLoader, GLTFLoader]);
 
 const DEFAULT_POINT_COLOR = [255, 0, 0, 255];
 
@@ -42,7 +42,8 @@ export default class Tile3DLayer extends CompositeLayer {
   initializeState() {
     this.state = {
       layerMap: {},
-      layers: []
+      layers: [],
+      tileset3d: null
     };
   }
 
@@ -58,10 +59,14 @@ export default class Tile3DLayer extends CompositeLayer {
       tileset3d.alwaysLoadRoot = true;
     }
 
-    this.setState({tileset3d});
+    this.setState({
+      tileset3d,
+      layerMap: {},
+      layers: []
+    });
 
     if (tileset3d) {
-      this.props.onTilesetLoaded();
+      this.props.onTilesetLoaded(tileset3d);
     }
   }
 
@@ -71,14 +76,9 @@ export default class Tile3DLayer extends CompositeLayer {
 
   updateState({props, oldProps, context, changeFlags}) {
     if (props.tilesetUrl !== oldProps.tilesetUrl) {
-      this.setState({
-        layerMap: {},
-        layers: []
-      });
-      const options = {
+      this._loadTileset(props.tilesetUrl, {
         onTileLoad: this.props.onTileLoaded
-      };
-      this._loadTileset(props.tilesetUrl, options);
+      });
     }
 
     const {tileset3d} = this.state;
@@ -128,12 +128,13 @@ export default class Tile3DLayer extends CompositeLayer {
 
     for (const value of layerMapValues) {
       const {tile} = value;
-      const {layer} = value;
+      let { layer } = value;
 
       if (tile.selectedFrame === frameNumber) {
         if (!layer.props.visible) {
           // Still has GPU resource but visibilty is turned off so turn it back on so we can render it.
-          layerMap[tile.contentUri].layer = layer.clone({visible: true});
+          layer = layer.clone({ visible: true });
+          layerMap[tile.contentUri].layer = layer;
         }
         selectedLayers.push(layer);
       } else if (tile.contentUnloaded) {
@@ -141,7 +142,8 @@ export default class Tile3DLayer extends CompositeLayer {
         layerMap.delete(tile.contentUri);
       } else if (layer.props.visible) {
         // Still in tileset cache but doesn't need to render this frame. Keep the GPU resource bound but don't render it.
-        layerMap[tile.contentUri].layer = layer.clone({visible: false});
+        layer = layer.clone({ visible: false });
+        layerMap[tile.contentUri].layer = layer;
       }
     }
 
@@ -185,7 +187,7 @@ export default class Tile3DLayer extends CompositeLayer {
         default:
           // eslint-disable-next-line
           console.warn('Error unpacking 3D tile', content.type, content);
-          return;
+          throw new Error(`Tile3DLayer: Error unpacking 3D tile ${content.type}`);
       }
     }
   }
@@ -270,11 +272,8 @@ export default class Tile3DLayer extends CompositeLayer {
   }
 
   _unpackInstanced3DTile(tileHeader) {
-    if (tileHeader.content.gltf) {
-      // const {gl} = this.context.animationProps;
-      // const json = postProcessGLTF(tileHeader.content.gltf);
-      // const gltfObjects = createGLTFObjects(gl, json);
-      // tileHeader.userData = {gltfObjects};
+    if (tileHeader.content.gltfArrayBuffer) {
+      tileHeader.userData = { gltfUrl: parse(tileHeader.content.gltfArrayBuffer) };
     }
 
     if (tileHeader.content.gltfUrl) {
@@ -363,15 +362,21 @@ export default class Tile3DLayer extends CompositeLayer {
       return null;
     }
 
+    let layer;
     switch (tileHeader.content.type) {
       case 'pnts':
-        return this._renderPointCloud3DTileLayer(tileHeader);
+        layer = this._renderPointCloud3DTileLayer(tileHeader);
+        break;
       case 'i3dm':
       case 'b3dm':
-        return this._renderInstanced3DTileLayer(tileHeader);
+        layer = this._renderInstanced3DTileLayer(tileHeader);
+        break;
       default:
-        return null;
     }
+    if (!layer) {
+      throw new Error(`Tile3DLayer: Failed to render layer of type ${tileHeader.content.type}`);
+    }
+    return layer;
   }
 
   _renderInstanced3DTileLayer(tileHeader) {
@@ -379,34 +384,12 @@ export default class Tile3DLayer extends CompositeLayer {
 
     const transformProps = this._resolveTransformProps(tileHeader);
 
-    let scenegraphProps = {scenegraph: gltfUrl};
-
-    const {gltfArrayBuffer} = tileHeader.content;
-
-    // TODO - Currently scenegraph layer mainly works with async URLs
-    // So try to make our embedded array buffer look like an async URL
-    if (!gltfUrl) {
-      // const {gltfObjects} = tileHeader.userData;
-      scenegraphProps = {
-        scenegraph: '3d-tile',
-        fetch: (url, {propName, layer}) => {
-          if (url === '3d-tile') {
-            // return Promise.resolve(gltfArrayBuffer);
-            /* global Blob, URL */
-            const blob = new Blob([gltfArrayBuffer]);
-            const blobUrl = URL.createObjectURL(blob);
-            load(blobUrl, GLTFScenegraphLoader, layer.getLoadOptions());
-          }
-        }
-      };
-    }
-
     return new ScenegraphLayer({
       id: `3d-model-tile-layer-${tileHeader.contentUri}`,
       data: [{}, {}],
       coordinateSystem: COORDINATE_SYSTEM.METERS,
       pickable: true,
-      ...scenegraphProps,
+      scenegraph: gltfUrl,
       sizeScale: 1,
       // getPosition: row => [0, 0, 0],
       // getOrientation: d => [0, 45, 0],
