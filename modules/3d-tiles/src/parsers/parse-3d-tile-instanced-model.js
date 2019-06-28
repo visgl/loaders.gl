@@ -1,9 +1,11 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
+import {Vector3, Matrix3, Matrix4, Quaternion} from 'math.gl';
+import {Ellipsoid} from '@math.gl/geospatial';
 import {GL} from '@loaders.gl/math'; // 'math.gl/geometry';
 import Tile3DFeatureTable from '../classes/tile-3d-feature-table';
-// import Tile3DBatchTable from '../classes/tile-3d-batch-table';
+import Tile3DBatchTable from '../classes/tile-3d-batch-table';
 
 import {parse3DTileHeaderSync} from './helpers/parse-3d-tile-header';
 import {parse3DTileTablesHeaderSync, parse3DTileTablesSync} from './helpers/parse-3d-tile-tables';
@@ -50,72 +52,82 @@ export function parseInstancedModel3DTileSync(tile, arrayBuffer, byteOffset, opt
   tile.eastNorthUp = featureTable.getGlobalProperty('EAST_NORTH_UP');
   tile.rtcCenter = featureTable.getGlobalProperty('RTC_CENTER', GL.FLOAT, 3);
 
-  // const batchTable = new Tile3DBatchTable(tile, instancesLength);
+  const batchTable = new Tile3DBatchTable(
+    tile.batchTableJson,
+    tile.batchTableBinary,
+    instancesLength
+  );
 
   extractGLTF(tile, tile.gltfFormat, options);
 
-  extractInstancedAttributes(tile, featureTable);
+  extractInstancedAttributes(tile, featureTable, batchTable, instancesLength);
 
   return byteOffset;
 }
 
 // eslint-disable-next-line max-statements, complexity
-function extractInstancedAttributes(tile, featureTable, batchTable) {
-  /*
+function extractInstancedAttributes(tile, featureTable, batchTable, instancesLength) {
   // Create model instance collection
   const collectionOptions = {
     instances: new Array(instancesLength),
     batchTable: tile._batchTable,
     cull: false, // Already culled by 3D Tiles
     url: undefined,
-    requestType: RequestType.TILES3D,
+    // requestType: RequestType.TILES3D,
     gltf: undefined,
     basePath: undefined,
     incrementallyLoadTextures: false,
-    upAxis: tileset._gltfUpAxis,
-    forwardAxis: Axis.X,
-    opaquePass: Pass.CESIUM_3D_TILE, // Draw opaque portions during the 3D Tiles pass
-    pickIdLoaded: getPickIdCallback(tile),
-    imageBasedLightingFactor: tileset.imageBasedLightingFactor,
-    lightColor: tileset.lightColor,
-    luminanceAtZenith: tileset.luminanceAtZenith,
-    sphericalHarmonicCoefficients: tileset.sphericalHarmonicCoefficients,
-    specularEnvironmentMaps: tileset.specularEnvironmentMaps
+    // TODO - tileset is not available at this stage, tile is parsed independently
+    // upAxis: (tileset && tileset._gltfUpAxis) || [0, 1, 0],
+    forwardAxis: [1, 0, 0]
+
+    // Cesium internals
+    // opaquePass: Pass.CESIUM_3D_TILE, // Draw opaque portions during the 3D Tiles pass
+    // pickIdLoaded: getPickIdCallback(tile),
+    // imageBasedLightingFactor: tileset.imageBasedLightingFactor,
+    // lightColor: tileset.lightColor,
+    // luminanceAtZenith: tileset.luminanceAtZenith,
+    // sphericalHarmonicCoefficients: tileset.sphericalHarmonicCoefficients,
+    // specularEnvironmentMaps: tileset.specularEnvironmentMaps
   };
 
   const instances = collectionOptions.instances;
   const instancePosition = new Vector3();
-  const instancePositionArray = new Array(3);
   const instanceNormalRight = new Vector3();
   const instanceNormalUp = new Vector3();
   const instanceNormalForward = new Vector3();
   const instanceRotation = new Matrix3();
   const instanceQuaternion = new Quaternion();
   const instanceScale = new Vector3();
-  const instanceTranslationRotationScale = new TranslationRotationScale();
+  const instanceTranslationRotationScale = {};
   const instanceTransform = new Matrix4();
-  const scratch1 = new Array();
-  const scratch2 = new Array();
+  const scratch1 = [];
+  const scratch2 = [];
+  const scratchVector1 = new Vector3();
+  const scratchVector2 = new Vector3();
 
-  for (const i = 0; i < instancesLength; i++) {
+  for (let i = 0; i < instancesLength; i++) {
+    let position;
+
     // Get the instance position
     if (featureTable.hasProperty('POSITION')) {
-      tile.position = featureTable.getProperty('POSITION', GL.FLOAT, 3, i, scratch1);
+      position = featureTable.getProperty('POSITION', GL.FLOAT, 3, i, instancePosition);
     } else if (featureTable.hasProperty('POSITION_QUANTIZED')) {
-      tile.position = instancePositionArray;
-      tile.positionQuantized = featureTable.getProperty(
+      position = featureTable.getProperty(
         'POSITION_QUANTIZED',
         GL.UNSIGNED_SHORT,
         3,
-        scratch1
+        i,
+        instancePosition
       );
 
-      tile.quantizedVolumeOffset = featureTable.getGlobalProperty(
+      const quantizedVolumeOffset = featureTable.getGlobalProperty(
         'QUANTIZED_VOLUME_OFFSET',
         GL.FLOAT,
-        3
+        3,
+        scratchVector1
       );
-      if (!tile.quantizedVolumeOffset) {
+      if (!quantizedVolumeOffset) {
         throw new Error(
           'i3dm parser: QUANTIZED_VOLUME_OFFSET must be defined for quantized positions.'
         );
@@ -124,27 +136,30 @@ function extractInstancedAttributes(tile, featureTable, batchTable) {
       const quantizedVolumeScale = featureTable.getGlobalProperty(
         'QUANTIZED_VOLUME_SCALE',
         GL.FLOAT,
-        3
+        3,
+        scratchVector2
       );
-      if (!tile.quantizedVolumeScale) {
+      if (!quantizedVolumeScale) {
         throw new Error(
           'i3dm parser: QUANTIZED_VOLUME_SCALE must be defined for quantized positions.'
         );
       }
 
-      for (const j = 0; j < 3; j++) {
+      const MAX_UNSIGNED_SHORT = 65535.0;
+      for (let j = 0; j < 3; j++) {
         position[j] =
-          (positionQuantized[j] / 65535.0) * quantizedVolumeScale[j] + quantizedVolumeOffset[j];
+          (position[j] / MAX_UNSIGNED_SHORT) * quantizedVolumeScale[j] + quantizedVolumeOffset[j];
       }
     }
 
-    if (!tile.position) {
+    if (!position) {
       throw new Error('i3dm: POSITION or POSITION_QUANTIZED must be defined for each instance.');
     }
 
-    Vector3.unpack(position, 0, instancePosition);
-    if (defined(rtcCenter)) {
-      Vector3.add(instancePosition, rtcCenter, instancePosition);
+    instancePosition.copy(position);
+    // Why add center to instance position rather than tile transform?
+    if (tile.rtcCenter) {
+      instancePosition.add(tile.rtcCenter);
     }
     instanceTranslationRotationScale.translation = instancePosition;
 
@@ -181,69 +196,63 @@ function extractInstancedAttributes(tile, featureTable, batchTable) {
           );
         }
 
-        AttributeCompression.octDecodeInRange(
-          octNormalUp[0],
-          octNormalUp[1],
-          65535,
-          instanceNormalUp
-        );
-
-        AttributeCompression.octDecodeInRange(
-          octNormalRight[0],
-          octNormalRight[1],
-          65535,
-          instanceNormalRight
-        );
-
+        throw new Error('i3dm: oct-encoded orientation not implemented');
+        /*
+        AttributeCompression.octDecodeInRange(octNormalUp[0], octNormalUp[1], 65535, instanceNormalUp);
+        AttributeCompression.octDecodeInRange(octNormalRight[0], octNormalRight[1], 65535, instanceNormalRight);
         hasCustomOrientation = true;
-      } else if (eastNorthUp) {
-        Transforms.eastNorthUpToFixedFrame(instancePosition, Ellipsoid.WGS84, instanceTransform);
-        Matrix4.getRotation(instanceTransform, instanceRotation);
+        */
+      } else if (tile.eastNorthUp) {
+        Ellipsoid.WGS84.eastNorthUpToFixedFrame(instancePosition, instanceTransform);
+        instanceTransform.getRotation(instanceRotation);
       } else {
-        Matrix3.clone(Matrix3.IDENTITY, instanceRotation);
+        instanceRotation.identity();
       }
     }
 
     if (hasCustomOrientation) {
-      Vector3.cross(instanceNormalRight, instanceNormalUp, instanceNormalForward);
-      Vector3.normalize(instanceNormalForward, instanceNormalForward);
-      Matrix3.setColumn(instanceRotation, 0, instanceNormalRight, instanceRotation);
-      Matrix3.setColumn(instanceRotation, 1, instanceNormalUp, instanceRotation);
-      Matrix3.setColumn(instanceRotation, 2, instanceNormalForward, instanceRotation);
+      instanceNormalForward
+        .copy(instanceNormalRight)
+        .cross(instanceNormalUp)
+        .normalize();
+      instanceRotation.setColumn(0, instanceNormalRight);
+      instanceRotation.setColumn(1, instanceNormalUp);
+      instanceRotation.setColumn(2, instanceNormalForward);
     }
 
-    Quaternion.fromRotationMatrix(instanceRotation, instanceQuaternion);
+    instanceQuaternion.fromMatrix3(instanceRotation);
     instanceTranslationRotationScale.rotation = instanceQuaternion;
 
     // Get the instance scale
-    instanceScale = Vector3.fromElements(1.0, 1.0, 1.0, instanceScale);
+    instanceScale.set(1.0, 1.0, 1.0);
     const scale = featureTable.getProperty('SCALE', GL.FLOAT, 1, i);
-    if (defined(scale)) {
-      Vector3.multiplyByScalar(instanceScale, scale, instanceScale);
+    if (Number.isFinite(scale)) {
+      instanceScale.multiplyByScalar(scale);
     }
     const nonUniformScale = featureTable.getProperty('SCALE_NON_UNIFORM', GL.FLOAT, 3, i, scratch1);
-    if (defined(nonUniformScale)) {
-      instanceScale.x *= nonUniformScale[0];
-      instanceScale.y *= nonUniformScale[1];
-      instanceScale.z *= nonUniformScale[2];
+    if (nonUniformScale) {
+      instanceScale.scale(nonUniformScale);
     }
+
     instanceTranslationRotationScale.scale = instanceScale;
 
     // Get the batchId
-    const batchId = featureTable.getProperty('BATCH_ID', GL.UNSIGNED_SHORT, 1, i);
-    if (!defined(batchId)) {
+    let batchId = featureTable.getProperty('BATCH_ID', GL.UNSIGNED_SHORT, 1, i);
+    if (batchId === undefined) {
       // If BATCH_ID semantic is undefined, batchId is just the instance number
       batchId = i;
     }
 
     // Create the model matrix and the instance
-    Matrix4.fromTranslationRotationScale(instanceTranslationRotationScale, instanceTransform);
+    instanceTransform.fromQuaternion(instanceTranslationRotationScale.rotation);
+    instanceTransform.scale(instanceTranslationRotationScale.scale);
+    instanceTransform.translate(instanceTranslationRotationScale.translation);
     const modelMatrix = instanceTransform.clone();
     instances[i] = {
-      modelMatrix: modelMatrix,
-      batchId: batchId
+      modelMatrix,
+      batchId
     };
   }
-  tile._modelInstanceCollection = new ModelInstanceCollection(collectionOptions);
-  */
+
+  tile.instances = instances;
 }

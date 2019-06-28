@@ -51,6 +51,7 @@
     "get-pixels": "^3.3.2",
     "ndarray": "^1.0.18",
     "save-pixels": "^2.3.2",
+    "stream-to-async-iterator": "^0.2.0",
     "through": "^2.3.8"
   }
 }

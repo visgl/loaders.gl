@@ -32,7 +32,6 @@
     "build-bundle": "webpack --display=minimal --config ../../scripts/bundle.config.js"
   },
   "dependencies": {
-    "@loaders.gl/core": "1.2.0-alpha.1",
-    "filesaver.js": "^0.2.0"
+    "@loaders.gl/core": "1.2.0-alpha.1"
   }
 }

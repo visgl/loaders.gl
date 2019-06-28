@@ -12,5 +12,7 @@ function parseSync(arrayBuffer, options) {
 export default {
   name: 'DRACO',
   extensions: ['drc'],
+  binary: true,
+  test: 'DRACO',
   parseSync
 };

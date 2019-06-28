@@ -44,6 +44,7 @@ export default {
   extensions: ['gltf', 'glb'],
   text: true,
   binary: true,
+  test: 'glTF',
   parse,
   parseSync, // Less features when parsing synchronously
   defaultOptions: DEFAULT_OPTIONS

@@ -6,7 +6,7 @@
 */
 
 // laz-perf.js
-export default function getModule() {
+module.exports = function getModule() {
   var Module = {};
 
   var ENVIRONMENT_IS_WEB = typeof window === 'object';

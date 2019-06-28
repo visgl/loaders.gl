@@ -51,10 +51,9 @@ export function createBoundingVolume(boundingVolumeHeader, transform, result) {
   if (boundingVolumeHeader.sphere) {
     // The first three elements define the x, y, and z values for the center of the sphere in a right-handed 3-axis (x, y, z)
     const [x, y, z] = boundingVolumeHeader.sphere;
-    let center = new Vector3(x, y, z);
-
-    center = new Matrix4(transform).transform(center);
-    center = Ellipsoid.WGS84.cartesianToCartographic(center, center);
+    const center = new Vector3(x, y, z);
+    transform.transform(center, center);
+    Ellipsoid.WGS84.cartesianToCartographic(center, center);
 
     Object.assign(result, boundingVolumeHeader, {center});
 

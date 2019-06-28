@@ -36,7 +36,7 @@ var global = (function() {
 const IS_PAPA_WORKER = false;
 
 const Papa = {};
-export default Papa;
+module.exports = Papa;
 Papa.parse = CsvToJson;
 Papa.unparse = JsonToCsv;
 
