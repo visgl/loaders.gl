@@ -21,6 +21,8 @@ if (version < 10) {
     // 'apache-arrow': resolve(__dirname, '../node_modules/apache-arrow/Arrow.es5.min.js')
   });
 
+  require('core-js/stable'); // Polyfill `Symbol` under Node.js 8
+
   require('@babel/register')({
     presets: [['@babel/env', {modules: 'commonjs'}]],
     plugins: [
