@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/ply",
-  "version": "1.1.5",
+  "version": "1.1.6",
   "description": "Framework-independent loader for the PLY format",
   "license": "MIT",
   "publishConfig": {
@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
-    "@loaders.gl/loader-utils": "1.1.5"
+    "@loaders.gl/loader-utils": "1.1.6"
   },
   "gitHead": "82249f7f603510662706271bb58246c8f9c77148"
 }
