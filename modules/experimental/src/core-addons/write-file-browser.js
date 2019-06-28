@@ -1,4 +1,6 @@
 // A browser implementation of the Node.js `fs` module's `fs.writeFile` method.
+// NOTE: WAS COMMENTED OUT TO GET NODE 8 TESTS RUNNING
+
 /*
 /* global global *
 /* global Blob *
