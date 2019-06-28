@@ -115,38 +115,38 @@ export default class Tile3DLayer extends CompositeLayer {
     const {height, tick} = animationProps;
     const {cameraPosition, cameraDirection, cameraUp, zoom} = viewport;
 
-    // Map zoom 0-1
-    // const min = 12; const max = 24; const zoomMagic = 1000;// tilesetpoints
-    const min = 15;
-    const max = 20;
+    const minZoom = 14;
+    const maxZoom = 21;
     const zoomMagic = 10000; // royalexhibition
-    let zoomMap = Math.max(Math.min(zoom, max), min);
-    zoomMap = (zoomMap - min) / (max - min);
-    zoomMap = Math.max(Math.min(1.0 - zoomMap, 1), 0);
+    let zoomMap = Math.max(Math.min(zoom, maxZoom), minZoom);
+    zoomMap = (zoomMap - minZoom) / (maxZoom - minZoom);
+    let expMap = 1 - Math.exp(-zoomMap * 6);
+    expMap = Math.max(Math.min(1.0 - expMap, 1), 0);
+    const distanceMagic = expMap * zoomMagic;
 
-    // const {coordinateOrigin} = this.props;
-    // // Take coordinateOrigin and get a cartesian
-    // const cameraTranslatedToTileset = scratchCameraToTileset.copy(cameraPosition).subtract(coordinateOrigin);
-    // console.log('COORD ORIG:' + coordinateOrigin);
-    // console.log('CAM POS:' + cameraPosition);
-    // console.log('CAM POS TO TILESET:' + cameraTranslatedToTileset);
     // TODO: make a file/class for frameState and document what needs to be attached to this so that traversal can function
     const frameState = {
       camera: {
-        // position: cameraTranslatedToTileset,
         position: cameraPosition,
         direction: cameraDirection,
         up: cameraUp
       },
       height,
       frameNumber: tick,
-      distanceMagic: zoomMap * zoomMagic,
+      distanceMagic: distanceMagic,
       sseDenominator: 1.15 // Assumes fovy = 60 degrees
     };
 
     tileset3d.update(frameState, DracoWorkerLoader);
     this._updateLayers(frameState);
     this._selectLayers(frameState);
+    // console.log('requested: ' + tileset3d._requestedTiles.length);
+    // console.log('selected: ' + tileset3d.selectedTiles.length);
+    // console.log('layers: ' + this.state.layers.length);
+    console.log('zoom: ' + zoom);
+    console.log('zoomMap: ' + zoomMap);
+    console.log('expMap: ' + expMap);
+    console.log('distanceMagic: ' + distanceMagic);
   }
 
   // Grab only those layers who were selected this frame.
