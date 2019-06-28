@@ -4,5 +4,7 @@ import worker from '../dist/draco-loader.worker.js';
 export default {
   name: 'DRACO',
   extensions: ['drc'],
+  binary: true,
+  test: 'DRACO',
   worker
 };

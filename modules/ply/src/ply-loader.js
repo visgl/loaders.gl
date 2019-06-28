@@ -9,10 +9,11 @@ const DEFAULT_OPTIONS = {};
 export default {
   name: 'PLY',
   extensions: ['ply'],
+  text: true,
+  binary: true,
+  test: 'ply',
   // Note: parsePLY supports both text and binary
   parseTextSync: parsePLY,
   parseSync: parsePLY,
-  text: true,
-  binary: true,
   DEFAULT_OPTIONS
 };

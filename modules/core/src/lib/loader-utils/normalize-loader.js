@@ -64,5 +64,15 @@ export function normalizeLoader(loader) {
     loader.binary = true;
   }
 
+  // TODO - Does adding a default MIME type add any value?
+  /*
+  if (!loader.mimeType) {
+    if (loader.binary) {
+      // TODO - do we need separate mime types for binary and text formats?
+      loader.mimeType = 'application/octet-stream';
+    }
+  }
+  */
+
   return loader;
 }

@@ -18,7 +18,7 @@ export async function parse(data, loaders, options, url) {
   const autoUrl = isFileReadable(url) ? url.name : url;
 
   loaders = loaders || getRegisteredLoaders();
-  const loader = Array.isArray(loaders) ? autoDetectLoader(autoUrl, data, loaders) : loaders;
+  const loader = Array.isArray(loaders) ? autoDetectLoader(data, loaders, {url: autoUrl}) : loaders;
   if (!loader) {
     // no loader available
     // TODO: throw error?
@@ -44,7 +44,7 @@ export function parseSync(data, loaders, options, url) {
 
   // Choose loader and normalize it
   loaders = loaders || getRegisteredLoaders();
-  const loader = Array.isArray(loaders) ? autoDetectLoader(url, data, loaders) : loaders;
+  const loader = Array.isArray(loaders) ? autoDetectLoader(data, loaders, {url}) : loaders;
   normalizeLoader(loader);
 
   // Normalize options
@@ -64,7 +64,7 @@ export async function parseInBatches(data, loaders, options, url) {
 
   // Choose loader and normalize it
   loaders = loaders || getRegisteredLoaders();
-  const loader = Array.isArray(loaders) ? autoDetectLoader(url, null, loaders) : loaders;
+  const loader = Array.isArray(loaders) ? autoDetectLoader(null, loaders, {url}) : loaders;
   normalizeLoader(loader);
 
   // Normalize options
@@ -84,7 +84,7 @@ export async function parseInBatchesSync(data, loaders, options, url) {
 
   // Choose loader and normalize it
   loaders = loaders || getRegisteredLoaders();
-  const loader = Array.isArray(loaders) ? autoDetectLoader(url, null, loaders) : loaders;
+  const loader = Array.isArray(loaders) ? autoDetectLoader(null, loaders, {url}) : loaders;
   normalizeLoader(loader);
 
   // Normalize options
