@@ -53,7 +53,7 @@ export default class Tile3DLayer extends CompositeLayer {
       const tilesetJson = await load(tilesetUrl);
 
       if (tilesetUrl.includes('RoyalExhibitionBuilding')) {
-        // ECEF transform to the coordinateOrigin long lat position (60m height offset from ellipsoid) -0.5739749660092391,-0.8188728462922024,0.0,0.0,-0.5019514247607851,0.3518342967041723,0.7900996107094966,0.0,-0.6469911170760465,0.4534973972008964,-0.6129784703859522,0.0,-4131756.7389703253,2896175.013126114,-3888472.663125889,1.0
+        // ECEF transform to the coordinateOrigin long lat position (60m height offset from ellipsoid)
         tilesetJson.root.transform = new Matrix4([
           -0.5739749660092391,
           -0.8188728462922024,
@@ -67,7 +67,7 @@ export default class Tile3DLayer extends CompositeLayer {
           0.4534973972008964,
           -0.6129784703859522,
           0.0,
-          -4131756.7389703253,
+          -4131757.7389703253,
           2896175.013126114,
           -3888472.663125889,
           1.0
@@ -125,6 +125,13 @@ export default class Tile3DLayer extends CompositeLayer {
     const distanceMagic = expMap * zoomMagic;
 
     // TODO: make a file/class for frameState and document what needs to be attached to this so that traversal can function
+    const camToCartog = new Vector3();
+    const camToCartes = new Vector3();
+    Ellipsoid.WGS84.cartesianToCartographic(cameraPosition, camToCartog);
+    Ellipsoid.WGS84.cartographicToCartesian(cameraPosition, camToCartes);
+    console.log('cam pos: ' + cameraPosition);
+    console.log('camToCartog: ' + camToCartog);
+    console.log('camToCartes: ' + camToCartes);
     const frameState = {
       camera: {
         position: cameraPosition,
@@ -143,10 +150,10 @@ export default class Tile3DLayer extends CompositeLayer {
     // console.log('requested: ' + tileset3d._requestedTiles.length);
     // console.log('selected: ' + tileset3d.selectedTiles.length);
     // console.log('layers: ' + this.state.layers.length);
-    console.log('zoom: ' + zoom);
-    console.log('zoomMap: ' + zoomMap);
-    console.log('expMap: ' + expMap);
-    console.log('distanceMagic: ' + distanceMagic);
+    // console.log('zoom: ' + zoom);
+    // console.log('zoomMap: ' + zoomMap);
+    // console.log('expMap: ' + expMap);
+    // console.log('distanceMagic: ' + distanceMagic);
   }
 
   // Grab only those layers who were selected this frame.
@@ -344,9 +351,7 @@ export default class Tile3DLayer extends CompositeLayer {
       modelMatrix = new Matrix4(transform);
     }
 
-    // TODO: remove rtcCenter from royal .content
-    const isRoyal = tileHeader._tileset._url.includes('Royal');
-    if (rtcCenter && !isRoyal) {
+    if (rtcCenter) {
       modelMatrix = modelMatrix || new Matrix4();
       modelMatrix.translate(rtcCenter);
       transformProps.coordinateSystem =

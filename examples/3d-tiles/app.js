@@ -219,6 +219,7 @@ export default class App extends PureComponent {
         if (isRoyal || name === 'TilesetPoints') {
           Ellipsoid.WGS84.cartesianToCartographic(center, longLat);
         }
+        // console.log('longLat: ' + longLat);
         this.setState({
           viewState: {
             ...this.state.viewState,
