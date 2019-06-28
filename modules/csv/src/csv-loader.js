@@ -1,6 +1,6 @@
 import {AsyncQueue} from '@loaders.gl/experimental';
 import {TableBatchBuilder, RowTableBatch} from '@loaders.gl/experimental/categories/table';
-import Papa from './papaparse/papaparse';
+import Papa from './papaparse/papaparse.transpiled';
 import AsyncIteratorStreamer from './papaparse/async-iterator-streamer';
 
 export default {

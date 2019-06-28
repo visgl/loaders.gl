@@ -8,7 +8,7 @@
 import {TextDecoder} from '@loaders.gl/core';
 
 // Note: papaparse is not an ES6 module
-import Papa from './papaparse';
+import Papa from './papaparse.transpiled';
 const {ChunkStreamer} = Papa;
 
 export default function AsyncIteratorStreamer(config) {

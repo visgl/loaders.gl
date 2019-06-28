@@ -1,14 +1,17 @@
-import {isBrowser} from '../utils/globals';
+import {isBrowser, nodeVersion} from '../utils/globals';
 
 export function getStreamIterator(stream) {
-  // NODE 10+: stream is an asyncIterator
-  if (typeof stream[Symbol.asyncIterator] === 'function') {
-    return stream;
-  }
+  // Hacky test for node version to ensure we don't call bad polyfills
+  if (isBrowser || nodeVersion >= 10) {
+    // NODE 10+: stream is an asyncIterator
+    if (typeof stream[Symbol.asyncIterator] === 'function') {
+      return stream;
+    }
 
-  // WhatWG: stream is supposed to have a `getIterator` method
-  if (typeof stream.getIterator === 'function') {
-    return stream.getIterator();
+    // WhatWG: stream is supposed to have a `getIterator` method
+    if (typeof stream.getIterator === 'function') {
+      return stream.getIterator();
+    }
   }
 
   return isBrowser ? makeBrowserStreamIterator(stream) : makeNodeStreamIterator(stream);
@@ -65,3 +68,11 @@ async function onceReadable(stream) {
     stream.once('readable', resolve);
   });
 }
+
+// TODO - we could add our own polyfill
+// const {Readable} = require('stream');
+// if (typeof Readable !== 'undefined' && !Readable.prototype[Symbol.asyncIterator]) {
+//   Readable.prototype[Symbol.asyncIterator] = function () {
+//     return makeNodeStreamIterator(this);
+//   }
+// }

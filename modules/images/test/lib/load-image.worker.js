@@ -1,4 +1,4 @@
-import {loadImage} from '@loaders.gl/images';
+const {loadImage} = require('@loaders.gl/images');
 
 if (typeof self !== 'undefined') {
   /* global self */

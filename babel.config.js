@@ -11,7 +11,7 @@ module.exports = api => {
     }
   ]);
 
-  // config.ignore = ['**/*.worker.js', '**/*.transpiled.js', '**/*.minified.js'];
+  // config.ignore = ['**/*.worker.js', '**/*.transpiled.js', '**/*.min.js'];
   config.ignore = ['**/*.worker.js'];
 
   // TEST to prevent compilation of already transpiled files
@@ -19,7 +19,7 @@ module.exports = api => {
   config.overrides.push({
     // Tell babel these are already large and minified
     // https://babeljs.io/docs/en/options#overrides
-    test: /minified.js|transpiled.js/,
+    test: /min.js|transpiled.js/,
     compact: false,
     sourceMaps: false
   });
