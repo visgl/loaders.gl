@@ -216,7 +216,7 @@ export default class App extends PureComponent {
       } else {
         const longLat = new Vector3();
         longLat.copy(center);
-        if (this.state.tilesetExampleProps.isWGS84) {
+        if (isRoyal || name === 'TilesetPoints') {
           Ellipsoid.WGS84.cartesianToCartographic(center, longLat);
         }
         this.setState({
