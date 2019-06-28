@@ -1,4 +1,4 @@
-import {isBrowser, global, nodeVersion} from '../utils/globals';
+import {isBrowser, nodeVersion} from '../utils/globals';
 
 export function getStreamIterator(stream) {
   // Hacky test for node version to ensure we don't call bad polyfills
