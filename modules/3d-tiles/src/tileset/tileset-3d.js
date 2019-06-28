@@ -140,6 +140,7 @@ export default class Tileset3D {
     if (this._root) {
       stack.push(this._root);
     }
+
     while (stack.length > 0) {
       for (const child of tile.children) {
         stack.push(child);
