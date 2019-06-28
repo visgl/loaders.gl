@@ -1,9 +1,12 @@
 /* global fetch */
+import '@babel/polyfill';
+
 import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
 import DeckGL from '@deck.gl/react';
 import {COORDINATE_SYSTEM, MapController} from '@deck.gl/core';
+
 // import '@loaders.gl/polyfills';
 // import '@luma.gl/debug';
 

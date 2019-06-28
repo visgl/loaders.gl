@@ -7,12 +7,28 @@
 const webpack = require('webpack');
 const resolve = require('path').resolve;
 // eslint-disable-next-line import/no-extraneous-dependencies
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+
+// eslint-disable-next-line import/no-extraneous-dependencies
 const ALIASES = require('ocular-dev-tools/config/ocular.config')({
   root: resolve(__dirname, '..')
 }).aliases;
 
-// eslint-disable-next-line import/no-extraneous-dependencies
-const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+const ROOT_DIR = resolve(__dirname, '..');
+
+const DECK_LINK_ALIASES = {
+  // TODO - add all aliases
+  '@deck.gl/core': resolve(ROOT_DIR, '../deck.gl/modules/core/src'),
+  '@deck.gl/layers': resolve(ROOT_DIR, '../deck.gl/modules/layers/src'),
+  '@deck.gl/mesh-layers': resolve(ROOT_DIR, '../deck.gl/modules/mesh-layers/src'),
+  '@deck.gl/react': resolve(ROOT_DIR, '../deck.gl/modules/react/src')
+};
+
+const MATH_LINK_ALIASES = {
+  'math.gl': resolve(ROOT_DIR, '../math.gl/modules/core/src'),
+  '@math.gl/culling': resolve(ROOT_DIR, '../math.gl/modules/culling/src'),
+  '@math.gl/geospatial': resolve(ROOT_DIR, '../math.gl/modules/geospatial/src')
+};
 
 // Support for hot reloading changes to the library:
 const LOCAL_DEVELOPMENT_CONFIG = {
@@ -52,6 +68,23 @@ const LOCAL_DEVELOPMENT_CONFIG = {
   plugins: [new webpack.EnvironmentPlugin(['MapboxAccessToken'])]
 };
 
+function addLocalDependency(config, dependency) {
+  config.resolve = config.resolve || {};
+  config.resolve.alias = config.resolve.alias || {};
+
+  switch (dependency) {
+    case 'deck':
+      Object.assign(config.resolve.alias, DECK_LINK_ALIASES);
+      break;
+    case 'math':
+      Object.assign(config.resolve.alias, MATH_LINK_ALIASES);
+      break;
+    default:
+  }
+
+  return config;
+}
+
 function addLocalDevSettings(config) {
   config = Object.assign({}, LOCAL_DEVELOPMENT_CONFIG, config);
   config.resolve = config.resolve || {};
@@ -89,6 +122,11 @@ module.exports = (baseConfig, opts = {}) => env => {
 
   if (env && env.local) {
     config = addLocalDevSettings(config, opts);
+  }
+
+  // Iterate over env keys and see if they match a local dependency
+  for (const key in env || {}) {
+    config = addLocalDependency(config, key);
   }
 
   // uncomment to debug
