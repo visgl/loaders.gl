@@ -120,18 +120,19 @@ export default class Tile3DLayer extends CompositeLayer {
     const zoomMagic = 10000; // royalexhibition
     let zoomMap = Math.max(Math.min(zoom, maxZoom), minZoom);
     zoomMap = (zoomMap - minZoom) / (maxZoom - minZoom);
-    let expMap = 1 - Math.exp(-zoomMap * 6);
+    let expMap = 1 - Math.exp(-zoomMap * 6); // Use exposure tone mapping to smooth out the sensitivity in the zoom mapping
     expMap = Math.max(Math.min(1.0 - expMap, 1), 0);
     const distanceMagic = expMap * zoomMagic;
 
     // TODO: make a file/class for frameState and document what needs to be attached to this so that traversal can function
-    const camToCartog = new Vector3();
-    const camToCartes = new Vector3();
-    Ellipsoid.WGS84.cartesianToCartographic(cameraPosition, camToCartog);
-    Ellipsoid.WGS84.cartographicToCartesian(cameraPosition, camToCartes);
-    console.log('cam pos: ' + cameraPosition);
-    console.log('camToCartog: ' + camToCartog);
-    console.log('camToCartes: ' + camToCartes);
+    // TODO: what space is cameraPosition
+    // const camToCartog = new Vector3();
+    // const camToCartes = new Vector3();
+    // Ellipsoid.WGS84.cartesianToCartographic(cameraPosition, camToCartog);
+    // Ellipsoid.WGS84.cartographicToCartesian(cameraPosition, camToCartes);
+    // console.log('cam pos: ' + cameraPosition);
+    // console.log('camToCartog: ' + camToCartog);
+    // console.log('camToCartes: ' + camToCartes);
     const frameState = {
       camera: {
         position: cameraPosition,
@@ -140,20 +141,13 @@ export default class Tile3DLayer extends CompositeLayer {
       },
       height,
       frameNumber: tick,
-      distanceMagic: distanceMagic,
+      distanceMagic,
       sseDenominator: 1.15 // Assumes fovy = 60 degrees
     };
 
     tileset3d.update(frameState, DracoWorkerLoader);
     this._updateLayers(frameState);
     this._selectLayers(frameState);
-    // console.log('requested: ' + tileset3d._requestedTiles.length);
-    // console.log('selected: ' + tileset3d.selectedTiles.length);
-    // console.log('layers: ' + this.state.layers.length);
-    // console.log('zoom: ' + zoom);
-    // console.log('zoomMap: ' + zoomMap);
-    // console.log('expMap: ' + expMap);
-    // console.log('distanceMagic: ' + distanceMagic);
   }
 
   // Grab only those layers who were selected this frame.
