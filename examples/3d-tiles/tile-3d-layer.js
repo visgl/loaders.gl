@@ -26,8 +26,6 @@ registerLoaders([Tile3DLoader, Tileset3DLoader, GLTFScenegraphLoader]);
 
 const DEFAULT_POINT_COLOR = [255, 0, 0, 255];
 
-// const scratchCameraToTileset = new Vector3();
-
 const defaultProps = {
   // TODO - the tileset json should be an async prop.
   tilesetUrl: null,
@@ -39,6 +37,7 @@ const defaultProps = {
   onTileLoaded: () => {},
   onTilesetLoaded: () => {}
 };
+
 export default class Tile3DLayer extends CompositeLayer {
   initializeState() {
     this.state = {
@@ -115,6 +114,7 @@ export default class Tile3DLayer extends CompositeLayer {
     const {height, tick} = animationProps;
     const {cameraPosition, cameraDirection, cameraUp, zoom} = viewport;
 
+    // TODO: remove after sse traversal working
     const minZoom = 14;
     const maxZoom = 21;
     const zoomMagic = 10000; // royalexhibition
@@ -125,14 +125,6 @@ export default class Tile3DLayer extends CompositeLayer {
     const distanceMagic = expMap * zoomMagic;
 
     // TODO: make a file/class for frameState and document what needs to be attached to this so that traversal can function
-    // TODO: what space is cameraPosition
-    // const camToCartog = new Vector3();
-    // const camToCartes = new Vector3();
-    // Ellipsoid.WGS84.cartesianToCartographic(cameraPosition, camToCartog);
-    // Ellipsoid.WGS84.cartographicToCartesian(cameraPosition, camToCartes);
-    // console.log('cam pos: ' + cameraPosition);
-    // console.log('camToCartog: ' + camToCartog);
-    // console.log('camToCartes: ' + camToCartes);
     const frameState = {
       camera: {
         position: cameraPosition,

@@ -30,15 +30,6 @@ export function createBoundingVolume(boundingVolumeHeader, transform, result) {
   result = result || {};
   assert(boundingVolumeHeader, '3D Tile: boundingVolume must be defined');
   if (boundingVolumeHeader.box) {
-    // The first three elements define the x, y, and z values for the center of the box.
-    // const [x, y, z] = boundingVolumeHeader.box;
-    // let center = new Vector3(x, y, z);
-    // center = new Matrix4(transform).transform(center);
-    // center = Ellipsoid.WGS84.cartesianToCartographic(center, center);
-    //
-    // Object.assign(result, boundingVolumeHeader, {center});
-    //
-    // return result;
     return createBox(boundingVolumeHeader.box, transform, result);
   }
   if (boundingVolumeHeader.region) {
@@ -74,22 +65,6 @@ export function createBoundingVolume(boundingVolumeHeader, transform, result) {
 }
 
 function createBox(box, transform, result) {
-  // return null;
-
-  // const halfAxes = new Matrix3(); // Matrix3.fromArray(box, 3, scratchHalfAxes);
-
-  // Find the transformed center and halfAxes
-  // center = Matrix4.multiplyByPoint(transform, center, center);
-
-  // Need to do halfAxes = transform3x3 * halfAxes
-  // const rotationScale = Matrix4.getRotation(transform, scratchMatrix);
-  // halfAxes = Matrix3.multiply(rotationScale, halfAxes, halfAxes);
-
-  // if (defined(result)) {
-  //   result.update(center, halfAxes);
-  //   return result;
-  // }
-
   const center = new Vector3(box[0], box[1], box[2]);
   let halfAxes = new Matrix3(box.slice(3, box.length));
 
@@ -106,6 +81,12 @@ function createBox(box, transform, result) {
     transform[9],
     transform[10]
   ).multiplyRight(halfAxes);
+
+  if (defined(result)) {
+    result.center = center;
+    result.halfAxes = halfAxes;
+    return result;
+  }
 
   return new OrientedBoundingBox(center, halfAxes);
 }
