@@ -229,7 +229,7 @@ export default class App extends PureComponent {
           ...this.state.viewState,
           longitude: scratchLongLat[0],
           latitude: scratchLongLat[1],
-          zoom: 18 // reset zoom
+          zoom: INITIAL_VIEW_STATE.zoom // reset zoom
         }
       });
     }
@@ -295,7 +295,7 @@ export default class App extends PureComponent {
         depthLimit,
         color,
         onTileLoaded: this._onTileLoaded.bind(this),
-        onTilesetLoaded: this._onTilesetLoaded.bind(this),
+        onTilesetLoaded: this._onTilesetLoaded.bind(this)
       })
     );
   }
