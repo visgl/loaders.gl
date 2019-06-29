@@ -27,7 +27,6 @@ const scratchTransform = new Matrix4();
  * @returns {TileBoundingVolume} The modified result parameter or a new TileBoundingVolume instance if none was provided.
  */
 export function createBoundingVolume(boundingVolumeHeader, transform, result) {
-  result = result || {};
   assert(boundingVolumeHeader, '3D Tile: boundingVolume must be defined');
   if (boundingVolumeHeader.box) {
     return createBox(boundingVolumeHeader.box, transform, result);

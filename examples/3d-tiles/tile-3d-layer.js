@@ -26,6 +26,8 @@ registerLoaders([Tile3DLoader, Tileset3DLoader, GLTFLoader]);
 
 const DEFAULT_POINT_COLOR = [255, 0, 0, 255];
 
+const cameraPosition = new Vector3();
+
 const defaultProps = {
   // TODO - the tileset json should be an async prop.
   tilesetUrl: null,
@@ -56,7 +58,7 @@ export default class Tile3DLayer extends CompositeLayer {
       // TODO: Remove these after sse traversal is working since this is just to prevent full load of tileset and loading of root
       // The alwaysLoadRoot is better solved by moving the camera to the newly selected asset.
       tileset3d.depthLimit = this.props.depthLimit;
-      tileset3d.alwaysLoadRoot = true;
+      tileset3d.alwaysLoadRoot = false;
     }
 
     this.setState({
@@ -89,17 +91,21 @@ export default class Tile3DLayer extends CompositeLayer {
 
     // Traverse and and request. Update _selectedTiles so that we know what to render.
     const {height, tick} = animationProps;
-    const {cameraPosition, cameraDirection, cameraUp, zoom} = viewport;
+    const {longitude, latitude, cameraDirection, cameraUp, zoom} = viewport;
 
     // TODO: remove after sse traversal working
-    const minZoom = 14;
-    const maxZoom = 21;
+    const minZoom = 16;
+    const maxZoom = 20;
     const zoomMagic = 10000; // royalexhibition
     let zoomMap = Math.max(Math.min(zoom, maxZoom), minZoom);
     zoomMap = (zoomMap - minZoom) / (maxZoom - minZoom);
     let expMap = 1 - Math.exp(-zoomMap * 6); // Use exposure tone mapping to smooth out the sensitivity in the zoom mapping
     expMap = Math.max(Math.min(1.0 - expMap, 1), 0);
     const distanceMagic = expMap * zoomMagic;
+    const heightMagic = expMap * zoomMagic + 16;// I think royal was tiled at a height of 16
+
+    cameraPosition.set(longitude, latitude, heightMagic);
+    Ellipsoid.WGS84.cartographicToCartesian(cameraPosition, cameraPosition);
 
     // TODO: make a file/class for frameState and document what needs to be attached to this so that traversal can function
     const frameState = {
