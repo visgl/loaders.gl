@@ -24,7 +24,7 @@ import {
 
 registerLoaders([Tile3DLoader, Tileset3DLoader, GLTFLoader]);
 
-const DEFAULT_POINT_COLOR = [255, 0, 0, 255];
+const DEFAULT_POINT_COLOR = [202, 112, 41, 255];
 
 const defaultProps = {
   // TODO - the tileset json should be an async prop.
@@ -32,8 +32,6 @@ const defaultProps = {
   isWGS84: false,
   color: DEFAULT_POINT_COLOR,
   depthLimit: Number.MAX_SAFE_INTEGER,
-  coordinateSystem: null,
-  coordinateOrigin: null,
   onTileLoaded: () => {},
   onTilesetLoaded: () => {}
 };
@@ -295,52 +293,28 @@ export default class Tile3DLayer extends CompositeLayer {
       return {};
     }
 
-    const {coordinateSystem, coordinateOrigin, isWGS84} = this.props;
     const {rtcCenter} = tileHeader.content;
-    const {transform} = tileHeader.userData;
+    const {transform, positions} = tileHeader.userData;
 
     const transformProps = {};
 
-    if (coordinateSystem) {
-      transformProps.coordinateSystem = coordinateSystem;
-    }
-    if (coordinateOrigin) {
-      transformProps.coordinateOrigin = coordinateOrigin;
-    }
-
-    let modelMatrix;
-    if (transform) {
-      modelMatrix = new Matrix4(transform);
-    }
-
+    let modelMatrix = new Matrix4(transform);
     if (rtcCenter) {
-      modelMatrix = modelMatrix || new Matrix4();
       modelMatrix.translate(rtcCenter);
-      transformProps.coordinateSystem =
-        transformProps.coordinateSystem || COORDINATE_SYSTEM.METER_OFFSETS;
     }
 
-    if (isWGS84) {
-      transformProps.coordinateSystem = coordinateSystem || COORDINATE_SYSTEM.METER_OFFSETS;
-      transformProps.coordinateOrigin = coordinateOrigin;
-      // TODO - Heuristics to get a coordinateOrigin from the tile
-      // verify with spec
-      if (!coordinateOrigin) {
-        if (modelMatrix) {
-          const origin = new Vector3();
-          modelMatrix.transform(origin, origin);
-          transformProps.coordinateOrigin = Ellipsoid.WGS84.cartesianToCartographic(origin, origin);
-          modelMatrix = null;
-        } else {
-          // No model matrix, so assume bounding volume center
-          transformProps.coordinateOrigin = tileHeader.boundingVolume.center;
-        }
-      }
-    }
+    const firstPoint = [positions[0], positions[1], positions[2]];
 
-    if (modelMatrix) {
-      transformProps.modelMatrix = modelMatrix;
-    }
+    const originInCartesian = modelMatrix.transform(firstPoint, new Vector3());
+    const originInCarto = Ellipsoid.WGS84.cartesianToCartographic(originInCartesian, new Vector3());
+
+    const rotateMatrix = Ellipsoid.WGS84.eastNorthUpToFixedFrame(originInCartesian);
+
+    modelMatrix = new Matrix4(rotateMatrix.invert()).multiplyRight(modelMatrix);
+
+    transformProps.coordinateOrigin = originInCarto;
+    transformProps.modelMatrix = modelMatrix;
+    transformProps.coordinateSystem = COORDINATE_SYSTEM.METER_OFFSETS;
 
     return transformProps;
   }
