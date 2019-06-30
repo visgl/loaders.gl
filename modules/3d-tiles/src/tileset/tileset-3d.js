@@ -8,8 +8,6 @@ import Tileset3DTraverser from './tileset-3d-traverser';
 
 // import Tileset3DCache from './tileset-3d-cache';
 
-const defined = x => x !== undefined;
-
 const Ellipsoid = {
   WGS84: ''
 };
@@ -384,13 +382,6 @@ export default class Tileset3D {
       // }
     }
 
-    // const tile1 = rootTile;
-    // console.log('TILE1 C: ' + tile1._boundingVolume.center);
-    // console.log('TILE1 T: ' + tile1.computedTransform);
-    // const tile2 = rootTile.children[0];
-    // console.log('TILE2 C: ' + tile2._boundingVolume.center);
-    // console.log('TILE2 T: ' + tile2.computedTransform);
-
     return rootTile;
   }
 
@@ -400,11 +391,6 @@ export default class Tileset3D {
   }
 
   update(frameState, DracoLoader) {
-    // const tile = this._root.children[0];
-    // if (defined(tile._boundingVolume)) {
-    //   console.log('CENTER 1: ' + tile._boundingVolume.center);
-    // }
-
     this._updatedVisibilityFrame++; // TODO: only update when camera or culling volume from last update moves (could be render camera change or prefetch camera)
     this._traverser.traverse(this, frameState);
 
@@ -415,10 +401,6 @@ export default class Tileset3D {
     for (const tile of requestedTiles) {
       this._requestContent(tile, DracoLoader);
     }
-
-    // if (defined(tile._boundingVolume)) {
-    //   console.log('CENTER 2: ' + tile._boundingVolume.center);
-    // }
   }
 
   async _requestContent(tile, DracoLoader) {

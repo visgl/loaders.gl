@@ -58,7 +58,7 @@ export const INITIAL_VIEW_STATE = {
   bearing: 0,
   minZoom: 2,
   maxZoom: 30,
-  zoom: 18
+  zoom: 17.5
 };
 
 export default class App extends PureComponent {
@@ -209,8 +209,6 @@ export default class App extends PureComponent {
   }
 
   _onTilesetLoaded(tileset) {
-    const {name} = this.state;
-
     const root = tileset._root;
     // TODO: won't be needed after data PR merges, just use root
     const tileHeader = tileset.isRoyal ? root.children[0] : root;

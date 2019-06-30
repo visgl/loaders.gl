@@ -2,7 +2,7 @@
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 // import {TILE3D_REFINEMENT, TILE3D_OPTIMIZATION_HINT} from '../constants';
 import {Vector3, Matrix4} from 'math.gl';
-import {CullingVolume, OrientedBoundingBox} from '@math.gl/culling';
+// import {CullingVolume} from '@math.gl/culling';
 import Tile3DLoader from '../tile-3d-loader';
 // import Tileset3DLoader from '../tileset-3d-loader';
 import {TILE3D_REFINEMENT, TILE3D_CONTENT_STATE, TILE3D_OPTIMIZATION_HINT} from '../constants';
@@ -424,14 +424,13 @@ export default class Tile3DHeader {
     // TODO: Remove this after deck.gl data PR merged. replace with above
     const tileset = this.tileset;
     const root = tileset._root;
-    const boundingVolume = tileset.isRoyal && this === root ? root.children[0]._boundingVolume : this._boundingVolume;
+    const boundingVolume =
+      tileset.isRoyal && this === root ? root.children[0]._boundingVolume : this._boundingVolume;
 
     const dist = Math.sqrt(boundingVolume.distanceSquaredTo(frameState.camera.position));
 
-    console.log('DISTANCE: ' + dist);
-    // console.log('ZOOM DISTANCE: ' + zoomDist);
+    // console.log('DISTANCE: ' + dist);
     // console.log('CENTER: ' + boundingVolume.center);
-    // console.log('CAM POS: ' + frameState.camera.position);
 
     return dist;
   }
