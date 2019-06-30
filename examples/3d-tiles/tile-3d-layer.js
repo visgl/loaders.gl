@@ -56,9 +56,9 @@ export default class Tile3DLayer extends CompositeLayer {
       tileset3d = new Tileset3D(tilesetJson, tilesetUrl, options);
 
       // TODO: Remove these after sse traversal is working since this is just to prevent full load of tileset and loading of root
-      // The alwaysLoadRoot is better solved by moving the camera to the newly selected asset.
       tileset3d.depthLimit = this.props.depthLimit;
-      tileset3d.alwaysLoadRoot = false;
+      // TODO: remove
+      tileset3d.isRoyal = tilesetUrl.includes('Royal');
     }
 
     this.setState({

@@ -422,19 +422,18 @@ export default class Tile3DHeader {
   distanceToTile(frameState) {
     // const boundingVolume = this._boundingVolume;
     // TODO: Remove this after deck.gl data PR merged. replace with above
-    const root = this._tileset._root;
-    const boundingVolume = this === root ? root.children[0]._boundingVolume : this._boundingVolume;
+    const tileset = this.tileset;
+    const root = tileset._root;
+    const boundingVolume = tileset.isRoyal && this === root ? root.children[0]._boundingVolume : this._boundingVolume;
 
-    // const boundingVolume = this._boundingVolume;
-    const zoomDist = frameState.distanceMagic;
-    const actualDist = boundingVolume.distanceTo(frameState.camera.position);
+    const dist = Math.sqrt(boundingVolume.distanceSquaredTo(frameState.camera.position));
 
-    console.log('ACTU DISTANCE: ' + actualDist);
+    console.log('DISTANCE: ' + dist);
     // console.log('ZOOM DISTANCE: ' + zoomDist);
     // console.log('CENTER: ' + boundingVolume.center);
     // console.log('CAM POS: ' + frameState.camera.position);
 
-    return zoomDist;
+    return dist;
   }
 
   // Computes the tile's camera-space z-depth.

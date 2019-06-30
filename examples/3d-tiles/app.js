@@ -58,7 +58,7 @@ export const INITIAL_VIEW_STATE = {
   bearing: 0,
   minZoom: 2,
   maxZoom: 30,
-  zoom: 17
+  zoom: 18
 };
 
 export default class App extends PureComponent {
@@ -210,20 +210,17 @@ export default class App extends PureComponent {
 
   _onTilesetLoaded(tileset) {
     const {name} = this.state;
-    const isRoyal = name === 'royalExhibitionBuilding';
 
     const root = tileset._root;
     // TODO: won't be needed after data PR merges, just use root
-    const tileHeader = isRoyal ? root.children[0] : root;
+    const tileHeader = tileset.isRoyal ? root.children[0] : root;
     const {center} = tileHeader.boundingVolume;
     if (!center) {
       // eslint-disable-next-line
       console.warn('center was not pre-calculated for the root tile');
     } else {
       scratchLongLat.copy(center);
-      if (isRoyal || name === 'TilesetPoints') {
-        Ellipsoid.WGS84.cartesianToCartographic(scratchLongLat, scratchLongLat);
-      }
+      Ellipsoid.WGS84.cartesianToCartographic(scratchLongLat, scratchLongLat);
       this.setState({
         viewState: {
           ...this.state.viewState,
@@ -238,29 +235,6 @@ export default class App extends PureComponent {
   }
 
   _onTileLoaded(tileHeader) {
-    // const {name} = this.state;
-    // // cannot parse the center from royalExhibitionBuilding dataset
-    // const isRoyal = name === 'royalExhibitionBuilding' && tileHeader.depth === 1;
-    // if (tileHeader.depth === 0 || isRoyal) {
-    //   const {center} = tileHeader.boundingVolume;
-    //   if (!center) {
-    //     // eslint-disable-next-line
-    //     console.warn('center was not pre-calculated for the root tile');
-    //   } else {
-    //     scratchLongLat.copy(center);
-    //     if (isRoyal || name === 'TilesetPoints') {
-    //       Ellipsoid.WGS84.cartesianToCartographic(scratchLongLat, scratchLongLat);
-    //     }
-    //     this.setState({
-    //       viewState: {
-    //         ...this.state.viewState,
-    //         longitude: scratchLongLat[0],
-    //         latitude: scratchLongLat[1]
-    //       }
-    //     });
-    //   }
-    // }
-
     const pointCount = tileHeader.content.pointsLength || 0;
     this.setState({
       tileCount: this.state.tileCount + 1,
