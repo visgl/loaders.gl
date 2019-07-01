@@ -42,6 +42,7 @@ export function createBoundingVolume(boundingVolumeHeader, transform, result) {
       degrees((north + south) / 2),
       (minHeight + maxHeight) / 2
     );
+    result = result || {};
     Object.assign(result, boundingVolumeHeader, {center});
 
     return result;
