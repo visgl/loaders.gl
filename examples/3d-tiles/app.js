@@ -5,7 +5,7 @@ import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
 import DeckGL from '@deck.gl/react';
-import {COORDINATE_SYSTEM, MapController} from '@deck.gl/core';
+import {MapController} from '@deck.gl/core';
 import {Vector3} from 'math.gl';
 // import '@loaders.gl/polyfills';
 // import '@luma.gl/debug';
@@ -39,8 +39,6 @@ const ADDITIONAL_EXAMPLES = {
     royalExhibitionBuilding: {
       tilesetUrl:
         'https://raw.githubusercontent.com/uber-common/deck.gl-data/master/3d-tiles/RoyalExhibitionBuilding/tileset.json',
-      coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS,
-      isWGS84: true,
       depthLimit: 2, // TODO: Remove this after sse traversal is working since this is just to prevent full load of tileset
       color: [115, 101, 152, 200]
     }
@@ -58,7 +56,8 @@ export const INITIAL_VIEW_STATE = {
   bearing: 0,
   minZoom: 2,
   maxZoom: 30,
-  zoom: 17.5
+  // zoom: 17.5
+  zoom: 18
 };
 
 export default class App extends PureComponent {
@@ -250,26 +249,19 @@ export default class App extends PureComponent {
     const {tilesetExampleProps} = this.state;
     const {
       tilesetUrl,
-      coordinateSystem,
       coordinateOrigin,
-      isWGS84,
       depthLimit = 5,
       color = [255, 0, 0, 255]
     } = tilesetExampleProps;
-    return (
-      tilesetExampleProps &&
-      new Tile3DLayer({
-        id: 'tile-3d-layer',
-        tilesetUrl,
-        coordinateSystem,
-        coordinateOrigin,
-        isWGS84,
-        depthLimit,
-        color,
-        onTileLoaded: this._onTileLoaded.bind(this),
-        onTilesetLoaded: this._onTilesetLoaded.bind(this)
-      })
-    );
+    return new Tile3DLayer({
+      id: 'tile-3d-layer',
+      tilesetUrl,
+      coordinateOrigin,
+      depthLimit,
+      color,
+      onTileLoaded: this._onTileLoaded.bind(this),
+      onTilesetLoaded: this._onTilesetLoaded.bind(this)
+    });
   }
 
   render() {

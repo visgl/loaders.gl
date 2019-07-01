@@ -85,7 +85,7 @@ function addLocalDependency(config, dependency) {
   return config;
 }
 
-function addLocalDevSettings(config) {
+function addLocalDevSettings(config, opts) {
   config = Object.assign({}, LOCAL_DEVELOPMENT_CONFIG, config);
   config.resolve = config.resolve || {};
   config.resolve.alias = config.resolve.alias || {};
