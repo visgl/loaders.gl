@@ -6,16 +6,15 @@ import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
 import DeckGL from '@deck.gl/react';
 import {MapController} from '@deck.gl/core';
-import {Vector3} from 'math.gl';
 // import '@loaders.gl/polyfills';
 // import '@luma.gl/debug';
+import {Vector3} from 'math.gl';
 
 import Tile3DLayer from './tile-3d-layer';
 
 import ControlPanel from './components/control-panel';
 import fileDrop from './components/file-drop';
 import {updateStatWidgets} from './components/stats-widgets';
-import {Ellipsoid} from '@math.gl/geospatial';
 
 const DATA_URI = 'https://raw.githubusercontent.com/uber-web/loaders.gl/master';
 const INDEX_FILE = `${DATA_URI}/modules/3d-tiles/test/data/index.json`;
@@ -31,7 +30,7 @@ const INITIAL_EXAMPLE_NAME = 'royalExhibitionBuilding';
 // const INITIAL_EXAMPLE_CATEGORY = 'PointCloud';
 // const INITIAL_EXAMPLE_NAME = 'PointCloudRGB';
 
-const scratchLongLat = new Vector3();
+const scratchLongLatZoom = new Vector3();
 
 const ADDITIONAL_EXAMPLES = {
   name: 'additional',
@@ -216,25 +215,15 @@ export default class App extends PureComponent {
   }
 
   _onTilesetLoaded(tileset) {
-    const root = tileset._root;
-    // TODO: won't be needed after data PR merges, just use root
-    const tileHeader = tileset.isRoyal ? root.children[0] : root;
-    const {center} = tileHeader.boundingVolume;
-    if (!center) {
-      // eslint-disable-next-line
-      console.warn('center was not pre-calculated for the root tile');
-    } else {
-      scratchLongLat.copy(center);
-      Ellipsoid.WGS84.cartesianToCartographic(scratchLongLat, scratchLongLat);
-      this.setState({
-        viewState: {
-          ...this.state.viewState,
-          longitude: scratchLongLat[0],
-          latitude: scratchLongLat[1],
-          zoom: INITIAL_VIEW_STATE.zoom // reset zoom
-        }
-      });
-    }
+    tileset._getCartographicCenterAndZoom(scratchLongLatZoom);
+    this.setState({
+      viewState: {
+        ...this.state.viewState,
+        longitude: scratchLongLatZoom[0],
+        latitude: scratchLongLatZoom[1],
+        zoom: scratchLongLatZoom[2]
+      }
+    });
 
     this.forceUpdate();
   }

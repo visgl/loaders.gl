@@ -55,8 +55,6 @@ export default class Tile3DLayer extends CompositeLayer {
 
       // TODO: Remove these after sse traversal is working since this is just to prevent full load of tileset and loading of root
       tileset3d.depthLimit = this.props.depthLimit;
-      // TODO: remove after data PR merge
-      tileset3d.isRoyal = tilesetUrl.includes('Royal');
     }
 
     this.setState({
@@ -100,7 +98,7 @@ export default class Tile3DLayer extends CompositeLayer {
     let expMap = 1 - Math.exp(-zoomMap * 6); // Use exposure tone mapping to smooth out the sensitivity in the zoom mapping
     expMap = Math.max(Math.min(1.0 - expMap, 1), 0);
     const distanceMagic = expMap * zoomMagic;
-    const heightMagic = expMap * zoomMagic + 16; // I think royal was tiled at a height of 16
+    const heightMagic = expMap * zoomMagic;
 
     cameraPosition.set(longitude, latitude, heightMagic);
     Ellipsoid.WGS84.cartographicToCartesian(cameraPosition, cameraPosition);
