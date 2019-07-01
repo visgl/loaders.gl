@@ -2,7 +2,7 @@
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 // import {TILE3D_REFINEMENT, TILE3D_OPTIMIZATION_HINT} from '../constants';
 import {Vector3, Matrix4} from 'math.gl';
-// import {CullingVolume} from '@math.gl/culling';
+import {CullingVolume} from '@math.gl/culling';
 import Tile3DLoader from '../tile-3d-loader';
 // import Tileset3DLoader from '../tileset-3d-loader';
 import {TILE3D_REFINEMENT, TILE3D_CONTENT_STATE, TILE3D_OPTIMIZATION_HINT} from '../constants';
@@ -11,7 +11,7 @@ import {createBoundingVolume} from './helpers/bounding-volume';
 // TODO - inject this dependency?
 import {fetchFile} from '@loaders.gl/core';
 
-const defined = x => x !== undefined;
+const defined = x => x !== undefined && x !== null;
 
 /* eslint-disable */
 const scratchDate = new Date();
@@ -318,12 +318,12 @@ export default class Tile3DHeader {
       return;
     }
 
-    // const parent = this.parent;
-    // const parentTransform = defined(parent) ? parent.computedTransform : this._tileset.modelMatrix;
-    // // const parentVisibilityPlaneMask = defined(parent)
-    // //   ? parent._visibilityPlaneMask
-    // //   : CullingVolume.MASK_INDETERMINATE;
-    // this._updateTransform(parentTransform);
+    const parent = this.parent;
+    const parentTransform = defined(parent) ? parent.computedTransform : this._tileset.modelMatrix;
+    const parentVisibilityPlaneMask = defined(parent)
+      ? parent._visibilityPlaneMask
+      : CullingVolume.MASK_INDETERMINATE;
+    this._updateTransform(parentTransform);
     this._distanceToCamera = this.distanceToTile(frameState);
     // this._centerZDepth = this.cameraSpaceZDepth(frameState);
     this._screenSpaceError = this.getScreenSpaceError(frameState, false);
@@ -615,7 +615,7 @@ export default class Tile3DHeader {
 
   // Update the tile's transform. The transform is applied to the tile's bounding volumes.
   _updateTransform(parentTransform = new Matrix4()) {
-    const computedTransform = parentTransform.clone().multiply(this.transform);
+    const computedTransform = parentTransform.clone().multiplyRight(this.transform);
     const didTransformChange = !computedTransform.equals(this.computedTransform);
 
     if (!didTransformChange) {
