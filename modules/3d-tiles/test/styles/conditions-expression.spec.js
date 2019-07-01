@@ -1,12 +1,11 @@
-defineSuite([
-  'Scene/ConditionsExpression',
-  'Core/Cartesian4',
-  'Core/Color'
-], function(
-  ConditionsExpression,
-  Cartesian4,
-  Color) {
-'use strict';
+// This file is derived from the Cesium code base under Apache 2 license
+// See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
+
+/* eslint-disable no-template-curly-in-string */
+import {it, expect} from 'test/utils/expect-assertions';
+
+import ConditionsExpression from '@loaders,gl/3d-tiles/styles/condition-expression';
+import {Cartesian4} from 'math.gl';
 
 function MockFeature(value) {
   this._value = value;
@@ -16,41 +15,41 @@ MockFeature.prototype.getProperty = function() {
   return this._value;
 };
 
-var jsonExp = {
+const jsonExp = {
   conditions : [
-      ['${Height} > 100', 'color("blue")'],
-      ['${Height} > 50', 'color("red")'],
-      ['true', 'color("lime")']
+    ['${Height} > 100', 'color("blue")'],
+    ['${Height} > 50', 'color("red")'],
+    ['true', 'color("lime")']
   ]
 };
 
-var defines = {
+const defines = {
   halfHeight: '${Height}/2',
   quarterHeight: '${Height}/4'
 };
 
-var jsonExpWithDefines = {
+const jsonExpWithDefines = {
   conditions : [
-      ['${halfHeight} > 50 && ${halfHeight} < 100', 'color("blue")'],
-      ['${quarterHeight} > 50 && ${quarterHeight} < 52', 'color("red")'],
-      ['true', 'color("lime")']
+    ['${halfHeight} > 50 && ${halfHeight} < 100', 'color("blue")'],
+    ['${quarterHeight} > 50 && ${quarterHeight} < 52', 'color("red")'],
+    ['true', 'color("lime")']
   ]
 };
 
 it('constructs', function() {
-  var expression = new ConditionsExpression(jsonExp);
+  const expression = new ConditionsExpression(jsonExp);
   expect(expression.conditionsExpression).toEqual(jsonExp);
 });
 
 it('evaluates conditional', function() {
-  var expression = new ConditionsExpression(jsonExp);
+  const expression = new ConditionsExpression(jsonExp);
   expect(expression.evaluateColor(new MockFeature(101))).toEqual(Color.BLUE);
   expect(expression.evaluateColor(new MockFeature(52))).toEqual(Color.RED);
   expect(expression.evaluateColor(new MockFeature(3))).toEqual(Color.LIME);
 });
 
 it('evaluates conditional with defines', function() {
-  var expression = new ConditionsExpression(jsonExpWithDefines, defines);
+  const expression = new ConditionsExpression(jsonExpWithDefines, defines);
   expect(expression.evaluateColor(new MockFeature(101))).toEqual(Color.BLUE);
   expect(expression.evaluateColor(new MockFeature(52))).toEqual(Color.LIME);
   expect(expression.evaluateColor(new MockFeature(3))).toEqual(Color.LIME);
@@ -58,7 +57,7 @@ it('evaluates conditional with defines', function() {
 
 it('evaluate takes result argument', function() {
   var result = new Cartesian4();
-  var expression = new ConditionsExpression(jsonExpWithDefines, defines, result);
+  const expression = new ConditionsExpression(jsonExpWithDefines, defines, result);
   var value = expression.evaluate(new MockFeature(101), result);
   expect(value).toEqual(new Cartesian4(0.0, 0.0, 1.0, 1.0));
   expect(value).toBe(result);
@@ -66,14 +65,14 @@ it('evaluate takes result argument', function() {
 
 it('evaluate takes a color result argument', function() {
   var result = new Color();
-  var expression = new ConditionsExpression(jsonExpWithDefines, defines, result);
+  const expression = new ConditionsExpression(jsonExpWithDefines, defines, result);
   var value = expression.evaluate(new MockFeature(101), result);
   expect(value).toEqual(Color.BLUE);
   expect(value).toBe(result);
 });
 
 it('constructs and evaluates empty conditional', function() {
-  var expression = new ConditionsExpression({
+  const expression = new ConditionsExpression({
       'conditions' : []
   });
   expect(expression._conditions).toEqual([]);
@@ -83,7 +82,7 @@ it('constructs and evaluates empty conditional', function() {
 });
 
 it('constructs and evaluates empty', function() {
-  var expression = new ConditionsExpression([]);
+  const expression = new ConditionsExpression([]);
   expect(expression._conditions).toEqual(undefined);
   expect(expression.evaluate(new MockFeature(101))).toEqual(undefined);
   expect(expression.evaluate(new MockFeature(52))).toEqual(undefined);
@@ -91,7 +90,7 @@ it('constructs and evaluates empty', function() {
 });
 
 it('gets shader function', function() {
-  var expression = new ConditionsExpression(jsonExp);
+  const expression = new ConditionsExpression(jsonExp);
   var shaderFunction = expression.getShaderFunction('getColor', '', {}, 'vec4');
   var expected = 'vec4 getColor() \n' +
                  '{ \n' +
@@ -113,8 +112,7 @@ it('gets shader function', function() {
 });
 
 it('return undefined shader function when there are no conditions', function() {
-  var expression = new ConditionsExpression([]);
+  const expression = new ConditionsExpression([]);
   var shaderFunction = expression.getShaderFunction('getColor', '', {}, 'vec4');
   expect(shaderFunction).toBeUndefined();
-});
 });
