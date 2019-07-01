@@ -1,16 +1,15 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
-import {Matrix4} from 'math.gl';
+import {Matrix4, Vector3} from 'math.gl';
+import {Ellipsoid} from '@math.gl/geospatial';
 import assert from '../utils/assert';
 import Tile3DHeader from './tile-3d-header';
 import Tileset3DTraverser from './tileset-3d-traverser';
 
 // import Tileset3DCache from './tileset-3d-cache';
 
-const Ellipsoid = {
-  WGS84: ''
-};
+const scratchCartographic = new Vector3();
 
 const DEFAULT_OPTIONS = {
   basePath: '',
@@ -108,6 +107,10 @@ export default class Tileset3D {
     this._tilesLoaded = false;
     this._initialTilesLoaded = false;
 
+    this._longitude = 0;
+    this._latitude = 0;
+    this._zoom = 18;
+
     this._readyPromise = Promise.resolve();
 
     this._classificationType = options.classificationType;
@@ -163,6 +166,7 @@ export default class Tileset3D {
     // console.warn('Tileset3D.basePath is deprecated. Tiles are relative to the tileset JSON url');
 
     this._root = this.installTileset(tilesetJson, null);
+    this._updateCartographicCenterAndZoom();
     // const gltfUpAxis = defined(tilesetJson.asset.gltfUpAxis)
     //   ? Axis.fromName(tilesetJson.asset.gltfUpAxis)
     //   : Axis.Y;
@@ -432,6 +436,22 @@ export default class Tileset3D {
         message: error.message || error.toString()
       });
     }
+  }
+
+  // Called during intializeTileset to initialize the tileset's cartographic center (longitude, latitude) and zoom.
+  // Also called if the root transform changes
+  _updateCartographicCenterAndZoom() {
+    const root = this._root;
+    const {center} = root.boundingVolume;
+    if (!center) {
+      // eslint-disable-next-line
+      console.warn('center was not pre-calculated for the root tile');
+    }
+
+    scratchCartographic.copy(center);
+    Ellipsoid.WGS84.cartesianToCartographic(scratchCartographic, scratchCartographic);
+    this._longitude = scratchCartographic[0];
+    this._latitude = scratchCartographic[1];
   }
 
   _destroySubtree(tile) {

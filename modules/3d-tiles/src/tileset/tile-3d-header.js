@@ -420,19 +420,8 @@ export default class Tile3DHeader {
   // @param {FrameState} frameState The frame state.
   // @returns {Number} The distance, in meters, or zero if the camera is inside the bounding volume.
   distanceToTile(frameState) {
-    // const boundingVolume = this._boundingVolume;
-    // TODO: Remove this after deck.gl data PR merged. replace with above
-    const tileset = this.tileset;
-    const root = tileset._root;
-    const boundingVolume =
-      tileset.isRoyal && this === root ? root.children[0]._boundingVolume : this._boundingVolume;
-
-    const dist = Math.sqrt(boundingVolume.distanceSquaredTo(frameState.camera.position));
-
-    // console.log('DISTANCE: ' + dist);
-    // console.log('CENTER: ' + boundingVolume.center);
-
-    return dist;
+    const boundingVolume = this._boundingVolume;
+    return Math.sqrt(boundingVolume.distanceSquaredTo(frameState.camera.position));
   }
 
   // Computes the tile's camera-space z-depth.
@@ -623,6 +612,11 @@ export default class Tile3DHeader {
     }
 
     this.computedTransform = computedTransform;
+
+    const {tileset} = this;
+    if (this === tileset.root) {
+      tileset._updateCartographicCenterAndZoom();
+    }
 
     // Matrix4.clone(computedTransform, this.computedTransform);
 

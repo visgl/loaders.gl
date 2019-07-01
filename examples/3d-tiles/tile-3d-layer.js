@@ -55,8 +55,6 @@ export default class Tile3DLayer extends CompositeLayer {
 
       // TODO: Remove these after sse traversal is working since this is just to prevent full load of tileset and loading of root
       tileset3d.depthLimit = this.props.depthLimit;
-      // TODO: remove after data PR merge
-      tileset3d.isRoyal = tilesetUrl.includes('Royal');
     }
 
     this.setState({
