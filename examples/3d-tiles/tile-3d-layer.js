@@ -98,7 +98,7 @@ export default class Tile3DLayer extends CompositeLayer {
     let expMap = 1 - Math.exp(-zoomMap * 6); // Use exposure tone mapping to smooth out the sensitivity in the zoom mapping
     expMap = Math.max(Math.min(1.0 - expMap, 1), 0);
     const distanceMagic = expMap * zoomMagic;
-    const heightMagic = expMap * zoomMagic + 16; // I think royal was tiled at a height of 16
+    const heightMagic = expMap * zoomMagic;
 
     cameraPosition.set(longitude, latitude, heightMagic);
     Ellipsoid.WGS84.cartographicToCartesian(cameraPosition, cameraPosition);

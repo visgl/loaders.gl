@@ -613,11 +613,6 @@ export default class Tile3DHeader {
 
     this.computedTransform = computedTransform;
 
-    const {tileset} = this;
-    if (this === tileset.root) {
-      tileset._updateCartographicCenterAndZoom();
-    }
-
     // Matrix4.clone(computedTransform, this.computedTransform);
 
     // Update the bounding volumes

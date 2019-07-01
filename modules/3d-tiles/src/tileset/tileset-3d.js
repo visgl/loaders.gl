@@ -9,8 +9,6 @@ import Tileset3DTraverser from './tileset-3d-traverser';
 
 // import Tileset3DCache from './tileset-3d-cache';
 
-const scratchCartographic = new Vector3();
-
 const DEFAULT_OPTIONS = {
   basePath: '',
 
@@ -107,10 +105,6 @@ export default class Tileset3D {
     this._tilesLoaded = false;
     this._initialTilesLoaded = false;
 
-    this._longitude = 0;
-    this._latitude = 0;
-    this._zoom = 18;
-
     this._readyPromise = Promise.resolve();
 
     this._classificationType = options.classificationType;
@@ -166,7 +160,6 @@ export default class Tileset3D {
     // console.warn('Tileset3D.basePath is deprecated. Tiles are relative to the tileset JSON url');
 
     this._root = this.installTileset(tilesetJson, null);
-    this._updateCartographicCenterAndZoom();
     // const gltfUpAxis = defined(tilesetJson.asset.gltfUpAxis)
     //   ? Axis.fromName(tilesetJson.asset.gltfUpAxis)
     //   : Axis.Y;
@@ -440,18 +433,20 @@ export default class Tileset3D {
 
   // Called during intializeTileset to initialize the tileset's cartographic center (longitude, latitude) and zoom.
   // Also called if the root transform changes
-  _updateCartographicCenterAndZoom() {
+  _getCartographicCenterAndZoom(result) {
     const root = this._root;
     const {center} = root.boundingVolume;
     if (!center) {
       // eslint-disable-next-line
       console.warn('center was not pre-calculated for the root tile');
+      return result;
     }
 
-    scratchCartographic.copy(center);
-    Ellipsoid.WGS84.cartesianToCartographic(scratchCartographic, scratchCartographic);
-    this._longitude = scratchCartographic[0];
-    this._latitude = scratchCartographic[1];
+    result = result || new Vector3();
+    result.copy(center);
+    Ellipsoid.WGS84.cartesianToCartographic(result, result);
+    result[2] = 18;
+    return result;
   }
 
   _destroySubtree(tile) {

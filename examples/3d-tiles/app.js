@@ -8,6 +8,7 @@ import DeckGL from '@deck.gl/react';
 import {MapController} from '@deck.gl/core';
 // import '@loaders.gl/polyfills';
 // import '@luma.gl/debug';
+import {Vector3} from 'math.gl';
 
 import Tile3DLayer from './tile-3d-layer';
 
@@ -28,6 +29,8 @@ const INITIAL_EXAMPLE_NAME = 'royalExhibitionBuilding';
 // const INITIAL_EXAMPLE_NAME = 'InstancedGltfExternal';
 // const INITIAL_EXAMPLE_CATEGORY = 'PointCloud';
 // const INITIAL_EXAMPLE_NAME = 'PointCloudRGB';
+
+const scratchLongLatZoom = new Vector3();
 
 const ADDITIONAL_EXAMPLES = {
   name: 'additional',
@@ -212,12 +215,13 @@ export default class App extends PureComponent {
   }
 
   _onTilesetLoaded(tileset) {
+    tileset._getCartographicCenterAndZoom(scratchLongLatZoom);
     this.setState({
       viewState: {
         ...this.state.viewState,
-        longitude: tileset._longitude,
-        latitude: tileset._latitude,
-        zoom: tileset._zoom
+        longitude: scratchLongLatZoom[0],
+        latitude: scratchLongLatZoom[1],
+        zoom: scratchLongLatZoom[2]
       }
     });
 
