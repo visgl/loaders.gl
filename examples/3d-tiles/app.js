@@ -45,6 +45,18 @@ const ADDITIONAL_EXAMPLES = {
   }
 };
 
+const CUSTOM_EXAMPLES = {
+  name: 'custom',
+  examples: {
+    royalExhibitionBuilding: {
+      tilesetUrl:
+        'https://raw.githubusercontent.com/uber-common/deck.gl-data/master/3d-tiles/RoyalExhibitionBuilding/tileset.json',
+      depthLimit: 2, // TODO: Remove this after sse traversal is working since this is just to prevent full load of tileset
+      color: [115, 101, 152, 200]
+    }
+  }
+};
+
 const EXAMPLES_VIEWSTATE = {
   latitude: 40.04248558075302,
   longitude: -75.61213987669433
@@ -102,12 +114,7 @@ export default class App extends PureComponent {
       examplesByCategory: {
         ...data,
         additional: ADDITIONAL_EXAMPLES,
-        custom: {
-          name: 'Custom',
-          examples: {
-            'Custom Tileset': {}
-          }
-        }
+        custom: CUSTOM_EXAMPLES
       }
     });
   }
@@ -131,6 +138,8 @@ export default class App extends PureComponent {
     let tilesetExampleProps;
     if (category === 'additional') {
       tilesetExampleProps = ADDITIONAL_EXAMPLES.examples[name];
+    } else if (category === 'custom') {
+      tilesetExampleProps = CUSTOM_EXAMPLES.examples[name];
     } else {
       const selectedExample = examplesByCategory[category].examples[name];
       if (selectedExample && selectedExample.tileset) {
