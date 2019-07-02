@@ -55,12 +55,12 @@ function planeDataToWGS84(viewport, plane, scale, heightMagic) {
 }
 
 // TODO: Derive planes from the view and projection matrix?
-function getCullingVolume(viewport, heightMagic, volume) {
+function updateCullingVolume(viewport, heightMagic) {
   const frustumPlanes = viewport.getFrustumPlanes();
 
   let i = 0;
   for (const planeName of planes) {
-    const cullingPlane = volume.planes[i];
+    const cullingPlane = cullingVolume.planes[i];
     const plane = frustumPlanes[planeName];
 
     const pos = planeDataToWGS84(viewport, plane, plane.d, heightMagic);
@@ -147,7 +147,7 @@ export default class Tile3DLayer extends CompositeLayer {
     cameraPosition.set(longitude, latitude, heightMagic);
     Ellipsoid.WGS84.cartographicToCartesian(cameraPosition, cameraPosition);
 
-    getCullingVolume(viewport, heightMagic, cullingVolume);
+    updateCullingVolume(viewport, heightMagic);
 
     // TODO: make a file/class for frameState and document what needs to be attached to this so that traversal can function
     const frameState = {
