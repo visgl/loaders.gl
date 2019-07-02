@@ -378,7 +378,6 @@ export default class Tile3DHeader {
     this._screenSpaceError = this.getScreenSpaceError(frameState, false);
     this._visibilityPlaneMask = this.visibility(frameState, parentVisibilityPlaneMask); // Use parent's plane mask to speed up visibility test
     this._visible = this._visibilityPlaneMask !== CullingVolume.MASK_OUTSIDE;
-    // this._visible = true;
     this._inRequestVolume = this.insideViewerRequestVolume(frameState);
 
     this._updatedVisibilityFrame = tileset._updatedVisibilityFrame;
