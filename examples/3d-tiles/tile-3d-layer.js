@@ -1,5 +1,6 @@
 import {CompositeLayer} from '@deck.gl/core';
 import {Matrix4, Vector3} from 'math.gl';
+import {CullingVolume, Plane} from '@math.gl/culling';
 
 import {COORDINATE_SYSTEM} from '@deck.gl/core';
 import {PointCloudLayer} from '@deck.gl/layers';
@@ -27,6 +28,50 @@ registerLoaders([Tile3DLoader, Tileset3DLoader, GLTFLoader]);
 const DEFAULT_POINT_COLOR = [202, 112, 41, 255];
 
 const cameraPosition = new Vector3();
+const scratchPlane = new Plane();
+const cullingVolume = new CullingVolume([
+  new Plane(),
+  new Plane(),
+  new Plane(),
+  new Plane(),
+  new Plane(),
+  new Plane()
+]);
+
+const planes = ['near', 'far', 'left', 'right', 'bottom', 'top'];
+
+function planeDataToWGS84(viewport, plane, scale, heightMagic) {
+  scratchPlane.normal.copy(plane.n);
+  scratchPlane.distance = plane.d;
+  scratchPlane.normal.scale(scale);
+
+  const n = scratchPlane.normal;
+  const longLat = viewport.unproject([n[1], n[2]]);
+  n[0] = longLat[0];
+  n[1] = longLat[1];
+  n[2] = heightMagic; // Yikes.
+  Ellipsoid.WGS84.cartographicToCartesian(n, n);
+  return n;
+}
+
+// TODO: Derive planes from the view and projection matrix?
+function getCullingVolume(viewport, heightMagic, volume) {
+  const frustumPlanes = viewport.getFrustumPlanes();
+
+  let i = 0;
+  for (const planeName of planes) {
+    const cullingPlane = volume.planes[i];
+    const plane = frustumPlanes[planeName];
+
+    const pos = planeDataToWGS84(viewport, plane, plane.d, heightMagic);
+    cullingPlane.distance = pos.magnitude();
+
+    const nor = planeDataToWGS84(viewport, plane, 1, heightMagic);
+    cullingPlane.normal = nor.normalize();
+
+    i++;
+  }
+}
 
 const defaultProps = {
   // TODO - the tileset json should be an async prop.
@@ -97,11 +142,12 @@ export default class Tile3DLayer extends CompositeLayer {
     zoomMap = (zoomMap - minZoom) / (maxZoom - minZoom);
     let expMap = 1 - Math.exp(-zoomMap * 6); // Use exposure tone mapping to smooth out the sensitivity in the zoom mapping
     expMap = Math.max(Math.min(1.0 - expMap, 1), 0);
-    const distanceMagic = expMap * zoomMagic;
     const heightMagic = expMap * zoomMagic;
 
     cameraPosition.set(longitude, latitude, heightMagic);
     Ellipsoid.WGS84.cartographicToCartesian(cameraPosition, cameraPosition);
+
+    getCullingVolume(viewport, heightMagic, cullingVolume);
 
     // TODO: make a file/class for frameState and document what needs to be attached to this so that traversal can function
     const frameState = {
@@ -111,8 +157,8 @@ export default class Tile3DLayer extends CompositeLayer {
         up: cameraUp
       },
       height,
+      cullingVolume,
       frameNumber: tick,
-      distanceMagic,
       sseDenominator: 1.15 // Assumes fovy = 60 degrees
     };
 

@@ -330,8 +330,7 @@ export default class Tile3DHeader {
     // this._visibilityPlaneMask = this.visibility(frameState, parentVisibilityPlaneMask); // Use parent's plane mask to speed up visibility test
     // this._visible = this._visibilityPlaneMask !== CullingVolume.MASK_OUTSIDE;
     this._visible = true;
-    // this._inRequestVolume = this.insideViewerRequestVolume(frameState);
-    this._inRequestVolume = true;
+    this._inRequestVolume = this.insideViewerRequestVolume(frameState);
 
     this._updatedVisibilityFrame = tileset._updatedVisibilityFrame;
   }
@@ -353,9 +352,8 @@ export default class Tile3DHeader {
   // @returns {Number} A plane mask as described above in {@link CullingVolume#computeVisibilityWithPlaneMask}.
   visibility(frameState, parentVisibilityPlaneMask) {
     // TODO - implement culling
-    return true;
-    /*
-    const cullingVolume = frameState.cullingVolume;
+    // return true;
+    const {cullingVolume} = frameState;
     const boundingVolume = this._boundingVolume;
 
     const tileset = this._tileset;
@@ -372,7 +370,6 @@ export default class Tile3DHeader {
     }
 
     return cullingVolume.computeVisibilityWithPlaneMask(boundingVolume, parentVisibilityPlaneMask);
-    */
   }
 
   // Assuming the tile's bounding volume intersects the culling volume, determines
