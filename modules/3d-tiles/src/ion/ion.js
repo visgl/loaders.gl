@@ -6,7 +6,7 @@ const CESIUM_ION_URL = 'https://api.cesium.com/v1/assets';
 
 // Returns `{url, headers, type, attributions}` for an ion tileset
 export async function getIonTilesetMetadata(accessToken, assetId) {
-  debugger
+  debugger;
   // Step 1, if no asset id, look for first 3DTILES asset associated with this token.
   if (!assetId) {
     const assets = await getIonAssets(accessToken);
@@ -19,11 +19,11 @@ export async function getIonTilesetMetadata(accessToken, assetId) {
 
   // Step 2: Query metdatadata for this asset.
   const ionAssetMetadata = await getIonAssetMetadata(assetId, accessToken);
-  const { type, url} = ionAssetMetadata;
+  const {type, url} = ionAssetMetadata;
   assert(type === '3DTILES' && url);
 
   // Prepare a headers object for fetch
-  ionAssetMetadata.headers = { Authorization: `Bearer ${ionAssetMetadata.accessToken}` };;
+  ionAssetMetadata.headers = {Authorization: `Bearer ${ionAssetMetadata.accessToken}`};
   return ionAssetMetadata;
 }
 
@@ -32,7 +32,7 @@ export async function getIonAssets(accessToken) {
   assert(accessToken);
   const url = CESIUM_ION_URL;
   const headers = {Authorization: `Bearer ${accessToken}`};
-  const response = await fetch(url, { headers });
+  const response = await fetch(url, {headers});
   return await response.json();
 }
 
@@ -41,6 +41,6 @@ export async function getIonAssetMetadata(accessToken, assetId) {
   assert(accessToken, assetId);
   const url = `${CESIUM_ION_URL}/${assetId}`;
   const headers = {Authorization: `Bearer ${accessToken}`};
-  const response = await fetch(url, { headers });
+  const response = await fetch(url, {headers});
   return await response.json();
 }

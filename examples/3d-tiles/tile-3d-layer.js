@@ -1,5 +1,5 @@
 /* global fetch */
-import { CompositeLayer } from '@deck.gl/core';
+import {CompositeLayer} from '@deck.gl/core';
 import {Matrix4, Vector3} from 'math.gl';
 
 import {COORDINATE_SYSTEM} from '@deck.gl/core';
@@ -51,7 +51,7 @@ export default class Tile3DLayer extends CompositeLayer {
     let tileset3d = null;
 
     if (tilesetUrl) {
-      const response = await fetch(tilesetUrl, fetchOptions)
+      const response = await fetch(tilesetUrl, fetchOptions);
       const tilesetJson = await response.json();
       tileset3d = new Tileset3D(tilesetJson, tilesetUrl, {
         onTileLoad: this.props.onTileLoaded,
@@ -80,27 +80,30 @@ export default class Tile3DLayer extends CompositeLayer {
 
   async _loadTilesetFromIon(ionAccessToken, ionAssetId) {
     const ionMetadata = _getIonTilesetMetadata(ionAccessToken, ionAssetId);
-    const { url, headers } = ionMetadata;
-    return await this._loadTileset(url, { headers }, ionMetadata);
+    const {url, headers} = ionMetadata;
+    return await this._loadTileset(url, {headers}, ionMetadata);
   }
 
   shouldUpdateState({changeFlags}) {
     return changeFlags.somethingChanged;
   }
 
-  updateState({ props, oldProps, context, changeFlags }) {
+  updateState({props, oldProps, context, changeFlags}) {
     if (props.tilesetUrl !== oldProps.tilesetUrl) {
       this._loadTileset(props.tilesetUrl);
-    } else if (props.ionAssetToken !== oldProps.ionAssetToken || props.ionAssetId !== oldProps.ionAssetId) {
+    } else if (
+      props.ionAssetToken !== oldProps.ionAssetToken ||
+      props.ionAssetId !== oldProps.ionAssetId
+    ) {
       this._loadTilesetFromIon(props.ionAccessToken, props.ionAssetId);
     }
 
-    const { tileset3d } = this.state;
+    const {tileset3d} = this.state;
     this._updateTileset(tileset3d);
   }
 
   _updateTileset(tileset3d) {
-    const { animationProps, viewport } = this.context;
+    const {animationProps, viewport} = this.context;
     if (!animationProps || !viewport || !tileset3d) {
       return;
     }
