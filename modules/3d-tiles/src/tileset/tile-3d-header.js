@@ -264,7 +264,7 @@ export default class Tile3DHeader {
       this._contentState = TILE3D_CONTENT_STATE.LOADING;
 
       const contentUri = this.uri;
-      const response = await fetchFile(contentUri);
+      const response = await fetchFile(contentUri, this._tileset.fetchOptions);
       const arrayBuffer = await response.arrayBuffer();
 
       // TODO: The content can be a binary tile ot a JSON tileset

@@ -1,7 +1,7 @@
 // Minimal support to load tilsets from the Cesium ION services
 /* global fetch */
 import assert from '../utils/assert';
-import {_getErrorFromResponse} from '@loaders.gl/core';
+import {_getErrorMessageFromResponse} from '@loaders.gl/core';
 
 const CESIUM_ION_URL = 'https://api.cesium.com/v1/assets';
 // const CESIUM_ION_URL = 'https://api.cesium.com/v1/assets/2/endpoint';
@@ -37,7 +37,7 @@ export async function getIonAssets(accessToken) {
   const headers = {Authorization: `Bearer ${accessToken}`};
   const response = await fetch(url, {headers});
   if (!response.ok) {
-    throw new Error(await _getErrorFromResponse(response));
+    throw new Error(await _getErrorMessageFromResponse(response));
   }
   return await response.json();
 }
@@ -49,7 +49,7 @@ export async function getIonAssetMetadata(accessToken, assetId) {
   const headers = {Authorization: `Bearer ${accessToken}`};
   const response = await fetch(url, {headers});
   if (!response.ok) {
-    throw new Error(await _getErrorFromResponse(response));
+    throw new Error(await _getErrorMessageFromResponse(response));
   }
   return await response.json();
 }
