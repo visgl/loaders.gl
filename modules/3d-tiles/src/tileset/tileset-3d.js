@@ -92,6 +92,8 @@ export default class Tileset3D {
     this._extras = undefined;
     this._credits = undefined;
 
+    this.DracoLoader = options.DracoLoader;
+
     this._cullWithChildrenBounds = cullWithChildrenBounds;
     this._allTilesAdditive = true;
 
@@ -387,7 +389,7 @@ export default class Tileset3D {
     this._cache.trim();
   }
 
-  update(frameState, DracoLoader) {
+  update(frameState) {
     this._updatedVisibilityFrame++; // TODO: only update when camera or culling volume from last update moves (could be render camera change or prefetch camera)
     this._traverser.traverse(this, frameState);
 
@@ -396,13 +398,13 @@ export default class Tileset3D {
     // This makes it less likely this requests will be cancelled after being issued.
     // requestedTiles.sort((a, b) => a._priority - b._priority);
     for (const tile of requestedTiles) {
-      this._requestContent(tile, DracoLoader);
+      this._requestContent(tile);
     }
   }
 
-  async _requestContent(tile, DracoLoader) {
+  async _requestContent(tile) {
     const expired = tile.contentExpired;
-    const requested = await tile.requestContent(DracoLoader);
+    const requested = await tile.requestContent(this.DracoLoader);
 
     if (!requested) {
       return;

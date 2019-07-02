@@ -44,18 +44,6 @@ const ADDITIONAL_EXAMPLES = {
   }
 };
 
-const CUSTOM_EXAMPLES = {
-  name: 'custom',
-  examples: {
-    royalExhibitionBuilding: {
-      tilesetUrl:
-        'https://raw.githubusercontent.com/uber-common/deck.gl-data/master/3d-tiles/RoyalExhibitionBuilding/tileset.json',
-      depthLimit: 2, // TODO: Remove this after sse traversal is working since this is just to prevent full load of tileset
-      color: [115, 101, 152, 200]
-    }
-  }
-};
-
 const EXAMPLES_VIEWSTATE = {
   latitude: 40.04248558075302,
   longitude: -75.61213987669433
@@ -112,21 +100,38 @@ export default class App extends PureComponent {
       examplesByCategory: {
         ...data,
         additional: ADDITIONAL_EXAMPLES,
-        custom: CUSTOM_EXAMPLES
+        custom: {
+          name: 'Custom',
+          examples: {
+            'Custom Tileset': {},
+            'ION Tileset': {}
+          }
+        }
       }
     });
   }
 
   async _loadInitialTileset() {
-    const tilesetUrl = this._getTilesetUrlFromSearchParams();
+    /* global URL */
+    const parsedUrl = new URL(window.location.href);
+    const ionAssetId = parsedUrl.searchParams.get('ionAssetId');
+    const ionAccessToken = parsedUrl.searchParams.get('ionAccessToken');
+    if (ionAccessToken) {
+      // load the tileset specified in the URL
+      await this._loadTilesetFromIonAsset(ionAccessToken, ionAssetId);
+      return;
+    }
+
+    const tilesetUrl = parsedUrl.searchParams.get('tileset');
     if (tilesetUrl) {
       // load the tileset specified in the URL
       await this._loadTilesetFromUrl(tilesetUrl);
-    } else {
-      // load the default example tileset
-      const {category, name} = this.state;
-      await this._loadExampleTileset(category, name);
+      return;
     }
+
+    // load the default example tileset
+    const {category, name} = this.state;
+    await this._loadExampleTileset(category, name);
   }
 
   async _loadExampleTileset(category, name) {
@@ -136,8 +141,6 @@ export default class App extends PureComponent {
     let tilesetExampleProps;
     if (category === 'additional') {
       tilesetExampleProps = ADDITIONAL_EXAMPLES.examples[name];
-    } else if (category === 'custom') {
-      tilesetExampleProps = CUSTOM_EXAMPLES.examples[name];
     } else {
       const selectedExample = examplesByCategory[category].examples[name];
       if (selectedExample && selectedExample.tileset) {
@@ -166,11 +169,15 @@ export default class App extends PureComponent {
     }
   }
 
-  _getTilesetUrlFromSearchParams() {
-    /* global URL */
-    const parsedUrl = new URL(window.location.href);
-    const tilesetUrl = parsedUrl.searchParams.get('tileset');
-    return tilesetUrl;
+  async _loadTilesetFromIonAsset(ionAccessToken, ionAssetId) {
+    this.setState({
+      tilesetExampleProps: {
+        ionAccessToken,
+        ionAssetId
+      },
+      category: 'custom',
+      name: 'ION Tileset'
+    });
   }
 
   async _loadTilesetFromUrl(tilesetUrl) {
@@ -246,6 +253,8 @@ export default class App extends PureComponent {
     const {tilesetExampleProps} = this.state;
     const {
       tilesetUrl,
+      ionAssetId,
+      ionAccessToken,
       coordinateOrigin,
       depthLimit = 5,
       color = [255, 0, 0, 255]
@@ -253,6 +262,8 @@ export default class App extends PureComponent {
     return new Tile3DLayer({
       id: 'tile-3d-layer',
       tilesetUrl,
+      ionAssetId,
+      ionAccessToken,
       coordinateOrigin,
       depthLimit,
       color,

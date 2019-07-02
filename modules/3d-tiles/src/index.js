@@ -13,3 +13,5 @@ export {default as Tile3DFeatureTable} from './classes/tile-3d-feature-table';
 export {default as Tile3DBatchTable} from './classes/tile-3d-batch-table';
 
 export {parseRGB565} from './parsers/parse-3d-tile-point-cloud';
+
+export {getIonTilesetMetadata as _getIonTilesetMetadata} from './ion/ion';
