@@ -1,15 +1,14 @@
+/* global fetch */
 import {CompositeLayer} from '@deck.gl/core';
 import {Matrix4, Vector3} from 'math.gl';
 
 import {COORDINATE_SYSTEM} from '@deck.gl/core';
 import {PointCloudLayer} from '@deck.gl/layers';
 import {ScenegraphLayer} from '@deck.gl/mesh-layers';
-
 import {GLTFLoader} from '@loaders.gl/gltf';
 
 import '@loaders.gl/polyfills';
-import {load, parse, registerLoaders} from '@loaders.gl/core';
-// import {postProcessGLTF} from '@loaders.gl/gltf';
+import {parse, registerLoaders} from '@loaders.gl/core';
 import {DracoWorkerLoader} from '@loaders.gl/draco';
 import {Ellipsoid} from '@math.gl/geospatial';
 
@@ -19,7 +18,8 @@ import {
   Tile3DFeatureTable,
   Tile3DBatchTable,
   parseRGB565,
-  Tileset3DLoader
+  Tileset3DLoader,
+  _getIonTilesetMetadata
 } from '@loaders.gl/3d-tiles';
 
 registerLoaders([Tile3DLoader, Tileset3DLoader, GLTFLoader]);
@@ -29,8 +29,10 @@ const DEFAULT_POINT_COLOR = [202, 112, 41, 255];
 const cameraPosition = new Vector3();
 
 const defaultProps = {
-  // TODO - the tileset json should be an async prop.
+  // TODO - the tileset json could be an async prop.
   tilesetUrl: null,
+  ionAssetId: null,
+  ionAccessToken: null,
   isWGS84: false,
   color: DEFAULT_POINT_COLOR,
   depthLimit: Number.MAX_SAFE_INTEGER,
@@ -47,12 +49,20 @@ export default class Tile3DLayer extends CompositeLayer {
     };
   }
 
-  async _loadTileset(tilesetUrl, options) {
+  async _loadTileset(tilesetUrl, fetchOptions, ionMetadata) {
     let tileset3d = null;
-    if (tilesetUrl) {
-      const tilesetJson = await load(tilesetUrl);
-      tileset3d = new Tileset3D(tilesetJson, tilesetUrl, options);
 
+    if (tilesetUrl) {
+      const response = await fetch(tilesetUrl, fetchOptions);
+      const tilesetJson = await response.json();
+      tileset3d = new Tileset3D(tilesetJson, tilesetUrl, {
+        onTileLoad: this.props.onTileLoaded,
+        DracoLoader: DracoWorkerLoader,
+        ...ionMetadata
+      });
+    }
+
+    if (tileset3d) {
       // TODO: Remove these after sse traversal is working since this is just to prevent full load of tileset and loading of root
       tileset3d.depthLimit = this.props.depthLimit;
     }
@@ -68,19 +78,32 @@ export default class Tile3DLayer extends CompositeLayer {
     }
   }
 
+  async _loadTilesetFromIon(ionAccessToken, ionAssetId) {
+    const ionMetadata = _getIonTilesetMetadata(ionAccessToken, ionAssetId);
+    const {url, headers} = ionMetadata;
+    return await this._loadTileset(url, {headers}, ionMetadata);
+  }
+
   shouldUpdateState({changeFlags}) {
     return changeFlags.somethingChanged;
   }
 
   updateState({props, oldProps, context, changeFlags}) {
     if (props.tilesetUrl !== oldProps.tilesetUrl) {
-      this._loadTileset(props.tilesetUrl, {
-        onTileLoad: this.props.onTileLoaded
-      });
+      this._loadTileset(props.tilesetUrl);
+    } else if (
+      props.ionAssetToken !== oldProps.ionAssetToken ||
+      props.ionAssetId !== oldProps.ionAssetId
+    ) {
+      this._loadTilesetFromIon(props.ionAccessToken, props.ionAssetId);
     }
 
     const {tileset3d} = this.state;
-    const {animationProps, viewport} = context;
+    this._updateTileset(tileset3d);
+  }
+
+  _updateTileset(tileset3d) {
+    const {animationProps, viewport} = this.context;
     if (!animationProps || !viewport || !tileset3d) {
       return;
     }
