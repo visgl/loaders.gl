@@ -535,7 +535,7 @@ export default class Tile3DHeader {
 
     // If a content tileHeader
     if (tileHeader.content) {
-      this.contentUri = tileHeader.content.uri;
+      this.contentUri = tileHeader.content.uri || tileHeader.content.url;
       if ('url' in tileHeader) {
         console.warn('Tileset 3D: "content.url" property deprecated. Use "content.uri" instead.');
         this.contentUri = tileHeader.url;
