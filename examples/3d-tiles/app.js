@@ -104,7 +104,8 @@ export default class App extends PureComponent {
         custom: {
           name: 'Custom',
           examples: {
-            'Custom Tileset': {}
+            'Custom Tileset': {},
+            'ION Tileset': {}
           }
         }
       }
@@ -112,15 +113,26 @@ export default class App extends PureComponent {
   }
 
   async _loadInitialTileset() {
-    const tilesetUrl = this._getTilesetUrlFromSearchParams();
+    /* global URL */
+    const parsedUrl = new URL(window.location.href);
+    const ionAssetId = parsedUrl.searchParams.get('ionAssetId');
+    const ionAccessToken = parsedUrl.searchParams.get('ionAccessToken');
+    if (ionAccessToken) {
+      // load the tileset specified in the URL
+      await this._loadTilesetFromIonAsset(ionAccessToken, ionAssetId);
+      return;
+    }
+
+    const tilesetUrl = parsedUrl.searchParams.get('tileset');
     if (tilesetUrl) {
       // load the tileset specified in the URL
       await this._loadTilesetFromUrl(tilesetUrl);
-    } else {
-      // load the default example tileset
-      const {category, name} = this.state;
-      await this._loadExampleTileset(category, name);
+      return;
     }
+
+    // load the default example tileset
+    const {category, name} = this.state;
+    await this._loadExampleTileset(category, name);
   }
 
   async _loadExampleTileset(category, name) {
@@ -158,11 +170,15 @@ export default class App extends PureComponent {
     }
   }
 
-  _getTilesetUrlFromSearchParams() {
-    /* global URL */
-    const parsedUrl = new URL(window.location.href);
-    const tilesetUrl = parsedUrl.searchParams.get('tileset');
-    return tilesetUrl;
+  async _loadTilesetFromIonAsset(ionAccessToken, ionAssetId) {
+    this.setState({
+      tilesetExampleProps: {
+        ionAccessToken,
+        ionAssetId
+      },
+      category: 'custom',
+      name: 'ION Tileset'
+    });
   }
 
   async _loadTilesetFromUrl(tilesetUrl) {
@@ -247,6 +263,8 @@ export default class App extends PureComponent {
     const {tilesetExampleProps} = this.state;
     const {
       tilesetUrl,
+      ionAssetId,
+      ionAccessToken,
       coordinateOrigin,
       depthLimit = 5,
       color = [255, 0, 0, 255]
@@ -254,6 +272,8 @@ export default class App extends PureComponent {
     return new Tile3DLayer({
       id: 'tile-3d-layer',
       tilesetUrl,
+      ionAssetId,
+      ionAccessToken,
       coordinateOrigin,
       depthLimit,
       color,
