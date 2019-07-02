@@ -7,7 +7,6 @@ dist/*
 dist.js
 dist.min.js
 
-
 .reify-cache
 .nyc_output/
 coverage/
@@ -27,3 +26,6 @@ yarn-error.log
 .idea
 .project
 .DS_Store
+
+# local data
+data/**
