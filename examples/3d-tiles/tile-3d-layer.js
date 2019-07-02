@@ -8,7 +8,7 @@ import {ScenegraphLayer} from '@deck.gl/mesh-layers';
 import {GLTFLoader} from '@loaders.gl/gltf';
 
 import '@loaders.gl/polyfills';
-import {load, parse, registerLoaders} from '@loaders.gl/core';
+import {parse, registerLoaders} from '@loaders.gl/core';
 import {DracoWorkerLoader} from '@loaders.gl/draco';
 import {Ellipsoid} from '@math.gl/geospatial';
 
