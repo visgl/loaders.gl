@@ -56,6 +56,7 @@ export default class Tile3DLayer extends CompositeLayer {
       tileset3d = new Tileset3D(tilesetJson, tilesetUrl, {
         onTileLoad: this.props.onTileLoaded,
         DracoLoader: DracoWorkerLoader,
+        fetchOptions,
         ...ionMetadata
       });
     }

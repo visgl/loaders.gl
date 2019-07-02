@@ -96,6 +96,7 @@ export default class Tileset3D {
     this._credits = undefined;
 
     this.DracoLoader = options.DracoLoader;
+    this.fetchOptions = options.fetchOptions;
 
     this._cullWithChildrenBounds = cullWithChildrenBounds;
     this._allTilesAdditive = true;
