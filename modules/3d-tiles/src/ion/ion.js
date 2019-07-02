@@ -19,7 +19,7 @@ export async function getIonTilesetMetadata(accessToken, assetId) {
   }
 
   // Step 2: Query metdatadata for this asset.
-  const ionAssetMetadata = await getIonAssetMetadata(assetId, accessToken);
+  const ionAssetMetadata = await getIonAssetMetadata(accessToken, assetId);
   const {type, url} = ionAssetMetadata;
   assert(type === '3DTILES' && url);
 
