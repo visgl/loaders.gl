@@ -15,7 +15,6 @@ import Tile3DLayer from './tile-3d-layer';
 import ControlPanel from './components/control-panel';
 import fileDrop from './components/file-drop';
 import {updateStatWidgets} from './components/stats-widgets';
-import {Ellipsoid} from '@math.gl/geospatial';
 
 const DATA_URI = 'https://raw.githubusercontent.com/uber-web/loaders.gl/master';
 const INDEX_FILE = `${DATA_URI}/modules/3d-tiles/test/data/index.json`;
@@ -32,7 +31,7 @@ const INITIAL_EXAMPLE_NAME = 'royalExhibitionBuilding';
 // const INITIAL_EXAMPLE_CATEGORY = 'PointCloud';
 // const INITIAL_EXAMPLE_NAME = 'PointCloudRGB';
 
-const scratchLongLat = new Vector3();
+const scratchLongLatZoom = new Vector3();
 
 const ADDITIONAL_EXAMPLES = {
   name: 'additional',
@@ -223,30 +222,21 @@ export default class App extends PureComponent {
     );
   }
 
-  _onTileLoaded(tileHeader) {
-    const {name} = this.state;
-    // cannot parse the center from royalExhibitionBuilding dataset
-    const isRoyal = name === 'royalExhibitionBuilding' && tileHeader.depth === 1;
-    if (tileHeader.depth === 0 || isRoyal) {
-      const {center} = tileHeader.boundingVolume;
-      if (!center) {
-        // eslint-disable-next-line
-        console.warn('center was not pre-calculated for the root tile');
-      } else {
-        scratchLongLat.copy(center);
-        if (isRoyal || name === 'TilesetPoints' || name === 'ION Tileset') {
-          Ellipsoid.WGS84.cartesianToCartographic(center, scratchLongLat);
-        }
-        this.setState({
-          viewState: {
-            ...this.state.viewState,
-            longitude: scratchLongLat[0],
-            latitude: scratchLongLat[1]
-          }
-        });
+  _onTilesetLoaded(tileset) {
+    tileset._getCartographicCenterAndZoom(scratchLongLatZoom);
+    this.setState({
+      viewState: {
+        ...this.state.viewState,
+        longitude: scratchLongLatZoom[0],
+        latitude: scratchLongLatZoom[1],
+        zoom: scratchLongLatZoom[2]
       }
-    }
+    });
 
+    this.forceUpdate();
+  }
+
+  _onTileLoaded(tileHeader) {
     const pointCount = tileHeader.content.pointsLength || 0;
     this.setState({
       tileCount: this.state.tileCount + 1,
@@ -279,7 +269,7 @@ export default class App extends PureComponent {
       depthLimit,
       color,
       onTileLoaded: this._onTileLoaded.bind(this),
-      onTilesetLoaded: () => this.forceUpdate()
+      onTilesetLoaded: this._onTilesetLoaded.bind(this)
     });
   }
 

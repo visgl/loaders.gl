@@ -63,9 +63,7 @@ export default class Tile3DLayer extends CompositeLayer {
 
     if (tileset3d) {
       // TODO: Remove these after sse traversal is working since this is just to prevent full load of tileset and loading of root
-      // The alwaysLoadRoot is better solved by moving the camera to the newly selected asset.
       tileset3d.depthLimit = this.props.depthLimit;
-      tileset3d.alwaysLoadRoot = true;
     }
 
     this.setState({
@@ -111,7 +109,7 @@ export default class Tile3DLayer extends CompositeLayer {
 
     // Traverse and and request. Update _selectedTiles so that we know what to render.
     const {height, tick} = animationProps;
-    const {cameraDirection, cameraUp, zoom} = viewport;
+    const {cameraDirection, cameraUp} = viewport;
 
     const cameraPositionENU = new Vector3(viewport.cameraPosition)
       .subtract(viewport.center)
@@ -132,14 +130,14 @@ export default class Tile3DLayer extends CompositeLayer {
     const cameraUpCartesian = enuToFixedTransform.transformAsVector(cameraUp);
 
     // TODO: remove after sse traversal working
-    const minZoom = 14;
-    const maxZoom = 21;
-    const zoomMagic = 10000; // royalexhibition
-    let zoomMap = Math.max(Math.min(zoom, maxZoom), minZoom);
-    zoomMap = (zoomMap - minZoom) / (maxZoom - minZoom);
-    let expMap = 1 - Math.exp(-zoomMap * 6); // Use exposure tone mapping to smooth out the sensitivity in the zoom mapping
-    expMap = Math.max(Math.min(1.0 - expMap, 1), 0);
-    const distanceMagic = expMap * zoomMagic;
+    // const minZoom = 14;
+    // const maxZoom = 21;
+    // const zoomMagic = 10000; // royalexhibition
+    // let zoomMap = Math.max(Math.min(zoom, maxZoom), minZoom);
+    // zoomMap = (zoomMap - minZoom) / (maxZoom - minZoom);
+    // let expMap = 1 - Math.exp(-zoomMap * 6); // Use exposure tone mapping to smooth out the sensitivity in the zoom mapping
+    // expMap = Math.max(Math.min(1.0 - expMap, 1), 0);
+    // const heightMagic = expMap * zoomMagic;
 
     // TODO: make a file/class for frameState and document what needs to be attached to this so that traversal can function
     const frameState = {
@@ -150,7 +148,6 @@ export default class Tile3DLayer extends CompositeLayer {
       },
       height,
       frameNumber: tick,
-      distanceMagic,
       sseDenominator: 1.15 // Assumes fovy = 60 degrees
     };
 
