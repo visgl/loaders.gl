@@ -1,6 +1,7 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
+import DoublyLinkedList from '../utils/doubly-linked-list';
 const defined = x => x !== undefined;
 
 /**
@@ -12,7 +13,7 @@ export default class Tileset3DCache {
   constructor() {
     // [head, sentinel) -> tiles that weren't selected this frame and may be removed from the cache
     // (sentinel, tail] -> tiles that were selected this frame
-    this._list = []; // new DoublyLinkedList();
+    this._list = new DoublyLinkedList();
     this._sentinel = this._list.add();
     this._trimTiles = false;
   }

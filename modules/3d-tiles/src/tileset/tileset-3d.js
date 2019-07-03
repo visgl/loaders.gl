@@ -6,7 +6,7 @@ import assert from '../utils/assert';
 import Tile3DHeader from './tile-3d-header';
 import Tileset3DTraverser from './tileset-3d-traverser';
 
-// import Tileset3DCache from './tileset-3d-cache';
+import Tileset3DCache from './tileset-3d-cache';
 
 const Ellipsoid = {
   WGS84: ''
@@ -83,7 +83,7 @@ export default class Tileset3D {
     this._gltfUpAxis = undefined;
     this._traverser = new Tileset3DTraverser();
 
-    // this._cache = new Tileset3DCache();
+    this._cache = new Tileset3DCache();
     this._processingQueue = [];
     this.selectedTiles = [];
     this._emptyTiles = [];
