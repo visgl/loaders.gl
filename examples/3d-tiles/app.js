@@ -23,6 +23,7 @@ const INDEX_FILE = `${DATA_URI}/modules/3d-tiles/test/data/index.json`;
 // Set your mapbox token here
 const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
 const MAPBOX_STYLE = 'mapbox://styles/mapbox/light-v9';
+const DEPTH_LIMIT = 2; // TODO: Remove this after sse traversal is working since this is just to prevent full load of tileset
 
 const INITIAL_EXAMPLE_CATEGORY = 'additional';
 const INITIAL_EXAMPLE_NAME = 'royalExhibitionBuilding';
@@ -39,7 +40,7 @@ const ADDITIONAL_EXAMPLES = {
     royalExhibitionBuilding: {
       tilesetUrl:
         'https://raw.githubusercontent.com/uber-common/deck.gl-data/master/3d-tiles/RoyalExhibitionBuilding/tileset.json',
-      depthLimit: 2, // TODO: Remove this after sse traversal is working since this is just to prevent full load of tileset
+      depthLimit: DEPTH_LIMIT, // TODO: Remove this after sse traversal is working since this is just to prevent full load of tileset
       color: [115, 101, 152, 200]
     }
   }
@@ -233,7 +234,7 @@ export default class App extends PureComponent {
         console.warn('center was not pre-calculated for the root tile');
       } else {
         scratchLongLat.copy(center);
-        if (isRoyal || name === 'TilesetPoints') {
+        if (isRoyal || name === 'TilesetPoints' || name === 'ION Tileset') {
           Ellipsoid.WGS84.cartesianToCartographic(center, scratchLongLat);
         }
         this.setState({
@@ -266,7 +267,7 @@ export default class App extends PureComponent {
       ionAssetId,
       ionAccessToken,
       coordinateOrigin,
-      depthLimit = 5,
+      depthLimit = DEPTH_LIMIT,
       color = [255, 0, 0, 255]
     } = tilesetExampleProps;
     return new Tile3DLayer({
