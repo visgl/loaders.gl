@@ -56,7 +56,7 @@ const QUERY = graphql`
     }
   }
 
-  query ConfigQuery {
+  query WebsiteConfigQuery {
     site {
       ...SiteConfigFragment
     }

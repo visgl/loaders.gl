@@ -91,10 +91,8 @@ export default class Tile3DLayer extends CompositeLayer {
     if (props.tilesetUrl && props.tilesetUrl !== oldProps.tilesetUrl) {
       this._loadTileset(props.tilesetUrl);
     } else if (
-      (props.ionAccessToken &&
-        props.ionAssetId &&
-        props.ionAccessToken !== oldProps.ionAccessToken) ||
-      props.ionAssetId !== oldProps.ionAssetId
+      (props.ionAccessToken || props.ionAssetId) &&
+      (props.ionAccessToken !== oldProps.ionAccessToken || props.ionAssetId !== oldProps.ionAssetId)
     ) {
       this._loadTilesetFromIon(props.ionAccessToken, props.ionAssetId);
     }
