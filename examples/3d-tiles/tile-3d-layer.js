@@ -65,7 +65,6 @@ function getHeightMagic(viewport) {
   return heightMagic;
 }
 
-// TODO: Derive planes from the view and projection matrix?
 function updateCullingVolume(viewport) {
   const frustumPlanes = viewport.getFrustumPlanes();
   const heightMagic = getHeightMagic(viewport);
@@ -81,6 +80,43 @@ function updateCullingVolume(viewport) {
     const nor = planeDataToWGS84(viewport, plane, 1, heightMagic);
     cullingPlane.normal = nor.normalize();
 
+    i++;
+  }
+}
+
+// function cameraDataToWGS84(viewport, plane, cullingPlane) {
+//   scratchPlane.normal.copy(plane.n);
+//   scratchPlane.normal.scale(plane.d);
+//   const positionENU = new Vector3(scratchPlane.normal[1], scratchPlane.normal[2], 0)
+//     .subtract(viewport.center)
+//     .scale(viewport.distanceScales.metersPerPixel);
+//
+//   const normalENU = new Vector3(plane.n[1], plane.n[2], 0);
+//
+//   const viewportCenterCartographic = [viewport.longitude, viewport.latitude, 0];
+//   // TODO - Ellipsoid.eastNorthUpToFixedFrame() breaks on raw array, create a Vector.
+//   // TODO - Ellipsoid.eastNorthUpToFixedFrame() takes a cartesian, is that intuitive?
+//   const viewportCenterCartesian = Ellipsoid.WGS84.cartographicToCartesian(
+//     viewportCenterCartographic,
+//     new Vector3()
+//   );
+//   const enuToFixedTransform = Ellipsoid.WGS84.eastNorthUpToFixedFrame(viewportCenterCartesian);
+//
+//   const normalCartesian = enuToFixedTransform.transformAsVector(positionENU);
+//   const positionCartesian = enuToFixedTransform.transform(positionENU);
+//   cullingPlane.normal = normalCartesian.normalize();
+//   cullingPlane.distance = positionCartesian.magnitude();
+// }
+
+function updateCullingVolumeCartesian(viewport) {
+  const frustumPlanes = viewport.getFrustumPlanes();
+
+  let i = 0;
+  for (const planeName of planes) {
+    const cullingPlane = cullingVolume.planes[i];
+    const plane = frustumPlanes[planeName];
+
+    cameraDataToWGS84(viewport, plane, cullingPlane);
     i++;
   }
 }
@@ -188,8 +224,8 @@ export default class Tile3DLayer extends CompositeLayer {
     const cameraDirectionCartesian = enuToFixedTransform.transformAsVector(cameraDirection);
     const cameraUpCartesian = enuToFixedTransform.transformAsVector(cameraUp);
 
-    // TODO: get actual cartesian
     updateCullingVolume(viewport);
+    // updateCullingVolumeCartesian(viewport);
 
     // TODO: make a file/class for frameState and document what needs to be attached to this so that traversal can function
     const frameState = {
