@@ -120,7 +120,10 @@ export default class Tile3DLayer extends CompositeLayer {
     const viewportCenterCartographic = [viewport.longitude, viewport.latitude, 0];
     // TODO - Ellipsoid.eastNorthUpToFixedFrame() breaks on raw array, create a Vector.
     // TODO - Ellipsoid.eastNorthUpToFixedFrame() takes a cartesian, is that intuitive?
-    const viewportCenterCartesian = Ellipsoid.WGS84.cartographicToCartesian(viewportCenterCartographic, new Vector3());
+    const viewportCenterCartesian = Ellipsoid.WGS84.cartographicToCartesian(
+      viewportCenterCartographic,
+      new Vector3()
+    );
     const enuToFixedTransform = Ellipsoid.WGS84.eastNorthUpToFixedFrame(viewportCenterCartesian);
 
     const cameraPositionCartesian = enuToFixedTransform.transform(cameraPositionENU);
