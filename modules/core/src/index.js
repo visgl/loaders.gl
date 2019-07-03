@@ -9,6 +9,10 @@ export {setPathPrefix, getPathPrefix, resolvePath} from './lib/fetch/file-aliase
 export {fetchFile} from './lib/fetch/fetch-file';
 export {readFileSync} from './lib/fetch/read-file';
 export {writeFile, writeFileSync} from './lib/fetch/write-file';
+export {
+  getErrorMessageFromResponseSync as _getErrorMessageFromResponseSync,
+  getErrorMessageFromResponse as _getErrorMessageFromResponse
+} from './lib/fetch/fetch-error-message';
 
 // FILE PARSING AND ENCODING
 export {registerLoaders} from './lib/register-loaders';

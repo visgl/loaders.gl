@@ -27,7 +27,6 @@ registerLoaders([Tile3DLoader, Tileset3DLoader, GLTFLoader]);
 
 const DEFAULT_POINT_COLOR = [202, 112, 41, 255];
 
-const cameraPosition = new Vector3();
 const scratchPlane = new Plane();
 const cullingVolume = new CullingVolume([
   new Plane(),
@@ -54,9 +53,22 @@ function planeDataToWGS84(viewport, plane, scale, heightMagic) {
   return n;
 }
 
+function getHeightMagic(viewport) {
+  const minZoom = 14;
+  const maxZoom = 21;
+  const zoomMagic = 10000; // royalexhibition
+  let zoomMap = Math.max(Math.min(viewport.zoom, maxZoom), minZoom);
+  zoomMap = (zoomMap - minZoom) / (maxZoom - minZoom);
+  let expMap = 1 - Math.exp(-zoomMap * 6); // Use exposure tone mapping to smooth out the sensitivity in the zoom mapping
+  expMap = Math.max(Math.min(1.0 - expMap, 1), 0);
+  const heightMagic = expMap * zoomMagic;
+  return heightMagic;
+}
+
 // TODO: Derive planes from the view and projection matrix?
-function updateCullingVolume(viewport, heightMagic) {
+function updateCullingVolume(viewport) {
   const frustumPlanes = viewport.getFrustumPlanes();
+  const heightMagic = getHeightMagic(viewport);
 
   let i = 0;
   for (const planeName of planes) {
@@ -103,6 +115,7 @@ export default class Tile3DLayer extends CompositeLayer {
       tileset3d = new Tileset3D(tilesetJson, tilesetUrl, {
         onTileLoad: this.props.onTileLoaded,
         DracoLoader: DracoWorkerLoader,
+        fetchOptions,
         ...ionMetadata
       });
     }
@@ -124,7 +137,7 @@ export default class Tile3DLayer extends CompositeLayer {
   }
 
   async _loadTilesetFromIon(ionAccessToken, ionAssetId) {
-    const ionMetadata = _getIonTilesetMetadata(ionAccessToken, ionAssetId);
+    const ionMetadata = await _getIonTilesetMetadata(ionAccessToken, ionAssetId);
     const {url, headers} = ionMetadata;
     return await this._loadTileset(url, {headers}, ionMetadata);
   }
@@ -137,7 +150,7 @@ export default class Tile3DLayer extends CompositeLayer {
     if (props.tilesetUrl !== oldProps.tilesetUrl) {
       this._loadTileset(props.tilesetUrl);
     } else if (
-      props.ionAssetToken !== oldProps.ionAssetToken ||
+      props.ionAccessToken !== oldProps.ionAccessToken ||
       props.ionAssetId !== oldProps.ionAssetId
     ) {
       this._loadTilesetFromIon(props.ionAccessToken, props.ionAssetId);
@@ -155,29 +168,35 @@ export default class Tile3DLayer extends CompositeLayer {
 
     // Traverse and and request. Update _selectedTiles so that we know what to render.
     const {height, tick} = animationProps;
-    const {longitude, latitude, cameraDirection, cameraUp, zoom} = viewport;
+    const {cameraDirection, cameraUp} = viewport;
 
-    // TODO: remove after sse traversal working
-    const minZoom = 16;
-    const maxZoom = 20;
-    const zoomMagic = 10000; // royalexhibition
-    let zoomMap = Math.max(Math.min(zoom, maxZoom), minZoom);
-    zoomMap = (zoomMap - minZoom) / (maxZoom - minZoom);
-    let expMap = 1 - Math.exp(-zoomMap * 6); // Use exposure tone mapping to smooth out the sensitivity in the zoom mapping
-    expMap = Math.max(Math.min(1.0 - expMap, 1), 0);
-    const heightMagic = expMap * zoomMagic;
+    const cameraPositionENU = new Vector3(viewport.cameraPosition)
+      .subtract(viewport.center)
+      .scale(viewport.distanceScales.metersPerPixel);
 
-    cameraPosition.set(longitude, latitude, heightMagic);
-    Ellipsoid.WGS84.cartographicToCartesian(cameraPosition, cameraPosition);
+    const viewportCenterCartographic = [viewport.longitude, viewport.latitude, 0];
+    // TODO - Ellipsoid.eastNorthUpToFixedFrame() breaks on raw array, create a Vector.
+    // TODO - Ellipsoid.eastNorthUpToFixedFrame() takes a cartesian, is that intuitive?
+    const viewportCenterCartesian = Ellipsoid.WGS84.cartographicToCartesian(
+      viewportCenterCartographic,
+      new Vector3()
+    );
+    const enuToFixedTransform = Ellipsoid.WGS84.eastNorthUpToFixedFrame(viewportCenterCartesian);
 
-    updateCullingVolume(viewport, heightMagic);
+    const cameraPositionCartesian = enuToFixedTransform.transform(cameraPositionENU);
+    // These should still be normalized as the transform has scale 1 (goes from meters to meters)
+    const cameraDirectionCartesian = enuToFixedTransform.transformAsVector(cameraDirection);
+    const cameraUpCartesian = enuToFixedTransform.transformAsVector(cameraUp);
+
+    // TODO: get actual cartesian
+    updateCullingVolume(viewport);
 
     // TODO: make a file/class for frameState and document what needs to be attached to this so that traversal can function
     const frameState = {
       camera: {
-        position: cameraPosition,
-        direction: cameraDirection,
-        up: cameraUp
+        position: cameraPositionCartesian,
+        direction: cameraDirectionCartesian,
+        up: cameraUpCartesian
       },
       height,
       cullingVolume,
