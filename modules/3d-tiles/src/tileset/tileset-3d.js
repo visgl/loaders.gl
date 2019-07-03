@@ -9,6 +9,20 @@ import Tileset3DTraverser from './tileset-3d-traverser';
 
 // import Tileset3DCache from './tileset-3d-cache';
 
+const WGS84_RADIUS_X = 6378137.0;
+const WGS84_RADIUS_Y = 6378137.0;
+const WGS84_RADIUS_Z = 6356752.3142451793;
+
+function getZoom(point) {
+  const zoomX = Math.log2(WGS84_RADIUS_X / Math.abs(point[0]));
+  const zoomY = Math.log2(WGS84_RADIUS_Y / Math.abs(point[1]));
+  const zoomZ = Math.log2(WGS84_RADIUS_Z / Math.abs(point[2]));
+
+  console.log({zoomX, zoomY, zoomZ});
+
+  return Math.min(zoomX, Math.min(zoomY, zoomZ));
+}
+
 const DEFAULT_OPTIONS = {
   basePath: '',
 
@@ -448,6 +462,9 @@ export default class Tileset3D {
     result = result || new Vector3();
     result.copy(center);
     Ellipsoid.WGS84.cartesianToCartographic(result, result);
+
+    console.log(getZoom(center));
+
     result[2] = 18;
     return result;
   }
