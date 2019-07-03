@@ -9,18 +9,33 @@ import Tileset3DTraverser from './tileset-3d-traverser';
 
 // import Tileset3DCache from './tileset-3d-cache';
 
+// TODO move to Math library?
 const WGS84_RADIUS_X = 6378137.0;
 const WGS84_RADIUS_Y = 6378137.0;
 const WGS84_RADIUS_Z = 6356752.3142451793;
 
-function getZoom(point) {
-  const zoomX = Math.log2(WGS84_RADIUS_X / Math.abs(point[0]));
-  const zoomY = Math.log2(WGS84_RADIUS_Y / Math.abs(point[1]));
-  const zoomZ = Math.log2(WGS84_RADIUS_Z / Math.abs(point[2]));
+function getZoom(boundingVolume) {
+  const {halfAxes, radius, width, height} = boundingVolume;
 
-  console.log({zoomX, zoomY, zoomZ});
+  if (halfAxes) {
+    // OrientedBoundingBox
+    const [x, , , , y, , , , z] = halfAxes;
+    const zoomX = Math.log2(WGS84_RADIUS_X / x / 2);
+    const zoomY = Math.log2(WGS84_RADIUS_Y / y / 2);
+    const zoomZ = Math.log2(WGS84_RADIUS_Z / z / 2);
+    return (zoomX + zoomY + zoomZ) / 3;
+  } else if (radius) {
+    // BoundingSphere
+    return Math.log2(WGS84_RADIUS_Z / radius);
+  } else if (height && width) {
+    // BoundingRectangle
+    const zoomX = Math.log2(WGS84_RADIUS_X / width);
+    const zoomY = Math.log2(WGS84_RADIUS_Y / height);
 
-  return Math.min(zoomX, Math.min(zoomY, zoomZ));
+    return (zoomX + zoomY) / 2;
+  }
+
+  return 18;
 }
 
 const DEFAULT_OPTIONS = {
@@ -463,9 +478,7 @@ export default class Tileset3D {
     result.copy(center);
     Ellipsoid.WGS84.cartesianToCartographic(result, result);
 
-    console.log(getZoom(center));
-
-    result[2] = 18;
+    result[2] = getZoom(root.boundingVolume);
     return result;
   }
 
