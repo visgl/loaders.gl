@@ -130,8 +130,8 @@ export default class Tile3DLayer extends CompositeLayer {
     const cameraUpCartesian = enuToFixedTransform.transformAsVector(cameraUp);
 
     // TODO: remove after sse traversal working
-    // const minZoom = 16;
-    // const maxZoom = 20;
+    // const minZoom = 14;
+    // const maxZoom = 21;
     // const zoomMagic = 10000; // royalexhibition
     // let zoomMap = Math.max(Math.min(zoom, maxZoom), minZoom);
     // zoomMap = (zoomMap - minZoom) / (maxZoom - minZoom);

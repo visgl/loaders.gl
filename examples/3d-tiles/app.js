@@ -6,9 +6,9 @@ import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
 import DeckGL from '@deck.gl/react';
 import {MapController} from '@deck.gl/core';
+import {Vector3} from 'math.gl';
 // import '@loaders.gl/polyfills';
 // import '@luma.gl/debug';
-import {Vector3} from 'math.gl';
 
 import Tile3DLayer from './tile-3d-layer';
 
