@@ -84,29 +84,29 @@ function updateCullingVolume(viewport) {
   }
 }
 
-// function cameraDataToWGS84(viewport, plane, cullingPlane) {
-//   scratchPlane.normal.copy(plane.n);
-//   scratchPlane.normal.scale(plane.d);
-//   const positionENU = new Vector3(scratchPlane.normal[1], scratchPlane.normal[2], 0)
-//     .subtract(viewport.center)
-//     .scale(viewport.distanceScales.metersPerPixel);
-//
-//   const normalENU = new Vector3(plane.n[1], plane.n[2], 0);
-//
-//   const viewportCenterCartographic = [viewport.longitude, viewport.latitude, 0];
-//   // TODO - Ellipsoid.eastNorthUpToFixedFrame() breaks on raw array, create a Vector.
-//   // TODO - Ellipsoid.eastNorthUpToFixedFrame() takes a cartesian, is that intuitive?
-//   const viewportCenterCartesian = Ellipsoid.WGS84.cartographicToCartesian(
-//     viewportCenterCartographic,
-//     new Vector3()
-//   );
-//   const enuToFixedTransform = Ellipsoid.WGS84.eastNorthUpToFixedFrame(viewportCenterCartesian);
-//
-//   const normalCartesian = enuToFixedTransform.transformAsVector(positionENU);
-//   const positionCartesian = enuToFixedTransform.transform(positionENU);
-//   cullingPlane.normal = normalCartesian.normalize();
-//   cullingPlane.distance = positionCartesian.magnitude();
-// }
+function cameraDataToWGS84(viewport, plane, cullingPlane) {
+  scratchPlane.normal.copy(plane.n);
+  scratchPlane.normal.scale(plane.d);
+  const positionENU = new Vector3(scratchPlane.normal[1], scratchPlane.normal[2], 0)
+    .subtract(viewport.center)
+    .scale(viewport.distanceScales.metersPerPixel);
+
+  const normalENU = new Vector3(plane.n[1], plane.n[2], 0);
+
+  const viewportCenterCartographic = [viewport.longitude, viewport.latitude, 0];
+  // TODO - Ellipsoid.eastNorthUpToFixedFrame() breaks on raw array, create a Vector.
+  // TODO - Ellipsoid.eastNorthUpToFixedFrame() takes a cartesian, is that intuitive?
+  const viewportCenterCartesian = Ellipsoid.WGS84.cartographicToCartesian(
+    viewportCenterCartographic,
+    new Vector3()
+  );
+  const enuToFixedTransform = Ellipsoid.WGS84.eastNorthUpToFixedFrame(viewportCenterCartesian);
+
+  const normalCartesian = enuToFixedTransform.transformAsVector(positionENU);
+  const positionCartesian = enuToFixedTransform.transform(positionENU);
+  cullingPlane.normal = normalCartesian.normalize();
+  cullingPlane.distance = positionCartesian.magnitude();
+}
 
 function updateCullingVolumeCartesian(viewport) {
   const frustumPlanes = viewport.getFrustumPlanes();
