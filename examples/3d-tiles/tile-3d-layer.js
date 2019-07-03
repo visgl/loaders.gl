@@ -88,11 +88,11 @@ export default class Tile3DLayer extends CompositeLayer {
   }
 
   updateState({props, oldProps, context, changeFlags}) {
-    if (props.tilesetUrl !== oldProps.tilesetUrl) {
+    if (props.tilesetUrl && props.tilesetUrl !== oldProps.tilesetUrl) {
       this._loadTileset(props.tilesetUrl);
     } else if (
-      props.ionAccessToken !== oldProps.ionAccessToken ||
-      props.ionAssetId !== oldProps.ionAssetId
+      (props.ionAccessToken || props.ionAssetId) &&
+      (props.ionAccessToken !== oldProps.ionAccessToken || props.ionAssetId !== oldProps.ionAssetId)
     ) {
       this._loadTilesetFromIon(props.ionAccessToken, props.ionAssetId);
     }

@@ -14,6 +14,9 @@ const ALIASES = require('ocular-dev-tools/config/ocular.config')({
   root: resolve(__dirname, '..')
 }).aliases;
 
+const DEFAULT_ION_ACCESS_TOKEN =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIxN2NhMzkwYi0zNWM4LTRjNTYtYWE3Mi1jMDAxYzhlOGVmNTAiLCJpZCI6OTYxOSwic2NvcGVzIjpbImFzbCIsImFzciIsImFzdyIsImdjIl0sImlhdCI6MTU2MjE4MTMxM30.OkgVr6NaKYxabUMIGqPOYFe0V5JifXLVLfpae63x-tA';
+
 const ROOT_DIR = resolve(__dirname, '..');
 
 const DECK_LINK_ALIASES = {
@@ -65,7 +68,10 @@ const LOCAL_DEVELOPMENT_CONFIG = {
     ]
   },
 
-  plugins: [new webpack.EnvironmentPlugin(['MapboxAccessToken'])]
+  plugins: [
+    new webpack.EnvironmentPlugin(['MapboxAccessToken']),
+    new webpack.EnvironmentPlugin({IonAccessToken: DEFAULT_ION_ACCESS_TOKEN})
+  ]
 };
 
 function addLocalDependency(config, dependency) {
