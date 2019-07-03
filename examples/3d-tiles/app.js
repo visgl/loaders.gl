@@ -227,20 +227,6 @@ export default class App extends PureComponent {
       }
     });
 
-    // let tileViewState = null;
-    // if (isIon) {
-    //   tileViewState = {
-    //     zoom: 12.5
-    //   };
-    // }
-    //
-    // const viewState = {
-    //   ...this.state.viewState,
-    //   ...tileViewState,
-    //   longitude: scratchLongLat[0],
-    //   latitude: scratchLongLat[1]
-    // };
-
     this.forceUpdate();
   }
 
