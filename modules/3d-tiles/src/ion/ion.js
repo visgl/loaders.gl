@@ -45,7 +45,7 @@ export async function getIonAssets(accessToken) {
 // Return metadata for a specific asset assocated with token
 export async function getIonAssetMetadata(accessToken, assetId) {
   assert(accessToken, assetId);
-  const url = `${CESIUM_ION_URL}/${assetId}`;
+  const url = `${CESIUM_ION_URL}/${assetId}/endpoint`;
   const headers = {Authorization: `Bearer ${accessToken}`};
   const response = await fetch(url, {headers});
   if (!response.ok) {

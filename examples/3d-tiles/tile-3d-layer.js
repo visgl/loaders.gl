@@ -80,7 +80,7 @@ export default class Tile3DLayer extends CompositeLayer {
   }
 
   async _loadTilesetFromIon(ionAccessToken, ionAssetId) {
-    const ionMetadata = _getIonTilesetMetadata(ionAccessToken, ionAssetId);
+    const ionMetadata = await _getIonTilesetMetadata(ionAccessToken, ionAssetId);
     const {url, headers} = ionMetadata;
     return await this._loadTileset(url, {headers}, ionMetadata);
   }
