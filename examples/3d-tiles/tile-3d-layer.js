@@ -111,7 +111,22 @@ export default class Tile3DLayer extends CompositeLayer {
 
     // Traverse and and request. Update _selectedTiles so that we know what to render.
     const {height, tick} = animationProps;
-    const {cameraPosition, cameraDirection, cameraUp, zoom} = viewport;
+    const {cameraDirection, cameraUp, zoom} = viewport;
+
+    const cameraPositionENU = new Vector3(viewport.cameraPosition)
+      .subtract(viewport.center)
+      .scale(viewport.distanceScales.metersPerPixel);
+
+    const viewportCenterCartographic = [viewport.longitude, viewport.latitude, 0];
+    // TODO - Ellipsoid.eastNorthUpToFixedFrame() breaks on raw array, create a Vector.
+    // TODO - Ellipsoid.eastNorthUpToFixedFrame() takes a cartesian, is that intuitive?
+    const viewportCenterCartesian = Ellipsoid.WGS84.cartographicToCartesian(viewportCenterCartographic, new Vector3());
+    const enuToFixedTransform = Ellipsoid.WGS84.eastNorthUpToFixedFrame(viewportCenterCartesian);
+
+    const cameraPositionCartesian = enuToFixedTransform.transform(cameraPositionENU);
+    // These should still be normalized as the transform has scale 1 (goes from meters to meters)
+    const cameraDirectionCartesian = enuToFixedTransform.transformAsVector(cameraDirection);
+    const cameraUpCartesian = enuToFixedTransform.transformAsVector(cameraUp);
 
     // TODO: remove after sse traversal working
     const minZoom = 14;
@@ -126,9 +141,9 @@ export default class Tile3DLayer extends CompositeLayer {
     // TODO: make a file/class for frameState and document what needs to be attached to this so that traversal can function
     const frameState = {
       camera: {
-        position: cameraPosition,
-        direction: cameraDirection,
-        up: cameraUp
+        position: cameraPositionCartesian,
+        direction: cameraDirectionCartesian,
+        up: cameraUpCartesian
       },
       height,
       frameNumber: tick,

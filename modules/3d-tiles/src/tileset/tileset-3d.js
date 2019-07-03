@@ -8,6 +8,7 @@ import Tileset3DTraverser from './tileset-3d-traverser';
 
 // import Tileset3DCache from './tileset-3d-cache';
 
+// TODO - hack - fix or remove. Do we need a configurable Ellipsoid?
 const Ellipsoid = {
   WGS84: ''
 };
