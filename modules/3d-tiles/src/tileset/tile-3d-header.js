@@ -421,12 +421,7 @@ export default class Tile3DHeader {
   // @returns {Number} The distance, in meters, or zero if the camera is inside the bounding volume.
   distanceToTile(frameState) {
     const boundingVolume = this._boundingVolume;
-    // const actualDist = boundingVolume.distanceTo(frameState.camera.position);
-    const zoomDist = frameState.distanceMagic;
-    // console.log('ZOOM DISTANCE: ' + zoomDist);
-    // console.log('CAM POS: ' + frameState.camera.position);
-    // console.log('ACTU DISTANCE: ' + actualDist);
-    return zoomDist;
+    return Math.sqrt(boundingVolume.distanceSquaredTo(frameState.camera.position));
   }
 
   // Computes the tile's camera-space z-depth.

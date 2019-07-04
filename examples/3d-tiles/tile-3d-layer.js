@@ -63,9 +63,7 @@ export default class Tile3DLayer extends CompositeLayer {
 
     if (tileset3d) {
       // TODO: Remove these after sse traversal is working since this is just to prevent full load of tileset and loading of root
-      // The alwaysLoadRoot is better solved by moving the camera to the newly selected asset.
       tileset3d.depthLimit = this.props.depthLimit;
-      tileset3d.alwaysLoadRoot = true;
     }
 
     this.setState({
@@ -90,11 +88,11 @@ export default class Tile3DLayer extends CompositeLayer {
   }
 
   updateState({props, oldProps, context, changeFlags}) {
-    if (props.tilesetUrl !== oldProps.tilesetUrl) {
+    if (props.tilesetUrl && props.tilesetUrl !== oldProps.tilesetUrl) {
       this._loadTileset(props.tilesetUrl);
     } else if (
-      props.ionAccessToken !== oldProps.ionAccessToken ||
-      props.ionAssetId !== oldProps.ionAssetId
+      (props.ionAccessToken || props.ionAssetId) &&
+      (props.ionAccessToken !== oldProps.ionAccessToken || props.ionAssetId !== oldProps.ionAssetId)
     ) {
       this._loadTilesetFromIon(props.ionAccessToken, props.ionAssetId);
     }
@@ -111,28 +109,45 @@ export default class Tile3DLayer extends CompositeLayer {
 
     // Traverse and and request. Update _selectedTiles so that we know what to render.
     const {height, tick} = animationProps;
-    const {cameraPosition, cameraDirection, cameraUp, zoom} = viewport;
+    const {cameraDirection, cameraUp} = viewport;
+
+    const cameraPositionENU = new Vector3(viewport.cameraPosition)
+      .subtract(viewport.center)
+      .scale(viewport.distanceScales.metersPerPixel);
+
+    const viewportCenterCartographic = [viewport.longitude, viewport.latitude, 0];
+    // TODO - Ellipsoid.eastNorthUpToFixedFrame() breaks on raw array, create a Vector.
+    // TODO - Ellipsoid.eastNorthUpToFixedFrame() takes a cartesian, is that intuitive?
+    const viewportCenterCartesian = Ellipsoid.WGS84.cartographicToCartesian(
+      viewportCenterCartographic,
+      new Vector3()
+    );
+    const enuToFixedTransform = Ellipsoid.WGS84.eastNorthUpToFixedFrame(viewportCenterCartesian);
+
+    const cameraPositionCartesian = enuToFixedTransform.transform(cameraPositionENU);
+    // These should still be normalized as the transform has scale 1 (goes from meters to meters)
+    const cameraDirectionCartesian = enuToFixedTransform.transformAsVector(cameraDirection);
+    const cameraUpCartesian = enuToFixedTransform.transformAsVector(cameraUp);
 
     // TODO: remove after sse traversal working
-    const minZoom = 14;
-    const maxZoom = 21;
-    const zoomMagic = 10000; // royalexhibition
-    let zoomMap = Math.max(Math.min(zoom, maxZoom), minZoom);
-    zoomMap = (zoomMap - minZoom) / (maxZoom - minZoom);
-    let expMap = 1 - Math.exp(-zoomMap * 6); // Use exposure tone mapping to smooth out the sensitivity in the zoom mapping
-    expMap = Math.max(Math.min(1.0 - expMap, 1), 0);
-    const distanceMagic = expMap * zoomMagic;
+    // const minZoom = 14;
+    // const maxZoom = 21;
+    // const zoomMagic = 10000; // royalexhibition
+    // let zoomMap = Math.max(Math.min(zoom, maxZoom), minZoom);
+    // zoomMap = (zoomMap - minZoom) / (maxZoom - minZoom);
+    // let expMap = 1 - Math.exp(-zoomMap * 6); // Use exposure tone mapping to smooth out the sensitivity in the zoom mapping
+    // expMap = Math.max(Math.min(1.0 - expMap, 1), 0);
+    // const heightMagic = expMap * zoomMagic;
 
     // TODO: make a file/class for frameState and document what needs to be attached to this so that traversal can function
     const frameState = {
       camera: {
-        position: cameraPosition,
-        direction: cameraDirection,
-        up: cameraUp
+        position: cameraPositionCartesian,
+        direction: cameraDirectionCartesian,
+        up: cameraUpCartesian
       },
       height,
       frameNumber: tick,
-      distanceMagic,
       sseDenominator: 1.15 // Assumes fovy = 60 degrees
     };
 

@@ -15,10 +15,11 @@ import Tile3DLayer from './tile-3d-layer';
 import ControlPanel from './components/control-panel';
 import fileDrop from './components/file-drop';
 import {updateStatWidgets} from './components/stats-widgets';
-import {Ellipsoid} from '@math.gl/geospatial';
 
 const DATA_URI = 'https://raw.githubusercontent.com/uber-web/loaders.gl/master';
 const INDEX_FILE = `${DATA_URI}/modules/3d-tiles/test/data/index.json`;
+
+const ION_ACCESS_TOKEN = process.env.IonAccessToken; // eslint-disable-line
 
 // Set your mapbox token here
 const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
@@ -32,7 +33,7 @@ const INITIAL_EXAMPLE_NAME = 'royalExhibitionBuilding';
 // const INITIAL_EXAMPLE_CATEGORY = 'PointCloud';
 // const INITIAL_EXAMPLE_NAME = 'PointCloudRGB';
 
-const scratchLongLat = new Vector3();
+const scratchLongLatZoom = new Vector3();
 
 const ADDITIONAL_EXAMPLES = {
   name: 'additional',
@@ -42,6 +43,10 @@ const ADDITIONAL_EXAMPLES = {
         'https://raw.githubusercontent.com/uber-common/deck.gl-data/master/3d-tiles/RoyalExhibitionBuilding/tileset.json',
       depthLimit: DEPTH_LIMIT, // TODO: Remove this after sse traversal is working since this is just to prevent full load of tileset
       color: [115, 101, 152, 200]
+    },
+    'St Helen (Cesium ion)': {
+      ionAssetId: 33301, // St Helen
+      ionAccessToken: ION_ACCESS_TOKEN
     }
   }
 };
@@ -117,9 +122,10 @@ export default class App extends PureComponent {
     /* global URL */
     const parsedUrl = new URL(window.location.href);
     const ionAssetId = parsedUrl.searchParams.get('ionAssetId');
-    const ionAccessToken = parsedUrl.searchParams.get('ionAccessToken');
-    if (ionAccessToken) {
+    let ionAccessToken = parsedUrl.searchParams.get('ionAccessToken');
+    if (ionAssetId || ionAccessToken) {
       // load the tileset specified in the URL
+      ionAccessToken = ionAccessToken || ION_ACCESS_TOKEN;
       await this._loadTilesetFromIonAsset(ionAccessToken, ionAssetId);
       return;
     }
@@ -157,18 +163,6 @@ export default class App extends PureComponent {
     this.setState({
       tilesetExampleProps
     });
-
-    // The "Additional" examples can contain a coordinate origin
-    const {coordinateOrigin} = tilesetExampleProps;
-    if (coordinateOrigin) {
-      this.setState({
-        viewState: {
-          ...this.state.viewState,
-          longitude: coordinateOrigin[0],
-          latitude: coordinateOrigin[1]
-        }
-      });
-    }
   }
 
   async _loadTilesetFromIonAsset(ionAccessToken, ionAssetId) {
@@ -223,30 +217,21 @@ export default class App extends PureComponent {
     );
   }
 
-  _onTileLoaded(tileHeader) {
-    const {name} = this.state;
-    // cannot parse the center from royalExhibitionBuilding dataset
-    const isRoyal = name === 'royalExhibitionBuilding' && tileHeader.depth === 1;
-    if (tileHeader.depth === 0 || isRoyal) {
-      const {center} = tileHeader.boundingVolume;
-      if (!center) {
-        // eslint-disable-next-line
-        console.warn('center was not pre-calculated for the root tile');
-      } else {
-        scratchLongLat.copy(center);
-        if (isRoyal || name === 'TilesetPoints' || name === 'ION Tileset') {
-          Ellipsoid.WGS84.cartesianToCartographic(center, scratchLongLat);
-        }
-        this.setState({
-          viewState: {
-            ...this.state.viewState,
-            longitude: scratchLongLat[0],
-            latitude: scratchLongLat[1]
-          }
-        });
+  _onTilesetLoaded(tileset) {
+    tileset._getCartographicCenterAndZoom(scratchLongLatZoom);
+    this.setState({
+      viewState: {
+        ...this.state.viewState,
+        longitude: scratchLongLatZoom[0],
+        latitude: scratchLongLatZoom[1],
+        zoom: scratchLongLatZoom[2]
       }
-    }
+    });
 
+    this.forceUpdate();
+  }
+
+  _onTileLoaded(tileHeader) {
     const pointCount = tileHeader.content.pointsLength || 0;
     this.setState({
       tileCount: this.state.tileCount + 1,
@@ -262,6 +247,10 @@ export default class App extends PureComponent {
 
   _renderLayer() {
     const {tilesetExampleProps} = this.state;
+    if (!tilesetExampleProps) {
+      return null;
+    }
+
     const {
       tilesetUrl,
       ionAssetId,
@@ -279,7 +268,7 @@ export default class App extends PureComponent {
       depthLimit,
       color,
       onTileLoaded: this._onTileLoaded.bind(this),
-      onTilesetLoaded: () => this.forceUpdate()
+      onTilesetLoaded: this._onTilesetLoaded.bind(this)
     });
   }
 

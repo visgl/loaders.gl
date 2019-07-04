@@ -27,7 +27,6 @@ const scratchTransform = new Matrix4();
  * @returns {TileBoundingVolume} The modified result parameter or a new TileBoundingVolume instance if none was provided.
  */
 export function createBoundingVolume(boundingVolumeHeader, transform, result) {
-  result = result || {};
   assert(boundingVolumeHeader, '3D Tile: boundingVolume must be defined');
   if (boundingVolumeHeader.box) {
     return createBox(boundingVolumeHeader.box, transform, result);
@@ -43,22 +42,14 @@ export function createBoundingVolume(boundingVolumeHeader, transform, result) {
       degrees((north + south) / 2),
       (minHeight + maxHeight) / 2
     );
+    result = result || {};
     Object.assign(result, boundingVolumeHeader, {center});
 
     return result;
     // return createRegion(boundingVolumeHeader.region, transform, this._initialTransform, result);
   }
   if (boundingVolumeHeader.sphere) {
-    // The first three elements define the x, y, and z values for the center of the sphere in a right-handed 3-axis (x, y, z)
-    const [x, y, z] = boundingVolumeHeader.sphere;
-    const center = new Vector3(x, y, z);
-    transform.transform(center, center);
-    Ellipsoid.WGS84.cartesianToCartographic(center, center);
-
-    Object.assign(result, boundingVolumeHeader, {center});
-
-    return result;
-    // return createSphere(boundingVolumeHeader.sphere, transform, result);
+    return createSphere(boundingVolumeHeader.sphere, transform, result);
   }
   throw new Error('3D Tile: boundingVolume must contain a sphere, region, or box');
 }
@@ -144,18 +135,19 @@ function createRegion(region, transform, initialTransform, result) {
 }
 
 function createSphere(sphere, transform, result) {
-  const center = Vector3.fromElements(sphere[0], sphere[1], sphere[2], scratchCenter);
-  const radius = sphere[3];
+  // Find the transformed center
+  const center = new Vector3(sphere[0], sphere[1], sphere[2]);
+  transform.transform(center, center);
+  const scale = transform.getScale(scratchScale);
 
-  // Find the transformed center and radius
-  center = Matrix4.multiplyByPoint(transform, center, center);
-  const scale = Matrix4.getScale(transform, scratchScale);
-  const uniformScale = Vector3.maximumComponent(scale);
-  radius *= uniformScale;
+  const uniformScale = Math.max(Math.max(scale[0], scale[1]), scale[2]);
+  const radius = sphere[3] * uniformScale;
 
   if (defined(result)) {
-    result.update(center, radius);
+    result.center = center;
+    result.radius = radius;
     return result;
   }
-  return new TileBoundingSphere(center, radius);
+
+  return new BoundingSphere(center, radius);
 }
