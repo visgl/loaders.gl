@@ -27,7 +27,7 @@
     "@luma.gl/constants": "^7.1.1",
     "@luma.gl/core": "^7.1.1",
     "@luma.gl/webgl": "^7.1.1",
-    "@probe.gl/stats-widget": "^3.0.1",
+    "@probe.gl/stats-widget": "^3.1.0-alpha.2",
     "react": "^16.6.0",
     "react-dom": "^16.6.0",
     "react-map-gl": "^5.0.0",

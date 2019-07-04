@@ -19,6 +19,8 @@ import {updateStatWidgets} from './components/stats-widgets';
 const DATA_URI = 'https://raw.githubusercontent.com/uber-web/loaders.gl/master';
 const INDEX_FILE = `${DATA_URI}/modules/3d-tiles/test/data/index.json`;
 
+const ION_ACCESS_TOKEN = process.env.IonAccessToken; // eslint-disable-line
+
 // Set your mapbox token here
 const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
 const MAPBOX_STYLE = 'mapbox://styles/mapbox/light-v9';
@@ -41,6 +43,10 @@ const ADDITIONAL_EXAMPLES = {
         'https://raw.githubusercontent.com/uber-common/deck.gl-data/master/3d-tiles/RoyalExhibitionBuilding/tileset.json',
       depthLimit: DEPTH_LIMIT, // TODO: Remove this after sse traversal is working since this is just to prevent full load of tileset
       color: [115, 101, 152, 200]
+    },
+    'St Helen (Cesium ion)': {
+      ionAssetId: 33301, // St Helen
+      ionAccessToken: ION_ACCESS_TOKEN
     }
   }
 };
@@ -116,9 +122,10 @@ export default class App extends PureComponent {
     /* global URL */
     const parsedUrl = new URL(window.location.href);
     const ionAssetId = parsedUrl.searchParams.get('ionAssetId');
-    const ionAccessToken = parsedUrl.searchParams.get('ionAccessToken');
-    if (ionAccessToken) {
+    let ionAccessToken = parsedUrl.searchParams.get('ionAccessToken');
+    if (ionAssetId || ionAccessToken) {
       // load the tileset specified in the URL
+      ionAccessToken = ionAccessToken || ION_ACCESS_TOKEN;
       await this._loadTilesetFromIonAsset(ionAccessToken, ionAssetId);
       return;
     }
@@ -156,18 +163,6 @@ export default class App extends PureComponent {
     this.setState({
       tilesetExampleProps
     });
-
-    // The "Additional" examples can contain a coordinate origin
-    const {coordinateOrigin} = tilesetExampleProps;
-    if (coordinateOrigin) {
-      this.setState({
-        viewState: {
-          ...this.state.viewState,
-          longitude: coordinateOrigin[0],
-          latitude: coordinateOrigin[1]
-        }
-      });
-    }
   }
 
   async _loadTilesetFromIonAsset(ionAccessToken, ionAssetId) {
@@ -252,6 +247,10 @@ export default class App extends PureComponent {
 
   _renderLayer() {
     const {tilesetExampleProps} = this.state;
+    if (!tilesetExampleProps) {
+      return null;
+    }
+
     const {
       tilesetUrl,
       ionAssetId,
