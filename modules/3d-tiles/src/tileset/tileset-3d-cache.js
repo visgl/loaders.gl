@@ -35,6 +35,7 @@ export default class Tileset3DCache {
   add(tile) {
     if (!defined(tile.cacheNode)) {
       tile.cacheNode = this._list.add(tile);
+      tile.tileset.incrementGPUMemoryUsage(tile.gpuMemoryUsageInBytes);
     }
   }
 
@@ -46,8 +47,10 @@ export default class Tileset3DCache {
 
     this._list.remove(node);
     tile.cacheNode = undefined;
+    tileset.decrementGPUMemoryUsage(tile.gpuMemoryUsageInBytes);
+    tile.unloadContent();
     if (unloadCallback) {
-      unloadCallback(tile);
+      unloadCallback(tileset, tile);
     }
   }
 
@@ -61,13 +64,13 @@ export default class Tileset3DCache {
 
     // Traverse the list only to the sentinel since tiles/nodes to the
     // right of the sentinel were used this frame.
-    //
     // The sub-list to the left of the sentinel is ordered from LRU to MRU.
     const sentinel = this._sentinel;
     let node = list.head;
+
     while (
       node !== sentinel &&
-      (tileset.totalMemoryUsageInBytes > maximumMemoryUsageInBytes || trimTiles)
+      (tileset.gpuMemoryUsageInBytes > maximumMemoryUsageInBytes || trimTiles)
     ) {
       const tile = node.item;
       node = node.next;
