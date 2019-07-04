@@ -40,13 +40,14 @@ const cullingVolume = new CullingVolume([
 const planes = ['near', 'far', 'left', 'right', 'bottom', 'top'];
 
 function planeToWGS84(viewport, plane, cullingPlane) {
-  scratchPlane.normal.copy(plane.n);
-  scratchPlane.normal.scale(plane.d);
+  scratchPlane.normal
+    .copy(plane.n)
+    .scale(plane.d);
 
-  const positionENU = new Vector3(scratchPlane.normal);
-  // const positionENU = new Vector3(scratchPlane.normal)
-  //   .subtract(viewport.center)
-  //   .scale(viewport.distanceScales.metersPerPixel);
+  // const positionENU = new Vector3(scratchPlane.normal);
+  const positionENU = new Vector3(scratchPlane.normal)
+    .subtract(viewport.center)
+    .scale(viewport.distanceScales.metersPerPixel);
 
   const normalENU = new Vector3(plane.n);
 
@@ -60,8 +61,9 @@ function planeToWGS84(viewport, plane, cullingPlane) {
   const enuToFixedTransform = Ellipsoid.WGS84.eastNorthUpToFixedFrame(viewportCenterCartesian);
 
   const normalCartesian = new Vector3(enuToFixedTransform.transformAsVector(normalENU));
+  cullingPlane.normal = normalCartesian.normalize().scale(-1); // flip to face inside volume
+
   const positionCartesian = new Vector3(enuToFixedTransform.transform(positionENU));
-  cullingPlane.normal = normalCartesian.normalize();
   cullingPlane.distance = positionCartesian.magnitude();
 }
 
@@ -74,6 +76,7 @@ function updateCullingVolumeCartesian(viewport) {
     const plane = frustumPlanes[planeName];
 
     planeToWGS84(viewport, plane, cullingPlane);
+
     i++;
   }
 }
@@ -186,10 +189,18 @@ export default class Tile3DLayer extends CompositeLayer {
     ).normalize();
 
     updateCullingVolumeCartesian(viewport);
+    // Test Print
+    // TODO: check if cameraPositionCartesian  - planePositionCartesian dot planeNormalCartesian is the focal dist
+    const planeNormalCartesian = cullingVolume.planes[0].normal;
+    const planeDistanceCartesian = cullingVolume.planes[0].distance;
+    const planePositionCartesian = new Vector3(planeNormalCartesian);
+    planePositionCartesian.scale(planeDistanceCartesian);
+    const camPos = new Vector3(cameraPositionCartesian);
+    const dist = camPos.subtract(planePositionCartesian).dot(planeNormalCartesian);
     // These match
-    // console.log('cameraDir: ' + cameraDirectionCartesian);
-    // console.log('nearDir: ' + cullingVolume.planes[0].normal);
-    // TODO: check if cameraPositionCartesian  - planePositionCartesian dot with planeNormalCartesian is very close to 0
+    console.log('cameraDir: ' + cameraDirectionCartesian);
+    console.log('nearDir: ' + planeNormalCartesian);
+    console.log('dist: ' + dist);
 
     // TODO: make a file/class for frameState and document what needs to be attached to this so that traversal can function
     const frameState = {
