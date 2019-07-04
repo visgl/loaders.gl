@@ -430,6 +430,7 @@ export default class Tileset3D {
     for (const tile of requestedTiles) {
       this._requestContent(tile);
     }
+    this._cache.unloadTiles(this, tile => tile.unloadContent());
   }
 
   async _requestContent(tile) {
@@ -447,11 +448,10 @@ export default class Tileset3D {
     }
 
     try {
-      // await tile.contentReadyPromise;
-      // if (!tile.hasTilesetContent) {
-      //   // Add to the tile cache. Previously expired tiles are already in the cache and won't get re-added.
-      //   this._cache.add(tile);
-      // }
+      if (tile.hasRenderContent) {
+        // Add to the tile cache. Previously expired tiles are already in the cache and won't get re-added.
+        this._cache.add(tile);
+      }
 
       this.onTileLoad(tile);
     } catch (error) {

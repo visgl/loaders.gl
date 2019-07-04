@@ -107,7 +107,7 @@ export default class Tile3DHeader {
     return this._contentState === TILE3D_CONTENT_STATE.READY;
   }
 
-  // Returns true if tile is an empty tile or an external tileset
+  // Returns true if tile is not an empty tile and not an external tileset
   get hasRenderContent() {
     return !this.hasEmptyContent && !this.hasTilesetContent;
   }
@@ -292,7 +292,7 @@ export default class Tile3DHeader {
 
   // Unloads the tile's content.
   unloadContent() {
-    if (this.hasRenderContent) {
+    if (!this.hasRenderContent) {
       return;
     }
 

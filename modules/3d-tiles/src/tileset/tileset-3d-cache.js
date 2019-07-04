@@ -47,7 +47,7 @@ export default class Tileset3DCache {
     this._list.remove(node);
     tile.cacheNode = undefined;
     if (unloadCallback) {
-      unloadCallback(tileset, tile);
+      unloadCallback(tile);
     }
   }
 
