@@ -41,14 +41,6 @@ const cullingVolume = new CullingVolume([
 const planes = ['near', 'far', 'left', 'right', 'bottom', 'top'];
 
 function planeToWGS84(viewport, plane, cullingPlane) {
-  const {metersPerPixel} = viewport.distanceScales;
-
-  scratchNormal.copy(plane.n).scale(metersPerPixel);
-
-  scratchPosition.copy(plane.n).scale(plane.d);
-
-  scratchPosition.subtract(viewport.center).scale(metersPerPixel);
-
   const viewportCenterCartographic = [viewport.longitude, viewport.latitude, 0];
   // TODO - Ellipsoid.eastNorthUpToFixedFrame() breaks on raw array, create a Vector.
   // TODO - Ellipsoid.eastNorthUpToFixedFrame() takes a cartesian, is that intuitive?
@@ -58,6 +50,13 @@ function planeToWGS84(viewport, plane, cullingPlane) {
   );
   const enuToFixedTransform = Ellipsoid.WGS84.eastNorthUpToFixedFrame(viewportCenterCartesian);
 
+  const {metersPerPixel} = viewport.distanceScales;
+
+  scratchNormal.copy(plane.n).scale(metersPerPixel);
+
+  scratchPosition.copy(plane.n).scale(plane.d);
+  scratchPosition.subtract(viewport.center).scale(metersPerPixel);
+
   scratchNormal.copy(enuToFixedTransform.transformAsVector(scratchNormal));
   cullingPlane.normal.copy(scratchNormal.normalize());
 
@@ -65,7 +64,7 @@ function planeToWGS84(viewport, plane, cullingPlane) {
   cullingPlane.distance = scratchPosition.magnitude();
 
   // cullingPlane.distance = plane.d * metersPerPixel[0];
-  // const positionCartesian = new Vector3(cullingPlane.normal).scale(cullingPlane.distance);
+  // scratchPosition.copy(cullingPlane.normal).scale(cullingPlane.distance);
 
   return scratchPosition;
 }
