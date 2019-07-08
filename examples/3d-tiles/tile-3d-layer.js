@@ -213,7 +213,6 @@ export default class Tile3DLayer extends CompositeLayer {
     // console.log('nearDir: ' + planeNormalCartesian);
     // console.log('dot near camera: ' + planeNormalCartesian.dot(cameraDirectionCartesian));
     console.log('near dist from cam: ' + dist);
-    console.log('focal dist: ' + viewport.focalDistance);
 
     // Camera direction faces opposite of look direction
     // const boundCenter = new Vector3(tileset3d._root._boundingVolume.center);
