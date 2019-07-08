@@ -27,7 +27,8 @@ registerLoaders([Tile3DLoader, Tileset3DLoader, GLTFLoader]);
 
 const DEFAULT_POINT_COLOR = [202, 112, 41, 255];
 
-const scratchPlane = new Plane();
+const scratchNormal = new Vector3();
+const scratchPosition = new Vector3();
 const cullingVolume = new CullingVolume([
   new Plane(),
   new Plane(),
@@ -42,14 +43,11 @@ const planes = ['near', 'far', 'left', 'right', 'bottom', 'top'];
 function planeToWGS84(viewport, plane, cullingPlane) {
   const {metersPerPixel} = viewport.distanceScales;
 
-  const normalENU = new Vector3(plane.n).scale(metersPerPixel);
+  scratchNormal.copy(plane.n).scale(metersPerPixel);
 
-  scratchPlane.normal.copy(plane.n);
-  scratchPlane.normal.scale(plane.d);
+  scratchPosition.copy(plane.n).scale(plane.d);
 
-  const positionENU = new Vector3(scratchPlane.normal)
-    .subtract(viewport.center)
-    .scale(metersPerPixel);
+  scratchPosition.subtract(viewport.center).scale(metersPerPixel);
 
   const viewportCenterCartographic = [viewport.longitude, viewport.latitude, 0];
   // TODO - Ellipsoid.eastNorthUpToFixedFrame() breaks on raw array, create a Vector.
@@ -60,15 +58,16 @@ function planeToWGS84(viewport, plane, cullingPlane) {
   );
   const enuToFixedTransform = Ellipsoid.WGS84.eastNorthUpToFixedFrame(viewportCenterCartesian);
 
-  const normalCartesian = new Vector3(enuToFixedTransform.transformAsVector(normalENU));
-  cullingPlane.normal = normalCartesian.normalize();
+  scratchNormal.copy(enuToFixedTransform.transformAsVector(scratchNormal));
+  cullingPlane.normal.copy(scratchNormal.normalize());
+
+  scratchPosition.copy(enuToFixedTransform.transform(scratchPosition));
+  cullingPlane.distance = scratchPosition.magnitude();
+
   // cullingPlane.distance = plane.d * metersPerPixel[0];
   // const positionCartesian = new Vector3(cullingPlane.normal).scale(cullingPlane.distance);
 
-  const positionCartesian = new Vector3(enuToFixedTransform.transform(positionENU));
-  cullingPlane.distance = positionCartesian.magnitude();
-
-  return positionCartesian;
+  return scratchPosition;
 }
 
 function updateCullingVolumeCartesian(viewport) {
@@ -218,7 +217,6 @@ export default class Tile3DLayer extends CompositeLayer {
     // const boundCenter = new Vector3(tileset3d._root._boundingVolume.center);
     // const toCenter = boundCenter.subtract(cameraPositionCartesian).normalize();
     // console.log('view dot toCenter: ' +toCenter.dot(cameraDirectionCartesian));
-
 
     // TODO: make a file/class for frameState and document what needs to be attached to this so that traversal can function
     const frameState = {
