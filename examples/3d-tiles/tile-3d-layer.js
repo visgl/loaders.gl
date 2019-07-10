@@ -27,6 +27,7 @@ registerLoaders([Tile3DLoader, Tileset3DLoader, GLTFLoader]);
 
 const DEFAULT_POINT_COLOR = [202, 112, 41, 255];
 
+const scratchPlane = new Plane();
 const scratchNormal = new Vector3();
 const scratchPosition = new Vector3();
 const cullingVolume = new CullingVolume([
@@ -67,10 +68,16 @@ function planeToWGS84(viewport, plane, cullingPlane) {
   return scratchPosition;
 }
 
-function behindPlane(planePos, testPos) {
+function behindPlane2(planeNor, planePos,  testPos) {
   const toTestPos = new Vector3(testPos).subtract(planePos);
-  planePos.normalize();
-  const dist = planePos.dot(toTestPos);
+  const dist = planeNor.dot(toTestPos);
+  return dist < 0;
+}
+
+function behindPlane(plane, testPos) {
+  const planePos = new Vector3(plane.normal).scale(plane.distance);
+  const toTestPos = new Vector3(testPos).subtract(planePos);
+  const dist = plane.normal.dot(toTestPos);
   return dist < 0;
 }
 
@@ -104,6 +111,7 @@ function commonSpacePlanesToWGS84(viewport, cullingVolume, center) {
     viewportCenterCartographic,
     new Vector3()
   );
+
   const frustumPlanes = viewport.getFrustumPlanes();
   let out = false;
   let outDir = null;
@@ -117,15 +125,19 @@ function commonSpacePlanesToWGS84(viewport, cullingVolume, center) {
       new Vector3()
     );
 
+
     // If normalizing this is the actual plane normal
-    // Then we want the dot the orig cartesianPos onto the subtract and normalized version to get the actual plane dist
-    cartesianPos.subtract(viewportCenterCartesian);
+    // Then we want the dot the orig cartesianPos onto the subtract and normalized version to get the actual plane dist and then re-determine the plane position
+
+    scratchPlane.normal.copy(cartesianPos).subtract(viewportCenterCartesian).scale(-1).normalize();
+    scratchPlane.distance = Math.abs(scratchPlane.normal.dot(cartesianPos));
 
     if (dir === 'near') {
-      cullingVolume.planes[0].normal = new Vector3(cartesianPos).normalize();
+      cullingVolume.planes[0].normal.copy(scratchPlane.normal);
     }
 
-    if (behindPlane(cartesianPos, center)) {
+    if (behindPlane(scratchPlane, center)) {
+    // if (behindPlane2(scratchPlane.normal, cartesianPos, center)) {
       out = true;
       outDir = dir;
       break;
@@ -274,7 +286,7 @@ export default class Tile3DLayer extends CompositeLayer {
     commonSpacePlanesToWGS84(viewport, cullingVolume, boundCenter);
     // Test Print
     // TODO: check if cameraPositionCartesian  - planePositionCartesian dot planeNormalCartesian is the focal dist
-    const planeNormalCartesian = cullingVolume.planes[0].normal;
+    const planeNormalCartesian = cullingVolume.planes[0].normal; // 0 near, 1 2 3 4 5 6
     const planeDistanceCartesian = cullingVolume.planes[0].distance;
     const planePositionCartesian = new Vector3(planeNormalCartesian);
     planePositionCartesian.scale(planeDistanceCartesian);
@@ -288,7 +300,7 @@ export default class Tile3DLayer extends CompositeLayer {
 
     // Camera direction faces opposite of look direction
     const toCenter = boundCenter.subtract(cameraPositionCartesian).normalize();
-    console.log('view dot toCenter: ' +toCenter.dot(cameraDirectionCartesian));
+    console.log('view dot toCenter: ' +toCenter.dot(planeNormalCartesian));
 
     // TODO: make a file/class for frameState and document what needs to be attached to this so that traversal can function
     const frameState = {
