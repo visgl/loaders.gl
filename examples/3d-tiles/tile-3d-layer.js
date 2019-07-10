@@ -38,8 +38,6 @@ const cullingVolume = new CullingVolume([
   new Plane()
 ]);
 
-const planes = ['near', 'far', 'left', 'right', 'bottom', 'top'];
-
 function planeToWGS84(viewport, plane, cullingPlane) {
   const viewportCenterCartographic = [viewport.longitude, viewport.latitude, 0];
   // TODO - Ellipsoid.eastNorthUpToFixedFrame() breaks on raw array, create a Vector.
@@ -69,13 +67,80 @@ function planeToWGS84(viewport, plane, cullingPlane) {
   return scratchPosition;
 }
 
-function updateCullingVolumeCartesian(viewport) {
+function behindPlane(planePos, testPos) {
+  const toTestPos = new Vector3(testPos).subtract(planePos);
+  planePos.normalize();
+  const dist = planePos.dot(toTestPos);
+  return dist < 0;
+}
+
+function commonSpacePlanesToWGS84(viewport, cullingVolume, center) {
+  // Culling tests must be done in common space
+  // const pos = [center[0], center[1], center[2]];
+  // const cartoPos = Ellipsoid.WGS84.cartesianToCartographic(
+  //   pos,
+  //   new Vector3()
+  // );
+  // const commonPosition = viewport.projectPosition(cartoPos);
+  //
+  // // Extract frustum planes based on current view.
+  // const frustumPlanes = viewport.getFrustumPlanes();
+  // let out = false;
+  // let outDir = null;
+  // for (const dir in frustumPlanes) {
+  //   const plane = frustumPlanes[dir];
+  //
+  //   if (scratchPosition.copy(commonPosition).dot(plane.n) > plane.d) {
+  //     out = true;
+  //     outDir = dir;
+  //     break;
+  //   }
+  // }
+  // console.log(out, outDir);
+
+  // Extract frustum planes based on current view.
+  const viewportCenterCartographic = [viewport.longitude, viewport.latitude, 0];
+  const viewportCenterCartesian = Ellipsoid.WGS84.cartographicToCartesian(
+    viewportCenterCartographic,
+    new Vector3()
+  );
+  const frustumPlanes = viewport.getFrustumPlanes();
+  let out = false;
+  let outDir = null;
+  for (const dir in frustumPlanes) {
+    const plane = frustumPlanes[dir];
+    scratchPosition.copy(plane.n).scale(plane.d);
+    // const cartographicPos = viewport.unprojectPosition(scratchPosition);
+    const cartographicPos = viewport.unproject(scratchPosition);
+    const cartesianPos = Ellipsoid.WGS84.cartographicToCartesian(
+      cartographicPos,
+      new Vector3()
+    );
+
+    // If normalizing this is the actual plane normal
+    // Then we want the dot the orig cartesianPos onto the subtract and normalized version to get the actual plane dist
+    cartesianPos.subtract(viewportCenterCartesian);
+
+    if (dir === 'near') {
+      cullingVolume.planes[0].normal = new Vector3(cartesianPos).normalize();
+    }
+
+    if (behindPlane(cartesianPos, center)) {
+      out = true;
+      outDir = dir;
+      break;
+    }
+  }
+  console.log(out, outDir);
+}
+
+function updateCullingVolumeCartesian(viewport, center) {
   const frustumPlanes = viewport.getFrustumPlanes();
 
   let i = 0;
-  for (const planeName of planes) {
+  for (const dir in frustumPlanes) {
     const cullingPlane = cullingVolume.planes[i];
-    const plane = frustumPlanes[planeName];
+    const plane = frustumPlanes[dir];
 
     // For debugging purposes it's returning the wgs84 point in plane
     const pos = planeToWGS84(viewport, plane, cullingPlane);
@@ -188,7 +253,13 @@ export default class Tile3DLayer extends CompositeLayer {
     );
     const enuToFixedTransform = Ellipsoid.WGS84.eastNorthUpToFixedFrame(viewportCenterCartesian);
 
-    const cameraPositionCartesian = enuToFixedTransform.transform(cameraPositionENU);
+    // const cameraPositionCartesian = enuToFixedTransform.transform(cameraPositionENU);
+    const cameraPositionCartographic = viewport.unprojectPosition(viewport.cameraPosition);
+    const cameraPositionCartesian = Ellipsoid.WGS84.cartographicToCartesian(
+      cameraPositionCartographic,
+      new Vector3()
+    );
+
     // These should still be normalized as the transform has scale 1 (goes from meters to meters)
     const cameraDirectionCartesian = new Vector3(
       enuToFixedTransform.transformAsVector(new Vector3(cameraDirection).scale(metersPerPixel))
@@ -197,7 +268,10 @@ export default class Tile3DLayer extends CompositeLayer {
       enuToFixedTransform.transformAsVector(new Vector3(cameraUp).scale(metersPerPixel))
     ).normalize();
 
+
+    const boundCenter = new Vector3(tileset3d._root._boundingVolume.center);
     updateCullingVolumeCartesian(viewport);
+    commonSpacePlanesToWGS84(viewport, cullingVolume, boundCenter);
     // Test Print
     // TODO: check if cameraPositionCartesian  - planePositionCartesian dot planeNormalCartesian is the focal dist
     const planeNormalCartesian = cullingVolume.planes[0].normal;
@@ -210,12 +284,11 @@ export default class Tile3DLayer extends CompositeLayer {
     // console.log('cameraDir: ' + cameraDirectionCartesian);
     // console.log('nearDir: ' + planeNormalCartesian);
     // console.log('dot near camera: ' + planeNormalCartesian.dot(cameraDirectionCartesian));
-    console.log('near dist from cam: ' + dist);
+    // console.log('near dist from cam: ' + dist);
 
     // Camera direction faces opposite of look direction
-    // const boundCenter = new Vector3(tileset3d._root._boundingVolume.center);
-    // const toCenter = boundCenter.subtract(cameraPositionCartesian).normalize();
-    // console.log('view dot toCenter: ' +toCenter.dot(cameraDirectionCartesian));
+    const toCenter = boundCenter.subtract(cameraPositionCartesian).normalize();
+    console.log('view dot toCenter: ' +toCenter.dot(cameraDirectionCartesian));
 
     // TODO: make a file/class for frameState and document what needs to be attached to this so that traversal can function
     const frameState = {
