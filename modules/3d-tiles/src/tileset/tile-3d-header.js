@@ -28,9 +28,11 @@ export default class Tile3DHeader {
 
     this._tileset = tileset;
     this._header = header;
+    this.cacheNode = undefined;
 
     this._content = null;
     this._contentState = TILE3D_CONTENT_STATE.UNLOADED;
+    this._gpuMemoryUsageInBytes = 0;
 
     // Gets the tile's children.
     this.children = [];
@@ -77,6 +79,11 @@ export default class Tile3DHeader {
   }
 
   // The tileset containing this tile.
+  get gpuMemoryUsageInBytes() {
+    return this._gpuMemoryUsageInBytes;
+  }
+
+  // The tileset containing this tile.
   get tileset() {
     return this._tileset;
   }
@@ -107,7 +114,7 @@ export default class Tile3DHeader {
     return this._contentState === TILE3D_CONTENT_STATE.READY;
   }
 
-  // Returns true if tile is an empty tile or an external tileset
+  // Returns true if tile is not an empty tile and not an external tileset
   get hasRenderContent() {
     return !this.hasEmptyContent && !this.hasTilesetContent;
   }
@@ -292,7 +299,7 @@ export default class Tile3DHeader {
 
   // Unloads the tile's content.
   unloadContent() {
-    if (this.hasRenderContent) {
+    if (!this.hasRenderContent) {
       return;
     }
 
@@ -599,7 +606,14 @@ export default class Tile3DHeader {
     // The content may be tileset json
     if (this._isTileset(this._content)) {
       this.hasTilesetContent = true;
+    } else {
+      this._updateGPUMemoryUsageInBytes();
     }
+  }
+
+  _updateGPUMemoryUsageInBytes() {
+    // Good enough? Didn't look too deep but it seemed like it already had the buffers' byte lengths.
+    this._gpuMemoryUsageInBytes = this._content.byteLength;
   }
 
   // Update the tile's transform. The transform is applied to the tile's bounding volumes.

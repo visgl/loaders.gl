@@ -1,6 +1,7 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
+import DoublyLinkedList from '../utils/doubly-linked-list';
 const defined = x => x !== undefined;
 
 /**
@@ -12,7 +13,7 @@ export default class Tileset3DCache {
   constructor() {
     // [head, sentinel) -> tiles that weren't selected this frame and may be removed from the cache
     // (sentinel, tail] -> tiles that were selected this frame
-    this._list = []; // new DoublyLinkedList();
+    this._list = new DoublyLinkedList();
     this._sentinel = this._list.add();
     this._trimTiles = false;
   }
@@ -34,6 +35,7 @@ export default class Tileset3DCache {
   add(tile) {
     if (!defined(tile.cacheNode)) {
       tile.cacheNode = this._list.add(tile);
+      tile.tileset.incrementGPUMemoryUsage(tile.gpuMemoryUsageInBytes);
     }
   }
 
@@ -45,6 +47,8 @@ export default class Tileset3DCache {
 
     this._list.remove(node);
     tile.cacheNode = undefined;
+    tileset.decrementGPUMemoryUsage(tile.gpuMemoryUsageInBytes);
+    tile.unloadContent();
     if (unloadCallback) {
       unloadCallback(tileset, tile);
     }
@@ -60,13 +64,13 @@ export default class Tileset3DCache {
 
     // Traverse the list only to the sentinel since tiles/nodes to the
     // right of the sentinel were used this frame.
-    //
     // The sub-list to the left of the sentinel is ordered from LRU to MRU.
     const sentinel = this._sentinel;
     let node = list.head;
+
     while (
       node !== sentinel &&
-      (tileset.totalMemoryUsageInBytes > maximumMemoryUsageInBytes || trimTiles)
+      (tileset.gpuMemoryUsageInBytes > maximumMemoryUsageInBytes || trimTiles)
     ) {
       const tile = node.item;
       node = node.next;
