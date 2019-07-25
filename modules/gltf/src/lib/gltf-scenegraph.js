@@ -294,11 +294,8 @@ export default class GLTFScenegraph {
 
   // Add one untyped source buffer, create a matching glTF `bufferView`, and return its index
   addBufferView(buffer) {
-    const byteLength = buffer.byteLength || buffer.length;
-
-    // We've now written the contents to the body, so update the total length
-    // Every sub-chunk needs to be 4-byte aligned
-    this.byteLength += padTo4Bytes(byteLength);
+    const byteLength = buffer.byteLength;
+    assert(Number.isFinite(byteLength));
 
     // Add this buffer to the list of buffers to be written to the body.
     this.sourceBuffers = this.sourceBuffers || [];
@@ -310,6 +307,10 @@ export default class GLTFScenegraph {
       byteOffset: this.byteLength,
       byteLength
     };
+
+    // We've now added the contents to the body, so update the total length
+    // Every sub-chunk needs to be 4-byte align ed
+    this.byteLength += padTo4Bytes(byteLength);
 
     // Add a bufferView indicating start and length of this binary sub-chunk
     this.json.bufferViews = this.json.bufferViews || [];
