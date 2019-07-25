@@ -1484,23 +1484,23 @@
     "@luma.gl/webgl2-polyfill" "7.1.1"
     probe.gl "^3.0.2"
 
-"@math.gl/culling@^3.0.0-alpha.6":
-  version "3.0.0-beta.1"
-  resolved "https://registry.yarnpkg.com/@math.gl/culling/-/culling-3.0.0-beta.1.tgz#35b66a5834630693971338eaf591647f748640b9"
-  integrity sha512-KdOf5ey6b9C9enPY5nAhBAb97Oyauu0APTRrV3bZ2YalR7RxVlgVD3ONSp0SOFrjclI758uvXLQ/MKDnBsvbqA==
+"@math.gl/culling@^3.0.0-beta.2":
+  version "3.0.0-beta.2"
+  resolved "https://registry.yarnpkg.com/@math.gl/culling/-/culling-3.0.0-beta.2.tgz#81e87303b97effc0d084666e8419d30fb6db82ff"
+  integrity sha512-pFaRu1GeeqxVb507ypbfYYb1CTks4GOY0+BBJ0miJ8Hs/LjrtHGAT/iTw4b10mur+S+TdZZ6tPm2+fIi3Mo/Bw==
   dependencies:
     "@babel/runtime" "^7.0.0"
     gl-matrix "^3.0.0"
-    math.gl "3.0.0-beta.1"
+    math.gl "3.0.0-beta.2"
 
-"@math.gl/geospatial@^3.0.0-alpha.6":
-  version "3.0.0-beta.1"
-  resolved "https://registry.yarnpkg.com/@math.gl/geospatial/-/geospatial-3.0.0-beta.1.tgz#030de50f32f7cf00d6e73c6bd923ecbffca84b25"
-  integrity sha512-AWNqJP+GfNmTEPBHnWc2f9vTzx3Ig1C5YTBFNTFP0mKBbdOXHaCMNemWm36Oo9gpRfVgQquXWumvZ0+eqgwpbg==
+"@math.gl/geospatial@^3.0.0-beta.2":
+  version "3.0.0-beta.2"
+  resolved "https://registry.yarnpkg.com/@math.gl/geospatial/-/geospatial-3.0.0-beta.2.tgz#29f0248a58f84718d0693596812885ac4c25f7e1"
+  integrity sha512-mDa/ZrECJS9fziN4tluLRUxSfmmRmNMl+Nwi3lUyMcVpJqxWI6mAIAB4SQQhRVbbV5Rv21TxhLocbkeLmKTCcw==
   dependencies:
     "@babel/runtime" "^7.0.0"
     gl-matrix "^3.0.0"
-    math.gl "3.0.0-beta.1"
+    math.gl "3.0.0-beta.2"
 
 "@mrmlnc/readdir-enhanced@^2.2.1":
   version "2.2.1"
@@ -6054,10 +6054,10 @@ map-visit@^1.0.0:
   dependencies:
     object-visit "^1.0.0"
 
-math.gl@3.0.0-beta.1, math.gl@^3.0.0-alpha.6:
-  version "3.0.0-beta.1"
-  resolved "https://registry.yarnpkg.com/math.gl/-/math.gl-3.0.0-beta.1.tgz#9e476e8be0ab672406ac4c2441bfa742440129d8"
-  integrity sha512-MPOpGxicDPmHHzjTaQl4iokGORiqP7KkLIxZ6e0IBKwENHkNvx9ak8BXWWSZe4qoyAOu7qvEsCUDk3wccUzK/g==
+math.gl@3.0.0-beta.2, math.gl@^3.0.0-beta.2:
+  version "3.0.0-beta.2"
+  resolved "https://registry.yarnpkg.com/math.gl/-/math.gl-3.0.0-beta.2.tgz#18f884f2463a3c189010bb0e24673d9a67fd3312"
+  integrity sha512-NAWS3rtX30NU3rXC2njtPgRKR9j3xCPiA6JePlJpHIu7aM4s87y4AbUXUMledP9pgWhJJLNlXy6O0izj/oFxYA==
   dependencies:
     "@babel/runtime" "^7.0.0"
     gl-matrix "^3.0.0"

@@ -21,6 +21,7 @@ const scratchToTileCenter = new Vector3();
 // TODO: Remove
 const scratchPlane = new Plane();
 import {INTERSECT, Intersect, Plane} from '@math.gl/culling';
+
 function computeVisibilityWithPlaneMask(cullingVolume, boundingVolume, parentPlaneMask) {
   assert(boundingVolume, 'boundingVolume is required.');
   // assert(parentPlaneMask, 'parentPlaneMask is required.'); // Sometimes mask is 0 which triggers this
@@ -35,7 +36,7 @@ function computeVisibilityWithPlaneMask(cullingVolume, boundingVolume, parentPla
 
   // Start with MASK_INSIDE (all zeros) so that after the loop, the return value can be compared with MASK_INSIDE.
   // (Because if there are fewer than 31 planes, the upper bits wont be changed.)
-  const mask = CullingVolume.MASK_INSIDE;
+  let mask = CullingVolume.MASK_INSIDE;
 
   const planes = cullingVolume.planes;
   const length = cullingVolume.planes.length;
@@ -57,6 +58,7 @@ function computeVisibilityWithPlaneMask(cullingVolume, boundingVolume, parentPla
     if (result === Intersect.OUTSIDE) {
       return CullingVolume.MASK_OUTSIDE;
     } else if (result === Intersect.INTERSECTING) {
+      console.log('flag: ' + flag);
       mask |= flag;
     }
   }

@@ -2,6 +2,7 @@
 import {CompositeLayer} from '@deck.gl/core';
 import {Matrix4, Vector3} from 'math.gl';
 import {CullingVolume, Plane} from '@math.gl/culling';
+import {_PerspectiveFrustum as PerspectiveFrustum} from '@math.gl/culling'
 
 import {COORDINATE_SYSTEM} from '@deck.gl/core';
 import {PointCloudLayer} from '@deck.gl/layers';
@@ -29,7 +30,7 @@ const DEFAULT_POINT_COLOR = [202, 112, 41, 255];
 
 const scratchPlane = new Plane();
 const scratchNormal = new Vector3();
-const scratchPosition = new Vector3();
+let scratchPosition = new Vector3();
 const cullingVolume = new CullingVolume([
   new Plane(),
   new Plane(),
@@ -78,7 +79,9 @@ function behindPlane(plane, testPos) {
   const planePos = new Vector3(plane.normal).scale(plane.distance);
   const toTestPos = new Vector3(testPos).subtract(planePos);
   const dist = plane.normal.dot(toTestPos);
-  return dist < 0;
+  // return dist < 0;
+  // return dist > 0;
+  return plane.normal.dot(testPos) > plane.distance;
 }
 
 function commonSpacePlanesToWGS84(viewport, cullingVolume, center) {
@@ -115,11 +118,21 @@ function commonSpacePlanesToWGS84(viewport, cullingVolume, center) {
   const frustumPlanes = viewport.getFrustumPlanes();
   let out = false;
   let outDir = null;
+  let i = 0;
   for (const dir in frustumPlanes) {
     const plane = frustumPlanes[dir];
-    scratchPosition.copy(plane.n).scale(plane.d);
-    // const cartographicPos = viewport.unprojectPosition(scratchPosition);
-    const cartographicPos = viewport.unproject(scratchPosition);
+    // scratchPosition.copy(plane.n).scale(plane.d);
+    // // const cartographicPos = viewport.unprojectPosition(scratchPosition);
+    // const cartographicPos = viewport.unproject(scratchPosition);
+
+    // xiaoji
+    const distanceToCenter = plane.n.dot(viewport.center);
+    // n is not normalized!
+    // TODO - fix in deck?
+    const nLen = plane.n.len();
+    scratchPosition.copy(plane.n).scale((plane.d - distanceToCenter) / nLen / nLen).add(viewport.center);
+    const cartographicPos = viewport.unprojectPosition(scratchPosition);
+
     const cartesianPos = Ellipsoid.WGS84.cartographicToCartesian(
       cartographicPos,
       new Vector3()
@@ -129,21 +142,24 @@ function commonSpacePlanesToWGS84(viewport, cullingVolume, center) {
     // If normalizing this is the actual plane normal
     // Then we want the dot the orig cartesianPos onto the subtract and normalized version to get the actual plane dist and then re-determine the plane position
 
-    scratchPlane.normal.copy(cartesianPos).subtract(viewportCenterCartesian).scale(-1).normalize();
+    scratchPlane.normal.copy(cartesianPos).subtract(viewportCenterCartesian).normalize();
     scratchPlane.distance = Math.abs(scratchPlane.normal.dot(cartesianPos));
+    scratchPlane.normal.scale(-1);
 
-    if (dir === 'near') {
-      cullingVolume.planes[0].normal.copy(scratchPlane.normal);
-    }
+    // if (dir === 'near') {
+      cullingVolume.planes[i].normal.copy(scratchPlane.normal);
+      cullingVolume.planes[i].distance = scratchPlane.distance;
+      i = i + 1;
+    // }
 
     if (behindPlane(scratchPlane, center)) {
     // if (behindPlane2(scratchPlane.normal, cartesianPos, center)) {
       out = true;
       outDir = dir;
-      break;
+      // break;
     }
   }
-  console.log(out, outDir);
+  // console.log(out, outDir);
 }
 
 function updateCullingVolumeCartesian(viewport, center) {
@@ -164,6 +180,30 @@ function updateCullingVolumeCartesian(viewport, center) {
 
     i++;
   }
+}
+
+function getCullingVolumeFromPerspectiveFrustum(viewport, cullingVolume, boundCenter, position, direction, up) {
+  //what does pers frustum need?
+  //  * @param {Number} [options.fov] The angle of the field of view (FOV), in radians.
+  //  * @param {Number} [options.aspectRatio] The aspect ratio of the frustum's width to it's height.
+  //  * @param {Number} [options.near=1.0] The distance of the near plane.
+  //  * @param {Number} [options.far=500000000.0] The distance of the far plane.
+  //  * @param {Number} [options.xOffset=0.0] The offset in the x direction.
+  //  * @param {Number} [options.yOffset=0.0] The offset in the y direction.
+
+
+  // get fov and aspect ratio from viewport
+  // const options = {aspectRatio: viewport.aspectRatio, fov: viewport.fov};
+  const options = {};
+  const perspectiveFrustum = new PerspectiveFrustum(options);
+
+   // * @param {Vector3} position The eye position.
+   // * @param {Vector3} direction The view direction.
+   // * @param {Vector3} up The up direction.
+   // * @returns {CullingVolume} A culling volume at the given position and orientation.
+  cullingVolume = perspectiveFrustum.computeCullingVolume(position, direction, up);
+
+  // TODO: Test the culling with bound center
 }
 
 const defaultProps = {
@@ -284,6 +324,7 @@ export default class Tile3DLayer extends CompositeLayer {
     const boundCenter = new Vector3(tileset3d._root._boundingVolume.center);
     updateCullingVolumeCartesian(viewport);
     commonSpacePlanesToWGS84(viewport, cullingVolume, boundCenter);
+    // getCullingVolumeFromPerspectiveFrustum(viewport, cullingVolume, boundCenter, cameraPositionCartesian, cameraDirectionCartesian, cameraUpCartesian);
     // Test Print
     // TODO: check if cameraPositionCartesian  - planePositionCartesian dot planeNormalCartesian is the focal dist
     const planeNormalCartesian = cullingVolume.planes[0].normal; // 0 near, 1 2 3 4 5 6
@@ -292,15 +333,21 @@ export default class Tile3DLayer extends CompositeLayer {
     planePositionCartesian.scale(planeDistanceCartesian);
     const camPos = new Vector3(cameraPositionCartesian);
     const dist = camPos.subtract(planePositionCartesian).dot(planeNormalCartesian);
-    // This should be -1
+    // This should be -1, since camera direction points behind
     // console.log('cameraDir: ' + cameraDirectionCartesian);
     // console.log('nearDir: ' + planeNormalCartesian);
     // console.log('dot near camera: ' + planeNormalCartesian.dot(cameraDirectionCartesian));
     // console.log('near dist from cam: ' + dist);
+    // const toCenter = boundCenter.subtract(cameraPositionCartesian).normalize();
+    // console.log('view dot toCenter: ' + toCenter.dot(planeNormalCartesian));
 
-    // Camera direction faces opposite of look direction
-    const toCenter = boundCenter.subtract(cameraPositionCartesian).normalize();
-    console.log('view dot toCenter: ' +toCenter.dot(planeNormalCartesian));
+    // const planePos = new Vector3(planeNormalCartesian).scale(planeDistanceCartesian);
+    // const toTestPos = new Vector3(cameraPositionCartesian).subtract(planePos);
+    // const dist2 = planeNormalCartesian.dot(toTestPos);
+    // console.log('near dist from cam: ' + dist2);
+    // const dist3 = planeNormalCartesian.dot(cameraPositionCartesian) - planeDistanceCartesian;
+    // console.log('near dist from cam: ' + dist3);
+
 
     // TODO: make a file/class for frameState and document what needs to be attached to this so that traversal can function
     const frameState = {
@@ -320,7 +367,7 @@ export default class Tile3DLayer extends CompositeLayer {
     this._selectLayers(frameState);
 
     // TODO: This should be 0 when off camera
-    // console.log(this.state.layers.length);
+    console.log(this.state.layers.length);
   }
 
   // Grab only those layers who were selected this frame.
