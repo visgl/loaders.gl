@@ -365,9 +365,6 @@ export default class Tile3DHeader {
     const parentVisibilityPlaneMask = defined(parent)
       ? parent._visibilityPlaneMask
       : CullingVolume.MASK_INDETERMINATE;
-    if (parentVisibilityPlaneMask === null || parentVisibilityPlaneMask === undefined) {
-      console.log('HEY');
-    }
     this._updateTransform(parentTransform);
     this._distanceToCamera = this.distanceToTile(frameState);
     // this._centerZDepth = this.cameraSpaceZDepth(frameState);
