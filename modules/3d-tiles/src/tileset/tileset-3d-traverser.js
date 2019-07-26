@@ -95,10 +95,12 @@ export default class Tileset3DTraverser {
   }
 
   touchTile(tileset, tile, frameState) {
-    if (tile._touchedFrame === frameState.frameNumber) {
-      // Prevents another pass from touching the frame again
-      return;
-    }
+    // TODO need a better frameNumber since it can be the same between updates
+    // Until then this needs to be commented out
+    // if (tile._touchedFrame === frameState.frameNumber) {
+    //   // Prevents another pass from touching the frame again
+    //   return;
+    // }
     tileset._cache.touch(tile);
     tile._touchedFrame = frameState.frameNumber;
   }
@@ -326,7 +328,7 @@ export default class Tileset3DTraverser {
       }
 
       // this.visitTile(tileset, tile, frameState);
-      // this.touchTile(tileset, tile, frameState);
+      this.touchTile(tileset, tile, frameState);
       tile._refines = refines;
     }
   }

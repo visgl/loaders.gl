@@ -7,7 +7,7 @@ import assert from '../utils/assert';
 import Tile3DHeader from './tile-3d-header';
 import Tileset3DTraverser from './tileset-3d-traverser';
 
-// import Tileset3DCache from './tileset-3d-cache';
+import Tileset3DCache from './tileset-3d-cache';
 
 // TODO move to Math library?
 const WGS84_RADIUS_X = 6378137.0;
@@ -109,7 +109,7 @@ export default class Tileset3D {
     this._gltfUpAxis = undefined;
     this._traverser = new Tileset3DTraverser();
 
-    // this._cache = new Tileset3DCache();
+    this._cache = new Tileset3DCache();
     this._processingQueue = [];
     this.selectedTiles = [];
     this._emptyTiles = [];
@@ -155,6 +155,8 @@ export default class Tileset3D {
     // Optimization option. Determines if level of detail skipping should be applied during the traversal.
     this._skipLevelOfDetail = this.skipLevelOfDetail;
     this._disableSkipLevelOfDetail = false;
+
+    this._gpuMemoryUsageInBytes = 0;
 
     this.initializeTileSet(json, options);
 
@@ -329,8 +331,8 @@ export default class Tileset3D {
   // The total amount of GPU memory in bytes used by the tileset. This value is estimated from
   // geometry, texture, and batch table textures of loaded tiles. For point clouds, this value also
   // includes per-point metadata.
-  get totalMemoryUsageInBytes() {
-    return 0;
+  get gpuMemoryUsageInBytes() {
+    return this._gpuMemoryUsageInBytes;
     // const statistics = this._statistics;
     // return statistics.texturesByteLength + statistics.geometryByteLength + statistics.batchTableByteLength;
   }
@@ -419,8 +421,23 @@ export default class Tileset3D {
     this._cache.trim();
   }
 
+  decrementGPUMemoryUsage(bytes) {
+    this._gpuMemoryUsageInBytes -= bytes;
+  }
+
+  incrementGPUMemoryUsage(bytes) {
+    this._gpuMemoryUsageInBytes += bytes;
+  }
+
+  addTileToCache(tile) {
+    // Add to the tile cache. Previously expired tiles are already in the cache and won't get re-added.
+    this._cache.add(tile);
+  }
+
   update(frameState) {
     this._updatedVisibilityFrame++; // TODO: only update when camera or culling volume from last update moves (could be render camera change or prefetch camera)
+    this._cache.reset();
+
     this._traverser.traverse(this, frameState);
 
     const requestedTiles = this._requestedTiles;
@@ -430,6 +447,7 @@ export default class Tileset3D {
     for (const tile of requestedTiles) {
       this._requestContent(tile);
     }
+    this._cache.unloadTiles(this);
   }
 
   async _requestContent(tile) {
@@ -447,12 +465,6 @@ export default class Tileset3D {
     }
 
     try {
-      // await tile.contentReadyPromise;
-      // if (!tile.hasTilesetContent) {
-      //   // Add to the tile cache. Previously expired tiles are already in the cache and won't get re-added.
-      //   this._cache.add(tile);
-      // }
-
       this.onTileLoad(tile);
     } catch (error) {
       this.onTileLoadFailed({

@@ -194,7 +194,7 @@ export default class Tile3DLayer extends CompositeLayer {
       },
       height,
       cullingVolume,
-      frameNumber: tick,
+      frameNumber: tick, // TODO: This can be the same between updates, what number is unique for between updates?
       sseDenominator: 1.15 // Assumes fovy = 60 degrees
     };
 
@@ -223,7 +223,7 @@ export default class Tile3DLayer extends CompositeLayer {
         selectedLayers.push(layer);
       } else if (tile.contentUnloaded) {
         // Was cleaned up from tileset cache. We no longer need to track it.
-        layerMap.delete(tile.contentUri);
+        delete layerMap[tile.contentUri];
       } else if (layer.props.visible) {
         // Still in tileset cache but doesn't need to render this frame. Keep the GPU resource bound but don't render it.
         layer = layer.clone({visible: false});
@@ -247,6 +247,8 @@ export default class Tile3DLayer extends CompositeLayer {
       this._unpackTile(tile);
 
       const layer = this._render3DTileLayer(tile);
+
+      tileset3d.addTileToCache(tile); // Add and remove on main thread
 
       layerMap[tile.contentUri] = {
         layer,
