@@ -24,7 +24,7 @@ import {INTERSECT, Intersect, Plane} from '@math.gl/culling';
 
 function computeVisibilityWithPlaneMask(cullingVolume, boundingVolume, parentPlaneMask) {
   assert(boundingVolume, 'boundingVolume is required.');
-  // assert(parentPlaneMask, 'parentPlaneMask is required.'); // Sometimes mask is 0 which triggers this
+  assert(Number.isFinite(parentPlaneMask), 'parentPlaneMask is required.');
 
   if (
     parentPlaneMask === CullingVolume.MASK_OUTSIDE ||
@@ -39,21 +39,16 @@ function computeVisibilityWithPlaneMask(cullingVolume, boundingVolume, parentPla
   let mask = CullingVolume.MASK_INSIDE;
 
   const planes = cullingVolume.planes;
-  const length = cullingVolume.planes.length;
-  for (let k = 0; k < length; ++k) {
+  for (let k = 0; k < cullingVolume.planes.length; ++k) {
     // For k greater than 31 (since 31 is the maximum number of INSIDE/INTERSECTING bits we can store), skip the optimization.
-    const less = k < 32;
-    const flag = less ? 1 << k : 0;
-    if (less && (parentPlaneMask & flag) === 0) {
-      // boundingVolume is known to be INSIDE cullingVolume plane.
+    const flag = k < 31 ? 1 << k : 0;
+    if (k < 31 && (parentPlaneMask & flag) === 0) {
+      // boundingVolume is known to be INSIDE this plane.
       continue;
     }
 
-    const plane = planes[k];
-    scratchPlane.normal.copy(plane.normal);
-    scratchPlane.distance = plane.distance;
-
-    const result = boundingVolume.intersectPlane(scratchPlane);
+    const plane = scratchPlane.fromNormalDistance(planes[k].normal, planes[k].distance);
+    const result = boundingVolume.intersectPlane(plane);
 
     if (result === Intersect.OUTSIDE) {
       return CullingVolume.MASK_OUTSIDE;
@@ -401,8 +396,6 @@ export default class Tile3DHeader {
   // @param {Number} parentVisibilityPlaneMask The parent's plane mask to speed up the visibility check.
   // @returns {Number} A plane mask as described above in {@link CullingVolume#computeVisibilityWithPlaneMask}.
   visibility(frameState, parentVisibilityPlaneMask) {
-    // TODO - implement culling
-    // return true;
     const {cullingVolume} = frameState;
     const {boundingVolume, tileset} = this;
 
