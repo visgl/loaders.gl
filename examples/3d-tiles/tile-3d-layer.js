@@ -64,9 +64,9 @@ function commonSpacePlanesToWGS84(viewport) {
     scratchPlane.normal
       .copy(cartesianPos)
       .subtract(viewportCenterCartesian)
+      .scale(-1) // Want the normal to point into the frustum since that's what culling expects
       .normalize();
     scratchPlane.distance = Math.abs(scratchPlane.normal.dot(cartesianPos));
-    scratchPlane.normal.scale(-1); // Want the normal to point into the frustum since that's what culling expects
 
     cullingVolume.planes[i].normal.copy(scratchPlane.normal);
     cullingVolume.planes[i].distance = scratchPlane.distance;
