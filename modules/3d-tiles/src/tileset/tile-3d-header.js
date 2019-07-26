@@ -53,7 +53,6 @@ function computeVisibilityWithPlaneMask(cullingVolume, boundingVolume, parentPla
     if (result === Intersect.OUTSIDE) {
       return CullingVolume.MASK_OUTSIDE;
     } else if (result === Intersect.INTERSECTING) {
-      console.log('flag: ' + flag);
       mask |= flag;
     }
   }

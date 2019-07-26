@@ -2,7 +2,7 @@
 import {CompositeLayer} from '@deck.gl/core';
 import {Matrix4, Vector3} from 'math.gl';
 import {CullingVolume, Plane} from '@math.gl/culling';
-import {_PerspectiveFrustum as PerspectiveFrustum} from '@math.gl/culling'
+// import {_PerspectiveFrustum as PerspectiveFrustum} from '@math.gl/culling';
 
 import {COORDINATE_SYSTEM} from '@deck.gl/core';
 import {PointCloudLayer} from '@deck.gl/layers';
@@ -29,7 +29,7 @@ registerLoaders([Tile3DLoader, Tileset3DLoader, GLTFLoader]);
 const DEFAULT_POINT_COLOR = [202, 112, 41, 255];
 
 const scratchPlane = new Plane();
-let scratchPosition = new Vector3();
+const scratchPosition = new Vector3();
 const cullingVolume = new CullingVolume([
   new Plane(),
   new Plane(),
@@ -39,8 +39,7 @@ const cullingVolume = new CullingVolume([
   new Plane()
 ]);
 
-
-function commonSpacePlanesToWGS84(viewport, cullingVolume) {
+function commonSpacePlanesToWGS84(viewport) {
   // Extract frustum planes based on current view.
   const viewportCenterCartographic = [viewport.longitude, viewport.latitude, 0];
   const viewportCenterCartesian = Ellipsoid.WGS84.cartographicToCartesian(
@@ -54,15 +53,18 @@ function commonSpacePlanesToWGS84(viewport, cullingVolume) {
     const plane = frustumPlanes[dir];
     const distanceToCenter = plane.n.dot(viewport.center);
     const nLen = plane.n.len();
-    scratchPosition.copy(plane.n).scale((plane.d - distanceToCenter) / nLen / nLen).add(viewport.center);
+    scratchPosition
+      .copy(plane.n)
+      .scale((plane.d - distanceToCenter) / nLen / nLen)
+      .add(viewport.center);
     const cartographicPos = viewport.unprojectPosition(scratchPosition);
 
-    const cartesianPos = Ellipsoid.WGS84.cartographicToCartesian(
-      cartographicPos,
-      new Vector3()
-    );
+    const cartesianPos = Ellipsoid.WGS84.cartographicToCartesian(cartographicPos, new Vector3());
 
-    scratchPlane.normal.copy(cartesianPos).subtract(viewportCenterCartesian).normalize();
+    scratchPlane.normal
+      .copy(cartesianPos)
+      .subtract(viewportCenterCartesian)
+      .normalize();
     scratchPlane.distance = Math.abs(scratchPlane.normal.dot(cartesianPos));
     scratchPlane.normal.scale(-1); // Want the normal to point into the frustum since that's what culling expects
 
@@ -181,7 +183,7 @@ export default class Tile3DLayer extends CompositeLayer {
       enuToFixedTransform.transformAsVector(new Vector3(cameraUp).scale(metersPerPixel))
     ).normalize();
 
-    commonSpacePlanesToWGS84(viewport, cullingVolume);
+    commonSpacePlanesToWGS84(viewport);
 
     // TODO: make a file/class for frameState and document what needs to be attached to this so that traversal can function
     const frameState = {
@@ -199,9 +201,6 @@ export default class Tile3DLayer extends CompositeLayer {
     tileset3d.update(frameState, DracoWorkerLoader);
     this._updateLayers();
     this._selectLayers(frameState);
-
-    // TODO: This should be 0 when off camera
-    console.log(this.state.layers.length);
   }
 
   // Grab only those layers who were selected this frame.
