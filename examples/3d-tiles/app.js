@@ -14,7 +14,7 @@ import Tile3DLayer from './tile-3d-layer';
 
 import ControlPanel from './components/control-panel';
 import fileDrop from './components/file-drop';
-import {updateStatWidgets} from './components/stats-widgets';
+import {getStatsWidget} from './components/stats-widgets';
 
 const DATA_URI = 'https://raw.githubusercontent.com/uber-web/loaders.gl/master';
 const INDEX_FILE = `${DATA_URI}/modules/3d-tiles/test/data/index.json`;
@@ -88,6 +88,8 @@ export default class App extends PureComponent {
   }
 
   async componentDidMount() {
+    this._memWidget = getStatsWidget(this._memWidgetContainer);
+
     fileDrop(this._deckRef.deckCanvas, (promise, file) => {
       // eslint-disable-next-line
       alert('File drop of tilesets not yet implemented');
@@ -272,12 +274,29 @@ export default class App extends PureComponent {
     });
   }
 
+  _renderStats() {
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          padding: 12,
+          zIndex: '10000',
+          maxWidth: 300,
+          background: '#000',
+          color: '#fff'
+        }}
+        ref={_ => (this._memWidgetContainer = _)}
+      />
+    );
+  }
+
   render() {
     const {viewState} = this.state;
     const layer = this._renderLayer();
 
     return (
       <div>
+        {this._renderStats()}
         {this._renderControlPanel()}
         <DeckGL
           ref={_ => (this._deckRef = _)}
@@ -286,7 +305,7 @@ export default class App extends PureComponent {
           viewState={viewState}
           onViewStateChange={this._onViewStateChange.bind(this)}
           controller={{type: MapController, maxPitch: 85}}
-          onAfterRender={() => updateStatWidgets()}
+          onAfterRender={() => this._memWidget && this._memWidget.update()}
         >
           <StaticMap mapStyle={MAPBOX_STYLE} mapboxApiAccessToken={MAPBOX_TOKEN} />
         </DeckGL>

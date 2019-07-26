@@ -21,22 +21,15 @@ import {lumaStats} from '@luma.gl/core';
 //   }
 // });
 
-const memWidget = new StatsWidget(lumaStats.get('Memory Usage'), {
-  framesPerUpdate: 60,
-  formatters: {
-    'GPU Memory': 'memory',
-    'Buffer Memory': 'memory',
-    'Renderbuffer Memory': 'memory',
-    'Texture Memory': 'memory'
-  },
-  css: {
-    position: 'absolute',
-    top: '100px',
-    left: '20px'
-  }
-});
-
-export function updateStatWidgets() {
-  // timeWidget.update();
-  memWidget.update();
+export function getStatsWidget(container) {
+  return new StatsWidget(lumaStats.get('Memory Usage'), {
+    framesPerUpdate: 60,
+    formatters: {
+      'GPU Memory': 'memory',
+      'Buffer Memory': 'memory',
+      'Renderbuffer Memory': 'memory',
+      'Texture Memory': 'memory'
+    },
+    container
+  });
 }
