@@ -19,7 +19,9 @@ import {getStatsWidget} from './components/stats-widgets';
 const DATA_URI = 'https://raw.githubusercontent.com/uber-web/loaders.gl/master';
 const INDEX_FILE = `${DATA_URI}/modules/3d-tiles/test/data/index.json`;
 
-const ION_ACCESS_TOKEN = process.env.IonAccessToken; // eslint-disable-line
+// eslint-disable-next-line
+const ION_ACCESS_TOKEN =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIxN2NhMzkwYi0zNWM4LTRjNTYtYWE3Mi1jMDAxYzhlOGVmNTAiLCJpZCI6OTYxOSwic2NvcGVzIjpbImFzbCIsImFzciIsImFzdyIsImdjIl0sImlhdCI6MTU2MjE4MTMxM30.OkgVr6NaKYxabUMIGqPOYFe0V5JifXLVLfpae63x-tA';
 
 // Set your mapbox token here
 const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
@@ -27,24 +29,20 @@ const MAPBOX_STYLE = 'mapbox://styles/mapbox/light-v9';
 const DEPTH_LIMIT = 2; // TODO: Remove this after sse traversal is working since this is just to prevent full load of tileset
 
 const INITIAL_EXAMPLE_CATEGORY = 'additional';
-const INITIAL_EXAMPLE_NAME = 'royalExhibitionBuilding';
-// const INITIAL_EXAMPLE_CATEGORY = 'Instanced';
-// const INITIAL_EXAMPLE_NAME = 'InstancedGltfExternal';
-// const INITIAL_EXAMPLE_CATEGORY = 'PointCloud';
-// const INITIAL_EXAMPLE_NAME = 'PointCloudRGB';
+const INITIAL_EXAMPLE_NAME = 'Mount St Helens (Cesium ion)';
 
 const scratchLongLatZoom = new Vector3();
 
 const ADDITIONAL_EXAMPLES = {
   name: 'additional',
   examples: {
-    royalExhibitionBuilding: {
+    'Royal Exhibition Building (Github Pages)': {
       tilesetUrl:
         'https://raw.githubusercontent.com/uber-common/deck.gl-data/master/3d-tiles/RoyalExhibitionBuilding/tileset.json',
       depthLimit: DEPTH_LIMIT, // TODO: Remove this after sse traversal is working since this is just to prevent full load of tileset
       color: [115, 101, 152, 200]
     },
-    'St Helen (Cesium ion)': {
+    'Mount St Helens (Cesium ion)': {
       ionAssetId: 33301, // St Helen
       ionAccessToken: ION_ACCESS_TOKEN
     }
@@ -212,8 +210,10 @@ export default class App extends PureComponent {
           points
         </div>
         <div>
-          {' '}
-          {viewState.longitude.toFixed(5)} {viewState.latitude.toFixed(5)} {viewState.zoom}{' '}
+          long/lat: {viewState.longitude.toFixed(5)},{viewState.latitude.toFixed(5)}
+        </div>
+        <div>
+          zoom: {viewState.zoom.toFixed(2)}{' '}
         </div>
       </ControlPanel>
     );
