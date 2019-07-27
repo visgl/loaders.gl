@@ -2,7 +2,7 @@
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 // import {TILE3D_REFINEMENT, TILE3D_OPTIMIZATION_HINT} from '../constants';
 import {Vector3, Matrix4} from 'math.gl';
-// import {CullingVolume} from '@math.gl/culling';
+import {CullingVolume} from '@math.gl/culling';
 import Tile3DLoader from '../tile-3d-loader';
 // import Tileset3DLoader from '../tileset-3d-loader';
 import {TILE3D_REFINEMENT, TILE3D_CONTENT_STATE, TILE3D_OPTIMIZATION_HINT} from '../constants';
@@ -11,12 +11,54 @@ import {createBoundingVolume} from './helpers/bounding-volume';
 // TODO - inject this dependency?
 import {fetchFile} from '@loaders.gl/core';
 
-const defined = x => x !== undefined;
+const defined = x => x !== undefined && x !== null;
 
 /* eslint-disable */
 const scratchDate = new Date();
 const scratchCommandList = [];
 const scratchToTileCenter = new Vector3();
+
+// TODO: Remove
+const scratchPlane = new Plane();
+import {INTERSECT, Intersect, Plane} from '@math.gl/culling';
+
+function computeVisibilityWithPlaneMask(cullingVolume, boundingVolume, parentPlaneMask) {
+  assert(boundingVolume, 'boundingVolume is required.');
+  assert(Number.isFinite(parentPlaneMask), 'parentPlaneMask is required.');
+
+  if (
+    parentPlaneMask === CullingVolume.MASK_OUTSIDE ||
+    parentPlaneMask === CullingVolume.MASK_INSIDE
+  ) {
+    // parent is completely outside or completely inside, so this child is as well.
+    return parentPlaneMask;
+  }
+
+  // Start with MASK_INSIDE (all zeros) so that after the loop, the return value can be compared with MASK_INSIDE.
+  // (Because if there are fewer than 31 planes, the upper bits wont be changed.)
+  let mask = CullingVolume.MASK_INSIDE;
+
+  const planes = cullingVolume.planes;
+  for (let k = 0; k < cullingVolume.planes.length; ++k) {
+    // For k greater than 31 (since 31 is the maximum number of INSIDE/INTERSECTING bits we can store), skip the optimization.
+    const flag = k < 31 ? 1 << k : 0;
+    if (k < 31 && (parentPlaneMask & flag) === 0) {
+      // boundingVolume is known to be INSIDE this plane.
+      continue;
+    }
+
+    const plane = scratchPlane.fromNormalDistance(planes[k].normal, planes[k].distance);
+    const result = boundingVolume.intersectPlane(plane);
+
+    if (result === Intersect.OUTSIDE) {
+      return CullingVolume.MASK_OUTSIDE;
+    } else if (result === Intersect.INTERSECTING) {
+      mask |= flag;
+    }
+  }
+
+  return mask;
+}
 
 // A Tile3DHeader represents a tile a Tileset3D. When a tile is first created, its content is not loaded;
 // the content is loaded on-demand when needed based on the view.
@@ -325,20 +367,18 @@ export default class Tile3DHeader {
       return;
     }
 
-    // const parent = this.parent;
-    // const parentTransform = defined(parent) ? parent.computedTransform : this._tileset.modelMatrix;
-    // // const parentVisibilityPlaneMask = defined(parent)
-    // //   ? parent._visibilityPlaneMask
-    // //   : CullingVolume.MASK_INDETERMINATE;
-    // this._updateTransform(parentTransform);
+    const parent = this.parent;
+    const parentTransform = defined(parent) ? parent.computedTransform : this._tileset.modelMatrix;
+    const parentVisibilityPlaneMask = defined(parent)
+      ? parent._visibilityPlaneMask
+      : CullingVolume.MASK_INDETERMINATE;
+    this._updateTransform(parentTransform);
     this._distanceToCamera = this.distanceToTile(frameState);
     // this._centerZDepth = this.cameraSpaceZDepth(frameState);
     this._screenSpaceError = this.getScreenSpaceError(frameState, false);
-    // this._visibilityPlaneMask = this.visibility(frameState, parentVisibilityPlaneMask); // Use parent's plane mask to speed up visibility test
-    // this._visible = this._visibilityPlaneMask !== CullingVolume.MASK_OUTSIDE;
-    this._visible = true;
-    // this._inRequestVolume = this.insideViewerRequestVolume(frameState);
-    this._inRequestVolume = true;
+    this._visibilityPlaneMask = this.visibility(frameState, parentVisibilityPlaneMask); // Use parent's plane mask to speed up visibility test
+    this._visible = this._visibilityPlaneMask !== CullingVolume.MASK_OUTSIDE;
+    this._inRequestVolume = this.insideViewerRequestVolume(frameState);
 
     this._updatedVisibilityFrame = tileset._updatedVisibilityFrame;
   }
@@ -359,18 +399,14 @@ export default class Tile3DHeader {
   // @param {Number} parentVisibilityPlaneMask The parent's plane mask to speed up the visibility check.
   // @returns {Number} A plane mask as described above in {@link CullingVolume#computeVisibilityWithPlaneMask}.
   visibility(frameState, parentVisibilityPlaneMask) {
-    // TODO - implement culling
-    return true;
-    /*
-    const cullingVolume = frameState.cullingVolume;
-    const boundingVolume = this._boundingVolume;
+    const {cullingVolume} = frameState;
+    const {boundingVolume, tileset} = this;
 
-    const tileset = this._tileset;
-    const clippingPlanes = tileset.clippingPlanes;
+    const {clippingPlanes, clippingPlanesOriginMatrix} = tileset;
     if (defined(clippingPlanes) && clippingPlanes.enabled) {
       const intersection = clippingPlanes.computeIntersectionWithBoundingVolume(
         boundingVolume,
-        tileset.clippingPlanesOriginMatrix
+        clippingPlanesOriginMatrix
       );
       this._isClipped = intersection !== Intersect.INSIDE;
       if (intersection === Intersect.OUTSIDE) {
@@ -378,8 +414,8 @@ export default class Tile3DHeader {
       }
     }
 
-    return cullingVolume.computeVisibilityWithPlaneMask(boundingVolume, parentVisibilityPlaneMask);
-    */
+    // return cullingVolume.computeVisibilityWithPlaneMask(boundingVolume, parentVisibilityPlaneMask);
+    return computeVisibilityWithPlaneMask(cullingVolume, boundingVolume, parentVisibilityPlaneMask);
   }
 
   // Assuming the tile's bounding volume intersects the culling volume, determines
@@ -435,10 +471,9 @@ export default class Tile3DHeader {
   // @param {FrameState} frameState The frame state.
   // @returns {Number} The distance, in meters.
   cameraSpaceZDepth({camera}) {
-    const tileBoundingVolume = this._boundingVolume;
-    const boundingVolume = tileBoundingVolume.boundingVolume; // Gets the underlying OrientedBoundingBox or BoundingSphere
-    const toCenter = Vector3.subtract(boundingVolume.center, camera.position, scratchToTileCenter);
-    return Vector3.dot(camera.direction, toCenter);
+    const boundingVolume = this.boundingVolume; // Gets the underlying OrientedBoundingBox or BoundingSphere
+    scratchToTileCenter.subVectors(boundingVolume.center, camera.position);
+    return camera.direction.dot(scratchToTileCenter);
   }
 
   /**
@@ -555,7 +590,7 @@ export default class Tile3DHeader {
     this._distanceToCamera = 0;
     this._centerZDepth = 0;
     this._screenSpaceError = 0;
-    this._visibilityPlaneMask = 0;
+    this._visibilityPlaneMask = CullingVolume.MASK_INDETERMINATE;
     this._visible = false;
     this._inRequestVolume = false;
 
@@ -618,7 +653,7 @@ export default class Tile3DHeader {
 
   // Update the tile's transform. The transform is applied to the tile's bounding volumes.
   _updateTransform(parentTransform = new Matrix4()) {
-    const computedTransform = parentTransform.clone().multiply(this.transform);
+    const computedTransform = parentTransform.clone().multiplyRight(this.transform);
     const didTransformChange = !computedTransform.equals(this.computedTransform);
 
     if (!didTransformChange) {

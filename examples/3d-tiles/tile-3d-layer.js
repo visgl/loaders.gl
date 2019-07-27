@@ -1,6 +1,8 @@
 /* global fetch */
 import {CompositeLayer} from '@deck.gl/core';
 import {Matrix4, Vector3} from 'math.gl';
+import {CullingVolume, Plane} from '@math.gl/culling';
+// import {_PerspectiveFrustum as PerspectiveFrustum} from '@math.gl/culling';
 
 import {COORDINATE_SYSTEM} from '@deck.gl/core';
 import {PointCloudLayer} from '@deck.gl/layers';
@@ -25,6 +27,52 @@ import {
 registerLoaders([Tile3DLoader, Tileset3DLoader, GLTFLoader]);
 
 const DEFAULT_POINT_COLOR = [202, 112, 41, 255];
+
+const scratchPlane = new Plane();
+const scratchPosition = new Vector3();
+const cullingVolume = new CullingVolume([
+  new Plane(),
+  new Plane(),
+  new Plane(),
+  new Plane(),
+  new Plane(),
+  new Plane()
+]);
+
+function commonSpacePlanesToWGS84(viewport) {
+  // Extract frustum planes based on current view.
+  const viewportCenterCartographic = [viewport.longitude, viewport.latitude, 0];
+  const viewportCenterCartesian = Ellipsoid.WGS84.cartographicToCartesian(
+    viewportCenterCartographic,
+    new Vector3()
+  );
+
+  const frustumPlanes = viewport.getFrustumPlanes();
+  let i = 0;
+  for (const dir in frustumPlanes) {
+    const plane = frustumPlanes[dir];
+    const distanceToCenter = plane.n.dot(viewport.center);
+    const nLen = plane.n.len();
+    scratchPosition
+      .copy(plane.n)
+      .scale((plane.d - distanceToCenter) / nLen / nLen)
+      .add(viewport.center);
+    const cartographicPos = viewport.unprojectPosition(scratchPosition);
+
+    const cartesianPos = Ellipsoid.WGS84.cartographicToCartesian(cartographicPos, new Vector3());
+
+    scratchPlane.normal
+      .copy(cartesianPos)
+      .subtract(viewportCenterCartesian)
+      .scale(-1) // Want the normal to point into the frustum since that's what culling expects
+      .normalize();
+    scratchPlane.distance = Math.abs(scratchPlane.normal.dot(cartesianPos));
+
+    cullingVolume.planes[i].normal.copy(scratchPlane.normal);
+    cullingVolume.planes[i].distance = scratchPlane.distance;
+    i = i + 1;
+  }
+}
 
 const defaultProps = {
   // TODO - the tileset json could be an async prop.
@@ -87,7 +135,7 @@ export default class Tile3DLayer extends CompositeLayer {
     return changeFlags.somethingChanged;
   }
 
-  updateState({props, oldProps, context, changeFlags}) {
+  updateState({props, oldProps}) {
     if (props.tilesetUrl && props.tilesetUrl !== oldProps.tilesetUrl) {
       this._loadTileset(props.tilesetUrl);
     } else if (
@@ -110,10 +158,7 @@ export default class Tile3DLayer extends CompositeLayer {
     // Traverse and and request. Update _selectedTiles so that we know what to render.
     const {height, tick} = animationProps;
     const {cameraDirection, cameraUp} = viewport;
-
-    const cameraPositionENU = new Vector3(viewport.cameraPosition)
-      .subtract(viewport.center)
-      .scale(viewport.distanceScales.metersPerPixel);
+    const {metersPerPixel} = viewport.distanceScales;
 
     const viewportCenterCartographic = [viewport.longitude, viewport.latitude, 0];
     // TODO - Ellipsoid.eastNorthUpToFixedFrame() breaks on raw array, create a Vector.
@@ -124,20 +169,21 @@ export default class Tile3DLayer extends CompositeLayer {
     );
     const enuToFixedTransform = Ellipsoid.WGS84.eastNorthUpToFixedFrame(viewportCenterCartesian);
 
-    const cameraPositionCartesian = enuToFixedTransform.transform(cameraPositionENU);
-    // These should still be normalized as the transform has scale 1 (goes from meters to meters)
-    const cameraDirectionCartesian = enuToFixedTransform.transformAsVector(cameraDirection);
-    const cameraUpCartesian = enuToFixedTransform.transformAsVector(cameraUp);
+    const cameraPositionCartographic = viewport.unprojectPosition(viewport.cameraPosition);
+    const cameraPositionCartesian = Ellipsoid.WGS84.cartographicToCartesian(
+      cameraPositionCartographic,
+      new Vector3()
+    );
 
-    // TODO: remove after sse traversal working
-    // const minZoom = 14;
-    // const maxZoom = 21;
-    // const zoomMagic = 10000; // royalexhibition
-    // let zoomMap = Math.max(Math.min(zoom, maxZoom), minZoom);
-    // zoomMap = (zoomMap - minZoom) / (maxZoom - minZoom);
-    // let expMap = 1 - Math.exp(-zoomMap * 6); // Use exposure tone mapping to smooth out the sensitivity in the zoom mapping
-    // expMap = Math.max(Math.min(1.0 - expMap, 1), 0);
-    // const heightMagic = expMap * zoomMagic;
+    // These should still be normalized as the transform has scale 1 (goes from meters to meters)
+    const cameraDirectionCartesian = new Vector3(
+      enuToFixedTransform.transformAsVector(new Vector3(cameraDirection).scale(metersPerPixel))
+    ).normalize();
+    const cameraUpCartesian = new Vector3(
+      enuToFixedTransform.transformAsVector(new Vector3(cameraUp).scale(metersPerPixel))
+    ).normalize();
+
+    commonSpacePlanesToWGS84(viewport);
 
     // TODO: make a file/class for frameState and document what needs to be attached to this so that traversal can function
     const frameState = {
@@ -147,12 +193,13 @@ export default class Tile3DLayer extends CompositeLayer {
         up: cameraUpCartesian
       },
       height,
+      cullingVolume,
       frameNumber: tick, // TODO: This can be the same between updates, what number is unique for between updates?
       sseDenominator: 1.15 // Assumes fovy = 60 degrees
     };
 
     tileset3d.update(frameState, DracoWorkerLoader);
-    this._updateLayers(frameState);
+    this._updateLayers();
     this._selectLayers(frameState);
   }
 
@@ -190,7 +237,7 @@ export default class Tile3DLayer extends CompositeLayer {
   }
 
   // Layer is created and added to the map if it doesn't exist yet.
-  _updateLayers(frameState) {
+  _updateLayers() {
     const {tileset3d, layerMap} = this.state;
     const {selectedTiles} = tileset3d;
 

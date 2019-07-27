@@ -38,8 +38,8 @@
     "@loaders.gl/gltf": "1.2.0-beta.2",
     "@loaders.gl/loader-utils": "1.2.0-beta.2",
     "@loaders.gl/math": "1.2.0-beta.2",
-    "@math.gl/culling": "^3.0.0-alpha.6",
-    "@math.gl/geospatial": "^3.0.0-alpha.6",
-    "math.gl": "^3.0.0-alpha.6"
+    "@math.gl/culling": "^3.0.0-beta.2",
+    "@math.gl/geospatial": "^3.0.0-beta.2",
+    "math.gl": "^3.0.0-beta.2"
   }
 }
