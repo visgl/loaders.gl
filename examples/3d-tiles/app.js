@@ -212,9 +212,7 @@ export default class App extends PureComponent {
         <div>
           long/lat: {viewState.longitude.toFixed(5)},{viewState.latitude.toFixed(5)}
         </div>
-        <div>
-          zoom: {viewState.zoom.toFixed(2)}{' '}
-        </div>
+        <div>zoom: {viewState.zoom.toFixed(2)} </div>
       </ControlPanel>
     );
   }
