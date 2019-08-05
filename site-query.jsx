@@ -6,6 +6,7 @@
 // run by gatsby. Rather, a file of the same name must have the same query in the local tree.
 // During the init process, ocular copies this file over to the local tree.
 
+// WARNING: DO NOT MODIFY THIS FILE MANUALLY IT WILL BE OVERWRITTEN.
 import React from 'react';
 import {StaticQuery, graphql} from 'gatsby';
 
@@ -20,6 +21,7 @@ const QUERY = graphql`
         PROJECT_URL
         PROJECT_ORG
         HOME_HEADING
+        LINK_TO_GET_STARTED
         HOME_BULLETS {
           text
           desc
@@ -56,7 +58,7 @@ const QUERY = graphql`
     }
   }
 
-  query WebsiteConfigQuery {
+  query ConfigQuery {
     site {
       ...SiteConfigFragment
     }

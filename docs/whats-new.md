@@ -1,5 +1,23 @@
 # What's New
 
+## v1.2 (In Development, alpha/beta releases available)
+
+Release Date: Aug 8, 2019
+
+- `@loaders.gl/core`: File Type Auto Detection now supports binary files
+- `@loaders.gl/polyfills`: Fixed `TextEncoder` warnings
+- `@loaders.gl/arrow`: Improved Node 8 support
+- `@loaders.gl/images`: Image file extensions now added to loader object
+- `@loaders.gl/gltf`: Generate default sampler parameters if none provided in gltf file
+
+### @loaders.gl/3d-tiles <sup>EXPERIMENTAL</sup>
+
+- Support for dynamic traversal of 3D tilesets (automatically loads and unloads tiles based on viewer position and view frustum).
+- Support for loading tilesets from Cesium ION servers.
+- Asynchronous tileset loading
+- Auto centering of view based on tileset bounding volumes
+- deck.gl `Tile3DLayer` class provided in examples.
+
 ## v1.1
 
 Release Date: May 30, 2019

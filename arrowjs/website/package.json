@@ -21,12 +21,8 @@
     "react-dom": "^16.6.0"
   },
   "devDependencies": {
-    "gatsby": "2.3.0",
-    "gatsby-plugin-styletron": "^3.0.5",
-    "ocular-gatsby": "1.0.0-alpha.33",
+    "gatsby": "^2.13.0",
+    "ocular-gatsby": "1.0.0-alpha.44",
     "sharp": "^0.22.1"
-  },
-  "resolutions": {
-    "**/sharp": "^0.22.1"
   }
 }

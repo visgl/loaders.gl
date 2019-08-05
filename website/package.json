@@ -17,30 +17,30 @@
     "deploy": "NODE_DEBUG=gh-pages gh-pages -d public"
   },
   "dependencies": {
-    "@deck.gl/core": "^7.1.2",
-    "@deck.gl/layers": "^7.1.2",
-    "@deck.gl/mesh-layers": "^7.1.2",
-    "@deck.gl/react": "^7.1.2",
-    "@loaders.gl/draco": "^1.0.3",
-    "@loaders.gl/las": "^1.0.3",
-    "@luma.gl/addons": "^7.1.1",
-    "@luma.gl/constants": "^7.1.1",
-    "@luma.gl/core": "^7.1.1",
-    "@luma.gl/webgl": "^7.1.1",
+    "@deck.gl/core": "^7.2.0-alpha.4",
+    "@deck.gl/layers": "^7.2.0-alpha.4",
+    "@deck.gl/mesh-layers": "^7.2.0-alpha.4",
+    "@deck.gl/react": "^7.2.0-alpha.4",
+    "@loaders.gl/draco": "^1.2.0-beta.2",
+    "@loaders.gl/las": "1.2.0-beta.2",
+    "@luma.gl/addons": "^7.2.0-alpha.6",
+    "@luma.gl/constants": "^7.2.0-alpha.6",
+    "@luma.gl/core": "^7.2.0-alpha.6",
+    "@luma.gl/webgl": "^7.2.0-alpha.6",
     "math.gl": "^3.0.0-beta.2",
     "@math.gl/culling": "^3.0.0-beta.2",
     "@math.gl/geospatial": "^3.0.0-beta.2",
-    "@probe.gl/stats-widget": "^3.1.0-alpha.2",
+    "@probe.gl/stats-widget": "^3.1.0-alpha.7",
     "react": "^16.6.0",
     "react-dom": "^16.6.0",
     "react-map-gl": "^5.0.0",
     "styled-components": "^4.2.0"
   },
   "devDependencies": {
-    "gatsby": "^2.3.0",
+    "gatsby": "^2.13.51",
     "gatsby-plugin-no-sourcemaps": "^2.0.2",
-    "gh-pages": "^2.0.1",
-    "ocular-gatsby": "1.0.0-alpha.38",
-    "sharp": "^0.22.0"
+    "gh-pages": "^2.1.0",
+    "ocular-gatsby": "1.0.0-alpha.46",
+    "sharp": "^0.23.0"
   }
 }
