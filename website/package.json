@@ -23,10 +23,10 @@
     "@deck.gl/react": "^7.2.0-alpha.4",
     "@loaders.gl/draco": "^1.2.0-beta.2",
     "@loaders.gl/las": "1.2.0-beta.2",
-    "@luma.gl/addons": "^7.2.0-alpha.4",
-    "@luma.gl/constants": "^7.2.0-alpha.4",
-    "@luma.gl/core": "^7.2.0-alpha.4",
-    "@luma.gl/webgl": "^7.2.0-alpha.4",
+    "@luma.gl/addons": "^7.2.0-alpha.6",
+    "@luma.gl/constants": "^7.2.0-alpha.6",
+    "@luma.gl/core": "^7.2.0-alpha.6",
+    "@luma.gl/webgl": "^7.2.0-alpha.6",
     "math.gl": "^3.0.0-beta.2",
     "@math.gl/culling": "^3.0.0-beta.2",
     "@math.gl/geospatial": "^3.0.0-beta.2",
@@ -37,10 +37,10 @@
     "styled-components": "^4.2.0"
   },
   "devDependencies": {
-    "gatsby": "^2.13.0",
+    "gatsby": "^2.13.51",
     "gatsby-plugin-no-sourcemaps": "^2.0.2",
-    "gh-pages": "^2.0.1",
-    "ocular-gatsby": "1.0.0-alpha.44",
-    "sharp": "^0.22.0"
+    "gh-pages": "^2.1.0",
+    "ocular-gatsby": "1.0.0-alpha.46",
+    "sharp": "^0.23.0"
   }
 }
