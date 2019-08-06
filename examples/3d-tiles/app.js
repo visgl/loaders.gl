@@ -7,8 +7,7 @@ import {StaticMap} from 'react-map-gl';
 import DeckGL from '@deck.gl/react';
 import {MapController} from '@deck.gl/core';
 import {Vector3} from 'math.gl';
-// import '@loaders.gl/polyfills';
-// import '@luma.gl/debug';
+import {StatsWidget} from '@probe.gl/stats-widget';
 
 import Tile3DLayer from './tile-3d-layer';
 
@@ -83,10 +82,12 @@ export default class App extends PureComponent {
     };
 
     this._deckRef = null;
+    this._onTilesetLoaded = this._onTilesetLoaded.bind(this);
+    this._onTilesetChanged = this._onTilesetChanged.bind(this);
   }
 
   async componentDidMount() {
-    this._memWidget = getStatsWidget(this._memWidgetContainer);
+    this._memWidget = getStatsWidget(this._statsWidgetContainer);
 
     fileDrop(this._deckRef.deckCanvas, (promise, file) => {
       // eslint-disable-next-line
@@ -192,11 +193,61 @@ export default class App extends PureComponent {
     await this._loadExampleTileset(category, name);
   }
 
+  _onTilesetLoaded(tileset) {
+    const tilesetStatsWidget = new StatsWidget(tileset.stats, {
+      framesPerUpdate: 1,
+      formatters: {
+        'GPU Memory': 'memory',
+        'Buffer Memory': 'memory',
+        'Renderbuffer Memory': 'memory',
+        'Texture Memory': 'memory'
+      },
+      container: this._statsWidgetContainer
+    });
+
+    const center = tileset.getCartographicCenter();
+    const zoom = tileset.getMercatorZoom();
+
+    this.setState({
+      tilesetStatsWidget,
+      viewState: {
+        ...this.state.viewState,
+        longitude: center[0],
+        latitude: center[1],
+        zoom
+      }
+    });
+  }
+
+  _onTilesetChanged(tileHeader) {
+    this._updateStatWidgets();
+    this.forceUpdate();
+  }
+
+  _onViewStateChange({viewState}) {
+    this.setState({viewState});
+  }
+
+  _updateStatWidgets() {
+    if (this.state.tilesetStatsWidget) {
+      this.state.tilesetStatsWidget.update();
+    }
+    if (this._memWidget) {
+      this._memWidget.update();
+    }
+  }
+
   _renderControlPanel() {
     const {examplesByCategory, category, name, viewState} = this.state;
     if (!examplesByCategory) {
       return null;
     }
+
+    // const stats = tileset && tileset.stats;
+    // <div>
+    //   Loaded {this.state.tileCount | 0} tiles {(this.state.pointCount / 1e6).toFixed(2)} M
+    //   points
+    // </div>
 
     return (
       <ControlPanel
@@ -206,43 +257,11 @@ export default class App extends PureComponent {
         onChange={this._onSelectExample.bind(this)}
       >
         <div>
-          Loaded {this.state.tileCount | 0} tiles {(this.state.pointCount / 1e6).toFixed(2)} M
-          points
-        </div>
-        <div>
           long/lat: {viewState.longitude.toFixed(5)},{viewState.latitude.toFixed(5)}
         </div>
         <div>zoom: {viewState.zoom.toFixed(2)} </div>
       </ControlPanel>
     );
-  }
-
-  _onTilesetLoaded(tileset) {
-    tileset._getCartographicCenterAndZoom(scratchLongLatZoom);
-    this.setState({
-      viewState: {
-        ...this.state.viewState,
-        longitude: scratchLongLatZoom[0],
-        latitude: scratchLongLatZoom[1],
-        zoom: scratchLongLatZoom[2]
-      }
-    });
-
-    this.forceUpdate();
-  }
-
-  _onTileLoaded(tileHeader) {
-    const pointCount = tileHeader.content.pointsLength || 0;
-    this.setState({
-      tileCount: this.state.tileCount + 1,
-      pointCount: this.state.pointCount + pointCount
-    });
-  }
-
-  // MAIN
-
-  _onViewStateChange({viewState}) {
-    this.setState({viewState});
   }
 
   _renderLayer() {
@@ -267,8 +286,10 @@ export default class App extends PureComponent {
       coordinateOrigin,
       depthLimit,
       color,
-      onTileLoaded: this._onTileLoaded.bind(this),
-      onTilesetLoaded: this._onTilesetLoaded.bind(this)
+      onTilesetLoaded: this._onTilesetLoaded,
+      onTileLoaded: this._onTilesetChanged,
+      onTileUnloaded: this._onTilesetChanged,
+      onTileLoadFiled: this._onTilesetChanged
     });
   }
 
@@ -283,7 +304,7 @@ export default class App extends PureComponent {
           background: '#000',
           color: '#fff'
         }}
-        ref={_ => (this._memWidgetContainer = _)}
+        ref={_ => (this._statsWidgetContainer = _)}
       />
     );
   }
@@ -303,7 +324,7 @@ export default class App extends PureComponent {
           viewState={viewState}
           onViewStateChange={this._onViewStateChange.bind(this)}
           controller={{type: MapController, maxPitch: 85}}
-          onAfterRender={() => this._memWidget && this._memWidget.update()}
+          onAfterRender={() => this._updateStatWidgets()}
         >
           <StaticMap mapStyle={MAPBOX_STYLE} mapboxApiAccessToken={MAPBOX_TOKEN} />
         </DeckGL>

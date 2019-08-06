@@ -7,8 +7,6 @@ import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
 import {Ellipsoid} from '@math.gl/geospatial';
 import assert from '../../utils/assert';
 
-// const scratchProjectedBoundingSphere = new BoundingSphere();
-
 const defined = x => x !== undefined;
 
 const scratchMatrix = new Matrix3();
@@ -145,20 +143,52 @@ function createRegion(region, transform, initialTransform, result) {
   });
 }
 
-function createSphere(sphere, transform, result) {
+function createSphere(sphere, transform, result = new BoundingSphere()) {
   // Find the transformed center
-  const center = new Vector3(sphere[0], sphere[1], sphere[2]);
+  const center = new Vector3().from(sphere);
   transform.transform(center, center);
-  const scale = transform.getScale(scratchScale);
 
-  const uniformScale = Math.max(Math.max(scale[0], scale[1]), scale[2]);
+  // Scale the radius
+  const scale = transform.getScale(scratchScale);
+  const uniformScale = Math.max(scale[0], scale[1], scale[2]);
   const radius = sphere[3] * uniformScale;
 
-  if (defined(result)) {
-    result.center = center;
-    result.radius = radius;
-    return result;
+  result.center = center;
+  result.radius = radius;
+  return result;
+}
+
+export function getMercatorZoom(boundingVolume) {
+  const WGS84_RADIUS_X = Ellipsoid.WGS84.radii[0];
+  const WGS84_RADIUS_Y = Ellipsoid.WGS84.radii[1];
+  const WGS84_RADIUS_Z = Ellipsoid.WGS84.radii[2];
+
+  // OrientedBoundingBox
+  if (boundingVolume instanceof OrientedBoundingBox) {
+    const {halfAxes} = boundingVolume;
+    const [x, , , , y, , , , z] = halfAxes;
+
+    const zoomX = Math.log2(WGS84_RADIUS_X / x / 2);
+    const zoomY = Math.log2(WGS84_RADIUS_Y / y / 2);
+    const zoomZ = Math.log2(WGS84_RADIUS_Z / z / 2);
+    return (zoomX + zoomY + zoomZ) / 3;
   }
 
-  return new BoundingSphere(center, radius);
+  // BoundingSphere
+  if (boundingVolume instanceof BoundingSphere) {
+    const {radius} = boundingVolume;
+    return Math.log2(WGS84_RADIUS_Z / radius);
+  }
+
+  // BoundingRectangle
+  // if (boundingVolume instanceof BoundingRectangle)
+  const {width, height} = boundingVolume;
+  if (width && height) {
+    const zoomX = Math.log2(WGS84_RADIUS_X / width);
+    const zoomY = Math.log2(WGS84_RADIUS_Y / height);
+    return (zoomX + zoomY) / 2;
+  }
+
+  console.warn('Unknown bounding volume');
+  return 18;
 }

@@ -22,6 +22,11 @@ const COMMON_CONFIG = {
         }
       }
     ]
+  },
+
+  node: {
+    // Draco3D still has issues
+    fs: 'empty'
   }
 };
 
