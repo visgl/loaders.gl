@@ -63,7 +63,7 @@ function parseCSVInBatches(asyncIterator, options) {
 
       // Check if we need to save a header row
       if (isFirstRow && !headerRow) {
-        const {header = isHeaderRow(row)} = options;
+        const header = options.header === undefined ? isHeaderRow(row) : options.header;
         if (header) {
           headerRow = row;
           return;

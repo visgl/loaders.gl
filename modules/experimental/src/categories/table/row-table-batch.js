@@ -5,6 +5,8 @@ export default class RowTableBatch {
     this.rows = null;
     this.length = 0;
 
+    // schema is an array if there're no headers
+    // object if there are headers
     if (!Array.isArray(schema)) {
       this._headers = [];
       for (const key in schema) {
@@ -18,7 +20,7 @@ export default class RowTableBatch {
       this.rows = new Array(this.batchSize);
       this.length = 0;
     }
-    this.rows[this.length] = row;
+    this.rows[this.length] = convertRowToObject(row, this._headers);
     this.length++;
   }
 
@@ -28,12 +30,7 @@ export default class RowTableBatch {
 
   getNormalizedBatch() {
     if (this.rows) {
-      let rows = this.rows.slice(0, this.length);
-
-      if (this._headers) {
-        rows = rows.map(row => convertRowToObject(row, this._headers));
-      }
-
+      const rows = this.rows.slice(0, this.length);
       this.rows = null;
       return {data: rows, schema: this.schema, length: rows.length};
     }
@@ -42,6 +39,9 @@ export default class RowTableBatch {
 }
 
 function convertRowToObject(row, headers) {
+  if (!headers) {
+    return row;
+  }
   const result = {};
   for (let i = 0; i < headers.length; i++) {
     result[headers[i]] = row[i];

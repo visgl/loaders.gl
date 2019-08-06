@@ -28,6 +28,9 @@ export default class ColumnarTableBatch {
     this.pruneColumns();
     const columns = Array.isArray(this.schema) ? this.columns : {};
 
+    // schema is an array if there're no headers
+    // object if there are headers
+    // columns should match schema format
     if (!Array.isArray(this.schema)) {
       for (const fieldName in this.schema) {
         const field = this.schema[fieldName];
