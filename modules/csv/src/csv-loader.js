@@ -7,11 +7,31 @@ export default {
   name: 'CSV',
   extensions: ['csv'],
   testText: null,
+  parseTextSync: parseCSVSync,
   parseInBatches: parseCSVInBatches,
   options: {
     TableBatch: RowTableBatch
   }
 };
+
+function parseCSVSync(csvText, options) {
+  const config = Object.assign(
+    {
+      header: hasHeader(csvText, options),
+      dynamicTyping: true // Convert numbers and boolean values in rows from strings
+    },
+    options,
+    {
+      download: false, // We handle loading, no need for papaparse to do it for us
+      error: e => {
+        throw new Error(e);
+      }
+    }
+  );
+
+  const result = Papa.parse(csvText, config);
+  return result.data;
+}
 
 // TODO - support batch size 0 = no batching/single batch?
 function parseCSVInBatches(asyncIterator, options) {
@@ -86,6 +106,25 @@ function parseCSVInBatches(asyncIterator, options) {
 
 function isHeaderRow(row) {
   return row.every(value => typeof value === 'string');
+}
+
+function hasHeader(csvText, options) {
+  if ('header' in options) {
+    return options.header;
+  }
+
+  let header = false;
+  Papa.parse(csvText, {
+    download: false,
+    dynamicTyping: true,
+    step: (results, parser) => {
+      const row = results.data;
+      header = isHeaderRow(row);
+      parser.abort();
+    }
+  });
+
+  return header;
 }
 
 function deduceSchema(row, headerRow) {
