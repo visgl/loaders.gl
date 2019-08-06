@@ -30,13 +30,13 @@ export async function loadImage(url, options) {
 // Supported on worker threads
 // Not supported on Edge and Safari
 // https://developer.mozilla.org/en-US/docs/Web/API/ImageBitmap#Browser_compatibility
-export function parseToImageBitmap(arrayBuffer) {
+export function parseToImageBitmap(arrayBuffer, options) {
   if (typeof createImageBitmap === 'undefined') {
     throw new Error('parseImage');
   }
 
   const blob = new Blob([new Uint8Array(arrayBuffer)]);
-  return createImageBitmap(blob);
+  return createImageBitmap(blob, options);
 }
 
 //
