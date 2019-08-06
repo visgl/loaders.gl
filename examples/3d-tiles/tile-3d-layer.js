@@ -51,11 +51,11 @@ function commonSpacePlanesToWGS84(viewport) {
   let i = 0;
   for (const dir in frustumPlanes) {
     const plane = frustumPlanes[dir];
-    const distanceToCenter = plane.n.dot(viewport.center);
-    const nLen = plane.n.len();
+    const distanceToCenter = plane.normal.dot(viewport.center);
+    const nLen = plane.normal.len();
     scratchPosition
-      .copy(plane.n)
-      .scale((plane.d - distanceToCenter) / nLen / nLen)
+      .copy(plane.normal)
+      .scale((plane.distance - distanceToCenter) / nLen / nLen)
       .add(viewport.center);
     const cartographicPos = viewport.unprojectPosition(scratchPosition);
 
