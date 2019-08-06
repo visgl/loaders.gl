@@ -1,5 +1,5 @@
 import test from 'tape-promise/tape';
-import {loadInBatches, isIterator, isAsyncIterable} from '@loaders.gl/core';
+import {load, loadInBatches, isIterator, isAsyncIterable} from '@loaders.gl/core';
 import {ColumnarTableBatch} from '@loaders.gl/experimental';
 import {CSVLoader} from '@loaders.gl/csv';
 
@@ -7,6 +7,26 @@ import {CSVLoader} from '@loaders.gl/csv';
 const CSV_SAMPLE_URL = '@loaders.gl/csv/test/data/sample.csv';
 // const CSV_SAMLE_LONG_URL = '@loaders.gl/csv/test/data/sample-long.csv';
 const CSV_SAMPLE_VERY_LONG_URL = '@loaders.gl/csv/test/data/sample-very-long.csv';
+
+test('CSVLoader#load', async t => {
+  const rows = await load(CSV_SAMPLE_URL, CSVLoader);
+  t.is(rows.length, 2, 'Got correct table size');
+  t.deepEqual(rows[0], ['A', 'B', 1], 'Got correct first row');
+
+  const rows2 = await load(CSV_SAMPLE_VERY_LONG_URL, CSVLoader);
+  t.is(rows2.length, 2000, 'Got correct table size');
+  t.deepEqual(
+    rows2[0],
+    {
+      TLD: 'ABC',
+      'meaning of life': 42,
+      placeholder: 'Lorem ipsum dolor sit'
+    },
+    'Got correct first row'
+  );
+
+  t.end();
+});
 
 test('CSVLoader#loadInBatches(sample.csv, columns)', async t => {
   const iterator = await loadInBatches(CSV_SAMPLE_URL, CSVLoader, {
@@ -17,7 +37,7 @@ test('CSVLoader#loadInBatches(sample.csv, columns)', async t => {
   let batchCount = 0;
   for await (const batch of iterator) {
     t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
-    t.equal(batch.length, 1, 'Got correct batch size');
+    t.equal(batch.length, 2, 'Got correct batch size');
     batchCount++;
   }
   t.equal(batchCount, 1, 'Correct number of batches received');
@@ -53,7 +73,7 @@ test('CSVLoader#loadInBatches(sample.csv, rows)', async t => {
   let batchCount = 0;
   for await (const batch of iterator) {
     t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
-    t.equal(batch.length, 1, 'Got correct batch size');
+    t.equal(batch.length, 2, 'Got correct batch size');
     batchCount++;
   }
   t.equal(batchCount, 1, 'Correct number of batches received');
