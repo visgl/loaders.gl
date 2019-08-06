@@ -63,7 +63,8 @@ function parseCSVInBatches(asyncIterator, options) {
 
       // Check if we need to save a header row
       if (isFirstRow && !headerRow) {
-        if (isHeaderRow(row)) {
+        const {header = isHeaderRow(row)} = options;
+        if (header) {
           headerRow = row;
           return;
         }
@@ -128,19 +129,19 @@ function hasHeader(csvText, options) {
 }
 
 function deduceSchema(row, headerRow) {
-  const schema = {};
+  const schema = headerRow ? {} : [];
   for (let i = 0; i < row.length; i++) {
-    const columnName = (headerRow && headerRow[i]) || String(i);
+    const columnName = (headerRow && headerRow[i]) || i;
     const value = row[i];
     switch (typeof value) {
       case 'number':
       case 'boolean':
         // TODO - booleans could be handled differently...
-        schema[columnName] = {name: columnName, type: Float32Array};
+        schema[columnName] = {name: String(columnName), index: i, type: Float32Array};
         break;
       case 'string':
       default:
-        schema[columnName] = {name: columnName, type: Array};
+        schema[columnName] = {name: String(columnName), index: i, type: Array};
       // We currently only handle numeric rows
       // TODO we could offer a function to map strings to numbers?
     }

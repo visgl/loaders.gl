@@ -8,6 +8,27 @@ const CSV_SAMPLE_URL = '@loaders.gl/csv/test/data/sample.csv';
 // const CSV_SAMLE_LONG_URL = '@loaders.gl/csv/test/data/sample-long.csv';
 const CSV_SAMPLE_VERY_LONG_URL = '@loaders.gl/csv/test/data/sample-very-long.csv';
 
+function validateColumn(column, length, type) {
+  if (column.length !== length) {
+    return `column length should be ${length}`;
+  }
+  let validator = null;
+  switch (type) {
+    case 'string':
+      validator = d => typeof d === 'string';
+      break;
+
+    case 'float':
+      validator = d => Number.isFinite(d);
+      break;
+
+    default:
+      return null;
+  }
+
+  return column.every(validator) ? true : `column elements are not all ${type}s`;
+}
+
 test('CSVLoader#load', async t => {
   const rows = await load(CSV_SAMPLE_URL, CSVLoader);
   t.is(rows.length, 2, 'Got correct table size');
@@ -38,6 +59,11 @@ test('CSVLoader#loadInBatches(sample.csv, columns)', async t => {
   for await (const batch of iterator) {
     t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
     t.equal(batch.length, 2, 'Got correct batch size');
+
+    t.ok(validateColumn(batch.data[0], batch.length, 'string'), 'column 0 valid');
+    t.ok(validateColumn(batch.data[1], batch.length, 'string'), 'column 1 valid');
+    t.ok(validateColumn(batch.data[2], batch.length, 'float'), 'column 2 valid');
+
     batchCount++;
   }
   t.equal(batchCount, 1, 'Correct number of batches received');
@@ -56,6 +82,17 @@ test('CSVLoader#loadInBatches(sample-very-long.csv, columns)', async t => {
   for await (const batch of iterator) {
     t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
     t.equal(batch.length, batchSize, 'Got correct batch size');
+
+    t.ok(validateColumn(batch.data.TLD, batch.length, 'string'), 'column TLD valid');
+    t.ok(
+      validateColumn(batch.data['meaning of life'], batch.length, 'float'),
+      'column meaning of life valid'
+    );
+    t.ok(
+      validateColumn(batch.data.placeholder, batch.length, 'string'),
+      'column placeholder valid'
+    );
+
     batchCount++;
     if (batchCount === 5) {
       break;
@@ -74,6 +111,7 @@ test('CSVLoader#loadInBatches(sample.csv, rows)', async t => {
   for await (const batch of iterator) {
     t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
     t.equal(batch.length, 2, 'Got correct batch size');
+    t.deepEqual(batch.data[0], ['A', 'B', 1], 'Got correct first row');
     batchCount++;
   }
   t.equal(batchCount, 1, 'Correct number of batches received');
@@ -90,6 +128,11 @@ test('CSVLoader#loadInBatches(sample-very-long.csv, rows)', async t => {
   for await (const batch of iterator) {
     t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
     t.equal(batch.length, batchSize, 'Got correct batch size');
+
+    t.ok(batch.data[0].TLD, 'first row has TLD value');
+    t.ok(batch.data[0]['meaning of life'], 'first row has meaning of life value');
+    t.ok(batch.data[0].placeholder, 'first row has placeholder value');
+
     batchCount++;
     if (batchCount === 5) {
       break;
