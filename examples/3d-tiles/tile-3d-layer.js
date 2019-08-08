@@ -2,7 +2,6 @@
 import {CompositeLayer} from '@deck.gl/core';
 import {Matrix4, Vector3} from 'math.gl';
 import {CullingVolume, Plane} from '@math.gl/culling';
-// import {_PerspectiveFrustum as PerspectiveFrustum} from '@math.gl/culling';
 
 import {COORDINATE_SYSTEM} from '@deck.gl/core';
 import {PointCloudLayer} from '@deck.gl/layers';
@@ -25,8 +24,6 @@ import {
 } from '@loaders.gl/3d-tiles';
 
 registerLoaders([Tile3DLoader, Tileset3DLoader, GLTFLoader]);
-
-const DEFAULT_POINT_COLOR = [202, 112, 41, 255];
 
 const scratchPlane = new Plane();
 const scratchPosition = new Vector3();
@@ -55,7 +52,7 @@ function commonSpacePlanesToWGS84(viewport) {
     const nLen = plane.normal.len();
     scratchPosition
       .copy(plane.normal)
-      .scale((plane.distance - distanceToCenter) / nLen / nLen)
+      .scale((plane.distance - distanceToCenter) / (nLen * nLen))
       .add(viewport.center);
     const cartographicPos = viewport.unprojectPosition(scratchPosition);
 
@@ -74,13 +71,56 @@ function commonSpacePlanesToWGS84(viewport) {
   }
 }
 
+function getFrameState(viewport, animationProps) {
+  // Traverse and and request. Update _selectedTiles so that we know what to render.
+  const {height, tick} = animationProps;
+  const {cameraDirection, cameraUp} = viewport;
+  const {metersPerPixel} = viewport.distanceScales;
+
+  const viewportCenterCartographic = [viewport.longitude, viewport.latitude, 0];
+  // TODO - Ellipsoid.eastNorthUpToFixedFrame() breaks on raw array, create a Vector.
+  // TODO - Ellipsoid.eastNorthUpToFixedFrame() takes a cartesian, is that intuitive?
+  const viewportCenterCartesian = Ellipsoid.WGS84.cartographicToCartesian(
+    viewportCenterCartographic,
+    new Vector3()
+  );
+  const enuToFixedTransform = Ellipsoid.WGS84.eastNorthUpToFixedFrame(viewportCenterCartesian);
+
+  const cameraPositionCartographic = viewport.unprojectPosition(viewport.cameraPosition);
+  const cameraPositionCartesian = Ellipsoid.WGS84.cartographicToCartesian(
+    cameraPositionCartographic,
+    new Vector3()
+  );
+
+  // These should still be normalized as the transform has scale 1 (goes from meters to meters)
+  const cameraDirectionCartesian = new Vector3(
+    enuToFixedTransform.transformAsVector(new Vector3(cameraDirection).scale(metersPerPixel))
+  ).normalize();
+  const cameraUpCartesian = new Vector3(
+    enuToFixedTransform.transformAsVector(new Vector3(cameraUp).scale(metersPerPixel))
+  ).normalize();
+
+  commonSpacePlanesToWGS84(viewport);
+
+  // TODO: make a file/class for frameState and document what needs to be attached to this so that traversal can function
+  return {
+    camera: {
+      position: cameraPositionCartesian,
+      direction: cameraDirectionCartesian,
+      up: cameraUpCartesian
+    },
+    height,
+    cullingVolume,
+    frameNumber: tick, // TODO: This can be the same between updates, what number is unique for between updates?
+    sseDenominator: 1.15 // Assumes fovy = 60 degrees
+  };
+}
+
 const defaultProps = {
-  // TODO - the tileset json could be an async prop.
   tilesetUrl: null,
   ionAssetId: null,
   ionAccessToken: null,
-  isWGS84: false,
-  color: DEFAULT_POINT_COLOR,
+  color: [155, 155, 155, 200],
   depthLimit: Number.MAX_SAFE_INTEGER,
   onTileLoaded: () => {},
   onTilesetLoaded: () => {}
@@ -109,11 +149,6 @@ export default class Tile3DLayer extends CompositeLayer {
       });
     }
 
-    if (tileset3d) {
-      // TODO: Remove these after sse traversal is working since this is just to prevent full load of tileset and loading of root
-      tileset3d.depthLimit = this.props.depthLimit;
-    }
-
     this.setState({
       tileset3d,
       layerMap: {},
@@ -121,6 +156,8 @@ export default class Tile3DLayer extends CompositeLayer {
     });
 
     if (tileset3d) {
+      // TODO: Remove these after sse traversal is working since this is just to prevent full load of tileset and loading of root
+      tileset3d.depthLimit = this.props.depthLimit;
       this.props.onTilesetLoaded(tileset3d);
     }
   }
@@ -135,14 +172,14 @@ export default class Tile3DLayer extends CompositeLayer {
     return changeFlags.somethingChanged;
   }
 
-  updateState({props, oldProps}) {
+  async updateState({props, oldProps}) {
     if (props.tilesetUrl && props.tilesetUrl !== oldProps.tilesetUrl) {
-      this._loadTileset(props.tilesetUrl);
+      await this._loadTileset(props.tilesetUrl);
     } else if (
       (props.ionAccessToken || props.ionAssetId) &&
       (props.ionAccessToken !== oldProps.ionAccessToken || props.ionAssetId !== oldProps.ionAssetId)
     ) {
-      this._loadTilesetFromIon(props.ionAccessToken, props.ionAssetId);
+      await this._loadTilesetFromIon(props.ionAccessToken, props.ionAssetId);
     }
 
     const {tileset3d} = this.state;
@@ -155,50 +192,9 @@ export default class Tile3DLayer extends CompositeLayer {
       return;
     }
 
-    // Traverse and and request. Update _selectedTiles so that we know what to render.
-    const {height, tick} = animationProps;
-    const {cameraDirection, cameraUp} = viewport;
-    const {metersPerPixel} = viewport.distanceScales;
-
-    const viewportCenterCartographic = [viewport.longitude, viewport.latitude, 0];
-    // TODO - Ellipsoid.eastNorthUpToFixedFrame() breaks on raw array, create a Vector.
-    // TODO - Ellipsoid.eastNorthUpToFixedFrame() takes a cartesian, is that intuitive?
-    const viewportCenterCartesian = Ellipsoid.WGS84.cartographicToCartesian(
-      viewportCenterCartographic,
-      new Vector3()
-    );
-    const enuToFixedTransform = Ellipsoid.WGS84.eastNorthUpToFixedFrame(viewportCenterCartesian);
-
-    const cameraPositionCartographic = viewport.unprojectPosition(viewport.cameraPosition);
-    const cameraPositionCartesian = Ellipsoid.WGS84.cartographicToCartesian(
-      cameraPositionCartographic,
-      new Vector3()
-    );
-
-    // These should still be normalized as the transform has scale 1 (goes from meters to meters)
-    const cameraDirectionCartesian = new Vector3(
-      enuToFixedTransform.transformAsVector(new Vector3(cameraDirection).scale(metersPerPixel))
-    ).normalize();
-    const cameraUpCartesian = new Vector3(
-      enuToFixedTransform.transformAsVector(new Vector3(cameraUp).scale(metersPerPixel))
-    ).normalize();
-
-    commonSpacePlanesToWGS84(viewport);
-
-    // TODO: make a file/class for frameState and document what needs to be attached to this so that traversal can function
-    const frameState = {
-      camera: {
-        position: cameraPositionCartesian,
-        direction: cameraDirectionCartesian,
-        up: cameraUpCartesian
-      },
-      height,
-      cullingVolume,
-      frameNumber: tick, // TODO: This can be the same between updates, what number is unique for between updates?
-      sseDenominator: 1.15 // Assumes fovy = 60 degrees
-    };
-
+    const frameState = getFrameState(viewport, animationProps);
     tileset3d.update(frameState, DracoWorkerLoader);
+
     this._updateLayers();
     this._selectLayers(frameState);
   }
@@ -216,7 +212,7 @@ export default class Tile3DLayer extends CompositeLayer {
 
       if (tile.selectedFrame === frameNumber) {
         if (!layer.props.visible) {
-          // Still has GPU resource but visibilty is turned off so turn it back on so we can render it.
+          // Still has GPU resource but visibility is turned off so turn it back on so we can render it.
           layer = layer.clone({visible: true});
           layerMap[tile.contentUri].layer = layer;
         }
@@ -246,7 +242,7 @@ export default class Tile3DLayer extends CompositeLayer {
     for (const tile of tilesWithoutLayer) {
       this._unpackTile(tile);
 
-      const layer = this._render3DTileLayer(tile);
+      const layer = this._create3DTileLayer(tile);
 
       tileset3d.addTileToCache(tile); // Add and remove on main thread
 
@@ -407,19 +403,7 @@ export default class Tile3DLayer extends CompositeLayer {
     return transformProps;
   }
 
-  _getColorProps(tileHeader) {
-    const {colors, color} = tileHeader.userData;
-    if (colors) {
-      return {
-        instanceColors: colors
-      };
-    }
-    return {
-      getColor: () => color || this.props.color || DEFAULT_POINT_COLOR
-    };
-  }
-
-  _render3DTileLayer(tileHeader) {
+  _create3DTileLayer(tileHeader) {
     if (!tileHeader.content || !tileHeader.userData) {
       return null;
     }
@@ -427,11 +411,11 @@ export default class Tile3DLayer extends CompositeLayer {
     let layer;
     switch (tileHeader.content.type) {
       case 'pnts':
-        layer = this._renderPointCloud3DTileLayer(tileHeader);
+        layer = this._createPointCloud3DTileLayer(tileHeader);
         break;
       case 'i3dm':
       case 'b3dm':
-        layer = this._renderInstanced3DTileLayer(tileHeader);
+        layer = this._createInstanced3DTileLayer(tileHeader);
         break;
       default:
     }
@@ -441,7 +425,7 @@ export default class Tile3DLayer extends CompositeLayer {
     return layer;
   }
 
-  _renderInstanced3DTileLayer(tileHeader) {
+  _createInstanced3DTileLayer(tileHeader) {
     const {gltfUrl} = tileHeader.userData;
 
     const transformProps = this._resolveTransformProps(tileHeader);
@@ -464,24 +448,29 @@ export default class Tile3DLayer extends CompositeLayer {
     });
   }
 
-  _renderPointCloud3DTileLayer(tileHeader) {
+  _createPointCloud3DTileLayer(tileHeader) {
     const {positions, normals} = tileHeader.content;
-    const {pointsCount} = tileHeader.userData;
+    const {pointsCount, colors, color} = tileHeader.userData;
 
     const transformProps = this._resolveTransformProps(tileHeader);
-    const colorProps = this._getColorProps(tileHeader);
 
     return (
       positions &&
       new PointCloudLayer({
         id: `3d-point-cloud-tile-layer-${tileHeader.contentUri}`,
         data: {
-          length: positions.length / 3
+          header: {
+            vertexCount: pointsCount
+          },
+          attributes: {
+            POSITION: positions,
+            NORMAL: normals,
+            COLOR_0: colors
+          }
         },
+        getColor: color || this.props.color,
+        pickable: true,
         numInstances: pointsCount,
-        instancePositions: positions,
-        ...colorProps,
-        instanceNormals: normals,
         opacity: 0.8,
         pointSize: 1.5,
         ...transformProps
