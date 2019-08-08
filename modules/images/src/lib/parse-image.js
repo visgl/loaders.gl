@@ -17,7 +17,7 @@ export function parseImage(arrayBuffer, options) {
 // Fallback for older browsers
 // TODO - investigate Image.decode()
 // https://medium.com/dailyjs/image-loading-with-image-decode-b03652e7d2d2
-export async function loadImage(url, options) {
+export async function loadImage(url, options = {}) {
   if (typeof Image === 'undefined') {
     const response = await fetch(url, options);
     const arrayBuffer = await response.arrayBuffer();
