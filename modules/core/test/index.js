@@ -10,8 +10,10 @@ import './lib/fetch/fetch-file.browser.spec';
 
 import './lib/loader-utils/auto-detect-loader.spec';
 import './lib/loader-utils/auto-parse.spec';
+import './lib/loader-utils/normalize-loader.spec';
 
 import './lib/parse.spec';
 import './lib/load.spec';
+import './lib/register-loaders.spec';
 
 import './deprecated/create-read-stream.spec';

@@ -30,11 +30,11 @@ export function normalizeLoader(loader) {
   // If [loader, options], create a new loaders object with options merged in
   let options;
   if (Array.isArray(loader)) {
-    loader = loader[0];
     options = loader[1];
+    loader = loader[0];
     loader = {
       ...loader,
-      options: {...loader.options, options}
+      options: {...loader.options, ...options}
     };
   }
 

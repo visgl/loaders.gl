@@ -5,9 +5,9 @@ const registeredLoaders = {};
 export function registerLoaders(loaders) {
   loaders = Array.isArray(loaders) ? loaders : [loaders];
   for (const loader of loaders) {
-    normalizeLoader(loader);
-    for (const extension of loader.extensions) {
-      registeredLoaders[extension] = loader;
+    const normalizedLoader = normalizeLoader(loader);
+    for (const extension of normalizedLoader.extensions) {
+      registeredLoaders[extension] = normalizedLoader;
     }
   }
 }
