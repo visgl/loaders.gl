@@ -11,7 +11,7 @@ export function parseImage(arrayBuffer, options) {
     return global._parseImageNode(arrayBuffer, mimeType, options);
   }
 
-  return parseToImageBitmap(arrayBuffer);
+  return parseToImageBitmap(arrayBuffer, options);
 }
 
 // Fallback for older browsers
@@ -21,7 +21,7 @@ export async function loadImage(url, options) {
   if (typeof Image === 'undefined') {
     const response = await fetch(url, options);
     const arrayBuffer = await response.arrayBuffer();
-    return parseImage(arrayBuffer);
+    return parseImage(arrayBuffer, options);
   }
   return await loadToHTMLImage(url, options);
 }
@@ -36,7 +36,10 @@ export function parseToImageBitmap(arrayBuffer, options) {
   }
 
   const blob = new Blob([new Uint8Array(arrayBuffer)]);
-  return createImageBitmap(blob, options);
+  return createImageBitmap(blob, {
+    imageOrientation: options.imageOrientation || 'none',
+    premultiplyAlpha: options.premultiplyAlpha || 'default'
+  });
 }
 
 //

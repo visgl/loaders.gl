@@ -21,10 +21,7 @@ export default {
 // Specifically loads an ImageBitmap (works on newer browsers, on both main and worker threads)
 export const ImageBitmapLoader = {
   extensions: EXTENSIONS,
-  parse: parseToImageBitmap,
-  defaultOptions: {
-    imageOrientation: 'flipY' // for WebGL texture use case
-  }
+  parse: parseToImageBitmap
 };
 
 // Specifically loads an HTMLImage (works on all browsers' main thread but not on worker threads)
