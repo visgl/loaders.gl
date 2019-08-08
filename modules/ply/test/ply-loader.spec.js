@@ -68,7 +68,7 @@ test('PLYLoader#parseStream(text)', async t => {
   const response = await fetchFile(PLY_CUBE_ATT_URL);
   const stream = await response.body;
 
-  const data = await _PLYStreamLoader.parseAsIterator(getStreamIterator(stream));
+  const data = await _PLYStreamLoader.parseStream(getStreamIterator(stream));
 
   validateLoadedData(t, data);
   t.equal(data.indices.value.length, 36, 'Indices found');

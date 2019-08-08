@@ -19,7 +19,7 @@ export default function PLYLoaderBench(bench) {
       })
       .addAsync('Stream parsing', async () => {
         const stream = await createReadStream('@loaders.gl/ply/test/data/cube_att.ply');
-        await _PLYStreamLoader.parseAsIterator(getStreamIterator(stream));
+        await _PLYStreamLoader.parseStream(getStreamIterator(stream));
       })
 
       .group('PLYLoader (Binary)')
