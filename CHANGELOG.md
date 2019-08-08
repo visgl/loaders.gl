@@ -13,15 +13,13 @@
 - Fix widget styling (#300)
 - [WIP] Specify math.gl version in wehbsite package (#299)
 
-
 #### v1.2.0-beta.2
-
 
 #### v1.2.0-beta.1
 
 - Bump lerna to beta
 - Fix for GLTFScenegraph.addBufferView (#298)
-- Cleanup old tile._content (#295)
+- Cleanup old tile.\_content (#295)
 - Auto detect zoom level of a tilesert (#293)
 - Support ion dataset (#292)
 - 3d-tiles: Real distance sse traversal (#283)
@@ -43,7 +41,6 @@
 - 3d-tiles: Fix traversal issues (#277)
 - 3d-tiles example: Specify tileset source using URL parameter (#272)
 - core: Fix extension normalization (#273)
-
 
 #### v1.2.0-alpha.1
 
@@ -77,7 +74,6 @@
 
 ### 1.1 Release
 
-
 #### v1.1.0
 
 - Bump ocular-dev-tools to publish LICENSE.md (#237)
@@ -85,7 +81,6 @@
 - loader-utils: Copy utility functions from core to loader-utils (#233)
 - All modules: Update doc links in module `README.md` files (#231)
 - website: Bump ocular-gatsby (#232)
-
 
 #### v1.1.0-beta.1
 
@@ -99,12 +94,11 @@
 - 3d-tiles: Tile3DHeader.loadContent() implemented (#224)
 - Ellipsoid class: Cartographic to cartesian conversions (#223)
 
-
 #### v1.1.0-alpha.1
 
 - Point cloud example - file select/load panel (#221)
 - Documentation Pass (#222)
-- Tileset improvements.  Minimal Tile3DHeader tests pass (#220)
+- Tileset improvements. Minimal Tile3DHeader tests pass (#220)
 - 3d-tiles example: Display i3dm tile as GLTF Scenegraph (#217)
 - GLTF: Refactor post processing (#219)
 - @loaders.gl/math: Raw port of 3D tileset math classes (#218)
@@ -155,8 +149,7 @@
 - Regenerate docs with prefixes
 - Stage main docs
 - Stage arrowjs docs
--  Switch to publishing gh-pages from master/docs (#172)
-
+- Switch to publishing gh-pages from master/docs (#172)
 
 ### 1.0 Release
 
@@ -165,7 +158,6 @@
 - Fix node setup in images module (#171)
 - Fix website and example (#170)
 - 3d tiles: binary parsers for tiles (#168)
-
 
 #### v1.0.0
 
@@ -184,7 +176,6 @@
 - Fix Draco loader attribute types (#154)
 - Add scripts (#153)
 
-
 #### v1.0.0-alpha.4
 
 - Port three.js obj loader (#150)
@@ -197,18 +188,15 @@
 - New 3d-tiles module (#142)
 - DracoLoader cleanup (#140)
 
-
 #### v1.0.0-alpha.3
 
 - Upgrade ocular-dev-tools and fix lint (#139)
 - fix webpack errors when bundling las (#138)
 - fix ply loader (#137)
 
-
 #### v1.0.0-alpha.2
 
 - Fix load-file/parse-file auto loader selection with unit tests (#135)
-
 
 #### v1.0.0-alpha.1
 
@@ -231,14 +219,12 @@
 - Run lint on docs (#116)
 - Replace dev scripts with ocular-dev-tools (#115)
 
-
 ## loaders.gl Beta
 
 #### v0.8.1
 
 - Fix glTF loader issues after refactor (#114)
 - Update lerna publish script to allow version selection
-
 
 #### v0.8.0
 
@@ -252,15 +238,11 @@
 - Fix chunk headers in GLB file writer (#107)
 - PLYLoader refactor (Prep for streaming) (#106)
 
-
 #### v0.7.2
 
 - Load glTF Embedded or multi-file (#104)
 
-
 #### v0.7.1
-
-
 
 #### v0.7.0
 
@@ -274,13 +256,11 @@
 - add babel-runtime to loaders/core
 - Start using ES2018 syntax, AsyncIterators, alias system to load from webpack dev server (#95)
 
-
 #### v0.6.2
 
 - Use "self" instead of "window" to work in WebWorkers (#92)
 - Fix addImage() on GLTFBuilder (#91)
 - Fix calls to GLBParser and pass data in parse method (#90)
-
 
 #### v0.6.1
 
@@ -300,15 +280,13 @@
 - Make tests use `parseFileSync` instead of raw loader objects (#77)
 - Moving tests into module folders (#76)
 - Make sure all loaders output consistent format (#74)
-- [POC] parse PLY with worker  (#55)
+- [POC] parse PLY with worker (#55)
 - Render test with new probe.gl API (#67)
 - Fix CI failure (#73)
-
 
 #### v0.5.4
 
 - glTF: fix options and export gltf-type-utils (#72)
-
 
 #### v0.5.3
 
@@ -318,7 +296,6 @@
 - implement GLBParser.getImageAsync (#62)
 - `loadImage` fixes (#70)
 - Update RFC directory
-
 
 #### v0.5.2
 
@@ -332,12 +309,10 @@
 - Remove rootPath as it is unused (#54)
 - Fix PCD docs typo (#53)
 
-
 #### v0.5.1
 
 - Fix glTF and GLB parser buffer and image issues (#49)
 - glTF Fix for #46 and #47 (#48)
-
 
 #### v0.5.0
 
@@ -351,23 +326,19 @@
 - Partial test case improvements for Draco decoder (#37)
 - Copy loaders.gl RFC from luma.gl (#38)
 
-
 #### v0.4.8
 
 - Additional GLTF fixes (#36)
 - Fix image tests under browser (#35)
 
-
 #### v0.4.7
 
 - glTF/GLB API: Stricter split, better docs (#33)
-
 
 #### v0.4.6
 
 - GTLF builder & parser fixes (#32)
 - Update webpack (#31)
-
 
 #### v0.4.5
 
