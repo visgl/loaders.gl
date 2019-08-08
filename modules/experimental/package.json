@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/experimental",
-  "version": "1.2.0-beta.2",
+  "version": "1.2.0-beta.3",
   "description": "Framework-independent loaders for table formats (JSON, CSV, ...)",
   "license": "MIT",
   "publishConfig": {
@@ -32,6 +32,6 @@
     "build-bundle": "webpack --display=minimal --config ../../scripts/bundle.config.js"
   },
   "dependencies": {
-    "@loaders.gl/core": "1.2.0-beta.2"
+    "@loaders.gl/core": "1.2.0-beta.3"
   }
 }
