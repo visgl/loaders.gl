@@ -2,6 +2,10 @@
 
 ### 1.2 Release
 
+#### v1.2.0-beta.4
+
+- fix loader registration (#308)
+
 #### v1.2.0-beta.3
 
 - [csv] use header option in batch loader (#304)
