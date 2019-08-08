@@ -11,17 +11,17 @@ export function parseImage(arrayBuffer, options) {
     return global._parseImageNode(arrayBuffer, mimeType, options);
   }
 
-  return parseToImageBitmap(arrayBuffer);
+  return parseToImageBitmap(arrayBuffer, options);
 }
 
 // Fallback for older browsers
 // TODO - investigate Image.decode()
 // https://medium.com/dailyjs/image-loading-with-image-decode-b03652e7d2d2
-export async function loadImage(url, options) {
+export async function loadImage(url, options = {}) {
   if (typeof Image === 'undefined') {
     const response = await fetch(url, options);
     const arrayBuffer = await response.arrayBuffer();
-    return parseImage(arrayBuffer);
+    return parseImage(arrayBuffer, options);
   }
   return await loadToHTMLImage(url, options);
 }
@@ -30,13 +30,16 @@ export async function loadImage(url, options) {
 // Supported on worker threads
 // Not supported on Edge and Safari
 // https://developer.mozilla.org/en-US/docs/Web/API/ImageBitmap#Browser_compatibility
-export function parseToImageBitmap(arrayBuffer) {
+export function parseToImageBitmap(arrayBuffer, options) {
   if (typeof createImageBitmap === 'undefined') {
     throw new Error('parseImage');
   }
 
   const blob = new Blob([new Uint8Array(arrayBuffer)]);
-  return createImageBitmap(blob);
+  return createImageBitmap(blob, {
+    imageOrientation: options.imageOrientation || 'none',
+    premultiplyAlpha: options.premultiplyAlpha || 'default'
+  });
 }
 
 //
