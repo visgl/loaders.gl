@@ -1,8 +1,11 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
-class Tile3DStyle(styleJson = {}) {
-  constructor(style) {
+// NOTE: This file is only partially ported and is a work in progress
+/* eslint-disable */
+
+export default class Tile3DStyle {
+  constructor(styleJson = {}) {
     this._style = {};
     this._ready = false;
 
@@ -79,7 +82,7 @@ class Tile3DStyle(styleJson = {}) {
     this._pointSizeShaderFunctionReady = false;
   }
 
-  get pointOutlineColor {
+  get pointOutlineColor() {
     return this._pointOutlineColor;
   }
   set pointOutlineColor(value) {
@@ -103,7 +106,6 @@ class Tile3DStyle(styleJson = {}) {
     this._labelColor = getExpression(this, value);
     this._style.labelColor = getJsonFromExpression(this._labelColor);
   }
-
 
   // Gets or sets the {@link StyleExpression} object used to evaluate the style's <code>labelOutlineColor</code> property.
   get labelOutlineColor() {
@@ -266,7 +268,6 @@ class Tile3DStyle(styleJson = {}) {
     this._meta = value;
   }
 
-
   /**
    * Gets the color shader function for this style.
    *
@@ -286,7 +287,9 @@ class Tile3DStyle(styleJson = {}) {
     }
 
     this._colorShaderFunctionReady = true;
-    this._colorShaderFunction = defined(this.color) ? this.color.getShaderFunction(functionName, attributePrefix, shaderState, 'vec4') : undefined;
+    this._colorShaderFunction = defined(this.color)
+      ? this.color.getShaderFunction(functionName, attributePrefix, shaderState, 'vec4')
+      : undefined;
     this._colorShaderTranslucent = shaderState.translucent;
     return this._colorShaderFunction;
   }
@@ -309,7 +312,9 @@ class Tile3DStyle(styleJson = {}) {
     }
 
     this._showShaderFunctionReady = true;
-    this._showShaderFunction = defined(this.show) ? this.show.getShaderFunction(functionName, attributePrefix, shaderState, 'bool') : undefined;
+    this._showShaderFunction = defined(this.show)
+      ? this.show.getShaderFunction(functionName, attributePrefix, shaderState, 'bool')
+      : undefined;
     return this._showShaderFunction;
   }
 
@@ -331,7 +336,9 @@ class Tile3DStyle(styleJson = {}) {
     }
 
     this._pointSizeShaderFunctionReady = true;
-    this._pointSizeShaderFunction = defined(this.pointSize) ? this.pointSize.getShaderFunction(functionName, attributePrefix, shaderState, 'float') : undefined;
+    this._pointSizeShaderFunction = defined(this.pointSize)
+      ? this.pointSize.getShaderFunction(functionName, attributePrefix, shaderState, 'float')
+      : undefined;
     return this._pointSizeShaderFunction;
   }
 }

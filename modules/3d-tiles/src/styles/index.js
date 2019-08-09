@@ -1,1 +1,1 @@
-export { default as Tile3DStyle } from 'tile-3d-style';
+export {default as Tile3DStyle} from 'tile-3d-style';

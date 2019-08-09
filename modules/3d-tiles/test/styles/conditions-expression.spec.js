@@ -16,7 +16,7 @@ MockFeature.prototype.getProperty = function() {
 };
 
 const jsonExp = {
-  conditions : [
+  conditions: [
     ['${Height} > 100', 'color("blue")'],
     ['${Height} > 50', 'color("red")'],
     ['true', 'color("lime")']
@@ -29,7 +29,7 @@ const defines = {
 };
 
 const jsonExpWithDefines = {
-  conditions : [
+  conditions: [
     ['${halfHeight} > 50 && ${halfHeight} < 100', 'color("blue")'],
     ['${quarterHeight} > 50 && ${quarterHeight} < 52', 'color("red")'],
     ['true', 'color("lime")']
@@ -73,7 +73,7 @@ it('evaluate takes a color result argument', function() {
 
 it('constructs and evaluates empty conditional', function() {
   const expression = new ConditionsExpression({
-      'conditions' : []
+    conditions: []
   });
   expect(expression._conditions).toEqual([]);
   expect(expression.evaluate(new MockFeature(101))).toEqual(undefined);
@@ -92,22 +92,23 @@ it('constructs and evaluates empty', function() {
 it('gets shader function', function() {
   const expression = new ConditionsExpression(jsonExp);
   var shaderFunction = expression.getShaderFunction('getColor', '', {}, 'vec4');
-  var expected = 'vec4 getColor() \n' +
-                 '{ \n' +
-                 '    if ((Height > 100.0)) \n' +
-                 '    { \n' +
-                 '        return vec4(vec3(0.0, 0.0, 1.0), 1.0); \n' +
-                 '    } \n' +
-                 '    else if ((Height > 50.0)) \n' +
-                 '    { \n' +
-                 '        return vec4(vec3(1.0, 0.0, 0.0), 1.0); \n' +
-                 '    } \n' +
-                 '    else if (true) \n' +
-                 '    { \n' +
-                 '        return vec4(vec3(0.0, 1.0, 0.0), 1.0); \n' +
-                 '    } \n' +
-                 '    return vec4(1.0); \n' +
-                 '} \n';
+  var expected =
+    'vec4 getColor() \n' +
+    '{ \n' +
+    '    if ((Height > 100.0)) \n' +
+    '    { \n' +
+    '        return vec4(vec3(0.0, 0.0, 1.0), 1.0); \n' +
+    '    } \n' +
+    '    else if ((Height > 50.0)) \n' +
+    '    { \n' +
+    '        return vec4(vec3(1.0, 0.0, 0.0), 1.0); \n' +
+    '    } \n' +
+    '    else if (true) \n' +
+    '    { \n' +
+    '        return vec4(vec3(0.0, 1.0, 0.0), 1.0); \n' +
+    '    } \n' +
+    '    return vec4(1.0); \n' +
+    '} \n';
   expect(shaderFunction).toEqual(expected);
 });
 
