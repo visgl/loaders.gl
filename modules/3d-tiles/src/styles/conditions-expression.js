@@ -2,6 +2,7 @@
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
 // NOTE: This file is only partially ported and is a work in progress
+/* eslint-disable */
 
 define(['../Core/clone', '../Core/defined', '../Core/defineProperties', './Expression'], function(
   clone,

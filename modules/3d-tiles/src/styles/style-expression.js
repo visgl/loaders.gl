@@ -31,7 +31,7 @@
 
 export default class StyleExpression {
   evaluate(feature, result) {
-    DeveloperError.throwInstantiationError();
+    throw new Error();
   }
 
   /**
@@ -45,7 +45,7 @@ export default class StyleExpression {
    * @returns {Color} The modified result parameter or a new Color instance if one was not provided.
    */
   evaluateColor(feature, result) {
-    DeveloperError.throwInstantiationError();
+    throw new Error();
   }
 
   /**
@@ -62,6 +62,6 @@ export default class StyleExpression {
    * @private
    */
   getShaderFunction(functionName, attributePrefix, shaderState, returnType) {
-    DeveloperError.throwInstantiationError();
+    throw new Error();
   }
 }

@@ -1,6 +1,8 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
+/* eslint-disable */
+
 import Expression from '@loaders.gl/3d-tiles/styles/expression';
 import {Vector2, Vector3, Vector4, Color, CesiumMath} from 'math.gl';
 
