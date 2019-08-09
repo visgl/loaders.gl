@@ -2,6 +2,8 @@
 
 ### 1.2 Release
 
+#### v1.2.0
+
 #### v1.2.0-beta.4
 
 - fix loader registration (#308)
