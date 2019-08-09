@@ -78,7 +78,7 @@ function testBinary(data, loader) {
   }
 }
 
-function getMagicString(arrayBuffer, byteOffset = 0, length) {
+function getMagicString(arrayBuffer, byteOffset, length) {
   if (arrayBuffer.byteLength <= byteOffset + length) {
     return '';
   }

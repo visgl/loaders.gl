@@ -16,9 +16,10 @@ export function getUrlFromData(data) {
   return isFetchResponse(data) ? data.url : null;
 }
 
-export function getSizeFromData(data) {
-  return isFetchResponse(data) ? data.headers.get('Content-Length') : null;
-}
+// export function getSizeFromData(data) {
+//   return isFetchResponse(data) ? data.headers.get('Content-Length') : null;
+// }
+
 export function getArrayBufferOrStringFromDataSync(data, loader) {
   if (loader.text && typeof data === 'string') {
     return data;
@@ -64,7 +65,7 @@ export async function getArrayBufferOrStringFromData(data, loader) {
   throw new Error(ERR_DATA);
 }
 
-export async function getAsyncIteratorFromData(data, loader) {
+export function getAsyncIteratorFromData(data) {
   if (isIterator(data)) {
     return data;
   }
@@ -82,10 +83,10 @@ export async function getAsyncIteratorFromData(data, loader) {
     return data[Symbol.asyncIterator]();
   }
 
-  return getIteratorFromData(data, loader);
+  return getIteratorFromData(data);
 }
 
-export async function getIteratorFromData(data, loader) {
+export function getIteratorFromData(data) {
   // generate an iterator that emits a single chunk
   if (data instanceof ArrayBuffer || ArrayBuffer.isView(data)) {
     return (function* oneChunk() {
