@@ -8,6 +8,7 @@
     "**/encoding.js",
     "**/laz-perf.js",
     "**/wip/**",
-    "**/test/**"
+    "**/test/**",
+    "**3d-tiles/src/styles/**"
   ]
 }
