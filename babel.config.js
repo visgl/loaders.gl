@@ -11,18 +11,22 @@ module.exports = api => {
     }
   ]);
 
-  // config.ignore = ['**/*.worker.js', '**/*.transpiled.js', '**/*.min.js'];
-  config.ignore = ['**/*.worker.js'];
-
+  // https://babeljs.io/docs/en/options#overrides
+  const overrides = config.overrides || [];
   // TEST to prevent compilation of already transpiled files
-  config.overrides = config.overrides || [];
-  config.overrides.push({
-    // Tell babel these are already large and minified
-    // https://babeljs.io/docs/en/options#overrides
+  // These files should be copied without any modification
+  overrides.push({
     test: /min.js|transpiled.js/,
     compact: false,
     sourceMaps: false
   });
+  // Default babel config (env, plugin) only apply to the rest of the files
+  overrides.push(Object.assign({
+    exclude: /min.js|transpiled.js/,
+  }, config));
 
-  return config;
+  return {
+    ignore: ['**/*.worker.js'],
+    overrides
+  };
 };
