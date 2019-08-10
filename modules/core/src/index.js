@@ -36,15 +36,7 @@ export {
   isWritableStream
 } from './javascript-utils/is-type';
 
-export {
-  isArrayBuffer,
-  isBlob,
-  toArrayBuffer,
-  blobToArrayBuffer,
-  toDataView
-} from './javascript-utils/binary-utils';
-
-export {padTo4Bytes, copyToArray, copyArrayBuffer} from './javascript-utils/memory-copy-utils';
+export {toArrayBuffer} from './javascript-utils/binary-utils';
 
 // ITERATOR UTILS
 export {getStreamIterator} from './javascript-utils/stream-utils';

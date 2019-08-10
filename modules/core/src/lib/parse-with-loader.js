@@ -58,10 +58,10 @@ export function parseWithLoaderSync(data, loader, options, url) {
   return assert(false);
 }
 
-export async function parseWithLoaderInBatches(data, loader, options, url) {
+export function parseWithLoaderInBatches(data, loader, options, url) {
   // Create async iterator adapter for data, and concatenate result
   if (loader.parseInBatches) {
-    const inputIterator = await getAsyncIteratorFromData(data);
+    const inputIterator = getAsyncIteratorFromData(data);
     const outputIterator = loader.parseInBatches(inputIterator, options, url, loader);
     return outputIterator;
   }
@@ -70,7 +70,7 @@ export async function parseWithLoaderInBatches(data, loader, options, url) {
   return null;
 }
 
-export async function parseWithLoaderInBatchesSync(data, loader, options, url) {
+export function parseWithLoaderInBatchesSync(data, loader, options, url) {
   // Create async iterator adapter for data, and concatenate result
   if (loader.parseInBatchesSync) {
     const inputIterator = getIteratorFromData(data);

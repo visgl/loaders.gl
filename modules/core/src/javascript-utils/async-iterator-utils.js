@@ -35,7 +35,7 @@ export async function concatenateAsyncIterator(asyncIterator) {
       arrayBuffer = concatenateArrayBuffers(arrayBuffer, chunk);
     }
   }
-  return arrayBuffer || string;
+  return string || arrayBuffer;
 }
 
 // ITERATOR GENERATORS

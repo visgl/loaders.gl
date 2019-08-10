@@ -10,7 +10,7 @@ export const isIterable = x => x && typeof x[Symbol.iterator] === 'function';
 
 export const isAsyncIterable = x => x && typeof x[Symbol.asyncIterator] === 'function';
 
-export const isIterator = x => isObject(x) && 'done' in x && 'value' in x;
+export const isIterator = x => x && isFunction(x.next);
 
 export const isFetchResponse = x =>
   (typeof Response !== 'undefined' && x instanceof Response) || (x.arrayBuffer && x.text && x.json);
