@@ -5,10 +5,9 @@
       "title": "Overview",
       "entries": [
         {"entry": "docs/README"},
+        {"entry": "docs/developer-guide/get-started"},
         {"entry": "docs/whats-new"},
-        {"entry": "docs/upgrade-guide"},
-        {"entry": "docs/roadmap"},
-        {"entry": "docs/contributing"}
+        {"entry": "docs/upgrade-guide"}
       ]
     },
     {
@@ -17,11 +16,12 @@
         {
           "title": "Guides",
           "entries": [
-            {"entry": "docs/developer-guide/get-started"},
             {"entry": "docs/developer-guide/about-loaders"},
             {"entry": "docs/developer-guide/about-writers"},
             {"entry": "docs/developer-guide/loader-categories"},
-            {"entry": "docs/developer-guide/polyfills"}
+            {"entry": "docs/developer-guide/polyfills"},
+            {"entry": "docs/roadmap"},
+            {"entry": "docs/contributing"}
           ]
         },
         {
@@ -36,10 +36,38 @@
       ]
     },
     {
+      "title": "Specifications",
+      "entries": [
+        {"entry": "docs/specifications/loader-object-format"},
+        {"entry": "docs/specifications/writer-object-format"},
+        {"entry": "docs/specifications/category-gis"},
+        {"entry": "docs/specifications/category-gltf"},
+        {"entry": "docs/specifications/category-mesh"},
+        {"entry": "docs/specifications/category-table"}
+      ]
+    },
+    {
       "title": "API Reference",
       "chapters": [
         {
-          "title": "Core Functions",
+          "title": "3d-tiles",
+          "entries": [
+            {"entry": "docs/api-reference/3d-tiles/overview"},
+            {"entry": "docs/api-reference/3d-tiles/tile-3d-loader"},
+            {"entry": "docs/api-reference/3d-tiles/tileset-3d-loader"},
+            {"entry": "docs/api-reference/3d-tiles/tileset-3d"},
+            {"entry": "docs/api-reference/3d-tiles/tile-3d-header"}
+          ]
+        },
+        {
+          "title": "arrow",
+          "entries": [
+            {"entry": "docs/api-reference/arrow/overview"},
+            {"entry": "docs/api-reference/arrow/arrow-loader"}
+          ]
+        },
+        {
+          "title": "core",
           "entries": [
             {"entry": "docs/api-reference/core/parse"},
             {"entry": "docs/api-reference/core/load"},
@@ -54,93 +82,91 @@
           ]
         },
         {
-          "title": "Polyfills",
+          "title": "csv",
           "entries": [
-            {"entry": "docs/api-reference/polyfills/README"}
+            {"entry": "docs/api-reference/csv/overview"},
+            {"entry": "docs/api-reference/csv/csv-loader"}
           ]
         },
         {
-          "title": "GLTF Loaders",
+          "title": "draco",
           "entries": [
-            {"entry": "docs/api-reference/gltf-loaders/category-gltf"},
-            {"entry": "docs/api-reference/gltf-loaders/gltf-extensions"},
-            {"entry": "docs/api-reference/gltf-loaders/gltf-loader"},
-            {"entry": "docs/api-reference/gltf-loaders/gltf-writer"},
-            {"entry": "docs/api-reference/gltf-loaders/glb-loader"},
-            {"entry": "docs/api-reference/gltf-loaders/glb-writer"},
-            {"entry": "docs/api-reference/gltf-loaders/gltf-scenegraph"},
-            {"entry": "docs/api-reference/gltf-loaders/post-process-gltf"},
-            {"entry": "docs/api-reference/gltf-loaders/glbdump"},
-            {"entry": "docs/api-reference/deprecated/gltf-parser"},
-            {"entry": "docs/api-reference/deprecated/gltf-builder"},
-            {"entry": "docs/api-reference/deprecated/glb-parser"},
-            {"entry": "docs/api-reference/deprecated/glb-builder"}
+            {"entry": "docs/api-reference/draco/overview"},
+            {"entry": "docs/api-reference/draco/draco-loader"},
+            {"entry": "docs/api-reference/draco/draco-writer"}
           ]
         },
         {
-          "title": "Point Cloud & Mesh Loaders",
+          "title": "gltf",
           "entries": [
-            {"entry": "docs/api-reference/mesh-loaders/category-mesh"},
-            {"entry": "docs/api-reference/mesh-loaders/draco-loader"},
-            {"entry": "docs/api-reference/mesh-loaders/draco-writer"},
-            {"entry": "docs/api-reference/mesh-loaders/las-loader"},
-            {"entry": "docs/api-reference/mesh-loaders/obj-loader"},
-            {"entry": "docs/api-reference/mesh-loaders/pcd-loader"},
-            {"entry": "docs/api-reference/mesh-loaders/ply-loader"}
+            {"entry": "docs/api-reference/gltf/overview"},
+            {"entry": "docs/api-reference/gltf/gltf-extensions"},
+            {"entry": "docs/api-reference/gltf/gltf-loader"},
+            {"entry": "docs/api-reference/gltf/gltf-writer"},
+            {"entry": "docs/api-reference/gltf/glb-loader"},
+            {"entry": "docs/api-reference/gltf/glb-writer"},
+            {"entry": "docs/api-reference/gltf/gltf-scenegraph"},
+            {"entry": "docs/api-reference/gltf/post-process-gltf"},
+            {"entry": "docs/api-reference/gltf/glbdump"}
           ]
         },
         {
-          "title": "Image Loaders",
+          "title": "images",
           "entries": [
-            {"entry": "docs/api-reference/image-loaders/load-image"},
-            {"entry": "docs/api-reference/image-loaders/image-loader"},
-            {"entry": "docs/api-reference/image-loaders/image-utilities"},
-            {"entry": "docs/api-reference/image-loaders/image-writer"}
+            {"entry": "docs/api-reference/images/overview"},
+            {"entry": "docs/api-reference/images/load-image"},
+            {"entry": "docs/api-reference/images/image-loader"},
+            {"entry": "docs/api-reference/images/image-utilities"},
+            {"entry": "docs/api-reference/images/image-writer"}
           ]
         },
         {
-          "title": "Geospatial Loaders",
+          "title": "kml",
           "entries": [
-            {"entry": "docs/api-reference/geojson-loaders/category-geojson"},
-            {"entry": "docs/api-reference/geojson-loaders/kml-loader"}
+            {"entry": "docs/api-reference/kml/overview"},
+            {"entry": "docs/api-reference/kml/kml-loader"}
           ]
         },
         {
-          "title": "Miscellaneous Loaders",
+          "title": "las",
           "entries": [
-            {"entry": "docs/api-reference/misc-loaders/zip-loader"},
-            {"entry": "docs/api-reference/misc-loaders/zip-writer"}
+            {"entry": "docs/api-reference/las/overview"},
+            {"entry": "docs/api-reference/las/las-loader"}
           ]
         },
         {
-          "title": "Table Loaders",
+          "title": "obj",
           "entries": [
-            {"entry": "docs/api-reference/table-loaders/category-table"},
-            {"entry": "docs/api-reference/table-loaders/arrow-loader"},
-            {"entry": "docs/api-reference/table-loaders/csv-loader"}
+            {"entry": "docs/api-reference/obj/overview"},
+            {"entry": "docs/api-reference/obj/obj-loader"}
           ]
         },
         {
-          "title": "3D Tile Loaders",
+          "title": "pcd",
           "entries": [
-            {"entry": "docs/api-reference/3d-tile-loaders/category-3d-tiles"},
-            {"entry": "docs/api-reference/3d-tile-loaders/tile-3d-loader"},
-            {"entry": "docs/api-reference/3d-tile-loaders/tileset-3d"},
-            {"entry": "docs/api-reference/3d-tile-loaders/tile-3d-header"}
+            {"entry": "docs/api-reference/pcd/overview"},
+            {"entry": "docs/api-reference/pcd/pcd-loader"}
           ]
         },
         {
-          "title": "Math Library (Experimental)",
+          "title": "ply",
           "entries": [
-            {"entry": "docs/api-reference/math/geometry/README"},
-            {"entry": "docs/api-reference/math/geometry/gl-type"}
+            {"entry": "docs/api-reference/ply/overview"},
+            {"entry": "docs/api-reference/ply/ply-loader"}
           ]
         },
         {
-          "title": "Loader and Writer Objects",
+          "title": "polyfills",
           "entries": [
-            {"entry": "docs/api-reference/specifications/loader-object-format"},
-            {"entry": "docs/api-reference/specifications/writer-object-format"}
+            {"entry": "docs/api-reference/polyfills/overview"}
+          ]
+        },
+        {
+          "title": "zip",
+          "entries": [
+            {"entry": "docs/api-reference/zip/overview"},
+            {"entry": "docs/api-reference/zip/zip-loader"},
+            {"entry": "docs/api-reference/zip/zip-writer"}
           ]
         }
       ]

@@ -39,7 +39,7 @@ The glTF module has been refactored with the aim of simplifying the loaded data 
 - [`GLTFScenegraph`](/docs/api-reference/gltf/gltf-scenegraph) class <sup>NEW</sup> - A helper class that provides methods for structured access to and modification/creation of glTF data.
 - [`postProcessGLTF`](/docs/api-reference/gltf/post-process-gltf) function <sup>NEW</sup> - Function that performs a set of transformations on loaded glTF data that simplify application processing.
 - [`GLBLoader`](/docs/api-reference/gltf/glb-loader)/[`GLBWriter`] <sup>NEW</sup> - loader/writer pair that enables loading/saving custom (non-glTF) data in the binary GLB format.
-- [`GLTFLoader`](/docs/api-reference/gltf/gltf-loader) <sup>ENHANCED</sup> - can now return the pure JavaScript object defined by the [GLTF category](/docs/api-reference/gltf/category-gltf), letting application separately handle post-processing etc.
+- [`GLTFLoader`](/docs/specifications/category-gltf), letting application separately handle post-processing etc.
 
 ### @loaders.gl/3d-tiles <sup>NEW MODULE</sup>
 

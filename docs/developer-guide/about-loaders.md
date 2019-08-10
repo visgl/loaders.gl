@@ -12,7 +12,7 @@ Loaders can be passed into utility functions in the loaders.gl core API to enabl
 
 ## Creating New Loaders
 
-> See the a detailed specification of the [loader object format API reference](docs/api-reference/specifications/loader-object-formats).
+> See the a detailed specification of the [loader object format API reference](docs/specifications/loader-object-format).
 
 Applications can also create new loader objects. E.g. if you have existing JavaScript parsing functionality that you would like to use with the loaders.gl core utility functions.
 
