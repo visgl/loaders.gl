@@ -4,6 +4,7 @@ import {toArrayBuffer as bufferToArrayBuffer} from '../node/utils/to-array-buffe
 
 export function toArrayBuffer(data) {
   if (bufferToArrayBuffer) {
+    // TODO - per docs we should just be able to call buffer.buffer, but there are issues
     data = bufferToArrayBuffer(data);
   }
 
