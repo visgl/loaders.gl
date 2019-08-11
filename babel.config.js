@@ -21,9 +21,14 @@ module.exports = api => {
     sourceMaps: false
   });
   // Default babel config (env, plugin) only apply to the rest of the files
-  overrides.push(Object.assign({
-    exclude: /min.js|transpiled.js/,
-  }, config));
+  overrides.push(
+    Object.assign(
+      {
+        exclude: /min.js|transpiled.js/
+      },
+      config
+    )
+  );
 
   return {
     ignore: ['**/*.worker.js'],
