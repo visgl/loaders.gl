@@ -2,6 +2,11 @@
 
 ### 1.2 Release
 
+#### v1.2.1
+
+- Tests and bug fixes for core (#310)
+- Fix babel config for already transpiled files (#313)
+
 #### v1.2.0
 
 #### v1.2.0-beta.4
