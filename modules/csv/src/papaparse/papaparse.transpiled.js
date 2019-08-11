@@ -33,9 +33,9 @@ var global = (function() {
   return {};
 })();
 
-const IS_PAPA_WORKER = false;
+var IS_PAPA_WORKER = false;
 
-const Papa = {};
+var Papa = {};
 module.exports = Papa;
 Papa.parse = CsvToJson;
 Papa.unparse = JsonToCsv;
