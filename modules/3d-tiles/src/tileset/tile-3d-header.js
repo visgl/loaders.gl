@@ -326,7 +326,7 @@ export default class Tile3DHeader {
         // this.content =  Tile3D.isTile(content) ?
         //   new Tile3D(content, contentUri) :
         //   new Tileset3D(content, contentUri);
-        this._content = await Tile3DLoader.parse(arrayBuffer, { DracoLoader });
+        this._content = await Tile3DLoader.parse(arrayBuffer, {DracoLoader});
       }
 
       this._contentState = TILE3D_CONTENT_STATE.READY;
