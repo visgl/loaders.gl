@@ -30,6 +30,33 @@ test('isImage', async t => {
   t.end();
 });
 
+test('isImage#jpeg detection edge case', async t => {
+  const arrayBuffer = new ArrayBuffer(4);
+  const dataView = new DataView(arrayBuffer);
+  const LITTLE_ENDIAN = true;
+
+  // Encodes as 0xC224D8FF and when written as little endian stored // as 0xFF 0xD8 0x24 0xC2
+  dataView.setFloat32(0, -41.211910247802734, LITTLE_ENDIAN);
+
+  t.equals(dataView.getUint16(0), 0xffd8, 'Test data written correctly');
+  t.notOk(
+    isImage(arrayBuffer),
+    'isImage fails with floating point data matching first 2 bytes of jpeg magic'
+  );
+
+  // Encodes as 0xC2FFD8FF and when written as little endian stored // as 0xFF 0xD8 0xFF 0xC2
+  dataView.setFloat32(0, -127.92382049560547, LITTLE_ENDIAN);
+  t.equals(dataView.getUint32(0), 0xffd8ffc2, 'Test data written correctly');
+
+  // False positive case!
+  t.ok(
+    isImage(arrayBuffer),
+    'isImage has a false positive with floating point data matching first 3 bytes of jpeg magic'
+  );
+
+  t.end();
+});
+
 test('getImageMIMEType', async t => {
   const images = await IMAGES_PROMISE;
   for (const imageType in images) {
