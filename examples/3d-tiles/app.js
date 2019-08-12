@@ -26,7 +26,7 @@ const ION_ACCESS_TOKEN =
 // Set your mapbox token here
 const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
 const MAPBOX_STYLE = 'mapbox://styles/mapbox/light-v9';
-const DEPTH_LIMIT = 2; // TODO: Remove this after sse traversal is working since this is just to prevent full load of tileset
+const DEPTH_LIMIT = 10; // TODO: Remove this after sse traversal is working since this is just to prevent full load of tileset
 
 const INITIAL_EXAMPLE_CATEGORY = 'additional';
 const INITIAL_EXAMPLE_NAME = 'Mount St Helens (Cesium ion)';

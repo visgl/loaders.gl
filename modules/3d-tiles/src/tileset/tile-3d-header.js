@@ -314,14 +314,20 @@ export default class Tile3DHeader {
 
       const contentUri = this.uri;
       const response = await fetchFile(contentUri, this._tileset.fetchOptions);
-      const arrayBuffer = await response.arrayBuffer();
 
-      // TODO: The content can be a binary tile ot a JSON tileset
-      // const content = await parse(arrayBuffer, [Tile3DLoader, Tileset3DLoader]);
-      // this.content =  Tile3D.isTile(content) ?
-      //   new Tile3D(content, contentUri) :
-      //   new Tileset3D(content, contentUri);
-      this._content = await Tile3DLoader.parse(arrayBuffer, {DracoLoader});
+      if (contentUri.indexOf('.json') !== -1) {
+        // TODO - Use Tileset3DLoader
+        // this._nestedTileset = response.json();
+      } else {
+        const arrayBuffer = await response.arrayBuffer();
+
+        // TODO: The content can be a binary tile ot a JSON tileset
+        // const content = await parse(arrayBuffer, [Tile3DLoader, Tileset3DLoader]);
+        // this.content =  Tile3D.isTile(content) ?
+        //   new Tile3D(content, contentUri) :
+        //   new Tileset3D(content, contentUri);
+        this._content = await Tile3DLoader.parse(arrayBuffer, { DracoLoader });
+      }
 
       this._contentState = TILE3D_CONTENT_STATE.READY;
       this._contentLoaded();
