@@ -9,6 +9,6 @@ import './parsers/composite-3d-tile.spec';
 import './tileset/tile-3d-header.spec';
 import './tileset/tileset-3d.spec';
 
-import './styles/expression.spec';
+// import './styles/expression.spec';
 // import './styles/conditions-expression.spec';
 // import './styles/tile-3d-style.spec';
