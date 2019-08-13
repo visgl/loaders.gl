@@ -4,10 +4,6 @@ import {getImageMetadata} from './get-image-metadata';
 
 export const canParseImage = global._parseImageNode || typeof ImageBitmap !== 'undefined';
 
-// Firefox does not support options:
-// https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/createImageBitmap
-let imageBitmapOptionsSupport = true;
-
 // Parse to platform defined type (ndarray on node, ImageBitmap on browser)
 export function parseImage(arrayBuffer, options) {
   if (global._parseImageNode) {
@@ -40,20 +36,7 @@ export function parseToImageBitmap(arrayBuffer, options) {
   }
 
   const blob = new Blob([new Uint8Array(arrayBuffer)]);
-  const opts = {
-    imageOrientation: options.imageOrientation || 'none',
-    premultiplyAlpha: options.premultiplyAlpha || 'default'
-  };
-  if (!imageBitmapOptionsSupport) {
-    return createImageBitmap(blob);
-  }
-  return createImageBitmap(blob, opts).catch(error => {
-    if (error.name === 'TypeError') {
-      imageBitmapOptionsSupport = false;
-      return createImageBitmap(blob);
-    }
-    throw error;
-  });
+  return createImageBitmap(blob);
 }
 
 //

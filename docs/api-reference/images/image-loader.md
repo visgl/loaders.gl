@@ -7,7 +7,7 @@ An image loader that works under both Node.js (requires `@loaders.gl/polyfills`)
 | File Extension | `.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`, `.bmp`, `.ico`, `.svg`         |
 | File Type      | Binary         |
 | File Format    | Image          |
-| Data Format    | `Image`, `ImageBitmap` or ndarray (Node) |
+| Data Format    | `Image`, `ImageBitmap` (web worker) or ndarray (node.js) |
 | Decoder Type   | Asynchronous   |
 | Worker Thread  | No             |
 | Streaming      | No             |
@@ -27,8 +27,6 @@ const image = await load(url, ImageLoader, options);
 | Option        | Type      | Default     | Description       |
 | ------------- | --------- | ----------- | ----------------- |
 | `crossOrigin` | String    | -           | passed to [Image.crossorigin](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/img). |
-| `imageOrientation` | String | `'none'` | passed to [createImageBitmap](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/createImageBitmap). |
-| `premultiplyAlpha` | String | `'default'` | passed to [createImageBitmap](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/createImageBitmap). |
 
 ## Remarks
 
