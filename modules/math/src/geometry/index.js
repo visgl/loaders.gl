@@ -14,5 +14,7 @@ export {default as primitiveIterator} from './iterators/primitive-iterator';
 // Helper methods
 export {default as computeVertexNormals} from './attributes/compute-vertex-normals';
 
+export {encodeRGB565, decodeRGB565} from './colors/rgb565';
+
 // Typed array utils
 export {concatTypedArrays} from './typed-arrays/typed-array-utils';

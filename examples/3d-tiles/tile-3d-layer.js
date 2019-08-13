@@ -18,7 +18,6 @@ import {
   Tile3DLoader,
   Tile3DFeatureTable,
   Tile3DBatchTable,
-  parseRGB565,
   Tileset3DLoader,
   _getIonTilesetMetadata
 } from '@loaders.gl/3d-tiles';
@@ -300,46 +299,6 @@ export default class Tile3DLayer extends CompositeLayer {
       // TODO figure out what is the correct way to extract transform from tileHeader
       transform: tileHeader._initialTransform
     };
-
-    this._loadColors(tileHeader);
-  }
-
-  /* eslint-disable max-statements, complexity */
-  _loadColors(tileHeader) {
-    const {batchIds, colors, isRGB565, constantRGBA} = tileHeader.content;
-
-    if (constantRGBA) {
-      tileHeader.userData.color = constantRGBA;
-    }
-
-    const {batchTable, pointsCount} = tileHeader.userData;
-    let parsedColors = colors;
-
-    if (isRGB565) {
-      parsedColors = new Uint8ClampedArray(pointsCount * 3);
-      for (let i = 0; i < pointsCount; i++) {
-        const color = parseRGB565(colors[i]);
-        parsedColors[i * 4] = color[0];
-        parsedColors[i * 4 + 1] = color[1];
-        parsedColors[i * 4 + 2] = color[2];
-      }
-    }
-
-    if (batchIds && batchTable) {
-      parsedColors = new Uint8ClampedArray(pointsCount * 4);
-      for (let i = 0; i < pointsCount; i++) {
-        const batchId = batchIds[i];
-        // TODO figure out what is `dimensions` used for
-        const dimensions = batchTable.getProperty(batchId, 'dimensions');
-        const color = dimensions.map(d => d * 255);
-        parsedColors[i * 4] = color[0];
-        parsedColors[i * 4 + 1] = color[1];
-        parsedColors[i * 4 + 2] = color[2];
-        parsedColors[i * 4 + 3] = 255;
-      }
-    }
-
-    tileHeader.userData.colors = parsedColors;
   }
 
   _unpackInstanced3DTile(tileHeader) {
@@ -357,7 +316,6 @@ export default class Tile3DLayer extends CompositeLayer {
     if (tileHeader.content.gltfArrayBuffer) {
       tileHeader.userData = {gltfUrl: parse(tileHeader.content.gltfArrayBuffer)};
     }
-
     if (tileHeader.content.gltfUrl) {
       const gltfUrl = tileHeader.tileset.getTileUrl(tileHeader.content.gltfUrl);
       tileHeader.userData = {gltfUrl};
@@ -424,7 +382,7 @@ export default class Tile3DLayer extends CompositeLayer {
 
     return new ScenegraphLayer({
       id: `3d-model-tile-layer-${tileHeader.contentUri}`,
-      data: instances ? instances : [{}],
+      data: instances || [{}],
       coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS,
       coordinateOrigin: transformProps.coordinateOrigin,
 
@@ -432,20 +390,18 @@ export default class Tile3DLayer extends CompositeLayer {
       scenegraph: gltfUrl,
       sizeScale: 1,
       getPosition: row => [0, 0, 0],
-      getTransformMatrix: d => {
         // TODO fix scenegraph modelMatrix
-        return d.modelMatrix
-          ? transformProps.modelMatrix.clone().multiplyRight(d.modelMatrix)
-          : transformProps.modelMatrix;
-      },
+      getTransformMatrix: d => d.modelMatrix
+        ? transformProps.modelMatrix.clone().multiplyRight(d.modelMatrix)
+        : transformProps.modelMatrix,
       getColor: d => [255, 255, 255, 100],
       opacity: 0.6
     });
   }
 
   _createPointCloud3DTileLayer(tileHeader) {
-    const {positions, normals} = tileHeader.content;
-    const {pointsCount, colors, color} = tileHeader.userData;
+    const {positions, normals, colors} = tileHeader.content.attributes;
+    const {pointsCount, colorRGBA} = tileHeader.userData;
 
     const transformProps = this._resolveTransformProps(tileHeader);
 
@@ -470,7 +426,7 @@ export default class Tile3DLayer extends CompositeLayer {
             COLOR_0: colorAttribute
           }
         },
-        getColor: color || this.props.color,
+        getColor: colorRGBA || this.props.color,
         pickable: true,
         numInstances: pointsCount,
         opacity: 0.8,
@@ -481,8 +437,9 @@ export default class Tile3DLayer extends CompositeLayer {
   }
 
   renderLayers() {
-    const layers = Object.values(this.state.layerMap).map(layer => layer.layer);
+    // TODO - reuse the same layer list
     // const {layers} = this.state;
+    const layers = Object.values(this.state.layerMap).map(layer => layer.layer);
     return layers;
   }
 }

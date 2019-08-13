@@ -1,6 +1,6 @@
 import test from 'tape';
 import {Vector3} from 'math.gl';
-import {GL, computeVertexNormals} from '@math.gl/geometry';
+import {GL, computeVertexNormals} from '@loaders.gl/math';
 
 function getNormalsForVertices(vertices, t) {
   const positions = {values: new Float32Array(vertices), size: 3};

@@ -1,24 +1,17 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
-// https://github.com/AnalyticalGraphicsInc/cesium/blob/master/Source/Scene/PointCloud.js#L254
-
 import {Vector3} from 'math.gl';
 import {GL} from '@loaders.gl/math'; // 'math.gl/geometry';
 
-import {DracoParser} from '@loaders.gl/draco';
 import {parse} from '@loaders.gl/core';
 import Tile3DFeatureTable from '../classes/tile-3d-feature-table';
 import Tile3DBatchTable from '../classes/tile-3d-batch-table';
 import {parse3DTileHeaderSync} from './helpers/parse-3d-tile-header';
 import {parse3DTileTablesHeaderSync, parse3DTileTablesSync} from './helpers/parse-3d-tile-tables';
+import {normalize3DTileColorAttribute} from './helpers/normalize-3d-tile-colors';
 
-// const DECODING_STATE = {
-//   NEEDS_DECODE: 0,
-//   DECODING: 1,
-//   READY: 2,
-//   FAILED: 3
-// };
+import assert from '../utils/assert';
 
 export async function parsePointCloud3DTile(tile, arrayBuffer, byteOffset, options) {
   byteOffset = parse3DTileHeaderSync(tile, arrayBuffer, byteOffset, options);
@@ -42,6 +35,8 @@ export function parsePointCloud3DTileSync(tile, arrayBuffer, byteOffset, options
 
 // eslint-disable-next-line max-statements, complexity
 async function extractPointCloud(tile, options) {
+  initializeTile(tile);
+
   const {featureTable, batchTable} = parsePointCloudTables(tile);
 
   await parseDraco(tile, featureTable, batchTable, options);
@@ -52,11 +47,27 @@ async function extractPointCloud(tile, options) {
 }
 
 function extractPointCloudSync(tile) {
+  initializeTile(tile);
+
   const {featureTable} = parsePointCloudTables(tile);
 
   parsePositions(tile, featureTable);
   parseColors(tile, featureTable);
   parseNormals(tile, featureTable);
+}
+
+function initializeTile(tile) {
+  // Initialize point cloud tile defaults
+  tile.attributes = {
+    positions: null,
+    colors: null,
+    normals: null,
+    batchIds: null
+  };
+  tile.isQuantized = false;
+  tile.isTranslucent = false;
+  tile.isRGB565 = false;
+  tile.isOctEncoded16P = false;
 }
 
 function parsePointCloudTables(tile) {
@@ -70,29 +81,25 @@ function parsePointCloudTables(tile) {
 
   tile.featuresLength = pointsLength;
   tile.pointsLength = pointsLength;
+  tile.pointCount = pointsLength;
+
   tile.rtcCenter = featureTable.getGlobalProperty('RTC_CENTER', GL.FLOAT, 3);
 
-  // Initialize point cloud tile defaults
-  tile.positions = null;
-  tile.colors = null;
-  tile.normals = null;
-  tile.batchIds = null;
-  tile.isQuantized = false;
-  tile.isTranslucent = false;
-  tile.isRGB565 = false;
-  tile.isOctEncoded16P = false;
-
-  const batchTable = parseBatch(tile, featureTable);
+  const batchTable = parseBatchIds(tile, featureTable);
 
   return {featureTable, batchTable};
 }
 
 function parsePositions(tile, featureTable) {
-  if (!tile.positions) {
+  if (!tile.attributes.positions) {
     if (featureTable.hasProperty('POSITION')) {
-      tile.positions = featureTable.getPropertyArray('POSITION', GL.FLOAT, 3);
+      tile.attributes.positions = featureTable.getPropertyArray('POSITION', GL.FLOAT, 3);
     } else if (featureTable.hasProperty('POSITION_QUANTIZED')) {
-      tile.positions = featureTable.getPropertyArray('POSITION_QUANTIZED', GL.UNSIGNED_SHORT, 3);
+      tile.attributes.positions = featureTable.getPropertyArray(
+        'POSITION_QUANTIZED',
+        GL.UNSIGNED_SHORT,
+        3
+      );
       tile.isQuantized = true;
       tile.quantizedRange = (1 << 16) - 1;
 
@@ -116,22 +123,25 @@ function parsePositions(tile, featureTable) {
     }
   }
 
-  if (!tile.positions) {
+  if (!tile.attributes.positions) {
     throw new Error('Either POSITION or POSITION_QUANTIZED must be defined.');
   }
 }
 
 function parseColors(tile, featureTable) {
-  if (!tile.colors) {
+  if (!tile.attributes.colors) {
+    let colors = null;
     if (featureTable.hasProperty('RGBA')) {
-      tile.colors = featureTable.getPropertyArray('RGBA', GL.UNSIGNED_BYTE, 4);
+      colors = featureTable.getPropertyArray('RGBA', GL.UNSIGNED_BYTE, 4);
       tile.isTranslucent = true;
     } else if (featureTable.hasProperty('RGB')) {
-      tile.colors = featureTable.getPropertyArray('RGB', GL.UNSIGNED_BYTE, 3);
+      colors = featureTable.getPropertyArray('RGB', GL.UNSIGNED_BYTE, 3);
     } else if (featureTable.hasProperty('RGB565')) {
-      tile.colors = featureTable.getPropertyArray('RGB565', GL.UNSIGNED_SHORT, 1);
+      colors = featureTable.getPropertyArray('RGB565', GL.UNSIGNED_SHORT, 1);
       tile.isRGB565 = true;
     }
+
+    tile.attributes.colors = normalize3DTileColorAttribute(tile, colors);
   }
 
   if (featureTable.hasProperty('CONSTANT_RGBA')) {
@@ -140,17 +150,17 @@ function parseColors(tile, featureTable) {
 }
 
 function parseNormals(tile, featureTable) {
-  if (!tile.normals) {
+  if (!tile.attributes.normals) {
     if (featureTable.hasProperty('NORMAL')) {
-      tile.normals = featureTable.getPropertyArray('NORMAL', GL.FLOAT, 3);
+      tile.attributes.normals = featureTable.getPropertyArray('NORMAL', GL.FLOAT, 3);
     } else if (featureTable.hasProperty('NORMAL_OCT16P')) {
-      tile.normals = featureTable.getPropertyArray('NORMAL_OCT16P', GL.UNSIGNED_BYTE, 2);
+      tile.attributes.normals = featureTable.getPropertyArray('NORMAL_OCT16P', GL.UNSIGNED_BYTE, 2);
       tile.isOctEncoded16P = true;
     }
   }
 }
 
-function parseBatch(tile, featureTable) {
+function parseBatchIds(tile, featureTable) {
   let batchTable = null;
   if (!tile.batchIds && featureTable.hasProperty('BATCH_ID')) {
     tile.batchIds = featureTable.getPropertyArray('BATCH_ID', GL.UNSIGNED_SHORT, 1);
@@ -164,7 +174,6 @@ function parseBatch(tile, featureTable) {
       batchTable = new Tile3DBatchTable(batchTableJson, batchTableBinary, batchFeatureLength);
     }
   }
-
   return batchTable;
 }
 
@@ -199,68 +208,48 @@ async function parseDraco(tile, featureTable, batchTable, options) {
   }
 
   if (dracoBuffer) {
-    tile.draco = {
+    const dracoData = {
       buffer: dracoBuffer,
       properties: {...dracoFeatureTableProperties, ...dracoBatchTableProperties},
       featureTableProperties: dracoFeatureTableProperties,
       batchTableProperties: dracoBatchTableProperties,
       dequantizeInShader: false
     };
-
-    await loadDraco(tile, options);
+    await loadDraco(tile, dracoData, options);
   }
-}
-
-export function parseRGB565(rgb565) {
-  let r5 = rgb565 & 31;
-  let g6 = (rgb565 >> 5) & 63;
-  let b5 = (rgb565 >> 11) & 31;
-
-  r5 = Math.round((r5 * 255) / 32);
-  g6 = Math.round((g6 * 255) / 64);
-  b5 = Math.round((b5 * 255) / 32);
-
-  return [r5, g6, b5];
 }
 
 /* eslint-disable complexity, max-statements */
-export async function loadDraco(tile, options) {
-  const draco = tile.draco;
-  if (draco && draco.buffer) {
-    let data = null;
-    if (options.DracoLoader) {
-      data = await parse(draco.buffer, options.DracoLoader);
-    } else {
-      data = new DracoParser().parseSync(draco.buffer);
-    }
-    const decodedPositions = data.attributes.POSITION && data.attributes.POSITION.value;
-    const decodedColors = data.attributes.COLOR_0 && data.attributes.COLOR_0.value;
-    const decodedNormals = data.attributes.NORMAL && data.attributes.NORMAL.value;
-    const decodedBatchIds = data.attributes.BATCH_ID && data.attributes.BATCH_ID.value;
-    const isQuantizedDraco = decodedPositions && data.attributes.POSITION.value.quantization;
-    const isOctEncodedDraco = decodedNormals && data.attributes.NORMAL.value.quantization;
-    if (isQuantizedDraco) {
-      // Draco quantization range == quantized volume scale - size in meters of the quantized volume
-      // Internal quantized range is the range of values of the quantized data, e.g. 255 for 8-bit, 1023 for 10-bit, etc
-      const quantization = data.POSITION.data.quantization;
-      const range = quantization.range;
-      tile.quantizedVolumeScale = new Vector3(range, range, range);
-      tile.quantizedVolumeOffset = new Vector3(quantization.minValues);
-      tile.quantizedRange = (1 << quantization.quantizationBits) - 1.0;
-      tile.isQuantizedDraco = true;
-    }
-    if (isOctEncodedDraco) {
-      tile.octEncodedRange = (1 << data.NORMAL.data.quantization.quantizationBits) - 1.0;
-      tile.isOctEncodedDraco = true;
-    }
-
-    tile.positions = decodedPositions;
-    tile.colors = decodedColors;
-    tile.normals = decodedNormals;
-    tile.batchIds = decodedBatchIds;
-
-    delete tile.draco;
+export async function loadDraco(tile, dracoData, options) {
+  assert(options.DracoLoader);
+  const data = await parse(dracoData.buffer, options.DracoLoader);
+  const decodedPositions = data.attributes.POSITION && data.attributes.POSITION.value;
+  const decodedColors = data.attributes.COLOR_0 && data.attributes.COLOR_0.value;
+  const decodedNormals = data.attributes.NORMAL && data.attributes.NORMAL.value;
+  const decodedBatchIds = data.attributes.BATCH_ID && data.attributes.BATCH_ID.value;
+  const isQuantizedDraco = decodedPositions && data.attributes.POSITION.value.quantization;
+  const isOctEncodedDraco = decodedNormals && data.attributes.NORMAL.value.quantization;
+  if (isQuantizedDraco) {
+    // Draco quantization range == quantized volume scale - size in meters of the quantized volume
+    // Internal quantized range is the range of values of the quantized data, e.g. 255 for 8-bit, 1023 for 10-bit, etc
+    const quantization = data.POSITION.data.quantization;
+    const range = quantization.range;
+    tile.quantizedVolumeScale = new Vector3(range, range, range);
+    tile.quantizedVolumeOffset = new Vector3(quantization.minValues);
+    tile.quantizedRange = (1 << quantization.quantizationBits) - 1.0;
+    tile.isQuantizedDraco = true;
   }
+  if (isOctEncodedDraco) {
+    tile.octEncodedRange = (1 << data.NORMAL.data.quantization.quantizationBits) - 1.0;
+    tile.isOctEncodedDraco = true;
+  }
+
+  tile.attributes = {
+    positions: decodedPositions,
+    colors: normalize3DTileColorAttribute(tile, decodedColors),
+    normals: decodedNormals,
+    batchIds: decodedBatchIds
+  };
 }
 
 /*
@@ -268,17 +257,17 @@ export async function loadDraco(tile, options) {
 
   // parseDracoBuffer(tile, featureTable, batchTable);
 
-  if (!tile.positions) {
+  if (!tile.attributes.positions) {
     throw new Error('Either POSITION or POSITION_QUANTIZED must be defined.');
   }
 }
 /*
 
-  if (!tile.positions) {
+  if (!tile.attributes.positions) {
     if (featureTable.hasProperty('POSITION')) {
-      tile.positions = featureTable.getPropertyArray('POSITION', GL.FLOAT, 3);
+      tile.attributes.positions = featureTable.getPropertyArray('POSITION', GL.FLOAT, 3);
     } else if (featureTable.hasProperty('POSITION_QUANTIZED')) {
-      tile.positions = featureTable.getPropertyArray('POSITION_QUANTIZED', GL.UNSIGNED_SHORT, 3);
+      tile.attributes.positions = featureTable.getPropertyArray('POSITION_QUANTIZED', GL.UNSIGNED_SHORT, 3);
 
 
   if (!tile.colors) {
@@ -293,11 +282,11 @@ export async function loadDraco(tile, options) {
     }
   }
 
-  if (!tile.normals) {
+  if (!tile.attributes.normals) {
     if (featureTable.getPropertry('NORMAL')) {
-      tile.normals = featureTable.getPropertyArray('NORMAL', GL.FLOAT, 3);
+      tile.attributes.normals = featureTable.getPropertyArray('NORMAL', GL.FLOAT, 3);
     } else if (featureTable.getProperty('NORMAL_OCT16P')) {
-      tile.normals = featureTable.getPropertyArray('NORMAL_OCT16P', GL.UNSIGNED_BYTE, 2);
+      tile.attributes.normals = featureTable.getPropertyArray('NORMAL_OCT16P', GL.UNSIGNED_BYTE, 2);
       tile.isOctEncoded16P = true;
     }
   }
@@ -308,7 +297,7 @@ export async function loadDraco(tile, options) {
     }
   }
 
-  if (!tile.positions) {
+  if (!tile.attributes.positions) {
     throw new Error('Either POSITION or POSITION_QUANTIZED must be defined.');
   }
 
