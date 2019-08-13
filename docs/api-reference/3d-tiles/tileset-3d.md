@@ -1,6 +1,6 @@
 # Tileset3D
 
-> The 3D tiles loaders are still under development. If you are interested in early access, please open an issue.
+> The 3D tiles loaders are still under development.
 
 The definition of a [3D Tiles tileset](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification).
 

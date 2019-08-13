@@ -1,15 +1,15 @@
 # Tile3DLoader
 
-> The 3D tile loaders are still under development. If you are interested in early access, please open an issue.
+> The 3D tile loaders are still under development.
 
 Parses a [3D tile](https://github.com/AnalyticalGraphicsInc/3d-tiles). glTF file into a hirearchical scenegraph description that can be used to instantiate an actual Scenegraph in most WebGL libraries. Can load both binary `.glb` files and JSON `.gltf` files.
 
 | Loader                | Characteristic  |
 | --------------------- | --------------- |
 | File Extensions       | `.b3dm`,`.i3dm`, `.pnts`, `.cmpt` |
-| File Types            | Binary (with linked assets) |
-| Input Format           | [glTF](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#tile-format-specifications)    |
-| Output Format       | [Scenegraph](/docs/specifications/category-scenegraph) |
+| File Type             | Binary (with linked assets) |
+| File Format           | [glTF](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#tile-format-specifications)    |
+| Data Format           | [Scenegraph](/docs/specifications/category-scenegraph) |
 | Decoder Type          | Synchronous (limited), Asynchronous |
 | Worker Thread Support | No              |
 | Streaming Support     | No \*           |

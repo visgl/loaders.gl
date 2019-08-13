@@ -1,15 +1,15 @@
 # Tileset3DLoader
 
-> The 3D tile loaders are still under development. If you are interested in early access, please open an issue.
+> The 3D tile loaders are still under development.
 
 Parses a main tileset JSON file as the entry point to define a 3D tileset.
 
 | Loader                | Characteristic   |
 | --------------------- | ---------------- |
 | File Extensions       | `.json`          |
-| File Types            | JSON             |
-| Input Format          | [3D Tileset JSON](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#tileset-json) |
-| Output Format         | JSON             |
+| File Type             | JSON             |
+| File Format           | [3D Tileset JSON](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#tileset-json) |
+| Data Format           | JSON             |
 | Decoder Type          | Synchronous      |
 | Worker Thread Support | No               |
 | Streaming Support     | No               |

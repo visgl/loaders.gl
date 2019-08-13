@@ -6,8 +6,8 @@ The `ImageWriter` class can encode an image into `ArrayBuffer` both under browse
 | -------------- | -------------- |
 | File Extension | `.png`, `.jpg`, `.jpeg`  |
 | File Format    | Binary         |
-| Input Format   | `ArrayBuffer`         |
-| Output Format  | Image          |
+| Data Format    | `ArrayBuffer`  |
+| File Format    | Image          |
 | Encoder Type   | Asynchronous   |
 | Worker Thread  | No             |
 | Streaming      | No             |

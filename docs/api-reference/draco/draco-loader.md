@@ -6,8 +6,8 @@ The `DracoLoader` decodes a mesh or point cloud (maps of attributes) using [DRAC
 | --------------------- | ---------------- |
 | File Extension        | `.drc`           |
 | File Type             | Binary           |
-| Input Format          | [Draco](https://google.github.io/draco/) |
-| Output Format         | [Mesh](docs/specifications/category-mesh.md) |
+| File Format           | [Draco](https://google.github.io/draco/) |
+| Data Format           | [Mesh](docs/specifications/category-mesh.md) |
 | Decoder Type          | Synchronous      |
 | Worker Thread Support | Yes              |
 | Streaming Support     | No               |

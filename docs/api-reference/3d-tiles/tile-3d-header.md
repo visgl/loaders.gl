@@ -1,6 +1,6 @@
 # Tile3DHeader
 
-> The 3D tile loaders are still under development. If you are interested in early access, please open an issue.
+> The 3D tile loaders are still under development.
 
 Class that simplified access to data inside a tile in a `Tileset3D`.
 

@@ -41,7 +41,7 @@
         {"entry": "docs/specifications/loader-object-format"},
         {"entry": "docs/specifications/writer-object-format"},
         {"entry": "docs/specifications/category-gis"},
-        {"entry": "docs/specifications/category-gltf"},
+        {"entry": "docs/specifications/category-scenegraph"},
         {"entry": "docs/specifications/category-mesh"},
         {"entry": "docs/specifications/category-table"}
       ]

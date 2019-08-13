@@ -5,9 +5,9 @@ An image loader that works under both Node.js (requires `@loaders.gl/polyfills`)
 | Loader         | Characteristic |
 | -------------- | -------------- |
 | File Extension | `.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`, `.bmp`, `.ico`, `.svg`         |
-| File Format    | Binary         |
-| Input Format   | Image          |
-| Output Format  | `Image`, `ImageBitmap` or ndarray (Node) |
+| File Type      | Binary         |
+| File Format    | Image          |
+| Data Format    | `Image`, `ImageBitmap` or ndarray (Node) |
 | Decoder Type   | Asynchronous   |
 | Worker Thread  | No             |
 | Streaming      | No             |

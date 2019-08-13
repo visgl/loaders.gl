@@ -6,8 +6,8 @@ The `LASLoader` parses a point cloud in the LASER file format.
 | --------------------- | --------------- |
 | File Extension        | `.las`, `.laz`  |
 | File Type             | Binary          |
-| Input Format          | [LASER file format](https://www.asprs.org/divisions-committees/lidar-division/laser-las-file-format-exchange-activities) |
-| Output Format         | [PointCloud](docs/specifications/category-mesh.md) |
+| File Format           | [LASER file format](https://www.asprs.org/divisions-committees/lidar-division/laser-las-file-format-exchange-activities) |
+| Data Format           | [PointCloud](docs/specifications/category-mesh.md) |
 | Decoder Type          | Synchronous     |
 | Worker Thread Support | Yes             |
 | Streaming Support     | No              |

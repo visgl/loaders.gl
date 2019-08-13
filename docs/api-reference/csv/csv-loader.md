@@ -6,8 +6,8 @@ Streaming loader for comma-separated value and [delimiter-separated value](https
 | --------------------- | ---------------- |
 | File Extension        | `.csv`, `.dsv`   |
 | File Type             | Text             |
-| Input Format          | [RFC4180](https://tools.ietf.org/html/rfc4180) |
-| Output Format         | [Classic Table](/docs/specifications/category-table)   |
+| File Format           | [RFC4180](https://tools.ietf.org/html/rfc4180) |
+| Data Format           | [Classic Table](/docs/specifications/category-table)   |
 | Decoder Type          | Synchronous, Asynchronous |
 | Worker Thread Support | No               |
 | Streaming Support     | Yes              |

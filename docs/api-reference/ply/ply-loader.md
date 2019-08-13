@@ -6,8 +6,8 @@ The `PLYLoader` parses simple meshes in the Polygon File Format or the Stanford 
 | --------------------- | --------------- |
 | File Extension        | `.ply`          |
 | File Type             | Binary/Text     |
-| Input Format          | [PLY](http://paulbourke.net/dataformats/ply/) |
-| Output Format         | [Mesh](docs/specifications/category-mesh.md) |
+| File Format           | [PLY](http://paulbourke.net/dataformats/ply/) |
+| Data Format           | [Mesh](docs/specifications/category-mesh.md) |
 | Decoder Type          | Synchronous     |
 | Worker Thread Support | Yes             |
 | Streaming Support     | No              |

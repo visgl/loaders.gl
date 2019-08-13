@@ -5,9 +5,9 @@ Decodes a Zip Archive into a file map.
 | Loader         | Characteristic |
 | -------------- | -------------- |
 | File Extension | `.zip`         |
-| File Format    | Binary         |
-| Input Format   | [ZIP Archive](https://en.wikipedia.org/wiki/Zip_\(file_format\))   |
-| Output Format  | "File Map"     |
+| File Type      | Binary         |
+| File Format    | [ZIP Archive](https://en.wikipedia.org/wiki/Zip_\(file_format\))   |
+| Data Format    | "File Map"     |
 | Decoder Type   | Asynchronous   |
 | Worker Thread  | No             |
 | Streaming      | No             |
@@ -25,7 +25,7 @@ for (const fileName in FILE_MAP) {
 }
 ```
 
-## Output Format
+## Data Format
 
 The file map is an object with keys representing file names or relative paths in the zip file, and values being the contents of each sub file (either `ArrayBuffer` or `String`).
 

@@ -6,8 +6,8 @@ The `KMLLoader` parses KML files into GeoJSON.
 | --------------------- | ---------------- |
 | File Extension        | `.kml`           |
 | File Type             | Text             |
-| Input Format          | [KML](https://en.wikipedia.org/wiki/Keyhole_Markup_Language) |
-| Output Format         | [GIS](docs/specifications/category-gis.md) |
+| File Format           | [KML](https://en.wikipedia.org/wiki/Keyhole_Markup_Language) |
+| Data Format           | [GIS](docs/specifications/category-gis.md) |
 | Decoder Type          | Synchronous      |
 | Worker Thread Support | No               |
 | Streaming Support     | No               |

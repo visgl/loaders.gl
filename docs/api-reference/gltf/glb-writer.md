@@ -8,8 +8,8 @@ Note: applications that want to encode GLB-formatted glTF files use the `GLTFWri
 | --------------------- | --------------- |
 | File Extensions       | `.glb`          |
 | File Type             | Binary          |
-| Input Format          | [Scenegraph](/docs/specifications/category-scenegraph) |
-| Output Format         | [GLB](https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#glb-file-format-specification) |
+| Data Format           | See below       |
+| File Format           | [GLB](https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#glb-file-format-specification) |
 | Encoder Type          | Synchronous     |
 | Worker Thread Support | No              |
 | Streaming Support     | No              |
@@ -23,13 +23,18 @@ import {encodeSync} from '@loaders.gl/core';
 const arrayBuffer = encodeSync(gltf, GLBWriter, options);
 ```
 
+## Options
+
+| Option        | Type      | Default     | Description       |
+| ------------- | --------- | ----------- | ----------------- |
+| `magic`       | Number    | glTF        | The magic number to be save in the file. |
+
+
 ## Data Format
 
-Returns an object with the following fields:
-
-| Field     | Type          | Default   | Description |
-| ---       | ---           | ---       | --- |
-| `magic`   | Number        | glTF      | The first four bytes of the file |
-| `version` | Number        | `2`       | The version number |
-| `json`    | Object        | `{}`      | The JSON chunk  |
-| `binary`  | ArrayBuffer   | `null`    | The binary chunk, or `null` |
+| Field     | Type          | Default   | Description        |
+| ---       | ---           | ---       | ---                |
+| `magic`   | `Number`      | glTF      | The first four bytes of the file |
+| `version` | `Number`      | `2`       | The version number |
+| `json`    | `Object`      | `{}`      | The JSON chunk     |
+| `binary`  | `ArrayBuffer` | `null`    | The binary chunk   |

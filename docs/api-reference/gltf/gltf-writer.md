@@ -6,8 +6,8 @@ The `GLTFWriter` is a writer for glTF scenegraphs.
 | --------------------- | --------------- |
 | File Extensions       | `.glb`,`.gltf`  |
 | File Types            | Binary, JSON, Linked Assets |
-| Input Format          | [Scenegraph](/docs/specifications/category-scenegraph) |
-| Output Format         | [glTF](https://github.com/KhronosGroup/glTF/tree/master/specification/2.0) |
+| Data Format           | [Scenegraph](/docs/specifications/category-scenegraph) |
+| File Format           | [glTF](https://github.com/KhronosGroup/glTF/tree/master/specification/2.0) |
 | Encoder Type          | Synchronous (limited), Asynchronous |
 | Worker Thread Support | No              |
 | Streaming Support     | No              |

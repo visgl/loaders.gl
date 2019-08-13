@@ -7,9 +7,9 @@ Also, certain glTF extensions can be fully or partially processed during loading
 | Loader                | Characteristic  |
 | --------------------- | --------------- |
 | File Extensions       | `.glb`, `.gltf` |
-| File Types            | Binary, JSON, Linked Assets |
-| Input Format          | [glTF](https://github.com/KhronosGroup/glTF/tree/master/specification/2.0) |
-| Output Format         | [Scenegraph](/docs/specifications/category-scenegraph) |
+| File Type             | Binary, JSON, Linked Assets |
+| File Format           | [glTF](https://github.com/KhronosGroup/glTF/tree/master/specification/2.0) |
+| Data Format           | [Scenegraph](/docs/specifications/category-scenegraph) |
 | Decoder Type          | Synchronous (limited), Asynchronous |
 | Worker Thread Support | No              |
 | Streaming Support     | No              |

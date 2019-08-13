@@ -5,9 +5,9 @@ Encodes a filemap into a Zip Archive. Returns an `ArrayBuffer` that is a valid Z
 | Loader         | Characteristic |
 | -------------- | -------------- |
 | File Extension | `.zip`         |
-| File Format    | Binary         |
-| Input Format   | "File Map"     |
-| Output Format  | [ZIP Archive](https://en.wikipedia.org/wiki/Zip_\(file_format\))   |
+| File Type      | Binary         |
+| Data Format    | "File Map"     |
+| File Format    | [ZIP Archive](https://en.wikipedia.org/wiki/Zip_\(file_format\))   |
 | Encoder Type   | Asynchronous   |
 | Worker Thread  | No             |
 | Streaming      | No             |
@@ -28,7 +28,7 @@ const arrayBuffer = await encode(FILE_MAP, ZipWriter)
 writeFile(zipFileName, arrayBuffer);
 ```
 
-## Input Format
+## File Format
 
 The file map is an object with keys representing file names or relative paths in the zip file, and values being the contents of each sub file (either `ArrayBuffer` or `String`).
 

@@ -1,6 +1,6 @@
 # @loaders.gl/3d-tiles
 
-> The 3D tile loaders are still under development. If you are interested in early access, please open an issue.
+> The 3D tile loaders are still under development.
 
 Support for loading and traversing [3D Tile Sets](https://github.com/AnalyticalGraphicsInc/3d-tiles).
 

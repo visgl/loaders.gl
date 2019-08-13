@@ -1,6 +1,6 @@
 # ArrowLoader
 
-> The Arrow loaders are still under development. If you are interested in early access, please open an issue.
+> The Arrow loaders are still under development.
 
 The `ArrowLoader` parses the Apache Arrow columnar table format.
 
@@ -9,8 +9,8 @@ The `ArrowLoader` parses the Apache Arrow columnar table format.
 | --------------------- | --------------- |
 | File Extension        | `.arrow`        |
 | File Type             | Binary          |
-| Input Format          | [IPC: Encapsulated Message Format](http://arrow.apache.org/docs/ipc.html) |
-| Output Format         | [Columnar Table](/docs/specifications/category-table) |
+| File Format           | [IPC: Encapsulated Message Format](http://arrow.apache.org/docs/ipc.html) |
+| Data Format           | [Columnar Table](/docs/specifications/category-table) |
 | Decoder Type          | Synchronous     |
 | Worker Thread Support | Yes             |
 | Streaming Support     | Yes             |
