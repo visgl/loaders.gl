@@ -14,6 +14,9 @@ const defined = x => x !== undefined;
 const scratchMatrix = new Matrix3();
 const scratchScale = new Vector3();
 const scratchHalfAxes = new Matrix3();
+const scratchHalfX = new Vector3();
+const scratchHalfY = new Vector3();
+const scratchHalfZ = new Vector3();
 const scratchCenter = new Vector3();
 // const scratchRectangle = new Rectangle();
 // const scratchOrientedBoundingBox = new OrientedBoundingBox();
@@ -42,15 +45,26 @@ export function createBoundingVolume(boundingVolumeHeader, transform, result) {
       degrees((north + south) / 2),
       (minHeight + maxHeight) / 2
     );
-    result = result || {};
-    Object.assign(result, boundingVolumeHeader, {center});
 
-    return result;
-    // return createRegion(boundingVolumeHeader.region, transform, this._initialTransform, result);
+    const centerInCartesian = Ellipsoid.WGS84.cartographicToCartesian(
+      center,
+      scratchCenter
+    );
+
+    const northWest = Ellipsoid.WGS84.cartographicToCartesian([north, west, 0]);
+    const northEast = Ellipsoid.WGS84.cartographicToCartesian([north, east, 0]);
+    const southWest = Ellipsoid.WGS84.cartographicToCartesian([south, west, 0]);
+    const radius = (Math.abs(northEast[0] - northWest[0]) + Math.abs(southWest[1] - northWest[1])) / 2;
+
+    // TODO fix region boundingVolume
+    // for now, create a fake big sphere as the boundingVolume
+    return createSphere([centerInCartesian[0], centerInCartesian[1], centerInCartesian[2], radius], new Matrix4());
   }
+
   if (boundingVolumeHeader.sphere) {
     return createSphere(boundingVolumeHeader.sphere, transform, result);
   }
+
   throw new Error('3D Tile: boundingVolume must contain a sphere, region, or box');
 }
 

@@ -490,7 +490,7 @@ export default class Tileset3D {
     result.copy(center);
     Ellipsoid.WGS84.cartesianToCartographic(result, result);
 
-    result[2] = getZoom(root.boundingVolume);
+    result[2] = getZoom(root._header.boundingVolume);
     return result;
   }
 

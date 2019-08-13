@@ -211,7 +211,7 @@ export default class Tile3DLayer extends CompositeLayer {
       let {layer} = value;
 
       if (tile.selectedFrame === frameNumber) {
-        if (!layer.props.visible) {
+        if (layer && layer.props && !layer.props.visible) {
           // Still has GPU resource but visibility is turned off so turn it back on so we can render it.
           layer = layer.clone({visible: true});
           layerMap[tile.contentUri].layer = layer;
@@ -220,7 +220,7 @@ export default class Tile3DLayer extends CompositeLayer {
       } else if (tile.contentUnloaded) {
         // Was cleaned up from tileset cache. We no longer need to track it.
         delete layerMap[tile.contentUri];
-      } else if (layer.props.visible) {
+      } else if (layer && layer.props && layer.props.visible) {
         // Still in tileset cache but doesn't need to render this frame. Keep the GPU resource bound but don't render it.
         layer = layer.clone({visible: false});
         layerMap[tile.contentUri].layer = layer;
@@ -365,7 +365,14 @@ export default class Tile3DLayer extends CompositeLayer {
   }
 
   _unpackBatched3DTile(tileHeader) {
-    // const {gl} = this.context.animationProps;
+    const {gl} = this.context.animationProps;
+    if (tileHeader.content.gltfArrayBuffer) {
+      tileHeader.userData = {gltfUrl: parse(tileHeader.content.gltfArrayBuffer)};
+    }
+    if (tileHeader.content.gltfUrl) {
+      const gltfUrl = tileHeader.tileset.getTileUrl(tileHeader.content.gltfUrl);
+      tileHeader.userData = {gltfUrl};
+    }
     // const json = postProcessGLTF(tileHeader.content.gltf);
     // const gltfObjects = createGLTFObjects(gl, json);
     // tileHeader.userData = {gltfObjects};
@@ -387,16 +394,23 @@ export default class Tile3DLayer extends CompositeLayer {
       modelMatrix.translate(rtcCenter);
     }
 
-    const firstPoint = [positions[0], positions[1], positions[2]];
+    let originInCartesian = null;
+    if (positions) {
+      // use the first point
+      const origin = [positions[0], positions[1], positions[2]];
+      originInCartesian = modelMatrix.transform(origin, new Vector3());
+    } else {
+      originInCartesian = tileHeader._boundingVolume.center;
+    }
 
-    const originInCartesian = modelMatrix.transform(firstPoint, new Vector3());
-    const originInCarto = Ellipsoid.WGS84.cartesianToCartographic(originInCartesian, new Vector3());
-
+    const originInCartographic = Ellipsoid.WGS84.cartesianToCartographic(
+      originInCartesian,
+      new Vector3()
+    );
     const rotateMatrix = Ellipsoid.WGS84.eastNorthUpToFixedFrame(originInCartesian);
-
     modelMatrix = new Matrix4(rotateMatrix.invert()).multiplyRight(modelMatrix);
 
-    transformProps.coordinateOrigin = originInCarto;
+    transformProps.coordinateOrigin = originInCartographic;
     transformProps.modelMatrix = modelMatrix;
     transformProps.coordinateSystem = COORDINATE_SYSTEM.METER_OFFSETS;
 
@@ -427,24 +441,32 @@ export default class Tile3DLayer extends CompositeLayer {
 
   _createInstanced3DTileLayer(tileHeader) {
     const {gltfUrl} = tileHeader.userData;
+    const {instances} = tileHeader._content;
 
     const transformProps = this._resolveTransformProps(tileHeader);
+    console.log(tileHeader)
+    console.log('transformProps.modelMatrix: ', transformProps.modelMatrix )
+    console.log('instance.modelMatrix: ', instances[0].modelMatrix )
+    console.log( ' M_LC * M_I * [0,0,0] ', transformProps.modelMatrix.clone().multiplyRight(instances[0].modelMatrix).transform([0, 0, 0]) )
+
+
 
     return new ScenegraphLayer({
       id: `3d-model-tile-layer-${tileHeader.contentUri}`,
-      data: [{}, {}],
-      coordinateSystem: COORDINATE_SYSTEM.METERS,
+      data: instances,
+      coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS,
+      coordinateOrigin: transformProps.coordinateOrigin,
+
       pickable: true,
       scenegraph: gltfUrl,
       sizeScale: 1,
-      // getPosition: row => [0, 0, 0],
-      // getOrientation: d => [0, 45, 0],
-      // getTranslation: [0, 0, 0],
-      // getScale: [1, 1, 1],
-      // white is a bit hard to see
-      getColor: [0, 0, 100, 100],
-      opacity: 0.6,
-      ...transformProps
+      getPosition: row => [0, 0, 0],
+      getTransformMatrix: d => {
+        // TODO fix scenegraph modelMatrix
+        return transformProps.modelMatrix.clone().multiplyRight(d.modelMatrix);
+      },
+      getColor: d => [255 * Math.random(), 255 * Math.random(), 255 * Math.random(), 100],
+      opacity: 0.6
     });
   }
 
