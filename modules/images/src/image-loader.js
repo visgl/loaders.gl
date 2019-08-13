@@ -1,10 +1,5 @@
-import {
-  canParseImage,
-  parseImage,
-  loadImage,
-  parseToImageBitmap,
-  loadToHTMLImage
-} from './lib/parse-image';
+/* global Image */
+import {canParseImage, parseImage, parseToImageBitmap, loadToHTMLImage} from './lib/parse-image';
 
 const EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'ico', 'svg'];
 
@@ -13,7 +8,7 @@ export default {
   name: 'Images',
   extensions: EXTENSIONS,
   parse: canParseImage && parseImage,
-  loadAndParse: !canParseImage && loadImage
+  loadAndParse: typeof Image !== 'undefined' && loadToHTMLImage
 };
 
 // EXPERIMENTAL
