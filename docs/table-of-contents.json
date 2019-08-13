@@ -52,7 +52,7 @@
         {
           "title": "3d-tiles",
           "entries": [
-            {"entry": "docs/api-reference/3d-tiles/overview"},
+            {"entry": "docs/api-reference/3d-tiles"},
             {"entry": "docs/api-reference/3d-tiles/tile-3d-loader"},
             {"entry": "docs/api-reference/3d-tiles/tileset-3d-loader"},
             {"entry": "docs/api-reference/3d-tiles/tileset-3d"},
@@ -62,7 +62,7 @@
         {
           "title": "arrow",
           "entries": [
-            {"entry": "docs/api-reference/arrow/overview"},
+            {"entry": "docs/api-reference/arrow"},
             {"entry": "docs/api-reference/arrow/arrow-loader"}
           ]
         },
@@ -84,14 +84,14 @@
         {
           "title": "csv",
           "entries": [
-            {"entry": "docs/api-reference/csv/overview"},
+            {"entry": "docs/api-reference/csv"},
             {"entry": "docs/api-reference/csv/csv-loader"}
           ]
         },
         {
           "title": "draco",
           "entries": [
-            {"entry": "docs/api-reference/draco/overview"},
+            {"entry": "docs/api-reference/draco"},
             {"entry": "docs/api-reference/draco/draco-loader"},
             {"entry": "docs/api-reference/draco/draco-writer"}
           ]
@@ -99,7 +99,7 @@
         {
           "title": "gltf",
           "entries": [
-            {"entry": "docs/api-reference/gltf/overview"},
+            {"entry": "docs/api-reference/gltf"},
             {"entry": "docs/api-reference/gltf/gltf-extensions"},
             {"entry": "docs/api-reference/gltf/gltf-loader"},
             {"entry": "docs/api-reference/gltf/gltf-writer"},
@@ -113,7 +113,7 @@
         {
           "title": "images",
           "entries": [
-            {"entry": "docs/api-reference/images/overview"},
+            {"entry": "docs/api-reference/images"},
             {"entry": "docs/api-reference/images/load-image"},
             {"entry": "docs/api-reference/images/image-loader"},
             {"entry": "docs/api-reference/images/image-utilities"},
@@ -123,48 +123,48 @@
         {
           "title": "kml",
           "entries": [
-            {"entry": "docs/api-reference/kml/overview"},
+            {"entry": "docs/api-reference/kml"},
             {"entry": "docs/api-reference/kml/kml-loader"}
           ]
         },
         {
           "title": "las",
           "entries": [
-            {"entry": "docs/api-reference/las/overview"},
+            {"entry": "docs/api-reference/las"},
             {"entry": "docs/api-reference/las/las-loader"}
           ]
         },
         {
           "title": "obj",
           "entries": [
-            {"entry": "docs/api-reference/obj/overview"},
+            {"entry": "docs/api-reference/obj"},
             {"entry": "docs/api-reference/obj/obj-loader"}
           ]
         },
         {
           "title": "pcd",
           "entries": [
-            {"entry": "docs/api-reference/pcd/overview"},
+            {"entry": "docs/api-reference/pcd"},
             {"entry": "docs/api-reference/pcd/pcd-loader"}
           ]
         },
         {
           "title": "ply",
           "entries": [
-            {"entry": "docs/api-reference/ply/overview"},
+            {"entry": "docs/api-reference/ply"},
             {"entry": "docs/api-reference/ply/ply-loader"}
           ]
         },
         {
           "title": "polyfills",
           "entries": [
-            {"entry": "docs/api-reference/polyfills/overview"}
+            {"entry": "docs/api-reference/polyfills"}
           ]
         },
         {
           "title": "zip",
           "entries": [
-            {"entry": "docs/api-reference/zip/overview"},
+            {"entry": "docs/api-reference/zip"},
             {"entry": "docs/api-reference/zip/zip-loader"},
             {"entry": "docs/api-reference/zip/zip-writer"}
           ]
