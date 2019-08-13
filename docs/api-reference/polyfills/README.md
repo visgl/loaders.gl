@@ -1,8 +1,14 @@
-# Polyfills
+# @loaders.gl/polyfills
 
 Older browsers (mainly Edge and IE11) as well as versions of Node.js prior to v11 do not provide certain classes that loaders.gl depends on.
 
 While there are many good polyfill modules available on `npm`, to make the search for a version that works perfectly with loaders.gl a little easier, a polyfill module is included.
+
+## Installation
+
+```bash
+npm install @loaders.gl/polyfills
+```
 
 ## Usage
 
