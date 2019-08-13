@@ -59,8 +59,13 @@ function getBmpSize(dataView) {
 // JPEG
 
 function isJpeg(dataView) {
-  // Check file contains the JPEG "start of image" (SOI) marker.
-  return dataView.byteLength >= 2 && dataView.getUint16(0, BIG_ENDIAN) === 0xffd8;
+  // Check file contains the JPEG "start of image" (SOI) marker
+  // followed by another marker.
+  return (
+    dataView.byteLength >= 3 &&
+    dataView.getUint16(0, BIG_ENDIAN) === 0xffd8 &&
+    dataView.getUint8(2, BIG_ENDIAN) === 0xff
+  );
 }
 
 // Extract width and height from a binary JPEG file
