@@ -1,17 +1,17 @@
 /* global fetch */
-import {CompositeLayer} from '@deck.gl/core';
-import {Matrix4, Vector3} from 'math.gl';
-import {CullingVolume, Plane} from '@math.gl/culling';
+import '@loaders.gl/polyfills';
 
-import {COORDINATE_SYSTEM} from '@deck.gl/core';
+import {COORDINATE_SYSTEM, CompositeLayer} from '@deck.gl/core';
 import {PointCloudLayer} from '@deck.gl/layers';
 import {ScenegraphLayer} from '@deck.gl/mesh-layers';
-import {GLTFLoader} from '@loaders.gl/gltf';
 
-import '@loaders.gl/polyfills';
-import {parse, registerLoaders} from '@loaders.gl/core';
-import {DracoWorkerLoader} from '@loaders.gl/draco';
+import {Matrix4, Vector3} from 'math.gl';
+import {CullingVolume, Plane} from '@math.gl/culling';
 import {Ellipsoid} from '@math.gl/geospatial';
+
+import {DracoWorkerLoader} from '@loaders.gl/draco';
+import {GLTFLoader} from '@loaders.gl/gltf';
+import {parse, registerLoaders} from '@loaders.gl/core';
 
 import {
   Tileset3D,
@@ -211,7 +211,7 @@ export default class Tile3DLayer extends CompositeLayer {
       let {layer} = value;
 
       if (tile.selectedFrame === frameNumber) {
-        if (!layer.props.visible) {
+        if (layer && layer.props && !layer.props.visible) {
           // Still has GPU resource but visibility is turned off so turn it back on so we can render it.
           layer = layer.clone({visible: true});
           layerMap[tile.contentUri].layer = layer;
@@ -220,7 +220,7 @@ export default class Tile3DLayer extends CompositeLayer {
       } else if (tile.contentUnloaded) {
         // Was cleaned up from tileset cache. We no longer need to track it.
         delete layerMap[tile.contentUri];
-      } else if (layer.props.visible) {
+      } else if (layer && layer.props && layer.props.visible) {
         // Still in tileset cache but doesn't need to render this frame. Keep the GPU resource bound but don't render it.
         layer = layer.clone({visible: false});
         layerMap[tile.contentUri].layer = layer;
@@ -316,23 +316,12 @@ export default class Tile3DLayer extends CompositeLayer {
     let parsedColors = colors;
 
     if (isRGB565) {
-      parsedColors = new Uint8ClampedArray(pointsCount * 4);
+      parsedColors = new Uint8ClampedArray(pointsCount * 3);
       for (let i = 0; i < pointsCount; i++) {
         const color = parseRGB565(colors[i]);
         parsedColors[i * 4] = color[0];
         parsedColors[i * 4 + 1] = color[1];
         parsedColors[i * 4 + 2] = color[2];
-        parsedColors[i * 4 + 3] = 255;
-      }
-    }
-
-    if (colors && colors.length === pointsCount * 3) {
-      parsedColors = new Uint8ClampedArray(pointsCount * 4);
-      for (let i = 0; i < pointsCount; i++) {
-        parsedColors[i * 4] = colors[i * 3];
-        parsedColors[i * 4 + 1] = colors[i * 3 + 1];
-        parsedColors[i * 4 + 2] = colors[i * 3 + 2];
-        parsedColors[i * 4 + 3] = 255;
       }
     }
 
@@ -365,10 +354,14 @@ export default class Tile3DLayer extends CompositeLayer {
   }
 
   _unpackBatched3DTile(tileHeader) {
-    // const {gl} = this.context.animationProps;
-    // const json = postProcessGLTF(tileHeader.content.gltf);
-    // const gltfObjects = createGLTFObjects(gl, json);
-    // tileHeader.userData = {gltfObjects};
+    if (tileHeader.content.gltfArrayBuffer) {
+      tileHeader.userData = {gltfUrl: parse(tileHeader.content.gltfArrayBuffer)};
+    }
+
+    if (tileHeader.content.gltfUrl) {
+      const gltfUrl = tileHeader.tileset.getTileUrl(tileHeader.content.gltfUrl);
+      tileHeader.userData = {gltfUrl};
+    }
   }
 
   /* eslint-disable-next-line complexity */
@@ -378,29 +371,27 @@ export default class Tile3DLayer extends CompositeLayer {
     }
 
     const {rtcCenter} = tileHeader.content;
-    const {transform, positions} = tileHeader.userData;
-
-    const transformProps = {};
+    const {transform} = tileHeader.userData;
 
     let modelMatrix = new Matrix4(transform);
     if (rtcCenter) {
       modelMatrix.translate(rtcCenter);
     }
 
-    const firstPoint = [positions[0], positions[1], positions[2]];
+    const cartesianOrigin = tileHeader._boundingVolume.center;
+    const cartographicOrigin = Ellipsoid.WGS84.cartesianToCartographic(
+      cartesianOrigin,
+      new Vector3()
+    );
 
-    const originInCartesian = modelMatrix.transform(firstPoint, new Vector3());
-    const originInCarto = Ellipsoid.WGS84.cartesianToCartographic(originInCartesian, new Vector3());
-
-    const rotateMatrix = Ellipsoid.WGS84.eastNorthUpToFixedFrame(originInCartesian);
-
+    const rotateMatrix = Ellipsoid.WGS84.eastNorthUpToFixedFrame(cartesianOrigin);
     modelMatrix = new Matrix4(rotateMatrix.invert()).multiplyRight(modelMatrix);
 
-    transformProps.coordinateOrigin = originInCarto;
-    transformProps.modelMatrix = modelMatrix;
-    transformProps.coordinateSystem = COORDINATE_SYSTEM.METER_OFFSETS;
-
-    return transformProps;
+    return {
+      coordinateOrigin: cartographicOrigin,
+      modelMatrix,
+      coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS
+    };
   }
 
   _create3DTileLayer(tileHeader) {
@@ -427,24 +418,28 @@ export default class Tile3DLayer extends CompositeLayer {
 
   _createInstanced3DTileLayer(tileHeader) {
     const {gltfUrl} = tileHeader.userData;
+    const {instances} = tileHeader._content;
 
     const transformProps = this._resolveTransformProps(tileHeader);
 
     return new ScenegraphLayer({
       id: `3d-model-tile-layer-${tileHeader.contentUri}`,
-      data: [{}, {}],
-      coordinateSystem: COORDINATE_SYSTEM.METERS,
+      data: instances ? instances : [{}],
+      coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS,
+      coordinateOrigin: transformProps.coordinateOrigin,
+
       pickable: true,
       scenegraph: gltfUrl,
       sizeScale: 1,
-      // getPosition: row => [0, 0, 0],
-      // getOrientation: d => [0, 45, 0],
-      // getTranslation: [0, 0, 0],
-      // getScale: [1, 1, 1],
-      // white is a bit hard to see
-      getColor: [0, 0, 100, 100],
-      opacity: 0.6,
-      ...transformProps
+      getPosition: row => [0, 0, 0],
+      getTransformMatrix: d => {
+        // TODO fix scenegraph modelMatrix
+        return d.modelMatrix
+          ? transformProps.modelMatrix.clone().multiplyRight(d.modelMatrix)
+          : transformProps.modelMatrix;
+      },
+      getColor: d => [255, 255, 255, 100],
+      opacity: 0.6
     });
   }
 
@@ -453,6 +448,13 @@ export default class Tile3DLayer extends CompositeLayer {
     const {pointsCount, colors, color} = tileHeader.userData;
 
     const transformProps = this._resolveTransformProps(tileHeader);
+
+    const colorAttribute = colors
+      ? {
+          size: colors.length / pointsCount,
+          value: colors
+        }
+      : null;
 
     return (
       positions &&
@@ -465,7 +467,7 @@ export default class Tile3DLayer extends CompositeLayer {
           attributes: {
             POSITION: positions,
             NORMAL: normals,
-            COLOR_0: colors
+            COLOR_0: colorAttribute
           }
         },
         getColor: color || this.props.color,
