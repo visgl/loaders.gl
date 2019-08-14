@@ -28,8 +28,8 @@ const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
 const MAPBOX_STYLE = 'mapbox://styles/mapbox/dark-v9';
 const DEPTH_LIMIT = 10; // TODO: Remove this after sse traversal is working since this is just to prevent full load of tileset
 
-const INITIAL_EXAMPLE_CATEGORY = 'Instanced';
-const INITIAL_EXAMPLE_NAME = 'InstancedOrientation';
+const INITIAL_EXAMPLE_CATEGORY = 'additional';
+const INITIAL_EXAMPLE_NAME = 'Mount St Helens (Cesium ion)';
 
 const scratchLongLatZoom = new Vector3();
 

@@ -36,7 +36,7 @@ export default class Tileset3DTraverser {
     // The this doesn't meet the SSE requirement, therefore the tree does not need to be rendered
     // The alwaysLoadRoot is better solved by moving the camera to the newly selected asset.
     if (root.getScreenSpaceError(frameState, true) <= tileset.maximumScreenSpaceError) {
-      // return false;
+      return false;
     }
 
     const baseScreenSpaceError = tileset.maximumScreenSpaceError;

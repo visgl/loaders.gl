@@ -1,17 +1,17 @@
 /* global fetch */
-import {CompositeLayer} from '@deck.gl/core';
-import {Matrix4, Vector3} from 'math.gl';
-import {CullingVolume, Plane} from '@math.gl/culling';
+import '@loaders.gl/polyfills';
 
-import {COORDINATE_SYSTEM} from '@deck.gl/core';
+import {COORDINATE_SYSTEM, CompositeLayer} from '@deck.gl/core';
 import {PointCloudLayer} from '@deck.gl/layers';
 import {ScenegraphLayer} from '@deck.gl/mesh-layers';
-import {GLTFLoader} from '@loaders.gl/gltf';
 
-import '@loaders.gl/polyfills';
-import {parse, registerLoaders} from '@loaders.gl/core';
-import {DracoWorkerLoader} from '@loaders.gl/draco';
+import {Matrix4, Vector3} from 'math.gl';
+import {CullingVolume, Plane} from '@math.gl/culling';
 import {Ellipsoid} from '@math.gl/geospatial';
+
+import {DracoWorkerLoader} from '@loaders.gl/draco';
+import {GLTFLoader} from '@loaders.gl/gltf';
+import {parse, registerLoaders} from '@loaders.gl/core';
 
 import {
   Tileset3D,
@@ -261,10 +261,8 @@ export default class Tile3DLayer extends CompositeLayer {
           this._unpackPointCloud3DTile(tileHeader);
           break;
         case 'i3dm':
-          this._unpackInstanced3DTile(tileHeader);
-          break;
         case 'b3dm':
-          this._unpackBatched3DTile(tileHeader);
+          this._unpackInstanced3DTile(tileHeader);
           break;
         default:
           // eslint-disable-next-line
@@ -316,23 +314,12 @@ export default class Tile3DLayer extends CompositeLayer {
     let parsedColors = colors;
 
     if (isRGB565) {
-      parsedColors = new Uint8ClampedArray(pointsCount * 4);
+      parsedColors = new Uint8ClampedArray(pointsCount * 3);
       for (let i = 0; i < pointsCount; i++) {
         const color = parseRGB565(colors[i]);
         parsedColors[i * 4] = color[0];
         parsedColors[i * 4 + 1] = color[1];
         parsedColors[i * 4 + 2] = color[2];
-        parsedColors[i * 4 + 3] = 255;
-      }
-    }
-
-    if (colors && colors.length === pointsCount * 3) {
-      parsedColors = new Uint8ClampedArray(pointsCount * 4);
-      for (let i = 0; i < pointsCount; i++) {
-        parsedColors[i * 4] = colors[i * 3];
-        parsedColors[i * 4 + 1] = colors[i * 3 + 1];
-        parsedColors[i * 4 + 2] = colors[i * 3 + 2];
-        parsedColors[i * 4 + 3] = 255;
       }
     }
 
@@ -362,20 +349,6 @@ export default class Tile3DLayer extends CompositeLayer {
       const gltfUrl = tileHeader.tileset.getTileUrl(tileHeader.content.gltfUrl);
       tileHeader.userData = {gltfUrl};
     }
-  }
-
-  _unpackBatched3DTile(tileHeader) {
-    const {gl} = this.context.animationProps;
-    if (tileHeader.content.gltfArrayBuffer) {
-      tileHeader.userData = {gltfUrl: parse(tileHeader.content.gltfArrayBuffer)};
-    }
-    if (tileHeader.content.gltfUrl) {
-      const gltfUrl = tileHeader.tileset.getTileUrl(tileHeader.content.gltfUrl);
-      tileHeader.userData = {gltfUrl};
-    }
-    // const json = postProcessGLTF(tileHeader.content.gltf);
-    // const gltfObjects = createGLTFObjects(gl, json);
-    // tileHeader.userData = {gltfObjects};
   }
 
   /* eslint-disable-next-line complexity */
@@ -444,16 +417,10 @@ export default class Tile3DLayer extends CompositeLayer {
     const {instances} = tileHeader._content;
 
     const transformProps = this._resolveTransformProps(tileHeader);
-    console.log(tileHeader)
-    console.log('transformProps.modelMatrix: ', transformProps.modelMatrix )
-    console.log('instance.modelMatrix: ', instances[0].modelMatrix )
-    console.log( ' M_LC * M_I * [0,0,0] ', transformProps.modelMatrix.clone().multiplyRight(instances[0].modelMatrix).transform([0, 0, 0]) )
-
-
 
     return new ScenegraphLayer({
       id: `3d-model-tile-layer-${tileHeader.contentUri}`,
-      data: instances,
+      data: instances ? instances : [{}],
       coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS,
       coordinateOrigin: transformProps.coordinateOrigin,
 
@@ -463,7 +430,9 @@ export default class Tile3DLayer extends CompositeLayer {
       getPosition: row => [0, 0, 0],
       getTransformMatrix: d => {
         // TODO fix scenegraph modelMatrix
-        return transformProps.modelMatrix.clone().multiplyRight(d.modelMatrix);
+        return d.modelMatrix
+          ? transformProps.modelMatrix.clone().multiplyRight(d.modelMatrix)
+          : transformProps.modelMatrix;
       },
       getColor: d => [255, 255, 255, 100],
       opacity: 0.6
@@ -476,6 +445,13 @@ export default class Tile3DLayer extends CompositeLayer {
 
     const transformProps = this._resolveTransformProps(tileHeader);
 
+    const colorAttribute = colors
+      ? {
+          size: colors.length / pointsCount,
+          value: colors
+        }
+      : null;
+
     return (
       positions &&
       new PointCloudLayer({
@@ -487,7 +463,7 @@ export default class Tile3DLayer extends CompositeLayer {
           attributes: {
             POSITION: positions,
             NORMAL: normals,
-            COLOR_0: colors
+            COLOR_0: colorAttribute
           }
         },
         getColor: color || this.props.color,
