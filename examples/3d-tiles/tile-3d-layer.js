@@ -405,13 +405,6 @@ export default class Tile3DLayer extends CompositeLayer {
 
     const transformProps = this._resolveTransformProps(tileHeader);
 
-    const colorAttribute = colors
-      ? {
-          size: colors.length / pointsCount,
-          value: colors
-        }
-      : null;
-
     return (
       positions &&
       new PointCloudLayer({
@@ -423,7 +416,7 @@ export default class Tile3DLayer extends CompositeLayer {
           attributes: {
             POSITION: positions,
             NORMAL: normals,
-            COLOR_0: colorAttribute
+            COLOR_0: colors
           }
         },
         getColor: colorRGBA || this.props.color,
