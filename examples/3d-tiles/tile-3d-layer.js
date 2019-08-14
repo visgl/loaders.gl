@@ -390,10 +390,11 @@ export default class Tile3DLayer extends CompositeLayer {
       scenegraph: gltfUrl,
       sizeScale: 1,
       getPosition: row => [0, 0, 0],
-        // TODO fix scenegraph modelMatrix
-      getTransformMatrix: d => d.modelMatrix
-        ? transformProps.modelMatrix.clone().multiplyRight(d.modelMatrix)
-        : transformProps.modelMatrix,
+      // TODO fix scenegraph modelMatrix
+      getTransformMatrix: d =>
+        d.modelMatrix
+          ? transformProps.modelMatrix.clone().multiplyRight(d.modelMatrix)
+          : transformProps.modelMatrix,
       getColor: d => [255, 255, 255, 100],
       opacity: 0.6
     });
