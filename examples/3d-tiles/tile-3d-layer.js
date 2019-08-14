@@ -358,36 +358,27 @@ export default class Tile3DLayer extends CompositeLayer {
     }
 
     const {rtcCenter} = tileHeader.content;
-    const {transform, positions} = tileHeader.userData;
-
-    const transformProps = {};
+    const {transform} = tileHeader.userData;
 
     let modelMatrix = new Matrix4(transform);
     if (rtcCenter) {
       modelMatrix.translate(rtcCenter);
     }
 
-    let originInCartesian = null;
-    if (positions) {
-      // use the first point
-      const origin = [positions[0], positions[1], positions[2]];
-      originInCartesian = modelMatrix.transform(origin, new Vector3());
-    } else {
-      originInCartesian = tileHeader._boundingVolume.center;
-    }
-
-    const originInCartographic = Ellipsoid.WGS84.cartesianToCartographic(
-      originInCartesian,
+    const cartesianOrigin = tileHeader._boundingVolume.center;
+    const cartographicOrigin = Ellipsoid.WGS84.cartesianToCartographic(
+      cartesianOrigin,
       new Vector3()
     );
-    const rotateMatrix = Ellipsoid.WGS84.eastNorthUpToFixedFrame(originInCartesian);
+
+    const rotateMatrix = Ellipsoid.WGS84.eastNorthUpToFixedFrame(cartesianOrigin);
     modelMatrix = new Matrix4(rotateMatrix.invert()).multiplyRight(modelMatrix);
 
-    transformProps.coordinateOrigin = originInCartographic;
-    transformProps.modelMatrix = modelMatrix;
-    transformProps.coordinateSystem = COORDINATE_SYSTEM.METER_OFFSETS;
-
-    return transformProps;
+    return {
+      coordinateOrigin: cartographicOrigin,
+      modelMatrix,
+      coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS
+    };
   }
 
   _create3DTileLayer(tileHeader) {
