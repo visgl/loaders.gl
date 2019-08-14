@@ -261,8 +261,10 @@ export default class Tile3DLayer extends CompositeLayer {
           this._unpackPointCloud3DTile(tileHeader);
           break;
         case 'i3dm':
-        case 'b3dm':
           this._unpackInstanced3DTile(tileHeader);
+          break;
+        case 'b3dm':
+          this._unpackBatched3DTile(tileHeader);
           break;
         default:
           // eslint-disable-next-line
@@ -341,6 +343,17 @@ export default class Tile3DLayer extends CompositeLayer {
   }
 
   _unpackInstanced3DTile(tileHeader) {
+    if (tileHeader.content.gltfArrayBuffer) {
+      tileHeader.userData = {gltfUrl: parse(tileHeader.content.gltfArrayBuffer)};
+    }
+
+    if (tileHeader.content.gltfUrl) {
+      const gltfUrl = tileHeader.tileset.getTileUrl(tileHeader.content.gltfUrl);
+      tileHeader.userData = {gltfUrl};
+    }
+  }
+
+  _unpackBatched3DTile(tileHeader) {
     if (tileHeader.content.gltfArrayBuffer) {
       tileHeader.userData = {gltfUrl: parse(tileHeader.content.gltfArrayBuffer)};
     }
