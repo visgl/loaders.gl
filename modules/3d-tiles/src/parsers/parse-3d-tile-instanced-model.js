@@ -243,10 +243,13 @@ function extractInstancedAttributes(tile, featureTable, batchTable, instancesLen
       batchId = i;
     }
 
+    const rotationMatrix = new Matrix4().fromQuaternion(instanceTranslationRotationScale.rotation);
+
     // Create the model matrix and the instance
-    instanceTransform.fromQuaternion(instanceTranslationRotationScale.rotation);
-    instanceTransform.scale(instanceTranslationRotationScale.scale);
+    instanceTransform.identity();
     instanceTransform.translate(instanceTranslationRotationScale.translation);
+    instanceTransform.multiplyRight(rotationMatrix);
+    instanceTransform.scale(instanceTranslationRotationScale.scale);
     const modelMatrix = instanceTransform.clone();
     instances[i] = {
       modelMatrix,

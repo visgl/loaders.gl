@@ -465,7 +465,7 @@ export default class Tile3DLayer extends CompositeLayer {
         // TODO fix scenegraph modelMatrix
         return transformProps.modelMatrix.clone().multiplyRight(d.modelMatrix);
       },
-      getColor: d => [255 * Math.random(), 255 * Math.random(), 255 * Math.random(), 100],
+      getColor: d => [255, 255, 255, 100],
       opacity: 0.6
     });
   }
