@@ -36,10 +36,7 @@ export function parseToImageBitmap(arrayBuffer, options) {
   }
 
   const blob = new Blob([new Uint8Array(arrayBuffer)]);
-  return createImageBitmap(blob, {
-    imageOrientation: options.imageOrientation || 'none',
-    premultiplyAlpha: options.premultiplyAlpha || 'default'
-  });
+  return createImageBitmap(blob);
 }
 
 //
