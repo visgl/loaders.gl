@@ -158,7 +158,7 @@ export default class Tileset3D {
 
     this._gpuMemoryUsageInBytes = 0;
 
-    this.initializeTileSet(json, options);
+    this._initializeTileSet(json, options);
 
     this.props = {};
     Object.assign(this.props, options);
@@ -181,55 +181,6 @@ export default class Tileset3D {
     }
 
     this._root = null;
-  }
-
-  // eslint-disable-next-line max-statements
-  initializeTileSet(tilesetJson, options) {
-    // ion resources have a credits property we can use for additional attribution.
-    // this._credits = resource.credits;
-
-    // this._url = options.url;
-    // this._basePath = options.basePath || '';
-    // eslint-disable-next-line
-    // console.warn('Tileset3D.basePath is deprecated. Tiles are relative to the tileset JSON url');
-
-    this._root = this.installTileset(tilesetJson, null);
-    // const gltfUpAxis = defined(tilesetJson.asset.gltfUpAxis)
-    //   ? Axis.fromName(tilesetJson.asset.gltfUpAxis)
-    //   : Axis.Y;
-    const asset = tilesetJson.asset;
-    this._asset = asset;
-    this._properties = tilesetJson.properties;
-    this._geometricError = tilesetJson.geometricError;
-    this._extensionsUsed = tilesetJson.extensionsUsed;
-    // this._gltfUpAxis = gltfUpAxis;
-    this._extras = tilesetJson.extras;
-
-    this._credits = {}; // this._getCredits();
-
-    // Save the original, untransformed bounding volume position so we can apply
-    // the tile transform and model matrix at run time
-    // const boundingVolume = this._root.createBoundingVolume(
-    //   tilesetJson.root.boundingVolume,
-    //   Matrix4.IDENTITY
-    // );
-    // const clippingPlanesOrigin = boundingVolume.boundingSphere.center;
-    // If this origin is above the surface of the earth
-    // we want to apply an ENU orientation as our best guess of orientation.
-    // Otherwise, we assume it gets its position/orientation completely from the
-    // root tile transform and the tileset's model matrix
-    // const originCartographic = this._ellipsoid.cartesianToCartographic(clippingPlanesOrigin);
-    // if (
-    //   originCartographic &&
-    //   originCartographic.height > ApproximateTerrainHeights._defaultMinTerrainHeight
-    // ) {
-    //   this._initialClippingPlanesOriginMatrix = Transforms.eastNorthUpToFixedFrame(
-    //     clippingPlanesOrigin
-    //   );
-    // }
-
-    // this._clippingPlanesOriginMatrix = Matrix4.clone(this._initialClippingPlanesOriginMatrix);
-    // this._readyPromise.resolve(this);
   }
 
   // Gets the tileset's asset object property, which contains metadata about the tileset.
@@ -357,9 +308,88 @@ export default class Tileset3D {
     return Boolean(this._extensionsUsed && this._extensionsUsed.indexOf(extensionName) > -1);
   }
 
+  update(frameState) {
+    this._updatedVisibilityFrame++; // TODO: only update when camera or culling volume from last update moves (could be render camera change or prefetch camera)
+    this._cache.reset();
+
+    this._traverser.traverse(this, frameState);
+
+    const requestedTiles = this._requestedTiles;
+    // Sort requests by priority before making any requests.
+    // This makes it less likely this requests will be cancelled after being issued.
+    // requestedTiles.sort((a, b) => a._priority - b._priority);
+    for (const tile of requestedTiles) {
+      this._loadTile(tile);
+    }
+    this._cache.unloadTiles(this);
+  }
+
+  // TODO - why are these public methods?
+
+  // Unloads all tiles this weren't selected the previous frame.  This can be used to
+  trimLoadedTiles() {
+    this._cache.trim();
+  }
+
+  // Add to the tile cache. Previously expired tiles are already in the cache and won't get re-added.
+  addTileToCache(tile) {
+    this._cache.add(tile);
+  }
+
+  // PRIVATE
+
+  // eslint-disable-next-line max-statements
+  _initializeTileSet(tilesetJson, options) {
+    // ion resources have a credits property we can use for additional attribution.
+    // this._credits = resource.credits;
+
+    // this._url = options.url;
+    // this._basePath = options.basePath || '';
+    // eslint-disable-next-line
+    // console.warn('Tileset3D.basePath is deprecated. Tiles are relative to the tileset JSON url');
+
+    this._root = this._installTileset(tilesetJson, null);
+    // const gltfUpAxis = defined(tilesetJson.asset.gltfUpAxis)
+    //   ? Axis.fromName(tilesetJson.asset.gltfUpAxis)
+    //   : Axis.Y;
+    const asset = tilesetJson.asset;
+    this._asset = asset;
+    this._properties = tilesetJson.properties;
+    this._geometricError = tilesetJson.geometricError;
+    this._extensionsUsed = tilesetJson.extensionsUsed;
+    // this._gltfUpAxis = gltfUpAxis;
+    this._extras = tilesetJson.extras;
+
+    this._credits = {}; // this._getCredits();
+
+    // Save the original, untransformed bounding volume position so we can apply
+    // the tile transform and model matrix at run time
+    // const boundingVolume = this._root.createBoundingVolume(
+    //   tilesetJson.root.boundingVolume,
+    //   Matrix4.IDENTITY
+    // );
+    // const clippingPlanesOrigin = boundingVolume.boundingSphere.center;
+    // If this origin is above the surface of the earth
+    // we want to apply an ENU orientation as our best guess of orientation.
+    // Otherwise, we assume it gets its position/orientation completely from the
+    // root tile transform and the tileset's model matrix
+    // const originCartographic = this._ellipsoid.cartesianToCartographic(clippingPlanesOrigin);
+    // if (
+    //   originCartographic &&
+    //   originCartographic.height > ApproximateTerrainHeights._defaultMinTerrainHeight
+    // ) {
+    //   this._initialClippingPlanesOriginMatrix = Transforms.eastNorthUpToFixedFrame(
+    //     clippingPlanesOrigin
+    //   );
+    // }
+
+    // this._clippingPlanesOriginMatrix = Matrix4.clone(this._initialClippingPlanesOriginMatrix);
+    // this._readyPromise.resolve(this);
+  }
+
   // Installs the main tileset JSON file or a tileset JSON file referenced from a tile.
   // eslint-disable-next-line max-statements
-  installTileset(tilesetJson, parentTile) {
+  _installTileset(tilesetJson, parentTile) {
     const asset = tilesetJson.asset;
     if (!asset) {
       throw new Error('Tileset must have an asset property.');
@@ -416,41 +446,7 @@ export default class Tileset3D {
     return rootTile;
   }
 
-  // Unloads all tiles this weren't selected the previous frame.  This can be used to
-  trimLoadedTiles() {
-    this._cache.trim();
-  }
-
-  decrementGPUMemoryUsage(bytes) {
-    this._gpuMemoryUsageInBytes -= bytes;
-  }
-
-  incrementGPUMemoryUsage(bytes) {
-    this._gpuMemoryUsageInBytes += bytes;
-  }
-
-  addTileToCache(tile) {
-    // Add to the tile cache. Previously expired tiles are already in the cache and won't get re-added.
-    this._cache.add(tile);
-  }
-
-  update(frameState) {
-    this._updatedVisibilityFrame++; // TODO: only update when camera or culling volume from last update moves (could be render camera change or prefetch camera)
-    this._cache.reset();
-
-    this._traverser.traverse(this, frameState);
-
-    const requestedTiles = this._requestedTiles;
-    // Sort requests by priority before making any requests.
-    // This makes it less likely this requests will be cancelled after being issued.
-    // requestedTiles.sort((a, b) => a._priority - b._priority);
-    for (const tile of requestedTiles) {
-      this._requestContent(tile);
-    }
-    this._cache.unloadTiles(this);
-  }
-
-  async _requestContent(tile) {
+  async _loadTile(tile) {
     const expired = tile.contentExpired;
     const requested = await tile.requestContent(this.DracoLoader);
 
@@ -475,6 +471,16 @@ export default class Tileset3D {
     }
   }
 
+  _unloadTile(tile) {
+    // this._cache.unloadTile(this, tile);
+    this.onTileUnload(tile);
+    tile.unloadContent();
+  }
+
+  _unloadTiles() {
+    this._cache.unloadTiles(this, tile => this._unloadTile(tile));
+  }
+
   // Called during intializeTileset to initialize the tileset's cartographic center (longitude, latitude) and zoom.
   // Also called if the root transform changes
   _getCartographicCenterAndZoom(result) {
@@ -492,6 +498,14 @@ export default class Tileset3D {
 
     result[2] = getZoom(root.boundingVolume);
     return result;
+  }
+
+  decrementGPUMemoryUsage(bytes) {
+    this._gpuMemoryUsageInBytes -= bytes;
+  }
+
+  incrementGPUMemoryUsage(bytes) {
+    this._gpuMemoryUsageInBytes += bytes;
   }
 
   _destroySubtree(tile) {
@@ -517,12 +531,5 @@ export default class Tileset3D {
     this.onTileUnload(tile);
     tile.unloadContent();
     tile.destroy();
-  }
-
-  _unloadTiles() {
-    this._cache.unloadTiles(this, tile => {
-      this.onTileUnload(tile);
-      tile.unloadContent();
-    });
   }
 }
