@@ -42,7 +42,7 @@ async function extractPointCloud(tile, options) {
   await parseDraco(tile, featureTable, batchTable, options);
 
   parsePositions(tile, featureTable);
-  parseColors(tile, featureTable);
+  parseColors(tile, featureTable, batchTable);
   parseNormals(tile, featureTable);
 }
 
@@ -128,7 +128,7 @@ function parsePositions(tile, featureTable) {
   }
 }
 
-function parseColors(tile, featureTable) {
+function parseColors(tile, featureTable, batchTable) {
   if (!tile.attributes.colors) {
     let colors = null;
     if (featureTable.hasProperty('RGBA')) {
@@ -141,7 +141,7 @@ function parseColors(tile, featureTable) {
       tile.isRGB565 = true;
     }
 
-    tile.attributes.colors = normalize3DTileColorAttribute(tile, colors);
+    tile.attributes.colors = normalize3DTileColorAttribute(tile, colors, batchTable);
   }
 
   if (featureTable.hasProperty('CONSTANT_RGBA')) {

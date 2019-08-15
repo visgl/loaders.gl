@@ -1,13 +1,13 @@
 import {decodeRGB565} from '@loaders.gl/math';
 
-export function normalize3DTileColorAttribute(tile, colors) {
-  const {batchIds, isRGB565, batchTable, pointCount} = tile;
-
+/* eslint-disable complexity*/
+export function normalize3DTileColorAttribute(tile, colors, batchTable) {
   // no colors defined
-  if (!colors && (!batchIds || !batchTable)) {
+  if (!colors && (!tile || !tile.batchIds || !batchTable)) {
     return null;
   }
 
+  const {batchIds, isRGB565, pointCount} = tile;
   // Batch table, look up colors in table
   if (batchIds && batchTable) {
     const colorArray = new Uint8ClampedArray(pointCount * 3);
@@ -43,3 +43,4 @@ export function normalize3DTileColorAttribute(tile, colors) {
   // DEFAULT: RGBA case
   return {size: 4, value: colors};
 }
+/* eslint-enable complexity*/
