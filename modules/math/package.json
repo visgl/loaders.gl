@@ -31,7 +31,7 @@
     "pre-build": "echo \"Nothing to build in @loaders.gl/math\""
   },
   "dependencies": {
-    "math.gl": "^3.0.0-beta.2",
+    "@loaders.gl/core": "1.2.1",
     "@loaders.gl/images": "1.2.1"
   }
 }

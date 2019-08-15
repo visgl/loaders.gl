@@ -18,3 +18,21 @@ export {encodeRGB565, decodeRGB565} from './colors/rgb565';
 
 // Typed array utils
 export {concatTypedArrays} from './typed-arrays/typed-array-utils';
+
+// Compression
+export {
+  octEncodeInRange,
+  octEncode,
+  octEncodeToVector4,
+  octDecodeInRange,
+  octDecode,
+  octDecodeFromVector4,
+  octPackFloat,
+  octEncodeFloat,
+  octDecodeFloat,
+  octPack,
+  octUnpack,
+  compressTextureCoordinates,
+  decompressTextureCoordinates,
+  zigZagDeltaDecode
+} from './compression/attribute-compression';
