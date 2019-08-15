@@ -1,0 +1,28 @@
+
+## Common Fields
+
+| Field        | Type                | Contents     |
+| ------------ | ------------------- | ------------ |
+| `loaderData` | `Object` (Optional) | Loader and format specific data |
+| `version`    | `Number`            | See [Header](#header)    |
+| `type`       | `String`            | See [Mode](#mode)    |
+| `indices`    | `Object` (Optional) | If present, describes the indices (elements) of the geometry as an [accessor](#accessor) object. |
+
+### PointCloudTile Fields
+
+| `header` Field | Type     | Contents |
+| -------------- | -------- | -------- |
+| `attributes.positions` | `Object`            | Keys are [glTF attribute names](#gltf-attribute-name-mapping) and values are [accessor](#accessor) objects.  |
+| `attributes.colors`    | `Object`         |
+
+
+### Accessor
+
+`attributes` and `indices` are represented by glTF "accessor objects" with the binary data for that attribute resolved into a typed array of the proper type.
+
+| Accessors Fields | glTF? | Type         | Contents       |
+| ---------------- | ----- | ------------ | -------------- |
+| `value`          | No    | `TypedArray` | Contains the typed array (corresponds to `bufferView`). The type of the array will match the GL constant in `componentType`. |
+| `size`           | No    | `Number`      | Number of components, `1`-`4`. |
+| `byteOffset`     | Yes   | `Number`     | Starting offset into the bufferView. |
+| `count`          | Yes   | `Number`     | The number of elements/vertices in the attribute data. |
