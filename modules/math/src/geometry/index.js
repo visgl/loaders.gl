@@ -18,6 +18,3 @@ export {encodeRGB565, decodeRGB565} from './colors/rgb565';
 
 // Typed array utils
 export {concatTypedArrays} from './typed-arrays/typed-array-utils';
-
-// Compression
-export {default as AttributeCompression} from './compression/attribute-compression';
