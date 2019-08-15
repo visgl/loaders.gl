@@ -9,7 +9,6 @@ require('@loaders.gl/polyfills/test');
 require('@loaders.gl/core/test');
 require('@loaders.gl/loader-utils/test');
 require('@loaders.gl/images/test');
-require('@loaders.gl/math/test');
 
 // Pointcloud/Mesh Formats
 require('@loaders.gl/draco/test');
@@ -22,6 +21,7 @@ require('@loaders.gl/ply/test');
 require('@loaders.gl/gltf/test');
 
 // 3D Tile Formats
+require('@loaders.gl/math/test');
 require('@loaders.gl/3d-tiles/test');
 
 // Geospatial Formats
