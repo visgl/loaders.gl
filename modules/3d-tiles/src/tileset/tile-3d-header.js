@@ -317,7 +317,9 @@ export default class Tile3DHeader {
 
       if (contentUri.indexOf('.json') !== -1) {
         // TODO - Use Tileset3DLoader
-        this._content = response.json();
+        this._content = await response.json();
+        // Async update of the tree should be fine since there would never be edits to the same node
+        this._tileset.installTileset(this._content, this.parent);
       } else {
         const arrayBuffer = await response.arrayBuffer();
 
@@ -632,7 +634,7 @@ export default class Tile3DHeader {
   }
 
   _isTileset(content) {
-    return 'tilesetVersion' in content;
+    return defined(content.asset);
   }
 
   _contentLoaded() {
