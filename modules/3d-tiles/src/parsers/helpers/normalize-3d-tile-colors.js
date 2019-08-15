@@ -32,6 +32,11 @@ export function normalize3DTileColorAttribute(tile, colors) {
     return {size: 3, value: colorArray};
   }
 
+  // no colors defined
+  if (!colors) {
+    return null;
+  }
+
   // RGB case (tile.isTranslucent)
   if (colors && colors.length === pointCount * 3) {
     return {size: 3, value: colors};
