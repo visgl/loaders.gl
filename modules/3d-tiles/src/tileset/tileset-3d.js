@@ -7,8 +7,6 @@ import {Stats} from 'probe.gl';
 
 import assert from '../utils/assert';
 
-import {getMercatorZoom} from './helpers/bounding-volume';
-
 import Tile3DHeader from './tile-3d-header';
 import Tileset3DTraverser from './tileset-3d-traverser';
 import Tileset3DCache from './tileset-3d-cache';
@@ -323,26 +321,6 @@ export default class Tileset3D {
   // true if the tileset JSON file lists the extension in extensionsUsed
   hasExtension(extensionName) {
     return Boolean(this._extensionsUsed && this._extensionsUsed.indexOf(extensionName) > -1);
-  }
-
-  // Called during intializeTileset to initialize the tileset's cartographic center (longitude, latitude) and zoom.
-  // Also called if the root transform changes
-  getCartographicCenter(result = [0, 0, 0]) {
-    const root = this._root;
-    const {center} = root.boundingVolume;
-    if (!center) {
-      // eslint-disable-next-line
-      console.warn('center was not pre-calculated for the root tile');
-      return result;
-    }
-
-    return Ellipsoid.WGS84.cartesianToCartographic(center, result);
-  }
-
-  // Returns a mercator zoom level that shows the full tileset if centered
-  // Mercator: scale = 2 ** zoom
-  getMercatorZoom() {
-    return getMercatorZoom(this._root.boundingVolume);
   }
 
   update(frameState) {

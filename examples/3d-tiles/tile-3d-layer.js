@@ -232,7 +232,7 @@ export default class Tile3DLayer extends CompositeLayer {
   }
 
   // Layer is created and added to the map if it doesn't exist yet.
-  _updateLayers(frameState) {
+  _updateLayers() {
     const {tileset3d, layerMap} = this.state;
     const {selectedTiles} = tileset3d;
 

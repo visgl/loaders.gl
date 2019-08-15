@@ -205,16 +205,14 @@ export default class App extends PureComponent {
       container: this._statsWidgetContainer
     });
 
-    const center = tileset.getCartographicCenter();
-    const zoom = tileset.getMercatorZoom();
-
+    tileset._getCartographicCenterAndZoom(scratchLongLatZoom);
     this.setState({
       tilesetStatsWidget,
       viewState: {
         ...this.state.viewState,
-        longitude: center[0],
-        latitude: center[1],
-        zoom
+        longitude: scratchLongLatZoom[0],
+        latitude: scratchLongLatZoom[1],
+        zoom: scratchLongLatZoom[2]
       }
     });
   }
