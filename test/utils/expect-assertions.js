@@ -1,5 +1,5 @@
 import test from 'tape';
-import {tapeEqualsEpsilon} from './expect-assertions';
+import {tapeEquals, tapeEqualsEpsilon} from './tape-assertions';
 
 class TestCase {
   constructor(t, result) {
@@ -10,10 +10,10 @@ class TestCase {
     this.t.equals(value);
   }
   toEqual(value) {
-    this.t.equals(value);
+    tapeEquals(this.t, this.result, value);
   }
   toEqualEpsilon(value, epsilon) {
-    tapeEqualsEpsilon(this.t, value, epsilon);
+    tapeEqualsEpsilon(this.t, this.result, value, epsilon);
   }
   toThrow() {
     this.t.throws(() => this.result());
