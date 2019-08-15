@@ -23,7 +23,7 @@ export default class Tileset3DTraverser {
       _emptyTiles: [],
       _hasMixedContent: false
     };
-      }
+  }
 
   traverse(root, frameState, options) {
     this.root = root; // for root screen space error
