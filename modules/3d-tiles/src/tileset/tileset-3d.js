@@ -345,25 +345,6 @@ export default class Tileset3D {
     return getMercatorZoom(this._root.boundingVolume);
   }
 
-  // Called during intializeTileset to initialize the tileset's cartographic center (longitude, latitude) and zoom.
-  // Also called if the root transform changes
-  _getCartographicCenterAndZoom(result) {
-    const root = this._root;
-    const {center} = root.boundingVolume;
-    if (!center) {
-      // eslint-disable-next-line
-      console.warn('center was not pre-calculated for the root tile');
-      return result;
-    }
-
-    result = result || new Vector3();
-    result.copy(center);
-    Ellipsoid.WGS84.cartesianToCartographic(result, result);
-
-    result[2] = getZoom(root.boundingVolume);
-    return result;
-  }
-
   update(frameState) {
     this._updatedVisibilityFrame++; // TODO: only update when camera or culling volume from last update moves (could be render camera change or prefetch camera)
     this._cache.reset();
