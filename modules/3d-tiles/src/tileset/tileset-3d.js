@@ -481,7 +481,6 @@ export default class Tileset3D {
     this._cache.unloadTiles(this, tile => this._unloadTile(tile));
   }
 
-
   // Called during intializeTileset to initialize the tileset's cartographic center (longitude, latitude) and zoom.
   // Also called if the root transform changes
   _getCartographicCenterAndZoom(result) {
