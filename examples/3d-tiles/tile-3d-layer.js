@@ -239,16 +239,20 @@ export default class Tile3DLayer extends CompositeLayer {
     const tilesWithoutLayer = selectedTiles.filter(tile => !(tile.contentUri in layerMap));
 
     for (const tile of tilesWithoutLayer) {
-      this._unpackTile(tile);
+      if (tile.hasTilesetContent) {
+        tileset3d.installTileset(tile.content, tile.parent);
+      } else {
+        this._unpackTile(tile);
 
-      const layer = this._create3DTileLayer(tile);
+        const layer = this._create3DTileLayer(tile);
 
-      tileset3d.addTileToCache(tile); // Add and remove on main thread
+        tileset3d.addTileToCache(tile); // Add and remove on main thread
 
-      layerMap[tile.contentUri] = {
-        layer,
-        tile
-      };
+        layerMap[tile.contentUri] = {
+          layer,
+          tile
+        };
+      }
     }
   }
 
