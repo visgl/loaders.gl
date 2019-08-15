@@ -1,9 +1,12 @@
 import {decodeRGB565} from '@loaders.gl/math';
 
 export function normalize3DTileColorAttribute(tile, colors) {
-  const {batchIds, isRGB565} = tile;
+  const {batchIds, isRGB565, batchTable, pointCount} = tile;
 
-  const {batchTable, pointCount} = tile;
+  // no colors defined
+  if (!colors && (!batchIds || !batchTable)) {
+    return null;
+  }
 
   // Batch table, look up colors in table
   if (batchIds && batchTable) {
@@ -24,17 +27,12 @@ export function normalize3DTileColorAttribute(tile, colors) {
   if (isRGB565) {
     const colorArray = new Uint8ClampedArray(pointCount * 3);
     for (let i = 0; i < pointCount; i++) {
-      const color = decodeRGB565(colorArray[i]);
+      const color = decodeRGB565(colors[i]);
       colorArray[i * 3] = color[0];
       colorArray[i * 3 + 1] = color[1];
       colorArray[i * 3 + 2] = color[2];
     }
     return {size: 3, value: colorArray};
-  }
-
-  // no colors defined
-  if (!colors) {
-    return null;
   }
 
   // RGB case (tile.isTranslucent)
