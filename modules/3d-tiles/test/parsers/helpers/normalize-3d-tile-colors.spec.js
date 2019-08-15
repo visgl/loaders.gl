@@ -33,7 +33,7 @@ const TEST_CASES = [
   // }
 ];
 
-test.only('normalize3DTileColorAttribute', t => {
+test('normalize3DTileColorAttribute', t => {
   TEST_CASES.forEach(testCase =>
     t.deepEqual(
       normalize3DTileColorAttribute(testCase.tile, testCase.colors),
