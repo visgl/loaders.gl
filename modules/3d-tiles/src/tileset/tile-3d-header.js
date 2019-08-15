@@ -317,7 +317,7 @@ export default class Tile3DHeader {
 
       if (contentUri.indexOf('.json') !== -1) {
         // TODO - Use Tileset3DLoader
-        // this._nestedTileset = response.json();
+        this._content = response.json();
       } else {
         const arrayBuffer = await response.arrayBuffer();
 
