@@ -312,7 +312,10 @@ export default class Tileset3D {
     this._updatedVisibilityFrame++; // TODO: only update when camera or culling volume from last update moves (could be render camera change or prefetch camera)
     this._cache.reset();
 
-    this._traverser.traverse(this, frameState);
+    // eslint-disable-next-line consistent-this
+    const options = this; // TODO: hack, create separate options field
+    this._traverser.traverse(this.root, frameState, options);
+    Object.assign(this, this._traverser.result); // Hack during refactor
 
     const requestedTiles = this._requestedTiles;
     // Sort requests by priority before making any requests.
