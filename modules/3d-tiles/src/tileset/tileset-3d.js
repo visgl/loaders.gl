@@ -3,11 +3,23 @@
 
 import {Matrix4, Vector3} from 'math.gl';
 import {Ellipsoid} from '@math.gl/geospatial';
+import {Stats} from 'probe.gl';
+
 import assert from '../utils/assert';
+
 import Tile3DHeader from './tile-3d-header';
 import Tileset3DTraverser from './tileset-3d-traverser';
-
 import Tileset3DCache from './tileset-3d-cache';
+
+const TILES_TOTAL = 'Tiles In Tileset(s)';
+const TILES_IN_MEMORY = 'Tiles In Memory';
+const TILES_IN_VIEW = 'Tiles In View';
+const TILES_RENDERABLE = 'Tiles To Render';
+const TILES_LOADED = 'Tiles Loaded';
+const TILES_LOADING = 'Tiles Loading';
+const TILES_UNLOADED = 'Tiles Unloaded';
+const TILES_LOAD_FAILED = 'Failed Tile Loads';
+const POINTS_COUNT = 'Points';
 
 // TODO move to Math library?
 const WGS84_RADIUS_X = 6378137.0;
@@ -99,6 +111,9 @@ export default class Tileset3D {
     this._basePath = getBasePath(url);
     // eslint-disable-next-line
     // console.warn('Tileset3D.basePath is deprecated. Tiles are relative to the tileset JSON url');
+
+    this.stats = new Stats({id: 'tileset-3d'});
+    this._initStats();
 
     this._root = undefined;
 
@@ -325,6 +340,21 @@ export default class Tileset3D {
       this._loadTile(tile);
     }
     this._cache.unloadTiles(this);
+
+    let tilesRenderable = 0;
+    let pointsRenderable = 0;
+    for (const tile of this.selectedTiles) {
+      if (tile.contentAvailable) {
+        tilesRenderable++;
+        if (tile.content.pointCount) {
+          pointsRenderable += tile.content.pointCount;
+        }
+      }
+    }
+
+    this.stats.get(TILES_IN_VIEW).count = this.selectedTiles.length;
+    this.stats.get(TILES_RENDERABLE).count = tilesRenderable;
+    this.stats.get(POINTS_COUNT).count = pointsRenderable;
   }
 
   // TODO - why are these public methods?
@@ -390,6 +420,18 @@ export default class Tileset3D {
     // this._readyPromise.resolve(this);
   }
 
+  _initStats() {
+    this.stats.get(TILES_TOTAL);
+    this.stats.get(TILES_LOADING);
+    this.stats.get(TILES_IN_MEMORY);
+    this.stats.get(TILES_IN_VIEW);
+    this.stats.get(TILES_RENDERABLE);
+    this.stats.get(TILES_LOADED);
+    this.stats.get(TILES_UNLOADED);
+    this.stats.get(TILES_LOAD_FAILED);
+    this.stats.get(POINTS_COUNT);
+  }
+
   // Installs the main tileset JSON file or a tileset JSON file referenced from a tile.
   // eslint-disable-next-line max-statements
   _installTileset(tilesetJson, parentTile) {
@@ -429,7 +471,7 @@ export default class Tileset3D {
 
     while (stack.length > 0) {
       const tile = stack.pop();
-      // ++statistics.numberOfTilesTotal;
+      this.stats.get(TILES_TOTAL).incrementCount();
       // this._allTilesAdditive = this._allTilesAdditive && tile.refine === TILE_3D_REFINE.ADD;
 
       const children = tile._header.children || [];
@@ -450,31 +492,44 @@ export default class Tileset3D {
   }
 
   async _loadTile(tile) {
-    const expired = tile.contentExpired;
-    const requested = await tile.requestContent(this.DracoLoader);
+    // const expired = tile.contentExpired;
+    // if (expired) {
+    //   if (tile.hasTilesetContent) {
+    //     this._destroySubtree(tile);
+    //   }
+    // }
 
-    if (!requested) {
+    let loaded;
+
+    this.stats.get(TILES_LOADING).incrementCount();
+    try {
+      loaded = await tile.requestContent(this.DracoLoader);
+    } catch (error) {
+      this.stats.get(TILES_LOADING).decrementCount();
+      this.stats.get(TILES_LOAD_FAILED).incrementCount();
+
+      this.onTileLoadFailed(tile, {
+        message: error.message || error.toString()
+      });
+      return;
+    }
+    this.stats.get(TILES_LOADING).decrementCount();
+
+    if (!loaded) {
       return;
     }
 
-    if (expired) {
-      if (tile.hasTilesetContent) {
-        this._destroySubtree(tile);
-      }
-    }
+    this.stats.get(TILES_LOADED).incrementCount();
+    this.stats.get(TILES_IN_MEMORY).incrementCount();
 
-    try {
-      this.onTileLoad(tile);
-    } catch (error) {
-      this.onTileLoadFailed({
-        tile,
-        url: tile.url,
-        message: error.message || error.toString()
-      });
-    }
+    // TODO - add tile to cache
+
+    this.onTileLoad(tile);
   }
 
   _unloadTile(tile) {
+    this.stats.get(TILES_IN_MEMORY).decrementCount();
+    this.stats.get(TILES_UNLOADED).incrementCount();
     // this._cache.unloadTile(this, tile);
     this.onTileUnload(tile);
     tile.unloadContent();
@@ -531,8 +586,7 @@ export default class Tileset3D {
 
   _destroyTile(tile) {
     this._cache.unloadTile(this, tile);
-    this.onTileUnload(tile);
-    tile.unloadContent();
+    this._unloadTile(tile);
     tile.destroy();
   }
 }
