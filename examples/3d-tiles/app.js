@@ -24,7 +24,6 @@ const ION_ACCESS_TOKEN =
 
 // Set your mapbox token here
 const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
-const MAPBOX_STYLE = 'mapbox://styles/mapbox/dark-v9';
 const DEPTH_LIMIT = 10; // TODO: Remove this after sse traversal is working since this is just to prevent full load of tileset
 
 const INITIAL_EXAMPLE_CATEGORY = 'additional';
@@ -48,6 +47,12 @@ const ADDITIONAL_EXAMPLES = {
   }
 };
 
+const MAP_STYLES = {
+  light: 'mapbox://styles/mapbox/light-v9',
+  dark: 'mapbox://styles/mapbox/dark-v9',
+  satellite: 'mapbox://styles/mapbox/satellite-v9'
+};
+
 const EXAMPLES_VIEWSTATE = {
   latitude: 40.04248558075302,
   longitude: -75.61213987669433
@@ -55,7 +60,8 @@ const EXAMPLES_VIEWSTATE = {
 
 export const INITIAL_VIEW_STATE = {
   ...EXAMPLES_VIEWSTATE,
-  pitch: 60,
+  pitch: 45,
+  maxPitch: 60,
   bearing: 0,
   minZoom: 2,
   maxZoom: 30,
@@ -75,6 +81,7 @@ export default class App extends PureComponent {
       tilesetExampleProps: {},
       category: INITIAL_EXAMPLE_CATEGORY,
       name: INITIAL_EXAMPLE_NAME,
+      selectedMapStyle: MAP_STYLES.dark,
 
       // stats (TODO should be managed by Tileset3D)
       tileCount: 0,
@@ -193,6 +200,12 @@ export default class App extends PureComponent {
     await this._loadExampleTileset(category, name);
   }
 
+  _onSelectMapStyle({selectedMapStyle}) {
+    this.setState({
+      selectedMapStyle
+    });
+  }
+
   _onTilesetLoaded(tileset) {
     const tilesetStatsWidget = new StatsWidget(tileset.stats, {
       framesPerUpdate: 1,
@@ -234,7 +247,7 @@ export default class App extends PureComponent {
   }
 
   _renderControlPanel() {
-    const {examplesByCategory, category, name, viewState} = this.state;
+    const {examplesByCategory, category, name, viewState, selectedMapStyle} = this.state;
     if (!examplesByCategory) {
       return null;
     }
@@ -247,10 +260,13 @@ export default class App extends PureComponent {
 
     return (
       <ControlPanel
+        mapStyles={MAP_STYLES}
+        selectedMapStyle={selectedMapStyle}
         data={examplesByCategory}
         category={category}
         name={name}
-        onChange={this._onSelectExample.bind(this)}
+        onMapStyleChange={this._onSelectMapStyle.bind(this)}
+        onExampleChange={this._onSelectExample.bind(this)}
       >
         <div>
           long/lat: {viewState.longitude.toFixed(5)},{viewState.latitude.toFixed(5)}
@@ -306,7 +322,7 @@ export default class App extends PureComponent {
   }
 
   render() {
-    const {viewState} = this.state;
+    const {viewState, selectedMapStyle} = this.state;
     const layer = this._renderLayer();
 
     return (
@@ -322,7 +338,7 @@ export default class App extends PureComponent {
           controller={{type: MapController, maxPitch: 85}}
           onAfterRender={() => this._updateStatWidgets()}
         >
-          <StaticMap mapStyle={MAPBOX_STYLE} mapboxApiAccessToken={MAPBOX_TOKEN} />
+          <StaticMap mapStyle={selectedMapStyle} mapboxApiAccessToken={MAPBOX_TOKEN} />
         </DeckGL>
       </div>
     );

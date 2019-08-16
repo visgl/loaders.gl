@@ -16,8 +16,6 @@ import {parse, registerLoaders} from '@loaders.gl/core';
 import {
   Tileset3D,
   Tile3DLoader,
-  Tile3DFeatureTable,
-  Tile3DBatchTable,
   Tileset3DLoader,
   _getIonTilesetMetadata
 } from '@loaders.gl/3d-tiles';
@@ -274,30 +272,11 @@ export default class Tile3DLayer extends CompositeLayer {
   }
 
   _unpackPointCloud3DTile(tileHeader) {
-    const content = tileHeader.content;
-    const featureTable = new Tile3DFeatureTable(
-      content.featureTableJson,
-      content.featureTableBinary
-    );
-    let batchTable = null;
-    if (content.batchIds) {
-      const {batchTableJson, batchTableBinary} = content;
-      batchTable = new Tile3DBatchTable(
-        batchTableJson,
-        batchTableBinary,
-        featureTable.getGlobalProperty('BATCH_LENGTH')
-      );
-    }
-
-    const {positions} = content;
+    const {pointCount, positions} = tileHeader.content;
 
     tileHeader.userData = {
-      pointsCount: content.featureTableJson.POINTS_LENGTH,
-      positions,
-      featureTable,
-      batchTable,
-      // TODO figure out what is the correct way to extract transform from tileHeader
-      transform: tileHeader._initialTransform
+      pointsCount: pointCount,
+      positions
     };
   }
 

@@ -20,15 +20,18 @@ const Container = styled.div`
 `;
 
 const DropDown = styled.select`
-  margin-bottom: 6px;
+  margin-bottom: 12px;
 `;
 
 const propTypes = {
   category: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
   data: PropTypes.object.isRequired,
+  mapStyles: PropTypes.object.isRequired,
+  selectedMapStyle: PropTypes.string.isRequired,
   droppedFile: PropTypes.string,
-  onChange: PropTypes.func,
+  onExampleChange: PropTypes.func,
+  onMapStyleChange: PropTypes.func,
   children: PropTypes.node
 };
 
@@ -39,7 +42,7 @@ const defaultProps = {
 
 export default class ControlPanel extends PureComponent {
   _renderByCategories() {
-    const {category, name, onChange, data} = this.props;
+    const {category, name, onExampleChange, data} = this.props;
     const categories = Object.keys(data);
     const selectedValue = `${category}.${name}`;
 
@@ -49,7 +52,7 @@ export default class ControlPanel extends PureComponent {
         onChange={evt => {
           const selected = evt.target.value;
           const value = selected.split('.');
-          onChange({category: value[0], name: value[1]});
+          onExampleChange({category: value[0], name: value[1]});
         }}
       >
         {categories.map((c, i) => {
@@ -71,6 +74,28 @@ export default class ControlPanel extends PureComponent {
     );
   }
 
+  _renderMapStyles() {
+    const {onMapStyleChange, mapStyles, selectedMapStyle} = this.props;
+
+    return (
+      <DropDown
+        value={selectedMapStyle}
+        onChange={evt => {
+          const selected = evt.target.value;
+          onMapStyleChange({selectedMapStyle: selected});
+        }}
+      >
+        {Object.keys(mapStyles).map(key => {
+          return (
+            <option key={key} value={mapStyles[key]}>
+              {key}
+            </option>
+          );
+        })}
+      </DropDown>
+    );
+  }
+
   _renderDropped() {
     const {droppedFile} = this.props;
     return droppedFile ? <div>Dropped file: {JSON.stringify(droppedFile.name)}</div> : null;
@@ -79,6 +104,7 @@ export default class ControlPanel extends PureComponent {
   render() {
     return (
       <Container>
+        {this._renderMapStyles()}
         {this._renderByCategories()}
         {this._renderDropped()}
         {this.props.children}
