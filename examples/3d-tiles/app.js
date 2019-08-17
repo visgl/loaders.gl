@@ -6,14 +6,13 @@ import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
 import DeckGL from '@deck.gl/react';
 import {MapController} from '@deck.gl/core';
-import {Vector3} from 'math.gl';
+import {lumaStats} from '@luma.gl/core';
 import {StatsWidget} from '@probe.gl/stats-widget';
 
-import Tile3DLayer from './tile-3d-layer';
+import Tile3DLayer from './tile-3d-layer/tile-3d-layer';
 
 import ControlPanel from './components/control-panel';
 import fileDrop from './components/file-drop';
-import {getStatsWidget} from './components/stats-widgets';
 
 const DATA_URI = 'https://raw.githubusercontent.com/uber-web/loaders.gl/master';
 const INDEX_FILE = `${DATA_URI}/modules/3d-tiles/test/data/index.json`;
@@ -24,12 +23,14 @@ const ION_ACCESS_TOKEN =
 
 // Set your mapbox token here
 const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
-const DEPTH_LIMIT = 10; // TODO: Remove this after sse traversal is working since this is just to prevent full load of tileset
 
-const INITIAL_EXAMPLE_CATEGORY = 'additional';
-const INITIAL_EXAMPLE_NAME = 'Mount St Helens (Cesium ion)';
+const MAP_STYLES = {
+  'Satellite Base Map': 'mapbox://styles/mapbox/satellite-v9',
+  'Light Base Map': 'mapbox://styles/mapbox/light-v9',
+  'Dark Base Map': 'mapbox://styles/mapbox/dark-v9'
+};
 
-const scratchLongLatZoom = new Vector3();
+const INITIAL_MAP_STYLE = MAP_STYLES['Dark Base Map'];
 
 const ADDITIONAL_EXAMPLES = {
   name: 'additional',
@@ -37,21 +38,22 @@ const ADDITIONAL_EXAMPLES = {
     'Royal Exhibition Building (Github Pages)': {
       tilesetUrl:
         'https://raw.githubusercontent.com/uber-common/deck.gl-data/master/3d-tiles/RoyalExhibitionBuilding/tileset.json',
-      depthLimit: DEPTH_LIMIT, // TODO: Remove this after sse traversal is working since this is just to prevent full load of tileset
       color: [115, 101, 152, 200]
     },
-    'Mount St Helens (Cesium ion)': {
-      ionAssetId: 33301, // St Helen
+    'Mount St Helens (Cesium Ion PointCloud)': {
+      ionAssetId: 33301,
+      ionAccessToken: ION_ACCESS_TOKEN
+    },
+    'Montreal (Cesium Ion PointCloud)': {
+      ionAssetId: 28945,
       ionAccessToken: ION_ACCESS_TOKEN
     }
   }
 };
 
-const MAP_STYLES = {
-  light: 'mapbox://styles/mapbox/light-v9',
-  dark: 'mapbox://styles/mapbox/dark-v9',
-  satellite: 'mapbox://styles/mapbox/satellite-v9'
-};
+const INITIAL_EXAMPLE_CATEGORY = 'additional';
+const INITIAL_EXAMPLE_NAME = 'Mount St Helens (Cesium Ion PointCloud)';
+
 
 const EXAMPLES_VIEWSTATE = {
   latitude: 40.04248558075302,
@@ -81,11 +83,7 @@ export default class App extends PureComponent {
       tilesetExampleProps: {},
       category: INITIAL_EXAMPLE_CATEGORY,
       name: INITIAL_EXAMPLE_NAME,
-      selectedMapStyle: MAP_STYLES.dark,
-
-      // stats (TODO should be managed by Tileset3D)
-      tileCount: 0,
-      pointCount: 0
+      selectedMapStyle: INITIAL_MAP_STYLE
     };
 
     this._deckRef = null;
@@ -94,7 +92,17 @@ export default class App extends PureComponent {
   }
 
   async componentDidMount() {
-    this._memWidget = getStatsWidget(this._statsWidgetContainer);
+    this._memWidget = new StatsWidget(lumaStats.get('Memory Usage'), {
+      framesPerUpdate: 1,
+      // TODO - This is noisy. Default formatters should already be pre-registered on the stats object
+      formatters: {
+        'GPU Memory': 'memory',
+        'Buffer Memory': 'memory',
+        'Renderbuffer Memory': 'memory',
+        'Texture Memory': 'memory'
+      },
+      container: this._statsWidgetContainer
+    });
 
     fileDrop(this._deckRef.deckCanvas, (promise, file) => {
       // eslint-disable-next-line
@@ -194,56 +202,70 @@ export default class App extends PureComponent {
     });
   }
 
-  // CONTROL PANEL
+  // Updates stats, called every frame
+  _updateStatWidgets() {
+    if (this._tilesetStatsWidget) {
+      this._tilesetStatsWidget.update();
+    }
+    if (this._memWidget) {
+      this._memWidget.update();
+    }
+  }
+
+
+  // Called by ControlPanel when user selects a new example
   async _onSelectExample({category, name}) {
     this.setState({category, name});
     await this._loadExampleTileset(category, name);
   }
 
+  // Called by ControlPanel when user selects a new map style
   _onSelectMapStyle({selectedMapStyle}) {
-    this.setState({
-      selectedMapStyle
-    });
+    this.setState({selectedMapStyle});
   }
 
+  // Called by Tile3DLayer when a new tileset is loaded
   _onTilesetLoaded(tileset) {
-    const tilesetStatsWidget = new StatsWidget(tileset.stats, {
-      framesPerUpdate: 1,
-      formatters: {
-        Points: 'memory',
-        'Tile Memory Use': 'memory'
-      },
-      container: this._statsWidgetContainer
-    });
+    if (!this._tilesetStatsWidget) {
+      // TODO - would be nice to be able to create stats widget in constructor without stats object
+      // TODO - need method to detach stats widget in unmount...
+      this._tilesetStatsWidget = new StatsWidget(tileset.stats, {
+        container: this._statsWidgetContainer,
+        framesPerUpdate: 1,
+        // TODO - This is noisy. Default formatters should already be pre-registered on the stats object
+        formatters: {
+          Points: 'memory',
+          'Tile Memory Use': 'memory'
+        }
+      });
+    } else {
+      // TODO - this hack "works" but does not update the stats widget title
+      this._tilesetStatsWidget.stats = tileset.stats;
+      this._updateStatWidgets();
+    }
 
-    tileset._getCartographicCenterAndZoom(scratchLongLatZoom);
+    // Recenter to cover the tileset
+    // TODO - transition?
+    const {cartographicCenter, zoom} = tileset;
     this.setState({
-      tilesetStatsWidget,
       viewState: {
         ...this.state.viewState,
-        longitude: scratchLongLatZoom[0],
-        latitude: scratchLongLatZoom[1],
-        zoom: scratchLongLatZoom[2]
+        longitude: cartographicCenter[0],
+        latitude: cartographicCenter[1],
+        zoom
       }
     });
   }
 
+  // Called by Tile3DLayer whenever an individual tile in the current tileset is loaded or unloaded
   _onTilesetChanged(tileHeader) {
     this._updateStatWidgets();
     this.forceUpdate();
   }
 
+  // Called by DeckGL when user interacts with the map
   _onViewStateChange({viewState}) {
     this.setState({viewState});
-  }
-
-  _updateStatWidgets() {
-    if (this.state.tilesetStatsWidget) {
-      this.state.tilesetStatsWidget.update();
-    }
-    if (this._memWidget) {
-      this._memWidget.update();
-    }
   }
 
   _renderControlPanel() {
@@ -251,12 +273,6 @@ export default class App extends PureComponent {
     if (!examplesByCategory) {
       return null;
     }
-
-    // const stats = tileset && tileset.stats;
-    // <div>
-    //   Loaded {this.state.tileCount | 0} tiles {(this.state.pointCount / 1e6).toFixed(2)} M
-    //   points
-    // </div>
 
     return (
       <ControlPanel
@@ -270,13 +286,30 @@ export default class App extends PureComponent {
       >
         <div>
           long/lat: {viewState.longitude.toFixed(5)},{viewState.latitude.toFixed(5)}
+          zoom: {viewState.zoom.toFixed(2)}
         </div>
-        <div>zoom: {viewState.zoom.toFixed(2)} </div>
       </ControlPanel>
     );
   }
 
-  _renderLayer() {
+  _renderStats() {
+    // TODO - too verbose, get more default styling from stats widget?
+   return (
+     <div
+       style={{
+         position: 'absolute',
+         padding: 12,
+         zIndex: '10000',
+         maxWidth: 300,
+         background: '#000',
+         color: '#fff'
+       }}
+       ref={_ => (this._statsWidgetContainer = _)}
+     />
+   );
+ }
+
+  _renderTile3DLayer() {
     const {tilesetExampleProps} = this.state;
     if (!tilesetExampleProps) {
       return null;
@@ -286,44 +319,25 @@ export default class App extends PureComponent {
       tilesetUrl,
       ionAssetId,
       ionAccessToken,
-      coordinateOrigin,
-      depthLimit = DEPTH_LIMIT,
-      color = [255, 0, 0, 255]
+      coordinateOrigin
     } = tilesetExampleProps;
+
     return new Tile3DLayer({
       id: 'tile-3d-layer',
       tilesetUrl,
       ionAssetId,
       ionAccessToken,
       coordinateOrigin,
-      depthLimit,
-      color,
       onTilesetLoaded: this._onTilesetLoaded,
       onTileLoaded: this._onTilesetChanged,
       onTileUnloaded: this._onTilesetChanged,
-      onTileLoadFiled: this._onTilesetChanged
+      onTileLoadFailed: this._onTilesetChanged
     });
-  }
-
-  _renderStats() {
-    return (
-      <div
-        style={{
-          position: 'absolute',
-          padding: 12,
-          zIndex: '10000',
-          maxWidth: 300,
-          background: '#000',
-          color: '#fff'
-        }}
-        ref={_ => (this._statsWidgetContainer = _)}
-      />
-    );
   }
 
   render() {
     const {viewState, selectedMapStyle} = this.state;
-    const layer = this._renderLayer();
+    const tile3DLayer = this._renderTile3DLayer();
 
     return (
       <div>
@@ -331,14 +345,18 @@ export default class App extends PureComponent {
         {this._renderControlPanel()}
         <DeckGL
           ref={_ => (this._deckRef = _)}
-          layers={[layer]}
+          layers={[tile3DLayer]}
           initialViewState={INITIAL_VIEW_STATE}
           viewState={viewState}
           onViewStateChange={this._onViewStateChange.bind(this)}
           controller={{type: MapController, maxPitch: 85}}
           onAfterRender={() => this._updateStatWidgets()}
         >
-          <StaticMap mapStyle={selectedMapStyle} mapboxApiAccessToken={MAPBOX_TOKEN} />
+          <StaticMap
+            mapStyle={selectedMapStyle}
+            mapboxApiAccessToken={MAPBOX_TOKEN}
+            preventStyleDiffing
+          />
         </DeckGL>
       </div>
     );
