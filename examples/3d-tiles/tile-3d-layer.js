@@ -346,7 +346,7 @@ export default class Tile3DLayer extends CompositeLayer {
 
   _createInstanced3DTileLayer(tileHeader) {
     const {gltfUrl} = tileHeader.userData;
-    const {instances, cartographicOrigin, modelMatrix} = tileHeader._content;
+    const {instances, cartographicOrigin, modelMatrix} = tileHeader.content;
 
     return new ScenegraphLayer({
       id: `3d-model-tile-layer-${tileHeader.contentUri}`,
@@ -369,7 +369,7 @@ export default class Tile3DLayer extends CompositeLayer {
   _createPointCloud3DTileLayer(tileHeader) {
     const {positions, normals, colors} = tileHeader.content.attributes;
     const {pointsCount, colorRGBA} = tileHeader.userData;
-    const {cartographicOrigin, modelMatrix} = tileHeader._content;
+    const {cartographicOrigin, modelMatrix} = tileHeader.content;
 
     return (
       positions &&
