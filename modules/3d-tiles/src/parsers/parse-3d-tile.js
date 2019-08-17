@@ -20,20 +20,26 @@ export async function parse3DTile(arrayBuffer, byteOffset = 0, options = {}, til
   switch (tile.type) {
     case TILE3D_TYPE.COMPOSITE:
       // Note: We pass this function as argument so that embedded tiles can be parsed recursively
-      return parseComposite3DTile(tile, arrayBuffer, byteOffset, options, parse3DTile);
+      byteOffset = await parseComposite3DTile(tile, arrayBuffer, byteOffset, options, parse3DTile);
+      break;
 
     case TILE3D_TYPE.BATCHED_3D_MODEL:
-      return parseBatchedModel3DTile(tile, arrayBuffer, byteOffset, options);
+      byteOffset = await parseBatchedModel3DTile(tile, arrayBuffer, byteOffset, options);
+      break;
 
     case TILE3D_TYPE.INSTANCED_3D_MODEL:
-      return parseInstancedModel3DTile(tile, arrayBuffer, byteOffset, options);
+      byteOffset = await parseInstancedModel3DTile(tile, arrayBuffer, byteOffset, options);
+      break;
 
     case TILE3D_TYPE.POINT_CLOUD:
-      return await parsePointCloud3DTile(tile, arrayBuffer, byteOffset, options);
+      byteOffset = await parsePointCloud3DTile(tile, arrayBuffer, byteOffset, options);
+      break;
 
     default:
       throw new Error(`3DTileLoader: unknown type ${tile.type}`); // eslint-disable-line
   }
+
+  return byteOffset;
 }
 
 export function parse3DTileSync(arrayBuffer, byteOffset = 0, options = {}, tile = {}) {

@@ -10,6 +10,7 @@ import assert from '../utils/assert';
 import Tile3DHeader from './tile-3d-header';
 import Tileset3DTraverser from './tileset-3d-traverser';
 import Tileset3DCache from './tileset-3d-cache';
+import {calculateTransformProps} from './helpers/transform-utils';
 
 const TILES_TOTAL = 'Tiles In Tileset(s)';
 const TILES_IN_MEMORY = 'Tiles In Memory';
@@ -524,6 +525,10 @@ export default class Tileset3D {
 
     // TODO - add tile to cache
 
+    // add coordinateOrigin and modelMatrix to tile
+    if (tile && tile._content) {
+      calculateTransformProps(tile, tile._content);
+    }
     this.onTileLoad(tile);
   }
 
