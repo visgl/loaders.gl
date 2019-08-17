@@ -5,7 +5,7 @@ import {COORDINATE_SYSTEM, CompositeLayer} from '@deck.gl/core';
 import {PointCloudLayer} from '@deck.gl/layers';
 import {ScenegraphLayer} from '@deck.gl/mesh-layers';
 
-import {Matrix4, Vector3} from 'math.gl';
+import {Vector3} from 'math.gl';
 import {CullingVolume, Plane} from '@math.gl/culling';
 import {Ellipsoid} from '@math.gl/geospatial';
 
@@ -322,36 +322,6 @@ export default class Tile3DLayer extends CompositeLayer {
     }
   }
 
-  /* eslint-disable-next-line complexity */
-  _resolveTransformProps(tileHeader) {
-    if (!tileHeader || !tileHeader.content) {
-      return {};
-    }
-
-    const {rtcCenter} = tileHeader.content;
-    const {transform} = tileHeader.userData;
-
-    let modelMatrix = new Matrix4(transform);
-    if (rtcCenter) {
-      modelMatrix.translate(rtcCenter);
-    }
-
-    const cartesianOrigin = tileHeader._boundingVolume.center;
-    const cartographicOrigin = Ellipsoid.WGS84.cartesianToCartographic(
-      cartesianOrigin,
-      new Vector3()
-    );
-
-    const rotateMatrix = Ellipsoid.WGS84.eastNorthUpToFixedFrame(cartesianOrigin);
-    modelMatrix = new Matrix4(rotateMatrix.invert()).multiplyRight(modelMatrix);
-
-    return {
-      coordinateOrigin: cartographicOrigin,
-      modelMatrix,
-      coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS
-    };
-  }
-
   _create3DTileLayer(tileHeader) {
     if (!tileHeader.content || !tileHeader.userData) {
       return null;
@@ -376,15 +346,13 @@ export default class Tile3DLayer extends CompositeLayer {
 
   _createInstanced3DTileLayer(tileHeader) {
     const {gltfUrl} = tileHeader.userData;
-    const {instances} = tileHeader._content;
-
-    const transformProps = this._resolveTransformProps(tileHeader);
+    const {instances, cartographicOrigin, modelMatrix} = tileHeader.content;
 
     return new ScenegraphLayer({
       id: `3d-model-tile-layer-${tileHeader.contentUri}`,
       data: instances || [{}],
       coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS,
-      coordinateOrigin: transformProps.coordinateOrigin,
+      coordinateOrigin: cartographicOrigin,
 
       pickable: true,
       scenegraph: gltfUrl,
@@ -392,9 +360,7 @@ export default class Tile3DLayer extends CompositeLayer {
       getPosition: row => [0, 0, 0],
       // TODO fix scenegraph modelMatrix
       getTransformMatrix: d =>
-        d.modelMatrix
-          ? transformProps.modelMatrix.clone().multiplyRight(d.modelMatrix)
-          : transformProps.modelMatrix,
+        d.modelMatrix ? modelMatrix.clone().multiplyRight(d.modelMatrix) : modelMatrix,
       getColor: d => [255, 255, 255, 100],
       opacity: 0.6
     });
@@ -403,8 +369,7 @@ export default class Tile3DLayer extends CompositeLayer {
   _createPointCloud3DTileLayer(tileHeader) {
     const {positions, normals, colors} = tileHeader.content.attributes;
     const {pointsCount, colorRGBA} = tileHeader.userData;
-
-    const transformProps = this._resolveTransformProps(tileHeader);
+    const {cartographicOrigin, modelMatrix} = tileHeader.content;
 
     return (
       positions &&
@@ -420,12 +385,15 @@ export default class Tile3DLayer extends CompositeLayer {
             COLOR_0: colors
           }
         },
+        coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS,
+        coordinateOrigin: cartographicOrigin,
+        modelMatrix,
+
         getColor: colorRGBA || this.props.color,
         pickable: true,
         numInstances: pointsCount,
         opacity: 0.8,
-        pointSize: 1.5,
-        ...transformProps
+        pointSize: 1.5
       })
     );
   }

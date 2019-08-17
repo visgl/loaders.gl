@@ -20,13 +20,13 @@ export async function parse3DTile(arrayBuffer, byteOffset = 0, options = {}, til
   switch (tile.type) {
     case TILE3D_TYPE.COMPOSITE:
       // Note: We pass this function as argument so that embedded tiles can be parsed recursively
-      return parseComposite3DTile(tile, arrayBuffer, byteOffset, options, parse3DTile);
+      return await parseComposite3DTile(tile, arrayBuffer, byteOffset, options, parse3DTile);
 
     case TILE3D_TYPE.BATCHED_3D_MODEL:
-      return parseBatchedModel3DTile(tile, arrayBuffer, byteOffset, options);
+      return await parseBatchedModel3DTile(tile, arrayBuffer, byteOffset, options);
 
     case TILE3D_TYPE.INSTANCED_3D_MODEL:
-      return parseInstancedModel3DTile(tile, arrayBuffer, byteOffset, options);
+      return await parseInstancedModel3DTile(tile, arrayBuffer, byteOffset, options);
 
     case TILE3D_TYPE.POINT_CLOUD:
       return await parsePointCloud3DTile(tile, arrayBuffer, byteOffset, options);
