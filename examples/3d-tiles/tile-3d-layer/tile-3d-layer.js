@@ -6,12 +6,17 @@ import {PointCloudLayer} from '@deck.gl/layers';
 import {ScenegraphLayer} from '@deck.gl/mesh-layers';
 
 import {parse, registerLoaders} from '@loaders.gl/core';
-import {Tileset3DLoader, Tile3DLoader, Tileset3D, _getIonTilesetMetadata} from '@loaders.gl/3d-tiles';
+import {
+  Tileset3DLoader,
+  Tile3DLoader,
+  Tileset3D,
+  _getIonTilesetMetadata
+} from '@loaders.gl/3d-tiles';
 import {GLTFLoader} from '@loaders.gl/gltf';
 import {DracoWorkerLoader} from '@loaders.gl/draco';
 
-import { Vector3, Matrix4 } from 'math.gl';
-import { Ellipsoid } from '@math.gl/geospatial';
+import {Vector3, Matrix4} from 'math.gl';
+import {Ellipsoid} from '@math.gl/geospatial';
 
 import {getFrameState} from './get-frame-state';
 
@@ -41,7 +46,7 @@ export default class Tile3DLayer extends CompositeLayer {
     return changeFlags.somethingChanged;
   }
 
-  async updateState({ props, oldProps }) {
+  async updateState({props, oldProps}) {
     if (props.tilesetUrl && props.tilesetUrl !== oldProps.tilesetUrl) {
       await this._loadTileset(props.tilesetUrl);
     } else if (
@@ -54,7 +59,6 @@ export default class Tile3DLayer extends CompositeLayer {
     const {tileset3d} = this.state;
     this._updateTileset(tileset3d);
   }
-
 
   async _loadTileset(tilesetUrl, fetchOptions, ionMetadata) {
     let tileset3d = null;
@@ -254,7 +258,6 @@ export default class Tile3DLayer extends CompositeLayer {
       opacity: 0.6
     });
   }
-
 
   // TODO - delete when bug fixed
   _resolveTransformProps(tileHeader) {

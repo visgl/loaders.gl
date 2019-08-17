@@ -54,7 +54,6 @@ const ADDITIONAL_EXAMPLES = {
 const INITIAL_EXAMPLE_CATEGORY = 'additional';
 const INITIAL_EXAMPLE_NAME = 'Mount St Helens (Cesium Ion PointCloud)';
 
-
 const EXAMPLES_VIEWSTATE = {
   latitude: 40.04248558075302,
   longitude: -75.61213987669433
@@ -212,7 +211,6 @@ export default class App extends PureComponent {
     }
   }
 
-
   // Called by ControlPanel when user selects a new example
   async _onSelectExample({category, name}) {
     this.setState({category, name});
@@ -294,20 +292,20 @@ export default class App extends PureComponent {
 
   _renderStats() {
     // TODO - too verbose, get more default styling from stats widget?
-   return (
-     <div
-       style={{
-         position: 'absolute',
-         padding: 12,
-         zIndex: '10000',
-         maxWidth: 300,
-         background: '#000',
-         color: '#fff'
-       }}
-       ref={_ => (this._statsWidgetContainer = _)}
-     />
-   );
- }
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          padding: 12,
+          zIndex: '10000',
+          maxWidth: 300,
+          background: '#000',
+          color: '#fff'
+        }}
+        ref={_ => (this._statsWidgetContainer = _)}
+      />
+    );
+  }
 
   _renderTile3DLayer() {
     const {tilesetExampleProps} = this.state;
@@ -315,12 +313,7 @@ export default class App extends PureComponent {
       return null;
     }
 
-    const {
-      tilesetUrl,
-      ionAssetId,
-      ionAccessToken,
-      coordinateOrigin
-    } = tilesetExampleProps;
+    const {tilesetUrl, ionAssetId, ionAccessToken, coordinateOrigin} = tilesetExampleProps;
 
     return new Tile3DLayer({
       id: 'tile-3d-layer',

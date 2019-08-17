@@ -428,7 +428,7 @@ export default class Tileset3D {
   // Called during intializeTileset to initialize the tileset's cartographic center (longitude, latitude) and zoom.
   _calculateViewProps() {
     const root = this._root;
-    const { center } = root.boundingVolume;
+    const {center} = root.boundingVolume;
     // TODO - handle all cases
     if (!center) {
       // eslint-disable-next-line
