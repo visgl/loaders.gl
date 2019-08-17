@@ -197,10 +197,8 @@ export default class App extends PureComponent {
     const tilesetStatsWidget = new StatsWidget(tileset.stats, {
       framesPerUpdate: 1,
       formatters: {
-        'GPU Memory': 'memory',
-        'Buffer Memory': 'memory',
-        'Renderbuffer Memory': 'memory',
-        'Texture Memory': 'memory'
+        Points: 'memory',
+        'Tile Memory Use': 'memory'
       },
       container: this._statsWidgetContainer
     });

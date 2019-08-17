@@ -283,15 +283,6 @@ export default class Tile3DHeader {
       return true;
     }
 
-    return await this.requestContent(DracoLoader);
-  }
-
-  // TODO: This is the fuctiong causing lint to crash
-  async requestContent(DracoLoader) {
-    if (this.hasEmptyContent) {
-      return false;
-    }
-
     const expired = this.contentExpired;
 
     // Append a query parameter of the tile expiration date to prevent caching
@@ -643,14 +634,7 @@ export default class Tile3DHeader {
     // The content may be tileset json
     if (this._isTileset(this._content)) {
       this.hasTilesetContent = true;
-    } else {
-      this._updateGPUMemoryUsageInBytes();
     }
-  }
-
-  _updateGPUMemoryUsageInBytes() {
-    // Good enough? Didn't look too deep but it seemed like it already had the buffers' byte lengths.
-    this._gpuMemoryUsageInBytes = this._content.byteLength;
   }
 
   // Update the tile's transform. The transform is applied to the tile's bounding volumes.
