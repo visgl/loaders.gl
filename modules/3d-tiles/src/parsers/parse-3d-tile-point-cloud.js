@@ -4,14 +4,15 @@
 import {Vector3} from 'math.gl';
 import {GL} from '@loaders.gl/math'; // 'math.gl/geometry';
 
+import assert from '../utils/assert';
 import {parse} from '@loaders.gl/core';
 import Tile3DFeatureTable from '../classes/tile-3d-feature-table';
 import Tile3DBatchTable from '../classes/tile-3d-batch-table';
 import {parse3DTileHeaderSync} from './helpers/parse-3d-tile-header';
 import {parse3DTileTablesHeaderSync, parse3DTileTablesSync} from './helpers/parse-3d-tile-tables';
 import {normalize3DTileColorAttribute} from './helpers/normalize-3d-tile-colors';
-
-import assert from '../utils/assert';
+import {normalize3DTileNormalAttribute} from './helpers/normalize-3d-tile-normals';
+import {normalize3DTilePositionAttribute} from './helpers/normalize-3d-tile-positions';
 
 export async function parsePointCloud3DTile(tile, arrayBuffer, byteOffset, options) {
   byteOffset = parse3DTileHeaderSync(tile, arrayBuffer, byteOffset, options);
@@ -95,11 +96,8 @@ function parsePositions(tile, featureTable) {
     if (featureTable.hasProperty('POSITION')) {
       tile.attributes.positions = featureTable.getPropertyArray('POSITION', GL.FLOAT, 3);
     } else if (featureTable.hasProperty('POSITION_QUANTIZED')) {
-      tile.attributes.positions = featureTable.getPropertyArray(
-        'POSITION_QUANTIZED',
-        GL.UNSIGNED_SHORT,
-        3
-      );
+      const positions = featureTable.getPropertyArray('POSITION_QUANTIZED', GL.UNSIGNED_SHORT, 3);
+
       tile.isQuantized = true;
       tile.quantizedRange = (1 << 16) - 1;
 
@@ -120,6 +118,8 @@ function parsePositions(tile, featureTable) {
       if (!tile.quantizedVolumeOffset) {
         throw new Error('QUANTIZED_VOLUME_OFFSET must be defined for quantized positions.');
       }
+
+      tile.attributes.positions = normalize3DTilePositionAttribute(tile, positions);
     }
   }
 
@@ -151,12 +151,15 @@ function parseColors(tile, featureTable, batchTable) {
 
 function parseNormals(tile, featureTable) {
   if (!tile.attributes.normals) {
+    let normals = null;
     if (featureTable.hasProperty('NORMAL')) {
-      tile.attributes.normals = featureTable.getPropertyArray('NORMAL', GL.FLOAT, 3);
+      normals = featureTable.getPropertyArray('NORMAL', GL.FLOAT, 3);
     } else if (featureTable.hasProperty('NORMAL_OCT16P')) {
-      tile.attributes.normals = featureTable.getPropertyArray('NORMAL_OCT16P', GL.UNSIGNED_BYTE, 2);
+      normals = featureTable.getPropertyArray('NORMAL_OCT16P', GL.UNSIGNED_BYTE, 2);
       tile.isOctEncoded16P = true;
     }
+
+    tile.attributes.normals = normalize3DTileNormalAttribute(tile, normals);
   }
 }
 
