@@ -20,6 +20,7 @@ const TILES_LOADING = 'Tiles Loading';
 const TILES_UNLOADED = 'Tiles Unloaded';
 const TILES_LOAD_FAILED = 'Failed Tile Loads';
 const POINTS_COUNT = 'Points';
+const TILES_GPU_MEMORY = 'Tile Memory Use';
 
 // TODO move to Math library?
 const WGS84_RADIUS_X = 6378137.0;
@@ -57,7 +58,7 @@ const DEFAULT_OPTIONS = {
 
   cullWithChildrenBounds: true,
   maximumScreenSpaceError: 16,
-  maximumMemoryUsage: 512,
+  maximumMemoryUsage: 32,
 
   modelMatrix: new Matrix4(),
 
@@ -503,7 +504,7 @@ export default class Tileset3D {
 
     this.stats.get(TILES_LOADING).incrementCount();
     try {
-      loaded = await tile.requestContent(this.DracoLoader);
+      loaded = await tile.loadContent(this.DracoLoader);
     } catch (error) {
       this.stats.get(TILES_LOADING).decrementCount();
       this.stats.get(TILES_LOAD_FAILED).incrementCount();
@@ -522,15 +523,23 @@ export default class Tileset3D {
     this.stats.get(TILES_LOADED).incrementCount();
     this.stats.get(TILES_IN_MEMORY).incrementCount();
 
-    // TODO - add tile to cache
+    // Good enough? Didn't look too deep but it seemed like it already had the buffers' byte lengths.
+    this._gpuMemoryUsageInBytes += tile._content.byteLength || 0;
+    this.stats.get(TILES_GPU_MEMORY).count = this._gpuMemoryUsageInBytes;
 
+    // TODO - add tile to cache
     this.onTileLoad(tile);
   }
 
   _unloadTile(tile) {
     this.stats.get(TILES_IN_MEMORY).decrementCount();
     this.stats.get(TILES_UNLOADED).incrementCount();
+
+    this._gpuMemoryUsageInBytes -= tile._content.byteLength || 0;
+    this.stats.get(TILES_GPU_MEMORY).count = this._gpuMemoryUsageInBytes;
+
     // this._cache.unloadTile(this, tile);
+
     this.onTileUnload(tile);
     tile.unloadContent();
   }
