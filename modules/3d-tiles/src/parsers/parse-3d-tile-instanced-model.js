@@ -157,10 +157,6 @@ function extractInstancedAttributes(tile, featureTable, batchTable, instancesLen
     }
 
     instancePosition.copy(position);
-    // Why add center to instance position rather than tile transform?
-    if (tile.rtcCenter) {
-      // instancePosition.add(tile.rtcCenter);
-    }
     instanceTranslationRotationScale.translation = instancePosition;
 
     // Get the instance rotation
