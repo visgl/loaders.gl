@@ -1,5 +1,7 @@
 # Category: Table
 
+This category provides a set of conventions for working with tables in row-based, columnar or chunked/batched columnar formats.
+
 ## Data Structure
 
 | Field        | Type                | Contents     |
