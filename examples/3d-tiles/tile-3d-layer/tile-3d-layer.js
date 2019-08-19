@@ -5,113 +5,23 @@ import {COORDINATE_SYSTEM, CompositeLayer} from '@deck.gl/core';
 import {PointCloudLayer} from '@deck.gl/layers';
 import {ScenegraphLayer} from '@deck.gl/mesh-layers';
 
-import {Vector3} from 'math.gl';
-import {CullingVolume, Plane} from '@math.gl/culling';
-import {Ellipsoid} from '@math.gl/geospatial';
-
-import {DracoWorkerLoader} from '@loaders.gl/draco';
-import {GLTFLoader} from '@loaders.gl/gltf';
 import {parse, registerLoaders} from '@loaders.gl/core';
-
 import {
-  Tileset3D,
-  Tile3DLoader,
   Tileset3DLoader,
+  Tile3DLoader,
+  Tileset3D,
   _getIonTilesetMetadata
 } from '@loaders.gl/3d-tiles';
+import {GLTFLoader} from '@loaders.gl/gltf';
+import {DracoWorkerLoader} from '@loaders.gl/draco';
 
+import {Vector3, Matrix4} from 'math.gl';
+import {Ellipsoid} from '@math.gl/geospatial';
+
+import {getFrameState} from './get-frame-state';
+
+// TODO - simply registering the DracoLoader should be enough to make it available to gltf/3d-tiles
 registerLoaders([Tile3DLoader, Tileset3DLoader, GLTFLoader]);
-
-const scratchPlane = new Plane();
-const scratchPosition = new Vector3();
-const cullingVolume = new CullingVolume([
-  new Plane(),
-  new Plane(),
-  new Plane(),
-  new Plane(),
-  new Plane(),
-  new Plane()
-]);
-
-function commonSpacePlanesToWGS84(viewport) {
-  // Extract frustum planes based on current view.
-  const viewportCenterCartographic = [viewport.longitude, viewport.latitude, 0];
-  const viewportCenterCartesian = Ellipsoid.WGS84.cartographicToCartesian(
-    viewportCenterCartographic,
-    new Vector3()
-  );
-
-  const frustumPlanes = viewport.getFrustumPlanes();
-  let i = 0;
-  for (const dir in frustumPlanes) {
-    const plane = frustumPlanes[dir];
-    const distanceToCenter = plane.normal.dot(viewport.center);
-    const nLen = plane.normal.len();
-    scratchPosition
-      .copy(plane.normal)
-      .scale((plane.distance - distanceToCenter) / (nLen * nLen))
-      .add(viewport.center);
-    const cartographicPos = viewport.unprojectPosition(scratchPosition);
-
-    const cartesianPos = Ellipsoid.WGS84.cartographicToCartesian(cartographicPos, new Vector3());
-
-    scratchPlane.normal
-      .copy(cartesianPos)
-      .subtract(viewportCenterCartesian)
-      .scale(-1) // Want the normal to point into the frustum since that's what culling expects
-      .normalize();
-    scratchPlane.distance = Math.abs(scratchPlane.normal.dot(cartesianPos));
-
-    cullingVolume.planes[i].normal.copy(scratchPlane.normal);
-    cullingVolume.planes[i].distance = scratchPlane.distance;
-    i = i + 1;
-  }
-}
-
-function getFrameState(viewport, animationProps) {
-  // Traverse and and request. Update _selectedTiles so that we know what to render.
-  const {height, tick} = animationProps;
-  const {cameraDirection, cameraUp} = viewport;
-  const {metersPerPixel} = viewport.distanceScales;
-
-  const viewportCenterCartographic = [viewport.longitude, viewport.latitude, 0];
-  // TODO - Ellipsoid.eastNorthUpToFixedFrame() breaks on raw array, create a Vector.
-  // TODO - Ellipsoid.eastNorthUpToFixedFrame() takes a cartesian, is that intuitive?
-  const viewportCenterCartesian = Ellipsoid.WGS84.cartographicToCartesian(
-    viewportCenterCartographic,
-    new Vector3()
-  );
-  const enuToFixedTransform = Ellipsoid.WGS84.eastNorthUpToFixedFrame(viewportCenterCartesian);
-
-  const cameraPositionCartographic = viewport.unprojectPosition(viewport.cameraPosition);
-  const cameraPositionCartesian = Ellipsoid.WGS84.cartographicToCartesian(
-    cameraPositionCartographic,
-    new Vector3()
-  );
-
-  // These should still be normalized as the transform has scale 1 (goes from meters to meters)
-  const cameraDirectionCartesian = new Vector3(
-    enuToFixedTransform.transformAsVector(new Vector3(cameraDirection).scale(metersPerPixel))
-  ).normalize();
-  const cameraUpCartesian = new Vector3(
-    enuToFixedTransform.transformAsVector(new Vector3(cameraUp).scale(metersPerPixel))
-  ).normalize();
-
-  commonSpacePlanesToWGS84(viewport);
-
-  // TODO: make a file/class for frameState and document what needs to be attached to this so that traversal can function
-  return {
-    camera: {
-      position: cameraPositionCartesian,
-      direction: cameraDirectionCartesian,
-      up: cameraUpCartesian
-    },
-    height,
-    cullingVolume,
-    frameNumber: tick, // TODO: This can be the same between updates, what number is unique for between updates?
-    sseDenominator: 1.15 // Assumes fovy = 60 degrees
-  };
-}
 
 const defaultProps = {
   tilesetUrl: null,
@@ -132,15 +42,37 @@ export default class Tile3DLayer extends CompositeLayer {
     };
   }
 
+  shouldUpdateState({changeFlags}) {
+    return changeFlags.somethingChanged;
+  }
+
+  async updateState({props, oldProps}) {
+    if (props.tilesetUrl && props.tilesetUrl !== oldProps.tilesetUrl) {
+      await this._loadTileset(props.tilesetUrl);
+    } else if (
+      (props.ionAccessToken || props.ionAssetId) &&
+      (props.ionAccessToken !== oldProps.ionAccessToken || props.ionAssetId !== oldProps.ionAssetId)
+    ) {
+      await this._loadTilesetFromIon(props.ionAccessToken, props.ionAssetId);
+    }
+
+    const {tileset3d} = this.state;
+    this._updateTileset(tileset3d);
+  }
+
   async _loadTileset(tilesetUrl, fetchOptions, ionMetadata) {
     let tileset3d = null;
 
     if (tilesetUrl) {
       const response = await fetch(tilesetUrl, fetchOptions);
       const tilesetJson = await response.json();
+
       tileset3d = new Tileset3D(tilesetJson, tilesetUrl, {
-        onTileLoad: this.props.onTileLoaded,
-        DracoLoader: DracoWorkerLoader,
+        onTileLoad: tileHeader => {
+          this.props.onTileLoaded(tileHeader);
+          this._updateTileset(tileset3d);
+        },
+        DracoLoader: DracoWorkerLoader, // TODO: should not be needed, see registerLoaders above
         fetchOptions,
         ...ionMetadata
       });
@@ -163,24 +95,6 @@ export default class Tile3DLayer extends CompositeLayer {
     const ionMetadata = await _getIonTilesetMetadata(ionAccessToken, ionAssetId);
     const {url, headers} = ionMetadata;
     return await this._loadTileset(url, {headers}, ionMetadata);
-  }
-
-  shouldUpdateState({changeFlags}) {
-    return changeFlags.somethingChanged;
-  }
-
-  async updateState({props, oldProps}) {
-    if (props.tilesetUrl && props.tilesetUrl !== oldProps.tilesetUrl) {
-      await this._loadTileset(props.tilesetUrl);
-    } else if (
-      (props.ionAccessToken || props.ionAssetId) &&
-      (props.ionAccessToken !== oldProps.ionAccessToken || props.ionAssetId !== oldProps.ionAssetId)
-    ) {
-      await this._loadTilesetFromIon(props.ionAccessToken, props.ionAssetId);
-    }
-
-    const {tileset3d} = this.state;
-    this._updateTileset(tileset3d);
   }
 
   _updateTileset(tileset3d) {
@@ -275,7 +189,7 @@ export default class Tile3DLayer extends CompositeLayer {
     const {pointCount, positions} = tileHeader.content;
 
     tileHeader.userData = {
-      pointsCount: pointCount,
+      pointCount,
       positions
     };
   }
@@ -345,9 +259,39 @@ export default class Tile3DLayer extends CompositeLayer {
     });
   }
 
+  // TODO - delete when bug fixed
+  _resolveTransformProps(tileHeader) {
+    if (!tileHeader || !tileHeader.content) {
+      return {};
+    }
+
+    const {rtcCenter} = tileHeader.content;
+    const transform = tileHeader._initialTransform;
+
+    let modelMatrix = new Matrix4(transform);
+    if (rtcCenter) {
+      modelMatrix.translate(rtcCenter);
+    }
+
+    const cartesianOrigin = tileHeader._boundingVolume.center;
+    const cartographicOrigin = Ellipsoid.WGS84.cartesianToCartographic(
+      cartesianOrigin,
+      new Vector3()
+    );
+
+    const rotateMatrix = Ellipsoid.WGS84.eastNorthUpToFixedFrame(cartesianOrigin);
+    modelMatrix = new Matrix4(rotateMatrix.invert()).multiplyRight(modelMatrix);
+
+    return {
+      coordinateOrigin: cartographicOrigin,
+      modelMatrix
+    };
+  }
+
   _createPointCloud3DTileLayer(tileHeader) {
     const {positions, normals, colors} = tileHeader.content.attributes;
-    const {pointsCount, colorRGBA} = tileHeader.userData;
+    const {pointCount} = tileHeader.content;
+    const {colorRGBA} = tileHeader.userData;
     const {cartographicOrigin, modelMatrix} = tileHeader.content;
 
     return (
@@ -356,7 +300,7 @@ export default class Tile3DLayer extends CompositeLayer {
         id: `3d-point-cloud-tile-layer-${tileHeader.contentUri}`,
         data: {
           header: {
-            vertexCount: pointsCount
+            vertexCount: pointCount
           },
           attributes: {
             POSITION: positions,
@@ -368,9 +312,12 @@ export default class Tile3DLayer extends CompositeLayer {
         coordinateOrigin: cartographicOrigin,
         modelMatrix,
 
+        // TODO - delete when bug fixed, somehow these props are different
+        ...this._resolveTransformProps(tileHeader),
+
         getColor: colorRGBA || this.props.color,
         pickable: true,
-        numInstances: pointsCount,
+        numInstances: pointCount,
         opacity: 0.8,
         pointSize: 1.5
       })
@@ -379,8 +326,8 @@ export default class Tile3DLayer extends CompositeLayer {
 
   renderLayers() {
     // TODO - reuse the same layer list
-    // const {layers} = this.state;
     const layers = Object.values(this.state.layerMap).map(layer => layer.layer);
+    // const {layers} = this.state;
     return layers;
   }
 }

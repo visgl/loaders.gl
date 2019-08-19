@@ -114,7 +114,7 @@ export default class Tileset3D {
     // eslint-disable-next-line
     // console.warn('Tileset3D.basePath is deprecated. Tiles are relative to the tileset JSON url');
 
-    this.stats = new Stats({id: 'tileset-3d'});
+    this.stats = new Stats({id: url});
     this._initStats();
 
     this._root = undefined;
@@ -420,6 +420,25 @@ export default class Tileset3D {
 
     // this._clippingPlanesOriginMatrix = Matrix4.clone(this._initialClippingPlanesOriginMatrix);
     // this._readyPromise.resolve(this);
+
+    // Calculate cartographicCenter & zoom props to help apps center view on tileset
+    this._calculateViewProps();
+  }
+
+  // Called during intializeTileset to initialize the tileset's cartographic center (longitude, latitude) and zoom.
+  _calculateViewProps() {
+    const root = this._root;
+    const {center} = root.boundingVolume;
+    // TODO - handle all cases
+    if (!center) {
+      // eslint-disable-next-line
+      console.warn('center was not pre-calculated for the root tile');
+      this.cartographicCenter = new Vector3();
+      this.zoom = 16;
+      return;
+    }
+    this.cartographicCenter = Ellipsoid.WGS84.cartesianToCartographic(center, new Vector3());
+    this.zoom = getZoom(root.boundingVolume);
   }
 
   _initStats() {
@@ -551,25 +570,6 @@ export default class Tileset3D {
 
   _unloadTiles() {
     this._cache.unloadTiles(this, tile => this._unloadTile(tile));
-  }
-
-  // Called during intializeTileset to initialize the tileset's cartographic center (longitude, latitude) and zoom.
-  // Also called if the root transform changes
-  _getCartographicCenterAndZoom(result) {
-    const root = this._root;
-    const {center} = root.boundingVolume;
-    if (!center) {
-      // eslint-disable-next-line
-      console.warn('center was not pre-calculated for the root tile');
-      return result;
-    }
-
-    result = result || new Vector3();
-    result.copy(center);
-    Ellipsoid.WGS84.cartesianToCartographic(result, result);
-
-    result[2] = getZoom(root.boundingVolume);
-    return result;
   }
 
   decrementGPUMemoryUsage(bytes) {
