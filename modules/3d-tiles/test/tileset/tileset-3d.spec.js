@@ -172,7 +172,7 @@ test('Tileset3D#loads and initializes with tileset JSON file', async t => {
   t.equals(tileset.properties.id.minimum, 0);
   t.equals(tileset.properties.id.maximum, 9);
 
-  t.equals(tileset._geometricError, 240.0);
+  t.equals(tileset.geometricError, 240.0);
   t.ok(tileset.root);
   t.equals(tileset.url, TILESET_URL);
 
@@ -2000,7 +2000,7 @@ test('Tileset3D#renders with lightColor', t => {
       });
     });
   });
-  t.end(); 
+  t.end();
 });
 ///////////////////////////////////////////////////////////////////////////
 // Cache replacement tests

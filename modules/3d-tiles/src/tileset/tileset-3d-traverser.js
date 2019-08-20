@@ -23,6 +23,9 @@ export default class Tileset3DTraverser {
       _emptyTiles: [],
       _hasMixedContent: false
     };
+
+    // Optimization option. Determines if level of detail skipping should be applied during the traversal.
+    this._disableSkipLevelOfDetail = false;
   }
 
   traverse(root, frameState, options) {
@@ -77,7 +80,7 @@ export default class Tileset3DTraverser {
   }
 
   selectDesiredTile(tile, frameState) {
-    if (!this.options._skipLevelOfDetail) {
+    if (!this.options.skipLevelOfDetail) {
       if (tile.contentAvailable) {
         // The tile can be selected right away and does not require traverseAndSelect
         this.selectTile(tile, frameState);
@@ -128,7 +131,7 @@ export default class Tileset3DTraverser {
         const {parent} = tile;
         const useParentScreenSpaceError =
           parent &&
-          (!options._skipLevelOfDetail ||
+          (!options.skipLevelOfDetail ||
             tile._screenSpaceError === 0.0 ||
             parent.hasTilesetContent);
         const screenSpaceError = useParentScreenSpaceError
@@ -236,7 +239,7 @@ export default class Tileset3DTraverser {
     //
     // // For traditional replacement refinement only refine if all children are loaded.
     // // Empty tiles are exempt since it looks better if children stream in as they are loaded to fill the empty space.
-    // const checkRefines = !options._skipLevelOfDetail && tile.refine === TILE3D_REFINEMENT.REPLACE && tile.hasRenderContent
+    // const checkRefines = !options.skipLevelOfDetail && tile.refine === TILE3D_REFINEMENT.REPLACE && tile.hasRenderContent
     // let refines = true;
     //
     // let anyChildrenVisible = false;
