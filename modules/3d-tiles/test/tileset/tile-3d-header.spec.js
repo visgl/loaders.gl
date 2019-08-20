@@ -112,11 +112,7 @@ const MOCK_TILESET = {
 // }
 
 test('Tile3DHeader#destroys', t => {
-  const tile = new Tile3DHeader(
-    MOCK_TILESET,
-    TILE_HEADER_WITH_BOUNDING_SPHERE,
-    undefined
-  );
+  const tile = new Tile3DHeader(MOCK_TILESET, TILE_HEADER_WITH_BOUNDING_SPHERE, undefined);
   t.equals(tile.isDestroyed(), false);
   tile.destroy();
   t.equals(tile.isDestroyed(), true);
@@ -152,11 +148,7 @@ test('Tile3DHeader#geometric error is undefined', t => {
   const geometricErrorMissing = clone(TILE_HEADER_WITH_BOUNDING_SPHERE, true);
   delete geometricErrorMissing.geometricError;
 
-  const parent = new Tile3DHeader(
-    MOCK_TILESET,
-    TILE_HEADER_WITH_BOUNDING_SPHERE,
-    undefined
-  );
+  const parent = new Tile3DHeader(MOCK_TILESET, TILE_HEADER_WITH_BOUNDING_SPHERE, undefined);
   const child = new Tile3DHeader(MOCK_TILESET, geometricErrorMissing, parent);
   t.deepEquals(child.geometricError, parent.geometricError);
   t.deepEquals(child.geometricError, 1);
