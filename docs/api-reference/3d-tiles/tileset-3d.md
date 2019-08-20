@@ -65,32 +65,13 @@ Notes: The tileset must be 3D Tiles version 0.0 or 1.0.
 - `options.skipLevels`=`1` (`Number`) - When `skipLevelOfDetail` is `true`, a constant defining the minimum number of levels to skip when loading tiles. When it is 0, no levels are skipped. Used in conjunction with `skipScreenSpaceErrorFactor` to determine which tiles to load.
 - `options.immediatelyLoadDesiredLevelOfDetail`=`false` (`Boolean`) - When `skipLevelOfDetail` is `true`, only tiles that meet the maximum screen space error will ever be downloaded. Skipping factors are ignored and just the desired tiles are loaded.
 - `options.loadSiblings`=`false` (`Boolean`) - When `skipLevelOfDetail` is `true`, determines whether siblings of visible tiles are always downloaded during traversal.
-
-Rendering Options:
-
-- `options.shadows`=`ShadowMode.ENABLED`] (`ShadowMode`) - Determines whether the tileset casts or receives shadows from each light source.
-- `options.clippingPlanes`= (`ClippingPlaneCollection`) The (`ClippingPlaneCollection`) used to selectively disable rendering the tileset.
-- `options.classificationType` (`ClassificationType`) - Determines whether terrain, 3D Tiles or both will be classified by this tileset. See (`Tileset3D#classificationType`) for details about restrictions and limitations.
 - `options.ellipsoid`=`Ellipsoid.WGS84` (`Ellipsoid`) - The ellipsoid determining the size and shape of the globe.
-- `options.pointCloudShading`] (`Object`) - Options for constructing a (`PointCloudShading`) object to control point attenuation based on geometric error and lighting.
-- `options.imageBasedLightingFactor`=`[1.0, 1.0]` - Scales the diffuse and specular image-based lighting from the earth, sky, atmosphere and star skybox.
-- `options.lightColor`= (Number[3]) - The color and intensity of the sunlight used to shade models.
-- (`Number`) `options.luminanceAtZenith`=`0`. - 5] The sun's luminance at the zenith in kilo candela per meter squared to use for this model's procedural environment map.
-- (`Cartesian3[]`) `options.sphericalHarmonicCoefficients`] The third order spherical harmonic coefficients used for the diffuse color of image-based lighting.
-- (`String`) `options.specularEnvironmentMaps`] A URL to a KTX file that contains a cube map of the specular lighting and the convoluted specular mipmaps.
+- `options.classificationType` (`ClassificationType`) - Determines whether terrain, 3D Tiles or both will be classified by this tileset. See (`Tileset3D#classificationType`) for details about restrictions and limitations.
 
-Debug Options:
-
-- `options.debugFreezeFrame`=`false` (`Boolean`) - For debugging only. Determines if only the tiles from last frame should be used for rendering.
-- `options.debugColorizeTiles`=`false` (`Boolean`) - For debugging only. When true, assigns a random color to each tile.
-- `options.debugWireframe`=`false` (`Boolean`) - For debugging only. When true, render's each tile's content as a wireframe.
-- `options.debugShowBoundingVolume`=`false`](`Boolean`) - For debugging only. When true, renders the bounding volume for each tile.
-- `options.debugShowContentBoundingVolume`=`false` (`Boolean`) - For debugging only. When true, renders the bounding volume for each tile's content.
-- `options.debugShowViewerRequestVolume`=`false` (`Boolean`) - For debugging only. When true, renders the viewer request volume for each tile.
-- `options.debugShowGeometricError`=`false` (`Boolean`) - For debugging only. When true, draws labels to indicate the geometric error of each tile.
-- `options.debugShowRenderingStatistics`=`false` (`Boolean`) - For debugging only. When true, draws labels to indicate the number of commands, points, triangles and features for each tile.
-- `options.debugShowMemoryUsage`=`false` (`Boolean`) - For debugging only. When true, draws labels to indicate the texture and geometry memory in megabytes used by each tile.
-- `options.debugShowUrl`=`false` (`Boolean`) - For debugging only. When true, draws labels to indicate the url of each tile.
+Callbacks
+- `options.onTileLoad` (`void(tileHeader)`) -
+- `options.onTileUnload` (`void(tileHeader)`) -
+- `options.onTileLoadFailed` (`void(tileHeader, message : String)`) -
 
 ### hasExtension(extensionName : String) : Boolean
 
@@ -99,7 +80,7 @@ Debug Options:
 ^returns {Boolean} `true` if the tileset JSON file lists the extension in extensionsUsed; otherwise, `false`.
 
 
-## Option
+## Options
 
 ### dynamicScreenSpaceError
 
@@ -142,7 +123,7 @@ street level views.
 
 Valid values are between 0.0 and 1.0.
 
-# loadProgress : Event
+# onTileLoad
 
 The event fired to indicate progress of loading new tiles.  This event is fired when a new tile
 is requested, when a requested tile is finished downloading, and when a downloaded tile has been
@@ -179,12 +160,10 @@ This event is fired at the end of the frame after the scene is rendered.
 
 
 ```js
-tileset.initialTilesLoaded.addEventListener(function() {
-    console.log('Initial tiles are loaded');
-});
+tileset.initialTilesLoaded.addEventListener(() => console.log('Initial tiles are loaded'));
 ```
 
-### tileLoad : Event
+### onTileLoad : Event
 
 The event fired to indicate that a tile's content was loaded.
 
@@ -211,9 +190,7 @@ rendered so that the event listener has access to the tile's content.  Do not cr
 or modify entities or primitives during the event listener.
 
 ```js
-tileset.tileUnload.addEventListener(function(tile) {
-    console.log('A tile was unloaded from the cache.');
-});
+tileset.tileUnload.addEventListener(tile =>  console.log('A tile was unloaded from the cache.'));
 ```
  *
 see Tileset3D#maximumMemoryUsage
