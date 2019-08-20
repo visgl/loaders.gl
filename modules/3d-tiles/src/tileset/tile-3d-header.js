@@ -91,7 +91,7 @@ export default class Tile3DHeader {
     if ('geometricError' in header) {
       this.geometricError = header.geometricError;
     } else {
-      this.geometricError = (this.parent && this.parent.geometricError) || tileset._geometricError;
+      this.geometricError = (this.parent && this.parent.geometricError) || tileset.geometricError;
       console.warn('3D Tile: Required prop geometricError is undefined. Using parent error');
     }
 
@@ -232,7 +232,7 @@ export default class Tile3DHeader {
   getScreenSpaceError(frameState, useParentGeometricError) {
     const tileset = this._tileset;
     const parentGeometricError =
-      (this.parent && this.parent.geometricError) || tileset._geometricError;
+      (this.parent && this.parent.geometricError) || tileset.geometricError;
     const geometricError = useParentGeometricError ? parentGeometricError : this.geometricError;
 
     // Leaf tiles do not have any error so save the computation
@@ -629,7 +629,7 @@ export default class Tile3DHeader {
     switch (this._content.type) {
       case 'vctr':
       case 'geom':
-        tileset._disableSkipLevelOfDetail = true;
+        tileset.traverser.disableSkipLevelOfDetail = true;
       default:
     }
 

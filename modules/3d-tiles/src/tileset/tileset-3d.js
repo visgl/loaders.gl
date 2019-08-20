@@ -141,6 +141,8 @@ export default class Tileset3D {
     // includes per-point metadata.
     this.gpuMemoryUsageInBytes = 0;
 
+    this.geometricError = undefined; // Geometric error when the tree is not rendered at all
+
     // HELPER OBJECTS
     this._traverser = new Tileset3DTraverser();
     this._cache = new Tileset3DCache();
@@ -156,7 +158,6 @@ export default class Tileset3D {
     this._root = undefined;
     this._asset = undefined; // Metadata for the entire tileset
     this._properties = undefined; // Metadata for per-model/point/etc properties
-    this._geometricError = undefined; // Geometric error when the tree is not rendered at all
     this._extensionsUsed = undefined;
     this._gltfUpAxis = undefined;
 
@@ -180,10 +181,6 @@ export default class Tileset3D {
     this._ellipsoid = options.ellipsoid;
 
     this._dynamicScreenSpaceErrorComputedDensity = 0.0; // Updated based on the camera position and direction
-
-    // Optimization option. Determines if level of detail skipping should be applied during the traversal.
-    this._skipLevelOfDetail = this.skipLevelOfDetail;
-    this._disableSkipLevelOfDetail = false;
 
     this._initializeTileSet(json, options);
 
@@ -276,8 +273,6 @@ export default class Tileset3D {
     this._updatedVisibilityFrame++; // TODO: only update when camera or culling volume from last update moves (could be render camera change or prefetch camera)
     this._cache.reset();
 
-    // eslint-disable-next-line consistent-this
-    const options = this; // TODO: hack, create separate options field
     this._traverser.traverse(this.root, frameState, this.options);
     Object.assign(this, this._traverser.result); // Hack during refactor
 
@@ -338,7 +333,7 @@ export default class Tileset3D {
 
     this._asset = tilesetJson.asset;
     this._properties = tilesetJson.properties;
-    this._geometricError = tilesetJson.geometricError;
+    this.geometricError = tilesetJson.geometricError;
     this._extensionsUsed = tilesetJson.extensionsUsed;
     this._extras = tilesetJson.extras;
 

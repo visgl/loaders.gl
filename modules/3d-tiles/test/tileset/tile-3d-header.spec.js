@@ -98,7 +98,7 @@ const MOCK_TILESET = {
   debugShowBoundingVolume: true,
   debugShowViewerRequestVolume: true,
   modelMatrix: new Matrix4(),
-  _geometricError: 2
+  geometricError: 2
 };
 
 // const centerLongitude = -1.31968;
@@ -114,7 +114,6 @@ const MOCK_TILESET = {
 test('Tile3DHeader#destroys', t => {
   const tile = new Tile3DHeader(
     MOCK_TILESET,
-    '/some_url',
     TILE_HEADER_WITH_BOUNDING_SPHERE,
     undefined
   );
@@ -127,14 +126,14 @@ test('Tile3DHeader#destroys', t => {
 test('Tile3DHeader#throws if boundingVolume is undefined', t => {
   const tileWithoutBoundingVolume = clone(TILE_HEADER_WITH_BOUNDING_SPHERE, true);
   delete tileWithoutBoundingVolume.boundingVolume;
-  t.throws(() => new Tile3DHeader(MOCK_TILESET, '/some_url', tileWithoutBoundingVolume, undefined));
+  t.throws(() => new Tile3DHeader(MOCK_TILESET, tileWithoutBoundingVolume, undefined));
   t.end();
 });
 
 test('Tile3DHeader#throws if boundingVolume does not contain a sphere, region, or box', t => {
   const tileWithoutBoundingVolume = clone(TILE_HEADER_WITH_BOUNDING_SPHERE, true);
   delete tileWithoutBoundingVolume.boundingVolume.sphere;
-  t.throws(() => new Tile3DHeader(MOCK_TILESET, '/some_url', tileWithoutBoundingVolume, undefined));
+  t.throws(() => new Tile3DHeader(MOCK_TILESET, tileWithoutBoundingVolume, undefined));
   t.end();
 });
 
@@ -142,7 +141,7 @@ test('Tile3DHeader#refine is lowercase', t => {
   // spyOn(Tile3D, '_deprecationWarning');
   const header = clone(TILE_HEADER_WITH_BOUNDING_SPHERE, true);
   header.refine = 'replace';
-  const tile = new Tile3DHeader(MOCK_TILESET, '/some_url', header, undefined);
+  const tile = new Tile3DHeader(MOCK_TILESET, header, undefined);
   t.equals(tile.refine, TILE3D_REFINEMENT.REPLACE);
   t.end();
 });
@@ -155,16 +154,15 @@ test('Tile3DHeader#geometric error is undefined', t => {
 
   const parent = new Tile3DHeader(
     MOCK_TILESET,
-    '/some_url',
     TILE_HEADER_WITH_BOUNDING_SPHERE,
     undefined
   );
-  const child = new Tile3DHeader(MOCK_TILESET, '/some_url', geometricErrorMissing, parent);
+  const child = new Tile3DHeader(MOCK_TILESET, geometricErrorMissing, parent);
   t.deepEquals(child.geometricError, parent.geometricError);
   t.deepEquals(child.geometricError, 1);
 
-  const tile = new Tile3DHeader(MOCK_TILESET, '/some_url', geometricErrorMissing, undefined);
-  t.deepEquals(tile.geometricError, MOCK_TILESET._geometricError);
+  const tile = new Tile3DHeader(MOCK_TILESET, geometricErrorMissing, undefined);
+  t.deepEquals(tile.geometricError, MOCK_TILESET.geometricError);
   t.deepEquals(tile.geometricError, 2);
 
   t.end();
@@ -173,14 +171,14 @@ test('Tile3DHeader#geometric error is undefined', t => {
 /*
 test('Tile3DHeader#bounding volumes', tt => {
   test('Tile3DHeader#returns the tile bounding volume if the content bounding volume is undefined', t => {
-    const tile = new Tile3DHeader(MOCK_TILESET, '/some_url', TILE_HEADER_WITH_BOUNDING_SPHERE, undefined);
+    const tile = new Tile3DHeader(MOCK_TILESET, TILE_HEADER_WITH_BOUNDING_SPHERE, undefined);
     t.ok(tile.boundingVolume);
     t.deepEquals(tile.contentBoundingVolume, tile.boundingVolume);
     t.end();
   });
 
   test('Tile3DHeader#can have a bounding sphere', t => {
-    const tile = new Tile3DHeader(MOCK_TILESET, '/some_url', TILE_HEADER_WITH_BOUNDING_SPHERE, undefined);
+    const tile = new Tile3DHeader(MOCK_TILESET, TILE_HEADER_WITH_BOUNDING_SPHERE, undefined);
     const radius = TILE_HEADER_WITH_BOUNDING_SPHERE.boundingVolume.sphere[3];
     t.ok(tile.boundingVolume);
     t.equals(tile.boundingVolume.boundingVolume.radius, radius);
@@ -191,7 +189,6 @@ test('Tile3DHeader#bounding volumes', tt => {
   test('Tile3DHeader#can have a content bounding sphere', t => {
     const tile = new Tile3DHeader(
       MOCK_TILESET,
-      '/some_url',
       TILE_HEADER_WITH_CONTENT_BOUNDING_SPHERE,
       undefined
     );
@@ -207,7 +204,7 @@ test('Tile3DHeader#bounding volumes', tt => {
     const rectangle = new Rectangle(box[0], box[1], box[2], box[3]);
     const minimumHeight = TILE_HEADER_WITH_BOUNDING_REGION.boundingVolume.region[4];
     const maximumHeight = TILE_HEADER_WITH_BOUNDING_REGION.boundingVolume.region[5];
-    const tile = new Tile3DHeader(MOCK_TILESET, '/some_url', TILE_HEADER_WITH_BOUNDING_REGION, undefined);
+    const tile = new Tile3DHeader(MOCK_TILESET, TILE_HEADER_WITH_BOUNDING_REGION, undefined);
     const tbr = new TileBoundingRegion({rectangle, minimumHeight, maximumHeight});
     t.ok(tile.boundingVolume);
     t.equals(tile.boundingVolume, tbr);
@@ -234,7 +231,7 @@ test('Tile3DHeader#bounding volumes', tt => {
 
   test('Tile3DHeader#can have an oriented bounding box', t => {
     const box = TILE_HEADER_WITH_BOUNDING_BOX.boundingVolume.box;
-    const tile = new Tile3DHeader(MOCK_TILESET, '/some_url', TILE_HEADER_WITH_BOUNDING_BOX, undefined);
+    const tile = new Tile3DHeader(MOCK_TILESET, TILE_HEADER_WITH_BOUNDING_BOX, undefined);
     t.ok(tile.boundingVolume);
     const center = new Cartesian3(box[0], box[1], box[2]);
     const halfAxes = Matrix3.fromArray(box, 3);
@@ -245,7 +242,7 @@ test('Tile3DHeader#bounding volumes', tt => {
 
   test('Tile3DHeader#can have a content oriented bounding box', t => {
     const box = TILE_HEADER_WITH_CONTENT_BOUNDING_BOX.boundingVolume.box;
-    const tile = new Tile3DHeader(MOCK_TILESET, '/some_url', TILE_HEADER_WITH_CONTENT_BOUNDING_BOX, undefined);
+    const tile = new Tile3DHeader(MOCK_TILESET, TILE_HEADER_WITH_CONTENT_BOUNDING_BOX, undefined);
     t.ok(tile.contentBoundingVolume);
     const center = new Cartesian3(box[0], box[1], box[2]);
     const halfAxes = Matrix3.fromArray(box, 3);
@@ -257,7 +254,7 @@ test('Tile3DHeader#bounding volumes', tt => {
   test('Tile3DHeader#tile transform affects bounding sphere', t => {
     const header = clone(TILE_HEADER_WITH_CONTENT_BOUNDING_SPHERE, true);
     header.transform = getTileTransform(centerLongitude, centerLatitude);
-    const tile = new Tile3DHeader(MOCK_TILESET, '/some_url', header, undefined);
+    const tile = new Tile3DHeader(MOCK_TILESET, header, undefined);
     const boundingSphere = tile.boundingVolume.boundingVolume;
     const contentBoundingSphere = tile.contentBoundingVolume.boundingVolume;
 
@@ -273,7 +270,7 @@ test('Tile3DHeader#bounding volumes', tt => {
   test('Tile3DHeader#tile transform affects oriented bounding box', t => {
     const header = clone(TILE_HEADER_WITH_CONTENT_BOUNDING_BOX, true);
     header.transform = getTileTransform(centerLongitude, centerLatitude);
-    const tile = new Tile3DHeader(MOCK_TILESET, '/some_url', header, undefined);
+    const tile = new Tile3DHeader(MOCK_TILESET, header, undefined);
     const boundingBox = tile.boundingVolume.boundingVolume;
     const contentBoundingBox = tile.contentBoundingVolume.boundingVolume;
 
@@ -286,7 +283,7 @@ test('Tile3DHeader#bounding volumes', tt => {
   test('Tile3DHeader#tile transform does not affect bounding region', t => {
     const header = clone(TILE_HEADER_WITH_CONTENT_BOUNDING_REGION, true);
     header.transform = getTileTransform(centerLongitude, centerLatitude);
-    const tile = new Tile3DHeader(MOCK_TILESET, '/some_url', header, undefined);
+    const tile = new Tile3DHeader(MOCK_TILESET, header, undefined);
     const boundingRegion = tile.boundingVolume;
     const contentBoundingRegion = tile.contentBoundingVolume;
 
@@ -300,7 +297,7 @@ test('Tile3DHeader#bounding volumes', tt => {
   test('Tile3DHeader#tile transform affects viewer request volume', t => {
     const header = clone(TILE_HEADER_WITH_VIEWER_REQUEST_VOLUME, true);
     header.transform = getTileTransform(centerLongitude, centerLatitude);
-    const tile = new Tile3DHeader(MOCK_TILESET, '/some_url', header, undefined);
+    const tile = new Tile3DHeader(MOCK_TILESET, header, undefined);
     const requestVolume = tile._viewerRequestVolume.boundingVolume;
     const requestVolumeCenter = Cartesian3.fromRadians(centerLongitude, centerLatitude, 1.0);
     expect(requestVolume.center).toEqualEpsilon(requestVolumeCenter, CesiumMath.EPSILON7);
@@ -313,7 +310,7 @@ test('Tile3DHeader#bounding volumes', tt => {
     };
     const header = clone(TILE_HEADER_WITH_BOUNDING_SPHERE, true);
     header.transform = getTileTransform(centerLongitude, centerLatitude);
-    const tile = new Tile3DHeader(MOCK_TILESET, '/some_url', header, undefined);
+    const tile = new Tile3DHeader(MOCK_TILESET, header, undefined);
     const boundingSphere = tile.boundingVolume.boundingVolume;
 
     // Check the original transform
@@ -349,28 +346,28 @@ test('Tile3DHeader#debug bounding volumes', tt => {
   });
 
   test('Tile3DHeader#can be a bounding region', t => {
-    const tile = new Tile3DHeader(MOCK_TILESET, '/some_url', TILE_HEADER_WITH_BOUNDING_REGION, undefined);
+    const tile = new Tile3DHeader(MOCK_TILESET, TILE_HEADER_WITH_BOUNDING_REGION, undefined);
     tile.update(MOCK_TILESET, scene.frameState);
     t.ok(tile._debugBoundingVolume);
     t.end();
   });
 
   test('Tile3DHeader#can be an oriented bounding box', t => {
-    const tile = new Tile3DHeader(MOCK_TILESET, '/some_url', TILE_HEADER_WITH_BOUNDING_BOX, undefined);
+    const tile = new Tile3DHeader(MOCK_TILESET, TILE_HEADER_WITH_BOUNDING_BOX, undefined);
     tile.update(MOCK_TILESET, scene.frameState);
     t.ok(tile._debugBoundingVolume);
     t.end();
   });
 
   test('Tile3DHeader#can be a bounding sphere', t => {
-    const tile = new Tile3DHeader(MOCK_TILESET, '/some_url', TILE_HEADER_WITH_BOUNDING_SPHERE, undefined);
+    const tile = new Tile3DHeader(MOCK_TILESET, TILE_HEADER_WITH_BOUNDING_SPHERE, undefined);
     tile.update(MOCK_TILESET, scene.frameState);
     t.ok(tile._debugBoundingVolume);
     t.end();
   });
 
   test('Tile3DHeader#creates debug bounding volume for viewer request volume', t => {
-    const tile = new Tile3DHeader(MOCK_TILESET, '/some_url', TILE_HEADER_WITH_VIEWER_REQUEST_VOLUME, undefined);
+    const tile = new Tile3DHeader(MOCK_TILESET, TILE_HEADER_WITH_VIEWER_REQUEST_VOLUME, undefined);
     tile.update(MOCK_TILESET, scene.frameState);
     t.ok(tile._debugViewerRequestVolume);
     t.end();
