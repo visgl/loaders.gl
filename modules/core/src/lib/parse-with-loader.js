@@ -33,7 +33,7 @@ export async function parseWithLoader(data, loader, options, url) {
   }
 
   if (loader.worker) {
-    return await parseWithWorker(loader.worker, data, options);
+    return parseWithWorker(loader.worker, data, options);
   }
 
   // TBD - If asynchronous parser not available, return null
