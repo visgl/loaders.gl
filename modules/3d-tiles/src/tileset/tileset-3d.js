@@ -84,7 +84,7 @@ const DEFAULT_OPTIONS = {
   // Determines whether siblings of visible tiles are always downloaded during traversal.
   loadSiblings: false,
 
-  onTileLoad: () => { }, // Indicates this a tile's content was loaded
+  onTileLoad: () => {}, // Indicates this a tile's content was loaded
   onTileUnload: () => {}, // Indicates this a tile's content was unloaded
   onTileLoadFailed: ({tile, message, url}) => {
     // Indicates this a tile's content failed to load
@@ -95,7 +95,7 @@ const DEFAULT_OPTIONS = {
   onLoadProgress: () => {}, // Indicates progress of loading new tiles
   onAllTilesLoaded: () => {}, // All tiles that meet the screen space error of this frame are loaded
   initialTilesLoaded: () => {}, // Indicates all tiles meet the screen space error this frame loaded
-  onTileVisible: () => {}, // Called once for each visible tile in a frame. E.g manual styling
+  onTileVisible: () => {} // Called once for each visible tile in a frame. E.g manual styling
 };
 
 function getBasePath(url) {
@@ -123,7 +123,7 @@ export default class Tileset3D {
   constructor(json, url, options = {}) {
     assert(json);
 
-    options = { ...DEFAULT_OPTIONS, ...options };
+    options = {...DEFAULT_OPTIONS, ...options};
 
     // PUBLIC MEMBERS
     this.options = options;
@@ -241,7 +241,7 @@ export default class Tileset3D {
     return this._timeSinceLoad;
   }
 
-    // The maximum amount of GPU memory (in MB) that may be used to cache tiles.
+  // The maximum amount of GPU memory (in MB) that may be used to cache tiles.
   // Tiles not in view are unloaded to enforce this.
   get maximumMemoryUsage() {
     return this._maximumMemoryUsage;
@@ -354,7 +354,6 @@ export default class Tileset3D {
 
     // Calculate cartographicCenter & zoom props to help apps center view on tileset
     this._calculateViewProps();
-
 
     // TODO - Do we need this?
     // Save the original, untransformed bounding volume position so we can apply
