@@ -64,7 +64,7 @@ function computeVisibilityWithPlaneMask(cullingVolume, boundingVolume, parentPla
 // the content is loaded on-demand when needed based on the view.
 // Do not construct this directly, instead access tiles through {@link Tileset3D#tileVisible}.
 export default class Tile3DHeader {
-  constructor(tileset, baseResource, header, parentHeader) {
+  constructor(tileset, header, parentHeader) {
     // assert(tileset._asset);
     assert(typeof header === 'object');
 
@@ -304,21 +304,23 @@ export default class Tile3DHeader {
       this._contentState = TILE3D_CONTENT_STATE.LOADING;
 
       const contentUri = this.uri;
-      const response = await fetchFile(contentUri, this._tileset.fetchOptions);
+      const response = await fetchFile(contentUri, this._tileset.options.fetchOptions);
 
       if (contentUri.indexOf('.json') !== -1) {
         // TODO - Use Tileset3DLoader
         this._content = await response.json();
+        // Add tile headers for the nested tilset's subtree
         // Async update of the tree should be fine since there would never be edits to the same node
-        this._tileset.installTileset(this._content, this.parent);
+        this._tileset._initializeTileHeaders(this._content, this.parent);
       } else {
         const arrayBuffer = await response.arrayBuffer();
 
         // TODO: The content can be a binary tile ot a JSON tileset
-        // const content = await parse(arrayBuffer, [Tile3DLoader, Tileset3DLoader]);
+        // const content = await parse(response, [Tile3DLoader, Tileset3DLoader]);
         // this.content =  Tile3D.isTile(content) ?
         //   new Tile3D(content, contentUri) :
         //   new Tileset3D(content, contentUri);
+        // TODO: parse() should check status of response and handle errors
         this._content = await Tile3DLoader.parse(arrayBuffer, {DracoLoader});
       }
 
@@ -361,8 +363,8 @@ export default class Tile3DHeader {
     }
 
     const parent = this.parent;
-    const parentTransform = defined(parent) ? parent.computedTransform : this._tileset.modelMatrix;
-    const parentVisibilityPlaneMask = defined(parent)
+    const parentTransform = parent ? parent.computedTransform : this._tileset.modelMatrix;
+    const parentVisibilityPlaneMask = parent
       ? parent._visibilityPlaneMask
       : CullingVolume.MASK_INDETERMINATE;
     this._updateTransform(parentTransform);
@@ -396,7 +398,7 @@ export default class Tile3DHeader {
     const {boundingVolume, tileset} = this;
 
     const {clippingPlanes, clippingPlanesOriginMatrix} = tileset;
-    if (defined(clippingPlanes) && clippingPlanes.enabled) {
+    if (clippingPlanes && clippingPlanes.enabled) {
       const intersection = clippingPlanes.computeIntersectionWithBoundingVolume(
         boundingVolume,
         clippingPlanesOriginMatrix
@@ -488,9 +490,9 @@ export default class Tile3DHeader {
     let expire = header.expire;
     let expireDuration;
     let expireDate;
-    if (defined(expire)) {
+    if (expire) {
       expireDuration = expire.duration;
-      if (defined(expire.date)) {
+      if (expire.date) {
         expireDate = Date.fromIso8601(expire.date);
       }
     }
@@ -619,7 +621,7 @@ export default class Tile3DHeader {
   }
 
   _isTileset(content) {
-    return defined(content.asset);
+    return Boolean(content.asset);
   }
 
   _contentLoaded() {
@@ -680,7 +682,7 @@ function updateContent(tile, tileset, frameState) {
   const content = tile._content;
   const expiredContent = tile._expiredContent;
 
-  if (defined(expiredContent)) {
+  if (expiredContent) {
     if (!tile.contentReady) {
       // Render the expired content while the content loads
       expiredContent.update(tileset, frameState);

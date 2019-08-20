@@ -35,7 +35,7 @@ export default class Tileset3DCache {
   add(tile) {
     if (!defined(tile.cacheNode)) {
       tile.cacheNode = this._list.add(tile);
-      tile.tileset.incrementGPUMemoryUsage(tile.gpuMemoryUsageInBytes);
+      tile.tileset.gpuMemoryUsage += tile.gpuMemoryUsageInBytes;
     }
   }
 
@@ -47,7 +47,7 @@ export default class Tileset3DCache {
 
     this._list.remove(node);
     tile.cacheNode = undefined;
-    tileset.decrementGPUMemoryUsage(tile.gpuMemoryUsageInBytes);
+    tileset.gPUMemoryUsage -= tile.gpuMemoryUsageInBytes;
     tile.unloadContent();
     if (unloadCallback) {
       unloadCallback(tileset, tile);
