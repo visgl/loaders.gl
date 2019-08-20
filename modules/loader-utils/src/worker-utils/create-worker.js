@@ -26,7 +26,6 @@ export default function createWorker(loader) {
 
       const result = parser(data, opts);
       const transferList = getTransferList(result);
-
       self.postMessage({type: 'done', result}, transferList);
     } catch (error) {
       self.postMessage({type: 'error', message: error.message});
