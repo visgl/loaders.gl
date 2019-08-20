@@ -86,8 +86,8 @@ export default class App extends PureComponent {
     };
 
     this._deckRef = null;
-    this._onTilesetLoaded = this._onTilesetLoaded.bind(this);
-    this._onTilesetChanged = this._onTilesetChanged.bind(this);
+    this._onTilesetLoad = this._onTilesetLoad.bind(this);
+    this._onTilesetChange = this._onTilesetChange.bind(this);
   }
 
   async componentDidMount() {
@@ -222,8 +222,8 @@ export default class App extends PureComponent {
     this.setState({selectedMapStyle});
   }
 
-  // Called by Tile3DLayer when a new tileset is loaded
-  _onTilesetLoaded(tileset) {
+  // Called by Tile3DLayer when a new tileset is load
+  _onTilesetLoad(tileset) {
     if (!this._tilesetStatsWidget) {
       // TODO - would be nice to be able to create stats widget in constructor without stats object
       // TODO - need method to detach stats widget in unmount...
@@ -255,8 +255,8 @@ export default class App extends PureComponent {
     });
   }
 
-  // Called by Tile3DLayer whenever an individual tile in the current tileset is loaded or unloaded
-  _onTilesetChanged(tileHeader) {
+  // Called by Tile3DLayer whenever an individual tile in the current tileset is load or unload
+  _onTilesetChange(tileHeader) {
     this._updateStatWidgets();
     this.forceUpdate();
   }
@@ -321,10 +321,10 @@ export default class App extends PureComponent {
       ionAssetId,
       ionAccessToken,
       coordinateOrigin,
-      onTilesetLoaded: this._onTilesetLoaded,
-      onTileLoaded: this._onTilesetChanged,
-      onTileUnloaded: this._onTilesetChanged,
-      onTileLoadFailed: this._onTilesetChanged
+      onTilesetLoad: this._onTilesetLoad,
+      onTileLoad: this._onTilesetChange,
+      onTileUnload: this._onTilesetChange,
+      onTileLoadFail: this._onTilesetChange
     });
   }
 

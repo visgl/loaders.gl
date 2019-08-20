@@ -86,16 +86,8 @@ const DEFAULT_OPTIONS = {
 
   onTileLoad: () => {}, // Indicates this a tile's content was loaded
   onTileUnload: () => {}, // Indicates this a tile's content was unloaded
-  onTileLoadFailed: ({tile, message, url}) => {
-    // Indicates this a tile's content failed to load
-    console.error(`A 3D tile failed to load: ${url} ${message}`); // eslint-disable-line
-  },
-
-  // TODO - currently unused callbacks
-  onLoadProgress: () => {}, // Indicates progress of loading new tiles
-  onAllTilesLoaded: () => {}, // All tiles that meet the screen space error of this frame are loaded
-  initialTilesLoaded: () => {}, // Indicates all tiles meet the screen space error this frame loaded
-  onTileVisible: () => {} // Called once for each visible tile in a frame. E.g manual styling
+  onTileLoadFail: ({tile, message, url}) =>
+    console.error(`A 3D tile fail to load: ${url} ${message}`), // eslint-disable-line
 };
 
 function getBasePath(url) {
@@ -182,6 +174,23 @@ export default class Tileset3D {
 
     this._dynamicScreenSpaceErrorComputedDensity = 0.0; // Updated based on the camera position and direction
 
+<<<<<<< HEAD
+=======
+    this.onLoadProgress = options.onLoadProgress;
+    this.onAllTilesLoaded = options.onAllTilesLoaded;
+    this.initialTilesLoaded = options.initialTilesLoaded;
+    this.onTileLoad = options.onTileLoad;
+    this.onTileUnload = options.onTileUnload;
+    this.onTileLoadFail = options.onTileLoadFail;
+    this.onTileVisible = options.onTileVisible;
+
+    // Optimization option. Determines if level of detail skipping should be applied during the traversal.
+    this._skipLevelOfDetail = this.skipLevelOfDetail;
+    this._disableSkipLevelOfDetail = false;
+
+    this._gpuMemoryUsageInBytes = 0;
+
+>>>>>>> 3d-tiles: Callback naming convention
     this._initializeTileSet(json, options);
 
     // Object.freeze(this);
@@ -465,7 +474,11 @@ export default class Tileset3D {
       this.stats.get(TILES_LOADING).decrementCount();
       this.stats.get(TILES_LOAD_FAILED).incrementCount();
 
+<<<<<<< HEAD
       this.options.onTileLoadFailed(tile, {
+=======
+      this.onTileLoadFail(tile, {
+>>>>>>> 3d-tiles: Callback naming convention
         message: error.message || error.toString()
       });
       return;
