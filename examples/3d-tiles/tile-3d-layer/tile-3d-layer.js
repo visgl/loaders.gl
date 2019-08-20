@@ -29,8 +29,8 @@ const defaultProps = {
   ionAccessToken: null,
   color: [155, 155, 155, 200],
   depthLimit: Number.MAX_SAFE_INTEGER,
-  onTileLoaded: () => {},
-  onTilesetLoaded: () => {}
+  onTilesetLoad: () => {},
+  onTileLoad: () => {}
 };
 
 export default class Tile3DLayer extends CompositeLayer {
@@ -69,7 +69,7 @@ export default class Tile3DLayer extends CompositeLayer {
 
       tileset3d = new Tileset3D(tilesetJson, tilesetUrl, {
         onTileLoad: tileHeader => {
-          this.props.onTileLoaded(tileHeader);
+          this.props.onTileLoad(tileHeader);
           this._updateTileset(tileset3d);
         },
         DracoLoader: DracoWorkerLoader, // TODO: should not be needed, see registerLoaders above
@@ -87,7 +87,7 @@ export default class Tile3DLayer extends CompositeLayer {
     if (tileset3d) {
       // TODO: Remove these after sse traversal is working since this is just to prevent full load of tileset and loading of root
       tileset3d.depthLimit = this.props.depthLimit;
-      this.props.onTilesetLoaded(tileset3d);
+      this.props.onTilesetLoad(tileset3d);
     }
   }
 
