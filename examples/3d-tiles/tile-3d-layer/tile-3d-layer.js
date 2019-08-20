@@ -313,7 +313,6 @@ export default class Tile3DLayer extends CompositeLayer {
         modelMatrix,
 
         // TODO - delete when bug fixed, somehow these props are different
-        ...this._resolveTransformProps(tileHeader),
 
         getColor: colorRGBA || this.props.color,
         pickable: true,
