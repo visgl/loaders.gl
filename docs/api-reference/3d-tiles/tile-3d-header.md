@@ -2,7 +2,7 @@
 
 > The 3D tile loaders are still under development.
 
-Class that simplified access to data inside a tile in a `Tileset3D`.
+Class that provides access to data inside a tile in a `Tileset3D`.
 
 Notes:
 
