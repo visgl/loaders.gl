@@ -2,19 +2,28 @@ import {toArrayBuffer} from '../javascript-utils/binary-utils';
 
 const workerCache = new Map();
 
+const counters = {};
+
+function getDecoratedWorkerName(workerName) {
+  const lowerCaseName = workerName ? workerName.toLowerCase() : 'unnamed';
+  counters[lowerCaseName] = counters[lowerCaseName] || 0;
+  const counter = counters[lowerCaseName]++;
+  return `loaders.gl-${lowerCaseName}-worker-${counter}`;
+}
+
 /* global Worker, Blob, URL */
-function getWorker(workerSource) {
+function getWorker(workerSource, workerName) {
   let workerURL = workerCache.get(workerSource);
   if (!workerURL) {
     const blob = new Blob([workerSource], {type: 'application/javascript'});
     workerURL = URL.createObjectURL(blob);
     workerCache.set(workerSource, workerURL);
   }
-  return new Worker(workerURL);
+  return new Worker(workerURL, {name: getDecoratedWorkerName(workerName)});
 }
 
-export default function parseWithWorker(workerSource, data, options) {
-  const worker = getWorker(workerSource);
+export default function parseWithWorker(workerSource, workerName, data, options) {
+  const worker = getWorker(workerSource, workerName);
 
   options = removeNontransferableOptions(options);
 
