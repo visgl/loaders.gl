@@ -2,8 +2,6 @@ import {assert} from '@loaders.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {Matrix4, Vector3} from 'math.gl';
 
-const scratchVector = new Vector3();
-
 export function calculateTransformProps(tileHeader, tile) {
   assert(tileHeader);
   assert(tile);
@@ -18,7 +16,7 @@ export function calculateTransformProps(tileHeader, tile) {
   const cartesianOrigin = center;
   const cartographicOrigin = Ellipsoid.WGS84.cartesianToCartographic(
     cartesianOrigin,
-    scratchVector
+    new Vector3()
   );
 
   const rotateMatrix = Ellipsoid.WGS84.eastNorthUpToFixedFrame(cartesianOrigin);
