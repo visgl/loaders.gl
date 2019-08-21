@@ -42,5 +42,6 @@ const document_ = globals.document || {};
 export {isBrowser, self_ as self, window_ as window, global_ as global, document_ as document};
 
 // Extract node version
-const matches = typeof process !== 'undefined' && process.version.match(/v([0-9]*)/);
+const matches =
+  typeof process !== 'undefined' && process.version && process.version.match(/v([0-9]*)/);
 export const nodeVersion = (matches && parseFloat(matches[1])) || 0;
