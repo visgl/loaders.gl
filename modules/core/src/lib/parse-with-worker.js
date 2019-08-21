@@ -15,7 +15,7 @@ function getDecoratedWorkerName(workerName) {
 function getWorker(workerSource, workerName) {
   let workerURL = workerCache.get(workerSource);
   if (!workerURL) {
-    const blob = new Blob([workerSource], { type: 'application/javascript' });
+    const blob = new Blob([workerSource], {type: 'application/javascript'});
     workerURL = URL.createObjectURL(blob);
     workerCache.set(workerSource, workerURL);
   }
