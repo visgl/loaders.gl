@@ -4,12 +4,12 @@
 import {Vector3, Matrix4} from 'math.gl';
 import {CullingVolume} from '@math.gl/culling';
 import Tile3DLoader from '../tile-3d-loader';
-// import Tileset3DLoader from '../tileset-3d-loader';
+import Tileset3DLoader from '../tileset-3d-loader';
 import {TILE3D_REFINEMENT, TILE3D_CONTENT_STATE, TILE3D_OPTIMIZATION_HINT} from '../constants';
 import assert from '../utils/assert';
 import {createBoundingVolume} from './helpers/bounding-volume';
 // TODO - inject this dependency?
-import {fetchFile} from '@loaders.gl/core';
+import {parse, fetchFile, path} from '@loaders.gl/core';
 
 const defined = x => x !== undefined && x !== null;
 
@@ -64,26 +64,24 @@ function computeVisibilityWithPlaneMask(cullingVolume, boundingVolume, parentPla
 // the content is loaded on-demand when needed based on the view.
 // Do not construct this directly, instead access tiles through {@link Tileset3D#tileVisible}.
 export default class Tile3DHeader {
-  constructor(tileset, header, parentHeader) {
+  constructor(tileset, header, parentHeader, basePath) {
     // assert(tileset._asset);
     assert(typeof header === 'object');
 
     this._tileset = tileset;
     this._header = header;
-    this.cacheNode = undefined;
-
+    this._basePath = basePath;
     this._content = null;
     this._contentState = TILE3D_CONTENT_STATE.UNLOADED;
     this._gpuMemoryUsageInBytes = 0;
 
-    // Gets the tile's children.
-    this.children = [];
-    // This tile's parent or <code>undefined</code> if this tile is the root.
+    // This tile's parent or `undefined` if this tile is the root.
     this.parent = parentHeader;
-
+    // The tile's children.
+    this.children = [];
     // Specifies the type of refine that is used when traversing this tile for rendering.
     this.refine = this._getRefine(header.refine);
-
+    this.cacheNode = undefined;
     this.userData = null;
 
     // The error, in meters, introduced if this tile is rendered and its children are not.
@@ -96,11 +94,8 @@ export default class Tile3DHeader {
     }
 
     this._initializeTransforms(header);
-
     this._initializeBoundingVolumes(header);
-
     this._initializeContent(header);
-
     this._initializeCache(header);
 
     // Marks whether the tile's children bounds are fully contained within the tile's bounds
@@ -150,7 +145,7 @@ export default class Tile3DHeader {
     return this._content;
   }
 
-  // Determines if the tile's content is ready. This is automatically <code>true</code> for
+  // Determines if the tile's content is ready. This is automatically `true` for
   // tile's with empty content.
   get contentReady() {
     return this._contentState === TILE3D_CONTENT_STATE.READY;
@@ -161,7 +156,7 @@ export default class Tile3DHeader {
     return !this.hasEmptyContent && !this.hasTilesetContent;
   }
 
-  // Determines if the tile has available content to render.  <code>true</code> if the tile's
+  // Determines if the tile has available content to render.  `true` if the tile's
   // content is ready or if it has expired content this renders while new content loads; otherwise,
   get contentAvailable() {
     return (
@@ -175,30 +170,30 @@ export default class Tile3DHeader {
     return this.hasRenderContent && this.contentUnloaded;
   }
 
-  // Determines if the tile's content has not be requested. <code>true</code> if tile's
-  // content has not be requested; otherwise, <code>false</code>.
+  // Determines if the tile's content has not be requested. `true` if tile's
+  // content has not be requested; otherwise, `false`.
   get contentUnloaded() {
     return this._contentState === TILE3D_CONTENT_STATE.UNLOADED;
   }
 
-  // Determines if the tile's content is expired. <code>true</code> if tile's
-  // content is expired; otherwise, <code>false</code>.
+  // Determines if the tile's content is expired. `true` if tile's
+  // content is expired; otherwise, `false`.
   get contentExpired() {
     return this._contentState === TILE3D_CONTENT_STATE.EXPIRED;
   }
 
-  // Determines if the tile's content failed to load.  <code>true</code> if the tile's
-  // content failed to load; otherwise, <code>false</code>.
+  // Determines if the tile's content failed to load.  `true` if the tile's
+  // content failed to load; otherwise, `false`.
   get contentFailed() {
     return this._contentState === TILE3D_CONTENT_STATE.FAILED;
   }
 
   get url() {
-    return this.tileset.getTileUrl(this.contentUri);
+    return this.tileset.getTileUrl(this.contentUri, this._basePath);
   }
 
   get uri() {
-    return this.tileset.getTileUrl(this.contentUri);
+    return this.tileset.getTileUrl(this.contentUri, this._basePath);
   }
 
   // Get the tile's bounding volume.
@@ -207,7 +202,7 @@ export default class Tile3DHeader {
   }
 
   // Get the bounding volume of the tile's contents.  This defaults to the
-  // tile's bounding volume when the content's bounding volume is <code>undefined</code>.
+  // tile's bounding volume when the content's bounding volume is `undefined`.
   get contentBoundingVolume() {
     return this._contentBoundingVolume || this._boundingVolume;
   }
@@ -217,8 +212,8 @@ export default class Tile3DHeader {
     return this._boundingVolume.boundingSphere;
   }
 
-  // Returns the <code>extras</code> property in the tileset JSON for this tile, which contains application specific metadata.
-  // Returns <code>undefined</code> if <code>extras</code> does not exist.
+  // Returns the `extras` property in the tileset JSON for this tile, which contains application specific metadata.
+  // Returns `undefined` if `extras` does not exist.
   // @see {@link https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#specifying-extensions-and-application-specific-extras|Extras in the 3D Tiles specification.}
   get extras() {
     return this._header.extras;
@@ -306,22 +301,16 @@ export default class Tile3DHeader {
       const contentUri = this.uri;
       const response = await fetchFile(contentUri, this._tileset.options.fetchOptions);
 
+      // The content can be a binary tile ot a JSON tileset
+      this._content = await parse(response, [Tile3DLoader, Tileset3DLoader], {DracoLoader});
+      // if (Tile3D.isTile(content)) {
+      //   new Tileset3D(content, contentUri);
+
       if (contentUri.indexOf('.json') !== -1) {
-        // TODO - Use Tileset3DLoader
-        this._content = await response.json();
         // Add tile headers for the nested tilset's subtree
         // Async update of the tree should be fine since there would never be edits to the same node
-        this._tileset._initializeTileHeaders(this._content, this.parent);
-      } else {
-        const arrayBuffer = await response.arrayBuffer();
-
-        // TODO: The content can be a binary tile ot a JSON tileset
-        // const content = await parse(response, [Tile3DLoader, Tileset3DLoader]);
-        // this.content =  Tile3D.isTile(content) ?
-        //   new Tile3D(content, contentUri) :
-        //   new Tileset3D(content, contentUri);
-        // TODO: parse() should check status of response and handle errors
-        this._content = await Tile3DLoader.parse(arrayBuffer, {DracoLoader});
+        // TODO - we need to capture the child tileset's URL
+        this._tileset._initializeTileHeaders(this._content, this.parent, path.dirname(this.uri));
       }
 
       this._contentState = TILE3D_CONTENT_STATE.READY;
@@ -522,9 +511,6 @@ export default class Tile3DHeader {
     const parentInitialTransform =
       parent && parent._initialTransform ? parent._initialTransform.clone() : new Matrix4();
     this._initialTransform = new Matrix4(parentInitialTransform).multiplyRight(this.transform);
-
-    // TODO ?
-    // this.computedTransform = new Matrix4(); // computedTransform;
   }
 
   _initializeBoundingVolumes(tileHeader) {
@@ -534,7 +520,7 @@ export default class Tile3DHeader {
     this._viewerRequestVolume = null;
 
     // Non-leaf tiles may have a content bounding-volume, which is a tight-fit bounding volume
-    // around only the features in the tile.  This box is useful for culling for rendering,
+    // around only the features in the tile. This box is useful for culling for rendering,
     // but not for culling for traversing the tree since it does not guarantee spatial coherence, i.e.,
     // since it only bounds features in the tile, not the entire tile, children may be
     // outside of this box.
@@ -561,8 +547,8 @@ export default class Tile3DHeader {
     this._expiredContent = undefined;
     this._serverKey = null;
 
-    // When <code>true</code>, the tile's content points to an external tileset.
-    // This is <code>false</code> until the tile's content is loaded.
+    // When `true`, the tile's content points to an external tileset.
+    // This is `false` until the tile's content is loaded.
     this.hasTilesetContent = false;
 
     // If a content tileHeader
