@@ -16,7 +16,9 @@ const isRequestURL = url => url.startsWith('http:') || url.startsWith('https:');
 // See https://developer.mozilla.org/en-US/docs/Web/API/Response
 export default class NodeFetchResponse {
   constructor(url, options) {
-    this.url = url;
+    this._url = url;
+    this._ok = true; // TODO - handle errors and set ok/status
+    this._status = 200;
     this.options = options;
     this.bodyUsed = false;
     this._headers = null;
@@ -24,7 +26,18 @@ export default class NodeFetchResponse {
 
   // Subset of Properties
 
-  // get url()
+  get ok() {
+    return this._ok;
+  }
+
+  get status() {
+    return this._status;
+  }
+
+  get url() {
+    return this._url;
+  }
+
   get headers() {
     this._headers = this._headers || this._getHeaders();
   }

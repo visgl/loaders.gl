@@ -19,6 +19,7 @@
             {"entry": "docs/developer-guide/about-loaders"},
             {"entry": "docs/developer-guide/about-writers"},
             {"entry": "docs/developer-guide/loader-categories"},
+            {"entry": "docs/developer-guide/error-handling"},
             {"entry": "docs/developer-guide/polyfills"},
             {"entry": "docs/roadmap"},
             {"entry": "docs/contributing"}

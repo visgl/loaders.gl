@@ -15,6 +15,14 @@ class FileReadableResponse {
     });
   }
 
+  get ok() {
+    return true; // Blob & File objects are already in memory
+  }
+
+  get status() {
+    return 200; // Blob & File objects are already in memory
+  }
+
   url() {
     // Note: This is just the file name without path information
     // Note: File has `name` field but the Blob baseclass does not
