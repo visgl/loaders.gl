@@ -5,7 +5,6 @@
       "title": "Overview",
       "entries": [
         {"entry": "docs/README"},
-        {"entry": "docs/developer-guide/get-started"},
         {"entry": "docs/whats-new"},
         {"entry": "docs/upgrade-guide"}
       ]
@@ -16,6 +15,7 @@
         {
           "title": "Guides",
           "entries": [
+            {"entry": "docs/developer-guide/get-started"},
             {"entry": "docs/developer-guide/about-loaders"},
             {"entry": "docs/developer-guide/about-writers"},
             {"entry": "docs/developer-guide/loader-categories"},
