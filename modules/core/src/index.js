@@ -3,6 +3,11 @@ import {fetchFile} from './lib/fetch/fetch-file';
 import {load} from './lib/load';
 import {resolvePath} from './lib/fetch/file-aliases';
 import {global} from './utils/globals';
+import * as path from './lib/path/path';
+
+// PATH
+
+export {path};
 
 // FILE READING AND WRITING
 export {setPathPrefix, getPathPrefix, resolvePath} from './lib/fetch/file-aliases.js';
