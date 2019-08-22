@@ -7,12 +7,7 @@ The definition of a [3D Tiles tileset](https://github.com/AnalyticalGraphicsInc/
 ## Usage
 
 ```js
-import {Tileset3DLoader, Tileset3D} from '@loaders.gl/3d-tiles';
-import {parse} from '@loaders.gl/core';
-
-const tilesetJSON = await parse(fetch(tileset))
-const tileset = new Tileset3D(tilesetJson);
-
+const tileset = new Tileset3D();
 console.log(`Maximum building height: ${tileset.properties.height.maximum}`);
 console.log(`Minimum building height: ${tileset.properties.height.minimum}`);
 ```
@@ -20,9 +15,8 @@ console.log(`Minimum building height: ${tileset.properties.height.minimum}`);
 Common setting for the skipLevelOfDetail optimization
 
 ```js
-import {Tileset3D} from '@loaders.gl/3d-tiles';
-
-const tileset = new Tileset3D(tilesetJson, {
+import {Tileset3D} from '^loaders.gl/3d-tiles';
+const tileset = new Tileset3D({
   url: 'http://localhost:8002/tilesets/Seattle/tileset.json',
   skipLevelOfDetail: true,
   baseScreenSpaceError: 1024,
@@ -63,6 +57,29 @@ See the [properties schema reference](https://github.com/AnalyticalGraphicsInc/3
 see Cesium3DTileFeature#getProperty
 see Cesium3DTileFeature#setProperty
 
+### ready
+
+When `true`, the tileset's root tile is loaded and the tileset is ready to render.
+This is set to `true` right before `Tileset3D.readyPromise` is resolved.
+
+### readyPromise
+
+Gets the promise that will be resolved when the tileset's root tile is loaded and the tileset is ready to render.
+
+This promise is resolved at the end of the frame before the first frame the tileset is rendered in.
+
+
+```js
+tileset.readyPromise.then(function(tileset) {
+    // tile.properties is not defined until readyPromise resolves.
+    var properties = tileset.properties;
+    if (defined(properties)) {
+        for (var name in properties) {
+            console.log(properties[name]);
+        }
+    }
+});
+```
 
 ### tilesLoaded : boolean (readonly)
 
@@ -155,6 +172,12 @@ var translation = Cartesian3.subtract(offset, surface, new Cartesian3());
 tileset.modelMatrix = Matrix4.fromTranslation(translation);
 ```
 
+
+### timeSinceLoad : Number
+
+Returns the time, in milliseconds, since the tileset was loaded and first updated.
+
+
 ### maximumMemoryUsage : Number
 
 ### totalMemoryUsageInBytes : Number
@@ -163,9 +186,29 @@ The total amount of GPU memory in bytes used by the tileset. This value is estim
 geometry, texture, and batch table textures of loaded tiles. For point clouds, this value also
 includes per-point metadata.
 
-### stats : Stats
+### statistics
 
-An instance of a probe.gl `Stats` object that contains information on how many tiles have been loaded etc. Easy to display using a probe.gl `StatsWidget`.
+
+### classificationType (Experimental) readonly
+
+Determines whether terrain, 3D Tiles or both will be classified by this tileset.
+
+
+This option is only applied to tilesets containing batched 3D models, geometry data, or vector data. Even when undefined, vector data and geometry data
+must render as classifications and will default to rendering on both terrain and other 3D Tiles tilesets.
+
+When enabled for batched 3D model tilesets, there are a few requirements/limitations on the glTF:
+<ul>
+    <li>POSITION and _BATCHID semantics are required.</li>
+    <li>All indices with the same batch id must occupy contiguous sections of the index buffer.</li>
+    <li>All shaders and techniques are ignored. The generated shader simply multiplies the position by the model-view-projection matrix.</li>
+    <li>The only supported extensions are CESIUM_RTC and WEB3D_quantized_attributes.</li>
+    <li>Only one node is supported.</li>
+    <li>Only one mesh per node is supported.</li>
+    <li>Only one primitive per mesh is supported.</li>
+</ul>
+
+This feature is using part of the 3D Tiles spec that is not final and is subject to change without the standard deprecation policy.
 
 
 ### ellipsoid : Ellipsoid
@@ -210,11 +253,11 @@ Wxception This object was destroyed, i.e., destroy() was called.
 
 ## Methods
 
-### constructor(tileset : Object, url : String [, options : Object])
+### constructor(tileset, url, options)
 
-- `tileset`: The loaded tileset (parsed JSON)
-- `url`: The url to a tileset JSON file.
-- `options`: Options object, see the options section below for available options.
+- `tileset` (`Object`) - The loaded tileset (parsed JSON)
+- `url` - (`String) The url to a tileset JSON file.
+- `options` Options object, see  with the following properties:
 
 Notes:
 - The `version` tileset must be 3D Tiles version 0.0 or 1.0.
@@ -229,9 +272,6 @@ Notes:
 
 ## Options
 
-> Tileset3D class is still being developed, not all options are guaranteed to be working.
-
-The `Tileset3D` class supports a number of options
 
 - `options.url` (`Resource|String|Promise.Resource|Promise.String`) The url to a tileset JSON file.
 - `options.show`=`true` (`Boolean`) - Determines if the tileset will be shown.

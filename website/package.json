@@ -12,7 +12,7 @@
     "build": "yarn clean-examples && yarn clean && gatsby build",
     "clean": "rm -rf ./.cache ./public",
     "clean-examples": "find ../examples -name node_modules -exec rm -r {} \\; || true",
-    "develop": "gatsby develop --port=801",
+    "develop": "gatsby develop",
     "serve": "gatsby serve",
     "deploy": "NODE_DEBUG=gh-pages gh-pages -d public"
   },

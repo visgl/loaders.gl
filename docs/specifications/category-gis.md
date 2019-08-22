@@ -1,6 +1,6 @@
 # Category: GIS
 
-> The GIS category is still under development
+> The GIS category is highly experimental and may be removed in a future release
 
 Several geospatial formats return data in the form of lists of lng/lat encoded geometric objects.
 
