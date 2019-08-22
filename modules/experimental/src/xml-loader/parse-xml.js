@@ -37,6 +37,7 @@ export function parseXMLSupported() {
   return false;
 }
 
+// https://stackoverflow.com/questions/11563554/how-do-i-detect-xml-parsing-errors-when-using-javascripts-domparser-in-a-cross
 function isXMLParseError(parsedDocument) {
   const parser = new DOMParser();
   const erroneousParse = parser.parseFromString('<', 'text/xml');

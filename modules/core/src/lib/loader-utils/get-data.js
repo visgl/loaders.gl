@@ -9,16 +9,13 @@ import {
 } from '../../javascript-utils/is-type';
 import {getStreamIterator} from '../../javascript-utils/stream-utils';
 import fetchFileReadable from '../fetch/fetch-file.browser';
+import {checkFetchResponseStatus, checkFetchResponseStatusSync} from './check-errors';
 
 const ERR_DATA = 'Cannot convert supplied data type';
 
 export function getUrlFromData(data) {
   return isFetchResponse(data) ? data.url : null;
 }
-
-// export function getSizeFromData(data) {
-//   return isFetchResponse(data) ? data.headers.get('Content-Length') : null;
-// }
 
 export function getArrayBufferOrStringFromDataSync(data, loader) {
   if (loader.text && typeof data === 'string') {
@@ -53,7 +50,8 @@ export async function getArrayBufferOrStringFromData(data, loader) {
   }
 
   if (isFetchResponse(data)) {
-    return loader.binary ? await data.arrayBuffer() : data.text();
+    await checkFetchResponseStatus(data);
+    return loader.binary ? await data.arrayBuffer() : await data.text();
   }
 
   // if (isIterable(data) || isAsyncIterable(data)) {
@@ -72,6 +70,8 @@ export function getAsyncIteratorFromData(data) {
 
   // TODO: Our fetchFileReaderObject response does not yet support a body stream
   if (isFetchResponse(data) && data.body) {
+    // Note Since this function is not async, we currently can't load error message, just status
+    checkFetchResponseStatusSync(data);
     return getStreamIterator(data.body);
   }
 

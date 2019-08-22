@@ -15,6 +15,14 @@ class FileReadableResponse {
     });
   }
 
+  get ok() {
+    return true;
+  }
+
+  get status() {
+    return 200;
+  }
+
   url() {
     // Note: This is just the file name without path information
     // Note: File has `name` field but the Blob baseclass does not
