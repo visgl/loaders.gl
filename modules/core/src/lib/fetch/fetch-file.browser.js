@@ -16,11 +16,11 @@ class FileReadableResponse {
   }
 
   get ok() {
-    return true;
+    return true; // Blob & File objects are already in memory
   }
 
   get status() {
-    return 200;
+    return 200; // Blob & File objects are already in memory
   }
 
   url() {
