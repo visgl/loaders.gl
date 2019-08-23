@@ -3,13 +3,12 @@
 // import {TILE3D_REFINEMENT, TILE3D_OPTIMIZATION_HINT} from '../constants';
 import {Vector3, Matrix4} from 'math.gl';
 import {CullingVolume} from '@math.gl/culling';
+import {parse, fetchFile, path} from '@loaders.gl/core';
 import Tile3DLoader from '../tile-3d-loader';
 import Tileset3DLoader from '../tileset-3d-loader';
 import {TILE3D_REFINEMENT, TILE3D_CONTENT_STATE, TILE3D_OPTIMIZATION_HINT} from '../constants';
 import assert from '../utils/assert';
 import {createBoundingVolume} from './helpers/bounding-volume';
-// TODO - inject this dependency?
-import {parse, fetchFile, path} from '@loaders.gl/core';
 
 const defined = x => x !== undefined && x !== null;
 
@@ -303,7 +302,6 @@ export default class Tile3DHeader {
 
       // The content can be a binary tile ot a JSON tileset
       this._content = await parse(response, [Tile3DLoader, Tileset3DLoader], {DracoLoader});
-
       // if (Tile3D.isTile(content)) {
       //   new Tileset3D(content, contentUri);
 

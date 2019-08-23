@@ -1,10 +1,11 @@
 import {normalizeLoader} from './normalize-loader';
 
-const EXT_PATTERN = /[^.]+.([^?]+)$/;
+const EXT_PATTERN = /[^.]+$/;
 
 // Find a loader that works for extension/text
 // Search the loaders array argument for a loader that matches extension or text
 export function autoDetectLoader(data, loaders, {url = ''} = {}) {
+  url = url.replace(/\?.*/, '');
   let loader = null;
   loader = loader || findLoaderByUrl(loaders, url);
   loader = loader || findLoaderByExamingInitialData(loaders, data);
@@ -16,7 +17,7 @@ export function autoDetectLoader(data, loaders, {url = ''} = {}) {
 function findLoaderByUrl(loaders, url) {
   // Get extension
   const match = url.match(EXT_PATTERN);
-  const extension = match && match.length >= 1 && match[1];
+  const extension = match && match[0];
   const loader = extension && findLoaderByExtension(loaders, extension);
   return loader;
 }
