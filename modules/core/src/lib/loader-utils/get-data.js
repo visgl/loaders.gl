@@ -13,8 +13,17 @@ import {checkFetchResponseStatus, checkFetchResponseStatusSync} from './check-er
 
 const ERR_DATA = 'Cannot convert supplied data type';
 
-export function getUrlFromData(data) {
-  return isFetchResponse(data) ? data.url : null;
+// Extract a URL from `parse` arguments if possible
+// If a fetch Response object or File/Blob were passed in get URL from those objects
+export function getUrlFromData(data, url) {
+  if (isFetchResponse(data)) {
+    url = url || data.url;
+  } else if (isFileReadable(url)) {
+    // File or Blob
+    url = url.name;
+  }
+  // Strip any query string
+  return typeof url === 'string' ? url.replace(/\?.*/, '') : url;
 }
 
 export function getArrayBufferOrStringFromDataSync(data, loader) {

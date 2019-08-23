@@ -5,6 +5,7 @@ const EXT_PATTERN = /[^.]+$/;
 // Find a loader that works for extension/text
 // Search the loaders array argument for a loader that matches extension or text
 export function autoDetectLoader(data, loaders, {url = ''} = {}) {
+  url = url.replace(/\?.*/, '');
   let loader = null;
   loader = loader || findLoaderByUrl(loaders, url);
   loader = loader || findLoaderByExamingInitialData(loaders, data);

@@ -4,6 +4,7 @@
 import {Matrix4, Vector3} from 'math.gl';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {Stats} from 'probe.gl';
+import {path} from '@loaders.gl/core';
 
 import assert from '../utils/assert';
 
@@ -86,14 +87,9 @@ const DEFAULT_OPTIONS = {
 
   onTileLoad: () => {}, // Indicates this a tile's content was loaded
   onTileUnload: () => {}, // Indicates this a tile's content was unloaded
-  onTileLoadFail: ({tile, message, url}) =>
-    console.error(`A 3D tile fail to load: ${url} ${message}`) // eslint-disable-line
+  onTileLoadFail: (tile, message, url) =>
+    console.error(`A 3D tile failed to load: ${url} ${message}`) // eslint-disable-line
 };
-
-function getBasePath(url) {
-  const slashIndex = url && url.lastIndexOf('/');
-  return slashIndex >= 0 ? url.substr(0, slashIndex) : '';
-}
 
 function getQueryParamString(queryParams) {
   const queryParamStrings = [];
@@ -123,7 +119,7 @@ export default class Tileset3D {
     // The url to a tileset JSON file.
     this.url = url;
     // The base path that any non-absolute paths in tileset JSON file are relative to.
-    this.basePath = getBasePath(url);
+    this.basePath = path.dirname(url);
     this._queryParams = {};
     this.stats = new Stats({id: url});
     this._initStats();
@@ -249,9 +245,11 @@ export default class Tileset3D {
     return this._extras;
   }
 
-  getTileUrl(tilePath) {
+  getTileUrl(tilePath, basePath) {
     const isDataUrl = url => url.startsWith('data:');
-    return isDataUrl(tilePath) ? tilePath : `${this.basePath}/${tilePath}${this.queryParams}`;
+    return isDataUrl(tilePath)
+      ? tilePath
+      : `${basePath || this.basePath}/${tilePath}${this.queryParams}`;
   }
 
   // true if the tileset JSON file lists the extension in extensionsUsed
@@ -396,16 +394,16 @@ export default class Tileset3D {
 
   // Installs the main tileset JSON file or a tileset JSON file referenced from a tile.
   // eslint-disable-next-line max-statements
-  _initializeTileHeaders(tilesetJson, parentTile) {
+  _initializeTileHeaders(tilesetJson, parentTileHeader, basePath) {
     // A tileset JSON file referenced from a tile may exist in a different directory than the root tileset.
     // Get the basePath relative to the external tileset.
-    const rootTile = new Tile3DHeader(this, tilesetJson.root, parentTile); // resource
+    const rootTile = new Tile3DHeader(this, tilesetJson.root, parentTileHeader, basePath); // resource
 
-    // If there is a parentTile, add the root of the currently loading tileset
-    // to parentTile's children, and update its _depth.
-    if (parentTile) {
-      parentTile.children.push(rootTile);
-      rootTile._depth = parentTile._depth + 1;
+    // If there is a parentTileHeader, add the root of the currently loading tileset
+    // to parentTileHeader's children, and update its _depth.
+    if (parentTileHeader) {
+      parentTileHeader.children.push(rootTile);
+      rootTile._depth = parentTileHeader._depth + 1;
     }
 
     const stack = [];
@@ -418,7 +416,7 @@ export default class Tileset3D {
 
       const children = tile._header.children || [];
       for (const childHeader of children) {
-        const childTile = new Tile3DHeader(this, childHeader, tile);
+        const childTile = new Tile3DHeader(this, childHeader, tile, basePath);
         tile.children.push(childTile);
         childTile._depth = tile._depth + 1;
         stack.push(childTile);
@@ -455,9 +453,7 @@ export default class Tileset3D {
       this.stats.get(TILES_LOADING).decrementCount();
       this.stats.get(TILES_LOAD_FAILED).incrementCount();
 
-      this.onTileLoadFail(tile, {
-        message: error.message || error.toString()
-      });
+      this.options.onTileLoadFail(tile, error.message || error.toString(), tile.url);
       return;
     }
     this.stats.get(TILES_LOADING).decrementCount();
