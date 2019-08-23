@@ -22,14 +22,14 @@ export async function parseWithLoader(data, loader, options, url) {
     return loader.parseTextSync(data, options, url, loader);
   }
 
-  // Now check for synchronous binary data parser, wrap results in promises
-  if (loader.parseSync) {
-    return loader.parseSync(data, options, url, loader);
-  }
-
   // Check for asynchronous parser
   if (loader.parse) {
     return await loader.parse(data, options, url, loader);
+  }
+
+  // Now check for synchronous binary data parser, wrap results in promises
+  if (loader.parseSync) {
+    return loader.parseSync(data, options, url, loader);
   }
 
   if (loader.worker) {

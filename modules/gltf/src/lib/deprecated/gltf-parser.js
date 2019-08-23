@@ -188,7 +188,8 @@ export default class GLTFParser {
   }
 
   async _loadBuffer(buffer, options) {
-    if (buffer.uri) {
+    // NOTE: options.uri is not correctly passed, however this class is deprecated...
+    if (buffer.uri && options.uri) {
       const fetch = options.fetch || window.fetch;
       const uri = getFullUri(buffer.uri, options.uri);
       const response = await fetch(uri);
