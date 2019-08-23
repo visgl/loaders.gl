@@ -1,14 +1,18 @@
 # Category: Mesh/PointCloud
 
-Loaders that load simple meshes or point clouds output a "single geometry primitive" consisting of a set of attributes, such as `positions`, `colors`, `normals` etc. These attributes are all typed arrays containing successive values for each vertex.
+This category unifies the loader output for simple mesh and point clouds formats that describe a "single geometry primitive" (as opposed to e.g. a scenegraph consisting of multiple geometries).
 
-The mesh loaders do the following to standardize the loaded mesh:
+A single mesh is typically defined by a set of attributes, such as `positions`, `colors`, `normals` etc, as well as a draw mode.
 
-- Provide a primitive drawing `mode` (the numeric values matches the corresponding WebGL constants).
-- Unpacks attributes (and indices if present) into typed arrays.
-- Wrap all attributes (and indices if present) into common "accessor objects": `{size: 1-4, value: typedArray}`.
-- Maps known attribute names to glTF attribute names.
-- Add `indices` field to the result (only if indices are present in the loaded geometry).
+## Format Notes
+
+The Pointcloud/Mesh loaders output mesh data in a common form that is optimized for use in WebGL frameworks:
+
+- All attributes (and indices if present) are stored as typed arrays of the proper type.
+- All attributes (and indices if present) are wrapped into glTF-style "accessor objects", e.g. `{size: 1-4, value: typedArray}`.
+- Attribute names are mapped to glTF attribute names (on a best-effort basis).
+- An `indices` field is added (only if present in the loaded geometry).
+- A primitive drawing `mode` value is added (the numeric value matches WebGL constants, e.g `GL.TRIANGLES`).
 
 ## Data Structure
 

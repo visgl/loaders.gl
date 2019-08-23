@@ -41,10 +41,11 @@
       "entries": [
         {"entry": "docs/specifications/loader-object-format"},
         {"entry": "docs/specifications/writer-object-format"},
-        {"entry": "docs/specifications/category-gis"},
-        {"entry": "docs/specifications/category-scenegraph"},
         {"entry": "docs/specifications/category-mesh"},
-        {"entry": "docs/specifications/category-table"}
+        {"entry": "docs/specifications/category-table"},
+        {"entry": "docs/specifications/category-scenegraph"},
+        {"entry": "docs/specifications/category-3d-tiles"},
+        {"entry": "docs/specifications/category-gis"}
       ]
     },
     {
@@ -56,8 +57,7 @@
             {"entry": "docs/api-reference/3d-tiles"},
             {"entry": "docs/api-reference/3d-tiles/tile-3d-loader"},
             {"entry": "docs/api-reference/3d-tiles/tileset-3d-loader"},
-            {"entry": "docs/api-reference/3d-tiles/tileset-3d"},
-            {"entry": "docs/api-reference/3d-tiles/tile-3d-header"}
+            {"entry": "docs/api-reference/3d-tiles/tileset-3d"}
           ]
         },
         {
