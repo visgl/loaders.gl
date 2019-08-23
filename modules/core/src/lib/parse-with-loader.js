@@ -4,16 +4,13 @@ import {
   getArrayBufferOrStringFromDataSync,
   getArrayBufferOrStringFromData,
   getAsyncIteratorFromData,
-  getIteratorFromData,
-  // getLengthFromData,
-  getUrlFromData
+  getIteratorFromData
 } from './loader-utils/get-data';
 
 // TODO: support progress and abort
 // TODO: support moving loading to worker
 // TODO - should accept loader.parseAsyncIterator and concatenate.
 export async function parseWithLoader(data, loader, options, url) {
-  url = url || getUrlFromData(data);
   data = await getArrayBufferOrStringFromData(data, loader);
 
   // First check for synchronous text parser, wrap results in promises

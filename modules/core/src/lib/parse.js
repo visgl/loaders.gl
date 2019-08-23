@@ -4,18 +4,7 @@ import {normalizeLoader, isLoaderObject} from './loader-utils/normalize-loader';
 import {mergeLoaderAndUserOptions} from './loader-utils/normalize-options';
 import {getRegisteredLoaders} from './register-loaders';
 import {parseWithLoader, parseWithLoaderInBatches, parseWithLoaderSync} from './parse-with-loader';
-
-// Extract a URL from `parse` arguments if possible
-// If a fetch Response object or File/Blob were passed in get URL from those objects
-function getUrl(data, url) {
-  if (isFetchResponse(data)) {
-    return url || data.url;
-  }
-  if (isFileReadable(url)) {
-    return url.name;
-  }
-  return url;
-}
+import {getUrlFromData} from './loader-utils/get-data';
 
 export async function parse(data, loaders, options, url) {
   // Signature: parse(data, options, url)
@@ -27,7 +16,7 @@ export async function parse(data, loaders, options, url) {
   }
 
   // Extract a url for auto detection
-  const autoUrl = getUrl(data, url);
+  const autoUrl = getUrlFromData(data, url);
 
   loaders = loaders || getRegisteredLoaders();
   const loader = Array.isArray(loaders) ? autoDetectLoader(data, loaders, {url: autoUrl}) : loaders;

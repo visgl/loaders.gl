@@ -303,6 +303,7 @@ export default class Tile3DHeader {
 
       // The content can be a binary tile ot a JSON tileset
       this._content = await parse(response, [Tile3DLoader, Tileset3DLoader], {DracoLoader});
+
       // if (Tile3D.isTile(content)) {
       //   new Tileset3D(content, contentUri);
 
@@ -612,7 +613,7 @@ export default class Tile3DHeader {
 
   _contentLoaded() {
     // Vector and Geometry tile rendering do not support the skip LOD optimization.
-    switch (this._content.type) {
+    switch (this._content && this._content.type) {
       case 'vctr':
       case 'geom':
         tileset.traverser.disableSkipLevelOfDetail = true;
