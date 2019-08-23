@@ -2,9 +2,14 @@
 
 > The 3D tiles loaders are still under development.
 
-The definition of a [3D Tiles tileset](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification).
+This class can be instantiated with tileset data formatted according to the [3D Tiles Category](docs/specifications/3d-tiles), which is supported by the [Tileset3DLoader](docs/api-reference/3d-tiles/tileset-3d-loader).
+
+References
+- [3D Tiles](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification).
 
 ## Usage
+
+Loading a tileset and instantiating a `Tileset3D` instance.
 
 ```js
 import {Tileset3DLoader, Tileset3D} from '@loaders.gl/3d-tiles';
@@ -17,7 +22,7 @@ console.log(`Maximum building height: ${tileset.properties.height.maximum}`);
 console.log(`Minimum building height: ${tileset.properties.height.minimum}`);
 ```
 
-Common setting for the skipLevelOfDetail optimization
+Common setting for the `skipLevelOfDetail` optimization
 
 ```js
 import {Tileset3D} from '@loaders.gl/3d-tiles';
@@ -34,7 +39,7 @@ const tileset = new Tileset3D(tilesetJson, {
 });
 ```
 
-Common settings for the dynamicScreenSpaceError optimization
+Common settings for the `dynamicScreenSpaceError` optimization
 
 ```js
 import {Tileset3D} from '^loaders.gl/3d-tiles';
@@ -56,12 +61,11 @@ Gets the tileset's asset object property, which contains metadata about the tile
 See the [asset schema reference](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#reference-asset) in the 3D Tiles spec for the full set of properties.
 
 
+### properties : Object (readonly)
+
 Gets the tileset's properties dictionary object, which contains metadata about per-feature properties.
 
 See the [properties schema reference](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#reference-properties) in the 3D Tiles spec for the full set of properties.
-
-see Cesium3DTileFeature#getProperty
-see Cesium3DTileFeature#setProperty
 
 
 ### tilesLoaded : boolean (readonly)
@@ -80,7 +84,7 @@ The url to a tileset JSON file.
 
 The base path that non-absolute paths in tileset JSON file are relative to.
 
-### maximumScreenSpaceError
+### maximumScreenSpaceError : Number
 
 The maximum screen space error used to drive level of detail refinement. This value helps determine when a tile refines to its descendants, and therefore plays a major role in balancing performance with visual quality.
 

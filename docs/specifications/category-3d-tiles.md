@@ -1,31 +1,29 @@
-# Category; 3D Tiles
+# Category: 3D Tiles
 
 > The 3D tiles category is still under development.
 
-The 3D Tiles category generalizes hierarchical geospatial data structures. It is being developed for the 3D Tiles standard but may be generalized to handle `i3s` and `potree` formats as well.
+The 3D Tiles category generalizes hierarchical geospatial data structures. It is being defined for the [OGC 3D Tiles](https://www.opengeospatial.org/standards/3DTiles) standard but may be generalized to handle the [OGC i3s](https://www.opengeospatial.org/standards/i3s) standard and the `potree` format as well.
 
 
 ## Concepts
 
-* *Tile Header Hierarchy* - An initial, "minimal" set of data listing the *hierarchy of available tiles*, with  minimal information to allow an application to determine which tiles need to be loaded based on a certain viewing position in 3d space.
-* *Tile Header* - A minimal header describing a tiles bounding volume and a screen space error tolerance (allowing the tile to be culled if it is distant), as well as the URL to load the tile's actual content from.
-* *Tile Cache* - Since the number of tiles in big tilesets often exceed what can be loaded into available memory, it is important to have a system that releases no-longer visible tiles from memory.
-* *Tileset Traversal* - Dynamically loading and rendering 3D tiles based on current viewing position, possibly triggering loads of new tiles and unloading of older, no-longer visible tiles.
+* **Tile Header Hierarchy** - An initial, "minimal" set of data listing the *hierarchy of available tiles*, with  minimal information to allow an application to determine which tiles need to be loaded based on a certain viewing position in 3d space.
+* **Tile Header** - A minimal header describing a tiles bounding volume and a screen space error tolerance (allowing the tile to be culled if it is distant), as well as the URL to load the tile's actual content from.
+* **Tile Cache** - Since the number of tiles in big tilesets often exceed what can be loaded into available memory, it is important to have a system that releases no-longer visible tiles from memory.
+* **Tileset Traversal** - Dynamically loading and rendering 3D tiles based on current viewing position, possibly triggering loads of new tiles and unloading of older, no-longer visible tiles.
 
 
 ## Tileset Traversal Support
 
-Dynamically loading and rendering 3D tile is fairly complex as it requires a significant amount of geospatial and culling math, as well as tile selection and caching logic.
+To start loading tiles once a top-level tileset file is loaded, the application can instantiate the `Tileset3D` class and start calling `tileset3D.traverse(camera_parameters)`.
 
-Therefore, in addition to basic loaders for the tileset and individual tile formats, loaders.gl provides an (optional) tileset traversal class.
+Since 3D tiled data sets tend to be very big, the key idea is to only load the tiles actually needed to show a view from the current camera position.
 
-By loading a top-level tileset file, instantiating a `Tileset3D` class, and calling `Tileset3D.traverse(camera parameters)` the tiles required to show a view from that camera position will be loaded.
-
-Since tile loads happen asynchronously, `Tileset3D` allows callbacks to be registered that notifies the app when the set of tiles available for rendering has changed.
+The `Tileset3D` allows callbacks (`onTileLoad`, `onTileUnload`) to be registered that notify the app when the set of tiles available for rendering has changed. This is important because tile loads complete asynchronously, after the `tileset3D.traverse(...)` call has returned.
 
 ## Coordinate Systems
 
-Matrices are provided to enable tiles to be used in fixed frame or lng/lat-relative, east-north-up (ENU) coordinate systems:
+To help applications process the `position` data in the tiles, 3D Tiles category loaders are expected to provide matrices are provided to enable tiles to be used in both fixed frame or cartographic (long/lat-relative, east-north-up / ENU) coordinate systems:
 
 * *cartesian*  WGS84 fixed frame coordinates
 * *cartographic*  tile geometry positions to ENU meter offsets from `cartographicOrigin`.

@@ -57,8 +57,7 @@
             {"entry": "docs/api-reference/3d-tiles"},
             {"entry": "docs/api-reference/3d-tiles/tile-3d-loader"},
             {"entry": "docs/api-reference/3d-tiles/tileset-3d-loader"},
-            {"entry": "docs/api-reference/3d-tiles/tileset-3d"},
-            {"entry": "docs/api-reference/3d-tiles/tile-3d-header"}
+            {"entry": "docs/api-reference/3d-tiles/tileset-3d"}
           ]
         },
         {
