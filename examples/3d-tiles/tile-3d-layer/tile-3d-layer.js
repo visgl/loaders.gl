@@ -15,9 +15,6 @@ import {
 import {GLTFLoader} from '@loaders.gl/gltf';
 import {DracoWorkerLoader} from '@loaders.gl/draco';
 
-import {Vector3, Matrix4} from 'math.gl';
-import {Ellipsoid} from '@math.gl/geospatial';
-
 import {getFrameState} from './get-frame-state';
 
 // TODO - simply registering the DracoLoader should be enough to make it available to gltf/3d-tiles
@@ -259,35 +256,6 @@ export default class Tile3DLayer extends CompositeLayer {
     });
   }
 
-  // TODO - delete when bug fixed
-  _resolveTransformProps(tileHeader) {
-    if (!tileHeader || !tileHeader.content) {
-      return {};
-    }
-
-    const {rtcCenter} = tileHeader.content;
-    const transform = tileHeader._initialTransform;
-
-    let modelMatrix = new Matrix4(transform);
-    if (rtcCenter) {
-      modelMatrix.translate(rtcCenter);
-    }
-
-    const cartesianOrigin = tileHeader._boundingVolume.center;
-    const cartographicOrigin = Ellipsoid.WGS84.cartesianToCartographic(
-      cartesianOrigin,
-      new Vector3()
-    );
-
-    const rotateMatrix = Ellipsoid.WGS84.eastNorthUpToFixedFrame(cartesianOrigin);
-    modelMatrix = new Matrix4(rotateMatrix.invert()).multiplyRight(modelMatrix);
-
-    return {
-      coordinateOrigin: cartographicOrigin,
-      modelMatrix
-    };
-  }
-
   _createPointCloud3DTileLayer(tileHeader) {
     const {positions, normals, colors} = tileHeader.content.attributes;
     const {pointCount} = tileHeader.content;
@@ -311,8 +279,6 @@ export default class Tile3DLayer extends CompositeLayer {
         coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS,
         coordinateOrigin: cartographicOrigin,
         modelMatrix,
-
-        // TODO - delete when bug fixed, somehow these props are different
 
         getColor: colorRGBA || this.props.color,
         pickable: true,

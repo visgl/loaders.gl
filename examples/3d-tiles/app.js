@@ -103,6 +103,14 @@ export default class App extends PureComponent {
       container: this._statsWidgetContainer
     });
 
+    this._tilesetStatsWidget = new StatsWidget(
+      {},
+      {
+        container: this._statsWidgetContainer,
+        framesPerUpdate: 1
+      }
+    );
+
     fileDrop(this._deckRef.deckCanvas, (promise, file) => {
       // eslint-disable-next-line
       alert('File drop of tilesets not yet implemented');
@@ -224,23 +232,8 @@ export default class App extends PureComponent {
 
   // Called by Tile3DLayer when a new tileset is load
   _onTilesetLoad(tileset) {
-    if (!this._tilesetStatsWidget) {
-      // TODO - would be nice to be able to create stats widget in constructor without stats object
-      // TODO - need method to detach stats widget in unmount...
-      this._tilesetStatsWidget = new StatsWidget(tileset.stats, {
-        container: this._statsWidgetContainer,
-        framesPerUpdate: 1,
-        // TODO - This is noisy. Default formatters should already be pre-registered on the stats object
-        formatters: {
-          Points: 'memory',
-          'Tile Memory Use': 'memory'
-        }
-      });
-    } else {
-      // TODO - this hack "works" but does not update the stats widget title
-      this._tilesetStatsWidget.stats = tileset.stats;
-      this._updateStatWidgets();
-    }
+    this._tilesetStatsWidget.setStats(tileset.stats);
+    this._updateStatWidgets();
 
     // Recenter to cover the tileset
     // TODO - transition?
