@@ -1,10 +1,9 @@
-import {isFetchResponse, isFileReadable} from '../javascript-utils/is-type';
 import {autoDetectLoader} from './loader-utils/auto-detect-loader';
 import {normalizeLoader, isLoaderObject} from './loader-utils/normalize-loader';
 import {mergeLoaderAndUserOptions} from './loader-utils/normalize-options';
+import {getUrlFromData} from './loader-utils/get-data';
 import {getRegisteredLoaders} from './register-loaders';
 import {parseWithLoader, parseWithLoaderInBatches, parseWithLoaderSync} from './parse-with-loader';
-import {getUrlFromData} from './loader-utils/get-data';
 
 export async function parse(data, loaders, options, url) {
   // Signature: parse(data, options, url)
