@@ -58,6 +58,8 @@
     "reify": "^0.19.1",
     "source-map-support": "^0.5.12",
     "tape-promise": "^4.0.0",
+    "webworkify": "^1.5.0",
+    "webworkify-webpack": "^2.1.5",
     "worker-loader": "^2.0.0"
   },
   "pre-commit": [
