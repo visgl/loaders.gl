@@ -145,7 +145,7 @@ export default class Tile3DLayer extends CompositeLayer {
     const {tileset3d, layerMap} = this.state;
     const {selectedTiles} = tileset3d;
 
-    const tilesWithoutLayer = selectedTiles.filter(tile => !(tile.contentUri in layerMap));
+    const tilesWithoutLayer = selectedTiles.filter(tile => !layerMap[tile.contentUri]);
 
     for (const tile of tilesWithoutLayer) {
       this._unpackTile(tile);
@@ -166,7 +166,6 @@ export default class Tile3DLayer extends CompositeLayer {
     if (content) {
       switch (content.type) {
         case 'pnts':
-          this._unpackPointCloud3DTile(tileHeader);
           break;
         case 'i3dm':
           this._unpackInstanced3DTile(tileHeader);
@@ -182,27 +181,15 @@ export default class Tile3DLayer extends CompositeLayer {
     }
   }
 
-  _unpackPointCloud3DTile(tileHeader) {
-    const {pointCount, positions} = tileHeader.content;
-
-    tileHeader.userData = {
-      pointCount,
-      positions
-    };
-  }
-
   _unpackInstanced3DTile(tileHeader) {
-    if (tileHeader.content.gltfArrayBuffer) {
-      tileHeader.userData = {gltfUrl: parse(tileHeader.content.gltfArrayBuffer)};
-    }
-
-    if (tileHeader.content.gltfUrl) {
-      const gltfUrl = tileHeader.tileset.getTileUrl(tileHeader.content.gltfUrl);
-      tileHeader.userData = {gltfUrl};
-    }
+    this._extractGltfUrl(tileHeader);
   }
 
   _unpackBatched3DTile(tileHeader) {
+    this._extractGltfUrl(tileHeader);
+  }
+
+  _extractGltfUrl(tileHeader) {
     if (tileHeader.content.gltfArrayBuffer) {
       tileHeader.userData = {
         gltfUrl: parse(tileHeader.content.gltfArrayBuffer, {DracoLoader, decompress: true})
@@ -215,7 +202,7 @@ export default class Tile3DLayer extends CompositeLayer {
   }
 
   _create3DTileLayer(tileHeader) {
-    if (!tileHeader.content || !tileHeader.userData) {
+    if (!tileHeader.content) {
       return null;
     }
 
@@ -230,9 +217,11 @@ export default class Tile3DLayer extends CompositeLayer {
         break;
       default:
     }
+
     if (!layer) {
       throw new Error(`Tile3DLayer: Failed to render layer of type ${tileHeader.content.type}`);
     }
+
     return layer;
   }
 
@@ -263,10 +252,14 @@ export default class Tile3DLayer extends CompositeLayer {
   }
 
   _createPointCloud3DTileLayer(tileHeader) {
-    const {positions, normals, colors} = tileHeader.content.attributes;
-    const {pointCount} = tileHeader.content;
-    const {colorRGBA} = tileHeader.userData;
-    const {cartographicOrigin, modelMatrix} = tileHeader.content;
+    const {
+      attributes,
+      pointCount,
+      constantRGBA,
+      cartographicOrigin,
+      modelMatrix
+    } = tileHeader.content;
+    const {positions, normals, colors} = attributes;
 
     return (
       positions &&
@@ -286,7 +279,7 @@ export default class Tile3DLayer extends CompositeLayer {
         coordinateOrigin: cartographicOrigin,
         modelMatrix,
 
-        getColor: colorRGBA || this.props.color,
+        getColor: constantRGBA || this.props.color,
         pickable: true,
         numInstances: pointCount,
         opacity: 1.0,
@@ -296,10 +289,7 @@ export default class Tile3DLayer extends CompositeLayer {
   }
 
   renderLayers() {
-    // TODO - reuse the same layer list
-    const layers = Object.values(this.state.layerMap).map(layer => layer.layer);
-    // const {layers} = this.state;
-    return layers;
+    return this.state.layers;
   }
 }
 
