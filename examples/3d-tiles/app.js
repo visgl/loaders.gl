@@ -91,25 +91,21 @@ export default class App extends PureComponent {
   }
 
   async componentDidMount() {
+    const container = this._statsWidgetContainer;
+    // TODO - This is noisy. Default formatters should already be pre-registered on the stats object
+    // TODO - Revisit after upgrade luma to use most recent StatsWidget API
     this._memWidget = new StatsWidget(lumaStats.get('Memory Usage'), {
       framesPerUpdate: 1,
-      // TODO - This is noisy. Default formatters should already be pre-registered on the stats object
       formatters: {
         'GPU Memory': 'memory',
         'Buffer Memory': 'memory',
         'Renderbuffer Memory': 'memory',
         'Texture Memory': 'memory'
       },
-      container: this._statsWidgetContainer
+      container
     });
 
-    this._tilesetStatsWidget = new StatsWidget(
-      {},
-      {
-        container: this._statsWidgetContainer,
-        framesPerUpdate: 1
-      }
-    );
+    this._tilesetStatsWidget = new StatsWidget(null, {container});
 
     fileDrop(this._deckRef.deckCanvas, (promise, file) => {
       // eslint-disable-next-line
@@ -233,7 +229,8 @@ export default class App extends PureComponent {
   // Called by Tile3DLayer when a new tileset is load
   _onTilesetLoad(tileset) {
     this._tilesetStatsWidget.setStats(tileset.stats);
-    this._updateStatWidgets();
+    // TODO remove when @probe.gl/stats-widget fix
+    this._tilesetStatsWidget.update();
 
     // Recenter to cover the tileset
     // TODO - transition?

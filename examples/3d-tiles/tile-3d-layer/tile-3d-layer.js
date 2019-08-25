@@ -244,7 +244,6 @@ export default class Tile3DLayer extends CompositeLayer {
       coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS,
       coordinateOrigin: cartographicOrigin,
 
-      _lighting: 'pbr',
       pickable: true,
       scenegraph: gltfUrl,
       sizeScale: 1,
@@ -253,7 +252,10 @@ export default class Tile3DLayer extends CompositeLayer {
       getTransformMatrix: d =>
         d.modelMatrix ? modelMatrix.clone().multiplyRight(d.modelMatrix) : modelMatrix,
       getColor: d => [255, 255, 255, 100],
-      opacity: 0.6
+      opacity: 0.6,
+
+      // enable gltf pbr model
+      _lighting: 'pbr'
     });
   }
 

@@ -33,10 +33,6 @@ const MATH_LINK_ALIASES = {
   '@math.gl/geospatial': resolve(ROOT_DIR, '../math.gl/modules/geospatial/src')
 };
 
-const LUMA_LOCAL_ALIASES = {
-  '@luma.gl/core': `${ROOT_DIR}/node_modules/@luma.gl/core`
-};
-
 // Support for hot reloading changes to the library:
 const LOCAL_DEVELOPMENT_CONFIG = {
   mode: 'development',
@@ -58,7 +54,7 @@ const LOCAL_DEVELOPMENT_CONFIG = {
 
   resolve: {
     // Imports the library from its src directory in this repo
-    alias: Object.assign({}, ALIASES, LUMA_LOCAL_ALIASES)
+    alias: Object.assign({}, ALIASES)
   },
 
   module: {
