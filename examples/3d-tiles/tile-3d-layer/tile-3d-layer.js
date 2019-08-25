@@ -244,6 +244,7 @@ export default class Tile3DLayer extends CompositeLayer {
       coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS,
       coordinateOrigin: cartographicOrigin,
 
+      _lighting: 'pbr',
       pickable: true,
       scenegraph: gltfUrl,
       sizeScale: 1,
