@@ -122,7 +122,7 @@ export default class Tileset3D {
     this.basePath = path.dirname(url);
     this._queryParams = {};
     this.stats = new Stats({id: url});
-    this._initStats();
+    this._initializeStats();
 
     // The total amount of GPU memory in bytes used by the tileset. This value is estimated from
     // geometry, texture, and batch table textures of loaded tiles. For point clouds, this value also
@@ -380,16 +380,17 @@ export default class Tileset3D {
     this.zoom = getZoom(root.boundingVolume);
   }
 
-  _initStats() {
+  _initializeStats() {
     this.stats.get(TILES_TOTAL);
     this.stats.get(TILES_LOADING);
-    this.stats.get(TILES_IN_MEMORY);
+    this.stats.get(TILES_IN_MEMORY, 'memory');
     this.stats.get(TILES_IN_VIEW);
     this.stats.get(TILES_RENDERABLE);
     this.stats.get(TILES_LOADED);
     this.stats.get(TILES_UNLOADED);
     this.stats.get(TILES_LOAD_FAILED);
     this.stats.get(POINTS_COUNT);
+    this.stats.get(TILES_GPU_MEMORY, 'memory');
   }
 
   // Installs the main tileset JSON file or a tileset JSON file referenced from a tile.

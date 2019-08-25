@@ -40,6 +40,7 @@
     "@loaders.gl/math": "1.2.1",
     "@math.gl/culling": "^3.0.0-beta.2",
     "@math.gl/geospatial": "^3.0.0-beta.2",
-    "math.gl": "^3.0.0-beta.2"
+    "math.gl": "^3.0.0-beta.2",
+    "probe.gl": "^3.1.0-alpha.10"
   }
 }

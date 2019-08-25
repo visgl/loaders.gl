@@ -54,7 +54,7 @@ const LOCAL_DEVELOPMENT_CONFIG = {
 
   resolve: {
     // Imports the library from its src directory in this repo
-    alias: ALIASES
+    alias: Object.assign({}, ALIASES)
   },
 
   module: {

@@ -91,17 +91,21 @@ export default class App extends PureComponent {
   }
 
   async componentDidMount() {
+    const container = this._statsWidgetContainer;
+    // TODO - This is noisy. Default formatters should already be pre-registered on the stats object
+    // TODO - Revisit after upgrade luma to use most recent StatsWidget API
     this._memWidget = new StatsWidget(lumaStats.get('Memory Usage'), {
       framesPerUpdate: 1,
-      // TODO - This is noisy. Default formatters should already be pre-registered on the stats object
       formatters: {
         'GPU Memory': 'memory',
         'Buffer Memory': 'memory',
         'Renderbuffer Memory': 'memory',
         'Texture Memory': 'memory'
       },
-      container: this._statsWidgetContainer
+      container
     });
+
+    this._tilesetStatsWidget = new StatsWidget(null, {container});
 
     fileDrop(this._deckRef.deckCanvas, (promise, file) => {
       // eslint-disable-next-line
@@ -224,23 +228,9 @@ export default class App extends PureComponent {
 
   // Called by Tile3DLayer when a new tileset is load
   _onTilesetLoad(tileset) {
-    if (!this._tilesetStatsWidget) {
-      // TODO - would be nice to be able to create stats widget in constructor without stats object
-      // TODO - need method to detach stats widget in unmount...
-      this._tilesetStatsWidget = new StatsWidget(tileset.stats, {
-        container: this._statsWidgetContainer,
-        framesPerUpdate: 1,
-        // TODO - This is noisy. Default formatters should already be pre-registered on the stats object
-        formatters: {
-          Points: 'memory',
-          'Tile Memory Use': 'memory'
-        }
-      });
-    } else {
-      // TODO - this hack "works" but does not update the stats widget title
-      this._tilesetStatsWidget.stats = tileset.stats;
-      this._updateStatWidgets();
-    }
+    this._tilesetStatsWidget.setStats(tileset.stats);
+    // TODO remove when @probe.gl/stats-widget fix
+    this._tilesetStatsWidget.update();
 
     // Recenter to cover the tileset
     // TODO - transition?
