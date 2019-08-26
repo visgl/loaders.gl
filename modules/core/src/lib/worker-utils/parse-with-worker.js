@@ -1,54 +1,48 @@
 import {toArrayBuffer} from '../../javascript-utils/binary-utils';
+import WorkerFarm from './worker-farm';
 
-const workerCache = new Map();
+let _workerFarm = null;
 
-const counters = {};
-
-function getDecoratedWorkerName(workerName) {
-  const lowerCaseName = workerName ? workerName.toLowerCase() : 'unnamed';
-  counters[lowerCaseName] = counters[lowerCaseName] || 0;
-  const counter = counters[lowerCaseName]++;
-  return `loaders.gl-${lowerCaseName}-worker-${counter}`;
-}
-
-/* global Worker, Blob, URL */
-function getWorker(workerSource, workerName) {
-  let workerURL = workerCache.get(workerSource);
-  if (!workerURL) {
-    const blob = new Blob([workerSource], {type: 'application/javascript'});
-    workerURL = URL.createObjectURL(blob);
-    workerCache.set(workerSource, workerURL);
+function getWorkerFarm(options = {}) {
+  let props = null;
+  if (options.maxConcurrency) {
+    props = {};
+    props.maxConcurrency = options.maxConcurrency;
   }
-  return new Worker(workerURL, {name: getDecoratedWorkerName(workerName)});
+  if (options.onDebug) {
+    props = props || {};
+    props.onDebug = options.onDebug;
+  }
+
+  if (_workerFarm) {
+    _workerFarm.setProps(props);
+  } else {
+    _workerFarm = new WorkerFarm(props || {});
+  }
+
+  return _workerFarm;
 }
 
-export default function parseWithWorker(workerSource, workerName, data, options) {
-  const worker = getWorker(workerSource, workerName);
+export default async function parseWithWorker(workerSource, workerName, data, options) {
+  const workerFarm = getWorkerFarm(options);
 
   options = removeNontransferableOptions(options);
 
-  const parse = (rawData, opts) =>
-    new Promise((resolve, reject) => {
-      worker.onmessage = evt => {
-        switch (evt.data.type) {
-          case 'done':
-            resolve(evt.data.result);
-            worker.terminate();
-            break;
+  const result = await workerFarm.process(workerSource, workerName, {
+    arraybuffer: toArrayBuffer(data),
+    opts: options
+  });
 
-          case 'error':
-            reject(new Error(evt.data.message));
-            break;
+  switch (result.type) {
+    case 'done':
+      return result.result;
 
-          default:
-        }
-      };
+    case 'error':
+      throw new Error(result.message);
 
-      const arraybuffer = toArrayBuffer(rawData);
-      worker.postMessage({arraybuffer, opts}, [arraybuffer]);
-    });
-
-  return data ? parse(data, options) : parse;
+    default:
+      return result;
+  }
 }
 
 function removeNontransferableOptions(options) {

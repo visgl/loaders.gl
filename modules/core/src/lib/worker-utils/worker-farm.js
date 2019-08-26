@@ -14,6 +14,16 @@ export default class WorkerFarm {
     this.workerPools = new Map();
   }
 
+  setProps(props) {
+    if ('maxConcurrency' in props) {
+      this.maxConcurrency = props.maxConcurrency;
+    }
+
+    if ('onDebug' in props) {
+      this.onDebug = props.onDebug;
+    }
+  }
+
   destroy() {
     this.workerPools.forEach(workerPool => workerPool.destroy());
   }
@@ -31,7 +41,7 @@ export default class WorkerFarm {
   // PRIVATE
 
   _getWorkerPool(workerSource, workerName) {
-    let workerPool = this.workerPools.get(workerSource);
+    let workerPool = this.workerPools.get(workerName);
     if (!workerPool) {
       workerPool = new WorkerPool({
         source: workerSource,
@@ -39,7 +49,7 @@ export default class WorkerFarm {
         maxConcurrency: this.maxConcurrency,
         onDebug: this.onDebug
       });
-      this.workerPools.set(workerPool);
+      this.workerPools.set(workerName, workerPool);
     }
     return workerPool;
   }

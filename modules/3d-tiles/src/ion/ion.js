@@ -4,7 +4,6 @@ import assert from '../utils/assert';
 import {_getErrorMessageFromResponse} from '@loaders.gl/core';
 
 const CESIUM_ION_URL = 'https://api.cesium.com/v1/assets';
-// const CESIUM_ION_URL = 'https://api.cesium.com/v1/assets/2/endpoint';
 
 // Returns `{url, headers, type, attributions}` for an ion tileset
 export async function getIonTilesetMetadata(accessToken, assetId) {

@@ -22,6 +22,8 @@ const ION_ACCESS_TOKEN_1 =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIxN2NhMzkwYi0zNWM4LTRjNTYtYWE3Mi1jMDAxYzhlOGVmNTAiLCJpZCI6OTYxOSwic2NvcGVzIjpbImFzbCIsImFzciIsImFzdyIsImdjIl0sImlhdCI6MTU2MjE4MTMxM30.OkgVr6NaKYxabUMIGqPOYFe0V5JifXLVLfpae63x-tA';
 const ION_ACCESS_TOKEN_2 =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIzMGY4ODczYy1mNTk4LTRiMDUtYmIxYy0xZWYwOWZmMGY4NjQiLCJpZCI6NDQsInNjb3BlcyI6WyJhc3IiLCJnYyJdLCJhc3NldHMiOlsxLDIsMyw0LDYxOTMsNjI3Myw3MTYyLDczNTMsNzE0Ml0sImlhdCI6MTU0MTYxODM0NX0.lWnGs9ySXO4QK3HagcMsDpZ8L01DpmUDQm38-2QAQuE';
+const ION_ACCESS_TOKEN_3 =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlNGZmZjBjMS04ZGYwLTRhYjAtOWIzYy0wZWJmNzI4OWZhNGEiLCJpZCI6MTYyMywic2NvcGVzIjpbImFzciIsImdjIl0sImFzc2V0cyI6WzI5MzI4LDI5MzMxLDI5MzMyLDI5MzMzLDI5MzM0LDI5MzM1LDEsMiwzLDQsMzk1NF0sImlhdCI6MTU2MDQ0ODA2Nn0.zZPuc5WzTsrKNviCY2jyhmDwJITXzhbRTnJS025_uBw';
 // Set your mapbox token here
 const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
 
@@ -43,6 +45,7 @@ const ADDITIONAL_EXAMPLES = {
     },
     '6193 (Cesium Ion Batched)': {ionAssetId: 6193, ionAccessToken: ION_ACCESS_TOKEN_2},
     '7162 (Cesium Ion Batched)': {ionAssetId: 7162, ionAccessToken: ION_ACCESS_TOKEN_2},
+    '29335 (Cesium Ion Batched)': {ionAssetId: 29335, ionAccessToken: ION_ACCESS_TOKEN_3},
     'Mount St Helens (Cesium Ion PointCloud)': {
       ionAssetId: 33301,
       ionAccessToken: ION_ACCESS_TOKEN_1
