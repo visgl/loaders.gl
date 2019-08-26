@@ -20,9 +20,9 @@ const ADDITIONAL_EXAMPLES = {
         ionAssetId: 33301,
         ionAccessToken: ION_ACCESS_TOKEN_1
       },
-      'Montreal (Cesium Ion PointCloud)': { ionAssetId: 28945, ionAccessToken: ION_ACCESS_TOKEN_1 },
-      '6193 (Cesium Ion Batched)': { ionAssetId: 6193, ionAccessToken: ION_ACCESS_TOKEN_2 },
-      '7162 (Cesium Ion Batched)': { ionAssetId: 7162, ionAccessToken: ION_ACCESS_TOKEN_2 },
+      'Montreal (Cesium Ion PointCloud)': {ionAssetId: 28945, ionAccessToken: ION_ACCESS_TOKEN_1},
+      '6193 (Cesium Ion Batched)': {ionAssetId: 6193, ionAccessToken: ION_ACCESS_TOKEN_2},
+      '7162 (Cesium Ion Batched)': {ionAssetId: 7162, ionAccessToken: ION_ACCESS_TOKEN_2},
       'Royal Exhibition Building (Github Pages)': {
         tilesetUrl: `${DECK_DATA_URI}/3d-tiles/RoyalExhibitionBuilding/tileset.json`
       }
@@ -31,12 +31,12 @@ const ADDITIONAL_EXAMPLES = {
   vricon: {
     name: 'vricon',
     examples: {
-      Cairo: { ionAssetId: 29328, ionAccessToken: ION_ACCESS_TOKEN_VRICON },
-      Caracas: { ionAssetId: 29331, ionAccessToken: ION_ACCESS_TOKEN_VRICON },
-      Damascus: { ionAssetId: 29332, ionAccessToken: ION_ACCESS_TOKEN_VRICON },
-      Honolulu: { ionAssetId: 29333, ionAccessToken: ION_ACCESS_TOKEN_VRICON },
-      'San Francisco': { ionAssetId: 29334, ionAccessToken: ION_ACCESS_TOKEN_VRICON },
-      Tehran: { ionAssetId: 29335, ionAccessToken: ION_ACCESS_TOKEN_VRICON }
+      Cairo: {ionAssetId: 29328, ionAccessToken: ION_ACCESS_TOKEN_VRICON},
+      Caracas: {ionAssetId: 29331, ionAccessToken: ION_ACCESS_TOKEN_VRICON},
+      Damascus: {ionAssetId: 29332, ionAccessToken: ION_ACCESS_TOKEN_VRICON},
+      Honolulu: {ionAssetId: 29333, ionAccessToken: ION_ACCESS_TOKEN_VRICON},
+      'San Francisco': {ionAssetId: 29334, ionAccessToken: ION_ACCESS_TOKEN_VRICON},
+      Tehran: {ionAssetId: 29335, ionAccessToken: ION_ACCESS_TOKEN_VRICON}
     }
   }
 };

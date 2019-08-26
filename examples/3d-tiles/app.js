@@ -1,4 +1,3 @@
-/* global fetch */
 import '@babel/polyfill';
 
 import React, {PureComponent} from 'react';
@@ -90,7 +89,7 @@ export default class App extends PureComponent {
       // load(promise, Tile3DLoader).then(this._onLoad);
     });
 
-    const examplesByCategory = await this._loadExampleIndex();
+    await this._loadExampleIndex();
     await this._loadInitialTileset();
   }
 
