@@ -9,3 +9,5 @@ node_modules/
 
 public/
 .cache/
+
+modules/potree/test/data/**/cloud.js
