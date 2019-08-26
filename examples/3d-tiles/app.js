@@ -14,14 +14,11 @@ import Tile3DLayer from './tile-3d-layer/tile-3d-layer';
 import ControlPanel from './components/control-panel';
 import fileDrop from './components/file-drop';
 
-const DATA_URI = 'https://raw.githubusercontent.com/uber-web/loaders.gl/master';
-const INDEX_FILE = `${DATA_URI}/modules/3d-tiles/test/data/index.json`;
+import {EXAMPLE_INDEX_URL, ADDITIONAL_EXAMPLES} from './examples';
 
-// eslint-disable-next-line
-const ION_ACCESS_TOKEN_1 =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIxN2NhMzkwYi0zNWM4LTRjNTYtYWE3Mi1jMDAxYzhlOGVmNTAiLCJpZCI6OTYxOSwic2NvcGVzIjpbImFzbCIsImFzciIsImFzdyIsImdjIl0sImlhdCI6MTU2MjE4MTMxM30.OkgVr6NaKYxabUMIGqPOYFe0V5JifXLVLfpae63x-tA';
-const ION_ACCESS_TOKEN_2 =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIzMGY4ODczYy1mNTk4LTRiMDUtYmIxYy0xZWYwOWZmMGY4NjQiLCJpZCI6NDQsInNjb3BlcyI6WyJhc3IiLCJnYyJdLCJhc3NldHMiOlsxLDIsMyw0LDYxOTMsNjI3Myw3MTYyLDczNTMsNzE0Ml0sImlhdCI6MTU0MTYxODM0NX0.lWnGs9ySXO4QK3HagcMsDpZ8L01DpmUDQm38-2QAQuE';
+export const INITIAL_EXAMPLE_CATEGORY = 'additional';
+export const INITIAL_EXAMPLE_NAME = 'Mount St Helens (Cesium Ion PointCloud)';
+
 // Set your mapbox token here
 const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
 
@@ -32,27 +29,6 @@ const MAP_STYLES = {
 };
 
 const INITIAL_MAP_STYLE = MAP_STYLES['Dark Base Map'];
-
-const ADDITIONAL_EXAMPLES = {
-  name: 'additional',
-  examples: {
-    'Royal Exhibition Building (Github Pages)': {
-      tilesetUrl:
-        'https://raw.githubusercontent.com/uber-common/deck.gl-data/master/3d-tiles/RoyalExhibitionBuilding/tileset.json',
-      color: [115, 101, 152, 200]
-    },
-    '6193 (Cesium Ion Batched)': {ionAssetId: 6193, ionAccessToken: ION_ACCESS_TOKEN_2},
-    '7162 (Cesium Ion Batched)': {ionAssetId: 7162, ionAccessToken: ION_ACCESS_TOKEN_2},
-    'Mount St Helens (Cesium Ion PointCloud)': {
-      ionAssetId: 33301,
-      ionAccessToken: ION_ACCESS_TOKEN_1
-    },
-    'Montreal (Cesium Ion PointCloud)': {ionAssetId: 28945, ionAccessToken: ION_ACCESS_TOKEN_1}
-  }
-};
-
-const INITIAL_EXAMPLE_CATEGORY = 'additional';
-const INITIAL_EXAMPLE_NAME = 'Mount St Helens (Cesium Ion PointCloud)';
 
 const EXAMPLES_VIEWSTATE = {
   latitude: 40.04248558075302,
@@ -144,7 +120,7 @@ export default class App extends PureComponent {
     let ionAccessToken = parsedUrl.searchParams.get('ionAccessToken');
     if (ionAssetId || ionAccessToken) {
       // load the tileset specified in the URL
-      ionAccessToken = ionAccessToken || ION_ACCESS_TOKEN_1;
+      ionAccessToken = ionAccessToken;
       await this._loadTilesetFromIonAsset(ionAccessToken, ionAssetId);
       return;
     }

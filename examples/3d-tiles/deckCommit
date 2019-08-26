@@ -1,4 +1,0 @@
-    "@deck.gl/core": "git@github.com:uber/deck.gl#fce0b28",
-    "@deck.gl/layers": "git@github.com:uber/deck.gl#fce0b28",
-    "@deck.gl/mesh-layers": "git@github.com:uber/deck.gl#fce0b28",
-    "@deck.gl/react": "git@github.com:uber/deck.gl#fce0b28",
