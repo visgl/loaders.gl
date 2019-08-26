@@ -200,7 +200,7 @@ function extractInstancedAttributes(tile, featureTable, batchTable, instancesLen
         */
       } else if (tile.eastNorthUp) {
         Ellipsoid.WGS84.eastNorthUpToFixedFrame(instancePosition, instanceTransform);
-        instanceTransform.getRotation(instanceRotation);
+        instanceTransform.getRotationMatrix3(instanceRotation);
       } else {
         instanceRotation.identity();
       }
