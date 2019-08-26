@@ -14,7 +14,7 @@ import Tile3DLayer from './tile-3d-layer/tile-3d-layer';
 import ControlPanel from './components/control-panel';
 import fileDrop from './components/file-drop';
 
-import {EXAMPLE_INDEX_URL, ADDITIONAL_EXAMPLES} from './examples';
+import {loadExampleIndex, DATA_URI} from './examples';
 
 export const INITIAL_EXAMPLE_CATEGORY = 'additional';
 export const INITIAL_EXAMPLE_NAME = 'Mount St Helens (Cesium Ion PointCloud)';
@@ -90,27 +90,14 @@ export default class App extends PureComponent {
       // load(promise, Tile3DLoader).then(this._onLoad);
     });
 
-    await this._loadExampleIndex();
+    const examplesByCategory = await this._loadExampleIndex();
     await this._loadInitialTileset();
   }
 
+  // load the index file that lists example tilesets
   async _loadExampleIndex() {
-    // load the index file that lists example tilesets
-    const response = await fetch(INDEX_FILE);
-    const data = await response.json();
-    this.setState({
-      examplesByCategory: {
-        ...data,
-        additional: ADDITIONAL_EXAMPLES,
-        custom: {
-          name: 'Custom',
-          examples: {
-            'Custom Tileset': {},
-            'ION Tileset': {}
-          }
-        }
-      }
-    });
+    const examplesByCategory = await loadExampleIndex();
+    this.setState({examplesByCategory});
   }
 
   async _loadInitialTileset() {
@@ -140,24 +127,24 @@ export default class App extends PureComponent {
   async _loadExampleTileset(category, name) {
     const {examplesByCategory} = this.state;
 
+    // TODO - unify this as part of cleanup
     let tilesetUrl;
     let tilesetExampleProps;
-    if (category === 'additional') {
-      tilesetExampleProps = ADDITIONAL_EXAMPLES.examples[name];
-    } else {
-      const selectedExample = examplesByCategory[category].examples[name];
-      if (selectedExample && selectedExample.tileset) {
-        tilesetUrl = `${DATA_URI}/${selectedExample.path}/${selectedExample.tileset}`;
-        tilesetExampleProps = {
-          tilesetUrl,
-          isWGS84: true
-        };
-      }
+    switch (category) {
+      case 'additional':
+      case 'vricon':
+        tilesetExampleProps = examplesByCategory[category].examples[name];
+        break;
+      default:
+        const selectedExample = examplesByCategory[category].examples[name];
+        if (selectedExample && selectedExample.tileset) {
+          tilesetUrl = `${DATA_URI}/${selectedExample.path}/${selectedExample.tileset}`;
+          tilesetExampleProps = {
+            tilesetUrl
+          };
+        }
     }
-
-    this.setState({
-      tilesetExampleProps
-    });
+    this.setState({tilesetExampleProps});
   }
 
   async _loadTilesetFromIonAsset(ionAccessToken, ionAssetId) {
