@@ -252,7 +252,8 @@ export default class Tile3DLayer extends CompositeLayer {
       getTransformMatrix: d =>
         d.modelMatrix ? modelMatrix.clone().multiplyRight(d.modelMatrix) : modelMatrix,
       getColor: d => [255, 255, 255, 100],
-      opacity: 0.6,
+      // TODO: Does not seem to take effect, maybe an opacity bug in ScenegraphLayer?
+      opacity: 1.0,
 
       // enable gltf pbr model
       _lighting: 'pbr'
@@ -286,7 +287,7 @@ export default class Tile3DLayer extends CompositeLayer {
         getColor: colorRGBA || this.props.color,
         pickable: true,
         numInstances: pointCount,
-        opacity: 0.8,
+        opacity: 1.0,
         pointSize: 1
       })
     );
