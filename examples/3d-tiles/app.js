@@ -28,7 +28,7 @@ const MAP_STYLES = {
 };
 
 const INITIAL_MAP_STYLE = MAP_STYLES['Dark Base Map'];
-const TRANSITION_DURAITON = 1000;
+const TRANSITION_DURAITON = 3000;
 const EXAMPLES_VIEWSTATE = {
   latitude: 40.04248558075302,
   longitude: -75.61213987669433
@@ -235,7 +235,7 @@ export default class App extends PureComponent {
         onExampleChange={this._onSelectExample.bind(this)}
       >
         <div>
-          long/lat: {viewState.longitude.toFixed(5)},{viewState.latitude.toFixed(5)}
+          long/lat: {viewState.longitude.toFixed(5)},{viewState.latitude.toFixed(5)},
           zoom: {viewState.zoom.toFixed(2)}
         </div>
       </ControlPanel>

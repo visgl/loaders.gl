@@ -384,13 +384,13 @@ export default class Tileset3D {
   _initializeStats() {
     this.stats.get(TILES_TOTAL);
     this.stats.get(TILES_LOADING);
-    this.stats.get(TILES_IN_MEMORY, 'memory');
+    this.stats.get(TILES_IN_MEMORY);
     this.stats.get(TILES_IN_VIEW);
     this.stats.get(TILES_RENDERABLE);
     this.stats.get(TILES_LOADED);
     this.stats.get(TILES_UNLOADED);
     this.stats.get(TILES_LOAD_FAILED);
-    this.stats.get(POINTS_COUNT);
+    this.stats.get(POINTS_COUNT, 'memory');
     this.stats.get(TILES_GPU_MEMORY, 'memory');
   }
 
