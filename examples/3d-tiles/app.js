@@ -102,11 +102,9 @@ export default class App extends PureComponent {
   async _loadInitialTileset() {
     /* global URL */
     const parsedUrl = new URL(window.location.href);
+    const ionAccessToken = parsedUrl.searchParams.get('ionAccessToken');
     const ionAssetId = parsedUrl.searchParams.get('ionAssetId');
-    let ionAccessToken = parsedUrl.searchParams.get('ionAccessToken');
-    if (ionAssetId || ionAccessToken) {
-      // load the tileset specified in the URL
-      ionAccessToken = ionAccessToken;
+    if (ionAccessToken && ionAssetId) {
       await this._loadTilesetFromIonAsset(ionAccessToken, ionAssetId);
       return;
     }

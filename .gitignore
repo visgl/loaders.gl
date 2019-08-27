@@ -29,6 +29,3 @@ yarn-error.log
 
 # local data
 data/**
-
-deckTags
-deckCommit
