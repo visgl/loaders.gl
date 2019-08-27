@@ -271,7 +271,8 @@ export default class Tileset3D {
     for (const tile of requestedTiles) {
       this._loadTile(tile);
     }
-    this._cache.unloadTiles(this);
+
+    this._unloadTiles();
 
     let tilesRenderable = 0;
     let pointsRenderable = 0;
@@ -298,7 +299,7 @@ export default class Tileset3D {
 
   // Add to the tile cache. Previously expired tiles are already in the cache and won't get re-added.
   addTileToCache(tile) {
-    this._cache.add(tile);
+    this._cache.add(this, tile, (tileset, tileToAdd) => tileset._addTileToCache(tileToAdd));
   }
 
   // PRIVATE
@@ -463,19 +464,21 @@ export default class Tileset3D {
       return;
     }
 
+    // add coordinateOrigin and modelMatrix to tile
+    if (tile && tile._content) {
+      calculateTransformProps(tile, tile._content);
+    }
+
+    this.options.onTileLoad(tile);
+  }
+
+  _addTileToCache(tile) {
     this.stats.get(TILES_LOADED).incrementCount();
     this.stats.get(TILES_IN_MEMORY).incrementCount();
 
     // Good enough? Just use the raw binary ArrayBuffer's byte length.
     this.gpuMemoryUsageInBytes += tile._content.byteLength || 0;
     this.stats.get(TILES_GPU_MEMORY).count = this.gpuMemoryUsageInBytes;
-
-    // add coordinateOrigin and modelMatrix to tile
-    if (tile && tile._content) {
-      calculateTransformProps(tile, tile._content);
-    }
-    // TODO - add tile to cache
-    this.options.onTileLoad(tile);
   }
 
   _unloadTile(tile) {
@@ -485,14 +488,13 @@ export default class Tileset3D {
     this.gpuMemoryUsageInBytes -= tile._content.byteLength || 0;
     this.stats.get(TILES_GPU_MEMORY).count = this.gpuMemoryUsageInBytes;
 
-    // this._cache.unloadTile(this, tile);
-
     this.options.onTileUnload(tile);
+
     tile.unloadContent();
   }
 
   _unloadTiles() {
-    this._cache.unloadTiles(this, tile => this._unloadTile(tile));
+    this._cache.unloadTiles(this, (tileset, tile) => tileset._unloadTile(tile));
   }
 
   // Traverse the tree and destroy all tiles
