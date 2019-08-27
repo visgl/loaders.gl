@@ -65,6 +65,7 @@ export default class Tile3DLayer extends CompositeLayer {
       const tilesetJson = await response.json();
 
       tileset3d = new Tileset3D(tilesetJson, tilesetUrl, {
+        throttleRequests: true,
         onTileLoad: tileHeader => {
           this.props.onTileLoad(tileHeader);
           this._updateTileset(tileset3d);
