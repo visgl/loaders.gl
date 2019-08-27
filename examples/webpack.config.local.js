@@ -65,9 +65,7 @@ const LOCAL_DEVELOPMENT_CONFIG = {
     ]
   },
 
-  plugins: [
-    new webpack.EnvironmentPlugin(['MapboxAccessToken'])
-  ]
+  plugins: [new webpack.EnvironmentPlugin(['MapboxAccessToken'])]
 };
 
 function addLocalDependency(config, dependency) {

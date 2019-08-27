@@ -235,8 +235,8 @@ export default class App extends PureComponent {
         onExampleChange={this._onSelectExample.bind(this)}
       >
         <div>
-          long/lat: {viewState.longitude.toFixed(5)},{viewState.latitude.toFixed(5)},
-          zoom: {viewState.zoom.toFixed(2)}
+          long/lat: {viewState.longitude.toFixed(5)},{viewState.latitude.toFixed(5)}, zoom:{' '}
+          {viewState.zoom.toFixed(2)}
         </div>
       </ControlPanel>
     );
