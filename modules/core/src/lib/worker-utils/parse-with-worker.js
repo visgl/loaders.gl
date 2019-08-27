@@ -1,28 +1,29 @@
 import {toArrayBuffer} from '../../javascript-utils/binary-utils';
 import WorkerFarm from './worker-farm';
 
+import {removeNontransferableOptions} from './worker-utils';
+
 let _workerFarm = null;
 
 function getWorkerFarm(options = {}) {
-  let props = null;
+  const props = {};
   if (options.maxConcurrency) {
-    props = {};
     props.maxConcurrency = options.maxConcurrency;
   }
   if (options.onDebug) {
-    props = props || {};
     props.onDebug = options.onDebug;
   }
 
-  if (_workerFarm) {
-    _workerFarm.setProps(props);
-  } else {
-    _workerFarm = new WorkerFarm(props || {});
-  }
+  _workerFarm = _workerFarm || new WorkerFarm({});
+  _workerFarm.setProps(props);
 
   return _workerFarm;
 }
 
+/**
+ * this function expects that the worker function sends certain messages,
+ * this can be automated if the worker is wrapper by a call to createWorker in @loaders.gl/loader-utils.
+ */
 export default async function parseWithWorker(workerSource, workerName, data, options) {
   const workerFarm = getWorkerFarm(options);
 
@@ -43,14 +44,4 @@ export default async function parseWithWorker(workerSource, workerName, data, op
     default:
       return result;
   }
-}
-
-function removeNontransferableOptions(options) {
-  options = Object.assign({}, options);
-  // log object contains functions which cannot be transferred
-  // TODO - decide how to handle logging on workers
-  if (options.log !== null) {
-    delete options.log;
-  }
-  return options;
 }

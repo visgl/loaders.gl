@@ -34,3 +34,13 @@ export function getWorkerURL(workerSource) {
 
   return workerURL;
 }
+
+export function removeNontransferableOptions(options) {
+  options = Object.assign({}, options);
+  // log object contains functions which cannot be transferred
+  // TODO - decide how to handle logging on workers
+  if (options.log !== null) {
+    delete options.log;
+  }
+  return options;
+}
