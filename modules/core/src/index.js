@@ -58,6 +58,11 @@ export {
 export {isBrowser, self, window, global, document} from './utils/globals';
 export {default as assert} from './utils/assert';
 
+// EXPERIMENTAL
+export {default as _WorkerThread} from './lib/worker-utils/worker-thread';
+export {default as _WorkerFarm} from './lib/worker-utils/worker-farm';
+export {default as _WorkerPool} from './lib/worker-utils/worker-pool';
+
 // DEPRECATED
 
 // Use @loaders.gl/polyfills and global symbols instead

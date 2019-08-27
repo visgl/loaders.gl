@@ -2,6 +2,8 @@ import './javascript-utils';
 
 import './streams/stream-iterator.spec';
 
+import './lib/worker-utils/worker-farm.spec';
+
 import './lib/fetch';
 import './lib/loader-utils';
 import './lib/parse.spec';
