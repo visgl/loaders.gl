@@ -127,7 +127,6 @@ export default class Tile3DLayer extends CompositeLayer {
         selectedLayers.push(layer);
       } else if (tile.contentUnloaded) {
         // Was cleaned up from tileset cache. We no longer need to track it.
-        console.log('LAYER REMOVE uri: ' + tile.uri);
         delete layerMap[tile.contentUri];
       } else if (layer && layer.props && layer.props.visible) {
         // Still in tileset cache but doesn't need to render this frame. Keep the GPU resource bound but don't render it.

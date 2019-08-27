@@ -64,7 +64,7 @@ const DEFAULT_OPTIONS = {
   cullWithChildrenBounds: true,
   // The maximum screen space error used to drive level of detail refinement.
   maximumScreenSpaceError: 16,
-  maximumMemoryUsage: 1, // 32
+  maximumMemoryUsage: 32,
 
   // default props
   dynamicScreenSpaceError: false,
@@ -299,7 +299,7 @@ export default class Tileset3D {
 
   // Add to the tile cache. Previously expired tiles are already in the cache and won't get re-added.
   addTileToCache(tile) {
-    this._cache.add(this, tile, (tileset, tile) => tileset._addTileToCache(tile));
+    this._cache.add(this, tile, (tileset, tileToAdd) => tileset._addTileToCache(tileToAdd));
   }
 
   // PRIVATE
@@ -479,7 +479,6 @@ export default class Tileset3D {
     // Good enough? Just use the raw binary ArrayBuffer's byte length.
     this.gpuMemoryUsageInBytes += tile._content.byteLength || 0;
     this.stats.get(TILES_GPU_MEMORY).count = this.gpuMemoryUsageInBytes;
-    console.log('CACHE ADD, TILES_GPU_MEMORY: ' + this.gpuMemoryUsageInBytes + ', uri: ' + tile.uri);
   }
 
   _unloadTile(tile) {
@@ -488,7 +487,6 @@ export default class Tileset3D {
 
     this.gpuMemoryUsageInBytes -= tile._content.byteLength || 0;
     this.stats.get(TILES_GPU_MEMORY).count = this.gpuMemoryUsageInBytes;
-    console.log('CACHE REMOVE, TILES_GPU_MEMORY: ' + this.gpuMemoryUsageInBytes + ', uri: ' + tile.uri);
 
     this.options.onTileUnload(tile);
 
