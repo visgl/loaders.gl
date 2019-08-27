@@ -73,7 +73,6 @@ export default class Tileset3DCache {
       node !== sentinel &&
       (tileset.gpuMemoryUsageInBytes > maximumMemoryUsageInBytes || trimTiles)
     ) {
-      console.log('cache unload');
       const tile = node.item;
       node = node.next;
       this.unloadTile(tileset, tile, unloadCallback);

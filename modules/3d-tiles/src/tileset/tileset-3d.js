@@ -273,7 +273,6 @@ export default class Tileset3D {
     }
 
     this._unloadTiles();
-    // this._cache.unloadTiles(this);
 
     let tilesRenderable = 0;
     let pointsRenderable = 0;
@@ -300,7 +299,6 @@ export default class Tileset3D {
 
   // Add to the tile cache. Previously expired tiles are already in the cache and won't get re-added.
   addTileToCache(tile) {
-    // TODO: similiar to unloadTile we want a call back that can update the gpu stats
     this._cache.add(this, tile, (tileset, tile) => tileset._addTileToCache(tile));
   }
 
@@ -471,7 +469,6 @@ export default class Tileset3D {
       calculateTransformProps(tile, tile._content);
     }
 
-    // TODO: check what this is doing, it either goes here or _addTileToCache
     this.options.onTileLoad(tile);
   }
 
@@ -482,8 +479,7 @@ export default class Tileset3D {
     // Good enough? Just use the raw binary ArrayBuffer's byte length.
     this.gpuMemoryUsageInBytes += tile._content.byteLength || 0;
     this.stats.get(TILES_GPU_MEMORY).count = this.gpuMemoryUsageInBytes;
-
-    // this.options.onTileLoad(tile);
+    console.log('CACHE ADD, TILES_GPU_MEMORY: ' + this.gpuMemoryUsageInBytes + ', uri: ' + tile.uri);
   }
 
   _unloadTile(tile) {
@@ -492,8 +488,10 @@ export default class Tileset3D {
 
     this.gpuMemoryUsageInBytes -= tile._content.byteLength || 0;
     this.stats.get(TILES_GPU_MEMORY).count = this.gpuMemoryUsageInBytes;
+    console.log('CACHE REMOVE, TILES_GPU_MEMORY: ' + this.gpuMemoryUsageInBytes + ', uri: ' + tile.uri);
 
     this.options.onTileUnload(tile);
+
     tile.unloadContent();
   }
 

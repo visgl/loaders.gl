@@ -113,7 +113,8 @@ export default class Tileset3DTraverser {
     //   // Prevents another pass from touching the frame again
     //   return;
     // }
-    // tileset._cache.touch(tile);
+    // TODO: add function to tile that te
+    tile.tileset._cache.touch(tile);
     tile._touchedFrame = frameState.frameNumber;
   }
 
