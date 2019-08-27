@@ -4,7 +4,7 @@ import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
 import DeckGL from '@deck.gl/react';
-import {MapController, FlyToInterpolator} from '@deck.gl/core';
+import {MapController} from '@deck.gl/core';
 import {lumaStats} from '@luma.gl/core';
 import {StatsWidget} from '@probe.gl/stats-widget';
 
@@ -28,7 +28,7 @@ const MAP_STYLES = {
 };
 
 const INITIAL_MAP_STYLE = MAP_STYLES['Dark Base Map'];
-const TRANSITION_DURAITON = 1000;
+
 const EXAMPLES_VIEWSTATE = {
   latitude: 40.04248558075302,
   longitude: -75.61213987669433
@@ -200,9 +200,7 @@ export default class App extends PureComponent {
         ...this.state.viewState,
         longitude: cartographicCenter[0],
         latitude: cartographicCenter[1],
-        zoom,
-        transitionDuration: TRANSITION_DURAITON,
-        transitionInterpolator: new FlyToInterpolator()
+        zoom
       }
     });
   }
