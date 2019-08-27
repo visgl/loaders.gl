@@ -294,10 +294,7 @@ export default class Tile3DLayer extends CompositeLayer {
   }
 
   renderLayers() {
-    // TODO - reuse the same layer list
-    const layers = Object.values(this.state.layerMap).map(layer => layer.layer);
-    // const {layers} = this.state;
-    return layers;
+    return this.state.layers;
   }
 }
 

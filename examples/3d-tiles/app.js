@@ -5,13 +5,12 @@ import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
 import DeckGL from '@deck.gl/react';
 import {MapController, FlyToInterpolator} from '@deck.gl/core';
-import {lumaStats} from '@luma.gl/core';
-import {StatsWidget} from '@probe.gl/stats-widget';
 
 import Tile3DLayer from './tile-3d-layer/tile-3d-layer';
 
 import ControlPanel from './components/control-panel';
 import fileDrop from './components/file-drop';
+import StatsPanel, {STATS_IDS} from './components/stats-panel';
 
 import {loadExampleIndex, DATA_URI} from './examples';
 
@@ -66,22 +65,6 @@ export default class App extends PureComponent {
   }
 
   async componentDidMount() {
-    const container = this._statsWidgetContainer;
-    // TODO - This is noisy. Default formatters should already be pre-registered on the stats object
-    // TODO - Revisit after upgrade luma to use most recent StatsWidget API
-    this._memWidget = new StatsWidget(lumaStats.get('Memory Usage'), {
-      framesPerUpdate: 1,
-      formatters: {
-        'GPU Memory': 'memory',
-        'Buffer Memory': 'memory',
-        'Renderbuffer Memory': 'memory',
-        'Texture Memory': 'memory'
-      },
-      container
-    });
-
-    this._tilesetStatsWidget = new StatsWidget(null, {container});
-
     fileDrop(this._deckRef.deckCanvas, (promise, file) => {
       // eslint-disable-next-line
       alert('File drop of tilesets not yet implemented');
@@ -165,16 +148,6 @@ export default class App extends PureComponent {
     });
   }
 
-  // Updates stats, called every frame
-  _updateStatWidgets() {
-    if (this._tilesetStatsWidget) {
-      this._tilesetStatsWidget.update();
-    }
-    if (this._memWidget) {
-      this._memWidget.update();
-    }
-  }
-
   // Called by ControlPanel when user selects a new example
   async _onSelectExample({category, name}) {
     this.setState({category, name});
@@ -188,9 +161,7 @@ export default class App extends PureComponent {
 
   // Called by Tile3DLayer when a new tileset is load
   _onTilesetLoad(tileset) {
-    this._tilesetStatsWidget.setStats(tileset.stats);
-    // TODO remove when @probe.gl/stats-widget fix
-    this._tilesetStatsWidget.update();
+    this._statsPanelRef.setStats(STATS_IDS.TILESET, tileset.stats);
 
     // Recenter to cover the tileset
     // TODO - transition?
@@ -209,7 +180,8 @@ export default class App extends PureComponent {
 
   // Called by Tile3DLayer whenever an individual tile in the current tileset is load or unload
   _onTilesetChange(tileHeader) {
-    this._updateStatWidgets();
+    // Updates stats, called every frame
+    this._statsPanelRef.update(STATS_IDS.TILESET);
     this.forceUpdate();
   }
 
@@ -242,23 +214,6 @@ export default class App extends PureComponent {
     );
   }
 
-  _renderStats() {
-    // TODO - too verbose, get more default styling from stats widget?
-    return (
-      <div
-        style={{
-          position: 'absolute',
-          padding: 12,
-          zIndex: '10000',
-          maxWidth: 300,
-          background: '#000',
-          color: '#fff'
-        }}
-        ref={_ => (this._statsWidgetContainer = _)}
-      />
-    );
-  }
-
   _renderTile3DLayer() {
     const {tilesetExampleProps} = this.state;
     if (!tilesetExampleProps) {
@@ -286,8 +241,8 @@ export default class App extends PureComponent {
 
     return (
       <div>
-        {this._renderStats()}
         {this._renderControlPanel()}
+        <StatsPanel ref={_ => (this._statsPanelRef = _)} />
         <DeckGL
           ref={_ => (this._deckRef = _)}
           layers={[tile3DLayer]}
@@ -295,7 +250,7 @@ export default class App extends PureComponent {
           viewState={viewState}
           onViewStateChange={this._onViewStateChange.bind(this)}
           controller={{type: MapController, maxPitch: 85}}
-          onAfterRender={() => this._updateStatWidgets()}
+          onAfterRender={() => this._statsPanelRef.updateAll()}
         >
           <StaticMap
             mapStyle={selectedMapStyle}

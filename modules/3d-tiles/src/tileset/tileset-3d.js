@@ -24,6 +24,7 @@ const TILES_UNLOADED = 'Tiles Unloaded';
 const TILES_LOAD_FAILED = 'Failed Tile Loads';
 const POINTS_COUNT = 'Points';
 const TILES_GPU_MEMORY = 'Tile Memory Use';
+const TILE_LOAD_AVG_TIME = 'Tile Load Avg Time';
 
 // TODO move to Math library?
 const WGS84_RADIUS_X = 6378137.0;
@@ -392,6 +393,7 @@ export default class Tileset3D {
     this.stats.get(TILES_LOAD_FAILED);
     this.stats.get(POINTS_COUNT, 'memory');
     this.stats.get(TILES_GPU_MEMORY, 'memory');
+    this.stats.get(TILE_LOAD_AVG_TIME, 'averageTime');
   }
 
   // Installs the main tileset JSON file or a tileset JSON file referenced from a tile.
@@ -450,7 +452,9 @@ export default class Tileset3D {
 
     this.stats.get(TILES_LOADING).incrementCount();
     try {
+      this.stats.get(TILE_LOAD_AVG_TIME).timeStart();
       loaded = await tile.loadContent(this.options.DracoLoader);
+      this.stats.get(TILE_LOAD_AVG_TIME).timeEnd();
     } catch (error) {
       this.stats.get(TILES_LOADING).decrementCount();
       this.stats.get(TILES_LOAD_FAILED).incrementCount();

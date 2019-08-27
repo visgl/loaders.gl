@@ -4,6 +4,7 @@
     "start": "webpack-dev-server --progress --hot --open",
     "start-local": "webpack-dev-server --env.local --progress --hot --open",
     "start-local-deck": "webpack-dev-server --env.local --env.deck --progress --hot --open",
+    "start-local-luma": "webpack-dev-server --env.local --env.luma --progress --hot --open",
     "generate": "node ./generate-index/index.js"
   },
   "dependencies": {

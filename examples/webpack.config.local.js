@@ -24,6 +24,12 @@ const DECK_LINK_ALIASES = {
   '@deck.gl/react': resolve(ROOT_DIR, '../deck.gl/modules/react/src')
 };
 
+const LUMA_LINK_ALIASES = {
+  '@luma.gl/webgl': resolve(ROOT_DIR, '../luma.gl/modules/webgl/src'),
+  '@luma.gl/core': resolve(ROOT_DIR, '../luma.gl/modules/core/src'),
+  '@luma.gl/shadertools': resolve(ROOT_DIR, '../luma.gl/modules/shadertools')
+};
+
 const MATH_LINK_ALIASES = {
   'math.gl': resolve(ROOT_DIR, '../math.gl/modules/core/src'),
   '@math.gl/culling': resolve(ROOT_DIR, '../math.gl/modules/culling/src'),
@@ -78,6 +84,9 @@ function addLocalDependency(config, dependency) {
       break;
     case 'math':
       Object.assign(config.resolve.alias, MATH_LINK_ALIASES);
+      break;
+    case 'luma':
+      Object.assign(config.resolve.alias, LUMA_LINK_ALIASES);
       break;
     default:
   }

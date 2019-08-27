@@ -8,7 +8,7 @@ export default class WorkerFarm {
    * @param processor {function | string} - worker function
    * @param maxConcurrency {number} - max count of workers
    */
-  constructor({maxConcurrency = 1, onDebug = () => {}}) {
+  constructor({maxConcurrency = 4, onDebug = () => {}}) {
     this.maxConcurrency = maxConcurrency;
     this.onDebug = onDebug;
     this.workerPools = new Map();
