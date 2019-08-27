@@ -32,10 +32,13 @@ export default class Tileset3DCache {
     }
   }
 
-  add(tile) {
+  add(tileset, tile, addCallback) {
     if (!defined(tile.cacheNode)) {
       tile.cacheNode = this._list.add(tile);
-      tile.tileset.gpuMemoryUsage += tile.gpuMemoryUsageInBytes;
+
+      if (addCallback) {
+        addCallback(tileset, tile);
+      }
     }
   }
 
@@ -47,8 +50,6 @@ export default class Tileset3DCache {
 
     this._list.remove(node);
     tile.cacheNode = undefined;
-    tileset.gPUMemoryUsage -= tile.gpuMemoryUsageInBytes;
-    tile.unloadContent();
     if (unloadCallback) {
       unloadCallback(tileset, tile);
     }
@@ -72,6 +73,7 @@ export default class Tileset3DCache {
       node !== sentinel &&
       (tileset.gpuMemoryUsageInBytes > maximumMemoryUsageInBytes || trimTiles)
     ) {
+      console.log('cache unload');
       const tile = node.item;
       node = node.next;
       this.unloadTile(tileset, tile, unloadCallback);
