@@ -35,7 +35,7 @@ _selectLoader(null, 'filename.csv'); // => CSVLoader
 
 ## Functions
 
-### _selectLoader(loaders : Object | Object[] | null, url? : String, data? : ArrayBuffer | String, options? : Object)
+### \_selectLoader(loaders : Object | Object[] | null, url? : String, data? : ArrayBuffer | String, options? : Object)
 
 Selects an appropriate loader for a file from a list of candidate loaders by examining a URL and/or an initial data chunk.
 
