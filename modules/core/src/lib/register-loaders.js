@@ -1,6 +1,6 @@
 import {normalizeLoader} from './loader-utils/normalize-loader';
 
-const registeredLoaders = {};
+let registeredLoaders = {};
 
 export function registerLoaders(loaders) {
   loaders = Array.isArray(loaders) ? loaders : [loaders];
@@ -14,4 +14,9 @@ export function registerLoaders(loaders) {
 
 export function getRegisteredLoaders() {
   return Object.values(registeredLoaders);
+}
+
+// For testing
+export function _unregisterLoaders() {
+  registeredLoaders = {};
 }

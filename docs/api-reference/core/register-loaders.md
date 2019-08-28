@@ -6,7 +6,7 @@ Applications can then make all those imported loaders available (via format auto
 
 ## Usage
 
-Initialization imports and registers loaders:
+Sample application initialization code that imports and registers loaders:
 
 ```js
 import {registerLoaders} from '@loaders.gl/core';

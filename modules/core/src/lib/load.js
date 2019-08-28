@@ -2,10 +2,9 @@ import {isFileReadable} from '../javascript-utils/is-type';
 import {fetchFile} from './fetch/fetch-file';
 import {isLoaderObject} from './loader-utils/normalize-loader';
 import {mergeLoaderAndUserOptions} from './loader-utils/normalize-options';
-import {autoDetectLoader} from './loader-utils/auto-detect-loader';
+import {selectLoader} from './select-loader';
 
 import {parse, parseInBatches} from './parse';
-import {getRegisteredLoaders} from './register-loaders';
 
 export async function loadInBatches(url, loaders, options) {
   const response = await fetchFile(url, options);
@@ -17,7 +16,6 @@ export async function loadInBatches(url, loaders, options) {
 // it can also call fetchFile on string urls, which `parse` won't do.
 export async function load(url, loaders, options) {
   // Signature: load(url, options)
-  // Uses registered loaders
   if (!Array.isArray(loaders) && !isLoaderObject(loaders)) {
     options = loaders;
     loaders = null;
@@ -26,14 +24,18 @@ export async function load(url, loaders, options) {
   // Extract a url for auto detection
   const autoUrl = isFileReadable(url) ? url.name : url;
 
-  loaders = loaders || getRegisteredLoaders();
-  const loader = Array.isArray(loaders) ? autoDetectLoader(null, loaders, {url: autoUrl}) : loaders;
+  // Initial loader autodection (Use registered loaders if none provided)
+  // This only uses URL extensions to detect loaders.
+  const loader = selectLoader(loaders, autoUrl, null, {nothrow: true});
 
-  options = mergeLoaderAndUserOptions(options, loader);
-
-  // Some loaders can not separate reading and parsing of data (e.g ImageLoader)
-  if (loader && loader.loadAndParse) {
-    return await loader.loadAndParse(url, options);
+  if (loader) {
+    // Some loaders do not separate reading and parsing of data (e.g ImageLoader)
+    // These can only be handled by `load`, not `parse`
+    // TODO - ImageLoaders can be rewritten to separate load and parse, phase out this variant?
+    if (loader.loadAndParse) {
+      const loaderOptions = mergeLoaderAndUserOptions(options, loader);
+      return await loader.loadAndParse(url, loaderOptions);
+    }
   }
 
   // at this point, data can be binary or text
@@ -41,5 +43,9 @@ export async function load(url, loaders, options) {
   if (isFileReadable(data) || typeof data === 'string') {
     data = await fetchFile(url, options);
   }
-  return parse(data, loaders, options, autoUrl);
+
+  // Fall back to parse
+  // Note: An improved round of autodetection is possible now that data has been loaded
+  // This means that another loader might be selected
+  return parse(data, loaders, options, url);
 }
