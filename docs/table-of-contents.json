@@ -77,6 +77,7 @@
             {"entry": "docs/api-reference/core/fetch-file"},
             {"entry": "docs/api-reference/core/write-file"},
             {"entry": "docs/api-reference/core/register-loaders"},
+            {"entry": "docs/api-reference/core/select-loader"},
             {"entry": "docs/api-reference/core/set-path-prefix"},
             {"entry": "docs/api-reference/core/binary-utilities"},
             {"entry": "docs/api-reference/core/iterator-utilities"}

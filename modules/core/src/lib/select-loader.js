@@ -1,15 +1,51 @@
-import {normalizeLoader} from './normalize-loader';
+import {getRegisteredLoaders} from './register-loaders';
+import {normalizeLoader} from './loader-utils/normalize-loader';
 
 const EXT_PATTERN = /[^.]+$/;
 
-// Find a loader that works for extension/text
-// Search the loaders array argument for a loader that matches extension or text
-export function autoDetectLoader(data, loaders, {url = ''} = {}) {
+// Find a loader that matches file extension and/or initial file content
+// Search the loaders array argument for a loader that matches url extension or initial data
+// Returns: a normalized loader
+
+// TODO - Need a variant that peeks at streams for parseInBatches
+// TODO - Detect multiple matching loaders? Use heuristics to grade matches?
+// TODO - Allow apps to pass context to disambiguate between multiple matches (e.g. multiple .json formats)?
+
+export function selectLoader(loaders, url = '', data = null, {nothrow = false} = {}) {
+  url = url || '';
+
+  // if only a single loader was provided (not as array), force its use
+  // TODO - Should this behaviour be kept and documented?
+  if (loaders && !Array.isArray(loaders)) {
+    const loader = loaders;
+    normalizeLoader(loader);
+    return loader;
+  }
+
+  // If no loaders provided, get the registered loaders
+  loaders = loaders || getRegisteredLoaders();
+  normalizeLoaders(loaders);
+
   url = url.replace(/\?.*/, '');
   let loader = null;
   loader = loader || findLoaderByUrl(loaders, url);
   loader = loader || findLoaderByExamingInitialData(loaders, data);
+
+  // no loader available
+  if (!loader) {
+    if (nothrow) {
+      return null;
+    }
+    throw new Error(`No valid loader found for ${url}`);
+  }
+
   return loader;
+}
+
+function normalizeLoaders(loaders) {
+  for (const loader of loaders) {
+    normalizeLoader(loader);
+  }
 }
 
 // TODO - Would be nice to support http://example.com/file.glb?parameter=1
@@ -26,7 +62,6 @@ function findLoaderByExtension(loaders, extension) {
   extension = extension.toLowerCase();
 
   for (const loader of loaders) {
-    normalizeLoader(loader);
     for (const loaderExtension of loader.extensions) {
       if (loaderExtension.toLowerCase() === extension) {
         return loader;
@@ -37,6 +72,10 @@ function findLoaderByExtension(loaders, extension) {
 }
 
 function findLoaderByExamingInitialData(loaders, data) {
+  if (!data) {
+    return null;
+  }
+
   for (const loader of loaders) {
     if (typeof data === 'string') {
       if (testText(data, loader)) {

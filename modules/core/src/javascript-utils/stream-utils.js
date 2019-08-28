@@ -36,7 +36,9 @@ async function* makeBrowserStreamIterator(stream) {
       // Else yield the chunk
       yield value;
     }
-  } finally {
+  } catch (error) {
+    // TODO - examples makes it look like this should always be called,
+    // but that generates exceptions so only call it if we do not reach the end
     reader.releaseLock();
   }
 }

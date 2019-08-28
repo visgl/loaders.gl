@@ -12,12 +12,10 @@ const JSONLoader = {
   parseTextSync: JSON.parse
 };
 
-test('load#load', t => {
+test('load#load', async t => {
   t.ok(load, 'load defined');
-  load('.').then(loadedData => {
-    t.ok(true, 'load accepts undefined loaders');
-    t.end();
-  });
+  await t.rejects(load('.'), 'load throws on undefined loaders');
+  t.end();
 });
 
 test('load#auto detect loader', t => {
