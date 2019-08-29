@@ -197,23 +197,15 @@ export default class Tile3DLayer extends CompositeLayer {
       return null;
     }
 
-    let layer;
     switch (tileHeader.content.type) {
       case 'pnts':
-        layer = this._createPointCloudTileLayer(tileHeader);
-        break;
+        return this._createPointCloudTileLayer(tileHeader);
       case 'i3dm':
       case 'b3dm':
-        layer = this._create3DModelTileLayer(tileHeader);
-        break;
+        return this._create3DModelTileLayer(tileHeader);
       default:
+        throw new Error(`Tile3DLayer: Failed to render layer of type ${tileHeader.content.type}`);
     }
-
-    if (!layer) {
-      throw new Error(`Tile3DLayer: Failed to render layer of type ${tileHeader.content.type}`);
-    }
-
-    return layer;
   }
 
   _create3DModelTileLayer(tileHeader) {
