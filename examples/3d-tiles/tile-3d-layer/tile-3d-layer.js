@@ -13,7 +13,7 @@ import {
   _getIonTilesetMetadata
 } from '@loaders.gl/3d-tiles';
 import {GLTFLoader} from '@loaders.gl/gltf';
-import {DracoWorkerLoader} from '@loaders.gl/draco';
+import {DracoLoader, DracoWorkerLoader} from '@loaders.gl/draco';
 
 import {getFrameState} from './get-frame-state';
 
@@ -204,7 +204,9 @@ export default class Tile3DLayer extends CompositeLayer {
 
   _unpackBatched3DTile(tileHeader) {
     if (tileHeader.content.gltfArrayBuffer) {
-      tileHeader.userData = {gltfUrl: parse(tileHeader.content.gltfArrayBuffer)};
+      tileHeader.userData = {
+        gltfUrl: parse(tileHeader.content.gltfArrayBuffer, {DracoLoader, decompress: true})
+      };
     }
     if (tileHeader.content.gltfUrl) {
       const gltfUrl = tileHeader.tileset.getTileUrl(tileHeader.content.gltfUrl);
