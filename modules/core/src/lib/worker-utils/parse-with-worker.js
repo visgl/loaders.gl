@@ -7,7 +7,9 @@ let _workerFarm = null;
 
 function getWorkerFarm(options = {}) {
   const props = {};
-  props.maxConcurrency = options.maxConcurrency || 5;
+  if (options.maxConcurrency) {
+    props.maxConcurrency = options.maxConcurrency;
+  }
   if (options.onDebug) {
     props.onDebug = options.onDebug;
   }
