@@ -229,7 +229,8 @@ export default class Tile3DLayer extends CompositeLayer {
       pickable: true,
       scenegraph: gltf,
       sizeScale: 1,
-      // TODO fix scenegraph modelMatrix
+      // Fix for scenegraph modelMatrix, under flag to not break
+      // _enableOffsetModelMatrix: true,
       // modelMatrix,
       // getTransformMatrix: d => d.modelMatrix,
       getTransformMatrix: d =>
