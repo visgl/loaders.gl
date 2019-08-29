@@ -21,8 +21,14 @@ const ADDITIONAL_EXAMPLES = {
         ionAccessToken: ION_ACCESS_TOKEN_1
       },
       'Montreal (Cesium Ion PointCloud)': {ionAssetId: 28945, ionAccessToken: ION_ACCESS_TOKEN_1},
-      '6193 (Cesium Ion Batched)': {ionAssetId: 6193, ionAccessToken: ION_ACCESS_TOKEN_2},
-      '7162 (Cesium Ion Batched)': {ionAssetId: 7162, ionAccessToken: ION_ACCESS_TOKEN_2},
+      'New York Buildings 1 (Cesium Ion 3D Batched)': {
+        ionAssetId: 6193,
+        ionAccessToken: ION_ACCESS_TOKEN_2
+      },
+      'New York Buildings 2 (Cesium Ion 3D Batched)': {
+        ionAssetId: 7162,
+        ionAccessToken: ION_ACCESS_TOKEN_2
+      },
       'Royal Exhibition Building (Github Pages)': {
         tilesetUrl: `${DECK_DATA_URI}/3d-tiles/RoyalExhibitionBuilding/tileset.json`
       }
