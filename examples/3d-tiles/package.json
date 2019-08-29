@@ -4,6 +4,7 @@
     "start": "webpack-dev-server --progress --hot --open",
     "start-local": "webpack-dev-server --env.local --progress --hot --open",
     "start-local-deck": "webpack-dev-server --env.local --env.deck --progress --hot --open",
+    "start-local-luma": "webpack-dev-server --env.local --env.luma --progress --hot --open",
     "start-local-math": "webpack-dev-server --env.local --env.math --progress --hot --open",
     "generate": "node ./generate-index/index.js"
   },
@@ -16,6 +17,8 @@
     "@loaders.gl/3d-tiles": "^1.2.0",
     "@loaders.gl/core": "^1.2.0",
     "@luma.gl/addons": "^7.2.0",
+    "@luma.gl/core": "^7.2.0",
+    "@luma.gl/debug": "^7.2.0",
     "@math.gl/geospatial": "^3.0.0-beta.3",
     "@math.gl/culling": "^3.0.0-beta.3",
     "probe.gl": "^3.1.0-alpha.11",
