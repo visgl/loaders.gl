@@ -131,6 +131,8 @@ export default class Tileset3D {
 
     this.geometricError = undefined; // Geometric error when the tree is not rendered at all
 
+    this.userData = {};
+
     // HELPER OBJECTS
     this._traverser = new Tileset3DTraverser();
     this._cache = new Tileset3DCache();

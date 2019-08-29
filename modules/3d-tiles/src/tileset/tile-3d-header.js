@@ -81,7 +81,7 @@ export default class Tile3DHeader {
     // Specifies the type of refine that is used when traversing this tile for rendering.
     this.refine = this._getRefine(header.refine);
     this.cacheNode = undefined;
-    this.userData = null;
+    this.userData = {};
 
     // The error, in meters, introduced if this tile is rendered and its children are not.
     // This is used to compute screen space error, i.e., the error measured in pixels.

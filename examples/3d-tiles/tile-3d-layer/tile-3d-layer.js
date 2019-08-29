@@ -145,7 +145,7 @@ export default class Tile3DLayer extends CompositeLayer {
     const {tileset3d, layerMap} = this.state;
     const {selectedTiles} = tileset3d;
 
-    const tilesWithoutLayer = selectedTiles.filter(tile => !(tile.contentUri in layerMap));
+    const tilesWithoutLayer = selectedTiles.filter(tile => !layerMap[tile.contentUri]);
 
     for (const tile of tilesWithoutLayer) {
       this._unpackTile(tile);
@@ -166,78 +166,58 @@ export default class Tile3DLayer extends CompositeLayer {
     if (content) {
       switch (content.type) {
         case 'pnts':
-          this._unpackPointCloud3DTile(tileHeader);
+          // Nothing to do;
           break;
         case 'i3dm':
-          this._unpackInstanced3DTile(tileHeader);
-          break;
         case 'b3dm':
-          this._unpackBatched3DTile(tileHeader);
+          this._unpackGLTF(tileHeader);
           break;
         default:
-          // eslint-disable-next-line
-          console.warn('Error unpacking 3D tile', content.type, content);
           throw new Error(`Tile3DLayer: Error unpacking 3D tile ${content.type}`);
       }
     }
   }
 
-  _unpackPointCloud3DTile(tileHeader) {
-    const {pointCount, positions} = tileHeader.content;
-
-    tileHeader.userData = {
-      pointCount,
-      positions
-    };
-  }
-
-  _unpackInstanced3DTile(tileHeader) {
+  // TODO - move glTF + Draco parsing into the Tile3DLoader
+  // DracoLoading is typically async on worker, better keep it in the top-level `parse` promise...
+  _unpackGLTF(tileHeader) {
     if (tileHeader.content.gltfArrayBuffer) {
-      tileHeader.userData = {gltfUrl: parse(tileHeader.content.gltfArrayBuffer)};
-    }
-
-    if (tileHeader.content.gltfUrl) {
-      const gltfUrl = tileHeader.tileset.getTileUrl(tileHeader.content.gltfUrl);
-      tileHeader.userData = {gltfUrl};
-    }
-  }
-
-  _unpackBatched3DTile(tileHeader) {
-    if (tileHeader.content.gltfArrayBuffer) {
-      tileHeader.userData = {
-        gltfUrl: parse(tileHeader.content.gltfArrayBuffer, {DracoLoader, decompress: true})
-      };
+      tileHeader.userData.gltf = parse(tileHeader.content.gltfArrayBuffer, {
+        DracoLoader,
+        decompress: true
+      });
     }
     if (tileHeader.content.gltfUrl) {
-      const gltfUrl = tileHeader.tileset.getTileUrl(tileHeader.content.gltfUrl);
-      tileHeader.userData = {gltfUrl};
+      tileHeader.userData.gltf = tileHeader.tileset.getTileUrl(tileHeader.content.gltfUrl);
     }
   }
 
   _create3DTileLayer(tileHeader) {
-    if (!tileHeader.content || !tileHeader.userData) {
+    if (!tileHeader.content) {
       return null;
     }
 
     let layer;
     switch (tileHeader.content.type) {
       case 'pnts':
-        layer = this._createPointCloud3DTileLayer(tileHeader);
+        layer = this._createPointCloudTileLayer(tileHeader);
         break;
       case 'i3dm':
       case 'b3dm':
-        layer = this._createInstanced3DTileLayer(tileHeader);
+        layer = this._create3DModelTileLayer(tileHeader);
         break;
       default:
     }
+
     if (!layer) {
       throw new Error(`Tile3DLayer: Failed to render layer of type ${tileHeader.content.type}`);
     }
+
     return layer;
   }
 
-  _createInstanced3DTileLayer(tileHeader) {
-    const {gltfUrl} = tileHeader.userData;
+  _create3DModelTileLayer(tileHeader) {
+    const {gltf} = tileHeader.userData;
     const {instances, cartographicOrigin, modelMatrix} = tileHeader.content;
 
     return new ScenegraphLayer({
@@ -247,12 +227,14 @@ export default class Tile3DLayer extends CompositeLayer {
       coordinateOrigin: cartographicOrigin,
 
       pickable: true,
-      scenegraph: gltfUrl,
+      scenegraph: gltf,
       sizeScale: 1,
-      getPosition: row => [0, 0, 0],
       // TODO fix scenegraph modelMatrix
+      // modelMatrix,
+      // getTransformMatrix: d => d.modelMatrix,
       getTransformMatrix: d =>
         d.modelMatrix ? modelMatrix.clone().multiplyRight(d.modelMatrix) : modelMatrix,
+      getPosition: row => [0, 0, 0],
       getColor: d => [255, 255, 255, 100],
       // TODO: Does not seem to take effect, maybe an opacity bug in ScenegraphLayer?
       opacity: 1.0,
@@ -262,11 +244,15 @@ export default class Tile3DLayer extends CompositeLayer {
     });
   }
 
-  _createPointCloud3DTileLayer(tileHeader) {
-    const {positions, normals, colors} = tileHeader.content.attributes;
-    const {pointCount} = tileHeader.content;
-    const {colorRGBA} = tileHeader.userData;
-    const {cartographicOrigin, modelMatrix} = tileHeader.content;
+  _createPointCloudTileLayer(tileHeader) {
+    const {
+      attributes,
+      pointCount,
+      constantRGBA,
+      cartographicOrigin,
+      modelMatrix
+    } = tileHeader.content;
+    const {positions, normals, colors} = attributes;
 
     return (
       positions &&
@@ -286,7 +272,7 @@ export default class Tile3DLayer extends CompositeLayer {
         coordinateOrigin: cartographicOrigin,
         modelMatrix,
 
-        getColor: colorRGBA || this.props.color,
+        getColor: constantRGBA || this.props.color,
         pickable: true,
         numInstances: pointCount,
         opacity: 1.0,
@@ -296,10 +282,7 @@ export default class Tile3DLayer extends CompositeLayer {
   }
 
   renderLayers() {
-    // TODO - reuse the same layer list
-    const layers = Object.values(this.state.layerMap).map(layer => layer.layer);
-    // const {layers} = this.state;
-    return layers;
+    return this.state.layers;
   }
 }
 
