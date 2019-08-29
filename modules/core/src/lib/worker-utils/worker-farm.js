@@ -1,6 +1,6 @@
 import WorkerPool from './worker-pool';
 
-const DEFAULT_MAX_CONCURRENCY = 5
+const DEFAULT_MAX_CONCURRENCY = 5;
 
 /**
  * Process multiple data messages with a "farm" of different workers (in worker pools)

@@ -15,7 +15,7 @@ export default function createWorker(loader) {
         return;
       }
 
-      const {arraybuffer, byteOffset = 0, byteLength = 0, options = {} } = evt.data;
+      const {arraybuffer, byteOffset = 0, byteLength = 0, options = {}} = evt.data;
       const result = parseData(loader, arraybuffer, byteOffset, byteLength, options);
       const transferList = getTransferList(result);
       self.postMessage({type: 'done', result}, transferList);
