@@ -378,6 +378,7 @@ test('Tileset3D#handles failed tile processing', t => {
 test('Tileset3D#loads tiles in tileset', async t => {
   const tilesetJson = await parse(fetchFile(TILESET_URL), Tileset3DLoader);
   const tileset = new Tileset3D(tilesetJson, TILESET_URL);
+  tileset.root._visible = true;
   await tileset.root.loadContent();
   t.ok(tileset.root.content);
   t.end();

@@ -294,11 +294,37 @@ export default class Tile3DHeader {
       this.expireDate = undefined;
     }
 
-    try {
-      this._contentState = TILE3D_CONTENT_STATE.LOADING;
+    this._contentState = TILE3D_CONTENT_STATE.LOADING;
 
+    function updatePriority(tile) {
+      // Check if any reason to abort
+      if (!tile._visible) {
+        return -1;
+      }
+      if (tile._contentState === TILE3D_CONTENT_STATE.UNLOADED) {
+        return -1;
+      }
+      return tile._priority || 0;
+    }
+
+    const cancelled = !(await this.tileset._requestScheduler.scheduleRequest(this, updatePriority));
+
+    if (cancelled) {
+      console.log('Tile load cancelled');
+      this._contentState = TILE3D_CONTENT_STATE.UNLOADED;
+      return false;
+    }
+
+    try {
       const contentUri = this.uri;
-      const response = await fetchFile(contentUri, this._tileset.options.fetchOptions);
+
+      let response;
+      try {
+        this.tileset._requestScheduler.startRequest(this);
+        response = await fetchFile(contentUri, this.tileset.options.fetchOptions);
+      } finally {
+        this.tileset._requestScheduler.endRequest(this);
+      }
 
       // The content can be a binary tile ot a JSON tileset
       this._content = await parse(response, [Tile3DLoader, Tileset3DLoader], {DracoLoader});

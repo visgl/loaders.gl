@@ -7,11 +7,12 @@ import {Stats} from 'probe.gl';
 import {path} from '@loaders.gl/core';
 
 import assert from '../utils/assert';
+import RequestScheduler from '../request-utils/request-scheduler';
 
+import {calculateTransformProps} from './helpers/transform-utils';
 import Tile3DHeader from './tile-3d-header';
 import Tileset3DTraverser from './tileset-3d-traverser';
 import Tileset3DCache from './tileset-3d-cache';
-import {calculateTransformProps} from './helpers/transform-utils';
 
 // Tracked Stats
 const TILES_TOTAL = 'Tiles In Tileset(s)';
@@ -60,6 +61,9 @@ const DEFAULT_OPTIONS = {
   ellipsoid: Ellipsoid.WGS84,
   // A 4x4 transformation matrix this transforms the entire tileset.
   modelMatrix: new Matrix4(),
+
+  // Set to true to enable experimental request throttling, for improved performance
+  throttleRequests: false,
 
   cullWithChildrenBounds: true,
   // The maximum screen space error used to drive level of detail refinement.
@@ -111,29 +115,23 @@ export default class Tileset3D {
   constructor(json, url, options = {}) {
     assert(json);
 
-    options = {...DEFAULT_OPTIONS, ...options};
-
     // PUBLIC MEMBERS
-    this.options = options;
-    this.modelMatrix = options.modelMatrix;
-    // The url to a tileset JSON file.
-    this.url = url;
-    // The base path that any non-absolute paths in tileset JSON file are relative to.
-    this.basePath = path.dirname(url);
-    this._queryParams = {};
+    this.options = {...DEFAULT_OPTIONS, ...options};
+    this.url = url; // The url to a tileset JSON file.
+    this.basePath = path.dirname(url); // base path that non-absolute paths in tileset are relative to.
+    this.modelMatrix = this.options.modelMatrix;
     this.stats = new Stats({id: url});
     this._initializeStats();
 
-    // The total amount of GPU memory in bytes used by the tileset. This value is estimated from
-    // geometry, texture, and batch table textures of loaded tiles. For point clouds, this value also
-    // includes per-point metadata.
-    this.gpuMemoryUsageInBytes = 0;
-
+    this.gpuMemoryUsageInBytes = 0; // The total amount of GPU memory in bytes used by the tileset.
     this.geometricError = undefined; // Geometric error when the tree is not rendered at all
-
     this.userData = {};
 
     // HELPER OBJECTS
+    this._queryParams = {};
+    this._requestScheduler = new RequestScheduler({
+      throttleRequests: this.options.throttleRequests
+    });
     this._traverser = new Tileset3DTraverser();
     this._cache = new Tileset3DCache();
 
@@ -167,12 +165,12 @@ export default class Tileset3D {
 
     this._readyPromise = Promise.resolve();
 
-    this._classificationType = options.classificationType;
-    this._ellipsoid = options.ellipsoid;
+    this._classificationType = this.options.classificationType;
+    this._ellipsoid = this.options.ellipsoid;
 
     this._dynamicScreenSpaceErrorComputedDensity = 0.0; // Updated based on the camera position and direction
 
-    this._initializeTileSet(json, options);
+    this._initializeTileSet(json, this.options);
   }
 
   destroy() {
@@ -491,7 +489,6 @@ export default class Tileset3D {
     this.stats.get(TILES_GPU_MEMORY).count = this.gpuMemoryUsageInBytes;
 
     this.options.onTileUnload(tile);
-
     tile.unloadContent();
   }
 
