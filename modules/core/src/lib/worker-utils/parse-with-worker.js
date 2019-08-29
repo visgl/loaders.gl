@@ -1,15 +1,13 @@
 import {toArrayBuffer} from '../../javascript-utils/binary-utils';
 import WorkerFarm from './worker-farm';
 
-import {removeNontransferableOptions} from './worker-utils';
+import {removeNontransferableValues} from './worker-utils';
 
 let _workerFarm = null;
 
 function getWorkerFarm(options = {}) {
   const props = {};
-  if (options.maxConcurrency) {
-    props.maxConcurrency = options.maxConcurrency;
-  }
+  props.maxConcurrency = options.maxConcurrency || 5;
   if (options.onDebug) {
     props.onDebug = options.onDebug;
   }
@@ -27,11 +25,15 @@ function getWorkerFarm(options = {}) {
 export default async function parseWithWorker(workerSource, workerName, data, options) {
   const workerFarm = getWorkerFarm(options);
 
-  options = removeNontransferableOptions(options);
+  // Since the `options` object is "shared" (contains options for other purposes),
+  // it can contain functions etc that need to be stripped
+  options = removeNontransferableValues(options);
 
-  const result = await workerFarm.process(workerSource, workerName, {
+  const result = await workerFarm.process(workerSource, `loaders.gl-${workerName}`, {
     arraybuffer: toArrayBuffer(data),
-    opts: options
+    options,
+    source: 'loaders.gl', // Lets worker ignore unrelated messages
+    type: 'process' // For future extension
   });
 
   switch (result.type) {
@@ -42,6 +44,7 @@ export default async function parseWithWorker(workerSource, workerName, data, op
       throw new Error(result.message);
 
     default:
+      // TODO - is this not an error case? Log a warning?
       return result;
   }
 }
