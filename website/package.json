@@ -40,7 +40,7 @@
     "gatsby": "^2.13.51",
     "gatsby-plugin-no-sourcemaps": "^2.0.2",
     "gh-pages": "^2.1.0",
-    "ocular-gatsby": "1.0.0-alpha.53",
+    "ocular-gatsby": "^1.0.0",
     "sharp": "^0.23.0"
   }
 }
