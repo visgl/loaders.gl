@@ -8,7 +8,7 @@
     "@loaders.gl/core": "^1.2.0",
     "@loaders.gl/las": "^1.2.0",
     "@loaders.gl/ply": "^1.2.0",
-    "deck.gl": "^7.3.0-alpha.1",
+    "deck.gl": "^7.3.0-alpha.4",
     "react": "^16.3.0",
     "react-dom": "^16.3.0",
     "styled-components": "^4.2.0"
