@@ -8,9 +8,6 @@ const ION_TOKEN_1 =
 const ION_TOKEN_2 =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIzMGY4ODczYy1mNTk4LTRiMDUtYmIxYy0xZWYwOWZmMGY4NjQiLCJpZCI6NDQsInNjb3BlcyI6WyJhc3IiLCJnYyJdLCJhc3NldHMiOlsxLDIsMyw0LDYxOTMsNjI3Myw3MTYyLDczNTMsNzE0Ml0sImlhdCI6MTU0MTYxODM0NX0.lWnGs9ySXO4QK3HagcMsDpZ8L01DpmUDQm38-2QAQuE';
 
-const ION_TOKEN_MELBOURNE =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJiMTBjN2E3Mi03ZGZkLTRhYmItOWEzNC1iOTdjODEzMzM5MzgiLCJpZCI6NDQsImlhdCI6MTQ4NjQ4NDM0M30.B3C7Noey3ZPXcf7_FXBEYwirct23fsUecRnS12FltN8';
-
 export const DATA_URI = 'https://raw.githubusercontent.com/uber-web/loaders.gl/master';
 
 const EXAMPLE_INDEX_URL = `${DATA_URI}/modules/3d-tiles/test/data/index.json`;
