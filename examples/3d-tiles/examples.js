@@ -7,12 +7,14 @@ const ION_TOKEN_1 =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIxN2NhMzkwYi0zNWM4LTRjNTYtYWE3Mi1jMDAxYzhlOGVmNTAiLCJpZCI6OTYxOSwic2NvcGVzIjpbImFzbCIsImFzciIsImFzdyIsImdjIl0sImlhdCI6MTU2MjE4MTMxM30.OkgVr6NaKYxabUMIGqPOYFe0V5JifXLVLfpae63x-tA';
 const ION_TOKEN_2 =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIzMGY4ODczYy1mNTk4LTRiMDUtYmIxYy0xZWYwOWZmMGY4NjQiLCJpZCI6NDQsInNjb3BlcyI6WyJhc3IiLCJnYyJdLCJhc3NldHMiOlsxLDIsMyw0LDYxOTMsNjI3Myw3MTYyLDczNTMsNzE0Ml0sImlhdCI6MTU0MTYxODM0NX0.lWnGs9ySXO4QK3HagcMsDpZ8L01DpmUDQm38-2QAQuE';
+const ION_TOKEN_MELBOURNE =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJjYTExNWEwZC00MWFmLTRmNWUtOTA1Zi00OGUzMzlkMDVlNWQiLCJpZCI6NDQsInNjb3BlcyI6WyJhc3IiLCJnYyJdLCJhc3NldHMiOlsyODk1N10sImlhdCI6MTU2ODM5OTgxNn0.Bqe4IWmT6etdZYqm12WcgdW52wDLzdbKM4Xx_8lRZmk';
 
 const DATA_URI = 'https://raw.githubusercontent.com/uber-web/loaders.gl/master';
 const EXAMPLE_INDEX_URL = `${DATA_URI}/modules/3d-tiles/test/data/index.json`;
 
 export const INITIAL_EXAMPLE_CATEGORY = 'ion';
-export const INITIAL_EXAMPLE_NAME = 'Mt St Helens (PointCloud)';
+export const INITIAL_EXAMPLE_NAME = 'Melbourne (PointCloud)';
 
 const ADDITIONAL_EXAMPLES = {
   github: {
@@ -25,6 +27,7 @@ const ADDITIONAL_EXAMPLES = {
   ion: {
     name: 'Cesium ION',
     examples: {
+      'Melbourne (PointCloud)': { ionAssetId: 28957, ionAccessToken: ION_TOKEN_MELBOURNE},
       'Mount St Helens (PointCloud)': {ionAssetId: 33301, ionAccessToken: ION_TOKEN_1},
       'Montreal (PointCloud)': {ionAssetId: 28945, ionAccessToken: ION_TOKEN_1},
       'New York Buildings 1 (3D Photogrammetry)': {
