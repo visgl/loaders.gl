@@ -1,4 +1,4 @@
-# @math.gl/geometry
+# @loaders.gl/math
 
 > This library is being developed to support 3D tiles and will be moved to the math.gl repository when it stabilizes.
 
