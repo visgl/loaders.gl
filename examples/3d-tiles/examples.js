@@ -26,7 +26,6 @@ const ADDITIONAL_EXAMPLES = {
   ion: {
     name: 'Cesium ION',
     examples: {
-      'Melbourne (Cesium Ion PointCloud)': {ionAssetId: 28957, ionAccessToken: ION_TOKEN_MELBOURNE },
       'Mount St Helens (Cesium Ion PointCloud)': {ionAssetId: 33301, ionAccessToken: ION_TOKEN_1},
       'Montreal (Cesium Ion PointCloud)': {ionAssetId: 28945, ionAccessToken: ION_TOKEN_1},
       'New York Buildings 1 (Cesium Ion Photogrammetry)': {

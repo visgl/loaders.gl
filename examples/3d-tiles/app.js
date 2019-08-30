@@ -19,7 +19,7 @@ import fileDrop from './components/file-drop';
 import {loadExampleIndex, DATA_URI} from './examples';
 
 export const INITIAL_EXAMPLE_CATEGORY = 'ion';
-export const INITIAL_EXAMPLE_NAME = 'Melbourne (Cesium Ion PointCloud)';
+export const INITIAL_EXAMPLE_NAME = 'Mount St Helens (Cesium Ion PointCloud)';
 
 // Set your mapbox token here
 const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
