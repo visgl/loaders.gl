@@ -1,5 +1,5 @@
-import { Vector3 } from 'math.gl';
-import { GL } from '@loaders.gl/math';
+import {Vector3} from 'math.gl';
+import {GL} from '@loaders.gl/math';
 
 // Prepare attribute for positions
 // For quantized posititions, either expand to Float32Array or return custom accessor
