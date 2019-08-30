@@ -17,10 +17,10 @@
     "deploy": "NODE_DEBUG=gh-pages gh-pages -d public"
   },
   "dependencies": {
-    "@deck.gl/core": "^7.3.0-alpha.1",
-    "@deck.gl/layers": "^7.3.0-alpha.1",
-    "@deck.gl/mesh-layers": "^7.3.0-alpha.1",
-    "@deck.gl/react": "^7.3.0-alpha.1",
+    "@deck.gl/core": "^7.3.0-alpha.4",
+    "@deck.gl/layers": "^7.3.0-alpha.4",
+    "@deck.gl/mesh-layers": "^7.3.0-alpha.4",
+    "@deck.gl/react": "^7.3.0-alpha.4",
     "@loaders.gl/draco": "^1.2.0",
     "@loaders.gl/las": "1.2.0",
     "@luma.gl/addons": "^7.2.0",
