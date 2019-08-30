@@ -29,7 +29,7 @@ export function parsePointCloud3DTileSync(tile, arrayBuffer, byteOffset, options
   byteOffset = parse3DTileTablesHeaderSync(tile, arrayBuffer, byteOffset, options);
   byteOffset = parse3DTileTablesSync(tile, arrayBuffer, byteOffset, options);
 
-  extractPointCloudSync(tile);
+  extractPointCloudSync(tile, options);
 
   return byteOffset;
 }
@@ -42,19 +42,19 @@ async function extractPointCloud(tile, options) {
 
   await parseDraco(tile, featureTable, batchTable, options);
 
-  parsePositions(tile, featureTable);
-  parseColors(tile, featureTable, batchTable);
-  parseNormals(tile, featureTable);
+  parsePositions(tile, featureTable, options);
+  parseColors(tile, featureTable, batchTable, options);
+  parseNormals(tile, featureTable, options);
 }
 
-function extractPointCloudSync(tile) {
+function extractPointCloudSync(tile, options) {
   initializeTile(tile);
 
   const {featureTable} = parsePointCloudTables(tile);
 
-  parsePositions(tile, featureTable);
-  parseColors(tile, featureTable);
-  parseNormals(tile, featureTable);
+  parsePositions(tile, featureTable, options);
+  parseColors(tile, featureTable, options);
+  parseNormals(tile, featureTable, options);
 }
 
 function initializeTile(tile) {
@@ -91,7 +91,7 @@ function parsePointCloudTables(tile) {
   return {featureTable, batchTable};
 }
 
-function parsePositions(tile, featureTable) {
+function parsePositions(tile, featureTable, options) {
   if (!tile.attributes.positions) {
     if (featureTable.hasProperty('POSITION')) {
       tile.attributes.positions = featureTable.getPropertyArray('POSITION', GL.FLOAT, 3);
@@ -119,7 +119,7 @@ function parsePositions(tile, featureTable) {
         throw new Error('QUANTIZED_VOLUME_OFFSET must be defined for quantized positions.');
       }
 
-      tile.attributes.positions = normalize3DTilePositionAttribute(tile, positions);
+      tile.attributes.positions = normalize3DTilePositionAttribute(tile, positions, options);
     }
   }
 

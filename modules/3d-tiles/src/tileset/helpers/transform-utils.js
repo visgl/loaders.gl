@@ -25,6 +25,10 @@ export function calculateTransformProps(tileHeader, tile) {
     modelMatrix.translate(rtcCenter);
   }
 
+  if (tile.isQuantized) {
+    modelMatrix.translate(tile.quantizedVolumeOffset).scale(tile.quantizedVolumeScale);
+  }
+
   tile.cartesianOrigin = cartesianOrigin;
   tile.cartographicOrigin = cartographicOrigin;
   tile.modelMatrix = modelMatrix;
