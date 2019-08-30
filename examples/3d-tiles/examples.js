@@ -35,7 +35,7 @@ const ADDITIONAL_EXAMPLES = {
       'New York Buildings 2 (Cesium Ion Photogrammetry)': {
         ionAssetId: 7162,
         ionAccessToken: ION_TOKEN_2
-      },
+      }
     }
   },
   vricon: {
