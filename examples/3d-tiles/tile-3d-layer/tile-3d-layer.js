@@ -217,7 +217,7 @@ export default class Tile3DLayer extends CompositeLayer {
       scenegraph: gltf,
       sizeScale: 1,
       opacity: 1.0,
-      _lighting: 'pbr',  // enable gltf pbr lighting model
+      _lighting: 'pbr', // enable gltf pbr lighting model
 
       // Fix for ScenegraphLayer.modelMatrix, under flag in deck 7.3 to avoid breaking existing code
       _enableOffsetModelMatrix: true,
