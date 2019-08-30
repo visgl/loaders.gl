@@ -17,7 +17,7 @@ Helper functions to work with WebGL data type constants.
 ## Usage
 
 ```js
-import {GL, GLType} from '@loaders.gl/matth';
+import {GL, GLType} from '@loaders.gl/math';
 // Returns Int8Array.BYTES_PER_ELEMENT
 var size = GLType.getSizeInBytes(GL.BYTE);
 ```

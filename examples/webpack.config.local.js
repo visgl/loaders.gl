@@ -30,6 +30,13 @@ const MATH_LINK_ALIASES = {
   '@math.gl/geospatial': resolve(ROOT_DIR, '../math.gl/modules/geospatial/src')
 };
 
+const LUMA_LINK_ALIASES = {
+  '@luma.gl/constants': resolve(ROOT_DIR, '../luma.gl/modules/constants/src'),
+  '@luma.gl/core': resolve(ROOT_DIR, '../luma.gl/modules/core/src'),
+  '@luma.gl/webgl': resolve(ROOT_DIR, '../luma.gl/modules/webgl/src'),
+  '@luma.gl/debug': resolve(ROOT_DIR, '../luma.gl/modules/debug/src')
+};
+
 // Support for hot reloading changes to the library:
 const LOCAL_DEVELOPMENT_CONFIG = {
   mode: 'development',
@@ -75,6 +82,9 @@ function addLocalDependency(config, dependency) {
   switch (dependency) {
     case 'deck':
       Object.assign(config.resolve.alias, DECK_LINK_ALIASES);
+      break;
+    case 'luma':
+      Object.assign(config.resolve.alias, LUMA_LINK_ALIASES);
       break;
     case 'math':
       Object.assign(config.resolve.alias, MATH_LINK_ALIASES);

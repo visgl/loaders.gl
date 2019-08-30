@@ -259,7 +259,7 @@ export default class Tile3DLayer extends CompositeLayer {
         pickable: true,
         numInstances: pointCount,
         opacity: 1.0,
-        pointSize: 1
+        pointSize: 2
       })
     );
   }
