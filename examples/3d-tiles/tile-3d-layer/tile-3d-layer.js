@@ -6,18 +6,16 @@ import {PointCloudLayer} from '@deck.gl/layers';
 import {ScenegraphLayer} from '@deck.gl/mesh-layers';
 
 import {parse, registerLoaders} from '@loaders.gl/core';
+import {GLTFLoader} from '@loaders.gl/gltf';
 import {
   Tileset3DLoader,
   Tile3DLoader,
   Tileset3D,
   _getIonTilesetMetadata
 } from '@loaders.gl/3d-tiles';
-import {GLTFLoader} from '@loaders.gl/gltf';
-import {DracoLoader, DracoWorkerLoader} from '@loaders.gl/draco';
 
 import {getFrameState} from './get-frame-state';
 
-// TODO - simply registering the DracoLoader should be enough to make it available to gltf/3d-tiles
 registerLoaders([Tile3DLoader, Tileset3DLoader, GLTFLoader]);
 
 const defaultProps = {
@@ -26,8 +24,8 @@ const defaultProps = {
   ionAccessToken: null,
   color: [155, 155, 155, 200],
   depthLimit: Number.MAX_SAFE_INTEGER,
-  onTilesetLoad: () => {},
-  onTileLoad: () => {}
+  onTilesetLoad: tileset3d => {},
+  onTileLoad: tileHeader => {}
 };
 
 export default class Tile3DLayer extends CompositeLayer {
@@ -70,7 +68,8 @@ export default class Tile3DLayer extends CompositeLayer {
           this.props.onTileLoad(tileHeader);
           this._updateTileset(tileset3d);
         },
-        DracoLoader: DracoWorkerLoader, // TODO: should not be needed, see registerLoaders above
+        // TODO: explicit passing should not be needed, registerLoaders should suffice
+        DracoLoader: this.props.DracoWorkerLoader || this.props.DracoLoader,
         fetchOptions,
         ...ionMetadata
       });
@@ -102,16 +101,34 @@ export default class Tile3DLayer extends CompositeLayer {
     }
 
     const frameState = getFrameState(viewport, animationProps);
-    tileset3d.update(frameState, DracoWorkerLoader);
+    tileset3d.update(frameState);
+    this._updateLayerMap();
+    this._selectLayers(frameState.frameNumber);
+  }
 
-    this._updateLayers();
-    this._selectLayers(frameState);
+  // `Layer` instances is created and added to the map if it doesn't exist yet.
+  _updateLayerMap() {
+    const {tileset3d, layerMap} = this.state;
+    const {selectedTiles} = tileset3d;
+
+    const tilesWithoutLayer = selectedTiles.filter(tile => !layerMap[tile.contentUri]);
+
+    for (const tile of tilesWithoutLayer) {
+      // TODO - why do we call this here? Being "selected" should automatically add it to cache?
+      tileset3d.addTileToCache(tile);
+
+      this._unpackTile(tile);
+
+      layerMap[tile.contentUri] = {
+        layer: this._create3DTileLayer(tile),
+        tile
+      };
+    }
   }
 
   // Grab only those layers who were selected this frame.
-  _selectLayers(frameState) {
+  _selectLayers(frameNumber) {
     const {layerMap} = this.state;
-    const {frameNumber} = frameState;
     const selectedLayers = [];
     const layerMapValues = Object.values(layerMap);
 
@@ -136,30 +153,7 @@ export default class Tile3DLayer extends CompositeLayer {
       }
     }
 
-    this.setState({
-      layers: selectedLayers
-    });
-  }
-
-  // Layer is created and added to the map if it doesn't exist yet.
-  _updateLayers() {
-    const {tileset3d, layerMap} = this.state;
-    const {selectedTiles} = tileset3d;
-
-    const tilesWithoutLayer = selectedTiles.filter(tile => !layerMap[tile.contentUri]);
-
-    for (const tile of tilesWithoutLayer) {
-      this._unpackTile(tile);
-
-      const layer = this._create3DTileLayer(tile);
-
-      tileset3d.addTileToCache(tile); // Add and remove on main thread
-
-      layerMap[tile.contentUri] = {
-        layer,
-        tile
-      };
-    }
+    this.setState({layers: selectedLayers});
   }
 
   _unpackTile(tileHeader) {
@@ -184,7 +178,7 @@ export default class Tile3DLayer extends CompositeLayer {
   _unpackGLTF(tileHeader) {
     if (tileHeader.content.gltfArrayBuffer) {
       tileHeader.userData.gltf = parse(tileHeader.content.gltfArrayBuffer, {
-        DracoLoader,
+        DracoLoader: this.props.DracoLoader,
         decompress: true
       });
     }
@@ -222,19 +216,14 @@ export default class Tile3DLayer extends CompositeLayer {
       pickable: true,
       scenegraph: gltf,
       sizeScale: 1,
-      // Fix for scenegraph modelMatrix, under flag to not break
-      // _enableOffsetModelMatrix: true,
-      // modelMatrix,
-      // getTransformMatrix: d => d.modelMatrix,
-      getTransformMatrix: d =>
-        d.modelMatrix ? modelMatrix.clone().multiplyRight(d.modelMatrix) : modelMatrix,
-      getPosition: row => [0, 0, 0],
-      getColor: d => [255, 255, 255, 100],
-      // TODO: Does not seem to take effect, maybe an opacity bug in ScenegraphLayer?
       opacity: 1.0,
+      _lighting: 'pbr', // enable gltf pbr lighting model
 
-      // enable gltf pbr model
-      _lighting: 'pbr'
+      // Fix for ScenegraphLayer.modelMatrix, under flag in deck 7.3 to avoid breaking existing code
+      _enableOffsetModelMatrix: true,
+      modelMatrix,
+      getTransformMatrix: instance => instance.modelMatrix,
+      getPosition: instance => [0, 0, 0]
     });
   }
 
