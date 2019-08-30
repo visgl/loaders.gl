@@ -18,8 +18,8 @@ import fileDrop from './components/file-drop';
 
 import {loadExampleIndex, DATA_URI} from './examples';
 
-export const INITIAL_EXAMPLE_CATEGORY = 'additional';
-export const INITIAL_EXAMPLE_NAME = 'Mount St Helens (Cesium Ion PointCloud)';
+export const INITIAL_EXAMPLE_CATEGORY = 'ion';
+export const INITIAL_EXAMPLE_NAME = 'Melbourne (Cesium Ion PointCloud)';
 
 // Set your mapbox token here
 const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
@@ -126,25 +126,12 @@ export default class App extends PureComponent {
 
   async _loadExampleTileset(category, name) {
     const {examplesByCategory} = this.state;
-
-    // TODO - unify this as part of cleanup
-    let tilesetUrl;
-    let tilesetExampleProps;
-    switch (category) {
-      case 'additional':
-      case 'vricon':
-        tilesetExampleProps = examplesByCategory[category].examples[name];
-        break;
-      default:
-        const selectedExample = examplesByCategory[category].examples[name];
-        if (selectedExample && selectedExample.tileset) {
-          tilesetUrl = `${DATA_URI}/${selectedExample.path}/${selectedExample.tileset}`;
-          tilesetExampleProps = {
-            tilesetUrl
-          };
-        }
+    const selectedExample = examplesByCategory[category].examples[name];
+    // TODO - avoid this fixup
+    if (selectedExample && selectedExample.tileset) {
+      selectedExample.tilesetUrl = `${DATA_URI}/${selectedExample.path}/${selectedExample.tileset}`;
     }
-    this.setState({tilesetExampleProps});
+    this.setState({tilesetExampleProps: selectedExample});
   }
 
   async _loadTilesetFromIonAsset(ionAccessToken, ionAssetId) {

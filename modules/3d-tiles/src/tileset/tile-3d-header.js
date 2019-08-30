@@ -304,7 +304,7 @@ export default class Tile3DHeader {
       if (tile._contentState === TILE3D_CONTENT_STATE.UNLOADED) {
         return -1;
       }
-      return tile._priority || 0;
+      return Math.max(1e7 - tile._priority, 0) || 0;
     }
 
     const cancelled = !(await this.tileset._requestScheduler.scheduleRequest(this, updatePriority));
