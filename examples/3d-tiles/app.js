@@ -31,7 +31,7 @@ const MAP_STYLES = {
 };
 
 const INITIAL_MAP_STYLE = MAP_STYLES['Dark Base Map'];
-const TRANSITION_DURAITON = 3000;
+const TRANSITION_DURAITON = 4000;
 const EXAMPLES_VIEWSTATE = {
   latitude: 40.04248558075302,
   longitude: -75.61213987669433
@@ -193,14 +193,14 @@ export default class App extends PureComponent {
   _onTilesetLoad(tileset) {
     this._tilesetStatsWidget.setStats(tileset.stats);
 
-    // Recenter to cover the new tileset
+    // Recenter to cover the new tileset, with a nice fly to transition
     const {cartographicCenter, zoom} = tileset;
     this.setState({
       viewState: {
         ...this.state.viewState,
         longitude: cartographicCenter[0],
         latitude: cartographicCenter[1],
-        zoom,
+        zoom: zoom + 1.5, // TODO - remove adjustment when Tileset3D calculates correct zoom
         bearing: INITIAL_VIEW_STATE.bearing,
         pitch: INITIAL_VIEW_STATE.pitch,
         transitionDuration: TRANSITION_DURAITON,
