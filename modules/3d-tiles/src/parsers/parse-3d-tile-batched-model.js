@@ -26,5 +26,15 @@ export function parseBatchedModel3DTileSync(tile, arrayBuffer, byteOffset, optio
 
   extractGLTF(tile, GLTF_FORMAT.EMBEDDED, options);
 
+  /* TODO - Remove. This was a shot in the dark, didn't work...
+  if (tile.rtcCenter) {
+    const instanceTransform = new Matrix4();
+    Ellipsoid.WGS84.eastNorthUpToFixedFrame(tile.rtcCenter, instanceTransform);
+    const modelMatrix = new Matrix4();
+    instanceTransform.getRotationMatrix3(modelMatrix);
+    tile.instances = [{modelMatrix: modelMatrix.invert()}];
+  }
+  */
+
   return byteOffset;
 }

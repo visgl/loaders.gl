@@ -8,6 +8,9 @@ import {MapController, FlyToInterpolator} from '@deck.gl/core';
 import {lumaStats} from '@luma.gl/core';
 import {StatsWidget} from '@probe.gl/stats-widget';
 
+// To manage dependencies and bundle size, the app must decide which supporting loaders to bring in
+import {DracoLoader, DracoWorkerLoader} from '@loaders.gl/draco';
+
 import Tile3DLayer from './tile-3d-layer/tile-3d-layer';
 
 import ControlPanel from './components/control-panel';
@@ -17,6 +20,7 @@ import {loadExampleIndex, DATA_URI} from './examples';
 
 export const INITIAL_EXAMPLE_CATEGORY = 'additional';
 export const INITIAL_EXAMPLE_NAME = 'Mount St Helens (Cesium Ion PointCloud)';
+
 
 // Set your mapbox token here
 const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
@@ -186,14 +190,11 @@ export default class App extends PureComponent {
     this.setState({selectedMapStyle});
   }
 
-  // Called by Tile3DLayer when a new tileset is load
+  // Called by Tile3DLayer when a new tileset is loaded
   _onTilesetLoad(tileset) {
     this._tilesetStatsWidget.setStats(tileset.stats);
-    // TODO remove when @probe.gl/stats-widget fix
-    this._tilesetStatsWidget.update();
 
-    // Recenter to cover the tileset
-    // TODO - transition?
+    // Recenter to cover the new tileset
     const {cartographicCenter, zoom} = tileset;
     this.setState({
       viewState: {
@@ -201,6 +202,8 @@ export default class App extends PureComponent {
         longitude: cartographicCenter[0],
         latitude: cartographicCenter[1],
         zoom,
+        bearing: INITIAL_VIEW_STATE.bearing,
+        pitch: INITIAL_VIEW_STATE.pitch,
         transitionDuration: TRANSITION_DURAITON,
         transitionInterpolator: new FlyToInterpolator()
       }
@@ -273,6 +276,12 @@ export default class App extends PureComponent {
       ionAssetId,
       ionAccessToken,
       coordinateOrigin,
+      // TODO - calling `registerLoaders([DracoLoader])` should be enough to make it available to gltf & 3d-tiles
+      //   (but a lot of plumbing is required...)
+      DracoWorkerLoader,
+      // TODO  Also, the deprecated gltf decoder cannot handle worker loader so we must pass both...
+      //   (more plumbing is required...)
+      DracoLoader,
       onTilesetLoad: this._onTilesetLoad,
       onTileLoad: this._onTilesetChange,
       onTileUnload: this._onTilesetChange,

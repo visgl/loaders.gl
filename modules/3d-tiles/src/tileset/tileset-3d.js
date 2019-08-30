@@ -454,7 +454,6 @@ export default class Tileset3D {
     } catch (error) {
       this.stats.get(TILES_LOADING).decrementCount();
       this.stats.get(TILES_LOAD_FAILED).incrementCount();
-
       this.options.onTileLoadFail(tile, error.message || error.toString(), tile.url);
       return;
     }
