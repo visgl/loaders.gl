@@ -21,7 +21,7 @@ export function calculateTransformProps(tileHeader, tile) {
 
   const rotateMatrix = Ellipsoid.WGS84.eastNorthUpToFixedFrame(cartesianOrigin);
   modelMatrix = new Matrix4(rotateMatrix.invert()).multiplyRight(modelMatrix);
-  let rot = new Matrix4().rotateX(Math.PI/2);
+  const rot = new Matrix4().rotateX(Math.PI / 2);
   modelMatrix = modelMatrix.multiplyRight(rot);
   if (rtcCenter) {
     modelMatrix.translate(rtcCenter);
