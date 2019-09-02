@@ -335,7 +335,7 @@ export default class Tile3DHeader {
         // Add tile headers for the nested tilset's subtree
         // Async update of the tree should be fine since there would never be edits to the same node
         // TODO - we need to capture the child tileset's URL
-        this._tileset._initializeTileHeaders(this._content, this.parent, path.dirname(this.uri));
+        this._tileset._initializeTileHeaders(this._content, this, path.dirname(this.uri));
       }
 
       this._contentState = TILE3D_CONTENT_STATE.READY;
