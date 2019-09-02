@@ -6,32 +6,48 @@ export function calculateTransformProps(tileHeader, tile) {
   assert(tileHeader);
   assert(tile);
 
-  const {rtcCenter} = tile;
+  const {rtcCenter, rotateYtoZ} = tile;
   const {
     computedTransform,
     _boundingVolume: {center}
   } = tileHeader;
 
   let modelMatrix = new Matrix4(computedTransform);
-  const cartesianOrigin = center;
-  const cartographicOrigin = Ellipsoid.WGS84.cartesianToCartographic(
-    cartesianOrigin,
-    new Vector3()
-  );
 
-  const rotateMatrix = Ellipsoid.WGS84.eastNorthUpToFixedFrame(cartesianOrigin);
-  modelMatrix = new Matrix4(rotateMatrix.invert()).multiplyRight(modelMatrix);
-  const rot = new Matrix4().rotateX(Math.PI / 2);
-  modelMatrix = modelMatrix.multiplyRight(rot);
+  // Translate if appropriate
   if (rtcCenter) {
     modelMatrix.translate(rtcCenter);
   }
 
+  // glTF models need to be rotated from Y to Z up
+  // https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#y-up-to-z-up
+  if (rotateYtoZ) {
+    const rotation = new Matrix4().rotateX(Math.PI / 2);
+    modelMatrix = modelMatrix.multiplyRight(rotation);
+  }
+
+  // Scale/offset positions if normalized integers
   if (tile.isQuantized) {
     modelMatrix.translate(tile.quantizedVolumeOffset).scale(tile.quantizedVolumeScale);
   }
 
+  // Option 1: Cartesian matrix and origin
+  const cartesianOrigin = new Vector3(center);
+
+  tile.cartesianModelMatrix = modelMatrix;
   tile.cartesianOrigin = cartesianOrigin;
+
+  // Option 2: Cartographic matrix and origin
+  const cartographicOrigin = Ellipsoid.WGS84.cartesianToCartographic(
+    cartesianOrigin,
+    new Vector3()
+  );
+  const fromFixedFrameMatrix = Ellipsoid.WGS84.eastNorthUpToFixedFrame(cartesianOrigin);
+  const toFixedFrameMatrix = fromFixedFrameMatrix.invert();
+
+  tile.cartographicModelMatrix = toFixedFrameMatrix.multiplyRight(modelMatrix);
   tile.cartographicOrigin = cartographicOrigin;
-  tile.modelMatrix = modelMatrix;
+
+  // Deprecated, drop
+  tile.modelMatrix = tile.cartographicModelMatrix;
 }

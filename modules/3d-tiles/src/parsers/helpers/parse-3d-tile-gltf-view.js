@@ -23,6 +23,7 @@ export function parse3DTileGLTFViewSync(tile, arrayBuffer, byteOffset) {
     throw new Error('glTF byte length must be greater than 0.');
   }
 
+  // TODO - We can avoid copy if already 4-byte aligned...
   // if (byteOffset % 4 === 0) {
   //   tile.gltfArrayBuffer = arrayBuffer;
   //   tile.gltfByteOffset = byteOffset;
@@ -37,6 +38,10 @@ export function parse3DTileGLTFViewSync(tile, arrayBuffer, byteOffset) {
   tile.gltfByteOffset = 0;
   tile.gltfByteLength = gltfByteLength;
   // }
+
+  // glTF models need to be rotated from Y to Z up
+  // https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#y-up-to-z-up
+  tile.rotateYtoZ = true;
 
   // Entire tile is consumed
   return tile.byteOffset + tile.byteLength;
