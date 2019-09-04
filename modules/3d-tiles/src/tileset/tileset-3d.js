@@ -142,9 +142,11 @@ export default class Tileset3D {
     this._requestedTiles = [];
     this._selectedTilesToStyle = [];
 
+    this.asset = {}; // Metadata for the entire tileset
+    this.credits = {};
+
     // EXTRACTED FROM TILESET
     this._root = undefined;
-    this._asset = undefined; // Metadata for the entire tileset
     this._properties = undefined; // Metadata for per-model/point/etc properties
     this._extensionsUsed = undefined;
     this._gltfUpAxis = undefined;
@@ -153,7 +155,6 @@ export default class Tileset3D {
     this._timeSinceLoad = 0.0;
     this._updatedVisibilityFrame = 0;
     this._extras = undefined;
-    this._credits = undefined;
 
     this._allTilesAdditive = true;
     this._hasMixedContent = false;
@@ -178,9 +179,9 @@ export default class Tileset3D {
   }
 
   // Gets the tileset's asset object property, which contains metadata about the tileset.
-  get asset() {
-    return this._asset;
-  }
+  // get asset() {
+  //   return this._asset;
+  // }
 
   // Gets the tileset's properties dictionary object, which contains metadata about per-feature properties.
   get properties() {
@@ -306,28 +307,29 @@ export default class Tileset3D {
 
   // eslint-disable-next-line max-statements
   _initializeTileSet(tilesetJson, options) {
-    const asset = tilesetJson.asset;
-    if (!asset) {
+    this.asset = tilesetJson.asset;
+    if (!this.asset) {
       throw new Error('Tileset must have an asset property.');
     }
-    if (asset.version !== '0.0' && asset.version !== '1.0') {
+    if (this.asset.version !== '0.0' && this.asset.version !== '1.0') {
       throw new Error('The tileset must be 3D Tiles version 0.0 or 1.0.');
     }
 
     // Note: `asset.tilesetVersion` is version of the tileset itself (not the version of the 3D TILES standard)
-    // We add this version as a query param to fetch the right version and not get an older cached version
-    if ('tilesetVersion' in asset) {
-      this._queryParams.v = asset.tilesetVersion;
+    // We add this version as a `v=1.0` query param to fetch the right version and not get an older cached version
+    if ('tilesetVersion' in this.asset) {
+      this._queryParams.v = this.asset.tilesetVersion;
     }
 
-    this._asset = tilesetJson.asset;
+    // TODO - ion resources have a credits property we can use for additional attribution.
+    this.credits = {
+      attributions: options.attributions || []
+    };
+
     this._properties = tilesetJson.properties;
     this.geometricError = tilesetJson.geometricError;
     this._extensionsUsed = tilesetJson.extensionsUsed;
     this._extras = tilesetJson.extras;
-
-    // TODO - ion resources have a credits property we can use for additional attribution.
-    this._credits = {}; // resource.credits;
 
     // TODO - handle configurable glTF up axis
     // const gltfUpAxis = defined(tilesetJson.asset.gltfUpAxis)
