@@ -1,9 +1,13 @@
-import { parse } from '@loaders.gl/core';
-import { OBJLoader } from "@loaders.gl/obj";
+/* global fetch */
+import {parse} from '@loaders.gl/core';
+import {OBJLoader} from '@loaders.gl/obj';
 
-async function test() {
-    const data = await parse(fetch('https://raw.githubusercontent.com/uber-web/loaders.gl/master/modules/obj/test/data/cube.obj'), OBJLoader);
-    console.log(data)
+const OBJ_URL =
+  'https://raw.githubusercontent.com/uber-web/loaders.gl/master/modules/obj/test/data/cube.obj';
+
+async function main() {
+  const data = await parse(fetch(OBJ_URL), OBJLoader);
+  console.log(data); // eslint-disable-line
 }
 
-test();
+main();
