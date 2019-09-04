@@ -53,15 +53,19 @@ export default class App extends PureComponent {
     super(props);
 
     this.state = {
+      // CURRENT VIEW POINT / CAMERA POSITIO
       viewState: INITIAL_VIEW_STATE,
-      featureTable: null,
-      batchTable: null,
+
+      // MAP STATE
+      selectedMapStyle: INITIAL_MAP_STYLE,
+
+      // EXAMPLE STATE
       droppedFile: null,
       examplesByCategory: null,
       selectedExample: {},
       category: INITIAL_EXAMPLE_CATEGORY,
       name: INITIAL_EXAMPLE_NAME,
-      selectedMapStyle: INITIAL_MAP_STYLE
+      attributions: []
     };
 
     this._deckRef = null;
@@ -158,6 +162,7 @@ export default class App extends PureComponent {
 
   // Called by Tile3DLayer when a new tileset is loaded
   _onTilesetLoad(tileset) {
+    this.setState({attributions: tileset.credits.attributions});
     this._tilesetStatsWidget.setStats(tileset.stats);
     this._centerViewOnTileset(tileset);
   }
@@ -196,6 +201,7 @@ export default class App extends PureComponent {
 
   _renderControlPanel() {
     const {examplesByCategory, category, name, viewState, selectedMapStyle} = this.state;
+    const {attributions} = this.state;
     if (!examplesByCategory) {
       return null;
     }
@@ -207,10 +213,11 @@ export default class App extends PureComponent {
         data={examplesByCategory}
         category={category}
         name={name}
+        attributions={attributions}
         onMapStyleChange={this._onSelectMapStyle.bind(this)}
         onExampleChange={this._onSelectExample.bind(this)}
       >
-        <div>
+        <div style={{textAlign: 'center'}}>
           long/lat: {viewState.longitude.toFixed(5)},{viewState.latitude.toFixed(5)}, zoom:{' '}
           {viewState.zoom.toFixed(2)}
         </div>
