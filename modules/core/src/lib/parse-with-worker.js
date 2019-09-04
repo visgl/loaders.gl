@@ -27,8 +27,10 @@ function getWorkerFarm(options = {}) {
 export default async function parseWithWorker(workerSource, workerName, data, options) {
   const workerFarm = getWorkerFarm(options);
 
-  // Since the `options` object is "shared" (contains options for other purposes),
-  // it can contain functions etc that need to be stripped
+  // Note that options are documented for each loader, we are just passing them through to the worker
+  // `options` can contain functions etc that can not be serialized/deserialized, they need to be stripped
+  // TODO - Since the `options` object can contain options not intended for the loader, we currently cannot
+  // treat this as an error case, but we just silently remove such values.
   options = removeNontransferableValues(options);
 
   const result = await workerFarm.process(workerSource, `loaders.gl-${workerName}`, {
