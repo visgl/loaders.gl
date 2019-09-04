@@ -8,7 +8,6 @@
 
 This RFC proposes creating a special JSON Loader for parsing JSON "tables", i.e JSON files that contain arrays of similar objects. In contrast to `JSON.parse()`, this loader would support batched parsing ("streaming"), binary columnar output, and performant operation on a worker.
 
-
 ## Background
 
 This RFC provides appendices with information on "Streaming JSON formats" and "Survey of Prior Art" looking at existing OSS solutions.
@@ -18,9 +17,8 @@ This RFC provides appendices with information on "Streaming JSON formats" and "S
 In JavaScript, JSON is supported natively through `JSON.parse` (which because it is native function can be expected to perform at least as good as any JS implementation). However there are a number of reasons why you might consider a custom JSON loader:
 
 - **Atomic/No streaming** `JSON.parse` is atomic. It requires a complete string and produces a complete output. It can not work on partial data chunks as they arrive.
-- *Defeats Worker performance gains** - The input to `JSON.parse` is a string (not binary) output is a non-binary and will have to be serialized and deserialized if sent from a worker to the main thread - essentially triggering a new `JSON.parse` on the main thread, more than negating any benefits from moving to a worker.
+- \*Defeats Worker performance gains\*\* - The input to `JSON.parse` is a string (not binary) output is a non-binary and will have to be serialized and deserialized if sent from a worker to the main thread - essentially triggering a new `JSON.parse` on the main thread, more than negating any benefits from moving to a worker.
 - **Poor error messages**: `JSON.parse` tends to have unhelpful error messages: `Syntax error at "a"`, with no indication that this is was related to JSON parsing or what line or even position in the file that caused the error.
-
 
 ## Proposals
 
@@ -29,6 +27,7 @@ In JavaScript, JSON is supported natively through `JSON.parse` (which because it
 A new JSON loader would be provided by the loaders, tentatively names `JSONTableLoader`.
 
 The new loader would parse tabular data from loaders in a streaming fashion:
+
 ```js
 import {parse} from '@loaders.gl/core`;
 import {JSONTableLoader} from '@loaders.gl/json`;
@@ -36,6 +35,7 @@ const table = parse(fetch('geo.json'), JSONTableLoader, {jsonpath: "features"});
 ```
 
 We would also provide a worker loader variant for binary output:
+
 ```js
 import {parse} from '@loaders.gl/core`;
 import {JSONTableWorkerLoader} from '@loaders.gl/json`;
@@ -43,11 +43,12 @@ const table parse(fetch('geo.json'), JSONTableWorkerLoader, {binary: true, jsonp
 ```
 
 Notes:
-- The new loader could replace the existing `JSONLoader` loader (and take its name), though perhaps the generic, trivial `JSONLoader` should  be kept as a fallback JSON loader (perhaps even moved into core) as it is very small (very low bundle size impact).
+
+- The new loader could replace the existing `JSONLoader` loader (and take its name), though perhaps the generic, trivial `JSONLoader` should be kept as a fallback JSON loader (perhaps even moved into core) as it is very small (very low bundle size impact).
 
 ### Binary Columnar AsyncIterator output
 
-As for all *table category* loaders, when called with `parseInBatches`, the `JSONTable*Loader` would return an `AsyncIterator` that yields binary columnar batches, essentially serving up slices of the full JSON-encoded table as the binary data chunks arrive over the network.
+As for all _table category_ loaders, when called with `parseInBatches`, the `JSONTable*Loader` would return an `AsyncIterator` that yields binary columnar batches, essentially serving up slices of the full JSON-encoded table as the binary data chunks arrive over the network.
 
 ```js
 import {parseInBatches} from '@loaders.gl/core`;
@@ -57,13 +58,13 @@ const table parseInBatches(fetch('geo.json'), JSONTableWorkerLoader, {binary: tr
 
 Note that deck.gl is being extended to accept AsyncIterators as `data` props. The `AsyncIterator` returned by `parseInBatches` could be passed directly to deck.gl which would start incrementally rendering the data rows in the json file as they arrive over the wire.
 
-
 ### Proposal: JSONTableLoader Options
 
 - `table`: `auto` - assume the file contains a table of objects with the same "schema". E.g. multiple top level JSON objects (or a top-level array of objects).
 - `jsonpath`: `auto` - A JSONPath string. Specifies how to extract the table rows from the JSON payload with one or more wildcard paths (see JSONPath discussion below).
 
 Low-priority
+
 - `lengthPrefixed`: `auto` - Enable support for length prefixed json (we don't need the prefixes, but we'd need to ignore them). `auto` - If the first value in the file is a number, assumes the file is length prefixed and discards every other value assuming it is a number.
 
 ## Proposal: Specifying how to extract rows (JSONPath)
@@ -81,6 +82,7 @@ const table parse(fetch('geo.json'), JSONTableLoader, {jsonpath: "features"});
 ```
 
 JSONPath is inspired by XPath, a specification for how to access tree nodes in XML documents.
+
 - [JSONPath original page?](https://goessner.net/articles/JsonPath/)
 - [JSONPath Playground](https://jsonpath.com/)
 - [JSONPath Syntax](https://restfulapi.net/json-jsonpath/)
@@ -88,27 +90,26 @@ JSONPath is inspired by XPath, a specification for how to access tree nodes in X
 The [JSONStream] module contains a minimal JSONPath implementation, together with some conventions for expressing paths as JavaScript arrays (rather than strings).
 
 Possible alternatives to JSONPath:
+
 - JSON pointers, while well specified/standardized, they do not seem to support wildcarding.
 - IBM has developed [jsonata](http://jsonata.org/) which has some proponents
-
 
 ### Proposal (P1): Arrow-like columnar data packing of variable-length data
 
 Arrow supports variable length values, both strings, and binary blobs. It would be good to be able to pack such non-fixed-length values into binary columns according to conventions that would allow them to be parsed on the client side.
 
 Using geojson as a pilot use case:
+
 - feature.coordinates contains nested arrays of coordinates (which are variable length)
 - feature.properties can contain strings (which are variable length)
 
 Binary packing of variable length data is a more general topic for the "table loader category", but the geojson pilot use case means that realistically it will be solved as part of this effort.
-
 
 ## Proposal (P2): Support Streaming JSON
 
 As described in the appendices, there are several variants of streaming JSON (they all involve multiple top-level JSON objects, one per "row", rather than wrapping the rows in an array).
 
 This will be easy to support using our own JSON parser, as we can keep just looking for new top-level JSON objects in the stream. However unclear if we have any use cases.
-
 
 ### Proposal (P2): Autodetection of "tabular" JSON
 
@@ -127,6 +128,7 @@ For embedded arrays, we could look for first array (would cover geojson case), b
 ## JSON Parser Implementation Thoughts
 
 The implementation needs a JSON parser
+
 - works on binary input (which means it needs to recognize UTF8 character sequences).
 - that can accept chunks of input, generate objects and keep the unused bytes until next chunk arrives.
 - tokenizes the input bytes
@@ -134,7 +136,6 @@ The implementation needs a JSON parser
 - stringifies keys
 - does not automatically create JS objects/arrays for unneeded parts
 - does not automatically stringify strings/numbers.
-
 
 ### Appendix: Streaming JSON Formats
 
@@ -146,26 +147,25 @@ The implementation needs a JSON parser
 - Concatenated JSON
 - Length-prefixed JSON
 
-
 ### Appendix: MIME Types and File Extensions
 
 Overview of extensions and MIME types defined by JSON and delimited JSON formats.
 
-| Format | Extension | MIME Media Type [RFC4288](https://www.ietf.org/rfc/rfc4288.txt) |
-| ---    | ---       | ---       |
-| Standard JSON   | `.json` | `application/json` |
-| Line-delimited JSON | `.jsonl` |  - |
-| NewLine delimited JSON | `.ndjson` | `application/x-ndjson` |
-| Record separator-delimited JSON | - | `application/json-seq` |
+| Format                          | Extension | MIME Media Type [RFC4288](https://www.ietf.org/rfc/rfc4288.txt) |
+| ------------------------------- | --------- | --------------------------------------------------------------- |
+| Standard JSON                   | `.json`   | `application/json`                                              |
+| Line-delimited JSON             | `.jsonl`  | -                                                               |
+| NewLine delimited JSON          | `.ndjson` | `application/x-ndjson`                                          |
+| Record separator-delimited JSON | -         | `application/json-seq`                                          |
 
 `@loaders.gl/core` does not currently use or generate MIME types but this would be a natural extension to e.g. the loader selection subsystem.
-
 
 ## Appendix: Prior Art
 
 There are a number of open source modules on that tackle the problem of parsing JSON in a more streaming fashion in JavaScript. To make sure we are not reinventing the wheel.
 
 Some issues with these modules are that they are often
+
 - Focused on Node.js only - Use `Stream`s and more seriously `Buffer` classes.
 - Do not provide granular control of object creation.
 
@@ -176,7 +176,6 @@ Contains a small implementation of JSONPath that is potentially of interest, oth
 ### jsonparse
 
 The underlying `JSONParser` class is a fork of Tim Caswell's [`jsonparse`](https://github.com/creationix/jsonparse) under MIT license, and looks quite usable.
-
 
 ### [oboe](http://oboejs.com/)
 
@@ -196,45 +195,44 @@ A "sax-style" JSON Parser with a fine grain API:
 - CON: Uses `Buffer` instead of `ArrayBuffer` (pulls in Node polyfills)
 
 clarinet sample code, illustrating the "sax-like" callbacks
-```js
-var clarinet = require("clarinet")
-  , parser = clarinet.parser()
-  ;
 
-parser.onerror = function (e) {
+```js
+var clarinet = require('clarinet'),
+  parser = clarinet.parser();
+
+parser.onerror = function(e) {
   // an error happened. e is the error.
 };
-parser.onvalue = function (v) {
+parser.onvalue = function(v) {
   // got some value.  v is the value. can be string, double, bool, or null.
 };
-parser.onopenobject = function (key) {
+parser.onopenobject = function(key) {
   // opened an object. key is the first key.
 };
-parser.onkey = function (key) {
+parser.onkey = function(key) {
   // got a subsequent key in an object.
 };
-parser.oncloseobject = function () {
+parser.oncloseobject = function() {
   // closed an object.
 };
-parser.onopenarray = function () {
+parser.onopenarray = function() {
   // opened an array.
 };
-parser.onclosearray = function () {
+parser.onclosearray = function() {
   // closed an array.
 };
-parser.onend = function () {
+parser.onend = function() {
   // parser stream is done, and ready to have more stuff written to it.
 };
 
 parser.write('{"foo": "bar"}').close();
 ```
 
-
 ### [sax](http://www.saxproject.org/)
 
-Not a JSON parser per se, however many of the JavaScript JSON loaders refer to sax, callinh  themselves a "sax-style" parser etc.
+Not a JSON parser per se, however many of the JavaScript JSON loaders refer to sax, callinh themselves a "sax-style" parser etc.
 
-From the webpage: SAX is the *Simple API for XML*, originally a Java-only API. SAX was the first widely adopted API for XML in Java, and is a “de facto” standard. The current version is SAX 2.0.1, and there are versions for several programming language environments other than Java.
+From the webpage: SAX is the _Simple API for XML_, originally a Java-only API. SAX was the first widely adopted API for XML in Java, and is a “de facto” standard. The current version is SAX 2.0.1, and there are versions for several programming language environments other than Java.
 
 [sax-js](https://github.com/isaacs/sax-js) is a (Node.js-first) JavaScript implementation.
 
@@ -243,29 +241,28 @@ Side Note: We may consider adopting SAX API for a streaming XML / KML parser...
 `sax-js` sample code, illustrating the callbacks:
 
 ```js
-var sax = require("./lib/sax"),
+var sax = require('./lib/sax'),
   strict = true, // set to false for html-mode
   parser = sax.parser(strict);
 
-parser.onerror = function (e) {
+parser.onerror = function(e) {
   // an error happened.
 };
-parser.ontext = function (t) {
+parser.ontext = function(t) {
   // got some text.  t is the string of text.
 };
-parser.onopentag = function (node) {
+parser.onopentag = function(node) {
   // opened a tag.  node has "name" and "attributes"
 };
-parser.onattribute = function (attr) {
+parser.onattribute = function(attr) {
   // an attribute.  attr has "name" and "value"
 };
-parser.onend = function () {
+parser.onend = function() {
   // parser stream is done, and ready to have more stuff written to it.
 };
 
 parser.write('<xml>Hello, <who name="world">world</who>!</xml>').close();
 ```
-
 
 ## Appendix: Full stack approaches
 
