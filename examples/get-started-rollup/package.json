@@ -1,0 +1,20 @@
+{
+  "license": "MIT",
+  "description": "Minimal working example of using loaders.gl with rollup.",
+  "scripts": {
+    "start": "yarn build; serve",
+    "build": "rollup -c",
+    "watch": "rollup -c -w",
+    "serve": "serve public"
+  },
+  "dependencies": {
+    "@loaders.gl/core": "^1.2.2",
+    "@loaders.gl/obj": "^1.2.2"
+  },
+  "devDependencies": {
+    "rollup": "^1.16.2",
+    "rollup-plugin-commonjs": "^10.0.0",
+    "rollup-plugin-node-resolve": "^5.1.0",
+    "serve": "^11.0.2"
+  }
+}

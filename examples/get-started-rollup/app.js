@@ -7,7 +7,7 @@ const OBJ_URL =
 
 async function main() {
   const data = await parse(fetch(OBJ_URL), OBJLoader);
-  console.log(data); // eslint-disable-line
+  console.log(JSON.stringify(data, null, 2)); // eslint-disable-line
 }
 
 main();
