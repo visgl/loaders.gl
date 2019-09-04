@@ -114,17 +114,10 @@ export default class ControlPanel extends PureComponent {
   }
 
   render() {
-    const {attributions} = this.props;
     return (
       <Container>
         {this._renderByCategories()}
         {this._renderDropped()}
-        <div style={{textAlign: 'center'}}>
-          {Boolean(attributions.length) && <b>Tileset Credentials</b>}
-          {attributions.map(attribution => (
-            <div key={attribution.html} dangerouslySetInnerHTML={{ __html: attribution.html }}></div>
-          ))}
-        </div>
         <div style={{marginBottom: '0.5cm'}}></div>
         {this._renderMapStyles()}
         {this.props.children}

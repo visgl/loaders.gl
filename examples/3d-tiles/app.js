@@ -61,8 +61,7 @@ export default class App extends PureComponent {
       selectedExample: {},
       category: INITIAL_EXAMPLE_CATEGORY,
       name: INITIAL_EXAMPLE_NAME,
-      selectedMapStyle: INITIAL_MAP_STYLE,
-      attributions: []
+      selectedMapStyle: INITIAL_MAP_STYLE
     };
 
     this._deckRef = null;
@@ -159,7 +158,6 @@ export default class App extends PureComponent {
 
   // Called by Tile3DLayer when a new tileset is loaded
   _onTilesetLoad(tileset) {
-    this.setState({attributions: tileset.credits.attributions})
     this._tilesetStatsWidget.setStats(tileset.stats);
     this._centerViewOnTileset(tileset);
   }
@@ -197,7 +195,7 @@ export default class App extends PureComponent {
   }
 
   _renderControlPanel() {
-    const {examplesByCategory, category, name, viewState, selectedMapStyle, attributions} = this.state;
+    const {examplesByCategory, category, name, viewState, selectedMapStyle} = this.state;
     if (!examplesByCategory) {
       return null;
     }
@@ -209,7 +207,6 @@ export default class App extends PureComponent {
         data={examplesByCategory}
         category={category}
         name={name}
-        attributions={attributions}
         onMapStyleChange={this._onSelectMapStyle.bind(this)}
         onExampleChange={this._onSelectExample.bind(this)}
       >
