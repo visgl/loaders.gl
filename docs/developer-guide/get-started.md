@@ -43,11 +43,13 @@ const data = await parse(fetch('data.csv'));
 
 ## Building
 
-loaders.gl is designed to leverage modern JavaScript (ES2018) and to optimize functionality and performance on evergreen browsers.
-
-However, the default distribution is completely transpiled to ES5 so using loaders.gl with older or "slower moving" browsers such as IE11 and Edge is possible if polyfills are added.
+You can use your bundler of choice such as webpack or rollup. See the [`get-started-...`](https://github.com/uber-web/loaders.gl/tree/master/examples) examples for minimal working examples of how to bundle loaders.gl.
 
 ## Supporting Older Browsers
+
+loaders.gl is designed to leverage modern JavaScript (ES2018) and to optimize functionality and performance on evergreen browsers.
+
+However, the default distribution is completely transpiled to ES5 so using loaders.gl with older or "slower moving" browsers such as IE11 and Edge is possible, assuming that the appropriate polyfills are installed.
 
 To build on Edge and IE11, `TextEncoder` and `TextDecoder` must be polyfilled. There are several polyfills available on `npm`, but you can also use the polyfills provided by loaders.gl:
 
