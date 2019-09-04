@@ -23,13 +23,20 @@ const DropDown = styled.select`
   margin-bottom: 12px;
 `;
 
+const TilesetDropDown = styled.select`
+  margin-bottom: 12px;
+  font-weight: 800;
+  font-size: medium;
+`;
+
 const propTypes = {
   category: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
   data: PropTypes.object.isRequired,
+  droppedFile: PropTypes.string,
+  attributions: PropTypes.array,
   mapStyles: PropTypes.object.isRequired,
   selectedMapStyle: PropTypes.string.isRequired,
-  droppedFile: PropTypes.string,
   onExampleChange: PropTypes.func,
   onMapStyleChange: PropTypes.func,
   children: PropTypes.node
@@ -47,12 +54,17 @@ export default class ControlPanel extends PureComponent {
     const selectedValue = `${category}.${name}`;
 
     return (
-      <DropDown
+      <TilesetDropDown
         value={selectedValue}
         onChange={evt => {
           const selected = evt.target.value;
-          const value = selected.split('.');
-          onExampleChange({category: value[0], name: value[1]});
+          const [newCategory, newName] = selected.split('.');
+          const categoryExamples = data[newCategory].examples;
+          onExampleChange({
+            category: newCategory,
+            name: newName,
+            example: categoryExamples[newName]
+          });
         }}
       >
         {categories.map((c, i) => {
@@ -70,7 +82,7 @@ export default class ControlPanel extends PureComponent {
             </optgroup>
           );
         })}
-      </DropDown>
+      </TilesetDropDown>
     );
   }
 
@@ -102,11 +114,19 @@ export default class ControlPanel extends PureComponent {
   }
 
   render() {
+    const {attributions} = this.props;
     return (
       <Container>
-        {this._renderMapStyles()}
         {this._renderByCategories()}
         {this._renderDropped()}
+        <div style={{textAlign: 'center'}}>
+          {Boolean(attributions.length) && <b>Tileset Credentials</b>}
+          {attributions.map(attribution => (
+            <div key={attribution.html} dangerouslySetInnerHTML={{ __html: attribution.html }}></div>
+          ))}
+        </div>
+        <div style={{marginBottom: '0.5cm'}}></div>
+        {this._renderMapStyles()}
         {this.props.children}
       </Container>
     );

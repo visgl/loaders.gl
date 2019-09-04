@@ -1,3 +1,4 @@
+/* global URL */
 import '@babel/polyfill';
 
 import React, {PureComponent} from 'react';
@@ -16,21 +17,21 @@ import Tile3DLayer from './tile-3d-layer/tile-3d-layer';
 import ControlPanel from './components/control-panel';
 import fileDrop from './components/file-drop';
 
-import {loadExampleIndex, DATA_URI} from './examples';
+import {loadExampleIndex} from './examples';
 
 export const INITIAL_EXAMPLE_CATEGORY = 'ion';
-export const INITIAL_EXAMPLE_NAME = 'Mount St Helens (Cesium Ion PointCloud)';
+export const INITIAL_EXAMPLE_NAME = 'Mount St Helens (PointCloud)';
 
 // Set your mapbox token here
 const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
 
 const MAP_STYLES = {
-  'Satellite Base Map': 'mapbox://styles/mapbox/satellite-v9',
-  'Light Base Map': 'mapbox://styles/mapbox/light-v9',
-  'Dark Base Map': 'mapbox://styles/mapbox/dark-v9'
+  'Base Map: Satellite': 'mapbox://styles/mapbox/satellite-v9',
+  'Base Map: Light': 'mapbox://styles/mapbox/light-v9',
+  'Base Map: Dark': 'mapbox://styles/mapbox/dark-v9'
 };
 
-const INITIAL_MAP_STYLE = MAP_STYLES['Dark Base Map'];
+const INITIAL_MAP_STYLE = MAP_STYLES['Base Map: Dark'];
 const TRANSITION_DURAITON = 4000;
 const EXAMPLES_VIEWSTATE = {
   latitude: 40.04248558075302,
@@ -57,10 +58,11 @@ export default class App extends PureComponent {
       batchTable: null,
       droppedFile: null,
       examplesByCategory: null,
-      tilesetExampleProps: {},
+      selectedExample: {},
       category: INITIAL_EXAMPLE_CATEGORY,
       name: INITIAL_EXAMPLE_NAME,
-      selectedMapStyle: INITIAL_MAP_STYLE
+      selectedMapStyle: INITIAL_MAP_STYLE,
+      attributions: []
     };
 
     this._deckRef = null;
@@ -93,7 +95,17 @@ export default class App extends PureComponent {
     });
 
     await this._loadExampleIndex();
-    await this._loadInitialTileset();
+
+    // Check if a tileset is specified in the query params
+    if (this._selectTilesetFromQueryParams()) {
+      return;
+    }
+
+    // if not, select the default example tileset
+    const {category, name} = this.state;
+    const {examplesByCategory} = this.state;
+    const selectedExample = examplesByCategory[category].examples[name];
+    this.setState({selectedExample});
   }
 
   // load the index file that lists example tilesets
@@ -102,73 +114,42 @@ export default class App extends PureComponent {
     this.setState({examplesByCategory});
   }
 
-  async _loadInitialTileset() {
-    /* global URL */
+  // Check URL query params and select the "custom example" if appropriate
+  _selectTilesetFromQueryParams() {
     const parsedUrl = new URL(window.location.href);
     const ionAccessToken = parsedUrl.searchParams.get('ionAccessToken');
     const ionAssetId = parsedUrl.searchParams.get('ionAssetId');
     if (ionAccessToken && ionAssetId) {
-      await this._loadTilesetFromIonAsset(ionAccessToken, ionAssetId);
-      return;
+      this.setState({
+        selectedExample: { ionAccessToken, ionAssetId },
+        category: 'custom',
+        name: 'ION Tileset'
+      });
+      return true;
     }
 
     const tilesetUrl = parsedUrl.searchParams.get('tileset');
     if (tilesetUrl) {
-      // load the tileset specified in the URL
-      await this._loadTilesetFromUrl(tilesetUrl);
-      return;
+      this.setState({
+        selectedExample: { tilesetUrl },
+        category: 'custom',
+        name: 'URL Tileset'
+      });
+      return true;
     }
 
-    // load the default example tileset
-    const {category, name} = this.state;
-    await this._loadExampleTileset(category, name);
-  }
-
-  async _loadExampleTileset(category, name) {
-    const {examplesByCategory} = this.state;
-    const selectedExample = examplesByCategory[category].examples[name];
-    // TODO - avoid this fixup
-    if (selectedExample && selectedExample.tileset) {
-      selectedExample.tilesetUrl = `${DATA_URI}/${selectedExample.path}/${selectedExample.tileset}`;
-    }
-    this.setState({tilesetExampleProps: selectedExample});
-  }
-
-  async _loadTilesetFromIonAsset(ionAccessToken, ionAssetId) {
-    this.setState({
-      tilesetExampleProps: {
-        ionAccessToken,
-        ionAssetId
-      },
-      category: 'custom',
-      name: 'ION Tileset'
-    });
-  }
-
-  async _loadTilesetFromUrl(tilesetUrl) {
-    this.setState({
-      tilesetExampleProps: {
-        tilesetUrl
-      },
-      category: 'custom',
-      name: 'Custom Tileset'
-    });
+    return false;
   }
 
   // Updates stats, called every frame
   _updateStatWidgets() {
-    if (this._tilesetStatsWidget) {
-      this._tilesetStatsWidget.update();
-    }
-    if (this._memWidget) {
-      this._memWidget.update();
-    }
+    this._memWidget.update();
+    this._tilesetStatsWidget.update();
   }
 
   // Called by ControlPanel when user selects a new example
-  async _onSelectExample({category, name}) {
-    this.setState({category, name});
-    await this._loadExampleTileset(category, name);
+  async _onSelectExample({example, category, name}) {
+    this.setState({selectedExample: example, category, name});
   }
 
   // Called by ControlPanel when user selects a new map style
@@ -178,18 +159,26 @@ export default class App extends PureComponent {
 
   // Called by Tile3DLayer when a new tileset is loaded
   _onTilesetLoad(tileset) {
+    this.setState({attributions: tileset.credits.attributions})
     this._tilesetStatsWidget.setStats(tileset.stats);
+    this._centerViewOnTileset(tileset);
+  }
 
-    // Recenter to cover the new tileset, with a nice fly to transition
+  // Recenter view to cover the new tileset, with a fly-to transition
+  _centerViewOnTileset(tileset) {
     const {cartographicCenter, zoom} = tileset;
     this.setState({
       viewState: {
         ...this.state.viewState,
+
+        // Update deck.gl viewState, moving the camera to the new tileset
         longitude: cartographicCenter[0],
         latitude: cartographicCenter[1],
         zoom: zoom + 1.5, // TODO - remove adjustment when Tileset3D calculates correct zoom
         bearing: INITIAL_VIEW_STATE.bearing,
         pitch: INITIAL_VIEW_STATE.pitch,
+
+        // Tells deck.gl to animate the camera move to the new tileset
         transitionDuration: TRANSITION_DURAITON,
         transitionInterpolator: new FlyToInterpolator()
       }
@@ -208,7 +197,7 @@ export default class App extends PureComponent {
   }
 
   _renderControlPanel() {
-    const {examplesByCategory, category, name, viewState, selectedMapStyle} = this.state;
+    const {examplesByCategory, category, name, viewState, selectedMapStyle, attributions} = this.state;
     if (!examplesByCategory) {
       return null;
     }
@@ -220,6 +209,7 @@ export default class App extends PureComponent {
         data={examplesByCategory}
         category={category}
         name={name}
+        attributions={attributions}
         onMapStyleChange={this._onSelectMapStyle.bind(this)}
         onExampleChange={this._onSelectExample.bind(this)}
       >
@@ -249,12 +239,12 @@ export default class App extends PureComponent {
   }
 
   _renderTile3DLayer() {
-    const {tilesetExampleProps} = this.state;
-    if (!tilesetExampleProps) {
+    const {selectedExample} = this.state;
+    if (!selectedExample) {
       return null;
     }
 
-    const {tilesetUrl, ionAssetId, ionAccessToken, coordinateOrigin} = tilesetExampleProps;
+    const {tilesetUrl, ionAssetId, ionAccessToken, coordinateOrigin} = selectedExample;
 
     return new Tile3DLayer({
       id: 'tile-3d-layer',
