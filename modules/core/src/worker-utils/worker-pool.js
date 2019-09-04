@@ -8,7 +8,7 @@ export default class WorkerPool {
    * @param processor {function | string} - worker function
    * @param maxConcurrency {number} - max count of workers
    */
-  constructor({source, name, maxConcurrency = 1, onDebug = () => {}}) {
+  constructor({source, name = 'unnamed', maxConcurrency = 1, onDebug = () => {}}) {
     this.source = source;
     this.name = name;
     this.maxConcurrency = maxConcurrency;

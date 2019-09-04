@@ -1,7 +1,7 @@
-import {toArrayBuffer} from '../../javascript-utils/binary-utils';
-import WorkerFarm from './worker-farm';
+import {toArrayBuffer} from '../javascript-utils/binary-utils';
+import WorkerFarm from '../worker-utils/worker-farm';
 
-import {removeNontransferableValues} from './worker-utils';
+import {removeNontransferableValues} from '../worker-utils/worker-utils';
 
 let _workerFarm = null;
 
