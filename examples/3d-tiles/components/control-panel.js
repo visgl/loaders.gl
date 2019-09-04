@@ -118,7 +118,7 @@ export default class ControlPanel extends PureComponent {
       <Container>
         {this._renderByCategories()}
         {this._renderDropped()}
-        <div style={{marginBottom: '0.5cm'}}></div>
+        <div style={{marginBottom: '0.5cm'}} />
         {this._renderMapStyles()}
         {this.props.children}
       </Container>

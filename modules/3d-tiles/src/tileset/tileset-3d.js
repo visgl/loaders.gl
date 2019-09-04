@@ -331,7 +331,6 @@ export default class Tileset3D {
     this._extensionsUsed = tilesetJson.extensionsUsed;
     this._extras = tilesetJson.extras;
 
-
     // TODO - handle configurable glTF up axis
     // const gltfUpAxis = defined(tilesetJson.asset.gltfUpAxis)
     //   ? Axis.fromName(tilesetJson.asset.gltfUpAxis)

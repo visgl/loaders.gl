@@ -120,7 +120,7 @@ export default class App extends PureComponent {
     const ionAssetId = parsedUrl.searchParams.get('ionAssetId');
     if (ionAccessToken && ionAssetId) {
       this.setState({
-        selectedExample: { ionAccessToken, ionAssetId },
+        selectedExample: {ionAccessToken, ionAssetId},
         category: 'custom',
         name: 'ION Tileset'
       });
@@ -130,7 +130,7 @@ export default class App extends PureComponent {
     const tilesetUrl = parsedUrl.searchParams.get('tileset');
     if (tilesetUrl) {
       this.setState({
-        selectedExample: { tilesetUrl },
+        selectedExample: {tilesetUrl},
         category: 'custom',
         name: 'URL Tileset'
       });
