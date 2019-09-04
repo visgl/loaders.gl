@@ -1,4 +1,4 @@
-# RFC: Improved JSON Support in loaders.gl
+# RFC: Improved JSON Support in @loaders.gl/core
 
 - **Authors**: Ib Green
 - **Date**: Jun 2019
