@@ -1,6 +1,9 @@
 {
   "license": "MIT",
   "description": "Minimal working example of using loaders.gl with rollup.",
+  "contributors": [
+    "@nshen"
+  ],
   "scripts": {
     "start": "yarn build; serve",
     "build": "rollup -c",
