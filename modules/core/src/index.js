@@ -61,9 +61,9 @@ export {default as assert} from './utils/assert';
 // EXPERIMENTAL
 export {selectLoader as _selectLoader} from './lib/select-loader';
 
-export {default as _WorkerThread} from './lib/worker-utils/worker-thread';
-export {default as _WorkerFarm} from './lib/worker-utils/worker-farm';
-export {default as _WorkerPool} from './lib/worker-utils/worker-pool';
+export {default as _WorkerThread} from './worker-utils/worker-thread';
+export {default as _WorkerFarm} from './worker-utils/worker-farm';
+export {default as _WorkerPool} from './worker-utils/worker-pool';
 
 // FOR TESTING
 export {_unregisterLoaders} from './lib/register-loaders';

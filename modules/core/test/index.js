@@ -1,8 +1,6 @@
 import './javascript-utils';
 
-import './streams/stream-iterator.spec';
-
-import './lib/worker-utils/worker-farm.spec';
+import './worker-utils';
 
 import './lib/fetch';
 import './lib/loader-utils';

@@ -8,7 +8,7 @@ export default class WorkerPool {
    * @param processor {function | string} - worker function
    * @param maxConcurrency {number} - max count of workers
    */
-  constructor({source, name, maxConcurrency = 1, onDebug = () => {}}) {
+  constructor({source, name = 'unnamed', maxConcurrency = 1, onDebug = () => {}}) {
     this.source = source;
     this.name = name;
     this.maxConcurrency = maxConcurrency;
@@ -84,7 +84,7 @@ export default class WorkerPool {
     // Create fresh worker if we haven't yet created the max amount of worker threads for this worker source
     if (this.count < this.maxConcurrency) {
       this.count++;
-      const name = `${this.name}-${this.count}-of-${this.maxConcurrency}`;
+      const name = `${this.name.toLowerCase()}-worker-${this.count}-of-${this.maxConcurrency}`;
       return new WorkerThread(this.source, name);
     }
 

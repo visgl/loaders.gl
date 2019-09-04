@@ -1,5 +1,7 @@
 import WorkerPool from './worker-pool';
 
+const DEFAULT_MAX_CONCURRENCY = 5;
+
 /**
  * Process multiple data messages with a "farm" of different workers (in worker pools)
  */
@@ -8,7 +10,7 @@ export default class WorkerFarm {
    * @param processor {function | string} - worker function
    * @param maxConcurrency {number} - max count of workers
    */
-  constructor({maxConcurrency = 1, onDebug = () => {}}) {
+  constructor({maxConcurrency = DEFAULT_MAX_CONCURRENCY, onDebug = () => {}}) {
     this.maxConcurrency = maxConcurrency;
     this.onDebug = onDebug;
     this.workerPools = new Map();

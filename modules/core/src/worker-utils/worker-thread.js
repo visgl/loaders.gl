@@ -19,7 +19,8 @@ export default class WorkerThread {
     return new Promise((resolve, reject) => {
       this.worker.onmessage = e => resolve(e.data);
       this.worker.onerror = error => reject(error);
-      this.worker.postMessage(data, getTransferList(data));
+      const transferList = getTransferList(data);
+      this.worker.postMessage(data, transferList);
     });
   }
 

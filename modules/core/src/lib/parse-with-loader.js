@@ -1,5 +1,5 @@
 import assert from '../utils/assert';
-import parseWithWorker from './worker-utils/parse-with-worker';
+import parseWithWorker from './parse-with-worker';
 import {
   getArrayBufferOrStringFromDataSync,
   getArrayBufferOrStringFromData,
