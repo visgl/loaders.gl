@@ -113,14 +113,31 @@ export default class ControlPanel extends PureComponent {
     return droppedFile ? <div>Dropped file: {JSON.stringify(droppedFile.name)}</div> : null;
   }
 
+  _renderAttributions() {
+    const {attributions} = this.props;
+    if (!attributions || attributions.length === 0) {
+      return null;
+    }
+    return (
+      <div style={{marginTop: '0.5cm'}}>
+        <div style={{textAlign: 'center', borderStyle: 'groove'}}>
+          {Boolean(attributions.length) && <b>Tileset Credentials</b>}
+          {attributions.map(attribution => (
+            <div key={attribution.html} dangerouslySetInnerHTML={{__html: attribution.html}} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   render() {
     return (
       <Container>
         {this._renderByCategories()}
         {this._renderDropped()}
-        <div style={{marginBottom: '0.5cm'}} />
         {this._renderMapStyles()}
         {this.props.children}
+        {this._renderAttributions()}
       </Container>
     );
   }
