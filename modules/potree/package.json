@@ -1,0 +1,43 @@
+{
+  "name": "@loaders.gl/potree",
+  "version": "1.2.1",
+  "description": "potree loaders for large point clouds.",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/uber-web/loaders.gl"
+  },
+  "keywords": [
+    "webgl",
+    "loader",
+    "potree",
+    "3d tile",
+    "tile",
+    "mesh",
+    "las",
+    "point cloud",
+    "pointcloud"
+  ],
+  "main": "dist/es5/index.js",
+  "module": "dist/esm/index.js",
+  "esnext": "dist/es6/index.js",
+  "sideEffects": false,
+  "files": [
+    "src",
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "pre-build": "npm run build-bundle && npm run build-bundle -- --env.dev",
+    "build-bundle": "webpack --display=minimal --config ../../scripts/bundle.config.js"
+  },
+  "dependencies": {
+    "@loaders.gl/core": "1.2.1",
+    "@loaders.gl/loader-utils": "1.2.1",
+    "@loaders.gl/math": "1.2.1",
+    "math.gl": "^3.0.0-beta.2"
+  }
+}
