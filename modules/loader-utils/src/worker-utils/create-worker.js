@@ -9,18 +9,25 @@ export default function createWorker(loader) {
     return;
   }
 
-  self.onmessage = evt => {
+  const onmessage = async (port, evt) => {
     try {
       if (!isKnownMessage(evt, loader.name)) {
         return;
       }
 
       const {arraybuffer, byteOffset = 0, byteLength = 0, options = {}} = evt.data;
-      const result = parseData(loader, arraybuffer, byteOffset, byteLength, options);
+      const result = await parseData(loader, arraybuffer, byteOffset, byteLength, options);
       const transferList = getTransferList(result);
-      self.postMessage({type: 'done', result}, transferList);
+      port.postMessage({type: 'done', result}, transferList);
     } catch (error) {
-      self.postMessage({type: 'error', message: error.message});
+      port.postMessage({type: 'error', message: error.message});
+    }
+  };
+
+  self.onmessage = evt => {
+    const {port} = evt.data;
+    if (port) {
+      port.onmessage = onmessage.bind(null, port);
     }
   };
 }
@@ -29,12 +36,12 @@ export default function createWorker(loader) {
 // TODO - Why not support async loader.parse* funcs here?
 // TODO - Why not reuse a common function instead of reimplementing loader.parse* selection logic? Keeping loader small?
 // TODO - Lack of appropriate parser functions can be detected when we create worker, no need to wait until parse
-function parseData(loader, arraybuffer, byteOffset, byteLength, options) {
+async function parseData(loader, arraybuffer, byteOffset, byteLength, options) {
   let data;
   let parser;
-  if (loader.parseSync) {
+  if (loader.parseSync || loader.parse) {
     data = arraybuffer;
-    parser = loader.parseSync;
+    parser = loader.parseSync || loader.parse;
   } else if (loader.parseTextSync) {
     const textDecoder = new TextDecoder();
     data = textDecoder.decode(arraybuffer);
@@ -43,7 +50,7 @@ function parseData(loader, arraybuffer, byteOffset, byteLength, options) {
     throw new Error(`Could not load data with ${loader.name} loader`);
   }
 
-  return parser(data, options);
+  return await parser(data, options);
 }
 
 // Filter out noise messages sent to workers

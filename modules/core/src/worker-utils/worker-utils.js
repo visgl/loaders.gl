@@ -1,5 +1,5 @@
 /* global URL, Blob */
-// import webworkify from 'webworkify';
+import assert from '../utils/assert';
 
 export function getTransferList(object, recursive = true, transfers = []) {
   if (!object) {
@@ -23,6 +23,14 @@ const workerURLCache = new Map();
 // Creates a URL from worker source that can be used to create `Worker` instances
 // Packages (and then caches) the result of `webworkify` as an "Object URL"
 export function getWorkerURL(workerSource) {
+  assert(typeof workerSource === 'string', 'worker source');
+
+  // url(./worker.js)
+  // This pattern is needed for testing
+  if (workerSource.startsWith('url(') && workerSource.endsWith(')')) {
+    return workerSource.match(/^url\((.*)\)$/)[1];
+  }
+
   let workerURL = workerURLCache.get(workerSource);
 
   if (!workerURL) {

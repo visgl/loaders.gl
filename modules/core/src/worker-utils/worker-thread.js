@@ -1,13 +1,23 @@
-/* global Worker */
+/* global Worker, MessageChannel */
 import {getWorkerURL, getTransferList} from './worker-utils';
 
 let count = 0;
 
 export default class WorkerThread {
-  constructor(workerSource, name = `web-worker-${count++}`) {
-    const url = getWorkerURL(workerSource);
+  constructor({source, name = `web-worker-${count++}`, messagePort}) {
+    const url = getWorkerURL(source);
     this.worker = new Worker(url, {name});
     this.name = name;
+
+    if (messagePort) {
+      // Listen to an external message port
+      this.localPort = null;
+      this.worker.postMessage({port: messagePort}, [messagePort]);
+    } else {
+      const messageChannel = new MessageChannel();
+      this.localPort = messageChannel.port1;
+      this.worker.postMessage({port: messageChannel.port2}, [messageChannel.port2]);
+    }
   }
 
   /**
@@ -16,11 +26,15 @@ export default class WorkerThread {
    * @returns a Promise with data containing typed arrays transferred back from work
    */
   async process(data) {
+    if (!this.localPort) {
+      // This thread was created to communicate with another worker
+      throw new Error('Cannot post to this worker');
+    }
     return new Promise((resolve, reject) => {
-      this.worker.onmessage = e => resolve(e.data);
+      this.localPort.onmessage = e => resolve(e.data);
       this.worker.onerror = error => reject(error);
       const transferList = getTransferList(data);
-      this.worker.postMessage(data, transferList);
+      this.localPort.postMessage(data, transferList);
     });
   }
 

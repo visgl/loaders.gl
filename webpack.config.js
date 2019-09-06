@@ -38,5 +38,18 @@ module.exports = (env = {}) => {
     }
   );
 
-  return config;
+  return [
+    config,
+    // For worker tests
+    {
+      mode: 'development',
+      entry: {
+        'json-loader': './modules/core/test/worker-utils/json-loader.worker.js'
+      },
+      output: {
+        filename: '[name].worker.js'
+      },
+      target: 'webworker'
+    }
+  ];
 };

@@ -85,7 +85,7 @@ export default class WorkerPool {
     if (this.count < this.maxConcurrency) {
       this.count++;
       const name = `${this.name.toLowerCase()}-worker-${this.count}-of-${this.maxConcurrency}`;
-      return new WorkerThread(this.source, name);
+      return new WorkerThread({source: this.source, name});
     }
 
     // No worker available, have to wait
