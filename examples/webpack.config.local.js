@@ -31,10 +31,11 @@ const MATH_LINK_ALIASES = {
 };
 
 const LUMA_LINK_ALIASES = {
+  '@luma.gl/addons': resolve(ROOT_DIR, '../luma.gl/modules/addons/src'),
   '@luma.gl/constants': resolve(ROOT_DIR, '../luma.gl/modules/constants/src'),
   '@luma.gl/core': resolve(ROOT_DIR, '../luma.gl/modules/core/src'),
-  '@luma.gl/webgl': resolve(ROOT_DIR, '../luma.gl/modules/webgl/src'),
-  '@luma.gl/debug': resolve(ROOT_DIR, '../luma.gl/modules/debug/src')
+  '@luma.gl/debug': resolve(ROOT_DIR, '../luma.gl/modules/debug/src'),
+  '@luma.gl/webgl': resolve(ROOT_DIR, '../luma.gl/modules/webgl/src')
 };
 
 // Support for hot reloading changes to the library:
@@ -57,6 +58,7 @@ const LOCAL_DEVELOPMENT_CONFIG = {
   },
 
   resolve: {
+    mainFields: ['esnext', 'browser', 'module', 'main'],
     // Imports the library from its src directory in this repo
     alias: Object.assign({}, ALIASES)
   },
@@ -98,6 +100,7 @@ function addLocalDependency(config, dependency) {
 function addLocalDevSettings(config, opts) {
   config = Object.assign({}, LOCAL_DEVELOPMENT_CONFIG, config);
   config.resolve = config.resolve || {};
+  config.resolve.mainFields = LOCAL_DEVELOPMENT_CONFIG.resolve.mainFields;
   config.resolve.alias = config.resolve.alias || {};
   Object.assign(config.resolve.alias, LOCAL_DEVELOPMENT_CONFIG.resolve.alias);
 
