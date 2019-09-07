@@ -22,11 +22,13 @@ export default class GLTFScenegraph {
           version: 2,
           buffers: []
         },
-        binary: null
+        buffers: []
       };
     }
 
+    // TODO - this is too sloppy, define inputs more clearly
     this.gltf = gltf;
+    assert(this.gltf.json);
   }
 
   // Accessors
@@ -124,9 +126,9 @@ export default class GLTFScenegraph {
     if (typeof index === 'object') {
       return index;
     }
-    const object = this.gltf[array] && this.gltf[array][index];
+    const object = this.json[array] && this.json[array][index];
     if (!object) {
-      console.warn(`glTF file error: Could not find ${array}[${index}]`); // eslint-disable-line
+      throw new Error(`glTF file error: Could not find ${array}[${index}]`); // eslint-disable-line
     }
     return object;
   }
@@ -135,11 +137,15 @@ export default class GLTFScenegraph {
   // returns a `Uint8Array`
   getTypedArrayForBufferView(bufferView) {
     bufferView = this.getBufferView(bufferView);
-    const buffer = this.getBuffer(bufferView.buffer);
-    const arrayBuffer = buffer.data;
+    const bufferIndex = bufferView.buffer;
 
-    const byteOffset = bufferView.byteOffset || 0;
-    return new Uint8Array(arrayBuffer, byteOffset, bufferView.byteLength);
+    // Get hold of the arrayBuffer
+    // const buffer = this.getBuffer(bufferIndex);
+    const binChunk = this.gltf.buffers[bufferIndex];
+    assert(binChunk);
+
+    const byteOffset = bufferView.byteOffset || 0 + binChunk.byteOffset;
+    return new Uint8Array(binChunk.arrayBuffer, byteOffset, bufferView.byteLength);
   }
 
   // accepts accessor index or accessor object

@@ -1,4 +1,5 @@
 import {getFullUri} from './gltf-utils/gltf-utils';
+import assert from './utils/assert';
 
 // This is a post processor for loaded glTF files
 // The goal is to make the loaded data easier to use in WebGL applications
@@ -68,10 +69,17 @@ function getSizeFromAccessorType(type) {
 
 class GLTFPostProcessor {
   postProcess(gltf, options = {}) {
-    this.gltf = gltf;
-    this.json = gltf.json;
-    this.buffers = gltf.buffers;
-    return this._resolveTree(gltf.json, options);
+    const {json, buffers = [], images = [], baseUri = ''} = gltf;
+    assert(json);
+
+    this.baseUri = baseUri;
+    this.json = json;
+    this.buffers = buffers;
+    this.images = images;
+
+    this._resolveTree(this.json, options);
+
+    return this.json;
   }
 
   // Convert indexed glTF structure into tree structure
@@ -111,12 +119,7 @@ class GLTFPostProcessor {
     if (json.scene !== undefined) {
       json.scene = json.scenes[this.json.scene];
     }
-
-    // TODO arrays added by extensions, e.g. lights
-
-    return json;
   }
-  /* eslint-enable complexity */
 
   getScene(index) {
     return this._get('scenes', index);
@@ -181,14 +184,14 @@ class GLTFPostProcessor {
   // PARSING HELPERS
 
   _resolveScene(scene, index) {
-    scene = {...scene};
+    // scene = {...scene};
     scene.id = scene.id || `scene-${index}`;
     scene.nodes = (scene.nodes || []).map(node => this.getNode(node));
     return scene;
   }
 
   _resolveNode(node, index) {
-    node = {...node};
+    // node = {...node};
     node.id = node.id || `node-${index}`;
     if (node.children) {
       node.children = node.children.map(child => this.getNode(child));
@@ -206,14 +209,14 @@ class GLTFPostProcessor {
   }
 
   _resolveSkin(skin, index) {
-    skin = {...skin};
+    // skin = {...skin};
     skin.id = skin.id || `skin-${index}`;
     skin.inverseBindMatrices = this.getAccessor(skin.inverseBindMatrices);
     return skin;
   }
 
   _resolveMesh(mesh, index) {
-    mesh = {...mesh};
+    // mesh = {...mesh};
     mesh.id = mesh.id || `mesh-${index}`;
     if (mesh.primitives) {
       mesh.primitives = mesh.primitives.map(primitive => {
@@ -236,7 +239,7 @@ class GLTFPostProcessor {
   }
 
   _resolveMaterial(material, index) {
-    material = {...material};
+    // material = {...material};
     material.id = material.id || `material-${index}`;
     if (material.normalTexture) {
       material.normalTexture = {...material.normalTexture};
@@ -267,7 +270,7 @@ class GLTFPostProcessor {
   }
 
   _resolveAccessor(accessor, index) {
-    accessor = {...accessor};
+    // accessor = {...accessor};
     accessor.id = accessor.id || `accessor-${index}`;
     if (accessor.bufferView !== undefined) {
       // Draco encoded meshes don't have bufferView
@@ -278,11 +281,14 @@ class GLTFPostProcessor {
     accessor.bytesPerComponent = getBytesFromComponentType(accessor.componentType);
     accessor.components = getSizeFromAccessorType(accessor.type);
     accessor.bytesPerElement = accessor.bytesPerComponent * accessor.components;
+
+    // TODO - Create TypedArray for the accessor
+
     return accessor;
   }
 
   _resolveTexture(texture, index) {
-    texture = {...texture};
+    // texture = {...texture};
     texture.id = texture.id || `texture-${index}`;
     texture.sampler = 'sampler' in texture ? this.getSampler(texture.sampler) : DEFAULT_SAMPLER;
     texture.source = this.getImage(texture.source);
@@ -290,7 +296,7 @@ class GLTFPostProcessor {
   }
 
   _resolveSampler(sampler, index) {
-    sampler = {...sampler};
+    // sampler = {...sampler};
     sampler.id = sampler.id || `sampler-${index}`;
     // Map textual parameters to GL parameter values
     sampler.parameters = {};
@@ -307,45 +313,67 @@ class GLTFPostProcessor {
     return SAMPLER_PARAMETER_GLTF_TO_GL[key];
   }
 
-  // TODO - Handle non-binary-chunk images, data URIs, URLs etc
-  // TODO - Image creation could be done on getImage instead of during load
   _resolveImage(image, index, options) {
-    image = {...image};
+    // image = {...image};
     image.id = image.id || `image-${index}`;
     if (image.bufferView !== undefined) {
       image.bufferView = this.getBufferView(image.bufferView);
     }
 
     if ('uri' in image) {
-      const baseUri = options.uri || this.gltf.baseUri;
+      // Check if image has been preloaded by the GLTFLoader
+      // If so, link it into the JSON and drop the URI
+      const preloadedImage = this.images[index];
+      if (preloadedImage && preloadedImage.image) {
+        image.image = preloadedImage.image;
+        delete image.uri;
+      }
+
+      // If not, resolve the relative URI using the baseName
+      const baseUri = options.uri || this.baseUri;
       if (baseUri) {
+        const uri = image.uri;
+        image.uri = getFullUri(image.uri, baseUri);
+
+        // Deprecated
+        image.originalUri = uri;
         image.baseUri = baseUri;
-        image.fullUri = getFullUri(image.uri, baseUri);
+        image.fullUri = image.uri;
       }
     }
 
-    function getImageAsync() {
-      if (image.uri) {
-        // TODO: Maybe just return the URL?
-        // TODO: Maybe use loaders.gl/core loadImage?
+    // Deprecated, use image.image or image.uri or image loaders instead
+    image.getImageAsync = () => {
+      /* global self, Blob, Image */
+      if (image.bufferView) {
         return new Promise(resolve => {
-          /* global Image */
+          const arrayBufferView = this.getBufferView(image.bufferView);
+          const mimeType = image.mimeType || 'image/jpeg';
+          const blob = new Blob([arrayBufferView.data], {type: mimeType});
+          const urlCreator = self.URL || self.webkitURL;
+          const imageUrl = urlCreator.createObjectURL(blob);
           const img = new Image();
-          img.crossOrigin = 'anonymous';
           img.onload = () => resolve(img);
-          img.src = image.fullUri || image.uri;
+          img.src = imageUrl;
         });
       }
-      // cannot get image
-      return null;
-    }
 
-    image.getImageAsync = getImageAsync;
+      return image.uri
+        ? new Promise(resolve => {
+            /* global Image */
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => resolve(img);
+            img.src = image.fullUri || image.uri;
+          })
+        : null;
+    };
+
     return image;
   }
 
   _resolveBufferView(bufferView, index) {
-    bufferView = {...bufferView};
+    // bufferView = {...bufferView};
     bufferView.id = bufferView.id || `bufferView-${index}`;
     const bufferIndex = bufferView.buffer;
     bufferView.buffer = this.getBuffer(bufferIndex);

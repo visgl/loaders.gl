@@ -7,7 +7,10 @@ export default {
   extension: ['glb'],
   text: true,
   binary: true,
-  parseSync
+  parseSync,
+  defaultOptions: {
+    strict: false // Enables deprecated XVIZ support (illegal CHUNK formats)
+  }
 };
 
 function parseSync(arrayBuffer, options) {

@@ -95,8 +95,8 @@ Returns
 | `baseUri` | `String`     | ``        | length of GLB (e.g. embedded in larger binary block) |
 | `json`    | `Object`     | `{}`      | Parsed JSON from the JSON chunk     |
 | `buffers` | `Object[]`   | `[]`      | The version number |
-| `buffers[*].arrayBuffer` | `ArrayBuffer` | `null`  | The binary chunk   |
-| `buffers[*].byteOffset`  | `Number`  | `null`  | offset of buffer (embedded in larger binary block)   |
-| `buffers[*].byteLength`  | `ArrayBuffer` | `null`  | length of buffer (embedded in larger binary block)   |
+| `buffers[\*].arrayBuffer` | `ArrayBuffer` | `null`  | The binary chunk   |
+| `buffers[\*].byteOffset`  | `Number`  | `null`  | offset of buffer (embedded in larger binary block)   |
+| `buffers[\*].byteLength`  | `ArrayBuffer` | `null`  | length of buffer (embedded in larger binary block)   |
 | `_glb`?     | `Object`    | N/A       | The output of the GLBLoader if the parsed file was GLB formatted |
 

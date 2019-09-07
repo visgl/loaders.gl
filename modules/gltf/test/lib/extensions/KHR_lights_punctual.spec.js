@@ -51,7 +51,7 @@ const TEST_CASES = [
   }
 ];
 
-test('GLTF roundtrip#extensions', t => {
+test('gltf#KHR_lights_punctuals', t => {
   for (const testCase of TEST_CASES) {
     const json = getResolvedJson(testCase.input);
     t.deepEqual(json, testCase.output, testCase.name);
