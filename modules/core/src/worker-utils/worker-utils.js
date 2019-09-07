@@ -12,7 +12,7 @@ export function getTransferList(object, recursive = true, transfers = []) {
   } else if (recursive && typeof object === 'object') {
     for (const key in object) {
       // Avoid perf hit - only go one level deep
-      getTransferList(object[key], false, transfers);
+      getTransferList(object[key], recursive, transfers);
     }
   }
   return transfers;

@@ -1,5 +1,6 @@
 import {toArrayBuffer} from '../javascript-utils/binary-utils';
 import WorkerFarm from '../worker-utils/worker-farm';
+import {parseWithLoader} from './parse-with-loader';
 
 import {removeNontransferableValues} from '../worker-utils/worker-utils';
 
@@ -14,7 +15,7 @@ function getWorkerFarm(options = {}) {
     props.onDebug = options.onDebug;
   }
 
-  _workerFarm = _workerFarm || new WorkerFarm({});
+  _workerFarm = _workerFarm || new WorkerFarm({parse: parseWithLoader});
   _workerFarm.setProps(props);
 
   return _workerFarm;

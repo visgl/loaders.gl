@@ -1,6 +1,10 @@
 /* global Worker */
 import test from 'tape-catch';
 import {_WorkerThread, _WorkerPool, toArrayBuffer} from '@loaders.gl/core';
+import {parseWithLoader} from '@loaders.gl/core/lib/parse-with-loader';
+
+const CHUNKS_TOTAL = 6;
+const MAX_CONCURRENCY = 3;
 
 const hasWorker = typeof Worker !== 'undefined';
 const testWorkerSource = `
@@ -43,9 +47,6 @@ test('WorkerPool', async t => {
     return;
   }
 
-  const CHUNKS_TOTAL = 6;
-  const MAX_CONCURRENCY = 3;
-
   const callback = message =>
     t.comment(`Processing with worker ${message.worker}, backlog ${message.backlog}`);
 
@@ -74,9 +75,6 @@ test('createWorker', async t => {
     t.end();
     return;
   }
-
-  const CHUNKS_TOTAL = 6;
-  const MAX_CONCURRENCY = 3;
 
   const callback = message =>
     t.comment(`Processing with worker ${message.worker}, backlog ${message.backlog}`);
@@ -124,7 +122,8 @@ test('createWorker#nested', async t => {
   const workerPool = new _WorkerPool({
     source: `url(./jsonl-loader.worker.js)`,
     name: 'test-jsonl-loader',
-    maxConcurrency: 3,
+    parse: parseWithLoader,
+    maxConcurrency: MAX_CONCURRENCY,
     onDebug: callback
   });
 

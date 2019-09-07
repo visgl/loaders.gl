@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-globals */
-/* global TextDecoder, self, MessagePort */
+/* global TextDecoder, self */
 import getTransferList from './get-transfer-list';
 
 // Set up a WebWorkerGlobalScope to talk with the main thread
@@ -9,9 +9,16 @@ export default function createWorker(loader) {
     return;
   }
 
-  const loaders = {};
+  let messagePort = null;
 
-  const onmessage = async (port, evt) => {
+  self.onmessage = async evt => {
+    const {data} = evt;
+
+    if (data.messagePort) {
+      messagePort = data.messagePort;
+      return;
+    }
+
     try {
       if (!isKnownMessage(evt, loader.name)) {
         return;
@@ -21,26 +28,15 @@ export default function createWorker(loader) {
 
       for (const key in options) {
         if (typeof options[key] === 'string' && options[key].startsWith('loader#')) {
-          options[key] = loaders[options[key].slice(7)];
+          options[key] = hydrateLoader(options[key].slice(7), messagePort);
         }
       }
 
       const result = await parseData(loader, arraybuffer, byteOffset, byteLength, options);
       const transferList = getTransferList(result);
-      port.postMessage({type: 'done', result}, transferList);
+      self.postMessage({type: 'done', result}, transferList);
     } catch (error) {
-      port.postMessage({type: 'error', message: error.message});
-    }
-  };
-
-  self.onmessage = evt => {
-    const {data} = evt;
-    if (data.__port) {
-      data.__port.onmessage = onmessage.bind(null, data.__port);
-    } else if (data.__loader) {
-      loaders[data.__loader.name] = normalizeLoader(data.__loader);
-    } else {
-      onmessage(self, evt);
+      self.postMessage({type: 'error', message: error.message});
     }
   };
 }
@@ -79,27 +75,17 @@ function isKnownMessage(evt, name) {
   }
 }
 
-function normalizeLoader(loader) {
-  if (loader.port instanceof MessagePort) {
-    loader.parse = (arraybuffer, options) =>
+function hydrateLoader(name, messagePort) {
+  return {
+    name,
+    parse: (arraybuffer, options) =>
       new Promise((resolve, reject) => {
-        loader.port.onmessage = evt => {
-          switch (evt.data.type) {
-            case 'done':
-              resolve(evt.data.result);
-              return;
-
-            case 'error':
-              reject(evt.data.message);
-              return;
-
-            default:
-          }
-        };
-        loader.port.postMessage({arraybuffer, options, source: 'loaders.gl'}, [arraybuffer]);
-      });
-  }
-  return loader;
+        messagePort.onmessage = e => resolve(e.data);
+        messagePort.postMessage({arraybuffer, options, loader: name, source: 'loaders.gl'}, [
+          arraybuffer
+        ]);
+      })
+  };
 }
 
 /*
