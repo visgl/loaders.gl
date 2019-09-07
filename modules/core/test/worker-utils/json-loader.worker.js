@@ -1,7 +1,10 @@
-import {createWorker} from '@loaders.gl/loader-utils';
+import {createWorker} from '../../../loader-utils/src';
 
 createWorker({
-  name: 'TEST-1',
-  extensions: ['test1'],
-  parseTextSync: str => JSON.parse(str)
+  name: 'TEST-JSON-LOADER',
+  extensions: ['json'],
+  parseTextSync: str => {
+    console.log('TEST-JSON-LOADER:processing'); // eslint-disable-line
+    return JSON.parse(str);
+  }
 });
