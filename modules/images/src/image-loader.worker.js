@@ -1,4 +1,5 @@
-import ImageLoader from './las-loader';
+import {ImageLoaders} from './image-loaders';
 import {createWorker} from '@loaders.gl/loader-utils';
 
-createWorker(ImageLoader);
+// TODO - Can createWorker handle an array of loaders
+createWorker(ImageLoaders);

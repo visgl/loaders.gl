@@ -4,19 +4,16 @@ import {
   parseImage,
   parseToImageBitmap,
   loadToHTMLImage
-} from './lib/parsers/parse-to-image-bitmap';
+} from './lib/parsers/parse-image-v1';
 
-// TODO - we don't have tests for all of these. Many are not supported on node...
 const EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'ico', 'svg'];
 
 // Loads a platform-specific image type that can be used as input data to WebGL textures
 export default {
-  id: 'image',
   name: 'Images',
   extensions: EXTENSIONS,
   parse: canParseImage && parseImage,
-  loadAndParse: typeof Image !== 'undefined' && loadToHTMLImage,
-  options: {}
+  loadAndParse: typeof Image !== 'undefined' && loadToHTMLImage
 };
 
 // EXPERIMENTAL
@@ -25,4 +22,10 @@ export default {
 export const ImageBitmapLoader = {
   extensions: EXTENSIONS,
   parse: parseToImageBitmap
+};
+
+// Specifically loads an HTMLImage (works on all browsers' main thread but not on worker threads)
+export const HTMLImageLoader = {
+  extensions: EXTENSIONS,
+  loadAndParse: loadToHTMLImage
 };

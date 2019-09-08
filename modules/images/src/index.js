@@ -20,7 +20,7 @@ export {
 } from './image-loaders';
 
 // DEPRECATED
-export {loadImage} from './lib/parsers/parse-image';
+export {loadImage} from './lib/parsers/parse-image-v1';
 
 // Now possible to use ImageLoaders on arrayBuffer input
 // Unpacks compressed image data into an HTML image
