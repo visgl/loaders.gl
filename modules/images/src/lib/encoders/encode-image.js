@@ -1,8 +1,8 @@
 // Image loading/saving for browser
 /* global document, HTMLCanvasElement, Image */
 
-import assert from '../utils/assert';
-import {global} from '../utils/globals';
+import assert from '../../utils/assert';
+import {global} from '../../utils/globals';
 
 // Returns data bytes representing a compressed image in PNG or JPG format,
 // This data can be saved using file system (f) methods or
