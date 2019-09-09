@@ -81,13 +81,14 @@ function findLoaderByExamingInitialData(loaders, data) {
       if (testText(data, loader)) {
         return loader;
       }
+    } else if (ArrayBuffer.isView(data)) {
+      // Typed Arrays can have offsets into underlying buffer
+      if (testBinary(data.buffer, data.byteOffset, loader)) {
+        return loader;
+      }
     } else if (data instanceof ArrayBuffer) {
       const byteOffset = 0;
       if (testBinary(data, byteOffset, loader)) {
-        return loader;
-      }
-    } else if (ArrayBuffer.isView(data)) {
-      if (testBinary(data.buffer, data.byteOffset, loader)) {
         return loader;
       }
     }
