@@ -1,4 +1,4 @@
-const COMMON_CONFIG = {
+const CONFIG = {
   mode: 'development',
 
   entry: {
@@ -7,6 +7,10 @@ const COMMON_CONFIG = {
 
   output: {
     library: 'App'
+  },
+
+  resolve: {
+    mainFields: ['esnext', 'browser', 'module', 'main']
   },
 
   module: {
@@ -25,6 +29,10 @@ const COMMON_CONFIG = {
   }
 };
 
+// This line enables bundling against src in this repo rather than installed module
+module.exports = env => (env ? require('../webpack.config.local')(CONFIG)(env) : CONFIG);
+
+/*
 function addDevConfig(config, env) {
   config = require('../webpack.config.local')(config)(env);
   return config;
@@ -56,3 +64,4 @@ module.exports = env => {
 
   return config;
 };
+*/
