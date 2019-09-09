@@ -4,7 +4,6 @@ import {fetchFile, _fetchProgress} from '@loaders.gl/core';
 const PROGRESS_IMAGE_URL = '@loaders.gl/images/test/data/img1-preview.jpeg';
 
 test('progress#fetchProgress', async t => {
-  debugger;
   t.ok(_fetchProgress, '_fetchProgress defined');
   const response = await _fetchProgress(
     fetchFile(PROGRESS_IMAGE_URL),
