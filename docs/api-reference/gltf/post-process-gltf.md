@@ -1,6 +1,8 @@
 # postProcessGLTF
 
 The `postProcessGLTF` function transforms parsed GLTF JSON to make it easier to use.
+- It adds loaded buffers and images to the glTF JSON objects
+- It creates typed arrays for buffer views
 
 ## Usage
 
@@ -23,7 +25,7 @@ for (const node of scenegraph.nodes) { // no need to resolve indices
 
 ## Functions
 
-### postProcessGLTF(gltf, options = {})
+### postProcessGLTF(gltf : Object, options? : Object) : Object
 
 - `gltf` is expected to have `json` and `buffers` fields per the GLTF Data Format Category.
 - `options.uri` - Set base URI (for image loading)
@@ -46,19 +48,30 @@ Unless already present.
 
 ## Node Specific Post Processing
 
+### Buffers
+
+The following fields will be populated from the supplied `gltf.buffers` parameter (this parameter is populated by the loader via `options.loadLinkedResources: true`):
+
+- `buffer.arrayBuffer` -
+- `buffer.byteOffset` -
+- `buffer.byteLength` -
+
 ### BufferViews
 
-* Typed arrays (`Uint8Arrays`) will be created for buffer views and added to `bufferView.data` field. These typed arrays can be used to upload data to WebGL buffers.
+- `bufferView.data` - Typed arrays (`Uint8Arrays`) will be created for buffer views and stored in this field. These typed arrays can be used to upload data to WebGL buffers.
 
 ### Accessors
 
 The accessor parameters which are textual strings in glTF will be resolved into WebGL constants.
 
-### Texture
+## Images
 
-Modifies
-- `sampler` - will be resolved the the corresponding image object.
-- `source` - will be resolved the the corresponding image object.
+- `image.image` - Populated from the supplied `gltf.images` array. This array is populated by the `GLTFLoader` via `options.loadImages: true`):
+- `image.uri` - If loaded image in the `images` array is not available, uses `gltf.baseUri` or `options.baseUri` is available, to resolve a relative URI and replaces this value.
+
+### Materials
+
+- `...texture` - Since each texture object in the material has an `...index` field next to other fields, the post processor will add a `...texture` field instead of replacing the `...index` field.
 
 ### Samplers
 
@@ -75,7 +88,8 @@ Sampler parameters (which are textual in glTF) will be resolved into WebGL const
 | `wrapT` | `GL.TEXTURE_WRAP_T` |
 
 
-### Materials
+### Texture
 
-Adds:
-- Since each texture object in the material has an `index` field next to other fields, the post processor will add a `texture` field instead of replacing the `index` field.
+Modifies
+- `sampler` - will be resolved the the corresponding image object.
+- `source` - will be resolved the the corresponding image object.
