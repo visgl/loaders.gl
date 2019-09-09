@@ -5,7 +5,7 @@ import GLTFParser from './lib/deprecated/gltf-parser';
 
 const DEFAULT_OPTIONS = {
   gltf: {
-    useParserV2: false // if `true`, uses the new parser that will be the only option in V2.
+    parserVersion: 1 // the new parser that will be the only option in V2.
   },
   uri: '' // base URI
 };

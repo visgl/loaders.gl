@@ -59,7 +59,7 @@ test('GLTFWriter#encode (DEPRECATED settings)', t => {
 
   const arrayBuffer = gltfBuilder.encodeSync();
 
-  const gltf = parseSync(arrayBuffer, GLTFLoader, {gltf: {useParserV2: true}});
+  const gltf = parseSync(arrayBuffer, GLTFLoader, {gltf: {parserVersion: 2}});
   const gltfScenegraph = new GLTFScenegraph({json: gltf});
 
   const appData = gltfScenegraph.getApplicationData('viz');
