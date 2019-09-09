@@ -11,7 +11,6 @@ const GLB_CHUNK_TYPE_JSON = 0x4e4f534a;
 const GLB_CHUNK_TYPE_BIN = 0x004e4942;
 
 const LE = true; // Binary GLTF is little endian.
-const BE = false; // Magic needs to be written as BE
 
 function getMagicString(dataView, byteOffset = 0) {
   return `\
@@ -172,7 +171,7 @@ function addDeprecatedFields(glb) {
   glb.magic = glb.header.magic;
   glb.version = glb.header.version;
   glb.byteLength = glb.header.byteLength;
-  glb.hasBinChunk = glb.binChunks.length >= 0;
+  glb.hasBinChunk = glb.binChunks.length >= 1;
   glb.binChunkByteOffset = glb.header.hasBinChunk ? glb.binChunks[0].byteOffset : 0;
   glb.binChunkLength = glb.header.hasBinChunk ? glb.binChunks[0].byteLength : 0;
 }

@@ -82,12 +82,7 @@ function findLoaderByExamingInitialData(loaders, data) {
         return loader;
       }
     } else if (data instanceof ArrayBuffer) {
-      const byteOffset = 0;
-      if (testBinary(data, byteOffset, loader)) {
-        return loader;
-      }
-    } else if (ArrayBuffer.isView(data)) {
-      if (testBinary(data.buffer, data.byteOffset, loader)) {
+      if (testBinary(data, loader)) {
         return loader;
       }
     }
@@ -100,7 +95,7 @@ function testText(data, loader) {
   return loader.testText && loader.testText(data);
 }
 
-function testBinary(data, byteOffset, loader) {
+function testBinary(data, loader) {
   const type = Array.isArray(loader.test) ? 'array' : typeof loader.test;
   switch (type) {
     case 'function':
@@ -110,7 +105,9 @@ function testBinary(data, byteOffset, loader) {
     case 'array':
       // Magic bytes check: If `loader.test` is a string or array of strings,
       // check if binary data starts with one of those strings
+      const byteOffset = 0;
       const tests = Array.isArray(loader.test) ? loader.test : [loader.test];
+
       return tests.some(test => {
         const magic = getMagicString(data, byteOffset, test.length);
         return test === magic;
