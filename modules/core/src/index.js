@@ -65,6 +65,8 @@ export {default as _WorkerThread} from './worker-utils/worker-thread';
 export {default as _WorkerFarm} from './worker-utils/worker-farm';
 export {default as _WorkerPool} from './worker-utils/worker-pool';
 
+export {default as _fetchProgress} from './lib/progress/fetch-progress';
+
 // FOR TESTING
 export {_unregisterLoaders} from './lib/register-loaders';
 
