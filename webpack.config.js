@@ -41,6 +41,7 @@ module.exports = (env = {}) => {
   return [
     config,
     // For worker tests
+    // Output bundles to root and can be loaded with `new Worker('/*.worker.js')`
     {
       mode: 'development',
       entry: {

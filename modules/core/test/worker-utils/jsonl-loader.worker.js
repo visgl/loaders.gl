@@ -1,3 +1,4 @@
+/* global self */
 import {createWorker} from '../../../loader-utils/src';
 
 createWorker({
@@ -15,7 +16,7 @@ createWorker({
         // handover the ownership of arrayBuffer to the child process
         const json = characters.slice(startIndex, i);
         if (json.length > 1) {
-          result.push(await options.JsonLoader.parse(json.buffer));
+          result.push(await self.parse(json.buffer, {}, 'line.json'));
         }
         startIndex = i + 1;
       }

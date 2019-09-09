@@ -1,7 +1,8 @@
 /* global Worker */
 import test from 'tape-catch';
 import {_WorkerThread, _WorkerPool, toArrayBuffer} from '@loaders.gl/core';
-import {parseWithLoader} from '@loaders.gl/core/lib/parse-with-loader';
+import parseWithWorker from '@loaders.gl/core/lib/parse-with-worker';
+import {registerLoaders, _unregisterLoaders} from '@loaders.gl/core/lib/register-loaders';
 
 const CHUNKS_TOTAL = 6;
 const MAX_CONCURRENCY = 3;
@@ -116,33 +117,26 @@ test('createWorker#nested', async t => {
     return;
   }
 
-  const callback = message =>
-    t.comment(`Processing with worker ${message.worker}, backlog ${message.backlog}`);
-
-  const workerPool = new _WorkerPool({
-    source: `url(./jsonl-loader.worker.js)`,
-    name: 'test-jsonl-loader',
-    parse: parseWithLoader,
-    maxConcurrency: MAX_CONCURRENCY,
-    onDebug: callback
-  });
+  registerLoaders(JsonWorkerLoader);
 
   const TEST_CASES = [[{chunk: 0}, {chunk: 1}, {chunk: 2}], [{chunk: 3}, {chunk: 4}]];
 
   const result = await Promise.all(
     TEST_CASES.map(testData =>
-      workerPool.process({
-        arraybuffer: toArrayBuffer(testData.map(JSON.stringify).join('\n')),
-        source: 'loaders.gl',
-        options: {
+      parseWithWorker(
+        `url(./jsonl-loader.worker.js)`,
+        'test-jsonl-loader',
+        toArrayBuffer(testData.map(JSON.stringify).join('\n')),
+        {
           JsonLoader: JsonWorkerLoader
         }
-      })
+      )
     )
   );
-  t.deepEquals(result[0], {type: 'done', result: TEST_CASES[0]}, 'worker returns expected result');
-  t.deepEquals(result[1], {type: 'done', result: TEST_CASES[1]}, 'worker returns expected result');
+  t.deepEquals(result[0], TEST_CASES[0], 'worker returns expected result');
+  t.deepEquals(result[1], TEST_CASES[1], 'worker returns expected result');
 
-  workerPool.destroy();
+  _unregisterLoaders();
+
   t.end();
 });

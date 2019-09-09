@@ -1,6 +1,5 @@
 /* global Worker, MessageChannel */
 import {getWorkerURL, getTransferList} from './worker-utils';
-import {isLoaderObject} from '../lib/loader-utils/normalize-loader';
 
 let count = 0;
 
@@ -12,10 +11,8 @@ export default class WorkerThread {
 
     if (parse) {
       const {port1, port2} = new MessageChannel();
-      port1.onmessage = async ({data}) => {
-        const loader = this.options[data.loader];
-        const result = await parse(data.arraybuffer, loader, data.options);
-        port1.postMessage(result, getTransferList(result));
+      port1.onmessage = ({data}) => {
+        parse(data).then(result => port1.postMessage(result, getTransferList(result)));
       };
       this.worker.postMessage({messagePort: port2}, [port2]);
     }
@@ -27,9 +24,6 @@ export default class WorkerThread {
    * @returns a Promise with data containing typed arrays transferred back from work
    */
   async process(data) {
-    this.options = data.options || {};
-    data.options = this._sanitizeOptions(data.options);
-
     return new Promise((resolve, reject) => {
       this.worker.onmessage = e => resolve(e.data);
       this.worker.onerror = error => reject(error);
@@ -41,17 +35,5 @@ export default class WorkerThread {
   destroy() {
     this.worker.terminate();
     this.worker = null;
-  }
-
-  _sanitizeOptions(options = {}) {
-    const result = {};
-    for (const key in options) {
-      let value = options[key];
-      if (isLoaderObject(value)) {
-        value = `loader#${key}`;
-      }
-      result[key] = value;
-    }
-    return result;
   }
 }

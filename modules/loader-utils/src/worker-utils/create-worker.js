@@ -9,13 +9,11 @@ export default function createWorker(loader) {
     return;
   }
 
-  let messagePort = null;
-
   self.onmessage = async evt => {
     const {data} = evt;
 
     if (data.messagePort) {
-      messagePort = data.messagePort;
+      self.parse = requestParse(data.messagePort);
       return;
     }
 
@@ -25,12 +23,6 @@ export default function createWorker(loader) {
       }
 
       const {arraybuffer, byteOffset = 0, byteLength = 0, options = {}} = evt.data;
-
-      for (const key in options) {
-        if (typeof options[key] === 'string' && options[key].startsWith('loader#')) {
-          options[key] = hydrateLoader(options[key].slice(7), messagePort);
-        }
-      }
 
       const result = await parseData(loader, arraybuffer, byteOffset, byteLength, options);
       const transferList = getTransferList(result);
@@ -75,17 +67,12 @@ function isKnownMessage(evt, name) {
   }
 }
 
-function hydrateLoader(name, messagePort) {
-  return {
-    name,
-    parse: (arraybuffer, options) =>
-      new Promise((resolve, reject) => {
-        messagePort.onmessage = e => resolve(e.data);
-        messagePort.postMessage({arraybuffer, options, loader: name, source: 'loaders.gl'}, [
-          arraybuffer
-        ]);
-      })
-  };
+function requestParse(messagePort) {
+  return (arraybuffer, options, url) =>
+    new Promise((resolve, reject) => {
+      messagePort.onmessage = e => resolve(e.data);
+      messagePort.postMessage({arraybuffer, options, url}, [arraybuffer]);
+    });
 }
 
 /*
