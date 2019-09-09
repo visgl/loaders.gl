@@ -11,13 +11,7 @@ import KML_SAMPLE from '@loaders.gl/kml/test/data/KML_Samples.kml';
 const DRACO_URL = '@loaders.gl/draco/test/data/bunny.drc';
 const TILE_3D_URL = '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudRGB/pointCloudRGB.pnts';
 
-test('parseSync#select-loader', async t => {
-  let response = await fetchFile(DRACO_URL);
-  const dracoData = await response.arrayBuffer();
-
-  response = await fetchFile(TILE_3D_URL);
-  const tileData = await response.arrayBuffer();
-
+test('selectLoader#urls', async t => {
   t.throws(() => selectLoader(null), 'selectedLoader throws if no loader found');
 
   t.equal(
@@ -35,6 +29,14 @@ test('parseSync#select-loader', async t => {
     () => selectLoader([Tile3DLoader, DracoLoader, LASLoader], 'data.obj', null),
     'find no loaders by url extension'
   );
+});
+
+test('selectLoader#data', async t => {
+  let response = await fetchFile(DRACO_URL);
+  const dracoData = await response.arrayBuffer();
+
+  response = await fetchFile(TILE_3D_URL);
+  const tileData = await response.arrayBuffer();
 
   t.is(
     selectLoader([Tile3DLoader, DracoLoader, LASLoader], null, dracoData),
@@ -61,6 +63,17 @@ test('parseSync#select-loader', async t => {
     'find loader by examining text data'
   );
   t.throws(() => selectLoader([KMLLoader], null, '{}'), 'find no loaders by examining text data');
+
+  // Create an ArrayBuffer with a byteOffset to the payload
+  const byteOffset = 10;
+  const offsetBuffer = new ArrayBuffer(tileData.byteLength + byteOffset);
+  const offsetArray = new Uint8Array(offsetBuffer, byteOffset);
+  offsetArray.set(new Uint8Array(tileData));
+  t.is(
+    selectLoader([Tile3DLoader], null, offsetArray),
+    Tile3DLoader,
+    'find loader by checking magic string in embedded tile data (with offset)'
+  );
 
   t.end();
 });
