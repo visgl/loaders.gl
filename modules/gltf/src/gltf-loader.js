@@ -19,8 +19,7 @@ export async function parse(arrayBuffer, options = {}) {
   // Return pure javascript object
   const {byteOffset = 0} = options;
   const gltf = {};
-  await parseGLTF(gltf, arrayBuffer, byteOffset, options);
-  return gltf;
+  return await parseGLTF(gltf, arrayBuffer, byteOffset, options);
 }
 
 export function parseSync(arrayBuffer, options = {}) {
@@ -35,8 +34,7 @@ export function parseSync(arrayBuffer, options = {}) {
   // Return pure javascript object
   const {byteOffset = 0} = options;
   const gltf = {};
-  parseGLTFSync(gltf, arrayBuffer, byteOffset, options);
-  return gltf;
+  return parseGLTFSync(gltf, arrayBuffer, byteOffset, options);
 }
 
 export default {

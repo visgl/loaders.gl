@@ -3,32 +3,18 @@
 import {fetchFile} from '@loaders.gl/core';
 import assert from './utils/assert';
 import {getFullUri} from './gltf-utils/gltf-utils';
+import {decodeExtensions, decodeExtensionsSync} from './extensions/extensions';
 import parseGLBSync, {isGLB} from './parse-glb';
-import * as EXTENSIONS from './extensions';
+import postProcessGLTF from './post-process-gltf';
 
-// import {getGLTFAccessors, getGLTFAccessor} from './gltf-attribute-utils';
-// import {
-//   ATTRIBUTE_TYPE_TO_COMPONENTS,
-//   ATTRIBUTE_COMPONENT_TYPE_TO_BYTE_SIZE,
-//   ATTRIBUTE_COMPONENT_TYPE_TO_ARRAY
-// } from '../gltf/gltf-utils';
-
-const DEFAULT_SYNC_OPTIONS = {
-  fetchLinkedResources: false, // Fetch any linked .BIN buffers, decode base64
-  decompress: false, // Decompress Draco compressed meshes (if DracoLoader available)
-  DracoLoader: null,
-  postProcess: true,
-  createImages: false, // Create image objects
-  log: console // eslint-disable-line
-};
-
-const DEFAULT_ASYNC_OPTIONS = {
+const DEFAULT_OPTIONS = {
   fetchLinkedResources: true, // Fetch any linked .BIN buffers, decode base64
+  fetchImages: false, // Fetch any linked .BIN buffers, decode base64
+  createImages: false, // Create image objects
   fetch: fetchFile,
   decompress: false, // Decompress Draco compressed meshes (if DracoLoader available)
   DracoLoader: null,
-  postProcess: true,
-  createImages: false, // Create image objects
+  postProcess: false,
   log: console // eslint-disable-line
 };
 
@@ -38,99 +24,183 @@ export function isGLTF(arrayBuffer, options = {}) {
   return isGLB(dataView, byteOffset);
 }
 
+export async function parseGLTF(gltf, arrayBufferOrString, byteOffset = 0, options = {}) {
+  options = {...DEFAULT_OPTIONS, ...options};
+
+  parseGLTFContainerSync(gltf, arrayBufferOrString, byteOffset, options);
+
+  const promises = [];
+
+  if (options.fetchImages) {
+    const promise = fetchImages(gltf, options);
+    promises.push(promise);
+  }
+
+  // Load linked buffers asynchronously and decodes base64 buffers in parallel
+  if (options.fetchLinkedResources) {
+    await fetchBuffers(gltf, options);
+  }
+
+  const promise = decodeExtensions(gltf, options);
+  promises.push(promise);
+
+  // Parallelize image loading and buffer loading/extension decoding
+  await Promise.all(promises);
+
+  // Post processing resolves indices to objects, buffers
+  return options.postProcess ? postProcessGLTF(gltf, options) : gltf;
+}
+
 // NOTE: The sync parser cannot handle linked assets or base64 encoded resources
 // gtlf - input can be arrayBuffer (GLB or UTF8 encoded JSON), string (JSON), or parsed JSON.
+// eslint-disable-next-line complexity
 export function parseGLTFSync(gltf, arrayBufferOrString, byteOffset = 0, options = {}) {
-  options = Object.assign({}, DEFAULT_SYNC_OPTIONS, options);
+  options = {...DEFAULT_OPTIONS, ...options};
 
-  let data = arrayBufferOrString;
+  parseGLTFContainerSync(gltf, arrayBufferOrString, byteOffset, options);
 
-  // If binary is not starting with magic bytes, assume JSON and convert to string
+  // TODO: we could synchronously decode base64 encoded data URIs in this non-async path
+  if (options.fetchLinkedResources) {
+    fetchBuffersSync(gltf, options);
+  }
+
+  // Whether this is possible can depends on whether sync loaders are registered
+  // e.g. the `DracoWorkerLoader` cannot be called synchronously
+  if (options.decodeExtensions) {
+    decodeExtensionsSync(gltf, options);
+  }
+
+  // Post processing resolves indices to objects, buffers
+  return options.postProcess ? postProcessGLTF(gltf, options) : gltf;
+}
+
+// `data` - can be ArrayBuffer (GLB), ArrayBuffer (Binary JSON), String (JSON), or Object (parsed JSON)
+function parseGLTFContainerSync(gltf, data, byteOffset, options) {
+  // Initialize gltf container
+  if (options.uri) {
+    gltf.baseUri = options.uri;
+  }
+
+  // If data is binary and starting with magic bytes, assume binary JSON text, convert to string
   if (data instanceof ArrayBuffer && !isGLB(data, byteOffset, options)) {
     const textDecoder = new TextDecoder();
     data = textDecoder.decode(data);
   }
 
-  gltf.buffers = [];
-
-  // If string, try to parse as JSON
   if (typeof data === 'string') {
+    // If string, try to parse as JSON
     gltf.json = JSON.parse(data);
   } else if (data instanceof ArrayBuffer) {
-    // Populates JSON and some bin chunk info
-    byteOffset = parseGLBSync(gltf, data, byteOffset, options);
-
-    if (gltf.hasBinChunk) {
-      gltf.buffers.push({
-        arrayBuffer: data,
-        byteOffset: gltf.binChunkByteOffset,
-        byteLength: gltf.binChunkLength
-      });
-    }
+    // If still ArrayBuffer, parse as GLB container
+    gltf._glb = {};
+    byteOffset = parseGLBSync(gltf._glb, data, byteOffset, options);
+    gltf.json = gltf._glb.json;
   } else {
-    // Assume parsed JSON
+    // Assume input is already parsed JSON
+    // TODO - should we throw instead?
     gltf.json = data;
   }
 
-  if (options.uri) {
-    gltf.baseUri = options.uri;
+  // Populate buffers
+  // Create an external buffers array to hold binary data
+  const buffers = gltf.json.buffers || [];
+  gltf.buffers = new Array(buffers.length).fill({});
+
+  // Populates JSON and some bin chunk info
+  if (gltf._glb && gltf._glb.hasBinChunk) {
+    gltf.buffers[0] = {
+      // TODO - standardize on `arrayBuffer`
+      arrayBuffer: gltf._glb.binChunks[0].arrayBuffer,
+      byteOffset: gltf._glb.binChunks[0].byteOffset,
+      byteLength: gltf._glb.binChunks[0].byteLength
+    };
+
+    gltf.json.buffers[0].data = gltf.buffers[0].arrayBuffer;
+    gltf.json.buffers[0].byteOffset = gltf.buffers[0].byteOffset;
   }
 
-  // TODO: we could synchronously decode base64 encoded URIs in the non-async path
-  if (options.fetchLinkedResources) {
-    for (const buffer of gltf.json.buffers || []) {
-      if (buffer.uri) {
-        throw new Error('parseGLTFSync: Cannot decode uri buffers');
-      }
-    }
-  }
-
-  decodeExtensions(gltf, options);
-
-  return byteOffset;
+  // Populate images
+  const images = gltf.json.images || [];
+  gltf.images = new Array(images.length).fill({});
 }
 
-export async function parseGLTF(gltf, arrayBufferOrString, byteOffset = 0, options = {}) {
-  options = Object.assign({}, DEFAULT_ASYNC_OPTIONS, options);
-
-  // Postpone decompressing/postprocessing to make sure we load any linked files first
-  // TODO - is this really needed?
-  parseGLTFSync(gltf, arrayBufferOrString, byteOffset, {
-    ...options,
-    fetchLinkedResources: false, // We'll handle it if needed
-    postProcess: false, // We'll handle it if needed
-    decompress: false // We'll handle it if needed
-  });
-
-  // Load linked buffers asynchronously and decodes base64 buffers in parallel
-  if (options.fetchLinkedResources) {
-    await fetchLinkedResources(gltf, options);
-  }
-
-  return gltf;
-}
-
-async function fetchLinkedResources(gltf, options) {
-  for (const buffer of gltf.json.buffers) {
+// Asynchronously fetch and parse buffers, store in buffers array outside of json
+async function fetchBuffers(gltf, options) {
+  for (let i = 0; i < gltf.json.buffers.length; ++i) {
+    const buffer = gltf.json.buffers[i];
     if (buffer.uri) {
       const fetch = options.fetch || window.fetch;
       assert(fetch);
       const uri = getFullUri(buffer.uri, options.uri);
       const response = await fetch(uri);
       const arrayBuffer = await response.arrayBuffer();
-      buffer.data = arrayBuffer;
+
+      gltf.buffers[i] = {
+        arrayBuffer,
+        byteOffset: 0,
+        byteLength: arrayBuffer.byteLength
+      };
+
       delete buffer.uri;
     }
   }
 }
 
-// TODO - async decoding for Draco
-function decodeExtensions(gltf, options) {
-  for (const extensionName in EXTENSIONS) {
-    const disableExtension = extensionName in options && !options[extensionName];
-    if (!disableExtension) {
-      const extension = EXTENSIONS[extensionName];
-      extension.decode(gltf, options);
+function fetchBuffersSync(gltf, options) {
+  for (const buffer of gltf.json.buffers || []) {
+    if (buffer.uri) {
+      throw new Error('parseGLTFSync: Cannot decode uri buffers');
     }
   }
+}
+
+async function fetchImages(gltf, options) {
+  const images = gltf.json.images || [];
+
+  const promises = [];
+  for (let i = 0; i < images.length; ++i) {
+    const image = images[i];
+    if ('uri' in image) {
+      promises.push(fetchAndParseLinkedImage(gltf, image, i, options));
+    }
+  }
+  return await Promise.all(promises);
+}
+
+// Asynchronously fetches and parses one image, store in images array outside of json
+async function fetchAndParseLinkedImage(gltf, image, i, options) {
+  const fetch = options.fetch || window.fetch;
+  assert(fetch);
+
+  /*
+  if (image.bufferView) {
+    gltf.images[i] = await new Promise(resolve => {
+      const arrayBufferView = this.getBufferView(image.bufferView);
+      const mimeType = image.mimeType || 'image/jpeg';
+      const blob = new Blob([arrayBufferView], { type: mimeType });
+      const urlCreator = self.URL || self.webkitURL;
+      const imageUrl = urlCreator.createObjectURL(blob);
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.src = imageUrl;
+    });
+  }
+  */
+
+  const uri = getFullUri(image.uri, options.uri);
+
+  // TODO - Call `parse` and use registered image loaders?
+  // const response = await fetch(uri);
+  // const arrayBuffer = await response.arrayBuffer();
+  // Create a new 'buffer' to hold the arrayBuffer?
+  // const image = parse(arrayBuffer);
+
+  gltf.images[i] = await new Promise((resolve, reject) => {
+    /* global Image */
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = error => reject(error);
+    img.src = uri;
+  });
 }

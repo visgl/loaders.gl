@@ -32,6 +32,8 @@ const arrayBuffer = encodeSync(gltf, GLBWriter, options);
 
 ## Data Format
 
+See `GLBLoader`.
+
 | Field     | Type          | Default   | Description        |
 | ---       | ---           | ---       | ---                |
 | `magic`   | `Number`      | glTF      | The first four bytes of the file |
