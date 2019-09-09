@@ -18,7 +18,7 @@ import ControlPanel from './components/control-panel';
 import fileDrop from './components/file-drop';
 
 import {loadExampleIndex} from './examples';
-import { registerLoaders } from '@loaders.gl/core';
+import {registerLoaders} from '@loaders.gl/core';
 
 const INITIAL_EXAMPLE_CATEGORY = 'ion';
 const INITIAL_EXAMPLE_NAME = 'Mount St Helens (PointCloud)';

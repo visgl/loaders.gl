@@ -19,7 +19,7 @@ test('GLTFLoader#parseSync(text/JSON)', async t => {
   const data = await response.text();
 
   t.throws(
-    () => parseSync(data, GLTFLoader, { gltf: { parserVersion: 2 } }),
+    () => parseSync(data, GLTFLoader, {gltf: {parserVersion: 2}}),
     'GLTFLoader throws when synchronously parsing gltfs with base64 buffers'
   );
 
