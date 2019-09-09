@@ -15,7 +15,7 @@ test('selectLoader#urls', async t => {
   t.throws(() => selectLoader(null), 'selectedLoader throws if no loader found');
 
   t.equal(
-    selectLoader(null, '.', null, { nothrow: true }),
+    selectLoader(null, '.', null, {nothrow: true}),
     null,
     'selectedLoader({nothrow: true}) returns null instead of throwing'
   );
@@ -65,7 +65,7 @@ test('selectLoader#data', async t => {
   t.throws(() => selectLoader([KMLLoader], null, '{}'), 'find no loaders by examining text data');
 
   // Create an ArrayBuffer with a byteOffset to the payload
-  const byteOffset = 10
+  const byteOffset = 10;
   const offsetBuffer = new ArrayBuffer(tileData.byteLength + byteOffset);
   const offsetArray = new Uint8Array(offsetBuffer, byteOffset);
   offsetArray.set(new Uint8Array(tileData));
