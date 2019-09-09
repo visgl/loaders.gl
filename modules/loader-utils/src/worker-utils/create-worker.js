@@ -12,17 +12,12 @@ export default function createWorker(loader) {
   self.onmessage = async evt => {
     const {data} = evt;
 
-    if (data.messagePort) {
-      self.parse = requestParse(data.messagePort);
-      return;
-    }
-
     try {
-      if (!isKnownMessage(evt, loader.name)) {
+      if (!isKnownMessage(data, loader.name)) {
         return;
       }
 
-      const {arraybuffer, byteOffset = 0, byteLength = 0, options = {}} = evt.data;
+      const {arraybuffer, byteOffset = 0, byteLength = 0, options = {}} = data;
 
       const result = await parseData(loader, arraybuffer, byteOffset, byteLength, options);
       const transferList = getTransferList(result);
@@ -31,6 +26,36 @@ export default function createWorker(loader) {
       self.postMessage({type: 'error', message: error.message});
     }
   };
+
+  let requestId = 0;
+  self.parse = (arraybuffer, options = {}, url) =>
+    new Promise((resolve, reject) => {
+      const id = requestId++;
+
+      const onMessage = ({data}) => {
+        if (!data || data.id !== id) {
+          // not ours
+          return;
+        }
+        switch (data.type) {
+          case 'process-done':
+            self.removeEventListener('message', onMessage);
+            resolve(data.result);
+            break;
+
+          case 'process-error':
+            self.removeEventListener('message', onMessage);
+            reject(data.message);
+            break;
+
+          default:
+          // ignore
+        }
+      };
+      self.addEventListener('message', onMessage);
+      // Ask the main thread to decode data
+      self.postMessage({type: 'process', id, arraybuffer, options, url}, [arraybuffer]);
+    });
 }
 
 // TODO - Support byteOffset and byteLength (enabling parsing of embedded binaries without copies)
@@ -55,24 +80,8 @@ async function parseData(loader, arraybuffer, byteOffset, byteLength, options) {
 }
 
 // Filter out noise messages sent to workers
-function isKnownMessage(evt, name) {
-  switch (evt.data && evt.data.source) {
-    case 'loaders.gl':
-      return true;
-
-    default:
-      // Uncomment to debug incoming messages
-      // checkMessage(evt, name)
-      return false;
-  }
-}
-
-function requestParse(messagePort) {
-  return (arraybuffer, options, url) =>
-    new Promise((resolve, reject) => {
-      messagePort.onmessage = e => resolve(e.data);
-      messagePort.postMessage({arraybuffer, options, url}, [arraybuffer]);
-    });
+function isKnownMessage(data, name) {
+  return data && data.type === 'process' && data.source === 'loaders.gl';
 }
 
 /*

@@ -93,6 +93,7 @@ test('createWorker', async t => {
     TEST_CASES.map(testData =>
       workerPool.process({
         arraybuffer: toArrayBuffer(JSON.stringify(testData)),
+        type: 'process',
         source: 'loaders.gl'
       })
     )
