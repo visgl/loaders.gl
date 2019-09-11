@@ -12,32 +12,12 @@ console.log(`Maximum building height: ${tileset.properties.height.maximum}`);
 console.log(`Minimum building height: ${tileset.properties.height.minimum}`);
 ```
 
-Common setting for the skipLevelOfDetail optimization
-
 ```js
 import {Tileset3D} from '^loaders.gl/3d-tiles';
 const tileset = new Tileset3D({
   url: 'http://localhost:8002/tilesets/Seattle/tileset.json',
-  skipLevelOfDetail: true,
   baseScreenSpaceError: 1024,
-  skipScreenSpaceErrorFactor: 16,
-  skipLevels: 1,
-  immediatelyLoadDesiredLevelOfDetail: false,
-  loadSiblings: false,
-  cullWithChildrenBounds: true
-});
-```
-
-Common settings for the dynamicScreenSpaceError optimization
-
-```js
-import {Tileset3D} from '^loaders.gl/3d-tiles';
-const tileset = new Tileset3D({
-  url: 'http://localhost:8002/tilesets/Seattle/tileset.json',
-  dynamicScreenSpaceError: true,
-  dynamicScreenSpaceErrorDensity: 0.00278,
-  dynamicScreenSpaceErrorFactor: 4.0,
-  dynamicScreenSpaceErrorHeightFalloff: 0.25
+  skipScreenSpaceErrorFactor: 16
 });
 ```
 
@@ -80,14 +60,6 @@ tileset.readyPromise.then(function(tileset) {
     }
 });
 ```
-
-### tilesLoaded : boolean (readonly)
-
-When `true`, all tiles that meet the screen space error this frame are loaded. The tileset is
-completely loaded for this view.
-
-See Tileset3D#allTilesLoaded
-
 
 ### url : String (readonly)
 
@@ -278,19 +250,12 @@ Notes:
 - `options.modelMatrix`=`Matrix4.IDENTITY` (`Matrix4`) - A 4x4 transformation matrix that transforms the tileset's root tile.
 - `options.maximumScreenSpaceError`=`16`] (`Number`) - The maximum screen space error used to drive level of detail refinement.
 - `options.maximumMemoryUsage`=`512`] (`Number`) - The maximum amount of memory in MB that can be used by the tileset.
-- `options.cullWithChildrenBounds`=`true`] (`Boolean`) - Optimization option. Whether to cull tiles using the union of their children bounding volumes.
 - `options.dynamicScreenSpaceError`=`false`] (`Boolean`) - Optimization option. Reduce the screen space error for tiles that are further away from the camera.
 - `options.dynamicScreenSpaceErrorDensity`=`0.00278`] (`Number`) - Density used to adjust the dynamic screen space error, similar to fog density.
 - `options.dynamicScreenSpaceErrorFactor`=`4.0`] (`Number`) - A factor used to increase the computed dynamic screen space error.
-- `options.dynamicScreenSpaceErrorHeightFalloff`=`0.25` (`Number`) - A ratio of the tileset's height at which the density starts to falloff.
 - `options.skipLevelOfDetail`=`true` (`Boolean`) - Optimization option. Determines if level of detail skipping should be applied during the traversal.
 - `options.baseScreenSpaceError`=`1024` (`Number`) - When `skipLevelOfDetail` is `true`, the screen space error that must be reached before skipping levels of detail.
-- `options.skipScreenSpaceErrorFactor`=`16` (`Number`) - When `skipLevelOfDetail` is `true`, a multiplier defining the minimum screen space error to skip. Used in conjunction with `skipLevels` to determine which tiles to load.
-- `options.skipLevels`=`1` (`Number`) - When `skipLevelOfDetail` is `true`, a constant defining the minimum number of levels to skip when loading tiles. When it is 0, no levels are skipped. Used in conjunction with `skipScreenSpaceErrorFactor` to determine which tiles to load.
-- `options.immediatelyLoadDesiredLevelOfDetail`=`false` (`Boolean`) - When `skipLevelOfDetail` is `true`, only tiles that meet the maximum screen space error will ever be downloaded. Skipping factors are ignored and just the desired tiles are loaded.
-- `options.loadSiblings`=`false` (`Boolean`) - When `skipLevelOfDetail` is `true`, determines whether siblings of visible tiles are always downloaded during traversal.
 - `options.ellipsoid`=`Ellipsoid.WGS84` (`Ellipsoid`) - The ellipsoid determining the size and shape of the globe.
-- `options.classificationType` (`ClassificationType`) - Determines whether terrain, 3D Tiles or both will be classified by this tileset. See (`Tileset3D#classificationType`) for details about restrictions and limitations.
 
 Callbacks
 - `options.onTileLoad` (`void(tileHeader)`) -
@@ -328,71 +293,44 @@ It is analogous to moving fog closer to the camera.
 A factor used to increase the screen space error of tiles for dynamic screen space error. As this value increases less tiles
 are requested for rendering and tiles in the distance will have lower detail. If set to zero, the feature will be disabled.
 
-### dynamicScreenSpaceErrorHeightFalloff
+### onTileLoad(tileHeader : Tile3DHeader) : void
 
-= 0.25;
+Indicate ssthat a tile's content was loaded.
 
-A ratio of the tileset's height at which the density starts to falloff. If the camera is below this height the
-full computed density is applied, otherwise the density falls off. This has the effect of higher density at
-street level views.
-
-
-Valid values are between 0.0 and 1.0.
-
-### onTileLoad(tileHeader)
-
-The event fired to indicate progress of loading new tiles.  This event is fired when a new tile
-is requested, when a requested tile is finished downloading, and when a downloaded tile has been
-processed and is ready to render.
-
-The number of pending tile requests, `numberOfPendingRequests`, and number of tiles
-processing, `numberOfTilesProcessing` are passed to the event listener.
-
-This event is fired at the end of the frame after the scene is rendered.
-
-```js
-tileset.loadProgress.addEventListener(function(numberOfPendingRequests, numberOfTilesProcessing) {
-    if ((numberOfPendingRequests === 0) && (numberOfTilesProcessing === 0)) {
-        console.log('Stopped loading');
-        return;
-    }
-    console.log('Loading: requests: ' + numberOfPendingRequests + ', processing: ' + numberOfTilesProcessing);
-});
-```
-
-The event fired to indicate that a tile's content was loaded.
-
-The loaded `Tile3D` is passed to the event listener.
+The loaded `Tile3DHeader` is passed to the event listener.
 
 This event is fired during the tileset traversal while the frame is being rendered
 so that updates to the tile take effect in the same frame.  Do not create or modify
 entities or primitives during the event listener.
 
 ```js
-    tileset.tileLoad.addEventListener(function(tile) {
-        console.log('A tile was loaded.');
-    });
+  new Tileset3D({
+    onTileLoad(tileHeader => console.log('A tile was loaded.'));
+  });
 ```
 
-### onTileUnload(tileHeader)
+### onTileUnload(tileHeader : Tile3DHeader) : void
 
-The event fired to indicate that a tile's content was unloaded.
+Indicates that a tile's content was unloaded.
 
-The unloaded `Tile3D` is passed to the event listener.
+The unloaded `Tile3DHeaders` is passed to the event listener.
 
 This event is fired immediately before the tile's content is unloaded while the frame is being
 rendered so that the event listener has access to the tile's content.  Do not create
 or modify entities or primitives during the event listener.
 
 ```js
-tileset.tileUnload.addEventListener(tile =>  console.log('A tile was unloaded from the cache.'));
+  new Tileset3D({
+    onTileUnload(tile =>  console.log('A tile was unloaded from the cache.'));
+  });
 ```
- *
-see Tileset3D#maximumMemoryUsage
-see Tileset3D#trimLoadedTiles
+
+See
+- Tileset3D#maximumMemoryUsage
+- Tileset3D#trimLoadedTiles
 
 
-### onTileLoadFail(tileHeader)
+### onTileLoadFail(tileHeader : Tile3DHeader) : void
 
 Called to indicate that a tile's content failed to load. By default, error messages will be logged to the console.
 
@@ -401,26 +339,12 @@ The error object passed to the listener contains two properties:
 - `message`: the error message.
 
 ```js
-onTileFailed(tileHeader, url, message) {
-  console.log('An error occurred loading tile: ', url);
-  console.log('Error: ', message);
-}
-```
-
-This event fires once for each visible tile in a frame.  This can be used to manually style a tileset.
-
-The visible 3DTile is passed to the event listener.
-
-This event is fired during the tileset traversal while the frame is being rendered
-so that updates to the tile take effect in the same frame.  Do not create or modify
-entities or primitives during the event listener.
-
-```js
-onTileVisible(tile) {
-  if (tile.content instanceof Batched3DModel3DTileContent) {
-    console.log('A Batched 3D Model tile is visible.');
-  }
-});
+  new Tileset3D({
+    onTileFailed(tileHeader, url, message) {
+      console.log('An error occurred loading tile: ', url);
+      console.log('Error: ', message);
+    }
+  });
 ```
 
 ### skipLevelOfDetail : Boolean

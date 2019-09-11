@@ -4,14 +4,23 @@
 
 Target Release Date: Sep 13
 
-- `@loaders.gl/core` Worker Thread Pool - reuse workers, avoiding worker startup overhead
+- `@loaders.gl/core`: **Worker Thread Pool**
+    - Reuses workers. Performance gains by avoiding worker startup overhead.
+    - Worker threads are named, easy to track in debugger
+    - Worker based loaders can now call `parse` recursively to parse embedded data
 
-**Improved Format Auto-Discovery** - Each loader can optionally expose a test function that can examine the "head" of a file to test if it is likely to be in a format this loader will be able to parse.
+- `@loaders.gl/core`: **Improved Format Auto-Discovery**
+    - The loader selection mechanism is now exposed to apps through the new `selectLoader` API.
+    - Loaders can now examine the first bytes of a file
+    - This complements the existing URL extension based auto detection mechanisms.
 
-### @loaders.gl/3d-tiles (EXPERIMENTAL)
+- `@loaders.gl/3d-tiles`: **RequestScheduler**
+    - Cancels loads for not-yet loaded tiles that are no longer in view)
+    - Dramatically improves loading performance when panning/zooming through a tileset
 
-- `RequestScheduler` (cancels loads for not-yet loaded tiles that are no longer in view)
-**Automatic Timing** - objects returned from loaders could contain a `stats` object with timing stats.
+- `@loaders.gl/3d-tiles`: **Automatic Timing**
+    - `Tileset3D` now contain a `stats` object with stats on the loading process.
+
 
 ## v1.2
 

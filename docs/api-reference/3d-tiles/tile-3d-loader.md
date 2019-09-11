@@ -35,11 +35,20 @@ const gltf = await load(url, Tile3DLoader, {DracoLoader, decompress: true});
 
 ## Options
 
+Point cloud options
+
 | Option        | Type      | Default     | Description       |
 | ------------- | --------- | ----------- | ----------------- |
+| `DracoLoader`        | [DracoLoader](/docs/api-reference/draco/draco-loader)  | `null`      |
+
+
+glTF tile options
+
+| Option        | Type      | Default     | Description       |
+| ------------- | --------- | ----------- | ----------------- |
+| `DracoLoader`        | [DracoLoader](/docs/api-reference/draco/draco-loader)  | `null`      | Supply to enable decoding of Draco compressed meshes. |
 | `fetchLinkedResources` | Boolean | `true`      | Fetch any linked .BIN files, decode base64 encoded URIS. Only supported in asynchronous parsing. |
 | `fetch`              | Function  | `fetch` | Function used to fetch linked resources. |
 | `decompress`         | Boolean | `true`      | Decompress Draco compressed meshes (if DracoLoader available). |
-| `DracoLoader`        | [DracoLoader](/docs/api-reference/draco/draco-loader)  | `null`      | Supply to enable decoding of Draco compressed meshes. |
 | `postProcess`        | Boolean | `false`     | Perform additional post processing to simplify use in WebGL libraries. |
 | `createImages`       | Boolean  | `false`     | Create image objects from loaded image data. |
