@@ -12,14 +12,13 @@ yarn add @loaders.gl/gltf
 ...
 ```
 
-## Using
+## Usage
 
 You can import a loader and use it directly with `parse`. Note that `parse` can accept a `fetch` response object as the source of data to be parsed:
 
 ```js
 import {parse} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/csv';
-
 const data = await parse(fetch('data.csv'), CSVLoader);
 ```
 
@@ -28,7 +27,6 @@ You can register loaders after importing them
 ```js
 import {registerLoaders} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/csv';
-
 registerLoaders(CSVLoader);
 ```
 

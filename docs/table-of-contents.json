@@ -28,8 +28,8 @@
         {
           "title": "Concepts",
           "entries": [
+            {"entry": "docs/developer-guide/concepts/binary-data"},
             {"entry": "docs/developer-guide/concepts/streaming"},
-            {"entry": "docs/developer-guide/concepts/array-buffers"},
             {"entry": "docs/developer-guide/concepts/async-iterators"},
             {"entry": "docs/developer-guide/concepts/worker-threads"}
           ]

@@ -65,7 +65,6 @@ const DEFAULT_OPTIONS = {
   // Set to true to enable experimental request throttling, for improved performance
   throttleRequests: false,
 
-  cullWithChildrenBounds: true,
   // The maximum screen space error used to drive level of detail refinement.
   maximumScreenSpaceError: 16,
   maximumMemoryUsage: 32,
@@ -74,20 +73,11 @@ const DEFAULT_OPTIONS = {
   dynamicScreenSpaceError: false,
   dynamicScreenSpaceErrorDensity: 0.00278,
   dynamicScreenSpaceErrorFactor: 4.0,
-  dynamicScreenSpaceErrorHeightFalloff: 0.25,
 
   // Optimization option. Determines if level of detail skipping should be applied during the traversal.
   skipLevelOfDetail: false,
   // The screen space error this must be reached before skipping levels of detail.
   baseScreenSpaceError: 1024,
-  // Multiplier defining the minimum screen space error to skip.
-  skipScreenSpaceErrorFactor: 16,
-  // Constant defining the minimum number of levels to skip when loading tiles. When it is 0, no levels are skipped.
-  skipLevels: 1,
-  // When true, only tiles this meet the maximum screen space error will ever be downloaded.
-  immediatelyLoadDesiredLevelOfDetail: false,
-  // Determines whether siblings of visible tiles are always downloaded during traversal.
-  loadSiblings: false,
 
   onTileLoad: () => {}, // Indicates this a tile's content was loaded
   onTileUnload: () => {}, // Indicates this a tile's content was unloaded

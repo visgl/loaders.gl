@@ -7,46 +7,56 @@ We are trying to make the loaders.gl roadmap as public as possible. We share inf
 - **[Blog](https://medium.com/@vis.gl)** - We use the vis.gl blog to share information about what we are doing.
 - **[Github Issues](https://github.com/uber-web/loaders.gl/issues)** - The traditional way to start or join a discussion.
 
+
 ## Feature Roadmap
 
-**Off-thread parsing support** - Off thread parsing is an obvious optimization however it has some major complications that often eat up any performance gains: and serialization/deserialization overhead. loaders.gl is designed to avoid serialization through direct transfer of typed arrays.
+Many ideas are in tracker tasks in github, but here are some ideas:
 
-**Loader Worker Thread Pool** - Another performance "killer" for worker threads is multi-second startup time. loaders.gl exports an optional "loader worker manager" class that can help keep a loader thread pool loaded and primed and ready to start off-thread parsing as soon as data arrives on the wire.
+**Worker Thread Pool Priming** - Worker Pools should have an option to pre-warm so that loader thread pool is primed and ready to start off-thread parsing as soon as data arrives on the wire.
 
-**Progress Tracking** - loaders can provide progress callbacks and a `ProgressTracker` class is provided to track the progress of a set of parallel loads.
-
-**Improved Format Auto-Discovery** - Each loader can optionally expose a test function that can examine the "head" of a file to test if it is likely to be in a format this loader will be able to parse.
+**Progress Tracking** - loaders can provide progress callbacks and a `ProgressTracker` class to track the progress of a set of parallel loads.
 
 **Automatic Timing** - objects returned from loaders could contain a `stats` object with timing stats.
 
-**Default Settings** - Set `setDefaultOptions({stats: true})` to enable stats collection, etc.
+**Stats and Default Settings** - Set `setDefaultOptions({stats: true})` to enable stats collection, etc.
 
 **MIME types** - Allow MIME types (e.g. from response headers) to be provided to assist in loader auto-selection. Enable Writers to return recommended MIMEtypes.
 
 
 ## Format Roadmap
 
+### Data loaders
+
+- Streaming JSON loader
+
+### Geospatial loaders
+
+Focus on loading of complex geospatial data.
+- KML and Shapefile
+- Streaming GeoJSON loader
+
 ### Scenegraph Formats
 
-- We expect loaders.gl to have very solid ("reference caliber") glTF/GLB implementation.
-- Support for glTF extensions that can be handled during the load phase (many can only be handled during rendering).
-- Given the emergence of glTF as a major Khronos standard, and availability of good glTF conversion tools and exporters, we will most likely not implement any other scene/mesh description formats such as COLLADA.
-
-### Point Clouds
-
-Still, for special data sets such as large point clouds or complex geospatial data, the need for special formats for (e.g. compactness or expressivity) is unchanged, so this is the direction we expect most new loaders.gl loaders to focus on.
+- Focus on glTF/GLB - loaders.gl should to have a very solid implementation.
+- The glTF loaders should handle (e.g. preprocess) any glTF extensions that can be handled during the load phase (such as Draco, Basis - but many can only be handled during rendering).
+- Limited alternatives: Given the emergence of glTF as a major Khronos standard, and availability of good glTF conversion tools and exporters, loaders will most likely not implement any other scene/mesh description formats such as COLLADA.
 
 ### Meshes
 
-- Currently no support beyond OBJ.
+- Given glTF, do not envision support beyond OBJ.
 - For OBJ, should we support MTL?
+
+### Point Clouds
+
+Focus on loading formats for large point clouds.
 
 ### Massive Point Clouds/Data Sets
 
-* 3D Tiles
-* potree?
+- 3D Tiles
+- potree
+- i3s
 
-These critically need to include traversal and tile loading caches
+Tile parsers are not enough, the 3d tiles category will need to include advanced traversal and tile loading caches
 
 ### Other loaders
 

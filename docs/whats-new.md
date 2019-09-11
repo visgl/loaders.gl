@@ -1,6 +1,28 @@
 # What's New
 
-## v1.2 (In Development, alpha/beta releases available)
+## v1.3 (In Development, alpha/beta releases will soon become available)
+
+Target Release Date: Sep 13
+
+- `@loaders.gl/core`: **Worker Thread Pool**
+    - Reuses workers. Performance gains by avoiding worker startup overhead.
+    - Worker threads are named, easy to track in debugger
+    - Worker based loaders can now call `parse` recursively to parse embedded data
+
+- `@loaders.gl/core`: **Improved Format Auto-Discovery**
+    - The loader selection mechanism is now exposed to apps through the new `selectLoader` API.
+    - Loaders can now examine the first bytes of a file
+    - This complements the existing URL extension based auto detection mechanisms.
+
+- `@loaders.gl/3d-tiles`: **RequestScheduler**
+    - Cancels loads for not-yet loaded tiles that are no longer in view)
+    - Dramatically improves loading performance when panning/zooming through a tileset
+
+- `@loaders.gl/3d-tiles`: **Automatic Timing**
+    - `Tileset3D` now contain a `stats` object with stats on the loading process.
+
+
+## v1.2
 
 Release Date: Aug 8, 2019
 
@@ -10,7 +32,7 @@ Release Date: Aug 8, 2019
 - `@loaders.gl/images`: Image file extensions now added to loader object
 - `@loaders.gl/gltf`: Generate default sampler parameters if none provided in gltf file
 
-### @loaders.gl/3d-tiles <sup>EXPERIMENTAL</sup>
+### @loaders.gl/3d-tiles (EXPERIMENTAL)
 
 - Support for dynamic traversal of 3D tilesets (automatically loads and unloads tiles based on viewer position and view frustum).
 - Support for loading tilesets from Cesium ION servers.
