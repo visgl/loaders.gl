@@ -40,6 +40,7 @@ export default class NodeFetchResponse {
 
   get headers() {
     this._headers = this._headers || this._getHeaders();
+    return this._headers;
   }
 
   // Returns a readable stream to the "body" of the response (or file)

@@ -4,6 +4,7 @@ import './worker-utils';
 
 import './lib/fetch';
 import './lib/loader-utils';
+import './lib/progress/fetch-progress.spec';
 
 import './lib/parse.spec';
 import './lib/load.spec';
