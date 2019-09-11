@@ -8,10 +8,11 @@ export default class WorkerPool {
    * @param processor {function | string} - worker function
    * @param maxConcurrency {number} - max count of workers
    */
-  constructor({source, name = 'unnamed', maxConcurrency = 1, onDebug = () => {}}) {
+  constructor({source, name = 'unnamed', maxConcurrency = 1, onMessage, onDebug = () => {}}) {
     this.source = source;
     this.name = name;
     this.maxConcurrency = maxConcurrency;
+    this.onMessage = onMessage;
     this.onDebug = onDebug;
 
     this.jobQueue = [];
@@ -85,7 +86,7 @@ export default class WorkerPool {
     if (this.count < this.maxConcurrency) {
       this.count++;
       const name = `${this.name.toLowerCase()}-worker-${this.count}-of-${this.maxConcurrency}`;
-      return new WorkerThread(this.source, name);
+      return new WorkerThread({source: this.source, onMessage: this.onMessage, name});
     }
 
     // No worker available, have to wait

@@ -10,8 +10,9 @@ export default class WorkerFarm {
    * @param processor {function | string} - worker function
    * @param maxConcurrency {number} - max count of workers
    */
-  constructor({maxConcurrency = DEFAULT_MAX_CONCURRENCY, onDebug = () => {}}) {
+  constructor({maxConcurrency = DEFAULT_MAX_CONCURRENCY, onMessage, onDebug = () => {}}) {
     this.maxConcurrency = maxConcurrency;
+    this.onMessage = onMessage;
     this.onDebug = onDebug;
     this.workerPools = new Map();
   }
@@ -48,6 +49,7 @@ export default class WorkerFarm {
       workerPool = new WorkerPool({
         source: workerSource,
         name: workerName,
+        onMessage: this.onMessage,
         maxConcurrency: this.maxConcurrency,
         onDebug: this.onDebug
       });
