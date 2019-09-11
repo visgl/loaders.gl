@@ -2,7 +2,7 @@ import {toArrayBuffer} from '../javascript-utils/binary-utils';
 import WorkerFarm from '../worker-utils/worker-farm';
 import {parse} from './parse';
 
-import {removeNontransferableValues, getTransferList} from '../worker-utils/worker-utils';
+import {getTransferList} from '../worker-utils/worker-utils';
 
 let _workerFarm = null;
 
@@ -25,26 +25,27 @@ function getWorkerFarm(options = {}) {
   return _workerFarm;
 }
 
-function onWorkerMessage({worker, data, resolve, reject}) {
+async function onWorkerMessage({worker, data, resolve, reject}) {
   switch (data.type) {
     case 'done':
-      return resolve(data.result);
+      resolve(data.result);
+      break;
 
     case 'process':
-      return parse(data.arraybuffer, data.options, data.url)
-        .then(result =>
-          worker.postMessage({type: 'process-done', id: data.id, result}, getTransferList(result))
-        )
-        .catch(error =>
-          worker.postMessage({type: 'process-error', id: data.id, message: error.message})
-        );
+      try {
+        const result = await parse(data.arraybuffer, data.options, data.url);
+        worker.postMessage({type: 'process-done', id: data.id, result}, getTransferList(result));
+      } catch (error) {
+        worker.postMessage({type: 'process-error', id: data.id, message: error.message});
+      }
+      break;
 
     case 'error':
-      return reject(data.message);
+      reject(data.message);
+      break;
 
     default:
-      // TODO - is this not an error case? Log a warning?
-      return resolve(data);
+    // TODO - is this not an error case? Log a warning?
   }
 }
 
@@ -52,14 +53,12 @@ function onWorkerMessage({worker, data, resolve, reject}) {
  * this function expects that the worker function sends certain messages,
  * this can be automated if the worker is wrapper by a call to createWorker in @loaders.gl/loader-utils.
  */
-export default function parseWithWorker(workerSource, workerName, data, options) {
+export default function parseWithWorker(workerSource, workerName, data, options = {}) {
   const workerFarm = getWorkerFarm(options);
 
-  // Note that options are documented for each loader, we are just passing them through to the worker
-  // `options` can contain functions etc that can not be serialized/deserialized, they need to be stripped
-  // TODO - Since the `options` object can contain options not intended for the loader, we currently cannot
-  // treat this as an error case, but we just silently remove such values.
-  options = removeNontransferableValues(options);
+  // options.log object contains functions which cannot be transferred
+  // TODO - decide how to handle logging on workers
+  options = JSON.parse(JSON.stringify(options));
 
   return workerFarm.process(workerSource, `loaders.gl-${workerName}`, {
     arraybuffer: toArrayBuffer(data),

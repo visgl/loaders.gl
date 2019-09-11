@@ -4,7 +4,7 @@ import {createWorker} from '../../../loader-utils/src';
 createWorker({
   name: 'TEST-JSONL_LOADER',
   extensions: ['jsonl'],
-  parse: async (arrayBuffer, options) => {
+  parse: async arrayBuffer => {
     const characters = new Uint8Array(arrayBuffer);
     const result = [];
 

@@ -127,10 +127,7 @@ test('createWorker#nested', async t => {
       parseWithWorker(
         `url(./jsonl-loader.worker.js)`,
         'test-jsonl-loader',
-        toArrayBuffer(testData.map(JSON.stringify).join('\n')),
-        {
-          JsonLoader: JsonWorkerLoader
-        }
+        toArrayBuffer(testData.map(JSON.stringify).join('\n'))
       )
     )
   );
