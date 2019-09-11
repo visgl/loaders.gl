@@ -6,14 +6,13 @@ import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
 import DeckGL from '@deck.gl/react';
 import {MapController, FlyToInterpolator} from '@deck.gl/core';
+import {Tile3DLayer} from '@deck.gl/geo-layers';
 import {lumaStats} from '@luma.gl/core';
 import {StatsWidget} from '@probe.gl/stats-widget';
 
 // To manage dependencies and bundle size, the app must decide which supporting loaders to bring in
 import {registerLoaders} from '@loaders.gl/core';
 import {DracoLoader, DracoWorkerLoader} from '@loaders.gl/draco';
-
-import Tile3DLayer from './tile-3d-layer/tile-3d-layer';
 
 import ControlPanel from './components/control-panel';
 import fileDrop from './components/file-drop';
@@ -191,7 +190,6 @@ export default class App extends PureComponent {
   // Called by Tile3DLayer whenever an individual tile in the current tileset is load or unload
   _onTilesetChange(tileHeader) {
     this._updateStatWidgets();
-    this.forceUpdate();
   }
 
   // Called by DeckGL when user interacts with the map

@@ -21,6 +21,7 @@ const DECK_LINK_ALIASES = {
   '@deck.gl/core': resolve(ROOT_DIR, '../deck.gl/modules/core/src'),
   '@deck.gl/layers': resolve(ROOT_DIR, '../deck.gl/modules/layers/src'),
   '@deck.gl/mesh-layers': resolve(ROOT_DIR, '../deck.gl/modules/mesh-layers/src'),
+  '@deck.gl/geo-layers': resolve(ROOT_DIR, '../deck.gl/modules/geo-layers/src'),
   '@deck.gl/react': resolve(ROOT_DIR, '../deck.gl/modules/react/src')
 };
 
@@ -119,7 +120,6 @@ function addAnalyzerSettings(config) {
 
   config.resolve = config.resolve || {};
   // 'esnext' picks up ES6 dist for smaller bundles
-  config.resolve.mainFields = ['esnext', 'browser', 'module', 'main'];
 
   config.plugins = config.plugins || [];
   config.plugins.push(new BundleAnalyzerPlugin());
