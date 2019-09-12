@@ -28,7 +28,7 @@ import {
 import Controller from './controller';
 
 const DEFAULT_OPTIONS = {
-  useGLTFParser: true, // Use deprecated parser for now
+  gltf: {parserVersion: 1}, // Use deprecated parser for now
   pbrDebug: true,
   imageBasedLightingEnvironment: null,
   lights: false

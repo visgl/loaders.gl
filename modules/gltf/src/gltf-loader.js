@@ -4,14 +4,17 @@ import {parseGLTFSync, parseGLTF} from './lib/parse-gltf';
 import GLTFParser from './lib/deprecated/gltf-parser';
 
 const DEFAULT_OPTIONS = {
-  useGLTFParser: true // GLTFParser will be removed in v2.
+  gltf: {
+    parserVersion: 1 // the new parser that will be the only option in V2.
+  },
+  uri: '' // base URI
 };
 
 export async function parse(arrayBuffer, options = {}) {
   // Apps like to call the parse method directly so apply default options here
   options = {...DEFAULT_OPTIONS, ...options};
   // Deprecated: Return GLTFParser instance
-  if (options.useGLTFParser) {
+  if (options.gltf.parserVersion !== 2 && options.useGLTFParser !== false) {
     const gltfParser = new GLTFParser();
     return gltfParser.parse(arrayBuffer, options);
   }
@@ -27,7 +30,7 @@ export function parseSync(arrayBuffer, options = {}) {
   options = {...DEFAULT_OPTIONS, ...options};
 
   // Deprecated: Return GLTFParser instance
-  if (options.useGLTFParser) {
+  if (options.gltf.parserVersion !== 2 && options.useGLTFParser !== false) {
     return new GLTFParser().parseSync(arrayBuffer, options);
   }
 

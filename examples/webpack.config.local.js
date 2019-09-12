@@ -58,7 +58,7 @@ const LOCAL_DEVELOPMENT_CONFIG = {
   },
 
   resolve: {
-    mainFields: ['esnext', 'browser', 'module', 'main'],
+    // mainFields: ['esnext', 'browser', 'module', 'main'],
     // Imports the library from its src directory in this repo
     alias: Object.assign({}, ALIASES)
   },
@@ -100,7 +100,7 @@ function addLocalDependency(config, dependency) {
 function addLocalDevSettings(config, opts) {
   config = Object.assign({}, LOCAL_DEVELOPMENT_CONFIG, config);
   config.resolve = config.resolve || {};
-  config.resolve.mainFields = LOCAL_DEVELOPMENT_CONFIG.resolve.mainFields;
+  // config.resolve.mainFields = LOCAL_DEVELOPMENT_CONFIG.resolve.mainFields;
   config.resolve.alias = config.resolve.alias || {};
   Object.assign(config.resolve.alias, LOCAL_DEVELOPMENT_CONFIG.resolve.alias);
 

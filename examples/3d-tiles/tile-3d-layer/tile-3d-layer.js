@@ -178,6 +178,7 @@ export default class Tile3DLayer extends CompositeLayer {
   _unpackGLTF(tileHeader) {
     if (tileHeader.content.gltfArrayBuffer) {
       tileHeader.userData.gltf = parse(tileHeader.content.gltfArrayBuffer, {
+        // gltf: {parserVersion: 2},
         DracoLoader: this.props.DracoLoader,
         decompress: true
       });

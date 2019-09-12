@@ -18,9 +18,10 @@ import ControlPanel from './components/control-panel';
 import fileDrop from './components/file-drop';
 
 import {loadExampleIndex} from './examples';
+import {registerLoaders} from '@loaders.gl/core';
 
-export const INITIAL_EXAMPLE_CATEGORY = 'ion';
-export const INITIAL_EXAMPLE_NAME = 'Mount St Helens (PointCloud)';
+const INITIAL_EXAMPLE_CATEGORY = 'ion';
+const INITIAL_EXAMPLE_NAME = 'Mount St Helens (PointCloud)';
 
 // Set your mapbox token here
 const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
@@ -47,6 +48,8 @@ export const INITIAL_VIEW_STATE = {
   maxZoom: 30,
   zoom: 17
 };
+
+registerLoaders([DracoLoader]);
 
 export default class App extends PureComponent {
   constructor(props) {
