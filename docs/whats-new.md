@@ -4,26 +4,32 @@
 
 Target Release Date: Sep 13
 
-- `@loaders.gl/core`: **Worker Thread Pool**
-    - Reuses workers. Performance gains by avoiding worker startup overhead.
-    - Worker threads are named, easy to track in debugger
-    - Worker based loaders can now call `parse` recursively to parse embedded data
-
-- `@loaders.gl/core`: **Improved Format Auto-Discovery**
+- `@loaders.gl/core`: **Loader Selection Improvements**
     - The loader selection mechanism is now exposed to apps through the new `selectLoader` API.
     - Loaders can now examine the first bytes of a file
     - This complements the existing URL extension based auto detection mechanisms.
+
+- `@loaders.gl/core`: **Worker Thread Pool**
+    - Now reuses worker threads. Performance gains by avoiding worker startup overhead.
+    - Worker threads are named, easy to track in debugger
+    - Worker based loaders can now call `parse` recursively to delegate parsing of embedded data (e.g. glTF, Draco) to other loaders
+
+- `@loaders.gl/3d-tiles`: **Tile3DLayer moved to deck.gl**
+    - Tile3DLayer is now exported from `@deck.gl/geo-layers`
+
+- `@loaders.gl/3d-tiles`: **Batched 3D Model Tile Support**
+    - `b3dm` tilesets can now be loaded and displayed by the `Tile3DLayer`
 
 - `@loaders.gl/3d-tiles`: **RequestScheduler**
     - Cancels loads for not-yet loaded tiles that are no longer in view)
     - Dramatically improves loading performance when panning/zooming through a tileset
 
-- `@loaders.gl/3d-tiles`: **Automatic Timing**
-    - `Tileset3D` now contain a `stats` object with stats on the loading process.
+- `@loaders.gl/3d-tiles`: **Performance Tracking**
+    - `Tileset3D` now contain a `stats` object with stats on the loading process to help profile big tilesets.
 
 - `@loaders.gl/gltf`: **Version 2 Improvements**
     - Select the new glTF parser by passing `options.gltf.parserVersion: 2` to the `GLTFLoader`.
-    - Many bug fixes to the new glTF parser.
+    - Many improvements to the v2 glTF parser.
 
 ## v1.2
 
