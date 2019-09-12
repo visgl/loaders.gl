@@ -21,6 +21,9 @@ Target Release Date: Sep 13
 - `@loaders.gl/3d-tiles`: **Automatic Timing**
     - `Tileset3D` now contain a `stats` object with stats on the loading process.
 
+- `@loaders.gl/gltf`: **Version 2 Improvements**
+    - Select the new glTF parser by passing `options.gltf.parserVersion: 2` to the `GLTFLoader`.
+    - Many bug fixes to the new glTF parser.
 
 ## v1.2
 
@@ -56,12 +59,14 @@ Release Date: May 30, 2019
 
 ### @loaders.gl/gltf
 
-The glTF module has been refactored with the aim of simplifying the loaded data and orthogonalizing the API, as well as allowing 'embedded' GLB data inside other binary formats to be parsed (e.g. the glTF parser can now extract embedded glTF inside 3D tile files).
+- The glTF module has been refactored with the aim of simplifying the loaded data and orthogonalizing the API.
+- "Embedded' GLB data (GLBs inside other binary formats) can now be parsed (e.g. the glTF parser can now extract embedded glTF inside 3D tile files).
 
-- [`GLTFScenegraph`](/docs/api-reference/gltf/gltf-scenegraph) class <sup>NEW</sup> - A helper class that provides methods for structured access to and modification/creation of glTF data.
-- [`postProcessGLTF`](/docs/api-reference/gltf/post-process-gltf) function <sup>NEW</sup> - Function that performs a set of transformations on loaded glTF data that simplify application processing.
-- [`GLBLoader`](/docs/api-reference/gltf/glb-loader)/[`GLBWriter`] <sup>NEW</sup> - loader/writer pair that enables loading/saving custom (non-glTF) data in the binary GLB format.
-- [`GLTFLoader`](/docs/api-reference/gltf/gltf-loader), letting application separately handle post-processing etc.
+- New classes/functions:
+    - [`GLTFScenegraph`](/docs/api-reference/gltf/gltf-scenegraph) class <sup>NEW</sup> - A helper class that provides methods for structured access to and modification/creation of glTF data.
+    - [`postProcessGLTF`](/docs/api-reference/gltf/post-process-gltf) function <sup>NEW</sup> - Function that performs a set of transformations on loaded glTF data that simplify application processing.
+    - [`GLBLoader`](/docs/api-reference/gltf/glb-loader)/[`GLBWriter`] <sup>NEW</sup> - loader/writer pair that enables loading/saving custom (non-glTF) data in the binary GLB format.
+    - [`GLTFLoader`](/docs/api-reference/gltf/gltf-loader), letting application separately handle post-processing.
 
 ### @loaders.gl/3d-tiles <sup>NEW MODULE</sup>
 
