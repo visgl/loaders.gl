@@ -111,7 +111,7 @@ export default class Tile3DLayer extends CompositeLayer {
     const {tileset3d, layerMap} = this.state;
     const {selectedTiles} = tileset3d;
 
-    const tilesWithoutLayer = selectedTiles.filter(tile => !layerMap[tile.contentUri]);
+    const tilesWithoutLayer = selectedTiles.filter(tile => !layerMap[tile.fullUri]);
 
     for (const tile of tilesWithoutLayer) {
       // TODO - why do we call this here? Being "selected" should automatically add it to cache?
@@ -119,7 +119,7 @@ export default class Tile3DLayer extends CompositeLayer {
 
       this._unpackTile(tile);
 
-      layerMap[tile.contentUri] = {
+      layerMap[tile.fullUri] = {
         layer: this._create3DTileLayer(tile),
         tile
       };
@@ -140,16 +140,16 @@ export default class Tile3DLayer extends CompositeLayer {
         if (layer && layer.props && !layer.props.visible) {
           // Still has GPU resource but visibility is turned off so turn it back on so we can render it.
           layer = layer.clone({visible: true});
-          layerMap[tile.contentUri].layer = layer;
+          layerMap[tile.fullUri].layer = layer;
         }
         selectedLayers.push(layer);
       } else if (tile.contentUnloaded) {
         // Was cleaned up from tileset cache. We no longer need to track it.
-        delete layerMap[tile.contentUri];
+        delete layerMap[tile.fullUri];
       } else if (layer && layer.props && layer.props.visible) {
         // Still in tileset cache but doesn't need to render this frame. Keep the GPU resource bound but don't render it.
         layer = layer.clone({visible: false});
-        layerMap[tile.contentUri].layer = layer;
+        layerMap[tile.fullUri].layer = layer;
       }
     }
 
@@ -209,7 +209,7 @@ export default class Tile3DLayer extends CompositeLayer {
     const {instances, cartographicOrigin, modelMatrix} = tileHeader.content;
 
     return new ScenegraphLayer({
-      id: `3d-model-tile-layer-${tileHeader.contentUri}`,
+      id: `3d-model-tile-layer-${tileHeader.fullUri}`,
       data: instances || [{}],
       coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS,
       coordinateOrigin: cartographicOrigin,
@@ -241,7 +241,7 @@ export default class Tile3DLayer extends CompositeLayer {
     return (
       positions &&
       new PointCloudLayer({
-        id: `3d-point-cloud-tile-layer-${tileHeader.contentUri}`,
+        id: `3d-point-cloud-tile-layer-${tileHeader.fullUri}`,
         data: {
           header: {
             vertexCount: pointCount
