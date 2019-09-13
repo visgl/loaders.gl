@@ -9,8 +9,10 @@ const ION_TOKEN_2 =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIzMGY4ODczYy1mNTk4LTRiMDUtYmIxYy0xZWYwOWZmMGY4NjQiLCJpZCI6NDQsInNjb3BlcyI6WyJhc3IiLCJnYyJdLCJhc3NldHMiOlsxLDIsMyw0LDYxOTMsNjI3Myw3MTYyLDczNTMsNzE0Ml0sImlhdCI6MTU0MTYxODM0NX0.lWnGs9ySXO4QK3HagcMsDpZ8L01DpmUDQm38-2QAQuE';
 
 const DATA_URI = 'https://raw.githubusercontent.com/uber-web/loaders.gl/master';
-
 const EXAMPLE_INDEX_URL = `${DATA_URI}/modules/3d-tiles/test/data/index.json`;
+
+export const INITIAL_EXAMPLE_CATEGORY = 'ion';
+export const INITIAL_EXAMPLE_NAME = 'Mt St Helens (PointCloud)';
 
 const ADDITIONAL_EXAMPLES = {
   github: {
@@ -25,11 +27,11 @@ const ADDITIONAL_EXAMPLES = {
     examples: {
       'Mount St Helens (PointCloud)': {ionAssetId: 33301, ionAccessToken: ION_TOKEN_1},
       'Montreal (PointCloud)': {ionAssetId: 28945, ionAccessToken: ION_TOKEN_1},
-      'New York 1 (3D Photogrammetry)': {
+      'New York Buildings 1 (3D Photogrammetry)': {
         ionAssetId: 6193,
         ionAccessToken: ION_TOKEN_2
       },
-      'New York 2 (3D Photogrammetry)': {
+      'Manhattan (3D Photogrammetry)': {
         ionAssetId: 7162,
         ionAccessToken: ION_TOKEN_2
       }

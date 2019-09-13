@@ -10,6 +10,7 @@ import {lumaStats} from '@luma.gl/core';
 import {StatsWidget} from '@probe.gl/stats-widget';
 
 // To manage dependencies and bundle size, the app must decide which supporting loaders to bring in
+import {registerLoaders} from '@loaders.gl/core';
 import {DracoLoader, DracoWorkerLoader} from '@loaders.gl/draco';
 
 import Tile3DLayer from './tile-3d-layer/tile-3d-layer';
@@ -17,11 +18,7 @@ import Tile3DLayer from './tile-3d-layer/tile-3d-layer';
 import ControlPanel from './components/control-panel';
 import fileDrop from './components/file-drop';
 
-import {loadExampleIndex} from './examples';
-import {registerLoaders} from '@loaders.gl/core';
-
-const INITIAL_EXAMPLE_CATEGORY = 'ion';
-const INITIAL_EXAMPLE_NAME = 'Mount St Helens (PointCloud)';
+import {loadExampleIndex, INITIAL_EXAMPLE_CATEGORY, INITIAL_EXAMPLE_NAME} from './examples';
 
 // Set your mapbox token here
 const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
