@@ -1,6 +1,99 @@
 ## loaders.gl v1.0
 
+### 1.3 Release
+
+#### v1.3.0
+
+- 3d-tiles: Example handling (#398)
+- 3d-tiles: Use unique string for the key in layerMap (#400)
+
+#### v1.3.0-beta.3
+
+- fix import in csv module (#399)
+
+#### v1.3.0-beta.2
+
+- ocular-dev-tools: 0.0.29 (modernize es6 dist) (#395)
+- gltf: Add `options.gltf.parserVersion` (#394)
+- 3d-tiles: fix b3dm tile stop rendering issue (#396)
+- Worker improvements (#386)
+- Docs:  improvements for v1.3 (#381)
+- core: Add fetch progress tracker (#391)
+- core: Fix binary test for typed arrays (#393)
+- gltf: example simplifications (#389)
+- gltf: Improvements to v2.0 gltf parser (#390)
+- gltf: doc improvements (#388)
+- bump dependencies versions (#385)
+
+#### v1.3.0-beta.1
+
+- potree: Add test data (#350)
+- 3d-tiles: Show attributions for tilesets loaded from ion. (#379)
+- core: Worker cleanup (#362)
+- 3d-tiles: Simplify tileset example handling (#378)
+- 3d-tiles: Transform cleanup (#374)
+- Fx tilesets with external tileset.json and b3dm orientation (#373)
+- 3d-tiles: small fixes (#370)
+- bump version of frameworks (#369)
+- math: Update docs (#368)
+- 3d-tiles: Quantized position w/ normalized shorts + modelMatrix (#367)
+- 3d-tiles: More cleanup (#366)
+- 3d-tiles: Add experimental RequestScheduler and throttleRequests option. (#364)
+- 3d-tiles: cleanup (#363)
+- 3d-tiles: example polish (#360)
+- Cleanup Tile3Dlayer (#348)
+- 3d-tiles: batch draco partial loading (#359)
+- core: selectLoader API Improvements (#358)
+- 3d-tiles: Update example image
+- 3d-tiles: Minor fixes to example (#355)
+- 3d-tiles: add viewport transitions to example (#354)
+- Cache fix (#353)
+- Revert "example: add viewport transitions to 3d-tiles"
+- example: add viewport transitions to 3d-tiles
+- WIP: Worker Pools (#347)
+- 3d-tiles: Add vricon tilesets. Clean up example index handling. (#352)
+- bump probe.gl and math.gl, fix instanced rotation examples (#351)
+
 ### 1.2 Release
+
+#### v1.2.2
+
+- 3d-tiles: Support nested tilesets with local url folders (#344)
+- Docs: updates for 3d-tiles and categories (#333)
+- core: Fixes to `parse` (#345)
+- docs: front page update
+- core: Add error handling to `parse*` functions (#342)
+- core: Name workers for debugger (#339)
+- fix bug with read property match of undefined (#340) (#341)
+- Fix tranformMatrix regression (#338)
+- Add back DracoWorkerLoader (#337)
+- 3d-tiles: Align tileset callback names with vis.gl conventions (#336)
+- 3d-tiles: Tileset3D options refactor (#334)
+- 3d-tiles: Remove irrelevant wip code (#335)
+- 3d-tiles: polish (#332)
+- Support oct encoded normals (#329)
+- Extract transform props from layer to tileset (#330)
+- Track Memory Use (#331)
+- 3d-tiles: Improved stats (#326)
+- 3d-tiles: traverser no longer knows about tileset (#328)
+- 3d-tiles: Reorder tileset3d methods (#327)
+- fix parsing color (#325)
+- Adding call for installing the external tileset (#324)
+- 3d-tiles: attribute compression Phase 1 (#321)
+- 3d-tiles: move styles to wip (#323)
+- 3d-tiles: bump to deck/luma 7.2 (#322)
+- 3d-tiles: Move point cloud color parsing into 3d-tiles module (#320)
+- try to render i3dm and b3dm examples (#319)
+- Fix image loader in FF (#318)
+- Reorganize docs (#312)
+- 3d-tiles: Ensure we parse JSON when loading nested tilesets (#314)
+- 3d-tiles: Land partial port of styles (#311)
+- Add additional check for jpeg headers for isImage (#315)
+
+#### v1.2.1
+
+- Fix babel config for already transpiled files (#313)
+- Tests and bug fixes for core (#310)
 
 #### v1.2.1
 
