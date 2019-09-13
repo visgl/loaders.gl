@@ -17,7 +17,7 @@
 - gltf: Add `options.gltf.parserVersion` (#394)
 - 3d-tiles: fix b3dm tile stop rendering issue (#396)
 - Worker improvements (#386)
-- Docs:  improvements for v1.3 (#381)
+- Docs: improvements for v1.3 (#381)
 - core: Add fetch progress tracker (#391)
 - core: Fix binary test for typed arrays (#393)
 - gltf: example simplifications (#389)
