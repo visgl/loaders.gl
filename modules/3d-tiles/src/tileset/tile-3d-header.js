@@ -586,6 +586,7 @@ export default class Tile3DHeader {
       this._content = null;
       this.hasEmptyContent = false;
       this.contentState = TILE3D_CONTENT_STATE.UNLOADED;
+      this.fullUri = this._basePath + '/' + this.contentUri;
       // this.serverKey = RequestScheduler.getServerKey(contentResource.getUrlComponent());
     }
   }
