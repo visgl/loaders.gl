@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-/* global document, window */
+/* global document */
 import {GLTF_DEFAULT_MODEL, GLTF_BASE_URL} from './examples';
 
 export function addModelsToDropdown(models, onChange) {
