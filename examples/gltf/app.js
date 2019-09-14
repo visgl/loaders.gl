@@ -7,15 +7,6 @@ import {AnimationLoop, setParameters, clear, log, lumaStats} from '@luma.gl/core
 import {GLTFScenegraphLoader, createGLTFObjects, GLTFEnvironment} from '@luma.gl/addons';
 import {Matrix4, radians} from 'math.gl';
 
-const CUBE_FACE_TO_DIRECTION = {
-  [GL.TEXTURE_CUBE_MAP_POSITIVE_X]: 'right',
-  [GL.TEXTURE_CUBE_MAP_NEGATIVE_X]: 'left',
-  [GL.TEXTURE_CUBE_MAP_POSITIVE_Y]: 'top',
-  [GL.TEXTURE_CUBE_MAP_NEGATIVE_Y]: 'bottom',
-  [GL.TEXTURE_CUBE_MAP_POSITIVE_Z]: 'front',
-  [GL.TEXTURE_CUBE_MAP_NEGATIVE_Z]: 'back'
-};
-
 import {loadModelList, GLTF_ENV_BASE_URL} from './components/examples';
 import {
   LIGHT_SOURCES,
@@ -26,6 +17,15 @@ import {
   onLightSettingsChange
 } from './components/model-picker';
 import Controller from './controller';
+
+const CUBE_FACE_TO_DIRECTION = {
+  [GL.TEXTURE_CUBE_MAP_POSITIVE_X]: 'right',
+  [GL.TEXTURE_CUBE_MAP_NEGATIVE_X]: 'left',
+  [GL.TEXTURE_CUBE_MAP_POSITIVE_Y]: 'top',
+  [GL.TEXTURE_CUBE_MAP_NEGATIVE_Y]: 'bottom',
+  [GL.TEXTURE_CUBE_MAP_POSITIVE_Z]: 'front',
+  [GL.TEXTURE_CUBE_MAP_NEGATIVE_Z]: 'back'
+};
 
 const DEFAULT_OPTIONS = {
   gltf: {parserVersion: 1}, // Use deprecated parser for now
