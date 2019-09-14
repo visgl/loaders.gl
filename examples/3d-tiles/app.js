@@ -42,7 +42,7 @@ export const INITIAL_VIEW_STATE = {
   bearing: 0,
   minZoom: 2,
   maxZoom: 30,
-  zoom: 17
+  zoom: 10
 };
 
 registerLoaders([DracoLoader]);
