@@ -17,9 +17,10 @@ for (const dependency in DEPENDENCIES) {
 }
 
 module.exports = {
-  logLevel: 4, // Adjusts amount of debug information from ocular-gatsby
+  logLevel: 2, // Adjusts amount of debug information from ocular-gatsby
 
-  DOC_FOLDERS: [`${__dirname}/../docs/`, `${__dirname}/../modules`],
+  // NOTE - we currently need custom excludes in gatsby-config.js to support multiple directories
+  DOC_FOLDERS: [`${__dirname}/../docs/`, `${__dirname}/../arrowjs/`, `${__dirname}/../modules/`],
   ROOT_FOLDER: `${__dirname}/../`,
   DIR_NAME: `${__dirname}`,
 

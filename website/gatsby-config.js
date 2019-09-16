@@ -17,6 +17,7 @@ gatsbyConfig.plugins.forEach(plugin => {
     plugin.options.ignore.push('**/modules/**/dist');
     plugin.options.ignore.push('**/modules/**/wip');
     plugin.options.ignore.push('**/modules/**/*.json');
+    plugin.options.ignore.push('**/arrowjs/**/*.json');
   }
 });
 

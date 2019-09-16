@@ -185,6 +185,65 @@
           ]
         }
       ]
+    },
+
+    {
+      "title": "Arrow JS",
+      "chapters": [
+        {
+          "title": "Overview",
+          "entries": [
+            {"entry": "arrowjs/docs"},
+            {"entry": "arrowjs/docs/roadmap"},
+            {"entry": "arrowjs/docs/contributing"}
+          ]
+        },
+        {
+          "title": "Get Started",
+          "entries": [
+            {"entry": "arrowjs/docs/get-started/installing"},
+            {"entry": "arrowjs/docs/get-started/examples"}
+          ]
+        },
+        {
+          "title": "Developer Guide",
+          "entries": [
+            {"entry": "arrowjs/docs/developer-guide/big-ints"},
+            {"entry": "arrowjs/docs/developer-guide/converting-data"},
+            {"entry": "arrowjs/docs/developer-guide/data-frame-operations"},
+            {"entry": "arrowjs/docs/developer-guide/data-sources"},
+            {"entry": "arrowjs/docs/developer-guide/data-types"},
+            {"entry": "arrowjs/docs/developer-guide/memory-management"},
+            {"entry": "arrowjs/docs/developer-guide/predicates"},
+            {"entry": "arrowjs/docs/developer-guide/reading-and-writing"},
+            {"entry": "arrowjs/docs/developer-guide/tables"},
+            {"entry": "arrowjs/docs/developer-guide/typescript"}
+          ]
+        },
+        {
+          "title": "API Reference",
+          "entries": [
+            {"entry": "arrowjs/docs/api-reference"},
+            {"entry": "arrowjs/docs/api-reference/chunked"},
+            {"entry": "arrowjs/docs/api-reference/column"},
+            {"entry": "arrowjs/docs/api-reference/data-frame"},
+            {"entry": "arrowjs/docs/api-reference/data"},
+            {"entry": "arrowjs/docs/api-reference/dictionary"},
+            {"entry": "arrowjs/docs/api-reference/field"},
+            {"entry": "arrowjs/docs/api-reference/predicates"},
+            {"entry": "arrowjs/docs/api-reference/record-batch-reader"},
+            {"entry": "arrowjs/docs/api-reference/record-batch-writer"},
+            {"entry": "arrowjs/docs/api-reference/record-batch"},
+            {"entry": "arrowjs/docs/api-reference/row"},
+            {"entry": "arrowjs/docs/api-reference/schema"},
+            {"entry": "arrowjs/docs/api-reference/table"},
+            {"entry": "arrowjs/docs/api-reference/types"},
+            {"entry": "arrowjs/docs/api-reference/vector"},
+            {"entry": "arrowjs/docs/api-reference/vectors"}
+          ]
+        }
+      ]
     }
+
   ]
 }
