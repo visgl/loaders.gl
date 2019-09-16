@@ -20,7 +20,7 @@ Most of the loaders have been "curated" from the open source community, often fr
 
 ## Main Features
 
-**Framework Agnosticism** - There is a wide range of excellent loaders for 3D formats available as open source under e.g. MIT and Apache license. However, many of these loaders were created for a specific 3D framework (e.g. THREE.js) and are not immediately usable outside of that framework.
+**Framework Agnostic** - There is a wide range of excellent loaders for 3D formats available as open source under e.g. MIT and Apache license. However, many of these loaders were created for a specific 3D framework (e.g. THREE.js) and are not immediately usable outside of that framework.
 
 **Standard Format** - All loaders return a "standardized" JavaScript objects with a header key-value map and a map of typed arrays representing binary data attributes. The binary attributes can be uploaded directly to GPU buffers and used for rendering or GPGPU calculations.
 

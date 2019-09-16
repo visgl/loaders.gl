@@ -1,6 +1,6 @@
 # @loaders.gl/ply
 
-[loaders.gl](https://loaders.gl/docs) is a collection of framework independent 3D and geospatial loaders (parsers).
+[loaders.gl](https://loaders.gl/docs) is a collection of loaders for big data visualizations.
 
 This module contains loaders for the PLY format.
 

@@ -32,7 +32,7 @@ module.exports = {
   PROJECT_NAME: 'loaders.gl',
   PROJECT_ORG: 'uber-web',
   PROJECT_URL: 'https://github.com/uber-web/loaders.gl',
-  PROJECT_DESC: 'Framework Agnostic Loaders for Data Visualization',
+  PROJECT_DESC: 'Loaders for Big Data Visualization',
   PATH_PREFIX: '/',
 
   FOOTER_LOGO: '',
@@ -45,7 +45,7 @@ module.exports = {
 
   HOME_PATH: '/',
 
-  HOME_HEADING: 'Framework Agnostic Loaders for Data Visualization',
+  HOME_HEADING: 'Loaders for Big Data Visualization',
 
   HOME_RIGHT: null,
 
