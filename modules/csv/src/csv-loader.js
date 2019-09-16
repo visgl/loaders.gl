@@ -1,3 +1,4 @@
+/* global TextDecoder */
 import {AsyncQueue, TableBatchBuilder, RowTableBatch} from '@loaders.gl/experimental';
 import Papa from './papaparse/papaparse.transpiled';
 import AsyncIteratorStreamer from './papaparse/async-iterator-streamer';
@@ -5,28 +6,28 @@ import AsyncIteratorStreamer from './papaparse/async-iterator-streamer';
 export default {
   name: 'CSV',
   extensions: ['csv'],
-  testText: null,
+  mimeType: 'text/csv',
+  category: 'table',
+  parse: async (arrayBuffer, options) =>
+    parseCSVSync(new TextDecoder().decode(arrayBuffer), options),
   parseTextSync: parseCSVSync,
   parseInBatches: parseCSVInBatches,
+  testText: null,
   options: {
     TableBatch: RowTableBatch
   }
 };
 
 function parseCSVSync(csvText, options) {
-  const config = Object.assign(
-    {
-      header: hasHeader(csvText, options),
-      dynamicTyping: true // Convert numbers and boolean values in rows from strings
-    },
-    options,
-    {
-      download: false, // We handle loading, no need for papaparse to do it for us
-      error: e => {
-        throw new Error(e);
-      }
+  const config = {
+    header: hasHeader(csvText, options),
+    dynamicTyping: true, // Convert numbers and boolean values in rows from strings
+    ...options,
+    download: false, // We handle loading, no need for papaparse to do it for us
+    error: e => {
+      throw new Error(e);
     }
-  );
+  };
 
   const result = Papa.parse(csvText, config);
   return result.data;

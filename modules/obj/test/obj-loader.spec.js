@@ -1,18 +1,23 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
-import {load} from '@loaders.gl/core';
-import {OBJLoader, OBJWorkerLoader} from '@loaders.gl/obj';
+import {validateLoader, validatePointCloudCategoryData} from 'test/common/conformance';
 
-// Note: The Sublime Text Editor hides OBJ files from the file tree...
-import {validateLoadedData} from 'test/common/conformance';
+import {OBJLoader, OBJWorkerLoader} from '@loaders.gl/obj';
+import {load} from '@loaders.gl/core';
 
 const OBJ_ASCII_URL = '@loaders.gl/obj/test/data/bunny.obj';
 const OBJ_NORMALS_URL = '@loaders.gl/obj/test/data/cube.obj';
 const OBJ_MULTI_PART_URL = '@loaders.gl/obj/test/data/magnolia.obj';
 
+test('OBJLoader#loader objects', async t => {
+  validateLoader(t, OBJLoader, 'OBJLoader');
+  validateLoader(t, OBJWorkerLoader, 'OBJWorkerLoader');
+  t.end();
+});
+
 test('OBJLoader#parseText', async t => {
   const data = await load(OBJ_ASCII_URL, OBJLoader);
-  validateLoadedData(t, data);
+  validatePointCloudCategoryData(t, data);
 
   t.equal(data.mode, 4, 'mode is TRIANGLES (4)');
 
@@ -24,7 +29,7 @@ test('OBJLoader#parseText', async t => {
 
 test('OBJLoader#parseText - object with normals', async t => {
   const data = await load(OBJ_NORMALS_URL, OBJLoader);
-  validateLoadedData(t, data);
+  validatePointCloudCategoryData(t, data);
 
   t.equal(data.attributes.POSITION.value.length, 108, 'POSITION attribute was found');
   t.equal(data.attributes.POSITION.size, 3, 'POSITION attribute was found');
@@ -37,7 +42,7 @@ test('OBJLoader#parseText - object with normals', async t => {
 
 test('OBJLoader#parseText - multi-part object', async t => {
   const data = await load(OBJ_MULTI_PART_URL, OBJLoader);
-  validateLoadedData(t, data);
+  validatePointCloudCategoryData(t, data);
 
   t.equal(data.header.vertexCount, 1372 * 3, 'Vertices are loaded');
   t.end();
@@ -52,7 +57,7 @@ test('OBJWorkerLoader#parse(text)', async t => {
 
   const data = await load(OBJ_ASCII_URL, OBJWorkerLoader);
 
-  validateLoadedData(t, data);
+  validatePointCloudCategoryData(t, data);
 
   t.equal(data.mode, 4, 'mode is TRIANGLES (4)');
 

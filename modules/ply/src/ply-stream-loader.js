@@ -2,7 +2,7 @@
 // links: ['http://paulbourke.net/dataformats/ply/',
 // 'https://en.wikipedia.org/wiki/PLY_(file_format)']
 
-import parsePLYStream from './parser/parse-ply-stream';
+import parsePLYStream from './lib/parse-ply-stream';
 
 const DEFAULT_OPTIONS = {};
 

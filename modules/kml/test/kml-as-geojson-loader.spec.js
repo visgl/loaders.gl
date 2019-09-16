@@ -1,5 +1,7 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
+import {validateLoader} from 'test/common/conformance';
+
 import {parseSync} from '@loaders.gl/core';
 import {KMLasGeoJsonLoader} from '@loaders.gl/kml';
 
@@ -12,6 +14,11 @@ const INVALID_KML = `\
   </Document>
 </kml>
 `;
+
+test('KMLasGeoJsonLoader#loader conformance', t => {
+  validateLoader(t, KMLasGeoJsonLoader, 'KMLasGeoJsonLoader');
+  t.end();
+});
 
 test('KMLasGeoJsonLoader#testText', t => {
   let isKML = KMLasGeoJsonLoader.testText(KML);
