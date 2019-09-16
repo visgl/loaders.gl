@@ -5,6 +5,7 @@ To be compatible with the parsing/loading functions in `@loaders.gl/core` such a
 ## Loader Object Format v1.0
 
 ### Common Fields
+
 | Field               | Type       | Default  | Description                                                     |
 | ------------------- | ---------- | -------- | --------------------------------------------------------------- |
 | `name`              | `String`   | Required | Short name of the loader ('OBJ', 'PLY' etc)                     |
