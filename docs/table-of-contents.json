@@ -2,16 +2,16 @@
   "id": "table-of-contents",
   "chapters": [
     {
-      "title": "Overview",
-      "entries": [
-        {"entry": "docs/README"},
-        {"entry": "docs/whats-new"},
-        {"entry": "docs/upgrade-guide"}
-      ]
-    },
-    {
       "title": "Developer Guide",
       "chapters": [
+        {
+          "title": "Overview",
+          "entries": [
+            {"entry": "docs"},
+            {"entry": "docs/whats-new"},
+            {"entry": "docs/upgrade-guide"}
+          ]
+        },
         {
           "title": "Guides",
           "entries": [
@@ -37,10 +37,52 @@
       ]
     },
     {
-      "title": "Specifications",
+      "title": "API Reference",
       "entries": [
+        {"entry": "modules/core/docs/api-reference/parse"},
+        {"entry": "modules/core/docs/api-reference/parse-sync"},
+        {"entry": "modules/core/docs/api-reference/parse-in-batches"},
+        {"entry": "modules/core/docs/api-reference/load"},
+        {"entry": "modules/core/docs/api-reference/encode"},
+        {"entry": "modules/core/docs/api-reference/save"},
+        {"entry": "modules/core/docs/api-reference/fetch-file"},
+        {"entry": "modules/core/docs/api-reference/write-file"},
+        {"entry": "modules/core/docs/api-reference/register-loaders"},
+        {"entry": "modules/core/docs/api-reference/select-loader"},
+        {"entry": "modules/core/docs/api-reference/set-path-prefix"},
+        {"entry": "modules/core/docs/api-reference/binary-utilities"},
+        {"entry": "modules/core/docs/api-reference/iterator-utilities"},
         {"entry": "docs/specifications/loader-object-format"},
-        {"entry": "docs/specifications/writer-object-format"},
+        {"entry": "docs/specifications/writer-object-format"}
+      ]
+    },
+    {
+      "title": "Loader Catalog",
+      "entries": [
+        {"entry": "modules/arrow/docs/api-reference/arrow-loader"},
+        {"entry": "modules/csv/docs/api-reference/csv-loader"},
+        {"entry": "modules/draco/docs/api-reference/draco-loader"},
+        {"entry": "modules/draco/docs/api-reference/draco-writer"},
+        {"entry": "modules/gltf/docs/api-reference/gltf-loader"},
+        {"entry": "modules/gltf/docs/api-reference/gltf-writer"},
+        {"entry": "modules/gltf/docs/api-reference/glb-loader"},
+        {"entry": "modules/gltf/docs/api-reference/glb-writer"},
+        {"entry": "modules/images/docs/api-reference/image-loader"},
+        {"entry": "modules/images/docs/api-reference/image-writer"},
+        {"entry": "modules/kml/docs/api-reference/kml-loader"},
+        {"entry": "modules/las/docs/api-reference/las-loader"},
+        {"entry": "modules/obj/docs/api-reference/obj-loader"},
+        {"entry": "modules/pcd/docs/api-reference/pcd-loader"},
+        {"entry": "modules/ply/docs/api-reference/ply-loader"},
+        {"entry": "modules/3d-tiles/docs/api-reference/tile-3d-loader"},
+        {"entry": "modules/3d-tiles/docs/api-reference/tileset-3d-loader"},
+        {"entry": "modules/zip/docs/api-reference/zip-loader"},
+        {"entry": "modules/zip/docs/api-reference/zip-writer"}
+      ]
+    },
+    {
+      "title": "Loader Categories",
+      "entries": [
         {"entry": "docs/specifications/category-mesh"},
         {"entry": "docs/specifications/category-table"},
         {"entry": "docs/specifications/category-scenegraph"},
@@ -49,126 +91,97 @@
       ]
     },
     {
-      "title": "API Reference",
+      "title": "Submodule Reference",
       "chapters": [
         {
-          "title": "3d-tiles",
+          "title": "@loaders.gl/3d-tiles",
           "entries": [
-            {"entry": "docs/api-reference/3d-tiles"},
-            {"entry": "docs/api-reference/3d-tiles/tile-3d-loader"},
-            {"entry": "docs/api-reference/3d-tiles/tileset-3d-loader"},
-            {"entry": "docs/api-reference/3d-tiles/tileset-3d"}
+            {"entry": "modules/3d-tiles/docs/api-reference"},
+            {"entry": "modules/3d-tiles/docs/api-reference/tileset-3d"}
           ]
         },
         {
-          "title": "arrow",
+          "title": "@loaders.gl/arrow",
           "entries": [
-            {"entry": "docs/api-reference/arrow"},
-            {"entry": "docs/api-reference/arrow/arrow-loader"}
+            {"entry": "modules/arrow/docs/api-reference"}
           ]
         },
         {
-          "title": "core",
+          "title": "@loaders.gl/core",
           "entries": [
-            {"entry": "docs/api-reference/core/parse"},
-            {"entry": "docs/api-reference/core/load"},
-            {"entry": "docs/api-reference/core/encode"},
-            {"entry": "docs/api-reference/core/save"},
-            {"entry": "docs/api-reference/core/fetch-file"},
-            {"entry": "docs/api-reference/core/write-file"},
-            {"entry": "docs/api-reference/core/register-loaders"},
-            {"entry": "docs/api-reference/core/select-loader"},
-            {"entry": "docs/api-reference/core/set-path-prefix"},
-            {"entry": "docs/api-reference/core/binary-utilities"},
-            {"entry": "docs/api-reference/core/iterator-utilities"}
+            {"entry": "modules/core/docs/api-reference"}
           ]
         },
         {
-          "title": "csv",
+          "title": "@loaders.gl/csv",
           "entries": [
-            {"entry": "docs/api-reference/csv"},
-            {"entry": "docs/api-reference/csv/csv-loader"}
+            {"entry": "modules/csv/docs/api-reference"}
           ]
         },
         {
-          "title": "draco",
+          "title": "@loaders.gl/draco",
           "entries": [
-            {"entry": "docs/api-reference/draco"},
-            {"entry": "docs/api-reference/draco/draco-loader"},
-            {"entry": "docs/api-reference/draco/draco-writer"}
+            {"entry": "modules/draco/docs/api-reference"}
           ]
         },
         {
-          "title": "gltf",
+          "title": "@loaders.gl/gltf",
           "entries": [
-            {"entry": "docs/api-reference/gltf"},
-            {"entry": "docs/api-reference/gltf/gltf-extensions"},
-            {"entry": "docs/api-reference/gltf/gltf-loader"},
-            {"entry": "docs/api-reference/gltf/gltf-writer"},
-            {"entry": "docs/api-reference/gltf/glb-loader"},
-            {"entry": "docs/api-reference/gltf/glb-writer"},
-            {"entry": "docs/api-reference/gltf/gltf-scenegraph"},
-            {"entry": "docs/api-reference/gltf/post-process-gltf"},
-            {"entry": "docs/api-reference/gltf/glbdump"}
+            {"entry": "modules/gltf/docs/api-reference"},
+            {"entry": "modules/gltf/docs/api-reference/gltf-extensions"},
+            {"entry": "modules/gltf/docs/api-reference/gltf-scenegraph"},
+            {"entry": "modules/gltf/docs/api-reference/post-process-gltf"},
+            {"entry": "modules/gltf/docs/api-reference/glbdump"}
           ]
         },
         {
-          "title": "images",
+          "title": "@loaders.gl/images",
           "entries": [
-            {"entry": "docs/api-reference/images"},
-            {"entry": "docs/api-reference/images/load-image"},
-            {"entry": "docs/api-reference/images/image-loader"},
-            {"entry": "docs/api-reference/images/image-utilities"},
-            {"entry": "docs/api-reference/images/image-writer"}
+            {"entry": "modules/images/docs/api-reference"},
+            {"entry": "modules/images/docs/api-reference/load-image"},
+            {"entry": "modules/images/docs/api-reference/image-utilities"}
           ]
         },
         {
-          "title": "kml",
+          "title": "@loaders.gl/kml",
           "entries": [
-            {"entry": "docs/api-reference/kml"},
-            {"entry": "docs/api-reference/kml/kml-loader"}
+            {"entry": "modules/kml/docs/api-reference"}
           ]
         },
         {
-          "title": "las",
+          "title": "@loaders.gl/las",
           "entries": [
-            {"entry": "docs/api-reference/las"},
-            {"entry": "docs/api-reference/las/las-loader"}
+            {"entry": "modules/las/docs/api-reference"}
           ]
         },
         {
-          "title": "obj",
+          "title": "@loaders.gl/obj",
           "entries": [
-            {"entry": "docs/api-reference/obj"},
-            {"entry": "docs/api-reference/obj/obj-loader"}
+            {"entry": "modules/obj/docs/api-reference"}
           ]
         },
         {
-          "title": "pcd",
+          "title": "@loaders.gl/pcd",
           "entries": [
-            {"entry": "docs/api-reference/pcd"},
-            {"entry": "docs/api-reference/pcd/pcd-loader"}
+            {"entry": "modules/pcd/docs/api-reference"}
           ]
         },
         {
-          "title": "ply",
+          "title": "@loaders.gl/ply",
           "entries": [
-            {"entry": "docs/api-reference/ply"},
-            {"entry": "docs/api-reference/ply/ply-loader"}
+            {"entry": "modules/ply/docs/api-reference"}
           ]
         },
         {
-          "title": "polyfills",
+          "title": "@loaders.gl/polyfills",
           "entries": [
-            {"entry": "docs/api-reference/polyfills"}
+            {"entry": "modules/polyfills/docs/api-reference"}
           ]
         },
         {
-          "title": "zip",
+          "title": "@loaders.gl/zip",
           "entries": [
-            {"entry": "docs/api-reference/zip"},
-            {"entry": "docs/api-reference/zip/zip-loader"},
-            {"entry": "docs/api-reference/zip/zip-writer"}
+            {"entry": "modules/zip/docs/api-reference"}
           ]
         }
       ]

@@ -19,7 +19,7 @@ for (const dependency in DEPENDENCIES) {
 module.exports = {
   logLevel: 4, // Adjusts amount of debug information from ocular-gatsby
 
-  DOC_FOLDER: `${__dirname}/../docs/`,
+  DOC_FOLDERS: [`${__dirname}/../docs/`, `${__dirname}/../modules`],
   ROOT_FOLDER: `${__dirname}/../`,
   DIR_NAME: `${__dirname}`,
 
