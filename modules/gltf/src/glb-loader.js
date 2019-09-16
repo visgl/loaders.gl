@@ -7,7 +7,7 @@ export default {
   extensions: ['glb'],
   mimeType: 'model/gltf-binary',
   binary: true,
-  parse: parseSync,
+  parse: async (arrayBuffer, options) => parseSync(arrayBuffer, options),
   parseSync,
   defaultOptions: {
     strict: false // Enables deprecated XVIZ support (illegal CHUNK formats)

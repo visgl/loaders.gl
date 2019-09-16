@@ -29,7 +29,8 @@ export default {
   mimeType: 'vnd.google-earth.kml+xml',
   supported: XMLLoader.supported,
   testText,
-  parse: arrayBuffer => parseTextSync(new TextDecoder().decode(arrayBuffer)),
+  parse: async (arrayBuffer, options) =>
+    parseTextSync(new TextDecoder().decode(arrayBuffer), options),
   parseTextSync,
   browserOnly: true,
   worker: false,

@@ -5,6 +5,9 @@ export function validateLoader(t, loader, name = '') {
   if (!loader.worker) {
     t.equal(typeof loader.mimeType, 'string', `Loader ${name} has a mimeType`);
     t.equal(typeof loader.parse, 'function', `Loader ${name} has 'parse' function`);
+    // Call parse just to ensure it returns a promise
+    const promise = loader.parse(null, {}).catch(_ => {});
+    t.ok(promise.then, `Loader ${name} is async (returns a promise)`);
   }
 }
 

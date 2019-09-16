@@ -6,7 +6,7 @@ export default {
   extensions: ['arrow'],
   mimeType: 'application/octet-stream',
   category: 'table',
-  parse: parseSync,
+  parse: async (arraybuffer, options) => parseSync(arraybuffer, options),
   parseSync,
   parseInBatches: parseArrowInBatches,
   parseInBatchesSync: parseArrowInBatchesSync,

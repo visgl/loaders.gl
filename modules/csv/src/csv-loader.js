@@ -8,7 +8,8 @@ export default {
   extensions: ['csv'],
   mimeType: 'text/csv',
   category: 'table',
-  parse: arrayBuffer => parseCSVSync(new TextDecoder().decode(arrayBuffer)),
+  parse: async (arrayBuffer, options) =>
+    parseCSVSync(new TextDecoder().decode(arrayBuffer), options),
   parseTextSync: parseCSVSync,
   parseInBatches: parseCSVInBatches,
   testText: null,
@@ -18,19 +19,15 @@ export default {
 };
 
 function parseCSVSync(csvText, options) {
-  const config = Object.assign(
-    {
-      header: hasHeader(csvText, options),
-      dynamicTyping: true // Convert numbers and boolean values in rows from strings
-    },
-    options,
-    {
-      download: false, // We handle loading, no need for papaparse to do it for us
-      error: e => {
-        throw new Error(e);
-      }
+  const config = {
+    header: hasHeader(csvText, options),
+    dynamicTyping: true, // Convert numbers and boolean values in rows from strings
+    ...options,
+    download: false, // We handle loading, no need for papaparse to do it for us
+    error: e => {
+      throw new Error(e);
     }
-  );
+  };
 
   const result = Papa.parse(csvText, config);
   return result.data;

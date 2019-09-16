@@ -9,6 +9,6 @@ export default {
   text: true,
   binary: true,
   test: 'LAS',
-  parse: parseLAS,
+  parse: async (arrayBuffer, options) => parseLAS(arrayBuffer, options),
   parseSync: parseLAS
 };

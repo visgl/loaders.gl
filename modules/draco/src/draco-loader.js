@@ -15,6 +15,6 @@ export default {
   mimeType: 'application/octet-stream',
   binary: true,
   test: 'DRACO',
-  parse: parseSync,
+  parse: async (arrayBuffer, options) => parseSync(arrayBuffer, options),
   parseSync
 };

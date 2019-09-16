@@ -15,7 +15,7 @@ export default {
   binary: true,
   test: 'ply',
   // Note: parsePLY supports both text and binary
-  parse: parsePLY, // TODO - this may not detect text correctly?
+  parse: async (arrayBuffer, options) => parsePLY(arrayBuffer, options), // TODO - this may not detect text correctly?
   parseTextSync: parsePLY,
   parseSync: parsePLY,
   DEFAULT_OPTIONS

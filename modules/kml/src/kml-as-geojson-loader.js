@@ -32,7 +32,8 @@ export default {
   category: 'geojson',
   supported: XMLLoader.supported,
   testText,
-  parse: arrayBuffer => parseTextSync(new TextDecoder().decode(arrayBuffer)),
+  parse: async (arrayBuffer, options) =>
+    parseTextSync(new TextDecoder().decode(arrayBuffer), options),
   parseTextSync,
   browserOnly: true,
   worker: false,
