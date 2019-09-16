@@ -12,6 +12,7 @@ To be compatible with the parsing/loading functions in `@loaders.gl/core` such a
 | `extension`  | `String`   | Required | Three letter (typically) extension used by files of this format |
 | `extensions` | `String[]` | Required | Array of file extension strings supported by this loader        |
 | `category`   | `String`   | Optional | Indicates the type/shape of data                                |
+| `parse` \| `worker` | `Function` | `null`  | Every non-worker loader should expose a `parse` function. |
 
 Note: Only one of `extension` or `extensions` is required. If both are supplied, `extensions` will be used.
 
@@ -24,15 +25,17 @@ Note: Only one of `extension` or `extensions` is required. If both are supplied,
 
 ### Parser Function
 
-When creating a new loader object, at least one of the parser functions needs to be defined.
+Each (non-worker) loader should define a `parse` function. Additional parsing functions can be exposed depending on the loaders capabilities, to optimize for text parsing, synchronous parsing, streaming parsing, etc:
 
 | Parser function field               | Type       | Default | Description                                                                            |
 | ----------------------------------- | ---------- | ------- | -------------------------------------------------------------------------------------- |
+| `parse`                             | `Function` | `null`  | Asynchronously parses binary data (e.g. file contents) asynchronously (`ArrayBuffer`). |
 | `parseInBatches` (Experimental)     | `Function` | `null`  | Parses binary data chunks (`ArrayBuffer`) to output data "batches"                     |
 | `parseInBatchesSync` (Experimental) | `Function` | `null`  | Synchronously parses binary data chunks (`ArrayBuffer`) to output data "batches"       |
 | `parseSync`                         | `Function` | `null`  | Atomically and synchronously parses binary data (e.g. file contents) (`ArrayBuffer`)   |
 | `parseTextSync`                     | `Function` | `null`  | Atomically and synchronously parses a text file (`String`)                             |
-| `parse`                             | `Function` | `null`  | Asynchronously parses binary data (e.g. file contents) asynchronously (`ArrayBuffer`). |
 | `loadAndParse`                      | `Function` | `null`  | Asynchronously reads a binary file and parses its contents.                            |
 
-Note: Only one parser function is required. Synchronous parsers are more flexible as they can support synchronous parsing in addition to asynchronous parsing, and iterator-based parsers are more flexible as they can support batched loading in addition to atomic loading. You are encouraged to provide the most capable parser function you can (e.g. `parseSync` or `parseToIterator` if possible). Unless you are writing a completely new loader, the appropriate choice usually depends on the loader you are encapsulating.
+Synchronous parsers are more flexible as they can support synchronous parsing which can simplify application logic and debugging, and iterator-based parsers are more flexible as they can support batched loading of large data sets in addition to atomic loading.
+
+You are encouraged to provide the most capable parser function you can (e.g. `parseSync` or `parseToIterator` if possible). Unless you are writing a completely new loader from scratch, the appropriate choice often depends on the capabilities of an existing external "loader" that you are working with.
