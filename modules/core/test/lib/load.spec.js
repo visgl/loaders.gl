@@ -19,14 +19,15 @@ test('load#load', async t => {
 });
 
 test('load#auto detect loader', t => {
-  registerLoaders({
+  const TEST_LOADER = {
     name: 'JSON',
     extensions: ['json'],
-    parse: data => {
-      t.ok(data instanceof ArrayBuffer, 'Got ArrayBuffer');
+    parse: async arrayBuffer => {
+      t.ok(arrayBuffer instanceof ArrayBuffer, 'Got ArrayBuffer');
       t.end();
     }
-  });
+  };
+  registerLoaders(TEST_LOADER);
   load('package.json');
 });
 

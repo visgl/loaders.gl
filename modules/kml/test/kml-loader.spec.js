@@ -1,5 +1,7 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
+import {validateLoader} from 'test/common/conformance';
+
 import {parseSync} from '@loaders.gl/core';
 import {KMLLoader} from '@loaders.gl/kml';
 
@@ -12,6 +14,11 @@ const INVALID_KML = `\
   </Document>
 </kml>
 `;
+
+test('KMLLoader#loader conformance', t => {
+  validateLoader(t, KMLLoader, 'KMLLoader');
+  t.end();
+});
 
 test('KMLLoader#testText', t => {
   let isKML = KMLLoader.testText(KML);

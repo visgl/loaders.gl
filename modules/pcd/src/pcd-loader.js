@@ -1,7 +1,9 @@
-import parsePCD from './parse-pcd';
+import parsePCDSync from './lib/parse-pcd';
 
 export default {
   name: 'PCD',
   extensions: ['pcd'],
-  parseSync: parsePCD
+  mimeType: 'text/plain', // TODO - can be both text and binary
+  parse: async (arrayBuffer, options) => parsePCDSync(arrayBuffer, options),
+  parseSync: parsePCDSync
 };

@@ -8,12 +8,15 @@ import './lib/gltf-roundtrip.spec';
 import './lib/gltf-scenegraph-modifiers.spec';
 import './lib/post-process-gltf.spec';
 
+import './lib/extensions/KHR_draco_mesh_compression.spec';
+import './lib/extensions/KHR_lights_punctual.spec';
+
 import './glb-loader.spec';
+import './glb-writer.spec';
 import './gltf-loader.spec';
 import './gltf-writer.spec';
 
-import './lib/extensions/KHR_draco_mesh_compression.spec';
-import './lib/extensions/KHR_lights_punctual.spec';
+// DEPRECATED
 
 import './lib/deprecated/packed-json/flatten-to-typed-array.spec';
 import './lib/deprecated/packed-json/pack-binary-json.spec';

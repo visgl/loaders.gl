@@ -1,5 +1,17 @@
 import {encodeGLTFSync} from './lib/encode-gltf';
 
+export default {
+  name: 'glTF',
+  extensions: ['glb'], // We only support encoding to binary GLB, not to JSON GLTF
+  // mimeType: 'model/gltf-binary',
+  mimeType: 'model/gltf+json',
+  encodeSync,
+  binary: true,
+  defaultOptions: {
+    useGLTFBuilder: true // Note: GLTFBuilder will be removed in v2
+  }
+};
+
 function encodeSync(gltf, options = {}) {
   const {byteOffset = 0} = options;
 
@@ -11,13 +23,3 @@ function encodeSync(gltf, options = {}) {
 
   return arrayBuffer;
 }
-
-export default {
-  name: 'glTF',
-  extensions: ['glb'], // We only support encoding to binary GLB, not to JSON GLTF
-  encodeSync,
-  binary: true,
-  defaultOptions: {
-    useGLTFBuilder: true // Note: GLTFBuilder will be removed in v2
-  }
-};

@@ -1,7 +1,8 @@
+/* global TextDecoder */
 import {XMLLoader} from '@loaders.gl/experimental';
-import KMLParser from './kml-parser';
-import normalizeKML from './kml-normalizer';
-import convertKMLToGeoJson from './kml-to-geojson';
+import KMLParser from './lib/kml-parser';
+import normalizeKML from './lib/kml-normalizer';
+import convertKMLToGeoJson from './lib/kml-to-geojson';
 
 const KML_HEADER = `\
 <?xml version="1.0" encoding="UTF-8"?>
@@ -27,9 +28,12 @@ function parseTextSync(text, options = DEFAULT_OPTIONS) {
 export default {
   name: 'KML',
   extensions: ['kml'],
+  mimeType: 'vnd.google-earth.kml+xml',
   category: 'geojson',
   supported: XMLLoader.supported,
   testText,
+  parse: async (arrayBuffer, options) =>
+    parseTextSync(new TextDecoder().decode(arrayBuffer), options),
   parseTextSync,
   browserOnly: true,
   worker: false,

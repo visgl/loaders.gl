@@ -21,9 +21,11 @@ Many ideas are in tracker tasks in github, but here are some ideas:
 
 **MIME types** - Allow MIME types (e.g. from response headers) to be provided to assist in loader auto-selection. Enable Writers to return recommended MIMEtypes.
 
-## Format Roadmap
+## Loader Roadmap
 
 ### Data loaders
+
+Streaming tabular loaders
 
 - Streaming JSON loader
 
@@ -31,19 +33,22 @@ Many ideas are in tracker tasks in github, but here are some ideas:
 
 Focus on loading of complex geospatial data.
 
-- KML and Shapefile
+Focus on loading of large, complex geospatial data.
+
+- KML
+- Shapefile
+  > > > > > > > Add tests
 - Streaming GeoJSON loader
 
-### Scenegraph Formats
+### Images
 
-- Focus on glTF/GLB - loaders.gl should to have a very solid implementation.
-- The glTF loaders should handle (e.g. preprocess) any glTF extensions that can be handled during the load phase (such as Draco, Basis - but many can only be handled during rendering).
-- Limited alternatives: Given the emergence of glTF as a major Khronos standard, and availability of good glTF conversion tools and exporters, loaders will most likely not implement any other scene/mesh description formats such as COLLADA.
+- Basis image decoder
+- Better image loaders
 
 ### Meshes
 
-- Given glTF, do not envision support beyond OBJ.
-- For OBJ, should we support MTL?
+- MTL - we should have full OBJ/MTL support.
+- Given industry convergence on glTF, we do not envision supporting any otherr mesh formats beyond OBJ/MTL.
 
 ### Point Clouds
 
@@ -51,11 +56,16 @@ Focus on loading formats for large point clouds.
 
 ### Massive Point Clouds/Data Sets
 
-- 3D Tiles
+Complement 3D Tiles with:
+
 - potree
 - i3s
 
-Tile parsers are not enough, the 3d tiles category will need to include advanced traversal and tile loading caches
+### Scenegraph Formats
+
+- Focus on glTF/GLB - loaders.gl should to have a very solid implementation.
+- The glTF loaders should handle (e.g. preprocess) any glTF extensions that can be handled during the load phase (such as Draco, Basis - but many can only be handled during rendering).
+- Limited alternatives: Given the emergence of glTF as a major Khronos standard, and availability of good glTF conversion tools and exporters, loaders will most likely not implement any other scene/mesh description formats such as COLLADA.
 
 ### Other loaders
 

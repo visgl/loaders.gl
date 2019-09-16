@@ -1,8 +1,9 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
+import {validateWriter} from 'test/common/conformance';
 
 import {parseSync, encodeSync} from '@loaders.gl/core';
-import {GLTFScenegraph, GLTFLoader, GLTFWriter, GLTFBuilder} from '@loaders.gl/gltf';
+import {GLTFLoader, GLTFWriter, GLTFScenegraph, GLTFBuilder} from '@loaders.gl/gltf';
 
 const EXTRA_DATA = {extraData: 1};
 const APP_DATA = {vizData: 2};
@@ -12,6 +13,11 @@ const REQUIRED_EXTENSION_1 = 'UBER_extension_1';
 const REQUIRED_EXTENSION_2 = 'UBER_extension_2';
 const USED_EXTENSION_1 = 'UBER_extension_3';
 const USED_EXTENSION_2 = 'UBER_extension_4';
+
+test('GLTFWriter#loader conformance', t => {
+  validateWriter(t, GLTFWriter, 'GLTFWriter');
+  t.end();
+});
 
 test('GLTFWriter#encode', t => {
   const gltfBuilder = new GLTFScenegraph();

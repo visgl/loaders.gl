@@ -3,7 +3,7 @@ import test from 'tape-promise/tape';
 import {fetchFile, parseSync, encodeSync} from '@loaders.gl/core';
 import {_getMeshSize} from '@loaders.gl/loader-utils';
 import {DracoWriter, DracoLoader} from '@loaders.gl/draco';
-import {validateLoadedData} from 'test/common/conformance';
+import {validatePointCloudCategoryData} from 'test/common/conformance';
 
 const POSITIONS_URL = '@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-positions.bin';
 const COLORS_URL = '@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-colors.bin';
@@ -30,7 +30,7 @@ test('DracoWriter#compressRawBuffers', async t => {
 
   // Ensure we can parse it
   const data2 = parseSync(compressedMesh, DracoLoader);
-  validateLoadedData(t, data2);
+  validatePointCloudCategoryData(t, data2);
 
   t.equal(data2.attributes.POSITION.value.length, attributes.POSITION.length, 'POSITION matched');
   t.equal(data2.attributes.COLOR_0.value.length, attributes.COLOR_0.length, 'COLOR matched');

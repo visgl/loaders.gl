@@ -1,6 +1,8 @@
 import test from 'tape-promise/tape';
-import {encode, parse, TextDecoder} from '@loaders.gl/core';
+import {validateLoader, validateWriter} from 'test/common/conformance';
+
 import {ZipWriter, ZipLoader} from '@loaders.gl/zip';
+import {encode, parse, TextDecoder} from '@loaders.gl/core';
 
 const FILE_MAP = {
   src: 'abc',
@@ -8,6 +10,12 @@ const FILE_MAP = {
   'README.md': 'This is a module',
   package: '{"name": "module"}'
 };
+
+test('Zip#loader/writer conformance', t => {
+  validateLoader(t, ZipLoader, 'ZipLoader');
+  validateWriter(t, ZipWriter, 'ZipWriter');
+  t.end();
+});
 
 test('Zip#encode/decode', t => {
   encode(FILE_MAP, ZipWriter)

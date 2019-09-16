@@ -1,9 +1,10 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
+import {validateWriter, validatePointCloudCategoryData} from 'test/common/conformance';
+
+import {DracoWriter, DracoLoader, DracoBuilder} from '@loaders.gl/draco';
 import {encodeSync, fetchFile, parseSync} from '@loaders.gl/core';
 import {_getMeshSize} from '@loaders.gl/loader-utils';
-import {DracoLoader, DracoWriter, DracoBuilder} from '@loaders.gl/draco';
-import {validateLoadedData} from 'test/common/conformance';
 
 const TEST_CASES = [
   {
@@ -35,6 +36,11 @@ async function loadBunny() {
   return parseSync(arrayBuffer, DracoLoader);
 }
 
+test('DracoWriter#loader conformance', t => {
+  validateWriter(t, DracoWriter, 'DracoWriter');
+  t.end();
+});
+
 test('DracoWriter#encodeSync(bunny.drc)', async t => {
   const data = await loadBunny();
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
@@ -65,7 +71,7 @@ test('DracoWriter#encodeSync(bunny.drc)', async t => {
     if (!tc.options.pointcloud) {
       // Decode the mesh
       const data2 = parseSync(compressedMesh, DracoLoader);
-      validateLoadedData(t, data2);
+      validatePointCloudCategoryData(t, data2);
 
       // t.comment(JSON.stringify(data));
       t.equal(
@@ -81,7 +87,7 @@ test('DracoWriter#encodeSync(bunny.drc)', async t => {
 
 test('DracoParser#encode(bunny.drc)', async t => {
   const data = await loadBunny();
-  validateLoadedData(t, data);
+  validatePointCloudCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
 
   const meshAttributes = {
@@ -110,7 +116,7 @@ test('DracoParser#encode(bunny.drc)', async t => {
     if (!tc.options.pointcloud) {
       // Decode the mesh
       const data2 = parseSync(compressedMesh, DracoLoader);
-      validateLoadedData(t, data2);
+      validatePointCloudCategoryData(t, data2);
 
       // t.comment(JSON.stringify(data));
       t.equal(
