@@ -26,6 +26,7 @@ Many ideas are in tracker tasks in github, but here are some ideas:
 ### Data loaders
 
 Streaming tabular loaders
+
 - Streaming JSON loader
 
 ### Geospatial loaders
@@ -33,9 +34,10 @@ Streaming tabular loaders
 Focus on loading of complex geospatial data.
 
 Focus on loading of large, complex geospatial data.
+
 - KML
 - Shapefile
->>>>>>> Add tests
+  > > > > > > > Add tests
 - Streaming GeoJSON loader
 
 ### Images
@@ -55,6 +57,7 @@ Focus on loading formats for large point clouds.
 ### Massive Point Clouds/Data Sets
 
 Complement 3D Tiles with:
+
 - potree
 - i3s
 
