@@ -246,14 +246,14 @@ export default class App extends PureComponent {
       return null;
     }
 
-    const {tilesetUrl, ionAssetId, ionAccessToken, coordinateOrigin} = selectedExample;
+    const {tilesetUrl, ionAssetId, ionAccessToken} = selectedExample;
 
     return new Tile3DLayer({
       id: 'tile-3d-layer',
       tilesetUrl,
-      ionAssetId,
-      ionAccessToken,
-      coordinateOrigin,
+      _ionAssetId: ionAssetId,
+      _ionAccessToken: ionAccessToken,
+      pointSize: 2,
       // TODO - calling `registerLoaders([DracoLoader])` should be enough to make it available to gltf & 3d-tiles
       //   (but a lot of plumbing is required...)
       DracoWorkerLoader,
