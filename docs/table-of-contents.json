@@ -37,26 +37,6 @@
       ]
     },
     {
-      "title": "API Reference",
-      "entries": [
-        {"entry": "modules/core/docs/api-reference/parse"},
-        {"entry": "modules/core/docs/api-reference/parse-sync"},
-        {"entry": "modules/core/docs/api-reference/parse-in-batches"},
-        {"entry": "modules/core/docs/api-reference/load"},
-        {"entry": "modules/core/docs/api-reference/encode"},
-        {"entry": "modules/core/docs/api-reference/save"},
-        {"entry": "modules/core/docs/api-reference/fetch-file"},
-        {"entry": "modules/core/docs/api-reference/write-file"},
-        {"entry": "modules/core/docs/api-reference/register-loaders"},
-        {"entry": "modules/core/docs/api-reference/select-loader"},
-        {"entry": "modules/core/docs/api-reference/set-path-prefix"},
-        {"entry": "modules/core/docs/api-reference/binary-utilities"},
-        {"entry": "modules/core/docs/api-reference/iterator-utilities"},
-        {"entry": "docs/specifications/loader-object-format"},
-        {"entry": "docs/specifications/writer-object-format"}
-      ]
-    },
-    {
       "title": "Loader Catalog",
       "entries": [
         {"entry": "modules/arrow/docs/api-reference/arrow-loader"},
@@ -91,8 +71,29 @@
       ]
     },
     {
-      "title": "Submodule Reference",
+      "title": "API Reference",
       "chapters": [
+        {
+          "title": "@loaders.gl/core",
+          "entries": [
+            {"entry": "modules/core/docs/api-reference"},
+            {"entry": "modules/core/docs/api-reference/parse"},
+            {"entry": "modules/core/docs/api-reference/parse-sync"},
+            {"entry": "modules/core/docs/api-reference/parse-in-batches"},
+            {"entry": "modules/core/docs/api-reference/load"},
+            {"entry": "modules/core/docs/api-reference/encode"},
+            {"entry": "modules/core/docs/api-reference/save"},
+            {"entry": "modules/core/docs/api-reference/fetch-file"},
+            {"entry": "modules/core/docs/api-reference/write-file"},
+            {"entry": "modules/core/docs/api-reference/register-loaders"},
+            {"entry": "modules/core/docs/api-reference/select-loader"},
+            {"entry": "modules/core/docs/api-reference/set-path-prefix"},
+            {"entry": "modules/core/docs/api-reference/binary-utilities"},
+            {"entry": "modules/core/docs/api-reference/iterator-utilities"},
+            {"entry": "docs/specifications/loader-object-format"},
+            {"entry": "docs/specifications/writer-object-format"}
+          ]
+        },
         {
           "title": "@loaders.gl/3d-tiles",
           "entries": [
@@ -104,12 +105,6 @@
           "title": "@loaders.gl/arrow",
           "entries": [
             {"entry": "modules/arrow/docs/api-reference"}
-          ]
-        },
-        {
-          "title": "@loaders.gl/core",
-          "entries": [
-            {"entry": "modules/core/docs/api-reference"}
           ]
         },
         {
