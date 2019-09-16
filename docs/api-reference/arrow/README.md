@@ -1,6 +1,6 @@
 # @loaders.gl/arrow
 
-This module handles [Apache Arrow](https://arrow.apache.org/), an emerging standard for large in-memory columnar data. 
+This module handles [Apache Arrow](https://arrow.apache.org/), an emerging standard for large in-memory columnar data.
 
 ## Installation
 

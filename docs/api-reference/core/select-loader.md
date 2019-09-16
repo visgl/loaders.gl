@@ -40,23 +40,27 @@ _selectLoader(null, 'filename.csv'); // => CSVLoader
 Selects an appropriate loader for a file from a list of candidate loaders by examining a URL and/or an initial data chunk.
 
 Parameters:
+
 - `loaders` - can be a single loader or an array of loaders, or null.
 - `url` - An optional URL to perform autodetection against.
 - `data` - Optional data to perform autodetection against
 - `options.nothrow`=`false` - Return null instead of throwing exception if no loader can be found
 
 Returns:
+
 - A single loader (or null if `options.nothrow` was set and no matching loader was found).
 
 Throws:
+
 - If no matching loader was found, and `options.nothrow` was not set.
 
 Regarding the `loaders` parameter:
+
 - A single loader object will be returned without matching.
 - a `null` loader list will use the pre-registered list of loaders.
 - A supplied list of loaders will be searched for a matching loader.
 
 ## Remarks
 
-* File extensions - An attempt will be made to extract a file extension by stripping away query parameters and base path before matching against known loader extensions.
-* Stream autodetection - Currently not well supported.
+- File extensions - An attempt will be made to extract a file extension by stripping away query parameters and base path before matching against known loader extensions.
+- Stream autodetection - Currently not well supported.

@@ -1,6 +1,6 @@
 # Loader Categories
 
-To simplify working with multiple similar formats, loaders and writers in loaders.gl are grouped into *categories*.
+To simplify working with multiple similar formats, loaders and writers in loaders.gl are grouped into _categories_.
 
 The idea is that many loaders return very similar data (e.g. point clouds loaders), which makes it possible to represent the loaded data in the same data structure, letting applications handle the output from multiple loaders without
 
@@ -13,6 +13,7 @@ The fact that loaders belong to categories enable applications to flexibly regis
 For instance, once an application has added support for one loader in a category, other loaders in the same category can be registered during application startup.
 
 Original code
+
 ```js
 import {parse, registerLoaders} from '@loaders.gl/core';
 import {PCDLoader} from `@loaders.gl/pcd';

@@ -27,11 +27,11 @@ export default {
 };
 ```
 
-| Field       | Type     | Default  | Description                                                     |
-| ----------- | -------- | -------- | --------------------------------------------------------------- |
-| `name`      | `String` | Required | Short name of the loader ('OBJ', 'PLY' etc)                     |
-| `extension` | `String` | Required | Three letter (typically) extension used by files of this format |
-| `testText` | `Function` | `null`  | Guesses if a file is of this format by examining the first characters in the file |
+| Field       | Type       | Default  | Description                                                                       |
+| ----------- | ---------- | -------- | --------------------------------------------------------------------------------- |
+| `name`      | `String`   | Required | Short name of the loader ('OBJ', 'PLY' etc)                                       |
+| `extension` | `String`   | Required | Three letter (typically) extension used by files of this format                   |
+| `testText`  | `Function` | `null`   | Guesses if a file is of this format by examining the first characters in the file |
 
 A loader must define a parser function for the format, a function that takes the loaded data and converts it into a parsed object.
 

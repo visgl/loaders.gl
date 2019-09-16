@@ -1,6 +1,6 @@
 # @loaders.gl/zip
 
-This module handles compressing and decompressing of the [ZIP](https://en.wikipedia.org/wiki/Zip_\(file_format\)) format.
+This module handles compressing and decompressing of the [ZIP](<https://en.wikipedia.org/wiki/Zip_(file_format)>) format.
 
 ## Installation
 

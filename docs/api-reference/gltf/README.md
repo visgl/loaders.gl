@@ -52,4 +52,3 @@ import {DracoWriter, DracoLoader} from '@loaders.gl/draco';
 
 const gltfBuilder = new GLTFBuilder({DracoWriter, DracoLoader});
 ```
-

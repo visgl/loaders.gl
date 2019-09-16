@@ -12,17 +12,16 @@ GIS category data can be converted to GeoJSON (sometimes with a loss of informat
 
 A JavaScript object with a number of top-level array-valued fields:
 
-| Field           | Description                        |
-| --------------- | ---------------------------------- |
+| Field           | Description                                          |
+| --------------- | ---------------------------------------------------- |
 | `points`        | A [GeoJson](https://geojson.org/) FeatureCollection. |
 | `lines`         | A [GeoJson](https://geojson.org/) FeatureCollection. |
 | `polygons`      | A [GeoJson](https://geojson.org/) FeatureCollection. |
-| `imageoverlays` | Urls and bounds of bitmap overlays |
-| `documents`     |                                    |
-| `folders`       |                                    |
-| `links`         |                                    |
+| `imageoverlays` | Urls and bounds of bitmap overlays                   |
+| `documents`     |                                                      |
+| `folders`       |                                                      |
+| `links`         |                                                      |
 
 ## Loaders
 
 - [KMLLoader](/docs/api-reference/kml/kml-loader)
-
