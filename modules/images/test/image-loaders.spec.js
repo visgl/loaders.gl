@@ -1,7 +1,7 @@
 import test from 'tape-promise/tape';
-import {validateLoader} from 'test/common/conformance';
+// import {validateLoader} from 'test/common/conformance';
 
-import {ImageLoader, ImageBitmapLoader, HTMLImageLoader} from '@loaders.gl/images';
+// import {ImageLoader, ImageBitmapLoader, HTMLImageLoader} from '@loaders.gl/images';
 
 test('LASLoader#loader conformance', t => {
   // TODO - enable when we land the image loader refactor
