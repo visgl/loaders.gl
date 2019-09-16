@@ -1,4 +1,8 @@
 import test from 'tape-promise/tape';
+import {validateLoader} from 'test/common/conformance';
+
+import {ArrowLoader} from '@loaders.gl/arrow';
+import {ArrowWorkerLoader} from '@loaders.gl/arrow';
 import {
   isBrowser,
   resolvePath,
@@ -7,9 +11,6 @@ import {
   parse,
   parseInBatches
 } from '@loaders.gl/core';
-// import {parseInBatchesSync} from '@loaders.gl/core';
-import {ArrowLoader} from '@loaders.gl/arrow';
-import {ArrowWorkerLoader} from '@loaders.gl/arrow';
 
 // Small Arrow Sample Files
 const ARROW_SIMPLE = '@loaders.gl/arrow/test/data/simple.arrow';
@@ -18,6 +19,11 @@ const ARROW_STRUCT = '@loaders.gl/arrow/test/data/struct.arrow';
 
 // Bigger, batched sample file
 const ARROW_BIOGRID_NODES = '@loaders.gl/arrow/test/data/biogrid-nodes.arrow';
+
+test('ArrowLoader#loader conformance', t => {
+  validateLoader(t, ArrowLoader, 'ArrowLoader');
+  t.end();
+});
 
 test('ArrowLoader#parseSync(simple.arrow)', async t => {
   const columns = await parse(fetchFile(ARROW_SIMPLE), ArrowLoader);

@@ -1,4 +1,4 @@
-import DracoParser from './draco-parser';
+import DracoParser from './lib/draco-parser';
 
 function parseSync(arrayBuffer, options) {
   const dracoParser = new DracoParser();
@@ -12,7 +12,9 @@ function parseSync(arrayBuffer, options) {
 export default {
   name: 'DRACO',
   extensions: ['drc'],
+  mimeType: 'application/octet-stream',
   binary: true,
   test: 'DRACO',
+  parse: parseSync,
   parseSync
 };

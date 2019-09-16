@@ -1,5 +1,13 @@
 # What's New
 
+## v1.4 (In Development, alpha/beta releases will soon become available)
+
+### Loaders
+
+- All exported (non-worker) loaders are now guaranteed to expose a `parse` function (in addition to any additional, morer specialized `parseSync/parseText/parseInBatches` functions).
+- This makes it easier to import and use loader modules without importing `@loaders.gl/core`, which can reduce footprint when building small applications.
+- All exported loader and writer objects now expose a `mimeType` field. This field is not yet used by `@loaders.gl/core` but is available for applications (e.g. see `selectLoader`).
+
 ## v1.3 (In Development, alpha/beta releases will soon become available)
 
 Target Release Date: Sep 13

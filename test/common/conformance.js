@@ -1,8 +1,23 @@
+export function validateLoader(t, loader, name = '') {
+  t.ok(loader, `Loader ${name} defined`);
+  t.equal(typeof loader.name, 'string', `Loader ${name} has a name`);
+  t.ok(Array.isArray(loader.extensions), `Loader ${name} has extensions`);
+  if (!loader.worker) {
+    t.equal(typeof loader.mimeType, 'string', `Loader ${name} has a mimeType`);
+    t.equal(typeof loader.parse, 'function', `Loader ${name} has 'parse' function`);
+  }
+}
+
+export function validateWriter(t, writer, name = '') {
+  t.ok(writer, `Writer ${name} defined`);
+  t.equal(typeof writer.name, 'string', `Writer ${name} has a name`);
+}
+
 /**
  * Check if the returned data from loaders use the format specified in:
  *  /docs/developer-guide/category-pointcloud.md
  */
-export function validateLoadedData(t, data) {
+export function validatePointCloudCategoryData(t, data) {
   t.ok(data.loaderData && data.loaderData.header, 'data has original header');
 
   t.ok(data.header && Number.isFinite(data.header.vertexCount), 'data has normalized header');

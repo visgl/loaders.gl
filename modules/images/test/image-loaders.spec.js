@@ -1,10 +1,14 @@
+import test from 'tape-promise/tape';
+import {validateLoader} from 'test/common/conformance';
+
 import {ImageLoader, ImageBitmapLoader, HTMLImageLoader} from '@loaders.gl/images';
 
-import test from 'tape-promise/tape';
-
-test('image loaders#imports', t => {
-  t.ok(ImageLoader, 'ImageLoader defined');
-  t.ok(ImageBitmapLoader, 'ImageBitmapLoader defined');
-  t.ok(HTMLImageLoader, 'HTMLImageLoader defined');
+test('LASLoader#loader conformance', t => {
+  // TODO - enable when we land the image loader refactor
+  /*
+  validateLoader(t, ImageLoader, 'ImageLoader');
+  validateLoader(t, ImageBitmapLoader, 'ImageBitmapLoader');
+  validateLoader(t, HTMLImageLoader, 'HTMLImageLoader');
+  */
   t.end();
 });

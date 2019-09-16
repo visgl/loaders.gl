@@ -1,3 +1,4 @@
+/* global TextDecoder */
 import {AsyncQueue, TableBatchBuilder, RowTableBatch} from '@loaders.gl/experimental';
 import Papa from './papaparse/papaparse.transpiled';
 import AsyncIteratorStreamer from './papaparse/async-iterator-streamer';
@@ -5,9 +6,12 @@ import AsyncIteratorStreamer from './papaparse/async-iterator-streamer';
 export default {
   name: 'CSV',
   extensions: ['csv'],
-  testText: null,
+  mimeType: 'text/csv',
+  category: 'table',
+  parse: arrayBuffer => parseCSVSync(new TextDecoder().decode(arrayBuffer)),
   parseTextSync: parseCSVSync,
   parseInBatches: parseCSVInBatches,
+  testText: null,
   options: {
     TableBatch: RowTableBatch
   }

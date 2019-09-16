@@ -1,13 +1,14 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
+import {validateLoader} from 'test/common/conformance';
 
 import {load, parseSync, fetchFile} from '@loaders.gl/core';
 import {GLBLoader} from '@loaders.gl/gltf';
 
 const GLTF_BINARY_URL = '@loaders.gl/gltf/test/data/gltf-2.0/2CylinderEngine.glb';
 
-test('GLBLoader#imports', t => {
-  t.ok(GLBLoader, 'GLBLoader was imported');
+test('GLBLoader#loader conformance', t => {
+  validateLoader(t, GLBLoader, 'GLBLoader');
   t.end();
 });
 

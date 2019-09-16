@@ -4,6 +4,9 @@ import {parseArrowInBatches, parseArrowInBatchesSync} from './lib/parse-arrow-in
 export default {
   name: 'Apache Arrow',
   extensions: ['arrow'],
+  mimeType: 'application/octet-stream',
+  category: 'table',
+  parse: parseSync,
   parseSync,
   parseInBatches: parseArrowInBatches,
   parseInBatchesSync: parseArrowInBatchesSync,

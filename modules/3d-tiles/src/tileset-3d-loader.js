@@ -1,6 +1,8 @@
+/* global TextDecoder */
 export default {
   name: '3D Tileset',
   extensions: ['json'],
-  testText: text => text.indexOf('asset' >= 0),
-  parseTextSync: JSON.parse
+  parse: arrayBuffer => JSON.parse(new TextDecoder().decode(arrayBuffer)),
+  parseTextSync: JSON.parse,
+  testText: text => text.indexOf('asset' >= 0)
 };

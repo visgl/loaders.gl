@@ -248,6 +248,11 @@ var UNPARSE_TESTS = [
   }
 ];
 
+test('CSVWriter#loader conformance', t => {
+  validateLoader(t, CSVWriter, 'CSVWriter');
+  t.end();
+});
+
 test('Unparse Tests', t => {
   function generateTest(test) {
     (test.disabled ? it.skip : it)(test.description, () => {

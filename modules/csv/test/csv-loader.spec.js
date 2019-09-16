@@ -1,7 +1,9 @@
 import test from 'tape-promise/tape';
+import {validateLoader} from 'test/common/conformance';
+
+import {CSVLoader} from '@loaders.gl/csv';
 import {load, loadInBatches, isIterator, isAsyncIterable} from '@loaders.gl/core';
 import {ColumnarTableBatch} from '@loaders.gl/experimental';
-import {CSVLoader} from '@loaders.gl/csv';
 
 // Small CSV Sample Files
 const CSV_SAMPLE_URL = '@loaders.gl/csv/test/data/sample.csv';
@@ -28,6 +30,11 @@ function validateColumn(column, length, type) {
 
   return column.every(validator) ? true : `column elements are not all ${type}s`;
 }
+
+test('CSVLoader#loader conformance', t => {
+  validateLoader(t, CSVLoader, 'CSVLoader');
+  t.end();
+});
 
 test('CSVLoader#load', async t => {
   const rows = await load(CSV_SAMPLE_URL, CSVLoader);

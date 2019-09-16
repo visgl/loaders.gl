@@ -1,4 +1,4 @@
-import DRACOBuilder from './draco-builder';
+import DRACOBuilder from './lib/draco-builder';
 
 function encodeSync(data, options) {
   const dracoBuilder = new DRACOBuilder();

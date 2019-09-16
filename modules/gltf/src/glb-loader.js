@@ -1,12 +1,13 @@
-// Binary container format for glTF
+// Binary container format for GLB
 
 import parseGLBSync from './lib/parse-glb';
 
 export default {
   name: 'GLB',
-  extension: ['glb'],
-  text: true,
+  extensions: ['glb'],
+  mimeType: 'model/gltf-binary',
   binary: true,
+  parse: parseSync,
   parseSync,
   defaultOptions: {
     strict: false // Enables deprecated XVIZ support (illegal CHUNK formats)

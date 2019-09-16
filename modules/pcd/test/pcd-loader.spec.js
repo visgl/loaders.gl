@@ -1,16 +1,22 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
-import {fetchFile, parse, load} from '@loaders.gl/core';
-import {PCDLoader, PCDWorkerLoader} from '@loaders.gl/pcd';
+import {validateLoader, validatePointCloudCategoryData} from 'test/common/conformance';
 
-import {validateLoadedData} from 'test/common/conformance';
+import {PCDLoader, PCDWorkerLoader} from '@loaders.gl/pcd';
+import {fetchFile, parse, load} from '@loaders.gl/core';
 
 const PCD_ASCII_URL = '@loaders.gl/pcd/test/data/simple-ascii.pcd';
 const PCD_BINARY_URL = '@loaders.gl/pcd/test/data/Zaghetto.pcd';
 
+test('PCDLoader#loader conformance', t => {
+  validateLoader(t, PCDLoader, 'PCDLoader');
+  validateLoader(t, PCDWorkerLoader, 'PCDWorkerLoader');
+  t.end();
+});
+
 test('PCDLoader#parse(text)', async t => {
   const data = await parse(fetchFile(PCD_ASCII_URL), PCDLoader);
-  validateLoadedData(t, data);
+  validatePointCloudCategoryData(t, data);
 
   t.equal(data.mode, 0, 'mode is POINTS (0)');
   t.notOk(data.indices, 'INDICES attribute was not found');
@@ -23,7 +29,7 @@ test('PCDLoader#parse(text)', async t => {
 
 test('PCDLoader#parse(binary)', async t => {
   const data = await parse(fetchFile(PCD_BINARY_URL), PCDLoader);
-  validateLoadedData(t, data);
+  validatePointCloudCategoryData(t, data);
 
   t.equal(data.mode, 0, 'mode is POINTS (0)');
   t.notOk(data.indices, 'INDICES attribute was not preset');
@@ -40,7 +46,7 @@ test('PCDWorkerLoader#parse(binary)', async t => {
   }
 
   const data = await load(PCD_BINARY_URL, PCDWorkerLoader);
-  validateLoadedData(t, data);
+  validatePointCloudCategoryData(t, data);
 
   t.equal(data.mode, 0, 'mode is POINTS (0)');
   t.notOk(data.indices, 'INDICES attribute was not preset');
