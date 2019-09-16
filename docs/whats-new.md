@@ -1,4 +1,5 @@
 # What's New
+
 ## v1.4 (In Development, alpha/beta releases will soon become available)
 
 ### Loaders
@@ -6,7 +7,6 @@
 - All exported (non-worker) loaders are now guaranteed to expose a `parse` function (in addition to any additional, morer specialized `parseSync/parseText/parseInBatches` functions).
 - This makes it easier to import and use loader modules without importing `@loaders.gl/core`, which can reduce footprint when building small applications.
 - All exported loader and writer objects now expose a `mimeType` field. This field is not yet used by `@loaders.gl/core` but is available for applications (e.g. see `selectLoader`).
-
 
 ## v1.3
 
@@ -43,9 +43,8 @@ Release Date: Sep 13, 2019
 
 - `@loaders.gl/gltf`: **Version 2 Improvements**
   - Select the new glTF parser by passing `options.gltf.parserVersion: 2` to the `GLTFLoader`.
-  - Many improvements to the v2 glTF parser.
-=======
-The 1.3 release makes the `Tile3DLoader` ready for production, in particular for point cloud tilesets. It brings related improvements across the <strong>core</strong> and <strong>gltf</strong> modules, notably support for worker thread pools that speed up repeated parsing of the same data format.
+  - # Many improvements to the v2 glTF parser.
+    The 1.3 release makes the `Tile3DLoader` ready for production, in particular for point cloud tilesets. It brings related improvements across the <strong>core</strong> and <strong>gltf</strong> modules, notably support for worker thread pools that speed up repeated parsing of the same data format.
 
 <table style="border: 0;" align="center">
   <tbody>
@@ -61,37 +60,39 @@ The 1.3 release makes the `Tile3DLoader` ready for production, in particular for
 ### @loaders.gl/3d-tiles
 
 - **Tile3DLayer moved to deck.gl**
-    - The `Tile3DLayer` can now be imported from `@deck.gl/geo-layers`, and no longer needs to be copied from the loaders.gl example
+
+  - The `Tile3DLayer` can now be imported from `@deck.gl/geo-layers`, and no longer needs to be copied from the loaders.gl example
 
 - **Batched 3D Model Tile Support**
-    - `b3dm` tilesets can now be loaded and displayed by the `Tile3DLayer`
+
+  - `b3dm` tilesets can now be loaded and displayed by the `Tile3DLayer`
 
 - **Performance Tracking**
-    - `Tileset3D` now contain a `stats` object which tracks the loading process to help profile big tilesets.
-    - Easily displayed in your UI via the `@probe.gl/stats-widget` module (see 3d-tiles example).
+
+  - `Tileset3D` now contain a `stats` object which tracks the loading process to help profile big tilesets.
+  - Easily displayed in your UI via the `@probe.gl/stats-widget` module (see 3d-tiles example).
 
 - **Request Scheduling**
-    - The `Tileset3D` class now cancels loads for not-yet loaded tiles that are no longer in view).
-    - Scehduling dramatically improves loading performance when panning/zooming through large tilesets.
+  - The `Tileset3D` class now cancels loads for not-yet loaded tiles that are no longer in view).
+  - Scehduling dramatically improves loading performance when panning/zooming through large tilesets.
 
 ### @loaders.gl/gltf
 
-- **Version 2 Improvements**
-    - Select the new glTF parser by passing `options.gltf.parserVersion: 2` to the `GLTFLoader`.
-    - Many improvements to the v2 glTF parser.
->>>>>>> Update whats new
+- **Version 2 Improvements** - Select the new glTF parser by passing `options.gltf.parserVersion: 2` to the `GLTFLoader`. - Many improvements to the v2 glTF parser.
+  > > > > > > > Update whats new
 
 ### @loaders.gl/core
 
 - **Loader Selection Improvements**
-    - The loader selection mechanism is now exposed to apps through the new `selectLoader` API.
-    - Loaders can now examine the first bytes of a file
-    - This complements the existing URL extension based auto detection mechanisms.
+
+  - The loader selection mechanism is now exposed to apps through the new `selectLoader` API.
+  - Loaders can now examine the first bytes of a file
+  - This complements the existing URL extension based auto detection mechanisms.
 
 - **Worker Thread Pool**
-    - Now reuses worker threads. Performance gains by avoiding worker startup overhead.
-    - Worker threads are named, easy to track in debugger
-    - Worker based loaders can now call `parse` recursively to delegate parsing of embedded data (e.g. glTF, Draco) to other loaders
+  - Now reuses worker threads. Performance gains by avoiding worker startup overhead.
+  - Worker threads are named, easy to track in debugger
+  - Worker based loaders can now call `parse` recursively to delegate parsing of embedded data (e.g. glTF, Draco) to other loaders
 
 ## v1.2
 
@@ -146,10 +147,10 @@ Release Date: May 30, 2019
 - "Embedded' GLB data (GLBs inside other binary formats) can now be parsed (e.g. the glTF parser can now extract embedded glTF inside 3D tile files).
 
 - New classes/functions:
-    - [`GLTFScenegraph`](/docs/api-reference/gltf/gltf-scenegraph) class (NEW) - A helper class that provides methods for structured access to and modification/creation of glTF data.
-    - [`postProcessGLTF`](/docs/api-reference/gltf/post-process-gltf) function ( EW) - Function that performs a set of transformations on loaded glTF data that simplify application processing.
-    - [`GLBLoader`](/docs/api-reference/gltf/glb-loader)/[`GLBWriter`] (NEW) - loader/writer pair that enables loading/saving custom (non-glTF) data in the binary GLB format.
-    - [`GLTFLoader`](/docs/api-reference/gltf/gltf-loader), letting application separately handle post-processing.
+  - [`GLTFScenegraph`](/docs/api-reference/gltf/gltf-scenegraph) class (NEW) - A helper class that provides methods for structured access to and modification/creation of glTF data.
+  - [`postProcessGLTF`](/docs/api-reference/gltf/post-process-gltf) function ( EW) - Function that performs a set of transformations on loaded glTF data that simplify application processing.
+  - [`GLBLoader`](/docs/api-reference/gltf/glb-loader)/[`GLBWriter`](NEW) - loader/writer pair that enables loading/saving custom (non-glTF) data in the binary GLB format.
+  - [`GLTFLoader`](/docs/api-reference/gltf/gltf-loader), letting application separately handle post-processing.
 
 ### @loaders.gl/3d-tiles (NEW MODULE)
 
