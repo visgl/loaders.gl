@@ -20,7 +20,7 @@ const ADDITIONAL_EXAMPLES = {
   github: {
     examples: {
       'Royal Exhibition Building (Github Pages)': {
-        tileset: `${DECK_DATA_URI}/3d-tiles/RoyalExhibitionBuilding/tileset.json`
+        tilesetUrl: `${DECK_DATA_URI}/3d-tiles/RoyalExhibitionBuilding/tileset.json`
       }
     }
   },
