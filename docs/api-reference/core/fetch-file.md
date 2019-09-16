@@ -50,11 +50,11 @@ A wrapper around the platform [`fetch`](https://developer.mozilla.org/en-US/docs
 Returns:
 
 - A promise that resolves into a fetch [`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response) object, with the following methods/fields:
-    - `headers`: `Headers` - A [`Headers`](https://developer.mozilla.org/en-US/docs/Web/API/Headers) object.
-    - `arrayBuffer()`: Promise.ArrayBuffer` - Loads the file as an `ArrayBuffer`.
-    - `text()`: Promise.String` - Loads the file and decodes it into text.
-    - `json()`: Promise.String` - Loads the file and decodes it into JSON.
-    - `body` : ReadableStream` - A stream that can be used to incrementally read the contents of the file.
+  - `headers`: `Headers` - A [`Headers`](https://developer.mozilla.org/en-US/docs/Web/API/Headers) object.
+  - `arrayBuffer()`: Promise.ArrayBuffer`- Loads the file as an`ArrayBuffer`.
+  - `text()`: Promise.String` - Loads the file and decodes it into text.
+  - `json()`: Promise.String` - Loads the file and decodes it into JSON.
+  - `body` : ReadableStream` - A stream that can be used to incrementally read the contents of the file.
 
 Options:
 

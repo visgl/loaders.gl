@@ -4,12 +4,11 @@ This category provides a set of conventions for working with tables in row-based
 
 ## Data Structure
 
-| Field        | Type                | Contents     |
-| ------------ | ------------------- | ------------ |
-| `schema`     | `Object`            | Metadata of the table, maps name of each column to its type. |
-| `data`       | `Object` or `Array` | Data of the table, see [table types](#table-types) |
-| `length`     | `Number`            | Number of rows |
-
+| Field    | Type                | Contents                                                     |
+| -------- | ------------------- | ------------------------------------------------------------ |
+| `schema` | `Object`            | Metadata of the table, maps name of each column to its type. |
+| `data`   | `Object` or `Array` | Data of the table, see [table types](#table-types)           |
+| `length` | `Number`            | Number of rows                                               |
 
 ## Table Types
 
@@ -41,4 +40,3 @@ Using the Arrow API it is possible to work extremely efficiently with very large
 
 - [ArrowLoader](/docs/api-reference/arrow/arrow-loader)
 - [CSVLoader](/docs/api-reference/csv/csv-loader)
-

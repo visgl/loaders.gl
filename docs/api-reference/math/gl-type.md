@@ -35,12 +35,12 @@ Returns
 The size in bytes.
 
 Throws
-- glType is not a valid value.
 
+- glType is not a valid value.
 
 Gets the {@link ComponentDatatype} for the provided TypedArray instance.
 
--  array The typed array.
+- array The typed array.
 
 Returns
 
@@ -74,4 +74,5 @@ Returns
 `Int8Array`|`Uint8Array`|`Int16Array`|`Uint16Array`|`Int32Array`|`Uint32Array`|`Float32Array`|`Float64Array` A typed array view of the buffer.
 
 Throws
+
 - `glType` is not a valid value.

@@ -38,7 +38,6 @@ const scenegraph = gltf.getScene();
 const scenegraph = gltf.getScene(2);
 ```
 
-
 ## Accessor Methods
 
 ### constructor(gltf : Object)
@@ -68,7 +67,6 @@ Returns an array of extension names (covering all extensions used at any level o
 Returns an array of extensions at any level of the glTF hierarchy that are required to properly display this file (covering all extensions used at any level of the glTF hierarchy).
 
 #### getObjectExtension(object, extensionName)
-
 
 #### getScene([index : Number]) : Object?
 

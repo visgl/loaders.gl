@@ -7,7 +7,6 @@ We are trying to make the loaders.gl roadmap as public as possible. We share inf
 - **[Blog](https://medium.com/@vis.gl)** - We use the vis.gl blog to share information about what we are doing.
 - **[Github Issues](https://github.com/uber-web/loaders.gl/issues)** - The traditional way to start or join a discussion.
 
-
 ## Feature Roadmap
 
 Many ideas are in tracker tasks in github, but here are some ideas:
@@ -22,7 +21,6 @@ Many ideas are in tracker tasks in github, but here are some ideas:
 
 **MIME types** - Allow MIME types (e.g. from response headers) to be provided to assist in loader auto-selection. Enable Writers to return recommended MIMEtypes.
 
-
 ## Format Roadmap
 
 ### Data loaders
@@ -32,6 +30,7 @@ Many ideas are in tracker tasks in github, but here are some ideas:
 ### Geospatial loaders
 
 Focus on loading of complex geospatial data.
+
 - KML and Shapefile
 - Streaming GeoJSON loader
 

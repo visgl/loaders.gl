@@ -21,7 +21,6 @@ async function main() {
 }
 ```
 
-## _fetchProgress(response : Response | Promise, onProgress : function, onDone : function, onError : function) : Response
+## \_fetchProgress(response : Response | Promise, onProgress : function, onDone : function, onError : function) : Response
 
 `onProgress: (percent: number, {loadedBytes : number, totalBytes : number}) => void`
-

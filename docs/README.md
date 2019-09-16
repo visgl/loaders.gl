@@ -25,8 +25,8 @@ To quickly get up to speed on how the loaders.gl API works, please see [Get Star
 
 ## Major Components
 
-- **Loaders** - A suite of *loaders* for parsing various file formats into well-defined JavaScript data strucutures.
-- **Writers** - *writers* allowing data to be encoded and saved to certain formats.
+- **Loaders** - A suite of _loaders_ for parsing various file formats into well-defined JavaScript data strucutures.
+- **Writers** - _writers_ allowing data to be encoded and saved to certain formats.
 - **Core Functions** - A set of functions that make it easier to work with loaders and writers.
 
 ## Why loaders.gl?

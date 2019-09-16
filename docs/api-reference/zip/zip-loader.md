@@ -2,15 +2,15 @@
 
 Decodes a Zip Archive into a file map.
 
-| Loader         | Characteristic |
-| -------------- | -------------- |
-| File Extension | `.zip`         |
-| File Type      | Binary         |
-| File Format    | [ZIP Archive](https://en.wikipedia.org/wiki/Zip_\(file_format\))   |
-| Data Format    | "File Map"     |
-| Decoder Type   | Asynchronous   |
-| Worker Thread  | No             |
-| Streaming      | No             |
+| Loader         | Characteristic                                                   |
+| -------------- | ---------------------------------------------------------------- |
+| File Extension | `.zip`                                                           |
+| File Type      | Binary                                                           |
+| File Format    | [ZIP Archive](<https://en.wikipedia.org/wiki/Zip_(file_format)>) |
+| Data Format    | "File Map"                                                       |
+| Decoder Type   | Asynchronous                                                     |
+| Worker Thread  | No                                                               |
+| Streaming      | No                                                               |
 
 ## Usage
 

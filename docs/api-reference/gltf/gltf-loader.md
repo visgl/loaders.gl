@@ -4,15 +4,15 @@ Parses a glTF file. Can load both the `.glb` (binary) and `.gltf` (text/json) fi
 
 A glTF file contains a hierarchical scenegraph description that can be used to instantiate corresponding hierarcy of actual `Scenegraph` related classes in most WebGL libraries.
 
-| Loader                | Characteristic  |
-| --------------------- | --------------- |
-| File Extensions       | `.glb`, `.gltf` |
-| File Type             | Binary, JSON, Linked Assets |
+| Loader                | Characteristic                                                             |
+| --------------------- | -------------------------------------------------------------------------- |
+| File Extensions       | `.glb`, `.gltf`                                                            |
+| File Type             | Binary, JSON, Linked Assets                                                |
 | File Format           | [glTF](https://github.com/KhronosGroup/glTF/tree/master/specification/2.0) |
-| Data Format           | [Scenegraph](/docs/specifications/category-scenegraph) |
-| Decoder Type          | Synchronous (limited), Asynchronous |
-| Worker Thread Support | No              |
-| Streaming Support     | No              |
+| Data Format           | [Scenegraph](/docs/specifications/category-scenegraph)                     |
+| Decoder Type          | Synchronous (limited), Asynchronous                                        |
+| Worker Thread Support | No                                                                         |
+| Streaming Support     | No                                                                         |
 
 The `GLTFLoader` aims to take care of as much processing as possible, while remaining framework-independent.
 
@@ -48,22 +48,21 @@ const gltf = load(url, GLTFLoader, {DracoLoader, decompress: true});
 
 ## Options
 
-| Option        | Type      | Default Async | Sync  | Description       |
-| ------------- | --------- | ----------- | ----------------- |
-| `fetchLinkedResources` | Boolean  | `true`  | No | Fetch any linked .BIN files, decode base64 encoded URIS. Async only. |
-| `fetchImages`          | Boolean  | `false` | No     | Fetch any referenced image files (and decode base64 encoded URIS). Async only. |
-| `createImages`         | Boolean  | `false` | Create image objects from loaded image data. |
-| `fetch`                | Function | `fetch` | N/A | Function used to fetch linked resources. |
-| `uri`                  | String | `fetch` | N/A | Function used to fetch linked resources. |
-| `decompress`           | Boolean  | `true`  | Yes | Decompress Draco compressed meshes (if DracoLoader available). |
-| `DracoLoader`          | [DracoLoader](/docs/api-reference/draco/draco-loader) | `null`  | Yes\*    | Supply to enable decoding of Draco compressed meshes. \* `DracoWorkerLoader` is async only. |
-| `postProcess`          | Boolean  | `false` | Perform additional [post processing](docs/api-reference/post-process-gltf) to simplify use in WebGL libraries. |
-
-
+| Option                 | Type                                                  | Default Async | Sync                                                                                                           | Description                                                                                 |
+| ---------------------- | ----------------------------------------------------- | ------------- | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `fetchLinkedResources` | Boolean                                               | `true`        | No                                                                                                             | Fetch any linked .BIN files, decode base64 encoded URIS. Async only.                        |
+| `fetchImages`          | Boolean                                               | `false`       | No                                                                                                             | Fetch any referenced image files (and decode base64 encoded URIS). Async only.              |
+| `createImages`         | Boolean                                               | `false`       | Create image objects from loaded image data.                                                                   |
+| `fetch`                | Function                                              | `fetch`       | N/A                                                                                                            | Function used to fetch linked resources.                                                    |
+| `uri`                  | String                                                | `fetch`       | N/A                                                                                                            | Function used to fetch linked resources.                                                    |
+| `decompress`           | Boolean                                               | `true`        | Yes                                                                                                            | Decompress Draco compressed meshes (if DracoLoader available).                              |
+| `DracoLoader`          | [DracoLoader](/docs/api-reference/draco/draco-loader) | `null`        | Yes\*                                                                                                          | Supply to enable decoding of Draco compressed meshes. \* `DracoWorkerLoader` is async only. |
+| `postProcess`          | Boolean                                               | `false`       | Perform additional [post processing](docs/api-reference/post-process-gltf) to simplify use in WebGL libraries. |
 
 ## Data Format
 
 Returns
+
 ```json
 {
   // The base URI used to load this glTF, if any. For resolving relative uris to linked resources.
@@ -90,13 +89,12 @@ Returns
 }
 ```
 
-| Field         | Type     | Default   | Description        |
-| ---           | ---      | ---       | ---                |
-| `baseUri` | `String`     | ``        | length of GLB (e.g. embedded in larger binary block) |
-| `json`    | `Object`     | `{}`      | Parsed JSON from the JSON chunk     |
-| `buffers` | `Object[]`   | `[]`      | The version number |
-| `buffers[\*].arrayBuffer` | `ArrayBuffer` | `null`  | The binary chunk   |
-| `buffers[\*].byteOffset`  | `Number`  | `null`  | offset of buffer (embedded in larger binary block)   |
-| `buffers[\*].byteLength`  | `ArrayBuffer` | `null`  | length of buffer (embedded in larger binary block)   |
-| `_glb`?     | `Object`    | N/A       | The output of the GLBLoader if the parsed file was GLB formatted |
-
+| Field                     | Type          | Default                                                   | Description                                                      |
+| ------------------------- | ------------- | --------------------------------------------------------- | ---------------------------------------------------------------- |
+| `baseUri`                 | `String`      | `` | length of GLB (e.g. embedded in larger binary block) |
+| `json`                    | `Object`      | `{}`                                                      | Parsed JSON from the JSON chunk                                  |
+| `buffers`                 | `Object[]`    | `[]`                                                      | The version number                                               |
+| `buffers[\*].arrayBuffer` | `ArrayBuffer` | `null`                                                    | The binary chunk                                                 |
+| `buffers[\*].byteOffset`  | `Number`      | `null`                                                    | offset of buffer (embedded in larger binary block)               |
+| `buffers[\*].byteLength`  | `ArrayBuffer` | `null`                                                    | length of buffer (embedded in larger binary block)               |
+| `_glb`?                   | `Object`      | N/A                                                       | The output of the GLBLoader if the parsed file was GLB formatted |

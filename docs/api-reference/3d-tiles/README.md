@@ -13,11 +13,13 @@ npm install @loaders.gl/core @loaders.gl/3d-tiles
 ## Roadmap
 
 The plan is to provide the following loaders/writers:
+
 - `Tile3DLoader` for individual tiles
 - `Tileset3DLoader` for the tileset
 - `Tile3DWriter` for individual tiles
 
 And the following helper classes
+
 - `Tileset3D` to help access the loaded tileset.
 - `Tile3D` to help access a loaded tile.
 - `Tileset3DTraversal` class that accepts view frustum parameters and returns a culled, prioritized list of tiles to show.

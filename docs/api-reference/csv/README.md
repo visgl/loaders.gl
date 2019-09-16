@@ -1,6 +1,6 @@
 # @loaders.gl/csv
 
-This module handles tabular data stored in the [CSV/DSV file format](https://en.wikipedia.org/wiki/Comma-separated_values). 
+This module handles tabular data stored in the [CSV/DSV file format](https://en.wikipedia.org/wiki/Comma-separated_values).
 
 ## Installation
 
