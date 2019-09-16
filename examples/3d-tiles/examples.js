@@ -30,14 +30,7 @@ const ADDITIONAL_EXAMPLES = {
       'Melbourne (PointCloud)': {ionAssetId: 28957, ionAccessToken: ION_TOKEN_MELBOURNE},
       'Mount St Helens (PointCloud)': {ionAssetId: 33301, ionAccessToken: ION_TOKEN_1},
       'Montreal (PointCloud)': {ionAssetId: 28945, ionAccessToken: ION_TOKEN_1},
-      'New York Buildings 1 (3D Photogrammetry)': {
-        ionAssetId: 6193,
-        ionAccessToken: ION_TOKEN_2
-      },
-      'Manhattan (3D Photogrammetry)': {
-        ionAssetId: 7162,
-        ionAccessToken: ION_TOKEN_2
-      }
+      'New York (3D Photogrammetry)': {ionAssetId: 7162, ionAccessToken: ION_TOKEN_2}
     }
   },
   vricon: {

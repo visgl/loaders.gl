@@ -11,7 +11,7 @@ We are trying to make the loaders.gl roadmap as public as possible. We share inf
 
 Many ideas are in tracker tasks in github, but here are some ideas:
 
-**Worker Thread Pool Priming** - Worker Pools should have an option to pre-warm so that loader thread pool is primed and ready to start off-thread parsing as soon as data arrives on the wire.
+**Worker Thread Pool Priming** - Worker Pools should have an option to pre-load workers so that loader thread pool is primed and ready to start off-thread parsing as soon as data arrives on the wire. This can avoid 1-2 second lag when loading starts.
 
 **Progress Tracking** - loaders can provide progress callbacks and a `ProgressTracker` class to track the progress of a set of parallel loads.
 
