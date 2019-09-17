@@ -59,6 +59,7 @@ The 1.3 release is focused on production quality 3D tiles support, maturing the 
 ### @loaders.gl/core
 
 - **Loader Selection Improvements**
+
   - The loader selection mechanism is now exposed to apps through the new `selectLoader` API.
   - Loaders can now examine the first bytes of a file
   - This complements the existing URL extension based auto detection mechanisms.

@@ -2,7 +2,7 @@
 
 loaders.gl is a suite of loaders for file formats for big data visualization, including point clouds, 3D geometries, images, geospatial formats as well as tabular data.
 
-loaders.gl is part  of the [vis.gl](https://vis.gl) ecosystem, and frameworks like [deck.gl](https://deck.gl) and [luma.gl](https://luma.gl) come pre-integrated with loaders.gl. However all all the provided loaders and writers are framework independent, and can be used by any application.
+loaders.gl is part of the [vis.gl](https://vis.gl) ecosystem, and frameworks like [deck.gl](https://deck.gl) and [luma.gl](https://luma.gl) come pre-integrated with loaders.gl. However all all the provided loaders and writers are framework independent, and can be used by any application.
 
 ## Quick Code Example
 
