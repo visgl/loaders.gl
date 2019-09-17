@@ -1,10 +1,16 @@
 # What's New
 
-## v1.4 (In Development, alpha/beta releases will soon become available)
+## v1.4
 
-### Loaders
+(In Development, alpha/beta releases will soon become available)
 
-- All exported (non-worker) loaders are now guaranteed to expose a `parse` function (in addition to any additional, morer specialized `parseSync/parseText/parseInBatches` functions).
+Release Date: Target mid-Nov, 2019
+
+The 1.4 release focuses on introducing 2.0 concepts.
+
+### Loader Specification Updates
+
+- All (non-worker) loaders are now required to expose a `parse` function (in addition to any more specialized `parseSync/parseText/parseInBatches` functions).
 - This makes it easier to import and use loader modules without importing `@loaders.gl/core`, which can reduce footprint when building small applications.
 - All exported loader and writer objects now expose a `mimeType` field. This field is not yet used by `@loaders.gl/core` but is available for applications (e.g. see `selectLoader`).
 
@@ -12,39 +18,7 @@
 
 Release Date: Sep 13, 2019
 
-- `@loaders.gl/core`: **Loader Selection Improvements**
-
-  - The loader selection mechanism is now exposed to apps through the new `selectLoader` API.
-  - Loaders can now examine the first bytes of a file
-  - This complements the existing URL extension based auto detection mechanisms.
-
-- `@loaders.gl/core`: **Worker Thread Pool**
-
-  - Now reuses worker threads. Performance gains by avoiding worker startup overhead.
-  - Worker threads are named, easy to track in debugger
-  - Worker based loaders can now call `parse` recursively to delegate parsing of embedded data (e.g. glTF, Draco) to other loaders
-
-- `@loaders.gl/3d-tiles`: **Tile3DLayer moved to deck.gl**
-
-  - Tile3DLayer is now exported from `@deck.gl/geo-layers`
-
-- `@loaders.gl/3d-tiles`: **Batched 3D Model Tile Support**
-
-  - `b3dm` tilesets can now be loaded and displayed by the `Tile3DLayer`
-
-- `@loaders.gl/3d-tiles`: **RequestScheduler**
-
-  - Cancels loads for not-yet loaded tiles that are no longer in view)
-  - Dramatically improves loading performance when panning/zooming through a tileset
-
-- `@loaders.gl/3d-tiles`: **Performance Tracking**
-
-  - `Tileset3D` now contain a `stats` object with stats on the loading process to help profile big tilesets.
-
-- `@loaders.gl/gltf`: **Version 2 Improvements**
-  - Select the new glTF parser by passing `options.gltf.parserVersion: 2` to the `GLTFLoader`.
-  - # Many improvements to the v2 glTF parser.
-    The 1.3 release makes the `Tile3DLoader` ready for production, in particular for point cloud tilesets. It brings related improvements across the <strong>core</strong> and <strong>gltf</strong> modules, notably support for worker thread pools that speed up repeated parsing of the same data format.
+The 1.3 release is focused on production quality 3D tiles support, maturing the v2 glTF parser, and provides some improvements to the core API.
 
 <table style="border: 0;" align="center">
   <tbody>
@@ -61,11 +35,11 @@ Release Date: Sep 13, 2019
 
 - **Tile3DLayer moved to deck.gl**
 
-  - The `Tile3DLayer` can now be imported from `@deck.gl/geo-layers`, and no longer needs to be copied from the loaders.gl example
+  - The `Tile3DLayer` can now be imported from `@deck.gl/geo-layers`, and no longer needs to be copied from the loaders.gl `3d-tiles` example
 
 - **Batched 3D Model Tile Support**
 
-  - `b3dm` tilesets can now be loaded and displayed by the `Tile3DLayer`
+  - `b3dm` tiles can now be loaded and displayed by the `Tile3DLayer` (in addition to `pnts` tiles).
 
 - **Performance Tracking**
 
@@ -74,17 +48,17 @@ Release Date: Sep 13, 2019
 
 - **Request Scheduling**
   - The `Tileset3D` class now cancels loads for not-yet loaded tiles that are no longer in view).
-  - Scehduling dramatically improves loading performance when panning/zooming through large tilesets.
+  - Scheduling dramatically improves loading performance when panning/zooming through large tilesets.
 
 ### @loaders.gl/gltf
 
-- **Version 2 Improvements** - Select the new glTF parser by passing `options.gltf.parserVersion: 2` to the `GLTFLoader`. - Many improvements to the v2 glTF parser.
-  > > > > > > > Update whats new
+- **Version 2 Improvements**
+  - Select the new glTF parser by passing `options.gltf.parserVersion: 2` to the `GLTFLoader`.
+  - Many improvements to the v2 glTF parser.
 
 ### @loaders.gl/core
 
 - **Loader Selection Improvements**
-
   - The loader selection mechanism is now exposed to apps through the new `selectLoader` API.
   - Loaders can now examine the first bytes of a file
   - This complements the existing URL extension based auto detection mechanisms.

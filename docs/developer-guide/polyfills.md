@@ -1,4 +1,4 @@
-## Polyfills
+# Polyfills
 
 Older browsers (mainly Edge and IE11) as well as Node.js do not provide certain APIs (`TextEncoder`, `fetch` etc) that loaders.gl depends on.
 

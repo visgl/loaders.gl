@@ -1,4 +1,4 @@
-# Using Loaders
+# About Loaders
 
 loaders.gl has parser functions that use so called "loaders" to convert the raw data loaded from files into parsed objects. Each loader encapsulates a parsing function for one file format (or a group of related file formats) together with some metadata (like the loader name, common file extensions for the format etc).
 

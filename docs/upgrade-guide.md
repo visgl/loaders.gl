@@ -1,6 +1,10 @@
 # Upgrade Guide
 
-## v1.1 (In Development)
+## Upgrading from v1.2 to v1.3
+
+- As with v1.1, `GLTFLoader` will no longer return a `GLTFParser` object in v2.0. A new option `options.gltf.parserVersion: 2` is provided to opt in to the new behavior now.
+
+## Upgrading from v1.0 to v1.1
 
 A couple of functions have been deprecated and will be removed in v2.0. They now emit console warnings. Start replacing your use of these functions now to remove the console warnings and ensure a smooth future upgrade to v2.0.
 
