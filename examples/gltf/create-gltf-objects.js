@@ -8,7 +8,10 @@ export async function createGLTFObjects(gl, gltf, options) {
     await waitForGLTFAssets(gltfObjects);
   }
 
-  return Object.assign({gltf}, gltfObjects);
+  return {
+    ...gltfObjects,
+    gltf
+  };
 }
 
 async function waitForGLTFAssets(gltfObjects) {

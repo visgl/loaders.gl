@@ -12,8 +12,7 @@ const DEFAULT_OPTIONS = {
   fetchImages: false, // Fetch any linked .BIN buffers, decode base64
   createImages: false, // Create image objects
   fetch: fetchFile,
-  decompress: false, // Decompress Draco compressed meshes (if DracoLoader available)
-  DracoLoader: null,
+  decompress: false, // Decompress Draco compressed meshes
   postProcess: false,
   log: console // eslint-disable-line
 };
@@ -25,7 +24,7 @@ export function isGLTF(arrayBuffer, options = {}) {
 }
 
 export async function parseGLTF(gltf, arrayBufferOrString, byteOffset = 0, options = {}) {
-  options = {...DEFAULT_OPTIONS, ...options};
+  options = {...DEFAULT_OPTIONS, ...options.gltf};
 
   parseGLTFContainerSync(gltf, arrayBufferOrString, byteOffset, options);
 
