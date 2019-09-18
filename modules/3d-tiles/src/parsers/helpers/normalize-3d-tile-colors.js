@@ -1,4 +1,4 @@
-import {decodeRGB565} from '@loaders.gl/math';
+import {decodeRGB565, GL} from '@loaders.gl/math';
 
 /* eslint-disable complexity*/
 export function normalize3DTileColorAttribute(tile, colors, batchTable) {
@@ -20,7 +20,12 @@ export function normalize3DTileColorAttribute(tile, colors, batchTable) {
       colorArray[i * 3 + 1] = color[1];
       colorArray[i * 3 + 2] = color[2];
     }
-    return {size: 3, value: colorArray};
+    return {
+      type: GL.UNSIGNED_BYTE,
+      value: colorArray,
+      size: 3,
+      normalized: true
+    };
   }
 
   // RGB565 case, convert to RGB
@@ -32,15 +37,30 @@ export function normalize3DTileColorAttribute(tile, colors, batchTable) {
       colorArray[i * 3 + 1] = color[1];
       colorArray[i * 3 + 2] = color[2];
     }
-    return {size: 3, value: colorArray};
+    return {
+      type: GL.UNSIGNED_BYTE,
+      value: colorArray,
+      size: 3,
+      normalized: true
+    };
   }
 
   // RGB case (tile.isTranslucent)
   if (colors && colors.length === pointCount * 3) {
-    return {size: 3, value: colors};
+    return {
+      type: GL.UNSIGNED_BYTE,
+      value: colors,
+      size: 3,
+      normalized: true
+    };
   }
 
   // DEFAULT: RGBA case
-  return {size: 4, value: colors};
+  return {
+    type: GL.UNSIGNED_BYTE,
+    value: colors,
+    size: 4,
+    normalized: true
+  };
 }
 /* eslint-enable complexity*/

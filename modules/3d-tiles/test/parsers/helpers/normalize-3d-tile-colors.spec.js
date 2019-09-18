@@ -1,6 +1,7 @@
 /* eslint-disable max-len */
 import {normalize3DTileColorAttribute} from '@loaders.gl/3d-tiles/parsers/helpers/normalize-3d-tile-colors';
 import test from 'tape-promise/tape';
+import {GL} from '@loaders.gl/math';
 
 const TEST_CASES = [
   {
@@ -14,14 +15,24 @@ const TEST_CASES = [
     tile: {pointCount: 1},
     colors: new Uint8ClampedArray([250, 150, 50]),
     batchTable: null,
-    expected: {size: 3, value: new Uint8ClampedArray([250, 150, 50])},
+    expected: {
+      type: GL.UNSIGNED_BYTE,
+      size: 3,
+      value: new Uint8ClampedArray([250, 150, 50]),
+      normalized: true
+    },
     message: 'Size should be 3 for RGB format'
   },
   {
     tile: {pointCount: 1},
     colors: new Uint8ClampedArray([250, 150, 50, 255]),
     batchTable: null,
-    expected: {size: 4, value: new Uint8ClampedArray([250, 150, 50, 255])},
+    expected: {
+      type: GL.UNSIGNED_BYTE,
+      size: 4,
+      value: new Uint8ClampedArray([250, 150, 50, 255]),
+      normalized: true
+    },
     message: 'Size should be 4 for RGBA format'
   }
   // {
