@@ -18,15 +18,13 @@ export function normalize3DTileNormalAttribute(tile, normals) {
     return {
       type: GL.FLOAT,
       size: 2,
-      value: decodedArray,
-      normalized: true
+      value: decodedArray
     };
   }
 
   return {
     type: GL.FLOAT,
     size: 2,
-    value: normals,
-    normalized: true
+    value: normals
   };
 }
