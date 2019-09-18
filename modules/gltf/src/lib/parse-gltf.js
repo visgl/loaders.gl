@@ -127,12 +127,14 @@ function parseGLTFContainerSync(gltf, data, byteOffset, options) {
 async function fetchBuffers(gltf, options) {
   for (let i = 0; i < gltf.json.buffers.length; ++i) {
     const buffer = gltf.json.buffers[i];
-    // TODO - remove this defensive hack and auto-infer the base URI
-    if (!options.uri) {
-      // eslint-disable-next-line
-      console.warn('options.uri must be set to decode embedded glTF buffers');
-    }
-    if (buffer.uri && options.uri) {
+    if (buffer.uri) {
+      if (!options.uri) {
+        // TODO - remove this defensive hack and auto-infer the base URI
+        // eslint-disable-next-line
+        console.warn('options.uri must be set to decode embedded glTF buffers');
+        return;
+      }
+
       const fetch = options.fetch || window.fetch;
       assert(fetch);
       const uri = getFullUri(buffer.uri, options.uri);
