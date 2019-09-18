@@ -442,7 +442,7 @@ export default class Tileset3D {
 
     this.stats.get(TILES_LOADING).incrementCount();
     try {
-      loaded = await tile.loadContent(this.options.DracoLoader);
+      loaded = await tile.loadContent();
     } catch (error) {
       this.stats.get(TILES_LOADING).decrementCount();
       this.stats.get(TILES_LOAD_FAILED).incrementCount();

@@ -4,7 +4,6 @@
 import {Vector3} from 'math.gl';
 import {GL} from '@loaders.gl/math'; // 'math.gl/geometry';
 
-import assert from '../utils/assert';
 import {parse} from '@loaders.gl/core';
 import Tile3DFeatureTable from '../classes/tile-3d-feature-table';
 import Tile3DBatchTable from '../classes/tile-3d-batch-table';
@@ -224,8 +223,7 @@ async function parseDraco(tile, featureTable, batchTable, options) {
 
 /* eslint-disable complexity, max-statements */
 export async function loadDraco(tile, dracoData, options) {
-  assert(options.DracoLoader);
-  const data = await parse(dracoData.buffer, options.DracoLoader);
+  const data = await parse(dracoData.buffer);
   const decodedPositions = data.attributes.POSITION && data.attributes.POSITION.value;
   const decodedColors = data.attributes.COLOR_0 && data.attributes.COLOR_0.value;
   const decodedNormals = data.attributes.NORMAL && data.attributes.NORMAL.value;

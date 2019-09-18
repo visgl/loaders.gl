@@ -20,8 +20,6 @@
     "@luma.gl/addons": "^7.3.0-beta.2",
     "@luma.gl/core": "^7.3.0-beta.2",
     "@luma.gl/debug": "^7.3.0-beta.2",
-    "@math.gl/geospatial": "^3.0.0",
-    "@math.gl/culling": "^3.0.0",
     "probe.gl": "^3.1.0-beta.3",
     "@probe.gl/stats-widget": "^3.1.0-beta.3",
     "math.gl": "^3.0.0",
