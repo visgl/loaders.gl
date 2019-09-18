@@ -3,16 +3,20 @@ import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
 import DeckGL from '@deck.gl/react';
+
 import {MapController, FlyToInterpolator} from '@deck.gl/core';
-import {Tile3DLayer} from '@deck.gl/geo-layers';
+// import {Tile3DLayer} from '@deck.gl/geo-layers';
+import Tile3DLayer from './3d-tile-layer/tile-3d-layer';
+
 import {lumaStats} from '@luma.gl/core';
 import {StatsWidget} from '@probe.gl/stats-widget';
 
 // To manage dependencies and bundle size, the app must decide which supporting loaders to bring in
 import {registerLoaders} from '@loaders.gl/core';
 import {DracoWorkerLoader} from '@loaders.gl/draco';
+import {GLTFLoader} from '@loaders.gl/gltf';
 
-registerLoaders([DracoWorkerLoader]);
+registerLoaders([GLTFLoader, DracoWorkerLoader]);
 
 import ControlPanel from './components/control-panel';
 import fileDrop from './components/file-drop';

@@ -217,7 +217,7 @@ async function parseDraco(tile, featureTable, batchTable, options, context) {
 // eslint-disable-next-line complexity, max-statements
 export async function loadDraco(tile, dracoData, options, context) {
   const {parse} = context;
-  const data = await parse(dracoData.buffer, options.DracoLoader);
+  const data = await parse(dracoData.buffer);
   const decodedPositions = data.attributes.POSITION && data.attributes.POSITION.value;
   const decodedColors = data.attributes.COLOR_0 && data.attributes.COLOR_0.value;
   const decodedNormals = data.attributes.NORMAL && data.attributes.NORMAL.value;

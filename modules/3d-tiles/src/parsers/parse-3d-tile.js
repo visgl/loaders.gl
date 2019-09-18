@@ -14,6 +14,8 @@ import {parseComposite3DTile, parseComposite3DTileSync} from './parse-3d-tile-co
 
 // Extracts
 export async function parse3DTile(arrayBuffer, byteOffset = 0, options, context, tile = {}) {
+  options = options['3d-tiles'] || {};
+
   tile.byteOffset = byteOffset;
   tile.type = getMagicString(arrayBuffer, byteOffset);
 
@@ -44,6 +46,8 @@ export async function parse3DTile(arrayBuffer, byteOffset = 0, options, context,
 }
 
 export function parse3DTileSync(arrayBuffer, byteOffset = 0, options, context, tile = {}) {
+  options = options['3d-tiles'] || {};
+
   tile.byteOffset = byteOffset;
   tile.type = getMagicString(arrayBuffer, byteOffset);
 

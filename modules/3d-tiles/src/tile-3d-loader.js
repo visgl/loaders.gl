@@ -22,5 +22,11 @@ export default {
   test: ['cmpt', 'pnts', 'b3dm', 'i3dm'],
   parse,
   parseSync,
-  binary: true
+  binary: true,
+  defaultOptions: {
+    '3d-tiles': {
+      loadGLTF: true,
+      decodeQuantizedPositions: false
+    }
+  }
 };
