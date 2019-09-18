@@ -1,8 +1,8 @@
-import {toArrayBuffer} from '../javascript-utils/binary-utils';
-import WorkerFarm from '../worker-utils/worker-farm';
-import {parse} from './parse';
+import {toArrayBuffer} from '../../javascript-utils/binary-utils';
+import WorkerFarm from '../../worker-utils/worker-farm';
+import {parse} from '../parse';
 
-import {getTransferList} from '../worker-utils/worker-utils';
+import {getTransferList} from '../../worker-utils/worker-utils';
 
 let _workerFarm = null;
 

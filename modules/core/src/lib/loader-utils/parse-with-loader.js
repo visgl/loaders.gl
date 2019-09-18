@@ -1,36 +1,36 @@
-import assert from '../utils/assert';
+import assert from '../../utils/assert';
 import parseWithWorker from './parse-with-worker';
 import {
   getArrayBufferOrStringFromDataSync,
   getArrayBufferOrStringFromData,
   getAsyncIteratorFromData,
   getIteratorFromData
-} from './loader-utils/get-data';
+} from './get-data';
 
 // TODO: support progress and abort
 // TODO: support moving loading to worker
 // TODO - should accept loader.parseAsyncIterator and concatenate.
-export async function parseWithLoader(data, loader, options, url) {
+export async function parseWithLoader(data, loader, options, context) {
   data = await getArrayBufferOrStringFromData(data, loader);
 
   // First check for synchronous text parser, wrap results in promises
   if (loader.parseTextSync && typeof data === 'string') {
     options.dataType = 'text';
-    return loader.parseTextSync(data, options, url, loader);
+    return loader.parseTextSync(data, options, context, loader);
   }
 
   // Check for asynchronous parser
   if (loader.parse) {
-    return await loader.parse(data, options, url, loader);
+    return await loader.parse(data, options, context, loader);
   }
 
   // Now check for synchronous binary data parser, wrap results in promises
   if (loader.parseSync) {
-    return loader.parseSync(data, options, url, loader);
+    return loader.parseSync(data, options, context, loader);
   }
 
   if (loader.worker) {
-    return await parseWithWorker(loader.worker, loader.name, data, options);
+    return await parseWithWorker(loader.worker, loader.name, data, options, context, loader);
   }
 
   // TBD - If asynchronous parser not available, return null
@@ -39,15 +39,15 @@ export async function parseWithLoader(data, loader, options, url) {
 }
 
 // TODO - should accept loader.parseSync/parse and generate 1 chunk asyncIterator
-export function parseWithLoaderSync(data, loader, options, url) {
+export function parseWithLoaderSync(data, loader, options, context) {
   data = getArrayBufferOrStringFromDataSync(data, loader);
 
   if (loader.parseTextSync && typeof data === 'string') {
-    return loader.parseTextSync(data, options, url, loader);
+    return loader.parseTextSync(data, options, context, loader);
   }
 
   if (loader.parseSync) {
-    return loader.parseSync(data, options, url, loader);
+    return loader.parseSync(data, options, context, loader);
   }
 
   // TBD - If synchronous parser not available, return null
@@ -55,11 +55,11 @@ export function parseWithLoaderSync(data, loader, options, url) {
   return assert(false);
 }
 
-export function parseWithLoaderInBatches(data, loader, options, url) {
+export function parseWithLoaderInBatches(data, loader, options, context) {
   // Create async iterator adapter for data, and concatenate result
   if (loader.parseInBatches) {
     const inputIterator = getAsyncIteratorFromData(data);
-    const outputIterator = loader.parseInBatches(inputIterator, options, url, loader);
+    const outputIterator = loader.parseInBatches(inputIterator, options, context, loader);
     return outputIterator;
   }
 
@@ -67,11 +67,11 @@ export function parseWithLoaderInBatches(data, loader, options, url) {
   return null;
 }
 
-export function parseWithLoaderInBatchesSync(data, loader, options, url) {
+export function parseWithLoaderInBatchesSync(data, loader, options, context) {
   // Create async iterator adapter for data, and concatenate result
   if (loader.parseInBatchesSync) {
     const inputIterator = getIteratorFromData(data);
-    const outputIterator = loader.parseInBatchesSync(inputIterator, options, url, loader, url);
+    const outputIterator = loader.parseInBatchesSync(inputIterator, options, context, loader);
     return outputIterator;
   }
 
