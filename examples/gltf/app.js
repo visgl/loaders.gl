@@ -1,10 +1,12 @@
 /* eslint-disable camelcase */
 /* global document, window */
 import {load, registerLoaders} from '@loaders.gl/core';
+import {GLTFLoader} from '@loaders.gl/gltf';
 import {DracoLoader} from '@loaders.gl/draco';
 import GL from '@luma.gl/constants';
 import {AnimationLoop, setParameters, clear, log, lumaStats} from '@luma.gl/core';
-import {GLTFScenegraphLoader, createGLTFObjects, GLTFEnvironment} from '@luma.gl/addons';
+import {GLTFEnvironment} from '@luma.gl/addons';
+import {createGLTFObjects} from './create-gltf-objects';
 import {Matrix4, radians} from 'math.gl';
 
 import {loadModelList, GLTF_ENV_BASE_URL} from './components/examples';
@@ -25,13 +27,6 @@ const CUBE_FACE_TO_DIRECTION = {
   [GL.TEXTURE_CUBE_MAP_NEGATIVE_Y]: 'bottom',
   [GL.TEXTURE_CUBE_MAP_POSITIVE_Z]: 'front',
   [GL.TEXTURE_CUBE_MAP_NEGATIVE_Z]: 'back'
-};
-
-const DEFAULT_OPTIONS = {
-  gltf: {parserVersion: 1}, // Use deprecated parser for now
-  pbrDebug: true,
-  imageBasedLightingEnvironment: null,
-  lights: false
 };
 
 registerLoaders([DracoLoader]);
@@ -81,7 +76,12 @@ export default class AppAnimationLoop extends AnimationLoop {
       onDrag: file => this._loadGLTF(file)
     });
 
-    this.loadOptions = Object.assign({}, DEFAULT_OPTIONS);
+    this.gltfCreateOptions = {
+      pbrDebug: true,
+      imageBasedLightingEnvironment: null,
+      lights: false
+    };
+
     this.environment = new GLTFEnvironment(gl, {
       brdfLutUrl: `${GLTF_ENV_BASE_URL}/brdfLUT.png`,
       getTexUrl: (type, dir, mipLevel) =>
@@ -89,7 +89,7 @@ export default class AppAnimationLoop extends AnimationLoop {
           CUBE_FACE_TO_DIRECTION[dir]
         }_${mipLevel}.jpg`
     });
-    this.loadOptions.imageBasedLightingEnvironment = this.environment;
+    this.gltfCreateOptions.imageBasedLightingEnvironment = this.environment;
 
     this.gl = gl;
     if (this.modelFile) {
@@ -115,9 +115,9 @@ export default class AppAnimationLoop extends AnimationLoop {
       Object.assign(this, settings);
     });
     onLightSettingsChange(settings => {
-      Object.assign(this.loadOptions, settings);
-      if (this.loadOptions.imageBasedLightingEnvironment) {
-        this.loadOptions.imageBasedLightingEnvironment = this.environment;
+      Object.assign(this.gltfCreateOptions, settings);
+      if (this.gltfCreateOptions.imageBasedLightingEnvironment) {
+        this.gltfCreateOptions.imageBasedLightingEnvironment = this.environment;
       }
       this._rebuildModel();
     });
@@ -172,20 +172,24 @@ export default class AppAnimationLoop extends AnimationLoop {
 
   // Can accept url, File, promise etc.
   async _loadGLTF(file) {
-    const {gl, loadOptions: options} = this;
+    const {gl} = this;
 
     this._deleteScenes();
 
-    const loadResult = await load(file, GLTFScenegraphLoader, {
-      ...options,
-      gl,
-      DracoLoader
+    const rawGltf = await load(file, GLTFLoader, {
+      gltf: {
+        parserVersion: 2,
+        postProcess: true
+      }
     });
 
-    const {gltf, scenes, animator} = loadResult;
+    const {gltf, scenes, animator} = await createGLTFObjects(gl, rawGltf, this.gltfCreateOptions);
+
     scenes[0].traverse((node, {worldMatrix}) => log.info(4, 'Using model: ', node)());
 
-    Object.assign(this, {scenes, animator, gltf});
+    this.scenes = scenes;
+    this.animator = animator;
+    this.gltf = gltf;
   }
 
   _rebuildModel() {
@@ -196,7 +200,7 @@ export default class AppAnimationLoop extends AnimationLoop {
     (this.gltf.bufferViews || []).forEach(bufferView => delete bufferView.lumaBuffers);
 
     this._deleteScenes();
-    Object.assign(this, createGLTFObjects(this.gl, this.gltf, this.loadOptions));
+    Object.assign(this, createGLTFObjects(this.gl, this.gltf, this.gltfCreateOptions));
   }
 
   _deleteScenes() {
