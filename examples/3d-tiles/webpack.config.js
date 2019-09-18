@@ -23,9 +23,12 @@ const CONFIG = {
         exclude: [/node_modules/],
         options: {
           presets: [
-            ['@babel/preset-env', {
-              "exclude": ["transform-regenerator"]
-            }],
+            [
+              '@babel/preset-env',
+              {
+                exclude: ['transform-regenerator']
+              }
+            ],
             '@babel/preset-react'
           ]
         }
@@ -36,4 +39,3 @@ const CONFIG = {
 
 // This line enables bundling against src in this repo rather than installed module
 module.exports = env => (env ? require('../webpack.config.local')(CONFIG)(env) : CONFIG);
-
