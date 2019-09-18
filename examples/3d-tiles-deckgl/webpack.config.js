@@ -9,10 +9,6 @@ const CONFIG = {
     library: 'App'
   },
 
-  resolve: {
-    mainFields: ['esnext', 'browser', 'module', 'main']
-  },
-
   module: {
     rules: [
       {
@@ -22,15 +18,7 @@ const CONFIG = {
         loader: 'babel-loader',
         exclude: [/node_modules/],
         options: {
-          presets: [
-            [
-              '@babel/preset-env',
-              {
-                exclude: ['@babel/transform-regenerator']
-              }
-            ],
-            '@babel/preset-react'
-          ]
+          presets: ['@babel/preset-env', '@babel/preset-react']
         }
       }
     ]

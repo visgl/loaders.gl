@@ -9,16 +9,18 @@ const SIZEOF_UINT32 = 4;
 export function parse3DTileTablesHeaderSync(tile, arrayBuffer, byteOffset) {
   const view = new DataView(arrayBuffer);
 
-  tile.featureTableJsonByteLength = view.getUint32(byteOffset, true);
+  tile.header = tile.header || {};
+
+  tile.header.featureTableJsonByteLength = view.getUint32(byteOffset, true);
   byteOffset += SIZEOF_UINT32;
 
-  tile.featureTableBinaryByteLength = view.getUint32(byteOffset, true);
+  tile.header.featureTableBinaryByteLength = view.getUint32(byteOffset, true);
   byteOffset += SIZEOF_UINT32;
 
-  tile.batchTableJsonByteLength = view.getUint32(byteOffset, true);
+  tile.header.batchTableJsonByteLength = view.getUint32(byteOffset, true);
   byteOffset += SIZEOF_UINT32;
 
-  tile.batchTableBinaryByteLength = view.getUint32(byteOffset, true);
+  tile.header.batchTableBinaryByteLength = view.getUint32(byteOffset, true);
   byteOffset += SIZEOF_UINT32;
 
   return byteOffset;
@@ -31,7 +33,7 @@ export function parse3DTileTablesSync(tile, arrayBuffer, byteOffset, options) {
 }
 
 function parse3DTileFeatureTable(tile, arrayBuffer, byteOffset, options) {
-  const {featureTableJsonByteLength, featureTableBinaryByteLength} = tile;
+  const {featureTableJsonByteLength, featureTableBinaryByteLength} = tile.header;
 
   tile.featureTableJson = {
     BATCH_LENGTH: 0
@@ -61,7 +63,7 @@ function parse3DTileFeatureTable(tile, arrayBuffer, byteOffset, options) {
 }
 
 function parse3DTileBatchTable(tile, arrayBuffer, byteOffset, options) {
-  const {batchTableJsonByteLength, batchTableBinaryByteLength} = tile;
+  const {batchTableJsonByteLength, batchTableBinaryByteLength} = tile.header;
 
   if (batchTableJsonByteLength > 0) {
     const batchTableString = getStringFromArrayBuffer(
