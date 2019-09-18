@@ -1,10 +1,12 @@
 /* eslint-disable camelcase */
 /* global document, window */
 import {load, registerLoaders} from '@loaders.gl/core';
+import {GLTFLoader} from '@loaders.gl/gltf';
 import {DracoLoader} from '@loaders.gl/draco';
 import GL from '@luma.gl/constants';
 import {AnimationLoop, setParameters, clear, log, lumaStats} from '@luma.gl/core';
-import {GLTFScenegraphLoader, createGLTFObjects, GLTFEnvironment} from '@luma.gl/addons';
+import {GLTFEnvironment} from '@luma.gl/addons';
+import {createGLTFObjects} from './create-gltf-objects';
 import {Matrix4, radians} from 'math.gl';
 
 import {loadModelList, GLTF_ENV_BASE_URL} from './components/examples';
@@ -176,11 +178,12 @@ export default class AppAnimationLoop extends AnimationLoop {
 
     this._deleteScenes();
 
-    const loadResult = await load(file, GLTFScenegraphLoader, {
+    const rawGltf = await load(file, GLTFLoader, {
       ...options,
-      gl,
       DracoLoader
     });
+
+    const loadResult = await createGLTFObjects(gl, rawGltf, options);
 
     const {gltf, scenes, animator} = loadResult;
     scenes[0].traverse((node, {worldMatrix}) => log.info(4, 'Using model: ', node)());
