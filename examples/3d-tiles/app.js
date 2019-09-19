@@ -12,7 +12,9 @@ import {StatsWidget} from '@probe.gl/stats-widget';
 
 // To manage dependencies and bundle size, the app must decide which supporting loaders to bring in
 import {registerLoaders} from '@loaders.gl/core';
-import {DracoLoader, DracoWorkerLoader} from '@loaders.gl/draco';
+import {DracoWorkerLoader} from '@loaders.gl/draco';
+
+registerLoaders([DracoWorkerLoader]);
 
 import ControlPanel from './components/control-panel';
 import fileDrop from './components/file-drop';
@@ -44,8 +46,6 @@ export const INITIAL_VIEW_STATE = {
   maxZoom: 30,
   zoom: 17
 };
-
-registerLoaders([DracoLoader]);
 
 export default class App extends PureComponent {
   constructor(props) {
@@ -254,12 +254,6 @@ export default class App extends PureComponent {
       _ionAssetId: ionAssetId,
       _ionAccessToken: ionAccessToken,
       pointSize: 2,
-      // TODO - calling `registerLoaders([DracoLoader])` should be enough to make it available to gltf & 3d-tiles
-      //   (but a lot of plumbing is required...)
-      DracoWorkerLoader,
-      // TODO  Also, the deprecated gltf decoder cannot handle worker loader so we must pass both...
-      //   (more plumbing is required...)
-      DracoLoader,
       onTilesetLoad: this._onTilesetLoad,
       onTileLoad: this._onTilesetChange,
       onTileUnload: this._onTilesetChange,
