@@ -11,13 +11,22 @@ import {parse3DTileHeaderSync} from './helpers/parse-3d-tile-header';
 import {parse3DTileTablesHeaderSync, parse3DTileTablesSync} from './helpers/parse-3d-tile-tables';
 import {parse3DTileGLTFViewSync, extractGLTF} from './helpers/parse-3d-tile-gltf-view';
 
-export async function parseInstancedModel3DTile(tile, arrayBuffer, byteOffset, options) {
-  return parseInstancedModel3DTileSync(tile, arrayBuffer, byteOffset, options);
+export async function parseInstancedModel3DTile(tile, arrayBuffer, byteOffset, options, context) {
+  byteOffset = parseInstancedModel(tile, arrayBuffer, byteOffset, options, context);
+  await extractGLTF(tile, tile.gltfFormat, options, context);
+  return byteOffset;
 }
 
 // Reference code:
 // https://github.com/AnalyticalGraphicsInc/cesium/blob/master/Source/Scene/Instanced3DModel3DTileContent.js#L190
-export function parseInstancedModel3DTileSync(tile, arrayBuffer, byteOffset, options) {
+export function parseInstancedModel3DTileSync(tile, arrayBuffer, byteOffset, options, context) {
+  byteOffset = parseInstancedModel(tile, arrayBuffer, byteOffset, options, context);
+  // extractGLTFSync(tile, tile.gltfFormat, options, context);
+  return byteOffset;
+}
+
+
+function parseInstancedModel(tile, arrayBuffer, byteOffset, options, context) {
   byteOffset = parse3DTileHeaderSync(tile, arrayBuffer, byteOffset, options);
   if (tile.version !== 1) {
     throw new Error(`Instanced 3D Model version ${tile.version} is not supported`);
@@ -58,8 +67,6 @@ export function parseInstancedModel3DTileSync(tile, arrayBuffer, byteOffset, opt
     instancesLength
   );
 
-  extractGLTF(tile, tile.gltfFormat, options);
-
   extractInstancedAttributes(tile, featureTable, batchTable, instancesLength);
 
   return byteOffset;
@@ -80,15 +87,6 @@ function extractInstancedAttributes(tile, featureTable, batchTable, instancesLen
     // TODO - tileset is not available at this stage, tile is parsed independently
     // upAxis: (tileset && tileset._gltfUpAxis) || [0, 1, 0],
     forwardAxis: [1, 0, 0]
-
-    // Cesium internals
-    // opaquePass: Pass.CESIUM_3D_TILE, // Draw opaque portions during the 3D Tiles pass
-    // pickIdLoaded: getPickIdCallback(tile),
-    // imageBasedLightingFactor: tileset.imageBasedLightingFactor,
-    // lightColor: tileset.lightColor,
-    // luminanceAtZenith: tileset.luminanceAtZenith,
-    // sphericalHarmonicCoefficients: tileset.sphericalHarmonicCoefficients,
-    // specularEnvironmentMaps: tileset.specularEnvironmentMaps
   };
 
   const instances = collectionOptions.instances;

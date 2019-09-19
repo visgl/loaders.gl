@@ -31,13 +31,13 @@ export async function parse(data, loaders, options, url) {
     parse
   };
 
-  return await parseWithLoader(data, loader, options, context);
+  return await parseWithLoader(loader, data, options, context);
 }
 
 // TODO: support progress and abort
 // TODO: support moving loading to worker
 // TODO - should accept loader.parseAsyncIterator and concatenate.
-async function parseWithLoader(data, loader, options, context) {
+async function parseWithLoader(loader, data, options, context) {
   data = await getArrayBufferOrStringFromData(data, loader);
 
   // First check for synchronous text parser, wrap results in promises

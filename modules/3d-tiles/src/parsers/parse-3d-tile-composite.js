@@ -6,7 +6,8 @@
 
 import {parse3DTileHeaderSync} from './helpers/parse-3d-tile-header';
 
-export async function parseComposite3DTile(tile, arrayBuffer, byteOffset, options, parse3DTile) {
+// eslint-disable-next-line max-params
+export async function parseComposite3DTile(tile, arrayBuffer, byteOffset, options, context, parse3DTile) {
   byteOffset = parse3DTileHeaderSync(tile, arrayBuffer, byteOffset, options);
 
   const view = new DataView(arrayBuffer);
@@ -20,14 +21,15 @@ export async function parseComposite3DTile(tile, arrayBuffer, byteOffset, option
   while (tile.tiles.length < tile.tilesLength && tile.byteLength - byteOffset > 12) {
     const subtile = {};
     tile.tiles.push(subtile);
-    byteOffset = await parse3DTile(arrayBuffer, byteOffset, options, subtile);
+    byteOffset = await parse3DTile(arrayBuffer, byteOffset, options, context, subtile);
     // TODO - do we need to add any padding in between tiles?
   }
 
   return byteOffset;
 }
 
-export function parseComposite3DTileSync(tile, arrayBuffer, byteOffset, options, parse3DTileSync) {
+// eslint-disable-next-line max-params
+export function parseComposite3DTileSync(tile, arrayBuffer, byteOffset, options, context, parse3DTileSync) {
   byteOffset = parse3DTileHeaderSync(tile, arrayBuffer, byteOffset, options);
 
   const view = new DataView(arrayBuffer);
@@ -41,7 +43,7 @@ export function parseComposite3DTileSync(tile, arrayBuffer, byteOffset, options,
   while (tile.tiles.length < tile.tilesLength && tile.byteLength - byteOffset > 12) {
     const subtile = {};
     tile.tiles.push(subtile);
-    byteOffset = parse3DTileSync(arrayBuffer, byteOffset, options, subtile);
+    byteOffset = parse3DTileSync(arrayBuffer, byteOffset, options, context, subtile);
     // TODO - do we need to add any padding in between tiles?
   }
 

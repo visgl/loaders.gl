@@ -24,10 +24,10 @@ export async function parseInBatches(data, loaders, options, url) {
     // parseWithLoaderInBatches
   };
 
-  return parseWithLoaderInBatches(data, loader, options, context);
+  return parseWithLoaderInBatches(loader, data, options, context);
 }
 
-function parseWithLoaderInBatches(data, loader, options, context) {
+function parseWithLoaderInBatches(loader, data, options, context) {
   // Create async iterator adapter for data, and concatenate result
   if (loader.parseInBatches) {
     const inputIterator = getAsyncIteratorFromData(data);

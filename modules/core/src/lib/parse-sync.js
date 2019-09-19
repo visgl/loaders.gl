@@ -27,12 +27,11 @@ export function parseSync(data, loaders, options, url) {
     parseSync
   };
 
-  return parseWithLoaderSync(data, loader, options, context);
+  return parseWithLoaderSync(loader, data, options, context);
 }
 
-
 // TODO - should accept loader.parseSync/parse and generate 1 chunk asyncIterator
-function parseWithLoaderSync(data, loader, options, context) {
+function parseWithLoaderSync(loader, data, options, context) {
   data = getArrayBufferOrStringFromDataSync(data, loader);
 
   if (loader.parseTextSync && typeof data === 'string') {
