@@ -1,12 +1,10 @@
-import {selectLoader} from './select-loader';
+import assert from '../utils/assert';
 import {isLoaderObject} from './loader-utils/normalize-loader';
 import {mergeLoaderAndUserOptions} from './loader-utils/normalize-options';
 import {getUrlFromData} from './loader-utils/get-data';
-import {
-  parseWithLoader,
-  parseWithLoaderInBatches,
-  parseWithLoaderSync
-} from './loader-utils/parse-with-loader';
+import {getArrayBufferOrStringFromData} from './loader-utils/get-data';
+import parseWithWorker from './loader-utils/parse-with-worker';
+import {selectLoader} from './select-loader';
 
 export async function parse(data, loaders, options, url) {
   // Signature: parse(data, options, url)
@@ -34,4 +32,35 @@ export async function parse(data, loaders, options, url) {
   };
 
   return await parseWithLoader(data, loader, options, context);
+}
+
+// TODO: support progress and abort
+// TODO: support moving loading to worker
+// TODO - should accept loader.parseAsyncIterator and concatenate.
+async function parseWithLoader(data, loader, options, context) {
+  data = await getArrayBufferOrStringFromData(data, loader);
+
+  // First check for synchronous text parser, wrap results in promises
+  if (loader.parseTextSync && typeof data === 'string') {
+    options.dataType = 'text';
+    return loader.parseTextSync(data, options, context, loader);
+  }
+
+  // Check for asynchronous parser
+  if (loader.parse) {
+    return await loader.parse(data, options, context, loader);
+  }
+
+  // Now check for synchronous binary data parser, wrap results in promises
+  if (loader.parseSync) {
+    return loader.parseSync(data, options, context, loader);
+  }
+
+  if (loader.worker) {
+    return await parseWithWorker(loader.worker, loader.name, data, options, context, loader);
+  }
+
+  // TBD - If asynchronous parser not available, return null
+  // => This loader does not work on loaded data and only supports `loadAndParseAsync`
+  return assert(false);
 }

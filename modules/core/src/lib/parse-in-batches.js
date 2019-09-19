@@ -1,7 +1,7 @@
-import {selectLoader} from './select-loader';
 import {isLoaderObject} from './loader-utils/normalize-loader';
 import {mergeLoaderAndUserOptions} from './loader-utils/normalize-options';
-import {parseWithLoaderInBatches} from './loader-utils/parse-with-loader';
+import {getAsyncIteratorFromData} from './loader-utils/get-data';
+import {selectLoader} from './select-loader';
 
 export async function parseInBatches(data, loaders, options, url) {
   // Signature: parseInBatches(data, options, url)
@@ -25,4 +25,16 @@ export async function parseInBatches(data, loaders, options, url) {
   };
 
   return parseWithLoaderInBatches(data, loader, options, context);
+}
+
+function parseWithLoaderInBatches(data, loader, options, context) {
+  // Create async iterator adapter for data, and concatenate result
+  if (loader.parseInBatches) {
+    const inputIterator = getAsyncIteratorFromData(data);
+    const outputIterator = loader.parseInBatches(inputIterator, options, context, loader);
+    return outputIterator;
+  }
+
+  // TODO - update after test cases have been fixed
+  return null;
 }

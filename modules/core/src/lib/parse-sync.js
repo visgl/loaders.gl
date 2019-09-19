@@ -1,7 +1,7 @@
 import {selectLoader} from './select-loader';
 import {isLoaderObject} from './loader-utils/normalize-loader';
 import {mergeLoaderAndUserOptions} from './loader-utils/normalize-options';
-import {parseWithLoaderSync} from './loader-utils/parse-with-loader';
+import {getArrayBufferOrStringFromDataSync} from './loader-utils/get-data';
 
 export function parseSync(data, loaders, options, url) {
   // Signature: parseSync(data, options, url)
@@ -28,4 +28,22 @@ export function parseSync(data, loaders, options, url) {
   };
 
   return parseWithLoaderSync(data, loader, options, context);
+}
+
+
+// TODO - should accept loader.parseSync/parse and generate 1 chunk asyncIterator
+function parseWithLoaderSync(data, loader, options, context) {
+  data = getArrayBufferOrStringFromDataSync(data, loader);
+
+  if (loader.parseTextSync && typeof data === 'string') {
+    return loader.parseTextSync(data, options, context, loader);
+  }
+
+  if (loader.parseSync) {
+    return loader.parseSync(data, options, context, loader);
+  }
+
+  // TBD - If synchronous parser not available, return null
+  // new Error(`Could not parse ${url || 'data'} using ${loader.name} loader`);
+  return assert(false);
 }

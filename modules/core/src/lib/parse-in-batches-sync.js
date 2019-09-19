@@ -1,7 +1,7 @@
-import {selectLoader} from './select-loader';
 import {isLoaderObject} from './loader-utils/normalize-loader';
 import {mergeLoaderAndUserOptions} from './loader-utils/normalize-options';
-import {parseWithLoaderInBatches} from './loader-utils/parse-with-loader';
+import {getIteratorFromData} from './loader-utils/get-data';
+import {selectLoader} from './select-loader';
 
 export async function parseInBatchesSync(data, loaders, options, url) {
   // Signature: parseInBatchesSync(data, options, url)
@@ -24,5 +24,16 @@ export async function parseInBatchesSync(data, loaders, options, url) {
     // parseInBatchesSync
   };
 
-  return parseWithLoaderInBatches(data, loader, options, context);
+  return parseWithLoaderInBatchesSync(data, loader, options, context);
+}
+
+function parseWithLoaderInBatchesSync(data, loader, options, context) {
+  // Create async iterator adapter for data, and concatenate result
+  if (loader.parseInBatchesSync) {
+    const inputIterator = getIteratorFromData(data);
+    const outputIterator = loader.parseInBatchesSync(inputIterator, options, context, loader);
+    return outputIterator;
+  }
+
+  return assert(false);
 }

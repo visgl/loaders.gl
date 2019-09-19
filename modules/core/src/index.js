@@ -23,7 +23,10 @@ export {
 export {registerLoaders} from './lib/register-loaders';
 
 // LOADING (READING + PARSING)
-export {parse, parseSync, parseInBatches, parseInBatchesSync} from './lib/parse';
+export {parse} from './lib/parse';
+export {parseSync} from './lib/parse-sync';
+export {parseInBatches} from './lib/parse-in-batches';
+export {parseInBatchesSync} from './lib/parse-in-batches-sync';
 export {load, loadInBatches} from './lib/load';
 
 // ENCODING AND SAVING
