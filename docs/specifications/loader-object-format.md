@@ -39,3 +39,14 @@ Each (non-worker) loader should define a `parse` function. Additional parsing fu
 Synchronous parsers are more flexible as they can support synchronous parsing which can simplify application logic and debugging, and iterator-based parsers are more flexible as they can support batched loading of large data sets in addition to atomic loading.
 
 You are encouraged to provide the most capable parser function you can (e.g. `parseSync` or `parseToIterator` if possible). Unless you are writing a completely new loader from scratch, the appropriate choice often depends on the capabilities of an existing external "loader" that you are working with.
+
+### Parser Function Signatures
+
+- `async parse(data : ArrayBuffer, options : Object, context : Object) : Object`
+- `parseSync(data : ArrayBuffer, options : Object, context : Object) : Object`
+- `parseInBatches(data : AsyncIterator, options : Object, context : Object) : AsyncIterator`
+
+The `context` parameter will contain the foolowing fields
+
+- `parse` or `parseSync`
+- `url` if available

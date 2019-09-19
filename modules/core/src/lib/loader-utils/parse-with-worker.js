@@ -1,8 +1,8 @@
-import {toArrayBuffer} from '../javascript-utils/binary-utils';
-import WorkerFarm from '../worker-utils/worker-farm';
-import {parse} from './parse';
+import {toArrayBuffer} from '../../javascript-utils/binary-utils';
+import WorkerFarm from '../../worker-utils/worker-farm';
+import {parse} from '../parse';
 
-import {getTransferList} from '../worker-utils/worker-utils';
+import {getTransferList} from '../../worker-utils/worker-utils';
 
 let _workerFarm = null;
 
@@ -15,11 +15,9 @@ function getWorkerFarm(options = {}) {
     props.onDebug = options.onDebug;
   }
 
-  _workerFarm =
-    _workerFarm ||
-    new WorkerFarm({
-      onMessage: onWorkerMessage
-    });
+  if (!_workerFarm) {
+    _workerFarm = new WorkerFarm({onMessage: onWorkerMessage});
+  }
   _workerFarm.setProps(props);
 
   return _workerFarm;
@@ -53,7 +51,13 @@ async function onWorkerMessage({worker, data, resolve, reject}) {
  * this function expects that the worker function sends certain messages,
  * this can be automated if the worker is wrapper by a call to createWorker in @loaders.gl/loader-utils.
  */
-export default function parseWithWorker(workerSource, workerName, data, options = {}) {
+export default function parseWithWorker(
+  workerSource,
+  workerName,
+  data,
+  options = {},
+  context = {}
+) {
   const workerFarm = getWorkerFarm(options);
 
   // options.log object contains functions which cannot be transferred

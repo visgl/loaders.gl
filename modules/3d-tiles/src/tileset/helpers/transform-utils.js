@@ -1,4 +1,4 @@
-import {assert} from '@loaders.gl/core';
+import {assert} from '@loaders.gl/loader-utils';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {Matrix4, Vector3} from 'math.gl';
 

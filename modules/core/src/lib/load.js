@@ -4,7 +4,8 @@ import {isLoaderObject} from './loader-utils/normalize-loader';
 import {mergeLoaderAndUserOptions} from './loader-utils/normalize-options';
 import {selectLoader} from './select-loader';
 
-import {parse, parseInBatches} from './parse';
+import {parse} from './parse';
+import {parseInBatches} from './parse-in-batches';
 
 export async function loadInBatches(url, loaders, options) {
   const response = await fetchFile(url, options);

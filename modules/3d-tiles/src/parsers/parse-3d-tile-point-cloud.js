@@ -4,7 +4,6 @@
 import {Vector3} from 'math.gl';
 import {GL} from '@loaders.gl/math'; // 'math.gl/geometry';
 
-import {parse} from '@loaders.gl/core';
 import Tile3DFeatureTable from '../classes/tile-3d-feature-table';
 import Tile3DBatchTable from '../classes/tile-3d-batch-table';
 import {parse3DTileHeaderSync} from './helpers/parse-3d-tile-header';
@@ -13,47 +12,40 @@ import {normalize3DTileColorAttribute} from './helpers/normalize-3d-tile-colors'
 import {normalize3DTileNormalAttribute} from './helpers/normalize-3d-tile-normals';
 import {normalize3DTilePositionAttribute} from './helpers/normalize-3d-tile-positions';
 
-export async function parsePointCloud3DTile(tile, arrayBuffer, byteOffset, options) {
+export async function parsePointCloud3DTile(tile, arrayBuffer, byteOffset, options, context) {
   byteOffset = parse3DTileHeaderSync(tile, arrayBuffer, byteOffset, options);
   byteOffset = parse3DTileTablesHeaderSync(tile, arrayBuffer, byteOffset, options);
   byteOffset = parse3DTileTablesSync(tile, arrayBuffer, byteOffset, options);
-
-  await extractPointCloud(tile, options);
-
-  return byteOffset;
-}
-
-export function parsePointCloud3DTileSync(tile, arrayBuffer, byteOffset, options) {
-  byteOffset = parse3DTileHeaderSync(tile, arrayBuffer, byteOffset, options);
-  byteOffset = parse3DTileTablesHeaderSync(tile, arrayBuffer, byteOffset, options);
-  byteOffset = parse3DTileTablesSync(tile, arrayBuffer, byteOffset, options);
-
-  extractPointCloudSync(tile, options);
-
-  return byteOffset;
-}
-
-// eslint-disable-next-line max-statements, complexity
-async function extractPointCloud(tile, options) {
   initializeTile(tile);
 
   const {featureTable, batchTable} = parsePointCloudTables(tile);
 
-  await parseDraco(tile, featureTable, batchTable, options);
+  await parseDraco(tile, featureTable, batchTable, options, context);
 
   parsePositions(tile, featureTable, options);
   parseColors(tile, featureTable, batchTable, options);
   parseNormals(tile, featureTable, options);
+
+  return byteOffset;
 }
 
-function extractPointCloudSync(tile, options) {
+// TODO - is there really a need for sync tile parsing?
+export function parsePointCloud3DTileSync(tile, arrayBuffer, byteOffset, options, context) {
+  byteOffset = parse3DTileHeaderSync(tile, arrayBuffer, byteOffset, options);
+  byteOffset = parse3DTileTablesHeaderSync(tile, arrayBuffer, byteOffset, options);
+  byteOffset = parse3DTileTablesSync(tile, arrayBuffer, byteOffset, options);
+
   initializeTile(tile);
 
   const {featureTable} = parsePointCloudTables(tile);
 
+  // parseDracoSync(tile, featureTable, batchTable, options);
+
   parsePositions(tile, featureTable, options);
   parseColors(tile, featureTable, options);
   parseNormals(tile, featureTable, options);
+
+  return byteOffset;
 }
 
 function initializeTile(tile) {
@@ -180,7 +172,7 @@ function parseBatchIds(tile, featureTable) {
 }
 
 // eslint-disable-next-line complexity
-async function parseDraco(tile, featureTable, batchTable, options) {
+async function parseDraco(tile, featureTable, batchTable, options, context) {
   let dracoBuffer;
   let dracoFeatureTableProperties;
   let dracoBatchTableProperties;
@@ -217,13 +209,15 @@ async function parseDraco(tile, featureTable, batchTable, options) {
       batchTableProperties: dracoBatchTableProperties,
       dequantizeInShader: false
     };
-    await loadDraco(tile, dracoData, options);
+
+    await loadDraco(tile, dracoData, options, context);
   }
 }
 
-/* eslint-disable complexity, max-statements */
-export async function loadDraco(tile, dracoData, options) {
-  const data = await parse(dracoData.buffer);
+// eslint-disable-next-line complexity, max-statements
+export async function loadDraco(tile, dracoData, options, context) {
+  const {parse} = context;
+  const data = await parse(dracoData.buffer, options.DracoLoader);
   const decodedPositions = data.attributes.POSITION && data.attributes.POSITION.value;
   const decodedColors = data.attributes.COLOR_0 && data.attributes.COLOR_0.value;
   const decodedNormals = data.attributes.NORMAL && data.attributes.NORMAL.value;

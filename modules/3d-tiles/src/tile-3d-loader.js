@@ -1,16 +1,16 @@
 import {parse3DTile, parse3DTileSync} from './parsers/parse-3d-tile';
 
-async function parse(arrayBuffer, options, url, loader) {
+async function parse(arrayBuffer, options, context, loader) {
   const tile = {};
   const byteOffset = 0;
-  await parse3DTile(arrayBuffer, byteOffset, options, tile);
+  await parse3DTile(arrayBuffer, byteOffset, options, context, tile);
   return tile;
 }
 
-function parseSync(arrayBuffer, options, url, loader) {
+function parseSync(arrayBuffer, options, context, loader) {
   const tile = {};
   const byteOffset = 0;
-  parse3DTileSync(arrayBuffer, byteOffset, options, tile);
+  parse3DTileSync(arrayBuffer, byteOffset, options, context, tile);
   return tile;
 }
 

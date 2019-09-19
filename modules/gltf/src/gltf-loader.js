@@ -23,22 +23,22 @@ export default {
   defaultOptions
 };
 
-export async function parse(arrayBuffer, options = {}) {
+export async function parse(arrayBuffer, options = {}, context) {
   // Apps like to call the parse method directly so apply default options here
   options = {...defaultOptions, ...options};
-  // Deprecated: Return GLTFParser instance
+
+  // Deprecated v1 Parser: Returns `GLTFParser` instance, instead of "pure" js object
   if (options.gltf.parserVersion !== 2 && options.useGLTFParser !== false) {
     const gltfParser = new GLTFParser();
     return gltfParser.parse(arrayBuffer, options);
   }
 
-  // Return pure javascript object
   const {byteOffset = 0} = options;
   const gltf = {};
-  return await parseGLTF(gltf, arrayBuffer, byteOffset, options);
+  return await parseGLTF(gltf, arrayBuffer, byteOffset, options, context);
 }
 
-export function parseSync(arrayBuffer, options = {}) {
+export function parseSync(arrayBuffer, options = {}, context) {
   // Apps like to call the parse method directly so apply default options here
   options = {...defaultOptions, ...options};
 
@@ -50,5 +50,5 @@ export function parseSync(arrayBuffer, options = {}) {
   // Return pure javascript object
   const {byteOffset = 0} = options;
   const gltf = {};
-  return parseGLTFSync(gltf, arrayBuffer, byteOffset, options);
+  return parseGLTFSync(gltf, arrayBuffer, byteOffset, options, context);
 }

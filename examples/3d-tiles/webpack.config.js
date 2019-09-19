@@ -26,7 +26,7 @@ const CONFIG = {
             [
               '@babel/preset-env',
               {
-                exclude: ['transform-regenerator']
+                exclude: ['@babel/transform-regenerator']
               }
             ],
             '@babel/preset-react'
