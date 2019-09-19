@@ -7,7 +7,14 @@
 import {parse3DTileHeaderSync} from './helpers/parse-3d-tile-header';
 
 // eslint-disable-next-line max-params
-export async function parseComposite3DTile(tile, arrayBuffer, byteOffset, options, context, parse3DTile) {
+export async function parseComposite3DTile(
+  tile,
+  arrayBuffer,
+  byteOffset,
+  options,
+  context,
+  parse3DTile
+) {
   byteOffset = parse3DTileHeaderSync(tile, arrayBuffer, byteOffset, options);
 
   const view = new DataView(arrayBuffer);
@@ -29,7 +36,14 @@ export async function parseComposite3DTile(tile, arrayBuffer, byteOffset, option
 }
 
 // eslint-disable-next-line max-params
-export function parseComposite3DTileSync(tile, arrayBuffer, byteOffset, options, context, parse3DTileSync) {
+export function parseComposite3DTileSync(
+  tile,
+  arrayBuffer,
+  byteOffset,
+  options,
+  context,
+  parse3DTileSync
+) {
   byteOffset = parse3DTileHeaderSync(tile, arrayBuffer, byteOffset, options);
 
   const view = new DataView(arrayBuffer);

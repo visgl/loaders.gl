@@ -1,4 +1,5 @@
-import {parse, parseSync} from './lib/parse';
+import {parse} from './lib/parse';
+import {parseSync} from './lib/parse-sync';
 import {fetchFile} from './lib/fetch/fetch-file';
 import {load} from './lib/load';
 import {resolvePath} from './lib/fetch/file-aliases';

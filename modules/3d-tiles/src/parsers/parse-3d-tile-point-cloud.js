@@ -16,23 +16,36 @@ export async function parsePointCloud3DTile(tile, arrayBuffer, byteOffset, optio
   byteOffset = parse3DTileHeaderSync(tile, arrayBuffer, byteOffset, options);
   byteOffset = parse3DTileTablesHeaderSync(tile, arrayBuffer, byteOffset, options);
   byteOffset = parse3DTileTablesSync(tile, arrayBuffer, byteOffset, options);
-
-  await extractPointCloud(tile, options, context);
-
-  return byteOffset;
-}
-
-// eslint-disable-next-line max-statements, complexity
-async function extractPointCloud(tile, options, conttetxt) {
   initializeTile(tile);
 
   const {featureTable, batchTable} = parsePointCloudTables(tile);
 
-  await parseDraco(tile, featureTable, batchTable, options);
+  await parseDraco(tile, featureTable, batchTable, options, context);
 
   parsePositions(tile, featureTable, options);
   parseColors(tile, featureTable, batchTable, options);
   parseNormals(tile, featureTable, options);
+
+  return byteOffset;
+}
+
+// TODO - is there really a need for sync tile parsing?
+export function parsePointCloud3DTileSync(tile, arrayBuffer, byteOffset, options, context) {
+  byteOffset = parse3DTileHeaderSync(tile, arrayBuffer, byteOffset, options);
+  byteOffset = parse3DTileTablesHeaderSync(tile, arrayBuffer, byteOffset, options);
+  byteOffset = parse3DTileTablesSync(tile, arrayBuffer, byteOffset, options);
+
+  initializeTile(tile);
+
+  const {featureTable} = parsePointCloudTables(tile);
+
+  // parseDracoSync(tile, featureTable, batchTable, options);
+
+  parsePositions(tile, featureTable, options);
+  parseColors(tile, featureTable, options);
+  parseNormals(tile, featureTable, options);
+
+  return byteOffset;
 }
 
 function initializeTile(tile) {
@@ -159,7 +172,7 @@ function parseBatchIds(tile, featureTable) {
 }
 
 // eslint-disable-next-line complexity
-async function parseDraco(tile, featureTable, batchTable, options) {
+async function parseDraco(tile, featureTable, batchTable, options, context) {
   let dracoBuffer;
   let dracoFeatureTableProperties;
   let dracoBatchTableProperties;
@@ -196,11 +209,12 @@ async function parseDraco(tile, featureTable, batchTable, options) {
       batchTableProperties: dracoBatchTableProperties,
       dequantizeInShader: false
     };
-    await loadDraco(tile, dracoData, options);
+
+    await loadDraco(tile, dracoData, options, context);
   }
 }
 
-/* eslint-disable complexity, max-statements */
+// eslint-disable-next-line complexity, max-statements
 export async function loadDraco(tile, dracoData, options, context) {
   const {parse} = context;
   const data = await parse(dracoData.buffer, options.DracoLoader);
@@ -231,30 +245,6 @@ export async function loadDraco(tile, dracoData, options, context) {
     normals: decodedNormals,
     batchIds: decodedBatchIds
   };
-}
-
-// TODO - is there really a need for sync tile parsing?
-
-export function parsePointCloud3DTileSync(tile, arrayBuffer, byteOffset, options, context) {
-  byteOffset = parse3DTileHeaderSync(tile, arrayBuffer, byteOffset, options);
-  byteOffset = parse3DTileTablesHeaderSync(tile, arrayBuffer, byteOffset, options);
-  byteOffset = parse3DTileTablesSync(tile, arrayBuffer, byteOffset, options);
-
-  extractPointCloudSync(tile, options, context);
-
-  return byteOffset;
-}
-
-function extractPointCloudSync(tile, options) {
-  initializeTile(tile);
-
-  const {featureTable} = parsePointCloudTables(tile);
-
-  // parseDracoSync(tile, featureTable, batchTable, options);
-
-  parsePositions(tile, featureTable, options);
-  parseColors(tile, featureTable, options);
-  parseNormals(tile, featureTable, options);
 }
 
 /*

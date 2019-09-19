@@ -25,7 +25,6 @@ export function parseInstancedModel3DTileSync(tile, arrayBuffer, byteOffset, opt
   return byteOffset;
 }
 
-
 function parseInstancedModel(tile, arrayBuffer, byteOffset, options, context) {
   byteOffset = parse3DTileHeaderSync(tile, arrayBuffer, byteOffset, options);
   if (tile.version !== 1) {
