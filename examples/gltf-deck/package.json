@@ -2,7 +2,7 @@
   "license": "MIT",
   "scripts": {
     "start": "webpack-dev-server --progress --hot --open",
-    "start-local": "webpack-dev-server --env.local --env.esnext --progress --hot --open",
+    "start-local": "webpack-dev-server --env.local --env.esnext --progress --hot --open"
   },
   "dependencies": {
     "@deck.gl/core": "^7.3.0-beta.1",

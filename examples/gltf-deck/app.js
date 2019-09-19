@@ -21,8 +21,7 @@ const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
 const GLTF_BASE_URL =
   'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/';
 
-const GLTF_DEFAULT_MODEL =
-`${GLTF_BASE_URL}/DamagedHelmet/glTF-Binary/DamagedHelmet.glb`;
+const GLTF_DEFAULT_MODEL = `${GLTF_BASE_URL}/DamagedHelmet/glTF-Binary/DamagedHelmet.glb`;
 
 export const INITIAL_VIEW_STATE = {
   longitude: -75.61213987669433,
@@ -33,24 +32,20 @@ export const INITIAL_VIEW_STATE = {
   maxPitch: 60
 };
 
-const ORIGIN = [INITIAL_VIEW_STATE.longitude, INITIAL_VIEW_STATE.latitude, 0];
+const MODEL_ORIGIN = [INITIAL_VIEW_STATE.longitude, INITIAL_VIEW_STATE.latitude, 0];
 
 export default class App extends PureComponent {
   constructor(props) {
     super(props);
 
     this.state = {
-      iblEnvironment: null,
-      droppedFile: null
+      iblEnvironment: null
     };
   }
 
   componentDidMount() {
-    // fileDrop(this._deckRef.deckCanvas, (promise, file) => {
-    //   // eslint-disable-next-line
-    //   // this.setState({ droppedFile: file, tile: null });
-    //   // load(promise, Tile3DLoader).then(this._onLoad);
-    // });
+    // TODO
+    // fileDrop(this._deckRef.deckCanvas, (promise, file) => {});
   }
 
   _onWebGLInitialized(gl) {
@@ -75,7 +70,7 @@ export default class App extends PureComponent {
               }
             },
             coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS,
-            coordinateOrigin: ORIGIN,
+            coordinateOrigin: MODEL_ORIGIN,
             sizeScale: 1000,
             _pbr: true,
             _imageBasedLightingEnvironment: this.state.iblEnvironment
@@ -92,10 +87,10 @@ export default class App extends PureComponent {
   }
 }
 
-/* global document */
-render(<App />, document.body.appendChild(document.createElement("div")));
-
+// TODO - hook for integrating into web page
 export function renderToDOM(container) {
   render(<App />, container);
 }
 
+/* global document */
+renderToDOM(document.body.appendChild(document.createElement('div')));
