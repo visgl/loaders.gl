@@ -190,6 +190,6 @@ module.exports = (baseConfig, opts = {}) => env => {
   }
 
   // uncomment to debug
-  console.warn(JSON.stringify(config, null, 2));
+  // console.warn(JSON.stringify(config, null, 2));
   return config;
 };

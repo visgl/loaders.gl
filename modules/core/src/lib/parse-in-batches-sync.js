@@ -34,5 +34,5 @@ function parseWithLoaderInBatchesSync(loader, data, options, context) {
     return outputIterator;
   }
 
-  return assert(false);
+  throw new Error('parseWithLoaderInBatchesSync not available');
 }
