@@ -2,10 +2,10 @@
   "license": "MIT",
   "scripts": {
     "start": "webpack-dev-server --progress --hot --open",
-    "start-local": "webpack-dev-server --env.local --progress --hot --open",
-    "start-local-deck": "webpack-dev-server --env.local --env.deck --progress --hot --open",
-    "start-local-luma": "webpack-dev-server --env.local --env.luma --progress --hot --open",
-    "start-local-math": "webpack-dev-server --env.local --env.math --progress --hot --open",
+    "start-local": "webpack-dev-server --env.local --env.esnext --progress --hot --open",
+    "start-local-deck": "webpack-dev-server --env.local --env.esnext --env.deck --progress --hot --open",
+    "start-local-luma": "webpack-dev-server --env.local --env.esnext --env.luma --progress --hot --open",
+    "start-local-math": "webpack-dev-server --env.local --env.esnext --env.math --progress --hot --open",
     "generate": "node ./generate-index/index.js"
   },
   "dependencies": {

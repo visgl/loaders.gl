@@ -5,7 +5,7 @@
   ],
   "scripts": {
     "start": "webpack-dev-server --progress --hot --open -d",
-    "start-local": "webpack-dev-server --env.local --progress --hot --open -d",
+    "start-local": "webpack-dev-server --env.local --env.esnext --progress --hot --open -d",
     "open-vr": "adb reverse tcp:8080 tcp:8080 && adb shell am start -a android.intent.action.VIEW -d http://localhost:8080/"
   },
   "dependencies": {

@@ -126,11 +126,54 @@ function addAnalyzerSettings(config) {
   return config;
 }
 
+// Use non-transpiled vis.gl dependencies and disable regenerator transforms
+function addESNextSettings(config) {
+  // Add 'esnext' to make sure vis.gl frameworks are imported with minimal transpilation
+  config.resolve = config.resolve || {};
+  config.resolve.mainFields = config.resolve.mainFields || ['browser', 'module', 'main'];
+  config.resolve.mainFields.shift('esnext');
+
+  // Look for babel plugin
+  config.module = config.module || {};
+  config.module.rules = config.module.rules || [];
+  const babelRule = config.module.rules.find(rule => rule.loader === 'babel-loader');
+
+  // If found, inject excludes in @babel/present-env to prevent transpile
+  if (babelRule && babelRule.options && babelRule.options.presets) {
+    babelRule.options.presets = babelRule.options.presets.map(preset => {
+      if (preset === '@babel/preset-env') {
+        return [
+          '@babel/preset-env',
+          {
+            exclude: [/transform-async-to-generator/, /transform-regenerator/]
+          }
+        ];
+      }
+      return preset;
+    });
+  }
+  return config;
+}
+
 module.exports = (baseConfig, opts = {}) => env => {
   let config = baseConfig;
 
-  if (env && env.analyze) {
-    config = addAnalyzerSettings(config);
+  /* eslint-disable no-console */
+  /* global console */
+  if (env && env.help) {
+    console.log(
+      '--env.esnext: Use non-transpiled vis.gl dependencies and disable regenerator transforms'
+    );
+    console.log('--env.local: Build against local src for modules in this repo');
+    console.log('--env.math,luma,deck: Build against local src for external repos');
+    console.log('--env.analyze: Add bundle size analyzer plugin');
+  }
+
+  console.log('For documentation on build options, run: "yarn start --env.help"');
+
+  /* eslint-enable no-console */
+  if (env && env.esnext) {
+    config = addESNextSettings(config);
   }
 
   if (env && env.local) {
@@ -140,6 +183,10 @@ module.exports = (baseConfig, opts = {}) => env => {
   // Iterate over env keys and see if they match a local dependency
   for (const key in env || {}) {
     config = addLocalDependency(config, key);
+  }
+
+  if (env && env.analyze) {
+    config = addAnalyzerSettings(config);
   }
 
   // uncomment to debug
