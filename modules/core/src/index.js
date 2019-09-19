@@ -1,4 +1,5 @@
-import {parse, parseSync} from './lib/parse';
+import {parse} from './lib/parse';
+import {parseSync} from './lib/parse-sync';
 import {fetchFile} from './lib/fetch/fetch-file';
 import {load} from './lib/load';
 import {resolvePath} from './lib/fetch/file-aliases';
@@ -23,7 +24,10 @@ export {
 export {registerLoaders} from './lib/register-loaders';
 
 // LOADING (READING + PARSING)
-export {parse, parseSync, parseInBatches, parseInBatchesSync} from './lib/parse';
+export {parse} from './lib/parse';
+export {parseSync} from './lib/parse-sync';
+export {parseInBatches} from './lib/parse-in-batches';
+export {parseInBatchesSync} from './lib/parse-in-batches-sync';
 export {load, loadInBatches} from './lib/load';
 
 // ENCODING AND SAVING

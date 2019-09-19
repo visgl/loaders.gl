@@ -47,6 +47,7 @@
     "arraybuffer-loader": "^1.0.7",
     "babel-loader": "^8.0.6",
     "babel-plugin-inline-import": "^3.0.0",
+    "core-js": "^3.2.1",
     "coveralls": "^3.0.3",
     "eslint-config-uber-jsx": "^3.3.3",
     "eslint-plugin-babel": "^5.3.0",

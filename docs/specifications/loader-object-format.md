@@ -35,4 +35,17 @@ When creating a new loader object, at least one of the parser functions needs to
 | `parse`                             | `Function` | `null`  | Asynchronously parses binary data (e.g. file contents) asynchronously (`ArrayBuffer`). |
 | `loadAndParse`                      | `Function` | `null`  | Asynchronously reads a binary file and parses its contents.                            |
 
-Note: Only one parser function is required. Synchronous parsers are more flexible as they can support synchronous parsing in addition to asynchronous parsing, and iterator-based parsers are more flexible as they can support batched loading in addition to atomic loading. You are encouraged to provide the most capable parser function you can (e.g. `parseSync` or `parseToIterator` if possible). Unless you are writing a completely new loader, the appropriate choice usually depends on the loader you are encapsulating.
+Synchronous parsers are more flexible as they can support synchronous parsing which can simplify application logic and debugging, and iterator-based parsers are more flexible as they can support batched loading of large data sets in addition to atomic loading.
+
+You are encouraged to provide the most capable parser function you can (e.g. `parseSync` or `parseToIterator` if possible). Unless you are writing a completely new loader from scratch, the appropriate choice often depends on the capabilities of an existing external "loader" that you are working with.
+
+### Parser Function Signatures
+
+- `async parse(data : ArrayBuffer, options : Object, context : Object) : Object`
+- `parseSync(data : ArrayBuffer, options : Object, context : Object) : Object`
+- `parseInBatches(data : AsyncIterator, options : Object, context : Object) : AsyncIterator`
+
+The `context` parameter will contain the foolowing fields
+
+- `parse` or `parseSync`
+- `url` if available

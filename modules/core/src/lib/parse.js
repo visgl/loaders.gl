@@ -1,8 +1,11 @@
-import {selectLoader} from './select-loader';
+import assert from '../utils/assert';
 import {isLoaderObject} from './loader-utils/normalize-loader';
 import {mergeLoaderAndUserOptions} from './loader-utils/normalize-options';
 import {getUrlFromData} from './loader-utils/get-data';
-import {parseWithLoader, parseWithLoaderInBatches, parseWithLoaderSync} from './parse-with-loader';
+import {getArrayBufferOrStringFromData} from './loader-utils/get-data';
+import {getLoaderContext} from './loader-utils/get-loader-context';
+import parseWithWorker from './loader-utils/parse-with-worker';
+import {selectLoader} from './select-loader';
 
 export async function parse(data, loaders, options, url) {
   // Signature: parse(data, options, url)
@@ -24,65 +27,38 @@ export async function parse(data, loaders, options, url) {
   // Normalize options
   options = mergeLoaderAndUserOptions(options, loader);
 
-  return await parseWithLoader(data, loader, options, autoUrl);
+  const context = getLoaderContext({url: autoUrl, parse}, options);
+
+  return await parseWithLoader(loader, data, options, context);
 }
 
-export function parseSync(data, loaders, options, url) {
-  // Signature: parseSync(data, options, url)
-  // Uses registered loaders
-  if (!Array.isArray(loaders) && !isLoaderObject(loaders)) {
-    url = options;
-    options = loaders;
-    loaders = null;
+// TODO: support progress and abort
+// TODO: support moving loading to worker
+// TODO - should accept loader.parseAsyncIterator and concatenate.
+async function parseWithLoader(loader, data, options, context) {
+  data = await getArrayBufferOrStringFromData(data, loader);
+
+  // First check for synchronous text parser, wrap results in promises
+  if (loader.parseTextSync && typeof data === 'string') {
+    options.dataType = 'text';
+    return loader.parseTextSync(data, options, context, loader);
   }
 
-  // Chooses a loader and normalize it
-  const loader = selectLoader(loaders, url, data);
-  // Note: if nothrow option was set, it is possible that no loader was found, if so just return null
-  if (!loader) {
-    return null;
+  // Check for asynchronous parser
+  if (loader.parse) {
+    return await loader.parse(data, options, context, loader);
   }
 
-  // Normalize options
-  options = mergeLoaderAndUserOptions(options, loader);
-
-  return parseWithLoaderSync(data, loader, options, url);
-}
-
-export async function parseInBatches(data, loaders, options, url) {
-  // Signature: parseInBatches(data, options, url)
-  // Uses registered loaders
-  if (!Array.isArray(loaders) && !isLoaderObject(loaders)) {
-    url = options;
-    options = loaders;
-    loaders = null;
+  // Now check for synchronous binary data parser, wrap results in promises
+  if (loader.parseSync) {
+    return loader.parseSync(data, options, context, loader);
   }
 
-  // Chooses a loader and normalizes it
-  // TODO - only uses URL, need a selectLoader variant that peeks at first stream chunk...
-  const loader = selectLoader(loaders, url, null);
-
-  // Normalize options
-  options = mergeLoaderAndUserOptions(options, loader);
-
-  return parseWithLoaderInBatches(data, loader, options, url);
-}
-
-export async function parseInBatchesSync(data, loaders, options, url) {
-  // Signature: parseInBatchesSync(data, options, url)
-  // Uses registered loaders
-  if (!Array.isArray(loaders) && !isLoaderObject(loaders)) {
-    url = options;
-    options = loaders;
-    loaders = null;
+  if (loader.worker) {
+    return await parseWithWorker(loader.worker, loader.name, data, options, context, loader);
   }
 
-  // Chooses a loader and normalizes it
-  // TODO - only uses URL, need a selectLoader variant that peeks at first stream chunk...
-  const loader = selectLoader(loaders, url, null);
-
-  // Normalize options
-  options = mergeLoaderAndUserOptions(options, loader);
-
-  return parseWithLoaderInBatches(data, loader, options, url);
+  // TBD - If asynchronous parser not available, return null
+  // => This loader does not work on loaded data and only supports `loadAndParseAsync`
+  return assert(false);
 }

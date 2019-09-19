@@ -2,7 +2,7 @@
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
 /* global TextDecoder */
-import {assert} from '@loaders.gl/core';
+import {assert} from '@loaders.gl/loader-utils';
 
 // Decode the JSON binary array into clear text
 export function getStringFromArrayBuffer(arrayBuffer, byteOffset, byteLength) {

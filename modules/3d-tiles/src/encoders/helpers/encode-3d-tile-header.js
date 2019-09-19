@@ -1,5 +1,5 @@
 // HELPER ENCODERS
-import {assert} from '@loaders.gl/core';
+import {assert} from '@loaders.gl/loader-utils';
 
 export function encode3DTileHeader(tile, dataView, byteOffset) {
   const HEADER_SIZE = 12;

@@ -9,11 +9,19 @@ import {parse3DTileHeaderSync} from './helpers/parse-3d-tile-header';
 import {parse3DTileTablesHeaderSync, parse3DTileTablesSync} from './helpers/parse-3d-tile-tables';
 import {parse3DTileGLTFViewSync, extractGLTF, GLTF_FORMAT} from './helpers/parse-3d-tile-gltf-view';
 
-export async function parseBatchedModel3DTile(tile, arrayBuffer, byteOffset, options) {
-  return parseBatchedModel3DTileSync(tile, arrayBuffer, byteOffset, options);
+export async function parseBatchedModel3DTile(tile, arrayBuffer, byteOffset, options, context) {
+  byteOffset = parseBatchedModel(tile, arrayBuffer, byteOffset, options, context);
+  await extractGLTF(tile, GLTF_FORMAT.EMBEDDED, options, context);
+  return byteOffset;
 }
 
-export function parseBatchedModel3DTileSync(tile, arrayBuffer, byteOffset, options) {
+export function parseBatchedModel3DTileSync(tile, arrayBuffer, byteOffset, options, context) {
+  byteOffset = parseBatchedModel(tile, arrayBuffer, byteOffset, options, context);
+  extractGLTF(tile, GLTF_FORMAT.EMBEDDED, options, context);
+  return byteOffset;
+}
+
+export function parseBatchedModel(tile, arrayBuffer, byteOffset, options, context) {
   byteOffset = parse3DTileHeaderSync(tile, arrayBuffer, byteOffset, options);
 
   byteOffset = parse3DTileTablesHeaderSync(tile, arrayBuffer, byteOffset, options);
@@ -24,17 +32,7 @@ export function parseBatchedModel3DTileSync(tile, arrayBuffer, byteOffset, optio
   const featureTable = new Tile3DFeatureTable(tile.featureTableJson, tile.featureTableBinary);
   tile.rtcCenter = featureTable.getGlobalProperty('RTC_CENTER', GL.FLOAT, 3);
 
-  extractGLTF(tile, GLTF_FORMAT.EMBEDDED, options);
-
-  /* TODO - Remove. This was a shot in the dark, didn't work...
-  if (tile.rtcCenter) {
-    const instanceTransform = new Matrix4();
-    Ellipsoid.WGS84.eastNorthUpToFixedFrame(tile.rtcCenter, instanceTransform);
-    const modelMatrix = new Matrix4();
-    instanceTransform.getRotationMatrix3(modelMatrix);
-    tile.instances = [{modelMatrix: modelMatrix.invert()}];
-  }
-  */
+  extractGLTF(tile, GLTF_FORMAT.EMBEDDED, options, context);
 
   return byteOffset;
 }

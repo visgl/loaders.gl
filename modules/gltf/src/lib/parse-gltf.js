@@ -1,6 +1,5 @@
 /* eslint-disable camelcase, max-statements, no-restricted-globals */
 /* global TextDecoder */
-import {fetchFile} from '@loaders.gl/core';
 import assert from './utils/assert';
 import {getFullUri} from './gltf-utils/gltf-utils';
 import {decodeExtensions, decodeExtensionsSync} from './extensions/extensions';
@@ -11,9 +10,7 @@ const DEFAULT_OPTIONS = {
   fetchLinkedResources: true, // Fetch any linked .BIN buffers, decode base64
   fetchImages: false, // Fetch any linked .BIN buffers, decode base64
   createImages: false, // Create image objects
-  fetch: fetchFile,
-  decompress: false, // Decompress Draco compressed meshes (if DracoLoader available)
-  DracoLoader: null,
+  decompress: false, // Decompress Draco compressed meshes
   postProcess: false,
   log: console // eslint-disable-line
 };
@@ -24,24 +21,24 @@ export function isGLTF(arrayBuffer, options = {}) {
   return isGLB(dataView, byteOffset);
 }
 
-export async function parseGLTF(gltf, arrayBufferOrString, byteOffset = 0, options = {}) {
-  options = {...DEFAULT_OPTIONS, ...options};
+export async function parseGLTF(gltf, arrayBufferOrString, byteOffset = 0, options, context) {
+  options = {...DEFAULT_OPTIONS, ...options.gltf};
 
   parseGLTFContainerSync(gltf, arrayBufferOrString, byteOffset, options);
 
   const promises = [];
 
   if (options.fetchImages) {
-    const promise = fetchImages(gltf, options);
+    const promise = fetchImages(gltf, options, context);
     promises.push(promise);
   }
 
   // Load linked buffers asynchronously and decodes base64 buffers in parallel
   if (options.fetchLinkedResources) {
-    await fetchBuffers(gltf, options);
+    await fetchBuffers(gltf, options, context);
   }
 
-  const promise = decodeExtensions(gltf, options);
+  const promise = decodeExtensions(gltf, options, context);
   promises.push(promise);
 
   // Parallelize image loading and buffer loading/extension decoding
@@ -54,7 +51,7 @@ export async function parseGLTF(gltf, arrayBufferOrString, byteOffset = 0, optio
 // NOTE: The sync parser cannot handle linked assets or base64 encoded resources
 // gtlf - input can be arrayBuffer (GLB or UTF8 encoded JSON), string (JSON), or parsed JSON.
 // eslint-disable-next-line complexity
-export function parseGLTFSync(gltf, arrayBufferOrString, byteOffset = 0, options = {}) {
+export function parseGLTFSync(gltf, arrayBufferOrString, byteOffset = 0, options, context) {
   options = {...DEFAULT_OPTIONS, ...options};
 
   parseGLTFContainerSync(gltf, arrayBufferOrString, byteOffset, options);
@@ -125,17 +122,20 @@ function parseGLTFContainerSync(gltf, data, byteOffset, options) {
 }
 
 // Asynchronously fetch and parse buffers, store in buffers array outside of json
-async function fetchBuffers(gltf, options) {
+async function fetchBuffers(gltf, options, context) {
   for (let i = 0; i < gltf.json.buffers.length; ++i) {
     const buffer = gltf.json.buffers[i];
-    // TODO - remove this defensive hack and auto-infer the base URI
-    if (!options.uri) {
-      // eslint-disable-next-line
-      console.warn('options.uri must be set to decode embedded glTF buffers');
-    }
-    if (buffer.uri && options.uri) {
-      const fetch = options.fetch || window.fetch;
+    if (buffer.uri) {
+      if (!options.uri) {
+        // TODO - remove this defensive hack and auto-infer the base URI
+        // eslint-disable-next-line
+        console.warn('options.uri must be set to decode embedded glTF buffers');
+        return;
+      }
+
+      const {fetch} = context;
       assert(fetch);
+
       const uri = getFullUri(buffer.uri, options.uri);
       const response = await fetch(uri);
       const arrayBuffer = await response.arrayBuffer();
@@ -159,7 +159,7 @@ function fetchBuffersSync(gltf, options) {
   }
 }
 
-async function fetchImages(gltf, options) {
+async function fetchImages(gltf, options, context) {
   const images = gltf.json.images || [];
 
   const promises = [];
@@ -173,9 +173,9 @@ async function fetchImages(gltf, options) {
 }
 
 // Asynchronously fetches and parses one image, store in images array outside of json
-async function fetchAndParseLinkedImage(gltf, image, i, options) {
-  const fetch = options.fetch || window.fetch;
-  assert(fetch);
+async function fetchAndParseLinkedImage(gltf, image, i, options, context) {
+  // const fetch = options.fetch || window.fetch;
+  // assert(fetch);
 
   /*
   if (image.bufferView) {

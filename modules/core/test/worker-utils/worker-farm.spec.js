@@ -1,7 +1,7 @@
 /* global Worker */
 import test from 'tape-catch';
 import {_WorkerThread, _WorkerPool, toArrayBuffer} from '@loaders.gl/core';
-import parseWithWorker from '@loaders.gl/core/lib/parse-with-worker';
+import parseWithWorker from '@loaders.gl/core/lib/loader-utils/parse-with-worker';
 import {registerLoaders, _unregisterLoaders} from '@loaders.gl/core/lib/register-loaders';
 
 const CHUNKS_TOTAL = 6;
