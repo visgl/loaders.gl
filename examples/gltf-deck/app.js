@@ -44,7 +44,7 @@ export default class App extends PureComponent {
   }
 
   componentDidMount() {
-    // TODO
+    // TODO, implement loading of new glTF on drop
     // fileDrop(this._deckRef.deckCanvas, (promise, file) => {});
   }
 
@@ -57,7 +57,7 @@ export default class App extends PureComponent {
       <DeckGL
         height="100%"
         initialViewState={INITIAL_VIEW_STATE}
-        controller={{type: MapController, maxPitch: 85}}
+        controller={{type: MapController}}
         onWebGLInitialized={this._onWebGLInitialized.bind(this)}
         layers={[
           new ScenegraphLayer({
