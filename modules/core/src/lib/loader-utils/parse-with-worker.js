@@ -51,7 +51,13 @@ async function onWorkerMessage({worker, data, resolve, reject}) {
  * this function expects that the worker function sends certain messages,
  * this can be automated if the worker is wrapper by a call to createWorker in @loaders.gl/loader-utils.
  */
-export default function parseWithWorker(workerSource, workerName, data, options = {}, context = {}) {
+export default function parseWithWorker(
+  workerSource,
+  workerName,
+  data,
+  options = {},
+  context = {}
+) {
   const workerFarm = getWorkerFarm(options);
 
   // options.log object contains functions which cannot be transferred
