@@ -2,6 +2,12 @@
 
 ### 1.3 Release
 
+#### v1.3.1
+
+- Auto resolve DracoLoader for PointCloud tiles (#412)
+- Add `parse` method to all loaders (#405)
+- core: add `context` to `parse` methods (#414)
+
 #### v1.3.0
 
 - 3d-tiles: Example handling (#398)
