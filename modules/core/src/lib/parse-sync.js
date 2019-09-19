@@ -2,6 +2,7 @@ import {selectLoader} from './select-loader';
 import {isLoaderObject} from './loader-utils/normalize-loader';
 import {mergeLoaderAndUserOptions} from './loader-utils/normalize-options';
 import {getArrayBufferOrStringFromDataSync} from './loader-utils/get-data';
+import {getLoaderContext} from './loader-utils/get-loader-context';
 
 export function parseSync(data, loaders, options, url) {
   // Signature: parseSync(data, options, url)
@@ -22,10 +23,7 @@ export function parseSync(data, loaders, options, url) {
   // Normalize options
   options = mergeLoaderAndUserOptions(options, loader);
 
-  const context = {
-    url,
-    parseSync
-  };
+  const context = getLoaderContext({url, parseSync}, options);
 
   return parseWithLoaderSync(loader, data, options, context);
 }

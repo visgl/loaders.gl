@@ -3,6 +3,7 @@ import {isLoaderObject} from './loader-utils/normalize-loader';
 import {mergeLoaderAndUserOptions} from './loader-utils/normalize-options';
 import {getUrlFromData} from './loader-utils/get-data';
 import {getArrayBufferOrStringFromData} from './loader-utils/get-data';
+import {getLoaderContext} from './loader-utils/get-loader-context';
 import parseWithWorker from './loader-utils/parse-with-worker';
 import {selectLoader} from './select-loader';
 
@@ -26,10 +27,7 @@ export async function parse(data, loaders, options, url) {
   // Normalize options
   options = mergeLoaderAndUserOptions(options, loader);
 
-  const context = {
-    url: autoUrl,
-    parse
-  };
+  const context = getLoaderContext({url: autoUrl, parse}, options);
 
   return await parseWithLoader(loader, data, options, context);
 }

@@ -1,8 +1,10 @@
 import {isLoaderObject} from './loader-utils/normalize-loader';
 import {mergeLoaderAndUserOptions} from './loader-utils/normalize-options';
 import {getIteratorFromData} from './loader-utils/get-data';
+import {getLoaderContext} from './loader-utils/get-loader-context';
 import {selectLoader} from './select-loader';
 
+// TODO - remove?
 export async function parseInBatchesSync(data, loaders, options, url) {
   // Signature: parseInBatchesSync(data, options, url)
   // Uses registered loaders
@@ -19,10 +21,7 @@ export async function parseInBatchesSync(data, loaders, options, url) {
   // Normalize options
   options = mergeLoaderAndUserOptions(options, loader);
 
-  const context = {
-    url
-    // parseInBatchesSync
-  };
+  const context = getLoaderContext({url}, options);
 
   return parseWithLoaderInBatchesSync(loader, data, options, context);
 }
