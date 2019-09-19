@@ -268,7 +268,7 @@ export default class Tile3DHeader {
 
   // Requests the tile's content.
   // The request may not be made if the Request Scheduler can't prioritize it.
-  async loadContent(DracoLoader) {
+  async loadContent() {
     if (this.hasEmptyContent) {
       return false;
     }
@@ -327,7 +327,7 @@ export default class Tile3DHeader {
       }
 
       // The content can be a binary tile ot a JSON tileset
-      this._content = await parse(response, [Tile3DLoader, Tileset3DLoader], {DracoLoader});
+      this._content = await parse(response, [Tile3DLoader, Tileset3DLoader]);
       // if (Tile3D.isTile(content)) {
       //   new Tileset3D(content, contentUri);
 
