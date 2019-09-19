@@ -16,11 +16,7 @@ const CONFIG = {
         loader: 'babel-loader',
         exclude: [/node_modules/],
         options: {
-          presets: [
-            // Debugging is much nicer without transform-regenerator...
-            '@babel/preset-env',
-            '@babel/preset-react'
-          ]
+          presets: ['@babel/preset-env', '@babel/preset-react']
         }
       }
     ]

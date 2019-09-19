@@ -140,9 +140,12 @@ function addESNextSettings(config) {
   if (babelRule && babelRule.options && babelRule.options.presets) {
     babelRule.options.presets = babelRule.options.presets.map(preset => {
       if (preset === '@babel/preset-env') {
-        return ['@babel/preset-env', {
-          exclude: [/transform-async-to-generator/, /transform-regenerator/]
-        }];
+        return [
+          '@babel/preset-env',
+          {
+            exclude: [/transform-async-to-generator/, /transform-regenerator/]
+          }
+        ];
       }
       return preset;
     });
@@ -156,7 +159,9 @@ module.exports = (baseConfig, opts = {}) => env => {
   /* eslint-disable no-console */
   /* global console */
   if (env && env.help) {
-    console.log('--env.esnext: Use non-transpiled vis.gl dependencies and disable regenerator transforms');
+    console.log(
+      '--env.esnext: Use non-transpiled vis.gl dependencies and disable regenerator transforms'
+    );
     console.log('--env.local: Build against local src for modules in this repo');
     console.log('--env.math,luma,deck: Build against local src for external repos');
     console.log('--env.analyze: Add bundle size analyzer plugin');
