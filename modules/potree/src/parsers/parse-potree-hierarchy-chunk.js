@@ -79,7 +79,7 @@ function parseBinaryChunk(arrayBuffer, byteOffset = 0) {
     let mask = 1;
 
     for (let i = 0; i < 8; i++) {
-      if ((snode.childMask & mask) !== 0) {
+      if ((snode.header.childMask & mask) !== 0) {
         const tileHeader = {};
         byteOffset = decodeRow(dataView, byteOffset, tileHeader);
         tileHeader.name = snode.name + i;
@@ -87,7 +87,7 @@ function parseBinaryChunk(arrayBuffer, byteOffset = 0) {
         stack.push(tileHeader);
         tileHeaders.push(tileHeader);
 
-        snode.childCount++;
+        snode.header.childCount++;
       }
       mask = mask * 2;
     }
@@ -128,7 +128,7 @@ function buildHierarchy(tileHeaders, options = {}) {
     // assert(parentNode && level >= 0);
 
     tileHeader.level = level;
-    tileHeader.hasChildren = tileHeader.children.length > 0;
+    tileHeader.hasChildren = tileHeader.header.childCount;
     tileHeader.children = [];
     tileHeader.childrenByIndex = new Array(8).fill(null);
     tileHeader.spacing = options.spacing / Math.pow(2, level);
