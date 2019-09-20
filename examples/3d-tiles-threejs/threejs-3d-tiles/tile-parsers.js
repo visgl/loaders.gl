@@ -24,13 +24,13 @@ export async function loadTileset(url, styleParams) {
   return tileset;
 }
 
-
 export async function loadPointTile(url) {
   const content = await load(url, Tile3DLoader, {loadGLTF: false});
 
-  const tile = {};
-  tile.rtc_center = content.rtcCenter;
-  tile.points = content.attributes.positions;
+  const tile = {
+    rtc_center: content.rtcCenter, // eslint-disable-line camelcase
+    points: content.attributes.positions
+  };
   const {colors} = content.attributes;
   if (colors && colors.size === 3) {
     tile.rgb = colors.value;

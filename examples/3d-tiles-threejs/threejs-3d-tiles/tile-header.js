@@ -72,7 +72,7 @@ export default class TileHeader {
 
     const dist = this.box.distanceToPoint(cameraPosition);
 
-    //console.log(`dist: ${dist}, geometricError: ${this.geometricError}`);
+    // console.log(`dist: ${dist}, geometricError: ${this.geometricError}`);
     // are we too far to render this tile?
     if (this.geometricError > 0.0 && dist > this.geometricError * 50.0) {
       this.unload(true);
@@ -80,7 +80,7 @@ export default class TileHeader {
     }
 
     // should we load this tile?
-    if (this.refine == 'REPLACE' && dist < this.geometricError * 20.0) {
+    if (this.refine === 'REPLACE' && dist < this.geometricError * 20.0) {
       this.unload(false);
     } else {
       this.load();
@@ -127,6 +127,7 @@ export default class TileHeader {
           const tileset = await loadTileset(url, this.styleParams);
           this.children.push(tileset.root);
           if (tileset.root) {
+            // eslint-disable-next-line max-depth
             if (tileset.root.transform) {
               // the root tile transform of a tileset is normally not applied because
               // it is applied by the camera while rendering. However, in case the tileset
@@ -157,7 +158,7 @@ export default class TileHeader {
           throw new Error('cmpt tiles not yet implemented');
 
         default:
-          throw new Error('invalid tile type: ' + type);
+          throw new Error(`invalid tile type: ${type}`);
       }
     }
   }
@@ -197,10 +198,7 @@ export default class TileHeader {
 
   _createGLTFNodes(d, tileContent) {
     const loader = new GLTFLoader();
-    const rotateX = new THREE.Matrix4().makeRotationAxis(
-      new THREE.Vector3(1, 0, 0),
-      Math.PI / 2
-    );
+    const rotateX = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(1, 0, 0), Math.PI / 2);
 
     tileContent.applyMatrix(rotateX); // convert from GLTF Y-up to Z-up
     loader.parse(
@@ -214,7 +212,7 @@ export default class TileHeader {
               if (this.styleParams.color !== null) child.material.color = color;
               if (this.styleParams.opacity !== null) {
                 child.material.opacity = this.styleParams.opacity;
-                child.material.transparent = this.styleParams.opacity < 1.0 ? true : false;
+                child.material.transparent = this.styleParams.opacity < 1.0;
               }
             }
           });
@@ -229,7 +227,7 @@ export default class TileHeader {
         tileContent.add(gltf.scene);
       },
       e => {
-        throw new Error('error parsing gltf: ' + e);
+        throw new Error(`error parsing gltf: ${e}`);
       }
     );
     return tileContent;
