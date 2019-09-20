@@ -1,22 +1,24 @@
 import {normalizeLoader} from './loader-utils/normalize-loader';
 
-let registeredLoaders = {};
+let registeredLoaders = [];
 
 export function registerLoaders(loaders) {
   loaders = Array.isArray(loaders) ? loaders : [loaders];
+
   for (const loader of loaders) {
     const normalizedLoader = normalizeLoader(loader);
-    for (const extension of normalizedLoader.extensions) {
-      registeredLoaders[extension] = normalizedLoader;
+    if (!registeredLoaders.find(registeredLoader => normalizedLoader === registeredLoader)) {
+      // add to the beginning of the registeredLoaders, so the last registeredLoader get picked
+      registeredLoaders.unshift(normalizedLoader);
     }
   }
 }
 
 export function getRegisteredLoaders() {
-  return Object.values(registeredLoaders);
+  return registeredLoaders;
 }
 
 // For testing
 export function _unregisterLoaders() {
-  registeredLoaders = {};
+  registeredLoaders = [];
 }
