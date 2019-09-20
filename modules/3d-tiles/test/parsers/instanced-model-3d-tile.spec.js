@@ -92,7 +92,12 @@ test('instanced model tile#loaded tile without batch table', async t => {
 // TODO - this should be a render test
 test('instanced model tile#renders with external gltf', async t => {
   const tileData = await loadRootTileFromTileset(t, GLTF_EXTERNAL_URL);
-  const tile = await parse(tileData, Tile3DLoader);
+  const tile = await parse(tileData, Tile3DLoader, {
+    '3d-tiles': {
+      // TODO - provide base URI?
+      loadGLTF: false
+    }
+  });
   t.ok(tile, 'loaded tile with external gltf');
   t.end();
 });
