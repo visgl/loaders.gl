@@ -2,6 +2,11 @@
 
 ### 1.3 Release
 
+#### v1.3.2
+
+- Dedupe loaders (#421)
+- Fix core module browser config (#422)
+
 #### v1.3.1
 
 - Auto resolve DracoLoader for PointCloud tiles (#412)

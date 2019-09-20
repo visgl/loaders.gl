@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/csv",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "description": "Framework-independent loader for CSV and DSV table formats",
   "license": "MIT",
   "publishConfig": {
@@ -30,7 +30,7 @@
     "build-bundle": "webpack --display=minimal --config ../../scripts/bundle.config.js"
   },
   "dependencies": {
-    "@loaders.gl/core": "1.3.1",
-    "@loaders.gl/experimental": "1.3.1"
+    "@loaders.gl/core": "1.3.2",
+    "@loaders.gl/experimental": "1.3.2"
   }
 }
