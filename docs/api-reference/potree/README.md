@@ -13,10 +13,12 @@ npm install @loaders.gl/core @loaders.gl/potree
 ## Roadmap
 
 The plan is to provide the following loaders/writers:
+
 - `PotreeLoader` for individual tiles
 - `PotreeHierarchyChunkLoader` for the hierarchy indices
 
 PotreeLoader will work with the 3d tileset classes in the `@loaders.gl/3d-tiles` module.
+
 - `Tileset3D` class will be generalize to access the loaded potree tileset.
 
 ## Attribution
