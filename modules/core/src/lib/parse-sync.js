@@ -23,7 +23,7 @@ export function parseSync(data, loaders, options, url) {
   // Normalize options
   options = mergeLoaderAndUserOptions(options, loader);
 
-  const context = getLoaderContext({url, parseSync}, options);
+  const context = getLoaderContext({url, parseSync, loaders}, options);
 
   return parseWithLoaderSync(loader, data, options, context);
 }

@@ -21,7 +21,7 @@ export async function parseInBatchesSync(data, loaders, options, url) {
   // Normalize options
   options = mergeLoaderAndUserOptions(options, loader);
 
-  const context = getLoaderContext({url}, options);
+  const context = getLoaderContext({url, loaders}, options);
 
   return parseWithLoaderInBatchesSync(loader, data, options, context);
 }

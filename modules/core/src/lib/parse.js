@@ -27,7 +27,7 @@ export async function parse(data, loaders, options, url) {
   // Normalize options
   options = mergeLoaderAndUserOptions(options, loader);
 
-  const context = getLoaderContext({url: autoUrl, parse}, options);
+  const context = getLoaderContext({url: autoUrl, parse, loaders}, options);
 
   return await parseWithLoader(loader, data, options, context);
 }

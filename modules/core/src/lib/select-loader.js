@@ -1,5 +1,6 @@
 import {getRegisteredLoaders} from './register-loaders';
 import {normalizeLoader} from './loader-utils/normalize-loader';
+import {stringify} from 'querystring';
 
 const EXT_PATTERN = /[^.]+$/;
 
@@ -36,7 +37,14 @@ export function selectLoader(loaders, url = '', data = null, {nothrow = false} =
     if (nothrow) {
       return null;
     }
-    throw new Error(`No valid loader found for ${url}`);
+    let message = 'No valid loader found';
+    if (data) {
+      message += ` for data block starting with "${getFirstCharacters(data)}"`;
+    }
+    if (url) {
+      message += ` for ${url}`;
+    }
+    throw new Error(message);
   }
 
   return loader;
@@ -120,6 +128,19 @@ function testBinary(data, byteOffset, loader) {
     default:
       return false;
   }
+}
+
+function getFirstCharacters(data, length = 5) {
+  if (typeof data === 'string') {
+    return data.slice(0, length);
+  } else if (ArrayBuffer.isView(data)) {
+    // Typed Arrays can have offsets into underlying buffer
+    return getMagicString(data.buffer, data.byteOffset, length);
+  } else if (data instanceof ArrayBuffer) {
+    const byteOffset = 0;
+    return getMagicString(data, byteOffset, length);
+  }
+  return '';
 }
 
 function getMagicString(arrayBuffer, byteOffset, length) {
