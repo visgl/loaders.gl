@@ -1,6 +1,4 @@
 /* global URL */
-import '@babel/polyfill';
-
 import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
