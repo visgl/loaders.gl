@@ -1,7 +1,4 @@
 /* global URL */
-import '@babel/polyfill'; // For older browsers
-import '@loaders.gl/polyfills'; // For older browsers
-
 import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
