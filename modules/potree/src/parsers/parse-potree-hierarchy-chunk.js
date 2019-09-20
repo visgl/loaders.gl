@@ -56,50 +56,69 @@ Would have an index looking like this:
 
 // load hierarchy
 export default function parsePotreeHierarchyChunk(arrayBuffer) {
+  const tileHeaders = parseBinaryChunk(arrayBuffer);
+  return buildHierarchy(tileHeaders);
+}
+
+// Parses the binary rows
+function parseBinaryChunk(arrayBuffer, byteOffset = 0) {
   const dataView = new DataView(arrayBuffer);
 
   const stack = [];
 
   // Get root mask
-  let childMask = dataView.getUint8(0);
-  let pointCount = dataView.getUint32(1, true);
-  stack.push({name: '', childMask, pointCount, childCount: 0});
+  const topTileHeader = {};
+  byteOffset = decodeRow(dataView, byteOffset, topTileHeader);
+
+  stack.push(topTileHeader);
 
   const tileHeaders = [];
 
-  let offset = 5;
   while (stack.length > 0) {
     const snode = stack.shift();
     let mask = 1;
+    let childCount = 0;
     for (let i = 0; i < 8; i++) {
       if ((snode.childMask & mask) !== 0) {
-        childMask = dataView.getUint8(offset);
-        pointCount = dataView.getUint32(offset + 1, true);
+        childCount++;
 
-        const name = snode.name + i;
+        const tileHeader = {};
+        byteOffset = decodeRow(dataView, byteOffset, tileHeader);
 
-        stack.push({name, childMask, pointCount, childCount: 0});
-        tileHeaders.push({name, childMask, pointCount, childCount: 0});
+        tileHeader.name = snode.name + i;
 
-        offset += 5;
+        stack.push(tileHeader);
+        tileHeaders.push(tileHeader);
+
         snode.childCount++;
       }
       mask = mask * 2;
     }
 
-    if (offset === dataView.byteLength) {
+    if (byteOffset === dataView.byteLength) {
       break;
     }
   }
 
-  return buildHierarchy(tileHeaders);
+  return tileHeaders;
 }
 
-export function buildHierarchy(tileHeaders, options = {}) {
+function decodeRow(dataView, byteOffset, tileHeader) {
+  tileHeader.header = tileHeader.header || {};
+  tileHeader.header.childMask = dataView.getUint8(byteOffset);
+  tileHeader.header.childCount = 0;
+  tileHeader.pointCount = dataView.getUint32(byteOffset + 1, true);
+  tileHeader.name = '';
+  byteOffset += 5;
+  return byteOffset;
+}
+
+// Resolves the binary rows into a hierarchy (tree structure)
+function buildHierarchy(tileHeaders, options = {}) {
   const DEFAULT_OPTIONS = {spacing: 100}; // TODO assert instead of default?
   options = {...DEFAULT_OPTIONS, ...options};
 
-  let topNode = null;
+  const topNode = tileHeaders[0];
   const nodes = {};
 
   for (const tileHeader of tileHeaders) {
@@ -128,5 +147,5 @@ export function buildHierarchy(tileHeaders, options = {}) {
   }
 
   // First node is the root
-  return tileHeaders[0];
+  return topNode;
 }
