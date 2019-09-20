@@ -8,25 +8,25 @@ export const EXTENSIONS = {
   KHR_lights_punctual
 };
 
-export async function decodeExtensions(gltf, options) {
+export async function decodeExtensions(gltf, options, context) {
   for (const extensionName in EXTENSIONS) {
     const disableExtension = extensionName in options && !options[extensionName];
     if (!disableExtension) {
       const extension = EXTENSIONS[extensionName];
       // Note: We decode extensions sequentially, this might not be necessary
       // Currently we only have glTF, but when we add Basis we may revisit
-      await extension.decode(gltf, options);
+      await extension.decode(gltf, options, context);
       // TODO - warn if extension cannot be decoded synchronously?
     }
   }
 }
 
-export function decodeExtensionsSync(gltf, options) {
+export function decodeExtensionsSync(gltf, options, context) {
   for (const extensionName in EXTENSIONS) {
     const disableExtension = extensionName in options && !options[extensionName];
     if (!disableExtension) {
       const extension = EXTENSIONS[extensionName];
-      extension.decodeSync(gltf, options);
+      extension.decodeSync(gltf, options, context);
     }
   }
 }

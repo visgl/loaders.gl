@@ -39,13 +39,13 @@ test('GLTFLoader#parseSync(binary)', async t => {
 
 test('GLTFLoader#load(binary)', async t => {
   const data = await load(GLTF_BINARY_URL, GLTFLoader, {gltf: {parserVersion: 2}});
-  t.ok(data.json.asset, 'GLTFLoader returned parsed data');
+  t.ok(data.asset, 'GLTFLoader returned parsed data');
   t.end();
 });
 
 test('GLTFLoader#load(text)', async t => {
   const data = await load(GLTF_JSON_URL, GLTFLoader, {gltf: {parserVersion: 2}});
-  t.ok(data.json.asset, 'GLTFLoader returned parsed data');
+  t.ok(data.asset, 'GLTFLoader returned parsed data');
   t.end();
 });
 

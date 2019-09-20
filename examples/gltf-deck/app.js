@@ -69,6 +69,8 @@ export default class App extends PureComponent {
                 parserVersion: 2
               }
             },
+            modelMatrix: [1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1],
+            _composeModelMatrix: true,
             coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS,
             coordinateOrigin: MODEL_ORIGIN,
             sizeScale: 1000,

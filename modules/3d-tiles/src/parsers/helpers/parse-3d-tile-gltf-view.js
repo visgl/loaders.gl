@@ -8,8 +8,8 @@
 // - And if we decode, do we still keep the GLB in case it is needed?
 // - Do we add an option to control this?
 // - Also, should we have hard dependency on gltf module or use injection or auto-discovery for gltf parser?
-//
-// import {parseGLTFSync} from '@loaders.gl/gltf';
+
+import {GLTFLoader} from '@loaders.gl/gltf';
 
 export const GLTF_FORMAT = {
   URI: 0,
@@ -17,6 +17,11 @@ export const GLTF_FORMAT = {
 };
 
 export function parse3DTileGLTFViewSync(tile, arrayBuffer, byteOffset) {
+  // Set flags
+  // glTF models need to be rotated from Y to Z up
+  // https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#y-up-to-z-up
+  tile.rotateYtoZ = true;
+
   // Assume glTF consumes rest of tile
   const gltfByteLength = tile.byteOffset + tile.byteLength - byteOffset;
   if (gltfByteLength === 0) {
@@ -24,30 +29,63 @@ export function parse3DTileGLTFViewSync(tile, arrayBuffer, byteOffset) {
   }
 
   // TODO - We can avoid copy if already 4-byte aligned...
-  // if (byteOffset % 4 === 0) {
-  //   tile.gltfArrayBuffer = arrayBuffer;
-  //   tile.gltfByteOffset = byteOffset;
-  //   tile.gltfByteLength = gltfByteLength;
-  // } else {
-  // Create a copy of the glb so that it is 4-byte aligned
-  // eslint-disable-next-line
-  // console.warn(`${tile.type}: embedded glb is not aligned to a 4-byte boundary.`);
-  const subArray = new Uint8Array(arrayBuffer).subarray(byteOffset, byteOffset + gltfByteLength);
-  const arrayCopy = new Uint8Array(subArray);
-  tile.gltfArrayBuffer = arrayCopy.buffer;
+  // However the rest of the code may not be able to accept byteOffsets, so copy anyway
+  tile.gltfArrayBuffer = copyArrayBuffer(arrayBuffer, byteOffset, gltfByteLength);
   tile.gltfByteOffset = 0;
   tile.gltfByteLength = gltfByteLength;
-  // }
 
-  // glTF models need to be rotated from Y to Z up
-  // https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#y-up-to-z-up
-  tile.rotateYtoZ = true;
+  if (byteOffset % 4 === 0) {
+    // tile.gltfArrayBuffer = arrayBuffer;
+    // tile.gltfByteOffset = byteOffset;
+    // tile.gltfByteLength = gltfByteLength;
+  } else {
+    // Create a copy of the glb so that it is 4-byte aligned
+    // eslint-disable-next-line
+    console.warn(`${tile.type}: embedded glb is not aligned to a 4-byte boundary.`);
+  }
 
   // Entire tile is consumed
   return tile.byteOffset + tile.byteLength;
 }
 
-export function extractGLTF(tile, gltfFormat, options) {
+export async function extractGLTF(tile, gltfFormat, options, context) {
+  extractGLTFBufferOrURL(tile, gltfFormat, options);
+
+  if (options.loadGLTF) {
+    const {parse, fetch} = context;
+    if (tile.gltfUrl) {
+      tile.gltfArrayBuffer = await fetch(tile.gltfUrl, options);
+      tile.gltfByteOffset = 0;
+    }
+    if (tile.gltfArrayBuffer) {
+      // TODO - Should handle byteOffset... However, not used now...
+      tile.gltf = await parse(tile.gltfArrayBuffer, GLTFLoader, {...options, parserVersion: 2});
+      delete tile.gltfArrayBuffer;
+      delete tile.gltfByteOffset;
+      delete tile.gltfByteLength;
+    }
+  }
+}
+
+export function extractGLTFSync(tile, gltfFormat, options, context) {
+  extractGLTFBufferOrURL(tile, gltfFormat, options);
+
+  if (options.loadGLTF) {
+    if (tile.gltfArrayBuffer) {
+      const {parseSync} = context;
+      // TODO - Should handle byteOffset... Not used now...
+      tile.gltf = parseSync(tile.gltfArrayBuffer, GLTFLoader, {...options, parserVersion: 2});
+      delete tile.gltfArrayBuffer;
+      delete tile.gltfByteOffset;
+      delete tile.gltfByteLength;
+    } else if (tile.gltfUrl) {
+      // TODO - use context.fetch or context.load
+      throw new Error('cant load glTF URL synchronously');
+    }
+  }
+}
+
+function extractGLTFBufferOrURL(tile, gltfFormat, options) {
   switch (gltfFormat) {
     case GLTF_FORMAT.URI:
       // We need to remove padding from the end of the model URL in case this tile was part of a composite tile.
@@ -56,15 +94,20 @@ export function extractGLTF(tile, gltfFormat, options) {
       const textDecoder = new TextDecoder();
       const gltfUrl = textDecoder.decode(gltfUrlBytes);
       tile.gltfUrl = gltfUrl.replace(/[\s\0]+$/, '');
+      delete tile.gltfArrayBuffer;
+      delete tile.gltfByteOffset;
+      delete tile.gltfByteLength;
       break;
     case GLTF_FORMAT.EMBEDDED:
-      tile.gltf = {};
-      // parseGLTFSync(tile.gltf, tile.gltfArrayBuffer, tile.gltfByteOffset, options);
-      // delete tile.gltfArrayBuffer;
-      // delete tile.gltfByteOffset;
-      // delete tile.gltfByteLength;
       break;
     default:
-      throw new Error(`i3dm: glTF format ${gltfFormat}: Must be 0 (uri) or 1 (embedded)`);
+      throw new Error(`b3dm: Illegal glTF format field`);
   }
+}
+
+// Copy the glb into new ArrayBuffer.
+function copyArrayBuffer(arrayBuffer, byteOffset, byteLength) {
+  const subArray = new Uint8Array(arrayBuffer).subarray(byteOffset, byteOffset + byteLength);
+  const arrayCopy = new Uint8Array(subArray);
+  return arrayCopy.buffer;
 }

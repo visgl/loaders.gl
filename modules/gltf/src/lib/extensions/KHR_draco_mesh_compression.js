@@ -5,15 +5,13 @@
 import GLTFScenegraph from '../gltf-scenegraph';
 import {KHR_DRACO_MESH_COMPRESSION} from '../gltf-constants';
 import {getGLTFAccessors, getGLTFAccessor} from '../gltf-utils/gltf-attribute-utils';
-import {parse} from '@loaders.gl/core';
-
 export default class KHR_draco_mesh_compression {
   static get name() {
     return KHR_DRACO_MESH_COMPRESSION;
   }
 
   // Note: We have a "soft dependency" on Draco to avoid bundling it when not needed
-  static async decode(gltfData, options = {}) {
+  static async decode(gltfData, options, context) {
     if (!options.decompress) {
       return;
     }
@@ -22,7 +20,7 @@ export default class KHR_draco_mesh_compression {
     const promises = [];
     for (const primitive of meshPrimitiveIterator(scenegraph)) {
       if (scenegraph.getObjectExtension(primitive, KHR_DRACO_MESH_COMPRESSION)) {
-        promises.push(decompressPrimitive(primitive, scenegraph, options));
+        promises.push(decompressPrimitive(primitive, scenegraph, options, context));
       }
     }
 
@@ -64,7 +62,7 @@ export default class KHR_draco_mesh_compression {
 
 // TODO - Implement fallback behavior per KHR_DRACO_MESH_COMPRESSION spec
 
-async function decompressPrimitive(primitive, scenegraph, options) {
+async function decompressPrimitive(primitive, scenegraph, options, context) {
   const compressedPrimitive = scenegraph.getObjectExtension(primitive, KHR_DRACO_MESH_COMPRESSION);
 
   // eslint-disable-next-line
@@ -74,6 +72,7 @@ async function decompressPrimitive(primitive, scenegraph, options) {
   const subArray = new Uint8Array(buffer.buffer).subarray(buffer.byteOffset); // , buffer.byteLength);
   const bufferCopy = new Uint8Array(subArray);
 
+  const {parse} = context;
   const decodedData = await parse(bufferCopy);
 
   primitive.attributes = getGLTFAccessors(decodedData.attributes);
@@ -89,7 +88,7 @@ async function decompressPrimitive(primitive, scenegraph, options) {
 
 // eslint-disable-next-line max-len
 // Only TRIANGLES: 0x0004 and TRIANGLE_STRIP: 0x0005 are supported
-function compressMesh(attributes, indices, mode = 4, options = {}) {
+function compressMesh(attributes, indices, mode = 4, options, context) {
   if (!options.DracoWriter || !options.DracoLoader) {
     throw new Error('DracoWriter/DracoLoader not available');
   }
@@ -102,7 +101,8 @@ function compressMesh(attributes, indices, mode = 4, options = {}) {
   // compressed and uncompressed data, generators should create uncompressed
   // attributes and indices using data that has been decompressed from the Draco buffer,
   // rather than the original source data.
-  const decodedData = options.DracoLoader.parseSync({attributes});
+  const {parseSync} = context;
+  const decodedData = parseSync({attributes});
   const fauxAccessors = options._addFauxAttributes(decodedData.attributes);
 
   const bufferViewIndex = options.addBufferView(compressedData);

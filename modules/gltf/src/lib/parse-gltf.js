@@ -2,18 +2,9 @@
 /* global TextDecoder */
 import assert from './utils/assert';
 import {getFullUri} from './gltf-utils/gltf-utils';
-import {decodeExtensions, decodeExtensionsSync} from './extensions/extensions';
+import {decodeExtensions, decodeExtensionsSync} from './extensions/gltf-extensions';
 import parseGLBSync, {isGLB} from './parse-glb';
 import postProcessGLTF from './post-process-gltf';
-
-const DEFAULT_OPTIONS = {
-  fetchLinkedResources: true, // Fetch any linked .BIN buffers, decode base64
-  fetchImages: false, // Fetch any linked .BIN buffers, decode base64
-  createImages: false, // Create image objects
-  decompress: false, // Decompress Draco compressed meshes
-  postProcess: false,
-  log: console // eslint-disable-line
-};
 
 export function isGLTF(arrayBuffer, options = {}) {
   const dataView = new DataView(arrayBuffer);
@@ -22,8 +13,6 @@ export function isGLTF(arrayBuffer, options = {}) {
 }
 
 export async function parseGLTF(gltf, arrayBufferOrString, byteOffset = 0, options, context) {
-  options = {...DEFAULT_OPTIONS, ...options.gltf};
-
   parseGLTFContainerSync(gltf, arrayBufferOrString, byteOffset, options);
 
   const promises = [];
@@ -52,8 +41,6 @@ export async function parseGLTF(gltf, arrayBufferOrString, byteOffset = 0, optio
 // gtlf - input can be arrayBuffer (GLB or UTF8 encoded JSON), string (JSON), or parsed JSON.
 // eslint-disable-next-line complexity
 export function parseGLTFSync(gltf, arrayBufferOrString, byteOffset = 0, options, context) {
-  options = {...DEFAULT_OPTIONS, ...options};
-
   parseGLTFContainerSync(gltf, arrayBufferOrString, byteOffset, options);
 
   // TODO: we could synchronously decode base64 encoded data URIs in this non-async path
