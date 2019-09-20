@@ -102,7 +102,7 @@ module.exports = {
     {
       title: '3D Tiles',
       image: 'images/example-3d-tiles.png',
-      componentUrl: resolve(__dirname, '../examples/3d-tiles-deckgl/app.js'),
+      componentUrl: resolve(__dirname, '../examples/3d-tiles-deck/app.js'),
       path: 'examples/3d-tiles'
     },
     {
