@@ -1,6 +1,5 @@
 import {getRegisteredLoaders} from './register-loaders';
 import {normalizeLoader} from './loader-utils/normalize-loader';
-import {stringify} from 'querystring';
 
 const EXT_PATTERN = /[^.]+$/;
 
