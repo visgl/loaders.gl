@@ -1,4 +1,4 @@
-import {parse3DTile, parse3DTileSync} from './parsers/parse-3d-tile';
+import {parse3DTile, parse3DTileSync} from './lib/parsers/parse-3d-tile';
 
 async function parse(arrayBuffer, options, context, loader) {
   const tile = {};
