@@ -38,7 +38,7 @@ export function selectLoader(loaders, url = '', data = null, {nothrow = false} =
     }
     let message = 'No valid loader found';
     if (data) {
-      message += ` for data block starting with "${getFirstCharacters(data)}"`;
+      message += ` for data starting with "${getFirstCharacters(data)}"`;
     }
     if (url) {
       message += ` for ${url}`;

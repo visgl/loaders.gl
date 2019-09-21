@@ -29,5 +29,15 @@ test('registerLoaders', t => {
 
   t.is(getRegisteredLoaders().length - registeredLoadersCount, 3, 'loader is registered');
 
+  const TestLoader = {
+    parseTextSync: d => d,
+    extensions: ['ext2']
+  };
+
+  t.doesNotThrow(
+    () => registerLoaders(TestLoader),
+    'registerLoaders() does not require array of loaders'
+  );
+
   t.end();
 });

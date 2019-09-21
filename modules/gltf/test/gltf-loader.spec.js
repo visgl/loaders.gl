@@ -2,11 +2,19 @@
 import test from 'tape-promise/tape';
 import {validateLoader} from 'test/common/conformance';
 
-import {load, parseSync, fetchFile} from '@loaders.gl/core';
+import {registerLoaders, load, parseSync, fetchFile} from '@loaders.gl/core';
 import {GLTFLoader} from '@loaders.gl/gltf';
+import {DracoLoader} from '@loaders.gl/draco';
 
 const GLTF_BINARY_URL = '@loaders.gl/gltf/test/data/gltf-2.0/2CylinderEngine.glb';
 const GLTF_JSON_URL = '@loaders.gl/gltf/test/data/gltf-2.0/2CylinderEngine.gltf';
+
+// Extracted from Cesium 3D Tiles
+const GLB_TILE_WITH_DRACO_URL = '@loaders.gl/gltf/test/data/3d-tiles/143.glb';
+const GLB_TILE_CESIUM_AIR_URL = '@loaders.gl/gltf/test/data/3d-tiles/Cesium_Air.glb';
+const GLB_TILE_URL = '@loaders.gl/gltf/test/data/3d-tiles/tile.glb';
+
+registerLoaders([DracoLoader]);
 
 test('GLTFLoader#loader conformance', t => {
   validateLoader(t, GLTFLoader, 'GLTFLoader');
@@ -82,3 +90,27 @@ test('GLTFLoader#load(text) V1', async t => {
   t.ok(data.asset, 'GLTFLoader returned parsed data');
   t.end();
 });
+
+test.only('GLTFLoader#Parses GLBs from 3D Tiles', async t => {
+  await testTileGLBs(t, {gltf: {parserVersion: 1}, decompress: true, DracoLoader}, 'v1');
+  await testTileGLBs(t, {gltf: {parserVersion: 2}}, 'v2');
+  t.end();
+});
+
+async function testTileGLBs(t, loaderOptions, version) {
+  t.ok(
+    await load(GLB_TILE_WITH_DRACO_URL, GLTFLoader, loaderOptions),
+    `Parser ${version}: Parses Draco corner case`
+  );
+
+  // Working - Commented to facilitate debugging of above case
+  /*
+  t.ok(await load(GLB_TILE_URL, GLTFLoader, loaderOptions), `Parser ${version}: Test GLB parses`);
+
+  t.rejects(
+    async () => await load(GLB_TILE_CESIUM_AIR_URL, GLTFLoader, loaderOptions),
+    /Invalid GLB version 1/,
+    `Parser ${version}: GLB v1 is rejected with a user-friendly message`
+  );
+  */
+}

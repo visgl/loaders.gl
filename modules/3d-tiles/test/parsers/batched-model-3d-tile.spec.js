@@ -12,10 +12,7 @@ import test from 'tape-promise/tape';
 import {parse, encodeSync, fetchFile, registerLoaders} from '@loaders.gl/core';
 import {Tile3DLoader, Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/3d-tiles';
 import {loadRootTileFromTileset} from '../utils/load-utils';
-import {GLTFLoader} from '@loaders.gl/gltf';
 import {DracoLoader} from '@loaders.gl/draco';
-
-registerLoaders([DracoLoader]);
 
 const WITH_BATCH_TABLE_URL =
   '@loaders.gl/3d-tiles/test/data/Batched/BatchedWithBatchTable/tileset.json';
@@ -37,14 +34,7 @@ const TEXTURED_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedTextured/til
 // const DEPRECATED2_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedDeprecated2/tileset.json';
 // const WITH_RTC_CENTER_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedWithRtcCenter/tileset.json';
 
-/* global fetch */
-test.only('debug', async t => {
-  const filePath = '@loaders.gl/3d-tiles/test/data/143.b3dm';
-  const response = await fetchFile(filePath);
-  const tileData = response.arrayBuffer();
-  const tile = await parse(tileData, Tile3DLoader);
-  t.end();
-});
+registerLoaders([DracoLoader]);
 
 test('batched model tile#throws with invalid version', async t => {
   const TILE = {
