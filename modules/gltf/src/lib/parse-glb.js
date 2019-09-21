@@ -13,7 +13,6 @@ const GLB_CHUNK_TYPE_BIN = 0x004e4942;
 const GLB_CHUNK_TYPE_JSON_XVIZ_DEPRECATED = 0;
 const GLB_CHUNK_TYPE_BIX_XVIZ_DEPRECATED = 1;
 
-
 const LE = true; // Binary GLTF is little endian.
 
 function getMagicString(dataView, byteOffset = 0) {
