@@ -67,8 +67,10 @@ async function decompressPrimitive(primitive, scenegraph, options, context) {
 
   // eslint-disable-next-line
   const buffer = scenegraph.getTypedArrayForBufferView(compressedPrimitive.bufferView);
-  // eslint-disable-next-line
+  /* eslint-disable */
   console.log(buffer.byteOffset, buffer.byteLength);
+  // correct value for buffer.byteOffset is 2898
+  /* eslint-enable */
 
   // TODO - parse does not yet deal well with byte offsets embedded in typed arrays. Copy buffer
   const subArray = new Uint8Array(buffer.buffer).subarray(buffer.byteOffset); // , buffer.byteLength);

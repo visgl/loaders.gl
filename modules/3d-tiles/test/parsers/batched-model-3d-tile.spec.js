@@ -39,7 +39,7 @@ const TEXTURED_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedTextured/til
 
 /* global fetch */
 test.only('debug', async t => {
-  const filePath = '/Users/xintongxia/dev/loaders.gl/modules/3d-tiles/test/data/143.b3dm';
+  const filePath = '@loaders.gl/3d-tiles/test/data/143.b3dm';
   const response = await fetchFile(filePath);
   const tileData = response.arrayBuffer();
   const tile = await parse(tileData, Tile3DLoader);
