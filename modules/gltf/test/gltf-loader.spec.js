@@ -91,26 +91,23 @@ test('GLTFLoader#load(text) V1', async t => {
   t.end();
 });
 
-test.only('GLTFLoader#Parses GLBs from 3D Tiles', async t => {
+test('GLTFLoader#Parses GLBs from 3D Tiles', async t => {
   await testTileGLBs(t, {gltf: {parserVersion: 1}, decompress: true, DracoLoader}, 'v1');
   await testTileGLBs(t, {gltf: {parserVersion: 2}}, 'v2');
   t.end();
 });
 
 async function testTileGLBs(t, loaderOptions, version) {
+  t.ok(await load(GLB_TILE_URL, GLTFLoader, loaderOptions), `Parser ${version}: Test GLB parses`);
+
   t.ok(
     await load(GLB_TILE_WITH_DRACO_URL, GLTFLoader, loaderOptions),
-    `Parser ${version}: Parses Draco corner case`
+    `Parser ${version}: Parses Draco GLB`
   );
-
-  // Working - Commented to facilitate debugging of above case
-  /*
-  t.ok(await load(GLB_TILE_URL, GLTFLoader, loaderOptions), `Parser ${version}: Test GLB parses`);
 
   t.rejects(
     async () => await load(GLB_TILE_CESIUM_AIR_URL, GLTFLoader, loaderOptions),
     /Invalid GLB version 1/,
     `Parser ${version}: GLB v1 is rejected with a user-friendly message`
   );
-  */
 }

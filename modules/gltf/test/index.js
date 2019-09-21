@@ -6,6 +6,7 @@ import './lib/gltf-attribute-utils.spec';
 import './lib/gltf-roundtrip.spec';
 
 import './lib/gltf-scenegraph-modifiers.spec';
+import './lib/gltf-scenegraph-accessors.spec';
 import './lib/post-process-gltf.spec';
 
 import './lib/extensions/KHR_draco_mesh_compression.spec';

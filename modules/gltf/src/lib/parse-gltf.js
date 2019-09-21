@@ -92,15 +92,16 @@ function parseGLTFContainerSync(gltf, data, byteOffset, options) {
 
   // Populates JSON and some bin chunk info
   if (gltf._glb && gltf._glb.hasBinChunk) {
+    const {binChunks} = gltf._glb;
     gltf.buffers[0] = {
-      // TODO - standardize on `arrayBuffer`
-      arrayBuffer: gltf._glb.binChunks[0].arrayBuffer,
-      byteOffset: gltf._glb.binChunks[0].byteOffset,
-      byteLength: gltf._glb.binChunks[0].byteLength
+      arrayBuffer: binChunks[0].arrayBuffer,
+      byteOffset: binChunks[0].byteOffset,
+      byteLength: binChunks[0].byteLength
     };
 
-    gltf.json.buffers[0].data = gltf.buffers[0].arrayBuffer;
-    gltf.json.buffers[0].byteOffset = gltf.buffers[0].byteOffset;
+    // TODO - this modifies JSON and is a post processing thing
+    // gltf.json.buffers[0].data = gltf.buffers[0].arrayBuffer;
+    // gltf.json.buffers[0].byteOffset = gltf.buffers[0].byteOffset;
   }
 
   // Populate images

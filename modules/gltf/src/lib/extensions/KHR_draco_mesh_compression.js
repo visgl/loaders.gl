@@ -65,19 +65,14 @@ export default class KHR_draco_mesh_compression {
 async function decompressPrimitive(primitive, scenegraph, options, context) {
   const compressedPrimitive = scenegraph.getObjectExtension(primitive, KHR_DRACO_MESH_COMPRESSION);
 
-  // eslint-disable-next-line
   const buffer = scenegraph.getTypedArrayForBufferView(compressedPrimitive.bufferView);
-  /* eslint-disable */
-  console.log(buffer.byteOffset, buffer.byteLength);
-  // correct value for buffer.byteOffset is 2898
-  /* eslint-enable */
 
   // TODO - parse does not yet deal well with byte offsets embedded in typed arrays. Copy buffer
   const subArray = new Uint8Array(buffer.buffer).subarray(buffer.byteOffset); // , buffer.byteLength);
   const bufferCopy = new Uint8Array(subArray);
 
   const {parse} = context;
-  const decodedData = await parse(bufferCopy);
+  const decodedData = await parse(bufferCopy.buffer);
 
   primitive.attributes = getGLTFAccessors(decodedData.attributes);
   if (decodedData.indices) {

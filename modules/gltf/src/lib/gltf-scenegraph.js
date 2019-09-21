@@ -144,7 +144,7 @@ export default class GLTFScenegraph {
     const binChunk = this.gltf.buffers[bufferIndex];
     assert(binChunk);
 
-    const byteOffset = bufferView.byteOffset || 0 + binChunk.byteOffset;
+    const byteOffset = (bufferView.byteOffset || 0) + binChunk.byteOffset;
     return new Uint8Array(binChunk.arrayBuffer, byteOffset, bufferView.byteLength);
   }
 
