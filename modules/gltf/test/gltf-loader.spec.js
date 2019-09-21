@@ -12,7 +12,7 @@ const GLTF_JSON_URL = '@loaders.gl/gltf/test/data/gltf-2.0/2CylinderEngine.gltf'
 // Extracted from Cesium 3D Tiles
 // const GLB_TILE_WITH_DRACO_URL = '@loaders.gl/gltf/test/data/3d-tiles/143.glb';
 const GLB_TILE_CESIUM_AIR_URL = '@loaders.gl/gltf/test/data/3d-tiles/Cesium_Air.glb';
-const GLB_TILE_URL = '@loaders.gl/gltf/test/data/3d-tiles/tile.glb';
+// const GLB_TILE_URL = '@loaders.gl/gltf/test/data/3d-tiles/tile.glb';
 
 registerLoaders([DracoLoader]);
 
