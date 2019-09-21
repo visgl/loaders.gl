@@ -152,7 +152,7 @@ export default class GLTFScenegraph {
   // returns a typed array with type that matches the types
   getTypedArrayForAccessor(accessor) {
     accessor = this.getAccessor(accessor);
-    const bufferView = this.getBuffer(accessor.bufferView);
+    const bufferView = this.getBufferView(accessor.bufferView);
     const buffer = this.getBuffer(bufferView.buffer);
     const arrayBuffer = buffer.data;
 
@@ -166,7 +166,7 @@ export default class GLTFScenegraph {
   // returns a `Uint8Array`
   getTypedArrayForImageData(image) {
     image = this.getAccessor(image);
-    const bufferView = this.getBuffer(image.bufferView);
+    const bufferView = this.getBufferView(image.bufferView);
     const buffer = this.getBuffer(bufferView.buffer);
     const arrayBuffer = buffer.data;
 
