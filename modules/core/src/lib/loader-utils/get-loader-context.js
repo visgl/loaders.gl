@@ -1,6 +1,16 @@
-export function getLoaderContext(context, options) {
+// "sub" loaders invoked by other loaders get a "context" injected on `this`
+// The context will inject core methods like `parse` and contain information
+// about loaders and options passed in to the top-level `parse` call.
+
+export function getLoaderContext(context, options, previousContext) {
+  // For recursive calls, we already have a context
+  // TODO - add any additional loaders to context?
+  if (previousContext) {
+    return previousContext;
+  }
   context = {
-    fetch: typeof window !== 'undefined' && window.fetch,
+    // TODO - determine how to inject fetch, fetch in options etc
+    fetch: context.fetch || (typeof window !== 'undefined' && window.fetch),
     ...context
   };
 

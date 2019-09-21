@@ -33,3 +33,35 @@ Depending on how the underlying loader works (whether it is synchronous or async
 ## Dependency Management
 
 In general, it is recommended that loaders are "standalone" and avoid importing `@loaders.gl/core`. `@loaders.gl/loader-utils` provides a small set of shared loader utilities.
+
+## Creating Composite Loaders
+
+loaders.gl enables loaders to call other loaders (referred to as "sub-loaders" in this section). This enables loaders for "composite formats" to be "composed" out of loaders for the primitive parts.
+
+Good examples of sub-loaders are the `GLTFLoader` which can delegate Draco mesh decoding to the `DracoLoader` and image decoding to the various `ImageLoaders` and the `BasisLoader`.
+
+Naturally, Composite loaders can call other composite loaders, which is for instance used by the `Tile3DLoader` which uses the `GLTFLoader` to parse embedded glTF data in certain tiles.
+
+## Calling loaders inside loaders
+
+To call another loader, a loader should use the appropriate `parse` function provided in the `context` parameter.
+
+A conceptual example of a 3D Tiles loader calling the `GLTFLoader` with some additional options.
+
+```js
+export async function parse3DTile(arrayBuffer, options, context) {
+  const tile = {};
+  // Extract embedded GLB (if present) into `tile.gltfArrayBuffer`
+  ...
+  if (tile.gltfArrayBuffer) {
+    const {parse} = context;
+    tile.gltf = await parse(tile.gltfArrayBuffer, GLTFLoader, {
+      gltf: {...}
+    });
+  }
+}
+```
+
+Remarks:
+
+- While a loader could potentially import `parse` from `@loaders.gl/core` to invoke a sub-loader, it is discouraged, not only from a dependency management reasons, but it prevents loaders.gl from properly handling parameters and allow worker-loaders to call other loaders.

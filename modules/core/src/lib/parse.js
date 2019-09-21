@@ -7,6 +7,19 @@ import {getLoaderContext} from './loader-utils/get-loader-context';
 import parseWithWorker from './loader-utils/parse-with-worker';
 import {selectLoader} from './select-loader';
 
+// TODO - move to loader-utils
+function getLoaders(loaders, context) {
+  let candidateLoaders;
+  if (loaders) {
+    candidateLoaders = Array.isArray(loaders) ? loaders : [loaders];
+  }
+  if (context && context.loaders) {
+    const contextLoaders = Array.isArray(context.loaders) ? context.loaders : [context.loaders];
+    candidateLoaders = candidateLoaders ? [...candidateLoaders, ...contextLoaders] : contextLoaders;
+  }
+  return candidateLoaders;
+}
+
 export async function parse(data, loaders, options, url) {
   // Signature: parse(data, options, url)
   // Uses registered loaders
@@ -18,16 +31,23 @@ export async function parse(data, loaders, options, url) {
 
   options = options || {};
 
+  // We store the context in `this` using bind for "recursive" parse calls
+  // eslint-disable-next-line consistent-this, no-invalid-this
+  let context = this;
+
   // Extract a url for auto detection
   const autoUrl = getUrlFromData(data, url);
 
-  // Chooses a loader and normalize it
-  const loader = selectLoader(loaders, autoUrl, data);
+  // Chooses a loader (and normalizes it)
+  // Also use any loaders in the context, new loaders take priority
+  const candidateLoaders = getLoaders(loaders, context);
+  const loader = selectLoader(candidateLoaders, autoUrl, data);
 
   // Normalize options
   options = mergeOptions(loader, options);
 
-  const context = getLoaderContext({url: autoUrl, parse, loaders}, options);
+  // Get a context (if already present, will be unchanged)
+  context = getLoaderContext({url: autoUrl, parse, loaders: candidateLoaders}, options, context);
 
   return await parseWithLoader(loader, data, options, context);
 }
