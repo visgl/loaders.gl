@@ -15,3 +15,5 @@ import './tileset/tileset-3d.spec';
 // import './styles/expression.spec';
 // import './styles/conditions-expression.spec';
 // import './styles/tile-3d-style.spec';
+
+import './tile-3d-loader.spec';

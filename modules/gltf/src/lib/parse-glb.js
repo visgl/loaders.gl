@@ -9,6 +9,9 @@ const GLB_CHUNK_HEADER_SIZE = 8;
 
 const GLB_CHUNK_TYPE_JSON = 0x4e4f534a;
 const GLB_CHUNK_TYPE_BIN = 0x004e4942;
+// DEPRECATED - Backward compatibility for very old xviz files
+const GLB_CHUNK_TYPE_JSON_XVIZ_DEPRECATED = 0;
+const GLB_CHUNK_TYPE_BIX_XVIZ_DEPRECATED = 1;
 
 const LE = true; // Binary GLTF is little endian.
 
@@ -114,25 +117,23 @@ function parseGLBChunksSync(glb, dataView, byteOffset, options) {
       case GLB_CHUNK_TYPE_BIN:
         parseBINChunk(glb, dataView, byteOffset, chunkLength, options);
         break;
-      default:
-        // Ignore, per spec
-        // console.warn(`Unknown GLB chunk type`); // eslint-disable-line
-        break;
-    }
 
-    // DEPRECATED - Backward compatibility for very old xviz files
-    switch (chunkFormat) {
-      case 0:
+      // DEPRECATED - Backward compatibility for very old xviz files
+      case GLB_CHUNK_TYPE_JSON_XVIZ_DEPRECATED:
         if (!options.strict) {
           parseJSONChunk(glb, dataView, byteOffset, chunkLength, options);
         }
         break;
-      case 1:
+      case GLB_CHUNK_TYPE_BIX_XVIZ_DEPRECATED:
         if (!options.strict) {
           parseBINChunk(glb, dataView, byteOffset, chunkLength, options);
         }
         break;
+
       default:
+        // Ignore, per spec
+        // console.warn(`Unknown GLB chunk type`); // eslint-disable-line
+        break;
     }
 
     byteOffset += padTo4Bytes(chunkLength);
