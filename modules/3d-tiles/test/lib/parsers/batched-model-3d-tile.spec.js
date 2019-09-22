@@ -2,17 +2,10 @@
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
 /* eslint-disable max-len */
-
-// NOTICE: This file was forked from
-// https://github.com/AnalyticalGraphicsInc/cesium/blob/master/Specs/Scene/Batched3DModel3DTileContentSpec.js
-// which is under Apache 2 license
-
-/* eslint-disable */
 import test from 'tape-promise/tape';
-import {parse, encodeSync, fetchFile, registerLoaders} from '@loaders.gl/core';
+import {parse, encodeSync} from '@loaders.gl/core';
 import {Tile3DLoader, Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/3d-tiles';
 import {loadRootTileFromTileset} from '../utils/load-utils';
-import {DracoLoader} from '@loaders.gl/draco';
 
 const WITH_BATCH_TABLE_URL =
   '@loaders.gl/3d-tiles/test/data/Batched/BatchedWithBatchTable/tileset.json';
@@ -33,9 +26,6 @@ const TEXTURED_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedTextured/til
 // const DEPRECATED1_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedDeprecated1/tileset.json';
 // const DEPRECATED2_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedDeprecated2/tileset.json';
 // const WITH_RTC_CENTER_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedWithRtcCenter/tileset.json';
-
-// TODO - we should not need to register this globally
-registerLoaders([DracoLoader]);
 
 test('batched model tile#throws with invalid version', async t => {
   const TILE = {

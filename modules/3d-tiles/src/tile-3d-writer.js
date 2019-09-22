@@ -1,4 +1,4 @@
-import encode3DTile from './encoders/encode-3d-tile';
+import encode3DTile from './lib/encoders/encode-3d-tile';
 
 // TODO - target writer structure not yet clear
 export default {

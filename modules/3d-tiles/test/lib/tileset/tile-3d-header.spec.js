@@ -3,8 +3,8 @@
 
 import test from 'tape-promise/tape';
 import {Matrix4} from 'math.gl';
-import {TILE3D_REFINEMENT} from '@loaders.gl/3d-tiles/constants';
-import Tile3DHeader from '@loaders.gl/3d-tiles/tileset/tile-3d-header';
+import {TILE3D_REFINEMENT} from '@loaders.gl/3d-tiles/lib/constants';
+import Tile3DHeader from '@loaders.gl/3d-tiles/lib/tileset/tile-3d-header';
 
 const clone = object => JSON.parse(JSON.stringify(object));
 
