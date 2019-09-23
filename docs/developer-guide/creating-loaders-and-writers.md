@@ -1,20 +1,12 @@
-# About Loaders
-
-loaders.gl has parser functions that use so called "loaders" to convert the raw data loaded from files into parsed objects. Each loader encapsulates a parsing function for one file format (or a group of related file formats) together with some metadata (like the loader name, common file extensions for the format etc).
-
-## Installing loaders
-
-loaders.gl provides a suite of pre-built loader objects packaged as scoped npm modules. The intention is that applications will install and import loaders only for the formats they need.
-
-## Using Loaders
-
-Loaders can be passed into utility functions in the loaders.gl core API to enable parsing of the chosen format.
-
-## Creating New Loaders
+# Creating New Loaders and Writers
 
 > See the a detailed specification of the [loader object format API reference](docs/specifications/loader-object-format).
 
+## Overview
+
 Applications can also create new loader objects. E.g. if you have existing JavaScript parsing functionality that you would like to use with the loaders.gl core utility functions.
+
+## Creating a Loader Object
 
 You would give a name to the loader object, define what file extension(s) it uses, and define a parser function.
 
@@ -23,6 +15,7 @@ export default {
   name: 'JSON',
   extensions: ['json'],
   testText: null,
+  parse: async (arrayBuffer) => await JSON.parse(new TextDecoder().decode(arrayBuffer),
   parseTextSync: JSON.parse
 };
 ```
@@ -36,3 +29,8 @@ export default {
 A loader must define a parser function for the format, a function that takes the loaded data and converts it into a parsed object.
 
 Depending on how the underlying loader works (whether it is synchronous or asynchronous and whether it expects text or binary data), the loader object can expose the parser in a couple of different ways, specified by provided one of the parser function fields.
+
+## Dependency Management
+
+In general, it is recommended that loaders are "standalone" and avoid importing `@loaders.gl/core`. `@loaders.gl/loader-utils` provides a small set of shared loader utilities.
+
