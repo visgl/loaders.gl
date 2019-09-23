@@ -1,18 +1,21 @@
 # What's New
 
-## v1.4
+## v1.4 (In Development)
 
-(In Development, alpha/beta releases will soon become available)
-
-Release Date: Target mid-Nov, 2019
+Release Date: Target mid-Nov, 2019 (alpha/beta releases will soon become available)
 
 The 1.4 release focuses on introducing 2.0 concepts.
 
-### Loader Specification Updates
+### @loaders.gl/core`
 
-- All (non-worker) loaders are now required to expose a `parse` function (in addition to any more specialized `parseSync/parseText/parseInBatches` functions).
-- This makes it easier to import and use loader modules without importing `@loaders.gl/core`, which can reduce footprint when building small applications.
-- All exported loader and writer objects now expose a `mimeType` field. This field is not yet used by `@loaders.gl/core` but is available for applications (e.g. see `selectLoader`).
+- **Composite Loaders**
+
+  - Improved support for loaders that call sub-loaders. Options and loader selection are now forwarded as one would expect.
+
+- **Loader Specification Updates**
+
+  - All (non-worker) loaders are now required to expose a `parse` function (in addition to any more specialized `parseSync/parseText/parseInBatches` functions). This simplifies using loaders without `@loaders.gl/core`, which can reduce footprint in small applications.
+  - All exported loader and writer objects now expose a `mimeType` field. This field is not yet used by `@loaders.gl/core` but is available for applications (e.g. see `selectLoader`).
 
 ## v1.3
 
