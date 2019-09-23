@@ -6,11 +6,7 @@ Release Date: Target mid-Nov, 2019 (alpha/beta releases will soon become availab
 
 The 1.4 release focuses on introducing 2.0 concepts.
 
-### @loaders.gl/core`
-
-- **Composite Loaders**
-
-  - Improved support for loaders that call sub-loaders. Options and loader selection are now forwarded as one would expect.
+### @loaders.gl/core
 
 - **Loader Specification Updates**
 
