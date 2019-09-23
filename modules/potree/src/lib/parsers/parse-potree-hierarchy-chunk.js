@@ -1,4 +1,4 @@
-// This file is derived from the Cesium code base under BSD 2-clause license
+// This file is derived from the potree code base under BSD 2-clause license
 // See LICENSE.md and https://github.com/potree/potree/blob/develop/LICENSE
 
 // Potree Hierarchy Chunk file format
