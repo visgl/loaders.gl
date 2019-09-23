@@ -66,11 +66,6 @@ async function decompressPrimitive(primitive, scenegraph, options, context) {
   const compressedPrimitive = scenegraph.getObjectExtension(primitive, KHR_DRACO_MESH_COMPRESSION);
 
   const buffer = scenegraph.getTypedArrayForBufferView(compressedPrimitive.bufferView);
-  /* eslint-disable */
-  console.log(buffer.byteOffset, buffer.byteLength);
-  // correct value for buffer.byteOffset is 2898
-  /* eslint-enable */
-
   // TODO - parse does not yet deal well with byte offsets embedded in typed arrays. Copy buffer
   const subArray = new Uint8Array(buffer.buffer).subarray(buffer.byteOffset); // , buffer.byteLength);
   const bufferCopy = new Uint8Array(subArray);

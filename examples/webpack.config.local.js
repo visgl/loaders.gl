@@ -39,20 +39,6 @@ const LUMA_LINK_ALIASES = {
   '@luma.gl/webgl': resolve(ROOT_DIR, '../luma.gl/modules/webgl/src')
 };
 
-const BABEL_CONFIG = {
-  presets: ['@babel/env'],
-  plugins: [
-    [
-      'babel-plugin-inline-import',
-      {
-        extensions: ['.worker.js']
-      }
-    ],
-    ['@babel/plugin-transform-runtime', {useESModules: true}]
-  ],
-  ignore: ['**/*.worker.js']
-};
-
 // Support for hot reloading changes to the library:
 const LOCAL_DEVELOPMENT_CONFIG = {
   mode: 'development',
@@ -86,17 +72,7 @@ const LOCAL_DEVELOPMENT_CONFIG = {
         use: ['source-map-loader'],
         enforce: 'pre'
       },
-      {
-        // This is required to handle inline worker!
-        test: /worker.*\.js$/,
-        exclude: /node_modules/,
-        use: [
-          {
-            loader: 'babel-loader',
-            options: BABEL_CONFIG
-          }
-        ]
-      },
+      // workers need to be completely transpiled
       {
         // Load worker tests
         test: /\.worker\.js$/,
