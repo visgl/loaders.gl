@@ -1,6 +1,6 @@
 # Overview
 
-![logo](../images/gltf-small.png)
+![logo](./images/gltf-small.png)
 
 The `@loaders.gl/gltf` module provides loaders and writers of the GLB/glTF formats.
 

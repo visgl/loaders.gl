@@ -16,11 +16,12 @@
           "title": "Guides",
           "entries": [
             {"entry": "docs/developer-guide/get-started"},
-            {"entry": "docs/developer-guide/about-loaders"},
-            {"entry": "docs/developer-guide/about-writers"},
+            {"entry": "docs/developer-guide/using-loaders"},
+            {"entry": "docs/developer-guide/using-writers"},
             {"entry": "docs/developer-guide/loader-categories"},
             {"entry": "docs/developer-guide/error-handling"},
             {"entry": "docs/developer-guide/polyfills"},
+            {"entry": "docs/developer-guide/create-new-loaders-and-writers"},
             {"entry": "docs/roadmap"},
             {"entry": "docs/contributing"}
           ]
@@ -61,22 +62,12 @@
       ]
     },
     {
-      "title": "Loader Categories",
-      "entries": [
-        {"entry": "docs/specifications/category-mesh"},
-        {"entry": "docs/specifications/category-table"},
-        {"entry": "docs/specifications/category-scenegraph"},
-        {"entry": "docs/specifications/category-3d-tiles"},
-        {"entry": "docs/specifications/category-gis"}
-      ]
-    },
-    {
       "title": "API Reference",
       "chapters": [
         {
           "title": "@loaders.gl/core",
           "entries": [
-            {"entry": "modules/core/docs/api-reference"},
+            {"entry": "modules/core/docs"},
             {"entry": "modules/core/docs/api-reference/parse"},
             {"entry": "modules/core/docs/api-reference/parse-sync"},
             {"entry": "modules/core/docs/api-reference/parse-in-batches"},
@@ -97,32 +88,32 @@
         {
           "title": "@loaders.gl/3d-tiles",
           "entries": [
-            {"entry": "modules/3d-tiles/docs/api-reference"},
+            {"entry": "modules/3d-tiles/docs"},
             {"entry": "modules/3d-tiles/docs/api-reference/tileset-3d"}
           ]
         },
         {
           "title": "@loaders.gl/arrow",
           "entries": [
-            {"entry": "modules/arrow/docs/api-reference"}
+            {"entry": "modules/arrow/docs"}
           ]
         },
         {
           "title": "@loaders.gl/csv",
           "entries": [
-            {"entry": "modules/csv/docs/api-reference"}
+            {"entry": "modules/csv/docs"}
           ]
         },
         {
           "title": "@loaders.gl/draco",
           "entries": [
-            {"entry": "modules/draco/docs/api-reference"}
+            {"entry": "modules/draco/docs"}
           ]
         },
         {
           "title": "@loaders.gl/gltf",
           "entries": [
-            {"entry": "modules/gltf/docs/api-reference"},
+            {"entry": "modules/gltf/docs"},
             {"entry": "modules/gltf/docs/api-reference/gltf-extensions"},
             {"entry": "modules/gltf/docs/api-reference/gltf-scenegraph"},
             {"entry": "modules/gltf/docs/api-reference/post-process-gltf"},
@@ -132,7 +123,7 @@
         {
           "title": "@loaders.gl/images",
           "entries": [
-            {"entry": "modules/images/docs/api-reference"},
+            {"entry": "modules/images/docs"},
             {"entry": "modules/images/docs/api-reference/load-image"},
             {"entry": "modules/images/docs/api-reference/image-utilities"}
           ]
@@ -140,43 +131,54 @@
         {
           "title": "@loaders.gl/kml",
           "entries": [
-            {"entry": "modules/kml/docs/api-reference"}
+            {"entry": "modules/kml/docs"}
           ]
         },
         {
           "title": "@loaders.gl/las",
           "entries": [
-            {"entry": "modules/las/docs/api-reference"}
+            {"entry": "modules/las/docs"}
           ]
         },
         {
           "title": "@loaders.gl/obj",
           "entries": [
-            {"entry": "modules/obj/docs/api-reference"}
+            {"entry": "modules/obj/docs"}
           ]
         },
         {
           "title": "@loaders.gl/pcd",
           "entries": [
-            {"entry": "modules/pcd/docs/api-reference"}
+            {"entry": "modules/pcd/docs"}
           ]
         },
         {
           "title": "@loaders.gl/ply",
           "entries": [
-            {"entry": "modules/ply/docs/api-reference"}
+            {"entry": "modules/ply/docs"}
           ]
         },
         {
           "title": "@loaders.gl/polyfills",
           "entries": [
-            {"entry": "modules/polyfills/docs/api-reference"}
+            {"entry": "modules/polyfills/docs"}
           ]
         },
         {
           "title": "@loaders.gl/zip",
           "entries": [
-            {"entry": "modules/zip/docs/api-reference"}
+            {"entry": "modules/zip/docs"}
+          ]
+        },
+
+        {
+          "title": "Loader Categories",
+          "entries": [
+            {"entry": "docs/specifications/category-mesh"},
+            {"entry": "docs/specifications/category-table"},
+            {"entry": "docs/specifications/category-scenegraph"},
+            {"entry": "docs/specifications/category-3d-tiles"},
+            {"entry": "docs/specifications/category-gis"}
           ]
         }
       ]

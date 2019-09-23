@@ -1,8 +1,8 @@
 # Introduction
 
-loaders.gl is a suite of loaders and writers for a range of file formats related to geospatial and big data visualization, including point clouds, 3D geometries, images, geospatial formats as well as tabular data.
+loaders.gl is a suite of loaders for file formats for big data visualization, including point clouds, 3D geometries, images, geospatial formats as well as tabular data.
 
-loaders.gl is a major component of the [vis.gl](https://vis.gl) framework ecosystem. While all the provided loaders and writers are independently usable, frameworks like [deck.gl](https://deck.gl) and [luma.gl](https://luma.gl) are pre-integrated with loaders.gl.
+loaders.gl is part of the [vis.gl](https://vis.gl) ecosystem, and frameworks like [deck.gl](https://deck.gl) and [luma.gl](https://luma.gl) come pre-integrated with loaders.gl. However all all the provided loaders and writers are framework independent, and can be used by any application.
 
 ## Quick Code Example
 
@@ -23,43 +23,39 @@ for (const row of data) {
 
 To quickly get up to speed on how the loaders.gl API works, please see [Get Started](docs/developer-guide/get-started).
 
-## Major Components
-
-- **Loaders** - A suite of _loaders_ for parsing various file formats into well-defined JavaScript data strucutures.
-- **Writers** - _writers_ allowing data to be encoded and saved to certain formats.
-- **Core Functions** - A set of functions that make it easier to work with loaders and writers.
-
 ## Why loaders.gl?
 
-Many open source projects already contain excellent loaders for the key 3D and geospatial formats under permissive licenses. However, due to design limitations (e.g. dependencies on a certain WebGL framework, not packaged for external use, lack of Node.js support etc) these can be hard to use in other applications.
+Many open source projects already contain excellent loaders for key 3D and geospatial formats under permissive licenses. However, due to design limitations (e.g. dependencies on a certain WebGL framework, not packaged for easy re-use, lack of Node.js support, inability to run in worker threads, lack of streaming support, differing interface conventions etc) these can be hard to use in new applications.
 
-loaders.gl is an effort to collect some of the best existing open source loaders (and a handful of newly written loaders) and package them all in a unified, portable, framework-independent way.
+loaders.gl collects some of the best existing and a handful of newly written open source loaders, and package them all in a unified, portable, framework-independent way.
 
 ## Main Design Goals
 
-**Framework Agnostic** - Files are parsed into clearly documented data structures, that can be used with any JavaScript framework.
+**Framework Agnostic** - Files are parsed into clearly documented data structures (objects + typed arrays) that can be used with any JavaScript framework.
+
+**Worker Support** - Many loaders can run in web workers, keeping the main thread free for other tasks while parsing completes.
+
+**Node Support** - All loaders are work under Node.js, useful for running your unit tests under Node.
 
 **Loader Categories** - loaders.gl groups similar data formats into "categories". loaders in the same category return parsed data in "standardized" form, simplifying handling of multiple related formats.
 
 **Format Autodection** - Applications can specify multiple loaders when parsing a file, and loaders.gl will automatically pick the right loader for a given file.
 
-**Worker Pools** - Many loaders can run in web workers, keeping the main thread free for other tasks while parsing completes.
-
-**Node Support** - All loaders are work under Node.js, useful for running your unit tests under Node.
-
 **Bundle Size Optimized** - Each format is published as an independent npm module to allow cherry-picking, and additionally, modules are setup to let tree-shaking remove any symbols not imported by user.
 
-Note that while loaders.gl is optimized for use with WebGL frameworks (e.g. by returning typed arrays whenever possible), it does not have any actual WebGL dependencies and can be used without restrictions in non-WebGL applications.
+**Modern JavaScript** - loaders.gl is written in standard ES2018 and uses fresh JavaScript constructs, e.g. async iterators instead of streams, `ArrayBuffer` instead of `Buffer`, etc.
+
+**WebGL Optimized** - loaders.gl is optimized for use with WebGL frameworks (e.g. by returning typed arrays whenever possible). However, there are no any actual WebGL dependencies and loaders can be used without restrictions in non-WebGL applications.
 
 ## Supported Platforms
 
-Our intention is for loaders.gl to work well on recent versions of the major evergreen browsers (Chrome, Firefox, Safari, both desktop and mobile). We also support as Node.js v10+ (assuming `@loaders.gl/polyfills` is installed).
+Our intention is for loaders.gl to work well on recent versions of the major evergreen browsers (Chrome, Firefox, Safari, both desktop and mobile). We also support all Node.js LTS versions. (Long-Term Support includes Node 12, Node 10, and Node 8 through December 2019. Node.js support assumes `@loaders.gl/polyfills` is installed).
 
-We also have an ambition that loaders.gl should run on Edge, IE11 and Node.js v8, however this assumes that both `@loaders.gl/polyfills` and additional appropriate polyfills (e.g. babel polyfills) are installed. Testing on these older platforms is limited.
+We also have an ambition that loaders.gl should run on Edge, IE11 and Node.js v8, however this assumes that both `@loaders.gl/polyfills` and additional appropriate polyfills (e.g. babel polyfills) are installed. Testing on these older platforms is limited, so if an issue on these platforms is detected please report it, if there is a clear solution we will try to fix it.
 
 ## Licenses, Credits and Attributions
 
-License-wise, loaders.gl currently contains a collection of MIT and Apache licensed loaders. Each loader comes with its own license, so if the distinction matters to you, please check and decide accordingly. Additional licenses might be included in the future, however loaders.gl will never include code with non-permissive, commercial or copy-left licenses.
+License-wise, loaders.gl currently contains a collection of MIT, BSD and Apache licensed loaders. Each loader comes with its own license, so if the distinction matters to you, please check and decide accordingly. Additional licenses might be included in the future, however loaders.gl will never include code with non-permissive, commercial or copy-left licenses.
 
 Regading attributions, loaders.gl is partly a repackaging of the superb work done by many others in the open source community. We try to be as explicit as we can about the origins and attributions of each loader, both in the documentation page for each loader and in the preservation of comments relating to authorship and contributions inside forked source code.
 
