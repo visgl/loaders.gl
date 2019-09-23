@@ -326,7 +326,7 @@ export default class Tileset3D {
     //   ? Axis.fromName(tilesetJson.asset.gltfUpAxis)
     //   : Axis.Y;
 
-    this._root = this._initializeTileHeaders(tilesetJson, null);
+    this._root = this._initializeTileHeaders(tilesetJson, null, this.basePath);
 
     // Calculate cartographicCenter & zoom props to help apps center view on tileset
     this._calculateViewProps();
