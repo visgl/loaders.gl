@@ -71,6 +71,14 @@ const LOCAL_DEVELOPMENT_CONFIG = {
         test: /\.js$/,
         use: ['source-map-loader'],
         enforce: 'pre'
+      },
+      // workers need to be completely transpiled
+      {
+        // Load worker tests
+        test: /\.worker\.js$/,
+        use: {
+          loader: 'worker-loader'
+        }
       }
     ]
   },
