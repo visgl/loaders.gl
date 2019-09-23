@@ -1,5 +1,6 @@
 /* eslint-disable camelcase, max-statements, no-restricted-globals */
 /* global TextDecoder */
+import {parseJSON} from '@loaders.gl/loader-utils';
 import assert from './utils/assert';
 import {getFullUri} from './gltf-utils/gltf-utils';
 import {decodeExtensions, decodeExtensionsSync} from './extensions/gltf-extensions';
@@ -73,7 +74,7 @@ function parseGLTFContainerSync(gltf, data, byteOffset, options) {
 
   if (typeof data === 'string') {
     // If string, try to parse as JSON
-    gltf.json = JSON.parse(data);
+    gltf.json = parseJSON(data);
   } else if (data instanceof ArrayBuffer) {
     // If still ArrayBuffer, parse as GLB container
     gltf._glb = {};
