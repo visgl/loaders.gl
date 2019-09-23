@@ -1,4 +1,5 @@
 import {TextDecoder, fetchFile} from '@loaders.gl/core';
+import {parseJSON} from '@loaders.gl/loader-utils';
 import {getFullUri} from '../gltf-utils/gltf-utils';
 import {getGLTFAccessors, getGLTFAccessor} from '../gltf-utils/gltf-attribute-utils';
 import {KHR_DRACO_MESH_COMPRESSION, UBER_POINT_CLOUD_EXTENSION} from '../gltf-constants';
@@ -53,7 +54,7 @@ export default class GLTFParser {
 
     // If string, try to parse as JSON
     if (typeof gltf === 'string') {
-      gltf = JSON.parse(gltf);
+      gltf = parseJSON(gltf);
     }
 
     if (gltf instanceof ArrayBuffer) {

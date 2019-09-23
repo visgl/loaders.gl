@@ -2,6 +2,15 @@ export function padTo4Bytes(byteLength) {
   return (byteLength + 3) & ~3;
 }
 
+// Copy a view of an ArrayBuffer into new ArrayBuffer with byteOffset = 0
+export function getZeroOffsetArrayBuffer(arrayBuffer, byteOffset, byteLength) {
+  const subArray = byteLength
+    ? new Uint8Array(arrayBuffer).subarray(byteOffset, byteOffset + byteLength)
+    : new Uint8Array(arrayBuffer).subarray(byteOffset);
+  const arrayCopy = new Uint8Array(subArray);
+  return arrayCopy.buffer;
+}
+
 /* Creates a new Uint8Array based on two different ArrayBuffers
  * @private
  * @param {ArrayBuffers} buffer1 The first buffer.
