@@ -29,25 +29,6 @@ export async function parsePointCloud3DTile(tile, arrayBuffer, byteOffset, optio
   return byteOffset;
 }
 
-// TODO - is there really a need for sync tile parsing?
-export function parsePointCloud3DTileSync(tile, arrayBuffer, byteOffset, options, context) {
-  byteOffset = parse3DTileHeaderSync(tile, arrayBuffer, byteOffset, options);
-  byteOffset = parse3DTileTablesHeaderSync(tile, arrayBuffer, byteOffset, options);
-  byteOffset = parse3DTileTablesSync(tile, arrayBuffer, byteOffset, options);
-
-  initializeTile(tile);
-
-  const {featureTable} = parsePointCloudTables(tile);
-
-  // parseDracoSync(tile, featureTable, batchTable, options);
-
-  parsePositions(tile, featureTable, options);
-  parseColors(tile, featureTable, options);
-  parseNormals(tile, featureTable, options);
-
-  return byteOffset;
-}
-
 function initializeTile(tile) {
   // Initialize point cloud tile defaults
   tile.attributes = {
@@ -247,6 +228,7 @@ export async function loadDraco(tile, dracoData, options, context) {
   };
 }
 
+// TODO - this is the remaining code from Cesium's parser
 /*
   const batchTable = new Tile3DBatchTable(tile);
 

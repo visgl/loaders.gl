@@ -17,14 +17,6 @@ export async function parseInstancedModel3DTile(tile, arrayBuffer, byteOffset, o
   return byteOffset;
 }
 
-// Reference code:
-// https://github.com/AnalyticalGraphicsInc/cesium/blob/master/Source/Scene/Instanced3DModel3DTileContent.js#L190
-export function parseInstancedModel3DTileSync(tile, arrayBuffer, byteOffset, options, context) {
-  byteOffset = parseInstancedModel(tile, arrayBuffer, byteOffset, options, context);
-  // extractGLTFSync(tile, tile.gltfFormat, options, context);
-  return byteOffset;
-}
-
 function parseInstancedModel(tile, arrayBuffer, byteOffset, options, context) {
   byteOffset = parse3DTileHeaderSync(tile, arrayBuffer, byteOffset, options);
   if (tile.version !== 1) {

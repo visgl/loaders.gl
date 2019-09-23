@@ -15,12 +15,6 @@ export async function parseBatchedModel3DTile(tile, arrayBuffer, byteOffset, opt
   return byteOffset;
 }
 
-export function parseBatchedModel3DTileSync(tile, arrayBuffer, byteOffset, options, context) {
-  byteOffset = parseBatchedModel(tile, arrayBuffer, byteOffset, options, context);
-  extractGLTF(tile, GLTF_FORMAT.EMBEDDED, options, context);
-  return byteOffset;
-}
-
 export function parseBatchedModel(tile, arrayBuffer, byteOffset, options, context) {
   byteOffset = parse3DTileHeaderSync(tile, arrayBuffer, byteOffset, options);
 

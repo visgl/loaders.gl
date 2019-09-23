@@ -1,16 +1,9 @@
-import {parse3DTile, parse3DTileSync} from './lib/parsers/parse-3d-tile';
+import {parse3DTile} from './lib/parsers/parse-3d-tile';
 
 async function parse(arrayBuffer, options, context, loader) {
   const tile = {};
   const byteOffset = 0;
   await parse3DTile(arrayBuffer, byteOffset, options, context, tile);
-  return tile;
-}
-
-function parseSync(arrayBuffer, options, context, loader) {
-  const tile = {};
-  const byteOffset = 0;
-  parse3DTileSync(arrayBuffer, byteOffset, options, context, tile);
   return tile;
 }
 
@@ -21,7 +14,6 @@ export default {
   mimeType: 'application/octet-stream',
   test: ['cmpt', 'pnts', 'b3dm', 'i3dm'],
   parse,
-  parseSync,
   binary: true,
   defaultOptions: {
     '3d-tiles': {
