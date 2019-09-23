@@ -34,32 +34,3 @@ export async function parseComposite3DTile(
 
   return byteOffset;
 }
-
-// eslint-disable-next-line max-params
-export function parseComposite3DTileSync(
-  tile,
-  arrayBuffer,
-  byteOffset,
-  options,
-  context,
-  parse3DTileSync
-) {
-  byteOffset = parse3DTileHeaderSync(tile, arrayBuffer, byteOffset, options);
-
-  const view = new DataView(arrayBuffer);
-
-  // Extract number of tiles
-  tile.tilesLength = view.getUint32(byteOffset, true);
-  byteOffset += 4;
-
-  // extract each tile from the byte stream
-  tile.tiles = [];
-  while (tile.tiles.length < tile.tilesLength && tile.byteLength - byteOffset > 12) {
-    const subtile = {};
-    tile.tiles.push(subtile);
-    byteOffset = parse3DTileSync(arrayBuffer, byteOffset, options, context, subtile);
-    // TODO - do we need to add any padding in between tiles?
-  }
-
-  return byteOffset;
-}
