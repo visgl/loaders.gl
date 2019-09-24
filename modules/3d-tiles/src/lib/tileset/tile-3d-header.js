@@ -310,7 +310,6 @@ export default class Tile3DHeader {
     const cancelled = !(await this.tileset._requestScheduler.scheduleRequest(this, updatePriority));
 
     if (cancelled) {
-      console.log('Tile load cancelled');
       this._contentState = TILE3D_CONTENT_STATE.UNLOADED;
       return false;
     }
