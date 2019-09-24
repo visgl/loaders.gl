@@ -1,28 +1,45 @@
 # RFC: User definable `fetch` for `load` in loaders.gl
 
-## Summary
+- **Authors**: Ib Green
+- **Date**:
+- **Status**: Draft
+
+## Abstract
+
+This RFC proposes a mechanism for overriding and/or providing options to the `fetch` call that loaders.gl `load` function executes to retrieve data.
 
 ## Overview
 
-This provides the ability for app to redefine how data is loaded (or "fetched") is important. Apps need to be able to do things like
+The ability for app to control how data is loaded (or "fetched") is important.
 
+Apps need to be control options, such
+
+- HTTP method (`GET` or `POST` etc)
 - add request headers
 - set CORS flags
 - etc
 
-Most of those things can be done by providing options to fetch, however this may not be enough. there are many different techniques and libraries (`XMLHttpRequest`, company-internal libraries etc) that help users load data into the browser, we want to enable users to use the techniques that work for them.
+Most of those things can be done by providing options to fetch, however this may not be enough.
 
-loaders.gl already separates between `load` and `parse` (the latter allowing `fetch` to be called separately), which provides good flexibility in many situations, as it let's applications call any loading method they want.
+there are many different techniques and libraries (`XMLHttpRequest`, company-internal libraries etc) that help users load data into the browser, we want to enable users to use the techniques that work for them.
+
+### `load` vs `parse`
+
+loaders.gl already separates between `load` and `parse` (the latter allowing `fetch` to be called separately), which provides good flexibility in many situations, as it lets applications call any loading method they want.
 
 However, problems remain:
 
-- Some applications must call `load`. Some loaders (mainly image loaders) do not support separate loading of data, but instead load and parse in a single operation. To use these loaders, the app mush call loaders.gl `load` and provide a separate options object to pass in to set cors strings etc.
 - And if the app wants to redefine `fetch` for some loaders, it needs to start distinguishing loaders (which is hard to do with the current loaders.gl API).
 - Some loaders (e.g. gltf) load additional files, currently they provide ad-hoc solutions for the "recursive" fetch operations.
+- (Update: This will no longer apply in v2) Some loaders (mainly image loaders) only support `load`. They do not support separate parsing of data, but instead load and parse in a single operation.
 
-Future considerations:
+
+### Future considerations:
 
 - File system support (separate RFC) - Some loaders can generate virtual file systems (zip files, a list of dropped files in the browser, a dropbox loader) where files can be loaded with local names from a non-URL source. Overridable `fetch` in `load` and `parse` could be extended to support this.
+
+## Proposals
+
 
 ## Proposal 1a: Allow fetch to be completely overridden
 
