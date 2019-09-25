@@ -71,11 +71,13 @@ Note that when calling worker loaders, binary data is transferred from the calli
 
 ## Loader Options
 
-Apis like `load`, `parse` etc accept an options object. Since these apis can select one of multiple loaders, or invoke sub-loaders, it is important to be able to specify options to multiple loaders.
+`load`, `parse` and other core functions accept loader options in the form of an options object.
 
-Therefor loader options objects are organized into sub objects, which provices a structured way to pass options to multiple loaders:
+```js
+parse(data, Loader, {...options});
+```
 
-Nested options object, where each loader type and category has a defined sub-field:
+Such loader options objects are organized into nested sub objects, with one sub-object per loader or loader category. This provides a structured way to pass options to multiple loaders.
 
 ```js
 load(url, {
@@ -85,5 +87,7 @@ load(url, {
   gltf: {...}
 });
 ```
+
+An advantage of this design is that since the core functions can select a loader from a list of multiple candidate loaders, or invoke sub-loaders, the nested options system allows separate specification of options to each loader in a single options object.
 
 Loader options are merged with default options using a deep, two-level merge. Any object-valued key on the top level will be merged with the corresponding key value in the default options object.
