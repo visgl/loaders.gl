@@ -21,4 +21,4 @@ See table category.
 
 ## Attributions
 
-CSVLoader is based on a minimal fork of the [papaparse](https://github.com/mholt/PapaParse) module, under MIT license.
+CSVLoader is based on a fork of the [papaparse](https://github.com/mholt/PapaParse) module, under MIT license.

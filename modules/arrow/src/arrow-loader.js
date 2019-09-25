@@ -10,5 +10,5 @@ export default {
   parseSync,
   parseInBatches: parseArrowInBatches,
   parseInBatchesSync: parseArrowInBatchesSync,
-  DEFAULT_OPTIONS: {}
+  options: {}
 };

@@ -2,15 +2,13 @@
 
 The `DracoLoader` decodes a mesh or point cloud (maps of attributes) using [DRACO](https://google.github.io/draco/) compression.
 
-| Loader                | Characteristic                               |
-| --------------------- | -------------------------------------------- |
-| File Extension        | `.drc`                                       |
-| File Type             | Binary                                       |
-| File Format           | [Draco](https://google.github.io/draco/)     |
-| Data Format           | [Mesh](docs/specifications/category-mesh.md) |
-| Decoder Type          | Synchronous                                  |
-| Worker Thread Support | Yes                                          |
-| Streaming Support     | No                                           |
+| Loader         | Characteristic                               |
+| -------------- | -------------------------------------------- |
+| File Extension | `.drc`                                       |
+| File Type      | Binary                                       |
+| File Format    | [Draco](https://google.github.io/draco/)     |
+| Data Format    | [Mesh](docs/specifications/category-mesh.md) |
+| Supported APIs | `parse`, `parseSync`                         |
 
 ## Usage
 
