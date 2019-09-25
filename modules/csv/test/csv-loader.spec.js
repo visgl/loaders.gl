@@ -58,7 +58,9 @@ test('CSVLoader#load', async t => {
 
 test('CSVLoader#loadInBatches(sample.csv, columns)', async t => {
   const iterator = await loadInBatches(CSV_SAMPLE_URL, CSVLoader, {
-    TableBatch: ColumnarTableBatch
+    csv: {
+      TableBatch: ColumnarTableBatch
+    }
   });
   t.ok(isIterator(iterator) || isAsyncIterable(iterator), 'loadInBatches returned iterator');
 
@@ -80,8 +82,10 @@ test('CSVLoader#loadInBatches(sample.csv, columns)', async t => {
 test('CSVLoader#loadInBatches(sample-very-long.csv, columns)', async t => {
   const batchSize = 25;
   const iterator = await loadInBatches(CSV_SAMPLE_VERY_LONG_URL, CSVLoader, {
-    TableBatch: ColumnarTableBatch,
-    batchSize
+    csv: {
+      TableBatch: ColumnarTableBatch,
+      batchSize
+    }
   });
   t.ok(isIterator(iterator) || isAsyncIterable(iterator), 'loadInBatches returned iterator');
 
@@ -128,7 +132,7 @@ test('CSVLoader#loadInBatches(sample.csv, rows)', async t => {
 
 test('CSVLoader#loadInBatches(sample-very-long.csv, rows)', async t => {
   const batchSize = 25;
-  const iterator = await loadInBatches(CSV_SAMPLE_VERY_LONG_URL, CSVLoader, {batchSize});
+  const iterator = await loadInBatches(CSV_SAMPLE_VERY_LONG_URL, CSVLoader, {csv: {batchSize}});
   t.ok(isIterator(iterator) || isAsyncIterable(iterator), 'loadInBatches returned iterator');
 
   let batchCount = 0;

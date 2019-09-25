@@ -31,17 +31,6 @@ export default class KHR_draco_mesh_compression {
     scenegraph.removeExtension(KHR_DRACO_MESH_COMPRESSION);
   }
 
-  static decodeSync(gltfData, options) {
-    if (!options.decompress) {
-      return;
-    }
-    const scenegraph = new GLTFScenegraph(gltfData);
-    if (scenegraph.getRequiredExtension(KHR_DRACO_MESH_COMPRESSION)) {
-      throw new Error('Cannot synchronously decode Draco');
-    }
-    // TODO - we can support sync decoding, let's just keep code/bundle size in check...
-  }
-
   static encode(gltfData, options = {}) {
     const scenegraph = new GLTFScenegraph(gltfData);
 

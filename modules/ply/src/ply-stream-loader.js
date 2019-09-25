@@ -4,11 +4,9 @@
 
 import parsePLYStream from './lib/parse-ply-stream';
 
-const DEFAULT_OPTIONS = {};
-
 export default {
   name: 'PLY',
   extensions: ['ply'],
   parseStream: parsePLYStream,
-  DEFAULT_OPTIONS
+  options: {}
 };

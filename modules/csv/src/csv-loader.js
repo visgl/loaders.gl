@@ -3,7 +3,7 @@ import {AsyncQueue, TableBatchBuilder, RowTableBatch} from '@loaders.gl/experime
 import Papa from './papaparse/papaparse.transpiled';
 import AsyncIteratorStreamer from './papaparse/async-iterator-streamer';
 
-export default {
+const CSVLoader = {
   name: 'CSV',
   extensions: ['csv'],
   mimeType: 'text/csv',
@@ -14,15 +14,24 @@ export default {
   parseInBatches: parseCSVInBatches,
   testText: null,
   options: {
-    TableBatch: RowTableBatch
+    csv: {
+      TableBatch: RowTableBatch,
+      batchSize: 10
+    }
   }
 };
 
+export default CSVLoader;
+
 function parseCSVSync(csvText, options) {
+  // Apps can call the parse method directly, we so apply default options here
+  options = {...CSVLoader.options, ...options};
+  options.csv = {...CSVLoader.options.csv, ...options.csv};
+
   const config = {
     header: hasHeader(csvText, options),
     dynamicTyping: true, // Convert numbers and boolean values in rows from strings
-    ...options,
+    ...options.csv,
     download: false, // We handle loading, no need for papaparse to do it for us
     error: e => {
       throw new Error(e);
@@ -35,10 +44,13 @@ function parseCSVSync(csvText, options) {
 
 // TODO - support batch size 0 = no batching/single batch?
 function parseCSVInBatches(asyncIterator, options) {
-  // options
-  const {batchSize = 10} = options;
+  // Apps can call the parse method directly, we so apply default options here
+  options = {...CSVLoader.options, ...options};
+  options.csv = {...CSVLoader.options.csv, ...options.csv};
 
-  const TableBatchType = options.TableBatch;
+  const {batchSize} = options.csv;
+  const TableBatchType = options.csv.TableBatch;
+
   const asyncQueue = new AsyncQueue();
 
   let isFirstRow = true;

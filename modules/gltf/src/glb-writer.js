@@ -5,7 +5,10 @@ export default {
   extensions: ['glb'],
   mimeType: 'model/gltf-binary',
   encodeSync,
-  binary: true
+  binary: true,
+  options: {
+    glb: {}
+  }
 };
 
 function encodeSync(glb, options) {

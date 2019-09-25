@@ -16,5 +16,6 @@ export default {
   binary: true,
   test: 'DRACO',
   parse: async (arrayBuffer, options) => parseSync(arrayBuffer, options),
-  parseSync
+  parseSync,
+  options: {}
 };

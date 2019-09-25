@@ -20,13 +20,3 @@ export async function decodeExtensions(gltf, options, context) {
     }
   }
 }
-
-export function decodeExtensionsSync(gltf, options, context) {
-  for (const extensionName in EXTENSIONS) {
-    const disableExtension = extensionName in options && !options[extensionName];
-    if (!disableExtension) {
-      const extension = EXTENSIONS[extensionName];
-      extension.decodeSync(gltf, options, context);
-    }
-  }
-}

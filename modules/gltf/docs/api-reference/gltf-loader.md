@@ -4,30 +4,13 @@ Parses a glTF file. Can load both the `.glb` (binary) and `.gltf` (text/json) fi
 
 A glTF file contains a hierarchical scenegraph description that can be used to instantiate corresponding hierarcy of actual `Scenegraph` related classes in most WebGL libraries.
 
-| Loader                | Characteristic                                                             |
-| --------------------- | -------------------------------------------------------------------------- |
-| File Extensions       | `.glb`, `.gltf`                                                            |
-| File Type             | Binary, JSON, Linked Assets                                                |
-| File Format           | [glTF](https://github.com/KhronosGroup/glTF/tree/master/specification/2.0) |
-| Data Format           | [Scenegraph](/docs/specifications/category-scenegraph)                     |
-| Decoder Type          | Synchronous (limited), Asynchronous                                        |
-| Worker Thread Support | No                                                                         |
-| Streaming Support     | No                                                                         |
-
-The `GLTFLoader` aims to take care of as much processing as possible, while remaining framework-independent.
-
-The GLTF Loader returns an object with a `json` field containing the glTF Scenegraph. In its basic mode, the `GLTFLoader` does not modify the loaded JSON in any way. Instead, the results of additional processing are placed in parallel top-level fields such as `buffers` and `images`. This ensures that applications that want to work with the standard glTF data structure can do so.
-
-Optionally, the loaded gltf can be "post processed", which lightly annotates and transforms the loaded JSON structure to make it easier to use. Refer to [postProcessGLTF](docs/api-reference/gltf-loaders/gltf-extensions.md) for details.
-
-In addition, certain glTF extensions, in particular Draco mesh encoding, can be fully or partially processed during loading. When possible (and extension processing is enabled), such extensions will be resolved/decompressed and replaced with standards conformant representations. See [glTF Extensions](docs/api-reference/gltf-loaders/gltf-extensions.md) for more information.
-
-Note: while supported, synchronous parsing of glTF (e.g. using `parseSync()`) has significant limitations. When parsed asynchronously (using `await parse()` or `await load()`), the following additional capabilities are enabled:
-
-- linked binary resource URI:s will be loaded and resolved (assuming a valid base url is available).
-- base64 encoded binary URI:s inside the JSON payload will be decoded.
-- linked image URI:s can be loaded and decoded.
-- Draco meshes can be decoded asynchronously on worker threads (in parallel!).
+| Loader          | Characteristic                                                             |
+| --------------- | -------------------------------------------------------------------------- |
+| File Extensions | `.glb`, `.gltf`                                                            |
+| File Type       | Binary, JSON, Linked Assets                                                |
+| File Format     | [glTF](https://github.com/KhronosGroup/glTF/tree/master/specification/2.0) |
+| Data Format     | [Scenegraph](/docs/specifications/category-scenegraph)                     |
+| Supported APIs  | `parse`, `parseSync`                                                       |
 
 ## Usage
 
@@ -46,22 +29,77 @@ import {DracoLoader} from '@loaders.gl/draco';
 const gltf = load(url, GLTFLoader, {DracoLoader, decompress: true});
 ```
 
+## Overview
+
+The `GLTFLoader` aims to take care of as much processing as possible, while remaining framework-independent.
+
+The GLTF Loader returns an object with a `json` field containing the glTF Scenegraph. In its basic mode, the `GLTFLoader` does not modify the loaded JSON in any way. Instead, the results of additional processing are placed in parallel top-level fields such as `buffers` and `images`. This ensures that applications that want to work with the standard glTF data structure can do so.
+
+Optionally, the loaded gltf can be "post processed", which lightly annotates and transforms the loaded JSON structure to make it easier to use. Refer to [postProcessGLTF](docs/api-reference/gltf-loaders/gltf-extensions.md) for details.
+
+In addition, certain glTF extensions, in particular Draco mesh encoding, can be fully or partially processed during loading. When possible (and extension processing is enabled), such extensions will be resolved/decompressed and replaced with standards conformant representations. See [glTF Extensions](docs/api-reference/gltf-loaders/gltf-extensions.md) for more information.
+
+Note: while supported, synchronous parsing of glTF (e.g. using `parseSync()`) has significant limitations. When parsed asynchronously (using `await parse()` or `await load()`), the following additional capabilities are enabled:
+
+- linked binary resource URI:s will be loaded and resolved (assuming a valid base url is available).
+- base64 encoded binary URI:s inside the JSON payload will be decoded.
+- linked image URI:s can be loaded and decoded.
+- Draco meshes can be decoded asynchronously on worker threads (in parallel!).
+
 ## Options
 
-| Option                 | Type                                                  | Default Async | Sync                                                                                                           | Description                                                                                 |
-| ---------------------- | ----------------------------------------------------- | ------------- | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `fetchLinkedResources` | Boolean                                               | `true`        | No                                                                                                             | Fetch any linked .BIN files, decode base64 encoded URIS. Async only.                        |
-| `fetchImages`          | Boolean                                               | `false`       | No                                                                                                             | Fetch any referenced image files (and decode base64 encoded URIS). Async only.              |
-| `createImages`         | Boolean                                               | `false`       | Create image objects from loaded image data.                                                                   |
-| `fetch`                | Function                                              | `fetch`       | N/A                                                                                                            | Function used to fetch linked resources.                                                    |
-| `uri`                  | String                                                | `fetch`       | N/A                                                                                                            | Function used to fetch linked resources.                                                    |
-| `decompress`           | Boolean                                               | `true`        | Yes                                                                                                            | Decompress Draco compressed meshes (if DracoLoader available).                              |
-| `DracoLoader`          | [DracoLoader](/docs/api-reference/draco/draco-loader) | `null`        | Yes\*                                                                                                          | Supply to enable decoding of Draco compressed meshes. \* `DracoWorkerLoader` is async only. |
-| `postProcess`          | Boolean                                               | `false`       | Perform additional [post processing](docs/api-reference/post-process-gltf) to simplify use in WebGL libraries. |
+The following options are used when `gltf.parserVersion` is set to `2`:
+
+| Option               | Type    | Default |                                                                                | Description |
+| -------------------- | ------- | ------- | ------------------------------------------------------------------------------ | ----------- |
+| `gltf.parserVersion` | Number  | `1`     | F                                                                              |
+| `gltf.fetchImages`   | Boolean | `false` | Fetch any referenced image files (and decode base64 encoded URIS). Async only. |
+| `gltf.parseImages`   | Boolean | `false` |
+| `gltf.decompress`    | Boolean | `true`  | Decompress Draco compressed meshes (if DracoLoader available).                 |
+| `gltf.postProcess`   | Boolean | `true`  | Perform additional post processing before returning data.                      |
+
+DEPRECATED OPTIONS
+
+The foillowing top-level options are deprecated and will be removed in v2.0
+
+| Option                 | Type          | Default | Description                                                                    |
+| ---------------------- | ------------- | ------- | ------------------------------------------------------------------------------ |
+| `fetchLinkedResources` | Boolean       | `true`  | Fetch any linked .BIN files, decode base64 encoded URIS. Async only.           |
+| `fetchImages`          | Boolean       | `false` | Fetch any referenced image files (and decode base64 encoded URIS). Async only. |
+| `createImages`         | Boolean       | `false` |                                                                                |
+| `fetch`                | Function      | `fetch` | Function used to fetch linked resources.                                       |
+| `uri`                  | String        | `fetch` | Function used to fetch linked resources.                                       |
+| `decompress`           | Boolean       | `true`  | Decompress Draco compressed meshes (if DracoLoader available).                 |
+| `DracoLoader`          | `DracoLoader` | `null`  | Supply to enable decoding of Draco compressed meshes.                          |
+| `postProcess`          | Boolean       | `false` | Perform additional post processing before returning data.                      |
+
+Remarks:
+
+- The v1 parser will be removed in loaders.gl v2.0
+- `postProcess`: Performs additional [post processing](docs/api-reference/post-process-gltf) to simplify use in WebGL libraries. Changes the return value of the call.
 
 ## Data Format
 
-Returns
+### With Post Processing
+
+The format of data returned by the `GLTFLoader` depends on whether the `gltf.postProcess` option is `true`. When true, the parsed JSON structure will be returned, and [post processing](docs/api-reference/post-process-gltf) will have been performed, which will link data from binary buffers into the parsed JSON structure using non-standard fields, and also modify the data in other ways to make it easier to use.
+
+At the top level, this will look like a standard json structure:
+
+```json
+{
+  scenes: [...],
+  scene: ...,
+  nodes: [...],
+  ...
+}
+```
+
+For details on the extra fields added to the returned data structure, see [post processing](docs/api-reference/post-process-gltf).
+
+### With Post Processing
+
+By setting `gltf.postProcess` to `false`, a "pure" gltf data structure will be returned, with binary buffers provided as an `ArrayBuffer` array.
 
 ```json
 {
@@ -69,7 +107,7 @@ Returns
   baseUri: String,
 
   // JSON Chunk
-  json: Object,
+  json: Object, // This will be the standard glTF json structuure shown above
 
   // Length and indices of this array will match `json.buffers`
   // The GLB bin chunk, if present, will be found in buffer 0.

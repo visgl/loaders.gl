@@ -1,8 +1,10 @@
 # glTF Extensions
 
-Arbitrary glTF extensions can be present in glTF files, and will remain present in the parsed JSON as you would expect. Such extensions can supported by applications by inspecting the `extensions` fields inside glTF objects, and it is up to each application to handle or ignore them.
+glTF extensions can be present in glTF files, and will be present in the parsed JSON. glTF extensions can supported by applications by inspecting the `extensions` fields inside glTF objects, and it is up to each application to handle or ignore them.
 
-Many glTF extensions affect e.g. rendering which is outside of the scope of loaders.gl, however in a few cases it is possible to provide support for extensions directly during loading. This article describes glTF extensions that are fully or partially processed by the `@loaders.gl/gltf` classes.
+loaders.gl aims to provide support for glTF extensions that can be handled completely or partially during loading, and article describes glTF extensions that are fully or partially processed by the `@loaders.gl/gltf` classes.
+
+Note that many glTF extensions affect aspects that are firmly outside of the scope of loaders.gl (e.g. rendering), and no attempt is made to process those extensions in loaders.gl.
 
 ## Official Extensions
 

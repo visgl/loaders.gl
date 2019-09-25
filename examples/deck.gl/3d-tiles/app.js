@@ -16,12 +16,12 @@ import {registerLoaders} from '@loaders.gl/core';
 import {DracoWorkerLoader} from '@loaders.gl/draco';
 import {GLTFLoader} from '@loaders.gl/gltf';
 
-registerLoaders([GLTFLoader, DracoWorkerLoader]);
-
 import ControlPanel from './components/control-panel';
 import fileDrop from './components/file-drop';
 
 import {loadExampleIndex, INITIAL_EXAMPLE_CATEGORY, INITIAL_EXAMPLE_NAME} from './examples';
+
+registerLoaders([GLTFLoader, DracoWorkerLoader]);
 
 // Set your mapbox token here
 const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line

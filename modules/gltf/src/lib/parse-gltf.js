@@ -3,7 +3,7 @@
 import {parseJSON} from '@loaders.gl/loader-utils';
 import assert from './utils/assert';
 import {getFullUri} from './gltf-utils/gltf-utils';
-import {decodeExtensions, decodeExtensionsSync} from './extensions/gltf-extensions';
+import {decodeExtensions} from './extensions/gltf-extensions';
 import parseGLBSync, {isGLB} from './parse-glb';
 import postProcessGLTF from './post-process-gltf';
 
@@ -18,13 +18,13 @@ export async function parseGLTF(gltf, arrayBufferOrString, byteOffset = 0, optio
 
   const promises = [];
 
-  if (options.fetchImages) {
+  if (options.gltf.fetchImages) {
     const promise = fetchImages(gltf, options, context);
     promises.push(promise);
   }
 
   // Load linked buffers asynchronously and decodes base64 buffers in parallel
-  if (options.fetchLinkedResources) {
+  if (options.gltf.fetchBuffers) {
     await fetchBuffers(gltf, options, context);
   }
 
@@ -35,28 +35,7 @@ export async function parseGLTF(gltf, arrayBufferOrString, byteOffset = 0, optio
   await Promise.all(promises);
 
   // Post processing resolves indices to objects, buffers
-  return options.postProcess ? postProcessGLTF(gltf, options) : gltf;
-}
-
-// NOTE: The sync parser cannot handle linked assets or base64 encoded resources
-// gtlf - input can be arrayBuffer (GLB or UTF8 encoded JSON), string (JSON), or parsed JSON.
-// eslint-disable-next-line complexity
-export function parseGLTFSync(gltf, arrayBufferOrString, byteOffset = 0, options, context) {
-  parseGLTFContainerSync(gltf, arrayBufferOrString, byteOffset, options);
-
-  // TODO: we could synchronously decode base64 encoded data URIs in this non-async path
-  if (options.fetchLinkedResources) {
-    fetchBuffersSync(gltf, options);
-  }
-
-  // Whether this is possible can depends on whether sync loaders are registered
-  // e.g. the `DracoWorkerLoader` cannot be called synchronously
-  if (options.decodeExtensions) {
-    decodeExtensionsSync(gltf, options);
-  }
-
-  // Post processing resolves indices to objects, buffers
-  return options.postProcess ? postProcessGLTF(gltf, options) : gltf;
+  return options.gltf.postProcess ? postProcessGLTF(gltf, options) : gltf;
 }
 
 // `data` - can be ArrayBuffer (GLB), ArrayBuffer (Binary JSON), String (JSON), or Object (parsed JSON)
@@ -77,13 +56,15 @@ function parseGLTFContainerSync(gltf, data, byteOffset, options) {
     gltf.json = parseJSON(data);
   } else if (data instanceof ArrayBuffer) {
     // If still ArrayBuffer, parse as GLB container
-    gltf._glb = {};
-    byteOffset = parseGLBSync(gltf._glb, data, byteOffset, options);
-    gltf.json = gltf._glb.json;
+    const glb = {};
+    byteOffset = parseGLBSync(glb, data, byteOffset, options);
+
+    assert(glb.type === 'glTF', `Invalid GLB magic string ${glb.type}`);
+
+    gltf._glb = glb;
+    gltf.json = glb.json;
   } else {
-    // Assume input is already parsed JSON
-    // TODO - should we throw instead?
-    gltf.json = data;
+    assert(false, `GLTF: must be ArrayBuffer or string`);
   }
 
   // Populate buffers
@@ -136,14 +117,6 @@ async function fetchBuffers(gltf, options, context) {
       };
 
       delete buffer.uri;
-    }
-  }
-}
-
-function fetchBuffersSync(gltf, options) {
-  for (const buffer of gltf.json.buffers || []) {
-    if (buffer.uri) {
-      throw new Error('parseGLTFSync: Cannot decode uri buffers');
     }
   }
 }

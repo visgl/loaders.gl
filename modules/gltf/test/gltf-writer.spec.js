@@ -2,7 +2,7 @@
 import test from 'tape-promise/tape';
 import {validateWriter} from 'test/common/conformance';
 
-import {parseSync, encodeSync} from '@loaders.gl/core';
+import {parse, encodeSync} from '@loaders.gl/core';
 import {GLTFLoader, GLTFWriter, GLTFScenegraph, GLTFBuilder} from '@loaders.gl/gltf';
 
 const EXTRA_DATA = {extraData: 1};
@@ -19,7 +19,7 @@ test('GLTFWriter#loader conformance', t => {
   t.end();
 });
 
-test('GLTFWriter#encode', t => {
+test('GLTFWriter#encode', async t => {
   const gltfBuilder = new GLTFScenegraph();
   gltfBuilder.addApplicationData('viz', APP_DATA);
   gltfBuilder.addExtraData('test', EXTRA_DATA);
@@ -31,7 +31,7 @@ test('GLTFWriter#encode', t => {
 
   const arrayBuffer = encodeSync(gltfBuilder.gltf, GLTFWriter, {gltf: {parserVersion: 2}});
 
-  const gltf = parseSync(arrayBuffer, GLTFLoader, {gltf: {parserVersion: 2, postProcess: false}});
+  const gltf = await parse(arrayBuffer, GLTFLoader, {gltf: {parserVersion: 2, postProcess: false}});
   const gltfScenegraph = new GLTFScenegraph(gltf);
 
   const appData = gltfScenegraph.getApplicationData('viz');
@@ -53,7 +53,7 @@ test('GLTFWriter#encode', t => {
   t.end();
 });
 
-test('GLTFWriter#encode (DEPRECATED settings)', t => {
+test('GLTFWriter#encode (DEPRECATED settings)', async t => {
   const gltfBuilder = new GLTFBuilder();
   gltfBuilder.addApplicationData('viz', APP_DATA);
   gltfBuilder.addExtraData('test', EXTRA_DATA);
@@ -65,7 +65,7 @@ test('GLTFWriter#encode (DEPRECATED settings)', t => {
 
   const arrayBuffer = gltfBuilder.encodeSync();
 
-  const gltf = parseSync(arrayBuffer, GLTFLoader, {gltf: {parserVersion: 2, postProcess: false}});
+  const gltf = await parse(arrayBuffer, GLTFLoader, {gltf: {parserVersion: 2, postProcess: false}});
   const gltfScenegraph = new GLTFScenegraph(gltf);
 
   const appData = gltfScenegraph.getApplicationData('viz');
