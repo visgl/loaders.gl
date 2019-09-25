@@ -15,7 +15,7 @@ export function parseSync(data, loaders, options, url) {
 
   options = options || {};
 
-    // We store the context in `this` using bind for "recursive" parse calls
+  // We store the context in `this` using bind for "recursive" parse calls
   // eslint-disable-next-line consistent-this, no-invalid-this
   let context = this;
 
