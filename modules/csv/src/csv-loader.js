@@ -49,7 +49,7 @@ function parseCSVInBatches(asyncIterator, options) {
   options.csv = {...CSVLoader.options.csv, ...options.csv};
 
   const {batchSize} = options.csv;
-  const TableBatchType = options.TableBatch;
+  const TableBatchType = options.csv.TableBatch;
 
   const asyncQueue = new AsyncQueue();
 
