@@ -22,8 +22,8 @@ load(url, {
 ```
 
 ### Use-Case: Specifying Options to Individual Loaders without knowing which loader will be picked
-### Use-Case: Specifying Options to Sub Loaders
 
+### Use-Case: Specifying Options to Sub Loaders
 
 ## Proposals
 
@@ -44,7 +44,6 @@ It is convenient if the names are valid JS strings, so that they can used as obj
 All loaders for the same format (WorkerLoader, StreamingLoader) would be referenced by the same name.
 
 The user would need to decide the names for custom loaders.
-
 
 ## Problems
 
