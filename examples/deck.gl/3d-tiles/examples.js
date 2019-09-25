@@ -28,8 +28,18 @@ const ADDITIONAL_EXAMPLES = {
       'Montreal (PointCloud)': {ionAssetId: 28945, ionAccessToken: ION_TOKEN}
     }
   },
+  nearmap: {
+    name: 'nearmap Photogrammetry Tilesets',
+    examples: {
+      'Las Vegas': {
+        ionAssetId: 44865,
+        ionAccessToken:
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIwOTBkYTA1ZS03NGM5LTQyNTEtOTViOS1hZDFmNDZjZGQ3YTEiLCJpZCI6NDQsInNjb3BlcyI6WyJhc3IiXSwiYXNzZXRzIjpbNDQ4NjVdLCJpYXQiOjE1Njk0MTcwNjh9.zrWE65u2u-TYyTSRKhDl9-yDYrC_qxiJQ-tZFCgMbt0'
+      }
+    }
+  },
   vricon: {
-    name: 'vricon Photogrammetry Samples',
+    name: 'VRICON Photogrammetry Samples',
     examples: {
       Cairo: {ionAssetId: 29328, ionAccessToken: ION_TOKEN},
       Caracas: {ionAssetId: 29331, ionAccessToken: ION_TOKEN},
