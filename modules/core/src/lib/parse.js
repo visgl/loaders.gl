@@ -1,6 +1,6 @@
 import assert from '../utils/assert';
 import {isLoaderObject} from './loader-utils/normalize-loader';
-import {mergeLoaderAndUserOptions} from './loader-utils/normalize-options';
+import {mergeOptions} from './loader-utils/merge-options';
 import {getUrlFromData} from './loader-utils/get-data';
 import {getArrayBufferOrStringFromData} from './loader-utils/get-data';
 import {getLoaderContext} from './loader-utils/get-loader-context';
@@ -25,7 +25,7 @@ export async function parse(data, loaders, options, url) {
   const loader = selectLoader(loaders, autoUrl, data);
 
   // Normalize options
-  options = mergeLoaderAndUserOptions(options, loader);
+  options = mergeOptions(loader, options);
 
   const context = getLoaderContext({url: autoUrl, parse, loaders}, options);
 
