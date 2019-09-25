@@ -1,42 +1,55 @@
 // Binary container format for glTF
 
-import {parseGLTFSync, parseGLTF} from './lib/parse-gltf';
+import {parseGLTF} from './lib/parse-gltf';
 import GLTFParser from './lib/deprecated/gltf-parser';
 
-const defaultOptions = {
-  parserVersion: 1, // the new parser that will be the only option in V2.
-  fetchBuffers: true, // Fetch any linked .BIN buffers, decode base64
-  fetchImages: true, // Fetch any linked .BIN buffers, decode base64
-  createImages: false, // Create image objects
-  decompress: true,
-  postProcess: true,
-
-  // v1 defaults
-  uri: '', // base URI
-  fetchLinkedResources: true, // Fetch any linked .BIN buffers, decode base64
-  log: console // eslint-disable-line
-};
-
-export default {
+const GLTFLoader = {
   name: 'glTF',
   extensions: ['gltf', 'glb'],
   // mimeType: 'model/gltf-binary',
   mimeType: 'model/gltf+json',
+
   text: true,
   binary: true,
   test: 'glTF',
   parse,
-  parseSync, // Less features when parsing synchronously
-  optionKey: 'gltf',
-  defaultOptions
+
+  options: {
+    gltf: {
+      parserVersion: 1, // the new parser that will be the only option in V2 is not default in V1
+
+      // Note: The following options are used only when parserVersion === 2
+      fetchBuffers: true, // Fetch any linked .BIN buffers, decode base64
+      fetchImages: true, // Fetch any linked .BIN buffers, decode base64
+      createImages: false, // Create image objects
+      decompress: true, // Decompress meshes
+      postProcess: true // Postprocess glTF and return json structure directly
+    },
+
+    // DEPRECATED OPTIONS for the v1 glTF parser
+    // useGLTFParser: false,
+    // fetchImages: true, // Fetch any linked .BIN buffers, decode base64
+    // createImages: false, // Create image objects
+    // decompress: true,
+    // postProcess: true,
+    // fetchLinkedResources: true, // Fetch any linked .BIN buffers, decode base64
+
+    // common?
+    uri: '', // base URI
+    log: console // eslint-disable-line
+  }
 };
 
+export default GLTFLoader;
+
 export async function parse(arrayBuffer, options = {}, context) {
-  // Apps like to call the parse method directly so apply default options here
-  options = {...defaultOptions, ...options, ...options.gltf};
+  // Apps can call the parse method directly, we so apply default options here
+  options = {...GLTFLoader.options, ...options};
+  options.gltf = {...GLTFLoader.options.gltf, ...options.gltf};
+  addDeprecatedGLTFOptions(options);
 
   // Deprecated v1 Parser: Returns `GLTFParser` instance, instead of "pure" js object
-  if (options.parserVersion !== 2 && options.useGLTFParser !== false) {
+  if (options.gltf.parserVersion !== 2 && options.useGLTFParser !== false) {
     const gltfParser = new GLTFParser();
     return gltfParser.parse(arrayBuffer, options);
   }
@@ -46,17 +59,19 @@ export async function parse(arrayBuffer, options = {}, context) {
   return await parseGLTF(gltf, arrayBuffer, byteOffset, options, context);
 }
 
-export function parseSync(arrayBuffer, options = {}, context) {
-  // Apps like to call the parse method directly so apply default options here
-  options = {...defaultOptions, ...options, ...options.gltf};
+// DEPRECATED
 
-  // Deprecated: Return GLTFParser instance
-  if (options.parserVersion !== 2 && options.useGLTFParser !== false) {
-    return new GLTFParser().parseSync(arrayBuffer, options);
+function addDeprecatedGLTFOptions(options) {
+  if ('fetchImages' in options) {
+    options.gltf.fetchImages = options.fetchImages;
   }
-
-  // Return pure javascript object
-  const {byteOffset = 0} = options;
-  const gltf = {};
-  return parseGLTFSync(gltf, arrayBuffer, byteOffset, options, context);
+  if ('fetchLinkedResources' in options) {
+    options.gltf.fetchBuffers = options.fetchLinkedResources;
+  }
+  if ('decompress' in options) {
+    options.gltf.fetchBuffers = options.decompress;
+  }
+  if ('postProcess' in options) {
+    options.gltf.postProcess = options.postProcess;
+  }
 }

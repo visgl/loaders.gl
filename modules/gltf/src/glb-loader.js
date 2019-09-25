@@ -9,8 +9,10 @@ export default {
   binary: true,
   parse: async (arrayBuffer, options) => parseSync(arrayBuffer, options),
   parseSync,
-  defaultOptions: {
-    strict: false // Enables deprecated XVIZ support (illegal CHUNK formats)
+  options: {
+    glb: {
+      strict: false // Enables deprecated XVIZ support (illegal CHUNK formats)
+    }
   }
 };
 

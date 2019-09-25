@@ -2,7 +2,7 @@
 
 The `GLTFScenegraph` class provides an API for accessing and modifying glTF data.
 
-> Caveat: Modification of existing binary data chunks has limitations, this class is not intended to be a generic utility for modifying existing glTF data.
+> Caveat: Modification of binary data chunks has limitations, and this class is currently not intended to be a generic utility for modifying glTF data.
 
 ## Usage
 

@@ -23,24 +23,14 @@ test('GLTFLoader#loader conformance', t => {
 
 // V2 parser
 
-test('GLTFLoader#parseSync(text/JSON)', async t => {
+test('GLTFLoader#parseSync()', async t => {
   const response = await fetchFile(GLTF_JSON_URL);
   const data = await response.text();
 
   t.throws(
     () => parseSync(data, GLTFLoader, {gltf: {parserVersion: 2}}),
-    'GLTFLoader throws when synchronously parsing gltfs with base64 buffers'
+    'GLTFLoader throws when synchronously parsing gltfs'
   );
-
-  t.end();
-});
-
-test('GLTFLoader#parseSync(binary)', async t => {
-  const response = await fetchFile(GLTF_BINARY_URL);
-  const data = await response.arrayBuffer();
-
-  const gltf = parseSync(data, GLTFLoader, {gltf: {parserVersion: 2}});
-  t.ok(gltf, 'GLTFLoader returned parsed data');
 
   t.end();
 });
@@ -58,26 +48,6 @@ test('GLTFLoader#load(text)', async t => {
 });
 
 // V1 parser (deprecated)
-
-test('GLTFLoader#parseSync(text/JSON) V1', async t => {
-  const response = await fetchFile(GLTF_JSON_URL);
-  const data = await response.text();
-
-  const gltf = parseSync(data, GLTFLoader);
-  t.ok(gltf, 'GLTFLoader returned parsed data');
-
-  t.end();
-});
-
-test('GLTFLoader#parseSync(binary) V1', async t => {
-  const response = await fetchFile(GLTF_BINARY_URL);
-  const data = await response.arrayBuffer();
-
-  const gltf = parseSync(data, GLTFLoader);
-  t.ok(gltf, 'GLTFLoader returned parsed data');
-
-  t.end();
-});
 
 test('GLTFLoader#load(binary) V1', async t => {
   const data = await load(GLTF_BINARY_URL, GLTFLoader);

@@ -14,7 +14,6 @@ export {default as GLTFScenegraph} from './lib/gltf-scenegraph';
 export {default as postProcessGLTF} from './lib/post-process-gltf';
 
 // For 3D Tiles
-export {parseGLTFSync} from './lib/parse-gltf';
 export {encodeGLTFSync} from './lib/encode-gltf';
 
 // DEPRECATED
