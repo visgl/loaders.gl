@@ -68,3 +68,26 @@ To use worker loaders, jut the worker loader
 Concurrency - The `maxConcurrency` parameter can be adjusted to define how many workers should be created for each format.
 
 Note that when calling worker loaders, binary data is transferred from the calling thread to the worker thread. This means that any `ArrayBuffer` `data` parameter you pass in to the worker will no longer be accessible in the calling thread.
+
+## Loader Options
+
+`load`, `parse` and other core functions accept loader options in the form of an options object.
+
+```js
+parse(data, Loader, {...options});
+```
+
+Such loader options objects are organized into nested sub objects, with one sub-object per loader or loader category. This provides a structured way to pass options to multiple loaders.
+
+```js
+load(url, {
+  json: {...},
+  csv: {...},
+  '3d-tiles': {...},
+  gltf: {...}
+});
+```
+
+An advantage of this design is that since the core functions can select a loader from a list of multiple candidate loaders, or invoke sub-loaders, the nested options system allows separate specification of options to each loader in a single options object.
+
+Loader options are merged with default options using a deep, two-level merge. Any object-valued key on the top level will be merged with the corresponding key value in the default options object.

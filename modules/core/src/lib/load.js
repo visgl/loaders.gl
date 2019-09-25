@@ -1,7 +1,7 @@
 import {isFileReadable} from '../javascript-utils/is-type';
 import {fetchFile} from './fetch/fetch-file';
 import {isLoaderObject} from './loader-utils/normalize-loader';
-import {mergeLoaderAndUserOptions} from './loader-utils/normalize-options';
+import {mergeOptions} from './loader-utils/merge-options';
 import {selectLoader} from './select-loader';
 
 import {parse} from './parse';
@@ -34,7 +34,7 @@ export async function load(url, loaders, options) {
     // These can only be handled by `load`, not `parse`
     // TODO - ImageLoaders can be rewritten to separate load and parse, phase out this variant?
     if (loader.loadAndParse) {
-      const loaderOptions = mergeLoaderAndUserOptions(options, loader);
+      const loaderOptions = mergeOptions(loader, options);
       return await loader.loadAndParse(url, loaderOptions);
     }
   }

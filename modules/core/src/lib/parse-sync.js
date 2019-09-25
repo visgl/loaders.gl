@@ -1,6 +1,6 @@
 import {selectLoader} from './select-loader';
 import {isLoaderObject} from './loader-utils/normalize-loader';
-import {mergeLoaderAndUserOptions} from './loader-utils/normalize-options';
+import {mergeOptions} from './loader-utils/merge-options';
 import {getArrayBufferOrStringFromDataSync} from './loader-utils/get-data';
 import {getLoaderContext} from './loader-utils/get-loader-context';
 
@@ -21,7 +21,7 @@ export function parseSync(data, loaders, options, url) {
   }
 
   // Normalize options
-  options = mergeLoaderAndUserOptions(options, loader);
+  options = mergeOptions(loader, options);
 
   const context = getLoaderContext({url, parseSync, loaders}, options);
 
