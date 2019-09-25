@@ -41,5 +41,5 @@ function parseWithLoaderSync(loader, data, options, context) {
   }
 
   // TBD - If synchronous parser not available, return null
-  throw new Error(`Could not parse ${context.url || 'data'} using ${loader.name} loader`);
+  throw new Error(`${loader.name}: Loader does not support 'parseSync' (${context.url || 'data'})`);
 }
