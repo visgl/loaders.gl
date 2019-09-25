@@ -15,7 +15,7 @@ export default {
   test: ['cmpt', 'pnts', 'b3dm', 'i3dm'],
   parse,
   binary: true,
-  defaultOptions: {
+  options: {
     '3d-tiles': {
       loadGLTF: true,
       decodeQuantizedPositions: false

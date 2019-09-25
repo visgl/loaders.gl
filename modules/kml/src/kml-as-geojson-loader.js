@@ -37,5 +37,5 @@ export default {
   parseTextSync,
   browserOnly: true,
   worker: false,
-  DEFAULT_OPTIONS
+  options: DEFAULT_OPTIONS
 };

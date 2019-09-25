@@ -18,5 +18,5 @@ export default {
   parse: async (arrayBuffer, options) => parsePLY(arrayBuffer, options), // TODO - this may not detect text correctly?
   parseTextSync: parsePLY,
   parseSync: parsePLY,
-  DEFAULT_OPTIONS
+  options: DEFAULT_OPTIONS
 };
