@@ -1,3 +1,5 @@
+// probe.gl Log compatible loggers
+
 // Logs nothing
 export class NullLog {
   log() {
@@ -17,7 +19,7 @@ export class NullLog {
 // Logs to console
 export class ConsoleLog {
   constructor() {
-    this.console = console; // esli
+    this.console = console; // eslint-disable-line
   }
   log(...args) {
     return this.console.log.bind(this.console, ...args);
