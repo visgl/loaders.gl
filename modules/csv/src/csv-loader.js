@@ -26,7 +26,7 @@ export default CSVLoader;
 function parseCSVSync(csvText, options) {
   // Apps can call the parse method directly, we so apply default options here
   options = {...CSVLoader.options, ...options};
-  options.gltf = {...CSVLoader.options.csv, ...options.gltf};
+  options.csv = {...CSVLoader.options.csv, ...options.csv};
 
   const config = {
     header: hasHeader(csvText, options),
