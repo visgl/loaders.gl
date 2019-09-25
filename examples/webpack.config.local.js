@@ -16,6 +16,20 @@ const ALIASES = require('ocular-dev-tools/config/ocular.config')({
 
 const ROOT_DIR = resolve(__dirname, '..');
 
+const BABEL_CONFIG = {
+  presets: ['@babel/env'],
+  plugins: [
+    [
+      'babel-plugin-inline-import',
+      {
+        extensions: ['.worker.js']
+      }
+    ],
+    ['@babel/plugin-transform-runtime', {useESModules: true}]
+  ],
+  ignore: ['**/*.worker.js']
+};
+
 const DECK_LINK_ALIASES = {
   // TODO - add all aliases
   '@deck.gl/core': resolve(ROOT_DIR, '../deck.gl/modules/core/src'),
@@ -71,6 +85,17 @@ const LOCAL_DEVELOPMENT_CONFIG = {
         test: /\.js$/,
         use: ['source-map-loader'],
         enforce: 'pre'
+      },
+      {
+        // This is required to handle inline worker!
+        test: /worker.*\.js$/,
+        exclude: /node_modules/,
+        use: [
+          {
+            loader: 'babel-loader',
+            options: BABEL_CONFIG
+          }
+        ]
       },
       // workers need to be completely transpiled
       {
