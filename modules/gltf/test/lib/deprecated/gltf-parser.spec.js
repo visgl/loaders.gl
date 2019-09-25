@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
 
-import {load, parse, parseSync, fetchFile} from '@loaders.gl/core';
+import {load, parse, fetchFile} from '@loaders.gl/core';
 import {GLTFLoader, GLBParser, GLTFParser} from '@loaders.gl/gltf';
 
 const GLTF_BINARY_URL = '@loaders.gl/gltf/test/data/gltf-2.0/2CylinderEngine.glb';
