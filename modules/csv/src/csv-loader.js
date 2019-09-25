@@ -47,17 +47,10 @@ function parseCSVInBatches(asyncIterator, options) {
   // Apps can call the parse method directly, we so apply default options here
   options = {...CSVLoader.options, ...options};
   options.csv = {...CSVLoader.options.csv, ...options.csv};
-<<<<<<< HEAD
 
   const {batchSize} = options.csv;
   const TableBatchType = options.csv.TableBatch;
 
-=======
-
-  const {batchSize} = options.csv;
-  const TableBatchType = options.TableBatch;
-
->>>>>>> csv optiions
   const asyncQueue = new AsyncQueue();
 
   let isFirstRow = true;

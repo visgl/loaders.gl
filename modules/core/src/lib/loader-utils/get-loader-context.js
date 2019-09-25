@@ -30,3 +30,21 @@ export function getLoaderContext(context, options, previousContext) {
 
   return context;
 }
+
+export function getLoaders(loaders, context) {
+  // A single non-array loader disables lookup in context
+  if (!Array.isArray(loaders)) {
+    return loaders;
+  }
+
+  // Create a merged list
+  let candidateLoaders;
+  if (loaders) {
+    candidateLoaders = Array.isArray(loaders) ? loaders : [loaders];
+  }
+  if (context && context.loaders) {
+    const contextLoaders = Array.isArray(context.loaders) ? context.loaders : [context.loaders];
+    candidateLoaders = candidateLoaders ? [...candidateLoaders, ...contextLoaders] : contextLoaders;
+  }
+  return candidateLoaders;
+}
