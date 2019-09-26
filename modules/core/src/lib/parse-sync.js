@@ -2,7 +2,7 @@ import {selectLoader} from './select-loader';
 import {isLoaderObject} from './loader-utils/normalize-loader';
 import {mergeOptions} from './loader-utils/merge-options';
 import {getArrayBufferOrStringFromDataSync} from './loader-utils/get-data';
-import {getLoaderContext} from './loader-utils/get-loader-context';
+import {getLoaders, getLoaderContext} from './loader-utils/get-loader-context';
 
 export function parseSync(data, loaders, options, url) {
   // Signature: parseSync(data, options, url)
@@ -13,8 +13,16 @@ export function parseSync(data, loaders, options, url) {
     loaders = null;
   }
 
-  // Chooses a loader and normalize it
-  const loader = selectLoader(loaders, url, data);
+  options = options || {};
+
+  // We store the context in `this` using bind for "recursive" parse calls
+  // eslint-disable-next-line consistent-this, no-invalid-this
+  let context = this;
+
+  // Chooses a loader (and normalizes it)
+  // Also use any loaders in the context, new loaders take priority
+  const candidateLoaders = getLoaders(loaders, context);
+  const loader = selectLoader(candidateLoaders, url, data);
   // Note: if nothrow option was set, it is possible that no loader was found, if so just return null
   if (!loader) {
     return null;
@@ -23,7 +31,7 @@ export function parseSync(data, loaders, options, url) {
   // Normalize options
   options = mergeOptions(loader, options);
 
-  const context = getLoaderContext({url, parseSync, loaders}, options);
+  context = getLoaderContext({url, parseSync, loaders}, options);
 
   return parseWithLoaderSync(loader, data, options, context);
 }

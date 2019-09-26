@@ -10,6 +10,7 @@
 // - Also, should we have hard dependency on gltf module or use injection or auto-discovery for gltf parser?
 
 import {GLTFLoader} from '@loaders.gl/gltf';
+import {getZeroOffsetArrayBuffer} from '@loaders.gl/loader-utils';
 
 export const GLTF_FORMAT = {
   URI: 0,
@@ -30,7 +31,7 @@ export function parse3DTileGLTFViewSync(tile, arrayBuffer, byteOffset) {
 
   // TODO - We can avoid copy if already 4-byte aligned...
   // However the rest of the code may not be able to accept byteOffsets, so copy anyway
-  tile.gltfArrayBuffer = copyArrayBuffer(arrayBuffer, byteOffset, gltfByteLength);
+  tile.gltfArrayBuffer = getZeroOffsetArrayBuffer(arrayBuffer, byteOffset, gltfByteLength);
   tile.gltfByteOffset = 0;
   tile.gltfByteLength = gltfByteLength;
 
@@ -77,7 +78,10 @@ export function extractGLTFSync(tile, gltfFormat, options, context) {
     if (tile.gltfArrayBuffer) {
       const {parseSync} = context;
       // TODO - Should handle byteOffset... Not used now...
-      tile.gltf = parseSync(tile.gltfArrayBuffer, GLTFLoader, {...options, parserVersion: 2});
+      tile.gltf = parseSync(tile.gltfArrayBuffer, GLTFLoader, {
+        ...options,
+        gltf: {parserVersion: 2}
+      });
       delete tile.gltfArrayBuffer;
       delete tile.gltfByteOffset;
       delete tile.gltfByteLength;
@@ -106,11 +110,4 @@ function extractGLTFBufferOrURL(tile, gltfFormat, options) {
     default:
       throw new Error(`b3dm: Illegal glTF format field`);
   }
-}
-
-// Copy the glb into new ArrayBuffer.
-function copyArrayBuffer(arrayBuffer, byteOffset, byteLength) {
-  const subArray = new Uint8Array(arrayBuffer).subarray(byteOffset, byteOffset + byteLength);
-  const arrayCopy = new Uint8Array(subArray);
-  return arrayCopy.buffer;
 }

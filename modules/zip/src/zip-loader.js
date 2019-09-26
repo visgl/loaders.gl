@@ -5,6 +5,7 @@ export const ZipLoader = {
   extensions: ['zip'],
   mimeType: 'application/zip',
   category: 'archive',
+  test: 'PK',
   parse: parseZipAsync
 };
 
@@ -46,8 +47,7 @@ function parseZipAsync(data, options) {
       // Return fileMap
       .then(() => fileMap)
       .catch(error => {
-        options.log.error(`Unable to read zip archive: ${error}`);
-        throw error;
+        throw new Error(`Unable to read zip archive: ${error}`);
       })
   );
 }

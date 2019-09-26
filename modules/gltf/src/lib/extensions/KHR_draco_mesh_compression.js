@@ -2,9 +2,11 @@
 // Only TRIANGLES: 0x0004 and TRIANGLE_STRIP: 0x0005 are supported
 
 /* eslint-disable camelcase */
+import {getZeroOffsetArrayBuffer} from '@loaders.gl/loader-utils';
 import GLTFScenegraph from '../gltf-scenegraph';
 import {KHR_DRACO_MESH_COMPRESSION} from '../gltf-constants';
 import {getGLTFAccessors, getGLTFAccessor} from '../gltf-utils/gltf-attribute-utils';
+
 export default class KHR_draco_mesh_compression {
   static get name() {
     return KHR_DRACO_MESH_COMPRESSION;
@@ -56,11 +58,11 @@ async function decompressPrimitive(primitive, scenegraph, options, context) {
 
   const buffer = scenegraph.getTypedArrayForBufferView(compressedPrimitive.bufferView);
   // TODO - parse does not yet deal well with byte offsets embedded in typed arrays. Copy buffer
-  const subArray = new Uint8Array(buffer.buffer).subarray(buffer.byteOffset); // , buffer.byteLength);
-  const bufferCopy = new Uint8Array(subArray);
+  // TODO - remove when `parse` is fixed to handle `byteOffset`s
+  const bufferCopy = getZeroOffsetArrayBuffer(buffer.buffer, buffer.byteOffset); // , buffer.byteLength);
 
   const {parse} = context;
-  const decodedData = await parse(bufferCopy.buffer);
+  const decodedData = await parse(bufferCopy, options);
 
   primitive.attributes = getGLTFAccessors(decodedData.attributes);
   if (decodedData.indices) {
@@ -80,7 +82,7 @@ function compressMesh(attributes, indices, mode = 4, options, context) {
     throw new Error('DracoWriter/DracoLoader not available');
   }
 
-  // TODO - use registered DracoWriter...
+  // TODO - use DracoWriter using encode w/ registered DracoWriter...
   const compressedData = options.DracoWriter.encodeSync({attributes});
 
   // Draco compression may change the order and number of vertices in a mesh.
