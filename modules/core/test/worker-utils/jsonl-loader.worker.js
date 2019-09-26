@@ -1,10 +1,9 @@
-/* global self */
 import {createWorker} from '../../../loader-utils/src';
 
 createWorker({
   name: 'TEST-JSONL_LOADER',
   extensions: ['jsonl'],
-  parse: async arrayBuffer => {
+  parse: async (arrayBuffer, options, context) => {
     const characters = new Uint8Array(arrayBuffer);
     const result = [];
 
@@ -16,7 +15,7 @@ createWorker({
         // handover the ownership of arrayBuffer to the child process
         const json = characters.slice(startIndex, i);
         if (json.length > 1) {
-          result.push(await self.parse(json.buffer, {}, 'line.json'));
+          result.push(await context.parse(json.buffer, {}, 'line.json'));
         }
         startIndex = i + 1;
       }
