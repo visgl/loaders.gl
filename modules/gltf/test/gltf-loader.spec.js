@@ -14,8 +14,6 @@ const GLB_TILE_WITH_DRACO_URL = '@loaders.gl/gltf/test/data/3d-tiles/143.glb';
 const GLB_TILE_CESIUM_AIR_URL = '@loaders.gl/gltf/test/data/3d-tiles/Cesium_Air.glb';
 const GLB_TILE_URL = '@loaders.gl/gltf/test/data/3d-tiles/tile.glb';
 
-registerLoaders([DracoLoader]);
-
 test('GLTFLoader#loader conformance', t => {
   validateLoader(t, GLTFLoader, 'GLTFLoader');
   t.end();
@@ -71,8 +69,16 @@ async function testTileGLBs(t, loaderOptions, version) {
   t.ok(await load(GLB_TILE_URL, GLTFLoader, loaderOptions), `Parser ${version}: Test GLB parses`);
 
   t.ok(
+    await load(GLB_TILE_WITH_DRACO_URL, [GLTFLoader, DracoLoader], loaderOptions),
+    `Parser ${version}: Parses Draco GLB with supplied DracoLoader`
+  );
+
+  // TODO - prone to flakiness since we have async unregisterLoaders calls
+  registerLoaders([DracoLoader]);
+
+  t.ok(
     await load(GLB_TILE_WITH_DRACO_URL, GLTFLoader, loaderOptions),
-    `Parser ${version}: Parses Draco GLB`
+    `Parser ${version}: Parses Draco GLB with registered DracoLoader`
   );
 
   t.rejects(

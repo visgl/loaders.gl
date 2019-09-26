@@ -14,6 +14,11 @@ export function getLoaderContext(context, options, previousContext) {
     ...context
   };
 
+  // Recursive loading does not use single loader
+  if (!Array.isArray(context.loaders)) {
+    context.loaders = null;
+  }
+
   // Make context available to parse functions by binding it to `this`
   if (context.parse) {
     context.parse = context.parse.bind(context);
@@ -32,8 +37,8 @@ export function getLoaderContext(context, options, previousContext) {
 }
 
 export function getLoaders(loaders, context) {
-  // A single non-array loader disables lookup in context
-  if (!Array.isArray(loaders)) {
+  // A single non-array loader is force selected, but only on top-level (context === null)
+  if (!context && !Array.isArray(loaders)) {
     return loaders;
   }
 
@@ -46,5 +51,6 @@ export function getLoaders(loaders, context) {
     const contextLoaders = Array.isArray(context.loaders) ? context.loaders : [context.loaders];
     candidateLoaders = candidateLoaders ? [...candidateLoaders, ...contextLoaders] : contextLoaders;
   }
-  return candidateLoaders;
+  // If no loaders, return null to look in globally registered loaders
+  return candidateLoaders && candidateLoaders.length ? candidateLoaders : null;
 }
