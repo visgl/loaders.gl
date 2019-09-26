@@ -2,7 +2,6 @@
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
 import {TILE3D_REFINEMENT, TILE3D_OPTIMIZATION_HINT} from '../constants';
-// import {TILE3D_REFINEMENT} from '../constants';
 import ManagedArray from '../utils/managed-array';
 import assert from '../utils/assert';
 
@@ -244,11 +243,11 @@ export default class Tileset3DTraverser {
       tile.hasRenderContent;
     let refines = true;
 
-    let anyChildVisible = false;
+    let hasVisibleChild = false;
     for (const child of children) {
       if (child.isVisibleAndInRequestVolume) {
         stack.push(child);
-        anyChildVisible = true;
+        hasVisibleChild = true;
       } else if (checkRefines || options.loadSiblings) {
         // Keep non-visible children loaded since they are still needed before the parent can refine.
         // Or loadSiblings is true so always load tiles regardless of visibility.
@@ -269,7 +268,7 @@ export default class Tileset3DTraverser {
       }
     }
 
-    if (!anyChildVisible) {
+    if (!hasVisibleChild) {
       refines = false;
     }
 
