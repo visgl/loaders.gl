@@ -33,13 +33,11 @@ However, problems remain:
 - Some loaders (e.g. gltf) load additional files, currently they provide ad-hoc solutions for the "recursive" fetch operations.
 - (Update: This will no longer apply in v2) Some loaders (mainly image loaders) only support `load`. They do not support separate parsing of data, but instead load and parse in a single operation.
 
-
 ### Future considerations:
 
 - File system support (separate RFC) - Some loaders can generate virtual file systems (zip files, a list of dropped files in the browser, a dropbox loader) where files can be loaded with local names from a non-URL source. Overridable `fetch` in `load` and `parse` could be extended to support this.
 
 ## Proposals
-
 
 ## Proposal 1a: Allow fetch to be completely overridden
 
