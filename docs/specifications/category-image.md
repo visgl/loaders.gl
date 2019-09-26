@@ -16,7 +16,6 @@ Apart from providing a set of image loaders that integrate with loaders.gl, ther
 - Handles SVG images
 - Image type detection (without loading images)
 
-
 ## Installation and Usage
 
 Image category support is bundled in the `@loaders.gl/images` module:
@@ -26,6 +25,7 @@ npm install @loaders.gl/core @loaders.gl/images
 ```
 
 Individual loaders for specific image formats can be imported for `@loaders.gl/images`:
+
 ```js
 import {JEPGLoader, PNGLoader} from '@loaders.gl/images';
 import {registerLoaders, load} from '@loaders.gl/core';
@@ -46,24 +46,22 @@ const image = await load('image.jpeg');
 
 The loaded image representation can vary somewhat based on your environment. For performance, image loaders use native image loading functionality in browsers. Browsers can load into two types of image classes (`ImageBitmap` and `HTMLImageElement`) and on Node.js images are represented using `ndarray`. The following table summarizes the situation:
 
-| Format Name   | Format | Availability | Workers | Description |
-| --- | --- | --- | --- | --- |
-| `imagebitmap` | `ImageBitmap` | Chrome/Firefox | Yes: **transferrable** | A newer class designed for efficient loading of images for use with WebGL |
-| `html`        | `Image` (aka `HTMLImageElement`) | All browsers | No | The original HTML class used for image loading into DOM trees. WebGL compatible. |
-| `ndarray`     | ndarray |  Node only, via `@loaders.gl/polyfills` | No |  Used to load images under node. Compatible with headless gl. |
-
+| Format Name   | Format                           | Availability                           | Workers                | Description                                                                      |
+| ------------- | -------------------------------- | -------------------------------------- | ---------------------- | -------------------------------------------------------------------------------- |
+| `imagebitmap` | `ImageBitmap`                    | Chrome/Firefox                         | Yes: **transferrable** | A newer class designed for efficient loading of images for use with WebGL        |
+| `html`        | `Image` (aka `HTMLImageElement`) | All browsers                           | No                     | The original HTML class used for image loading into DOM trees. WebGL compatible. |
+| `ndarray`     | ndarray                          | Node only, via `@loaders.gl/polyfills` | No                     | Used to load images under node. Compatible with headless gl.                     |
 
 ## Options
 
 The image category support some generic options (specified using `options.image.<option-name>`), that are applicable to all (or most) image loaders.
 
-| Option | Default | Type | Availability | Description |
-| --- | --- | --- | --- | --- |
-| `options.image.format`      | `'auto'`    | string  | See table       | One of `auto`, `imagebitmap`, `html`, `ndarray` |
-| `options.image.decodeHTML`  | `true`      | boolean | No: Edge, IE11  | Wait for HTMLImages to be fully decoded. |
-| `options.image.crossOrigin` | `'anonymous'` | boolean | All Browsers  | Sets `crossOrigin` field for HTMLImage loads |
-| `options.image.useWorkers` (TBA) | `true` | boolean | Chrome, Firefox | If true, uses worker loaders on supported platforms. |
-
+| Option                           | Default       | Type    | Availability    | Description                                          |
+| -------------------------------- | ------------- | ------- | --------------- | ---------------------------------------------------- |
+| `options.image.format`           | `'auto'`      | string  | See table       | One of `auto`, `imagebitmap`, `html`, `ndarray`      |
+| `options.image.decodeHTML`       | `true`        | boolean | No: Edge, IE11  | Wait for HTMLImages to be fully decoded.             |
+| `options.image.crossOrigin`      | `'anonymous'` | boolean | All Browsers    | Sets `crossOrigin` field for HTMLImage loads         |
+| `options.image.useWorkers` (TBA) | `true`        | boolean | Chrome, Firefox | If true, uses worker loaders on supported platforms. |
 
 ## Notes
 
@@ -75,7 +73,6 @@ The image category support some generic options (specified using `options.image.
 
 In contrast to other modules, where worker loaders have to be separately installed, since image workers are small and worker loading is only available on some browsers, the image loaders dynamically determines if worker loading is available.
 Use `options.image.useWorkers: false` to disable worker loading of images on all platforms.
-
 
 ## Utilities
 

@@ -13,30 +13,12 @@ export async function loadInBatches(url, loaders, options) {
 }
 
 // Note: Load does duplicate a lot of parse.
-// Works like parse but can call `loadAndParse` for parsers that need to do their own loading
 // it can also call fetchFile on string urls, which `parse` won't do.
 export async function load(url, loaders, options) {
   // Signature: load(url, options)
   if (!Array.isArray(loaders) && !isLoaderObject(loaders)) {
     options = loaders;
     loaders = null;
-  }
-
-  // Extract a url for auto detection
-  const autoUrl = isFileReadable(url) ? url.name : url;
-
-  // Initial loader autodection (Use registered loaders if none provided)
-  // This only uses URL extensions to detect loaders.
-  const loader = selectLoader(loaders, autoUrl, null, {nothrow: true});
-
-  if (loader) {
-    // Some loaders do not separate reading and parsing of data (e.g ImageLoader)
-    // These can only be handled by `load`, not `parse`
-    // TODO - ImageLoaders can be rewritten to separate load and parse, phase out this variant?
-    if (loader.loadAndParse) {
-      const loaderOptions = mergeOptions(loader, options);
-      return await loader.loadAndParse(url, loaderOptions);
-    }
   }
 
   // at this point, data can be binary or text

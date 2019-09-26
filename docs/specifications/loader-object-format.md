@@ -34,7 +34,6 @@ Each (non-worker) loader should define a `parse` function. Additional parsing fu
 | `parseInBatchesSync` (Experimental) | `Function` | `null`  | Synchronously parses binary data chunks (`ArrayBuffer`) to output data "batches"       |
 | `parseSync`                         | `Function` | `null`  | Atomically and synchronously parses binary data (e.g. file contents) (`ArrayBuffer`)   |
 | `parseTextSync`                     | `Function` | `null`  | Atomically and synchronously parses a text file (`String`)                             |
-| `loadAndParse`                      | `Function` | `null`  | Asynchronously reads a binary file and parses its contents.                            |
 
 Synchronous parsers are more flexible as they can support synchronous parsing which can simplify application logic and debugging, and iterator-based parsers are more flexible as they can support batched loading of large data sets in addition to atomic loading.
 

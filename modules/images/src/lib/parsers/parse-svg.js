@@ -1,7 +1,7 @@
 /* global TextDecoder, btoa */
 import parseImage from './parse-image';
 
-export async function parseSVG(arrayBuffer, options) {
+export default async function parseSVG(arrayBuffer, options) {
   // Prepare a properly tagged data URL, and load using normal mechanism
   const textDecoder = new TextDecoder();
   const xmlText = textDecoder.decode(arrayBuffer);

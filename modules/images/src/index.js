@@ -1,14 +1,6 @@
 export {default as ImageLoader, HTMLImageLoader, ImageBitmapLoader} from './image-loader';
 export {default as ImageWriter} from './image-writer';
 
-// UTILS
-export {
-  isImage,
-  getImageMetadata,
-  getImageMIMEType,
-  getImageSize
-} from './lib/metadata/get-image-metadata';
-
 // EXPERIMENTAL V2.0
 export {
   JPEGLoader as _JPEGLoader,
@@ -19,8 +11,18 @@ export {
   ImageLoaders as _ImageLoaders
 } from './image-loaders';
 
+export {getImageSize as _getImageSize} from './lib/accessors';
+
+// UTILS
+export {
+  isImage,
+  getImageMetadata,
+  getImageMIMEType,
+  getImageSize
+} from './lib/metadata/get-image-metadata';
+
 // DEPRECATED
-export {loadImage} from './lib/parsers/parse-image-v1';
+// export {loadImage} from './lib/parsers/parse-image-v1';
 
 // Now possible to use ImageLoaders on arrayBuffer input
 // Unpacks compressed image data into an HTML image

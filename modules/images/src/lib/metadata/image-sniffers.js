@@ -10,7 +10,7 @@ export const mimeTypeMap = new Map([
 
 // PNG
 
-function isPng(dataView) {
+export function isPng(dataView) {
   // Check file contains the first 4 bytes of the PNG signature.
   return dataView.byteLength >= 24 && dataView.getUint32(0, BIG_ENDIAN) === 0x89504e47;
 }
@@ -25,7 +25,7 @@ function getPngSize(dataView) {
 
 // GIF
 
-function isGif(dataView) {
+export function isGif(dataView) {
   // Check first 4 bytes of the GIF signature ("GIF8").
   return dataView.byteLength >= 10 && dataView.getUint32(0, BIG_ENDIAN) === 0x47494638;
 }
@@ -43,7 +43,7 @@ function getGifSize(dataView) {
 // BMP
 
 // TODO: BMP is not this simple
-function isBmp(dataView) {
+export function isBmp(dataView) {
   // Check magic number is valid (first 2 characters should be "BM").
   return dataView.byteLength >= 2 && dataView.getUint16(0, BIG_ENDIAN) === 0x424d;
 }
@@ -58,7 +58,7 @@ function getBmpSize(dataView) {
 
 // JPEG
 
-function isJpeg(dataView) {
+export function isJpeg(dataView) {
   // Check file contains the JPEG "start of image" (SOI) marker
   // followed by another marker.
   return (

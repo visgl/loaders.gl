@@ -44,7 +44,7 @@ const IMAGE = {
 };
 
 // Test that we can write and read an image, and that result is identical
-test('images#write-and-read-image', async t => {
+test('ImageWriter#write-and-read-image', async t => {
   if (isBrowser) {
     t.comment('Skip read/write file in browser');
     t.end();

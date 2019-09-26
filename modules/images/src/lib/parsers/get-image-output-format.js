@@ -2,7 +2,7 @@ import {NODE_IMAGE_SUPPORTED} from './parse-to-node-image';
 import {HTML_IMAGE_SUPPORTED} from './parse-to-html-image';
 import {IMAGE_BITMAP_SUPPORTED} from './parse-to-image-bitmap';
 
-import assert from '../../utils/assert';
+import assert from '../utils/assert';
 
 // The user can request a specific output format
 // If using loaders.gl to load images for HTML

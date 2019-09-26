@@ -1,11 +1,11 @@
-const {loadImage} = require('@loaders.gl/images');
+const {ImageLoader} = require('@loaders.gl/images');
 
 if (typeof self !== 'undefined') {
   /* global self */
-  self.onmessage = evt => {
-    const url = evt.data;
+  self.onmessage = event => {
+    const data = event.data;
 
-    loadImage(url)
+    ImageLoader.parse(data, {})
       .then(image => {
         self.postMessage({image}, [image]);
       })

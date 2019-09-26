@@ -1,5 +1,7 @@
-import {parseImage} from './lib/parsers/parse-image';
-import {parseSVG} from './lib/parsers/parse-svg';
+import parseImage from './lib/parsers/parse-image';
+import parseSVG from './lib/parsers/parse-svg';
+
+import {isPng, isGif, isBmp, isJpeg} from './lib/metadata/image-sniffers';
 
 export const JPEGLoader = {
   id: 'jpeg',
@@ -7,6 +9,7 @@ export const JPEGLoader = {
   name: 'JPEG',
   extensions: ['jpg', 'jpeg'],
   mimeType: 'image/jpeg',
+  test: arrayBuffer => isJpeg(new DataView(arrayBuffer)),
   parse: parseImage,
   // test: ,
   options: {}
@@ -18,6 +21,7 @@ export const PNGLoader = {
   name: 'PNG',
   extensions: ['png'],
   mimeType: 'image/png',
+  test: arrayBuffer => isPng(new DataView(arrayBuffer)),
   parse: parseImage,
   // test: , - Add sniffer here
   options: {}
@@ -29,6 +33,7 @@ export const GIFLoader = {
   name: 'GIF',
   extensions: ['gif'],
   mimeType: 'image/gif',
+  test: arrayBuffer => isGif(new DataView(arrayBuffer)),
   parse: parseImage,
   options: {}
 };
@@ -39,7 +44,7 @@ export const BMPLoader = {
   name: 'BMP',
   extensions: ['gif'],
   mimeType: 'image/gif',
-  // test: , - Add sniffer here
+  test: arrayBuffer => isBmp(new DataView(arrayBuffer)),
   parse: parseImage,
   options: {}
 };
@@ -49,8 +54,8 @@ export const SVGLoader = {
   name: 'SVG',
   extensions: ['svg'],
   mimeType: 'image/svg+xml',
-  parse: parseSVG
   // test: , - Add sniffer here
+  parse: parseSVG
 };
 
 export const ImageLoaders = [

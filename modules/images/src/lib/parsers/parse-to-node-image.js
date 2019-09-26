@@ -1,5 +1,5 @@
-import {global} from '../../utils/globals';
-import assert from '../../utils/assert';
+import {global} from '../utils/globals';
+import assert from '../utils/assert';
 import {getImageMetadata} from '../metadata/get-image-metadata';
 
 export const NODE_IMAGE_SUPPORTED = Boolean(global._parseImageNode);

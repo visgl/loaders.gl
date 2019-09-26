@@ -70,6 +70,5 @@ async function parseWithLoader(loader, data, options, context) {
   }
 
   // TBD - If asynchronous parser not available, return null
-  // => This loader does not work on loaded data and only supports `loadAndParseAsync`
   return assert(false);
 }

@@ -13,7 +13,6 @@ export function isLoaderObject(loader) {
     loader.parseTextSync ||
     loader.parseSync ||
     loader.parse ||
-    loader.loadAndParse ||
     loader.parseStream || // TODO Replace with parseInBatches
     loader.parseInBatches ||
     // loader.parseInBatchesSync || // Optimization only, parseInBatches needed

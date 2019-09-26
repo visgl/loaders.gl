@@ -21,18 +21,19 @@ export default async function parseToHTMLImage(arrayBuffer, options) {
   }
 }
 
-export async function loadToHTMLImage(url, options) {
+async function loadToHTMLImage(url, options) {
   const image = new Image();
   image.crossOrigin = (options && options.crossOrigin) || 'anonymous';
 
   // The `image.onload()` callback does not guarantee that the image has been decoded
+  // so a main thread "freeze" can be incurred when using the image for the first time.
+  // `Image.decode()` returns a promise that completes when image is decoded.
+
   // https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/decode
-  if (options.decodeHTML) {
-    // Note: When calling `img.decode()`, we do not need to wait for `img.onload()`
-    // Note: `HTMLImageElement.decode()` is not available in Edge and IE11
-    if (image.decode) {
-      return await image.decode();
-    }
+  // Note: When calling `img.decode()`, we do not need to wait for `img.onload()`
+  // Note: `HTMLImageElement.decode()` is not available in Edge and IE11
+  if (options.images.decodeHTML && image.decode) {
+    return await image.decode();
   }
 
   // Create a promise that tracks onload/onerror callbacks
