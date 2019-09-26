@@ -7,45 +7,39 @@ import GLTFScenegraph from '../gltf-scenegraph';
 import {KHR_DRACO_MESH_COMPRESSION} from '../gltf-constants';
 import {getGLTFAccessors, getGLTFAccessor} from '../gltf-utils/gltf-attribute-utils';
 
-export default class KHR_draco_mesh_compression {
-  static get name() {
-    return KHR_DRACO_MESH_COMPRESSION;
+// Note: We have a "soft dependency" on Draco to avoid bundling it when not needed
+export async function decode(gltfData, options, context) {
+  if (!options.gltf.decompressMeshes) {
+    return;
   }
 
-  // Note: We have a "soft dependency" on Draco to avoid bundling it when not needed
-  static async decode(gltfData, options, context) {
-    if (!options.gltf.decompress) {
-      return;
+  const scenegraph = new GLTFScenegraph(gltfData);
+  const promises = [];
+  for (const primitive of meshPrimitiveIterator(scenegraph)) {
+    if (scenegraph.getObjectExtension(primitive, KHR_DRACO_MESH_COMPRESSION)) {
+      promises.push(decompressPrimitive(primitive, scenegraph, options, context));
     }
-
-    const scenegraph = new GLTFScenegraph(gltfData);
-    const promises = [];
-    for (const primitive of meshPrimitiveIterator(scenegraph)) {
-      if (scenegraph.getObjectExtension(primitive, KHR_DRACO_MESH_COMPRESSION)) {
-        promises.push(decompressPrimitive(primitive, scenegraph, options, context));
-      }
-    }
-
-    // Decompress meshes in parallel
-    await Promise.all(promises);
-
-    // We have now decompressed all primitives, so remove the top-level extensions
-    scenegraph.removeExtension(KHR_DRACO_MESH_COMPRESSION);
   }
 
-  static encode(gltfData, options = {}) {
-    const scenegraph = new GLTFScenegraph(gltfData);
+  // Decompress meshes in parallel
+  await Promise.all(promises);
 
-    for (const mesh of scenegraph.json.meshes || []) {
-      // eslint-disable-next-line camelcase
-      compressMesh(mesh, options);
-      // NOTE: Only add the extension if something was actually compressed
-      scenegraph.addRequiredExtension(KHR_DRACO_MESH_COMPRESSION);
-    }
+  // We have now decompressed all primitives, so remove the top-level extensions
+  scenegraph.removeExtension(KHR_DRACO_MESH_COMPRESSION);
+}
+
+export function encode(gltfData, options = {}) {
+  const scenegraph = new GLTFScenegraph(gltfData);
+
+  for (const mesh of scenegraph.json.meshes || []) {
+    // eslint-disable-next-line camelcase
+    compressMesh(mesh, options);
+    // NOTE: Only add the extension if something was actually compressed
+    scenegraph.addRequiredExtension(KHR_DRACO_MESH_COMPRESSION);
   }
 }
 
-// PRIVATE
+// DECODE
 
 // Unpacks one mesh primitive and removes the extension from the primitive
 // DracoDecoder needs to be imported and registered by app
@@ -74,6 +68,8 @@ async function decompressPrimitive(primitive, scenegraph, options, context) {
 
   checkPrimitive(primitive);
 }
+
+// ENCODE
 
 // eslint-disable-next-line max-len
 // Only TRIANGLES: 0x0004 and TRIANGLE_STRIP: 0x0005 are supported
@@ -113,6 +109,8 @@ function compressMesh(attributes, indices, mode = 4, options, context) {
 
   return glTFMesh;
 }
+
+// UTILS
 
 function checkPrimitive(primitive) {
   if (!primitive.attributes && Object.keys(primitive.attributes).length > 0) {

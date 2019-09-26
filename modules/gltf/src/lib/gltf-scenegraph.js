@@ -189,6 +189,21 @@ export default class GLTFScenegraph {
     return this;
   }
 
+  addObjectExtension(object, extensionName, data) {
+    assert(data);
+    object.extensions = object.extensions || {};
+    // TODO - clobber or merge?
+    object.extensions[extensionName] = data;
+    this.registerUsedExtension(extensionName);
+    return this;
+  }
+
+  removeObjectExtension(object, extensionName) {
+    const extensions = object.extensions || {};
+    delete extensions[extensionName];
+    return this;
+  }
+
   // Add to standard GLTF top level extension object, mark as used
   addExtension(extensionName, data) {
     assert(data);
