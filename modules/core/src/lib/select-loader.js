@@ -23,6 +23,7 @@ export function selectLoader(loaders, url = '', data = null, {nothrow = false} =
   }
 
   // merge input loaders with registered loaders
+  // the input loader will be picked over pre registeredLoaders
   loaders = (loaders || []).concat(getRegisteredLoaders());
   normalizeLoaders(loaders);
 
