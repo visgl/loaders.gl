@@ -1,11 +1,8 @@
-/* eslint-disable max-len */
-// import test from 'tape-promise/tape';
-
-// TBA
-
-/* eslint-disable max-len, camelcase */
-/*
+/* eslint-disable camelcase */
 import test from 'tape-promise/tape';
+
+import {decodeExtensions} from '@loaders.gl/gltf/lib/extensions/gltf-extensions.js';
+
 const TEST_CASES = [
   {
     name: 'KHR_lights_punctual',
@@ -39,23 +36,24 @@ const TEST_CASES = [
       nodes: [
         {
           extensions: {},
-          id: 'node-0',
-          children: [],
-          light: {
-            color: [1.0, 1.0, 1.0],
-            type: 'directional'
-          }
+          light: 0
+        }
+      ],
+      lights: [
+        {
+          color: [1.0, 1.0, 1.0],
+          type: 'directional'
         }
       ]
     }
   }
 ];
 
-test('gltf#KHR_lights_punctuals', t => {
+test('gltf#KHR_lights_punctuals', async t => {
   for (const testCase of TEST_CASES) {
-    const json = getResolvedJson(testCase.input);
-    t.deepEqual(json, testCase.output, testCase.name);
+    await decodeExtensions(testCase.input);
+    // Modifies input
+    t.deepEqual(testCase.input.json, testCase.output, testCase.name);
   }
   t.end();
 });
-*/

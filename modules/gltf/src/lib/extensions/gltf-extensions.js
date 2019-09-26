@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
-import KHR_draco_mesh_compression from './KHR_draco_mesh_compression';
-import KHR_lights_punctual from './KHR_lights_punctual';
+import * as KHR_draco_mesh_compression from './KHR_draco_mesh_compression';
+import * as KHR_lights_punctual from './KHR_lights_punctual';
 // import UBER_POINT_CLOUD_COMPRESSION from './KHR_draco_mesh_compression';
 
 export const EXTENSIONS = {
@@ -8,15 +8,16 @@ export const EXTENSIONS = {
   KHR_lights_punctual
 };
 
-export async function decodeExtensions(gltf, options, context) {
+export async function decodeExtensions(gltf, options = {}, context) {
+  options.gltf = options.gltf || {};
   for (const extensionName in EXTENSIONS) {
-    const disableExtension = extensionName in options && !options[extensionName];
-    if (!disableExtension) {
+    const excludes = options.gltf.excludeExtensions || {};
+    const exclude = extensionName in excludes && !excludes[extensionName];
+    if (!exclude) {
       const extension = EXTENSIONS[extensionName];
-      // Note: We decode extensions sequentially, this might not be necessary
-      // Currently we only have glTF, but when we add Basis we may revisit
+      // Note: We decode async extensions sequentially, this might not be necessary
+      // Currently we only have Draco, but when we add Basis we may revisit
       await extension.decode(gltf, options, context);
-      // TODO - warn if extension cannot be decoded synchronously?
     }
   }
 }

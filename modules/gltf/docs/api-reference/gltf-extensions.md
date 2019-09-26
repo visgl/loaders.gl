@@ -6,6 +6,11 @@ loaders.gl aims to provide support for glTF extensions that can be handled compl
 
 Note that many glTF extensions affect aspects that are firmly outside of the scope of loaders.gl (e.g. rendering), and no attempt is made to process those extensions in loaders.gl.
 
+| Extension                                                                                                                        | Description |
+| -------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| [KHR_draco_mesh_compression](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_draco_mesh_compression) |             |
+| [KHR_lights_punctual](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_lights_punctual)               |             |
+
 ## Official Extensions
 
 ### KHR_draco_mesh_compression
