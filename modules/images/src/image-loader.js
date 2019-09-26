@@ -10,8 +10,8 @@ const ImageLoader = {
   extensions: EXTENSIONS,
   parse: parseImage,
   test: arrayBuffer => {
-    const dataView = new DataView(arrayBuffer);
-    return isJpeg(dataView) && isBmp(dataView) && isGif(dataView) && isPng(dataView);
+    const dataView = new DataView(arrayBuffer); // , byteOffset, byteLength);
+    return isJpeg(dataView) || isBmp(dataView) || isGif(dataView) || isPng(dataView);
   },
   options: {
     images: {

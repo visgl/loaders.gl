@@ -19,10 +19,9 @@ const GLTFLoader = {
       parserVersion: 1, // the new parser that will be the only option in V2 is not default in V1
 
       // Note: The following options are used only when parserVersion === 2
-      fetchBuffers: true, // Fetch any linked .BIN buffers, decode base64
-      fetchImages: true, // Fetch any linked .BIN buffers, decode base64
-      createImages: false, // Create image objects
-      decompress: true, // Decompress meshes
+      loadBuffers: true, // Fetch any linked .BIN buffers, decode base64
+      loadImages: true, // Create image objects
+      decompressMeshes: true, // Decompress Draco encoded meshes
       postProcess: true // Postprocess glTF and return json structure directly
     },
 
@@ -63,7 +62,10 @@ export async function parse(arrayBuffer, options = {}, context) {
 
 function addDeprecatedGLTFOptions(options) {
   if ('fetchImages' in options) {
-    options.gltf.fetchImages = options.fetchImages;
+    options.gltf.loadImages = options.fetchImages;
+  }
+  if ('createImages' in options) {
+    options.gltf.loadImages = options.createImages;
   }
   if ('fetchLinkedResources' in options) {
     options.gltf.fetchBuffers = options.fetchLinkedResources;

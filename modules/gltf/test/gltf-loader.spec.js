@@ -5,6 +5,7 @@ import {validateLoader} from 'test/common/conformance';
 import {registerLoaders, load, parseSync, fetchFile} from '@loaders.gl/core';
 import {GLTFLoader} from '@loaders.gl/gltf';
 import {DracoLoader} from '@loaders.gl/draco';
+import {ImageLoader} from '@loaders.gl/images';
 
 const GLTF_BINARY_URL = '@loaders.gl/gltf/test/data/gltf-2.0/2CylinderEngine.glb';
 const GLTF_JSON_URL = '@loaders.gl/gltf/test/data/gltf-2.0/2CylinderEngine.gltf';
@@ -69,12 +70,12 @@ async function testTileGLBs(t, loaderOptions, version) {
   t.ok(await load(GLB_TILE_URL, GLTFLoader, loaderOptions), `Parser ${version}: Test GLB parses`);
 
   t.ok(
-    await load(GLB_TILE_WITH_DRACO_URL, [GLTFLoader, DracoLoader], loaderOptions),
+    await load(GLB_TILE_WITH_DRACO_URL, [GLTFLoader, DracoLoader, ImageLoader], loaderOptions),
     `Parser ${version}: Parses Draco GLB with supplied DracoLoader`
   );
 
   // TODO - prone to flakiness since we have async unregisterLoaders calls
-  registerLoaders([DracoLoader]);
+  registerLoaders([DracoLoader, ImageLoader]);
 
   t.ok(
     await load(GLB_TILE_WITH_DRACO_URL, GLTFLoader, loaderOptions),

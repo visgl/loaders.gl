@@ -11,6 +11,7 @@ const EXT_PATTERN = /[^.]+$/;
 // TODO - Detect multiple matching loaders? Use heuristics to grade matches?
 // TODO - Allow apps to pass context to disambiguate between multiple matches (e.g. multiple .json formats)?
 
+// eslint-disable-next-line complexity
 export function selectLoader(loaders, url = '', data = null, {nothrow = false} = {}) {
   url = url || '';
 
@@ -22,9 +23,8 @@ export function selectLoader(loaders, url = '', data = null, {nothrow = false} =
     return loader;
   }
 
-  // merge input loaders with registered loaders
-  // the input loader will be picked over pre registeredLoaders
-  loaders = (loaders || []).concat(getRegisteredLoaders());
+  // If no loaders provided, get the registered loaders
+  loaders = [...(loaders || []), ...getRegisteredLoaders()];
   normalizeLoaders(loaders);
 
   url = url.replace(/\?.*/, '');
