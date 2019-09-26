@@ -182,23 +182,26 @@ async function parseDraco(tile, featureTable, batchTable, options, context) {
     tile.isTranslucent = Number.isFinite(dracoFeatureTableProperties.RGBA);
   }
 
-  if (dracoBuffer) {
-    const dracoData = {
-      buffer: dracoBuffer,
-      properties: {...dracoFeatureTableProperties, ...dracoBatchTableProperties},
-      featureTableProperties: dracoFeatureTableProperties,
-      batchTableProperties: dracoBatchTableProperties,
-      dequantizeInShader: false
-    };
-
-    await loadDraco(tile, dracoData, options, context);
+  if (!dracoBuffer) {
+    return true;
   }
+
+  const dracoData = {
+    buffer: dracoBuffer,
+    properties: {...dracoFeatureTableProperties, ...dracoBatchTableProperties},
+    featureTableProperties: dracoFeatureTableProperties,
+    batchTableProperties: dracoBatchTableProperties,
+    dequantizeInShader: false
+  };
+
+  return await loadDraco(tile, dracoData, options, context);
 }
 
 // eslint-disable-next-line complexity, max-statements
 export async function loadDraco(tile, dracoData, options, context) {
   const {parse} = context;
   const data = await parse(dracoData.buffer);
+
   const decodedPositions = data.attributes.POSITION && data.attributes.POSITION.value;
   const decodedColors = data.attributes.COLOR_0 && data.attributes.COLOR_0.value;
   const decodedNormals = data.attributes.NORMAL && data.attributes.NORMAL.value;
