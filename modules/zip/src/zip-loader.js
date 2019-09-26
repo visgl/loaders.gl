@@ -23,18 +23,16 @@ async function parseZipAsync(data, options) {
     zip.forEach((relativePath, zipEntry) => {
       const subFilename = zipEntry.name;
 
-      const promise = loadZipEntry(jsZip, subFilename, options)
-        .then(arrayBufferOrError => {
-          fileMap[relativePath] = arrayBufferOrError;
-        });
+      const promise = loadZipEntry(jsZip, subFilename, options).then(arrayBufferOrError => {
+        fileMap[relativePath] = arrayBufferOrError;
+      });
 
-        // Ensure Promise.all doesn't ignore rejected promises.
+      // Ensure Promise.all doesn't ignore rejected promises.
       promises.push(promise);
     });
 
     await Promise.all(promises);
     return fileMap;
-
   } catch (error) {
     options.log.error(`Unable to read zip archive: ${error}`);
     throw error;
