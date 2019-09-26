@@ -12,7 +12,7 @@ export default class KHR_draco_mesh_compression {
 
   // Note: We have a "soft dependency" on Draco to avoid bundling it when not needed
   static async decode(gltfData, options, context) {
-    if (!options.decompress) {
+    if (!options.gltf.decompress) {
       return;
     }
 

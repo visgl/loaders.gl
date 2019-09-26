@@ -217,62 +217,60 @@ export default class Tileset3DTraverser {
 
   // eslint-disable-next-line complexity
   updateAndPushChildren(tile, stack, frameState) {
+    const {options} = this;
     const {children} = tile;
 
     for (const child of children) {
       this.updateTile(child, frameState);
-      stack.push(child);
     }
-    return true;
 
-    // for (const child of children) {
-    //   this.updateTile(child, frameState);
-    // }
-    //
-    // function compareDistanceToCamera(a, b) {
-    //   // Sort by farthest child first since this is going on a stack
-    //   return b._distanceToCamera === 0 && a._distanceToCamera === 0
-    //     ? b._centerZDepth - a._centerZDepth
-    //     : b._distanceToCamera - a._distanceToCamera;
-    // }
-    //
-    // // Sort by distance to take advantage of early Z and reduce artifacts for skipLevelOfDetail
-    // children.sort(compareDistanceToCamera);
-    //
-    // // For traditional replacement refinement only refine if all children are loaded.
-    // // Empty tiles are exempt since it looks better if children stream in as they are loaded to fill the empty space.
-    // const checkRefines = !options.skipLevelOfDetail && tile.refine === TILE3D_REFINEMENT.REPLACE && tile.hasRenderContent
-    // let refines = true;
-    //
-    // let anyChildrenVisible = false;
-    // for (const child of children) {
-    //   if (child.isVisibleAndInRequestVolume) {
-    //     stack.push(child);
-    //     anyChildrenVisible = true;
-    //   } else if (checkRefines || options.loadSiblings) {
-    //     // Keep non-visible children loaded since they are still needed before the parent can refine.
-    //     // Or loadSiblings is true so always load tiles regardless of visibility.
-    //     this.loadTile(child, frameState);
-    //     this.touchTile(child, frameState);
-    //   }
-    //   if (checkRefines) {
-    //     let childRefines;
-    //     if (!child._inRequestVolume) {
-    //       childRefines = false;
-    //     } else if (!child.hasRenderContent) {
-    //       childRefines = this.executeEmptyTraversal(child, frameState);
-    //     } else {
-    //       childRefines = child.contentAvailable;
-    //     }
-    //     refines = refines && childRefines;
-    //   }
-    // }
-    //
-    // if (!anyChildrenVisible) {
-    //   refines = false;
-    // }
-    //
-    // return refines;
+    function compareDistanceToCamera(a, b) {
+      // Sort by farthest child first since this is going on a stack
+      return b._distanceToCamera === 0 && a._distanceToCamera === 0
+        ? b._centerZDepth - a._centerZDepth
+        : b._distanceToCamera - a._distanceToCamera;
+    }
+
+    // Sort by distance to take advantage of early Z and reduce artifacts for skipLevelOfDetail
+    children.sort(compareDistanceToCamera);
+
+    // For traditional replacement refinement only refine if all children are loaded.
+    // Empty tiles are exempt since it looks better if children stream in as they are loaded to fill the empty space.
+    const checkRefines =
+      !options.skipLevelOfDetail &&
+      tile.refine === TILE3D_REFINEMENT.REPLACE &&
+      tile.hasRenderContent;
+    let refines = true;
+
+    let anyChildrenVisible = false;
+    for (const child of children) {
+      if (child.isVisibleAndInRequestVolume) {
+        stack.push(child);
+        anyChildrenVisible = true;
+      } else if (checkRefines || options.loadSiblings) {
+        // Keep non-visible children loaded since they are still needed before the parent can refine.
+        // Or loadSiblings is true so always load tiles regardless of visibility.
+        this.loadTile(child, frameState);
+        this.touchTile(child, frameState);
+      }
+      if (checkRefines) {
+        let childRefines;
+        if (!child._inRequestVolume) {
+          childRefines = false;
+        } else if (!child.hasRenderContent) {
+          childRefines = true; // this.executeEmptyTraversal(child, frameState);
+        } else {
+          childRefines = child.contentAvailable;
+        }
+        refines = refines && childRefines;
+      }
+    }
+
+    if (!anyChildrenVisible) {
+      refines = false;
+    }
+
+    return refines;
   }
 
   canTraverse(tile, options) {

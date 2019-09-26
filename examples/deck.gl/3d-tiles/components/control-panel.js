@@ -70,7 +70,7 @@ export default class ControlPanel extends PureComponent {
         {categories.map((c, i) => {
           const categoryExamples = data[c].examples;
           return (
-            <optgroup key={i} label={c}>
+            <optgroup key={i} label={data[c].name}>
               {Object.keys(categoryExamples).map((e, j) => {
                 const value = `${c}.${e}`;
                 return (
