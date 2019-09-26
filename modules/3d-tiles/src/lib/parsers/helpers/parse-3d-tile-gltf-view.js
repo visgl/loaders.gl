@@ -59,7 +59,10 @@ export async function extractGLTF(tile, gltfFormat, options, context) {
     }
     if (tile.gltfArrayBuffer) {
       // TODO - Should handle byteOffset... However, not used now...
-      tile.gltf = await parse(tile.gltfArrayBuffer, GLTFLoader, {...options, parserVersion: 2});
+      tile.gltf = await parse(tile.gltfArrayBuffer, GLTFLoader, {
+        ...options,
+        gltf: {parserVersion: 2}
+      });
       delete tile.gltfArrayBuffer;
       delete tile.gltfByteOffset;
       delete tile.gltfByteLength;
