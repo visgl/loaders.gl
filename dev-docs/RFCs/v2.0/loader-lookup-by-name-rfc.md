@@ -1,7 +1,5 @@
 # RFC: loader auto detection in loaders.gl
 
-# RFC: Loaders Sub-Module
-
 - **Authors**: Ib Green
 - **Date**: Jun 2019
 - **Status**: Draft
@@ -30,6 +28,12 @@ import {isLoaderAvailable} from `@loaders.gl/core`;
 `json` could cover a lot of formats. Should we define this to mean the JSON "table" loader specifically?
 
 ## Problems
+
+## Proposals
+
+### Proposal: selectLoader (Implemented)
+
+Add a `selectLoader` API to give the application access to the loader selection algorithm.
 
 ### Proposal: Loader naming conventions
 
