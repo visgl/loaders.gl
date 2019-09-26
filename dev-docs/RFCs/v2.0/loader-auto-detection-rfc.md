@@ -23,6 +23,7 @@ Successful auto detection of loaders depends on multiple contextual pieces of in
 When autoselecting a loader, the `parse` (and sometimes `load`) functions should be supplied with contextual information.
 
 Depending on how `parse` is called, contextual information may be available:
+
 - The standard `fetch` `Response` object allows `url` and `headers` (in which MIME type might be present) to be queried.
 - The loaders.gl `fetchFile` function returns `fetch` `Response` objects for `File` and `Blob` objects, providing a uniform interface to such classes.
 

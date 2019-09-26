@@ -15,12 +15,12 @@ Writeups of directions in major areas of interest
 | RFC                                                                  | Author   | Status    | Description                                   |
 | -------------------------------------------------------------------- | -------- | --------- | --------------------------------------------- |
 | [**Streaming JSON Loader**](v2.0/json-loader-rfc.md)                 | @ibgreen | **Draft** | Binary, streaming, worker-enabled JSON loader |
-| [**Loader Options**](v2.0/loader-options-rfc.md)                      | @ibgreen | **Draft** | Nested options scheme for loaders             |
+| [**Loader Options**](v2.0/loader-options-rfc.md)                     | @ibgreen | **Draft** | Nested options scheme for loaders             |
 | [**Fetch Options**](v2.0/fetch-option-rfc.md)                        | @ibgreen | **Draft** | Options for `fetch`                           |
 | [**JSON**](v2.0/json-support-rfc.md)                                 | @ibgreen | **Draft** | Core support for JSON formats                 |
 | [**Loader Auto-Detection**](v2.0/loader-auto-detection-rfc.md)       | @ibgreen | **Draft** | Improved support for loader auto detection    |
 | [**Loader Auto-Registration**](v2.0/loader-auto-registration-rfc.md) | @ibgreen | **Draft** | Loader auto registration at import            |
-| [**Loader Lookup By Name**](v2.0/loader-lookup-by-name-rfc.md)        | @ibgreen | **Draft** | Loader lookup among pre-registered loaders    |
+| [**Loader Lookup By Name**](v2.0/loader-lookup-by-name-rfc.md)       | @ibgreen | **Draft** | Loader lookup among pre-registered loaders    |
 
 ## v1.0 RFCs
 

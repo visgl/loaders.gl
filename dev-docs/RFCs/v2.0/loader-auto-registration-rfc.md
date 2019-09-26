@@ -9,8 +9,8 @@
 This RFC proposes that importing loaders.gl loader modules autoregisters their loaders, removing the need to also import and call `registerLoaders`.
 
 ## Review Notes
-- Sep 2019 - the `CompositeLoader` system is somewhat reducing the need to pre-register loaders.
 
+- Sep 2019 - the `CompositeLoader` system is somewhat reducing the need to pre-register loaders.
 
 ## Motivation
 
@@ -64,12 +64,11 @@ import '@loaders.gl/draco'; // Simply importing it makes this loader available
 new ScenegraphLayer({scenegraph: DRACO_COMPRESSED_GLTF_URL});
 ```
 
-
 ## Open Issues
 
 While loader "pre-registration" would be trivial to implement, there are some concerns:
 
-- Tree-shaking: A loader module often exports multiple loaders. By auto registering all of them, we  defeat tree-shaking (mitigated by the fact that we are already publishing loaders a-la-carte).
+- Tree-shaking: A loader module often exports multiple loaders. By auto registering all of them, we defeat tree-shaking (mitigated by the fact that we are already publishing loaders a-la-carte).
 - Which loader(s) to register: The default main-thread loader, the streaming loader, or the worker thread loader? All of them? Create separate entry-points for each of them?
 
 ```js
@@ -83,4 +82,3 @@ This would require solving non-trivial problems in ocular-dev-tools (which would
 - Increased dependency: Currently simple loader modules can be written without importing any loaders.gl helper libraries (e.g. `@loaders.gl/loader-utils`). If the loader modules have to import `registerLoaders` that changes. This is a design simplicity/elegance in loaders.gl that matters to some people, that would be lost for this convenience.
 - Manual registration code? - To avoid having to import `@loaders.gl/loader-utils` in each loader module, we could just ask each loader to push their loaders to a global array. But even then, the global scope must be determined, if not by helper functions in loaders.gl, then by some code that needs to be copied into each loader.
 - Conceptually, global mechanisms should normally be minimized.
-
