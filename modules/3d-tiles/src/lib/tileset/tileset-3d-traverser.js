@@ -1,8 +1,8 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
-// import {TILE3D_REFINEMENT, TILE3D_OPTIMIZATION_HINT} from '../constants';
-import {TILE3D_REFINEMENT} from '../constants';
+import {TILE3D_REFINEMENT, TILE3D_OPTIMIZATION_HINT} from '../constants';
+// import {TILE3D_REFINEMENT} from '../constants';
 import ManagedArray from '../utils/managed-array';
 import assert from '../utils/assert';
 
@@ -124,7 +124,8 @@ export default class Tileset3DTraverser {
   // Replacement tiles are prioritized by screen space error.
   // A tileset that has both additive and replacement tiles may not prioritize tiles as effectively since SSE and distance
   // are different types of values. Maybe all priorities need to be normalized to 0-1 range.
-  getPriority(tile, options) {
+  getPriority(tile) {
+    const {options} = this;
     switch (tile.refine) {
       case TILE3D_REFINEMENT.ADD:
         return tile._distanceToCamera;
@@ -150,64 +151,65 @@ export default class Tileset3DTraverser {
   loadTile(tile, frameState) {
     if (tile.hasUnloadedContent || tile.contentExpired) {
       tile._requestedFrame = frameState.frameNumber;
-      tile._priority = this.getPriority(tile, this.options);
+      tile._priority = this.getPriority(tile);
       this.result._requestedTiles.push(tile);
     }
   }
 
-  // anyChildrenVisible(tileset, tile, frameState) {
-  //   let anyVisible = false;
-  //   for (const child of tile.children) {
-  //     child.updateVisibility(frameState);
-  //     anyVisible = anyVisible || child.isVisibleAndInRequestVolume;
-  //   }
-  //   return anyVisible;
-  // }
+  anyChildrenVisible(tile, frameState) {
+    let anyVisible = false;
+    for (const child of tile.children) {
+      child.updateVisibility(frameState);
+      anyVisible = anyVisible || child.isVisibleAndInRequestVolume;
+    }
+    return anyVisible;
+  }
 
-  // meetsScreenSpaceErrorEarly(tileset, tile, frameState) {
-  //   const {parent} = tile;
-  //   if (!parent || parent.hasTilesetContent || parent.refine !== TILE3D_REFINEMENT.ADD) {
-  //     return false;
-  //   }
-  //
-  //   // Use parent's geometric error with child's box to see if the tile already meet the SSE
-  //   return tile.getScreenSpaceError(frameState, true) <= tileset.maximumScreenSpaceError;
-  // }
+  meetsScreenSpaceErrorEarly(tile, frameState) {
+    const {parent} = tile;
+    const {options} = this;
+    if (!parent || parent.hasTilesetContent || parent.refine !== TILE3D_REFINEMENT.ADD) {
+      return false;
+    }
+
+    // Use parent's geometric error with child's box to see if the tile already meet the SSE
+    return tile.getScreenSpaceError(frameState, true) <= options.maximumScreenSpaceError;
+  }
 
   updateTileVisibility(tile, frameState) {
     tile.updateVisibility(frameState);
 
-    // //  Optimization - if none of the tile's children are visible then this tile isn't visible
-    // if (!tile.isVisibleAndInRequestVolume) {
-    //   return;
-    // }
-    //
-    // const hasChildren = tile.children.length > 0;
-    // if (tile.hasTilesetContent && hasChildren) {
-    //   // Use the root tile's visibility instead of this tile's visibility.
-    //   // The root tile may be culled by the children bounds optimization in which
-    //   // case this tile should also be culled.
-    //   const firstChild = tile.children[0];
-    //   this.updateTileVisibility(tileset, firstChild, frameState);
-    //   tile._visible = firstChild._visible;
-    //   return;
-    // }
-    //
-    // if (this.meetsScreenSpaceErrorEarly(tileset, tile, frameState)) {
-    //   tile._visible = false;
-    //   return;
-    // }
-    //
-    // const replace = tile.refine === TILE3D_REFINEMENT.REPLACE;
-    // const useOptimization =
-    //   tile._optimChildrenWithinParent === TILE3D_OPTIMIZATION_HINT.USE_OPTIMIZATION;
-    // if (replace && useOptimization && hasChildren) {
-    //   if (!this.anyChildrenVisible(tileset, tile, frameState)) {
-    //     ++tileset._statistics.numberOfTilesCulledWithChildrenUnion;
-    //     tile._visible = false;
-    //     return;
-    //   }
-    // }
+    //  Optimization - if none of the tile's children are visible then this tile isn't visible
+    if (!tile.isVisibleAndInRequestVolume) {
+      return;
+    }
+
+    const hasChildren = tile.children.length > 0;
+    if (tile.hasTilesetContent && hasChildren) {
+      // Use the root tile's visibility instead of this tile's visibility.
+      // The root tile may be culled by the children bounds optimization in which
+      // case this tile should also be culled.
+      const firstChild = tile.children[0];
+      this.updateTileVisibility(firstChild, frameState);
+      tile._visible = firstChild._visible;
+      return;
+    }
+
+    if (this.meetsScreenSpaceErrorEarly(tile, frameState)) {
+      tile._visible = false;
+      return;
+    }
+
+    const replace = tile.refine === TILE3D_REFINEMENT.REPLACE;
+    const useOptimization =
+      tile._optimChildrenWithinParent === TILE3D_OPTIMIZATION_HINT.USE_OPTIMIZATION;
+    if (replace && useOptimization && hasChildren) {
+      if (!this.anyChildrenVisible(tile, frameState)) {
+        // ++tileset._statistics.numberOfTilesCulledWithChildrenUnion;
+        tile._visible = false;
+        return;
+      }
+    }
   }
 
   updateTile(tile, frameState) {
@@ -242,11 +244,11 @@ export default class Tileset3DTraverser {
       tile.hasRenderContent;
     let refines = true;
 
-    let anyChildrenVisible = false;
+    let anyChildVisible = false;
     for (const child of children) {
       if (child.isVisibleAndInRequestVolume) {
         stack.push(child);
-        anyChildrenVisible = true;
+        anyChildVisible = true;
       } else if (checkRefines || options.loadSiblings) {
         // Keep non-visible children loaded since they are still needed before the parent can refine.
         // Or loadSiblings is true so always load tiles regardless of visibility.
@@ -258,7 +260,8 @@ export default class Tileset3DTraverser {
         if (!child._inRequestVolume) {
           childRefines = false;
         } else if (!child.hasRenderContent) {
-          childRefines = true; // this.executeEmptyTraversal(child, frameState);
+          // childRefines = true; // this.executeEmptyTraversal(child, frameState);
+          childRefines = this.executeEmptyTraversal(child, frameState);
         } else {
           childRefines = child.contentAvailable;
         }
@@ -266,14 +269,15 @@ export default class Tileset3DTraverser {
       }
     }
 
-    if (!anyChildrenVisible) {
+    if (!anyChildVisible) {
       refines = false;
     }
 
     return refines;
   }
 
-  canTraverse(tile, options) {
+  canTraverse(tile) {
+    const {options} = this;
     // TODO: remove the depthLimit check once real sse is working
     if (tile.children.length === 0 || options.depthLimit < tile.depth) {
       return false;
@@ -311,7 +315,7 @@ export default class Tileset3DTraverser {
       const parentRefines = !parent || parent._refines;
       let refines = false;
 
-      if (this.canTraverse(tile, this.options)) {
+      if (this.canTraverse(tile)) {
         refines = this.updateAndPushChildren(tile, stack, frameState) && parentRefines;
       }
 
@@ -346,41 +350,41 @@ export default class Tileset3DTraverser {
   }
 
   // Depth-first traversal that checks if all nearest descendants with content are loaded. Ignores visibility.
-  // executeEmptyTraversal(root, frameState) {
-  //   const allDescendantsLoaded = true;
-  //   const stack = emptyTraversal.stack;
-  //   stack.push(root);
-  //
-  //   while (stack.length > 0) {
-  //     emptyTraversal.stackMaximumLength = Math.max(emptyTraversal.stackMaximumLength, stack.length);
-  //
-  //     const tile = stack.pop();
-  //     const children = tile.children;
-  //     const childrenLength = children.length;
-  //
-  //     // Only traverse if the tile is empty - traversal stop at descendants with content
-  //     const traverse = !tile.hasRenderContent && this.canTraverse(tile);
-  //
-  //     // Traversal stops but the tile does not have content yet.
-  //     // There will be holes if the parent tries to refine to its children, so don't refine.
-  //     if (!traverse && !tile.contentAvailable) {
-  //       allDescendantsLoaded = false;
-  //     }
-  //
-  //     this.updateTile(tile, frameState);
-  //     if (!tile.isVisibleAndInRequestVolume) {
-  //       // Load tiles that aren't visible since they are still needed for the parent to refine
-  //       this.loadTile(tile, frameState);
-  //       this.touchTile(tile, frameState);
-  //     }
-  //
-  //     if (traverse) {
-  //       for (const child of this.children) {
-  //         stack.push(child);
-  //       }
-  //     }
-  //   }
-  //
-  //   return allDescendantsLoaded;
-  // }
+  executeEmptyTraversal(root, frameState) {
+    let allDescendantsLoaded = true;
+    const {emptyTraversal} = this;
+    const stack = emptyTraversal.stack;
+    stack.push(root);
+
+    while (stack.length > 0) {
+      emptyTraversal.stackMaximumLength = Math.max(emptyTraversal.stackMaximumLength, stack.length);
+
+      const tile = stack.pop();
+
+      // Only traverse if the tile is empty - traversal stop at descendants with content
+      const traverse = !tile.hasRenderContent && this.canTraverse(tile);
+
+      // Traversal stops but the tile does not have content yet.
+      // There will be holes if the parent tries to refine to its children, so don't refine.
+      if (!traverse && !tile.contentAvailable) {
+        allDescendantsLoaded = false;
+      }
+
+      this.updateTile(tile, frameState);
+      if (!tile.isVisibleAndInRequestVolume) {
+        // Load tiles that aren't visible since they are still needed for the parent to refine
+        this.loadTile(tile, frameState);
+        this.touchTile(tile, frameState);
+      }
+
+      if (traverse) {
+        const children = tile.children;
+        for (const child of children) {
+          stack.push(child);
+        }
+      }
+    }
+
+    return allDescendantsLoaded;
+  }
 }
