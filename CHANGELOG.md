@@ -2,6 +2,11 @@
 
 ### 1.3 Release
 
+#### v1.3.3
+
+- Disable debugging message (#433)
+- Fix full uri (#409)
+
 #### v1.3.2
 
 - Dedupe loaders (#421)
