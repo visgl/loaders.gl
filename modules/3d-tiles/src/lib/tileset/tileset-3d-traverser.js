@@ -236,7 +236,10 @@ export default class Tileset3DTraverser {
 
     // For traditional replacement refinement only refine if all children are loaded.
     // Empty tiles are exempt since it looks better if children stream in as they are loaded to fill the empty space.
-    const checkRefines = !options.skipLevelOfDetail && tile.refine === TILE3D_REFINEMENT.REPLACE && tile.hasRenderContent
+    const checkRefines =
+      !options.skipLevelOfDetail &&
+      tile.refine === TILE3D_REFINEMENT.REPLACE &&
+      tile.hasRenderContent;
     let refines = true;
 
     let anyChildrenVisible = false;
