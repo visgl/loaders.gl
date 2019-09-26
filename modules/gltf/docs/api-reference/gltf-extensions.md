@@ -10,6 +10,7 @@ Note that many glTF extensions affect aspects that are firmly outside of the sco
 | -------------------------------------------------------------------------------------------------------------------------------- | ----------- |
 | [KHR_draco_mesh_compression](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_draco_mesh_compression) |             |
 | [KHR_lights_punctual](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_lights_punctual)               |             |
+| [KHR_materials_unlit](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_unlit)               |             |
 
 ## Official Extensions
 
@@ -44,6 +45,12 @@ Parsing Support:
 Encoding Support:
 
 - N/A
+
+### KHR_materials_unlit
+
+Specifies that a material should not be affected by light. Useful for pre-lit materials (e.g. photogrammetry).
+
+[KHR_materials_unlit](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_unlit)
 
 ## Custom Extensions
 

@@ -11,6 +11,7 @@ import './lib/post-process-gltf.spec';
 
 import './lib/extensions/KHR_draco_mesh_compression.spec';
 import './lib/extensions/KHR_lights_punctual.spec';
+import './lib/extensions/KHR_materials_unlit.spec';
 
 import './glb-loader.spec';
 import './glb-writer.spec';
