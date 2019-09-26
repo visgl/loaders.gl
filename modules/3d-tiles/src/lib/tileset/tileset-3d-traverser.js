@@ -259,7 +259,6 @@ export default class Tileset3DTraverser {
         if (!child._inRequestVolume) {
           childRefines = false;
         } else if (!child.hasRenderContent) {
-          // childRefines = true; // this.executeEmptyTraversal(child, frameState);
           childRefines = this.executeEmptyTraversal(child, frameState);
         } else {
           childRefines = child.contentAvailable;
