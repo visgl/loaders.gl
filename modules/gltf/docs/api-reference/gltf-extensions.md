@@ -10,7 +10,11 @@ Note that many glTF extensions affect aspects that are firmly outside of the sco
 | -------------------------------------------------------------------------------------------------------------------------------- | ----------- |
 | [KHR_draco_mesh_compression](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_draco_mesh_compression) |             |
 | [KHR_lights_punctual](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_lights_punctual)               |             |
+<<<<<<< HEAD
 | [KHR_materials_unlit](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_unlit) | |
+=======
+| [KHR_materials_unlit](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_unlit)               |             |
+>>>>>>> prettier
 
 ## Official Extensions
 

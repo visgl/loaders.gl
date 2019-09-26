@@ -18,7 +18,7 @@ export function decode(gltfData, options) {
     if (extension) {
       material.unlit = true;
     }
-    gltfScenegraph.removeObjectExtension(material, KHR_MATERIALS_UNLIT)
+    gltfScenegraph.removeObjectExtension(material, KHR_MATERIALS_UNLIT);
   }
 }
 
