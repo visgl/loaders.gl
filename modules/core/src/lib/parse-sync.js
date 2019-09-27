@@ -4,20 +4,23 @@ import {mergeOptions} from './loader-utils/merge-options';
 import {getArrayBufferOrStringFromDataSync} from './loader-utils/get-data';
 import {getLoaders, getLoaderContext} from './loader-utils/get-loader-context';
 
-export function parseSync(data, loaders, options, url) {
+export function parseSync(data, loaders, options, context) {
   // Signature: parseSync(data, options, url)
   // Uses registered loaders
   if (!Array.isArray(loaders) && !isLoaderObject(loaders)) {
-    url = options;
+    context = options;
     options = loaders;
     loaders = null;
   }
 
-  options = options || {};
+  // DEPRECATED - backwards compatibility, last param can be URL...
+  let url;
+  if (typeof context === 'string') {
+    url = context;
+    context = null;
+  }
 
-  // We store the context in `this` using bind for "recursive" parse calls
-  // eslint-disable-next-line consistent-this, no-invalid-this
-  let context = this;
+  options = options || {};
 
   // Chooses a loader (and normalizes it)
   // Also use any loaders in the context, new loaders take priority
