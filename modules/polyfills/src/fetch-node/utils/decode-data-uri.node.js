@@ -6,6 +6,7 @@
 // TODO - remove dependency on Buffer
 
 /* global Buffer */
+import {toArrayBuffer} from './to-array-buffer.node';
 
 /**
  * Parses a data URI into a buffer, as well as retrieving its declared MIME type.
@@ -32,5 +33,5 @@ export default function decodeDataUri(uri) {
     mimeType = `text/plain${mimeType}`;
   }
 
-  return {buffer, mimeType};
+  return {arrayBuffer: toArrayBuffer(buffer), mimeType};
 }

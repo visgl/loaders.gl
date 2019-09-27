@@ -1,5 +1,22 @@
 # What's New
 
+## v2.0 (no release available, experimental parts accessible in v1.4-alpha)
+
+- `@loaders.gl/images`: Redefined as a new Image Category, see below
+- `@loaders.gl/core`: `loader.loadAndParse` removed.
+
+### @loaders.gl/images
+
+- **Image Category** now defined
+  - Now have a separate micro loader for each format: `JPEGLoader`, `PNGLoader`, `GIFLoader`, `BMPLoader`, `SVGLoader`
+  - Category ensures interchangability
+  - Composite loader (Array) `ImageLoaders` for easy registration.
+  - No longer uses `loadAndParse`, even loads from URLs are blobified and object URL:ed.
+- `options.image` contain common options that apply across the category
+  - Ability to control loaded image format `options.image.format`, default `auto`
+  - Worker Image Loaders on Chrome and Firefox `options.image.useWorkers: true`
+  - Support for `Image.decode()` to ensure images are ready to go when loader promise resolves: `options.image.decodeHTML: true`
+
 ## v1.4 (In Development)
 
 Release Date: Target mid-Nov, 2019 (alpha/beta releases will soon become available)

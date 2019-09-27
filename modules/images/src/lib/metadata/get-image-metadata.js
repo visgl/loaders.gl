@@ -6,7 +6,7 @@
 // import {bufferToArrayBuffer} from '../node/buffer-to-array-buffer';
 // TODO - this should be handled in @loaders.gl/polyfills
 
-import {mimeTypeMap} from './image-parsers';
+import {mimeTypeMap} from './image-sniffers';
 
 const ERR_INVALID_MIME_TYPE = `Invalid MIME type. Supported MIME types are: ${Array.from(
   mimeTypeMap.keys()
@@ -71,6 +71,7 @@ function getImageTypeHandlers(mimeType) {
 }
 
 function toDataView(data) {
+  data = data.buffer || data;
   // TODO: make these functions work for Node.js buffers?
   // if (bufferToArrayBuffer) {
   //   data = bufferToArrayBuffer(data);

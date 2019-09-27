@@ -28,7 +28,9 @@ export {parse} from './lib/parse';
 export {parseSync} from './lib/parse-sync';
 export {parseInBatches} from './lib/parse-in-batches';
 export {parseInBatchesSync} from './lib/parse-in-batches-sync';
-export {load, loadInBatches} from './lib/load';
+
+export {load} from './lib/load';
+export {loadInBatches} from './lib/load-in-batches';
 
 // ENCODING AND SAVING
 export {encode, encodeSync, encodeInBatches} from './lib/encode';

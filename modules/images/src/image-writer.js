@@ -1,4 +1,4 @@
-import {encodeImage} from './lib/encode-image';
+import {encodeImage} from './lib/encoders/encode-image';
 
 export default {
   name: 'Images',

@@ -54,7 +54,8 @@ export default class NodeFetchResponse {
 
   async arrayBuffer() {
     this.bodyUsed = true;
-    return readFile(this.url, this.options);
+    const data = await readFile(this.url, this.options);
+    return data;
   }
 
   async text() {
