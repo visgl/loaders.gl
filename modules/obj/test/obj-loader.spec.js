@@ -55,7 +55,9 @@ test('OBJWorkerLoader#parse(text)', async t => {
     return;
   }
 
-  const data = await load(OBJ_ASCII_URL, OBJWorkerLoader);
+  const data = await load(OBJ_ASCII_URL, OBJWorkerLoader, {
+    workerUrl: 'modules/obj/dist/obj-loader.worker.js'
+  });
 
   validatePointCloudCategoryData(t, data);
 

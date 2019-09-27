@@ -58,6 +58,19 @@ export default function parseWithWorker(
   options = {},
   context = {}
 ) {
+  if (workerSource === true) {
+    if (options.workerUrl.startsWith('http')) {
+      workerSource = `
+  try {
+    importScripts('${options.workerUrl}')
+  } catch (error) {
+    console.error(error);
+  }`;
+    } else {
+      workerSource = `url(${options.workerUrl})`;
+    }
+  }
+
   const workerFarm = getWorkerFarm(options);
 
   // options.log object contains functions which cannot be transferred

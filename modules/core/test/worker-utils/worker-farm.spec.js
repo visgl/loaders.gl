@@ -1,4 +1,4 @@
-/* global Worker */
+/* global Worker,location */
 import test from 'tape-catch';
 import {_WorkerThread, _WorkerPool, toArrayBuffer} from '@loaders.gl/core';
 import parseWithWorker from '@loaders.gl/core/lib/loader-utils/parse-with-worker';
@@ -135,6 +135,36 @@ test('createWorker#nested', async t => {
   t.deepEquals(result[1], TEST_CASES[1], 'worker returns expected result');
 
   _unregisterLoaders();
+
+  t.end();
+});
+
+test('parseWithWorker#options.workerUrl', async t => {
+  if (!hasWorker) {
+    t.comment('Worker test is browser only');
+    t.end();
+    return;
+  }
+
+  const testData = [{chunk: 0}, {chunk: 1}, {chunk: 2}];
+
+  let parsedData = await parseWithWorker(
+    true,
+    'test-json-loader',
+    toArrayBuffer(JSON.stringify(testData)),
+    {workerUrl: './json-loader.worker.js'}
+  );
+
+  t.deepEquals(parsedData, testData, 'data parsed with relative worker url');
+
+  parsedData = await parseWithWorker(
+    true,
+    'test-json-loader',
+    toArrayBuffer(JSON.stringify(testData)),
+    {workerUrl: `${location.origin}/json-loader.worker.js`}
+  );
+
+  t.deepEquals(parsedData, testData, 'data parsed with absolute worker url');
 
   t.end();
 });

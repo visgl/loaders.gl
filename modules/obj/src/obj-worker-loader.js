@@ -1,8 +1,8 @@
-// The bundled worker is imported as an inline string
-import worker from '../dist/obj-loader.worker.js';
-
 export default {
   name: 'OBJ',
   extensions: ['obj'],
-  worker
+  worker: true,
+  defaultOptions: {
+    workerUrl: 'https://unpkg.com/@loaders.gl/obj/dist/obj-loader.worker.js'
+  }
 };
