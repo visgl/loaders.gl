@@ -1,12 +1,7 @@
 /* global fetch */
 const DECK_DATA_URI = 'https://raw.githubusercontent.com/uber-common/deck.gl-data/master';
-
-const ION_TOKEN_ST_HELEN =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIxN2NhMzkwYi0zNWM4LTRjNTYtYWE3Mi1jMDAxYzhlOGVmNTAiLCJpZCI6OTYxOSwic2NvcGVzIjpbImFzbCIsImFzciIsImFzdyIsImdjIl0sImlhdCI6MTU2MjE4MTMxM30.OkgVr6NaKYxabUMIGqPOYFe0V5JifXLVLfpae63x-tA';
 const ION_TOKEN =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ';
-const ION_TOKEN_2 =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIzMGY4ODczYy1mNTk4LTRiMDUtYmIxYy0xZWYwOWZmMGY4NjQiLCJpZCI6NDQsInNjb3BlcyI6WyJhc3IiLCJnYyJdLCJhc3NldHMiOlsxLDIsMyw0LDYxOTMsNjI3Myw3MTYyLDczNTMsNzE0Ml0sImlhdCI6MTU0MTYxODM0NX0.lWnGs9ySXO4QK3HagcMsDpZ8L01DpmUDQm38-2QAQuE';
 
 const DATA_URI = 'https://raw.githubusercontent.com/uber-web/loaders.gl/master';
 const EXAMPLE_INDEX_URL = `${DATA_URI}/modules/3d-tiles/test/data/index.json`;
@@ -15,19 +10,26 @@ export const INITIAL_EXAMPLE_CATEGORY = 'ion';
 export const INITIAL_EXAMPLE_NAME = 'Melbourne (PointCloud)';
 
 const ADDITIONAL_EXAMPLES = {
-  github: {
-    examples: {
-      'Royal Exhibition Building (Github Pages)': {
-        tilesetUrl: `${DECK_DATA_URI}/3d-tiles/RoyalExhibitionBuilding/tileset.json`
-      }
-    }
-  },
   ion: {
     name: 'Cesium ION',
     examples: {
       'Melbourne (PointCloud)': {ionAssetId: 43978, ionAccessToken: ION_TOKEN},
-      'Mount St Helens (PointCloud)': {ionAssetId: 33301, ionAccessToken: ION_TOKEN_ST_HELEN},
-      'Montreal (PointCloud)': {ionAssetId: 28945, ionAccessToken: ION_TOKEN}
+      'Montreal (PointCloud)': {ionAssetId: 28945, ionAccessToken: ION_TOKEN},
+      'Mount St Helens (PointCloud)': {
+        ionAssetId: 33301,
+        ionAccessToken:
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIxN2NhMzkwYi0zNWM4LTRjNTYtYWE3Mi1jMDAxYzhlOGVmNTAiLCJpZCI6OTYxOSwic2NvcGVzIjpbImFzbCIsImFzciIsImFzdyIsImdjIl0sImlhdCI6MTU2MjE4MTMxM30.OkgVr6NaKYxabUMIGqPOYFe0V5JifXLVLfpae63x-tA'
+      }
+    },
+    'Phillipines B3DM': {
+      ionAssetId: 34014,
+      ionAccessToken:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI0MTQ0NTNiOC0wNzlmLTQ1ZGEtYjM3Yi05ZmJlY2FiMmRjYWMiLCJpZCI6MTMxNTEsInNjb3BlcyI6WyJhc3IiLCJnYyJdLCJpYXQiOjE1NjI2OTQ3NTh9.tlqEVzzO25Itcla4jD17yywNFvAVM-aNVduzF6ss-1g'
+    },
+    'Phillipines Point Cloud': {
+      ionAssetId: 34013,
+      ionAccessToken:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI0MTQ0NTNiOC0wNzlmLTQ1ZGEtYjM3Yi05ZmJlY2FiMmRjYWMiLCJpZCI6MTMxNTEsInNjb3BlcyI6WyJhc3IiLCJnYyJdLCJpYXQiOjE1NjI2OTQ3NTh9.tlqEVzzO25Itcla4jD17yywNFvAVM-aNVduzF6ss-1g'
     }
   },
   nearmap: {
@@ -38,9 +40,10 @@ const ADDITIONAL_EXAMPLES = {
         ionAccessToken:
           'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIwOTBkYTA1ZS03NGM5LTQyNTEtOTViOS1hZDFmNDZjZGQ3YTEiLCJpZCI6NDQsInNjb3BlcyI6WyJhc3IiXSwiYXNzZXRzIjpbNDQ4NjVdLCJpYXQiOjE1Njk0MTcwNjh9.zrWE65u2u-TYyTSRKhDl9-yDYrC_qxiJQ-tZFCgMbt0'
       },
-      'New York (3D Photogrammetry)': {
+      'New York': {
         ionAssetId: 7162,
-        ionAccessToken: ION_TOKEN_2
+        ionAccessToken:
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIzMGY4ODczYy1mNTk4LTRiMDUtYmIxYy0xZWYwOWZmMGY4NjQiLCJpZCI6NDQsInNjb3BlcyI6WyJhc3IiLCJnYyJdLCJhc3NldHMiOlsxLDIsMyw0LDYxOTMsNjI3Myw3MTYyLDczNTMsNzE0Ml0sImlhdCI6MTU0MTYxODM0NX0.lWnGs9ySXO4QK3HagcMsDpZ8L01DpmUDQm38-2QAQuE'
       }
     }
   },
@@ -53,6 +56,13 @@ const ADDITIONAL_EXAMPLES = {
       Honolulu: {ionAssetId: 29333, ionAccessToken: ION_TOKEN},
       'San Francisco': {ionAssetId: 29334, ionAccessToken: ION_TOKEN},
       Tehran: {ionAssetId: 29335, ionAccessToken: ION_TOKEN}
+    }
+  },
+  github: {
+    examples: {
+      'Royal Exhibition Building (Github Pages)': {
+        tilesetUrl: `${DECK_DATA_URI}/3d-tiles/RoyalExhibitionBuilding/tileset.json`
+      }
     }
   }
 };
