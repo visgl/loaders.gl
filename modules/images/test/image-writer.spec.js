@@ -10,7 +10,7 @@ import path from 'path';
 // import mkdirp from 'mkdirp';
 // const TEST_DIR = path.join(__dirname, '..', 'data');
 
-const TEST_FILE = path.join(__dirname, '../data/test.png');
+const TEST_FILE = path.join(__dirname, '../test/data/test.png');
 
 const IMAGE = {
   width: 2,
