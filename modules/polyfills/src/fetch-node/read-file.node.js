@@ -24,7 +24,8 @@ export async function readFile(url, options = {}) {
   options = getReadFileOptions(options);
 
   if (isDataURL(url)) {
-    return Promise.resolve(decodeDataUri(url));
+    const {arrayBuffer} = decodeDataUri(url);
+    return Promise.resolve(arrayBuffer);
   }
 
   if (isRequestURL(url)) {

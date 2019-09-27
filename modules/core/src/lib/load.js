@@ -30,5 +30,5 @@ export async function load(url, loaders, options) {
   // Fall back to parse
   // Note: An improved round of autodetection is possible now that data has been loaded
   // This means that another loader might be selected
-  return parse(data, loaders, options, url);
+  return await parse(data, loaders, options, url);
 }

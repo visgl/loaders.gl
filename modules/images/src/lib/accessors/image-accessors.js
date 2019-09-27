@@ -1,5 +1,6 @@
 /* global ImageBitmap, Image */
 import assert from '../utils/assert';
+import imageWriter from '../../image-writer';
 
 export function getImageFormat(image) {
   if (typeof ImageBitmap !== 'undefined' && image instanceof ImageBitmap) {
@@ -7,6 +8,11 @@ export function getImageFormat(image) {
   }
   if (typeof Image !== 'undefined' && image instanceof Image) {
     return 'html';
+  }
+  if (image && typeof image === 'object' && image.data && image.width && image.height) {
+    // Assume this is ndarray
+    // TODO - this is not ndarray
+    return 'ndarray';
   }
   if (Array.isArray(image)) {
     // Assume this is ndarray

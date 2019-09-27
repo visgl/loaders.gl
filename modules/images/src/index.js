@@ -11,7 +11,7 @@ export {
   ImageLoaders as _ImageLoaders
 } from './image-loaders';
 
-export {getImageSize as _getImageSize} from './lib/accessors';
+export {getImageSize as _getImageSize} from './lib/accessors/image-accessors';
 
 // UTILS
 export {
@@ -22,7 +22,6 @@ export {
 } from './lib/metadata/get-image-metadata';
 
 // DEPRECATED
-// export {loadImage} from './lib/parsers/parse-image-v1';
 
 // Now possible to use ImageLoaders on arrayBuffer input
 // Unpacks compressed image data into an HTML image

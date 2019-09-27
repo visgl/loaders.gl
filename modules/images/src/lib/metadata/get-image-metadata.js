@@ -71,6 +71,7 @@ function getImageTypeHandlers(mimeType) {
 }
 
 function toDataView(data) {
+  data = data.buffer || data;
   // TODO: make these functions work for Node.js buffers?
   // if (bufferToArrayBuffer) {
   //   data = bufferToArrayBuffer(data);

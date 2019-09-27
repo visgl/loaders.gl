@@ -1,6 +1,6 @@
-/* global self, Image, Blob*/
+/* global self, Image, Blob */
 
-// Note: Watch out for false positives from jsdom?
+// NOTE: Will get false positives from jsdom!
 export const HTML_IMAGE_SUPPORTED = typeof Image !== undefined;
 
 // Parses html image from array buffer
@@ -21,7 +21,7 @@ export default async function parseToHTMLImage(arrayBuffer, options) {
   }
 }
 
-async function loadToHTMLImage(url, options) {
+export async function loadToHTMLImage(url, options) {
   const image = new Image();
   image.crossOrigin = (options && options.crossOrigin) || 'anonymous';
 

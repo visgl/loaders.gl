@@ -10,9 +10,15 @@ export async function parseImageNode(arrayBuffer, mimeType, options) {
   const buffer = arrayBuffer instanceof Buffer ? arrayBuffer : Buffer.from(arrayBuffer);
 
   const ndarray = await getPixelsAsync(buffer, mimeType);
+
+  const layers = ndarray.shape.length === 4 ? ndarray.shape.shift() : 1;
+
   return {
+    ndarray,
+    data: ndarray.data,
     width: ndarray.shape[0],
     height: ndarray.shape[1],
-    data: ndarray.data
+    components: ndarray.shape[2],
+    layers
   };
 }

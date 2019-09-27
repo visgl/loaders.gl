@@ -34,23 +34,28 @@ test('ImageLoader#load(data URL)', async t => {
   t.end();
 });
 
-test('ImageLoader#formats', t => {
-  TEST_CASES.forEach(testLoadImage);
+test.only('ImageLoader#formats', async t => {
+  for (const testCase of TEST_CASES) {
+    await testLoadImage(t, testCase);
+  }
   t.end();
 });
 
-function testLoadImage(testCase) {
-  const {title, url, width, height} = testCase;
-  test(title, async t => {
-    const image = load(url, ImageLoader);
-    t.ok(image, `ImageLoader loaded ${url.slice(0, 40)}...`);
-    const imageSize = _getImageSize(image);
-    t.ok(
-      imageSize.width === width && imageSize.height === height,
-      `loaded image has correct content ${url.slice(0, 30)}`
-    );
-    t.end();
-  });
+async function testLoadImage(t, testCase) {
+  const {title, url, width, height, skipUnderNode} = testCase;
+
+  // Skip some test cases under Node.js
+  if (!isBrowser && skipUnderNode) {
+    return;
+  }
+
+  const image = await load(url, ImageLoader);
+  t.ok(image, `${title} loaded ${url.slice(0, 40)}...`);
+  const imageSize = _getImageSize(image);
+  t.ok(
+    imageSize.width === width && imageSize.height === height,
+    `${title} image has correct content ${url.slice(0, 30)}`
+  );
 }
 
 /*
