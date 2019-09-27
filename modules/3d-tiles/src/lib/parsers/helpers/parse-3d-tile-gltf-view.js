@@ -60,10 +60,15 @@ export async function extractGLTF(tile, gltfFormat, options, context) {
     }
     if (tile.gltfArrayBuffer) {
       // TODO - Should handle byteOffset... However, not used now...
-      tile.gltf = await parse(tile.gltfArrayBuffer, GLTFLoader, {
-        ...options,
-        gltf: {parserVersion: 2}
-      });
+      tile.gltf = await parse(
+        tile.gltfArrayBuffer,
+        GLTFLoader,
+        {
+          ...options,
+          gltf: {parserVersion: 2}
+        },
+        context
+      );
       delete tile.gltfArrayBuffer;
       delete tile.gltfByteOffset;
       delete tile.gltfByteLength;
@@ -78,10 +83,15 @@ export function extractGLTFSync(tile, gltfFormat, options, context) {
     if (tile.gltfArrayBuffer) {
       const {parseSync} = context;
       // TODO - Should handle byteOffset... Not used now...
-      tile.gltf = parseSync(tile.gltfArrayBuffer, GLTFLoader, {
-        ...options,
-        gltf: {parserVersion: 2}
-      });
+      tile.gltf = parseSync(
+        tile.gltfArrayBuffer,
+        GLTFLoader,
+        {
+          ...options,
+          gltf: {parserVersion: 2}
+        },
+        context
+      );
       delete tile.gltfArrayBuffer;
       delete tile.gltfByteOffset;
       delete tile.gltfByteLength;

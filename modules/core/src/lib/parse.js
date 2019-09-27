@@ -7,20 +7,23 @@ import {getLoaders, getLoaderContext} from './loader-utils/get-loader-context';
 import parseWithWorker from './loader-utils/parse-with-worker';
 import {selectLoader} from './select-loader';
 
-export async function parse(data, loaders, options, url) {
-  // Signature: parse(data, options, url)
+export async function parse(data, loaders, options, context) {
+  // Signature: parse(data, options, context | url)
   // Uses registered loaders
-  if (loaders && !Array.isArray(loaders) && !isLoaderObject(loaders)) {
-    url = options;
+  if (!Array.isArray(loaders) && !isLoaderObject(loaders)) {
+    context = options;
     options = loaders;
     loaders = null;
   }
 
-  options = options || {};
+  // DEPRECATED - backwards compatibility, last param can be URL...
+  let url;
+  if (typeof context === 'string') {
+    url = context;
+    context = null;
+  }
 
-  // We store the context in `this` using bind for "recursive" parse calls
-  // eslint-disable-next-line consistent-this, no-invalid-this
-  let context = this;
+  options = options || {};
 
   // Extract a url for auto detection
   const autoUrl = getUrlFromData(data, url);
