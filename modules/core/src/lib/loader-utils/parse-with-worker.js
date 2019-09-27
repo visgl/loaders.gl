@@ -58,8 +58,10 @@ export default function parseWithWorker(
   options = {},
   context = {}
 ) {
-  if (workerSource === true) {
+  if (options.workerUrl) {
     if (options.workerUrl.startsWith('http')) {
+      // Per spec worker cannot be constructed from a different origin
+      // Only use trusted sources!
       workerSource = `
   try {
     importScripts('${options.workerUrl}')
