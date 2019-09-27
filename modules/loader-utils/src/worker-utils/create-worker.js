@@ -9,26 +9,8 @@ export default function createWorker(loader) {
     return;
   }
 
-  self.onmessage = async evt => {
-    const {data} = evt;
-
-    try {
-      if (!isKnownMessage(data, loader.name)) {
-        return;
-      }
-
-      const {arraybuffer, byteOffset = 0, byteLength = 0, options = {}} = data;
-
-      const result = await parseData(loader, arraybuffer, byteOffset, byteLength, options);
-      const transferList = getTransferList(result);
-      self.postMessage({type: 'done', result}, transferList);
-    } catch (error) {
-      self.postMessage({type: 'error', message: error.message});
-    }
-  };
-
   let requestId = 0;
-  self.parse = (arraybuffer, options = {}, url) =>
+  const parse = (arraybuffer, options = {}, url) =>
     new Promise((resolve, reject) => {
       const id = requestId++;
 
@@ -56,13 +38,38 @@ export default function createWorker(loader) {
       // Ask the main thread to decode data
       self.postMessage({type: 'process', id, arraybuffer, options, url}, [arraybuffer]);
     });
+
+  self.onmessage = async evt => {
+    const {data} = evt;
+
+    try {
+      if (!isKnownMessage(data, loader.name)) {
+        return;
+      }
+
+      const {arraybuffer, byteOffset = 0, byteLength = 0, options = {}} = data;
+
+      const result = await parseData({
+        loader,
+        arraybuffer,
+        byteOffset,
+        byteLength,
+        options,
+        context: {parse}
+      });
+      const transferList = getTransferList(result);
+      self.postMessage({type: 'done', result}, transferList);
+    } catch (error) {
+      self.postMessage({type: 'error', message: error.message});
+    }
+  };
 }
 
 // TODO - Support byteOffset and byteLength (enabling parsing of embedded binaries without copies)
 // TODO - Why not support async loader.parse* funcs here?
 // TODO - Why not reuse a common function instead of reimplementing loader.parse* selection logic? Keeping loader small?
 // TODO - Lack of appropriate parser functions can be detected when we create worker, no need to wait until parse
-async function parseData(loader, arraybuffer, byteOffset, byteLength, options) {
+async function parseData({loader, arraybuffer, byteOffset, byteLength, options, context}) {
   let data;
   let parser;
   if (loader.parseSync || loader.parse) {
@@ -76,7 +83,7 @@ async function parseData(loader, arraybuffer, byteOffset, byteLength, options) {
     throw new Error(`Could not load data with ${loader.name} loader`);
   }
 
-  return await parser(data, options);
+  return await parser(data, options, context, loader);
 }
 
 // Filter out noise messages sent to workers
