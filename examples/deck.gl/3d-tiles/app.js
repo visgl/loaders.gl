@@ -163,7 +163,7 @@ export default class App extends PureComponent {
 
   // Called by Tile3DLayer when a new tileset is loaded
   _onTilesetLoad(tileset) {
-    this.setState({attributions: tileset.credits.attributions});
+    this.setState({description: tileset.description, attributions: tileset.credits.attributions});
     this._tilesetStatsWidget.setStats(tileset.stats);
     this._centerViewOnTileset(tileset);
   }
@@ -200,8 +200,15 @@ export default class App extends PureComponent {
   }
 
   _renderControlPanel() {
-    const {examplesByCategory, category, name, viewState, selectedMapStyle} = this.state;
-    const {attributions} = this.state;
+    const {
+      examplesByCategory,
+      category,
+      name,
+      viewState,
+      selectedMapStyle,
+      attributions,
+      description
+    } = this.state;
     if (!examplesByCategory) {
       return null;
     }
@@ -213,6 +220,7 @@ export default class App extends PureComponent {
         data={examplesByCategory}
         category={category}
         name={name}
+        description={description}
         attributions={attributions}
         onMapStyleChange={this._onSelectMapStyle.bind(this)}
         onExampleChange={this._onSelectExample.bind(this)}
@@ -252,10 +260,11 @@ export default class App extends PureComponent {
 
     return new Tile3DLayer({
       id: 'tile-3d-layer',
-      tilesetUrl,
+      data: tilesetUrl,
       _ionAssetId: ionAssetId,
       _ionAccessToken: ionAccessToken,
       pointSize: 2,
+      getPointColor: [115, 112, 202],
       onTilesetLoad: this._onTilesetLoad,
       onTileLoad: this._onTilesetChange,
       onTileUnload: this._onTilesetChange,

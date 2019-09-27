@@ -1,6 +1,7 @@
 import styled from 'styled-components';
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
+import marked from 'marked';
 
 const Container = styled.div`
   display: flex;
@@ -26,7 +27,20 @@ const DropDown = styled.select`
 const TilesetDropDown = styled.select`
   margin-bottom: 12px;
   font-weight: 800;
-  font-size: medium;
+  font-size: 16px;
+`;
+
+const InfoContainer = styled.div`
+  margin-top: 12px;
+  text-align: center;
+  border-style: groove;
+`;
+
+const Description = styled.div`
+  margin-top: 6px;
+  font-size: 12px;
+  color: #555;
+  line-height: 1.4em;
 `;
 
 const propTypes = {
@@ -35,6 +49,7 @@ const propTypes = {
   data: PropTypes.object.isRequired,
   droppedFile: PropTypes.string,
   attributions: PropTypes.array,
+  description: PropTypes.string,
   mapStyles: PropTypes.object.isRequired,
   selectedMapStyle: PropTypes.string.isRequired,
   onExampleChange: PropTypes.func,
@@ -113,21 +128,20 @@ export default class ControlPanel extends PureComponent {
     return droppedFile ? <div>Dropped file: {JSON.stringify(droppedFile.name)}</div> : null;
   }
 
-  _renderAttributions() {
-    const {attributions} = this.props;
+  _renderInfo() {
+    const {description, attributions} = this.props;
     if (!attributions || attributions.length === 0) {
       return null;
     }
+
     return (
-      <div style={{marginTop: '0.5cm'}}>
-        <div style={{textAlign: 'center'}}>
-          {Boolean(attributions.length) && <b>Tileset Attribution</b>}
-          <div style={{borderStyle: 'solid', borderWidth: 1}} />
-          {attributions.map(attribution => (
-            <div key={attribution.html} dangerouslySetInnerHTML={{__html: attribution.html}} />
-          ))}
-        </div>
-      </div>
+      <InfoContainer>
+        {Boolean(attributions.length) && <b>Tileset Credentials</b>}
+        {attributions.map(attribution => (
+          <div key={attribution.html} dangerouslySetInnerHTML={{__html: attribution.html}} />
+        ))}
+        {description && <Description dangerouslySetInnerHTML={{__html: marked(description)}} />}
+      </InfoContainer>
     );
   }
 
@@ -138,7 +152,7 @@ export default class ControlPanel extends PureComponent {
         {this._renderDropped()}
         {this._renderMapStyles()}
         {this.props.children}
-        {this._renderAttributions()}
+        {this._renderInfo()}
       </Container>
     );
   }

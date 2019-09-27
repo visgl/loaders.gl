@@ -131,8 +131,10 @@ export default class Tileset3D {
     this._requestedTiles = [];
     this._selectedTilesToStyle = [];
 
-    this.asset = {}; // Metadata for the entire tileset
+    // Metadata for the entire tileset
+    this.asset = {};
     this.credits = {};
+    this.description = options.description;
 
     // EXTRACTED FROM TILESET
     this._root = undefined;

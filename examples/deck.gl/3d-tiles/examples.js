@@ -9,7 +9,7 @@ const EXAMPLE_INDEX_URL = `${DATA_URI}/modules/3d-tiles/test/data/index.json`;
 export const INITIAL_EXAMPLE_CATEGORY = 'ion';
 export const INITIAL_EXAMPLE_NAME = 'Melbourne (PointCloud)';
 
-const ADDITIONAL_EXAMPLES = {
+const SHOWCASE_EXAMPLES = {
   ion: {
     name: 'Cesium ION',
     examples: {
@@ -59,6 +59,7 @@ const ADDITIONAL_EXAMPLES = {
     }
   },
   github: {
+    name: 'Others',
     examples: {
       'Royal Exhibition Building (Github Pages)': {
         tilesetUrl: `${DECK_DATA_URI}/3d-tiles/RoyalExhibitionBuilding/tileset.json`
@@ -82,7 +83,7 @@ export async function loadExampleIndex() {
 
   return {
     ...testExamples,
-    ...ADDITIONAL_EXAMPLES,
+    ...SHOWCASE_EXAMPLES,
     custom: {
       name: 'Custom',
       examples: {
