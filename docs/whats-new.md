@@ -1,27 +1,13 @@
 # What's New
 
-## v2.0 (no release available, experimental parts accessible in v1.4-alpha)
+## v2.0 (In development)
+
+Release Date: Target mid-Nov, 2019, currently available as `2.0.0-alpha` releases
+
+The 2.0 release brings stronger loader composition, image loading improvements, significant overhauls to several loaders and removes deprecated functions across the board.
 
 - `@loaders.gl/images`: Redefined as a new Image Category, see below
 - `@loaders.gl/core`: `loader.loadAndParse` removed.
-
-### @loaders.gl/images
-
-- **Image Category** now defined
-  - Now have a separate micro loader for each format: `JPEGLoader`, `PNGLoader`, `GIFLoader`, `BMPLoader`, `SVGLoader`
-  - Category ensures interchangability
-  - Composite loader (Array) `ImageLoaders` for easy registration.
-  - No longer uses `loadAndParse`, even loads from URLs are blobified and object URL:ed.
-- `options.image` contain common options that apply across the category
-  - Ability to control loaded image format `options.image.format`, default `auto`
-  - Worker Image Loaders on Chrome and Firefox `options.image.useWorkers: true`
-  - Support for `Image.decode()` to ensure images are ready to go when loader promise resolves: `options.image.decodeHTML: true`
-
-## v1.4 (In Development)
-
-Release Date: Target mid-Nov, 2019 (alpha/beta releases will soon become available)
-
-The 1.4 release starts to introduce loaders.gl 2.0 concepts.
 
 ### @loaders.gl/core
 
@@ -33,6 +19,21 @@ The 1.4 release starts to introduce loaders.gl 2.0 concepts.
 - **Composite Loaders**
 
   - Loaders can call other loaders
+
+### @loaders.gl/images
+
+- **Image Category** now defined
+  - Category ensures interchangability
+  - Composite loader (Array) `ImageLoaders` for easy registration.
+  - No longer uses `loadAndParse`,
+  - Node.js support improved.
+
+- `options.image` contain common options that apply across the category
+  - `options.image.format`, Ability to control loaded image format, default `auto`
+  - TBA `options.image.useWorkers: true` - Worker Image Loaders on Chrome and Firefox
+  - TBA `options.image.decodeHTML: true` - Support for `Image.decode()` to ensure HTML images are ready to be used when loader promise resolves.
+
+  - TBD: Now have a separate micro loader for each format: `JPEGLoader`, `PNGLoader`, `GIFLoader`, `BMPLoader`, `SVGLoader`
 
 ## v1.3
 
