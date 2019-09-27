@@ -121,7 +121,7 @@ export default class ControlPanel extends PureComponent {
     return (
       <div style={{marginTop: '0.5cm'}}>
         <div style={{textAlign: 'center', borderStyle: 'groove'}}>
-          {Boolean(attributions.length) && <b>Tileset Credentials</b>}
+          {Boolean(attributions.length) && <b>Tileset Attribution</b>}
           {attributions.map(attribution => (
             <div key={attribution.html} dangerouslySetInnerHTML={{__html: attribution.html}} />
           ))}
