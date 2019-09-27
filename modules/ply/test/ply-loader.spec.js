@@ -62,7 +62,9 @@ test('PLYLoader#parse(WORKER)', async t => {
     return;
   }
 
-  const data = await load(PLY_BUN_ZIPPER_URL, PLYWorkerLoader);
+  const data = await load(PLY_BUN_ZIPPER_URL, PLYWorkerLoader, {
+    workerUrl: 'modules/ply/dist/ply-loader.worker.js'
+  });
 
   validatePointCloudCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 107841, 'POSITION attribute was found');

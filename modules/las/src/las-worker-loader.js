@@ -1,8 +1,9 @@
-// The bundled worker is imported as an inline string
-import worker from '../dist/las-loader.worker.js';
-
+/* global __VERSION__ */
 export default {
   name: 'LAZ',
   extensions: ['las', 'laz'],
-  worker
+  worker: true,
+  defaultOptions: {
+    workerUrl: `https://unpkg.com/@loaders.gl/las@${__VERSION__}/dist/las-loader.worker.js`
+  }
 };

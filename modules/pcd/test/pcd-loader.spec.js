@@ -45,7 +45,9 @@ test('PCDWorkerLoader#parse(binary)', async t => {
     return;
   }
 
-  const data = await load(PCD_BINARY_URL, PCDWorkerLoader);
+  const data = await load(PCD_BINARY_URL, PCDWorkerLoader, {
+    workerUrl: 'modules/pcd/dist/pcd-loader.worker.js'
+  });
   validatePointCloudCategoryData(t, data);
 
   t.equal(data.mode, 0, 'mode is POINTS (0)');

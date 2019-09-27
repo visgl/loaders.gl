@@ -10,6 +10,9 @@ if (typeof process !== 'undefined') {
   // console.log(matches, version);
 }
 
+// This constant will be inlined by babel plugin.
+// To test source without transpilation, set a fallback here.
+global.__VERSION__ = 'latest';
 global.nodeVersion = version;
 
 if (version < 10) {

@@ -1,10 +1,11 @@
-// The bundled worker is imported as an inline string
-import worker from '../dist/arrow-loader.worker.js';
-
+/* global __VERSION__ */
 export default {
   name: 'Apache Arrow',
   extensions: ['arrow'],
   mimeType: 'application/octet-stream',
   category: 'table',
-  worker
+  worker: true,
+  defaultOptions: {
+    workerUrl: `https://unpkg.com/@loaders.gl/arrow@${__VERSION__}/dist/arrow-loader.worker.js`
+  }
 };
