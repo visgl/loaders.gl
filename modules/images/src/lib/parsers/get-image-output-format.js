@@ -4,7 +4,6 @@ import {IMAGE_BITMAP_SUPPORTED} from './parse-to-image-bitmap';
 
 import {isBrowser} from '../utils/globals';
 import assert from '../utils/assert';
-import {ImageLoaders} from '../../image-loaders';
 
 // The user can request a specific output format
 // If using loaders.gl to load images for HTML

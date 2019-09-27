@@ -11,10 +11,12 @@ export async function parseImageNode(arrayBuffer, mimeType, options) {
 
   const ndarray = await getPixelsAsync(buffer, mimeType);
 
+  const shape = [...ndarray.shape];
   const layers = ndarray.shape.length === 4 ? ndarray.shape.shift() : 1;
 
+  // extract width/height etc
   return {
-    ndarray,
+    shape,
     data: ndarray.data,
     width: ndarray.shape[0],
     height: ndarray.shape[1],

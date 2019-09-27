@@ -1,6 +1,5 @@
 /* global ImageBitmap, Image */
 import assert from '../utils/assert';
-import imageWriter from '../../image-writer';
 
 export function getImageFormat(image) {
   if (typeof ImageBitmap !== 'undefined' && image instanceof ImageBitmap) {
