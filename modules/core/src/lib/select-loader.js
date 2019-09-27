@@ -22,8 +22,9 @@ export function selectLoader(loaders, url = '', data = null, {nothrow = false} =
     return loader;
   }
 
-  // If no loaders provided, get the registered loaders
-  loaders = loaders || getRegisteredLoaders();
+  // merge input loaders with registered loaders
+  // the input loader will be picked over pre registeredLoaders
+  loaders = (loaders || []).concat(getRegisteredLoaders());
   normalizeLoaders(loaders);
 
   url = url.replace(/\?.*/, '');

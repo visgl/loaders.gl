@@ -69,7 +69,10 @@ function addDeprecatedGLTFOptions(options) {
     options.gltf.fetchBuffers = options.fetchLinkedResources;
   }
   if ('decompress' in options) {
-    options.gltf.fetchBuffers = options.decompress;
+    options.gltf.decompressMeshes = options.decompress;
+  }
+  if ('decompress' in options.gltf) {
+    options.gltf.decompressMeshes = options.gltf.decompress;
   }
   if ('postProcess' in options) {
     options.gltf.postProcess = options.postProcess;
