@@ -14,7 +14,7 @@ export function parseSync(data, loaders, options, context) {
   }
 
   // DEPRECATED - backwards compatibility, last param can be URL...
-  let url;
+  let url = '';
   if (typeof context === 'string') {
     url = context;
     context = null;

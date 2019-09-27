@@ -154,7 +154,7 @@ async function loadImage(gltf, image, i, options, context) {
   assert(arrayBuffer, 'glTF image has no data');
 
   // Call `parse`
-  const parsedImage = await parse(arrayBuffer, ImageLoader);
+  const parsedImage = await parse(arrayBuffer, ImageLoader, {}, context);
   // TODO making sure ImageLoader is overridable by using array of loaders
   // const parsedImage = await parse(arrayBuffer, [ImageLoader]);
 

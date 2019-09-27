@@ -13,14 +13,21 @@ export async function load(url, loaders, options) {
     loaders = null;
   }
 
-  // at this point, data can be binary or text
+  // at this point, `url` could be already loaded binary data
   let data = url;
-  if (isFileReadable(data) || typeof data === 'string') {
+
+  // url is a string, fetch the url
+  if (typeof url === 'string') {
     data = await fetchFile(url, options);
   }
 
-  // Fall back to parse
-  // Note: An improved round of autodetection is possible now that data has been loaded
-  // This means that another loader might be selected
+  // URL is Blob or File, fetchFile handles it (alt: we could generate ObjectURL here)
+  if (isFileReadable(url)) {
+    // The fetch response object will contain blob.name
+    data = await fetchFile(url, options);
+    url = null;
+  }
+
+  // Data is loaded (at least we have a `Response` object) so time to hand over to `parse`
   return await parse(data, loaders, options, url);
 }
