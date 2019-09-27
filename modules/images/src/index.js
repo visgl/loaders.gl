@@ -1,4 +1,7 @@
-export {default as ImageLoader, HTMLImageLoader, ImageBitmapLoader} from './image-loader';
+import {load} from '@loaders.gl/core';
+import ImageLoader from './image-loader';
+
+export {default as ImageLoader} from './image-loader';
 export {default as ImageWriter} from './image-writer';
 
 // EXPERIMENTAL V2.0
@@ -22,6 +25,12 @@ export {
 } from './lib/metadata/get-image-metadata';
 
 // DEPRECATED
+
+export {default as HTMLImageLoader, ImageBitmapLoader} from './image-loader';
+
+export async function loadImage(url, options) {
+  return await load(url, ImageLoader, options);
+}
 
 // Now possible to use ImageLoaders on arrayBuffer input
 // Unpacks compressed image data into an HTML image

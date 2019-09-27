@@ -8,7 +8,7 @@ const Container = styled.div`
   position: absolute;
   top: 0;
   right: 0;
-  max-width: 320px;
+  max-width: 280px;
   background: #fff;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   padding: 12px 24px;
@@ -120,8 +120,9 @@ export default class ControlPanel extends PureComponent {
     }
     return (
       <div style={{marginTop: '0.5cm'}}>
-        <div style={{textAlign: 'center', borderStyle: 'groove'}}>
+        <div style={{textAlign: 'center'}}>
           {Boolean(attributions.length) && <b>Tileset Attribution</b>}
+          <div style={{borderStyle: 'solid', borderWidth: 1}} />
           {attributions.map(attribution => (
             <div key={attribution.html} dangerouslySetInnerHTML={{__html: attribution.html}} />
           ))}
