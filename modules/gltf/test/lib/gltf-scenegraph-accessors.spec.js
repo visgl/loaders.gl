@@ -3,6 +3,7 @@ import test from 'tape-promise/tape';
 
 import {GLTFScenegraph} from '@loaders.gl/gltf';
 import {GLTFLoader} from '@loaders.gl/gltf';
+import {DracoLoader} from '@loaders.gl/draco';
 import {load} from '@loaders.gl/core';
 
 // Extracted from Cesium 3D Tiles
@@ -15,7 +16,7 @@ test('GLTFScenegraph#ctor', t => {
 });
 
 test('GLTFScenegraph#BufferView indices resolve correctly', async t => {
-  const gltf = await load(GLB_TILE_WITH_DRACO_URL, GLTFLoader, {
+  const gltf = await load(GLB_TILE_WITH_DRACO_URL, [GLTFLoader, DracoLoader], {
     gltf: {
       parserVersion: 2,
       decompress: false,

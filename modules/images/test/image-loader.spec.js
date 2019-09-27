@@ -34,7 +34,7 @@ test('ImageLoader#load(data URL)', async t => {
   t.end();
 });
 
-test.only('ImageLoader#formats', async t => {
+test('ImageLoader#formats', async t => {
   for (const testCase of TEST_CASES) {
     await testLoadImage(t, testCase);
   }

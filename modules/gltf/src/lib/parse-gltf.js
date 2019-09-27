@@ -1,8 +1,10 @@
 /* eslint-disable camelcase, max-statements, no-restricted-globals */
 /* global TextDecoder */
-import {parseJSON} from '@loaders.gl/loader-utils';
+import {ImageLoader} from '@loaders.gl/images';
+import {parseJSON, getZeroOffsetArrayBuffer} from '@loaders.gl/loader-utils';
 import assert from './utils/assert';
 import {getFullUri} from './gltf-utils/gltf-utils';
+import {getTypedArrayForBufferView} from './gltf-utils/get-typed-array';
 import {decodeExtensions} from './extensions/gltf-extensions';
 import parseGLBSync, {isGLB} from './parse-glb';
 import postProcessGLTF from './post-process-gltf';
@@ -18,14 +20,14 @@ export async function parseGLTF(gltf, arrayBufferOrString, byteOffset = 0, optio
 
   const promises = [];
 
-  if (options.gltf.fetchImages) {
-    const promise = fetchImages(gltf, options, context);
+  if (options.gltf.loadImages) {
+    const promise = loadImages(gltf, options, context);
     promises.push(promise);
   }
 
   // Load linked buffers asynchronously and decodes base64 buffers in parallel
-  if (options.gltf.fetchBuffers) {
-    await fetchBuffers(gltf, options, context);
+  if (options.gltf.loadBuffers) {
+    await loadBuffers(gltf, options, context);
   }
 
   const promise = decodeExtensions(gltf, options, context);
@@ -92,7 +94,7 @@ function parseGLTFContainerSync(gltf, data, byteOffset, options) {
 }
 
 // Asynchronously fetch and parse buffers, store in buffers array outside of json
-async function fetchBuffers(gltf, options, context) {
+async function loadBuffers(gltf, options, context) {
   for (let i = 0; i < gltf.json.buffers.length; ++i) {
     const buffer = gltf.json.buffers[i];
     if (buffer.uri) {
@@ -121,53 +123,40 @@ async function fetchBuffers(gltf, options, context) {
   }
 }
 
-async function fetchImages(gltf, options, context) {
+async function loadImages(gltf, options, context) {
   const images = gltf.json.images || [];
 
   const promises = [];
   for (let i = 0; i < images.length; ++i) {
-    const image = images[i];
-    if ('uri' in image) {
-      promises.push(fetchAndParseLinkedImage(gltf, image, i, options));
-    }
+    promises.push(loadImage(gltf, images[i], i, options, context));
   }
+
   return await Promise.all(promises);
 }
 
 // Asynchronously fetches and parses one image, store in images array outside of json
-async function fetchAndParseLinkedImage(gltf, image, i, options, context) {
-  // const fetch = options.fetch || window.fetch;
-  // assert(fetch);
+async function loadImage(gltf, image, i, options, context) {
+  const {fetch, parse} = context;
 
-  /*
-  if (image.bufferView) {
-    gltf.images[i] = await new Promise(resolve => {
-      const arrayBufferView = this.getBufferView(image.bufferView);
-      const mimeType = image.mimeType || 'image/jpeg';
-      const blob = new Blob([arrayBufferView], { type: mimeType });
-      const urlCreator = self.URL || self.webkitURL;
-      const imageUrl = urlCreator.createObjectURL(blob);
-      const img = new Image();
-      img.onload = () => resolve(img);
-      img.src = imageUrl;
-    });
+  let arrayBuffer;
+
+  if (image.uri) {
+    const uri = getFullUri(image.uri, options.uri);
+    const response = await fetch(uri);
+    arrayBuffer = await response.arrayBuffer();
   }
-  */
 
-  const uri = getFullUri(image.uri, options.uri);
+  if (Number.isFinite(image.bufferView)) {
+    const array = getTypedArrayForBufferView(gltf.json, gltf.buffers, image.bufferView);
+    arrayBuffer = getZeroOffsetArrayBuffer(array.buffer, array.byteOffset, array.byteLength);
+  }
 
-  // TODO - Call `parse` and use registered image loaders?
-  // const response = await fetch(uri);
-  // const arrayBuffer = await response.arrayBuffer();
-  // Create a new 'buffer' to hold the arrayBuffer?
-  // const image = parse(arrayBuffer);
+  assert(arrayBuffer, 'glTF image has no data');
 
-  gltf.images[i] = await new Promise((resolve, reject) => {
-    /* global Image */
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => resolve(img);
-    img.onerror = error => reject(error);
-    img.src = uri;
-  });
+  // Call `parse`
+  const parsedImage = await parse(arrayBuffer, ImageLoader);
+  // TODO making sure ImageLoader is overridable by using array of loaders
+  // const parsedImage = await parse(arrayBuffer, [ImageLoader]);
+
+  gltf.images[i] = parsedImage;
 }

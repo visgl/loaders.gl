@@ -1,4 +1,3 @@
-import {getFullUri} from './gltf-utils/gltf-utils';
 import assert from './utils/assert';
 
 // This is a post processor for loaded glTF files
@@ -320,53 +319,20 @@ class GLTFPostProcessor {
       image.bufferView = this.getBufferView(image.bufferView);
     }
 
-    if ('uri' in image) {
-      // Check if image has been preloaded by the GLTFLoader
-      // If so, link it into the JSON and drop the URI
-      const preloadedImage = this.images[index];
-      if (preloadedImage && preloadedImage.image) {
-        image.image = preloadedImage.image;
-        delete image.uri;
-      }
-
-      // If not, resolve the relative URI using the baseName
-      const baseUri = options.uri || this.baseUri;
-      if (baseUri) {
-        const uri = image.uri;
-        image.uri = getFullUri(image.uri, baseUri);
-
-        // Deprecated
-        image.originalUri = uri;
-        image.baseUri = baseUri;
-        image.fullUri = image.uri;
-      }
+    // Check if image has been preloaded by the GLTFLoader
+    // If so, link it into the JSON and drop the URI
+    const preloadedImage = this.images[index];
+    if (preloadedImage) {
+      image.image = preloadedImage;
+      // delete image.uri;
+      // delete image.bufferView;
     }
 
-    // Deprecated, use image.image or image.uri or image loaders instead
+    // DEPRECATED: just use image.image
     image.getImageAsync = () => {
-      /* global self, Blob, Image */
-      if (image.bufferView) {
-        return new Promise(resolve => {
-          const arrayBufferView = this.getBufferView(image.bufferView);
-          const mimeType = image.mimeType || 'image/jpeg';
-          const blob = new Blob([arrayBufferView.data], {type: mimeType});
-          const urlCreator = self.URL || self.webkitURL;
-          const imageUrl = urlCreator.createObjectURL(blob);
-          const img = new Image();
-          img.onload = () => resolve(img);
-          img.src = imageUrl;
-        });
-      }
-
-      return image.uri
-        ? new Promise(resolve => {
-            /* global Image */
-            const img = new Image();
-            img.crossOrigin = 'anonymous';
-            img.onload = () => resolve(img);
-            img.src = image.fullUri || image.uri;
-          })
-        : null;
+      // Check if already loaded
+      assert(image.image);
+      return image.image;
     };
 
     return image;

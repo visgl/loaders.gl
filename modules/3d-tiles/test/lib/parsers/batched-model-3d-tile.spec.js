@@ -4,6 +4,7 @@
 import test from 'tape-promise/tape';
 import {parse, encodeSync} from '@loaders.gl/core';
 import {Tile3DLoader, Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/3d-tiles';
+import {ImageLoader} from '@loaders.gl/images';
 import {loadRootTileFromTileset} from '../utils/load-utils';
 
 const WITH_BATCH_TABLE_URL =
@@ -115,7 +116,7 @@ test('batched model tile#with a mix of opaque and translucent features', async t
 // TODO this should be a render test
 test('batched model tile#with textures', async t => {
   const tileData = await loadRootTileFromTileset(t, TEXTURED_URL);
-  const tile = await parse(tileData, Tile3DLoader);
+  const tile = await parse(tileData, [Tile3DLoader, ImageLoader]);
   t.ok(tile, 'loaded tile with a mix of opaque and translucent features');
   t.end();
 });
