@@ -23,12 +23,14 @@ The 2.0 release brings stronger loader composition, image loading improvements, 
 ### @loaders.gl/images
 
 - **Image Category** now defined
+
   - Category ensures interchangability
   - Composite loader (Array) `ImageLoaders` for easy registration.
   - No longer uses `loadAndParse`,
   - Node.js support improved.
 
 - `options.image` contain common options that apply across the category
+
   - `options.image.format`, Ability to control loaded image format, default `auto`
   - TBA `options.image.useWorkers: true` - Worker Image Loaders on Chrome and Firefox
   - TBA `options.image.decodeHTML: true` - Support for `Image.decode()` to ensure HTML images are ready to be used when loader promise resolves.

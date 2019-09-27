@@ -11,7 +11,6 @@
 - `ImageHTMLLoader` and `ImageHTMLLoader` removed. Use `options.images.format: 'html'` or `options.images.format: 'imagebitmap'` to control the output type.
 - `loadImage(url, options)` removed. Use `load(url, ImageLoader, options)` instead.
 
-
 ## Upgrading from v1.2 to v1.3
 
 - As with v1.1, `GLTFLoader` will no longer return a `GLTFParser` object in v2.0. A new option `options.gltf.parserVersion: 2` is provided to opt in to the new behavior now.
