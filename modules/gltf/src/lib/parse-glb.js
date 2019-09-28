@@ -58,9 +58,6 @@ export default function parseGLBSync(glb, arrayBuffer, byteOffset = 0, options =
 
   parseGLBChunksSync(glb, dataView, byteOffset + GLB_FILE_HEADER_SIZE, options);
 
-  // DEPRECATED - duplicate header fields in root of returned object
-  addDeprecatedFields(glb);
-
   return byteOffset + glb.header.byteLength;
 }
 
@@ -80,7 +77,7 @@ function parseGLBChunksSync(glb, dataView, byteOffset, options) {
         parseBINChunk(glb, dataView, byteOffset, chunkLength, options);
         break;
 
-      // DEPRECATED - Backward compatibility for very old xviz files
+      // Backward compatibility for very old xviz files
       case GLB_CHUNK_TYPE_JSON_XVIZ_DEPRECATED:
         if (!options.glb.strict) {
           parseJSONChunk(glb, dataView, byteOffset, chunkLength, options);
@@ -127,14 +124,4 @@ function parseBINChunk(glb, dataView, byteOffset, chunkLength, options) {
     arrayBuffer: dataView.buffer
     // TODO - copy, or create typed array view?
   });
-}
-
-// DEPRECATED
-
-function addDeprecatedFields(glb) {
-  glb.byteOffset = glb.header.byteOffset;
-  glb.byteLength = glb.header.byteLength;
-  glb.hasBinChunk = glb.binChunks.length >= 1;
-  glb.binChunkByteOffset = glb.header.hasBinChunk ? glb.binChunks[0].byteOffset : 0;
-  glb.binChunkLength = glb.header.hasBinChunk ? glb.binChunks[0].byteLength : 0;
 }

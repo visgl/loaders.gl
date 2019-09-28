@@ -22,26 +22,3 @@ const ImageLoader = {
 };
 
 export default ImageLoader;
-
-// DEPRECATED
-
-// Specifically loads an ImageBitmap (works on newer browsers, on both main and worker threads)
-export const ImageBitmapLoader = {
-  ...ImageLoader,
-  options: {
-    images: {
-      format: 'imagebitmap'
-    }
-  }
-};
-
-// Specifically loads an HTMLImage (works on all browsers' main thread but not on worker threads)
-export const HTMLImageLoader = {
-  ...ImageLoader,
-  options: {
-    images: {
-      format: 'html',
-      decodeHTML: true
-    }
-  }
-};

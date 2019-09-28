@@ -25,14 +25,6 @@ const GLTFLoader = {
       postProcess: true // Postprocess glTF and return json structure directly
     },
 
-    // DEPRECATED OPTIONS for the v1 glTF parser
-    // useGLTFParser: false,
-    // fetchImages: true, // Fetch any linked .BIN buffers, decode base64
-    // createImages: false, // Create image objects
-    // decompress: true,
-    // postProcess: true,
-    // fetchLinkedResources: true, // Fetch any linked .BIN buffers, decode base64
-
     // common?
     uri: '', // base URI
     log: console // eslint-disable-line
