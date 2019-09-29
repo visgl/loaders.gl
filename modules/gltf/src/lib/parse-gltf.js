@@ -3,7 +3,7 @@
 import {ImageLoader} from '@loaders.gl/images';
 import {parseJSON, getZeroOffsetArrayBuffer} from '@loaders.gl/loader-utils';
 import assert from './utils/assert';
-import {getFullUri} from './gltf-utils/gltf-utils';
+import {resolveUrl} from './gltf-utils/resolve-url';
 import {getTypedArrayForBufferView} from './gltf-utils/get-typed-array';
 import {decodeExtensions} from './extensions/gltf-extensions';
 import parseGLBSync, {isGLB} from './parse-glb';
@@ -72,10 +72,10 @@ function parseGLTFContainerSync(gltf, data, byteOffset, options) {
   // Populate buffers
   // Create an external buffers array to hold binary data
   const buffers = gltf.json.buffers || [];
-  gltf.buffers = new Array(buffers.length).fill({});
+  gltf.buffers = new Array(buffers.length).fill(null);
 
   // Populates JSON and some bin chunk info
-  if (gltf._glb && gltf._glb.hasBinChunk) {
+  if (gltf._glb && gltf._glb.header.hasBinChunk) {
     const {binChunks} = gltf._glb;
     gltf.buffers[0] = {
       arrayBuffer: binChunks[0].arrayBuffer,
@@ -98,17 +98,10 @@ async function loadBuffers(gltf, options, context) {
   for (let i = 0; i < gltf.json.buffers.length; ++i) {
     const buffer = gltf.json.buffers[i];
     if (buffer.uri) {
-      if (!options.uri) {
-        // TODO - remove this defensive hack and auto-infer the base URI
-        // eslint-disable-next-line
-        console.warn('options.uri must be set to decode embedded glTF buffers');
-        return;
-      }
-
       const {fetch} = context;
       assert(fetch);
 
-      const uri = getFullUri(buffer.uri, options.uri);
+      const uri = resolveUrl(buffer.uri, options);
       const response = await fetch(uri);
       const arrayBuffer = await response.arrayBuffer();
 
@@ -141,7 +134,7 @@ async function loadImage(gltf, image, i, options, context) {
   let arrayBuffer;
 
   if (image.uri) {
-    const uri = getFullUri(image.uri, options.uri);
+    const uri = resolveUrl(image.uri, options);
     const response = await fetch(uri);
     arrayBuffer = await response.arrayBuffer();
   }

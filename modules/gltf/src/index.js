@@ -15,5 +15,5 @@ export {default as postProcessGLTF} from './lib/post-process-gltf';
 
 // DEPRECATED
 
-// For 3D Tiles
-export {encodeGLTFSync} from './lib/encode-gltf';
+export {default as GLBBuilder} from './lib/deprecated/glb-builder';
+export {encodeGLTFSync} from './lib/encode-gltf'; // For 3D Tiles

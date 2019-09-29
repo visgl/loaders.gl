@@ -2,7 +2,7 @@
 import test from 'tape-promise/tape';
 import {validateWriter, validatePointCloudCategoryData} from 'test/common/conformance';
 
-import {DracoWriter, DracoLoader, DracoBuilder} from '@loaders.gl/draco';
+import {DracoWriter, DracoLoader} from '@loaders.gl/draco';
 import {encodeSync, fetchFile, parseSync} from '@loaders.gl/core';
 import {_getMeshSize} from '@loaders.gl/loader-utils';
 
@@ -104,13 +104,12 @@ test('DracoParser#encode(bunny.drc)', async t => {
 
     let compressedMesh;
 
+    // eslint-disable-next-line no-loop-func
     t.doesNotThrow(() => {
-      const dracoBuilder = new DracoBuilder();
-      compressedMesh = dracoBuilder.encodeSync(attributes, tc.options);
+      compressedMesh = encodeSync(attributes, DracoWriter, tc.options);
 
       const ratio = meshSize / compressedMesh.byteLength;
       t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
-      dracoBuilder.destroy();
     }, `${tc.title} did not trow`);
 
     if (!tc.options.pointcloud) {

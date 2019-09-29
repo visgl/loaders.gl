@@ -48,15 +48,12 @@ Note: while supported, synchronous parsing of glTF (e.g. using `parseSync()`) ha
 
 ## Options
 
-The following options are used when `gltf.parserVersion` is set to `2`:
-
-| Option               | Type    | Default |                                                                                | Description |
-| -------------------- | ------- | ------- | ------------------------------------------------------------------------------ | ----------- |
-| `gltf.parserVersion` | Number  | `1`     | F                                                                              |
-| `gltf.fetchImages`   | Boolean | `false` | Fetch any referenced image files (and decode base64 encoded URIS). Async only. |
-| `gltf.parseImages`   | Boolean | `false` |
-| `gltf.decompress`    | Boolean | `true`  | Decompress Draco compressed meshes (if DracoLoader available).                 |
-| `gltf.postProcess`   | Boolean | `true`  | Perform additional post processing before returning data.                      |
+| Option             | Type    | Default |                                                                                | Description |
+| ------------------ | ------- | ------- | ------------------------------------------------------------------------------ | ----------- |
+| `gltf.fetchImages` | Boolean | `false` | Fetch any referenced image files (and decode base64 encoded URIS). Async only. |
+| `gltf.parseImages` | Boolean | `false` |
+| `gltf.decompress`  | Boolean | `true`  | Decompress Draco compressed meshes (if DracoLoader available).                 |
+| `gltf.postProcess` | Boolean | `true`  | Perform additional post processing before returning data.                      |
 
 Remarks:
 

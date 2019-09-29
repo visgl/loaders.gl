@@ -1,4 +1,5 @@
 /* eslint-disable max-len */
+/*
 import test from 'tape-promise/tape';
 
 import {fetchFile} from '@loaders.gl/core';
@@ -62,3 +63,4 @@ test('GLTFBuilder#addCompressedPointCloud', async t => {
 
   t.end();
 });
+*/

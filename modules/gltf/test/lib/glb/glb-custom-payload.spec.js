@@ -1,4 +1,5 @@
 /* eslint-disable */
+/*
 import test from 'tape-promise/tape';
 import {toLowPrecision} from 'test/test-utils';
 
@@ -142,3 +143,4 @@ test('pack-unpack-pack-json', t => {
 
   t.end();
 });
+*/

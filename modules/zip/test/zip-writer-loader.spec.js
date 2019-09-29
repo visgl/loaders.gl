@@ -1,8 +1,9 @@
 import test from 'tape-promise/tape';
 import {validateLoader, validateWriter} from 'test/common/conformance';
 
+/* global TextDecoder */
 import {ZipWriter, ZipLoader} from '@loaders.gl/zip';
-import {encode, parse, TextDecoder} from '@loaders.gl/core';
+import {encode, parse} from '@loaders.gl/core';
 
 const FILE_MAP = {
   src: 'abc',

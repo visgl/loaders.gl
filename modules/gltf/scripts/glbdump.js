@@ -1,6 +1,6 @@
-/* global console, process */
-/* eslint-disable no-console */
-
+/*
+/* global console, process *
+/* eslint-disable no-console *
 const {GLBParser, GLTFParser} = require('@loaders.gl/gltf');
 const {toArrayBuffer} = require('@loaders.gl/core');
 
@@ -134,3 +134,4 @@ function parseOptions(args) {
   }
   return opts;
 }
+*/

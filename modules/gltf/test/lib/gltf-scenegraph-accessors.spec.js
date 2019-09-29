@@ -17,11 +17,7 @@ test('GLTFScenegraph#ctor', t => {
 
 test('GLTFScenegraph#BufferView indices resolve correctly', async t => {
   const gltf = await load(GLB_TILE_WITH_DRACO_URL, [GLTFLoader, DracoLoader], {
-    gltf: {
-      parserVersion: 2,
-      decompress: false,
-      postProcess: false
-    }
+    gltf: {decompress: false, postProcess: false}
   });
 
   const gltfScenegraph = new GLTFScenegraph(gltf);

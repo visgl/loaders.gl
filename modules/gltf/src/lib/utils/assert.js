@@ -3,6 +3,6 @@
 // so no need to support it here
 export default function assert(condition, message) {
   if (!condition) {
-    throw new Error(message || 'gltf/glb assertion failed.');
+    throw new Error(message || 'assert failed: gltf');
   }
 }

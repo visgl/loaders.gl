@@ -4,11 +4,8 @@
 
 /* eslint-disable no-invalid-this */
 
-// TODO - Not found by Node.js - how to deal with this without loaders.gl?
-import {TextDecoder} from '@loaders.gl/core';
-
-// Note: papaparse is not an ES6 module
-import Papa from './papaparse.transpiled';
+/* global TextDecoder */
+import Papa from './papaparse.transpiled'; // Note: papaparse is not an ES6 module
 const {ChunkStreamer} = Papa;
 
 export default function AsyncIteratorStreamer(config) {

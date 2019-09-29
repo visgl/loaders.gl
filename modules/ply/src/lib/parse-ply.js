@@ -21,7 +21,7 @@
 //   }
 // });
 
-import {TextDecoder} from '@loaders.gl/core';
+/* global TextDecoder */
 import normalizePLY from './normalize-ply';
 
 export default function parsePLY(data, options = {}) {

@@ -61,9 +61,3 @@ export function getAccessorArrayTypeAndLength(accessor, bufferView) {
   assert(byteLength >= 0 && byteLength <= bufferView.byteLength);
   return {ArrayType, length, byteLength};
 }
-
-export function getFullUri(uri, base) {
-  // TODO: Use better logic to handle all protocols plus not delay on data
-  const absolute = uri.startsWith('data:') || uri.startsWith('http:') || uri.startsWith('https:');
-  return absolute ? uri : base.substr(0, base.lastIndexOf('/') + 1) + uri;
-}

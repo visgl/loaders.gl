@@ -18,7 +18,7 @@ export async function parseInBatches(data, loaders, options, url) {
   const loader = selectLoader(loaders, url, null);
 
   // Normalize options
-  options = mergeOptions(loader, options);
+  options = mergeOptions(loader, options, url);
 
   const context = getLoaderContext({url, loaders}, options);
 

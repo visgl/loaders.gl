@@ -10,8 +10,7 @@ const TILE_B3DM_WITH_DRACO_URL = '@loaders.gl/3d-tiles/test/data/143.b3dm';
 
 test('Tile3DLoader#Tile with GLB w/ Draco bufferviews', async t => {
   const response = await fetchFile(TILE_B3DM_WITH_DRACO_URL);
-  const tile = await parse(response, [Tile3DLoader, DracoLoader], {gltf: {parserVersion: 2}});
+  const tile = await parse(response, [Tile3DLoader, DracoLoader]);
   t.ok(tile);
-
   t.end();
 });

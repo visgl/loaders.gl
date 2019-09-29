@@ -53,7 +53,6 @@ export default function parseGLBSync(glb, arrayBuffer, byteOffset = 0, options =
 
   // Per spec we must iterate over chunks, ignoring all except JSON and BIN
   glb.json = {};
-  glb.hasBinChunk = false;
   glb.binChunks = [];
 
   parseGLBChunksSync(glb, dataView, byteOffset + GLB_FILE_HEADER_SIZE, options);

@@ -32,7 +32,7 @@ export function parseSync(data, loaders, options, context) {
   }
 
   // Normalize options
-  options = mergeOptions(loader, options);
+  options = mergeOptions(loader, options, url);
 
   context = getLoaderContext({url, parseSync, loaders}, options);
 

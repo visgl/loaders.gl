@@ -29,9 +29,9 @@ test('GLTFWriter#encode', async t => {
   gltfBuilder.addExtension(USED_EXTENSION_2, EXTENSION_DATA_1);
   gltfBuilder.addRequiredExtension(REQUIRED_EXTENSION_2, EXTENSION_DATA_2);
 
-  const arrayBuffer = encodeSync(gltfBuilder.gltf, GLTFWriter, {gltf: {parserVersion: 2}});
+  const arrayBuffer = encodeSync(gltfBuilder.gltf, GLTFWriter);
 
-  const gltf = await parse(arrayBuffer, GLTFLoader, {gltf: {parserVersion: 2, postProcess: false}});
+  const gltf = await parse(arrayBuffer, GLTFLoader, {gltf: {postProcess: false}});
   const gltfScenegraph = new GLTFScenegraph(gltf);
 
   const appData = gltfScenegraph.getApplicationData('viz');

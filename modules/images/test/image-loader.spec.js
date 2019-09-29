@@ -1,6 +1,6 @@
 import test from 'tape-promise/tape';
 
-import {ImageLoader, ImageBitmapLoader, HTMLImageLoader, _getImageSize} from '@loaders.gl/images';
+import {ImageLoader, _getImageSize} from '@loaders.gl/images';
 import {isBrowser, load} from '@loaders.gl/core';
 
 import {TEST_CASES, DATA_URL} from './lib/test-cases';
@@ -9,8 +9,6 @@ const TEST_URL = '@loaders.gl/images/test/data/img1-preview.png';
 
 test('image loaders#imports', t => {
   t.ok(ImageLoader, 'ImageLoader defined');
-  t.ok(ImageBitmapLoader, 'ImageBitmapLoader defined');
-  t.ok(HTMLImageLoader, 'HTMLImageLoader defined');
   t.end();
 });
 
