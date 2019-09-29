@@ -39,24 +39,21 @@ The `GLTFLoader` now always uses the new v2 parser, and the original `GLTFParser
 
 Note that automatic packing of binary data (aka "packed JSON" support) was only implemented in the v1 `GLTFLoader` and has thus also been removed. Experience showed that packing of binary data for `.glb` files is best handled by applications.
 
-Option changes
-
-- `gltf.parserVersion` No longer needs to be specied, version 2 is always used.
-
-DEPRECATED OPTIONS
+#### GLTFLoader option changes
 
 The foillowing top-level options are deprecated and will be removed in v2.0
 
-| Option                 | Type          | Default | Description                                                                    |
-| ---------------------- | ------------- | ------- | ------------------------------------------------------------------------------ |
-| `fetchLinkedResources` | Boolean       | `true`  | Fetch any linked .BIN files, decode base64 encoded URIS. Async only.           |
-| `fetchImages`          | Boolean       | `false` | Fetch any referenced image files (and decode base64 encoded URIS). Async only. |
-| `createImages`         | Boolean       | `false` |                                                                                |
-| `fetch`                | Function      | `fetch` | Function used to fetch linked resources.                                       |
-| `uri`                  | String        | `fetch` | Function used to fetch linked resources.                                       |
-| `decompress`           | Boolean       | `true`  | Decompress Draco compressed meshes (if DracoLoader available).                 |
-| `DracoLoader`          | `DracoLoader` | `null`  | Supply to enable decoding of Draco compressed meshes.                          |
-| `postProcess`          | Boolean       | `false` | Perform additional post processing before returning data.                      |
+| Removed Option         | Replacement                             | Descriptions                                                              |
+| ---------------------- | --------------------------------------- | ------------------------------------------------------------------------- |
+| `gltf.parserVersion`   | N/A                                     | No longer needs to be specied, only the new gltf parser is available.     |
+| `fetchLinkedResources` | `gltf.fetchBuffers`, `gltf.fetchImages` |                                                                           |
+| `fetchImages`          | `gltf.fetchImages`                      |                                                                           |
+| `createImages`         | N/A                                     | Images are now always created when fetched                                |
+| `decompress`           | `gltf.decompressMeshes`                 | Decompress Draco compressed meshes (if DracoLoader available).            |
+| `DracoLoader`          | N/A                                     | Supply `DracoLoader` to `parse`, or call `registerLoaders(pDracoLoader])` |
+| `postProcess`          | `gltf.postProcess`                      | Perform additional post processing before returning data.                 |
+| `uri`                  | `baseUri`                               | Auto-populated when loading from a url-equipped source                    |
+| `fetch`                | N/A                                     | fetch is automatically available to sub-loaders.                          |
 
 ### `@loaders.gl/draco`
 
