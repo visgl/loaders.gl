@@ -1,8 +1,8 @@
 # Image Accessors
 
-The actual JavaScript type of parsed images returned by the [`ImageLoader`](modules/images/docs/api-reference/image-loader.md) depends on whether you are running in a newer or older browser, or under Node.js.
+Unless specified via `options.type`, the actual JavaScript type of parsed images returned by the [`ImageLoader`](modules/images/docs/api-reference/image-loader.md) depends on whether you are running in a newer or older browser, or under Node.js.
 
-To simplify writing cross-platform image handling code that is optimized on newer browsers and works on older browsers and on Node.js, a set of image accessor functions are provided.
+To simplify writing cross-platform image handling code that is optimized on newer browsers and still works on older browsers and on Node.js, a set of image accessor functions are provided.
 
 ## Usage
 

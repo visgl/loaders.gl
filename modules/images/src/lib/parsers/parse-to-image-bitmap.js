@@ -1,5 +1,4 @@
 /* global Blob, createImageBitmap */
-export const IMAGE_BITMAP_SUPPORTED = typeof ImageBitmap !== 'undefined';
 
 // Asynchronously parses an array buffer into an ImageBitmap - this contains the decoded data
 // Supported on worker threads, not supported on Edge, IE11 and Safari
