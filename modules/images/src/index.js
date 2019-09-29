@@ -4,6 +4,22 @@ import ImageLoader from './image-loader';
 export {default as ImageLoader} from './image-loader';
 export {default as ImageWriter} from './image-writer';
 
+// Parsed Image API
+export {isImageTypeSupported, getSupportedImageType} from './lib/parsed-image-api/image-type';
+export {
+  isImage,
+  getImageType,
+  getImageSize,
+  getImageData
+} from './lib/parsed-image-api/parsed-image-api';
+
+// Binary Image API
+export {
+  isBinaryImage,
+  getBinaryImageMIMEType,
+  getBinaryImageSize
+} from './lib/binary-image-api/binary-image-api';
+
 // EXPERIMENTAL V2.0
 export {
   JPEGLoader as _JPEGLoader,
@@ -13,16 +29,6 @@ export {
   SVGLoader as _SVGLoader,
   ImageLoaders as _ImageLoaders
 } from './image-loaders';
-
-export {getImageSize as _getImageSize} from './lib/accessors/image-accessors';
-
-// UTILS
-export {
-  isImage,
-  getImageMetadata,
-  getImageMIMEType,
-  getImageSize
-} from './lib/metadata/get-image-metadata';
 
 // DEPRECATED
 

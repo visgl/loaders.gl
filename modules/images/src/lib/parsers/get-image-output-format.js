@@ -1,40 +1,26 @@
-import {NODE_IMAGE_SUPPORTED} from './parse-to-node-image';
-import {HTML_IMAGE_SUPPORTED} from './parse-to-html-image';
-import {IMAGE_BITMAP_SUPPORTED} from './parse-to-image-bitmap';
+import {isImageTypeSupported, getSupportedImageType} from '../parsed-image-api/image-type';
 
-import {isBrowser} from '../utils/globals';
-import assert from '../utils/assert';
-
-// The user can request a specific output format
-// If using loaders.gl to load images for HTML
-// TODO - should this throw or silently return the available format?
+// The user can request a specific output format via `options.type`
 // TODO - ImageBitmap vs HTMLImage depends on worker threads...
 export default function getImageOutputFormat(options = {}) {
   const imageOptions = options.image || {};
-  const requestedFormat = imageOptions.format || 'auto';
-  switch (requestedFormat) {
+  const type = imageOptions.format || 'auto';
+
+  switch (type) {
     case 'imagebitmap':
-      assert(IMAGE_BITMAP_SUPPORTED);
-      return requestedFormat;
     case 'html':
-      assert(HTML_IMAGE_SUPPORTED);
-      return requestedFormat;
-    default:
-    // warn?
-    // fall through
+    case 'ndarray':
+      // Check that it is actually supported
+      if (!isImageTypeSupported(type)) {
+        throw new Error(`Requested image type ${type} not available in current environment`);
+      }
+      return type;
+
     case 'auto':
-      if (NODE_IMAGE_SUPPORTED) {
-        return 'ndarray';
-      }
-      if (!isBrowser) {
-        throw new Error(`Install '@loaders.gl/polyfills' to parse images under Node.js`);
-      }
-      if (IMAGE_BITMAP_SUPPORTED) {
-        return 'imagebitmap';
-      }
-      if (HTML_IMAGE_SUPPORTED) {
-        return 'html';
-      }
-      return assert(false);
+      return getSupportedImageType();
+
+    default:
+      // Note: isImageTypeSupported throws on unknown type
+      throw new Error(`Unknown image format ${type}`);
   }
 }

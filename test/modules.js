@@ -9,6 +9,7 @@ require('@loaders.gl/polyfills/test');
 require('@loaders.gl/core/test');
 require('@loaders.gl/loader-utils/test');
 require('@loaders.gl/images/test');
+
 require('@loaders.gl/math/test');
 
 // Pointcloud/Mesh Formats

@@ -1,7 +1,7 @@
 import parseImage from './lib/parsers/parse-image';
 import parseSVG from './lib/parsers/parse-svg';
 
-import {isPng, isGif, isBmp, isJpeg} from './lib/metadata/image-sniffers';
+import {isPng, isGif, isBmp, isJpeg} from './lib/binary-image-api/binary-image-parsers';
 
 export const JPEGLoader = {
   id: 'jpeg',
