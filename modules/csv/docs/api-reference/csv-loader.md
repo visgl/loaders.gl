@@ -8,7 +8,7 @@ Streaming loader for comma-separated value and [delimiter-separated value](https
 | File Type      | Text                                                 |
 | File Format    | [RFC4180](https://tools.ietf.org/html/rfc4180)       |
 | Data Format    | [Classic Table](/docs/specifications/category-table) |
-| Loader Modes   | Synchronous, Asynchronous, Streaming                 |
+| Supported APIs | `load`, `parse`, `parseSync`, `parseInBatches`       |
 
 ## Usage
 

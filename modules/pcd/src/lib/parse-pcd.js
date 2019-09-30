@@ -9,7 +9,6 @@
 // Limitations: Compressed binary files are not supported.
 
 /* global TextDecoder */
-
 const LITTLE_ENDIAN = true;
 
 export default function parsePCD(data, url, options) {

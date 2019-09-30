@@ -1,7 +1,7 @@
+/* global TextDecoder */
 import test from 'tape-promise/tape';
 import {validateLoader, validateWriter} from 'test/common/conformance';
 
-/* global TextDecoder */
 import {ZipWriter, ZipLoader} from '@loaders.gl/zip';
 import {encode, parse} from '@loaders.gl/core';
 
