@@ -8,8 +8,7 @@
 // Description: A loader for PCD ascii and binary files.
 // Limitations: Compressed binary files are not supported.
 
-import {TextDecoder} from '@loaders.gl/core';
-
+/* global TextDecoder */
 const LITTLE_ENDIAN = true;
 
 export default function parsePCD(data, url, options) {

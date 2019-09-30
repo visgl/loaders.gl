@@ -38,7 +38,7 @@ export async function parse(data, loaders, options, context) {
   }
 
   // Normalize options
-  options = mergeOptions(loader, options);
+  options = mergeOptions(loader, options, autoUrl);
 
   // Get a context (if already present, will be unchanged)
   context = getLoaderContext({url: autoUrl, parse, loaders: candidateLoaders}, options, context);

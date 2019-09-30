@@ -20,71 +20,46 @@ test('GLTFLoader#loader conformance', t => {
   t.end();
 });
 
-// V2 parser
-
 test('GLTFLoader#parseSync()', async t => {
   const response = await fetchFile(GLTF_JSON_URL);
   const data = await response.text();
 
-  t.throws(
-    () => parseSync(data, GLTFLoader, {gltf: {parserVersion: 2}}),
-    'GLTFLoader throws when synchronously parsing gltfs'
-  );
+  t.throws(() => parseSync(data, GLTFLoader), 'GLTFLoader throws when synchronously parsing gltfs');
 
   t.end();
 });
 
 test('GLTFLoader#load(binary)', async t => {
-  const data = await load(GLTF_BINARY_URL, GLTFLoader, {gltf: {parserVersion: 2}});
-  t.ok(data.asset, 'GLTFLoader returned parsed data');
-  t.end();
-});
-
-test('GLTFLoader#load(text)', async t => {
-  const data = await load(GLTF_JSON_URL, GLTFLoader, {gltf: {parserVersion: 2}});
-  t.ok(data.asset, 'GLTFLoader returned parsed data');
-  t.end();
-});
-
-// V1 parser (deprecated)
-
-test('GLTFLoader#load(binary) V1', async t => {
   const data = await load(GLTF_BINARY_URL, GLTFLoader);
   t.ok(data.asset, 'GLTFLoader returned parsed data');
   t.end();
 });
 
-test('GLTFLoader#load(text) V1', async t => {
-  const data = await load(GLTF_JSON_URL, GLTFLoader);
+test('GLTFLoader#load(text)', async t => {
+  const data = await load(GLTF_JSON_URL, GLTFLoader, {gltf: {loadImages: false}});
   t.ok(data.asset, 'GLTFLoader returned parsed data');
   t.end();
 });
 
-test('GLTFLoader#Parses GLBs from 3D Tiles', async t => {
-  await testTileGLBs(t, {gltf: {parserVersion: 1}, decompress: true, DracoLoader}, 'v1');
-  await testTileGLBs(t, {gltf: {parserVersion: 2}}, 'v2');
-  t.end();
-});
-
-async function testTileGLBs(t, loaderOptions, version) {
-  t.ok(await load(GLB_TILE_URL, GLTFLoader, loaderOptions), `Parser ${version}: Test GLB parses`);
+test('GLTFLoader#load(3d tile GLB)', async t => {
+  t.ok(await load(GLB_TILE_URL, [GLTFLoader, DracoLoader]), `Test that GLB from 3D tile parses`);
 
   t.ok(
-    await load(GLB_TILE_WITH_DRACO_URL, [GLTFLoader, DracoLoader, ImageLoader], loaderOptions),
-    `Parser ${version}: Parses Draco GLB with supplied DracoLoader`
+    await load(GLB_TILE_WITH_DRACO_URL, [GLTFLoader, DracoLoader, ImageLoader]),
+    `Parses Draco GLB with supplied DracoLoader`
   );
 
   // TODO - prone to flakiness since we have async unregisterLoaders calls
   registerLoaders([DracoLoader, ImageLoader]);
 
   t.ok(
-    await load(GLB_TILE_WITH_DRACO_URL, GLTFLoader, loaderOptions),
-    `Parser ${version}: Parses Draco GLB with registered DracoLoader`
+    await load(GLB_TILE_WITH_DRACO_URL, GLTFLoader),
+    `Parses Draco GLB with registered DracoLoader`
   );
 
   t.rejects(
-    async () => await load(GLB_TILE_CESIUM_AIR_URL, GLTFLoader, loaderOptions),
+    async () => await load(GLB_TILE_CESIUM_AIR_URL, GLTFLoader),
     /Invalid GLB version 1/,
-    `Parser ${version}: GLB v1 is rejected with a user-friendly message`
+    `GLB v1 is rejected with a user-friendly message`
   );
-}
+});

@@ -1,15 +1,70 @@
 # Upgrade Guide
 
-## Upgrading from v1.3 to v2.0
+## Upgrading to v2.0
 
-### `@loaders.gl/core`:
+Version 2.0 is a major release that consolidates functionality and APIs, and a number of deprecated functions have been removed.
 
-- Loaders no longer have a `loadAndParse` removed. Just define `parse` on your loaders.
+### `@loaders.gl/core`
 
-### `@loaders.gl/images`:
+| Removal            | Replacement                                                            |
+| ------------------ | ---------------------------------------------------------------------- |
+| `TextEncoder`      | Use global `TextEncoder` instead and `@loaders.gl/polyfills` if needed |
+| `TextDecoder`      | Use global `TextDecoder` instead and `@loaders.gl/polyfills` if needed |
+| `createReadStream` | `fetch().then(resp => resp.body)`                                      |
+| `parseFile`        | `parse`                                                                |
+| `parseFileSync`    | `parseSync`                                                            |
+| `loadFile`         | `load`                                                                 |
+
+### `@loaders.gl/images`
+
+| Removal       | Replacement                       |
+| ------------- | --------------------------------- |
+| `decodeImage` | `parse(arrayBuffer, ImageLoader)` |
 
 - `ImageHTMLLoader` and `ImageHTMLLoader` removed. Use `options.images.format: 'html'` or `options.images.format: 'imagebitmap'` to control the output type.
 - `loadImage(url, options)` removed. Use `load(url, ImageLoader, options)` instead.
+
+### `@loaders.gl/gltf`
+
+The `GLTFLoader` now always uses the new v2 parser, and the original `GLTFParser` has been removed.
+
+| Removal            | Replacement  |
+| ------------------ | ------------ |
+| `GLBParser`        | `GLBLoader`  |
+| `GLBBuilder`       | `GLBWriter`  |
+| `GLTFParser`       | `GLTFLoader` |
+| `GLTFBuilder`      | `GLTFWriter` |
+| `packBinaryJson`   | N/A          |
+| `unpackBinaryJson` | N/A          |
+
+Note that automatic packing of binary data (aka "packed JSON" support) was only implemented in the v1 `GLTFLoader` and has thus also been removed. Experience showed that packing of binary data for `.glb` files is best handled by applications.
+
+#### GLTFLoader option changes
+
+The foillowing top-level options are deprecated and will be removed in v2.0
+
+| Removed Option         | Replacement                             | Descriptions                                                              |
+| ---------------------- | --------------------------------------- | ------------------------------------------------------------------------- |
+| `gltf.parserVersion`   | N/A                                     | No longer needs to be specied, only the new gltf parser is available.     |
+| `fetchLinkedResources` | `gltf.fetchBuffers`, `gltf.fetchImages` |                                                                           |
+| `fetchImages`          | `gltf.fetchImages`                      |                                                                           |
+| `createImages`         | N/A                                     | Images are now always created when fetched                                |
+| `decompress`           | `gltf.decompressMeshes`                 | Decompress Draco compressed meshes (if DracoLoader available).            |
+| `DracoLoader`          | N/A                                     | Supply `DracoLoader` to `parse`, or call `registerLoaders(pDracoLoader])` |
+| `postProcess`          | `gltf.postProcess`                      | Perform additional post processing before returning data.                 |
+| `uri`                  | `baseUri`                               | Auto-populated when loading from a url-equipped source                    |
+| `fetch`                | N/A                                     | fetch is automatically available to sub-loaders.                          |
+
+### `@loaders.gl/draco`
+
+| Removal        | Replacement   |
+| -------------- | ------------- |
+| `DracoParser`  | `DracoLoader` |
+| `DracoBuilder` | `DracoWriter` |
+
+### Loader Objects
+
+- Loaders no longer have a `loadAndParse` removed. Just define `parse` on your loaders.
 
 ## Upgrading from v1.2 to v1.3
 

@@ -48,34 +48,15 @@ Note: while supported, synchronous parsing of glTF (e.g. using `parseSync()`) ha
 
 ## Options
 
-The following options are used when `gltf.parserVersion` is set to `2`:
-
-| Option               | Type    | Default |                                                                                | Description |
-| -------------------- | ------- | ------- | ------------------------------------------------------------------------------ | ----------- |
-| `gltf.parserVersion` | Number  | `1`     | F                                                                              |
-| `gltf.fetchImages`   | Boolean | `false` | Fetch any referenced image files (and decode base64 encoded URIS). Async only. |
-| `gltf.parseImages`   | Boolean | `false` |
-| `gltf.decompress`    | Boolean | `true`  | Decompress Draco compressed meshes (if DracoLoader available).                 |
-| `gltf.postProcess`   | Boolean | `true`  | Perform additional post processing before returning data.                      |
-
-DEPRECATED OPTIONS
-
-The foillowing top-level options are deprecated and will be removed in v2.0
-
-| Option                 | Type          | Default | Description                                                                    |
-| ---------------------- | ------------- | ------- | ------------------------------------------------------------------------------ |
-| `fetchLinkedResources` | Boolean       | `true`  | Fetch any linked .BIN files, decode base64 encoded URIS. Async only.           |
-| `fetchImages`          | Boolean       | `false` | Fetch any referenced image files (and decode base64 encoded URIS). Async only. |
-| `createImages`         | Boolean       | `false` |                                                                                |
-| `fetch`                | Function      | `fetch` | Function used to fetch linked resources.                                       |
-| `uri`                  | String        | `fetch` | Function used to fetch linked resources.                                       |
-| `decompress`           | Boolean       | `true`  | Decompress Draco compressed meshes (if DracoLoader available).                 |
-| `DracoLoader`          | `DracoLoader` | `null`  | Supply to enable decoding of Draco compressed meshes.                          |
-| `postProcess`          | Boolean       | `false` | Perform additional post processing before returning data.                      |
+| Option             | Type    | Default |                                                                                | Description |
+| ------------------ | ------- | ------- | ------------------------------------------------------------------------------ | ----------- |
+| `gltf.fetchImages` | Boolean | `false` | Fetch any referenced image files (and decode base64 encoded URIS). Async only. |
+| `gltf.parseImages` | Boolean | `false` |
+| `gltf.decompress`  | Boolean | `true`  | Decompress Draco compressed meshes (if DracoLoader available).                 |
+| `gltf.postProcess` | Boolean | `true`  | Perform additional post processing before returning data.                      |
 
 Remarks:
 
-- The v1 parser will be removed in loaders.gl v2.0
 - `postProcess`: Performs additional [post processing](docs/api-reference/post-process-gltf) to simplify use in WebGL libraries. Changes the return value of the call.
 
 ## Data Format

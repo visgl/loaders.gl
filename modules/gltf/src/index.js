@@ -13,15 +13,7 @@ export {default as GLBWriter} from './glb-writer';
 export {default as GLTFScenegraph} from './lib/gltf-scenegraph';
 export {default as postProcessGLTF} from './lib/post-process-gltf';
 
-// For 3D Tiles
-export {encodeGLTFSync} from './lib/encode-gltf';
-
 // DEPRECATED
-export {default as packBinaryJson} from './lib/deprecated/packed-json/pack-binary-json';
-export {default as unpackBinaryJson} from './lib/deprecated/packed-json/unpack-binary-json';
 
-export {default as GLBParser} from './lib/deprecated/glb-parser';
 export {default as GLBBuilder} from './lib/deprecated/glb-builder';
-
-export {default as GLTFParser} from './lib/deprecated/gltf-parser';
-export {default as GLTFBuilder} from './lib/deprecated/gltf-builder';
+export {encodeGLTFSync} from './lib/encode-gltf'; // For 3D Tiles

@@ -7,7 +7,7 @@ const COMMON_DEFAULT_OPTIONS = {
 const isPureObject = value =>
   value && typeof value === 'object' && value.constructor === {}.constructor;
 // Merges
-export function mergeOptions(loader, options) {
+export function mergeOptions(loader, options, url) {
   const loaderDefaultOptions =
     loader && (loader.DEFAULT_OPTIONS || loader.defaultOptions || loader.options || {});
 
@@ -18,14 +18,23 @@ export function mergeOptions(loader, options) {
     ...options // Merges any non-nested fields, but clobbers nested fields
   };
 
-  // LOGGING
+  // TODO - remove file component from baseUri
+  if (url && !('baseUri' in mergedOptions)) {
+    mergedOptions.baseUri = url;
+  }
 
-  // options.log can be set to `null` to defeat logging
+  // LOGGING: options.log can be set to `null` to defeat logging
   if (mergedOptions.log === null) {
     mergedOptions.log = new NullLog();
   }
 
-  // Merge nested fields
+  mergeNesteFields(mergedOptions, options, loaderDefaultOptions);
+
+  return mergedOptions;
+}
+
+// Merge nested options objects
+function mergeNesteFields(mergedOptions, options, loaderDefaultOptions) {
   for (const key in options) {
     const value = options[key];
     // Check for nested options
@@ -42,6 +51,4 @@ export function mergeOptions(loader, options) {
     }
     // else: No need to merge nested opts, and the initial merge already copied over the nested options
   }
-
-  return mergedOptions;
 }

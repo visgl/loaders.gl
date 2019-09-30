@@ -55,8 +55,9 @@ async function decompressPrimitive(primitive, scenegraph, options, context) {
   // TODO - remove when `parse` is fixed to handle `byteOffset`s
   const bufferCopy = getZeroOffsetArrayBuffer(buffer.buffer, buffer.byteOffset); // , buffer.byteLength);
 
+  // this will generate an exception if DracoLoader is not installed
   const {parse} = context;
-  const decodedData = await parse(bufferCopy, options);
+  const decodedData = await parse(bufferCopy, [], options, context);
 
   primitive.attributes = getGLTFAccessors(decodedData.attributes);
   if (decodedData.indices) {

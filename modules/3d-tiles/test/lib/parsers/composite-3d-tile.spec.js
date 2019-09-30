@@ -1,12 +1,6 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
-/* eslint-disable max-len */
-
-// NOTICE: This file was forked from
-// https://github.com/AnalyticalGraphicsInc/cesium/blob/master/Specs/Scene/Composite3DTileContentSpec.js
-// which is under Apache 2 license
-
 import test from 'tape-promise/tape';
 import {parse, parseSync, encodeSync} from '@loaders.gl/core';
 import {Tile3DLoader, Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/3d-tiles';

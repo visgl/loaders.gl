@@ -3,7 +3,6 @@ import {padTo4Bytes, copyToArray} from '@loaders.gl/loader-utils';
 import {isImage} from '@loaders.gl/images';
 import {getAccessorTypeFromSize, getComponentTypeFromArray} from '../gltf-utils/gltf-utils';
 import encodeGLBSync from '../encode-glb';
-import packBinaryJson from './packed-json/pack-binary-json';
 
 export default class GLBBuilder {
   constructor(options = {}) {
@@ -80,8 +79,7 @@ export default class GLBBuilder {
   // Add an extra application-defined key to the top-level data structure
   // By default packs JSON by extracting binary data and replacing it with JSON pointers
   addApplicationData(key, data, packOptions = {}) {
-    const jsonData = packOptions.packTypedArrays ? packBinaryJson(data, this, packOptions) : data;
-    this.json[key] = jsonData;
+    this.json[key] = data;
     return this;
   }
 

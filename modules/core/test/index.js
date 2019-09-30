@@ -9,8 +9,6 @@ import './lib/load.spec';
 import './lib/register-loaders.spec';
 import './lib/select-loader.spec';
 
-// TODO - Worker utils tests test loading, not just worker farm
-// so we keep them after util tests
+// TODO - The worker-utils specs test loading, not just worker farm
+// so we run them after util tests, until loading has been split out
 import './worker-utils';
-
-import './deprecated/create-read-stream.spec';

@@ -1,4 +1,5 @@
 /* eslint-disable max-len */
+/*
 import test from 'tape-promise/tape';
 
 import {GLBBuilder, GLBParser} from '@loaders.gl/gltf';
@@ -39,3 +40,4 @@ test('GLB#encode-and-decode', t => {
   t.deepEqual(unpackedBuffers.accessors, BUFFERS, 'buffers should be deep equal');
   t.end();
 });
+*/

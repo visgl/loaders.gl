@@ -1,4 +1,5 @@
 /* eslint-disable max-len */
+/*
 import test from 'tape-promise/tape';
 
 import {GLTFBuilder, GLTFParser} from '@loaders.gl/gltf';
@@ -45,3 +46,4 @@ test('GLTF roundtrip#extensions', t => {
 
   t.end();
 });
+*/

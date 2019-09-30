@@ -7,9 +7,7 @@ export default {
   mimeType: 'model/gltf+json',
   encodeSync,
   binary: true,
-  defaultOptions: {
-    useGLTFBuilder: true // Note: GLTFBuilder will be removed in v2
-  }
+  options: {}
 };
 
 function encodeSync(gltf, options = {}) {

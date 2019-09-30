@@ -328,13 +328,6 @@ class GLTFPostProcessor {
       // delete image.bufferView;
     }
 
-    // DEPRECATED: just use image.image
-    image.getImageAsync = () => {
-      // Check if already loaded
-      assert(image.image);
-      return image.image;
-    };
-
     return image;
   }
 

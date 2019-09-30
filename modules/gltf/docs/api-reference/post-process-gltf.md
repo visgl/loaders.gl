@@ -7,22 +7,19 @@ The `postProcessGLTF` function transforms parsed GLTF JSON to make it easier to 
 
 ## Usage
 
-Postprocessing is done by default in the v2 `GLTFLoader`:
+Postprocessing is done by default by the `GLTFLoader`:
 
 ```js
 import {GLTFLoader} from '@loaders.gl/gltf';
-const gltf = await parse(..., GLTFLoader, {
-  {gltf: {parserVersion: 2}}
-});
-const processedGLTF = postProcesssGLTF(gltf);
+const processedGLTF = await parse(..., GLTFLoader,);
 ```
 
 To turn post processing off, and then optionally post process via `postProcessGLTF` function:
 
 ```js
 import {GLTFLoader, postProcessGLTF} from '@loaders.gl/gltf';
-const gltf = await parse(..., GLTFLoader, {gltf: {parserVersion: 2, postProcess: false}});
-const processedGLTF = postProcesssGLTF(gltf);
+const gltf = await parse(..., GLTFLoader, {gltf: {postProcess: false}});
+const processedGLTF = postProcessGLTF(gltf);
 ```
 
 After post-processing, the gltf scenegraphs are now easier to iterate over as indices have been resolved to object references:
