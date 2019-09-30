@@ -5,6 +5,7 @@
 Version 2.0 is a major release that consolidates functionality and APIs, and a number of deprecated functions have been removed.
 
 <<<<<<< HEAD
+
 ### `@loaders.gl/core`
 
 | Removal            | Replacement                                                            |
@@ -18,14 +19,14 @@ Version 2.0 is a major release that consolidates functionality and APIs, and a n
 
 ### `@loaders.gl/images`
 
-| Removal       | Replacement                       |
-| ------------- | --------------------------------- |
-| `ImageHTMLLoader`  | `ImageLoader` with `options.images.format: 'html'`        |
-| `ImageBitmapLoader`  | `ImageLoader` with `options.images.format: 'imagebitmap'` |
-| `decodeImage` | `parse(arrayBuffer, ImageLoader)` |
-| `isImage`          | `isBinaryImage`                                           |
-| `getImageMIMEType` | `getBinaryImageMIMEType`                                  |
-| `getImageSize`     | `getBinaryImageSize`                                      |
+| Removal             | Replacement                                               |
+| ------------------- | --------------------------------------------------------- |
+| `ImageHTMLLoader`   | `ImageLoader` with `options.images.format: 'html'`        |
+| `ImageBitmapLoader` | `ImageLoader` with `options.images.format: 'imagebitmap'` |
+| `decodeImage`       | `parse(arrayBuffer, ImageLoader)`                         |
+| `isImage`           | `isBinaryImage`                                           |
+| `getImageMIMEType`  | `getBinaryImageMIMEType`                                  |
+| `getImageSize`      | `getBinaryImageSize`                                      |
 
 ### Loader Objects
 
