@@ -10,7 +10,8 @@ Note: applications that want to parse GLB-formatted glTF files use the `GLTFLoad
 | File Type       | Binary                                                                                                  |
 | File Format     | [GLB](https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#glb-file-format-specification) |
 | Data Format     | See below                                                                                               |
-| Supported APIs  | `parse`, `parseSync`                                                                                    |
+| Supported APIs  | `load`, `parse`, `parseSync`                                                                            |
+|                 |
 
 ## Usage
 
