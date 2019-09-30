@@ -46,33 +46,3 @@ export async function loadImageCube(getUrl, options = {}) {
   const urls = await getImageCubeUrls(getUrl, options);
   return await deepLoad(urls, parseImage, options);
 }
-
-/*
-export async function loadImageCube(getUrl, options = {}) {
-  const faces = {};
-  const promises = [];
-
-  const urlOptions = {...options};
-
-  // Iterate over faces
-  for (let i = 0; i < CUBE_FACES.length; ++i) {
-    // Populate url options
-    urlOptions.index = i;
-    Object.assign(urlOptions, CUBE_FACES[i]);
-
-    // Load the image(s) for this face
-    // eslint-disable-next-line no-loop-func
-    const promise = loadImage(getUrl, urlOptions).then(image => {
-      // Use (stringified) value of the GL constant for this face as the key in the returned object
-      const {face} = CUBE_FACES[i];
-      faces[face] = image;
-    });
-
-    promises.push(promise);
-  }
-
-  await Promise.all(promises);
-
-  return faces;
-}
-*/

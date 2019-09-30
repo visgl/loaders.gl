@@ -15,19 +15,3 @@ export async function getImageArrayUrls(count, getUrl, options = {}) {
   }
   return await Promise.all(promises);
 }
-
-/*
-export async function loadImageArray(count, getUrl, options = {}) {
-  const urlOptions = {...options};
-
-  const promises = [];
-
-  for (let i = 0; i < count; i++) {
-    urlOptions.index = i;
-    const promise = loadImage(getUrl, urlOptions);
-    promises.push(promise);
-  }
-
-  return await Promise.all(promises);
-}
-*/
