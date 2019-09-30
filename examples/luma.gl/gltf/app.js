@@ -29,7 +29,7 @@ const CUBE_FACE_TO_DIRECTION = {
   [GL.TEXTURE_CUBE_MAP_NEGATIVE_Z]: 'back'
 };
 
-registerLoaders([DracoLoader]);
+registerLoaders([GLTFLoader, DracoLoader]);
 
 export default class AppAnimationLoop extends AnimationLoop {
   // TODO - do we need both?

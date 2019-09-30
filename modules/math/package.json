@@ -32,6 +32,6 @@
   },
   "dependencies": {
     "@loaders.gl/images": "2.0.0-alpha.1",
-    "math.gl": "^3.0.0-beta.3"
+    "math.gl": "^3.0.0"
   }
 }
