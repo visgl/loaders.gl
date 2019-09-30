@@ -1,5 +1,4 @@
 /* global self, Image, Blob */
-
 // NOTE: Will get false positives from jsdom!
 export const HTML_IMAGE_SUPPORTED = typeof Image !== undefined;
 

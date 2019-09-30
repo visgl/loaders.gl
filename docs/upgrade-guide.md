@@ -4,6 +4,8 @@
 
 Version 2.0 is a major release that consolidates functionality and APIs, and a number of deprecated functions have been removed.
 
+<<<<<<< HEAD
+
 ### `@loaders.gl/core`
 
 | Removal            | Replacement                                                            |
@@ -17,12 +19,18 @@ Version 2.0 is a major release that consolidates functionality and APIs, and a n
 
 ### `@loaders.gl/images`
 
-| Removal       | Replacement                       |
-| ------------- | --------------------------------- |
-| `decodeImage` | `parse(arrayBuffer, ImageLoader)` |
+| Removal             | Replacement                                               |
+| ------------------- | --------------------------------------------------------- |
+| `ImageHTMLLoader`   | `ImageLoader` with `options.images.format: 'html'`        |
+| `ImageBitmapLoader` | `ImageLoader` with `options.images.format: 'imagebitmap'` |
+| `decodeImage`       | `parse(arrayBuffer, ImageLoader)`                         |
+| `isImage`           | `isBinaryImage`                                           |
+| `getImageMIMEType`  | `getBinaryImageMIMEType`                                  |
+| `getImageSize`      | `getBinaryImageSize`                                      |
 
-- `ImageHTMLLoader` and `ImageHTMLLoader` removed. Use `options.images.format: 'html'` or `options.images.format: 'imagebitmap'` to control the output type.
-- `loadImage(url, options)` removed. Use `load(url, ImageLoader, options)` instead.
+### Loader Objects
+
+- Loaders can no longer have a `loadAndParse` method. Remove it, and just make sure you define `parse` on your loaders instead.
 
 ### `@loaders.gl/gltf`
 

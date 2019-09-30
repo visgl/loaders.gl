@@ -1,4 +1,4 @@
-import {getImageMIMEType} from '@loaders.gl/images';
+import {getBinaryImageMIMEType} from '@loaders.gl/images';
 import {padTo4Bytes, copyToArray} from '@loaders.gl/loader-utils';
 import assert from './utils/assert';
 import {
@@ -299,7 +299,7 @@ export default class GLTFScenegraph {
     // If image is referencing a bufferView instead of URI, mimeType must be defined:
     //   https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#images
     //   "a reference to a bufferView; in that case mimeType must be defined."
-    mimeType = mimeType || getImageMIMEType(imageData);
+    mimeType = mimeType || getBinaryImageMIMEType(imageData);
 
     const bufferViewIndex = this.addBufferView(imageData);
 

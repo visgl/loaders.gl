@@ -6,25 +6,25 @@
 // import {bufferToArrayBuffer} from '../node/buffer-to-array-buffer';
 // TODO - this should be handled in @loaders.gl/polyfills
 
-import {mimeTypeMap} from './image-sniffers';
+import {mimeTypeMap} from './binary-image-parsers';
 
 const ERR_INVALID_MIME_TYPE = `Invalid MIME type. Supported MIME types are: ${Array.from(
   mimeTypeMap.keys()
 ).join(', ')}`;
 
 // Supported image types are PNG, JPEG, GIF and BMP.
-export function isImage(arrayBuffer, mimeType) {
+export function isBinaryImage(arrayBuffer, mimeType) {
   if (mimeType) {
-    const {test} = getImageTypeHandlers(mimeType);
+    const {test} = getBinaryImageTypeHandlers(mimeType);
     const dataView = toDataView(arrayBuffer);
     return test(dataView);
   }
   // check if known type
-  return Boolean(getImageMIMEType(arrayBuffer));
+  return Boolean(getBinaryImageMIMEType(arrayBuffer));
 }
 
 // Sniffs the contents of a file to attempt to deduce the image type
-export function getImageMIMEType(arrayBuffer) {
+export function getBinaryImageMIMEType(arrayBuffer) {
   const dataView = toDataView(arrayBuffer);
 
   // Loop through each file type and see if they work.
@@ -37,10 +37,10 @@ export function getImageMIMEType(arrayBuffer) {
   return null;
 }
 
-export function getImageSize(arrayBuffer, mimeType = null) {
-  mimeType = mimeType || getImageMIMEType(arrayBuffer);
+export function getBinaryImageSize(arrayBuffer, mimeType = null) {
+  mimeType = mimeType || getBinaryImageMIMEType(arrayBuffer);
 
-  const {getSize} = getImageTypeHandlers(mimeType);
+  const {getSize} = getBinaryImageTypeHandlers(mimeType);
 
   const dataView = toDataView(arrayBuffer);
   const size = getSize(dataView);
@@ -52,17 +52,7 @@ export function getImageSize(arrayBuffer, mimeType = null) {
   return size;
 }
 
-// Sniffs the contents of a file to attempt to deduce the image type and size.
-// Supported image types are PNG, JPEG, GIF and BMP.
-export function getImageMetadata(arrayBuffer, mimeType = null) {
-  mimeType = mimeType || getImageMIMEType(arrayBuffer);
-
-  const metadata = getImageSize(arrayBuffer, mimeType);
-  metadata.mimeType = mimeType;
-  return metadata;
-}
-
-function getImageTypeHandlers(mimeType) {
+function getBinaryImageTypeHandlers(mimeType) {
   const handlers = mimeTypeMap.get(mimeType);
   if (!handlers) {
     throw new Error(ERR_INVALID_MIME_TYPE);

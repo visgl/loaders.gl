@@ -1,6 +1,6 @@
 import test from 'tape-promise/tape';
 
-import {ImageLoader, _getImageSize} from '@loaders.gl/images';
+import {ImageLoader, getImageSize} from '@loaders.gl/images';
 import {isBrowser, load} from '@loaders.gl/core';
 
 import {TEST_CASES, DATA_URL} from './lib/test-cases';
@@ -49,7 +49,7 @@ async function testLoadImage(t, testCase) {
 
   const image = await load(url, ImageLoader);
   t.ok(image, `${title} loaded ${url.slice(0, 40)}...`);
-  const imageSize = _getImageSize(image);
+  const imageSize = getImageSize(image);
   t.ok(
     imageSize.width === width && imageSize.height === height,
     `${title} image has correct content ${url.slice(0, 30)}`

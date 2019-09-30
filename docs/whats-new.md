@@ -25,17 +25,30 @@ The 2.0 release brings stronger loader composition, image loading improvements, 
 - **Image Category** now defined
 
   - Category ensures interchangability
-  - Composite loader (Array) `ImageLoaders` for easy registration.
-  - No longer uses `loadAndParse`,
-  - Node.js support improved.
 
+- **New ImageLoader options**
 - `options.image` contain common options that apply across the category
 
-  - `options.image.format`, Ability to control loaded image format, default `auto`
+  - `options.image.type`, Ability to control loaded image type, default `auto`
   - TBA `options.image.useWorkers: true` - Worker Image Loaders on Chrome and Firefox
   - TBA `options.image.decodeHTML: true` - Support for `Image.decode()` to ensure HTML images are ready to be used when loader promise resolves.
 
-  - TBD: Now have a separate micro loader for each format: `JPEGLoader`, `PNGLoader`, `GIFLoader`, `BMPLoader`, `SVGLoader`
+- **Parsed Image API** To help working with loaded images across platform
+
+  - `isImage`, `getImageType`, `getImageSize`, `getImageData`, ...
+
+- **Binary Image API** Separate API to work with unparsed images in binary data form
+
+  - `isBinaryImage`, `getBinaryImageType`, `getBinaryImageSize`, ...
+
+- **Separate Loaders** (Experimental) Now exports a separate micro loader for each format: `_JPEGLoader`, `_PNGLoader`, `_GIFLoader`, `_BMPLoader`, `_SVGLoader`
+
+- **Separate Loaders**
+
+  - Composite loader (Array) `ImageLoaders` for easy registration.
+
+- **Improved Node.js image support**
+  - More test cases are now run in both browser and Node.js and a few important issues were uncovered and fixed.
 
 ## v1.3
 

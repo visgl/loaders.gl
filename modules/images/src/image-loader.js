@@ -1,6 +1,6 @@
 import parseImage from './lib/parsers/parse-image';
 
-import {isPng, isGif, isBmp, isJpeg} from './lib/metadata/image-sniffers';
+import {isPng, isGif, isBmp, isJpeg} from './lib/binary-image-api/binary-image-parsers';
 
 const EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'ico', 'svg'];
 
