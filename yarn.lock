@@ -1435,33 +1435,6 @@
     npmlog "^4.1.2"
     write-file-atomic "^2.3.0"
 
-"@loaders.gl/core@1.2.1":
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/core/-/core-1.2.1.tgz#77c2ac33d935429dc37419754ab3ec1fd0c45fda"
-  integrity sha512-D+KdCQSKMhnReC3gNSdjNs2sQrm7SviEbu68mD93k4VqCyNg9/5AHY9FAK6P6SQkau0GAJ0zXIJ/GIxxuOLNoQ==
-  dependencies:
-    "@babel/runtime" "^7.3.1"
-
-"@loaders.gl/images@1.2.1":
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/images/-/images-1.2.1.tgz#558b45fdeb55f783acf4d34b3df5fc974d8efa6d"
-  integrity sha512-Ec/UAqfsQifdQjUdW2yvLf0KyHAwv6Ej4xEKyIC6JWD6KE2Z1hfAKrwdhIsiLBPHIonvxy41jSuVEJeoVYonEA==
-
-"@loaders.gl/loader-utils@1.2.1":
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/loader-utils/-/loader-utils-1.2.1.tgz#fc6846927bc379b20fe71e22a5f3622edcedb59a"
-  integrity sha512-g3IEg58PiCaISi8R6FU+o4OS/GFJDr8Rx/R54lkGdPzDlsdsaKCL90cs6FlQ/Bwyzo+uXPd4UDkz1Oc1Qyvjxg==
-  dependencies:
-    "@babel/runtime" "^7.3.1"
-
-"@loaders.gl/math@1.2.1":
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/math/-/math-1.2.1.tgz#5adf903843b5a6861734e7546cc368dc7353a758"
-  integrity sha512-SrbPiId9sh87XOjE6bE2dhTkxJeUfP4GoKAN8py5rdRxbjvRt+gA/Y4YuTRONRzNcQsNV13EPgbHKXUPGdzCUw==
-  dependencies:
-    "@loaders.gl/core" "1.2.1"
-    "@loaders.gl/images" "1.2.1"
-
 "@luma.gl/constants@7.3.0":
   version "7.3.0"
   resolved "https://registry.yarnpkg.com/@luma.gl/constants/-/constants-7.3.0.tgz#b1c45f22ccdd0f2b7064df3d76c44e30d19e3252"
@@ -1617,22 +1590,22 @@
     once "^1.4.0"
     universal-user-agent "^4.0.0"
 
-"@probe.gl/bench@^3.1.0-beta.3":
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/@probe.gl/bench/-/bench-3.1.0.tgz#30aa5de961e4b50023642671389cdea3c71c53ee"
-  integrity sha512-X57uX3xCrUm66+kDOsCEsRJGpNBrrHqB10VzXM3xtmArM54AG/NAaIdUQmiBVhm/sKIK0DuoqcNI51OSniQf5Q==
+"@probe.gl/bench@^3.1.1":
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/@probe.gl/bench/-/bench-3.1.1.tgz#caba3f7fabd0149f1b6fb28db27adc7ef454f813"
+  integrity sha512-opy3rdUqgz+GRQ5aam49UKZXIERZMCE7eLQm9uKaTTghdy/UJswKbRKcJc2mbk5k3sOyLILLZPJrIxfvfNSAbQ==
   dependencies:
     "@babel/runtime" "^7.0.0"
-    probe.gl "3.1.0"
+    probe.gl "3.1.1"
 
-"@probe.gl/test-utils@^3.1.0-beta.3":
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/@probe.gl/test-utils/-/test-utils-3.1.0.tgz#839ebb4802bcbe23e80523f3d9fd783af02b1b09"
-  integrity sha512-kxtnHnnno7U/CED2FhQEpwq/8aEEJL93UrtBpu7GQ7ICi1DIBOQaHlMLkeFeRxo0qAuV0X1Bi1tgkJh5h2FGRw==
+"@probe.gl/test-utils@^3.1.1":
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/@probe.gl/test-utils/-/test-utils-3.1.1.tgz#3ffb632b590ae82ae40011e520be0a2e5eb94059"
+  integrity sha512-jeOficrZ6zEc38kQTLVfj98GHb551EHv17QSUPTB2lr7grhD2juA+g0h7mmQWW6QNVEzXkJROo2Bv2LO1Ci5Fw==
   dependencies:
     "@babel/runtime" "^7.0.0"
     pixelmatch "^4.0.2"
-    probe.gl "3.1.0"
+    probe.gl "3.1.1"
     puppeteer "^1.16.0"
 
 "@types/events@*":
@@ -6177,7 +6150,7 @@ map-visit@^1.0.0:
   dependencies:
     object-visit "^1.0.0"
 
-math.gl@3.0.0, math.gl@^3.0.0, math.gl@^3.0.0-beta.2, math.gl@^3.0.0-beta.3:
+math.gl@3.0.0, math.gl@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/math.gl/-/math.gl-3.0.0.tgz#fe7ee98bd9439a29942246b3fe7a36f27fba06b2"
   integrity sha512-HIH2zXZmkCLudLUQjZe8ppnM5bMBeo8prblFSVQ0jy9AxPa3HZqYONDX6vPOf3En7nwkJzw451JHSYAxe70nPA==
@@ -7533,14 +7506,7 @@ private@^0.1.6:
   resolved "https://registry.yarnpkg.com/private/-/private-0.1.8.tgz#2381edb3689f7a53d653190060fcf822d2f368ff"
   integrity sha512-VvivMrbvd2nKkiG38qjULzlc+4Vx4wm/whI9pQD35YrARNnhxeiRktSOhSukRLFNlzg6Br/cJPet5J/u19r/mg==
 
-probe.gl@3.1.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/probe.gl/-/probe.gl-3.1.0.tgz#6aaeeb2d5bff85458fb7e8f7a72a57a53757c745"
-  integrity sha512-Bqk+hMklRtHJ29UcDvhjh0ha0JLoZI5wpPBZdzAOwciBGhPXNy1C/TD1ihKBdOlCzTw78EKVLm0eKLj5Xek5+w==
-  dependencies:
-    "@babel/runtime" "^7.0.0"
-
-probe.gl@^3.1.1:
+probe.gl@3.1.1, probe.gl@^3.1.1:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/probe.gl/-/probe.gl-3.1.1.tgz#58f5d23efe588b9d9af10add6b47587f8e6c72b3"
   integrity sha512-mD/DzhaYVftrRpobJd/W5JNhDVYCpClhuCGeOphuNZO1+qM6tOlBIf/6ETz11JyolZoJTTeT6aiVXOuIVyAVRg==
