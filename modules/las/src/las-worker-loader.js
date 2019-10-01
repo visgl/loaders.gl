@@ -1,8 +1,10 @@
-// The bundled worker is imported as an inline string
-import worker from '../dist/las-loader.worker.js';
-
 export default {
   name: 'LAZ',
   extensions: ['las', 'laz'],
-  worker
+  worker: true,
+  defaultOptions: {
+    /* global __VERSION__ */
+    // __VERSION__ is injected by babel-plugin-version-inline
+    workerUrl: `https://unpkg.com/@loaders.gl/las@${__VERSION__}/dist/las-loader.worker.js`
+  }
 };

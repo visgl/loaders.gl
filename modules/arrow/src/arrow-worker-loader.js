@@ -1,10 +1,12 @@
-// The bundled worker is imported as an inline string
-import worker from '../dist/arrow-loader.worker.js';
-
 export default {
   name: 'Apache Arrow',
   extensions: ['arrow'],
   mimeType: 'application/octet-stream',
   category: 'table',
-  worker
+  worker: true,
+  defaultOptions: {
+    /* global __VERSION__ */
+    // __VERSION__ is injected by babel-plugin-version-inline
+    workerUrl: `https://unpkg.com/@loaders.gl/arrow@${__VERSION__}/dist/arrow-loader.worker.js`
+  }
 };

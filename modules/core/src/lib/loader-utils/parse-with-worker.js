@@ -58,6 +58,21 @@ export default function parseWithWorker(
   options = {},
   context = {}
 ) {
+  if (options.workerUrl) {
+    if (options.workerUrl.startsWith('http')) {
+      // Per spec worker cannot be constructed from a different origin
+      // Only use trusted sources!
+      workerSource = `
+  try {
+    importScripts('${options.workerUrl}')
+  } catch (error) {
+    console.error(error);
+  }`;
+    } else {
+      workerSource = `url(${options.workerUrl})`;
+    }
+  }
+
   const workerFarm = getWorkerFarm(options);
 
   // options.log object contains functions which cannot be transferred

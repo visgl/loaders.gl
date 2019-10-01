@@ -1,10 +1,12 @@
-// The bundled worker is imported as an inline string
-import worker from '../dist/draco-loader.worker.js';
-
 export default {
   name: 'DRACO',
   extensions: ['drc'],
   binary: true,
   test: 'DRACO',
-  worker
+  worker: true,
+  defaultOptions: {
+    /* global __VERSION__ */
+    // __VERSION__ is injected by babel-plugin-version-inline
+    workerUrl: `https://unpkg.com/@loaders.gl/draco@${__VERSION__}/dist/draco-loader.worker.js`
+  }
 };
