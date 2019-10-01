@@ -4,7 +4,7 @@ import {isImageTypeSupported, getSupportedImageType} from '../parsed-image-api/i
 // TODO - ImageBitmap vs HTMLImage depends on worker threads...
 export default function getImageOutputFormat(options = {}) {
   const imageOptions = options.image || {};
-  const type = imageOptions.format || 'auto';
+  const type = imageOptions.type || 'auto';
 
   switch (type) {
     case 'imagebitmap':

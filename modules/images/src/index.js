@@ -1,6 +1,3 @@
-import {load} from '@loaders.gl/core';
-import ImageLoader from './image-loader';
-
 export {default as ImageLoader} from './image-loader';
 export {default as ImageWriter} from './image-writer';
 
@@ -20,6 +17,11 @@ export {
   getBinaryImageSize
 } from './lib/binary-image-api/binary-image-api';
 
+// Texture Loading API
+export {loadImage} from './lib/texture-loading-api/load-image';
+export {loadImageArray} from './lib/texture-loading-api/load-image-array';
+export {loadImageCube} from './lib/texture-loading-api/load-image-cube';
+
 // EXPERIMENTAL V2.0
 export {
   JPEGLoader as _JPEGLoader,
@@ -29,9 +31,3 @@ export {
   SVGLoader as _SVGLoader,
   ImageLoaders as _ImageLoaders
 } from './image-loaders';
-
-// DEPRECATED
-
-export async function loadImage(url, options) {
-  return await load(url, ImageLoader, options);
-}

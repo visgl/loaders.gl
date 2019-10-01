@@ -1,17 +1,50 @@
 # loadImage
 
-## Functions
+## Usage
 
-### loadImage(url : String [, options : Object]) : Image / HTMLImageElement
+```js
+import '@loaders.gl/polyfills'; // only needed if using under Node
+import {loadImage} from `@loaders.gl/images`;
 
-<p class="badges">
-   <img src="https://img.shields.io/badge/browser-only-red.svg?style=flat-square" alt="browser only" />
-</p>
+const image = await loadImage(url);
+```
 
-This is a minimal basic image loading function that only works in the browser main threaqd. For image loading and writing that works across both browser and node, refer to the `@loaders.gl/images` module.
+```js
+import '@loaders.gl/polyfills'; // only needed if using under Node
+import {loadImage} from `@loaders.gl/images`;
 
-`options.crossOrigin` - Provides control of the requests cross origin field.
+const URL = ...;
 
-Notes:
+const image = await loadImage(({lod}) => `${URL}-${lod}.jpg`, {
+  image: {
+    mipLevels: 'auto'
+  }
+});
 
-- Any path prefix set by `setPathPrefix` will be appended to relative urls.
+for (const lodImage of imageArray) {
+  ...
+}
+```
+
+## Function
+
+### loadImage(getUrl : String | Function, options? : Object]) : image | image[]
+
+A basic image loading function for loading a single image (or an array of mipmap images representing a single image).
+
+- `getUrl`: A function that generates the url for each image, it is called for each image with the `lod` of that image.
+- `options`: Supports the same options as [`ImageLoader`](modules/images/docs/api-reference/image-loader).
+
+Returns
+
+- image or array of images
+
+## Options
+
+Accepts the same options as [`ImageLoader`](modules/images/docs/api-reference/image-loader), and
+
+| Option            | Type              | Default | Description                                            |
+| ----------------- | ----------------- | ------- | ------------------------------------------------------ |
+| `image.mipLevels` | `Number | String` | `0`     | If `'auto'` or non-zero, loads an array of mip images. |
+
+Number of mip level images to load: Use `0` to indicate a single image with no mips. Supplying the string `'auto'` will infer the mipLevel from the size of the `lod`=`0` image.

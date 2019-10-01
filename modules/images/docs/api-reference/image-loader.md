@@ -8,9 +8,7 @@ An image loader that works under both Node.js (requires `@loaders.gl/polyfills`)
 | File Type      | Binary                                                           |
 | File Format    | Image                                                            |
 | Data Format    | `ImageBitmap`, `Image` (older browsers) or ndarray (node.js)     |
-| Decoder Type   | Asynchronous                                                     |
-| Worker Thread  | No                                                               |
-| Streaming      | No                                                               |
+| Supported APIs | `load`, `parse`                                                  |
 
 ## Usage
 
@@ -24,10 +22,10 @@ const image = await load(url, ImageLoader, options);
 
 ## Options
 
-| Option        | Type   | Default  | Description                                                                                   |
-| ------------- | ------ | -------- | --------------------------------------------------------------------------------------------- |
-| `type`        | String | `'auto'` |                                                                                               |
-| `crossOrigin` | String | -        | passed to [Image.crossorigin](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/img). |
+| Option         | Type    | Default  | Description                                                                  |
+| -------------- | ------- | -------- | ---------------------------------------------------------------------------- |
+| `image.type`   | String  | `'auto'` | Set to `imagebitmap`, `html` or `ndarray` to control type of returned image. |
+| `image.decode` | boolean | `true`   | Ensures `html` type images are fully decoded before promise resolves.        |
 
 ## Remarks
 
