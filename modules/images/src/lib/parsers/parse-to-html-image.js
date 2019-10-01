@@ -6,8 +6,6 @@ export default async function parseToHTMLImage(arrayBuffer, options) {
   // Potentially inefficient for not using `response.blob()` (and for File / Blob inputs)...
   // But presumably not worth adding 'blob' flag to loader objects?
 
-  debugger;
-
   // TODO - how to determine mime type? Param? Sniff here?
   const mimeType = 'image/jpeg';
   const blob = new Blob([arrayBuffer], {type: mimeType});
