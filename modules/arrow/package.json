@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/arrow",
-  "version": "2.0.0-alpha.1",
+  "version": "2.0.0-alpha.2",
   "description": "Simple columnar table loader for the Apache Arrow format",
   "license": "MIT",
   "publishConfig": {
@@ -33,8 +33,8 @@
     "build-worker": "webpack --entry ./src/arrow-loader.worker.js --output ./dist/arrow-loader.worker.js --config ../../scripts/worker-webpack-config.js"
   },
   "dependencies": {
-    "@loaders.gl/core": "2.0.0-alpha.1",
-    "@loaders.gl/experimental": "2.0.0-alpha.1",
+    "@loaders.gl/core": "2.0.0-alpha.2",
+    "@loaders.gl/experimental": "2.0.0-alpha.2",
     "apache-arrow": "^0.13.0"
   }
 }
