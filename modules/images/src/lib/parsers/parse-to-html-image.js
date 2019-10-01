@@ -29,7 +29,7 @@ export async function loadToHTMLImage(url, options) {
   // https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/decode
   // Note: When calling `img.decode()`, we do not need to wait for `img.onload()`
   // Note: `HTMLImageElement.decode()` is not available in Edge and IE11
-  if (options.image.decode && image.decode) {
+  if (options.image && options.image.decode && image.decode) {
     await image.decode();
     return image;
   }

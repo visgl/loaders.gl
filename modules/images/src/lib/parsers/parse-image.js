@@ -8,6 +8,10 @@ import parseSVG from './parse-svg';
 
 // Parse to platform defined image type (ndarray on node, ImageBitmap or HTMLImage on browser)
 export default async function parseImage(arrayBuffer, options, context) {
+  if ('image' in options) {
+    options = {...options, image: {}};
+  }
+
   const {url} = context || {};
   if (url && /\.svg((\?|#).*)?$/.test(url)) {
     // eslint-disable-next-line
