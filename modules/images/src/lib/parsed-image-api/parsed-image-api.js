@@ -2,11 +2,11 @@
 import assert from '../utils/assert';
 
 export function isImage(image) {
-  return Boolean(getImageFormatOrNull(image));
+  return Boolean(getImageTypeOrNull(image));
 }
 
 export function deleteImage(image) {
-  switch (getImageFormat(image)) {
+  switch (getImageType(image)) {
     case 'imagebitmap':
       image.close();
       break;
@@ -15,8 +15,8 @@ export function deleteImage(image) {
   }
 }
 
-export function getImageFormat(image) {
-  const format = getImageFormatOrNull(image);
+export function getImageType(image) {
+  const format = getImageTypeOrNull(image);
   if (!format) {
     throw new Error('Not an image');
   }
@@ -24,7 +24,7 @@ export function getImageFormat(image) {
 }
 
 export function getImageSize(image) {
-  switch (getImageFormat(image)) {
+  switch (getImageType(image)) {
     case 'imagebitmap':
     case 'ndarray':
       return {width: image.width, height: image.height};
@@ -36,7 +36,7 @@ export function getImageSize(image) {
 }
 
 export function getImageData(image) {
-  switch (getImageFormat(image)) {
+  switch (getImageType(image)) {
     case 'imagebitmap':
     case 'html':
       /* global document */
@@ -55,7 +55,7 @@ export function getImageData(image) {
 
 // PRIVATE
 
-function getImageFormatOrNull(image) {
+function getImageTypeOrNull(image) {
   if (typeof ImageBitmap !== 'undefined' && image instanceof ImageBitmap) {
     return 'imagebitmap';
   }

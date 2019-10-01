@@ -10,6 +10,8 @@ import parseSVG from './parse-svg';
 export default async function parseImage(arrayBuffer, options, context) {
   const {url} = context || {};
   if (url && /\.svg((\?|#).*)?$/.test(url)) {
+    // eslint-disable-next-line
+    console.warn('@loaders.gl/images: SVG parsing needs to be fixed for 2.0');
     return await parseSVG(arrayBuffer, options);
   }
 

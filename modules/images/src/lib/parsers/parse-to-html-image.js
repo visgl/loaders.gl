@@ -6,6 +6,8 @@ export default async function parseToHTMLImage(arrayBuffer, options) {
   // Potentially inefficient for not using `response.blob()` (and for File / Blob inputs)...
   // But presumably not worth adding 'blob' flag to loader objects?
 
+  debugger;
+
   // TODO - how to determine mime type? Param? Sniff here?
   const mimeType = 'image/jpeg';
   const blob = new Blob([arrayBuffer], {type: mimeType});
@@ -20,9 +22,7 @@ export default async function parseToHTMLImage(arrayBuffer, options) {
 
 export async function loadToHTMLImage(url, options) {
   const image = new Image();
-  // TODO - no effect - this function is no longer called on non-data URLs
-  // This option should be set on `fetch` instead
-  image.crossOrigin = (options.image && options.image.crossOrigin) || 'anonymous';
+  image.src = url;
 
   // The `image.onload()` callback does not guarantee that the image has been decoded
   // so a main thread "freeze" can be incurred when using the image for the first time.
@@ -32,7 +32,8 @@ export async function loadToHTMLImage(url, options) {
   // Note: When calling `img.decode()`, we do not need to wait for `img.onload()`
   // Note: `HTMLImageElement.decode()` is not available in Edge and IE11
   if (options.image.decode && image.decode) {
-    return await image.decode();
+    await image.decode();
+    return image;
   }
 
   // Create a promise that tracks onload/onerror callbacks
@@ -40,7 +41,6 @@ export async function loadToHTMLImage(url, options) {
     try {
       image.onload = () => resolve(image);
       image.onerror = err => reject(new Error(`Could not load image ${url}: ${err}`));
-      image.src = url;
     } catch (error) {
       reject(error);
     }
