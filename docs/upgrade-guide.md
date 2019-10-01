@@ -4,8 +4,6 @@
 
 Version 2.0 is a major release that consolidates functionality and APIs, and a number of deprecated functions have been removed.
 
-<<<<<<< HEAD
-
 ### `@loaders.gl/core`
 
 | Removal            | Replacement                                                            |
@@ -27,6 +25,7 @@ Version 2.0 is a major release that consolidates functionality and APIs, and a n
 | `isImage`           | `isBinaryImage`                                           |
 | `getImageMIMEType`  | `getBinaryImageMIMEType`                                  |
 | `getImageSize`      | `getBinaryImageSize`                                      |
+| `getImageMetadata`  | `getBinaryImageMIMEType` + `getBinaryImageSize`           |
 
 ### Loader Objects
 
