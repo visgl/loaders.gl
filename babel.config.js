@@ -4,12 +4,7 @@ module.exports = api => {
   const config = getBabelConfig(api);
 
   config.plugins = config.plugins || [];
-  config.plugins.push('version-inline', [
-    'babel-plugin-inline-import',
-    {
-      extensions: ['.worker.js']
-    }
-  ]);
+  config.plugins.push('version-inline');
 
   // https://babeljs.io/docs/en/options#overrides
   const overrides = config.overrides || [];
