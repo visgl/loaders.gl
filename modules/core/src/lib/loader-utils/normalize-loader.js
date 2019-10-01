@@ -25,6 +25,7 @@ export function normalizeLoader(loader) {
   // This error is fairly easy to trigger by mixing up import statments etc
   // So we make an exception and add a developer error message for this case
   // To help new users from getting stuck here
+  assert(loader, 'null loader');
   assert(isLoaderObject(loader), 'invalid loader');
 
   // NORMALIZE [LOADER, OPTIONS] => LOADER

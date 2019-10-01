@@ -31,3 +31,6 @@ export {
   SVGLoader as _SVGLoader,
   ImageLoaders as _ImageLoaders
 } from './image-loaders';
+
+// DEPRECATED
+export {default as HTMLImageLoader} from './image-loader';

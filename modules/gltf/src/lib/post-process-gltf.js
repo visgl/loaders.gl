@@ -324,9 +324,14 @@ class GLTFPostProcessor {
     const preloadedImage = this.images[index];
     if (preloadedImage) {
       image.image = preloadedImage;
-      // delete image.uri;
-      // delete image.bufferView;
     }
+
+    // TODO - DEPRECATED - remove as soon as luma.gl is updated
+    image.getImageAsync = async () => {
+      // eslint-disable-next-line
+      console.warn('loaders.gl/gltf: image.getImageAsync will be removed in 2.0');
+      return image.image;
+    };
 
     return image;
   }

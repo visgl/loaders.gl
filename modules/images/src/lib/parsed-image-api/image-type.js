@@ -25,11 +25,11 @@ export function getSupportedImageType() {
   if (isImageTypeSupported('ndarray')) {
     return 'ndarray';
   }
-  if (isImageTypeSupported('imagebitmap')) {
-    return 'imagebitmap';
-  }
   if (isImageTypeSupported('html')) {
     return 'html';
+  }
+  if (isImageTypeSupported('imagebitmap')) {
+    return 'imagebitmap';
   }
 
   if (!isBrowser) {
