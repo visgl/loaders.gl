@@ -16,8 +16,8 @@ export default class THREETileset {
     this.root = new TileHeader(json.root, resourcePath, styleParams, this.refine, true);
 
     this.tileset = new Tileset3D(json, url, {
-      onTileLoad: tile => console.log('Load', tile),
-      onTileUnload: tile => console.log('Unload', tile)
+      onTileLoad: tile => console.log('Load', tile), // eslint-disable-line
+      onTileUnload: tile => console.log('Unload', tile) // eslint-disable-line
     });
   }
 
