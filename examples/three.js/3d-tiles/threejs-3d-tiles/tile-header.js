@@ -1,9 +1,26 @@
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader';
 
-import {loadTileset, loadBatchedModelTile, loadPointTile} from './tile-parsers';
+import {loadBatchedModelTile, loadPointTile} from './tile-parsers';
 
 const DEBUG = false;
+
+// Create a THREE.Box3 from a 3D Tiles OBB
+function createTHREEBoxFromOBB(box) {
+  const extent = [box[0] - box[3], box[1] - box[7], box[0] + box[3], box[1] + box[7]];
+  const sw = new THREE.Vector3(extent[0], extent[1], box[2] - box[11]);
+  const ne = new THREE.Vector3(extent[2], extent[3], box[2] + box[11]);
+  return new THREE.Box3(sw, ne);
+}
+
+function createTHREEOutlineFromOBB(box) {
+  const geom = new THREE.BoxGeometry(box[3] * 2, box[7] * 2, box[11] * 2);
+  const edges = new THREE.EdgesGeometry(geom);
+  const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({color: 0x800000}));
+  const trans = new THREE.Matrix4().makeTranslation(box[0], box[1], box[2]);
+  line.applyMatrix(trans);
+  return line;
+}
 
 export default class TileHeader {
   // eslint-disable-next-line max-statements
@@ -11,33 +28,29 @@ export default class TileHeader {
     this.loaded = false;
     this.styleParams = styleParams;
     this.resourcePath = resourcePath;
+    this.debug = DEBUG;
+
+    this.extent = null;
+    this.sw = null;
+    this.ne = null;
+    this.box = null;
+    this.center = null;
 
     this._createTHREENodes();
-    this.totalContent.add(this.tileContent);
-    this.totalContent.add(this.childContent);
     this.boundingVolume = json.boundingVolume;
 
-    if (this.boundingVolume && this.boundingVolume.box) {
-      const b = this.boundingVolume.box;
-      const extent = [b[0] - b[3], b[1] - b[7], b[0] + b[3], b[1] + b[7]];
-      const sw = new THREE.Vector3(extent[0], extent[1], b[2] - b[11]);
-      const ne = new THREE.Vector3(extent[2], extent[3], b[2] + b[11]);
-      this.box = new THREE.Box3(sw, ne);
+    const box = this.boundingVolume && this.boundingVolume.box;
+    if (box) {
+      this.box = createTHREEBoxFromOBB(box);
       if (DEBUG) {
-        const geom = new THREE.BoxGeometry(b[3] * 2, b[7] * 2, b[11] * 2);
-        const edges = new THREE.EdgesGeometry(geom);
-        const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({color: 0x800000}));
-        const trans = new THREE.Matrix4().makeTranslation(b[0], b[1], b[2]);
-        line.applyMatrix(trans);
-        this.totalContent.add(line);
+        this.totalContent.add(createTHREEOutlineFromOBB(box));
       }
-    } else {
-      this.extent = null;
-      this.sw = null;
-      this.ne = null;
-      this.box = null;
-      this.center = null;
     }
+
+    this._initTraversal(json, parentRefine, isRoot);
+  }
+
+  _initTraversal(json, parentRefine, isRoot) {
     this.refine = json.refine ? json.refine.toUpperCase() : parentRefine;
     this.geometricError = json.geometricError;
     this.transform = json.transform;
@@ -52,8 +65,8 @@ export default class TileHeader {
       for (let i = 0; i < json.children.length; i++) {
         const child = new TileHeader(
           json.children[i],
-          resourcePath,
-          styleParams,
+          this.resourcePath,
+          this.styleParams,
           this.refine,
           false
         );
@@ -124,7 +137,10 @@ export default class TileHeader {
       switch (type) {
         case 'json':
           // child is a tileset json
-          const tileset = await loadTileset(url, this.styleParams);
+          /* global fetch */
+          const response = await fetch(url);
+          const tileset = await response.json;
+          // loadTileset(url, this.styleParams);
           this.children.push(tileset.root);
           if (tileset.root) {
             // eslint-disable-next-line max-depth
@@ -169,6 +185,8 @@ export default class TileHeader {
     this.totalContent = new THREE.Group(); // Three JS Object3D Group for this tile and all its children
     this.tileContent = new THREE.Group(); // Three JS Object3D Group for this tile's content
     this.childContent = new THREE.Group(); // Three JS Object3D Group for this tile's children
+    this.totalContent.add(this.tileContent);
+    this.totalContent.add(this.childContent);
   }
 
   _createPointNodes(d, tileContent) {

@@ -1,5 +1,6 @@
+/* global fetch */
 import * as THREE from 'three';
-import {loadTileset} from '../threejs-3d-tiles/tile-parsers';
+import Tileset from '../threejs-3d-tiles/tileset';
 import {transform2mapbox} from './web-mercator';
 
 export default class Mapbox3DTilesLayer {
@@ -44,7 +45,10 @@ export default class Mapbox3DTilesLayer {
     directionalLight2.position.set(0, 70, 100).normalize();
     this.scene.add(directionalLight2);
 
-    this.tileset = await loadTileset(this.url, this.styleParams);
+    const response = await fetch(this.url);
+    const json = await response.json();
+
+    this.tileset = new Tileset(json, this.styleParams, this.url);
 
     if (this.tileset.root.transform) {
       this.rootTransform = transform2mapbox(this.tileset.root.transform);
@@ -84,8 +88,8 @@ export default class Mapbox3DTilesLayer {
         )
       );
 
-      if (this.tileset.root) {
-        this.tileset.root.checkLoad(frustum, this._getCameraPosition());
+      if (this.tileset) {
+        this.tileset.update(frustum, this._getCameraPosition());
       }
     }
   }
