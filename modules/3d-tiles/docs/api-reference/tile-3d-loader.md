@@ -46,15 +46,9 @@ For i3dm and b3dm tiles:
 
 | Option               | Type    | Default | Description                           |
 | -------------------- | ------- | ------- | ------------------------------------- |
-| `3d-tiles.parseGLTF` | Boolean | `true`  | Fetch and parse any linked glTF files |
+| `3d-tiles.loadGLTF`  | Boolean | `true`  | Fetch and parse any linked glTF files |
 
-| Option                      | Type     | Default | Description                                                                                      |
-| --------------------------- | -------- | ------- | ------------------------------------------------------------------------------------------------ |
-| `gltf.fetchLinkedResources` | Boolean  | `true`  | Fetch any linked .BIN files, decode base64 encoded URIS. Only supported in asynchronous parsing. |
-| `gltf.fetch`                | Function | `fetch` | Function used to fetch linked resources.                                                         |
-| `gltf.decompress`           | Boolean  | `true`  | Decompress Draco compressed meshes (if DracoLoader is registered), and removes extension         |
-| `gltf.postProcess`          | Boolean  | `true`  | Perform additional post processing to simplify use in WebGL libraries.                           |
-| `gltf.createImages`         | Boolean  | `false` | Create image objects from loaded image data.                                                     |
+If `options['3d-tiles'].loadGLTF` is `true`, GLTF loading can be controlled by providing [`GLTFLoader` options](modules/gltf/docs/api-reference/gltf-loader.md) via the `options.gltf` sub options.
 
 ## Notes about Tile Types
 
