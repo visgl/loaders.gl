@@ -7,5 +7,6 @@
 export default function parseToImageBitmap(arrayBuffer, options) {
   // NOTE: In some cases unnecessary conversion to blob (response, blob, file input)
   const blob = new Blob([new Uint8Array(arrayBuffer)]); // MIME type not needed...
-  return createImageBitmap(blob);
+  const imagebitmapOptions = options && options.imagebitmap;
+  return imagebitmapOptions ? createImageBitmap(blob) : createImageBitmap(blob, imagebitmapOptions);
 }

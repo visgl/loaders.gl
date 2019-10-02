@@ -55,10 +55,12 @@ These functions take a `getUrl` parameter that enables the app to supply the url
 
 As with all loaders.gl functions, while these functions are intended for use in WebGL applications, they do not call any WebGL functions, and do not actually create any WebGL textures..
 
-> > > > > > > images: texture loaders
-
 ## Image Types
 
 To support image loading on older browsers and Node.js, the `ImageLoader` can return different types, i.e. different representations of the parsed image.
 
-See [`ImageLoader`](modules/images/docs/api-reference/image-loader) for more details
+- `ImageBitmap` - An `ImageBitmap` object represents a bitmap image that can be painted to a canvas without undue latency. This is the preferred parsed image representation in the browser. It can also be transferred efficiently between threads. Not available in some older browsers.
+- `Image` (aka `HTMLImageElement`) - The traditional HTML image class. Available in all browsers.
+- `ndarray` - a memory layout for parsed pixels in node.js. Texture creation functions in headless gl accept `ndarray` images.
+
+See [`ImageLoader`](modules/images/docs/api-reference/image-loader) for more details on options etc.
