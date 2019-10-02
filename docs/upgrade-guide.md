@@ -46,7 +46,7 @@ The `GLTFLoader` now always uses the new v2 parser, and the original `GLTFParser
 
 Note that automatic packing of binary data (aka "packed JSON" support) was only implemented in the v1 `GLTFLoader` and has thus also been removed. Experience showed that packing of binary data for `.glb` files is best handled by applications.
 
-#### GLTFLoader option changes
+**GLTFLoader option changes**
 
 The foillowing top-level options are deprecated and will be removed in v2.0
 

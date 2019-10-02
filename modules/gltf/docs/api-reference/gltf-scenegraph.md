@@ -44,128 +44,128 @@ const scenegraph = gltf.getScene(2);
 
 Creates a new `GLTFScenegraph` instance from a pure JavaScript object.
 
-#### json()
+### json()
 
-#### getApplicationData(key : String) : Object
+### getApplicationData(key : String) : Object
 
 Returns the given data field in the top-level glTF JSON object.
 
-#### getExtraData(key : String) : Object?
+### getExtraData(key : String) : Object?
 
 Returns a key in the top-level glTF `extras` JSON object.
 
-#### getExtension(name : String) : Object?
+### getExtension(name : String) : Object?
 
 Returns the top-level extension by `name`, if present.
 
-#### getUsedExtensions() : String[]
+### getUsedExtensions() : String[]
 
 Returns an array of extension names (covering all extensions used at any level of the glTF hierarchy).
 
-#### getRequiredExtensions() : String[]
+### getRequiredExtensions() : String[]
 
 Returns an array of extensions at any level of the glTF hierarchy that are required to properly display this file (covering all extensions used at any level of the glTF hierarchy).
 
-#### getObjectExtension(object, extensionName)
+### getObjectExtension(object, extensionName)
 
-#### getScene([index : Number]) : Object?
+### getScene([index : Number]) : Object?
 
 Returns the scene (scenegraph) with the given index, or the default scene if no index is specified.
 
-#### getScene(index : Number) : Object
+### getScene(index : Number) : Object
 
-#### getNode(index : Number) : Object
+### getNode(index : Number) : Object
 
-#### getSkin(index : Number) : Object
+### getSkin(index : Number) : Object
 
-#### getMesh(index : Number) : Object
+### getMesh(index : Number) : Object
 
-#### getMaterial(index : Number) : Object
+### getMaterial(index : Number) : Object
 
-#### getAccessor(index : Number) : Object
+### getAccessor(index : Number) : Object
 
-#### getCamera(index : Number) : Object
+### getCamera(index : Number) : Object
 
-#### getTexture(index : Number) : Object
+### getTexture(index : Number) : Object
 
-#### getSampler(index : Number) : Object
+### getSampler(index : Number) : Object
 
-#### getImage(index : Number) : Object
+### getImage(index : Number) : Object
 
 Returns the image with specified index
 
-#### getBufferView(index : Number) : Object
+### getBufferView(index : Number) : Object
 
-#### getBuffer(index : Number) : Object
+### getBuffer(index : Number) : Object
 
-#### getTypedArrayForBufferView(bufferView : Number | Object) : Uint8Array
+### getTypedArrayForBufferView(bufferView : Number | Object) : Uint8Array
 
 Accepts buffer view index or buffer view object
 
-#### getTypedArrayForAccessor(accessor : Number | Object) : Uint8Array | Float32Array | ...
+### getTypedArrayForAccessor(accessor : Number | Object) : Uint8Array | Float32Array | ...
 
 Accepts accessor index or accessor object.
 
 Returns a typed array with type that matches the types
 
-#### getTypedArrayForImageData(image : Number | Object) : Uint8Array
+### getTypedArrayForImageData(image : Number | Object) : Uint8Array
 
 accepts accessor index or accessor object
 
 ## Modifiers
 
-#### addApplicationData(key, data)
+### addApplicationData(key, data)
 
 Add an extra application-defined key to the top-level data structure
 
-#### addExtraData(key, data)
+### addExtraData(key, data)
 
 `extras` - Standard GLTF field for storing application specific data
 
 Add to GLTF top level extension object, mark as used
 
-##### addRequiredExtension(extensionName, data)
+### addRequiredExtension(extensionName, data)
 
 Add GLTF top level extension object, mark as used and required
 
-#### registerUsedExtension(extensionName)
+### registerUsedExtension(extensionName)
 
 Add extensionName to list of used extensions
 
-#### registerRequiredExtension(extensionName)
+### registerRequiredExtension(extensionName)
 
 Add extensionName to list of required extensions
 
-#### removeExtension(extensionName)
+### removeExtension(extensionName)
 
 Removes an extension from the top-level list
 
-#### setObjectExtension(object, extensionName, data)
+### setObjectExtension(object, extensionName, data)
 
-#### addMesh(attributes, indices, mode = 4)
+### addMesh(attributes, indices, mode = 4)
 
-#### addPointCloud(attributes)
+### addPointCloud(attributes)
 
-#### addBufferView(buffer)
+### addBufferView(buffer)
 
 Add one untyped source buffer, create a matching glTF `bufferView`, and return its index
 
 > The binary data will not be added to the gltf buffer until `createBinChunk()` is called.
 
-#### addAccessor(bufferViewIndex, accessor)
+### addAccessor(bufferViewIndex, accessor)
 
 Adds an accessor to a bufferView
 
 > The binary data will not be added to the gltf buffer until `createBinChunk()` is called.
 
-#### addImage(imageData, mimeType)
+### addImage(imageData, mimeType)
 
 Adds a binary image. Builds glTF "JSON metadata" and saves buffer reference
 Buffer will be copied into BIN chunk during "pack"
 
 > The binary data will not be added to the gltf buffer until `createBinChunk()` is called.
 
-#### createBinChunk()
+### createBinChunk()
 
 Packs any pending binary data into the first binary glTF buffer.
 
