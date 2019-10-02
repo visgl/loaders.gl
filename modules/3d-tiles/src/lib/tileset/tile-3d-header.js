@@ -2,7 +2,7 @@
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 // import {TILE3D_REFINEMENT, TILE3D_OPTIMIZATION_HINT} from '../constants';
 import {Vector3, Matrix4} from 'math.gl';
-import {CullingVolume} from '@math.gl/culling';
+import {CullingVolume, Intersect, Plane} from '@math.gl/culling';
 import {parse, fetchFile, path} from '@loaders.gl/core';
 import Tile3DLoader from '../../tile-3d-loader';
 import Tileset3DLoader from '../../tileset-3d-loader';
@@ -12,16 +12,18 @@ import {createBoundingVolume} from './helpers/bounding-volume';
 
 const defined = x => x !== undefined && x !== null;
 
-/* eslint-disable */
 const scratchDate = new Date();
-const scratchCommandList = [];
 const scratchToTileCenter = new Vector3();
-
 // TODO: Remove
 const scratchPlane = new Plane();
-import {INTERSECT, Intersect, Plane} from '@math.gl/culling';
 
 function computeVisibilityWithPlaneMask(cullingVolume, boundingVolume, parentPlaneMask) {
+  // Support array of planes
+  if (Array.isArray(cullingVolume)) {
+    const planes = cullingVolume;
+    return new CullingVolume(planes);
+  }
+
   assert(boundingVolume, 'boundingVolume is required.');
   assert(Number.isFinite(parentPlaneMask), 'parentPlaneMask is required.');
 
@@ -43,6 +45,7 @@ function computeVisibilityWithPlaneMask(cullingVolume, boundingVolume, parentPla
     const flag = k < 31 ? 1 << k : 0;
     if (k < 31 && (parentPlaneMask & flag) === 0) {
       // boundingVolume is known to be INSIDE this plane.
+      // eslint-disable-next-line no-continue
       continue;
     }
 
@@ -89,6 +92,7 @@ export default class Tile3DHeader {
       this.geometricError = header.geometricError;
     } else {
       this.geometricError = (this.parent && this.parent.geometricError) || tileset.geometricError;
+      // eslint-disable-next-line
       console.warn('3D Tile: Required prop geometricError is undefined. Using parent error');
     }
 
@@ -218,10 +222,6 @@ export default class Tile3DHeader {
     return this._header.extras;
   }
 
-  get depth() {
-    return this._depth;
-  }
-
   // Get the tile's screen space error.
   getScreenSpaceError(frameState, useParentGeometricError) {
     const tileset = this._tileset;
@@ -268,6 +268,7 @@ export default class Tile3DHeader {
 
   // Requests the tile's content.
   // The request may not be made if the Request Scheduler can't prioritize it.
+  // eslint-disable-next-line max-statements
   async loadContent() {
     if (this.hasEmptyContent) {
       return false;
@@ -500,7 +501,7 @@ export default class Tile3DHeader {
     // The node in the tileset's LRU cache, used to determine when to unload a tile's content.
     this.cacheNode = undefined;
 
-    let expire = header.expire;
+    const expire = header.expire;
     let expireDuration;
     let expireDate;
     if (expire) {
@@ -579,13 +580,14 @@ export default class Tile3DHeader {
     if (tileHeader.content) {
       this.contentUri = tileHeader.content.uri || tileHeader.content.url;
       if ('url' in tileHeader) {
+        // eslint-disable-next-line
         console.warn('Tileset 3D: "content.url" property deprecated. Use "content.uri" instead.');
         this.contentUri = tileHeader.url;
       }
       this._content = null;
       this.hasEmptyContent = false;
       this.contentState = TILE3D_CONTENT_STATE.UNLOADED;
-      this.fullUri = this._basePath + '/' + this.contentUri;
+      this.fullUri = `${this._basePath}/${this.contentUri}`;
       // this.serverKey = RequestScheduler.getServerKey(contentResource.getUrlComponent());
     }
   }
@@ -640,7 +642,8 @@ export default class Tile3DHeader {
     switch (this._content && this._content.type) {
       case 'vctr':
       case 'geom':
-        tileset.traverser.disableSkipLevelOfDetail = true;
+        this.tileset.traverser.disableSkipLevelOfDetail = true;
+        break;
       default:
     }
 
@@ -689,6 +692,7 @@ export default class Tile3DHeader {
   }
 }
 
+/*
 function updateContent(tile, tileset, frameState) {
   const content = tile._content;
   const expiredContent = tile._expiredContent;
@@ -728,3 +732,4 @@ function createPriorityFunction(tile) {
     return tile._priority;
   };
 }
+*/
