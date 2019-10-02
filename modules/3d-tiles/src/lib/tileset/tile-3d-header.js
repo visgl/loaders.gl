@@ -2,7 +2,7 @@
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 // import {TILE3D_REFINEMENT, TILE3D_OPTIMIZATION_HINT} from '../constants';
 import {Vector3, Matrix4} from 'math.gl';
-import {CullingVolume} from '@math.gl/culling';
+import {CullingVolume, Intersect, Plane} from '@math.gl/culling';
 import {parse, fetchFile, path} from '@loaders.gl/core';
 import Tile3DLoader from '../../tile-3d-loader';
 import Tileset3DLoader from '../../tileset-3d-loader';
@@ -12,16 +12,18 @@ import {createBoundingVolume} from './helpers/bounding-volume';
 
 const defined = x => x !== undefined && x !== null;
 
-/* eslint-disable */
 const scratchDate = new Date();
-const scratchCommandList = [];
 const scratchToTileCenter = new Vector3();
-
 // TODO: Remove
 const scratchPlane = new Plane();
-import {INTERSECT, Intersect, Plane} from '@math.gl/culling';
 
 function computeVisibilityWithPlaneMask(cullingVolume, boundingVolume, parentPlaneMask) {
+  // Support array of planes
+  if (Array.isArray(cullingVolume)) {
+    const planes = cullingVolume;
+    return new CullingVolume(planes);
+  }
+
   assert(boundingVolume, 'boundingVolume is required.');
   assert(Number.isFinite(parentPlaneMask), 'parentPlaneMask is required.');
 

@@ -1,6 +1,6 @@
 /* global fetch */
 import * as THREE from 'three';
-import Tileset from '../threejs-3d-tiles/tileset';
+import THREETileset from '../threejs-3d-tiles/three-tileset';
 import {transform2mapbox} from './web-mercator';
 
 export default class Mapbox3DTilesLayer {
@@ -48,7 +48,7 @@ export default class Mapbox3DTilesLayer {
     const response = await fetch(this.url);
     const json = await response.json();
 
-    this.tileset = new Tileset(json, this.styleParams, this.url);
+    this.tileset = new THREETileset(json, this.styleParams, this.url);
 
     if (this.tileset.root.transform) {
       this.rootTransform = transform2mapbox(this.tileset.root.transform);
