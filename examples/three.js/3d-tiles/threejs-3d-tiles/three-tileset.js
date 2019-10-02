@@ -25,7 +25,7 @@ export default class THREETileset {
     this.root.checkLoad(frustum, cameraPosition);
 
     // Map to loaders.gl frameState
-    const planes = frustum.planes.map(plane => new Plane(plane.normal, plane.constant))
+    const planes = frustum.planes.map(plane => new Plane(plane.normal, plane.constant));
 
     const frameState = {
       camera: {
