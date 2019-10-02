@@ -62,11 +62,13 @@ fetchTilesetJson({
   ionAccessToken: Cesium.Ion.defaultAccessToken
 })
   .then(({tilesetJson, tilesetUrl, ionMetadata}) => {
+    const fetchOptions = ionMetadata && {headers: ionMetadata.headers};
     const tileset3d = new Tileset3D(tilesetJson, tilesetUrl, {
       onTileLoad: tileHeader => {
         // eslint-disable-next-line
         console.log(tileHeader.uri);
       },
+      fetchOptions,
       ...ionMetadata,
       throttleRequests: true
     });
