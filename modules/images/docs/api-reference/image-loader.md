@@ -29,14 +29,14 @@ const image = await load(url, ImageLoader, options);
 
 In addition, for `imagebitmap` type images, it is possible to pass through options to [`createImageBitmap`](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/createImageBitmap) to control image extraction, via the separate `options.imagebitmap` object.
 
-| Option         | Type    | Default  | Description                                                                  |
-| -------------- | ------- | -------- | ---------------------------------------------------------------------------- |
-| `imagebitmap.imageOrientation` | string | `'none'` | image should be flipped vertically. Either `'none'` or `'flipY'`. |
-| `imagebitmap.premultiplyAlpha` | string | `'default'` | Premultiply color channels by the alpha channel. One of `'none'`, `'premultiply'`, or `'default'`. |
-| `imagebitmap.colorSpaceConversion` | string | `'default'` | Decode using color space conversion. Either `'none'` or `'default'` default indicates implementation-specific behavior. |
-| `imagebitmap.resizeWidth` | number | - | Output image width. |
-| `imagebitmap.resizeHeight` | number | - | Output image height. |
-| `imagebitmap.resizeQuality` | string | `'low'` | Algorithm to be used for resizing the input to match the output dimensions. One of pixelated, low (default), medium, or high. |
+| Option                             | Type   | Default     | Description                                                                                                                   |
+| ---------------------------------- | ------ | ----------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `imagebitmap.imageOrientation`     | string | `'none'`    | image should be flipped vertically. Either `'none'` or `'flipY'`.                                                             |
+| `imagebitmap.premultiplyAlpha`     | string | `'default'` | Premultiply color channels by the alpha channel. One of `'none'`, `'premultiply'`, or `'default'`.                            |
+| `imagebitmap.colorSpaceConversion` | string | `'default'` | Decode using color space conversion. Either `'none'` or `'default'` default indicates implementation-specific behavior.       |
+| `imagebitmap.resizeWidth`          | number | -           | Output image width.                                                                                                           |
+| `imagebitmap.resizeHeight`         | number | -           | Output image height.                                                                                                          |
+| `imagebitmap.resizeQuality`        | string | `'low'`     | Algorithm to be used for resizing the input to match the output dimensions. One of pixelated, low (default), medium, or high. |
 
 Portability note: The exact set of `imagebitmap` options supported may depend on the browser, and also do not apply to `html` or `ndarray` images.
 

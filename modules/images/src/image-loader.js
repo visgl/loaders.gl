@@ -18,6 +18,7 @@ const ImageLoader = {
       format: 'auto',
       decodeHTML: true // if format is HTML
     }
+    // imagebitmap: {}
   }
 };
 
