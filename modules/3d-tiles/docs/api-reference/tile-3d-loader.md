@@ -44,9 +44,9 @@ Point cloud tie options
 
 For i3dm and b3dm tiles:
 
-| Option               | Type    | Default | Description                           |
-| -------------------- | ------- | ------- | ------------------------------------- |
-| `3d-tiles.loadGLTF`  | Boolean | `true`  | Fetch and parse any linked glTF files |
+| Option              | Type    | Default | Description                           |
+| ------------------- | ------- | ------- | ------------------------------------- |
+| `3d-tiles.loadGLTF` | Boolean | `true`  | Fetch and parse any linked glTF files |
 
 If `options['3d-tiles'].loadGLTF` is `true`, GLTF loading can be controlled by providing [`GLTFLoader` options](modules/gltf/docs/api-reference/gltf-loader.md) via the `options.gltf` sub options.
 
