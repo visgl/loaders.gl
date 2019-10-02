@@ -13,13 +13,13 @@ Cesium.Ion.defaultAccessToken =
 // eslint-disable-next-line
 const TILESET_URL =
   'https://raw.githubusercontent.com/uber-web/loaders.gl/master/modules/3d-tiles/test/data/Batched/BatchedColorsMix/tileset.json';
-const NELBOURNE_ION_ASSET_ID = 43978;
+const MELBOURNE_ION_ASSET_ID = 43978;
 
 const viewer = new Cesium.Viewer('cesiumContainer');
 
 const tileset = viewer.scene.primitives.add(
   new Cesium.Cesium3DTileset({
-    url: Cesium.IonResource.fromAssetId(NELBOURNE_ION_ASSET_ID)
+    url: Cesium.IonResource.fromAssetId(MELBOURNE_ION_ASSET_ID)
   })
 );
 
@@ -58,7 +58,7 @@ function convertCesiumFrameState(frameState, height) {
 }
 
 fetchTilesetJson({
-  ionAssetId: NELBOURNE_ION_ASSET_ID,
+  ionAssetId: MELBOURNE_ION_ASSET_ID,
   ionAccessToken: Cesium.Ion.defaultAccessToken
 })
   .then(({tilesetJson, tilesetUrl, ionMetadata}) => {
