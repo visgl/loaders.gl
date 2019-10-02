@@ -41,6 +41,7 @@ const EXAMPLES_VIEWSTATE = {
 
 export const INITIAL_VIEW_STATE = {
   ...EXAMPLES_VIEWSTATE,
+  height: 300,
   pitch: 45,
   maxPitch: 60,
   bearing: 0,
@@ -181,6 +182,7 @@ export default class App extends PureComponent {
         zoom: zoom + 1.5, // TODO - remove adjustment when Tileset3D calculates correct zoom
         bearing: INITIAL_VIEW_STATE.bearing,
         pitch: INITIAL_VIEW_STATE.pitch,
+        height: INITIAL_VIEW_STATE.height,
 
         // Tells deck.gl to animate the camera move to the new tileset
         transitionDuration: TRANSITION_DURAITON,
@@ -196,7 +198,12 @@ export default class App extends PureComponent {
 
   // Called by DeckGL when user interacts with the map
   _onViewStateChange({viewState}) {
-    this.setState({viewState});
+    this.setState({
+      viewState: {
+        ...viewState,
+        height: '300px'
+      }
+    });
   }
 
   _renderControlPanel() {
@@ -278,9 +285,10 @@ export default class App extends PureComponent {
 
     return (
       <div>
-        {this._renderStats()}
-        {this._renderControlPanel()}
+        {/*{this._renderStats()}*/}
+        {/*{this._renderControlPanel()}*/}
         <DeckGL
+          height={300}
           ref={_ => (this._deckRef = _)}
           layers={[tile3DLayer]}
           initialViewState={INITIAL_VIEW_STATE}

@@ -4,6 +4,7 @@ import {Vector3} from 'math.gl';
 import {registerLoaders} from '@loaders.gl/core';
 import {DracoWorkerLoader} from '@loaders.gl/draco';
 import {Tileset3D, _getIonTilesetMetadata} from '@loaders.gl/3d-tiles';
+import {Plane} from '@math.gl/culling';
 
 registerLoaders([DracoWorkerLoader]);
 
@@ -15,8 +16,9 @@ const TILESET_URL =
   'https://raw.githubusercontent.com/uber-web/loaders.gl/master/modules/3d-tiles/test/data/Batched/BatchedColorsMix/tileset.json';
 const MELBOURNE_ION_ASSET_ID = 43978;
 
+const TILESET_URL =
+  'https://raw.githubusercontent.com/uber-web/loaders.gl/master/modules/3d-tiles/test/data/Batched/BatchedColorsMix/tileset.json';
 const viewer = new Cesium.Viewer('cesiumContainer');
-
 const tileset = viewer.scene.primitives.add(
   new Cesium.Cesium3DTileset({
     url: Cesium.IonResource.fromAssetId(MELBOURNE_ION_ASSET_ID)
@@ -24,6 +26,39 @@ const tileset = viewer.scene.primitives.add(
 );
 
 viewer.zoomTo(tileset);
+
+
+
+loadTileset({
+  ionAssetId: MELBOURNE_ION_ASSET_ID,
+  ionAccessToken: Cesium.Ion.defaultAccessToken
+})
+
+async function fetchTilesetJson({tilesetUrl, ionAssetId, ionAccessToken}) {
+  let fetchOptions = null;
+  if (ionAssetId && ionAccessToken) {
+    const {url, headers} = await _getIonTilesetMetadata(ionAccessToken, ionAssetId);
+    tilesetUrl = url;
+    fetchOptions = {headers};
+  }
+
+  const response = await fetch(tilesetUrl, fetchOptions);
+  const tilesetJson = await response.json();
+
+  const tileset3d = new Tileset3D(tilesetJson, tilesetUrl, {
+    onTileLoad: tileHeader => console.log('Load', tileHeader.uri), // eslint-disable-line
+    onTileUnload: tileHeader => console.log('Unload', tileHeader.uri), // eslint-disable-line
+    onTileLoadFailed: tileHeader => console.error('LoadFailed', tileHeader.uri), // eslint-disable-line
+    fetchOptions,
+    ...ionMetadata,
+    throttleRequests: true
+  });
+
+  viewer.scene.preRender.addEventListener(scene => {
+    const frameState = convertCesiumFrameState(scene.frameState, scene.canvas.height);
+    tileset3d.update(frameState);
+  });
+}
 
 function convertCesiumFrameState(frameState, height) {
   let cameraPosition = frameState.camera.position;
@@ -35,11 +70,9 @@ function convertCesiumFrameState(frameState, height) {
   let cameraUp = frameState.camera.up;
   cameraUp = new Vector3([cameraUp.x, cameraUp.y, cameraUp.z]);
 
-  const cullingVolume = frameState.cullingVolume;
-  const planes = cullingVolume.planes.map(plane => ({
-    normal: new Vector3(plane.x, plane.y, plane.z),
-    distance: plane.w
-  }));
+  const planes = frameState.cullingVolume.planes.map(
+    plane => new Plane([plane.x, plane.y, plane.z], plane.w)
+  );
 
   return {
     camera: {
@@ -48,54 +81,8 @@ function convertCesiumFrameState(frameState, height) {
       up: cameraUp
     },
     height,
-    cullingVolume: {
-      ...cullingVolume,
-      planes
-    },
+    cullingVolume: planes,
     frameNumber: frameState.frameNumber, // TODO: This can be the same between updates, what number is unique for between updates?
     sseDenominator: frameState.camera.frustum.sseDenominator
-  };
-}
-
-fetchTilesetJson({
-  ionAssetId: MELBOURNE_ION_ASSET_ID,
-  ionAccessToken: Cesium.Ion.defaultAccessToken
-})
-  .then(({tilesetJson, tilesetUrl, ionMetadata}) => {
-    const fetchOptions = ionMetadata && {headers: ionMetadata.headers};
-    const tileset3d = new Tileset3D(tilesetJson, tilesetUrl, {
-      onTileLoad: tileHeader => {
-        // eslint-disable-next-line
-        console.log(tileHeader.uri);
-      },
-      fetchOptions,
-      ...ionMetadata,
-      throttleRequests: true
-    });
-    return tileset3d;
-  })
-  .then(tileset3d => {
-    viewer.scene.preRender.addEventListener(scene => {
-      const frameState = convertCesiumFrameState(scene.frameState, scene.canvas.height);
-      tileset3d.update(frameState);
-    });
-  });
-
-async function fetchTilesetJson({tilesetUrl, ionAssetId, ionAccessToken}) {
-  let fetchOptions = null;
-  let ionMetadata = {};
-  if (ionAssetId && ionAccessToken) {
-    ionMetadata = await _getIonTilesetMetadata(ionAccessToken, ionAssetId);
-    const {url, headers} = ionMetadata;
-    tilesetUrl = url;
-    fetchOptions = {headers};
-  }
-
-  const response = await fetch(tilesetUrl, fetchOptions);
-  const tilesetJson = await response.json();
-  return {
-    tilesetJson,
-    tilesetUrl,
-    ionMetadata
   };
 }
