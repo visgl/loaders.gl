@@ -22,51 +22,51 @@ const cartographicPosition = Ellipsoid.WGS84.cartesianToCartographic(position);
 
 ## Static Fields
 
-#### Ellipsoid.WGS84 : Ellipsoid (readonly)
+### Ellipsoid.WGS84 : Ellipsoid (readonly)
 
 An Ellipsoid instance initialized to the WGS84 standard.
 
-#### Ellipsoid.UNIT_SPHERE : Ellipsoid (readonly)
+### Ellipsoid.UNIT_SPHERE : Ellipsoid (readonly)
 
 An Ellipsoid instance initialized to radii of (1.0, 1.0, 1.0).
 
-#### Ellipsoid.MOON : Ellipsoid (readonly)
+### Ellipsoid.MOON : Ellipsoid (readonly)
 
 An Ellipsoid instance initialized to a sphere with the lunar radius.
 
 ## Members
 
-#### radii : Vector3 (readonly)
+### radii : Vector3 (readonly)
 
 Gets the radii of the ellipsoid.
 
-#### radiiSquared : Vector3 (readonly)
+### radiiSquared : Vector3 (readonly)
 
 Gets the squared radii of the ellipsoid.
 
-#### radiiToTheFourth : Vector3 (readonly)
+### radiiToTheFourth : Vector3 (readonly)
 
 Gets the radii of the ellipsoid raise to the fourth power.
 
-#### oneOverRadii : Vector3 (readonly)
+### oneOverRadii : Vector3 (readonly)
 
 Gets one over the radii of the ellipsoid.
 
-#### oneOverRadiiSquared : Vector3 (readonly)
+### oneOverRadiiSquared : Vector3 (readonly)
 
 Gets one over the squared radii of the ellipsoid.
 
-#### minimumRadius : Number (readonly)
+### minimumRadius : Number (readonly)
 
 Gets the minimum radius of the ellipsoid.
 
-#### maximumRadius : Number
+### maximumRadius : Number
 
 Gets the maximum radius of the ellipsoid.
 
 ## Methods
 
-#### constructor(x : Number, y : Number, z : Number)
+### constructor(x : Number, y : Number, z : Number)
 
 - `x`=`0` The radius in the x direction.
 - `y`=`0` The radius in the y direction.
@@ -76,7 +76,7 @@ Throws
 
 - All radii components must be greater than or equal to zero.
 
-#### clone() : Ellipsoid
+### clone() : Ellipsoid
 
 Duplicates an Ellipsoid instance.
 
@@ -86,7 +86,7 @@ Duplicates an Ellipsoid instance.
 Returns
 - The cloned Ellipsoid. (Returns undefined if ellipsoid is undefined)
 
-#### equals(right)
+### equals(right)
 
 Compares this Ellipsoid against the provided Ellipsoid componentwise and returns `true` if they are equal, `false` otherwise. \*
 
@@ -94,7 +94,7 @@ Compares this Ellipsoid against the provided Ellipsoid componentwise and returns
 
 Returns - {Boolean} `true` if they are equal, `false` otherwise.
 
-#### toString() : String
+### toString() : String
 
 Creates a string representing this Ellipsoid in the format  used.'(radii.x, radii.y, radii.z)'. \*
 
@@ -102,7 +102,7 @@ Returns
 
 - A string representing this ellipsoid in the format '(radii.x, radii.y, radii.z)'.
 
-#### geocentricSurfaceNormal(cartesian : Number[3] [, result : Number[3]]) : Vector3 | Number[3]
+### geocentricSurfaceNormal(cartesian : Number[3] [, result : Number[3]]) : Vector3 | Number[3]
 
 Computes the unit vector directed from the center of this ellipsoid toward the provided Cartesian position.
 
@@ -113,7 +113,7 @@ Returns
 
 - The modified result parameter or a new `Vector3` instance if none was provided.
 
-#### geodeticSurfaceNormalCartographic(cartographic : Number[3] [, result : Number[3]]) : Vector3 | Number[3]
+### geodeticSurfaceNormalCartographic(cartographic : Number[3] [, result : Number[3]]) : Vector3 | Number[3]
 
 Computes the normal of the plane tangent to the surface of the ellipsoid at the provided position.
 
@@ -124,7 +124,7 @@ Returns
 
 The modified result parameter or a new `Vector3` instance if none was provided.
 
-#### geodeticSurfaceNormal(cartesian : Number[3] [, result : Number[3]]) : Vector3 | Number[3]
+### geodeticSurfaceNormal(cartesian : Number[3] [, result : Number[3]]) : Vector3 | Number[3]
 
 Computes the normal of the plane tangent to the surface of the ellipsoid at the provided position.
 
@@ -135,7 +135,7 @@ Returns
 
 - The modified `result` parameter or a new `Vector3` instance if none was provided.
 
-#### cartographicToCartesian(cartographic : Number[3] [, result : Number[3]]) : Vector3 | Number[3]
+### cartographicToCartesian(cartographic : Number[3] [, result : Number[3]]) : Vector3 | Number[3]
 
 Converts the provided cartographic to Cartesian representation.
 
@@ -146,7 +146,7 @@ Returns
 
 - The modified `result` parameter or a new `Vector3` instance if none was provided.
 
-#### cartesianToCartographic(cartesian : Number[3] [, result : Number[3]]) : Vector3 | Number[3] | `undefined`
+### cartesianToCartographic(cartesian : Number[3] [, result : Number[3]]) : Vector3 | Number[3] | `undefined`
 
 Converts the provided cartesian to cartographic representation. The cartesian is `undefined` at the center of the ellipsoid.
 
@@ -157,7 +157,7 @@ Returns
 
 - The modified result parameter, new `Vector3` instance if none was provided, or undefined if the cartesian is at the center of the ellipsoid.
 
-#### scaleToGeodeticSurface(cartesian : Number[3] [, result : Number[3]]) : Vector3 | Number[3] | `undefined`
+### scaleToGeodeticSurface(cartesian : Number[3] [, result : Number[3]]) : Vector3 | Number[3] | `undefined`
 
 Scales the provided Cartesian position along the geodetic surface normal so that it is on the surface of this ellipsoid. If the position is at the center of the ellipsoid, this function returns `undefined`.
 
@@ -168,7 +168,7 @@ Returns
 
 - The modified result parameter, a new `Vector3` instance if none was provided, or undefined if the position is at the center.
 
-#### scaleToGeocentricSurface(cartesian : Number[3] [, result : Number[3]]) : Vector3 | Number[3]
+### scaleToGeocentricSurface(cartesian : Number[3] [, result : Number[3]]) : Vector3 | Number[3]
 
 Scales the provided Cartesian position along the geocentric surface normal so that it is on the surface of this ellipsoid.
 
@@ -178,7 +178,7 @@ Scales the provided Cartesian position along the geocentric surface normal so th
 Returns
 - The modified `result` parameter or a new `Vector3` instance if none was provided.
 
-#### transformPositionToScaledSpace(position : Number[3] [, result : Number[3]]) : Vector3 | Number[3]
+### transformPositionToScaledSpace(position : Number[3] [, result : Number[3]]) : Vector3 | Number[3]
 
 Transforms a Cartesian X, Y, Z position to the ellipsoid-scaled space by multiplying its components by the result of `Ellipsoid.oneOverRadii`.
 
@@ -189,7 +189,7 @@ Returns
 
 - The position expressed in the scaled space. The returned instance is the one passed as the `result` parameter if it is not undefined, or a new instance of it is.
 
-#### transformPositionFromScaledSpace(position : Number[3] [, result : Number[3]]) : Vector3 | Number[3]
+### transformPositionFromScaledSpace(position : Number[3] [, result : Number[3]]) : Vector3 | Number[3]
 
 Transforms a Cartesian X, Y, Z position from the ellipsoid-scaled space by multiplying its components by the result of `Ellipsoid.radii`.
 
@@ -200,7 +200,7 @@ Returns
 
 - The position expressed in the unscaled space. The returned array is the one passed as the `result` parameter, or a new `Vector3` instance.
 
-#### getSurfaceNormalIntersectionWithZAxis(position, buffer, result) : | undefined
+### getSurfaceNormalIntersectionWithZAxis(position, buffer, result) : | undefined
 
 Computes a point which is the intersection of the surface normal with the z-axis.
 

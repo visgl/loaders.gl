@@ -23,25 +23,25 @@ new CartographicRectangle(-Math.PI, -CesiumMath.PI_OVER_TWO, Math.PI, CesiumMath
 
 ## Members
 
-##### west : Number
+### west : Number
 
 The westernmost longitude in radians in the range [-Pi, Pi].
 
 default 0.0
 
-##### south : Number
+### south : Number
 
 The southernmost latitude in radians in the range [-Pi/2, Pi/2].
 
 default 0.0
 
-##### east : Number
+### east : Number
 
 The easternmost longitude in radians in the range [-Pi, Pi].
 
 default 0.0
 
-##### north : Number
+### north : Number
 
 The northernmost latitude in radians in the range [-Pi/2, Pi/2].
 
@@ -50,7 +50,7 @@ default 0.0
 
 ## Methods
 
-##### constructor(west, south, east, north)
+### constructor(west, south, east, north)
 
 - `west`=`0.0`  The westernmost longitude, in radians, in the range [-Pi, Pi].
 - `south`=`0.0`  The southernmost latitude, in radians, in the range [-Pi/2, Pi/2].
@@ -58,19 +58,19 @@ default 0.0
 - `north`=`0.0`  The northernmost latitude, in radians, in the range [-Pi/2, Pi/2].
 
 
-##### computeWidth()
+### computeWidth()
 
 Computes the width of a rectangle in radians.
 
 @returns {Number} The width.
 
-##### computeHeight()
+### computeHeight()
 
 Computes the height of a rectangle in radians.
 
 @returns {Number} The height.
 
-##### fromDegrees(west, south, east, north, result)
+### fromDegrees(west, south, east, north, result)
 
 Creates a rectangle given the boundary longitude and latitude in degrees.
 
@@ -81,7 +81,7 @@ Creates a rectangle given the boundary longitude and latitude in degrees.
 @param {CartographicRectangle} [result] The object onto which to store the result, or undefined if a new instance should be created.
 @returns {CartographicRectangle} The modified result parameter or a new CartographicRectangle instance if none was provided.
 
-##### fromRadians(west, south, east, north, result)
+### fromRadians(west, south, east, north, result)
 
 Creates a rectangle given the boundary longitude and latitude in radians.
 
@@ -93,7 +93,7 @@ Creates a rectangle given the boundary longitude and latitude in radians.
 @returns {CartographicRectangle} The modified result parameter or a new CartographicRectangle instance if none was provided.
 
 
-##### fromCartographicArray(cartographics, result)
+### fromCartographicArray(cartographics, result)
 
 Creates the smallest possible CartographicRectangle that encloses all positions in the provided array.
 
@@ -101,7 +101,7 @@ Creates the smallest possible CartographicRectangle that encloses all positions 
 @param {CartographicRectangle} [result] The object onto which to store the result, or undefined if a new instance should be created.
 @returns {CartographicRectangle} The modified result parameter or a new CartographicRectangle instance if none was provided.
 
-##### fromCartesianArray(cartesians, ellipsoid, result)
+### fromCartesianArray(cartesians, ellipsoid, result)
 
 Creates the smallest possible CartographicRectangle that encloses all positions in the provided array.
 
@@ -110,7 +110,7 @@ Creates the smallest possible CartographicRectangle that encloses all positions 
 @param {CartographicRectangle} [result] The object onto which to store the result, or undefined if a new instance should be created.
 @returns {CartographicRectangle} The modified result parameter or a new CartographicRectangle instance if none was provided.
 
-##### clone(rectangle, result)
+### clone(rectangle, result)
 
 Duplicates a CartographicRectangle.
 
@@ -184,7 +184,7 @@ CartographicRectangle.prototype.equalsEpsilon = function(other, epsilon)
 @param {Number} epsilon The epsilon to use for equality testing.
 @returns {Boolean} `true` if the CartographicRectangles are within the provided epsilon, `false` otherwise.
 
-##### validate()
+### validate()
 
 Checks a CartographicRectangle's properties and throws if they are not in valid ranges.
 
@@ -194,7 +194,7 @@ Throws
 - `east` must be in the interval [`-Pi`, `Pi`].
 - `west` must be in the interval [`-Pi`, `Pi`].
 
-##### southwest(rectangle, result)
+### southwest(rectangle, result)
 
 Computes the southwest corner of a rectangle.
 
@@ -202,7 +202,7 @@ Computes the southwest corner of a rectangle.
 @param {Cartographic} [result] The object onto which to store the result.
 @returns {Cartographic} The modified result parameter or a new Cartographic instance if none was provided.
 
-##### northwest(rectangle, result)
+### northwest(rectangle, result)
 
 Computes the northwest corner of a rectangle.
 
@@ -210,7 +210,7 @@ Computes the northwest corner of a rectangle.
 @param {Cartographic} [result] The object onto which to store the result.
 @returns {Cartographic} The modified result parameter or a new Cartographic instance if none was provided.
 
-##### northeast(rectangle, result)
+### northeast(rectangle, result)
 
 Computes the northeast corner of a rectangle.
 
@@ -219,7 +219,7 @@ Computes the northeast corner of a rectangle.
 @returns {Cartographic} The modified result parameter or a new Cartographic instance if none was provided.
 
 
-##### southeast(rectangle, result)
+### southeast(rectangle, result)
 
 Computes the southeast corner of a rectangle.
 
@@ -227,7 +227,7 @@ Computes the southeast corner of a rectangle.
 @param {Cartographic} [result] The object onto which to store the result.
 @returns {Cartographic} The modified result parameter or a new Cartographic instance if none was provided.
 
-##### center = function(rectangle, result)
+### center = function(rectangle, result)
 
 Computes the center of a rectangle.
 
@@ -235,7 +235,7 @@ Computes the center of a rectangle.
 @param {Cartographic} [result] The object onto which to store the result.
 @returns {Cartographic} The modified result parameter or a new Cartographic instance if none was provided.
 
-##### intersection = function(rectangle, CartographicotherRectangle, result)
+### intersection = function(rectangle, CartographicotherRectangle, result)
 
 Computes the intersection of two rectangles.  This function assumes that the rectangle's coordinates are
 latitude and longitude in radians and produces a correct intersection, taking into account the fact that
@@ -248,7 +248,7 @@ coordinates, see {@link CartographicRectangle.simpleIntersection}.
 @param {CartographicRectangle} [result] The object onto which to store the result.
 
 
-##### simpleIntersection = function(rectangle, CartographicotherRectangle, result)
+### simpleIntersection = function(rectangle, CartographicotherRectangle, result)
 
 Computes a simple intersection of two rectangles.  Unlike {@link CartographicRectangle.intersection}, this function
 does not attempt to put the angular coordinates into a consistent range or to account for crossing the
@@ -261,7 +261,7 @@ and longitude (i.e. projected coordinates).
 @returns {CartographicRectangle|undefined} The modified result parameter, a new CartographicRectangle instance if none was provided or undefined if there is no intersection.
 
 
-##### union(rectangle, CartographicotherRectangle, result)
+### union(rectangle, CartographicotherRectangle, result)
 
 Computes a rectangle that is the union of two rectangles.
 
@@ -270,7 +270,7 @@ Computes a rectangle that is the union of two rectangles.
 @param {CartographicRectangle} [result] The object onto which to store the result.
 @returns {CartographicRectangle} The modified result parameter or a new CartographicRectangle instance if none was provided.
 
-##### expand(rectangle, cartographic, result)
+### expand(rectangle, cartographic, result)
 
 Computes a rectangle by enlarging the provided rectangle until it contains the provided cartographic.
 
@@ -279,7 +279,7 @@ Computes a rectangle by enlarging the provided rectangle until it contains the p
 @param {CartographicRectangle} [result] The object onto which to store the result.
 @returns {CartographicRectangle} The modified result parameter or a new CartographicRectangle instance if one was not provided.
 
-##### contains(rectangle, cartographic)
+### contains(rectangle, cartographic)
 
 Returns true if the cartographic is on or inside the rectangle, false otherwise.
 
@@ -287,7 +287,7 @@ Returns true if the cartographic is on or inside the rectangle, false otherwise.
 @param {Cartographic} cartographic The cartographic to test.
 @returns {Boolean} true if the provided cartographic is inside the rectangle, false otherwise.
 
-##### subsample(rectangle, ellipsoid, surfaceHeight, result)
+### subsample(rectangle, ellipsoid, surfaceHeight, result)
 
 Samples a rectangle so that it includes a list of Cartesian points suitable for passing to
 {@link BoundingSphere#fromPoints}.  Sampling is necessary to account
