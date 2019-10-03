@@ -61,7 +61,6 @@ export default class Tile3DLayer extends CompositeLayer {
 
     const tileset3d = new Tileset3D(tilesetJson, tilesetUrl, {
       onTileLoad: tileHeader => {
-        console.log('onTileLoad');
         this.props.onTileLoad(tileHeader);
         this._updateTileset(tileset3d);
         this.setNeedsUpdate();
@@ -97,47 +96,7 @@ export default class Tile3DLayer extends CompositeLayer {
     }
 
     // use Date.now() as frame identifier for now and later used to filter layers for rendering
-    // const frameState = getFrameState(viewport, Date.now());
-
-    // copied from cesium example
-    const frameState = {
-      camera: {
-        position: [-4129177.4436845127, 2897358.104762894, -3895489.035314936],
-        direction: [-0.13038111167390576, 0.09148571979975412, 0.9872340800394797],
-        up: [-0.8081356152768331, 0.5670519871339241, -0.1592760848608561]
-      },
-      height: 296,
-      cullingVolume: {
-        planes: [
-          {
-            normal: [-0.5626221535725722, -0.6631730757411378, 0.49361704176557797],
-            distance: 1521162.9538524575
-          },
-          {
-            normal: [0.4322410413737176, 0.7546587958118188, 0.4936170419019381],
-            distance: 1521162.9542726728
-          },
-          {
-            normal: [-0.8125927987720785, 0.570179500276794, 0.1207819558041092],
-            distance: -4536849.267387959
-          },
-          {
-            normal: [0.7402703688050201, -0.5194323523329109, 0.4268369857676096],
-            distance: 6224428.04293012
-          },
-          {
-            normal: [-0.13038111167390576, 0.09148571979975412, 0.9872340800394797],
-            distance: 3042325.7969447337
-          },
-          {
-            normal: [0.13038111167390576, -0.09148571979975412, -0.9872340800394797],
-            distance: 9996957674.103058
-          }
-        ]
-      },
-      frameNumber: Date.now(),
-      sseDenominator: 1.15
-    };
+    const frameState = getFrameState(viewport, Date.now());
     tileset3d.update(frameState);
     this._updateLayerMap(frameState.frameNumber);
   }
