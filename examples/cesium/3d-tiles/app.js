@@ -11,13 +11,10 @@ registerLoaders([DracoWorkerLoader]);
 Cesium.Ion.defaultAccessToken =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ';
 
-// eslint-disable-next-line
-const TILESET_URL =
-  'https://raw.githubusercontent.com/uber-web/loaders.gl/master/modules/3d-tiles/test/data/Batched/BatchedColorsMix/tileset.json';
+// const TILESET_URL =
+//   'https://raw.githubusercontent.com/uber-web/loaders.gl/master/modules/3d-tiles/test/data/Batched/BatchedColorsMix/tileset.json';
 const MELBOURNE_ION_ASSET_ID = 43978;
 
-const TILESET_URL =
-  'https://raw.githubusercontent.com/uber-web/loaders.gl/master/modules/3d-tiles/test/data/Batched/BatchedColorsMix/tileset.json';
 const viewer = new Cesium.Viewer('cesiumContainer');
 const tileset = viewer.scene.primitives.add(
   new Cesium.Cesium3DTileset({
@@ -34,7 +31,7 @@ loadTileset({
   ionAccessToken: Cesium.Ion.defaultAccessToken
 })
 
-async function fetchTilesetJson({tilesetUrl, ionAssetId, ionAccessToken}) {
+async function loadTileset({tilesetUrl, ionAssetId, ionAccessToken}) {
   let fetchOptions = null;
   if (ionAssetId && ionAccessToken) {
     const {url, headers} = await _getIonTilesetMetadata(ionAccessToken, ionAssetId);
@@ -50,8 +47,7 @@ async function fetchTilesetJson({tilesetUrl, ionAssetId, ionAccessToken}) {
     onTileUnload: tileHeader => console.log('Unload', tileHeader.uri), // eslint-disable-line
     onTileLoadFailed: tileHeader => console.error('LoadFailed', tileHeader.uri), // eslint-disable-line
     fetchOptions,
-    ...ionMetadata,
-    throttleRequests: true
+      throttleRequests: true
   });
 
   viewer.scene.preRender.addEventListener(scene => {
