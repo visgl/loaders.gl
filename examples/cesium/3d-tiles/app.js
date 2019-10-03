@@ -24,12 +24,10 @@ const tileset = viewer.scene.primitives.add(
 
 viewer.zoomTo(tileset);
 
-
-
 loadTileset({
   ionAssetId: MELBOURNE_ION_ASSET_ID,
   ionAccessToken: Cesium.Ion.defaultAccessToken
-})
+});
 
 async function loadTileset({tilesetUrl, ionAssetId, ionAccessToken}) {
   let fetchOptions = null;
@@ -47,7 +45,7 @@ async function loadTileset({tilesetUrl, ionAssetId, ionAccessToken}) {
     onTileUnload: tileHeader => console.log('Unload', tileHeader.uri), // eslint-disable-line
     onTileLoadFailed: tileHeader => console.error('LoadFailed', tileHeader.uri), // eslint-disable-line
     fetchOptions,
-      throttleRequests: true
+    throttleRequests: true
   });
 
   viewer.scene.preRender.addEventListener(scene => {
