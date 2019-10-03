@@ -1,6 +1,7 @@
 // LASER (LAS) FILE FORMAT
 
 /* global __VERSION__ */ // __VERSION__ is injected by babel-plugin-version-inline
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 import parseLAS from './lib/parse-las';
 
@@ -25,7 +26,7 @@ export const LASWorkerLoader = {
   ...LAS,
   options: {
     las: {
-      workerUrl: `https://unpkg.com/@loaders.gl/las@${__VERSION__}/dist/las-loader.worker.js`
+      workerUrl: `https://unpkg.com/@loaders.gl/las@${VERSION}/dist/las-loader.worker.js`
     }
   }
 };

@@ -13,7 +13,7 @@ function testText(text) {
   return text.startsWith(KML_HEADER);
 }
 
-function parseTextSync(text, options = DEFAULT_OPTIONS) {
+function parseTextSync(text, options) {
   const xml = XMLLoader.parseTextSync(text);
   const kmlLoader = new KMLParser();
   let kml = kmlLoader.parse(xml, options);

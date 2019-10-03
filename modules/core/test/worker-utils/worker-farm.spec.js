@@ -157,7 +157,11 @@ test.skip('parseWithWorker#options.workerUrl', async t => {
     true,
     'test-json-loader',
     toArrayBuffer(JSON.stringify(testData)),
-    {workerUrl: './json-loader.worker.js'}
+    {
+      json: {
+        workerUrl: './json-loader.worker.js'
+      }
+    }
   );
 
   t.deepEquals(parsedData, testData, 'data parsed with relative worker url');

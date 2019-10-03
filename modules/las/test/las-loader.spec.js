@@ -13,7 +13,7 @@ test('LASLoader#loader conformance', t => {
   t.end();
 });
 
-test('LASLoader#parseBinary', async t => {
+test('LASLoader#parse(binary)', async t => {
   const data = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {skip: 10});
   validatePointCloudCategoryData(t, data);
 
@@ -26,7 +26,7 @@ test('LASLoader#parseBinary', async t => {
   t.end();
 });
 
-test('LASWorkerLoader#parseBinary', async t => {
+test.only('LASWorkerLoader#load(binary)', async t => {
   if (typeof Worker === 'undefined') {
     t.comment('Worker is not usable in non-browser environments');
     t.end();
@@ -34,7 +34,10 @@ test('LASWorkerLoader#parseBinary', async t => {
   }
 
   const data = await load(LAS_BINARY_URL, LASWorkerLoader, {
-    workerUrl: 'modules/las/dist/las-loader.worker.js',
+    las: {
+      workerUrl: 'modules/las/dist/las-loader.worker.js',
+      skip: 10
+    },
     skip: 10
   });
   validatePointCloudCategoryData(t, data);

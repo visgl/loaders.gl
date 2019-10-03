@@ -29,7 +29,9 @@ test('DracoWorkerLoader#parse', async t => {
   }
 
   const data = await load(BUNNY_DRC_URL, DracoWorkerLoader, {
-    workerUrl: 'modules/draco/dist/draco-loader.worker.js'
+    draco: {
+      workerUrl: 'modules/draco/dist/draco-loader.worker.js'
+    }
   });
   validatePointCloudCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');

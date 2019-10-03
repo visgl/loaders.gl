@@ -1,5 +1,7 @@
-/* global __VERSION__ */ // __VERSION__ is injected by babel-plugin-version-inline
 /* global TextDecoder */
+/* global __VERSION__ */ // __VERSION__ is injected by babel-plugin-version-inline
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+
 import loadOBJ from './lib/load-obj';
 
 const OBJ = {
@@ -20,7 +22,7 @@ export const OBJWorkerLoader = {
   ...OBJ,
   options: {
     obj: {
-      workerUrl: `https://unpkg.com/@loaders.gl/obj@${__VERSION__}/dist/obj-loader.worker.js`
+      workerUrl: `https://unpkg.com/@loaders.gl/obj@${VERSION}/dist/obj-loader.worker.js`
     }
   }
 };

@@ -3,6 +3,7 @@
 // 'https://en.wikipedia.org/wiki/PLY_(file_format)']
 
 /* global __VERSION__ */ // __VERSION__ is injected by babel-plugin-version-inline
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 import parsePLY from './lib/parse-ply';
 
@@ -30,7 +31,7 @@ export const PLYWorkerLoader = {
   ...PLY,
   options: {
     ply: {
-      workerUrl: `https://unpkg.com/@loaders.gl/ply@${__VERSION__}/dist/ply-loader.worker.js`
+      workerUrl: `https://unpkg.com/@loaders.gl/ply@${VERSION}/dist/ply-loader.worker.js`
     }
   }
 };

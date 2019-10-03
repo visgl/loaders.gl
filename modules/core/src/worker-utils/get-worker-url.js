@@ -18,12 +18,12 @@ export function getWorkerURL(workerSource, workerName = 'Worker') {
     // Only use trusted sources!
     if (workerUrl && workerUrl.startsWith('http')) {
       return `importScripts('${workerUrl}')`;
-  //     return `
-  // try {
-  //   importScripts('${workerUrl}');
-  // } catch (error) {
-  //   console.error(error);
-  // }`;
+      //     return `
+      // try {
+      //   importScripts('${workerUrl}');
+      // } catch (error) {
+      //   console.error(error);
+      // }`;
     }
     // console.error(${workerName}: importScripts(\'${workerUrl}\') failed');
 

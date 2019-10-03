@@ -1,4 +1,5 @@
 /* global __VERSION__ */ // __VERSION__ is injected by babel-plugin-version-inline
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 import parseSync from './lib/parse-arrow-sync';
 import {parseArrowInBatches, parseArrowInBatchesSync} from './lib/parse-arrow-in-batches';
@@ -24,7 +25,7 @@ export const ArrowWorkerLoader = {
   ...ARROW,
   options: {
     arrow: {
-      workerUrl: `https://unpkg.com/@loaders.gl/arrow@${__VERSION__}/dist/arrow-loader.worker.js`
+      workerUrl: `https://unpkg.com/@loaders.gl/arrow@${VERSION}/dist/arrow-loader.worker.js`
     }
   }
 };

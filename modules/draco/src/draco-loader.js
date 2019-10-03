@@ -1,4 +1,5 @@
 /* global __VERSION__ */ // __VERSION__ is injected by babel-plugin-version-inline
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 import DracoParser from './lib/draco-parser';
 
@@ -22,7 +23,7 @@ export const DracoWorkerLoader = {
   ...DRACO,
   options: {
     draco: {
-      workerUrl: `https://unpkg.com/@loaders.gl/draco@${__VERSION__}/dist/draco-loader.worker.js`
+      workerUrl: `https://unpkg.com/@loaders.gl/draco@${VERSION}/dist/draco-loader.worker.js`
     }
   }
 };
