@@ -1,5 +1,6 @@
 /* global TextDecoder */
 export default {
+  id: '3d-tileset',
   name: '3D Tileset',
   extensions: ['json'],
   parse: async arrayBuffer => JSON.parse(new TextDecoder().decode(arrayBuffer)),

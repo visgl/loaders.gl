@@ -9,14 +9,15 @@ export function isLoaderObject(loader) {
     loader = loader[0];
   }
 
-  const hasParser =
+  let hasParser =
     loader.parseTextSync ||
     loader.parseSync ||
     loader.parse ||
-    loader.parseStream || // TODO Replace with parseInBatches
-    loader.parseInBatches ||
-    // loader.parseInBatchesSync || // Optimization only, parseInBatches needed
-    loader.worker;
+    loader.parseStream || // TODO Remove, Replace with parseInBatches
+    loader.parseInBatches;
+
+  const loaderOptions = loader.options && loader.options[loader.id];
+  hasParser = hasParser || (loaderOptions && loaderOptions.workerUrl);
 
   return hasParser;
 }

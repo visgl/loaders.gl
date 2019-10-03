@@ -1,9 +1,26 @@
 import parsePCDSync from './lib/parse-pcd';
 
-export default {
+const PCD = {
+  id: 'pcd',
   name: 'PCD',
   extensions: ['pcd'],
-  mimeType: 'text/plain', // TODO - can be both text and binary
+  mimeType: 'text/plain'
+};
+
+export const PCDLoader = {
+  ...PCD,
   parse: async (arrayBuffer, options) => parsePCDSync(arrayBuffer, options),
-  parseSync: parsePCDSync
+  parseSync: parsePCDSync,
+  options: {
+    pcd: {}
+  }
+};
+
+export const PCDWorkerLoader = {
+  ...PCD,
+  options: {
+    pcd: {
+      workerUrl: `https://unpkg.com/@loaders.gl/pcd@${__VERSION__}/dist/pcd-loader.worker.js`
+    }
+  }
 };

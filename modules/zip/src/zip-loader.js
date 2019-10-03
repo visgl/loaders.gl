@@ -1,6 +1,7 @@
 import JSZip from 'jszip';
 
 export const ZipLoader = {
+  id: 'zip',
   name: 'Zip Archive',
   extensions: ['zip'],
   mimeType: 'application/zip',

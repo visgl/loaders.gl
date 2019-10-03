@@ -1,7 +1,8 @@
 const EXTENSIONS = ['basis'];
 
 export const BasisLoader = {
-  name: 'basis',
+  id: 'basis',
+  name: 'Basis',
   extensions: EXTENSIONS,
   parse: data => 'not implemented yet'
 };

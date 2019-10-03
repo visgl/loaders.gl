@@ -2,21 +2,35 @@
 // links: ['http://paulbourke.net/dataformats/ply/',
 // 'https://en.wikipedia.org/wiki/PLY_(file_format)']
 
+/* global __VERSION__ */ // __VERSION__ is injected by babel-plugin-version-inline
+
 import parsePLY from './lib/parse-ply';
 
-const DEFAULT_OPTIONS = {};
-
-export default {
+export const PLY = {
+  id: 'ply',
   name: 'PLY',
   extensions: ['ply'],
   mimeType: 'text/plain',
   // mimeType: 'application/octet-stream', TODO - binary version?
   text: true,
   binary: true,
-  test: 'ply',
+  test: 'ply'
+};
+
+export const PLYLoader = {
+  ...PLY,
   // Note: parsePLY supports both text and binary
   parse: async (arrayBuffer, options) => parsePLY(arrayBuffer, options), // TODO - this may not detect text correctly?
   parseTextSync: parsePLY,
   parseSync: parsePLY,
-  options: DEFAULT_OPTIONS
+  options: {}
+};
+
+export const PLYWorkerLoader = {
+  ...PLY,
+  options: {
+    ply: {
+      workerUrl: `https://unpkg.com/@loaders.gl/ply@${__VERSION__}/dist/ply-loader.worker.js`
+    }
+  }
 };

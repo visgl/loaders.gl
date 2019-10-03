@@ -3,6 +3,7 @@
 import parseGLBSync from './lib/parse-glb';
 
 export default {
+  id: 'glb',
   name: 'GLB',
   extensions: ['glb'],
   mimeType: 'model/gltf-binary',

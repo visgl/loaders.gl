@@ -5,11 +5,13 @@ function parseSync(arrayBuffer, options, url, loader) {
 }
 
 export default {
+  id: 'potree',
   name: 'potree Hierarchy Chunk',
   extensions: ['hrc'],
   mimeType: 'application/octet-stream',
   // binary potree files have no header bytes, no content test function possible
   // test: ['...'],
+  parse: async (arrayBuffer) => parseSync(arrayBuffer),
   parseSync,
   binary: true
 };

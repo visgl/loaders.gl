@@ -9,10 +9,6 @@ const KML_HEADER = `\
 <kml xmlns="http://www.opengis.net/kml/2.2">
 `;
 
-const DEFAULT_OPTIONS = {
-  normalize: true
-};
-
 function testText(text) {
   return text.startsWith(KML_HEADER);
 }
@@ -26,6 +22,7 @@ function parseTextSync(text, options = DEFAULT_OPTIONS) {
 }
 
 export default {
+  id: 'kml',
   name: 'KML',
   extensions: ['kml'],
   mimeType: 'vnd.google-earth.kml+xml',
@@ -36,6 +33,7 @@ export default {
     parseTextSync(new TextDecoder().decode(arrayBuffer), options),
   parseTextSync,
   browserOnly: true,
-  worker: false,
-  options: DEFAULT_OPTIONS
+  options: {
+    normalize: true
+  }
 };

@@ -1,7 +1,8 @@
 import {NullLog, ConsoleLog} from './loggers';
 
 const COMMON_DEFAULT_OPTIONS = {
-  log: new ConsoleLog()
+  worker: true, // By default, use worker if provided by loader
+  log: new ConsoleLog() // A probe.gl compatible (`log.log()()` syntax) that just logs to console
 };
 
 const isPureObject = value =>

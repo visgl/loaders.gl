@@ -3,6 +3,7 @@
 import {parseGLTF} from './lib/parse-gltf';
 
 const GLTFLoader = {
+  id: 'gltf',
   name: 'glTF',
   extensions: ['gltf', 'glb'],
   // mimeType: 'model/gltf-binary',
