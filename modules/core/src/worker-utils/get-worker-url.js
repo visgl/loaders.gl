@@ -12,32 +12,33 @@ export function getWorkerURL(workerSource, workerName = 'Worker') {
   // This pattern is used to differentiate worker urls from worker source code
   // Load from url is needed for testing, when using Webpack & webworker target
   if (workerSource.startsWith('url(') && workerSource.endsWith(')')) {
-    const workerUrl = workerSource.match(/^url\((.*)\)$/)[1];
+    workerSource = workerSource.match(/^url\((.*)\)$/)[1];
 
     // Per spec worker cannot be constructed from a different origin
     // Only use trusted sources!
-    if (workerUrl && workerUrl.startsWith('http')) {
-      return `importScripts('${workerUrl}')`;
-      //     return `
-      // try {
-      //   importScripts('${workerUrl}');
-      // } catch (error) {
-      //   console.error(error);
-      // }`;
+    if (workerSource && workerSource.startsWith('http')) {
+      workerSource = buildScript(workerSource);
     }
-    // console.error(${workerName}: importScripts(\'${workerUrl}\') failed');
-
-    return workerUrl;
   }
 
   let workerURL = workerURLCache.get(workerSource);
 
   if (!workerURL) {
-    const blob = new Blob([workerSource], {type: 'application/javascript'});
+    // NOTE: webworkify was previously used
     // const blob = webworkify(workerSource, {bare: true});
+    const blob = new Blob([workerSource], {type: 'application/javascript'});
     workerURL = URL.createObjectURL(blob);
     workerURLCache.set(workerSource, workerURL);
   }
 
   return workerURL;
+}
+
+function buildScript(workerUrl) {
+  return `\
+try {
+  importScripts('${workerUrl}');
+} catch (error) {
+  console.error(error);
+}`;
 }

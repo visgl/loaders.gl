@@ -27,11 +27,15 @@ export default class WorkerThread {
       this.worker.onmessage = event =>
         this.onMessage({worker: this.worker, data: event.data, resolve, reject});
       this.worker.onerror = error => {
-        // Error object does not seem to have the expected fields:
+        // Note Error object does not have the expected fields if loading failed completely
         // https://developer.mozilla.org/en-US/docs/Web/API/Worker#Event_handlers
         // https://developer.mozilla.org/en-US/docs/Web/API/ErrorEvent
-        const betterError = new Error(`${this.name}: WorkerThread.process() failed`);
-        console.error(betterError, error); // eslint-disable-line
+        let message = `${this.name}: WorkerThread.process() failed`;
+        if (error.message) {
+          message += ` ${error.message} ${error.filename}:${error.lineno}:${error.colno}`;
+        }
+        const betterError = new Error(message);
+        console.error(error); // eslint-disable-line
         reject(betterError);
       };
       const transferList = getTransferList(data);
