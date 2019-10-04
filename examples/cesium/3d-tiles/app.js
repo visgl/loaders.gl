@@ -2,11 +2,11 @@
 
 import {Vector3} from 'math.gl';
 import {registerLoaders} from '@loaders.gl/core';
-import {DracoWorkerLoader} from '@loaders.gl/draco';
+import {DracoLoader} from '@loaders.gl/draco';
 import {Tileset3D, _getIonTilesetMetadata} from '@loaders.gl/3d-tiles';
 import {Plane} from '@math.gl/culling';
 
-registerLoaders([DracoWorkerLoader]);
+registerLoaders([DracoLoader]);
 
 Cesium.Ion.defaultAccessToken =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ';
@@ -75,7 +75,8 @@ function convertCesiumFrameState(frameState, height) {
       up: cameraUp
     },
     height,
-    cullingVolume: planes,
+    // TODO update when math.gl published
+    cullingVolume: {planes},
     frameNumber: frameState.frameNumber, // TODO: This can be the same between updates, what number is unique for between updates?
     sseDenominator: frameState.camera.frustum.sseDenominator
   };
