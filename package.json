@@ -25,7 +25,7 @@
   "scripts": {
     "start": "echo 'Please see loaders.gl website for how to run examples' && open https://loaders.gl/docs",
     "bootstrap": "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true yarn && ocular-bootstrap",
-    "build": "ocular-clean && lerna run pre-build && ocular-build",
+    "build": "ocular-clean && lerna run pre-build && ocular-build --dist esm,es6",
     "clean": "ocular-clean",
     "cover": "ocular-test cover",
     "lint": "ocular-lint",
@@ -53,7 +53,7 @@
     "eslint-plugin-babel": "^5.3.0",
     "eslint-plugin-react": "^7.13",
     "mkdirp": "^0.5.1",
-    "ocular-dev-tools": "0.0.29",
+    "ocular-dev-tools": "0.0.30",
     "pre-commit": "^1.2.2",
     "raw-loader": "^2.0.0",
     "reify": "^0.19.1",

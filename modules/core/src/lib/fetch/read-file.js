@@ -1,4 +1,4 @@
-import {isBrowser} from '../../utils/globals';
+import {isBrowser} from '@loaders.gl/loader-utils';
 import * as node from '../../node/read-file-sync.node';
 import {resolvePath} from './file-aliases';
 import {readFileSyncBrowser} from './read-file.browser';

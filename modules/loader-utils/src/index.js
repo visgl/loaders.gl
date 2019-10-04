@@ -1,5 +1,25 @@
+export {default as createWorker} from './lib/create-worker';
+
+// GENERAL UTILS
+export {default as assert} from './lib/env-utils/assert';
+export {
+  isBrowser,
+  isWorker,
+  nodeVersion,
+  self,
+  window,
+  global,
+  document
+} from './lib/env-utils/globals';
+
+// LIBRARY UTILS
+export {loadLibrary} from './lib/library-utils/library-utils';
+
 // WORKER UTILS
-export {default as createWorker} from './worker-utils/create-worker';
+export {getTransferList} from './lib/worker-utils/get-transfer-list';
+
+// PARSER UTILS
+export {parseJSON} from './lib/parser-utils/parse-json';
 
 // MEMORY COPY UTILS
 export {
@@ -7,19 +27,18 @@ export {
   copyToArray,
   copyArrayBuffer,
   getZeroOffsetArrayBuffer
-} from './lib/memory-copy-utils';
-export {copyPaddedArrayBufferToDataView, copyPaddedStringToDataView} from './lib/binary-copy-utils';
+} from './lib/binary-utils/memory-copy-utils';
+export {
+  copyPaddedArrayBufferToDataView,
+  copyPaddedStringToDataView
+} from './lib/binary-utils/binary-copy-utils';
 export {
   padStringToByteAlignment,
   copyStringToDataView,
   copyBinaryToDataView
-} from './lib/encode-utils';
-
-export {getFirstCharacters, getMagicString} from './lib/get-first-characters';
-
-export {parseJSON} from './lib/parse-json';
+} from './lib/binary-utils/encode-utils';
+export {getFirstCharacters, getMagicString} from './lib/binary-utils/get-first-characters';
 
 // MESH CATEGORY UTILS
+// Note: Should move to category specific module if code size increases
 export {getMeshSize as _getMeshSize} from './categories/mesh/mesh-utils';
-
-export {default as assert} from './lib/utils/assert';

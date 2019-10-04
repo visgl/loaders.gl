@@ -1,5 +1,4 @@
-import {isBrowser} from '../../utils/globals';
-import assert from '../../utils/assert';
+import {isBrowser, assert} from '@loaders.gl/loader-utils';
 import * as node from '../../node/write-file.node';
 import {resolvePath} from './file-aliases';
 

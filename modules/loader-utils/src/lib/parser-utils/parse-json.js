@@ -1,4 +1,4 @@
-import {getFirstCharacters} from './get-first-characters';
+import {getFirstCharacters} from '../binary-utils/get-first-characters';
 
 // Minimal JSON parser with a meaningful error message
 export function parseJSON(string) {

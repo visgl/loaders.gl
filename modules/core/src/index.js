@@ -54,8 +54,8 @@ export {
 } from './javascript-utils/async-iterator-utils';
 
 // CORE UTILS
-export {isBrowser, self, window, global, document} from './utils/globals';
-export {default as assert} from './utils/assert';
+export {isBrowser, isWorker, self, window, global, document} from '@loaders.gl/loader-utils';
+export {assert} from '@loaders.gl/loader-utils';
 
 // EXPERIMENTAL
 export {selectLoader as _selectLoader} from './lib/select-loader';
