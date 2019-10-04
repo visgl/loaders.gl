@@ -9,9 +9,10 @@ module.exports = api => {
   // https://babeljs.io/docs/en/options#overrides
   const overrides = config.overrides || [];
   // TEST to prevent compilation of already transpiled files
-  // These files should be copied without any modification
+  // TODO: Ideally these files should be copied to the right dist folder without any further modification
+  // It still seems they are being parsed by babel which does take a relatively long time
   overrides.push({
-    test: /min.js|transpiled.js/,
+    test: /src\/libs/,
     compact: false,
     sourceMaps: false
   });
@@ -19,7 +20,7 @@ module.exports = api => {
   overrides.push(
     Object.assign(
       {
-        exclude: /min.js|transpiled.js/
+        exclude: /src\/libs/
       },
       config
     )

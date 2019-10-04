@@ -1,0 +1,7 @@
+{
+  "license": "MIT",
+  "description": "Example of progress tracking in loaders.gl",
+  "scripts": {
+    "start": "open index.html"
+  }
+}
