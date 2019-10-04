@@ -6,6 +6,7 @@ import DracoParser from './lib/draco-parser';
 const DRACO = {
   id: 'draco',
   name: 'DRACO',
+  version: __VERSION__,
   extensions: ['drc'],
   mimeType: 'application/octet-stream',
   binary: true,

@@ -10,6 +10,7 @@ import parsePLY from './lib/parse-ply';
 export const PLY = {
   id: 'ply',
   name: 'PLY',
+  version: __VERSION__,
   extensions: ['ply'],
   mimeType: 'text/plain',
   // mimeType: 'application/octet-stream', TODO - binary version?

@@ -1,3 +1,4 @@
+/* global __VERSION__ */ // __VERSION__ is injected by babel-plugin-version-inline
 import {parse3DTile} from './lib/parsers/parse-3d-tile';
 
 async function parse(arrayBuffer, options, context, loader) {
@@ -11,6 +12,7 @@ async function parse(arrayBuffer, options, context, loader) {
 export default {
   id: '3d-tiles',
   name: '3D Tiles',
+  version: __VERSION__,
   extensions: ['cmpt', 'pnts', 'b3dm', 'i3dm'],
   mimeType: 'application/octet-stream',
   test: ['cmpt', 'pnts', 'b3dm', 'i3dm'],

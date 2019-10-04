@@ -6,6 +6,7 @@ import {getArrayBufferOrStringFromData} from './loader-utils/get-data';
 import {getLoaders, getLoaderContext} from './loader-utils/get-loader-context';
 import parseWithWorker, {canParseWithWorker} from './loader-utils/parse-with-worker';
 import {selectLoader} from './select-loader';
+import {validateLoaderVersion} from '../utils/version.js';
 
 export async function parse(data, loaders, options, context) {
   // Signature: parse(data, options, context | url)
@@ -49,6 +50,8 @@ export async function parse(data, loaders, options, context) {
 // TODO: support progress and abort
 // TODO - should accept loader.parseAsyncIterator and concatenate.
 async function parseWithLoader(loader, data, options, context) {
+  validateLoaderVersion(loader);
+
   data = await getArrayBufferOrStringFromData(data, loader);
 
   // First check for synchronous text parser, wrap results in promises

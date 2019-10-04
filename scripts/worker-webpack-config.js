@@ -24,7 +24,7 @@ const BABEL_CONFIG = {
     // We must transpile to es6 to enable tree shaking
     ['@babel/env', {modules: false}]
   ],
-  plugins: [['@babel/plugin-transform-runtime', {useESModules: false}]]
+  plugins: [['@babel/plugin-transform-runtime', {useESModules: false}], 'version-inline']
 };
 
 module.exports = {

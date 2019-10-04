@@ -1,8 +1,10 @@
+/* global __VERSION__ */ // __VERSION__ is injected by babel-plugin-version-inline
 import JSZip from 'jszip';
 
 export const ZipLoader = {
   id: 'zip',
   name: 'Zip Archive',
+  version: __VERSION__,
   extensions: ['zip'],
   mimeType: 'application/zip',
   category: 'archive',
