@@ -37,7 +37,7 @@ if (version < 10) {
         }
       ]
     ],
-    ignore: ['node_modules', '**/*.transpiled.js', '**/*.min.js']
+    ignore: ['node_modules', '**/src/libs/*', '**/*.min.js']
   });
 } else {
   console.log('Using reify. Node version:', version);

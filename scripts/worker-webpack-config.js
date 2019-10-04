@@ -41,10 +41,9 @@ module.exports = {
   module: {
     rules: [
       {
-        // Compile ES2015 using babel
+        // Compile
         test: /\.js$/,
-        // exclude: /node_modules|transpiled/,
-        exclude: /node_modules|transpiled|minified/,
+        exclude: /node_modules|libs/,
         use: [
           {
             loader: 'babel-loader',
@@ -53,14 +52,15 @@ module.exports = {
         ]
       },
       {
-        // Compile ES2015 using babel
-        test: /\.transpiled.js$|\.minified.js$/,
-        // exclude: /node_modules|transpiled/,
+        // LIBS: Already compled, just process with babel - e.g. copy to dist
+        test: /libs\.*\.js$/,
         exclude: /node_modules|/,
         use: [
           {
             loader: 'babel-loader',
-            options: {}
+            options: {
+              compact: false
+            }
           }
         ]
       }
