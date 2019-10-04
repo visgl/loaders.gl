@@ -12,13 +12,17 @@ export function getWorkerURL(workerSource, workerName = 'Worker') {
   // This pattern is used to differentiate worker urls from worker source code
   // Load from url is needed for testing, when using Webpack & webworker target
   if (workerSource.startsWith('url(') && workerSource.endsWith(')')) {
-    workerSource = workerSource.match(/^url\((.*)\)$/)[1];
+    const workerUrl = workerSource.match(/^url\((.*)\)$/)[1];
 
-    // Per spec worker cannot be constructed from a different origin
-    // Only use trusted sources!
-    if (workerSource && workerSource.startsWith('http')) {
-      workerSource = buildScript(workerSource);
+    // A local script url, we can use it to initialize a Worker directly
+    if (workerUrl && !workerUrl.startsWith('http')) {
+      return workerUrl;
     }
+
+    // Per spec, worker cannot be initialized with a script from a different origin
+    // However a local worker script can still import scripts from other origins,
+    // so we simply build a wrapper script
+    workerSource = buildScript(workerUrl);
   }
 
   let workerURL = workerURLCache.get(workerSource);
@@ -34,6 +38,7 @@ export function getWorkerURL(workerSource, workerName = 'Worker') {
   return workerURL;
 }
 
+// Only use trusted sources!
 function buildScript(workerUrl) {
   return `\
 try {
