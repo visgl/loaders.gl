@@ -1,9 +1,8 @@
-/* eslint-disable max-len */
 import test from 'tape-promise/tape';
 import {validateWriter, validatePointCloudCategoryData} from 'test/common/conformance';
 
 import {DracoWriter, DracoLoader} from '@loaders.gl/draco';
-import {encodeSync, fetchFile, parseSync} from '@loaders.gl/core';
+import {encode, fetchFile, parse} from '@loaders.gl/core';
 import {_getMeshSize} from '@loaders.gl/loader-utils';
 
 const TEST_CASES = [
@@ -33,7 +32,7 @@ async function loadBunny() {
   const response = await fetchFile(BUNNY_DRC_URL);
   const arrayBuffer = await response.arrayBuffer();
   // Decode Loaded Mesh to use as input data for encoders
-  return parseSync(arrayBuffer, DracoLoader);
+  return await parse(arrayBuffer, DracoLoader);
 }
 
 test('DracoWriter#loader conformance', t => {
@@ -41,7 +40,7 @@ test('DracoWriter#loader conformance', t => {
   t.end();
 });
 
-test('DracoWriter#encodeSync(bunny.drc)', async t => {
+test('DracoWriter#encode(bunny.drc)', async t => {
   const data = await loadBunny();
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
 
@@ -61,16 +60,13 @@ test('DracoWriter#encodeSync(bunny.drc)', async t => {
     const mesh = tc.options.pointcloud ? POINTCLOUD : MESH;
     const meshSize = _getMeshSize(mesh.attributes);
 
-    let compressedMesh;
-    t.doesNotThrow(() => {
-      compressedMesh = encodeSync(mesh, DracoWriter, tc.options);
-      const ratio = meshSize / compressedMesh.byteLength;
-      t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
-    }, `${tc.title} did not trow`);
+    const compressedMesh = await encode(mesh, DracoWriter, tc.options);
+    const ratio = meshSize / compressedMesh.byteLength;
+    t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
 
     if (!tc.options.pointcloud) {
       // Decode the mesh
-      const data2 = parseSync(compressedMesh, DracoLoader);
+      const data2 = await parse(compressedMesh, DracoLoader);
       validatePointCloudCategoryData(t, data2);
 
       // t.comment(JSON.stringify(data));
@@ -102,19 +98,14 @@ test('DracoParser#encode(bunny.drc)', async t => {
     const attributes = tc.options.pointcloud ? pointCloudAttributes : meshAttributes;
     const meshSize = _getMeshSize(attributes);
 
-    let compressedMesh;
+    const compressedMesh = await encode(attributes, DracoWriter, tc.options);
 
-    // eslint-disable-next-line no-loop-func
-    t.doesNotThrow(() => {
-      compressedMesh = encodeSync(attributes, DracoWriter, tc.options);
-
-      const ratio = meshSize / compressedMesh.byteLength;
-      t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
-    }, `${tc.title} did not trow`);
+    const ratio = meshSize / compressedMesh.byteLength;
+    t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
 
     if (!tc.options.pointcloud) {
       // Decode the mesh
-      const data2 = parseSync(compressedMesh, DracoLoader);
+      const data2 = await parse(compressedMesh, DracoLoader);
       validatePointCloudCategoryData(t, data2);
 
       // t.comment(JSON.stringify(data));

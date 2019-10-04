@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
-import {fetchFile, parseSync, encodeSync} from '@loaders.gl/core';
+import {fetchFile, parse, encode} from '@loaders.gl/core';
 import {_getMeshSize} from '@loaders.gl/loader-utils';
 import {DracoWriter, DracoLoader} from '@loaders.gl/draco';
 import {validatePointCloudCategoryData} from 'test/common/conformance';
@@ -23,13 +23,13 @@ test('DracoWriter#compressRawBuffers', async t => {
 
   // Encode mesh
   // TODO - Replace with draco writer
-  const compressedMesh = encodeSync({attributes}, DracoWriter, {pointcloud: true});
+  const compressedMesh = await encode({attributes}, DracoWriter, {pointcloud: true});
   const meshSize = _getMeshSize(attributes);
   const ratio = meshSize / compressedMesh.byteLength;
   t.comment(`Draco compression ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
 
   // Ensure we can parse it
-  const data2 = parseSync(compressedMesh, DracoLoader);
+  const data2 = await parse(compressedMesh, DracoLoader);
   validatePointCloudCategoryData(t, data2);
 
   t.equal(data2.attributes.POSITION.value.length, attributes.POSITION.length, 'POSITION matched');

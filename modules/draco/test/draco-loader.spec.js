@@ -13,7 +13,7 @@ test('DracoLoader#loader conformance', t => {
   t.end();
 });
 
-test('DracoLoader#parse and encode', async t => {
+test('DracoLoader#parse', async t => {
   const data = await load(BUNNY_DRC_URL, DracoLoader);
   validatePointCloudCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
