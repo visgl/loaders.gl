@@ -1,6 +1,6 @@
 /* eslint-disable no-restricted-globals */
 /* global TextDecoder, self */
-import getTransferList from './get-transfer-list';
+import {getTransferList} from './get-transfer-list';
 
 // Set up a WebWorkerGlobalScope to talk with the main thread
 export default function createWorker(loader) {
@@ -20,12 +20,12 @@ export default function createWorker(loader) {
           return;
         }
         switch (data.type) {
-          case 'process-done':
+          case 'parse-done':
             self.removeEventListener('message', onMessage);
             resolve(data.result);
             break;
 
-          case 'process-error':
+          case 'parse-error':
             self.removeEventListener('message', onMessage);
             reject(data.message);
             break;
@@ -36,7 +36,7 @@ export default function createWorker(loader) {
       };
       self.addEventListener('message', onMessage);
       // Ask the main thread to decode data
-      self.postMessage({type: 'process', id, arraybuffer, options, url}, [arraybuffer]);
+      self.postMessage({type: 'parse', id, arraybuffer, options, url}, [arraybuffer]);
     });
 
   self.onmessage = async evt => {
@@ -88,7 +88,7 @@ async function parseData({loader, arraybuffer, byteOffset, byteLength, options, 
 
 // Filter out noise messages sent to workers
 function isKnownMessage(data, name) {
-  return data && data.type === 'process' && data.source === 'loaders.gl';
+  return data && data.type === 'parse' && data.source === 'loaders.gl';
 }
 
 /*

@@ -57,7 +57,9 @@ test('ArrowLoader#parse (WORKER)', async t => {
   }
 
   const data = await parse(fetchFile(ARROW_SIMPLE), ArrowWorkerLoader, {
-    workerUrl: 'modules/arrow/dist/arrow-loader.worker.js'
+    arrow: {
+      workerUrl: 'modules/arrow/dist/arrow-loader.worker.js'
+    }
   });
   t.ok(data, 'Data returned');
   t.end();

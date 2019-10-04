@@ -1,9 +1,18 @@
 export function validateLoader(t, loader, name = '') {
+  t.ok(typeof loader.id === 'string', `Loader ${name} loader.id is not defined`);
   t.ok(loader, `Loader ${name} defined`);
   t.equal(typeof loader.name, 'string', `Loader ${name} has a name`);
   t.ok(Array.isArray(loader.extensions), `Loader ${name} has extensions`);
-  if (!loader.worker) {
-    t.equal(typeof loader.mimeType, 'string', `Loader ${name} has a mimeType`);
+  t.equal(typeof loader.mimeType, 'string', `Loader ${name} has a mimeType`);
+
+  const options = loader.options || {};
+  t.ok(!('workerUrl' in options), 'workerUrl is not defined on loader.options');
+  t.ok(!('worker' in loader), `Loader ${name} loader.worker is not defined`);
+
+  const loaderOptions = options[loader.id] || {};
+  if (!loader.parse) {
+    t.ok(loaderOptions.workerUrl, 'options.<loaderId>.workerUrl');
+  } else {
     t.equal(typeof loader.parse, 'function', `Loader ${name} has 'parse' function`);
     // Call parse just to ensure it returns a promise
     const promise = loader.parse(null, {}).catch(_ => {});

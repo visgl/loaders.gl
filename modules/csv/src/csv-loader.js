@@ -4,6 +4,7 @@ import Papa from './papaparse/papaparse.transpiled';
 import AsyncIteratorStreamer from './papaparse/async-iterator-streamer';
 
 const CSVLoader = {
+  id: 'csv',
   name: 'CSV',
   extensions: ['csv'],
   mimeType: 'text/csv',

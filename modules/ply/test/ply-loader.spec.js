@@ -63,7 +63,9 @@ test('PLYLoader#parse(WORKER)', async t => {
   }
 
   const data = await load(PLY_BUN_ZIPPER_URL, PLYWorkerLoader, {
-    workerUrl: 'modules/ply/dist/ply-loader.worker.js'
+    ply: {
+      workerUrl: 'modules/ply/dist/ply-loader.worker.js'
+    }
   });
 
   validatePointCloudCategoryData(t, data);

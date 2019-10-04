@@ -8,6 +8,7 @@ function parseSync(arrayBuffer, options, url, loader) {
 }
 
 export default {
+  id: 'potree',
   name: 'potree Binary Point Attributes',
   extensions: ['bin'],
   mimeType: 'application/octet-stream',

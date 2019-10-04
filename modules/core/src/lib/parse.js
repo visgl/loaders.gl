@@ -4,7 +4,7 @@ import {mergeOptions} from './loader-utils/merge-options';
 import {getUrlFromData} from './loader-utils/get-data';
 import {getArrayBufferOrStringFromData} from './loader-utils/get-data';
 import {getLoaders, getLoaderContext} from './loader-utils/get-loader-context';
-import parseWithWorker from './loader-utils/parse-with-worker';
+import parseWithWorker, {canParseWithWorker} from './loader-utils/parse-with-worker';
 import {selectLoader} from './select-loader';
 
 export async function parse(data, loaders, options, context) {
@@ -47,7 +47,6 @@ export async function parse(data, loaders, options, context) {
 }
 
 // TODO: support progress and abort
-// TODO: support moving loading to worker
 // TODO - should accept loader.parseAsyncIterator and concatenate.
 async function parseWithLoader(loader, data, options, context) {
   data = await getArrayBufferOrStringFromData(data, loader);
@@ -58,19 +57,18 @@ async function parseWithLoader(loader, data, options, context) {
     return loader.parseTextSync(data, options, context, loader);
   }
 
+  // If we have a workerUrl and the loader can parse the given options efficiently in a worker
+  if (canParseWithWorker(loader, data, options, context)) {
+    return await parseWithWorker(loader, data, options, context);
+  }
+
   // Check for asynchronous parser
   if (loader.parse) {
     return await loader.parse(data, options, context, loader);
   }
 
-  // Now check for synchronous binary data parser, wrap results in promises
-  if (loader.parseSync) {
-    return loader.parseSync(data, options, context, loader);
-  }
-
-  if (loader.worker) {
-    return await parseWithWorker(loader.worker, loader.name, data, options, context, loader);
-  }
+  // This should not happen, all sync loaders should also offer `parse` function
+  assert(!loader.parseSync);
 
   // TBD - If asynchronous parser not available, return null
   return assert(false);

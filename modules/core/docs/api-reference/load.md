@@ -14,10 +14,6 @@ The `loaders` parameter can also be omitted, in which case any _loader objects_ 
 - `loaders` - can be a single loader or an array of loaders. If ommitted, will use the list of registered loaders (see `registerLoaders`)
 - `options` - optional, contains both options for the read process and options for the loader (see documentation of the specific loader).
 
-- `options.dataType`=`arraybuffer` - Default depends on loader object. Set to 'text' to read as text.
-
-`url` values
-
 Returns:
 
 - Return value depends on the _loader category_.
@@ -28,3 +24,16 @@ Notes:
 - Any path prefix set by `setPathPrefix` will be appended to relative urls.
 - `load` takes a `url` and a loader object, checks what type of data that loader prefers to work on (e.g. text, binary, stream, ...), loads the data in the appropriate way, and passes it to the loader.
 - If `@loaders.gl/polyfills` is installed, `load` will work under Node.js as well.
+
+## Options
+
+A loader object, that can contain a mix of options defined by:
+
+- any loader(s) being used
+- the `parse` function
+
+In addition to the following options
+
+| Option             | Type   | Default       | Description                                                      |
+| ------------------ | ------ | ------------- | ---------------------------------------------------------------- |
+| `options.dataType` | string | `arraybuffer` | Default depends on loader object. Set to 'text' to read as text. |

@@ -9,6 +9,7 @@ async function parse(arrayBuffer, options, context, loader) {
 
 // Tile3DLoader
 export default {
+  id: '3d-tiles',
   name: '3D Tiles',
   extensions: ['cmpt', 'pnts', 'b3dm', 'i3dm'],
   mimeType: 'application/octet-stream',

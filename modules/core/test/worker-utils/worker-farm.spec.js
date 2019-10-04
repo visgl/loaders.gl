@@ -1,4 +1,4 @@
-/* global Worker,location */
+/* global Worker, location */
 import test from 'tape-catch';
 import {_WorkerThread, _WorkerPool, toArrayBuffer} from '@loaders.gl/core';
 import parseWithWorker from '@loaders.gl/core/lib/loader-utils/parse-with-worker';
@@ -14,10 +14,15 @@ const testWorkerSource = `
   };
 `;
 
-const JsonWorkerLoader = {
+const JSONWorkerLoader = {
+  id: 'json',
   name: 'TEST-JSON-LOADER',
   extensions: ['json'],
-  worker: 'url(./json-loader.worker.js)'
+  options: {
+    json: {
+      workerUrl: './jsonl-loader.worker.js'
+    }
+  }
 };
 
 test('WorkerThread', async t => {
@@ -93,7 +98,7 @@ test('createWorker', async t => {
     TEST_CASES.map(testData =>
       workerPool.process({
         arraybuffer: toArrayBuffer(JSON.stringify(testData)),
-        type: 'process',
+        type: 'parse',
         source: 'loaders.gl'
       })
     )
@@ -111,23 +116,23 @@ test('createWorker', async t => {
   t.end();
 });
 
-test('createWorker#nested', async t => {
+test.skip('createWorker#nested', async t => {
   if (!hasWorker) {
     t.comment('Worker test is browser only');
     t.end();
     return;
   }
 
-  registerLoaders(JsonWorkerLoader);
+  registerLoaders(JSONWorkerLoader);
 
   const TEST_CASES = [[{chunk: 0}, {chunk: 1}, {chunk: 2}], [{chunk: 3}, {chunk: 4}]];
 
   const result = await Promise.all(
     TEST_CASES.map(testData =>
       parseWithWorker(
-        `url(./jsonl-loader.worker.js)`,
-        'test-jsonl-loader',
-        toArrayBuffer(testData.map(JSON.stringify).join('\n'))
+        JSONWorkerLoader,
+        toArrayBuffer(testData.map(JSON.stringify).join('\n')),
+        JSONWorkerLoader.options
       )
     )
   );
@@ -139,7 +144,7 @@ test('createWorker#nested', async t => {
   t.end();
 });
 
-test('parseWithWorker#options.workerUrl', async t => {
+test.skip('parseWithWorker#options.workerUrl', async t => {
   if (!hasWorker) {
     t.comment('Worker test is browser only');
     t.end();
@@ -152,7 +157,11 @@ test('parseWithWorker#options.workerUrl', async t => {
     true,
     'test-json-loader',
     toArrayBuffer(JSON.stringify(testData)),
-    {workerUrl: './json-loader.worker.js'}
+    {
+      json: {
+        workerUrl: './json-loader.worker.js'
+      }
+    }
   );
 
   t.deepEquals(parsedData, testData, 'data parsed with relative worker url');
@@ -161,7 +170,11 @@ test('parseWithWorker#options.workerUrl', async t => {
     true,
     'test-json-loader',
     toArrayBuffer(JSON.stringify(testData)),
-    {workerUrl: `${location.origin}/json-loader.worker.js`}
+    {
+      json: {
+        workerUrl: `${location.origin}/json-loader.worker.js`
+      }
+    }
   );
 
   t.deepEquals(parsedData, testData, 'data parsed with absolute worker url');
