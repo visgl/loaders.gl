@@ -2,8 +2,6 @@
 // Copyright 2017 The Draco Authors.
 // Licensed under the Apache License, Version 2.0 (the 'License');
 
-const draco3d = require('draco3d');
-
 const GEOMETRY_TYPE = {
   TRIANGULAR_MESH: 0,
   POINT_CLOUD: 1
@@ -28,26 +26,25 @@ const DRACO_DATA_TYPE_TO_TYPED_ARRAY_MAP = {
 };
 
 export default class DracoParser {
-  constructor() {
-    this.decoderModule = draco3d.createDecoderModule({});
+  // draco - the draco decoder, either import `draco3d` or load dynamically
+  constructor(draco) {
+    this.draco = draco;
   }
 
-  destroy() {
-    // this.decoderModule.destroy();
-  }
+  destroy() {}
 
   destroyGeometry(dracoGeometry) {
     if (dracoGeometry) {
-      this.decoderModule.destroy(dracoGeometry.dracoGeometry);
+      this.draco.destroy(dracoGeometry.dracoGeometry);
     }
   }
 
   // NOTE: caller must call `destroyGeometry` on the return value after using it
   parseSync(arrayBuffer) {
-    const buffer = new this.decoderModule.DecoderBuffer();
+    const buffer = new this.draco.DecoderBuffer();
     buffer.Init(new Int8Array(arrayBuffer), arrayBuffer.byteLength);
 
-    const decoder = new this.decoderModule.Decoder();
+    const decoder = new this.draco.Decoder();
 
     const data = {};
     let dracoStatus;
@@ -57,8 +54,8 @@ export default class DracoParser {
     try {
       const geometryType = decoder.GetEncodedGeometryType(buffer);
       switch (geometryType) {
-        case this.decoderModule.TRIANGULAR_MESH:
-          dracoGeometry = new this.decoderModule.Mesh();
+        case this.draco.TRIANGULAR_MESH:
+          dracoGeometry = new this.draco.Mesh();
           dracoStatus = decoder.DecodeBufferToMesh(buffer, dracoGeometry);
           header = {
             type: GEOMETRY_TYPE.TRIANGULAR_MESH,
@@ -68,8 +65,8 @@ export default class DracoParser {
           };
           break;
 
-        case this.decoderModule.POINT_CLOUD:
-          dracoGeometry = new this.decoderModule.PointCloud();
+        case this.draco.POINT_CLOUD:
+          dracoGeometry = new this.draco.PointCloud();
           dracoStatus = decoder.DecodeBufferToPointCloud(buffer, dracoGeometry);
           header = {
             type: GEOMETRY_TYPE.POINT_CLOUD,
@@ -86,7 +83,7 @@ export default class DracoParser {
         const message = `DRACO decompression failed: ${dracoStatus.error_msg()}`;
         // console.error(message);
         if (dracoGeometry) {
-          this.decoderModule.destroy(dracoGeometry);
+          this.draco.destroy(dracoGeometry);
         }
         throw new Error(message);
       }
@@ -98,8 +95,8 @@ export default class DracoParser {
 
       this.extractDRACOGeometry(decoder, dracoGeometry, geometryType, data);
     } finally {
-      this.decoderModule.destroy(decoder);
-      this.decoderModule.destroy(buffer);
+      this.draco.destroy(decoder);
+      this.draco.destroy(buffer);
     }
 
     return data;
@@ -120,7 +117,7 @@ export default class DracoParser {
     this.getPositionAttributeMetadata(positionAttribute);
 
     // For meshes, we need indices to define the faces.
-    if (geometryType === this.decoderModule.TRIANGULAR_MESH) {
+    if (geometryType === this.draco.TRIANGULAR_MESH) {
       attributes.indices =
         this.drawMode === 'TRIANGLE_STRIP'
           ? this.getMeshStripIndices(decoder, dracoGeometry)
@@ -146,7 +143,7 @@ export default class DracoParser {
     this.metadata = this.metadata || {};
     this.metadata.attributes = this.metadata.attributes || {};
 
-    const posTransform = new this.decoderModule.AttributeQuantizationTransform();
+    const posTransform = new this.draco.AttributeQuantizationTransform();
     if (posTransform.InitFromAttribute(positionAttribute)) {
       // Quantized attribute. Store the quantization parameters into the attribute
       this.metadata.attributes.position.isQuantized = true;
@@ -157,7 +154,7 @@ export default class DracoParser {
         this.metadata.attributes.position.minValues[i] = posTransform.min_value(i);
       }
     }
-    this.decoderModule.destroy(posTransform);
+    this.draco.destroy(posTransform);
   }
 
   getAttributes(decoder, dracoGeometry) {
@@ -171,7 +168,7 @@ export default class DracoParser {
       // For example, loading .drc files.
 
       // if (attributeUniqueIdMap[attributeName] === undefined) {
-      const attributeType = this.decoderModule[attributeName];
+      const attributeType = this.draco[attributeName];
       const attributeId = decoder.GetAttributeId(dracoGeometry, attributeType);
       if (attributeId !== -1) {
         const dracoAttribute = decoder.GetAttribute(dracoGeometry, attributeId);
@@ -207,7 +204,7 @@ export default class DracoParser {
 
     const numIndices = numFaces * 3;
     const indices = new Uint32Array(numIndices);
-    const dracoArray = new this.decoderModule.DracoInt32Array();
+    const dracoArray = new this.draco.DracoInt32Array();
     for (let i = 0; i < numFaces; ++i) {
       decoder.GetFaceFromMesh(dracoGeometry, i, dracoArray);
       const index = i * 3;
@@ -216,19 +213,19 @@ export default class DracoParser {
       indices[index + 2] = dracoArray.GetValue(2);
     }
 
-    this.decoderModule.destroy(dracoArray);
+    this.draco.destroy(dracoArray);
     return indices;
   }
 
   // For meshes, we need indices to define the faces.
   getMeshStripIndices(decoder, dracoGeometry) {
-    const dracoArray = new this.decoderModule.DracoInt32Array();
+    const dracoArray = new this.draco.DracoInt32Array();
     /* const numStrips = */ decoder.GetTriangleStripsFromMesh(dracoGeometry, dracoArray);
     const indices = new Uint32Array(dracoArray.size());
     for (let i = 0; i < dracoArray.size(); ++i) {
       indices[i] = dracoArray.GetValue(i);
     }
-    this.decoderModule.destroy(dracoArray);
+    this.draco.destroy(dracoArray);
     return indices;
   }
 
@@ -249,43 +246,43 @@ export default class DracoParser {
 
     switch (attributeType) {
       case Float32Array:
-        dracoArray = new this.decoderModule.DracoFloat32Array();
+        dracoArray = new this.draco.DracoFloat32Array();
         decoder.GetAttributeFloatForAllPoints(dracoGeometry, dracoAttribute, dracoArray);
         typedArray = new Float32Array(numValues);
         break;
 
       case Int8Array:
-        dracoArray = new this.decoderModule.DracoInt8Array();
+        dracoArray = new this.draco.DracoInt8Array();
         decoder.GetAttributeInt8ForAllPoints(dracoGeometry, dracoAttribute, dracoArray);
         typedArray = new Int8Array(numValues);
         break;
 
       case Int16Array:
-        dracoArray = new this.decoderModule.DracoInt16Array();
+        dracoArray = new this.draco.DracoInt16Array();
         decoder.GetAttributeInt16ForAllPoints(dracoGeometry, dracoAttribute, dracoArray);
         typedArray = new Int16Array(numValues);
         break;
 
       case Int32Array:
-        dracoArray = new this.decoderModule.DracoInt32Array();
+        dracoArray = new this.draco.DracoInt32Array();
         decoder.GetAttributeInt32ForAllPoints(dracoGeometry, dracoAttribute, dracoArray);
         typedArray = new Int32Array(numValues);
         break;
 
       case Uint8Array:
-        dracoArray = new this.decoderModule.DracoUInt8Array();
+        dracoArray = new this.draco.DracoUInt8Array();
         decoder.GetAttributeUInt8ForAllPoints(dracoGeometry, dracoAttribute, dracoArray);
         typedArray = new Uint8Array(numValues);
         break;
 
       case Uint16Array:
-        dracoArray = new this.decoderModule.DracoUInt16Array();
+        dracoArray = new this.draco.DracoUInt16Array();
         decoder.GetAttributeUInt16ForAllPoints(dracoGeometry, dracoAttribute, dracoArray);
         typedArray = new Uint16Array(numValues);
         break;
 
       case Uint32Array:
-        dracoArray = new this.decoderModule.DracoUInt32Array();
+        dracoArray = new this.draco.DracoUInt32Array();
         decoder.GetAttributeUInt32ForAllPoints(dracoGeometry, dracoAttribute, dracoArray);
         typedArray = new Uint32Array(numValues);
         break;
@@ -301,7 +298,7 @@ export default class DracoParser {
       typedArray[i] = dracoArray.GetValue(i);
     }
 
-    this.decoderModule.destroy(dracoArray);
+    this.draco.destroy(dracoArray);
 
     return {typedArray, components: numComponents};
   }
