@@ -1,5 +1,4 @@
-**/*.transpiled.js
-**/*.minified.js
+**/src/libs/*
 
 **/dist/*
 **/wip/*

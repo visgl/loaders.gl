@@ -1,7 +1,7 @@
 /* global TextDecoder */
 import {AsyncQueue, TableBatchBuilder, RowTableBatch} from '@loaders.gl/experimental';
-import Papa from './papaparse/papaparse.transpiled';
-import AsyncIteratorStreamer from './papaparse/async-iterator-streamer';
+import Papa from './libs/papaparse';
+import AsyncIteratorStreamer from './lib/async-iterator-streamer';
 
 const CSVLoader = {
   id: 'csv',

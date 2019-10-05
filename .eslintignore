@@ -1,10 +1,10 @@
 dist
 
+**/src/libs/*
 **/dist/*
 **/wip/*
 node_modules/
 *.min.js
-**/*.transpiled.js
 **/*.minified.js
 
 public/
