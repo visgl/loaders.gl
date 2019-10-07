@@ -3,7 +3,6 @@ import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
 import DeckGL from '@deck.gl/react';
-
 import {MapController, FlyToInterpolator} from '@deck.gl/core';
 // import {Tile3DLayer} from '@deck.gl/geo-layers';
 import Tile3DLayer from './3d-tile-layer/tile-3d-layer';
@@ -13,26 +12,21 @@ import {StatsWidget} from '@probe.gl/stats-widget';
 
 // To manage dependencies and bundle size, the app must decide which supporting loaders to bring in
 import {registerLoaders} from '@loaders.gl/core';
-import {DracoWorkerLoader} from '@loaders.gl/draco';
+import {DracoLoader} from '@loaders.gl/draco';
 import {GLTFLoader} from '@loaders.gl/gltf';
 
 import ControlPanel from './components/control-panel';
 import fileDrop from './components/file-drop';
 
 import {loadExampleIndex, INITIAL_EXAMPLE_CATEGORY, INITIAL_EXAMPLE_NAME} from './examples';
+import {INITIAL_MAP_STYLE} from './contants';
 
-registerLoaders([GLTFLoader, DracoWorkerLoader]);
+// use DracoWorkerLoader when fixed
+registerLoaders([GLTFLoader, DracoLoader]);
 
 // Set your mapbox token here
 const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
 
-const MAP_STYLES = {
-  'Base Map: Satellite': 'mapbox://styles/mapbox/satellite-v9',
-  'Base Map: Light': 'mapbox://styles/mapbox/light-v9',
-  'Base Map: Dark': 'mapbox://styles/mapbox/dark-v9'
-};
-
-const INITIAL_MAP_STYLE = MAP_STYLES['Base Map: Dark'];
 const TRANSITION_DURAITON = 4000;
 const EXAMPLES_VIEWSTATE = {
   latitude: 40.04248558075302,
@@ -57,6 +51,9 @@ export default class App extends PureComponent {
       // CURRENT VIEW POINT / CAMERA POSITIO
       viewState: INITIAL_VIEW_STATE,
 
+      // current tileset
+      tileset: null,
+
       // MAP STATE
       selectedMapStyle: INITIAL_MAP_STYLE,
 
@@ -65,8 +62,7 @@ export default class App extends PureComponent {
       examplesByCategory: null,
       selectedExample: {},
       category: INITIAL_EXAMPLE_CATEGORY,
-      name: INITIAL_EXAMPLE_NAME,
-      attributions: []
+      name: INITIAL_EXAMPLE_NAME
     };
 
     this._deckRef = null;
@@ -163,7 +159,7 @@ export default class App extends PureComponent {
 
   // Called by Tile3DLayer when a new tileset is loaded
   _onTilesetLoad(tileset) {
-    this.setState({description: tileset.description, attributions: tileset.credits.attributions});
+    this.setState({tileset});
     this._tilesetStatsWidget.setStats(tileset.stats);
     this._centerViewOnTileset(tileset);
   }
@@ -200,28 +196,17 @@ export default class App extends PureComponent {
   }
 
   _renderControlPanel() {
-    const {
-      examplesByCategory,
-      category,
-      name,
-      viewState,
-      selectedMapStyle,
-      attributions,
-      description
-    } = this.state;
+    const {examplesByCategory, category, name, viewState, tileset} = this.state;
     if (!examplesByCategory) {
       return null;
     }
 
     return (
       <ControlPanel
-        mapStyles={MAP_STYLES}
-        selectedMapStyle={selectedMapStyle}
         data={examplesByCategory}
         category={category}
         name={name}
-        description={description}
-        attributions={attributions}
+        tileset={tileset}
         onMapStyleChange={this._onSelectMapStyle.bind(this)}
         onExampleChange={this._onSelectExample.bind(this)}
       >

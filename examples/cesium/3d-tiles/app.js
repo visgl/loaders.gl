@@ -15,12 +15,6 @@ const MELBOURNE_ION_ASSET_ID = 43978;
 
 const viewer = new Cesium.Viewer('cesiumContainer');
 
-// const tileset = viewer.scene.primitives.add(
-//   new Cesium.Cesium3DTileset({
-//     url: Cesium.IonResource.fromAssetId(MELBOURNE_ION_ASSET_ID)
-//   })
-// );
-
 viewer.camera.flyTo({
   destination: new Cesium.Cartesian3(-4129177.4436845127, 2897358.104762894, -3895489.035314936),
   orientation: {

@@ -15,6 +15,8 @@ const ALIASES = require('ocular-dev-tools/config/ocular.config')({
 }).aliases;
 
 const ROOT_DIR = resolve(__dirname, '..');
+const PACKAGE_ROOT = resolve('../../../');
+const PACKAGE_INFO = require(resolve(PACKAGE_ROOT, 'package.json'));
 
 const BABEL_CONFIG = {
   presets: ['@babel/env'],
@@ -65,7 +67,7 @@ const LOCAL_DEVELOPMENT_CONFIG = {
     stats: {
       warnings: false
     },
-    contentBase: [resolve('.'), resolve('../../')]
+    contentBase: [resolve('.'), resolve('../../../')]
   },
 
   // this is required by draco
@@ -109,7 +111,12 @@ const LOCAL_DEVELOPMENT_CONFIG = {
     ]
   },
 
-  plugins: [new webpack.EnvironmentPlugin(['MapboxAccessToken'])]
+  plugins: [
+    new webpack.EnvironmentPlugin(['MapboxAccessToken']),
+    new webpack.DefinePlugin({
+      __VERSION__: JSON.stringify(PACKAGE_INFO.version)
+    })
+  ]
 };
 
 function addLocalDependency(config, dependency) {
