@@ -1,3 +1,7 @@
+// This code is a fork of example code from the DRACO repository
+// Copyright 2017 The Draco Authors.
+// Licensed under the Apache License, Version 2.0 (the 'License');
+
 const draco3d = require('draco3d');
 
 const GEOMETRY_TYPE = {

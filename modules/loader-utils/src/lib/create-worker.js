@@ -1,6 +1,6 @@
 /* eslint-disable no-restricted-globals */
 /* global TextDecoder, self */
-import {getTransferList} from './get-transfer-list';
+import {getTransferList} from './worker-utils/get-transfer-list';
 
 // Set up a WebWorkerGlobalScope to talk with the main thread
 export default function createWorker(loader) {
