@@ -1,7 +1,9 @@
-import assert from '../../utils/assert'; // __VERSION__ is injected by babel-plugin-version-inline
+// __VERSION__ is injected by babel-plugin-version-inline
+/* global __VERSION__ */
+import {assert} from '@loaders.gl/loader-utils';
 
 // Returns `true` if the two versions are compatible
-/* global __VERSION__ */ export function validateLoaderVersion(loader) {
+export function validateLoaderVersion(loader) {
   let coreVersion = typeof __VERSION__ === 'undefined' ? '' : __VERSION__;
   let loaderVersion = loader.version;
   if (!coreVersion || !loaderVersion) {
