@@ -21,7 +21,6 @@ import fileDrop from './components/file-drop';
 
 import {loadExampleIndex, INITIAL_EXAMPLE_CATEGORY, INITIAL_EXAMPLE_NAME} from './examples';
 
-debugger
 registerLoaders([GLTFLoader, DracoWorkerLoader]);
 
 // Set your mapbox token here

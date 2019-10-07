@@ -9,7 +9,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 const CSVLoader = {
   id: 'csv',
   name: 'CSV',
-  version:  VERSION,
+  version: VERSION,
   extensions: ['csv'],
   mimeType: 'text/csv',
   category: 'table',

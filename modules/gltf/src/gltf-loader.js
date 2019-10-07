@@ -4,7 +4,6 @@ import {parseGLTF} from './lib/parse-gltf';
 
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-
 const GLTFLoader = {
   id: 'gltf',
   name: 'glTF',
