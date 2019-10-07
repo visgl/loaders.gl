@@ -1,4 +1,4 @@
-import assert from '../utils/assert';
+import {assert} from '@loaders.gl/loader-utils';
 import {isLoaderObject} from './loader-utils/normalize-loader';
 import {mergeOptions} from './loader-utils/merge-options';
 import {getUrlFromData} from './loader-utils/get-data';

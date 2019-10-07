@@ -22,11 +22,7 @@
 // micro modules like 'global' and 'is-browser';
 
 /* eslint-disable no-restricted-globals */
-/* global process, window, global, document */
-const isBrowser =
-  typeof process !== 'object' || String(process) !== '[object process]' || process.browser;
-
-/* global self, window, global, document */
+/* global process, window, global, document, self, importScripts */
 const globals = {
   self: typeof self !== 'undefined' && self,
   window: typeof window !== 'undefined' && window,
@@ -39,9 +35,14 @@ const window_ = globals.window || globals.self || globals.global;
 const global_ = globals.global || globals.self || globals.window;
 const document_ = globals.document || {};
 
-export {isBrowser, self_ as self, window_ as window, global_ as global, document_ as document};
+export {self_ as self, window_ as window, global_ as global, document_ as document};
 
-// Extract node version
+export const isBrowser =
+  typeof process !== 'object' || String(process) !== '[object process]' || process.browser;
+
+export const isWorker = typeof importScripts === 'function';
+
+// Extract node major version
 const matches =
   typeof process !== 'undefined' && process.version && process.version.match(/v([0-9]*)/);
 export const nodeVersion = (matches && parseFloat(matches[1])) || 0;

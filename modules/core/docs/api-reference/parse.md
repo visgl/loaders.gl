@@ -79,9 +79,3 @@ Top-level options
 | ---------------- | ------- | --------- | ------------------------------------------------------------------------------------------------------------------------ |
 | `options.log`    | object  | `console` | By default set to a `console` wrapper. Setting log to `null` will turn off logging.                                      |
 | `options.worker` | boolean | `true`    | If the selected loader is equipped with a worker url (and the runtime environment supports it) parse on a worker thread. |
-
-Per-loader options
-
-| Option                            | Type   | Default | Description                                                                         |
-| --------------------------------- | ------ | ------- | ----------------------------------------------------------------------------------- |
-| `options.<_loader id_>.workerUrl` | string | -       | Enables overriding the loader's workerUrl (e.g. for testing or debugging purposes). |

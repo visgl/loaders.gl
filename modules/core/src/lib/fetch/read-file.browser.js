@@ -1,5 +1,5 @@
 // TODO - this file is not tested
-import assert from '../../utils/assert';
+import {assert} from '@loaders.gl/loader-utils';
 
 const DEFAULT_OPTIONS = {
   dataType: 'arraybuffer',

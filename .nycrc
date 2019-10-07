@@ -3,7 +3,7 @@
   "exclude": [
     "**/bundle.js",
     "**/*.worker.js",
-    "**/*.transpiled.js",
+    "**/src/libs/**",
     "**/text-encoding.js",
     "**/encoding.js",
     "**/laz-perf.js",

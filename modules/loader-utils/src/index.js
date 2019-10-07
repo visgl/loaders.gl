@@ -13,7 +13,7 @@ export {
 } from './lib/env-utils/globals';
 
 // LIBRARY UTILS
-export {loadLibrary} from './lib/library-utils/library-utils';
+export {getLibraryUrl, loadLibrary} from './lib/library-utils/library-utils';
 
 // WORKER UTILS
 export {getTransferList} from './lib/worker-utils/get-transfer-list';

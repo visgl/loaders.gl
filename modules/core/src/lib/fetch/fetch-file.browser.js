@@ -1,5 +1,5 @@
 /* global FileReader, Headers */
-import assert from '../../utils/assert';
+import {assert} from '@loaders.gl/loader-utils';
 
 // File reader fetch "polyfill" for the browser
 class FileReadableResponse {

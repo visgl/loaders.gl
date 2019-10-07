@@ -1,4 +1,4 @@
-import assert from '../../utils/assert';
+import {assert} from '@loaders.gl/loader-utils';
 
 export function isLoaderObject(loader) {
   if (!loader) {

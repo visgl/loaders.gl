@@ -1,5 +1,5 @@
 import {GLType} from '@loaders.gl/math'; // '@math.gl/geometry';
-import assert from '../../utils/assert';
+import {assert} from '@loaders.gl/loader-utils';
 
 const COMPONENTS_PER_ATTRIBUTE = {
   SCALAR: 1,
