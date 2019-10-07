@@ -7,6 +7,7 @@ import loadOBJ from './lib/load-obj';
 const OBJ = {
   id: 'obj',
   name: 'OBJ',
+  version: __VERSION__,
   extensions: ['obj'],
   mimeType: 'text/plain',
   testText: testOBJFile

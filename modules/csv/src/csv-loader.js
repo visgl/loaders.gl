@@ -1,3 +1,4 @@
+/* global __VERSION__ */ // __VERSION__ is injected by babel-plugin-version-inline
 /* global TextDecoder */
 import {AsyncQueue, TableBatchBuilder, RowTableBatch} from '@loaders.gl/experimental';
 import Papa from './libs/papaparse';
@@ -6,6 +7,7 @@ import AsyncIteratorStreamer from './lib/async-iterator-streamer';
 const CSVLoader = {
   id: 'csv',
   name: 'CSV',
+  version: __VERSION__,
   extensions: ['csv'],
   mimeType: 'text/csv',
   category: 'table',

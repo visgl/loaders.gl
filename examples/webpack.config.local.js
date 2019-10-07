@@ -25,7 +25,8 @@ const BABEL_CONFIG = {
         extensions: ['.worker.js']
       }
     ],
-    ['@babel/plugin-transform-runtime', {useESModules: true}]
+    ['@babel/plugin-transform-runtime', {useESModules: true}],
+    'version-inline'
   ],
   ignore: ['**/*.worker.js']
 };
@@ -108,12 +109,7 @@ const LOCAL_DEVELOPMENT_CONFIG = {
     ]
   },
 
-  plugins: [
-    new webpack.EnvironmentPlugin(['MapboxAccessToken']),
-    new webpack.DefinePlugin({
-      __VERSION__: JSON.stringify('latest')
-    })
-  ]
+  plugins: [new webpack.EnvironmentPlugin(['MapboxAccessToken'])]
 };
 
 function addLocalDependency(config, dependency) {

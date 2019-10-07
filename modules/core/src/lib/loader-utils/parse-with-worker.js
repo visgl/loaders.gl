@@ -31,8 +31,8 @@ export default function parseWithWorker(loader, data, options, context) {
 
   return workerFarm.process(workerSource, `loaders.gl-${workerName}`, {
     arraybuffer: toArrayBuffer(data),
-    options,
-    source: 'loaders.gl', // Lets worker ignore unrelated messages
+    options, // __VERSION__ is injected by babel-plugin-version-inline
+    /* global __VERSION__ */ source: `loaders.gl@${__VERSION__}`, // Lets worker ignore unrelated messages
     type: 'parse' // For future extension
   });
 }

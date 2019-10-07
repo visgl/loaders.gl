@@ -12,3 +12,5 @@ import './lib/select-loader.spec';
 // TODO - The worker-utils specs test loading, not just worker farm
 // so we run them after util tests, until loading has been split out
 import './worker-utils';
+
+import './utils';

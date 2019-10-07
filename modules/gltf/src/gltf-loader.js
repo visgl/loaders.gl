@@ -1,3 +1,4 @@
+/* global __VERSION__ */ // __VERSION__ is injected by babel-plugin-version-inline
 // Binary container format for glTF
 
 import {parseGLTF} from './lib/parse-gltf';
@@ -5,6 +6,7 @@ import {parseGLTF} from './lib/parse-gltf';
 const GLTFLoader = {
   id: 'gltf',
   name: 'glTF',
+  version: __VERSION__,
   extensions: ['gltf', 'glb'],
   // mimeType: 'model/gltf-binary',
   mimeType: 'model/gltf+json',

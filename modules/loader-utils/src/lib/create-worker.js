@@ -1,6 +1,7 @@
 /* eslint-disable no-restricted-globals */
 /* global TextDecoder, self */
 import {getTransferList} from './worker-utils/get-transfer-list';
+import {validateLoaderVersion} from './validate-loader-version';
 
 // Set up a WebWorkerGlobalScope to talk with the main thread
 export default function createWorker(loader) {
@@ -47,6 +48,8 @@ export default function createWorker(loader) {
         return;
       }
 
+      validateLoaderVersion(data.source.split('@')[1], loader);
+
       const {arraybuffer, byteOffset = 0, byteLength = 0, options = {}} = data;
 
       const result = await parseData({
@@ -88,7 +91,7 @@ async function parseData({loader, arraybuffer, byteOffset, byteLength, options, 
 
 // Filter out noise messages sent to workers
 function isKnownMessage(data, name) {
-  return data && data.type === 'parse' && data.source === 'loaders.gl';
+  return data && data.type === 'parse' && data.source && data.source.startsWith('loaders.gl');
 }
 
 /*

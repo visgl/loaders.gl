@@ -6,6 +6,7 @@ import parsePCDSync from './lib/parse-pcd';
 const PCD = {
   id: 'pcd',
   name: 'PCD',
+  version: __VERSION__,
   extensions: ['pcd'],
   mimeType: 'text/plain'
 };
