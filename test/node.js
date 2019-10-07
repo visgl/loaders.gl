@@ -12,7 +12,7 @@ if (typeof process !== 'undefined') {
 
 // This constant will be inlined by babel plugin.
 // To test source without transpilation, set a fallback here.
-global.__VERSION__ = require('../lerna.json').verion;
+global.__VERSION__ = require('../lerna.json').version;
 global.nodeVersion = version;
 
 if (version < 10) {
