@@ -4,6 +4,8 @@ import {XMLLoader} from '@loaders.gl/experimental';
 import KMLParser from './lib/kml-parser';
 import normalizeKML from './lib/kml-normalizer';
 
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+
 const KML_HEADER = `\
 <?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2">
@@ -23,7 +25,7 @@ function parseTextSync(text, options) {
 export default {
   id: 'kml',
   name: 'KML',
-  version: __VERSION__,
+  version: VERSION,
   extensions: ['kml'],
   mimeType: 'vnd.google-earth.kml+xml',
   supported: XMLLoader.supported,

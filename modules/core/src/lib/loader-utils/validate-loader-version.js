@@ -4,7 +4,7 @@ import {assert} from '@loaders.gl/loader-utils';
 
 // Returns `true` if the two versions are compatible
 export function validateLoaderVersion(loader) {
-  let coreVersion = typeof __VERSION__ === 'undefined' ? '' : __VERSION__;
+  let coreVersion = typeof __VERSION__ !== 'undefined' ? '' : __VERSION__;
   let loaderVersion = loader.version;
   if (!coreVersion || !loaderVersion) {
     return;

@@ -8,7 +8,7 @@ import parseLAS from './lib/parse-las';
 const LAS = {
   id: 'las',
   name: 'LAS',
-  version: __VERSION__,
+  version: VERSION,
   extensions: ['las', 'laz'], // LAZ is the "compressed" flavor of LAS,
   mimeType: 'application/octet-stream', // TODO - text version?
   text: true,
