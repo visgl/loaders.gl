@@ -14,4 +14,4 @@ import './lib/load.spec';
 // so we run them after util tests, until loading has been split out
 import './worker-utils';
 
-import './utils';
+import './utils/validate-loader-version.spec';
