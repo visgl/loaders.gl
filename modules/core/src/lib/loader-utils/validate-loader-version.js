@@ -1,4 +1,4 @@
-import assert from './assert'; // __VERSION__ is injected by babel-plugin-version-inline
+import assert from '../../utils/assert'; // __VERSION__ is injected by babel-plugin-version-inline
 
 // Returns `true` if the two versions are compatible
 /* global __VERSION__ */ export function validateLoaderVersion(loader) {

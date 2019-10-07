@@ -5,8 +5,8 @@ import {getUrlFromData} from './loader-utils/get-data';
 import {getArrayBufferOrStringFromData} from './loader-utils/get-data';
 import {getLoaders, getLoaderContext} from './loader-utils/get-loader-context';
 import parseWithWorker, {canParseWithWorker} from './loader-utils/parse-with-worker';
+import {validateLoaderVersion} from './loader-utils/validate-loader-version.js';
 import {selectLoader} from './select-loader';
-import {validateLoaderVersion} from '../utils/version.js';
 
 export async function parse(data, loaders, options, context) {
   // Signature: parse(data, options, context | url)

@@ -9,9 +9,10 @@ import {
 
 // Class for structured access to GLTF data
 export default class GLTFScenegraph {
+  // eslint-disable-next-line consistent-return
   constructor(gltf) {
     // Signature: new GLTFScenegraph(data : GLTFScenegraph)
-    // Allow utilities to create a GLTFScenegraph object from gltf data without checking
+    // Allow creation of a `GLTFScenegraph` object from gltf data without checking if already a `GLTFScenegraph`
     if (gltf instanceof GLTFScenegraph) {
       return gltf;
     }

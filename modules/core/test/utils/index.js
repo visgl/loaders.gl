@@ -1,6 +1,6 @@
 import test from 'tape-promise/tape';
-import {validateLoaderVersion} from '@loaders.gl/core/utils/version';
-import {global} from '@loaders.gl/core/utils/globals';
+import {validateLoaderVersion} from '@loaders.gl/core/lib/loader-utils/validate-loader-version';
+import {global} from '@loaders.gl/loader-utils';
 
 test('validateLoaderVersion', t => {
   const version = global.__VERSION__;
