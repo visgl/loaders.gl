@@ -13,5 +13,3 @@ import './lib/load.spec';
 // TODO - The worker-utils specs test loading, not just worker farm
 // so we run them after util tests, until loading has been split out
 import './worker-utils';
-
-import './utils/validate-loader-version.spec';

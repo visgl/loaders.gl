@@ -48,7 +48,7 @@ export default function createWorker(loader) {
         return;
       }
 
-      validateLoaderVersion(data.source.split('@')[1], loader);
+      validateLoaderVersion(loader, data.source.split('@')[1]);
 
       const {arraybuffer, byteOffset = 0, byteLength = 0, options = {}} = data;
 

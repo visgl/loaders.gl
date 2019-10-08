@@ -17,6 +17,7 @@ export {getLibraryUrl, loadLibrary} from './lib/library-utils/library-utils';
 
 // WORKER UTILS
 export {getTransferList} from './lib/worker-utils/get-transfer-list';
+export {validateLoaderVersion} from './lib/validate-loader-version';
 
 // PARSER UTILS
 export {parseJSON} from './lib/parser-utils/parse-json';
