@@ -36,12 +36,13 @@
     "test-browser": "ocular-test browser",
     "bench": "ocular-test bench",
     "bench-browser": "ocular-test bench-browser",
-    "metrics": "./scripts/metrics.sh && ocular-metrics"
+    "metrics": "./scripts/metrics.sh && ocular-metrics",
+    "bump": "node ./scripts/bump.js"
   },
   "devDependencies": {
     "@babel/register": "^7.4.4",
-    "@luma.gl/core": "^7.3.0",
-    "@luma.gl/debug": "^7.3.0",
+    "@luma.gl/core": "^7.4.0-alpha.2",
+    "@luma.gl/debug": "^7.4.0-alpha.2",
     "@luma.gl/test-utils": "^7.3.0",
     "@probe.gl/bench": "^3.1.1",
     "@probe.gl/test-utils": "^3.1.1",
@@ -52,6 +53,7 @@
     "eslint-config-uber-jsx": "^3.3.3",
     "eslint-plugin-babel": "^5.3.0",
     "eslint-plugin-react": "^7.13",
+    "glob": "^7.1.4",
     "mkdirp": "^0.5.1",
     "ocular-dev-tools": "0.0.30",
     "pre-commit": "^1.2.2",
