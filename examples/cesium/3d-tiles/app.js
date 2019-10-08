@@ -85,13 +85,7 @@ function loadPnts(pntsUrl, tileHeader) {
       pickIdLoaded: getPickIdLoaded()
     });
 
-    const customPrimitive = new Cesium.Primitive();
-    customPrimitive.p = pointCloud;
-    customPrimitive.update = function(frameState) {
-      this.p.update(frameState);
-    };
-
-    viewer.scene.primitives.add(customPrimitive);
+    viewer.scene.primitives.add(pointCloud);
 
     pointCloud.boundingSphere = boundingSphere;
     pointCloud.modelMatrix = computedTransform;
