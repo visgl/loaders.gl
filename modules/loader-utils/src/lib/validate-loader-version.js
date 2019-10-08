@@ -8,7 +8,6 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : '';
 export function validateLoaderVersion(loader, coreVersion = VERSION) {
   assert(loader, 'no loader provided');
 
-
   let loaderVersion = loader.version;
   if (!coreVersion || !loaderVersion) {
     return;
