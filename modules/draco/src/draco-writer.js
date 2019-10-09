@@ -1,18 +1,10 @@
+import {loadDracoEncoderModule} from './lib/draco-module-loader';
 import DRACOBuilder from './lib/draco-builder';
-
-function encodeSync(data, options) {
-  const dracoBuilder = new DRACOBuilder();
-  try {
-    return dracoBuilder.encodeSync(data, options);
-  } finally {
-    dracoBuilder.destroy();
-  }
-}
 
 export default {
   name: 'DRACO',
   extensions: ['drc'],
-  encodeSync,
+  encode,
   options: {
     pointcloud: false // Set to true if pointcloud (mode: 0, no indices)
     // Draco Compression Parameters
@@ -23,3 +15,14 @@ export default {
     // }
   }
 };
+
+async function encode(data, options) {
+  // Dynamically load draco
+  const {draco} = await loadDracoEncoderModule(options);
+  const dracoBuilder = new DRACOBuilder(draco);
+  try {
+    return dracoBuilder.encodeSync(data, options);
+  } finally {
+    dracoBuilder.destroy();
+  }
+}

@@ -39,3 +39,15 @@ It is also possible to include dependencies in your application bundle
 `options.modules` will let your application `import` or `require` dependencies (thus bundling them) and supply them to loaders.gl.
 
 See each loader module for information on its dependencies.
+
+Example: bundling the entire `draco3d` library:
+
+```js
+import draco from 'draco3d';
+import {setLoaderOptions} from '@loaders.gl/core';
+setLoaderOptions({
+  modules: {
+    draco3d
+  }
+});
+```
