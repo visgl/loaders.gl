@@ -1,16 +1,9 @@
 import test from 'tape-promise/tape';
 import {validateLoader} from 'test/common/conformance';
 
-import {ArrowLoader} from '@loaders.gl/arrow';
-import {ArrowWorkerLoader} from '@loaders.gl/arrow';
-import {
-  isBrowser,
-  resolvePath,
-  fetchFile,
-  getStreamIterator,
-  parse,
-  parseInBatches
-} from '@loaders.gl/core';
+import {ArrowLoader, ArrowWorkerLoader} from '@loaders.gl/arrow';
+import {isBrowser, getStreamIterator, resolvePath} from '@loaders.gl/core';
+import {setLoaderOptions, fetchFile, parse, parseInBatches} from '@loaders.gl/core';
 
 // Small Arrow Sample Files
 const ARROW_SIMPLE = '@loaders.gl/arrow/test/data/simple.arrow';
@@ -20,13 +13,19 @@ const ARROW_STRUCT = '@loaders.gl/arrow/test/data/struct.arrow';
 // Bigger, batched sample file
 const ARROW_BIOGRID_NODES = '@loaders.gl/arrow/test/data/biogrid-nodes.arrow';
 
+setLoaderOptions({
+  arrow: {
+    workerUrl: 'modules/arrow/dist/arrow-loader.worker.js'
+  }
+});
+
 test('ArrowLoader#loader conformance', t => {
   validateLoader(t, ArrowLoader, 'ArrowLoader');
   t.end();
 });
 
 test('ArrowLoader#parseSync(simple.arrow)', async t => {
-  const columns = await parse(fetchFile(ARROW_SIMPLE), ArrowLoader);
+  const columns = await parse(fetchFile(ARROW_SIMPLE), ArrowLoader, {worker: false});
   // Check loader specific results
   t.ok(columns.bar, 'bar column loaded');
   t.ok(columns.baz, 'baz column loaded');
@@ -56,11 +55,7 @@ test('ArrowLoader#parse (WORKER)', async t => {
     return;
   }
 
-  const data = await parse(fetchFile(ARROW_SIMPLE), ArrowWorkerLoader, {
-    arrow: {
-      workerUrl: 'modules/arrow/dist/arrow-loader.worker.js'
-    }
-  });
+  const data = await parse(fetchFile(ARROW_SIMPLE), ArrowWorkerLoader);
   t.ok(data, 'Data returned');
   t.end();
 });

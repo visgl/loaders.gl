@@ -5,7 +5,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 import parseLAS from './lib/parse-las';
 
-const LAS = {
+export const LASWorkerLoader = {
   id: 'las',
   name: 'LAS',
   version: VERSION,
@@ -13,21 +13,16 @@ const LAS = {
   mimeType: 'application/octet-stream', // TODO - text version?
   text: true,
   binary: true,
-  test: 'LAS'
-};
-
-export const LASLoader = {
-  ...LAS,
-  parse: async (arrayBuffer, options) => parseLAS(arrayBuffer, options),
-  parseSync: parseLAS,
-  options: {}
-};
-
-export const LASWorkerLoader = {
-  ...LAS,
+  test: 'LAS',
   options: {
     las: {
       workerUrl: `https://unpkg.com/@loaders.gl/las@${VERSION}/dist/las-loader.worker.js`
     }
   }
+};
+
+export const LASLoader = {
+  ...LASWorkerLoader,
+  parse: async (arrayBuffer, options) => parseLAS(arrayBuffer, options),
+  parseSync: parseLAS
 };

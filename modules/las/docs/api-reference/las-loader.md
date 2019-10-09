@@ -26,7 +26,7 @@ const data = await load(url, LASWorkerLoader, options);
 
 ## Options
 
-| Option       | Type     | Default | Description                                                               |
-| ------------ | -------- | ------- | ------------------------------------------------------------------------- |
-| `skip`       | Number   | `1`     | Read one from every _n_ points.                                           |
-| `onProgress` | Function | -       | Callback when a new chunk of data is read. Only works on the main thread. |
+| Option               | Type     | Default | Description                                                               |
+| -------------------- | -------- | ------- | ------------------------------------------------------------------------- |
+| `options.las.skip`   | Number   | `1`     | Read one from every _n_ points.                                           |
+| `options.onProgress` | Function | -       | Callback when a new chunk of data is read. Only works on the main thread. |

@@ -3,10 +3,16 @@ import test from 'tape-promise/tape';
 import {validateLoader, validatePointCloudCategoryData} from 'test/common/conformance';
 
 import {PCDLoader, PCDWorkerLoader} from '@loaders.gl/pcd';
-import {fetchFile, parse, load} from '@loaders.gl/core';
+import {setLoaderOptions, fetchFile, parse, load} from '@loaders.gl/core';
 
 const PCD_ASCII_URL = '@loaders.gl/pcd/test/data/simple-ascii.pcd';
 const PCD_BINARY_URL = '@loaders.gl/pcd/test/data/Zaghetto.pcd';
+
+setLoaderOptions({
+  pcd: {
+    workerUrl: 'modules/pcd/dist/pcd-loader.worker.js'
+  }
+});
 
 test('PCDLoader#loader conformance', t => {
   validateLoader(t, PCDLoader, 'PCDLoader');
@@ -28,7 +34,7 @@ test('PCDLoader#parse(text)', async t => {
 });
 
 test('PCDLoader#parse(binary)', async t => {
-  const data = await parse(fetchFile(PCD_BINARY_URL), PCDLoader);
+  const data = await parse(fetchFile(PCD_BINARY_URL), PCDLoader, {worker: false});
   validatePointCloudCategoryData(t, data);
 
   t.equal(data.mode, 0, 'mode is POINTS (0)');
@@ -45,11 +51,7 @@ test('PCDWorkerLoader#parse(binary)', async t => {
     return;
   }
 
-  const data = await load(PCD_BINARY_URL, PCDWorkerLoader, {
-    pcd: {
-      workerUrl: 'modules/pcd/dist/pcd-loader.worker.js'
-    }
-  });
+  const data = await load(PCD_BINARY_URL, PCDWorkerLoader);
   validatePointCloudCategoryData(t, data);
 
   t.equal(data.mode, 0, 'mode is POINTS (0)');

@@ -3,9 +3,15 @@ import test from 'tape-promise/tape';
 import {validateLoader, validatePointCloudCategoryData} from 'test/common/conformance';
 
 import {DracoLoader, DracoWorkerLoader} from '@loaders.gl/draco';
-import {load} from '@loaders.gl/core';
+import {setLoaderOptions, load} from '@loaders.gl/core';
 
 const BUNNY_DRC_URL = '@loaders.gl/draco/test/data/bunny.drc';
+
+setLoaderOptions({
+  draco: {
+    workerUrl: 'modules/draco/dist/draco-loader.worker.js'
+  }
+});
 
 test('DracoLoader#loader conformance', t => {
   validateLoader(t, DracoLoader, 'DracoLoader');
@@ -14,10 +20,9 @@ test('DracoLoader#loader conformance', t => {
 });
 
 test('DracoLoader#parse and encode', async t => {
-  const data = await load(BUNNY_DRC_URL, DracoLoader);
+  const data = await load(BUNNY_DRC_URL, DracoLoader, {worker: false});
   validatePointCloudCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
-
   t.end();
 });
 
@@ -28,11 +33,7 @@ test('DracoWorkerLoader#parse', async t => {
     return;
   }
 
-  const data = await load(BUNNY_DRC_URL, DracoWorkerLoader, {
-    draco: {
-      workerUrl: 'modules/draco/dist/draco-loader.worker.js'
-    }
-  });
+  const data = await load(BUNNY_DRC_URL, DracoWorkerLoader);
   validatePointCloudCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
 

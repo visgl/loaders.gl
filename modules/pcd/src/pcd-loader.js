@@ -3,28 +3,21 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 import parsePCDSync from './lib/parse-pcd';
 
-const PCD = {
+export const PCDWorkerLoader = {
   id: 'pcd',
   name: 'PCD',
   version: VERSION,
   extensions: ['pcd'],
-  mimeType: 'text/plain'
-};
-
-export const PCDLoader = {
-  ...PCD,
-  parse: async (arrayBuffer, options) => parsePCDSync(arrayBuffer, options),
-  parseSync: parsePCDSync,
-  options: {
-    pcd: {}
-  }
-};
-
-export const PCDWorkerLoader = {
-  ...PCD,
+  mimeType: 'text/plain',
   options: {
     pcd: {
       workerUrl: `https://unpkg.com/@loaders.gl/pcd@${VERSION}/dist/pcd-loader.worker.js`
     }
   }
+};
+
+export const PCDLoader = {
+  ...PCDWorkerLoader,
+  parse: async (arrayBuffer, options) => parsePCDSync(arrayBuffer, options),
+  parseSync: parsePCDSync
 };

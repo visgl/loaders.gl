@@ -2,10 +2,16 @@
 import test from 'tape-promise/tape';
 import {validateLoader, validatePointCloudCategoryData} from 'test/common/conformance';
 
-import {fetchFile, parse, load} from '@loaders.gl/core';
 import {LASLoader, LASWorkerLoader} from '@loaders.gl/las';
+import {setLoaderOptions, fetchFile, parse, load} from '@loaders.gl/core';
 
 const LAS_BINARY_URL = '@loaders.gl/las/test/data/indoor.laz';
+
+setLoaderOptions({
+  las: {
+    workerUrl: 'modules/las/dist/las-loader.worker.js'
+  }
+});
 
 test('LASLoader#loader conformance', t => {
   validateLoader(t, LASLoader, 'LASLoader');
@@ -14,7 +20,7 @@ test('LASLoader#loader conformance', t => {
 });
 
 test('LASLoader#parse(binary)', async t => {
-  const data = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {skip: 10});
+  const data = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {las: {skip: 10}, worker: false});
   validatePointCloudCategoryData(t, data);
 
   t.is(data.header.vertexCount, data.loaderData.header.totalRead, 'Original header was found');
@@ -26,7 +32,7 @@ test('LASLoader#parse(binary)', async t => {
   t.end();
 });
 
-test('LASWorkerLoader#load(binary)', async t => {
+test('LASWorkerLoader#load(worker)', async t => {
   if (typeof Worker === 'undefined') {
     t.comment('Worker is not usable in non-browser environments');
     t.end();
@@ -37,8 +43,7 @@ test('LASWorkerLoader#load(binary)', async t => {
     las: {
       workerUrl: 'modules/las/dist/las-loader.worker.js',
       skip: 10
-    },
-    skip: 10
+    }
   });
   validatePointCloudCategoryData(t, data);
 
