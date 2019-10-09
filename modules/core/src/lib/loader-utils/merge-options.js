@@ -44,7 +44,7 @@ function mergeNestedFields(mergedOptions, options) {
           ...options[key]
         };
       } else {
-        mergedOptions[key] = options[key]
+        mergedOptions[key] = options[key];
       }
     }
     // else: No need to merge nested opts, and the initial merge already copied over the nested options
