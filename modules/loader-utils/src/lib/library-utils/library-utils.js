@@ -34,20 +34,17 @@ export function getLibraryUrl(library, moduleName, options) {
     return modules[library];
   }
 
-  let libraryPath;
   if (options.CDN) {
     assert(options.CDN.startsWith('http'));
-    if (libraryPath === true) {
-      libraryPath = `${options.CDN}/${moduleName}@${VERSION}/dist/libs`;
-    }
-  } else if (isWorker) {
-    // Note - Worker loading requires paths relative to worker script "location"?
-    libraryPath = '../src/libs';
-  } else {
-    libraryPath = `modules/${moduleName}/src/libs`;
+    return `${options.CDN}/${moduleName}@${VERSION}/dist/libs/${library}`;
   }
-  const libraryUrl = `${libraryPath}/${library}`;
-  return libraryUrl;
+
+  // Note - Worker loading requires paths relative to worker script "location"?
+  if (isWorker) {
+    return `../src/libs/${library}`;
+  }
+
+  return `modules/${moduleName}/src/libs/${library}`;
 }
 
 async function loadLibraryFromFile(libraryUrl) {
