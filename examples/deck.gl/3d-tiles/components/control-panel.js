@@ -3,6 +3,8 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import marked from 'marked';
 
+import {MAP_STYLES} from '../constants';
+
 const Container = styled.div`
   display: flex;
   flex-direction: column;
@@ -48,10 +50,9 @@ const propTypes = {
   name: PropTypes.string.isRequired,
   data: PropTypes.object.isRequired,
   droppedFile: PropTypes.string,
-  attributions: PropTypes.array,
-  description: PropTypes.string,
-  mapStyles: PropTypes.object.isRequired,
-  selectedMapStyle: PropTypes.string.isRequired,
+  tileset: PropTypes.object,
+  mapStyles: PropTypes.object,
+  selectedMapStyle: PropTypes.string,
   onExampleChange: PropTypes.func,
   onMapStyleChange: PropTypes.func,
   children: PropTypes.node
@@ -75,6 +76,11 @@ export default class ControlPanel extends PureComponent {
           const selected = evt.target.value;
           const [newCategory, newName] = selected.split('.');
           const categoryExamples = data[newCategory].examples;
+          this.setState({
+            category: newCategory,
+            name: newName,
+            example: categoryExamples[newName]
+          });
           onExampleChange({
             category: newCategory,
             name: newName,
@@ -102,7 +108,7 @@ export default class ControlPanel extends PureComponent {
   }
 
   _renderMapStyles() {
-    const {onMapStyleChange, mapStyles, selectedMapStyle} = this.props;
+    const {onMapStyleChange, mapStyles = MAP_STYLES, selectedMapStyle} = this.props;
 
     return (
       <DropDown
@@ -129,17 +135,23 @@ export default class ControlPanel extends PureComponent {
   }
 
   _renderInfo() {
-    const {description, attributions} = this.props;
-    if (!attributions || attributions.length === 0) {
+    if (!this.props.tileset) {
+      return null;
+    }
+
+    const {description, credits} = this.props.tileset;
+    const attributions = credits && credits.attributions;
+    if (!attributions || attributions.length === 0 || !description) {
       return null;
     }
 
     return (
       <InfoContainer>
-        {Boolean(attributions.length) && <b>Tileset Credentials</b>}
-        {attributions.map(attribution => (
-          <div key={attribution.html} dangerouslySetInnerHTML={{__html: attribution.html}} />
-        ))}
+        {Boolean(attributions && attributions.length) && <b>Tileset Credentials</b>}
+        {Boolean(attributions && attributions.length) &&
+          attributions.map(attribution => (
+            <div key={attribution.html} dangerouslySetInnerHTML={{__html: attribution.html}} />
+          ))}
         {description && <Description dangerouslySetInnerHTML={{__html: marked(description)}} />}
       </InfoContainer>
     );
