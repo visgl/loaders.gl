@@ -11,7 +11,7 @@ import {lumaStats} from '@luma.gl/core';
 import {StatsWidget} from '@probe.gl/stats-widget';
 
 // To manage dependencies and bundle size, the app must decide which supporting loaders to bring in
-import {registerLoaders} from '@loaders.gl/core';
+import {registerLoaders, setLoaderOptions} from '@loaders.gl/core';
 import {DracoLoader} from '@loaders.gl/draco';
 import {GLTFLoader} from '@loaders.gl/gltf';
 
@@ -19,10 +19,13 @@ import ControlPanel from './components/control-panel';
 import fileDrop from './components/file-drop';
 
 import {loadExampleIndex, INITIAL_EXAMPLE_CATEGORY, INITIAL_EXAMPLE_NAME} from './examples';
-import {INITIAL_MAP_STYLE} from './contants';
+import {INITIAL_MAP_STYLE} from './constants';
 
-// use DracoWorkerLoader when fixed
+// enable DracoWorkerLoader when fixed
 registerLoaders([GLTFLoader, DracoLoader]);
+setLoaderOptions({
+  worker: false
+});
 
 // Set your mapbox token here
 const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
