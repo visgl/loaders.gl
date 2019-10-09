@@ -1,4 +1,4 @@
-// Dynamic DRACO module loading inspired by
+// Dynamic DRACO module loading inspired by THREE.DRACOLoader
 // https://github.com/mrdoob/three.js/blob/398c4f39ebdb8b23eefd4a7a5ec49ec0c96c7462/examples/jsm/loaders/DRACOLoader.js
 // by Don McCurdy / https://www.donmccurdy.com / MIT license
 
