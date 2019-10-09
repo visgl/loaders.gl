@@ -39,12 +39,7 @@ test('LASWorkerLoader#load(worker)', async t => {
     return;
   }
 
-  const data = await load(LAS_BINARY_URL, LASWorkerLoader, {
-    las: {
-      workerUrl: 'modules/las/dist/las-loader.worker.js',
-      skip: 10
-    }
-  });
+  const data = await load(LAS_BINARY_URL, LASWorkerLoader, {las: {skip: 10}});
   validatePointCloudCategoryData(t, data);
 
   t.equal(data.attributes.POSITION.value.length, 80805 * 3, 'POSITION attribute was found');
