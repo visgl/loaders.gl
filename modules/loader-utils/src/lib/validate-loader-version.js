@@ -1,5 +1,13 @@
+// __VERSION__ is injected by babel-plugin-version-inline
+/* global __VERSION__ */
+import assert from './env-utils/assert';
+
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : '';
+
 // Returns `true` if the two versions are compatible
-export function validateLoaderVersion(coreVersion, loader) {
+export function validateLoaderVersion(loader, coreVersion = VERSION) {
+  assert(loader, 'no loader provided');
+
   let loaderVersion = loader.version;
   if (!coreVersion || !loaderVersion) {
     return;
@@ -19,13 +27,4 @@ export function validateLoaderVersion(coreVersion, loader) {
 function parseVersion(version) {
   const parts = version.split('.').map(Number);
   return {major: parts[0], minor: parts[1]};
-}
-
-// Replacement for the external assert method to reduce bundle size
-// Note: We don't use the second "message" argument in calling code,
-// so no need to support it here
-function assert(condition, message) {
-  if (!condition) {
-    throw new Error(message || 'loader assertion failed.');
-  }
 }

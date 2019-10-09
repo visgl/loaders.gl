@@ -3,14 +3,14 @@
 // 'https://en.wikipedia.org/wiki/PLY_(file_format)']
 
 /* global __VERSION__ */ // __VERSION__ is injected by babel-plugin-version-inline
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
-
 import parsePLY from './lib/parse-ply';
+
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export const PLY = {
   id: 'ply',
   name: 'PLY',
-  version: __VERSION__,
+  version: VERSION,
   extensions: ['ply'],
   mimeType: 'text/plain',
   // mimeType: 'application/octet-stream', TODO - binary version?

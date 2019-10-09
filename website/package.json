@@ -17,13 +17,16 @@
     "deploy": "NODE_DEBUG=gh-pages gh-pages -d public"
   },
   "dependencies": {
+    "babel-plugin-version-inline": "^1.0.0",
     "@deck.gl/core": "^7.3.0",
     "@deck.gl/geo-layers": "^7.3.0",
     "@deck.gl/layers": "^7.3.0",
     "@deck.gl/mesh-layers": "^7.3.0",
     "@deck.gl/react": "^7.3.0",
-    "@loaders.gl/draco": "^2.0.0-alpha.1",
-    "@loaders.gl/las": "^2.0.0-alpha.1",
+    "@loaders.gl/core": "^2.0.0-alpha.2",
+    "@loaders.gl/draco": "^2.0.0-alpha.2",
+    "@loaders.gl/gltf": "^2.0.0-alpha.2",
+    "@loaders.gl/las": "^2.0.0-alpha.2",
     "@luma.gl/addons": "^7.3.0",
     "@luma.gl/constants": "^7.3.0",
     "@luma.gl/core": "^7.3.0",
@@ -42,7 +45,7 @@
     "gatsby": "^2.13.51",
     "gatsby-plugin-no-sourcemaps": "^2.0.2",
     "gh-pages": "^2.1.0",
-    "ocular-gatsby": "^1.0.2",
+    "ocular-gatsby": "^1.0.4",
     "sharp": "^0.23.1"
   }
 }

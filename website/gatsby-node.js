@@ -13,7 +13,6 @@
 // // We use graphgl to query for nodes and iterate
 // exports.createPages = ({ graphql, actions }) =>
 //   ocular.createPages({ graphql, actions });
-
 const ocularConfig = require('./ocular-config');
 const getGatsbyNodeCallbacks = require('ocular-gatsby/gatsby-node');
 

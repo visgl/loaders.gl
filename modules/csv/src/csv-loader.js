@@ -4,10 +4,12 @@ import {AsyncQueue, TableBatchBuilder, RowTableBatch} from '@loaders.gl/experime
 import Papa from './libs/papaparse';
 import AsyncIteratorStreamer from './lib/async-iterator-streamer';
 
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+
 const CSVLoader = {
   id: 'csv',
   name: 'CSV',
-  version: __VERSION__,
+  version: VERSION,
   extensions: ['csv'],
   mimeType: 'text/csv',
   category: 'table',

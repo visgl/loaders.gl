@@ -1,4 +1,4 @@
-import assert from '../../utils/assert';
+import {assert} from '@loaders.gl/loader-utils';
 
 // Convert (copy) ArrayBuffer to Buffer
 export default function toBuffer(binaryData) {

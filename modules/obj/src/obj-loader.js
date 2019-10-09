@@ -1,13 +1,13 @@
 /* global TextDecoder */
 /* global __VERSION__ */ // __VERSION__ is injected by babel-plugin-version-inline
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
-
 import loadOBJ from './lib/load-obj';
+
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 const OBJ = {
   id: 'obj',
   name: 'OBJ',
-  version: __VERSION__,
+  version: VERSION,
   extensions: ['obj'],
   mimeType: 'text/plain',
   testText: testOBJFile

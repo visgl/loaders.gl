@@ -1,41 +1,42 @@
-import {NullLog, ConsoleLog} from './loggers';
-
-const COMMON_DEFAULT_OPTIONS = {
-  worker: true, // By default, use worker if provided by loader
-  log: new ConsoleLog() // A probe.gl compatible (`log.log()()` syntax) that just logs to console
-};
+import {DEFAULT_LOADER_OPTIONS} from '../constants';
+import {NullLog} from './loggers';
 
 const isPureObject = value =>
   value && typeof value === 'object' && value.constructor === {}.constructor;
-// Merges
+
+let globalOptions = {...DEFAULT_LOADER_OPTIONS};
+
+// Set global loader options
+export function setGlobalOptions(options) {
+  globalOptions = mergeOptions(globalOptions, options);
+}
+
+// Merges options with global opts and loader defaults, also injects baseUri
 export function mergeOptions(loader, options, url) {
   const loaderDefaultOptions =
-    loader && (loader.DEFAULT_OPTIONS || loader.defaultOptions || loader.options || {});
+    loader && (loader.DEFAULT_LOADER_OPTIONS || loader.defaultOptions || loader.options || {});
 
   const mergedOptions = {
-    ...COMMON_DEFAULT_OPTIONS,
     ...loaderDefaultOptions,
-    dataType: 'arraybuffer', // TODO - explain why this option is needed for parsing
+    ...globalOptions,
     ...options // Merges any non-nested fields, but clobbers nested fields
   };
 
-  // TODO - remove file component from baseUri
-  if (url && !('baseUri' in mergedOptions)) {
-    mergedOptions.baseUri = url;
-  }
+  addUrlOptions(mergedOptions, url);
 
   // LOGGING: options.log can be set to `null` to defeat logging
   if (mergedOptions.log === null) {
     mergedOptions.log = new NullLog();
   }
 
-  mergeNesteFields(mergedOptions, options, loaderDefaultOptions);
+  mergeNestedFields(mergedOptions, loaderDefaultOptions, globalOptions);
+  mergeNestedFields(mergedOptions, loaderDefaultOptions, options);
 
   return mergedOptions;
 }
 
 // Merge nested options objects
-function mergeNesteFields(mergedOptions, options, loaderDefaultOptions) {
+function mergeNestedFields(mergedOptions, loaderDefaultOptions, options) {
   for (const key in options) {
     const value = options[key];
     // Check for nested options
@@ -51,5 +52,16 @@ function mergeNesteFields(mergedOptions, options, loaderDefaultOptions) {
       }
     }
     // else: No need to merge nested opts, and the initial merge already copied over the nested options
+  }
+}
+
+// Harvest information from the url
+// TODO - baseUri should be a directory, i.e. remove file component from baseUri
+// TODO - extract extension?
+// TODO - extract query parameters?
+// TODO - should these be injected on context instead of options?
+function addUrlOptions(options, url) {
+  if (url && !('baseUri' in options)) {
+    options.baseUri = url;
   }
 }

@@ -21,6 +21,7 @@
             {"entry": "docs/developer-guide/loader-categories"},
             {"entry": "docs/developer-guide/error-handling"},
             {"entry": "docs/developer-guide/polyfills"},
+            {"entry": "docs/developer-guide/dependencies"},
             {"entry": "docs/developer-guide/creating-loaders-and-writers"},
             {"entry": "docs/roadmap"},
             {"entry": "docs/contributing"}

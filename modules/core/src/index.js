@@ -13,7 +13,8 @@ export {
   getErrorMessageFromResponse as _getErrorMessageFromResponse
 } from './lib/fetch/fetch-error-message';
 
-// FILE PARSING AND ENCODING
+// CONFIGURATION
+export {setLoaderOptions} from './lib/set-loader-options';
 export {registerLoaders} from './lib/register-loaders';
 
 // LOADING (READING + PARSING)
@@ -25,7 +26,7 @@ export {parseInBatchesSync} from './lib/parse-in-batches-sync';
 export {load} from './lib/load';
 export {loadInBatches} from './lib/load-in-batches';
 
-// ENCODING AND SAVING
+// ENCODING (ENCODING AND WRITING)
 export {encode, encodeSync, encodeInBatches} from './lib/encode';
 export {save, saveSync} from './lib/save';
 

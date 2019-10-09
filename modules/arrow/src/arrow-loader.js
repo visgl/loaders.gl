@@ -7,7 +7,7 @@ import {parseArrowInBatches, parseArrowInBatchesSync} from './lib/parse-arrow-in
 const ARROW = {
   id: 'arrow',
   name: 'Apache Arrow',
-  version: __VERSION__,
+  version: VERSION,
   extensions: ['arrow'],
   mimeType: 'application/octet-stream',
   category: 'table'
