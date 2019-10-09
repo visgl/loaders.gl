@@ -6,6 +6,10 @@ const DEFAULT_MAX_CONCURRENCY = 5;
  * Process multiple data messages with a "farm" of different workers (in worker pools)
  */
 export default class WorkerFarm {
+  static isSupported() {
+    return typeof Worker !== 'undefined';
+  }
+
   /**
    * @param processor {function | string} - worker function
    * @param maxConcurrency {number} - max count of workers

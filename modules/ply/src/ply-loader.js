@@ -7,7 +7,7 @@ import parsePLY from './lib/parse-ply';
 
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-export const PLY = {
+export const PLYWorkerLoader = {
   id: 'ply',
   name: 'PLY',
   version: VERSION,
@@ -16,23 +16,18 @@ export const PLY = {
   // mimeType: 'application/octet-stream', TODO - binary version?
   text: true,
   binary: true,
-  test: 'ply'
-};
-
-export const PLYLoader = {
-  ...PLY,
-  // Note: parsePLY supports both text and binary
-  parse: async (arrayBuffer, options) => parsePLY(arrayBuffer, options), // TODO - this may not detect text correctly?
-  parseTextSync: parsePLY,
-  parseSync: parsePLY,
-  options: {}
-};
-
-export const PLYWorkerLoader = {
-  ...PLY,
+  test: 'ply',
   options: {
     ply: {
       workerUrl: `https://unpkg.com/@loaders.gl/ply@${VERSION}/dist/ply-loader.worker.js`
     }
   }
+};
+
+export const PLYLoader = {
+  ...PLYWorkerLoader,
+  // Note: parsePLY supports both text and binary
+  parse: async (arrayBuffer, options) => parsePLY(arrayBuffer, options), // TODO - this may not detect text correctly?
+  parseTextSync: parsePLY,
+  parseSync: parsePLY
 };

@@ -3,11 +3,17 @@ import test from 'tape-promise/tape';
 import {validateLoader, validatePointCloudCategoryData} from 'test/common/conformance';
 
 import {OBJLoader, OBJWorkerLoader} from '@loaders.gl/obj';
-import {load} from '@loaders.gl/core';
+import {setLoaderOptions, load} from '@loaders.gl/core';
 
 const OBJ_ASCII_URL = '@loaders.gl/obj/test/data/bunny.obj';
 const OBJ_NORMALS_URL = '@loaders.gl/obj/test/data/cube.obj';
 const OBJ_MULTI_PART_URL = '@loaders.gl/obj/test/data/magnolia.obj';
+
+setLoaderOptions({
+  obj: {
+    workerUrl: 'modules/obj/dist/obj-loader.worker.js'
+  }
+});
 
 test('OBJLoader#loader objects', async t => {
   validateLoader(t, OBJLoader, 'OBJLoader');
@@ -55,11 +61,7 @@ test('OBJWorkerLoader#parse(text)', async t => {
     return;
   }
 
-  const data = await load(OBJ_ASCII_URL, OBJWorkerLoader, {
-    obj: {
-      workerUrl: 'modules/obj/dist/obj-loader.worker.js'
-    }
-  });
+  const data = await load(OBJ_ASCII_URL, OBJWorkerLoader);
 
   validatePointCloudCategoryData(t, data);
 

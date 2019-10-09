@@ -3,12 +3,18 @@ import test from 'tape-promise/tape';
 import {validateLoader, validatePointCloudCategoryData} from 'test/common/conformance';
 
 import {PLYLoader, PLYWorkerLoader, _PLYStreamLoader} from '@loaders.gl/ply';
-import {fetchFile, parse, parseSync, load} from '@loaders.gl/core';
+import {setLoaderOptions, fetchFile, parse, parseSync, load} from '@loaders.gl/core';
 import {getStreamIterator} from '@loaders.gl/core';
 
 const PLY_CUBE_ATT_URL = '@loaders.gl/ply/test/data/cube_att.ply';
 const PLY_BUN_ZIPPER_URL = '@loaders.gl/ply/test/data/bun_zipper.ply';
 const PLY_BUN_BINARY_URL = '@loaders.gl/ply/test/data/bunny.ply';
+
+setLoaderOptions({
+  ply: {
+    workerUrl: 'modules/ply/dist/ply-loader.worker.js'
+  }
+});
 
 function validateTextPLY(t, data) {
   t.equal(data.indices.value.length, 36, 'Indices found');
@@ -62,11 +68,7 @@ test('PLYLoader#parse(WORKER)', async t => {
     return;
   }
 
-  const data = await load(PLY_BUN_ZIPPER_URL, PLYWorkerLoader, {
-    ply: {
-      workerUrl: 'modules/ply/dist/ply-loader.worker.js'
-    }
-  });
+  const data = await load(PLY_BUN_ZIPPER_URL, PLYWorkerLoader);
 
   validatePointCloudCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 107841, 'POSITION attribute was found');

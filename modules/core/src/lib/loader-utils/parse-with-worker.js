@@ -1,9 +1,13 @@
+/* global __VERSION__ */ // __VERSION__ is injected by babel-plugin-version-inline
 import {toArrayBuffer} from '../../javascript-utils/binary-utils';
 import WorkerFarm from '../../worker-utils/worker-farm';
 import {getTransferList} from '../../worker-utils/get-transfer-list';
 import {parse} from '../parse';
 
 export function canParseWithWorker(loader, data, options, context) {
+  if (!WorkerFarm.isSupported()) {
+    return false;
+  }
   const loaderOptions = options && options[loader.id];
   if (options.worker && loaderOptions && loaderOptions.workerUrl) {
     return loader.useWorker ? loader.useWorker(options) : true;
@@ -31,8 +35,8 @@ export default function parseWithWorker(loader, data, options, context) {
 
   return workerFarm.process(workerSource, `loaders.gl-${workerName}`, {
     arraybuffer: toArrayBuffer(data),
-    options, // __VERSION__ is injected by babel-plugin-version-inline
-    /* global __VERSION__ */ source: `loaders.gl@${__VERSION__}`, // Lets worker ignore unrelated messages
+    options,
+    source: `loaders.gl@${__VERSION__}`, // Lets worker ignore unrelated messages
     type: 'parse' // For future extension
   });
 }
