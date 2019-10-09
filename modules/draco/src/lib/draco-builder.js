@@ -2,8 +2,6 @@
 // Copyright 2017 The Draco Authors.
 // Licensed under the Apache License, Version 2.0 (the 'License');
 
-const draco3d = require('draco3d');
-
 // const DEFAULT_ENCODING_OPTIONS = {
 //   method: 'MESH_EDGEBREAKER_ENCODING',
 //   speed: [5, 5],
@@ -39,10 +37,11 @@ https://github.com/google/draco/blob/master/src/draco/javascript/emscripten/drac
 https://github.com/google/draco/blob/master/javascript/npm/draco3d/draco_nodejs_example.js
  */
 export default class DracoBuilder {
-  constructor(options = {}) {
-    this.dracoEncoderModule = draco3d.createEncoderModule({});
-    this.dracoEncoder = new this.dracoEncoderModule.Encoder();
-    this.dracoMeshBuilder = new this.dracoEncoderModule.MeshBuilder();
+  // draco - the draco decoder, either import `draco3d` or load dynamically
+  constructor(draco, options = {}) {
+    this.draco = draco;
+    this.dracoEncoder = new this.draco.Encoder();
+    this.dracoMeshBuilder = new this.draco.MeshBuilder();
     this.log = options.log || noop;
   }
 
@@ -51,13 +50,13 @@ export default class DracoBuilder {
     this.destroyEncodedObject(this.dracoEncoder);
     this.dracoMeshBuilder = null;
     this.dracoEncoder = null;
-    this.dracoEncoderModule = null;
+    this.draco = null;
   }
 
   // TBD - when does this need to be called?
   destroyEncodedObject(object) {
     if (object) {
-      this.dracoEncoderModule.destroy(object);
+      this.draco.destroy(object);
     }
   }
 
@@ -85,7 +84,7 @@ export default class DracoBuilder {
     // Build a `DracoPointCloud` from the input data
     const dracoPointCloud = this._createDracoPointCloud(attributes);
 
-    const dracoData = new this.dracoEncoderModule.DracoInt8Array();
+    const dracoData = new this.draco.DracoInt8Array();
 
     try {
       const encodedLen = this.dracoEncoder.EncodePointCloudToDracoBuffer(
@@ -113,7 +112,7 @@ export default class DracoBuilder {
     // Build a `DracoMesh` from the input data
     const dracoMesh = this._createDracoMesh(attributes);
 
-    const dracoData = new this.dracoEncoderModule.DracoInt8Array();
+    const dracoData = new this.draco.DracoInt8Array();
 
     try {
       const encodedLen = this.dracoEncoder.EncodeMeshToDracoBuffer(dracoMesh, dracoData);
@@ -137,21 +136,21 @@ export default class DracoBuilder {
       this.dracoEncoder.SetSpeedOptions(...opts.speed);
     }
     if ('method' in opts) {
-      const dracoMethod = this.dracoEncoderModule[opts.method];
+      const dracoMethod = this.draco[opts.method];
       // if (dracoMethod === undefined) {}
       this.dracoEncoder.SetEncodingMethod(dracoMethod);
     }
     if ('quantization' in opts) {
       for (const attribute in opts.quantization) {
         const bits = opts.quantization[attribute];
-        const dracoPosition = this.dracoEncoderModule[attribute];
+        const dracoPosition = this.draco[attribute];
         this.dracoEncoder.SetAttributeQuantization(dracoPosition, bits);
       }
     }
   }
 
   _createDracoMesh(attributes) {
-    const dracoMesh = new this.dracoEncoderModule.Mesh();
+    const dracoMesh = new this.draco.Mesh();
 
     try {
       const positions = this._getPositionAttribute(attributes);
@@ -174,7 +173,7 @@ export default class DracoBuilder {
   }
 
   _createDracoPointCloud(attributes) {
-    const dracoPointCloud = new this.dracoEncoderModule.PointCloud();
+    const dracoPointCloud = new this.draco.PointCloud();
 
     try {
       const positions = this._getPositionAttribute(attributes);
@@ -296,18 +295,18 @@ export default class DracoBuilder {
       case 'position':
       case 'positions':
       case 'vertices':
-        return this.dracoEncoderModule.POSITION;
+        return this.draco.POSITION;
       case 'normal':
       case 'normals':
-        return this.dracoEncoderModule.NORMAL;
+        return this.draco.NORMAL;
       case 'color':
       case 'colors':
-        return this.dracoEncoderModule.COLOR;
+        return this.draco.COLOR;
       case 'texCoord':
       case 'texCoords':
-        return this.dracoEncoderModule.TEX_COORD;
+        return this.draco.TEX_COORD;
       default:
-        return this.dracoEncoderModule.GENERIC;
+        return this.draco.GENERIC;
     }
   }
 
@@ -315,7 +314,7 @@ export default class DracoBuilder {
     for (const attributeName in attributes) {
       const attribute = attributes[attributeName];
       const dracoType = this._getDracoAttributeType(attributeName, attribute);
-      if (dracoType === this.dracoEncoderModule.POSITION) {
+      if (dracoType === this.draco.POSITION) {
         return attribute;
       }
     }
