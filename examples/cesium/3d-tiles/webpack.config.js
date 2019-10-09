@@ -5,11 +5,7 @@ const CONFIG = {
 
   entry: {
     bundle: resolve('./app.js')
-  } // ,
-
-  // externals: {
-  //   'Cesium'
-  // }
+  }
 };
 
 // This line enables bundling against src in this repo rather than installed module

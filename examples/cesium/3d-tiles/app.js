@@ -1,28 +1,26 @@
 /* global Cesium, fetch */
 
 import {Vector3} from 'math.gl';
-import {registerLoaders} from '@loaders.gl/core';
+import {registerLoaders, setLoaderOptions} from '@loaders.gl/core';
 import {DracoLoader} from '@loaders.gl/draco';
 import {Tileset3D, _getIonTilesetMetadata} from '@loaders.gl/3d-tiles';
 import {Plane} from '@math.gl/culling';
 
+// set up loaders
 registerLoaders([DracoLoader]);
+setLoaderOptions({worker: false});
 
+// Ion asset
 Cesium.Ion.defaultAccessToken =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ';
-
 const MELBOURNE_ION_ASSET_ID = 43978;
 
-const viewer = new Cesium.Viewer('cesiumContainer');
+const INITIAL_VIEW_STATE = {
+  direction: [-0.13038111167390576, 0.09148571979975412, 0.9872340800394797],
+  up: [-0.8081356152768331, 0.5670519871339241, -0.1592760848608561]
+};
 
-viewer.camera.flyTo({
-  destination: new Cesium.Cartesian3(-4129177.4436845127, 2897358.104762894, -3895489.035314936),
-  orientation: {
-    direction: new Cesium.Cartesian3(-0.13038111167390576, 0.09148571979975412, 0.9872340800394797),
-    up: new Cesium.Cartesian3(-0.8081356152768331, 0.5670519871339241, -0.1592760848608561)
-  },
-  duration: 3
-});
+const viewer = new Cesium.Viewer('cesiumContainer');
 
 loadTileset({
   ionAssetId: MELBOURNE_ION_ASSET_ID,
@@ -41,16 +39,30 @@ async function loadTileset({tilesetUrl, ionAssetId, ionAccessToken}) {
   const tilesetJson = await response.json();
 
   const tileset3d = new Tileset3D(tilesetJson, tilesetUrl, {
-    onTileLoad: tileHeader => loadPnts(tileHeader.uri, tileHeader), // eslint-disable-line
+    onTileLoad: tileHeader => loadPnts(tileHeader.uri, tileHeader),
     onTileUnload: tileHeader => console.log('Unload', tileHeader.uri), // eslint-disable-line
     onTileLoadFailed: tileHeader => console.error('LoadFailed', tileHeader.uri), // eslint-disable-line
     fetchOptions,
     throttleRequests: true
   });
 
+  centerTileset(tileset3d);
+
   viewer.scene.preRender.addEventListener(scene => {
     const frameState = convertCesiumFrameState(scene.frameState, scene.canvas.height);
     tileset3d.update(frameState);
+  });
+}
+
+function centerTileset(tileset) {
+  // destination: new Cesium.Cartesian3(-4129177.4436845127, 2897358.104762894, -3895489.035314936),
+  viewer.camera.flyTo({
+    destination: new Cesium.Cartesian3(...tileset.cartesianCenter),
+    orientation: {
+      direction: new Cesium.Cartesian3(...INITIAL_VIEW_STATE.direction),
+      up: new Cesium.Cartesian3(...INITIAL_VIEW_STATE.up)
+    },
+    duration: 3
   });
 }
 
@@ -72,11 +84,11 @@ function loadPnts(pntsUrl, tileHeader) {
       byteOffset: 0,
       cull: false,
       opaquePass: Cesium.Pass.CESIUM_3D_TILE,
-      vertexShaderLoaded: getVertexShaderLoaded(),
-      fragmentShaderLoaded: getFragmentShaderLoaded(),
-      uniformMapLoaded: getUniformMapLoaded(),
-      batchTableLoaded: getBatchTableLoaded(),
-      pickIdLoaded: getPickIdLoaded()
+      vertexShaderLoaded: vs => vs,
+      fragmentShaderLoaded: fs => `uniform vec4 czm_pickColor;\n${fs}`,
+      uniformMapLoaded: uniformMap => uniformMap,
+      batchTableLoaded: (batchLength, batchTableJson, batchTableBinary) => {},
+      pickIdLoaded: () => 'czm_pickColor'
     });
 
     viewer.scene.primitives.add(pointCloud);
@@ -84,34 +96,6 @@ function loadPnts(pntsUrl, tileHeader) {
     pointCloud.boundingSphere = boundingSphere;
     pointCloud.modelMatrix = computedTransform;
   });
-}
-
-function getPickIdLoaded() {
-  return function() {
-    return 'czm_pickColor';
-  };
-}
-
-function getUniformMapLoaded() {
-  return function(uniformMap) {
-    return uniformMap;
-  };
-}
-
-function getFragmentShaderLoaded() {
-  return function(fs) {
-    return `uniform vec4 czm_pickColor;\n${fs}`;
-  };
-}
-
-function getVertexShaderLoaded() {
-  return function(vs) {
-    return vs;
-  };
-}
-
-function getBatchTableLoaded() {
-  return function(batchLength, batchTableJson, batchTableBinary) {};
 }
 
 function convertCesiumFrameState(frameState, height) {

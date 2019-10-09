@@ -358,7 +358,7 @@ export default class Tileset3D {
     // this._readyPromise.resolve(this);
   }
 
-  // Called during intializeTileset to initialize the tileset's cartographic center (longitude, latitude) and zoom.
+  // Called during initialize Tileset to initialize the tileset's cartographic center (longitude, latitude) and zoom.
   _calculateViewProps() {
     const root = this._root;
     const {center} = root.boundingVolume;
@@ -371,6 +371,7 @@ export default class Tileset3D {
       return;
     }
     this.cartographicCenter = Ellipsoid.WGS84.cartesianToCartographic(center, new Vector3());
+    this.cartesianCenter = center;
     this.zoom = getZoom(root.boundingVolume);
   }
 
