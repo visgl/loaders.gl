@@ -5,7 +5,9 @@ import {global, isBrowser, isWorker} from '../env-utils/globals';
 import {requireFromFile, requireFromString} from './require-utils.node';
 import assert from '../env-utils/assert';
 
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+// TODO - unpkg.com doesn't seem to have a `latest` specifier for alpha releases...
+const LATEST = '2.0.0-alpha.3';
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : LATEST;
 
 const loadLibraryPromises = {}; // promises
 

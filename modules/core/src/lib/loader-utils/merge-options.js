@@ -16,11 +16,7 @@ export function mergeOptions(loader, options, url) {
   const loaderDefaultOptions =
     loader && (loader.DEFAULT_LOADER_OPTIONS || loader.defaultOptions || loader.options || {});
 
-  const mergedOptions = {
-    ...loaderDefaultOptions,
-    ...globalOptions,
-    ...options // Merges any non-nested fields, but clobbers nested fields
-  };
+  const mergedOptions = {...loaderDefaultOptions};
 
   addUrlOptions(mergedOptions, url);
 
@@ -29,26 +25,26 @@ export function mergeOptions(loader, options, url) {
     mergedOptions.log = new NullLog();
   }
 
-  mergeNestedFields(mergedOptions, loaderDefaultOptions, globalOptions);
-  mergeNestedFields(mergedOptions, loaderDefaultOptions, options);
+  mergeNestedFields(mergedOptions, globalOptions);
+  mergeNestedFields(mergedOptions, options);
 
   return mergedOptions;
 }
 
 // Merge nested options objects
-function mergeNestedFields(mergedOptions, loaderDefaultOptions, options) {
+function mergeNestedFields(mergedOptions, options) {
   for (const key in options) {
-    const value = options[key];
     // Check for nested options
     // object in options => either no key in defaultOptions or object in defaultOptions
-    if (isPureObject(value) && key in loaderDefaultOptions) {
-      if (isPureObject(loaderDefaultOptions[key])) {
+    if (key in options) {
+      const value = options[key];
+      if (isPureObject(value) && isPureObject(mergedOptions[key])) {
         mergedOptions[key] = {
-          ...loaderDefaultOptions[key],
+          ...mergedOptions[key],
           ...options[key]
         };
       } else {
-        mergedOptions.log.warn(`Nested option ${key} not recognized`)();
+        mergedOptions[key] = options[key];
       }
     }
     // else: No need to merge nested opts, and the initial merge already copied over the nested options
