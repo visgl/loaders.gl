@@ -26,7 +26,7 @@ test('DracoLoader#parse(mainthread)', async t => {
   t.end();
 });
 
-test.skip('DracoWorkerLoader#parse', async t => {
+test('DracoWorkerLoader#parse', async t => {
   if (typeof Worker === 'undefined') {
     t.comment('Worker is not usable in non-browser environments');
     t.end();
