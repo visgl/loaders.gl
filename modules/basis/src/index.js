@@ -1,1 +1,1 @@
-export {BasisLoader} from './basis-loader';
+export {BasisLoader, BasisWorkerLoader} from './basis-loader';
