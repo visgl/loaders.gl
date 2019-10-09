@@ -23,7 +23,7 @@ export const DracoWorkerLoader = {
 };
 
 export const DracoLoader = {
-  ...DRACO,
+  ...DracoWorkerLoader,
   parse
 };
 
