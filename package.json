@@ -25,7 +25,7 @@
   "scripts": {
     "start": "echo 'Please see loaders.gl website for how to run examples' && open https://loaders.gl/docs",
     "bootstrap": "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true yarn && ocular-bootstrap",
-    "build": "ocular-clean && lerna run pre-build && ocular-build --dist esm,es6",
+    "build": "ocular-clean && lerna run pre-build && ocular-build",
     "clean": "ocular-clean",
     "cover": "ocular-test cover",
     "lint": "ocular-lint",
