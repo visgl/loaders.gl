@@ -15,8 +15,7 @@ const ALIASES = require('ocular-dev-tools/config/ocular.config')({
 }).aliases;
 
 const ROOT_DIR = resolve(__dirname, '..');
-const PACKAGE_ROOT = resolve('../../../');
-const PACKAGE_INFO = require(resolve(PACKAGE_ROOT, 'package.json'));
+const PACKAGE_INFO = require(resolve(ROOT_DIR, 'package.json'));
 
 const BABEL_CONFIG = {
   presets: ['@babel/env'],

@@ -6,10 +6,11 @@
     "start-local": "webpack-dev-server --env.local --progress --hot --open"
   },
   "dependencies": {
-    "@loaders.gl/core": "^2.0.0-alpha.4",
-    "@loaders.gl/basis": "^2.0.0-alpha.4"
+    "@loaders.gl/basis": "^2.0.0-alpha.4",
+    "@loaders.gl/core": "^2.0.0-alpha.4"
   },
   "devDependencies": {
+    "babel-plugin-inline-import": "^3.0.0",
     "html-webpack-plugin": "^3.2.0",
     "webpack": "^4.3.0",
     "webpack-dev-server": "^3.1.1"

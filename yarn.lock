@@ -1435,6 +1435,13 @@
     npmlog "^4.1.2"
     write-file-atomic "^2.3.0"
 
+"@loaders.gl/experimental@2.0.0-alpha.4":
+  version "2.0.0-alpha.4"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/experimental/-/experimental-2.0.0-alpha.4.tgz#6a7f373864f19542dc91ad2825cf1d706c65e4bb"
+  integrity sha512-ZA9VDiJfFwEG32dmPnTFTpwJQfCmmrKu87PS8pBuz9U6TrqK4jPGkxpufuMOTYL+bMKbAEdhWux3hbUAdmdGRA==
+  dependencies:
+    "@loaders.gl/core" "2.0.0-alpha.4"
+
 "@luma.gl/constants@7.3.0":
   version "7.3.0"
   resolved "https://registry.yarnpkg.com/@luma.gl/constants/-/constants-7.3.0.tgz#b1c45f22ccdd0f2b7064df3d76c44e30d19e3252"
