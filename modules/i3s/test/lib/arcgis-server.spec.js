@@ -1,6 +1,7 @@
 // eslint-disable-next-line
-const ARCGIS_URL = `${__dirname}/../data/SanFrancisco_Bldgs/SceneServer/layers/0`;
-// '@loaders.gl/i3s/test/data/SanFrancisco_Bldgs/SceneServer/layers/0';
+const ARCGIS_URL =
+  // `${__dirname}/../data/SanFrancisco_Bldgs/SceneServer/layers/0`;
+  '@loaders.gl/i3s/test/data/SanFrancisco_Bldgs/SceneServer/layers/0';
 // 'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_Bldgs/SceneServer/layers/0?p=fjson';
 
 import test from 'tape-promise/tape';
