@@ -13,9 +13,9 @@ export const I3SNodeGeometryLoader = {
   id: 'i3s',
   name: 'i3s',
   version: VERSION,
-  extensions: ['cmpt', 'pnts', 'b3dm', 'i3dm'],
+  extensions: ['i3s'],
   mimeType: 'application/octet-stream',
-  test: ['cmpt', 'pnts', 'b3dm', 'i3dm'],
+  // test: ['cmpt', 'pnts', 'b3dm', 'i3dm'],
   parse,
   binary: true,
   options: {
