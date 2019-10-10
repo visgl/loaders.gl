@@ -1435,6 +1435,57 @@
     npmlog "^4.1.2"
     write-file-atomic "^2.3.0"
 
+"@loaders.gl/3d-tiles@2.0.0-alpha.3":
+  version "2.0.0-alpha.3"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/3d-tiles/-/3d-tiles-2.0.0-alpha.3.tgz#8455168431b2082c2406709d7ad509d58dd75a01"
+  integrity sha512-rkwWUyeSZH/FAPmSUZ/teSO818pW/hoRk8PMXHxTcOVHcn7BdKsoellWQ7gTfVaEfKQRrUpG9OZwFku+38e9Uw==
+  dependencies:
+    "@loaders.gl/core" "2.0.0-alpha.3"
+    "@loaders.gl/gltf" "2.0.0-alpha.3"
+    "@loaders.gl/loader-utils" "2.0.0-alpha.3"
+    "@loaders.gl/math" "2.0.0-alpha.3"
+    "@math.gl/culling" "^3.0.0"
+    "@math.gl/geospatial" "^3.0.0"
+    math.gl "^3.0.0"
+    probe.gl "^3.1.1"
+
+"@loaders.gl/core@2.0.0-alpha.3":
+  version "2.0.0-alpha.3"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/core/-/core-2.0.0-alpha.3.tgz#745454cb05297c911db50c4c67cf0162e22c7886"
+  integrity sha512-fMjNgd14TNV53ZiDiuz3qBSyEIJBSoZtN5q8jfSHu1LOUZ7t7HH9j5fkP3U18DVVUfVxZXur2Kzjyx5vxQ+3YQ==
+  dependencies:
+    "@babel/runtime" "^7.3.1"
+    "@loaders.gl/loader-utils" "2.0.0-alpha.3"
+
+"@loaders.gl/gltf@2.0.0-alpha.3":
+  version "2.0.0-alpha.3"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/gltf/-/gltf-2.0.0-alpha.3.tgz#6da4e3971f1f2af283ddf60c4f08da67bf5aa4ac"
+  integrity sha512-tlWO5qLbHrJZ/uIsp2bVdjhVEmQQX04oOSr1quVEYLULo53GMZi7b6RreVVr3WPvBf0+foyVny4NgElgd98htQ==
+  dependencies:
+    "@loaders.gl/core" "2.0.0-alpha.3"
+    "@loaders.gl/images" "2.0.0-alpha.3"
+    "@loaders.gl/loader-utils" "2.0.0-alpha.3"
+
+"@loaders.gl/images@2.0.0-alpha.3":
+  version "2.0.0-alpha.3"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/images/-/images-2.0.0-alpha.3.tgz#7fde66a93d1d417647d34cd1b6266f69cb1552ee"
+  integrity sha512-pWmuC6ETnhd4vELMtZFuKyb/JNtPRkBMVkGCg67dJLwLNL7AIjZmz/D6LfXj6B0HO3x80AwY9V7eIyZp+zrl6Q==
+
+"@loaders.gl/loader-utils@2.0.0-alpha.3":
+  version "2.0.0-alpha.3"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/loader-utils/-/loader-utils-2.0.0-alpha.3.tgz#cf49a791fb77ec853ea18dceda70cf97375337ae"
+  integrity sha512-ctbgYmOLSgRr3P0Iwf0BIDo6DuUWqJFmEvgk3XEaEAogQwg3Llm5YHeCleCvlWccMbl9QMd1b1glQUYqv4C/4A==
+  dependencies:
+    "@babel/runtime" "^7.3.1"
+
+"@loaders.gl/math@2.0.0-alpha.3":
+  version "2.0.0-alpha.3"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/math/-/math-2.0.0-alpha.3.tgz#61b27ba37c278238d11fed5f88312bb834c3d2ab"
+  integrity sha512-ieyLojxwUMEL8s/sJUoL5OSWK4IyQFgKzLf+DC8Gr1R99SHg86fpjta1Y/ZFicYs6yI7HCg+r3ugFJTYKWTd3w==
+  dependencies:
+    "@loaders.gl/images" "2.0.0-alpha.3"
+    math.gl "^3.0.0"
+
 "@luma.gl/constants@7.3.0":
   version "7.3.0"
   resolved "https://registry.yarnpkg.com/@luma.gl/constants/-/constants-7.3.0.tgz#b1c45f22ccdd0f2b7064df3d76c44e30d19e3252"

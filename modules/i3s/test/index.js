@@ -1,1 +1,2 @@
-import './i3s-node-geometry-loader.spec';
+// import './i3s-node-geometry-loader.spec';
+import './lib/arcgis-server.spec';

@@ -13,7 +13,7 @@ export const BasisWorkerLoader = {
   binary: true,
   options: {
     basis: {
-      libraryPath: `libs/`,
+      libraryPath: `libs/`
       // workerUrl: `https://unpkg.com/@loaders.gl/basis@${VERSION}/dist/basis-loader.worker.js`
     }
   }
