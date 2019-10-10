@@ -2,7 +2,7 @@
 
 /* global fetch */
 import {_getErrorMessageFromResponse} from '@loaders.gl/core';
-import assert from '../utils/assert';
+// import assert from '../utils/assert';
 
 const ARCGIS_SERVER_URL = 'https://...';
 
@@ -20,8 +20,8 @@ export async function getArcgisTilesetMetadata(accessToken, assetId) {
 
   // Step 2: Query metdatadata for this asset.
   const ionAssetMetadata = await getArcgisAssetMetadata(accessToken, assetId);
-  const {type, url} = ionAssetMetadata;
-  assert(type === '3DTILES' && url);
+  // const {type, url} = ionAssetMetadata;
+  // // assert(type === '3DTILES' && url);
 
   // Prepare a headers object for fetch
   ionAssetMetadata.headers = {
@@ -32,7 +32,7 @@ export async function getArcgisTilesetMetadata(accessToken, assetId) {
 
 // Return a list of all assets associated with accessToken
 export async function getArcgisAssets(accessToken) {
-  assert(accessToken);
+  // assert(accessToken);
   const url = ARCGIS_SERVER_URL;
   const headers = {Authorization: `Bearer ${accessToken}`};
   const response = await fetch(url, {headers});
@@ -44,7 +44,7 @@ export async function getArcgisAssets(accessToken) {
 
 // Return metadata for a specific asset assocated with token
 export async function getArcgisAssetMetadata(accessToken, assetId) {
-  assert(accessToken, assetId);
+  // assert(accessToken, assetId);
   const headers = {Authorization: `Bearer ${accessToken}`};
 
   const url = `${ARCGIS_SERVER_URL}/${assetId}`;
