@@ -6,8 +6,8 @@
     "start-local": "webpack-dev-server --env.local --progress --hot --open"
   },
   "dependencies": {
-    "@loaders.gl/core": "^1.3.0",
-    "@loaders.gl/basis": "^1.3.0"
+    "@loaders.gl/core": "^2.0.0-alpha.4",
+    "@loaders.gl/basis": "^2.0.0-alpha.4"
   },
   "devDependencies": {
     "html-webpack-plugin": "^3.2.0",
