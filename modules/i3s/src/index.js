@@ -1,1 +1,1 @@
-export {I3STileLoader} from './i3s-tile-loader';
+export {I3SNodeGeometryLoader} from './i3s-node-geometry-loader';

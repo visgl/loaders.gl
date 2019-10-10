@@ -1,1 +1,1 @@
-import './i3s-loader.spec';
+import './i3s-node-geometry-loader.spec';
