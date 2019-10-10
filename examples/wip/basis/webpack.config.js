@@ -1,4 +1,6 @@
 const {resolve} = require('path');
+// eslint-disable-next-line import/no-extraneous-dependencies
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const CONFIG = {
   mode: 'development',
@@ -6,6 +8,8 @@ const CONFIG = {
   entry: {
     app: resolve('./app.js')
   },
+
+  plugins: [new HtmlWebpackPlugin({title: 'Basis Loader'})],
 
   node: {
     fs: 'empty'

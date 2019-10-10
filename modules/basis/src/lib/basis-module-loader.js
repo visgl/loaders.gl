@@ -23,18 +23,22 @@ async function loadBasis(options) {
 
   // Depends on how import happened...
   BASIS = BASIS || global.BASIS;
-  return await initializeBasis(BASIS, wasmBinary);
+  return await initializeBasisModule(BASIS, wasmBinary);
 }
 
-function initializeBasis(BASIS, wasmBinary) {
-  // const options = {};
-  // if (wasmBinary) {
-  //   options.wasmBinary = wasmBinary;
-  // }
-  // return new Promise(resolve => {
-  //   BasisModule({
-  //     ...options,
-  //     onModuleLoaded: draco => resolve({draco}) // Module is Promise-like. Wrap in object to avoid loop.
-  //   });
-  // });
+function initializeBasisModule(BasisModule, wasmBinary) {
+  const options = {};
+
+  if (wasmBinary) {
+    options.wasmBinary = wasmBinary;
+  }
+
+  return new Promise(resolve => {
+    // if you try to return BasisModule the browser crashes!
+    BasisModule(options).then(module => {
+      const {BasisFile, initializeBasis} = module;
+      initializeBasis();
+      resolve({BasisFile});
+    });
+  });
 }
