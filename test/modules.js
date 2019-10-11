@@ -8,8 +8,11 @@ require('@loaders.gl/polyfills');
 require('@loaders.gl/polyfills/test');
 require('@loaders.gl/core/test');
 require('@loaders.gl/loader-utils/test');
-require('@loaders.gl/images/test');
 require('@loaders.gl/math/test');
+
+// Image Formats
+require('@loaders.gl/images/test');
+require('@loaders.gl/basis/test');
 
 // Pointcloud/Mesh Formats
 require('@loaders.gl/draco/test');

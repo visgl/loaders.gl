@@ -26,6 +26,7 @@ const makeAliases = () => ({
   test: path.resolve(__dirname, '../test'),
   '@loaders.gl/3d-tiles/test': path.resolve(__dirname, '../modules/3d-tiles/test'),
   '@loaders.gl/arrow/test': path.resolve(__dirname, '../modules/arrow/test'),
+  '@loaders.gl/basis/test': path.resolve(__dirname, '../modules/basis/test'),
   '@loaders.gl/core/test': path.resolve(__dirname, '../modules/core/test'),
   '@loaders.gl/csv/test': path.resolve(__dirname, '../modules/csv/test'),
   '@loaders.gl/draco/test': path.resolve(__dirname, '../modules/draco/test'),
