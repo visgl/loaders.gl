@@ -1435,6 +1435,13 @@
     npmlog "^4.1.2"
     write-file-atomic "^2.3.0"
 
+"@loaders.gl/experimental@2.0.0-alpha.4":
+  version "2.0.0-alpha.4"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/experimental/-/experimental-2.0.0-alpha.4.tgz#6a7f373864f19542dc91ad2825cf1d706c65e4bb"
+  integrity sha512-ZA9VDiJfFwEG32dmPnTFTpwJQfCmmrKu87PS8pBuz9U6TrqK4jPGkxpufuMOTYL+bMKbAEdhWux3hbUAdmdGRA==
+  dependencies:
+    "@loaders.gl/core" "2.0.0-alpha.4"
+
 "@luma.gl/constants@7.3.0":
   version "7.3.0"
   resolved "https://registry.yarnpkg.com/@luma.gl/constants/-/constants-7.3.0.tgz#b1c45f22ccdd0f2b7064df3d76c44e30d19e3252"
@@ -7179,7 +7186,7 @@ pad-left@2.1.0:
   dependencies:
     repeat-string "^1.5.4"
 
-pako@~1.0.2, pako@~1.0.5:
+pako@^1.0.6, pako@~1.0.2, pako@~1.0.5:
   version "1.0.10"
   resolved "https://registry.yarnpkg.com/pako/-/pako-1.0.10.tgz#4328badb5086a426aa90f541977d4955da5c9732"
   integrity sha512-0DTvPVU3ed8+HNXOu5Bs+o//Mbdj9VNQMUOe9oKCwh8l0GNwpTDMKCWbRjgtD291AWnkAgkqA/LOnQS8AmS1tw==
@@ -9467,6 +9474,14 @@ verror@1.10.0:
     core-util-is "1.0.2"
     extsprintf "^1.2.0"
 
+viewport-mercator-project@^6.2.2:
+  version "6.2.2"
+  resolved "https://registry.yarnpkg.com/viewport-mercator-project/-/viewport-mercator-project-6.2.2.tgz#f524819ad53fcc009b46136a59f73461bfcf1604"
+  integrity sha512-vs9pjDZxDwoiEqr+GgdpRAUogEQRoZ9D9COVLSr4+h/WdcUWhYN36SQr3n5jaTKrl/wlfdRj+TYU8wTk05grbg==
+  dependencies:
+    "@babel/runtime" "^7.0.0"
+    gl-matrix "^3.0.0"
+
 vm-browserify@^1.0.1:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/vm-browserify/-/vm-browserify-1.1.0.tgz#bd76d6a23323e2ca8ffa12028dc04559c75f9019"
@@ -9879,3 +9894,10 @@ yauzl@2.4.1:
   integrity sha1-lSj0QtqxsihOWLQ3m7GU4i4MQAU=
   dependencies:
     fd-slicer "~1.0.1"
+
+zip-loader@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/zip-loader/-/zip-loader-1.1.0.tgz#c610f0b378e0bfb1d02a94eb9ba7cd6b0968f708"
+  integrity sha512-8XZgg1JFdlHmcKaldLEpjGH6qtxUxwDGfS+cgF1OVWa5dT6QFI6EgzAbMorT1RY6uurlevr6JytawNpUhOJLeQ==
+  dependencies:
+    pako "^1.0.6"
