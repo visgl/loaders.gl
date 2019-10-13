@@ -9,5 +9,4 @@ export {default as JSONLoader} from './json-loader';
 export {default as XMLLoader} from './xml-loader';
 
 // EXPERIMENTAL APIs
-export {writeFile} from './core-addons/write-file-browser';
 export {default as AsyncQueue} from './lib/utils/async-queue';
