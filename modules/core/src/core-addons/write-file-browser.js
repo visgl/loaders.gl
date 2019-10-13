@@ -36,7 +36,7 @@ if (!isBrowser) {
  * @param {Function} callback - Standard node (err, data) callback
  * @return {Promise} - promise, can be used instead of callback
  *
-export function writeFile(file, data, options, callback = () => {}) {
+async export function writeFile(file, data, options, callback = () => {}) {
   // options is optional
   if (callback === undefined && typeof options === 'function') {
     options = undefined;

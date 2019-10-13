@@ -1,4 +1,4 @@
-import parseXML, {parseXMLSupported} from './parse-xml';
+import parseXML, {parseXMLSupported} from './lib/xml/parse-xml';
 
 const XML_HEADER = '<?xml';
 

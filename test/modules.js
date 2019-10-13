@@ -30,9 +30,9 @@ require('@loaders.gl/potree/test');
 require('@loaders.gl/kml/test');
 
 // Table Formats
+require('@loaders.gl/tables/test');
 require('@loaders.gl/arrow/test');
 require('@loaders.gl/csv/test');
-require('@loaders.gl/experimental/test');
 
 // Archive Formats
 require('@loaders.gl/zip/test');
