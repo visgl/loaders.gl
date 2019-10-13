@@ -5,26 +5,34 @@ import {registerLoaders, setLoaderOptions} from '@loaders.gl/core';
 import {DracoLoader} from '@loaders.gl/draco';
 import {Tileset3D, _getIonTilesetMetadata} from '@loaders.gl/3d-tiles';
 import {Plane} from '@math.gl/culling';
+import {loadBatchedModelTile, loadPointTile} from './tile-parsers';
 
 // set up loaders
 registerLoaders([DracoLoader]);
 setLoaderOptions({worker: false});
 
-// Ion asset
+// This is taken from this blog: https://cesium.com/blog/2019/08/06/webodm-ships-with-cesium-ion/
+// Data captured by American Red Cross.
+const malalisonToken =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI0MTQ0NTNiOC0wNzlmLTQ1ZGEtYjM3Yi05ZmJlY2FiMmRjYWMiLCJpZCI6MTMxNTEsInNjb3BlcyI6WyJhc3IiLCJnYyJdLCJpYXQiOjE1NjI2OTQ3NTh9.tlqEVzzO25Itcla4jD17yywNFvAVM-aNVduzF6ss-1g';
+
+// Ion assets
 Cesium.Ion.defaultAccessToken =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ';
-const MELBOURNE_ION_ASSET_ID = 43978;
+const MELBOURNE_ION_ASSET_ID = 43978; // eslint-disable-line
+const CAIRO_ASSET_ID = 29328; // eslint-disable-line
+const MALALISON_ISLAND_ASSET_ID = 34014;
 
-const INITIAL_VIEW_STATE = {
-  direction: [-0.13038111167390576, 0.09148571979975412, 0.9872340800394797],
-  up: [-0.8081356152768331, 0.5670519871339241, -0.1592760848608561]
-};
+// const VIEW_TYPES = {SINGLE: 0, SIDE_BY_SIDE: 1};
+// const VIEW_MODE = VIEW_TYPES.SINGLE;
 
 const viewer = new Cesium.Viewer('cesiumContainer');
+const tileMap = {}; // Map the contentUri -> tile so we can unload/set visibility based on loaders.gl's tile events.
 
 loadTileset({
-  ionAssetId: MELBOURNE_ION_ASSET_ID,
-  ionAccessToken: Cesium.Ion.defaultAccessToken
+  ionAssetId: MALALISON_ISLAND_ASSET_ID,
+  ionAccessToken: malalisonToken
+  // ionAccessToken: Cesium.Ion.defaultAccessToken
 });
 
 async function loadTileset({tilesetUrl, ionAssetId, ionAccessToken}) {
@@ -39,8 +47,8 @@ async function loadTileset({tilesetUrl, ionAssetId, ionAccessToken}) {
   const tilesetJson = await response.json();
 
   const tileset3d = new Tileset3D(tilesetJson, tilesetUrl, {
-    onTileLoad: tileHeader => loadPnts(tileHeader.uri, tileHeader),
-    onTileUnload: tileHeader => console.log('Unload', tileHeader.uri), // eslint-disable-line
+    onTileLoad: tileHeader => loadTile(tileHeader.uri, tileHeader),
+    onTileUnload: tileHeader => unloadTile(tileHeader.contentUri),
     onTileLoadFailed: tileHeader => console.error('LoadFailed', tileHeader.uri), // eslint-disable-line
     fetchOptions,
     throttleRequests: true
@@ -55,47 +63,40 @@ async function loadTileset({tilesetUrl, ionAssetId, ionAccessToken}) {
 }
 
 function centerTileset(tileset) {
-  // destination: new Cesium.Cartesian3(-4129177.4436845127, 2897358.104762894, -3895489.035314936),
   viewer.camera.flyTo({
     destination: new Cesium.Cartesian3(...tileset.cartesianCenter),
-    orientation: {
-      direction: new Cesium.Cartesian3(...INITIAL_VIEW_STATE.direction),
-      up: new Cesium.Cartesian3(...INITIAL_VIEW_STATE.up)
-    },
     duration: 3
   });
 }
 
-function loadPnts(pntsUrl, tileHeader) {
-  const center = tileHeader.boundingVolume.center;
-  const halfAxes = tileHeader.boundingVolume.halfAxes;
+function loadTile(uri, tileHeader) {
+  const type = uri.replace(/\?[\w\W]+/, '').slice(-4); // Make sure to remove query parameters.
 
-  const boundingVolume = new Cesium.TileOrientedBoundingBox(
-    new Cesium.Cartesian3(center.x, center.y, center.z),
-    Cesium.Matrix3.fromColumnMajorArray(halfAxes)
-  );
+  switch (type) {
+    case 'pnts':
+      loadPointTile(uri, tileHeader).then(renderTilePrimitive);
+      break;
+    case 'b3dm':
+      loadBatchedModelTile(uri, tileHeader).then(renderTilePrimitive);
+      break;
+    default:
+      console.log(`${type} is not implemented.`); // eslint-disable-line
+  }
+}
 
-  const boundingSphere = boundingVolume._boundingSphere;
-  const computedTransform = Cesium.Matrix4.fromColumnMajorArray(tileHeader.computedTransform);
+// TODO, hook this up to Tileset3D's tile visible event when that's ready.
+// function setTileVisible(contentUri, visibility) {
+//   tileMap[contentUri].show = visibility;
+// }
 
-  Cesium.Resource.fetchArrayBuffer(pntsUrl).then(function(arrayBuffer) {
-    const pointCloud = new Cesium.PointCloud({
-      arrayBuffer,
-      byteOffset: 0,
-      cull: false,
-      opaquePass: Cesium.Pass.CESIUM_3D_TILE,
-      vertexShaderLoaded: vs => vs,
-      fragmentShaderLoaded: fs => `uniform vec4 czm_pickColor;\n${fs}`,
-      uniformMapLoaded: uniformMap => uniformMap,
-      batchTableLoaded: (batchLength, batchTableJson, batchTableBinary) => {},
-      pickIdLoaded: () => 'czm_pickColor'
-    });
+function unloadTile(contentUri) {
+  viewer.scene.primitives.remove(tileMap[contentUri]);
+  delete tileMap[contentUri];
+}
 
-    viewer.scene.primitives.add(pointCloud);
-
-    pointCloud.boundingSphere = boundingSphere;
-    pointCloud.modelMatrix = computedTransform;
-  });
+function renderTilePrimitive({primitive, tileHeader}) {
+  tileMap[tileHeader.contentUri] = primitive;
+  viewer.scene.primitives.add(primitive);
 }
 
 function convertCesiumFrameState(frameState, height) {
