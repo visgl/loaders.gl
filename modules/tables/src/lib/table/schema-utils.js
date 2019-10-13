@@ -40,21 +40,6 @@ function deduceSchemaForRowTable(rowTable) {
   return schema;
 }
 
-// TABLE CONVERSION
-
-// function convertToColumnarTable(table, options = {}) {
-//   if (!Array.isArray(table)) {
-//     return table;
-//   }
-
-//   getS
-//   const {schema} = options;
-
-//   for (const row of rows) {
-
-//   }
-// }
-
 function deduceTypeFromValue(value) {
   if (value instanceof Date) {
     return Date;

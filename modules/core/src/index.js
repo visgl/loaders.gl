@@ -67,5 +67,7 @@ export {default as _WorkerPool} from './worker-utils/worker-pool';
 
 export {default as _fetchProgress} from './lib/progress/fetch-progress';
 
+// export {writeFile as _writeFile} from './core-addons/write-file-browser';
+
 // FOR TESTING
 export {_unregisterLoaders} from './lib/register-loaders';
