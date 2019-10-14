@@ -8,7 +8,6 @@
 
 This RFC would enable loader name strings to specify a loader, without importing the loader object or even knowing if that loader has been registered, eliminating the need to import and reference loader objects in use cases like conditional reference to other loader.
 
-
 ## Background
 
 How does another part of the code reference a pre-registered loader without actually importing it?
@@ -52,4 +51,3 @@ parse(arrayBuffer, 'draco', ...); // throws if draco loader not available...
 import {selectLoader, isLoaderAvailable} from `@loaders.gl/core`;
 selectLoader('draco'); // throws if draco loader not available
 ```
-
