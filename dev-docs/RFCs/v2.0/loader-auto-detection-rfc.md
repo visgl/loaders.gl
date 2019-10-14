@@ -1,4 +1,4 @@
-# RFC: loader auto detection using initial data
+# RFC: loader auto detection using first bytes of content
 
 - **Authors**: Ib Green
 - **Date**: Jun 2019
