@@ -72,4 +72,3 @@ load(INTERNAL_DATA_URL, {
 TBD - what parameters should the overridden fetch function receive?
 
 If the app wants to redefine `fetch` for some loaders only, it needs to start distinguishing loaders (which is hard to do with the current loaders.gl API).
-

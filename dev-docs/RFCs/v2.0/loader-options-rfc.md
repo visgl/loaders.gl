@@ -54,11 +54,9 @@ The user would need to decide the names for custom loaders.
 
 loaders.gl core will need to merge options objects in a two-step process. Any nested object will need to be separately merged.
 
-
 ### Proposal: Loaders use nested options
 
 Update code and documentation to look for nested options.
-
 
 ## Problems
 
