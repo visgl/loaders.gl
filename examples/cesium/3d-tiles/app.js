@@ -1,127 +1,74 @@
-/* global Cesium, fetch */
+/* global Cesium, document  */
+import {loadTileset} from './tileset-loader';
 
-import {Vector3} from 'math.gl';
-import {registerLoaders, setLoaderOptions} from '@loaders.gl/core';
-import {DracoLoader} from '@loaders.gl/draco';
-import {Tileset3D, _getIonTilesetMetadata} from '@loaders.gl/3d-tiles';
-import {Plane} from '@math.gl/culling';
-
-// set up loaders
-registerLoaders([DracoLoader]);
-setLoaderOptions({worker: false});
-
-// Ion asset
+// This is taken from this blog: https://cesium.com/blog/2019/08/06/webodm-ships-with-cesium-ion/
+// Data captured by American Red Cross.
+/* eslint-disable no-unused-vars */
+const malalisonToken =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI0MTQ0NTNiOC0wNzlmLTQ1ZGEtYjM3Yi05ZmJlY2FiMmRjYWMiLCJpZCI6MTMxNTEsInNjb3BlcyI6WyJhc3IiLCJnYyJdLCJpYXQiOjE1NjI2OTQ3NTh9.tlqEVzzO25Itcla4jD17yywNFvAVM-aNVduzF6ss-1g';
 Cesium.Ion.defaultAccessToken =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ';
 const MELBOURNE_ION_ASSET_ID = 43978;
+const CAIRO_ASSET_ID = 29328;
+const MALALISON_ISLAND_ASSET_ID = 34014;
+/* eslint-enable no-unused-vars */
+const VIEW_TYPES = {SINGLE: 0, SIDE_BY_SIDE: 1};
 
-const INITIAL_VIEW_STATE = {
-  direction: [-0.13038111167390576, 0.09148571979975412, 0.9872340800394797],
-  up: [-0.8081356152768331, 0.5670519871339241, -0.1592760848608561]
-};
+// Application settings.
+const VIEW_MODE = VIEW_TYPES.SIDE_BY_SIDE;
+const TOKEN = Cesium.Ion.defaultAccessToken;
+const ASSET_ID = CAIRO_ASSET_ID;
 
-const viewer = new Cesium.Viewer('cesiumContainer');
+if (VIEW_MODE === VIEW_TYPES.SINGLE) {
+  // Just use the Loaders.gl traversal
+  const viewer = new Cesium.Viewer('loadersViewer');
 
-loadTileset({
-  ionAssetId: MELBOURNE_ION_ASSET_ID,
-  ionAccessToken: Cesium.Ion.defaultAccessToken
-});
+  document.querySelector('#cesiumViewer').style.display = 'none';
 
-async function loadTileset({tilesetUrl, ionAssetId, ionAccessToken}) {
-  let fetchOptions = null;
-  if (ionAssetId && ionAccessToken) {
-    const {url, headers} = await _getIonTilesetMetadata(ionAccessToken, ionAssetId);
-    tilesetUrl = url;
-    fetchOptions = {headers};
-  }
+  loadTileset({
+    ionAssetId: ASSET_ID,
+    ionAccessToken: TOKEN,
+    viewerInstance: viewer
+  });
+} else if (VIEW_MODE === VIEW_TYPES.SIDE_BY_SIDE) {
+  // Set the viewer on the left to be using LoadersGL loading & traversal,
+  // and the right viewer using CesiumJS's built in loading & traversal.
 
-  const response = await fetch(tilesetUrl, fetchOptions);
-  const tilesetJson = await response.json();
+  const loadersViewer = new Cesium.Viewer('loadersViewer');
 
-  const tileset3d = new Tileset3D(tilesetJson, tilesetUrl, {
-    onTileLoad: tileHeader => loadPnts(tileHeader.uri, tileHeader),
-    onTileUnload: tileHeader => console.log('Unload', tileHeader.uri), // eslint-disable-line
-    onTileLoadFailed: tileHeader => console.error('LoadFailed', tileHeader.uri), // eslint-disable-line
-    fetchOptions,
-    throttleRequests: true
+  loadTileset({
+    ionAssetId: ASSET_ID,
+    ionAccessToken: TOKEN,
+    viewerInstance: loadersViewer
   });
 
-  centerTileset(tileset3d);
+  const cesiumViewer = new Cesium.Viewer('cesiumViewer');
+  cesiumViewer.scene.primitives.add(
+    new Cesium.Cesium3DTileset({
+      url: Cesium.IonResource.fromAssetId(ASSET_ID, {accessToken: TOKEN})
+    })
+  );
 
-  viewer.scene.preRender.addEventListener(scene => {
-    const frameState = convertCesiumFrameState(scene.frameState, scene.canvas.height);
-    tileset3d.update(frameState);
-  });
+  // Sync the two views
+  loadersViewer.camera.percentageChanged = 0.01;
+  loadersViewer.camera.changed.addEventListener(() =>
+    syncCameras(loadersViewer.camera, cesiumViewer.camera)
+  );
+
+  cesiumViewer.camera.percentageChanged = 0.01;
+  cesiumViewer.camera.changed.addEventListener(() =>
+    syncCameras(cesiumViewer.camera, loadersViewer.camera)
+  );
 }
 
-function centerTileset(tileset) {
-  // destination: new Cesium.Cartesian3(-4129177.4436845127, 2897358.104762894, -3895489.035314936),
-  viewer.camera.flyTo({
-    destination: new Cesium.Cartesian3(...tileset.cartesianCenter),
+function syncCameras(sourceCamera, sinkCamera) {
+  // This copies sourceCamera's state onto sinkCamera's.
+  sinkCamera.setView({
+    destination: sourceCamera.position,
     orientation: {
-      direction: new Cesium.Cartesian3(...INITIAL_VIEW_STATE.direction),
-      up: new Cesium.Cartesian3(...INITIAL_VIEW_STATE.up)
-    },
-    duration: 3
+      heading: sourceCamera.heading,
+      pitch: sourceCamera.pitch,
+      roll: sourceCamera.roll
+    }
   });
-}
-
-function loadPnts(pntsUrl, tileHeader) {
-  const center = tileHeader.boundingVolume.center;
-  const halfAxes = tileHeader.boundingVolume.halfAxes;
-
-  const boundingVolume = new Cesium.TileOrientedBoundingBox(
-    new Cesium.Cartesian3(center.x, center.y, center.z),
-    Cesium.Matrix3.fromColumnMajorArray(halfAxes)
-  );
-
-  const boundingSphere = boundingVolume._boundingSphere;
-  const computedTransform = Cesium.Matrix4.fromColumnMajorArray(tileHeader.computedTransform);
-
-  Cesium.Resource.fetchArrayBuffer(pntsUrl).then(function(arrayBuffer) {
-    const pointCloud = new Cesium.PointCloud({
-      arrayBuffer,
-      byteOffset: 0,
-      cull: false,
-      opaquePass: Cesium.Pass.CESIUM_3D_TILE,
-      vertexShaderLoaded: vs => vs,
-      fragmentShaderLoaded: fs => `uniform vec4 czm_pickColor;\n${fs}`,
-      uniformMapLoaded: uniformMap => uniformMap,
-      batchTableLoaded: (batchLength, batchTableJson, batchTableBinary) => {},
-      pickIdLoaded: () => 'czm_pickColor'
-    });
-
-    viewer.scene.primitives.add(pointCloud);
-
-    pointCloud.boundingSphere = boundingSphere;
-    pointCloud.modelMatrix = computedTransform;
-  });
-}
-
-function convertCesiumFrameState(frameState, height) {
-  let cameraPosition = frameState.camera.position;
-  cameraPosition = new Vector3([cameraPosition.x, cameraPosition.y, cameraPosition.z]);
-
-  let cameraDirection = frameState.camera.direction;
-  cameraDirection = new Vector3([cameraDirection.x, cameraDirection.y, cameraDirection.z]);
-
-  let cameraUp = frameState.camera.up;
-  cameraUp = new Vector3([cameraUp.x, cameraUp.y, cameraUp.z]);
-
-  const planes = frameState.cullingVolume.planes.map(
-    plane => new Plane([plane.x, plane.y, plane.z], plane.w)
-  );
-
-  return {
-    camera: {
-      position: cameraPosition,
-      direction: cameraDirection,
-      up: cameraUp
-    },
-    height,
-    // TODO update when math.gl published
-    cullingVolume: {planes},
-    frameNumber: frameState.frameNumber, // TODO: This can be the same between updates, what number is unique for between updates?
-    sseDenominator: frameState.camera.frustum.sseDenominator
-  };
 }

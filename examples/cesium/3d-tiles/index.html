@@ -8,8 +8,30 @@
       rel="stylesheet"
     />
   </head>
+  <style>
+    html, body {
+      margin:0px;
+      height:100%;
+    }
+    #cesiumContainer {
+      display: flex;
+      width: 100%;
+      height: 100%;
+    }
+    #loadersViewer {
+      display: inline-block;
+      width: 100%;
+    }
+    #cesiumViewer {
+      display: inline-block;
+      width: 100%;
+    }
+  </style>
   <body>
-    <div id="cesiumContainer" style="width: 100%; height:100%"></div>
+    <div id="cesiumContainer">
+      <div id="loadersViewer"></div>
+      <div id="cesiumViewer"></div>
+    </div>
     <script type="module">
       import './bundle.js';
     </script>
