@@ -59,25 +59,6 @@ In such cases, a parse call without a specified loader might look successful but
 
 The loaders.gl name appears to be the remaining option.
 
-### Use-Case Specifying Options to Individual Loaders with having access to the loaders
-
-Since loaders can be pre-registered by other parts of the code, there may not be access to them when we want to use them.
-
-Being able to do something like the follows would look very pretty.
-
-```js
-load(url, {
-  json: {...},
-  csv: {...},
-  '3d-tiles': {...},
-  gltf: {...}
-});
-```
-
-But how are these names resolved? The loaders objects have different names, different capitalizations etc.
-
-A bunch of loaders will use the `json` extension (this particular issue is also discussed in a separate RFC).
-
 ### Use-Case: Conditional invocation of supporting loaders
 
 Since loaders can be quite big, we don't always want a loader to always unconditionally `import` another loader that it does not always depend on.

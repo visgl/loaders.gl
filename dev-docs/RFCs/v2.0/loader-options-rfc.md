@@ -2,11 +2,13 @@
 
 - **Authors**: Ib Green
 - **Date**: Jun 2019
-- **Status**: Draft
+- **Status**: Implemented
 
 ## Summary
 
-This RFC proposes a system for organizing loader options into subobjects, providing a structured way to pass options to multiple loaders, particularly in situations where it is not known in advance which loader will be selected, or when a loaders invokes other sub loaders.
+This RFC proposes a system for organizing loader options into subobjects, providing a structured way to pass options to multiple loaders.
+
+This allows providing options to multiple loaders without knowing a priori which loader will be selected, or to "sub loaders" invoked by the top-level loader.
 
 ## Motivation
 
@@ -33,26 +35,37 @@ Support nested options objects. Each loader type and category has a defined sub-
 
 Loader options are merged using a two-level merge. Any object-valued key on the top level will be merged with the corresponding key value in the other object.
 
-### Proposal: Loader subobject naming conventions
+### Proposal: New `Loader.id` and naming conventions
 
-It is convenient if the names are valid JS strings, so that they can used as object keys without quoting. Lower case, removing spaces, hyphens and underscores:
+Each loader will an `id` field.
 
-- `draco`
-- `tileset3d`
-- `tile3d`
+It is convenient, but not required, that the names are valid JS strings, so that they can used as object keys without quoting. Lower case, removing spaces:
+
+- `csv`
+- `json`
+- `image`
+- `3d-tileset`
 
 All loaders for the same format (WorkerLoader, StreamingLoader) would be referenced by the same name.
 
 The user would need to decide the names for custom loaders.
 
+### Proposal: Two-level Options Merging
+
+loaders.gl core will need to merge options objects in a two-step process. Any nested object will need to be separately merged.
+
+### Proposal: Loaders use nested options
+
+Update code and documentation to look for nested options.
+
 ## Problems
 
 But how are these sub field names chosen? The loaders objects have different names, different capitalizations etc.
 
-A bunch of loaders will use the `json` extension (this particular issue is also discussed in a separate RFC).
-
 Since loaders can be pre-registered by other parts of the code, there may not be access to them when we want to use them.
 
 ## The JSON problem
+
+A bunch of loaders will use the `json` extension (this particular issue is also discussed in a separate RFC).
 
 The `json` subfield could cover a lot of formats. Should we define `json` to mean the JSON "streaming table" loader specifically, since we'll be doubling down on that loader as one of the primary loaders.gl loaders?
