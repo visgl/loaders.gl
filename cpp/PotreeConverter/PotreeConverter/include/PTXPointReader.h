@@ -2,6 +2,7 @@
 #define PTXPOINTREADER_H
 
 #include <map>
+#include <vector>
 #include "PointReader.h"
 
 using std::string;

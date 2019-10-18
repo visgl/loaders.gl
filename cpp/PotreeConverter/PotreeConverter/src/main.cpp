@@ -246,7 +246,7 @@ PotreeArguments parseArguments(int argc, char **argv){
 	}
 
    try {
-    auto absolutePath = fs::canonical(fs::system_complete(argv[0]));
+    auto absolutePath = fs::canonical(argv[0]);
     a.executablePath = absolutePath.parent_path().string();
    } catch (const fs::filesystem_error &e) {
      // do nothing
@@ -281,8 +281,10 @@ void printArguments(PotreeArguments &a){
 }
 
 #include "Vector3.h"
+#include <Tile3DConverter.h>
 #include <random>
 
+using Tile3D::Tile3DConverter;
 
 int main(int argc, char **argv){
 	cout.imbue(std::locale(""));
@@ -318,6 +320,9 @@ int main(int argc, char **argv){
 		pc.flushLimit = a.flushLimit;
 
 		pc.convert();
+
+        Tile3DConverter converter(a.outdir, "");
+        converter.convert();
 	}catch(exception &e){
 		cout << "ERROR: " << e.what() << endl;
 		return 1;
