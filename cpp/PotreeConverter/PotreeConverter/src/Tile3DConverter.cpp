@@ -51,7 +51,6 @@ void Tile3DConverter::readJsonHeader() {
     IStreamWrapper isw(ifs);
 
     cloudJsonDoc_.ParseStream(isw);
-    // std::cout << cloudJsonDoc_["version"].GetString() << std::endl;;
 }
 
 void Tile3DConverter::collectPotreeFiles() {
@@ -91,7 +90,7 @@ void Tile3DConverter::traverseOctree(const OctreeNode& node, Value& value) {
         traverseOctree(*p, json);
     }
     if(tile.isValid()) {
-        tile.writeData("/Users/jianhuang/Uber/test_3d");
+        tile.writeData(workDir_);
         if(node.id().empty()) {
             value["root"] = json;
         }
@@ -113,10 +112,9 @@ void Tile3DConverter::processOctree() {
     doc["geometricError"] = doc["root"]["geometricError"].GetDouble();
 
     StringBuffer buffer;
-    //PrettyWriter<StringBuffer> writer(buffer);
     Writer<StringBuffer> writer(buffer);
     doc.Accept(writer);
-    string filepath("/Users/jianhuang/Uber/test_3d/tileset.json");
+    string filepath(workDir_ + "/tileset.json");
     if(fs::exists(filepath)){
         fs::remove(filepath);
     }

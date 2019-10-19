@@ -35,37 +35,38 @@ using Potree::ConversionQuality;
 class SparseGrid;
 
 struct PotreeArguments {
-	bool help = false;
-	StoreOption storeOption = StoreOption::ABORT_IF_EXISTS;
-	vector<string> source;
-	string outdir;
-	float spacing;
-	int levels;
-	string format;
-	double scale;
-	int diagonalFraction;
-	Potree::OutputFormat outFormat;
-	vector<double> colorRange;
-	vector<double> intensityRange;
-	vector<string> outputAttributes;
-	bool generatePage;
-	bool pageTemplate;
-	string pageTemplatePath = "";
-	vector<double> aabbValues;
-	string pageName = "";
-	string projection = "";
-	bool sourceListingOnly = false;
-	string listOfFiles = "";
-	ConversionQuality conversionQuality = ConversionQuality::DEFAULT;
-	string conversionQualityString = "";
-	string title = "PotreeViewer";
-	string description = "";
-	bool edlEnabled = false;
-	bool showSkybox = false;
-	string material = "RGB";
+    bool help = false;
+    StoreOption storeOption = StoreOption::OVERWRITE;
+    vector<string> source;
+    string outdir;
+    float spacing;
+    int levels;
+    string format;
+    double scale;
+    int diagonalFraction;
+    Potree::OutputFormat outFormat;
+    vector<double> colorRange;
+    vector<double> intensityRange;
+    vector<string> outputAttributes;
+    bool generatePage;
+    bool pageTemplate;
+    string pageTemplatePath = "";
+    vector<double> aabbValues;
+    string pageName = "";
+    string projection = "";
+    bool sourceListingOnly = false;
+    string listOfFiles = "";
+    ConversionQuality conversionQuality = ConversionQuality::DEFAULT;
+    string conversionQualityString = "";
+    string title = "PotreeViewer";
+    string description = "";
+    bool edlEnabled = false;
+    bool showSkybox = false;
+    string material = "RGB";
     string executablePath;
-	int storeSize;
-	int flushLimit;
+    int storeSize;
+    int flushLimit;
+    bool gen3DTile = false;
 };
 
 PotreeArguments parseArguments(int argc, char **argv){
@@ -87,7 +88,6 @@ PotreeArguments parseArguments(int argc, char **argv){
 	args.addArgument("scale", "Scale of the X, Y, Z coordinate in LAS and LAZ files.");
 	args.addArgument("aabb", "Bounding cube as \"minX minY minZ maxX maxY maxZ\". If not provided it is automatically computed");
 	args.addArgument("incremental", "Add new points to existing conversion");
-	args.addArgument("overwrite", "Replace existing conversion at target directory");
 	args.addArgument("source-listing-only", "Create a sources.json but no octree.");
 	args.addArgument("projection", "Specify projection in proj4 format.");
 	args.addArgument("list-of-files", "A text file containing a list of files to be converted.");
@@ -146,7 +146,11 @@ PotreeArguments parseArguments(int argc, char **argv){
 			a.outFormat = Potree::OutputFormat::LAS;
 		} else if (of == "LAZ") {
 			a.outFormat = Potree::OutputFormat::LAZ;
-		} else {
+        } else if(of == "PNTS") {
+            a.outFormat = Potree::OutputFormat::LAS;
+            a.gen3DTile = true;
+        }
+        else {
 			a.outFormat = Potree::OutputFormat::BINARY;
 		}
 	} else {
@@ -178,10 +182,8 @@ PotreeArguments parseArguments(int argc, char **argv){
 
 	if(args.has("incremental")){
 		a.storeOption = StoreOption::INCREMENTAL;
-	}else if(args.has("overwrite")){
-		a.storeOption = StoreOption::OVERWRITE;
 	}else{
-		a.storeOption = StoreOption::ABORT_IF_EXISTS;
+		a.storeOption = StoreOption::OVERWRITE;
 	}
 
 	a.sourceListingOnly = args.has("source-listing-only");
@@ -293,7 +295,17 @@ int main(int argc, char **argv){
 		PotreeArguments a = parseArguments(argc, argv);
 		printArguments(a);
 
-        PotreeConverter pc(a.executablePath, a.outdir, a.source);
+        string potreeOutdir = a.outdir;
+
+        if(a.storeOption == StoreOption::OVERWRITE) {
+            fs::remove_all(a.outdir);
+        }
+
+        if(a.gen3DTile) {
+            potreeOutdir += "/potree";
+        }
+
+        PotreeConverter pc(a.executablePath, potreeOutdir, a.source);
 
 		pc.spacing = a.spacing;
 		pc.diagonalFraction = a.diagonalFraction;
@@ -321,8 +333,11 @@ int main(int argc, char **argv){
 
 		pc.convert();
 
-        Tile3DConverter converter(a.outdir, "");
-        converter.convert();
+        if(a.gen3DTile) {
+            Tile3DConverter converter(potreeOutdir, a.outdir);
+            converter.convert();
+            fs::remove_all(potreeOutdir);
+        }
 	}catch(exception &e){
 		cout << "ERROR: " << e.what() << endl;
 		return 1;
