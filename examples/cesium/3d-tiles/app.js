@@ -16,8 +16,8 @@ const VIEW_TYPES = {SINGLE: 0, SIDE_BY_SIDE: 1};
 
 // Application settings.
 const VIEW_MODE = VIEW_TYPES.SIDE_BY_SIDE;
-const TOKEN = Cesium.Ion.defaultAccessToken;
-const ASSET_ID = CAIRO_ASSET_ID;
+const TOKEN = malalisonToken;
+const ASSET_ID = MALALISON_ISLAND_ASSET_ID;
 
 if (VIEW_MODE === VIEW_TYPES.SINGLE) {
   // Just use the Loaders.gl traversal

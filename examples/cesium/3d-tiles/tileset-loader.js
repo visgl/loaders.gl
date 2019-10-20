@@ -39,6 +39,16 @@ export async function loadTileset({tilesetUrl, ionAssetId, ionAccessToken, viewe
   viewer.scene.preRender.addEventListener(scene => {
     const frameState = convertCesiumFrameState(scene.frameState, scene.canvas.height);
     tileset3d.update(frameState);
+
+    for (const tile of Object.values(tileMap)) {
+      tile.show = false;
+    }
+
+    for (const tile of tileset3d.selectedTiles) {
+      if (tile.contentAvailable && tileMap[tile.contentUri]) {
+        tileMap[tile.contentUri].show = true;
+      }
+    }
   });
 }
 
@@ -63,11 +73,6 @@ function loadTile(uri, tileHeader) {
       console.log(`${type} is not implemented.`); // eslint-disable-line
   }
 }
-
-// TODO, hook this up to Tileset3D's tile visible event when that's ready.
-// function setTileVisible(contentUri, visibility) {
-//   tileMap[contentUri].show = visibility;
-// }
 
 function unloadTile(contentUri) {
   viewer.scene.primitives.remove(tileMap[contentUri]);
