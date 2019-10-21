@@ -37,7 +37,9 @@ add_executable(PotreeConverter ${files} ${lib_rapidjson_files} ${lib_argument_fi
 
 target_link_libraries(PotreeConverter ${LASZIP_LIBRARY})
 
-if(UNIX)
+if(APPLE AND XCODE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++14 -pthread")
+elseif(UNIX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++14 -pthread -lstdc++ -lm")
     target_link_libraries(PotreeConverter -lstdc++fs)
 endif()
