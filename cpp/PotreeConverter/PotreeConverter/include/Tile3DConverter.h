@@ -21,7 +21,7 @@ using fs::path;
 class Tile3DConverter{
 
 public:
-    Tile3DConverter(string dataDir, string workDir);
+    Tile3DConverter(string dataDir, string workDir, vector<double>& transform);
     void convert();
     void readJsonHeader();
     void collectPotreeFiles();
@@ -32,11 +32,12 @@ private:
     void traverseOctree(const OctreeNode& node, Value& value);
 private:
     string dataDir_;
-	string workDir_;
+    string workDir_;
     Document cloudJsonDoc_;
     Document tilesetJsonDoc_;
     vector<path> filePaths_;
     unique_ptr<OctreeNode> rootNode_;
+    vector<double> transform_;
 };
 
 }
