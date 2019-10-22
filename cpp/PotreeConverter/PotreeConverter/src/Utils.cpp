@@ -26,7 +26,6 @@ std::vector<double> Utils::enuToEcefMatrix(double latitude, double longitude, do
     double y = (height + n) * cos_lambda * sin_phi;
     double z = (height + (1.0 - e_sq) * n) * sin_lambda;
 
-    /*return vector<double>({-sin_phi, -cos_phi * sin_lambda, cos_lambda * cos_phi, x, cos_phi, -sin_lambda * sin_phi, cos_lambda * sin_phi, y, 0.0, cos_lambda, sin_lambda, z, 0.0, 0.0, 0.0, 1.0});*/
     return vector<double>({-sin_phi, cos_phi, 0.0, 0.0, -cos_phi * sin_lambda, -sin_lambda * sin_phi, cos_lambda, 0.0, cos_lambda * cos_phi, cos_lambda * sin_phi, sin_lambda, 0.0, x, y, z, 1.0});
 }
 }

@@ -310,9 +310,6 @@ int main(int argc, char **argv){
 	try{
 		PotreeArguments a = parseArguments(argc, argv);
 		printArguments(a);
-        cout << a.latitude << endl;
-        cout << a.longitude << endl;
-        cout << a.altitude << endl;
         auto matrix = Utils::enuToEcefMatrix(a.latitude, a.longitude, a.altitude);
 
         string potreeOutdir = a.outdir;
