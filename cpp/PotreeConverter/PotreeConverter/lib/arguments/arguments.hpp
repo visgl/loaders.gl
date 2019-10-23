@@ -53,10 +53,12 @@ template<> vector<double> AValue::as<vector<double>>() {
 }
 
 template<> double AValue::as<double>(double alternative) {
+    std::cout << std::setprecision(9);
 	return !values.empty() ? std::stod(values[0]) : alternative;
 }
 
 template<> double AValue::as<double>() {
+    std::cout << std::setprecision(9);
 	return !values.empty() ? std::stod(values[0]) : 0.0;
 }
 
@@ -188,6 +190,7 @@ public:
 
 		string currentKey = "";
 		map.insert({ currentKey, {} });
+        bool lastIsKey = false;
 		for (string token : tokens) {
 			if(startsWith(token, "---")) {
 				cerr << "Invalid argument: " << token << endl;
@@ -195,11 +198,14 @@ public:
 			} else if (startsWith(token, "--")) {
 				currentKey = token.substr(2);
 				map.insert({ currentKey,{} });
-			} else if (startsWith(token, "-")) {
+                lastIsKey = true;
+			} else if (!lastIsKey && startsWith(token, "-")) {
 				currentKey = token.substr(1);
 				map.insert({ currentKey,{} });
+                lastIsKey = true;
 			} else {
 				map[currentKey].push_back(token);
+                lastIsKey = false;
 			}
 		}
 	}

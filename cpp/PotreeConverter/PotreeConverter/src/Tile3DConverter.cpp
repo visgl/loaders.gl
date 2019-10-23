@@ -1,12 +1,9 @@
-#include <string>
-#include <vector>
-#include <fstream>
-#include <memory>
 #include <Tile3DConverter.h>
 #include <Tile.h>
 #include <rapidjson/prettywriter.h>
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/istreamwrapper.h>
+#include <fstream>
 
 using rapidjson::StringBuffer;
 using rapidjson::Writer;
@@ -14,9 +11,11 @@ using rapidjson::PrettyWriter;
 using rapidjson::Value;
 using rapidjson::IStreamWrapper;
 using rapidjson::kObjectType;
+using rapidjson::kArrayType;
 using std::fstream;
 using std::unique_ptr;
 using std::make_unique;
+using std::vector;
 
 namespace Tile3D{
 
@@ -29,8 +28,8 @@ bool comparePath(const path& a, const path& b) {
     return a.filename() < b.filename();
 }
 
-Tile3DConverter::Tile3DConverter(string dataDir, string workDir)
-: dataDir_(dataDir), workDir_(workDir), tilesetJsonDoc_(kObjectType){
+Tile3DConverter::Tile3DConverter(string dataDir, string workDir, vector<double>& transform)
+: dataDir_(dataDir), workDir_(workDir), tilesetJsonDoc_(kObjectType), transform_(transform){
 }
 
 void Tile3DConverter::convert(){
@@ -110,6 +109,14 @@ void Tile3DConverter::processOctree() {
 
     traverseOctree(*rootNode_, doc);
     doc["geometricError"] = doc["root"]["geometricError"].GetDouble();
+
+    if(!transform_.empty()) {
+        Value transform(kArrayType);
+        for(auto& v : transform_) {
+            transform.PushBack(v, doc.GetAllocator());
+        }
+        doc["root"].AddMember("transform", transform, doc.GetAllocator());
+    }
 
     StringBuffer buffer;
     Writer<StringBuffer> writer(buffer);

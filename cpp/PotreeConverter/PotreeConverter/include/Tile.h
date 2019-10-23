@@ -1,7 +1,6 @@
 #ifndef TILE_H
 #define TILE_H
 
-
 #include <memory>
 #include <vector>
 #include <string>

@@ -12,6 +12,7 @@
 
 #include "arguments.hpp"
 #include <experimental/filesystem>
+#include <Utils.h>
 
 namespace fs = std::experimental::filesystem;
 
@@ -67,6 +68,10 @@ struct PotreeArguments {
     int storeSize;
     int flushLimit;
     bool gen3DTile = false;
+    bool georeference = false;
+    double latitude;
+    double longitude;
+    double altitude;
 };
 
 PotreeArguments parseArguments(int argc, char **argv){
@@ -99,6 +104,9 @@ PotreeArguments parseArguments(int argc, char **argv){
 	args.addArgument("material", "RGB, ELEVATION, INTENSITY, INTENSITY_GRADIENT, CLASSIFICATION, RETURN_NUMBER, SOURCE, LEVEL_OF_DETAIL");
 	args.addArgument("store-size", "A node is split once more than store-size points are added. Reduce for better results at cost of performance. Default is 20000");
 	args.addArgument("flush-limit", "Flush after X points. Default is 10000000");
+    args.addArgument("latitude", "georeference latitude");
+    args.addArgument("longitude", "georeference longitude");
+    args.addArgument("altitude", "georeference altitude");
 
 	PotreeArguments a;
 
@@ -136,6 +144,13 @@ PotreeArguments parseArguments(int argc, char **argv){
 	a.format = args.get("input-format").as<string>();
 	a.colorRange = args.get("color-range").as<vector<double>>();
 	a.intensityRange = args.get("intensity-range").as<vector<double>>();
+
+    a.georeference = args.has("latitude") && args.has("longitude");
+    if(a.georeference) {
+        a.latitude = args.get("latitude").as<double>();
+        a.longitude = args.get("longitude").as<double>();
+        a.altitude = args.get("altitude").as<double>(0.0);
+    }
 	
 	if (args.has("output-format")) {
 		string of = args.get("output-format").as<string>("BINARY");
@@ -287,6 +302,7 @@ void printArguments(PotreeArguments &a){
 #include <random>
 
 using Tile3D::Tile3DConverter;
+using UTILS::Utils;
 
 int main(int argc, char **argv){
 	cout.imbue(std::locale(""));
@@ -294,6 +310,7 @@ int main(int argc, char **argv){
 	try{
 		PotreeArguments a = parseArguments(argc, argv);
 		printArguments(a);
+        auto matrix = Utils::enuToEcefMatrix(a.latitude, a.longitude, a.altitude);
 
         string potreeOutdir = a.outdir;
 
@@ -334,7 +351,7 @@ int main(int argc, char **argv){
 		pc.convert();
 
         if(a.gen3DTile) {
-            Tile3DConverter converter(potreeOutdir, a.outdir);
+            Tile3DConverter converter(potreeOutdir, a.outdir, matrix);
             converter.convert();
             fs::remove_all(potreeOutdir);
         }

@@ -38,7 +38,7 @@ void Tile::createBbox() {
     bbox_.insert(bbox_.end(), zeros.begin(), zeros.end());
     bbox_.push_back(maxHalfSize);
 
-    geometricError_ = (header->max_x - header->min_x) / 115.0;
+    geometricError_ = (header->max_x - header->min_x) / 115.47 * 8.0;
 }
 
 void Tile::readPoints() {
