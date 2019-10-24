@@ -2,13 +2,13 @@
 
 An image loader that works under both Node.js (requires `@loaders.gl/polyfills`) and the browser.
 
-| Loader         | Characteristic                                                   |
-| -------------- | ---------------------------------------------------------------- |
-| File Extension | `.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`, `.bmp`, `.ico`, `.svg` |
-| File Type      | Binary                                                           |
-| File Format    | Image                                                            |
-| Data Format    | `ImageBitmap`, `Image` (older browsers) or ndarray (node.js)     |
-| Supported APIs | `load`, `parse`                                                  |
+| Loader         | Characteristic                                             |
+| -------------- | ---------------------------------------------------------- |
+| File Extension | `.dds`, `.pvr`                                             |
+| File Type      | Binary                                                     |
+| File Format    | Compressed Texture                                         |
+| Data Format    | Array of `{compressed: true, format, width, height, data}` |
+| Supported APIs | `load`, `parse`                                            |
 
 ## Usage
 
@@ -22,23 +22,11 @@ const image = await load(url, CompressedTextureLoader, options);
 
 ## Options
 
-| Option         | Type    | Default  | Description                                                                  |
-| -------------- | ------- | -------- | ---------------------------------------------------------------------------- |
-| `image.type`   | String  | `'auto'` | Set to `imagebitmap`, `html` or `ndarray` to control type of returned image. |
-| `image.decode` | boolean | `true`   | Ensures `html` type images are fully decoded before promise resolves.        |
+| Option       | Type   | Default  | Description                                                                  |
+| ------------ | ------ | -------- | ---------------------------------------------------------------------------- |
+| `image.type` | String | `'auto'` | Set to `imagebitmap`, `html` or `ndarray` to control type of returned image. |
 
 In addition, for `imagebitmap` type images, it is possible to pass through options to [`createImageBitmap`](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/createImageBitmap) to control image extraction, via the separate `options.imagebitmap` object.
-
-| Option                             | Type   | Default     | Description                                                                                                                   |
-| ---------------------------------- | ------ | ----------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `imagebitmap.imageOrientation`     | string | `'none'`    | image should be flipped vertically. Either `'none'` or `'flipY'`.                                                             |
-| `imagebitmap.premultiplyAlpha`     | string | `'default'` | Premultiply color channels by the alpha channel. One of `'none'`, `'premultiply'`, or `'default'`.                            |
-| `imagebitmap.colorSpaceConversion` | string | `'default'` | Decode using color space conversion. Either `'none'` or `'default'` default indicates implementation-specific behavior.       |
-| `imagebitmap.resizeWidth`          | number | -           | Output image width.                                                                                                           |
-| `imagebitmap.resizeHeight`         | number | -           | Output image height.                                                                                                          |
-| `imagebitmap.resizeQuality`        | string | `'low'`     | Algorithm to be used for resizing the input to match the output dimensions. One of pixelated, low (default), medium, or high. |
-
-Portability note: The exact set of `imagebitmap` options supported may depend on the browser, and also do not apply to `html` or `ndarray` images.
 
 ## Remarks
 

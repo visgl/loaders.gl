@@ -89,7 +89,7 @@ export function parseCompressedTexture(data) {
 
   const image = new Uint8Array(data, dataOffset);
 
-  const levels = new Array(mipMapLevels);
+  const images = new Array(mipMapLevels);
 
   let levelWidth = width;
   let levelHeight = height;
@@ -97,7 +97,13 @@ export function parseCompressedTexture(data) {
 
   for (let i = 0; i < mipMapLevels; ++i) {
     const levelSize = sizeFunction(levelWidth, levelHeight);
-    levels[i] = new Uint8Array(image.buffer, image.byteOffset + offset, levelSize);
+    images[i] = {
+      compressed: true,
+      format: formatEnum,
+      data: new Uint8Array(image.buffer, image.byteOffset + offset, levelSize),
+      width: levelWidth,
+      height: levelHeight
+    };
 
     levelWidth = Math.max(1, levelWidth >> 1);
     levelHeight = Math.max(1, levelHeight >> 1);
@@ -105,12 +111,7 @@ export function parseCompressedTexture(data) {
     offset += levelSize;
   }
 
-  return {
-    data: levels,
-    width,
-    height,
-    format: formatEnum
-  };
+  return images;
 }
 
 // https://www.khronos.org/registry/webgl/extensions/WEBGL_compressed_texture_pvrtc/
