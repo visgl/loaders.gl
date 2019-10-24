@@ -1,6 +1,6 @@
-# CompressedTextureLoader
+# CompressedTextureLoader (Experimental)
 
-An image loader that works under both Node.js (requires `@loaders.gl/polyfills`) and the browser.
+Loader for compressed Texture Files.
 
 | Loader         | Characteristic                                             |
 | -------------- | ---------------------------------------------------------- |
@@ -17,8 +17,12 @@ import '@loaders.gl/polyfills'; // only needed if using under Node
 import {CompressedTextureLoader} from '@loaders.gl/basis';
 import {load} from '@loaders.gl/core';
 
-const image = await load(url, CompressedTextureLoader, options);
+const images = await load(url, CompressedTextureLoader, options);
 ```
+
+## Data Format
+
+Returns an array of image objects representing mip levels.
 
 ## Options
 
