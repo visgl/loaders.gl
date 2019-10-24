@@ -1,16 +1,17 @@
 // __VERSION__ is injected by babel-plugin-version-inline
 /* global __VERSION__ */
-import parseBasis from './lib/parse-basis';
-
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-export const BasisWorkerLoader = {
+export const CompressedTextureWorkerLoader = {
   id: 'basis',
-  name: 'Basis',
+  name: 'CompressedTexture',
   version: VERSION,
-  extensions: ['basis'],
-  test: 'sB',
+  extensions: [
+    'dds', // WEBGL_compressed_texture_s3tc, WEBGL_compressed_texture_atc
+    'pvr' // WEBGL_compressed_texture_pvrtc
+  ],
   mimeType: 'application/octet-stream',
+  test: 0x03525650, // PVR magic number
   binary: true,
   options: {
     basis: {
@@ -20,7 +21,7 @@ export const BasisWorkerLoader = {
   }
 };
 
-export const BasisLoader = {
-  ...BasisWorkerLoader,
-  parse: parseBasis
+export const CompressedTextureLoader = {
+  ...CompressedTextureWorkerLoader,
+  parse: async (arrayBuffer, options) => arrayBuffer
 };
