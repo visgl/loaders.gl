@@ -43,10 +43,13 @@ const tileset = new Tileset3D(tilesetJson, {
 });
 
 // initial camera view
-let visibleTiles = tileset3d.traverse(cameraParameters1);
+tileset3d.update(cameraParameters1);
 
 // Camera changes (pan zoom etc)
-visibleTiles = tileset3d.traverse(cameraParameters2);
+tileset3d.update(cameraParameters2);
+
+// Visible tiles
+const visibleTiles = tileset3d.selectedTiles;
 
 // Note that visibleTiles will likely not immediately include all tiles
 // tiles will keep loading and file `onTileLoad` callbacks
