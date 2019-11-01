@@ -7,8 +7,10 @@ export default class I3STraverser {
     this.baseUrl = options.baseUrl;
     this._tree = new I3STileTree(options);
 
+    this._tileMap = {};
+
     this.results = {
-      selectedTiles: []
+      selectedTiles: {}
     };
   }
 
@@ -24,12 +26,17 @@ export default class I3STraverser {
         case 'DIG':
           this._tree.unloadNodeByObject(tileNode);
           for (let i = 0; i < tileNode.content.children.length; i++) {
-            const tileset = await fetchTileNode(this.baseUrl, tileNode.content.children[i].id);
+            const childId = tileNode.content.children[i].id;
+            let tileset = this._tileMap[childId];
+            if (!tileset) {
+              tileset = await fetchTileNode(this.baseUrl, childId);
+              this._tileMap[tileNode.id] = tileset;
+            }
             await this.traverse(tileset, frameState, options);
           }
           break;
         case 'DRAW':
-          this.results.selectedTiles.push(tileNode);
+          this.results.selectedTiles[tileNode.id] = tileNode;
           break;
       }
     }

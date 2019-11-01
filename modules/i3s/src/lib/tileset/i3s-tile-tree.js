@@ -1,3 +1,9 @@
+export const TILE_NODE_STATUS = {
+  EMPTY: 'EMPTY',
+  LOADING: 'LOADING',
+  LOADED: 'LOADED'
+};
+
 export class I3STileNode {
   constructor(content) {
     this.id = content.id;
@@ -7,7 +13,7 @@ export class I3STileNode {
     this.metricType = content.lodSelection[0].metricType;
     this.content = content;
 
-    this._processed = false;
+    this._status = TILE_NODE_STATUS.EMPTY;
     this._show = false;
 
     this.children = [];

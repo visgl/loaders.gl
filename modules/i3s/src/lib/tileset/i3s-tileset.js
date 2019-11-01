@@ -1,6 +1,8 @@
 import I3STraverser from './i3s-traverser';
 import {parseI3SNodeGeometry} from '../parsers/parse-i3s-node-geometry';
 
+import {TILE_NODE_STATUS} from './i3s-tile-tree';
+
 export default class I3STileset {
   constructor(json, baseUrl, options = {}) {
     this.baseUrl = baseUrl;
@@ -24,13 +26,21 @@ export default class I3STileset {
     this.results = this._traverser.results;
 
     if (this.results.selectedTiles) {
-      for (const tile of this.results.selectedTiles) {
-        await this._loadTile(tile);
+      const selectedTiles = Object.values(this.results.selectedTiles);
+      for (const tile of selectedTiles) {
+        if (tile._status === TILE_NODE_STATUS.EMPTY) {
+          tile._status = TILE_NODE_STATUS.LOADING;
+          await this._loadTile(tile);
+        }
       }
     }
   }
 
   async _loadTile(tile) {
+    if (!tile) {
+      return;
+    }
+
     const featureData = await this._loadFeatureData(tile);
     const geometryBuffer = await this._loadGeometryBuffer(tile);
     tile.featureData = featureData;
@@ -40,6 +50,7 @@ export default class I3STileset {
     }
 
     tile._content = parseI3SNodeGeometry(geometryBuffer, tile);
+    tile._status = TILE_NODE_STATUS.LOADED;
   }
 
   async _loadFeatureData(tile) {

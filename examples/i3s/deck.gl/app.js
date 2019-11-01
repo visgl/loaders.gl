@@ -4,6 +4,7 @@ import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
 
+import {Vector3} from 'math.gl';
 import GL from '@luma.gl/constants';
 import {Geometry} from '@luma.gl/core';
 import DeckGL from '@deck.gl/react';
@@ -20,20 +21,26 @@ const TEST_DATA_URL =
   'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_Bldgs/SceneServer/layers/0'
 ;
 
+const scratchOffset = new Vector3(0, 0, 0);
+
 // Set your mapbox token here
 const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
 
 const TRANSITION_DURAITON = 4000;
 
 const INITIAL_VIEW_STATE = {
-  latitude: 40.709693475815506,
-  longitude: -74.00717245979908,
+  // latitude: 40.709693475815506,
+  // longitude: -74.00717245979908,
+  longitude: -122.43751306035713,
+  latitude: 37.78249440803938,
+  height: 600,
+  width: 800,
   pitch: 45,
   maxPitch: 60,
   bearing: 0,
   minZoom: 2,
   maxZoom: 30,
-  zoom: 14
+  zoom: 11
 };
 
 export default class App extends PureComponent {
@@ -75,7 +82,10 @@ export default class App extends PureComponent {
     });
 
     await tileset.update({viewState});
-    this.setState({tiles: tileset.results.selectedTiles});
+    this.setState({
+      tileset,
+      tiles: Object.values(tileset.results.selectedTiles)
+    });
 
     // render with cesium
     centerMap(viewState);
@@ -85,26 +95,36 @@ export default class App extends PureComponent {
   _onViewStateChange({viewState}) {
     // centerMap(viewState);
     this.setState({viewState});
+    this._updateTileset(viewState);
+  }
+
+  async _updateTileset(viewState) {
+    const tileset = this.state.tileset;
+    if (tileset) {
+      await tileset.update({viewState});
+      this.setState({tiles: Object.values(tileset.results.selectedTiles)});
+    }
+
   }
 
   _renderMeshLayers() {
     const {tiles} = this.state;
     const layers = [];
-    console.log(tiles && tiles.length)
+    const max = Math.min(tiles && tiles.length, 5);
     tiles &&
-      tiles.forEach((tile, node) => {
+      tiles.slice(0, max).filter(t => t._status === 'LOADED').forEach((tile, node) => {
         const {attributes, matrix, cartographicOrigin, texture} = tile;
 
         const positions = new Float32Array(attributes.position.value.length);
         for (let i = 0; i < positions.length; i += 3) {
-          const offset = matrix.transform(attributes.position.value.subarray(i, i + 3));
-          positions.set(offset, i);
+          scratchOffset.copy(matrix.transform(attributes.position.value.subarray(i, i + 3)));
+          positions.set(scratchOffset, i);
         }
 
         const geometry = new Geometry({
           drawMode: GL.TRIANGLES,
           attributes: {
-            positions,
+            positions: attributes.position,
             colors: attributes.color,
             normals: attributes.normal
           }
@@ -117,6 +137,7 @@ export default class App extends PureComponent {
           getPosition: [0, 0, 0],
           getColor: [255, 255, 255],
           texture,
+          modelMatrix: matrix,
           coordinateOrigin: cartographicOrigin,
           coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS
         });
@@ -132,7 +153,6 @@ export default class App extends PureComponent {
   }
 
   render() {
-    const {viewState} = this.state;
     const layers = this._renderLayers();
 
     return (
@@ -140,7 +160,6 @@ export default class App extends PureComponent {
         <DeckGL
           layers={layers}
           initialViewState={INITIAL_VIEW_STATE}
-          viewState={viewState}
           onViewStateChange={this._onViewStateChange.bind(this)}
           controller={{type: MapController, maxPitch: 85}}
         >
