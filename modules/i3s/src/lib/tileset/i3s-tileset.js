@@ -1,13 +1,36 @@
 import I3STraverser from './i3s-traverser';
 import {parseI3SNodeGeometry} from '../parsers/parse-i3s-node-geometry';
 
-import {TILE_NODE_STATUS} from './i3s-tile-tree';
+import {TILE3D_CONTENT_STATE} from './i3s-tile-tree';
+import RequestScheduler from '../request-utils/request-scheduler';
+
+const DEFAULT_OPTIONS = {
+  throttleRequests: true,
+
+  onTileLoad: () => {
+  }, // Indicates this a tile's content was loaded
+  onTileUnload: () => {
+  }, // Indicates this a tile's content was unloaded
+  onTileLoadFail: (tile, message, url) => {
+  }
+};
+
+function updatePriority(tile) {
+  // Check if any reason to abort
+  if (!tile._isVisible) {
+    return -1;
+  }
+  if (tile._contentState === TILE3D_CONTENT_STATE.UNLOADED) {
+    return -1;
+  }
+  return Math.max(1e7 - tile._priority, 0) || 0;
+}
 
 export default class I3STileset {
-  constructor(json, baseUrl, options = {}) {
+  constructor(json, baseUrl, options = DEFAULT_OPTIONS) {
+    this.json = json;
     this.baseUrl = baseUrl;
     this.options = options;
-    this.json = json;
     this.root = null;
 
     this.results = {
@@ -15,6 +38,13 @@ export default class I3STileset {
     };
 
     this._traverser = new I3STraverser({baseUrl});
+    this._requestScheduler = new RequestScheduler({
+      throttleRequests: this.options.throttleRequests
+    });
+
+    this._onTileLoad = options.onTileLoad;
+    this._onTileLoadFail = options.onTileLoadFail;
+    this._onTileUnload = options.onTileUnload;
   }
 
   async update(frameState) {
@@ -22,15 +52,35 @@ export default class I3STileset {
       this.root = await fetchRootNode(this.baseUrl, this.json.store.rootNode);
     }
 
-    await this._traverser.traverse(this.root, frameState, this.options);
+    await this._traverser.startTraverse(this.root, frameState, this.options);
     this.results = this._traverser.results;
 
     if (this.results.selectedTiles) {
       const selectedTiles = Object.values(this.results.selectedTiles);
       for (const tile of selectedTiles) {
-        if (tile._status === TILE_NODE_STATUS.EMPTY) {
-          tile._status = TILE_NODE_STATUS.LOADING;
-          await this._loadTile(tile);
+        if (tile._contentState === TILE3D_CONTENT_STATE.UNLOADED) {
+
+          tile._contentState = TILE3D_CONTENT_STATE.LOADING_CONTENT;
+
+          const cancelled = !(await this._requestScheduler.scheduleRequest(tile, updatePriority));
+
+          if (cancelled) {
+            tile._contentState = TILE3D_CONTENT_STATE.UNLOADED;
+            continue;
+          }
+
+          try {
+            this._requestScheduler.startRequest(tile);
+            await this._loadTile(tile);
+            this._requestScheduler.endRequest(tile);
+
+            tile._contentState = TILE3D_CONTENT_STATE.READY;
+            this._onTileLoad(tile);
+          } catch (error) {
+            // Tile is unloaded before the content finishes loading
+            tile._contentState = TILE3D_CONTENT_STATE.FAILED;
+            throw error;
+          }
         }
       }
     }
@@ -41,16 +91,31 @@ export default class I3STileset {
       return;
     }
 
-    const featureData = await this._loadFeatureData(tile);
-    const geometryBuffer = await this._loadGeometryBuffer(tile);
-    tile.featureData = featureData;
-
-    if (tile.textureData) {
-      tile.texture = `${this.baseUrl}/nodes/${tile.id}/${tile.textureData[0].href}`;
+    if (
+      tile.attributes ||
+      tile._contentState === TILE3D_CONTENT_STATE.READY || tile._contentState === TILE3D_CONTENT_STATE.UNLOADED
+    ) {
+      return;
     }
 
-    tile._content = parseI3SNodeGeometry(geometryBuffer, tile);
-    tile._status = TILE_NODE_STATUS.LOADED;
+    if (!tile._isVisible) {
+      return;
+    }
+
+    this._requestScheduler.startRequest(tile);
+    const featureData = await this._loadFeatureData(tile);
+    const geometryBuffer = await this._loadGeometryBuffer(tile);
+    this._requestScheduler.endRequest(tile);
+
+    tile.featureData = featureData;
+
+    if (tile.content.textureData) {
+      tile.texture = `${this.baseUrl}/nodes/${tile.id}/${tile.content.textureData[0].href}`;
+    }
+
+    parseI3SNodeGeometry(geometryBuffer, tile);
+
+    tile._contentState = TILE3D_CONTENT_STATE.READY;
   }
 
   async _loadFeatureData(tile) {

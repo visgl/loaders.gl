@@ -1,21 +1,11 @@
-import {Ellipsoid} from '@math.gl/geospatial';
-import {Vector3, toRadians} from 'math.gl';
+import {toRadians} from 'math.gl';
 import WebMercatorViewport, {addMetersToLngLat, getDistanceScales} from 'viewport-mercator-project';
 
 const MIN_ERROR = 1200;
 
 export function lodJudge(frameState, tile) {
-  // if (tile.id === 'root') {
-  //   return 'DIG';
-  // }
-  // } else if (!isFinite(tile.id) || Number(tile.id) > 2) {
-  //   return 'OUT';
-  // }
-  // return 'DRAW';
-
   const viewport = new WebMercatorViewport(frameState.viewState);
   const distanceScales = getDistanceScales(viewport);
-  // console.log(viewport)
 
   let mbsLat = tile.mbs[1];
   let mbsLon = tile.mbs[0];
@@ -49,21 +39,8 @@ export function lodJudge(frameState, tile) {
     return 'DIG';
   } else {
     // calculate maxScreenThreshold and mbs
-
     const objWest = addMetersToLngLat([mbsLon, mbsLat, mbsH], [-mbsR, 0, 0]);
-    // let objWestPixelLocation = wgs84ToPixels(viewport, new Vector3(objWest, mbsLat, mbsH));
-    // if (!objWestPixelLocation) {
-    //   objWestPixelLocation = {x: 0, y: 0};
-    // }
     const objEast = addMetersToLngLat([mbsLon, mbsLat, mbsH], [mbsR, 0, 0]);
-    // let objEastPixelLocation = wgs84ToPixels(viewport, new Vector3(objEast, mbsLat, mbsH));
-    // if (!objEastPixelLocation) {
-    //   objEastPixelLocation = {x: 0, y: 0};
-    // }
-
-    // let pixelDistance = Math.abs(
-    //   (objEastPixelLocation.x - objWestPixelLocation.x) * pixelsPerMeter
-    // );
 
     let objWestPixelLocation = viewport.project(objWest);
     let objEastPixelLocation = viewport.project(objEast);
@@ -84,12 +61,6 @@ export function lodJudge(frameState, tile) {
   }
 }
 
-function wgs84ToPixels(viewport, cartesian) {
-  const carto = Ellipsoid.WGS84.cartesianToCartographic(cartesian, new Vector3());
-  const pixels = viewport.project(carto);
-  return pixels;
-}
-
 function getDistanceFromLatLon([lon1, lat1], [lon2, lat2]) {
   const R = 6371000; // Radius of the earth
   const dLat = toRadians(lat2 - lat1);
@@ -100,19 +71,6 @@ function getDistanceFromLatLon([lon1, lat1], [lon2, lat2]) {
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   const d = R * c; // Distance in
   return d;
-}
-
-function getDistancePerDegree(latitude, longitude) {
-  let earthRadius = 6371000; // in meters
-
-  let distanceBetweenLatitudes = (2 * Math.PI * earthRadius) / 360;
-  let distanceBetweenLongitudes =
-    (2 * Math.PI * Math.cos(latitude / (180 / Math.PI)) * earthRadius) / 360;
-
-  return {
-    latitude: distanceBetweenLatitudes,
-    longitude: distanceBetweenLongitudes
-  };
 }
 
 // function parseFeatures(featureData, geometryBuffer, node) {

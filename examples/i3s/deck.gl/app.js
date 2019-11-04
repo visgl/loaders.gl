@@ -12,10 +12,10 @@ import {MapController, FlyToInterpolator, COORDINATE_SYSTEM} from '@deck.gl/core
 import {SimpleMeshLayer} from '@deck.gl/mesh-layers';
 import {I3SSLPKLoader, I3STileset} from '@loaders.gl/i3s';
 
-import {centerMap, cesiumRender} from './cesium';
+import {centerMap, cesiumRender, cesiumUnload} from './cesium';
 
 const TEST_DATA_SLPK =
-    'https://raw.githubusercontent.com/uber-web/loaders.gl/master/modules/i3s/test/data/DA12_subset.slpk';
+  'https://raw.githubusercontent.com/uber-web/loaders.gl/master/modules/i3s/test/data/DA12_subset.slpk';
 
 const TEST_DATA_URL =
   'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_Bldgs/SceneServer/layers/0'
@@ -29,8 +29,6 @@ const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
 const TRANSITION_DURAITON = 4000;
 
 const INITIAL_VIEW_STATE = {
-  // latitude: 40.709693475815506,
-  // longitude: -74.00717245979908,
   longitude: -122.43751306035713,
   latitude: 37.78249440803938,
   height: 600,
@@ -40,7 +38,7 @@ const INITIAL_VIEW_STATE = {
   bearing: 0,
   minZoom: 2,
   maxZoom: 30,
-  zoom: 11
+  zoom: 14.5
 };
 
 export default class App extends PureComponent {
@@ -48,19 +46,26 @@ export default class App extends PureComponent {
     super(props);
 
     this.state = {
+      layerMap: {},
+      layers: [],
       viewState: INITIAL_VIEW_STATE
     };
   }
 
   async componentDidMount() {
     const tilesetJson = await fetch(TEST_DATA_URL)
-      .then(result => result.json());
-    console.log(tilesetJson);
+    .then(result => result.json());
 
-    // const result = await I3SSLPKLoader.parse(TEST_DATA_URL);
-    // const tilesetJson = result.tilesetJson;
+    const tileset = new I3STileset(
+      tilesetJson,
+      TEST_DATA_URL,
+      {
+        onTileLoad: (tile) => this._onTileLoad(tile),
+        onTileUnload: (tile) => this._onTileUnload(tile)
+      }
+    );
 
-    const tileset = new I3STileset(tilesetJson, TEST_DATA_URL);
+    this.setState({tileset});
 
     const bbox = tilesetJson.store.extent;
     const longitude = (bbox[0] + bbox[2]) / 2;
@@ -82,15 +87,71 @@ export default class App extends PureComponent {
     });
 
     await tileset.update({viewState});
-    this.setState({
-      tileset,
-      tiles: Object.values(tileset.results.selectedTiles)
-    });
 
     // render with cesium
     centerMap(viewState);
-    cesiumRender(viewState, this.state.tiles);
   }
+
+  _onTileLoad(tile) {
+    const {viewState, layerMap} = this.state;
+    cesiumRender(viewState, tile);
+
+    let layer = layerMap[tile.id];
+    if (layer) {
+      if (layer && layer.props && !layer.props.visible) {
+        // Still has GPU resource but visibility is turned off so turn it back on so we can render it.
+        layer = layer.clone({visible: true});
+        layerMap[tile.id] = layer;
+
+        this.setState({layers: Object.values(layerMap)});
+      }
+      return;
+    }
+
+    const {attributes, matrix, cartographicOrigin, texture, id} = tile;
+    const positions = new Float32Array(attributes.position.value.length);
+    for (let i = 0; i < positions.length; i += 3) {
+      scratchOffset.copy(matrix.transform(attributes.position.value.subarray(i, i + 3)));
+      positions.set(scratchOffset, i);
+    }
+
+    const geometry = new Geometry({
+      drawMode: GL.TRIANGLES,
+      attributes: {
+        positions,
+        normals: attributes.normal,
+        texCoords: attributes.uv0
+      }
+    });
+
+    layer = new SimpleMeshLayer({
+      id: `mesh-layer-${tile.id}`,
+      mesh: geometry,
+      data: [{}],
+      getPosition: [0, 0, 0],
+      getColor: [255, 255, 255],
+      texture,
+      coordinateOrigin: cartographicOrigin,
+      coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS
+    });
+
+    layerMap[id] = layer;
+
+    this.setState({layers: Object.values(layerMap)});
+  };
+
+  _onTileUnload(tile) {
+    cesiumUnload(tile);
+
+    const {layerMap} = this.state;
+    let layer = layerMap[tile.id];
+    if (layer && layer.props && layer.props.visible) {
+      // Still has GPU resource but visibility is turned off so turn it back on so we can render it.
+      layer = layer.clone({visible: false});
+      layerMap[tile.id] = layer;
+      this.setState({layers: Object.values(layerMap)});
+    }
+  };
 
   _onViewStateChange({viewState}) {
     // centerMap(viewState);
@@ -102,50 +163,11 @@ export default class App extends PureComponent {
     const tileset = this.state.tileset;
     if (tileset) {
       await tileset.update({viewState});
-      this.setState({tiles: Object.values(tileset.results.selectedTiles)});
     }
-
   }
 
   _renderMeshLayers() {
-    const {tiles} = this.state;
-    const layers = [];
-    const max = Math.min(tiles && tiles.length, 5);
-    tiles &&
-      tiles.slice(0, max).filter(t => t._status === 'LOADED').forEach((tile, node) => {
-        const {attributes, matrix, cartographicOrigin, texture} = tile;
-
-        const positions = new Float32Array(attributes.position.value.length);
-        for (let i = 0; i < positions.length; i += 3) {
-          scratchOffset.copy(matrix.transform(attributes.position.value.subarray(i, i + 3)));
-          positions.set(scratchOffset, i);
-        }
-
-        const geometry = new Geometry({
-          drawMode: GL.TRIANGLES,
-          attributes: {
-            positions: attributes.position,
-            colors: attributes.color,
-            normals: attributes.normal
-          }
-        });
-
-        const layer = new SimpleMeshLayer({
-          id: `mesh-layer-${node}`,
-          mesh: geometry,
-          data: [{}],
-          getPosition: [0, 0, 0],
-          getColor: [255, 255, 255],
-          texture,
-          modelMatrix: matrix,
-          coordinateOrigin: cartographicOrigin,
-          coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS
-        });
-
-        layers.push(layer);
-      });
-
-    return layers;
+    return this.state.layers;
   }
 
   _renderLayers() {
@@ -175,4 +197,4 @@ export default class App extends PureComponent {
 }
 
 const deckViewer = document.getElementById('deck-viewer');
-render(<App />, deckViewer);
+render(<App/>, deckViewer);

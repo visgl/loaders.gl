@@ -17,12 +17,11 @@ export function parseI3SNodeGeometry(arrayBuffer, tile = {}) {
     return tile;
   }
 
-  const buffer = arrayBuffer;
-
-  const featureData = tile.featureData;
-  const geometryData = featureData.geometryData[0];
   tile.attributes = {};
 
+  const buffer = arrayBuffer;
+  const featureData = tile.featureData;
+  const geometryData = featureData.geometryData[0];
   const mbs = tile.mbs;
   const {
     params: {vertexAttributes}
@@ -51,6 +50,10 @@ export function parseI3SNodeGeometry(arrayBuffer, tile = {}) {
       value = offsetsToCartesians(value, tile.cartographicOrigin);
     }
 
+    if (attribute === 'uv0') {
+      flipY(value);
+    }
+
     tile.attributes[attribute] = {
       value,
       type: GL_TYPE_MAP[valueType],
@@ -69,6 +72,12 @@ export function parseI3SNodeGeometry(arrayBuffer, tile = {}) {
 }
 
 const scratchVector = new Vector3([0, 0, 0]);
+
+function flipY(texCoords) {
+  for (let i = 0; i < texCoords.length; i+=2) {
+    texCoords[i + 1] = 1 - texCoords[i + 1];
+  }
+}
 
 function offsetsToCartesians(vertices, cartographicOrigin) {
   const positions = new Float64Array(vertices.length);
