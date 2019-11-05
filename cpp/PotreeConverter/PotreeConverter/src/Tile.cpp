@@ -13,8 +13,8 @@ using rapidjson::kArrayType;
 
 using Potree::AABB;
 
-Tile::Tile(const OctreeNode& node)
-: level_(node.level()), id_(node.id()), filepath_(node.filepath()), reader_(new LIBLASReader(filepath_)), geometricError_(0.0){
+Tile::Tile(const OctreeNode& node, const TileConfig& config)
+: level_(node.level()), id_(node.id()), filepath_(node.filepath()), reader_(new LIBLASReader(filepath_)), geometricError_(0.0), config_(config){
     readData();
 }
 
@@ -57,7 +57,7 @@ void Tile::readData() {
 
 void Tile::writeData(const string& path) {
     string filePath = path + "/r" + id_ + ".pnts";
-    TileWriter writer(filePath);
+    TileWriter writer(filePath, config_);
     writer.write(points_);
 }
 

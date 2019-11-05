@@ -72,6 +72,8 @@ struct PotreeArguments {
     double latitude;
     double longitude;
     double altitude;
+    bool useDraco = false;
+    int positionBits;
 };
 
 PotreeArguments parseArguments(int argc, char **argv){
@@ -107,6 +109,8 @@ PotreeArguments parseArguments(int argc, char **argv){
     args.addArgument("latitude", "georeference latitude");
     args.addArgument("longitude", "georeference longitude");
     args.addArgument("altitude", "georeference altitude");
+    args.addArgument("draco", "apply draco compression");
+    args.addArgument("position-bits", "Draco quantization bits for positions, range is [8, 16]. Default is 14");
 
 	PotreeArguments a;
 
@@ -152,6 +156,10 @@ PotreeArguments parseArguments(int argc, char **argv){
         a.altitude = args.get("altitude").as<double>(0.0);
     }
 	
+    if(args.has("draco")) {
+        a.useDraco = true;
+        a.positionBits = args.get("position-bits").as<int>(14);
+    }
 	if (args.has("output-format")) {
 		string of = args.get("output-format").as<string>("BINARY");
 
@@ -302,6 +310,7 @@ void printArguments(PotreeArguments &a){
 #include <random>
 
 using Tile3D::Tile3DConverter;
+using Tile3D::TileConfig;
 using UTILS::Utils;
 
 int main(int argc, char **argv){
@@ -351,7 +360,8 @@ int main(int argc, char **argv){
 		pc.convert();
 
         if(a.gen3DTile) {
-            Tile3DConverter converter(potreeOutdir, a.outdir, matrix);
+            TileConfig tileConfig(a.useDraco, a.positionBits);
+            Tile3DConverter converter(potreeOutdir, a.outdir, matrix, tileConfig);
             converter.convert();
             fs::remove_all(potreeOutdir);
         }

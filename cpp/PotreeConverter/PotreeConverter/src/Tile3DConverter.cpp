@@ -28,8 +28,8 @@ bool comparePath(const path& a, const path& b) {
     return a.filename() < b.filename();
 }
 
-Tile3DConverter::Tile3DConverter(string dataDir, string workDir, vector<double>& transform)
-: dataDir_(dataDir), workDir_(workDir), tilesetJsonDoc_(kObjectType), transform_(transform){
+Tile3DConverter::Tile3DConverter(string dataDir, string workDir, vector<double>& transform, const TileConfig& config)
+: dataDir_(dataDir), workDir_(workDir), tilesetJsonDoc_(kObjectType), transform_(transform), tileConfig_(config){
 }
 
 void Tile3DConverter::convert(){
@@ -83,7 +83,7 @@ void Tile3DConverter::buildOctree() {
 }
 
 void Tile3DConverter::traverseOctree(const OctreeNode& node, Value& value) {
-    Tile tile(node);
+    Tile tile(node, tileConfig_);
     Value json = tile.toJson(tilesetJsonDoc_);
     for(auto& p : node.children()) {
         traverseOctree(*p, json);

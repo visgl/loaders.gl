@@ -7,6 +7,7 @@
 #include <OctreeNode.h>
 #include <LASPointReader.h>
 #include <Point.h>
+#include <TileConfig.h>
 
 #include <rapidjson/document.h>
 
@@ -24,7 +25,7 @@ using rapidjson::Value;
 
 class Tile{
 public:
-    Tile(const OctreeNode& node);
+    Tile(const OctreeNode& node, const TileConfig& config);
     void writeData(const string& path);
     Value toJson(Document& doc);
     bool isValid() {
@@ -44,6 +45,7 @@ private:
     vector<double> bbox_;
     vector<Point> points_;
     double geometricError_;
+    TileConfig config_;
 };
 }
 
