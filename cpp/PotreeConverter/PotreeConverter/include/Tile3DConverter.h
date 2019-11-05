@@ -7,6 +7,7 @@
 #include <rapidjson/document.h>
 #include <experimental/filesystem>
 #include <OctreeNode.h>
+#include <TileConfig.h>
 
 namespace Tile3D{
 namespace fs = std::experimental::filesystem;
@@ -21,7 +22,7 @@ using fs::path;
 class Tile3DConverter{
 
 public:
-    Tile3DConverter(string dataDir, string workDir, vector<double>& transform);
+    Tile3DConverter(string dataDir, string workDir, vector<double>& transform, const TileConfig& config = TileConfig());
     void convert();
     void readJsonHeader();
     void collectPotreeFiles();
@@ -38,6 +39,7 @@ private:
     vector<path> filePaths_;
     unique_ptr<OctreeNode> rootNode_;
     vector<double> transform_;
+    TileConfig tileConfig_;
 };
 
 }
