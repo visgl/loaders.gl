@@ -2,6 +2,10 @@
 
 ### 1.3 Release
 
+#### v1.3.4
+
+- Support selecting loader from data url (#526)
+
 #### v1.3.3
 
 - Disable debugging message (#433)
