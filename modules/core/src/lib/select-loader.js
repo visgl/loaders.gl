@@ -1,7 +1,8 @@
 import {getRegisteredLoaders} from './register-loaders';
 import {normalizeLoader} from './loader-utils/normalize-loader';
 
-const EXT_PATTERN = /[^.]+$/;
+const EXT_PATTERN = /\.([^.]+)$/;
+const DATA_URL_PATTERN = /^data:(.*?)(;|,)/;
 
 // Find a loader that matches file extension and/or initial file content
 // Search the loaders array argument for a loader that matches url extension or initial data
@@ -59,11 +60,26 @@ function normalizeLoaders(loaders) {
 // TODO - Would be nice to support http://example.com/file.glb?parameter=1
 // E.g: x = new URL('http://example.com/file.glb?load=1'; x.pathname
 function findLoaderByUrl(loaders, url) {
+  // Check for data url
+  let match = url.match(DATA_URL_PATTERN);
+  const mimeType = match && match[1];
+  if (mimeType) {
+    return findLoaderByMimeType(loaders, mimeType);
+  }
   // Get extension
-  const match = url.match(EXT_PATTERN);
-  const extension = match && match[0];
+  match = url.match(EXT_PATTERN);
+  const extension = match && match[1];
   const loader = extension && findLoaderByExtension(loaders, extension);
   return loader;
+}
+
+function findLoaderByMimeType(loaders, mimeType) {
+  for (const loader of loaders) {
+    if (loader.mimeTypes && loader.mimeTypes.includes(mimeType)) {
+      return loader;
+    }
+  }
+  return null;
 }
 
 function findLoaderByExtension(loaders, extension) {
