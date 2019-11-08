@@ -251,7 +251,7 @@ export default class App extends PureComponent {
       data: tilesetUrl,
       _ionAssetId: ionAssetId,
       _ionAccessToken: ionAccessToken,
-      pointSize: 2,
+      pointSize: 1,
       getPointColor: [115, 112, 202],
       onTilesetLoad: this._onTilesetLoad,
       onTileLoad: this._onTilesetChange,

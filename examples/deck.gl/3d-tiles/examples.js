@@ -20,7 +20,7 @@ const SHOWCASE_EXAMPLES = {
         ionAccessToken:
           'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIxN2NhMzkwYi0zNWM4LTRjNTYtYWE3Mi1jMDAxYzhlOGVmNTAiLCJpZCI6OTYxOSwic2NvcGVzIjpbImFzbCIsImFzciIsImFzdyIsImdjIl0sImlhdCI6MTU2MjE4MTMxM30.OkgVr6NaKYxabUMIGqPOYFe0V5JifXLVLfpae63x-tA'
       },
-      '555 Market (PointCloud)': {ionAssetId: 49941, ionAccessToken: ION_TOKEN}
+      '555 Market (PointCloud)': {ionAssetId: 53537, ionAccessToken: ION_TOKEN}
     },
     'Phillipines B3DM': {
       ionAssetId: 34014,
