@@ -1,6 +1,7 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
 import {fetchFile, _selectLoader as selectLoader} from '@loaders.gl/core';
+import {ImageLoader} from '@loaders.gl/images';
 import {DracoLoader} from '@loaders.gl/draco';
 import {LASLoader} from '@loaders.gl/las';
 import {Tile3DLoader} from '@loaders.gl/3d-tiles';
@@ -21,12 +22,23 @@ test('selectLoader#urls', async t => {
   );
 
   t.is(
-    selectLoader([Tile3DLoader, DracoLoader, LASLoader], 'data.laz', null),
+    selectLoader([ImageLoader, Tile3DLoader, DracoLoader, LASLoader], 'data.laz', null),
     LASLoader,
     'find loader by url extension'
   );
+
+  t.is(
+    selectLoader(
+      [ImageLoader, Tile3DLoader, DracoLoader, LASLoader],
+      // eslint-disable-next-line
+      'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACAQMAAABIeJ9nAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAGUExURf///wAAAFXC034AAAAMSURBVAjXY3BgaAAAAUQAwetZAwkAAAAASUVORK5CYII=',
+      null
+    ),
+    ImageLoader,
+    'find loader by data url'
+  );
   t.throws(
-    () => selectLoader([Tile3DLoader, DracoLoader, LASLoader], 'data.obj', null),
+    () => selectLoader([ImageLoader, Tile3DLoader, DracoLoader, LASLoader], 'data.obj', null),
     'find no loaders by url extension'
   );
 });
