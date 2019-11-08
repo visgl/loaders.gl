@@ -66,7 +66,7 @@ const DEFAULT_OPTIONS = {
   throttleRequests: false,
 
   // The maximum screen space error used to drive level of detail refinement.
-  maximumScreenSpaceError: 16,
+  maximumScreenSpaceError: 8,
   maximumMemoryUsage: 32,
 
   // default props
@@ -134,7 +134,7 @@ export default class Tileset3D {
     // Metadata for the entire tileset
     this.asset = {};
     this.credits = {};
-    this.description = options.description;
+    this.description = this.options.description;
 
     // EXTRACTED FROM TILESET
     this._root = undefined;
@@ -149,8 +149,8 @@ export default class Tileset3D {
 
     this._allTilesAdditive = true;
     this._hasMixedContent = false;
-    this._maximumScreenSpaceError = options.maximumScreenSpaceError;
-    this._maximumMemoryUsage = options.maximumMemoryUsage;
+    this._maximumScreenSpaceError = this.options.maximumScreenSpaceError;
+    this._maximumMemoryUsage = this.options.maximumMemoryUsage;
 
     this._tilesLoaded = false;
     this._initialTilesLoaded = false;
