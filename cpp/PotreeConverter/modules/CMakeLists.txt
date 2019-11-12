@@ -1,4 +1,4 @@
-project(PotreeConverter)
+project(Model3DTiler)
 
 set(RAPIDJSON_INCLUDE_DIR lib/rapidjson/include)
 set(ARGUMENTS_INCLUDE_DIR lib/arguments)
@@ -37,15 +37,15 @@ SOURCE_GROUP("lib\\rapidjson" FILES ${lib_rapidjson_files})
 SOURCE_GROUP("lib\\arguments" FILES ${lib_argument_files})
 SOURCE_GROUP("lib\\draco" FILES ${lib_draco_files})
 
-add_executable(PotreeConverter ${files} ${lib_rapidjson_files} ${lib_argument_files} ${lib_draco_files})
+add_executable(Model3DTiler ${files} ${lib_rapidjson_files} ${lib_argument_files} ${lib_draco_files})
 
-target_link_libraries(PotreeConverter ${LASZIP_LIBRARY})
+target_link_libraries(Model3DTiler ${LASZIP_LIBRARY})
 
 if(APPLE AND XCODE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++14 -pthread")
 elseif(UNIX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++14 -pthread -lstdc++ -lm")
-    target_link_libraries(PotreeConverter -lstdc++fs)
+    target_link_libraries(Model3DTiler -lstdc++fs)
 endif()
 
-install(TARGETS PotreeConverter RUNTIME DESTINATION bin/ )
+install(TARGETS Model3DTiler RUNTIME DESTINATION bin/ )
