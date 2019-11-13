@@ -41,7 +41,7 @@ add_executable(Model3DTiler ${files} ${lib_rapidjson_files} ${lib_argument_files
 
 target_link_libraries(Model3DTiler ${LASZIP_LIBRARY})
 
-if(APPLE AND XCODE)
+if(APPLE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++14 -pthread")
 elseif(UNIX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++14 -pthread -lstdc++ -lm")

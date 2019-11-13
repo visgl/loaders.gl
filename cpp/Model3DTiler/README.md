@@ -50,15 +50,13 @@ make
 
 Same as the linux instructions above, except:
 
-1. Add `cmake_policy(SET CMP0042 NEW)` to LASzip/CMakeLists.txt 
-2. Install gcc-6 with `brew install gcc@6`
-3. Give cmake absolute paths to the LASzip tools you just built. (Otherwise make might not be able to find them)
-4. LASZip library will be called `liblaszip.dylib`, not `liblaszip.so`
-5. Run cmd `export LC_ALL=C; unset LANGUAGE` before launching app
+1. Install Xcode version >= 11.1
+2. Give cmake absolute paths to the LASzip tools you just built. (Otherwise make might not be able to find them)
+3. LASZip library will be called `liblaszip.dylib`, not `liblaszip.so`
 
 ```
 ...
-cmake -DCMAKE_BUILD_TYPE=Release -DLASZIP_INCLUDE_DIRS=[ABSOLUTE_PATH_TO_LASTOOLS]/LAStools/LASzip/dll -DLASZIP_LIBRARY=[ABSOLUTE_PATH_TO_LASTOOLS]/LAStools/LASzip/src/build/liblaszip.dylib -DCMAKE_C_COMPILER=/usr/local/bin/gcc-6 -DCMAKE_CXX_COMPILER=/usr/local/bin/g++-6 ..
+cmake -DCMAKE_BUILD_TYPE=Release -DLASZIP_INCLUDE_DIRS=[ABSOLUTE_PATH_TO_LASTOOLS]/LAStools/LASzip/dll -DLASZIP_LIBRARY=[ABSOLUTE_PATH_TO_LASTOOLS]/LAStools/LASzip/src/build/liblaszip.dylib ..
 
 make
 
