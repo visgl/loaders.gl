@@ -2,23 +2,26 @@
 
 Cesium.Ion.defaultAccessToken =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ';
+
+const tileMap = {};
 let viewer = null;
+
 function getViewer() {
-  if (viewer){
+  if (viewer) {
     return viewer;
   }
 
   viewer = new Cesium.Viewer('cesium-viewer');
   viewer.camera.percentageChanged = 0.01;
-  viewer.scene.primitives.destroyPrimitives = true
+  viewer.scene.primitives.destroyPrimitives = true;
 
   return viewer;
 }
 
-
 export function centerMap(viewport) {
+  const cesiumViewer = getViewer();
   const {longitude, latitude, pitch = 45, bearing = 0} = viewport;
-  viewer.camera.flyTo({
+  cesiumViewer.camera.flyTo({
     destination: Cesium.Cartesian3.fromDegrees(longitude, latitude, 1500),
     orientation: {
       heading: Cesium.Math.toRadians(bearing),
@@ -27,8 +30,6 @@ export function centerMap(viewport) {
     }
   });
 }
-
-const tileMap = {};
 
 export function cesiumUnload(tileId) {
   const cesiumViewer = getViewer();
@@ -39,7 +40,7 @@ export function cesiumUnload(tileId) {
 export function cesiumRender(viewport, tile) {
   const {
     texture,
-    attributes: {id, position, normal, color, uv0}
+    attributes: {id, position, normal, uv0}
   } = tile;
 
   const geometry = new Cesium.Geometry({
@@ -71,7 +72,7 @@ export function cesiumRender(viewport, tile) {
   });
 
   const geoInstance = new Cesium.GeometryInstance({
-    geometry: geometry,
+    geometry,
     show: new Cesium.ShowGeometryInstanceAttribute(true),
     id
   });
@@ -97,8 +98,7 @@ export function cesiumRender(viewport, tile) {
     interleave: false,
     vertexCacheOptimize: true,
     compressVertices: true,
-    releaseGeometryInstances: false,
-    allowPicking: true,
+    releaseGeometryInstances: false
   });
   primitive.id = geoInstance.id;
   primitive.mbs = geoInstance.mbs;

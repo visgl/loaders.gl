@@ -12,6 +12,9 @@ const GL_TYPE_MAP = {
   Float32: GL.FLOAT
 };
 
+const scratchVector = new Vector3([0, 0, 0]);
+
+/* eslint-disable max-statements */
 export function parseI3SNodeGeometry(arrayBuffer, tile = {}) {
   if (!tile.featureData) {
     return tile;
@@ -28,17 +31,17 @@ export function parseI3SNodeGeometry(arrayBuffer, tile = {}) {
   } = tile.featureData.geometryData[0];
 
   let minHeight = Infinity;
-  let enuMatrix = new Matrix4();
+  const enuMatrix = new Matrix4();
 
   for (const attribute in vertexAttributes) {
     const {byteOffset, count, valueType, valuesPerElement} = vertexAttributes[attribute];
-    const typedArrayType = TYPE_ARRAY_MAP[valueType];
+    const TypedArrayType = TYPE_ARRAY_MAP[valueType];
 
-    let value = new typedArrayType(buffer, byteOffset, count * valuesPerElement);
+    let value = new TypedArrayType(buffer, byteOffset, count * valuesPerElement);
 
     if (attribute === 'position') {
       minHeight = value
-        .filter((coordinate, index) => (index + 1) % 3 == 0)
+        .filter((coordinate, index) => (index + 1) % 3 === 0)
         .reduce((accumulator, currentValue) => Math.min(accumulator, currentValue), Infinity);
 
       tile.vertexCount = count / 3;
@@ -70,11 +73,10 @@ export function parseI3SNodeGeometry(arrayBuffer, tile = {}) {
 
   return tile;
 }
-
-const scratchVector = new Vector3([0, 0, 0]);
+/* eslint-enable max-statements */
 
 function flipY(texCoords) {
-  for (let i = 0; i < texCoords.length; i+=2) {
+  for (let i = 0; i < texCoords.length; i += 2) {
     texCoords[i + 1] = 1 - texCoords[i + 1];
   }
 }

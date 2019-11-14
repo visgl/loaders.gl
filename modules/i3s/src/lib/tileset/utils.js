@@ -1,25 +1,30 @@
 import {toRadians} from 'math.gl';
-import WebMercatorViewport, {addMetersToLngLat, getDistanceScales} from 'viewport-mercator-project';
 
-const MIN_ERROR = 1200;
+import {WebMercatorViewport} from '@deck.gl/core';
+import {getDistanceScales} from 'viewport-mercator-project';
 
+/* eslint-disable max-statements */
 export function lodJudge(frameState, tile) {
-  const viewport = new WebMercatorViewport(frameState.viewState);
+  let viewport = frameState.viewport;
+  if (!(viewport instanceof WebMercatorViewport)) {
+    viewport = new WebMercatorViewport(frameState.viewport);
+  }
+
   const distanceScales = getDistanceScales(viewport);
 
-  let mbsLat = tile.mbs[1];
-  let mbsLon = tile.mbs[0];
-  let mbsH = tile.mbs[2];
-  let mbsR = tile.mbs[3];
+  const mbsLat = tile.mbs[1];
+  const mbsLon = tile.mbs[0];
+  const mbsR = tile.mbs[3];
 
   const {height, width, latitude, longitude} = viewport;
 
   const viewportCenter = [longitude, latitude];
   const mbsCenter = [mbsLon, mbsLat];
-  const mbsLatProjected= [longitude, mbsLat];
+  const mbsLatProjected = [longitude, mbsLat];
   const mbsLonProjected = [mbsLon, latitude];
 
-  const diagonalInMeters = Math.sqrt(height * height + width * width) * distanceScales.metersPerPixel[0];
+  const diagonalInMeters =
+    Math.sqrt(height * height + width * width) * distanceScales.metersPerPixel[0];
   const distanceInMeters = getDistanceFromLatLon(viewportCenter, mbsCenter);
 
   const visibleHeight = height * 0.5 + mbsR;
@@ -35,31 +40,20 @@ export function lodJudge(frameState, tile) {
     return 'OUT';
   }
 
-  if (tile.lodMaxError == 0) {
+  if (tile.lodMaxError === 0) {
     return 'DIG';
-  } else {
-    // calculate maxScreenThreshold and mbs
-    const objWest = addMetersToLngLat([mbsLon, mbsLat, mbsH], [-mbsR, 0, 0]);
-    const objEast = addMetersToLngLat([mbsLon, mbsLat, mbsH], [mbsR, 0, 0]);
-
-    let objWestPixelLocation = viewport.project(objWest);
-    let objEastPixelLocation = viewport.project(objEast);
-    const pixelDistance = (objEastPixelLocation[0] - objWestPixelLocation[0]);
-
-    let maxError = tile.lodMaxError < MIN_ERROR ? MIN_ERROR : tile.lodMaxError;
-
-    if (pixelDistance > maxError) {
-      if (!tile && tile.content.children.length > 0) {
-        return 'DIG';
-      } else if (tile && tile.content.children) {
-        return 'DIG';
-      }
-      return 'DRAW';
-    }
-
-    return 'DRAW';
   }
+
+  const screenSize = getScreenSize(tile, viewport);
+  if (!tile.content.children || screenSize <= tile.lodMaxError) {
+    return 'DRAW';
+  } else if (tile.content.children) {
+    return 'DIG';
+  }
+
+  return 'OUT';
 }
+/* eslint-enable max-statements */
 
 function getDistanceFromLatLon([lon1, lat1], [lon2, lat2]) {
   const R = 6371000; // Radius of the earth
@@ -71,6 +65,43 @@ function getDistanceFromLatLon([lon1, lat1], [lon2, lat2]) {
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   const d = R * c; // Distance in
   return d;
+}
+
+function getScreenSize(tile, viewport) {
+  const mbsLat = tile.mbs[1];
+  const mbsLon = tile.mbs[0];
+  const mbsR = tile.mbs[3];
+
+  const mbsCenter = [mbsLon, mbsLat];
+  const cameraPositionCartographic = viewport.unprojectPosition(viewport.cameraPosition);
+
+  const mbsToCameraDistanceInMeters = getDistanceFromLatLon(cameraPositionCartographic, mbsCenter);
+  const d = mbsToCameraDistanceInMeters * mbsToCameraDistanceInMeters - mbsR * mbsR;
+  const fltMax = 3.4028235e38; // convert from 0x7f7fffff which is the maximum
+  if (d <= 0.0) {
+    return 0.5 * fltMax;
+  }
+
+  let screenSizeFactor = calculategetScreenSizeFactor(tile, viewport);
+  screenSizeFactor *= mbsR / Math.sqrt(d);
+  return screenSizeFactor;
+}
+
+function calculategetScreenSizeFactor(tile, viewport) {
+  const tanOfHalfVFAngle = Math.tan(
+    Math.atan(
+      Math.sqrt(
+        1.0 / (viewport.viewProjectionMatrix[0] * viewport.viewProjectionMatrix[0]) +
+          1.0 / (viewport.viewProjectionMatrix[5] * viewport.viewProjectionMatrix[5])
+      )
+    )
+  );
+
+  const screenCircleFactor =
+    Math.sqrt(viewport.height * viewport.height + viewport.width * viewport.width) /
+    tanOfHalfVFAngle;
+
+  return screenCircleFactor;
 }
 
 // function parseFeatures(featureData, geometryBuffer, node) {

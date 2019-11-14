@@ -16,8 +16,10 @@ export class I3STileNode {
     this.metricType = content.lodSelection[0].metricType;
     this.content = content;
 
+    // lodMaxError: larger, more details?
     this._priority = this.lodMaxError;
     this._isVisible = false;
+
     this._contentState = content._contentState || TILE3D_CONTENT_STATE.UNLOADED;
 
     this.children = [];
@@ -27,6 +29,7 @@ export class I3STileNode {
 export default class I3STileTree {
   constructor() {
     this.children = [];
+    this._cache = {};
   }
 
   appendNode(node) {
@@ -36,33 +39,37 @@ export default class I3STileTree {
     }
 
     const newNode = new I3STileNode(node);
+    this._cache[newNode.id] = newNode;
+
     const parentNode = this.searchNode(node.parentNode && node.parentNode.id);
-    if (parentNode == null) {
+    if (!node.parentNode) {
       this.children.push(newNode);
       return this.children[this.children.length - 1];
-    } else {
+    } else if (parentNode) {
       parentNode.children.push(newNode);
       return parentNode.children[parentNode.children.length - 1];
     }
+
+    return null;
   }
 
   _dig(id, ids, node) {
-    if (node.level > ids.length) {
+    if (node.level > ids.length + 1) {
       return null;
     }
 
     let keepGoing = false;
-    if (node.id == id) {
+    if (node.id === id) {
       return node;
-    } else if (node.id == 'root') {
+    } else if (node.id === 'root') {
       keepGoing = true;
     } else {
       let partId = ids[0];
       for (let i = 1; i < node.level - 1; i++) {
-        partId = partId + '-' + ids[i];
+        partId = `${partId}-${ids[i]}`;
       }
 
-      if (node.id == partId) {
+      if (node.id === partId) {
         keepGoing = true;
       }
     }
@@ -96,11 +103,14 @@ export default class I3STileTree {
     return null;
   }
 
-  unloadNodeById(id) {
-    const node = this.searchNode(id);
-
+  unLoadNodeById(node, onUnload) {
     if (node) {
       node._isVisible = false;
+      node._contentState = TILE3D_CONTENT_STATE.UNLOADED;
+      // node.attributes = null;
+    }
+    if (onUnload) {
+      onUnload(node);
     }
   }
 
@@ -108,6 +118,7 @@ export default class I3STileTree {
     if (node) {
       node._isVisible = false;
       node._contentState = TILE3D_CONTENT_STATE.UNLOADED;
+      // node.attributes = null;
     }
     if (onUnload) {
       onUnload(node);

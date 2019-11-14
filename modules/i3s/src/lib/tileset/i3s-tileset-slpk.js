@@ -39,6 +39,7 @@ export default class I3STileset {
       const featureDataPath = getTileFeaturePath(tile.id, 0);
       return this.options.files[featureDataPath];
     }
+    return null;
   }
 
   _loadGeometryBuffer(tile) {
@@ -46,6 +47,7 @@ export default class I3STileset {
       const geometryBufferPath = getTileGeometryBufferPath(tile.id, 0);
       return this.options.files[geometryBufferPath];
     }
+    return null;
   }
 }
 
@@ -67,6 +69,6 @@ function getTileGeometryBufferPath(nodeId, geometryNumber) {
   return `nodes/${nodeId}/geometries/${geometryNumber}.bin.gz`;
 }
 
-function getTileSharedResourcePath(nodeId, featureNumber) {
-  return `nodes/${nodeId}/shared/sharedResource.json.gz`;
-}
+// function getTileSharedResourcePath(nodeId, featureNumber) {
+//   return `nodes/${nodeId}/shared/sharedResource.json.gz`;
+// }

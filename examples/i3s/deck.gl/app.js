@@ -5,23 +5,14 @@ import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
 
 import {Vector3} from 'math.gl';
-import GL from '@luma.gl/constants';
-import {Geometry} from '@luma.gl/core';
 import DeckGL from '@deck.gl/react';
-import {MapController, FlyToInterpolator, COORDINATE_SYSTEM} from '@deck.gl/core';
-import {SimpleMeshLayer} from '@deck.gl/mesh-layers';
-import {I3SSLPKLoader, I3STileset} from '@loaders.gl/i3s';
+import {MapController, FlyToInterpolator} from '@deck.gl/core';
+import I3S3DLayer from './i3s-3d-layer';
 
 import {centerMap, cesiumRender, cesiumUnload} from './cesium';
 
-const TEST_DATA_SLPK =
-  'https://raw.githubusercontent.com/uber-web/loaders.gl/master/modules/i3s/test/data/DA12_subset.slpk';
-
 const TEST_DATA_URL =
-  'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_Bldgs/SceneServer/layers/0'
-;
-
-const scratchOffset = new Vector3(0, 0, 0);
+  'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_Bldgs/SceneServer/layers/0';
 
 // Set your mapbox token here
 const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
@@ -52,22 +43,8 @@ export default class App extends PureComponent {
     };
   }
 
-  async componentDidMount() {
-    const tilesetJson = await fetch(TEST_DATA_URL)
-    .then(result => result.json());
-
-    const tileset = new I3STileset(
-      tilesetJson,
-      TEST_DATA_URL,
-      {
-        onTileLoad: (tile) => this._onTileLoad(tile),
-        onTileUnload: (tile) => this._onTileUnload(tile)
-      }
-    );
-
-    this.setState({tileset});
-
-    const bbox = tilesetJson.store.extent;
+  _onTilesetLoad(tileset) {
+    const bbox = tileset.json.store.extent;
     const longitude = (bbox[0] + bbox[2]) / 2;
     const latitude = (bbox[1] + bbox[3]) / 2;
 
@@ -79,6 +56,7 @@ export default class App extends PureComponent {
     };
 
     this.setState({
+      tileset,
       viewState: {
         ...viewState,
         transitionDuration: TRANSITION_DURAITON,
@@ -86,92 +64,35 @@ export default class App extends PureComponent {
       }
     });
 
-    await tileset.update({viewState});
+    // await tileset.update({viewState});
 
     // render with cesium
     centerMap(viewState);
   }
 
   _onTileLoad(tile) {
-    const {viewState, layerMap} = this.state;
+    const {viewState} = this.state;
     cesiumRender(viewState, tile);
-
-    let layer = layerMap[tile.id];
-    if (layer) {
-      if (layer && layer.props && !layer.props.visible) {
-        // Still has GPU resource but visibility is turned off so turn it back on so we can render it.
-        layer = layer.clone({visible: true});
-        layerMap[tile.id] = layer;
-
-        this.setState({layers: Object.values(layerMap)});
-      }
-      return;
-    }
-
-    const {attributes, matrix, cartographicOrigin, texture, id} = tile;
-    const positions = new Float32Array(attributes.position.value.length);
-    for (let i = 0; i < positions.length; i += 3) {
-      scratchOffset.copy(matrix.transform(attributes.position.value.subarray(i, i + 3)));
-      positions.set(scratchOffset, i);
-    }
-
-    const geometry = new Geometry({
-      drawMode: GL.TRIANGLES,
-      attributes: {
-        positions,
-        normals: attributes.normal,
-        texCoords: attributes.uv0
-      }
-    });
-
-    layer = new SimpleMeshLayer({
-      id: `mesh-layer-${tile.id}`,
-      mesh: geometry,
-      data: [{}],
-      getPosition: [0, 0, 0],
-      getColor: [255, 255, 255],
-      texture,
-      coordinateOrigin: cartographicOrigin,
-      coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS
-    });
-
-    layerMap[id] = layer;
-
-    this.setState({layers: Object.values(layerMap)});
-  };
+  }
 
   _onTileUnload(tile) {
     cesiumUnload(tile);
-
-    const {layerMap} = this.state;
-    let layer = layerMap[tile.id];
-    if (layer && layer.props && layer.props.visible) {
-      // Still has GPU resource but visibility is turned off so turn it back on so we can render it.
-      layer = layer.clone({visible: false});
-      layerMap[tile.id] = layer;
-      this.setState({layers: Object.values(layerMap)});
-    }
-  };
+  }
 
   _onViewStateChange({viewState}) {
-    // centerMap(viewState);
     this.setState({viewState});
-    this._updateTileset(viewState);
-  }
-
-  async _updateTileset(viewState) {
-    const tileset = this.state.tileset;
-    if (tileset) {
-      await tileset.update({viewState});
-    }
-  }
-
-  _renderMeshLayers() {
-    return this.state.layers;
+    centerMap(viewState);
   }
 
   _renderLayers() {
-    return this._renderMeshLayers();
+    return [
+      new I3S3DLayer({
+        data: TEST_DATA_URL,
+        onTilesetLoad: this._onTilesetLoad.bind(this),
+        onTileLoad: this._onTileLoad.bind(this),
+        onTileUnload: this._onTileUnload.bind(this)
+      })
+    ];
   }
 
   render() {
@@ -180,6 +101,7 @@ export default class App extends PureComponent {
     return (
       <div>
         <DeckGL
+          ref={_ => (this._deckRef = _)}
           layers={layers}
           initialViewState={INITIAL_VIEW_STATE}
           onViewStateChange={this._onViewStateChange.bind(this)}
@@ -197,4 +119,4 @@ export default class App extends PureComponent {
 }
 
 const deckViewer = document.getElementById('deck-viewer');
-render(<App/>, deckViewer);
+render(<App />, deckViewer);

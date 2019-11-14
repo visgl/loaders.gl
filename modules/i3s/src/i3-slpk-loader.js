@@ -33,6 +33,7 @@ async function parseSlpkAsync(data, options) {
         } else if (subType === 'bin') {
           files[fileName] = pako.inflate(fileContent.buffer);
         } else {
+          // eslint-disable-next-line
           console.error('unrecognized sub type', subType);
         }
         break;
@@ -40,6 +41,7 @@ async function parseSlpkAsync(data, options) {
         files[fileName] = loader.extractAsJSON(fileName);
         break;
       default:
+        // eslint-disable-next-line
         console.error('unrecognized file type', fileType);
     }
   }
