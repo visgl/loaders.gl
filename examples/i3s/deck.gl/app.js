@@ -4,7 +4,6 @@ import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
 
-import {Vector3} from 'math.gl';
 import DeckGL from '@deck.gl/react';
 import {MapController, FlyToInterpolator} from '@deck.gl/core';
 import I3S3DLayer from './i3s-3d-layer';
@@ -37,10 +36,17 @@ export default class App extends PureComponent {
     super(props);
 
     this.state = {
+      renderCesium: false,
       layerMap: {},
       layers: [],
       viewState: INITIAL_VIEW_STATE
     };
+  }
+
+  componentDidMount() {
+    const parsedUrl = new URL(window.location.href);
+    const renderCesium = parsedUrl.searchParams.get('cesium');
+    this.setState({renderCesium});
   }
 
   _onTilesetLoad(tileset) {
@@ -64,24 +70,31 @@ export default class App extends PureComponent {
       }
     });
 
-    // await tileset.update({viewState});
-
     // render with cesium
-    centerMap(viewState);
+    if (this.state.renderCesium) {
+      centerMap(viewState);
+    }
   }
 
   _onTileLoad(tile) {
-    const {viewState} = this.state;
-    cesiumRender(viewState, tile);
+    if (this.state.renderCesium) {
+      const {viewState} = this.state;
+      cesiumRender(viewState, tile);
+    }
   }
 
   _onTileUnload(tile) {
-    cesiumUnload(tile);
+    if (this.state.renderCesium) {
+      cesiumUnload(tile);
+    }
   }
 
   _onViewStateChange({viewState}) {
     this.setState({viewState});
-    centerMap(viewState);
+
+    if (this.state.renderCesium) {
+      centerMap(viewState);
+    }
   }
 
   _renderLayers() {

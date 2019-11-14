@@ -44,6 +44,10 @@ export function lodJudge(frameState, tile) {
     return 'DIG';
   }
 
+  // For the maxScreenThreshold error metric, maxError means that you should replace the node with it's children
+  // as soon as the nodes bounding sphere has a screen radius larger than maxError pixels.
+  // In this sense a value of 0 means you should always load it's children,
+  // or if it's a leaf node, you should always display it.
   const screenSize = getScreenSize(tile, viewport);
   if (!tile.content.children || screenSize <= tile.lodMaxError) {
     return 'DRAW';
@@ -68,6 +72,7 @@ function getDistanceFromLatLon([lon1, lat1], [lon2, lat2]) {
 }
 
 function getScreenSize(tile, viewport) {
+  // https://stackoverflow.com/questions/21648630/radius-of-projected-sphere-in-screen-space
   const mbsLat = tile.mbs[1];
   const mbsLon = tile.mbs[0];
   const mbsR = tile.mbs[3];
