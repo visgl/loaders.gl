@@ -1,4 +1,4 @@
-This is a standalone web app using `@loaders.gl/3d-tiles`.
+This is a standalone web app using `@loaders.gl/i3s-tiles`.
 
 ### Usage
 
@@ -14,6 +14,6 @@ yarn start-local  # or yarn start
 ### Load a local dataset
 
 Copy the dataset to `data` under `loaders.gl` root directory.
-Start the application and pass the path to your local dataset as url parameter.
 
-`localhost:8080/?tileset=data/<mytiles>/tileset.json`
+`localhost:8080` - render with `deck.gl`
+`localhost:8080/?cesium=true` - render with `deck.gl` and `cesium` side by side
