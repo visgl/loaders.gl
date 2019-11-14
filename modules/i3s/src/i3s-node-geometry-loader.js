@@ -1,10 +1,14 @@
 /* global __VERSION__ */ // __VERSION__ is injected by babel-plugin-version-inline
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
-import {parseI3SNodeGeometry} from './lib/parse-i3s-node-geometry';
+import {parseI3SNodeGeometry} from './lib/parsers/parse-i3s-node-geometry';
 
 async function parse(arrayBuffer, options, context, loader) {
-  const tile = {};
-  const byteOffset = 0;
+  const tile = {
+    ...options.node,
+    ...options.nodeInTree,
+    featureData: options.featureData
+  };
+  const byteOffset = options.byteOffset;
   await parseI3SNodeGeometry(arrayBuffer, byteOffset, options, context, tile);
   return tile;
 }
