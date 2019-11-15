@@ -13,14 +13,27 @@ const SHOWCASE_EXAMPLES = {
   ion: {
     name: 'Cesium ION',
     examples: {
-      'Melbourne (PointCloud)': {ionAssetId: 43978, ionAccessToken: ION_TOKEN},
-      'Montreal (PointCloud)': {ionAssetId: 28945, ionAccessToken: ION_TOKEN},
+      'Melbourne (PointCloud)': {
+        ionAssetId: 43978,
+        ionAccessToken: ION_TOKEN,
+        maximumScreenSpaceError: 4
+      },
+      'Montreal (PointCloud)': {
+        ionAssetId: 28945,
+        ionAccessToken: ION_TOKEN,
+        maximumScreenSpaceError: 8
+      },
       'Mount St Helens (PointCloud)': {
         ionAssetId: 33301,
         ionAccessToken:
-          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIxN2NhMzkwYi0zNWM4LTRjNTYtYWE3Mi1jMDAxYzhlOGVmNTAiLCJpZCI6OTYxOSwic2NvcGVzIjpbImFzbCIsImFzciIsImFzdyIsImdjIl0sImlhdCI6MTU2MjE4MTMxM30.OkgVr6NaKYxabUMIGqPOYFe0V5JifXLVLfpae63x-tA'
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIxN2NhMzkwYi0zNWM4LTRjNTYtYWE3Mi1jMDAxYzhlOGVmNTAiLCJpZCI6OTYxOSwic2NvcGVzIjpbImFzbCIsImFzciIsImFzdyIsImdjIl0sImlhdCI6MTU2MjE4MTMxM30.OkgVr6NaKYxabUMIGqPOYFe0V5JifXLVLfpae63x-tA',
+        maximumScreenSpaceError: 4
       },
-      '555 Market (PointCloud)': {ionAssetId: 53537, ionAccessToken: ION_TOKEN}
+      '555 Market (PointCloud)': {
+        ionAssetId: 55337,
+        ionAccessToken: ION_TOKEN,
+        maximumScreenSpaceError: 16
+      }
     },
     'Phillipines B3DM': {
       ionAssetId: 34014,

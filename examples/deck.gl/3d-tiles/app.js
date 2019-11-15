@@ -244,7 +244,8 @@ export default class App extends PureComponent {
       return null;
     }
 
-    const {tilesetUrl, ionAssetId, ionAccessToken} = selectedExample;
+    const {tilesetUrl, ionAssetId, ionAccessToken, maximumScreenSpaceError} = selectedExample;
+    const loadOptions = maximumScreenSpaceError ? {maximumScreenSpaceError} : {};
 
     return new Tile3DLayer({
       id: 'tile-3d-layer',
@@ -256,7 +257,8 @@ export default class App extends PureComponent {
       onTilesetLoad: this._onTilesetLoad,
       onTileLoad: this._onTilesetChange,
       onTileUnload: this._onTilesetChange,
-      onTileLoadFail: this._onTilesetChange
+      onTileLoadFail: this._onTilesetChange,
+      loadOptions
     });
   }
 
