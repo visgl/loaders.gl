@@ -10,10 +10,8 @@ import {LASLoader} from '@loaders.gl/las';
 import {PLYLoader} from '@loaders.gl/ply';
 import {PCDLoader} from '@loaders.gl/pcd';
 import {OBJLoader} from '@loaders.gl/obj';
-// TODO fix LasWorkerLoader
-// import {LASWorkerLoader} from '@loaders.gl/las/worker-loader';
 
-import {load, registerLoaders} from '@loaders.gl/core';
+import {load, registerLoaders, setLoaderOptions} from '@loaders.gl/core';
 
 import ControlPanel from './components/control-panel';
 // import fileDrop from './components/file-drop';
@@ -22,6 +20,8 @@ import FILE_INDEX from './file-index';
 
 // Additional format support can be added here, see
 registerLoaders([DracoLoader, LASLoader, PLYLoader, PCDLoader, OBJLoader]);
+// TODO fix WorkerLoader
+setLoaderOptions({worker: false});
 
 const INITIAL_VIEW_STATE = {
   target: [0, 0, 0],
@@ -109,7 +109,11 @@ export default class App extends PureComponent {
     this.setState(
       {
         loadTimeMs: Date.now() - this._loadStartMs,
-        pointsCount: header.vertexCount,
+        // TODO - Some popular "point cloud" formats (PLY) can also generate indexed meshes
+        // in which case the vertex count is not correct for display as points
+        // Proposal: Consider adding a `mesh.points` or `mesh.pointcloud` option to mesh loaders
+        // in which case the loader throws away indices and just return the vertices?
+        pointsCount: attributes.POSITION.value.length / 3, // header.vertexCount,
         points: attributes.POSITION.value,
         viewState
       },

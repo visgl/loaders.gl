@@ -244,7 +244,7 @@ function handleElement(buffer, elementName, element) {
     }
 
     if ('red' in element && 'green' in element && 'blue' in element) {
-      buffer.colors.push(element.red / 255.0, element.green / 255.0, element.blue / 255.0);
+      buffer.colors.push(element.red, element.green, element.blue);
     }
   } else if (elementName === 'face') {
     const vertexIndices = element.vertex_indices || element.vertex_index; // issue #9338
