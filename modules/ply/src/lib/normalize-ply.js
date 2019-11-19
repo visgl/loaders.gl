@@ -35,7 +35,7 @@ function normalizeAttributes(attributes) {
   }
 
   if (attributes.colors.length > 0) {
-    // Uint8Array -> Float32Array 
+    // Uint8Array -> Float32Array
     accessors.COLOR_0 = {value: new Float32Array(attributes.colors), size: 3};
   }
 
