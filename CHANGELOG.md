@@ -2,6 +2,10 @@
 
 ### 1.3 Release
 
+#### v1.3.5
+
+- PLYLoader: Fix handling of color values (#535)
+
 #### v1.3.4
 
 - Support selecting loader from data url (#526)
