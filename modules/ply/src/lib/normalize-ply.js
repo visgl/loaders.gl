@@ -35,8 +35,8 @@ function normalizeAttributes(attributes) {
   }
 
   if (attributes.colors.length > 0) {
-    // Uint8Array -> Float32Array
-    accessors.COLOR_0 = {value: new Float32Array(attributes.colors), size: 3};
+    // TODO - normalized shoud be based on `uchar` flag in source data?
+    accessors.COLOR_0 = {value: new Uint8Array(attributes.colors), size: 3, normalized: true};
   }
 
   return accessors;
