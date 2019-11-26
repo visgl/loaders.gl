@@ -63,57 +63,16 @@ export default class Tileset3DTraverser {
   selectTile(tile, frameState) {
     tile._selectedFrame = frameState.frameNumber;
     this.result.selectedTiles.push(tile);
-
-    // if (tile.contentVisibility(frameState) !== Intersect.OUTSIDE) {
-    //   if (tile.content.featurePropertiesDirty) {
-    //     // A feature's property in this tile changed, the tile needs to be re-styled.
-    //     tile.content.featurePropertiesDirty = false;
-    //     tile.lastStyleTime = 0; // Force applying the style to this tile
-    //     tileset._selectedTilesToStyle.push(tile);
-    //   } else if (tile._selectedFrame < frameState.frameNumber - 1) {
-    //     // Tile is newly selected; it is selected this frame, but was not selected last frame.
-    //     tileset._selectedTilesToStyle.push(tile);
-    //   }
-    //   tile._selectedFrame = frameState.frameNumber;
-    //   tileset.selectedTiles.push(tile);
-    // }
   }
 
   selectDesiredTile(tile, frameState) {
-    if (!this.options.skipLevelOfDetail) {
-      if (tile.contentAvailable) {
-        // The tile can be selected right away and does not require traverseAndSelect
-        this.selectTile(tile, frameState);
-      }
-      return;
+    if (!this.options.skipLevelOfDetail && tile.contentAvailable) {
+      // The tile can be selected right away and does not require traverseAndSelect
+      this.selectTile(tile, frameState);
     }
-
-    // If this tile is not loaded attempt to select its ancestor instead
-    const loadedTile = tile.contentAvailable ? tile : tile._ancestorWithContentAvailable;
-    if (loadedTile) {
-      // Tiles will actually be selected in traverseAndSelect
-      loadedTile._shouldSelect = true;
-    } else {
-      // If no ancestors are ready traverse down and select tiles to minimize empty regions.
-      // This happens often for immediatelyLoadDesiredLevelOfDetail where parent tiles
-      // are not necessarily loaded before zooming out.
-      this.selectDescendants(tile, frameState);
-    }
-  }
-
-  visitTile(tileset, tile, frameState) {
-    ++tileset._statistics.visited;
-    tile._visitedFrame = frameState.frameNumber;
   }
 
   touchTile(tile, frameState) {
-    // TODO need a better frameNumber since it can be the same between updates
-    // Until then this needs to be commented out
-    // if (tile._touchedFrame === frameState.frameNumber) {
-    //   // Prevents another pass from touching the frame again
-    //   return;
-    // }
-    // TODO: add function to tile that te
     tile.tileset._cache.touch(tile);
     tile._touchedFrame = frameState.frameNumber;
   }
@@ -204,7 +163,6 @@ export default class Tileset3DTraverser {
       tile._optimChildrenWithinParent === TILE3D_OPTIMIZATION_HINT.USE_OPTIMIZATION;
     if (replace && useOptimization && hasChildren) {
       if (!this.anyChildrenVisible(tile, frameState)) {
-        // ++tileset._statistics.numberOfTilesCulledWithChildrenUnion;
         tile._visible = false;
         return;
       }
@@ -218,7 +176,7 @@ export default class Tileset3DTraverser {
 
   // eslint-disable-next-line complexity
   updateAndPushChildren(tile, stack, frameState) {
-    const {options} = this;
+    const options = this.options;
     const {children} = tile;
 
     for (const child of children) {
@@ -241,6 +199,7 @@ export default class Tileset3DTraverser {
       !options.skipLevelOfDetail &&
       tile.refine === TILE3D_REFINEMENT.REPLACE &&
       tile.hasRenderContent;
+
     let refines = true;
 
     let hasVisibleChild = false;
@@ -254,6 +213,7 @@ export default class Tileset3DTraverser {
         this.loadTile(child, frameState);
         this.touchTile(child, frameState);
       }
+
       if (checkRefines) {
         let childRefines;
         if (!child._inRequestVolume) {
@@ -276,8 +236,7 @@ export default class Tileset3DTraverser {
 
   canTraverse(tile) {
     const {options} = this;
-    // TODO: remove the depthLimit check once real sse is working
-    if (tile.children.length === 0 || options.depthLimit < tile.depth) {
+    if (tile.children.length === 0) {
       return false;
     }
 
@@ -314,7 +273,7 @@ export default class Tileset3DTraverser {
       let refines = false;
 
       if (this.canTraverse(tile)) {
-        refines = this.updateAndPushChildren(tile, stack, frameState) && parentRefines;
+        refines = this.updateAndPushChildren(tile, stack, frameState);
       }
 
       const stoppedRefining = !refines && parentRefines;
