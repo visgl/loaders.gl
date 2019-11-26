@@ -107,7 +107,7 @@ export default class Tileset3D {
     // PUBLIC MEMBERS
     this.options = {...DEFAULT_OPTIONS, ...options};
     this.url = url; // The url to a tileset JSON file.
-    this.basePath = path.dirname(url); // base path that non-absolute paths in tileset are relative to.
+    this.basePath = options.basePath || path.dirname(url); // base path that non-absolute paths in tileset are relative to.
     this.modelMatrix = this.options.modelMatrix;
     this.stats = new Stats({id: url});
     this._initializeStats();
@@ -169,10 +169,6 @@ export default class Tileset3D {
     this._destroy();
   }
 
-  // Gets the tileset's asset object property, which contains metadata about the tileset.
-  // get asset() {
-  //   return this._asset;
-  // }
   get traverser() {
     return this._traverser;
   }
@@ -208,9 +204,8 @@ export default class Tileset3D {
 
   // The tileset's bounding sphere.
   get boundingSphere() {
-    this._checkReady();
-    this._root.updateTransform(this.modelMatrix);
-    return this._root.boundingSphere;
+    this.root._updateTransform(this.modelMatrix);
+    return this.root.boundingSphere;
   }
 
   // Returns the time, in milliseconds, since the tileset was loaded and first updated.
@@ -471,6 +466,7 @@ export default class Tileset3D {
       calculateTransformProps(tile, tile._content);
     }
 
+    this.addTileToCache(tile);
     this.options.onTileLoad(tile);
   }
 

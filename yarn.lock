@@ -1451,10 +1451,10 @@
     npmlog "^4.1.2"
     write-file-atomic "^2.3.0"
 
-"@loaders.gl/core@1.3.4", "@loaders.gl/core@^1.3.4":
-  version "1.3.4"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/core/-/core-1.3.4.tgz#eb6222865bf121f0063c4355121f92b499a3df17"
-  integrity sha512-9yjNuWL/qaN68tDY/HnWjQ/5YMtIXo/Rw1NgGyrIpt+aQpK9YhIg7ZLd06vIOzEg1N/3FxjaEcauRTOKpiiMHA==
+"@loaders.gl/core@1.3.5", "@loaders.gl/core@^1.3.4":
+  version "1.3.5"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/core/-/core-1.3.5.tgz#e7046b0e75e45db9fa6c4f0816395ef69aa7d9a8"
+  integrity sha512-aCVHgLrFuVvxqEP2soN/nst22mfEzAfhhe9LuFQbLcg2oUKbaW6eh1EW6AeYSkkjCmRkCmXRYLFWNvjbg2R55g==
   dependencies:
     "@babel/runtime" "^7.3.1"
 
@@ -1466,23 +1466,23 @@
     "@loaders.gl/core" "2.0.0-alpha.4"
 
 "@loaders.gl/gltf@^1.3.0":
-  version "1.3.4"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/gltf/-/gltf-1.3.4.tgz#ec28412f0f2bbcb19fca70b6cbec9546d58d322a"
-  integrity sha512-vNFJfavybsCSD3dTuy96wIttqoJnQrfnppceOrOPGJma0SuSLSy/hjCRzEFRF1lU8XWw+Nq4HVJTKWas78jvzQ==
+  version "1.3.5"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/gltf/-/gltf-1.3.5.tgz#bc7500eaad3429d41d071059757723d34ad7037a"
+  integrity sha512-JLsa0Q7h8Nt+FUECIaEewdJ6DusQxycazfiUo3D2gj8Lt15ydsdPtWLwDhyWRhm80i4FtqO5IqZTQIyTNAlOmA==
   dependencies:
-    "@loaders.gl/core" "1.3.4"
-    "@loaders.gl/images" "1.3.4"
-    "@loaders.gl/loader-utils" "1.3.4"
+    "@loaders.gl/core" "1.3.5"
+    "@loaders.gl/images" "1.3.5"
+    "@loaders.gl/loader-utils" "1.3.5"
 
-"@loaders.gl/images@1.3.4", "@loaders.gl/images@^1.3.0", "@loaders.gl/images@^1.3.4":
-  version "1.3.4"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/images/-/images-1.3.4.tgz#cddf36b43b1e10ff8d8fab13626398589b7eaab3"
-  integrity sha512-zsIlJ8PWkOjp62DoTmvU6AgoAe9zk5MckHGTybd8aQG7UHsjiRYiWYcJJvZ5oat5SEeULxVUcpI3ShUxB/lgpA==
+"@loaders.gl/images@1.3.5", "@loaders.gl/images@^1.3.0", "@loaders.gl/images@^1.3.4":
+  version "1.3.5"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/images/-/images-1.3.5.tgz#7e34847c66418879e5bad96f7667ab3a34d4825e"
+  integrity sha512-96F9a1+7HsFEr+bnZh04r4pI2J7iXq4CvaQowCd75sFzgiHBvniHjMDNhjpbzHqGskXoKrSCJUeQ/EVUPCxZtw==
 
-"@loaders.gl/loader-utils@1.3.4":
-  version "1.3.4"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/loader-utils/-/loader-utils-1.3.4.tgz#e39b1e6cbdfc10072433b7928bbbbb8555d39745"
-  integrity sha512-TSolYGo70IksbmjjXZmYsiWlieRrMAlcOcR0XVQPMPmt8XlfL4IwSnS5FuMeRWzZ06bv538zRHNmNZtG/M3m2Q==
+"@loaders.gl/loader-utils@1.3.5":
+  version "1.3.5"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/loader-utils/-/loader-utils-1.3.5.tgz#89f2074c2566168bb0f53844d4b4ac493ff85fff"
+  integrity sha512-dml8IP4n49ftX4ew+olTRhWY0pm4A8nZKpXFq2o541vvrJIRaahp6oCbrlJGwcEMCDFfVXEqThsP2dicgDwL3A==
   dependencies:
     "@babel/runtime" "^7.3.1"
 

@@ -15,6 +15,7 @@ import assert from './assert';
 export default class ManagedArray {
   constructor(length = 0) {
     this._array = new Array(length);
+    this._map = new Map();
     this._length = length;
   }
 
@@ -69,7 +70,22 @@ export default class ManagedArray {
     if (index >= this.length) {
       this.length = index + 1;
     }
+
+    if (this._map.has(this._array[index])) {
+      this._map.delete(this._array[index]);
+    }
+
     this._array[index] = element;
+    this._map.set(element, index);
+  }
+
+  delete(element) {
+    const index = this._map.get(element);
+    if (index >= 0) {
+      this._array.splice(index, 1);
+      this._map.delete(element);
+      this.length--;
+    }
   }
 
   /**
@@ -87,8 +103,11 @@ export default class ManagedArray {
    * @param {*} element The element to push.
    */
   push(element) {
-    const index = this.length++;
-    this._array[index] = element;
+    if (!this._map.has(element)) {
+      const index = this.length++;
+      this._array[index] = element;
+      this._map.set(element, index);
+    }
   }
 
   /**
@@ -97,7 +116,9 @@ export default class ManagedArray {
    * @returns {*} The last element in the array.
    */
   pop() {
-    return this._array[--this.length];
+    const element = this._array[--this.length];
+    this._map.delete(element);
+    return element;
   }
 
   /**
@@ -129,7 +150,20 @@ export default class ManagedArray {
    *
    * @param {Number} [length] The length.
    */
-  trim(length = this.length) {
+  trim(length) {
+    if (length === null || length === undefined) {
+      length = this.length;
+    }
     this._array.length = length;
+  }
+
+  reset() {
+    this._array = new Array();
+    this._map = new Map();
+    this._length = 0;
+  }
+
+  find(target) {
+    return this._map.has(target);
   }
 }

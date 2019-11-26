@@ -1,21 +1,30 @@
-// This file is derived from the Cesium code base under Apache 2 license
-// See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
-// import {TILE3D_REFINEMENT, TILE3D_OPTIMIZATION_HINT} from '../constants';
+/* global fetch */
 import {Vector3, Matrix4} from 'math.gl';
 import {CullingVolume, Intersect, Plane} from '@math.gl/culling';
-import {parse, fetchFile, path} from '@loaders.gl/core';
-import Tile3DLoader from '../../tile-3d-loader';
-import Tileset3DLoader from '../../tileset-3d-loader';
-import {TILE3D_REFINEMENT, TILE3D_CONTENT_STATE, TILE3D_OPTIMIZATION_HINT} from '../constants';
+import {Ellipsoid} from '@math.gl/geospatial';
+
+import {createBoundingVolume} from '@loaders.gl/3d-tiles';
+
+import {getScreenSize} from '../utils/lod';
 import assert from '../utils/assert';
-import {createBoundingVolume} from './helpers/bounding-volume';
+import {TILE3D_REFINEMENT, TILE3D_CONTENT_STATE} from '../constants';
+import {parseI3SNodeGeometry} from '../parsers/parse-i3s-node-geometry';
 
-const defined = x => x !== undefined && x !== null;
-
-const scratchDate = new Date();
+const scratchCenter = new Vector3();
 const scratchToTileCenter = new Vector3();
-// TODO: Remove
 const scratchPlane = new Plane();
+
+function updatePriority(tile) {
+  // Check if any reason to abort
+  if (!tile._visible) {
+    return -1;
+  }
+  if (tile._contentState === TILE3D_CONTENT_STATE.UNLOADED) {
+    return -1;
+  }
+
+  return Math.max(1e7 - tile._priority, 0) || 0;
+}
 
 function computeVisibilityWithPlaneMask(cullingVolume, boundingVolume, parentPlaneMask) {
   // Support array of planes
@@ -62,13 +71,16 @@ function computeVisibilityWithPlaneMask(cullingVolume, boundingVolume, parentPla
   return mask;
 }
 
-// A Tile3DHeader represents a tile a Tileset3D. When a tile is first created, its content is not loaded;
+// A Tile3DHeader represents a tile as Tileset3D. When a tile is first created, its content is not loaded;
 // the content is loaded on-demand when needed based on the view.
 // Do not construct this directly, instead access tiles through {@link Tileset3D#tileVisible}.
-export default class Tile3DHeader {
+export default class I3STileHeader {
   constructor(tileset, header, parentHeader, basePath) {
     // assert(tileset._asset);
     assert(typeof header === 'object');
+
+    this.id = header.id;
+    this.lodMaxError = header.lodSelection[0].maxError;
 
     this._tileset = tileset;
     this._header = header;
@@ -88,24 +100,15 @@ export default class Tile3DHeader {
 
     // The error, in meters, introduced if this tile is rendered and its children are not.
     // This is used to compute screen space error, i.e., the error measured in pixels.
-    if ('geometricError' in header) {
-      this.geometricError = header.geometricError;
-    } else {
-      this.geometricError = (this.parent && this.parent.geometricError) || tileset.geometricError;
-      // eslint-disable-next-line
-      console.warn('3D Tile: Required prop geometricError is undefined. Using parent error');
-    }
-
     this._initializeTransforms(header);
     this._initializeBoundingVolumes(header);
     this._initializeContent(header);
     this._initializeCache(header);
 
-    // Marks whether the tile's children bounds are fully contained within the tile's bounds
-    // @type {TILE3D_OPTIMIZATION_HINT}
-    this._optimChildrenWithinParent = TILE3D_OPTIMIZATION_HINT.NOT_COMPUTED;
+    this._initializeRenderingState(header);
 
-    this._initializeRenderingState();
+    // for debugging
+    this._loadJudge = null;
 
     Object.seal(this);
   }
@@ -142,6 +145,10 @@ export default class Tile3DHeader {
     return this._visible && this._inRequestVolume;
   }
 
+  get hasChildren() {
+    return this.children.length > 0 || (this._header.children && this._header.children.length > 0);
+  }
+
   // The tile's content.  This represents the actual tile's payload,
   // not the content's metadata in the tileset JSON file.
   get content() {
@@ -162,9 +169,8 @@ export default class Tile3DHeader {
   // Determines if the tile has available content to render.  `true` if the tile's
   // content is ready or if it has expired content this renders while new content loads; otherwise,
   get contentAvailable() {
-    return (
-      (this.contentReady && this.hasRenderContent) ||
-      (defined(this._expiredContent) && !this.contentFailed)
+    return Boolean(
+      (this.contentReady && this.hasRenderContent) || (this._expiredContent && !this.contentFailed)
     );
   }
 
@@ -192,11 +198,7 @@ export default class Tile3DHeader {
   }
 
   get url() {
-    return this.tileset.getTileUrl(this.contentUri, this._basePath);
-  }
-
-  get uri() {
-    return this.tileset.getTileUrl(this.contentUri, this._basePath);
+    return `${this._basePath}/nodes/${this.id}`;
   }
 
   // Get the tile's bounding volume.
@@ -204,78 +206,28 @@ export default class Tile3DHeader {
     return this._boundingVolume;
   }
 
-  // Get the bounding volume of the tile's contents.  This defaults to the
-  // tile's bounding volume when the content's bounding volume is `undefined`.
-  get contentBoundingVolume() {
-    return this._contentBoundingVolume || this._boundingVolume;
-  }
-
   // Get the bounding sphere derived from the tile's bounding volume.
   get boundingSphere() {
     return this._boundingVolume.boundingSphere;
   }
 
-  // Returns the `extras` property in the tileset JSON for this tile, which contains application specific metadata.
-  // Returns `undefined` if `extras` does not exist.
-  // @see {@link https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#specifying-extensions-and-application-specific-extras|Extras in the 3D Tiles specification.}
-  get extras() {
-    return this._header.extras;
-  }
-
-  get hasChildren() {
-    // this.children are Tile3DHeader objects with content fetched from server
-    // this._header.children are children of this tile which are not yet fetched
-    return this.children.length > 0 || (this._header.children && this.children.length > 0);
-  }
-
   // Get the tile's screen space error.
-  getScreenSpaceError(frameState, useParentGeometricError) {
-    const tileset = this._tileset;
-    const parentGeometricError =
-      (this.parent && this.parent.geometricError) || tileset.geometricError;
-    const geometricError = useParentGeometricError ? parentGeometricError : this.geometricError;
-
-    // Leaf tiles do not have any error so save the computation
-    if (geometricError === 0.0) {
-      return 0.0;
-    }
-
-    // TODO: Orthographic Frustum needs special treatment?
-    // this._getOrthograhicScreenSpaceError();
-
-    // Avoid divide by zero when viewer is inside the tile
-    const distance = Math.max(this._distanceToCamera, 1e-7);
-    const {height, sseDenominator} = frameState;
-    let error = (geometricError * height) / (distance * sseDenominator);
-
-    error -= this._getDynamicScreenSpaceError(distance);
-
-    return error;
-  }
-
-  // TODO: Refined screen space error that minimizes tiles in non-first-person
-  _getDynamicScreenSpaceError(distance) {
-    function fog(distanceToCamera, density) {
-      const scalar = distanceToCamera * density;
-      return 1.0 - Math.exp(-(scalar * scalar));
-    }
-
-    const tileset = this._tileset;
-
-    if (tileset.dynamicScreenSpaceError && tileset._dynamicScreenSpaceErrorComputedDensity) {
-      const density = tileset._dynamicScreenSpaceErrorComputedDensity;
-      const factor = tileset.dynamicScreenSpaceErrorFactor;
-      const dynamicError = fog(distance, density) * factor;
-      return dynamicError;
-    }
-
-    return 0;
+  getScreenSpaceError(frameState) {
+    return getScreenSize(this, frameState);
   }
 
   // Requests the tile's content.
   // The request may not be made if the Request Scheduler can't prioritize it.
   // eslint-disable-next-line max-statements
-  async loadContent(frameState) {
+  async loadContent() {
+    if (!this.tileset._debug[this.id]) {
+      this.tileset._debug[this.id] = {
+        load: 0,
+        featureLoad: 0,
+        geometryLoad: 0,
+        unload: 0
+      };
+    }
     if (this.hasEmptyContent) {
       return false;
     }
@@ -286,66 +238,25 @@ export default class Tile3DHeader {
 
     const expired = this.contentExpired;
 
-    // Append a query parameter of the tile expiration date to prevent caching
-    // if (expired) {
-    //   expired: this.expireDate.toString()
-    // const request = new Request({
-    //   throttle: true,
-    //   throttleByServer: true,
-    //   type: RequestType.TILES3D,
-    //   priorityFunction: createPriorityFunction(this),
-    //   serverKey: this._serverKey
-    // });
-
     if (expired) {
       this.expireDate = undefined;
     }
 
     this._contentState = TILE3D_CONTENT_STATE.LOADING;
 
-    function updatePriority(tile) {
-      // Check if any reason to abort
-      if (!tile._visible) {
-        return -1;
-      }
-      if (tile._contentState === TILE3D_CONTENT_STATE.UNLOADED) {
-        return -1;
-      }
-      return Math.max(1e7 - tile._priority, 0) || 0;
-    }
-
     const cancelled = !(await this.tileset._requestScheduler.scheduleRequest(this, updatePriority));
 
     if (cancelled) {
       this._contentState = TILE3D_CONTENT_STATE.UNLOADED;
+      this.tileset._debug[this.id].unload++;
       return false;
     }
 
     try {
-      const contentUri = this.uri;
-
-      let response;
-      try {
-        this.tileset._requestScheduler.startRequest(this);
-        response = await fetchFile(contentUri, this.tileset.options.fetchOptions);
-      } finally {
-        this.tileset._requestScheduler.endRequest(this);
-      }
-
-      // The content can be a binary tile ot a JSON tileset
-      this._content = await parse(response, [Tile3DLoader, Tileset3DLoader]);
-      // if (Tile3D.isTile(content)) {
-      //   new Tileset3D(content, contentUri);
-
-      if (contentUri.indexOf('.json') !== -1) {
-        // Add tile headers for the nested tilset's subtree
-        // Async update of the tree should be fine since there would never be edits to the same node
-        // TODO - we need to capture the child tileset's URL
-        this._tileset._initializeTileHeaders(this._content, this, path.dirname(this.uri));
-      }
-
+      this.tileset._requestScheduler.startRequest(this);
+      await this._loadData();
+      this.tileset._requestScheduler.endRequest(this);
       this._contentState = TILE3D_CONTENT_STATE.READY;
-      this._contentLoaded();
       return true;
     } catch (error) {
       // Tile is unloaded before the content finishes loading
@@ -354,8 +265,52 @@ export default class Tile3DHeader {
     }
   }
 
+  async _loadFeatureData() {
+    const featureData = this._header.featureData[0];
+    const featureDataPath = `${this._basePath}/nodes/${this.id}/${featureData.href}`;
+    this.tileset._debug[this.id].featureLoad++;
+    const response = await fetch(featureDataPath);
+    return await response.json();
+  }
+
+  async _loadGeometryBuffer() {
+    const geometryData = this._header.geometryData[0];
+    const geometryDataPath = `${this._basePath}/nodes/${this.id}/${geometryData.href}`;
+    this.tileset._debug[this.id].geometryLoad++;
+    return await fetch(geometryDataPath).then(resp => resp.arrayBuffer());
+  }
+
+  async _loadData() {
+    if (!(this._content && this._content.featureData)) {
+      this._content = this._content || {};
+      this._content.featureData = {};
+
+      const featureData = await this._loadFeatureData();
+      const geometryBuffer = await this._loadGeometryBuffer();
+
+      this._content.featureData = featureData;
+
+      if (this._header.textureData) {
+        this._content.texture = `${this._basePath}/nodes/${this.id}/${
+          this._header.textureData[0].href
+        }`;
+      }
+
+      parseI3SNodeGeometry(geometryBuffer, this);
+      this.tileset._debug[this.id].load++;
+    }
+  }
+
   // Unloads the tile's content.
   unloadContent() {
+    if (!this.tileset._debug[this.id]) {
+      this.tileset._debug[this.id] = {
+        load: 0,
+        featureLoad: 0,
+        geometryLoad: 0,
+        unload: 0
+      };
+    }
     if (!this.hasRenderContent) {
       return false;
     }
@@ -364,14 +319,9 @@ export default class Tile3DHeader {
     }
     this._content = null;
     this._contentState = TILE3D_CONTENT_STATE.UNLOADED;
+    this.tileset._debug[this.id].unload++;
     return true;
   }
-
-  // _getOrthograhicScreenSpaceError() {
-  // if (frustum instanceof OrthographicFrustum) {
-  //   const pixelSize = Math.max(frustum.top - frustum.bottom, frustum.right - frustum.left) / Math.max(width, height);
-  //   error = geometricError / pixelSize;
-  // }
 
   // Update the tile's visibility.
   updateVisibility(frameState) {
@@ -389,9 +339,9 @@ export default class Tile3DHeader {
       : CullingVolume.MASK_INDETERMINATE;
     this._updateTransform(parentTransform);
     this._distanceToCamera = this.distanceToTile(frameState);
-    // this._centerZDepth = this.cameraSpaceZDepth(frameState);
     this._screenSpaceError = this.getScreenSpaceError(frameState, false);
     this._visibilityPlaneMask = this.visibility(frameState, parentVisibilityPlaneMask); // Use parent's plane mask to speed up visibility test
+    this._priority = this.lodMaxError;
     this._visible = this._visibilityPlaneMask !== CullingVolume.MASK_OUTSIDE;
     this._inRequestVolume = this.insideViewerRequestVolume(frameState);
 
@@ -399,15 +349,8 @@ export default class Tile3DHeader {
   }
 
   // Update whether the tile has expired.
-  updateExpiration() {
-    if (defined(this.expireDate) && this.contentReady && !this.hasEmptyContent) {
-      const now = Date.now(scratchDate);
-      if (Date.lessThan(this.expireDate, now)) {
-        this._contentState = TILE3D_CONTENT_STATE.EXPIRED;
-        this._expiredContent = this._content;
-      }
-    }
-  }
+  // TODO
+  updateExpiration() {}
 
   // Determines whether the tile's bounding volume intersects the culling volume.
   // @param {FrameState} frameState The frame state.
@@ -415,21 +358,8 @@ export default class Tile3DHeader {
   // @returns {Number} A plane mask as described above in {@link CullingVolume#computeVisibilityWithPlaneMask}.
   visibility(frameState, parentVisibilityPlaneMask) {
     const {cullingVolume} = frameState;
-    const {boundingVolume, tileset} = this;
+    const {boundingVolume} = this;
 
-    const {clippingPlanes, clippingPlanesOriginMatrix} = tileset;
-    if (clippingPlanes && clippingPlanes.enabled) {
-      const intersection = clippingPlanes.computeIntersectionWithBoundingVolume(
-        boundingVolume,
-        clippingPlanesOriginMatrix
-      );
-      this._isClipped = intersection !== Intersect.INSIDE;
-      if (intersection === Intersect.OUTSIDE) {
-        return CullingVolume.MASK_OUTSIDE;
-      }
-    }
-
-    // return cullingVolume.computeVisibilityWithPlaneMask(boundingVolume, parentVisibilityPlaneMask);
     return computeVisibilityWithPlaneMask(cullingVolume, boundingVolume, parentVisibilityPlaneMask);
   }
 
@@ -439,39 +369,6 @@ export default class Tile3DHeader {
   // @returns {Intersect} The result of the intersection: the tile's content is completely outside, completely inside, or intersecting the culling volume.
   contentVisibility(frameState) {
     return true;
-    /*
-    // Assumes the tile's bounding volume intersects the culling volume already, so
-    // just return Intersect.INSIDE if there is no content bounding volume.
-    if (!defined(this._contentBoundingVolume)) {
-      return Intersect.INSIDE;
-    }
-
-    if (this._visibilityPlaneMask === CullingVolume.MASK_INSIDE) {
-      // The tile's bounding volume is completely inside the culling volume so
-      // the content bounding volume must also be inside.
-      return Intersect.INSIDE;
-    }
-
-    // PERFORMANCE_IDEA: is it possible to burn less CPU on this test since we know the
-    // tile's (not the content's) bounding volume intersects the culling volume?
-    const cullingVolume = frameState.cullingVolume;
-    const boundingVolume = tile._contentBoundingVolume;
-
-    const tileset = this._tileset;
-    const clippingPlanes = tileset.clippingPlanes;
-    if (defined(clippingPlanes) && clippingPlanes.enabled) {
-      const intersection = clippingPlanes.computeIntersectionWithBoundingVolume(
-        boundingVolume,
-        tileset.clippingPlanesOriginMatrix
-      );
-      this._isClipped = intersection !== Intersect.INSIDE;
-      if (intersection === Intersect.OUTSIDE) {
-        return Intersect.OUTSIDE;
-      }
-    }
-
-    return cullingVolume.computeVisibility(boundingVolume);
-    */
   }
 
   // Computes the (potentially approximate) distance from the closest point of the tile's bounding volume to the camera.
@@ -479,7 +376,7 @@ export default class Tile3DHeader {
   // @returns {Number} The distance, in meters, or zero if the camera is inside the bounding volume.
   distanceToTile(frameState) {
     const boundingVolume = this._boundingVolume;
-    return Math.sqrt(Math.max(boundingVolume.distanceSquaredTo(frameState.camera.position), 0));
+    return Math.sqrt(Math.max(boundingVolume.distanceSquaredTo(frameState.camera.position), 1e-7));
   }
 
   // Computes the tile's camera-space z-depth.
@@ -497,8 +394,7 @@ export default class Tile3DHeader {
    * @returns {Boolean} Whether the camera is inside the volume.
    */
   insideViewerRequestVolume(frameState) {
-    const viewerRequestVolume = this._viewerRequestVolume;
-    return !viewerRequestVolume || viewerRequestVolume.distanceToCamera(frameState) === 0.0;
+    return true;
   }
 
   // PRIVATE
@@ -545,29 +441,14 @@ export default class Tile3DHeader {
   }
 
   _initializeBoundingVolumes(tileHeader) {
-    this._boundingVolume = createBoundingVolume(tileHeader.boundingVolume, this.computedTransform);
+    scratchCenter.copy(tileHeader.mbs);
+    const centerCartesian = Ellipsoid.WGS84.cartographicToCartesian(tileHeader.mbs.slice(0, 3));
+    const boundingVolume = {
+      sphere: [...centerCartesian, tileHeader.mbs[3]]
+    };
 
-    this._contentBoundingVolume = null;
-    this._viewerRequestVolume = null;
-
-    // Non-leaf tiles may have a content bounding-volume, which is a tight-fit bounding volume
-    // around only the features in the tile. This box is useful for culling for rendering,
-    // but not for culling for traversing the tree since it does not guarantee spatial coherence, i.e.,
-    // since it only bounds features in the tile, not the entire tile, children may be
-    // outside of this box.
-    if (tileHeader.content && tileHeader.content.boundingVolume) {
-      this._contentBoundingVolume = createBoundingVolume(
-        tileHeader.boundingVolume,
-        this.computedTransform
-      );
-    }
-
-    if (tileHeader.viewerRequestVolume) {
-      this._viewerRequestVolume = createBoundingVolume(
-        tileHeader.viewerRequestVolume,
-        this.computedTransform
-      );
-    }
+    this._mbs = tileHeader.mbs;
+    this._boundingVolume = createBoundingVolume(boundingVolume, this.computedTransform);
   }
 
   _initializeContent(tileHeader) {
@@ -582,24 +463,17 @@ export default class Tile3DHeader {
     // This is `false` until the tile's content is loaded.
     this.hasTilesetContent = false;
 
-    // If a content tileHeader
-    if (tileHeader.content) {
-      this.contentUri = tileHeader.content.uri || tileHeader.content.url;
-      if ('url' in tileHeader) {
-        // eslint-disable-next-line
-        console.warn('Tileset 3D: "content.url" property deprecated. Use "content.uri" instead.');
-        this.contentUri = tileHeader.url;
-      }
+    if (tileHeader.featureData && tileHeader.geometryData) {
+      this.contentUri = tileHeader.geometryData[0].href;
       this._content = null;
       this.hasEmptyContent = false;
       this.contentState = TILE3D_CONTENT_STATE.UNLOADED;
-      this.fullUri = `${this._basePath}/${this.contentUri}`;
-      this.id = this.fullUri;
+      this.fullUri = `${this._basePath}/${this.id}/${this.contentUri}`;
     }
   }
 
   // TODO - remove anything not related to basic visibility detection
-  _initializeRenderingState() {
+  _initializeRenderingState(header) {
     // Members this are updated every frame for tree traversal and rendering optimizations:
     this._distanceToCamera = 0;
     this._centerZDepth = 0;
@@ -608,8 +482,7 @@ export default class Tile3DHeader {
     this._visible = false;
     this._inRequestVolume = false;
 
-    this._finalResolution = true;
-    this._depth = 0;
+    this._depth = header.level;
     this._stackLength = 0;
     this._selectionDepth = 0;
 
@@ -618,8 +491,7 @@ export default class Tile3DHeader {
     this._visitedFrame = 0;
     this._selectedFrame = 0;
     this._requestedFrame = 0;
-    this._ancestorWithContent = undefined;
-    this._ancestorWithContentAvailable = undefined;
+
     this._refines = false;
     this._shouldSelect = false;
     this._priority = 0.0;
@@ -639,26 +511,6 @@ export default class Tile3DHeader {
     }
   }
 
-  _isTileset(content) {
-    return Boolean(content.asset);
-  }
-
-  _contentLoaded() {
-    // Vector and Geometry tile rendering do not support the skip LOD optimization.
-    switch (this._content && this._content.type) {
-      case 'vctr':
-      case 'geom':
-        this.tileset.traverser.disableSkipLevelOfDetail = true;
-        break;
-      default:
-    }
-
-    // The content may be tileset json
-    if (this._isTileset(this._content)) {
-      this.hasTilesetContent = true;
-    }
-  }
-
   // Update the tile's transform. The transform is applied to the tile's bounding volumes.
   _updateTransform(parentTransform = new Matrix4()) {
     const computedTransform = parentTransform.clone().multiplyRight(this.transform);
@@ -670,72 +522,13 @@ export default class Tile3DHeader {
 
     this.computedTransform = computedTransform;
 
-    // Matrix4.clone(computedTransform, this.computedTransform);
-
     // Update the bounding volumes
     const header = this._header;
 
-    const content = this._header.content;
     this._boundingVolume = createBoundingVolume(
       header.boundingVolume,
       this.computedTransform,
       this._boundingVolume
     );
-    if (this._contentBoundingVolume) {
-      this._contentBoundingVolume = createBoundingVolume(
-        content.boundingVolume,
-        this.computedTransform,
-        this._contentBoundingVolume
-      );
-    }
-    if (this._viewerRequestVolume) {
-      this._viewerRequestVolume = createBoundingVolume(
-        header.viewerRequestVolume,
-        this.computedTransform,
-        this._viewerRequestVolume
-      );
-    }
   }
 }
-
-/*
-function updateContent(tile, tileset, frameState) {
-  const content = tile._content;
-  const expiredContent = tile._expiredContent;
-
-  if (expiredContent) {
-    if (!tile.contentReady) {
-      // Render the expired content while the content loads
-      expiredContent.update(tileset, frameState);
-      return;
-    }
-
-    // New content is ready, destroy expired content
-    tile._expiredContent.destroy();
-    tile._expiredContent = undefined;
-  }
-
-  content.update(tileset, frameState);
-}
-
-function updateExpireDate(tile) {
-  if (defined(tile.expireDuration)) {
-    const expireDurationDate = Date.now(scratchDate);
-    Date.addSeconds(expireDurationDate, tile.expireDuration, expireDurationDate);
-
-    if (defined(tile.expireDate)) {
-      if (Date.lessThan(tile.expireDate, expireDurationDate)) {
-        Date.clone(expireDurationDate, tile.expireDate);
-      }
-    } else {
-      tile.expireDate = Date.clone(expireDurationDate);
-    }
-  }
-}
-
-function createPriorityFunction(tile) {
-  return function() {
-    return tile._priority;
-  };
-}
-*/

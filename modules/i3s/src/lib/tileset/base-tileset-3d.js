@@ -7,12 +7,14 @@ import {Stats} from 'probe.gl';
 import {path} from '@loaders.gl/core';
 
 import assert from '../utils/assert';
-import RequestScheduler from '../request-utils/request-scheduler';
 
-import {calculateTransformProps} from './helpers/transform-utils';
-import Tile3DHeader from './tile-3d-header';
-import Tileset3DTraverser from './tileset-3d-traverser';
-import Tileset3DCache from './tileset-3d-cache';
+import {
+  _Tileset3DCache as Tileset3DCache,
+  _RequestScheduler as RequestScheduler,
+  calculateTransformProps
+} from '@loaders.gl/3d-tiles';
+import I3STileHeader from './i3s-tile-header';
+import Tileset3DTraverser from './i3s-tileset-traverser';
 
 // Tracked Stats
 const TILES_TOTAL = 'Tiles In Tileset(s)';
@@ -107,7 +109,7 @@ export default class Tileset3D {
     // PUBLIC MEMBERS
     this.options = {...DEFAULT_OPTIONS, ...options};
     this.url = url; // The url to a tileset JSON file.
-    this.basePath = path.dirname(url); // base path that non-absolute paths in tileset are relative to.
+    this.basePath = options.basePath || path.dirname(url); // base path that non-absolute paths in tileset are relative to.
     this.modelMatrix = this.options.modelMatrix;
     this.stats = new Stats({id: url});
     this._initializeStats();
@@ -169,10 +171,6 @@ export default class Tileset3D {
     this._destroy();
   }
 
-  // Gets the tileset's asset object property, which contains metadata about the tileset.
-  // get asset() {
-  //   return this._asset;
-  // }
   get traverser() {
     return this._traverser;
   }
@@ -208,9 +206,8 @@ export default class Tileset3D {
 
   // The tileset's bounding sphere.
   get boundingSphere() {
-    this._checkReady();
-    this._root.updateTransform(this.modelMatrix);
-    return this._root.boundingSphere;
+    this.root._updateTransform(this.modelMatrix);
+    return this.root.boundingSphere;
   }
 
   // Returns the time, in milliseconds, since the tileset was loaded and first updated.
@@ -303,18 +300,18 @@ export default class Tileset3D {
   // eslint-disable-next-line max-statements
   _initializeTileSet(tilesetJson, options) {
     this.asset = tilesetJson.asset;
-    if (!this.asset) {
-      throw new Error('Tileset must have an asset property.');
-    }
-    if (this.asset.version !== '0.0' && this.asset.version !== '1.0') {
-      throw new Error('The tileset must be 3D Tiles version 0.0 or 1.0.');
-    }
+    // if (!this.asset) {
+    // throw new Error('Tileset must have an asset property.');
+    // }
+    // if (this.asset.version !== '0.0' && this.asset.version !== '1.0') {
+    // throw new Error('The tileset must be 3D Tiles version 0.0 or 1.0.');
+    // }
 
     // Note: `asset.tilesetVersion` is version of the tileset itself (not the version of the 3D TILES standard)
     // We add this version as a `v=1.0` query param to fetch the right version and not get an older cached version
-    if ('tilesetVersion' in this.asset) {
-      this._queryParams.v = this.asset.tilesetVersion;
-    }
+    // if ('tilesetVersion' in this.asset) {
+    //   this._queryParams.v = this.asset.tilesetVersion;
+    // }
 
     // TODO - ion resources have a credits property we can use for additional attribution.
     this.credits = {
@@ -397,35 +394,10 @@ export default class Tileset3D {
   _initializeTileHeaders(tilesetJson, parentTileHeader, basePath) {
     // A tileset JSON file referenced from a tile may exist in a different directory than the root tileset.
     // Get the basePath relative to the external tileset.
-    const rootTile = new Tile3DHeader(this, tilesetJson.root, parentTileHeader, basePath); // resource
+    const rootTile = new I3STileHeader(this, tilesetJson.root, parentTileHeader, basePath); // resource
 
-    // If there is a parentTileHeader, add the root of the currently loading tileset
-    // to parentTileHeader's children, and update its _depth.
     if (parentTileHeader) {
       parentTileHeader.children.push(rootTile);
-      rootTile._depth = parentTileHeader._depth + 1;
-    }
-
-    const stack = [];
-    stack.push(rootTile);
-
-    while (stack.length > 0) {
-      const tile = stack.pop();
-      this.stats.get(TILES_TOTAL).incrementCount();
-      // this._allTilesAdditive = this._allTilesAdditive && tile.refine === TILE_3D_REFINE.ADD;
-
-      const children = tile._header.children || [];
-      for (const childHeader of children) {
-        const childTile = new Tile3DHeader(this, childHeader, tile, basePath);
-        tile.children.push(childTile);
-        childTile._depth = tile._depth + 1;
-        stack.push(childTile);
-      }
-
-      // TODO:
-      // if (this.options.cullWithChildrenBounds) {
-      //   Tile3DOptimizations.checkChildrenWithinParent(tile);
-      // }
     }
 
     return rootTile;
@@ -471,6 +443,7 @@ export default class Tileset3D {
       calculateTransformProps(tile, tile._content);
     }
 
+    this.addTileToCache(tile);
     this.options.onTileLoad(tile);
   }
 

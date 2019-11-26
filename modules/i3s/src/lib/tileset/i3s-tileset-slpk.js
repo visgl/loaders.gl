@@ -1,4 +1,4 @@
-import I3STraverser from './i3s-traverser';
+import I3STraverser from './i3s-tileset-traverser';
 import {parseI3SNodeGeometry} from '../parsers/parse-i3s-node-geometry';
 
 export default class I3STileset {
@@ -12,6 +12,7 @@ export default class I3STileset {
       selectedTiles: null
     };
 
+    // TODO fix traversal
     this._traverser = new I3STraverser();
   }
 
@@ -68,7 +69,3 @@ function getTileFeaturePath(tileId, featureNumber) {
 function getTileGeometryBufferPath(nodeId, geometryNumber) {
   return `nodes/${nodeId}/geometries/${geometryNumber}.bin.gz`;
 }
-
-// function getTileSharedResourcePath(nodeId, featureNumber) {
-//   return `nodes/${nodeId}/shared/sharedResource.json.gz`;
-// }

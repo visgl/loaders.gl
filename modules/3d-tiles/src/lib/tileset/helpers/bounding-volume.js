@@ -45,7 +45,6 @@ export function createBoundingVolume(boundingVolumeHeader, transform, result) {
       [degrees(east), degrees(south), maxHeight],
       scratchSouthEast
     );
-
     const centerInCartesian = new Vector3().addVectors(northWest, southEast).multiplyScalar(0.5);
     const radius = new Vector3().subVectors(northWest, southEast).len() / 2.0;
 
