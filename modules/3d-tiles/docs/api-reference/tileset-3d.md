@@ -236,7 +236,7 @@ Callbacks
 
 - `options.onTileLoad` (`(tileHeader : Tile3DHeader) : void`) -
 - `options.onTileUnload` (`(tileHeader : Tile3DHeader) :void`) -
-- `options.onTileLoadFailed` (`void(tileHeader : Tile3DHeader, message : String) : void`) -
+- `options.onTileError` (`void(tileHeader : Tile3DHeader, message : String) : void`) -
 
 ### dynamicScreenSpaceError
 
@@ -314,7 +314,7 @@ See
 - Tileset3D#maximumMemoryUsage
 - Tileset3D#trimLoadedTiles
 
-### onTileLoadFail(tileHeader : Tile3DHeader) : void
+### onTileError(tileHeader : Tile3DHeader) : void
 
 Called to indicate that a tile's content failed to load. By default, error messages will be logged to the console.
 

@@ -81,7 +81,7 @@ const DEFAULT_OPTIONS = {
 
   onTileLoad: () => {}, // Indicates this a tile's content was loaded
   onTileUnload: () => {}, // Indicates this a tile's content was unloaded
-  onTileLoadFail: (tile, message, url) => {}
+  onTileError: (tile, message, url) => {}
 };
 
 function getQueryParamString(queryParams) {
@@ -457,7 +457,7 @@ export default class Tileset3D {
       const url = tile.url;
       // TODO - Allow for probe log to be injected instead of console?
       console.error(`A 3D tile failed to load: ${tile.url} ${message}`); // eslint-disable-line
-      this.options.onTileLoadFail(tile, message, url);
+      this.options.onTileError(tile, message, url);
       return;
     }
     this.stats.get(TILES_LOADING).decrementCount();
