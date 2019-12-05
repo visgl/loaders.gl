@@ -13,7 +13,8 @@ const defined = x => x !== undefined;
 
 const scratchMatrix = new Matrix3();
 const scratchScale = new Vector3();
-const scratchCenter = new Vector3();
+const scratchNorthWest = new Vector3();
+const scratchSouthEast = new Vector3();
 // const scratchRectangle = new Rectangle();
 // const scratchOrientedBoundingBox = new OrientedBoundingBox();
 const scratchTransform = new Matrix4();
@@ -36,22 +37,20 @@ export function createBoundingVolume(boundingVolumeHeader, transform, result) {
     // Heights are in meters above (or below) the WGS 84 ellipsoid.
     const [west, south, east, north, minHeight, maxHeight] = boundingVolumeHeader.region;
 
-    const center = new Vector3(
-      degrees((west + east) / 2),
-      degrees((north + south) / 2),
-      (minHeight + maxHeight) / 2
+    const northWest = Ellipsoid.WGS84.cartographicToCartesian(
+      [degrees(west), degrees(north), minHeight],
+      scratchNorthWest
+    );
+    const southEast = Ellipsoid.WGS84.cartographicToCartesian(
+      [degrees(east), degrees(south), maxHeight],
+      scratchSouthEast
     );
 
-    const centerInCartesian = Ellipsoid.WGS84.cartographicToCartesian(center, scratchCenter);
+    const centerInCartesian = new Vector3().addVectors(northWest, southEast).multiplyScalar(0.5);
+    const radius = new Vector3().subVectors(northWest, southEast).len() / 2.0;
 
-    const northWest = Ellipsoid.WGS84.cartographicToCartesian([north, west, 0]);
-    const northEast = Ellipsoid.WGS84.cartographicToCartesian([north, east, 0]);
-    const southWest = Ellipsoid.WGS84.cartographicToCartesian([south, west, 0]);
-    const radius =
-      (Math.abs(northEast[0] - northWest[0]) + Math.abs(southWest[1] - northWest[1])) * 8;
-
-    // TODO fix region boundingVolume
-    // for now, create a fake big sphere as the boundingVolume
+    // TODO improve region boundingVolume
+    // for now, create a sphere as the boundingVolume instead of box
     return createSphere(
       [centerInCartesian[0], centerInCartesian[1], centerInCartesian[2], radius],
       new Matrix4()
