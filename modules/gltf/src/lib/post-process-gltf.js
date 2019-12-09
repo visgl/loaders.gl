@@ -282,16 +282,18 @@ class GLTFPostProcessor {
     accessor.bytesPerElement = accessor.bytesPerComponent * accessor.components;
 
     // Create TypedArray for the accessor
-    const TypedArrayConstructor = TYPES[accessor.componentType];
-    const buffer = accessor.bufferView.buffer.data;
-    const byteOffset =
-      (accessor.bufferView.byteOffset || 0) + (accessor.bufferView.buffer.byteOffset || 0);
-    const length = accessor.bufferView.byteLength / accessor.bytesPerComponent;
-
-    try {
-      accessor.value = new TypedArrayConstructor(buffer, byteOffset, length);
-    } catch (error) {
-      console.warn(`glTF file error: Could not create TypedArray for the accessor ${accessor.id}`); // eslint-disable-line
+    if (accessor.bufferView) {
+      const TypedArrayConstructor = TYPES[accessor.componentType];
+      const buffer = accessor.bufferView.buffer.data;
+      const byteOffset =
+        (accessor.bufferView.byteOffset || 0) + (accessor.bufferView.buffer.byteOffset || 0);
+      const length = accessor.bufferView.byteLength / accessor.bytesPerComponent;
+  
+      try {
+        accessor.values = new TypedArrayConstructor(buffer, byteOffset, length);
+      } catch (error) {
+        console.warn(`glTF file error: Could not create TypedArray for the accessor ${accessor.id}`); // eslint-disable-line
+      }
     }
 
     return accessor;
