@@ -288,11 +288,14 @@ class GLTFPostProcessor {
       const byteOffset =
         (accessor.bufferView.byteOffset || 0) + (accessor.bufferView.buffer.byteOffset || 0);
       const length = accessor.bufferView.byteLength / accessor.bytesPerComponent;
-  
+
       try {
-        accessor.values = new TypedArrayConstructor(buffer, byteOffset, length);
+        accessor.value = new TypedArrayConstructor(buffer, byteOffset, length);
       } catch (error) {
-        console.warn(`glTF file error: Could not create TypedArray for the accessor ${accessor.id}`); // eslint-disable-line
+        // eslint-disable-next-line
+        console.warn(
+          `glTF file error: Could not create TypedArray for the accessor ${accessor.id}`
+        );
       }
     }
 
