@@ -20,13 +20,13 @@ const COMPONENTS = {
   MAT4: 16
 };
 
-const BYTES = {
-  5120: 1, // BYTE
-  5121: 1, // UNSIGNED_BYTE
-  5122: 2, // SHORT
-  5123: 2, // UNSIGNED_SHORT
-  5125: 4, // UNSIGNED_INT
-  5126: 4 // FLOAT
+const TYPES = {
+  5120: Int8Array,   // BYTE
+  5121: Uint8Array,  // UNSIGNED_BYTE
+  5122: Int16Array,  // SHORT
+  5123: Uint16Array, // UNSIGNED_SHORT
+  5125: Uint32Array, // UNSIGNED_INT
+  5126: Float32Array // FLOAT
 };
 
 const GL_SAMPLER = {
@@ -59,7 +59,7 @@ const DEFAULT_SAMPLER = {
 };
 
 function getBytesFromComponentType(componentType) {
-  return BYTES[componentType];
+  return TYPES[componentType].BYTES_PER_ELEMENT;
 }
 
 function getSizeFromAccessorType(type) {
@@ -281,7 +281,17 @@ class GLTFPostProcessor {
     accessor.components = getSizeFromAccessorType(accessor.type);
     accessor.bytesPerElement = accessor.bytesPerComponent * accessor.components;
 
-    // TODO - Create TypedArray for the accessor
+    // Create TypedArray for the accessor
+    const TypedArrayConstructor = TYPES[accessor.componentType];
+    const buffer = accessor.bufferView.buffer.data;
+    const byteOffset = (accessor.bufferView.byteOffset || 0) + (accessor.bufferView.buffer.byteOffset || 0);
+    const length = accessor.bufferView.byteLength / accessor.bytesPerComponent;
+
+    try {
+      accessor.value = new TypedArrayConstructor(buffer, byteOffset, length);
+    } catch (error) {
+      console.warn(`glTF file error: Could not create TypedArray for the accessor ${accessor.id}`); // eslint-disable-line
+    }
 
     return accessor;
   }
