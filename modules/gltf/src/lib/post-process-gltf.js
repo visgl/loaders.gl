@@ -21,9 +21,9 @@ const COMPONENTS = {
 };
 
 const TYPES = {
-  5120: Int8Array,   // BYTE
-  5121: Uint8Array,  // UNSIGNED_BYTE
-  5122: Int16Array,  // SHORT
+  5120: Int8Array, // BYTE
+  5121: Uint8Array, // UNSIGNED_BYTE
+  5122: Int16Array, // SHORT
   5123: Uint16Array, // UNSIGNED_SHORT
   5125: Uint32Array, // UNSIGNED_INT
   5126: Float32Array // FLOAT
@@ -59,7 +59,7 @@ const DEFAULT_SAMPLER = {
 };
 
 function getBytesFromComponentType(componentType) {
-  return TYPES[componentType].BYTES_PER_ELEMENT;
+  return TYPES[componentType] && TYPES[componentType].BYTES_PER_ELEMENT;
 }
 
 function getSizeFromAccessorType(type) {
@@ -284,7 +284,8 @@ class GLTFPostProcessor {
     // Create TypedArray for the accessor
     const TypedArrayConstructor = TYPES[accessor.componentType];
     const buffer = accessor.bufferView.buffer.data;
-    const byteOffset = (accessor.bufferView.byteOffset || 0) + (accessor.bufferView.buffer.byteOffset || 0);
+    const byteOffset =
+      (accessor.bufferView.byteOffset || 0) + (accessor.bufferView.buffer.byteOffset || 0);
     const length = accessor.bufferView.byteLength / accessor.bytesPerComponent;
 
     try {
