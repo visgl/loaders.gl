@@ -1,4 +1,5 @@
 import assert from './utils/assert';
+import {getAccessorArrayTypeAndLength} from './gltf-utils/gltf-utils';
 
 // This is a post processor for loaded glTF files
 // The goal is to make the loaded data easier to use in WebGL applications
@@ -20,13 +21,13 @@ const COMPONENTS = {
   MAT4: 16
 };
 
-const TYPES = {
-  5120: Int8Array, // BYTE
-  5121: Uint8Array, // UNSIGNED_BYTE
-  5122: Int16Array, // SHORT
-  5123: Uint16Array, // UNSIGNED_SHORT
-  5125: Uint32Array, // UNSIGNED_INT
-  5126: Float32Array // FLOAT
+const BYTES = {
+  5120: 1, // BYTE
+  5121: 1, // UNSIGNED_BYTE
+  5122: 2, // SHORT
+  5123: 2, // UNSIGNED_SHORT
+  5125: 4, // UNSIGNED_INT
+  5126: 4 // FLOAT
 };
 
 const GL_SAMPLER = {
@@ -59,7 +60,7 @@ const DEFAULT_SAMPLER = {
 };
 
 function getBytesFromComponentType(componentType) {
-  return TYPES[componentType] && TYPES[componentType].BYTES_PER_ELEMENT;
+  return BYTES[componentType];
 }
 
 function getSizeFromAccessorType(type) {
@@ -98,7 +99,9 @@ class GLTFPostProcessor {
       json.textures = json.textures.map((texture, i) => this._resolveTexture(texture, i));
     }
     if (json.accessors) {
-      json.accessors = json.accessors.map((accessor, i) => this._resolveAccessor(accessor, i));
+      json.accessors = json.accessors.map((accessor, i) =>
+        this._resolveAccessor(accessor, i, options)
+      );
     }
     if (json.materials) {
       json.materials = json.materials.map((material, i) => this._resolveMaterial(material, i));
@@ -268,7 +271,7 @@ class GLTFPostProcessor {
     return material;
   }
 
-  _resolveAccessor(accessor, index) {
+  _resolveAccessor(accessor, index, options) {
     // accessor = {...accessor};
     accessor.id = accessor.id || `accessor-${index}`;
     if (accessor.bufferView !== undefined) {
@@ -282,21 +285,12 @@ class GLTFPostProcessor {
     accessor.bytesPerElement = accessor.bytesPerComponent * accessor.components;
 
     // Create TypedArray for the accessor
-    if (accessor.bufferView) {
-      const TypedArrayConstructor = TYPES[accessor.componentType];
-      const buffer = accessor.bufferView.buffer.data;
-      const byteOffset =
-        (accessor.bufferView.byteOffset || 0) + (accessor.bufferView.buffer.byteOffset || 0);
-      const length = accessor.bufferView.byteLength / accessor.bytesPerComponent;
+    if (options.gltf.resolveValue && accessor.bufferView) {
+      const buffer = accessor.bufferView.buffer;
+      const {ArrayType, length} = getAccessorArrayTypeAndLength(accessor, accessor.bufferView);
+      const byteOffset = (accessor.bufferView.byteOffset || 0) + buffer.byteOffset;
 
-      try {
-        accessor.value = new TypedArrayConstructor(buffer, byteOffset, length);
-      } catch (error) {
-        // eslint-disable-next-line
-        console.warn(
-          `glTF file error: Could not create TypedArray for the accessor ${accessor.id}`
-        );
-      }
+      accessor.value = new ArrayType(buffer.arrayBuffer, byteOffset, length);
     }
 
     return accessor;
@@ -356,7 +350,7 @@ class GLTFPostProcessor {
     // bufferView = {...bufferView};
     bufferView.id = bufferView.id || `bufferView-${index}`;
     const bufferIndex = bufferView.buffer;
-    bufferView.buffer = this.getBuffer(bufferIndex);
+    bufferView.buffer = this.buffers[bufferIndex];
 
     const arrayBuffer = this.buffers[bufferIndex].arrayBuffer;
     let byteOffset = this.buffers[bufferIndex].byteOffset || 0;
