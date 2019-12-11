@@ -53,19 +53,19 @@ Note: while supported, synchronous parsing of glTF (e.g. using `parseSync()`) ha
 | `gltf.fetchImages` | Boolean | `false` | Fetch any referenced image files (and decode base64 encoded URIS). Async only. |
 | `gltf.parseImages` | Boolean | `false` |
 | `gltf.decompress`  | Boolean | `true`  | Decompress Draco compressed meshes (if DracoLoader available).                 |
-| `gltf.postProcess` | Boolean | `true`  | Perform additional post processing before returning data.                      |
+| `gltf.postProcess` | Boolean | `true`  | Perform additional post processing on the loaded glTF data.                    |
 
 Remarks:
 
-- `postProcess`: Performs additional [post processing](docs/api-reference/post-process-gltf) to simplify use in WebGL libraries. Changes the return value of the call.
+- The `gltf.postProcess` option activates additional [post processing](docs/api-reference/post-process-gltf) that transforms parts of JSON structure in the loaded glTF data, to make glTF data easier use in applications and WebGL libraries, however this changes the format of the data returned by the `GLTFLoader`.
 
 ## Data Format
 
 ### With Post Processing
 
-The format of data returned by the `GLTFLoader` depends on whether the `gltf.postProcess` option is `true`. When true, the parsed JSON structure will be returned, and [post processing](docs/api-reference/post-process-gltf) will have been performed, which will link data from binary buffers into the parsed JSON structure using non-standard fields, and also modify the data in other ways to make it easier to use.
+When the `GLTFLoader` is called with `gltf.postProcess` option set to `true` (the default),the parsed JSON chunk will be returned, and [post processing](docs/api-reference/post-process-gltf) will have been performed, which will link data from binary buffers into the parsed JSON structure using non-standard fields, and also modify the data in other ways to make it easier to use.
 
-At the top level, this will look like a standard json structure:
+At the top level, this will look like a standard glTF JSON structure:
 
 ```json
 {
@@ -76,11 +76,11 @@ At the top level, this will look like a standard json structure:
 }
 ```
 
-For details on the extra fields added to the returned data structure, see [post processing](docs/api-reference/post-process-gltf).
+However, the objects inside these arrays will have been pre-processed to simplify usage. For details on changes and extra fields added to the various glTF objects, see [post processing](docs/api-reference/post-process-gltf).
 
-### With Post Processing
+### Without Post Processing
 
-By setting `gltf.postProcess` to `false`, a "pure" gltf data structure will be returned, with binary buffers provided as an `ArrayBuffer` array.
+By setting `gltf.postProcess` to `false`, an unprocessed glTF/GLB data structure will be returned, with binary buffers provided as an `ArrayBuffer` array.
 
 ```json
 {
@@ -88,11 +88,11 @@ By setting `gltf.postProcess` to `false`, a "pure" gltf data structure will be r
   baseUri: String,
 
   // JSON Chunk
-  json: Object, // This will be the standard glTF json structuure shown above
+  json: Object, // Containse the parsed glTF JSON or the parsed GLB JSON chunk
 
   // Length and indices of this array will match `json.buffers`
   // The GLB bin chunk, if present, will be found in buffer 0.
-  // Additional buffers are fetched or base64 decoded from the JSON uri:s.
+  // Additional glTF json `buffers` are fetched and base64 decoded from the JSON uri:s.
   buffers: [{
     arrayBuffer: ArrayBuffer,
     byteOffset: Number,

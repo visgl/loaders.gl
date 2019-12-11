@@ -32,15 +32,7 @@ test('GLTFLoader#parseSync()', async t => {
 test('GLTFLoader#load(binary)', async t => {
   const data = await load(GLTF_BINARY_URL, GLTFLoader);
   t.ok(data.asset, 'GLTFLoader returned parsed data');
-  t.end();
-});
 
-test('GLTFLoader#load(binary)', async t => {
-  const data = await load(GLTF_BINARY_URL, GLTFLoader, {
-    gltf: {postProcess: true, resolveValue: true}
-  });
-  const length = data.meshes[0].primitives[0].attributes.POSITION.value.length;
-  t.equal(length, 6036, 'GLTFLoader correctly resolve accessor value');
   t.end();
 });
 
@@ -71,4 +63,19 @@ test('GLTFLoader#load(3d tile GLB)', async t => {
     /Invalid GLB version 1/,
     `GLB v1 is rejected with a user-friendly message`
   );
+});
+
+// Check load options
+
+test('GLTFLoader#options({postProcess: true})', async t => {
+  const data = await load(GLTF_BINARY_URL, GLTFLoader, {
+    gltf: {postProcess: true}
+  });
+  const value = data.meshes[0].primitives[0].attributes.POSITION.value;
+  t.ok(
+    ArrayBuffer.isView(value),
+    'GLTFLoader({postProcess: true}) resolves accessor value as typed array'
+  );
+  t.equal(value.length, 6036, 'GLTFLoader({postProcess: true}) resolves accessor value length');
+  t.end();
 });

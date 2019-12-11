@@ -48,13 +48,13 @@ The GLTF post processor copies objects in the input gltf json field as necessary
 
 ### Replace indices with references
 
-The GLTF file format links nodes through indices. The `nodes` field in an object in the top-level glTF `scenegraph` array. is an array of indices into the top-level `nodes` array. Each node has a `mesh` attribute that is an index into to the `meshes` array, and so on.
+The first thing that `postProcessGLTF` does is replace glTF indices with object references to simplify iteration over the scenegraph.
 
-Having to follow indices is inconvenient when working with the gltf data in JavaScript. So during post processing, indices will be replaced with references to the indexed objects, enabling applications to use simple iteration to follow the scenegraph.
+Background: The GLTF file format describes a tree structure, however it links nodes through numeric indices rather than direct references. (As an example the `nodes` field in the top-level glTF `scenegraph` array is an array of indices into the top-level `nodes` array. Each node has a `mesh` attribute that is an index into to the `meshes` array, and so on).
 
 ### Adds `id` to every node
 
-Unless already present.
+The postprocessor makes sure each node and an `id` value, unless already present.
 
 ## Node Specific Post Processing
 
@@ -72,7 +72,13 @@ The following fields will be populated from the supplied `gltf.buffers` paramete
 
 ### Accessors
 
-The accessor parameters which are textual strings in glTF will be resolved into WebGL constants.
+The accessor parameters which are textual strings in glTF will be resolved into WebGL constants (which are just numbers, e.g. `5126` = `GL.FLOAT`), to prepare for use with WebGL frameworks.
+
+- `accessor.value` - This will be set to a typed array that is a view into the underlying bufferView.
+
+Remarks:
+
+- While it can be very convenient to initialize WebGL buffers from `accessor.value`, this approach will defeat any memory sharing on the GPU that the glTF file specifies through accessors sharing `bufferViews`. The canonical way of instantitating a glTF model is for an application to create one WebGL buffer for each `bufferView` and then use accessors to reference data chunks inside those WebGL buffers with `offset` and `stride`.
 
 ## Images
 
