@@ -1,6 +1,6 @@
 ## Using Worker Loaders
 
-By default, many loaders.gl loader modules do their parsing on JavaScript worker threads. This means that the main thread will not block during parsing. Worker threads can also  run in parallel, increasing your application's performance.
+By default, many loaders.gl loader modules do their parsing on JavaScript worker threads. This means that the main thread will not block during parsing. Worker threads can also run in parallel, increasing your application's performance.
 
 For more details on the advantages and complications with worker thread based loading the [Worker Threads](./using-worker-loaders.md) article in the concepts secion.
 
@@ -13,10 +13,7 @@ import {load} from '@loaders.gl/core';
 import {DracoLoader} from '@loaders.gl/draco';
 
 async function loadInParallel(url1, url2) {
-  const [data1, data2] = await Promise.all([
-    load(url1, DracoLoader),
-    load(url2, DracoLoader)
-  ]);
+  const [data1, data2] = await Promise.all([load(url1, DracoLoader), load(url2, DracoLoader)]);
 }
 ```
 
@@ -44,19 +41,19 @@ Most applications will not need to do further processing on the raw binary data 
 
 In JavaScript, worker threads are loaded from separate scripts files and are typically not part of the main application bundle. For ease-of-use, loaders.gl provides a default set of pre-built worker threads which are published on loaders.gl npm distribution from `unpck.com` CDN (Content Delivery Network).
 
-As an advanced option, it is possible to for application to specify alternate URLs for loading a pre-built worker loader instance. 
+As an advanced option, it is possible to for application to specify alternate URLs for loading a pre-built worker loader instance.
 
 This can be useful e.g. when building applications that cannot access CDNs or when creating highly customized application builds, or doing in-depth debugging.
 
 ## Composite Loaders and Workers (Advanced)
 
-loaders.gl supports sub-loader invocation from worker loaders. This is somewhat experimental 
+loaders.gl supports sub-loader invocation from worker loaders. This is somewhat experimental
 
 A worker loader starts a seperate thread with a javascript bundle that only contains the code for that loader, so a worker loader needs to call the main thread (and indirectly, potentially another worker thread with another worrker loader) to parse using a sub-loader, properly transferring data into and back from the other thread.
 
 ## Debugging Worker Loaders (Advanced)
 
-Debugging worker loaders is tricky. While it is always possible to specify `options.worker: false` which helps in many situations, there are cases where the worker loader itself must be debugged. 
+Debugging worker loaders is tricky. While it is always possible to specify `options.worker: false` which helps in many situations, there are cases where the worker loader itself must be debugged.
 
 TBA - There is an ambition to provide better support for debugging worker loaders:
 
