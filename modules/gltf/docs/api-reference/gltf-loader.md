@@ -53,11 +53,11 @@ Note: while supported, synchronous parsing of glTF (e.g. using `parseSync()`) ha
 | `gltf.fetchImages` | Boolean | `false` | Fetch any referenced image files (and decode base64 encoded URIS). Async only. |
 | `gltf.parseImages` | Boolean | `false` |
 | `gltf.decompress`  | Boolean | `true`  | Decompress Draco compressed meshes (if DracoLoader available).                 |
-| `gltf.postProcess` | Boolean | `true`  | Perform additional post processing on the loaded glTF data.                      |
+| `gltf.postProcess` | Boolean | `true`  | Perform additional post processing on the loaded glTF data.                    |
 
 Remarks:
 
--  The `gltf.postProcess` option activates additional [post processing](docs/api-reference/post-process-gltf) that transforms parts of JSON structure in the loaded glTF data, to make glTF data easier use in applications and WebGL libraries, however this changes the format of the data returned by the `GLTFLoader`. 
+- The `gltf.postProcess` option activates additional [post processing](docs/api-reference/post-process-gltf) that transforms parts of JSON structure in the loaded glTF data, to make glTF data easier use in applications and WebGL libraries, however this changes the format of the data returned by the `GLTFLoader`.
 
 ## Data Format
 

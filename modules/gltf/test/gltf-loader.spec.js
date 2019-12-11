@@ -72,7 +72,10 @@ test('GLTFLoader#options({postProcess: true})', async t => {
     gltf: {postProcess: true}
   });
   const value = data.meshes[0].primitives[0].attributes.POSITION.value;
-  t.ok(ArrayBuffer.isView(value), 'GLTFLoader({postProcess: true}) resolves accessor value as typed array');
+  t.ok(
+    ArrayBuffer.isView(value),
+    'GLTFLoader({postProcess: true}) resolves accessor value as typed array'
+  );
   t.equal(value.length, 6036, 'GLTFLoader({postProcess: true}) resolves accessor value length');
   t.end();
 });
