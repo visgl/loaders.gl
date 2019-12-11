@@ -3,7 +3,13 @@
 import {loadDracoDecoderModule} from './lib/draco-module-loader';
 import DracoParser from './lib/draco-parser';
 
+const env = process.env.NODE_ENV;
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+
+console.log(env)
+const workerUrl = env === 'production' ?
+  `https://unpkg.com/@loaders.gl/draco@${VERSION}/dist/draco-loader.worker.js` :
+  'modules/draco/dist/draco-loader.worker.js';
 
 export const DracoWorkerLoader = {
   id: 'draco',
@@ -17,7 +23,7 @@ export const DracoWorkerLoader = {
     draco: {
       decoderType: typeof WebAssembly === 'object' ? 'wasm' : 'js', // 'js' for IE11
       libraryPath: `libs/`,
-      workerUrl: `https://unpkg.com/@loaders.gl/draco@${VERSION}/dist/draco-loader.worker.js`
+      workerUrl
     }
   }
 };

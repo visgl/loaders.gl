@@ -24,7 +24,7 @@ import {INITIAL_MAP_STYLE} from './constants';
 // enable DracoWorkerLoader when fixed
 registerLoaders([GLTFLoader, DracoLoader]);
 setLoaderOptions({
-  worker: false
+  worker: true
 });
 
 // Set your mapbox token here
