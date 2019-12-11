@@ -17,7 +17,8 @@ export const DracoWorkerLoader = {
     draco: {
       decoderType: typeof WebAssembly === 'object' ? 'wasm' : 'js', // 'js' for IE11
       libraryPath: `libs/`,
-      workerUrl: `https://unpkg.com/@loaders.gl/draco@${VERSION}/dist/draco-loader.worker.js`
+      workerUrl: `https://unpkg.com/@loaders.gl/draco@${VERSION}/dist/draco-loader.worker.js`,
+      localWorkerUrl: `modules/draco/dist/draco-loader.worker.js`
     }
   }
 };

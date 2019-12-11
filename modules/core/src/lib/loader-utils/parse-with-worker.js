@@ -9,7 +9,10 @@ export function canParseWithWorker(loader, data, options, context) {
     return false;
   }
   const loaderOptions = options && options[loader.id];
-  if (options.worker && loaderOptions && loaderOptions.workerUrl) {
+  if (
+    (options.worker === 'local' && loaderOptions && loaderOptions.localWorkerUrl) ||
+    (options.worker && loaderOptions && loaderOptions.workerUrl)
+  ) {
     return loader.useWorker ? loader.useWorker(options) : true;
   }
   return false;
@@ -20,8 +23,9 @@ export function canParseWithWorker(loader, data, options, context) {
  * this can be automated if the worker is wrapper by a call to createWorker in @loaders.gl/loader-utils.
  */
 export default function parseWithWorker(loader, data, options, context) {
-  const loaderOptions = options && options[loader.id];
-  const {workerUrl} = loaderOptions || {};
+  const {worker} = options || {};
+  const loaderOptions = (options && options[loader.id]) || {};
+  const workerUrl = worker === 'local' ? loaderOptions.localWorkerUrl : loaderOptions.workerUrl;
 
   // Mark as URL
   const workerSource = `url(${workerUrl})`;
