@@ -35,6 +35,15 @@ test('GLTFLoader#load(binary)', async t => {
   t.end();
 });
 
+test('GLTFLoader#load(binary)', async t => {
+  const data = await load(GLTF_BINARY_URL, GLTFLoader, {
+    gltf: {postProcess: true, resolveValue: true}
+  });
+  const length = data.meshes[0].primitives[0].attributes.POSITION.value.length;
+  t.equal(length, 6036, 'GLTFLoader correctly resolve accessor value');
+  t.end();
+});
+
 test('GLTFLoader#load(text)', async t => {
   const data = await load(GLTF_JSON_URL, GLTFLoader, {gltf: {loadImages: false}});
   t.ok(data.asset, 'GLTFLoader returned parsed data');

@@ -22,7 +22,8 @@ const GLTFLoader = {
       loadBuffers: true, // Fetch any linked .BIN buffers, decode base64
       loadImages: true, // Create image objects
       decompressMeshes: true, // Decompress Draco encoded meshes
-      postProcess: true // Postprocess glTF and return json structure directly
+      postProcess: true, // Postprocess glTF and return json structure directly
+      resolveValue: false // Create TypedArray for the accessor
     },
 
     // common?

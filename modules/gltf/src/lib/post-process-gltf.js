@@ -1,4 +1,5 @@
 import assert from './utils/assert';
+import {getAccessorArrayTypeAndLength} from './gltf-utils/gltf-utils';
 
 // This is a post processor for loaded glTF files
 // The goal is to make the loaded data easier to use in WebGL applications
@@ -98,7 +99,9 @@ class GLTFPostProcessor {
       json.textures = json.textures.map((texture, i) => this._resolveTexture(texture, i));
     }
     if (json.accessors) {
-      json.accessors = json.accessors.map((accessor, i) => this._resolveAccessor(accessor, i));
+      json.accessors = json.accessors.map((accessor, i) =>
+        this._resolveAccessor(accessor, i, options)
+      );
     }
     if (json.materials) {
       json.materials = json.materials.map((material, i) => this._resolveMaterial(material, i));
@@ -268,7 +271,7 @@ class GLTFPostProcessor {
     return material;
   }
 
-  _resolveAccessor(accessor, index) {
+  _resolveAccessor(accessor, index, options) {
     // accessor = {...accessor};
     accessor.id = accessor.id || `accessor-${index}`;
     if (accessor.bufferView !== undefined) {
@@ -281,7 +284,14 @@ class GLTFPostProcessor {
     accessor.components = getSizeFromAccessorType(accessor.type);
     accessor.bytesPerElement = accessor.bytesPerComponent * accessor.components;
 
-    // TODO - Create TypedArray for the accessor
+    // Create TypedArray for the accessor
+    if (options.gltf.resolveValue && accessor.bufferView) {
+      const buffer = accessor.bufferView.buffer;
+      const {ArrayType, length} = getAccessorArrayTypeAndLength(accessor, accessor.bufferView);
+      const byteOffset = (accessor.bufferView.byteOffset || 0) + buffer.byteOffset;
+
+      accessor.value = new ArrayType(buffer.arrayBuffer, byteOffset, length);
+    }
 
     return accessor;
   }
@@ -340,7 +350,7 @@ class GLTFPostProcessor {
     // bufferView = {...bufferView};
     bufferView.id = bufferView.id || `bufferView-${index}`;
     const bufferIndex = bufferView.buffer;
-    bufferView.buffer = this.getBuffer(bufferIndex);
+    bufferView.buffer = this.buffers[bufferIndex];
 
     const arrayBuffer = this.buffers[bufferIndex].arrayBuffer;
     let byteOffset = this.buffers[bufferIndex].byteOffset || 0;
