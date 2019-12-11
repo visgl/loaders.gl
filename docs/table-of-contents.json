@@ -9,7 +9,8 @@
           "entries": [
             {"entry": "docs"},
             {"entry": "docs/whats-new"},
-            {"entry": "docs/upgrade-guide"}
+            {"entry": "docs/upgrade-guide"},
+            {"entry": "docs/roadmap"}
           ]
         },
         {
@@ -17,13 +18,13 @@
           "entries": [
             {"entry": "docs/developer-guide/get-started"},
             {"entry": "docs/developer-guide/using-loaders"},
+            {"entry": "docs/developer-guide/using-worker-loaders"},
             {"entry": "docs/developer-guide/using-writers"},
             {"entry": "docs/developer-guide/loader-categories"},
             {"entry": "docs/developer-guide/error-handling"},
             {"entry": "docs/developer-guide/polyfills"},
             {"entry": "docs/developer-guide/dependencies"},
             {"entry": "docs/developer-guide/creating-loaders-and-writers"},
-            {"entry": "docs/roadmap"},
             {"entry": "docs/contributing"}
           ]
         },

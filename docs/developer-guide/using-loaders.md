@@ -82,16 +82,6 @@ An advantage of this design is that since the core functions can select a loader
 
 Loader options are merged with default options using a deep, two-level merge. Any object-valued key on the top level will be merged with the corresponding key value in the default options object.
 
-## Using Worker Loaders
-
-Some loader modules provide _worker loaders_, e.g. the `DracoWorkerLoader`. These loaders execute on a worker thread, meaning that the main thread will not block during parsing. There can also be multiple parallel workers, potentially increasing parsing throughput on multicore CPUs.
-
-To use worker loaders, jut the worker loader
-
-Concurrency - The `maxConcurrency` parameter can be adjusted to define how many workers should be created for each format.
-
-Note that when calling worker loaders, binary data is transferred from the calling thread to the worker thread. This means that any `ArrayBuffer` `data` parameter you pass in to the worker will no longer be accessible in the calling thread.
-
 ## Using Composite Loaders
 
 loaders.gl enables the creation of _composite loaders_ that call other loaders (referred to as "sub-loaders" in this section). This enables loaders for "composite formats" to be quickly composed out of loaders for the primitive parts.
@@ -121,9 +111,3 @@ In this example:
 - The options will be passed through to the sub-loaders, so that the `GLTFLoader` will receive the `gltf` options, merged with any `gltf` options set by the `Tile3DLoader`.
 
 This override system makes it easy for applications to test alternate sub-loaders or parameter options without having to modify any existing loader code.
-
-## Composite Loaders and Workers
-
-> Not currently implemented, but the plan is that loaders.gl will supports sub-loader invocation from worker loaders.
-
-A worker loader starts a seperate thread with a javascript bundle that only contains the code for that loader, so a worker loader needs to call the main thread (and indirectly, potentially another worker thread with another worrker loader) to parse using a sub-loader, properly transferring data into and back from the other thread.
