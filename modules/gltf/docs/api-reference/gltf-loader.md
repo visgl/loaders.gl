@@ -57,7 +57,7 @@ Note: while supported, synchronous parsing of glTF (e.g. using `parseSync()`) ha
 
 Remarks:
 
-- `postProcess`: Performs additional [post processing](docs/api-reference/post-process-gltf) to simplify use in WebGL libraries. Changes the return value of the call.
+- `postProcess`: Performs additional [post processing](docs/api-reference/post-process-gltf) on the JSON structure in the loaded glTF data, to simplify use in applications and WebGL libraries. Rhis option does change the structure of the returned data.
 
 ## Data Format
 
@@ -78,9 +78,9 @@ At the top level, this will look like a standard json structure:
 
 For details on the extra fields added to the returned data structure, see [post processing](docs/api-reference/post-process-gltf).
 
-### With Post Processing
+### Without Post Processing
 
-By setting `gltf.postProcess` to `false`, a "pure" gltf data structure will be returned, with binary buffers provided as an `ArrayBuffer` array.
+By setting `gltf.postProcess` to `false`, a "pure" or "raw" glTF data structure will be returned, with binary buffers provided as an `ArrayBuffer` array.
 
 ```json
 {

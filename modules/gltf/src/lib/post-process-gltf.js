@@ -271,7 +271,7 @@ class GLTFPostProcessor {
     return material;
   }
 
-  _resolveAccessor(accessor, index, options) {
+  _resolveAccessor(accessor, index) {
     // accessor = {...accessor};
     accessor.id = accessor.id || `accessor-${index}`;
     if (accessor.bufferView !== undefined) {
@@ -285,11 +285,12 @@ class GLTFPostProcessor {
     accessor.bytesPerElement = accessor.bytesPerComponent * accessor.components;
 
     // Create TypedArray for the accessor
-    if (options.gltf.resolveValue && accessor.bufferView) {
+    // Note: The canonical way to instantiate is to ignore this array and create
+    // WebGLBuffer's using the bufferViews.
+    if (accessor.bufferView) {
       const buffer = accessor.bufferView.buffer;
       const {ArrayType, length} = getAccessorArrayTypeAndLength(accessor, accessor.bufferView);
       const byteOffset = (accessor.bufferView.byteOffset || 0) + buffer.byteOffset;
-
       accessor.value = new ArrayType(buffer.arrayBuffer, byteOffset, length);
     }
 
@@ -322,7 +323,7 @@ class GLTFPostProcessor {
     return SAMPLER_PARAMETER_GLTF_TO_GL[key];
   }
 
-  _resolveImage(image, index, options) {
+  _resolveImage(image, index) {
     // image = {...image};
     image.id = image.id || `image-${index}`;
     if (image.bufferView !== undefined) {
@@ -338,9 +339,7 @@ class GLTFPostProcessor {
 
     // TODO - DEPRECATED - remove as soon as luma.gl is updated
     image.getImageAsync = async () => {
-      // eslint-disable-next-line
-      console.warn('loaders.gl/gltf: image.getImageAsync will be removed in 2.0');
-      return image.image;
+      throw new Error('loaders.gl/gltf: image.getImageAsync() removed in 2.0');
     };
 
     return image;
