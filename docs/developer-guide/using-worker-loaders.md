@@ -1,10 +1,12 @@
 ## Using Worker Loaders
 
-This section gives an overview of how to use worker loaders in loaders.gl. For more details on the advantages and complications with worker thread based loading the [Worker Threads](./using-worker-loaders.md) article in the concepts secion.
+By default, many loaders.gl loader modules do their parsing on JavaScript worker threads. This means that the main thread will not block during parsing. Worker threads can also  run in parallel, increasing your application's performance.
 
-Many loaders.gl loader modules provide _worker loaders_, e.g. `DracoLoader`. This means that the loader have the ability to (optionally) execute on a worker thread, so that the main thread will not block during parsing. Worker loaders can also be run in parallel (up to limits rougly defined by the number of cores the CPU on your machine), potentially increasing parsing throughput on multicore CPUs.
+For more details on the advantages and complications with worker thread based loading the [Worker Threads](./using-worker-loaders.md) article in the concepts secion.
 
-Worker loaders are enabled by default for supporting loaders. E.g. to load two Draco encoded meshes in parallel on worker threads, just call the `DracoLoader` as follows:
+## Loading Files in Parallel using Worker Loaders
+
+The `DracoLoader` is worker enabled and uses worker threads by default. To load two Draco encoded meshes _in parallel_ on worker threads, just use the `DracoLoader` as follows:
 
 ```js
 import {load} from '@loaders.gl/core';
@@ -30,7 +32,7 @@ async function loadwWithoutWorker(url1) {
 
 ## Concurrency Level
 
-Concurrency - The `options.maxConcurrency` parameter can be adjusted to define how many workers should be created for each format. Note that setting this higher than the number CPU cores will not provide much benefit.
+Concurrency - The `options.maxConcurrency` parameter can be adjusted to define how many workers should be created for each format. Note that setting this higher than roughly the number CPU cores on your current machine will not provide much benefit and may create extra overhead.
 
 ## ArrayBuffer Neutering
 
@@ -61,4 +63,3 @@ TBA - There is an ambition to provide better support for debugging worker loader
 - Pre-build non-minified versions of workers, and provide option to easily select those.
 - Let loaders.gl developers easily switch between CDN and locally built workers.
 - ...
-
