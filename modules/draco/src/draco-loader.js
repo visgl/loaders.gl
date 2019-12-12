@@ -18,7 +18,7 @@ export const DracoWorkerLoader = {
       decoderType: typeof WebAssembly === 'object' ? 'wasm' : 'js', // 'js' for IE11
       libraryPath: `libs/`,
       workerUrl: `https://unpkg.com/@loaders.gl/draco@${VERSION}/dist/draco-loader.worker.js`,
-      localWorkerUrl: `modules/draco/dist/draco-loader.worker.js`
+      localWorkerUrl: `modules/draco/dist/draco-loader.worker.dev.js`
     }
   }
 };
@@ -30,7 +30,6 @@ export const DracoLoader = {
 
 async function parse(arrayBuffer, options, context, loader) {
   const {draco} = await loadDracoDecoderModule(options);
-
   const dracoParser = new DracoParser(draco);
   try {
     return dracoParser.parseSync(arrayBuffer, options);

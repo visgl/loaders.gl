@@ -17,17 +17,14 @@ module.exports = api => {
     sourceMaps: false
   });
   // Default babel config (env, plugin) only apply to the rest of the files
-  overrides.push(
-    Object.assign(
-      {
-        exclude: /src\/libs/
-      },
-      config
-    )
-  );
+  overrides.push({
+    exclude: /src\/libs/,
+    ...config
+  });
 
   return {
-    ignore: ['**/*.worker.js'],
+    // Don't transpile workers, they are transpiled separately
+    ignore: ['**/*.worker.js', '**/workers/*.js'],
     overrides
   };
 };
