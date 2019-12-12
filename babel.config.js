@@ -24,7 +24,7 @@ module.exports = api => {
 
   return {
     // Don't transpile workers, they are transpiled separately
-    ignore: ['**/*.worker.js', '**/workers/*.js'],
+    ignore: ['**/*.worker.js', '**/workers/*.js', /src\/libs/],
     overrides
   };
 };
