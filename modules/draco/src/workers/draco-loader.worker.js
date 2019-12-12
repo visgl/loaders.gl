@@ -1,5 +1,3 @@
-// __VERSION__ is injected by babel-plugin-version-inline
-/* global __VERSION__ */
 import {createWorker} from '@loaders.gl/loader-utils';
 
 import {DracoLoader} from '../draco-loader';
