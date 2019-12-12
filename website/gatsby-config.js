@@ -1,8 +1,7 @@
 const resolve = require('path').resolve;
-
 const DOC_TABLE_OF_CONTENTS = require('../docs/table-of-contents.json');
 
-const GATSBY_CONFIG = {
+module.exports = {
   plugins: [
     {
       resolve: `gatsby-theme-ocular`,
@@ -110,5 +109,3 @@ const GATSBY_CONFIG = {
     {resolve: 'gatsby-plugin-no-sourcemaps'}
   ]
 };
-
-module.exports = GATSBY_CONFIG;
