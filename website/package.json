@@ -6,7 +6,7 @@
   "keywords": [
     "ocular"
   ],
-  "main": "index.js",
+  "main": "gatsby-config.js",
   "scripts": {
     "start": "yarn clean && yarn develop",
     "build": "yarn clean-examples && yarn clean && gatsby build",

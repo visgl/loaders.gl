@@ -20,11 +20,11 @@ module.exports.onCreateWebpackConfig = function onCreateWebpackConfigOverride(op
     // rules, // Object (map): set of preconfigured webpack config rules
     // plugins, // Object (map): A set of preconfigured webpack config plugins
     getConfig, // Function that returns the current webpack config
-    loaders, // Object (map): set of preconfigured webpack config loaders
+    // loaders, // Object (map): set of preconfigured webpack config loaders
     actions
   } = opts;
 
-  console.log(`App rewriting gatsby webpack config`); // eslint-disable-line
+  console.log(`App rewriting gatsby webpack config ${stage}`); // eslint-disable-line
 
   const config = getConfig();
   config.resolve = config.resolve || {};  
@@ -79,5 +79,5 @@ module.exports.onCreateWebpackConfig = function onCreateWebpackConfigOverride(op
   // This can be dangerous and break Gatsby if certain configuration options are changed.
   // Generally only useful for cases where you need to handle config merging logic yourself,
   // in which case consider using webpack-merge.
-  actions.setWebpackConfig(config);
+  actions.replaceWebpackConfig(config);
 };
