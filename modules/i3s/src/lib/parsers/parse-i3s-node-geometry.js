@@ -16,19 +16,21 @@ const scratchVector = new Vector3([0, 0, 0]);
 
 /* eslint-disable max-statements */
 export function parseI3SNodeGeometry(arrayBuffer, tile = {}) {
-  if (!tile.featureData) {
+  if (!tile._content) {
     return tile;
   }
 
-  tile.attributes = {};
+  const content = tile._content;
+  const mbs = tile._mbs;
+
+  const {featureData} = content;
+  content.attributes = {};
 
   const buffer = arrayBuffer;
-  const featureData = tile.featureData;
   const geometryData = featureData.geometryData[0];
-  const mbs = tile.mbs;
   const {
     params: {vertexAttributes}
-  } = tile.featureData.geometryData[0];
+  } = featureData.geometryData[0];
 
   let minHeight = Infinity;
   const enuMatrix = new Matrix4();
@@ -44,33 +46,34 @@ export function parseI3SNodeGeometry(arrayBuffer, tile = {}) {
         .filter((coordinate, index) => (index + 1) % 3 === 0)
         .reduce((accumulator, currentValue) => Math.min(accumulator, currentValue), Infinity);
 
-      tile.vertexCount = count / 3;
-      tile.cartographicOrigin = new Vector3(mbs[0], mbs[1], -minHeight);
-      tile.cartesianOrigin = new Vector3();
-      Ellipsoid.WGS84.cartographicToCartesian(tile.cartographicOrigin, tile.cartesianOrigin);
-      Ellipsoid.WGS84.eastNorthUpToFixedFrame(tile.cartesianOrigin, enuMatrix);
+      content.vertexCount = count / 3;
+      content.cartographicOrigin = new Vector3(mbs[0], mbs[1], -minHeight);
+      content.cartesianOrigin = new Vector3();
+      Ellipsoid.WGS84.cartographicToCartesian(content.cartographicOrigin, content.cartesianOrigin);
+      Ellipsoid.WGS84.eastNorthUpToFixedFrame(content.cartesianOrigin, enuMatrix);
       // cartesian
-      value = offsetsToCartesians(value, tile.cartographicOrigin);
+      value = offsetsToCartesians(value, content.cartographicOrigin);
     }
 
     if (attribute === 'uv0') {
       flipY(value);
     }
 
-    tile.attributes[attribute] = {
+    content.attributes[attribute] = {
       value,
       type: GL_TYPE_MAP[valueType],
       size: valuesPerElement
     };
 
     if (attribute === 'color') {
-      tile.attributes[attribute].normalized = true;
+      content.attributes[attribute].normalized = true;
     }
   }
 
   const matrix = new Matrix4(geometryData.transformation).multiplyRight(enuMatrix);
-  tile.matrix = matrix.invert();
+  content.matrix = matrix.invert();
 
+  content.byteLength = arrayBuffer.byteLength;
   return tile;
 }
 /* eslint-enable max-statements */

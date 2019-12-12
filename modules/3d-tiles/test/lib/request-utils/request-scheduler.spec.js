@@ -11,10 +11,10 @@ test('RequestScheduler#scheduleRequest', async t => {
   const requestScheduler = new RequestScheduler({maxRequests: 1});
   t.ok(requestScheduler);
 
-  let result = await requestScheduler.scheduleRequest(1);
+  let result = await requestScheduler.scheduleRequest({id: 1});
   t.ok(result);
 
-  result = await requestScheduler.scheduleRequest(2, () => -1);
+  result = await requestScheduler.scheduleRequest({id: 2}, () => -1);
   t.notOk(result);
 
   t.end();

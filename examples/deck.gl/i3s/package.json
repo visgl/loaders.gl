@@ -28,8 +28,7 @@
     "react": "^16.8.0",
     "react-dom": "^16.8.0",
     "react-map-gl": "^5.0.0",
-    "styled-components": "^4.2.0",
-    "zip-loader": "^1.1.0"
+    "styled-components": "^4.2.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.0.0",

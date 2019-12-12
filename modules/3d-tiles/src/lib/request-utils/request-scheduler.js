@@ -19,7 +19,7 @@ const DEFAULT_PROPS = {
 
 // The request scheduler does not actually issue requests, it just lets apps know
 // when the request can be issued without overwhelming the server.
-// The main use case is to let the app  reprioritize or cancel requests if
+// The main use case is to let the app reprioritize or cancel requests if
 //  circumstances change before the request can be scheduled.
 //
 // TODO - Track requests globally, across multiple servers
@@ -30,6 +30,7 @@ export default class RequestScheduler {
     // Tracks the number of active requests and prioritizes/cancels queued requests.
     this.requestQueue = [];
     this.activeRequestCount = 0;
+    this.requestMap = {};
 
     // Returns the statistics used by the request scheduler.
     this.stats = new Stats({id: props.id});
@@ -52,10 +53,19 @@ export default class RequestScheduler {
       return Promise.resolve(handle);
     }
 
+    // dedupe
+    if (this.requestMap[handle.id]) {
+      return this.requestMap[handle.id];
+    }
+
+    let request = null;
     const promise = new Promise((resolve, reject) => {
-      this.requestQueue.push({handle, callback, resolve, reject});
+      request = {handle, callback, resolve, reject};
+      return request;
     });
 
+    this.requestQueue.push({promise, ...request});
+    this.requestMap[handle.id] = promise;
     this._issueNewRequests();
     return promise;
   }
@@ -67,6 +77,9 @@ export default class RequestScheduler {
 
   // Called by an application to mark that it is finished making a request
   endRequest(handle) {
+    if (this.requestMap[handle.id]) {
+      delete this.requestMap[handle.id];
+    }
     this.activeRequestCount--;
     this._issueNewRequests();
   }
@@ -117,6 +130,7 @@ export default class RequestScheduler {
       if (!this._updateRequest(request)) {
         // Remove the element and make sure to adjust the counter to account for shortened array
         requestQueue.splice(i, 1);
+        delete this.requestMap[request.handle.id];
         i--;
       }
     }

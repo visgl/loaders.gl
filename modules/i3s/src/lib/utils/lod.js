@@ -1,20 +1,14 @@
 import {toRadians} from 'math.gl';
-
-import {WebMercatorViewport} from '@deck.gl/core';
 import {getDistanceScales} from 'viewport-mercator-project';
 
 /* eslint-disable max-statements */
-export function lodJudge(frameState, tile) {
-  let viewport = frameState.viewport;
-  if (!(viewport instanceof WebMercatorViewport)) {
-    viewport = new WebMercatorViewport(frameState.viewport);
-  }
-
+export function lodJudge(tile, frameState) {
+  const viewport = frameState.viewport;
   const distanceScales = getDistanceScales(viewport);
 
-  const mbsLat = tile.mbs[1];
-  const mbsLon = tile.mbs[0];
-  const mbsR = tile.mbs[3];
+  const mbsLat = tile._mbs[1];
+  const mbsLon = tile._mbs[0];
+  const mbsR = tile._mbs[3];
 
   const {height, width, latitude, longitude} = viewport;
 
@@ -48,10 +42,11 @@ export function lodJudge(frameState, tile) {
   // as soon as the nodes bounding sphere has a screen radius larger than maxError pixels.
   // In this sense a value of 0 means you should always load it's children,
   // or if it's a leaf node, you should always display it.
-  const screenSize = getScreenSize(tile, viewport);
-  if (!tile.content.children || screenSize <= tile.lodMaxError) {
+  const screenSize = getScreenSize(tile, frameState);
+  // -1000 is a hack
+  if (!tile._header.children || screenSize <= tile.lodMaxError - 1000) {
     return 'DRAW';
-  } else if (tile.content.children) {
+  } else if (tile._header.children) {
     return 'DIG';
   }
 
@@ -68,42 +63,48 @@ function getDistanceFromLatLon([lon1, lat1], [lon2, lat2]) {
     Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   const d = R * c; // Distance in
+
   return d;
 }
 
-function getScreenSize(tile, viewport) {
+export function getScreenSize(tile, frameState) {
   // https://stackoverflow.com/questions/21648630/radius-of-projected-sphere-in-screen-space
-  const mbsLat = tile.mbs[1];
-  const mbsLon = tile.mbs[0];
-  const mbsR = tile.mbs[3];
+  const mbsLat = tile._mbs[1];
+  const mbsLon = tile._mbs[0];
+  const mbsR = tile._mbs[3];
 
   const mbsCenter = [mbsLon, mbsLat];
-  const cameraPositionCartographic = viewport.unprojectPosition(viewport.cameraPosition);
+  const cameraPositionCartographic = frameState.viewport.unprojectPosition(
+    frameState.viewport.cameraPosition
+  );
 
   const mbsToCameraDistanceInMeters = getDistanceFromLatLon(cameraPositionCartographic, mbsCenter);
-  const d = mbsToCameraDistanceInMeters * mbsToCameraDistanceInMeters - mbsR * mbsR;
+  const dSquared = mbsToCameraDistanceInMeters * mbsToCameraDistanceInMeters - mbsR * mbsR;
+
   const fltMax = 3.4028235e38; // convert from 0x7f7fffff which is the maximum
-  if (d <= 0.0) {
+  if (dSquared <= 0.0) {
     return 0.5 * fltMax;
   }
 
-  let screenSizeFactor = calculategetScreenSizeFactor(tile, viewport);
-  screenSizeFactor *= mbsR / Math.sqrt(d);
+  const d = Math.sqrt(dSquared);
+  // console.log(d, tile._distanceToCamera);
+  let screenSizeFactor = calculateScreenSizeFactor(tile, frameState);
+  screenSizeFactor *= mbsR / d;
   return screenSizeFactor;
 }
 
-function calculategetScreenSizeFactor(tile, viewport) {
+function calculateScreenSizeFactor(tile, frameState) {
   const tanOfHalfVFAngle = Math.tan(
     Math.atan(
       Math.sqrt(
-        1.0 / (viewport.viewProjectionMatrix[0] * viewport.viewProjectionMatrix[0]) +
-          1.0 / (viewport.viewProjectionMatrix[5] * viewport.viewProjectionMatrix[5])
+        1.0 / (frameState.viewProjectionMatrix[0] * frameState.viewProjectionMatrix[0]) +
+          1.0 / (frameState.viewProjectionMatrix[5] * frameState.viewProjectionMatrix[5])
       )
     )
   );
 
   const screenCircleFactor =
-    Math.sqrt(viewport.height * viewport.height + viewport.width * viewport.width) /
+    Math.sqrt(frameState.height * frameState.height + frameState.width * frameState.width) /
     tanOfHalfVFAngle;
 
   return screenCircleFactor;
