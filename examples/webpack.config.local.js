@@ -15,7 +15,7 @@ const ALIASES = require('ocular-dev-tools/config/ocular.config')({
 }).aliases;
 
 const ROOT_DIR = resolve(__dirname, '..');
-const PACKAGE_INFO = require(resolve(ROOT_DIR, 'package.json'));
+const LERNA_INFO = require(resolve(ROOT_DIR, 'lerna.json'));
 
 const BABEL_CONFIG = {
   presets: ['@babel/env'],
@@ -113,7 +113,7 @@ const LOCAL_DEVELOPMENT_CONFIG = {
   plugins: [
     new webpack.EnvironmentPlugin(['MapboxAccessToken']),
     new webpack.DefinePlugin({
-      __VERSION__: JSON.stringify(PACKAGE_INFO.version)
+      __VERSION__: JSON.stringify(LERNA_INFO.version)
     })
   ]
 };
