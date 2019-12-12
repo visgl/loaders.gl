@@ -38,8 +38,8 @@
     "build-bin": "BABEL_ENV=es5 babel scripts --config-file ../../babel.config.js --out-dir dist/scripts"
   },
   "dependencies": {
-    "@loaders.gl/core": "2.0.0-beta.2",
-    "@loaders.gl/images": "2.0.0-beta.2",
-    "@loaders.gl/loader-utils": "2.0.0-beta.2"
+    "@loaders.gl/core": "^2.0.0-beta.2",
+    "@loaders.gl/images": "^2.0.0-beta.2",
+    "@loaders.gl/loader-utils": "^2.0.0-beta.2"
   }
 }

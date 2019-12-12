@@ -1455,21 +1455,6 @@
   dependencies:
     "@babel/runtime" "^7.3.1"
 
-"@loaders.gl/core@2.0.0-alpha.4":
-  version "2.0.0-alpha.4"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/core/-/core-2.0.0-alpha.4.tgz#44c6b52468c4715258fce3a71012064207b4b902"
-  integrity sha512-whyDmZd3Y5VDpVIurJXzOro6apoMzemo+X6yd+AeqPOnH3rHJbIVqJ9uQakQ+uJPUPIxWkrw6Jyy23VM0SZduQ==
-  dependencies:
-    "@babel/runtime" "^7.3.1"
-    "@loaders.gl/loader-utils" "2.0.0-alpha.4"
-
-"@loaders.gl/experimental@2.0.0-alpha.4":
-  version "2.0.0-alpha.4"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/experimental/-/experimental-2.0.0-alpha.4.tgz#6a7f373864f19542dc91ad2825cf1d706c65e4bb"
-  integrity sha512-ZA9VDiJfFwEG32dmPnTFTpwJQfCmmrKu87PS8pBuz9U6TrqK4jPGkxpufuMOTYL+bMKbAEdhWux3hbUAdmdGRA==
-  dependencies:
-    "@loaders.gl/core" "2.0.0-alpha.4"
-
 "@loaders.gl/gltf@^1.3.0":
   version "1.3.5"
   resolved "https://registry.yarnpkg.com/@loaders.gl/gltf/-/gltf-1.3.5.tgz#bc7500eaad3429d41d071059757723d34ad7037a"
@@ -1488,13 +1473,6 @@
   version "1.3.5"
   resolved "https://registry.yarnpkg.com/@loaders.gl/loader-utils/-/loader-utils-1.3.5.tgz#89f2074c2566168bb0f53844d4b4ac493ff85fff"
   integrity sha512-dml8IP4n49ftX4ew+olTRhWY0pm4A8nZKpXFq2o541vvrJIRaahp6oCbrlJGwcEMCDFfVXEqThsP2dicgDwL3A==
-  dependencies:
-    "@babel/runtime" "^7.3.1"
-
-"@loaders.gl/loader-utils@2.0.0-alpha.4":
-  version "2.0.0-alpha.4"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/loader-utils/-/loader-utils-2.0.0-alpha.4.tgz#165fd472a97f8dc890fb4101e78b42d81c0375e8"
-  integrity sha512-SxFJpFN8lra8hidoP78WT+Su3SKtQdK5RAaz4MjsZJ7Q5Djm/ZsdFMfjmgkKt/ONvhIIafIIlpNdYA0pMhazMQ==
   dependencies:
     "@babel/runtime" "^7.3.1"
 
