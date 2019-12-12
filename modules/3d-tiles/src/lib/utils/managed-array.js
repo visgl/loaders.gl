@@ -158,7 +158,7 @@ export default class ManagedArray {
   }
 
   reset() {
-    this._array = new Array();
+    this._array = [];
     this._map = new Map();
     this._length = 0;
   }

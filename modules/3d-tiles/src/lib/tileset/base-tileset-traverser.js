@@ -77,6 +77,7 @@ export default class BaseTilesetTraverser {
   // Tiles that have a greater screen space error than the base screen space error are part of the base traversal,
   // all other tiles are part of the skip traversal. The skip traversal allows for skipping levels of the tree
   // and rendering children and parent tiles simultaneously.
+  /* eslint-disable-next-line complexity, max-statements */
   async executeTraversal(root, frameState) {
     // stack to store traversed tiles, only visible tiles should be added to stack
     // visible: visible in the current view frustum
@@ -350,8 +351,9 @@ export default class BaseTilesetTraverser {
     while (stack.length > 0) {
       if (this._frameNumber !== frameState) {
         this.canceledFrames.push(frameState.frameNumber);
-        return;
+        return false;
       }
+
       const tile = stack.pop();
 
       this.updateTile(tile, frameState);
@@ -374,6 +376,7 @@ export default class BaseTilesetTraverser {
       if (traverse) {
         const children = tile.children.filter(c => c);
         for (const child of children) {
+          // eslint-disable-next-line max-depth
           if (stack.find(child)) {
             stack.delete(child);
           }

@@ -32,6 +32,7 @@ const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
 const TRANSITION_DURAITON = 4000;
 
 //SF
+
 const INITIAL_VIEW_STATE = {
   longitude: -122.43751306035713,
   latitude: 37.78249440803938,
@@ -44,7 +45,7 @@ const INITIAL_VIEW_STATE = {
   maxZoom: 30,
   zoom: 14.5
 };
-/**/
+/* */
 //NY
 /*
 const INITIAL_VIEW_STATE = {
