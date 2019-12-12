@@ -1,4 +1,4 @@
-import {DracoLoader} from './draco-loader';
+import {DracoWorkerLoader} from './draco-worker-loader';
 import {createWorker} from '@loaders.gl/loader-utils';
 
-createWorker(DracoLoader);
+createWorker(DracoWorkerLoader);

@@ -8,10 +8,12 @@ let loadDecoderPromise;
 let loadEncoderPromise;
 
 export async function loadDracoDecoderModule(options) {
-  // modules: {draco3d: require('draco3d')}; // if draco is bundled, we are done
   const modules = options.modules || {};
+  // console.log('Draco: Using bundled draco libraries', JSON.stringify(options, null, 2));
   if (modules.draco3d) {
-    return modules.draco3d;
+    return {
+      draco: modules.draco3d.createDecoderModule()
+    };
   }
 
   loadDecoderPromise = loadDecoderPromise || loadDracoDecoder(options);
@@ -19,10 +21,11 @@ export async function loadDracoDecoderModule(options) {
 }
 
 export async function loadDracoEncoderModule(options) {
-  // modules: {draco3d: require('draco3d')}; // if draco is bundled, we are done
   const modules = options.modules || {};
   if (modules.draco3d) {
-    return modules.draco3d;
+    return {
+      draco: modules.draco3d.createEncoderModule()
+    };
   }
 
   loadEncoderPromise = loadEncoderPromise || loadDracoEncoder(options);

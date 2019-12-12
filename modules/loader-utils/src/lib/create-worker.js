@@ -86,7 +86,14 @@ async function parseData({loader, arraybuffer, byteOffset, byteLength, options, 
     throw new Error(`Could not load data with ${loader.name} loader`);
   }
 
-  return await parser(data, {...options, worker: false}, context, loader);
+  // TODO - proper merge in of loader options...
+  options = {
+    ...options,
+    modules: (loader && loader.options && loader.options.modules) || {},
+    worker: false
+  };
+
+  return await parser(data, {...options}, context, loader);
 }
 
 // Filter out noise messages sent to workers
