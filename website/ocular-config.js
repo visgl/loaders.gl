@@ -106,6 +106,12 @@ module.exports = {
       path: 'examples/3d-tiles'
     },
     {
+      title: 'I3S Tiles',
+      image: 'images/example-i3s.png',
+      componentUrl: resolve(__dirname, '../examples/deck.gl/i3s/app.js'),
+      path: 'examples/3d-tiles'
+    },
+    {
       title: 'glTF',
       image: 'images/example-gltf.jpg',
       componentUrl: resolve(__dirname, './templates/example-gltf.jsx'),

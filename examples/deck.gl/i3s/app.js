@@ -10,8 +10,6 @@ import {I3S3DLayer} from './i3s-3d-layer';
 import {StatsWidget} from '@probe.gl/stats-widget';
 import {lumaStats} from '@luma.gl/core';
 
-import {centerMap, cesiumRender, cesiumUnload} from './cesium';
-
 //SanFrancisco_Bldgs
 const TEST_DATA_URL =
   'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_Bldgs/SceneServer/layers/0';
@@ -137,40 +135,17 @@ export default class App extends PureComponent {
     });
 
     this._tilesetStatsWidget.setStats(tileset.stats);
-    // render with cesium
-    if (this.state.renderCesium) {
-      centerMap(viewState);
-    }
-  }
-
-  _onTileLoad(tile) {
-    if (this.state.renderCesium) {
-      const {viewState} = this.state;
-      cesiumRender(viewState, tile);
-    }
-  }
-
-  _onTileUnload(tile) {
-    if (this.state.renderCesium) {
-      cesiumUnload(tile);
-    }
   }
 
   _onViewStateChange({viewState}) {
     this.setState({viewState});
-
-    if (this.state.renderCesium) {
-      centerMap(viewState);
-    }
   }
 
   _renderLayers() {
     return [
       new I3S3DLayer({
         data: TEST_DATA_URL,
-        onTilesetLoad: this._onTilesetLoad.bind(this),
-        onTileLoad: this._onTileLoad.bind(this),
-        onTileUnload: this._onTileUnload.bind(this)
+        onTilesetLoad: this._onTilesetLoad.bind(this)
       })
     ];
   }
@@ -217,5 +192,6 @@ export default class App extends PureComponent {
   }
 }
 
-const deckViewer = document.getElementById('deck-viewer');
-render(<App />, deckViewer);
+export function renderToDOM(container) {
+  render(<App />, container);
+}
