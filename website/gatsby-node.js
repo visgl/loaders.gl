@@ -1,18 +1,6 @@
 const resolve = require('path').resolve;
-
+const getOcularConfig = require('ocular-dev-tools/config/ocular.config');
 const DEPENDENCIES = require('./package.json').dependencies;
-const ALIASES = require('ocular-dev-tools/config/ocular.config')({
-  root: resolve(__dirname, '..')
-}).aliases;
-
-// When duplicating example dependencies in website, autogenerate
-// aliases to ensure the website version is picked up
-// NOTE: module dependencies are automatically injected
-// TODO - should this be automatically done by ocular-gatsby?
-const dependencyAliases = {};
-for (const dependency in DEPENDENCIES) {
-  dependencyAliases[dependency] = `${__dirname}/node_modules/${dependency}`;
-}
 
 module.exports.onCreateWebpackConfig = function onCreateWebpackConfigOverride(opts) {
   const {
@@ -27,8 +15,20 @@ module.exports.onCreateWebpackConfig = function onCreateWebpackConfigOverride(op
   console.log(`App rewriting gatsby webpack config ${stage}`); // eslint-disable-line
 
   const config = getConfig();
-  config.resolve = config.resolve || {};  
-  config.resolve.alias = config.resolve.alias || {};  
+  config.resolve = config.resolve || {};
+  config.resolve.alias = config.resolve.alias || {};
+
+  const ALIASES = getOcularConfig({root: resolve(__dirname, '..')}).aliases;
+
+  // When duplicating example dependencies in website, autogenerate
+  // aliases to ensure the website version is picked up
+  // NOTE: module dependencies are automatically injected
+  // TODO - should this be automatically done by ocular-gatsby?
+  const dependencyAliases = {};
+  for (const dependency in DEPENDENCIES) {
+    dependencyAliases[dependency] = `${__dirname}/node_modules/${dependency}`;
+  }
+
   Object.assign(config.resolve.alias, ALIASES, dependencyAliases);
 
   /*

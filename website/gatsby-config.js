@@ -1,6 +1,6 @@
 const resolve = require('path').resolve;
 
-const DOCS = require('../docs/table-of-contents.json');
+const DOC_TABLE_OF_CONTENTS = require('../docs/table-of-contents.json');
 
 const GATSBY_CONFIG = {
   plugins: [
@@ -9,18 +9,17 @@ const GATSBY_CONFIG = {
       options: {
         logLevel: 1, // Adjusts amount of debug information from ocular-gatsby
 
+        // Folders
         DIR_NAME: `${__dirname}`,
         ROOT_FOLDER: `${__dirname}/../`,
-        // NOTE - we currently need custom excludes in gatsby-config.js to support multiple directories
+
+        DOCS: DOC_TABLE_OF_CONTENTS,
         DOC_FOLDERS: [
           `${__dirname}/../docs/`,
           `${__dirname}/../modules/`,
           `${__dirname}/../arrowjs/`
         ],
 
-        DOCS,
-
-        // TODO/ib - from ocular, deduplicate with above settings
         PROJECT_TYPE: 'github',
 
         PROJECT_NAME: 'loaders.gl',
