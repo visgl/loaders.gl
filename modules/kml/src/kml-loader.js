@@ -1,6 +1,6 @@
 /* global __VERSION__ */ // __VERSION__ is injected by babel-plugin-version-inline
 /* global TextDecoder */
-import {XMLLoader} from '@loaders.gl/experimental';
+import {XMLLoader} from '@loaders.gl/tables';
 import KMLParser from './lib/kml-parser';
 import normalizeKML from './lib/kml-normalizer';
 

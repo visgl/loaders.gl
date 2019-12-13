@@ -1,6 +1,6 @@
 /* global __VERSION__ */ // __VERSION__ is injected by babel-plugin-version-inline
 /* global TextDecoder */
-import {AsyncQueue, TableBatchBuilder, RowTableBatch} from '@loaders.gl/experimental';
+import {AsyncQueue, TableBatchBuilder, RowTableBatch} from '@loaders.gl/tables';
 import Papa from './libs/papaparse';
 import AsyncIteratorStreamer from './lib/async-iterator-streamer';
 

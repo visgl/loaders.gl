@@ -13,7 +13,6 @@ License: MIT
 import test from 'tape-promise/tape';
 import {isBrowser, load} from '@loaders.gl/core';
 import {parseAsIterator, parseAsAsyncIterator} from '@loaders.gl/core';
-import {CSVWriter} from '@loaders.gl/experimental';
 
 // Tests for Papa.unparse() function (JSON to CSV)
 var UNPARSE_TESTS = [
@@ -247,11 +246,6 @@ var UNPARSE_TESTS = [
     expected: 'foo,"""quoted"""'
   }
 ];
-
-test('CSVWriter#loader conformance', t => {
-  validateLoader(t, CSVWriter, 'CSVWriter');
-  t.end();
-});
 
 test('Unparse Tests', t => {
   function generateTest(test) {

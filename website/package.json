@@ -42,9 +42,9 @@
     "styled-components": "^4.2.0"
   },
   "devDependencies": {
-    "gatsby": "^2.18.0",
-    "gatsby-plugin-no-sourcemaps": "^2.0.2",
-    "gatsby-theme-ocular": "^1.1.0-alpha.4",
+    "gatsby": "^2.18.11",
+    "gatsby-plugin-no-sourcemaps": "^2.1.1",
+    "gatsby-theme-ocular": "^1.1.0-alpha.5",
     "gh-pages": "^2.1.0"
   }
 }
