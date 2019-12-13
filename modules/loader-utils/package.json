@@ -29,7 +29,7 @@
   "browser": {
     "./src/lib/library-utils/require-utils.node.js": false,
     "./dist/esm/lib/library-utils/require-utils.node.js": false,
-    "./dist/es6/library-utils/require-utils.node.js": false
+    "./dist/es6/lib/library-utils/require-utils.node.js": false
   },
   "scripts": {
     "pre-build-disabled": "npm run build-bundle && npm run build-bundle -- --env.dev",
