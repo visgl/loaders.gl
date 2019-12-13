@@ -337,13 +337,6 @@ class GLTFPostProcessor {
       image.image = preloadedImage;
     }
 
-    // TODO - DEPRECATED - remove as soon as luma.gl is updated
-    image.getImageAsync = async () => {
-      // eslint-disable-next-line
-      console.warn('loaders.gl/gltf: image.getImageAsync is deprecated, use image.image');
-      return image.image;
-    };
-
     return image;
   }
 
