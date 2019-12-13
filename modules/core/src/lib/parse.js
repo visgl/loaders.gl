@@ -10,7 +10,7 @@ import {selectLoader} from './select-loader';
 export async function parse(data, loaders, options, context) {
   // Signature: parse(data, options, context | url)
   // Uses registered loaders
-  if (!Array.isArray(loaders) && !isLoaderObject(loaders)) {
+  if (loaders && !Array.isArray(loaders) && !isLoaderObject(loaders)) {
     context = options;
     options = loaders;
     loaders = null;
