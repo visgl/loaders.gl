@@ -254,7 +254,7 @@ export default class App extends PureComponent {
       onTilesetLoad: this._onTilesetLoad,
       onTileLoad: this._onTilesetChange,
       onTileUnload: this._onTilesetChange,
-      onTileLoadFail: this._onTilesetChange,
+      onTileError: this._onTilesetChange,
       loadOptions
     });
   }

@@ -29,7 +29,7 @@ export async function loadTileset({tilesetUrl, ionAssetId, ionAccessToken, viewe
   const tileset3d = new Tileset3D(tilesetJson, tilesetUrl, {
     onTileLoad: tileHeader => loadTile(tileHeader.uri, tileHeader),
     onTileUnload: tileHeader => unloadTile(tileHeader.contentUri),
-    onTileLoadFailed: tileHeader => console.error('LoadFailed', tileHeader.uri), // eslint-disable-line
+    onTileError: tileHeader => console.error('LoadFailed', tileHeader.uri), // eslint-disable-line
     fetchOptions,
     throttleRequests: true
   });

@@ -73,7 +73,7 @@ const DEFAULT_OPTIONS = {
 
   onTileLoad: () => {}, // Indicates this a tile's content was loaded
   onTileUnload: () => {}, // Indicates this a tile's content was unloaded
-  onTileLoadFail: (tile, message, url) => {}
+  onTileError: (tile, message, url) => {}
 };
 
 export default class I3STileset {
