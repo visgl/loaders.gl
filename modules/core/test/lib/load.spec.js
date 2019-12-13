@@ -22,13 +22,15 @@ test('load#auto detect loader', t => {
   const TEST_LOADER = {
     name: 'JSON',
     extensions: ['json'],
-    parse: async arrayBuffer => {
+    parse: async (arrayBuffer, options, context) => {
       t.ok(arrayBuffer instanceof ArrayBuffer, 'Got ArrayBuffer');
+      t.deepEquals(options.JSON, {option: true}, 'Option is passed through');
+      t.ok(context.parse, 'context is populated');
       t.end();
     }
   };
   registerLoaders(TEST_LOADER);
-  load('package.json');
+  load('package.json', {JSON: {option: true}});
 });
 
 test('load#Blob (text)', async t => {
