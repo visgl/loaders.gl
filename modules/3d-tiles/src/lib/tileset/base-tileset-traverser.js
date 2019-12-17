@@ -8,12 +8,10 @@ export const DEFAULT_OPTIONS = {
   maximumScreenSpaceError: 2
 };
 
-const MAX_CANCELLED_FRAMES = 20;
-
 export default class BaseTilesetTraverser {
   // TODO nested props
   constructor(options) {
-    this.options = {...DEFAULT_OPTIONS, options};
+    this.options = {...DEFAULT_OPTIONS, ...options};
     // TRAVERSAL
     // temporary storage to hold the traversed tiles during a traversal
     this._traversalStack = new ManagedArray();
@@ -23,7 +21,6 @@ export default class BaseTilesetTraverser {
     this._frameNumber = null;
 
     // fulfill in traverse call
-    this.options = null;
     this.root = null;
 
     // RESULT
@@ -33,13 +30,10 @@ export default class BaseTilesetTraverser {
     this.requestedTiles = {};
     // tiles does not have render content
     this.emptyTiles = {};
-    // frames which are cancelled traversing, only keep most recent cancelled frames
-    // stop unnecessary traversing when traverse are frequently called
-    this.canceledFrames = [];
   }
 
   // tiles should be visible
-  async traverse(root, frameState, options) {
+  traverse(root, frameState, options) {
     this.root = root; // for root screen space error
     this.options = {...this.options, ...options};
 
@@ -55,14 +49,12 @@ export default class BaseTilesetTraverser {
     }
 
     this._frameNumber = frameState.frameNumber;
-    await this.executeTraversal(root, frameState);
+    this.executeTraversal(root, frameState);
 
     return true;
   }
 
   reset() {
-    // keep most recent 20
-    this.canceledFrames.slice(-MAX_CANCELLED_FRAMES);
     this.requestedTiles = {};
     this.selectedTiles = {};
     this.emptyTiles = {};
@@ -78,31 +70,20 @@ export default class BaseTilesetTraverser {
   // all other tiles are part of the skip traversal. The skip traversal allows for skipping levels of the tree
   // and rendering children and parent tiles simultaneously.
   /* eslint-disable-next-line complexity, max-statements */
-  async executeTraversal(root, frameState) {
+  executeTraversal(root, frameState) {
     // stack to store traversed tiles, only visible tiles should be added to stack
     // visible: visible in the current view frustum
     const stack = this._traversalStack;
 
     stack.push(root);
     while (stack.length > 0) {
-      // should check in every round if another `traverse` call is triggered with a different frameState
-      // and hence this `traverse` associated with this frameState call should be terminated
-      if (this._frameNumber !== frameState.frameNumber) {
-        this.canceledFrames.push(frameState.frameNumber);
-        return;
-      }
       // 1. pop tile
       const tile = stack.pop();
 
       // 2. check if tile needs to be refine, needs refine if a tile's LoD is not sufficient and tile has available children (available content)
       let refines = false;
       if (this.canTraverse(tile, frameState)) {
-        this.cancel = !(await this.updateChildTiles(tile, frameState));
-        if (this.cancel) {
-          this.canceledFrames.push(frameState.frameNumber);
-          return;
-        }
-
+        this.updateChildTiles(tile, frameState);
         refines = this.updateAndPushChildren(tile, frameState, stack);
       }
 
@@ -142,15 +123,15 @@ export default class BaseTilesetTraverser {
       // 4. update tile refine prop and parent refinement status to trickle down to the descendants
       tile._refines = refines && parentRefines;
     }
+
+    if (this.options.onTraverseEnd) {
+      this.options.onTraverseEnd();
+    }
   }
 
-  async updateChildTiles(tile, frameState) {
+  updateChildTiles(tile, frameState) {
     const children = tile.children;
-
     for (const child of children) {
-      if (frameState.frameNumber !== this._frameNumber) {
-        return false;
-      }
       this.updateTile(child, frameState);
     }
     return true;
@@ -258,28 +239,16 @@ export default class BaseTilesetTraverser {
     return this.shouldRefine(tile, frameState, useParentMetric);
   }
 
-  // check if the traversal for frameState.frame is aborted
-  shouldAbortFrame(frameState) {
-    return this.canceledFrames.find(frameNumber => frameNumber === frameState.frameNumber);
-  }
-
   shouldLoadTile(tile, frameState) {
     // if request tile is in current frame
     // and has unexpired render content
-    return (
-      this._frameNumber === frameState.frameNumber &&
-      (tile.hasUnloadedContent || tile.contentExpired)
-    );
+    return tile.hasUnloadedContent || tile.contentExpired;
   }
 
   shouldSelectTile(tile, frameState) {
     // if select tile is in current frame
     // and content available
-    return (
-      this._frameNumber === frameState.frameNumber &&
-      tile.contentAvailable &&
-      !this.options.skipLevelOfDetail
-    );
+    return tile.contentAvailable && !this.options.skipLevelOfDetail;
   }
 
   // Decide if tile LoD (level of detail) is not sufficient under current viewport
@@ -349,11 +318,6 @@ export default class BaseTilesetTraverser {
     const stack = this._emptyTraversalStack;
 
     while (stack.length > 0) {
-      if (this._frameNumber !== frameState) {
-        this.canceledFrames.push(frameState.frameNumber);
-        return false;
-      }
-
       const tile = stack.pop();
 
       this.updateTile(tile, frameState);

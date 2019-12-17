@@ -3,13 +3,12 @@ import {_BaseTilesetTraverser as BaseTilesetTraverser} from '@loaders.gl/3d-tile
 import {lodJudge} from '../utils/lod';
 /* global fetch */
 import I3STileHeader from './i3s-tile-header';
+import I3STileManager from './i3s-tile-manager';
 
 export default class I3STilesetTraverser extends BaseTilesetTraverser {
   constructor(options) {
     super(options);
-
-    // persist fetched tile headers
-    this._tileHeaderMap = {};
+    this._tileManager = new I3STileManager();
   }
 
   shouldRefine(tile, frameState) {
@@ -19,35 +18,46 @@ export default class I3STilesetTraverser extends BaseTilesetTraverser {
   }
 
   // eslint-disable-next-line complexity
-  async updateChildTiles(tile, frameState) {
+  updateChildTiles(tile, frameState) {
     const {basePath} = this.options;
     const children = tile._header.children || [];
+    const childTiles = tile.children;
 
     for (const child of children) {
-      if (frameState.frameNumber !== this._frameNumber) {
-        return false;
-      }
-
-      let childTile = this._tileHeaderMap[child.id];
-
       // if child tile is not requested or fetched
+      const childTile = childTiles && childTiles.find(t => t.id === child.id);
       if (!childTile) {
-        this._tileHeaderMap[child.id] = {};
-        const header = await fetchTileNode(basePath, child.id);
-
-        // after child tile is fetched
-        childTile = new I3STileHeader(tile.tileset, header, tile, basePath);
-        tile.children.push(childTile);
-        this._tileHeaderMap[child.id] = childTile;
-      }
-
-      // if child tile is fetched and available
-      if (childTile._header) {
+        const request = () => fetchTileNode(basePath, child.id);
+        const cachedRequest = this._tileManager.find(child.id);
+        if (!cachedRequest) {
+          this._tileManager.add(
+            request,
+            child.id,
+            header => this._onTileLoad(header, tile, frameState),
+            {frameNumber: frameState.frameNumber}
+          );
+        } else {
+          // update frameNumber since it is still needed in current frame
+          this._tileManager.update(child.id, {frameNumber: frameState.frameNumber});
+        }
+      } else if (childTile) {
+        // if child tile is fetched and available
         this.updateTile(childTile, frameState);
       }
     }
+  }
 
-    return true;
+  _onTileLoad(header, tile, frameState) {
+    const basePath = this.options.basePath;
+    // after child tile is fetched
+    const childTile = new I3STileHeader(tile.tileset, header, tile, basePath);
+    tile.children.push(childTile);
+    this.updateTile(childTile, frameState);
+
+    // after tile fetcher, resume traversal if still in current update/traversal frame
+    if (this._frameNumber === frameState.frameNumber) {
+      this.executeTraversal(childTile, frameState);
+    }
   }
 }
 
