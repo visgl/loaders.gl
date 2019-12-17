@@ -100,7 +100,8 @@ export default class I3STileset {
       throttleRequests: this.options.throttleRequests
     });
     this._traverser = new Tileset3DTraverser({
-      basePath: this.basePath
+      basePath: this.basePath,
+      onTraverseEnd: this._onTraverseEnd.bind(this)
     });
     this._cache = new Tileset3DCache();
 
@@ -199,17 +200,7 @@ export default class I3STileset {
     return tilePath;
   }
 
-  async update(frameState) {
-    // TODO: only update when camera or culling volume from last update moves (could be render camera change or prefetch camera)
-    this._updatedVisibilityFrame++;
-    this._cache.reset();
-
-    await this._traverser.traverse(this.root, frameState, this.options);
-
-    if (this._traverser.shouldAbortFrame(frameState)) {
-      return;
-    }
-
+  _onTraverseEnd() {
     this.selectedTiles = Object.values(this._traverser.selectedTiles);
     this._requestedTiles = Object.values(this._traverser.requestedTiles);
     this._emptyTiles = Object.values(this._traverser.emptyTiles);
@@ -248,6 +239,13 @@ export default class I3STileset {
     this.stats.get(TILES_IN_VIEW).count = this.selectedTiles.length;
     this.stats.get(TILES_RENDERABLE).count = tilesRenderable;
     this.stats.get(POINTS_COUNT).count = pointsRenderable;
+  }
+
+  update(frameState) {
+    // TODO: only update when camera or culling volume from last update moves (could be render camera change or prefetch camera)
+    this._updatedVisibilityFrame++;
+    this._cache.reset();
+    this._traverser.traverse(this.root, frameState, this.options);
   }
 
   // TODO - why are these public methods? For testing?
@@ -337,7 +335,8 @@ export default class I3STileset {
       calculateTransformProps(tile, tile._content);
     }
 
-    this.addTileToCache(tile);
+    // TODO enable caching when fixed
+    // this.addTileToCache(tile);
     this.options.onTileLoad(tile);
   }
 

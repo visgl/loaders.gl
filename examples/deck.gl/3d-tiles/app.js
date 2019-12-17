@@ -12,7 +12,7 @@ import {StatsWidget} from '@probe.gl/stats-widget';
 
 // To manage dependencies and bundle size, the app must decide which supporting loaders to bring in
 import {registerLoaders} from '@loaders.gl/core';
-import {DracoLoader} from '@loaders.gl/draco';
+import {DracoWorkerLoader} from '@loaders.gl/draco';
 import {GLTFLoader} from '@loaders.gl/gltf';
 
 import ControlPanel from './components/control-panel';
@@ -21,7 +21,7 @@ import {loadExampleIndex, INITIAL_EXAMPLE_CATEGORY, INITIAL_EXAMPLE_NAME} from '
 import {INITIAL_MAP_STYLE} from './constants';
 
 // enable DracoWorkerLoader when fixed
-registerLoaders([GLTFLoader, DracoLoader]);
+registerLoaders([GLTFLoader, DracoWorkerLoader]);
 
 // Set your mapbox token here
 const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
@@ -241,7 +241,7 @@ export default class App extends PureComponent {
       data: tilesetUrl,
       _ionAssetId: ionAssetId,
       _ionAccessToken: ionAccessToken,
-      pointSize: 1,
+      pointSize: 2,
       getPointColor: [115, 112, 202],
       onTilesetLoad: this._onTilesetLoad,
       onTileLoad: this._onTilesetChange,
