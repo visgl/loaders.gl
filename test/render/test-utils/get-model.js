@@ -1,9 +1,7 @@
-import {Model, Geometry, _ShaderCache as ShaderCache} from '@luma.gl/core';
+import {Model, Geometry} from '@luma.gl/core';
 import * as mat4 from 'gl-matrix/mat4';
 
 import {normalizeAttributes} from './normalize-attributes';
-
-const shaderCache = {};
 
 export function drawModelInViewport(model, viewport, uniforms = {}) {
   const {gl} = model;
@@ -28,10 +26,6 @@ export function drawModelInViewport(model, viewport, uniforms = {}) {
 }
 
 export function getModel(gl, data) {
-  if (!shaderCache[gl]) {
-    shaderCache[gl] = new ShaderCache({gl, _cachePrograms: true});
-  }
-
   return new Model(gl, {
     id: 'mesh',
     vs: `
@@ -76,8 +70,7 @@ void main(void) {
     geometry: new Geometry({
       attributes: normalizeAttributes(data),
       drawMode: data.mode
-    }),
-    shaderCache: shaderCache[gl]
+    })
   });
 }
 

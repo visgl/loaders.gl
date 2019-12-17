@@ -16,7 +16,6 @@ import {DracoLoader} from '@loaders.gl/draco';
 import {GLTFLoader} from '@loaders.gl/gltf';
 
 import ControlPanel from './components/control-panel';
-import fileDrop from './components/file-drop';
 
 import {loadExampleIndex, INITIAL_EXAMPLE_CATEGORY, INITIAL_EXAMPLE_NAME} from './examples';
 import {INITIAL_MAP_STYLE} from './constants';
@@ -86,13 +85,6 @@ export default class App extends PureComponent {
     });
 
     this._tilesetStatsWidget = new StatsWidget(null, {container});
-
-    fileDrop(this._deckRef.deckCanvas, (promise, file) => {
-      // eslint-disable-next-line
-      alert('File drop of tilesets not yet implemented');
-      // this.setState({ droppedFile: file, tile: null });
-      // load(promise, Tile3DLoader).then(this._onLoad);
-    });
 
     await this._loadExampleIndex();
 

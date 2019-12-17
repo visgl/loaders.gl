@@ -48,7 +48,7 @@ const MATH_LINK_ALIASES = {
 };
 
 const LUMA_LINK_ALIASES = {
-  '@luma.gl/addons': resolve(ROOT_DIR, '../luma.gl/modules/addons/src'),
+  '@luma.gl/experimental': resolve(ROOT_DIR, '../luma.gl/modules/experimental/src'),
   '@luma.gl/constants': resolve(ROOT_DIR, '../luma.gl/modules/constants/src'),
   '@luma.gl/core': resolve(ROOT_DIR, '../luma.gl/modules/core/src'),
   '@luma.gl/debug': resolve(ROOT_DIR, '../luma.gl/modules/debug/src'),

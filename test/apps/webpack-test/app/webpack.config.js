@@ -13,7 +13,7 @@ module.exports = {
   },
   resolve: {
     alias: {
-      '@luma.gl/addons': resolve('node_modules/@luma.gl/addons')
+      '@luma.gl/experimental': resolve('node_modules/@luma.gl/experimental')
     }
   }
 };

@@ -5,7 +5,7 @@ import {GLTFLoader} from '@loaders.gl/gltf';
 import {DracoLoader} from '@loaders.gl/draco';
 import GL from '@luma.gl/constants';
 import {AnimationLoop, setParameters, clear, log, lumaStats} from '@luma.gl/core';
-import {GLTFEnvironment} from '@luma.gl/addons';
+import {GLTFEnvironment} from '@luma.gl/experimental';
 import {createGLTFObjects} from './create-gltf-objects';
 import {Matrix4, radians} from 'math.gl';
 

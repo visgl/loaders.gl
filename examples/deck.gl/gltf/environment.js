@@ -1,4 +1,4 @@
-import {GLTFEnvironment} from '@luma.gl/addons';
+import {GLTFEnvironment} from '@luma.gl/experimental';
 import GL from '@luma.gl/constants';
 
 const GLTF_ENV_BASE_URL =

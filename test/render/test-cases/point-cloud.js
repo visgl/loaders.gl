@@ -8,8 +8,10 @@ import {getModel, drawModelInViewport} from '../test-utils/get-model';
 const LAS_BINARY_URL = '@loaders.gl/las/test/data/indoor.laz';
 
 // Raw point cloud data URLS
-const KITTI_POSITIONS_URL = '@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-positions.bin';
-const KITTI_COLORS_URL = '@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-colors.bin';
+const KITTI_POSITIONS_URL =
+  'https://raw.githubusercontent.com/uber-web/loaders.gl/master/modules/draco/test/data/raw-attribute-buffers/lidar-positions.bin';
+const KITTI_COLORS_URL =
+  'https://raw.githubusercontent.com/uber-web/loaders.gl/master/modules/draco/test/data/raw-attribute-buffers/lidar-colors.bin';
 
 // Load big cloud only once...
 let kittiPointCloud;
