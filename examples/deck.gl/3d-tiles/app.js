@@ -86,13 +86,6 @@ export default class App extends PureComponent {
 
     this._tilesetStatsWidget = new StatsWidget(null, {container});
 
-    // fileDrop(this._deckRef.deckCanvas, (promise, file) => {
-    //   // eslint-disable-next-line
-    //   alert('File drop of tilesets not yet implemented');
-    //   // this.setState({ droppedFile: file, tile: null });
-    //   // load(promise, Tile3DLoader).then(this._onLoad);
-    // });
-
     await this._loadExampleIndex();
 
     // Check if a tileset is specified in the query params
