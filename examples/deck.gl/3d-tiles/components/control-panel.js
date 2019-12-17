@@ -49,7 +49,6 @@ const propTypes = {
   category: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
   data: PropTypes.object.isRequired,
-  droppedFile: PropTypes.string,
   tileset: PropTypes.object,
   mapStyles: PropTypes.object,
   selectedMapStyle: PropTypes.string,
@@ -129,11 +128,6 @@ export default class ControlPanel extends PureComponent {
     );
   }
 
-  _renderDropped() {
-    const {droppedFile} = this.props;
-    return droppedFile ? <div>Dropped file: {JSON.stringify(droppedFile.name)}</div> : null;
-  }
-
   _renderInfo() {
     if (!this.props.tileset) {
       return null;
@@ -161,7 +155,6 @@ export default class ControlPanel extends PureComponent {
     return (
       <Container>
         {this._renderByCategories()}
-        {this._renderDropped()}
         {this._renderMapStyles()}
         {this.props.children}
         {this._renderInfo()}

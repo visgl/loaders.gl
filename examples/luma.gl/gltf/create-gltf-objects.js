@@ -1,5 +1,5 @@
 // TODO - move to @luma.gl/addons
-import {createGLTFObjects as createGLTFObjectsSync} from '@luma.gl/addons';
+import {createGLTFObjects as createGLTFObjectsSync} from '@luma.gl/experimental';
 
 export async function createGLTFObjects(gl, gltf, options) {
   const gltfObjects = createGLTFObjectsSync(gl, gltf, options);

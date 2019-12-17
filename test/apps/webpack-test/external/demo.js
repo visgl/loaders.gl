@@ -1,2 +1,2 @@
 import '@luma.gl/core';
-import '@luma.gl/addons';
+import '@luma.gl/experimental';
