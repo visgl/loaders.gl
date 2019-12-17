@@ -5,9 +5,9 @@
     "start-local": "webpack-dev-server --env.local --env.esnext --progress --hot --open"
   },
   "dependencies": {
-    "@deck.gl/core": "^7.3.6",
-    "@deck.gl/mesh-layers": "^7.3.6",
-    "@deck.gl/react": "^7.3.6",
+    "@deck.gl/core": "^8.0.0-beta.1",
+    "@deck.gl/mesh-layers": "^8.0.0-beta.1",
+    "@deck.gl/react": "^8.0.0-beta.1",
     "@loaders.gl/core": "^2.0.0-beta.2",
     "@loaders.gl/gltf": "^2.0.0-beta.2",
     "@loaders.gl/draco": "^2.0.0-beta.2",

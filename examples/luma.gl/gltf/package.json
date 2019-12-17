@@ -11,9 +11,9 @@
   "dependencies": {
     "@loaders.gl/core": "^2.0.0-beta.2",
     "@loaders.gl/draco": "^2.0.0-beta.2",
-    "@luma.gl/addons": "^7.3.2",
-    "@luma.gl/constants": "^7.3.2",
-    "@luma.gl/core": "^7.3.2",
+    "@luma.gl/addons": "^8.0.0-alpha.10",
+    "@luma.gl/constants": "^8.0.0-beta.4",
+    "@luma.gl/core": "^8.0.0-beta.4",
     "math.gl": "^3.0.0"
   },
   "devDependencies": {
