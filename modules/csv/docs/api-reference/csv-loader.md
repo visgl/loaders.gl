@@ -13,7 +13,7 @@ Streaming loader for comma-separated value and [delimiter-separated value](https
 ## Usage
 
 ```js
-import {CSVLoader} from '@loaders.gl/obj';
+import {CSVLoader} from '@loaders.gl/csv';
 import {load} from '@loaders.gl/core';
 
 const data = await load(url, CSVLoader, {csv: options});

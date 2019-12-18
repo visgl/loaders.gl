@@ -11,8 +11,5 @@ module.exports = {
     'no-inline-comments': 0,
     'no-multi-str': 0,
     'space-before-function-paren': 0
-  },
-  globals: {
-    window: false
   }
 };

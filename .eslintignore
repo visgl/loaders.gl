@@ -6,6 +6,7 @@ dist
 node_modules/
 *.min.js
 **/*.minified.js
+bundle.js
 
 public/
 .cache/

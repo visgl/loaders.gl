@@ -371,10 +371,11 @@ export default class I3STileset {
       stack.push(this._root);
     }
     while (stack.length > 0) {
+      const tile = stack.pop();
+
       for (const child of tile.children) {
         stack.push(child);
       }
-      const tile = stack.pop();
 
       // TODO - Use this._destroyTile(tile); ?
       tile.destroy();

@@ -1,3 +1,4 @@
+/* global requestAnimationFrame */
 // TODO - move to @luma.gl/addons
 import {createGLTFObjects as createGLTFObjectsSync} from '@luma.gl/experimental';
 
@@ -32,6 +33,6 @@ async function waitForGLTFAssets(gltfObjects) {
 
 async function waitWhileCondition(condition) {
   while (condition()) {
-    await new Promise(resolve => window.requestAnimationFrame(resolve));
+    await new Promise(resolve => requestAnimationFrame(resolve));
   }
 }

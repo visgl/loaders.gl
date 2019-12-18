@@ -1,6 +1,6 @@
 // TODO: Duplicate of core
 
-/* global ArrayBuffer, Buffer, TextEncoder */
+/* global Buffer, TextEncoder */
 import assert from '../../utils/assert';
 
 const isArrayBuffer = x => x && x instanceof ArrayBuffer;

@@ -19,7 +19,6 @@
 // THE SOFTWARE.
 
 const path = require('path');
-const {addAliases} = require('@loaders.gl/core/lib/fetch/file-aliases');
 
 // NOTE - Replace with a transform of ocular-dev-tools aliases?
 const makeAliases = () => ({
@@ -44,7 +43,5 @@ const makeAliases = () => ({
 });
 
 const ALIASES = makeAliases();
-
-addAliases(ALIASES);
 
 module.exports = ALIASES;
