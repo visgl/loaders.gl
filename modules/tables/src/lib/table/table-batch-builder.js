@@ -18,8 +18,16 @@ export default class TableBatchBuilder {
     this.batch.addRow(row);
   }
 
+  chunkComplete() {
+    this.batch.chunkComplete();
+  }
+
   isFull() {
     return this.batch && this.batch.isFull();
+  }
+
+  hasBatch() {
+    return Boolean(this.batch);
   }
 
   getNormalizedBatch() {

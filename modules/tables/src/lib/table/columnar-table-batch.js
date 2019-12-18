@@ -6,6 +6,7 @@ export default class ColumnarTableBatch {
     this.length = 0;
     this.allocated = 0;
     this.columns = null;
+    this.isChunkComplete = false;
 
     this.reallocateColumns();
   }
@@ -20,7 +21,14 @@ export default class ColumnarTableBatch {
   }
 
   // Is this TableBatch full?
+  chunkComplete() {
+    this.isChunkComplete = true;
+  }
+
   isFull() {
+    if (this.batchSize === 'auto') {
+      return this.isChunkComplete;
+    }
     return this.length >= this.allocated;
   }
 
@@ -39,6 +47,7 @@ export default class ColumnarTableBatch {
     }
 
     this.columns = null;
+    this.isChunkComplete = false;
 
     return {data: columns, schema: this.schema, length: this.length};
   }
