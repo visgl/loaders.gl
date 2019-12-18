@@ -1,7 +1,7 @@
 // Sets up aliases for file reader
 
 const ALIASES = require('./aliases');
-const {_addAliases} = require('@loaders.gl/core');
+const {_addAliases} = require('@loaders.gl/loader-utils');
 _addAliases(ALIASES);
 
 // Install polyfills (primarily for Node)

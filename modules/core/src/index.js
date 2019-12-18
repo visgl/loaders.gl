@@ -4,7 +4,8 @@ import * as path from './lib/path/path';
 export {path};
 
 // FILE READING AND WRITING
-export {setPathPrefix, getPathPrefix, resolvePath} from './lib/fetch/file-aliases.js';
+export {setPathPrefix, getPathPrefix, resolvePath} from '@loaders.gl/loader-utils';
+
 export {fetchFile} from './lib/fetch/fetch-file';
 export {readFileSync} from './lib/fetch/read-file';
 export {writeFile, writeFileSync} from './lib/fetch/write-file';
@@ -70,5 +71,4 @@ export {default as _fetchProgress} from './lib/progress/fetch-progress';
 // export {writeFile as _writeFile} from './core-addons/write-file-browser';
 
 // FOR TESTING
-export {addAliases as _addAliases} from './lib/fetch/file-aliases.js';
 export {_unregisterLoaders} from './lib/register-loaders';

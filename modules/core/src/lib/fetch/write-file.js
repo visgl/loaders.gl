@@ -1,6 +1,5 @@
-import {isBrowser, assert} from '@loaders.gl/loader-utils';
+import {isBrowser, assert, resolvePath} from '@loaders.gl/loader-utils';
 import * as node from '../../node/write-file.node';
-import {resolvePath} from './file-aliases';
 
 export function writeFile(filePath, arrayBufferOrString, options) {
   filePath = resolvePath(filePath);

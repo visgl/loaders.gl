@@ -1,8 +1,9 @@
 import test from 'tape-promise/tape';
 
-import {setPathPrefix, getPathPrefix, resolvePath} from '@loaders.gl/core';
+import {setPathPrefix, getPathPrefix, resolvePath} from '@loaders.gl/loader-utils';
+
 // NOTE: addAliases is not a public export, already used by test setup
-// import {addAliases} from '@loaders.gl/core';
+// import {_addAliases} from '@loaders.gl/loader-utils';
 
 test('file aliases#imports', t => {
   t.ok(typeof setPathPrefix === 'function', 'setPathPrefix() defined');

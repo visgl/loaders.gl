@@ -1,8 +1,7 @@
 /* global fetch */
 import test from 'tape-promise/tape';
 import '@loaders.gl/polyfills';
-import {isBrowser} from '@loaders.gl/core';
-import {resolvePath} from '@loaders.gl/core/lib/fetch/file-aliases';
+import {isBrowser, resolvePath} from '@loaders.gl/core';
 
 const PLY_CUBE_ATT_URL = resolvePath('@loaders.gl/ply/test/data/cube_att.ply');
 
