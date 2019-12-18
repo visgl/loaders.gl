@@ -14,7 +14,9 @@ export function getPathPrefix() {
   return pathPrefix;
 }
 
-// Note: addAliases are not exported at the moment, they are only for loaders.gl testing
+// Note: addAliases are an experimental export,
+// they are only for testing of loaders.gl loaders
+// not inteded as a generic aliasing mechanism
 export function addAliases(aliases) {
   Object.assign(fileAliases, aliases);
 }

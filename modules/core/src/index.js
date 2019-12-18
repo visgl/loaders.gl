@@ -4,7 +4,6 @@ import * as path from './lib/path/path';
 export {path};
 
 // FILE READING AND WRITING
-export {setPathPrefix, getPathPrefix, resolvePath} from './lib/fetch/file-aliases.js';
 export {fetchFile} from './lib/fetch/fetch-file';
 export {readFileSync} from './lib/fetch/read-file';
 export {writeFile, writeFileSync} from './lib/fetch/write-file';
@@ -54,9 +53,10 @@ export {
   numberedLineAsyncIterator
 } from './javascript-utils/async-iterator-utils';
 
-// CORE UTILS
+// CORE UTILS SHARED WITH LOADERS (RE-EXPORTED FROM LOADER-UTILS)
 export {isBrowser, isWorker, self, window, global, document} from '@loaders.gl/loader-utils';
 export {assert} from '@loaders.gl/loader-utils';
+export {setPathPrefix, getPathPrefix, resolvePath} from '@loaders.gl/loader-utils';
 
 // EXPERIMENTAL
 export {selectLoader as _selectLoader} from './lib/select-loader';
@@ -67,8 +67,5 @@ export {default as _WorkerPool} from './worker-utils/worker-pool';
 
 export {default as _fetchProgress} from './lib/progress/fetch-progress';
 
-// export {writeFile as _writeFile} from './core-addons/write-file-browser';
-
 // FOR TESTING
-export {addAliases as _addAliases} from './lib/fetch/file-aliases.js';
 export {_unregisterLoaders} from './lib/register-loaders';

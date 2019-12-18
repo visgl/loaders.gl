@@ -1,6 +1,6 @@
 /* global fetch */
+import {resolvePath} from '@loaders.gl/loader-utils';
 import {isFileReadable} from '../../javascript-utils/is-type';
-import {resolvePath} from './file-aliases';
 import fetchFileReadable from './fetch-file.browser';
 
 // As fetch but respects pathPrefix and file aliases

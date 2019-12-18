@@ -1,7 +1,7 @@
 import test from 'tape-promise/tape';
 
 import {loadImage, loadImageArray, loadImageCube, isImage} from '@loaders.gl/images';
-import {resolvePath} from '@loaders.gl/core';
+import {resolvePath} from '@loaders.gl/loader-utils';
 
 const LUT_URL = resolvePath('@loaders.gl/images/test/data/ibl/brdfLUT.png');
 const PAPERMILL_URL = resolvePath('@loaders.gl/images/test/data/ibl/papermill');
