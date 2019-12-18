@@ -1,4 +1,4 @@
-/* global process, global */
+/* global process, global, console */
 /* eslint-disable no-console */
 
 // Determine Node version
