@@ -1446,20 +1446,6 @@
     npmlog "^4.1.2"
     write-file-atomic "^2.3.0"
 
-"@loaders.gl/core@1.2.2":
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/core/-/core-1.2.2.tgz#2c87b09e2e2a0d07c029d88d637757b85ce3dd38"
-  integrity sha512-c/ERkx2J2hWxEDxOLhU1XtOlqpn8TPGII2B31lu9nW3sv0MTqDVbM51R2TXthJ0uxenDz1ubhapiYyF5eA1eFw==
-  dependencies:
-    "@babel/runtime" "^7.3.1"
-
-"@loaders.gl/experimental@1.2.2":
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/experimental/-/experimental-1.2.2.tgz#cc253cf82e8b7fa7182f39c05f4243c53f6ab5d2"
-  integrity sha512-lyfw7pG7zFIDc6SkFIXubSjUFU5e8jvGLLrywXKYOGukHTJaOF6x2caYPrf57/x4pIp2r0IN4MNw/cilWJCikw==
-  dependencies:
-    "@loaders.gl/core" "1.2.2"
-
 "@luma.gl/constants@8.0.0-beta.4":
   version "8.0.0-beta.4"
   resolved "https://registry.yarnpkg.com/@luma.gl/constants/-/constants-8.0.0-beta.4.tgz#3dea057bbf44fc44725c539d821d9ea5c558abab"
