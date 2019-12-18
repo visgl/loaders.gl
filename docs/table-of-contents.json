@@ -131,6 +131,12 @@
           ]
         },
         {
+          "title": "@loaders.gl/json",
+          "entries": [
+            {"entry": "modules/json/docs"}
+          ]
+        },
+        {
           "title": "@loaders.gl/kml",
           "entries": [
             {"entry": "modules/kml/docs"}

@@ -1,5 +1,13 @@
 # What's New
 
+## v2.1 (In Development)
+
+Release Date: Target Feb-Mar, 2019.
+
+### @loaders.gl/json
+
+A new streaming `JSONLoader` that supports batched (i.e. streaming) parsing from standard JSON files, e.g. geojson. No need to reformat your files as line delimited JSON.
+
 ## v2.0
 
 Release Date: Target Dec, 2019, currently available as `2.0.0-beta` releases
