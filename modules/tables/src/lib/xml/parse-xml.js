@@ -1,4 +1,4 @@
-/* global DOMParser */
+/* global window, DOMParser */
 export default function parseXML(xml) {
   if (window.DOMParser) {
     const xmlDoc = new window.DOMParser().parseFromString(xml, 'application/xml');

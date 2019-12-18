@@ -1,8 +1,8 @@
 # What's New
 
-## v2.0 (In development)
+## v2.0
 
-Release Date: Target mid-Nov, 2019, currently available as `2.0.0-alpha` releases
+Release Date: Target Dec, 2019, currently available as `2.0.0-beta` releases
 
 The 2.0 release brings stronger loader composition, image loading improvements, significant overhauls to several loaders and removes deprecated functions across the board.
 

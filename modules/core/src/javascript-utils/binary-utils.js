@@ -1,4 +1,4 @@
-/* global ArrayBuffer, TextEncoder */
+/* global TextEncoder */
 import {assert} from '@loaders.gl/loader-utils';
 import {toArrayBuffer as bufferToArrayBuffer} from '../node/utils/to-array-buffer.node';
 

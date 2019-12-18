@@ -1,4 +1,5 @@
 import {equals, _withEpsilon} from 'math.gl';
+import './tape-deep-equal';
 
 // FOR TAPE TESTING
 // Use tape assert to compares using a.equals(b)
