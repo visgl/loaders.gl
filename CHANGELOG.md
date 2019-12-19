@@ -44,11 +44,9 @@
 - improve distanceToTile calculation (#544)
 - Create a sphere from map region (#542)
 - Fix "loadGLTF" check (#538)
-- PLYLoader: Fix handling of color values (#535)
 - improve point cloud examples by adding new data and tune screen space error (#530)
 - Add i3s parser and example (#499)
 - Rename folders, target and update build instructions (#529)
-- Support selecting loader from data url (#526)
 - update 555 market model id (#525)
 - add draco compression support (#521)
 - add draco lib (#520)
@@ -97,7 +95,36 @@
 
 #### v2.0.0-alpha.1
 
-
+- core: parse url handling fix
+- core: Avoid binding context due to transpilation issues (#455)
+- use context in worker (#448)
+- Extract description from ion metadata (#450)
+- glTF image loading (#441)
+- Fix parsing draco compressed gltf (#447)
+- For v2.0: Image Category Reimagined (#387)
+- 3d-tiles: Ensure tile error messages are not hidden (#446)
+- gltf: support KHR_materials_unlit extension (#445)
+- zip: use async (#443)
+- gltf: Extension handling cleanup (#444)
+- Enable commented vis code (#442)
+- core: Use `context` to resolve loaders in sub-loaders (#426)
+- glTF fixes (#440)
+- gltf: drop parseSync, options refactor and doc refresh (#437)
+- arrow/csv/draco: Update options and docs (#438)
+- core: Merge nested options objects (#436)
+- Restore worker loader config (#435)
+- 3d-tiles: Remove sync parser versions (#430)
+- loader-utils: Improved JSON parsing error messages (#428)
+- 3d-tiles: Create lib directory (#425)
+- gltf: Fix Scenegraph.getTypedArrayForBufferView (#423)
+- Fix core module browser config (#422)
+- Dedupe loaders (#421)
+- potree: Initial parser code for potree format (#349)
+- 3d-tiles & gltf: atomic parser, load all linked assets within on… (#417)
+- core: add `context` to `parse` methods (#414)
+- add basis module (#413)
+- Auto resolve DracoLoader for PointCloud tiles (#412)
+- ES2018 async debugging improvements (#411)
 
 ## loaders.gl v1.0
 
