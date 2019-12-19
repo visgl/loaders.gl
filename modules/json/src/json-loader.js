@@ -70,6 +70,7 @@ function getFirstArray(json) {
 }
 
 // TODO - support batch size 0 = no batching/single batch?
+// eslint-disable-next-line max-statements
 async function* parseJSONInBatches(asyncIterator, options) {
   // Apps can call the parse method directly, we so apply default options here
   options = {...JSONLoader.options, ...options};
@@ -83,14 +84,13 @@ async function* parseJSONInBatches(asyncIterator, options) {
   let schema = null;
 
   const parser = new StreamingJSONParser();
-  tableBatchBuilder =
-    tableBatchBuilder || new TableBatchBuilder(TableBatchType, schema, batchSize);
+  tableBatchBuilder = tableBatchBuilder || new TableBatchBuilder(TableBatchType, schema, batchSize);
 
-    if (!tableBatchBuilder) {
-      throw new Error('yary')
-    }
-  
-    for await (const chunk of asyncIterator) {
+  if (!tableBatchBuilder) {
+    throw new Error('yary');
+  }
+
+  for await (const chunk of asyncIterator) {
     const rows = parser.write(chunk);
 
     if (isFirstChunk) {
@@ -107,7 +107,7 @@ async function* parseJSONInBatches(asyncIterator, options) {
       }
     }
 
-    tableBatchBuilder.chunkComplete();    
+    tableBatchBuilder.chunkComplete();
     if (tableBatchBuilder.isFull()) {
       yield tableBatchBuilder.getNormalizedBatch();
     }
