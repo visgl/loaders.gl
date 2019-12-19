@@ -42,7 +42,7 @@ if (!isBrowser && !('Headers' in global) && HeadersNode) {
 }
 
 if (!isBrowser && !('Response' in global) && ResponseNode) {
-  global['Respone'] = ResponseNode;
+  global['Response'] = ResponseNode;
 }
 
 if (!isBrowser && !('fetch' in global) && fetchNode) {
