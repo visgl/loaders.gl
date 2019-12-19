@@ -17,7 +17,7 @@
 
 #### v2.0.0-beta.4
 
--  deck.gl v8.0 API audit (#543)
+- deck.gl v8.0 API audit (#543)
 
 #### v2.0.0-beta.3
 
@@ -35,7 +35,7 @@
 - workers: Add dev-worker scripts (#552)
 - Fix loading worker loader from cdn (#553)
 - Refactor 3d tile traversal - Part 1 (#540)
- 
+
 #### v2.0.0-alpha.5
 
 - Support customized worker loader url (#551)

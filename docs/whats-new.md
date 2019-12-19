@@ -4,10 +4,6 @@
 
 Release Date: Target Feb-Mar, 2019.
 
-### @loaders.gl/json
-
-A new streaming `JSONLoader` that supports batched (i.e. streaming) parsing from standard JSON files, e.g. geojson. No need to reformat your files as line delimited JSON.
-
 ## v2.0
 
 Release Date: Target Dec, 2019, currently available as `2.0.0-beta` releases
@@ -57,6 +53,11 @@ The 2.0 release brings stronger loader composition, image loading improvements, 
 
 - **Improved Node.js image support**
   - More test cases are now run in both browser and Node.js and a few important issues were uncovered and fixed.
+
+### @loaders.gl/json
+
+A new streaming `JSONLoader`(Experimental) that supports batched (i.e. streaming) parsing from standard JSON files, e.g. geojson. No need to reformat your files as line delimited JSON.
+
 
 ## v1.3
 
