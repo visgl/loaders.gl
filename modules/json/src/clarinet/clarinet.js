@@ -14,7 +14,8 @@ export const EVENTS = [
   'ready'
 ];
 
-const MAX_BUFFER_LENGTH = 64 * 1024;
+// Removes the MAX_BUFFER_LENGTH, originally set to 64 * 1024
+const MAX_BUFFER_LENGTH = Number.MAX_SAFE_INTEGER;
 const DEBUG = env.CDEBUG === 'debug';
 
 const buffers = {
@@ -95,8 +96,9 @@ const Char = {
 };
 
 function checkBufferLength(parser) {
-  var maxAllowed = Math.max(MAX_BUFFER_LENGTH, 10),
-    maxActual = 0;
+  const maxAllowed = Math.max(MAX_BUFFER_LENGTH, 10);
+  let maxActual = 0;
+
   for (var buffer in buffers) {
     var len = parser[buffer] === undefined ? 0 : parser[buffer].length;
     if (len > maxAllowed) {
@@ -513,7 +515,9 @@ export default class ClarinetParser {
           error(this, 'Unknown state: ' + this.state);
       }
     }
-    if (this.position >= this.bufferCheckPosition) checkBufferLength(this);
+    if (this.position >= this.bufferCheckPosition) {
+      checkBufferLength(this);
+    }
 
     emit(this, 'onchunkparsed');
 

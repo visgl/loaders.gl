@@ -11,6 +11,23 @@ test('JSONLoader#load(geojson.json)', async t => {
   t.end();
 });
 
+test('JSONLoader#loadInBatches(geojson.json, rows, batchSize = auto)', async t => {
+  const iterator = await loadInBatches(GEOJSON_PATH, JSONLoader);
+  t.ok(isIterator(iterator) || isAsyncIterable(iterator), 'loadInBatches returned iterator');
+
+  let batch;
+  let batchCount = 0;
+  let rowCount = 0;
+  for await (batch of iterator) {
+    batchCount++;
+    rowCount += batch.length;
+  }
+
+  t.ok(batchCount <= 3, 'Correct number of batches received');
+  t.equal(rowCount, 308, 'Correct number of row received');
+  t.end();
+});
+
 test('JSONLoader#loadInBatches(geojson.json, rows, batchSize = 10)', async t => {
   const iterator = await loadInBatches(GEOJSON_PATH, JSONLoader, {
     json: {batchSize: 10}
@@ -43,23 +60,6 @@ test('JSONLoader#loadInBatches(geojson.json, rows, batchSize = 10)', async t => 
   t.end();
 });
 
-test('JSONLoader#loadInBatches(geojson.json, rows, batchSize = auto)', async t => {
-  const iterator = await loadInBatches(GEOJSON_PATH, JSONLoader);
-  t.ok(isIterator(iterator) || isAsyncIterable(iterator), 'loadInBatches returned iterator');
-
-  let batch;
-  let batchCount = 0;
-  let rowCount = 0;
-  for await (batch of iterator) {
-    batchCount++;
-    rowCount += batch.length;
-  }
-
-  t.ok(batchCount <= 3, 'Correct number of batches received');
-  t.equal(rowCount, 308, 'Correct number of row received');
-  t.end();
-});
-
 /*
 test('JSONLoader#loadInBatches(geojson.json, columns, batchSize = auto)', async t => {
   const iterator = await loadInBatches(GEOJSON_PATH, JSONLoader, {
@@ -83,3 +83,20 @@ test('JSONLoader#loadInBatches(geojson.json, columns, batchSize = auto)', async 
   t.end();
 });
 */
+
+test('JSONLoader#loadInBatches(geojson.json, rows, batchSize = auto)', async t => {
+  const iterator = await loadInBatches(GEOJSON_PATH, JSONLoader);
+  t.ok(isIterator(iterator) || isAsyncIterable(iterator), 'loadInBatches returned iterator');
+
+  let batch;
+  let batchCount = 0;
+  let rowCount = 0;
+  for await (batch of iterator) {
+    batchCount++;
+    rowCount += batch.length;
+  }
+
+  t.ok(batchCount <= 3, 'Correct number of batches received');
+  t.equal(rowCount, 308, 'Correct number of row received');
+  t.end();
+});
