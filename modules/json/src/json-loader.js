@@ -86,10 +86,6 @@ async function* parseJSONInBatches(asyncIterator, options) {
   const parser = new StreamingJSONParser();
   tableBatchBuilder = tableBatchBuilder || new TableBatchBuilder(TableBatchType, schema, batchSize);
 
-  if (!tableBatchBuilder) {
-    throw new Error('yary');
-  }
-
   for await (const chunk of asyncIterator) {
     const rows = parser.write(chunk);
 
