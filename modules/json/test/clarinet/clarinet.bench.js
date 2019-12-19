@@ -7,13 +7,13 @@ export default function clarinetBench(bench) {
 
   const parser = new ClarinetParser();
 
-  bench.group('Clarinet - JSON parsing');
+  bench.group('Clarinet - JSON parsing from string');
 
-  bench.add('ClarinetParser(basic.json)', () => {
-    parser.write(STRING);
+  bench.add('JSON.parse (used by parseSync)', () => {
+    JSON.parse(STRING);
   });
 
-  bench.add('JSON.parse(basic.json)', () => {
-    JSON.parse(STRING);
+  bench.add('ClarinetParser (used by parseInBatches)', () => {
+    parser.write(STRING);
   });
 }

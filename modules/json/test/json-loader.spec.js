@@ -60,6 +60,7 @@ test('JSONLoader#loadInBatches(geojson.json, rows, batchSize = 10)', async t => 
   t.end();
 });
 
+// TODO - columnar table batch support not yet fixed
 /*
 test('JSONLoader#loadInBatches(geojson.json, columns, batchSize = auto)', async t => {
   const iterator = await loadInBatches(GEOJSON_PATH, JSONLoader, {
@@ -72,7 +73,6 @@ test('JSONLoader#loadInBatches(geojson.json, columns, batchSize = auto)', async 
   let batch;
   let batchCount = 0;
   let rowCount = 0;
-
   for await (batch of iterator) {
     batchCount++;
     rowCount += batch.length;

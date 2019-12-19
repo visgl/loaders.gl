@@ -4,6 +4,8 @@ import WorkerFarm from '../../worker-utils/worker-farm';
 import {getTransferList} from '../../worker-utils/get-transfer-list';
 import {parse} from '../parse';
 
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+
 export function canParseWithWorker(loader, data, options, context) {
   if (!WorkerFarm.isSupported()) {
     return false;
@@ -37,10 +39,12 @@ export default function parseWithWorker(loader, data, options, context) {
   // TODO - decide how to handle logging on workers
   options = JSON.parse(JSON.stringify(options));
 
-  return workerFarm.process(workerSource, `loaders.gl-${workerName}`, {
+  const warning = loader.version !== VERSION ? `(core version ${VERSION})` : '';
+
+  return workerFarm.process(workerSource, `loaders.gl@${loader.version}${warning}:${workerName}`, {
     arraybuffer: toArrayBuffer(data),
     options,
-    source: `loaders.gl@${__VERSION__}`, // Lets worker ignore unrelated messages
+    source: `loaders.gl@${VERSION}`, // Lets worker ignore unrelated messages
     type: 'parse' // For future extension
   });
 }
