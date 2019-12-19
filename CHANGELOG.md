@@ -1,3 +1,131 @@
+## loaders.gl v2.0
+
+### 2.0 Release
+
+#### v2.0.0-beta.6
+
+- json: New streaming `JSONLoader` (supports GeoJSON) (#383)
+- json: Add module placeholder with clarinet fork (#567)
+- json: prep diff (#566)
+- Bump math.gl and probe.gl (#564)
+- Make traversal synchronous and fix the tile-3d-layer example fla… (#563)
+- Bump luma.gl and deck.gl (#565)
+
+#### v2.0.0-beta.5
+
+- Fix loader-utils build (#561)
+
+#### v2.0.0-beta.4
+
+- deck.gl v8.0 API audit (#543)
+
+#### v2.0.0-beta.3
+
+- remove unused getImageAsync call (#560)
+- Bump and remove experimental packages (#558)
+- fix auto loader detection (#559)
+- website: Move to `gatsby-theme-ocular` (#545)
+
+#### v2.0.0-beta.2
+
+- Fix gltf image loading (#555)
+
+#### v2.0.0-beta.1
+
+- workers: Add dev-worker scripts (#552)
+- Fix loading worker loader from cdn (#553)
+- Refactor 3d tile traversal - Part 1 (#540)
+
+#### v2.0.0-alpha.5
+
+- Support customized worker loader url (#551)
+- gltf: Remove `gltf.resolveValues` options, better docs (#548)
+- glTF: Added option - resolveValue. Creates TypedArray for the accessor (#547)
+- improve distanceToTile calculation (#544)
+- Create a sphere from map region (#542)
+- Fix "loadGLTF" check (#538)
+- improve point cloud examples by adding new data and tune screen space error (#530)
+- Add i3s parser and example (#499)
+- Rename folders, target and update build instructions (#529)
+- update 555 market model id (#525)
+- add draco compression support (#521)
+- add draco lib (#520)
+- Fix 3d tiles docs (#519)
+- basis example app decodes reference textures (#493)
+- basis: add `CompressedTextureLoader` (#498)
+- Add georeference for 3d tiles (#512)
+- Add cesium point cloud 3D tile format support (#508)
+- upgrade rapidjson lib (#507)
+- tables: @loaders.gl/experimental => @loaders.gl/tables (#500)
+- basis: add docs (#497)
+- i3s test data using NYC 3-D Building Model from NYC DoITT (#495)
+- i3s server tests (#494)
+- i3s: initial module (#492)
+- Basis loader works (#490)
+- Add basis_transcoder to basis module (#489)
+- Fix loading (#488)
+- draco: Use library modules to avoid excessive bundling (#473)
+- Combined loaders (#486)
+- loader-utils: dynamic library loading (#482)
+- Load point cloud in CesiumJS with loaders.gl (#485)
+- Add potree converter code base (#483)
+- Verify loader version compatibility (#471)
+- core: depend on loader-utils (#475)
+- Introduce libs directories for untranspiled files (#472)
+- Move workerUrls to loader-specific options (#463)
+- images: Pass through imagebitmap creation options (#464)
+- Fix fetching files with passing fetchOptions (#469)
+- 3d-tiles: integrate Tileset3D in THREE.js example (#467)
+- 3d-tiles: THREE.js example refactor (#465)
+- Remove plumbing for inline workers (#456)
+
+#### v2.0.0-alpha.4
+
+#### v2.0.0-alpha.3
+
+#### v2.0.0-alpha.2
+
+- Import workers from url (#453)
+- images: Restore HTML image loading to fix glTF example (#462)
+- images: loaders for mipmapped images, arrays and cubemaps (#460)
+- Add cubemap test images (#461)
+- images: Separate "binary image" and "parsed image" APIs (#459)
+- v2.0: remove deprecated code (#458)
+- Bump luma.gl (#457)
+
+#### v2.0.0-alpha.1
+
+- core: parse url handling fix
+- core: Avoid binding context due to transpilation issues (#455)
+- use context in worker (#448)
+- Extract description from ion metadata (#450)
+- glTF image loading (#441)
+- Fix parsing draco compressed gltf (#447)
+- For v2.0: Image Category Reimagined (#387)
+- 3d-tiles: Ensure tile error messages are not hidden (#446)
+- gltf: support KHR_materials_unlit extension (#445)
+- zip: use async (#443)
+- gltf: Extension handling cleanup (#444)
+- Enable commented vis code (#442)
+- core: Use `context` to resolve loaders in sub-loaders (#426)
+- glTF fixes (#440)
+- gltf: drop parseSync, options refactor and doc refresh (#437)
+- arrow/csv/draco: Update options and docs (#438)
+- core: Merge nested options objects (#436)
+- Restore worker loader config (#435)
+- 3d-tiles: Remove sync parser versions (#430)
+- loader-utils: Improved JSON parsing error messages (#428)
+- 3d-tiles: Create lib directory (#425)
+- gltf: Fix Scenegraph.getTypedArrayForBufferView (#423)
+- Fix core module browser config (#422)
+- Dedupe loaders (#421)
+- potree: Initial parser code for potree format (#349)
+- 3d-tiles & gltf: atomic parser, load all linked assets within on… (#417)
+- core: add `context` to `parse` methods (#414)
+- add basis module (#413)
+- Auto resolve DracoLoader for PointCloud tiles (#412)
+- ES2018 async debugging improvements (#411)
+
 ## loaders.gl v1.0
 
 ### 1.3 Release
