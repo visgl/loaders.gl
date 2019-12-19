@@ -58,7 +58,6 @@ The 2.0 release brings stronger loader composition, image loading improvements, 
 
 A new streaming `JSONLoader`(Experimental) that supports batched (i.e. streaming) parsing from standard JSON files, e.g. geojson. No need to reformat your files as line delimited JSON.
 
-
 ## v1.3
 
 Release Date: Sep 13, 2019
