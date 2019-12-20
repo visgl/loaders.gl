@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/math",
-  "version": "2.0.0-beta.6",
+  "version": "2.0.0-beta.7",
   "description": "Experimental math classes for loaders.gl",
   "license": "MIT",
   "publishConfig": {
@@ -31,7 +31,7 @@
     "pre-build": "echo \"Nothing to build in @loaders.gl/math\""
   },
   "dependencies": {
-    "@loaders.gl/images": "2.0.0-beta.6",
+    "@loaders.gl/images": "2.0.0-beta.7",
     "math.gl": "^3.1.1"
   }
 }
