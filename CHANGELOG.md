@@ -2,6 +2,11 @@
 
 ### 2.0 Release
 
+#### v2.0.0-beta.8
+
+- Check response content type to match loader (#570)
+- [3d-tiles] Fix bounding volume calculation (#576)
+
 #### v2.0.0-beta.7
 
 - Make 3d-tiles traversal synchronized (#573)
