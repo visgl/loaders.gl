@@ -251,11 +251,11 @@ export default class Tileset3D {
     return Boolean(this._extensionsUsed && this._extensionsUsed.indexOf(extensionName) > -1);
   }
 
-  async update(frameState) {
+  update(frameState) {
     this._updatedVisibilityFrame++; // TODO: only update when camera or culling volume from last update moves (could be render camera change or prefetch camera)
     this._cache.reset();
 
-    await this._traverser.traverse(this.root, frameState, this.options);
+    this._traverser.traverse(this.root, frameState, this.options);
     this._requestedTiles = Object.values(this._traverser.requestedTiles);
     this.selectedTiles = Object.values(this._traverser.selectedTiles);
     this._emptyTiles = Object.values(this._traverser.emptyTiles);
