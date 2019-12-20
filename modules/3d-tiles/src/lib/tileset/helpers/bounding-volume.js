@@ -28,6 +28,9 @@ const scratchTransform = new Matrix4();
  */
 export function createBoundingVolume(boundingVolumeHeader, transform, result) {
   assert(boundingVolumeHeader, '3D Tile: boundingVolume must be defined');
+
+  // boundingVolume schema:
+  // https://github.com/AnalyticalGraphicsInc/3d-tiles/blob/master/specification/schema/boundingVolume.schema.json
   if (boundingVolumeHeader.box) {
     return createBox(boundingVolumeHeader.box, transform, result);
   }
@@ -64,22 +67,28 @@ export function createBoundingVolume(boundingVolumeHeader, transform, result) {
 }
 
 function createBox(box, transform, result) {
+  // box: An array of 12 numbers that define an oriented bounding box.
+  // The first three elements define the x, y, and z values for the center of the box.
+  // The next three elements (with indices 3, 4, and 5) define the x axis direction and half-length.
+  // The next three elements (indices 6, 7, and 8) define the y axis direction and half-length.
+  // The last three elements (indices 9, 10, and 11) define the z axis direction and half-length.
   const center = new Vector3(box[0], box[1], box[2]);
-  let halfAxes = new Matrix3(box.slice(3, box.length));
-
   transform.transform(center, center);
 
-  halfAxes = new Matrix3(
-    transform[0],
-    transform[1],
-    transform[2],
-    transform[4],
-    transform[5],
-    transform[6],
-    transform[8],
-    transform[9],
-    transform[10]
-  ).multiplyRight(halfAxes);
+  const xAxis = transform.transformAsVector(box.slice(3, 6));
+  const yAxis = transform.transformAsVector(box.slice(6, 9));
+  const zAxis = transform.transformAsVector(box.slice(9, 12));
+  const halfAxes = new Matrix3([
+    xAxis[0],
+    xAxis[1],
+    xAxis[2],
+    yAxis[0],
+    yAxis[1],
+    yAxis[2],
+    zAxis[0],
+    zAxis[1],
+    zAxis[2]
+  ]);
 
   if (defined(result)) {
     result.center = center;
