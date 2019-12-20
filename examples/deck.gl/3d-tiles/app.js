@@ -1,10 +1,16 @@
 /* global window, URL */
 import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
-import {StaticMap} from 'react-map-gl';
 import DeckGL from '@deck.gl/react';
 import {MapController, FlyToInterpolator} from '@deck.gl/core';
 import {Tile3DLayer} from '@deck.gl/geo-layers';
+import {StaticMap} from 'react-map-gl';
+import {MapView, WebMercatorViewport, MapController, FlyToInterpolator} from '@deck.gl/core';
+import {LineLayer} from '@deck.gl/layers';
+
+import {SphereGeometry} from '@luma.gl/core';
+
+import {getCulling, getFrustumBounds} from './frustum-utils';
 
 import {lumaStats} from '@luma.gl/core';
 import {StatsWidget} from '@probe.gl/stats-widget';
@@ -31,15 +37,46 @@ const EXAMPLES_VIEWSTATE = {
   longitude: -75.61213987669433
 };
 
-export const INITIAL_VIEW_STATE = {
-  ...EXAMPLES_VIEWSTATE,
-  pitch: 45,
-  maxPitch: 60,
-  bearing: 0,
-  minZoom: 2,
-  maxZoom: 30,
-  zoom: 3 // Start zoomed out on US, tileset will center via "fly-to" on load
+// export const INITIAL_VIEW_STATE = {
+//   ...EXAMPLES_VIEWSTATE,
+//   pitch: 45,
+//   maxPitch: 60,
+//   bearing: 0,
+//   minZoom: 2,
+//   maxZoom: 30,
+//   zoom: 3 // Start zoomed out on US, tileset will center via "fly-to" on load
+// };
+
+const INITIAL_VIEW_STATE = {
+  main: {
+    width: window.innerWidth,
+    height: window.innerHeight,
+    ...EXAMPLES_VIEWSTATE,
+    pitch: 45,
+    maxPitch: 60,
+    bearing: 0,
+    minZoom: 2,
+    maxZoom: 30,
+    zoom: 3 // Start zoomed out on US, tileset will center via "fly-to" on load
+  },
+  minimap: {
+    ...EXAMPLES_VIEWSTATE,
+    zoom: 3 // Start zoomed out on US, tileset will center via "fly-to" on load
+  }
 };
+
+const MINIMAP_STYLE = {
+  width: '100%',
+  height: '100%',
+  background: '#444',
+  position: 'relative',
+  zIndex: -1
+};
+
+const VIEWS = [
+  new MapView({id: 'main', controller: true}),
+  new MapView({id: 'minimap', clear: true, x: 20, y: 20, width: '20%', height: '20%'})
+];
 
 export default class App extends PureComponent {
   constructor(props) {
@@ -56,7 +93,6 @@ export default class App extends PureComponent {
       selectedMapStyle: INITIAL_MAP_STYLE,
 
       // EXAMPLE STATE
-      droppedFile: null,
       examplesByCategory: null,
       selectedExample: {},
       category: INITIAL_EXAMPLE_CATEGORY,
@@ -160,18 +196,21 @@ export default class App extends PureComponent {
     const {cartographicCenter, zoom} = tileset;
     this.setState({
       viewState: {
-        ...this.state.viewState,
+        ...INITIAL_VIEW_STATE,
+        main: {
+          ...this.state.viewState,
 
-        // Update deck.gl viewState, moving the camera to the new tileset
-        longitude: cartographicCenter[0],
-        latitude: cartographicCenter[1],
-        zoom: zoom + 1.5, // TODO - remove adjustment when Tileset3D calculates correct zoom
-        bearing: INITIAL_VIEW_STATE.bearing,
-        pitch: INITIAL_VIEW_STATE.pitch,
+          // Update deck.gl viewState, moving the camera to the new tileset
+          longitude: cartographicCenter[0],
+          latitude: cartographicCenter[1],
+          zoom: zoom + 1.5, // TODO - remove adjustment when Tileset3D calculates correct zoom
+          bearing: INITIAL_VIEW_STATE.bearing,
+          pitch: INITIAL_VIEW_STATE.pitch,
 
-        // Tells deck.gl to animate the camera move to the new tileset
-        transitionDuration: TRANSITION_DURAITON,
-        transitionInterpolator: new FlyToInterpolator()
+          // Tells deck.gl to animate the camera move to the new tileset
+          transitionDuration: TRANSITION_DURAITON,
+          transitionInterpolator: new FlyToInterpolator()
+        }
       }
     });
   }
@@ -183,15 +222,18 @@ export default class App extends PureComponent {
 
   // Called by DeckGL when user interacts with the map
   _onViewStateChange({viewState}) {
-    this.setState({viewState});
+    this.setState({
+      viewState: {...INITIAL_VIEW_STATE, main: viewState}
+    });
   }
 
   _renderControlPanel() {
-    const {examplesByCategory, category, name, viewState, tileset} = this.state;
+    const {examplesByCategory, category, name, tileset} = this.state;
     if (!examplesByCategory) {
       return null;
     }
 
+    const viewState = this.state.viewState.main;
     return (
       <ControlPanel
         data={examplesByCategory}
@@ -215,6 +257,8 @@ export default class App extends PureComponent {
       <div
         style={{
           position: 'absolute',
+          right: 0,
+          botoom: 100,
           padding: 12,
           zIndex: '10000',
           maxWidth: 300,
@@ -250,9 +294,31 @@ export default class App extends PureComponent {
     });
   }
 
+  _renderFrustumLayer() {
+    const {viewState} = this.state;
+    const viewport = new WebMercatorViewport(viewState.main);
+
+    const frustomBounds = getFrustumBounds(viewport);
+
+    new LineLayer({
+      id: 'frustum',
+      data: frustomBounds,
+      getSourcePosition: d => d.source,
+      getTargetPosition: d => d.target,
+      getColor: d => d.color,
+      getWidth: 2
+    });
+  }
+
+  _renderLayers() {
+    return [
+      this._renderTile3DLayer(),
+      this._renderFrustumLayer()
+    ];
+  }
+
   render() {
     const {viewState, selectedMapStyle} = this.state;
-    const tile3DLayer = this._renderTile3DLayer();
 
     return (
       <div>
@@ -260,18 +326,22 @@ export default class App extends PureComponent {
         {this._renderControlPanel()}
         <DeckGL
           ref={_ => (this._deckRef = _)}
-          layers={[tile3DLayer]}
-          initialViewState={INITIAL_VIEW_STATE}
+          layers={this._renderLayers()}
+          views={VIEWS}
           viewState={viewState}
           onViewStateChange={this._onViewStateChange.bind(this)}
-          controller={{type: MapController, maxPitch: 85}}
           onAfterRender={() => this._updateStatWidgets()}
         >
-          <StaticMap
-            mapStyle={selectedMapStyle}
-            mapboxApiAccessToken={MAPBOX_TOKEN}
-            preventStyleDiffing
-          />
+          <MapView id="main">
+            <StaticMap
+              mapStyle={selectedMapStyle}
+              mapboxApiAccessToken={MAPBOX_TOKEN}
+              preventStyleDiffing
+            />
+          </MapView>
+          <MapView id="minimap">
+            <div style={MINIMAP_STYLE}/>
+          </MapView>
         </DeckGL>
       </div>
     );
@@ -279,5 +349,5 @@ export default class App extends PureComponent {
 }
 
 export function renderToDOM(container) {
-  render(<App />, container);
+  render(<App/>, container);
 }
