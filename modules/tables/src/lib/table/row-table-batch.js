@@ -31,7 +31,7 @@ export default class RowTableBatch {
 
   isFull() {
     if (this.batchSize === 'auto') {
-      return this.isChunkComplete;
+      return this.isChunkComplete && this.length > 0;
     }
     return this.rows && this.length >= this.batchSize;
   }

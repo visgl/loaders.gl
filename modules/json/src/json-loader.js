@@ -25,8 +25,8 @@ export const JSONLoader = {
   */
   category: 'table',
   parse: async (arrayBuffer, options) =>
-    parseJSONSync(new TextDecoder().decode(arrayBuffer), options),
-  parseTextSync: parseJSONSync,
+    parseJSONTextSync(new TextDecoder().decode(arrayBuffer), options),
+  parseTextSync: parseJSONTextSync,
   parseInBatches: (asyncIterator, options) => parseJSONInBatches(asyncIterator, options),
   testText: null,
   text: true,
@@ -38,7 +38,7 @@ export const JSONLoader = {
   }
 };
 
-function parseJSONSync(jsonText, options) {
+function parseJSONTextSync(jsonText, options) {
   // Apps can call the parse method directly, we so apply default options here
   options = {...JSONLoader.options, ...options};
   options.json = {...JSONLoader.options.json, ...options.json};
@@ -70,6 +70,7 @@ function getFirstArray(json) {
 }
 
 // TODO - support batch size 0 = no batching/single batch?
+// eslint-disable-next-line max-statements
 async function* parseJSONInBatches(asyncIterator, options) {
   // Apps can call the parse method directly, we so apply default options here
   options = {...JSONLoader.options, ...options};
@@ -83,6 +84,8 @@ async function* parseJSONInBatches(asyncIterator, options) {
   let schema = null;
 
   const parser = new StreamingJSONParser();
+  tableBatchBuilder = tableBatchBuilder || new TableBatchBuilder(TableBatchType, schema, batchSize);
+
   for await (const chunk of asyncIterator) {
     const rows = parser.write(chunk);
 
@@ -92,15 +95,17 @@ async function* parseJSONInBatches(asyncIterator, options) {
     }
 
     // Add the row
-    tableBatchBuilder =
-      tableBatchBuilder || new TableBatchBuilder(TableBatchType, schema, batchSize);
-
     for (const row of rows) {
       tableBatchBuilder.addRow(row);
       // If a batch has been completed, emit it
       if (tableBatchBuilder.isFull()) {
         yield tableBatchBuilder.getNormalizedBatch();
       }
+    }
+
+    tableBatchBuilder.chunkComplete();
+    if (tableBatchBuilder.isFull()) {
+      yield tableBatchBuilder.getNormalizedBatch();
     }
   }
 

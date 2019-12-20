@@ -19,7 +19,9 @@ export default class TableBatchBuilder {
   }
 
   chunkComplete() {
-    this.batch.chunkComplete();
+    if (this.batch) {
+      this.batch.chunkComplete();
+    }
   }
 
   isFull() {
