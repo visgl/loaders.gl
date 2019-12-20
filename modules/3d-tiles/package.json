@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/3d-tiles",
-  "version": "2.0.0-beta.7",
+  "version": "2.0.0-beta.8",
   "description": "3D Tiles, an open standard for streaming massive heterogeneous 3D geospatial datasets.",
   "license": "MIT",
   "publishConfig": {
@@ -34,10 +34,10 @@
     "build-bundle": "webpack --display=minimal --config ../../scripts/bundle.config.js"
   },
   "dependencies": {
-    "@loaders.gl/core": "2.0.0-beta.7",
-    "@loaders.gl/gltf": "2.0.0-beta.7",
-    "@loaders.gl/loader-utils": "2.0.0-beta.7",
-    "@loaders.gl/math": "2.0.0-beta.7",
+    "@loaders.gl/core": "2.0.0-beta.8",
+    "@loaders.gl/gltf": "2.0.0-beta.8",
+    "@loaders.gl/loader-utils": "2.0.0-beta.8",
+    "@loaders.gl/math": "2.0.0-beta.8",
     "@math.gl/culling": "^3.1.1",
     "@math.gl/geospatial": "^3.1.1",
     "math.gl": "^3.1.1",

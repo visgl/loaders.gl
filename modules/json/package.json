@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/json",
-  "version": "2.0.0-beta.7",
+  "version": "2.0.0-beta.8",
   "description": "Framework-independent loader for JSON and streaming JSON formats",
   "license": "MIT",
   "publishConfig": {
