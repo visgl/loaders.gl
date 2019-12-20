@@ -2,6 +2,14 @@
 
 ### 2.0 Release
 
+#### v2.0.0-beta.7
+
+- Make 3d-tiles traversal synchronized (#573)
+- json: Minor fixes (#572)
+- Fix polyfill module typo (#571)
+- Improved Lod Selection criteria for I3S layers (#562)
+- loader-utils: Move resolvePath from core to loader-utils (#568)
+
 #### v2.0.0-beta.6
 
 - json: New streaming `JSONLoader` (supports GeoJSON) (#383)
