@@ -24,7 +24,7 @@ import {TEST_CASES} from './test-cases';
 
 const TOTAL_TIMEOUT = TEST_CASES.reduce((t, testCase) => t + (testCase.timeout || 2000), 0);
 
-test.only('RenderTest', t => {
+test('RenderTest', t => {
   t.timeoutAfter(TOTAL_TIMEOUT);
 
   new SnapshotTestRunner({width: 800, height: 450})
