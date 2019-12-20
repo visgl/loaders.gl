@@ -1,5 +1,6 @@
 import {getRegisteredLoaders} from './register-loaders';
 import {normalizeLoader} from './loader-utils/normalize-loader';
+import {isFetchResponse} from '../javascript-utils/is-type';
 
 const EXT_PATTERN = /\.([^.]+)$/;
 const DATA_URL_PATTERN = /^data:(.*?)(;|,)/;
@@ -29,8 +30,8 @@ export function selectLoader(loaders, url = '', data = null, {nothrow = false} =
   normalizeLoaders(loaders);
 
   url = url.replace(/\?.*/, '');
-  let loader = null;
-  loader = loader || findLoaderByUrl(loaders, url);
+  let loader = findLoaderByUrl(loaders, url);
+  loader = loader || findLoaderByContentType(loaders, data);
   loader = loader || findLoaderByExamingInitialData(loaders, data);
 
   // no loader available
@@ -93,6 +94,16 @@ function findLoaderByExtension(loaders, extension) {
     }
   }
   return null;
+}
+
+// data should be a Response object
+function findLoaderByContentType(loaders, data) {
+  if (!data || !isFetchResponse(data) || !data.headers) {
+    return null;
+  }
+
+  const contentType = data.headers.get('content-type');
+  return findLoaderByMimeType(loaders, contentType);
 }
 
 function findLoaderByExamingInitialData(loaders, data) {
