@@ -2,6 +2,12 @@
 
 ### 2.0 Release
 
+#### v2.0
+
+- Fix i3s example (#581)
+- Port getFrameState from deck and update Tileset3D.update API (#579)
+- Update math.gl (#578)
+
 #### v2.0.0-beta.8
 
 - Check response content type to match loader (#570)
