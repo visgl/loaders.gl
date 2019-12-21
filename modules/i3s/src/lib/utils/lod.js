@@ -20,8 +20,7 @@ export function lodJudge(tile, frameState) {
   const mbsLatProjected = [longitude, mbsLat];
   const mbsLonProjected = [mbsLon, latitude];
 
-  const diagonalInMeters =
-    Math.sqrt(height * height + width * width) * metersPerPixel[0];
+  const diagonalInMeters = Math.sqrt(height * height + width * width) * metersPerPixel[0];
   const distanceInMeters = getDistanceFromLatLon(viewportCenter, mbsCenter);
 
   const visibleHeight = height * 0.5 + mbsR / WGS84_RADIUS_X;
@@ -91,9 +90,7 @@ export function getScreenSize(tile, frameState) {
   const mbsR = tile._mbs[3];
 
   const mbsCenter = [mbsLon, mbsLat, mbsZ];
-  const cameraPositionCartographic = viewport.unprojectPosition(
-    viewport.cameraPosition
-  );
+  const cameraPositionCartographic = viewport.unprojectPosition(viewport.cameraPosition);
   const dSquared = getDistanceFromLatLon(cameraPositionCartographic, mbsCenter);
   const mbsRNormalized = mbsR / WGS84_RADIUS_X;
   const d = dSquared - mbsRNormalized * mbsRNormalized;
@@ -113,14 +110,12 @@ function calculateScreenSizeFactor(tile, frameState) {
     Math.atan(
       Math.sqrt(
         1.0 / (viewProjectionMatrix[0] * viewProjectionMatrix[0]) +
-        1.0 / (viewProjectionMatrix[5] * viewProjectionMatrix[5])
+          1.0 / (viewProjectionMatrix[5] * viewProjectionMatrix[5])
       )
     )
   );
 
-  const screenCircleFactor =
-    Math.sqrt(height * height + width * width) /
-    tanOfHalfVFAngle;
+  const screenCircleFactor = Math.sqrt(height * height + width * width) / tanOfHalfVFAngle;
 
   return screenCircleFactor;
 }
