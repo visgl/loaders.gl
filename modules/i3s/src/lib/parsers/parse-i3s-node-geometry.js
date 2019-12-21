@@ -74,12 +74,6 @@ export function parseI3SNodeGeometry(arrayBuffer, tile = {}) {
 }
 /* eslint-enable max-statements */
 
-function flipY(texCoords) {
-  for (let i = 0; i < texCoords.length; i += 2) {
-    texCoords[i + 1] = 1 - texCoords[i + 1];
-  }
-}
-
 function offsetsToCartesians(vertices, cartographicOrigin) {
   const positions = new Float64Array(vertices.length);
   for (let i = 0; i < positions.length; i += 3) {
