@@ -4,8 +4,7 @@ import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
 import DeckGL from '@deck.gl/react';
 import {MapController, FlyToInterpolator} from '@deck.gl/core';
-// import {Tile3DLayer} from '@deck.gl/geo-layers';
-import Tile3DLayer from './3d-tile-layer/tile-3d-layer';
+import {Tile3DLayer} from '@deck.gl/geo-layers';
 
 import {lumaStats} from '@luma.gl/core';
 import {StatsWidget} from '@probe.gl/stats-widget';

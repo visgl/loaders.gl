@@ -8,6 +8,7 @@ import {path} from '@loaders.gl/core';
 
 import assert from '../utils/assert';
 import RequestScheduler from '../request-utils/request-scheduler';
+import {getFrameState} from './helpers/get-frame-state';
 
 import {calculateTransformProps} from './helpers/transform-utils';
 import Tile3DHeader from './tile-3d-header';
@@ -184,6 +185,7 @@ export default class Tileset3D {
   get traverser() {
     return this._traverser;
   }
+
   // Gets the tileset's properties dictionary object, which contains metadata about per-feature properties.
   get properties() {
     return this._properties;
@@ -259,7 +261,18 @@ export default class Tileset3D {
     return Boolean(this._extensionsUsed && this._extensionsUsed.indexOf(extensionName) > -1);
   }
 
-  update(frameState) {
+  update(viewport) {
+    let frameState;
+    if ('frameNumber' in viewport) {
+      // backward compatibility
+      // this is using old API, input is `frameState` object
+      // old API: update(frameState)
+      frameState = viewport;
+    } else {
+      // TODO deprecated in v8.x
+      frameState = getFrameState(viewport);
+    }
+
     this._updatedVisibilityFrame++; // TODO: only update when camera or culling volume from last update moves (could be render camera change or prefetch camera)
     this._cache.reset();
 
@@ -292,6 +305,8 @@ export default class Tileset3D {
     this.stats.get(TILES_IN_VIEW).count = this.selectedTiles.length;
     this.stats.get(TILES_RENDERABLE).count = tilesRenderable;
     this.stats.get(POINTS_COUNT).count = pointsRenderable;
+
+    return frameState.frameNumber;
   }
 
   // TODO - why are these public methods? For testing?
