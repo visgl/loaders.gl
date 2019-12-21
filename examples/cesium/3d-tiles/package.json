@@ -6,9 +6,9 @@
     "start-local": "webpack-dev-server --env.local --env.esnext --progress --hot --open"
   },
   "dependencies": {
-    "@loaders.gl/3d-tiles": "^2.0.0-beta.2",
-    "@loaders.gl/core": "^2.0.0-beta.2",
-    "@loaders.gl/draco": "^2.0.0-beta.2",
+    "@loaders.gl/3d-tiles": "^2.0.0",
+    "@loaders.gl/core": "^2.0.0",
+    "@loaders.gl/draco": "^2.0.0",
     "@math.gl/culling": "^3.1.1",
     "math.gl": "^3.1.1"
   },
