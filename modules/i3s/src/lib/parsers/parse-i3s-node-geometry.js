@@ -55,10 +55,6 @@ export function parseI3SNodeGeometry(arrayBuffer, tile = {}) {
       value = offsetsToCartesians(value, content.cartographicOrigin);
     }
 
-    if (attribute === 'uv0') {
-      flipY(value);
-    }
-
     content.attributes[attribute] = {
       value,
       type: GL_TYPE_MAP[valueType],
@@ -77,12 +73,6 @@ export function parseI3SNodeGeometry(arrayBuffer, tile = {}) {
   return tile;
 }
 /* eslint-enable max-statements */
-
-function flipY(texCoords) {
-  for (let i = 0; i < texCoords.length; i += 2) {
-    texCoords[i + 1] = 1 - texCoords[i + 1];
-  }
-}
 
 function offsetsToCartesians(vertices, cartographicOrigin) {
   const positions = new Float64Array(vertices.length);

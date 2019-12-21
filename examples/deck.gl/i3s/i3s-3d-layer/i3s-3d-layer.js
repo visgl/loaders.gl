@@ -7,7 +7,6 @@ import {SimpleMeshLayer} from '@deck.gl/mesh-layers';
 import {I3STileset} from '@loaders.gl/i3s';
 import {Geometry} from '@luma.gl/core';
 import GL from '@luma.gl/constants';
-import {getFrameState} from './get-frame-state';
 
 const scratchOffset = new Vector3(0, 0, 0);
 
@@ -85,8 +84,7 @@ export default class Tile3DLayer extends CompositeLayer {
     }
 
     // TODO use a valid frameState
-    const frameState = getFrameState(viewport, Date.now());
-    tileset3d.update(frameState);
+    tileset3d.update(viewport);
     this._updateLayerMap();
   }
 

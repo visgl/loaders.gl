@@ -11,6 +11,7 @@ import assert from '../utils/assert';
 import {
   _Tileset3DCache as Tileset3DCache,
   _RequestScheduler as RequestScheduler,
+  _getFrameState as getFrameState,
   calculateTransformProps
 } from '@loaders.gl/3d-tiles';
 import I3STileHeader from './i3s-tile-header';
@@ -241,7 +242,10 @@ export default class I3STileset {
     this.stats.get(POINTS_COUNT).count = pointsRenderable;
   }
 
-  update(frameState) {
+  update(viewport) {
+    const frameState = getFrameState(viewport);
+    // TODO hack, remove in next release
+    frameState.viewport = viewport;
     // TODO: only update when camera or culling volume from last update moves (could be render camera change or prefetch camera)
     this._updatedVisibilityFrame++;
     this._cache.reset();

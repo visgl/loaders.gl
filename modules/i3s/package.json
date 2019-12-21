@@ -44,7 +44,6 @@
     "@math.gl/geospatial": "^3.1.2",
     "math.gl": "^3.1.2",
     "probe.gl": "^3.2.0",
-    "viewport-mercator-project": "^6.2.2",
     "zip-loader": "^1.1.0"
   }
 }
