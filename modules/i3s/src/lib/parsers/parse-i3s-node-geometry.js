@@ -55,10 +55,6 @@ export function parseI3SNodeGeometry(arrayBuffer, tile = {}) {
       value = offsetsToCartesians(value, content.cartographicOrigin);
     }
 
-    if (attribute === 'uv0') {
-      flipY(value);
-    }
-
     content.attributes[attribute] = {
       value,
       type: GL_TYPE_MAP[valueType],

@@ -1,12 +1,12 @@
 import {toRadians} from 'math.gl';
-import {getDistanceScales} from 'viewport-mercator-project';
+
 const WGS84_RADIUS_X = 6378137.0;
 // use this to bias the lod switching  (1+ results in increasing the LOD quality)
 const qualityFactor = 1;
 /* eslint-disable max-statements */
 export function lodJudge(tile, frameState) {
   const viewport = frameState.viewport;
-  const distanceScales = getDistanceScales(viewport);
+  const metersPerPixel = viewport.metersPerPixel;
 
   const mbsLat = tile._mbs[1];
   const mbsLon = tile._mbs[0];
@@ -21,7 +21,7 @@ export function lodJudge(tile, frameState) {
   const mbsLonProjected = [mbsLon, latitude];
 
   const diagonalInMeters =
-    Math.sqrt(height * height + width * width) * distanceScales.metersPerPixel[0];
+    Math.sqrt(height * height + width * width) * metersPerPixel[0];
   const distanceInMeters = getDistanceFromLatLon(viewportCenter, mbsCenter);
 
   const visibleHeight = height * 0.5 + mbsR / WGS84_RADIUS_X;
@@ -83,6 +83,7 @@ function getDistanceFromLatLon(
 }
 
 export function getScreenSize(tile, frameState) {
+  const viewport = frameState.viewport;
   // https://stackoverflow.com/questions/21648630/radius-of-projected-sphere-in-screen-space
   const mbsLat = tile._mbs[1];
   const mbsLon = tile._mbs[0];
@@ -90,8 +91,8 @@ export function getScreenSize(tile, frameState) {
   const mbsR = tile._mbs[3];
 
   const mbsCenter = [mbsLon, mbsLat, mbsZ];
-  const cameraPositionCartographic = frameState.viewport.unprojectPosition(
-    frameState.viewport.cameraPosition
+  const cameraPositionCartographic = viewport.unprojectPosition(
+    viewport.cameraPosition
   );
   const dSquared = getDistanceFromLatLon(cameraPositionCartographic, mbsCenter);
   const mbsRNormalized = mbsR / WGS84_RADIUS_X;
@@ -101,23 +102,24 @@ export function getScreenSize(tile, frameState) {
     return 0.5 * fltMax;
   }
   let screenSizeFactor = calculateScreenSizeFactor(tile, frameState);
-  screenSizeFactor *= mbsRNormalized / Math.sqrt(d);
-  // console.log(d, tile._distanceToCamera);
+  // viewport changed in deck.gl v8.0
+  screenSizeFactor *= mbsRNormalized / Math.sqrt(d) / viewport.scale;
   return screenSizeFactor;
 }
 
 function calculateScreenSizeFactor(tile, frameState) {
+  const {width, height, viewProjectionMatrix} = frameState.viewport;
   const tanOfHalfVFAngle = Math.tan(
     Math.atan(
       Math.sqrt(
-        1.0 / (frameState.viewProjectionMatrix[0] * frameState.viewProjectionMatrix[0]) +
-          1.0 / (frameState.viewProjectionMatrix[5] * frameState.viewProjectionMatrix[5])
+        1.0 / (viewProjectionMatrix[0] * viewProjectionMatrix[0]) +
+        1.0 / (viewProjectionMatrix[5] * viewProjectionMatrix[5])
       )
     )
   );
 
   const screenCircleFactor =
-    Math.sqrt(frameState.height * frameState.height + frameState.width * frameState.width) /
+    Math.sqrt(height * height + width * width) /
     tanOfHalfVFAngle;
 
   return screenCircleFactor;
