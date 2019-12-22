@@ -44,7 +44,7 @@ export function lodJudge(tile, frameState) {
   // as soon as the nodes bounding sphere has a screen radius larger than maxError pixels.
   // In this sense a value of 0 means you should always load it's children,
   // or if it's a leaf node, you should always display it.
-  let screenSize = getScreenSize(tile, frameState);
+  let screenSize = getScreenSize(tile, frameState); // in pixels
   screenSize *= qualityFactor;
   if (screenSize < 0.5) {
     return 'OUT';
