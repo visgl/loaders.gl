@@ -29,7 +29,7 @@ export default async function dracoBench(bench) {
     POSITIONS: new Float32Array(POSITIONS),
     COLORS: new Uint8ClampedArray(COLORS)
   };
-  const rawSize = _getMeshSize(attributes);
+  // const rawSize = _getMeshSize(attributes);
 
   for (const options of OPTIONS) {
     const compressedPointCloud = await encode(attributes, DracoWriter, {draco: {pointcloud: true}});
@@ -41,12 +41,13 @@ export default async function dracoBench(bench) {
       }
     );
 
-    bench.addAsync(
-      `DracoDecoder#pointcloud ${POSITIONS.byteLength / 12}#${options.name}`,
-      async () => {
-        return await parse(compressedPointCloud, DracoLoader, {worker: false});
-      }
-    );
+    // TODO - COMMENT OUT until bench.addAsync is fixed (too many invocations)
+    // bench.addAsync(
+    //   `DracoDecoder#pointcloud ${POSITIONS.byteLength / 12}#${options.name}`,
+    //   async () => {
+    //     return await parse(compressedPointCloud, DracoLoader, {worker: false});
+    //   }
+    // );
   }
 
   return bench;

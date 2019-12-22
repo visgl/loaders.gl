@@ -32,10 +32,6 @@
     "publish": "ocular-publish",
     "prepare": "npm run build",
     "test": "ocular-test",
-    "test-fast": "ocular-test fast",
-    "test-browser": "ocular-test browser",
-    "bench": "ocular-test bench",
-    "bench-browser": "ocular-test bench-browser",
     "metrics": "./scripts/metrics.sh && ocular-metrics"
   },
   "devDependencies": {
@@ -43,7 +39,7 @@
     "@luma.gl/core": "^8.0.0",
     "@luma.gl/debug": "^8.0.0",
     "@luma.gl/test-utils": "^8.0.0",
-    "@probe.gl/bench": "^3.1.1",
+    "@probe.gl/bench": "^3.2.0",
     "@probe.gl/test-utils": "^3.1.1",
     "arraybuffer-loader": "^1.0.7",
     "babel-loader": "^8.0.6",
