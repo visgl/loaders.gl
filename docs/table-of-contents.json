@@ -52,6 +52,7 @@
         {"entry": "modules/gltf/docs/api-reference/glb-writer"},
         {"entry": "modules/images/docs/api-reference/image-loader"},
         {"entry": "modules/images/docs/api-reference/image-writer"},
+        {"entry": "modules/json/docs/api-reference/json-loader"},
         {"entry": "modules/kml/docs/api-reference/kml-loader"},
         {"entry": "modules/las/docs/api-reference/las-loader"},
         {"entry": "modules/obj/docs/api-reference/obj-loader"},

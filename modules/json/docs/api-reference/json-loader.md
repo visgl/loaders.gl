@@ -1,12 +1,12 @@
 # JSONLoader
 
-Streaming loader for comma-separated value and [delimiter-separated value](https://en.wikipedia.org/wiki/Delimiter-separated_values) encoded files.
+Streaming loader for JSON encoded files.
 
 | Loader         | Characteristic                                       |
 | -------------- | ---------------------------------------------------- |
-| File Extension | `.csv`, `.dsv`                                       |
+| File Extension | `.json`,                                             |
 | File Type      | Text                                                 |
-| File Format    | [RFC4180](https://tools.ietf.org/html/rfc4180)       |
+| File Format    | [JSON](https://www.json.org/json-en.html)            |
 | Data Format    | [Classic Table](/docs/specifications/category-table) |
 | Supported APIs | `load`, `parse`, `parseSync`, `parseInBatches`       |
 
@@ -19,7 +19,7 @@ import {load} from '@loaders.gl/core';
 const data = await load(url, JSONLoader, {json: options});
 ```
 
-The JSONLoader supports streaming JSON parsing, in which case it will yield "batches" of rows of the first array it encounters in the JSON. To e.g. parse a stream of GeoJSON:
+The JSONLoader supports streaming JSON parsing, in which case it will yield "batches" of rows from the first array it encounters in the JSON. To e.g. parse a stream of GeoJSON:
 
 ```js
 import {JSONLoader} from '@loaders.gl/json';
@@ -43,3 +43,7 @@ for await (const batch of batches) {
 | Option       | Type    | Default | Description                                                            |
 | ------------ | ------- | ------- | ---------------------------------------------------------------------- |
 | `json.table` | Boolean | TBD     | Parse JSON as table, i.e. return the first embedded array in the JSON. |
+
+## Attribution
+
+This loader is based on a fork of dscape's [`clarinet`](https://github.com/dscape/clarinet) under BSD 2-clause license.
