@@ -1,5 +1,4 @@
 import {fetchFile, encode} from '@loaders.gl/core';
-import {_getMeshSize} from '@loaders.gl/loader-utils';
 import {DracoWriter} from '@loaders.gl/draco';
 
 const OPTIONS = [
@@ -29,11 +28,8 @@ export default async function dracoBench(bench) {
     POSITIONS: new Float32Array(POSITIONS),
     COLORS: new Uint8ClampedArray(COLORS)
   };
-  // const rawSize = _getMeshSize(attributes);
 
   for (const options of OPTIONS) {
-    const compressedPointCloud = await encode(attributes, DracoWriter, {draco: {pointcloud: true}});
-
     bench.addAsync(
       `DracoEncoder#pointcloud ${POSITIONS.byteLength / 12}#${options.name}`,
       async () => {
@@ -42,6 +38,7 @@ export default async function dracoBench(bench) {
     );
 
     // TODO - COMMENT OUT until bench.addAsync is fixed (too many invocations)
+    // const compressedPointCloud = await encode(attributes, DracoWriter, {draco: {pointcloud: true}});
     // bench.addAsync(
     //   `DracoDecoder#pointcloud ${POSITIONS.byteLength / 12}#${options.name}`,
     //   async () => {
