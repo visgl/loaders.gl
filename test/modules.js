@@ -34,6 +34,7 @@ require('@loaders.gl/potree/test');
 
 // Geospatial Formats
 require('@loaders.gl/kml/test');
+require('@loaders.gl/wkt/test');
 
 // Table Formats
 require('@loaders.gl/tables/test');

@@ -60,6 +60,8 @@
         {"entry": "modules/ply/docs/api-reference/ply-loader"},
         {"entry": "modules/3d-tiles/docs/api-reference/tile-3d-loader"},
         {"entry": "modules/3d-tiles/docs/api-reference/tileset-3d-loader"},
+        {"entry": "modules/wkt/docs/api-reference/wkt-loader"},
+        {"entry": "modules/wkt/docs/api-reference/wkt-writer"},
         {"entry": "modules/zip/docs/api-reference/zip-loader"},
         {"entry": "modules/zip/docs/api-reference/zip-writer"}
       ]
@@ -171,6 +173,12 @@
           "title": "@loaders.gl/polyfills",
           "entries": [
             {"entry": "modules/polyfills/docs"}
+          ]
+        },
+        {
+          "title": "@loaders.gl/wkt",
+          "entries": [
+            {"entry": "modules/wkt/docs"}
           ]
         },
         {
