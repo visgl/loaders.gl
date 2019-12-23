@@ -74,7 +74,10 @@ test('selectLoader#data', async t => {
     KMLLoader,
     'find loader by examining text data'
   );
-  t.throws(() => selectLoader([KMLLoader], null, '{}'), 'find no loaders by examining text data');
+  t.throws(
+    () => selectLoader([KMLLoader], null, 'hello'),
+    'find no loaders by examining text data'
+  );
 
   // Create an ArrayBuffer with a byteOffset to the payload
   const byteOffset = 10;

@@ -70,8 +70,7 @@ function findLoaderByUrl(loaders, url) {
   // Get extension
   match = url.match(EXT_PATTERN);
   const extension = match && match[1];
-  const loader = extension && findLoaderByExtension(loaders, extension);
-  return loader;
+  return extension && findLoaderByExtension(loaders, extension);
 }
 
 function findLoaderByMimeType(loaders, mimeType) {
