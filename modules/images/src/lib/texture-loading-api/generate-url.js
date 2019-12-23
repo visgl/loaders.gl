@@ -1,3 +1,4 @@
+import {resolvePath} from '@loaders.gl/loader-utils';
 import assert from '../utils/assert';
 
 // Generate a url by calling getUrl with mix of options, applying options.baseUrl
@@ -15,5 +16,5 @@ export function generateUrl(getUrl, options, urlOptions) {
     url = baseUrl[baseUrl.length - 1] === '/' ? `${baseUrl}${url}` : `${baseUrl}/${url}`;
   }
 
-  return url;
+  return resolvePath(url);
 }
