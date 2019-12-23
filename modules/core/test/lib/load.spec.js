@@ -1,6 +1,6 @@
 /* global Blob */
 import test from 'tape-promise/tape';
-import {isBrowser, load, registerLoaders, resolvePath} from '@loaders.gl/core';
+import {isBrowser, load, fetchFile, registerLoaders, resolvePath} from '@loaders.gl/core';
 import {JSONLoader} from '@loaders.gl/json';
 
 const JSON_URL = '@loaders.gl/core/test/data/files/basic.json';
@@ -46,7 +46,7 @@ test('load#Blob(text) - BROWSER ONLY', async t => {
 });
 
 test('load#stream', async t => {
-  const response = await fetch(resolvePath(JSON_URL));
+  const response = await fetchFile(JSON_URL);
   const stream = response.body;
   const data = await load(stream, JSONLoader);
   t.equals(typeof data, 'object', 'load(stream) returned data');
