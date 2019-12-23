@@ -27,7 +27,7 @@ const ImageLoader = {
     return isJpeg(dataView) || isBmp(dataView) || isGif(dataView) || isPng(dataView);
   },
   options: {
-    images: {
+    image: {
       format: 'auto',
       decodeHTML: true // if format is HTML
     }
