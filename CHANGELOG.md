@@ -1,5 +1,9 @@
 ## loaders.gl v2.0
 
+### v2.1.0-alpha.1 (TBD)
+
+- Move RequestScheduler to loader utils
+
 ### 2.0 Release
 
 #### v2.0.0-beta.8

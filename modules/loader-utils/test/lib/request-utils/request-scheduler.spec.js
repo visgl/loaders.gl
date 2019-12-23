@@ -1,4 +1,4 @@
-import RequestScheduler from '@loaders.gl/3d-tiles/lib/request-utils/request-scheduler';
+import {RequestScheduler} from '@loaders.gl/loader-utils';
 import test from 'tape-promise/tape';
 
 test('RequestScheduler#constructor', t => {

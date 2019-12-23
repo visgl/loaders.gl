@@ -43,8 +43,10 @@ export {getFirstCharacters, getMagicString} from './lib/binary-utils/get-first-c
 // PATH UTILS
 
 export {setPathPrefix, getPathPrefix, resolvePath} from './lib/path-utils/file-aliases';
-// FOR TESTING ONLY, EXPERIMENTAL
 export {addAliases as _addAliases} from './lib/path-utils/file-aliases.js';
+
+// REQUEST UTILS
+export {default as RequestScheduler} from './lib/request-utils/request-scheduler';
 
 // MESH CATEGORY UTILS
 // Note: Should move to category specific module if code size increases
