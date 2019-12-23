@@ -8,7 +8,7 @@ function addCompressedPointCloud(attributes, options) {
   }
 
   attributes.mode = 0;
-  const compressedData = options.DracoWriter.encodeSync(attributes, {pointcloud: true});
+  const compressedData = options.DracoWriter.encodeSync(attributes, {draco: {pointcloud: true}});
 
   const bufferViewIndex = this.addBufferView(compressedData);
 

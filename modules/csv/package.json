@@ -32,5 +32,8 @@
   "dependencies": {
     "@loaders.gl/core": "2.0.0-beta.8",
     "@loaders.gl/tables": "2.0.0-beta.8"
+  },
+  "devDependencies": {
+    "d3-dsv": "^1.2.0"
   }
 }

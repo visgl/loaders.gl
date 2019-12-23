@@ -1446,13 +1446,6 @@
     npmlog "^4.1.2"
     write-file-atomic "^2.3.0"
 
-"@loaders.gl/core@1.2.2":
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/core/-/core-1.2.2.tgz#2c87b09e2e2a0d07c029d88d637757b85ce3dd38"
-  integrity sha512-c/ERkx2J2hWxEDxOLhU1XtOlqpn8TPGII2B31lu9nW3sv0MTqDVbM51R2TXthJ0uxenDz1ubhapiYyF5eA1eFw==
-  dependencies:
-    "@babel/runtime" "^7.3.1"
-
 "@loaders.gl/core@^2.0.0":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@loaders.gl/core/-/core-2.0.0.tgz#ab84b94efb8ad3a90133389e5b76f6a721b20419"
@@ -1460,13 +1453,6 @@
   dependencies:
     "@babel/runtime" "^7.3.1"
     "@loaders.gl/loader-utils" "2.0.0"
-
-"@loaders.gl/experimental@1.2.2":
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/experimental/-/experimental-1.2.2.tgz#cc253cf82e8b7fa7182f39c05f4243c53f6ab5d2"
-  integrity sha512-lyfw7pG7zFIDc6SkFIXubSjUFU5e8jvGLLrywXKYOGukHTJaOF6x2caYPrf57/x4pIp2r0IN4MNw/cilWJCikw==
-  dependencies:
-    "@loaders.gl/core" "1.2.2"
 
 "@loaders.gl/images@^2.0.0":
   version "2.0.0"
@@ -1663,7 +1649,7 @@
   dependencies:
     "@types/node" ">= 8"
 
-"@probe.gl/bench@^3.1.1":
+"@probe.gl/bench@^3.2.0":
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/@probe.gl/bench/-/bench-3.2.0.tgz#323cf42e1b3fb33a93d0e5282c49fd050a3b063f"
   integrity sha512-nAEeRQIpo5eEBSmQ9O0RNp2I6jxrAVEzZnpPBa5Bkc1TrD40S9Eu/EqCUkxcQDTwNMKZIK6A4EIIIph5Qj3Rlg==
@@ -2929,15 +2915,15 @@ command-line-usage@5.0.5:
     table-layout "^0.4.3"
     typical "^2.6.1"
 
+commander@2, commander@^2.18.0, commander@^2.20.0, commander@~2.20.3:
+  version "2.20.3"
+  resolved "https://registry.yarnpkg.com/commander/-/commander-2.20.3.tgz#fd485e84c03eb4881c20722ba48035e8531aeb33"
+  integrity sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ==
+
 commander@2.17.x:
   version "2.17.1"
   resolved "https://registry.yarnpkg.com/commander/-/commander-2.17.1.tgz#bd77ab7de6de94205ceacc72f1716d29f20a77bf"
   integrity sha512-wPMUt6FnH2yzG95SA6mzjQOEKUU3aLaDEmzs1ti+1E9h+CsrZghRlqEM/EJ4KscsQVG8uNN4uVreUeT8+drlgg==
-
-commander@^2.18.0, commander@^2.20.0, commander@~2.20.3:
-  version "2.20.3"
-  resolved "https://registry.yarnpkg.com/commander/-/commander-2.20.3.tgz#fd485e84c03eb4881c20722ba48035e8531aeb33"
-  integrity sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ==
 
 commander@^4.0.1:
   version "4.0.1"
@@ -3324,6 +3310,15 @@ cyclist@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/cyclist/-/cyclist-1.0.1.tgz#596e9698fd0c80e12038c2b82d6eb1b35b6224d9"
   integrity sha1-WW6WmP0MgOEgOMK4LW6xs1tiJNk=
+
+d3-dsv@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/d3-dsv/-/d3-dsv-1.2.0.tgz#9d5f75c3a5f8abd611f74d3f5847b0d4338b885c"
+  integrity sha512-9yVlqvZcSOMhCYzniHE7EVUws7Fa1zgw+/EAV2BxJoG3ME19V6BQFBwI855XQDsxyOuG7NibqRMTtiF/Qup46g==
+  dependencies:
+    commander "2"
+    iconv-lite "0.4"
+    rw "1"
 
 dargs@^4.0.1:
   version "4.1.0"
@@ -5231,7 +5226,7 @@ humanize-ms@^1.2.1:
   dependencies:
     ms "^2.0.0"
 
-iconv-lite@0.4.24, iconv-lite@^0.4.24, iconv-lite@~0.4.13:
+iconv-lite@0.4, iconv-lite@0.4.24, iconv-lite@^0.4.24, iconv-lite@~0.4.13:
   version "0.4.24"
   resolved "https://registry.yarnpkg.com/iconv-lite/-/iconv-lite-0.4.24.tgz#2022b4b25fbddc21d2f524974a474aafe733908b"
   integrity sha512-v3MXnZAcvnywkTUEZomIActle7RXXeedOR31wwl7VlyoXO4Qi9arvSenNQWne1TcRwhCL1HwLI21bEqdpj8/rA==
@@ -8416,6 +8411,11 @@ run-queue@^1.0.0, run-queue@^1.0.3:
   integrity sha1-6Eg5bwV9Ij8kOGkkYY4laUFh7Ec=
   dependencies:
     aproba "^1.1.1"
+
+rw@1:
+  version "1.3.3"
+  resolved "https://registry.yarnpkg.com/rw/-/rw-1.3.3.tgz#3f862dfa91ab766b14885ef4d01124bfda074fb4"
+  integrity sha1-P4Yt+pGrdmsUiF700BEkv9oHT7Q=
 
 rxjs@^6.4.0, rxjs@^6.5.3:
   version "6.5.3"

@@ -1,6 +1,5 @@
-import {fetchFile, parseSync, encode} from '@loaders.gl/core';
-import {_getMeshSize} from '@loaders.gl/loader-utils';
-import {DracoLoader, DracoWriter} from '@loaders.gl/draco';
+import {fetchFile, encode} from '@loaders.gl/core';
+import {DracoWriter} from '@loaders.gl/draco';
 
 const OPTIONS = [
   {
@@ -29,23 +28,24 @@ export default async function dracoBench(bench) {
     POSITIONS: new Float32Array(POSITIONS),
     COLORS: new Uint8ClampedArray(COLORS)
   };
-  const rawSize = _getMeshSize(attributes);
 
-  OPTIONS.forEach(options => {
-    const dracoEncoder = encode({attributes}, DracoWriter, options);
-    const compressedPointCloud = dracoEncoder.encodePointCloud(attributes);
-    // eslint-disable-next-line
-    console.log(`${options.name} compression rate:
-      ${((compressedPointCloud.byteLength / rawSize) * 100).toFixed(2)}%`);
+  for (const options of OPTIONS) {
+    bench.addAsync(
+      `DracoEncoder#pointcloud ${POSITIONS.byteLength / 12}#${options.name}`,
+      async () => {
+        return await encode(attributes, DracoWriter, {draco: {pointcloud: true}});
+      }
+    );
 
-    bench = bench
-      .add(`DracoEncoder#encode point cloud#${options.name}`, () => {
-        dracoEncoder.encodePointCloud(attributes);
-      })
-      .add(`DracoDecoder#decode point cloud#${options.name}`, () => {
-        parseSync(compressedPointCloud, DracoLoader);
-      });
-  });
+    // TODO - COMMENT OUT until bench.addAsync is fixed (too many invocations)
+    // const compressedPointCloud = await encode(attributes, DracoWriter, {draco: {pointcloud: true}});
+    // bench.addAsync(
+    //   `DracoDecoder#pointcloud ${POSITIONS.byteLength / 12}#${options.name}`,
+    //   async () => {
+    //     return await parse(compressedPointCloud, DracoLoader, {worker: false});
+    //   }
+    // );
+  }
 
   return bench;
 }

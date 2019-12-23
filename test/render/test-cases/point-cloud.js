@@ -81,9 +81,11 @@ export default [
       const kittiPointCloudRaw = await loadKittiPointCloud();
       // Encode/decode mesh with Draco
       const compressedMesh = await encode({attributes: kittiPointCloudRaw}, DracoWriter, {
-        pointcloud: true,
-        quantization: {
-          POSITION: 14
+        draco: {
+          pointcloud: true,
+          quantization: {
+            POSITION: 14
+          }
         }
       });
 

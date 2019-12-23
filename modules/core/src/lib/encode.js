@@ -1,9 +1,9 @@
-export function encode(data, writer, options, url) {
+export async function encode(data, writer, options, url) {
   if (writer.encode) {
-    return writer.encode(data, options);
+    return await writer.encode(data, options);
   }
   if (writer.encodeSync) {
-    return Promise.resolve(writer.encodeSync(data, options));
+    return writer.encodeSync(data, options);
   }
   // TODO - Use encodeToBatches?
   throw new Error('Writer could not encode data');
