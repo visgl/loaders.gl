@@ -5,14 +5,11 @@ import {Matrix4, Vector3} from 'math.gl';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {Stats} from 'probe.gl';
 import {path} from '@loaders.gl/core';
+import {RequestScheduler} from '@loaders.gl/loader-utils';
 
 import assert from '../utils/assert';
 
-import {
-  _Tileset3DCache as Tileset3DCache,
-  _RequestScheduler as RequestScheduler,
-  calculateTransformProps
-} from '@loaders.gl/3d-tiles';
+import {_Tileset3DCache as Tileset3DCache, calculateTransformProps} from '@loaders.gl/3d-tiles';
 import I3STileHeader from './i3s-tile-header';
 import Tileset3DTraverser from './i3s-tileset-traverser';
 

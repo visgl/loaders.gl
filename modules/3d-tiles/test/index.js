@@ -1,5 +1,3 @@
-import './lib/request-utils/request-scheduler.spec';
-
 import './lib/classes/tile-3d-feature-table.spec';
 import './lib/classes/tile-3d-batch-table.spec';
 

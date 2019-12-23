@@ -5,12 +5,12 @@ import {Matrix4, Vector3} from 'math.gl';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {Stats} from 'probe.gl';
 import {path} from '@loaders.gl/core';
+import {RequestScheduler} from '@loaders.gl/loader-utils';
 
 import assert from '../utils/assert';
 
 import {
   _Tileset3DCache as Tileset3DCache,
-  _RequestScheduler as RequestScheduler,
   _getFrameState as getFrameState,
   calculateTransformProps
 } from '@loaders.gl/3d-tiles';

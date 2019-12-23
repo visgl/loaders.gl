@@ -5,9 +5,9 @@ import {Matrix4, Vector3} from 'math.gl';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {Stats} from 'probe.gl';
 import {path} from '@loaders.gl/core';
+import {RequestScheduler} from '@loaders.gl/loader-utils';
 
 import assert from '../utils/assert';
-import RequestScheduler from '../request-utils/request-scheduler';
 import {getFrameState} from './helpers/get-frame-state';
 
 import {calculateTransformProps} from './helpers/transform-utils';
