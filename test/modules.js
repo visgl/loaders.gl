@@ -39,7 +39,6 @@ require('@loaders.gl/kml/test');
 require('@loaders.gl/tables/test');
 require('@loaders.gl/arrow/test');
 require('@loaders.gl/csv/test');
-
 require('@loaders.gl/json/test');
 
 // Archive Formats

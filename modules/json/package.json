@@ -34,7 +34,5 @@
     "build-bundle": "webpack --display=minimal --config ../../scripts/bundle.config.js"
   },
   "dependencies": {
-    "@loaders.gl/core": "1.2.2",
-    "@loaders.gl/experimental": "1.2.2"
   }
 }
