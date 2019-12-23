@@ -8,6 +8,7 @@ import {
   isFileReadable
 } from '../../javascript-utils/is-type';
 import {getStreamIterator} from '../../javascript-utils/stream-utils';
+import {concatenateAsyncIterator} from '../../javascript-utils/async-iterator-utils';
 import fetchFileReadable from '../fetch/fetch-file.browser';
 import {checkFetchResponseStatus, checkFetchResponseStatusSync} from './check-errors';
 
@@ -63,11 +64,14 @@ export async function getArrayBufferOrStringFromData(data, loader) {
     return loader.binary ? await data.arrayBuffer() : await data.text();
   }
 
-  // if (isIterable(data) || isAsyncIterable(data)) {
-  // }
+  if (isReadableStream(data)) {
+    data = getStreamIterator(data);
+  }
 
-  // Assume arrayBuffer iterator - attempt to concatenate
-  // return concatenateAsyncIterator(data);
+  if (isIterable(data) || isAsyncIterable(data)) {
+    // Assume arrayBuffer iterator - attempt to concatenate
+    return concatenateAsyncIterator(data);
+  }
 
   throw new Error(ERR_DATA);
 }
