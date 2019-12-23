@@ -171,7 +171,7 @@ export default class GLTFBuilder extends GLBBuilder {
     }
 
     attributes.mode = 0;
-    const compressedData = this.DracoWriter.encodeSync(attributes, {pointcloud: true});
+    const compressedData = this.DracoWriter.encodeSync(attributes, {draco: {pointcloud: true}});
 
     const bufferViewIndex = this.addBufferView(compressedData);
 

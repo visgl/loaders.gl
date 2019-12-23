@@ -9,19 +9,23 @@ const TEST_CASES = [
   {
     title: 'Encoding Draco Mesh: SEQUENTIAL',
     options: {
-      method: 'MESH_SEQUENTIAL_ENCODING'
+      draco: {
+        method: 'MESH_SEQUENTIAL_ENCODING'
+      }
     }
   },
   {
     title: 'Encoding Draco Mesh: EDGEBREAKER',
     options: {
-      method: 'MESH_EDGEBREAKER_ENCODING'
+      draco: {
+        method: 'MESH_EDGEBREAKER_ENCODING'
+      }
     }
   },
   {
     title: 'Encoding Draco PointCloud (no indices)',
     options: {
-      pointcloud: true
+      draco: {pointcloud: true}
     }
   }
 ];
@@ -57,7 +61,7 @@ test('DracoWriter#encode(bunny.drc)', async t => {
   };
 
   for (const tc of TEST_CASES) {
-    const mesh = tc.options.pointcloud ? POINTCLOUD : MESH;
+    const mesh = tc.options.draco.pointcloud ? POINTCLOUD : MESH;
     const meshSize = _getMeshSize(mesh.attributes);
 
     const compressedMesh = await encode(mesh, DracoWriter, tc.options);
@@ -95,7 +99,7 @@ test('DracoParser#encode(bunny.drc)', async t => {
   };
 
   for (const tc of TEST_CASES) {
-    const attributes = tc.options.pointcloud ? pointCloudAttributes : meshAttributes;
+    const attributes = tc.options.draco.pointcloud ? pointCloudAttributes : meshAttributes;
     const meshSize = _getMeshSize(attributes);
 
     const compressedMesh = await encode(attributes, DracoWriter, tc.options);

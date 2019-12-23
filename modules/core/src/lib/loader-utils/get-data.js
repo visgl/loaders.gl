@@ -59,8 +59,9 @@ export async function getArrayBufferOrStringFromData(data, loader) {
   }
 
   if (isFetchResponse(data)) {
-    await checkFetchResponseStatus(data);
-    return loader.binary ? await data.arrayBuffer() : await data.text();
+    const response = data;
+    await checkFetchResponseStatus(response);
+    return loader.binary ? await response.arrayBuffer() : await response.text();
   }
 
   // if (isIterable(data) || isAsyncIterable(data)) {
