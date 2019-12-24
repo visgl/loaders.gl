@@ -26,11 +26,11 @@
     "start": "echo 'Please see loaders.gl website for how to run examples' && open https://loaders.gl/docs",
     "bootstrap": "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true yarn && ocular-bootstrap",
     "build": "ocular-clean && lerna run pre-build && ocular-build",
+    "build-workers": "lerna run pre-build",
     "clean": "ocular-clean",
     "cover": "ocular-test cover",
     "lint": "ocular-lint",
     "publish": "ocular-publish",
-    "prepare": "npm run build",
     "test": "ocular-test",
     "metrics": "./scripts/metrics.sh && ocular-metrics"
   },
