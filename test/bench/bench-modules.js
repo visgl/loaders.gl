@@ -25,6 +25,7 @@ import coreBench from '@loaders.gl/core/test/core.bench';
 import csvBench from '@loaders.gl/csv/test/csv.bench';
 import jsonBench from '@loaders.gl/json/test/json-loader.bench';
 import dracoBench from '@loaders.gl/draco/test/draco.bench';
+import imageBench from '@loaders.gl/images/test/images.bench';
 
 const suite = new Bench({
   minIterations: 10
@@ -33,6 +34,7 @@ const suite = new Bench({
 (async function bench() {
   // add tests
   await coreBench(suite);
+  await imageBench(suite);
   await csvBench(suite);
   await jsonBench(suite);
   await dracoBench(suite);

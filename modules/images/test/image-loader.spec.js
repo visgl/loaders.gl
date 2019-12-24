@@ -1,9 +1,11 @@
 import test from 'tape-promise/tape';
 
-import {ImageLoader, getImageSize} from '@loaders.gl/images';
+import {ImageLoader, getImageSize, isImageTypeSupported} from '@loaders.gl/images';
 import {isBrowser, load} from '@loaders.gl/core';
 
 import {TEST_CASES, DATA_URL} from './lib/test-cases';
+
+const TYPES = ['auto', 'imagebitmap', 'html', 'ndarray'].filter(isImageTypeSupported);
 
 const TEST_URL = '@loaders.gl/images/test/data/img1-preview.png';
 
@@ -13,22 +15,29 @@ test('image loaders#imports', t => {
 });
 
 test('ImageLoader#load(URL)', async t => {
-  const image = await load(TEST_URL, ImageLoader);
+  let image = await load(TEST_URL, ImageLoader);
   t.ok(image, 'image loaded successfully from URL');
+
+  for (const type of TYPES) {
+    image = await load(TEST_URL, ImageLoader, {image: {type}});
+    t.ok(image, 'image loaded successfully from URL');
+  }
+
   t.end();
 });
 
 test('ImageLoader#load(data URL)', async t => {
-  const image = await load(DATA_URL, ImageLoader);
-  t.ok(image, 'image loaded successfully from data URL');
+  for (const type of TYPES) {
+    const image = await load(DATA_URL, ImageLoader, {image: {type}});
+    t.ok(image, 'image loaded successfully from data URL');
 
-  t.deepEquals(image.width, 2, 'image width is correct');
-  t.deepEquals(image.height, 2, 'image height is correct');
-  if (!isBrowser) {
-    t.ok(ArrayBuffer.isView(image.data), 'image data is `ArrayBuffer`');
-    t.equals(image.data.byteLength, 16, 'image `data.byteLength` is correct');
+    t.deepEquals(image.width, 2, 'image width is correct');
+    t.deepEquals(image.height, 2, 'image height is correct');
+    if (!isBrowser) {
+      t.ok(ArrayBuffer.isView(image.data), 'image data is `ArrayBuffer`');
+      t.equals(image.data.byteLength, 16, 'image `data.byteLength` is correct');
+    }
   }
-
   t.end();
 });
 
