@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@loaders.gl/core": "^2.0.0",
-    "@loaders.gl/draco": "^2.0.0-beta.2",
+    "@loaders.gl/draco": "^2.0.0",
     "@luma.gl/experimental": "^8.0.0",
     "@luma.gl/constants": "^8.0.0",
     "@luma.gl/core": "^8.0.0",
