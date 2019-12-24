@@ -56,8 +56,8 @@ test('registerLoaders#normalizeLoader', t => {
     },
     {
       title: 'loader with options',
-      input: [images.ImageLoader, {images: {imageOrientation: 'flipY'}}],
-      options: {images: {imageOrientation: 'flipY'}}
+      input: [images.ImageLoader, {image: {imageOrientation: 'flipY'}}],
+      options: {image: {imageOrientation: 'flipY'}}
     },
     {
       title: 'extension field',
