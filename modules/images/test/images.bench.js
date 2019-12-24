@@ -3,7 +3,7 @@ import {fetchFile, parse} from '@loaders.gl/core';
 
 const TEST_URL = '@loaders.gl/images/test/data/img1-preview.png';
 
-export default async function jsonLoaderBench(suite) {
+export default async function imageLoaderBench(suite) {
   suite.group('ImageLoader - parsing');
 
   const response = await fetchFile(TEST_URL);
