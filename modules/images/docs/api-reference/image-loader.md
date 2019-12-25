@@ -25,9 +25,12 @@ const image = await load(url, ImageLoader, options);
 | Option         | Type    | Default  | Description                                                                  |
 | -------------- | ------- | -------- | ---------------------------------------------------------------------------- |
 | `image.type`   | String  | `'auto'` | Set to `imagebitmap`, `html` or `ndarray` to control type of returned image. |
-| `image.decode` | boolean | `true`   | Ensures `html` type images are fully decoded before promise resolves.        |
+| `image.data`   | boolean | `false`  | If true, extracts image data instead of returning an actual image, as an `ImageData`-shaped object `{widht, height, data}`. |
+| `image.decode` | boolean | `true`   | Applies to `html` type images only, ensures image is fully decoded before loading promise resolves. |
 
-In addition, for `imagebitmap` type images, it is possible to pass through options to [`createImageBitmap`](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/createImageBitmap) to control image extraction, via the separate `options.imagebitmap` object.
+### ImageBitmap Options
+
+In addition, for `imagebitmap` type images, it is possible to pass through options to [`createImageBitmap`](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/createImageBitmap) to control image extraction, via the separate `options.imagebitmap` object. However, for portability it may be best to avoid relying on these options for now, since some browsers do not support `ImageBitmap` options (and some browsers do not support `ImageBitmap`s at all).
 
 | Option                             | Type   | Default     | Description                                                                                                                   |
 | ---------------------------------- | ------ | ----------- | ----------------------------------------------------------------------------------------------------------------------------- |

@@ -2,61 +2,59 @@
 
 ## v2.1 (In Development)
 
-Release Date: Target Feb-Mar, 2019.
+Target Release Date: mid-Feb, 2019. `alpha` releases will be made available.
+
+**@loaders.gl/core**
+- The `load` and `parse` functions can now read directly from `Stream` instances (works for both node and browser streams). However, note that simply reading from a stream does not automatically trigger "streaming" parsing, applications will still want to use `loadInBatches` and `streamInBatches` when processing larger files.
+
+**@loaders.gl/images**
+- Data Texture Loading: `ImageLoader` now accepts a `data: true` parameter that returns image data instead of an actual image, intended for use of images as data textures.
+- `ImageBitmap` Loading: now works correctly: `load(..., ImageLoader, {image: {type 'imagebitmap'}}) => ImageBitmap`
+
+**@loaders.gl/wkt** (new loader module)
+- New loader module for the Well-Known Text geometry format.
+
 
 ## v2.0
 
-Release Date: Target Dec, 2019, currently available as `2.0.0-beta` releases
+Release Date: Dec 20, 2019
 
-The 2.0 release brings stronger loader composition, image loading improvements, significant overhauls to several loaders and removes deprecated functions across the board.
+The 2.0 release brings potentially dramatic bundle size savings through dynamic loading of loaders and workers, significant overhauls to several loaders including , image loading improvements and the glTF loader, and a powerful loader composition system. 
 
-- `@loaders.gl/images`: Redefined as a new Image Category, see below
-- `@loaders.gl/core`: `loader.loadAndParse` removed.
+- **Loader-Specific Options** Each loader now defines its own sub object in the options object. This makes it possible to cleanly specify options for multiple loaders at the same time. This is helpful when loaders.gl auto-selects a pre-registered loader or when passing options to a sub-loader when using a composite loader.
 
-### @loaders.gl/core
+- **Smaller Loaders** Big loaders such as `DracoLoader` and `BasisLoader` that use large libraries (e.g. WASM/WebAssembly or emscripten/C++ transpiled to JavaScript) now load those libraries dynamically from `unpkg.com` CDN resulting in dramatic bundle size savings. E.g the bundle size impact of the `DracoLoader` was reduced from > 1MB to just over 10KB.
 
-- **Loader Specification Updates**
-
-  - All (non-worker) loaders are now required to expose a `parse` function (in addition to any more specialized `parseSync/parseText/parseInBatches` functions). This simplifies using loaders without `@loaders.gl/core`, which can reduce footprint in small applications.
-  - All exported loader and writer objects now expose a `mimeType` field. This field is not yet used by `@loaders.gl/core` but is available for applications (e.g. see `selectLoader`).
+- **Worker Loaders**
+  - Ease-of-use: Worker loading is provided by the main loader objects. It is not necessary to import the `...WorkerLoader` objects to enable worker loading (but see below about bundle size)
+  - Performance: Loading on worker threads is now the default: All worker enabled loaders now run on worker threads by default (set `options.worker: false` to disable worker-thread loading and run the loader on the main thread).
+  - Debugging: Development builds of workers are now available on `unpkg.com` CDN, eabling debugging of worker loaders.
+  - Bundle size: Workers are no longer bundled, but loaded from from the `unpkg.com` CDN.
+  - Bundle size: Note that the old `...WorkerLoader` classes are still available. Using these can save even more bundle space since during tree-shaking since they do not depend on the non-worker parser.
 
 - **Composite Loaders**
+  - The new _composite loader_ architecture enables complex loaders like `Tile3DLoader` and `GLTFLoader` to be composed from more primitive loaders without losing the ability to run some parts on worker, pass arguments to sub-loaders etc.
 
-  - Loaders can call other loaders
+### New Loader Modules
 
-### @loaders.gl/images
+- **@loaders.gl/basis** (Experimental) A new module for the basis format that enables. This module also provides a `CompressedImageLoader` for more traditional compressed images.
+- **@loaders.gl/json** (Experimental) A new streaming `JSONLoader` that supports batched (i.e. streaming) parsing from standard JSON files, e.g. geojson. No need to reformat your files as line delimited JSON.
 
-- **Image Category** now defined
+### Update Loader Modules
 
-  - Category ensures interchangability
+- `@loaders.gl/gltf` the `GLTFLoader` is now a "composite loader". The perhaps most important change is that `load(url, GLTFLoader)` also loads all sub-assets, including images, Draco compressed meshes, etc making the loaded data easier for applications to use.
+- `@loaders.gl/images` see below for a list of changes
 
-- **New ImageLoader options**
-- `options.image` contain common options that apply across the category
+### @loaders.gl/images Updates
 
-  - `options.image.type`, Ability to control loaded image type, default `auto`
-  - TBA `options.image.useWorkers: true` - Worker Image Loaders on Chrome and Firefox
-  - TBA `options.image.decodeHTML: true` - Support for `Image.decode()` to ensure HTML images are ready to be used when loader promise resolves.
+- **New ImageLoader options** `options: {image: {}}` contain common options that apply across the category
+  - `options.image.type`, Ability to control loaded image type enabling faster `ImageBitmap` instances to be loaded via `type: 'imagebitmap`. Default `auto` setting returns traditional HTML image objects.
+- Image Decoding. `options.image.decodeHTML: true` - `ImageLoader` now ensures HTML images are completely decoded and ready to be used when the image is returned (by calling `Image.decode()`).
 
-- **Parsed Image API** To help working with loaded images across platform
-
-  - `isImage`, `getImageType`, `getImageSize`, `getImageData`, ...
-
-- **Binary Image API** Separate API to work with unparsed images in binary data form
-
-  - `isBinaryImage`, `getBinaryImageType`, `getBinaryImageSize`, ...
-
-- **Separate Loaders** (Experimental) Now exports a separate micro loader for each format: `_JPEGLoader`, `_PNGLoader`, `_GIFLoader`, `_BMPLoader`, `_SVGLoader`
-
-- **Separate Loaders**
-
-  - Composite loader (Array) `ImageLoaders` for easy registration.
-
-- **Improved Node.js image support**
-  - More test cases are now run in both browser and Node.js and a few important issues were uncovered and fixed.
-
-### @loaders.gl/json
-
-A new streaming `JSONLoader`(Experimental) that supports batched (i.e. streaming) parsing from standard JSON files, e.g. geojson. No need to reformat your files as line delimited JSON.
+- **Parsed Image API** Since the type of images returned by the `ImageLoader` depends on the `{image: {type: ...}}` option, a set of functions are provided to work portably with loaded images: `isImage()`, `getImageType()`, `getImageSize()`, `getImageData()`, ...
+- **Binary Image API** Separate API to work with unparsed images in binary data form: `isBinaryImage()`, `getBinaryImageType()`, `getBinaryImageSize()`, ...
+- **"Texture" Loading API** New methods `loadImages` and `loadImageCube` can signficantly simplify loading of arrays of arrays of (mipmapped) images that are often used in 3D applications. These methods allow an entire complex of images (e.g. 6 cube faces with 10 mip images each) to be loaded using a single async call.
+- **Improved Node.js support** More image test cases are now run in both browser and Node.js and a couple of important Node.js issues were uncovered and fixed.
 
 ## v1.3
 

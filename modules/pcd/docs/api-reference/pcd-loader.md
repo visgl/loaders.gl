@@ -17,13 +17,10 @@ Note: Currently only `ascii` and `binary` subformats are supported. Compressed b
 ## Usage
 
 ```js
-import {PCDLoader, PCDWorkerLoader} from '@loaders.gl/pcd';
+import {PCDLoader} from '@loaders.gl/pcd';
 import {load} from '@loaders.gl/core';
 
-// Decode on main thread
 const data = await load(url, PCSLoader, options);
-// Decode on worker thread
-const data = await load(url, PCDWorkerLoader, options);
 ```
 
 ## Options
