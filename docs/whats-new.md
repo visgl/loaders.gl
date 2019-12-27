@@ -5,27 +5,30 @@
 Target Release Date: mid-Feb, 2019. `alpha` releases will be made available.
 
 **@loaders.gl/core**
+
 - The `load` and `parse` functions can now read directly from `Stream` instances (works for both node and browser streams). However, note that simply reading from a stream does not automatically trigger "streaming" parsing, applications will still want to use `loadInBatches` and `streamInBatches` when processing larger files.
 
 **@loaders.gl/images**
+
 - Data Texture Loading: `ImageLoader` now accepts a `data: true` parameter that returns image data instead of an actual image, intended for use of images as data textures.
 - `ImageBitmap` Loading: now works correctly: `load(..., ImageLoader, {image: {type 'imagebitmap'}}) => ImageBitmap`
 
 **@loaders.gl/wkt** (new loader module)
-- New loader module for the Well-Known Text geometry format.
 
+- New loader module for the Well-Known Text geometry format.
 
 ## v2.0
 
 Release Date: Dec 20, 2019
 
-The 2.0 release brings potentially dramatic bundle size savings through dynamic loading of loaders and workers, significant overhauls to several loaders including , image loading improvements and the glTF loader, and a powerful loader composition system. 
+The 2.0 release brings potentially dramatic bundle size savings through dynamic loading of loaders and workers, significant overhauls to several loaders including , image loading improvements and the glTF loader, and a powerful loader composition system.
 
 - **Loader-Specific Options** Each loader now defines its own sub object in the options object. This makes it possible to cleanly specify options for multiple loaders at the same time. This is helpful when loaders.gl auto-selects a pre-registered loader or when passing options to a sub-loader when using a composite loader.
 
 - **Smaller Loaders** Big loaders such as `DracoLoader` and `BasisLoader` that use large libraries (e.g. WASM/WebAssembly or emscripten/C++ transpiled to JavaScript) now load those libraries dynamically from `unpkg.com` CDN resulting in dramatic bundle size savings. E.g the bundle size impact of the `DracoLoader` was reduced from > 1MB to just over 10KB.
 
 - **Worker Loaders**
+
   - Ease-of-use: Worker loading is provided by the main loader objects. It is not necessary to import the `...WorkerLoader` objects to enable worker loading (but see below about bundle size)
   - Performance: Loading on worker threads is now the default: All worker enabled loaders now run on worker threads by default (set `options.worker: false` to disable worker-thread loading and run the loader on the main thread).
   - Debugging: Development builds of workers are now available on `unpkg.com` CDN, eabling debugging of worker loaders.

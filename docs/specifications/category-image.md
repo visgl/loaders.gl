@@ -4,11 +4,11 @@ The image category documents a common data format, options, conventions and util
 
 Participating Loaders
 
-| Loader | Notes |
-| --- | --- |
-| ImageLoader | |
-| CompressedImageLoader | |
-| BasisLoader | |
+| Loader                | Notes |
+| --------------------- | ----- |
+| ImageLoader           |       |
+| CompressedImageLoader |       |
+| BasisLoader           |       |
 
 ## Features and Capabilities
 
@@ -52,7 +52,6 @@ const image = await load('image.jpeg');
 
 The loaded image representation can vary somewhat based on your environment. For performance, image loaders use native image loading functionality in browsers. Browsers can load into two types of image classes (`ImageBitmap` and `HTMLImageElement`) and on Node.js images are represented using `ndarray`. The following table summarizes the situation:
 
-
 | Format Name   | Format                           | Availability                           | Workers                | Description                                                                      |
 | ------------- | -------------------------------- | -------------------------------------- | ---------------------- | -------------------------------------------------------------------------------- |
 | `imagebitmap` | `ImageBitmap`                    | Chrome/Firefox                         | Yes: **transferrable** | A newer class designed for efficient loading of images for use with WebGL        |
@@ -63,11 +62,11 @@ The loaded image representation can vary somewhat based on your environment. For
 
 The image category support some generic options (specified using `options.image.<option-name>`), that are applicable to all (or most) image loaders.
 
-| Option                           | Default       | Type    | Availability    | Description                                          |
-| -------------------------------- | ------------- | ------- | --------------- | ---------------------------------------------------- |
-| `options.image.type`             | `'auto'`      | string  | See table       | One of `auto`, `imagebitmap`, `html`, `ndarray`      |
-| `options.image.decodeHTML`       | `true`        | boolean | No: Edge, IE11  | Wait for HTMLImages to be fully decoded.             |
-| `options.image.crossOrigin`      | `'anonymous'` | boolean | All Browsers    | Sets `crossOrigin` field for HTMLImage loads         |
+| Option                      | Default       | Type    | Availability   | Description                                     |
+| --------------------------- | ------------- | ------- | -------------- | ----------------------------------------------- |
+| `options.image.type`        | `'auto'`      | string  | See table      | One of `auto`, `imagebitmap`, `html`, `ndarray` |
+| `options.image.decodeHTML`  | `true`        | boolean | No: Edge, IE11 | Wait for HTMLImages to be fully decoded.        |
+| `options.image.crossOrigin` | `'anonymous'` | boolean | All Browsers   | Sets `crossOrigin` field for HTMLImage loads    |
 
 ## Notes
 
@@ -77,7 +76,6 @@ The image category support some generic options (specified using `options.image.
 - `ImageBitmap` is **transferrable** and can be moved back to main thread without copying.
 
 Since image worker loading is only available on some browsers, the `ImageLoader` dynamically determines if worker loading is available. Use `options.worker: false` to disable worker loading of images.
-
 
 ## Image API
 

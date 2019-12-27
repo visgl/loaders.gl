@@ -11,10 +11,9 @@ Parses a [3D tile](https://github.com/AnalyticalGraphicsInc/3d-tiles).
 | Decoder Type          | Synchronous (limited), Asynchronous                                                                            |
 | Worker Thread Support | No                                                                                                             |
 | Streaming Support     | No \*                                                                                                          |
-| CompositeLoader     | Yes: `DracoLoader` (`.pnts`), `GLTFLoader` (`.b3dm`, `.i3dm`)                                                                      |
+| Subloaders            | `DracoLoader` (`.pnts`), `GLTFLoader` (`.b3dm`, `.i3dm`)                                                       |
 
-\* Streaming is not supported for invididual tiles, however tilesets are streamed by loading only the tiles needed for the 
-
+\* Streaming is not supported for invididual tiles, however tilesets are streamed by loading only the tiles needed for the
 
 ## Usage
 
