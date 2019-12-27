@@ -15,13 +15,10 @@ The `PLYLoader` parses simple meshes in the Polygon File Format or the Stanford 
 ## Usage
 
 ```js
-import {PLYLoader, PLYWorkerLoader} from '@loaders.gl/ply';
+import {PLYLoader} from '@loaders.gl/ply';
 import {load} from '@loaders.gl/core';
 
-// Decode on main thread
 const data = await load(url, PLYLoader, options);
-// Decode on worker thread
-const data = await load(url, PLYWorkerLoader, options);
 ```
 
 ## Options

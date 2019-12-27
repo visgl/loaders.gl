@@ -4,6 +4,11 @@
 
 Version 2.0 is a major release that consolidates functionality and APIs, and a number of deprecated functions have been removed.
 
+Some general changes:
+
+- All exported loader and writer objects now expose a `mimeType` field. This field is not yet used by `@loaders.gl/core` but is available for applications (e.g. see `selectLoader`).
+- All (non-worker) loaders are now required to expose a `parse` function (in addition to any more specialized `parseSync/parseText/parseInBatches` functions). This simplifies using loaders without `@loaders.gl/core`, which can reduce footprint in small applications.
+
 ### `@loaders.gl/core`
 
 | Removal            | Replacement                                                            |

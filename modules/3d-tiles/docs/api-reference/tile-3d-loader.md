@@ -11,8 +11,9 @@ Parses a [3D tile](https://github.com/AnalyticalGraphicsInc/3d-tiles).
 | Decoder Type          | Synchronous (limited), Asynchronous                                                                            |
 | Worker Thread Support | No                                                                                                             |
 | Streaming Support     | No \*                                                                                                          |
+| Subloaders            | `DracoLoader` (`.pnts`), `GLTFLoader` (`.b3dm`, `.i3dm`)                                                       |
 
-\* Streaming is not supported for invididual tiles, however tilesets are streamed by loading only the tiles needed for the current view.
+\* Streaming is not supported for invididual tiles, however tilesets are streamed by loading only the tiles needed for the
 
 ## Usage
 
@@ -33,7 +34,7 @@ const gltf = await load(url, Tile3DLoader, {DracoLoader, decompress: true});
 
 ## Options
 
-To enable parsing of DRACO compressed point clouds and glTF tiles, make sure to first register a [DracoLoader](/docs/api-reference/draco/draco-loader). The `DracoWorkerLoader` will usually give best loading performance and interactivity.
+To enable parsing of DRACO compressed point clouds and glTF tiles, make sure to first register the [DracoLoader](/docs/api-reference/draco/draco-loader).
 
 Point cloud tie options
 

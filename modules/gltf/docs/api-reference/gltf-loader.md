@@ -11,6 +11,7 @@ A glTF file contains a hierarchical scenegraph description that can be used to i
 | File Format     | [glTF](https://github.com/KhronosGroup/glTF/tree/master/specification/2.0) |
 | Data Format     | [Scenegraph](/docs/specifications/category-scenegraph)                     |
 | Supported APIs  | `load`, `parse`, `parseSync`                                               |
+| Subloaders      | `DracoLoader`, `ImageLoader`                                               |  |
 
 ## Usage
 

@@ -15,13 +15,10 @@ The `LASLoader` parses a point cloud in the LASER file format.
 ## Usage
 
 ```js
-import {LASLoader, LASWorkerLoader} from '@loaders.gl/las';
+import {LASLoader} from '@loaders.gl/las';
 import {load} from '@loaders.gl/core';
 
-// Decode on main thread
 const data = await load(url, LASLoader, options);
-// Decode on worker thread
-const data = await load(url, LASWorkerLoader, options);
 ```
 
 ## Options
