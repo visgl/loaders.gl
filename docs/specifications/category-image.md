@@ -1,10 +1,14 @@
 # Category: Image
 
-> The Image Category is being defined for loaders.gl v2.0 and is currently experimental and unstable.
-
 The image category documents a common data format, options, conventions and utilities for loader and writers for images that follow loaders.gl conventions.
 
-Image category loaders includes: `JPEGLoader`, `PNGLoader`, `GIFLoader`, `BMPLoader`, `SVGLoader` and of course all the loaders in the `ImageLoaders` composite loader.
+Participating Loaders
+
+| Loader                | Notes |
+| --------------------- | ----- |
+| ImageLoader           |       |
+| CompressedImageLoader |       |
+| BasisLoader           |       |
 
 ## Features and Capabilities
 
@@ -16,20 +20,22 @@ Apart from providing a set of image loaders that integrate with loaders.gl, ther
 - Handles SVG images
 - Image type detection (without loading images)
 
-## Installation and Usage
+## Installation
 
-Image category support is bundled in the `@loaders.gl/images` module:
+Core image category support is provided by the `@loaders.gl/images` module:
 
 ```bash
 npm install @loaders.gl/core @loaders.gl/images
 ```
 
+## Usage
+
 Individual loaders for specific image formats can be imported for `@loaders.gl/images`:
 
 ```js
-import {JEPGLoader, PNGLoader} from '@loaders.gl/images';
+import {ImageLoader} from '@loaders.gl/images';
 import {registerLoaders, load} from '@loaders.gl/core';
-registerLoaders([JEPGLoader, PNGLoader]);
+registerLoaders(ImageLoader);
 const image = await load('image.jpeg');
 ```
 
@@ -37,8 +43,8 @@ However since each image loader is quite small (in terms of code size and bundle
 
 ```js
 import {ImageLoaders} from '@loaders.gl/images';
-import {registerLoaders, load} from '@loaders.gl/core';
-registerLoaders(ImageLoaders);
+import {registerLoader, load} from '@loaders.gl/core';
+registerLoaders(ImageLoader);
 const image = await load('image.jpeg');
 ```
 
@@ -56,25 +62,22 @@ The loaded image representation can vary somewhat based on your environment. For
 
 The image category support some generic options (specified using `options.image.<option-name>`), that are applicable to all (or most) image loaders.
 
-| Option                           | Default       | Type    | Availability    | Description                                          |
-| -------------------------------- | ------------- | ------- | --------------- | ---------------------------------------------------- |
-| `options.image.format`           | `'auto'`      | string  | See table       | One of `auto`, `imagebitmap`, `html`, `ndarray`      |
-| `options.image.decodeHTML`       | `true`        | boolean | No: Edge, IE11  | Wait for HTMLImages to be fully decoded.             |
-| `options.image.crossOrigin`      | `'anonymous'` | boolean | All Browsers    | Sets `crossOrigin` field for HTMLImage loads         |
-| `options.image.useWorkers` (TBA) | `true`        | boolean | Chrome, Firefox | If true, uses worker loaders on supported platforms. |
+| Option                      | Default       | Type    | Availability   | Description                                     |
+| --------------------------- | ------------- | ------- | -------------- | ----------------------------------------------- |
+| `options.image.type`        | `'auto'`      | string  | See table      | One of `auto`, `imagebitmap`, `html`, `ndarray` |
+| `options.image.decodeHTML`  | `true`        | boolean | No: Edge, IE11 | Wait for HTMLImages to be fully decoded.        |
+| `options.image.crossOrigin` | `'anonymous'` | boolean | All Browsers   | Sets `crossOrigin` field for HTMLImage loads    |
 
 ## Notes
 
-### About worker support
+### About worker loading
 
 - Worker loading is only supported for the `imagebitmap` format (on Chrome and Firefox).
-- `ImageBitmap` is **transferrable** and can be moved back to main thread without copying.ß
-- There should be no technical limitations to loading images on workers in node, however node workers are not supported yet.
+- `ImageBitmap` is **transferrable** and can be moved back to main thread without copying.
 
-In contrast to other modules, where worker loaders have to be separately installed, since image workers are small and worker loading is only available on some browsers, the image loaders dynamically determines if worker loading is available.
-Use `options.image.useWorkers: false` to disable worker loading of images on all platforms.
+Since image worker loading is only available on some browsers, the `ImageLoader` dynamically determines if worker loading is available. Use `options.worker: false` to disable worker loading of images.
 
-## Utilities
+## Image API
 
 The image category also provides a few utilities:
 

@@ -17,13 +17,10 @@ The `ArrowLoader` parses the Apache Arrow columnar table format.
 ## Usage
 
 ```js
-import {ArrowLoader, ArrowWorkerLoader} from '@loaders.gl/arrow';
+import {ArrowLoader} from '@loaders.gl/arrow';
 import {load} from '@loaders.gl/core';
 
-// Decode on main thread
 const data = await load(url, ArrowLoader, options);
-// Decode on worker thread
-const data = await load(url, ArrowWorkerLoader, options);
 ```
 
 ## Options

@@ -15,13 +15,10 @@ The `OBJLoader` parses the OBJ half of the classic Wavefront OBJ/MTL format.
 ## Usage
 
 ```js
-import {OBJLoader, OBJWorkerLoader} from '@loaders.gl/obj';
+import {OBJLoader} from '@loaders.gl/obj';
 import {load} from '@loaders.gl/core';
 
-// Decode on main thread
 const data = await load(url, OBJLoader, options);
-// Decode on worker thread
-const data = await load(url, OBJWorkerLoader, options);
 ```
 
 ## Options
