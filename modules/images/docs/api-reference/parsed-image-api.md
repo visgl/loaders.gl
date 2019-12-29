@@ -47,11 +47,11 @@ Throws
 
 - if `image` is not of a recognized type.
 
-| Type          | JavaScript Type                                 | Description                                        |
-| ------------- | ----------------------------------------------- | -------------------------------------------------- |
-| `data`        | Image data object: `data`, `width`, `height` .. | Node.js representation                             |
-| `imagebitmap` | `ImageBitmap`                                   | The newer HTML5 image class (modern browsers only) |
-| `image`       | `Image` aka `HTMLImageElement`                  | The older, less flexible HTML image element        |
+| Type          | JavaScript Type                                 | Description                                                          |
+| ------------- | ----------------------------------------------- | -------------------------------------------------------------------- |
+| `data`        | Image data object: `data`, `width`, `height` .. | Node.js representation                                               |
+| `imagebitmap` | `ImageBitmap`                                   | The newer HTML5 image class (modern browsers only)                   |
+| `image`       | `Image` aka `HTMLImageElement`                  | More widely supported (but less performant and flexible) image class |
 
 ### getImageData(image : any) : Object
 

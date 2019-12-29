@@ -12,7 +12,7 @@ import {
   getImageData
 } from '@loaders.gl/images';
 
-const IMAGE_TYPES = ['auto', 'imagebitmap', 'html', 'ndarray'];
+const IMAGE_TYPES = ['auto', 'image', 'imagebitmap', 'data'];
 
 const IMAGE_URL = '@loaders.gl/images/test/data/img1-preview.png';
 

@@ -44,4 +44,12 @@ export default async function imageLoaderBench(suite) {
       );
     }
   }
+
+  // for (const type of ['image', 'imagebitmap', 'data']) {
+  //   if (isImageTypeSupported(type)) {
+  //     suite.addAsync(`parse(ImageLoader, type=${type}, data=true)`, async () => {
+  //       return await parse(arrayBuffer, ImageLoader, {image: {type, data: true}});
+  //     });
+  //   }
+  // }
 }
