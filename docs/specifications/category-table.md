@@ -1,6 +1,14 @@
-# Category: Table
+# Table Loaders
 
 This category provides a set of conventions for working with tables in row-based, columnar or chunked/batched columnar formats.
+
+## Table Category Loaders
+
+| Loader                | Notes |
+| --------------------- | ----- |
+| [`ArrowLoader`](modules/arrow/docs/api-reference/arrow-loader) | |
+| [`CSVLoader`](modules/csv/docs/api-reference/csv-loader) | |
+| [`JSONLoader`](modules/json/docs/api-reference/json-loader) | Set `options.json.table` to `true` |
 
 ## Data Structure
 
@@ -36,7 +44,3 @@ The down-side is that complexity can increase quickly. Data Frames are optimized
 
 Using the Arrow API it is possible to work extremely efficiently with very large (multi-gigabyte) datasets.
 
-## Loaders
-
-- [ArrowLoader](/docs/api-reference/arrow/arrow-loader)
-- [CSVLoader](/docs/api-reference/csv/csv-loader)

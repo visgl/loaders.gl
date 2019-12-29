@@ -28,7 +28,7 @@ Returns an array of image objects representing mip levels.
 
 | Option       | Type   | Default  | Description                                                                  |
 | ------------ | ------ | -------- | ---------------------------------------------------------------------------- |
-| `image.type` | String | `'auto'` | Set to `imagebitmap`, `html` or `ndarray` to control type of returned image. |
+| `image.type` | String | `'auto'` | Set to `imagebitmap`, `image` or `ndarray` to control type of returned image. |
 
 In addition, for `imagebitmap` type images, it is possible to pass through options to [`createImageBitmap`](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/createImageBitmap) to control image extraction, via the separate `options.imagebitmap` object.
 

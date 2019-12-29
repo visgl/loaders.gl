@@ -35,7 +35,7 @@ A set of functions to work with parsed images returned by the `ImageLoader`.
 | Function                                        | Description                                                                                               |
 | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
 | `isImageTypeSupported(type : string) : boolean` | Check if type is supported by current run-time environment                                                |
-| `getSupportedImageType() : string`              | Returns the image type selected by default ( `options.image.type: 'auto'` in current run-time environment |
+| `getDefaultImageType() : string`              | Returns the image type selected by default ( `options.image.type: 'auto'` in current run-time environment |
 | `isImage(image : any) : boolean`                | Checks any JavaScript value to see if it is an image of a type that loaders.gl can work with              |
 | `getImageType(image : any) : string`            | Returns the type name for this image.                                                                     |
 | `getImageSize(image : any) : object`            | Returns `width` and `height` for an image                                                                 |

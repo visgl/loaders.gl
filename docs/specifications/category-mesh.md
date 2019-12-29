@@ -1,10 +1,20 @@
-# Category: Mesh/PointCloud
+# Mesh and PointCloud Loaders
 
-This category unifies the loader output for simple mesh and point clouds formats that describe a "single geometry primitive" (as opposed to e.g. a scenegraph consisting of multiple geometries).
+The mesh and pointcloud loader category unifies the loader output for simple mesh and point clouds formats that describe a "single geometry primitive" (as opposed to e.g. a scenegraph consisting of multiple geometries).
 
-A single mesh is typically defined by a set of attributes, such as `positions`, `colors`, `normals` etc, as well as a draw mode.
+## Mesh/PointCloud Category Loaders
+
+| Loader                | Notes |
+| --------------------- | ----- |
+| [`DracoLoader`](modules/draco/docs/api-reference/draco-loader) | |
+| [`LASLoader`](modules/las/docs/api-reference/las-loader) | |
+| [`OBJLoader`](modules/obj/docs/api-reference/obj-loader) | |
+| [`PCDLoader`](modules/pcd/docs/api-reference/pcd-loader) | |
+| [`PLYLoader`](modules/ply/docs/api-reference/ply-loader) | |
 
 ## Format Notes
+
+A single mesh is typically defined by a set of attributes, such as `positions`, `colors`, `normals` etc, as well as a draw mode.
 
 The Pointcloud/Mesh loaders output mesh data in a common form that is optimized for use in WebGL frameworks:
 
@@ -90,10 +100,3 @@ For now it is best to convert such assets off-line to glTF before attempting to 
 ### Material support
 
 Material support is provided by some mesh formats (e.g. OBJ/MTL) and is currently not implemented by loaders.gl, however the glTF loader has full support for PBR (Physically-Based Rendering) materials.
-
-## Loaders
-
-- [LASLoader](/docs/api-reference/las/las-loader)
-- [OBJLoader](/docs/api-reference/obj/obj-loader)
-- [PCDLoader](/docs/api-reference/pcd/pcd-loader)
-- [PLYLoader](/docs/api-reference/ply/ply-loader)

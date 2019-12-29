@@ -24,9 +24,9 @@ const image = await load(url, ImageLoader, options);
 
 | Option         | Type    | Default  | Description                                                                                                                 |
 | -------------- | ------- | -------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `image.type`   | String  | `'auto'` | Set to `imagebitmap`, `html` or `ndarray` to control type of returned image.                                                |
+| `image.type`   | String  | `'auto'` | Set to `imagebitmap`, `image` or `ndarray` to control type of returned image.                                                |
 | `image.data`   | boolean | `false`  | If true, extracts image data instead of returning an actual image, as an `ImageData`-shaped object `{widht, height, data}`. |
-| `image.decode` | boolean | `true`   | Applies to `html` type images only, ensures image is fully decoded before loading promise resolves.                         |
+| `image.decode` | boolean | `true`   | Applies to `image` type images only, ensures image is fully decoded before loading promise resolves.                         |
 
 ### ImageBitmap Options
 

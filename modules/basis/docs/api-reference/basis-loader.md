@@ -24,8 +24,7 @@ const image = await load(url, ImageLoader, options);
 
 | Option       | Type   | Default  | Description                                                                  |
 | ------------ | ------ | -------- | ---------------------------------------------------------------------------- |
-| `basis.type` | String | `'auto'` | Set to `imagebitmap`, `html` or `ndarray` to control type of returned image. |
-| `basis.type` | String | `'auto'` | Set to `imagebitmap`, `html` or `ndarray` to control type of returned image. |
+| `basis.type` | String | `'auto'` | Set to `imagebitmap`, `image` or `ndarray` to control type of returned image. |
 
 ## Remarks
 

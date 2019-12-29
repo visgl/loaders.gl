@@ -1,8 +1,18 @@
-# Category: 3D Tiles
+# 3D Tiles Loaders
 
 > The 3D tiles category is still under development.
 
 The 3D Tiles category defines a generalized, slightly abstracted representation of hierarchical geospatial data structures.
+
+## 3D Tiles Category Loaders
+
+| Loader                | Notes |
+| --------------------- | ----- |
+| [`Tileset3DLoader`](modules/gltf/docs/api-reference/gltf-loader) | |
+| [`I3SLoader`](modules/i3s/docs/api-reference/i3s-loader) | |
+| [`PotreeLoader`](modules/potree/docs/api-reference/potree-loader) | |
+
+## Overview
 
 It is being defined to be able to represent the [OGC 3D Tiles](https://www.opengeospatial.org/standards/3DTiles) standard but is intended to be generalized and extended to handle the similar formats, potentially such as [OGC i3s](https://www.opengeospatial.org/standards/i3s) standard and the `potree` format as well.
 

@@ -1,6 +1,15 @@
-# Category: Scenegraph
+# Scenegraph Loaders
 
 The Scenegraph category is intended to represent glTF scenegraphs.
+
+## Loaders
+
+| Loader                | Notes |
+| --------------------- | ----- |
+| [`GLTFLoader`](modules/gltf/docs/api-reference/gltf-loader) | |
+| [`GLBLoader`](modules/gltf/docs/api-reference/glb-loader) | |
+
+## Data Format
 
 The data format is fairly raw, close to the unpacked glTF/GLB data structure, it is described by:
 
@@ -34,12 +43,3 @@ A JSON object with the following top-level fields:
 | `buffers` | `ArrayBuffer[]` | `[]`    | (glTF) The BIN chunk plus any base64 or BIN file buffers |
 
 Buffers can be objects in the shape of `{buffer, byteOffset, byteLength}`.
-
-## Loaders
-
-- [GLTFLoader](/docs/api-reference/gltf/gltf-loader)
-- [GLBLoader](/docs/api-reference/gltf/glb-loader)
-
-## Notes
-
-- [Tile3DLoader](/docs/api-reference/3d-tiles/tile-3d-loader) some tiles contain embedded glTF.
