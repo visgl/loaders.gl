@@ -2,7 +2,7 @@
 
 > The 3D tiles category is still under development.
 
-The 3D Tiles category defines a generalized, slightly abstracted representation of hierarchical geospatial data structures.
+The 3D Tiles category defines a generalized representation of hierarchical geospatial data structures.
 
 ## 3D Tiles Category Loaders
 
@@ -14,7 +14,10 @@ The 3D Tiles category defines a generalized, slightly abstracted representation 
 
 ## Overview
 
-It is being defined to be able to represent the [OGC 3D Tiles](https://www.opengeospatial.org/standards/3DTiles) standard but is intended to be generalized and extended to handle the similar formats, potentially such as [OGC i3s](https://www.opengeospatial.org/standards/i3s) standard and the `potree` format as well.
+The 3D Tiles category is can represent the 
+- [OGC 3D Tiles](https://www.opengeospatial.org/standards/3DTiles) standard
+- [OGC i3s](https://www.opengeospatial.org/standards/i3s) standard
+- `potree` format as well.
 
 ## Concepts
 
@@ -23,24 +26,7 @@ It is being defined to be able to represent the [OGC 3D Tiles](https://www.openg
 - **Tile Cache** - Since the number of tiles in big tilesets often exceed what can be loaded into available memory, it is important to have a system that releases no-longer visible tiles from memory.
 - **Tileset Traversal** - Dynamically loading and rendering 3D tiles based on current viewing position, possibly triggering loads of new tiles and unloading of older, no-longer visible tiles.
 
-## Tileset Traversal Support
-
-To start loading tiles once a top-level tileset file is loaded, the application can instantiate the `Tileset3D` class and start calling `tileset3D.traverse(camera_parameters)`.
-
-Since 3D tiled data sets tend to be very big, the key idea is to only load the tiles actually needed to show a view from the current camera position.
-
-The `Tileset3D` allows callbacks (`onTileLoad`, `onTileUnload`) to be registered that notify the app when the set of tiles available for rendering has changed. This is important because tile loads complete asynchronously, after the `tileset3D.traverse(...)` call has returned.
-
-## Coordinate Systems
-
-To help applications process the `position` data in the tiles, 3D Tiles category loaders are expected to provide matrices are provided to enable tiles to be used in both fixed frame or cartographic (long/lat-relative, east-north-up / ENU) coordinate systems:
-
-- _cartesian_ WGS84 fixed frame coordinates
-- _cartographic_ tile geometry positions to ENU meter offsets from `cartographicOrigin`.
-
-Position units in both cases are in meters.
-
-For cartographic coordinates, tiles come with a prechosen cartographic origin and precalculated model matrix. This cartographic origin is "arbitrary" (chosen based on the tiles bounding volume center). A different origin can be chosen and a transform can be calculated, e.g. using the math.gl `Ellipsoid` class.
+## Data Format
 
 ## Tileset Fields
 
@@ -57,8 +43,6 @@ For cartographic coordinates, tiles come with a prechosen cartographic origin an
 | Field            | Type     | Contents |
 | ---------------- | -------- | -------- |
 | `boundingVolume` | `Object` |          |
-
-## Tile Fields
 
 ### Common Fields
 
@@ -111,3 +95,27 @@ Following vis.gl conventions, `attributes` are represented by "glTF-style" acces
 | `size`           | No    | `Number`     | Number of components, `1`-`4`.                                                                                               |
 | `byteOffset`     | Yes   | `Number`     | Starting offset into the bufferView.                                                                                         |
 | `count`          | Yes   | `Number`     | The number of elements/vertices in the attribute data.                                                                       |
+
+
+## Helper Classes
+
+Tileset Traversal Support
+
+To start loading tiles once a top-level tileset file is loaded, the application can instantiate the `Tileset3D` class and start calling `tileset3D.traverse(camera_parameters)`.
+
+Since 3D tiled data sets tend to be very big, the key idea is to only load the tiles actually needed to show a view from the current camera position.
+
+The `Tileset3D` allows callbacks (`onTileLoad`, `onTileUnload`) to be registered that notify the app when the set of tiles available for rendering has changed. This is important because tile loads complete asynchronously, after the `tileset3D.traverse(...)` call has returned.
+
+## Additional Information
+
+### Coordinate Systems
+
+To help applications process the `position` data in the tiles, 3D Tiles category loaders are expected to provide matrices are provided to enable tiles to be used in both fixed frame or cartographic (long/lat-relative, east-north-up / ENU) coordinate systems:
+
+- _cartesian_ WGS84 fixed frame coordinates
+- _cartographic_ tile geometry positions to ENU meter offsets from `cartographicOrigin`.
+
+Position units in both cases are in meters.
+
+For cartographic coordinates, tiles come with a prechosen cartographic origin and precalculated model matrix. This cartographic origin is "arbitrary" (chosen based on the tiles bounding volume center). A different origin can be chosen and a transform can be calculated, e.g. using the math.gl `Ellipsoid` class.

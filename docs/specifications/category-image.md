@@ -10,29 +10,8 @@ The image loader category documents a common data format, options, conventions a
 | [`CompressedTextureLoader`](modules/basis/docs/api-reference/compressed-texture-loader)  | Parses compressed textures to image data mipmap array      |
 | [`BasisLoader`](modules/basis/docs/api-reference/basis-loader)           | Transpiles into supported compressed texture format      |
 
-## Features and Capabilities
-
-A set of image loaders that integrate with loaders.gl
-
-- Works under both node and browser.
-- Loads images on workers (on supporting browsers)
-- Uses ImageBitmap (on supporting browsers)
-- Handles SVG images
-- Image type detection (without loading images)
-
-## Installation
-
 Core image category support is provided by the `@loaders.gl/images` module:
 
-```bash
-npm install @loaders.gl/core @loaders.gl/images
-```
-
-Note that `@loaders.gl/polyfills` must be installed and imported to to enable loading images under node.js.
-
-```bash
-npm install @loaders.gl/polyfills
-```
 
 ## Usage
 
@@ -56,35 +35,40 @@ registerLoaders(ImageLoader);
 const image = await load('image.jpeg');
 ```
 
-## Image Type
+## Image Types
 
-The image category referes to the type of the JavaScript object returned by the `ImageLoader` as the image _type_. It indicates which JavaScript class is used to represent the image. Note that this is not related to the "format" of the image (see below).
+Images can be loaded as image data or as opaque image objects (`Image` or `ImageBitmap`), and the image _type_ option can be used to control the type of image object produced by the `ImageLoader`. 
 
-The type of the loaded image will vary based on the environment. For performance, in the browser, the `ImageLoader` uses native image loading functionality in browsers, preferring `ImageBitmap` when available, falling back to  `Image` (aka `HTMLImageElement`).
+A loaded image can always be returned as an _image data_ object (an object containing a `Uint8Array` with the pixel data, and metadata like `width` and `height`, and in Node.js images are always loaded as image data objects).
 
-Additionally, a loaded image can optionally be returned as an _image data_ object (an object containing a `Uint8Array` with the pixel data, and some metadata like `width` and `height`. (In Node.js images are always loaded as image data objects).
+In the browser, the `ImageLoader` uses the browser's native image loading functionality, and if direct access to the image data is not required, it is more efficient to load data into an opaque image object. The `ImageLoader` prefers `ImageBitmap` when supported, falling back to  `Image` (aka `HTMLImageElement`) on older browsers.
+
+Note that _type_ is independent of the _format_ of the image (see below).
+
 
 | Image Type    | Class                           | Availability                           | Workers                | Description                                                                      |
 | ------------- | -------------------------------- | -------------------------------------- | ---------------------- | -------------------------------------------------------------------------------- |
-| `image`       | `Image` (aka `HTMLImageElement`) | All browsers                           | No                     | The traditional HTML/JavaScript class used for image loading into DOM trees. WebGL compatible. |
+| `data`   | Object with `{width: Number, height: Number, data: Uint8Array, ...}`                         | Node.js and browsers | No                     | Compatible with headless gl.                     |
 | `imagebitmap` | `ImageBitmap`                    | Chrome/Firefox                         | Yes: **transferrable** | A newer JavaScript class designed for efficient loading of images, optimized for use in worker threads and with  WebGL        |
-| `imagedata`   | Object with `{width: Number, height: Number, data: Uint8Array, ...}`                         | Node.js and browsers | No                     | Compatible with headless gl.                     |
+| `image`       | `Image` (aka `HTMLImageElement`) | All browsers                           | No                     | The traditional HTML/JavaScript class used for image loading into DOM trees. WebGL compatible. |
 
 ## Image Data
 
 Image data objects are images loaded as data, represented by an object that contains a typed array with the pixel data, size, and possibly additional metadata `{width: Number, height: Number, data: Uint8Array, ...}` 
 
-To get an image data object from a loaded `Image` or `ImageBitmap`, call `getImageData(image)`. To load an image data object directly, set the `image.type: 'imagedata'` option when loading the image.
+To get an image data object from a loaded `Image` or `ImageBitmap`, call `getImageData(image)`. To load an image data object directly, set the `image.type: 'data'` option when loading the image.
 
 ## Image Format
 
-The _format_ of the image describes how the memory is laid out. It is mainly important when working with `imagedata` objects. The default format for `imagedata` objects is `RGBA` and `UNSIGNED_BYTE` i.e. four components per pixel, each a byte.
+The _format_ of the image describes how the memory is laid out. It is mainly important when working with `data` _type_ images. The default format / memory layout for image data is `RGBA` and `UNSIGNED_BYTE` i.e. four components per pixel, each a byte.
 
-Some loaders may add additional fields to the image data structure to describe the data format. Currently there are no image category level conventions for how to describe alternate formats, however the preliminary recommendation is to follow OpenGL/WebGL conventions.
+Some loaders may add additional fields to the image data structure to describe the data format. Currently the image category does not provide any documentation for how to describe alternate formats/memory layouts, however a preliminary recommendation is to follow OpenGL/WebGL conventions.
 
 ## Compressed Images
 
-Compressed images are always returned as image data objects. They will have an additional field, `compressed: true`, indicating that the typed array in the `data` field contains compressed pixels and is not directly indexable. Applications that use e.g. the `CompressedTextureLoader` and/or the `BasisLoader` together with the `ImageLoader` can check this flag before indexing into the array.
+Compressed images are always returned as image data objects. They will have an additional field, `compressed: true`, indicating that the typed array in the `data` field contains compressed pixels and is not directly indexable. 
+
+Applications that use e.g. the `CompressedTextureLoader` and/or the `BasisLoader` together with the `ImageLoader` can check this flag before attempting to access the image data.
 
 ## Options
 
@@ -92,18 +76,14 @@ The image category support some generic options (specified using `options.image.
 
 | Option                      | Default       | Type    | Availability   | Description                                     |
 | --------------------------- | ------------- | ------- | -------------- | ----------------------------------------------- |
-| `options.image.type`        | `'auto'`      | string  | See table      | One of `auto`, `imagebitmap`, `html`, `ndarray` |
+| `options.image.type`        | `'auto'`      | string  | See table      | One of `auto`, `data`, `imagebitmap`, `image` |
 | `options.image.decodeHTML`  | `true`        | boolean | No: Edge, IE11 | Wait for HTMLImages to be fully decoded.        |
-| `options.image.crossOrigin` | `'anonymous'` | boolean | All Browsers   | Sets `crossOrigin` field for HTMLImage loads    |
 
 ## Notes
 
 ### About worker loading
 
-- Worker loading is only supported for the `imagebitmap` format (on Chrome and Firefox).
-- `ImageBitmap` is **transferrable** and can be moved back to main thread without copying.
-
-Since image worker loading is only available on some browsers, the `ImageLoader` dynamically determines if worker loading is available. Use `options.worker: false` to disable worker loading of images.
+Worker loading is only supported for the `data` and `imagebitmap` formats. Since image worker loading is only available on some browsers (Chrome and Firefox), the `ImageLoader` dynamically determines if worker loading is available. Use `options.worker: false` to disable worker loading of images.
 
 ## Image API
 

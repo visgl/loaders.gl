@@ -54,6 +54,8 @@
       "title": "Loader Catalog",
       "entries": [
         {"entry": "modules/arrow/docs/api-reference/arrow-loader"},
+        {"entry": "modules/basis/docs/api-reference/basis-loader"},
+        {"entry": "modules/basis/docs/api-reference/compressed-texture-loader"},
         {"entry": "modules/csv/docs/api-reference/csv-loader"},
         {"entry": "modules/draco/docs/api-reference/draco-loader"},
         {"entry": "modules/draco/docs/api-reference/draco-writer"},
@@ -112,6 +114,12 @@
           "title": "@loaders.gl/arrow",
           "entries": [
             {"entry": "modules/arrow/docs"}
+          ]
+        },
+        {
+          "title": "@loaders.gl/basis",
+          "entries": [
+            {"entry": "modules/basis/docs"}
           ]
         },
         {

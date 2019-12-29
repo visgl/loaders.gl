@@ -1,6 +1,6 @@
 # Table Loaders
 
-This category provides a set of conventions for working with tables in row-based, columnar or chunked/batched columnar formats.
+The _table_ category loaders supports loading tables in _row-based_, _columnar_ or _batched columnar_ formats.
 
 ## Table Category Loaders
 
