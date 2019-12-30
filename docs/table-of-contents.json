@@ -40,9 +40,22 @@
       ]
     },
     {
+      "title": "Loader Categories",
+      "entries": [
+        {"entry": "docs/specifications/category-table"},
+        {"entry": "docs/specifications/category-image"},
+        {"entry": "docs/specifications/category-gis"},
+        {"entry": "docs/specifications/category-mesh"},
+        {"entry": "docs/specifications/category-scenegraph"},
+        {"entry": "docs/specifications/category-3d-tiles"}
+      ]
+    },
+    {
       "title": "Loader Catalog",
       "entries": [
         {"entry": "modules/arrow/docs/api-reference/arrow-loader"},
+        {"entry": "modules/basis/docs/api-reference/basis-loader"},
+        {"entry": "modules/basis/docs/api-reference/compressed-texture-loader"},
         {"entry": "modules/csv/docs/api-reference/csv-loader"},
         {"entry": "modules/draco/docs/api-reference/draco-loader"},
         {"entry": "modules/draco/docs/api-reference/draco-writer"},
@@ -99,6 +112,12 @@
           "title": "@loaders.gl/arrow",
           "entries": [
             {"entry": "modules/arrow/docs"}
+          ]
+        },
+        {
+          "title": "@loaders.gl/basis",
+          "entries": [
+            {"entry": "modules/basis/docs"}
           ]
         },
         {
@@ -177,17 +196,6 @@
           "title": "@loaders.gl/zip",
           "entries": [
             {"entry": "modules/zip/docs"}
-          ]
-        },
-
-        {
-          "title": "Loader Categories",
-          "entries": [
-            {"entry": "docs/specifications/category-mesh"},
-            {"entry": "docs/specifications/category-table"},
-            {"entry": "docs/specifications/category-scenegraph"},
-            {"entry": "docs/specifications/category-3d-tiles"},
-            {"entry": "docs/specifications/category-gis"}
           ]
         }
       ]
