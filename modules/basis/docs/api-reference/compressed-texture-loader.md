@@ -4,13 +4,13 @@
 
 Loader for compressed Texture Files in the PVR file format
 
-| Loader         | Characteristic                                             |
-| -------------- | ---------------------------------------------------------- |
-| File Format    | [PVR](http://cdn.imgtec.com/sdk-documentation/PVR+File+Format.Specification.pdf)                                         |
-| File Extension | `.dds`, `.pvr`                                             |
-| File Type      | Binary                                                     |
-| Data Format    | Array of compressed image data objects |
-| Supported APIs | `load`, `parse`                                            |
+| Loader         | Characteristic                                                                   |
+| -------------- | -------------------------------------------------------------------------------- |
+| File Format    | [PVR](http://cdn.imgtec.com/sdk-documentation/PVR+File+Format.Specification.pdf) |
+| File Extension | `.dds`, `.pvr`                                                                   |
+| File Type      | Binary                                                                           |
+| Data Format    | Array of compressed image data objects                                           |
+| Supported APIs | `load`, `parse`                                                                  |
 
 ## Usage
 
@@ -32,6 +32,6 @@ Returns an array of image objects representing mip levels.
 
 ## Options
 
-| Option       | Type   | Default  | Description                                                                  |
-| ------------ | ------ | -------- | ---------------------------------------------------------------------------- |
-| N/A |   |  |  |
+| Option | Type | Default | Description |
+| ------ | ---- | ------- | ----------- |
+| N/A    |      |         |             |

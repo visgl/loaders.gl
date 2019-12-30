@@ -10,7 +10,7 @@ The `ArrowLoader` parses the Apache Arrow columnar table format.
 | File Extension        | `.arrow`                                                                  |
 | File Type             | Binary                                                                    |
 | Data Format           | [Columnar Table](/docs/specifications/category-table)                     |
-| Decoder Type          | `load`, `parse`, `parseSync`, `parseInBatches`                                                        |
+| Decoder Type          | `load`, `parse`, `parseSync`, `parseInBatches`                            |
 | Worker Thread Support | Yes                                                                       |
 | Streaming Support     | Yes                                                                       |
 

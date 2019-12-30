@@ -24,7 +24,7 @@ Some general changes:
 
 | Removal             | Replacement                                               |
 | ------------------- | --------------------------------------------------------- |
-| `ImageHTMLLoader`   | `ImageLoader` with `options.images.format: 'image'`        |
+| `ImageHTMLLoader`   | `ImageLoader` with `options.images.format: 'image'`       |
 | `ImageBitmapLoader` | `ImageLoader` with `options.images.format: 'imagebitmap'` |
 | `decodeImage`       | `parse(arrayBuffer, ImageLoader)`                         |
 | `isImage`           | `isBinaryImage`                                           |

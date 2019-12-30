@@ -4,11 +4,11 @@ The _table_ category loaders supports loading tables in _row-based_, _columnar_ 
 
 ## Table Category Loaders
 
-| Loader                | Notes |
-| --------------------- | ----- |
-| [`ArrowLoader`](modules/arrow/docs/api-reference/arrow-loader) | |
-| [`CSVLoader`](modules/csv/docs/api-reference/csv-loader) | |
-| [`JSONLoader`](modules/json/docs/api-reference/json-loader) | Set `options.json.table` to `true` |
+| Loader                                                         | Notes                              |
+| -------------------------------------------------------------- | ---------------------------------- |
+| [`ArrowLoader`](modules/arrow/docs/api-reference/arrow-loader) |                                    |
+| [`CSVLoader`](modules/csv/docs/api-reference/csv-loader)       |                                    |
+| [`JSONLoader`](modules/json/docs/api-reference/json-loader)    | Set `options.json.table` to `true` |
 
 ## Data Structure
 
@@ -43,4 +43,3 @@ A problem with columnar tables is that column arrays they can get very long, cau
 The down-side is that complexity can increase quickly. Data Frames are optimized to minimize the amount of copying/moving/reallocation of data during common operations such e.g. loading and transformations, and support zero-cost filtering through smart iterators etc.
 
 Using the Arrow API it is possible to work extremely efficiently with very large (multi-gigabyte) datasets.
-

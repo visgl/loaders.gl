@@ -6,15 +6,16 @@ The 3D Tiles category defines a generalized representation of hierarchical geosp
 
 ## 3D Tiles Category Loaders
 
-| Loader                | Notes |
-| --------------------- | ----- |
-| [`Tileset3DLoader`](modules/gltf/docs/api-reference/gltf-loader) | |
-| [`I3SLoader`](modules/i3s/docs/api-reference/i3s-loader) | |
-| [`PotreeLoader`](modules/potree/docs/api-reference/potree-loader) | |
+| Loader                                                            | Notes |
+| ----------------------------------------------------------------- | ----- |
+| [`Tileset3DLoader`](modules/gltf/docs/api-reference/gltf-loader)  |       |
+| [`I3SLoader`](modules/i3s/docs/api-reference/i3s-loader)          |       |
+| [`PotreeLoader`](modules/potree/docs/api-reference/potree-loader) |       |
 
 ## Overview
 
-The 3D Tiles category is can represent the 
+The 3D Tiles category is can represent the
+
 - [OGC 3D Tiles](https://www.opengeospatial.org/standards/3DTiles) standard
 - [OGC i3s](https://www.opengeospatial.org/standards/i3s) standard
 - `potree` format as well.
@@ -95,7 +96,6 @@ Following vis.gl conventions, `attributes` are represented by "glTF-style" acces
 | `size`           | No    | `Number`     | Number of components, `1`-`4`.                                                                                               |
 | `byteOffset`     | Yes   | `Number`     | Starting offset into the bufferView.                                                                                         |
 | `count`          | Yes   | `Number`     | The number of elements/vertices in the attribute data.                                                                       |
-
 
 ## Helper Classes
 

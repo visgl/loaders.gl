@@ -6,10 +6,10 @@ Several geospatial formats return data in the form of lists of lng/lat encoded g
 
 ## Geospatial Category Loaders
 
-| Loader                | Notes |
-| --------------------- | ----- |
-| [`KMLLoader`](modules/kml/docs/api-reference/kml-loader) | |
-| [`WKTLoader`](modules/wkt/docs/api-reference/wkt-loader) | |
+| Loader                                                   | Notes |
+| -------------------------------------------------------- | ----- |
+| [`KMLLoader`](modules/kml/docs/api-reference/kml-loader) |       |
+| [`WKTLoader`](modules/wkt/docs/api-reference/wkt-loader) |       |
 
 ## Data Format
 
@@ -30,4 +30,3 @@ A JavaScript object with a number of top-level array-valued fields:
 ### GeoJSON Conversion
 
 Geospatial category data can be converted to GeoJSON (sometimes with a loss of information). Most geospatial applications can consume geojson.
-

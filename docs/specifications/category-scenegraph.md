@@ -4,10 +4,10 @@ The Scenegraph category is intended to represent glTF scenegraphs.
 
 ## Loaders
 
-| Loader                | Notes |
-| --------------------- | ----- |
-| [`GLTFLoader`](modules/gltf/docs/api-reference/gltf-loader) | |
-| [`GLBLoader`](modules/gltf/docs/api-reference/glb-loader) | |
+| Loader                                                      | Notes |
+| ----------------------------------------------------------- | ----- |
+| [`GLTFLoader`](modules/gltf/docs/api-reference/gltf-loader) |       |
+| [`GLBLoader`](modules/gltf/docs/api-reference/glb-loader)   |       |
 
 ## Data Format
 
@@ -40,7 +40,7 @@ To simplify higher-level processing of the loaded, raw glTF data, several helper
 
 ## Non-glTF Scenegraphs
 
-The scenegraph "category" was created specifically for the `glTF` format, and there are no plans to support other scenegraph formats in loaders.gl (as such formats tend to have large and complex specifications with many edge cases). 
+The scenegraph "category" was created specifically for the `glTF` format, and there are no plans to support other scenegraph formats in loaders.gl (as such formats tend to have large and complex specifications with many edge cases).
 
 Therefore, the current recommendation is to first convert scenegraph files in other formats to glTF with external tools before loading them using loaders.gl.
 
