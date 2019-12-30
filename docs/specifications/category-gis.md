@@ -1,12 +1,17 @@
-# Category: GIS
+# Geospatial Loaders
 
-> The GIS category is highly experimental and may be removed in a future release
+> The Geospatial category is experimental
 
 Several geospatial formats return data in the form of lists of lng/lat encoded geometric objects.
 
-## GeoJSON Conversion
+## Geospatial Category Loaders
 
-GIS category data can be converted to GeoJSON (sometimes with a loss of information). Most geospatial applications can consume geojson.
+| Loader                                                   | Notes |
+| -------------------------------------------------------- | ----- |
+| [`KMLLoader`](modules/kml/docs/api-reference/kml-loader) |       |
+| [`WKTLoader`](modules/wkt/docs/api-reference/wkt-loader) |       |
+
+## Data Format
 
 ## Data Structure
 
@@ -22,6 +27,6 @@ A JavaScript object with a number of top-level array-valued fields:
 | `folders`       |                                                      |
 | `links`         |                                                      |
 
-## Loaders
+### GeoJSON Conversion
 
-- [KMLLoader](/docs/api-reference/kml/kml-loader)
+Geospatial category data can be converted to GeoJSON (sometimes with a loss of information). Most geospatial applications can consume geojson.

@@ -1,10 +1,20 @@
-# Category: Mesh/PointCloud
+# Mesh and PointCloud Loaders
 
-This category unifies the loader output for simple mesh and point clouds formats that describe a "single geometry primitive" (as opposed to e.g. a scenegraph consisting of multiple geometries).
+The _mesh and pointcloud_ loader category is intended for simpler mesh and point clouds formats that describe a "single geometry primitive" (as opposed to e.g. a scenegraph consisting of a hierarchy of multiple geometries).
+
+## Mesh/PointCloud Category Loaders
+
+| Loader                                                         | Notes |
+| -------------------------------------------------------------- | ----- |
+| [`DracoLoader`](modules/draco/docs/api-reference/draco-loader) |       |
+| [`LASLoader`](modules/las/docs/api-reference/las-loader)       |       |
+| [`OBJLoader`](modules/obj/docs/api-reference/obj-loader)       |       |
+| [`PCDLoader`](modules/pcd/docs/api-reference/pcd-loader)       |       |
+| [`PLYLoader`](modules/ply/docs/api-reference/ply-loader)       |       |
+
+## Data Format
 
 A single mesh is typically defined by a set of attributes, such as `positions`, `colors`, `normals` etc, as well as a draw mode.
-
-## Format Notes
 
 The Pointcloud/Mesh loaders output mesh data in a common form that is optimized for use in WebGL frameworks:
 
@@ -13,8 +23,6 @@ The Pointcloud/Mesh loaders output mesh data in a common form that is optimized 
 - Attribute names are mapped to glTF attribute names (on a best-effort basis).
 - An `indices` field is added (only if present in the loaded geometry).
 - A primitive drawing `mode` value is added (the numeric value matches WebGL constants, e.g `GL.TRIANGLES`).
-
-## Data Structure
 
 | Field        | Type                | Contents                                                                                                    |
 | ------------ | ------------------- | ----------------------------------------------------------------------------------------------------------- |
@@ -81,19 +89,8 @@ When a loader can map an attribute name, it will replace ir with the glTF equiva
 
 ### Scenegraph support
 
-For more complex, scenegraph-type formats (i.e. formats that don't just contain single geometric primitives), loaders.gl currently focuses on glTF 2.0 support.
-
-It is assumed that other scenegraph-type format loaders (e.g. a hyptothetical COLLADA loader) could convert their loaded data to a similar structure, essentially converting to glTF 2.0 on-the-fly as they load.
-
-For now it is best to convert such assets off-line to glTF before attempting to loade them with loaders.gl.
+For more complex, scenegraph-type formats (i.e. formats that contain multiple geometric primitives), loaders.gl provides glTF 2.0 support via the `GLTFLoader`.
 
 ### Material support
 
 Material support is provided by some mesh formats (e.g. OBJ/MTL) and is currently not implemented by loaders.gl, however the glTF loader has full support for PBR (Physically-Based Rendering) materials.
-
-## Loaders
-
-- [LASLoader](/docs/api-reference/las/las-loader)
-- [OBJLoader](/docs/api-reference/obj/obj-loader)
-- [PCDLoader](/docs/api-reference/pcd/pcd-loader)
-- [PLYLoader](/docs/api-reference/ply/ply-loader)

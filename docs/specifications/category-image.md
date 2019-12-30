@@ -1,38 +1,23 @@
-# Category: Image
+# Image Loaders
 
-The image category documents a common data format, options, conventions and utilities for loader and writers for images that follow loaders.gl conventions.
+The image loader category documents a common data format, options, conventions and utilities for loader and writers for images that follow loaders.gl conventions.
 
-Participating Loaders
+## Image Category Loaders
 
-| Loader                | Notes |
-| --------------------- | ----- |
-| ImageLoader           |       |
-| CompressedImageLoader |       |
-| BasisLoader           |       |
-
-## Features and Capabilities
-
-Apart from providing a set of image loaders that integrate with loaders.gl, there are a number of capabilities that are provided for
-
-- Worka under both node and browser.
-- Transparently uses ImageBitmap on supporting browsers
-- Loads images on workers
-- Handles SVG images
-- Image type detection (without loading images)
-
-## Installation
+| Loader                                                                                  | Notes                                                 |
+| --------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| [`ImageLoader`](modules/images/docs/api-reference/image-loader)                         | Loads compressed images (PNG, JPG, etc)               |
+| [`CompressedTextureLoader`](modules/basis/docs/api-reference/compressed-texture-loader) | Parses compressed textures to image data mipmap array |
+| [`BasisLoader`](modules/basis/docs/api-reference/basis-loader)                          | Transpiles into supported compressed texture format   |
 
 Core image category support is provided by the `@loaders.gl/images` module:
-
-```bash
-npm install @loaders.gl/core @loaders.gl/images
-```
 
 ## Usage
 
 Individual loaders for specific image formats can be imported for `@loaders.gl/images`:
 
 ```js
+import '@loaders.gl/polyfills'; // Only required if loading images under Node.js
 import {ImageLoader} from '@loaders.gl/images';
 import {registerLoaders, load} from '@loaders.gl/core';
 registerLoaders(ImageLoader);
@@ -42,40 +27,61 @@ const image = await load('image.jpeg');
 However since each image loader is quite small (in terms of code size and bundle size impact), most applications will just install all image loaders in one go:
 
 ```js
+import '@loaders.gl/polyfills'; // Only required if loading images under Node.js
 import {ImageLoaders} from '@loaders.gl/images';
 import {registerLoader, load} from '@loaders.gl/core';
 registerLoaders(ImageLoader);
 const image = await load('image.jpeg');
 ```
 
-## Data Formats
+## Image Types
 
-The loaded image representation can vary somewhat based on your environment. For performance, image loaders use native image loading functionality in browsers. Browsers can load into two types of image classes (`ImageBitmap` and `HTMLImageElement`) and on Node.js images are represented using `ndarray`. The following table summarizes the situation:
+Images can be loaded as image data or as opaque image objects (`Image` or `ImageBitmap`), and the image _type_ option can be used to control the type of image object produced by the `ImageLoader`.
 
-| Format Name   | Format                           | Availability                           | Workers                | Description                                                                      |
-| ------------- | -------------------------------- | -------------------------------------- | ---------------------- | -------------------------------------------------------------------------------- |
-| `imagebitmap` | `ImageBitmap`                    | Chrome/Firefox                         | Yes: **transferrable** | A newer class designed for efficient loading of images for use with WebGL        |
-| `html`        | `Image` (aka `HTMLImageElement`) | All browsers                           | No                     | The original HTML class used for image loading into DOM trees. WebGL compatible. |
-| `ndarray`     | ndarray                          | Node only, via `@loaders.gl/polyfills` | No                     | Used to load images under node. Compatible with headless gl.                     |
+A loaded image can always be returned as an _image data_ object (an object containing a `Uint8Array` with the pixel data, and metadata like `width` and `height`, and in Node.js images are always loaded as image data objects).
+
+In the browser, the `ImageLoader` uses the browser's native image loading functionality, and if direct access to the image data is not required, it is more efficient to load data into an opaque image object. The `ImageLoader` prefers `ImageBitmap` when supported, falling back to `Image` (aka `HTMLImageElement`) on older browsers.
+
+Note that _type_ is independent of the _format_ of the image (see below).
+
+| Image Type    | Class                                                                | Availability         | Workers                | Description                                                                                                           |
+| ------------- | -------------------------------------------------------------------- | -------------------- | ---------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `data`        | Object with `{width: Number, height: Number, data: Uint8Array, ...}` | Node.js and browsers | No                     | Compatible with headless gl.                                                                                          |
+| `imagebitmap` | `ImageBitmap`                                                        | Chrome/Firefox       | Yes: **transferrable** | A newer JavaScript class designed for efficient loading of images, optimized for use in worker threads and with WebGL |
+| `image`       | `Image` (aka `HTMLImageElement`)                                     | All browsers         | No                     | The traditional HTML/JavaScript class used for image loading into DOM trees. WebGL compatible.                        |
+
+## Image Data
+
+Image data objects are images loaded as data, represented by an object that contains a typed array with the pixel data, size, and possibly additional metadata `{width: Number, height: Number, data: Uint8Array, ...}`
+
+To get an image data object from a loaded `Image` or `ImageBitmap`, call `getImageData(image)`. To load an image data object directly, set the `image.type: 'data'` option when loading the image.
+
+## Image Format
+
+The _format_ of the image describes how the memory is laid out. It is mainly important when working with `data` _type_ images. The default format / memory layout for image data is `RGBA` and `UNSIGNED_BYTE` i.e. four components per pixel, each a byte.
+
+Some loaders may add additional fields to the image data structure to describe the data format. Currently the image category does not provide any documentation for how to describe alternate formats/memory layouts, however a preliminary recommendation is to follow OpenGL/WebGL conventions.
+
+## Compressed Images
+
+Compressed images are always returned as image data objects. They will have an additional field, `compressed: true`, indicating that the typed array in the `data` field contains compressed pixels and is not directly indexable.
+
+Applications that use e.g. the `CompressedTextureLoader` and/or the `BasisLoader` together with the `ImageLoader` can check this flag before attempting to access the image data.
 
 ## Options
 
 The image category support some generic options (specified using `options.image.<option-name>`), that are applicable to all (or most) image loaders.
 
-| Option                      | Default       | Type    | Availability   | Description                                     |
-| --------------------------- | ------------- | ------- | -------------- | ----------------------------------------------- |
-| `options.image.type`        | `'auto'`      | string  | See table      | One of `auto`, `imagebitmap`, `html`, `ndarray` |
-| `options.image.decodeHTML`  | `true`        | boolean | No: Edge, IE11 | Wait for HTMLImages to be fully decoded.        |
-| `options.image.crossOrigin` | `'anonymous'` | boolean | All Browsers   | Sets `crossOrigin` field for HTMLImage loads    |
+| Option                     | Default  | Type    | Availability   | Description                                   |
+| -------------------------- | -------- | ------- | -------------- | --------------------------------------------- |
+| `options.image.type`       | `'auto'` | string  | See table      | One of `auto`, `data`, `imagebitmap`, `image` |
+| `options.image.decodeHTML` | `true`   | boolean | No: Edge, IE11 | Wait for HTMLImages to be fully decoded.      |
 
 ## Notes
 
 ### About worker loading
 
-- Worker loading is only supported for the `imagebitmap` format (on Chrome and Firefox).
-- `ImageBitmap` is **transferrable** and can be moved back to main thread without copying.
-
-Since image worker loading is only available on some browsers, the `ImageLoader` dynamically determines if worker loading is available. Use `options.worker: false` to disable worker loading of images.
+Worker loading is only supported for the `data` and `imagebitmap` formats. Since image worker loading is only available on some browsers (Chrome and Firefox), the `ImageLoader` dynamically determines if worker loading is available. Use `options.worker: false` to disable worker loading of images.
 
 ## Image API
 
@@ -83,3 +89,13 @@ The image category also provides a few utilities:
 
 - Detecting ("sniffing") mime type and size of image files before parsing them
 - Getting image data (arrays of pixels) from an image without knowing which type was loaded (TBA)
+
+## Remarks
+
+- image data objects have the same fields as the browser's built-in `ImageData` class, but are not actual instances of `ImageData`. It is however easy to create an `ImageData` instance from an image data object:
+
+```js
+const imageData = new ImageData(imagedata.data, imagedata.width, imagedata.height);
+```
+
+Note that this assumes its image _format_ is the default 8-bit RGBA.

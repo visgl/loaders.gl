@@ -1,26 +1,20 @@
-# Category: Scenegraph
+# Scenegraph Loaders
 
 The Scenegraph category is intended to represent glTF scenegraphs.
+
+## Loaders
+
+| Loader                                                      | Notes |
+| ----------------------------------------------------------- | ----- |
+| [`GLTFLoader`](modules/gltf/docs/api-reference/gltf-loader) |       |
+| [`GLBLoader`](modules/gltf/docs/api-reference/glb-loader)   |       |
+
+## Data Format
 
 The data format is fairly raw, close to the unpacked glTF/GLB data structure, it is described by:
 
 - a parsed JSON object (with top level arrays for `scenes`, `nodes` etc)
 - a list of `ArrayBuffer`s representing binary blocks (into which `bufferViews` and `images` in the JSON point).
-
-## Helper Classes
-
-To simplify higher-level processing of the loaded, raw glTF data, several helper classes are provided in the `@loaders.gl/gltf` module, these can:
-
-- unpack and remove certain glTF extensions
-- extract typed array views from the JSON objects into the binary buffers
-- create HTML images from image buffers
-- etc
-
-## Non-glTF Scenegraphs
-
-The scenegraph "category" is quite specific glTF, and there are no plans to support other scenegraph formats in loaders.gl. Therefore, the current recommendation is to convert scenegraph files to glTF with external tools before loading them using loaders.gl.
-
-That said, hypothetical new loaders for other scenegraph formats (e.g. a COLLADA loader) could potentially choose to belong to the Scenegraph category by "converting" the loaded data to this glTF format (and thus enable interoperability with applications that are already designed to use the `GLTFLoader`).
 
 ## Data Structure
 
@@ -35,11 +29,19 @@ A JSON object with the following top-level fields:
 
 Buffers can be objects in the shape of `{buffer, byteOffset, byteLength}`.
 
-## Loaders
+## Helper Classes
 
-- [GLTFLoader](/docs/api-reference/gltf/gltf-loader)
-- [GLBLoader](/docs/api-reference/gltf/glb-loader)
+To simplify higher-level processing of the loaded, raw glTF data, several helper classes are provided in the `@loaders.gl/gltf` module, these can:
 
-## Notes
+- unpack and remove certain glTF extensions
+- extract typed array views from the JSON objects into the binary buffers
+- create HTML images from image buffers
+- etc
 
-- [Tile3DLoader](/docs/api-reference/3d-tiles/tile-3d-loader) some tiles contain embedded glTF.
+## Non-glTF Scenegraphs
+
+The scenegraph "category" was created specifically for the `glTF` format, and there are no plans to support other scenegraph formats in loaders.gl (as such formats tend to have large and complex specifications with many edge cases).
+
+Therefore, the current recommendation is to first convert scenegraph files in other formats to glTF with external tools before loading them using loaders.gl.
+
+That said, hypothetical new loaders for other scenegraph formats (e.g. a COLLADA loader) could potentially choose to belong to the Scenegraph category by "converting" loaded data to the format described on this page. It would thus enable interoperability with applications that are already designed to use the `GLTFLoader`).
