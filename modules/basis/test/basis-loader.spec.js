@@ -1,60 +1,55 @@
 import test from 'tape-promise/tape';
 
 import {BasisLoader} from '@loaders.gl/basis';
+import {load} from '@loaders.gl/core';
 
-// import {isBrowser, load} from '@loaders.gl/core';
-// import {TEST_CASES, DATA_URL} from './lib/test-cases';
-// const TEST_URL = '@loaders.gl/images/test/data/img1-preview.png';
+const TEST_URL = '@loaders.gl/basis/test/data/alpha3.basis';
 
 test('BasisLoader#imports', t => {
   t.ok(BasisLoader, 'BasisLoader defined');
   t.end();
 });
 
-/*
-test('BasisLoader#load(URL)', async t => {
-  const image = await load(TEST_URL, BasisLoader);
+test('BasisLoader#load(URL, worker: false)', async t => {
+  const images = await load(TEST_URL, BasisLoader, {worker: false});
+
+  const image = images[0][0];
+
   t.ok(image, 'image loaded successfully from URL');
-  t.end();
-});
 
-test('BasisLoader#load(data URL)', async t => {
-  const image = await load(DATA_URL, BasisLoader);
-  t.ok(image, 'image loaded successfully from data URL');
+  t.equals(image.width, 768, 'image width is correct');
+  t.equals(image.height, 512, 'image height is correct');
+  t.equals(image.compressed, false, 'image height is correct');
 
-  t.deepEquals(image.width, 2, 'image width is correct');
-  t.deepEquals(image.height, 2, 'image height is correct');
-  if (!isBrowser) {
-    t.ok(ArrayBuffer.isView(image.data), 'image data is `ArrayBuffer`');
-    t.equals(image.data.byteLength, 16, 'image `data.byteLength` is correct');
-  }
+  t.ok(ArrayBuffer.isView(image.data), 'image data is `ArrayBuffer`');
+  t.equals(image.data.byteLength, 786432, 'image `data.byteLength` is correct');
 
   t.end();
 });
 
-test('BasisLoader#formats', async t => {
-  for (const testCase of TEST_CASES) {
-    await testLoadImage(t, testCase);
-  }
+test('BasisLoader#load(URL, worker: true)', async t => {
+  const images = await load(TEST_URL, BasisLoader, {worker: true});
+
+  const image = images[0][0];
+
+  t.ok(image, 'image loaded successfully from URL');
+
+  t.equals(image.width, 768, 'image width is correct');
+  t.equals(image.height, 512, 'image height is correct');
+  t.equals(image.compressed, false, 'image height is correct');
+
+  t.ok(ArrayBuffer.isView(image.data), 'image data is `ArrayBuffer`');
+  t.equals(image.data.byteLength, 786432, 'image `data.byteLength` is correct');
+
   t.end();
 });
 
-async function testLoadImage(t, testCase) {
-  const {title, url, width, height, skip} = testCase;
-
-  // Skip some test cases under Node.js
-  if (skip) {
-    return;
-  }
-
-  const image = await load(url, BasisLoader);
-  t.ok(image, `${title} loaded ${url.slice(0, 40)}...`);
-  const imageSize = getImageSize(image);
-  t.ok(
-    imageSize.width === width && imageSize.height === height,
-    `${title} image has correct content ${url.slice(0, 30)}`
-  );
-}
+// test('BasisLoader#formats', async t => {
+//   for (const testCase of TEST_CASES) {
+//     await testLoadImage(t, testCase);
+//   }
+//   t.end();
+// });
 
 /*
 test('loadImage#worker', t => {
