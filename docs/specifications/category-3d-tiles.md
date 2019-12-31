@@ -1,6 +1,6 @@
 # 3D Tiles Loaders
 
-> The 3D tiles category is still under development.
+> The 3D tiles category is experimental.
 
 The 3D Tiles category defines a generalized representation of hierarchical geospatial data structures.
 
