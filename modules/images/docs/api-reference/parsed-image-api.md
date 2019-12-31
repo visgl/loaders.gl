@@ -1,12 +1,12 @@
-# Image Accessors
+# Image Utilities
 
-Unless specified via `options.type`, the actual JavaScript type of parsed images returned by the [`ImageLoader`](modules/images/docs/api-reference/image-loader.md) depends on whether you are running in a newer or older browser, or under Node.js.
+A small set of image utility functions functions intended to help write image handling code that works across platforms.
 
-To simplify writing cross-platform image handling code that is optimized on newer browsers and still works on older browsers and on Node.js, a set of image accessor functions are provided.
+Background: The image returned by the [`ImageLoader`](modules/images/docs/api-reference/image-loader.md) depends on the environment, i.e. whether the application is running in a new or old browser, or under Node.js.
 
 ## Usage
 
-To get width, height and pixel data from an image returned by the `ImageLoader` in a cross-platform way:
+E.g., the `getImageData` method enables the application to get width, height and pixel data from an image returned by the `ImageLoader` in a platform independent way:
 
 ```js
 import {ImageLoader, getImageSize, getImageData} from `@loaders.gl/images`;
@@ -14,9 +14,12 @@ import {load} from `@loaders.gl/core`;
 
 const image = await load(URL, ImageLoader);
 
-const {width, height} = getImageSize(image);
-const pixelArray = getImageData(image);
+// Get an image data object regardless of whether the image is already an `Image`, `ImageBitmap` or already an image data object
+const imageData = getImageData(image);
+console.log(imageData.width, imageData.height, imageData.data);
 ```
+
+## Functions
 
 ### isImageTypeSupported(type : string) : boolean
 
@@ -26,7 +29,7 @@ Returns `true` if `type` is one of the types that `@loaders.gl/images` can use o
 
 ### isImage(image : any) : boolean
 
-- `image`: value to test
+- `image`: An image returned by an image category loader, such as `ImageLoader`
 
 Returns `true` if `image` is one of the types that `@loaders.gl/images` can return.
 
@@ -34,7 +37,7 @@ Returns `true` if `image` is one of the types that `@loaders.gl/images` can retu
 
 Returns the type of an image. Can be used when loading images with the default setting of `options.type: 'auto'` to discover what type was actually returned.
 
-- `image`: value to test
+- `image`: An image returned by an image category loader, such as `ImageLoader`
 
 Returns
 
@@ -44,31 +47,21 @@ Throws
 
 - if `image` is not of a recognized type.
 
-| Type      | JavaScript Type                                         | Description                                        |
-| --------- | ------------------------------------------------------- | -------------------------------------------------- |
-| `bitmap`  | `ImageBitmap`                                           | The newer HTML5 image class (modern browsers only) |
-| `html`    | `Image` aka `HTMLImageElement`                          | The older, less flexible HTML image element        |
-| `ndarray` | `Object` of ndarray shape: `data`, `width`, `height` .. | Node.js representation                             |
+| Type          | JavaScript Type                                 | Description                                        |
+| ------------- | ----------------------------------------------- | -------------------------------------------------- |
+| `data`        | Image data object: `data`, `width`, `height` .. | Node.js representation                             |
+| `imagebitmap` | `ImageBitmap`                                   | The newer HTML5 image class (modern browsers only) |
+| `image`       | `Image` aka `HTMLImageElement`                  | The older, less flexible HTML image element        |
 
-### getImageSize(image : any) : Object
+### getImageData(image : any) : Object
 
-- `image`: an image instance
+- `image`: An image returned by an image category loader, such as `ImageLoader`
 
-Returns
+Returns and image data object with the following fields
 
-- And object `{widht, height}` describing the size of the image
-
-Throws
-
-- if `image` is not of a recognized type.
-
-### getImageData(image : any) : TypedArray
-
-- `image`: an image instance
-
-Returns
-
-- And typed array containing the pixels of the image
+- `data` typed array containing the pixels of the image
+- `width`
+- `height`
 
 Throws
 

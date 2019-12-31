@@ -1,6 +1,6 @@
 # Binary Image Utilities
 
-Allows extracting image format and size (dimensions) from binary images without parsing the full image, by reading format-specific headers in the encoded binary data (e.g. encoded JPEG or PNG images).
+Utilities to extract metadata such as image format and size (dimensions) from binary images without parsing the full image. Works by by looking for format-specific headers in the encoded binary data (e.g. encoded JPEG or PNG images).
 
 The format is reported using MIME types strings. Supported binary formats and their MIME types are:
 
@@ -14,7 +14,8 @@ The format is reported using MIME types strings. Supported binary formats and th
 ## Usage
 
 ```js
-const arrayBuffer = await fetchFile(imageUrl).then(response => response.arrayBuffer());
+const response = await fetchFile(imageUrl);
+const arrayBuffer = await response.arrayBuffer();
 
 const mimeType = getBinaryImageMIMEType(arrayBuffer);
 const {width, height} = getBinaryImageSize(arrayBuffer, mimeType);

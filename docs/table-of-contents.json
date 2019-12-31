@@ -149,9 +149,12 @@
           "entries": [
             {"entry": "modules/images/docs"},
             {"entry": "modules/images/docs/api-reference/load-image"},
-            {"entry": "modules/images/docs/api-reference/image-utilities"}
+            {"entry": "modules/images/docs/api-reference/load-image-array"},
+            {"entry": "modules/images/docs/api-reference/load-image-cube"},
+            {"entry": "modules/images/docs/api-reference/parsed-image-api"},
+            {"entry": "modules/images/docs/api-reference/binary-image-api"}
           ]
-        },
+        },  
         {
           "title": "@loaders.gl/json",
           "entries": [
