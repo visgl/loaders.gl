@@ -1,7 +1,7 @@
 /* global self, Image, Blob */
 
 // Parses html image from array buffer
-export default async function parseToHTMLImage(arrayBuffer, options) {
+export default async function parseToImage(arrayBuffer, options) {
   // Note: image parsing requires conversion to Blob (for createObjectURL).
   // Potentially inefficient for not using `response.blob()` (and for File / Blob inputs)...
   // But presumably not worth adding 'blob' flag to loader objects?
@@ -12,13 +12,13 @@ export default async function parseToHTMLImage(arrayBuffer, options) {
   const URL = self.URL || self.webkitURL;
   const objectUrl = URL.createObjectURL(blob);
   try {
-    return await loadToHTMLImage(objectUrl, options);
+    return await loadToImage(objectUrl, options);
   } finally {
     URL.revokeObjectURL(objectUrl);
   }
 }
 
-export async function loadToHTMLImage(url, options) {
+export async function loadToImage(url, options) {
   const image = new Image();
   image.src = url;
 

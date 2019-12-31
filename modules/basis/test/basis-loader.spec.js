@@ -40,10 +40,10 @@ test('BasisLoader#formats', async t => {
 });
 
 async function testLoadImage(t, testCase) {
-  const {title, url, width, height, skipUnderNode} = testCase;
+  const {title, url, width, height, skip} = testCase;
 
   // Skip some test cases under Node.js
-  if (!isBrowser && skipUnderNode) {
+  if (skip) {
     return;
   }
 
