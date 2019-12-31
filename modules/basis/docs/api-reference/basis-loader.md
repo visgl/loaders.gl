@@ -26,8 +26,8 @@ for (const compressedImage of miplevels) {
 
 ## Options
 
-| Option         | Type   | Default  | Description                                  |
-| -------------- | ------ | -------- | -------------------------------------------- |
+| Option         | Type   | Default  | Description                                             |
+| -------------- | ------ | -------- | ------------------------------------------------------- |
 | `basis.format` | String | `'auto'` | Set to one of the supported compressed texture formats. |
 
 ## Compressed Texture Formats
