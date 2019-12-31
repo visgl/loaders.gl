@@ -29,9 +29,9 @@ const ImageLoader = {
   options: {
     image: {
       format: 'auto',
-      decodeHTML: true // if format is HTML
+      decode: true // if format is HTML
     }
-    // imagebitmap: {}
+    // imagebitmap: {} - passes (platform dependent) parameters to ImageBitmap constructor
   }
 };
 

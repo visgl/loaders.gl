@@ -3,11 +3,9 @@ import test from 'tape-promise/tape';
 import {ImageLoader, getImageSize, isImageTypeSupported} from '@loaders.gl/images';
 import {isBrowser, load} from '@loaders.gl/core';
 
-import {TEST_CASES, DATA_URL} from './lib/test-cases';
+import {TEST_CASES, IMAGE_URL, IMAGE_DATA_URL} from './lib/test-cases';
 
 const TYPES = ['auto', 'imagebitmap', 'html', 'ndarray'].filter(isImageTypeSupported);
-
-const TEST_URL = '@loaders.gl/images/test/data/img1-preview.png';
 
 test('image loaders#imports', t => {
   t.ok(ImageLoader, 'ImageLoader defined');
@@ -15,11 +13,8 @@ test('image loaders#imports', t => {
 });
 
 test('ImageLoader#load(URL)', async t => {
-  let image = await load(TEST_URL, ImageLoader);
-  t.ok(image, 'image loaded successfully from URL');
-
   for (const type of TYPES) {
-    image = await load(TEST_URL, ImageLoader, {image: {type}});
+    const image = await load(IMAGE_URL, ImageLoader, {image: {type}});
     t.ok(image, 'image loaded successfully from URL');
   }
 
@@ -28,7 +23,7 @@ test('ImageLoader#load(URL)', async t => {
 
 test('ImageLoader#load(data URL)', async t => {
   for (const type of TYPES) {
-    const image = await load(DATA_URL, ImageLoader, {image: {type}});
+    const image = await load(IMAGE_DATA_URL, ImageLoader, {image: {type}});
     t.ok(image, 'image loaded successfully from data URL');
 
     t.deepEquals(image.width, 2, 'image width is correct');
@@ -49,10 +44,10 @@ test('ImageLoader#formats', async t => {
 });
 
 async function testLoadImage(t, testCase) {
-  const {title, url, width, height, skipUnderNode} = testCase;
+  const {title, url, width, height, skip} = testCase;
 
   // Skip some test cases under Node.js
-  if (!isBrowser && skipUnderNode) {
+  if (skip) {
     return;
   }
 
