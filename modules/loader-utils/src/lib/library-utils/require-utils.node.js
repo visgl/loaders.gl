@@ -11,6 +11,9 @@ import path from 'path';
 // This indirect function is provided because webpack will try to bundle `module.require`.
 // this file is not visible to webpack (it is excluded in the package.json "browser" field).
 export function requireFromFile(filename) {
+  if (filename.startsWith('http')) {
+    throw new Error(`require from remote script not supported in Node.js: ${filename}`);
+  }
   if (!filename.startsWith('/')) {
     filename = `${process.cwd()}/${filename}`;
   }
@@ -20,7 +23,8 @@ export function requireFromFile(filename) {
 // Dynamically require from string
 // - `code` - Required - Type: string - Module code.
 // - `filename` - Type: string - Default: '' - Optional filename.
-// - `options.appendPaths` Type: Array List of paths, that will be appended to module paths. Useful, when you want to be able require modules from these paths.
+// - `options.appendPaths` Type: Array List of paths, that will be appended to module paths.
+// Useful, when you want to be able require modules from these paths.
 // - `options.prependPaths` Type: Array Same as appendPaths, but paths will be prepended.
 export function requireFromString(code, filename = '', options = {}) {
   if (typeof filename === 'object') {

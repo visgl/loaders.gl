@@ -2,7 +2,7 @@
 
 > The `CompressedTextureLoader` is experimental
 
-Loader for compressed Texture Files in the PVR file format
+Loader for compressed textures in the PVR file format
 
 | Loader         | Characteristic                                                                   |
 | -------------- | -------------------------------------------------------------------------------- |
@@ -18,7 +18,7 @@ Loader for compressed Texture Files in the PVR file format
 import {CompressedTextureLoader} from '@loaders.gl/basis';
 import {load} from '@loaders.gl/core';
 
-const mipLevels = await load(url, CompressedTextureLoader, options);
+const mipLevels = await load(url, CompressedTextureLoader);
 for (const image of mipLevels) {
   ...
 }
@@ -26,9 +26,9 @@ for (const image of mipLevels) {
 
 ## Data Format
 
-Returns an array of image objects representing mip levels.
+Returns an array of image data objects representing mip levels.
 
-`{compressed: true, format, width, height, data}`
+`{compressed: true, format, width, height, data: ...}`
 
 ## Options
 
