@@ -6,7 +6,9 @@ loaders.gl is part of the [vis.gl](https://vis.gl) ecosystem, and frameworks lik
 
 ## Loaders
 
-| Loader Category | Description | 
+loaders.gl provides a wide selection of loaders organized into categories:
+
+| Category | Loaders | 
 | --- | --- |
 | [Table Loaders](docs/specifications/category-table) | Streaming tabular loaders for CSV, JSON, Arrow etc | 
 | [Image Loaders](docs/specifications/category-image) | Loaders for images, data textures, compressed textures, supercompressed textures (Basis), mipmapped arrays, cubemaps, binary image utilities and more. |
