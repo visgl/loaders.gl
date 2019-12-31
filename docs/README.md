@@ -8,14 +8,14 @@ loaders.gl is part of the [vis.gl](https://vis.gl) ecosystem, and frameworks lik
 
 loaders.gl provides a wide selection of loaders organized into categories:
 
-| Category | Loaders | 
-| --- | --- |
-| [Table Loaders](docs/specifications/category-table) | Streaming tabular loaders for CSV, JSON, Arrow etc | 
-| [Image Loaders](docs/specifications/category-image) | Loaders for images, data textures, compressed textures, supercompressed textures (Basis), mipmapped arrays, cubemaps, binary image utilities and more. |
-| [Pointcloud and Mesh Loaders](docs/specifications/mesh-category) | Loaders for point cloud and simple mesh formats such as Draco, LAS, PCD, PLY and OBJ | 
-| [Scenegraph Loaders](docs/specifications/category-scenegraph) | glTF loader |
-| [3D Tile Loaders](docs/specifications/category-3d-tiles) | Loaders for 3D tile formats such as 3D Tiles, I3S and potree |
-| [Geospatial Loaders](docs/specifications/category-gis) | Loaders for geospatial formats (beyond GeoJSON) such as KML, WKT etc. |
+| Category                                                         | Loaders                                                                                                                                                |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [Table Loaders](docs/specifications/category-table)              | Streaming tabular loaders for CSV, JSON, Arrow etc                                                                                                     |
+| [Image Loaders](docs/specifications/category-image)              | Loaders for images, data textures, compressed textures, supercompressed textures (Basis), mipmapped arrays, cubemaps, binary image utilities and more. |
+| [Pointcloud and Mesh Loaders](docs/specifications/mesh-category) | Loaders for point cloud and simple mesh formats such as Draco, LAS, PCD, PLY and OBJ                                                                   |
+| [Scenegraph Loaders](docs/specifications/category-scenegraph)    | glTF loader                                                                                                                                            |
+| [3D Tile Loaders](docs/specifications/category-3d-tiles)         | Loaders for 3D tile formats such as 3D Tiles, I3S and potree                                                                                           |
+| [Geospatial Loaders](docs/specifications/category-gis)           | Loaders for geospatial formats (beyond GeoJSON) such as KML, WKT etc.                                                                                  |
 
 ## Quick Code Example
 
