@@ -1,7 +1,5 @@
 import * as path from './lib/path/path';
 
-export const TEST = 1;
-
 // PATH
 export {path};
 
