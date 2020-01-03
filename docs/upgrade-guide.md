@@ -22,16 +22,15 @@ Some general changes:
 
 ### `@loaders.gl/images`
 
-| Removal               | Replacement                                               |
-| --------------------- | --------------------------------------------------------- |
-| `ImageHTMLLoader`     | `ImageLoader` with `options.images.format: 'image'`       |
-| `ImageBitmapLoader`   | `ImageLoader` with `options.images.format: 'imagebitmap'` |
-| `decodeImage`         | `parse(arrayBuffer, ImageLoader)`                         |
-| `isImage`             | `isBinaryImage`                                           |
-| `getDefaultImageType` | `getSupportedImageType`                                   |
-| `getImageMIMEType`    | `getBinaryImageMIMEType`                                  |
-| `getImageSize`        | `getBinaryImageSize`                                      |
-| `getImageMetadata`    | `getBinaryImageMIMEType` + `getBinaryImageSize`           |
+| Removal             | Replacement                                               |
+| ------------------- | --------------------------------------------------------- |
+| `ImageHTMLLoader`   | `ImageLoader` with `options.images.format: 'image'`       |
+| `ImageBitmapLoader` | `ImageLoader` with `options.images.format: 'imagebitmap'` |
+| `decodeImage`       | `parse(arrayBuffer, ImageLoader)`                         |
+| `isImage`           | `isBinaryImage`                                           |
+| `getImageMIMEType`  | `getBinaryImageMIMEType`                                  |
+| `getImageSize`      | `getBinaryImageSize`                                      |
+| `getImageMetadata`  | `getBinaryImageMIMEType` + `getBinaryImageSize`           |
 
 ### Loader Objects
 
