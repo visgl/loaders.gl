@@ -1,5 +1,5 @@
 import assert from '../utils/assert';
-import {isImageTypeSupported, getSupportedImageType} from '../parsed-image-api/image-type';
+import {isImageTypeSupported, getDefaultImageType} from '../parsed-image-api/image-type';
 
 import parseToNodeImage from './parse-to-node-image';
 import parseToImage from './parse-to-image';
@@ -47,7 +47,7 @@ function getImageOutputFormat(options = {}) {
       return type;
 
     case 'auto':
-      return getSupportedImageType();
+      return getDefaultImageType();
 
     default:
       // Note: isImageTypeSupported throws on unknown type

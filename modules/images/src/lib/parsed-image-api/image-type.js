@@ -23,7 +23,7 @@ export function isImageTypeSupported(type) {
 }
 
 // Returns the best loaders.gl image type supported on current run-time environment
-export function getSupportedImageType() {
+export function getDefaultImageType() {
   if (isImageTypeSupported('ndarray')) {
     return 'ndarray';
   }
