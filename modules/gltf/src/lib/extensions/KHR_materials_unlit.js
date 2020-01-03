@@ -33,7 +33,7 @@ export function encode(gltfData, options) {
       if (material.unlit) {
         delete material.unlit;
         gltfScenegraph.addObjectExtension(material, KHR_MATERIALS_UNLIT);
-        gltfScenegraph.addExtensions(KHR_MATERIALS_UNLIT);
+        gltfScenegraph.addExtension(KHR_MATERIALS_UNLIT);
       }
     }
   }
