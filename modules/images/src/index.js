@@ -2,7 +2,7 @@ export {default as ImageLoader} from './image-loader';
 export {default as ImageWriter} from './image-writer';
 
 // Parsed Image API
-export {isImageTypeSupported, getDefaultImageType} from './lib/parsed-image-api/image-type';
+export {isImageTypeSupported, getSupportedImageType} from './lib/parsed-image-api/image-type';
 export {
   isImage,
   getImageType,
@@ -34,9 +34,3 @@ export {
 
 // DEPRECATED
 export {default as HTMLImageLoader} from './image-loader';
-
-import {getDefaultImageType} from './lib/parsed-image-api/image-type';
-
-export function getSupportedImageType(imageType) {
-  return getDefaultImageType(imageType);
-}
