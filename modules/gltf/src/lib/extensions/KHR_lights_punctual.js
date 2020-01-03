@@ -33,7 +33,7 @@ export function encode(gltfData, options) {
   const {json} = gltfScenegraph;
 
   if (json.lights) {
-    const extension = gltfScenegraph.addExtensions(KHR_LIGHTS_PUNCTUAL);
+    const extension = gltfScenegraph.addExtension(KHR_LIGHTS_PUNCTUAL);
     assert(!extension.lights);
     extension.lights = json.lights;
     delete json.lights;
