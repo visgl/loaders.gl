@@ -28,7 +28,7 @@ Some general changes:
 | `ImageBitmapLoader`   | `ImageLoader` with `options.images.format: 'imagebitmap'` |
 | `decodeImage`         | `parse(arrayBuffer, ImageLoader)`                         |
 | `isImage`             | `isBinaryImage`                                           |
-| `getDefaultImageType` | `getSupportedImageType`                                           |
+| `getDefaultImageType` | `getSupportedImageType`                                   |
 | `getImageMIMEType`    | `getBinaryImageMIMEType`                                  |
 | `getImageSize`        | `getBinaryImageSize`                                      |
 | `getImageMetadata`    | `getBinaryImageMIMEType` + `getBinaryImageSize`           |
