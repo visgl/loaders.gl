@@ -2,6 +2,19 @@
 
 ### 2.0 Release
 
+#### v2.0.1
+
+- 3d-tiles: Fix encoding lighting extension (#604)
+- Fix @loaders.gl/image exports (#602)
+- fix loaders util browser field (#601)
+- basis: Add tests, improve options handling, clean up demo (#596)
+- images: prep diff for image data (#598)
+- polyfills: Add @babel/runtime (#594)
+- images: fix ImageBitmap loading, add benchmarks/tests (#590)
+- json: Add benchmark (+ fix existing benchmarks) (#584)
+- images: loadImage now calls resolvePath (#587)
+- Port getFrameState test from deck (#582)
+
 #### v2.0
 
 - Fix i3s example (#581)
