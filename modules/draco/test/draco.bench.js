@@ -1,5 +1,8 @@
-import {fetchFile, encode} from '@loaders.gl/core';
-import {DracoWriter} from '@loaders.gl/draco';
+import {fetchFile, parse, encode} from '@loaders.gl/core';
+import {DracoLoader, DracoWriter} from '@loaders.gl/draco';
+
+const POSITIONS_URL = '@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-positions.bin';
+const COLORS_URL = '@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-positions.bin';
 
 const OPTIONS = [
   {
@@ -13,15 +16,10 @@ const OPTIONS = [
 ];
 
 export default async function dracoBench(bench) {
-  bench = bench.group('Draco Encode/Decode');
-
-  let response = await fetchFile(
-    '@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-positions.bin'
-  );
+  let response = await fetchFile(POSITIONS_URL);
   const POSITIONS = await response.arrayBuffer();
-  response = await fetchFile(
-    '@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-positions.bin'
-  );
+
+  response = await fetchFile(COLORS_URL);
   const COLORS = await response.arrayBuffer();
 
   const attributes = {
@@ -29,22 +27,40 @@ export default async function dracoBench(bench) {
     COLORS: new Uint8ClampedArray(COLORS)
   };
 
+  const arrayBuffer = await encode(attributes, DracoWriter, {draco: {pointcloud: true}});
+
+  const pointCount = POSITIONS.byteLength / 12;
+
+  bench.group('Draco Decode');
   for (const options of OPTIONS) {
     bench.addAsync(
-      `DracoEncoder#pointcloud ${POSITIONS.byteLength / 12}#${options.name}`,
-      async () => {
-        return await encode(attributes, DracoWriter, {draco: {pointcloud: true}});
-      }
+      `DracoLoader#pointcloud#${options.name} - sequential`,
+      {multiplier: pointCount, unit: 'points'},
+      async () =>
+        await parse(arrayBuffer.slice(), DracoLoader, {draco: {pointcloud: true}, worker: true})
     );
 
-    // TODO - COMMENT OUT until bench.addAsync is fixed (too many invocations)
-    // const compressedPointCloud = await encode(attributes, DracoWriter, {draco: {pointcloud: true}});
-    // bench.addAsync(
-    //   `DracoDecoder#pointcloud ${POSITIONS.byteLength / 12}#${options.name}`,
-    //   async () => {
-    //     return await parse(compressedPointCloud, DracoLoader, {worker: false});
-    //   }
-    // );
+    bench.addAsync(
+      `DracoLoader#pointcloud#${options.name} - parallel`,
+      {multiplier: pointCount, unit: 'points', _throughput: 5},
+      async () =>
+        await parse(arrayBuffer.slice(), DracoLoader, {draco: {pointcloud: true}, worker: true})
+    );
+  }
+
+  bench.group('Draco Encode');
+  for (const options of OPTIONS) {
+    bench.addAsync(
+      `DracoWriter#pointcloud#${options.name} - sequential`,
+      {multiplier: pointCount, unit: 'points'},
+      async () => await encode(attributes, DracoWriter, {draco: {pointcloud: true}, worker: true})
+    );
+
+    bench.addAsync(
+      `DracoWriter#pointcloud#${options.name} - parallel`,
+      {multiplier: pointCount, unit: 'points', _throughput: 5},
+      async () => await encode(attributes, DracoWriter, {draco: {pointcloud: true}, worker: true})
+    );
   }
 
   return bench;

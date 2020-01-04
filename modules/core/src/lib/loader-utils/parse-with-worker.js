@@ -41,7 +41,7 @@ export default function parseWithWorker(loader, data, options, context) {
 
   const warning = loader.version !== VERSION ? `(core version ${VERSION})` : '';
 
-  return workerFarm.process(workerSource, `loaders.gl@${loader.version}${warning}:${workerName}`, {
+  return workerFarm.process(workerSource, `${workerName}-worker@${loader.version}${warning}`, {
     arraybuffer: toArrayBuffer(data),
     options,
     source: `loaders.gl@${VERSION}`, // Lets worker ignore unrelated messages

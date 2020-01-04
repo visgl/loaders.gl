@@ -23,9 +23,9 @@
     "modules/*"
   ],
   "scripts": {
-    "start": "echo 'Please see loaders.gl website for how to run examples' && open https://loaders.gl/docs",
     "bootstrap": "yarn install-fast && ocular-bootstrap",
     "install-fast": "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true yarn",
+    "start": "echo 'Please see loaders.gl website for how to run examples' && open https://loaders.gl/docs",
     "build": "ocular-clean && lerna run pre-build && ocular-build",
     "build-workers": "lerna run pre-build",
     "clean": "ocular-clean",
@@ -43,8 +43,9 @@
     "@luma.gl/core": "^8.0.0",
     "@luma.gl/debug": "^8.0.0",
     "@luma.gl/test-utils": "^8.0.0",
-    "@probe.gl/bench": "^3.2.0",
-    "@probe.gl/test-utils": "^3.1.1",
+    "@probe.gl/bench": "^3.3.0-alpha.2",
+    "@probe.gl/test-utils": "^3.3.0-alpha.2",
+    "arraybuffer-loader": "^1.0.7",
     "babel-loader": "^8.0.6",
     "core-js": "^3.2.1",
     "coveralls": "^3.0.3",
