@@ -1,7 +1,7 @@
 import {ImageLoader, isImageTypeSupported} from '@loaders.gl/images';
 import {fetchFile, parse} from '@loaders.gl/core';
 
-const TEST_URL = '@loaders.gl/images/test/data/earthengine/color-256x256.png';
+const TEST_URL = '@loaders.gl/images/test/data/tiles/colortile-256x256.png';
 
 const OPTIONS = [
   {type: 'ndarray'},
@@ -22,7 +22,7 @@ export default async function imageLoaderBench(suite) {
   for (const options of OPTIONS) {
     const {type, worker} = options;
     if (isImageTypeSupported(type)) {
-      suite.addAsync(`sequential: ${JSON.stringify(options)}`, async () => {
+      suite.addAsync(`sequential: ${JSON.stringify(options)}`, {unit: 'tiles(256x256)'}, async () => {
         const arrayBuffer = masterArrayBuffer.slice();
         return await parse(arrayBuffer, ImageLoader, {worker, image: options});
       });
@@ -35,7 +35,7 @@ export default async function imageLoaderBench(suite) {
     if (isImageTypeSupported(type)) {
       suite.addAsync(
         `throughput: ${JSON.stringify(options)}`,
-        {_throughput: 100},
+        {unit: 'tiles(256x256)', _throughput: 100},
         async () => await parse(masterArrayBuffer.slice(), ImageLoader, {worker, image: options})
       );
     }

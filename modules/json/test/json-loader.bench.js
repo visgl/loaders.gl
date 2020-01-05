@@ -6,16 +6,11 @@ import clarinetBench from './clarinet/clarinet.bench';
 const GEOJSON_URL = '@loaders.gl/json/test/data/geojson-big.json';
 
 export default async function jsonLoaderBench(suite) {
-  // Test underlying clarinet library
-  await clarinetBench(suite);
+  suite.group('JSONLoader');
 
-  suite.group('JSONLoader - loading from file');
+  const options = {multiplier: 308, unit: 'features'};
 
-  suite.addAsync('load(JSONLoader) - Uses JSON.parse', async () => {
-    await load(GEOJSON_URL, JSONLoader);
-  });
-
-  suite.addAsync('loadInBatches(JSONLoader) - Uses Clarinet', async () => {
+  suite.addAsync('loadInBatches(JSONLoader) - Streaming GeoJSON load', options, async () => {
     const asyncIterator = await loadInBatches(GEOJSON_URL, JSONLoader);
     // const asyncIterator = await parseInBatches(STRING, JSONLoader);
     const data = [];
@@ -23,4 +18,11 @@ export default async function jsonLoaderBench(suite) {
       data.push(...batch.data);
     }
   });
+
+  suite.addAsync('load(JSONLoader) - Atomic GeoJSON load (JSON.parse)', options, async () => {
+    await load(GEOJSON_URL, JSONLoader);
+  });
+
+  // Test underlying clarinet library
+  await clarinetBench(suite);
 }

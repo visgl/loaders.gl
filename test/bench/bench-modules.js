@@ -33,10 +33,10 @@ const suite = new Bench({
 
 (async function bench() {
   // add tests
-  // await coreBench(suite);
-  // await imageBench(suite);
-  // await csvBench(suite);
-  // await jsonBench(suite);
+  await coreBench(suite);
+  await csvBench(suite);
+  await jsonBench(suite);
+  await imageBench(suite);
   await dracoBench(suite);
 
   // Run the suite
