@@ -33,7 +33,7 @@ export default async function dracoBench(bench) {
   const arrayBuffer = await encode(attributes, DracoWriter, {draco: {pointcloud: true}});
 
   // Warm up worker (keep worker loading out of throughput measurement)
-  await parse(arrayBuffer.slice(), DracoLoader, {draco: {pointcloud: true}, worker: true})
+  await parse(arrayBuffer.slice(), DracoLoader, {draco: {pointcloud: true}, worker: true});
 
   const pointCount = POSITIONS.byteLength / 12;
 

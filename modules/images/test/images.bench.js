@@ -22,10 +22,14 @@ export default async function imageLoaderBench(suite) {
   for (const options of OPTIONS) {
     const {type, worker} = options;
     if (isImageTypeSupported(type)) {
-      suite.addAsync(`parse(${JSON.stringify(options)}) sequential`, {unit: 'tiles(256x256)'}, async () => {
-        const arrayBuffer = masterArrayBuffer.slice();
-        return await parse(arrayBuffer, ImageLoader, {worker, image: options});
-      });
+      suite.addAsync(
+        `parse(${JSON.stringify(options)}) sequential`,
+        {unit: 'tiles(256x256)'},
+        async () => {
+          const arrayBuffer = masterArrayBuffer.slice();
+          return await parse(arrayBuffer, ImageLoader, {worker, image: options});
+        }
+      );
     }
   }
 

@@ -1,9 +1,9 @@
 import test from 'tape-promise/tape';
 
-import {ImageLoader, isImageTypeSupported, getImageType, getImageData} from '@loaders.gl/images';
+import {ImageLoader, isImageTypeSupported, getImageData} from '@loaders.gl/images';
 import {isBrowser, load} from '@loaders.gl/core';
 
-import {TEST_CASES, IMAGE_URL, IMAGE_DATA_URL} from './lib/test-cases';
+import {IMAGE_URL, IMAGE_DATA_URL} from './lib/test-cases';
 import {getImageSize} from '../dist/es5/lib/parsed-image-api/parsed-image-api';
 
 const TYPES = ['auto', 'imagebitmap', 'html', 'ndarray'].filter(isImageTypeSupported);
