@@ -11,18 +11,18 @@ We are trying to make the loaders.gl roadmap as public as possible. We share inf
 
 Many ideas are in tracker tasks in github, but here are some ideas:
 
-**Worker Improvements** - 
-    - Worker Warmup - loaders.gl core should have an option to pre-load workers so that loader thread pool is primed and ready to start off-thread parsing as soon as data arrives on the wire. This can avoid a typical 1-2 second lag to load and parse the worker script on the initial load using that worker.
+**Worker Improvements** - - Worker Warmup - loaders.gl core should have an option to pre-load workers so that loader thread pool is primed and ready to start off-thread parsing as soon as data arrives on the wire. This can avoid a typical 1-2 second lag to load and parse the worker script on the initial load using that worker.
 
 **Progress Tracking** - loaders can provide progress callbacks and a `ProgressTracker` class to track the progress of a set of parallel loads.
 
 **Automatic Timing** - loaders.gl could integrate with probe.gl `Stats`, ideas:
+
 - loaders could export a global stats object.
 - `load` options could accept a `stats` parameter.
 - objects returned from loaders could contain a `stats` object with timing stats.
 - `setDefaultOptions({stats: true})` to enable stats collection, etc.
 
-**MIME types** - Allow MIME types (e.g. from response headers) to be provided to assist in loader auto-selection. 
+**MIME types** - Allow MIME types (e.g. from response headers) to be provided to assist in loader auto-selection.
 
 ## Writer Roadmap
 
@@ -40,6 +40,7 @@ Writer support is currently minimal in loaders.gl.
 - Develop GeoJSON to Arrow mapping
 
 Streaming tabular loaders
+
 - Improve perf of CSV Loader to match `d3.dsv`
 
 ### Images
@@ -71,11 +72,12 @@ Note: Given industry convergence on glTF, we do not envision supporting other me
 Focus on support formats for large point clouds.
 
 - Better example for point cloud loading
-    - auto discover extents
-    - support streaming loads (display points as they stream in).
-    - better selector for data sets with preview images
+  - auto discover extents
+  - support streaming loads (display points as they stream in).
+  - better selector for data sets with preview images
 
 **`LASLoader`**
+
 - Implement streaming load
 - load emscripten-lib from unpkg CDN
 - compile C++ to WASM instead of JS?
@@ -87,8 +89,8 @@ Focus on support formats for large point clouds.
 - Support unlit materials
 - Finalize i3s support
 - Finalize potree support
-- Better example 
-    - better selector for data sets with preview images
+- Better example
+  - better selector for data sets with preview images
 
 ### Scenegraph Formats
 
