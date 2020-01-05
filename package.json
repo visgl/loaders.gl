@@ -24,7 +24,8 @@
   ],
   "scripts": {
     "start": "echo 'Please see loaders.gl website for how to run examples' && open https://loaders.gl/docs",
-    "bootstrap": "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true yarn && ocular-bootstrap",
+    "bootstrap": "yarn install-fast && ocular-bootstrap",
+    "install-fast": "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true yarn",
     "build": "ocular-clean && lerna run pre-build && ocular-build",
     "build-workers": "lerna run pre-build",
     "clean": "ocular-clean",
@@ -32,9 +33,10 @@
     "lint": "ocular-lint",
     "publish": "ocular-publish",
     "test": "ocular-test",
+    "metrics": "./scripts/metrics.sh && ocular-metrics",
+    "version": "yarn build",
     "pre-commit": "ocular-lint",
-    "pre-push": "ocular-test fast",
-    "metrics": "./scripts/metrics.sh && ocular-metrics"
+    "pre-push": "ocular-test fast"
   },
   "devDependencies": {
     "@babel/register": "^7.4.4",
