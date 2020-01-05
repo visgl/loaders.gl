@@ -22,7 +22,7 @@ export default async function imageLoaderBench(suite) {
   for (const options of OPTIONS) {
     const {type, worker} = options;
     if (isImageTypeSupported(type)) {
-      suite.addAsync(`sequential: ${JSON.stringify(options)}`, {unit: 'tiles(256x256)'}, async () => {
+      suite.addAsync(`parse(${JSON.stringify(options)}) sequential`, {unit: 'tiles(256x256)'}, async () => {
         const arrayBuffer = masterArrayBuffer.slice();
         return await parse(arrayBuffer, ImageLoader, {worker, image: options});
       });
@@ -34,7 +34,7 @@ export default async function imageLoaderBench(suite) {
     const {type, worker} = options;
     if (isImageTypeSupported(type)) {
       suite.addAsync(
-        `throughput: ${JSON.stringify(options)}`,
+        `parse(${JSON.stringify(options)}) parallel`,
         {unit: 'tiles(256x256)', _throughput: 100},
         async () => await parse(masterArrayBuffer.slice(), ImageLoader, {worker, image: options})
       );
