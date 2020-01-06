@@ -7,65 +7,98 @@ We are trying to make the loaders.gl roadmap as public as possible. We share inf
 - **[Blog](https://medium.com/@vis.gl)** - We use the vis.gl blog to share information about what we are doing.
 - **[Github Issues](https://github.com/uber-web/loaders.gl/issues)** - The traditional way to start or join a discussion.
 
-## Feature Roadmap
+## Core Feature Roadmap
 
 Many ideas are in tracker tasks in github, but here are some ideas:
 
-**Worker Thread Pool Priming** - Worker Pools should have an option to pre-load workers so that loader thread pool is primed and ready to start off-thread parsing as soon as data arrives on the wire. This can avoid 1-2 second lag when loading starts.
+**Worker Improvements** - - Worker Warmup - loaders.gl core should have an option to pre-load workers so that loader thread pool is primed and ready to start off-thread parsing as soon as data arrives on the wire. This can avoid a typical 1-2 second lag to load and parse the worker script on the initial load using that worker.
 
 **Progress Tracking** - loaders can provide progress callbacks and a `ProgressTracker` class to track the progress of a set of parallel loads.
 
-**Automatic Timing** - objects returned from loaders could contain a `stats` object with timing stats.
+**Automatic Timing** - loaders.gl could integrate with probe.gl `Stats`, ideas:
 
-**Stats and Default Settings** - Set `setDefaultOptions({stats: true})` to enable stats collection, etc.
+- loaders could export a global stats object.
+- `load` options could accept a `stats` parameter.
+- objects returned from loaders could contain a `stats` object with timing stats.
+- `setDefaultOptions({stats: true})` to enable stats collection, etc.
 
-**MIME types** - Allow MIME types (e.g. from response headers) to be provided to assist in loader auto-selection. Enable Writers to return recommended MIMEtypes.
+**MIME types** - Allow MIME types (e.g. from response headers) to be provided to assist in loader auto-selection.
+
+## Writer Roadmap
+
+Writer support is currently minimal in loaders.gl.
+
+- Worker support for writers
+- Enable Writers to return recommended MIME type(s).
 
 ## Loader Roadmap
 
 ### Data loaders
 
+- Develop table category helper classes
+- Develop table to Arrow mapping support
+- Develop GeoJSON to Arrow mapping
+
 Streaming tabular loaders
 
-- Streaming JSON loader
+- Improve perf of CSV Loader to match `d3.dsv`
+
+### Images
+
+- Good example that shows various (compressed) formats loading
+- Decide on ImageWorkerLoader
+- Decide on type: 'data'
+- Basis image decoder, finalize API
+- Compressed image decoder, finalize API
+- Finalize documentation
 
 ### Geospatial loaders
-
-Focus on loading of complex geospatial data.
 
 Focus on loading of large, complex geospatial data.
 
 - KML
 - Shapefile
-  > > > > > > > Add tests
-- Streaming GeoJSON loader
-
-### Images
-
-- Basis image decoder
-- Better image loaders
 
 ### Meshes
 
-- MTL - we should have full OBJ/MTL support.
-- Given industry convergence on glTF, we do not envision supporting any otherr mesh formats beyond OBJ/MTL.
+- MTL - Implement MTL format support, we should have full OBJ/MTL support.
+- Determine how materials fit into the Mesh category, or if adding MTL returns a Scenegraph category object.
+- OBJ can also support face groups => simple scenegraph?
+
+Note: Given industry convergence on glTF, we do not envision supporting other mesh formats beyond OBJ/MTL.
 
 ### Point Clouds
 
-Focus on loading formats for large point clouds.
+Focus on support formats for large point clouds.
 
-### Massive Point Clouds/Data Sets
+- Better example for point cloud loading
+  - auto discover extents
+  - support streaming loads (display points as they stream in).
+  - better selector for data sets with preview images
 
-Complement 3D Tiles with:
+**`LASLoader`**
 
-- potree
-- i3s
+- Implement streaming load
+- load emscripten-lib from unpkg CDN
+- compile C++ to WASM instead of JS?
+- investigate support for LAS 1.4?
+
+### 3D Tiles
+
+- Support for alternative/non-geospatial coordinate systems (potree)
+- Support unlit materials
+- Finalize i3s support
+- Finalize potree support
+- Better example
+  - better selector for data sets with preview images
 
 ### Scenegraph Formats
 
-- Focus on glTF/GLB - loaders.gl should to have a very solid implementation.
+Focus on glTF/GLB - loaders.gl should to have a very solid implementation.
+
 - The glTF loaders should handle (e.g. preprocess) any glTF extensions that can be handled during the load phase (such as Draco, Basis - but many can only be handled during rendering).
-- Limited alternatives: Given the emergence of glTF as a major Khronos standard, and availability of good glTF conversion tools and exporters, loaders will most likely not implement any other scene/mesh description formats such as COLLADA.
+
+What loaders.gl will NOT support: Given the emergence of glTF as a major Khronos standard, and availability of good glTF conversion tools and exporters, loaders will most likely not supprt any other large scene/mesh description formats such as COLLADA.
 
 ### Other loaders
 
