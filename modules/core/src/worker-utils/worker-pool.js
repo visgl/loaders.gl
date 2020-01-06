@@ -85,7 +85,7 @@ export default class WorkerPool {
     // Create fresh worker if we haven't yet created the max amount of worker threads for this worker source
     if (this.count < this.maxConcurrency) {
       this.count++;
-      const name = `${this.name.toLowerCase()}-worker (#${this.count} of ${this.maxConcurrency})`;
+      const name = `${this.name.toLowerCase()} (#${this.count} of ${this.maxConcurrency})`;
       return new WorkerThread({source: this.source, onMessage: this.onMessage, name});
     }
 

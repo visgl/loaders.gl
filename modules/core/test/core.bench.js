@@ -11,7 +11,7 @@ async function* asyncIterator(array) {
 export default function coreBench(bench) {
   bench.group('Core Module - Async Iteration');
 
-  bench.add('Sync Iteration over 1000 elements', () => {
+  bench.add('Sync Iteration', {multiplier: LENGTH}, () => {
     let sum = 0;
     for (const element of ARRAY) {
       sum += element;
@@ -19,7 +19,7 @@ export default function coreBench(bench) {
     return sum;
   });
 
-  bench.addAsync('Async Iteration over 1000 elements', async () => {
+  bench.addAsync('Async Iteration', {multiplier: LENGTH}, async () => {
     let sum = 0;
     for await (const element of asyncIterator(ARRAY)) {
       sum += element;

@@ -20,11 +20,11 @@ export default async function csvBench(bench) {
 
   bench = bench.group('CSV Decode');
 
-  bench = bench.addAsync('CSVLoader#parse', async () => {
+  bench = bench.addAsync('CSVLoader#parse', {multiplier: 2000, unit: 'rows'}, async () => {
     return await parse(sample, CSVLoader);
   });
 
-  bench = bench.addAsync('d3-dsv#parse', async () => {
+  bench = bench.addAsync('d3-dsv#parse', {multiplier: 2000, unit: 'rows'}, async () => {
     return await parse(sample, D3CSVLoader);
   });
 

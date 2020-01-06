@@ -9,11 +9,11 @@ export default function clarinetBench(bench) {
 
   bench.group('Clarinet - JSON parsing from string');
 
-  bench.add('JSON.parse (used by parseSync)', () => {
-    JSON.parse(STRING);
+  bench.add('ClarinetParser', {multiplier: STRING.length, unit: 'bytes'}, () => {
+    parser.write(STRING);
   });
 
-  bench.add('ClarinetParser (used by parseInBatches)', () => {
-    parser.write(STRING);
+  bench.add('JSON.parse', {multiplier: STRING.length, unit: 'bytes'}, () => {
+    JSON.parse(STRING);
   });
 }

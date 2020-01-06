@@ -2,7 +2,7 @@ import test from 'tape-promise/tape';
 
 import LoadImageWorker from './load-image.worker';
 
-import {TEST_CASES} from './test-cases';
+import {TEST_CASES} from './lib/test-cases';
 
 test('loadImage#worker', t => {
   if (typeof Worker === 'undefined') {
