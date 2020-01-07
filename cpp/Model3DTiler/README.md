@@ -32,8 +32,8 @@ Model3DTiler
 
 ```
 cd ~/dev/workspaces/loaders.gl
-git clone https://github.com/uber-web/loaders.gl.git master
-cd master/cpp/Model3DTiler
+git clone https://github.com/uber-web/loaders.gl.git
+cd loaders.gl/cpp/Model3DTiler
 mkdir build
 cd build
 cmake -DCMAKE_BUILD_TYPE=Release -DLASZIP_INCLUDE_DIRS=~/dev/workspaces/lastools/master/LASzip/dll -DLASZIP_LIBRARY=~/dev/workspaces/lastools/master/LASzip/build/src/liblaszip.so ..
