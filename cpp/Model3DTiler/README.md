@@ -78,3 +78,6 @@ Examples:
 
     # convert data.las with draco compression in 8 quantization bits
     ./Model3DTiler ~/Documents/data.las -o ~/test --output-format PNTS --draco --position-bits 8 --latitude 37.789874 --longitude -122.400326 --altitude -8.0
+
+    # convert data.las with smaller point spacing by setting diagonal fraction to 1000 (Default is 200)
+    ./Model3DTiler ~/Documents/data.las -o ~/test --output-format PNTS --draco --position-bits 8 --latitude 37.789874 --longitude -122.400326 --altitude -8.0 -d 1000
