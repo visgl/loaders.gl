@@ -53,7 +53,7 @@ Command line build
 
 ```
 ...
-cmake -DCMAKE_BUILD_TYPE=Release -DLASZIP_INCLUDE_DIRS=[ABSOLUTE_PATH_TO_LASTOOLS]/LAStools/LASzip/dll -DLASZIP_LIBRARY=[ABSOLUTE_PATH_TO_LASTOOLS]/LAStools/LASzip/src/build/liblaszip.dylib ..
+cmake -DCMAKE_BUILD_TYPE=Release -DLASZIP_INCLUDE_DIRS=[ABSOLUTE_PATH_TO_LASTOOLS]/LAStools/LASzip/dll -DLASZIP_LIBRARY=[ABSOLUTE_PATH_TO_LASTOOLS]/LAStools/LASzip/build/src/liblaszip.dylib ..
 
 make
 
@@ -63,13 +63,13 @@ Create Xcode project
 
 ```
 ...
-cmake -DLASZIP_INCLUDE_DIRS=[ABSOLUTE_PATH_TO_LASTOOLS]/LAStools/LASzip/dll -DLASZIP_LIBRARY=[ABSOLUTE_PATH_TO_LASTOOLS]/LAStools/LASzip/src/build/liblaszip.dylib -G Xcode ..
+cmake -DLASZIP_INCLUDE_DIRS=[ABSOLUTE_PATH_TO_LASTOOLS]/LAStools/LASzip/dll -DLASZIP_LIBRARY=[ABSOLUTE_PATH_TO_LASTOOLS]/LAStools/LASzip/build/src/liblaszip.dylib -G Xcode ..
 
 ```
 
 ## Model3DTiler Usage
 
-Converts las/laz file to the cesium 3D tile format.
+Converts las/laz file to the cesium 3D tile format (PNTS).
 
 Examples:
 
