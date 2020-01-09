@@ -36,7 +36,7 @@ test('CSVLoader#loader conformance', t => {
   t.end();
 });
 
-test.only('CSVLoader#load(states.csv)', async t => {
+test('CSVLoader#load(states.csv)', async t => {
   const response = await fetchFile(CSV_STATES_URL);
   const rows = await load(response.body, CSVLoader);
   t.comment(JSON.stringify(rows, 2, null));
