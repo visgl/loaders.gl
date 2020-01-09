@@ -2,13 +2,13 @@ import test from 'tape-promise/tape';
 import {validateLoader} from 'test/common/conformance';
 
 import {CSVLoader} from '@loaders.gl/csv';
-import {load, loadInBatches, isIterator, isAsyncIterable} from '@loaders.gl/core';
+import {load, loadInBatches, fetchFile, isIterator, isAsyncIterable} from '@loaders.gl/core';
 import {ColumnarTableBatch} from '@loaders.gl/tables';
 
 // Small CSV Sample Files
 const CSV_SAMPLE_URL = '@loaders.gl/csv/test/data/sample.csv';
-// const CSV_SAMLE_LONG_URL = '@loaders.gl/csv/test/data/sample-long.csv';
 const CSV_SAMPLE_VERY_LONG_URL = '@loaders.gl/csv/test/data/sample-very-long.csv';
+const CSV_STATES_URL = '@loaders.gl/csv/test/data/states.csv';
 
 function validateColumn(column, length, type) {
   if (column.length !== length) {
@@ -33,6 +33,14 @@ function validateColumn(column, length, type) {
 
 test('CSVLoader#loader conformance', t => {
   validateLoader(t, CSVLoader, 'CSVLoader');
+  t.end();
+});
+
+test.only('CSVLoader#load(states.csv)', async t => {
+  const response = await fetchFile(CSV_STATES_URL);
+  const rows = await load(response.body, CSVLoader);
+  t.comment(JSON.stringify(rows, 2, null));
+  t.pass();
   t.end();
 });
 

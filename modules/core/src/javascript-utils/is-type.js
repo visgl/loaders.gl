@@ -13,7 +13,8 @@ export const isAsyncIterable = x => x && typeof x[Symbol.asyncIterator] === 'fun
 export const isIterator = x => x && isFunction(x.next);
 
 export const isFetchResponse = x =>
-  (typeof Response !== 'undefined' && x instanceof Response) || (x.arrayBuffer && x.text && x.json);
+  (typeof Response !== 'undefined' && x instanceof Response) ||
+  (x && x.arrayBuffer && x.text && x.json);
 
 export const isFile = x => typeof File !== 'undefined' && x instanceof File;
 export const isBlob = x => typeof Blob !== 'undefined' && x instanceof Blob;
