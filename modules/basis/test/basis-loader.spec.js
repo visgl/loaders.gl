@@ -10,7 +10,7 @@ test('BasisLoader#imports', t => {
   t.end();
 });
 
-test.skip('BasisLoader#load(URL, worker: false)', async t => {
+test('BasisLoader#load(URL, worker: false)', async t => {
   const images = await load(TEST_URL, BasisLoader, {worker: false});
 
   const image = images[0][0];
@@ -27,7 +27,7 @@ test.skip('BasisLoader#load(URL, worker: false)', async t => {
   t.end();
 });
 
-test.skip('BasisLoader#load(URL, worker: true)', async t => {
+test('BasisLoader#load(URL, worker: true)', async t => {
   const images = await load(TEST_URL, BasisLoader, {worker: true});
 
   const image = images[0][0];
