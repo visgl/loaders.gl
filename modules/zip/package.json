@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/zip",
-  "version": "2.0.0-beta.8",
+  "version": "2.1.0-alpha.1",
   "description": "Zip Archive Loader",
   "license": "MIT",
   "publishConfig": {
