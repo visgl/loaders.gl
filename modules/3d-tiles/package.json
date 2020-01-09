@@ -34,10 +34,10 @@
     "build-bundle": "webpack --display=minimal --config ../../scripts/bundle.config.js"
   },
   "dependencies": {
-    "@loaders.gl/core": "^2.0.0",
-    "@loaders.gl/gltf": "^2.0.0",
-    "@loaders.gl/loader-utils": "^2.0.0",
-    "@loaders.gl/math": "^2.0.0",
+    "@loaders.gl/core": "^2.1.0-alpha.1",
+    "@loaders.gl/gltf": "^2.1.0-alpha.1",
+    "@loaders.gl/loader-utils": "^2.1.0-alpha.1",
+    "@loaders.gl/math": "^2.1.0-alpha.1",
     "@math.gl/culling": "^3.1.2",
     "@math.gl/geospatial": "^3.1.2",
     "math.gl": "^3.1.2",
