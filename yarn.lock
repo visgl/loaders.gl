@@ -1435,21 +1435,7 @@
     npmlog "^4.1.2"
     write-file-atomic "^2.3.0"
 
-"@loaders.gl/3d-tiles@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/3d-tiles/-/3d-tiles-2.0.0.tgz#eca95119f12a1070a4a6cd74c608615e0d68f87d"
-  integrity sha512-mXsdeLI6WWqpYNhBtd7SiHE/PSTC1TQP7gDMTrtktbEdX0Uf1j6QxzmjmXJZbY78SallZaFtGZ3XHd0seNxy6g==
-  dependencies:
-    "@loaders.gl/core" "2.0.0"
-    "@loaders.gl/gltf" "2.0.0"
-    "@loaders.gl/loader-utils" "2.0.0"
-    "@loaders.gl/math" "2.0.0"
-    "@math.gl/culling" "^3.1.2"
-    "@math.gl/geospatial" "^3.1.2"
-    math.gl "^3.1.2"
-    probe.gl "^3.2.0"
-
-"@loaders.gl/core@2.0.0", "@loaders.gl/core@^2.0.0":
+"@loaders.gl/core@^2.0.0":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@loaders.gl/core/-/core-2.0.0.tgz#ab84b94efb8ad3a90133389e5b76f6a721b20419"
   integrity sha512-tcKTfDy3H7jsP61pEWG22rjnSjz4JzXlBzJuMt86Z76ASM1ZY5glfnNneA/x6Yqcl+8U0003B2PtRIFtQgo9og==
@@ -1457,41 +1443,17 @@
     "@babel/runtime" "^7.3.1"
     "@loaders.gl/loader-utils" "2.0.0"
 
-"@loaders.gl/gltf@2.0.0", "@loaders.gl/gltf@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/gltf/-/gltf-2.0.0.tgz#dc7b743118af4956e90719de15f3dd54c37e283b"
-  integrity sha512-X0SUoJVEwHj0gTPioohgQuXbSsdMfMzW81GoEG4wdGChf0e6eTMXplIpm+MU2dgo/IBR4n4EhlL4s37LtZtDow==
-  dependencies:
-    "@loaders.gl/core" "2.0.0"
-    "@loaders.gl/images" "2.0.0"
-    "@loaders.gl/loader-utils" "2.0.0"
-
-"@loaders.gl/images@2.0.0", "@loaders.gl/images@^2.0.0":
+"@loaders.gl/images@^2.0.0":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@loaders.gl/images/-/images-2.0.0.tgz#d3425ac855dfa54bd8119014bd548ea6f8a2ac5b"
   integrity sha512-GUsN7hSpYGtVNf3EcWjh1QgzJXJrS73KkD7GgM/pGqMpFlmNOkWYjW0DV8yYHikRQG4awNMGKgnUUzmXtdgpzQ==
 
-"@loaders.gl/loader-utils@2.0.0", "@loaders.gl/loader-utils@^2.0.0":
+"@loaders.gl/loader-utils@2.0.0":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@loaders.gl/loader-utils/-/loader-utils-2.0.0.tgz#8de22bd999fd09f5769fd70e23e7280c5a598506"
   integrity sha512-dK3pjS56M+18CrgdycgTsF/YkanWSojO/1JHVBB+KorjqoMWXhtCAnTToQ60u+XA8k0AF3mBQUPL7Hd2OIsbmA==
   dependencies:
     "@babel/runtime" "^7.3.1"
-
-"@loaders.gl/math@2.0.0", "@loaders.gl/math@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/math/-/math-2.0.0.tgz#ab6e620dd209614b71df1d53bf110337bdf9f903"
-  integrity sha512-M4/vH2Pk3YFAikaZQ90i+c9x0pkiJ9GZAYG5YbAPoonIyWY8YTBUxt0CutUlskyMpYKcSGuk9YwyWfHufe00lQ==
-  dependencies:
-    "@loaders.gl/images" "2.0.0"
-    math.gl "^3.1.2"
-
-"@loaders.gl/tables@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/tables/-/tables-2.0.0.tgz#77a807cd847a6955989995298aed27092b0dca19"
-  integrity sha512-lQjhdxOVbw+w1xjIBvje/WkeTF9rqtTL+9Ms5uTILMJXypnICZYycwE5memJ32JKAKE8MYp5NSjeo392qSPtjQ==
-  dependencies:
-    "@loaders.gl/core" "2.0.0"
 
 "@luma.gl/constants@8.0.1":
   version "8.0.1"

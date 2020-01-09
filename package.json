@@ -31,6 +31,7 @@
     "clean": "ocular-clean",
     "cover": "ocular-test cover",
     "lint": "ocular-lint",
+    "bump": "ocular-bump",
     "publish": "ocular-publish",
     "test": "ocular-test",
     "metrics": "./scripts/metrics.sh && ocular-metrics",
