@@ -1,7 +1,5 @@
 # BasisLoader
 
-> The `BasisLoader` is experimental
-
 A loader for Basis Universal "supercompressed" GPU textures. Extracts supercompressed textures from the basis container and efficiently "transpiles" them into the specified compressed texture format.
 
 | Loader         | Characteristic                                                    |
@@ -26,13 +24,13 @@ for (const compressedImage of miplevels) {
 
 ## Options
 
-| Option         | Type   | Default  | Description                                             |
-| -------------- | ------ | -------- | ------------------------------------------------------- |
-| `basis.format` | String | `'auto'` | Set to one of the supported compressed texture formats. |
+| Option         | Type   | Default  | Description                                  |
+| -------------- | ------ | -------- | -------------------------------------------- |
+| `basis.format` | String | `'auto'` | Set to one of the supported texture formats. |
 
 ## Compressed Texture Formats
 
-The `BasisLoader` can transpile into the following compressed (and uncompressed) texture formats.
+The `BasisLoader` can transpile into the following compressed and uncompressed texture formats.
 
 | Format                        | Description |
 | ----------------------------- | ----------- |
@@ -53,3 +51,5 @@ The `BasisLoader` can transpile into the following compressed (and uncompressed)
 | `rgb565`                      |             |
 | `bgr565`                      |             |
 | `rgba4444`                    |             |
+
+## Remarks

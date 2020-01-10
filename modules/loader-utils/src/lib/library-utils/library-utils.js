@@ -36,19 +36,12 @@ export function getLibraryUrl(library, moduleName, options) {
     return modules[library];
   }
 
-  // Load from local files, not from CDN scripts in Node.js
-  // TODO - needs to locate the modules directory when installed!
-  if (!isBrowser) {
-    return `modules/${moduleName}/dist/libs/${library}`;
-  }
-
-  // In browser, load from external scripts
   if (options.CDN) {
     assert(options.CDN.startsWith('http'));
     return `${options.CDN}/${moduleName}@${VERSION}/dist/libs/${library}`;
   }
 
-  // TODO - loading inside workers requires paths relative to worker script location...
+  // Note - Worker loading requires paths relative to worker script "location"?
   if (isWorker) {
     return `../src/libs/${library}`;
   }
