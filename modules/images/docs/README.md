@@ -38,7 +38,8 @@ A set of functions to work with parsed images returned by the `ImageLoader`.
 | `getDefaultImageType() : string`                | Returns the image type selected by default ( `options.image.type: 'auto'` in current run-time environment |
 | `isImage(image : any) : boolean`                | Checks any JavaScript value to see if it is an image of a type that loaders.gl can work with              |
 | `getImageType(image : any) : string`            | Returns the type name for this image.                                                                     |
-| `getImageData(image : any) : object`            | Returns an image data object with a `data` array representing the pixels of an image                      |
+| `getImageSize(image : any) : object`            | Returns `width` and `height` for an image                                                                 |
+| `getImageData(image : any) : typedarray`        | Returns a typed array representing the pixels of an image                                                 |
 
 ### Image Loading API for WebGL Textures
 
@@ -60,6 +61,6 @@ To support image loading on older browsers and Node.js, the `ImageLoader` can re
 
 - `ImageBitmap` - An `ImageBitmap` object represents a bitmap image that can be painted to a canvas without undue latency. This is the preferred parsed image representation in the browser. It can also be transferred efficiently between threads. Not available in some older browsers.
 - `Image` (aka `HTMLImageElement`) - The traditional HTML image class. Available in all browsers.
-- `data` - a memory layout for parsed pixels in node.js. Texture creation functions in headless gl accept `data` images.
+- `ndarray` - a memory layout for parsed pixels in node.js. Texture creation functions in headless gl accept `ndarray` images.
 
 See [`ImageLoader`](modules/images/docs/api-reference/image-loader) for more details on options etc.

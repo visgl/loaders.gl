@@ -1,5 +1,5 @@
 /* global TextDecoder, btoa */ // encodeURLComponent,
-import {loadToImage} from './parse-to-image';
+import {loadToHTMLImage} from './parse-to-html-image';
 
 export default async function parseSVG(arrayBuffer, options) {
   // Prepare a properly tagged data URL, and load using normal mechanism
@@ -11,5 +11,5 @@ export default async function parseSVG(arrayBuffer, options) {
   // }
   // base64 encoding is safer. utf-8 fails in some browsers
   const src = `data:image/svg+xml;base64,${btoa(xmlText)}`;
-  return await loadToImage(src, options);
+  return await loadToHTMLImage(src, options);
 }
