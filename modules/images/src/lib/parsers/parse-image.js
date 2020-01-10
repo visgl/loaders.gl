@@ -11,9 +11,7 @@ export default async function parseImage(arrayBuffer, options, context) {
   options = options || {};
 
   const {url} = context || {};
-  if (url && /\.svg((\?|#).*)?$/.test(url)) {
-    // eslint-disable-next-line
-    console.warn('@loaders.gl/images: SVG parsing needs to be fixed for 2.0');
+  if (url && /^data:image\/svg\+xml|\.svg((\?|#).*)?$/.test(url)) {
     return await parseSVG(arrayBuffer, options);
   }
 
