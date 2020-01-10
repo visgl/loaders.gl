@@ -1,13 +1,12 @@
 import test from 'tape-promise/tape';
 
-import {ImageLoader, getImageSize, isImageTypeSupported} from '@loaders.gl/images';
+import {ImageLoader, isImageTypeSupported, getImageData} from '@loaders.gl/images';
 import {isBrowser, load} from '@loaders.gl/core';
 
-import {TEST_CASES, DATA_URL} from './lib/test-cases';
+import {TEST_CASES, IMAGE_URL, IMAGE_DATA_URL, SVG_DATA_URL} from './lib/test-cases';
+import {getImageSize} from '../dist/es5/lib/parsed-image-api/parsed-image-api';
 
 const TYPES = ['auto', 'imagebitmap', 'html', 'ndarray'].filter(isImageTypeSupported);
-
-const TEST_URL = '@loaders.gl/images/test/data/img1-preview.png';
 
 test('image loaders#imports', t => {
   t.ok(ImageLoader, 'ImageLoader defined');
@@ -15,102 +14,52 @@ test('image loaders#imports', t => {
 });
 
 test('ImageLoader#load(URL)', async t => {
-  let image = await load(TEST_URL, ImageLoader);
-  t.ok(image, 'image loaded successfully from URL');
-
   for (const type of TYPES) {
-    image = await load(TEST_URL, ImageLoader, {image: {type}});
-    t.ok(image, 'image loaded successfully from URL');
+    const image = await load(IMAGE_URL, ImageLoader, {image: {type}});
+    t.ok(image, `image of type ${type} loaded successfully from data URL`);
   }
-
   t.end();
 });
 
 test('ImageLoader#load(data URL)', async t => {
   for (const type of TYPES) {
-    const image = await load(DATA_URL, ImageLoader, {image: {type}});
-    t.ok(image, 'image loaded successfully from data URL');
+    const image = await load(IMAGE_DATA_URL, ImageLoader, {image: {type}});
+    t.ok(image, `image of type ${type} loaded successfully from data URL`);
 
-    t.deepEquals(image.width, 2, 'image width is correct');
-    t.deepEquals(image.height, 2, 'image height is correct');
+    const imageData = {...getImageSize(image), data: getImageData(image)};
+    t.deepEquals(imageData.width, 2, 'image width is correct');
+    t.deepEquals(imageData.height, 2, 'image height is correct');
     if (!isBrowser) {
-      t.ok(ArrayBuffer.isView(image.data), 'image data is `ArrayBuffer`');
-      t.equals(image.data.byteLength, 16, 'image `data.byteLength` is correct');
+      t.ok(ArrayBuffer.isView(imageData.data), 'image data is `ArrayBuffer`');
+      t.equals(imageData.data.byteLength, 16, 'image `data.byteLength` is correct');
     }
   }
   t.end();
 });
 
-test('ImageLoader#formats', async t => {
-  for (const testCase of TEST_CASES) {
-    await testLoadImage(t, testCase);
-  }
-  t.end();
-});
-
-async function testLoadImage(t, testCase) {
-  const {title, url, width, height, skipUnderNode} = testCase;
-
-  // Skip some test cases under Node.js
-  if (!isBrowser && skipUnderNode) {
-    return;
-  }
-
-  const image = await load(url, ImageLoader);
-  t.ok(image, `${title} loaded ${url.slice(0, 40)}...`);
-  const imageSize = getImageSize(image);
-  t.ok(
-    imageSize.width === width && imageSize.height === height,
-    `${title} image has correct content ${url.slice(0, 30)}`
-  );
-}
-
-/*
-test('loadImage#worker', t => {
-  if (typeof Worker === 'undefined') {
-    t.comment('loadImage only works under browser');
+test('ImageLoader#DATA URL - SVG', async t => {
+  if (!isBrowser) {
+    t.comment('Skipping browser-only test');
     t.end();
     return;
   }
 
-  const worker = new LoadImageWorker();
-  let testIndex = 0;
-
-  const runTest = index => {
-    const testCase = TEST_CASES[index];
-    if (!testCase) {
-      t.end();
-      return;
-    }
-    if (testCase.worker === false) {
-      // the current loader does not support loading from dataURL in a worker
-      runTest(testIndex++);
-      return;
-    }
-
-    const {title, width, height} = testCase;
-    t.comment(title);
-
-    let {url} = testCase;
-    url = url.startsWith('data:') ? url : resolvePath(CONTENT_BASE + url);
-
-    worker.onmessage = ({data}) => {
-      if (data.error) {
-        t.fail(data.error);
-      } else {
-        t.ok(data.image, 'loadImage loaded data from url');
-        t.ok(
-          data.image.width === width && data.image.height === height,
-          'loaded image has correct content'
-        );
-      }
-
-      runTest(testIndex++);
-    };
-
-    worker.postMessage(url);
-  };
-
-  runTest(testIndex++);
+  const svgImage = await load(SVG_DATA_URL, ImageLoader);
+  t.ok(svgImage, 'SVG is loaded from data URL');
+  t.end();
 });
-*/
+
+test('loadImage#formats', async t => {
+  for (const testCase of TEST_CASES) {
+    if (!testCase.skip) {
+      const image = await load(testCase.url, ImageLoader);
+      t.ok(image, `${testCase.title} is loaded`);
+      t.ok(
+        image.width === testCase.width && image.height === testCase.height,
+        `${testCase.title} gets correct dimensions`
+      );
+    }
+  }
+
+  t.end();
+});
