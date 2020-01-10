@@ -2,6 +2,12 @@
 
 ### 2.0 Release
 
+#### v2.0.2
+
+- @loaders.gl/images: Fix loading SVG from data url (#615)
+- @loader.gl/i3s: Cleanup i3s dependencies (#609)
+- root: package.json cleanup (#605)
+
 #### v2.0.1
 
 - @loaders.gl/3d-tiles: Fix encoding lighting extension (#604)
