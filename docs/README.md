@@ -8,14 +8,14 @@ loaders.gl is part of the [vis.gl](https://vis.gl) ecosystem, and frameworks lik
 
 loaders.gl provides a wide selection of loaders organized into categories:
 
-| Category                                                         | Loaders                                                                                                                                                |
-| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [Table Loaders](docs/specifications/category-table)              | Streaming tabular loaders for [CSV](modules/csv/docs/api-reference/csv-loader), [JSON](modules/json/docs/api-reference/json-loader), [Arrow](modules/arrow/docs/api-reference/arrow-loader) etc                                                                                                     |
+| Category                                                         | Loaders                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [Table Loaders](docs/specifications/category-table)              | Streaming tabular loaders for [CSV](modules/csv/docs/api-reference/csv-loader), [JSON](modules/json/docs/api-reference/json-loader), [Arrow](modules/arrow/docs/api-reference/arrow-loader) etc                                                                                                                                                                                                                                                                                |
 | [Image Loaders](docs/specifications/category-image)              | Loaders for [images](modules/images/docs/api-reference/image-loader), [compressed textures](modules/basis/docs/api-reference/compressed-texture-loader), [supercompressed textures (Basis)](modules/basis/docs/api-reference/basis-loader). Utilities for [mipmapped arrays](modules/images/docs/api-reference/load-image-array), [cubemaps](modules/images/docs/api-reference/load-image-cube), [binary images](modules/images/docs/api-reference/binary-image-api) and more. |
-| [Pointcloud and Mesh Loaders](docs/specifications/mesh-category) | Loaders for point cloud and simple mesh formats such as [Draco](modules/draco/docs/api-reference/draco-loader), [LAS](modules/las/docs/api-reference/las-loader), [PCD](modules/pcd/docs/api-reference/pcd-loader), [PLY](modules/ply/docs/api-reference/ply-loader) and [OBJ](modules/obj/docs/api-reference/obj-loader)                                                                   |
-| [Scenegraph Loaders](docs/specifications/category-scenegraph)    | [glTF](modules/gltf/docs/api-reference/gltf-loader) loader                                                                                                                                            |
-| [3D Tile Loaders](docs/specifications/category-3d-tiles)         | Loaders for 3D tile formats such as [3D Tiles](modules/3d-tiles/docs/api-reference/tile-3d-loader), I3S and potree                                                                                           |
-| [Geospatial Loaders](docs/specifications/category-gis)           | Loaders for geospatial formats (beyond GeoJSON) such as [KML](modules/kml/docs/api-reference/kml-loader), [WKT](modules/wkt/docs/api-reference/wkt-loader) etc.                                                                                  |
+| [Pointcloud and Mesh Loaders](docs/specifications/mesh-category) | Loaders for point cloud and simple mesh formats such as [Draco](modules/draco/docs/api-reference/draco-loader), [LAS](modules/las/docs/api-reference/las-loader), [PCD](modules/pcd/docs/api-reference/pcd-loader), [PLY](modules/ply/docs/api-reference/ply-loader) and [OBJ](modules/obj/docs/api-reference/obj-loader)                                                                                                                                                      |
+| [Scenegraph Loaders](docs/specifications/category-scenegraph)    | [glTF](modules/gltf/docs/api-reference/gltf-loader) loader                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| [3D Tile Loaders](docs/specifications/category-3d-tiles)         | Loaders for 3D tile formats such as [3D Tiles](modules/3d-tiles/docs/api-reference/tile-3d-loader), I3S and potree                                                                                                                                                                                                                                                                                                                                                             |
+| [Geospatial Loaders](docs/specifications/category-gis)           | Loaders for geospatial formats (beyond GeoJSON) such as [KML](modules/kml/docs/api-reference/kml-loader), [WKT](modules/wkt/docs/api-reference/wkt-loader) etc.                                                                                                                                                                                                                                                                                                                |
 
 ## Quick Code Examples
 
@@ -74,11 +74,11 @@ loaders.gl provides consistent support for both browsers and Node.js. The follow
 
 **Framework Agnostic** - Files are parsed into clearly documented data structures (objects + typed arrays) that can be used with any JavaScript framework.
 
-**Worker Support** - Many loaders can run in web workers, keeping the main thread free for other tasks while parsing completes.
+**Worker Support** - Many loaders run in web workers, keeping the main thread free for other tasks while parsing completes.
 
-**Streaming Support** - Several loaders can parse in batches, allowing "larger than memory" files to be parsed.
+**Streaming Support** - Several loaders can parse in batches from both node and browser `Stream`s, allowing "larger than memory" files to be processed, and initial results to be available while the remainder of a file is still loading.
 
-**Node Support** - All loaders are work under Node.js and can be used when writing backend and cloud services and for running your unit tests under Node.
+**Node Support** - All loaders work under Node.js and can be used when writing backend and cloud services, and when running your unit tests under Node.
 
 **Loader Categories** - loaders.gl groups similar data formats into "categories". loaders in the same category return parsed data in "standardized" form, simplifying applications that want to handle multiple related formats.
 
@@ -89,6 +89,8 @@ loaders.gl provides consistent support for both browsers and Node.js. The follow
 **Modern JavaScript** - loaders.gl is written in standard ES2018 and the API emphasizes modern, portable JavaScript constructs, e.g. async iterators instead of streams, `ArrayBuffer` instead of `Buffer`, etc.
 
 **Binary Data Optimized** - loaders.gl is optimized for use with WebGL frameworks (e.g. by returning typed arrays whenever possible). However, there are no any actual WebGL dependencies and loaders can be used without restrictions in non-WebGL applications.
+
+**Multi-Asset Loading** - Some formats like glTF, or mipmapped cube textures, can required dozens of separate loads to resolve all linked assets (external buffers, images etc). Tracking all the resulting async loads can cause complications for applications. By default, loaders.gl loads all linked assets before resolving a returned `Promise`.
 
 ## Licenses, Credits and Attributions
 

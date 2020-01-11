@@ -1,32 +1,38 @@
 # Roadmap
 
-We are trying to make the loaders.gl roadmap as public as possible. We share information about the direction of the framework in the following ways:
+This is the high-level loaders.gl roadmap. For detailed information see
 
-- **[RFCs](https://github.com/uber-web/loaders.gl/tree/master/dev-docs/RFCs)** - RFCs are technical writeups that describe proposed features in upcoming releases.
-- **[Roadmap Document](https://github.com/uber-web/loaders.gl/tree/master/docs/overview/roadmap)** - (this document) A high-level summary of our current direction for future releases.
-- **[Blog](https://medium.com/@vis.gl)** - We use the vis.gl blog to share information about what we are doing.
-- **[Github Issues](https://github.com/uber-web/loaders.gl/issues)** - The traditional way to start or join a discussion.
+- **[RFCs](https://github.com/uber-web/loaders.gl/tree/master/dev-docs/RFCs)** - technical writeups that describe proposed features.
+- **[Github Tracker Issues](https://github.com/uber-web/loaders.gl/issues?q=is%3Aissue+is%3Aopen+tracker)** - "Tracker" issues contained detailed technical roadmaps for specific features/modules.
 
 ## Core Feature Roadmap
 
 Many ideas are in tracker tasks in github, but here are some ideas:
 
-**Worker Improvements** - - Worker Warmup - loaders.gl core should have an option to pre-load workers so that loader thread pool is primed and ready to start off-thread parsing as soon as data arrives on the wire. This can avoid a typical 1-2 second lag to load and parse the worker script on the initial load using that worker.
+**Worker Improvements**
 
-**Progress Tracking** - loaders can provide progress callbacks and a `ProgressTracker` class to track the progress of a set of parallel loads.
+- Worker Warmup: loaders.gl core should have an option to pre-load workers so that loader thread pool is primed and ready to start off-thread parsing as soon as data arrives on the wire. This can avoid a typical 1-2 second lag to load and parse the worker script on the initial load using that worker.
+- Node.js Workers: Supported since Node 10.6 / 12.3, would increase the appeal of loaders.gl in cloud/backend applications
 
-**Automatic Timing** - loaders.gl could integrate with probe.gl `Stats`, ideas:
+**Progress Tracking**
 
+- loaders can provide progress callbacks and a `ProgressTracker` class to track the progress of a set of parallel loads.
+
+**Automatic Timing**
+
+- loaders.gl could integrate with probe.gl `Stats`.
 - loaders could export a global stats object.
 - `load` options could accept a `stats` parameter.
 - objects returned from loaders could contain a `stats` object with timing stats.
 - `setDefaultOptions({stats: true})` to enable stats collection, etc.
 
-**MIME types** - Allow MIME types (e.g. from response headers) to be provided to assist in loader auto-selection.
+**MIME types**
+
+- Allow MIME types (e.g. from response headers) to be provided to assist in loader auto-selection.
 
 ## Writer Roadmap
 
-Writer support is currently minimal in loaders.gl.
+Note that Writer support is currently minimal in loaders.gl, so far mainly due to lack of strong internal use cases.
 
 - Worker support for writers
 - Enable Writers to return recommended MIME type(s).
@@ -40,6 +46,8 @@ Writer support is currently minimal in loaders.gl.
 - Develop GeoJSON to Arrow mapping
 
 Streaming tabular loaders
+
+### `CSVLoader`
 
 - Improve perf of CSV Loader to match `d3.dsv`
 
