@@ -6,7 +6,7 @@ import {
   getIteratorFromData
 } from '@loaders.gl/core/lib/loader-utils/get-data';
 
-import {isIterator} from '@loaders.gl/core';
+import {isBrowser, isIterator} from '@loaders.gl/core';
 
 test('parseWithLoader#getArrayBufferOrStringFromDataSync', t => {
   const string = 'line 1\nline 2';
@@ -22,6 +22,35 @@ test('parseWithLoader#getArrayBufferOrStringFromDataSync', t => {
   t.is(result, string, 'returns correct result');
 
   t.throws(() => getArrayBufferOrStringFromDataSync(string, {binary: true}));
+
+  t.end();
+});
+
+test.only('parseWithLoader#getArrayBufferOrStringFromDataSync(embedded arrays/buffers)', t => {
+  const string = 'line 1\nline 2';
+  const embeddedString = `}}}${string}{{{`;
+
+  const typedArray = new TextEncoder().encode(embeddedString);
+  const typedArrayWithOffset = new Uint8Array(typedArray.buffer, 3, string.length);
+
+  // Check that our offset array is correctly set up
+  let extractedString = new TextDecoder().decode(typedArrayWithOffset);
+  t.equals(extractedString, string);
+
+
+  let result = getArrayBufferOrStringFromDataSync(typedArrayWithOffset, {text: true});
+  t.equals(result, string, 'typedArrayWithOffset returns correct result');
+
+  if (!isBrowser) {
+    const nodeBufferWithOffset = Buffer.from(typedArray.buffer, 3, string.length);
+  
+    // Check that our offset array is correctly set up
+    extractedString = nodeBufferWithOffset.toString();
+    t.equals(extractedString, string);
+
+    let result = getArrayBufferOrStringFromDataSync(nodeBufferWithOffset, {text: true});
+    t.equals(result, string, 'typedArrayWithOffset returns correct result');  
+  }
 
   t.end();
 });

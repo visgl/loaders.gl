@@ -32,11 +32,20 @@ export function getArrayBufferOrStringFromDataSync(data, loader) {
     return data;
   }
 
-  if (data instanceof ArrayBuffer || ArrayBuffer.isView(data)) {
-    const arrayBuffer = data.buffer || data;
+  if (data instanceof ArrayBuffer) {
+    const arrayBuffer = data;
     if (loader.text && !loader.binary) {
       const textDecoder = new TextDecoder('utf8');
       return textDecoder.decode(arrayBuffer);
+    }
+    return arrayBuffer;
+  }
+
+  if (ArrayBuffer.isView(data) || data.buffer) {
+    const arrayBuffer = data.buffer || data;
+    if (loader.text && !loader.binary) {
+      const textDecoder = new TextDecoder('utf8');
+      return textDecoder.decode(data);
     }
     return arrayBuffer;
   }
