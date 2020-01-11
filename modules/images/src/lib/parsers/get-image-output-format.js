@@ -1,4 +1,4 @@
-import {isImageTypeSupported, getSupportedImageType} from '../parsed-image-api/image-type';
+import {isImageTypeSupported, getDefaultImageType} from '../parsed-image-api/image-type';
 
 // The user can request a specific output format via `options.type`
 // TODO - ImageBitmap vs HTMLImage depends on worker threads...
@@ -17,7 +17,7 @@ export default function getImageOutputFormat(options = {}) {
       return type;
 
     case 'auto':
-      return getSupportedImageType();
+      return getDefaultImageType();
 
     default:
       // Note: isImageTypeSupported throws on unknown type

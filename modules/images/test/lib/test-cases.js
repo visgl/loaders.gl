@@ -46,7 +46,7 @@ export const TEST_CASES = [
     url: `${CONTENT_BASE}/img1-preview.bmp`,
     width: 480,
     height: 320,
-    skipUnderNode: true // small bug in `get-pixels` module we could post a patch...
+    skip: !isBrowser
   },
   {
     title: 'JPEG',
