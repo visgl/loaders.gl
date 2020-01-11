@@ -1,4 +1,4 @@
-/* global TextEncoder */
+/* global TextEncoder, TextDecoder, Buffer */
 import test from 'tape-promise/tape';
 import {
   getArrayBufferOrStringFromDataSync,
@@ -37,19 +37,24 @@ test.only('parseWithLoader#getArrayBufferOrStringFromDataSync(embedded arrays/bu
   let extractedString = new TextDecoder().decode(typedArrayWithOffset);
   t.equals(extractedString, string);
 
-
   let result = getArrayBufferOrStringFromDataSync(typedArrayWithOffset, {text: true});
-  t.equals(result, string, 'typedArrayWithOffset returns correct result');
+  t.equals(result, string, 'typedArrayWithOffset to string returns correct result');
+
+  // result = getArrayBufferOrStringFromDataSync(typedArrayWithOffset, {text: false});
+  // t.deepEquals(result, typedArrayWithOffset, 'typedArrayWithOffset to ArrayBuffer returns correct result');
 
   if (!isBrowser) {
     const nodeBufferWithOffset = Buffer.from(typedArray.buffer, 3, string.length);
-  
+
     // Check that our offset array is correctly set up
     extractedString = nodeBufferWithOffset.toString();
     t.equals(extractedString, string);
 
-    let result = getArrayBufferOrStringFromDataSync(nodeBufferWithOffset, {text: true});
-    t.equals(result, string, 'typedArrayWithOffset returns correct result');  
+    result = getArrayBufferOrStringFromDataSync(nodeBufferWithOffset, {text: true});
+    t.equals(result, string, 'BufferWithOffset to string returns correct result');
+
+    // result = getArrayBufferOrStringFromDataSync(nodeBufferWithOffset, {text: false});
+    // t.deepEquals(result, typedArrayWithOffset, 'BufferWithOffset to ArrayBuffer returns correct result');
   }
 
   t.end();

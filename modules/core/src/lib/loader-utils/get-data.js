@@ -5,7 +5,8 @@ import {
   isAsyncIterable,
   isIterable,
   isIterator,
-  isFileReadable
+  isFileReadable,
+  isBuffer
 } from '../../javascript-utils/is-type';
 import {getStreamIterator} from '../../javascript-utils/stream-utils';
 import {concatenateAsyncIterator} from '../../javascript-utils/async-iterator-utils';
@@ -27,6 +28,7 @@ export function getUrlFromData(data, url) {
   return typeof url === 'string' ? url.replace(/\?.*/, '') : url;
 }
 
+// eslint-disable-next-line complexity
 export function getArrayBufferOrStringFromDataSync(data, loader) {
   if (loader.text && typeof data === 'string') {
     return data;
@@ -41,11 +43,22 @@ export function getArrayBufferOrStringFromDataSync(data, loader) {
     return arrayBuffer;
   }
 
-  if (ArrayBuffer.isView(data) || data.buffer) {
-    const arrayBuffer = data.buffer || data;
+  // We may need to handle offsets
+  if (ArrayBuffer.isView(data) || isBuffer(data)) {
+    // TextDecoder is invoked on typed arrays and will handle offsets
     if (loader.text && !loader.binary) {
       const textDecoder = new TextDecoder('utf8');
       return textDecoder.decode(data);
+    }
+
+    // Since we are returning the underlying arrayBuffer, we must create a new copy
+    // TODO - this is a potentially unnecessary copy
+    const byteLength = data.byteLength || data.length;
+
+    let arrayBuffer = data.buffer;
+    if (data.byteOffset !== 0 || byteLength !== arrayBuffer.byteLength) {
+      console.warn('loaders.gl copying arraybuffer');
+      return arrayBuffer.slice(data.byteOffset, data.byteOffset, byteLength || data.length);
     }
     return arrayBuffer;
   }
