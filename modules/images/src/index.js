@@ -2,7 +2,7 @@ export {default as ImageLoader} from './image-loader';
 export {default as ImageWriter} from './image-writer';
 
 // Parsed Image API
-export {isImageTypeSupported} from './lib/parsed-image-api/image-type';
+export {getDefaultImageType, isImageTypeSupported} from './lib/parsed-image-api/image-type';
 export {
   isImage,
   getImageType,
