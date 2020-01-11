@@ -51,14 +51,15 @@ export function getArrayBufferOrStringFromDataSync(data, loader) {
       return textDecoder.decode(data);
     }
 
+    let arrayBuffer = data.buffer;
+
     // Since we are returning the underlying arrayBuffer, we must create a new copy
+    // if this typed array / Buffer is a partial view into the ArryayBuffer
     // TODO - this is a potentially unnecessary copy
     const byteLength = data.byteLength || data.length;
-
-    let arrayBuffer = data.buffer;
     if (data.byteOffset !== 0 || byteLength !== arrayBuffer.byteLength) {
-      console.warn('loaders.gl copying arraybuffer');
-      return arrayBuffer.slice(data.byteOffset, data.byteOffset, byteLength || data.length);
+      // console.warn(`loaders.gl copying arraybuffer of length ${byteLength}`);
+      arrayBuffer = arrayBuffer.slice(data.byteOffset, data.byteOffset + byteLength);
     }
     return arrayBuffer;
   }

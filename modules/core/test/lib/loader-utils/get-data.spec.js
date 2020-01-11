@@ -40,8 +40,12 @@ test.only('parseWithLoader#getArrayBufferOrStringFromDataSync(embedded arrays/bu
   let result = getArrayBufferOrStringFromDataSync(typedArrayWithOffset, {text: true});
   t.equals(result, string, 'typedArrayWithOffset to string returns correct result');
 
-  // result = getArrayBufferOrStringFromDataSync(typedArrayWithOffset, {text: false});
-  // t.deepEquals(result, typedArrayWithOffset, 'typedArrayWithOffset to ArrayBuffer returns correct result');
+  result = getArrayBufferOrStringFromDataSync(typedArrayWithOffset, {text: false});
+  t.deepEquals(
+    new Uint8Array(result),
+    typedArrayWithOffset,
+    'typedArrayWithOffset to ArrayBuffer returns correct result'
+  );
 
   if (!isBrowser) {
     const nodeBufferWithOffset = Buffer.from(typedArray.buffer, 3, string.length);
@@ -53,8 +57,12 @@ test.only('parseWithLoader#getArrayBufferOrStringFromDataSync(embedded arrays/bu
     result = getArrayBufferOrStringFromDataSync(nodeBufferWithOffset, {text: true});
     t.equals(result, string, 'BufferWithOffset to string returns correct result');
 
-    // result = getArrayBufferOrStringFromDataSync(nodeBufferWithOffset, {text: false});
-    // t.deepEquals(result, typedArrayWithOffset, 'BufferWithOffset to ArrayBuffer returns correct result');
+    result = getArrayBufferOrStringFromDataSync(nodeBufferWithOffset, {text: false});
+    t.deepEquals(
+      new Uint8Array(result),
+      typedArrayWithOffset,
+      'BufferWithOffset to ArrayBuffer returns correct result'
+    );
   }
 
   t.end();
