@@ -6,12 +6,11 @@ Target Release Date: mid-Feb, 2019. `alpha` releases will be made available.
 
 **@loaders.gl/core**
 
-- The `load` and `parse` functions can now read directly from `Stream` instances (works for both node and browser streams). However, note that simply reading from a stream does not automatically trigger "streaming" parsing, applications will still want to use `loadInBatches` and `streamInBatches` when processing larger files.
+- The `load` and `parse` functions can now read data directly from `Stream` objects both in node and browser.
 
 **@loaders.gl/images**
 
-- Data Texture Loading: `ImageLoader` now accepts a `data: true` parameter that returns image data instead of an actual image, intended for use of images as data textures.
-- `ImageBitmap` Loading: now works correctly: `load(..., ImageLoader, {image: {type 'imagebitmap'}}) => ImageBitmap`
+- `ImageBitmap` Loading: `load(..., ImageLoader, {image: {type 'imagebitmap'}}) => ImageBitmap`
 
 **@loaders.gl/wkt** (new loader module)
 
