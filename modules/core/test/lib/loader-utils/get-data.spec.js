@@ -26,7 +26,7 @@ test('parseWithLoader#getArrayBufferOrStringFromDataSync', t => {
   t.end();
 });
 
-test.only('parseWithLoader#getArrayBufferOrStringFromDataSync(embedded arrays/buffers)', t => {
+test('parseWithLoader#getArrayBufferOrStringFromDataSync(embedded arrays/buffers)', t => {
   const string = 'line 1\nline 2';
   const embeddedString = `}}}${string}{{{`;
 
