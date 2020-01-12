@@ -5,7 +5,8 @@ import {
   isAsyncIterable,
   isIterable,
   isIterator,
-  isFileReadable
+  isFileReadable,
+  isBuffer
 } from '../../javascript-utils/is-type';
 import {getStreamIterator} from '../../javascript-utils/stream-utils';
 import {concatenateAsyncIterator} from '../../javascript-utils/async-iterator-utils';
@@ -27,16 +28,38 @@ export function getUrlFromData(data, url) {
   return typeof url === 'string' ? url.replace(/\?.*/, '') : url;
 }
 
+// eslint-disable-next-line complexity
 export function getArrayBufferOrStringFromDataSync(data, loader) {
   if (loader.text && typeof data === 'string') {
     return data;
   }
 
-  if (data instanceof ArrayBuffer || ArrayBuffer.isView(data)) {
-    const arrayBuffer = data.buffer || data;
+  if (data instanceof ArrayBuffer) {
+    const arrayBuffer = data;
     if (loader.text && !loader.binary) {
       const textDecoder = new TextDecoder('utf8');
       return textDecoder.decode(arrayBuffer);
+    }
+    return arrayBuffer;
+  }
+
+  // We may need to handle offsets
+  if (ArrayBuffer.isView(data) || isBuffer(data)) {
+    // TextDecoder is invoked on typed arrays and will handle offsets
+    if (loader.text && !loader.binary) {
+      const textDecoder = new TextDecoder('utf8');
+      return textDecoder.decode(data);
+    }
+
+    let arrayBuffer = data.buffer;
+
+    // Since we are returning the underlying arrayBuffer, we must create a new copy
+    // if this typed array / Buffer is a partial view into the ArryayBuffer
+    // TODO - this is a potentially unnecessary copy
+    const byteLength = data.byteLength || data.length;
+    if (data.byteOffset !== 0 || byteLength !== arrayBuffer.byteLength) {
+      // console.warn(`loaders.gl copying arraybuffer of length ${byteLength}`);
+      arrayBuffer = arrayBuffer.slice(data.byteOffset, data.byteOffset + byteLength);
     }
     return arrayBuffer;
   }

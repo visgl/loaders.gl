@@ -34,6 +34,9 @@ export const isReadableDOMStream = x => {
   );
 };
 
+// Check for Node.js `Buffer` without triggering bundler to include polyfill
+export const isBuffer = x => x && typeof x === 'object' && x.isBuffer;
+
 export const isWritableNodeStream = x => {
   return isObject(x) && isFunction(x.end) && isFunction(x.write) && isBoolean(x.writable);
 };
