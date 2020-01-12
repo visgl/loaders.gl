@@ -18,8 +18,6 @@ export default async function* parseJSONInBatches(asyncIterator, options) {
     const rows = parser.write(chunk);
 
     if (isFirstChunk) {
-      console.log(parser.getPartialObject());
-      debugger; // eslint-disable-line
       isFirstChunk = false;
       schema = deduceSchema(rows);
     }

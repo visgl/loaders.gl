@@ -25,14 +25,6 @@ export default class StreamingJSONParser extends JSONParser {
     return array;
   }
 
-  // Returns a partially formed result object
-  // Useful for returning the "wrapper" object when array is not top level
-  // e.g. GeoJSON
-  getPartialObject() {
-    const container = this.currentState && this.currentState.container;
-    return container.length > 0 && container[0];
-  }
-
   // PRIVATE METHODS
 
   _extendParser() {
