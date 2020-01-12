@@ -38,18 +38,42 @@ for await (const batch of batches) {
 }
 ```
 
+When batch parsing an embedded JSON array as a table, it is possible to get access to the containing object using the `{json: {_container: true}}` option.
+
+The loader will yield an initial and a final batch with `batch.container` providing the container object and `batch.batchType` set to `opencontainer` and `closecontainer` respectively.
+
+```js
+import {JSONLoader} from '@loaders.gl/json';
+import {load} from '@loaders.gl/core';
+
+const data = await loadInBatches('geojson.json', JSONLoader);
+
+for await (const batch of batches) {
+  switch (batch.batchType) {
+    case 'opencontainer': // contains fields seen so far
+    case 'closecontainer': // contains all fields except the streamed array
+      console.log(batch.container);
+      break;
+    default:
+    // batch.data will contain a number of rows
+    for (const feature of batch.data) {
+      switch (feature.geometry.type) {
+        case 'Polygon':
+        ...
+      }
+    }
+  }
+}
+```
+
 ## Options
 
 Supports table category options such as `batchType` and `batchSize`.
 
 | Option            | Type    | Default | Description                                                            |
 | ----------------- | ------- | ------- | ---------------------------------------------------------------------- |
-| `json.table`      | Boolean | TBD     | Parse JSON as table, i.e. return the first embedded array in the JSON. |
-| `json._container` | Boolean | TBD     | Yield batches of                                                       |
-
-## About streaming loading
-
-When batch parsing an embedded JSON array as a table, set `{json: {_container: true}}` to get access to the containing object. The loader will yield an initial and a final batch with the wrapper object in `batch.container` and `batch.batchType` set to `opencontainer` and `closecontainer` respectively.
+| `json.table`      | Boolean | `true`  | Parse JSON as table, i.e. return the first embedded array in the JSON. |
+| `json._container` | Boolean | `false` | Yield batches of                                                       |
 
 ## Attribution
 
