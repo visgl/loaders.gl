@@ -91,12 +91,15 @@ async function testContainerBatches(t, iterator, expectedCount) {
   for await (const batch of iterator) {
     switch (batch.batchType) {
       case 'opencontainer':
+        t.ok(batch.container.type, 'batch.container should be set on opencontainer');
         opencontainerBatchCount++;
         break;
       case 'closecontainer':
+        t.ok(batch.container.type, 'batch.container should be set on closecontainer');
         closecontainerBatchCount++;
         break;
       default:
+        t.notOk(batch.container, 'batch.container should not be set');
     }
   }
 

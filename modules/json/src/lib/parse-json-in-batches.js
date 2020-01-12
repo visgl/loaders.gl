@@ -21,7 +21,7 @@ export default async function* parseJSONInBatches(asyncIterator, options) {
       if (_container) {
         const initialBatch = {
           batchType: 'opencontainer',
-          container: parser.getPartialObject(),
+          container: parser.getPartialResult(),
           data: [],
           schema: null
         };
@@ -55,7 +55,7 @@ export default async function* parseJSONInBatches(asyncIterator, options) {
   if (_container) {
     const finalBatch = {
       batchType: 'closecontainer',
-      container: parser.getPartialObject(),
+      container: parser.getPartialResult(),
       data: [],
       schema: null
     };
