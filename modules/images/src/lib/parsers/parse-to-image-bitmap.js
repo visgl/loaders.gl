@@ -6,30 +6,33 @@
 
 let imagebitmapOptionsSupported = true;
 
-export default function parseToImageBitmap(arrayBuffer, options) {
+export default async function parseToImageBitmap(arrayBuffer, options) {
   // NOTE: In some cases unnecessary conversion to blob (response, blob, file input)
   const blob = new Blob([new Uint8Array(arrayBuffer)]); // MIME type not needed...
   let imagebitmapOptions = options && options.imagebitmap;
 
   // Firefox crashes if imagebitmapOptions is supplied
-  // Avoid supplying if not provided, track if not supported
+  // Avoid supplying if not provided, remember if not supported
   if (isEmptyObject(imagebitmapOptions) || !imagebitmapOptionsSupported) {
     imagebitmapOptions = null;
   }
 
   if (imagebitmapOptions) {
     try {
-      return createImageBitmap(blob, imagebitmapOptions);
+      return await createImageBitmap(blob, imagebitmapOptions);
     } catch (error) {
       console.warn(error); // eslint-disable-line
       imagebitmapOptionsSupported = false;
     }
   }
-  return createImageBitmap(blob);
+  
+  return await createImageBitmap(blob);
 }
 
+const EMPTY_OBJECT = {};
+
 function isEmptyObject(object) {
-  for (const key in object) {
+  for (const key in object || EMPTY_OBJECT) {
     return true;
   }
   return false;
