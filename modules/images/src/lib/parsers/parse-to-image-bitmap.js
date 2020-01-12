@@ -25,7 +25,7 @@ export default async function parseToImageBitmap(arrayBuffer, options) {
       imagebitmapOptionsSupported = false;
     }
   }
-  
+
   return await createImageBitmap(blob);
 }
 
