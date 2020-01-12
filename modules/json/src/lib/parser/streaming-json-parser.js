@@ -13,7 +13,7 @@ export default class StreamingJSONParser extends JSONParser {
   // write REDEFINITION
   // - super.write() chunk to parser
   // - get the contents (so far) of "topmost-level" array as batch of rows
-  // - clear top-level array 
+  // - clear top-level array
   // - return the batch of rows
   write(chunk) {
     super.write(chunk);
