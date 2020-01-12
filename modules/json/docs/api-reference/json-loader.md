@@ -70,10 +70,10 @@ for await (const batch of batches) {
 
 Supports table category options such as `batchType` and `batchSize`.
 
-| Option            | Type    | Default | Description                                                            |
-| ----------------- | ------- | ------- | ---------------------------------------------------------------------- |
-| `json.table`      | Boolean | `true`  | Parse JSON as table, i.e. return the first embedded array in the JSON. |
-| `json._container` | Boolean | `false` | Yield batches of                                                       |
+| Option            | Type    | Default | Description                                                                                                                           |
+| ----------------- | ------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `json.table`      | Boolean | `false` | Parses non-streaming JSON as table, i.e. return the first embedded array in the JSON. Always `true` during batched/streaming parsing. |
+| `json._container` | Boolean | `false` | Yield batches of                                                                                                                      |
 
 ## Attribution
 
