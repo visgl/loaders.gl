@@ -2,6 +2,12 @@
 
 ## Upgrading to v2.0
 
+### `@loaders.gl/images`
+
+The experimental ImageLoaders for individual formats introduced in 2.0 have been removed, use `ImageLoader` for all formats.
+
+## Upgrading to v2.0
+
 Version 2.0 is a major release that consolidates functionality and APIs, and a number of deprecated functions have been removed.
 
 Some general changes:
