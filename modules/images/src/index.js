@@ -1,8 +1,11 @@
 export {default as ImageLoader} from './image-loader';
 export {default as ImageWriter} from './image-writer';
 
+// IMAGE CATEGORY API
+
 // Parsed Image API
-export {getDefaultImageType, isImageTypeSupported} from './lib/parsed-image-api/image-type';
+export {isImageTypeSupported, getDefaultImageType} from './lib/parsed-image-api/image-type';
+
 export {
   isImage,
   getImageType,
@@ -21,16 +24,6 @@ export {
 export {loadImage} from './lib/texture-loading-api/load-image';
 export {loadImageArray} from './lib/texture-loading-api/load-image-array';
 export {loadImageCube} from './lib/texture-loading-api/load-image-cube';
-
-// EXPERIMENTAL V2.0
-export {
-  JPEGLoader as _JPEGLoader,
-  PNGLoader as _PNGLoader,
-  GIFLoader as _GIFLoader,
-  BMPLoader as _BMPLoader,
-  SVGLoader as _SVGLoader,
-  ImageLoaders as _ImageLoaders
-} from './image-loaders';
 
 // DEPRECATED
 export {default as HTMLImageLoader} from './image-loader';
