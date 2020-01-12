@@ -1,5 +1,5 @@
 import test from 'tape-promise/tape';
-import {ClarinetParser} from '@loaders.gl/json';
+import ClarinetParser from '@loaders.gl/json/lib/clarinet/clarinet';
 import {fetchFile} from '@loaders.gl/core';
 
 const SAMPLE_PATH = '@loaders.gl/json/test/data/clarinet/sample.json';

@@ -1,5 +1,11 @@
 # Upgrade Guide
 
+## Upgrading to v2.1
+
+### @loaders.gl/json
+
+- Experimental exports have been removed `JSONParser`, `StreamingJSONParser`, `ClarinetParser`.
+
 ## Upgrading to v2.0
 
 Version 2.0 is a major release that consolidates functionality and APIs, and a number of deprecated functions have been removed.

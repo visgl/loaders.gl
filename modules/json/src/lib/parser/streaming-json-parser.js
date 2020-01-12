@@ -10,7 +10,11 @@ export default class StreamingJSONParser extends JSONParser {
     this._extendParser();
   }
 
-  // Redefine write to clear top-level array and return batch of rows
+  // write REDEFINITION
+  // - super.write() chunk to parser
+  // - get the contents (so far) of "topmost-level" array as batch of rows
+  // - clear top-level array 
+  // - return the batch of rows
   write(chunk) {
     super.write(chunk);
     let array = [];
@@ -19,6 +23,14 @@ export default class StreamingJSONParser extends JSONParser {
       this.topLevelArray.length = 0;
     }
     return array;
+  }
+
+  // Returns a partially formed result object
+  // Useful for returning the "wrapper" object when array is not top level
+  // e.g. GeoJSON
+  getPartialObject() {
+    const container = this.currentState && this.currentState.container;
+    return container.length > 0 && container[0];
   }
 
   // PRIVATE METHODS

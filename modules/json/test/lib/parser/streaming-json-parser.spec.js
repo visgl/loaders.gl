@@ -1,19 +1,20 @@
-/*
+/* global TextDecoder */
 import test from 'tape-promise/tape';
 import {fetchFile, getStreamIterator} from '@loaders.gl/core';
-import {StreamingJSONParser} from '@loaders.gl/json';
+import StreamingJSONParser from '@loaders.gl/json/lib/parser/streaming-json-parser';
 
 const GEOJSON_PATH = `@loaders.gl/json/test/data/geojson-big.json`;
 
 test('StreamingJSONParser#geojson', async t => {
   const parser = new StreamingJSONParser();
 
-  const response = await fetchFile(GEOJSON_PATH, {encoding: 'utf8', highWaterMark: 16384});
+  // Can return text stream by setting `{encoding: 'utf8'}`, but only works on Node
+  const response = await fetchFile(GEOJSON_PATH, {highWaterMark: 16384});
   for await (const chunk of getStreamIterator(response.body)) {
-    parser.write(chunk);
+    const string = new TextDecoder().decode(chunk);
+    parser.write(string);
   }
 
   t.pass('should be able to parse geojson in chunks from a stream');
   t.end();
 });
-*/

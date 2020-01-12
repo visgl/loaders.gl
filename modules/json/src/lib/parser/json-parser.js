@@ -1,9 +1,6 @@
 import ClarinetParser from '../clarinet/clarinet';
 
-/**
- * The `JSONParser` uses the events emitted by the Clarinet parser to
- * actually build the JSON object.
- */
+// JSONParser builds a JSON object using the events emitted by the Clarinet parser
 export default class JSONParser {
   constructor() {
     this.reset();
