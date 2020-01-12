@@ -1,5 +1,5 @@
 import test from 'tape-promise/tape';
-import {JSONParser} from '@loaders.gl/json';
+import JSONParser from '@loaders.gl/json/lib/parser/json-parser';
 
 // tslint:disable:object-literal-sort-keys
 const literalCases = [

@@ -10,7 +10,11 @@ export default class StreamingJSONParser extends JSONParser {
     this._extendParser();
   }
 
-  // Redefine write to clear top-level array and return batch of rows
+  // write REDEFINITION
+  // - super.write() chunk to parser
+  // - get the contents (so far) of "topmost-level" array as batch of rows
+  // - clear top-level array
+  // - return the batch of rows
   write(chunk) {
     super.write(chunk);
     let array = [];

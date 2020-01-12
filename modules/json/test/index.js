@@ -1,4 +1,4 @@
-import './clarinet';
-import './lib/json-parser.spec';
-import './lib/streaming-json-parser.spec';
+import './lib/clarinet';
+import './lib/parser/json-parser.spec';
+import './lib/parser/streaming-json-parser.spec';
 import './json-loader.spec';

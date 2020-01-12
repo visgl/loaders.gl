@@ -1,5 +1,11 @@
 # Upgrade Guide
 
+## Upgrading to v2.1
+
+### @loaders.gl/json
+
+- Experimental exports have been removed `JSONParser`, `StreamingJSONParser`, `ClarinetParser`.
+
 ## Upgrading to v2.0
 
 ### `@loaders.gl/images`
