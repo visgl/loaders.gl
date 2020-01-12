@@ -2,13 +2,11 @@
 
 ## Upgrading to v2.1
 
-### @loaders.gl/json
+**`@loaders.gl/json`**
 
 - Experimental exports have been removed `JSONParser`, `StreamingJSONParser`, `ClarinetParser`.
 
-## Upgrading to v2.0
-
-### `@loaders.gl/images`
+**`@loaders.gl/images`**
 
 The experimental ImageLoaders for individual formats introduced in 2.0 have been removed, use `ImageLoader` for all formats.
 

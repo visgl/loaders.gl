@@ -84,19 +84,36 @@ test('JSONLoader#loadInBatches(geojson.json, columns, batchSize = auto)', async 
 });
 */
 
-test('JSONLoader#loadInBatches(geojson.json, rows, batchSize = auto)', async t => {
-  const iterator = await loadInBatches(GEOJSON_PATH, JSONLoader);
-  t.ok(isIterator(iterator) || isAsyncIterable(iterator), 'loadInBatches returned iterator');
+async function testContainerBatches(t, iterator, expectedCount) {
+  let opencontainerBatchCount = 0;
+  let closecontainerBatchCount = 0;
 
-  let batch;
-  let batchCount = 0;
-  let rowCount = 0;
-  for await (batch of iterator) {
-    batchCount++;
-    rowCount += batch.length;
+  for await (const batch of iterator) {
+    switch (batch.batchType) {
+      case 'opencontainer':
+        opencontainerBatchCount++;
+        break;
+      case 'closecontainer':
+        closecontainerBatchCount++;
+        break;
+      default:
+    }
   }
 
-  t.ok(batchCount <= 3, 'Correct number of batches received');
-  t.equal(rowCount, 308, 'Correct number of row received');
+  t.equal(opencontainerBatchCount, expectedCount, 'opencontainer batch as expected');
+  t.equal(closecontainerBatchCount, expectedCount, 'closecontainer batch as expected');
+}
+
+test('JSONLoader#loadInBatches(geojson.json, {_container: true})', async t => {
+  let iterator = await loadInBatches(GEOJSON_PATH, JSONLoader, {
+    json: {table: true, _container: true}
+  });
+  await testContainerBatches(t, iterator, 1);
+
+  iterator = await loadInBatches(GEOJSON_PATH, JSONLoader, {
+    json: {table: true, _container: false}
+  });
+  await testContainerBatches(t, iterator, 0);
+
   t.end();
 });

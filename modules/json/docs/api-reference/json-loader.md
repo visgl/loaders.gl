@@ -40,9 +40,16 @@ for await (const batch of batches) {
 
 ## Options
 
-| Option       | Type    | Default | Description                                                            |
-| ------------ | ------- | ------- | ---------------------------------------------------------------------- |
-| `json.table` | Boolean | TBD     | Parse JSON as table, i.e. return the first embedded array in the JSON. |
+Supports table category options such as `batchType` and `batchSize`.
+
+| Option            | Type    | Default | Description                                                            |
+| ----------------- | ------- | ------- | ---------------------------------------------------------------------- |
+| `json.table`      | Boolean | TBD     | Parse JSON as table, i.e. return the first embedded array in the JSON. |
+| `json._container` | Boolean | TBD     | Yield batches of                                                       |
+
+## About streaming loading
+
+When batch parsing an embedded JSON array as a table, set `{json: {_container: true}}` to get access to the containing object. The loader will yield an initial and a final batch with the wrapper object in `batch.container` and `batch.batchType` set to `opencontainer` and `closecontainer` respectively.
 
 ## Attribution
 

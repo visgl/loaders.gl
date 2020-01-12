@@ -12,6 +12,10 @@ Target Release Date: mid-Feb, 2019. `alpha` releases will be made available.
 
 - `ImageBitmap` Loading: `load(..., ImageLoader, {image: {type 'imagebitmap'}}) => ImageBitmap`
 
+**@loaders.gl/json**
+
+- The streaming JSON loader now has an experimental option `_container` that returns the JSON object containing the JSON array being streamed (as additional first and last batches).
+
 **@loaders.gl/wkt** (new loader module)
 
 - New loader module for the Well-Known Text geometry format.
