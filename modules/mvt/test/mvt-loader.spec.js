@@ -41,6 +41,7 @@ test('Lines MVT', async t => {
     }
   };
 
+  // eslint-disable-next-line
   const geojson = parse(mvtArrayBuffer, MVTLoader, loaderOptions);
   // t.deepEqual(geojson, decodedGeoJSON);
 
