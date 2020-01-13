@@ -11,6 +11,7 @@ export const MapboxVectorTileLoader = {
   mimeType: 'application/x-protobuf',
   category: 'geometry',
   parse: async (arrayBuffer, options) => parseMVT(arrayBuffer, options),
+  parseSync: parseMVT,
   binary: true,
   testText: null,
   options: {

@@ -2,13 +2,13 @@
 
 Loader for the [Mapbox Vector Tile](https://docs.mapbox.com/vector-tiles/specification/) format for representation of geometry.
 
-| Loader         | Characteristic                                                                              |
-| -------------- | ------------------------------------------------------------------------------------------- |
-| File Extension | `.mvt`,                                                                                     |
-| File Type      | Binary                                                                                        |
+| Loader         | Characteristic                                                            |
+| -------------- | ------------------------------------------------------------------------- |
+| File Extension | `.mvt`,                                                                   |
+| File Type      | Binary                                                                    |
 | File Format    | [Mapbox Vector Tile](https://docs.mapbox.com/vector-tiles/specification/) |
-| Data Format    | [Geometry](/docs/specifications/category-gis)                                               |
-| Supported APIs | `load`, `parse`, `parseSync`                                                                |
+| Data Format    | [Geometry](/docs/specifications/category-gis)                             |
+| Supported APIs | `load`, `parse`, `parseSync`                                              |
 
 ## Usage
 

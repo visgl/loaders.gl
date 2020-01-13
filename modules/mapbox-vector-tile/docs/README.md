@@ -11,8 +11,8 @@ npm install @loaders.gl/core
 
 ## Loaders and Writers
 
-| Loader                                                   |
-| -------------------------------------------------------- |
+| Loader                                                                                               |
+| ---------------------------------------------------------------------------------------------------- |
 | [`MapboxVectorTileLoader`](modules/mapbox-vector-tiles/docs/api-reference/mapbox-vector-tile-loader) |
 
 ## Attribution

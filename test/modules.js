@@ -35,7 +35,7 @@ require('@loaders.gl/potree/test');
 // Geospatial Formats
 require('@loaders.gl/kml/test');
 require('@loaders.gl/wkt/test');
-require('@loaders.gl/mapbox-vector-tiles/test');
+require('@loaders.gl/mapbox-vector-tile/test');
 
 // Table Formats
 require('@loaders.gl/tables/test');
