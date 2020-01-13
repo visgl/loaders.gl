@@ -15,6 +15,8 @@ export const MapboxVectorTileLoader = {
   binary: true,
   testText: null,
   options: {
-    mvt: {}
+    mvt: {
+      tileProperties: {}
+    }
   }
 };
