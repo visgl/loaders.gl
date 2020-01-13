@@ -10,6 +10,7 @@ Several geospatial formats return data in the form of lists of lng/lat encoded g
 | -------------------------------------------------------- | ----- |
 | [`KMLLoader`](modules/kml/docs/api-reference/kml-loader) |       |
 | [`WKTLoader`](modules/wkt/docs/api-reference/wkt-loader) |       |
+| [`MapboxVectorTileLoader`](modules/mapbox-vector-tile/docs/api-reference/mapbox-vector-tile-loader) |       |
 
 ## Data Format
 
