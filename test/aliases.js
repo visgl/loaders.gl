@@ -35,10 +35,7 @@ const makeAliases = () => ({
   '@loaders.gl/kml/test': path.resolve(__dirname, '../modules/kml/test'),
   '@loaders.gl/i3s/test': path.resolve(__dirname, '../modules/i3s/test'),
   '@loaders.gl/las/test': path.resolve(__dirname, '../modules/las/test'),
-  '@loaders.gl/mapbox-vector-tile/test': path.resolve(
-    __dirname,
-    '../modules/mapbox-vector-tile/test'
-  ),
+  '@loaders.gl/mvt/test': path.resolve(__dirname, '../modules/mvt/test'),
   '@loaders.gl/obj/test': path.resolve(__dirname, '../modules/obj/test'),
   '@loaders.gl/pcd/test': path.resolve(__dirname, '../modules/pcd/test'),
   '@loaders.gl/ply/test': path.resolve(__dirname, '../modules/ply/test'),

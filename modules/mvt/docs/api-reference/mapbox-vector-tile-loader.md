@@ -1,4 +1,4 @@
-# MapboxVectorTileLoader
+# MVTLoader
 
 Loader for the [Mapbox Vector Tile](https://docs.mapbox.com/vector-tiles/specification/) format for representation of geometry.
 
@@ -13,10 +13,10 @@ Loader for the [Mapbox Vector Tile](https://docs.mapbox.com/vector-tiles/specifi
 ## Usage
 
 ```js
-import {MapboxVectorTileLoader} from '@loaders.gl/mapbox-vector-tile';
+import {MVTLoader} from '@loaders.gl/mvt';
 import {load} from '@loaders.gl/core';
 
-const data = await load(url, MapboxVectorTileLoader);
+const data = await load(url, MVTLoader);
 ```
 
 ## Options
@@ -25,4 +25,4 @@ N/A
 
 ## Attribution
 
-The `MapboxVectorTileLoader` uses [`@mapbox/vector-tile`](https://github.com/mapbox/vector-tile-js) module under the BSD-3-Clause.
+The `MVTLoader` uses [`@mapbox/vector-tile`](https://github.com/mapbox/vector-tile-js) module under the BSD-3-Clause.
