@@ -1,4 +1,4 @@
-# @loaders.gl/mapbox-vector-tile
+# @loaders.gl/mvt
 
 This module contains a geometry loader for Mapbox Vector Tiles (MVT).
 

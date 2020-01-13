@@ -6,11 +6,11 @@ Several geospatial formats return data in the form of lists of lng/lat encoded g
 
 ## Geospatial Category Loaders
 
-| Loader                                                                                              | Notes |
-| --------------------------------------------------------------------------------------------------- | ----- |
-| [`KMLLoader`](modules/kml/docs/api-reference/kml-loader)                                            |       |
-| [`WKTLoader`](modules/wkt/docs/api-reference/wkt-loader)                                            |       |
-| [`MapboxVectorTileLoader`](modules/mapbox-vector-tile/docs/api-reference/mapbox-vector-tile-loader) |       |
+| Loader                                                   | Notes |
+| -------------------------------------------------------- | ----- |
+| [`KMLLoader`](modules/kml/docs/api-reference/kml-loader) |       |
+| [`WKTLoader`](modules/wkt/docs/api-reference/wkt-loader) |       |
+| [`MVTLoader`](modules/mvt/docs/api-reference/mvt-loader) |       |
 
 ## Data Format
 
