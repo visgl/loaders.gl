@@ -22,15 +22,22 @@ export default function parseMVT(input, options) {
     for (let i = 0; i < vectorTileLayer.length; i++) {
       const vectorTileFeature = vectorTileLayer.feature(i);
 
-      const feature = vectorTileFeature.toGeoJSON(
-        mvtOptions.tileProperties.x,
-        mvtOptions.tileProperties.y,
-        mvtOptions.tileProperties.z
-      );
-
-      features.push(feature);
+      const decodedFeature = getDecodedFeature(vectorTileFeature, mvtOptions);
+      features.push(decodedFeature);
     }
   }
 
   return features;
+}
+
+function getDecodedFeature(feature, options) {
+  if (options.geojson) {
+    return feature.toGeoJSON(
+      options._tileProperties.x,
+      options._tileProperties.y,
+      options._tileProperties.z
+    );
+  }
+
+  return feature.loadGeometry();
 }
