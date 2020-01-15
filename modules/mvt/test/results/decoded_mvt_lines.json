@@ -1,0 +1,21 @@
+[
+  {
+    "type": "Feature",
+    "geometry": {
+      "type": "LineString",
+      "coordinates": [
+        [
+          -0.3515625,
+          41.73852846935915
+        ],
+        [
+          0.087890625,
+          41.64007838467893
+        ]
+      ]
+    },
+    "properties": {
+      "cartodb_id": 1
+    }
+  }
+]
