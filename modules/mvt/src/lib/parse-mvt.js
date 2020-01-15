@@ -13,6 +13,7 @@ export default function parseMVT(input, options) {
   }
 
   const tile = new VectorTile(new Protobuf(input));
+  const mvtOptions = options.mvt;
   const features = [];
 
   for (const layerName in tile.layers) {
@@ -22,9 +23,9 @@ export default function parseMVT(input, options) {
       const vectorTileFeature = vectorTileLayer.feature(i);
 
       const feature = vectorTileFeature.toGeoJSON(
-        options.tileProperties.x,
-        options.tileProperties.y,
-        options.tileProperties.z
+        mvtOptions.tileProperties.x,
+        mvtOptions.tileProperties.y,
+        mvtOptions.tileProperties.z
       );
 
       features.push(feature);
