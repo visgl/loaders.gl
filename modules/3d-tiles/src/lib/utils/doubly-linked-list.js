@@ -3,8 +3,6 @@
 
 import DoublyLinkedListNode from '../utils/doubly-linked-list-node';
 
-const defined = x => x !== undefined;
-
 /**
  * Doubly linked list
  *
@@ -12,8 +10,8 @@ const defined = x => x !== undefined;
  */
 export default class DoublyLinkedList {
   constructor() {
-    this.head = undefined;
-    this.tail = undefined;
+    this.head = null;
+    this.tail = null;
     this._length = 0;
   }
 
@@ -27,9 +25,9 @@ export default class DoublyLinkedList {
    * @return {DoublyLinkedListNode}
    */
   add(item) {
-    const node = new DoublyLinkedListNode(item, this.tail, undefined);
+    const node = new DoublyLinkedListNode(item, this.tail, null);
 
-    if (defined(this.tail)) {
+    if (this.tail) {
       this.tail.next = node;
       this.tail = node;
     } else {
@@ -47,29 +45,29 @@ export default class DoublyLinkedList {
    * @param {DoublyLinkedListNode} node
    */
   remove(node) {
-    if (!defined(node)) {
+    if (!node) {
       return;
     }
 
-    if (defined(node.previous) && defined(node.next)) {
+    if (node.previous && node.next) {
       node.previous.next = node.next;
       node.next.previous = node.previous;
-    } else if (defined(node.previous)) {
+    } else if (node.previous) {
       // Remove last node
-      node.previous.next = undefined;
+      node.previous.next = null;
       this.tail = node.previous;
-    } else if (defined(node.next)) {
+    } else if (node.next) {
       // Remove first node
-      node.next.previous = undefined;
+      node.next.previous = null;
       this.head = node.next;
     } else {
       // Remove last node in the linked list
-      this.head = undefined;
-      this.tail = undefined;
+      this.head = null;
+      this.tail = null;
     }
 
-    node.next = undefined;
-    node.previous = undefined;
+    node.next = null;
+    node.previous = null;
 
     --this._length;
   }
@@ -86,11 +84,14 @@ export default class DoublyLinkedList {
 
     // Remove nextNode, then insert after node
     this.remove(nextNode);
+    this._insert(node, nextNode);
+  }
 
+  _insert(node, nextNode) {
     const oldNodeNext = node.next;
     node.next = nextNode;
 
-    // Tail check
+    // nextNode is the new tail
     if (this.tail === node) {
       this.tail = nextNode;
     } else {
@@ -99,5 +100,7 @@ export default class DoublyLinkedList {
 
     nextNode.next = oldNodeNext;
     nextNode.previous = node;
+
+    ++this._length;
   }
 }
