@@ -7,12 +7,12 @@ const MVT_LINES_DATA_URL = '@loaders.gl/mvt/test/data/lines_2-2-1.mvt';
 const MVT_POLYGONS_DATA_URL = '@loaders.gl/mvt/test/data/polygons_10-133-325.mvt';
 
 // Geometry Array Results
-import decodedPolygonsGeometry from './results/decoded_mvt_polygons_array.json';
+import decodedPolygonsGeometry from '@loaders.gl/mvt/test/results/decoded_mvt_polygons_array.json';
 
 // GeoJSON Results
-import decodedPointsGeoJSON from './results/decoded_mvt_points.json';
-import decodedLinesGeoJSON from './results/decoded_mvt_lines.json';
-import decodedPolygonsGeoJSON from './results/decoded_mvt_polygons.json';
+import decodedPointsGeoJSON from '@loaders.gl/mvt/test/results/decoded_mvt_points.json';
+import decodedLinesGeoJSON from '@loaders.gl/mvt/test/results/decoded_mvt_lines.json';
+import decodedPolygonsGeoJSON from '@loaders.gl/mvt/test/results/decoded_mvt_polygons.json';
 
 test('Point MVT to Geometry Array', async t => {
   const response = await fetchFile(MVT_POINTS_DATA_URL);
@@ -51,7 +51,7 @@ test('Point MVT to GeoJSON', async t => {
   const loaderOptions = {
     mvt: {
       geojson: true,
-      _tileProperties: {
+      tileIndex: {
         x: 2,
         y: 6,
         z: 4
@@ -72,7 +72,7 @@ test('Lines MVT to GeoJSON', async t => {
   const loaderOptions = {
     mvt: {
       geojson: true,
-      _tileProperties: {
+      tileIndex: {
         x: 2,
         y: 1,
         z: 2
@@ -93,7 +93,7 @@ test('Polygons MVT to GeoJSON', async t => {
   const loaderOptions = {
     mvt: {
       geojson: true,
-      _tileProperties: {
+      tileIndex: {
         x: 133,
         y: 325,
         z: 10
