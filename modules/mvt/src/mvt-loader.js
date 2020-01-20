@@ -13,6 +13,7 @@ export const MVTWorkerLoader = {
   options: {
     mvt: {
       geojson: false,
+      tileIndex: {},
       workerUrl: `https://unpkg.com/@loaders.gl/mvt@${VERSION}/dist/mvt-loader.worker.js`
     }
   }

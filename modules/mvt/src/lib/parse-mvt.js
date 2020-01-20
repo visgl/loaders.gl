@@ -30,13 +30,9 @@ export default function parseMVT(input, options) {
   return features;
 }
 
-function getDecodedFeature(feature, options) {
-  if (options.geojson) {
-    return feature.toGeoJSON(
-      options._tileProperties.x,
-      options._tileProperties.y,
-      options._tileProperties.z
-    );
+function getDecodedFeature(feature, options = {}) {
+  if (options.geojson && options.tileIndex) {
+    return feature.toGeoJSON(options.tileIndex.x, options.tileIndex.y, options.tileIndex.z);
   }
 
   return feature.loadGeometry();
