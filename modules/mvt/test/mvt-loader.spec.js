@@ -14,7 +14,7 @@ import decodedPointsGeoJSON from '@loaders.gl/mvt/test/results/decoded_mvt_point
 import decodedLinesGeoJSON from '@loaders.gl/mvt/test/results/decoded_mvt_lines.json';
 import decodedPolygonsGeoJSON from '@loaders.gl/mvt/test/results/decoded_mvt_polygons.json';
 
-test('Point MVT to Geometry Array', async t => {
+test.skip('Point MVT to Geometry Array', async t => {
   const response = await fetchFile(MVT_POINTS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
 
@@ -24,7 +24,7 @@ test('Point MVT to Geometry Array', async t => {
   t.end();
 });
 
-test('Line MVT to Geometry Array', async t => {
+test.skip('Line MVT to Geometry Array', async t => {
   const response = await fetchFile(MVT_LINES_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
 
@@ -34,7 +34,7 @@ test('Line MVT to Geometry Array', async t => {
   t.end();
 });
 
-test('Polygon MVT to Geometry Array', async t => {
+test.skip('Polygon MVT to Geometry Array', async t => {
   const response = await fetchFile(MVT_POLYGONS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
 
@@ -44,7 +44,7 @@ test('Polygon MVT to Geometry Array', async t => {
   t.end();
 });
 
-test('Point MVT to GeoJSON', async t => {
+test.skip('Point MVT to GeoJSON', async t => {
   const response = await fetchFile(MVT_POINTS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
 
@@ -65,7 +65,7 @@ test('Point MVT to GeoJSON', async t => {
   t.end();
 });
 
-test('Lines MVT to GeoJSON', async t => {
+test.skip('Lines MVT to GeoJSON', async t => {
   const response = await fetchFile(MVT_LINES_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
 
@@ -86,7 +86,7 @@ test('Lines MVT to GeoJSON', async t => {
   t.end();
 });
 
-test('Polygons MVT to GeoJSON', async t => {
+test.skip('Polygons MVT to GeoJSON', async t => {
   const response = await fetchFile(MVT_POLYGONS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
 
