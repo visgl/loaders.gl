@@ -13,6 +13,7 @@ export default function parseMVT(input, options) {
   }
 
   const tile = new VectorTile(new Protobuf(input));
+  const mvtOptions = options.mvt;
   const features = [];
 
   for (const layerName in tile.layers) {
@@ -21,15 +22,18 @@ export default function parseMVT(input, options) {
     for (let i = 0; i < vectorTileLayer.length; i++) {
       const vectorTileFeature = vectorTileLayer.feature(i);
 
-      const feature = vectorTileFeature.toGeoJSON(
-        options.tileProperties.x,
-        options.tileProperties.y,
-        options.tileProperties.z
-      );
-
-      features.push(feature);
+      const decodedFeature = getDecodedFeature(vectorTileFeature, mvtOptions);
+      features.push(decodedFeature);
     }
   }
 
   return features;
+}
+
+function getDecodedFeature(feature, options = {}) {
+  if (options.geojson && options.tileIndex) {
+    return feature.toGeoJSON(options.tileIndex.x, options.tileIndex.y, options.tileIndex.z);
+  }
+
+  return feature.loadGeometry();
 }

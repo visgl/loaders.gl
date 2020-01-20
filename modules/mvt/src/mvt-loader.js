@@ -12,8 +12,8 @@ export const MVTWorkerLoader = {
   category: 'geometry',
   options: {
     mvt: {
-      geojson: true,
-      tileProperties: {},
+      geojson: false,
+      tileIndex: {},
       workerUrl: `https://unpkg.com/@loaders.gl/mvt@${VERSION}/dist/mvt-loader.worker.js`
     }
   }
@@ -23,6 +23,5 @@ export const MVTLoader = {
   ...MVTWorkerLoader,
   parse: async (arrayBuffer, options) => parseMVT(arrayBuffer, options),
   parseSync: parseMVT,
-  binary: true,
-  options: {}
+  binary: true
 };
