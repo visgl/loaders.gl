@@ -1,385 +1,148 @@
 # Tileset3D
 
-> The `Tileset3D` class is being generalized to handle more use cases. Since this may require modifying some APIs, this class should be considered experiemental.
+> The `Tileset3D` class is being generalized to handle more use cases. Since this may require modifying some APIs, this class should be considered experimental.
 
 The `Tileset3D` class can be instantiated with tileset data formatted according to the [3D Tiles Category](docs/specifications/3d-tiles), which is supported by the [Tileset3DLoader](docs/api-reference/3d-tiles/tileset-3d-loader).
 
 References
 
 - [3D Tiles](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification).
+- [Indexed 3d Scene Layer (i3s)](https://github.com/Esri/i3s-spec).
 
 ## Usage
 
-Loading a tileset and instantiating a `Tileset3D` instance.
+####### Loading a tileset and instantiating a `Tileset3D` instance.
+
+**Use Tileset3DLoader with load**
 
 ```js
+//
 import {Tileset3DLoader, Tileset3D} from '@loaders.gl/3d-tiles';
-import {parse} from '@loaders.gl/core';
+import {load} from '@loaders.gl/core';
 
-const tilesetJSON = await parse(fetch(tileset));
-const tileset = new Tileset3D(tilesetJson);
+const tilesetUrl = 'A tileset url';
+const tilesetJSON = await load(tilesetUrl, Tileset3DLoader);
+const tileset3d = new Tileset3D(tilesetJson, tilesetUrl, {
+  onTileLoad: tile => console.log(tile),
+  onTileUnload: tile => console.log(tile),
+  onTileError: ((tile, message, url) => console.error(message)
+});
 
-console.log(`Maximum building height: ${tileset.properties.height.maximum}`);
-console.log(`Minimum building height: ${tileset.properties.height.minimum}`);
+// A web mercator zoom level that displays the entire tile set bounding volume
+console.log(tileset3d.webMercatorZoom);
 ```
 
-Common setting for the `skipLevelOfDetail` optimization
+####### Updating tileset when viewport changes
 
 ```js
 import {Tileset3D} from '@loaders.gl/3d-tiles';
 
-const tileset = new Tileset3D(tilesetJson, {
-  url: 'http://localhost:8002/tilesets/Seattle/tileset.json',
-  baseScreenSpaceError: 1024,
-  skipScreenSpaceErrorFactor: 16
-});
+const tilesetJSON = await parse(fetch(tileset));
+const tileset3d = new Tileset3D(tilesetJson);
+tileset.update(viewport);
+
+// Check the selectedTiles based on current viewport
+// Each tile is a Tile3DHeader instance
+console.log(tileset3d.selectedTiles);
 ```
 
-Common settings for the `dynamicScreenSpaceError` optimization
+** [3D Tiles](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification): Common settings for the `dynamicScreenSpaceError` optimization **
 
 ```js
-import {Tileset3D} from '^loaders.gl/3d-tiles';
-const tileset = new Tileset3D({
-  url: 'http://localhost:8002/tilesets/Seattle/tileset.json',
+import {Tileset3D} from '@loaders.gl/3d-tiles';
+const tileset = new Tileset3D(tilesetJSON, tilesetUrl, {
   dynamicScreenSpaceError: true,
   dynamicScreenSpaceErrorDensity: 0.00278,
   dynamicScreenSpaceErrorFactor: 4.0
 });
 ```
 
-### Properties
+##### Properties
 
-### asset : Object (readonly)
+##### boundingVolume : BoundingVolume
 
-Gets the tileset's asset object property, which contains metadata about the tileset.
+The root tile's bounding volume. Check `Tile3DHeader#boundingVolume`
 
-See the [asset schema reference](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#reference-asset) in the 3D Tiles spec for the full set of properties.
+##### cartesianCenter : Number[3]
 
-### properties : Object (readonly)
+Center of tileset in fixed frame coordinates.
 
-Gets the tileset's properties dictionary object, which contains metadata about per-feature properties.
+##### cartographicCenter : Number[3]
 
-See the [properties schema reference](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#reference-properties) in the 3D Tiles spec for the full set of properties.
+Center of tileset in cartographic coordinates `[long, lat, elevation]`
 
-### tilesLoaded : boolean (readonly)
-
-When `true`, all tiles that meet the screen space error this frame are loaded. The tileset is
-completely loaded for this view.
-
-See Tileset3D#allTilesLoaded
-
-### url : String (readonly)
-
-The url to a tileset JSON file.
-
-### basePath : String (readonly) (deprecated)
-
-The base path that non-absolute paths in tileset JSON file are relative to.
-
-### maximumScreenSpaceError : Number
-
-The maximum screen space error used to drive level of detail refinement. This value helps determine when a tile refines to its descendants, and therefore plays a major role in balancing performance with visual quality.
-
-A tile's screen space error is roughly equivalent to the number of pixels wide that would be drawn if a sphere with a
-radius equal to the tile's <b>geometric error</b> were rendered at the tile's position. If this value exceeds
-`maximumScreenSpaceError` the tile refines to its descendants.
-
-Depending on the tileset, `maximumScreenSpaceError` may need to be tweaked to achieve the right balance. Higher values provide better performance but lower visual quality. \*
-
-### maximumMemoryUsage : Number
-
-^default 16 \*
-^exception `maximumScreenSpaceError` must be greater than or equal to zero.
-
-The maximum amount of GPU memory (in MB) that may be used to cache tiles. This value is estimated from
-geometry, textures, and batch table textures of loaded tiles. For point clouds, this value also
-includes per-point metadata.
-
-Tiles not in view are unloaded to enforce this.
-
-If decreasing this value results in unloading tiles, the tiles are unloaded the next frame.
-
-If tiles sized more than `maximumMemoryUsage` are needed
-to meet the desired screen space error, determined by `Tileset3D.maximumScreenSpaceError`,
-for the current view, then the memory usage of the tiles loaded will exceed
-`maximumMemoryUsage`. For example, if the maximum is 256 MB, but
-300 MB of tiles are needed to meet the screen space error, then 300 MB of tiles may be loaded. When
-these tiles go out of view, they will be unloaded.
-
-^default 512 \*
-^exception `maximumMemoryUsage` must be greater than or equal to zero.
-^see Tileset3D#totalMemoryUsageInBytes
-
-### root : Tile3DHeader
-
-The root tile header.
-
-### boundingSphere : BoundingSphere
-
-The tileset's bounding sphere.
-
-```js
-var tileset = viewer.scene.primitives.add(
-  new Tileset3D({
-    url: 'http://localhost:8002/tilesets/Seattle/tileset.json'
-  })
-);
-
-tileset.readyPromise.then(function(tileset) {
-  // Set the camera to view the newly added tileset
-  viewer.camera.viewBoundingSphere(tileset.boundingSphere, new HeadingPitchRange(0, -0.5, 0));
-});
-```
-
-### modelMatrix : Matrix4
-
-A 4x4 transformation matrix that transforms the entire tileset.
-
-```js
-// Adjust a tileset's height from the globe's surface.
-var heightOffset = 20.0;
-var boundingSphere = tileset.boundingSphere;
-var cartographic = Cartographic.fromCartesian(boundingSphere.center);
-var surface = Cartesian3.fromRadians(cartographic.longitude, cartographic.latitude, 0.0);
-var offset = Cartesian3.fromRadians(cartographic.longitude, cartographic.latitude, heightOffset);
-var translation = Cartesian3.subtract(offset, surface, new Cartesian3());
-tileset.modelMatrix = Matrix4.fromTranslation(translation);
-```
-
-### maximumMemoryUsage : Number
-
-### totalMemoryUsageInBytes : Number
-
-The total amount of GPU memory in bytes used by the tileset. This value is estimated from
-geometry, texture, and batch table textures of loaded tiles. For point clouds, this value also
-includes per-point metadata.
-
-### stats : Stats
-
-An instance of a probe.gl `Stats` object that contains information on how many tiles have been loaded etc. Easy to display using a probe.gl `StatsWidget`.
-
-### ellipsoid : Ellipsoid
+##### ellipsoid : Ellipsoid
 
 Gets an ellipsoid describing the shape of the globe.
 
-Returns the `extras` property at the top-level of the tileset JSON, which contains application specific metadata.
-Returns `undefined` if `extras` does not exist.
+##### maximumMemoryUsage : Number
 
-Exception The tileset is not loaded. Use Tileset3D.readyPromise or wait for Tileset3D.ready to be true.
+If tiles sized more than `maximumMemoryUsage` are needed to for the current view, when these tiles go out of view, they will be unloaded.
 
-See [Extras](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#specifying-extensions-and-application-specific-extras) in the 3D Tiles specification.}
+`maximumMemoryUsage` must be greater than or equal to zero.
 
-### unloadTileset
+##### modelMatrix : Matrix4
 
-Unloads all tiles that weren't selected the previous frame. This can be used to
-explicitly manage the tile cache and reduce the total number of tiles loaded below
-`Tileset3D.maximumMemoryUsage`.
+A [Matrix4](https://math.gl/modules/core/docs/api-reference/matrix4) instance (4x4 transformation matrix) that transforms the entire tileset.
 
-Tile unloads occur at the next frame to keep all the WebGL delete calls
-within the render loop.
+##### root : Tile3DHeader
 
-### isDestroyed() : Boolean
+The root tile header.
 
-Returns true if this object was destroyed; otherwise, false.
+##### selectedTiles : Array<Tile3DHeader> (readonly)
 
-If this object was destroyed, it should not be used; calling any function other than
-`isDestroyed` will result in an exception.
+The selected tiles for render in current update frame based on viewport.
 
-^returns `Boolean`: `true` if this object was destroyed; otherwise, `false`.
+##### stats : Stats
 
-### destroy()
+An instance of a probe.gl `Stats` object that contains information on how many tiles have been loaded etc. Easy to display using a probe.gl `StatsWidget`.
 
-Destroys the WebGL resources held by this object. Destroying an object allows for deterministic
-release of WebGL resources, instead of relying on the garbage collector to destroy this object.
+##### tilesLoaded : boolean (readonly)
 
-Once an object is destroyed, it should not be used; calling any function other than `isDestroyed` will result in an exception. Therefore, assign the return value `undefined` to the object as done in the example.
+When `true`, all tiles that meet the screen space error this frame are loaded. The tileset is completely loaded for this view.
 
-Wxception This object was destroyed, i.e., destroy() was called.
+##### totalMemoryUsageInBytes : Number
+
+The total amount of GPU memory in bytes used by the tileset. This value is estimated from geometry, texture, and batch table textures of loaded tiles. For point clouds, this value also includes per-point metadata.
+
+##### url : String (readonly)
+
+The url to a tileset JSON file.
+
+##### webMercatorZoom : Number[3](readonly)
+
+A web mercator zoom level that displays the entire tile set bounding volume
 
 ## Methods
 
-### constructor(tileset : Object, url : String [, options : Object])
+##### constructor(tileset : Object, url : String [, options : Object])
 
 - `tileset`: The loaded tileset (parsed JSON)
 - `url`: The url to a tileset JSON file.
 - `options`: Options object, see the options section below for available options.
 
-Notes:
+  - `modelMatrix`=`Matrix4.IDENTITY` (`Matrix4`) - A 4x4 transformation matrix that transforms the tileset's root tile.
+  - `maximumMemoryUsage`=`512`] (`Number`) - The maximum amount of memory in MB that can be used by the tileset.
+  - `ellipsoid`=`Ellipsoid.WGS84` ([`Ellipsoid`](https://math.gl/modules/geospatial/docs/api-reference/ellipsoid)) - The ellipsoid determining the size and shape of the globe.
 
-- The `version` tileset must be 3D Tiles version 0.0 or 1.0.
+  Cesium 3d tiles specific options:
 
-### hasExtension(extensionName : String) : Boolean
+  - `maximumScreenSpaceError`=`16`] (`Number`) - The maximum screen space error used to drive level of detail refinement.
+  - `dynamicScreenSpaceError`=`false`] (`Boolean`) - Optimization option. Reduce the screen space error for tiles that are further away from the camera.
+  - `dynamicScreenSpaceErrorDensity`=`0.00278`] (`Number`) - Density used to adjust the dynamic screen space error, similar to fog density.
+  - `dynamicScreenSpaceErrorFactor`=`4.0`] (`Number`) - A factor used to increase the computed dynamic screen space error.
+  - `baseScreenSpaceError`=`1024` (`Number`) - When `skipLevelOfDetail` is `true`, the screen space error that must be reached before skipping levels of detail.
 
-`true` if the tileset JSON file lists the extension in extensionsUsed; otherwise, `false`.
-^param {String} extensionName The name of the extension to check. \*
-^returns {Boolean} `true` if the tileset JSON file lists the extension in extensionsUsed; otherwise, `false`.
+  Callbacks:
 
-## Options
+  - `onTileLoad` (`(tileHeader : Tile3DHeader) : void`) - callback when a tile node is fully loaded during the tileset traversal.
+  - `onTileUnload` (`(tileHeader : Tile3DHeader) : void`) - callback when a tile node is unloaded during the tileset traversal.
+  - `onTileError` (`(tileHeader : Tile3DHeader, message : String) : void`) - callback when a tile faile to load during the tileset traversal.
 
-> Tileset3D class is still being developed, not all options are guaranteed to be working.
+##### update(viewport: WebMercatorViewport) : Number
 
-The `Tileset3D` class supports a number of options
+Execute traversal under current viewport and fetch tiles needed for current viewport and update `selectedTiles`. Return `frameNumber` of this update frame.
 
-- `options.url` (`Resource|String|Promise.Resource|Promise.String`) The url to a tileset JSON file.
-- `options.show`=`true` (`Boolean`) - Determines if the tileset will be shown.
-- `options.modelMatrix`=`Matrix4.IDENTITY` (`Matrix4`) - A 4x4 transformation matrix that transforms the tileset's root tile.
-- `options.maximumScreenSpaceError`=`16`] (`Number`) - The maximum screen space error used to drive level of detail refinement.
-- `options.maximumMemoryUsage`=`512`] (`Number`) - The maximum amount of memory in MB that can be used by the tileset.
-- `options.dynamicScreenSpaceError`=`false`] (`Boolean`) - Optimization option. Reduce the screen space error for tiles that are further away from the camera.
-- `options.dynamicScreenSpaceErrorDensity`=`0.00278`] (`Number`) - Density used to adjust the dynamic screen space error, similar to fog density.
-- `options.dynamicScreenSpaceErrorFactor`=`4.0`] (`Number`) - A factor used to increase the computed dynamic screen space error.
-- `options.baseScreenSpaceError`=`1024` (`Number`) - When `skipLevelOfDetail` is `true`, the screen space error that must be reached before skipping levels of detail.
-- `options.skipScreenSpaceErrorFactor`=`16` (`Number`) - When `skipLevelOfDetail` is `true`, a multiplier defining the minimum screen space error to skip. Used in conjunction with `skipLevels` to determine which tiles to load.
-- `options.ellipsoid`=`Ellipsoid.WGS84` (`Ellipsoid`) - The ellipsoid determining the size and shape of the globe.
+##### destroy() : void
 
-Callbacks
-
-- `options.onTileLoad` (`(tileHeader : Tile3DHeader) : void`) -
-- `options.onTileUnload` (`(tileHeader : Tile3DHeader) :void`) -
-- `options.onTileError` (`void(tileHeader : Tile3DHeader, message : String) : void`) -
-
-### dynamicScreenSpaceError
-
-=`false`
-
-Optimization option. Whether the tileset should refine based on a dynamic screen space error. Tiles that are further away will be rendered with lower detail than closer tiles. This improves performance by rendering fewer tiles and making less requests, but may result in a slight drop in visual quality for tiles in the distance.
-
-The algorithm is biased towards "street views" where the camera is close to the ground plane of the tileset and looking at the horizon. In addition results are more accurate for tightly fitting bounding volumes like box and region.
-
-### dynamicScreenSpaceErrorDensity
-
-=`0.00278`
-
-A scalar that determines the density used to adjust the dynamic screen space error (similar to "fog"). Increasing this value has the effect of increasing the maximum screen space error for all tiles, but in a non-linear fashion.
-
-The error starts at 0.0 and increases exponentially until a midpoint is reached, and then approaches 1.0 asymptotically. This has the effect of keeping high detail in the closer tiles and lower detail in the further tiles, with all tiles beyond a certain distance all roughly having an error of 1.0.
-
-The dynamic error is in the range [0.0, 1.0) and is multiplied by `dynamicScreenSpaceErrorFactor` to produce the
-final dynamic error. This dynamic error is then subtracted from the tile's actual screen space error.
-
-Increasing `dynamicScreenSpaceErrorDensity` has the effect of moving the error midpoint closer to the camera.
-It is analogous to moving fog closer to the camera.
-
-### dynamicScreenSpaceErrorFactor
-
-= 4.0;
-
-A factor used to increase the screen space error of tiles for dynamic screen space error. As this value increases less tiles
-are requested for rendering and tiles in the distance will have lower detail. If set to zero, the feature will be disabled.
-
-### dynamicScreenSpaceErrorHeightFalloff
-
-= 0.25;
-
-A ratio of the tileset's height at which the density starts to falloff. If the camera is below this height the
-full computed density is applied, otherwise the density falls off. This has the effect of higher density at
-street level views.
-
-Valid values are between 0.0 and 1.0.
-
-### onTileLoad(tileHeader : Tile3DHeader) : void
-
-Indicate ssthat a tile's content was loaded.
-
-The loaded `Tile3DHeader` is passed to the event listener.
-
-This event is fired during the tileset traversal while the frame is being rendered
-so that updates to the tile take effect in the same frame. Do not create or modify
-entities or primitives during the event listener.
-
-```js
-  new Tileset3D({
-    onTileLoad(tileHeader => console.log('A tile was loaded.'));
-  });
-```
-
-### onTileUnload(tileHeader : Tile3DHeader) : void
-
-Indicates that a tile's content was unloaded.
-
-The unloaded `Tile3DHeaders` is passed to the event listener.
-
-This event is fired immediately before the tile's content is unloaded while the frame is being
-rendered so that the event listener has access to the tile's content. Do not create
-or modify entities or primitives during the event listener.
-
-```js
-  new Tileset3D({
-    onTileUnload(tile =>  console.log('A tile was unloaded from the cache.'));
-  });
-```
-
-See
-
-- Tileset3D#maximumMemoryUsage
-- Tileset3D#trimLoadedTiles
-
-### onTileError(tileHeader : Tile3DHeader) : void
-
-Called to indicate that a tile's content failed to load. By default, error messages will be logged to the console.
-
-The error object passed to the listener contains two properties:
-
-- `url`: the url of the failed tile.
-- `message`: the error message.
-
-```js
-new Tileset3D({
-  onTileFailed(tileHeader, url, message) {
-    console.log('An error occurred loading tile: ', url);
-    console.log('Error: ', message);
-  }
-});
-```
-
-### skipLevelOfDetail : Boolean
-
-Default: true
-
-Optimization option. Determines if level of detail skipping should be applied during the traversal.
-
-The common strategy for replacement-refinement traversal is to store all levels of the tree in memory and require
-all children to be loaded before the parent can refine. With this optimization levels of the tree can be skipped
-entirely and children can be rendered alongside their parents. The tileset requires significantly less memory when
-using this optimization.
-
-### baseScreenSpaceError : Number
-
-Default: 1024
-
-The screen space error that must be reached before skipping levels of detail.
-
-Only used when `skipLevelOfDetail` is `true`.
-
-### skipScreenSpaceErrorFactor : Number
-
-Default: 16
-
-Multiplier defining the minimum screen space error to skip.
-For example, if a tile has screen space error of 100, no tiles will be loaded unless they
-are leaves or have a screen space error `<= 100 / skipScreenSpaceErrorFactor`.
-
-Only used when `Tileset3D.skipLevelOfDetail` is `true`.
-
-### skipLevels
-
-Default: 1
-
-Constant defining the minimum number of levels to skip when loading tiles. When it is 0, no levels are skipped.
-For example, if a tile is level 1, no tiles will be loaded unless they are at level greater than 2.
-
-Only used when `Tileset3D.skipLevelOfDetail` is `true`.
-
-### immediatelyLoadDesiredLevelOfDetail : false
-
-When true, only tiles that meet the maximum screen space error will ever be downloaded.
-Skipping factors are ignored and just the desired tiles are loaded.
-
-Only used when `Tileset3D.skipLevelOfDetail` is `true`.
-
-### loadSiblings: false
-
-Determines whether siblings of visible tiles are always downloaded during traversal.
-This may be useful for ensuring that tiles are already available when the viewer turns left/right.
-
-Only used when `Tileset3D.skipLevelOfDetail` is `true`.
+Destroys the WebGL resources held by this object, and destroy all the tiles' resources by recursively traversing the tileset tree.
