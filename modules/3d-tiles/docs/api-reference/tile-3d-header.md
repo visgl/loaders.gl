@@ -27,7 +27,7 @@ Indicate of the tile content state. Available options
 One of
 
 - `empty`: does not have any content to render
-- `render`: has content to to render
+- `render`: has content to render
 - `tileset`: tileset tile
 
 ##### depth : Number
@@ -84,12 +84,12 @@ One of `Scenegraph`, `PointCloud`, `SimpleMesh`
 
 Parent of this tile.
 
-###### refine : String
+##### refine : String
 
 Specifies the type of refine that is used when traversing this tile for rendering.
 
-- `ADD`: children tiles should be rendered together with parent tiles when level of details of parent tiles are not sufficient for current view.
-- `REPLACEMENT`: Children tiles should replace parent tiles when level of details of parent tiles are not sufficient for current view.
+- `ADD`: high-resolution children tiles should be rendered in addition to lower-resolution parent tiles when level of details of parent tiles are not sufficient for current view.
+- `REPLACEMENT`: high-resolution children tiles should replace parent tiles when lower-resolution parent tiles are not sufficient for current view.
 
 ##### selected : Boolean
 
@@ -105,7 +105,7 @@ The unprocessed tile header object passed in.
 
 ## Methods
 
-### constructor(tileset : Object, header : Object, parentHeader : Object)
+##### constructor(tileset : Object, header : Object, parentHeader : Object)
 
 - `tileset`: The loaded tileset (parsed JSON)
 - `header`: The url to a tileset JSON file.

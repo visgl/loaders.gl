@@ -11,9 +11,7 @@ References
 
 ## Usage
 
-####### Loading a tileset and instantiating a `Tileset3D` instance.
-
-**Use Tileset3DLoader with load**
+##### Loading a tileset and instantiating a `Tileset3D` instance.
 
 ```js
 //
@@ -32,7 +30,7 @@ const tileset3d = new Tileset3D(tilesetJson, tilesetUrl, {
 console.log(tileset3d.webMercatorZoom);
 ```
 
-####### Updating tileset when viewport changes
+##### Updating tileset when viewport changes
 
 ```js
 import {Tileset3D} from '@loaders.gl/3d-tiles';
@@ -96,6 +94,10 @@ The selected tiles for render in current update frame based on viewport.
 ##### stats : Stats
 
 An instance of a probe.gl `Stats` object that contains information on how many tiles have been loaded etc. Easy to display using a probe.gl `StatsWidget`.
+
+##### tileset : Object
+
+The original tileset data this object instanced from.
 
 ##### tilesLoaded : boolean (readonly)
 

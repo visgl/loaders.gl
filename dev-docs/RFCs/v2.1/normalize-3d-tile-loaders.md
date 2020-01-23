@@ -6,7 +6,7 @@
 
 ## Abstract
 
-This RFC focuses on consolidating Cesium tile 3d loaders and i3s loaders and output a unified format, which could support or easy to extend from a Tile 3D Loader to work with other 3D tile formats (Potree, etc.).
+This RFC consolidates Cesium tile 3d loaders and i3s loaders and unifies the output format, which could support or easy to extend from a Loader to work with other 3D tile formats (Potree, etc.).
 
 ## Motivation
 
@@ -17,7 +17,7 @@ displayed by zoom level.
 
 - Dynamically loading the dataset based on viewport requires tree traversing and strategies to decide whether a specific tile node is sufficient for current viewport (geo boundaries, zoom).
 - The math needed for loading is common in either graphics or geospatial, i.e. Bounding Box, frustum culling, Ellipsoid, and coordinate transformations, etc.
-- To provide smooth user interaction with the map (panning, zooming), requires frequently loading and unloading tiles, and thus request scheduling and caching are needed to manage tile nodes efficiently.
+- To provide smooth user interaction with the map (panning, zooming), requires frequently loading and unloading tiles, and thus request scheduling and caching are needed to manage tile resources efficiently.
 - A unified parsed format for 3d tiles category will empower all the rendering frameworks to load different 3D tiles specifications.
 
 Therefore this RFC joins the 3D tiles and i3s loaders and specifies the semantics of the unified output format. This would also potentially benefit loading other 3D standards, i.e. Potree.
@@ -34,9 +34,9 @@ Therefore this RFC joins the 3D tiles and i3s loaders and specifies the semantic
 ## Components
 
 - [`Tileset3DLoader`](docs/api-reference/3d-tiles/tileset-3d-loader): Load a tileset into a json object.
-- [`Tileset3D`](docs/api-reference/3d-tiles/tileset-3d):
+- [`Tileset3D`](docs/api-reference/3d-tiles/tileset-3d): Class instanced from a tileset object.
 - [`Tile3DLoader`](docs/api-reference/3d-tiles/tile-3d-loader): Load a tile node in a tileset.
-- [`Tile3DHeader`](docs/api-reference/3d-tiles/tile-3d-header)
+- [`Tile3DHeader`](docs/api-reference/3d-tiles/tile-3d-header): Class instanced from a tile header.
 
 ## Usage
 
@@ -97,3 +97,7 @@ tileset3d.selectedTiles.map(tileHeader => {
   }
 });
 ```
+
+## Questions
+
+It is unrealistic to support all the details for both SPECs. What is a reasonable goal for the 3d tiles loaders?
