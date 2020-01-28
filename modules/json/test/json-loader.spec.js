@@ -84,19 +84,39 @@ test('JSONLoader#loadInBatches(geojson.json, columns, batchSize = auto)', async 
 });
 */
 
-test('JSONLoader#loadInBatches(geojson.json, rows, batchSize = auto)', async t => {
-  const iterator = await loadInBatches(GEOJSON_PATH, JSONLoader);
-  t.ok(isIterator(iterator) || isAsyncIterable(iterator), 'loadInBatches returned iterator');
+async function testContainerBatches(t, iterator, expectedCount) {
+  let opencontainerBatchCount = 0;
+  let closecontainerBatchCount = 0;
 
-  let batch;
-  let batchCount = 0;
-  let rowCount = 0;
-  for await (batch of iterator) {
-    batchCount++;
-    rowCount += batch.length;
+  for await (const batch of iterator) {
+    switch (batch.batchType) {
+      case 'root-object-batch-partial':
+        t.ok(batch.container.type, 'batch.container should be set on root-object-batch-partial');
+        opencontainerBatchCount++;
+        break;
+      case 'root-object-batch-complete':
+        t.ok(batch.container.type, 'batch.container should be set on root-object-batch-complete');
+        closecontainerBatchCount++;
+        break;
+      default:
+        t.notOk(batch.container, 'batch.container should not be set');
+    }
   }
 
-  t.ok(batchCount <= 3, 'Correct number of batches received');
-  t.equal(rowCount, 308, 'Correct number of row received');
+  t.equal(opencontainerBatchCount, expectedCount, 'root-object-batch-partial batch as expected');
+  t.equal(closecontainerBatchCount, expectedCount, 'root-object-batch-complete batch as expected');
+}
+
+test('JSONLoader#loadInBatches(geojson.json, {_rootObjectBatches: true})', async t => {
+  let iterator = await loadInBatches(GEOJSON_PATH, JSONLoader, {
+    json: {table: true, _rootObjectBatches: true}
+  });
+  await testContainerBatches(t, iterator, 1);
+
+  iterator = await loadInBatches(GEOJSON_PATH, JSONLoader, {
+    json: {table: true, _rootObjectBatches: false}
+  });
+  await testContainerBatches(t, iterator, 0);
+
   t.end();
 });

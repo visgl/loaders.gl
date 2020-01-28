@@ -7,6 +7,8 @@ import {default as JSONParser} from './json-parser';
 export default class StreamingJSONParser extends JSONParser {
   constructor() {
     super();
+    this.topLevelArray = null;
+    this.topLevelObject = null;
     this._extendParser();
   }
 
@@ -25,6 +27,13 @@ export default class StreamingJSONParser extends JSONParser {
     return array;
   }
 
+  // Returns a partially formed result object
+  // Useful for returning the "wrapper" object when array is not top level
+  // e.g. GeoJSON
+  getPartialResult() {
+    return this.topLevelObject;
+  }
+
   // PRIVATE METHODS
 
   _extendParser() {
@@ -35,6 +44,18 @@ export default class StreamingJSONParser extends JSONParser {
         this._openContainer(this.topLevelArray);
       } else {
         this._openContainer([]);
+      }
+    };
+
+    this.parser.onopenobject = name => {
+      if (!this.topLevelObject) {
+        this.topLevelObject = {};
+        this._openContainer(this.topLevelObject);
+      } else {
+        this._openContainer({});
+      }
+      if (typeof name !== 'undefined') {
+        this.parser.onkey(name);
       }
     };
   }
