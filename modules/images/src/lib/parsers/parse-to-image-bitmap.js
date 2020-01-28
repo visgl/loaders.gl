@@ -4,9 +4,36 @@
 // Supported on worker threads, not supported on Edge, IE11 and Safari
 // https://developer.mozilla.org/en-US/docs/Web/API/ImageBitmap#Browser_compatibility
 
-export default function parseToImageBitmap(arrayBuffer, options) {
+let imagebitmapOptionsSupported = true;
+
+export default async function parseToImageBitmap(arrayBuffer, options) {
   // NOTE: In some cases unnecessary conversion to blob (response, blob, file input)
   const blob = new Blob([new Uint8Array(arrayBuffer)]); // MIME type not needed...
-  const imagebitmapOptions = options && options.imagebitmap;
-  return imagebitmapOptions ? createImageBitmap(blob) : createImageBitmap(blob, imagebitmapOptions);
+  let imagebitmapOptions = options && options.imagebitmap;
+
+  // Firefox crashes if imagebitmapOptions is supplied
+  // Avoid supplying if not provided, remember if not supported
+  if (isEmptyObject(imagebitmapOptions) || !imagebitmapOptionsSupported) {
+    imagebitmapOptions = null;
+  }
+
+  if (imagebitmapOptions) {
+    try {
+      return await createImageBitmap(blob, imagebitmapOptions);
+    } catch (error) {
+      console.warn(error); // eslint-disable-line
+      imagebitmapOptionsSupported = false;
+    }
+  }
+
+  return await createImageBitmap(blob);
+}
+
+const EMPTY_OBJECT = {};
+
+function isEmptyObject(object) {
+  for (const key in object || EMPTY_OBJECT) {
+    return true;
+  }
+  return false;
 }

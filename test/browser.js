@@ -22,6 +22,7 @@
 // require('tap-browser-color')();
 
 /* global window */
+require('@probe.gl/test-utils/polyfill');
 const test = require('tape');
 
 test.onFinish(window.browserTestDriver_finish);
