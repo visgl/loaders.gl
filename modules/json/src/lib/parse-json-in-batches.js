@@ -4,7 +4,7 @@ import StreamingJSONParser from './parser/streaming-json-parser';
 // TODO - support batch size 0 = no batching/single batch?
 // eslint-disable-next-line max-statements
 export default async function* parseJSONInBatches(asyncIterator, options) {
-  const {batchSize, _container} = options.json;
+  const {batchSize, _rootObjectBatches} = options.json;
   const TableBatchType = options.json.TableBatch;
 
   let isFirstChunk = true;
@@ -18,9 +18,9 @@ export default async function* parseJSONInBatches(asyncIterator, options) {
     const rows = parser.write(chunk);
 
     if (isFirstChunk) {
-      if (_container) {
+      if (_rootObjectBatches) {
         const initialBatch = {
-          batchType: 'opencontainer',
+          batchType: 'root-object-batch-partial',
           container: parser.getPartialResult(),
           data: [],
           schema: null
@@ -52,9 +52,9 @@ export default async function* parseJSONInBatches(asyncIterator, options) {
     yield batch;
   }
 
-  if (_container) {
+  if (_rootObjectBatches) {
     const finalBatch = {
-      batchType: 'closecontainer',
+      batchType: 'root-object-batch-complete',
       container: parser.getPartialResult(),
       data: [],
       schema: null

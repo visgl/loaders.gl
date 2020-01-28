@@ -38,9 +38,9 @@ for await (const batch of batches) {
 }
 ```
 
-When batch parsing an embedded JSON array as a table, it is possible to get access to the containing object using the `{json: {_container: true}}` option.
+When batch parsing an embedded JSON array as a table, it is possible to get access to the containing object using the `{json: {_rootObjectBatches: true}}` option.
 
-The loader will yield an initial and a final batch with `batch.container` providing the container object and `batch.batchType` set to `opencontainer` and `closecontainer` respectively.
+The loader will yield an initial and a final batch with `batch.container` providing the container object and `batch.batchType` set to `root-object-batch-partial` and `root-object-batch-complete` respectively.
 
 ```js
 import {JSONLoader} from '@loaders.gl/json';
@@ -50,8 +50,8 @@ const data = await loadInBatches('geojson.json', JSONLoader);
 
 for await (const batch of batches) {
   switch (batch.batchType) {
-    case 'opencontainer': // contains fields seen so far
-    case 'closecontainer': // contains all fields except the streamed array
+    case 'root-object-batch-partial': // contains fields seen so far
+    case 'root-object-batch-complete': // contains all fields except the streamed array
       console.log(batch.container);
       break;
     default:
@@ -70,10 +70,10 @@ for await (const batch of batches) {
 
 Supports table category options such as `batchType` and `batchSize`.
 
-| Option            | Type    | Default | Description                                                                                                                           |
-| ----------------- | ------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `json.table`      | Boolean | `false` | Parses non-streaming JSON as table, i.e. return the first embedded array in the JSON. Always `true` during batched/streaming parsing. |
-| `json._container` | Boolean | `false` | Yield batches of                                                                                                                      |
+| Option                    | From | Type    | Default | Description                                                                                                                           |
+| ------------------------- | ---- | ------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `json.table`              | v2.0 | Boolean | `false` | Parses non-streaming JSON as table, i.e. return the first embedded array in the JSON. Always `true` during batched/streaming parsing. |
+| `json._rootObjectBatches` | v2.1 | Boolean | `false` | Yield an initial and final batch containing the partial and complete root object (excluding the array being streamed).                |
 
 ## Attribution
 

@@ -14,7 +14,7 @@ Target Release Date: mid-Feb, 2019. `alpha` releases will be made available.
 
 **@loaders.gl/json**
 
-- The streaming JSON loader now has an experimental option `_container` that returns the JSON object containing the JSON array being streamed (as additional first and last batches).
+- The streaming JSON loader now has an experimental option `_rootObjectBatches` that returns the top-level JSON object containing the JSON array being streamed, as additional first (partial) and last (complete) batches.
 
 **@loaders.gl/wkt** (new loader module)
 
