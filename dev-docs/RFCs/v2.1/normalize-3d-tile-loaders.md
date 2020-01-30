@@ -22,11 +22,11 @@ displayed by zoom level.
 - To provide smooth user interaction with the map (panning, zooming), requires frequently loading and unloading tiles, and thus request scheduling and caching are needed to manage tile resources efficiently.
 - A unified parsed format for 3d tiles category will empower all the rendering frameworks to load different 3D tiles specifications.
 
-Therefore this RFC joins the 3D tiles and i3s loaders and specifies the semantics of the unified output format. This would also potentially benefit loading other 3D standards, i.e. Potree.
+Therefore this RFC joins the 3D tiles and i3s loaders and specifies the semantics of the unified output format. This would also potentially benefit loading other 3D standards i.e. Potree, and further 2D standards.
 
 ### 2D Tiles
 
-Paralleled with the [improvements](https://github.com/uber/deck.gl/pull/4139) in deck.gl 2D Tile loading and rendering, 2D and 3D tiles loading formats are going to converge in the future.
+Paralleled with the [improvements](https://github.com/uber/deck.gl/pull/4139) in deck.gl 2D Tile loading and rendering, 2D and 3D tiles loading share similar formats and can eventually converge in the future.
 
 ## Concepts
 
@@ -45,37 +45,49 @@ Paralleled with the [improvements](https://github.com/uber/deck.gl/pull/4139) in
 `@loaders.gl/3d-tiles`: Load Cesium 3D tiles
 
 - loaders
-  - Tileset3DLoader
-  - Tile3DHeaderLoader
+  - `Tileset3DLoader`
+  - `Tile3DHeaderLoader`
 - Tile Classes
-  - Tileset3D:
-  - Tileset:
-- Shared Components + BaseTileset3DTraversal + Tileset3DCache + RequestScheduler
-  `@loaders.gl/i3s`: Load ArcGIS I3S tiles
+  - `Tileset3D:`
+  - `Tileset:`
+- Shared Components
+
+  - `BaseTileset3DTraversal`
+  - `Tileset3DCache`
+  - `RequestScheduler`
+
+`@loaders.gl/i3s`: Load ArcGIS I3S tiles
+
 - loaders
-  - Tileset3DLoader
-  - Tile3DHeaderLoader
+  - `Tileset3DLoader`
+  - `Tile3DHeaderLoader`
 - Tile Classes
-  - I3STileset
-  - I3STileHeader
-- dependencies: + `@loaders.gl/3d-tiles` `BaseTileset3DTraversal`, `Tileset3DCache`, `RequestScheduler`, etc.  
-  `@loaders.gl/potree`: Load Potree tiles
+  - `I3STileset`
+  - `I3STileHeader`
+- Dependencies:
+  - `@loaders.gl/3d-tiles`: `BaseTileset3DTraversal`, `Tileset3DCache`, `RequestScheduler`, etc.
+
+`@loaders.gl/potree`: Load Potree tiles
+
 - loaders
-  - PotreeLoader
-  - PotreeHierarchyChunkLoader
-  - PotreeBinLoader
+  - `PotreeLoader`
+  - `PotreeHierarchyChunkLoader`
+  - `PotreeBinLoader`
 - Tile Classes
-  - Octree
+  - `Octree`
 
 **Proposed structure**
 
 Each specification will have its own loader module and expose a Tileset loader, a TileHeader loader and a tile content loader.
 
-`@loaders.gl/3d-tiles`: Load Cesium 3D tiles. Expose `Tiles3DTilesetLoader`, `Tiles3DTileLoader`, `Tiles3DContentLoader`
-`@loaders.gl/i3s`: Load ArcGIS I3S tiles. Expose `I3STilesetLoader`, `Tiles3DTileLoader`, `I3SContentLoader`
-`@loaders.gl/potree`: Load Potree tiles. Expose `PotreeTilesetLoader`, `PotreeTileLoader`, `PotreeContentLoader`
+`@loaders.gl/3d-tiles`: Load Cesium 3D tiles. Expose `Tiles3DTilesetLoader`, `Tiles3DTileLoader`, `Tiles3DContentLoader`.
 
-`@loaders.gl/tiles`: A modules contains the common components for loading 2d and 3d tiles
+`@loaders.gl/i3s`: Load ArcGIS I3S tiles. Expose `I3STilesetLoader`, `Tiles3DTileLoader`, `I3SContentLoader`.
+
+`@loaders.gl/potree`: Load Potree tiles. Expose `PotreeTilesetLoader`, `PotreeTileLoader`, `PotreeContentLoader`.
+
+`@loaders.gl/tiles`: A modules contains the common components for loading 2d and 3d tiles.
+
 **For users**
 
 - `Tileset2D`: A class which help manage 2d tiles.
@@ -118,18 +130,18 @@ Each specification will have its own loader module and expose a Tileset loader, 
                                       ------------
                                            |
                                            \/
-                                       ---------
-                                       | tiles |
-                                       ---------
-                                           |
-                                           \/
-                                       ---------       fullfill tile.content (actual tile payload)
-                                       | Tile3D | <-------------------|
-                                       ---------                      |
-                                           /\                ------------------------
-                                           |                 | Content Loaders      |
-                                  ----------------------     ------------------------
-                                  | unified tile object |
+                                       ---------                       -----------------------
+                                       | tiles |                       | PotreeContentLoader |
+                                       ---------                 |---- | @loaders.gl/potree  |
+                                           |                     |       ---------------------
+                                           \/                    |      --------------------
+                                       ---------    tile.content |----- | I3SContentLoader |
+                                       | Tile3D | <--------------|      | @loaders.gl/i3s  |
+                                       ---------                 |      --------------------
+                                           /\                    |      ------------------------
+                                           |                     |----- | Tiles3DContentLoader |
+                                  ----------------------                | @loaders.gl/3d-tiles |
+                                  | unified tile object |                ------------------------
                                   ----------------------
                                            /\
                                            |
@@ -226,7 +238,7 @@ SimpleMesh Fields
 - `maximumMemoryUsage` (`Number`): If tiles sized more than `maximumMemoryUsage` are needed to for the current view, when these tiles go out of view, they will be unloaded.`maximumMemoryUsage` must be greater than or equal to zero.
 - `modelMatrix` (`Matrix4: A [Matrix4](https`)://math.gl/modules/core/docs/api-reference/matrix4) instance (4x4 transformation matrix) that transforms the entire tileset.
 - `root` (`Tile3DHeader`): The root tile header.
-- tiles: Array<Tile3DHeader> (readonly): All the tiles that have been traversed.
+- tiles: Array<Tile3DHeader>: All the tiles that have been traversed.
 - `stats` (`Stats`): An instance of a probe.gl `Stats` object that contains information on how many tiles have been loaded etc. Easy to display using a probe.gl `StatsWidget`.
 - `tileset` (`Object`): The original tileset data this object instanced from.
 - `tilesLoaded` (`boolean`): When `true`, all tiles that meet the screen space error this frame are loaded. The tileset is completely loaded for this view.
@@ -236,7 +248,7 @@ SimpleMesh Fields
 
 **Methods**
 
-- constructor(tileset : Object, url : String [, options : Object])
+- `constructor(tileset : Object, url : String [, options : Object])`
   - `tileset`: The loaded tileset (parsed JSON)
   - `options`: Options object, but not limited to
     Parameters:
@@ -247,8 +259,8 @@ SimpleMesh Fields
     - `onTileLoad` (`(tileHeader : Tile3DHeader) : void`) - callback when a tile node is fully loaded during the tileset traversal.
     - `onTileUnload` (`(tileHeader : Tile3DHeader) : void`) - callback when a tile node is unloaded during the tileset traversal.
     - `onTileError` (`(tileHeader : Tile3DHeader, message : String) : void`) - callback when a tile faile to load during the tileset traversal.
-- update(viewport: WebMercatorViewport) : Number: Execute traversal under current viewport and fetch tiles needed for current viewport and update `selectedTiles`. Return `frameNumber` of this update frame.
-- destroy() : void: Destroys the WebGL resources held by this object, and destroy all the tiles' resources by recursively traversing the tileset tree.
+- `update(viewport: WebMercatorViewport) : Number`: Execute traversal under current viewport and fetch tiles needed for current viewport and update `selectedTiles`. Return `frameNumber` of this update frame.
+- `destroy() : void`: Destroys the WebGL resources held by this object, and destroy all the tiles' resources by recursively traversing the tileset tree.
 
 ### Tile3D
 
