@@ -19,13 +19,8 @@ Parses a [3D tile](https://github.com/AnalyticalGraphicsInc/3d-tiles).
 
 ```js
 import {load} from '@loaders.gl/core';
-// 3d tiles
 import {Tile3DLoader} from '@loaders.gl/3d-tiles';
-const tileHeader = await load(url, Tile3DLoader);
-
-// i3s
-import {I3STileLoader} from '@loaders.gl/i3s';
-const tileHeader = await load(url, I3STileLoader);
+const gltf = await load(url, Tile3DLoader);
 ```
 
 To decompress tiles containing Draco compressed glTF models or Draco compressed point clouds:
@@ -33,11 +28,8 @@ To decompress tiles containing Draco compressed glTF models or Draco compressed 
 ```js
 import {load} from '@loaders.gl/core';
 import {Tile3DLoader} from '@loaders.gl/3d-tiles';
-import {DracoWorkerLoader} from '@loaders.gl/draco';
-
-registerLoaders([DracoWorkerLoader]);
-
-const tileHeader = await load(url, Tile3DLoader, {decompress: true});
+import {DracoLoader} from '@loaders.gl/draco';
+const gltf = await load(url, Tile3DLoader, {DracoLoader, decompress: true});
 ```
 
 ## Options
@@ -48,6 +40,7 @@ Point cloud tie options
 
 | Option                              | Type      | Default | Description                          |
 | ----------------------------------- | --------- | ------- | ------------------------------------ |
+| `3d-tiles.decodeQuantizedPositions` | `Boolean` | `false` | Pre-decode quantized position on CPU |
 | `3d-tiles.decodeQuantizedPositions` | `Boolean` | `false` | Pre-decode quantized position on CPU |
 
 For i3dm and b3dm tiles:
@@ -62,4 +55,4 @@ If `options['3d-tiles'].loadGLTF` is `true`, GLTF loading can be controlled by p
 
 ### b3dm, i3dm
 
-glTF file into a hierarchical Scenegraph description that can be used to instantiate an actual Scenegraph in most WebGL libraries. Can load both binary `.glb` files and JSON `.gltf` files.
+glTF file into a hirearchical scenegraph description that can be used to instantiate an actual Scenegraph in most WebGL libraries. Can load both binary `.glb` files and JSON `.gltf` files.
