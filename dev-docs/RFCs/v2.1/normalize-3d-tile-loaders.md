@@ -313,7 +313,7 @@ SimpleMesh Fields
 
 ## Usage
 
-### Use tileset load
+### Use tileset loader
 
 1 Load a tileset
 
@@ -324,16 +324,16 @@ import {load} from '@loaders.gl/core';
 const tilesetUrl = '<cesium-ion-sever-url>/tileset.json';
 
 // load 3d tiles from Cesium Ion server
-const tilesetJSON = await load(tilesetUrl, Tileset3DLoader, {
+const tilesetJSON = await load(tilesetUrl, Tiles3DTilesetLoader, {
   ionAssetId,
   ionAssetToken
 });
+console.log(tilesetJSON);
 
 // load i3s tileset
 import {I3STilesetLoader} from '@loaders.gl/i3s';
 
 const tilesetJSON = await load(tilesetUrl, I3STilesetLoader);
-
 console.log(tilesetJSON);
 ```
 
@@ -396,10 +396,15 @@ tileset3d.tiles.map(tile => {
 
 ### Use tile loader
 
+Note: In most cases, users only need use Tileset loader and Tileset class to manage loading and updating a tileset.
+But do not need call a tile loader to load a specific tile.
+
 ```js
 import {Tiles3DTileLoader} from '@loaders.gl/3d-tiles';
 import {load} from '@loaders.gl/core';
 
+// 3d-tiles tileset.json contains the hierarchical info and metadata of each tile node
+// extract a tile node from the tileset tree
 const tileHeader = {
   children: [{}, {}],
   boundingVolume: {box: []},
@@ -407,27 +412,21 @@ const tileHeader = {
   ...
 };
 
-// load 3d tiles from Cesium Ion server
+// load a tile content from Cesium Ion server
 const tile = await load(tileHeader, Tiles3DTileLoader);
 console.log(tile)
 
 // load i3s tile with the content
 import {I3STileLoader} from '@loaders.gl/i3s';
 
+// i3s tileset (the layer file) doesn't have the hierarchical info
+// but there is a url for each tile node
 const tileUrl = 'i3s/tile-url';
 // load with a url
 const tile = await load(tileUrl, I3STilesetLoader, {loadContent: true});
+
 // load with a tile header object
-const tileHeader = fetch(tileUrl).then(resp => resp.json()).then(data => {
-  // format to an understandable tile header
-  return {
-    children: [{}, {}],
-    boundingVolume: {box: []},
-    content: 'content-url'
-  }
-});
-
-const tile = await load(tileHeader, I3STilesetLoader);
-
+const tileHeader = fetch(tileUrl).then(resp => resp.json())
+const tile = await load(tileHeader, I3STileLoader);
 console.log(tile);
 ```
