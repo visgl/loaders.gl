@@ -78,15 +78,30 @@ Paralleled with the [improvements](https://github.com/uber/deck.gl/pull/4139) in
 
 **Proposed structure**
 
-Each specification will have its own loader module and expose a Tileset loader, a TileHeader loader and a tile content loader.
+Each specification will have its own loader module and expose a Tileset loader, a TileHeader loader and a tile content loader. And a separate module `@loaders.gl/tiles` will contain all the tile classes and common components shared by different tile loaders.
 
-`@loaders.gl/3d-tiles`: Load Cesium 3D tiles. Expose `Tiles3DTilesetLoader`, `Tiles3DTileLoader`, `Tiles3DContentLoader`.
-
-`@loaders.gl/i3s`: Load ArcGIS I3S tiles. Expose `I3STilesetLoader`, `Tiles3DTileLoader`, `I3SContentLoader`.
-
-`@loaders.gl/potree`: Load Potree tiles. Expose `PotreeTilesetLoader`, `PotreeTileLoader`, `PotreeContentLoader`.
-
-`@loaders.gl/tiles`: A modules contains the common components for loading 2d and 3d tiles.
+```
+|--`@loaders.gl/3d-tiles`         // Load Cesium 3D tiles
+|   |- `Tiles3DTilesetLoader`
+|   |- `Tiles3DTileLoader`
+|   |- `Tiles3DContentLoader`
+|--`@loaders.gl/i3s`              // Load ArcGIS I3S tiles.
+|   |-- `I3STilesetLoader`
+|   |-- `I3STileLoader`
+|   |-- `I3SContentLoader`
+|--`@loaders.gl/potree`           // Load Potree tiles
+|   |-- `PotreeTilesetLoader`
+|   |-- `PotreeTileLoader`
+|   |-- `PotreeContentLoader`
+|--`@loaders.gl/tiles`            // A modules contains the tile classes and common components for loading 2d and 3d tiles.
+    |-- `Tileset2D`
+    |-- `Tileset3D`
+    |-- `Tile2D`
+    |-- `Tile3D`
+    |-- `Tileset3DTraversal`
+    |-- `Tileset3DCache`
+    |-- `RequestScheduler`
+```
 
 **For users**
 
