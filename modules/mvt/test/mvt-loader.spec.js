@@ -1,6 +1,6 @@
 import test from 'tape-promise/tape';
 import {MVTLoader} from '@loaders.gl/mvt';
-import {fetchFile, parse} from '@loaders.gl/core';
+import {setLoaderOptions, fetchFile, parse} from '@loaders.gl/core';
 
 const MVT_POINTS_DATA_URL = '@loaders.gl/mvt/test/data/points_4-2-6.mvt';
 const MVT_LINES_DATA_URL = '@loaders.gl/mvt/test/data/lines_2-2-1.mvt';
@@ -14,6 +14,11 @@ import decodedPointsGeoJSON from '@loaders.gl/mvt/test/results/decoded_mvt_point
 import decodedLinesGeoJSON from '@loaders.gl/mvt/test/results/decoded_mvt_lines.json';
 import decodedPolygonsGeoJSON from '@loaders.gl/mvt/test/results/decoded_mvt_polygons.json';
 
+setLoaderOptions({
+  mvt: {
+    workerUrl: 'modules/mvt/dist/mvt-loader.worker.js'
+  }
+});
 test('Point MVT to Geometry Array', async t => {
   const response = await fetchFile(MVT_POINTS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
