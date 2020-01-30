@@ -78,21 +78,18 @@ Paralleled with the [improvements](https://github.com/uber/deck.gl/pull/4139) in
 
 **Proposed structure**
 
-Each specification will have its own loader module and expose a Tileset loader, a TileHeader loader and a tile content loader. And a separate module `@loaders.gl/tiles` will contain all the tile classes and common components shared by different tile loaders.
+Each specification will have its own loader module and expose a Tileset loader, and a TileHeader loader. And a separate module `@loaders.gl/tiles` will contain all the tile classes and common components shared by different tile loaders.
 
 ```
 |--`@loaders.gl/3d-tiles`         // Load Cesium 3D tiles
 |   |- `Tiles3DTilesetLoader`
 |   |- `Tiles3DTileLoader`
-|   |- `Tiles3DContentLoader`
 |--`@loaders.gl/i3s`              // Load ArcGIS I3S tiles.
 |   |-- `I3STilesetLoader`
 |   |-- `I3STileLoader`
-|   |-- `I3SContentLoader`
 |--`@loaders.gl/potree`           // Load Potree tiles
 |   |-- `PotreeTilesetLoader`
 |   |-- `PotreeTileLoader`
-|   |-- `PotreeContentLoader`
 |--`@loaders.gl/tiles`            // A modules contains the tile classes and common components for loading 2d and 3d tiles.
     |-- `Tileset2D`
     |-- `Tileset3D`
@@ -145,18 +142,18 @@ Each specification will have its own loader module and expose a Tileset loader, 
                                       ------------
                                            |
                                            \/
-                                       ---------                       -----------------------
-                                       | tiles |                       | PotreeContentLoader |
-                                       ---------                 |---- | @loaders.gl/potree  |
-                                           |                     |       ---------------------
-                                           \/                    |      --------------------
-                                       ---------    tile.content |----- | I3SContentLoader |
-                                       | Tile3D | <--------------|      | @loaders.gl/i3s  |
-                                       ---------                 |      --------------------
-                                           /\                    |      ------------------------
-                                           |                     |----- | Tiles3DContentLoader |
-                                  ----------------------                | @loaders.gl/3d-tiles |
-                                  | unified tile object |                ------------------------
+                                       ---------
+                                       | tiles |
+                                       ---------
+                                           |
+                                           \/
+                                       ---------
+                                       | Tile3D |
+                                       ---------
+                                           /\
+                                           |
+                                  ----------------------
+                                  | unified tile object |
                                   ----------------------
                                            /\
                                            |
@@ -192,7 +189,7 @@ The following fields are guaranteed. But different tile loaders may have differe
 | ----------------- | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `boundingVolume`  | `Object`     | A bounding volume that encloses a tile or its content. Exactly one box, region, or sphere property is required. ([`Reference`](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#bounding-volume))                                                                                                            |
 | `children`        | `Array`      | An array of objects that define child tiles. Each child tile content is fully enclosed by its parent tile's bounding volume and, generally, has more details than parent. for leaf tiles, the length of this array is zero, and children may not be defined.                                                                            |
-| `content`         | `String`     | Metadata or url to fetch the payload.                                                                                                                                                                                                                                                                                                   |
+| `content`         | `String`     | The actual payload of the tile or the url point to the actual payload.                                                                                                                                                                                                                                                                  |
 | `id`              | `String`     | Identifier of the tile, unique in a tileset                                                                                                                                                                                                                                                                                             |
 | `lodSelection`    | `Object`     | Used for deciding if this tile is sufficient given current viewport. Cesium tile use [`geometricError`](https://github.com/AnalyticalGraphicsInc/3d-tiles/blob/master/specification/README.md#geometric-error), `i3s` uses [`metricError` and `metricError`](https://github.com/Esri/i3s-spec/blob/master/docs/1.7/lodSelection.cmn.md) |
 | `refine`          | `String`     | Refinement type of the tile, `ADD` or `REPLACE`                                                                                                                                                                                                                                                                                         |
@@ -244,7 +241,7 @@ SimpleMesh Fields
 
 ### Tileset3D
 
-**Properties**
+#### Properties
 
 - `boundingVolume` (`BoundingVolume`): The root tile's bounding volume. Check `Tile3DHeader#boundingVolume`
 - `cartesianCenter` (`Number[3]`): Center of tileset in fixed frame coordinates.
@@ -261,7 +258,7 @@ SimpleMesh Fields
 - `url` (`String`): The url to a tileset JSON file.
 - `zoom` (`Number[3]`): A web mercator zoom level that displays the entire tile set bounding volume
 
-**Methods**
+#### Methods
 
 - `constructor(tileset : Object, url : String [, options : Object])`
   - `tileset`: The loaded tileset (parsed JSON)
@@ -279,7 +276,7 @@ SimpleMesh Fields
 
 ### Tile3D
 
-**Properties**
+#### Properties
 
 - `boundingVolume` (`BoundingVolume`): A bounding volume that encloses a tile or its content. Exactly one box, region, or sphere property is required. ([`Reference`](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#bounding-volume))
 - `id` (`Number`|`String`): A unique number for the tile in the tileset. Default to the url of the tile.
@@ -304,7 +301,7 @@ SimpleMesh Fields
 - `tileset` (`Tileset3D`): The `Tileset3D` instance containing this tile.
 - `header` (`Object`): The unprocessed tile header object passed in.
 
-**Methods**
+#### Methods
 
 - `constructor(tileset : Object, header : Object, parentHeader : Object)`
   - `tileset`: The loaded tileset (parsed JSON)
@@ -316,10 +313,12 @@ SimpleMesh Fields
 
 ## Usage
 
+### Use tileset load
+
 1 Load a tileset
 
 ```js
-import {Tileset3DLoader} from '@loaders.gl/3d-tiles';
+import {Tiles3DTilesetLoader} from '@loaders.gl/3d-tiles';
 import {load} from '@loaders.gl/core';
 
 const tilesetUrl = '<cesium-ion-sever-url>/tileset.json';
@@ -393,4 +392,42 @@ tileset3d.tiles.map(tile => {
     return layer;
   }
 });
+```
+
+### Use tile loader
+
+```js
+import {Tiles3DTileLoader} from '@loaders.gl/3d-tiles';
+import {load} from '@loaders.gl/core';
+
+const tileHeader = {
+  children: [{}, {}],
+  boundingVolume: {box: []},
+  content: 'content-url',
+  ...
+};
+
+// load 3d tiles from Cesium Ion server
+const tile = await load(tileHeader, Tiles3DTileLoader);
+console.log(tile)
+
+// load i3s tile with the content
+import {I3STileLoader} from '@loaders.gl/i3s';
+
+const tileUrl = 'i3s/tile-url';
+// load with a url
+const tile = await load(tileUrl, I3STilesetLoader, {loadContent: true});
+// load with a tile header object
+const tileHeader = fetch(tileUrl).then(resp => resp.json()).then(data => {
+  // format to an understandable tile header
+  return {
+    children: [{}, {}],
+    boundingVolume: {box: []},
+    content: 'content-url'
+  }
+});
+
+const tile = await load(tileHeader, I3STilesetLoader);
+
+console.log(tile);
 ```
