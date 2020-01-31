@@ -78,18 +78,15 @@ Paralleled with the [improvements](https://github.com/uber/deck.gl/pull/4139) in
 
 **Proposed structure**
 
-Each specification will have its own loader module and expose a Tileset loader, and a TileHeader loader. And a separate module `@loaders.gl/tiles` will contain all the tile classes and common components shared by different tile loaders.
+Each specification will have its own loader module and expose a Tile loader, which will be smart enoug to load both a tileset file and a tile file. And a separate module `@loaders.gl/tiles` will contain all the tile classes and common components shared by different tile loaders.
 
 ```
 |--`@loaders.gl/3d-tiles`         // Load Cesium 3D tiles
-|   |- `Tiles3DTilesetLoader`
-|   |- `Tiles3DTileLoader`
+|   |- `Tiles3DLoader`
 |--`@loaders.gl/i3s`              // Load ArcGIS I3S tiles.
-|   |-- `I3STilesetLoader`
-|   |-- `I3STileLoader`
+|   |-- `I3SLoader`
 |--`@loaders.gl/potree`           // Load Potree tiles
-|   |-- `PotreeTilesetLoader`
-|   |-- `PotreeTileLoader`
+|   |-- `PotreeLoader`
 |--`@loaders.gl/tiles`            // A modules contains the tile classes and common components for loading 2d and 3d tiles.
     |-- `Tileset2D`
     |-- `Tileset3D`
@@ -103,12 +100,12 @@ Each specification will have its own loader module and expose a Tileset loader, 
 **For users**
 
 - `Tileset2D`: A class which help manage 2d tiles.
-- `Tileset3D`: A class which can understand unified tileset format loaded from tileset loaders, i.e. `Tiles3DTilesetLoader` for `@loaders.gl/3d-tiles`, `I3STilesetLoader` for `@loaders.gl/i3s`. Also it provides helper functions to dynamically loading and unloading tiles for rendering under current viewport.
+- `Tileset3D`: A class which can understand unified tileset format loaded from tile loaders, i.e. `Tiles3DLoader` for `@loaders.gl/3d-tiles`, `I3SLoader` for `@loaders.gl/i3s`. Also it provides helper functions to dynamically loading and unloading tiles for rendering under current viewport.
+- `Tile2D`: A class that extended from 2D tile data.
+- `Tile3D`: A class that can understand unified tile format loaded from tile loaders, i.e. `Tiles3DLoader` for `@loaders.gl/3d-tiles`, `I3SLoader` for `@loaders.gl/i3s`.
 
 **For shared by tiles loaders**
 
-- `Tile2D`: A class that extended from 2D tile data.
-- `Tile3D`: A class that can understand unified tile format loaded from tile loaders, i.e. `Tiles3DTileLoader` for `@loaders.gl/3d-tiles`, `I3STileLoader` for `@loaders.gl/i3s`.
 - `TilesetTraversal`: A class that traverse tile tree to get renderable tiles based on certain state (i.e. viewport), may cause loading and unloading tiles, and updating tiles visibilties.
 - `TilesetCache`: LRU cache for caching loaded tiles.
 - `RequestScheduler`: Managing fetching requests based on traversal priorities.
@@ -118,10 +115,9 @@ Each specification will have its own loader module and expose a Tileset loader, 
                  |                         |                          |
                  \/                        \/                         \/
      -------------------------    --------------------    -----------------------
-     | Tiles3DTilestLoader   |    | I3STilesetLoader |    | PotreeTilesetLoader |
+     |     Tiles3DLoader     |    |    I3SLoader     |    |     PotreeLoader    |
      |  @loaders.gl/3d-tiles |    | @loaders.gl/i3s  |    |  @loaders.gl/potree |
      -------------------------    --------------------    -----------------------
-                  |                        |                          |
                   |                        |                          |
                  \/                        \/                         \/
                   -----------------------------------------------------
@@ -160,11 +156,10 @@ Each specification will have its own loader module and expose a Tileset loader, 
                   --------------------------------------------------
                   /\                       /\                      /\
                   |                        |                       |
-                  |                        |                       |
-     ------------------------    -------------------    ----------------------
-     | Tiles3DTileLoader    |    | I3STileLoader   |    | PotreeTileLoader   |
-     | @loaders.gl/3d-tiles |    | @loaders.gl/i3s |    | @loaders.gl/potree |
-     ------------------------    -------------------    ----------------------
+     -------------------------    --------------------    -----------------------
+     |     Tiles3DLoader     |    |    I3SLoader     |    |     PotreeLoader    |
+     |  @loaders.gl/3d-tiles |    | @loaders.gl/i3s  |    |  @loaders.gl/potree |
+     -------------------------    --------------------    -----------------------
 ```
 
 ## Data Format
@@ -313,27 +308,27 @@ SimpleMesh Fields
 
 ## Usage
 
-### Use tileset loader
+### load tileset and render selected tiles
 
 1 Load a tileset
 
 ```js
-import {Tiles3DTilesetLoader} from '@loaders.gl/3d-tiles';
+import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {load} from '@loaders.gl/core';
 
 const tilesetUrl = '<cesium-ion-sever-url>/tileset.json';
 
 // load 3d tiles from Cesium Ion server
-const tilesetJSON = await load(tilesetUrl, Tiles3DTilesetLoader, {
+const tilesetJSON = await load(tilesetUrl, Tiles3DLoader, {
   ionAssetId,
   ionAssetToken
 });
 console.log(tilesetJSON);
 
 // load i3s tileset
-import {I3STilesetLoader} from '@loaders.gl/i3s';
+import {I3SLoader} from '@loaders.gl/i3s';
 
-const tilesetJSON = await load(tilesetUrl, I3STilesetLoader);
+const tilesetJSON = await load(tilesetUrl, I3SLoader);
 console.log(tilesetJSON);
 ```
 
@@ -394,13 +389,13 @@ tileset3d.tiles.map(tile => {
 });
 ```
 
-### Use tile loader
+### load a tile
 
 Note: In most cases, users only need use Tileset loader and Tileset class to manage loading and updating a tileset.
 But do not need call a tile loader to load a specific tile.
 
 ```js
-import {Tiles3DTileLoader} from '@loaders.gl/3d-tiles';
+import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {load} from '@loaders.gl/core';
 
 // 3d-tiles tileset.json contains the hierarchical info and metadata of each tile node
@@ -413,20 +408,20 @@ const tileHeader = {
 };
 
 // load a tile content from Cesium Ion server
-const tile = await load(tileHeader, Tiles3DTileLoader);
+const tile = await load(tileHeader, Tiles3DLoader);
 console.log(tile)
 
 // load i3s tile with the content
-import {I3STileLoader} from '@loaders.gl/i3s';
+import {I3SLoader} from '@loaders.gl/i3s';
 
 // i3s tileset (the layer file) doesn't have the hierarchical info
 // but there is a url for each tile node
 const tileUrl = 'i3s/tile-url';
 // load with a url
-const tile = await load(tileUrl, I3STilesetLoader, {loadContent: true});
+const tile = await load(tileUrl, I3SLoader, {loadContent: true});
 
 // load with a tile header object
 const tileHeader = fetch(tileUrl).then(resp => resp.json())
-const tile = await load(tileHeader, I3STileLoader);
+const tile = await load(tileHeader, I3SLoader);
 console.log(tile);
 ```
