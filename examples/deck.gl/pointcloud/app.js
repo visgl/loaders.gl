@@ -44,6 +44,7 @@ export default class App extends PureComponent {
       viewState: INITIAL_VIEW_STATE,
       pointsCount: 0,
       points: null,
+      colors: null,
       // control panel
       droppedFile: null,
       selectedExample: 'Indoor Scan 800K',
@@ -87,24 +88,47 @@ export default class App extends PureComponent {
     load(uri).then(this._onLoad.bind(this));
   }
 
-  _onLoad({header, loaderData, attributes, progress}) {
-    // metadata from LAZ file header
-    const {mins, maxs} = loaderData.header;
-    let {viewState} = this.state;
+  _getBounds(attributes) {
+    const mins = [Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE];
+    const maxs = [Number.MIN_VALUE, Number.MIN_VALUE, Number.MIN_VALUE];
 
-    if (mins && maxs) {
-      // File contains bounding box info
-      viewState = {
-        ...INITIAL_VIEW_STATE,
-        target: [(mins[0] + maxs[0]) / 2, (mins[1] + maxs[1]) / 2, (mins[2] + maxs[2]) / 2],
-        /* global window */
-        zoom: Math.log2(window.innerWidth / (maxs[0] - mins[0])) - 1
-      };
+    const pointSize = attributes.POSITION.size;
+    const pointCount = attributes.POSITION.value.length / pointSize;
+
+    for (let i = 0; i < pointCount; i += pointSize) {
+      const x = attributes.POSITION.value[i];
+      const y = attributes.POSITION.value[i + 1];
+      const z = attributes.POSITION.value[i + 2];
+
+      if (x < mins[0]) mins[0] = x;
+      else if (x > maxs[0]) maxs[0] = x;
+
+      if (y < mins[1]) mins[1] = y;
+      else if (y > maxs[1]) maxs[1] = y;
+
+      if (z < mins[2]) mins[2] = z;
+      else if (z > maxs[2]) maxs[2] = z;
     }
 
-    // if (this.props.onLoad) {
-    //   this.props.onLoad({count: header.vertexCount, progress: 1});
-    // }
+    return {mins, maxs};
+  }
+
+  _onLoad({header, loaderData, attributes, progress}) {
+    // metadata from LAZ file header
+    const {maxs, mins} =
+      loaderData.header.mins && loaderData.header.maxs
+        ? loaderData.header
+        : this._getBounds(attributes);
+
+    let {viewState} = this.state;
+
+    // File contains bounding box info
+    viewState = {
+      ...INITIAL_VIEW_STATE,
+      target: [(mins[0] + maxs[0]) / 2, (mins[1] + maxs[1]) / 2, (mins[2] + maxs[2]) / 2],
+      /* global window */
+      zoom: Math.log2(window.innerWidth / (maxs[0] - mins[0])) - 1
+    };
 
     this.setState(
       {
@@ -113,8 +137,9 @@ export default class App extends PureComponent {
         // in which case the vertex count is not correct for display as points
         // Proposal: Consider adding a `mesh.points` or `mesh.pointcloud` option to mesh loaders
         // in which case the loader throws away indices and just return the vertices?
-        pointsCount: attributes.POSITION.value.length / 3, // header.vertexCount,
+        pointsCount: attributes.POSITION.value.length / attributes.POSITION.size,
         points: attributes.POSITION.value,
+        colors: attributes.COLOR_0 ? attributes.COLOR_0.value : null,
         viewState
       },
       this._rotateCamera
@@ -122,7 +147,7 @@ export default class App extends PureComponent {
   }
 
   _renderLayers() {
-    const {pointsCount, points, selectedExample} = this.state;
+    const {pointsCount, points, colors, selectedExample} = this.state;
 
     return [
       points &&
@@ -131,7 +156,12 @@ export default class App extends PureComponent {
           id: `point-cloud-layer-${selectedExample}`,
           coordinateSystem: COORDINATE_SYSTEM.IDENTITY,
           numInstances: pointsCount,
-          instancePositions: points,
+          data: {
+            attributes: {
+              instancePositions: points,
+              instanceColors: colors
+            }
+          },
           getNormal: [0, 1, 0],
           getColor: [255, 255, 255],
           opacity: 0.5,
