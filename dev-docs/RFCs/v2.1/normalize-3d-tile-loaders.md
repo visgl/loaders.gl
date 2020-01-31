@@ -78,7 +78,7 @@ Paralleled with the [improvements](https://github.com/uber/deck.gl/pull/4139) in
 
 **Proposed structure**
 
-Each specification will have its own loader module and expose a Tile loader, which will be smart enoug to load both a tileset file and a tile file. And a separate module `@loaders.gl/tiles` will contain all the tile classes and common components shared by different tile loaders.
+Each specification will have its own loader module and expose a single Tile loader, which will be smart enough to load a tileset file or a tile file by detecting file type or peeking file content. And a separate module `@loaders.gl/tiles` will contain all the tile classes and common components shared by different tile loaders.
 
 ```
 |--`@loaders.gl/3d-tiles`         // Load Cesium 3D tiles
