@@ -48,8 +48,8 @@ Paralleled with the [improvements](https://github.com/uber/deck.gl/pull/4139) in
   - `Tileset3DLoader`
   - `Tile3DHeaderLoader`
 - Tile Classes
-  - `Tileset3D:`
-  - `Tileset:`
+  - `Tileset3D`
+  - `Tileset`
 - Shared Components
 
   - `BaseTileset3DTraversal`
@@ -78,7 +78,7 @@ Paralleled with the [improvements](https://github.com/uber/deck.gl/pull/4139) in
 
 **Proposed structure**
 
-Each specification will have its own loader module and expose a single Tile loader, which will be smart enough to load a tileset file or a tile file by detecting file type or peeking file content. And a separate module `@loaders.gl/tiles` will contain all the tile classes and common components shared by different tile loaders.
+Each specification will have its own loader module and expose a single `Tile` loader, which will be smart enough to load a tileset file or a tile file by detecting file type or peeking file content. And a separate module `@loaders.gl/tiles` will contain all the tile classes and common components shared by different tile loaders.
 
 ```
 |--`@loaders.gl/3d-tiles`         // Load Cesium 3D tiles
@@ -100,7 +100,7 @@ Each specification will have its own loader module and expose a single Tile load
 **For users**
 
 - `Tileset2D`: A class which help manage 2d tiles.
-- `Tileset3D`: A class which can understand unified tileset format loaded from tile loaders, i.e. `Tiles3DLoader` for `@loaders.gl/3d-tiles`, `I3SLoader` for `@loaders.gl/i3s`. Also it provides helper functions to dynamically loading and unloading tiles for rendering under current viewport.
+- `Tileset3D`: A class which can understand unified tileset format loaded from tile loaders, i.e. `Tiles3DLoader` of `@loaders.gl/3d-tiles`, `I3SLoader` of `@loaders.gl/i3s`. Also it provides helper functions to dynamically loading and unloading tiles for rendering under current viewport.
 - `Tile2D`: A class that extended from 2D tile data.
 - `Tile3D`: A class that can understand unified tile format loaded from tile loaders, i.e. `Tiles3DLoader` for `@loaders.gl/3d-tiles`, `I3SLoader` for `@loaders.gl/i3s`.
 
@@ -166,7 +166,7 @@ Each specification will have its own loader module and expose a single Tile load
 
 This section specifies the unified data formats from tileset loader and tile loader.
 
-**Tilset**
+**Tilset Object**
 
 The following fields are guaranteed. But different tileset loaders may have different extra fields.
 
@@ -176,20 +176,20 @@ The following fields are guaranteed. But different tileset loaders may have diff
 | `url`  | `Object` | The root tile header object                                                   |
 | `type` | `String` | Indicate the type of tileset specification, `3d-tiles`, `i3s`, `potree`, etc. |
 
-**Tile**
+**Tile Object**
 
 The following fields are guaranteed. But different tile loaders may have different extra fields.
 
-| Field             | Type         | Contents                                                                                                                                                                                                                                                                                                                                |
-| ----------------- | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `boundingVolume`  | `Object`     | A bounding volume that encloses a tile or its content. Exactly one box, region, or sphere property is required. ([`Reference`](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#bounding-volume))                                                                                                            |
-| `children`        | `Array`      | An array of objects that define child tiles. Each child tile content is fully enclosed by its parent tile's bounding volume and, generally, has more details than parent. for leaf tiles, the length of this array is zero, and children may not be defined.                                                                            |
-| `content`         | `String`     | The actual payload of the tile or the url point to the actual payload.                                                                                                                                                                                                                                                                  |
-| `id`              | `String`     | Identifier of the tile, unique in a tileset                                                                                                                                                                                                                                                                                             |
-| `lodSelection`    | `Object`     | Used for deciding if this tile is sufficient given current viewport. Cesium tile use [`geometricError`](https://github.com/AnalyticalGraphicsInc/3d-tiles/blob/master/specification/README.md#geometric-error), `i3s` uses [`metricError` and `metricError`](https://github.com/Esri/i3s-spec/blob/master/docs/1.7/lodSelection.cmn.md) |
-| `refine`          | `String`     | Refinement type of the tile, `ADD` or `REPLACE`                                                                                                                                                                                                                                                                                         |
-| `type`            | `String`     | Type of the tile, one of `pointcloud`, `scenegraph`, `simplemesh`                                                                                                                                                                                                                                                                       |
-| `transformMatrix` | `Number[16]` | A matrix that transforms from the tile's local coordinate system to the parent tile's coordinate system—or the tileset's coordinate system in the case of the root tile                                                                                                                                                                 |  |
+| Field             | Type         | Contents                                                                                                                                                                                                                                                                                                                            |
+| ----------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `boundingVolume`  | `Object`     | A bounding volume that encloses a tile or its content. Exactly one box, region, or sphere property is required. ([`Reference`](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#bounding-volume))                                                                                                        |
+| `children`        | `Array`      | An array of objects that define child tiles. Each child tile content is fully enclosed by its parent tile's bounding volume and, generally, has more details than parent. for leaf tiles, the length of this array is zero, and children may not be defined.                                                                        |
+| `content`         | `String`     | The actual payload of the tile or the url point to the actual payload.                                                                                                                                                                                                                                                              |
+| `id`              | `String`     | Identifier of the tile, unique in a tileset                                                                                                                                                                                                                                                                                         |
+| `lodSelection`    | `Object`     | Used for deciding if this tile is sufficient given current viewport. Cesium tile use [`geometricError`](https://github.com/AnalyticalGraphicsInc/3d-tiles/blob/master/specification/README.md#geometric-error), `i3s` uses [`metricType` and `maxError`](https://github.com/Esri/i3s-spec/blob/master/docs/1.7/lodSelection.cmn.md) |
+| `refine`          | `String`     | Refinement type of the tile, `ADD` or `REPLACE`                                                                                                                                                                                                                                                                                     |
+| `type`            | `String`     | Type of the tile, one of `pointcloud`, `scenegraph`, `simplemesh`                                                                                                                                                                                                                                                                   |
+| `transformMatrix` | `Number[16]` | A matrix that transforms from the tile's local coordinate system to the parent tile's coordinate system—or the tileset's coordinate system in the case of the root tile                                                                                                                                                             |  |
 
 **Tile Content**
 
@@ -204,51 +204,50 @@ After content is loaded, the following fields are guaranteed. But different tile
 
 `attributes` contains following fields
 
-| Field                  | Type       | Contents                          |
-| ---------------------- | ---------- | --------------------------------- |
-| `attributes.positions` | `Accessor` | `{value, type, size, normalized}` |
-| `attributes.normals`   | `Accessor` | `{value, type, size, normalized}` |
-| `attributes.colors`    | `Accessor` | `{value, type, size, normalized}` |
+| Field                  | Type     | Contents                          |
+| ---------------------- | -------- | --------------------------------- |
+| `attributes.positions` | `Object` | `{value, type, size, normalized}` |
+| `attributes.normals`   | `Object` | `{value, type, size, normalized}` |
+| `attributes.colors`    | `Object` | `{value, type, size, normalized}` |
 
 PointCloud Fields
 
-| Field        | Type     | Contents                                                 |
-| ------------ | -------- | -------------------------------------------------------- |
-| `pointCount` | Number   | Number of points                                         |
-| `color`      | Number[] | Color of the tile when there are not `attributes.colors` |
+| Field        | Type                       | Contents                                                 |
+| ------------ | -------------------------- | -------------------------------------------------------- |
+| `pointCount` | `Number`                   | Number of points                                         |
+| `color`      | `Number[3]` or `Number[4]` | Color of the tile when there are not `attributes.colors` |
 
 Scenegraph Fields
 
-| Field       | Type     | Contents                                                                                             |
-| ----------- | -------- | ---------------------------------------------------------------------------------------------------- |
-| `gltf`      | `Object` | check [GLTFLoader](https://loaders.gl/modules/gltf/docs/api-reference/gltf-loader) for detailed spec |
-| `instances` |          |                                                                                                      |
+| Field  | Type     | Contents                                                                                             |
+| ------ | -------- | ---------------------------------------------------------------------------------------------------- |
+| `gltf` | `Object` | check [GLTFLoader](https://loaders.gl/modules/gltf/docs/api-reference/gltf-loader) for detailed spec |
 
 SimpleMesh Fields
 
-| Field     | Type | Contents  |
-| --------- | ---- | --------- |
-| `texture` | URL  | Texture2D | texture of the tile |
+| Field     | Type | Contents              |
+| --------- | ---- | --------------------- |
+| `texture` | URL  | url of tile's texture |
 
 ## Tile Classes
 
-`@loaders/tiles` exposes handy classes `Tileset3D` and `Tile3D` which can understand the unified formats respectively and provide useful functions for dynamically selecting tiles for rendering based on viewport.
+`@loaders/tiles` exposes handy classes `Tileset3D` and `Tile3D` which can understand the unified formats respectively and provide useful functions for dynamically selecting tiles for rendering under a viewport.
 
-### Tileset3D
+### Tileset3D Class
 
 #### Properties
 
-- `boundingVolume` (`BoundingVolume`): The root tile's bounding volume. Check `Tile3DHeader#boundingVolume`
+- `boundingVolume` (`BoundingVolume`): The root tile's bounding volume, which is also the bouding volume of the entire tileset. Check `Tile3DHeader#boundingVolume`
 - `cartesianCenter` (`Number[3]`): Center of tileset in fixed frame coordinates.
 - `cartographicCenter` (`Number[3]`): Center of tileset in cartographic coordinates `[long, lat, elevation]`
-- `ellipsoid` (`Ellipsoid`): Gets an ellipsoid describing the shape of the globe.
+- `ellipsoid` ([`Ellipsoid`](https://math.gl/modules/geospatial/docs/api-reference/ellipsoid)): Gets an ellipsoid describing the shape of the globe.
 - `maximumMemoryUsage` (`Number`): If tiles sized more than `maximumMemoryUsage` are needed to for the current view, when these tiles go out of view, they will be unloaded.`maximumMemoryUsage` must be greater than or equal to zero.
-- `modelMatrix` (`Matrix4: A [Matrix4](https`)://math.gl/modules/core/docs/api-reference/matrix4) instance (4x4 transformation matrix) that transforms the entire tileset.
+- `modelMatrix` (`Matrix4: A [Matrix4](https://math.gl/modules/core/docs/api-reference/matrix4) instance (4x4 transformation matrix) that transforms the entire tileset.
 - `root` (`Tile3DHeader`): The root tile header.
 - tiles: Array<Tile3DHeader>: All the tiles that have been traversed.
-- `stats` (`Stats`): An instance of a probe.gl `Stats` object that contains information on how many tiles have been loaded etc. Easy to display using a probe.gl `StatsWidget`.
+- `stats` ([`Stats`](https://uber-web.github.io/probe.gl/docs/api-reference/log/stats))): An instance of a probe.gl `Stats` object that contains information on how many tiles have been loaded etc. Easy to display using a probe.gl `StatsWidget`.
 - `tileset` (`Object`): The original tileset data this object instanced from.
-- `tilesLoaded` (`boolean`): When `true`, all tiles that meet the screen space error this frame are loaded. The tileset is completely loaded for this view.
+- `tilesLoaded` (`Boolean`): When `true`, all tiles that meet the screen space error this frame are loaded. The tileset is completely loaded for this view.
 - `totalMemoryUsageInBytes` (`Number`): The total amount of GPU memory in bytes used by the tileset. This value is estimated from geometry, texture, and batch table textures of loaded tiles. For point clouds, this value also includes per-point metadata.
 - `url` (`String`): The url to a tileset JSON file.
 - `zoom` (`Number[3]`): A web mercator zoom level that displays the entire tile set bounding volume
@@ -269,7 +268,7 @@ SimpleMesh Fields
 - `update(viewport: WebMercatorViewport) : Number`: Execute traversal under current viewport and fetch tiles needed for current viewport and update `selectedTiles`. Return `frameNumber` of this update frame.
 - `destroy() : void`: Destroys the WebGL resources held by this object, and destroy all the tiles' resources by recursively traversing the tileset tree.
 
-### Tile3D
+### Tile3D Class
 
 #### Properties
 
@@ -391,9 +390,6 @@ tileset3d.tiles.map(tile => {
 
 ### load a tile
 
-Note: In most cases, users only need use Tileset loader and Tileset class to manage loading and updating a tileset.
-But do not need call a tile loader to load a specific tile.
-
 ```js
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {load} from '@loaders.gl/core';
@@ -425,3 +421,8 @@ const tileHeader = fetch(tileUrl).then(resp => resp.json())
 const tile = await load(tileHeader, I3SLoader);
 console.log(tile);
 ```
+
+## Remarks
+
+Cesium 3D Tiles [Specifications](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification)
+I3S Tiles [Specifications](https://github.com/Esri/i3s-spec)
