@@ -125,9 +125,15 @@ export function getAsyncIteratorFromData(data) {
 
 export function getIteratorFromData(data) {
   // generate an iterator that emits a single chunk
-  if (data instanceof ArrayBuffer || ArrayBuffer.isView(data)) {
+  if (ArrayBuffer.isView(data)) {
     return (function* oneChunk() {
-      yield data.buffer || data;
+      yield data.buffer;
+    })();
+  }
+
+  if (data instanceof ArrayBuffer) {
+    return (function* oneChunk() {
+      yield data;
     })();
   }
 

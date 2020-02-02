@@ -81,7 +81,7 @@ test('parseWithLoader#getIteratorFromData', t => {
   t.end();
 });
 
-test('parseWithLoader#getAsyncIteratorFromData', t => {
+test('parseWithLoader#getAsyncIteratorFromData', async t => {
   const TESTS = [
     (async function* generator() {
       yield 1;
@@ -90,11 +90,11 @@ test('parseWithLoader#getAsyncIteratorFromData', t => {
   ];
 
   for (const testCase of TESTS) {
-    const result = getAsyncIteratorFromData(testCase);
+    const result = await getAsyncIteratorFromData(testCase);
     t.ok(isIterator(result), 'returns iterator');
   }
 
-  t.throws(() => getAsyncIteratorFromData({}));
+  t.rejects(() => getAsyncIteratorFromData({}));
 
   t.end();
 });

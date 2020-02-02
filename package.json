@@ -30,7 +30,7 @@
     "build-workers": "lerna run pre-build",
     "clean": "ocular-clean",
     "cover": "ocular-test cover",
-    "lint": "ocular-lint",
+    "lint": "tsc && ocular-lint",
     "bump": "ocular-bump",
     "publish": "ocular-publish",
     "test": "ocular-test",
@@ -58,7 +58,8 @@
     "pre-commit": "^1.2.2",
     "pre-push": "^0.1.1",
     "reify": "^0.19.1",
-    "source-map-support": "^0.5.12"
+    "source-map-support": "^0.5.12",
+    "typescript": "^3.7.4"
   },
   "pre-commit": "pre-commit",
   "pre-push": "pre-push"
