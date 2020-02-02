@@ -10,7 +10,9 @@ if (typeof process !== 'undefined') {
 
 // Note: This constant will be inlined by babel plugin during transpilation
 // But for node we read it from lerna.json
+// @ts-ignore TS2339: Property does not exist on type 'Global'
 global.__VERSION__ = require('../lerna.json').version;
+// @ts-ignore TS2339: Property does not exist on type 'Global'
 global.nodeVersion = version;
 
 // Use reify for import/export support

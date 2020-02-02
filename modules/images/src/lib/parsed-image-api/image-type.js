@@ -1,9 +1,12 @@
 /* global ImageBitmap, Image */
 import {global, isBrowser} from '../utils/globals';
 
+// @ts-ignore TS2339: Property does not exist on type
+const {_parseImageNode} = global;
+
 const IMAGE_SUPPORTED = typeof Image !== 'undefined'; // NOTE: "false" positives if jsdom is installed
 const IMAGE_BITMAP_SUPPORTED = typeof ImageBitmap !== 'undefined';
-const NODE_IMAGE_SUPPORTED = Boolean(global._parseImageNode);
+const NODE_IMAGE_SUPPORTED = Boolean(_parseImageNode);
 
 // Checks if a loaders.gl image type is supported
 export function isImageTypeSupported(type) {

@@ -7,6 +7,7 @@ import {getBlob} from './get-blob';
 
 let imagebitmapOptionsSupported = true;
 
+// TODO - createImageBitmap supports source rect (5 param overload), pass through?
 export default async function parseToImageBitmap(arrayBuffer, options, url) {
   const blob = getBlob(arrayBuffer, url);
   let imagebitmapOptions = options && options.imagebitmap;
@@ -19,6 +20,7 @@ export default async function parseToImageBitmap(arrayBuffer, options, url) {
 
   if (imagebitmapOptions) {
     try {
+      // @ts-ignore Options
       return await createImageBitmap(blob, imagebitmapOptions);
     } catch (error) {
       console.warn(error); // eslint-disable-line

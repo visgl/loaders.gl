@@ -1,5 +1,7 @@
 /* eslint-disable */
 
+// @ts-nocheck
+
 export class PointCloudOctree {
   constructor() {
     this.url = null;

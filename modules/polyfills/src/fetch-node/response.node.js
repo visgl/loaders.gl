@@ -22,6 +22,9 @@ export default class NodeFetchResponse {
     this.options = options;
     this.bodyUsed = false;
     this._headers = null;
+
+    // TODO - is this used?
+    this.httpResponse = null;
   }
 
   // Subset of Properties

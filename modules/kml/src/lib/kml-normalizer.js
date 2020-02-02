@@ -2,7 +2,7 @@ export default function normalizeKML(kml) {
   // Convert coordinates to [lng, lat, z] format
   for (const key in kml) {
     for (const item of kml[key]) {
-      normalizeKMLItem(item, key);
+      normalizeKMLItem(item);
     }
   }
   return kml;

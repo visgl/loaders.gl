@@ -6,7 +6,7 @@ import {Matrix4} from '@math.gl/core';
 import {Tile3D} from '@loaders.gl/tiles';
 import {LOD_METRIC_TYPE} from '../../src';
 
-const clone = object => JSON.parse(JSON.stringify(object));
+const clone = (object, flag) => JSON.parse(JSON.stringify(object));
 
 const TILE_HEADER_WITH_BOUNDING_SPHERE = {
   lodMetricValue: 1,

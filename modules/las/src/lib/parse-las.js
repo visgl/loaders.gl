@@ -84,6 +84,7 @@ export default function parseLAS(arraybuffer, options = {}) {
   });
 
   result.header = {
+    // @ts-ignore Possibly undefined
     vertexCount: originalHeader.totalToRead
   };
   return result;
@@ -92,7 +93,6 @@ export default function parseLAS(arraybuffer, options = {}) {
 
 /**
  * parse laz data
- * @param {Binary} data
  * @return {*} parsed point cloud
  */
 export function parseLASChunked(rawData, skip, onParseData) {

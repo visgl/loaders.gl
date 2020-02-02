@@ -4,6 +4,9 @@
 import assert from '../utils/assert';
 import {global} from '../utils/globals';
 
+// @ts-ignore TS2339: Property does not exist on type
+const {_encodeImageNode} = global;
+
 // Returns data bytes representing a compressed image in PNG or JPG format,
 // This data can be saved using file system (f) methods or
 // used in a request.
@@ -12,8 +15,9 @@ import {global} from '../utils/globals';
 // @param {String} opt.dataURI= - Whether to include a data URI header
 
 export function encodeImage(image, type) {
-  if (global._encodeImageNode) {
-    return global._encodeImageNode(image, type);
+  if (_encodeImageNode) {
+    // @ts-ignore TS2339: Property does not exist on type
+    return _encodeImageNode(image, type);
   }
 
   if (image instanceof HTMLCanvasElement) {

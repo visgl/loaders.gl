@@ -32,8 +32,8 @@ export function copyArrayBuffer(
 /**
  * Copy from source to target at the targetOffset
  *
- * @param {ArrayBuffer|TypedArray} source - The data to copy
- * @param {TypedArray} target - The destination to copy data into
+ * @param {ArrayBuffer|any} source - The data to copy
+ * @param {any} target - The destination to copy data into
  * @param {Number} targetOffset - The start offset into target to place the copied data
  *
  * @return {Number} Returns the new offset taking into account proper padding

@@ -91,10 +91,11 @@ async function parseHeader(lineIterator, options) {
           header.elements.push(currentElement);
         }
 
-        currentElement = {};
-        currentElement.name = lineValues[0];
-        currentElement.count = parseInt(lineValues[1], 10);
-        currentElement.properties = [];
+        currentElement = {
+          name: lineValues[0],
+          count: parseInt(lineValues[1], 10),
+          properties: []
+        };
         break;
 
       case 'property':

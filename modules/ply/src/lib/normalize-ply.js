@@ -9,7 +9,7 @@ export default function normalizePLY(header, attributes, options) {
       vertexCount: attributes.indices.length || attributes.vertices.length / 3
     },
     mode: attributes.indices && attributes.indices.length > 0 ? 4 : 0, // TRIANGLES vs POINTS
-    attributes: normalizeAttributes(attributes, options)
+    attributes: normalizeAttributes(attributes)
   };
 
   if (attributes.indices && attributes.indices.length > 0) {

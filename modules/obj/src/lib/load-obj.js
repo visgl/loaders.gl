@@ -1,6 +1,6 @@
 import parseOBJ from './parse-obj';
 
-export default function loadOBJ(text) {
+export default function loadOBJ(text, options) {
   const {meshes} = parseOBJ(text);
 
   const vertexCount = meshes.reduce((s, mesh) => s + mesh.header.vertexCount, 0);

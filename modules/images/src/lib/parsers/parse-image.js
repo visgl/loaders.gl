@@ -37,7 +37,7 @@ export default async function parseImage(arrayBuffer, options, context) {
 
   // Browser: if options.image.type === 'data', we can now extract data from the loaded image
   if (imageType === 'data') {
-    image = getImageData(image, false);
+    image = getImageData(image);
   }
 
   return image;

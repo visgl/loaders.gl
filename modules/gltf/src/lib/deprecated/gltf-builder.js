@@ -1,8 +1,12 @@
 import {getBinaryImageMIMEType, getBinaryImageSize} from '@loaders.gl/images';
 import assert from '../utils/assert';
-import {KHR_DRACO_MESH_COMPRESSION, UBER_POINT_CLOUD_EXTENSION} from '../gltf-constants';
+import {UBER_POINT_CLOUD_EXTENSION} from '../gltf-constants';
 import GLBBuilder from './glb-builder';
-import packBinaryJson from './packed-json/pack-binary-json';
+
+function packBinaryJson(data, builder, packOptions) {
+  assert(!packOptions.packTypedArrays);
+  return data;
+}
 
 export default class GLTFBuilder extends GLBBuilder {
   constructor(options = {}) {
@@ -88,81 +92,21 @@ export default class GLTFBuilder extends GLBBuilder {
   // TRIANGLE_FAN:  0x0006,
 
   addMesh(attributes, indices, mode = 4) {
-    const accessors = this._addAttributes(attributes);
-
-    const glTFMesh = {
-      primitives: [
-        {
-          attributes: accessors,
-          indices,
-          mode
-        }
-      ]
-    };
-
-    this.json.meshes = this.json.meshes || [];
-    this.json.meshes.push(glTFMesh);
-    return this.json.meshes.length - 1;
+    assert(false);
+    return -1;
   }
 
   addPointCloud(attributes) {
-    const accessorIndices = this._addAttributes(attributes);
-
-    const glTFMesh = {
-      primitives: [
-        {
-          attributes: accessorIndices,
-          mode: 0 // GL.POINTS
-        }
-      ]
-    };
-
-    this.json.meshes = this.json.meshes || [];
-    this.json.meshes.push(glTFMesh);
-    return this.json.meshes.length - 1;
+    assert(false);
+    return -1;
   }
 
   // eslint-disable-next-line max-len
   // https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_draco_mesh_compression
   // Only TRIANGLES: 0x0004 and TRIANGLE_STRIP: 0x0005 are supported
   addCompressedMesh(attributes, indices, mode = 4) {
-    if (!this.DracoWriter || !this.DracoLoader) {
-      throw new Error('DracoWriter/DracoLoader not available');
-    }
-
-    // Since we do not add fallback data
-    this.registerRequiredExtension(KHR_DRACO_MESH_COMPRESSION);
-
-    const compressedData = this.DracoWriter.encodeSync({attributes});
-
-    // Draco compression may change the order and number of vertices in a mesh.
-    // To satisfy the requirement that accessors properties be correct for both
-    // compressed and uncompressed data, generators should create uncompressed
-    // attributes and indices using data that has been decompressed from the Draco buffer,
-    // rather than the original source data.
-    const decodedData = this.DracoLoader.parseSync({attributes});
-    const fauxAccessors = this._addFauxAttributes(decodedData.attributes);
-
-    const bufferViewIndex = this.addBufferView(compressedData);
-
-    const glTFMesh = {
-      primitives: [
-        {
-          attributes: fauxAccessors, // TODO - verify with spec
-          mode, // GL.POINTS
-          extensions: {
-            [KHR_DRACO_MESH_COMPRESSION]: {
-              bufferView: bufferViewIndex,
-              attributes: fauxAccessors // TODO - verify with spec
-            }
-          }
-        }
-      ]
-    };
-
-    this.json.meshes = this.json.meshes || [];
-    this.json.meshes.push(glTFMesh);
-    return this.json.meshes.length - 1;
+    assert(false);
+    return -1;
   }
 
   addCompressedPointCloud(attributes) {

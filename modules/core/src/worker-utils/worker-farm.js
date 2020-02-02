@@ -37,7 +37,7 @@ export default class WorkerFarm {
 
   /**
    * Process binary data in a worker
-   * @param data {data containing binary typed arrays} - data to be transferred to worker
+   * @param {any} data - data (containing binary typed arrays) to be transferred to worker
    * @returns a Promise with data containing typed arrays transferred back from work
    */
   async process(workerSource, workerName, data) {

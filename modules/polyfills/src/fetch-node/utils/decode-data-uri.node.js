@@ -29,7 +29,7 @@ export default function decodeDataUri(uri) {
 
   if (!mimeType) {
     mimeType = 'text/plain;charset=US-ASCII';
-  } else if (mimeType[0] === ';') {
+  } else if (mimeType.startsWith(';')) {
     mimeType = `text/plain${mimeType}`;
   }
 

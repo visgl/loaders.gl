@@ -1,9 +1,9 @@
 /**
  * Covert all numbers in a deep structure to a given precision, allowing
  * reliable float comparisons. Converts data in-place.
- * @param  {mixed} input      Input data
- * @param  {Number} [precision] Desired precision
- * @return {mixed}            Input data, with all numbers converted
+ * @param  {any} input      Input data
+ * @param  {number} [precision] Desired precision
+ * @return {any}            Input data, with all numbers converted
  */
 export function toLowPrecision(input, precision = 11) {
   /* eslint-disable guard-for-in */

@@ -228,7 +228,7 @@ class LAZLoader {
 
         if (i % skip === 0) {
           const a = new Uint8Array(Module.HEAPU8.buffer, bufRead, header.pointsStructSize);
-          thisBuf.set(a, pointsRead * header.pointsStructSize, header.pointsStructSize);
+          thisBuf.set(a, pointsRead * header.pointsStructSize);
           pointsRead++;
         }
 

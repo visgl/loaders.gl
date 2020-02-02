@@ -3,6 +3,7 @@
 import {loadDracoDecoderModule} from './lib/draco-module-loader';
 import DracoParser from './lib/draco-parser';
 
+// @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export const DracoWorkerLoader = {
@@ -32,7 +33,7 @@ async function parse(arrayBuffer, options, context, loader) {
   const {draco} = await loadDracoDecoderModule(options);
   const dracoParser = new DracoParser(draco);
   try {
-    return dracoParser.parseSync(arrayBuffer, options);
+    return dracoParser.parseSync(arrayBuffer);
   } finally {
     dracoParser.destroy();
   }

@@ -3,7 +3,8 @@ export function getMeshSize(attributes) {
   for (const attributeName in attributes) {
     const attribute = attributes[attributeName];
     if (ArrayBuffer.isView(attribute)) {
-      size += attribute.length * attribute.BYTES_PER_ELEMENT;
+      // @ts-ignore DataView doesn't have BYTES_PER_ELEMENT
+      size += attribute.byteLength * attribute.BYTES_PER_ELEMENT;
     }
   }
   return size;

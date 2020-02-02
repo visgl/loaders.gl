@@ -47,6 +47,8 @@ class MeshObject {
 
     this.materials = [];
     this.smooth = true;
+
+    this.fromDeclaration = null;
   }
 
   startMaterial(name, libraries) {

@@ -76,6 +76,7 @@ export default class Headers {
   }
 
   *[Symbol.iterator]() {
+    // @ts-ignore must have a '[Symbol.iterator]()' method that returns an iterator.
     yield* this.entries();
   }
 }

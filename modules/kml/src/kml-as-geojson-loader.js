@@ -1,8 +1,14 @@
+// __VERSION__ is injected by babel-plugin-version-inline
+/* global __VERSION__ */
+
 /* global TextDecoder */
 import {XMLLoader} from '@loaders.gl/tables';
 import KMLParser from './lib/kml-parser';
 import normalizeKML from './lib/kml-normalizer';
 import convertKMLToGeoJson from './lib/kml-to-geojson';
+
+// @ts-ignore TS2304: Cannot find name '__VERSION__'.
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 const KML_HEADER = `\
 <?xml version="1.0" encoding="UTF-8"?>
@@ -24,6 +30,7 @@ function parseTextSync(text, options) {
 export default {
   id: 'kml',
   name: 'KML',
+  version: VERSION,
   extensions: ['kml'],
   mimeType: 'vnd.google-earth.kml+xml',
   category: 'geojson',

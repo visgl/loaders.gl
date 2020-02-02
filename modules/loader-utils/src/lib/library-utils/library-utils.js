@@ -7,6 +7,8 @@ import assert from '../env-utils/assert';
 
 // TODO - unpkg.com doesn't seem to have a `latest` specifier for alpha releases...
 const LATEST = 'beta';
+
+// @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : LATEST;
 
 const loadLibraryPromises = {}; // promises

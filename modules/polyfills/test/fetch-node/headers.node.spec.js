@@ -84,15 +84,19 @@ test('deletes headers', t => {
 
 test('converts field name to string on set and get', t => {
   const headers = new Headers();
+  // @ts-ignore
   headers.set(1, 'application/json');
   t.ok(headers.has('1'));
+  // @ts-ignore
   t.equal(headers.get(1), 'application/json');
   t.end();
 });
 
 test('converts field value to string on set and get', t => {
   const headers = new Headers();
+  // @ts-ignore
   headers.set('Content-Type', 1);
+  // @ts-ignore
   headers.set('X-CSRF-Token', undefined);
   t.equal(headers.get('Content-Type'), '1');
   t.equal(headers.get('X-CSRF-Token'), 'undefined');
@@ -100,9 +104,13 @@ test('converts field value to string on set and get', t => {
 });
 
 test('throws TypeError on invalid character in field name', t => {
+  // @ts-ignore
   t.throws(() => new Headers({'[Accept]': 'application/json'}), TypeError);
+  // @ts-ignore
   t.throws(() => new Headers({'Accept:': 'application/json'}), TypeError);
+  // @ts-ignore
   t.throws(() => new Headers().set({field: 'value'}, 'application/json'), TypeError);
+  // @ts-ignore
   t.throws(() => new Headers({'': 'application/json'}), TypeError);
   t.end();
 });
@@ -127,6 +135,7 @@ test('is iterable with forEach', t => {
 test('forEach accepts second thisArg argument', t => {
   const headers = new Headers({Accept: 'application/json'});
   const thisArg = 42;
+  // eslint-disable-next-line no-invalid-this
   headers.forEach(function() {
     t.equal(this, thisArg);
   }, thisArg);

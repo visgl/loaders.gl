@@ -1,7 +1,7 @@
 /* eslint-disable dot-notation */
 import {isBrowser, global} from './utils/globals';
 
-import {TextDecoder, TextEncoder} from './text-encoding/encoding';
+import {TextDecoder, TextEncoder} from './libs/encoding';
 import * as base64 from './text-encoding/btoa.node';
 
 import HeadersNode from './fetch-node/headers.node';

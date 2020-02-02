@@ -1,9 +1,11 @@
-/* eslint-disable */
 /*
   Modified from Uday Verma and Howard Butler's plasio
   https://github.com/verma/plasio/
   MIT License
 */
+
+/* eslint-disable */
+// @ts-nocheck
 
 // laz-perf.js
 module.exports = function getModule() {

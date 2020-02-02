@@ -90,7 +90,7 @@ class GLTFPostProcessor {
       json.bufferViews = json.bufferViews.map((bufView, i) => this._resolveBufferView(bufView, i));
     }
     if (json.images) {
-      json.images = json.images.map((image, i) => this._resolveImage(image, i, options));
+      json.images = json.images.map((image, i) => this._resolveImage(image, i));
     }
     if (json.samplers) {
       json.samplers = json.samplers.map((sampler, i) => this._resolveSampler(sampler, i));
@@ -99,9 +99,7 @@ class GLTFPostProcessor {
       json.textures = json.textures.map((texture, i) => this._resolveTexture(texture, i));
     }
     if (json.accessors) {
-      json.accessors = json.accessors.map((accessor, i) =>
-        this._resolveAccessor(accessor, i, options)
-      );
+      json.accessors = json.accessors.map((accessor, i) => this._resolveAccessor(accessor, i));
     }
     if (json.materials) {
       json.materials = json.materials.map((material, i) => this._resolveMaterial(material, i));
