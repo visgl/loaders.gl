@@ -255,7 +255,7 @@ export default class App extends PureComponent {
     const tile3DLayer = this._renderTile3DLayer();
 
     return (
-      <div>
+      <div style={{position: 'relative', height: '100%'}}>
         {this._renderStats()}
         {this._renderControlPanel()}
         <DeckGL
