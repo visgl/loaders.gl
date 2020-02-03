@@ -326,7 +326,7 @@ export default class I3STileHeader {
   // Update the tile's visibility.
   updateVisibility(frameState) {
     const tileset = this._tileset;
-    if (this._updatedVisibilityFrame === tileset._updatedVisibilityFrame) {
+    if (this._frameNumber === tileset._frameNumber) {
       // Return early if visibility has already been checked during the traversal.
       // The visibility may have already been checked if the cullWithChildrenBounds optimization is used.
       return;
@@ -345,7 +345,7 @@ export default class I3STileHeader {
     this._visible = this._visibilityPlaneMask !== CullingVolume.MASK_OUTSIDE;
     this._inRequestVolume = this.insideViewerRequestVolume(frameState);
 
-    this._updatedVisibilityFrame = tileset._updatedVisibilityFrame;
+    this._frameNumber = tileset._frameNumber;
   }
 
   // Update whether the tile has expired.
@@ -486,7 +486,7 @@ export default class I3STileHeader {
     this._stackLength = 0;
     this._selectionDepth = 0;
 
-    this._updatedVisibilityFrame = 0;
+    this._frameNumber = 0;
     this._touchedFrame = 0;
     this._visitedFrame = 0;
     this._selectedFrame = 0;
