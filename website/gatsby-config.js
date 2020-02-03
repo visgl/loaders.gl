@@ -9,7 +9,7 @@ module.exports = {
         logLevel: 1, // Adjusts amount of debug information from ocular-gatsby
 
         // Folders
-        DIR_NAME: `${__dirname}`,
+        DIR_NAME: __dirname,
         ROOT_FOLDER: `${__dirname}/../`,
 
         DOCS: DOC_TABLE_OF_CONTENTS,
@@ -18,16 +18,16 @@ module.exports = {
           `${__dirname}/../modules/`,
           `${__dirname}/../arrowjs/`
         ],
+        SOURCE: [`${__dirname}/static`, `${__dirname}/src`],
 
         PROJECT_TYPE: 'github',
 
         PROJECT_NAME: 'loaders.gl',
         PROJECT_ORG: 'uber-web',
+        PROJECT_ORG_LOGO: 'images/uber-logo.png',
         PROJECT_URL: 'https://github.com/uber-web/loaders.gl',
         PROJECT_DESC: 'Loaders for Big Data Visualization',
         PATH_PREFIX: '/',
-
-        FOOTER_LOGO: '',
 
         GA_TRACKING: null,
 
@@ -37,50 +37,28 @@ module.exports = {
 
         HOME_PATH: '/',
 
-        HOME_HEADING: 'Loaders for Big Data Visualization',
-
-        HOME_RIGHT: null,
-
-        HOME_BULLETS: [
-          {
-            text: 'A collection of the best open source loaders',
-            desc: 'Parsers and encoders for many major 3D, geospatial and tabular formats.',
-            img: 'images/icon-high-precision.svg'
-          },
-          {
-            text: 'Framework Agnostic',
-            desc: 'Loaders and Writers can be used with any visualization framework.',
-            img: 'images/icon-high-precision.svg'
-          },
-          {
-            text: 'Works in Browser, Worker Threads and Node.js',
-            desc: 'Move your code around and rely on your loaders to keep working.',
-            img: 'images/icon-high-precision.svg'
-          }
-        ],
-
         PROJECTS: [
           {
-            title: 'deck.gl',
+            name: 'deck.gl',
             url: 'https://deck.gl'
           },
           {
-            title: 'luma.gl',
+            name: 'luma.gl',
             url: 'https://luma.gl'
           },
           {
-            title: 'react-map-gl',
+            name: 'react-map-gl',
             url: 'https://uber.github.io/react-map-gl'
           },
           {
-            title: 'nebula.gl',
+            name: 'nebula.gl',
             url: 'https://nebula.gl/'
           }
         ],
 
-        LINK_TO_GET_STARTED: 'docs/developer-guide/get-started',
+        LINK_TO_GET_STARTED: '/docs/developer-guide/get-started',
 
-        ADDITIONAL_LINKS: [],
+        ADDITIONAL_LINKS: [{name: 'Blog', href: 'http://medium.com/vis-gl'}],
 
         INDEX_PAGE_URL: resolve(__dirname, './templates/index.jsx'),
 
@@ -106,6 +84,12 @@ module.exports = {
         ]
       }
     },
-    {resolve: 'gatsby-plugin-no-sourcemaps'}
+    {resolve: 'gatsby-plugin-no-sourcemaps'},
+    {
+      resolve: 'gatsby-plugin-env-variables',
+      options: {
+        whitelist: ['MapboxAccessToken']
+      }
+    }
   ]
 };
