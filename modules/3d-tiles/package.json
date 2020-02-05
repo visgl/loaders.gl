@@ -44,6 +44,6 @@
     "probe.gl": "^3.2.0"
   },
   "devDependencies": {
-    "@deck.gl/core": "^8.0.0"
+    "@math.gl/web-mercator": "^3.1.3"
   }
 }
