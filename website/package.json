@@ -45,7 +45,7 @@
   "devDependencies": {
     "gatsby": "~2.18.0",
     "gatsby-plugin-no-sourcemaps": "^2.1.1",
-    "gatsby-theme-ocular": "^1.2.0-beta.2",
+    "gatsby-theme-ocular": "^1.2.0-beta.4",
     "gh-pages": "^2.1.0"
   }
 }

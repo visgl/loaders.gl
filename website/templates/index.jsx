@@ -29,7 +29,7 @@ export default class IndexPage extends React.Component {
             Loaders and Writers can be used with any visualization framework.
           </Bullet>
           <Bullet>
-            Move your code around and rely on your loaders to keep working.
+            Move your code between browser, worker threads and Node.js and rely on your loaders to keep working.
           </Bullet>
         </ul>
       </Home>
