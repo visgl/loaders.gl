@@ -223,12 +223,7 @@ export default class App extends PureComponent {
   }
 
   _renderStats() {
-    return (
-      <div
-        style={STATS_STYLE}
-        ref={_ => (this._statsWidgetContainer = _)}
-      />
-    );
+    return <div style={STATS_STYLE} ref={_ => (this._statsWidgetContainer = _)} />;
   }
 
   _renderTileInfo() {
@@ -237,11 +232,16 @@ export default class App extends PureComponent {
       return null;
     }
     const {x, y, object} = clicked;
-    const style = {position: 'absolute', background: 'white', zIndex: 1000, left: x, top: y, padding: '4px'};
+    const style = {
+      position: 'absolute',
+      background: 'white',
+      zIndex: 1000,
+      left: x,
+      top: y,
+      padding: '4px'
+    };
 
-    return (
-      <div style={style}>{object.id}</div>
-    );
+    return <div style={style}>{object.id}</div>;
   }
 
   _renderTile3DLayer() {
@@ -283,7 +283,7 @@ export default class App extends PureComponent {
           layers={[tile3DLayer]}
           viewState={viewState}
           onViewStateChange={this._onViewStateChange.bind(this)}
-          controller={true}
+          controller={{type: MapController, maxPitch: 85}}
           onClick={clicked => this.setState({clicked})}
           onAfterRender={() => this._updateStatWidgets()}
         >
@@ -299,5 +299,5 @@ export default class App extends PureComponent {
 }
 
 export function renderToDOM(container) {
-  render(<App/>, container);
+  render(<App />, container);
 }
