@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/tables",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "Table format APIs for JSON, CSV, etc...",
   "license": "MIT",
   "publishConfig": {
@@ -32,6 +32,6 @@
     "build-bundle": "webpack --display=minimal --config ../../scripts/bundle.config.js"
   },
   "dependencies": {
-    "@loaders.gl/core": "2.0.2"
+    "@loaders.gl/core": "2.0.3"
   }
 }

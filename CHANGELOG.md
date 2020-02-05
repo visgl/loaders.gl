@@ -2,6 +2,10 @@
 
 ### 2.0 Release
 
+#### v2.0.3
+
+- @loaders.gl/3d-tiles: fix frameNumber for updating traversal
+
 #### v2.0.2
 
 - @loaders.gl/images: Fix loading SVG from data url (#615)
