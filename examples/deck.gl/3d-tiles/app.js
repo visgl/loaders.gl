@@ -41,6 +41,18 @@ export const INITIAL_VIEW_STATE = {
   zoom: 3 // Start zoomed out on US, tileset will center via "fly-to" on load
 };
 
+const STATS_STYLE = {
+  position: 'absolute',
+  left: 20,
+  top: 20,
+  padding: 12,
+  wordBreak: 'break-word',
+  zIndex: '10000',
+  maxWidth: 300,
+  background: '#000',
+  color: '#fff'
+};
+
 export default class App extends PureComponent {
   constructor(props) {
     super(props);
@@ -51,6 +63,8 @@ export default class App extends PureComponent {
 
       // current tileset
       tileset: null,
+
+      clicked: null,
 
       // MAP STATE
       selectedMapStyle: INITIAL_MAP_STYLE,
@@ -68,7 +82,7 @@ export default class App extends PureComponent {
     this._onTilesetChange = this._onTilesetChange.bind(this);
   }
 
-  async componentDidMount() {
+  componentDidMount() {
     const container = this._statsWidgetContainer;
     // TODO - This is noisy. Default formatters should already be pre-registered on the stats object
     // TODO - Revisit after upgrade luma to use most recent StatsWidget API
@@ -85,24 +99,23 @@ export default class App extends PureComponent {
 
     this._tilesetStatsWidget = new StatsWidget(null, {container});
 
-    await this._loadExampleIndex();
+    this._loadExampleIndex();
 
     // Check if a tileset is specified in the query params
     if (this._selectTilesetFromQueryParams()) {
       return;
     }
-
-    // if not, select the default example tileset
-    const {category, name} = this.state;
-    const {examplesByCategory} = this.state;
-    const selectedExample = examplesByCategory[category].examples[name];
-    this.setState({selectedExample});
   }
 
   // load the index file that lists example tilesets
   async _loadExampleIndex() {
     const examplesByCategory = await loadExampleIndex();
     this.setState({examplesByCategory});
+
+    // if not, select the default example tileset
+    const {category, name} = this.state;
+    const selectedExample = examplesByCategory[category].examples[name];
+    this.setState({selectedExample});
   }
 
   // Check URL query params and select the "custom example" if appropriate
@@ -210,19 +223,24 @@ export default class App extends PureComponent {
   }
 
   _renderStats() {
-    // TODO - too verbose, get more default styling from stats widget?
     return (
       <div
-        style={{
-          position: 'absolute',
-          padding: 12,
-          zIndex: '10000',
-          maxWidth: 300,
-          background: '#000',
-          color: '#fff'
-        }}
+        style={STATS_STYLE}
         ref={_ => (this._statsWidgetContainer = _)}
       />
+    );
+  }
+
+  _renderTileInfo() {
+    const {clicked} = this.state;
+    if (!clicked || !clicked.object) {
+      return null;
+    }
+    const {x, y, object} = clicked;
+    const style = {position: 'absolute', background: 'white', zIndex: 1000, left: x, top: y, padding: '4px'};
+
+    return (
+      <div style={style}>{object.id}</div>
     );
   }
 
@@ -241,6 +259,7 @@ export default class App extends PureComponent {
       _ionAssetId: ionAssetId,
       _ionAccessToken: ionAccessToken,
       pointSize: 2,
+      pickable: true,
       getPointColor: [115, 112, 202],
       onTilesetLoad: this._onTilesetLoad,
       onTileLoad: this._onTilesetChange,
@@ -258,13 +277,14 @@ export default class App extends PureComponent {
       <div style={{position: 'relative', height: '100%'}}>
         {this._renderStats()}
         {this._renderControlPanel()}
+        {this._renderTileInfo()}
         <DeckGL
           ref={_ => (this._deckRef = _)}
           layers={[tile3DLayer]}
-          initialViewState={INITIAL_VIEW_STATE}
           viewState={viewState}
           onViewStateChange={this._onViewStateChange.bind(this)}
-          controller={{type: MapController, maxPitch: 85}}
+          controller={true}
+          onClick={clicked => this.setState({clicked})}
           onAfterRender={() => this._updateStatWidgets()}
         >
           <StaticMap
@@ -279,5 +299,5 @@ export default class App extends PureComponent {
 }
 
 export function renderToDOM(container) {
-  render(<App />, container);
+  render(<App/>, container);
 }
