@@ -106,7 +106,7 @@ these tiles go out of view, they will be unloaded.
 ^default 512
  *
 ^exception `maximumMemoryUsage` must be greater than or equal to zero.
-^see Tileset3D#totalMemoryUsageInBytes
+^see Tileset3D#gpuMemoryUsageInBytes
 
 ### root : Tile3DHeader
 
@@ -152,7 +152,7 @@ Returns the time, in milliseconds, since the tileset was loaded and first update
 
 ### maximumMemoryUsage : Number
 
-### totalMemoryUsageInBytes : Number
+### gpuMemoryUsageInBytes : Number
 
 The total amount of GPU memory in bytes used by the tileset. This value is estimated from
 geometry, texture, and batch table textures of loaded tiles. For point clouds, this value also

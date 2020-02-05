@@ -14,6 +14,10 @@ The experimental ImageLoaders for individual formats introduced in 2.0 have been
 - `getImageData(image)` now returns an object with `{data, width, height}` instead of just the `data` array. This small breaking change ensures that the concept of _image data_ is consistent across the API.
 - `ImageLoader`: `options.image.type`: The `html` and `ndarray` image types are now deprecated and replaced with `image` and `data` respectively.
 
+**`@loaders.gl/3d-tiles`**
+
+`Tileset3DLoader` and `Tile3DLoader` are replaced by `Tiles3DLoader`, which supports loading both a 3D tileset file and a tile. Check `loaders.gl/3d-tiles` for loaded data format.
+
 ## Upgrading to v2.0
 
 Version 2.0 is a major release that consolidates functionality and APIs, and a number of deprecated functions have been removed.

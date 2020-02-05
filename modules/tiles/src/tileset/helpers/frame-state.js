@@ -52,6 +52,7 @@ export function getFrameState(viewport, frameNumber) {
       direction: cameraDirectionCartesian,
       up: cameraUpCartesian
     },
+    viewport,
     height,
     cullingVolume,
     frameNumber, // TODO: This can be the same between updates, what number is unique for between updates?

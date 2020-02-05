@@ -54,7 +54,8 @@ const propTypes = {
   selectedMapStyle: PropTypes.string,
   onExampleChange: PropTypes.func,
   onMapStyleChange: PropTypes.func,
-  children: PropTypes.node
+  children: PropTypes.node,
+  metadata: PropTypes.object
 };
 
 const defaultProps = {
@@ -133,8 +134,7 @@ export default class ControlPanel extends PureComponent {
       return null;
     }
 
-    const {description, credits} = this.props.tileset;
-    const attributions = credits && credits.attributions;
+    const {description, attributions} = this.props.metadata || {};
     if (!attributions || attributions.length === 0 || !description) {
       return null;
     }

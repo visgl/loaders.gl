@@ -20,8 +20,8 @@ npm install @loaders.gl/core
 
 A standard complement of loaders and writers are provided to load the individual 3d Tile file formats:
 
-- [`Tileset3DLoader`](modules/3d-tiles/docs/api-reference/tileset-3d-loader), a loader for top-level (or nested) tilesets files.
-- [`Tile3DLoader`](modules/3d-tiles/docs/api-reference/tile-3d-loader) for individual tiles.
+- [`Tiles3DLoader`](modules/3d-tiles/docs/api-reference/tileset-3d-loader), a loader for top-level (or nested) tilesets files.
+- [`Tiles3DLoader`](modules/3d-tiles/docs/api-reference/tile-3d-loader) for individual tiles.
 - [`Tile3DWriter`](modules/3d-tiles/docs/api-reference/tile-3d-writer) for individual tiles.
 
 To handle the complex dynamic tile selection and loading required to performantly render larger-than-browser-memory tilesets, additional helper classes are provided:

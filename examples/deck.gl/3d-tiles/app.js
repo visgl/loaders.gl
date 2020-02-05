@@ -4,8 +4,9 @@ import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
 import DeckGL from '@deck.gl/react';
 import {MapController, FlyToInterpolator} from '@deck.gl/core';
-import {Tile3DLayer} from '@deck.gl/geo-layers';
-
+// import {Tile3DLayer} from '@deck.gl/geo-layers';
+// TODO bring back to deck.gl
+import Tile3DLayer from './tile-3d-layer';
 import {lumaStats} from '@luma.gl/core';
 import {StatsWidget} from '@probe.gl/stats-widget';
 
@@ -13,6 +14,7 @@ import {StatsWidget} from '@probe.gl/stats-widget';
 import {registerLoaders} from '@loaders.gl/core';
 import {DracoWorkerLoader} from '@loaders.gl/draco';
 import {GLTFLoader} from '@loaders.gl/gltf';
+import {Tiles3DLoader, _getIonTilesetMetadata} from '@loaders.gl/3d-tiles';
 
 import ControlPanel from './components/control-panel';
 
@@ -20,7 +22,7 @@ import {loadExampleIndex, INITIAL_EXAMPLE_CATEGORY, INITIAL_EXAMPLE_NAME} from '
 import {INITIAL_MAP_STYLE} from './constants';
 
 // enable DracoWorkerLoader when fixed
-registerLoaders([GLTFLoader, DracoWorkerLoader]);
+registerLoaders([GLTFLoader, DracoWorkerLoader, Tiles3DLoader]);
 
 // Set your mapbox token here
 const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
@@ -68,7 +70,7 @@ export default class App extends PureComponent {
     this._onTilesetChange = this._onTilesetChange.bind(this);
   }
 
-  async componentDidMount() {
+  componentDidMount() {
     const container = this._statsWidgetContainer;
     // TODO - This is noisy. Default formatters should already be pre-registered on the stats object
     // TODO - Revisit after upgrade luma to use most recent StatsWidget API
@@ -85,24 +87,35 @@ export default class App extends PureComponent {
 
     this._tilesetStatsWidget = new StatsWidget(null, {container});
 
-    await this._loadExampleIndex();
+    this._loadExampleIndex();
 
     // Check if a tileset is specified in the query params
     if (this._selectTilesetFromQueryParams()) {
       return;
     }
-
-    // if not, select the default example tileset
-    const {category, name} = this.state;
-    const {examplesByCategory} = this.state;
-    const selectedExample = examplesByCategory[category].examples[name];
-    this.setState({selectedExample});
   }
 
   // load the index file that lists example tilesets
   async _loadExampleIndex() {
     const examplesByCategory = await loadExampleIndex();
     this.setState({examplesByCategory});
+
+    // if not, select the default example tileset
+    const {category, name} = this.state;
+    const selectedExample = examplesByCategory[category].examples[name];
+    await this._loadExample(selectedExample);
+  }
+
+  async _loadExample(selectedExample) {
+    const {ionAssetId, ionAccessToken} = selectedExample;
+    if (ionAssetId && ionAccessToken) {
+      const metadata = await _getIonTilesetMetadata(ionAccessToken, ionAssetId);
+      const {url, headers} = metadata;
+      selectedExample.tilesetUrl = url;
+      selectedExample.headers = headers;
+      selectedExample.metadata = metadata;
+    }
+    this.setState({selectedExample});
   }
 
   // Check URL query params and select the "custom example" if appropriate
@@ -140,7 +153,8 @@ export default class App extends PureComponent {
 
   // Called by ControlPanel when user selects a new example
   async _onSelectExample({example, category, name}) {
-    this.setState({selectedExample: example, category, name});
+    await this._loadExample(example);
+    this.setState({category, name});
   }
 
   // Called by ControlPanel when user selects a new map style
@@ -187,7 +201,7 @@ export default class App extends PureComponent {
   }
 
   _renderControlPanel() {
-    const {examplesByCategory, category, name, viewState, tileset} = this.state;
+    const {examplesByCategory, category, name, viewState, tileset, selectedExample} = this.state;
     if (!examplesByCategory) {
       return null;
     }
@@ -196,6 +210,7 @@ export default class App extends PureComponent {
       <ControlPanel
         data={examplesByCategory}
         category={category}
+        metadata={selectedExample && selectedExample.metadata}
         name={name}
         tileset={tileset}
         onMapStyleChange={this._onSelectMapStyle.bind(this)}
@@ -232,14 +247,20 @@ export default class App extends PureComponent {
       return null;
     }
 
-    const {tilesetUrl, ionAssetId, ionAccessToken, maximumScreenSpaceError} = selectedExample;
-    const loadOptions = maximumScreenSpaceError ? {maximumScreenSpaceError} : {};
+    const {tilesetUrl, headers, maximumScreenSpaceError} = selectedExample;
+    const loadOptions = {};
+    if (headers) {
+      loadOptions.headers = headers;
+    }
+    if (maximumScreenSpaceError) {
+      loadOptions.maximumScreenSpaceError = maximumScreenSpaceError;
+    }
 
     return new Tile3DLayer({
       id: 'tile-3d-layer',
       data: tilesetUrl,
-      _ionAssetId: ionAssetId,
-      _ionAccessToken: ionAccessToken,
+      loader: Tiles3DLoader,
+      pickable: true,
       pointSize: 2,
       getPointColor: [115, 112, 202],
       onTilesetLoad: this._onTilesetLoad,
@@ -255,13 +276,12 @@ export default class App extends PureComponent {
     const tile3DLayer = this._renderTile3DLayer();
 
     return (
-      <div style={{position: 'relative', height: '100%'}}>
+      <div>
         {this._renderStats()}
         {this._renderControlPanel()}
         <DeckGL
           ref={_ => (this._deckRef = _)}
           layers={[tile3DLayer]}
-          initialViewState={INITIAL_VIEW_STATE}
           viewState={viewState}
           onViewStateChange={this._onViewStateChange.bind(this)}
           controller={{type: MapController, maxPitch: 85}}

@@ -45,7 +45,7 @@ Paralleled with the [improvements](https://github.com/uber/deck.gl/pull/4139) in
 `@loaders.gl/3d-tiles`: Load Cesium 3D tiles
 
 - loaders
-  - `Tileset3DLoader`
+  - `Tiles3DLoader`
   - `Tile3DHeaderLoader`
 - Tile Classes
   - `Tileset3D`
@@ -59,7 +59,7 @@ Paralleled with the [improvements](https://github.com/uber/deck.gl/pull/4139) in
 `@loaders.gl/i3s`: Load ArcGIS I3S tiles
 
 - loaders
-  - `Tileset3DLoader`
+  - `Tiles3DLoader`
   - `Tile3DHeaderLoader`
 - Tile Classes
   - `I3STileset`
@@ -188,7 +188,7 @@ The following fields are guaranteed. But different tile loaders may have differe
 | `id`              | `String`     | Identifier of the tile, unique in a tileset                                                                                                                                                                                                                                                                                         |
 | `lodSelection`    | `Object`     | Used for deciding if this tile is sufficient given current viewport. Cesium tile use [`geometricError`](https://github.com/AnalyticalGraphicsInc/3d-tiles/blob/master/specification/README.md#geometric-error), `i3s` uses [`metricType` and `maxError`](https://github.com/Esri/i3s-spec/blob/master/docs/1.7/lodSelection.cmn.md) |
 | `refine`          | `String`     | Refinement type of the tile, `ADD` or `REPLACE`                                                                                                                                                                                                                                                                                     |
-| `type`            | `String`     | Type of the tile, one of `pointcloud`, `scenegraph`, `simplemesh`                                                                                                                                                                                                                                                                   |
+| `type`            | `String`     | Type of the tile, one of `pointcloud`, `scenegraph`, `mesh`                                                                                                                                                                                                                                                                         |
 | `transformMatrix` | `Number[16]` | A matrix that transforms from the tile's local coordinate system to the parent tile's coordinate system—or the tileset's coordinate system in the case of the root tile                                                                                                                                                             |  |
 
 **Tile Content**
@@ -248,7 +248,7 @@ SimpleMesh Fields
 - `stats` ([`Stats`](https://uber-web.github.io/probe.gl/docs/api-reference/log/stats))): An instance of a probe.gl `Stats` object that contains information on how many tiles have been loaded etc. Easy to display using a probe.gl `StatsWidget`.
 - `tileset` (`Object`): The original tileset data this object instanced from.
 - `tilesLoaded` (`Boolean`): When `true`, all tiles that meet the screen space error this frame are loaded. The tileset is completely loaded for this view.
-- `totalMemoryUsageInBytes` (`Number`): The total amount of GPU memory in bytes used by the tileset. This value is estimated from geometry, texture, and batch table textures of loaded tiles. For point clouds, this value also includes per-point metadata.
+- `gpuMemoryUsageInBytes` (`Number`): The total amount of GPU memory in bytes used by the tileset. This value is estimated from geometry, texture, and batch table textures of loaded tiles. For point clouds, this value also includes per-point metadata.
 - `url` (`String`): The url to a tileset JSON file.
 - `zoom` (`Number[3]`): A web mercator zoom level that displays the entire tile set bounding volume
 
@@ -286,7 +286,7 @@ SimpleMesh Fields
   - `tileset`: tileset tile
 - `depth` (`Number`): The depth of the tile in the tileset tree.
 - `content` (`Object`): The tile's content.This represents the actual tile's payload.
-- `type` (`String`): One of `scenegraph`, `pointcloud`, `simplemesh`
+- `type` (`String`): One of `scenegraph`, `pointcloud`, `mesh`
 - `parent` (`Tile3DHeader`): Parent of this tile.
 - `refine` (`String`): Specifies the type of refine that is used when traversing this tile for rendering. [`Reference`](https://github.com/AnalyticalGraphicsInc/3d-tiles/blob/master/specification/README.md#refinement)
   - `ADD`: high-resolution children tiles should be rendered in addition to lower-resolution parent tiles when level of details of parent tiles are not sufficient for current view.
@@ -367,7 +367,7 @@ tileset3d.tiles.map(tile => {
            layer = createPointCloudTileLayer(tileHeader);
          case 'scenegraph':
            layer =  create3DModelTileLayer(tileHeader);
-         case 'simplemesh':
+         case 'mesh':
            layer = createSimpleMeshLayer(tileHeader);
          default:
            console.error(`Tile3DLayer: Failed to render layer of type ${tileHeader.type}`);

@@ -1,5 +1,5 @@
-import ManagedArray from '../utils/managed-array';
-import {TILE_REFINEMENT} from '../constants';
+import ManagedArray from '../../utils/managed-array';
+import {TILE_REFINEMENT} from '../../constants';
 import {assert} from '@loaders.gl/loader-utils';
 
 export const DEFAULT_OPTIONS = {
@@ -81,10 +81,10 @@ export default class TilesetTraverser {
       const tile = stack.pop();
 
       // 2. check if tile needs to be refine, needs refine if a tile's LoD is not sufficient and tile has available children (available content)
-      let refines = false;
+      let shouldRefine = false;
       if (this.canTraverse(tile, frameState)) {
         this.updateChildTiles(tile, frameState);
-        refines = this.updateAndPushChildren(tile, frameState, stack);
+        shouldRefine = this.updateAndPushChildren(tile, frameState, stack);
       }
 
       // 3. decide if should render (select) this tile
@@ -92,8 +92,8 @@ export default class TilesetTraverser {
       //   - tile has render content and tile is `add` type (pointcloud)
       //   - tile has render content and tile is `replace` type (photogrammetry) and can't refine any further
       const parent = tile.parent;
-      const parentRefines = Boolean(!parent || parent._refines);
-      const stoppedRefining = !refines;
+      const parentRefines = Boolean(!parent || parent._shouldRefine);
+      const stoppedRefining = !shouldRefine;
 
       if (!tile.hasRenderContent) {
         this.emptyTiles[tile.id] = tile;
@@ -121,11 +121,7 @@ export default class TilesetTraverser {
       this.touchTile(tile, frameState);
 
       // 4. update tile refine prop and parent refinement status to trickle down to the descendants
-      tile._refines = refines && parentRefines;
-    }
-
-    if (this.options.onTraverseEnd) {
-      this.options.onTraverseEnd();
+      tile._shouldRefine = shouldRefine && parentRefines;
     }
   }
 
@@ -137,7 +133,7 @@ export default class TilesetTraverser {
     return true;
   }
 
-  // eslint-disable-next-line complexity
+  /* eslint-disable complexity, max-statements */
   updateAndPushChildren(tile, frameState, stack) {
     const {loadSiblings, skipLevelOfDetail} = this.options;
 
@@ -150,8 +146,6 @@ export default class TilesetTraverser {
     // Empty tiles are exempt since it looks better if children stream in as they are loaded to fill the empty space.
     const checkRefines =
       !skipLevelOfDetail && tile.refine === TILE_REFINEMENT.REPLACE && tile.hasRenderContent;
-
-    let refines = true;
 
     let hasVisibleChild = false;
     for (const child of children) {
@@ -177,20 +171,19 @@ export default class TilesetTraverser {
         } else {
           childRefines = child.contentAvailable;
         }
-        refines = refines && childRefines;
+
+        if (!childRefines) {
+          return childRefines;
+        }
       }
     }
 
-    if (!hasVisibleChild) {
-      refines = false;
-    }
-
-    return refines;
+    return hasVisibleChild;
   }
+  /* eslint-enable complexity, max-statements */
 
   updateTile(tile, frameState) {
     this.updateTileVisibility(tile, frameState);
-    tile.updateExpiration();
   }
 
   // tile to render in the browser
@@ -198,7 +191,7 @@ export default class TilesetTraverser {
     if (this.shouldSelectTile(tile, frameState)) {
       // The tile can be selected right away and does not require traverseAndSelect
       tile._selectedFrame = frameState.frameNumber;
-      this.selectedTiles[tile.fullUri] = tile;
+      this.selectedTiles[tile.id] = tile;
     }
   }
 

@@ -8,7 +8,7 @@
 import {Matrix4, Vector3, clamp} from '@math.gl/core';
 
 const scratchPositionNormal = new Vector3();
-const scratchCartographic = new Cartographic();
+const scratchCartographic = new Vector3();
 const scratchMatrix = new Matrix4();
 const scratchCenter = new Vector3();
 const scratchPosition = new Vector3();
@@ -102,4 +102,44 @@ export function calculateDynamicScreenSpaceError(root, {camera, mapProjection}, 
   horizonFactor = horizonFactor * (1.0 - t);
 
   return dynamicScreenSpaceErrorDensity * horizonFactor;
+}
+
+export function fog(distanceToCamera, density) {
+  const scalar = distanceToCamera * density;
+  return 1.0 - Math.exp(-(scalar * scalar));
+}
+
+export function getDynamicScreenSpaceError(tileset, distanceToCamera) {
+  if (tileset.dynamicScreenSpaceError && tileset._dynamicScreenSpaceErrorComputedDensity) {
+    const density = tileset._dynamicScreenSpaceErrorComputedDensity;
+    const factor = tileset.dynamicScreenSpaceErrorFactor;
+    // TODO: Refined screen space error that minimizes tiles in non-first-person
+    const dynamicError = fog(distanceToCamera, density) * factor;
+    return dynamicError;
+  }
+
+  return 0;
+}
+
+export function getTiles3DScreenSpaceError(tile, frameState, useParentLodMetric) {
+  const tileset = tile.tileset;
+  const parentLodMetricValue = (tile.parent && tile.parent.lodMetricValue) || tile.lodMetricValue;
+  const lodMetricValue = useParentLodMetric ? parentLodMetricValue : tile.lodMetricValue;
+
+  // Leaf tiles do not have any error so save the computation
+  if (lodMetricValue === 0.0) {
+    return 0.0;
+  }
+
+  // TODO: Orthographic Frustum needs special treatment?
+  // this._getOrthograhicScreenSpaceError();
+
+  // Avoid divide by zero when viewer is inside the tile
+  const distance = Math.max(tile._distanceToCamera, 1e-7);
+  const {height, sseDenominator} = frameState;
+  let error = (lodMetricValue * height) / (distance * sseDenominator);
+
+  error -= getDynamicScreenSpaceError(tileset, distance);
+
+  return error;
 }

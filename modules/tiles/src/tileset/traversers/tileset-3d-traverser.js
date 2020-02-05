@@ -1,8 +1,8 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
-import {TILE3D_OPTIMIZATION_HINT} from '../constants';
-import {TilesetTraverser, TILE_REFINEMENT} from '@loaders.gl/tiles';
+import {TILE3D_OPTIMIZATION_HINT, TILE_REFINEMENT} from '../../constants';
+import TilesetTraverser from './tileset-traverser';
 
 export default class Tileset3DTraverser extends TilesetTraverser {
   compareDistanceToCamera(a, b) {

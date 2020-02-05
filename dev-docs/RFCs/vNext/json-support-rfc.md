@@ -18,12 +18,12 @@ But because of the `.json` extension ambiguity parse call without a specified lo
 
 ```js
 import {JSONTableLoader} from '@loaders.gl/experimantal';
-import {Tileset3DLoader} from '@loaders.gl/3d-tiles';
+import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 
 canvas.ondrop = event => {
   event.preventDefault();
   if (event.dataTransfer.files && event.dataTransfer.files.length === 1) {
-    const data = parse(event.dataTransfer.files[0], [JSONTableLoader, Tileset3DLoader]);
+    const data = parse(event.dataTransfer.files[0], [JSONTableLoader, Tiles3DLoader]);
 
     // `tileset3d.json` - was dropped, but which loader was called, what do do?
   }

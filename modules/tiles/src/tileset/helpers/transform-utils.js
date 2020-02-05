@@ -9,7 +9,7 @@ export function calculateTransformProps(tileHeader, tile) {
   const {rtcCenter, rotateYtoZ} = tile;
   const {
     computedTransform,
-    _boundingVolume: {center}
+    boundingVolume: {center}
   } = tileHeader;
 
   let modelMatrix = new Matrix4(computedTransform);

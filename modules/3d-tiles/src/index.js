@@ -1,10 +1,10 @@
 // LOADERS
-export {default as Tileset3DLoader} from './tileset-3d-loader';
-export {default as Tile3DLoader} from './tile-3d-loader';
+export {default as Tiles3DLoader} from './tiles-3d-loader';
+
+// WRITERS
 export {default as Tile3DWriter} from './tile-3d-writer';
 
 // CLASSES
-export {default as Tileset3D} from './lib/tileset/tileset-3d';
 export {default as Tile3DFeatureTable} from './lib/classes/tile-3d-feature-table';
 export {default as Tile3DBatchTable} from './lib/classes/tile-3d-batch-table';
 
