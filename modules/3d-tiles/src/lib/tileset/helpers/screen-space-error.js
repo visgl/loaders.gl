@@ -5,7 +5,7 @@
 // tilesets from above
 
 /* eslint-disable */
-import {Matrix4, Vector3, clamp} from 'math.gl';
+import {Matrix4, Vector3, clamp} from '@math.gl/core';
 
 const scratchPositionNormal = new Vector3();
 const scratchCartographic = new Cartographic();

@@ -1,5 +1,5 @@
 import GL from '@luma.gl/constants';
-import {Vector3, Matrix4} from 'math.gl';
+import {Vector3, Matrix4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 
 const TYPE_ARRAY_MAP = {

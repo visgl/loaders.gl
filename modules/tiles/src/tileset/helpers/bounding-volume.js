@@ -2,10 +2,10 @@
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
 /* eslint-disable */
-import {Vector3, Matrix3, Matrix4, degrees} from 'math.gl';
+import {Vector3, Matrix3, Matrix4, degrees} from '@math.gl/core';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
 import {Ellipsoid} from '@math.gl/geospatial';
-import assert from '../../utils/assert';
+import {assert} from '@loaders.gl/loader-utils';
 
 // const scratchProjectedBoundingSphere = new BoundingSphere();
 

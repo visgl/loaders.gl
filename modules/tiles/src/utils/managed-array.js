@@ -1,7 +1,7 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
-import assert from './assert';
+import {assert} from '@loaders.gl/loader-utils';
 
 /**
  * A wrapper around arrays so that the internal length of the array can be manually managed.

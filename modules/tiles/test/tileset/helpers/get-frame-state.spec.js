@@ -19,9 +19,9 @@
 // THE SOFTWARE.
 
 import test from 'tape-catch';
-import {_getFrameState as getFrameState} from '@loaders.gl/3d-tiles';
+import {getFrameState} from '@loaders.gl/tiles';
 import {Viewport} from '@deck.gl/core';
-import {equals, Vector3} from 'math.gl';
+import {equals, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 
 const EPSILON = 1e-5;

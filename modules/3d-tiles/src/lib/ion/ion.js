@@ -2,7 +2,7 @@
 
 /* global fetch */
 import {_getErrorMessageFromResponse} from '@loaders.gl/core';
-import assert from '../utils/assert';
+import {assert} from '@loaders.gl/loader-utils';
 
 const CESIUM_ION_URL = 'https://api.cesium.com/v1/assets';
 
