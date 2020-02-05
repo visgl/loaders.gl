@@ -1,7 +1,7 @@
 {
-  "name": "ocular-website-gatsby",
+  "name": "loaders.gl-website",
   "version": "0.0.0",
-  "description": "A website for Ocular, built with Ocular (Gatsby version)",
+  "description": "Website for loaders.gl",
   "license": "MIT",
   "keywords": [
     "ocular"
@@ -34,6 +34,7 @@
     "@math.gl/geospatial": "^3.1.2",
     "@probe.gl/stats-widget": "^3.1.1",
     "babel-plugin-version-inline": "^1.0.0",
+    "gatsby-plugin-env-variables": "^1.0.1",
     "marked": "^0.7.0",
     "math.gl": "^3.1.2",
     "react": "^16.12.0",
@@ -42,9 +43,9 @@
     "styled-components": "^4.4.1"
   },
   "devDependencies": {
-    "gatsby": "^2.18.11",
+    "gatsby": "~2.18.0",
     "gatsby-plugin-no-sourcemaps": "^2.1.1",
-    "gatsby-theme-ocular": "^1.1.0",
+    "gatsby-theme-ocular": "^1.2.0-beta.2",
     "gh-pages": "^2.1.0"
   }
 }

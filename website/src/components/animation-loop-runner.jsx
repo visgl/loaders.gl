@@ -3,8 +3,7 @@ import PropTypes from 'prop-types';
 import {lumaStats} from '@luma.gl/core';
 import {VRDisplay} from '@luma.gl/experimental';
 import StatsWidget from '@probe.gl/stats-widget';
-
-import InfoPanel from './info-panel';
+import {InfoPanel} from 'gatsby-theme-ocular/components';
 
 // WORKAROUND FOR luma.gl VRDisplay
 if (typeof global !== 'undefined' && !global.navigator) {
@@ -127,7 +126,8 @@ export default class AnimationLoopRunner extends Component {
   }
 
   render() {
-    const {name, panel = true, stats, sourceLink} = this.props;
+    const {pageContext, panel = true, stats, sourceLink} = this.props;
+    const name = pageContext && pageContext.exampleConfig && pageContext.exampleConfig.title;
 
     const notSupported = this.animationLoop.isSupported && !this.animationLoop.isSupported();
 
@@ -145,7 +145,7 @@ export default class AnimationLoopRunner extends Component {
       (this.animationLoop.getInfo && this.animationLoop.getInfo());
 
     return (
-      <div className="fg" style={{width: '100%', height: '100%', padding: 0, border: 0}}>
+      <div style={{width: '100%', height: '100%', position: 'relative'}}>
         {
           stats ?
           <div ref="stats" className="stats" style={STAT_STYLES}>
@@ -155,9 +155,13 @@ export default class AnimationLoopRunner extends Component {
         }
         <canvas
           id={this.props.canvas}
-          style={{width: '100%', height: '100%', padding: 0, border: 0}}
+          style={{width: '100%', height: '100%'}}
         />
-        {panel ? <InfoPanel name={name} controls={controls} sourceLink={sourceLink} /> : null}
+        {panel && (
+          <InfoPanel title={name} sourceLink={sourceLink}>
+            <div dangerouslySetInnerHTML={{__html: controls}} />
+          </InfoPanel>
+        )}
       </div>
     );
   }

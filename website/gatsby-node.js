@@ -31,50 +31,6 @@ module.exports.onCreateWebpackConfig = function onCreateWebpackConfigOverride(op
 
   Object.assign(config.resolve.alias, ALIASES, dependencyAliases);
 
-  /*
-  // Recreate it with custom exclude filter
-  // Called without any arguments, `loaders.js` will return an
-  // object like:
-  // {
-  //   options: undefined,
-  //   loader: '/path/to/node_modules/gatsby/dist/utils/babel-loader.js',
-  // }
-  // Unless you're replacing Babel with a different transpiler, you probably
-  // want this so that Gatsby will apply its required Babel
-  // presets/plugins.  This will also merge in your configuration from
-  // `babel.config.js`.
-  const newJSRule = loaders.js();
-
-  Object.assign(newJSRule, {
-    // JS and JSX
-    test: /\.jsx?$/,
-
-    // Exclude all node_modules from transpilation, except for ocular
-    exclude: modulePath =>
-      /node_modules/.test(modulePath) &&
-      !/node_modules\/(ocular|ocular-gatsby|gatsby-theme-ocular)/.test(modulePath)
-  });
-
-  // Omit the default rule where test === '\.jsx?$'
-  const rules = [newJSRule];
-
-  if (stage === 'build-html') {
-    rules.push({
-      test: /mapbox-gl/,
-      use: loaders.null()
-    });
-  }
-
-  const newConfig = {
-    module: {
-      rules
-    },
-    node: {
-      fs: 'empty'
-    }
-  };
-  */
-
   // Completely replace the webpack config for the current stage.
   // This can be dangerous and break Gatsby if certain configuration options are changed.
   // Generally only useful for cases where you need to handle config merging logic yourself,

@@ -153,7 +153,7 @@ export default class Tileset3D {
 
     this._loadTimestamp = undefined;
     this._timeSinceLoad = 0.0;
-    this._updatedVisibilityFrame = 0;
+    this._frameNumber = 0;
     this._extras = undefined;
 
     this._allTilesAdditive = true;
@@ -262,6 +262,8 @@ export default class Tileset3D {
   }
 
   update(viewport) {
+    // TODO: only update when camera or culling volume from last update moves (could be render camera change or prefetch camera)
+    this._frameNumber++;
     let frameState;
     if ('frameNumber' in viewport) {
       // backward compatibility
@@ -270,10 +272,9 @@ export default class Tileset3D {
       frameState = viewport;
     } else {
       // TODO deprecated in v8.x
-      frameState = getFrameState(viewport);
+      frameState = getFrameState(viewport, this._frameNumber);
     }
 
-    this._updatedVisibilityFrame++; // TODO: only update when camera or culling volume from last update moves (could be render camera change or prefetch camera)
     this._cache.reset();
 
     this._traverser.traverse(this.root, frameState, this.options);

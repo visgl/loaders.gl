@@ -116,7 +116,7 @@ export default class I3STileset {
 
     this._loadTimestamp = undefined;
     this._timeSinceLoad = 0.0;
-    this._updatedVisibilityFrame = 0;
+    this._frameNumber = 0;
 
     this._maximumMemoryUsage = this.options.maximumMemoryUsage;
 
@@ -243,11 +243,11 @@ export default class I3STileset {
   }
 
   update(viewport) {
-    const frameState = getFrameState(viewport);
+    this._frameNumber++;
+    const frameState = getFrameState(viewport, this._frameNumber);
     // TODO hack, remove in next release
     frameState.viewport = viewport;
     // TODO: only update when camera or culling volume from last update moves (could be render camera change or prefetch camera)
-    this._updatedVisibilityFrame++;
     this._cache.reset();
     this._traverser.traverse(this.root, frameState, this.options);
   }
