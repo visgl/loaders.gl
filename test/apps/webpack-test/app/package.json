@@ -4,7 +4,7 @@
   },
   "dependencies": {
     "@luma.gl/experimental": "^8.1.0-alpha.1",
-    "@luma.gl/core": "^8.1.0-alpha.1"
+    "@luma.gl/core": "^8.1.0-alpha.2"
   },
   "devDependencies": {
     "webpack": "^4.30.0",
