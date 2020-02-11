@@ -12,10 +12,16 @@ import {parse3DTileGLTFViewSync, extractGLTF, GLTF_FORMAT} from './helpers/parse
 export async function parseBatchedModel3DTile(tile, arrayBuffer, byteOffset, options, context) {
   byteOffset = parseBatchedModel(tile, arrayBuffer, byteOffset, options, context);
   await extractGLTF(tile, GLTF_FORMAT.EMBEDDED, options, context);
+
+  const {extensions} = tile.gltf || {};
+  if (extensions && extensions.CESIUM_RTC) {
+    tile.rtcCenter = extensions.CESIUM_RTC.center;
+  }
+
   return byteOffset;
 }
 
-export function parseBatchedModel(tile, arrayBuffer, byteOffset, options, context) {
+function parseBatchedModel(tile, arrayBuffer, byteOffset, options, context) {
   byteOffset = parse3DTileHeaderSync(tile, arrayBuffer, byteOffset, options);
 
   byteOffset = parse3DTileTablesHeaderSync(tile, arrayBuffer, byteOffset, options);
@@ -25,8 +31,6 @@ export function parseBatchedModel(tile, arrayBuffer, byteOffset, options, contex
 
   const featureTable = new Tile3DFeatureTable(tile.featureTableJson, tile.featureTableBinary);
   tile.rtcCenter = featureTable.getGlobalProperty('RTC_CENTER', GL.FLOAT, 3);
-
-  extractGLTF(tile, GLTF_FORMAT.EMBEDDED, options, context);
 
   return byteOffset;
 }
