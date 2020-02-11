@@ -2,6 +2,10 @@
 
 ### 2.0 Release
 
+#### v2.0.4
+
+- [3d-tiles] Handle GLTF w/ CESIUM_RTC extension (#645)
+
 #### v2.0.3
 
 - @loaders.gl/3d-tiles: fix frameNumber for updating traversal
