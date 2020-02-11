@@ -35,5 +35,5 @@ function getDecodedFeature(feature, options = {}) {
     return feature.toGeoJSON(options.tileIndex.x, options.tileIndex.y, options.tileIndex.z);
   }
 
-  return feature.loadGeometry();
+  return feature.toTileCoordsJSON();
 }
