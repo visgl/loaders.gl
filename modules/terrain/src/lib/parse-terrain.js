@@ -1,5 +1,4 @@
 import Martini from '@mapbox/martini';
-import {ImageLoader} from '@loaders.gl/images';
 
 function getTerrain(imageData, tileSize, elevationDecoder) {
   const {rScaler, bScaler, gScaler, offset} = elevationDecoder;
@@ -92,7 +91,7 @@ function getMartiniTileMesh(terrainImage, terrainOptions) {
 export default async function loadTerrain(arrayBuffer, options, context) {
   options.image = options.image || {};
   options.image.type = 'data';
-  const image = await context.parse(arrayBuffer, ImageLoader, options, options.baseUri);
+  const image = await context.parse(arrayBuffer, options, options.baseUri);
   // Extend function to support additional mesh generation options (square grid or delatin)
   return getMartiniTileMesh(image, options.terrain);
 }
