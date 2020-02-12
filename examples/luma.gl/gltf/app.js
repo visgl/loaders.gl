@@ -73,7 +73,7 @@ export default class AppAnimationLoop extends AnimationLoop {
 
     this.controller = new Controller(canvas, {
       initialZoom: 2,
-      onDrag: file => this._loadGLTF(file)
+      onDrop: file => this._loadGLTF(file)
     });
 
     this.gltfCreateOptions = {

@@ -5,6 +5,7 @@ export const KHR_DRACO_MESH_COMPRESSION = 'KHR_draco_mesh_compression';
 export const UBER_POINT_CLOUD_EXTENSION = 'UBER_draco_point_cloud_compression';
 export const KHR_LIGHTS_PUNCTUAL = 'KHR_lights_punctual';
 export const KHR_MATERIALS_UNLIT = 'KHR_materials_unlit';
+export const KHR_TECHNIQUES_WEBGL = 'KHR_techniques_webgl';
 
 const COMPONENTS = {
   SCALAR: 1,
