@@ -4,14 +4,14 @@ The _mesh and pointcloud_ loader category is intended for simpler mesh and point
 
 ## Mesh/PointCloud Category Loaders
 
-| Loader                                                         | Notes |
-| -------------------------------------------------------------- | ----- |
-| [`DracoLoader`](modules/draco/docs/api-reference/draco-loader) |       |
-| [`LASLoader`](modules/las/docs/api-reference/las-loader)       |       |
-| [`OBJLoader`](modules/obj/docs/api-reference/obj-loader)       |       |
-| [`PCDLoader`](modules/pcd/docs/api-reference/pcd-loader)       |       |
-| [`PLYLoader`](modules/ply/docs/api-reference/ply-loader)       |       |
-| [`TerrainLoader`](modules/terrain/docs/api-reference/terrain-loader)       |       |
+| Loader                                                               | Notes |
+| -------------------------------------------------------------------- | ----- |
+| [`DracoLoader`](modules/draco/docs/api-reference/draco-loader)       |       |
+| [`LASLoader`](modules/las/docs/api-reference/las-loader)             |       |
+| [`OBJLoader`](modules/obj/docs/api-reference/obj-loader)             |       |
+| [`PCDLoader`](modules/pcd/docs/api-reference/pcd-loader)             |       |
+| [`PLYLoader`](modules/ply/docs/api-reference/ply-loader)             |       |
+| [`TerrainLoader`](modules/terrain/docs/api-reference/terrain-loader) |       |
 
 ## Data Format
 
