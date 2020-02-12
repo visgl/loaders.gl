@@ -7,11 +7,18 @@ export const TerrainWorkerLoader = {
   id: 'terrain',
   name: 'Terrain',
   version: VERSION,
-  extensions: ['pngraw'],
+  extensions: ['png', 'pngraw'],
   mimeType: 'image/png',
   options: {
     terrain: {
-      workerUrl: `https://unpkg.com/@loaders.gl/terrain@${VERSION}/dist/terrain-loader.worker.js`
+      workerUrl: `https://unpkg.com/@loaders.gl/terrain@${VERSION}/dist/terrain-loader.worker.js`,
+      meshMaxError: 10,
+      elevationDecoder: {
+        rScaler: 1,
+        gScaler: 0,
+        bScaler: 0,
+        offset: 0
+      }
     }
   }
 };

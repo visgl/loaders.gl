@@ -1,5 +1,4 @@
 import Martini from '@mapbox/martini';
-import {getImageData, getImageSize, ImageLoader} from '@loaders.gl/images';
 
 function getTerrain(imageData, tileSize, elevationDecoder) {
   const {rScaler, bScaler, gScaler, offset} = elevationDecoder;
@@ -37,7 +36,7 @@ function getMeshAttributes(vertices, terrain, tileSize, bounds) {
   // vec2. 1 to 1 relationship with position. represents the uv on the texture image. 0,0 to 1,1.
   const texCoords = new Float32Array(numOfVerticies * 2);
 
-  const [minX, minY, maxX, maxY] = bounds;
+  const [minX, minY, maxX, maxY] = bounds || [0, 0, tileSize, tileSize];
   const xScale = (maxX - minX) / tileSize;
   const yScale = (maxY - minY) / tileSize;
 
@@ -57,7 +56,7 @@ function getMeshAttributes(vertices, terrain, tileSize, bounds) {
   return {
     POSITION: {value: positions, size: 3},
     TEXCOORD_0: {value: texCoords, size: 2}
-    // normals: [], - optional, but creates the high poly look with lighting
+    // NORMAL: {}, - optional, but creates the high poly look with lighting
   };
 }
 
@@ -67,10 +66,8 @@ function getMartiniTileMesh(terrainImage, terrainOptions) {
   }
   const {meshMaxError, bounds, elevationDecoder} = terrainOptions;
 
-  const data = getImageData(terrainImage);
-  const size = getImageSize(terrainImage);
-
-  const tileSize = size.width;
+  const data = terrainImage.data;
+  const tileSize = terrainImage.width;
   const gridSize = tileSize + 1;
 
   const terrain = getTerrain(data, tileSize, elevationDecoder);
@@ -84,15 +81,18 @@ function getMartiniTileMesh(terrainImage, terrainOptions) {
     loaderData: {
       header: {}
     },
-    header: {vertexCount: 100}, // xiaoji: is this the numOfVerticies value?
+    header: {vertexCount: triangles.length},
     mode: 4, // TRIANGLES
-    indices: {value: triangles, size: 3},
+    indices: {value: triangles, size: 1},
     attributes: getMeshAttributes(vertices, terrain, tileSize, bounds)
   };
 }
 
 export default async function loadTerrain(arrayBuffer, options, context) {
-  const image = await context.parse(arrayBuffer, ImageLoader, options, context);
+  options.image = {
+    type: 'data'
+  };
+  const image = await context.parse(arrayBuffer, options, options.baseUri);
   // Extend function to support additional mesh generation options (square grid or delatin)
   return getMartiniTileMesh(image, options.terrain);
 }

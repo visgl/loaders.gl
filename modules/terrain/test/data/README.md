@@ -1,1 +1,3 @@
-Sample OBJ files are from Mapbox Terrain Layer [data sample collection](https://people.sc.fsu.edu/~jburkardt/data/data.html)
+mapbox.png is from Mapbox's [Terrain RGB service](https://docs.mapbox.com/help/troubleshooting/access-elevation-data/#mapbox-terrain-rgb)
+
+terrarium.png is from [Mapzen Terrain Tiles](https://registry.opendata.aws/terrain-tiles/).
