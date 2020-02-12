@@ -4,10 +4,6 @@ import {getImageData} from '../parsed-image-api/parsed-image-api';
 import parseToImage from './parse-to-image';
 import parseToImageBitmap from './parse-to-image-bitmap';
 import parseToNodeImage from './parse-to-node-image';
-import parseSVG from './parse-svg';
-
-const SVG_DATA_URL_PATTERN = /^data:image\/svg\+xml/;
-const SVG_URL_PATTERN = /\.svg((\?|#).*)?$/;
 
 // Parse to platform defined image type (data on node, ImageBitmap or HTMLImage on browser)
 // eslint-disable-next-line complexity
@@ -19,12 +15,6 @@ export default async function parseImage(arrayBuffer, options, context) {
   const imageType = imageOptions.type || 'auto';
 
   const {url} = context || {};
-  if (url && (SVG_DATA_URL_PATTERN.test(url) || SVG_URL_PATTERN.test(url))) {
-    // TODO - This path does not handle the same options...
-    // eslint-disable-next-line
-    console.warn('@loaders.gl/images: SVG parsing is limited, not all options supported');
-    return await parseSVG(arrayBuffer, options);
-  }
 
   // Note: For options.image.type === `data`, we may still need to load as `image` or `imagebitmap`
   const loadType = getLoadableImageType(imageType);
@@ -32,9 +22,10 @@ export default async function parseImage(arrayBuffer, options, context) {
   let image;
   switch (loadType) {
     case 'imagebitmap':
-      return await parseToImageBitmap(arrayBuffer, options);
+      image = await parseToImageBitmap(arrayBuffer, options, url);
+      break;
     case 'image':
-      image = await parseToImage(arrayBuffer, options);
+      image = await parseToImage(arrayBuffer, options, url);
       break;
     case 'data':
       // Node.js loads imagedata directly

@@ -29,7 +29,7 @@ test('ImageLoader#load(data URL)', async t => {
     t.deepEquals(imageData.width, 2, 'image width is correct');
     t.deepEquals(imageData.height, 2, 'image height is correct');
     if (!isBrowser) {
-      t.ok(ArrayBuffer.isView(imageData.data), 'image data is `ArrayBuffer`');
+      t.ok(ArrayBuffer.isView(imageData.data), 'image data is TypedArray');
       t.equals(imageData.data.byteLength, 16, 'image `data.byteLength` is correct');
     }
   }
@@ -41,15 +41,15 @@ test(`ImageLoader#load({type: 'data'})`, async t => {
     const {title, url, width, height, skip} = testCase;
 
     // Skip some test case under Node.js
-    if (skip || title.toLowerCase().includes('svg')) {
-      return;
+    if (skip) {
+      continue; // eslint-disable-line
     }
 
     const imageData = await load(url, ImageLoader, {image: {type: 'data'}});
     t.equal(getImageType(imageData), 'data', `${title} image type is data`);
-    t.equal(getImageData(imageData), imageData, `${title} getImageData() works`);
     t.equal(imageData.width, width, `${title} image has correct width`);
     t.equal(imageData.height, height, `${title} image has correct height`);
+    t.ok(ArrayBuffer.isView(imageData.data), `${title} image data is TypedArray`);
   }
 
   t.end();

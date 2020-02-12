@@ -1,4 +1,5 @@
-/* global Blob, createImageBitmap */
+/* global createImageBitmap */
+import {getBlob} from './get-blob';
 
 // Asynchronously parses an array buffer into an ImageBitmap - this contains the decoded data
 // Supported on worker threads, not supported on Edge, IE11 and Safari
@@ -6,9 +7,8 @@
 
 let imagebitmapOptionsSupported = true;
 
-export default async function parseToImageBitmap(arrayBuffer, options) {
-  // NOTE: In some cases unnecessary conversion to blob (response, blob, file input)
-  const blob = new Blob([new Uint8Array(arrayBuffer)]); // MIME type not needed...
+export default async function parseToImageBitmap(arrayBuffer, options, url) {
+  const blob = getBlob(arrayBuffer, url);
   let imagebitmapOptions = options && options.imagebitmap;
 
   // Firefox crashes if imagebitmapOptions is supplied
