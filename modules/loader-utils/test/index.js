@@ -10,4 +10,5 @@ import './lib/request-utils/request-scheduler.spec';
 
 import './categories/mesh/mesh-utils.spec';
 
+import './worker-utils/get-transfer-list.spec';
 import './worker-utils/validate-loader-version.spec';
