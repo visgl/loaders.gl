@@ -1,6 +1,6 @@
 # TerrainLoader
 
-The `TerrainLoader` parses the OBJ half of the classic Wavefront OBJ/MTL format.
+The `TerrainLoader` reconstructs mesh surfaces from height map images, e.g. [Mapzen Terrain Tiles](https://github.com/tilezen/joerd/blob/master/docs/formats.md), which encodes elevation into R,G,B values.
 
 | Loader                | Characteristic                                |
 | --------------------- | --------------------------------------------- |

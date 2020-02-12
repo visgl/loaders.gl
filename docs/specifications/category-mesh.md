@@ -11,6 +11,7 @@ The _mesh and pointcloud_ loader category is intended for simpler mesh and point
 | [`OBJLoader`](modules/obj/docs/api-reference/obj-loader)       |       |
 | [`PCDLoader`](modules/pcd/docs/api-reference/pcd-loader)       |       |
 | [`PLYLoader`](modules/ply/docs/api-reference/ply-loader)       |       |
+| [`TerrainLoader`](modules/terrain/docs/api-reference/terrain-loader)       |       |
 
 ## Data Format
 
