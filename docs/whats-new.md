@@ -21,6 +21,10 @@ Target Release Date: mid-Feb, 2019. `alpha` releases will be made available.
 
 - New loader module for the Well-Known Text geometry format.
 
+**@loaders.gl/terrain** (new loader module)
+
+- New loader module for reconstructing mesh surfaces from height map images.
+
 ## v2.0
 
 Release Date: Dec 20, 2019

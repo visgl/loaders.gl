@@ -35,6 +35,7 @@
   "dependencies": {
     "@babel/runtime": "^7.3.1",
     "@loaders.gl/loader-utils": "2.1.0-alpha.3",
-    "@mapbox/martini": "^0.2.0"
+    "@mapbox/martini": "^0.2.0",
+    "@loaders.gl/images": "2.1.0-alpha.3"
   }
 }
