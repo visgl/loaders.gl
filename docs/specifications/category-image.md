@@ -56,7 +56,7 @@ Image data objects are images loaded as data, represented by an object that cont
 
 To get an image data object from a loaded `Image` or `ImageBitmap`, call `getImageData(image)`. To load an image data object directly, set the `image.type: 'data'` option when loading the image.
 
-## Image Format
+### Image Formats
 
 The _format_ of the image describes how the memory is laid out. It is mainly important when working with `data` _type_ images. The default format / memory layout for image data is `RGBA` and `UNSIGNED_BYTE` i.e. four components per pixel, each a byte.
 
@@ -72,10 +72,10 @@ Applications that use e.g. the `CompressedTextureLoader` and/or the `BasisLoader
 
 The image category support some generic options (specified using `options.image.<option-name>`), that are applicable to all (or most) image loaders.
 
-| Option                     | Default  | Type    | Availability   | Description                                   |
-| -------------------------- | -------- | ------- | -------------- | --------------------------------------------- |
-| `options.image.type`       | `'auto'` | string  | See table      | One of `auto`, `data`, `imagebitmap`, `image` |
-| `options.image.decodeHTML` | `true`   | boolean | No: Edge, IE11 | Wait for HTMLImages to be fully decoded.      |
+| Option                 | Default  | Type    | Availability   | Description                                   |
+| ---------------------- | -------- | ------- | -------------- | --------------------------------------------- |
+| `options.image.type`   | `'auto'` | string  | See table      | One of `auto`, `data`, `imagebitmap`, `image` |
+| `options.image.decode` | `true`   | boolean | No: Edge, IE11 | Wait for HTMLImages to be fully decoded.      |
 
 ## Notes
 
@@ -92,10 +92,11 @@ The image category also provides a few utilities:
 
 ## Remarks
 
-- image data objects have the same fields as the browser's built-in `ImageData` class, but are not actual instances of `ImageData`. It is however easy to create an `ImageData` instance from an image data object:
+### ImageData
+
+Image data objects return by image category loaders have the same fields (`width`, `height`, `data`) as the browser's built-in `ImageData` class, but are not actual instances of `ImageData`. However, should you need it, it is easy to create an `ImageData` instance from an image data object:
 
 ```js
-const imageData = new ImageData(imagedata.data, imagedata.width, imagedata.height);
+const data = load(url, ImageLoader, {image: {type: 'data'}});
+const imageData = new ImageData(data.data, data.width, data.height);
 ```
-
-Note that this assumes its image _format_ is the default 8-bit RGBA.

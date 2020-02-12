@@ -1,12 +1,11 @@
 import test from 'tape-promise/tape';
 
-import {ImageLoader, isImageTypeSupported, getImageData} from '@loaders.gl/images';
+import {ImageLoader, isImageTypeSupported, getImageType, getImageData} from '@loaders.gl/images';
 import {isBrowser, load} from '@loaders.gl/core';
 
 import {TEST_CASES, IMAGE_URL, IMAGE_DATA_URL, SVG_DATA_URL} from './lib/test-cases';
-import {getImageSize} from '../dist/es5/lib/parsed-image-api/parsed-image-api';
 
-const TYPES = ['auto', 'imagebitmap', 'html', 'ndarray'].filter(isImageTypeSupported);
+const TYPES = ['auto', 'imagebitmap', 'image', 'data'].filter(isImageTypeSupported);
 
 test('image loaders#imports', t => {
   t.ok(ImageLoader, 'ImageLoader defined');
@@ -26,7 +25,7 @@ test('ImageLoader#load(data URL)', async t => {
     const image = await load(IMAGE_DATA_URL, ImageLoader, {image: {type}});
     t.ok(image, `image of type ${type} loaded successfully from data URL`);
 
-    const imageData = {...getImageSize(image), data: getImageData(image)};
+    const imageData = getImageData(image);
     t.deepEquals(imageData.width, 2, 'image width is correct');
     t.deepEquals(imageData.height, 2, 'image height is correct');
     if (!isBrowser) {
@@ -34,6 +33,25 @@ test('ImageLoader#load(data URL)', async t => {
       t.equals(imageData.data.byteLength, 16, 'image `data.byteLength` is correct');
     }
   }
+  t.end();
+});
+
+test(`ImageLoader#load({type: 'data'})`, async t => {
+  for (const testCase of TEST_CASES) {
+    const {title, url, width, height, skip} = testCase;
+
+    // Skip some test case under Node.js
+    if (skip || title.toLowerCase().includes('svg')) {
+      return;
+    }
+
+    const imageData = await load(url, ImageLoader, {image: {type: 'data'}});
+    t.equal(getImageType(imageData), 'data', `${title} image type is data`);
+    t.equal(getImageData(imageData), imageData, `${title} getImageData() works`);
+    t.equal(imageData.width, width, `${title} image has correct width`);
+    t.equal(imageData.height, height, `${title} image has correct height`);
+  }
+
   t.end();
 });
 
