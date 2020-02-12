@@ -39,10 +39,10 @@ function isTransferable(object) {
   if (typeof MessagePort !== 'undefined' && object instanceof MessagePort) {
     return true;
   }
-  if (typeof ImageBitmap !== `undefined` && object instanceof ImageBitmap) {
+  if (typeof ImageBitmap !== 'undefined' && object instanceof ImageBitmap) {
     return true;
   }
-  if (typeof OffscreenCanvas !== `undefined` && object instanceof OffscreenCanvas) {
+  if (typeof OffscreenCanvas !== 'undefined' && object instanceof OffscreenCanvas) {
     return true;
   }
   return false;
