@@ -4,7 +4,6 @@ import {ImageLoader, isImageTypeSupported, getImageType, getImageData} from '@lo
 import {isBrowser, load} from '@loaders.gl/core';
 
 import {TEST_CASES, IMAGE_URL, IMAGE_DATA_URL, SVG_DATA_URL} from './lib/test-cases';
-import {getImageSize} from '../dist/es5/lib/parsed-image-api/parsed-image-api';
 
 const TYPES = ['auto', 'imagebitmap', 'image', 'data'].filter(isImageTypeSupported);
 
@@ -42,7 +41,7 @@ test(`ImageLoader#load({type: 'data'})`, async t => {
     const {title, url, width, height, skip} = testCase;
 
     // Skip some test case under Node.js
-    if (skip) {
+    if (skip || title.toLowerCase().includes('svg')) {
       return;
     }
 
