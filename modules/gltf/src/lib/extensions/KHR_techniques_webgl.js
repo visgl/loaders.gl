@@ -4,31 +4,6 @@
 import GLTFScenegraph from '../gltf-scenegraph';
 import {KHR_TECHNIQUES_WEBGL} from '../gltf-constants';
 
-function resolveTechniques({programs = [], shaders = [], techniques = []}, gltfScenegraph) {
-  const textDecoder = new TextDecoder();
-
-  shaders.forEach(shader => {
-    if (Number.isFinite(shader.bufferView)) {
-      shader.code = textDecoder.decode(
-        gltfScenegraph.getTypedArrayForBufferView(shader.bufferView)
-      );
-    }
-
-    // TODO: handle URI shader
-  });
-
-  programs.forEach(program => {
-    program.fragmentShader = shaders[program.fragmentShader];
-    program.vertexShader = shaders[program.vertexShader];
-  });
-
-  techniques.forEach(technique => {
-    technique.program = programs[technique.program];
-  });
-
-  return techniques;
-}
-
 export function decode(gltfData, options) {
   const gltfScenegraph = new GLTFScenegraph(gltfData);
   const {json} = gltfScenegraph;
@@ -55,4 +30,30 @@ export function decode(gltfData, options) {
 
 export function encode(gltfData, options) {
   // TODO
+}
+
+function resolveTechniques({programs = [], shaders = [], techniques = []}, gltfScenegraph) {
+  const textDecoder = new TextDecoder();
+
+  shaders.forEach(shader => {
+    if (Number.isFinite(shader.bufferView)) {
+      shader.code = textDecoder.decode(
+        gltfScenegraph.getTypedArrayForBufferView(shader.bufferView)
+      );
+    } else {
+      // TODO: handle URI shader
+      throw new Error('KHR_techniques_webgl: no shader code');
+    }
+  });
+
+  programs.forEach(program => {
+    program.fragmentShader = shaders[program.fragmentShader];
+    program.vertexShader = shaders[program.vertexShader];
+  });
+
+  techniques.forEach(technique => {
+    technique.program = programs[technique.program];
+  });
+
+  return techniques;
 }
