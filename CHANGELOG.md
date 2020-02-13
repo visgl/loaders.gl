@@ -1,8 +1,45 @@
 ## loaders.gl v2.0
 
-### v2.1.0-alpha.1 (TBD)
+### 2.1 Prerelease
 
-- Move RequestScheduler to loader utils
+#### v2.1.0-alpha.4
+
+- Terrain loader (#652)
+- Image data (#597)
+- Consolidate getTransferList (#648)
+- [3d-tiles] Handle GLTF w/ CESIUM_RTC extension (#645)
+- Fix website build (#641)
+- 3d-tiles and i3s: Add RFC for consolidating 3d tiles decoding (#631)
+- Update website to the latest gatsby-theme-ocular (#639)
+- 3d-tiles: fix frameNumber for updating traversal (#638)
+- images: Add dependency (#637)
+- mvt: Fix worker url used in test (#635)
+
+#### v2.1.0-alpha.3
+
+- image: Fix options.imagebitmap on Firefox (#616)
+- json: Return wrapper object in streaming parsing (#623)
+
+#### v2.1.0-alpha.2
+
+- MVT loader fixes (#626)
+- mvt: Add worker (#625)
+- Mapbox Vector Tiles loader (#624)
+- core: Fix parse of embedded typedArrays and Buffers (#618)
+- json: code cleanup (#622)
+- images: remove experimental exports (#620)
+
+#### v2.1.0-alpha.1
+
+- basis: Add tests, improve options handling, clean up demo (#596)
+- images: prep diff for image data (#598)
+- polyfills: Add @babel/runtime (#594)
+- Fix double build (#592)
+- core: `load` and `parse` from `Stream`s (#588)
+- json: Add benchmark (+ fix existing benchmarks) (#584)
+- images: loadImage now calls resolvePath (#587)
+- loader-utils: expose RequestScheduler (#586)
+- wkt: New loader module for WKT (Well-known text) (#575)
 
 ### 2.0 Release
 
