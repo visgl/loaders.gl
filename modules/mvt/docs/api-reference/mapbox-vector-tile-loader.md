@@ -16,10 +16,10 @@ Loader for the [Mapbox Vector Tile](https://docs.mapbox.com/vector-tiles/specifi
 import {MVTLoader} from '@loaders.gl/mvt';
 import {load} from '@loaders.gl/core';
 
-// Point objects with geometry decoded from (0, 0)
+// GeoJSON-like objects containing local coordinates decoded from tile origin to a range of [0 - (bufferSize / tileExtent), 1 + (bufferSize / tileExtent)]
 const geometryData = await load(url, MVTLoader);
 
-// GeoJSON Features
+// Array containing GeoJSON Features
 const loaderOptions = {
   mvt: {
     geojson: true,
@@ -34,12 +34,22 @@ const loaderOptions = {
 const geoJSONfeatures = await load(url, MVTLoader, loaderOptions);
 ```
 
+## Outputs
+
+### GeoJSON-like with local coordinates
+
+The parser will return an array of GeoJSON-like objects with local coordinates in a range between `[0 - (bufferSize / tileExtent), 1 + (bufferSize / tileExtent)]` and feature properties from MVT by default.
+
+### GeoJSON
+
+The parser will return an array of [GeoJSON objects](https://tools.ietf.org/html/rfc7946) with WGS84 coordinates and feature properties from MVT if `geojson` and `tileIndex` properties are present.
+
 ## Options
 
-| Option          | Type                                             | Default      | Description                                                                                                                                                                                                                                                                                     |
-| --------------- | ------------------------------------------------ | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `mvt.geojson`   | Boolean                                          | true         | If `true`, parser will return a flat array of GeoJSON representations of the features with coordinates decoded from provided tile index. If `false`, parser will return a flat array of [Point](https://github.com/mapbox/point-geometry) objects with feature coordinates decoded from (0, 0). |
-| `mvt.tileIndex` | Object ({x: `number`, y: `number`, z: `number`}) | _No default_ | Mandatory if using `geojson` output (It will return null coordinates if omitted). An object containing tile index values (x, y, z) to decode coordinates.                                                                                                                                       |
+| Option          | Type                                             | Default      | Description                                                                                                                                                                                                                                                           |
+| --------------- | ------------------------------------------------ | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `mvt.geojson`   | Boolean                                          | true         | If `true`, parser will return a flat array of GeoJSON representations of the features with coordinates decoded from provided tile index. If `false`, parser will return a flat array of GeoJSON-like objects with feature local coordinates decoded from tile origin. |
+| `mvt.tileIndex` | Object ({x: `number`, y: `number`, z: `number`}) | _No default_ | Mandatory if using `geojson` output (It will return null coordinates if omitted). An object containing tile index values (x, y, z) to decode coordinates.                                                                                                             |
 
 If you want to know more about how geometries are encoded into MVT tiles, please read [this documentation section](https://docs.mapbox.com/vector-tiles/specification/#encoding-geometry).
 

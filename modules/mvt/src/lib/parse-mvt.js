@@ -1,5 +1,6 @@
 import {VectorTile} from '@mapbox/vector-tile';
 import Protobuf from 'pbf';
+import {transformToLocalRange} from './transform-to-local-range';
 
 /*
   * Parse MVT arrayBuffer and return GeoJSON.
@@ -35,5 +36,5 @@ function getDecodedFeature(feature, options = {}) {
     return feature.toGeoJSON(options.tileIndex.x, options.tileIndex.y, options.tileIndex.z);
   }
 
-  return feature.toTileCoordsJSON();
+  return transformToLocalRange(feature);
 }

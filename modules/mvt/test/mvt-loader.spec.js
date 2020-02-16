@@ -19,32 +19,58 @@ setLoaderOptions({
     workerUrl: 'modules/mvt/dist/mvt-loader.worker.js'
   }
 });
-test('Point MVT to Geometry Array', async t => {
+test('Point MVT to local coordinates JSON', async t => {
   const response = await fetchFile(MVT_POINTS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
 
-  const geometryArray = await parse(mvtArrayBuffer, MVTLoader);
-  t.deepEqual(geometryArray, [[[{x: 1142, y: 380}]]]);
+  const geometryJSON = await parse(mvtArrayBuffer, MVTLoader);
+  t.deepEqual(geometryJSON, [
+    {
+      type: 'Feature',
+      geometry: {
+        type: 'Point',
+        coordinates: [[0.5576171875, 0.185546875]]
+      },
+      properties: {
+        /* eslint-disable camelcase */
+        cartodb_id: 3,
+        _cdb_feature_count: 1
+        /* eslint-enable camelcase */
+      }
+    }
+  ]);
 
   t.end();
 });
 
-test('Line MVT to Geometry Array', async t => {
+test('Line MVT to local coordinates JSON', async t => {
   const response = await fetchFile(MVT_LINES_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
 
-  const geometryArray = await parse(mvtArrayBuffer, MVTLoader);
-  t.deepEqual(geometryArray, [[[{x: -8, y: 1001}, {x: 2, y: 1004}]]]);
+  const geometryJSON = await parse(mvtArrayBuffer, MVTLoader);
+  t.deepEqual(geometryJSON, [
+    {
+      type: 'Feature',
+      geometry: {
+        type: 'LineString',
+        coordinates: [[-0.00390625, 0.48876953125], [0.0009765625, 0.490234375]]
+      },
+      properties: {
+        /* eslint-disable-next-line camelcase */
+        cartodb_id: 1
+      }
+    }
+  ]);
 
   t.end();
 });
 
-test('Polygon MVT to Geometry Array', async t => {
+test('Polygon MVT to local coordinates JSON', async t => {
   const response = await fetchFile(MVT_POLYGONS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
 
-  const geometryArray = await parse(mvtArrayBuffer, MVTLoader);
-  t.deepEqual(geometryArray, decodedPolygonsGeometry);
+  const geometryJSON = await parse(mvtArrayBuffer, MVTLoader);
+  t.deepEqual(geometryJSON, decodedPolygonsGeometry);
 
   t.end();
 });
