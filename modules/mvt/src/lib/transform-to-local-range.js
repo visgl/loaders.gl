@@ -1,34 +1,34 @@
 const geometryTypes = ['Unknown', 'Point', 'LineString', 'Polygon'];
 
-export function transformToLocalRange(feature) {
+export function transformToLocalCoordinates(line, feature) {
+  // This function transforms local coordinates in a
+  // [0 - bufferSize, this.extent + bufferSize] range to a
+  // [0 - (bufferSize / this.extent), 1 + (bufferSize / this.extent)] range.
+  // The resulting extent would be 1.
+
+  for (let i = 0; i < line.length; i++) {
+    const point = line[i];
+
+    line[i] = [point.x / feature.extent, point.y / feature.extent];
+  }
+}
+
+export function transformCoordinates(feature, transform = coordinates => coordinates) {
   const type = geometryTypes[feature.type];
   let coordinates = feature.loadGeometry();
-
-  function transformLocalCoordinatesToRange(line) {
-    // This function transforms local coordinates in a
-    // [0 - bufferSize, this.extent + bufferSize] range to a
-    // [0 - (bufferSize / this.extent), 1 + (bufferSize / this.extent)] range.
-    // The resulting extent would be 1.
-
-    for (let i = 0; i < line.length; i++) {
-      const point = line[i];
-
-      line[i] = [point.x / feature.extent, point.y / feature.extent];
-    }
-  }
 
   switch (feature.type) {
     // Point
     case 1:
       for (let i = 0; i < coordinates.length; i++) {
-        transformLocalCoordinatesToRange(coordinates[i]);
+        transform(coordinates[i], feature);
       }
       break;
 
     // LineString
     case 2:
       for (let i = 0; i < coordinates.length; i++) {
-        transformLocalCoordinatesToRange(coordinates[i]);
+        transform(coordinates[i], feature);
       }
       break;
 
@@ -37,10 +37,11 @@ export function transformToLocalRange(feature) {
       coordinates = classifyRings(coordinates);
       for (let i = 0; i < coordinates.length; i++) {
         for (let j = 0; j < coordinates[i].length; j++) {
-          transformLocalCoordinatesToRange(coordinates[i][j]);
+          transform(coordinates[i][j], feature);
         }
       }
       break;
+
     default:
       break;
   }
