@@ -16,13 +16,13 @@ Loader for the [Mapbox Vector Tile](https://docs.mapbox.com/vector-tiles/specifi
 import {MVTLoader} from '@loaders.gl/mvt';
 import {load} from '@loaders.gl/core';
 
-// GeoJSON-like objects containing local coordinates decoded from tile origin to a range of [0 - (bufferSize / tileExtent), 1 + (bufferSize / tileExtent)]
+// GeoJSON objects containing local coordinates decoded from tile origin to a range of [0 - (bufferSize / tileExtent), 1 + (bufferSize / tileExtent)]
 const geometryData = await load(url, MVTLoader);
 
 // Array containing GeoJSON Features
 const loaderOptions = {
   mvt: {
-    geojson: true,
+    coordinates: 'wgs84',
     tileIndex: {
       x: 0,
       y: 0,
@@ -36,20 +36,57 @@ const geoJSONfeatures = await load(url, MVTLoader, loaderOptions);
 
 ## Outputs
 
-### GeoJSON-like with local coordinates
-
-The parser will return an array of GeoJSON-like objects with local coordinates in a range between `[0 - (bufferSize / tileExtent), 1 + (bufferSize / tileExtent)]` and feature properties from MVT by default.
-
 ### GeoJSON
 
-The parser will return an array of [GeoJSON objects](https://tools.ietf.org/html/rfc7946) with WGS84 coordinates and feature properties from MVT if `geojson` and `tileIndex` properties are present.
+The parser will return an array of [GeoJSON objects](https://tools.ietf.org/html/rfc7946) with WGS84 coordinates and feature properties from MVT if `coordinates` property is set to `wgs84` and `tileIndex` properties are present.
+
+```js
+import {MVTLoader} from '@loaders.gl/mvt';
+import {load} from '@loaders.gl/core';
+
+const loaderOptions = {
+  mvt: {
+    coordinates: 'wgs84',
+    tileIndex: {
+      x: xTileIndex,
+      y: yTileIndex,
+      z: zTileIndex
+    }
+  }
+};
+
+const geoJSONfeatures = await load(url, MVTLoader, loaderOptions);
+```
+
+### GeoJSON with local coordinates
+
+The parser will return an array of GeoJSON objects with local coordinates in a range from 0 to 1 and feature properties from MVT by default.
+
+Even though tile coordinates go from 0 to 1, there can be some negative (or greater than one) coordinates because of buffer cells within MVT to handle geometry clipping. That difference can be as much as `bufferSize / tileExtent` depending on MVT creation parameters.
+
+```js
+import {MVTLoader} from '@loaders.gl/mvt';
+import {load} from '@loaders.gl/core';
+
+/*
+* Default loader options are:
+*
+* {
+*   mvt: {
+*     coordinates: 'local'
+*   }
+* }
+*/
+
+const geoJSONfeatures = await load(url, MVTLoader);
+```
 
 ## Options
 
-| Option          | Type                                             | Default      | Description                                                                                                                                                                                                                                                           |
-| --------------- | ------------------------------------------------ | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `mvt.geojson`   | Boolean                                          | true         | If `true`, parser will return a flat array of GeoJSON representations of the features with coordinates decoded from provided tile index. If `false`, parser will return a flat array of GeoJSON-like objects with feature local coordinates decoded from tile origin. |
-| `mvt.tileIndex` | Object ({x: `number`, y: `number`, z: `number`}) | _No default_ | Mandatory if using `geojson` output (It will return null coordinates if omitted). An object containing tile index values (x, y, z) to decode coordinates.                                                                                                             |
+| Option          | Type                                       | Default      | Description                                                                                                                                                                                                                                                                 |
+| --------------- | ------------------------------------------ | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| mvt.coordinates | String                                     | `local`      | When set to `wgs84`, parser will return a flat array of GeoJSON representations of the features with coordinates decoded from provided tile index. When set to `local`, parser will return a flat array of GeoJSON objects with local coordinates decoded from tile origin. |
+| mvt.tileIndex   | Object ({x: number, y: number, z: number}) | _No default_ | Mandatory with `wgs84` coordinates option. An object containing tile index values (x, y, z) to decode WGS84 coordinates.                                                                                                                                                    |
 
 If you want to know more about how geometries are encoded into MVT tiles, please read [this documentation section](https://docs.mapbox.com/vector-tiles/specification/#encoding-geometry).
 
