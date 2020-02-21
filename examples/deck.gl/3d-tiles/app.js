@@ -6,6 +6,7 @@ import DeckGL from '@deck.gl/react';
 import {MapController, FlyToInterpolator} from '@deck.gl/core';
 // import {Tile3DLayer} from '@deck.gl/geo-layers';
 // TODO bring back to deck.gl
+// remove after deck.gl release a new version of tile-3d-layer
 import Tile3DLayer from './tile-3d-layer';
 import {lumaStats} from '@luma.gl/core';
 import {StatsWidget} from '@probe.gl/stats-widget';
