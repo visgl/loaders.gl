@@ -117,5 +117,6 @@ function calculateScreenSizeFactor(tile, frameState) {
 
   const screenCircleFactor = Math.sqrt(height * height + width * width) / tanOfHalfVFAngle;
 
-  return screenCircleFactor * Math.PI / 2; //emperically derived bias factor:
+  // emperically derived bias factor
+  return (screenCircleFactor * Math.PI) / 2;
 }
