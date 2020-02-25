@@ -2,7 +2,10 @@ language: node_js
 os: linux
 sudo: required
 dist: trusty
-addons:
+env:
+  global:
+    - GOOGLE_CHROME_BINARY="/usr/bin/google-chrome-beta"
+    - PUPPETEER_SKIP_CHROMIUM_DOWNLOAD="true"
 node_js:
   - '10'
   - '12'
