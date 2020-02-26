@@ -20,6 +20,7 @@ export function decode(gltfData, options) {
           materialExtension,
           techniques[materialExtension.technique]
         );
+        material.technique.values = resolveValues(material.technique, gltfScenegraph);
       }
       gltfScenegraph.removeObjectExtension(material, KHR_TECHNIQUES_WEBGL);
     }
@@ -56,4 +57,26 @@ function resolveTechniques({programs = [], shaders = [], techniques = []}, gltfS
   });
 
   return techniques;
+}
+
+function resolveValues(technique, gltfScenegraph) {
+  const values = Object.assign({}, technique.values);
+
+  // merge values from uniforms
+  Object.keys(technique.uniforms || {}).forEach(uniform => {
+    if (technique.uniforms[uniform].value && !(uniform in values)) {
+      values[uniform] = technique.uniforms[uniform].value;
+    }
+  });
+
+  // resolve textures
+  Object.keys(values).forEach(uniform => {
+    if (typeof values[uniform] === 'object' && values[uniform].index !== undefined) {
+      // Assume this is a texture
+      // TODO: find if there are any other types that can be referenced
+      values[uniform].texture = gltfScenegraph.getTexture(values[uniform].index);
+    }
+  });
+
+  return values;
 }
