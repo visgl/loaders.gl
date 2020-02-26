@@ -6,7 +6,7 @@
 import {it, expect} from 'test/utils/expect-assertions';
 
 import ConditionsExpression from '@loaders,gl/3d-tiles/styles/condition-expression';
-import {Cartesian4} from 'math.gl';
+import {Cartesian4} from '@math.gl/core';
 
 function MockFeature(value) {
   this._value = value;

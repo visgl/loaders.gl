@@ -1,5 +1,4 @@
-// Copied from '@loaders.gl/3d-tiles'
-export const TILE3D_CONTENT_STATE = {
+export const TILE_CONTENT_STATE = {
   UNLOADED: 0, // Has never been requested
   LOADING: 1, // Is waiting on a pending request
   PROCESSING: 2, // Request received.  Contents are being processed for rendering.  Depending on the content, it might make its own requests for external data.
@@ -8,7 +7,7 @@ export const TILE3D_CONTENT_STATE = {
   FAILED: 5 // Request failed.
 };
 
-export const TILE3D_REFINEMENT = {
+export const TILE_REFINEMENT = {
   ADD: 0, // Render tile and, if screen space error exceeded, also refine to its children.
   REPLACE: 1 // Render tile or, if screen space error exceeded, refine to its descendants instead.
 };

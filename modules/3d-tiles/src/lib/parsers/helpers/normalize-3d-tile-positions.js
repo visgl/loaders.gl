@@ -1,4 +1,4 @@
-import {Vector3} from 'math.gl';
+import {Vector3} from '@math.gl/core';
 import {GL} from '@loaders.gl/math';
 
 // Prepare attribute for positions

@@ -32,6 +32,7 @@ require('@loaders.gl/gltf/test');
 require('@loaders.gl/3d-tiles/test');
 require('@loaders.gl/i3s/test');
 require('@loaders.gl/potree/test');
+require('@loaders.gl/tiles/test');
 
 // Geospatial Formats
 require('@loaders.gl/kml/test');

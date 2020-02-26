@@ -3,7 +3,7 @@
 
 // NOTE: This file is only partially ported and is a work in progress
 /* eslint-disable */
-import {Vector2, Vector3, Vector4, Color, CesiumMath} from 'math.gl';
+import {Vector2, Vector3, Vector4, Color, CesiumMath} from '@math.gl/core';
 
 // define([
 //   '../Core/Check',

@@ -1,11 +1,11 @@
-import {_BaseTilesetTraverser as BaseTilesetTraverser} from '@loaders.gl/3d-tiles';
+/* global fetch */
+import {TilesetTraverser} from '@loaders.gl/tiles';
 
 import {lodJudge} from '../utils/lod';
-/* global fetch */
 import I3STileHeader from './i3s-tile-header';
 import I3STileManager from './i3s-tile-manager';
 
-export default class I3STilesetTraverser extends BaseTilesetTraverser {
+export default class I3STilesetTraverser extends TilesetTraverser {
   constructor(options) {
     super(options);
     this._tileManager = new I3STileManager();

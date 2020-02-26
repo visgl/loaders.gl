@@ -1,4 +1,4 @@
-import {toRadians} from 'math.gl';
+import {toRadians} from '@math.gl/core';
 
 const WGS84_RADIUS_X = 6378137.0;
 // use this to bias the lod switching  (1+ results in increasing the LOD quality)

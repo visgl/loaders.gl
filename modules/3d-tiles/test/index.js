@@ -9,9 +9,6 @@ import './lib/parsers/helpers/normalize-3d-tile-colors.spec';
 
 import './lib/tileset/tile-3d-header.spec';
 import './lib/tileset/tileset-3d.spec';
-import './lib/tileset/helpers/get-frame-state.spec';
-
-import './lib/utils/doubly-linked-list.spec';
 
 // import './styles/expression.spec';
 // import './styles/conditions-expression.spec';

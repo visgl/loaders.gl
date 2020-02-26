@@ -1,19 +1,15 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
-import {Matrix4, Vector3} from 'math.gl';
+import {Matrix4, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
-import {Stats} from 'probe.gl';
+import {Stats} from '@probe.gl/stats';
 import {path} from '@loaders.gl/core';
-import {RequestScheduler} from '@loaders.gl/loader-utils';
+import {RequestScheduler, assert} from '@loaders.gl/loader-utils';
+import {TilesetCache, calculateTransformProps, getFrameState} from '@loaders.gl/tiles';
 
-import assert from '../utils/assert';
-import {getFrameState} from './helpers/get-frame-state';
-
-import {calculateTransformProps} from './helpers/transform-utils';
 import Tile3DHeader from './tile-3d-header';
 import Tileset3DTraverser from './tileset-3d-traverser';
-import Tileset3DCache from './tileset-3d-cache';
 
 // Tracked Stats
 const TILES_TOTAL = 'Tiles In Tileset(s)';
@@ -131,7 +127,7 @@ export default class Tileset3D {
       throttleRequests: this.options.throttleRequests
     });
     this._traverser = new Tileset3DTraverser();
-    this._cache = new Tileset3DCache();
+    this._cache = new TilesetCache();
 
     // HOLD TRAVERSAL RESULTS
     this._processingQueue = [];

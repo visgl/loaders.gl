@@ -1,4 +1,4 @@
-import {Vector3} from 'math.gl';
+import {Vector3} from '@math.gl/core';
 import {GL, octDecode} from '@loaders.gl/math';
 
 const scratchNormal = new Vector3();
