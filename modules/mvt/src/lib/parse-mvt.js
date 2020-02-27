@@ -1,5 +1,6 @@
 import {VectorTile} from '@mapbox/vector-tile';
 import Protobuf from 'pbf';
+import {transformCoordinates, transformToLocalCoordinates} from './transform-to-local-range';
 
 /*
   * Parse MVT arrayBuffer and return GeoJSON.
@@ -31,9 +32,17 @@ export default function parseMVT(input, options) {
 }
 
 function getDecodedFeature(feature, options = {}) {
-  if (options.geojson && options.tileIndex) {
+  const wgs84Coordinates = options.coordinates === 'wgs84';
+  const hasTileIndex =
+    options.tileIndex && options.tileIndex.x && options.tileIndex.y && options.tileIndex.z;
+
+  if (wgs84Coordinates && !hasTileIndex) {
+    throw new Error('MVT Loader: WGS84 coordinates need tileIndex property. Check documentation.');
+  }
+
+  if (wgs84Coordinates && hasTileIndex) {
     return feature.toGeoJSON(options.tileIndex.x, options.tileIndex.y, options.tileIndex.z);
   }
 
-  return feature.loadGeometry();
+  return transformCoordinates(feature, transformToLocalCoordinates);
 }
