@@ -1,10 +1,12 @@
-const {resolve} = require('path');
-
 const CONFIG = {
   mode: 'development',
 
   entry: {
-    bundle: resolve('./app.js')
+    app: './app.js'
+  },
+
+  output: {
+    library: 'App'
   },
 
   module: {

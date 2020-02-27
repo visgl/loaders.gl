@@ -71,8 +71,8 @@
         {"entry": "modules/obj/docs/api-reference/obj-loader"},
         {"entry": "modules/pcd/docs/api-reference/pcd-loader"},
         {"entry": "modules/ply/docs/api-reference/ply-loader"},
-        {"entry": "modules/3d-tiles/docs/api-reference/tile-3d-loader"},
-        {"entry": "modules/3d-tiles/docs/api-reference/tileset-3d-loader"},
+        {"entry": "modules/tiles/docs/api-reference/tileset-3d"},
+        {"entry": "modules/tiles/docs/api-reference/tile-3d"},
         {"entry": "modules/wkt/docs/api-reference/wkt-loader"},
         {"entry": "modules/wkt/docs/api-reference/wkt-writer"},
         {"entry": "modules/zip/docs/api-reference/zip-loader"},
@@ -107,7 +107,7 @@
           "title": "@loaders.gl/3d-tiles",
           "entries": [
             {"entry": "modules/3d-tiles/docs"},
-            {"entry": "modules/3d-tiles/docs/api-reference/tileset-3d"}
+            {"entry": "modules/3d-tiles/docs/api-reference/tiles-3d-loader"}
           ]
         },
         {
@@ -145,6 +145,12 @@
           ]
         },
         {
+          "title": "@loaders.gl/i3s",
+          "entries": [
+            {"entry": "modules/i3s/docs/api-reference/i3s-loader"}
+          ]
+        },
+        {
           "title": "@loaders.gl/images",
           "entries": [
             {"entry": "modules/images/docs"},
@@ -154,7 +160,7 @@
             {"entry": "modules/images/docs/api-reference/parsed-image-api"},
             {"entry": "modules/images/docs/api-reference/binary-image-api"}
           ]
-        },  
+        },
         {
           "title": "@loaders.gl/json",
           "entries": [
@@ -195,6 +201,12 @@
           "title": "@loaders.gl/polyfills",
           "entries": [
             {"entry": "modules/polyfills/docs"}
+          ]
+        },
+        {
+          "title": "@loaders.gl/tiles",
+          "entries": [
+            {"entry": "modules/tiles/docs"}
           ]
         },
         {

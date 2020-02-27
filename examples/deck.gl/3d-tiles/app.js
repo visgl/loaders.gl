@@ -18,7 +18,6 @@ import {GLTFLoader} from '@loaders.gl/gltf';
 import {Tiles3DLoader, _getIonTilesetMetadata} from '@loaders.gl/3d-tiles';
 
 import ControlPanel from './components/control-panel';
-
 import {loadExampleIndex, INITIAL_EXAMPLE_CATEGORY, INITIAL_EXAMPLE_NAME} from './examples';
 import {INITIAL_MAP_STYLE} from './constants';
 
@@ -277,7 +276,7 @@ export default class App extends PureComponent {
     const tile3DLayer = this._renderTile3DLayer();
 
     return (
-      <div>
+      <div style={{position: 'relative', height: '100%'}}>
         {this._renderStats()}
         {this._renderControlPanel()}
         <DeckGL
