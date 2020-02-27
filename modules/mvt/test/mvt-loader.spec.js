@@ -30,7 +30,7 @@ test('Point MVT to local coordinates JSON', async t => {
       type: 'Feature',
       geometry: {
         type: 'Point',
-        coordinates: [[0.5576171875, 0.185546875]]
+        coordinates: [0.5576171875, 0.185546875]
       },
       properties: {
         // eslint-disable-next-line camelcase

@@ -20,9 +20,12 @@ export function transformCoordinates(feature, transform = coordinates => coordin
   switch (feature.type) {
     // Point
     case 1:
+      const points = [];
       for (let i = 0; i < coordinates.length; i++) {
-        transform(coordinates[i], feature);
+        points[i] = coordinates[i][0];
       }
+      coordinates = points;
+      transform(coordinates, feature);
       break;
 
     // LineString
