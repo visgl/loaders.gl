@@ -9,7 +9,7 @@ const defined = x => x !== undefined;
  *
  * @private
  */
-export default class Tileset3DCache {
+export default class TilesetCache {
   constructor() {
     // [head, sentinel) -> tiles that weren't selected this frame and may be removed from the cache
     // (sentinel, tail] -> tiles that were selected this frame

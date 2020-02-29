@@ -3,7 +3,7 @@
 
 /* eslint-disable */
 import {Tile3DStyle} from './tiles';
-import {Cartesian2, Cartesian4} from 'math.gl';
+import {Cartesian2, Cartesian4} from '@math.gl/core';
 
 // defineSuite([
 //         'Core/Color',

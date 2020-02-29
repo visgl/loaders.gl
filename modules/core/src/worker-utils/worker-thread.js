@@ -1,6 +1,6 @@
 /* global Worker */
 import {getWorkerURL} from './get-worker-url';
-import {getTransferList} from './get-transfer-list';
+import {getTransferList} from '@loaders.gl/loader-utils';
 
 let count = 0;
 

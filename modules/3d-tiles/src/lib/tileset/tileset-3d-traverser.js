@@ -1,10 +1,10 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
-import {TILE3D_REFINEMENT, TILE3D_OPTIMIZATION_HINT} from '../constants';
-import BaseTilesetTraverser from './base-tileset-traverser';
+import {TILE3D_OPTIMIZATION_HINT} from '../constants';
+import {TilesetTraverser, TILE_REFINEMENT} from '@loaders.gl/tiles';
 
-export default class Tileset3DTraverser extends BaseTilesetTraverser {
+export default class Tileset3DTraverser extends TilesetTraverser {
   compareDistanceToCamera(a, b) {
     // Sort by farthest child first since this is going on a stack
     return b._distanceToCamera === 0 && a._distanceToCamera === 0
@@ -36,7 +36,7 @@ export default class Tileset3DTraverser extends BaseTilesetTraverser {
       return;
     }
 
-    const replace = tile.refine === TILE3D_REFINEMENT.REPLACE;
+    const replace = tile.refine === TILE_REFINEMENT.REPLACE;
     const useOptimization =
       tile._optimChildrenWithinParent === TILE3D_OPTIMIZATION_HINT.USE_OPTIMIZATION;
     if (replace && useOptimization && hasChildren) {
@@ -49,7 +49,7 @@ export default class Tileset3DTraverser extends BaseTilesetTraverser {
 
   meetsScreenSpaceErrorEarly(tile, frameState) {
     const {parent} = tile;
-    if (!parent || parent.hasTilesetContent || parent.refine !== TILE3D_REFINEMENT.ADD) {
+    if (!parent || parent.hasTilesetContent || parent.refine !== TILE_REFINEMENT.ADD) {
       return false;
     }
 

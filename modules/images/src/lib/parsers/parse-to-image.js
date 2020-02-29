@@ -1,20 +1,21 @@
-/* global self, Image, Blob */
+/* global self, Image */
+import {getBlobOrDataUrl} from './get-blob';
 
 // Parses html image from array buffer
-export default async function parseToImage(arrayBuffer, options) {
+export default async function parseToImage(arrayBuffer, options, url) {
   // Note: image parsing requires conversion to Blob (for createObjectURL).
   // Potentially inefficient for not using `response.blob()` (and for File / Blob inputs)...
   // But presumably not worth adding 'blob' flag to loader objects?
 
-  // TODO - how to determine mime type? Param? Sniff here?
-  const mimeType = 'image/jpeg';
-  const blob = new Blob([arrayBuffer], {type: mimeType});
+  const blobOrDataUrl = getBlobOrDataUrl(arrayBuffer, url);
   const URL = self.URL || self.webkitURL;
-  const objectUrl = URL.createObjectURL(blob);
+  const objectUrl = typeof blobOrDataUrl !== 'string' && URL.createObjectURL(blobOrDataUrl);
   try {
-    return await loadToImage(objectUrl, options);
+    return await loadToImage(objectUrl || blobOrDataUrl, options);
   } finally {
-    URL.revokeObjectURL(objectUrl);
+    if (objectUrl) {
+      URL.revokeObjectURL(objectUrl);
+    }
   }
 }
 

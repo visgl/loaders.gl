@@ -1,6 +1,6 @@
-import {assert} from '@loaders.gl/loader-utils';
 import {Ellipsoid} from '@math.gl/geospatial';
-import {Matrix4, Vector3} from 'math.gl';
+import {Matrix4, Vector3} from '@math.gl/core';
+import {assert} from '@loaders.gl/loader-utils';
 
 export function calculateTransformProps(tileHeader, tile) {
   assert(tileHeader);

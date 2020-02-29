@@ -1,7 +1,7 @@
 /* global __VERSION__ */ // __VERSION__ is injected by babel-plugin-version-inline
 import {toArrayBuffer} from '../../javascript-utils/binary-utils';
 import WorkerFarm from '../../worker-utils/worker-farm';
-import {getTransferList} from '../../worker-utils/get-transfer-list';
+import {getTransferList} from '@loaders.gl/loader-utils';
 import {parse} from '../parse';
 
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';

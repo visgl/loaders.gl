@@ -1,14 +1,15 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
-// import {TILE3D_REFINEMENT, TILE3D_OPTIMIZATION_HINT} from '../constants';
-import {Vector3, Matrix4} from 'math.gl';
+import {Vector3, Matrix4} from '@math.gl/core';
 import {CullingVolume, Intersect} from '@math.gl/culling';
+
 import {parse, fetchFile, path} from '@loaders.gl/core';
+import {TILE_REFINEMENT, TILE_CONTENT_STATE, createBoundingVolume} from '@loaders.gl/tiles';
+import {assert} from '@loaders.gl/loader-utils';
+
 import Tile3DLoader from '../../tile-3d-loader';
 import Tileset3DLoader from '../../tileset-3d-loader';
-import {TILE3D_REFINEMENT, TILE3D_CONTENT_STATE, TILE3D_OPTIMIZATION_HINT} from '../constants';
-import assert from '../utils/assert';
-import {createBoundingVolume} from './helpers/bounding-volume';
+import {TILE3D_OPTIMIZATION_HINT} from '../constants';
 
 const defined = x => x !== undefined && x !== null;
 
@@ -26,7 +27,7 @@ export default class Tile3DHeader {
     this._header = header;
     this._basePath = basePath;
     this._content = null;
-    this._contentState = TILE3D_CONTENT_STATE.UNLOADED;
+    this._contentState = TILE_CONTENT_STATE.UNLOADED;
     this._gpuMemoryUsageInBytes = 0;
 
     // This tile's parent or `undefined` if this tile is the root.
@@ -103,7 +104,7 @@ export default class Tile3DHeader {
   // Determines if the tile's content is ready. This is automatically `true` for
   // tile's with empty content.
   get contentReady() {
-    return this._contentState === TILE3D_CONTENT_STATE.READY;
+    return this._contentState === TILE_CONTENT_STATE.READY;
   }
 
   // Returns true if tile is not an empty tile and not an external tileset
@@ -128,19 +129,19 @@ export default class Tile3DHeader {
   // Determines if the tile's content has not be requested. `true` if tile's
   // content has not be requested; otherwise, `false`.
   get contentUnloaded() {
-    return this._contentState === TILE3D_CONTENT_STATE.UNLOADED;
+    return this._contentState === TILE_CONTENT_STATE.UNLOADED;
   }
 
   // Determines if the tile's content is expired. `true` if tile's
   // content is expired; otherwise, `false`.
   get contentExpired() {
-    return this._contentState === TILE3D_CONTENT_STATE.EXPIRED;
+    return this._contentState === TILE_CONTENT_STATE.EXPIRED;
   }
 
   // Determines if the tile's content failed to load.  `true` if the tile's
   // content failed to load; otherwise, `false`.
   get contentFailed() {
-    return this._contentState === TILE3D_CONTENT_STATE.FAILED;
+    return this._contentState === TILE_CONTENT_STATE.FAILED;
   }
 
   get url() {
@@ -253,14 +254,14 @@ export default class Tile3DHeader {
       this.expireDate = undefined;
     }
 
-    this._contentState = TILE3D_CONTENT_STATE.LOADING;
+    this._contentState = TILE_CONTENT_STATE.LOADING;
 
     function updatePriority(tile) {
       // Check if any reason to abort
       if (!tile._visible) {
         return -1;
       }
-      if (tile._contentState === TILE3D_CONTENT_STATE.UNLOADED) {
+      if (tile._contentState === TILE_CONTENT_STATE.UNLOADED) {
         return -1;
       }
       return Math.max(1e7 - tile._priority, 0) || 0;
@@ -269,7 +270,7 @@ export default class Tile3DHeader {
     const cancelled = !(await this.tileset._requestScheduler.scheduleRequest(this, updatePriority));
 
     if (cancelled) {
-      this._contentState = TILE3D_CONTENT_STATE.UNLOADED;
+      this._contentState = TILE_CONTENT_STATE.UNLOADED;
       return false;
     }
 
@@ -296,12 +297,12 @@ export default class Tile3DHeader {
         this._tileset._initializeTileHeaders(this._content, this, path.dirname(this.uri));
       }
 
-      this._contentState = TILE3D_CONTENT_STATE.READY;
+      this._contentState = TILE_CONTENT_STATE.READY;
       this._contentLoaded();
       return true;
     } catch (error) {
       // Tile is unloaded before the content finishes loading
-      this._contentState = TILE3D_CONTENT_STATE.FAILED;
+      this._contentState = TILE_CONTENT_STATE.FAILED;
       throw error;
     }
   }
@@ -315,7 +316,7 @@ export default class Tile3DHeader {
       this._content.destroy();
     }
     this._content = null;
-    this._contentState = TILE3D_CONTENT_STATE.UNLOADED;
+    this._contentState = TILE_CONTENT_STATE.UNLOADED;
     return true;
   }
 
@@ -355,7 +356,7 @@ export default class Tile3DHeader {
     if (defined(this.expireDate) && this.contentReady && !this.hasEmptyContent) {
       const now = Date.now();
       if (Date.lessThan(this.expireDate, now)) {
-        this._contentState = TILE3D_CONTENT_STATE.EXPIRED;
+        this._contentState = TILE_CONTENT_STATE.EXPIRED;
         this._expiredContent = this._content;
       }
     }
@@ -526,7 +527,7 @@ export default class Tile3DHeader {
     // Empty tile by default
     this._content = {_tileset: this._tileset, _tile: this};
     this.hasEmptyContent = true;
-    this.contentState = TILE3D_CONTENT_STATE.UNLOADED;
+    this.contentState = TILE_CONTENT_STATE.UNLOADED;
     this._expiredContent = undefined;
     this._serverKey = null;
 
@@ -544,7 +545,7 @@ export default class Tile3DHeader {
       }
       this._content = null;
       this.hasEmptyContent = false;
-      this.contentState = TILE3D_CONTENT_STATE.UNLOADED;
+      this.contentState = TILE_CONTENT_STATE.UNLOADED;
       this.fullUri = `${this._basePath}/${this.contentUri}`;
       this.id = this.fullUri;
     }
@@ -581,13 +582,13 @@ export default class Tile3DHeader {
     switch (refine) {
       case 'REPLACE':
       case 'replace':
-        return TILE3D_REFINEMENT.REPLACE;
+        return TILE_REFINEMENT.REPLACE;
       case 'ADD':
       case 'add':
-        return TILE3D_REFINEMENT.ADD;
+        return TILE_REFINEMENT.ADD;
       default:
         // Inherit from parent tile if omitted.
-        return this.parent ? this.parent.refine : TILE3D_REFINEMENT.REPLACE;
+        return this.parent ? this.parent.refine : TILE_REFINEMENT.REPLACE;
     }
   }
 

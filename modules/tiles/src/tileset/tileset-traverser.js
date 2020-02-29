@@ -1,6 +1,6 @@
 import ManagedArray from '../utils/managed-array';
-import {TILE3D_REFINEMENT} from '../constants';
-import assert from '../utils/assert';
+import {TILE_REFINEMENT} from '../constants';
+import {assert} from '@loaders.gl/loader-utils';
 
 export const DEFAULT_OPTIONS = {
   loadSiblings: false,
@@ -8,7 +8,7 @@ export const DEFAULT_OPTIONS = {
   maximumScreenSpaceError: 2
 };
 
-export default class BaseTilesetTraverser {
+export default class TilesetTraverser {
   // TODO nested props
   constructor(options) {
     this.options = {...DEFAULT_OPTIONS, ...options};
@@ -102,13 +102,13 @@ export default class BaseTilesetTraverser {
           this.selectTile(tile, frameState);
         }
         // additive tiles
-      } else if (tile.refine === TILE3D_REFINEMENT.ADD) {
+      } else if (tile.refine === TILE_REFINEMENT.ADD) {
         // Additive tiles are always loaded and selected
         this.loadTile(tile, frameState);
         this.selectTile(tile, frameState);
 
         // replace tiles
-      } else if (tile.refine === TILE3D_REFINEMENT.REPLACE) {
+      } else if (tile.refine === TILE_REFINEMENT.REPLACE) {
         // Always load tiles in the base traversal
         // Select tiles that can't refine further
         this.loadTile(tile, frameState);
@@ -149,7 +149,7 @@ export default class BaseTilesetTraverser {
     // For traditional replacement refinement only refine if all children are loaded.
     // Empty tiles are exempt since it looks better if children stream in as they are loaded to fill the empty space.
     const checkRefines =
-      !skipLevelOfDetail && tile.refine === TILE3D_REFINEMENT.REPLACE && tile.hasRenderContent;
+      !skipLevelOfDetail && tile.refine === TILE_REFINEMENT.REPLACE && tile.hasRenderContent;
 
     let refines = true;
 
@@ -280,10 +280,10 @@ export default class BaseTilesetTraverser {
   getPriority(tile) {
     const {options} = this;
     switch (tile.refine) {
-      case TILE3D_REFINEMENT.ADD:
+      case TILE_REFINEMENT.ADD:
         return tile._distanceToCamera;
 
-      case TILE3D_REFINEMENT.REPLACE:
+      case TILE_REFINEMENT.REPLACE:
         const {parent} = tile;
         const useParentScreenSpaceError =
           parent &&

@@ -1,22 +1,21 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
-import {Matrix4, Vector3} from 'math.gl';
+import {Matrix4, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
-import {Stats} from 'probe.gl';
+import {Stats} from '@probe.gl/stats';
+
 import {path} from '@loaders.gl/core';
-import {RequestScheduler} from '@loaders.gl/loader-utils';
-
-import assert from '../utils/assert';
-
+import {assert, RequestScheduler} from '@loaders.gl/loader-utils';
 import {
-  _Tileset3DCache as Tileset3DCache,
-  _getFrameState as getFrameState,
-  calculateTransformProps
-} from '@loaders.gl/3d-tiles';
+  TilesetCache,
+  getFrameState,
+  calculateTransformProps,
+  TILE_CONTENT_STATE
+} from '@loaders.gl/tiles';
+
 import I3STileHeader from './i3s-tile-header';
-import Tileset3DTraverser from './i3s-tileset-traverser';
-import {TILE3D_CONTENT_STATE} from '../constants';
+import I3STilesetTraverser from './i3s-tileset-traverser';
 
 // Tracked Stats
 const TILES_TOTAL = 'Tiles In Tileset(s)';
@@ -100,11 +99,11 @@ export default class I3STileset {
       maxRequests: 18,
       throttleRequests: this.options.throttleRequests
     });
-    this._traverser = new Tileset3DTraverser({
+    this._traverser = new I3STilesetTraverser({
       basePath: this.basePath,
       onTraverseEnd: this._onTraverseEnd.bind(this)
     });
-    this._cache = new Tileset3DCache();
+    this._cache = new TilesetCache();
 
     // HOLD TRAVERSAL RESULTS
     this.selectedTiles = [];
@@ -212,8 +211,8 @@ export default class I3STileset {
 
     const unloaded = requestedTiles.filter(
       t =>
-        t._contentState === TILE3D_CONTENT_STATE.UNLOADED ||
-        t._contentState === TILE3D_CONTENT_STATE.EXPIRED
+        t._contentState === TILE_CONTENT_STATE.UNLOADED ||
+        t._contentState === TILE_CONTENT_STATE.EXPIRED
     );
 
     // Sort requests by priority before making any requests.

@@ -23,6 +23,7 @@ require('@loaders.gl/las/test');
 require('@loaders.gl/obj/test');
 require('@loaders.gl/pcd/test');
 require('@loaders.gl/ply/test');
+require('@loaders.gl/terrain/test');
 
 // Scenegraph Formats
 require('@loaders.gl/gltf/test');
@@ -31,6 +32,7 @@ require('@loaders.gl/gltf/test');
 require('@loaders.gl/3d-tiles/test');
 require('@loaders.gl/i3s/test');
 require('@loaders.gl/potree/test');
+require('@loaders.gl/tiles/test');
 
 // Geospatial Formats
 require('@loaders.gl/kml/test');

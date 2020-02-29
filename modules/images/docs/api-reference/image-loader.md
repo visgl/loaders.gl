@@ -7,7 +7,7 @@ An image loader that works under both Node.js (requires `@loaders.gl/polyfills`)
 | File Extension | `.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`, `.bmp`, `.ico`, `.svg` |
 | File Type      | Binary                                                           |
 | File Format    | Image                                                            |
-| Data Format    | `ImageBitmap`, `Image` (older browsers) or ndarray (node.js)     |
+| Data Format    | `ImageBitmap`, `Image` (older browsers) or `data` (node.js)      |
 | Supported APIs | `load`, `parse`                                                  |
 
 ## Usage
@@ -22,11 +22,10 @@ const image = await load(url, ImageLoader, options);
 
 ## Options
 
-| Option         | Type    | Default  | Description                                                                                                                 |
-| -------------- | ------- | -------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `image.type`   | String  | `'auto'` | Set to `imagebitmap`, `image` or `ndarray` to control type of returned image.                                               |
-| `image.data`   | boolean | `false`  | If true, extracts image data instead of returning an actual image, as an `ImageData`-shaped object `{widht, height, data}`. |
-| `image.decode` | boolean | `true`   | Applies to `image` type images only, ensures image is fully decoded before loading promise resolves.                        |
+| Option         | Type    | Default  | Description                                                                                          |
+| -------------- | ------- | -------- | ---------------------------------------------------------------------------------------------------- |
+| `image.type`   | String  | `'auto'` | Set to `data`, `imagebitmap` or `image` to control type of returned image.                           |
+| `image.decode` | boolean | `true`   | Applies to `image` type images only, ensures image is fully decoded before loading promise resolves. |
 
 ### ImageBitmap Options
 
@@ -41,7 +40,7 @@ In addition, for `imagebitmap` type images, it is possible to pass through optio
 | `imagebitmap.resizeHeight`         | number | -           | Output image height.                                                                                                          |
 | `imagebitmap.resizeQuality`        | string | `'low'`     | Algorithm to be used for resizing the input to match the output dimensions. One of pixelated, low (default), medium, or high. |
 
-Portability note: The exact set of `imagebitmap` options supported may depend on the browser, and also do not apply to `html` or `ndarray` images.
+Portability note: The exact set of `imagebitmap` options supported may depend on the browser.
 
 ## Remarks
 

@@ -4,7 +4,7 @@
 /* eslint-disable */
 
 import Expression from '@loaders.gl/3d-tiles/styles/expression';
-import {Vector2, Vector3, Vector4, Color, CesiumMath} from 'math.gl';
+import {Vector2, Vector3, Vector4, Color, CesiumMath} from '@math.gl/core';
 
 // ExpressionNodeType) {
 //   'Scene/ExpressionNodeType'

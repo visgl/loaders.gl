@@ -12,7 +12,7 @@ export const MVTWorkerLoader = {
   category: 'geometry',
   options: {
     mvt: {
-      geojson: false,
+      coordinates: 'local',
       tileIndex: {},
       workerUrl: `https://unpkg.com/@loaders.gl/mvt@${VERSION}/dist/mvt-loader.worker.js`
     }

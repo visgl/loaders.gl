@@ -1,4 +1,4 @@
-/* global ImageBitmap, Image */
+/* global Image, ImageBitmap */
 import assert from '../utils/assert';
 
 export function isImage(image) {
@@ -11,7 +11,7 @@ export function deleteImage(image) {
       image.close();
       break;
     default:
-    // Nothing to do for images and ndarrays
+    // Nothing to do for images and image data objects
   }
 }
 
@@ -23,22 +23,14 @@ export function getImageType(image) {
   return format;
 }
 
-export function getImageSize(image) {
-  switch (getImageType(image)) {
-    case 'imagebitmap':
-    case 'ndarray':
-      return {width: image.width, height: image.height};
-    case 'html':
-      return {width: image.naturalWidth, height: image.naturalHeight};
-    default:
-      return assert(false);
-  }
-}
-
 export function getImageData(image) {
   switch (getImageType(image)) {
+    case 'data':
+      return image;
+
+    case 'image':
     case 'imagebitmap':
-    case 'html':
+      // Extract the image data from the image via a canvas
       /* global document */
       const canvas = document.createElement('canvas');
       // TODO - reuse the canvas?
@@ -47,31 +39,27 @@ export function getImageData(image) {
       canvas.height = image.height;
       context.drawImage(image, 0, 0);
       const imageData = context.getImageData(0, 0, image.width, image.height);
-      return imageData.data;
-    case 'ndarray':
-      return image.data;
+      return imageData;
     default:
       return assert(false);
   }
 }
 
+// TODO DEPRECATED not needed (use getImageData)
+export {getImageData as getImageSize};
+
 // PRIVATE
 
+// eslint-disable-next-line complexity
 function getImageTypeOrNull(image) {
   if (typeof ImageBitmap !== 'undefined' && image instanceof ImageBitmap) {
     return 'imagebitmap';
   }
   if (typeof Image !== 'undefined' && image instanceof Image) {
-    return 'html';
+    return 'image';
   }
   if (image && typeof image === 'object' && image.data && image.width && image.height) {
-    // Assume this is ndarray
-    // TODO - this is not ndarray
-    return 'ndarray';
-  }
-  if (Array.isArray(image)) {
-    // Assume this is ndarray
-    return 'ndarray';
+    return 'data';
   }
   return null;
 }

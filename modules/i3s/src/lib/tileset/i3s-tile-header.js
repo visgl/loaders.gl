@@ -1,13 +1,12 @@
 /* global fetch */
-import {Vector3, Matrix4} from 'math.gl';
+import {Vector3, Matrix4} from '@math.gl/core';
 import {CullingVolume, Intersect, Plane} from '@math.gl/culling';
 import {Ellipsoid} from '@math.gl/geospatial';
 
-import {createBoundingVolume} from '@loaders.gl/3d-tiles';
+import {assert} from '@loaders.gl/loader-utils';
+import {TILE_REFINEMENT, TILE_CONTENT_STATE, createBoundingVolume} from '@loaders.gl/tiles';
 
 import {getScreenSize} from '../utils/lod';
-import assert from '../utils/assert';
-import {TILE3D_REFINEMENT, TILE3D_CONTENT_STATE} from '../constants';
 import {parseI3SNodeGeometry} from '../parsers/parse-i3s-node-geometry';
 
 const scratchCenter = new Vector3();
@@ -19,7 +18,7 @@ function updatePriority(tile) {
   if (!tile._visible) {
     return -1;
   }
-  if (tile._contentState === TILE3D_CONTENT_STATE.UNLOADED) {
+  if (tile._contentState === TILE_CONTENT_STATE.UNLOADED) {
     return -1;
   }
 
@@ -86,7 +85,7 @@ export default class I3STileHeader {
     this._header = header;
     this._basePath = basePath;
     this._content = null;
-    this._contentState = TILE3D_CONTENT_STATE.UNLOADED;
+    this._contentState = TILE_CONTENT_STATE.UNLOADED;
     this._gpuMemoryUsageInBytes = 0;
 
     // This tile's parent or `undefined` if this tile is the root.
@@ -158,7 +157,7 @@ export default class I3STileHeader {
   // Determines if the tile's content is ready. This is automatically `true` for
   // tile's with empty content.
   get contentReady() {
-    return this._contentState === TILE3D_CONTENT_STATE.READY;
+    return this._contentState === TILE_CONTENT_STATE.READY;
   }
 
   // Returns true if tile is not an empty tile and not an external tileset
@@ -182,19 +181,19 @@ export default class I3STileHeader {
   // Determines if the tile's content has not be requested. `true` if tile's
   // content has not be requested; otherwise, `false`.
   get contentUnloaded() {
-    return this._contentState === TILE3D_CONTENT_STATE.UNLOADED;
+    return this._contentState === TILE_CONTENT_STATE.UNLOADED;
   }
 
   // Determines if the tile's content is expired. `true` if tile's
   // content is expired; otherwise, `false`.
   get contentExpired() {
-    return this._contentState === TILE3D_CONTENT_STATE.EXPIRED;
+    return this._contentState === TILE_CONTENT_STATE.EXPIRED;
   }
 
   // Determines if the tile's content failed to load.  `true` if the tile's
   // content failed to load; otherwise, `false`.
   get contentFailed() {
-    return this._contentState === TILE3D_CONTENT_STATE.FAILED;
+    return this._contentState === TILE_CONTENT_STATE.FAILED;
   }
 
   get url() {
@@ -242,12 +241,12 @@ export default class I3STileHeader {
       this.expireDate = undefined;
     }
 
-    this._contentState = TILE3D_CONTENT_STATE.LOADING;
+    this._contentState = TILE_CONTENT_STATE.LOADING;
 
     const cancelled = !(await this.tileset._requestScheduler.scheduleRequest(this, updatePriority));
 
     if (cancelled) {
-      this._contentState = TILE3D_CONTENT_STATE.UNLOADED;
+      this._contentState = TILE_CONTENT_STATE.UNLOADED;
       this.tileset._debug[this.id].unload++;
       return false;
     }
@@ -256,11 +255,11 @@ export default class I3STileHeader {
       this.tileset._requestScheduler.startRequest(this);
       await this._loadData();
       this.tileset._requestScheduler.endRequest(this);
-      this._contentState = TILE3D_CONTENT_STATE.READY;
+      this._contentState = TILE_CONTENT_STATE.READY;
       return true;
     } catch (error) {
       // Tile is unloaded before the content finishes loading
-      this._contentState = TILE3D_CONTENT_STATE.FAILED;
+      this._contentState = TILE_CONTENT_STATE.FAILED;
       throw error;
     }
   }
@@ -318,7 +317,7 @@ export default class I3STileHeader {
       this._content.destroy();
     }
     this._content = null;
-    this._contentState = TILE3D_CONTENT_STATE.UNLOADED;
+    this._contentState = TILE_CONTENT_STATE.UNLOADED;
     this.tileset._debug[this.id].unload++;
     return true;
   }
@@ -455,7 +454,7 @@ export default class I3STileHeader {
     // Empty tile by default
     this._content = {_tileset: this._tileset, _tile: this};
     this.hasEmptyContent = true;
-    this.contentState = TILE3D_CONTENT_STATE.UNLOADED;
+    this.contentState = TILE_CONTENT_STATE.UNLOADED;
     this._expiredContent = undefined;
     this._serverKey = null;
 
@@ -467,7 +466,7 @@ export default class I3STileHeader {
       this.contentUri = tileHeader.geometryData[0].href;
       this._content = null;
       this.hasEmptyContent = false;
-      this.contentState = TILE3D_CONTENT_STATE.UNLOADED;
+      this.contentState = TILE_CONTENT_STATE.UNLOADED;
       this.fullUri = `${this._basePath}/${this.id}/${this.contentUri}`;
     }
   }
@@ -501,13 +500,13 @@ export default class I3STileHeader {
     switch (refine) {
       case 'REPLACE':
       case 'replace':
-        return TILE3D_REFINEMENT.REPLACE;
+        return TILE_REFINEMENT.REPLACE;
       case 'ADD':
       case 'add':
-        return TILE3D_REFINEMENT.ADD;
+        return TILE_REFINEMENT.ADD;
       default:
         // Inherit from parent tile if omitted.
-        return this.parent ? this.parent.refine : TILE3D_REFINEMENT.REPLACE;
+        return this.parent ? this.parent.refine : TILE_REFINEMENT.REPLACE;
     }
   }
 

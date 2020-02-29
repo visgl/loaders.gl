@@ -3,11 +3,13 @@ import * as KHR_draco_mesh_compression from './KHR_draco_mesh_compression';
 import * as KHR_lights_punctual from './KHR_lights_punctual';
 import * as KHR_materials_unlit from './KHR_materials_unlit';
 // import UBER_POINT_CLOUD_COMPRESSION from './KHR_draco_mesh_compression';
+import * as KHR_techniques_webgl from './KHR_techniques_webgl';
 
 export const EXTENSIONS = {
   KHR_draco_mesh_compression,
   KHR_lights_punctual,
-  KHR_materials_unlit
+  KHR_materials_unlit,
+  KHR_techniques_webgl
 };
 
 export async function decodeExtensions(gltf, options = {}, context) {
