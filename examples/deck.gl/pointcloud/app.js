@@ -149,6 +149,14 @@ export default class App extends PureComponent {
   _renderLayers() {
     const {pointsCount, points, colors, selectedExample} = this.state;
 
+    //
+    const data = {
+      attributes: {
+        getPosition: {value: points, size: 3},
+        getColor: colors ? {value: colors, size: 3} : null
+      }
+    };
+
     return [
       points &&
         new PointCloudLayer({
@@ -156,12 +164,7 @@ export default class App extends PureComponent {
           id: `point-cloud-layer-${selectedExample}`,
           coordinateSystem: COORDINATE_SYSTEM.IDENTITY,
           numInstances: pointsCount,
-          data: {
-            attributes: {
-              instancePositions: points,
-              instanceColors: colors
-            }
-          },
+          data,
           getNormal: [0, 1, 0],
           getColor: [255, 255, 255],
           opacity: 0.5,
