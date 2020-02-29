@@ -43,8 +43,8 @@ export default class App extends PureComponent {
     this.state = {
       viewState: INITIAL_VIEW_STATE,
       pointsCount: 0,
-      points: null,
-      colors: null,
+      pointsAttribute: null,
+      colorsAttribute: null,
       // control panel
       droppedFile: null,
       selectedExample: 'Indoor Scan 800K',
@@ -82,7 +82,8 @@ export default class App extends PureComponent {
       selectedCategory,
       selectedExample,
       pointsCount: null,
-      points: null,
+      pointsAttribute: null,
+      colorsAttribute: null,
       loadTimeMs: undefined
     });
     load(uri).then(this._onLoad.bind(this));
@@ -138,8 +139,8 @@ export default class App extends PureComponent {
         // Proposal: Consider adding a `mesh.points` or `mesh.pointcloud` option to mesh loaders
         // in which case the loader throws away indices and just return the vertices?
         pointsCount: attributes.POSITION.value.length / attributes.POSITION.size,
-        points: attributes.POSITION.value,
-        colors: attributes.COLOR_0 ? attributes.COLOR_0.value : null,
+        pointsAttribute: attributes.POSITION || null,
+        colorsAttribute: attributes.COLOR_0 || null,
         viewState
       },
       this._rotateCamera
@@ -147,24 +148,21 @@ export default class App extends PureComponent {
   }
 
   _renderLayers() {
-    const {pointsCount, points, colors, selectedExample} = this.state;
-
-    //
-    const data = {
-      attributes: {
-        getPosition: {value: points, size: 3},
-        getColor: colors ? {value: colors, size: 3} : null
-      }
-    };
+    const {pointsCount, pointsAttribute, colorsAttribute, selectedExample} = this.state;
 
     return [
-      points &&
+      pointsAttribute &&
         new PointCloudLayer({
           // Layers can't reinitialize with new binary data
           id: `point-cloud-layer-${selectedExample}`,
           coordinateSystem: COORDINATE_SYSTEM.IDENTITY,
           numInstances: pointsCount,
-          data,
+          data: {
+            attributes: {
+              getPosition: pointsAttribute,
+              getColor: colorsAttribute
+            }
+          },
           getNormal: [0, 1, 0],
           getColor: [255, 255, 255],
           opacity: 0.5,
