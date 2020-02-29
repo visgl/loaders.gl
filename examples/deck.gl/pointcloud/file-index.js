@@ -14,6 +14,9 @@ export default {
     },
     'Bun Zipper (Text)': {
       uri: `${LOADERS_URI}/modules/ply/test/data/bun_zipper.ply`
+    },
+    'Richmond Azaelias': {
+      uri: `${LOADERS_URI}/modules/ply/test/data/richmond-azaelias.ply`
     }
   },
 
