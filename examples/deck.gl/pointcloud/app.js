@@ -36,15 +36,53 @@ const INITIAL_VIEW_STATE = {
 
 const transitionInterpolator = new LinearInterpolator(['rotationOrbit']);
 
+// basic helper method to calculate a models upper and lower bounds
+function calculateBounds(attributes) {
+  const mins = [Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE];
+  const maxs = [Number.MIN_VALUE, Number.MIN_VALUE, Number.MIN_VALUE];
+
+  const pointSize = attributes.POSITION.size;
+  const pointCount = attributes.POSITION.value.length / pointSize;
+
+  for (let i = 0; i < pointCount; i += pointSize) {
+    const x = attributes.POSITION.value[i];
+    const y = attributes.POSITION.value[i + 1];
+    const z = attributes.POSITION.value[i + 2];
+
+    if (x < mins[0]) mins[0] = x;
+    else if (x > maxs[0]) maxs[0] = x;
+
+    if (y < mins[1]) mins[1] = y;
+    else if (y > maxs[1]) maxs[1] = y;
+
+    if (z < mins[2]) mins[2] = z;
+    else if (z > maxs[2]) maxs[2] = z;
+  }
+
+  return {mins, maxs};
+}
+
+function convertLoadersMeshToDeckPointCloudData(attributes) {
+  const deckAttributes = {
+    getPosition: attributes.POSITION
+  };
+  if (attributes.COLOR_0) {
+    deckAttributes.getColor = attributes.COLOR_0;
+  }
+  // Check PointCloudLayer docs for other supported props?
+  return {
+    length: attributes.POSITION.value.length / attributes.POSITION.size,
+    attributes: deckAttributes
+  };
+}
+
 export default class App extends PureComponent {
   constructor(props) {
     super(props);
 
     this.state = {
       viewState: INITIAL_VIEW_STATE,
-      pointsCount: 0,
-      pointsAttribute: null,
-      colorsAttribute: null,
+      pointData: null,
       // control panel
       droppedFile: null,
       selectedExample: 'Indoor Scan 800K',
@@ -81,37 +119,10 @@ export default class App extends PureComponent {
     this.setState({
       selectedCategory,
       selectedExample,
-      pointsCount: null,
-      pointsAttribute: null,
-      colorsAttribute: null,
+      pointData: null,
       loadTimeMs: undefined
     });
     load(uri).then(this._onLoad.bind(this));
-  }
-
-  _getBounds(attributes) {
-    const mins = [Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE];
-    const maxs = [Number.MIN_VALUE, Number.MIN_VALUE, Number.MIN_VALUE];
-
-    const pointSize = attributes.POSITION.size;
-    const pointCount = attributes.POSITION.value.length / pointSize;
-
-    for (let i = 0; i < pointCount; i += pointSize) {
-      const x = attributes.POSITION.value[i];
-      const y = attributes.POSITION.value[i + 1];
-      const z = attributes.POSITION.value[i + 2];
-
-      if (x < mins[0]) mins[0] = x;
-      else if (x > maxs[0]) maxs[0] = x;
-
-      if (y < mins[1]) mins[1] = y;
-      else if (y > maxs[1]) maxs[1] = y;
-
-      if (z < mins[2]) mins[2] = z;
-      else if (z > maxs[2]) maxs[2] = z;
-    }
-
-    return {mins, maxs};
   }
 
   _onLoad({header, loaderData, attributes, progress}) {
@@ -119,7 +130,7 @@ export default class App extends PureComponent {
     const {maxs, mins} =
       loaderData.header.mins && loaderData.header.maxs
         ? loaderData.header
-        : this._getBounds(attributes);
+        : calculateBounds(attributes);
 
     let {viewState} = this.state;
 
@@ -138,9 +149,7 @@ export default class App extends PureComponent {
         // in which case the vertex count is not correct for display as points
         // Proposal: Consider adding a `mesh.points` or `mesh.pointcloud` option to mesh loaders
         // in which case the loader throws away indices and just return the vertices?
-        pointsCount: attributes.POSITION.value.length / attributes.POSITION.size,
-        pointsAttribute: attributes.POSITION || null,
-        colorsAttribute: attributes.COLOR_0 || null,
+        pointData: convertLoadersMeshToDeckPointCloudData(attributes),
         viewState
       },
       this._rotateCamera
@@ -148,21 +157,15 @@ export default class App extends PureComponent {
   }
 
   _renderLayers() {
-    const {pointsCount, pointsAttribute, colorsAttribute, selectedExample} = this.state;
+    const {pointData, selectedExample} = this.state;
 
     return [
-      pointsAttribute &&
+      pointData &&
         new PointCloudLayer({
           // Layers can't reinitialize with new binary data
           id: `point-cloud-layer-${selectedExample}`,
           coordinateSystem: COORDINATE_SYSTEM.IDENTITY,
-          numInstances: pointsCount,
-          data: {
-            attributes: {
-              getPosition: pointsAttribute,
-              getColor: colorsAttribute
-            }
-          },
+          data: pointData,
           getNormal: [0, 1, 0],
           getColor: [255, 255, 255],
           opacity: 0.5,
@@ -172,7 +175,7 @@ export default class App extends PureComponent {
   }
 
   _renderControlPanel() {
-    const {selectedExample, selectedCategory, pointsCount, loadTimeMs} = this.state;
+    const {selectedExample, pointData, selectedCategory, loadTimeMs} = this.state;
     return (
       <ControlPanel
         examples={FILE_INDEX}
@@ -180,7 +183,7 @@ export default class App extends PureComponent {
         selectedExample={selectedExample}
         onExampleChange={this._onExampleChange}
         // Stats - put in separate stats panel?
-        vertexCount={pointsCount}
+        vertexCount={pointData && pointData.length}
         loadTimeMs={loadTimeMs}
       />
     );
