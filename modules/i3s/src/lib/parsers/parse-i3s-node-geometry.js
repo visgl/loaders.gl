@@ -55,12 +55,7 @@ function constructFeatureDataStruct(tile) {
       // const geomAttribute = defaultGeometrySchema[geometryAttribute];
       const attribute = defaultGeometrySchema[geometryAttribute][namedAttribute];
       if (attribute) {
-        const {
-          byteOffset = 0,
-          count = 0,
-          valueType,
-          valuesPerElement
-        } = attribute;
+        const {byteOffset = 0, count = 0, valueType, valuesPerElement} = attribute;
 
         featureData[geometryAttribute][namedAttribute] = {
           valueType,
@@ -82,10 +77,7 @@ function parseHeaders(content, buffer) {
   let featureCount = 0;
   const headers = content.featureData[I3S_NAMED_HEADER_ATTRIBUTES.header];
   for (const header in headers) {
-    const {
-      property,
-      type
-    } = headers[header];
+    const {property, type} = headers[header];
     const TypedArrayTypeHeader = TYPE_ARRAY_MAP[type];
     if (property === I3S_NAMED_HEADER_ATTRIBUTES.vertexCount) {
       vertexCount = new TypedArrayTypeHeader(buffer, 0, 4)[0];
@@ -127,10 +119,7 @@ export function parseI3SNodeGeometry(arrayBuffer, tile = {}) {
   let byteOffset = currentAttributeOffset;
 
   for (const attribute in vertexAttributes) {
-    const {
-      valueType,
-      valuesPerElement
-    } = vertexAttributes[attribute];
+    const {valueType, valuesPerElement} = vertexAttributes[attribute];
     // update count and byteOffset count by calculating from defaultGeometrySchema + binnary content
     const count = vertexCount;
     const TypedArrayType = TYPE_ARRAY_MAP[valueType];
@@ -139,8 +128,8 @@ export function parseI3SNodeGeometry(arrayBuffer, tile = {}) {
 
     if (attribute === 'position') {
       minHeight = value
-      .filter((coordinate, index) => (index + 1) % 3 === 0)
-      .reduce((accumulator, currentValue) => Math.min(accumulator, currentValue), Infinity);
+        .filter((coordinate, index) => (index + 1) % 3 === 0)
+        .reduce((accumulator, currentValue) => Math.min(accumulator, currentValue), Infinity);
 
       content.vertexCount = count;
       content.cartographicOrigin = new Vector3(mbs[0], mbs[1], -minHeight);
