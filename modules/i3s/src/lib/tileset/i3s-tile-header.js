@@ -264,14 +264,6 @@ export default class I3STileHeader {
     }
   }
 
-  async _loadFeatureData() {
-    const featureData = this._header.featureData[0];
-    const featureDataPath = `${this._basePath}/nodes/${this.id}/${featureData.href}`;
-    this.tileset._debug[this.id].featureLoad++;
-    const response = await fetch(featureDataPath);
-    return await response.json();
-  }
-
   async _loadGeometryBuffer() {
     const geometryData = this._header.geometryData[0];
     const geometryDataPath = `${this._basePath}/nodes/${this.id}/${geometryData.href}`;
@@ -280,14 +272,10 @@ export default class I3STileHeader {
   }
 
   async _loadData() {
-    if (!(this._content && this._content.featureData)) {
+    if (!this._content || !this._content.featureData) {
       this._content = this._content || {};
-      this._content.featureData = {};
 
-      const featureData = await this._loadFeatureData();
       const geometryBuffer = await this._loadGeometryBuffer();
-
-      this._content.featureData = featureData;
 
       if (this._header.textureData) {
         this._content.texture = `${this._basePath}/nodes/${this.id}/${

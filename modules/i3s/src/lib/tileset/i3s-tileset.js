@@ -4,7 +4,6 @@
 import {Matrix4, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {Stats} from '@probe.gl/stats';
-
 import {path} from '@loaders.gl/core';
 import {assert, RequestScheduler} from '@loaders.gl/loader-utils';
 import {
@@ -126,6 +125,8 @@ export default class I3STileset {
 
     this._ellipsoid = this.options.ellipsoid;
 
+    this._defaultGeometrySchema = [];
+
     this._initializeTileSet(json, this.options);
   }
 
@@ -200,6 +201,11 @@ export default class I3STileset {
     return tilePath;
   }
 
+  // Get the defaultGeometrySchema
+  get defaultGeometrySchema() {
+    return this._defaultGeometrySchema;
+  }
+
   _onTraverseEnd() {
     this.selectedTiles = Object.values(this._traverser.selectedTiles);
     this._requestedTiles = Object.values(this._traverser.requestedTiles);
@@ -271,6 +277,9 @@ export default class I3STileset {
 
     // Calculate cartographicCenter & zoom props to help apps center view on tileset
     this._calculateViewProps();
+
+    // Initialize default Geometry schema
+    this._initializeDefaultGeometrySchema(tilesetJson);
   }
 
   // Called during initialize Tileset to initialize the tileset's cartographic center (longitude, latitude) and zoom.
@@ -420,5 +429,10 @@ export default class I3STileset {
     this.stats.get(TILES_LOAD_FAILED);
     this.stats.get(POINTS_COUNT, 'memory');
     this.stats.get(TILES_GPU_MEMORY, 'memory');
+  }
+
+  _initializeDefaultGeometrySchema(tilesetJson) {
+    const defaultGeometrySchema = tilesetJson.store.defaultGeometrySchema;
+    this._defaultGeometrySchema = defaultGeometrySchema;
   }
 }
