@@ -150,6 +150,9 @@ export default class Tileset3D {
     this.credits = {};
     this.description = this.options.description;
 
+    // TODO I3S Specific
+    this._defaultGeometrySchema = [];
+
     this._initializeTileSet(json, this.options);
   }
 
@@ -239,6 +242,10 @@ export default class Tileset3D {
     // TODO CESIUM Specific
     if (this.type === TILESET_TYPE.TILES3D) {
       this._initializeCesiumTileset(tilesetJson);
+    }
+
+    if (this.type === TILESET_TYPE.I3S) {
+      this._initializeI3STileset(tilesetJson);
     }
     // Calculate cartographicCenter & zoom props to help apps center view on tileset
     this._calculateViewProps();
@@ -483,6 +490,11 @@ export default class Tileset3D {
     this._extensionsUsed = tilesetJson.extensionsUsed;
     // Returns the extras property at the top of the tileset JSON (application specific metadata).
     this.extras = tilesetJson.extras;
+  }
+
+  _initializeI3STileset(tilesetJson) {
+    // Initialize default Geometry schema
+    this._defaultGeometrySchema = tilesetJson.store.defaultGeometrySchema;
   }
 
   // TODO CESIUM specific

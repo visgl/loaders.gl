@@ -203,7 +203,8 @@ export default class TileHeader {
       const options = this.tileset.fetchOptions;
       this.content = await load(contentUrl, this.tileset.loader, {
         ...options,
-        tile: this.header
+        tile: this.header,
+        tileset: this.tileset.tileset
       });
 
       if (this._isTileset()) {
