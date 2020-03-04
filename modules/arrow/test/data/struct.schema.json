@@ -1,0 +1,30 @@
+{
+  "fields": [
+    {
+      "name": "struct_nullable",
+      "type": {
+        "children": [
+          {
+            "name": "f1",
+            "type": {
+              "isSigned": true,
+              "bitWidth": 32
+            },
+            "nullable": true,
+            "metadata": {}
+          },
+          {
+            "name": "f2",
+            "type": {},
+            "nullable": true,
+            "metadata": {}
+          }
+        ]
+      },
+      "nullable": true,
+      "metadata": {}
+    }
+  ],
+  "metadata": {},
+  "dictionaries": {}
+}

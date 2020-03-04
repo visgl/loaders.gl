@@ -37,6 +37,7 @@ require('@loaders.gl/potree/test');
 require('@loaders.gl/tiles/test');
 
 // Geospatial Formats
+require('@loaders.gl/flatgeobuf/test');
 require('@loaders.gl/kml/test');
 require('@loaders.gl/wkt/test');
 require('@loaders.gl/mvt/test');

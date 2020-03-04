@@ -11,8 +11,8 @@ export const BasisWorkerLoader = {
   name: 'Basis',
   version: VERSION,
   extensions: ['basis'],
-  test: 'sB',
   mimeType: 'application/octet-stream',
+  test: 'sB',
   binary: true,
   options: {
     basis: {
