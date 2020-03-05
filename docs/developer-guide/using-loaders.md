@@ -95,7 +95,7 @@ A composite loader is called just like any other loader, however there are some 
 Loaders and parameters are passed through to sub loaders and are merged so that applications can override them:
 
 ```js
-  parse(data, [Tile3DLoader, GLTFLoader, DracoLoader], {
+  parse(data, [Tiles3DLoader, GLTFLoader, DracoLoader], {
     '3d-tiles': {
       ...
     },
@@ -108,6 +108,6 @@ Loaders and parameters are passed through to sub loaders and are merged so that 
 In this example:
 
 - the passed in loaders would override any loaders specified inside the sub-loaders as well as any globally registered loaders.
-- The options will be passed through to the sub-loaders, so that the `GLTFLoader` will receive the `gltf` options, merged with any `gltf` options set by the `Tile3DLoader`.
+- The options will be passed through to the sub-loaders, so that the `GLTFLoader` will receive the `gltf` options, merged with any `gltf` options set by the `Tiles3DLoader`.
 
 This override system makes it easy for applications to test alternate sub-loaders or parameter options without having to modify any existing loader code.

@@ -2,7 +2,7 @@
 
 > The `Tileset3D` class is being generalized to handle more use cases. Since this may require modifying some APIs, this class should be considered experiemental.
 
-The `Tileset3D` class can be instantiated with tileset data formatted according to the [3D Tiles Category](docs/specifications/3d-tiles), which is supported by the [Tileset3DLoader](docs/api-reference/3d-tiles/tileset-3d-loader).
+The `Tileset3D` class can be instantiated with tileset data formatted according to the [3D Tiles Category](docs/specifications/3d-tiles), which is supported by the [Tiles3DLoader](docs/api-reference/3d-tiles/tileset-3d-loader).
 
 References
 
@@ -13,7 +13,7 @@ References
 Loading a tileset and instantiating a `Tileset3D` instance.
 
 ```js
-import {Tileset3DLoader, Tileset3D} from '@loaders.gl/3d-tiles';
+import {Tiles3DLoader, Tileset3D} from '@loaders.gl/3d-tiles';
 import {parse} from '@loaders.gl/core';
 
 const tilesetJSON = await parse(fetch(tileset));
@@ -108,7 +108,7 @@ these tiles go out of view, they will be unloaded.
 
 ^default 512 \*
 ^exception `maximumMemoryUsage` must be greater than or equal to zero.
-^see Tileset3D#totalMemoryUsageInBytes
+^see Tileset3D#gpuMemoryUsageInBytes
 
 ### root : Tile3DHeader
 
@@ -148,7 +148,7 @@ tileset.modelMatrix = Matrix4.fromTranslation(translation);
 
 ### maximumMemoryUsage : Number
 
-### totalMemoryUsageInBytes : Number
+### gpuMemoryUsageInBytes : Number
 
 The total amount of GPU memory in bytes used by the tileset. This value is estimated from
 geometry, texture, and batch table textures of loaded tiles. For point clouds, this value also

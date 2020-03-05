@@ -1,8 +1,8 @@
 import {load} from '@loaders.gl/core';
-import {Tile3DLoader} from '@loaders.gl/3d-tiles';
+import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 
 export async function loadPointTile(url) {
-  const content = await load(url, Tile3DLoader);
+  const content = await load(url, Tiles3DLoader);
 
   const tile = {
     rtc_center: content.rtcCenter, // eslint-disable-line camelcase
@@ -20,7 +20,7 @@ export async function loadPointTile(url) {
 }
 
 export async function loadBatchedModelTile(url) {
-  const content = await load(url, Tile3DLoader, {
+  const content = await load(url, Tiles3DLoader, {
     '3d-tiles': {
       loadGLTF: false
     }

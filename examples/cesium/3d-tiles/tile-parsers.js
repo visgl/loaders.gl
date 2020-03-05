@@ -1,5 +1,5 @@
 import {load} from '@loaders.gl/core';
-import {Tile3DLoader} from '@loaders.gl/3d-tiles';
+import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 
 /* global Cesium */
 const Axis = Cesium.Axis;
@@ -59,7 +59,7 @@ export function loadPointTile(uri, tileHeader) {
 export async function loadBatchedModelTile(uri, tileHeader) {
   const computedTransform = getTransform(tileHeader);
 
-  const content = await load(uri, Tile3DLoader, {
+  const content = await load(uri, Tiles3DLoader, {
     '3d-tiles': {
       loadGLTF: false
     }

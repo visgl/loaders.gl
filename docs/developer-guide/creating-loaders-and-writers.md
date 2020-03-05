@@ -40,7 +40,7 @@ loaders.gl enables loaders to call other loaders (referred to as "sub-loaders" i
 
 Good examples of sub-loaders are the `GLTFLoader` which can delegate Draco mesh decoding to the `DracoLoader` and image decoding to the various `ImageLoaders` and the `BasisLoader`.
 
-Naturally, Composite loaders can call other composite loaders, which is for instance used by the `Tile3DLoader` which uses the `GLTFLoader` to parse embedded glTF data in certain tiles.
+Naturally, Composite loaders can call other composite loaders, which is for instance used by the `Tiles3DLoader` which uses the `GLTFLoader` to parse embedded glTF data in certain tiles.
 
 ## Calling loaders inside loaders
 

@@ -42,7 +42,7 @@ export async function getIonAssets(accessToken) {
   return await response.json();
 }
 
-// Return metadata for a specific asset assocated with token
+// Return metadata for a specific asset associated with token
 export async function getIonAssetMetadata(accessToken, assetId) {
   assert(accessToken, assetId);
   const headers = {Authorization: `Bearer ${accessToken}`};

@@ -6,7 +6,10 @@ import {assert} from '@loaders.gl/loader-utils';
 import {createTypedArrayFromAccessor} from './helpers/tile-3d-accessor-utils';
 import {initializeHierarchy, traverseHierarchy} from './tile-3d-batch-table-hierarchy';
 
-const defined = x => x !== undefined;
+function defined(x) {
+  return x !== undefined && x !== null;
+}
+
 const clone = x => x;
 
 // These top level fields in the batch table json are not properties

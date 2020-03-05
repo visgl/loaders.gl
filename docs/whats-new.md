@@ -25,6 +25,10 @@ Target Release Date: mid-Feb, 2019. `alpha` releases will be made available.
 
 - New loader module for reconstructing mesh surfaces from height map images.
 
+**@loaders.gl/i3s** (new loader module)
+
+- New experimental loader module for loading [I3S](https://github.com/Esri/i3s-spec) tiles.
+
 ## v2.0
 
 Release Date: Dec 20, 2019
@@ -44,7 +48,7 @@ The 2.0 release brings potentially dramatic bundle size savings through dynamic 
   - Bundle size: Note that the old `...WorkerLoader` classes are still available. Using these can save even more bundle space since during tree-shaking since they do not depend on the non-worker parser.
 
 - **Composite Loaders**
-  - The new _composite loader_ architecture enables complex loaders like `Tile3DLoader` and `GLTFLoader` to be composed from more primitive loaders without losing the ability to run some parts on worker, pass arguments to sub-loaders etc.
+  - The new _composite loader_ architecture enables complex loaders like `Tiles3DLoader` and `GLTFLoader` to be composed from more primitive loaders without losing the ability to run some parts on worker, pass arguments to sub-loaders etc.
 
 ### New Loader Modules
 
@@ -78,7 +82,7 @@ The 1.3 release is focused on production quality 3D tiles support, maturing the 
     <tr>
       <td style="text-align: center;">
         <img style="max-height:200px" src="https://raw.github.com/uber-web/loaders.gl/master/website/static/images/example-3d-tiles.png" />
-        <p><strong>Tile3DLoader</strong></p>
+        <p><strong>Tiles3DLoader</strong></p>
       </td>
     </tr>
   </tbody>
