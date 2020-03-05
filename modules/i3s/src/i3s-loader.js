@@ -15,7 +15,7 @@ async function parseTileContent(arrayBuffer, options, context) {
   const tile = options.tile;
   const tileset = options.tileset;
   tile.content = tile.content || {};
-  await parseI3STileContent(arrayBuffer, tile, tileset);
+  await parseI3STileContent(arrayBuffer, tile, tileset, options);
   return tile.content;
 }
 

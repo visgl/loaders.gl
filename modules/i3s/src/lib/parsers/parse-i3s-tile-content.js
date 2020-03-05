@@ -14,10 +14,11 @@ import {
   I3S_NAMED_VERTEX_ATTRIBUTES,
   I3S_NAMED_GEOMETREY_ATTRIBUTES
 } from './constants';
+import {getUrlWithToken} from './utils';
 
 const scratchVector = new Vector3([0, 0, 0]);
 
-export async function parseI3STileContent(arrayBuffer, tile, tileset) {
+export async function parseI3STileContent(arrayBuffer, tile, tileset, options) {
   tile.content = tile.content || {};
 
   // construct featureData from defaultGeometrySchema;
@@ -26,7 +27,8 @@ export async function parseI3STileContent(arrayBuffer, tile, tileset) {
 
   const geometryBuffer = await fetch(tile.contentUrl).then(resp => resp.arrayBuffer());
   if (tile.textureUrl) {
-    tile.content.texture = await load(tile.textureUrl, ImageLoader);
+    const url = getUrlWithToken(tile.textureUrl, options.token);
+    tile.content.texture = await load(url, ImageLoader);
   }
 
   return parseI3SNodeGeometry(geometryBuffer, tile, tileset);

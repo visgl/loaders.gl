@@ -204,12 +204,7 @@ export default class Tileset3D {
     if (isDataUrl) {
       return tilePath;
     }
-    const isRelative = !tilePath.startsWith('http');
-    let url = tilePath;
-    if (isRelative) {
-      url = `${this.basePath}/${tilePath}`;
-    }
-    return `${url}${this.queryParams}`;
+    return `${tilePath}${this.queryParams}`;
   }
 
   _tilesChanged(oldSelectedTiles, selectedTiles) {

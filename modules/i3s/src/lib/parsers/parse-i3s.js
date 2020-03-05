@@ -3,6 +3,8 @@ import {Ellipsoid} from '@math.gl/geospatial';
 import {load} from '@loaders.gl/core';
 import {TILE_TYPE, TILE_REFINEMENT, TILESET_TYPE} from '@loaders.gl/tiles';
 
+import {getUrlWithToken} from './utils';
+
 const scratchCenter = new Vector3();
 
 export function normalizeTileData(tile, options, context) {
@@ -49,8 +51,4 @@ export async function normalizeTilesetData(tileset, options, context) {
   // populate from root node
   tileset.lodMetricType = tileset.root.lodMetricType;
   tileset.lodMetricValue = tileset.root.lodMetricValue;
-}
-
-function getUrlWithToken(url, token) {
-  return token ? `${url}?token=${token}` : url;
 }
