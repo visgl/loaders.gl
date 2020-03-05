@@ -45,6 +45,7 @@ export default class TilesetTraverser {
 
     // check if traversable
     if (!this.canTraverse(root, frameState, true)) {
+      this.selectTile(root, frameState);
       return false;
     }
 
