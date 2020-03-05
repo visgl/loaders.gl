@@ -180,7 +180,7 @@ export default class App extends PureComponent {
         // Update deck.gl viewState, moving the camera to the new tileset
         longitude: cartographicCenter[0],
         latitude: cartographicCenter[1],
-        zoom: zoom + 1.5, // TODO - remove adjustment when Tileset3D calculates correct zoom
+        zoom, // TODO - remove adjustment when Tileset3D calculates correct zoom
         bearing: INITIAL_VIEW_STATE.bearing,
         pitch: INITIAL_VIEW_STATE.pitch,
 

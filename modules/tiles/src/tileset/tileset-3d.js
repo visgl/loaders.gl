@@ -96,7 +96,10 @@ export default class Tileset3D {
     this.refine = json.root.refine;
 
     // TODO add to loader context?
-    this.fetchOptions = this._initializeFetchOptions(options);
+    this.fetchOptions = this.options.fetchOptions || {};
+    if (this.options.headers) {
+      this.fetchOptions.headers = this.options.headers;
+    }
 
     this.root = null;
     // view props
@@ -126,6 +129,9 @@ export default class Tileset3D {
     this._requestedTiles = [];
     this._selectedTilesToStyle = [];
 
+    this._queryParams = {};
+    this._queryParamsString = null;
+
     // METRICS
     // The maximum amount of GPU memory (in MB) that may be used to cache tiles.
     // Tiles not in view are unloaded to enforce this.
@@ -139,7 +145,6 @@ export default class Tileset3D {
     this._hasMixedContent = false;
     this._maximumScreenSpaceError = this.options.maximumScreenSpaceError;
     // EXTRACTED FROM TILESET
-    this._queryParams = {};
     this._properties = undefined; // Metadata for per-model/point/etc properties
     this._extensionsUsed = undefined;
     this._gltfUpAxis = undefined;
@@ -192,6 +197,19 @@ export default class Tileset3D {
     this._updateStats();
 
     return this._updateFrameNumber;
+  }
+
+  getTileUrl(tilePath) {
+    const isDataUrl = tilePath.startsWith('data:');
+    if (isDataUrl) {
+      return tilePath;
+    }
+    const isRelative = !tilePath.startsWith('http');
+    let url = tilePath;
+    if (isRelative) {
+      url = `${this.basePath}/${tilePath}`;
+    }
+    return `${url}${this.queryParams}`;
   }
 
   _tilesChanged(oldSelectedTiles, selectedTiles) {
@@ -279,17 +297,6 @@ export default class Tileset3D {
     this.stats.get(TILES_LOAD_FAILED);
     this.stats.get(POINTS_COUNT, 'memory');
     this.stats.get(TILES_GPU_MEMORY, 'memory');
-  }
-
-  _initializeFetchOptions(options) {
-    const fetchOptions = options.fetchOptions || {};
-    if (options.headers) {
-      fetchOptions.headers = options.headers;
-    }
-    if (options.token) {
-      fetchOptions.token = options.token;
-    }
-    return fetchOptions;
   }
 
   // Installs the main tileset JSON file or a tileset JSON file referenced from a tile.
@@ -493,6 +500,9 @@ export default class Tileset3D {
   }
 
   _initializeI3STileset(tilesetJson) {
+    if ('token' in this.options) {
+      this._queryParams.token = this.options.token;
+    }
     // Initialize default Geometry schema
     this._defaultGeometrySchema = tilesetJson.store.defaultGeometrySchema;
   }
@@ -503,6 +513,9 @@ export default class Tileset3D {
   }
 
   get queryParams() {
-    return getQueryParamString(this._queryParams);
+    if (!this._queryParamsString) {
+      this._queryParamsString = getQueryParamString(this._queryParams);
+    }
+    return this._queryParamsString;
   }
 }

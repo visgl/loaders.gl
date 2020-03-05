@@ -1,4 +1,4 @@
-/* global TextDecoder,  __VERSION__ */ // __VERSION__ is injected by babel-plugin-version-inline
+/* global URL, TextDecoder,  __VERSION__ */ // __VERSION__ is injected by babel-plugin-version-inline
 
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
@@ -11,6 +11,7 @@ const TILESET_REGEX = /layers\/[0-9]+$/;
 const TILE_HEADER_REGEX = /nodes\/([0-9-]+|root)$/;
 
 async function parseTileContent(arrayBuffer, options, context) {
+  options = options.i3s || {};
   const tile = options.tile;
   const tileset = options.tileset;
   tile.content = tile.content || {};
@@ -47,27 +48,31 @@ const I3SLoader = {
 };
 
 async function parse(data, options, context, loader) {
+  const url = new URL(context.url);
+  options.i3s = options.i3s || {};
+  options.i3s.token = options.i3s.token || url.searchParams.get('token');
+
   // auto detect file type based on url
   let isTileset;
-  if ('isTileset' in options) {
-    isTileset = options.isTileset;
+  if ('isTileset' in options.i3s) {
+    isTileset = options.i3s.isTileset;
   } else {
-    isTileset = TILESET_REGEX.test(context.url);
+    isTileset = TILESET_REGEX.test(url.pathname);
   }
 
   let isTileHeader;
   if ('isTileHeader' in options) {
     isTileHeader = options.isTileHeader;
   } else {
-    isTileHeader = TILE_HEADER_REGEX.test(context.url);
+    isTileHeader = TILE_HEADER_REGEX.test(url.pathname);
   }
 
   if (isTileset) {
     data = await parseTileset(data, options, context, loader);
   } else if (isTileHeader) {
     data = await parseTile(data, options, context);
-    if (options.loadContent) {
-      options.tile = data;
+    if (options.i3s.loadContent) {
+      options.i3s.tile = data;
       await load(data.contentUrl, I3SLoader, options);
     }
   } else {

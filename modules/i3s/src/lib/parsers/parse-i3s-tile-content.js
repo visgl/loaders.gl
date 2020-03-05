@@ -17,6 +17,56 @@ import {
 
 const scratchVector = new Vector3([0, 0, 0]);
 
+export async function parseI3STileContent(arrayBuffer, tile, tileset) {
+  tile.content = tile.content || {};
+
+  // construct featureData from defaultGeometrySchema;
+  tile.content.featureData = constructFeatureDataStruct(tile, tileset);
+  tile.content.attributes = {};
+
+  const geometryBuffer = await fetch(tile.contentUrl).then(resp => resp.arrayBuffer());
+  if (tile.textureUrl) {
+    tile.content.texture = await load(tile.textureUrl, ImageLoader);
+  }
+
+  return parseI3SNodeGeometry(geometryBuffer, tile, tileset);
+}
+
+/* eslint-disable max-statements */
+function parseI3SNodeGeometry(arrayBuffer, tile = {}) {
+  if (!tile.content) {
+    return tile;
+  }
+
+  const content = tile.content;
+  const vertexAttributes = content.featureData.vertexAttributes;
+  // First 8 bytes reserved for header (vertexCount and featurecount)
+  const {vertexCount, byteOffset} = parseHeaders(content, arrayBuffer);
+  const {attributes} = normalizeAttributes(arrayBuffer, byteOffset, vertexAttributes, vertexCount);
+
+  const {enuMatrix, cartographicOrigin, cartesianOrigin} = parsePositions(
+    attributes.position,
+    tile
+  );
+
+  const matrix = new Matrix4(1, 0, 0, 0, 1, 0, 0, 0, 1).multiplyRight(enuMatrix);
+
+  content.attributes = {
+    positions: attributes.position,
+    normals: attributes.normal,
+    colors: attributes.color,
+    texCoords: attributes.uv0
+  };
+
+  content.vertexCount = vertexCount;
+  content.cartographicCenter = cartographicOrigin;
+  content.cartesianOrigin = cartesianOrigin;
+  content.modelMatrix = matrix.invert();
+  content.byteLength = arrayBuffer.byteLength;
+
+  return tile;
+}
+
 function constructFeatureDataStruct(tile, tileset) {
   // seed featureData from defaultGeometrySchema
   const defaultGeometrySchema = tileset.store.defaultGeometrySchema;
@@ -65,56 +115,6 @@ function parseHeaders(content, buffer) {
     featureCount,
     byteOffset
   };
-}
-
-export async function parseI3STileContent(arrayBuffer, tile, tileset) {
-  tile.content = tile.content || {};
-
-  // construct featureData from defaultGeometrySchema;
-  tile.content.featureData = constructFeatureDataStruct(tile, tileset);
-  tile.content.attributes = {};
-
-  const geometryBuffer = await fetch(tile.contentUrl).then(resp => resp.arrayBuffer());
-  if (tile.textureUrl) {
-    tile.content.texture = await load(tile.textureUrl, ImageLoader);
-  }
-
-  parseI3SNodeGeometry(geometryBuffer, tile, tileset);
-}
-
-/* eslint-disable max-statements */
-export function parseI3SNodeGeometry(arrayBuffer, tile = {}) {
-  if (!tile.content) {
-    return tile;
-  }
-
-  const content = tile.content;
-  const vertexAttributes = content.featureData.vertexAttributes;
-  // First 8 bytes reserved for header (vertexCount and featurecount)
-  const {vertexCount, byteOffset} = parseHeaders(content, arrayBuffer);
-  const {attributes} = normalizeAttributes(arrayBuffer, byteOffset, vertexAttributes, vertexCount);
-
-  const {enuMatrix, cartographicOrigin, cartesianOrigin} = parsePositions(
-    attributes.position,
-    tile
-  );
-
-  const matrix = new Matrix4(1, 0, 0, 0, 1, 0, 0, 0, 1).multiplyRight(enuMatrix);
-
-  content.attributes = {
-    positions: attributes.position,
-    normals: attributes.normal,
-    colors: attributes.color,
-    texCoords: attributes.uv0
-  };
-
-  content.vertexCount = vertexCount;
-  content.cartographicCenter = cartographicOrigin;
-  content.cartesianOrigin = cartesianOrigin;
-  content.modelMatrix = matrix.invert();
-  content.byteLength = arrayBuffer.byteLength;
-
-  return tile;
 }
 
 /* eslint-enable max-statements */

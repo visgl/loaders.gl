@@ -15,7 +15,8 @@ import {StatsWidget} from '@probe.gl/stats-widget';
 
 //SanFrancisco_Bldgs
 const TEST_DATA_URL =
-  'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_Bldgs/SceneServer/layers/0';
+  'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/New_York_Mesh_NearMap/SceneServer/layers/0';
+// 'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_Bldgs/SceneServer/layers/0';
 //philadelphia_Bldgs_text
 //https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/philadelphia_Bldgs_text_untex/SceneServer/layers/0
 //New_York_Buildings
@@ -143,9 +144,7 @@ export default class App extends PureComponent {
         onTilesetLoad: this._onTilesetLoad.bind(this),
         onTileLoad: () => this._updateStatWidgets(),
         onTileUnload: () => this._updateStatWidgets(),
-        loadOptions: {
-          i3s: {token: 'token'}
-        }
+        loadOptions: {}
       })
     ];
   }

@@ -28,7 +28,7 @@ export default class I3STilesetTraverser extends TilesetTraverser {
       // if child tile is not requested or fetched
       const childTile = childTiles && childTiles.find(t => t.id === child.id);
       if (!childTile) {
-        const request = () => this._loadTile(child.id, tileset.loader);
+        const request = () => this._loadTile(child.id, tileset);
         const cachedRequest = this._tileManager.find(child.id);
         if (!cachedRequest) {
           this._tileManager.add(
@@ -48,10 +48,10 @@ export default class I3STilesetTraverser extends TilesetTraverser {
     }
   }
 
-  async _loadTile(nodeId, loader) {
-    const {basePath} = this.options;
-    const nodeUrl = `${basePath}/nodes/${nodeId}`;
-    return await load(nodeUrl, loader, {isHeader: true, loadContent: false});
+  async _loadTile(nodeId, tileset) {
+    const {loader} = tileset;
+    const nodeUrl = tileset.getTileUrl(`nodes/${nodeId}`);
+    return await load(nodeUrl, loader, {i3s: {isHeader: true, loadContent: false}});
   }
 
   _onTileLoad(header, tile, frameState) {

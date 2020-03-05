@@ -30,21 +30,17 @@ export function normalizeTileData(tile, options, context) {
   // TODO only support replacement for now
   tile.refine = TILE_REFINEMENT.REPLACE;
 
-  if (options.token) {
-    tile.contentUrl = `${tile.featureUrl}?${options.token}`;
-    tile.featureUrl = `${tile.featureUrl}?${options.token}`;
-    tile.textureUrl = `${tile.featureUrl}?${options.token}`;
-  }
-
   return tile;
 }
 
 export async function normalizeTilesetData(tileset, options, context) {
   tileset.url = context.url;
 
-  const rootNodeUrl = `${tileset.url}/nodes/root`;
+  const rootNodeUrl = getUrlWithToken(`${tileset.url}/nodes/root`, options.i3s.token);
   // eslint-disable-next-line no-use-before-define
-  tileset.root = await load(rootNodeUrl, tileset.loader, {isHeader: true});
+  tileset.root = await load(rootNodeUrl, tileset.loader, {
+    i3s: {loadContent: false, isHeader: true}
+  });
 
   // base path that non-absolute paths in tileset are relative to.
   tileset.basePath = tileset.url;
@@ -53,4 +49,8 @@ export async function normalizeTilesetData(tileset, options, context) {
   // populate from root node
   tileset.lodMetricType = tileset.root.lodMetricType;
   tileset.lodMetricValue = tileset.root.lodMetricValue;
+}
+
+function getUrlWithToken(url, token) {
+  return token ? `${url}?token=${token}` : url;
 }
