@@ -2,7 +2,7 @@ import {toRadians} from '@math.gl/core';
 
 const WGS84_RADIUS_X = 6378137.0;
 // use this to bias the lod switching  (1+ results in increasing the LOD quality)
-const qualityFactor = 1;
+const qualityFactor = Math.PI / 2; // empirical derived bias factor
 /* eslint-disable max-statements */
 export function lodJudge(tile, frameState) {
   const viewport = frameState.viewport;
@@ -107,12 +107,12 @@ export function getI3ScreenSize(tile, frameState) {
 }
 
 function calculateScreenSizeFactor(tile, frameState) {
-  const {width, height, viewProjectionMatrix} = frameState.viewport;
+  const {width, height, pixelProjectionMatrix} = frameState.viewport;
   const tanOfHalfVFAngle = Math.tan(
     Math.atan(
       Math.sqrt(
-        1.0 / (viewProjectionMatrix[0] * viewProjectionMatrix[0]) +
-          1.0 / (viewProjectionMatrix[5] * viewProjectionMatrix[5])
+        1.0 / (pixelProjectionMatrix[0] * pixelProjectionMatrix[0]) +
+          1.0 / (pixelProjectionMatrix[5] * pixelProjectionMatrix[5])
       )
     )
   );

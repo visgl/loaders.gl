@@ -6,6 +6,7 @@ import DeckGL from '@deck.gl/react';
 import {MapController, FlyToInterpolator} from '@deck.gl/core';
 // import {Tile3DLayer} from '@deck.gl/geo-layers';
 // TODO bring back to deck.gl
+// remove after deck.gl release a new version of tile-3d-layer
 import Tile3DLayer from './tile-3d-layer';
 import {lumaStats} from '@luma.gl/core';
 import {StatsWidget} from '@probe.gl/stats-widget';
@@ -179,7 +180,7 @@ export default class App extends PureComponent {
         // Update deck.gl viewState, moving the camera to the new tileset
         longitude: cartographicCenter[0],
         latitude: cartographicCenter[1],
-        zoom: zoom + 1.5, // TODO - remove adjustment when Tileset3D calculates correct zoom
+        zoom, // TODO - remove adjustment when Tileset3D calculates correct zoom
         bearing: INITIAL_VIEW_STATE.bearing,
         pitch: INITIAL_VIEW_STATE.pitch,
 

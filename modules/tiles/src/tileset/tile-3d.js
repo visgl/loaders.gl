@@ -197,14 +197,18 @@ export default class TileHeader {
     }
 
     try {
-      const contentUrl = this.contentUrl;
+      const contentUrl = this.tileset.getTileUrl(this.contentUrl);
       this.tileset._requestScheduler.startRequest(this);
       // The content can be a binary tile ot a JSON tileset
       const options = this.tileset.fetchOptions;
-      this.content = await load(contentUrl, this.tileset.loader, {
+      const loader = this.tileset.loader;
+      this.content = await load(contentUrl, loader, {
         ...options,
-        tile: this.header,
-        tileset: this.tileset.tileset
+        [loader.id]: {
+          ...options[loader.id],
+          tile: this.header,
+          tileset: this.tileset.tileset
+        }
       });
 
       if (this._isTileset()) {
