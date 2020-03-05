@@ -2,6 +2,22 @@
 
 ### 2.1 Prerelease
 
+#### v2.1.0-alpha.6
+
+- [i3s]: implement to use tiles module [Part 3](#656)
+- [tiles]: Move Tileset and Tile class to @loaders.gl/tiles [Part 2](#654)
+- [pointcloud] example: auto-bounds, colors, Richmond flowers PLY (#659)
+- [i3s]: I3s featureDataLess traversal pattern (#660)
+
+#### v2.1.0-alpha.5
+
+- [mvt]: Return tile coordinates in 512x512 bounding box when parsing MVT (#646)
+- [gltf]: resolve textures in KHR_techniques_webgl (#653)
+- [tiles]: moving common components to @loaders.gl/tiles module [Part1](#644)
+- [i3s]: Use empirical value to fix the lod (#658)
+- [images] Fix parsing svg to data type (#651)
+- [i3s] Improved Lod selection criteria for I3S layers (#655)
+
 #### v2.1.0-alpha.4
 
 - Terrain loader (#652)

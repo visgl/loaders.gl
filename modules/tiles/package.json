@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/tiles",
-  "version": "2.1.0-alpha.5",
+  "version": "2.1.0-alpha.6",
   "description": "Common components for different tiles loaders.",
   "license": "MIT",
   "publishConfig": {

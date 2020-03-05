@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/basis",
-  "version": "2.1.0-alpha.5",
+  "version": "2.1.0-alpha.6",
   "description": "Framework-independent loader for the basis universal format",
   "license": "MIT",
   "publishConfig": {
@@ -34,6 +34,6 @@
     "build-worker": "webpack --entry ./src/workers/basis-loader.worker.js --output ./dist/basis-loader.worker.js --config ../../scripts/worker-webpack-config.js"
   },
   "dependencies": {
-    "@loaders.gl/core": "2.1.0-alpha.5"
+    "@loaders.gl/core": "2.1.0-alpha.6"
   }
 }
