@@ -43,15 +43,8 @@ export default class TilesetTraverser {
     // update tile (visibility and expiration)
     this.updateTile(root, frameState);
 
-    // check if traversable
-    if (!this.canTraverse(root, frameState, true)) {
-      return false;
-    }
-
     this._frameNumber = frameState.frameNumber;
     this.executeTraversal(root, frameState);
-
-    return true;
   }
 
   reset() {
