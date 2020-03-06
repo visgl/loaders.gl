@@ -2,6 +2,10 @@
 
 ### 2.1 Prerelease
 
+#### v2.1.0-alpha.7
+
+- [tiles]: fix traversal - select root node when it is visible (#665)
+
 #### v2.1.0-alpha.6
 
 - [i3s]: implement to use tiles module [Part 3](#656)
