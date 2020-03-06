@@ -2,6 +2,15 @@
 
 ## Upgrading to v2.1
 
+**`@loaders.gl/core`**
+
+Some iterator helper functions have been renamed, the old naming is now deprecated.
+
+| Old Name                   | New Name                 |
+| -------------------------- | ------------------------ |
+| `getStreamIterator`        | `makeStreamIterator`     |
+| `contatenateAsyncIterator` | `concatenateChunksAsync` |
+
 **`@loaders.gl/json`**
 
 - Experimental exports have been removed `JSONParser`, `StreamingJSONParser`, `ClarinetParser`.

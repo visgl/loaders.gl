@@ -3,8 +3,10 @@
 import {concatenateArrayBuffers} from '../javascript-utils/memory-copy-utils';
 
 /**
- * Concatenates all data chunks yielded by an async iterator
+ * Concatenates all data chunks yielded by an (async) iterator
  * Supports strings and ArrayBuffers
+ *
+ * This function can e.g. be used to enable atomic parsers to work on (async) iterator inputs
  */
 export async function concatenateChunksAsync(asyncIterator) {
   let arrayBuffer = new ArrayBuffer(0);
@@ -26,6 +28,9 @@ export async function concatenateChunksAsync(asyncIterator) {
  * @param options
  * @param options.chunkSize
  * @returns iterator that yields chunks of specified size
+ *
+ * This function can e.g. be used to enable data sources that can only be read atomically
+ * (such as `Blob` and `File` via `FileReader`) to still be parsed in batches.
  */
 export function* makeChunkIterator(bigArrayBufferOrString, options = {}) {
   if (typeof bigArrayBufferOrString === 'string') {
@@ -40,7 +45,7 @@ export function* makeChunkIterator(bigArrayBufferOrString, options = {}) {
 }
 
 /**
- * Breaks a big ArrayBuffer into chunks and returns an iterator that yields them one-by-one
+ * Helper: Breaks a big ArrayBuffer into chunks and returns an iterator that yields them one-by-one
  */
 function* makeArrayBufferChunkIterator(arrayBuffer, options = {}) {
   const {chunkSize = 256 * 1024} = options;
@@ -64,7 +69,7 @@ function* makeArrayBufferChunkIterator(arrayBuffer, options = {}) {
 }
 
 /**
- * Breaks a big string into chunks and returns an iterator that yields them one-by-one
+ * Helper: Breaks a big string into chunks and returns an iterator that yields them one-by-one
  */
 function* makeStringChunkIterator(string, options = {}) {
   const {chunkSize = 256 * 1024} = options;

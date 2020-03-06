@@ -70,3 +70,7 @@ export {default as _fetchProgress} from './lib/progress/fetch-progress';
 
 // FOR TESTING
 export {_unregisterLoaders} from './lib/register-loaders';
+
+// DEPRECATED in v2.1
+export {concatenateChunksAsync as contatenateAsyncIterator} from './iterator-utils/chunk-iteration';
+export {makeStreamIterator as getStreamIterator} from './iterator-utils/stream-iteration';
