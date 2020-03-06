@@ -8,8 +8,8 @@ import {
   isFileReadable,
   isBuffer
 } from '../../javascript-utils/is-type';
-import {getStreamIterator} from '../../javascript-utils/stream-utils';
-import {concatenateAsyncIterator} from '../../javascript-utils/async-iterator-utils';
+import {makeStreamIterator} from '../../iterator-utils/stream-iteration';
+import {concatenateChunksAsync} from '../../iterator-utils/chunk-iteration';
 import fetchFileReadable from '../fetch/fetch-file.browser';
 import {checkFetchResponseStatus, checkFetchResponseStatusSync} from './check-errors';
 
@@ -89,12 +89,12 @@ export async function getArrayBufferOrStringFromData(data, loader) {
   }
 
   if (isReadableStream(data)) {
-    data = getStreamIterator(data);
+    data = makeStreamIterator(data);
   }
 
   if (isIterable(data) || isAsyncIterable(data)) {
     // Assume arrayBuffer iterator - attempt to concatenate
-    return concatenateAsyncIterator(data);
+    return concatenateChunksAsync(data);
   }
 
   throw new Error(ERR_DATA);
@@ -109,11 +109,11 @@ export function getAsyncIteratorFromData(data) {
   if (isFetchResponse(data) && data.body) {
     // Note Since this function is not async, we currently can't load error message, just status
     checkFetchResponseStatusSync(data);
-    return getStreamIterator(data.body);
+    return makeStreamIterator(data.body);
   }
 
   if (isReadableStream(data)) {
-    return getStreamIterator(data);
+    return makeStreamIterator(data);
   }
 
   if (isAsyncIterable(data)) {

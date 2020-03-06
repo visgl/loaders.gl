@@ -1,14 +1,19 @@
 /* global TextDecoder, TextEncoder */
-import {concatenateArrayBuffers} from '../javascript-utils/memory-copy-utils';
 
 // GENERAL UTILITIES
 
-// Iterate over async iterator, without resetting iterator if end is not reached
-// - forEach does not reset iterator if exiting loop prematurely
-//   so that iteration can continue in a second loop
-// - It is recommended to use a standard for await as last loop to ensure
-//   iterator gets properly reset
-// TODO - optimize using sync iteration if argument is an Iterable?
+/**
+ * Iterate over async iterator, without resetting iterator if end is not reached
+ * - forEach intentionally does not reset iterator if exiting loop prematurely
+ *   so that iteration can continue in a second loop
+ * - It is recommended to use a standard for-await as last loop to ensure
+ *   iterator gets properly reset
+ *
+ * TODO - optimize using sync iteration if argument is an Iterable?
+ *
+ * @param iterator
+ * @param visitor
+ */
 export async function forEach(iterator, visitor) {
   // eslint-disable-next-line
   while (true) {
@@ -22,20 +27,6 @@ export async function forEach(iterator, visitor) {
       return;
     }
   }
-}
-
-// Concatenates all data chunks yielded by an async iterator
-export async function concatenateAsyncIterator(asyncIterator) {
-  let arrayBuffer = new ArrayBuffer();
-  let string = '';
-  for await (const chunk of asyncIterator) {
-    if (typeof chunk === 'string') {
-      string += chunk;
-    } else {
-      arrayBuffer = concatenateArrayBuffers(arrayBuffer, chunk);
-    }
-  }
-  return string || arrayBuffer;
 }
 
 // ITERATOR GENERATORS
@@ -64,9 +55,11 @@ export async function* textEncoderAsyncIterator(textIterator, options) {
   }
 }
 
-// Input: async iterable over strings
-// Returns: an async iterable over lines
-// See http://2ality.com/2018/04/async-iter-nodejs.html
+/**
+ * @param textIterator async iterable yielding strings
+ * @returns an async iterable over lines
+ * See http://2ality.com/2018/04/async-iter-nodejs.html
+ */
 
 export async function* lineAsyncIterator(textIterator) {
   let previous = '';
@@ -87,11 +80,11 @@ export async function* lineAsyncIterator(textIterator) {
 }
 
 /**
- * Parameter: async iterable of lines
- * Result: async iterable of numbered lines
+ * @param lineIterator async iterable yielding lines
+ * @returns async iterable yielding numbered lines
+ *
+ * See http://2ality.com/2018/04/async-iter-nodejs.html
  */
-// See http://2ality.com/2018/04/async-iter-nodejs.html
-// eslint-disable-next-line no-shadow
 export async function* numberedLineAsyncIterator(lineIterator) {
   let counter = 1;
   for await (const line of lineIterator) {

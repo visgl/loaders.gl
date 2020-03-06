@@ -1,6 +1,6 @@
 import {isBrowser, nodeVersion} from '@loaders.gl/loader-utils';
 
-export function getStreamIterator(stream) {
+export function makeStreamIterator(stream) {
   // Hacky test for node version to ensure we don't call bad polyfills
   if (isBrowser || nodeVersion >= 10) {
     // NODE 10+: stream is an asyncIterator
