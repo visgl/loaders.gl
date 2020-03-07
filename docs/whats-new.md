@@ -8,6 +8,11 @@ Target Release Date: mid-Feb, 2019. `alpha` releases will be made available.
 
 - The `load` and `parse` functions can now read data directly from `Stream` objects both in node and browser.
 
+**@loaders.gl/arrow**
+
+- The ArrowJS dependency has been upgraded to v0.16.
+- The ArrowJS API documentation in the loaders.gl website has been improved.
+
 **@loaders.gl/images**
 
 - Images can now be loaded as data: Using the `ImageLoader` with `options.image.type: 'data'` parameter will return an _image data object_ with width, height and a typed array containing the image data (instead of an opaque `Image` or `ImageBitmap` instance).
@@ -17,17 +22,21 @@ Target Release Date: mid-Feb, 2019. `alpha` releases will be made available.
 
 - The streaming JSON loader now has an experimental option `_rootObjectBatches` that returns the top-level JSON object containing the JSON array being streamed, as additional first (partial) and last (complete) batches.
 
-**@loaders.gl/wkt** (new loader module)
+**@loaders.gl/i3s** (new loader module)
 
-- New loader module for the Well-Known Text geometry format.
+- New loader module for loading [I3S](https://github.com/Esri/i3s-spec) tiles.
+
+**@loaders.gl/mvt** (new loader module)
+
+- New loader module for loading [Mapbox Vector Tiles](https://github.com/mapbox/vector-tile-spec) tiles.
 
 **@loaders.gl/terrain** (new loader module)
 
 - New loader module for reconstructing mesh surfaces from height map images.
 
-**@loaders.gl/i3s** (new loader module)
+**@loaders.gl/wkt** (new loader module)
 
-- New experimental loader module for loading [I3S](https://github.com/Esri/i3s-spec) tiles.
+- New loader module for the Well-Known Text geometry format.
 
 ## v2.0
 

@@ -35,6 +35,6 @@
   "dependencies": {
     "@loaders.gl/core": "2.1.0-alpha.7",
     "@loaders.gl/tables": "2.1.0-alpha.7",
-    "apache-arrow": "^0.13.0"
+    "apache-arrow": "^0.16.0"
   }
 }
