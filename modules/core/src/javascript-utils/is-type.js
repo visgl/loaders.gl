@@ -26,14 +26,10 @@ export const isWritableDOMStream = x => {
 
 export const isReadableDOMStream = x => {
   return (
-    (typeof ReadableStream !== 'undefined' && x instanceof ReadableStream) || (
-      isObject(x) &&
-      isFunction(x.tee) &&
-      isFunction(x.cancel) &&
-      isFunction(x.getReader)
-      // Not implemented in Firefox
-      // && isFunction(x.pipeTo)
-    )
+    (typeof ReadableStream !== 'undefined' && x instanceof ReadableStream) ||
+    (isObject(x) && isFunction(x.tee) && isFunction(x.cancel) && isFunction(x.getReader))
+    // Not implemented in Firefox
+    // && isFunction(x.pipeTo)
   );
 };
 
