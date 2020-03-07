@@ -1,4 +1,4 @@
-/* global File, Blob, Response */
+/* global File, Blob, Response, ReadableStream */
 
 const isBoolean = x => typeof x === 'boolean';
 const isFunction = x => typeof x === 'function';
@@ -26,11 +26,14 @@ export const isWritableDOMStream = x => {
 
 export const isReadableDOMStream = x => {
   return (
-    isObject(x) &&
-    isFunction(x.tee) &&
-    isFunction(x.cancel) &&
-    isFunction(x.pipeTo) &&
-    isFunction(x.getReader)
+    (typeof ReadableStream !== 'undefined' && x instanceof ReadableStream) || (
+      isObject(x) &&
+      isFunction(x.tee) &&
+      isFunction(x.cancel) &&
+      isFunction(x.getReader)
+      // Not implemented in Firefox
+      // && isFunction(x.pipeTo)
+    )
   );
 };
 
