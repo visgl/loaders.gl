@@ -4,7 +4,7 @@ import {validateLoader, validatePointCloudCategoryData} from 'test/common/confor
 
 import {PLYLoader, PLYWorkerLoader, _PLYStreamLoader} from '@loaders.gl/ply';
 import {setLoaderOptions, fetchFile, parse, parseSync, load} from '@loaders.gl/core';
-import {getStreamIterator} from '@loaders.gl/core';
+import {makeStreamIterator} from '@loaders.gl/core';
 
 const PLY_CUBE_ATT_URL = '@loaders.gl/ply/test/data/cube_att.ply';
 const PLY_BUN_ZIPPER_URL = '@loaders.gl/ply/test/data/bun_zipper.ply';
@@ -80,7 +80,7 @@ test('PLYLoader#parseStream(text)', async t => {
   const response = await fetchFile(PLY_CUBE_ATT_URL);
   const stream = await response.body;
 
-  const data = await _PLYStreamLoader.parseStream(getStreamIterator(stream));
+  const data = await _PLYStreamLoader.parseStream(makeStreamIterator(stream));
 
   validatePointCloudCategoryData(t, data);
   t.equal(data.indices.value.length, 36, 'Indices found');

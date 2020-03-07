@@ -3,12 +3,11 @@ import test from 'tape-promise/tape';
 
 import {
   forEach,
-  concatenateAsyncIterator,
   lineAsyncIterator,
   textDecoderAsyncIterator,
   textEncoderAsyncIterator,
   numberedLineAsyncIterator
-} from '@loaders.gl/core/javascript-utils/async-iterator-utils';
+} from '@loaders.gl/core/iterator-utils/async-iteration';
 
 /* global setTimeout */
 const setTimeoutPromise = timeout => new Promise(resolve => setTimeout(resolve, timeout));
@@ -43,20 +42,6 @@ test('async-iterator#forEach', async t => {
     iterations++;
     t.is(number, iterations, `async iterating over ${number}`);
   });
-});
-
-test('async-iterator#concatenateAsyncIterator', async t => {
-  const RESULT = `line 1\nline 2\nline 3\nline 4`;
-
-  const text = await concatenateAsyncIterator(asyncTexts());
-  t.is(text, RESULT, 'returns concatenated string');
-
-  const arraybuffer = await concatenateAsyncIterator(asyncArrayBuffers());
-  t.ok(arraybuffer instanceof Uint8Array, 'returns buffer');
-  /* global TextEncoder */
-  t.deepEqual(arraybuffer, new TextEncoder().encode(RESULT), 'returns concatenated arraybuffer');
-
-  t.end();
 });
 
 test('async-iterator#textDecoderAsyncIterator', async t => {
