@@ -102,6 +102,9 @@ export default class RequestScheduler {
 
   // Refresh all requests and
   _issueNewRequestsAsync() {
+    if (!this._updateNeeded) {
+      return;
+    }
     this._updateNeeded = false;
 
     const freeSlots = Math.max(this.props.maxRequests - this.activeRequestCount, 0);
