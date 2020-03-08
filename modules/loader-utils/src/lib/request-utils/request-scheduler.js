@@ -30,7 +30,7 @@ export default class RequestScheduler {
     // Tracks the number of active requests and prioritizes/cancels queued requests.
     this.requestQueue = [];
     this.activeRequestCount = 0;
-    this.requestMap = {};
+    this.requestMap = new Map();
 
     // Returns the statistics used by the request scheduler.
     this.stats = new Stats({id: props.id});
@@ -44,54 +44,61 @@ export default class RequestScheduler {
   }
 
   // Called by an application that wants to issue a request, without having it deeply queued
-  scheduleRequest(handle, callback = () => 0) {
+  // Parameter `getPriority` will be called when request "slots" open up,
+  //    allowing the caller to update priority or cancel the request
+  //    Highest priority executes first, priority < 0 cancels the request
+  // Returns: a promise that resolves to a request token when the request can be issued without queueing,
+  //    or `false` if the request has been cancelled (by getPriority)
+  scheduleRequest(handle, getPriority = () => 0) {
     // Allows throttling to be disabled
     if (!this.props.throttleRequests) {
-      return Promise.resolve(handle);
+      return Promise.resolve({done: () => {}});
     }
 
     // dedupe
-    if (this.requestMap[handle.id]) {
-      return this.requestMap[handle.id];
+    if (this.requestMap.has(handle)) {
+      return this.requestMap.get(handle);
     }
 
-    let request = null;
+    const request = {handle, getPriority};
     const promise = new Promise((resolve, reject) => {
-      request = {handle, callback, resolve, reject};
+      request.resolve = resolve;
+      request.reject = reject;
       return request;
     });
 
-    // TODO - error, request is not defined?
-    // @ts-ignore
-    this.requestQueue.push({promise, ...request});
-    this.requestMap[handle.id] = promise;
+    this.requestQueue.push(request);
+    this.requestMap.set(handle, promise);
     this._issueNewRequests();
     return promise;
   }
 
-  // Called by an application to mark that it is actively making a request
-  startRequest(handle) {
-    this.activeRequestCount++;
-  }
-
-  // Called by an application to mark that it is finished making a request
-  endRequest(handle) {
-    if (this.requestMap[handle.id]) {
-      delete this.requestMap[handle.id];
-    }
-    this.activeRequestCount--;
-    this._issueNewRequests();
-  }
-
-  // Tracks a request promise, starting and then ending the request (triggering new slots).
-  trackRequestPromise(handle, promise) {
-    this.startRequest(handle);
-    promise.then(() => this.endRequest(handle)).catch(() => this.endRequest(handle));
-  }
-
   // PRIVATE
 
-  // debounce request updates, to prevent duplicate updates in the same tick
+  _issueRequest(request) {
+    const {handle, resolve} = request;
+    let isDone = false;
+
+    const done = () => {
+      // can only be called once
+      if (!isDone) {
+        isDone = true;
+
+        // Stop tracking a request - it has completed, failed, cancelled etc
+        this.requestMap.delete(handle);
+        this.activeRequestCount--;
+        // A slot just freed up, see if any queued requests are waiting
+        this._issueNewRequests();
+      }
+    };
+
+    // Track this request
+    this.activeRequestCount++;
+
+    return resolve ? resolve({done}) : Promise.resolve({done});
+  }
+
+  // We check requests asynchronously, to prevent multiple updates
   _issueNewRequests() {
     if (!this._deferredUpdate) {
       this._deferredUpdate = setTimeout(() => this._issueNewRequestsAsync(), 0);
@@ -114,7 +121,7 @@ export default class RequestScheduler {
     for (let i = 0; i < freeSlots; ++i) {
       if (this.requestQueue.length > 0) {
         const request = this.requestQueue.shift();
-        request.resolve(true);
+        this._issueRequest(request);
       }
     }
 
@@ -130,7 +137,7 @@ export default class RequestScheduler {
       if (!this._updateRequest(request)) {
         // Remove the element and make sure to adjust the counter to account for shortened array
         requestQueue.splice(i, 1);
-        delete this.requestMap[request.handle.id];
+        this.requestMap.delete(request.handle);
         i--;
       }
     }
@@ -141,7 +148,7 @@ export default class RequestScheduler {
 
   // Update a single request by calling the callback
   _updateRequest(request) {
-    request.priority = request.callback(request.handle); // eslint-disable-line callback-return
+    request.priority = request.getPriority(request.handle); // eslint-disable-line callback-return
 
     // by returning a negative priority, the callback cancels the request
     if (request.priority < 0) {

@@ -185,16 +185,19 @@ export default class TileHeader {
 
     this.contentState = TILE_CONTENT_STATE.LOADING;
 
-    const cancelled = !(await this.tileset._requestScheduler.scheduleRequest(this, updatePriority));
+    const requestToken = await this.tileset._requestScheduler.scheduleRequest(
+      this.id,
+      updatePriority
+    );
 
-    if (cancelled) {
+    if (!requestToken) {
+      // cancelled
       this.contentState = TILE_CONTENT_STATE.UNLOADED;
       return false;
     }
 
     try {
       const contentUrl = this.tileset.getTileUrl(this.contentUrl);
-      this.tileset._requestScheduler.startRequest(this);
       // The content can be a binary tile ot a JSON tileset
       const fetchOptions = this.tileset.fetchOptions;
       const loader = this.tileset.loader;
@@ -222,7 +225,7 @@ export default class TileHeader {
       this.contentState = TILE_CONTENT_STATE.FAILED;
       throw error;
     } finally {
-      this.tileset._requestScheduler.endRequest(this);
+      requestToken.done();
     }
   }
 

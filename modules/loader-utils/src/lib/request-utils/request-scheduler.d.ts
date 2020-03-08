@@ -4,37 +4,25 @@ type RequestSchedulerProps = {
   maxRequests?: number;
 };
 
+type DoneFunction = () => any;
+
 export default class RequestScheduler {
   constructor(props?: RequestSchedulerProps);
 
   /**
    * Called by an application that wants to issue a request, without having it deeply queued by the browser
    * 
+   * When the returned promise resolved, it is OK for the application to issue a request.
+   * The promise resolves to an object that contains a `done` method.
+   * When the application's request has completed (or failed), the application must call the 
+   * 
    * @param handle 
-   * @param callback will be called when request "slots" open up,
+   * @param getPriority will be called when request "slots" open up,
    *    allowing the caller to update priority or cancel the request
    *    Highest priority executes first, priority < 0 cancels the request
-   * @return a promise that resolves when the request can be issued without queueing,
-   *    or rejects if the request has been cancelled (by the callback)
+   * @returns a promise
+   *   - resolves when the request can be issued without queueing,
+   *   - rejects if the request has been cancelled (by the callback return < 0)
    */
-  scheduleRequest(handle: any, callback?: () => number): Promise<boolean>;
-  
-  /**
-   * Called by an application to mark that it is actively making a request
-   * @param handle 
-   */
-  startRequest(handle: any);
-
-  /**
-   * Called by an application to mark that it is finished making a request
-   * @param handle 
-   */
-  endRequest(handle: any);
-
-  /**
-   * Tracks a request promise, starting and then ending the request (triggering new slots).
-   * @param handle 
-   * @param promise 
-   */
-  trackRequestPromise(handle: any, promise: any);
+  scheduleRequest(handle: any, getPriority?: () => number): Promise<{done: DoneFunction}>;
 }
