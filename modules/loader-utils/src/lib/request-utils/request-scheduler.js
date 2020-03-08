@@ -25,7 +25,7 @@ const DEFAULT_PROPS = {
 // TODO - Track requests globally, across multiple servers
 export default class RequestScheduler {
   constructor(props = {}) {
-    this.props = {...props, ...DEFAULT_PROPS};
+    this.props = {...DEFAULT_PROPS, ...props};
 
     // Tracks the number of active requests and prioritizes/cancels queued requests.
     this.requestQueue = [];

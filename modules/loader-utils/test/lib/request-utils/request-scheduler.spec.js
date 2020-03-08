@@ -17,5 +17,14 @@ test('RequestScheduler#scheduleRequest', async t => {
   result = await requestScheduler.scheduleRequest({id: 2}, () => -1);
   t.notOk(result);
 
+  let priority = 0;
+  result = await Promise.all([
+    requestScheduler.scheduleRequest({id: 3}).then(() => (priority = -1)),
+    // Should be resolved after the previous one
+    requestScheduler.scheduleRequest({id: 4}, () => priority)
+  ]);
+
+  t.notOk(result[1]);
+
   t.end();
 });
