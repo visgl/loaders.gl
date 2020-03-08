@@ -9,10 +9,14 @@ https://github.com/mholt/PapaParse
 License: MIT
 */
 
+// @ts-nocheck
+
 /* eslint-disable quotes */
 import test from 'tape-promise/tape';
-import {isBrowser, load} from '@loaders.gl/core';
-import {parseAsIterator, parseAsAsyncIterator} from '@loaders.gl/core';
+import Papa from '@loaders.gl/csv/libs/papaparse';
+
+// import {isBrowser, load} from '@loaders.gl/core';
+// import {parseAsIterator, parseAsAsyncIterator} from '@loaders.gl/core';
 
 // Tests for Papa.unparse() function (JSON to CSV)
 var UNPARSE_TESTS = [
@@ -249,7 +253,7 @@ var UNPARSE_TESTS = [
 
 test('Unparse Tests', t => {
   function generateTest(test) {
-    (test.disabled ? it.skip : it)(test.description, () => {
+    (test.disabled ? test.skip : test)(test.description, () => {
       var actual;
 
       try {
@@ -261,7 +265,7 @@ test('Unparse Tests', t => {
         actual = e;
       }
 
-      assert.strictEqual(actual, test.expected);
+      t.strictEqual(actual, test.expected);
     });
   }
 

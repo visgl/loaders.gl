@@ -1,6 +1,6 @@
 // TODO - remove? can this be handled via corresponding AsyncIterator function?
 export function concatenateReadStream(readStream) {
-  let arrayBuffer = new ArrayBuffer();
+  let arrayBuffer = new ArrayBuffer(0);
   let string = '';
 
   return new Promise((resolve, reject) => {

@@ -21,7 +21,7 @@ export function readFileSync(url, options = {}) {
     return null; // throw new Error('Cant load URI synchronously');
   }
 
-  const buffer = fs.readFileSync(url, options, () => {});
+  const buffer = fs.readFileSync(url, options);
   return buffer instanceof Buffer ? toArrayBuffer(buffer) : buffer;
 }
 

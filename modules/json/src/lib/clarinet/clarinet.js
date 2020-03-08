@@ -1,4 +1,5 @@
 /* eslint-disable */
+// @ts-nocheck
 const env = {};
 
 export const EVENTS = [

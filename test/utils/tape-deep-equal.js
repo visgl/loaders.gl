@@ -3,7 +3,7 @@ import Test from 'tape';
 // Tape uses `deep-equal` module which throws exceptions, so replace...
 function tapeDeepEqual(a, b, msg, extra) {
   // eslint-disable-next-line no-invalid-this
-  this._assert(deepEqual(a, b, {strict: true}), {
+  this._assert(deepEqual(a, b), {
     message: msg || 'should be equivalent',
     operator: 'deepEqual',
     actual: a,

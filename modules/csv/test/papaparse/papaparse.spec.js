@@ -12,7 +12,7 @@ License: MIT
 /* global File, setTimeout */
 import test from 'tape-promise/tape';
 
-import Papa from '../../src/papaparse/papaparse';
+import Papa from '@loaders.gl/csv/libs/papaparse';
 import {CORE_PARSER_TESTS, PARSE_TESTS, PARSE_ASYNC_TESTS} from './csv-test-cases';
 
 const BASE_PATH = `${__dirname}/../../data/csv/`;

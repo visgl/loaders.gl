@@ -38,6 +38,7 @@ const document_ = globals.document || {};
 export {self_ as self, window_ as window, global_ as global, document_ as document};
 
 export const isBrowser =
+  // @ts-ignore
   typeof process !== 'object' || String(process) !== '[object process]' || process.browser;
 
 export const isWorker = typeof importScripts === 'function';

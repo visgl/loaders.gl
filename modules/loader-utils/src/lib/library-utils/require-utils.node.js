@@ -42,9 +42,11 @@ export function requireFromString(code, filename = '', options = {}) {
     throw new Error(`code must be a string, not ${typeof code}`);
   }
 
+  // @ts-ignore
   const paths = Module._nodeModulePaths(path.dirname(filename));
 
   const parent = module.parent;
+  // @ts-ignore
   const newModule = new Module(filename, parent);
   newModule.filename = filename;
   newModule.paths = []

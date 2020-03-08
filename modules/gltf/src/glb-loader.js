@@ -1,7 +1,10 @@
 // Binary container format for GLB
-/* global __VERSION__ */ // __VERSION__ is injected by babel-plugin-version-inline
+
+// __VERSION__ is injected by babel-plugin-version-inline
+/* global __VERSION__ */
 import parseGLBSync from './lib/parse-glb';
 
+// @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export default {

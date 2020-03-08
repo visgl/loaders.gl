@@ -25,6 +25,7 @@ export default async function csvBench(bench) {
   });
 
   bench = bench.addAsync('d3-dsv#parse', {multiplier: 2000, unit: 'rows'}, async () => {
+    // @ts-ignore
     return await parse(sample, D3CSVLoader);
   });
 

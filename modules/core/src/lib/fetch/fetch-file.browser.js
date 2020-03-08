@@ -3,7 +3,7 @@ import {assert} from '@loaders.gl/loader-utils';
 
 // File reader fetch "polyfill" for the browser
 class FileReadableResponse {
-  constructor(fileOrBlob) {
+  constructor(fileOrBlob, options) {
     this._fileOrBlob = fileOrBlob;
     this.bodyUsed = false;
   }
@@ -60,11 +60,10 @@ class FileReadableResponse {
     assert(!this.bodyUsed);
     this.bodyUsed = true;
 
-    let reader;
+    const reader = new FileReader();
     const promise = new Promise((resolve, reject) => {
       try {
-        reader = new FileReader();
-        reader.onerror = error => reject(new Error(error));
+        reader.onerror = _ => reject(new Error('Read error')); // TODO extract error
         reader.onabort = () => reject(new Error('Read aborted.'));
         reader.onload = () => resolve(reader.result);
       } catch (error) {

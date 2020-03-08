@@ -5,8 +5,8 @@ import WorkerThread from './worker-thread';
  */
 export default class WorkerPool {
   /**
-   * @param processor {function | string} - worker function
-   * @param maxConcurrency {number} - max count of workers
+   * @param {function | string} processor - worker function
+   * @param {number} maxConcurrency - max count of workers
    */
   constructor({source, name = 'unnamed', maxConcurrency = 1, onMessage, onDebug = () => {}}) {
     this.source = source;

@@ -68,9 +68,11 @@ function toDataView(data) {
   // }
 
   // Careful - Node Buffers will look like ArrayBuffers (keep after isBuffer)
-  if (data instanceof ArrayBuffer || ArrayBuffer.isView(data)) {
-    return new DataView(data.buffer || data);
+  if (data instanceof ArrayBuffer) {
+    return new DataView(data);
   }
-
+  if (ArrayBuffer.isView(data)) {
+    return new DataView(data.buffer);
+  }
   throw new Error('toDataView');
 }

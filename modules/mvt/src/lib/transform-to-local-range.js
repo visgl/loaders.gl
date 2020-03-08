@@ -13,7 +13,7 @@ export function transformToLocalCoordinates(line, feature) {
   }
 }
 
-export function transformCoordinates(feature, transform = coordinates => coordinates) {
+export function transformCoordinates(feature, transform = (coordinates, feature_) => coordinates) {
   const type = geometryTypes[feature.type];
   let coordinates = feature.loadGeometry();
 

@@ -1,7 +1,7 @@
 import {JSONLoader} from '@loaders.gl/json';
 import {load, loadInBatches} from '@loaders.gl/core';
 
-import clarinetBench from './clarinet/clarinet.bench';
+import clarinetBench from './lib/clarinet/clarinet.bench';
 
 const GEOJSON_URL = '@loaders.gl/json/test/data/geojson-big.json';
 

@@ -15,7 +15,7 @@ setLoaderOptions({
   }
 });
 
-test('OBJLoader#loader objects', async t => {
+test('OBJLoader#loader objects', t => {
   validateLoader(t, OBJLoader, 'OBJLoader');
   validateLoader(t, OBJWorkerLoader, 'OBJWorkerLoader');
   t.end();

@@ -1,6 +1,5 @@
 /**
  * Original Author Credentials:
- *
  * Author - Nick Blackwell
  * License - MIT
  */
@@ -13,6 +12,8 @@
  * will create a Layer object from its contents, and pull out the items
  * which will be transformed aswell as MapItems.
  */
+
+// @ts-nocheck
 
 export default class KMLParser {
   parse(kml, options) {

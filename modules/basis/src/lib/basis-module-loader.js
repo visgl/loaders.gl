@@ -22,6 +22,7 @@ async function loadBasis(options) {
   ]);
 
   // Depends on how import happened...
+  // @ts-ignore TS2339: Property does not exist on type
   BASIS = BASIS || global.BASIS;
   return await initializeBasisModule(BASIS, wasmBinary);
 }

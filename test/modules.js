@@ -1,5 +1,7 @@
 // Sets up aliases for file reader
 
+/* eslint-disable @typescript-eslint/no-var-requires */
+
 const ALIASES = require('./aliases');
 const {_addAliases} = require('@loaders.gl/loader-utils');
 _addAliases(ALIASES);

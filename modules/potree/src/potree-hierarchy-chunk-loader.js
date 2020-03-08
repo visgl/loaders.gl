@@ -11,7 +11,7 @@ export default {
   mimeType: 'application/octet-stream',
   // binary potree files have no header bytes, no content test function possible
   // test: ['...'],
-  parse: async arrayBuffer => parseSync(arrayBuffer),
+  parse: async arrayBuffer => await parseSync(arrayBuffer),
   parseSync,
   binary: true
 };

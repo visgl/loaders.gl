@@ -64,6 +64,8 @@ export default class RequestScheduler {
       return request;
     });
 
+    // TODO - error, request is not defined?
+    // @ts-ignore
     this.requestQueue.push({promise, ...request});
     this.requestMap[handle.id] = promise;
     this._issueNewRequests();

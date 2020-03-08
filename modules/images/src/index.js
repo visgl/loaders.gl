@@ -30,6 +30,6 @@ export {default as HTMLImageLoader} from './image-loader';
 
 import {getDefaultImageType} from './lib/parsed-image-api/image-type';
 
-export function getSupportedImageType(imageType) {
-  return getDefaultImageType(imageType);
+export function getSupportedImageType(imageType = null) {
+  return getDefaultImageType();
 }

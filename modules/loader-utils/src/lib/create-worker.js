@@ -1,5 +1,6 @@
 /* eslint-disable no-restricted-globals */
 /* global TextDecoder, self */
+
 import {getTransferList} from './worker-utils/get-transfer-list';
 import {validateLoaderVersion} from './validate-loader-version';
 
@@ -37,6 +38,7 @@ export default function createWorker(loader) {
       };
       self.addEventListener('message', onMessage);
       // Ask the main thread to decode data
+      // @ts-ignore self is WorkerGlobalScope
       self.postMessage({type: 'parse', id, arraybuffer, options, url}, [arraybuffer]);
     });
 
@@ -61,8 +63,10 @@ export default function createWorker(loader) {
         context: {parse}
       });
       const transferList = getTransferList(result);
+      // @ts-ignore self is WorkerGlobalScope
       self.postMessage({type: 'done', result}, transferList);
     } catch (error) {
+      // @ts-ignore self is WorkerGlobalScope
       self.postMessage({type: 'error', message: error.message});
     }
   };

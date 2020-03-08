@@ -206,20 +206,20 @@ export default class GLTFScenegraph {
   }
 
   // Add to standard GLTF top level extension object, mark as used
-  addExtension(extensionName, data) {
-    assert(data);
+  addExtension(extensionName, extensionData = {}) {
+    assert(extensionData);
     this.json.extensions = this.json.extensions || {};
-    this.json.extensions[extensionName] = data;
+    this.json.extensions[extensionName] = extensionData;
     this.registerUsedExtension(extensionName);
-    return this;
+    return extensionData;
   }
 
   // Standard GLTF top level extension object, mark as used and required
-  addRequiredExtension(extensionName, data) {
-    assert(data);
-    this.addExtension(extensionName, data);
+  addRequiredExtension(extensionName, extensionData = {}) {
+    assert(extensionData);
+    this.addExtension(extensionName, extensionData);
     this.registerRequiredExtension(extensionName);
-    return this;
+    return extensionData;
   }
 
   // Add extensionName to list of used extensions

@@ -92,10 +92,11 @@ function parseHeader(data, options) {
           header.elements.push(currentElement);
         }
 
-        currentElement = {};
-        currentElement.name = lineValues[0];
-        currentElement.count = parseInt(lineValues[1], 10);
-        currentElement.properties = [];
+        currentElement = {
+          name: lineValues[0],
+          count: parseInt(lineValues[1], 10),
+          properties: []
+        };
         break;
 
       case 'property':
@@ -258,6 +259,14 @@ function handleElement(buffer, elementName, element) {
   }
 }
 
+/**
+ *
+ * @param {DataView} dataview
+ * @param {number} at
+ * @param {any} type
+ * @param {boolean} littleEndian
+ * @returns {[number, number]}
+ */
 // eslint-disable-next-line complexity
 function binaryRead(dataview, at, type, littleEndian) {
   switch (type) {
@@ -292,6 +301,14 @@ function binaryRead(dataview, at, type, littleEndian) {
   }
 }
 
+/**
+ *
+ * @param {DataView} dataview
+ * @param {number} at
+ * @param {*} properties
+ * @param {*} littleEndian
+ * @returns {[object, number]}
+ */
 function binaryReadElement(dataview, at, properties, littleEndian) {
   const element = {};
   let result;

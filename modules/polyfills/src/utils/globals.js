@@ -24,6 +24,7 @@
 /* eslint-disable no-restricted-globals */
 /* global process, global, window, self */
 const isBrowser =
+  // @ts-ignore process.browser
   typeof process !== 'object' || String(process) !== '[object process]' || process.browser;
 
 const globals = {

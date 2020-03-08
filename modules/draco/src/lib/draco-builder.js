@@ -130,19 +130,22 @@ export default class DracoBuilder {
     }
   }
 
-  // Set encoding options.
-  _setOptions(opts = {}) {
-    if ('speed' in opts) {
-      this.dracoEncoder.SetSpeedOptions(...opts.speed);
+  /**
+   * Set encoding options.
+   * @param {{speed?: any; method?: any; quantization?: any;}} options
+   */
+  _setOptions(options) {
+    if ('speed' in options) {
+      this.dracoEncoder.SetSpeedOptions(...options.speed);
     }
-    if ('method' in opts) {
-      const dracoMethod = this.draco[opts.method];
+    if ('method' in options) {
+      const dracoMethod = this.draco[options.method];
       // if (dracoMethod === undefined) {}
       this.dracoEncoder.SetEncodingMethod(dracoMethod);
     }
-    if ('quantization' in opts) {
-      for (const attribute in opts.quantization) {
-        const bits = opts.quantization[attribute];
+    if ('quantization' in options) {
+      for (const attribute in options.quantization) {
+        const bits = options.quantization[attribute];
         const dracoPosition = this.draco[attribute];
         this.dracoEncoder.SetAttributeQuantization(dracoPosition, bits);
       }

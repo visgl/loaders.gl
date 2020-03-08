@@ -1,4 +1,6 @@
 /* eslint-disable */
+// @ts-nocheck
+
 // Copied from https://github.com/inexorabletash/text-encoding/blob/b4e5bc26e26e51f56e3daa9f13138c79f49d3c34/lib/encoding.js
 //
 // This is free and unencumbered software released into the public domain.

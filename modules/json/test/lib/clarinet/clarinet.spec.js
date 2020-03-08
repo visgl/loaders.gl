@@ -1,4 +1,5 @@
 /* eslint-disable */
+// @ts-nocheck
 import test from 'tape-promise/tape';
 import ClarinetParser, {EVENTS} from '@loaders.gl/json/lib/clarinet/clarinet';
 

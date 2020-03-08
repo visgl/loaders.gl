@@ -1,7 +1,10 @@
-/* global __VERSION__ */ // __VERSION__ is injected by babel-plugin-version-inline
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+// __VERSION__ is injected by babel-plugin-version-inline
+/* global __VERSION__ */
 
 import parsePCDSync from './lib/parse-pcd';
+
+// @ts-ignore TS2304: Cannot find name '__VERSION__'.
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export const PCDWorkerLoader = {
   id: 'pcd',
@@ -18,6 +21,6 @@ export const PCDWorkerLoader = {
 
 export const PCDLoader = {
   ...PCDWorkerLoader,
-  parse: async (arrayBuffer, options) => parsePCDSync(arrayBuffer, options),
+  parse: async (arrayBuffer, options) => await parsePCDSync(arrayBuffer, options),
   parseSync: parsePCDSync
 };

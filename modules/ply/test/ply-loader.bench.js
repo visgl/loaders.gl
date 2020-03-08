@@ -1,5 +1,9 @@
-import {fetchFile, load, createReadStream, makeStreamIterator} from '@loaders.gl/core';
-import {PLYLoader, PLYWorkerLoader, _PLYStreamLoader} from '@loaders.gl/ply';
+import {fetchFile, load} from '@loaders.gl/core';
+import {PLYLoader, PLYWorkerLoader} from '@loaders.gl/ply';
+
+// TODO - use parseInBatches or remove
+// import {createReadStream, makeStreamIterator} from '@loaders.gl/core';
+// import {_PLYStreamLoader} from '@loaders.gl/ply';
 
 export default function PLYLoaderBench(bench) {
   return (
@@ -17,10 +21,10 @@ export default function PLYLoaderBench(bench) {
         const arrayBuffer = await response.arrayBuffer();
         await load(arrayBuffer, PLYWorkerLoader);
       })
-      .addAsync('Stream parsing', async () => {
-        const stream = await createReadStream('@loaders.gl/ply/test/data/cube_att.ply');
-        await _PLYStreamLoader.parseStream(makeStreamIterator(stream));
-      })
+      // .addAsync('Stream parsing', async () => {
+      //   const stream = await createReadStream('@loaders.gl/ply/test/data/cube_att.ply');
+      //   await _PLYStreamLoader.parseStream(getStreamIterator(stream));
+      // })
 
       .group('PLYLoader (Binary)')
       .addAsync('Atomic parsing', async () => {

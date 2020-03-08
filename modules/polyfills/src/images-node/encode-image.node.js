@@ -9,9 +9,10 @@ import {bufferToArrayBuffer} from '../utils/to-array-buffer.node';
  * Returns data bytes representing a compressed image in PNG or JPG format,
  * This data can be saved using file system (f) methods or
  * used in a request.
- * @param {Image} image to save
- * @param {String} type='png' - png, jpg or image/png, image/jpg are valid
- * @param {String} opt.dataURI= - Whether to include a data URI header
+ * @param {{data: any; width: number; height: number;}} image to save
+ * @param {object} options to save
+ * @param {String} [options.type='png'] - png, jpg or image/png, image/jpg are valid
+ * @param {String} [options.dataURI] - Whether to include a data URI header
  * @return {*} bytes
  */
 export function encodeImageToStreamNode(image, options) {

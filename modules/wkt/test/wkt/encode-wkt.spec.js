@@ -20,9 +20,7 @@ test('encodeWKT', t => {
     'GEOMETRYCOLLECTION (POINT (4 6), LINESTRING (4 6, 7 10))'
   ];
 
-  fixtures.forEach(function(fix) {
-    t.equal(fix, loop(fix), fix);
-  });
+  fixtures.forEach(fix => t.equal(fix, loop(fix), fix));
 
   function loop(s) {
     return encodeWKT(parseWKT(s));
