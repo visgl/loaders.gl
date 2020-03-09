@@ -100,6 +100,9 @@ export default class Tileset3D {
     if (this.options.headers) {
       this.fetchOptions.headers = this.options.headers;
     }
+    if (this.options.token) {
+      this.fetchOptions.token = this.options.token;
+    }
 
     this.root = null;
     // view props

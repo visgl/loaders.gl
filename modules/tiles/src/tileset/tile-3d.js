@@ -200,17 +200,17 @@ export default class TileHeader {
       const contentUrl = this.tileset.getTileUrl(this.contentUrl);
       this.tileset._requestScheduler.startRequest(this);
       // The content can be a binary tile ot a JSON tileset
-      const options = this.tileset.fetchOptions;
+      const fetchOptions = this.tileset.fetchOptions;
       const loader = this.tileset.loader;
-      this.content = await load(contentUrl, loader, {
-        ...options,
+      const options = {
+        ...fetchOptions,
         [loader.id]: {
-          ...options[loader.id],
           tile: this.header,
           tileset: this.tileset.tileset
         }
-      });
+      };
 
+      this.content = await load(contentUrl, loader, options);
       if (this._isTileset()) {
         // Add tile headers for the nested tilset's subtree
         // Async update of the tree should be fine since there would never be edits to the same node
