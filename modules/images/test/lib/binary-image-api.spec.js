@@ -29,6 +29,20 @@ test('isBinaryImage', async t => {
   t.end();
 });
 
+test('isBinaryImage#bmp detection edge case', t => {
+  const arrayBuffer = new ArrayBuffer(4);
+  const dataView = new DataView(arrayBuffer);
+  const LITTLE_ENDIAN = true;
+
+  // Encodes as 0x424D3EC4 and when written as little endian stored as 0xC4 0x3E 0x4D 0x42,
+  // which matches BMP's magic characters.
+  dataView.setFloat32(0, -761.207153, LITTLE_ENDIAN);
+
+  t.equals(dataView.getUint16(0, LITTLE_ENDIAN), 0x4d42, 'Test data written correctly');
+  t.notOk(isBinaryImage(arrayBuffer, 'image/bmp'));
+  t.end();
+});
+
 test('isBinaryImage#jpeg detection edge case', async t => {
   const arrayBuffer = new ArrayBuffer(4);
   const dataView = new DataView(arrayBuffer);
