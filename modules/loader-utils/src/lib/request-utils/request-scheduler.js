@@ -25,7 +25,7 @@ const DEFAULT_PROPS = {
 // TODO - Track requests globally, across multiple servers
 export default class RequestScheduler {
   constructor(props = {}) {
-    this.props = {...props, ...DEFAULT_PROPS};
+    this.props = {...DEFAULT_PROPS, ...props};
 
     // Tracks the number of active requests and prioritizes/cancels queued requests.
     this.requestQueue = [];
@@ -39,6 +39,8 @@ export default class RequestScheduler {
     this.stats.get(STAT_CANCELLED_REQUESTS);
     this.stats.get(STAT_QUEUED_REQUESTS_EVER);
     this.stats.get(STAT_ACTIVE_REQUESTS_EVER);
+
+    this._deferredUpdate = null;
   }
 
   // Called by an application that wants to issue a request, without having it deeply queued
@@ -94,15 +96,16 @@ export default class RequestScheduler {
 
   // PRIVATE
 
-  // We check requests asynchronously, to prevent multiple updates
+  // debounce request updates, to prevent duplicate updates in the same tick
   _issueNewRequests() {
-    this._updateNeeded = true;
-    setTimeout(() => this._issueNewRequestsAsync(), 0);
+    if (!this._deferredUpdate) {
+      this._deferredUpdate = setTimeout(() => this._issueNewRequestsAsync(), 0);
+    }
   }
 
   // Refresh all requests and
   _issueNewRequestsAsync() {
-    this._updateNeeded = false;
+    this._deferredUpdate = null;
 
     const freeSlots = Math.max(this.props.maxRequests - this.activeRequestCount, 0);
 
