@@ -10,7 +10,8 @@
     },
     "properties": {
       "cartodb_id": 3,
-      "_cdb_feature_count": 1
+      "_cdb_feature_count": 1,
+      "layer": "layer0"
     }
   }
 ]

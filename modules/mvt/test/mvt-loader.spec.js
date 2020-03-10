@@ -36,7 +36,8 @@ test('Point MVT to local coordinates JSON', async t => {
         // eslint-disable-next-line camelcase
         cartodb_id: 3,
         // eslint-disable-next-line camelcase
-        _cdb_feature_count: 1
+        _cdb_feature_count: 1,
+        layer: 'layer0'
       }
     }
   ]);
@@ -58,7 +59,8 @@ test('Line MVT to local coordinates JSON', async t => {
       },
       properties: {
         // eslint-disable-next-line camelcase
-        cartodb_id: 1
+        cartodb_id: 1,
+        layer: 'layer0'
       }
     }
   ]);
@@ -146,6 +148,24 @@ test('Should raise an error when coordinates param is wgs84 and tileIndex is mis
   const loaderOptions = {
     mvt: {coordinates: 'wgs84'}
   };
+  t.throws(() => parseSync(mvtArrayBuffer, MVTLoader, loaderOptions));
+  t.end();
+});
+
+test('Should add layer name to custom property when layer property is already present', async t => {});
+
+test('Should not override layer property if custom property is not provided', async t => {});
+
+test('Should return features from selected layer when layers property is provided', async t => {});
+
+test('Should raise an error when any selected layers is not present', async t => {
+  const response = await fetchFile(MVT_POINTS_DATA_URL);
+  const mvtArrayBuffer = await response.arrayBuffer();
+
+  const loaderOptions = {
+    mvt: {layers: ['nonpresentlayer']}
+  };
+
   t.throws(() => parseSync(mvtArrayBuffer, MVTLoader, loaderOptions));
   t.end();
 });
