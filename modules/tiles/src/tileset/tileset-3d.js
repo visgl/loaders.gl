@@ -488,6 +488,7 @@ export default class Tileset3D {
     this.credits = {
       attributions: this.options.attributions || []
     };
+    this.description = this.options.description;
 
     // Gets the tileset's properties dictionary object, which contains metadata about per-feature properties.
     this.properties = tilesetJson.properties;

@@ -69,13 +69,17 @@ export default class Tile3DLayer extends CompositeLayer {
 
   async _loadTileset(tilesetUrl) {
     const {loader, loadOptions} = this.props;
-    const tilesetJson = await load(tilesetUrl, loader, loadOptions);
+    const options = {...loadOptions};
+    if (loader.preload) {
+      Object.assign(options, await loader.preload(tilesetUrl, {[loader.id]: loadOptions}));
+    }
+    const tilesetJson = await load(tilesetUrl, loader, options);
 
     const tileset3d = new Tileset3D(tilesetJson, {
       onTileLoad: this._onTileLoad.bind(this),
       onTileUnload: this._onTileUnload.bind(this),
       onTileLoadFail: this.props.onTileError,
-      ...loadOptions
+      ...options
     });
 
     this.setState({
@@ -117,14 +121,14 @@ export default class Tile3DLayer extends CompositeLayer {
     }
 
     switch (tileHeader.type) {
-      case TILE_TYPE.POINTCLOUD:
-        return this._createPointCloudTileLayer(tileHeader);
-      case TILE_TYPE.SCENEGRAPH:
-        return this._create3DModelTileLayer(tileHeader);
-      case TILE_TYPE.MESH:
-        return this._createSimpleMeshLayer(tileHeader);
-      default:
-        throw new Error(`Tile3DLayer: Failed to render layer of type ${tileHeader.content.type}`);
+    case TILE_TYPE.POINTCLOUD:
+      return this._createPointCloudTileLayer(tileHeader);
+    case TILE_TYPE.SCENEGRAPH:
+      return this._create3DModelTileLayer(tileHeader);
+    case TILE_TYPE.MESH:
+      return this._createSimpleMeshLayer(tileHeader);
+    default:
+      throw new Error(`Tile3DLayer: Failed to render layer of type ${tileHeader.content.type}`);
     }
   }
 
@@ -244,33 +248,33 @@ export default class Tile3DLayer extends CompositeLayer {
     }
 
     return tileset3d.tiles
-      .map(tile => {
-        let layer = layerMap[tile.id] && layerMap[tile.id].layer;
-        // render selected tiles
-        if (tile.selected) {
-          // create layer
-          if (!layer) {
-            layer = this._create3DTileLayer(tile);
-            layerMap[tile.id] = {layer, tile};
-          }
-          // update layer visibility
-          if (layer && layer.props && !layer.props.visible) {
-            // Still has GPU resource but visibility is turned off so turn it back on so we can render it.
-            layer = layer.clone({visible: true});
-            layerMap[tile.id].layer = layer;
-          }
-          return layer;
+    .map(tile => {
+      let layer = layerMap[tile.id] && layerMap[tile.id].layer;
+      // render selected tiles
+      if (tile.selected) {
+        // create layer
+        if (!layer) {
+          layer = this._create3DTileLayer(tile);
+          layerMap[tile.id] = {layer, tile};
         }
-
-        // hide non-selected tiles
-        if (layer && layer.props && layer.props.visible) {
-          // Still in tileset cache but doesn't need to render this frame. Keep the GPU resource bound but don't render it.
-          layer = layer.clone({visible: false});
+        // update layer visibility
+        if (layer && layer.props && !layer.props.visible) {
+          // Still has GPU resource but visibility is turned off so turn it back on so we can render it.
+          layer = layer.clone({visible: true});
           layerMap[tile.id].layer = layer;
         }
         return layer;
-      })
-      .filter(Boolean);
+      }
+
+      // hide non-selected tiles
+      if (layer && layer.props && layer.props.visible) {
+        // Still in tileset cache but doesn't need to render this frame. Keep the GPU resource bound but don't render it.
+        layer = layer.clone({visible: false});
+        layerMap[tile.id].layer = layer;
+      }
+      return layer;
+    })
+    .filter(Boolean);
   }
 }
 
