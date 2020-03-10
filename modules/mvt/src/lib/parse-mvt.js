@@ -14,24 +14,32 @@ export default function parseMVT(input, options) {
   }
 
   const tile = new VectorTile(new Protobuf(input));
-  const mvtOptions = options.mvt;
+  const loaderOptions = options.mvt;
   const features = [];
 
-  for (const layerName in tile.layers) {
+  const selectedLayers = Array.isArray(loaderOptions.layers)
+    ? loaderOptions.layers
+    : Object.keys(tile.layers);
+
+  selectedLayers.forEach(layerName => {
     const vectorTileLayer = tile.layers[layerName];
+
+    if (!vectorTileLayer) {
+      throw new Error(`MVT Loader: ${layerName} is not present in MVT layers`);
+    }
 
     for (let i = 0; i < vectorTileLayer.length; i++) {
       const vectorTileFeature = vectorTileLayer.feature(i);
 
-      const decodedFeature = getDecodedFeature(vectorTileFeature, mvtOptions);
+      const decodedFeature = getDecodedFeature(vectorTileFeature, loaderOptions, layerName);
       features.push(decodedFeature);
     }
-  }
+  });
 
   return features;
 }
 
-function getDecodedFeature(feature, options = {}) {
+function getDecodedFeature(feature, options = {}, layerName) {
   const wgs84Coordinates = options.coordinates === 'wgs84';
   const hasTileIndex =
     options.tileIndex && options.tileIndex.x && options.tileIndex.y && options.tileIndex.z;
@@ -40,9 +48,17 @@ function getDecodedFeature(feature, options = {}) {
     throw new Error('MVT Loader: WGS84 coordinates need tileIndex property. Check documentation.');
   }
 
-  if (wgs84Coordinates && hasTileIndex) {
-    return feature.toGeoJSON(options.tileIndex.x, options.tileIndex.y, options.tileIndex.z);
+  const decodedFeature =
+    wgs84Coordinates && hasTileIndex
+      ? feature.toGeoJSON(options.tileIndex.x, options.tileIndex.y, options.tileIndex.z)
+      : transformCoordinates(feature, transformToLocalCoordinates);
+
+  // Add layer name to GeoJSON properties
+  const hasLayerProperty = decodedFeature.properties.hasOwnProperty('layer');
+  const layerPropertyName = hasLayerProperty ? options.layerProperty : 'layer';
+  if (layerPropertyName) {
+    decodedFeature.properties[layerPropertyName] = layerName;
   }
 
-  return transformCoordinates(feature, transformToLocalCoordinates);
+  return decodedFeature;
 }
