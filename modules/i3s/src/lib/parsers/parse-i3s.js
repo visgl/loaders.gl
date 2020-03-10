@@ -38,7 +38,7 @@ export function normalizeTileData(tile, options, context) {
 export async function normalizeTilesetData(tileset, options, context) {
   tileset.url = context.url;
 
-  const rootNodeUrl = getUrlWithToken(`${tileset.url}/nodes/root`, options.i3s.token);
+  const rootNodeUrl = getUrlWithToken(`${tileset.url}/nodes/root`, options.token);
   // eslint-disable-next-line no-use-before-define
   tileset.root = await load(rootNodeUrl, tileset.loader, {
     i3s: {loadContent: false, isHeader: true}

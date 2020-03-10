@@ -1,5 +1,3 @@
-/* global fetch */
-
 import {Vector3, Matrix4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 
@@ -25,13 +23,12 @@ export async function parseI3STileContent(arrayBuffer, tile, tileset, options) {
   tile.content.featureData = constructFeatureDataStruct(tile, tileset);
   tile.content.attributes = {};
 
-  const geometryBuffer = await fetch(tile.contentUrl).then(resp => resp.arrayBuffer());
   if (tile.textureUrl) {
     const url = getUrlWithToken(tile.textureUrl, options.token);
     tile.content.texture = await load(url, ImageLoader);
   }
 
-  return parseI3SNodeGeometry(geometryBuffer, tile, tileset);
+  return parseI3SNodeGeometry(arrayBuffer, tile, tileset);
 }
 
 /* eslint-disable max-statements */
@@ -154,21 +151,12 @@ function normalizeAttributes(buffer, byteOffset, vertexAttributes, vertexCount) 
 function parsePositions(attribute, tile) {
   const mbs = tile.mbs;
   const value = attribute.value;
-
-  // const minHeight = value
-  //   .filter((coordinate, index) => (index + 1) % 3 === 0)
-  //   .reduce((accumulator, currentValue) => Math.min(accumulator, currentValue), Infinity);
-
   const enuMatrix = new Matrix4();
   const cartographicOrigin = new Vector3(mbs[0], mbs[1], mbs[2]);
   const cartesianOrigin = new Vector3();
   Ellipsoid.WGS84.cartographicToCartesian(cartographicOrigin, cartesianOrigin);
   Ellipsoid.WGS84.eastNorthUpToFixedFrame(cartesianOrigin, enuMatrix);
   attribute.value = offsetsToCartesians(value, cartographicOrigin);
-
-  // TODO fix
-  // add back the minHeight to mbs for now
-  // tile.mbs[2] = -minHeight;
 
   return {
     enuMatrix,

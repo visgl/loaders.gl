@@ -13,7 +13,7 @@ function getBaseUri(tileset) {
 }
 
 async function parseTile(arrayBuffer, options, context) {
-  const tile = options.tile || {};
+  const tile = options['3d-tiles'].tile || {};
   tile.content = tile.content || {};
   const byteOffset = 0;
   await parse3DTile(arrayBuffer, byteOffset, options, context, tile.content);
@@ -38,8 +38,9 @@ async function parseTileset(data, options, context) {
 
 async function parse(data, options, context, loader) {
   // auto detect file type
+  const loaderOptions = options['3d-tiles'] || {};
   let isTileset;
-  if ('isTileset' in options) {
+  if ('isTileset' in loaderOptions) {
     isTileset = options.isTileset;
   } else {
     isTileset = context.url && context.url.indexOf('.json') !== -1;

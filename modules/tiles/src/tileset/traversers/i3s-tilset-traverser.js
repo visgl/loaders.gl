@@ -51,7 +51,15 @@ export default class I3STilesetTraverser extends TilesetTraverser {
   async _loadTile(nodeId, tileset) {
     const {loader} = tileset;
     const nodeUrl = tileset.getTileUrl(`${tileset.url}/nodes/${nodeId}`);
-    return await load(nodeUrl, loader, {i3s: {isHeader: true, loadContent: false}});
+    // load metadata
+    const options = {
+      i3s: {
+        ...tileset.fetchOptions,
+        isHeader: true,
+        loadContent: false
+      }
+    };
+    return await load(nodeUrl, loader, options);
   }
 
   _onTileLoad(header, tile, frameState) {

@@ -11,9 +11,8 @@ const TILESET_REGEX = /layers\/[0-9]+$/;
 const TILE_HEADER_REGEX = /nodes\/([0-9-]+|root)$/;
 
 async function parseTileContent(arrayBuffer, options, context) {
-  options = options.i3s || {};
-  const tile = options.tile;
-  const tileset = options.tileset;
+  const tile = options.i3s.tile;
+  const tileset = options.i3s.tileset;
   tile.content = tile.content || {};
   await parseI3STileContent(arrayBuffer, tile, tileset, options);
   return tile.content;
@@ -50,7 +49,6 @@ const I3SLoader = {
 async function parse(data, options, context, loader) {
   const url = new URL(context.url);
   options.i3s = options.i3s || {};
-  options.i3s.token = options.i3s.token || url.searchParams.get('token');
 
   // auto detect file type based on url
   let isTileset;
@@ -61,8 +59,8 @@ async function parse(data, options, context, loader) {
   }
 
   let isTileHeader;
-  if ('isTileHeader' in options) {
-    isTileHeader = options.isTileHeader;
+  if ('isTileHeader' in options.i3s) {
+    isTileHeader = options.i3s.isTileHeader;
   } else {
     isTileHeader = TILE_HEADER_REGEX.test(url.pathname);
   }
