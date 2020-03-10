@@ -45,12 +45,21 @@ test('isBinaryImage#jpeg detection edge case', async t => {
 
   // Encodes as 0xC2FFD8FF and when written as little endian stored // as 0xFF 0xD8 0xFF 0xC2
   dataView.setFloat32(0, -127.92382049560547, LITTLE_ENDIAN);
+
   t.equals(dataView.getUint32(0), 0xffd8ffc2, 'Test data written correctly');
+  t.notOk(
+    isBinaryImage(arrayBuffer),
+    'isBinaryImage fails with floating point data matching first 3 bytes of jpeg magic'
+  );
+
+  // Encodes as 0xD9FFD8FF and when written as little endian stored // as 0xFF 0xD8 0xFF 0xD9
+  dataView.setUint32(0, 3657423103, LITTLE_ENDIAN);
+  t.equals(dataView.getUint32(0), 0xffd8ffd9, 'Test data written correctly');
 
   // False positive case!
   t.ok(
     isBinaryImage(arrayBuffer),
-    'isBinaryImage has a false positive with floating point data matching first 3 bytes of jpeg magic'
+    'isBinaryImage has a false positive with floating point data matching first 3 and last 2 bytes of jpeg magic'
   );
 
   t.end();
