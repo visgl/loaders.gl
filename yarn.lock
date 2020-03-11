@@ -1435,14 +1435,6 @@
     npmlog "^4.1.2"
     write-file-atomic "^2.3.0"
 
-"@loaders.gl/core@2.1.0-alpha.3":
-  version "2.1.0-alpha.3"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/core/-/core-2.1.0-alpha.3.tgz#51a04dcf8e2b33f7f82ec6557d113671a1d03396"
-  integrity sha512-zmS5CcZZPi8qhfRvF55AroKnRv+hROsFmVO28Iu9ySBuZ9+p1PqPcLEXJytqLBUf5jJwhyA51Gg9bXSpvUjAMw==
-  dependencies:
-    "@babel/runtime" "^7.3.1"
-    "@loaders.gl/loader-utils" "2.1.0-alpha.3"
-
 "@loaders.gl/core@^2.0.0":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@loaders.gl/core/-/core-2.0.0.tgz#ab84b94efb8ad3a90133389e5b76f6a721b20419"
@@ -1450,11 +1442,6 @@
   dependencies:
     "@babel/runtime" "^7.3.1"
     "@loaders.gl/loader-utils" "2.0.0"
-
-"@loaders.gl/images@2.1.0-alpha.3":
-  version "2.1.0-alpha.3"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/images/-/images-2.1.0-alpha.3.tgz#2172e81104eca61822a1ed225ff3d8d9ebbbdfeb"
-  integrity sha512-WMt6jCQnLsoaaxa++q7ZgsICQwXJI0Xx2N1cTgM3jy+65JTqSVPjGbztBU3bbV/wPVd2IzExZtYf1zuChCZ2Gw==
 
 "@loaders.gl/images@^2.0.0":
   version "2.0.0"
@@ -1467,21 +1454,6 @@
   integrity sha512-dK3pjS56M+18CrgdycgTsF/YkanWSojO/1JHVBB+KorjqoMWXhtCAnTToQ60u+XA8k0AF3mBQUPL7Hd2OIsbmA==
   dependencies:
     "@babel/runtime" "^7.3.1"
-
-"@loaders.gl/loader-utils@2.1.0-alpha.3":
-  version "2.1.0-alpha.3"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/loader-utils/-/loader-utils-2.1.0-alpha.3.tgz#81a73d6c4c5b061bb5231ce743ff3f21d3227515"
-  integrity sha512-GtYJLyOLG62Y3sPAgt5WrkRIv04tqW7fNO8RrofMJdd1W1GHbFhq9whG/g5EaLn9IzVchPRnus/Ug8MKHLns1Q==
-  dependencies:
-    "@babel/runtime" "^7.3.1"
-
-"@loaders.gl/math@2.1.0-alpha.3":
-  version "2.1.0-alpha.3"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/math/-/math-2.1.0-alpha.3.tgz#9deb928b509adb35fb561e93775f4ec575205048"
-  integrity sha512-bnrBj+cw23pjc5yks+amW4v7GXtJ3RMMGPsLuqGbxJEefYFE4jpErilaAGXmam2aWXDp+1JtkGduWEhCU6ze4Q==
-  dependencies:
-    "@loaders.gl/images" "2.1.0-alpha.3"
-    math.gl "^3.1.2"
 
 "@luma.gl/constants@8.0.1":
   version "8.0.1"
