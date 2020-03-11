@@ -13,7 +13,7 @@ function getBaseUri(tileset) {
 }
 
 async function parseTile(arrayBuffer, options, context) {
-  const tile = options['3d-tiles'].tile || {};
+  const tile = {};
   tile.content = tile.content || {};
   const byteOffset = 0;
   await parse3DTile(arrayBuffer, byteOffset, options, context, tile.content);
