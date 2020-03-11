@@ -5,6 +5,8 @@ import {setLoaderOptions, fetchFile, parse, parseSync} from '@loaders.gl/core';
 const MVT_POINTS_DATA_URL = '@loaders.gl/mvt/test/data/points_4-2-6.mvt';
 const MVT_LINES_DATA_URL = '@loaders.gl/mvt/test/data/lines_2-2-1.mvt';
 const MVT_POLYGONS_DATA_URL = '@loaders.gl/mvt/test/data/polygons_10-133-325.mvt';
+const MVT_MULTIPLE_LAYERS_DATA_URL =
+  '@loaders.gl/mvt/test/data/lines_10-501-386_multiplelayers.mvt';
 
 // Geometry Array Results
 import decodedPolygonsGeometry from '@loaders.gl/mvt/test/results/decoded_mvt_polygons_array.json';
@@ -37,7 +39,7 @@ test('Point MVT to local coordinates JSON', async t => {
         cartodb_id: 3,
         // eslint-disable-next-line camelcase
         _cdb_feature_count: 1,
-        layer: 'layer0'
+        layerName: 'layer0'
       }
     }
   ]);
@@ -60,7 +62,7 @@ test('Line MVT to local coordinates JSON', async t => {
       properties: {
         // eslint-disable-next-line camelcase
         cartodb_id: 1,
-        layer: 'layer0'
+        layerName: 'layer0'
       }
     }
   ]);
@@ -148,24 +150,40 @@ test('Should raise an error when coordinates param is wgs84 and tileIndex is mis
   const loaderOptions = {
     mvt: {coordinates: 'wgs84'}
   };
+
   t.throws(() => parseSync(mvtArrayBuffer, MVTLoader, loaderOptions));
+
   t.end();
 });
 
-test('Should add layer name to custom property when layer property is already present', async t => {});
-
-test('Should not override layer property if custom property is not provided', async t => {});
-
-test('Should return features from selected layer when layers property is provided', async t => {});
-
-test('Should raise an error when any selected layers is not present', async t => {
+test('Should add layer name to custom property', async t => {
   const response = await fetchFile(MVT_POINTS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
 
   const loaderOptions = {
-    mvt: {layers: ['nonpresentlayer']}
+    mvt: {layerProperty: 'layerSource'}
   };
 
-  t.throws(() => parseSync(mvtArrayBuffer, MVTLoader, loaderOptions));
+  const geometryJSON = await parse(mvtArrayBuffer, MVTLoader, loaderOptions);
+  t.equals(geometryJSON[0].properties.layerSource, 'layer0');
+
+  t.end();
+});
+
+test('Should return features from selected layers when layers property is provided', async t => {
+  const response = await fetchFile(MVT_MULTIPLE_LAYERS_DATA_URL);
+  const mvtArrayBuffer = await response.arrayBuffer();
+
+  const loaderOptions = {
+    mvt: {layers: ['layer1']}
+  };
+
+  const geometryJSON = await parse(mvtArrayBuffer, MVTLoader, loaderOptions);
+  const anyFeatureFromAnotherLayer = geometryJSON.some(
+    feature => feature.properties.layerName !== 'layer1'
+  );
+  t.false(anyFeatureFromAnotherLayer);
+  t.equals(geometryJSON[0].properties.layerName, 'layer1');
+
   t.end();
 });

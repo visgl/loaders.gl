@@ -25,13 +25,13 @@ export default function parseMVT(input, options) {
     const vectorTileLayer = tile.layers[layerName];
 
     if (!vectorTileLayer) {
-      throw new Error(`MVT Loader: ${layerName} is not present in MVT layers`);
+      return;
     }
 
     for (let i = 0; i < vectorTileLayer.length; i++) {
       const vectorTileFeature = vectorTileLayer.feature(i);
 
-      const decodedFeature = getDecodedFeature(vectorTileFeature, loaderOptions, layerName);
+      const decodedFeature = getDecodedFeature(vectorTileFeature, {...loaderOptions, layerName});
       features.push(decodedFeature);
     }
   });
@@ -39,7 +39,7 @@ export default function parseMVT(input, options) {
   return features;
 }
 
-function getDecodedFeature(feature, options = {}, layerName) {
+function getDecodedFeature(feature, options = {}) {
   const wgs84Coordinates = options.coordinates === 'wgs84';
   const hasTileIndex =
     options.tileIndex && options.tileIndex.x && options.tileIndex.y && options.tileIndex.z;
@@ -54,10 +54,8 @@ function getDecodedFeature(feature, options = {}, layerName) {
       : transformCoordinates(feature, transformToLocalCoordinates);
 
   // Add layer name to GeoJSON properties
-  const hasLayerProperty = decodedFeature.properties.hasOwnProperty('layer');
-  const layerPropertyName = hasLayerProperty ? options.layerProperty : 'layer';
-  if (layerPropertyName) {
-    decodedFeature.properties[layerPropertyName] = layerName;
+  if (options.layerProperty) {
+    decodedFeature.properties[options.layerProperty] = options.layerName;
   }
 
   return decodedFeature;
