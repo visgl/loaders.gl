@@ -62,7 +62,7 @@ export default class App extends PureComponent {
       // EXAMPLE STATE
       droppedFile: null,
       examplesByCategory: null,
-      selectedExample: {},
+      selectedExample: null,
       category: INITIAL_EXAMPLE_CATEGORY,
       name: INITIAL_EXAMPLE_NAME
     };
