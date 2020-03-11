@@ -2,6 +2,17 @@
 
 ### 2.1 Prerelease
 
+#### v2.1.0-alpha.8
+
+- tiles: fix dependency versions (#681)
+- tiles: fix passing fetch options (#675)
+- images: additional bitmap checks (#673)
+- Fix RequestScheduler bugs (#671)
+- type linting cleanup (#669)
+- core: Add `makeChunkIterator`. Improve iterator generator function naming. (#666)
+- core: Fix tests on Firefox (ReadableStream detection fix) (#667)
+- Bump apache-arrow dependency to v0.16 (from v0.13) (#668)
+
 #### v2.1.0-alpha.7
 
 - [tiles]: fix traversal - select root node when it is visible (#665)
