@@ -142,7 +142,7 @@ export default class App extends PureComponent {
   }
 
   // Called by ControlPanel when user selects a new example
-  async _onSelectExample({example, category, name}) {
+  _onSelectExample({example, category, name}) {
     this.setState({selectedExample: example, category, name});
   }
 

@@ -1,4 +1,4 @@
-# # IONLoader
+# CesiumIonLoader
 
 > Extends from `Tiles3DLoader`, inherits all the options and share the same resolved `Tileset` and `Tile` format.
 > Along with the support of resolving tileset metadata and authorization from Cesium ION server.
@@ -11,15 +11,15 @@ Load a tileset file from Cesium ION server.
 
 ```js
 import {load} from '@loaders.gl/core';
-import {IONLoader} from '@loaders.gl/3d-tiles';
+import {CesiumIonLoader} from '@loaders.gl/3d-tiles';
 const tilesetUrl = 'https://assets.cesium.com/43978/tileset.json';
 const ION_ACCESS_TOKEN = ''; // your own ion access token
 
 const options = {ion: {loadGLTF: true}};
 // resolve the authorizations used for requesting tiles from ION server
-const metadata = IONLoader.preload(tilesetUrl, {accessToken: ION_ACCESS_TOKEN});
+const metadata = CesiumIonLoader.preload(tilesetUrl, {accessToken: ION_ACCESS_TOKEN});
 console.log(metadata);
-const tilesetJson = await load(tilesetUrl, IONLoader, {...options, ...metadata});
+const tilesetJson = await load(tilesetUrl, CesiumIonLoader, {...options, ...metadata});
 ```
 
 ## Options
