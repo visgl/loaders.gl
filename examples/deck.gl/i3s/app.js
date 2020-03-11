@@ -1,5 +1,4 @@
-/* eslint-disable */
-/* global URL */
+/* global window, URL */
 import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
@@ -12,22 +11,13 @@ import {MapController, FlyToInterpolator} from '@deck.gl/core';
 import Tile3DLayer from './tile-3d-layer';
 import {I3SLoader} from '@loaders.gl/i3s';
 import {StatsWidget} from '@probe.gl/stats-widget';
-
-//SanFrancisco_Bldgs
-const TEST_DATA_URL =
-  'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_Bldgs/SceneServer/layers/0';
-//philadelphia_Bldgs_text
-//https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/philadelphia_Bldgs_text_untex/SceneServer/layers/0
-//New_York_Buildings
-// const TEST_DATA_URL =
-// 'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/New_York_Buildings/SceneServer/layers/0';
+import {INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
+import ControlPanel from './components/control-panel';
 
 // Set your mapbox token here
 const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
 
 const TRANSITION_DURAITON = 4000;
-
-//SF
 
 const INITIAL_VIEW_STATE = {
   longitude: -120,
@@ -41,47 +31,25 @@ const INITIAL_VIEW_STATE = {
   maxZoom: 30,
   zoom: 14.5
 };
-/* */
-//NY
-/*
-const INITIAL_VIEW_STATE = {
- longitude: -73.97785639190995,
- latitude: 40.75262236078426,
- height: 600,
- width: 800,
- pitch: 45,
- maxPitch: 60,
- bearing: 0,
- minZoom: 2,
- maxZoom: 30,
- zoom: 14.5
-};
-*/
 
-//philadelphia_Bldgs_text
-/*
-const INITIAL_VIEW_STATE = {
-  longitude: -75.16725679895995,
-  latitude: 39.95667467886362,
-  height: 600,
-  width: 800,
-  pitch: 45,
-  maxPitch: 60,
-  bearing: 0,
-  minZoom: 2,
-  maxZoom: 30,
-  zoom: 14.5
+const STATS_WIDGET_STYLE = {
+  wordBreak: 'break-word',
+  position: 'absolute',
+  padding: 12,
+  zIndex: '10000',
+  maxWidth: 300,
+  background: '#000',
+  color: '#fff'
 };
- */
 
 export default class App extends PureComponent {
   constructor(props) {
     super(props);
     this._tilesetStatsWidget = null;
     this.state = {
-      renderCesium: false,
-      layerMap: {},
-      layers: [],
+      url: null,
+      token: null,
+      name: INITIAL_EXAMPLE_NAME,
       viewState: INITIAL_VIEW_STATE
     };
   }
@@ -100,6 +68,23 @@ export default class App extends PureComponent {
     this._tilesetStatsWidget = new StatsWidget(null, {
       container: this._statsWidgetContainer
     });
+
+    // Check if a tileset is specified in the query params
+    const {url, token} = this._loadTilesetFromUrl();
+    let dataUrl = url || EXAMPLES[INITIAL_EXAMPLE_NAME].url;
+    if (token) {
+      dataUrl = `${dataUrl}?token=${token}`;
+    }
+
+    this.setState({dataUrl, token});
+  }
+
+  _loadTilesetFromUrl() {
+    const parsedUrl = new URL(window.location.href);
+    return  {
+      url: parsedUrl.searchParams.get('url'),
+      token: parsedUrl.searchParams.get('token')
+    };
   }
 
   // Updates stats, called every frame
@@ -136,31 +121,40 @@ export default class App extends PureComponent {
   }
 
   _renderLayers() {
+    const {dataUrl, token} = this.state;
+    const loadOptions = {};
+    if (token) {
+      loadOptions.token = token;
+    }
     return [
       new Tile3DLayer({
-        data: TEST_DATA_URL,
+        data: dataUrl,
         loader: I3SLoader,
         onTilesetLoad: this._onTilesetLoad.bind(this),
         onTileLoad: () => this._updateStatWidgets(),
         onTileUnload: () => this._updateStatWidgets(),
-        loadOptions: {}
+        loadOptions
       })
     ];
   }
 
   _renderStats() {
     // TODO - too verbose, get more default styling from stats widget?
+    return <div style={STATS_WIDGET_STYLE} ref={_ => (this._statsWidgetContainer = _)} />;
+  }
+
+  _renderControlPanel() {
+    const {tileset, name} = this.state;
     return (
-      <div
-        style={{
-          position: 'absolute',
-          padding: 12,
-          zIndex: '10000',
-          maxWidth: 300,
-          background: '#000',
-          color: '#fff'
-        }}
-        ref={_ => (this._statsWidgetContainer = _)}
+      <ControlPanel
+        tileset={tileset}
+        name={name}
+        onExampleChange={selected =>
+          this.setState({
+            name: selected.name,
+            dataUrl: selected.example.url
+          })
+        }
       />
     );
   }
@@ -170,8 +164,9 @@ export default class App extends PureComponent {
     const {viewState} = this.state;
 
     return (
-      <div>
+      <div style={{position: 'relative', height: '100%'}}>
         {this._renderStats()}
+        {this._renderControlPanel()}
         <DeckGL
           ref={_ => (this._deckRef = _)}
           layers={layers}
@@ -191,5 +186,6 @@ export default class App extends PureComponent {
   }
 }
 
-const deckViewer = document.getElementById('deck-viewer');
-render(<App />, deckViewer);
+export function renderToDOM(container) {
+  render(<App />, container);
+}
