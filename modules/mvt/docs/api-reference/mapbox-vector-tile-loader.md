@@ -64,6 +64,8 @@ The parser will return an array of GeoJSON objects with local coordinates in a r
 
 Even though tile coordinates go from 0 to 1, there can be some negative (or greater than one) coordinates because of buffer cells within MVT to handle geometry clipping. That difference can be as much as `bufferSize / tileExtent` depending on MVT creation parameters.
 
+Note that local coordinates are relative to tile origin, which is in the top left.
+
 ```js
 import {MVTLoader} from '@loaders.gl/mvt';
 import {load} from '@loaders.gl/core';
@@ -83,12 +85,12 @@ const geoJSONfeatures = await load(url, MVTLoader);
 
 ## Options
 
-| Option            | Type                                       | Default      | Description                                                                                                                                                                                                                                                                 |
-| ----------------- | ------------------------------------------ | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| mvt.coordinates   | String                                     | `local`      | When set to `wgs84`, parser will return a flat array of GeoJSON representations of the features with coordinates decoded from provided tile index. When set to `local`, parser will return a flat array of GeoJSON objects with local coordinates decoded from tile origin. |
-| mvt.layerProperty | String                                     | `layerName`  | The layer name is added to `feature.properties[layerProperty]` (first adds a `feature.property` object is created if it did not already exist). If set to `null`, it won't add layer name to any property.                                                                  |
-| mvt.layers        | String[]                                   | _No default_ | Optional list of layer names. If supplied, only features belonging to the named layers will be included in the output. If not supplied, features from all layers are returned.                                                                                              |
-| mvt.tileIndex     | Object ({x: number, y: number, z: number}) | _No default_ | Mandatory with `wgs84` coordinates option. An object containing tile index values (x, y, z) to decode WGS84 coordinates.                                                                                                                                                    |
+| Option            | Type                                         | Default     | Description                                                                                                                                                                                                                                                                            |
+| ----------------- | -------------------------------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| mvt.coordinates   | String                                       | `local`     | When set to `wgs84`, the parser will return a flat array of GeoJSON objects with coordinates in longitude, latitude decoded from the provided tile index. When set to `local`, the parser will return a flat array of GeoJSON objects with local coordinates decoded from tile origin. |
+| mvt.layerProperty | String                                       | `layerName` | When non-`null`, the layer name of each feature is added to `feature.properties[layerProperty]`. (A `feature.properties` object is created if the feature has no existing properties). If set to `null`, a layer name property will not be added.                                      |
+| mvt.layers        | String[]                                     | `null`      | Optional list of layer names. If not `null`, only features belonging to the named layers will be included in the output. If `null`, features from all layers are returned.                                                                                                             |
+| mvt.tileIndex     | Object (`{x: number, y: number, z: number}`) | `null`      | Mandatory with `wgs84` coordinates option. An object containing tile index values (`x`, `y`, `z`) to reproject features' coordinates into WGS84.                                                                                                                                       |
 
 If you want to know more about how geometries are encoded into MVT tiles, please read [this documentation section](https://docs.mapbox.com/vector-tiles/specification/#encoding-geometry).
 
