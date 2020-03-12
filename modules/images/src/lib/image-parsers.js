@@ -45,7 +45,12 @@ function getGifSize(dataView) {
 // TODO: BMP is not this simple
 function isBmp(dataView) {
   // Check magic number is valid (first 2 characters should be "BM").
-  return dataView.byteLength >= 2 && dataView.getUint16(0, BIG_ENDIAN) === 0x424d;
+  // The mandatory bitmap file header is 14 bytes long.
+  return (
+    dataView.byteLength >= 14 &&
+    dataView.getUint16(0, BIG_ENDIAN) === 0x424d &&
+    dataView.getUint32(2, LITTLE_ENDIAN) === dataView.byteLength
+  );
 }
 
 function getBmpSize(dataView) {
