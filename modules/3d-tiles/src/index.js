@@ -1,5 +1,6 @@
 // LOADERS
 export {default as Tiles3DLoader} from './tiles-3d-loader';
+export {default as CesiumIonLoader} from './cesium-ion-loader';
 
 // WRITERS
 export {default as Tile3DWriter} from './tile-3d-writer';

@@ -15,17 +15,19 @@ import {StatsWidget} from '@probe.gl/stats-widget';
 import {registerLoaders} from '@loaders.gl/core';
 import {DracoWorkerLoader} from '@loaders.gl/draco';
 import {GLTFLoader} from '@loaders.gl/gltf';
-import {Tiles3DLoader, _getIonTilesetMetadata} from '@loaders.gl/3d-tiles';
+import {CesiumIonLoader} from '@loaders.gl/3d-tiles';
 
 import ControlPanel from './components/control-panel';
 import {loadExampleIndex, INITIAL_EXAMPLE_CATEGORY, INITIAL_EXAMPLE_NAME} from './examples';
 import {INITIAL_MAP_STYLE} from './constants';
 
 // enable DracoWorkerLoader when fixed
-registerLoaders([GLTFLoader, DracoWorkerLoader, Tiles3DLoader]);
+registerLoaders([GLTFLoader, DracoWorkerLoader]);
 
 // Set your mapbox token here
 const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
+
+const TILESET_SERVER_URL = 'https://assets.cesium.com';
 
 const TRANSITION_DURAITON = 4000;
 const EXAMPLES_VIEWSTATE = {
@@ -60,7 +62,7 @@ export default class App extends PureComponent {
       // EXAMPLE STATE
       droppedFile: null,
       examplesByCategory: null,
-      selectedExample: {},
+      selectedExample: null,
       category: INITIAL_EXAMPLE_CATEGORY,
       name: INITIAL_EXAMPLE_NAME
     };
@@ -103,18 +105,6 @@ export default class App extends PureComponent {
     // if not, select the default example tileset
     const {category, name} = this.state;
     const selectedExample = examplesByCategory[category].examples[name];
-    await this._loadExample(selectedExample);
-  }
-
-  async _loadExample(selectedExample) {
-    const {ionAssetId, ionAccessToken} = selectedExample;
-    if (ionAssetId && ionAccessToken) {
-      const metadata = await _getIonTilesetMetadata(ionAccessToken, ionAssetId);
-      const {url, headers} = metadata;
-      selectedExample.tilesetUrl = url;
-      selectedExample.headers = headers;
-      selectedExample.metadata = metadata;
-    }
     this.setState({selectedExample});
   }
 
@@ -152,9 +142,8 @@ export default class App extends PureComponent {
   }
 
   // Called by ControlPanel when user selects a new example
-  async _onSelectExample({example, category, name}) {
-    await this._loadExample(example);
-    this.setState({category, name});
+  _onSelectExample({example, category, name}) {
+    this.setState({selectedExample: example, category, name});
   }
 
   // Called by ControlPanel when user selects a new map style
@@ -210,7 +199,6 @@ export default class App extends PureComponent {
       <ControlPanel
         data={examplesByCategory}
         category={category}
-        metadata={selectedExample && selectedExample.metadata}
         name={name}
         tileset={tileset}
         onMapStyleChange={this._onSelectMapStyle.bind(this)}
@@ -247,11 +235,9 @@ export default class App extends PureComponent {
       return null;
     }
 
-    const {tilesetUrl, headers, maximumScreenSpaceError} = selectedExample;
-    const loadOptions = {};
-    if (headers) {
-      loadOptions.headers = headers;
-    }
+    const {ionAssetId, ionAccessToken, maximumScreenSpaceError} = selectedExample;
+    const tilesetUrl = `${TILESET_SERVER_URL}/${ionAssetId}/tileset.json`;
+    const loadOptions = {accessToken: ionAccessToken};
     if (maximumScreenSpaceError) {
       loadOptions.maximumScreenSpaceError = maximumScreenSpaceError;
     }
@@ -259,15 +245,15 @@ export default class App extends PureComponent {
     return new Tile3DLayer({
       id: 'tile-3d-layer',
       data: tilesetUrl,
-      loader: Tiles3DLoader,
+      loader: CesiumIonLoader,
+      loadOptions,
       pickable: true,
       pointSize: 2,
       getPointColor: [115, 112, 202],
       onTilesetLoad: this._onTilesetLoad,
       onTileLoad: this._onTilesetChange,
       onTileUnload: this._onTilesetChange,
-      onTileError: this._onTilesetChange,
-      loadOptions
+      onTileError: this._onTilesetChange
     });
   }
 
