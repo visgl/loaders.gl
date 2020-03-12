@@ -14,19 +14,28 @@ export default function parseMVT(input, options) {
   }
 
   const tile = new VectorTile(new Protobuf(input));
-  const mvtOptions = options.mvt;
+  const loaderOptions = options.mvt;
   const features = [];
 
-  for (const layerName in tile.layers) {
+  const selectedLayers = Array.isArray(loaderOptions.layers)
+    ? loaderOptions.layers
+    : Object.keys(tile.layers);
+
+  selectedLayers.forEach(layerName => {
     const vectorTileLayer = tile.layers[layerName];
+    const featureOptions = {...loaderOptions, layerName};
+
+    if (!vectorTileLayer) {
+      return;
+    }
 
     for (let i = 0; i < vectorTileLayer.length; i++) {
       const vectorTileFeature = vectorTileLayer.feature(i);
 
-      const decodedFeature = getDecodedFeature(vectorTileFeature, mvtOptions);
+      const decodedFeature = getDecodedFeature(vectorTileFeature, featureOptions);
       features.push(decodedFeature);
     }
-  }
+  });
 
   return features;
 }
@@ -40,9 +49,15 @@ function getDecodedFeature(feature, options = {}) {
     throw new Error('MVT Loader: WGS84 coordinates need tileIndex property. Check documentation.');
   }
 
-  if (wgs84Coordinates && hasTileIndex) {
-    return feature.toGeoJSON(options.tileIndex.x, options.tileIndex.y, options.tileIndex.z);
+  const decodedFeature =
+    wgs84Coordinates && hasTileIndex
+      ? feature.toGeoJSON(options.tileIndex.x, options.tileIndex.y, options.tileIndex.z)
+      : transformCoordinates(feature, transformToLocalCoordinates);
+
+  // Add layer name to GeoJSON properties
+  if (options.layerProperty) {
+    decodedFeature.properties[options.layerProperty] = options.layerName;
   }
 
-  return transformCoordinates(feature, transformToLocalCoordinates);
+  return decodedFeature;
 }

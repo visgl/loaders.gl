@@ -67,7 +67,7 @@ function generateJSON(type, feature, coordinates) {
       type: geometryType,
       coordinates
     },
-    properties: feature.properties
+    properties: feature.properties || {}
   };
 
   if ('id' in feature) {

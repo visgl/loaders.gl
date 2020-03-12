@@ -15,7 +15,8 @@
       ]
     },
     "properties": {
-      "cartodb_id": 1
+      "cartodb_id": 1,
+      "layerName": "layer0"
     }
   }
 ]
