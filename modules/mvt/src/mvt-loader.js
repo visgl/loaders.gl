@@ -15,9 +15,9 @@ export const MVTWorkerLoader = {
   options: {
     mvt: {
       coordinates: 'local',
+      layerProperty: 'layerName',
       tileIndex: {},
-      workerUrl: `https://unpkg.com/@loaders.gl/mvt@${VERSION}/dist/mvt-loader.worker.js`,
-      layerProperty: 'layerName'
+      workerUrl: `https://unpkg.com/@loaders.gl/mvt@${VERSION}/dist/mvt-loader.worker.js`
     }
   }
 };
