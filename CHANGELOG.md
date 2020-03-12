@@ -2,6 +2,12 @@
 
 ### 2.1 Prerelease
 
+#### v2.1.0-beta.1
+
+- basis: disable CDN when running local test (#684)
+- mvt: Allow MVT layer filtering and add layer name to properties (#679)
+- 3d-tiles: Add CesiumIonLoader to allow resolving authorization in preload (#680)
+
 #### v2.1.0-alpha.8
 
 - tiles: fix dependency versions (#681)
