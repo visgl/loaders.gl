@@ -2,6 +2,10 @@
 
 ### 1.3 Release
 
+#### v1.3.7
+
+- images: additional jpeg check (#682)
+
 #### v1.3.6
 
 - images: additional bitmap check (#677)
