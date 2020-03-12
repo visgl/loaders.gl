@@ -2,6 +2,10 @@
 
 ### 1.3 Release
 
+#### v1.3.6
+
+- images: additional bitmap check (#677)
+
 #### v1.3.5
 
 - PLYLoader: Fix handling of color values (#535)
