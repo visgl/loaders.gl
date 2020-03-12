@@ -69,7 +69,8 @@ function isJpeg(dataView) {
   return (
     dataView.byteLength >= 3 &&
     dataView.getUint16(0, BIG_ENDIAN) === 0xffd8 &&
-    dataView.getUint8(2, BIG_ENDIAN) === 0xff
+    dataView.getUint8(2, BIG_ENDIAN) === 0xff &&
+    dataView.getUint16(dataView.byteLength - 2, BIG_ENDIAN) === 0xffd9
   );
 }
 
