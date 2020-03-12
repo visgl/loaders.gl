@@ -23,6 +23,7 @@ export default function parseMVT(input, options) {
 
   selectedLayers.forEach(layerName => {
     const vectorTileLayer = tile.layers[layerName];
+    const featureOptions = {...loaderOptions, layerName};
 
     if (!vectorTileLayer) {
       return;
@@ -31,7 +32,7 @@ export default function parseMVT(input, options) {
     for (let i = 0; i < vectorTileLayer.length; i++) {
       const vectorTileFeature = vectorTileLayer.feature(i);
 
-      const decodedFeature = getDecodedFeature(vectorTileFeature, {...loaderOptions, layerName});
+      const decodedFeature = getDecodedFeature(vectorTileFeature, featureOptions);
       features.push(decodedFeature);
     }
   });
