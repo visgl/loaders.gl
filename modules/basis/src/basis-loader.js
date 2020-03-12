@@ -17,8 +17,8 @@ export const BasisWorkerLoader = {
   options: {
     basis: {
       format: 'rgb565', // TODO: auto...
-      libraryPath: `libs/`
-      // workerUrl: `https://unpkg.com/@loaders.gl/basis@${VERSION}/dist/basis-loader.worker.js`
+      libraryPath: `libs/`,
+      workerUrl: `https://unpkg.com/@loaders.gl/basis@${VERSION}/dist/basis-loader.worker.js`
     }
   }
 };

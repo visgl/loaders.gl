@@ -1,9 +1,16 @@
 import test from 'tape-promise/tape';
 
 import {BasisLoader} from '@loaders.gl/basis';
-import {load} from '@loaders.gl/core';
+import {load, setLoaderOptions} from '@loaders.gl/core';
 
 const TEST_URL = '@loaders.gl/basis/test/data/alpha3.basis';
+
+setLoaderOptions({
+  CDN: null,
+  basis: {
+    workerUrl: 'modules/basis/dist/basis-loader.worker.js'
+  }
+});
 
 test('BasisLoader#imports', t => {
   t.ok(BasisLoader, 'BasisLoader defined');
