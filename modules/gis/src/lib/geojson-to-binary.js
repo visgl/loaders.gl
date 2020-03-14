@@ -169,8 +169,6 @@ function handleLineString({coords, lines, index, coordLength}) {
   lines.pathIndices[index.linePath] = index.linePosition * coordLength;
   index.linePath++;
 
-  // TODO: if coordLength is 3, check length of each geometry.coordinates array, filling
-  // 3rd value if necessary?
   lines.positions.set(coords.flat(), index.linePosition * coordLength);
 
   const nPositions = coords.length;
