@@ -1,5 +1,3 @@
-/* eslint-disable no-var */
-
 // var features = require('../../test/data/roads.json').features;
 // var features = require("../../test/data/vancouver-blocks.json").features;
 
@@ -14,21 +12,18 @@ export function featuresToBinary(features, options = {}) {
 // counting the lengths of various arrays so you can allocate the typed arrays up front instead of building up temporary JS arrays.
 // etc...
 
-function firstPass(features, options = {}) {
-  var {} = options;
-
+function firstPass(features) {
   // Counts the number of _positions_, so [x, y, z] counts as one
-  var pointPositions = 0;
-  var linePositions = 0;
-  var linePaths = 0;
-  var polygonPositions = 0;
-  var polygonObjects = 0;
-  var polygonRings = 0;
-  var maxCoordLength = 2;
+  let pointPositions = 0;
+  let linePositions = 0;
+  let linePaths = 0;
+  let polygonPositions = 0;
+  let polygonObjects = 0;
+  let polygonRings = 0;
+  let maxCoordLength = 2;
 
-  for (var feature of features) {
-    var geometry = feature.geometry;
-
+  features.forEach(feature => {
+    const geometry = feature.geometry;
     switch (geometry.type) {
       case 'Point':
         pointPositions++;
@@ -42,10 +37,10 @@ function firstPass(features, options = {}) {
         linePaths++;
         break;
       case 'MultiLineString':
-        for (const line of geometry.coordinates) {
+        geometry.coordinates.forEach(line => {
           linePositions += line.length;
           linePaths++;
-        }
+        });
         break;
       case 'Polygon':
         polygonObjects++;
@@ -53,16 +48,16 @@ function firstPass(features, options = {}) {
         polygonPositions += geometry.coordinates.flat(1).length;
         break;
       case 'MultiPolygon':
-        for (const polygon of geometry.coordinates) {
+        geometry.coordinates.forEach(polygon => {
           polygonObjects++;
           polygonRings += polygon.length;
           polygonPositions += polygon.flat(1).length;
-        }
+        });
         break;
       default:
         throw new Error(`Unsupported geometry type: ${geometry.type}`);
     }
-  }
+  });
 
   return {
     pointPositions,
@@ -76,7 +71,7 @@ function firstPass(features, options = {}) {
 }
 
 function secondPass(features, options) {
-  var {
+  const {
     pointPositions,
     linePositions,
     linePaths,
@@ -85,23 +80,23 @@ function secondPass(features, options) {
     polygonObjects,
     polygonRings
   } = options;
-  var points = {
+  const points = {
     positions: new Float32Array(pointPositions * coordLength),
     objectIds: new Uint32Array(pointPositions)
   };
-  var lines = {
+  const lines = {
     pathIndices: new Uint32Array(linePaths),
     positions: new Float32Array(linePositions * coordLength),
     objectIds: new Uint32Array(linePositions)
   };
-  var polygons = {
+  const polygons = {
     polygonIndices: new Uint32Array(polygonObjects),
     primitivePolygonIndices: new Uint32Array(polygonRings),
     positions: new Float32Array(polygonPositions * coordLength),
     objectIds: new Uint32Array(polygonPositions)
   };
 
-  var index = {
+  const index = {
     pointPosition: 0,
     linePosition: 0,
     linePath: 0,
@@ -111,15 +106,15 @@ function secondPass(features, options) {
     feature: 0
   };
 
-  for (var feature of features) {
-    var geometry = feature.geometry;
+  features.forEach(feature => {
+    const geometry = feature.geometry;
 
     switch (geometry.type) {
       case 'Point':
-        handlePoint({coords: geometry.coordinates, lines, index, coordLength});
+        handlePoint({coords: geometry.coordinates, points, index, coordLength});
         break;
       case 'MultiPoint':
-        handleMultiPoint({coords: geometry.coordinates, lines, index, coordLength});
+        handleMultiPoint({coords: geometry.coordinates, points, index, coordLength});
         break;
       case 'LineString':
         handleLineString({coords: geometry.coordinates, lines, index, coordLength});
@@ -138,7 +133,7 @@ function secondPass(features, options) {
     }
 
     index.feature++;
-  }
+  });
 
   return {
     points,
@@ -154,12 +149,11 @@ function handlePoint({coords, points, index, coordLength}) {
 }
 
 function handleMultiPoint({coords, points, index, coordLength}) {
-  for (var point of coords) {
+  coords.forEach(point => {
     handlePoint({coords: point, points, index, coordLength});
-  }
+  });
 }
 
-// NOTE: Functions are impure
 function handleLineString({coords, lines, index, coordLength}) {
   lines.pathIndices[index.linePath] = index.linePosition * coordLength;
   index.linePath++;
@@ -168,36 +162,35 @@ function handleLineString({coords, lines, index, coordLength}) {
   // 3rd value if necessary?
   lines.positions.set(coords.flat(), index.linePosition * coordLength);
 
-  var nPositions = coords.length;
+  const nPositions = coords.length;
   lines.objectIds.set(new Uint32Array(nPositions).fill(index.feature), index.linePosition);
   index.linePosition += nPositions;
 }
 
 function handleMultiLineString({coords, lines, index, coordLength}) {
-  for (var line of coords) {
+  coords.forEach(line => {
     handleLineString({coords: line, lines, index, coordLength});
-  }
+  });
 }
 
 function handlePolygon({coords, polygons, index, coordLength}) {
-  // index within polygon positions array of where each polygon starts
   polygons.polygonIndices[index.polygonObject] = index.polygonPosition * coordLength;
   index.polygonObject++;
 
-  for (var ring of coords) {
+  coords.forEach(() => {
     polygons.primitivePolygonIndices[index.polygonRing] = index.polygonPosition * coordLength;
     index.polygonRing++;
-  }
+  });
 
   polygons.positions.set(coords.flat(2), index.polygonPosition * coordLength);
 
-  var nPositions = coords.flat(1).length;
+  const nPositions = coords.flat(1).length;
   polygons.objectIds.set(new Uint32Array(nPositions).fill(index.feature), index.polygonPosition);
   index.polygonPosition += nPositions;
 }
 
 function handleMultiPolygon({coords, lines, index, coordLength}) {
-  for (var polygon of coords) {
+  coords.forEach(polygon => {
     handleLineString({coords: polygon, lines, index, coordLength});
-  }
+  });
 }
