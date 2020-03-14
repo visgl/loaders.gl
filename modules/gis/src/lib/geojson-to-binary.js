@@ -6,7 +6,7 @@
 // TODO: add data type to options to customize whether positions data type is float 32 or float 64
 export function featuresToBinary(features, options = {}) {
   var options = firstPass(features);
-  return secondPass(features, firstPassObject);
+  return secondPass(features, options);
 }
 
 // detecting if any 3D coordinates are present
@@ -36,7 +36,6 @@ function firstPass(features, options = {}) {
         break;
       case 'MultiPoint':
         pointPositions += geometry.coordinates.length;
-
         break;
       case 'LineString':
         linePositions += geometry.coordinates.length;
@@ -49,19 +48,19 @@ function firstPass(features, options = {}) {
         }
         break;
       case 'Polygon':
-        polygonObjects++
-        polygonRings += geometry.coordinates.length
-        polygonPositions += geometry.coordinates.flat(1).length
+        polygonObjects++;
+        polygonRings += geometry.coordinates.length;
+        polygonPositions += geometry.coordinates.flat(1).length;
         break;
       case 'MultiPolygon':
         for (const polygon of geometry.coordinates) {
-          polygonObjects++
-          polygonRings += polygon.length
-          polygonPositions += polygon.flat(1).length
+          polygonObjects++;
+          polygonRings += polygon.length;
+          polygonPositions += polygon.flat(1).length;
         }
         break;
       default:
-        throw new Error('Invalid geometry type');
+        throw new Error(`Unsupported geometry type: ${geometry.type}`);
     }
   }
 
@@ -117,8 +116,10 @@ function secondPass(features, options) {
 
     switch (geometry.type) {
       case 'Point':
+        handlePoint({coords: geometry.coordinates, lines, index, coordLength});
         break;
       case 'MultiPoint':
+        handleMultiPoint({coords: geometry.coordinates, lines, index, coordLength});
         break;
       case 'LineString':
         handleLineString({coords: geometry.coordinates, lines, index, coordLength});
@@ -127,10 +128,10 @@ function secondPass(features, options) {
         handleMultiLineString({coords: geometry.coordinates, lines, index, coordLength});
         break;
       case 'Polygon':
-        handlePolygon({coords: geometry.coordinates, polygons, index, coordLength})
+        handlePolygon({coords: geometry.coordinates, polygons, index, coordLength});
         break;
       case 'MultiPolygon':
-        handleMultiPolygon({coords: geometry.coordinates, polygons, index, coordLength})
+        handleMultiPolygon({coords: geometry.coordinates, polygons, index, coordLength});
         break;
       default:
         throw new Error('Invalid geometry type');
@@ -144,6 +145,18 @@ function secondPass(features, options) {
     lines,
     polygons
   };
+}
+
+function handlePoint({coords, points, index, coordLength}) {
+  points.positions.set(coords, index.pointPosition * coordLength);
+  points.objectIds[index.pointPosition] = index.feature;
+  index.pointPosition++;
+}
+
+function handleMultiPoint({coords, points, index, coordLength}) {
+  for (var point of coords) {
+    handlePoint({coords: point, points, index, coordLength});
+  }
 }
 
 // NOTE: Functions are impure
@@ -168,15 +181,15 @@ function handleMultiLineString({coords, lines, index, coordLength}) {
 
 function handlePolygon({coords, polygons, index, coordLength}) {
   // index within polygon positions array of where each polygon starts
-  polygons.polygonIndices[index.polygonObject] = index.polygonPosition * coordLength
-  index.polygonObject++
+  polygons.polygonIndices[index.polygonObject] = index.polygonPosition * coordLength;
+  index.polygonObject++;
 
   for (var ring of coords) {
-    polygons.primitivePolygonIndices[index.polygonRing] = index.polygonPosition * coordLength
-    index.polygonRing++
+    polygons.primitivePolygonIndices[index.polygonRing] = index.polygonPosition * coordLength;
+    index.polygonRing++;
   }
 
-  polygons.positions.set(coords.flat(2), index.polygonPosition * coordLength)
+  polygons.positions.set(coords.flat(2), index.polygonPosition * coordLength);
 
   var nPositions = coords.flat(1).length;
   polygons.objectIds.set(new Uint32Array(nPositions).fill(index.feature), index.polygonPosition);
@@ -188,5 +201,3 @@ function handleMultiPolygon({coords, lines, index, coordLength}) {
     handleLineString({coords: polygon, lines, index, coordLength});
   }
 }
-
-
