@@ -9,7 +9,6 @@ export function featuresToBinary(features, options = {}) {
   return secondPass(features, firstPassObject);
 }
 
-
 // detecting if any 3D coordinates are present
 // detecting which properties are present so that you can add columns for these (may not be in all features)
 // counting the lengths of various arrays so you can allocate the typed arrays up front instead of building up temporary JS arrays.
@@ -22,6 +21,9 @@ function firstPass(features, options = {}) {
   var pointPositions = 0;
   var linePositions = 0;
   var linePaths = 0;
+  var polygonPositions = 0;
+  var polygonObjects = 0;
+  var polygonRings = 0;
   var maxCoordLength = 2;
 
   for (var feature of features) {
@@ -47,69 +49,94 @@ function firstPass(features, options = {}) {
         }
         break;
       case 'Polygon':
+        polygonObjects++
+        polygonRings += geometry.coordinates.length
+        polygonPositions += geometry.coordinates.flat(1).length
         break;
       case 'MultiPolygon':
+        for (const polygon of geometry.coordinates) {
+          polygonObjects++
+          polygonRings += polygon.length
+          polygonPositions += polygon.flat(1).length
+        }
         break;
       default:
         throw new Error('Invalid geometry type');
     }
   }
 
-  return {pointPositions, linePositions, linePaths, maxCoordLength};
+  return {
+    pointPositions,
+    linePositions,
+    linePaths,
+    coordLength: maxCoordLength,
+    polygonPositions,
+    polygonObjects,
+    polygonRings
+  };
 }
 
 function secondPass(features, options) {
-  var {pointPositions, linePositions, linePaths, maxCoordLength} = options;
+  var {
+    pointPositions,
+    linePositions,
+    linePaths,
+    coordLength,
+    polygonPositions,
+    polygonObjects,
+    polygonRings
+  } = options;
   var points = {
-    positions: new Float32Array(pointPositions * maxCoordLength),
+    positions: new Float32Array(pointPositions * coordLength),
     objectIds: new Uint32Array(pointPositions)
   };
   var lines = {
-    // NOTE: does pathIndices need to be linePathsCounter + 1?
     pathIndices: new Uint32Array(linePaths),
-    positions: new Float32Array(linePositions * maxCoordLength),
+    positions: new Float32Array(linePositions * coordLength),
     objectIds: new Uint32Array(linePositions)
   };
   var polygons = {
-    polygonIndices: [0],
-    primitivePolygonIndices: [0],
-    positions: [],
-    objectIds: []
+    polygonIndices: new Uint32Array(polygonObjects),
+    primitivePolygonIndices: new Uint32Array(polygonRings),
+    positions: new Float32Array(polygonPositions * coordLength),
+    objectIds: new Uint32Array(polygonPositions)
   };
 
   var index = {
     pointPosition: 0,
     linePosition: 0,
     linePath: 0,
-    feature: 0,
-  }
+    polygonPosition: 0,
+    polygonObject: 0,
+    polygonRing: 0,
+    feature: 0
+  };
 
   for (var feature of features) {
     var geometry = feature.geometry;
 
     switch (geometry.type) {
       case 'Point':
-
         break;
       case 'MultiPoint':
-
         break;
       case 'LineString':
-        // coords = geometry.coordinates
-        handleLineString({coords: geometry.coordinates, lines, index, maxCoordLength})
+        handleLineString({coords: geometry.coordinates, lines, index, coordLength});
         break;
       case 'MultiLineString':
-        handleMultiLineString({coords: geometry.coordinates, lines, index, maxCoordLength})
+        handleMultiLineString({coords: geometry.coordinates, lines, index, coordLength});
         break;
       case 'Polygon':
+        handlePolygon({coords: geometry.coordinates, polygons, index, coordLength})
         break;
       case 'MultiPolygon':
+        handleMultiPolygon({coords: geometry.coordinates, polygons, index, coordLength})
         break;
       default:
         throw new Error('Invalid geometry type');
     }
 
-    index.feature++
+    index.feature++;
   }
 
   return {
@@ -120,23 +147,46 @@ function secondPass(features, options) {
 }
 
 // NOTE: Functions are impure
+function handleLineString({coords, lines, index, coordLength}) {
+  lines.pathIndices[index.linePath] = index.linePosition * coordLength;
+  index.linePath++;
 
-function handleLineString({coords, lines, index, maxCoordLength}) {
-  lines.pathIndices[index.linePath] = index.linePosition * maxCoordLength
-  index.linePath++
-
-  // TODO: if maxCoordLength is 3, check length of each geometry.coordinates array, filling
+  // TODO: if coordLength is 3, check length of each geometry.coordinates array, filling
   // 3rd value if necessary?
-  lines.positions.set(coords.flat(), index.linePosition * maxCoordLength)
+  lines.positions.set(coords.flat(), index.linePosition * coordLength);
 
-  var nCoords = coords.length;
-  lines.objectIds.set(new Uint32Array(nCoords).fill(index.feature), index.linePosition)
-  index.linePosition += nCoords
+  var nPositions = coords.length;
+  lines.objectIds.set(new Uint32Array(nPositions).fill(index.feature), index.linePosition);
+  index.linePosition += nPositions;
 }
 
-function handleMultiLineString({coords, lines, index, maxCoordLength}) {
+function handleMultiLineString({coords, lines, index, coordLength}) {
   for (var line of coords) {
-    handleLineString({coords: line, lines, index, maxCoordLength})
+    handleLineString({coords: line, lines, index, coordLength});
   }
 }
+
+function handlePolygon({coords, polygons, index, coordLength}) {
+  // index within polygon positions array of where each polygon starts
+  polygons.polygonIndices[index.polygonObject] = index.polygonPosition * coordLength
+  index.polygonObject++
+
+  for (var ring of coords) {
+    polygons.primitivePolygonIndices[index.polygonRing] = index.polygonPosition * coordLength
+    index.polygonRing++
+  }
+
+  polygons.positions.set(coords.flat(2), index.polygonPosition * coordLength)
+
+  var nPositions = coords.flat(1).length;
+  polygons.objectIds.set(new Uint32Array(nPositions).fill(index.feature), index.polygonPosition);
+  index.polygonPosition += nPositions;
+}
+
+function handleMultiPolygon({coords, lines, index, coordLength}) {
+  for (var polygon of coords) {
+    handleLineString({coords: polygon, lines, index, coordLength});
+  }
+}
+
 
