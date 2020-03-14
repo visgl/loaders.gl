@@ -20,36 +20,39 @@ npm install @loaders.gl/core
 
 A standard complement of loaders and writers are provided to load the individual 3d Tile file formats:
 
-- [`Tiles3DLoader`](modules/3d-tiles/docs/api-reference/tileset-3d-loader), a loader for top-level (or nested) tilesets files.
-- [`Tiles3DLoader`](modules/3d-tiles/docs/api-reference/tile-3d-loader) for individual tiles.
-- [`Tile3DWriter`](modules/3d-tiles/docs/api-reference/tile-3d-writer) for individual tiles.
+- [`Tiles3DLoader`](modules/3d-tiles/docs/api-reference/tiles-3d-loader), a loader for loading a top-down or nested tileset and its tiles.
+- [`CesiumIonLoader`](modules/3d-tiles/docs/api-reference/cesium-ion-loader), a loader extends from `Tiles3DLoader` with resolving credentials from Cesium ion.
 
-To handle the complex dynamic tile selection and loading required to performantly render larger-than-browser-memory tilesets, additional helper classes are provided:
+To handle the complex dynamic tile selection and loading required to performantly render larger-than-browser-memory tilesets, additional helper classes are provided in `@loaders.gl/tiles` module:
 
 - [`Tileset3D`](modules/3d-tiles/docs/api-reference/tileset-3d) to work with the loaded tileset.
-- `Tile3DHeader` (currently undocumented) to access data for a specific tile.
+- [`Tile3D`](modules/3d-tiles/docs/api-reference/tile-3d) to access data for a specific tile.
 
 ## Usage
 
 Basic API usage is illustrated in the following snippet. Create a `Tileset3D` instance, point it a valid tileset URL, set up callbacks, and keep feeding in new camera positions:
 
 ```js
-import {Tileset3D} from '@loaders.gl/3d-tiles';
-const tileset = new Tileset3D(tilesetJson, {
-  url: TILESET_URL,
-  onTilesetLoad: tileset => console.log('Tileset loaded'),
-  onTileLoad: tileset => console.log('Tile loaded'),
-  onTileUnload: tileset => console.log('Tile unloaded')
+import {load} from '@loaders.gl/core';
+import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
+import {Tileset3D} from '@loaders.gl/tiles';
+
+const tilesetUrl = ''; // add the url to your tileset.json file here
+
+const tilesetJson = await load(tilesetUrl, Tiles3DLoader);
+
+const tileset3d = new Tileset3D(tilesetJson, {
+  onTileLoad: tile => console.log(tile)
 });
 
-// initial camera view
-tileset3d.update(cameraParameters1);
+// initial viewport
+tileset3d.update(viewport);
 
-// Camera changes (pan zoom etc)
-tileset3d.update(cameraParameters2);
+// Viewport changes (pan zoom etc)
+tileset3d.update(viewport);
 
 // Visible tiles
-const visibleTiles = tileset3d.selectedTiles;
+const visibleTiles = tileset3d.tiles.filter(tile => tile.selected);
 
 // Note that visibleTiles will likely not immediately include all tiles
 // tiles will keep loading and file `onTileLoad` callbacks

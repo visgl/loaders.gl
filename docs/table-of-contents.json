@@ -53,6 +53,8 @@
     {
       "title": "Loader Catalog",
       "entries": [
+        {"entry": "modules/3d-tiles/docs/api-reference/tiles-3d-loader"},
+        {"entry": "modules/3d-tiles/docs/api-reference/cesium-ion-loader"},
         {"entry": "modules/arrow/docs/api-reference/arrow-loader"},
         {"entry": "modules/basis/docs/api-reference/basis-loader"},
         {"entry": "modules/basis/docs/api-reference/compressed-texture-loader"},
@@ -63,16 +65,16 @@
         {"entry": "modules/gltf/docs/api-reference/gltf-writer"},
         {"entry": "modules/gltf/docs/api-reference/glb-loader"},
         {"entry": "modules/gltf/docs/api-reference/glb-writer"},
+        {"entry": "modules/i3s/docs/api-reference/i3s-loader"},
         {"entry": "modules/images/docs/api-reference/image-loader"},
         {"entry": "modules/images/docs/api-reference/image-writer"},
         {"entry": "modules/json/docs/api-reference/json-loader"},
         {"entry": "modules/kml/docs/api-reference/kml-loader"},
         {"entry": "modules/las/docs/api-reference/las-loader"},
+        {"entry": "modules/mvt/docs/api-reference/mvt-loader"},
         {"entry": "modules/obj/docs/api-reference/obj-loader"},
         {"entry": "modules/pcd/docs/api-reference/pcd-loader"},
         {"entry": "modules/ply/docs/api-reference/ply-loader"},
-        {"entry": "modules/tiles/docs/api-reference/tileset-3d"},
-        {"entry": "modules/tiles/docs/api-reference/tile-3d"},
         {"entry": "modules/wkt/docs/api-reference/wkt-loader"},
         {"entry": "modules/wkt/docs/api-reference/wkt-writer"},
         {"entry": "modules/zip/docs/api-reference/zip-loader"},
@@ -106,8 +108,7 @@
         {
           "title": "@loaders.gl/3d-tiles",
           "entries": [
-            {"entry": "modules/3d-tiles/docs"},
-            {"entry": "modules/3d-tiles/docs/api-reference/tiles-3d-loader"}
+            {"entry": "modules/3d-tiles/docs"}
           ]
         },
         {
@@ -200,13 +201,15 @@
         {
           "title": "@loaders.gl/polyfills",
           "entries": [
-            {"entry": "modules/polyfills/docs"}
+            {"entry": "modules/polyfills/docs/api-reference"}
           ]
         },
         {
           "title": "@loaders.gl/tiles",
           "entries": [
-            {"entry": "modules/tiles/docs"}
+            {"entry": "modules/tiles/docs"},
+            {"entry": "modules/tiles/docs/api-reference/tileset-3d"},
+            {"entry": "modules/tiles/docs/api-reference/tile-3d"}
           ]
         },
         {

@@ -1,4 +1,4 @@
-# Tile3D Class
+# Tile3D
 
 > The `Tile3D` class is used internally by `loaders.gl/tiles` `Tileset3D` class to manage loading/unloading tiles.
 

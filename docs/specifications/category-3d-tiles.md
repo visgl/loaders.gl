@@ -6,11 +6,12 @@ The 3D Tiles category defines a generalized representation of hierarchical geosp
 
 ## 3D Tiles Category Loaders
 
-| Loader                                                            | Notes |
-| ----------------------------------------------------------------- | ----- |
-| [`Tiles3DLoader`](modules/gltf/docs/api-reference/gltf-loader)    |       |
-| [`I3SLoader`](modules/i3s/docs/api-reference/i3s-loader)          |       |
-| [`PotreeLoader`](modules/potree/docs/api-reference/potree-loader) |       |
+| Loader                                                                     | Notes |
+| -------------------------------------------------------------------------- | ----- |
+| [`Tiles3DLoader`](modules/3d-tiles/docs/api-reference/tiles-3d-loader)     |       |
+| [`CesiumIonLoader`](modules/3d-tiles/docs/api-reference/cesium-ion-loader) |       |
+| [`I3SLoader`](modules/i3s/docs/api-reference/i3s-loader)                   |       |
+| [`PotreeLoader`](modules/potree/docs/api-reference/potree-loader)          |       |
 
 ## Overview
 
@@ -29,83 +30,18 @@ The 3D Tiles category is can represent the
 
 ## Data Format
 
-## Tileset Fields
-
-| Field                | Type                | Contents                                                                    |
-| -------------------- | ------------------- | --------------------------------------------------------------------------- |
-| `asset`              | `Object` (Optional) |                                                                             |
-| `root`               | `Object`            | The root tile header                                                        |
-| `cartesianCenter`    | `Number[3]`         | Center of tileset in fixed frame coordinates                                |
-| `cartographicCenter` | `Number[3]`         | Center of tileset in cartographic coordinates `[long, lat, elevation]`      |
-| `webMercatorZoom`    | `Number[3]`         | A web mercator zoom level that displays the entire tile set bounding volume |
-
-## TileHeader Fields
-
-| Field            | Type     | Contents |
-| ---------------- | -------- | -------- |
-| `boundingVolume` | `Object` |          |
-
-### Common Fields
-
-| Field                     | Type                | Contents                                                                           |
-| ------------------------- | ------------------- | ---------------------------------------------------------------------------------- |
-| `loaderData`              | `Object` (Optional) | Format specific data                                                               |
-| `version`                 | `Number`            | See [Header](#header)                                                              |
-| `type`                    | `String`            | See [Mode](#mode)                                                                  |
-| `cartesianOrigin`         | `Number[3]`         | "Center" of tile geometry in WGS84 fixed frame coordinates                         |
-| `cartographicOrigin`      | `Number[3]`         | "Origin" in lng/lat (center of tile's bounding volume)                             |
-| `cartesianModelMatrix`    | `Number[16]`        | Transforms tile geometry positions to fixed frame coordinates                      |
-| `cartographicModelMatrix` | `Number[16]`        | Transforms tile geometry positions to ENU meter offsets from `cartographicOrigin`. |
-
-### PointCloudTile Fields
-
-| Field                        | Type           | Contents                                  |
-| ---------------------------- | -------------- | ----------------------------------------- |
-| `attributes`                 | `Object`       | Values are [accessor](#accessor) objects. |
-| `attributes.positions.value` | `Float32Array` |                                           |
-| `attributes.normals.value`   | `Float32Array` |                                           |
-| `attributes.colors.value`    | `Uint8Array`   |                                           |
-
-TBA - batch ids?
-
-### Instanced3DModelTile Fields
-
-| Field         | Type | Contents |
-| ------------- | ---- | -------- |
-| `modelMatrix` |      |          |
-
-### PointCloudTile Fields
-
-| Field | Type | Contents |
-| ----- | ---- | -------- |
-
-
-### CompositeTile Fields
-
-| Field   | Type       | Contents                     |
-| ------- | ---------- | ---------------------------- |
-| `tiles` | `Object[]` | Array of parsed tile objects |
-
-### Accessors
-
-Following vis.gl conventions, `attributes` are represented by "glTF-style" accessor objects with the `value` field containing the binary data for that attribute stored in a typed array of the proper type.
-
-| Accessors Fields | glTF? | Type         | Contents                                                                                                                     |
-| ---------------- | ----- | ------------ | ---------------------------------------------------------------------------------------------------------------------------- |
-| `value`          | No    | `TypedArray` | Contains the typed array (corresponds to `bufferView`). The type of the array will match the GL constant in `componentType`. |
-| `size`           | No    | `Number`     | Number of components, `1`-`4`.                                                                                               |
-| `byteOffset`     | Yes   | `Number`     | Starting offset into the bufferView.                                                                                         |
-| `count`          | Yes   | `Number`     | The number of elements/vertices in the attribute data.                                                                       |
+Check [`Tiles3DLoader`](modules/3d-tiles/docs/api-reference/tiles-3d-loader), [`CesiumIonLoader`](modules/3d-tiles/docs/api-reference/cesium-ion-loader) | |
+and [`I3SLoader`](modules/i3s/docs/api-reference/i3s-loader).
 
 ## Helper Classes
 
 Tileset Traversal Support
 
-To start loading tiles once a top-level tileset file is loaded, the application can instantiate the `Tileset3D` class and start calling `tileset3D.traverse(camera_parameters)`.
+To start loading tiles once a top-level tileset file is loaded, the application can instantiate the `Tileset3D` class and start calling `tileset3D.update(viewport)`.
 
 Since 3D tiled data sets tend to be very big, the key idea is to only load the tiles actually needed to show a view from the current camera position.
 
-The `Tileset3D` allows callbacks (`onTileLoad`, `onTileUnload`) to be registered that notify the app when the set of tiles available for rendering has changed. This is important because tile loads complete asynchronously, after the `tileset3D.traverse(...)` call has returned.
+The `Tileset3D` allows callbacks (`onTileLoad`, `onTileUnload`) to be registered that notify the app when the set of tiles available for rendering has changed. This is important because tile loads complete asynchronously, after the `tileset3D.update(...)` call has returned.
 
 ## Additional Information
 

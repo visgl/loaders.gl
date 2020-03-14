@@ -63,12 +63,12 @@ module.exports = {
         INDEX_PAGE_URL: resolve(__dirname, './templates/index.jsx'),
 
         EXAMPLES: [
-          // {
-          //   title: 'Point Clouds & Meshes',
-          //   image: 'images/example-pointcloud.png',
-          //   componentUrl: resolve(__dirname, '../examples/pointcloud/app.js'),
-          //   path: 'examples/pointcloud'
-          // },
+          {
+            title: 'Point Clouds & Meshes',
+            image: 'images/example-pointcloud.jpg',
+            componentUrl: resolve(__dirname, '../examples/deck.gl/pointcloud/app.js'),
+            path: 'examples/pointcloud'
+          },
           {
             title: '3D Tiles',
             image: 'images/example-3d-tiles.png',
