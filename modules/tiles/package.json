@@ -42,6 +42,6 @@
     "@probe.gl/stats": "^3.2.1"
   },
   "devDependencies": {
-    "@deck.gl/core": "^8.0.0"
+    "@deck.gl/core": "^8.1.0-beta.3"
   }
 }

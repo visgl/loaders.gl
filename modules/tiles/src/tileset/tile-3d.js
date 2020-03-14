@@ -5,13 +5,9 @@ import {CullingVolume} from '@math.gl/culling';
 
 import {load} from '@loaders.gl/core';
 import {assert, path} from '@loaders.gl/loader-utils';
-import {
-  TILE_REFINEMENT,
-  TILE_CONTENT_STATE,
-  TILESET_TYPE,
-  createBoundingVolume
-} from '@loaders.gl/tiles';
+import {TILE_REFINEMENT, TILE_CONTENT_STATE, TILESET_TYPE} from '../constants';
 
+import {createBoundingVolume} from './helpers/bounding-volume';
 import {getTiles3DScreenSpaceError} from './helpers/tiles-3d-lod';
 import {getI3ScreenSize} from './helpers/i3s-lod';
 

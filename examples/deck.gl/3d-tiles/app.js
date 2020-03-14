@@ -190,7 +190,7 @@ export default class App extends PureComponent {
   }
 
   _renderControlPanel() {
-    const {examplesByCategory, category, name, viewState, tileset, selectedExample} = this.state;
+    const {examplesByCategory, category, name, viewState, tileset} = this.state;
     if (!examplesByCategory) {
       return null;
     }
@@ -266,7 +266,6 @@ export default class App extends PureComponent {
         {this._renderStats()}
         {this._renderControlPanel()}
         <DeckGL
-          ref={_ => (this._deckRef = _)}
           layers={[tile3DLayer]}
           viewState={viewState}
           onViewStateChange={this._onViewStateChange.bind(this)}

@@ -40,9 +40,9 @@
     "pre-push": "ocular-test fast"
   },
   "devDependencies": {
-    "@luma.gl/core": "^8.0.0",
-    "@luma.gl/debug": "^8.0.0",
-    "@luma.gl/test-utils": "^8.0.0",
+    "@luma.gl/core": "^8.1.0-beta.4",
+    "@luma.gl/debug": "^8.1.0-beta.4",
+    "@luma.gl/test-utils": "^8.1.0-beta.4",
     "@probe.gl/bench": "^3.3.0-alpha.4",
     "@probe.gl/test-utils": "^3.3.0-alpha.4",
     "babel-loader": "^8.0.6",
@@ -50,7 +50,8 @@
     "coveralls": "^3.0.3",
     "eslint-config-uber-jsx": "^3.3.3",
     "eslint-plugin-babel": "^5.3.0",
-    "eslint-plugin-react": "^7.13",
+    "eslint-plugin-import": "^2.20.1",
+    "eslint-plugin-react": "^7.19.0",
     "gl": "^4.4.0",
     "gl-matrix": "^3.1.0",
     "ocular-dev-tools": "^0.1.8",
