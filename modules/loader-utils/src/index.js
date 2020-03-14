@@ -42,6 +42,8 @@ export {getFirstCharacters, getMagicString} from './lib/binary-utils/get-first-c
 
 // PATH UTILS
 
+import * as path from './lib/path-utils/path';
+export {path};
 export {setPathPrefix, getPathPrefix, resolvePath} from './lib/path-utils/file-aliases';
 export {addAliases as _addAliases} from './lib/path-utils/file-aliases.js';
 

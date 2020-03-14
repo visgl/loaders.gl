@@ -2,6 +2,7 @@
 import {resolvePath} from '@loaders.gl/loader-utils';
 import {isFileReadable} from '../../javascript-utils/is-type';
 import fetchFileReadable from './fetch-file.browser';
+import {getErrorMessageFromResponse} from './fetch-error-message';
 
 // As fetch but respects pathPrefix and file aliases
 // Reads file data from:
@@ -14,5 +15,9 @@ export async function fetchFile(url, options) {
   }
   url = resolvePath(url);
   // TODO - SUPPORT reading from `File` objects
-  return fetch(url, options);
+  const response = await fetch(url, options);
+  if (!response.ok && options.throws) {
+    throw new Error(await getErrorMessageFromResponse(response));
+  }
+  return response;
 }

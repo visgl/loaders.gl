@@ -2,7 +2,7 @@
 
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-import {path} from '@loaders.gl/core';
+import {path} from '@loaders.gl/loader-utils';
 import {TILESET_TYPE, LOD_METRIC_TYPE} from '@loaders.gl/tiles';
 
 import {parse3DTile} from './lib/parsers/parse-3d-tile';
