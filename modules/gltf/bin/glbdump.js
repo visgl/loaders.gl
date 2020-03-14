@@ -1,4 +1,4 @@
 #!/usr/bin/env node
 
-/* eslint-disable no-console */
+/* eslint-disable import/no-extraneous-dependencies */
 require('@loaders.gl/gltf/dist/scripts/glbdump');

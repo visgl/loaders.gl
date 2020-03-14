@@ -1,5 +1,5 @@
 /* global URL, Blob */
-import assert from '../utils/assert';
+import {assert} from '@loaders.gl/loader-utils';
 
 const workerURLCache = new Map();
 

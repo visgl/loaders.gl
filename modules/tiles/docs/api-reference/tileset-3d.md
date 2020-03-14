@@ -74,9 +74,17 @@ Parameters:
   - `options.maximumMemoryUsage`=`512`] (`Number`) - The maximum amount of memory in MB that can be used by the tileset.
   - `options.fetchOptions` - fetchOptions, i.e. headers, used to load tiles from tiling server
 
-Callbacks - `onTileLoad` (`(tileHeader : Tile3DHeader) : void`) - callback when a tile node is fully loaded during the tileset traversal. - `onTileUnload` (`(tileHeader : Tile3DHeader) : void`) - callback when a tile node is unloaded during the tileset traversal. - `onTileError` (`(tileHeader : Tile3DHeader, message : String) : void`) - callback when a tile faile to load during the tileset traversal.
+Callbacks:
 
-Cesium 3D tiles specific options: - `options.maximumScreenSpaceError`=`16`] (`Number`) - The maximum screen space error used to drive level of detail refinement.
+- `onTileLoad` (`(tileHeader : Tile3DHeader) : void`) - callback when a tile node is fully loaded during the tileset traversal.
+- `onTileUnload` (`(tileHeader : Tile3DHeader) : void`) - callback when a tile node is unloaded during the tileset traversal.
+- `onTileError` (`(tileHeader : Tile3DHeader, message : String) : void`) - callback when a tile faile to load during the tileset traversal.
+
+The `Tileset3D` allows callbacks (`onTileLoad`, `onTileUnload`) to be registered that notify the app when the set of tiles available for rendering has changed. This is important because tile loads complete asynchronously, after the `tileset3D.update(...)` call has returned.
+
+Cesium 3D tiles specific options:
+
+- `options.maximumScreenSpaceError`=`16`] (`Number`) - The maximum screen space error used to drive level of detail refinement.
 
 ## Properties
 
@@ -211,17 +219,6 @@ tileset.readyPromise.then(function(tileset) {
 ### modelMatrix : Matrix4
 
 A 4x4 transformation matrix that transforms the entire tileset.
-
-```js
-// Adjust a tileset's height from the globe's surface.
-var heightOffset = 20.0;
-var boundingSphere = tileset.boundingSphere;
-var cartographic = Cartographic.fromCartesian(boundingSphere.center);
-var surface = Cartesian3.fromRadians(cartographic.longitude, cartographic.latitude, 0.0);
-var offset = Cartesian3.fromRadians(cartographic.longitude, cartographic.latitude, heightOffset);
-var translation = Cartesian3.subtract(offset, surface, new Cartesian3());
-tileset.modelMatrix = Matrix4.fromTranslation(translation);
-```
 
 ### maximumMemoryUsage : Number
 
