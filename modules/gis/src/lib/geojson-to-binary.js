@@ -1,10 +1,9 @@
 // var features = require('../../test/data/roads.json').features;
 // var features = require("../../test/data/vancouver-blocks.json").features;
 
-// TODO: add data type to options to customize whether positions data type is float 32 or float 64
 export function featuresToBinary(features, options = {}) {
-  var options = firstPass(features);
-  return secondPass(features, options);
+  const firstPassData = firstPass(features);
+  return secondPass(features, firstPassData, options);
 }
 
 // detecting if any 3D coordinates are present
@@ -70,7 +69,7 @@ function firstPass(features) {
   };
 }
 
-function secondPass(features, options) {
+function secondPass(features, firstPassData, options = {}) {
   const {
     pointPositions,
     linePositions,
@@ -79,20 +78,21 @@ function secondPass(features, options) {
     polygonPositions,
     polygonObjects,
     polygonRings
-  } = options;
+  } = firstPassData;
+  const {PositionDataType = Float32Array} = options;
   const points = {
-    positions: new Float32Array(pointPositions * coordLength),
+    positions: new PositionDataType(pointPositions * coordLength),
     objectIds: new Uint32Array(pointPositions)
   };
   const lines = {
     pathIndices: new Uint32Array(linePaths),
-    positions: new Float32Array(linePositions * coordLength),
+    positions: new PositionDataType(linePositions * coordLength),
     objectIds: new Uint32Array(linePositions)
   };
   const polygons = {
     polygonIndices: new Uint32Array(polygonObjects),
     primitivePolygonIndices: new Uint32Array(polygonRings),
-    positions: new Float32Array(polygonPositions * coordLength),
+    positions: new PositionDataType(polygonPositions * coordLength),
     objectIds: new Uint32Array(polygonPositions)
   };
 
