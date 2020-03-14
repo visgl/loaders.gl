@@ -46,8 +46,6 @@ export {
 export {makeChunkIterator, concatenateChunksAsync} from './iterator-utils/chunk-iteration';
 
 // CORE UTILS SHARED WITH LOADERS (RE-EXPORTED FROM LOADER-UTILS)
-export {isBrowser, isWorker, self, window, global, document} from '@loaders.gl/loader-utils';
-export {assert} from '@loaders.gl/loader-utils';
 export {setPathPrefix, getPathPrefix, resolvePath} from '@loaders.gl/loader-utils';
 
 // EXPERIMENTAL

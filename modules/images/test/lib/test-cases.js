@@ -1,4 +1,4 @@
-import {isBrowser} from '@loaders.gl/core';
+import {isBrowser} from '@loaders.gl/loader-utils';
 
 const CONTENT_BASE = '@loaders.gl/images/test/data';
 

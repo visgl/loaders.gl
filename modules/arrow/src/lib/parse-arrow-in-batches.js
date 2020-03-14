@@ -1,5 +1,6 @@
 import {RecordBatchReader} from 'apache-arrow/Arrow.es5.min';
-import {isIterable, isIterator, assert} from '@loaders.gl/core';
+import {isIterable, isIterator} from '@loaders.gl/core';
+import {assert} from '@loaders.gl/loader-utils';
 
 export async function parseArrowInBatches(asyncIterator, options) {
   // Creates the appropriate RecordBatchReader subclasses from the input

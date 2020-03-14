@@ -1,6 +1,7 @@
 /* global Blob */
 import test from 'tape-promise/tape';
-import {isBrowser, load, fetchFile, registerLoaders, resolvePath} from '@loaders.gl/core';
+import {load, fetchFile, registerLoaders, resolvePath} from '@loaders.gl/core';
+import {isBrowser} from '@loaders.gl/loader-utils';
 import {JSONLoader} from '@loaders.gl/json';
 
 const JSON_URL = '@loaders.gl/core/test/data/files/basic.json';

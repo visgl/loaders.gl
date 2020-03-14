@@ -1,7 +1,8 @@
 import test from 'tape-promise/tape';
 // import {isBrowser, encode, load} from '@loaders.gl/core';
 // import {ImageWriter, ImageLoader} from '@loaders.gl/images';
-import {isBrowser, encode} from '@loaders.gl/core';
+import {encode} from '@loaders.gl/core';
+import {isBrowser} from '@loaders.gl/loader-utils';
 import {ImageWriter} from '@loaders.gl/images';
 import fs from 'fs';
 import path from 'path';

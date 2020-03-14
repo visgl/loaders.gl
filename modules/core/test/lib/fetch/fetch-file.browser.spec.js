@@ -1,7 +1,8 @@
 /* global Blob */
 import test from 'tape-promise/tape';
 
-import {isBrowser, fetchFile} from '@loaders.gl/core';
+import {fetchFile} from '@loaders.gl/core';
+import {isBrowser} from '@loaders.gl/loader-utils';
 
 const TEXT_DATA = 'important content!';
 const JSON_DATA = [{col1: 22, col2: 'abc'}];
