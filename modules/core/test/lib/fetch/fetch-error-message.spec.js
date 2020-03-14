@@ -1,15 +1,15 @@
 import test from 'tape-promise/tape';
 
-import {_getErrorMessageFromResponseSync, _getErrorMessageFromResponse} from '@loaders.gl/core';
+import {
+  getErrorMessageFromResponseSync,
+  getErrorMessageFromResponse
+} from '@loaders.gl/core/lib/fetch/fetch-error-message';
 
-test('_getErrorMessageFromResponseSync#imports', t => {
+test('getErrorMessageFromResponseSync#imports', t => {
   t.ok(
-    typeof _getErrorMessageFromResponseSync === 'function',
-    '_getErrorMessageFromResponseSync() defined'
+    typeof getErrorMessageFromResponseSync === 'function',
+    'getErrorMessageFromResponseSync() defined'
   );
-  t.ok(
-    typeof _getErrorMessageFromResponse === 'function',
-    '_getErrorMessageFromResponse() defined'
-  );
+  t.ok(typeof getErrorMessageFromResponse === 'function', 'getErrorMessageFromResponse() defined');
   t.end();
 });

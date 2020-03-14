@@ -1,16 +1,7 @@
-import * as path from './lib/path/path';
-
-// PATH
-export {path};
-
 // FILE READING AND WRITING
 export {fetchFile} from './lib/fetch/fetch-file';
 export {readFileSync} from './lib/fetch/read-file';
 export {writeFile, writeFileSync} from './lib/fetch/write-file';
-export {
-  getErrorMessageFromResponseSync as _getErrorMessageFromResponseSync,
-  getErrorMessageFromResponse as _getErrorMessageFromResponse
-} from './lib/fetch/fetch-error-message';
 
 // CONFIGURATION
 export {setLoaderOptions} from './lib/set-loader-options';

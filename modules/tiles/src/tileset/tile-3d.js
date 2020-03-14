@@ -3,8 +3,8 @@
 import {Vector3, Matrix4} from '@math.gl/core';
 import {CullingVolume} from '@math.gl/culling';
 
-import {load, path} from '@loaders.gl/core';
-import {assert} from '@loaders.gl/loader-utils';
+import {load} from '@loaders.gl/core';
+import {assert, path} from '@loaders.gl/loader-utils';
 import {
   TILE_REFINEMENT,
   TILE_CONTENT_STATE,

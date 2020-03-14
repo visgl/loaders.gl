@@ -4,8 +4,7 @@
 import {Matrix4, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {Stats} from '@probe.gl/stats';
-import {path} from '@loaders.gl/core';
-import {RequestScheduler, assert} from '@loaders.gl/loader-utils';
+import {RequestScheduler, assert, path} from '@loaders.gl/loader-utils';
 
 import TilesetCache from './tileset-cache';
 import {calculateTransformProps} from './helpers/transform-utils';
