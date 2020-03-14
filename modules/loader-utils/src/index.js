@@ -47,6 +47,36 @@ export {path};
 export {setPathPrefix, getPathPrefix, resolvePath} from './lib/path-utils/file-aliases';
 export {addAliases as _addAliases} from './lib/path-utils/file-aliases.js';
 
+// "JAVASCRIPT" UTILS
+export {
+  isPromise,
+  isIterable,
+  isAsyncIterable,
+  isIterator,
+  isFileReadable,
+  isFetchResponse,
+  isReadableStream,
+  isWritableStream
+} from './lib/javascript-utils/is-type';
+
+// ITERATOR UTILS
+export {makeStreamIterator} from './lib/iterator-utils/stream-iteration';
+
+export {
+  forEach,
+  lineAsyncIterator,
+  textDecoderAsyncIterator,
+  numberedLineAsyncIterator
+} from './lib/iterator-utils/async-iteration';
+
+export {makeChunkIterator, concatenateChunksAsync} from './lib/iterator-utils/chunk-iteration';
+
+// deprecated
+export {
+  concatenateChunksAsync as contatenateAsyncIterator
+} from './lib/iterator-utils/chunk-iteration';
+export {makeStreamIterator as getStreamIterator} from './lib/iterator-utils/stream-iteration';
+
 // REQUEST UTILS
 export {default as RequestScheduler} from './lib/request-utils/request-scheduler';
 

@@ -1,6 +1,7 @@
 import test from 'tape-promise/tape';
 
-import {isBrowser, fetchFile, readFileSync} from '@loaders.gl/core';
+import {fetchFile, readFileSync} from '@loaders.gl/core';
+import {isBrowser} from '@loaders.gl/loader-utils';
 
 const DATA_URL = 'data:,important content!';
 const BINARY_URL = '@loaders.gl/core/test/data/files/binary-data.bin';

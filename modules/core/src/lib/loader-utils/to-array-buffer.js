@@ -1,8 +1,8 @@
 /* global TextEncoder */
 import {assert} from '@loaders.gl/loader-utils';
-import {toArrayBuffer as bufferToArrayBuffer} from '../node/utils/to-array-buffer.node';
+import {toArrayBuffer as bufferToArrayBuffer} from '../../node/utils/to-array-buffer.node';
 
-export function toArrayBuffer(data) {
+export default function toArrayBuffer(data) {
   if (bufferToArrayBuffer) {
     // TODO - per docs we should just be able to call buffer.buffer, but there are issues
     data = bufferToArrayBuffer(data);

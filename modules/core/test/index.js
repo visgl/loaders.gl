@@ -1,10 +1,5 @@
 import './javascript-utils/text-encoder.spec';
 import './javascript-utils/binary-utils.spec';
-import './javascript-utils/is-type.spec';
-
-import './iterator-utils/chunk-iteration.spec';
-import './iterator-utils/async-iteration.spec';
-import './iterator-utils/stream-iteration.spec';
 
 import './lib/fetch';
 import './lib/loader-utils';

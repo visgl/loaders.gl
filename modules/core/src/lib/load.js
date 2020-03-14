@@ -1,4 +1,4 @@
-import {isFileReadable} from '../javascript-utils/is-type';
+import {isFileReadable} from '@loaders.gl/loader-utils';
 import {fetchFile} from './fetch/fetch-file';
 import {isLoaderObject} from './loader-utils/normalize-loader';
 

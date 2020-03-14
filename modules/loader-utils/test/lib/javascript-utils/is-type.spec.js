@@ -8,7 +8,7 @@ import {
   // isFetchResponse,
   // isReadableStream,
   // isWritableStream
-} from '@loaders.gl/core';
+} from '@loaders.gl/loader-utils';
 
 test('isIterator', t => {
   const TESTS = [

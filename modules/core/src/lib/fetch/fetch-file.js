@@ -1,6 +1,5 @@
 /* global fetch */
-import {resolvePath} from '@loaders.gl/loader-utils';
-import {isFileReadable} from '../../javascript-utils/is-type';
+import {resolvePath, isFileReadable} from '@loaders.gl/loader-utils';
 import fetchFileReadable from './fetch-file.browser';
 import {getErrorMessageFromResponse} from './fetch-error-message';
 

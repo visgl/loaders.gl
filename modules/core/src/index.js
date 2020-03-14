@@ -21,32 +21,7 @@ export {encode, encodeSync, encodeInBatches} from './lib/encode';
 export {save, saveSync} from './lib/save';
 
 // "JAVASCRIPT" UTILS
-export {
-  isPromise,
-  isIterable,
-  isAsyncIterable,
-  isIterator,
-  isFetchResponse,
-  isReadableStream,
-  isWritableStream
-} from './javascript-utils/is-type';
-
-export {toArrayBuffer} from './javascript-utils/binary-utils';
-
-// ITERATOR UTILS
-export {makeStreamIterator} from './iterator-utils/stream-iteration';
-
-export {
-  forEach,
-  lineAsyncIterator,
-  textDecoderAsyncIterator,
-  numberedLineAsyncIterator
-} from './iterator-utils/async-iteration';
-
-export {makeChunkIterator, concatenateChunksAsync} from './iterator-utils/chunk-iteration';
-
-// CORE UTILS SHARED WITH LOADERS (RE-EXPORTED FROM LOADER-UTILS)
-export {setPathPrefix, getPathPrefix, resolvePath} from '@loaders.gl/loader-utils';
+export {default as toArrayBuffer} from './lib/loader-utils/to-array-buffer';
 
 // EXPERIMENTAL
 export {selectLoader as _selectLoader} from './lib/select-loader';
@@ -60,6 +35,30 @@ export {default as _fetchProgress} from './lib/progress/fetch-progress';
 // FOR TESTING
 export {_unregisterLoaders} from './lib/register-loaders';
 
-// DEPRECATED in v2.1
-export {concatenateChunksAsync as contatenateAsyncIterator} from './iterator-utils/chunk-iteration';
-export {makeStreamIterator as getStreamIterator} from './iterator-utils/stream-iteration';
+/* DEPRECATED in v2.1, will remove in a future version */
+
+export {
+  isPromise,
+  isIterable,
+  isAsyncIterable,
+  isIterator,
+  isFetchResponse,
+  isReadableStream,
+  isWritableStream
+} from '@loaders.gl/loader-utils';
+
+// ITERATOR UTILS
+export {
+  makeStreamIterator,
+  contatenateAsyncIterator,
+  getStreamIterator,
+  forEach,
+  lineAsyncIterator,
+  textDecoderAsyncIterator,
+  numberedLineAsyncIterator,
+  makeChunkIterator,
+  concatenateChunksAsync
+} from '@loaders.gl/loader-utils';
+
+// CORE UTILS SHARED WITH LOADERS (RE-EXPORTED FROM LOADER-UTILS)
+export {setPathPrefix, getPathPrefix, resolvePath} from '@loaders.gl/loader-utils';

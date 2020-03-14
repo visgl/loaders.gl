@@ -4,7 +4,7 @@ import {validateLoader, validatePointCloudCategoryData} from 'test/common/confor
 
 import {PLYLoader, PLYWorkerLoader, _PLYStreamLoader} from '@loaders.gl/ply';
 import {setLoaderOptions, fetchFile, parse, parseSync, load} from '@loaders.gl/core';
-import {makeStreamIterator} from '@loaders.gl/core';
+import {makeStreamIterator} from '@loaders.gl/loader-utils';
 
 const PLY_CUBE_ATT_URL = '@loaders.gl/ply/test/data/cube_att.ply';
 const PLY_BUN_ZIPPER_URL = '@loaders.gl/ply/test/data/bun_zipper.ply';

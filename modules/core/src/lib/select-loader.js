@@ -1,6 +1,6 @@
 import {getRegisteredLoaders} from './register-loaders';
 import {normalizeLoader} from './loader-utils/normalize-loader';
-import {isFetchResponse} from '../javascript-utils/is-type';
+import {isFetchResponse} from '@loaders.gl/loader-utils';
 
 const EXT_PATTERN = /\.([^.]+)$/;
 const DATA_URL_PATTERN = /^data:(.*?)(;|,)/;

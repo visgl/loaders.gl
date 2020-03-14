@@ -6,8 +6,7 @@ import {
   getIteratorFromData
 } from '@loaders.gl/core/lib/loader-utils/get-data';
 
-import {isIterator} from '@loaders.gl/core';
-import {isBrowser} from '@loaders.gl/loader-utils';
+import {isBrowser, isIterator} from '@loaders.gl/loader-utils';
 
 test('parseWithLoader#getArrayBufferOrStringFromDataSync', t => {
   const string = 'line 1\nline 2';

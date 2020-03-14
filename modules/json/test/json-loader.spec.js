@@ -1,5 +1,6 @@
 import test from 'tape-promise/tape';
-import {load, loadInBatches, isIterator, isAsyncIterable} from '@loaders.gl/core';
+import {load, loadInBatches} from '@loaders.gl/core';
+import {isIterator, isAsyncIterable} from '@loaders.gl/loader-utils';
 // import {ColumnarTableBatch} from '@loaders.gl/tables';
 import {JSONLoader} from '@loaders.gl/json';
 

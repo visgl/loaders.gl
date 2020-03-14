@@ -1,5 +1,4 @@
 import test from 'tape-promise/tape';
-// import {isBrowser, encode, load} from '@loaders.gl/core';
 // import {ImageWriter, ImageLoader} from '@loaders.gl/images';
 import {encode} from '@loaders.gl/core';
 import {isBrowser} from '@loaders.gl/loader-utils';

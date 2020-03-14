@@ -1,5 +1,6 @@
 import test from 'tape-promise/tape';
-import {loadInBatches, isIterator, isAsyncIterable} from '@loaders.gl/core';
+import {loadInBatches} from '@loaders.gl/core';
+import {isIterator, isAsyncIterable} from '@loaders.gl/loader-utils';
 import {CSVLoader} from '@loaders.gl/csv';
 import {ArrowTableBatch} from '@loaders.gl/arrow';
 import {RecordBatch} from 'apache-arrow/Arrow.es5.min';

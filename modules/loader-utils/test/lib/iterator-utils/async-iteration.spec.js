@@ -5,9 +5,9 @@ import {
   forEach,
   lineAsyncIterator,
   textDecoderAsyncIterator,
-  textEncoderAsyncIterator,
   numberedLineAsyncIterator
-} from '@loaders.gl/core/iterator-utils/async-iteration';
+} from '@loaders.gl/loader-utils';
+import {textEncoderAsyncIterator} from '@loaders.gl/loader-utils/lib/iterator-utils/async-iteration';
 
 /* global setTimeout */
 const setTimeoutPromise = timeout => new Promise(resolve => setTimeout(resolve, timeout));

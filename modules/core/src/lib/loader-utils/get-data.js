@@ -6,10 +6,10 @@ import {
   isIterable,
   isIterator,
   isFileReadable,
-  isBuffer
-} from '../../javascript-utils/is-type';
-import {makeStreamIterator} from '../../iterator-utils/stream-iteration';
-import {concatenateChunksAsync} from '../../iterator-utils/chunk-iteration';
+  isBuffer,
+  makeStreamIterator,
+  concatenateChunksAsync
+} from '@loaders.gl/loader-utils';
 import fetchFileReadable from '../fetch/fetch-file.browser';
 import {checkFetchResponseStatus, checkFetchResponseStatusSync} from './check-errors';
 

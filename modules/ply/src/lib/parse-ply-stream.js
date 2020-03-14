@@ -21,7 +21,7 @@
 //   }
 // });
 
-import {lineAsyncIterator, textDecoderAsyncIterator, forEach} from '@loaders.gl/core';
+import {lineAsyncIterator, textDecoderAsyncIterator, forEach} from '@loaders.gl/loader-utils';
 import normalizePLY from './normalize-ply';
 
 // PARSER

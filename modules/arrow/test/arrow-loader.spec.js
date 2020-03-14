@@ -2,7 +2,7 @@ import test from 'tape-promise/tape';
 import {validateLoader} from 'test/common/conformance';
 
 import {ArrowLoader, ArrowWorkerLoader} from '@loaders.gl/arrow';
-import {isBrowser, makeStreamIterator, resolvePath} from '@loaders.gl/core';
+import {isBrowser, makeStreamIterator, resolvePath} from '@loaders.gl/loader-utils';
 import {setLoaderOptions, fetchFile, parse, parseInBatches} from '@loaders.gl/core';
 
 // Small Arrow Sample Files

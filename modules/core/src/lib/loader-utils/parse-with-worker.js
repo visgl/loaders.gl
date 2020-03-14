@@ -1,6 +1,6 @@
 // __VERSION__ is injected by babel-plugin-version-inline
 /* global __VERSION__ */
-import {toArrayBuffer} from '../../javascript-utils/binary-utils';
+import toArrayBuffer from './to-array-buffer';
 import WorkerFarm from '../../worker-utils/worker-farm';
 import {getTransferList} from '@loaders.gl/loader-utils';
 import {parse} from '../parse';

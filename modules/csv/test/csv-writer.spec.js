@@ -15,9 +15,6 @@ License: MIT
 import test from 'tape-promise/tape';
 import Papa from '@loaders.gl/csv/libs/papaparse';
 
-// import {isBrowser, load} from '@loaders.gl/core';
-// import {parseAsIterator, parseAsAsyncIterator} from '@loaders.gl/core';
-
 // Tests for Papa.unparse() function (JSON to CSV)
 var UNPARSE_TESTS = [
   {

@@ -1,4 +1,4 @@
-import {isBrowser, nodeVersion} from '@loaders.gl/loader-utils';
+import {isBrowser, nodeVersion} from '../env-utils/globals';
 
 export function makeStreamIterator(stream) {
   // Hacky test for node version to ensure we don't call bad polyfills

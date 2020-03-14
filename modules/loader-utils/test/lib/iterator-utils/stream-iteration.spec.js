@@ -1,5 +1,6 @@
 import test from 'tape-promise/tape';
-import {fetchFile, makeStreamIterator} from '@loaders.gl/core';
+import {fetchFile} from '@loaders.gl/core';
+import {makeStreamIterator} from '@loaders.gl/loader-utils';
 
 const DATA_URL = '@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-positions.bin';
 

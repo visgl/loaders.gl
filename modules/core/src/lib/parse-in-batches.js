@@ -3,7 +3,7 @@ import {mergeOptions} from './loader-utils/merge-options';
 import {getAsyncIteratorFromData} from './loader-utils/get-data';
 import {getLoaderContext} from './loader-utils/get-loader-context';
 import {selectLoader} from './select-loader';
-import {textDecoderAsyncIterator} from '../iterator-utils/async-iteration';
+import {textDecoderAsyncIterator} from '@loaders.gl/loader-utils';
 
 export async function parseInBatches(data, loaders, options, url) {
   // Signature: parseInBatches(data, options, url)

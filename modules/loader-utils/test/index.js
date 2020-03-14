@@ -6,6 +6,12 @@ import './lib/library-utils/library-utils.spec';
 
 import './lib/path-utils/file-aliases.spec';
 
+import './lib/javascript-utils/is-type.spec';
+
+import './lib/iterator-utils/chunk-iteration.spec';
+import './lib/iterator-utils/async-iteration.spec';
+import './lib/iterator-utils/stream-iteration.spec';
+
 import './lib/request-utils/request-scheduler.spec';
 
 import './categories/mesh/mesh-utils.spec';
