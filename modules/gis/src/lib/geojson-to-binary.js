@@ -1,15 +1,7 @@
-// var features = require('../../test/data/roads.json').features;
-// var features = require("../../test/data/vancouver-blocks.json").features;
-
 export function featuresToBinary(features, options = {}) {
   const firstPassData = firstPass(features);
   return secondPass(features, firstPassData, options);
 }
-
-// detecting if any 3D coordinates are present
-// detecting which properties are present so that you can add columns for these (may not be in all features)
-// counting the lengths of various arrays so you can allocate the typed arrays up front instead of building up temporary JS arrays.
-// etc...
 
 function firstPass(features) {
   // Counts the number of _positions_, so [x, y, z] counts as one
@@ -30,27 +22,46 @@ function firstPass(features) {
         break;
       case 'MultiPoint':
         pointPositions += geometry.coordinates.length;
+        geometry.coordinates.forEach(point => {
+          if (point.length === 3) maxCoordLength = 3;
+        });
         break;
       case 'LineString':
         linePositions += geometry.coordinates.length;
         linePaths++;
+
+        geometry.coordinates.forEach(coord => {
+          if (coord.length === 3) maxCoordLength = 3;
+        });
         break;
       case 'MultiLineString':
         geometry.coordinates.forEach(line => {
           linePositions += line.length;
           linePaths++;
+
+          line.coordinates.forEach(coord => {
+            if (coord.length === 3) maxCoordLength = 3;
+          });
         });
         break;
       case 'Polygon':
         polygonObjects++;
         polygonRings += geometry.coordinates.length;
         polygonPositions += geometry.coordinates.flat(1).length;
+
+        geometry.coordinates.flat().forEach(coord => {
+          if (coord.length === 3) maxCoordLength = 3;
+        });
         break;
       case 'MultiPolygon':
         geometry.coordinates.forEach(polygon => {
           polygonObjects++;
           polygonRings += polygon.length;
           polygonPositions += polygon.flat(1).length;
+
+          geometry.coordinates.flat().forEach(coord => {
+            if (coord.length === 3) maxCoordLength = 3;
+          });
         });
         break;
       default:
