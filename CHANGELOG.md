@@ -2,6 +2,12 @@
 
 ### 2.1 Prerelease
 
+#### v2.1.0-beta.2
+
+- fix lint rules and module dependencies (#689)
+- Remove extraneous imports from @loaders.gl/core (#687)
+- build(deps): bump acorn from 6.4.0 to 6.4.1 (#686)
+
 #### v2.1.0-beta.1
 
 - basis: disable CDN when running local test (#684)
