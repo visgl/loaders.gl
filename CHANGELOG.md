@@ -1,6 +1,10 @@
 ## loaders.gl v2.0
 
-### 2.1 Prerelease
+### 2.1 Release
+
+#### v2.1.0
+
+- Add boundingBox to mesh category header (#696)
 
 #### v2.1.0-beta.2
 
