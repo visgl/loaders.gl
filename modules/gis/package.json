@@ -23,11 +23,6 @@
     "dist",
     "README.md"
   ],
-  "scripts": {
-    "pre-build": "npm run build-worker && npm run build-worker --env.dev && npm run build-bundle && npm run build-bundle -- --env.dev",
-    "build-worker": "webpack --entry ./src/workers/mvt-loader.worker.js --output ./dist/mvt-loader.worker.js --config ../../scripts/worker-webpack-config.js",
-    "build-bundle": "webpack --display=minimal --config ../../scripts/bundle.config.js"
-  },
   "dependencies": {
     "@loaders.gl/loader-utils": "2.1.0-beta.2",
     "@mapbox/vector-tile": "^1.3.1",
