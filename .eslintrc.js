@@ -20,7 +20,7 @@ module.exports = {
     // This means lint will not find the imported files and generate false warnings
     {
       // scripts use devDependencies
-      files: ['**/test/**/*.js', 'scripts/**/*.js'],
+      files: ['**/test/**/*.js', '**/scripts/**/*.js', '*.config.js', '*.config.local.js'],
       rules: {
         'import/no-unresolved': 0,
         'import/no-extraneous-dependencies': 0

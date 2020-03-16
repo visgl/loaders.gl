@@ -133,7 +133,10 @@ export default class ControlPanel extends PureComponent {
       return null;
     }
 
-    const {description, credits: {attributions}} = this.props.tileset || {};
+    const {
+      description,
+      credits: {attributions}
+    } = this.props.tileset || {};
     if (!attributions || attributions.length === 0 || !description) {
       return null;
     }

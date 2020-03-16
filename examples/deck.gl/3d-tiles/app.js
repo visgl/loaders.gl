@@ -2,13 +2,11 @@
 import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
+
+import {lumaStats} from '@luma.gl/core';
 import DeckGL from '@deck.gl/react';
 import {MapController, FlyToInterpolator} from '@deck.gl/core';
-// import {Tile3DLayer} from '@deck.gl/geo-layers';
-// TODO bring back to deck.gl
-// remove after deck.gl release a new version of tile-3d-layer
-import Tile3DLayer from './tile-3d-layer';
-import {lumaStats} from '@luma.gl/core';
+import {Tile3DLayer} from '@deck.gl/geo-layers';
 import {StatsWidget} from '@probe.gl/stats-widget';
 
 // To manage dependencies and bundle size, the app must decide which supporting loaders to bring in
