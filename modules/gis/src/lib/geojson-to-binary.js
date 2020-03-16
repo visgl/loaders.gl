@@ -13,7 +13,7 @@ function firstPass(features) {
   let polygonRings = 0;
   let maxCoordLength = 2;
 
-  features.forEach(feature => {
+  for (const feature of features) {
     const geometry = feature.geometry;
     switch (geometry.type) {
       case 'Point':
@@ -22,52 +22,52 @@ function firstPass(features) {
         break;
       case 'MultiPoint':
         pointPositions += geometry.coordinates.length;
-        geometry.coordinates.forEach(point => {
+        for (const point of geometry.coordinates) {
           if (point.length === 3) maxCoordLength = 3;
-        });
+        }
         break;
       case 'LineString':
         linePositions += geometry.coordinates.length;
         linePaths++;
 
-        geometry.coordinates.forEach(coord => {
+        for (const coord of geometry.coordinates) {
           if (coord.length === 3) maxCoordLength = 3;
-        });
+        }
         break;
       case 'MultiLineString':
-        geometry.coordinates.forEach(line => {
+        for (const line of geometry.coordinates) {
           linePositions += line.length;
           linePaths++;
 
-          line.coordinates.forEach(coord => {
+          for (const coord of line.coordinates) {
             if (coord.length === 3) maxCoordLength = 3;
-          });
-        });
+          }
+        }
         break;
       case 'Polygon':
         polygonObjects++;
         polygonRings += geometry.coordinates.length;
         polygonPositions += geometry.coordinates.flat(1).length;
 
-        geometry.coordinates.flat().forEach(coord => {
+        for (const coord of geometry.coordinates.flat()) {
           if (coord.length === 3) maxCoordLength = 3;
-        });
+        }
         break;
       case 'MultiPolygon':
-        geometry.coordinates.forEach(polygon => {
+        for (const polygon of geometry.coordinates) {
           polygonObjects++;
           polygonRings += polygon.length;
           polygonPositions += polygon.flat(1).length;
 
-          geometry.coordinates.flat().forEach(coord => {
+          for (const coord of geometry.coordinates.flat()) {
             if (coord.length === 3) maxCoordLength = 3;
-          });
-        });
+          }
+        }
         break;
       default:
         throw new Error(`Unsupported geometry type: ${geometry.type}`);
     }
-  });
+  };
 
   return {
     pointPositions,
@@ -117,7 +117,7 @@ function secondPass(features, firstPassData, options = {}) {
     feature: 0
   };
 
-  features.forEach(feature => {
+  for (const feature of features) {
     const geometry = feature.geometry;
 
     switch (geometry.type) {
@@ -144,7 +144,7 @@ function secondPass(features, firstPassData, options = {}) {
     }
 
     index.feature++;
-  });
+  };
 
   return {
     points,
@@ -160,9 +160,9 @@ function handlePoint({coords, points, index, coordLength}) {
 }
 
 function handleMultiPoint({coords, points, index, coordLength}) {
-  coords.forEach(point => {
+  for (const point of coords) {
     handlePoint({coords: point, points, index, coordLength});
-  });
+  }
 }
 
 function handleLineString({coords, lines, index, coordLength}) {
@@ -177,19 +177,19 @@ function handleLineString({coords, lines, index, coordLength}) {
 }
 
 function handleMultiLineString({coords, lines, index, coordLength}) {
-  coords.forEach(line => {
+  for (const line of coords) {
     handleLineString({coords: line, lines, index, coordLength});
-  });
+  }
 }
 
 function handlePolygon({coords, polygons, index, coordLength}) {
   polygons.polygonIndices[index.polygonObject] = index.polygonPosition * coordLength;
   index.polygonObject++;
 
-  coords.forEach(() => {
+  for (const {} of coords) {
     polygons.primitivePolygonIndices[index.polygonRing] = index.polygonPosition * coordLength;
     index.polygonRing++;
-  });
+  }
 
   polygons.positions.set(coords.flat(2), index.polygonPosition * coordLength);
 
@@ -199,7 +199,7 @@ function handlePolygon({coords, polygons, index, coordLength}) {
 }
 
 function handleMultiPolygon({coords, lines, index, coordLength}) {
-  coords.forEach(polygon => {
-    handleLineString({coords: polygon, lines, index, coordLength});
-  });
+  for (const polygon of coords) {
+    handlePolygon({coords: polygon, lines, index, coordLength});
+  }
 }
