@@ -9,6 +9,7 @@
 // Limitations: Compressed binary files are not supported.
 
 /* global TextDecoder */
+import {getMeshBoundingBox} from '@loaders.gl/loader-utils';
 const LITTLE_ENDIAN = true;
 
 export default function parsePCD(data, url, options) {
@@ -33,22 +34,25 @@ export default function parsePCD(data, url, options) {
       throw new Error(`PCD: ${header.data} files are not supported`);
   }
 
+  attributes = getNormalizedAttributes(attributes);
+
   return {
     loaderData: {
       header
     },
-    header: getNormalizedHeader(header),
+    header: getNormalizedHeader(header, attributes),
     mode: 0, // POINTS
     indices: null,
-    attributes: getNormalizedAttributes(attributes)
+    attributes
   };
 }
 
 // Create a header that contains common data for PointCloud category loaders
-function getNormalizedHeader(PCDheader) {
+function getNormalizedHeader(PCDheader, attributes) {
   const pointCount = PCDheader.width * PCDheader.height; // Supports "organized" point sets
   return {
-    vertexCount: pointCount
+    vertexCount: pointCount,
+    boundingBox: getMeshBoundingBox(attributes)
   };
 }
 

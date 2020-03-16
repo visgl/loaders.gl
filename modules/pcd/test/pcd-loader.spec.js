@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
-import {validateLoader, validatePointCloudCategoryData} from 'test/common/conformance';
+import {validateLoader, validateMeshCategoryData} from 'test/common/conformance';
 
 import {PCDLoader, PCDWorkerLoader} from '@loaders.gl/pcd';
 import {setLoaderOptions, fetchFile, parse, load} from '@loaders.gl/core';
@@ -22,7 +22,7 @@ test('PCDLoader#loader conformance', t => {
 
 test('PCDLoader#parse(text)', async t => {
   const data = await parse(fetchFile(PCD_ASCII_URL), PCDLoader);
-  validatePointCloudCategoryData(t, data);
+  validateMeshCategoryData(t, data);
 
   t.equal(data.mode, 0, 'mode is POINTS (0)');
   t.notOk(data.indices, 'INDICES attribute was not found');
@@ -35,7 +35,7 @@ test('PCDLoader#parse(text)', async t => {
 
 test('PCDLoader#parse(binary)', async t => {
   const data = await parse(fetchFile(PCD_BINARY_URL), PCDLoader, {worker: false});
-  validatePointCloudCategoryData(t, data);
+  validateMeshCategoryData(t, data);
 
   t.equal(data.mode, 0, 'mode is POINTS (0)');
   t.notOk(data.indices, 'INDICES attribute was not preset');
@@ -52,7 +52,7 @@ test('PCDWorkerLoader#parse(binary)', async t => {
   }
 
   const data = await load(PCD_BINARY_URL, PCDWorkerLoader);
-  validatePointCloudCategoryData(t, data);
+  validateMeshCategoryData(t, data);
 
   t.equal(data.mode, 0, 'mode is POINTS (0)');
   t.notOk(data.indices, 'INDICES attribute was not preset');

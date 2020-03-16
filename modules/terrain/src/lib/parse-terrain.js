@@ -1,4 +1,5 @@
 import Martini from '@mapbox/martini';
+import {getMeshBoundingBox} from '@loaders.gl/loader-utils';
 
 function getTerrain(imageData, tileSize, elevationDecoder) {
   const {rScaler, bScaler, gScaler, offset} = elevationDecoder;
@@ -76,15 +77,20 @@ function getMartiniTileMesh(terrainImage, terrainOptions) {
   const tile = martini.createTile(terrain);
   const {vertices, triangles} = tile.getMesh(meshMaxError);
 
+  const attributes = getMeshAttributes(vertices, terrain, tileSize, bounds);
+
   return {
     // Data return by this loader implementation
     loaderData: {
       header: {}
     },
-    header: {vertexCount: triangles.length},
+    header: {
+      vertexCount: triangles.length,
+      boundingBox: getMeshBoundingBox(attributes)
+    },
     mode: 4, // TRIANGLES
     indices: {value: triangles, size: 1},
-    attributes: getMeshAttributes(vertices, terrain, tileSize, bounds)
+    attributes
   };
 }
 

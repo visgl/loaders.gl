@@ -29,10 +29,15 @@ export function validateWriter(t, writer, name = '') {
  * Check if the returned data from loaders use the format specified in:
  *  /docs/developer-guide/category-pointcloud.md
  */
-export function validatePointCloudCategoryData(t, data) {
+export function validateMeshCategoryData(t, data) {
   t.ok(data.loaderData && data.loaderData.header, 'data has original header');
 
   t.ok(data.header && Number.isFinite(data.header.vertexCount), 'data has normalized header');
+  t.ok(data.header.boundingBox
+    && data.header.boundingBox.length === 2
+    && data.header.boundingBox.every(p =>
+      p.length === 3 && p.every(Number.isFinite)
+    ), 'data header has boundingBox');
 
   t.ok(Number.isFinite(data.mode), 'data has draw mode');
 

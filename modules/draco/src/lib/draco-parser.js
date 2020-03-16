@@ -1,6 +1,7 @@
 // This code is a fork of example code from the DRACO repository
 // Copyright 2017 The Draco Authors.
 // Licensed under the Apache License, Version 2.0 (the 'License');
+import {getMeshBoundingBox} from '@loaders.gl/loader-utils';
 
 const GEOMETRY_TYPE = {
   TRIANGULAR_MESH: 0,
@@ -88,12 +89,14 @@ export default class DracoParser {
         throw new Error(message);
       }
 
-      data.header = {
-        vertexCount: header.vertexCount
-      };
       data.loaderData = {header};
 
       this.extractDRACOGeometry(decoder, dracoGeometry, geometryType, data);
+
+      data.header = {
+        vertexCount: header.vertexCount,
+        boundingBox: getMeshBoundingBox(data.attributes)
+      };
     } finally {
       this.draco.destroy(decoder);
       this.draco.destroy(buffer);

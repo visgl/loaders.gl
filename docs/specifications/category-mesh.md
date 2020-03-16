@@ -37,9 +37,10 @@ The Pointcloud/Mesh loaders output mesh data in a common form that is optimized 
 
 The `header` fields are only recommended at this point, applications can not assume they will be present:
 
-| `header` Field | Type     | Contents |
-| -------------- | -------- | -------- |
-| `vertexCount`  | `Number` |          |
+| `header` Field | Type     | Contents                                   |
+| -------------- | -------- | ------------------------------------------ |
+| `vertexCount`  | `Number` |                                            |
+| `boundingBox`  | `Array`  | `[[minX, minY, minZ], [maxX, maxY, maxZ]]` |
 
 ### Mode
 
