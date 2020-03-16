@@ -122,22 +122,22 @@ function secondPass(features, firstPassData, options = {}) {
 
     switch (geometry.type) {
       case 'Point':
-        handlePoint({coords: geometry.coordinates, points, index, coordLength});
+        handlePoint(geometry.coordinates, points, index, coordLength);
         break;
       case 'MultiPoint':
-        handleMultiPoint({coords: geometry.coordinates, points, index, coordLength});
+        handleMultiPoint(geometry.coordinates, points, index, coordLength);
         break;
       case 'LineString':
-        handleLineString({coords: geometry.coordinates, lines, index, coordLength});
+        handleLineString(geometry.coordinates, lines, index, coordLength);
         break;
       case 'MultiLineString':
-        handleMultiLineString({coords: geometry.coordinates, lines, index, coordLength});
+        handleMultiLineString(geometry.coordinates, lines, index, coordLength);
         break;
       case 'Polygon':
-        handlePolygon({coords: geometry.coordinates, polygons, index, coordLength});
+        handlePolygon(geometry.coordinates, polygons, index, coordLength);
         break;
       case 'MultiPolygon':
-        handleMultiPolygon({coords: geometry.coordinates, polygons, index, coordLength});
+        handleMultiPolygon(geometry.coordinates, polygons, index, coordLength);
         break;
       default:
         throw new Error('Invalid geometry type');
@@ -153,19 +153,19 @@ function secondPass(features, firstPassData, options = {}) {
   };
 }
 
-function handlePoint({coords, points, index, coordLength}) {
+function handlePoint(coords, points, index, coordLength) {
   points.positions.set(coords, index.pointPosition * coordLength);
   points.objectIds[index.pointPosition] = index.feature;
   index.pointPosition++;
 }
 
-function handleMultiPoint({coords, points, index, coordLength}) {
+function handleMultiPoint(coords, points, index, coordLength) {
   for (const point of coords) {
-    handlePoint({coords: point, points, index, coordLength});
+    handlePoint(point, points, index, coordLength);
   }
 }
 
-function handleLineString({coords, lines, index, coordLength}) {
+function handleLineString(coords, lines, index, coordLength) {
   lines.pathIndices[index.linePath] = index.linePosition * coordLength;
   index.linePath++;
 
@@ -176,13 +176,13 @@ function handleLineString({coords, lines, index, coordLength}) {
   index.linePosition += nPositions;
 }
 
-function handleMultiLineString({coords, lines, index, coordLength}) {
+function handleMultiLineString(coords, lines, index, coordLength) {
   for (const line of coords) {
-    handleLineString({coords: line, lines, index, coordLength});
+    handleLineString(line, lines, index, coordLength);
   }
 }
 
-function handlePolygon({coords, polygons, index, coordLength}) {
+function handlePolygon(coords, polygons, index, coordLength) {
   polygons.polygonIndices[index.polygonObject] = index.polygonPosition * coordLength;
   index.polygonObject++;
 
@@ -198,8 +198,8 @@ function handlePolygon({coords, polygons, index, coordLength}) {
   index.polygonPosition += nPositions;
 }
 
-function handleMultiPolygon({coords, lines, index, coordLength}) {
+function handleMultiPolygon(coords, polygons, index, coordLength) {
   for (const polygon of coords) {
-    handlePolygon({coords: polygon, lines, index, coordLength});
+    handlePolygon(polygon, polygons, index, coordLength);
   }
 }
