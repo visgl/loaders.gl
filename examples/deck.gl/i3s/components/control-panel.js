@@ -17,10 +17,10 @@ const Container = styled.div`
   position: absolute;
   top: 0;
   right: 0;
-  width: 200px;
+  width: 340px;
   background: #fff;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  padding: 12px 24px;
+  padding: 12px 18px;
   margin: 20px;
   font-size: 13px;
   line-height: 2;
@@ -38,10 +38,18 @@ const TilesetDropDown = styled.select`
   font-size: 16px;
 `;
 
+const FrameWrap = styled.div`
+  width: 320px;
+  height: 200px;
+  padding: 0;
+  overflow: hidden;
+`;
+
 const propTypes = {
   name: PropTypes.string.isRequired,
   tileset: PropTypes.object,
   mapStyles: PropTypes.object,
+  metadata: PropTypes.object,
   onExampleChange: PropTypes.func,
   children: PropTypes.node
 };
@@ -74,6 +82,12 @@ export default class ControlPanel extends PureComponent {
           });
         }}
       >
+        {' '}
+        {!name && (
+          <option key={'custom-example'} value={'custom-example'}>
+            {'Custom example'}
+          </option>
+        )}
         {Object.keys(EXAMPLES).map(key => {
           const example = EXAMPLES[key];
           return (
@@ -109,11 +123,32 @@ export default class ControlPanel extends PureComponent {
     );
   }
 
+  _renderInfo() {
+    const {metadata} = this.props;
+    if (!metadata) {
+      return null;
+    }
+    const url = `https://www.arcgis.com/home/item.html?id=${metadata.serviceItemId}`;
+    return (
+      <FrameWrap>
+        <iframe
+          style={{border: '1px solid rgba(200, 200, 200, 100)'}}
+          id={'tileset-info'}
+          src={url}
+        />
+        <div>
+          <a href={url}>Go to ArcGIS</a>
+        </div>
+      </FrameWrap>
+    );
+  }
+
   render() {
     return (
       <Container>
         {this._renderExamples()}
         {this._renderMapStyles()}
+        {this._renderInfo()}
         {this.props.children}
       </Container>
     );

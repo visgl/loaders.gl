@@ -1,4 +1,4 @@
-/* global window, URL */
+/* global window, fetch, URL */
 import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
@@ -77,6 +77,7 @@ export default class App extends PureComponent {
     }
 
     this.setState({dataUrl, token});
+    this._onSelectExample(dataUrl, token);
   }
 
   _loadTilesetFromUrl() {
@@ -85,6 +86,19 @@ export default class App extends PureComponent {
       url: parsedUrl.searchParams.get('url'),
       token: parsedUrl.searchParams.get('token')
     };
+  }
+
+  async _onSelectExample(url, token) {
+    if (!url) {
+      return;
+    }
+    const index = url.lastIndexOf('/layers/0');
+    let metadataUrl = url.substring(0, index);
+    if (token) {
+      metadataUrl = `${metadataUrl}?token=${token}`;
+    }
+    const metadata = await fetch(metadataUrl).then(resp => resp.json());
+    this.setState({metadata});
   }
 
   // Updates stats, called every frame
@@ -144,17 +158,19 @@ export default class App extends PureComponent {
   }
 
   _renderControlPanel() {
-    const {tileset, name} = this.state;
+    const {tileset, name, metadata} = this.state;
     return (
       <ControlPanel
         tileset={tileset}
         name={name}
-        onExampleChange={selected =>
+        metadata={metadata}
+        onExampleChange={selected => {
           this.setState({
             name: selected.name,
             dataUrl: selected.example.url
-          })
-        }
+          });
+          this._onSelectExample(selected.example.url);
+        }}
       />
     );
   }
