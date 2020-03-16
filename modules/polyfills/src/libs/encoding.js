@@ -3080,4 +3080,5 @@ decoders['x-user-defined'] = function(options) {
 // FORK
 // if (!global['TextEncoder']) global['TextEncoder'] = TextEncoder;
 // if (!global['TextDecoder']) global['TextDecoder'] = TextDecoder;
-export {TextEncoder, TextDecoder};
+// babel.config.js skip transpiling files in `libs/`
+module.exports = {TextEncoder, TextDecoder};
