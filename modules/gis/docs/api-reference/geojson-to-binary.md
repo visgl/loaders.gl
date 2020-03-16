@@ -37,27 +37,27 @@ index of the vertex in the initial `features` array.
 {
   points: {
     // Array of x, y or x, y, z positions
-    positions: Float32Array,
+    positions: {value: Float32Array, size: coordLength},
     // Array of original feature indexes by vertex
-    objectIds: Uint32Array,
+    objectIds: {value: Uint32Array, size: 1},
   },
   lines: {
     // Indices within positions of the start of each individual LineString
-    pathIndices: Uint32Array,
+    pathIndices: {value: Uint32Array, size: 1},
     // Array of x, y or x, y, z positions
-    positions: Float32Array,
+    positions: {value: Float32Array, size: coordLength},
     // Array of original feature indexes by vertex
-    objectIds: Uint32Array,
+    objectIds: {value: Uint32Array, size: 1},
   },
   polygons: {
     // Indices within positions of the start of each complex Polygon
-    polygonIndices: Uint32Array,
+    polygonIndices: {value: Uint32Array, size: 1},
     // Indices within positions of the start of each primitive Polygon/ring
-    primitivePolygonIndices: Uint32Array,
+    primitivePolygonIndices: {value: Uint32Array, size: 1},
     // Array of x, y or x, y, z positions
-    positions: Float32Array,
+    positions: {value: Float32Array, size: coordLength},
     // Array of original feature indexes by vertex
-    objectIds: Uint32Array,
+    objectIds: {value: Uint32Array, size: 1},
   }
 }
 ```

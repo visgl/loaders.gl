@@ -160,10 +160,23 @@ function secondPass(features, firstPassData, options = {}) {
     index.feature++;
   }
 
+  // Wrap each array in an accessor object with value and size keys
   return {
-    points,
-    lines,
-    polygons
+    points: {
+      positions: {value: points.positions, size: coordLength},
+      objectIds: {value: points.objectIds, size: 1}
+    },
+    lines: {
+      pathIndices: {value: lines.pathIndices, size: 1},
+      positions: {value: lines.positions, size: coordLength},
+      objectIds: {value: lines.objectIds, size: 1}
+    },
+    polygons: {
+      polygonIndices: {value: polygons.polygonIndices, size: 1},
+      primitivePolygonIndices: {value: polygons.primitivePolygonIndices, size: 1},
+      positions: {value: polygons.positions, size: coordLength},
+      objectIds: {value: polygons.objectIds, size: 1}
+    }
   };
 }
 
