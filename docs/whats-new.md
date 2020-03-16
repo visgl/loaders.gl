@@ -1,8 +1,52 @@
 # What's New
 
-## v2.1 (In Development)
+## v2.1
 
-Target Release Date: mid-Feb, 2019. `alpha` releases will be made available.
+Release Date: Mar 16, 2020
+
+### New Geospatial Loaders
+
+**@loaders.gl/i3s** (new loader module)
+
+<table style="border: 0;" align="center">
+  <tbody>
+    <tr>
+      <td>
+        <img style="max-height:200px" src="https://raw.github.com/uber-common/deck.gl-data/master/images/whats-new/mvt-layer.jpg" />
+        <p><i>MVTLoader + <a target="_blank" href="https://deck.gl/#/documentation/deckgl-api-reference/layers/mvt-layer">MVTLayer</a></i></p>
+      </td>
+      <td>
+        <img style="max-height:200px" src="https://raw.github.com/uber-common/deck.gl-data/master/images/whats-new/terrain.jpg" />
+        <p><i>TerrainLoader + <a target="_blank" href="https://deck.gl/#/documentation/deckgl-api-reference/layers/terrain-layer">TerrainLayer</a></i></p>
+      </td>
+      <td>
+        <img style="max-height:200px" src="https://raw.github.com/uber-common/deck.gl-data/master/images/whats-new/esri-i3s.gif" />
+        <p><i>I3SLoader + <a target="_blank" href="https://deck.gl/#/documentation/deckgl-api-reference/layers/tile-3d-layer">Tile3DLayer</a> + I3S</i></p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<table style="border: 0;" align="center">
+
+The new loaders empowers rendering frameworks to visualize various geospatial datasets.
+
+**@loaders.gl/i3s** (new loader module)
+
+- Collaborated with I3S Tamrat Belayneh [@Tamrat-B](https://github.com/Tamrat-B), a new loader module for loading [I3S](https://github.com/Esri/i3s-spec) tiles is added to the 3D Tiles family. Checkout the San Francisco Buildings [example](https://loaders.gl/examples/i3s).
+
+**@loaders.gl/mvt** (new loader module)
+
+- With the efforts led by contributors from [CARTO](https://carto.com/), new loader module for loading [Mapbox Vector Tiles](https://github.com/mapbox/vector-tile-spec).
+
+**@loaders.gl/terrain** (new loader module)
+
+- New loader module for reconstructing mesh surfaces from height map images. Check out the [example](https://github.com/uber/deck.gl/tree/master/examples/website/terrain) with deck.gl's [`TerrainLayer`](https://deck.gl/#/documentation/deckgl-api-reference/layers/terrain-layer).
+
+**@loaders.gl/wkt** (new loader module)
+
+- New loader module for the Well-Known Text geometry format.
+
+### Other Improvements
 
 **@loaders.gl/core**
 
@@ -22,32 +66,9 @@ Target Release Date: mid-Feb, 2019. `alpha` releases will be made available.
 
 - The streaming JSON loader now has an experimental option `_rootObjectBatches` that returns the top-level JSON object containing the JSON array being streamed, as additional first (partial) and last (complete) batches.
 
-**@loaders.gl/i3s** (new loader module)
+**Mesh Category**
 
-- New loader module for loading [I3S](https://github.com/Esri/i3s-spec) tiles.
-
-<table style="border: 0;" align="center">
-  <tbody>
-    <tr>
-      <td style="text-align: center;">
-        <img style="max-height:200px" src="https://raw.github.com/uber-web/loaders.gl/master/website/static/images/example-i3s.jpg" />
-        <p><strong>Tiles3DLoader</strong></p>
-      </td>
-    </tr>
-  </tbody>
-</table>
-
-**@loaders.gl/mvt** (new loader module)
-
-- New loader module for loading [Mapbox Vector Tiles](https://github.com/mapbox/vector-tile-spec) tiles.
-
-**@loaders.gl/terrain** (new loader module)
-
-- New loader module for reconstructing mesh surfaces from height map images.
-
-**@loaders.gl/wkt** (new loader module)
-
-- New loader module for the Well-Known Text geometry format.
+- Add `boundingBox` to [mesh category](/docs/specifications/category-mesh) header
 
 ## v2.0
 
