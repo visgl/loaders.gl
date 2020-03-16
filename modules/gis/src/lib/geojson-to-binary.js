@@ -3,6 +3,7 @@ export function featuresToBinary(features, options = {}) {
   return secondPass(features, firstPassData, options);
 }
 
+// eslint-disable-next-line complexity
 function firstPass(features) {
   // Counts the number of _positions_, so [x, y, z] counts as one
   let pointPositions = 0;
@@ -23,6 +24,7 @@ function firstPass(features) {
       case 'MultiPoint':
         pointPositions += geometry.coordinates.length;
         for (const point of geometry.coordinates) {
+          // eslint-disable-next-line max-depth
           if (point.length === 3) maxCoordLength = 3;
         }
         break;
@@ -31,6 +33,7 @@ function firstPass(features) {
         linePaths++;
 
         for (const coord of geometry.coordinates) {
+          // eslint-disable-next-line max-depth
           if (coord.length === 3) maxCoordLength = 3;
         }
         break;
@@ -39,7 +42,9 @@ function firstPass(features) {
           linePositions += line.length;
           linePaths++;
 
+          // eslint-disable-next-line max-depth
           for (const coord of line.coordinates) {
+            // eslint-disable-next-line max-depth
             if (coord.length === 3) maxCoordLength = 3;
           }
         }
@@ -50,6 +55,7 @@ function firstPass(features) {
         polygonPositions += geometry.coordinates.flat(1).length;
 
         for (const coord of geometry.coordinates.flat()) {
+          // eslint-disable-next-line max-depth
           if (coord.length === 3) maxCoordLength = 3;
         }
         break;
@@ -59,7 +65,9 @@ function firstPass(features) {
           polygonRings += polygon.length;
           polygonPositions += polygon.flat(1).length;
 
+          // eslint-disable-next-line max-depth
           for (const coord of geometry.coordinates.flat()) {
+            // eslint-disable-next-line max-depth
             if (coord.length === 3) maxCoordLength = 3;
           }
         }
