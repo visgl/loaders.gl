@@ -66,6 +66,10 @@ The new loaders empowers rendering frameworks to visualize various geospatial da
 
 - The streaming JSON loader now has an experimental option `_rootObjectBatches` that returns the top-level JSON object containing the JSON array being streamed, as additional first (partial) and last (complete) batches.
 
+**Mesh Category**
+
+- Add `boundingBox` to [mesh category](/docs/specifications/category-mesh) header
+
 ## v2.0
 
 Release Date: Dec 20, 2019
