@@ -1,8 +1,12 @@
-export function featuresToBinary(features, options = {}) {
+// Convert GeoJSON features to flat binary arrays
+export function geojsonToBinary(features, options = {}) {
   const firstPassData = firstPass(features);
   return secondPass(features, firstPassData, options);
 }
 
+// Initial scan over GeoJSON features
+// Counts number of coordinates of each geometry type and keeps track of the max coordinate
+// dimensions
 // eslint-disable-next-line complexity
 function firstPass(features) {
   // Counts the number of _positions_, so [x, y, z] counts as one
@@ -75,7 +79,7 @@ function firstPass(features) {
       default:
         throw new Error(`Unsupported geometry type: ${geometry.type}`);
     }
-  };
+  }
 
   return {
     pointPositions,
@@ -88,6 +92,8 @@ function firstPass(features) {
   };
 }
 
+// Second scan over GeoJSON features
+// Fills coordinates into pre-allocated typed arrays
 function secondPass(features, firstPassData, options = {}) {
   const {
     pointPositions,
@@ -152,7 +158,7 @@ function secondPass(features, firstPassData, options = {}) {
     }
 
     index.feature++;
-  };
+  }
 
   return {
     points,
@@ -161,18 +167,21 @@ function secondPass(features, firstPassData, options = {}) {
   };
 }
 
+// Fills Point coordinates into points object of arrays
 function handlePoint(coords, points, index, coordLength) {
   points.positions.set(coords, index.pointPosition * coordLength);
   points.objectIds[index.pointPosition] = index.feature;
   index.pointPosition++;
 }
 
+// Fills MultiPoint coordinates into points object of arrays
 function handleMultiPoint(coords, points, index, coordLength) {
   for (const point of coords) {
     handlePoint(point, points, index, coordLength);
   }
 }
 
+// Fills LineString coordinates into lines object of arrays
 function handleLineString(coords, lines, index, coordLength) {
   lines.pathIndices[index.linePath] = index.linePosition * coordLength;
   index.linePath++;
@@ -184,12 +193,14 @@ function handleLineString(coords, lines, index, coordLength) {
   index.linePosition += nPositions;
 }
 
+// Fills MultiLineString coordinates into lines object of arrays
 function handleMultiLineString(coords, lines, index, coordLength) {
   for (const line of coords) {
     handleLineString(line, lines, index, coordLength);
   }
 }
 
+// Fills Polygon coordinates into polygons object of arrays
 function handlePolygon(coords, polygons, index, coordLength) {
   polygons.polygonIndices[index.polygonObject] = index.polygonPosition * coordLength;
   index.polygonObject++;
@@ -206,6 +217,7 @@ function handlePolygon(coords, polygons, index, coordLength) {
   index.polygonPosition += nPositions;
 }
 
+// Fills MultiPolygon coordinates into polygons object of arrays
 function handleMultiPolygon(coords, polygons, index, coordLength) {
   for (const polygon of coords) {
     handlePolygon(polygon, polygons, index, coordLength);
