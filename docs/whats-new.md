@@ -1,8 +1,8 @@
 # What's New
 
-## v2.1 (In Development)
+## v2.1
 
-Target Release Date: mid-March, 2019. `alpha` releases will be made available.
+Release Date: Mar 16, 2020
 
 ### New Geospatial Loaders
 
