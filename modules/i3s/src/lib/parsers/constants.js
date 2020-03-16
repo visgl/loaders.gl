@@ -22,7 +22,7 @@ export const I3S_NAMED_VERTEX_ATTRIBUTES = {
   region: 'region'
 };
 
-export const I3S_NAMED_GEOMETREY_ATTRIBUTES = {
+export const I3S_NAMED_GEOMETRY_ATTRIBUTES = {
   vertexAttributes: 'vertexAttributes',
   featureAttributeOrder: 'featureAttributeOrder',
   featureAttributes: 'featureAttributes'
