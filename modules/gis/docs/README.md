@@ -8,8 +8,8 @@ This module contains helper classes for the GIS category of loaders.
 npm install @loaders.gl/gis
 ```
 
-## Loaders and Writers
+## Utility Functions
 
-| Loader                                                    |
-| --------------------------------------------------------- |
-| [`MVTLoader`](modules/mvts/docs/api-reference/mvt-loader) |
+| Utility Functions                                                       |
+| ----------------------------------------------------------------------- |
+| [`geojson-to-binary`](modules/gis/docs/api-reference/geojson-to-binary) |

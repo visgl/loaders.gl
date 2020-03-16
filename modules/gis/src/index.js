@@ -1,1 +1,1 @@
-export {featuresToBinary} from './lib/geojson-to-binary';
+export {geojsonToBinary} from './lib/geojson-to-binary';
