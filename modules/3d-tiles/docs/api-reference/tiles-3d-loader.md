@@ -36,7 +36,7 @@ const tileUrl = 'https://assets.cesium.com/43978/1.pnts';
 const tile = await load(tileUrl, Tiles3DLoader, {DracoWorkerLoader, decompress: true});
 ```
 
-Load a tileset and dynamically load/unload tiles based on viewport with `@loaders.gl/tiles` module
+Load a tileset and dynamically load/unload tiles based on viewport with helper class `Tileset3D` (`@loaders.gl/tiles`)
 
 ```js
 import {load} from '@loaders.gl/core';
@@ -52,6 +52,11 @@ const tileset3d = new Tileset3D(tilesetJson, {
 
 const viewport = new WebMercatorViewport({latitude, longitude, zoom});
 tileset3d.update(viewport);
+
+// visible tiles
+const visibleTiles = tileset3d.tiles.filter(tile => tile.selected);
+// Note that visibleTiles will likely not immediately include all tiles
+// tiles will keep loading and file `onTileLoad` callbacks
 ```
 
 ## Options

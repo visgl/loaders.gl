@@ -26,6 +26,17 @@ Target Release Date: mid-Feb, 2019. `alpha` releases will be made available.
 
 - New loader module for loading [I3S](https://github.com/Esri/i3s-spec) tiles.
 
+<table style="border: 0;" align="center">
+  <tbody>
+    <tr>
+      <td style="text-align: center;">
+        <img style="max-height:200px" src="https://raw.github.com/uber-web/loaders.gl/master/website/static/images/example-i3s.jpg" />
+        <p><strong>Tiles3DLoader</strong></p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
 **@loaders.gl/mvt** (new loader module)
 
 - New loader module for loading [Mapbox Vector Tiles](https://github.com/mapbox/vector-tile-spec) tiles.

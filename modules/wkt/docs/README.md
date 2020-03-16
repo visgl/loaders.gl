@@ -1,4 +1,4 @@
-# @loaders.gl/wkt
+# Overview
 
 The `@loaders.gl/wkt` module handles the the [Well Known Text](https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry), an ASCII format that defines geospatial geometries.
 

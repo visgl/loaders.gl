@@ -1,27 +1,23 @@
 /* eslint-disable no-unused-vars */
 import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
+
 import DeckGL from '@deck.gl/react';
 import {COORDINATE_SYSTEM, OrbitView, LinearInterpolator} from '@deck.gl/core';
 import {PointCloudLayer} from '@deck.gl/layers';
 
-import {DracoLoader} from '@loaders.gl/draco';
+import {DracoWorkerLoader} from '@loaders.gl/draco';
 import {LASLoader} from '@loaders.gl/las';
 import {PLYLoader} from '@loaders.gl/ply';
 import {PCDLoader} from '@loaders.gl/pcd';
 import {OBJLoader} from '@loaders.gl/obj';
-
-import {load, registerLoaders, setLoaderOptions} from '@loaders.gl/core';
+import {load, registerLoaders} from '@loaders.gl/core';
 
 import ControlPanel from './components/control-panel';
-// import fileDrop from './components/file-drop';
-
 import FILE_INDEX from './file-index';
 
 // Additional format support can be added here, see
-registerLoaders([DracoLoader, LASLoader, PLYLoader, PCDLoader, OBJLoader]);
-// TODO fix WorkerLoader
-setLoaderOptions({worker: false});
+registerLoaders([DracoWorkerLoader, LASLoader, PLYLoader, PCDLoader, OBJLoader]);
 
 const INITIAL_VIEW_STATE = {
   target: [0, 0, 0],
@@ -84,9 +80,8 @@ export default class App extends PureComponent {
       viewState: INITIAL_VIEW_STATE,
       pointData: null,
       // control panel
-      droppedFile: null,
-      selectedExample: 'Indoor Scan 800K',
-      selectedCategory: 'LAZ'
+      selectedExample: 'Richmond Azaelias',
+      selectedCategory: 'PLY'
     };
 
     this._onLoad = this._onLoad.bind(this);
@@ -104,7 +99,7 @@ export default class App extends PureComponent {
     this.setState({
       viewState: {
         ...viewState,
-        rotationOrbit: viewState.rotationOrbit + 30,
+        rotationOrbit: viewState.rotationOrbit + 10,
         transitionDuration: 600,
         transitionInterpolator,
         onTransitionEnd: this._rotateCamera
@@ -164,7 +159,7 @@ export default class App extends PureComponent {
         new PointCloudLayer({
           // Layers can't reinitialize with new binary data
           id: `point-cloud-layer-${selectedExample}`,
-          coordinateSystem: COORDINATE_SYSTEM.IDENTITY,
+          coordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
           data: pointData,
           getNormal: [0, 1, 0],
           getColor: [255, 255, 255],
@@ -182,7 +177,6 @@ export default class App extends PureComponent {
         selectedCategory={selectedCategory}
         selectedExample={selectedExample}
         onExampleChange={this._onExampleChange}
-        // Stats - put in separate stats panel?
         vertexCount={pointData && pointData.length}
         loadTimeMs={loadTimeMs}
       />
@@ -193,7 +187,7 @@ export default class App extends PureComponent {
     const {viewState} = this.state;
 
     return (
-      <div>
+      <div style={{position: 'relative', height: '100%'}}>
         {this._renderControlPanel()}
         <DeckGL
           views={new OrbitView()}
