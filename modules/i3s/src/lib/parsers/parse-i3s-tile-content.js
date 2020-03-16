@@ -10,7 +10,7 @@ import {
   SIZEOF,
   I3S_NAMED_HEADER_ATTRIBUTES,
   I3S_NAMED_VERTEX_ATTRIBUTES,
-  I3S_NAMED_GEOMETREY_ATTRIBUTES
+  I3S_NAMED_GEOMETRY_ATTRIBUTES
 } from './constants';
 import {getUrlWithToken} from './utils';
 
@@ -71,7 +71,7 @@ function constructFeatureDataStruct(tile, tileset) {
   const defaultGeometrySchema = tileset.store.defaultGeometrySchema;
   const featureData = defaultGeometrySchema;
   // populate the vertex attributes value types and values per element
-  for (const geometryAttribute in I3S_NAMED_GEOMETREY_ATTRIBUTES) {
+  for (const geometryAttribute in I3S_NAMED_GEOMETRY_ATTRIBUTES) {
     for (const namedAttribute in I3S_NAMED_VERTEX_ATTRIBUTES) {
       // const geomAttribute = defaultGeometrySchema[geometryAttribute];
       const attribute = defaultGeometrySchema[geometryAttribute][namedAttribute];

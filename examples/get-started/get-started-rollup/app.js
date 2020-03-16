@@ -1,4 +1,4 @@
-/* global fetch */
+/* global document, fetch */
 import {parse} from '@loaders.gl/core';
 import {OBJLoader} from '@loaders.gl/obj';
 
@@ -7,7 +7,7 @@ const OBJ_URL =
 
 async function main() {
   const data = await parse(fetch(OBJ_URL), OBJLoader);
-  console.log(JSON.stringify(data, null, 2)); // eslint-disable-line
+  document.getElementById('content').innerHTML = JSON.stringify(data, null, 2);
 }
 
 main();
