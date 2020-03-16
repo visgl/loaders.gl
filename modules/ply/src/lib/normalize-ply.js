@@ -1,4 +1,8 @@
+import {getMeshBoundingBox} from '@loaders.gl/loader-utils';
+
 export default function normalizePLY(header, attributes, options) {
+  const normalizedAttributes = normalizeAttributes(attributes);
+
   const result = {
     loaderData: {
       header
@@ -6,10 +10,11 @@ export default function normalizePLY(header, attributes, options) {
     // TODO - how to detect POINT CLOUDS vs MESHES?
     // TODO - For Meshes, PLY quadrangles must be split?
     header: {
-      vertexCount: attributes.indices.length || attributes.vertices.length / 3
+      vertexCount: attributes.indices.length || attributes.vertices.length / 3,
+      boundingBox: getMeshBoundingBox(normalizedAttributes)
     },
     mode: attributes.indices && attributes.indices.length > 0 ? 4 : 0, // TRIANGLES vs POINTS
-    attributes: normalizeAttributes(attributes)
+    attributes: normalizedAttributes
   };
 
   if (attributes.indices && attributes.indices.length > 0) {

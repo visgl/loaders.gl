@@ -1,3 +1,4 @@
+import {getMeshBoundingBox} from '@loaders.gl/loader-utils';
 // ported and es6-ified from https://github.com/verma/plasio/
 import {LASFile} from './laslaz-decoder';
 
@@ -85,7 +86,8 @@ export default function parseLAS(arraybuffer, options = {}) {
 
   result.header = {
     // @ts-ignore Possibly undefined
-    vertexCount: originalHeader.totalToRead
+    vertexCount: originalHeader.totalToRead,
+    boundingBox: getMeshBoundingBox(result.attributes)
   };
   return result;
 }

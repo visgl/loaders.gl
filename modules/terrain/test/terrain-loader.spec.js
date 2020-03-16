@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
-import {validateLoader, validatePointCloudCategoryData} from 'test/common/conformance';
+import {validateLoader, validateMeshCategoryData} from 'test/common/conformance';
 
 import {TerrainLoader, TerrainWorkerLoader} from '@loaders.gl/terrain';
 import {setLoaderOptions, load} from '@loaders.gl/core';
@@ -34,7 +34,7 @@ test('TerrainLoader#parse mapbox', async t => {
     }
   };
   const data = await load(MAPBOX_TERRAIN_PNG_URL, TerrainLoader, options);
-  validatePointCloudCategoryData(t, data); // TODO: should there be a validateMeshCategoryData?
+  validateMeshCategoryData(t, data); // TODO: should there be a validateMeshCategoryData?
 
   t.equal(data.mode, 4, 'mode is TRIANGLES (4)');
 
@@ -65,7 +65,7 @@ test('TerrainLoader#parse terrarium', async t => {
   };
 
   const data = await load(TERRARIUM_TERRAIN_PNG_URL, TerrainLoader, options);
-  validatePointCloudCategoryData(t, data); // TODO: should there be a validateMeshCategoryData?
+  validateMeshCategoryData(t, data); // TODO: should there be a validateMeshCategoryData?
 
   t.equal(data.mode, 4, 'mode is TRIANGLES (4)');
 
@@ -102,7 +102,7 @@ test('TerrainWorkerLoader#parse terrarium', async t => {
   };
 
   const data = await load(TERRARIUM_TERRAIN_PNG_URL, TerrainWorkerLoader, options);
-  validatePointCloudCategoryData(t, data); // TODO: should there be a validateMeshCategoryData?
+  validateMeshCategoryData(t, data); // TODO: should there be a validateMeshCategoryData?
 
   t.equal(data.mode, 4, 'mode is TRIANGLES (4)');
 

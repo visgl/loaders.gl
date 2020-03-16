@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
-import {validateLoader, validatePointCloudCategoryData} from 'test/common/conformance';
+import {validateLoader, validateMeshCategoryData} from 'test/common/conformance';
 
 import {LASLoader, LASWorkerLoader} from '@loaders.gl/las';
 import {setLoaderOptions, fetchFile, parse, load} from '@loaders.gl/core';
@@ -21,7 +21,7 @@ test('LASLoader#loader conformance', t => {
 
 test('LASLoader#parse(binary)', async t => {
   const data = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {las: {skip: 10}, worker: false});
-  validatePointCloudCategoryData(t, data);
+  validateMeshCategoryData(t, data);
 
   t.is(data.header.vertexCount, data.loaderData.header.totalRead, 'Original header was found');
   t.equal(data.mode, 0, 'mode is POINTS (0)');
@@ -40,7 +40,7 @@ test('LASWorkerLoader#load(worker)', async t => {
   }
 
   const data = await load(LAS_BINARY_URL, LASWorkerLoader, {las: {skip: 10}});
-  validatePointCloudCategoryData(t, data);
+  validateMeshCategoryData(t, data);
 
   t.equal(data.attributes.POSITION.value.length, 80805 * 3, 'POSITION attribute was found');
   t.end();

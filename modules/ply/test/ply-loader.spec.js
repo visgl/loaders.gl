@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
-import {validateLoader, validatePointCloudCategoryData} from 'test/common/conformance';
+import {validateLoader, validateMeshCategoryData} from 'test/common/conformance';
 
 import {PLYLoader, PLYWorkerLoader, _PLYStreamLoader} from '@loaders.gl/ply';
 import {setLoaderOptions, fetchFile, parse, parseSync, load} from '@loaders.gl/core';
@@ -31,7 +31,7 @@ test('PLYLoader#loader conformance', t => {
 test('PLYLoader#parse(textFile)', async t => {
   const data = await parse(fetchFile(PLY_CUBE_ATT_URL), PLYLoader, {});
 
-  validatePointCloudCategoryData(t, data);
+  validateMeshCategoryData(t, data);
   validateTextPLY(t, data);
   t.end();
 });
@@ -39,7 +39,7 @@ test('PLYLoader#parse(textFile)', async t => {
 test('PLYLoader#parse(binary)', async t => {
   const data = await parse(fetchFile(PLY_BUN_BINARY_URL), PLYLoader);
 
-  validatePointCloudCategoryData(t, data);
+  validateMeshCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
   t.end();
 });
@@ -47,7 +47,7 @@ test('PLYLoader#parse(binary)', async t => {
 test('PLYLoader#parse(ascii)', async t => {
   const data = await parse(fetchFile(PLY_BUN_ZIPPER_URL), PLYLoader);
 
-  validatePointCloudCategoryData(t, data);
+  validateMeshCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 107841, 'POSITION attribute was found');
   t.end();
 });
@@ -56,7 +56,7 @@ test('PLYLoader#parseSync(binary)', async t => {
   const arrayBuffer = await fetchFile(PLY_BUN_ZIPPER_URL).then(res => res.arrayBuffer());
   const data = parseSync(arrayBuffer, PLYLoader);
 
-  validatePointCloudCategoryData(t, data);
+  validateMeshCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 107841, 'POSITION attribute was found');
   t.end();
 });
@@ -70,7 +70,7 @@ test('PLYLoader#parse(WORKER)', async t => {
 
   const data = await load(PLY_BUN_ZIPPER_URL, PLYWorkerLoader);
 
-  validatePointCloudCategoryData(t, data);
+  validateMeshCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 107841, 'POSITION attribute was found');
   t.end();
 });
@@ -82,7 +82,7 @@ test('PLYLoader#parseStream(text)', async t => {
 
   const data = await _PLYStreamLoader.parseStream(makeStreamIterator(stream));
 
-  validatePointCloudCategoryData(t, data);
+  validateMeshCategoryData(t, data);
   t.equal(data.indices.value.length, 36, 'Indices found');
   t.equal(data.attributes.POSITION.value.length, 72, 'POSITION attribute was found');
   t.equal(data.attributes.NORMAL.value.length, 72, 'NORMAL attribute was found');

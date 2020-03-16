@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
-import {validateLoader, validatePointCloudCategoryData} from 'test/common/conformance';
+import {validateLoader, validateMeshCategoryData} from 'test/common/conformance';
 
 import {DracoLoader, DracoWorkerLoader} from '@loaders.gl/draco';
 import {setLoaderOptions, load} from '@loaders.gl/core';
@@ -21,7 +21,7 @@ test('DracoLoader#loader conformance', t => {
 
 test('DracoLoader#parse(mainthread)', async t => {
   const data = await load(BUNNY_DRC_URL, DracoLoader, {worker: false});
-  validatePointCloudCategoryData(t, data);
+  validateMeshCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
   t.end();
 });
@@ -34,7 +34,7 @@ test('DracoWorkerLoader#parse', async t => {
   }
 
   const data = await load(BUNNY_DRC_URL, DracoWorkerLoader);
-  validatePointCloudCategoryData(t, data);
+  validateMeshCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
 
   t.end();

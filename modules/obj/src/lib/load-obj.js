@@ -1,9 +1,12 @@
+import {getMeshBoundingBox} from '@loaders.gl/loader-utils';
 import parseOBJ from './parse-obj';
 
 export default function loadOBJ(text, options) {
   const {meshes} = parseOBJ(text);
 
   const vertexCount = meshes.reduce((s, mesh) => s + mesh.header.vertexCount, 0);
+  // TODO - render objects separately
+  const attributes = mergeAttributes(meshes, vertexCount);
 
   return {
     // Data return by this loader implementation
@@ -12,12 +15,12 @@ export default function loadOBJ(text, options) {
     },
     // Normalised data
     header: {
-      vertexCount
+      vertexCount,
+      boundingBox: getMeshBoundingBox(attributes)
     },
     mode: 4, // TRIANGLES
 
-    // TODO - render objects separately
-    attributes: mergeAttributes(meshes, vertexCount)
+    attributes
   };
 }
 

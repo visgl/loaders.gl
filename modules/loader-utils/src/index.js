@@ -52,4 +52,4 @@ export {default as RequestScheduler} from './lib/request-utils/request-scheduler
 
 // MESH CATEGORY UTILS
 // Note: Should move to category specific module if code size increases
-export {getMeshSize as _getMeshSize} from './categories/mesh/mesh-utils';
+export {getMeshSize as _getMeshSize, getMeshBoundingBox} from './categories/mesh/mesh-utils';

@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
-import {validateLoader, validatePointCloudCategoryData} from 'test/common/conformance';
+import {validateLoader, validateMeshCategoryData} from 'test/common/conformance';
 
 import {OBJLoader, OBJWorkerLoader} from '@loaders.gl/obj';
 import {setLoaderOptions, load} from '@loaders.gl/core';
@@ -23,7 +23,7 @@ test('OBJLoader#loader objects', t => {
 
 test('OBJLoader#parseText', async t => {
   const data = await load(OBJ_ASCII_URL, OBJLoader);
-  validatePointCloudCategoryData(t, data);
+  validateMeshCategoryData(t, data);
 
   t.equal(data.mode, 4, 'mode is TRIANGLES (4)');
 
@@ -35,7 +35,7 @@ test('OBJLoader#parseText', async t => {
 
 test('OBJLoader#parseText - object with normals', async t => {
   const data = await load(OBJ_NORMALS_URL, OBJLoader);
-  validatePointCloudCategoryData(t, data);
+  validateMeshCategoryData(t, data);
 
   t.equal(data.attributes.POSITION.value.length, 108, 'POSITION attribute was found');
   t.equal(data.attributes.POSITION.size, 3, 'POSITION attribute was found');
@@ -48,7 +48,7 @@ test('OBJLoader#parseText - object with normals', async t => {
 
 test('OBJLoader#parseText - multi-part object', async t => {
   const data = await load(OBJ_MULTI_PART_URL, OBJLoader);
-  validatePointCloudCategoryData(t, data);
+  validateMeshCategoryData(t, data);
 
   t.equal(data.header.vertexCount, 1372 * 3, 'Vertices are loaded');
   t.end();
@@ -63,7 +63,7 @@ test('OBJWorkerLoader#parse(text)', async t => {
 
   const data = await load(OBJ_ASCII_URL, OBJWorkerLoader);
 
-  validatePointCloudCategoryData(t, data);
+  validateMeshCategoryData(t, data);
 
   t.equal(data.mode, 4, 'mode is TRIANGLES (4)');
 
