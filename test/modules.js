@@ -40,6 +40,7 @@ require('@loaders.gl/tiles/test');
 require('@loaders.gl/kml/test');
 require('@loaders.gl/wkt/test');
 require('@loaders.gl/mvt/test');
+require('@loaders.gl/gis/test')
 
 // Table Formats
 require('@loaders.gl/tables/test');
