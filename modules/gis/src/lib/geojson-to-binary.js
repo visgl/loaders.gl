@@ -23,7 +23,9 @@ function firstPass(features) {
     switch (geometry.type) {
       case 'Point':
         pointPositions++;
-        if (geometry.coordinates.length === 3) maxCoordLength = 3;
+        if (geometry.coordinates.length === 3) {
+          maxCoordLength = 3;
+        }
         break;
       case 'MultiPoint':
         pointPositions += geometry.coordinates.length;
@@ -121,7 +123,7 @@ function secondPass(features, firstPassData, options = {}) {
     objectIds: new Uint32Array(polygonPositions)
   };
 
-  const index = {
+  const indexMap = {
     pointPosition: 0,
     linePosition: 0,
     linePath: 0,
@@ -136,28 +138,28 @@ function secondPass(features, firstPassData, options = {}) {
 
     switch (geometry.type) {
       case 'Point':
-        handlePoint(geometry.coordinates, points, index, coordLength);
+        handlePoint(geometry.coordinates, points, indexMap, coordLength);
         break;
       case 'MultiPoint':
-        handleMultiPoint(geometry.coordinates, points, index, coordLength);
+        handleMultiPoint(geometry.coordinates, points, indexMap, coordLength);
         break;
       case 'LineString':
-        handleLineString(geometry.coordinates, lines, index, coordLength);
+        handleLineString(geometry.coordinates, lines, indexMap, coordLength);
         break;
       case 'MultiLineString':
-        handleMultiLineString(geometry.coordinates, lines, index, coordLength);
+        handleMultiLineString(geometry.coordinates, lines, indexMap, coordLength);
         break;
       case 'Polygon':
-        handlePolygon(geometry.coordinates, polygons, index, coordLength);
+        handlePolygon(geometry.coordinates, polygons, indexMap, coordLength);
         break;
       case 'MultiPolygon':
-        handleMultiPolygon(geometry.coordinates, polygons, index, coordLength);
+        handleMultiPolygon(geometry.coordinates, polygons, indexMap, coordLength);
         break;
       default:
         throw new Error('Invalid geometry type');
     }
 
-    index.feature++;
+    indexMap.feature++;
   }
 
   // Wrap each array in an accessor object with value and size keys
@@ -181,58 +183,61 @@ function secondPass(features, firstPassData, options = {}) {
 }
 
 // Fills Point coordinates into points object of arrays
-function handlePoint(coords, points, index, coordLength) {
-  points.positions.set(coords, index.pointPosition * coordLength);
-  points.objectIds[index.pointPosition] = index.feature;
-  index.pointPosition++;
+function handlePoint(coords, points, indexMap, coordLength) {
+  points.positions.set(coords, indexMap.pointPosition * coordLength);
+  points.objectIds[indexMap.pointPosition] = indexMap.feature;
+  indexMap.pointPosition++;
 }
 
 // Fills MultiPoint coordinates into points object of arrays
-function handleMultiPoint(coords, points, index, coordLength) {
+function handleMultiPoint(coords, points, indexMap, coordLength) {
   for (const point of coords) {
-    handlePoint(point, points, index, coordLength);
+    handlePoint(point, points, indexMap, coordLength);
   }
 }
 
 // Fills LineString coordinates into lines object of arrays
-function handleLineString(coords, lines, index, coordLength) {
-  lines.pathIndices[index.linePath] = index.linePosition * coordLength;
-  index.linePath++;
+function handleLineString(coords, lines, indexMap, coordLength) {
+  lines.pathIndices[indexMap.linePath] = indexMap.linePosition * coordLength;
+  indexMap.linePath++;
 
-  lines.positions.set(coords.flat(), index.linePosition * coordLength);
+  lines.positions.set(coords.flat(), indexMap.linePosition * coordLength);
 
   const nPositions = coords.length;
-  lines.objectIds.set(new Uint32Array(nPositions).fill(index.feature), index.linePosition);
-  index.linePosition += nPositions;
+  lines.objectIds.set(new Uint32Array(nPositions).fill(indexMap.feature), indexMap.linePosition);
+  indexMap.linePosition += nPositions;
 }
 
 // Fills MultiLineString coordinates into lines object of arrays
-function handleMultiLineString(coords, lines, index, coordLength) {
+function handleMultiLineString(coords, lines, indexMap, coordLength) {
   for (const line of coords) {
-    handleLineString(line, lines, index, coordLength);
+    handleLineString(line, lines, indexMap, coordLength);
   }
 }
 
 // Fills Polygon coordinates into polygons object of arrays
-function handlePolygon(coords, polygons, index, coordLength) {
-  polygons.polygonIndices[index.polygonObject] = index.polygonPosition * coordLength;
-  index.polygonObject++;
+function handlePolygon(coords, polygons, indexMap, coordLength) {
+  polygons.polygonIndices[indexMap.polygonObject] = indexMap.polygonPosition * coordLength;
+  indexMap.polygonObject++;
 
   for (const {} of coords) {
-    polygons.primitivePolygonIndices[index.polygonRing] = index.polygonPosition * coordLength;
-    index.polygonRing++;
+    polygons.primitivePolygonIndices[indexMap.polygonRing] = indexMap.polygonPosition * coordLength;
+    indexMap.polygonRing++;
   }
 
-  polygons.positions.set(coords.flat(2), index.polygonPosition * coordLength);
+  polygons.positions.set(coords.flat(2), indexMap.polygonPosition * coordLength);
 
   const nPositions = coords.flat(1).length;
-  polygons.objectIds.set(new Uint32Array(nPositions).fill(index.feature), index.polygonPosition);
-  index.polygonPosition += nPositions;
+  polygons.objectIds.set(
+    new Uint32Array(nPositions).fill(indexMap.feature),
+    indexMap.polygonPosition
+  );
+  indexMap.polygonPosition += nPositions;
 }
 
 // Fills MultiPolygon coordinates into polygons object of arrays
-function handleMultiPolygon(coords, polygons, index, coordLength) {
+function handleMultiPolygon(coords, polygons, indexMap, coordLength) {
   for (const polygon of coords) {
-    handlePolygon(polygon, polygons, index, coordLength);
+    handlePolygon(polygon, polygons, indexMap, coordLength);
   }
 }
