@@ -47,7 +47,7 @@ function firstPass(features) {
           linePaths++;
 
           // eslint-disable-next-line max-depth
-          for (const coord of line.coordinates) {
+          for (const coord of line) {
             // eslint-disable-next-line max-depth
             if (coord.length === 3) maxCoordLength = 3;
           }
@@ -70,7 +70,7 @@ function firstPass(features) {
           polygonPositions += polygon.flat(1).length;
 
           // eslint-disable-next-line max-depth
-          for (const coord of geometry.coordinates.flat()) {
+          for (const coord of polygon.flat()) {
             // eslint-disable-next-line max-depth
             if (coord.length === 3) maxCoordLength = 3;
           }
