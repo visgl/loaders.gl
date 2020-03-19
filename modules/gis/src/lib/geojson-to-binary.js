@@ -220,19 +220,19 @@ function handlePolygon(coords, polygons, indexMap, coordLength) {
   polygons.polygonIndices[indexMap.polygonObject] = indexMap.polygonPosition;
   indexMap.polygonObject++;
 
-  for (const {} of coords) {
+  for (const ring of coords) {
     polygons.primitivePolygonIndices[indexMap.polygonRing] = indexMap.polygonPosition;
     indexMap.polygonRing++;
+
+    polygons.positions.set(ring.flat(1), indexMap.polygonPosition * coordLength);
+
+    const nPositions = ring.length;
+    polygons.objectIds.set(
+      new Uint32Array(nPositions).fill(indexMap.feature),
+      indexMap.polygonPosition
+    );
+    indexMap.polygonPosition += nPositions;
   }
-
-  polygons.positions.set(coords.flat(2), indexMap.polygonPosition * coordLength);
-
-  const nPositions = coords.flat(1).length;
-  polygons.objectIds.set(
-    new Uint32Array(nPositions).fill(indexMap.feature),
-    indexMap.polygonPosition
-  );
-  indexMap.polygonPosition += nPositions;
 }
 
 // Fills MultiPolygon coordinates into polygons object of arrays
