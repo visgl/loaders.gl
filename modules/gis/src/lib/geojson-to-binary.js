@@ -198,7 +198,7 @@ function handleMultiPoint(coords, points, indexMap, coordLength) {
 
 // Fills LineString coordinates into lines object of arrays
 function handleLineString(coords, lines, indexMap, coordLength) {
-  lines.pathIndices[indexMap.linePath] = indexMap.linePosition * coordLength;
+  lines.pathIndices[indexMap.linePath] = indexMap.linePosition;
   indexMap.linePath++;
 
   lines.positions.set(coords.flat(), indexMap.linePosition * coordLength);
@@ -217,11 +217,11 @@ function handleMultiLineString(coords, lines, indexMap, coordLength) {
 
 // Fills Polygon coordinates into polygons object of arrays
 function handlePolygon(coords, polygons, indexMap, coordLength) {
-  polygons.polygonIndices[indexMap.polygonObject] = indexMap.polygonPosition * coordLength;
+  polygons.polygonIndices[indexMap.polygonObject] = indexMap.polygonPosition;
   indexMap.polygonObject++;
 
   for (const {} of coords) {
-    polygons.primitivePolygonIndices[indexMap.polygonRing] = indexMap.polygonPosition * coordLength;
+    polygons.primitivePolygonIndices[indexMap.polygonRing] = indexMap.polygonPosition;
     indexMap.polygonRing++;
   }
 
