@@ -11,8 +11,8 @@
     "serve": "serve public"
   },
   "dependencies": {
-    "@loaders.gl/core": "^2.1.0-beta.2",
-    "@loaders.gl/obj": "^2.1.0-beta.2"
+    "@loaders.gl/core": "^2.1.1",
+    "@loaders.gl/obj": "^2.1.1"
   },
   "devDependencies": {
     "rollup": "^1.16.2",
