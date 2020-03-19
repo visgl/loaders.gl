@@ -235,7 +235,7 @@ export default class App extends PureComponent {
 
     const {ionAssetId, ionAccessToken, maximumScreenSpaceError} = selectedExample;
     const tilesetUrl = `${TILESET_SERVER_URL}/${ionAssetId}/tileset.json`;
-    const loadOptions = {accessToken: ionAccessToken};
+    const loadOptions = {'cesium-ion': {accessToken: ionAccessToken}};
     if (maximumScreenSpaceError) {
       loadOptions.maximumScreenSpaceError = maximumScreenSpaceError;
     }

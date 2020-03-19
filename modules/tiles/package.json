@@ -33,15 +33,15 @@
     "build-bundle": "webpack --display=minimal --config ../../scripts/bundle.config.js"
   },
   "dependencies": {
-    "@loaders.gl/core": "2.1.0-beta.2",
-    "@loaders.gl/loader-utils": "2.1.0-beta.2",
-    "@loaders.gl/math": "2.1.0-beta.2",
+    "@loaders.gl/core": "^2.1.1",
+    "@loaders.gl/loader-utils": "^2.1.1",
+    "@loaders.gl/math": "^2.1.1",
     "@math.gl/core": "^3.1.3",
     "@math.gl/culling": "^3.1.2",
     "@math.gl/geospatial": "^3.1.2",
     "@probe.gl/stats": "^3.2.1"
   },
   "devDependencies": {
-    "@deck.gl/core": "^8.1.0-beta.3"
+    "@deck.gl/core": "^8.1.0"
   }
 }
