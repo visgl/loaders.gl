@@ -2,9 +2,11 @@ import test from 'tape-promise/tape';
 import {fetchFile} from '@loaders.gl/core';
 import {geojsonToBinary} from '@loaders.gl/gis';
 
-// Sample GeoJSON Files
+// Sample GeoJSON data derived from examples in GeoJSON specification
+// https://tools.ietf.org/html/rfc7946#appendix-A
 // All features have 2D coordinates
 const FEATURES_2D = '@loaders.gl/gis/test/data/2d_features.json';
+// All features have 3D coordinates
 const FEATURES_3D = '@loaders.gl/gis/test/data/3d_features.json';
 
 test('gis#geojson-to-binary 2D features', async t => {
