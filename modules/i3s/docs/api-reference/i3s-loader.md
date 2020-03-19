@@ -23,28 +23,130 @@ The terms and concepts used in `i3s` module have the corresponding parts [I3S Sp
 
 ## Usage
 
-When using loaders.gl's generic [`load`](https://loaders.gl/modules/core/docs/api-reference/load#load) function, user needs explicitly specify `I3Sloader` as auto detect loader from previously [`registered loaders`](https://loaders.gl/modules/core/docs/api-reference/register-loaders) is currently not supported for`I3Sloader`.
+**Load I3S tileset and render with [deck.gl](https://deck.gl/#/)**
+
+A simple react app uses `I3SLoader` to load [San Francisco Buildings](https://www.arcgis.com/home/item.html?id=d3344ba99c3f4efaa909ccfbcc052ed5), render with [deck.gl's](https://deck.gl/) [`Tile3Dlayer`](https://deck.gl/#/documentation/deckgl-api-reference/layers/tile-3d-layer) and dynamically load/unload tiles based on current viewport and adjust the level of details when zooming in and out.
+
+<table style="border: 0;" align="center">
+  <tbody>
+    <img style="max-height:200px" src="https://raw.github.com/uber-common/deck.gl-data/master/images/whats-new/esri-i3s.gif" />
+  </tbody>
+</table>
+
+[Example Codesandbox](https://codesandbox.io/s/i3sloadersgldeckgl-34dfp)
 
 ```js
-import {I3SLoader} from '@loaders.gl/i3s';
-import {load} from '@loaders.gl/core';
+import React, {Component} from 'react';
 
-// load tileset
+import {StaticMap} from 'react-map-gl';
+import DeckGL from '@deck.gl/react';
+import {MapController} from '@deck.gl/core';
+import {Tile3DLayer} from '@deck.gl/geo-layers';
+import {I3SLoader} from '@loaders.gl/i3s';
+
+// How to get mapbox token https://docs.mapbox.com/help/how-mapbox-works/access-tokens/
+const MAPBOX_TOKEN = ''; // add your Mapbox token here
+
+const INITIAL_VIEW_STATE = {
+  longitude: -120,
+  latitude: 34,
+  height: 600,
+  width: 800,
+  pitch: 45,
+  maxPitch: 85,
+  bearing: 0,
+  minZoom: 2,
+  maxZoom: 30,
+  zoom: 14.5
+};
+
+export default class App extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {viewState: INITIAL_VIEW_STATE};
+  }
+
+  _onTilesetLoad(tileset) {
+    // update viewport to the tileset center
+    const {zoom, cartographicCenter} = tileset;
+    const [longitude, latitude] = cartographicCenter;
+
+    const viewState = {
+      ...this.state.viewState,
+      zoom: zoom + 2.5,
+      longitude,
+      latitude
+    };
+
+    this.setState({viewState});
+  }
+
+  render() {
+    const {viewState} = this.state;
+
+    // construct Tile3DLayer to render I3S tileset
+    const layer = new Tile3DLayer({
+      id: 'tile-3d-layer',
+      // Tileset entry point: Indexed 3D layer file url
+      data:
+        'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_Bldgs/SceneServer/layers/0',
+      loader: I3SLoader,
+      onTilesetLoad: this._onTilesetLoad.bind(this)
+    });
+
+    return (
+      <DeckGL
+        layers={[layer]}
+        viewState={viewState}
+        controller={{type: MapController}}
+        onViewStateChange={({viewState}) => {
+          // update viewState when interacting with map
+          this.setState({viewState});
+        }}
+      >
+        <StaticMap
+          mapStyle={'mapbox://styles/mapbox/dark-v9'}
+          mapboxApiAccessToken={MAPBOX_TOKEN}
+          preventStyleDiffing
+        />
+      </DeckGL>
+    );
+  }
+}
+```
+
+A more complex example could be found [here](https://github.com/uber-web/loaders.gl/tree/master/examples/deck.gl/i3s), checkout website [examples](https://loaders.gl/examples/i3s).
+
+**Basic API Usage**
+
+Basic API usage is illustrated in the following snippet. Create a `Tileset3D` instance, point it a valid tileset URL, set up callbacks, and keep feeding in new camera positions:
+
+```js
+import {load} from '@loaders.gl/core';
+import {I3SLoader} from '@loaders.gl/i3s';
+import {Tileset3D} from '@loaders.gl/tiles';
+
 const tileseturl =
   'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_Bldgs/SceneServer/layers/0';
-const tileset = await load(tileseturl, I3SLoader, {token: '<token-to-fetch-data>'});
 
-// load tile with content
-const tileUrl =
-  'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_Bldgs/SceneServer/layers/0/nodes/2';
-const tile = await load(tileUrl, I3SLoader, {i3s: {loadContent: true}});
+const tileset = await load(tileseturl, I3SLoader);
 
-// load tile content
-// featureUrl is needed to load the tile content
-const tileUrl =
-  'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_Bldgs/SceneServer/layers/0/nodes/2/geometries/0';
-await load(tileUrl, I3SLoader, {tile});
-// load to `tile.content`
+const tileset3d = new Tileset3D(tilesetJson, {
+  onTileLoad: tile => console.log(tile)
+});
+
+// initial viewport
+// viewport should be deck.gl WebMercatorViewport instance
+tileset3d.update(viewport);
+
+// Viewport changes (pan zoom etc)
+tileset3d.update(viewport);
+
+// Visible tiles
+const visibleTiles = tileset3d.tiles.filter(tile => tile.selected);
+
+// Note that visibleTiles will likely not immediately include all tiles
+// tiles will keep loading and file `onTileLoad` callbacks
 ```
 
 ## Options
