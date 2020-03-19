@@ -1,0 +1,98 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [100.0, 0.0, 1]
+      },
+      "properties": {}
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiPoint",
+        "coordinates": [[100.0, 0.0, 2], [101.0, 1.0, 3]]
+      },
+      "properties": {}
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[100.0, 0.0, 4], [101.0, 1.0, 5]]
+      },
+      "properties": {}
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [[[100.0, 0.0, 6], [101.0, 1.0, 7]], [[102.0, 2.0, 8], [103.0, 3.0, 9]]]
+      },
+      "properties": {}
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [[100.0, 0.0, 10], [101.0, 0.0, 11], [101.0, 1.0, 12], [100.0, 1.0, 13], [100.0, 0.0, 14]]
+        ]
+      },
+      "properties": {}
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [100.0, 0.0, 15],
+            [101.0, 0.0, 16],
+            [101.0, 1.0, 17],
+            [100.0, 1.0, 18],
+            [100.0, 0.0, 19]
+          ],
+          [[100.8, 0.8, 20], [100.8, 0.2, 21], [100.2, 0.2, 22], [100.2, 0.8, 23], [100.8, 0.8, 24]]
+        ]
+      },
+      "properties": {}
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [102.0, 2.0, 25],
+              [103.0, 2.0, 26],
+              [103.0, 3.0, 27],
+              [102.0, 3.0, 28],
+              [102.0, 2.0, 29]
+            ]
+          ],
+          [
+            [
+              [100.0, 0.0, 30],
+              [101.0, 0.0, 31],
+              [101.0, 1.0, 32],
+              [100.0, 1.0, 33],
+              [100.0, 0.0, 34]
+            ],
+            [
+              [100.2, 0.2, 35],
+              [100.2, 0.8, 36],
+              [100.8, 0.8, 37],
+              [100.8, 0.2, 38],
+              [100.2, 0.2, 39]
+            ]
+          ]
+        ]
+      },
+      "properties": {}
+    }
+  ]
+}
