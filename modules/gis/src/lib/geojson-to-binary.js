@@ -58,9 +58,9 @@ function firstPass(features) {
       case 'Polygon':
         polygonObjects++;
         polygonRings += geometry.coordinates.length;
-        polygonPositions += geometry.coordinates.flat(1).length;
+        polygonPositions += flatten(geometry.coordinates).length;
 
-        for (const coord of geometry.coordinates.flat()) {
+        for (const coord of flatten(geometry.coordinates)) {
           // eslint-disable-next-line max-depth
           if (coord.length === 3) maxCoordLength = 3;
         }
@@ -69,10 +69,10 @@ function firstPass(features) {
         for (const polygon of geometry.coordinates) {
           polygonObjects++;
           polygonRings += polygon.length;
-          polygonPositions += polygon.flat(1).length;
+          polygonPositions += flatten(polygon).length;
 
           // eslint-disable-next-line max-depth
-          for (const coord of polygon.flat()) {
+          for (const coord of flatten(polygon)) {
             // eslint-disable-next-line max-depth
             if (coord.length === 3) maxCoordLength = 3;
           }
@@ -201,7 +201,7 @@ function handleLineString(coords, lines, indexMap, coordLength) {
   lines.pathIndices[indexMap.linePath] = indexMap.linePosition;
   indexMap.linePath++;
 
-  lines.positions.set(coords.flat(), indexMap.linePosition * coordLength);
+  lines.positions.set(flatten(coords), indexMap.linePosition * coordLength);
 
   const nPositions = coords.length;
   lines.objectIds.set(new Uint32Array(nPositions).fill(indexMap.feature), indexMap.linePosition);
@@ -224,7 +224,7 @@ function handlePolygon(coords, polygons, indexMap, coordLength) {
     polygons.primitivePolygonIndices[indexMap.polygonRing] = indexMap.polygonPosition;
     indexMap.polygonRing++;
 
-    polygons.positions.set(ring.flat(1), indexMap.polygonPosition * coordLength);
+    polygons.positions.set(flatten(ring), indexMap.polygonPosition * coordLength);
 
     const nPositions = ring.length;
     polygons.objectIds.set(
@@ -240,4 +240,8 @@ function handleMultiPolygon(coords, polygons, indexMap, coordLength) {
   for (const polygon of coords) {
     handlePolygon(polygon, polygons, indexMap, coordLength);
   }
+}
+
+function flatten(arrays) {
+  return [].concat(...arrays);
 }
