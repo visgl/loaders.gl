@@ -7,7 +7,7 @@ export function geojsonToBinary(features, options = {}) {
 // Initial scan over GeoJSON features
 // Counts number of coordinates of each geometry type and keeps track of the max coordinate
 // dimensions
-// eslint-disable-next-line complexity
+// eslint-disable-next-line complexity, max-statements
 function firstPass(features) {
   // Counts the number of _positions_, so [x, y, z] counts as one
   let pointPositions = 0;
@@ -17,6 +17,7 @@ function firstPass(features) {
   let polygonObjects = 0;
   let polygonRings = 0;
   let maxCoordLength = 2;
+  const numericProps = {};
 
   for (const feature of features) {
     const geometry = feature.geometry;
@@ -81,6 +82,13 @@ function firstPass(features) {
       default:
         throw new Error(`Unsupported geometry type: ${geometry.type}`);
     }
+
+    if (feature.properties) {
+      for (const key in feature.properties) {
+        const val = feature.properties[key];
+        numericProps[key] = numericProps[key] ? isNumeric(val) : numericProps[key];
+      }
+    }
   }
 
   return {
@@ -90,7 +98,8 @@ function firstPass(features) {
     coordLength: maxCoordLength,
     polygonPositions,
     polygonObjects,
-    polygonRings
+    polygonRings,
+    numericProps
   };
 }
 
@@ -244,4 +253,8 @@ function handleMultiPolygon(coords, polygons, indexMap, coordLength) {
 
 function flatten(arrays) {
   return [].concat(...arrays);
+}
+
+function isNumeric(x) {
+  return Number.isFinite(x);
 }
