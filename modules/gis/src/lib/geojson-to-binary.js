@@ -120,24 +120,27 @@ function secondPass(features, firstPassData, options = {}) {
   const {PositionDataType = Float32Array} = options;
   const points = {
     positions: new PositionDataType(pointPositions * coordLength),
-    objectIds: new Uint32Array(pointPositions)
+    objectIds: new Uint32Array(pointPositions),
+    numericProps: {}
   };
   const lines = {
     pathIndices: new Uint32Array(linePaths + 1),
     positions: new PositionDataType(linePositions * coordLength),
-    objectIds: new Uint32Array(linePositions)
+    objectIds: new Uint32Array(linePositions),
+    numericProps: {}
   };
   const polygons = {
     polygonIndices: new Uint32Array(polygonObjects + 1),
     primitivePolygonIndices: new Uint32Array(polygonRings + 1),
     positions: new PositionDataType(polygonPositions * coordLength),
-    objectIds: new Uint32Array(polygonPositions)
+    objectIds: new Uint32Array(polygonPositions),
+    numericProps: {}
   };
 
   // Instantiate numeric properties arrays; one value per vertex
   for (const object of [points, lines, polygons]) {
     for (const propName of numericProps) {
-      object[propName] = new Float32Array(object.positions.length / coordLength);
+      object.numericProps[propName] = new Float32Array(object.positions.length / coordLength);
     }
   }
   // Set last element of path/polygon indices as positions length
