@@ -1,7 +1,7 @@
 // Convert GeoJSON features to flat binary arrays
 export function geojsonToBinary(features, options = {}) {
   const firstPassData = firstPass(features);
-  return secondPass(features, firstPassData, options);
+  return secondPass(features, {...firstPassData, ...options});
 }
 
 // Initial scan over GeoJSON features
@@ -99,7 +99,7 @@ function firstPass(features) {
 
 // Second scan over GeoJSON features
 // Fills coordinates into pre-allocated typed arrays
-function secondPass(features, firstPassData, options = {}) {
+function secondPass(features, options = {}) {
   const {
     pointPositions,
     linePositions,
@@ -108,9 +108,9 @@ function secondPass(features, firstPassData, options = {}) {
     polygonPositions,
     polygonObjects,
     polygonRings,
-    numericProps
-  } = firstPassData;
-  const {PositionDataType = Float32Array} = options;
+    numericProps,
+    PositionDataType = Float32Array
+  } = options;
   const points = {
     positions: new PositionDataType(pointPositions * coordLength),
     objectIds: new Uint32Array(pointPositions),
