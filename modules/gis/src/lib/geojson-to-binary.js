@@ -16,7 +16,7 @@ function firstPass(features) {
   let polygonPositions = 0;
   let polygonObjects = 0;
   let polygonRings = 0;
-  let maxCoordLength = 2;
+  const coordLengths = new Set();
   const numericProps = {};
 
   for (const feature of features) {
@@ -24,15 +24,12 @@ function firstPass(features) {
     switch (geometry.type) {
       case 'Point':
         pointPositions++;
-        if (geometry.coordinates.length === 3) {
-          maxCoordLength = 3;
-        }
+        coordLengths.add(geometry.coordinates.length);
         break;
       case 'MultiPoint':
         pointPositions += geometry.coordinates.length;
         for (const point of geometry.coordinates) {
-          // eslint-disable-next-line max-depth
-          if (point.length === 3) maxCoordLength = 3;
+          coordLengths.add(point.length);
         }
         break;
       case 'LineString':
@@ -40,8 +37,7 @@ function firstPass(features) {
         linePaths++;
 
         for (const coord of geometry.coordinates) {
-          // eslint-disable-next-line max-depth
-          if (coord.length === 3) maxCoordLength = 3;
+          coordLengths.add(coord.length);
         }
         break;
       case 'MultiLineString':
@@ -51,8 +47,7 @@ function firstPass(features) {
 
           // eslint-disable-next-line max-depth
           for (const coord of line) {
-            // eslint-disable-next-line max-depth
-            if (coord.length === 3) maxCoordLength = 3;
+            coordLengths.add(coord.length);
           }
         }
         break;
@@ -62,8 +57,7 @@ function firstPass(features) {
         polygonPositions += flatten(geometry.coordinates).length;
 
         for (const coord of flatten(geometry.coordinates)) {
-          // eslint-disable-next-line max-depth
-          if (coord.length === 3) maxCoordLength = 3;
+          coordLengths.add(coord.length);
         }
         break;
       case 'MultiPolygon':
@@ -74,8 +68,7 @@ function firstPass(features) {
 
           // eslint-disable-next-line max-depth
           for (const coord of flatten(polygon)) {
-            // eslint-disable-next-line max-depth
-            if (coord.length === 3) maxCoordLength = 3;
+            coordLengths.add(coord.length);
           }
         }
         break;
@@ -95,7 +88,7 @@ function firstPass(features) {
     pointPositions,
     linePositions,
     linePaths,
-    coordLength: maxCoordLength,
+    coordLength: Math.max(...coordLengths),
     polygonPositions,
     polygonObjects,
     polygonRings,
