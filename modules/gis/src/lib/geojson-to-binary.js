@@ -99,7 +99,8 @@ function firstPass(features) {
     polygonPositions,
     polygonObjects,
     polygonRings,
-    numericProps
+    // Array of keys whose values are always numeric
+    numericProps: Object.keys(numericProps).filter(k => numericProps[k])
   };
 }
 
@@ -113,7 +114,8 @@ function secondPass(features, firstPassData, options = {}) {
     coordLength,
     polygonPositions,
     polygonObjects,
-    polygonRings
+    polygonRings,
+    numericProps
   } = firstPassData;
   const {PositionDataType = Float32Array} = options;
   const points = {
@@ -132,6 +134,12 @@ function secondPass(features, firstPassData, options = {}) {
     objectIds: new Uint32Array(polygonPositions)
   };
 
+  // Instantiate numeric properties arrays; one value per vertex
+  for (const object of [points, lines, polygons]) {
+    for (const propName of numericProps) {
+      object[propName] = new Float32Array(object.positions.length / coordLength);
+    }
+  }
   // Set last element of path/polygon indices as positions length
   lines.pathIndices[linePaths] = linePositions;
   polygons.polygonIndices[polygonObjects] = polygonPositions;
