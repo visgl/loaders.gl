@@ -121,16 +121,21 @@ function secondPass(features, firstPassData, options = {}) {
     objectIds: new Uint32Array(pointPositions)
   };
   const lines = {
-    pathIndices: new Uint32Array(linePaths),
+    pathIndices: new Uint32Array(linePaths + 1),
     positions: new PositionDataType(linePositions * coordLength),
     objectIds: new Uint32Array(linePositions)
   };
   const polygons = {
-    polygonIndices: new Uint32Array(polygonObjects),
-    primitivePolygonIndices: new Uint32Array(polygonRings),
+    polygonIndices: new Uint32Array(polygonObjects + 1),
+    primitivePolygonIndices: new Uint32Array(polygonRings + 1),
     positions: new PositionDataType(polygonPositions * coordLength),
     objectIds: new Uint32Array(polygonPositions)
   };
+
+  // Set last element of path/polygon indices as positions length
+  lines.pathIndices[linePaths] = linePositions;
+  polygons.polygonIndices[polygonObjects] = polygonPositions;
+  polygons.primitivePolygonIndices[polygonRings] = polygonPositions;
 
   const indexMap = {
     pointPosition: 0,
