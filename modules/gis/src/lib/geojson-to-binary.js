@@ -113,21 +113,24 @@ function secondPass(features, options = {}) {
   } = options;
   const points = {
     positions: new PositionDataType(pointPositions * coordLength),
-    numericProps: {}
     globalFeatureIndex: new Uint32Array(pointPositions),
+    numericProps: {},
+    properties: []
   };
   const lines = {
     pathIndices: new Uint32Array(linePaths + 1),
     positions: new PositionDataType(linePositions * coordLength),
-    numericProps: {}
     globalFeatureIndex: new Uint32Array(linePositions),
+    numericProps: {},
+    properties: []
   };
   const polygons = {
     polygonIndices: new Uint32Array(polygonObjects + 1),
     primitivePolygonIndices: new Uint32Array(polygonRings + 1),
     positions: new PositionDataType(polygonPositions * coordLength),
-    numericProps: {}
     globalFeatureIndex: new Uint32Array(polygonPositions),
+    numericProps: {},
+    properties: []
   };
 
   // Instantiate numeric properties arrays; one value per vertex
@@ -143,11 +146,14 @@ function secondPass(features, options = {}) {
 
   const indexMap = {
     pointPosition: 0,
+    pointFeature: 0,
     linePosition: 0,
     linePath: 0,
+    lineFeature: 0,
     polygonPosition: 0,
     polygonObject: 0,
     polygonRing: 0,
+    polygonFeature: 0,
     feature: 0
   };
 
@@ -158,21 +164,33 @@ function secondPass(features, options = {}) {
     switch (geometry.type) {
       case 'Point':
         handlePoint(geometry.coordinates, points, indexMap, coordLength, properties);
+        points.properties.push(keepStringProperties(properties, numericProps));
+        indexMap.pointFeature++;
         break;
       case 'MultiPoint':
         handleMultiPoint(geometry.coordinates, points, indexMap, coordLength, properties);
+        points.properties.push(keepStringProperties(properties, numericProps));
+        indexMap.pointFeature++;
         break;
       case 'LineString':
         handleLineString(geometry.coordinates, lines, indexMap, coordLength, properties);
+        lines.properties.push(keepStringProperties(properties, numericProps));
+        indexMap.lineFeature++;
         break;
       case 'MultiLineString':
         handleMultiLineString(geometry.coordinates, lines, indexMap, coordLength, properties);
+        lines.properties.push(keepStringProperties(properties, numericProps));
+        indexMap.lineFeature++;
         break;
       case 'Polygon':
         handlePolygon(geometry.coordinates, polygons, indexMap, coordLength, properties);
+        polygons.properties.push(keepStringProperties(properties, numericProps));
+        indexMap.polygonFeature++;
         break;
       case 'MultiPolygon':
         handleMultiPolygon(geometry.coordinates, polygons, indexMap, coordLength, properties);
+        polygons.properties.push(keepStringProperties(properties, numericProps));
+        indexMap.polygonFeature++;
         break;
       default:
         throw new Error('Invalid geometry type');
@@ -205,6 +223,7 @@ function secondPass(features, options = {}) {
 function handlePoint(coords, points, indexMap, coordLength, properties) {
   points.positions.set(coords, indexMap.pointPosition * coordLength);
   points.globalFeatureIndex[indexMap.pointPosition] = indexMap.feature;
+  points.featureIndex[indexMap.pointPosition] = indexMap.pointFeature;
 
   fillNumericProperties(points, properties, indexMap.pointPosition, 1);
   indexMap.pointPosition++;
@@ -229,6 +248,10 @@ function handleLineString(coords, lines, indexMap, coordLength, properties) {
 
   lines.globalFeatureIndex.set(
     new Uint32Array(nPositions).fill(indexMap.feature),
+    indexMap.linePosition
+  );
+  lines.featureIndex.set(
+    new Uint32Array(nPositions).fill(indexMap.lineFeature),
     indexMap.linePosition
   );
   indexMap.linePosition += nPositions;
@@ -259,6 +282,10 @@ function handlePolygon(coords, polygons, indexMap, coordLength, properties) {
       new Uint32Array(nPositions).fill(indexMap.feature),
       indexMap.polygonPosition
     );
+    polygons.featureIndex.set(
+      new Uint32Array(nPositions).fill(indexMap.polygonFeature),
+      indexMap.polygonPosition
+    );
     indexMap.polygonPosition += nPositions;
   }
 }
@@ -280,6 +307,17 @@ function fillNumericProperties(object, properties, index, length) {
       );
     }
   }
+}
+
+// Keep string properties in object
+// Note: this mutates the properties object
+function keepStringProperties(properties, numericKeys) {
+  for (const key in properties) {
+    if (numericKeys.includes(key)) {
+      delete properties[key];
+    }
+  }
+  return properties;
 }
 
 function flatten(arrays) {
