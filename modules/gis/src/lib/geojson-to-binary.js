@@ -114,6 +114,7 @@ function secondPass(features, options = {}) {
   const points = {
     positions: new PositionDataType(pointPositions * coordLength),
     globalFeatureIndex: new Uint32Array(pointPositions),
+    featureIndex: new Uint32Array(pointPositions),
     numericProps: {},
     properties: []
   };
@@ -121,6 +122,7 @@ function secondPass(features, options = {}) {
     pathIndices: new Uint32Array(linePaths + 1),
     positions: new PositionDataType(linePositions * coordLength),
     globalFeatureIndex: new Uint32Array(linePositions),
+    featureIndex: new Uint32Array(linePositions),
     numericProps: {},
     properties: []
   };
@@ -129,6 +131,7 @@ function secondPass(features, options = {}) {
     primitivePolygonIndices: new Uint32Array(polygonRings + 1),
     positions: new PositionDataType(polygonPositions * coordLength),
     globalFeatureIndex: new Uint32Array(polygonPositions),
+    featureIndex: new Uint32Array(linePositions),
     numericProps: {},
     properties: []
   };
