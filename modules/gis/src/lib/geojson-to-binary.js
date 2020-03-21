@@ -142,6 +142,7 @@ function secondPass(features, options = {}) {
       object.numericProps[propName] = new Float32Array(object.positions.length / coordLength);
     }
   }
+
   // Set last element of path/polygon indices as positions length
   lines.pathIndices[linePaths] = linePositions;
   polygons.polygonIndices[polygonObjects] = polygonPositions;
@@ -203,23 +204,7 @@ function secondPass(features, options = {}) {
   }
 
   // Wrap each array in an accessor object with value and size keys
-  return {
-    points: {
-      positions: {value: points.positions, size: coordLength},
-      globalFeatureIndex: {value: points.globalFeatureIndex, size: 1}
-    },
-    lines: {
-      pathIndices: {value: lines.pathIndices, size: 1},
-      positions: {value: lines.positions, size: coordLength},
-      globalFeatureIndex: {value: lines.globalFeatureIndex, size: 1}
-    },
-    polygons: {
-      polygonIndices: {value: polygons.polygonIndices, size: 1},
-      primitivePolygonIndices: {value: polygons.primitivePolygonIndices, size: 1},
-      positions: {value: polygons.positions, size: coordLength},
-      globalFeatureIndex: {value: polygons.globalFeatureIndex, size: 1}
-    }
-  };
+  return makeAccessorObjects(points, lines, polygons, coordLength);
 }
 
 // Fills Point coordinates into points object of arrays
@@ -298,6 +283,47 @@ function handleMultiPolygon(coords, polygons, indexMap, coordLength, properties)
   for (const polygon of coords) {
     handlePolygon(polygon, polygons, indexMap, coordLength, properties);
   }
+}
+
+// Wrap each array in an accessor object with value and size keys
+function makeAccessorObjects(points, lines, polygons, coordLength) {
+  const returnObj = {
+    points: {
+      positions: {value: points.positions, size: coordLength},
+      globalFeatureIndex: {value: points.globalFeatureIndex, size: 1},
+      featureIndex: {value: points.featureIndex, size: 1},
+      numericProps: points.numericProps,
+      properties: points.properties
+    },
+    lines: {
+      pathIndices: {value: lines.pathIndices, size: 1},
+      positions: {value: lines.positions, size: coordLength},
+      globalFeatureIndex: {value: lines.globalFeatureIndex, size: 1},
+      featureIndex: {value: lines.featureIndex, size: 1},
+      numericProps: lines.numericProps,
+      properties: lines.properties
+    },
+    polygons: {
+      polygonIndices: {value: polygons.polygonIndices, size: 1},
+      primitivePolygonIndices: {value: polygons.primitivePolygonIndices, size: 1},
+      positions: {value: polygons.positions, size: coordLength},
+      globalFeatureIndex: {value: polygons.globalFeatureIndex, size: 1},
+      featureIndex: {value: polygons.featureIndex, size: 1},
+      numericProps: polygons.numericProps,
+      properties: polygons.properties
+    }
+  };
+
+  // for (const object  [points, lines, polygons]) {
+  for (const geomType in returnObj) {
+    for (const numericProp in returnObj[geomType].numericProps) {
+      returnObj[geomType].numericProps[numericProp] = {
+        value: returnObj[geomType].numericProps[numericProp],
+        size: 1
+      };
+    }
+  }
+  return returnObj;
 }
 
 // Add numeric properties to object
