@@ -131,7 +131,7 @@ function secondPass(features, options = {}) {
     primitivePolygonIndices: new Uint32Array(polygonRings + 1),
     positions: new PositionDataType(polygonPositions * coordLength),
     globalFeatureIndex: new Uint32Array(polygonPositions),
-    featureIndex: new Uint32Array(linePositions),
+    featureIndex: new Uint32Array(polygonPositions),
     numericProps: {},
     properties: []
   };
