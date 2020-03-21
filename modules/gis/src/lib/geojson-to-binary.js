@@ -113,21 +113,21 @@ function secondPass(features, options = {}) {
   } = options;
   const points = {
     positions: new PositionDataType(pointPositions * coordLength),
-    objectIds: new Uint32Array(pointPositions),
     numericProps: {}
+    globalFeatureIndex: new Uint32Array(pointPositions),
   };
   const lines = {
     pathIndices: new Uint32Array(linePaths + 1),
     positions: new PositionDataType(linePositions * coordLength),
-    objectIds: new Uint32Array(linePositions),
     numericProps: {}
+    globalFeatureIndex: new Uint32Array(linePositions),
   };
   const polygons = {
     polygonIndices: new Uint32Array(polygonObjects + 1),
     primitivePolygonIndices: new Uint32Array(polygonRings + 1),
     positions: new PositionDataType(polygonPositions * coordLength),
-    objectIds: new Uint32Array(polygonPositions),
     numericProps: {}
+    globalFeatureIndex: new Uint32Array(polygonPositions),
   };
 
   // Instantiate numeric properties arrays; one value per vertex
@@ -185,18 +185,18 @@ function secondPass(features, options = {}) {
   return {
     points: {
       positions: {value: points.positions, size: coordLength},
-      objectIds: {value: points.objectIds, size: 1}
+      globalFeatureIndex: {value: points.globalFeatureIndex, size: 1}
     },
     lines: {
       pathIndices: {value: lines.pathIndices, size: 1},
       positions: {value: lines.positions, size: coordLength},
-      objectIds: {value: lines.objectIds, size: 1}
+      globalFeatureIndex: {value: lines.globalFeatureIndex, size: 1}
     },
     polygons: {
       polygonIndices: {value: polygons.polygonIndices, size: 1},
       primitivePolygonIndices: {value: polygons.primitivePolygonIndices, size: 1},
       positions: {value: polygons.positions, size: coordLength},
-      objectIds: {value: polygons.objectIds, size: 1}
+      globalFeatureIndex: {value: polygons.globalFeatureIndex, size: 1}
     }
   };
 }
@@ -204,7 +204,7 @@ function secondPass(features, options = {}) {
 // Fills Point coordinates into points object of arrays
 function handlePoint(coords, points, indexMap, coordLength, properties) {
   points.positions.set(coords, indexMap.pointPosition * coordLength);
-  points.objectIds[indexMap.pointPosition] = indexMap.feature;
+  points.globalFeatureIndex[indexMap.pointPosition] = indexMap.feature;
 
   fillNumericProperties(points, properties, indexMap.pointPosition, 1);
   indexMap.pointPosition++;
@@ -227,7 +227,10 @@ function handleLineString(coords, lines, indexMap, coordLength, properties) {
   const nPositions = coords.length;
   fillNumericProperties(lines, properties, indexMap.linePosition, nPositions);
 
-  lines.objectIds.set(new Uint32Array(nPositions).fill(indexMap.feature), indexMap.linePosition);
+  lines.globalFeatureIndex.set(
+    new Uint32Array(nPositions).fill(indexMap.feature),
+    indexMap.linePosition
+  );
   indexMap.linePosition += nPositions;
 }
 
@@ -252,7 +255,7 @@ function handlePolygon(coords, polygons, indexMap, coordLength, properties) {
     const nPositions = ring.length;
     fillNumericProperties(polygons, properties, indexMap.polygonPosition, nPositions);
 
-    polygons.objectIds.set(
+    polygons.globalFeatureIndex.set(
       new Uint32Array(nPositions).fill(indexMap.feature),
       indexMap.polygonPosition
     );
