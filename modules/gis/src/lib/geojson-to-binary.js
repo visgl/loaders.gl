@@ -241,7 +241,7 @@ function handleLineString(coords, lines, indexMap, coordLength, properties) {
   lines.pathIndices[indexMap.linePath] = indexMap.linePosition;
   indexMap.linePath++;
 
-  lines.positions.set(flatten(coords), indexMap.linePosition * coordLength);
+  fillCoords(lines.positions, coords, indexMap.linePosition, coordLength);
 
   const nPositions = coords.length;
   fillNumericProperties(lines, properties, indexMap.linePosition, nPositions);
@@ -273,7 +273,7 @@ function handlePolygon(coords, polygons, indexMap, coordLength, properties) {
     polygons.primitivePolygonIndices[indexMap.polygonRing] = indexMap.polygonPosition;
     indexMap.polygonRing++;
 
-    polygons.positions.set(flatten(ring), indexMap.polygonPosition * coordLength);
+    fillCoords(polygons.positions, ring, indexMap.polygonPosition, coordLength);
 
     const nPositions = ring.length;
     fillNumericProperties(polygons, properties, indexMap.polygonPosition, nPositions);
@@ -318,6 +318,15 @@ function keepStringProperties(properties, numericKeys) {
     }
   }
   return properties;
+}
+
+// coords is expected to be a list of arrays, each with length 2-3
+function fillCoords(array, coords, startVertex, coordLength) {
+  let index = startVertex * coordLength;
+  for (const coord of coords) {
+    array.set(coord, index);
+    index += coordLength;
+  }
 }
 
 function flatten(arrays) {
