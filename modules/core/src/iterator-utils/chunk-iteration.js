@@ -25,8 +25,8 @@ export async function concatenateChunksAsync(asyncIterator) {
  * Returns an iterator that breaks a big `ArrayBuffer` or string into chunks and yields them one-by-one.
  *
  * @param bigArrayBufferOrString
- * @param options
- * @param options.chunkSize
+ * @param {object} options
+ * @param {number} [options.chunkSize]
  * @returns iterator that yields chunks of specified size
  *
  * This function can e.g. be used to enable data sources that can only be read atomically

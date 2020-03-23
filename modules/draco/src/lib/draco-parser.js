@@ -30,6 +30,7 @@ export default class DracoParser {
   // draco - the draco decoder, either import `draco3d` or load dynamically
   constructor(draco) {
     this.draco = draco;
+    this.drawMode = 'TRIANGLE';
   }
 
   destroy() {}
@@ -41,7 +42,7 @@ export default class DracoParser {
   }
 
   // NOTE: caller must call `destroyGeometry` on the return value after using it
-  parseSync(arrayBuffer) {
+  parseSync(arrayBuffer, options) {
     const buffer = new this.draco.DecoderBuffer();
     buffer.Init(new Int8Array(arrayBuffer), arrayBuffer.byteLength);
 

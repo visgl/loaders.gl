@@ -1,5 +1,13 @@
 # What's New
 
+## v2.2
+
+Release Date: Not yet fixed. Target is to release in sync with deck.gl 8.2
+
+### Typescript Type Definitions
+
+Separate typescript type definitions (`d.ts` files) are provided for a growing list of loaders.gl modules.
+
 ## v2.1
 
 Release Date: Mar 16, 2020

@@ -94,7 +94,7 @@ test('parseWithLoader#getAsyncIteratorFromData', async t => {
     t.ok(isIterator(result), 'returns iterator');
   }
 
-  t.rejects(() => getAsyncIteratorFromData({}));
+  t.rejects(async () => await getAsyncIteratorFromData({}), 'object conversion to iterator fails');
 
   t.end();
 });
