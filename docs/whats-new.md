@@ -1,12 +1,12 @@
 # What's New
 
-## v2.2
+## v2.2 (In Development)
 
-Release Date: Not yet fixed. Target is to release in sync with deck.gl 8.2
+Target Release Date: TBD. Intention is to release in sync with deck.gl 8.2. Alpha releases will be made avaialble.
 
 ### Typescript Type Definitions
 
-Separate typescript type definitions (`d.ts` files) are provided for a growing list of loaders.gl modules.
+Typescript type definitions (`d.ts` files) are now provided for most loaders.gl modules that export APIs (functions and classes).
 
 ## v2.1
 
