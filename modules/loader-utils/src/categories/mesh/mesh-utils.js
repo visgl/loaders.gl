@@ -10,7 +10,7 @@ export function getMeshSize(attributes) {
   return size;
 }
 
-/* eslint-disable-next-line complexity */
+// eslint-disable-next-line complexity
 export function getMeshBoundingBox(attributes) {
   if (!attributes || !attributes.POSITION) {
     return null;

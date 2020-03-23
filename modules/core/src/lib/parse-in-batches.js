@@ -23,13 +23,13 @@ export async function parseInBatches(data, loaders, options, url) {
 
   const context = getLoaderContext({url, loaders}, options);
 
-  return parseWithLoaderInBatches(loader, data, options, context);
+  return await parseWithLoaderInBatches(loader, data, options, context);
 }
 
-function parseWithLoaderInBatches(loader, data, options, context) {
+async function parseWithLoaderInBatches(loader, data, options, context) {
   // Create async iterator adapter for data, and concatenate result
   if (loader.parseInBatches) {
-    let inputIterator = getAsyncIteratorFromData(data);
+    let inputIterator = await getAsyncIteratorFromData(data);
     // Converts ArrayBuffer chunks to text chunks (leaves text chunks alone)
     if (loader.text) {
       inputIterator = textDecoderAsyncIterator(inputIterator);

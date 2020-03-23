@@ -1,7 +1,7 @@
 /* global TextEncoder */
 import {padTo4Bytes} from './memory-copy-utils';
 
-export function copyPaddedArrayBufferToDataView(dataView, byteOffset, sourceBuffer, padding) {
+export function copyPaddedArrayBufferToDataView(dataView, byteOffset, sourceBuffer) {
   const paddedLength = padTo4Bytes(sourceBuffer.byteLength);
   const padLength = paddedLength - sourceBuffer.byteLength;
 
@@ -25,13 +25,13 @@ export function copyPaddedArrayBufferToDataView(dataView, byteOffset, sourceBuff
   return byteOffset;
 }
 
-export function copyPaddedStringToDataView(dataView, byteOffset, string, padding) {
+export function copyPaddedStringToDataView(dataView, byteOffset, string) {
   const textEncoder = new TextEncoder();
   // PERFORMANCE IDEA: We encode twice, once to get size and once to store
   // PERFORMANCE IDEA: Use TextEncoder.encodeInto() to avoid temporary copy
   const stringBuffer = textEncoder.encode(string);
 
-  byteOffset = copyPaddedArrayBufferToDataView(dataView, byteOffset, stringBuffer, padding);
+  byteOffset = copyPaddedArrayBufferToDataView(dataView, byteOffset, stringBuffer);
 
   return byteOffset;
 }

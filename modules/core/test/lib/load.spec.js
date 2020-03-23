@@ -9,6 +9,7 @@ const JSON_DATA = [{col1: 22, col2: 'abc'}];
 
 test('load#load', async t => {
   t.ok(load, 'load defined');
+  // @ts-ignore TS2554: Expected 2-4 arguments, but got 1.
   await t.rejects(load('.'), 'load throws on undefined loaders');
   t.end();
 });
@@ -24,7 +25,9 @@ test('load#auto detect loader', t => {
       t.end();
     }
   };
+  // @ts-ignore TS2345: Argument of type not assignable
   registerLoaders(TEST_LOADER);
+  // @ts-ignore TODO remove this ts-ignore
   load('package.json', {JSON: {option: true}});
 });
 
@@ -62,6 +65,7 @@ test('load#Node stream - NODE ONLY', async t => {
 
   const fs = require('fs');
   const stream = fs.createReadStream(resolvePath(JSON_URL));
+  // @ts-ignore TODO remove this ts-ignore
   const data = await load(stream, JSONLoader);
   t.equals(typeof data, 'object', 'load(Node stream) returned data');
 

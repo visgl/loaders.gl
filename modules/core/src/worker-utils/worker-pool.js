@@ -4,10 +4,6 @@ import WorkerThread from './worker-thread';
  * Process multiple data messages with small pool of identical workers
  */
 export default class WorkerPool {
-  /**
-   * @param {function | string} processor - worker function
-   * @param {number} maxConcurrency - max count of workers
-   */
   constructor({source, name = 'unnamed', maxConcurrency = 1, onMessage, onDebug = () => {}}) {
     this.source = source;
     this.name = name;
@@ -29,8 +25,6 @@ export default class WorkerPool {
 
   /**
    * Process binary data in a worker
-   * @param data {data containing binary typed arrays} - data to be transferred to worker
-   * @returns a Promise with data containing typed arrays transferred back from work
    */
   async process(data, jobName) {
     return new Promise((resolve, reject) => {
@@ -53,6 +47,7 @@ export default class WorkerPool {
     // We have a worker, dequeue and start the job
     const job = this.jobQueue.shift();
 
+    // @ts-ignore
     this.onDebug({
       message: 'processing',
       worker: worker.name,

@@ -19,8 +19,6 @@ export default class WorkerThread {
 
   /**
    * Process binary data in a worker
-   * @param data {data containing binary typed arrays} - data to be transferred to worker
-   * @returns a Promise with data containing typed arrays transferred back from work
    */
   async process(data) {
     return new Promise((resolve, reject) => {

@@ -14,11 +14,6 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : LATEST;
 const loadLibraryPromises = {}; // promises
 
 // Dynamically loads a library ("module")
-// wasm library: Array buffer is returned
-// js library: Parse JS is returned
-//  browser - script element is created and installed on document
-//  worker - eval is called on global context
-//  node - file is required
 export async function loadLibrary(libraryUrl, moduleName = null, options = {}) {
   if (moduleName) {
     libraryUrl = getLibraryUrl(libraryUrl, moduleName, options);
