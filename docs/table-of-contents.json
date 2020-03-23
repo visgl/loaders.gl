@@ -148,7 +148,7 @@
         {
           "title": "@loaders.gl/i3s",
           "entries": [
-            {"entry": "modules/i3s/docs/api-reference/i3s-loader"}
+            {"entry": "modules/i3s/docs"}
           ]
         },
         {

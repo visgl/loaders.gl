@@ -31,7 +31,7 @@ Loading a tileset and dynamically load/unload with viewport.
 import {load} from '@loaders.gl/core';
 import {Tileset3D} from '@loaders.gl/tiles';
 import {I3SLoader} from '@loaders.gl/i3s';
-import WebMercatorViewport from '@math.gl/web-mercator';
+import {WebMercatorViewport} from '@deck.gl/web-mercator';
 
 const tileseturl =
   'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_Bldgs/SceneServer/layers/0';
@@ -278,6 +278,6 @@ Wxception This object was destroyed, i.e., destroy() was called.
 
 Parameters:
 
-- `viewport`: a `WebMercatorViewport`
+- `viewport`: a [`WebMercatorViewport`](https://deck.gl/#/documentation/deckgl-api-reference/viewports/web-mercator-viewport)
 
 Execute traversal under current viewport and fetch tiles needed for current viewport and update `selectedTiles`. Return `frameNumber` of this update frame.
