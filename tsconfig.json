@@ -75,7 +75,6 @@
     "modules/**/src/libs/*",
 
     "modules/core/src/**/*",
-    "modules/core/test/**/*",
     "modules/math/src/**/*",
     "modules/math/test/**/*",
 

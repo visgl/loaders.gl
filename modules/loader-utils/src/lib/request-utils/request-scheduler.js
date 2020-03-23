@@ -44,11 +44,6 @@ export default class RequestScheduler {
   }
 
   // Called by an application that wants to issue a request, without having it deeply queued
-  // Parameter `callback` will be called when request "slots" open up,
-  //    allowing the caller to update priority or cancel the request
-  //    Highest priority executes first, priority < 0 cancels the request
-  // Returns: a promise that resolves when the request can be issued without queueing,
-  //    or rejects if the request has been cancelled (by the callback)
   scheduleRequest(handle, callback = () => 0) {
     // Allows throttling to be disabled
     if (!this.props.throttleRequests) {

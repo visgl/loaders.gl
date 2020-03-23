@@ -55,6 +55,7 @@ async function loadDracoDecoder(options) {
       ]);
   }
   // Depends on how import happened...
+  // @ts-ignore
   DracoDecoderModule = DracoDecoderModule || global.DracoDecoderModule;
   return await initializeDracoDecoder(DracoDecoderModule, wasmBinary);
 }
@@ -77,6 +78,7 @@ function initializeDracoDecoder(DracoDecoderModule, wasmBinary) {
 
 async function loadDracoEncoder(options) {
   let DracoEncoderModule = await loadLibrary('draco_encoder.js', 'draco', options);
+  // @ts-ignore
   DracoEncoderModule = DracoEncoderModule || global.DracoEncoderModule;
 
   return new Promise(resolve => {

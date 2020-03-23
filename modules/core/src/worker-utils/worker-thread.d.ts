@@ -12,7 +12,7 @@ export default class WorkerThread {
   constructor(options: {
     source: string,
     name?: string,
-    onMessage: onMessageFunc
+    onMessage?: onMessageFunc
   });
 
   /**

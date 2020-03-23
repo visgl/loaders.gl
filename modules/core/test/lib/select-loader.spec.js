@@ -56,7 +56,7 @@ test('selectLoader#data', async t => {
     'find loader by examining binary data'
   );
   t.throws(
-    () => selectLoader([Tiles3DLoader, DracoLoader, LASLoader], null, new ArrayBuffer()),
+    () => selectLoader([Tiles3DLoader, DracoLoader, LASLoader], null, new ArrayBuffer(10)),
     'find no loaders by examining binary data'
   );
   t.throws(

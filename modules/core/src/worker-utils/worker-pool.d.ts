@@ -12,7 +12,7 @@ export default class WorkerPool {
     source: string | Function;
     name?: string;
     maxConcurrency?: number;
-    onMessage: onMessageFunc,
+    onMessage?: onMessageFunc,
     onDebug?: () => any;
   });
 
@@ -22,7 +22,7 @@ export default class WorkerPool {
    * @param jobName name of the job
    * @returns a Promise with data (containing typed arrays) transferred back from worker
    */
-  process(data: any, jobName: string): Promise<any>;
+  process(data: any, jobName?: string): Promise<any>;
 
   destroy(): void;
 }

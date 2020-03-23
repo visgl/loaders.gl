@@ -22,6 +22,7 @@ test('parse#Blob (text)', async t => {
   const TEXT_DATA = JSON.stringify(JSON_DATA);
   const blob = new Blob([TEXT_DATA]);
 
+  // @ts-ignore (partial loader object)
   const data = await parse(blob, JSONLoader);
 
   t.deepEquals(data, JSON_DATA, 'parse(Blob) returned data');

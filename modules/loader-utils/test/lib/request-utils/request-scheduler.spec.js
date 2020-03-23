@@ -24,6 +24,7 @@ test('RequestScheduler#scheduleRequest', async t => {
     priority4 = -1;
   };
 
+  // @ts-ignore
   result = await Promise.all([
     requestScheduler.scheduleRequest({id: 3}).then(async () => {
       requestScheduler.startRequest({id: 3});

@@ -41,6 +41,7 @@ test('WorkerThread', async t => {
 
   workerThread.destroy();
 
+  // @ts-ignore Undeclared member
   t.ok(workerThread.worker === null);
 
   t.end();
@@ -131,7 +132,7 @@ test.skip('createWorker#nested', async t => {
     TEST_CASES.map(testData =>
       parseWithWorker(
         JSONWorkerLoader,
-        toArrayBuffer(testData.map(JSON.stringify).join('\n')),
+        toArrayBuffer(testData.map(data => JSON.stringify(data)).join('\n')),
         JSONWorkerLoader.options
       )
     )

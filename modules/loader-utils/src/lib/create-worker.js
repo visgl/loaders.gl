@@ -4,7 +4,6 @@
 import {getTransferList} from './worker-utils/get-transfer-list';
 import {validateLoaderVersion} from './validate-loader-version';
 
-// Set up a WebWorkerGlobalScope to talk with the main thread
 export default function createWorker(loader) {
   // TODO - explain when this happens? Just a sanity check? Throw an error or log a warning?
   if (typeof self === 'undefined') {
