@@ -1,5 +1,12 @@
 import {onMessageFunc} from './worker-thread';
 
+type OnDebugParameters = {
+  message: string;
+  worker: string;
+  job: string;
+  backlog: number;
+};
+
 /**
  * Process multiple data messages with small pool of identical workers
  */
@@ -13,7 +20,7 @@ export default class WorkerPool {
     name?: string;
     maxConcurrency?: number;
     onMessage?: onMessageFunc,
-    onDebug?: () => any;
+    onDebug?: (options: OnDebugParameters) => any;
   });
 
   /**

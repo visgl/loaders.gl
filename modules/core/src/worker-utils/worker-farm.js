@@ -10,10 +10,6 @@ export default class WorkerFarm {
     return typeof Worker !== 'undefined';
   }
 
-  /**
-   * @param processor {function | string} - worker function
-   * @param maxConcurrency {number} - max count of workers
-   */
   constructor({maxConcurrency = DEFAULT_MAX_CONCURRENCY, onMessage, onDebug = () => {}}) {
     this.maxConcurrency = maxConcurrency;
     this.onMessage = onMessage;
