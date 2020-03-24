@@ -2,6 +2,10 @@
 
 ### 2.1 Release
 
+#### v2.1.2
+
+- kml: fix parsing coordinate numbers (#705)
+
 #### v2.1.1
 
 - polyfills: fix TextEncoder and TextDecoder exports (#698)
