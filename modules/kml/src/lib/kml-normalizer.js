@@ -12,11 +12,15 @@ export default function normalizeKML(kml) {
 function normalizeKMLItem(item) {
   if (item.coordinates && item.coordinates.length) {
     if (Array.isArray(item.coordinates[0])) {
-      item.coordinates = item.coordinates.map(([lat, lng, z = 0]) => [lng, lat, z]);
+      item.coordinates = item.coordinates.map(([lat, lng, z = 0]) => [
+        Number(lng),
+        Number(lat),
+        Number(z)
+      ]);
     } else {
       // Marker coordinates are just a single coord (not an array of coords)
       const [lat, lng, z = 0] = item.coordinates;
-      item.coordinates = [lng, lat, z];
+      item.coordinates = [Number(lng), Number(lat), Number(z)];
     }
   }
 }
