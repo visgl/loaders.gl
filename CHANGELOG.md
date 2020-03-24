@@ -2,6 +2,10 @@
 
 ### 2.0 Release
 
+#### v2.0.5
+
+- kml: fix parsing coordinate numbers (#705)
+
 #### v2.0.4
 
 - [3d-tiles] Handle GLTF w/ CESIUM_RTC extension (#645)
