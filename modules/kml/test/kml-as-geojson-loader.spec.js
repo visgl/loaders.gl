@@ -37,6 +37,11 @@ test('KMLasGeoJsonLoader#parse(text)', t => {
     const data = parseSync(KML, KMLasGeoJsonLoader, {log: null});
     t.equal(data.type, 'FeatureCollection', 'FeatureCollection found');
     t.equal(data.features.length, 19, 'Features were found');
+
+    const feature = data.features[0];
+    t.ok(Number.isFinite(feature.geometry.coordinates[0]));
+    t.ok(Number.isFinite(feature.geometry.coordinates[1]));
+    t.ok(Number.isFinite(feature.geometry.coordinates[2]));
   }
 
   t.end();
