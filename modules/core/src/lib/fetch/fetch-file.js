@@ -9,7 +9,7 @@ import {getErrorMessageFromResponse} from './fetch-error-message';
 // * data urls
 // * http/http urls
 // * File/Blob objects
-export async function fetchFile(url, options) {
+export async function fetchFile(url, options = {}) {
   if (isFileReadable(url)) {
     return fetchFileReadable(url, options);
   }
