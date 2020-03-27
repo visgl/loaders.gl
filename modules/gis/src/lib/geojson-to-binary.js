@@ -99,6 +99,7 @@ function firstPass(features) {
 
 // Second scan over GeoJSON features
 // Fills coordinates into pre-allocated typed arrays
+// eslint-disable-next-line complexity
 function secondPass(features, options = {}) {
   const {
     pointPositionsCount,
@@ -111,27 +112,37 @@ function secondPass(features, options = {}) {
     numericProps,
     PositionDataType = Float32Array
   } = options;
+  const FeatureIndexDataType = features.length > 65535 ? Uint32Array : Uint16Array;
   const points = {
     positions: new PositionDataType(pointPositionsCount * coordLength),
-    globalFeatureIndex: new Uint32Array(pointPositionsCount),
-    featureIndex: new Uint32Array(pointPositionsCount),
+    globalFeatureIndex: new FeatureIndexDataType(pointPositionsCount),
+    featureIndex: new FeatureIndexDataType(pointPositionsCount),
     numericProps: {},
     properties: []
   };
   const lines = {
-    pathIndices: new Uint32Array(linePathsCount + 1),
+    pathIndices:
+      linePositionsCount > 65535
+        ? new Uint32Array(linePathsCount + 1)
+        : new Uint16Array(linePathsCount + 1),
     positions: new PositionDataType(linePositionsCount * coordLength),
-    globalFeatureIndex: new Uint32Array(linePositionsCount),
-    featureIndex: new Uint32Array(linePositionsCount),
+    globalFeatureIndex: new FeatureIndexDataType(linePositionsCount),
+    featureIndex: new FeatureIndexDataType(linePositionsCount),
     numericProps: {},
     properties: []
   };
   const polygons = {
-    polygonIndices: new Uint32Array(polygonObjectsCount + 1),
-    primitivePolygonIndices: new Uint32Array(polygonRingsCount + 1),
+    polygonIndices:
+      polygonPositionsCount > 65535
+        ? new Uint32Array(polygonObjectsCount + 1)
+        : new Uint16Array(polygonObjectsCount + 1),
+    primitivePolygonIndices:
+      polygonPositionsCount > 65535
+        ? new Uint32Array(polygonRingsCount + 1)
+        : new Uint16Array(polygonRingsCount + 1),
     positions: new PositionDataType(polygonPositionsCount * coordLength),
-    globalFeatureIndex: new Uint32Array(polygonPositionsCount),
-    featureIndex: new Uint32Array(polygonPositionsCount),
+    globalFeatureIndex: new FeatureIndexDataType(polygonPositionsCount),
+    featureIndex: new FeatureIndexDataType(polygonPositionsCount),
     numericProps: {},
     properties: []
   };
