@@ -11,11 +11,14 @@ export function geojsonToBinary(features, options = {}) {
 function firstPass(features) {
   // Counts the number of _positions_, so [x, y, z] counts as one
   let pointPositionsCount = 0;
+  let pointFeaturesCount = 0;
   let linePositionsCount = 0;
   let linePathsCount = 0;
+  let lineFeaturesCount = 0;
   let polygonPositionsCount = 0;
   let polygonObjectsCount = 0;
   let polygonRingsCount = 0;
+  let polygonFeaturesCount = 0;
   const coordLengths = new Set();
   const numericProps = {};
 
@@ -23,16 +26,19 @@ function firstPass(features) {
     const geometry = feature.geometry;
     switch (geometry.type) {
       case 'Point':
+        pointFeaturesCount++;
         pointPositionsCount++;
         coordLengths.add(geometry.coordinates.length);
         break;
       case 'MultiPoint':
+        pointFeaturesCount++;
         pointPositionsCount += geometry.coordinates.length;
         for (const point of geometry.coordinates) {
           coordLengths.add(point.length);
         }
         break;
       case 'LineString':
+        lineFeaturesCount++;
         linePositionsCount += geometry.coordinates.length;
         linePathsCount++;
 
@@ -41,6 +47,7 @@ function firstPass(features) {
         }
         break;
       case 'MultiLineString':
+        lineFeaturesCount++;
         for (const line of geometry.coordinates) {
           linePositionsCount += line.length;
           linePathsCount++;
@@ -52,6 +59,7 @@ function firstPass(features) {
         }
         break;
       case 'Polygon':
+        polygonFeaturesCount++;
         polygonObjectsCount++;
         polygonRingsCount += geometry.coordinates.length;
         polygonPositionsCount += flatten(geometry.coordinates).length;
@@ -61,6 +69,7 @@ function firstPass(features) {
         }
         break;
       case 'MultiPolygon':
+        polygonFeaturesCount++;
         for (const polygon of geometry.coordinates) {
           polygonObjectsCount++;
           polygonRingsCount += polygon.length;
@@ -86,12 +95,15 @@ function firstPass(features) {
 
   return {
     pointPositionsCount,
+    pointFeaturesCount,
     linePositionsCount,
     linePathsCount,
+    lineFeaturesCount,
     coordLength: Math.max(...coordLengths),
     polygonPositionsCount,
     polygonObjectsCount,
     polygonRingsCount,
+    polygonFeaturesCount,
     // Array of keys whose values are always numeric
     numericProps: Object.keys(numericProps).filter(k => numericProps[k])
   };
@@ -103,20 +115,26 @@ function firstPass(features) {
 function secondPass(features, options = {}) {
   const {
     pointPositionsCount,
+    pointFeaturesCount,
     linePositionsCount,
     linePathsCount,
+    lineFeaturesCount,
     coordLength,
     polygonPositionsCount,
     polygonObjectsCount,
     polygonRingsCount,
+    polygonFeaturesCount,
     numericProps,
     PositionDataType = Float32Array
   } = options;
-  const FeatureIndexDataType = features.length > 65535 ? Uint32Array : Uint16Array;
+  const GlobalFeatureIndexDataType = features.length > 65535 ? Uint32Array : Uint16Array;
   const points = {
     positions: new PositionDataType(pointPositionsCount * coordLength),
-    globalFeatureIndex: new FeatureIndexDataType(pointPositionsCount),
-    featureIndex: new FeatureIndexDataType(pointPositionsCount),
+    globalFeatureIndex: new GlobalFeatureIndexDataType(pointPositionsCount),
+    featureIndex:
+      pointFeaturesCount > 65535
+        ? new Uint32Array(pointPositionsCount)
+        : new Uint16Array(pointPositionsCount),
     numericProps: {},
     properties: []
   };
@@ -126,8 +144,11 @@ function secondPass(features, options = {}) {
         ? new Uint32Array(linePathsCount + 1)
         : new Uint16Array(linePathsCount + 1),
     positions: new PositionDataType(linePositionsCount * coordLength),
-    globalFeatureIndex: new FeatureIndexDataType(linePositionsCount),
-    featureIndex: new FeatureIndexDataType(linePositionsCount),
+    globalFeatureIndex: new GlobalFeatureIndexDataType(linePositionsCount),
+    featureIndex:
+      lineFeaturesCount > 65535
+        ? new Uint32Array(linePositionsCount)
+        : new Uint16Array(linePositionsCount),
     numericProps: {},
     properties: []
   };
@@ -141,8 +162,11 @@ function secondPass(features, options = {}) {
         ? new Uint32Array(polygonRingsCount + 1)
         : new Uint16Array(polygonRingsCount + 1),
     positions: new PositionDataType(polygonPositionsCount * coordLength),
-    globalFeatureIndex: new FeatureIndexDataType(polygonPositionsCount),
-    featureIndex: new FeatureIndexDataType(polygonPositionsCount),
+    globalFeatureIndex: new GlobalFeatureIndexDataType(polygonPositionsCount),
+    featureIndex:
+      polygonFeaturesCount > 65535
+        ? new Uint32Array(polygonPositionsCount)
+        : new Uint16Array(polygonPositionsCount),
     numericProps: {},
     properties: []
   };
