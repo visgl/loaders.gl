@@ -1,8 +1,9 @@
+/* eslint-disable max-statements */
 import test from 'tape-promise/tape';
 import {fetchFile} from '@loaders.gl/core';
 import {geojsonToBinary, TEST_EXPORTS} from '@loaders.gl/gis';
 
-const {firstPass} = TEST_EXPORTS;
+const {firstPass, secondPass} = TEST_EXPORTS;
 
 // Sample GeoJSON data derived from examples in GeoJSON specification
 // https://tools.ietf.org/html/rfc7946#appendix-A
@@ -42,6 +43,7 @@ test('gis#firstPass 2D features, no properties', async t => {
   t.equal(polygonFeaturesCount, 3);
   t.equal(coordLength, 2);
   t.deepEquals(numericPropKeys, []);
+  t.end();
 });
 
 test('gis#firstPass 3D features, no properties', async t => {
@@ -73,6 +75,7 @@ test('gis#firstPass 3D features, no properties', async t => {
   t.equal(polygonFeaturesCount, 3);
   t.equal(coordLength, 3);
   t.deepEquals(numericPropKeys, []);
+  t.end();
 });
 
 test('gis#firstPass mixed-dimension features, no properties', async t => {
@@ -104,12 +107,20 @@ test('gis#firstPass mixed-dimension features, no properties', async t => {
   t.equal(polygonFeaturesCount, 3);
   t.equal(coordLength, 3);
   t.deepEquals(numericPropKeys, []);
+  t.end();
 });
 
-test('gis#geojson-to-binary 2D features', async t => {
+test('gis#secondPass 2D features, no properties', async t => {
   const response = await fetchFile(FEATURES_2D);
   const {features} = await response.json();
-  const {points, lines, polygons} = geojsonToBinary(features);
+  const firstPassData = firstPass(features);
+
+  const options = {
+    coordLength: firstPassData.coordLength,
+    numericPropKeys: firstPassData.numericPropKeys,
+    PositionDataType: Float32Array
+  };
+  const {points, lines, polygons} = secondPass(features, firstPassData, options);
 
   // 2D size
   t.equal(points.positions.size, 2);
@@ -137,73 +148,14 @@ test('gis#geojson-to-binary 2D features', async t => {
   t.deepEqual(lines.globalFeatureIds.value, [2, 2, 3, 3, 3, 3]);
 
   // Polygon value equality
+  const polygonFeatures = features.filter(f =>
+    ['Polygon', 'MultiPolygon'].includes(f.geometry.type)
+  );
+  const expectedPolygonPositions = flatten(polygonFeatures.map(f => f.geometry.coordinates));
+
   t.deepEqual(polygons.polygonIndices.value, [0, 5, 15, 20, 30]);
   t.deepEqual(polygons.primitivePolygonIndices.value, [0, 5, 10, 15, 20, 25, 30]);
-  t.deepEqual(
-    polygons.positions.value,
-    Float32Array.from([
-      100,
-      0,
-      101,
-      0,
-      101,
-      1,
-      100,
-      1,
-      100,
-      0,
-      100,
-      0,
-      101,
-      0,
-      101,
-      1,
-      100,
-      1,
-      100,
-      0,
-      100.8,
-      0.8,
-      100.8,
-      0.2,
-      100.2,
-      0.2,
-      100.2,
-      0.8,
-      100.8,
-      0.8,
-      102,
-      2,
-      103,
-      2,
-      103,
-      3,
-      102,
-      3,
-      102,
-      2,
-      100,
-      0,
-      101,
-      0,
-      101,
-      1,
-      100,
-      1,
-      100,
-      0,
-      100.2,
-      0.2,
-      100.2,
-      0.8,
-      100.8,
-      0.8,
-      100.8,
-      0.2,
-      100.2,
-      0.2
-    ])
-  );
+  t.deepEqual(polygons.positions.value, Float32Array.from(expectedPolygonPositions));
   t.deepEqual(polygons.globalFeatureIds.value, [
     4,
     4,
@@ -265,126 +217,27 @@ test('gis#geojson-to-binary 3D features', async t => {
   t.deepEqual(points.globalFeatureIds.value, [0, 1, 1]);
 
   // LineString value equality
+  const lineFeatures = features.filter(f =>
+    ['LineString', 'MultiLineString'].includes(f.geometry.type)
+  );
+  const expectedLinePositions = flatten(lineFeatures.map(f => f.geometry.coordinates));
   t.deepEqual(lines.pathIndices.value, [0, 2, 4, 6]);
-  t.deepEqual(lines.positions.value, [
-    100,
-    0,
-    4,
-    101,
-    1,
-    5,
-    100,
-    0,
-    6,
-    101,
-    1,
-    7,
-    102,
-    2,
-    8,
-    103,
-    3,
-    9
-  ]);
+  t.deepEqual(lines.positions.value, Float32Array.from(expectedLinePositions));
   t.deepEqual(lines.globalFeatureIds.value, [2, 2, 3, 3, 3, 3]);
 
   // Polygon value equality
+  const polygonFeatures = features.filter(f =>
+    ['Polygon', 'MultiPolygon'].includes(f.geometry.type)
+  );
+  const expectedPolygonPositions = flatten(polygonFeatures.map(f => f.geometry.coordinates));
   t.deepEqual(polygons.polygonIndices.value, [0, 5, 15, 20, 30]);
   t.deepEqual(polygons.primitivePolygonIndices.value, [0, 5, 10, 15, 20, 25, 30]);
-  t.deepEqual(
-    polygons.positions.value,
-    Float32Array.from([
-      100,
-      0,
-      10,
-      101,
-      0,
-      11,
-      101,
-      1,
-      12,
-      100,
-      1,
-      13,
-      100,
-      0,
-      14,
-      100,
-      0,
-      15,
-      101,
-      0,
-      16,
-      101,
-      1,
-      17,
-      100,
-      1,
-      18,
-      100,
-      0,
-      19,
-      100.8,
-      0.8,
-      20,
-      100.8,
-      0.2,
-      21,
-      100.2,
-      0.2,
-      22,
-      100.2,
-      0.8,
-      23,
-      100.8,
-      0.8,
-      24,
-      102,
-      2,
-      25,
-      103,
-      2,
-      26,
-      103,
-      3,
-      27,
-      102,
-      3,
-      28,
-      102,
-      2,
-      29,
-      100,
-      0,
-      30,
-      101,
-      0,
-      31,
-      101,
-      1,
-      32,
-      100,
-      1,
-      33,
-      100,
-      0,
-      34,
-      100.2,
-      0.2,
-      35,
-      100.2,
-      0.8,
-      36,
-      100.8,
-      0.8,
-      37,
-      100.8,
-      0.2,
-      38,
-      100.2,
-      0.2,
-      39
-    ])
-  );
+  t.deepEqual(polygons.positions.value, Float32Array.from(expectedPolygonPositions));
   t.end();
 });
+
+function flatten(arr) {
+  return arr.reduce(function(flat, toFlatten) {
+    return flat.concat(Array.isArray(toFlatten) ? flatten(toFlatten) : toFlatten);
+  }, []);
+}

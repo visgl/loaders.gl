@@ -9,7 +9,8 @@ export function geojsonToBinary(features, options = {}) {
 }
 
 export const TEST_EXPORTS = {
-  firstPass
+  firstPass,
+  secondPass
 };
 
 // Initial scan over GeoJSON features
