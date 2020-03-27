@@ -20,7 +20,7 @@ function firstPass(features) {
   let polygonRingsCount = 0;
   let polygonFeaturesCount = 0;
   const coordLengths = new Set();
-  const numericProps = {};
+  const numericPropKeys = {};
 
   for (const feature of features) {
     const geometry = feature.geometry;
@@ -88,7 +88,7 @@ function firstPass(features) {
     if (feature.properties) {
       for (const key in feature.properties) {
         const val = feature.properties[key];
-        numericProps[key] = numericProps[key] ? isNumeric(val) : numericProps[key];
+        numericPropKeys[key] = numericPropKeys[key] ? isNumeric(val) : numericPropKeys[key];
       }
     }
   }
@@ -105,7 +105,7 @@ function firstPass(features) {
     polygonRingsCount,
     polygonFeaturesCount,
     // Array of keys whose values are always numeric
-    numericProps: Object.keys(numericProps).filter(k => numericProps[k])
+    numericPropKeys: Object.keys(numericPropKeys).filter(k => numericPropKeys[k])
   };
 }
 
@@ -124,7 +124,7 @@ function secondPass(features, options = {}) {
     polygonObjectsCount,
     polygonRingsCount,
     polygonFeaturesCount,
-    numericProps,
+    numericPropKeys,
     PositionDataType = Float32Array
   } = options;
   const GlobalFeatureIndexDataType = features.length > 65535 ? Uint32Array : Uint16Array;
@@ -173,7 +173,7 @@ function secondPass(features, options = {}) {
 
   // Instantiate numeric properties arrays; one value per vertex
   for (const object of [points, lines, polygons]) {
-    for (const propName of numericProps) {
+    for (const propName of numericPropKeys) {
       object.numericProps[propName] = new Float32Array(object.positions.length / coordLength);
     }
   }
