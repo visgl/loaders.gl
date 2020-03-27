@@ -207,32 +207,32 @@ function secondPass(features, firstPassData = {}, options = {}) {
     switch (geometry.type) {
       case 'Point':
         handlePoint(geometry.coordinates, points, indexMap, coordLength, properties);
-        points.properties.push(keepStringProperties(properties, numericProps));
+        points.properties.push(keepStringProperties(properties, numericPropKeys));
         indexMap.pointFeature++;
         break;
       case 'MultiPoint':
         handleMultiPoint(geometry.coordinates, points, indexMap, coordLength, properties);
-        points.properties.push(keepStringProperties(properties, numericProps));
+        points.properties.push(keepStringProperties(properties, numericPropKeys));
         indexMap.pointFeature++;
         break;
       case 'LineString':
         handleLineString(geometry.coordinates, lines, indexMap, coordLength, properties);
-        lines.properties.push(keepStringProperties(properties, numericProps));
+        lines.properties.push(keepStringProperties(properties, numericPropKeys));
         indexMap.lineFeature++;
         break;
       case 'MultiLineString':
         handleMultiLineString(geometry.coordinates, lines, indexMap, coordLength, properties);
-        lines.properties.push(keepStringProperties(properties, numericProps));
+        lines.properties.push(keepStringProperties(properties, numericPropKeys));
         indexMap.lineFeature++;
         break;
       case 'Polygon':
         handlePolygon(geometry.coordinates, polygons, indexMap, coordLength, properties);
-        polygons.properties.push(keepStringProperties(properties, numericProps));
+        polygons.properties.push(keepStringProperties(properties, numericPropKeys));
         indexMap.polygonFeature++;
         break;
       case 'MultiPolygon':
         handleMultiPolygon(geometry.coordinates, polygons, indexMap, coordLength, properties);
-        polygons.properties.push(keepStringProperties(properties, numericProps));
+        polygons.properties.push(keepStringProperties(properties, numericPropKeys));
         indexMap.polygonFeature++;
         break;
       default:
