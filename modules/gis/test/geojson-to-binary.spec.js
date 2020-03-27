@@ -20,24 +20,24 @@ test('gis#geojson-to-binary 2D features', async t => {
   t.equal(polygons.positions.size, 2);
 
   // Other arrays have coordinate size 1
-  t.equal(points.globalFeatureIndex.size, 1);
-  t.equal(points.featureIndex.size, 1);
+  t.equal(points.globalFeatureIds.size, 1);
+  t.equal(points.featureIds.size, 1);
   t.equal(lines.pathIndices.size, 1);
-  t.equal(lines.globalFeatureIndex.size, 1);
-  t.equal(lines.featureIndex.size, 1);
+  t.equal(lines.globalFeatureIds.size, 1);
+  t.equal(lines.featureIds.size, 1);
   t.equal(polygons.polygonIndices.size, 1);
   t.equal(polygons.primitivePolygonIndices.size, 1);
-  t.equal(polygons.globalFeatureIndex.size, 1);
-  t.equal(polygons.featureIndex.size, 1);
+  t.equal(polygons.globalFeatureIds.size, 1);
+  t.equal(polygons.featureIds.size, 1);
 
   // Point value equality
   t.deepEqual(points.positions.value, [100, 0, 100, 0, 101, 1]);
-  t.deepEqual(points.globalFeatureIndex.value, [0, 1, 1]);
+  t.deepEqual(points.globalFeatureIds.value, [0, 1, 1]);
 
   // LineString value equality
   t.deepEqual(lines.pathIndices.value, [0, 2, 4, 6]);
   t.deepEqual(lines.positions.value, [100, 0, 101, 1, 100, 0, 101, 1, 102, 2, 103, 3]);
-  t.deepEqual(lines.globalFeatureIndex.value, [2, 2, 3, 3, 3, 3]);
+  t.deepEqual(lines.globalFeatureIds.value, [2, 2, 3, 3, 3, 3]);
 
   // Polygon value equality
   t.deepEqual(polygons.polygonIndices.value, [0, 5, 15, 20, 30]);
@@ -107,7 +107,7 @@ test('gis#geojson-to-binary 2D features', async t => {
       0.2
     ])
   );
-  t.deepEqual(polygons.globalFeatureIndex.value, [
+  t.deepEqual(polygons.globalFeatureIds.value, [
     4,
     4,
     4,
@@ -153,19 +153,19 @@ test('gis#geojson-to-binary 3D features', async t => {
   t.equal(polygons.positions.size, 3);
 
   // Other arrays have coordinate size 1
-  t.equal(points.globalFeatureIndex.size, 1);
-  t.equal(points.featureIndex.size, 1);
+  t.equal(points.globalFeatureIds.size, 1);
+  t.equal(points.featureIds.size, 1);
   t.equal(lines.pathIndices.size, 1);
-  t.equal(lines.globalFeatureIndex.size, 1);
-  t.equal(lines.featureIndex.size, 1);
+  t.equal(lines.globalFeatureIds.size, 1);
+  t.equal(lines.featureIds.size, 1);
   t.equal(polygons.polygonIndices.size, 1);
   t.equal(polygons.primitivePolygonIndices.size, 1);
-  t.equal(polygons.globalFeatureIndex.size, 1);
-  t.equal(polygons.featureIndex.size, 1);
+  t.equal(polygons.globalFeatureIds.size, 1);
+  t.equal(polygons.featureIds.size, 1);
 
   // Point value equality
   t.deepEqual(points.positions.value, [100, 0, 1, 100, 0, 2, 101, 1, 3]);
-  t.deepEqual(points.globalFeatureIndex.value, [0, 1, 1]);
+  t.deepEqual(points.globalFeatureIds.value, [0, 1, 1]);
 
   // LineString value equality
   t.deepEqual(lines.pathIndices.value, [0, 2, 4, 6]);
@@ -189,7 +189,7 @@ test('gis#geojson-to-binary 3D features', async t => {
     3,
     9
   ]);
-  t.deepEqual(lines.globalFeatureIndex.value, [2, 2, 3, 3, 3, 3]);
+  t.deepEqual(lines.globalFeatureIds.value, [2, 2, 3, 3, 3, 3]);
 
   // Polygon value equality
   t.deepEqual(polygons.polygonIndices.value, [0, 5, 15, 20, 30]);
