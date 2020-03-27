@@ -16,7 +16,7 @@ export async function fetchFile(url, options) {
   url = resolvePath(url);
   // TODO - SUPPORT reading from `File` objects
   const response = await fetch(url, options);
-  if (!response.ok && options.throws) {
+  if (!response.ok && options && options.throws) {
     throw new Error(await getErrorMessageFromResponse(response));
   }
   return response;
