@@ -10,12 +10,12 @@ export function geojsonToBinary(features, options = {}) {
 // eslint-disable-next-line complexity, max-statements
 function firstPass(features) {
   // Counts the number of _positions_, so [x, y, z] counts as one
-  let pointPositions = 0;
-  let linePositions = 0;
-  let linePaths = 0;
-  let polygonPositions = 0;
-  let polygonObjects = 0;
-  let polygonRings = 0;
+  let pointPositionsCount = 0;
+  let linePositionsCount = 0;
+  let linePathsCount = 0;
+  let polygonPositionsCount = 0;
+  let polygonObjectsCount = 0;
+  let polygonRingsCount = 0;
   const coordLengths = new Set();
   const numericProps = {};
 
@@ -23,18 +23,18 @@ function firstPass(features) {
     const geometry = feature.geometry;
     switch (geometry.type) {
       case 'Point':
-        pointPositions++;
+        pointPositionsCount++;
         coordLengths.add(geometry.coordinates.length);
         break;
       case 'MultiPoint':
-        pointPositions += geometry.coordinates.length;
+        pointPositionsCount += geometry.coordinates.length;
         for (const point of geometry.coordinates) {
           coordLengths.add(point.length);
         }
         break;
       case 'LineString':
-        linePositions += geometry.coordinates.length;
-        linePaths++;
+        linePositionsCount += geometry.coordinates.length;
+        linePathsCount++;
 
         for (const coord of geometry.coordinates) {
           coordLengths.add(coord.length);
@@ -42,8 +42,8 @@ function firstPass(features) {
         break;
       case 'MultiLineString':
         for (const line of geometry.coordinates) {
-          linePositions += line.length;
-          linePaths++;
+          linePositionsCount += line.length;
+          linePathsCount++;
 
           // eslint-disable-next-line max-depth
           for (const coord of line) {
@@ -52,9 +52,9 @@ function firstPass(features) {
         }
         break;
       case 'Polygon':
-        polygonObjects++;
-        polygonRings += geometry.coordinates.length;
-        polygonPositions += flatten(geometry.coordinates).length;
+        polygonObjectsCount++;
+        polygonRingsCount += geometry.coordinates.length;
+        polygonPositionsCount += flatten(geometry.coordinates).length;
 
         for (const coord of flatten(geometry.coordinates)) {
           coordLengths.add(coord.length);
@@ -62,9 +62,9 @@ function firstPass(features) {
         break;
       case 'MultiPolygon':
         for (const polygon of geometry.coordinates) {
-          polygonObjects++;
-          polygonRings += polygon.length;
-          polygonPositions += flatten(polygon).length;
+          polygonObjectsCount++;
+          polygonRingsCount += polygon.length;
+          polygonPositionsCount += flatten(polygon).length;
 
           // eslint-disable-next-line max-depth
           for (const coord of flatten(polygon)) {
@@ -85,13 +85,13 @@ function firstPass(features) {
   }
 
   return {
-    pointPositions,
-    linePositions,
-    linePaths,
+    pointPositionsCount,
+    linePositionsCount,
+    linePathsCount,
     coordLength: Math.max(...coordLengths),
-    polygonPositions,
-    polygonObjects,
-    polygonRings,
+    polygonPositionsCount,
+    polygonObjectsCount,
+    polygonRingsCount,
     // Array of keys whose values are always numeric
     numericProps: Object.keys(numericProps).filter(k => numericProps[k])
   };
@@ -101,37 +101,37 @@ function firstPass(features) {
 // Fills coordinates into pre-allocated typed arrays
 function secondPass(features, options = {}) {
   const {
-    pointPositions,
-    linePositions,
-    linePaths,
+    pointPositionsCount,
+    linePositionsCount,
+    linePathsCount,
     coordLength,
-    polygonPositions,
-    polygonObjects,
-    polygonRings,
+    polygonPositionsCount,
+    polygonObjectsCount,
+    polygonRingsCount,
     numericProps,
     PositionDataType = Float32Array
   } = options;
   const points = {
-    positions: new PositionDataType(pointPositions * coordLength),
-    globalFeatureIndex: new Uint32Array(pointPositions),
-    featureIndex: new Uint32Array(pointPositions),
+    positions: new PositionDataType(pointPositionsCount * coordLength),
+    globalFeatureIndex: new Uint32Array(pointPositionsCount),
+    featureIndex: new Uint32Array(pointPositionsCount),
     numericProps: {},
     properties: []
   };
   const lines = {
-    pathIndices: new Uint32Array(linePaths + 1),
-    positions: new PositionDataType(linePositions * coordLength),
-    globalFeatureIndex: new Uint32Array(linePositions),
-    featureIndex: new Uint32Array(linePositions),
+    pathIndices: new Uint32Array(linePathsCount + 1),
+    positions: new PositionDataType(linePositionsCount * coordLength),
+    globalFeatureIndex: new Uint32Array(linePositionsCount),
+    featureIndex: new Uint32Array(linePositionsCount),
     numericProps: {},
     properties: []
   };
   const polygons = {
-    polygonIndices: new Uint32Array(polygonObjects + 1),
-    primitivePolygonIndices: new Uint32Array(polygonRings + 1),
-    positions: new PositionDataType(polygonPositions * coordLength),
-    globalFeatureIndex: new Uint32Array(polygonPositions),
-    featureIndex: new Uint32Array(polygonPositions),
+    polygonIndices: new Uint32Array(polygonObjectsCount + 1),
+    primitivePolygonIndices: new Uint32Array(polygonRingsCount + 1),
+    positions: new PositionDataType(polygonPositionsCount * coordLength),
+    globalFeatureIndex: new Uint32Array(polygonPositionsCount),
+    featureIndex: new Uint32Array(polygonPositionsCount),
     numericProps: {},
     properties: []
   };
@@ -144,9 +144,9 @@ function secondPass(features, options = {}) {
   }
 
   // Set last element of path/polygon indices as positions length
-  lines.pathIndices[linePaths] = linePositions;
-  polygons.polygonIndices[polygonObjects] = polygonPositions;
-  polygons.primitivePolygonIndices[polygonRings] = polygonPositions;
+  lines.pathIndices[linePathsCount] = linePositionsCount;
+  polygons.polygonIndices[polygonObjectsCount] = polygonPositionsCount;
+  polygons.primitivePolygonIndices[polygonRingsCount] = polygonPositionsCount;
 
   const indexMap = {
     pointPosition: 0,
