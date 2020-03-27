@@ -1,7 +1,11 @@
 // Convert GeoJSON features to flat binary arrays
 export function geojsonToBinary(features, options = {}) {
   const firstPassData = firstPass(features);
-  return secondPass(features, {...firstPassData, ...options});
+  return secondPass(features, firstPassData, {
+    coordLength: options.coordLength || firstPassData.coordLength,
+    numericPropKeys: options.numericPropKeys || firstPassData.numericPropKeys,
+    PositionDataType: options.PositionDataType || Float32Array
+  });
 }
 
 // Initial scan over GeoJSON features
@@ -112,21 +116,19 @@ function firstPass(features) {
 // Second scan over GeoJSON features
 // Fills coordinates into pre-allocated typed arrays
 // eslint-disable-next-line complexity
-function secondPass(features, options = {}) {
+function secondPass(features, firstPassData = {}, options = {}) {
   const {
     pointPositionsCount,
     pointFeaturesCount,
     linePositionsCount,
     linePathsCount,
     lineFeaturesCount,
-    coordLength,
     polygonPositionsCount,
     polygonObjectsCount,
     polygonRingsCount,
-    polygonFeaturesCount,
-    numericPropKeys,
-    PositionDataType = Float32Array
-  } = options;
+    polygonFeaturesCount
+  } = firstPassData;
+  const {coordLength, numericPropKeys, PositionDataType = Float32Array} = options;
   const GlobalFeatureIndexDataType = features.length > 65535 ? Uint32Array : Uint16Array;
   const points = {
     positions: new PositionDataType(pointPositionsCount * coordLength),
@@ -174,6 +176,8 @@ function secondPass(features, options = {}) {
   // Instantiate numeric properties arrays; one value per vertex
   for (const object of [points, lines, polygons]) {
     for (const propName of numericPropKeys) {
+      // If property has been numeric in all previous features in which the property existed, check
+      // if numeric in this feature
       object.numericProps[propName] = new Float32Array(object.positions.length / coordLength);
     }
   }
