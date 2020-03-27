@@ -8,6 +8,10 @@ export function geojsonToBinary(features, options = {}) {
   });
 }
 
+export const TEST_EXPORTS = {
+  firstPass
+};
+
 // Initial scan over GeoJSON features
 // Counts number of coordinates of each geometry type and keeps track of the max coordinate
 // dimensions

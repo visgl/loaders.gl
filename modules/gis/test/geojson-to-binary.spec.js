@@ -1,6 +1,8 @@
 import test from 'tape-promise/tape';
 import {fetchFile} from '@loaders.gl/core';
-import {geojsonToBinary} from '@loaders.gl/gis';
+import {geojsonToBinary, TEST_EXPORTS} from '@loaders.gl/gis';
+
+const {firstPass} = TEST_EXPORTS;
 
 // Sample GeoJSON data derived from examples in GeoJSON specification
 // https://tools.ietf.org/html/rfc7946#appendix-A
@@ -8,6 +10,101 @@ import {geojsonToBinary} from '@loaders.gl/gis';
 const FEATURES_2D = '@loaders.gl/gis/test/data/2d_features.json';
 // All features have 3D coordinates
 const FEATURES_3D = '@loaders.gl/gis/test/data/3d_features.json';
+// All features have 3D coordinates
+const FEATURES_MIXED = '@loaders.gl/gis/test/data/mixed_features.json';
+
+test('gis#firstPass 2D features, no properties', async t => {
+  const response = await fetchFile(FEATURES_2D);
+  const {features} = await response.json();
+  const firstPassData = firstPass(features);
+  const {
+    pointPositionsCount,
+    pointFeaturesCount,
+    linePositionsCount,
+    linePathsCount,
+    lineFeaturesCount,
+    polygonPositionsCount,
+    polygonObjectsCount,
+    polygonRingsCount,
+    polygonFeaturesCount,
+    coordLength,
+    numericPropKeys
+  } = firstPassData;
+
+  t.equal(pointPositionsCount, 3);
+  t.equal(pointFeaturesCount, 2);
+  t.equal(linePositionsCount, 6);
+  t.equal(linePathsCount, 3);
+  t.equal(lineFeaturesCount, 2);
+  t.equal(polygonPositionsCount, 30);
+  t.equal(polygonObjectsCount, 4);
+  t.equal(polygonRingsCount, 6);
+  t.equal(polygonFeaturesCount, 3);
+  t.equal(coordLength, 2);
+  t.deepEquals(numericPropKeys, []);
+});
+
+test('gis#firstPass 3D features, no properties', async t => {
+  const response = await fetchFile(FEATURES_3D);
+  const {features} = await response.json();
+  const firstPassData = firstPass(features);
+  const {
+    pointPositionsCount,
+    pointFeaturesCount,
+    linePositionsCount,
+    linePathsCount,
+    lineFeaturesCount,
+    polygonPositionsCount,
+    polygonObjectsCount,
+    polygonRingsCount,
+    polygonFeaturesCount,
+    coordLength,
+    numericPropKeys
+  } = firstPassData;
+
+  t.equal(pointPositionsCount, 3);
+  t.equal(pointFeaturesCount, 2);
+  t.equal(linePositionsCount, 6);
+  t.equal(linePathsCount, 3);
+  t.equal(lineFeaturesCount, 2);
+  t.equal(polygonPositionsCount, 30);
+  t.equal(polygonObjectsCount, 4);
+  t.equal(polygonRingsCount, 6);
+  t.equal(polygonFeaturesCount, 3);
+  t.equal(coordLength, 3);
+  t.deepEquals(numericPropKeys, []);
+});
+
+test('gis#firstPass mixed-dimension features, no properties', async t => {
+  const response = await fetchFile(FEATURES_MIXED);
+  const {features} = await response.json();
+  const firstPassData = firstPass(features);
+  const {
+    pointPositionsCount,
+    pointFeaturesCount,
+    linePositionsCount,
+    linePathsCount,
+    lineFeaturesCount,
+    polygonPositionsCount,
+    polygonObjectsCount,
+    polygonRingsCount,
+    polygonFeaturesCount,
+    coordLength,
+    numericPropKeys
+  } = firstPassData;
+
+  t.equal(pointPositionsCount, 3);
+  t.equal(pointFeaturesCount, 2);
+  t.equal(linePositionsCount, 6);
+  t.equal(linePathsCount, 3);
+  t.equal(lineFeaturesCount, 2);
+  t.equal(polygonPositionsCount, 30);
+  t.equal(polygonObjectsCount, 4);
+  t.equal(polygonRingsCount, 6);
+  t.equal(polygonFeaturesCount, 3);
+  t.equal(coordLength, 3);
+  t.deepEquals(numericPropKeys, []);
+});
 
 test('gis#geojson-to-binary 2D features', async t => {
   const response = await fetchFile(FEATURES_2D);
