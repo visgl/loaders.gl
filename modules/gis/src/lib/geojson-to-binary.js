@@ -129,11 +129,11 @@ function secondPass(features, firstPassData = {}, options = {}) {
     polygonFeaturesCount
   } = firstPassData;
   const {coordLength, numericPropKeys, PositionDataType = Float32Array} = options;
-  const GlobalFeatureIndexDataType = features.length > 65535 ? Uint32Array : Uint16Array;
+  const GlobalFeatureIdsDataType = features.length > 65535 ? Uint32Array : Uint16Array;
   const points = {
     positions: new PositionDataType(pointPositionsCount * coordLength),
-    globalFeatureIndex: new GlobalFeatureIndexDataType(pointPositionsCount),
-    featureIndex:
+    globalFeatureIds: new GlobalFeatureIdsDataType(pointPositionsCount),
+    featureIds:
       pointFeaturesCount > 65535
         ? new Uint32Array(pointPositionsCount)
         : new Uint16Array(pointPositionsCount),
@@ -146,8 +146,8 @@ function secondPass(features, firstPassData = {}, options = {}) {
         ? new Uint32Array(linePathsCount + 1)
         : new Uint16Array(linePathsCount + 1),
     positions: new PositionDataType(linePositionsCount * coordLength),
-    globalFeatureIndex: new GlobalFeatureIndexDataType(linePositionsCount),
-    featureIndex:
+    globalFeatureIds: new GlobalFeatureIdsDataType(linePositionsCount),
+    featureIds:
       lineFeaturesCount > 65535
         ? new Uint32Array(linePositionsCount)
         : new Uint16Array(linePositionsCount),
@@ -164,8 +164,8 @@ function secondPass(features, firstPassData = {}, options = {}) {
         ? new Uint32Array(polygonRingsCount + 1)
         : new Uint16Array(polygonRingsCount + 1),
     positions: new PositionDataType(polygonPositionsCount * coordLength),
-    globalFeatureIndex: new GlobalFeatureIndexDataType(polygonPositionsCount),
-    featureIndex:
+    globalFeatureIds: new GlobalFeatureIdsDataType(polygonPositionsCount),
+    featureIds:
       polygonFeaturesCount > 65535
         ? new Uint32Array(polygonPositionsCount)
         : new Uint16Array(polygonPositionsCount),
@@ -249,8 +249,8 @@ function secondPass(features, firstPassData = {}, options = {}) {
 // Fills Point coordinates into points object of arrays
 function handlePoint(coords, points, indexMap, coordLength, properties) {
   points.positions.set(coords, indexMap.pointPosition * coordLength);
-  points.globalFeatureIndex[indexMap.pointPosition] = indexMap.feature;
-  points.featureIndex[indexMap.pointPosition] = indexMap.pointFeature;
+  points.globalFeatureIds[indexMap.pointPosition] = indexMap.feature;
+  points.featureIds[indexMap.pointPosition] = indexMap.pointFeature;
 
   fillNumericProperties(points, properties, indexMap.pointPosition, 1);
   indexMap.pointPosition++;
@@ -273,11 +273,11 @@ function handleLineString(coords, lines, indexMap, coordLength, properties) {
   const nPositions = coords.length;
   fillNumericProperties(lines, properties, indexMap.linePosition, nPositions);
 
-  lines.globalFeatureIndex.set(
+  lines.globalFeatureIds.set(
     new Uint32Array(nPositions).fill(indexMap.feature),
     indexMap.linePosition
   );
-  lines.featureIndex.set(
+  lines.featureIds.set(
     new Uint32Array(nPositions).fill(indexMap.lineFeature),
     indexMap.linePosition
   );
@@ -305,11 +305,11 @@ function handlePolygon(coords, polygons, indexMap, coordLength, properties) {
     const nPositions = ring.length;
     fillNumericProperties(polygons, properties, indexMap.polygonPosition, nPositions);
 
-    polygons.globalFeatureIndex.set(
+    polygons.globalFeatureIds.set(
       new Uint32Array(nPositions).fill(indexMap.feature),
       indexMap.polygonPosition
     );
-    polygons.featureIndex.set(
+    polygons.featureIds.set(
       new Uint32Array(nPositions).fill(indexMap.polygonFeature),
       indexMap.polygonPosition
     );
@@ -329,16 +329,16 @@ function makeAccessorObjects(points, lines, polygons, coordLength) {
   const returnObj = {
     points: {
       positions: {value: points.positions, size: coordLength},
-      globalFeatureIndex: {value: points.globalFeatureIndex, size: 1},
-      featureIndex: {value: points.featureIndex, size: 1},
+      globalFeatureIds: {value: points.globalFeatureIds, size: 1},
+      featureIds: {value: points.featureIds, size: 1},
       numericProps: points.numericProps,
       properties: points.properties
     },
     lines: {
       pathIndices: {value: lines.pathIndices, size: 1},
       positions: {value: lines.positions, size: coordLength},
-      globalFeatureIndex: {value: lines.globalFeatureIndex, size: 1},
-      featureIndex: {value: lines.featureIndex, size: 1},
+      globalFeatureIds: {value: lines.globalFeatureIds, size: 1},
+      featureIds: {value: lines.featureIds, size: 1},
       numericProps: lines.numericProps,
       properties: lines.properties
     },
@@ -346,8 +346,8 @@ function makeAccessorObjects(points, lines, polygons, coordLength) {
       polygonIndices: {value: polygons.polygonIndices, size: 1},
       primitivePolygonIndices: {value: polygons.primitivePolygonIndices, size: 1},
       positions: {value: polygons.positions, size: coordLength},
-      globalFeatureIndex: {value: polygons.globalFeatureIndex, size: 1},
-      featureIndex: {value: polygons.featureIndex, size: 1},
+      globalFeatureIds: {value: polygons.globalFeatureIds, size: 1},
+      featureIds: {value: polygons.featureIds, size: 1},
       numericProps: polygons.numericProps,
       properties: polygons.properties
     }
