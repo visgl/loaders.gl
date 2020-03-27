@@ -97,7 +97,14 @@ function firstPass(features) {
     if (feature.properties) {
       for (const key in feature.properties) {
         const val = feature.properties[key];
-        numericPropKeys[key] = numericPropKeys[key] ? isNumeric(val) : numericPropKeys[key];
+
+        // If property has not been seen before, or if property has been numeric
+        // in all previous features, check if numeric in this feature
+        // If not numeric, false is stored to prevent rechecking in the future
+        numericPropKeys[key] =
+          numericPropKeys[key] || numericPropKeys[key] === undefined
+            ? isNumeric(val)
+            : numericPropKeys[key];
       }
     }
   }

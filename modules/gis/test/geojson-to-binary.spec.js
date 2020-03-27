@@ -110,6 +110,63 @@ test('gis#firstPass mixed-dimension features, no properties', async t => {
   t.end();
 });
 
+test('gis#firstPass numeric properties', async t => {
+  const response = await fetchFile(FEATURES_2D);
+  const {features} = await response.json();
+
+  // Add properties to features
+  // Uniform string, missing in some features
+  features[0].properties.string1 = 'string';
+  features[1].properties.string1 = 'string';
+
+  // Uniform string, in all features
+  for (const feature of features) {
+    feature.properties.string2 = 'string';
+  }
+
+  // Mixed string/numeric, missing in some features
+  features[0].properties.mixed1 = 'mixed';
+  features[1].properties.mixed1 = 1;
+
+  // Mixed string/numeric, in all features
+  for (const feature of features) {
+    feature.properties.mixed2 = 'string';
+  }
+  features[0].properties.mixed2 = 1;
+
+  // Uniform integer, missing in some features
+  features[0].properties.int1 = 0;
+  features[1].properties.int1 = 1;
+
+  // Uniform integer, in all features
+  for (const feature of features) {
+    feature.properties.int2 = 1;
+  }
+
+  // Uniform float, missing in some features
+  features[0].properties.float1 = 3.14;
+  features[1].properties.float1 = 2.14;
+
+  // Uniform float, in all features
+  for (const feature of features) {
+    feature.properties.float2 = 3.14;
+  }
+
+  // Mixed int/float, missing in some features
+  features[0].properties.numeric1 = 1;
+  features[1].properties.numeric1 = 2.14;
+
+  // Mixed int/float, in all features
+  for (const feature of features) {
+    feature.properties.numeric2 = 3.14;
+  }
+  features[0].properties.numeric2 = 1;
+
+  const {numericPropKeys} = firstPass(features);
+  t.deepEquals(numericPropKeys, ['int1', 'int2', 'float1', 'float2', 'numeric1', 'numeric2']);
+  t.end();
+});
+
 test('gis#secondPass 2D features, no properties', async t => {
   const response = await fetchFile(FEATURES_2D);
   const {features} = await response.json();
