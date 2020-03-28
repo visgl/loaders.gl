@@ -14,7 +14,7 @@ const FEATURES_3D = '@loaders.gl/gis/test/data/3d_features.json';
 // All features have 3D coordinates
 const FEATURES_MIXED = '@loaders.gl/gis/test/data/mixed_features.json';
 
-test('gis#firstPass 2D features, no properties', async t => {
+test('gis#geojson-to-binary firstPass 2D features, no properties', async t => {
   const response = await fetchFile(FEATURES_2D);
   const {features} = await response.json();
   const firstPassData = firstPass(features);
@@ -46,7 +46,7 @@ test('gis#firstPass 2D features, no properties', async t => {
   t.end();
 });
 
-test('gis#firstPass 3D features, no properties', async t => {
+test('gis#geojson-to-binary firstPass 3D features, no properties', async t => {
   const response = await fetchFile(FEATURES_3D);
   const {features} = await response.json();
   const firstPassData = firstPass(features);
@@ -78,7 +78,7 @@ test('gis#firstPass 3D features, no properties', async t => {
   t.end();
 });
 
-test('gis#firstPass mixed-dimension features, no properties', async t => {
+test('gis#geojson-to-binary firstPass mixed-dimension features, no properties', async t => {
   const response = await fetchFile(FEATURES_MIXED);
   const {features} = await response.json();
   const firstPassData = firstPass(features);
@@ -110,7 +110,7 @@ test('gis#firstPass mixed-dimension features, no properties', async t => {
   t.end();
 });
 
-test('gis#firstPass numeric properties', async t => {
+test('gis#geojson-to-binary firstPass numeric properties', async t => {
   const response = await fetchFile(FEATURES_2D);
   const {features} = await response.json();
 
@@ -167,7 +167,7 @@ test('gis#firstPass numeric properties', async t => {
   t.end();
 });
 
-test('gis#secondPass 2D features, no properties', async t => {
+test('gis#geojson-to-binary secondPass 2D features, no properties', async t => {
   const response = await fetchFile(FEATURES_2D);
   const {features} = await response.json();
   const firstPassData = firstPass(features);
@@ -290,6 +290,37 @@ test('gis#geojson-to-binary 3D features', async t => {
   t.deepEqual(polygons.polygonIndices.value, [0, 5, 15, 20, 30]);
   t.deepEqual(polygons.primitivePolygonIndices.value, [0, 5, 10, 15, 20, 25, 30]);
   t.deepEqual(polygons.positions.value, Float32Array.from(expectedPolygonPositions));
+  t.end();
+});
+
+test('gis#geojson-to-binary position, featureId data types', async t => {
+  const response = await fetchFile(FEATURES_2D);
+  let {features} = await response.json();
+
+  // Duplicate features so that there are >65535 total features but <65535 of
+  // any one geometry type
+  // Dividing by 6 means enough coordinates to test featureIds and path/polygon indices
+  const duplicateCount = Math.ceil(65535 / 6);
+  const origLength = features.length;
+  for (let i = 0; i < duplicateCount; i++) {
+    features = features.concat(features.slice(0, origLength));
+  }
+
+  const options = {PositionDataType: Float64Array};
+  const {points, lines, polygons} = geojsonToBinary(features, options);
+
+  t.ok(points.positions.value instanceof Float64Array);
+  t.ok(points.globalFeatureIds.value instanceof Uint32Array);
+  t.ok(points.featureIds.value instanceof Uint16Array);
+  t.ok(lines.positions.value instanceof Float64Array);
+  t.ok(lines.globalFeatureIds.value instanceof Uint32Array);
+  t.ok(lines.featureIds.value instanceof Uint16Array);
+  t.ok(lines.pathIndices.value instanceof Uint32Array);
+  t.ok(polygons.positions.value instanceof Float64Array);
+  t.ok(polygons.globalFeatureIds.value instanceof Uint32Array);
+  t.ok(polygons.featureIds.value instanceof Uint16Array);
+  t.ok(polygons.polygonIndices.value instanceof Uint32Array);
+  t.ok(polygons.primitivePolygonIndices.value instanceof Uint32Array);
   t.end();
 });
 
