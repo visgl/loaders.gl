@@ -365,7 +365,6 @@ function makeAccessorObjects(points, lines, polygons, coordLength) {
     }
   };
 
-  // for (const object  [points, lines, polygons]) {
   for (const geomType in returnObj) {
     for (const numericProp in returnObj[geomType].numericProps) {
       returnObj[geomType].numericProps[numericProp] = {

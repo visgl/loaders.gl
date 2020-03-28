@@ -110,7 +110,7 @@ test('gis#geojson-to-binary firstPass mixed-dimension features, no properties', 
   t.end();
 });
 
-test('gis#geojson-to-binary firstPass numeric properties', async t => {
+test('gis#geojson-to-binary properties', async t => {
   const response = await fetchFile(FEATURES_2D);
   const {features} = await response.json();
 
@@ -162,8 +162,64 @@ test('gis#geojson-to-binary firstPass numeric properties', async t => {
   }
   features[0].properties.numeric2 = 1;
 
-  const {numericPropKeys} = firstPass(features);
-  t.deepEquals(numericPropKeys, ['int1', 'int2', 'float1', 'float2', 'numeric1', 'numeric2']);
+  const firstPassData = firstPass(features);
+  const {numericPropKeys} = firstPassData;
+  const expectedNumericPropKeys = ['int1', 'int2', 'float1', 'float2', 'numeric1', 'numeric2'];
+  t.deepEquals(numericPropKeys, expectedNumericPropKeys);
+
+  const options = {
+    coordLength: firstPassData.coordLength,
+    numericPropKeys: firstPassData.numericPropKeys,
+    PositionDataType: Float32Array
+  };
+  const {points, lines, polygons} = secondPass(features, firstPassData, options);
+
+  // Check numeric properties keys exist
+  t.deepEquals(Object.keys(points.numericProps), expectedNumericPropKeys);
+  t.deepEquals(Object.keys(lines.numericProps), expectedNumericPropKeys);
+  t.deepEquals(Object.keys(polygons.numericProps), expectedNumericPropKeys);
+
+  // Verify accessor size
+  t.equal(points.numericProps.int1.size, 1);
+  t.equal(lines.numericProps.int1.size, 1);
+  t.equal(polygons.numericProps.int1.size, 1);
+
+  // Verify value length
+  t.equal(points.numericProps.int1.value.length, 3);
+  t.equal(lines.numericProps.int1.value.length, 6);
+  t.equal(polygons.numericProps.int1.value.length, 30);
+
+  // Verify selected values
+  t.deepEquals(points.numericProps.int2.value, new Float32Array(3).fill(1));
+  t.deepEquals(points.numericProps.float2.value, new Float32Array(3).fill(3.14));
+
+  // Verify point string property objects
+  t.deepEquals(points.properties, [
+    {
+      string1: 'string',
+      string2: 'string',
+      mixed1: 'mixed',
+      mixed2: 1
+    },
+    {
+      string1: 'string',
+      string2: 'string',
+      mixed1: 1,
+      mixed2: 'string'
+    }
+  ]);
+
+  // Verify linestring string property objects
+  t.deepEquals(lines.properties, [
+    {
+      string2: 'string',
+      mixed2: 'string'
+    },
+    {
+      string2: 'string',
+      mixed2: 'string'
+    }
+  ]);
   t.end();
 });
 
