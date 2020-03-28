@@ -27,11 +27,12 @@ import jsonBench from '@loaders.gl/json/test/json-loader.bench';
 import dracoBench from '@loaders.gl/draco/test/draco.bench';
 import imageBench from '@loaders.gl/images/test/images.bench';
 
-const suite = new Bench({
-  minIterations: 10
-});
+// Sets up aliases for file reader
+const ALIASES = require('../aliases');
+const {_addAliases} = require('@loaders.gl/loader-utils');
+_addAliases(ALIASES);
 
-(async function bench() {
+async function bench(suite) {
   // add tests
   await coreBench(suite);
   await csvBench(suite);
@@ -41,4 +42,12 @@ const suite = new Bench({
 
   // Run the suite
   suite.run();
-})();
+}
+
+const suite = new Bench({
+  minIterations: 10
+});
+
+bench(suite);
+
+export default bench;
