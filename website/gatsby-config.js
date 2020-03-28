@@ -64,6 +64,12 @@ module.exports = {
 
         EXAMPLES: [
           {
+            title: 'Benchmarks',
+            image: 'images/example-pointcloud.jpg',
+            componentUrl: resolve(__dirname, '../examples/benchmarks/app.js'),
+            path: 'examples/benchmarks'
+          },
+          {
             title: 'Point Clouds & Meshes',
             image: 'images/example-pointcloud.jpg',
             componentUrl: resolve(__dirname, '../examples/deck.gl/pointcloud/app.js'),
