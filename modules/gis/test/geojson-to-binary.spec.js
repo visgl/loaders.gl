@@ -107,6 +107,41 @@ test('gis#geojson-to-binary firstPass mixed-dimension features, no properties', 
   t.equal(polygonFeaturesCount, 3);
   t.equal(coordLength, 3);
   t.deepEquals(numericPropKeys, []);
+
+  const options = {
+    coordLength: firstPassData.coordLength,
+    numericPropKeys: firstPassData.numericPropKeys,
+    PositionDataType: Float32Array
+  };
+  const {points, lines, polygons} = secondPass(features, firstPassData, options);
+
+  // 3D size
+  t.equal(points.positions.size, 3);
+  t.equal(lines.positions.size, 3);
+  t.equal(polygons.positions.size, 3);
+
+  // Test value equality, missing third dimension imputed as 0
+  t.deepEqual(points.positions.value, [100, 0, 1, 100, 0, 0, 101, 1, 0]);
+  t.deepEqual(lines.positions.value, [
+    100,
+    0,
+    0,
+    101,
+    1,
+    0,
+    100,
+    0,
+    2,
+    101,
+    1,
+    0,
+    102,
+    2,
+    0,
+    103,
+    3,
+    0
+  ]);
   t.end();
 });
 
