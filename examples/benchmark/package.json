@@ -1,0 +1,27 @@
+{
+  "name": "loaders.gl-benchmark-example",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "webpack-dev-server --progress --hot --open",
+    "start-local": "webpack-dev-server --env.local --progress --hot --open"
+  },
+  "dependencies": {
+    "react": "^16.3.0",
+    "react-dom": "^16.3.0",
+    "@probe.gl/bench": "^3.3.0-alpha.8",
+    "@probe.gl/react-bench": "^3.3.0-alpha.8"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.0.0",
+    "@babel/core": "^7.4.0",
+    "@babel/preset-react": "^7.0.0",
+    "babel-loader": "^8.0.5",
+    "babel-plugin-inline-import": "^3.0.0",
+    "css-loader": "^2.1.1",
+    "style-loader": "^0.23.1",
+    "webpack": "^4.20.2",
+    "webpack-cli": "^3.1.2",
+    "webpack-dev-server": "^3.1.11"
+  }
+}
