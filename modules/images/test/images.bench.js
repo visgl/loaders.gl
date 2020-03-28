@@ -4,10 +4,10 @@ import {fetchFile, parse} from '@loaders.gl/core';
 const TEST_URL = '@loaders.gl/images/test/data/tiles/colortile-256x256.png';
 
 const OPTIONS = [
-  {type: 'ndarray'},
   {type: 'imagebitmap'},
-  {type: 'html', decode: false},
-  {type: 'html', decode: true}
+  {type: 'image', decode: false},
+  {type: 'image', decode: true},
+  {type: 'data'}
 ];
 
 export default async function imageLoaderBench(suite) {

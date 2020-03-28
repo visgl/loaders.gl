@@ -34,11 +34,11 @@ _addAliases(ALIASES);
 
 async function bench(suite) {
   // add tests
-  await coreBench(suite);
-  await csvBench(suite);
-  await jsonBench(suite);
   await imageBench(suite);
   await dracoBench(suite);
+  await csvBench(suite);
+  await jsonBench(suite);
+  await coreBench(suite);
 
   // Run the suite
   suite.run();
