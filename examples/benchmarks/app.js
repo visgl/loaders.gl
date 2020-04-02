@@ -36,24 +36,17 @@ export default class App extends PureComponent {
   }
 
   async componentDidMount() {
-    console.debug('Init bench');
     const suite = new Bench({
       log: this._logResult.bind(this)
     });
     await addModuleBenchmarksToSuite(suite, addReferenceBenchmarks);
-    console.debug('Start bench');
     suite
       // Calibrate performance
       .calibrate()
-      .run()
-      // when running in browser, notify test the driver that it's done
-      .then(() => {
-        console.debug('Finish bench');
-      });
+      .run();
   }
 
   _logResult(result) {
-    console.debug(result);
     const {entry, id, itersPerSecond, error} = result;
 
     const {log} = this.state;
@@ -80,7 +73,6 @@ export default class App extends PureComponent {
 
   render() {
     const {log} = this.state;
-    console.warn(log);
     return (
       <div>
         <BenchResults log={log} />
