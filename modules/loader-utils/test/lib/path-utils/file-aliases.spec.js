@@ -14,8 +14,8 @@ test('file aliases#imports', t => {
 
 test('file aliases#path prefix', t => {
   t.equal(getPathPrefix(), '', 'getPathPrefix() return correct value');
-  setPathPrefix('/tmp');
-  t.equal(getPathPrefix(), '/tmp', 'getPathPrefix() return correct value');
+  setPathPrefix('/tmp/');
+  t.equal(getPathPrefix(), '/tmp/', 'getPathPrefix() return correct value');
   t.equal(resolvePath('geo.json'), '/tmp/geo.json');
   // Make sure to reset so we don't break other tests!
   setPathPrefix('');
