@@ -22,33 +22,33 @@
 const path = require('path');
 
 // NOTE - Replace with a transform of ocular-dev-tools aliases?
-const makeAliases = () => ({
-  test: path.resolve(__dirname, '../test'),
-  '@loaders.gl/3d-tiles/test': path.resolve(__dirname, '../modules/3d-tiles/test'),
-  '@loaders.gl/arrow/test': path.resolve(__dirname, '../modules/arrow/test'),
-  '@loaders.gl/basis/test': path.resolve(__dirname, '../modules/basis/test'),
-  '@loaders.gl/core/test': path.resolve(__dirname, '../modules/core/test'),
-  '@loaders.gl/csv/test': path.resolve(__dirname, '../modules/csv/test'),
-  '@loaders.gl/draco/test': path.resolve(__dirname, '../modules/draco/test'),
-  '@loaders.gl/images/test': path.resolve(__dirname, '../modules/images/test'),
-  '@loaders.gl/gis/test': path.resolve(__dirname, '../modules/gis/test'),
-  '@loaders.gl/gltf/test': path.resolve(__dirname, '../modules/gltf/test'),
-  '@loaders.gl/json/test': path.resolve(__dirname, '../modules/json/test'),
-  '@loaders.gl/kml/test': path.resolve(__dirname, '../modules/kml/test'),
-  '@loaders.gl/i3s/test': path.resolve(__dirname, '../modules/i3s/test'),
-  '@loaders.gl/las/test': path.resolve(__dirname, '../modules/las/test'),
-  '@loaders.gl/mvt/test': path.resolve(__dirname, '../modules/mvt/test'),
-  '@loaders.gl/obj/test': path.resolve(__dirname, '../modules/obj/test'),
-  '@loaders.gl/pcd/test': path.resolve(__dirname, '../modules/pcd/test'),
-  '@loaders.gl/ply/test': path.resolve(__dirname, '../modules/ply/test'),
-  '@loaders.gl/potree/test': path.resolve(__dirname, '../modules/potree/test'),
-  '@loaders.gl/tables/test': path.resolve(__dirname, '../modules/tables/test'),
-  '@loaders.gl/terrain/test': path.resolve(__dirname, '../modules/terrain/test'),
-  '@loaders.gl/tiles/test': path.resolve(__dirname, '../modules/tiles/test'),
-  '@loaders.gl/wkt/test': path.resolve(__dirname, '../modules/wkt/test'),
-  '@loaders.gl/zip/test': path.resolve(__dirname, '../modules/zip/test')
-});
+function makeAliases(basename = __dirname) {
+  return {
+    test: path.resolve(basename, '../test'),
+    '@loaders.gl/3d-tiles/test': path.resolve(basename, '../modules/3d-tiles/test'),
+    '@loaders.gl/arrow/test': path.resolve(basename, '../modules/arrow/test'),
+    '@loaders.gl/basis/test': path.resolve(basename, '../modules/basis/test'),
+    '@loaders.gl/core/test': path.resolve(basename, '../modules/core/test'),
+    '@loaders.gl/csv/test': path.resolve(basename, '../modules/csv/test'),
+    '@loaders.gl/draco/test': path.resolve(basename, '../modules/draco/test'),
+    '@loaders.gl/images/test': path.resolve(basename, '../modules/images/test'),
+    '@loaders.gl/gis/test': path.resolve(basename, '../modules/gis/test'),
+    '@loaders.gl/gltf/test': path.resolve(basename, '../modules/gltf/test'),
+    '@loaders.gl/json/test': path.resolve(basename, '../modules/json/test'),
+    '@loaders.gl/kml/test': path.resolve(basename, '../modules/kml/test'),
+    '@loaders.gl/i3s/test': path.resolve(basename, '../modules/i3s/test'),
+    '@loaders.gl/las/test': path.resolve(basename, '../modules/las/test'),
+    '@loaders.gl/mvt/test': path.resolve(basename, '../modules/mvt/test'),
+    '@loaders.gl/obj/test': path.resolve(basename, '../modules/obj/test'),
+    '@loaders.gl/pcd/test': path.resolve(basename, '../modules/pcd/test'),
+    '@loaders.gl/ply/test': path.resolve(basename, '../modules/ply/test'),
+    '@loaders.gl/potree/test': path.resolve(basename, '../modules/potree/test'),
+    '@loaders.gl/tables/test': path.resolve(basename, '../modules/tables/test'),
+    '@loaders.gl/terrain/test': path.resolve(basename, '../modules/terrain/test'),
+    '@loaders.gl/tiles/test': path.resolve(basename, '../modules/tiles/test'),
+    '@loaders.gl/wkt/test': path.resolve(basename, '../modules/wkt/test'),
+    '@loaders.gl/zip/test': path.resolve(basename, '../modules/zip/test')
+  }
+}
 
-const ALIASES = makeAliases();
-
-module.exports = ALIASES;
+module.exports = makeAliases();

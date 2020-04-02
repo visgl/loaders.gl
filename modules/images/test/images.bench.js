@@ -18,13 +18,13 @@ export default async function imageLoaderBench(suite) {
   await parse(masterArrayBuffer.slice(), ImageLoader);
 
   // Add the tests
-  suite.group('parse(ImageLoader) - sequential');
+  suite.group('ImageLoader: sequential parsing of 256x256 color tiles');
   for (const options of OPTIONS) {
     const {type, worker} = options;
     if (isImageTypeSupported(type)) {
       suite.addAsync(
-        `parse(${JSON.stringify(options)}) sequential`,
-        {unit: 'tiles(256x256)'},
+        `parse({images: ${JSON.stringify(options)}}) sequential`,
+        {unit: 'tiles(256x256)', _target: 1000},
         async () => {
           const arrayBuffer = masterArrayBuffer.slice();
           return await parse(arrayBuffer, ImageLoader, {worker, image: options});
@@ -33,13 +33,13 @@ export default async function imageLoaderBench(suite) {
     }
   }
 
-  suite.group('parse(ImageLoader) - throughput');
+  suite.group('ImageLoader: parallel parsing of 256x256 color tiles');
   for (const options of OPTIONS) {
     const {type, worker} = options;
     if (isImageTypeSupported(type)) {
       suite.addAsync(
-        `parse(${JSON.stringify(options)}) parallel`,
-        {unit: 'tiles(256x256)', _throughput: 100},
+        `parse({images: {${JSON.stringify(options)}}) parallel`,
+        {unit: 'tiles(256x256)', _throughput: 100, _target: 1000},
         async () => await parse(masterArrayBuffer.slice(), ImageLoader, {worker, image: options})
       );
     }

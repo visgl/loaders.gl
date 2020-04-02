@@ -64,34 +64,34 @@ module.exports = {
 
         EXAMPLES: [
           {
-            title: 'Benchmarks',
-            image: 'images/example-pointcloud.jpg',
-            componentUrl: resolve(__dirname, '../examples/benchmarks/app.js'),
-            path: 'examples/benchmarks'
-          },
-          {
-            title: 'Point Clouds & Meshes',
+            title: 'Point Cloud Loaders',
             image: 'images/example-pointcloud.jpg',
             componentUrl: resolve(__dirname, '../examples/deck.gl/pointcloud/app.js'),
             path: 'examples/pointcloud'
           },
           {
-            title: '3D Tiles',
+            title: 'glTF Helmet',
+            image: 'images/example-gltf.jpg',
+            componentUrl: resolve(__dirname, './templates/example-gltf.jsx'),
+            path: 'examples/gltf'
+          },
+          {
+            title: '3D Tiles (Melbourne etc)',
             image: 'images/example-3d-tiles.png',
             componentUrl: resolve(__dirname, '../examples/deck.gl/3d-tiles/app.js'),
             path: 'examples/3d-tiles'
           },
           {
-            title: 'I3S',
+            title: 'I3S (San Francisco)',
             image: 'images/example-i3s.jpg',
             componentUrl: resolve(__dirname, '../examples/deck.gl/i3s/app.js'),
             path: 'examples/i3s'
           },
           {
-            title: 'glTF',
-            image: 'images/example-gltf.jpg',
-            componentUrl: resolve(__dirname, './templates/example-gltf.jsx'),
-            path: 'examples/gltf'
+            title: 'Benchmarks',
+            image: 'images/benchmark.png',
+            componentUrl: resolve(__dirname, '../examples/benchmarks/app-website.js'),
+            path: 'examples/benchmarks'
           }
         ]
       }

@@ -3,7 +3,8 @@ import {render} from 'react-dom';
 
 import {BenchResults} from '@probe.gl/react-bench';
 import {Bench} from '@probe.gl/bench';
-import addBenchmarks from '../../test/bench/bench-modules';
+
+import {addModuleBenchmarksToSuite} from '../../test/bench/modules';
 
 const addReferenceBenchmarks = false;
 
@@ -29,27 +30,30 @@ function parseSIPrefix(itersPerSecond) {
 export default class App extends PureComponent {
   constructor(props) {
     super(props);
-
-    this.suite = new Bench({
-      log: this._logResult.bind(this)
-    });
-    addBenchmarks(this.suite, addReferenceBenchmarks);
-
     this.state = {
       log: []
     };
   }
 
-  componentDidMount() {
-    this.suite
+  async componentDidMount() {
+    console.debug('Init bench');
+    const suite = new Bench({
+      log: this._logResult.bind(this)
+    });
+    await addModuleBenchmarksToSuite(suite, addReferenceBenchmarks);
+    console.debug('Start bench');
+    suite
       // Calibrate performance
       .calibrate()
       .run()
       // when running in browser, notify test the driver that it's done
-      .then(() => {});
+      .then(() => {
+        console.debug('Finish bench');
+      });
   }
 
   _logResult(result) {
+    console.debug(result);
     const {entry, id, itersPerSecond, error} = result;
 
     const {log} = this.state;
@@ -76,6 +80,7 @@ export default class App extends PureComponent {
 
   render() {
     const {log} = this.state;
+    console.warn(log);
     return (
       <div>
         <BenchResults log={log} />

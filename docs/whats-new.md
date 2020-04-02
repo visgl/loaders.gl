@@ -14,8 +14,6 @@ Release Date: Mar 16, 2020
 
 ### New Geospatial Loaders
 
-**@loaders.gl/i3s** (new loader module)
-
 <table style="border: 0;" align="center">
   <tbody>
     <tr>
@@ -40,19 +38,19 @@ The new loaders empowers rendering frameworks to visualize various geospatial da
 
 **@loaders.gl/i3s** (new loader module)
 
-- Collaborated with I3S Tamrat Belayneh [@Tamrat-B](https://github.com/Tamrat-B), a new loader module for loading [I3S](https://github.com/Esri/i3s-spec) tiles is added to the 3D Tiles family. Checkout the San Francisco Buildings [example](https://loaders.gl/examples/i3s).
+- A new loader module for [I3S](https://github.com/Esri/i3s-spec) tiles is added to the 3D Tiles family. Checkout the San Francisco Buildings [example](https://loaders.gl/examples/i3s). This is a collaboration with ESRI and Tamrat Belayneh [@Tamrat-B](https://github.com/Tamrat-B)
 
 **@loaders.gl/mvt** (new loader module)
 
-- With the efforts led by contributors from [CARTO](https://carto.com/), new loader module for loading [Mapbox Vector Tiles](https://github.com/mapbox/vector-tile-spec).
+- A new loader module for loading [Mapbox Vector Tiles](https://github.com/mapbox/vector-tile-spec). Development was led by contributors from [CARTO](https://carto.com/),
 
 **@loaders.gl/terrain** (new loader module)
 
-- New loader module for reconstructing mesh surfaces from height map images. Check out the [example](https://github.com/uber/deck.gl/tree/master/examples/website/terrain) with deck.gl's [`TerrainLayer`](https://deck.gl/#/documentation/deckgl-api-reference/layers/terrain-layer).
+- A new loader module for reconstructing mesh surfaces from height map images. Check out the [example](https://github.com/uber/deck.gl/tree/master/examples/website/terrain) with deck.gl's [`TerrainLayer`](https://deck.gl/#/documentation/deckgl-api-reference/layers/terrain-layer).
 
 **@loaders.gl/wkt** (new loader module)
 
-- New loader module for the Well-Known Text geometry format.
+- A new loader module for the Well-Known Text geometry format.
 
 ### Other Improvements
 

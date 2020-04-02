@@ -156,13 +156,14 @@ export default class ControlPanel extends PureComponent {
     return (
       <FrameWrap>
         <iframe
+          id="tileset-info"
+          title="tileset-info"
           style={{
             display: showFullInfo ? 'inherit' : 'none',
             height: 500,
             width: '99%',
             border: '1px solid rgba(200, 200, 200, 100)'
           }}
-          id={'tileset-info'}
           src={url}
         />
         <FrameControl showFullInfo={showFullInfo}>
