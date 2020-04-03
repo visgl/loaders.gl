@@ -34,7 +34,6 @@
       "@loaders.gl/images/test": ["modules/images/test"],
       "@loaders.gl/gltf/*": ["modules/gltf/src/*"],
       "@loaders.gl/gltf/test": ["modules/gltf/test"],
-      "@loaders.gl/json": ["modules/json/src"],
       "@loaders.gl/json/*": ["modules/json/src/*"],
       "@loaders.gl/json/test": ["modules/json/test"],
       "@loaders.gl/kml/*": ["modules/kml/src/*"],

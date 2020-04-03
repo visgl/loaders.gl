@@ -256,7 +256,9 @@ export default class ClarinetParser {
         case S.BEGIN:
           if (c === Char.openBrace) this.state = S.OPEN_OBJECT;
           else if (c === Char.openBracket) this.state = S.OPEN_ARRAY;
-          else if (!isWhitespace(c)) error(this, 'Non-whitespace before {[.');
+          else if (!isWhitespace(c)) {
+            error(this, 'Non-whitespace before {[.');
+          }
           continue;
 
         case S.OPEN_KEY:

@@ -2,8 +2,8 @@
 
 /* eslint-disable @typescript-eslint/no-var-requires */
 
-const ALIASES = require('./aliases');
 const {_addAliases} = require('@loaders.gl/loader-utils');
+const ALIASES = require('./aliases');
 _addAliases(ALIASES);
 
 // Install polyfills (primarily for Node)
