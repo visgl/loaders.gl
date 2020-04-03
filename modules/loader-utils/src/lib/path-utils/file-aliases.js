@@ -25,9 +25,11 @@ export function resolvePath(filename) {
   for (const alias in fileAliases) {
     if (filename.startsWith(alias)) {
       const replacement = fileAliases[alias];
-      return filename.replace(alias, replacement);
+      filename = filename.replace(alias, replacement);
     }
   }
-  filename += pathPrefix;
+  if (!filename.startsWith('http://') && !filename.startsWith('https://')) {
+    filename = `${pathPrefix}${filename}`;
+  }
   return filename;
 }

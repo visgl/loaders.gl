@@ -101,7 +101,7 @@ After content is loaded, the following fields are guaranteed. But different tile
 | -------------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
 | `cartesianOrigin`    | `Number[3]`  | "Center" of tile geometry in WGS84 fixed frame coordinates                                                                             |
 | `cartographicOrigin` | `Number[3]`  | "Origin" in lng/lat (center of tile's bounding volume)                                                                                 |
-| `modelMatrix`        | `Number[16]` | Transforms tile geometry positions to fixed frame coordinates                                                                          |
+| `modelMatrix`        | `Number[16]` | Transexamples/benchmarks/app.jsforms tile geometry positions to fixed frame coordinates                                                |
 | `vertexCount`        | `Number`     | Transforms tile geometry positions to fixed frame coordinates                                                                          |
 | `attributes`         | `Object`     | Each attribute follows luma.gl [accessor](https://github.com/uber/luma.gl/blob/master/docs/api-reference/webgl/accessor.md) properties |
 | `texture`            | `Object`     | Loaded texture by [`loaders.gl/image`](https://loaders.gl/modules/images/docs/api-reference/image-loader)                              |

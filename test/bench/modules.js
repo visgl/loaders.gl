@@ -18,27 +18,24 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-/* eslint-disable no-console, no-invalid-this */
-import {Bench} from '@probe.gl/bench';
+// Override aliases to point to publicly accessible github
+// TODO maybe setPathPrefix is enough?
+import ALIASES from '../../test/aliases';
+import {_addAliases} from '@loaders.gl/loader-utils';
 
+import imageBench from '@loaders.gl/images/test/images.bench';
 import coreBench from '@loaders.gl/core/test/core.bench';
 import csvBench from '@loaders.gl/csv/test/csv.bench';
 import jsonBench from '@loaders.gl/json/test/json-loader.bench';
-import dracoBench from '@loaders.gl/draco/test/draco.bench';
-import imageBench from '@loaders.gl/images/test/images.bench';
+// import dracoBench from '@loaders.gl/draco/test/draco.bench';
 
-const suite = new Bench({
-  minIterations: 10
-});
+_addAliases(ALIASES);
 
-(async function bench() {
+export async function addModuleBenchmarksToSuite(suite) {
   // add tests
-  await coreBench(suite);
+  await imageBench(suite);
+  // await dracoBench(suite); - does not build in website
   await csvBench(suite);
   await jsonBench(suite);
-  await imageBench(suite);
-  await dracoBench(suite);
-
-  // Run the suite
-  suite.run();
-})();
+  await coreBench(suite);
+}

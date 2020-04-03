@@ -4,10 +4,10 @@ import {fetchFile, parse} from '@loaders.gl/core';
 const TEST_URL = '@loaders.gl/images/test/data/tiles/colortile-256x256.png';
 
 const OPTIONS = [
-  {type: 'ndarray'},
   {type: 'imagebitmap'},
-  {type: 'html', decode: false},
-  {type: 'html', decode: true}
+  {type: 'image', decode: false},
+  {type: 'image', decode: true},
+  {type: 'data'}
 ];
 
 export default async function imageLoaderBench(suite) {
@@ -18,29 +18,29 @@ export default async function imageLoaderBench(suite) {
   await parse(masterArrayBuffer.slice(), ImageLoader);
 
   // Add the tests
-  suite.group('parse(ImageLoader) - sequential');
+  suite.group('ImageLoader: parallel parsing of 256x256 color tiles');
   for (const options of OPTIONS) {
     const {type, worker} = options;
     if (isImageTypeSupported(type)) {
       suite.addAsync(
-        `parse(${JSON.stringify(options)}) sequential`,
-        {unit: 'tiles(256x256)'},
-        async () => {
-          const arrayBuffer = masterArrayBuffer.slice();
-          return await parse(arrayBuffer, ImageLoader, {worker, image: options});
-        }
+        `parse({images: {${JSON.stringify(options)}}) parallel`,
+        {unit: 'tiles(256x256)', _throughput: 100, _target: 1000},
+        async () => await parse(masterArrayBuffer.slice(), ImageLoader, {worker, image: options})
       );
     }
   }
 
-  suite.group('parse(ImageLoader) - throughput');
+  suite.group('ImageLoader: sequential parsing of 256x256 color tiles');
   for (const options of OPTIONS) {
     const {type, worker} = options;
     if (isImageTypeSupported(type)) {
       suite.addAsync(
-        `parse(${JSON.stringify(options)}) parallel`,
-        {unit: 'tiles(256x256)', _throughput: 100},
-        async () => await parse(masterArrayBuffer.slice(), ImageLoader, {worker, image: options})
+        `parse({images: ${JSON.stringify(options)}}) sequential`,
+        {unit: 'tiles(256x256)', _target: 1000},
+        async () => {
+          const arrayBuffer = masterArrayBuffer.slice();
+          return await parse(arrayBuffer, ImageLoader, {worker, image: options});
+        }
       );
     }
   }

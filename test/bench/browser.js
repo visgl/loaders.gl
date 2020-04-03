@@ -18,4 +18,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-require('./index');
+import '@loaders.gl/polyfills';
+
+import {_addAliases} from '@loaders.gl/loader-utils';
+import ALIASES from '../aliases';
+import {addModuleBenchmarksToSuite} from './modules';
+
+// Sets up aliases for file reader
+_addAliases(ALIASES);
+
+const suite = new Bench({
+  minIterations: 10
+});
+
+addModuleBenchmarksToSuite(suite).then(_ => suite.run());
