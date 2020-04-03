@@ -9,6 +9,5 @@ import {setPathPrefix} from '@loaders.gl/core';
 setPathPrefix('https://raw.githubusercontent.com/uber-web/loaders.gl/master');
 
 export default function WebSiteApp(props) {
-  return (<App {...props}/>);
+  return <App {...props} />;
 }
-
