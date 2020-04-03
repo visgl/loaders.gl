@@ -32,7 +32,7 @@ module.exports.onCreateWebpackConfig = function onCreateWebpackConfigOverride(op
   // This looks strange but order matters...
   Object.assign(config.resolve.alias, ALIASES, dependencyAliases, ALIASES);
 
-  console.error(JSON.stringify(config.resolve.alias, null, 2));
+  // console.error(JSON.stringify(config.resolve.alias, null, 2));
 
   // Completely replace the webpack config for the current stage.
   // This can be dangerous and break Gatsby if certain configuration options are changed.
