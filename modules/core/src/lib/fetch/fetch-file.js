@@ -9,14 +9,14 @@ import {getErrorMessageFromResponse} from './fetch-error-message';
 // * data urls
 // * http/http urls
 // * File/Blob objects
-export async function fetchFile(url, options) {
+export async function fetchFile(url, options = {}) {
   if (isFileReadable(url)) {
     return fetchFileReadable(url, options);
   }
   url = resolvePath(url);
   // TODO - SUPPORT reading from `File` objects
   const response = await fetch(url, options);
-  if (!response.ok && options && options.throws) {
+  if (!response.ok && options.throws) {
     throw new Error(await getErrorMessageFromResponse(response));
   }
   return response;
