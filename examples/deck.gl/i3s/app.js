@@ -136,7 +136,7 @@ export default class App extends PureComponent {
 
   _renderLayers() {
     const {dataUrl, token} = this.state;
-    const loadOptions = {};
+    const loadOptions = {throttleRequests: true};
     if (token) {
       loadOptions.token = token;
     }
