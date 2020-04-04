@@ -36,7 +36,6 @@ const I3SLoader = {
   id: 'i3s',
   name: 'I3S 3D Tiles',
   version: VERSION,
-  extensions: ['json', 'bin'],
   mimeType: 'application/octet-stream',
   parse,
   options: {

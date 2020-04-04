@@ -23,7 +23,19 @@ The terms and concepts used in `i3s` module have the corresponding parts [I3S Sp
 
 ## Usage
 
-When using loaders.gl's generic [`load`](https://loaders.gl/modules/core/docs/api-reference/load#load) function, user needs explicitly specify `I3Sloader` as auto detect loader from previously [`registered loaders`](https://loaders.gl/modules/core/docs/api-reference/register-loaders) is currently not supported for`I3Sloader`.
+As an I3S tileset contains multiple file formats, `I3SLoader` is needed to be explicitly specified when using [`load`](https://loaders.gl/modules/core/docs/api-reference/load) function.
+
+**Load I3S tileset and render with [deck.gl](https://deck.gl/#/)**
+
+A simple react app uses `I3SLoader` to load [San Francisco Buildings](https://www.arcgis.com/home/item.html?id=d3344ba99c3f4efaa909ccfbcc052ed5), render with [deck.gl's](https://deck.gl/) [`Tile3Dlayer`](https://deck.gl/#/documentation/deckgl-api-reference/layers/tile-3d-layer) and dynamically load/unload tiles based on current viewport and adjust the level of details when zooming in and out.
+
+<table style="border: 0;" align="center">
+  <tbody>
+    <img style="max-height:200px" src="https://raw.github.com/uber-common/deck.gl-data/master/images/whats-new/esri-i3s.gif" />
+  </tbody>
+</table>
+
+[Example Codesandbox](https://codesandbox.io/s/i3sloadersgldeckgl-34dfp)
 
 ```js
 import {I3SLoader} from '@loaders.gl/i3s';

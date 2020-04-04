@@ -60,9 +60,9 @@ const Tiles3DLoader = {
   id: '3d-tiles',
   name: '3D Tiles',
   version: VERSION,
-  extensions: ['json', 'cmpt', 'pnts', 'b3dm', 'i3dm'],
+  extensions: ['cmpt', 'pnts', 'b3dm', 'i3dm'],
   mimeType: 'application/octet-stream',
-  test: ['json', 'cmpt', 'pnts', 'b3dm', 'i3dm'],
+  test: ['cmpt', 'pnts', 'b3dm', 'i3dm'],
   parse,
   options: {
     '3d-tiles': {
