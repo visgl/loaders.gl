@@ -17,6 +17,8 @@ Parses a [3D tile](https://github.com/AnalyticalGraphicsInc/3d-tiles).
 
 ## Usage
 
+As a tileset contains multiple file formats, `Tiles3DLoader` is needed to be explicitly specified when using [`load`](https://loaders.gl/modules/core/docs/api-reference/load) function.
+
 Load a tileset file.
 
 ```js
@@ -29,11 +31,12 @@ const tilesetJson = await load(tilesetUrl, Tiles3DLoader);
 To decompress tiles containing Draco compressed glTF models or Draco compressed point clouds:
 
 ```js
-import {load} from '@loaders.gl/core';
+import {load, registerLoaders} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {DracoWorkerLoader} from '@loaders.gl/draco';
+registerLoaders(DracoWorkerLoader);
 const tileUrl = 'https://assets.cesium.com/43978/1.pnts';
-const tile = await load(tileUrl, Tiles3DLoader, {DracoWorkerLoader, decompress: true});
+const tile = await load(tileUrl, Tiles3DLoader, {decompress: true});
 ```
 
 Load a tileset and dynamically load/unload tiles based on viewport with helper class `Tileset3D` (`@loaders.gl/tiles`)

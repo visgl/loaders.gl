@@ -11,7 +11,7 @@ const TILE_B3DM_WITH_DRACO_URL = '@loaders.gl/3d-tiles/test/data/143.b3dm';
 
 test('Tiles3DLoader#Tileset file', async t => {
   const response = await fetchFile(TILESET_URL);
-  const tileset = await parse(response, [Tiles3DLoader]);
+  const tileset = await parse(response, Tiles3DLoader);
   t.ok(tileset);
 
   t.equals(tileset.type, 'TILES3D');
