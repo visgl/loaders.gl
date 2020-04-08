@@ -1,1 +1,1 @@
-export {FlatGeobufLoader} from './fgb-loader';
+export {FlatGeobufLoader} from './flatgeobuf-loader';

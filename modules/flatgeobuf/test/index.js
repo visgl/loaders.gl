@@ -1,0 +1,1 @@
+import './flatgeobuf-loader.spec';
