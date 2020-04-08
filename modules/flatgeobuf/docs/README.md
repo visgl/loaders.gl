@@ -1,4 +1,4 @@
-# @loaders.gl/mvt
+# @loaders.gl/flatgeobuf
 
 The `@loaders.gl/flatgeobuf` module handles the [FlatGeobuf](https://bjornharrtell.github.io/flatgeobuf/) format, a [flatbuffers](http://google.github.io/flatbuffers/) encoded binary format that defines simple geojson-type geospatial geometries.
 
