@@ -12,6 +12,7 @@ export default function parseFlatGeobuf(input, options) {
     return [];
   }
 
-  const {features} = deserialize(input);
+  const arr = new Uint8Array(input);
+  const {features} = deserialize(arr);
   return features;
 }
