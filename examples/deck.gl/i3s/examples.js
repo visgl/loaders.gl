@@ -25,7 +25,7 @@ export const EXAMPLES = {
   'New York': {
     name: 'New York',
     url:
-      'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/New_York_Mesh_NearMap/SceneServer/layers/0',
+      'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/New_York_Mesh/SceneServer/layers/0',
     viewport: {
       ...VIEW_STATE,
       longitude: -74,
