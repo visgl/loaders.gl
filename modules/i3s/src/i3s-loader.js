@@ -38,6 +38,7 @@ const I3SLoader = {
   version: VERSION,
   mimeType: 'application/octet-stream',
   parse,
+  extensions: ['bin'],
   options: {
     i3s: {
       loadContent: true
