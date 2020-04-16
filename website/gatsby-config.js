@@ -25,7 +25,7 @@ module.exports = {
         PROJECT_NAME: 'loaders.gl',
         PROJECT_ORG: 'uber-web',
         PROJECT_ORG_LOGO: 'images/uber-logo.png',
-        PROJECT_URL: 'https://github.com/uber-web/loaders.gl',
+        PROJECT_URL: 'https://github.com/visgl/loaders.gl',
         PROJECT_DESC: 'Loaders for Big Data Visualization',
         PATH_PREFIX: '/',
 

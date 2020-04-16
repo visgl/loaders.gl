@@ -10,7 +10,7 @@ The `load` function is used to load and parse data with a specific _loader objec
 
 The `loaders` parameter can also be omitted, in which case any _loader objects_ previously registered with [`registerLoaders`](docs/api-reference/core/register-loaders) will be used.
 
-- `url` - Urls can be data urls (`data://`) or a request (`http://` or `https://`) urls, or a file name (Node.js only). Also accepts `File` or `Blob` object (Browser only). Can also accept any format that is accepted by [`parse`](https://github.com/uber-web/loaders.gl/blob/master/docs/api-reference/core/parse.md), with the exception of strings that are interpreted as urls.
+- `url` - Urls can be data urls (`data://`) or a request (`http://` or `https://`) urls, or a file name (Node.js only). Also accepts `File` or `Blob` object (Browser only). Can also accept any format that is accepted by [`parse`](https://github.com/visgl/loaders.gl/blob/master/docs/api-reference/core/parse.md), with the exception of strings that are interpreted as urls.
 - `loaders` - can be a single loader or an array of loaders. If single loader is provided, will force to use it. If ommitted, will use the list of pre-registered loaders (see `registerLoaders`)
 - `options` - optional, contains both options for the read process and options for the loader (see documentation of the specific loader).
 

@@ -130,12 +130,12 @@ The following fields are guaranteed. Additionally, the loaded tile object will c
 
 After content is loaded, the following fields are guaranteed. But different tiles may have different extra content fields.
 
-| Field                | Type         | Contents                                                                                                                               |
-| -------------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `cartesianOrigin`    | `Number[3]`  | "Center" of tile geometry in WGS84 fixed frame coordinates                                                                             |
-| `cartographicOrigin` | `Number[3]`  | "Origin" in lng/lat (center of tile's bounding volume)                                                                                 |
-| `modelMatrix`        | `Number[16]` | Transforms tile geometry positions to fixed frame coordinates                                                                          |
-| `attributes`         | `Object`     | Each attribute follows luma.gl [accessor](https://github.com/uber/luma.gl/blob/master/docs/api-reference/webgl/accessor.md) properties |
+| Field                | Type         | Contents                                                                                                                                |
+| -------------------- | ------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `cartesianOrigin`    | `Number[3]`  | "Center" of tile geometry in WGS84 fixed frame coordinates                                                                              |
+| `cartographicOrigin` | `Number[3]`  | "Origin" in lng/lat (center of tile's bounding volume)                                                                                  |
+| `modelMatrix`        | `Number[16]` | Transforms tile geometry positions to fixed frame coordinates                                                                           |
+| `attributes`         | `Object`     | Each attribute follows luma.gl [accessor](https://github.com/visgl/luma.gl/blob/master/docs/api-reference/webgl/accessor.md) properties |
 
 `attributes` contains following fields
 

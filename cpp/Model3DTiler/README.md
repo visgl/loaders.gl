@@ -4,7 +4,7 @@ Build cesium 3D tiles from las, laz.
 
 ## Downloads
 
-* [Source Code](https://github.com/uber-web/loaders.gl/tree/master/cpp/Model3DTiler)
+* [Source Code](https://github.com/visgl/loaders.gl/tree/master/cpp/Model3DTiler)
 
 ## Dependencies
 
@@ -32,7 +32,7 @@ Model3DTiler
 
 ```
 cd ~/dev/workspaces/loaders.gl
-git clone https://github.com/uber-web/loaders.gl.git
+git clone https://github.com/visgl/loaders.gl.git
 cd loaders.gl/cpp/Model3DTiler
 mkdir build
 cd build
