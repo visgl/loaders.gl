@@ -31,7 +31,7 @@ A simple react app uses `I3SLoader` to load [San Francisco Buildings](https://ww
 
 <table style="border: 0;" align="center">
   <tbody>
-    <img style="max-height:200px" src="https://raw.github.com/uber-common/deck.gl-data/master/images/whats-new/esri-i3s.gif" />
+    <img style="max-height:200px" src="https://raw.github.com/visgl/deck.gl-data/master/images/whats-new/esri-i3s.gif" />
   </tbody>
 </table>
 
@@ -117,7 +117,7 @@ export default class App extends Component {
 }
 ```
 
-A more complex example could be found [here](https://github.com/uber-web/loaders.gl/tree/master/examples/deck.gl/i3s), checkout website [examples](https://loaders.gl/examples/i3s).
+A more complex example could be found [here](https://github.com/visgl/loaders.gl/tree/master/examples/deck.gl/i3s), checkout website [examples](https://loaders.gl/examples/i3s).
 
 **Basic API Usage**
 
@@ -201,15 +201,15 @@ The following fields are guaranteed. Additionally, the loaded tile object will c
 
 After content is loaded, the following fields are guaranteed. But different tiles may have different extra content fields.
 
-| Field                | Type         | Contents                                                                                                                               |
-| -------------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `cartesianOrigin`    | `Number[3]`  | "Center" of tile geometry in WGS84 fixed frame coordinates                                                                             |
-| `cartographicOrigin` | `Number[3]`  | "Origin" in lng/lat (center of tile's bounding volume)                                                                                 |
-| `modelMatrix`        | `Number[16]` | Transforms tile geometry positions to fixed frame coordinates                                                                          |
-| `vertexCount`        | `Number`     | Transforms tile geometry positions to fixed frame coordinates                                                                          |
-| `attributes`         | `Object`     | Each attribute follows luma.gl [accessor](https://github.com/uber/luma.gl/blob/master/docs/api-reference/webgl/accessor.md) properties |
-| `texture`            | `Object`     | Loaded texture by [`loaders.gl/image`](https://loaders.gl/modules/images/docs/api-reference/image-loader)                              |
-| `featureData`        | `Object`     | Loaded feature data for parsing the geometies (Will be deprecated in 2.x)                                                              |
+| Field                | Type         | Contents                                                                                                                                |
+| -------------------- | ------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `cartesianOrigin`    | `Number[3]`  | "Center" of tile geometry in WGS84 fixed frame coordinates                                                                              |
+| `cartographicOrigin` | `Number[3]`  | "Origin" in lng/lat (center of tile's bounding volume)                                                                                  |
+| `modelMatrix`        | `Number[16]` | Transforms tile geometry positions to fixed frame coordinates                                                                           |
+| `vertexCount`        | `Number`     | Transforms tile geometry positions to fixed frame coordinates                                                                           |
+| `attributes`         | `Object`     | Each attribute follows luma.gl [accessor](https://github.com/visgl/luma.gl/blob/master/docs/api-reference/webgl/accessor.md) properties |
+| `texture`            | `Object`     | Loaded texture by [`loaders.gl/image`](https://loaders.gl/modules/images/docs/api-reference/image-loader)                               |
+| `featureData`        | `Object`     | Loaded feature data for parsing the geometies (Will be deprecated in 2.x)                                                               |
 
 `attributes` contains following fields
 
