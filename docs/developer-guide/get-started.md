@@ -41,7 +41,7 @@ const data = await parse(fetch('data.csv'));
 
 ## Building
 
-You can use your bundler of choice such as webpack or rollup. See the [`get-started-...`](https://github.com/uber-web/loaders.gl/tree/master/examples) examples for minimal working examples of how to bundle loaders.gl.
+You can use your bundler of choice such as webpack or rollup. See the [`get-started-...`](https://github.com/visgl/loaders.gl/tree/master/examples) examples for minimal working examples of how to bundle loaders.gl.
 
 ## Supporting Older Browsers
 

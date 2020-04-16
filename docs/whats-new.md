@@ -10,15 +10,15 @@ Release Date: Mar 16, 2020
   <tbody>
     <tr>
       <td>
-        <img style="max-height:200px" src="https://raw.github.com/uber-common/deck.gl-data/master/images/whats-new/mvt-layer.jpg" />
+        <img style="max-height:200px" src="https://raw.github.com/visgl/deck.gl-data/master/images/whats-new/mvt-layer.jpg" />
         <p><i>MVTLoader + <a target="_blank" href="https://deck.gl/#/documentation/deckgl-api-reference/layers/mvt-layer">MVTLayer</a></i></p>
       </td>
       <td>
-        <img style="max-height:200px" src="https://raw.github.com/uber-common/deck.gl-data/master/images/whats-new/terrain.jpg" />
+        <img style="max-height:200px" src="https://raw.github.com/visgl/deck.gl-data/master/images/whats-new/terrain.jpg" />
         <p><i>TerrainLoader + <a target="_blank" href="https://deck.gl/#/documentation/deckgl-api-reference/layers/terrain-layer">TerrainLayer</a></i></p>
       </td>
       <td>
-        <img style="max-height:200px" src="https://raw.github.com/uber-common/deck.gl-data/master/images/whats-new/esri-i3s.gif" />
+        <img style="max-height:200px" src="https://raw.github.com/visgl/deck.gl-data/master/images/whats-new/esri-i3s.gif" />
         <p><i>I3SLoader + <a target="_blank" href="https://deck.gl/#/documentation/deckgl-api-reference/layers/tile-3d-layer">Tile3DLayer</a> + I3S</i></p>
       </td>
     </tr>
@@ -38,7 +38,7 @@ The new loaders empowers rendering frameworks to visualize various geospatial da
 
 **@loaders.gl/terrain** (new loader module)
 
-- A new loader module for reconstructing mesh surfaces from height map images. Check out the [example](https://github.com/uber/deck.gl/tree/master/examples/website/terrain) with deck.gl's [`TerrainLayer`](https://deck.gl/#/documentation/deckgl-api-reference/layers/terrain-layer).
+- A new loader module for reconstructing mesh surfaces from height map images. Check out the [example](https://github.com/visgl/deck.gl/tree/master/examples/website/terrain) with deck.gl's [`TerrainLayer`](https://deck.gl/#/documentation/deckgl-api-reference/layers/terrain-layer).
 
 **@loaders.gl/wkt** (new loader module)
 
@@ -120,7 +120,7 @@ The 1.3 release is focused on production quality 3D tiles support, maturing the 
   <tbody>
     <tr>
       <td style="text-align: center;">
-        <img style="max-height:200px" src="https://raw.github.com/uber-web/loaders.gl/master/website/static/images/example-3d-tiles.png" />
+        <img style="max-height:200px" src="https://raw.github.com/visgl/loaders.gl/master/website/static/images/example-3d-tiles.png" />
         <p><strong>Tiles3DLoader</strong></p>
       </td>
     </tr>
@@ -195,7 +195,7 @@ Release Date: May 30, 2019
   <tbody>
     <tr>
       <td style="text-align: center;">
-        <img style="max-height:200px" src="https://raw.github.com/uber-web/loaders.gl/master/website/static/images/example-gltf.jpg" />
+        <img style="max-height:200px" src="https://raw.github.com/visgl/loaders.gl/master/website/static/images/example-gltf.jpg" />
         <p><strong>GLTFLoader</strong></p>
       </td>
     </tr>

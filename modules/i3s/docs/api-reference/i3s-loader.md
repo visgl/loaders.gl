@@ -31,7 +31,7 @@ A simple react app uses `I3SLoader` to load [San Francisco Buildings](https://ww
 
 <table style="border: 0;" align="center">
   <tbody>
-    <img style="max-height:200px" src="https://raw.github.com/uber-common/deck.gl-data/master/images/whats-new/esri-i3s.gif" />
+    <img style="max-height:200px" src="https://raw.github.com/visgl/deck.gl-data/master/images/whats-new/esri-i3s.gif" />
   </tbody>
 </table>
 
@@ -39,6 +39,85 @@ A simple react app uses `I3SLoader` to load [San Francisco Buildings](https://ww
 
 ```js
 import {I3SLoader} from '@loaders.gl/i3s';
+
+// How to get mapbox token https://docs.mapbox.com/help/how-mapbox-works/access-tokens/
+const MAPBOX_TOKEN = ''; // add your Mapbox token here
+
+const INITIAL_VIEW_STATE = {
+  longitude: -120,
+  latitude: 34,
+  height: 600,
+  width: 800,
+  pitch: 45,
+  maxPitch: 85,
+  bearing: 0,
+  minZoom: 2,
+  maxZoom: 30,
+  zoom: 14.5
+};
+
+export default class App extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {viewState: INITIAL_VIEW_STATE};
+  }
+
+  _onTilesetLoad(tileset) {
+    // update viewport to the tileset center
+    const {zoom, cartographicCenter} = tileset;
+    const [longitude, latitude] = cartographicCenter;
+
+    const viewState = {
+      ...this.state.viewState,
+      zoom: zoom + 2.5,
+      longitude,
+      latitude
+    };
+
+    this.setState({viewState});
+  }
+
+  render() {
+    const {viewState} = this.state;
+
+    // construct Tile3DLayer to render I3S tileset
+    const layer = new Tile3DLayer({
+      id: 'tile-3d-layer',
+      // Tileset entry point: Indexed 3D layer file url
+      data:
+        'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_Bldgs/SceneServer/layers/0',
+      loader: I3SLoader,
+      onTilesetLoad: this._onTilesetLoad.bind(this)
+    });
+
+    return (
+      <DeckGL
+        layers={[layer]}
+        viewState={viewState}
+        controller={{type: MapController}}
+        onViewStateChange={({viewState}) => {
+          // update viewState when interacting with map
+          this.setState({viewState});
+        }}
+      >
+        <StaticMap
+          mapStyle={'mapbox://styles/mapbox/dark-v9'}
+          mapboxApiAccessToken={MAPBOX_TOKEN}
+          preventStyleDiffing
+        />
+      </DeckGL>
+    );
+  }
+}
+```
+
+A more complex example could be found [here](https://github.com/visgl/loaders.gl/tree/master/examples/deck.gl/i3s), checkout website [examples](https://loaders.gl/examples/i3s).
+
+**Basic API Usage**
+
+Basic API usage is illustrated in the following snippet. Create a `Tileset3D` instance, point it a valid tileset URL, set up callbacks, and keep feeding in new camera positions:
+
+```js
 import {load} from '@loaders.gl/core';
 
 // load tileset
@@ -109,15 +188,15 @@ The following fields are guaranteed. Additionally, the loaded tile object will c
 
 After content is loaded, the following fields are guaranteed. But different tiles may have different extra content fields.
 
-| Field                | Type         | Contents                                                                                                                               |
-| -------------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `cartesianOrigin`    | `Number[3]`  | "Center" of tile geometry in WGS84 fixed frame coordinates                                                                             |
-| `cartographicOrigin` | `Number[3]`  | "Origin" in lng/lat (center of tile's bounding volume)                                                                                 |
-| `modelMatrix`        | `Number[16]` | Transexamples/benchmarks/app.jsforms tile geometry positions to fixed frame coordinates                                                |
-| `vertexCount`        | `Number`     | Transforms tile geometry positions to fixed frame coordinates                                                                          |
-| `attributes`         | `Object`     | Each attribute follows luma.gl [accessor](https://github.com/uber/luma.gl/blob/master/docs/api-reference/webgl/accessor.md) properties |
-| `texture`            | `Object`     | Loaded texture by [`loaders.gl/image`](https://loaders.gl/modules/images/docs/api-reference/image-loader)                              |
-| `featureData`        | `Object`     | Loaded feature data for parsing the geometies (Will be deprecated in 2.x)                                                              |
+| Field                | Type         | Contents                                                                                                                                |
+| -------------------- | ------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `cartesianOrigin`    | `Number[3]`  | "Center" of tile geometry in WGS84 fixed frame coordinates                                                                              |
+| `cartographicOrigin` | `Number[3]`  | "Origin" in lng/lat (center of tile's bounding volume)                                                                                  |
+| `modelMatrix`        | `Number[16]` | Transforms tile geometry positions to fixed frame coordinates                                                                           |
+| `vertexCount`        | `Number`     | Transforms tile geometry positions to fixed frame coordinates                                                                           |
+| `attributes`         | `Object`     | Each attribute follows luma.gl [accessor](https://github.com/visgl/luma.gl/blob/master/docs/api-reference/webgl/accessor.md) properties |
+| `texture`            | `Object`     | Loaded texture by [`loaders.gl/image`](https://loaders.gl/modules/images/docs/api-reference/image-loader)                               |
+| `featureData`        | `Object`     | Loaded feature data for parsing the geometies (Will be deprecated in 2.x)                                                               |
 
 `attributes` contains following fields
 

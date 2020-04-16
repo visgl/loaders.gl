@@ -5,7 +5,7 @@
   "private": true,
   "repository": {
     "type": "git",
-    "url": "https://github.com/uber-web/loaders.gl"
+    "url": "https://github.com/visgl/loaders.gl"
   },
   "keywords": [
     "webgl",
