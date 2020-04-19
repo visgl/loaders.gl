@@ -58,7 +58,13 @@ module.exports = {
 
         LINK_TO_GET_STARTED: '/docs/developer-guide/get-started',
 
-        ADDITIONAL_LINKS: [{name: 'Blog', href: 'http://medium.com/vis-gl'}],
+        ADDITIONAL_LINKS: [{
+          name: 'Blog',
+          href: 'http://medium.com/vis-gl',
+          index: 1
+        }],
+
+        STYLESHEETS: [''],
 
         INDEX_PAGE_URL: resolve(__dirname, './templates/index.jsx'),
 
