@@ -1,4 +1,4 @@
-import decode from '@here/quantized-mesh-decoder';
+import decode, {DECODING_STEPS} from '@here/quantized-mesh-decoder';
 import {getMeshBoundingBox} from '@loaders.gl/loader-utils';
 
 function getMeshAttributes(vertexData, header, bounds) {
@@ -45,7 +45,8 @@ function getTileMesh(arrayBuffer, options) {
     return null;
   }
   const {bounds} = options;
-  const {header, vertexData, triangleIndices} = decode(arrayBuffer);
+  // Don't parse edge indices or format extensions
+  const {header, vertexData, triangleIndices} = decode(arrayBuffer, DECODING_STEPS.triangleIndices);
   const attributes = getMeshAttributes(vertexData, header, bounds);
 
   return {
