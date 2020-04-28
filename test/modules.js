@@ -25,6 +25,7 @@ require('@loaders.gl/las/test');
 require('@loaders.gl/obj/test');
 require('@loaders.gl/pcd/test');
 require('@loaders.gl/ply/test');
+require('@loaders.gl/quantized-mesh/test');
 require('@loaders.gl/terrain/test');
 
 // Scenegraph Formats

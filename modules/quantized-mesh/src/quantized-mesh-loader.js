@@ -10,8 +10,13 @@ export const QuantizedMeshWorkerLoader = {
   name: 'Quantized Mesh',
   version: VERSION,
   extensions: ['terrain'],
-  // mimeType: 'image/png',
-  options: {}
+  mimeType: 'application/vnd.quantized-mesh',
+  options: {
+    'quantized-mesh': {
+      workerUrl: `https://unpkg.com/@loaders.gl/quantized-mesh@${VERSION}/dist/quantized-mesh-loader.worker.js`,
+      bounds: [0, 0, 1, 1]
+    }
+  }
 };
 
 export const QuantizedMeshLoader = {...QuantizedMeshWorkerLoader, parse: loadQuantizedMesh};
