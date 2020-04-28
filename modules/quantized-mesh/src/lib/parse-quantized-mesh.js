@@ -1,5 +1,5 @@
-import decode, {DECODING_STEPS} from '@here/quantized-mesh-decoder';
 import {getMeshBoundingBox} from '@loaders.gl/loader-utils';
+import decode, {DECODING_STEPS} from './decode';
 
 function getMeshAttributes(vertexData, header, bounds) {
   const {minHeight, maxHeight} = header;
