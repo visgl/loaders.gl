@@ -43,13 +43,13 @@ function makeAliases(basename = __dirname) {
     '@loaders.gl/pcd/test': path.resolve(basename, '../modules/pcd/test'),
     '@loaders.gl/ply/test': path.resolve(basename, '../modules/ply/test'),
     '@loaders.gl/potree/test': path.resolve(basename, '../modules/potree/test'),
-    '@loaders.gl/quantize-mesh/test': path.resolve(basename, '../modules/quantize-mesh/test'),
+    '@loaders.gl/quantized-mesh/test': path.resolve(basename, '../modules/quantized-mesh/test'),
     '@loaders.gl/tables/test': path.resolve(basename, '../modules/tables/test'),
     '@loaders.gl/terrain/test': path.resolve(basename, '../modules/terrain/test'),
     '@loaders.gl/tiles/test': path.resolve(basename, '../modules/tiles/test'),
     '@loaders.gl/wkt/test': path.resolve(basename, '../modules/wkt/test'),
     '@loaders.gl/zip/test': path.resolve(basename, '../modules/zip/test')
-  }
+  };
 }
 
 module.exports = makeAliases();
