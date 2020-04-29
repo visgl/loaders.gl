@@ -1,12 +1,12 @@
-# TerrainLoader
+# QuantizedMeshLoader
 
-The `TerrainLoader` reconstructs mesh surfaces from height map images, e.g. [Mapzen Terrain Tiles](https://github.com/tilezen/joerd/blob/master/docs/formats.md), which encodes elevation into R,G,B values.
+The `@loaders.gl/quantized-mesh` module reconstructs mesh surfaces from the [quantized mesh](https://github.com/CesiumGS/quantized-mesh) format.
 
 | Loader                | Characteristic                                |
 | --------------------- | --------------------------------------------- |
-| File Extension        | `.png`, `.pngraw`                             |
+| File Extension        | `.terrain`                                    |
 | File Type             | Binary                                        |
-| File Format           | Encoded height map                            |
+| File Format           | Encoded mesh                                  |
 | Data Format           | [Mesh](/docs/specifications/category-mesh.md) |
 | Decoder Type          | Asynchronous                                  |
 | Worker Thread Support | Yes                                           |
@@ -15,59 +15,15 @@ The `TerrainLoader` reconstructs mesh surfaces from height map images, e.g. [Map
 ## Usage
 
 ```js
-import {ImageLoader} from '@loaders.gl/images';
-import {TerrainLoader} from '@loaders.gl/terrain';
-import {load, registerLoaders} from '@loaders.gl/core';
+import {QuantizedMeshLoader} from '@loaders.gl/quantized-mesh';
+import {load} from '@loaders.gl/core';
 
-registerLoaders(ImageLoader);
-
-const data = await load(url, TerrainLoader, options);
+const data = await load(url, QuantizedMeshLoader, options);
 ```
 
 ## Options
 
-| Option                     | Type          | Default   | Description                                                                                                                                   |
-| -------------------------- | ------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `terrain.meshMaxError`     | number        | `10`      | Mesh error in meters. The output mesh is in higher resolution (more vertices) if the error is smaller.                                        |
-| `terrain.bounds`           | array<number> | `null`    | Bounds of the image to fit x,y coordinates into. In `[minX, minY, maxX, maxY]`. If not supplied, x and y are in pixels relative to the image. |
-| `terrain.elevationDecoder` | object        | See below | See below                                                                                                                                     |
-
-### elevationDecoder
-
-Parameters used to convert a pixel to elevation in meters.
-An object containing the following fields:
-
-- `rScale`: Multiplier of the red channel.
-- `gScale`: Multiplier of the green channel.
-- `bScale`: Multiplier of the blue channel.
-- `offset`: Translation of the sum.
-
-Each color channel (r, g, and b) is a number between `[0, 255]`.
-
-For example, the Mapbox terrain service's elevation is [encoded as follows](https://docs.mapbox.com/help/troubleshooting/access-elevation-data/#decode-data):
-
-```
-height = -10000 + ((R * 256 * 256 + G * 256 + B) * 0.1)
-```
-
-The corresponding `elevationDecoder` is:
-
-```
-{
-  "rScale": 6553.6,
-  "gScale": 25.6,
-  "bScale": 0.1,
-  "offset": -10000
-}
-```
-
-The default value of `elevationDecoder` decodes a grayscale image:
-
-```
-{
-  "rScale": 1,
-  "gScale": 0,
-  "gScale": 0,
-  "offset": 0
-}
-```
+| Option                     | Type          | Default        | Description                                                                     |
+| -------------------------- | ------------- | -------------- | ------------------------------------------------------------------------------- |
+| `quantized-mesh.bounds`    | array<number> | `[0, 0, 1, 1]` | Bounds of the image to fit x,y coordinates into. In `[minX, minY, maxX, maxY]`. |
+| `quantized-mesh.workerUrl` | string        |                | Custom worker url. Defaults to the unpkg CDN.                                   |
