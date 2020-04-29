@@ -2,6 +2,13 @@
 
 ### 2.1 Release
 
+#### v2.1.3
+
+- i3s: fix extensions (#721)
+- i3s and 3d-tiles: remove json from extensions (#711)
+- Sanity check in fetch (#707)
+- GeoJSON to binary arrays improvements (#703)
+
 #### v2.1.2
 
 - kml: fix parsing coordinate numbers (#705)
