@@ -64,6 +64,6 @@ function getTileMesh(arrayBuffer, options) {
   };
 }
 
-export default async function loadQuantizedMesh(arrayBuffer, options) {
+export default function loadQuantizedMesh(arrayBuffer, options) {
   return getTileMesh(arrayBuffer, options.quantizedMesh);
 }

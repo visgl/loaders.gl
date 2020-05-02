@@ -1,6 +1,6 @@
 // __VERSION__ is injected by babel-plugin-version-inline
 /* global __VERSION__ */
-import loadQuantizedMesh from './lib/parse-quantized-mesh';
+import parseQuantizedMesh from './lib/parse-quantized-mesh';
 
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
@@ -19,4 +19,8 @@ export const QuantizedMeshWorkerLoader = {
   }
 };
 
-export const QuantizedMeshLoader = {...QuantizedMeshWorkerLoader, parse: loadQuantizedMesh};
+export const QuantizedMeshLoader = {
+  ...QuantizedMeshWorkerLoader,
+  parseSync: parseQuantizedMesh,
+  parse: async (arrayBuffer, options) => parseQuantizedMesh(arrayBuffer, options)
+};
