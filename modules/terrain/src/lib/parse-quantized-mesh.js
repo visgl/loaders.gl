@@ -18,19 +18,15 @@ function getMeshAttributes(vertexData, header, bounds) {
   // Data is not interleaved; all u, then all v, then all heights
   for (let i = 0; i < nCoords; i++) {
     const x = vertexData[i] / 32767;
-    positions[3 * i + 0] = x * xScale + minX;
-    texCoords[2 * i + 0] = x;
-  }
-
-  for (let i = 0; i < nCoords; i++) {
     const y = vertexData[i + nCoords] / 32767;
-    positions[3 * i + 1] = y * yScale + minY;
-    texCoords[2 * i + 1] = y;
-  }
-
-  for (let i = 0; i < nCoords; i++) {
     const z = vertexData[i + nCoords * 2] / 32767;
+
+    positions[3 * i + 0] = x * xScale + minX;
+    positions[3 * i + 1] = y * yScale + minY;
     positions[3 * i + 2] = z * zScale + minHeight;
+
+    texCoords[2 * i + 0] = x;
+    texCoords[2 * i + 1] = y;
   }
 
   return {
