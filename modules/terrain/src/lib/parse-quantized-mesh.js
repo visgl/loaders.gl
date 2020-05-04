@@ -61,5 +61,5 @@ function getTileMesh(arrayBuffer, options) {
 }
 
 export default function loadQuantizedMesh(arrayBuffer, options) {
-  return getTileMesh(arrayBuffer, options.quantizedMesh);
+  return getTileMesh(arrayBuffer, options['quantized-mesh']);
 }
