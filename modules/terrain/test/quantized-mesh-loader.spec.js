@@ -8,7 +8,7 @@ import {setLoaderOptions, load} from '@loaders.gl/core';
 const TILE_WITH_EXTENSIONS_URL = '@loaders.gl/terrain/test/data/tile-with-extensions.terrain';
 
 setLoaderOptions({
-  quantizedMesh: {
+  'quantized-mesh': {
     workerUrl: 'modules/terrain/dist/quantized-mesh-loader.worker.js'
   }
 });
