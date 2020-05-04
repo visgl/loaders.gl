@@ -5,8 +5,6 @@ mesh][quantized_mesh] format.
 
 [quantized_mesh]: https://github.com/CesiumGS/quantized-mesh
 
-
-
 | Loader                | Characteristic                                |
 | --------------------- | --------------------------------------------- |
 | File Extension        | `.terrain`                                    |

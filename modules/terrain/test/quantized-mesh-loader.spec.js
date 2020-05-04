@@ -2,7 +2,7 @@
 import test from 'tape-promise/tape';
 import {validateLoader, validateMeshCategoryData} from 'test/common/conformance';
 
-import {QuantizedMeshLoader, QuantizedMeshWorkerLoader} from '@loaders.gl/quantized-mesh';
+import {QuantizedMeshLoader, QuantizedMeshWorkerLoader} from '@loaders.gl/terrain';
 import {setLoaderOptions, load} from '@loaders.gl/core';
 
 const TILE_WITH_EXTENSIONS_URL =
