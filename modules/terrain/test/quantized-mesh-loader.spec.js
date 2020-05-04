@@ -5,12 +5,11 @@ import {validateLoader, validateMeshCategoryData} from 'test/common/conformance'
 import {QuantizedMeshLoader, QuantizedMeshWorkerLoader} from '@loaders.gl/terrain';
 import {setLoaderOptions, load} from '@loaders.gl/core';
 
-const TILE_WITH_EXTENSIONS_URL =
-  '@loaders.gl/quantized-mesh/test/data/tile-with-extensions.terrain';
+const TILE_WITH_EXTENSIONS_URL = '@loaders.gl/terrain/test/data/tile-with-extensions.terrain';
 
 setLoaderOptions({
   quantizedMesh: {
-    workerUrl: 'modules/quantized-mesh/dist/quantized-mesh-loader.worker.js'
+    workerUrl: 'modules/terrain/dist/quantized-mesh-loader.worker.js'
   }
 });
 

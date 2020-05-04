@@ -75,6 +75,8 @@
         {"entry": "modules/obj/docs/api-reference/obj-loader"},
         {"entry": "modules/pcd/docs/api-reference/pcd-loader"},
         {"entry": "modules/ply/docs/api-reference/ply-loader"},
+        {"entry": "modules/terrain/docs/api-reference/quantized-mesh-loader"},
+        {"entry": "modules/terrain/docs/api-reference/terrain-loader"},
         {"entry": "modules/wkt/docs/api-reference/wkt-loader"},
         {"entry": "modules/wkt/docs/api-reference/wkt-writer"},
         {"entry": "modules/zip/docs/api-reference/zip-loader"},
