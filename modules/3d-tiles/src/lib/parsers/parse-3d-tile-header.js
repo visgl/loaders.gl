@@ -33,7 +33,13 @@ function getRefine(refine) {
 
 export function normalizeTileData(tile, options) {
   if (tile.content) {
-    tile.contentUrl = `${options.basePath}/${tile.content.uri}`;
+    let contentUri = tile.content.uri;
+    if ('url' in tile.content) {
+      // eslint-disable-next-line
+      console.warn('Tileset 3D: "content.url" property deprecated. Use "content.uri" instead.');
+      contentUri = tile.content.url;
+    }
+    tile.contentUrl = `${options.basePath}/${contentUri}`;
   }
   tile.id = tile.contentUrl;
   tile.lodMetricType = LOD_METRIC_TYPE.GEOMETRIC_ERROR;
