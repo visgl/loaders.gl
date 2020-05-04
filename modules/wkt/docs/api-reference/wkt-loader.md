@@ -2,13 +2,15 @@
 
 Loader and writer for the [Well-known text] format for representation of geometry.
 
-| Loader         | Characteristic                                                                              |
-| -------------- | ------------------------------------------------------------------------------------------- |
-| File Extension | `.wkt`,                                                                                     |
-| File Type      | Text                                                                                        |
-| File Format    | [Well Known Text](https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry) |
-| Data Format    | [Geometry](/docs/specifications/category-gis)                                               |
-| Supported APIs | `load`, `parse`, `parseSync`                                                                |
+| Loader                | Characteristic                                                                              |
+| --------------------- | ------------------------------------------------------------------------------------------- |
+| File Extension        | `.wkt`,                                                                                     |
+| File Type             | Text                                                                                        |
+| File Format           | [Well Known Text](https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry) |
+| Data Format           | [Geometry](/docs/specifications/category-gis)                                               |
+| Supported APIs        | `load`, `parse`, `parseSync`                                                                |
+| Decoder Type          | Synchronous                                                                                 |
+| Worker Thread Support | Yes                                                                                         |
 
 ## Usage
 
