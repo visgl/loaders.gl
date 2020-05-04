@@ -1,6 +1,11 @@
 # Overview
 
-The `@loaders.gl/terrain` module reconstructs mesh surfaces from height map images, e.g. [Mapzen Terrain Tiles](https://github.com/tilezen/joerd/blob/master/docs/formats.md), which encodes elevation into R,G,B values.
+The `@loaders.gl/terrain` module reconstructs mesh surfaces from either height
+map images--e.g. [Mapzen Terrain Tiles][mapzen_terrain_tiles]--which encode
+elevation into R,G,B values or the [quantized mesh][quantized_mesh] format.
+
+[mapzen_terrain_tiles]: https://github.com/tilezen/joerd/blob/master/docs/formats.md
+[quantized_mesh]: https://github.com/CesiumGS/quantized-mesh
 
 ## Installation
 
@@ -11,7 +16,14 @@ npm install @loaders.gl/core
 
 ## Attribution
 
-`@loaders.gl/terrain` uses [MARTINI](https://github.com/mapbox/martini) for mesh reconstruction.
+The `TerrainLoader` uses [MARTINI](https://github.com/mapbox/martini) for mesh
+reconstruction.
+
+The `QuantizedMeshLoader` uses
+[`quantized-mesh-decoder`][quantized-mesh-decoder] from HERE under the MIT
+license to decode quantized mesh.
+
+[quantized-mesh-decoder]: https://github.com/heremaps/quantized-mesh-decoder
 
 ISC License
 

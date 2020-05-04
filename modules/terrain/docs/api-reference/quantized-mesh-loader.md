@@ -1,6 +1,11 @@
 # QuantizedMeshLoader
 
-The `@loaders.gl/quantized-mesh` module reconstructs mesh surfaces from the [quantized mesh](https://github.com/CesiumGS/quantized-mesh) format.
+The `QuantizedMeshLoader` module reconstructs mesh surfaces from the [quantized
+mesh][quantized_mesh] format.
+
+[quantized_mesh]: https://github.com/CesiumGS/quantized-mesh
+
+
 
 | Loader                | Characteristic                                |
 | --------------------- | --------------------------------------------- |

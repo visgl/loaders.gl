@@ -13,7 +13,7 @@ export const QuantizedMeshWorkerLoader = {
   mimeType: 'application/vnd.quantized-mesh',
   options: {
     'quantized-mesh': {
-      workerUrl: `https://unpkg.com/@loaders.gl/quantized-mesh@${VERSION}/dist/quantized-mesh-loader.worker.js`,
+      workerUrl: `https://unpkg.com/@loaders.gl/terrain@${VERSION}/dist/quantized-mesh-loader.worker.js`,
       bounds: [0, 0, 1, 1]
     }
   }
