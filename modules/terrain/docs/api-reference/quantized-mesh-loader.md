@@ -19,9 +19,14 @@ mesh][quantized_mesh] format.
 ## Usage
 
 ```js
-import {QuantizedMeshLoader} from '@loaders.gl/quantized-mesh';
+import {QuantizedMeshLoader} from '@loaders.gl/terrain';
 import {load} from '@loaders.gl/core';
 
+const options = {
+  'quantized-mesh': {
+    bounds: [0, 0, 1, 1]
+  }
+};
 const data = await load(url, QuantizedMeshLoader, options);
 ```
 
