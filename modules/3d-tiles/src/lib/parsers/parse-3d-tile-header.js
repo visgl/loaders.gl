@@ -33,12 +33,7 @@ function getRefine(refine) {
 
 export function normalizeTileData(tile, options) {
   if (tile.content) {
-    let contentUri = tile.content.uri;
-    if ('url' in tile.content) {
-      // eslint-disable-next-line
-      console.warn('Tileset 3D: "content.url" property deprecated. Use "content.uri" instead.');
-      contentUri = tile.content.url;
-    }
+    const contentUri = tile.content.uri || tile.content.url;
     tile.contentUrl = `${options.basePath}/${contentUri}`;
   }
   tile.id = tile.contentUrl;
