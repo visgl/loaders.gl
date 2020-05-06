@@ -4,6 +4,7 @@
 
 #### v2.1.3
 
+- bump dependencies
 - i3s: fix extensions (#721)
 - i3s and 3d-tiles: remove json from extensions (#711)
 - Sanity check in fetch (#707)

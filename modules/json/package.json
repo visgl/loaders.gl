@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/json",
-  "version": "2.1.3",
+  "version": "2.1.4",
   "description": "Framework-independent loader for JSON and streaming JSON formats",
   "license": "MIT",
   "publishConfig": {
@@ -34,6 +34,6 @@
     "build-bundle": "webpack --display=minimal --config ../../scripts/bundle.config.js"
   },
   "dependencies": {
-    "@loaders.gl/tables": "2.1.3"
+    "@loaders.gl/tables": "2.1.4"
   }
 }
