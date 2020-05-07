@@ -175,13 +175,26 @@ export default class Tileset3D {
     return Object.values(this._tiles);
   }
 
+  getTileUrl(tilePath) {
+    const isDataUrl = tilePath.startsWith('data:');
+    if (isDataUrl) {
+      return tilePath;
+    }
+    return `${tilePath}${this.queryParams}`;
+  }
+
   update(viewport) {
+    if (!this._map) {
+      this._map = {};
+    }
+
     this._cache.reset();
     this._frameNumber++;
-    const frameState = getFrameState(viewport, this._frameNumber);
-    this._traverser.traverse(this.root, frameState, this.options);
+    this._frameState = getFrameState(viewport, this._frameNumber);
+    this._traverser.traverse(this.root, this._frameState, this.options);
+  }
 
-    // populate traversal results
+  _onTraversalEnd() {
     const selectedTiles = Object.values(this._traverser.selectedTiles);
     if (this._tilesChanged(this.selectedTiles, selectedTiles)) {
       this._updateFrameNumber++;
@@ -194,19 +207,11 @@ export default class Tileset3D {
     this._requestedTiles = Object.values(this._traverser.requestedTiles);
     this._emptyTiles = Object.values(this._traverser.emptyTiles);
 
-    this._loadTiles(frameState);
+    this._loadTiles(this._frameState);
     this._unloadTiles();
     this._updateStats();
 
     return this._updateFrameNumber;
-  }
-
-  getTileUrl(tilePath) {
-    const isDataUrl = tilePath.startsWith('data:');
-    if (isDataUrl) {
-      return tilePath;
-    }
-    return `${tilePath}${this.queryParams}`;
   }
 
   _tilesChanged(oldSelectedTiles, selectedTiles) {
@@ -225,7 +230,9 @@ export default class Tileset3D {
     // This makes it less likely this requests will be cancelled after being issued.
     // requestedTiles.sort((a, b) => a._priority - b._priority);
     for (const tile of this._requestedTiles) {
-      this._loadTile(tile, frameState);
+      if (tile.contentUnloaded) {
+        this._loadTile(tile, frameState);
+      }
     }
   }
 
@@ -346,7 +353,8 @@ export default class Tileset3D {
     }
 
     return new TraverserClass({
-      basePath: this.basePath
+      basePath: this.basePath,
+      onTraversalEnd: this._onTraversalEnd.bind(this)
     });
   }
 
