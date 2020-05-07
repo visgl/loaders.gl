@@ -184,10 +184,6 @@ export default class Tileset3D {
   }
 
   update(viewport) {
-    if (!this._map) {
-      this._map = {};
-    }
-
     this._cache.reset();
     this._frameNumber++;
     this._frameState = getFrameState(viewport, this._frameNumber);
