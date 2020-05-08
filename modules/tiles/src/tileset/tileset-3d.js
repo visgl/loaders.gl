@@ -1,6 +1,42 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
+/*
+
+  The Tileset loading and rendering flow is as below,
+  A rendered (i.e. deck.gl `Tile3DLayer`) triggers `tileset.update()` after a `tileset` is loaded
+  `tileset` starts traversing the tile tree and update `requestTiles` (tiles of which content need
+  to be fetched) and `selectedTiles` (tiles ready for rendering under the current viewport).
+  `Tile3DLayer` will update rendering based on `selectedTiles`.
+  `Tile3DLayer` also listens to `onTileLoad` callback and trigger another round of `update and then traversal`
+  when new tiles are loaded.
+
+  As I3S tileset have stored `tileHeader` file (metadata) and tile content files (geometry, texture, ...) separately.
+  During each traversal, it issues `tilHeader` requests if that `tileHeader` is not yet fetched,
+  after the tile header is fulfilled, it will resume the traversal starting from the tile just fetched (not root).
+
+  Tile3DLayer
+       |
+   await load(tileset)
+       |
+   tileset.update()
+       |                async load tileHeader
+   tileset.traverse() -------------------------- Queued
+       |        resume traversal after fetched  |
+       |----------------------------------------|
+       |
+       |                     async load tile content
+  tilset.requestedTiles  ----------------------------- RequestScheduler
+                                                              |
+  tilset.selectedTiles (ready for rendering)                  |
+       |         Listen to                                    |
+    Tile3DLayer ----------- onTileLoad  ----------------------|
+       |                         |   notify new tile is available
+    updateLayers                 |
+                        tileset.update // trigger another round of update
+
+*/
+
 import {Matrix4, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {Stats} from '@probe.gl/stats';
