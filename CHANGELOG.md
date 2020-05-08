@@ -2,7 +2,11 @@
 
 ### 2.1 Release
 
-#### v2.1.3
+#### v2.1.5
+
+- tiles: fix loading tiles after resuming traversal(#736)
+
+#### v2.1.4
 
 - bump dependencies
 - i3s: fix extensions (#721)
