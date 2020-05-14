@@ -32,7 +32,7 @@ export async function readFile(url, options = {}) {
     return new Promise((resolve, reject) => {
       options = {...new URL(url), ...options};
       const request = url.startsWith('https:') ? https.request : http.request;
-      request(url, response => concatenateReadStream(response).then(resolve, reject));
+      request(url, response => concatenateReadStream(response).then(resolve, reject)).end();
     });
   }
 
