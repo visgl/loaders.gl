@@ -79,7 +79,6 @@ function constructFeatureDataStruct(tile, tileset) {
   // populate the vertex attributes value types and values per element
   for (const geometryAttribute in I3S_NAMED_GEOMETRY_ATTRIBUTES) {
     for (const namedAttribute in I3S_NAMED_VERTEX_ATTRIBUTES) {
-      // const geomAttribute = defaultGeometrySchema[geometryAttribute];
       const attribute = defaultGeometrySchema[geometryAttribute][namedAttribute];
       if (attribute) {
         const {byteOffset = 0, count = 0, valueType, valuesPerElement} = attribute;
@@ -140,12 +139,12 @@ function normalizeAttributes(
       const {valueType, valuesPerElement} = vertexAttributes[attribute];
       // update count and byteOffset count by calculating from defaultGeometrySchema + binnary content
       const count = vertexCount;
-      //protect from arrayBuffer read overunns by NOT assuming node has regions always even though its declared in defaultGeometrySchema.
-      //In i3s 1.6: client is requied to decide that based on ./shared resource of the node (materialDefinitions.[Mat_id].params.vertexRegions == true)
-      //In i3s 1.7 the property has been rolled into the 3d scene layer json/node pages.
+      // protect from arrayBuffer read overunns by NOT assuming node has regions always even though its declared in defaultGeometrySchema.
+      // In i3s 1.6: client is required to decide that based on ./shared resource of the node (materialDefinitions.[Mat_id].params.vertexRegions == true)
+      // In i3s 1.7 the property has been rolled into the 3d scene layer json/node pages.
       // Code below does not account when the bytelength is actually bigger than
-      //the calulalated value (b\c the tile portentially could have mesh segmenation information).
-      //In those cases tiles without regions could fail or have garbage values.
+      // the calculated value (b\c the tile potentially could have mesh segmentation information).
+      // In those cases tiles without regions could fail or have garbage values.
       if (byteOffset + count * valuesPerElement > arrayBuffer.byteLength) {
         break;
       }

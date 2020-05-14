@@ -38,6 +38,7 @@ export const I3S_NAMED_HEADER_ATTRIBUTES = {
 
 export const SIZEOF = {
   UInt8: 1,
+  UInt16: 2,
   UInt32: 4,
   Float32: 4,
   UInt64: 8
