@@ -38,10 +38,16 @@ function parseI3SNodeGeometry(arrayBuffer, tile = {}) {
   }
 
   const content = tile.content;
-  const vertexAttributes = content.featureData.vertexAttributes;
-  // First 8 bytes reserved for header (vertexCount and featurecount)
+  const {vertexAttributes, attributesOrder} = content.featureData;
+  // First 8 bytes reserved for header (vertexCount and featureCount)
   const {vertexCount, byteOffset} = parseHeaders(content, arrayBuffer);
-  const {attributes} = normalizeAttributes(arrayBuffer, byteOffset, vertexAttributes, vertexCount);
+  const {attributes} = normalizeAttributes(
+    arrayBuffer,
+    byteOffset,
+    vertexAttributes,
+    vertexCount,
+    attributesOrder
+  );
 
   const {enuMatrix, cartographicOrigin, cartesianOrigin} = parsePositions(
     attributes.position,
@@ -88,6 +94,7 @@ function constructFeatureDataStruct(tile, tileset) {
     }
   }
 
+  featureData.attributesOrder = defaultGeometrySchema.ordering;
   return featureData;
 }
 
@@ -118,31 +125,51 @@ function parseHeaders(content, buffer) {
 
 /* eslint-enable max-statements */
 
-function normalizeAttributes(buffer, byteOffset, vertexAttributes, vertexCount) {
+function normalizeAttributes(
+  arrayBuffer,
+  byteOffset,
+  vertexAttributes,
+  vertexCount,
+  attributesOrder
+) {
   const attributes = {};
 
-  for (const attribute in vertexAttributes) {
-    const {valueType, valuesPerElement} = vertexAttributes[attribute];
-    // update count and byteOffset count by calculating from defaultGeometrySchema + binnary content
-    const count = vertexCount;
-    const TypedArrayType = TYPE_ARRAY_MAP[valueType];
+  // the order of attributes depend on the order being added to the vertexAttributes object
+  for (const attribute of attributesOrder) {
+    if (vertexAttributes[attribute]) {
+      const {valueType, valuesPerElement} = vertexAttributes[attribute];
+      // update count and byteOffset count by calculating from defaultGeometrySchema + binnary content
+      const count = vertexCount;
 
-    const value = new TypedArrayType(buffer, byteOffset, count * valuesPerElement);
+      // vertexAttributes is derived from defaultGeometrySchema
+      // some tiles do not have all the vertexAttributes
+      if (byteOffset + count * valuesPerElement > arrayBuffer.byteLength) {
+        break;
+      }
 
-    attributes[attribute] = {
-      value,
-      type: GL_TYPE_MAP[valueType],
-      size: valuesPerElement
-    };
+      const TypedArrayType = TYPE_ARRAY_MAP[valueType];
+      const value = new TypedArrayType(arrayBuffer, byteOffset, count * valuesPerElement);
 
-    if (attribute === 'color') {
-      attributes.color.normalized = true;
+      attributes[attribute] = {
+        value,
+        type: GL_TYPE_MAP[valueType],
+        size: valuesPerElement
+      };
+
+      if (attribute === 'color') {
+        attributes.color.normalized = true;
+      }
+
+      if (attribute === 'region') {
+        // do nothing for now...
+      }
+
+      if (attribute === 'normal') {
+        // do nothing for now...
+      }
+
+      byteOffset = byteOffset + count * valuesPerElement * SIZEOF[valueType];
     }
-    if (attribute === 'region' || attribute === 'normal') {
-      // do nothing for now...
-    }
-
-    byteOffset = byteOffset + count * valuesPerElement * SIZEOF[valueType];
   }
 
   return {attributes, byteOffset};

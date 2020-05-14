@@ -70,33 +70,29 @@ export default class App extends PureComponent {
     });
 
     // Check if a tileset is specified in the query params
-    const {url, token} = this._loadTilesetFromUrl();
-    let dataUrl = url || EXAMPLES[INITIAL_EXAMPLE_NAME].url;
-    if (token) {
-      dataUrl = `${dataUrl}?token=${token}`;
-    }
-
-    this.setState({dataUrl, token});
-    this._onSelectExample(dataUrl, token);
+    const dataUrl = this._loadTilesetFromUrl() || EXAMPLES[INITIAL_EXAMPLE_NAME].url;
+    this._onSelectExample({url: dataUrl});
   }
 
   _loadTilesetFromUrl() {
     const parsedUrl = new URL(window.location.href);
-    return {
-      url: parsedUrl.searchParams.get('url'),
-      token: parsedUrl.searchParams.get('token')
-    };
+    return parsedUrl.searchParams.get('url');
   }
 
-  async _onSelectExample(url, token) {
+  async _onSelectExample({url, token}) {
     if (!url) {
       return;
     }
+
+    const parsedUrl = new URL(url);
     const index = url.lastIndexOf('/layers/0');
     let metadataUrl = url.substring(0, index);
-    if (token) {
-      metadataUrl = `${metadataUrl}?token=${token}`;
+    if (parsedUrl.search) {
+      token = parsedUrl.searchParams.get('token');
+      metadataUrl = `${metadataUrl}${parsedUrl.search}`;
     }
+    this.setState({dataUrl: url, token});
+
     const metadata = await fetch(metadataUrl).then(resp => resp.json());
     this.setState({metadata});
   }
@@ -169,7 +165,7 @@ export default class App extends PureComponent {
             name: selected.name,
             dataUrl: selected.example.url
           });
-          this._onSelectExample(selected.example.url);
+          this._onSelectExample(selected.example);
         }}
       />
     );

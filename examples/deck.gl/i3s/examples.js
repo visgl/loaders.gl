@@ -22,14 +22,25 @@ export const EXAMPLES = {
       latitude: 34
     }
   },
-  'New York': {
-    name: 'New York',
+  Lyon: {
+    name: 'Lyon',
     url:
-      'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/New_York_Mesh/SceneServer/layers/0',
+      'https://services2.arcgis.com/cFEFS0EWrhfDeVw9/arcgis/rest/services/STM____FR_Lyon__Textured_buildings/SceneServer/layers/0?f=pjson',
     viewport: {
       ...VIEW_STATE,
-      longitude: -74,
-      latitude: 40
+      latitude: 45.764,
+      longitude: 4.8357
     }
   }
+  // TODO update url
+  // 'New York': {
+  //   name: 'New York',
+  //   url:
+  //     'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/New_York_Mesh/SceneServer/layers/0',
+  //   viewport: {
+  //     ...VIEW_STATE,
+  //     longitude: -74,
+  //     latitude: 40
+  //   }
+  // }
 };
