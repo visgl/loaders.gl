@@ -1,9 +1,10 @@
 /* global fetch */
 import test from 'tape-promise/tape';
 import '@loaders.gl/polyfills';
-import {isBrowser, resolvePath} from '@loaders.gl/core';
+import {isBrowser} from '@loaders.gl/core';
 
-const PLY_CUBE_ATT_URL = resolvePath('@loaders.gl/ply/test/data/cube_att.ply');
+const GITHUB_MASTER = 'https://raw.githubusercontent.com/visgl/loaders.gl/master/';
+const PLY_CUBE_ATT_URL = `${GITHUB_MASTER}ply/test/data/cube_att.ply`;
 
 test('fetch polyfill (Node.js)#fetch()', async t => {
   if (!isBrowser) {

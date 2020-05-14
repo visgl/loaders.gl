@@ -4,7 +4,7 @@ export function concatenateReadStream(readStream) {
   let string = '';
 
   return new Promise((resolve, reject) => {
-    readStream.data(chunk => {
+    readStream.on('data', chunk => {
       if (typeof chunk === 'string') {
         string += chunk;
       } else {
