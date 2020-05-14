@@ -140,9 +140,12 @@ function normalizeAttributes(
       const {valueType, valuesPerElement} = vertexAttributes[attribute];
       // update count and byteOffset count by calculating from defaultGeometrySchema + binnary content
       const count = vertexCount;
-
-      // vertexAttributes is derived from defaultGeometrySchema
-      // some tiles do not have all the vertexAttributes
+      //protect from arrayBuffer read overunns by NOT assuming node has regions always even though its declared in defaultGeometrySchema.
+      //In i3s 1.6: client is requied to decide that based on ./shared resource of the node (materialDefinitions.[Mat_id].params.vertexRegions == true)
+      //In i3s 1.7 the property has been rolled into the 3d scene layer json/node pages.
+      // Code below does not account when the bytelength is actually bigger than
+      //the calulalated value (b\c the tile portentially could have mesh segmenation information).
+      //In those cases tiles without regions could fail or have garbage values.
       if (byteOffset + count * valuesPerElement > arrayBuffer.byteLength) {
         break;
       }
