@@ -2,6 +2,13 @@
 
 ### 2.1 Release
 
+#### v2.1.6
+
+- 3d-tiles: fix parsing tileset option (#742)
+- i3s: skip parsing region data when not available (#739)
+- polyfills: Fix for Node.js being unable to pull files from non local FS (#741)
+- tiles: fix loading tiles after resuming traversal (#736)
+
 #### v2.1.5
 
 - tiles: fix loading tiles after resuming traversal(#736)
