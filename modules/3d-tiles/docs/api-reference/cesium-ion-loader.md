@@ -12,6 +12,7 @@ Load a tileset file from Cesium ion server.
 ```js
 import {load} from '@loaders.gl/core';
 import {CesiumIonLoader} from '@loaders.gl/3d-tiles';
+import {WebMercatorViewport} from '@deck.gl/core';
 const tilesetUrl = 'https://assets.cesium.com/43978/tileset.json';
 const ION_ACCESS_TOKEN = ''; // your own ion access token
 
@@ -19,7 +20,23 @@ const options = {ion: {loadGLTF: true}};
 // resolve the authorizations used for requesting tiles from Cesium ion server
 const metadata = CesiumIonLoader.preload(tilesetUrl, {accessToken: ION_ACCESS_TOKEN});
 console.log(metadata);
+
 const tilesetJson = await load(tilesetUrl, CesiumIonLoader, {...options, ...metadata});
+
+// If your tileset doesn't have .json extension, set options['cesium-ion'].isTileset to true
+const tilesetJson = await load(tilesetUrl, CesiumIonLoader, {
+  ...options,
+  ...metadata,
+  isTileset: true
+});
+
+const viewport = new WebMercatorViewport({latitude, longitude, zoom});
+tileset3d.update(viewport);
+
+// visible tiles
+const visibleTiles = tileset3d.tiles.filter(tile => tile.selected);
+// Note that visibleTiles will likely not immediately include all tiles
+// tiles will keep loading and file `onTileLoad` callbacks
 ```
 
 ## Options

@@ -127,6 +127,7 @@ Basic API usage is illustrated in the following snippet. Create a `Tileset3D` in
 import {load} from '@loaders.gl/core';
 import {I3SLoader} from '@loaders.gl/i3s';
 import {Tileset3D} from '@loaders.gl/tiles';
+import {WebMercatorViewport} from '@deck.gl/core';
 
 const tileseturl =
   'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_Bldgs/SceneServer/layers/0';
@@ -139,6 +140,7 @@ const tileset3d = new Tileset3D(tilesetJson, {
 
 // initial viewport
 // viewport should be deck.gl WebMercatorViewport instance
+const viewport = new WebMercatorViewport({latitude, longitude, zoom, ...})
 tileset3d.update(viewport);
 
 // Viewport changes (pan zoom etc)
