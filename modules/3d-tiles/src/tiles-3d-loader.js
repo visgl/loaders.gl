@@ -41,7 +41,7 @@ async function parse(data, options, context, loader) {
   const loaderOptions = options['3d-tiles'] || {};
   let isTileset;
   if ('isTileset' in loaderOptions) {
-    isTileset = options.isTileset;
+    isTileset = loaderOptions.isTileset;
   } else {
     isTileset = context.url && context.url.indexOf('.json') !== -1;
   }
