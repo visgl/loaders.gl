@@ -67,10 +67,11 @@ const FrameButton = styled.div`
 `;
 
 const propTypes = {
-  name: PropTypes.string.isRequired,
+  name: PropTypes.string,
   tileset: PropTypes.object,
   mapStyles: PropTypes.object,
   metadata: PropTypes.object,
+  token: PropTypes.string,
   onExampleChange: PropTypes.func,
   children: PropTypes.node
 };
@@ -98,13 +99,9 @@ export default class ControlPanel extends PureComponent {
         onChange={evt => {
           const selected = evt.target.value;
           this.setState({selected});
-          onExampleChange({
-            name: selected,
-            example: EXAMPLES[selected]
-          });
+          onExampleChange(EXAMPLES[selected]);
         }}
       >
-        {' '}
         {!name && (
           <option key={'custom-example'} value={'custom-example'}>
             {'Custom example'}
@@ -146,13 +143,16 @@ export default class ControlPanel extends PureComponent {
   }
 
   _renderInfo() {
-    const {metadata} = this.props;
+    const {metadata, token} = this.props;
     const {showFullInfo} = this.state;
     if (!metadata) {
       return null;
     }
 
-    const url = `https://www.arcgis.com/home/item.html?id=${metadata.serviceItemId}`;
+    let url = `https://www.arcgis.com/home/item.html?id=${metadata.serviceItemId}`;
+    if (token) {
+      url = `${url}&token=${token}`;
+    }
     return (
       <FrameWrap>
         <iframe

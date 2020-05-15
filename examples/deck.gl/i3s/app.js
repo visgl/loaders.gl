@@ -42,6 +42,23 @@ const STATS_WIDGET_STYLE = {
   color: '#fff'
 };
 
+function parseTilesetUrlFromUrl() {
+  const parsedUrl = new URL(window.location.href);
+  return parsedUrl.searchParams.get('url');
+}
+
+function parseTilesetUrlParams(url, options) {
+  const parsedUrl = new URL(url);
+  const index = url.lastIndexOf('/layers/0');
+  let metadataUrl = url.substring(0, index);
+  let token = options && options.token;
+  if (parsedUrl.search) {
+    token = parsedUrl.searchParams.get('token');
+    metadataUrl = `${metadataUrl}${parsedUrl.search}`;
+  }
+  return {...options, tilesetUrl: url, token, metadataUrl};
+}
+
 export default class App extends PureComponent {
   constructor(props) {
     super(props);
@@ -52,6 +69,7 @@ export default class App extends PureComponent {
       name: INITIAL_EXAMPLE_NAME,
       viewState: INITIAL_VIEW_STATE
     };
+    this._onSelectTileset = this._onSelectTileset.bind(this);
   }
 
   componentDidMount() {
@@ -70,33 +88,20 @@ export default class App extends PureComponent {
     });
 
     // Check if a tileset is specified in the query params
-    const {url, token} = this._loadTilesetFromUrl();
-    let dataUrl = url || EXAMPLES[INITIAL_EXAMPLE_NAME].url;
-    if (token) {
-      dataUrl = `${dataUrl}?token=${token}`;
+    let tileset;
+    const tilesetUrl = parseTilesetUrlFromUrl();
+    if (tilesetUrl) {
+      tileset = {url: tilesetUrl};
+    } else {
+      tileset = EXAMPLES[INITIAL_EXAMPLE_NAME];
     }
-
-    this.setState({dataUrl, token});
-    this._onSelectExample(dataUrl, token);
+    this._onSelectTileset(tileset);
   }
 
-  _loadTilesetFromUrl() {
-    const parsedUrl = new URL(window.location.href);
-    return {
-      url: parsedUrl.searchParams.get('url'),
-      token: parsedUrl.searchParams.get('token')
-    };
-  }
-
-  async _onSelectExample(url, token) {
-    if (!url) {
-      return;
-    }
-    const index = url.lastIndexOf('/layers/0');
-    let metadataUrl = url.substring(0, index);
-    if (token) {
-      metadataUrl = `${metadataUrl}?token=${token}`;
-    }
+  async _onSelectTileset(tileset) {
+    const params = parseTilesetUrlParams(tileset.url, tileset);
+    const {tilesetUrl, token, name, metadataUrl} = params;
+    this.setState({tilesetUrl, name, token});
     const metadata = await fetch(metadataUrl).then(resp => resp.json());
     this.setState({metadata});
   }
@@ -135,14 +140,14 @@ export default class App extends PureComponent {
   }
 
   _renderLayers() {
-    const {dataUrl, token} = this.state;
+    const {tilesetUrl, token} = this.state;
     const loadOptions = {throttleRequests: true};
     if (token) {
       loadOptions.token = token;
     }
     return [
       new Tile3DLayer({
-        data: dataUrl,
+        data: tilesetUrl,
         loader: I3SLoader,
         onTilesetLoad: this._onTilesetLoad.bind(this),
         onTileLoad: () => this._updateStatWidgets(),
@@ -158,19 +163,14 @@ export default class App extends PureComponent {
   }
 
   _renderControlPanel() {
-    const {tileset, name, metadata} = this.state;
+    const {name, tileset, token, metadata} = this.state;
     return (
       <ControlPanel
         tileset={tileset}
         name={name}
         metadata={metadata}
-        onExampleChange={selected => {
-          this.setState({
-            name: selected.name,
-            dataUrl: selected.example.url
-          });
-          this._onSelectExample(selected.example.url);
-        }}
+        token={token}
+        onExampleChange={this._onSelectTileset}
       />
     );
   }
@@ -184,7 +184,6 @@ export default class App extends PureComponent {
         {this._renderStats()}
         {this._renderControlPanel()}
         <DeckGL
-          ref={_ => (this._deckRef = _)}
           layers={layers}
           viewState={viewState}
           onViewStateChange={this._onViewStateChange.bind(this)}
