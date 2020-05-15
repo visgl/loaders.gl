@@ -54,7 +54,7 @@ function parseI3SNodeGeometry(arrayBuffer, tile = {}) {
     tile
   );
 
-  const matrix = new Matrix4(1, 0, 0, 0, 1, 0, 0, 0, 1).multiplyRight(enuMatrix);
+  const matrix = new Matrix4().multiplyRight(enuMatrix);
 
   content.attributes = {
     positions: attributes.position,
@@ -158,16 +158,14 @@ function normalizeAttributes(
         size: valuesPerElement
       };
 
-      if (attribute === 'color') {
-        attributes.color.normalized = true;
-      }
-
-      if (attribute === 'region') {
-        // do nothing for now...
-      }
-
-      if (attribute === 'normal') {
-        // do nothing for now...
+      switch (attribute) {
+        case 'color':
+          attributes.color.normalized = true;
+          break;
+        case 'position':
+        case 'region':
+        case 'normal':
+        default:
       }
 
       byteOffset = byteOffset + count * valuesPerElement * SIZEOF[valueType];

@@ -11,9 +11,11 @@ yarn
 yarn start-local  # or yarn start
 ```
 
-### Load a local dataset
+### Load a dataset from a tiling server
 
-Copy the dataset to `data` under `loaders.gl` root directory.
+After starting the app, which served at `http://localhost:8080` by default, you can load the tileset from browser url
 
-`localhost:8080` - render with `deck.gl`
-`localhost:8080/?cesium=true` - render with `deck.gl` and `cesium` side by side
+`http://localhost:8080/?url=https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_Bldgs/SceneServer/layers/0`
+
+If you need a token to access your tileset, you can pass it from the url
+`http://localhost:8080/?url=<url>&token=<access-token>`
