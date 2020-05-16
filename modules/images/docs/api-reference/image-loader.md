@@ -24,7 +24,7 @@ const image = await load(url, ImageLoader, options);
 
 | Option         | Type    | Default  | Description                                                                                          |
 | -------------- | ------- | -------- | ---------------------------------------------------------------------------------------------------- |
-| `image.type`   | String  | `'auto'` | Set to `data`, `imagebitmap` or `image` to control type of returned image.                           |
+| `image.type`   | String  | `'auto'` | Set to `imagebitmap`, `image` or `data` to explicitly control type of returned image. `auto` selects the most efficient supported format (`imagebitmap` on Chrome and Firefix)                           |
 | `image.decode` | boolean | `true`   | Applies to `image` type images only, ensures image is fully decoded before loading promise resolves. |
 
 ### ImageBitmap Options
