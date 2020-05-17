@@ -32,20 +32,6 @@ test('Image Category#Parsed Image API imports', t => {
   t.end();
 });
 
-test('Image Category#getDefaultImageType', async t => {
-  const imageType = getDefaultImageType();
-  t.ok(IMAGE_TYPES.includes(imageType), 'Returns an expected image type');
-  t.end();
-});
-
-test('Image Category#isImageTypeSupported', async t => {
-  for (const type of IMAGE_TYPES) {
-    t.equals(typeof isImageTypeSupported(type), 'boolean', 'returns boolean');
-  }
-  t.throws(() => isImageTypeSupported('unknown type'));
-  t.end();
-});
-
 test('Image Category#isImage', async t => {
   const IMAGES = await IMAGES_PROMISE;
   for (const image of IMAGES) {

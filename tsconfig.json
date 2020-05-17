@@ -30,6 +30,8 @@
       "@loaders.gl/csv/test": ["modules/csv/test"],
       "@loaders.gl/draco/*": ["modules/draco/src/*"],
       "@loaders.gl/draco/test": ["modules/draco/test"],
+      "@loaders.gl/image/*": ["modules/image/src/*"],
+      "@loaders.gl/image/test": ["modules/image/test"],
       "@loaders.gl/images/*": ["modules/images/src/*"],
       "@loaders.gl/images/test": ["modules/images/test"],
       "@loaders.gl/gltf/*": ["modules/gltf/src/*"],
