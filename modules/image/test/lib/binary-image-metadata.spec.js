@@ -10,10 +10,18 @@ const readFile = url => fetchFile(url).then(response => response.arrayBuffer());
 
 const IMAGES = {};
 const IMAGES_PROMISE = Promise.all([
-  readFile('@loaders.gl/images/test/data/img1-preview.png').then(data => (IMAGES['image/png'] = data)),
-  readFile('@loaders.gl/images/test/data/img1-preview.jpeg').then(data => (IMAGES['image/jpeg'] = data)),
-  readFile('@loaders.gl/images/test/data/img1-preview.gif').then(data => (IMAGES['image/gif'] = data)),
-  readFile('@loaders.gl/images/test/data/img1-preview.bmp').then(data => (IMAGES['image/bmp'] = data))
+  readFile('@loaders.gl/images/test/data/img1-preview.png').then(
+    data => (IMAGES['image/png'] = data)
+  ),
+  readFile('@loaders.gl/images/test/data/img1-preview.jpeg').then(
+    data => (IMAGES['image/jpeg'] = data)
+  ),
+  readFile('@loaders.gl/images/test/data/img1-preview.gif').then(
+    data => (IMAGES['image/gif'] = data)
+  ),
+  readFile('@loaders.gl/images/test/data/img1-preview.bmp').then(
+    data => (IMAGES['image/bmp'] = data)
+  )
   // readFile('@loaders.gl/images/test/data/img1-preview.tiff').then(data => IMAGES.tiff = data)
 ]).then(() => IMAGES);
 
@@ -22,11 +30,7 @@ test('getBinaryImageMetadata#mimeType', async t => {
 
   for (const mimeType in images) {
     const {mimeType: detectedMimeType} = getBinaryImageMetadata(images[mimeType]);
-    t.equals(
-      detectedMimeType,
-      mimeType,
-      `getBinaryImageMetadata(${mimeType})`
-    );
+    t.equals(detectedMimeType, mimeType, `getBinaryImageMetadata(${mimeType})`);
   }
   t.end();
 });

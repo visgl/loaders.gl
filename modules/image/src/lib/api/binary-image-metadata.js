@@ -91,7 +91,7 @@ function getJpegMetadata(binaryData) {
   const isJpeg =
     dataView.byteLength >= 3 &&
     dataView.getUint16(0, BIG_ENDIAN) === 0xffd8 &&
-    dataView.getUint8(2, BIG_ENDIAN) === 0xff;
+    dataView.getUint8(2) === 0xff;
 
   if (!isJpeg) {
     return null;
@@ -156,13 +156,15 @@ function getJpegMarkers() {
   return {tableMarkers, sofMarkers};
 }
 
-
 // TODO - move into image module?
 function toDataView(data) {
   if (data instanceof DataView) {
     return data;
   }
-  data = (data && data.buffer) || data;
+  if (ArrayBuffer.isView(data)) {
+    return new DataView(data.buffer);
+  }
+
   // TODO: make these functions work for Node.js buffers?
   // if (bufferToArrayBuffer) {
   //   data = bufferToArrayBuffer(data);
@@ -171,9 +173,6 @@ function toDataView(data) {
   // Careful - Node Buffers will look like ArrayBuffers (keep after isBuffer)
   if (data instanceof ArrayBuffer) {
     return new DataView(data);
-  }
-  if (ArrayBuffer.isView(data)) {
-    return new DataView(data.buffer);
   }
   throw new Error('toDataView');
 }

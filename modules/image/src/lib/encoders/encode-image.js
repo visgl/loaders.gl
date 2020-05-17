@@ -1,18 +1,11 @@
 // Image loading/saving for browser
 /* global document, HTMLCanvasElement, Image */
 
-import assert from '../utils/assert';
-import {global} from '../utils/globals';
+import assert from '../../../../images/src/lib/utils/assert';
+import {global} from '../../../../images/src/lib/utils/globals';
 
 // @ts-ignore TS2339: Property does not exist on type
 const {_encodeImageNode} = global;
-
-// Returns data bytes representing a compressed image in PNG or JPG format,
-// This data can be saved using file system (f) methods or
-// used in a request.
-// @param {Image}  image - Image or Canvas
-// @param {String} opt.type='png' - png, jpg or image/png, image/jpg are valid
-// @param {String} opt.dataURI= - Whether to include a data URI header
 
 export function encodeImage(image, type) {
   if (_encodeImageNode) {
