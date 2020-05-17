@@ -27,9 +27,8 @@ export function getBlobOrSVGDataUrl(arrayBuffer, url) {
 export function getBlob(arrayBuffer, url) {
   if (isSVG(url)) {
     // https://bugs.chromium.org/p/chromium/issues/detail?id=606319
-    // eslint-disable-next-line
-    console.error('SVG cannot be parsed directly to imagebitmap');
-    return new Blob([new Uint8Array(arrayBuffer)], {type: 'image/svg+xml'});
+    // return new Blob([new Uint8Array(arrayBuffer)], {type: 'image/svg+xml'});
+    throw new Error('SVG cannot be parsed directly to imagebitmap');
   }
   // TODO - how to determine mime type? Param? Sniff here?
   return new Blob([new Uint8Array(arrayBuffer)]); // MIME type not needed?

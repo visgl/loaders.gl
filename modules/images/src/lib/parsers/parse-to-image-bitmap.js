@@ -21,10 +21,8 @@ export default async function parseToImageBitmap(arrayBuffer, options, url) {
     // Note: this only works on main thread
     const image = await parseToImage(arrayBuffer, options, url);
     blob = image;
-  }
-
-  // Create blob from the array buffer
-  if (!blob) {
+  } else {
+    // Create blob from the array buffer
     blob = getBlob(arrayBuffer, url);
   }
 
