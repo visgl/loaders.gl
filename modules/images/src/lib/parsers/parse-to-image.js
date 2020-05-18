@@ -1,5 +1,5 @@
 /* global self, Image */
-import {getBlobOrDataUrl} from './get-blob';
+import {getBlobOrSVGDataUrl} from './svg-utils';
 
 // Parses html image from array buffer
 export default async function parseToImage(arrayBuffer, options, url) {
@@ -7,7 +7,7 @@ export default async function parseToImage(arrayBuffer, options, url) {
   // Potentially inefficient for not using `response.blob()` (and for File / Blob inputs)...
   // But presumably not worth adding 'blob' flag to loader objects?
 
-  const blobOrDataUrl = getBlobOrDataUrl(arrayBuffer, url);
+  const blobOrDataUrl = getBlobOrSVGDataUrl(arrayBuffer, url);
   const URL = self.URL || self.webkitURL;
   const objectUrl = typeof blobOrDataUrl !== 'string' && URL.createObjectURL(blobOrDataUrl);
   try {
