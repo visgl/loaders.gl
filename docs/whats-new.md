@@ -18,7 +18,6 @@ The `ImageLoader` now loads images as `Imagebitmap` by default on browsers that 
 
 Addresses a number of compatibility issues with different tilesets that have been reported by users. See the git log or issues for details.
 
-
 ## v2.1
 
 Release Date: Mar 16, 2020

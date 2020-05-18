@@ -8,11 +8,11 @@ let imagebitmapOptionsSupported = true;
 
 /**
  * Asynchronously parses an array buffer into an ImageBitmap - this contains the decoded data
-* ImageBitmaps are supported on worker threads, but not supported on Edge, IE11 and Safari
-* https://developer.mozilla.org/en-US/docs/Web/API/ImageBitmap#Browser_compatibility
-*
-* TODO - createImageBitmap supports source rect (5 param overload), pass through?
-*/
+ * ImageBitmaps are supported on worker threads, but not supported on Edge, IE11 and Safari
+ * https://developer.mozilla.org/en-US/docs/Web/API/ImageBitmap#Browser_compatibility
+ *
+ * TODO - createImageBitmap supports source rect (5 param overload), pass through?
+ */
 export default async function parseToImageBitmap(arrayBuffer, options, url) {
   let blob;
 
@@ -26,7 +26,7 @@ export default async function parseToImageBitmap(arrayBuffer, options, url) {
     blob = getBlob(arrayBuffer, url);
   }
 
-  let imagebitmapOptions = options && options.imagebitmap;
+  const imagebitmapOptions = options && options.imagebitmap;
 
   return await safeCreateImageBitmap(blob, imagebitmapOptions);
 }
