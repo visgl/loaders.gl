@@ -1,3 +1,4 @@
+/* global TextDecoder, Blob, btoa */
 // SVG parsing has limitations, e.g:
 // https://bugs.chromium.org/p/chromium/issues/detail?id=606319
 
