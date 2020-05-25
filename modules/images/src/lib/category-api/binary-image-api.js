@@ -1,23 +1,37 @@
+// Attributions
+// * Based on binary-gltf-utils under MIT license: Copyright (c) 2016-17 Karl Cheng
+
+// TODO: make these functions work for Node.js buffers?
+// Quarantine references to Buffer to prevent bundler from adding big polyfills
+// import {bufferToArrayBuffer} from '../node/buffer-to-array-buffer';
+// TODO - this should be handled in @loaders.gl/polyfills
+
 const BIG_ENDIAN = false;
 const LITTLE_ENDIAN = true;
 
-export const mimeTypeMap = new Map([
-  ['image/png', {test: isPng, getSize: getPngSize}],
-  ['image/jpeg', {test: isJpeg, getSize: getJpegSize}],
-  ['image/gif', {test: isGif, getSize: getGifSize}],
-  ['image/bmp', {test: isBmp, getSize: getBmpSize}]
-]);
+export function getBinaryImageMetadata(binaryData) {
+  const dataView = toDataView(binaryData);
+  return (
+    getPngMetadata(dataView) ||
+    getJpegMetadata(dataView) ||
+    getGifMetadata(dataView) ||
+    getBmpMetadata(dataView)
+  );
+}
 
 // PNG
 
-export function isPng(dataView) {
+function getPngMetadata(binaryData) {
+  const dataView = toDataView(binaryData);
   // Check file contains the first 4 bytes of the PNG signature.
-  return dataView.byteLength >= 24 && dataView.getUint32(0, BIG_ENDIAN) === 0x89504e47;
-}
+  const isPng = dataView.byteLength >= 24 && dataView.getUint32(0, BIG_ENDIAN) === 0x89504e47;
+  if (!isPng) {
+    return null;
+  }
 
-function getPngSize(dataView) {
   // Extract size from a binary PNG file
   return {
+    mimeType: 'image/png',
     width: dataView.getUint32(16, BIG_ENDIAN),
     height: dataView.getUint32(20, BIG_ENDIAN)
   };
@@ -25,16 +39,19 @@ function getPngSize(dataView) {
 
 // GIF
 
-export function isGif(dataView) {
-  // Check first 4 bytes of the GIF signature ("GIF8").
-  return dataView.byteLength >= 10 && dataView.getUint32(0, BIG_ENDIAN) === 0x47494638;
-}
-
 // Extract size from a binary GIF file
 // TODO: GIF is not this simple
-function getGifSize(dataView) {
+function getGifMetadata(binaryData) {
+  const dataView = toDataView(binaryData);
+  // Check first 4 bytes of the GIF signature ("GIF8").
+  const isGif = dataView.byteLength >= 10 && dataView.getUint32(0, BIG_ENDIAN) === 0x47494638;
+  if (!isGif) {
+    return null;
+  }
+
   // GIF is little endian.
   return {
+    mimeType: 'image/gif',
     width: dataView.getUint16(6, LITTLE_ENDIAN),
     height: dataView.getUint16(8, LITTLE_ENDIAN)
   };
@@ -43,19 +60,22 @@ function getGifSize(dataView) {
 // BMP
 
 // TODO: BMP is not this simple
-export function isBmp(dataView) {
+export function getBmpMetadata(binaryData) {
+  const dataView = toDataView(binaryData);
   // Check magic number is valid (first 2 characters should be "BM").
   // The mandatory bitmap file header is 14 bytes long.
-  return (
+  const isBmp =
     dataView.byteLength >= 14 &&
     dataView.getUint16(0, BIG_ENDIAN) === 0x424d &&
-    dataView.getUint32(2, LITTLE_ENDIAN) === dataView.byteLength
-  );
-}
+    dataView.getUint32(2, LITTLE_ENDIAN) === dataView.byteLength;
 
-function getBmpSize(dataView) {
+  if (!isBmp) {
+    return null;
+  }
+
   // BMP is little endian.
   return {
+    mimeType: 'image/bmp',
     width: dataView.getUint32(18, LITTLE_ENDIAN),
     height: dataView.getUint32(22, LITTLE_ENDIAN)
   };
@@ -63,20 +83,17 @@ function getBmpSize(dataView) {
 
 // JPEG
 
-export function isJpeg(dataView) {
+// Extract width and height from a binary JPEG file
+function getJpegMetadata(binaryData) {
+  const dataView = toDataView(binaryData);
   // Check file contains the JPEG "start of image" (SOI) marker
   // followed by another marker.
-  return (
+  const isJpeg =
     dataView.byteLength >= 3 &&
     dataView.getUint16(0, BIG_ENDIAN) === 0xffd8 &&
-    dataView.getUint8(2, BIG_ENDIAN) === 0xff
-  );
-}
+    dataView.getUint8(2) === 0xff;
 
-// Extract width and height from a binary JPEG file
-function getJpegSize(dataView) {
-  // Check file contains the JPEG "start of image" (SOI) marker.
-  if (dataView.byteLength < 2 || dataView.getUint16(0, BIG_ENDIAN) !== 0xffd8) {
+  if (!isJpeg) {
     return null;
   }
 
@@ -84,12 +101,13 @@ function getJpegSize(dataView) {
 
   // Exclude the two byte SOI marker.
   let i = 2;
-  while (i < dataView.byteLength) {
+  while (i + 9 < dataView.byteLength) {
     const marker = dataView.getUint16(i, BIG_ENDIAN);
 
     // The frame that contains the width and height of the JPEG image.
     if (sofMarkers.has(marker)) {
       return {
+        mimeType: 'image/jpeg',
         height: dataView.getUint16(i + 5, BIG_ENDIAN), // Number of lines
         width: dataView.getUint16(i + 7, BIG_ENDIAN) // Number of pixels per line
       };
@@ -136,4 +154,25 @@ function getJpegMarkers() {
   ]);
 
   return {tableMarkers, sofMarkers};
+}
+
+// TODO - move into image module?
+function toDataView(data) {
+  if (data instanceof DataView) {
+    return data;
+  }
+  if (ArrayBuffer.isView(data)) {
+    return new DataView(data.buffer);
+  }
+
+  // TODO: make these functions work for Node.js buffers?
+  // if (bufferToArrayBuffer) {
+  //   data = bufferToArrayBuffer(data);
+  // }
+
+  // Careful - Node Buffers will look like ArrayBuffers (keep after isBuffer)
+  if (data instanceof ArrayBuffer) {
+    return new DataView(data);
+  }
+  throw new Error('toDataView');
 }

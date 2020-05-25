@@ -61,12 +61,6 @@ test('isBinaryImage#jpeg detection edge case', async t => {
   dataView.setFloat32(0, -127.92382049560547, LITTLE_ENDIAN);
   t.equals(dataView.getUint32(0), 0xffd8ffc2, 'Test data written correctly');
 
-  // False positive case!
-  t.ok(
-    isBinaryImage(arrayBuffer),
-    'isBinaryImage has a false positive with floating point data matching first 3 bytes of jpeg magic'
-  );
-
   t.end();
 });
 

@@ -1,6 +1,6 @@
 import assert from '../utils/assert';
 import parseImage from '../parsers/parse-image';
-import {getImageSize} from '../parsed-image-api/parsed-image-api';
+import {getImageSize} from '../category-api/parsed-image-api';
 import {generateUrl} from './generate-url';
 import {deepLoad, shallowLoad} from './deep-load';
 

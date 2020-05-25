@@ -58,7 +58,7 @@ As with all loaders.gl functions, while these functions are intended for use in 
 
 To support image loading on older browsers and Node.js, the `ImageLoader` can return different types, i.e. different representations of the parsed image.
 
-- `ImageBitmap` - An `ImageBitmap` object represents a bitmap image that can be painted to a canvas without undue latency. This is the preferred parsed image representation in the browser. It can also be transferred efficiently between threads. Currently only available in Chrome and Firefox.
+- `ImageBitmap` - An `ImageBitmap` object represents a bitmap image that can be performantly painted to a canvas ("without undue latency"). Due to the signficant performance advantages, and the fact that `ImageBitmap` instances can be transferred efficiently between threads, `ImageBitmap` is the preferred parsed image representation in browsers, when available. Currently only available in Chrome and Firefox.
 - `Image` (aka `HTMLImageElement`) - The traditional HTML image class. Available in all browsers.
 - `data` - Raw binary memory representing the image pixels, typically in RGBA `Uint8Array` format. JavaScript computations can be done on this data. Also, Node.js texture creation functions in headless gl accept `data` images. and browser `ImageData` objects can be initialized with this data.
 

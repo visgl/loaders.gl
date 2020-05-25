@@ -1,7 +1,7 @@
 // __VERSION__ is injected by babel-plugin-version-inline
 /* global __VERSION__ */
 import parseImage from './lib/parsers/parse-image';
-import {isPng, isGif, isBmp, isJpeg} from './lib/binary-image-api/binary-image-parsers';
+import {getBinaryImageMetadata} from './lib/category-api/binary-image-api';
 
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
@@ -24,10 +24,8 @@ const ImageLoader = {
   mimeTypes: MIME_TYPES,
   extensions: EXTENSIONS,
   parse: parseImage,
-  test: arrayBuffer => {
-    const dataView = new DataView(arrayBuffer); // , byteOffset, byteLength);
-    return isJpeg(dataView) || isBmp(dataView) || isGif(dataView) || isPng(dataView);
-  },
+  // TODO: byteOffset, byteLength;
+  test: arrayBuffer => Boolean(getBinaryImageMetadata(new DataView(arrayBuffer))),
   options: {
     image: {
       format: 'auto',
