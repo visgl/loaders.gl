@@ -6,7 +6,6 @@
 
 The new function `getBinaryImageMetadata()` replaces `isBinaryImage()`, `getBinaryImageSize()` and `getBinaryImageMIMEType()`. The old functions are now deprecated, but still available.
 
-
 ## Upgrading to v2.1
 
 **`@loaders.gl/core`**

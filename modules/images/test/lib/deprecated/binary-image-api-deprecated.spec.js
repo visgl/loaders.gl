@@ -17,7 +17,7 @@ const IMAGES_PROMISE = Promise.all([
   // readFile('@loaders.gl/images/test/data/img1-preview.tiff').then(data => IMAGES.tiff = data)
 ]).then(() => IMAGES);
 
-test('isBinaryImage', async t => {
+test('isBinaryImage (deprecated)', async t => {
   const images = await IMAGES_PROMISE;
   for (const imageType in images) {
     t.equals(isBinaryImage(images[imageType]), true, `isBinaryImage(${imageType})`);
@@ -29,42 +29,7 @@ test('isBinaryImage', async t => {
   t.end();
 });
 
-test('isBinaryImage#bmp detection edge case', t => {
-  const arrayBuffer = new ArrayBuffer(4);
-  const dataView = new DataView(arrayBuffer);
-  const LITTLE_ENDIAN = true;
-
-  // Encodes as 0x424D3EC4 and when written as little endian stored as 0xC4 0x3E 0x4D 0x42,
-  // which matches BMP's magic characters.
-  dataView.setFloat32(0, -761.207153, LITTLE_ENDIAN);
-
-  t.equals(dataView.getUint16(0, LITTLE_ENDIAN), 0x4d42, 'Test data written correctly');
-  t.notOk(isBinaryImage(arrayBuffer, 'image/bmp'));
-  t.end();
-});
-
-test('isBinaryImage#jpeg detection edge case', async t => {
-  const arrayBuffer = new ArrayBuffer(4);
-  const dataView = new DataView(arrayBuffer);
-  const LITTLE_ENDIAN = true;
-
-  // Encodes as 0xC224D8FF and when written as little endian stored // as 0xFF 0xD8 0x24 0xC2
-  dataView.setFloat32(0, -41.211910247802734, LITTLE_ENDIAN);
-
-  t.equals(dataView.getUint16(0), 0xffd8, 'Test data written correctly');
-  t.notOk(
-    isBinaryImage(arrayBuffer),
-    'isBinaryImage fails with floating point data matching first 2 bytes of jpeg magic'
-  );
-
-  // Encodes as 0xC2FFD8FF and when written as little endian stored // as 0xFF 0xD8 0xFF 0xC2
-  dataView.setFloat32(0, -127.92382049560547, LITTLE_ENDIAN);
-  t.equals(dataView.getUint32(0), 0xffd8ffc2, 'Test data written correctly');
-
-  t.end();
-});
-
-test('getBinaryImageMIMEType', async t => {
+test('getBinaryImageMIMEType (deprecated)', async t => {
   const images = await IMAGES_PROMISE;
   for (const imageType in images) {
     t.equals(
@@ -76,7 +41,7 @@ test('getBinaryImageMIMEType', async t => {
   t.end();
 });
 
-test('getBinaryImageSize', async t => {
+test('getBinaryImageSize (deprecated)', async t => {
   const images = await IMAGES_PROMISE;
   for (const imageType in images) {
     const dimensions = getBinaryImageSize(images[imageType]);
