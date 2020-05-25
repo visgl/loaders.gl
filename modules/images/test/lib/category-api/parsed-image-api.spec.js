@@ -1,5 +1,5 @@
 import test from 'tape-promise/tape';
-import {load} from '@loaders.gl/core';
+import {load, isBrowser} from '@loaders.gl/core';
 import {ImageLoader} from '@loaders.gl/images';
 
 // PARSED IMAGE API
@@ -40,7 +40,8 @@ test('Image Category#getDefaultImageType', async t => {
 
 test('Image Category#isImageTypeSupported', async t => {
   for (const type of IMAGE_TYPES) {
-    t.equals(typeof isImageTypeSupported(type), 'boolean', 'returns boolean');
+    const supported = isImageTypeSupported(type);
+    t.equals(typeof supported, 'boolean', `isImageTypeSupported(${type}) returns boolean (${supported})`);
   }
   t.throws(() => isImageTypeSupported('unknown type'));
   t.end();
@@ -48,7 +49,9 @@ test('Image Category#isImageTypeSupported', async t => {
 
 test('Image Category#isImage', async t => {
   const IMAGES = await IMAGES_PROMISE;
+  t.comment('images loaded');
   for (const image of IMAGES) {
+    t.comment(JSON.stringify(image, null, 2));
     t.equals(isImage(image), true, 'isImage recognizes image');
   }
   t.equals(isImage('not an image'), false, 'isImage rejects non-image');
