@@ -45,7 +45,7 @@ registerLoaders([CSVLoader]);
 data = await load('url.csv'); // => CSVLoader selected from pre-registered loaders
 ```
 
-## Selecting Loadera
+## Selecting Loaders
 
 The loader selection algorithm is exposed to applications via `selectLoader`:
 
