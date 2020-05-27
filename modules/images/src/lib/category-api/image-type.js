@@ -7,26 +7,27 @@ const {_parseImageNode} = global;
 const IMAGE_SUPPORTED = typeof Image !== 'undefined'; // NOTE: "false" positives if jsdom is installed
 const IMAGE_BITMAP_SUPPORTED = typeof ImageBitmap !== 'undefined';
 const NODE_IMAGE_SUPPORTED = Boolean(_parseImageNode);
+const DATA_SUPPORTED = isBrowser ? true : NODE_IMAGE_SUPPORTED;
 
 // Checks if a loaders.gl image type is supported
 export function isImageTypeSupported(type) {
   switch (type) {
     case 'auto':
       // Should only ever be false in Node.js, if polyfills have not been installed...
-      return IMAGE_BITMAP_SUPPORTED || IMAGE_SUPPORTED || NODE_IMAGE_SUPPORTED;
+      return IMAGE_BITMAP_SUPPORTED || IMAGE_SUPPORTED || DATA_SUPPORTED;
 
     case 'imagebitmap':
       return IMAGE_BITMAP_SUPPORTED;
-
-    case 'html': // type `html` is deprecated, use `image`
-    // eslint-disable-next-line no-fallthrough
     case 'image':
       return IMAGE_SUPPORTED;
-
-    case 'ndarray': // type `ndarray` is deprecated, use 'data'
-    // eslint-disable-next-line no-fallthrough
     case 'data':
-      return isBrowser ? true : NODE_IMAGE_SUPPORTED;
+      return DATA_SUPPORTED;
+
+    // DEPRECATED types
+    case 'html':
+      return IMAGE_SUPPORTED;
+    case 'ndarray':
+      return DATA_SUPPORTED;
 
     default:
       throw new Error(`@loaders.gl/images: image ${type} not supported in this environment`);
@@ -35,13 +36,13 @@ export function isImageTypeSupported(type) {
 
 // Returns the best loaders.gl image type supported on current run-time environment
 export function getDefaultImageType() {
-  if (isImageTypeSupported('imagebitmap')) {
+  if (IMAGE_BITMAP_SUPPORTED) {
     return 'imagebitmap';
   }
-  if (isImageTypeSupported('image')) {
+  if (IMAGE_SUPPORTED) {
     return 'image';
   }
-  if (isImageTypeSupported('data')) {
+  if (DATA_SUPPORTED) {
     return 'data';
   }
 

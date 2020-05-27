@@ -40,7 +40,12 @@ test('Image Category#getDefaultImageType', async t => {
 
 test('Image Category#isImageTypeSupported', async t => {
   for (const type of IMAGE_TYPES) {
-    t.equals(typeof isImageTypeSupported(type), 'boolean', 'returns boolean');
+    const supported = isImageTypeSupported(type);
+    t.equals(
+      typeof supported,
+      'boolean',
+      `isImageTypeSupported(${type}) returns boolean (${supported})`
+    );
   }
   t.throws(() => isImageTypeSupported('unknown type'));
   t.end();

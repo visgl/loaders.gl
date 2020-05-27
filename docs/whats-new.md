@@ -12,7 +12,7 @@ Typescript type definitions (`d.ts` files) are now provided for some loaders.gl 
 
 **@loaders.gl/images**
 
-The `ImageLoader` now loads images as `Imagebitmap` by default on browsers that support `ImageBitmap` (Chrome and Firefox). The speedups are very signficant, as can be verified in the new [benchmark example](https://loaders.gl/examples/benchmarks).
+The `ImageLoader` now loads images as `Imagebitmap` by default on browsers that support `ImageBitmap` (Chrome and Firefox). The performance improvements are dramatic, which can be verified in the new [benchmark example](https://loaders.gl/examples/benchmarks).
 
 **@loaders.gl/i3s**
 
