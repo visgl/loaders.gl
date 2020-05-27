@@ -14,6 +14,7 @@ Writeups of directions in major areas of interest
 
 | RFC                                                                   | Author   | Status    | Description                                                 |
 | --------------------------------------------------------------------- | -------- | --------- | ----------------------------------------------------------- |
+| [**Images Category**](vNext/images-category-rfc.md)       | @ibgreen | **Draft** | Images Category                                    |
 | [**Category Improvements**](vNext/category-improvements-rfc.md)       | @ibgreen | **Draft** | Improve category concept                                    |
 | [**MIME type support**](vNext/mime-type-support-rfc.md)               | @ibgreen | **Draft** | Support for MIME types                                      |
 | [**JSON**](vNext/json-support-rfc.md)                                 | @ibgreen | **Draft** | Core support for JSON formats                               |
