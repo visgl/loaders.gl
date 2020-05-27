@@ -2,7 +2,8 @@
 
 const isBoolean = x => typeof x === 'boolean';
 const isFunction = x => typeof x === 'function';
-const isObject = x => x !== null && typeof x === 'object';
+
+export const isObject = x => x !== null && typeof x === 'object';
 
 export const isPromise = x => isObject(x) && isFunction(x.then);
 
@@ -12,7 +13,7 @@ export const isAsyncIterable = x => x && typeof x[Symbol.asyncIterator] === 'fun
 
 export const isIterator = x => x && isFunction(x.next);
 
-export const isFetchResponse = x =>
+export const isResponse = x =>
   (typeof Response !== 'undefined' && x instanceof Response) ||
   (x && x.arrayBuffer && x.text && x.json);
 

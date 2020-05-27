@@ -6,4 +6,4 @@ import {DataType, LoaderObject} from './common';
  * @param options
  * @param context
  */
-export function parseInBatches(data: DataType, loaders: LoaderObject | LoaderObject[], options?: object, context?: object): Promise<any>;
+export function parseInBatches(data: DataType, loaders: LoaderObject | LoaderObject[], options?: object, url?: string): Promise<any>;
