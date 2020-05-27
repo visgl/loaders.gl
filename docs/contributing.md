@@ -74,4 +74,3 @@ The loaders follow a consistent file and directory structure and it should not b
 - Search / replace `WKT` in docs / src / test / package.json
 - Add a couple of MVT test tiles and specify what license those tiles are under in `../test/data/README.md`.
 - If worker loader support is desired, copy the required package.json script and loader object configuration lines from another loader that support workers.
-
