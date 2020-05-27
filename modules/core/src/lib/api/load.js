@@ -1,6 +1,6 @@
-import {isFileReadable} from '../javascript-utils/is-type';
-import {fetchFile} from './fetch/fetch-file';
-import {isLoaderObject} from './loader-utils/normalize-loader';
+import {isFileReadable} from '../../javascript-utils/is-type';
+import {fetchFile} from '../fetch/fetch-file';
+import {isLoaderObject} from '../loader-utils/normalize-loader';
 
 import {parse} from './parse';
 

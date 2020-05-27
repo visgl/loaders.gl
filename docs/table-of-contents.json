@@ -19,6 +19,7 @@
             {"entry": "docs/developer-guide/get-started"},
             {"entry": "docs/developer-guide/using-loaders"},
             {"entry": "docs/developer-guide/using-worker-loaders"},
+            {"entry": "docs/developer-guide/using-streaming-loaders"},
             {"entry": "docs/developer-guide/using-writers"},
             {"entry": "docs/developer-guide/loader-categories"},
             {"entry": "docs/developer-guide/error-handling"},

@@ -1,5 +1,5 @@
 import {encode, encodeSync} from './encode';
-import {writeFile, writeFileSync} from './fetch/write-file';
+import {writeFile, writeFileSync} from '../fetch/write-file';
 
 export function save(data, url, writer, options) {
   const encodedData = encode(data, writer, options, url);
