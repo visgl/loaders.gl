@@ -26,7 +26,7 @@ import normalizePLY from './normalize-ply';
 
 // PARSER
 
-export default async function parsePLYStream(iterator, options = {}) {
+export default async function* parsePLYInBatches(iterator, options = {}) {
   const lineIterator = lineAsyncIterator(textDecoderAsyncIterator(iterator));
   const header = await parseHeader(lineIterator, options);
 
@@ -40,7 +40,7 @@ export default async function parsePLYStream(iterator, options = {}) {
     // attributes = await parseBinary(lineIterator, header);
   }
 
-  return normalizePLY(header, attributes, options);
+  yield normalizePLY(header, attributes, options);
 }
 
 async function parseHeader(lineIterator, options) {

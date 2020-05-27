@@ -70,11 +70,3 @@ async function onceReadable(stream) {
     stream.once('readable', resolve);
   });
 }
-
-// TODO - we could add our own polyfill
-// const {Readable} = require('stream');
-// if (typeof Readable !== 'undefined' && !Readable.prototype[Symbol.asyncIterator]) {
-//   Readable.prototype[Symbol.asyncIterator] = function () {
-//     return makeNodeStreamIterator(this);
-//   }
-// }

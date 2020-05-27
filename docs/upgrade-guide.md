@@ -7,6 +7,14 @@
 - `selectLoader` is no longer experimental. If you were using the experimental export, replace `_selectLoader` with `selectLoader`. Also note that argument order has changed.
 - `parseInBatchesSync` has been removed.
 
+Some rarely used iterator utilities have been changed:
+- `makeChunkIterator` and `makeStreamIterator` has been combined into `makeIterator`.
+- `lineAsyncIterator`, `textDecoderAsyncIterator`, `numberedLineAsyncIterator` have been removed to reduce the size of the library. If you were relying on these, just copy the source code for these into your application.
+
+**`@loaders.gl/ply`**
+
+The experimental streaming `_PLYStreamingLoader` has been removed. Use the non-streaming `PLYLoader` instead.
+
 **`@loaders.gl/images`**
 
 The new function `getBinaryImageMetadata()` replaces `isBinaryImage()`, `getBinaryImageSize()` and `getBinaryImageMIMEType()`. The old functions are now deprecated, but still available.

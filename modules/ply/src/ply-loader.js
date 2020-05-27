@@ -31,5 +31,6 @@ export const PLYLoader = {
   // Note: parsePLY supports both text and binary
   parse: async (arrayBuffer, options) => parsePLY(arrayBuffer, options), // TODO - this may not detect text correctly?
   parseTextSync: parsePLY,
-  parseSync: parsePLY
+  parseSync: parsePLY,
+  parseInBatches: parsePLYInBatches,
 };
