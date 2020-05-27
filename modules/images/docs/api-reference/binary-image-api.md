@@ -41,8 +41,4 @@ Returns a metadata object describing the image. Returns `null` if the binary dat
 }
 ```
 
-Throws:
-
-- if image is not in a supported binary format.
-
 If `mimeType` is supplied, assumes the image is of that type. If not supplied, first attempts to auto deduce the image format (see `getImageMIMEType`).

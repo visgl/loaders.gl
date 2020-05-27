@@ -22,6 +22,8 @@ export {loadImageArray} from './lib/texture-api/load-image-array';
 export {loadImageCube} from './lib/texture-api/load-image-cube';
 
 // DEPRECATED
+// TODO - Remove in V3
+
 export {default as HTMLImageLoader} from './image-loader';
 
 import {getDefaultImageType} from './lib/category-api/image-type';
@@ -30,7 +32,6 @@ export function getSupportedImageType(imageType = null) {
   return getDefaultImageType();
 }
 
-// Binary Image API
 export {
   isBinaryImage,
   getBinaryImageMIMEType,
