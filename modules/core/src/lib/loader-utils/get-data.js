@@ -1,6 +1,6 @@
 /* global TextDecoder */
 import {
-  isFetchResponse,
+  isResponse,
   isReadableStream,
   isAsyncIterable,
   isIterable,
@@ -18,7 +18,7 @@ const ERR_DATA = 'Cannot convert supplied data type';
 // Extract a URL from `parse` arguments if possible
 // If a fetch Response object or File/Blob were passed in get URL from those objects
 export function getUrlFromData(data, url) {
-  if (isFetchResponse(data)) {
+  if (isResponse(data)) {
     url = url || data.url;
   } else if (isFileReadable(url)) {
     // File or Blob
@@ -82,7 +82,7 @@ export async function getArrayBufferOrStringFromData(data, loader) {
     data = await fetchFileReadable(data);
   }
 
-  if (isFetchResponse(data)) {
+  if (isResponse(data)) {
     const response = data;
     await checkFetchResponseStatus(response);
     return loader.binary ? await response.arrayBuffer() : await response.text();
@@ -106,7 +106,7 @@ export function getAsyncIteratorFromData(data) {
   }
 
   // TODO: Our fetchFileReaderObject response does not yet support a body stream
-  if (isFetchResponse(data) && data.body) {
+  if (isResponse(data) && data.body) {
     // Note Since this function is not async, we currently can't load error message, just status
     checkFetchResponseStatusSync(data);
     return makeStreamIterator(data.body);

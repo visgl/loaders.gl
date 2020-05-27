@@ -6,4 +6,4 @@ import {DataType, LoaderObject} from './common';
  * @param options
  * @param context
  */
-export function load(url: string | File| Blob, loaders: LoaderObject | LoaderObject[], options?: object, context?: object): Promise<any>;
+export function load(url: string | ArrayBuffer | File | Blob | Response | ReadableStream, loaders: LoaderObject | LoaderObject[], options?: object, context?: object): Promise<any>;

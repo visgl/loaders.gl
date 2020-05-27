@@ -1,6 +1,6 @@
 import {getRegisteredLoaders} from './register-loaders';
 import {normalizeLoader} from './loader-utils/normalize-loader';
-import {isFetchResponse} from '../javascript-utils/is-type';
+import {isResponse} from '../javascript-utils/is-type';
 
 const EXT_PATTERN = /\.([^.]+)$/;
 const DATA_URL_PATTERN = /^data:(.*?)(;|,)/;
@@ -97,7 +97,7 @@ function findLoaderByExtension(loaders, extension) {
 
 // data should be a Response object
 function findLoaderByContentType(loaders, data) {
-  if (!data || !isFetchResponse(data) || !data.headers) {
+  if (!data || !isResponse(data) || !data.headers) {
     return null;
   }
 

@@ -3,7 +3,7 @@
 // about loaders and options passed in to the top-level `parse` call.
 import {fetchFile} from '../fetch/fetch-file';
 
-export function getLoaderContext(context, options, previousContext) {
+export function getLoaderContext(context, options, previousContext = null) {
   // For recursive calls, we already have a context
   // TODO - add any additional loaders to context?
   if (previousContext) {

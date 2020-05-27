@@ -42,6 +42,7 @@ test('parseWithLoader#getArrayBufferOrStringFromDataSync(embedded arrays/buffers
 
   result = getArrayBufferOrStringFromDataSync(typedArrayWithOffset, {text: false});
   t.deepEquals(
+    // @ts-ignore
     new Uint8Array(result),
     typedArrayWithOffset,
     'typedArrayWithOffset to ArrayBuffer returns correct result'
@@ -59,6 +60,7 @@ test('parseWithLoader#getArrayBufferOrStringFromDataSync(embedded arrays/buffers
 
     result = getArrayBufferOrStringFromDataSync(nodeBufferWithOffset, {text: false});
     t.deepEquals(
+      // @ts-ignore
       new Uint8Array(result),
       typedArrayWithOffset,
       'BufferWithOffset to ArrayBuffer returns correct result'

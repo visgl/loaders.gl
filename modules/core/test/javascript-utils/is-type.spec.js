@@ -5,7 +5,7 @@ import {
   // isIterable,
   // isAsyncIterable,
   isIterator
-  // isFetchResponse,
+  // isResponse,
   // isReadableStream,
   // isWritableStream
 } from '@loaders.gl/core';
