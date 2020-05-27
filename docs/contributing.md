@@ -4,6 +4,29 @@ Contributions are welcome, assuming that they align with the general design goal
 
 Unless you just want to contribute a small bug fix, it is a good idea to start by opening an issue and discuss your idea with the maintainers. This maximizes the chances that your contribution will be accepted once you open a pull request.
 
+## Community Governance
+
+vis.gl is part of the [Urban Computing Foundation](https://uc.foundation/). See the organization's [Technical Charter](https://github.com/visgl/tsc/blob/master/Technical%20Charter.md).
+
+### Technical Steering Committee
+
+loaders.gl development is governed by the vis.gl Technical Steering Committee (TSC). Current members:
+
+- [Ib Green](https://github.com/ibgreen)
+- [Xiaoji Chen](https://github.com/Pessimistress) - chairperson
+- [Xintong Xia](https://github.com/xintongxia)
+
+### Maintainers
+
+- [Kyle Barron](https://github.com/kylebarron) - Geospatial loaders
+
+Maintainers of loaders.gl have commit access to this GitHub repository, and take part in the decision making process.
+
+If you are interested in becoming a maintainer, read the [governance guidelines](https://github.com/visgl/tsc/tree/master/developer-process/governance.md).
+
+The vis.gl TSC meets monthly and publishes meeting notes via a [mailing list](https://lists.uc.foundation/g/visgl).
+This mailing list can also be utilized to reach out to the TSC.
+
 ## Configuring Your Development Environment
 
 To contribute, you will likely want to clone the loaders.gl repository and make sure you can install, build and run tests.
