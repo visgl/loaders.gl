@@ -32,6 +32,6 @@
     "build-bundle": "webpack --display=minimal --config ../../scripts/bundle.config.js"
   },
   "dependencies": {
-    "@loaders.gl/core": "^2.1.1"
+    "@loaders.gl/core": "^2.1.3"
   }
 }

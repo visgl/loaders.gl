@@ -34,6 +34,6 @@
     "build-bundle": "webpack --display=minimal --config ../../scripts/bundle.config.js"
   },
   "dependencies": {
-    "@loaders.gl/tables": "^2.1.1"
+    "@loaders.gl/tables": "^2.1.3"
   }
 }

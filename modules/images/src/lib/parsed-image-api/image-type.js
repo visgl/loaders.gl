@@ -35,12 +35,11 @@ export function isImageTypeSupported(type) {
 
 // Returns the best loaders.gl image type supported on current run-time environment
 export function getDefaultImageType() {
-  // TODO - switch order... we want to return imagebitmap by default
-  if (isImageTypeSupported('image')) {
-    return 'image';
-  }
   if (isImageTypeSupported('imagebitmap')) {
     return 'imagebitmap';
+  }
+  if (isImageTypeSupported('image')) {
+    return 'image';
   }
   if (isImageTypeSupported('data')) {
     return 'data';

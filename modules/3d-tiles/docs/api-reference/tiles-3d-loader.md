@@ -45,15 +45,19 @@ Load a tileset and dynamically load/unload tiles based on viewport with helper c
 import {load} from '@loaders.gl/core';
 import {Tileset3D} from '@loaders.gl/tiles';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
-import WebMercatorViewport from '@math.gl/web-mercator';
+import {WebMercatorViewport} from '@deck.gl/core';
 
 const tilesetUrl = 'https://assets.cesium.com/43978/tileset.json';
 const tilesetJson = await load(tilesetUrl, Tiles3DLoader);
+
+// if your tileset file doesn't have the .json extension, set `3d-tiles.isTileset` to true
+const tilesetJson = await load(tilesetUrl, Tiles3DLoader, {'3d-tiles': {isTileset: true}});
+
 const tileset3d = new Tileset3D(tilesetJson, {
   onTileLoad: tile => console.log(tile)
 });
 
-const viewport = new WebMercatorViewport({latitude, longitude, zoom});
+const viewport = new WebMercatorViewport({latitude, longitude, zoom, ...});
 tileset3d.update(viewport);
 
 // visible tiles

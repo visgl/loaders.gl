@@ -116,6 +116,10 @@ export default class TilesetTraverser {
       // 4. update tile refine prop and parent refinement status to trickle down to the descendants
       tile._shouldRefine = shouldRefine && parentRefines;
     }
+
+    if (this.options.onTraversalEnd) {
+      this.options.onTraversalEnd(frameState);
+    }
   }
 
   updateChildTiles(tile, frameState) {
