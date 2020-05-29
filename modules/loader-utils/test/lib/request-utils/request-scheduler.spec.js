@@ -31,16 +31,9 @@ test('RequestScheduler#scheduleRequest', async t => {
     priority4 = -1;
   };
 
-<<<<<<< HEAD
-  // @ts-ignore
-  result = await Promise.all([
-    requestScheduler.scheduleRequest({id: 3}).then(async () => {
-      requestScheduler.startRequest({id: 3});
-=======
   const result = await Promise.all([
     requestScheduler.scheduleRequest({id: 3}).then(async req => {
       t.is(requestScheduler.activeRequestCount, 1, 'active request count');
->>>>>>> core: simplify RequestScheduler
       await request3();
       req.done();
       t.is(requestScheduler.activeRequestCount, 0, 'active request count');

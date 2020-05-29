@@ -7,6 +7,8 @@ type RequestSchedulerProps = {
 type DoneFunction = () => any;
 
 export default class RequestScheduler {
+  readonly activeRequestCount: number;
+
   constructor(props?: RequestSchedulerProps);
 
   /**
@@ -14,7 +16,7 @@ export default class RequestScheduler {
    * 
    * When the returned promise resolved, it is OK for the application to issue a request.
    * The promise resolves to an object that contains a `done` method.
-   * When the application's request has completed (or failed), the application must call the 
+   * When the application's request has completed (or failed), the application must call the `done` function
    * 
    * @param handle 
    * @param getPriority will be called when request "slots" open up,
