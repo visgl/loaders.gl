@@ -56,9 +56,8 @@ export default class RequestScheduler {
     }
 
     const request = {handle, getPriority};
-    const promise = new Promise((resolve, reject) => {
+    const promise = new Promise(resolve => {
       request.resolve = resolve;
-      request.reject = reject;
       return request;
     });
 
@@ -147,7 +146,7 @@ export default class RequestScheduler {
 
     // by returning a negative priority, the callback cancels the request
     if (request.priority < 0) {
-      request.resolve(false);
+      request.resolve(null);
       return false;
     }
     return true;

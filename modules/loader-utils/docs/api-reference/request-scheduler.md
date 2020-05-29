@@ -8,9 +8,11 @@ Note: The request scheduler does not actually issue requests, it just lets apps 
 
 A primary use case is to let the app reprioritize or cancel requests if circumstances change before the request can be scheduled.
 
+- Some information on browser [request throttling](https://docs.pushtechnology.com/cloud/latest/manual/html/designguide/solution/support/connection_limitations.html)
+
 ## Usage
 
-To issue
+To schedule a request so that it can be issued at a time when it can be immediately processed.
 
 ```js
 const URL = '...';
@@ -46,5 +48,10 @@ Parameters
 
 Returns a promise that
 
-- resolves when the request can be issued without queueing.
-- rejects if the request has been cancelled (by the callback return < 0).
+- resolves to an object (with a `done` field) when the request can be issued without queueing. The application should issue the request and call `done()` when completed.
+- resolves to `null` if the request has been cancelled (by the callback return < 0).
+  In this case the application should not issue the request.
+
+## About Request Priorities
+
+The `getPriority` callback controls priority of requests and also cancellation of outstanding requests.

@@ -23,8 +23,9 @@ export default class RequestScheduler {
    *    allowing the caller to update priority or cancel the request
    *    Highest priority executes first, priority < 0 cancels the request
    * @returns a promise
-   *   - resolves when the request can be issued without queueing,
-   *   - rejects if the request has been cancelled (by the callback return < 0)
+   *   - resolves to a object (with a `done` field) when the request can be issued without queueing,
+   *   - resolves to `null` if the request has been cancelled (by the callback return < 0).
+   *     In this case the application should not issue the request
    */
-  scheduleRequest(handle: any, getPriority?: () => number): Promise<{done: DoneFunction}>;
+  scheduleRequest(handle: any, getPriority?: () => number): Promise<{done: DoneFunction} | null>;
 }
