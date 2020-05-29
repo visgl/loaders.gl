@@ -16,16 +16,12 @@ npm install @loaders.gl/core
 
 ## Attribution
 
+The `QuantizedMeshLoader` is a fork of
+[`quantized-mesh-decoder`](https://github.com/heremaps/quantized-mesh-decoder)
+from HERE under the MIT license to decode quantized mesh.
+
 The `TerrainLoader` uses [MARTINI](https://github.com/mapbox/martini) for mesh
-reconstruction.
-
-The `QuantizedMeshLoader` uses
-[`quantized-mesh-decoder`][quantized-mesh-decoder] from HERE under the MIT
-license to decode quantized mesh.
-
-[quantized-mesh-decoder]: https://github.com/heremaps/quantized-mesh-decoder
-
-ISC License
+reconstruction under the ISC License.
 
 Copyright (c) 2019, Mapbox
 
