@@ -32,6 +32,7 @@ function getMeshAttributes(vertexData, header, bounds) {
   return {
     POSITION: {value: positions, size: 3},
     TEXCOORD_0: {value: texCoords, size: 2}
+    // TODO: Parse normals if they exist in the file
     // NORMAL: {}, - optional, but creates the high poly look with lighting
   };
 }
@@ -43,6 +44,7 @@ function getTileMesh(arrayBuffer, options) {
   const {bounds} = options;
   // Don't parse edge indices or format extensions
   const {header, vertexData, triangleIndices} = decode(arrayBuffer, DECODING_STEPS.triangleIndices);
+  // TODO: use skirt information from file
   const attributes = getMeshAttributes(vertexData, header, bounds);
 
   return {
@@ -52,6 +54,8 @@ function getTileMesh(arrayBuffer, options) {
     },
     header: {
       vertexCount: triangleIndices.length,
+      // TODO: Find bounding box from header, instead of doing extra pass over
+      // vertices.
       boundingBox: getMeshBoundingBox(attributes)
     },
     mode: 4, // TRIANGLES

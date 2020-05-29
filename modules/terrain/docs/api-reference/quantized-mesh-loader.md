@@ -36,3 +36,11 @@ const data = await load(url, QuantizedMeshLoader, options);
 | -------------------------- | ------------- | -------------- | ------------------------------------------------------------------------------- |
 | `quantized-mesh.bounds`    | array<number> | `[0, 0, 1, 1]` | Bounds of the image to fit x,y coordinates into. In `[minX, minY, maxX, maxY]`. |
 | `quantized-mesh.workerUrl` | string        |                | Custom worker url. Defaults to the unpkg CDN.                                   |
+
+## Remarks
+
+### Future Work
+
+- Skirting. The Quantized Mesh format includes data on which vertices are on each edge, which should assist in creating a skirt.
+- Use optional Quantized Mesh extensions, such as vertex normals.
+- Closer integration into tile culling. Quantized Mesh headers, the first 88 bytes, describe a tile's bounding volume and min/max elevations. Just the headers could be parsed while deciding whether the tile is in view. Upon verifying visibility, the rest of the tile's data can be parsed.
