@@ -76,6 +76,8 @@
         {"entry": "modules/obj/docs/api-reference/obj-loader"},
         {"entry": "modules/pcd/docs/api-reference/pcd-loader"},
         {"entry": "modules/ply/docs/api-reference/ply-loader"},
+        {"entry": "modules/video/docs/api-reference/video-loader"},
+        {"entry": "modules/video/docs/api-reference/video-writer"},
         {"entry": "modules/wkt/docs/api-reference/wkt-loader"},
         {"entry": "modules/wkt/docs/api-reference/wkt-writer"},
         {"entry": "modules/zip/docs/api-reference/zip-loader"},
@@ -212,6 +214,12 @@
             {"entry": "modules/tiles/docs"},
             {"entry": "modules/tiles/docs/api-reference/tileset-3d"},
             {"entry": "modules/tiles/docs/api-reference/tile-3d"}
+          ]
+        },
+        {
+          "title": "@loaders.gl/video",
+          "entries": [
+            {"entry": "modules/video/docs"}
           ]
         },
         {
