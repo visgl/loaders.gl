@@ -3,7 +3,6 @@ import {compareArrayBuffers} from '@loaders.gl/loader-utils';
 import {normalizeLoader} from '../loader-utils/normalize-loader';
 import {getResourceUrlAndType} from '../utils/resource-utils';
 import {getRegisteredLoaders} from './register-loaders';
-import {readFileSlice} from '../../iterator-utils/make-iterator/blob-iterator';
 import {isBlob} from '../../javascript-utils/is-type';
 
 const EXT_PATTERN = /\.([^.]+)$/;
@@ -40,7 +39,7 @@ export async function selectLoader(
   // For Blobs and Files, try to asynchronously read a small initial slice and test again with that
   // to see if we can detect by initial content
   if (isBlob(data)) {
-    data = await readFileSlice(data as Blob, 0, 10);
+    data = await (data as Blob).slice(0, 10).arrayBuffer();
     loader = selectLoaderSync(data, loaders, options, context);
   }
 

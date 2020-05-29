@@ -22,7 +22,12 @@
   "module": "dist/esm/index.js",
   "sideEffects": false,
   "browser": {
-    "fs": false
+    "fs": false,
+    "stream": false,
+    "./src/iterators/make-stream/make-node-stream.ts": false,
+    "./src/iterators/make-stream/make-node-stream.js": false,
+    "./dist/es5/iterators/make-stream/make-node-stream.js": false,
+    "./dist/esm/iterators/make-stream/make-node-stream.js": false
   },
   "files": [
     "src",

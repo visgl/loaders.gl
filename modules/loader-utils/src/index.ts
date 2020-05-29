@@ -58,8 +58,8 @@ export {
   makeTextDecoderIterator,
   makeLineIterator,
   makeNumberedLineIterator
-} from './lib/iterator-utils/text-iterators';
-export {forEach, concatenateArrayBuffersAsync} from './lib/iterator-utils/async-iteration';
+} from './lib/iterators/text-iterators';
+export {forEach, concatenateArrayBuffersAsync} from './lib/iterators/async-iteration';
 
 // REQUEST UTILS
 export {default as RequestScheduler} from './lib/request-utils/request-scheduler';

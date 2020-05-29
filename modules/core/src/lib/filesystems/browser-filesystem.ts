@@ -57,7 +57,10 @@ export default class BrowserFileSystem implements FileSystem {
     if (bytes) {
       const start = parseInt(bytes[1]);
       const end = parseInt(bytes[2]);
-      const data = await readFileSlice(file, start, end);
+      // The trick when reading File objects is to read successive "slices" of the File
+      // Per spec https://w3c.github.io/FileAPI/, slicing a File should only update the start and end fields
+      // Actually reading from file should happen in `readAsArrayBuffer` (and as far we can tell it does)
+      const data = await file.slice(start, end).arrayBuffer();
       const response = new Response(data);
       Object.defineProperty(response, 'url', {value: path});
       return response;
@@ -127,7 +130,7 @@ export default class BrowserFileSystem implements FileSystem {
   ): Promise<{bytesRead: number; buffer: ArrayBuffer}> {
     const file = fd as File;
     const startPosition = 0; // position
-    const arrayBuffer = await readFileSlice(file, startPosition, startPosition + length);
+    const arrayBuffer = await file.slice(startPosition, startPosition + length).arrayBuffer();
     // copy into target buffer
     return {bytesRead: length, buffer: arrayBuffer};
   }
@@ -149,17 +152,4 @@ export default class BrowserFileSystem implements FileSystem {
     }
     return file;
   }
-}
-
-// The trick when reading File objects is to read successive "slices" of the File
-// Per spec https://w3c.github.io/FileAPI/, slicing a File should only update the start and end fields
-// Actually reading from file should happen in `readAsArrayBuffer` (and as far we can tell it does)
-async function readFileSlice(file: File, start: number, end: number) {
-  const slice = file.slice(start, end);
-  return await new Promise<ArrayBuffer>((resolve, reject) => {
-    const fileReader = new FileReader();
-    fileReader.onload = (event) => resolve(event.target?.result as ArrayBuffer);
-    fileReader.onerror = (error) => reject(new Error(error.type));
-    fileReader.readAsArrayBuffer(slice);
-  });
 }
