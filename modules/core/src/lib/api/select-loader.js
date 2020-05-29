@@ -47,6 +47,7 @@ export function selectLoaderSync(data, loaders = [], options = {}, context = {})
 
   let loader = findLoaderByUrl(loaders, url || context.url);
   loader = loader || findLoaderByContentType(loaders, type);
+  // NOTE: Initial data is not always available (e.g. Response, stream, async iterator)
   loader = loader || findLoaderByExamingInitialData(loaders, data);
 
   // no loader available
