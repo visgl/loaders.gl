@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
-import {fetchFile, _selectLoader as selectLoader} from '@loaders.gl/core';
+import {fetchFile, selectLoader} from '@loaders.gl/core';
 import {ImageLoader} from '@loaders.gl/images';
 import {DracoLoader} from '@loaders.gl/draco';
 import {LASLoader} from '@loaders.gl/las';
@@ -16,68 +16,62 @@ test('selectLoader#urls', async t => {
   t.throws(() => selectLoader(null), 'selectedLoader throws if no loader found');
 
   t.equal(
-    selectLoader(null, '.', null, {nothrow: true}),
+    selectLoader('.', null, {nothrow: true}),
     null,
     'selectedLoader({nothrow: true}) returns null instead of throwing'
   );
 
   t.is(
-    selectLoader([ImageLoader, Tiles3DLoader, DracoLoader, LASLoader], 'data.laz', null),
+    selectLoader('data.laz', [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader]),
     LASLoader,
     'find loader by url extension'
   );
 
   t.is(
     selectLoader(
-      [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader],
-      // eslint-disable-next-line
       'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACAQMAAABIeJ9nAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAGUExURf///wAAAFXC034AAAAMSURBVAjXY3BgaAAAAUQAwetZAwkAAAAASUVORK5CYII=',
-      null
+      [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader]
     ),
     ImageLoader,
-    'find loader by data url'
+    'find loader by data url mime type'
   );
   t.throws(
-    () => selectLoader([ImageLoader, Tiles3DLoader, DracoLoader, LASLoader], 'data.obj', null),
+    () => selectLoader('data.obj', [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader]),
     'find no loaders by url extension'
   );
 });
 
 test('selectLoader#data', async t => {
-  let response = await fetchFile(DRACO_URL);
-  const dracoData = await response.arrayBuffer();
+  const dracoResponse = await fetchFile(DRACO_URL);
+  const dracoData = await dracoResponse.arrayBuffer();
 
-  response = await fetchFile(TILE_3D_URL);
-  const tileData = await response.arrayBuffer();
+  const tileResponse = await fetchFile(TILE_3D_URL);
+  const tileData = await tileResponse.arrayBuffer();
 
   t.is(
-    selectLoader([Tiles3DLoader, DracoLoader, LASLoader], null, dracoData),
+    selectLoader(dracoResponse, [Tiles3DLoader, DracoLoader, LASLoader]),
+    DracoLoader,
+    'find loader by examining Response object'
+  );
+
+  t.is(
+    selectLoader(dracoData, [Tiles3DLoader, DracoLoader, LASLoader]),
     DracoLoader,
     'find loader by examining binary data'
   );
   t.throws(
-    () => selectLoader([Tiles3DLoader, DracoLoader, LASLoader], null, new ArrayBuffer(10)),
+    () => selectLoader(new ArrayBuffer(10), [Tiles3DLoader, DracoLoader, LASLoader]),
     'find no loaders by examining binary data'
   );
-  t.throws(
-    () => selectLoader([LASLoader], null, dracoData),
-    'find no loaders by examining binary data'
-  );
+  t.throws(() => selectLoader(dracoData, [LASLoader]), 'find no loaders by examining binary data');
   t.is(
-    selectLoader([Tiles3DLoader], null, tileData),
+    selectLoader(tileData, [Tiles3DLoader]),
     Tiles3DLoader,
     'find loader by checking magic string'
   );
 
-  t.is(
-    selectLoader([KMLLoader], null, KML_SAMPLE),
-    KMLLoader,
-    'find loader by examining text data'
-  );
-  t.throws(
-    () => selectLoader([KMLLoader], null, 'hello'),
-    'find no loaders by examining text data'
-  );
+  t.is(selectLoader(KML_SAMPLE, [KMLLoader]), KMLLoader, 'find loader by examining text data');
+  t.throws(() => selectLoader('hello', [KMLLoader]), 'find no loaders by examining text data');
 
   // Create an ArrayBuffer with a byteOffset to the payload
   const byteOffset = 10;
@@ -85,7 +79,7 @@ test('selectLoader#data', async t => {
   const offsetArray = new Uint8Array(offsetBuffer, byteOffset);
   offsetArray.set(new Uint8Array(tileData));
   t.is(
-    selectLoader([Tiles3DLoader], null, offsetArray),
+    selectLoader(offsetArray, [Tiles3DLoader]),
     Tiles3DLoader,
     'find loader by checking magic string in embedded tile data (with offset)'
   );

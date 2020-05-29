@@ -1,9 +1,9 @@
-import {isLoaderObject} from './loader-utils/normalize-loader';
-import {mergeOptions} from './loader-utils/merge-options';
-import {getAsyncIteratorFromData} from './loader-utils/get-data';
-import {getLoaderContext} from './loader-utils/get-loader-context';
+import {isLoaderObject} from '../loader-utils/normalize-loader';
+import {mergeOptions} from '../loader-utils/merge-options';
+import {getAsyncIteratorFromData} from '../loader-utils/get-data';
+import {getLoaderContext} from '../loader-utils/get-loader-context';
 import {selectLoader} from './select-loader';
-import {textDecoderAsyncIterator} from '../iterator-utils/async-iteration';
+import {textDecoderAsyncIterator} from '../../iterator-utils/async-iteration';
 
 export async function parseInBatches(data, loaders, options, url) {
   // Signature: parseInBatches(data, options, url)
@@ -16,7 +16,7 @@ export async function parseInBatches(data, loaders, options, url) {
 
   // Chooses a loader and normalizes it
   // TODO - only uses URL, need a selectLoader variant that peeks at first stream chunk...
-  const loader = selectLoader(loaders, url, null);
+  const loader = selectLoader(null, loaders, options, {url});
 
   // Normalize options
   options = mergeOptions(loader, options, url);

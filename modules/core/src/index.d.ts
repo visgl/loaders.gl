@@ -5,21 +5,21 @@ export {readFileSync} from './lib/fetch/read-file'; // TODO - deprecate?
 export {writeFile, writeFileSync} from './lib/fetch/write-file';
 
 // CONFIGURATION
-export {setLoaderOptions} from './lib/set-loader-options';
-export {registerLoaders} from './lib/register-loaders';
-export {selectLoader as _selectLoader} from './lib/select-loader';
+export {setLoaderOptions} from './lib/api/set-loader-options';
+export {registerLoaders} from './lib/api/register-loaders';
+export {selectLoader} from './lib/api/select-loader';
 
 // LOADING (READING + PARSING)
-export {parse} from './lib/parse';
-export {parseSync} from './lib/parse-sync';
-export {parseInBatches} from './lib/parse-in-batches';
+export {parse} from './lib/api/parse';
+export {parseSync} from './lib/api/parse-sync';
+export {parseInBatches} from './lib/api/parse-in-batches';
 
-export {load} from './lib/load';
-export {loadInBatches} from './lib/load-in-batches';
+export {load} from './lib/api/load';
+export {loadInBatches} from './lib/api/load-in-batches';
 
 // ENCODING (ENCODING AND WRITING)
-export {encode, encodeSync, encodeInBatches} from './lib/encode';
-export {save, saveSync} from './lib/save';
+export {encode, encodeSync, encodeInBatches} from './lib/api/encode';
+export {save, saveSync} from './lib/api/save';
 
 // "JAVASCRIPT" UTILS
 export {
@@ -58,7 +58,7 @@ export {default as _WorkerPool} from './worker-utils/worker-pool';
 export {default as _fetchProgress} from './lib/progress/fetch-progress';
 
 // FOR TESTING
-export {_unregisterLoaders} from './lib/register-loaders';
+export {_unregisterLoaders} from './lib/api/register-loaders';
 
 // DEPRECATED in v2.1
 export {concatenateChunksAsync as contatenateAsyncIterator} from './iterator-utils/chunk-iteration';

@@ -23,6 +23,7 @@ export type WriterObject = {
 export type LoaderContext = {
   fetch?: any;
   loaders?: LoaderObject[];
+  url?: string;
 
   parse?: (data: ArrayBuffer, options?: object) => Promise<any>;
   parseSync?: (data: ArrayBuffer, options?: object) => any;

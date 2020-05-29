@@ -1,10 +1,10 @@
 import {assert, validateLoaderVersion} from '@loaders.gl/loader-utils';
-import {isLoaderObject} from './loader-utils/normalize-loader';
-import {mergeOptions} from './loader-utils/merge-options';
-import {getUrlFromData} from './loader-utils/get-data';
-import {getArrayBufferOrStringFromData} from './loader-utils/get-data';
-import {getLoaders, getLoaderContext} from './loader-utils/get-loader-context';
-import parseWithWorker, {canParseWithWorker} from './loader-utils/parse-with-worker';
+import {isLoaderObject} from '../loader-utils/normalize-loader';
+import {mergeOptions} from '../loader-utils/merge-options';
+import {getUrlFromData} from '../loader-utils/get-data';
+import {getArrayBufferOrStringFromData} from '../loader-utils/get-data';
+import {getLoaders, getLoaderContext} from '../loader-utils/get-loader-context';
+import parseWithWorker, {canParseWithWorker} from '../loader-utils/parse-with-worker';
 import {selectLoader} from './select-loader';
 
 export async function parse(data, loaders, options, context) {
@@ -31,7 +31,7 @@ export async function parse(data, loaders, options, context) {
   // Chooses a loader (and normalizes it)
   // Also use any loaders in the context, new loaders take priority
   const candidateLoaders = getLoaders(loaders, context);
-  const loader = selectLoader(candidateLoaders, autoUrl, data);
+  const loader = selectLoader(data, candidateLoaders, options, {url: autoUrl});
   // Note: if nothrow option was set, it is possible that no loader was found, if so just return null
   if (!loader) {
     return null;

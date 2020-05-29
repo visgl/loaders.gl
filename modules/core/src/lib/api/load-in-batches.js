@@ -1,4 +1,4 @@
-import {fetchFile} from './fetch/fetch-file';
+import {fetchFile} from '../fetch/fetch-file';
 import {parseInBatches} from './parse-in-batches';
 
 export async function loadInBatches(url, loaders, options) {

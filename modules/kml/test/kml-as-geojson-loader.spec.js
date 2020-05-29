@@ -34,7 +34,7 @@ test('KMLasGeoJsonLoader#parse(text)', t => {
   if (!KMLasGeoJsonLoader.supported) {
     t.comment('XML parsing not available');
   } else {
-    const data = parseSync(KML, KMLasGeoJsonLoader, {log: null});
+    const data = parseSync(KML, KMLasGeoJsonLoader);
     t.equal(data.type, 'FeatureCollection', 'FeatureCollection found');
     t.equal(data.features.length, 19, 'Features were found');
 
