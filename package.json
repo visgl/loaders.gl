@@ -57,6 +57,7 @@
     "ocular-dev-tools": "^0.1.8",
     "pre-commit": "^1.2.2",
     "pre-push": "^0.1.1",
+    "readable-stream": "^3.6.0",
     "reify": "^0.19.1",
     "source-map-support": "^0.5.12",
     "typescript": "^3.7.4"
