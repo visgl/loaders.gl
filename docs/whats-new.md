@@ -18,6 +18,10 @@ The `ImageLoader` now loads images as `Imagebitmap` by default on browsers that 
 
 Addresses a number of compatibility issues with different tilesets that have been reported by users. See the git log or issues for details.
 
+**@loaders.gl/terrain**
+
+A new `QuantizedMeshLoader` has been added to the `terrain` module to decode the [Quantized Mesh](https://github.com/CesiumGS/quantized-mesh) format.
+
 ## v2.1
 
 Release Date: Mar 16, 2020
