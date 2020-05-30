@@ -102,6 +102,7 @@
             {"entry": "modules/core/docs/api-reference/set-path-prefix"},
             {"entry": "modules/core/docs/api-reference/binary-utilities"},
             {"entry": "modules/core/docs/api-reference/iterator-utilities"},
+            {"entry": "modules/loader-utils/docs/api-reference/request-scheduler"},
             {"entry": "docs/specifications/loader-object-format"},
             {"entry": "docs/specifications/writer-object-format"}
           ]
