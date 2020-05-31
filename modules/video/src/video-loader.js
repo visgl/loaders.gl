@@ -17,7 +17,7 @@ const VideoLoader = {
   mimeTypes: MIME_TYPES,
   extensions: EXTENSIONS,
 
-  parseResponse: parseVideo,
+  parse: parseVideo,
 
   // test: arrayBuffer => Boolean(getBinaryImageMetadata(new DataView(arrayBuffer))),
   options: {

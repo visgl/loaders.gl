@@ -1,0 +1,34 @@
+<!-- Forked from github AnthumChris/fetch-progress-indicators under MIT license -->
+<!doctype html>
+<body>
+  <main>
+    <div id="status">&nbsp;</div>
+    <h1 id="progress">&nbsp;</h1>
+    <div><button onclick="window.location.reload()">Reload</button></div>
+    <img id="img" />
+  </main>
+</body>
+<script src="https://unpkg.com/@loaders.gl/core@2.1.0/dist/dist.js"></script>
+<script src='https://unpkg.com/gifshot/dist/gifshot.js'></script>
+S<script>
+  const elStatus = document.getElementById('status');
+  const elProgress = document.getElementById('progress');
+  const elImage = document.getElementById('img');
+
+  async function main() {
+    elStatus.innerHTML = 'Generating GIF...';
+    gifshot.createGIF({}, function(obj) {
+      if(obj.error) {
+        elStatus.innerHTML = '...GIF generation failed';
+        return;
+      }
+      const image = obj.image,
+      animatedImage = document.createElement('img');
+      animatedImage.src = image;
+      document.body.appendChild(animatedImage);
+      elStatus.innerHTML = '...GIF generation completed';
+    });
+  }
+
+  main();
+</script>

@@ -1,0 +1,7 @@
+{
+  "license": "MIT",
+  "description": "Gallery of simple HTML page examples for loaders.gl",
+  "scripts": {
+    "start-progress": "open progress.html"
+  }
+}

@@ -1,2 +1,2 @@
 import './video-loader.spec';
-import './video-writer.spec';
+import './gif-builder.spec';

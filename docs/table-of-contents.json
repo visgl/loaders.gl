@@ -77,7 +77,6 @@
         {"entry": "modules/pcd/docs/api-reference/pcd-loader"},
         {"entry": "modules/ply/docs/api-reference/ply-loader"},
         {"entry": "modules/video/docs/api-reference/video-loader"},
-        {"entry": "modules/video/docs/api-reference/video-writer"},
         {"entry": "modules/wkt/docs/api-reference/wkt-loader"},
         {"entry": "modules/wkt/docs/api-reference/wkt-writer"},
         {"entry": "modules/zip/docs/api-reference/zip-loader"},
@@ -219,7 +218,8 @@
         {
           "title": "@loaders.gl/video",
           "entries": [
-            {"entry": "modules/video/docs"}
+            {"entry": "modules/video/docs"},
+            {"entry": "modules/video/docs/api-reference/gif-builder"}
           ]
         },
         {

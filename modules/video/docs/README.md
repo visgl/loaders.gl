@@ -16,4 +16,3 @@ npm install @loaders.gl/core
 | Loader                                                         | Description |
 | -------------------------------------------------------------- | ----------- |
 | [`VideoLoader`](modules/video/docs/api-reference/video-loader) |             |
-| [`VideoWriter`](modules/video/docs/api-reference/video-writer) |             |
