@@ -22,6 +22,18 @@ Addresses a number of compatibility issues with different tilesets that have bee
 
 An experimental new module with video loading and GIF generation support.
 
+**@loaders.gl/wkt**
+
+Worker support for the `WKTLoader`, designed to support future binary data improvements.
+
+**@loaders.gl/json**
+
+Experimental `GeoJSONLoader` (exported with an underscore as `_GeoJSONLoader`), desgined to support future binary data improvements.
+
+**@loaders.gl/arrow**
+
+Updated to use `apache-arrow` version `0.17.0`.
+
 ## v2.1
 
 Release Date: Mar 16, 2020
