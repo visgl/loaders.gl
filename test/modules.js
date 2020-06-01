@@ -30,6 +30,7 @@ if (TEST_CORE) {
 if (TEST_IMAGES) {
   require('@loaders.gl/basis/test');
   require('@loaders.gl/images/test');
+  require('@loaders.gl/video/test');
 }
 
 // Pointcloud/Mesh Formats

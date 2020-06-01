@@ -49,6 +49,7 @@ export {makeStreamIterator} from './iterator-utils/stream-iteration';
 export {isBrowser, isWorker, self, window, global, document} from '@loaders.gl/loader-utils';
 export {assert} from '@loaders.gl/loader-utils';
 export {setPathPrefix, getPathPrefix, resolvePath} from '@loaders.gl/loader-utils';
+export {RequestScheduler as RequestScheduler} from '@loaders.gl/loader-utils';
 
 // EXPERIMENTAL
 export {default as _WorkerThread} from './worker-utils/worker-thread';
