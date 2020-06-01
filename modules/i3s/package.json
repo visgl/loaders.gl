@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/i3s",
-  "version": "2.1.0-beta.2",
+  "version": "2.2.0-alpha.1",
   "description": "i3s .",
   "license": "MIT",
   "publishConfig": {
