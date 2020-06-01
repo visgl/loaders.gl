@@ -4,21 +4,21 @@ export {readFileSync} from './lib/fetch/read-file';
 export {writeFile, writeFileSync} from './lib/fetch/write-file';
 
 // CONFIGURATION
-export {setLoaderOptions} from './lib/set-loader-options';
-export {registerLoaders} from './lib/register-loaders';
+export {setLoaderOptions} from './lib/api/set-loader-options';
+export {registerLoaders} from './lib/api/register-loaders';
 
 // LOADING (READING + PARSING)
-export {parse} from './lib/parse';
-export {parseSync} from './lib/parse-sync';
-export {parseInBatches} from './lib/parse-in-batches';
-export {parseInBatchesSync} from './lib/parse-in-batches-sync';
+export {parse} from './lib/api/parse';
+export {parseSync} from './lib/api/parse-sync';
+export {parseInBatches} from './lib/api/parse-in-batches';
+export {selectLoader} from './lib/api/select-loader';
 
-export {load} from './lib/load';
-export {loadInBatches} from './lib/load-in-batches';
+export {load} from './lib/api/load';
+export {loadInBatches} from './lib/api/load-in-batches';
 
 // ENCODING (ENCODING AND WRITING)
-export {encode, encodeSync, encodeInBatches} from './lib/encode';
-export {save, saveSync} from './lib/save';
+export {encode, encodeSync, encodeInBatches} from './lib/api/encode';
+export {save, saveSync} from './lib/api/save';
 
 // "JAVASCRIPT" UTILS
 export {
@@ -26,7 +26,7 @@ export {
   isIterable,
   isAsyncIterable,
   isIterator,
-  isFetchResponse,
+  isResponse,
   isReadableStream,
   isWritableStream
 } from './javascript-utils/is-type';
@@ -49,10 +49,9 @@ export {makeChunkIterator, concatenateChunksAsync} from './iterator-utils/chunk-
 export {isBrowser, isWorker, self, window, global, document} from '@loaders.gl/loader-utils';
 export {assert} from '@loaders.gl/loader-utils';
 export {setPathPrefix, getPathPrefix, resolvePath} from '@loaders.gl/loader-utils';
+export {RequestScheduler} from '@loaders.gl/loader-utils';
 
 // EXPERIMENTAL
-export {selectLoader as _selectLoader} from './lib/select-loader';
-
 export {default as _WorkerThread} from './worker-utils/worker-thread';
 export {default as _WorkerFarm} from './worker-utils/worker-farm';
 export {default as _WorkerPool} from './worker-utils/worker-pool';
@@ -60,7 +59,7 @@ export {default as _WorkerPool} from './worker-utils/worker-pool';
 export {default as _fetchProgress} from './lib/progress/fetch-progress';
 
 // FOR TESTING
-export {_unregisterLoaders} from './lib/register-loaders';
+export {_unregisterLoaders} from './lib/api/register-loaders';
 
 // DEPRECATED in v2.1
 export {concatenateChunksAsync as contatenateAsyncIterator} from './iterator-utils/chunk-iteration';

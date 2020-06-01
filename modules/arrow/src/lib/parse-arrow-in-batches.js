@@ -1,5 +1,5 @@
 import {RecordBatchReader} from 'apache-arrow/Arrow.es5.min';
-import {isIterable, isIterator, assert} from '@loaders.gl/core';
+import {isIterable} from '@loaders.gl/core';
 
 export async function parseArrowInBatches(asyncIterator, options) {
   // Creates the appropriate RecordBatchReader subclasses from the input
@@ -26,26 +26,6 @@ export async function parseArrowInBatches(asyncIterator, options) {
       break; // only processing one stream of batches
     }
   })();
-}
-
-export async function parseArrowInBatchesSync(iterator, options) {
-  // Creates the appropriate RecordBatchReader subclasses from the input
-  // This will also close the underlying source in case of early termination or errors
-  const readers = RecordBatchReader.readAll(iterator);
-
-  // Check that `readers` is not a Promise, and is iterable
-  if (isIterable(readers) || isIterator(readers)) {
-    return (function* arrowIterator() {
-      for (const reader of readers) {
-        for (const batch of reader) {
-          yield processBatch(batch);
-        }
-        break; // only processing one stream of batches
-      }
-    })();
-  }
-
-  return assert(false);
 }
 
 function processBatch(batch, on) {

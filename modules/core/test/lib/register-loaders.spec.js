@@ -1,6 +1,6 @@
 import test from 'tape-promise/tape';
 import {registerLoaders} from '@loaders.gl/core';
-import {getRegisteredLoaders} from '@loaders.gl/core/lib/register-loaders';
+import {getRegisteredLoaders} from '@loaders.gl/core/lib/api/register-loaders';
 
 test('registerLoaders', t => {
   const registeredLoadersCount = getRegisteredLoaders().length;

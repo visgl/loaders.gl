@@ -33,7 +33,8 @@ function getRefine(refine) {
 
 export function normalizeTileData(tile, options) {
   if (tile.content) {
-    tile.contentUrl = `${options.basePath}/${tile.content.uri}`;
+    const contentUri = tile.content.uri || tile.content.url;
+    tile.contentUrl = `${options.basePath}/${contentUri}`;
   }
   tile.id = tile.contentUrl;
   tile.lodMetricType = LOD_METRIC_TYPE.GEOMETRIC_ERROR;
