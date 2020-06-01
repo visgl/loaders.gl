@@ -3,7 +3,7 @@
 import test from 'tape-promise/tape';
 import {validateLoader} from 'test/common/conformance';
 import {WKTLoader, WKTWorkerLoader} from '@loaders.gl/wkt';
-import {setLoaderOptions, load, fetchFile, parseSync} from '@loaders.gl/core';
+import {setLoaderOptions, fetchFile, parseSync} from '@loaders.gl/core';
 
 const GEOMETRYCOLLECTION_WKT_URL = '@loaders.gl/wkt/test/data/geometrycollection.wkt';
 const GEOMETRYCOLLECTION_GEOJSON_URL = '@loaders.gl/wkt/test/data/geometrycollection.geojson';
