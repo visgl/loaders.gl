@@ -8,6 +8,7 @@ The `TerrainLoader` reconstructs mesh surfaces from height map images, e.g. [Map
 | File Type             | Binary                                        |
 | File Format           | Encoded height map                            |
 | Data Format           | [Mesh](/docs/specifications/category-mesh.md) |
+| Supported APIs        | `load`, `parse`                               |
 | Decoder Type          | Asynchronous                                  |
 | Worker Thread Support | Yes                                           |
 | Streaming Support     | No                                            |

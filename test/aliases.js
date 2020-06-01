@@ -31,12 +31,12 @@ function makeAliases(basename = __dirname) {
     '@loaders.gl/core/test': path.resolve(basename, '../modules/core/test'),
     '@loaders.gl/csv/test': path.resolve(basename, '../modules/csv/test'),
     '@loaders.gl/draco/test': path.resolve(basename, '../modules/draco/test'),
-    '@loaders.gl/images/test': path.resolve(basename, '../modules/images/test'),
     '@loaders.gl/gis/test': path.resolve(basename, '../modules/gis/test'),
     '@loaders.gl/gltf/test': path.resolve(basename, '../modules/gltf/test'),
+    '@loaders.gl/i3s/test': path.resolve(basename, '../modules/i3s/test'),
+    '@loaders.gl/images/test': path.resolve(basename, '../modules/images/test'),
     '@loaders.gl/json/test': path.resolve(basename, '../modules/json/test'),
     '@loaders.gl/kml/test': path.resolve(basename, '../modules/kml/test'),
-    '@loaders.gl/i3s/test': path.resolve(basename, '../modules/i3s/test'),
     '@loaders.gl/las/test': path.resolve(basename, '../modules/las/test'),
     '@loaders.gl/mvt/test': path.resolve(basename, '../modules/mvt/test'),
     '@loaders.gl/obj/test': path.resolve(basename, '../modules/obj/test'),
@@ -49,7 +49,7 @@ function makeAliases(basename = __dirname) {
     '@loaders.gl/video/test': path.resolve(basename, '../modules/video/test'),
     '@loaders.gl/wkt/test': path.resolve(basename, '../modules/wkt/test'),
     '@loaders.gl/zip/test': path.resolve(basename, '../modules/zip/test')
-  }
+  };
 }
 
 module.exports = makeAliases();
