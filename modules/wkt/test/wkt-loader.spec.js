@@ -1,11 +1,24 @@
 // Fork of https://github.com/mapbox/wellknown under ISC license (MIT/BSD-2-clause equivalent)
 
 import test from 'tape-promise/tape';
-import {WKTLoader} from '@loaders.gl/wkt';
-import {fetchFile, parseSync} from '@loaders.gl/core';
+import {validateLoader} from 'test/common/conformance';
+import {WKTLoader, WKTWorkerLoader} from '@loaders.gl/wkt';
+import {setLoaderOptions, fetchFile, parseSync} from '@loaders.gl/core';
 
 const GEOMETRYCOLLECTION_WKT_URL = '@loaders.gl/wkt/test/data/geometrycollection.wkt';
 const GEOMETRYCOLLECTION_GEOJSON_URL = '@loaders.gl/wkt/test/data/geometrycollection.geojson';
+
+setLoaderOptions({
+  wkt: {
+    workerUrl: 'modules/wkt/dist/wkt-loader.worker.js'
+  }
+});
+
+test('WKTWorkerLoader#loader objects', async t => {
+  validateLoader(t, WKTLoader, 'WKTLoader');
+  validateLoader(t, WKTWorkerLoader, 'WKTWorkerLoader');
+  t.end();
+});
 
 // eslint-disable-next-line max-statements
 test('WKTLoader', async t => {
@@ -289,3 +302,20 @@ test('WKTLoader', async t => {
 
   t.end();
 });
+
+// NOTE(Kyle): Test disabled for now, to be fixed before 2.2.0 release
+// test('WKTWorkerLoader', async t => {
+//   if (typeof Worker === 'undefined') {
+//     t.comment('Worker is not usable in non-browser environments');
+//     t.end();
+//     return;
+//   }
+
+//   const GEOMETRYCOLLECTION_WKT = await load(GEOMETRYCOLLECTION_WKT_URL, WKTWorkerLoader);
+
+//   const response = await fetchFile(GEOMETRYCOLLECTION_GEOJSON_URL);
+//   const GEOMETRYCOLLECTION_GEOJSON = await response.json();
+
+//   t.deepEqual(parseSync(GEOMETRYCOLLECTION_WKT, WKTLoader), GEOMETRYCOLLECTION_GEOJSON);
+//   t.end();
+// });
