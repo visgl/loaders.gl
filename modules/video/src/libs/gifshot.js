@@ -1,17 +1,4 @@
-<!-- Forked from github AnthumChris/fetch-progress-indicators under MIT license -->
-<!doctype html>
-<body>
-  <main>
-    <div id="status">&nbsp;</div>
-    <h1 id="progress">&nbsp;</h1>
-    <div><button onclick="window.location.reload()">Reload</button></div>
-    <img id="img" />
-  </main>
-</body>
-<script src="https://unpkg.com/@loaders.gl/core@2.1.0/dist/dist.js"></script>
-<script src="https://unpkg.com/@loaders.gl/images@2.1.0/dist/dist.js"></script>
-<!-- script src='https://unpkg.com/gifshot/dist/gifshot.js'></script -->
-<script>
+// @ts-nocheck
 /*Copyrights for code authored by Yahoo Inc. is licensed under the following terms:
 MIT License
 Copyright  2017 Yahoo Inc.
@@ -2837,39 +2824,3 @@ if (typeof define === 'function' && define.amd) {
     window.gifshot = API;
 }
 }(typeof window !== "undefined" ? window : {}, typeof document !== "undefined" ? document : { createElement: function() {} }, typeof window !== "undefined" ? window.navigator : {}));
-
-</script>
-
-<script>
-  const elStatus = document.getElementById('status');
-  const elProgress = document.getElementById('progress');
-  const elImage = document.getElementById('img');
-
-  async function main() {
-    elStatus.innerHTML = 'Generating GIF...';
-
-    const IMAGE_URLS =  [
-      'http://i.imgur.com/2OO33vX.jpg',
-      'http://i.imgur.com/qOwVaSN.png',
-      'http://i.imgur.com/Vo5mFZJ.gif'
-    ];
-
-    const images = await Promise.all(
-      IMAGE_URLS.map(url => load(url, ImageLoader, {images: {type: 'image'}}))
-    );
-
-    gifshot.createGIF({images}, function(obj) {
-      if(obj.error) {
-        elStatus.innerHTML = '...GIF generation failed';
-        return;
-      }
-      const image = obj.image
-      animatedImage = document.createElement('img');
-      animatedImage.src = obj.image;
-      document.body.appendChild(animatedImage);
-      elStatus.innerHTML = '...GIF generation completed';
-    });
-  }
-
-  main();
-</script>

@@ -70,7 +70,7 @@
   },
   "include":[
     "modules/**/src/**/*",
-    "modules/**/test/**/*", "modules/core/wip/ply-stream-loader.js", "modules/core/wip/text-iterators.js"
+    "modules/**/test/**/*"
   ],
   "exclude":[
     "modules/**/src/libs/*",

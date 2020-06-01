@@ -1,6 +1,6 @@
 // A GIFBuilder based on the gifshot module
-import gifshot, {createGIF} from 'gifshot';
 import assert from './lib/utils/assert';
+import gifshot from './libs/gifshot'; // TODO - load dynamically to avoid bloating
 
 // These are gifshot module options
 const GIF_BUILDER_OPTIONS = {
@@ -82,11 +82,18 @@ export default class GIFBuilder {
     this.gifshot = gifshot;
   }
 
-  add(file) {
+  async initialize(options) {
+    // Expose the gifshot module so that the full gifshot API is available to apps (Experimental)
+    // this.gifshot = await loadGifshotModule(options);
+  }
+
+  async add(file) {
+    await this.initialize();
     this.files.push(file);
   }
 
   async build() {
+    await this.initialize();
     this._cleanOptions(this.options);
 
     switch (this.source) {
@@ -110,7 +117,7 @@ export default class GIFBuilder {
 
   async _createGIF() {
     return new Promise((resolve, reject) => {
-      createGIF(this.options, result => {
+      this.gifshot.createGIF(this.options, result => {
         // callback object properties
         // --------------------------
         // image - Base 64 image
