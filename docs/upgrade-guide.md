@@ -1,5 +1,16 @@
 # Upgrade Guide
 
+## Upgrading to v2.2
+
+**`@loaders.gl/core`**
+
+- `selectLoader` is no longer experimental. If you were using the experimental export, replace `_selectLoader` with `selectLoader`. Also note that argument order has changed.
+- `parseInBatchesSync` has been removed.
+
+**`@loaders.gl/images`**
+
+The new function `getBinaryImageMetadata()` replaces `isBinaryImage()`, `getBinaryImageSize()` and `getBinaryImageMIMEType()`. The old functions are now deprecated, but still available.
+
 ## Upgrading to v2.1
 
 **`@loaders.gl/core`**

@@ -64,3 +64,13 @@ To get the headless tests working: export DISPLAY=:99.0; sh -e /etc/init.d/xvfb 
 - `yarn test node`: Quick test run under Node.js
 - `yarn test browser`: Test run under browser, good for interactive debugging
 - `yarn test`: Run lint, node test, browser tests (in headless mode)
+
+## Adding a new loader
+
+The loaders follow a consistent file and directory structure and it should not be hard to duplicate. For instance, to add a loader for mapbox vector tiles based on the mapbox parser module, one could start by copying an existing loader e.g. WKT.
+
+- Copy `modules/wkt` to `modules/mvt`.
+- Add the mapbox mvt module to dependencies.
+- Search / replace `WKT` in docs / src / test / package.json
+- Add a couple of MVT test tiles and specify what license those tiles are under in `../test/data/README.md`.
+- If worker loader support is desired, copy the required package.json script and loader object configuration lines from another loader that support workers.

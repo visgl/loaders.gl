@@ -2,7 +2,7 @@
 import test from 'tape-catch';
 import {_WorkerThread, _WorkerPool, toArrayBuffer} from '@loaders.gl/core';
 import parseWithWorker from '@loaders.gl/core/lib/loader-utils/parse-with-worker';
-import {registerLoaders, _unregisterLoaders} from '@loaders.gl/core/lib/register-loaders';
+import {registerLoaders, _unregisterLoaders} from '@loaders.gl/core/lib/api/register-loaders';
 
 const CHUNKS_TOTAL = 6;
 const MAX_CONCURRENCY = 3;

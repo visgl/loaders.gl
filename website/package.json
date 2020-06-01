@@ -9,12 +9,13 @@
   "main": "gatsby-config.js",
   "scripts": {
     "start": "yarn clean && yarn develop",
-    "build": "yarn clean-examples && yarn clean && gatsby build",
+    "develop": "yarn clean-examples && yarn build:gallery && yarn gatsby develop",
+    "build": "yarn clean && yarn clean-examples && yarn build:gallery && gatsby build",
+    "serve": "gatsby serve",
+    "deploy": "NODE_DEBUG=gh-pages gh-pages -d public",
     "clean": "rm -rf ./.cache ./public",
     "clean-examples": "find ../examples -name node_modules -exec rm -r {} \\; || true",
-    "develop": "yarn clean-examples && gatsby develop",
-    "serve": "gatsby serve",
-    "deploy": "NODE_DEBUG=gh-pages gh-pages -d public"
+    "build:gallery": "mkdir -p public/gallery; find ../examples/gallery -name \"*.html\" -exec cp -f {} public/gallery \\;"
   },
   "dependencies": {
     "@deck.gl/core": "^8.1.4",

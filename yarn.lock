@@ -2145,10 +2145,10 @@ anymatch@^2.0.0:
     micromatch "^3.1.4"
     normalize-path "^2.1.1"
 
-apache-arrow@^0.16.0:
-  version "0.16.0"
-  resolved "https://registry.yarnpkg.com/apache-arrow/-/apache-arrow-0.16.0.tgz#7ee7a6397d1a2d6349aed90c6ce5b92362e79881"
-  integrity sha512-hiabMZb2XgHiNK6f7C/2x/fyGS85PoCdkeMhJDyZipaJy1il1BJMDDEa3VLvM6mdxsG61pY1zev6zWetOj8Eog==
+apache-arrow@^0.17.0:
+  version "0.17.0"
+  resolved "https://registry.yarnpkg.com/apache-arrow/-/apache-arrow-0.17.0.tgz#8f976fc6ffc18e34b15a0b327061534f6c2a2494"
+  integrity sha512-cbgSx/tzGgnC1qeUySXnAsSsoxhDykNINqr1D3U5pRwf0/Q0ztVccV3/VRW6gUR+lcOFawk6FtyYwmU+KjglbQ==
   dependencies:
     "@types/flatbuffers" "^1.9.1"
     "@types/node" "^12.0.4"
@@ -4846,6 +4846,11 @@ gif-encoder@~0.4.1:
   integrity sha1-iitP6MqJWkjjoLbLs0CgpqNXGJk=
   dependencies:
     readable-stream "~1.1.9"
+
+gifshot@^0.4.5:
+  version "0.4.5"
+  resolved "https://registry.yarnpkg.com/gifshot/-/gifshot-0.4.5.tgz#e3cb570203a3b139ff3069d7578098a29c03b0f8"
+  integrity sha1-48tXAgOjsTn/MGnXV4CYopwDsPg=
 
 git-raw-commits@2.0.0:
   version "2.0.0"

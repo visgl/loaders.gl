@@ -6,6 +6,9 @@ import './iterator-utils/chunk-iteration.spec';
 import './iterator-utils/async-iteration.spec';
 import './iterator-utils/stream-iteration.spec';
 
+import './lib/utils/mime-type-utils.spec';
+import './lib/utils/resource-utils.spec';
+
 import './lib/fetch';
 import './lib/loader-utils';
 import './lib/progress/fetch-progress.spec';

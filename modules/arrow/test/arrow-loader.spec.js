@@ -71,19 +71,6 @@ test('ArrowLoader#parseInBatches(async input)', async t => {
   t.end();
 });
 
-/*
-test('ArrowLoader#parseInBatchesSync(sync input)', async t => {
-  const response = await fetchFile(ARROW_BIOGRID_NODES);
-  const data = await response.arrayBuffer();
-
-  const iterator = parseInBatchesSync(data, ArrowLoader);
-  for (const batch of iterator) {
-    t.ok(batch, 'received batch');
-    t.end();
-  }
-});
-*/
-
 // TODO - Move node stream test to generic parseInBatches test?
 test('ArrowLoader#parseInBatches(Stream)', async t => {
   if (isBrowser) {

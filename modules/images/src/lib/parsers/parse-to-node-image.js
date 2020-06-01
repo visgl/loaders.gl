@@ -1,10 +1,10 @@
 import {global} from '../utils/globals';
 import assert from '../utils/assert';
-import {getBinaryImageMIMEType} from '../binary-image-api/binary-image-api';
+import {getBinaryImageMetadata} from '../category-api/binary-image-api';
 
 // Use polyfills if installed to p[arsed image using get-pixels
 export default function parseToNodeImage(arrayBuffer, options) {
-  const mimeType = getBinaryImageMIMEType(arrayBuffer);
+  const {mimeType} = getBinaryImageMetadata(arrayBuffer) || {};
 
   // @ts-ignore
   const {_parseImageNode} = global;

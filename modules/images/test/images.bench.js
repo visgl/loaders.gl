@@ -15,7 +15,7 @@ export default async function imageLoaderBench(suite) {
   const masterArrayBuffer = await response.arrayBuffer();
 
   // warm up loader (load any dynamic libraries or workers)
-  await parse(masterArrayBuffer.slice(), ImageLoader);
+  await parse(masterArrayBuffer.slice(0), ImageLoader);
 
   // Add the tests
   suite.group('ImageLoader: parallel parsing of 256x256 color tiles');
@@ -25,7 +25,7 @@ export default async function imageLoaderBench(suite) {
       suite.addAsync(
         `parse({images: {${JSON.stringify(options)}}) parallel`,
         {unit: 'tiles(256x256)', _throughput: 100, _target: 1000},
-        async () => await parse(masterArrayBuffer.slice(), ImageLoader, {worker, image: options})
+        async () => await parse(masterArrayBuffer.slice(0), ImageLoader, {worker, image: options})
       );
     }
   }
@@ -38,7 +38,7 @@ export default async function imageLoaderBench(suite) {
         `parse({images: ${JSON.stringify(options)}}) sequential`,
         {unit: 'tiles(256x256)', _target: 1000},
         async () => {
-          const arrayBuffer = masterArrayBuffer.slice();
+          const arrayBuffer = masterArrayBuffer.slice(0);
           return await parse(arrayBuffer, ImageLoader, {worker, image: options});
         }
       );

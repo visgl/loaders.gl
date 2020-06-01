@@ -12,7 +12,7 @@ Typescript type definitions (`d.ts` files) are now provided for some loaders.gl 
 
 **@loaders.gl/images**
 
-The `ImageLoader` now loads images as `Imagebitmap` by default on browsers that support `ImageBitmap` (Chrome and Firefox). The speedups are very signficant, as can be verified in the new [benchmark example](https://loaders.gl/examples/benchmarks).
+The `ImageLoader` now loads images as `Imagebitmap` by default on browsers that support `ImageBitmap` (Chrome and Firefox). The performance improvements are dramatic, which can be verified in the new [benchmark example](https://loaders.gl/examples/benchmarks).
 
 **@loaders.gl/i3s**
 
@@ -21,6 +21,10 @@ Addresses a number of compatibility issues with different tilesets that have bee
 **@loaders.gl/terrain**
 
 A new `QuantizedMeshLoader` has been added to the `terrain` module to decode the [Quantized Mesh](https://github.com/CesiumGS/quantized-mesh) format.
+
+**@loaders.gl/video** (new loader module)
+
+An experimental new module with video loading and GIF generation support.
 
 ## v2.1
 

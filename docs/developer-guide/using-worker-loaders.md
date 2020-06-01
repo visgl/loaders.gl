@@ -1,12 +1,14 @@
 ## Using Worker Loaders
 
-By default, many loaders.gl loader modules do their parsing on JavaScript worker threads. This means that the main thread will not block during parsing. Worker threads can also run in parallel, increasing your application's performance.
+Many loaders.gl loaders can do their parsing on JavaScript worker threads. This means that the main thread will not block during parsing. Worker threads can also run in parallel, increasing your application's performance when parsing many files in parallel.
 
-For more details on the advantages and complications with worker thread based loading the [Worker Threads](./using-worker-loaders.md) article in the concepts secion.
+Note that worker thread loading is not always the best choice, and when worker thread loading is not offered in a specific loader it is usually because it would not provide any performance benefits.
+
+More details on advantages and complications with worker thread based loading the [Worker Threads](./concepts/worker-threads.md) article in the concepts secion.
 
 ## Loading Files in Parallel using Worker Loaders
 
-The `DracoLoader` is worker enabled and uses worker threads by default. To load two Draco encoded meshes _in parallel_ on worker threads, just use the `DracoLoader` as follows:
+The `DracoLoader` is an example of a worker enabled loader. It parses data on worker threads by default. To load two Draco encoded meshes _in parallel_ on worker threads, just use the `DracoLoader` as follows:
 
 ```js
 import {load} from '@loaders.gl/core';
