@@ -23,7 +23,7 @@ The JSONLoader supports streaming JSON parsing, in which case it will yield "bat
 
 ```js
 import {JSONLoader} from '@loaders.gl/json';
-import {load} from '@loaders.gl/core';
+import {loadInBatches} from '@loaders.gl/core';
 
 const batches = await loadInBatches('geojson.json', JSONLoader);
 
@@ -44,9 +44,9 @@ The loader will yield an initial and a final batch with `batch.container` provid
 
 ```js
 import {JSONLoader} from '@loaders.gl/json';
-import {load} from '@loaders.gl/core';
+import {loadInBatches} from '@loaders.gl/core';
 
-const data = await loadInBatches('geojson.json', JSONLoader);
+const batches = await loadInBatches('geojson.json', JSONLoader);
 
 for await (const batch of batches) {
   switch (batch.batchType) {
