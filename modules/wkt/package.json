@@ -15,7 +15,7 @@
     "loader",
     "parser",
     "WKT",
-    "Well Known Tezt"
+    "Well Known Text"
   ],
   "main": "dist/es5/index.js",
   "module": "dist/esm/index.js",
