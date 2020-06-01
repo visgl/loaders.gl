@@ -18,7 +18,7 @@ The `ImageLoader` now loads images as `Imagebitmap` by default on browsers that 
 
 Addresses a number of compatibility issues with different tilesets that have been reported by users. See the git log or issues for details.
 
-**@loaders.gl/video**
+**@loaders.gl/video** (new loader module)
 
 An experimental new module with video loading and GIF generation support.
 

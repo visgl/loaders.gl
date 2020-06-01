@@ -1,5 +1,7 @@
 # GIFBuilder
 
+> This `GIFBuilder` is currenly highly experimental and may change significantly in minor releases and ev en patch releases. Pin down your loaders.gl version if you wish to use it.
+
 The `GIFBuilder` class creates a base64 encoded GIF image from either:
 
 - a series of images
@@ -19,9 +21,9 @@ import {ImageLoader} from '@loaders.gl/images';
 import {GIFBuilder} from '@loaders.gl/video';
 
 const gifBuilder = new GIFBuilder({source: 'images', width: 400, height: 400});
-gifBuilder.add(await load('http://i.imgur.com/2OO33vX.jpg', ImageLoader));
-gifBuilder.add(await load('http://i.imgur.com/qOwVaSN.png', ImageLoader));
-gifBuilder.add(await load('http://i.imgur.com/Vo5mFZJ.gif', ImageLoader));
+gifBuilder.add(await load('http://i.imgur.com/2OO33vX.jpg', ImageLoader, {images: {type: 'image'}}));
+gifBuilder.add(await load('http://i.imgur.com/qOwVaSN.png', ImageLoader, {images: {type: 'image'}}));
+gifBuilder.add(await load('http://i.imgur.com/Vo5mFZJ.gif', ImageLoader, {images: {type: 'image'}}));
 gifBuilder.build();
 ```
 
@@ -65,19 +67,17 @@ Creates a new `GIFBuilder` instance.
 
 `options` See the Options section below.
 
-### add(file: string | object | Image)
+### add(file: Image | string | object)
 
-The following types can be added
+- **images** -- `Image` objects can be added.(Note: `ImageBitmap` is not currently supported).
 
-The following types can be added
-
-- **images** - (NOT YET SUPPORTED) - `Image` objects can be added.
+Experimentally, tha following types can currently be added (may be removed in upcoming release)
 
 - **string URLs for images** If this option is used, then a GIF will be created using these images e.g. ,.'http://i.imgur.com/2OO33vX.jpg', 'http://i.imgur.com/qOwVaSN.png', 'http://i.imgur.com/Vo5mFZJ.gif'
 
 - **a video** a GIF will be created using the first supplied video that is supported by the current browser's video codecs. E.g. 'example.mp4', 'example.ogv'.
 
-> Note that a mix of types is not supported. All added elements must be of the same type (images, image URLs, video URLs).
+> Also note that a mix of types is not supported. All added elements must be of the same type (images, image URLs, video URLs).
 
 ### build(): string
 

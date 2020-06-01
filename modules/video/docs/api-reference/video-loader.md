@@ -1,5 +1,7 @@
 # VideoLoader
 
+> The `VideoLoader` is experimental.
+
 An image loader that works under both Node.js (requires `@loaders.gl/polyfills`) and the browser.
 
 | Loader         | Characteristic                                          |
