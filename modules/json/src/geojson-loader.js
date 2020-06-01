@@ -34,7 +34,7 @@ export const GeoJSONWorkerLoader = {
     geojson: {
       TableBatch: RowTableBatch,
       batchSize: 'auto',
-      workerUrl: `https://unpkg.com/@loaders.gl/json@${VERSION}/dist/geojson-loader.worker.js`,
+      workerUrl: `https://unpkg.com/@loaders.gl/json@${VERSION}/dist/geojson-loader.worker.js`
     }
   }
 };
@@ -43,7 +43,7 @@ export const GeoJSONLoader = {
   ...GeoJSONWorkerLoader,
   parse,
   parseTextSync,
-  parseInBatches,
+  parseInBatches
 };
 
 async function parse(arrayBuffer, options) {
