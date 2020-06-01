@@ -38,17 +38,23 @@ function parseI3SNodeGeometry(arrayBuffer, tile = {}) {
   }
 
   const content = tile.content;
-  const vertexAttributes = content.featureData.vertexAttributes;
-  // First 8 bytes reserved for header (vertexCount and featurecount)
+  const {vertexAttributes, attributesOrder} = content.featureData;
+  // First 8 bytes reserved for header (vertexCount and featureCount)
   const {vertexCount, byteOffset} = parseHeaders(content, arrayBuffer);
-  const {attributes} = normalizeAttributes(arrayBuffer, byteOffset, vertexAttributes, vertexCount);
+  const {attributes} = normalizeAttributes(
+    arrayBuffer,
+    byteOffset,
+    vertexAttributes,
+    vertexCount,
+    attributesOrder
+  );
 
   const {enuMatrix, cartographicOrigin, cartesianOrigin} = parsePositions(
     attributes.position,
     tile
   );
 
-  const matrix = new Matrix4(1, 0, 0, 0, 1, 0, 0, 0, 1).multiplyRight(enuMatrix);
+  const matrix = new Matrix4().multiplyRight(enuMatrix);
 
   content.attributes = {
     positions: attributes.position,
@@ -73,7 +79,6 @@ function constructFeatureDataStruct(tile, tileset) {
   // populate the vertex attributes value types and values per element
   for (const geometryAttribute in I3S_NAMED_GEOMETRY_ATTRIBUTES) {
     for (const namedAttribute in I3S_NAMED_VERTEX_ATTRIBUTES) {
-      // const geomAttribute = defaultGeometrySchema[geometryAttribute];
       const attribute = defaultGeometrySchema[geometryAttribute][namedAttribute];
       if (attribute) {
         const {byteOffset = 0, count = 0, valueType, valuesPerElement} = attribute;
@@ -88,6 +93,7 @@ function constructFeatureDataStruct(tile, tileset) {
     }
   }
 
+  featureData.attributesOrder = defaultGeometrySchema.ordering;
   return featureData;
 }
 
@@ -118,31 +124,52 @@ function parseHeaders(content, buffer) {
 
 /* eslint-enable max-statements */
 
-function normalizeAttributes(buffer, byteOffset, vertexAttributes, vertexCount) {
+function normalizeAttributes(
+  arrayBuffer,
+  byteOffset,
+  vertexAttributes,
+  vertexCount,
+  attributesOrder
+) {
   const attributes = {};
 
-  for (const attribute in vertexAttributes) {
-    const {valueType, valuesPerElement} = vertexAttributes[attribute];
-    // update count and byteOffset count by calculating from defaultGeometrySchema + binnary content
-    const count = vertexCount;
-    const TypedArrayType = TYPE_ARRAY_MAP[valueType];
+  // the order of attributes depend on the order being added to the vertexAttributes object
+  for (const attribute of attributesOrder) {
+    if (vertexAttributes[attribute]) {
+      const {valueType, valuesPerElement} = vertexAttributes[attribute];
+      // update count and byteOffset count by calculating from defaultGeometrySchema + binnary content
+      const count = vertexCount;
+      // protect from arrayBuffer read overunns by NOT assuming node has regions always even though its declared in defaultGeometrySchema.
+      // In i3s 1.6: client is required to decide that based on ./shared resource of the node (materialDefinitions.[Mat_id].params.vertexRegions == true)
+      // In i3s 1.7 the property has been rolled into the 3d scene layer json/node pages.
+      // Code below does not account when the bytelength is actually bigger than
+      // the calculated value (b\c the tile potentially could have mesh segmentation information).
+      // In those cases tiles without regions could fail or have garbage values.
+      if (byteOffset + count * valuesPerElement > arrayBuffer.byteLength) {
+        break;
+      }
 
-    const value = new TypedArrayType(buffer, byteOffset, count * valuesPerElement);
+      const TypedArrayType = TYPE_ARRAY_MAP[valueType];
+      const value = new TypedArrayType(arrayBuffer, byteOffset, count * valuesPerElement);
 
-    attributes[attribute] = {
-      value,
-      type: GL_TYPE_MAP[valueType],
-      size: valuesPerElement
-    };
+      attributes[attribute] = {
+        value,
+        type: GL_TYPE_MAP[valueType],
+        size: valuesPerElement
+      };
 
-    if (attribute === 'color') {
-      attributes.color.normalized = true;
+      switch (attribute) {
+        case 'color':
+          attributes.color.normalized = true;
+          break;
+        case 'position':
+        case 'region':
+        case 'normal':
+        default:
+      }
+
+      byteOffset = byteOffset + count * valuesPerElement * SIZEOF[valueType];
     }
-    if (attribute === 'region' || attribute === 'normal') {
-      // do nothing for now...
-    }
-
-    byteOffset = byteOffset + count * valuesPerElement * SIZEOF[valueType];
   }
 
   return {attributes, byteOffset};

@@ -20,12 +20,12 @@ export default class I3STilesetTraverser extends TilesetTraverser {
   // eslint-disable-next-line complexity
   updateChildTiles(tile, frameState) {
     const children = tile.header.children || [];
-    // child which are already fetched and constructed as Tile3D instances
+    // children which are already fetched and constructed as Tile3D instances
     const childTiles = tile.children;
     const tileset = tile.tileset;
 
     for (const child of children) {
-      // if child tile is not requested or fetched
+      // if child tile is not fetched
       const childTile = childTiles && childTiles.find(t => t.id === child.id);
       if (!childTile) {
         const request = () => this._loadTile(child.id, tileset);
@@ -34,12 +34,12 @@ export default class I3STilesetTraverser extends TilesetTraverser {
           this._tileManager.add(
             request,
             child.id,
-            header => this._onTileLoad(header, tile, frameState),
-            {frameNumber: frameState.frameNumber}
+            header => this._onTileLoad(header, tile),
+            frameState
           );
         } else {
           // update frameNumber since it is still needed in current frame
-          this._tileManager.update(child.id, {frameNumber: frameState.frameNumber});
+          this._tileManager.update(child.id, frameState);
         }
       } else if (childTile) {
         // if child tile is fetched and available
@@ -62,14 +62,15 @@ export default class I3STilesetTraverser extends TilesetTraverser {
     return await load(nodeUrl, loader, options);
   }
 
-  _onTileLoad(header, tile, frameState) {
+  _onTileLoad(header, tile) {
     const basePath = this.options.basePath;
     // after child tile is fetched
     const childTile = new TileHeader(tile.tileset, header, tile, basePath);
     tile.children.push(childTile);
+    const frameState = this._tileManager.find(childTile.id).frameState;
     this.updateTile(childTile, frameState);
 
-    // after tile fetcher, resume traversal if still in current update/traversal frame
+    // after tile fetched, resume traversal if still in current update/traversal frame
     if (this._frameNumber === frameState.frameNumber) {
       this.executeTraversal(childTile, frameState);
     }

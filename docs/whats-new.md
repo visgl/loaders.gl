@@ -6,7 +6,21 @@ Target Release Date: TBD. Intention is to release in sync with deck.gl 8.2. Alph
 
 ### Typescript Type Definitions
 
-Typescript type definitions (`d.ts` files) are now provided for most loaders.gl modules that export APIs (functions and classes).
+Typescript type definitions (`d.ts` files) are now provided for some loaders.gl modules that export APIs (functions and classes).
+
+### Loader Improvements
+
+**@loaders.gl/images**
+
+The `ImageLoader` now loads images as `Imagebitmap` by default on browsers that support `ImageBitmap` (Chrome and Firefox). The performance improvements are dramatic, which can be verified in the new [benchmark example](https://loaders.gl/examples/benchmarks).
+
+**@loaders.gl/i3s**
+
+Addresses a number of compatibility issues with different tilesets that have been reported by users. See the git log or issues for details.
+
+**@loaders.gl/video** (new loader module)
+
+An experimental new module with video loading and GIF generation support.
 
 ## v2.1
 

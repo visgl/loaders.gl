@@ -19,6 +19,7 @@
             {"entry": "docs/developer-guide/get-started"},
             {"entry": "docs/developer-guide/using-loaders"},
             {"entry": "docs/developer-guide/using-worker-loaders"},
+            {"entry": "docs/developer-guide/using-streaming-loaders"},
             {"entry": "docs/developer-guide/using-writers"},
             {"entry": "docs/developer-guide/loader-categories"},
             {"entry": "docs/developer-guide/error-handling"},
@@ -75,6 +76,7 @@
         {"entry": "modules/obj/docs/api-reference/obj-loader"},
         {"entry": "modules/pcd/docs/api-reference/pcd-loader"},
         {"entry": "modules/ply/docs/api-reference/ply-loader"},
+        {"entry": "modules/video/docs/api-reference/video-loader"},
         {"entry": "modules/wkt/docs/api-reference/wkt-loader"},
         {"entry": "modules/wkt/docs/api-reference/wkt-writer"},
         {"entry": "modules/zip/docs/api-reference/zip-loader"},
@@ -101,6 +103,7 @@
             {"entry": "modules/core/docs/api-reference/set-path-prefix"},
             {"entry": "modules/core/docs/api-reference/binary-utilities"},
             {"entry": "modules/core/docs/api-reference/iterator-utilities"},
+            {"entry": "modules/loader-utils/docs/api-reference/request-scheduler"},
             {"entry": "docs/specifications/loader-object-format"},
             {"entry": "docs/specifications/writer-object-format"}
           ]
@@ -210,6 +213,13 @@
             {"entry": "modules/tiles/docs"},
             {"entry": "modules/tiles/docs/api-reference/tileset-3d"},
             {"entry": "modules/tiles/docs/api-reference/tile-3d"}
+          ]
+        },
+        {
+          "title": "@loaders.gl/video",
+          "entries": [
+            {"entry": "modules/video/docs"},
+            {"entry": "modules/video/docs/api-reference/gif-builder"}
           ]
         },
         {

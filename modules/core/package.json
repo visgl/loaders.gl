@@ -17,6 +17,7 @@
     "mesh",
     "point cloud"
   ],
+  "types": "src/index.d.ts",
   "main": "dist/es5/index.js",
   "module": "dist/esm/index.js",
   "esnext": "dist/es6/index.js",
@@ -51,6 +52,6 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
-    "@loaders.gl/loader-utils": "^2.1.1"
+    "@loaders.gl/loader-utils": "^2.1.3"
   }
 }

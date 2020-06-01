@@ -30,9 +30,32 @@ export async function readFile(url, options = {}) {
 
   if (isRequestURL(url)) {
     return new Promise((resolve, reject) => {
-      options = {...new URL(url), ...options};
+      const urlObject = new URL(url);
+      let requestOptions = Object.assign(
+        {},
+        {
+          hostname: urlObject.hostname,
+          path: urlObject.pathname,
+          method: 'GET'
+        },
+        // Add options and user provided 'options.fetch' overrides if available
+        options,
+        options.fetch,
+        // Inject accepted encodings:
+        {
+          headers: {'Accept-Encoding': 'gzip,br,deflate'}
+        }
+      );
+      // And allow any overrides if needed by user
+      if (options.headers) {
+        requestOptions = Object.assign(requestOptions, {
+          headers: options.headers
+        });
+      }
       const request = url.startsWith('https:') ? https.request : http.request;
-      request(url, response => concatenateReadStream(response).then(resolve, reject));
+      request(requestOptions, response =>
+        concatenateReadStream(response).then(resolve, reject)
+      ).end();
     });
   }
 

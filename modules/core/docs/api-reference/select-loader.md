@@ -1,8 +1,6 @@
 # selectLoader
 
-> `selectLoader` is considered experimental as loader auto detection is still being improved.
-
-A core feature of loaders.gl is the ability to automatically select an appropriate loader for a specific file among a list of candidate loaders. This feature is built-in to the `parse` and `load` functions, but applications can also access this feature directly through the `selectLoader` API.
+A core feature of loaders.gl is the ability to automatically select an appropriate loader for a specific resource among a list of candidate loaders. This feature is built-in to the `parse` and `load` functions, but applications can also access this feature directly through the `selectLoader` API.
 
 Loader selection heuristics are based on both filename (url) extensions as well as comparison of initial data content against known headers for each file format.
 
@@ -13,42 +11,40 @@ Loader selection heuristics are based on both filename (url) extensions as well 
 Select a loader from a list of provided loaders:
 
 ```js
-import {_selectLoader} from '@loaders.gl/core';
+import {selectLoader} from '@loaders.gl/core';
 import {ArrowLoader} from '@loaders.gl/arrow';
 import {CSVLoader} from '@loaders.gl/csv';
 
-_selectLoader([ArrowLoader, CSVLoader], 'filename.csv'); // => CSVLoader
+selectLoader('filename.csv', [ArrowLoader, CSVLoader]); // => CSVLoader
 ```
 
 Select a loader from pre-registered loaders in the loader registry:
 
 ```js
-import {registerLoaders, _selectLoader} from '@loaders.gl/core';
+import {registerLoaders, selectLoader} from '@loaders.gl/core';
 import {ArrowLoader} from '@loaders.gl/arrow';
 import {CSVLoader} from '@loaders.gl/csv';
 
 registerLoaders(ArrowLoader, CSVLoader);
 
-// By passing null instead of a loader list, selectLoader returns null.
-_selectLoader(null, 'filename.csv'); // => CSVLoader
+selectLoader('filename.csv'); // => CSVLoader
 ```
 
 ## Functions
 
-### \_selectLoader(loaders : Object | Object[] | null, url? : String, data? : ArrayBuffer | String, options? : Object)
+### selectLoader(data: Response | ArrayBuffer | String, loaders?: Object | Object[] | null, options?: Object, info?: Object)
 
-Selects an appropriate loader for a file from a list of candidate loaders by examining a URL and/or an initial data chunk.
+Selects an appropriate loader for a file from a list of candidate loaders by examining the `data` parameter, looking at URL extension, mimeType ('Content-Type') and/or an initial data chunk.
 
 Parameters:
 
+- `data` - data to perform autodetection against
 - `loaders` - can be a single loader or an array of loaders, or null.
-- `url` - An optional URL to perform autodetection against.
-- `data` - Optional data to perform autodetection against
 - `options.nothrow`=`false` - Return null instead of throwing exception if no loader can be found
 
 Returns:
 
-- A single loader (or null if `options.nothrow` was set and no matching loader was found).
+- A single loader (or `null` if `options.nothrow` was set and no matching loader was found).
 
 Throws:
 
@@ -59,6 +55,21 @@ Regarding the `loaders` parameter:
 - A single loader object will be returned without matching.
 - a `null` loader list will use the pre-registered list of loaders.
 - A supplied list of loaders will be searched for a matching loader.
+
+## Supported Formats
+
+- strings / non-data urls:
+- strings / data urls: The mime type will be extracted from the data url prologue (if available)
+- fetch `Response` objects: `url` and `headers.get('Content-Type')` fields will be used.
+- `File` and `Blob` objects:
+
+Peeking into batched input sources is not supported directly by `selectLoader`:
+
+- `Response`: Avoids requesting initial data to make sure the response body is not marked as used.
+- `Stream`: It is not possible to non-destructively peek into a stream.
+- `Iterator/AsyncIterator`: it is not possible to peek into an iterator.
+
+Instead use helpers to get access to initialContents and pass it in separately.
 
 ## Remarks
 

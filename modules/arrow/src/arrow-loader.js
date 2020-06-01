@@ -1,7 +1,7 @@
 // __VERSION__ is injected by babel-plugin-version-inline
 /* global __VERSION__ */
 import parseSync from './lib/parse-arrow-sync';
-import {parseArrowInBatches, parseArrowInBatchesSync} from './lib/parse-arrow-in-batches';
+import {parseArrowInBatches} from './lib/parse-arrow-in-batches';
 
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
@@ -24,6 +24,5 @@ export const ArrowLoader = {
   ...ArrowWorkerLoader,
   parse: async (arraybuffer, options) => parseSync(arraybuffer, options),
   parseSync,
-  parseInBatches: parseArrowInBatches,
-  parseInBatchesSync: parseArrowInBatchesSync
+  parseInBatches: parseArrowInBatches
 };

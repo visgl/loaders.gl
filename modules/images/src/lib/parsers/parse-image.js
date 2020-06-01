@@ -1,6 +1,6 @@
 import assert from '../utils/assert';
-import {isImageTypeSupported, getDefaultImageType} from '../parsed-image-api/image-type';
-import {getImageData} from '../parsed-image-api/parsed-image-api';
+import {isImageTypeSupported, getDefaultImageType} from '../category-api/image-type';
+import {getImageData} from '../category-api/parsed-image-api';
 import parseToImage from './parse-to-image';
 import parseToImageBitmap from './parse-to-image-bitmap';
 import parseToNodeImage from './parse-to-node-image';

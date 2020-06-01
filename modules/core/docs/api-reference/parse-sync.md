@@ -30,9 +30,7 @@ try {
 
 ## Functions
 
-### parseSync(fileData : ArrayBuffer | String, loaders : Object | Object\[], [, options : Object [, url : String]]) : any
-
-### parseSync(fileData : ArrayBuffer | String, [, options : Object [, url : String]]) : any
+### parseSync(data: ArrayBuffer | String, loaders: Object | Object\[], options?: Object, url?: String]]) : any
 
 Parses data synchronously using the provided loader, if possible. If not, returns `null`, in which case asynchronous parsing is required.
 
