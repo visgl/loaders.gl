@@ -1,8 +1,12 @@
 # VideoLoader
 
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v2.2-blue.svg?style=flat-square" alt="From-v2.2" /> 
+</p>
+
 > The `VideoLoader` is experimental.
 
-An image loader that works under both Node.js (requires `@loaders.gl/polyfills`) and the browser.
+A basic Video element loader. Only works in the browser.
 
 | Loader         | Characteristic                                          |
 | -------------- | ------------------------------------------------------- |

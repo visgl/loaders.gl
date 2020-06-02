@@ -8,9 +8,9 @@
   ],
   "main": "gatsby-config.js",
   "scripts": {
-    "start": "yarn clean && yarn develop",
+    "start": "yarn develop",
     "develop": "yarn clean-examples && yarn build:gallery && yarn gatsby develop",
-    "build": "yarn clean && yarn clean-examples && yarn build:gallery && gatsby build",
+    "build": "rm -rf ./public && yarn clean-examples && yarn build:gallery && gatsby build",
     "serve": "gatsby serve",
     "deploy": "NODE_DEBUG=gh-pages gh-pages -d public",
     "clean": "rm -rf ./.cache ./public",
@@ -49,7 +49,7 @@
     "styled-components": "^4.4.1"
   },
   "devDependencies": {
-    "gatsby": "~2.20.24",
+    "gatsby": "~2.22.17",
     "gatsby-plugin-no-sourcemaps": "^2.1.2",
     "gatsby-theme-ocular": "^1.2.0-beta.8",
     "gh-pages": "^2.2.0"
