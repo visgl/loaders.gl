@@ -1,24 +1,63 @@
-# Request Scheduler
+# RequestScheduler
 
-The request scheduler enables an application to "issue" a large number of requests without flooding the browser's limited request queue.
+The request scheduler provides control when working with large numbers of requests, allowing applications to make the most efficient use of the browser's limited request queue, and also retry requests in a simple way.
 
-A getPriority callback is called on all outstanding requests whenever a slot frees up, allowing the application to reprioritize or even cancel "issued" requests if the application state has changed.
+The `RequestScheduler` class
+- Enables an application to queue a large number of requests without flooding the browser's request queue.
+- Provided a mechanism for applications to cancel or reprioritize queued requests before they are actually "issued", through a `getPriority()` callback.
+- Enables applications to reschedule requests (e.g. if a 429 HTTP error is received).
 
-Note: The request scheduler does not actually issue requests, it just lets apps know when the request can be issued without overwhelming the connection and the server.
-
-A primary use case is to let the app reprioritize or cancel requests if circumstances change before the request can be scheduled.
 
 - Some information on browser [request throttling](https://docs.pushtechnology.com/cloud/latest/manual/html/designguide/solution/support/connection_limitations.html)
 
 ## Usage
 
-To schedule a request so that it can be issued at a time when it can be immediately processed.
+For the simplest usage, use `RequestScheduler.scheduledFetch()`. This will both wait for a slot, and retry the fetch if 429s are returned.
 
 ```js
-const URL = '...';
-const requestToken = await requestScheduler.scheduleRequest(URL);
+const url = '...';
+const response = await requestScheduler.scheduledFetch(url);
+switch (response.status) {
+  case 408: // Request was cancelled by getPriority (or server did time out...)
+  case 429: // Too many retries
+  ...
+}
+```
+
+To just schedule a request, wait for a token to be returned from `RequestScheduler.scheduleRequest()`. Once the token resolves, the request can issued without be immediately processed.
+
+```js
+const url = '...';
+const requestToken = await requestScheduler.scheduleRequest(url);
 if (requestToken) {
-  await fetch(URL);
+  await fetch(url);
+  requestToken.done(); // NOTE: **must** be called for the next request in queue to resolve
+}
+```
+
+To schedule a request, rescheduling it repeatedly when 429 errors happen:
+
+```js
+const url = '...';
+let requestToken = await requestScheduler.scheduleRequest(url);
+try {
+  let done = false;
+  while (!done) {
+    const response = await fetch(url);
+    if (response.status === 429) {
+      requestToken = await requestToken.reschedule();
+      continue;
+    } 
+    
+    if (response.ok) {
+      // process response
+      done = true;
+    } else {
+      // handle error
+      done = true;
+    }
+  }
+} finally {
   requestToken.done(); // NOTE: **must** be called for the next request in queue to resolve
 }
 ```
@@ -27,9 +66,20 @@ if (requestToken) {
 
 ### constructor(options?: object)
 
-- `id`?: string;
+- `id`?: string - An identifier. Mainly intended for debugging.
 - `throttleRequests`?: boolean;
-- `maxRequests`?: number;
+- `maxRequests`?: number; - Max parallel requests
+- `maxRetries`?: number - Maximum number of retries for a request
+
+### scheduledFetch(url: string, fetchOptions?: object, schedulerOptions?: object)
+
+- `fetchOptions` are passed to `fetch` (Note: they are not used if `fetch` is overridden in `schedulerOptions`)
+
+- `schedulerOptions.getPriority` - 
+- `schedulerOptions.fetch` - Override the `fetch` function
+- `schedulerOptions.scheduleFailureStatus` - `408` - by default, cancellation is reported as a [`408 Request Timeout`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/408).
+- `schedulerOptions.retryFailureStatus` - `429 Too Many Requests` - by default, retry failure is reported as a [`429`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429).
+
 
 ### scheduleRequest(handle: any, getPriority?: () => number): Promise<{done: () => any)}>;
 

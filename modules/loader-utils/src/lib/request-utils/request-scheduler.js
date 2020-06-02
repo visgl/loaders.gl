@@ -45,11 +45,6 @@ export default class RequestScheduler {
   // Returns: a promise that resolves to a request token when the request can be issued without queueing,
   //    or `false` if the request has been cancelled (by getPriority)
   scheduleRequest(handle, getPriority = () => 0) {
-    // Allows throttling to be disabled
-    if (!this.props.throttleRequests) {
-      return Promise.resolve({done: () => {}});
-    }
-
     // dedupe
     if (this.requestMap.has(handle)) {
       return this.requestMap.get(handle);
@@ -86,6 +81,17 @@ export default class RequestScheduler {
       }
     };
 
+    const reschedule = () => {
+      // can only be called once
+      if (!isDone) {
+        isDone = true;
+        // Add this request back to the queue
+        this.requestQueue.push(request);
+        this.activeRequestCount--;
+        // TODO - Since we are rescheduling a request, we might want to implement backoff, to cool down
+      }
+    }
+
     // Track this request
     this.activeRequestCount++;
 
@@ -103,7 +109,7 @@ export default class RequestScheduler {
   _issueNewRequestsAsync() {
     this._deferredUpdate = null;
 
-    const freeSlots = Math.max(this.props.maxRequests - this.activeRequestCount, 0);
+    let freeSlots = Math.max(this.props.maxRequests - this.activeRequestCount, 0);
 
     if (freeSlots === 0) {
       return;
