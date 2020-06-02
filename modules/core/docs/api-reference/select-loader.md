@@ -1,5 +1,9 @@
 # selectLoader
 
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v2.2-blue.svg?style=flat-square" alt="From-v2.2" /> 
+</p>
+
 A core feature of loaders.gl is the ability to automatically select an appropriate loader for a specific resource among a list of candidate loaders. This feature is built-in to the `parse` and `load` functions, but applications can also access this feature directly through the `selectLoader` API.
 
 Loader selection heuristics are based on both filename (url) extensions as well as comparison of initial data content against known headers for each file format.

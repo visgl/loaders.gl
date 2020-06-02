@@ -1,16 +1,20 @@
 # WKTLoader
 
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v2.1-blue.svg?style=flat-square" alt="From-v2.1" /> 
+</p>
+
 Loader and writer for the [Well-known text] format for representation of geometry.
 
-| Loader                | Characteristic                                                                              |
-| --------------------- | ------------------------------------------------------------------------------------------- |
-| File Extension        | `.wkt`,                                                                                     |
-| File Type             | Text                                                                                        |
-| File Format           | [Well Known Text](https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry) |
-| Data Format           | [Geometry](/docs/specifications/category-gis)                                               |
-| Supported APIs        | `load`, `parse`, `parseSync`                                                                |
-| Decoder Type          | Synchronous                                                                                 |
-| Worker Thread Support | Yes                                                                                         |
+| Loader                | Characteristic                                                                                               |
+| --------------------- | ------------------------------------------------------------------------------------------------------------ |
+| File Extension        | `.wkt`,                                                                                                      |
+| File Type             | Text                                                                                                         |
+| File Format           | [Well Known Text](https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry)                  |
+| Data Format           | [Geometry](/docs/specifications/category-gis)                                                                |
+| Supported APIs        | `load`, `parse`, `parseSync`                                                                                 |
+| Decoder Type          | Synchronous                                                                                                  |
+| Worker Thread Support | Yes [![Website shields.io](https://img.shields.io/badge/v2.2-blue.svg?style=flat-square)](http://shields.io) |
 
 ## Usage
 

@@ -1,5 +1,19 @@
 # Introduction
 
+<p align="center">
+  <img src="https://img.shields.io/badge/loaders.gl-v2.2-blue.svg?style=flat-square" />
+</p>
+
+<p align="center">
+  Docs for older versions are available on github, e.g.
+  <a href="https://github.com/visgl/loaders.gl/blob/2.1-release/docs/README.md">
+    <img src="https://img.shields.io/badge/loaders.gl-v2.1-green.svg?style=flat-square" />
+  </a>
+  <a href="https://github.com/visgl/loaders.gl/blob/1.3-release/docs/README.md">
+    <img src="https://img.shields.io/badge/loaders.gl-v1.3-green.svg?style=flat-square" />
+  </a>
+</p>
+
 loaders.gl is a suite of loaders for file formats focused on visualization of big data, including point clouds, 3D geometries, images, geospatial formats as well as tabular data.
 
 loaders.gl is part of the [vis.gl](https://vis.gl) ecosystem, and frameworks like [deck.gl](https://deck.gl) and [luma.gl](https://luma.gl) come pre-integrated with loaders.gl. However, all the provided loaders and writers are framework independent, and can be used with any application or framework.

@@ -1,5 +1,9 @@
 # Request Scheduler
 
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v2.2-blue.svg?style=flat-square" alt="From-v2.2" /> 
+</p>
+
 The request scheduler enables an application to "issue" a large number of requests without flooding the browser's limited request queue.
 
 A getPriority callback is called on all outstanding requests whenever a slot frees up, allowing the application to reprioritize or even cancel "issued" requests if the application state has changed.
