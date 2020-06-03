@@ -691,13 +691,13 @@
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
 
-"@deck.gl/core@^8.1.4":
-  version "8.1.4"
-  resolved "https://registry.yarnpkg.com/@deck.gl/core/-/core-8.1.4.tgz#ed1a569f750471c0b2ce9d31f874f61f63bb4c21"
-  integrity sha512-7BduTC5WHBq6nC2zQnb4CPE5L2VBEw8rEsLzJO/VtUrg3jGg1zhptt20NDYi5vLtWkr+K2Z6vuMExSuK3+tdtQ==
+"@deck.gl/core@^8.1.8":
+  version "8.1.8"
+  resolved "https://registry.yarnpkg.com/@deck.gl/core/-/core-8.1.8.tgz#b0a5d3d0eae4cc7c6b973bbe56878412021e2640"
+  integrity sha512-wa/iLcNx0zMUEO3To4pMpqBU414cBJ0/1ipcUoHmYf4Ay9gtvNld7jFpguqudoLr9kvhaVhsH/cVUHP5uKz+0A==
   dependencies:
-    "@loaders.gl/core" "^2.1.1"
-    "@loaders.gl/images" "^2.1.1"
+    "@loaders.gl/core" "^2.1.6"
+    "@loaders.gl/images" "^2.1.6"
     "@luma.gl/core" "^8.1.2"
     "@math.gl/web-mercator" "^3.1.3"
     gl-matrix "^3.0.0"
@@ -1451,14 +1451,6 @@
     "@babel/runtime" "^7.3.1"
     "@loaders.gl/loader-utils" "2.1.6"
 
-"@loaders.gl/core@^2.1.1":
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/core/-/core-2.1.1.tgz#5dd79f9bc72f0aa7ea565dea419e3063edebb26f"
-  integrity sha512-HTh8aZduQSp9D6ELbtAhZumhkqUrhH+BKj1C9WRYiLFeFDjeJSj1D4sTXz+VY6OHZC07a9FyvsgwD8HC/2NXiw==
-  dependencies:
-    "@babel/runtime" "^7.3.1"
-    "@loaders.gl/loader-utils" "2.1.1"
-
 "@loaders.gl/gltf@^2.1.6":
   version "2.1.6"
   resolved "https://registry.yarnpkg.com/@loaders.gl/gltf/-/gltf-2.1.6.tgz#077a203e749bf4bdb57a3653768e8d836cd59656"
@@ -1474,21 +1466,6 @@
   integrity sha512-KE0fEJA3Luiqktgb2bfj/+de3QjWmP8L+hh2Pu03doxIgvV8mhhvduy5rBMMtoR0M3HBSPRI0DKKF5mR0Hb46Q==
   dependencies:
     "@loaders.gl/loader-utils" "2.1.6"
-
-"@loaders.gl/images@^2.1.1":
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/images/-/images-2.1.1.tgz#4c327aea783b7721ebc25bd0752dd2e6fea6820f"
-  integrity sha512-XlQFCmid4dGcdGu0xBgXVCiMXZsWnIOE6KqR5pHbNCPJoKokBzPsH7VKHmQh2ZB/8wE8GdsA98QDq9ECtx8yAQ==
-  dependencies:
-    "@loaders.gl/loader-utils" "2.1.1"
-
-"@loaders.gl/loader-utils@2.1.1":
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/loader-utils/-/loader-utils-2.1.1.tgz#970fcf2f9299dc848597b0a916d2cc8cec2f186c"
-  integrity sha512-lllCwscmrgqtGYoYHu61YSOe/amHPDRuioMn+SW2yisbRxf39MFFyOz7WdS50VP/eb3G22+fN41H3yrk9iMZXA==
-  dependencies:
-    "@babel/runtime" "^7.3.1"
-    "@probe.gl/stats" "^3.2.1"
 
 "@loaders.gl/loader-utils@2.1.6", "@loaders.gl/loader-utils@^2.1.6":
   version "2.1.6"

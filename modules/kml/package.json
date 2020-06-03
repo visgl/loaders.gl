@@ -32,7 +32,7 @@
     "build-bundle": "webpack --display=minimal --config ../../scripts/bundle.config.js"
   },
   "dependencies": {
-    "@loaders.gl/core": "^2.1.6",
-    "@loaders.gl/tables": "^2.1.6"
+    "@loaders.gl/core": "^2.2.0-alpha.1",
+    "@loaders.gl/tables": "^2.2.0-alpha.1"
   }
 }
