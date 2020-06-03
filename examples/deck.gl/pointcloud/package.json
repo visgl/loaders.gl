@@ -5,9 +5,9 @@
     "start-local": "webpack-dev-server --env.local --progress --hot --open"
   },
   "dependencies": {
-    "@deck.gl/react": "^8.1.4",
-    "@deck.gl/core": "^8.1.4",
-    "@deck.gl/layers": "^8.1.4",
+    "@deck.gl/react": "^8.1.8",
+    "@deck.gl/core": "^8.1.8",
+    "@deck.gl/layers": "^8.1.8",
     "@loaders.gl/core": "^2.1.6",
     "@loaders.gl/draco": "^2.1.6",
     "@loaders.gl/las": "^2.1.6",

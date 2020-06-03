@@ -9,11 +9,11 @@
     "generate": "node ./generate-index/index.js"
   },
   "dependencies": {
-    "@deck.gl/core": "^8.1.4",
-    "@deck.gl/geo-layers": "^8.1.4",
-    "@deck.gl/layers": "^8.1.4",
-    "@deck.gl/mesh-layers": "^8.1.4",
-    "@deck.gl/react": "^8.1.4",
+    "@deck.gl/core": "^8.1.8",
+    "@deck.gl/geo-layers": "^8.1.8",
+    "@deck.gl/layers": "^8.1.8",
+    "@deck.gl/mesh-layers": "^8.1.8",
+    "@deck.gl/react": "^8.1.8",
     "@loaders.gl/3d-tiles": "^2.1.6",
     "@loaders.gl/core": "^2.1.6",
     "@loaders.gl/draco": "^2.1.6",
