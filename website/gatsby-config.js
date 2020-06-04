@@ -23,7 +23,7 @@ module.exports = {
         PROJECT_TYPE: 'github',
 
         PROJECT_NAME: 'loaders.gl',
-        PROJECT_ORG: 'uber-web',
+        PROJECT_ORG: 'visgl',
         PROJECT_ORG_LOGO: 'images/uber-logo.png',
         PROJECT_URL: 'https://github.com/visgl/loaders.gl',
         PROJECT_DESC: 'Loaders for Big Data Visualization',
@@ -48,7 +48,7 @@ module.exports = {
           },
           {
             name: 'react-map-gl',
-            url: 'https://uber.github.io/react-map-gl'
+            url: 'https://visgl.github.io/react-map-gl'
           },
           {
             name: 'nebula.gl',
