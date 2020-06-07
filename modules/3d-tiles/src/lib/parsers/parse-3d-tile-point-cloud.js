@@ -1,8 +1,9 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
+import {DracoLoader} from '@loaders.gl/draco';
+import {GL} from '@loaders.gl/math';
 import {Vector3} from '@math.gl/core';
-import {GL} from '@loaders.gl/math'; // 'math.gl/geometry';
 
 import Tile3DFeatureTable from '../classes/tile-3d-feature-table';
 import Tile3DBatchTable from '../classes/tile-3d-batch-table';
@@ -200,7 +201,7 @@ async function parseDraco(tile, featureTable, batchTable, options, context) {
 // eslint-disable-next-line complexity, max-statements
 export async function loadDraco(tile, dracoData, options, context) {
   const {parse} = context;
-  const data = await parse(dracoData.buffer, {});
+  const data = await parse(dracoData.buffer, DracoLoader, {});
 
   const decodedPositions = data.attributes.POSITION && data.attributes.POSITION.value;
   const decodedColors = data.attributes.COLOR_0 && data.attributes.COLOR_0.value;

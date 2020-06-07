@@ -6,7 +6,7 @@ import DeckGL from '@deck.gl/react';
 import {COORDINATE_SYSTEM, OrbitView, LinearInterpolator} from '@deck.gl/core';
 import {PointCloudLayer} from '@deck.gl/layers';
 
-import {DracoWorkerLoader} from '@loaders.gl/draco';
+import {DracoLoader} from '@loaders.gl/draco';
 import {LASLoader} from '@loaders.gl/las';
 import {PLYLoader} from '@loaders.gl/ply';
 import {PCDLoader} from '@loaders.gl/pcd';
@@ -17,7 +17,7 @@ import ControlPanel from './components/control-panel';
 import FILE_INDEX from './file-index';
 
 // Additional format support can be added here, see
-registerLoaders([DracoWorkerLoader, LASLoader, PLYLoader, PCDLoader, OBJLoader]);
+registerLoaders([DracoLoader, LASLoader, PLYLoader, PCDLoader, OBJLoader]);
 
 const INITIAL_VIEW_STATE = {
   target: [0, 0, 0],
