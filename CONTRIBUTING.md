@@ -26,7 +26,6 @@ Additional instructions for [Windows](#developing-on-windows) and [Linux](#devel
 - `yarn test browser`: Test run under browser, good for interactive debugging
 - `yarn test`: Run lint, node test, browser tests (in headless mode)
 
-
 If you consider opening a PR, here are some documentations to get you started:
 
 - vis.gl [developer process](https://www.github.com/visgl/tsc/tree/master/developer-process)
