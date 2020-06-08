@@ -33,8 +33,6 @@ To decompress tiles containing Draco compressed glTF models or Draco compressed 
 ```js
 import {load, registerLoaders} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
-import {DracoWorkerLoader} from '@loaders.gl/draco';
-registerLoaders(DracoWorkerLoader);
 const tileUrl = 'https://assets.cesium.com/43978/1.pnts';
 const tile = await load(tileUrl, Tiles3DLoader, {decompress: true});
 ```

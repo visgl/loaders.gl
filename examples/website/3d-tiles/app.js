@@ -10,17 +10,11 @@ import {Tile3DLayer} from '@deck.gl/geo-layers';
 import {StatsWidget} from '@probe.gl/stats-widget';
 
 // To manage dependencies and bundle size, the app must decide which supporting loaders to bring in
-import {registerLoaders} from '@loaders.gl/core';
-import {DracoWorkerLoader} from '@loaders.gl/draco';
-import {GLTFLoader} from '@loaders.gl/gltf';
 import {CesiumIonLoader} from '@loaders.gl/3d-tiles';
 
 import ControlPanel from './components/control-panel';
 import {loadExampleIndex, INITIAL_EXAMPLE_CATEGORY, INITIAL_EXAMPLE_NAME} from './examples';
 import {INITIAL_MAP_STYLE} from './constants';
-
-// enable DracoWorkerLoader when fixed
-registerLoaders([GLTFLoader, DracoWorkerLoader]);
 
 // Set your mapbox token here
 const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line

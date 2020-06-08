@@ -7,13 +7,12 @@ import {MapController, COORDINATE_SYSTEM} from '@deck.gl/core';
 import {ScenegraphLayer} from '@deck.gl/mesh-layers';
 
 import {GLTFLoader} from '@loaders.gl/gltf';
-import {DracoWorkerLoader} from '@loaders.gl/draco';
 import {registerLoaders} from '@loaders.gl/core';
 
 import loadIBLEnvironment from './environment';
 
 // To manage dependencies/bundle size, the app decides which loaders to bring in
-registerLoaders([GLTFLoader, DracoWorkerLoader]);
+registerLoaders([GLTFLoader]);
 
 // Set your mapbox token here
 const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
@@ -64,11 +63,6 @@ export default class App extends PureComponent {
             id: 'tile-3d-layer',
             data: [{}],
             scenegraph: GLTF_DEFAULT_MODEL,
-            loadOptions: {
-              gltf: {
-                parserVersion: 2
-              }
-            },
             modelMatrix: [1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1],
             _composeModelMatrix: true,
             coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS,

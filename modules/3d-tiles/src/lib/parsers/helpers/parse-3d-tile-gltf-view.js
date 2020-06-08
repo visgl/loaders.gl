@@ -68,24 +68,6 @@ export async function extractGLTF(tile, gltfFormat, options, context) {
   }
 }
 
-export function extractGLTFSync(tile, gltfFormat, options, context) {
-  extractGLTFBufferOrURL(tile, gltfFormat, options);
-
-  if (options.loadGLTF) {
-    if (tile.gltfArrayBuffer) {
-      const {parseSync} = context;
-      // TODO - Should handle byteOffset... Not used now...
-      tile.gltf = parseSync(tile.gltfArrayBuffer, GLTFLoader, options, context);
-      delete tile.gltfArrayBuffer;
-      delete tile.gltfByteOffset;
-      delete tile.gltfByteLength;
-    } else if (tile.gltfUrl) {
-      // TODO - use context.fetch or context.load
-      throw new Error('cant load glTF URL synchronously');
-    }
-  }
-}
-
 function extractGLTFBufferOrURL(tile, gltfFormat, options) {
   switch (gltfFormat) {
     case GLTF_FORMAT.URI:

@@ -2,6 +2,8 @@
 // Only TRIANGLES: 0x0004 and TRIANGLE_STRIP: 0x0005 are supported
 
 /* eslint-disable camelcase */
+
+import {DracoLoader} from '@loaders.gl/draco';
 import {getZeroOffsetArrayBuffer} from '@loaders.gl/loader-utils';
 import GLTFScenegraph from '../gltf-scenegraph';
 import {KHR_DRACO_MESH_COMPRESSION} from '../gltf-constants';
@@ -57,7 +59,7 @@ async function decompressPrimitive(primitive, scenegraph, options, context) {
 
   // this will generate an exception if DracoLoader is not installed
   const {parse} = context;
-  const decodedData = await parse(bufferCopy, [], options, context);
+  const decodedData = await parse(bufferCopy, DracoLoader, options, context);
 
   primitive.attributes = getGLTFAccessors(decodedData.attributes);
   if (decodedData.indices) {
