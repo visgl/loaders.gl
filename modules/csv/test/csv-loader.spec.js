@@ -137,6 +137,38 @@ test('CSVLoader#loadInBatches(sample.csv, rows)', async t => {
   t.end();
 });
 
+test('CSVLoader#loadInBatches(sample.csv, header)', async t => {
+  const iterator = await loadInBatches(CSV_SAMPLE_URL, CSVLoader, {csv: {header: false}});
+  t.ok(isIterator(iterator) || isAsyncIterable(iterator), 'loadInBatches returned iterator');
+
+  let batchCount = 0;
+  for await (const batch of iterator) {
+    t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
+    t.equal(batch.length, 2, 'Got correct batch size');
+    t.deepEqual(batch.data[0], ['A', 'B', 1], 'Got correct first row');
+    batchCount++;
+  }
+  t.equal(batchCount, 1, 'Correct number of batches received');
+
+  t.end();
+});
+
+test('CSVLoader#loadInBatches(sample.csv, rows)', async t => {
+  const iterator = await loadInBatches(CSV_SAMPLE_URL, CSVLoader);
+  t.ok(isIterator(iterator) || isAsyncIterable(iterator), 'loadInBatches returned iterator');
+
+  let batchCount = 0;
+  for await (const batch of iterator) {
+    t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
+    t.equal(batch.length, 2, 'Got correct batch size');
+    t.deepEqual(batch.data[0], ['A', 'B', 1], 'Got correct first row');
+    batchCount++;
+  }
+  t.equal(batchCount, 1, 'Correct number of batches received');
+
+  t.end();
+});
+
 test('CSVLoader#loadInBatches(sample-very-long.csv, rows)', async t => {
   const batchSize = 25;
   const iterator = await loadInBatches(CSV_SAMPLE_VERY_LONG_URL, CSVLoader, {csv: {batchSize}});
@@ -146,7 +178,6 @@ test('CSVLoader#loadInBatches(sample-very-long.csv, rows)', async t => {
   for await (const batch of iterator) {
     t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
     t.equal(batch.length, batchSize, 'Got correct batch size');
-
     t.ok(batch.data[0].TLD, 'first row has TLD value');
     t.ok(batch.data[0]['meaning of life'], 'first row has meaning of life value');
     t.ok(batch.data[0].placeholder, 'first row has placeholder value');

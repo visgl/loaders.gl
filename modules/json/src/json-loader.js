@@ -12,7 +12,7 @@ export const JSONLoader = {
   id: 'json',
   name: 'JSON',
   version: VERSION,
-  extensions: ['json'],
+  extensions: ['json', 'geojson'],
   mimeType: 'text/json',
   // TODO - support various line based JSON formats
   /*

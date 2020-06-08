@@ -23,7 +23,8 @@ const CSVLoader = {
   options: {
     csv: {
       TableBatch: RowTableBatch,
-      batchSize: 10
+      batchSize: 10,
+      header: true
     }
   }
 };
@@ -59,6 +60,8 @@ function parseCSVInBatches(asyncIterator, options) {
   const TableBatchType = options.csv.TableBatch;
 
   const asyncQueue = new AsyncQueue();
+  //  convert the result to row object based on options.csv.header
+  const convertToObject = Boolean(options.csv.header);
 
   let isFirstRow = true;
   let headerRow = null;
@@ -69,7 +72,6 @@ function parseCSVInBatches(asyncIterator, options) {
     download: false, // We handle loading, no need for papaparse to do it for us
     dynamicTyping: true, // Convert numbers and boolean values in rows from strings
     header: false, // Unfortunately, header detection is not automatic and does not infer types
-
     // chunk(results, parser) {
     //   // TODO batch before adding to queue.
     //   console.log('Chunk:', results, parser);
@@ -79,6 +81,7 @@ function parseCSVInBatches(asyncIterator, options) {
     // step is called on every row
     step(results, parser) {
       const row = results.data;
+      const meta = results.meta;
 
       // Check if we need to save a header row
       if (isFirstRow && !headerRow) {
@@ -97,9 +100,10 @@ function parseCSVInBatches(asyncIterator, options) {
 
       // Add the row
       tableBatchBuilder =
-        tableBatchBuilder || new TableBatchBuilder(TableBatchType, schema, batchSize);
+        tableBatchBuilder ||
+        new TableBatchBuilder(TableBatchType, schema, batchSize, {convertToObject});
 
-      tableBatchBuilder.addRow(row);
+      tableBatchBuilder.addRow(row, meta.cursor);
       // If a batch has been completed, emit it
       if (tableBatchBuilder.isFull()) {
         asyncQueue.enqueue(tableBatchBuilder.getNormalizedBatch());

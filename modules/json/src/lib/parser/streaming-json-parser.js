@@ -8,6 +8,8 @@ export default class StreamingJSONParser extends JSONParser {
   constructor() {
     super();
     this.topLevelArray = null;
+    this.topLevelArrayDepth = null;
+    this.topLevelArrayPositions = null;
     this.topLevelObject = null;
     this._extendParser();
   }
@@ -20,11 +22,14 @@ export default class StreamingJSONParser extends JSONParser {
   write(chunk) {
     super.write(chunk);
     let array = [];
+    let cursors = [];
     if (this.topLevelArray) {
       array = [...this.topLevelArray];
+      cursors = this.topLevelArrayPositions ? [...this.topLevelArrayPositions] : [];
       this.topLevelArray.length = 0;
+      this.topLevelArrayPositions.length = 0;
     }
-    return array;
+    return {rows: array, cursors};
   }
 
   // Returns a partially formed result object
@@ -35,12 +40,13 @@ export default class StreamingJSONParser extends JSONParser {
   }
 
   // PRIVATE METHODS
-
   _extendParser() {
     // Redefine onopenarray to locate top-level array
     this.parser.onopenarray = () => {
       if (!this.topLevelArray) {
         this.topLevelArray = [];
+        this.topLevelArrayPositions = [];
+        this.topLevelArrayDepth = this.parser.depth + 1;
         this._openContainer(this.topLevelArray);
       } else {
         this._openContainer([]);
@@ -56,6 +62,13 @@ export default class StreamingJSONParser extends JSONParser {
       }
       if (typeof name !== 'undefined') {
         this.parser.onkey(name);
+      }
+    };
+
+    this.parser.oncloseobject = () => {
+      this._closeContainer();
+      if (this.parser.depth === this.topLevelArrayDepth + 1) {
+        this.topLevelArrayPositions.push(this.parser.position);
       }
     };
   }
