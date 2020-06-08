@@ -36,12 +36,13 @@ export {toArrayBuffer} from './javascript-utils/binary-utils';
 // ITERATOR UTILS
 export {makeStreamIterator} from './iterator-utils/stream-iteration';
 
+export {forEach} from './iterator-utils/async-iteration';
 export {
-  forEach,
-  lineAsyncIterator,
-  textDecoderAsyncIterator,
-  numberedLineAsyncIterator
-} from './iterator-utils/async-iteration';
+  makeTextDecoderIterator,
+  makeTextEncoderIterator,
+  makeLineIterator,
+  makeNumberedLineIterator
+} from './iterator-utils/text-iterators';
 
 export {makeChunkIterator, concatenateChunksAsync} from './iterator-utils/chunk-iteration';
 

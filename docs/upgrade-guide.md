@@ -4,12 +4,18 @@
 
 **`@loaders.gl/core`**
 
-- `selectLoader` is no longer experimental. If you were using the experimental export, replace `_selectLoader` with `selectLoader`. Also note that argument order has changed.
-- `parseInBatchesSync` has been removed.
+- `selectLoader` is no longer experimental. If you were using the experimental export, replace `_selectLoader` with `selectLoader`. Also note that argument order has changed and now aligns with `load` and `parse`
+- `parseInBatchesSync` has been removed, as all batched parsing is now performed asynchronously.
 
-Some rarely used iterator utilities have been changed:
-- `makeChunkIterator` and `makeStreamIterator` has been combined into `makeIterator`.
-- `lineAsyncIterator`, `textDecoderAsyncIterator`, `numberedLineAsyncIterator` have been removed to reduce the size of the library. If you were relying on these, just copy the source code for these into your application.
+Some infrequently used iterator utilities have been changed.
+
+| Function | Replacement |
+| --- | --- |
+| `makeChunkIterator` | combined into `makeIterator` |
+| `makeStreamIterator` | combined into `makeIterator` |
+| `textDecoderAsyncIterator` | | `makeTextDecoderIterator` |
+| `lineAsyncIterator` | `makeLineIterator` |
+| `numberedLineAsyncIterator` | `makeNumberedLineIterator` |
 
 **`@loaders.gl/ply`**
 

@@ -3,7 +3,7 @@ import {mergeOptions} from '../loader-utils/merge-options';
 import {getAsyncIteratorFromData} from '../loader-utils/get-data';
 import {getLoaderContext} from '../loader-utils/get-loader-context';
 import {selectLoader} from './select-loader';
-import {textDecoderAsyncIterator} from '../../iterator-utils/async-iteration';
+import {makeTextDecoderIterator} from '../../iterator-utils/async-iteration';
 
 export async function parseInBatches(data, loaders, options, url) {
   // Signature: parseInBatches(data, options, url)
@@ -32,7 +32,7 @@ async function parseWithLoaderInBatches(loader, data, options, context) {
     let inputIterator = await getAsyncIteratorFromData(data);
     // Converts ArrayBuffer chunks to text chunks (leaves text chunks alone)
     if (loader.text) {
-      inputIterator = textDecoderAsyncIterator(inputIterator);
+      inputIterator = makeTextDecoderIterator(inputIterator);
     }
     const outputIterator = loader.parseInBatches(inputIterator, options, context, loader);
     return outputIterator;
