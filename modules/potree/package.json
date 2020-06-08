@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/potree",
-  "version": "2.2.0-alpha.1",
+  "version": "2.2.0-alpha.2",
   "description": "potree loaders for large point clouds.",
   "license": "MIT",
   "publishConfig": {
