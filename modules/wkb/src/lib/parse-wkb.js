@@ -4,24 +4,23 @@ var NUM_DIMENSIONS = {
   0: 2,
   1: 3,
   2: 3,
-  3: 4,
-}
+  3: 4
+};
 
 function parseWKB(buffer) {
-  var view = new DataView(buffer)
+  var view = new DataView(buffer);
   var offset = 0;
 
   // Check endianness of data
-  var littleEndian = view.getUint8(offset) === 1
-  offset++
+  var littleEndian = view.getUint8(offset) === 1;
+  offset++;
 
   // 4-digit code representing dimension and type of geometry
-  var geometryCode = view.getUint32(offset, littleEndian)
-  offset += 4
+  var geometryCode = view.getUint32(offset, littleEndian);
+  offset += 4;
 
   var geometryType = geometryCode % 1000;
   var dimension = NUM_DIMENSIONS[(geometryCode - geometryType) / 1000];
-
 
   switch (geometryType) {
     case 1:
@@ -46,8 +45,9 @@ function parseWKB(buffer) {
       parseGeometryCollection();
       break;
     default:
-      console.error(`Unsupported geometry type: ${geometryType}`)
+      console.error(`Unsupported geometry type: ${geometryType}`);
   }
+}
 
 function parsePolygon(view, offset, dimension, littleEndian) {
   var nRings = view.getUint32(offset, littleEndian);
@@ -64,27 +64,28 @@ function parsePolygon(view, offset, dimension, littleEndian) {
   var primitivePolygonIndex = 0;
   for (var i = 0; i < polygonCoords.length; i++) {
     primitivePolygonIndex += polygonCoords[i].length;
-    primitivePolygonIndices.push(primitivePolygonIndex)
+    primitivePolygonIndices.push(primitivePolygonIndex);
   }
 
-  return {positions: {value: positions, size: dimension}, primitivePolygonIndices: {value: primitivePolygonIndices, size: 1}}
+  return {
+    positions: {value: positions, size: dimension},
+    primitivePolygonIndices: {value: primitivePolygonIndices, size: 1}
+  };
 }
 
-
 function parseLinearRing(view, offset, dimension, littleEndian) {
-  var nPoints = view.getUint32(offset, littleEndian)
+  var nPoints = view.getUint32(offset, littleEndian);
   offset += 4;
 
   // Instantiate array
   var coords = new Float64Array(nPoints * dimension);
   for (var i = 0; i < nPoints * dimension; i++) {
-    coords[i] = view.getFloat64(offset, littleEndian)
+    coords[i] = view.getFloat64(offset, littleEndian);
     offset += 8;
   }
 
   return {coords, offset};
 }
-
 
 // TODO: remove copy; import from typed-array-utils
 // modules/math/src/geometry/typed-arrays/typed-array-utils.js
