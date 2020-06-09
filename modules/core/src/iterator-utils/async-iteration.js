@@ -1,4 +1,3 @@
-/* global TextDecoder, TextEncoder */
 import {concatenateArrayBuffers} from '../javascript-utils/memory-copy-utils';
 
 // GENERAL UTILITIES

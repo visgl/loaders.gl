@@ -1,4 +1,4 @@
-export function makeTextEncoderIterator(textIterator: AsyncIterator<string>, options?: object): AsyncIterable<ArrayBuffer>;
-export function makeTextDecoderIterator(arrayBufferIterator: AsyncIterator<ArrayBuffer>, options?: object): AsyncIterable<string>;
-export function makeLineIterator(textIteratortextIterator: AsyncIterator<string>): AsyncIterable<string>;
-export function makeNumberedLineIterator(lineIterator: AsyncIterator<string>): AsyncIterable<object>;
+export function makeTextEncoderIterator(textIterator: AsyncIterable<string>, options?: object): AsyncIterable<ArrayBuffer>;
+export function makeTextDecoderIterator(arrayBufferIterator: AsyncIterable<ArrayBuffer>, options?: object): AsyncIterable<string>;
+export function makeLineIterator(textIteratortextIterator: AsyncIterable<string>): AsyncIterable<string>;
+export function makeNumberedLineIterator(lineIterator: AsyncIterable<string>): AsyncIterable<{counter: number; line: string}>;

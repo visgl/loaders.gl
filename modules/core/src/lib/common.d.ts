@@ -35,3 +35,5 @@ export type DataTypeOrPromise =
   string | ArrayBuffer | Response | FileReadableResponse | File | Blob |
   Promise<string> | Promise<ArrayBuffer> | Promise<Response> | Promise<FileReadableResponse> |
   Promise<File> | Promise<Blob>;
+
+export type BatchableDataType = DataType | AsyncIterable<ArrayBuffer> | Promise<AsyncIterable<ArrayBuffer>>;

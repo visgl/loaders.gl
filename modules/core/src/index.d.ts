@@ -36,12 +36,13 @@ export {toArrayBuffer} from './javascript-utils/binary-utils';
 
 // ITERATOR UTILS
 export {forEach, concatenateChunksAsync} from './iterator-utils/async-iteration';
-export {makeIterator} from './iterator-utils/make-iterator';
-export {lineIterator} from './iterator-utils/text-iterators';
-
-  export async function* makeTextEncoderIterator(textIterator, options) {
-  export async function* makeLineIterator(textIterator) {
-  export async function* makeNumberedLineIterator(lineIterator) {
+export {makeIterator} from './iterator-utils/make-iterator/make-iterator';
+export {
+  makeTextEncoderIterator,
+  makeTextDecoderIterator,
+  makeLineIterator,
+  makeNumberedLineIterator
+} from './iterator-utils/text-iterators';
 
 // CORE UTILS SHARED WITH LOADERS (RE-EXPORTED FROM LOADER-UTILS)
 export {isBrowser, isWorker, self, window, global, document} from '@loaders.gl/loader-utils';
@@ -58,7 +59,3 @@ export {default as _fetchProgress} from './lib/progress/fetch-progress';
 
 // FOR TESTING
 export {_unregisterLoaders} from './lib/api/register-loaders';
-
-// DEPRECATED in v2.1
-export {concatenateChunksAsync as contatenateAsyncIterator} from './iterator-utils/iterators/string-iterator';
-export {makeStreamIterator as getStreamIterator} from './iterator-utils/iterators/stream-iterator';

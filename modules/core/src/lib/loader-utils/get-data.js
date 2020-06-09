@@ -8,8 +8,8 @@ import {
   isFileReadable,
   isBuffer
 } from '../../javascript-utils/is-type';
-import {makeStreamIterator} from '../../iterator-utils/stream-iteration';
-import {concatenateChunksAsync} from '../../iterator-utils/chunk-iteration';
+import {makeIterator} from '../../iterator-utils/make-iterator/make-iterator';
+import {concatenateChunksAsync} from '../../iterator-utils/async-iteration';
 import fetchFileReadable from '../fetch/fetch-file.browser';
 import {checkFetchResponseStatus, checkFetchResponseStatusSync} from './check-errors';
 
@@ -89,7 +89,7 @@ export async function getArrayBufferOrStringFromData(data, loader) {
   }
 
   if (isReadableStream(data)) {
-    data = makeStreamIterator(data);
+    data = makeIterator(data);
   }
 
   if (isIterable(data) || isAsyncIterable(data)) {
@@ -109,11 +109,11 @@ export function getAsyncIteratorFromData(data) {
   if (isResponse(data) && data.body) {
     // Note Since this function is not async, we currently can't load error message, just status
     checkFetchResponseStatusSync(data);
-    return makeStreamIterator(data.body);
+    return makeIterator(data.body);
   }
 
   if (isReadableStream(data)) {
-    return makeStreamIterator(data);
+    return makeIterator(data);
   }
 
   if (isAsyncIterable(data)) {

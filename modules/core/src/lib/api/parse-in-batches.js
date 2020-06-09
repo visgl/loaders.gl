@@ -3,7 +3,7 @@ import {mergeOptions} from '../loader-utils/merge-options';
 import {getAsyncIteratorFromData} from '../loader-utils/get-data';
 import {getLoaderContext} from '../loader-utils/get-loader-context';
 import {selectLoader} from './select-loader';
-import {makeTextDecoderIterator} from '../../iterator-utils/async-iteration';
+// import {makeTextDecoderIterator} from '../../iterator-utils/text-iterators';
 
 export async function parseInBatches(data, loaders, options, url) {
   // Signature: parseInBatches(data, options, url)
@@ -28,15 +28,15 @@ export async function parseInBatches(data, loaders, options, url) {
 
 async function parseWithLoaderInBatches(loader, data, options, context) {
   // Create async iterator adapter for data, and concatenate result
-  if (loader.parseInBatches) {
-    let inputIterator = await getAsyncIteratorFromData(data);
-    // Converts ArrayBuffer chunks to text chunks (leaves text chunks alone)
-    if (loader.text) {
-      inputIterator = makeTextDecoderIterator(inputIterator);
-    }
-    const outputIterator = loader.parseInBatches(inputIterator, options, context, loader);
-    return outputIterator;
+  if (!loader.parseInBatches) {
+    throw new Error('loader does not support parseInBatches');
   }
 
-  throw new Error('parseWithLoaderInBatchesSync not available');
+  const inputIterator = await getAsyncIteratorFromData(data);
+  // Converts ArrayBuffer chunks to text chunks (leaves text chunks alone)
+  // if (loader.text) {
+  //   inputIterator = makeTextDecoderIterator(inputIterator);
+  // }
+  const outputIterator = loader.parseInBatches(inputIterator, options, context, loader);
+  return outputIterator;
 }

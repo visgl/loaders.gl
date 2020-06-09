@@ -4,4 +4,4 @@
  * @param options
  * @param options.chunkSize
  */
-export function makeArrayBufferIterator(blob: ArrayBuffer, options?: {chunkSize?: number}): AsyncIterable<ArrayBuffer>;
+export function makeArrayBufferIterator(blob: ArrayBuffer, options?: {chunkSize?: number}): Iterable<ArrayBuffer>;

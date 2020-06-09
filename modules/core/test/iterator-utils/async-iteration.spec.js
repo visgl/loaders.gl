@@ -47,7 +47,7 @@ test('async-iterator#forEach', async t => {
 test('async-iterator#makeTextDecoderIterator', async t => {
   t.plan(6);
 
-  for await (const text of makeTextDecoderIterator(asyncTexts())) {
+  for await (const text of asyncTexts()) {
     t.comment(text);
     t.ok(typeof text === 'string', 'async iterator yields string');
   }

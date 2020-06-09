@@ -9,13 +9,15 @@
 
 Some infrequently used iterator utilities have been changed.
 
-| Function | Replacement |
-| --- | --- |
-| `makeChunkIterator` | combined into `makeIterator` |
-| `makeStreamIterator` | combined into `makeIterator` |
-| `textDecoderAsyncIterator` | | `makeTextDecoderIterator` |
-| `lineAsyncIterator` | `makeLineIterator` |
-| `numberedLineAsyncIterator` | `makeNumberedLineIterator` |
+| Function                    | Replacement / Status              |
+| --------------------------- | --------------------------------- |
+| `makeChunkIterator`         | combined into `makeIterator`      |
+| `makeStreamIterator`        | combined into `makeIterator`      |
+| `textDecoderAsyncIterator`  |                                   | `makeTextDecoderIterator` |
+| `lineAsyncIterator`         | `makeLineIterator`                |
+| `numberedLineAsyncIterator` | `makeNumberedLineIterator`        |
+| `getStreamIterator`         | Deprecated in 2.1, removed in 2.2 |
+| `contatenateAsyncIterator`  | Deprecated in 2.1, removed in 2.2 |
 
 **`@loaders.gl/ply`**
 

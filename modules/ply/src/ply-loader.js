@@ -5,6 +5,7 @@
 // __VERSION__ is injected by babel-plugin-version-inline
 /* global __VERSION__ */
 import parsePLY from './lib/parse-ply';
+import parsePLYInBatches from './lib/parse-ply-in-batches';
 
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
@@ -32,5 +33,5 @@ export const PLYLoader = {
   parse: async (arrayBuffer, options) => parsePLY(arrayBuffer, options), // TODO - this may not detect text correctly?
   parseTextSync: parsePLY,
   parseSync: parsePLY,
-  parseInBatches: parsePLYInBatches,
+  parseInBatches: parsePLYInBatches
 };

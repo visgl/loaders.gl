@@ -1,5 +1,9 @@
-// Returns an iterator that breaks a big string into chunks and yields them one-by-one
-function* makeStringIterator(string, options = {}) {
+/* global TextEncoder */
+
+/**
+ * Returns an iterator that breaks a big string into chunks and yields them one-by-one
+ */
+export function* makeStringIterator(string, options = {}) {
   const {chunkSize = 256 * 1024} = options;
 
   let offset = 0;
@@ -10,7 +14,7 @@ function* makeStringIterator(string, options = {}) {
     const chunk = string.slice(offset, offset + chunkLength);
     offset += chunkLength;
 
-    // yield the chunk
+    // yield an ArrayBuffer chunk
     yield textEncoder.encode(chunk);
   }
 }

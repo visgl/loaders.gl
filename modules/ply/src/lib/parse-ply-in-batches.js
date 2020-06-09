@@ -21,13 +21,13 @@
 //   }
 // });
 
-import {lineAsyncIterator, textDecoderAsyncIterator, forEach} from '@loaders.gl/core';
+import {makeLineIterator, makeTextDecoderIterator, forEach} from '@loaders.gl/core';
 import normalizePLY from './normalize-ply';
 
 // PARSER
 
 export default async function* parsePLYInBatches(iterator, options = {}) {
-  const lineIterator = lineAsyncIterator(textDecoderAsyncIterator(iterator));
+  const lineIterator = makeLineIterator(makeTextDecoderIterator(iterator));
   const header = await parseHeader(lineIterator, options);
 
   let attributes;
