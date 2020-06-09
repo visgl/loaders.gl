@@ -1,5 +1,11 @@
 /* eslint-disable */
 
+var NUM_DIMENSIONS = {
+  0: 2,
+  1: 3,
+  2: 3,
+  3: 4,
+}
 
 function parseWKB(buffer) {
   var view = new DataView(buffer)
@@ -14,7 +20,8 @@ function parseWKB(buffer) {
   offset += 4
 
   var geometryType = geometryCode % 1000;
-  var dimension = (geometryCode - geometryType) / 1000
+  var dimension = NUM_DIMENSIONS[(geometryCode - geometryType) / 1000];
+
 
   switch (geometryType) {
     case 1:
@@ -24,7 +31,7 @@ function parseWKB(buffer) {
       parseLineString();
       break;
     case 3:
-      parsePolygon(new DataView(buffer, offset))
+      parsePolygon(view, offset, dimension, littleEndian);
       break;
     case 4:
       parseMultiPoint();
@@ -42,13 +49,30 @@ function parseWKB(buffer) {
       console.error(`Unsupported geometry type: ${geometryType}`)
   }
 
+function parsePolygon(view, offset, dimension, littleEndian) {
+  var nRings = view.getUint32(offset, littleEndian);
+  offset += 4;
 
+  for (var i = 0; i < nRings; i++) {
+    var {coords, offset} = parseLinearRing(view, offset, dimension, littleEndian);
+  }
 
+  // Concatenate rings
 }
 
 
+function parseLinearRing(view, offset, dimension, littleEndian) {
+  var nPoints = view.getUint32(offset, littleEndian)
+  offset += 4;
+
+  // Instantiate array
+  var coords = new Float64Array(nPoints * dimension);
+  for (var i = 0; i < nPoints * dimension; i++) {
+    coords[i] = view.getFloat64(offset, littleEndian)
+    offset += 8;
   }
 
+  return {coords, offset};
 }
 
 
