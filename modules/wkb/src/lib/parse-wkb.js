@@ -53,11 +53,21 @@ function parsePolygon(view, offset, dimension, littleEndian) {
   var nRings = view.getUint32(offset, littleEndian);
   offset += 4;
 
+  var polygonCoords = [];
   for (var i = 0; i < nRings; i++) {
     var {coords, offset} = parseLinearRing(view, offset, dimension, littleEndian);
+    polygonCoords.push(coords);
   }
 
-  // Concatenate rings
+  var positions = new Float64Array(concatTypedArrays(polygonCoords).buffer);
+  var primitivePolygonIndices = [0];
+  var primitivePolygonIndex = 0;
+  for (var i = 0; i < polygonCoords.length; i++) {
+    primitivePolygonIndex += polygonCoords[i].length;
+    primitivePolygonIndices.push(primitivePolygonIndex)
+  }
+
+  return {positions: {value: positions, size: dimension}, primitivePolygonIndices: {value: primitivePolygonIndices, size: 1}}
 }
 
 
@@ -76,5 +86,24 @@ function parseLinearRing(view, offset, dimension, littleEndian) {
 }
 
 
+// TODO: remove copy; import from typed-array-utils
+// modules/math/src/geometry/typed-arrays/typed-array-utils.js
+function concatTypedArrays(arrays) {
+  let byteLength = 0;
+  for (let i = 0; i < arrays.length; ++i) {
+    byteLength += arrays[i].byteLength;
+  }
+  const buffer = new Uint8Array(byteLength);
+
+  let byteOffset = 0;
+  for (let i = 0; i < arrays.length; ++i) {
+    const data = new Uint8Array(arrays[i].buffer);
+    byteLength = data.length;
+    for (let j = 0; j < byteLength; ++j) {
+      buffer[byteOffset++] = data[j];
+    }
+  }
+  return buffer;
+}
 
 
