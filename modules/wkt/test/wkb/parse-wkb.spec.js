@@ -3,7 +3,7 @@ import parseWKB from '@loaders.gl/wkt/lib/parse-wkb';
 import {fetchFile} from '@loaders.gl/core';
 import hexStringToArrayBuffer from './hex-string-to-array-buffer';
 
-const WKB_2D_TEST_CASES = '@loaders.gl/wkb/test/data/testdata.json';
+const WKB_2D_TEST_CASES = '@loaders.gl/wkt/test/data/wkb-testdata2d.json';
 
 test('parseWKB2D', async t => {
   const response = await fetchFile(WKB_2D_TEST_CASES);
