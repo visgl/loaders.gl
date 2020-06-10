@@ -93,11 +93,17 @@ function parsePolygon(view, offset, dimension, littleEndian) {
     rings.push(positions.value);
   }
 
+  const concatenatedPositions = new Float64Array(concatTypedArrays(rings).buffer);
+  const polygonIndices = new Uint16Array([0, concatenatedPositions.length / dimension]);
   const primitivePolygonIndices = rings.map(l => l.length / dimension).map(cumulativeSum(0));
   primitivePolygonIndices.unshift(0);
 
   return {
-    positions: {value: new Float64Array(concatTypedArrays(rings).buffer), size: dimension},
+    positions: {value: concatenatedPositions, size: dimension},
+    polygonIndices: {
+      value: polygonIndices,
+      size: 1
+    },
     primitivePolygonIndices: {value: new Uint16Array(primitivePolygonIndices), size: 1},
     offset
   };
@@ -126,8 +132,10 @@ function parseMultiPoint(view, offset, dimension, littleEndian) {
     points.push(positions.value);
   }
 
+  const concatenatedPositions = new Float64Array(concatTypedArrays(points).buffer);
+
   return {
-    positions: {value: new Float64Array(concatTypedArrays(points).buffer), size: dimension}
+    positions: {value: concatenatedPositions, size: dimension}
   };
 }
 
@@ -154,11 +162,12 @@ function parseMultiLineString(view, offset, dimension, littleEndian) {
     lines.push(positions.value);
   }
 
+  const concatenatedPositions = new Float64Array(concatTypedArrays(lines).buffer);
   const pathIndices = lines.map(l => l.length / dimension).map(cumulativeSum(0));
   pathIndices.unshift(0);
 
   return {
-    positions: {value: new Float64Array(concatTypedArrays(lines).buffer), size: dimension},
+    positions: {value: concatenatedPositions, size: dimension},
     pathIndices: {value: new Uint16Array(pathIndices), size: 1}
   };
 }
@@ -188,6 +197,7 @@ function parseMultiPolygon(view, offset, dimension, littleEndian) {
     primitivePolygons.push(primitivePolygonIndices.value);
   }
 
+  const concatenatedPositions = new Float64Array(concatTypedArrays(polygons).buffer);
   const polygonIndices = polygons.map(p => p.length / dimension).map(cumulativeSum(0));
   polygonIndices.unshift(0);
 
@@ -195,7 +205,7 @@ function parseMultiPolygon(view, offset, dimension, littleEndian) {
   const primitivePolygonIndices = [0];
 
   return {
-    positions: {value: new Float64Array(concatTypedArrays(polygons).buffer), size: dimension},
+    positions: {value: concatenatedPositions, size: dimension},
     polygonIndices: {value: new Uint16Array(polygonIndices), size: 1},
     primitivePolygonIndices: {value: new Uint16Array(primitivePolygonIndices), size: 1}
   };
