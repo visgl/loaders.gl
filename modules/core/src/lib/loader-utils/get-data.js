@@ -8,10 +8,10 @@ import {
   isFileReadable,
   isBuffer
 } from '../../javascript-utils/is-type';
-import {makeStreamIterator} from '../../iterator-utils/stream-iteration';
-import {concatenateChunksAsync} from '../../iterator-utils/chunk-iteration';
+import {makeIterator} from '../../iterator-utils/make-iterator/make-iterator';
+import {concatenateChunksAsync} from '../../iterator-utils/async-iteration';
 import fetchFileReadable from '../fetch/fetch-file.browser';
-import {checkFetchResponseStatus, checkFetchResponseStatusSync} from './check-errors';
+import {checkFetchResponseStatus} from './check-errors';
 
 const ERR_DATA = 'Cannot convert supplied data type';
 
@@ -89,7 +89,7 @@ export async function getArrayBufferOrStringFromData(data, loader) {
   }
 
   if (isReadableStream(data)) {
-    data = makeStreamIterator(data);
+    data = makeIterator(data);
   }
 
   if (isIterable(data) || isAsyncIterable(data)) {
@@ -100,7 +100,7 @@ export async function getArrayBufferOrStringFromData(data, loader) {
   throw new Error(ERR_DATA);
 }
 
-export function getAsyncIteratorFromData(data) {
+export async function getAsyncIteratorFromData(data) {
   if (isIterator(data)) {
     return data;
   }
@@ -108,12 +108,13 @@ export function getAsyncIteratorFromData(data) {
   // TODO: Our fetchFileReaderObject response does not yet support a body stream
   if (isResponse(data) && data.body) {
     // Note Since this function is not async, we currently can't load error message, just status
-    checkFetchResponseStatusSync(data);
-    return makeStreamIterator(data.body);
+    await checkFetchResponseStatus(data);
+    // TODO - bug in polyfill, body can be a Promise under Node.js
+    return makeIterator(await data.body);
   }
 
   if (isReadableStream(data)) {
-    return makeStreamIterator(data);
+    return makeIterator(data);
   }
 
   if (isAsyncIterable(data)) {

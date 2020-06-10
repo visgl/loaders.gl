@@ -1,4 +1,4 @@
-import {DataType, LoaderObject} from '../common';
+import {BatchableDataType, LoaderObject} from '../common';
 /**
  * Parses `data` using a specified loader
  * @param data
@@ -6,4 +6,8 @@ import {DataType, LoaderObject} from '../common';
  * @param options
  * @param context
  */
-export function parseInBatches(data: DataType, loaders: LoaderObject | LoaderObject[], options?: object, url?: string): Promise<any>;
+export function parseInBatches(
+  data: BatchableDataType,
+  loaders: LoaderObject | LoaderObject[],
+  options?: object, url?: string
+): Promise<any>;

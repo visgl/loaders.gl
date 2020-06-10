@@ -4,8 +4,24 @@
 
 **`@loaders.gl/core`**
 
-- `selectLoader` is no longer experimental. If you were using the experimental export, replace `_selectLoader` with `selectLoader`. Also note that argument order has changed.
-- `parseInBatchesSync` has been removed.
+- `selectLoader` is no longer experimental. If you were using the experimental export, replace `_selectLoader` with `selectLoader`. Also note that argument order has changed and now aligns with `load` and `parse`
+- `parseInBatchesSync` has been removed, as all batched parsing is now performed asynchronously.
+
+Some infrequently used iterator utilities have been changed.
+
+| Function                    | Replacement / Status              |
+| --------------------------- | --------------------------------- |
+| `makeChunkIterator`         | combined into `makeIterator`      |
+| `makeStreamIterator`        | combined into `makeIterator`      |
+| `textDecoderAsyncIterator`  |                                   | `makeTextDecoderIterator` |
+| `lineAsyncIterator`         | `makeLineIterator`                |
+| `numberedLineAsyncIterator` | `makeNumberedLineIterator`        |
+| `getStreamIterator`         | Deprecated in 2.1, removed in 2.2 |
+| `contatenateAsyncIterator`  | Deprecated in 2.1, removed in 2.2 |
+
+**`@loaders.gl/ply`**
+
+The experimental streaming `_PLYStreamingLoader` has been removed. Use the non-streaming `PLYLoader` instead.
 
 **`@loaders.gl/images`**
 

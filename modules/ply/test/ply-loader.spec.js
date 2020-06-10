@@ -2,9 +2,16 @@
 import test from 'tape-promise/tape';
 import {validateLoader, validateMeshCategoryData} from 'test/common/conformance';
 
-import {PLYLoader, PLYWorkerLoader, _PLYStreamLoader} from '@loaders.gl/ply';
-import {setLoaderOptions, fetchFile, parse, parseSync, load} from '@loaders.gl/core';
-import {makeStreamIterator} from '@loaders.gl/core';
+import {PLYLoader, PLYWorkerLoader} from '@loaders.gl/ply';
+import {
+  setLoaderOptions,
+  fetchFile,
+  load,
+  parse,
+  parseSync,
+  parseInBatches
+} from '@loaders.gl/core';
+import {makeIterator} from '@loaders.gl/core';
 
 const PLY_CUBE_ATT_URL = '@loaders.gl/ply/test/data/cube_att.ply';
 const PLY_BUN_ZIPPER_URL = '@loaders.gl/ply/test/data/bun_zipper.ply';
@@ -76,15 +83,18 @@ test('PLYLoader#parse(WORKER)', async t => {
 });
 
 // TODO - Update to use parseInBatches
-test('PLYLoader#parseStream(text)', async t => {
+test('PLYLoader#parseInBatches(text)', async t => {
   const response = await fetchFile(PLY_CUBE_ATT_URL);
   const stream = await response.body;
 
-  const data = await _PLYStreamLoader.parseStream(makeStreamIterator(stream));
+  const batches = await parseInBatches(makeIterator(stream), PLYLoader);
 
-  validateMeshCategoryData(t, data);
-  t.equal(data.indices.value.length, 36, 'Indices found');
-  t.equal(data.attributes.POSITION.value.length, 72, 'POSITION attribute was found');
-  t.equal(data.attributes.NORMAL.value.length, 72, 'NORMAL attribute was found');
-  t.end();
+  for await (const data of batches) {
+    validateMeshCategoryData(t, data);
+    t.equal(data.indices.value.length, 36, 'Indices found');
+    t.equal(data.attributes.POSITION.value.length, 72, 'POSITION attribute was found');
+    t.equal(data.attributes.NORMAL.value.length, 72, 'NORMAL attribute was found');
+    t.end();
+    return;
+  }
 });
