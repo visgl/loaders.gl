@@ -42,7 +42,8 @@ export default function parseWKB(buffer) {
       return parseMultiPolygon(view, offset, dimension, littleEndian);
       break;
     case 7:
-      return parseGeometryCollection(view, offset, dimension, littleEndian);
+      // TODO: handle GeometryCollections
+      // return parseGeometryCollection(view, offset, dimension, littleEndian);
       break;
     default:
       console.error(`Unsupported geometry type: ${geometryType}`);
@@ -185,6 +186,12 @@ function concatTypedArrays(arrays) {
     }
   }
   return buffer;
+}
+
+function assert(condition, message) {
+  if (!condition) {
+    throw new Error(`parseWKB assertion failed. ${message}`);
+  }
 }
 
 
