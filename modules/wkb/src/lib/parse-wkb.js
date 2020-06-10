@@ -58,21 +58,25 @@ function parsePoint(view, offset, dimension, littleEndian) {
     offset += 8;
   }
 
-  return {positions, offset};
+  return {positions: {value: positions, size: dimension}, offset};
 }
 
-function parseLinearRing(view, offset, dimension, littleEndian) {
+function parseLineString(view, offset, dimension, littleEndian) {
   var nPoints = view.getUint32(offset, littleEndian);
   offset += 4;
 
   // Instantiate array
-  var coords = new Float64Array(nPoints * dimension);
+  var positions = new Float64Array(nPoints * dimension);
   for (var i = 0; i < nPoints * dimension; i++) {
-    coords[i] = view.getFloat64(offset, littleEndian);
+    positions[i] = view.getFloat64(offset, littleEndian);
     offset += 8;
   }
 
-  return {coords, offset};
+  return {
+    positions: {value: positions, size: dimension},
+    pathIndices: {value: new Uint16Array([0, nPoints]), size: 1},
+    offset
+  };
 }
 
 function parsePolygon(view, offset, dimension, littleEndian) {
