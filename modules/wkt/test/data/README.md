@@ -2,3 +2,4 @@
 
 - geometrycollection.geojson From https://github.com/mapbox/wellknown under ISC license
 - geometrycollection.wkt From https://github.com/mapbox/wellknown under ISC license
+- testdata.json From https://github.com/cschwarz/wkx under MIT license
