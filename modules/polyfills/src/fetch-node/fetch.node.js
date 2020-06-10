@@ -1,11 +1,16 @@
 import fs from 'fs'; // `fs` will be empty object in browsers (see package.json "browser" field).
 import Response from './response.node';
 import Headers from './headers.node';
-import {createReadStream} from './create-stream.node';
+import {createReadStream} from './utils/stream-utils.node';
 
 const isDataURL = url => url.startsWith('data:');
 const isRequestURL = url => url.startsWith('http:') || url.startsWith('https:');
 
+/**
+ * Emulation of Browser fetch
+ * @param url
+ * @param options
+ */
 export default async function fetchNode(url, options) {
   try {
     // Need to create the stream in advance since Response constructor needs to be sync

@@ -1,14 +1,23 @@
 /* global TextDecoder */
 import assert from '../utils/assert';
+import {decompressReadStream, concatenateReadStream} from './utils/stream-utils.node';
 
-// Under Node.js we return a mock "fetch response object"
-// so that apps can use the same API as in the browser.
-//
-// Note: This is intended to be a lightweight implementation and will have limitations.
-// Apps that require more complete fech emulation in Node
-// are encouraged to use dedicated fetch polyfill modules.
+const isBoolean = x => typeof x === 'boolean';
+const isFunction = x => typeof x === 'function';
+const isObject = x => x !== null && typeof x === 'object';
+const isReadableNodeStream = x =>
+  isObject(x) && isFunction(x.read) && isFunction(x.pipe) && isBoolean(x.readable);
 
-// See https://developer.mozilla.org/en-US/docs/Web/API/Response
+/**
+ * Polyfill for Browser Response
+ *
+ * Under Node.js we return a mock "fetch response object"
+ * so that apps can use the same API as in the browser.
+ *
+ * Note: This is intended to be a "lightweight" implementation and will have limitations.
+ *
+ * See https://developer.mozilla.org/en-US/docs/Web/API/Response
+ */
 export default class Response {
   // TODO - handle ArrayBuffer, ArrayBufferView, Buffer
   constructor(body, options = {}) {
@@ -18,10 +27,10 @@ export default class Response {
     this._ok = !statusText;
     this._status = status; // TODO - handle errors and set status
     this._statusText = statusText;
-    this.options = options;
-    this.bodyUsed = false;
-    this._body = body;
     this._headers = headers;
+    this.bodyUsed = false;
+
+    this._body = decompressReadStream(body);
   }
 
   // Subset of Properties
@@ -49,6 +58,7 @@ export default class Response {
   // Returns a readable stream to the "body" of the response (or file)
   get body() {
     assert(!this.bodyUsed);
+    assert(isReadableNodeStream(this._body)); // Not implemented: conversion of ArrayBuffer etc to stream
     this.bodyUsed = true;
     return this._body;
   }
@@ -56,7 +66,11 @@ export default class Response {
   // Subset of Methods
 
   async arrayBuffer() {
-    const data = await concatenateChunksAsync(this.body);
+    if (!isReadableNodeStream(this._body)) {
+      return this._body;
+    }
+    // const data = await concatenateChunksAsync(this.body);
+    const data = await concatenateReadStream(this._body);
     return data;
   }
 

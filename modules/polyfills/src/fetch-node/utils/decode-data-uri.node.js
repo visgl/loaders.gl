@@ -1,12 +1,10 @@
 // Based on binary-gltf-utils under MIT license: Copyright (c) 2016-17 Karl Cheng
-// import path from 'path';
-// const fs = module.require && module.require('fs');
 
-// TODO consolidate with core-node
-// TODO - remove dependency on Buffer
+/* global Buffer, TextEncoder */
+import assert from '../../utils/assert';
 
-/* global Buffer */
-import {toArrayBuffer} from './to-array-buffer.node';
+const isArrayBuffer = x => x && x instanceof ArrayBuffer;
+const isBuffer = x => x && x instanceof Buffer;
 
 /**
  * Parses a data URI into a buffer, as well as retrieving its declared MIME type.
@@ -34,4 +32,33 @@ export default function decodeDataUri(uri) {
   }
 
   return {arrayBuffer: toArrayBuffer(buffer), mimeType};
+}
+
+/**
+ * @param data
+ * @todo Duplicate of core
+ */
+export function toArrayBuffer(data) {
+  if (isArrayBuffer(data)) {
+    return data;
+  }
+
+  // TODO - per docs we should just be able to call buffer.buffer, but there are issues
+  if (isBuffer(data)) {
+    const typedArray = new Uint8Array(data);
+    return typedArray.buffer;
+  }
+
+  // Careful - Node Buffers will look like ArrayBuffers (keep after isBuffer)
+  if (ArrayBuffer.isView(data)) {
+    return data.buffer;
+  }
+
+  if (typeof data === 'string') {
+    const text = data;
+    const uint8Array = new TextEncoder().encode(text);
+    return uint8Array.buffer;
+  }
+
+  return assert(false);
 }
