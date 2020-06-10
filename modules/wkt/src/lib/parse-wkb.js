@@ -1,6 +1,5 @@
 /* eslint-disable */
 
-
 const NUM_DIMENSIONS = {
   0: 2, // 2D
   1: 3, // 3D (Z)
@@ -114,7 +113,10 @@ function parseMultiPoint(view, offset, dimension, littleEndian) {
     offset++;
 
     // Assert point type
-    assert(view.getUint32(offset, littleEndianPoint) % 1000 === 1);
+    assert(
+      view.getUint32(offset, littleEndianPoint) % 1000 === 1,
+      'Inner geometries of MultiPoint not of type Point'
+    );
     offset += 4;
 
     var {positions, offset} = parsePoint(view, offset, dimension, littleEndianPoint);
@@ -137,7 +139,10 @@ function parseMultiLineString(view, offset, dimension, littleEndian) {
     offset++;
 
     // Assert type LineString
-    assert(view.getUint32(offset, littleEndianLine) % 1000 === 2);
+    assert(
+      view.getUint32(offset, littleEndianLine) % 1000 === 2,
+      'Inner geometries of MultiLineString not of type LineString'
+    );
     offset += 4;
 
     var {positions, offset} = parseLineString(view, offset, dimension, littleEndianLine);
@@ -165,7 +170,10 @@ function parseMultiPolygon(view, offset, dimension, littleEndian) {
     offset++;
 
     // Assert type Polygon
-    assert(view.getUint32(offset, littleEndianPolygon) % 1000 === 3);
+    assert(
+      view.getUint32(offset, littleEndianPolygon) % 1000 === 3,
+      'Inner geometries of MultiPolygon not of type Polygon'
+    );
     offset += 4;
 
     var {positions, primitivePolygonIndices, offset} = parsePolygon(
@@ -213,8 +221,6 @@ function concatTypedArrays(arrays) {
 
 function assert(condition, message) {
   if (!condition) {
-    throw new Error(`parseWKB assertion failed. ${message}`);
+    throw new Error(`Error parsing Well-Known Binary. ${message}`);
   }
 }
-
-
