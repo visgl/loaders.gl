@@ -7,18 +7,48 @@ const WKB_2D_TEST_CASES = '@loaders.gl/wkt/test/data/wkb-testdata2d.json';
 
 test('parseWKB2D', async t => {
   const response = await fetchFile(WKB_2D_TEST_CASES);
-  const TEST_CASES = await response.json();
+  const TEST_CASES = parseTestCases(await response.json());
 
   // TODO parseWKB outputs TypedArrays; testCase contains regular arrays
   for (const testCase of Object.values(TEST_CASES)) {
     // Little endian
-    const bufferLittleEndian = hexStringToArrayBuffer(testCase.wkb);
-    t.deepEqual(parseWKB(bufferLittleEndian), testCase.binary);
+    t.deepEqual(parseWKB(testCase.wkb), testCase.binary);
 
     // Big endian
-    const bufferBigEndian = hexStringToArrayBuffer(testCase.wkbXdr);
-    t.deepEqual(parseWKB(bufferBigEndian), testCase.binary);
+    t.deepEqual(parseWKB(testCase.wkbXdr), testCase.binary);
   }
 
   t.end();
 });
+
+// Note this mutates input
+function parseTestCases(testCases) {
+  for (const [key, value] of Object.entries(testCases)) {
+    // parse WKB hex into array buffer
+    testCases[key].wkb = hexStringToArrayBuffer(value.wkb);
+    testCases[key].ewkb = hexStringToArrayBuffer(value.ewkb);
+    testCases[key].wkbXdr = hexStringToArrayBuffer(value.wkbXdr);
+    testCases[key].ewkbXdr = hexStringToArrayBuffer(value.ewkbXdr);
+    testCases[key].ewkbNoSrid = hexStringToArrayBuffer(value.ewkbNoSrid);
+    testCases[key].ewkbXdrNoSrid = hexStringToArrayBuffer(value.ewkbXdrNoSrid);
+
+    // Convert binary arrays into typedArray
+    if (value.binary && 'positions' in value.binary) {
+      testCases[key].binary.positions.value = new Float64Array(value.binary.positions.value);
+    }
+    if (value.binary && 'pathIndices' in value.binary) {
+      testCases[key].binary.pathIndices.value = new Float64Array(value.binary.pathIndices.value);
+    }
+    if (value.binary && 'polygonIndices' in value.binary) {
+      testCases[key].binary.polygonIndices.value = new Float64Array(
+        value.binary.polygonIndices.value
+      );
+    }
+    if (value.binary && 'primitivePolygonIndices' in value.binary) {
+      testCases[key].binary.primitivePolygonIndices.value = new Float64Array(
+        value.binary.primitivePolygonIndices.value
+      );
+    }
+  }
+  return testCases;
+}
