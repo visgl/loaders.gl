@@ -49,6 +49,15 @@ export {path};
 export {setPathPrefix, getPathPrefix, resolvePath} from './lib/path-utils/file-aliases';
 export {addAliases as _addAliases} from './lib/path-utils/file-aliases.js';
 
+// ITERATOR UTILS
+export {
+  makeTextEncoderIterator,
+  makeTextDecoderIterator,
+  makeLineIterator,
+  makeNumberedLineIterator
+} from './lib/iterator-utils/text-iterators';
+
+
 // REQUEST UTILS
 export {default as RequestScheduler} from './lib/request-utils/request-scheduler';
 

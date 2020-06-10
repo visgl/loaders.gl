@@ -1,3 +1,4 @@
+/* global TextDecoder */
 import test from 'tape-promise/tape';
 import {fetchFile} from '@loaders.gl/core';
 import {makeIterator, concatenateChunksAsync, makeTextEncoderIterator} from '@loaders.gl/core';

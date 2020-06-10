@@ -7,7 +7,7 @@ import {
   makeTextEncoderIterator,
   makeLineIterator,
   makeNumberedLineIterator
-} from '@loaders.gl/core/iterator-utils/text-iterators';
+} from '@loaders.gl/loader-utils';
 
 /* global setTimeout */
 const setTimeoutPromise = timeout => new Promise(resolve => setTimeout(resolve, timeout));

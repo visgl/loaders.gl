@@ -1,4 +1,3 @@
-/* global Blob, ReadableStream, Response */
 import {makeStringIterator} from './string-iterator';
 import {makeArrayBufferIterator} from './array-buffer-iterator';
 import {makeBlobIterator} from './blob-iterator';
@@ -34,5 +33,5 @@ export function makeIterator(data, options = {}) {
   if (isResponse(data)) {
     return makeStreamIterator(data.body);
   }
-  assert(false);
+  return assert(false);
 }

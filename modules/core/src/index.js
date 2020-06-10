@@ -42,7 +42,7 @@ export {
   makeTextEncoderIterator,
   makeLineIterator,
   makeNumberedLineIterator
-} from './iterator-utils/text-iterators';
+} from '@loaders.gl/loader-utils';
 
 export {concatenateChunksAsync} from './iterator-utils/async-iteration';
 

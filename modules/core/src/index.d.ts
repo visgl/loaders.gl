@@ -42,7 +42,7 @@ export {
   makeTextDecoderIterator,
   makeLineIterator,
   makeNumberedLineIterator
-} from './iterator-utils/text-iterators';
+} from '@loaders.gl/loader-utils';
 
 // CORE UTILS SHARED WITH LOADERS (RE-EXPORTED FROM LOADER-UTILS)
 export {isBrowser, isWorker, self, window, global, document} from '@loaders.gl/loader-utils';
