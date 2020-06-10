@@ -1,5 +1,3 @@
-/* eslint-disable */
-
 const NUM_DIMENSIONS = {
   0: 2, // 2D
   1: 3, // 3D (Z)
@@ -25,26 +23,19 @@ export default function parseWKB(buffer) {
   switch (geometryType) {
     case 1:
       return parsePoint(view, offset, dimension, littleEndian);
-      break;
     case 2:
       return parseLineString(view, offset, dimension, littleEndian);
-      break;
     case 3:
       return parsePolygon(view, offset, dimension, littleEndian);
-      break;
     case 4:
       return parseMultiPoint(view, offset, dimension, littleEndian);
-      break;
     case 5:
       return parseMultiLineString(view, offset, dimension, littleEndian);
-      break;
     case 6:
       return parseMultiPolygon(view, offset, dimension, littleEndian);
-      break;
     case 7:
       // TODO: handle GeometryCollections
       // return parseGeometryCollection(view, offset, dimension, littleEndian);
-      break;
     default:
       console.error(`Unsupported geometry type: ${geometryType}`);
   }
