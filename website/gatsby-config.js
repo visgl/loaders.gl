@@ -23,7 +23,7 @@ module.exports = {
         PROJECT_TYPE: 'github',
 
         PROJECT_NAME: 'loaders.gl',
-        PROJECT_ORG: 'uber-web',
+        PROJECT_ORG: 'visgl',
         PROJECT_ORG_LOGO: 'images/uber-logo.png',
         PROJECT_URL: 'https://github.com/visgl/loaders.gl',
         PROJECT_DESC: 'Loaders for Big Data Visualization',
@@ -39,16 +39,16 @@ module.exports = {
 
         PROJECTS: [
           {
+            name: 'vis.gl',
+            url: 'https://vis.gl'
+          },
+          {
             name: 'deck.gl',
             url: 'https://deck.gl'
           },
           {
             name: 'luma.gl',
             url: 'https://luma.gl'
-          },
-          {
-            name: 'react-map-gl',
-            url: 'https://uber.github.io/react-map-gl'
           },
           {
             name: 'nebula.gl',
@@ -72,7 +72,7 @@ module.exports = {
           {
             title: 'Point Cloud Loaders',
             image: 'images/example-pointcloud.jpg',
-            componentUrl: resolve(__dirname, '../examples/deck.gl/pointcloud/app.js'),
+            componentUrl: resolve(__dirname, '../examples/website/pointcloud/app.js'),
             path: 'examples/pointcloud'
           },
           {
@@ -82,15 +82,15 @@ module.exports = {
             path: 'examples/gltf'
           },
           {
-            title: '3D Tiles (Melbourne etc)',
+            title: '3D Tiles (Melbourne)',
             image: 'images/example-3d-tiles.png',
-            componentUrl: resolve(__dirname, '../examples/deck.gl/3d-tiles/app.js'),
+            componentUrl: resolve(__dirname, '../examples/website/3d-tiles/app.js'),
             path: 'examples/3d-tiles'
           },
           {
             title: 'I3S (San Francisco)',
             image: 'images/example-i3s.jpg',
-            componentUrl: resolve(__dirname, '../examples/deck.gl/i3s/app.js'),
+            componentUrl: resolve(__dirname, '../examples/website/i3s/app.js'),
             path: 'examples/i3s'
           },
           {

@@ -1,13 +1,13 @@
 // https://jakearchibald.com/2017/async-iterators-and-generators/
 import test from 'tape-promise/tape';
 
+import {forEach} from '@loaders.gl/core/iterator-utils/async-iteration';
 import {
-  forEach,
-  lineAsyncIterator,
-  textDecoderAsyncIterator,
-  textEncoderAsyncIterator,
-  numberedLineAsyncIterator
-} from '@loaders.gl/core/iterator-utils/async-iteration';
+  makeTextDecoderIterator,
+  makeTextEncoderIterator,
+  makeLineIterator,
+  makeNumberedLineIterator
+} from '@loaders.gl/loader-utils';
 
 /* global setTimeout */
 const setTimeoutPromise = timeout => new Promise(resolve => setTimeout(resolve, timeout));
@@ -31,7 +31,7 @@ async function* asyncTexts() {
 }
 
 function asyncArrayBuffers() {
-  return textEncoderAsyncIterator(asyncTexts());
+  return makeTextEncoderIterator(asyncTexts());
 }
 
 test('async-iterator#forEach', async t => {
@@ -44,35 +44,35 @@ test('async-iterator#forEach', async t => {
   });
 });
 
-test('async-iterator#textDecoderAsyncIterator', async t => {
+test('async-iterator#makeTextDecoderIterator', async t => {
   t.plan(6);
 
-  for await (const text of textDecoderAsyncIterator(asyncTexts())) {
+  for await (const text of asyncTexts()) {
     t.comment(text);
     t.ok(typeof text === 'string', 'async iterator yields string');
   }
 
-  for await (const text of textDecoderAsyncIterator(asyncArrayBuffers())) {
+  for await (const text of makeTextDecoderIterator(asyncArrayBuffers())) {
     t.comment(text);
     t.ok(typeof text === 'string', 'async iterator yields string');
   }
 });
 
-test('async-iterator#lineAsyncIterator', async t => {
+test('async-iterator#makeLineIterator', async t => {
   t.plan(4);
 
   let iterations = 0;
-  for await (const text of lineAsyncIterator(asyncTexts())) {
+  for await (const text of makeLineIterator(asyncTexts())) {
     iterations++;
     t.is(text.trim(), `line ${iterations}`, 'yields single line');
   }
 });
 
-test('async-iterator#numberedLineAsyncIterator', async t => {
+test('async-iterator#makeNumberedLineIterator', async t => {
   t.plan(8);
 
   let iterations = 0;
-  for await (const result of numberedLineAsyncIterator(lineAsyncIterator(asyncTexts()))) {
+  for await (const result of makeNumberedLineIterator(makeLineIterator(asyncTexts()))) {
     iterations++;
     t.is(result.line.trim(), `line ${iterations}`, 'line text');
     t.is(result.counter, iterations, 'line counter');

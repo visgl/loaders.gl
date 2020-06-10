@@ -21,13 +21,13 @@
 //   }
 // });
 
-import {lineAsyncIterator, textDecoderAsyncIterator, forEach} from '@loaders.gl/core';
+import {makeLineIterator, makeTextDecoderIterator, forEach} from '@loaders.gl/core';
 import normalizePLY from './normalize-ply';
 
 // PARSER
 
-export default async function parsePLYStream(iterator, options = {}) {
-  const lineIterator = lineAsyncIterator(textDecoderAsyncIterator(iterator));
+export default async function* parsePLYInBatches(iterator, options = {}) {
+  const lineIterator = makeLineIterator(makeTextDecoderIterator(iterator));
   const header = await parseHeader(lineIterator, options);
 
   let attributes;
@@ -40,7 +40,7 @@ export default async function parsePLYStream(iterator, options = {}) {
     // attributes = await parseBinary(lineIterator, header);
   }
 
-  return normalizePLY(header, attributes, options);
+  yield normalizePLY(header, attributes, options);
 }
 
 async function parseHeader(lineIterator, options) {

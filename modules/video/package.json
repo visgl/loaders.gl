@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/video",
-  "version": "2.2.0-alpha.1",
+  "version": "2.2.0-alpha.2",
   "description": "Framework-independent loaders and writers for video (MP4, WEBM, ...)",
   "license": "MIT",
   "publishConfig": {

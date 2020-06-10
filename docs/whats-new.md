@@ -16,7 +16,7 @@ The `ImageLoader` now loads images as `Imagebitmap` by default on browsers that 
 
 **@loaders.gl/i3s**
 
-Addresses a number of compatibility issues with different tilesets that have been reported by users. See the git log or issues for details.
+Addresses a number of compatibility issues with different I3S tilesets that have been reported by users.
 
 **@loaders.gl/terrain**
 
@@ -37,6 +37,14 @@ Experimental `GeoJSONLoader` (exported with an underscore as `_GeoJSONLoader`), 
 **@loaders.gl/arrow**
 
 Updated to use `apache-arrow` version `0.17.0`.
+
+**@loaders.gl/3d-tiles**
+
+The `Tile3DLoader` now installs the `DracoLoader`. The application no longer needs to import and register the `DracoWorkerLoader`.
+
+**@loaders.gl/gltf**
+
+The `GLTFLoader` now installs the `DracoLoader`. The application no longer needs to import and register the `DracoWorkerLoader`.
 
 ## v2.1
 

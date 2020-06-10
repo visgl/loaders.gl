@@ -1,9 +1,12 @@
+import {makeTextDecoderIterator} from '@loaders.gl/loader-utils';
 import {TableBatchBuilder} from '@loaders.gl/tables';
 import StreamingJSONParser from './parser/streaming-json-parser';
 
 // TODO - support batch size 0 = no batching/single batch?
 // eslint-disable-next-line max-statements
 export default async function* parseJSONInBatches(asyncIterator, options) {
+  asyncIterator = makeTextDecoderIterator(asyncIterator);
+
   const {batchSize, _rootObjectBatches} = options.json;
   const TableBatchType = options.json.TableBatch;
 
