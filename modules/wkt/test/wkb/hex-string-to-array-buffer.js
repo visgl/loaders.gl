@@ -4,7 +4,7 @@
  * @param {string} hexString - hex representation of bytes
  * @return {ArrayBuffer} - The bytes in an ArrayBuffer.
  */
-export function hexStringToArrayBuffer(hexString) {
+export default function hexStringToArrayBuffer(hexString) {
   // remove the leading 0x
   hexString = hexString.replace(/^0x/, '');
 
