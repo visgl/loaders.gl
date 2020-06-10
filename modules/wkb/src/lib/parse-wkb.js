@@ -1,6 +1,7 @@
 /* eslint-disable */
 
-var NUM_DIMENSIONS = {
+
+const NUM_DIMENSIONS = {
   0: 2, // 2D
   1: 3, // 3D (Z)
   2: 3, // 3D (M)
@@ -8,19 +9,19 @@ var NUM_DIMENSIONS = {
 };
 
 export default function parseWKB(buffer) {
-  var view = new DataView(buffer);
-  var offset = 0;
+  const view = new DataView(buffer);
+  let offset = 0;
 
   // Check endianness of data
-  var littleEndian = view.getUint8(offset) === 1;
+  const littleEndian = view.getUint8(offset) === 1;
   offset++;
 
   // 4-digit code representing dimension and type of geometry
-  var geometryCode = view.getUint32(offset, littleEndian);
+  const geometryCode = view.getUint32(offset, littleEndian);
   offset += 4;
 
-  var geometryType = geometryCode % 1000;
-  var dimension = NUM_DIMENSIONS[(geometryCode - geometryType) / 1000];
+  const geometryType = geometryCode % 1000;
+  const dimension = NUM_DIMENSIONS[(geometryCode - geometryType) / 1000];
 
   switch (geometryType) {
     case 1:
@@ -52,8 +53,8 @@ export default function parseWKB(buffer) {
 
 // Primitives; parse point and linear ring
 function parsePoint(view, offset, dimension, littleEndian) {
-  var positions = new Float64Array(dimension);
-  for (var i = 0; i < dimension; i++) {
+  const positions = new Float64Array(dimension);
+  for (let i = 0; i < dimension; i++) {
     positions[i] = view.getFloat64(offset, littleEndian);
     offset += 8;
   }
@@ -62,12 +63,12 @@ function parsePoint(view, offset, dimension, littleEndian) {
 }
 
 function parseLineString(view, offset, dimension, littleEndian) {
-  var nPoints = view.getUint32(offset, littleEndian);
+  const nPoints = view.getUint32(offset, littleEndian);
   offset += 4;
 
   // Instantiate array
-  var positions = new Float64Array(nPoints * dimension);
-  for (var i = 0; i < nPoints * dimension; i++) {
+  const positions = new Float64Array(nPoints * dimension);
+  for (let i = 0; i < nPoints * dimension; i++) {
     positions[i] = view.getFloat64(offset, littleEndian);
     offset += 8;
   }
@@ -80,19 +81,19 @@ function parseLineString(view, offset, dimension, littleEndian) {
 }
 
 // https://stackoverflow.com/a/55261098
-var cumulativeSum = sum => value => (sum += value);
+const cumulativeSum = sum => value => (sum += value);
 
 function parsePolygon(view, offset, dimension, littleEndian) {
-  var nRings = view.getUint32(offset, littleEndian);
+  const nRings = view.getUint32(offset, littleEndian);
   offset += 4;
 
-  var rings = [];
-  for (var i = 0; i < nRings; i++) {
+  const rings = [];
+  for (let i = 0; i < nRings; i++) {
     var {positions, offset} = parseLineString(view, offset, dimension, littleEndian);
     rings.push(positions.value);
   }
 
-  var primitivePolygonIndices = rings.map(l => l.length / dimension).map(cumulativeSum(0));
+  const primitivePolygonIndices = rings.map(l => l.length / dimension).map(cumulativeSum(0));
   primitivePolygonIndices.unshift(0);
 
   return {
@@ -103,13 +104,13 @@ function parsePolygon(view, offset, dimension, littleEndian) {
 }
 
 function parseMultiPoint(view, offset, dimension, littleEndian) {
-  var nPoints = view.getUint32(offset, littleEndian);
+  const nPoints = view.getUint32(offset, littleEndian);
   offset += 4;
 
-  var points = [];
-  for (var i = 0; i < nPoints; i++) {
+  const points = [];
+  for (let i = 0; i < nPoints; i++) {
     // Byte order for point
-    var littleEndianPoint = view.getUint8(offset) === 1;
+    const littleEndianPoint = view.getUint8(offset) === 1;
     offset++;
 
     // Assert point type
@@ -126,13 +127,13 @@ function parseMultiPoint(view, offset, dimension, littleEndian) {
 }
 
 function parseMultiLineString(view, offset, dimension, littleEndian) {
-  var nLines = view.getUint32(offset, littleEndian);
+  const nLines = view.getUint32(offset, littleEndian);
   offset += 4;
 
-  var lines = [];
-  for (var i = 0; i < nLines; i++) {
+  const lines = [];
+  for (let i = 0; i < nLines; i++) {
     // Byte order for line
-    var littleEndianLine = view.getUint8(offset) === 1;
+    const littleEndianLine = view.getUint8(offset) === 1;
     offset++;
 
     // Assert type LineString
@@ -143,7 +144,7 @@ function parseMultiLineString(view, offset, dimension, littleEndian) {
     lines.push(positions.value);
   }
 
-  var pathIndices = lines.map(l => l.length / dimension).map(cumulativeSum(0));
+  const pathIndices = lines.map(l => l.length / dimension).map(cumulativeSum(0));
   pathIndices.unshift(0);
 
   return {
@@ -153,14 +154,14 @@ function parseMultiLineString(view, offset, dimension, littleEndian) {
 }
 
 function parseMultiPolygon(view, offset, dimension, littleEndian) {
-  var nPolygons = view.getUint32(offset, littleEndian);
+  const nPolygons = view.getUint32(offset, littleEndian);
   offset += 4;
 
-  var polygons = [];
-  var primitivePolygons = [];
-  for (var i = 0; i < nPolygons; i++) {
+  const polygons = [];
+  const primitivePolygons = [];
+  for (let i = 0; i < nPolygons; i++) {
     // Byte order for polygon
-    var littleEndianPolygon = view.getUint8(offset) === 1;
+    const littleEndianPolygon = view.getUint8(offset) === 1;
     offset++;
 
     // Assert type Polygon
@@ -177,11 +178,11 @@ function parseMultiPolygon(view, offset, dimension, littleEndian) {
     primitivePolygons.push(primitivePolygonIndices.value);
   }
 
-  var polygonIndices = polygons.map(p => p.length / dimension).map(cumulativeSum(0));
+  const polygonIndices = polygons.map(p => p.length / dimension).map(cumulativeSum(0));
   polygonIndices.unshift(0);
 
   // Todo fix calculation of primitivePolygonIndices
-  var primitivePolygonIndices = [0];
+  const primitivePolygonIndices = [0];
 
   return {
     positions: {value: new Float64Array(concatTypedArrays(polygons).buffer), size: dimension},
