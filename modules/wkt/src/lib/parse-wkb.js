@@ -22,11 +22,17 @@ export default function parseWKB(buffer) {
 
   switch (geometryType) {
     case 1:
-      return parsePoint(view, offset, dimension, littleEndian);
+      const point = parsePoint(view, offset, dimension, littleEndian);
+      delete point.offset;
+      return point;
     case 2:
-      return parseLineString(view, offset, dimension, littleEndian);
+      const line = parseLineString(view, offset, dimension, littleEndian);
+      delete line.offset;
+      return line;
     case 3:
-      return parsePolygon(view, offset, dimension, littleEndian);
+      const polygon = parsePolygon(view, offset, dimension, littleEndian);
+      delete polygon.offset;
+      return polygon;
     case 4:
       return parseMultiPoint(view, offset, dimension, littleEndian);
     case 5:
