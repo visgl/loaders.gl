@@ -98,6 +98,46 @@ function parsePolygon(view, offset, dimension, littleEndian) {
   };
 }
 
+function parseMultiPoint(view, offset, dimension, littleEndian) {
+  var nPoints = view.getUint32(offset, littleEndian);
+  var points = [];
+  for (var i = 0; i < nPoints; i++) {
+    var {positions, offset} = parsePoint(view, offset, dimension, littleEndian);
+    points.push(positions);
+  }
+
+  return {
+    positions: {value: new Float64Array(concatTypedArrays(points).buffer), size: dimension}
+  };
+}
+
+function parseMultiLineString(view, offset, dimension, littleEndian) {
+  var nLines = view.getUint32(offset, littleEndian);
+  var lines = [];
+  for (var i = 0; i < nLines; i++) {
+    var {positions, offset} = parseLineString(view, offset, dimension, littleEndian);
+    lines.push(positions);
+  }
+
+  return {
+    positions: {value: new Float64Array(concatTypedArrays(lines).buffer), size: dimension}
+  };
+}
+
+function parseMultiPolygon(view, offset, dimension, littleEndian) {
+  var nPolygons = view.getUint32(offset, littleEndian);
+
+  var polygons = [];
+  for (var i = 0; i < nPolygons; i++) {
+    var {positions, offset} = parsePolygon(view, offset, dimension, littleEndian);
+    polygons.push(positions);
+  }
+
+  return {
+    positions: {value: new Float64Array(concatTypedArrays(polygons).buffer), size: dimension}
+  };
+}
+
 // TODO: remove copy; import from typed-array-utils
 // modules/math/src/geometry/typed-arrays/typed-array-utils.js
 function concatTypedArrays(arrays) {
