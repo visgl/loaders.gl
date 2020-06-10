@@ -30,28 +30,7 @@ export async function readFile(url, options = {}) {
 
   if (isRequestURL(url)) {
     return new Promise((resolve, reject) => {
-      const urlObject = new URL(url);
-      let requestOptions = Object.assign(
-        {},
-        {
-          hostname: urlObject.hostname,
-          path: urlObject.pathname,
-          method: 'GET'
-        },
-        // Add options and user provided 'options.fetch' overrides if available
-        options,
-        options.fetch,
-        // Inject accepted encodings:
-        {
-          headers: {'Accept-Encoding': 'gzip,br,deflate'}
-        }
-      );
-      // And allow any overrides if needed by user
-      if (options.headers) {
-        requestOptions = Object.assign(requestOptions, {
-          headers: options.headers
-        });
-      }
+      const requestOptions = getRequestOptions(url, options);
       const request = url.startsWith('https:') ? https.request : http.request;
       request(requestOptions, response =>
         concatenateReadStream(response).then(resolve, reject)
@@ -84,13 +63,13 @@ export async function createReadStream(url, options) {
   // HANDLE HTTP/HTTPS REQUESTS IN NODE
   // TODO: THIS IS BAD SINCE WE RETURN A PROMISE INSTEAD OF A STREAM
   return await new Promise((resolve, reject) => {
-    options = {...new URL(url), ...options};
+    const requestOptions = getRequestOptions(url, options);
 
     let req;
     if (url.startsWith('https:')) {
-      req = https.request(url, res => resolve(res));
+      req = https.request(requestOptions, res => resolve(res));
     } else {
-      req = http.request(url, res => resolve(res));
+      req = http.request(requestOptions, res => resolve(res));
     }
     req.on('error', error => reject(error));
     req.end();
@@ -107,4 +86,22 @@ function getReadFileOptions(options = {}) {
     options.encoding = options.encoding || (options.dataType === 'text' ? 'utf8' : null);
   }
   return options;
+}
+
+function getRequestOptions(url, options = {}) {
+  // Add accept-encoding to headers
+  const headers = options.headers || {};
+  headers['accept-encoding'] = headers['accept-encoding'] || 'gzip,br,deflate';
+
+  const urlObject = new URL(url);
+  return {
+    hostname: urlObject.hostname,
+    path: urlObject.pathname,
+    method: 'GET',
+    // Add options and user provided 'options.fetch' overrides if available
+    ...options,
+    ...(options.fetch || {}),
+    // Override with updated headers with accepted encodings:
+    headers
+  };
 }

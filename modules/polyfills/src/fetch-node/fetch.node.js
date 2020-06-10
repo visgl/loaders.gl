@@ -7,19 +7,28 @@ const isDataURL = url => url.startsWith('data:');
 const isRequestURL = url => url.startsWith('http:') || url.startsWith('https:');
 
 export default async function fetchNode(url, options) {
-  // Need to create the stream in advance since response.object needs to be ssync
   try {
+    // Need to create the stream in advance since Response constructor needs to be sync
     const httpResponseOrStream = await createReadStream(url, options);
     const body = httpResponseOrStream;
     const headers = getHeaders(url, httpResponseOrStream);
-    return new Response(url, options, body, headers);
+    const {status, statusText} = getStatus(httpResponseOrStream);
+    return new Response(body, {headers, status, statusText, url});
   } catch (error) {
-    return new Response(url, options, null, null, error);
+    // TODO - what error code to use here?
+    return new Response(null, {status: 400, statusText: error, url});
   }
 }
 
 // HELPER FUNCTIONS
 // PRIVATE
+
+function getStatus(httpResponse) {
+  if (httpResponse.statusCode) {
+    return {status: httpResponse.statusCode, statusText: httpResponse.statusMessage || 'NA'};
+  }
+  return {status: 200, statusText: 'OK'};
+}
 
 function getHeaders(url, httpResponse) {
   // Under Node.js we return a mock "fetch response object"

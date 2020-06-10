@@ -1,28 +1,25 @@
 const zlib = require('zlib');
 
+export function decompressReadStream(readStream) {
+  switch (readStream.headers['content-encoding']) {
+    case 'br':
+      return readStream.pipe(zlib.createBrotliDecompress());
+    case 'gzip':
+      return readStream.pipe(zlib.createGunzip());
+    case 'deflate':
+      return readStream.pipe(zlib.createDeflate());
+    default:
+      // No compression or an unknown one, just return it as is
+      return readStream;
+  }
+}
+
 export function concatenateReadStream(readStream) {
   let arrayBuffer = new ArrayBuffer(0);
   let string = '';
 
   return new Promise((resolve, reject) => {
-    let wrappedStream;
-    switch (readStream.headers['content-encoding']) {
-      case 'br':
-        wrappedStream = readStream.pipe(zlib.createBrotliDecompress());
-        break;
-      case 'gzip':
-        wrappedStream = readStream.pipe(zlib.createGunzip());
-        break;
-      case 'deflate':
-        wrappedStream = readStream.pipe(zlib.createDeflate());
-        break;
-      default:
-        // No compression or an unknown one, just pipe it as is
-        wrappedStream = readStream;
-        break;
-    }
-
-    wrappedStream.on('data', chunk => {
+    readStream.on('data', chunk => {
       if (typeof chunk === 'string') {
         string += chunk;
       } else {
@@ -30,9 +27,9 @@ export function concatenateReadStream(readStream) {
       }
     });
 
-    wrappedStream.on('error', error => reject(error));
+    readStream.on('error', error => reject(error));
 
-    wrappedStream.on('end', () => {
+    readStream.on('end', () => {
       if (readStream.complete) {
         resolve(arrayBuffer || string);
       } else {

@@ -1,5 +1,5 @@
 /* global TextDecoder */
-import {assert} from '@loaders.gl/core';
+import assert from '../utils/assert';
 
 // Under Node.js we return a mock "fetch response object"
 // so that apps can use the same API as in the browser.
@@ -10,10 +10,13 @@ import {assert} from '@loaders.gl/core';
 
 // See https://developer.mozilla.org/en-US/docs/Web/API/Response
 export default class Response {
-  constructor(url, options, body, headers, statusText, status) {
+  // TODO - handle ArrayBuffer, ArrayBufferView, Buffer
+  constructor(body, options = {}) {
+    const {headers, status = 200, statusText, url} = options;
+
     this._url = url;
-    this._ok = !Boolean(statusText);
-    this._status = this._ok ? 200 : status || 400; // TODO - handle errors and set status
+    this._ok = !statusText;
+    this._status = status; // TODO - handle errors and set status
     this._statusText = statusText;
     this.options = options;
     this.bodyUsed = false;
@@ -67,29 +70,4 @@ export default class Response {
     const text = await this.text();
     return JSON.parse(text);
   }
-}
-
-// HELPER FUNCTIONS
-
-/**
- * Concatenates all data chunks yielded by an (async) iterator
- * Supports strings and ArrayBuffers
- *
- * This function can e.g. be used to enable atomic parsers to work on (async) iterator inputs
- */
-async function concatenateChunksAsync(asyncIterator) {
-  let arrayBuffer = new ArrayBuffer(0);
-  for await (const chunk of asyncIterator) {
-    arrayBuffer = concatenateArrayBuffers(arrayBuffer, chunk);
-  }
-  return arrayBuffer;
-}
-
-function concatenateArrayBuffers(source1, source2) {
-  const sourceArray1 = source1 instanceof ArrayBuffer ? new Uint8Array(source1) : source1;
-  const sourceArray2 = source2 instanceof ArrayBuffer ? new Uint8Array(source2) : source2;
-  const temp = new Uint8Array(sourceArray1.byteLength + sourceArray2.byteLength);
-  temp.set(sourceArray1, 0);
-  temp.set(sourceArray2, sourceArray1.byteLength);
-  return temp;
 }
