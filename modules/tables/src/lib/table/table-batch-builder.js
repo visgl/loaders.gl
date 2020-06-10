@@ -7,6 +7,7 @@ export default class TableBatchBuilder {
     this.batchSize = batchSize;
     this.batch = null;
     this.batchCount = 0;
+    this.bytesRead = 0;
   }
 
   addRow(row) {
@@ -18,7 +19,8 @@ export default class TableBatchBuilder {
     this.batch.addRow(row);
   }
 
-  chunkComplete() {
+  chunkComplete(chunk) {
+    this.bytesRead += chunk.byteLength || chunk.length || 0;
     if (this.batch) {
       this.batch.chunkComplete();
     }
@@ -38,6 +40,7 @@ export default class TableBatchBuilder {
       this.batch = null;
       normalizedBatch.count = this.batchCount;
       this.batchCount++;
+      normalizedBatch.bytesRead = this.bytesRead;
       return normalizedBatch;
     }
     return null;

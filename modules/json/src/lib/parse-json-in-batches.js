@@ -43,7 +43,7 @@ export default async function* parseJSONInBatches(asyncIterator, options) {
       }
     }
 
-    tableBatchBuilder.chunkComplete();
+    tableBatchBuilder.chunkComplete(chunk);
     if (tableBatchBuilder.isFull()) {
       yield tableBatchBuilder.getNormalizedBatch();
     }

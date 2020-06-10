@@ -18,13 +18,16 @@ test('JSONLoader#loadInBatches(geojson.json, rows, batchSize = auto)', async t =
   let batch;
   let batchCount = 0;
   let rowCount = 0;
+  let byteLength = 0;
   for await (batch of iterator) {
     batchCount++;
     rowCount += batch.length;
+    byteLength = batch.bytesRead;
   }
 
   t.ok(batchCount <= 3, 'Correct number of batches received');
   t.equal(rowCount, 308, 'Correct number of row received');
+  t.equal(byteLength, 135910, 'Correct number of bytes received');
   t.end();
 });
 
