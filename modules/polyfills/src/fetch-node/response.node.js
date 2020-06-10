@@ -1,6 +1,7 @@
 /* global TextDecoder */
 import assert from '../utils/assert';
 import {decompressReadStream, concatenateReadStream} from './utils/stream-utils.node';
+import Headers from './headers.node';
 
 const isBoolean = x => typeof x === 'boolean';
 const isFunction = x => typeof x === 'function';
@@ -24,13 +25,14 @@ export default class Response {
     const {headers, status = 200, statusText, url} = options;
 
     this._url = url;
-    this._ok = !statusText;
+    this._ok = status === 200;
     this._status = status; // TODO - handle errors and set status
     this._statusText = statusText;
-    this._headers = headers;
+    this._headers = new Headers(headers);
     this.bodyUsed = false;
 
-    this._body = decompressReadStream(body);
+    debugger
+    this._body = isReadableNodeStream(body) ? decompressReadStream(body, headers) : body;
   }
 
   // Subset of Properties
@@ -69,12 +71,12 @@ export default class Response {
     if (!isReadableNodeStream(this._body)) {
       return this._body;
     }
-    // const data = await concatenateChunksAsync(this.body);
     const data = await concatenateReadStream(this._body);
     return data;
   }
 
   async text() {
+    debugger
     const arrayBuffer = await this.arrayBuffer();
     const textDecoder = new TextDecoder();
     return textDecoder.decode(arrayBuffer);

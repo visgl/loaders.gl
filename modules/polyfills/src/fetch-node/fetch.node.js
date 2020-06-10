@@ -71,6 +71,14 @@ function getContentLength(url) {
   }
   // File URL
   // TODO - how to handle non-existing file, this presumably just throws
-  const stats = fs.statSync(url);
-  return stats.size;
+  try {
+    // strip query params from URL
+    const noqueryUrl = url.split('?')[0];
+    const stats = fs.statSync(noqueryUrl);
+    return stats.size;
+  } catch (error) {
+    // ignore for now
+  }
+
+  return null;
 }

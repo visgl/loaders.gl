@@ -4,7 +4,8 @@ import http from 'http';
 import https from 'https';
 import zlib from 'zlib';
 
-import decodeDataUri from './decode-data-uri.node';
+import decodeDataUri, {toArrayBuffer} from './decode-data-uri.node';
+import assert from '../../utils/assert';
 
 const DEFAULT_OPTIONS = {
   dataType: 'arraybuffer'
@@ -23,8 +24,8 @@ export async function createReadStream(url, options) {
 
   // Handle file streams in node
   if (!isRequestURL(url)) {
-    const readFileOptions = getReadFileOptions(options);
-    return fs.createReadStream(url, readFileOptions);
+    // const readFileOptions = getReadFileOptions(options);
+    return fs.createReadStream(url, {encoding: null});
   }
 
   // HANDLE HTTP/HTTPS REQUESTS IN NODE
@@ -39,8 +40,9 @@ export async function createReadStream(url, options) {
   });
 }
 
-export function decompressReadStream(readStream) {
-  switch (readStream.headers['content-encoding']) {
+export function decompressReadStream(readStream, headers) {
+  debugger
+  switch (headers.get('content-encoding')) {
     case 'br':
       return readStream.pipe(zlib.createBrotliDecompress());
     case 'gzip':
@@ -55,25 +57,25 @@ export function decompressReadStream(readStream) {
 
 export function concatenateReadStream(readStream) {
   let arrayBuffer = new ArrayBuffer(0);
-  let string = '';
 
   return new Promise((resolve, reject) => {
     readStream.on('data', chunk => {
       if (typeof chunk === 'string') {
-        string += chunk;
-      } else {
-        arrayBuffer = concatenateArrayBuffers(arrayBuffer, chunk);
+        reject(new Error('Read stream not binary'));
       }
+      const chunkAsArrayBuffer = toArrayBuffer(chunk);
+      arrayBuffer = concatenateArrayBuffers(arrayBuffer, chunkAsArrayBuffer);
     });
 
     readStream.on('error', error => reject(error));
 
     readStream.on('end', () => {
-      if (readStream.complete) {
-        resolve(arrayBuffer || string);
-      } else {
-        reject('The connection was terminated while the message was still being sent');
-      }
+      // TODO verify if this code is still required
+      // if (readStream.complete) {
+      resolve(arrayBuffer);
+      // } else {
+      //   reject('The connection was terminated while the message was still being sent');
+      // }
     });
   });
 }
