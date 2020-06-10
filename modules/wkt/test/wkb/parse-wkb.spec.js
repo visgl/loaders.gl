@@ -12,10 +12,14 @@ test('parseWKB2D', async t => {
   // TODO parseWKB outputs TypedArrays; testCase contains regular arrays
   for (const testCase of Object.values(TEST_CASES)) {
     // Little endian
-    t.deepEqual(parseWKB(testCase.wkb), testCase.binary);
+    if (testCase.wkb && testCase.binary) {
+      t.deepEqual(parseWKB(testCase.wkb), testCase.binary);
+    }
 
     // Big endian
-    t.deepEqual(parseWKB(testCase.wkbXdr), testCase.binary);
+    if (testCase.wkbXdr && testCase.binary) {
+      t.deepEqual(parseWKB(testCase.wkbXdr), testCase.binary);
+    }
   }
 
   t.end();
