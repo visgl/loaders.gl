@@ -24,25 +24,25 @@ export default function parseWKB(buffer) {
 
   switch (geometryType) {
     case 1:
-      parsePoint(view, offset, dimension, littleEndian);
+      return parsePoint(view, offset, dimension, littleEndian);
       break;
     case 2:
-      parseLineString(view, offset, dimension, littleEndian);
+      return parseLineString(view, offset, dimension, littleEndian);
       break;
     case 3:
-      parsePolygon(view, offset, dimension, littleEndian);
+      return parsePolygon(view, offset, dimension, littleEndian);
       break;
     case 4:
-      parseMultiPoint(view, offset, dimension, littleEndian);
+      return parseMultiPoint(view, offset, dimension, littleEndian);
       break;
     case 5:
-      parseMultiLineString(view, offset, dimension, littleEndian);
+      return parseMultiLineString(view, offset, dimension, littleEndian);
       break;
     case 6:
-      parseMultiPolygon(view, offset, dimension, littleEndian);
+      return parseMultiPolygon(view, offset, dimension, littleEndian);
       break;
     case 7:
-      parseGeometryCollection(view, offset, dimension, littleEndian);
+      return parseGeometryCollection(view, offset, dimension, littleEndian);
       break;
     default:
       console.error(`Unsupported geometry type: ${geometryType}`);
@@ -100,9 +100,19 @@ function parsePolygon(view, offset, dimension, littleEndian) {
 
 function parseMultiPoint(view, offset, dimension, littleEndian) {
   var nPoints = view.getUint32(offset, littleEndian);
+  offset += 4;
+
   var points = [];
   for (var i = 0; i < nPoints; i++) {
-    var {positions, offset} = parsePoint(view, offset, dimension, littleEndian);
+    // Byte order for point
+    var littleEndianPoint = view.getUint8(offset) === 1;
+    offset++;
+
+    // Assert point type
+    assert(view.getUint32(offset, littleEndianPoint) % 1000 === 1);
+    offset += 4;
+
+    var {positions, offset} = parsePoint(view, offset, dimension, littleEndianPoint);
     points.push(positions);
   }
 
@@ -113,9 +123,19 @@ function parseMultiPoint(view, offset, dimension, littleEndian) {
 
 function parseMultiLineString(view, offset, dimension, littleEndian) {
   var nLines = view.getUint32(offset, littleEndian);
+  offset += 4;
+
   var lines = [];
   for (var i = 0; i < nLines; i++) {
-    var {positions, offset} = parseLineString(view, offset, dimension, littleEndian);
+    // Byte order for line
+    var littleEndianLine = view.getUint8(offset) === 1;
+    offset++;
+
+    // Assert type LineString
+    assert(view.getUint32(offset, littleEndianLine) % 1000 === 2);
+    offset += 4;
+
+    var {positions, offset} = parseLineString(view, offset, dimension, littleEndianLine);
     lines.push(positions);
   }
 
@@ -126,10 +146,19 @@ function parseMultiLineString(view, offset, dimension, littleEndian) {
 
 function parseMultiPolygon(view, offset, dimension, littleEndian) {
   var nPolygons = view.getUint32(offset, littleEndian);
+  offset += 4;
 
   var polygons = [];
   for (var i = 0; i < nPolygons; i++) {
-    var {positions, offset} = parsePolygon(view, offset, dimension, littleEndian);
+    // Byte order for polygon
+    var littleEndianPolygon = view.getUint8(offset) === 1;
+    offset++;
+
+    // Assert type Polygon
+    assert(view.getUint32(offset, littleEndianPolygon) % 1000 === 3);
+    offset += 4;
+
+    var {positions, offset} = parsePolygon(view, offset, dimension, littleEndianPolygon);
     polygons.push(positions);
   }
 
