@@ -39,12 +39,14 @@ export default function parseWKB(buffer) {
       return parseMultiLineString(view, offset, dimension, littleEndian);
     case 6:
       return parseMultiPolygon(view, offset, dimension, littleEndian);
-    case 7:
-      // TODO: handle GeometryCollections
-      // return parseGeometryCollection(view, offset, dimension, littleEndian);
+    // case 7:
+    // TODO: handle GeometryCollections
+    // return parseGeometryCollection(view, offset, dimension, littleEndian);
     default:
-      console.error(`Unsupported geometry type: ${geometryType}`);
+      assert(false, `Unsupported geometry type: ${geometryType}`);
   }
+
+  return null;
 }
 
 // Primitives; parse point and linear ring
@@ -85,7 +87,9 @@ function parsePolygon(view, offset, dimension, littleEndian) {
 
   const rings = [];
   for (let i = 0; i < nRings; i++) {
-    var {positions, offset} = parseLineString(view, offset, dimension, littleEndian);
+    const parsed = parseLineString(view, offset, dimension, littleEndian);
+    const {positions} = parsed;
+    offset = parsed.offset;
     rings.push(positions.value);
   }
 
@@ -116,7 +120,9 @@ function parseMultiPoint(view, offset, dimension, littleEndian) {
     );
     offset += 4;
 
-    var {positions, offset} = parsePoint(view, offset, dimension, littleEndianPoint);
+    const parsed = parsePoint(view, offset, dimension, littleEndianPoint);
+    const {positions} = parsed;
+    offset = parsed.offset;
     points.push(positions.value);
   }
 
@@ -142,7 +148,9 @@ function parseMultiLineString(view, offset, dimension, littleEndian) {
     );
     offset += 4;
 
-    var {positions, offset} = parseLineString(view, offset, dimension, littleEndianLine);
+    const parsed = parseLineString(view, offset, dimension, littleEndianLine);
+    const {positions} = parsed;
+    offset = parsed.offset;
     lines.push(positions.value);
   }
 
@@ -173,12 +181,9 @@ function parseMultiPolygon(view, offset, dimension, littleEndian) {
     );
     offset += 4;
 
-    var {positions, primitivePolygonIndices, offset} = parsePolygon(
-      view,
-      offset,
-      dimension,
-      littleEndianPolygon
-    );
+    const parsed = parsePolygon(view, offset, dimension, littleEndianPolygon);
+    const {positions, primitivePolygonIndices} = parsed;
+    offset = parsed.offset;
     polygons.push(positions.value);
     primitivePolygons.push(primitivePolygonIndices.value);
   }
