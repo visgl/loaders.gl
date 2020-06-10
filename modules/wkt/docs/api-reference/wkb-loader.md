@@ -21,18 +21,18 @@ Loader for the [Well-known binary][wkb] format for representation of geometry.
 ## Usage
 
 ```js
-import {WKBLoader} from '@loaders.gl/wkb';
+import {WKBLoader} from '@loaders.gl/wkt';
 import {parseSync} from '@loaders.gl/core';
 
-const data = parseSync('LINESTRING (30 10, 10 30, 40 40)', WKTLoader);
+const data = parseSync('LINESTRING (30 10, 10 30, 40 40)', WKBLoader);
 // => {type: 'LineString', coordinates: [[30, 10], [10, 30], [40, 40]]}
 ```
 
 ```js
-import {WKTLoader} from '@loaders.gl/wkt';
+import {WKBLoader} from '@loaders.gl/wkt';
 import {load} from '@loaders.gl/core';
 
-const data = await load(url, WKTLoader);
+const data = await load(url, WKBLoader);
 ```
 
 ## Options
