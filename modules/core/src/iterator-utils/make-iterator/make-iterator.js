@@ -2,8 +2,9 @@
 import {makeStringIterator} from './string-iterator';
 import {makeArrayBufferIterator} from './array-buffer-iterator';
 import {makeBlobIterator} from './blob-iterator';
-import {makeStreamIterator} from './stream-iterator';
 import {assert} from '@loaders.gl/loader-utils';
+import {makeStreamIterator} from './stream-iterator';
+import {isBlob, isReadableStream, isResponse} from '../../javascript-utils/is-type';
 
 /**
  * Returns an iterator that breaks its input into chunks and yields them one-by-one.
@@ -24,13 +25,13 @@ export function makeIterator(data, options = {}) {
   if (data instanceof ArrayBuffer) {
     return makeArrayBufferIterator(data, options);
   }
-  if (data instanceof Blob) {
+  if (isBlob(data)) {
     return makeBlobIterator(data, options);
   }
-  if (data instanceof ReadableStream) {
+  if (isReadableStream(data)) {
     return makeStreamIterator(data);
   }
-  if (data instanceof Response) {
+  if (isResponse(data)) {
     return makeStreamIterator(data.body);
   }
   assert(false);

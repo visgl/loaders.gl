@@ -10,7 +10,9 @@ test('StreamingJSONParser#geojson', async t => {
 
   // Can return text stream by setting `{encoding: 'utf8'}`, but only works on Node
   const response = await fetchFile(GEOJSON_PATH, {highWaterMark: 16384});
-  for await (const chunk of makeIterator(response.body)) {
+  // TODO - https requests under Node return a Promise
+  const body = await response.body;
+  for await (const chunk of makeIterator(body)) {
     const string = new TextDecoder().decode(chunk);
     parser.write(string);
   }
