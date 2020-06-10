@@ -79,27 +79,26 @@ function parseLineString(view, offset, dimension, littleEndian) {
   };
 }
 
+// https://stackoverflow.com/a/55261098
+var cumulativeSum = sum => value => (sum += value);
+
 function parsePolygon(view, offset, dimension, littleEndian) {
   var nRings = view.getUint32(offset, littleEndian);
   offset += 4;
 
-  var polygonCoords = [];
+  var rings = [];
   for (var i = 0; i < nRings; i++) {
-    var {coords, offset} = parseLinearRing(view, offset, dimension, littleEndian);
-    polygonCoords.push(coords);
+    var {positions, offset} = parseLineString(view, offset, dimension, littleEndian);
+    rings.push(positions.value);
   }
 
-  var positions = new Float64Array(concatTypedArrays(polygonCoords).buffer);
-  var primitivePolygonIndices = [0];
-  var primitivePolygonIndex = 0;
-  for (var i = 0; i < polygonCoords.length; i++) {
-    primitivePolygonIndex += polygonCoords[i].length;
-    primitivePolygonIndices.push(primitivePolygonIndex);
-  }
+  var primitivePolygonIndices = rings.map(l => l.length / dimension).map(cumulativeSum(0));
+  primitivePolygonIndices.unshift(0);
 
   return {
-    positions: {value: positions, size: dimension},
-    primitivePolygonIndices: {value: primitivePolygonIndices, size: 1}
+    positions: {value: new Float64Array(concatTypedArrays(rings).buffer), size: dimension},
+    primitivePolygonIndices: {value: new Uint16Array(primitivePolygonIndices), size: 1},
+    offset
   };
 }
 
@@ -118,7 +117,7 @@ function parseMultiPoint(view, offset, dimension, littleEndian) {
     offset += 4;
 
     var {positions, offset} = parsePoint(view, offset, dimension, littleEndianPoint);
-    points.push(positions);
+    points.push(positions.value);
   }
 
   return {
@@ -141,11 +140,15 @@ function parseMultiLineString(view, offset, dimension, littleEndian) {
     offset += 4;
 
     var {positions, offset} = parseLineString(view, offset, dimension, littleEndianLine);
-    lines.push(positions);
+    lines.push(positions.value);
   }
 
+  var pathIndices = lines.map(l => l.length / dimension).map(cumulativeSum(0));
+  pathIndices.unshift(0);
+
   return {
-    positions: {value: new Float64Array(concatTypedArrays(lines).buffer), size: dimension}
+    positions: {value: new Float64Array(concatTypedArrays(lines).buffer), size: dimension},
+    pathIndices: {value: new Uint16Array(pathIndices), size: 1}
   };
 }
 
@@ -154,6 +157,7 @@ function parseMultiPolygon(view, offset, dimension, littleEndian) {
   offset += 4;
 
   var polygons = [];
+  var primitivePolygons = [];
   for (var i = 0; i < nPolygons; i++) {
     // Byte order for polygon
     var littleEndianPolygon = view.getUint8(offset) === 1;
@@ -163,12 +167,26 @@ function parseMultiPolygon(view, offset, dimension, littleEndian) {
     assert(view.getUint32(offset, littleEndianPolygon) % 1000 === 3);
     offset += 4;
 
-    var {positions, offset} = parsePolygon(view, offset, dimension, littleEndianPolygon);
-    polygons.push(positions);
+    var {positions, primitivePolygonIndices, offset} = parsePolygon(
+      view,
+      offset,
+      dimension,
+      littleEndianPolygon
+    );
+    polygons.push(positions.value);
+    primitivePolygons.push(primitivePolygonIndices.value);
   }
 
+  var polygonIndices = polygons.map(p => p.length / dimension).map(cumulativeSum(0));
+  polygonIndices.unshift(0);
+
+  // Todo fix calculation of primitivePolygonIndices
+  var primitivePolygonIndices = [0];
+
   return {
-    positions: {value: new Float64Array(concatTypedArrays(polygons).buffer), size: dimension}
+    positions: {value: new Float64Array(concatTypedArrays(polygons).buffer), size: dimension},
+    polygonIndices: {value: new Uint16Array(polygonIndices), size: 1},
+    primitivePolygonIndices: {value: new Uint16Array(primitivePolygonIndices), size: 1}
   };
 }
 
