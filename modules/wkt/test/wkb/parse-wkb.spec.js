@@ -41,15 +41,15 @@ function parseTestCases(testCases) {
       testCases[key].binary.positions.value = new Float64Array(value.binary.positions.value);
     }
     if (value.binary && 'pathIndices' in value.binary) {
-      testCases[key].binary.pathIndices.value = new Float64Array(value.binary.pathIndices.value);
+      testCases[key].binary.pathIndices.value = new Uint16Array(value.binary.pathIndices.value);
     }
     if (value.binary && 'polygonIndices' in value.binary) {
-      testCases[key].binary.polygonIndices.value = new Float64Array(
+      testCases[key].binary.polygonIndices.value = new Uint16Array(
         value.binary.polygonIndices.value
       );
     }
     if (value.binary && 'primitivePolygonIndices' in value.binary) {
-      testCases[key].binary.primitivePolygonIndices.value = new Float64Array(
+      testCases[key].binary.primitivePolygonIndices.value = new Uint16Array(
         value.binary.primitivePolygonIndices.value
       );
     }
