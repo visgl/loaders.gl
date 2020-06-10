@@ -7,7 +7,7 @@ var NUM_DIMENSIONS = {
   3: 4 // 4D (ZM)
 };
 
-function parseWKB(buffer) {
+export default function parseWKB(buffer) {
   var view = new DataView(buffer);
   var offset = 0;
 
