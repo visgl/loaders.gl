@@ -1,20 +1,22 @@
 # WKBLoader
 
 <p class="badges">
-  <img src="https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square" alt="From-v2.3" />
+  <img src="https://img.shields.io/badge/From-v2.2-blue.svg?style=flat-square" alt="From-v2.2" />
 </p>
 
-Loader for the [Well-known binary] format for representation of geometry.
+Loader for the [Well-known binary][wkb] format for representation of geometry.
 
-| Loader                | Characteristic                                                                                               |
-| --------------------- | ------------------------------------------------------------------------------------------------------------ |
-| File Extension        | `.wkb`,                                                                                                      |
-| File Type             | Text                                                                                                         |
-| File Format           | [Well Known Text](https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry)                  |
-| Data Format           | [Geometry](/docs/specifications/category-gis)                                                                |
-| Supported APIs        | `load`, `parse`, `parseSync`                                                                                 |
-| Decoder Type          | Synchronous                                                                                                  |
-| Worker Thread Support | Yes [![Website shields.io](https://img.shields.io/badge/v2.2-blue.svg?style=flat-square)](http://shields.io) |
+[wkb]: https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry#Well-known_binary
+
+| Loader                | Characteristic                                |
+| --------------------- | --------------------------------------------- |
+| File Extension        | `.wkb`,                                       |
+| File Type             | Binary                                        |
+| File Format           | [Well Known Binary][wkb]                      |
+| Data Format           | [Geometry](/docs/specifications/category-gis) |
+| Supported APIs        | `load`, `parse`, `parseSync`                  |
+| Decoder Type          | Synchronous                                   |
+| Worker Thread Support | Yes                                           |
 
 ## Usage
 
