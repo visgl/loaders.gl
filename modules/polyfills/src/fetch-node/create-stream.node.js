@@ -82,11 +82,18 @@ export async function createReadStream(url, options) {
   }
 
   // HANDLE HTTP/HTTPS REQUESTS IN NODE
-  return new Promise((resolve, reject) => {
-    /* TODO - URL not available in Node.js v8? */
+  // TODO: THIS IS BAD SINCE WE RETURN A PROMISE INSTEAD OF A STREAM
+  return await new Promise((resolve, reject) => {
     options = {...new URL(url), ...options};
-    const request = url.startsWith('https:') ? https.request : http.request;
-    request(url, response => resolve(response));
+
+    let req;
+    if (url.startsWith('https:')) {
+      req = https.request(url, res => resolve(res));
+    } else {
+      req = http.request(url, res => resolve(res));
+    }
+    req.on('error', error => reject(error));
+    req.end();
   });
 }
 

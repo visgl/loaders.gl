@@ -11,7 +11,7 @@ test('fetch polyfill (Node.js)#fetch()', async t => {
   if (!isBrowser) {
     const response = await fetch(PLY_CUBE_ATT_URL);
     t.ok(response.headers, 'fetch polyfill successfully returned headers under Node.js');
-    const data = await response.text();
+    const data = await response.arrayBuffer();
     t.ok(data, 'fetch polyfill successfully loaded data under Node.js');
   }
   t.end();

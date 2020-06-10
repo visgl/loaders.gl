@@ -1,10 +1,5 @@
 /* global TextDecoder */
-import fs from 'fs'; // `fs` will be empty object in browsers (see package.json "browser" field).
-import Headers from './headers.node';
-import {readFile, createReadStream} from './read-file.node';
-
-const isDataURL = url => url.startsWith('data:');
-const isRequestURL = url => url.startsWith('http:') || url.startsWith('https:');
+import {assert} from '@loaders.gl/core';
 
 // Under Node.js we return a mock "fetch response object"
 // so that apps can use the same API as in the browser.
@@ -14,17 +9,16 @@ const isRequestURL = url => url.startsWith('http:') || url.startsWith('https:');
 // are encouraged to use dedicated fetch polyfill modules.
 
 // See https://developer.mozilla.org/en-US/docs/Web/API/Response
-export default class NodeFetchResponse {
-  constructor(url, options) {
+export default class Response {
+  constructor(url, options, body, headers, statusText, status) {
     this._url = url;
-    this._ok = true; // TODO - handle errors and set ok/status
-    this._status = 200;
+    this._ok = !Boolean(statusText);
+    this._status = this._ok ? 200 : status || 400; // TODO - handle errors and set status
+    this._statusText = statusText;
     this.options = options;
     this.bodyUsed = false;
-    this._headers = null;
-
-    // TODO - is this used?
-    this.httpResponse = null;
+    this._body = body;
+    this._headers = headers;
   }
 
   // Subset of Properties
@@ -37,27 +31,29 @@ export default class NodeFetchResponse {
     return this._status;
   }
 
+  get statusText() {
+    return this._statusText;
+  }
+
   get url() {
     return this._url;
   }
 
   get headers() {
-    this._headers = this._headers || this._getHeaders();
     return this._headers;
   }
 
   // Returns a readable stream to the "body" of the response (or file)
   get body() {
-    const {url, options} = this;
+    assert(!this.bodyUsed);
     this.bodyUsed = true;
-    return createReadStream(url, options);
+    return this._body;
   }
 
   // Subset of Methods
 
   async arrayBuffer() {
-    this.bodyUsed = true;
-    const data = await readFile(this.url, this.options);
+    const data = await concatenateChunksAsync(this.body);
     return data;
   }
 
@@ -71,46 +67,29 @@ export default class NodeFetchResponse {
     const text = await this.text();
     return JSON.parse(text);
   }
+}
 
-  // PRIVATE
+// HELPER FUNCTIONS
 
-  _getHeaders() {
-    // Under Node.js we return a mock "fetch response object"
-    // so that apps can use the same API as in the browser.
-    //
-    // Note: This is intended to be a lightweight implementation and will have limitations.
-    // Apps that require more complete fech emulation in Node
-    // are encouraged to use dedicated fetch polyfill modules.
-
-    const headers = {};
-
-    if (this.httpResponse) {
-      const httpHeaders = this.httpResponse.getHeaders();
-      for (const name in httpHeaders) {
-        const header = headers[name];
-        headers[name] = String(header);
-      }
-    } else {
-      const contentLength = this._getContentLength();
-      if (Number.isFinite(contentLength)) {
-        headers['Content-Length'] = contentLength;
-      }
-    }
-
-    return new Headers(headers);
+/**
+ * Concatenates all data chunks yielded by an (async) iterator
+ * Supports strings and ArrayBuffers
+ *
+ * This function can e.g. be used to enable atomic parsers to work on (async) iterator inputs
+ */
+async function concatenateChunksAsync(asyncIterator) {
+  let arrayBuffer = new ArrayBuffer(0);
+  for await (const chunk of asyncIterator) {
+    arrayBuffer = concatenateArrayBuffers(arrayBuffer, chunk);
   }
+  return arrayBuffer;
+}
 
-  _getContentLength() {
-    if (isRequestURL(this.url)) {
-      // Needs to be read from actual headers
-      return null;
-    } else if (isDataURL(this.url)) {
-      // TODO - remove media type etc
-      return this.url.length - 'data:'.length;
-    }
-    // File URL
-    // TODO - how to handle non-existing file, this presumably just throws
-    const stats = fs.statSync(this.url);
-    return stats.size;
-  }
+function concatenateArrayBuffers(source1, source2) {
+  const sourceArray1 = source1 instanceof ArrayBuffer ? new Uint8Array(source1) : source1;
+  const sourceArray2 = source2 instanceof ArrayBuffer ? new Uint8Array(source2) : source2;
+  const temp = new Uint8Array(sourceArray1.byteLength + sourceArray2.byteLength);
+  temp.set(sourceArray1, 0);
+  temp.set(sourceArray2, sourceArray1.byteLength);
+  return temp;
 }
