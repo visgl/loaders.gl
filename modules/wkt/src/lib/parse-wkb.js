@@ -71,9 +71,14 @@ function parseLineString(view, offset, dimension, littleEndian) {
     offset += 8;
   }
 
+  const pathIndices = [0];
+  if (nPoints > 0) {
+    pathIndices.push(nPoints);
+  }
+
   return {
     positions: {value: positions, size: dimension},
-    pathIndices: {value: new Uint16Array([0, nPoints]), size: 1},
+    pathIndices: {value: new Uint16Array(pathIndices), size: 1},
     offset
   };
 }
