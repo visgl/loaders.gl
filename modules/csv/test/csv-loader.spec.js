@@ -173,7 +173,7 @@ test('CSVLoader#loadInBatches(sample.csv, rows)', async t => {
   t.end();
 });
 
-test.only('CSVLoader#loadInBatches(sample-very-long.csv, rows)', async t => {
+test('CSVLoader#loadInBatches(sample-very-long.csv, rows)', async t => {
   const batchSize = 25;
   const iterator = await loadInBatches(CSV_SAMPLE_VERY_LONG_URL, CSVLoader, {
     csv: {batchSize, rowFormat: 'object'}
