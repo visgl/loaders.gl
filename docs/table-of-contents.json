@@ -79,6 +79,7 @@
         {"entry": "modules/terrain/docs/api-reference/quantized-mesh-loader"},
         {"entry": "modules/terrain/docs/api-reference/terrain-loader"},
         {"entry": "modules/video/docs/api-reference/video-loader"},
+        {"entry": "modules/wkt/docs/api-reference/wkb-loader"},
         {"entry": "modules/wkt/docs/api-reference/wkt-loader"},
         {"entry": "modules/wkt/docs/api-reference/wkt-writer"},
         {"entry": "modules/zip/docs/api-reference/zip-loader"},
