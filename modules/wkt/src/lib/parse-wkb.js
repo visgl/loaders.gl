@@ -201,8 +201,15 @@ function parseMultiPolygon(view, offset, dimension, littleEndian) {
   const polygonIndices = polygons.map(p => p.length / dimension).map(cumulativeSum(0));
   polygonIndices.unshift(0);
 
-  // Todo fix calculation of primitivePolygonIndices
+  // Combine primitivePolygonIndices from each individual polygon
   const primitivePolygonIndices = [0];
+  for (const primitivePolygon of primitivePolygons) {
+    primitivePolygonIndices.push(
+      ...primitivePolygon
+        .filter(x => x > 0)
+        .map(x => x + primitivePolygonIndices[primitivePolygonIndices.length - 1])
+    );
+  }
 
   return {
     positions: {value: concatenatedPositions, size: dimension},
