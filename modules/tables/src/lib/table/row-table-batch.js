@@ -1,10 +1,20 @@
+const DEFAULT_OPTIONS = {
+  batchSize: 'auto',
+  convertToObject: true
+};
+
 export default class RowTableBatch {
-  constructor(schema, batchSize) {
+  constructor(schema, options = {}) {
+    options = {...DEFAULT_OPTIONS, ...options};
+
     this.schema = schema;
-    this.batchSize = batchSize;
+    this.batchSize = options.batchSize;
+    this.convertToObject = options.convertToObject;
+
     this.rows = null;
     this.length = 0;
     this.isChunkComplete = false;
+    this.cursor = 0;
 
     // schema is an array if there're no headers
     // object if there are headers
@@ -16,12 +26,16 @@ export default class RowTableBatch {
     }
   }
 
-  addRow(row) {
+  addRow(row, cursor = null) {
     if (!this.rows) {
       this.rows = new Array(this.batchSize);
       this.length = 0;
     }
-    this.rows[this.length] = convertRowToObject(row, this._headers);
+    if (Number.isFinite(cursor)) {
+      this.cursor = cursor;
+    }
+
+    this.rows[this.length] = this.convertToObject ? convertRowToObject(row, this._headers) : row;
     this.length++;
   }
 
@@ -36,12 +50,12 @@ export default class RowTableBatch {
     return this.rows && this.length >= this.batchSize;
   }
 
-  getNormalizedBatch() {
+  getBatch() {
     if (this.rows) {
       const rows = this.rows.slice(0, this.length);
       this.rows = null;
       this.isChunkComplete = false;
-      return {data: rows, schema: this.schema, length: rows.length};
+      return {data: rows, schema: this.schema, length: rows.length, cursor: this.cursor};
     }
     return null;
   }

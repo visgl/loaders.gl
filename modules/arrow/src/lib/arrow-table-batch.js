@@ -2,13 +2,13 @@ import {Schema, Field, RecordBatch, Float32Vector, Float32} from 'apache-arrow/A
 import {ColumnarTableBatch} from '@loaders.gl/tables';
 
 export default class ArrowTableBatch extends ColumnarTableBatch {
-  constructor(schema, batchSize) {
-    super(schema, batchSize);
+  constructor(schema, options) {
+    super(schema, options);
     this.arrowSchema = null;
   }
 
-  getNormalizedBatch() {
-    const batch = super.getNormalizedBatch();
+  getBatch() {
+    const batch = super.getBatch();
     if (batch) {
       // Get the arrow schema
       this.arrowSchema = this.arrowSchema || getArrowSchema(batch.schema);
