@@ -28,6 +28,8 @@ An experimental new module with video loading and GIF generation support.
 
 **@loaders.gl/wkt**
 
+A new `WKBLoader` has been added to the `wkt` module to decode the [Well-Known Binary](https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry#Well-known_binary) format.
+
 Worker support for the `WKTLoader`, designed to support future binary data improvements.
 
 **@loaders.gl/json**
