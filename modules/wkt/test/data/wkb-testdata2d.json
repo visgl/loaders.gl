@@ -12,7 +12,8 @@
     "ewkbNoSrid": "0101000000000000000000f87f000000000000f87f",
     "ewkbXdrNoSrid": "00000000017ff80000000000007ff8000000000000",
     "binary": {
-      "positions": {"value": ["NaN", "NaN"], "size": 2}
+      "positions": {"value": ["NaN", "NaN"], "size": 2},
+      "type": "Point"
     }
   },
   "point": {
@@ -27,7 +28,8 @@
     "ewkbNoSrid": "0101000000000000000000f03f0000000000000040",
     "ewkbXdrNoSrid": "00000000013ff00000000000004000000000000000",
     "binary": {
-      "positions": {"value": [1, 2], "size": 2}
+      "positions": {"value": [1, 2], "size": 2},
+      "type": "Point"
     }
   },
   "emptyLineString": {
@@ -43,7 +45,8 @@
     "ewkbXdrNoSrid": "000000000200000000",
     "binary": {
       "positions": {"value": [], "size": 2},
-      "pathIndices": {"value": [0], "size": 1}
+      "pathIndices": {"value": [0], "size": 1},
+      "type": "LineString"
     }
   },
   "lineString": {
@@ -59,7 +62,8 @@
     "ewkbXdrNoSrid": "0000000002000000023ff0000000000000400000000000000040080000000000004010000000000000",
     "binary": {
       "positions": {"value": [1, 2, 3, 4], "size": 2},
-      "pathIndices": {"value": [0, 2], "size": 1}
+      "pathIndices": {"value": [0, 2], "size": 1},
+      "type": "LineString"
     }
   },
   "emptyPolygon": {
@@ -76,7 +80,8 @@
     "binary": {
       "positions": {"value": [], "size": 2},
       "polygonIndices": {"value": [0], "size": 1},
-      "primitivePolygonIndices": {"value": [0], "size": 1}
+      "primitivePolygonIndices": {"value": [0], "size": 1},
+      "type": "Polygon"
     }
   },
   "polygon": {
@@ -96,7 +101,8 @@
     "binary": {
       "positions": {"value": [1, 2, 3, 4, 5, 6, 1, 2], "size": 2},
       "polygonIndices": {"value": [0, 4], "size": 1},
-      "primitivePolygonIndices": {"value": [0, 4], "size": 1}
+      "primitivePolygonIndices": {"value": [0, 4], "size": 1},
+      "type": "Polygon"
     }
   },
   "polygonWithOneInteriorRing": {
@@ -116,7 +122,8 @@
     "binary": {
       "positions": {"value": [1, 2, 3, 4, 5, 6, 1, 2, 11, 12, 13, 14, 15, 16, 11, 12], "size": 2},
       "polygonIndices": {"value": [0, 8], "size": 1},
-      "primitivePolygonIndices": {"value": [0, 4, 8], "size": 1}
+      "primitivePolygonIndices": {"value": [0, 4, 8], "size": 1},
+      "type": "Polygon"
     }
   },
   "polygonWithTwoInteriorRings": {
@@ -168,7 +175,8 @@
         "size": 2
       },
       "polygonIndices": {"value": [0, 12], "size": 1},
-      "primitivePolygonIndices": {"value": [0, 4, 8, 12], "size": 1}
+      "primitivePolygonIndices": {"value": [0, 4, 8, 12], "size": 1},
+      "type": "Polygon"
     }
   },
   "emptyMultiPoint": {
@@ -183,7 +191,8 @@
     "ewkbNoSrid": "010400000000000000",
     "ewkbXdrNoSrid": "000000000400000000",
     "binary": {
-      "positions": {"value": [], "size": 2}
+      "positions": {"value": [], "size": 2},
+      "type": "Point"
     }
   },
   "multiPointWithOnePoint": {
@@ -198,7 +207,8 @@
     "ewkbNoSrid": "0104000000010000000101000000000000000000f03f0000000000000040",
     "ewkbXdrNoSrid": "00000000040000000100000000013ff00000000000004000000000000000",
     "binary": {
-      "positions": {"value": [1, 2], "size": 2}
+      "positions": {"value": [1, 2], "size": 2},
+      "type": "Point"
     }
   },
   "multiPointWithTwoPoints": {
@@ -213,7 +223,8 @@
     "ewkbNoSrid": "0104000000020000000101000000000000000000f03f0000000000000040010100000000000000000008400000000000001040",
     "ewkbXdrNoSrid": "00000000040000000200000000013ff00000000000004000000000000000000000000140080000000000004010000000000000",
     "binary": {
-      "positions": {"value": [1, 2, 3, 4], "size": 2}
+      "positions": {"value": [1, 2, 3, 4], "size": 2},
+      "type": "Point"
     }
   },
   "emptyMultiLineString": {
@@ -229,7 +240,8 @@
     "ewkbXdrNoSrid": "000000000500000000",
     "binary": {
       "positions": {"value": [], "size": 2},
-      "pathIndices": {"value": [0], "size": 1}
+      "pathIndices": {"value": [0], "size": 1},
+      "type": "LineString"
     }
   },
   "multiLineStringWithOneLineString": {
@@ -245,7 +257,8 @@
     "ewkbXdrNoSrid": "0000000005000000010000000002000000023ff0000000000000400000000000000040080000000000004010000000000000",
     "binary": {
       "positions": {"value": [1, 2, 3, 4], "size": 2},
-      "pathIndices": {"value": [0, 2], "size": 1}
+      "pathIndices": {"value": [0, 2], "size": 1},
+      "type": "LineString"
     }
   },
   "multiLineStringWithTwoLineStrings": {
@@ -264,7 +277,8 @@
     "ewkbXdrNoSrid": "0000000005000000020000000002000000023ff000000000000040000000000000004008000000000000401000000000000000000000020000000240140000000000004018000000000000401c0000000000004020000000000000",
     "binary": {
       "positions": {"value": [1, 2, 3, 4, 5, 6, 7, 8], "size": 2},
-      "pathIndices": {"value": [0, 2, 4], "size": 1}
+      "pathIndices": {"value": [0, 2, 4], "size": 1},
+      "type": "LineString"
     }
   },
   "emptyMultiPolygon": {
@@ -281,7 +295,8 @@
     "binary": {
       "positions": {"value": [], "size": 2},
       "polygonIndices": {"value": [0], "size": 1},
-      "primitivePolygonIndices": {"value": [0], "size": 1}
+      "primitivePolygonIndices": {"value": [0], "size": 1},
+      "type": "Polygon"
     }
   },
   "multiPolygonWithOnePolygon": {
@@ -301,7 +316,8 @@
     "binary": {
       "positions": {"value": [1, 2, 3, 4, 5, 6, 1, 2], "size": 2},
       "polygonIndices": {"value": [0, 4], "size": 1},
-      "primitivePolygonIndices": {"value": [0, 4], "size": 1}
+      "primitivePolygonIndices": {"value": [0, 4], "size": 1},
+      "type": "Polygon"
     }
   },
   "multiPolygonWithTwoPolygons": {
@@ -364,7 +380,8 @@
         "size": 2
       },
       "polygonIndices": {"value": [0, 4, 16], "size": 1},
-      "primitivePolygonIndices": {"value": [0, 4, 8, 12, 16], "size": 1}
+      "primitivePolygonIndices": {"value": [0, 4, 8, 12, 16], "size": 1},
+      "type": "Polygon"
     }
   },
   "emptyGeometryCollection": {

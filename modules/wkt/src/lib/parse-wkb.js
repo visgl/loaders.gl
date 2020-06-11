@@ -24,21 +24,30 @@ export default function parseWKB(buffer) {
     case 1:
       const point = parsePoint(view, offset, dimension, littleEndian);
       delete point.offset;
+      point.type = 'Point';
       return point;
     case 2:
       const line = parseLineString(view, offset, dimension, littleEndian);
       delete line.offset;
+      line.type = 'LineString';
       return line;
     case 3:
       const polygon = parsePolygon(view, offset, dimension, littleEndian);
       delete polygon.offset;
+      polygon.type = 'Polygon';
       return polygon;
     case 4:
-      return parseMultiPoint(view, offset, dimension, littleEndian);
+      const multiPoint = parseMultiPoint(view, offset, dimension, littleEndian);
+      multiPoint.type = 'Point';
+      return multiPoint;
     case 5:
-      return parseMultiLineString(view, offset, dimension, littleEndian);
+      const multiLine = parseMultiLineString(view, offset, dimension, littleEndian);
+      multiLine.type = 'LineString';
+      return multiLine;
     case 6:
-      return parseMultiPolygon(view, offset, dimension, littleEndian);
+      const multiPolygon = parseMultiPolygon(view, offset, dimension, littleEndian);
+      multiPolygon.type = 'Polygon';
+      return multiPolygon;
     // case 7:
     // TODO: handle GeometryCollections
     // return parseGeometryCollection(view, offset, dimension, littleEndian);
