@@ -53,6 +53,7 @@ export function requireFromString(code, filename = '', options = {}) {
     .concat(options.prependPaths)
     .concat(paths)
     .concat(options.appendPaths);
+  // @ts-ignore
   newModule._compile(code, filename);
 
   if (parent && parent.children) {

@@ -33,7 +33,7 @@ async function parse(arrayBuffer, options, context, loader) {
   const {draco} = await loadDracoDecoderModule(options);
   const dracoParser = new DracoParser(draco);
   try {
-    return dracoParser.parseSync(arrayBuffer);
+    return dracoParser.parseSync(arrayBuffer, options);
   } finally {
     dracoParser.destroy();
   }
