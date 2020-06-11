@@ -9,13 +9,13 @@
 
 Some iterator utilities that are mostly used internally have been changed.
 
-| Function                    | Replacement / Status              |
-| --------------------------- | --------------------------------- |
-| `makeChunkIterator`         | combined into `makeIterator`      |
-| `makeStreamIterator`        | combined into `makeIterator`      |
-| `textDecoderAsyncIterator`  | `makeTextDecoderIterator` |
-| `lineAsyncIterator`         | `makeLineIterator`                |
-| `numberedLineAsyncIterator` | `makeNumberedLineIterator`        |
+| Function                    | Replacement / Status                  |
+| --------------------------- | ------------------------------------- |
+| `makeChunkIterator`         | combined into `makeIterator`          |
+| `makeStreamIterator`        | combined into `makeIterator`          |
+| `textDecoderAsyncIterator`  | `makeTextDecoderIterator`             |
+| `lineAsyncIterator`         | `makeLineIterator`                    |
+| `numberedLineAsyncIterator` | `makeNumberedLineIterator`            |
 | `getStreamIterator`         | Deprecated in 2.1, now removed in 2.2 |
 | `contatenateAsyncIterator`  | Deprecated in 2.1, now removed in 2.2 |
 

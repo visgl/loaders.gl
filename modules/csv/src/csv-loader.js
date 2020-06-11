@@ -15,8 +15,7 @@ const CSVLoader = {
   extensions: ['csv'],
   mimeType: 'text/csv',
   category: 'table',
-  parse: async (arrayBuffer, options) =>
-    parseCSV(new TextDecoder().decode(arrayBuffer), options),
+  parse: async (arrayBuffer, options) => parseCSV(new TextDecoder().decode(arrayBuffer), options),
   parseText: parseCSV,
   parseInBatches: parseCSVInBatches,
   testText: null,
@@ -42,7 +41,7 @@ async function parseCSV(csvText, options) {
   const config = {
     dynamicTyping: true, // Convert numbers and boolean values in rows from strings
     ...options.csv,
-    header, 
+    header,
     download: false, // We handle loading, no need for papaparse to do it for us
     error: e => {
       throw new Error(e);

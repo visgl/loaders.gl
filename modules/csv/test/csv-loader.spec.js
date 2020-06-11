@@ -4,7 +4,6 @@ import {validateLoader} from 'test/common/conformance';
 import {load, loadInBatches, fetchFile, isIterator, isAsyncIterable} from '@loaders.gl/core';
 import {ColumnarTableBatch} from '@loaders.gl/tables';
 import {CSVLoader} from '@loaders.gl/csv';
-import {TEST_EXPORTS} from '@loaders.gl/csv/csv-loader';
 
 // Small CSV Sample Files
 const CSV_SAMPLE_URL = '@loaders.gl/csv/test/data/sample.csv';
@@ -176,7 +175,9 @@ test('CSVLoader#loadInBatches(sample.csv, rows)', async t => {
 
 test('CSVLoader#loadInBatches(sample-very-long.csv, rows)', async t => {
   const batchSize = 25;
-  const iterator = await loadInBatches(CSV_SAMPLE_VERY_LONG_URL, CSVLoader, {csv: {batchSize, rowFormat: 'object'}});
+  const iterator = await loadInBatches(CSV_SAMPLE_VERY_LONG_URL, CSVLoader, {
+    csv: {batchSize, rowFormat: 'object'}
+  });
   t.ok(isIterator(iterator) || isAsyncIterable(iterator), 'loadInBatches returned iterator');
 
   let batchCount = 0;
