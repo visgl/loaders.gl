@@ -35,6 +35,10 @@ Worker support for the `WKTLoader`, designed to support future binary data impro
 - `parseInBatches` now returns a `batch.bytesRead` field to enable progress bars.
 - `.geojson` is now parsed by a new experimental `GeoJSONLoader` (exported with an underscore as `_GeoJSONLoader`), designed to support future binary data improvements.
 
+**@loaders.gl/csv**
+
+- Header auto-detection via `options.csv.header: 'auto'`.
+
 **@loaders.gl/arrow**
 
 Updated to use `apache-arrow` version `0.17.0`.

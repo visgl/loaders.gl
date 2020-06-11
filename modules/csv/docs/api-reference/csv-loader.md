@@ -16,6 +16,8 @@ Streaming loader for comma-separated value and [delimiter-separated value](https
 import {CSVLoader} from '@loaders.gl/csv';
 import {load} from '@loaders.gl/core';
 
+const data = await load(url, CSVLoader);
+// or
 const data = await load(url, CSVLoader, {csv: options});
 ```
 
@@ -23,8 +25,9 @@ const data = await load(url, CSVLoader, {csv: options});
 
 | Option                  | Type     | Default                 | Description                                                                                                                                                                                                                                                                                     |
 | ----------------------- | -------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `csv.rowFormat`            | String  | `auto`             | Can be set to `'object'` go force rows to be objects, or `'auto'`.                                                                                                                                                                   |
+| `csv.header`            | Boolean \| String | `auto`             | If `true`, the first row of parsed data will be interpreted as field names. If `false`, the first row is interpreted as data.                                                                                                                                                                   |
 | `csv.delimiter`         | String   | auto-detect             | The delimiting character.                                                                                                                                                                                                                                                                       |
-| `csv.header`            | Boolean  | auto-detect             | If `true`, the first row of parsed data will be interpreted as field names. If `false`, the first row is interpreted as data.                                                                                                                                                                   |
 | `csv.newline`           | String   | auto-detect             | The newline sequence. Must be `\r`, `\n`, or `\r\n`.                                                                                                                                                                                                                                            |
 | `csv.quoteChar`         | String   | `"`                     | The character used to quote fields.                                                                                                                                                                                                                                                             |
 | `csv.escapeChar`        | String   | `"`                     | The character used to escape the quote character within a field.                                                                                                                                                                                                                                |
@@ -37,4 +40,5 @@ const data = await load(url, CSVLoader, {csv: options});
 
 Remarks:
 
-- Many options are passed on to papaparse, if necessary [papaparse docs](https://www.papaparse.com/docs#config) could serve as a source for more information.
+- A complication with the CSV format is that CSV files can come with or without an initial header line. Use `options.csv.header` to specify how to handle the first line.
+- Many options are passed on to papaparse, so the [papaparse docs](https://www.papaparse.com/docs#config) can serve as a source for more information.

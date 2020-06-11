@@ -16,30 +16,33 @@ const CSVLoader = {
   mimeType: 'text/csv',
   category: 'table',
   parse: async (arrayBuffer, options) =>
-    parseCSVSync(new TextDecoder().decode(arrayBuffer), options),
-  parseTextSync: parseCSVSync,
+    parseCSV(new TextDecoder().decode(arrayBuffer), options),
+  parseText: parseCSV,
   parseInBatches: parseCSVInBatches,
   testText: null,
   options: {
     csv: {
       TableBatch: RowTableBatch,
       batchSize: 10,
-      header: true
+      header: 'auto',
+      rowFormat: 'auto'
     }
   }
 };
 
 export default CSVLoader;
 
-function parseCSVSync(csvText, options) {
+async function parseCSV(csvText, options) {
   // Apps can call the parse method directly, we so apply default options here
   options = {...CSVLoader.options, ...options};
   options.csv = {...CSVLoader.options.csv, ...options.csv};
 
+  const header = await hasHeader(csvText, options);
+
   const config = {
-    header: hasHeader(csvText, options),
     dynamicTyping: true, // Convert numbers and boolean values in rows from strings
     ...options.csv,
+    header, 
     download: false, // We handle loading, no need for papaparse to do it for us
     error: e => {
       throw new Error(e);
@@ -60,8 +63,8 @@ function parseCSVInBatches(asyncIterator, options) {
   const TableBatchType = options.csv.TableBatch;
 
   const asyncQueue = new AsyncQueue();
-  //  convert the result to row object based on options.csv.header
-  const convertToObject = Boolean(options.csv.header);
+
+  const convertToObject = options.csv.rowFormat === 'object';
 
   let isFirstRow = true;
   let headerRow = null;
@@ -85,7 +88,8 @@ function parseCSVInBatches(asyncIterator, options) {
 
       // Check if we need to save a header row
       if (isFirstRow && !headerRow) {
-        const header = options.header === undefined ? isHeaderRow(row) : options.header;
+        // Auto detects or can be forced with options.csv.header
+        const header = isHeaderRow(row, options);
         if (header) {
           headerRow = row;
           return;
@@ -128,27 +132,34 @@ function parseCSVInBatches(asyncIterator, options) {
   return asyncQueue;
 }
 
-function isHeaderRow(row) {
+function isHeaderRow(row, options) {
+  if (options && options.csv.header !== 'auto') {
+    return Boolean(options.csv.header);
+  }
+
   return row.every(value => typeof value === 'string');
 }
 
-function hasHeader(csvText, options) {
-  if ('header' in options) {
-    return options.header;
+async function hasHeader(csvText, options) {
+  if (options.csv.header !== 'auto') {
+    return Boolean(options.csv.header);
   }
 
-  let header = false;
-  Papa.parse(csvText, {
-    download: false,
-    dynamicTyping: true,
-    step: (results, parser) => {
-      const row = results.data;
-      header = isHeaderRow(row);
-      parser.abort();
-    }
+  return await new Promise((resolve, reject) => {
+    Papa.parse(csvText, {
+      download: false,
+      dynamicTyping: true,
+      step: (results, parser) => {
+        parser.abort();
+        const row = results.data;
+        // Test the row
+        resolve(isHeaderRow(row));
+      },
+      error: e => {
+        reject(new Error(e));
+      }
+    });
   });
-
-  return header;
 }
 
 function deduceSchema(row, headerRow) {

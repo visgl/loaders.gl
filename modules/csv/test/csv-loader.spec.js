@@ -1,9 +1,10 @@
 import test from 'tape-promise/tape';
 import {validateLoader} from 'test/common/conformance';
 
-import {CSVLoader} from '@loaders.gl/csv';
 import {load, loadInBatches, fetchFile, isIterator, isAsyncIterable} from '@loaders.gl/core';
 import {ColumnarTableBatch} from '@loaders.gl/tables';
+import {CSVLoader} from '@loaders.gl/csv';
+import {TEST_EXPORTS} from '@loaders.gl/csv/csv-loader';
 
 // Small CSV Sample Files
 const CSV_SAMPLE_URL = '@loaders.gl/csv/test/data/sample.csv';
@@ -43,10 +44,14 @@ test('CSVLoader#load(states.csv)', async t => {
   t.end();
 });
 
-test.only('CSVLoader#load', async t => {
+test('CSVLoader#load', async t => {
   const rows = await load(CSV_SAMPLE_URL, CSVLoader);
-  t.is(rows.length, 2, 'Got correct table size');
+  t.is(rows.length, 2, 'Got correct table size, correctly inferred no header');
   t.deepEqual(rows[0], ['A', 'B', 1], 'Got correct first row');
+
+  const rows1 = await load(CSV_SAMPLE_URL, CSVLoader, {csv: {header: true}});
+  t.is(rows1.length, 1, 'Got correct table size, forced first row as header');
+  t.deepEqual(rows1[0], {A: 'X', B: 'Y', 1: 2}, 'Got correct first row');
 
   const rows2 = await load(CSV_SAMPLE_VERY_LONG_URL, CSVLoader);
   t.is(rows2.length, 2000, 'Got correct table size');
@@ -171,7 +176,7 @@ test('CSVLoader#loadInBatches(sample.csv, rows)', async t => {
 
 test('CSVLoader#loadInBatches(sample-very-long.csv, rows)', async t => {
   const batchSize = 25;
-  const iterator = await loadInBatches(CSV_SAMPLE_VERY_LONG_URL, CSVLoader, {csv: {batchSize}});
+  const iterator = await loadInBatches(CSV_SAMPLE_VERY_LONG_URL, CSVLoader, {csv: {batchSize, rowFormat: 'object'}});
   t.ok(isIterator(iterator) || isAsyncIterable(iterator), 'loadInBatches returned iterator');
 
   let batchCount = 0;
