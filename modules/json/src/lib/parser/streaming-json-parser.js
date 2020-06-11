@@ -7,6 +7,7 @@ import {default as JSONParser} from './json-parser';
 export default class StreamingJSONParser extends JSONParser {
   constructor() {
     super();
+    this.path = [];
     this.topLevelArray = null;
     this.topLevelObject = null;
     this._extendParser();
@@ -34,11 +35,18 @@ export default class StreamingJSONParser extends JSONParser {
     return this.topLevelObject;
   }
 
+  getPath() {
+    return this.path;
+  }
+
   // PRIVATE METHODS
 
   _extendParser() {
     // Redefine onopenarray to locate top-level array
     this.parser.onopenarray = () => {
+      debugger
+      this.path.push(0);
+      console.error(this.path);
       if (!this.topLevelArray) {
         this.topLevelArray = [];
         this._openContainer(this.topLevelArray);
@@ -47,7 +55,15 @@ export default class StreamingJSONParser extends JSONParser {
       }
     };
 
+    this.parser.onclosearray = () => {
+      this.path.pop();
+      console.error(this.path);
+    };
+
     this.parser.onopenobject = name => {
+      this.path.push(name);
+      console.error(this.path);
+
       if (!this.topLevelObject) {
         this.topLevelObject = {};
         this._openContainer(this.topLevelObject);
@@ -57,6 +73,16 @@ export default class StreamingJSONParser extends JSONParser {
       if (typeof name !== 'undefined') {
         this.parser.onkey(name);
       }
+    };
+
+    this.parser.onkey = name => {
+      this.path[this.path.length] = name;
+      console.error(this.path);
+    };
+
+    this.parser.oncloseobject = () => {
+      this.path.pop();
+      console.error(this.path);
     };
   }
 }
