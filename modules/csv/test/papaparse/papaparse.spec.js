@@ -485,6 +485,7 @@ const CUSTOM_TESTS = [
       'Should still correctly guess default delimiters when delimiters to guess are not given.',
     expected: ',',
     run(callback) {
+      // @ts-ignore
       var results = Papa.parse('"A","B","C","D"');
       callback(results.meta.delimiter);
     }
@@ -494,6 +495,7 @@ const CUSTOM_TESTS = [
 test('papaparse#Core Parser Tests', t => {
   for (const testCase of CORE_PARSER_TESTS) {
     if (!testCase.disabled) {
+      // @ts-ignore
       var actual = new Papa.Parser(testCase.config).parse(testCase.input);
       t.deepEqual(
         JSON.stringify(actual.errors),

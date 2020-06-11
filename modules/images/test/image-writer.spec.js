@@ -51,7 +51,8 @@ test('ImageWriter#write-and-read-image', async t => {
     return;
   }
 
-  fs.writeFileSync(TEST_FILE, encode(IMAGE, ImageWriter, {type: 'png'}));
+  const imageData = await encode(IMAGE, ImageWriter, {type: 'png'});
+  fs.writeFileSync(TEST_FILE, new DataView(imageData));
 
   // const image = await load(TEST_FILE, ImageLoader);
   // t.same(image, IMAGE);
