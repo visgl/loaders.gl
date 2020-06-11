@@ -1,18 +1,20 @@
 const DEFAULT_OPTIONS = {
+  batchSize: 'auto',
   convertToObject: true
 };
 
 export default class RowTableBatch {
-  constructor(schema, batchSize, options = {}) {
+  constructor(schema, options = {}) {
     options = {...DEFAULT_OPTIONS, ...options};
-    
+
     this.schema = schema;
-    this.batchSize = batchSize;
+    this.batchSize = options.batchSize;
+    this.convertToObject = options.convertToObject;
+
     this.rows = null;
     this.length = 0;
     this.isChunkComplete = false;
     this.cursor = 0;
-    this.convertToObject = options.convertToObject;
 
     // schema is an array if there're no headers
     // object if there are headers
@@ -24,7 +26,7 @@ export default class RowTableBatch {
     }
   }
 
-  addRow(row, cursor) {
+  addRow(row, cursor = null) {
     if (!this.rows) {
       this.rows = new Array(this.batchSize);
       this.length = 0;

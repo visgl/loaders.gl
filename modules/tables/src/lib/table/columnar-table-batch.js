@@ -1,7 +1,7 @@
 export default class ColumnarTableBatch {
-  constructor(schema, batchSize) {
+  constructor(schema, options = {}) {
     this.schema = schema;
-    this.batchSize = batchSize;
+    this.batchSize = options.batchSize || 'auto';
 
     this.length = 0;
     this.allocated = 0;

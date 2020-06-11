@@ -43,7 +43,7 @@ test('CSVLoader#load(states.csv)', async t => {
   t.end();
 });
 
-test('CSVLoader#load', async t => {
+test.only('CSVLoader#load', async t => {
   const rows = await load(CSV_SAMPLE_URL, CSVLoader);
   t.is(rows.length, 2, 'Got correct table size');
   t.deepEqual(rows[0], ['A', 'B', 1], 'Got correct first row');

@@ -101,7 +101,7 @@ function parseCSVInBatches(asyncIterator, options) {
       // Add the row
       tableBatchBuilder =
         tableBatchBuilder ||
-        new TableBatchBuilder(TableBatchType, schema, batchSize, {convertToObject});
+        new TableBatchBuilder(TableBatchType, schema, {batchSize, convertToObject});
 
       tableBatchBuilder.addRow(row, meta.cursor);
       // If a batch has been completed, emit it

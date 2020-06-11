@@ -46,14 +46,4 @@ export default class TableBatchBuilder {
     }
     return null;
   }
-
-  // complete() {
-  //   let batch = null;
-  //   if (this.batch) {
-  //     batch = this.batch;
-  //     batch.complete();
-  //     this.batch = null;
-  //   }
-  //   return batch;
-  // }
 }
