@@ -19,7 +19,7 @@ export default async function* parseJSONInBatches(asyncIterator, options) {
     tableBatchBuilder || new TableBatchBuilder(TableBatchType, schema, {batchSize});
 
   for await (const chunk of asyncIterator) {
-    const {rows, cursors} = parser.write(chunk);
+    const rows = parser.write(chunk);
 
     if (isFirstChunk) {
       if (_rootObjectBatches) {
@@ -27,7 +27,6 @@ export default async function* parseJSONInBatches(asyncIterator, options) {
           batchType: 'root-object-batch-partial',
           container: parser.getPartialResult(),
           data: [],
-          cursor: 0,
           schema: null
         };
         yield initialBatch;
@@ -37,11 +36,11 @@ export default async function* parseJSONInBatches(asyncIterator, options) {
     }
 
     // Add the row
-    for (let i = 0; i < rows.length; i++) {
-      tableBatchBuilder.addRow(rows[i]);
+    for (const row of rows) {
+      tableBatchBuilder.addRow(row);
       // If a batch has been completed, emit it
       if (tableBatchBuilder.isFull()) {
-        yield tableBatchBuilder.getBatch({bytesUsed: cursors[i]});
+        yield tableBatchBuilder.getBatch();
       }
     }
 
