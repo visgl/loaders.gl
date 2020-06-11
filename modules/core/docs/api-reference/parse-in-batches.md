@@ -6,6 +6,10 @@ For supporting loaders, the streaming `parseInBatches` function can parse increm
 
 Batched (streaming) parsing is only supported by a subset of loaders. Check documentation of each loader before using this function.
 
+## Usage
+
+Parse CSV in batches (emitting a batch of rows every time data arrives from the network):
+
 ```js
 import {fetchFile, parseInBatches} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/obj';
@@ -13,6 +17,24 @@ import {CSVLoader} from '@loaders.gl/obj';
 const batchIterator = await parseInBatches(fetchFile(url), CSVLoader);
 for await (const batch of batchIterator) {
   console.log(batch.length);
+}
+```
+
+Parse CSV in batches, requesting an initial metadata batch:
+
+```js
+import {fetchFile, parseInBatches} from '@loaders.gl/core';
+import {CSVLoader} from '@loaders.gl/obj';
+
+const batchIterator = await parseInBatches(fetchFile(url), CSVLoader, {metadata: true});
+for await (const batch of batchIterator) {
+  switch (batch.batchType) {
+    case 'metadata':
+      console.log(batch.metadata);
+      break;
+    default:
+      processBatch(batch.data);
+  }
 }
 ```
 
@@ -53,8 +75,7 @@ Note that many other data sources can also be parsed by first converting them to
 
 ## Remarks
 
-Move below to iterator transforms section
-
-| Option                       | Type     | Description                                                      | Comment                                              |
-| ---------------------------- | -------- | ---------------------------------------------------------------- | ---------------------------------------------------- |
-| `options.batches.chunkSize?` | `number` | When set, "atomic" inputs are chunked, enabling batched parsing. | No effect if input is already an iterator or stream. |
+| Option                       | Type      | Default | Description                                                                                               |
+| ---------------------------- | --------- | ------- | --------------------------------------------------------------------------------------------------------- |
+| `options.metadata`           | `boolean` | `false` | An initial batch with `batchType: 'metadata'` will be added with information about the data being loaded. |
+| `options.batches.chunkSize?` | `number`  | N/A     | When set, "atomic" inputs (like `ArrayBuffer` or `string`) are chunked, enabling batched parsing.         | No effect if input is already an iterator or stream. |
