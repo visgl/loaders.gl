@@ -7,8 +7,8 @@ export default class ArrowTableBatch extends ColumnarTableBatch {
     this.arrowSchema = null;
   }
 
-  getNormalizedBatch() {
-    const batch = super.getNormalizedBatch();
+  getBatch() {
+    const batch = super.getBatch();
     if (batch) {
       // Get the arrow schema
       this.arrowSchema = this.arrowSchema || getArrowSchema(batch.schema);

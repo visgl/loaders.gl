@@ -32,7 +32,7 @@ Worker support for the `WKTLoader`, designed to support future binary data impro
 
 **@loaders.gl/json**
 
-- `parseInBatches` now returns a `batch.bytesRead` field to enable progress bars.
+- `parseInBatches` now returns a `batch.bytesUsed` field to enable progress bars.
 - `.geojson` is now parsed by a new experimental `GeoJSONLoader` (exported with an underscore as `_GeoJSONLoader`), designed to support future binary data improvements.
 
 **@loaders.gl/csv**

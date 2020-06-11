@@ -32,7 +32,7 @@ export default class ColumnarTableBatch {
     return this.length >= this.allocated;
   }
 
-  getNormalizedBatch() {
+  getBatch(options = {}) {
     this.pruneColumns();
     const columns = Array.isArray(this.schema) ? this.columns : {};
 

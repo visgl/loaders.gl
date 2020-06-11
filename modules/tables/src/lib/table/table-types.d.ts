@@ -8,5 +8,17 @@ export type Batch = {
   data: any;
   schema: Schema;
   length: number;
-  bytesRead: number;
+  bytesUsed: number;
 };
+
+export interface IBatchBuilder {
+  addRow(row): void;
+
+  chunkComplete(chunk: ArrayBuffer | string): void;
+
+  isFull(): boolean;
+
+  hasBatch(): boolean;
+
+  getBatch(): Batch | null;
+}

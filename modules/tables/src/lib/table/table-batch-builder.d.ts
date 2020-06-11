@@ -1,9 +1,14 @@
-import {Schema, Batch} from './table-types';
+import {Schema, Batch, IBatchBuilder} from './table-types';
 
-export default class TableBatchBuilder {
+// TODO define interface instead
+type GetBatchOptions = {
+  bytesUsed?: number;
+};
+
+export default class TableBatchBuilder implements IBatchBuilder {
   constructor(TableBatchType, schema: Schema, options?: object);
 
-  addRow(row, meta): void;
+  addRow(row): void;
 
   chunkComplete(chunk: ArrayBuffer | string): void;
 
@@ -11,5 +16,8 @@ export default class TableBatchBuilder {
 
   hasBatch(): boolean;
 
-  getNormalizedBatch(): Batch | null;
+  /**
+   * bytesUsed can be set via chunkComplete or via getBatch
+   */
+  getBatch(options?: GetBatchOptions): Batch | null;
 }

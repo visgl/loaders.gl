@@ -38,21 +38,21 @@ export default async function* parseJSONInBatches(asyncIterator, options) {
 
     // Add the row
     for (let i = 0; i < rows.length; i++) {
-      tableBatchBuilder.addRow(rows[i], cursors[i]);
+      tableBatchBuilder.addRow(rows[i]);
       // If a batch has been completed, emit it
       if (tableBatchBuilder.isFull()) {
-        yield tableBatchBuilder.getNormalizedBatch();
+        yield tableBatchBuilder.getBatch({bytesUsed: cursors[i]});
       }
     }
 
     tableBatchBuilder.chunkComplete(chunk);
     if (tableBatchBuilder.isFull()) {
-      yield tableBatchBuilder.getNormalizedBatch();
+      yield tableBatchBuilder.getBatch();
     }
   }
 
   // yield final batch
-  const batch = tableBatchBuilder.getNormalizedBatch();
+  const batch = tableBatchBuilder.getBatch();
   if (batch) {
     yield batch;
   }

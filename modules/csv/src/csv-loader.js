@@ -83,7 +83,7 @@ function parseCSVInBatches(asyncIterator, options) {
     // step is called on every row
     step(results, parser) {
       const row = results.data;
-      const meta = results.meta;
+      const bytesUsed = results.meta.cursor;
 
       // Check if we need to save a header row
       if (isFirstRow && !headerRow) {
@@ -106,17 +106,18 @@ function parseCSVInBatches(asyncIterator, options) {
         tableBatchBuilder ||
         new TableBatchBuilder(TableBatchType, schema, {batchSize, convertToObject});
 
-      tableBatchBuilder.addRow(row, meta.cursor);
+      tableBatchBuilder.addRow(row);
       // If a batch has been completed, emit it
       if (tableBatchBuilder.isFull()) {
-        asyncQueue.enqueue(tableBatchBuilder.getNormalizedBatch());
+        asyncQueue.enqueue(tableBatchBuilder.getBatch({bytesUsed}));
       }
     },
 
     // complete is called when all rows have been read
     complete(results, file) {
+      const bytesUsed = results.meta.cursor;
       // Ensure any final (partial) batch gets emitted
-      const batch = tableBatchBuilder.getNormalizedBatch();
+      const batch = tableBatchBuilder.getBatch({bytesUsed});
       if (batch) {
         asyncQueue.enqueue(batch);
       }

@@ -1,9 +1,9 @@
-import {Schema, Batch} from './table-types';
+import {Schema, Batch, IBatchBuilder} from './table-types';
 
-export default class TableBatchBuilder {
+export default class TableBatchBuilder implements IBatchBuilder {
   constructor(schema: Schema, options?: object);
 
-  addRow(row, meta): void;
+  addRow(row): void;
 
   chunkComplete(chunk: ArrayBuffer | string): void;
 
@@ -11,5 +11,5 @@ export default class TableBatchBuilder {
 
   hasBatch(): boolean;
 
-  getNormalizedBatch(): Batch | null;
+  getBatch(): Batch | null;
 }

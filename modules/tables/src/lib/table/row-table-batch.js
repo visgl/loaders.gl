@@ -50,7 +50,7 @@ export default class RowTableBatch {
     return this.rows && this.length >= this.batchSize;
   }
 
-  getNormalizedBatch() {
+  getBatch() {
     if (this.rows) {
       const rows = this.rows.slice(0, this.length);
       this.rows = null;

@@ -22,7 +22,7 @@ test('JSONLoader#loadInBatches(geojson.json, rows, batchSize = auto)', async t =
   for await (batch of iterator) {
     batchCount++;
     rowCount += batch.length;
-    byteLength = batch.bytesRead;
+    byteLength = batch.bytesUsed;
   }
 
   t.ok(batchCount <= 3, 'Correct number of batches received');
