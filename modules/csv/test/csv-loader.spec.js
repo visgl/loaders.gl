@@ -173,7 +173,7 @@ test('CSVLoader#loadInBatches(sample.csv, rows)', async t => {
   t.end();
 });
 
-test('CSVLoader#loadInBatches(sample-very-long.csv, rows)', async t => {
+test.only('CSVLoader#loadInBatches(sample-very-long.csv, rows)', async t => {
   const batchSize = 25;
   const iterator = await loadInBatches(CSV_SAMPLE_VERY_LONG_URL, CSVLoader, {
     csv: {batchSize, rowFormat: 'object'}
@@ -181,12 +181,14 @@ test('CSVLoader#loadInBatches(sample-very-long.csv, rows)', async t => {
   t.ok(isIterator(iterator) || isAsyncIterable(iterator), 'loadInBatches returned iterator');
 
   let batchCount = 0;
+  let byteLength = 0;
   for await (const batch of iterator) {
     t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
     t.equal(batch.length, batchSize, 'Got correct batch size');
     t.ok(batch.data[0].TLD, 'first row has TLD value');
     t.ok(batch.data[0]['meaning of life'], 'first row has meaning of life value');
     t.ok(batch.data[0].placeholder, 'first row has placeholder value');
+    byteLength = batch.bytesUsed;
 
     batchCount++;
     if (batchCount === 5) {
@@ -194,6 +196,7 @@ test('CSVLoader#loadInBatches(sample-very-long.csv, rows)', async t => {
     }
   }
   t.equal(batchCount, 5, 'Correct number of batches received');
+  t.equal(byteLength, 4528, 'Correct number of bytes received');
 
   t.end();
 });
