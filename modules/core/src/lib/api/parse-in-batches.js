@@ -47,8 +47,10 @@ async function parseWithLoaderInBatches(loader, data, options, context) {
 
   const metadataBatch = {
     batchType: 'metadata',
-    _loader: loader,
-    _context: context
+    metadata: {
+      _loader: loader,
+      _context: context
+    }
   };
 
   async function* makeMetadataBatchIterator() {
