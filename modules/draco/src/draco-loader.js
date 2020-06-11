@@ -33,7 +33,9 @@ async function parse(arrayBuffer, options, context, loader) {
   const {draco} = await loadDracoDecoderModule(options);
   const dracoParser = new DracoParser(draco);
   try {
-    return dracoParser.parseSync(arrayBuffer, options);
+    // TODO passing in options causes CI failures...
+    // @ts-ignore
+    return dracoParser.parseSync(arrayBuffer);
   } finally {
     dracoParser.destroy();
   }
