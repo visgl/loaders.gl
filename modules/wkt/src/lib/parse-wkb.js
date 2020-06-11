@@ -99,14 +99,17 @@ function parsePolygon(view, offset, dimension, littleEndian) {
   }
 
   const concatenatedPositions = new Float64Array(concatTypedArrays(rings).buffer);
-  const polygonIndices = new Uint16Array([0, concatenatedPositions.length / dimension]);
+  const polygonIndices = [0];
+  if (concatenatedPositions.length > 0) {
+    polygonIndices.push(concatenatedPositions.length / dimension);
+  }
   const primitivePolygonIndices = rings.map(l => l.length / dimension).map(cumulativeSum(0));
   primitivePolygonIndices.unshift(0);
 
   return {
     positions: {value: concatenatedPositions, size: dimension},
     polygonIndices: {
-      value: polygonIndices,
+      value: new Uint16Array(polygonIndices),
       size: 1
     },
     primitivePolygonIndices: {value: new Uint16Array(primitivePolygonIndices), size: 1},
