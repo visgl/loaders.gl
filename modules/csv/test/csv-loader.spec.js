@@ -1,9 +1,9 @@
 import test from 'tape-promise/tape';
 import {validateLoader} from 'test/common/conformance';
 
-import {CSVLoader} from '@loaders.gl/csv';
 import {load, loadInBatches, fetchFile, isIterator, isAsyncIterable} from '@loaders.gl/core';
 import {ColumnarTableBatch} from '@loaders.gl/tables';
+import {CSVLoader} from '@loaders.gl/csv';
 
 // Small CSV Sample Files
 const CSV_SAMPLE_URL = '@loaders.gl/csv/test/data/sample.csv';
@@ -45,8 +45,12 @@ test('CSVLoader#load(states.csv)', async t => {
 
 test('CSVLoader#load', async t => {
   const rows = await load(CSV_SAMPLE_URL, CSVLoader);
-  t.is(rows.length, 2, 'Got correct table size');
+  t.is(rows.length, 2, 'Got correct table size, correctly inferred no header');
   t.deepEqual(rows[0], ['A', 'B', 1], 'Got correct first row');
+
+  const rows1 = await load(CSV_SAMPLE_URL, CSVLoader, {csv: {header: true}});
+  t.is(rows1.length, 1, 'Got correct table size, forced first row as header');
+  t.deepEqual(rows1[0], {A: 'X', B: 'Y', 1: 2}, 'Got correct first row');
 
   const rows2 = await load(CSV_SAMPLE_VERY_LONG_URL, CSVLoader);
   t.is(rows2.length, 2000, 'Got correct table size');
@@ -137,19 +141,54 @@ test('CSVLoader#loadInBatches(sample.csv, rows)', async t => {
   t.end();
 });
 
-test('CSVLoader#loadInBatches(sample-very-long.csv, rows)', async t => {
-  const batchSize = 25;
-  const iterator = await loadInBatches(CSV_SAMPLE_VERY_LONG_URL, CSVLoader, {csv: {batchSize}});
+test('CSVLoader#loadInBatches(sample.csv, header)', async t => {
+  const iterator = await loadInBatches(CSV_SAMPLE_URL, CSVLoader, {csv: {header: false}});
   t.ok(isIterator(iterator) || isAsyncIterable(iterator), 'loadInBatches returned iterator');
 
   let batchCount = 0;
   for await (const batch of iterator) {
     t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
-    t.equal(batch.length, batchSize, 'Got correct batch size');
+    t.equal(batch.length, 2, 'Got correct batch size');
+    t.deepEqual(batch.data[0], ['A', 'B', 1], 'Got correct first row');
+    batchCount++;
+  }
+  t.equal(batchCount, 1, 'Correct number of batches received');
 
+  t.end();
+});
+
+test('CSVLoader#loadInBatches(sample.csv, rows)', async t => {
+  const iterator = await loadInBatches(CSV_SAMPLE_URL, CSVLoader);
+  t.ok(isIterator(iterator) || isAsyncIterable(iterator), 'loadInBatches returned iterator');
+
+  let batchCount = 0;
+  for await (const batch of iterator) {
+    t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
+    t.equal(batch.length, 2, 'Got correct batch size');
+    t.deepEqual(batch.data[0], ['A', 'B', 1], 'Got correct first row');
+    batchCount++;
+  }
+  t.equal(batchCount, 1, 'Correct number of batches received');
+
+  t.end();
+});
+
+test('CSVLoader#loadInBatches(sample-very-long.csv, rows)', async t => {
+  const batchSize = 25;
+  const iterator = await loadInBatches(CSV_SAMPLE_VERY_LONG_URL, CSVLoader, {
+    csv: {batchSize, rowFormat: 'object'}
+  });
+  t.ok(isIterator(iterator) || isAsyncIterable(iterator), 'loadInBatches returned iterator');
+
+  let batchCount = 0;
+  let byteLength = 0;
+  for await (const batch of iterator) {
+    t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
+    t.equal(batch.length, batchSize, 'Got correct batch size');
     t.ok(batch.data[0].TLD, 'first row has TLD value');
     t.ok(batch.data[0]['meaning of life'], 'first row has meaning of life value');
     t.ok(batch.data[0].placeholder, 'first row has placeholder value');
+    byteLength = batch.bytesUsed;
 
     batchCount++;
     if (batchCount === 5) {
@@ -157,6 +196,7 @@ test('CSVLoader#loadInBatches(sample-very-long.csv, rows)', async t => {
     }
   }
   t.equal(batchCount, 5, 'Correct number of batches received');
+  t.equal(byteLength, 4528, 'Correct number of bytes received');
 
   t.end();
 });

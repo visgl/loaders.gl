@@ -1,26 +1,27 @@
 const DEFAULT_BATCH_SIZE = 100;
 
 export default class TableBatchBuilder {
-  constructor(TableBatchType, schema, batchSize = DEFAULT_BATCH_SIZE) {
+  constructor(TableBatchType, schema, batchSize = DEFAULT_BATCH_SIZE, options) {
     this.TableBatchType = TableBatchType;
     this.schema = schema;
     this.batchSize = batchSize;
     this.batch = null;
     this.batchCount = 0;
-    this.bytesRead = 0;
+    this.bytesUsed = 0;
+    this.options = options;
   }
 
   addRow(row) {
     if (!this.batch) {
       const {TableBatchType} = this;
-      this.batch = new TableBatchType(this.schema, this.batchSize);
+      this.batch = new TableBatchType(this.schema, this.batchSize, this.options);
     }
 
     this.batch.addRow(row);
   }
 
   chunkComplete(chunk) {
-    this.bytesRead += chunk.byteLength || chunk.length || 0;
+    this.bytesUsed += chunk.byteLength || chunk.length || 0;
     if (this.batch) {
       this.batch.chunkComplete();
     }
@@ -34,25 +35,19 @@ export default class TableBatchBuilder {
     return Boolean(this.batch);
   }
 
-  getNormalizedBatch() {
+  getBatch(options = {}) {
+    if (Number.isFinite(options.bytesUsed)) {
+      this.bytesUsed = options.bytesUsed;
+    }
+
     if (this.batch) {
-      const normalizedBatch = this.batch.getNormalizedBatch();
+      const normalizedBatch = this.batch.getBatch();
       this.batch = null;
       normalizedBatch.count = this.batchCount;
       this.batchCount++;
-      normalizedBatch.bytesRead = this.bytesRead;
+      normalizedBatch.bytesUsed = this.bytesUsed;
       return normalizedBatch;
     }
     return null;
   }
-
-  // complete() {
-  //   let batch = null;
-  //   if (this.batch) {
-  //     batch = this.batch;
-  //     batch.complete();
-  //     this.batch = null;
-  //   }
-  //   return batch;
-  // }
 }

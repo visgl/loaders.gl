@@ -15,7 +15,8 @@ export default async function* parseJSONInBatches(asyncIterator, options) {
   let schema = null;
 
   const parser = new StreamingJSONParser();
-  tableBatchBuilder = tableBatchBuilder || new TableBatchBuilder(TableBatchType, schema, batchSize);
+  tableBatchBuilder =
+    tableBatchBuilder || new TableBatchBuilder(TableBatchType, schema, {batchSize});
 
   for await (const chunk of asyncIterator) {
     const rows = parser.write(chunk);
@@ -39,18 +40,18 @@ export default async function* parseJSONInBatches(asyncIterator, options) {
       tableBatchBuilder.addRow(row);
       // If a batch has been completed, emit it
       if (tableBatchBuilder.isFull()) {
-        yield tableBatchBuilder.getNormalizedBatch();
+        yield tableBatchBuilder.getBatch();
       }
     }
 
     tableBatchBuilder.chunkComplete(chunk);
     if (tableBatchBuilder.isFull()) {
-      yield tableBatchBuilder.getNormalizedBatch();
+      yield tableBatchBuilder.getBatch();
     }
   }
 
   // yield final batch
-  const batch = tableBatchBuilder.getNormalizedBatch();
+  const batch = tableBatchBuilder.getBatch();
   if (batch) {
     yield batch;
   }

@@ -1,7 +1,7 @@
 export default class ColumnarTableBatch {
-  constructor(schema, batchSize) {
+  constructor(schema, options = {}) {
     this.schema = schema;
-    this.batchSize = batchSize;
+    this.batchSize = options.batchSize || 'auto';
 
     this.length = 0;
     this.allocated = 0;
@@ -32,7 +32,7 @@ export default class ColumnarTableBatch {
     return this.length >= this.allocated;
   }
 
-  getNormalizedBatch() {
+  getBatch(options = {}) {
     this.pruneColumns();
     const columns = Array.isArray(this.schema) ? this.columns : {};
 

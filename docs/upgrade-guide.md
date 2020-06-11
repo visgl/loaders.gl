@@ -5,19 +5,23 @@
 **`@loaders.gl/core`**
 
 - `selectLoader` is no longer experimental. If you were using the experimental export, replace `_selectLoader` with `selectLoader`. Also note that argument order has changed and now aligns with `load` and `parse`
-- `parseInBatchesSync` has been removed, as all batched parsing is now performed asynchronously.
+- `parseInBatchesSync` has been removed, all batched parsing is now performed asynchronously.
 
-Some infrequently used iterator utilities have been changed.
+Some iterator utilities that are mostly used internally have been changed.
 
-| Function                    | Replacement / Status              |
-| --------------------------- | --------------------------------- |
-| `makeChunkIterator`         | combined into `makeIterator`      |
-| `makeStreamIterator`        | combined into `makeIterator`      |
-| `textDecoderAsyncIterator`  |                                   | `makeTextDecoderIterator` |
-| `lineAsyncIterator`         | `makeLineIterator`                |
-| `numberedLineAsyncIterator` | `makeNumberedLineIterator`        |
-| `getStreamIterator`         | Deprecated in 2.1, removed in 2.2 |
-| `contatenateAsyncIterator`  | Deprecated in 2.1, removed in 2.2 |
+| Function                    | Replacement / Status                  |
+| --------------------------- | ------------------------------------- |
+| `makeChunkIterator`         | combined into `makeIterator`          |
+| `makeStreamIterator`        | combined into `makeIterator`          |
+| `textDecoderAsyncIterator`  | `makeTextDecoderIterator`             |
+| `lineAsyncIterator`         | `makeLineIterator`                    |
+| `numberedLineAsyncIterator` | `makeNumberedLineIterator`            |
+| `getStreamIterator`         | Deprecated in 2.1, now removed in 2.2 |
+| `contatenateAsyncIterator`  | Deprecated in 2.1, now removed in 2.2 |
+
+**`@loaders.gl/csv`**
+
+- Header auto-detection now requires `options.csv.header` to be set to `'auto'` instead of `undefined`. `'auto'` is the new default value for this option, so this change is unlikely to affect applications.
 
 **`@loaders.gl/ply`**
 
