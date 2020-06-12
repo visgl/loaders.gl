@@ -4,7 +4,7 @@ The `@loaders.gl/polyfills` provides optional support for Node.js and older brow
 
 Older browsers (mainly Edge and IE11) as well as versions of Node.js prior to v11 do not provide certain classes that loaders.gl depends on.
 
-While there are many good polyfill modules available on `npm`, to make the search for a version that works perfectly with loaders.gl a little easier, a polyfill module is included.
+Note that while `@loaders.gl/polyfills` is designed to work perfectly with other loaders.gl modules, there are other good polyfill modules available on `npm` that can also be used.
 
 ## Installation
 
@@ -27,16 +27,17 @@ import '@loaders.gl/core';
 | --------------------------- | ------------ | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `TextEncoder`/`TextDecoder` | Node.js < 11 | Yes (Older browsers) | Only UTF8 is guaranteed to be supported                                                                                                                                                     |
 | `atob`/`btoa`               | All versions | No                   | Note: these functions are [not unicode safe](https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding#The_Unicode_Problem), but OK to use for test cases. |
-| `fetch`                     | All versions | No                   | A subset of the fetch API is supported, see below.                                                                                                                                          |
+| `fetch`                     | All versions | No                   | A subset of the fetch API is supported, see below.                                                                                                                                          | `Response` | All versions | No | A subset of the `Response` API is supported, see below. | `Headers` | All versions | No | A subset of the fetch API is supported, see below. |
 
 ## fetch Polyfill
 
-The Node.js `fetch` polyfill supports a subset of the browser fetch API, including:
+The Node.js `fetch`, `Response` and `Headers` polyfills supports a large subset of the browser fetch API, including:
 
-- `Response.text()`, `Response.arrayBuffer()`.
+- `Response.text()`, `Response.arrayBuffer()`, `Response.json()`
 - `Response.body` stream
-- limited support for `headers`
+- `headers`, `status`, `statusText` etc.
 - data uri / base64 decoding
+- automatic gzip, brotli and deflate decompression support for responses with `content-encoding` headers.
 
 # TextEncoder and TextDecoder Polyfills
 
@@ -48,7 +49,7 @@ Note: The provided polyfills only guarantee UTF8 support.
 
 - Applications should only install this module if they need to run under older environments. While the polyfills are only installed at runtime if the platform does not already support them, importing this module will increase the application's bundle size.
 - Refer to browser documentation for the usage of these classes, e.g. MDN.
-- In the browser, overhead of using these imports is very low, as most polyfills are only bundled under Node.js.
+- In the browser, overhead of using these imports is not as high, as most polyfills are only bundled under Node.js.
 - If working under older browsers, e.g. IE11, you may need to install your own TextEncoder/TextDecoder polyfills before loading this library
 
 ## Attribution
