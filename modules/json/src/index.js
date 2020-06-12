@@ -5,4 +5,5 @@ export {
 } from './geojson-loader';
 
 // EXPERIMENTAL EXPORTS - WARNING: MAY BE REMOVED WIHTOUT NOTICE IN FUTURE RELEASES
+export {default as _JSONPath} from './lib/jsonpath/jsonpath';
 export {default as _ClarinetParser} from './lib/clarinet/clarinet';
