@@ -1,16 +1,18 @@
 # WKTLoader
 
 <p class="badges">
-  <img src="https://img.shields.io/badge/From-v2.1-blue.svg?style=flat-square" alt="From-v2.1" /> 
+  <img src="https://img.shields.io/badge/From-v2.1-blue.svg?style=flat-square" alt="From-v2.1" />
 </p>
 
-Loader and writer for the [Well-known text] format for representation of geometry.
+Loader and writer for the [Well-known text][wkt] format for representation of geometry.
+
+[wkt]: https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry
 
 | Loader                | Characteristic                                                                                               |
 | --------------------- | ------------------------------------------------------------------------------------------------------------ |
 | File Extension        | `.wkt`,                                                                                                      |
 | File Type             | Text                                                                                                         |
-| File Format           | [Well Known Text](https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry)                  |
+| File Format           | [Well Known Text][wkt]                                                                                       |
 | Data Format           | [Geometry](/docs/specifications/category-gis)                                                                |
 | Supported APIs        | `load`, `parse`, `parseSync`                                                                                 |
 | Decoder Type          | Synchronous                                                                                                  |
