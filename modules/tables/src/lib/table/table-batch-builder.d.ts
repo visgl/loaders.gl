@@ -3,6 +3,7 @@ import {Schema, Batch, IBatchBuilder} from './table-types';
 // TODO define interface instead
 type GetBatchOptions = {
   bytesUsed?: number;
+  [key: string]: any;
 };
 
 export default class TableBatchBuilder implements IBatchBuilder {

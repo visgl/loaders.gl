@@ -1,30 +1,46 @@
 /**
  * A parser for a minimal subset of the jsonpath standard
  * Full JSON path parsers for JS exist but are quite large (bundle size)
- * 
+ *
  * Supports
- * 
+ *
  *   `$.component.component.component`
  */
 export default class JSONPath {
-  constructor(pathstring = null) {
-    this.path = [];
+  constructor(path = null) {
+    this.path = ['$'];
 
-    if (pathstring) {
-      const components = pathstring.split('.');
-      if (components[0] !== '$') {
+    if (Array.isArray(path)) {
+      this.path = path;
+    }
+
+    // Parse a string as a JSONPath
+    if (typeof path === 'string') {
+      this.path = path.split('.');
+      if (this.path[0] !== '$') {
         throw new Error('JSONPaths must start with $');
       }
-      components.shift();
     }
   }
 
-  push() {
-    this.path.push();
+  clone() {
+    return new JSONPath(this.path);
+  }
+
+  toString() {
+    return this.path.join('.');
+  }
+
+  push(name) {
+    this.path.push(name);
   }
 
   pop() {
     this.path.pop();
+  }
+
+  set(name) {
+    this.path[this.path.length - 1] = name;
   }
 
   equals(other) {

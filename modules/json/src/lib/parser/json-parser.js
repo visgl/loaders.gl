@@ -1,4 +1,5 @@
 import ClarinetParser from '../clarinet/clarinet';
+import JSONPath from '../jsonpath/jsonpath';
 
 // JSONParser builds a JSON object using the events emitted by the Clarinet parser
 export default class JSONParser {
@@ -7,12 +8,11 @@ export default class JSONParser {
     this._initializeParser();
   }
 
-  reset(options = {}) {
-    this.jsonpaths = options.jsonpaths || {};
+  reset() {
     this.result = undefined;
     this.previousStates = [];
     this.currentState = Object.freeze({container: [], key: null});
-    this.path = [];
+    this.jsonpath = new JSONPath();
   }
 
   write(chunk) {
@@ -36,33 +36,33 @@ export default class JSONParser {
   }
 
   _openArray(newContainer = []) {
-    this.path.push(null);
+    this.jsonpath.push(null);
     this._pushOrSet(newContainer);
     this.previousStates.push(this.currentState);
     this.currentState = {container: newContainer, isArray: true, key: null};
   }
 
   _closeArray() {
-    this.path.pop();
+    this.jsonpath.pop();
     this.currentState = this.previousStates.pop();
   }
 
   _openObject(newContainer = {}) {
-    this.path.push(null);
+    this.jsonpath.push(null);
     this._pushOrSet(newContainer);
     this.previousStates.push(this.currentState);
     this.currentState = {container: newContainer, isArray: false, key: null};
   }
 
   _closeObject() {
-    this.path.pop();
+    this.jsonpath.pop();
     this.currentState = this.previousStates.pop();
   }
 
   _initializeParser() {
     this.parser = new ClarinetParser({
       onready: () => {
-        this.path= [];
+        this.jsonpath = new JSONPath();
         this.previousStates.length = 0;
         this.currentState.container.length = 0;
       },
@@ -75,7 +75,7 @@ export default class JSONParser {
       },
 
       onkey: name => {
-        this.path[this.path.length - 1] = name;
+        this.jsonpath.set(name);
         this.currentState.key = name;
       },
 
@@ -86,7 +86,7 @@ export default class JSONParser {
       onopenarray: () => {
         this._openArray();
       },
-  
+
       onclosearray: () => {
         this._closeArray();
       },

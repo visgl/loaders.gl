@@ -72,8 +72,19 @@ Supports table category options such as `batchType` and `batchSize`.
 
 | Option                    | From | Type    | Default | Description                                                                                                                           |
 | ------------------------- | ---- | ------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `json.table`              | v2.0 | Boolean | `false` | Parses non-streaming JSON as table, i.e. return the first embedded array in the JSON. Always `true` during batched/streaming parsing. |
-| `json._rootObjectBatches` | v2.1 | Boolean | `false` | Yield an initial and final batch containing the partial and complete root object (excluding the array being streamed).                |
+| `json.table`              | [![Website shields.io](https://img.shields.io/badge/v2.0-blue.svg?style=flat-square)] | Boolean | `false` | Parses non-streaming JSON as table, i.e. return the first embedded array in the JSON. Always `true` during batched/streaming parsing. |
+| `json.jsonpaths`          | [![Website shields.io](https://img.shields.io/badge/v2.2-blue.svg?style=flat-square)] | `string[]` | `[]` | A list of JSON paths (see below) indicating the array that can be streamed. |
+| `json._rootObjectBatches` | [![Website shields.io](https://img.shields.io/badge/v2.1-blue.svg?style=flat-square)] | Boolean | `false` | Yield an initial and final batch containing the partial and complete root object (excluding the array being streamed).                |
+
+## JSONPaths
+
+A minimal subset of the JSONPath syntax is supported, to specify which array in a JSON object should be streamed as batchs. 
+
+`$.component1.component2.component3`
+
+- No support for wildcards, brackets etc. Only paths starting with `$` (JSON root) are supported.
+- Regardless of the paths provided, only arrays will be streamed.
+
 
 ## Attribution
 
