@@ -39,50 +39,40 @@ export default class StreamingJSONParser extends JSONParser {
     return this.path;
   }
 
+  _checkJSONPath(jsonPaths) {
+    const currentPath = this.getPath();
+    for (const jsonPath of jsonPaths) {
+      if (jsonPath.equal(currentPath)) {
+        return true;
+      }
+    }
+  }
   // PRIVATE METHODS
 
   _extendParser() {
-    // Redefine onopenarray to locate top-level array
+    debugger
+    // Redefine onopenarray to locate and inject value for top-level array
     this.parser.onopenarray = () => {
-      debugger
-      this.path.push(0);
-      console.error(this.path);
       if (!this.topLevelArray) {
+        console.debug(`Testing JSONPath`, this.getPath());
         this.topLevelArray = [];
-        this._openContainer(this.topLevelArray);
+        this._openArray(this.topLevelArray);
       } else {
-        this._openContainer([]);
+        this._openArray();
       }
     };
 
-    this.parser.onclosearray = () => {
-      this.path.pop();
-      console.error(this.path);
-    };
-
+    // Redefine onopenarray to inject value for top-level object
     this.parser.onopenobject = name => {
-      this.path.push(name);
-      console.error(this.path);
-
       if (!this.topLevelObject) {
         this.topLevelObject = {};
-        this._openContainer(this.topLevelObject);
+        this._openObject(this.topLevelObject);
       } else {
-        this._openContainer({});
+        this._openObject({});
       }
       if (typeof name !== 'undefined') {
         this.parser.onkey(name);
       }
-    };
-
-    this.parser.onkey = name => {
-      this.path[this.path.length] = name;
-      console.error(this.path);
-    };
-
-    this.parser.oncloseobject = () => {
-      this.path.pop();
-      console.error(this.path);
     };
   }
 }

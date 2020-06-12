@@ -7,10 +7,12 @@ export default class JSONParser {
     this._initializeParser();
   }
 
-  reset() {
+  reset(options = {}) {
+    this.jsonpaths = options.jsonpaths || {};
     this.result = undefined;
     this.previousStates = [];
     this.currentState = Object.freeze({container: [], key: null});
+    this.path = [];
   }
 
   write(chunk) {
@@ -33,44 +35,60 @@ export default class JSONParser {
     }
   }
 
-  _openContainer(newContainer) {
+  _openArray(newContainer = []) {
+    this.path.push(null);
     this._pushOrSet(newContainer);
     this.previousStates.push(this.currentState);
-    this.currentState = {container: newContainer, key: null};
+    this.currentState = {container: newContainer, isArray: true, key: null};
   }
 
-  _closeContainer() {
+  _closeArray() {
+    this.path.pop();
+    this.currentState = this.previousStates.pop();
+  }
+
+  _openObject(newContainer = {}) {
+    this.path.push(null);
+    this._pushOrSet(newContainer);
+    this.previousStates.push(this.currentState);
+    this.currentState = {container: newContainer, isArray: false, key: null};
+  }
+
+  _closeObject() {
+    this.path.pop();
     this.currentState = this.previousStates.pop();
   }
 
   _initializeParser() {
     this.parser = new ClarinetParser({
       onready: () => {
+        this.path= [];
         this.previousStates.length = 0;
         this.currentState.container.length = 0;
       },
 
       onopenobject: name => {
-        this._openContainer({});
+        this._openObject({});
         if (typeof name !== 'undefined') {
           this.parser.onkey(name);
         }
       },
 
       onkey: name => {
+        this.path[this.path.length - 1] = name;
         this.currentState.key = name;
       },
 
       oncloseobject: () => {
-        this._closeContainer();
+        this._closeObject();
       },
 
       onopenarray: () => {
-        this._openContainer([]);
+        this._openArray();
       },
-
+  
       onclosearray: () => {
-        this._closeContainer();
+        this._closeArray();
       },
 
       onvalue: value => {
