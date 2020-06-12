@@ -7,7 +7,7 @@ const TEST_CASES = [
   {jsonpath: '$.features.*', expected: ['features', '*']}
 ];
 
-test('clarinet#track position', async t => {
+test('JSONPath#parsing', async t => {
   for (const tc of TEST_CASES) {
     const jsonpath = new _JSONPath(tc.jsonpath);
     const expected = new _JSONPath(tc.expected);
