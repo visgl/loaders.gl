@@ -63,6 +63,33 @@ test('JSONLoader#loadInBatches(geojson.json, rows, batchSize = 10)', async t => 
   t.end();
 });
 
+test('JSONLoader#loadInBatches(jsonpaths)', async t => {
+  let iterator = await loadInBatches(GEOJSON_PATH, JSONLoader, {json: {jsonpaths: ['$.features']}});
+
+  let batchCount = 0;
+  let rowCount = 0;
+  let byteLength = 0;
+  for await (const batch of iterator) {
+    batchCount++;
+    rowCount += batch.length;
+    byteLength = batch.bytesUsed;
+  }
+
+  t.ok(batchCount <= 3, 'Correct number of batches received');
+  t.equal(rowCount, 308, 'Correct number of row received');
+  t.equal(byteLength, 135910, 'Correct number of bytes received');
+
+  iterator = await loadInBatches(GEOJSON_PATH, JSONLoader, {json: {jsonpaths: ['$.featureTypo']}});
+
+  rowCount = 0;
+  for await (const batch of iterator) {
+    rowCount += batch.length;
+  }
+
+  t.equal(rowCount, 0, 'Correct number of row received');
+  t.end();
+});
+
 // TODO - columnar table batch support not yet fixed
 /*
 test('JSONLoader#loadInBatches(geojson.json, columns, batchSize = auto)', async t => {
