@@ -27,16 +27,36 @@ export async function parseInBatches(data, loaders, options, url) {
 }
 
 async function parseWithLoaderInBatches(loader, data, options, context) {
-  // Create async iterator adapter for data, and concatenate result
   if (!loader.parseInBatches) {
+    // TODO - call parse and emit a single batch (plus metadata batch)
     throw new Error('loader does not support parseInBatches');
   }
 
+  // Create async iterator adapter for data, and concatenate result
   const inputIterator = await getAsyncIteratorFromData(data);
   // Converts ArrayBuffer chunks to text chunks (leaves text chunks alone)
   // if (loader.text) {
   //   inputIterator = makeTextDecoderIterator(inputIterator);
   // }
   const outputIterator = loader.parseInBatches(inputIterator, options, context, loader);
-  return outputIterator;
+
+  // Generate metadata batch if requested
+  if (!options.metadata) {
+    return outputIterator;
+  }
+
+  const metadataBatch = {
+    batchType: 'metadata',
+    metadata: {
+      _loader: loader,
+      _context: context
+    }
+  };
+
+  async function* makeMetadataBatchIterator() {
+    yield metadataBatch;
+    yield* outputIterator;
+  }
+
+  return makeMetadataBatchIterator();
 }

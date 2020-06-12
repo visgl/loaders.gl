@@ -17,6 +17,7 @@ import './lib/register-loaders.spec';
 import './lib/select-loader.spec';
 import './lib/parse.spec';
 import './lib/load.spec';
+import './lib/parse-in-batches.spec';
 
 // TODO - The worker-utils specs test loading, not just worker farm
 // so we run them after util tests, until loading has been split out

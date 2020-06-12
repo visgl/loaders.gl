@@ -10,6 +10,10 @@ Typescript type definitions (`d.ts` files) are now provided for some loaders.gl 
 
 ### Loader Improvements
 
+**@loaders.gl/core**
+
+- `parseInBatches` a new `options.metadata` option adds an initial batch with metadata about what data format is being loaded.
+
 **@loaders.gl/images**
 
 The `ImageLoader` now loads images as `Imagebitmap` by default on browsers that support `ImageBitmap` (Chrome and Firefox). The performance improvements are dramatic, which can be verified in the new [benchmark example](https://loaders.gl/examples/benchmarks).
@@ -39,7 +43,8 @@ Worker support for the `WKTLoader`, designed to support future binary data impro
 
 **@loaders.gl/csv**
 
-- Header auto-detection via `options.csv.header: 'auto'`.
+- `parseInBatches` now returns a `batch.bytesUsed` field to enable progress bars.
+- Header auto-detection available via `options.csv.header: 'auto'`.
 
 **@loaders.gl/arrow**
 
