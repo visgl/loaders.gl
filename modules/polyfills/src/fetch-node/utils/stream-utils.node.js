@@ -6,10 +6,6 @@ import zlib from 'zlib';
 
 import {toArrayBuffer} from './decode-data-uri.node';
 
-const DEFAULT_OPTIONS = {
-  dataType: 'arraybuffer'
-};
-
 const isRequestURL = url => url.startsWith('http:') || url.startsWith('https:');
 
 // Returns a promise that resolves to a readable stream
