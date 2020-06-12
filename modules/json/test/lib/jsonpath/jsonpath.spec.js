@@ -2,9 +2,9 @@ import test from 'tape-promise/tape';
 import {_JSONPath} from '@loaders.gl/json';
 
 const TEST_CASES = [
-  {jsonpath: '$', path: []},
-  {jsonpath: '$.features', path: ['features']},
-  {jsonpath: '$.features.*', path: ['features', '*']}
+  {jsonpath: '$', expected: []},
+  {jsonpath: '$.features', expected: ['features']},
+  {jsonpath: '$.features.*', expected: ['features', '*']}
 ];
 
 test('clarinet#track position', async t => {

@@ -10,8 +10,14 @@ export default class JSONPath {
   constructor(path = null) {
     this.path = ['$'];
 
+    if (path instanceof JSONPath) {
+      this.path = [...path.path];
+      return;
+    }
+
     if (Array.isArray(path)) {
-      this.path = path;
+      this.path.push(...path);
+      return;
     }
 
     // Parse a string as a JSONPath
