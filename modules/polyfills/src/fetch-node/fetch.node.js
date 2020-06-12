@@ -1,18 +1,28 @@
 import fs from 'fs'; // `fs` will be empty object in browsers (see package.json "browser" field).
 import Response from './response.node';
 import Headers from './headers.node';
+
+import {decodeDataUri} from './utils/decode-data-uri.node';
 import {createReadStream} from './utils/stream-utils.node';
 
 const isDataURL = url => url.startsWith('data:');
 const isRequestURL = url => url.startsWith('http:') || url.startsWith('https:');
 
 /**
- * Emulation of Browser fetch
+ * Emulation of Browser fetch for Node.js
  * @param url
  * @param options
  */
 export default async function fetchNode(url, options) {
   try {
+    // Handle data urls in node, to match `fetch``
+    // Note - this loses the MIME type, data URIs are handled directly in fetch
+    if (isDataURL(url)) {
+      const {arrayBuffer, mimeType} = decodeDataUri(url);
+      return new Response(arrayBuffer, {
+        headers: {'content-type': mimeType}
+      });
+    }
     // Need to create the stream in advance since Response constructor needs to be sync
     const httpResponseOrStream = await createReadStream(url, options);
     const body = httpResponseOrStream;
@@ -36,25 +46,21 @@ function getStatus(httpResponse) {
 }
 
 function getHeaders(url, httpResponse) {
-  // Under Node.js we return a mock "fetch response object"
-  // so that apps can use the same API as in the browser.
-  //
-  // Note: This is intended to be a lightweight implementation and will have limitations.
-  // Apps that require more complete fech emulation in Node
-  // are encouraged to use dedicated fetch polyfill modules.
-
   const headers = {};
 
-  if (httpResponse && httpResponse.getHeaders) {
-    const httpHeaders = httpResponse.getHeaders();
-    for (const name in httpHeaders) {
-      const header = headers[name];
-      headers[name] = String(header);
+  if (httpResponse && httpResponse.headers) {
+    const httpHeaders = httpResponse.headers;
+    for (const key in httpHeaders) {
+      const header = httpHeaders[key];
+      headers[key.toLowerCase()] = String(header);
     }
-  } else {
+  }
+
+  // Fix up content length if we can for best progress experience
+  if (!headers['content-length']) {
     const contentLength = getContentLength(url);
     if (Number.isFinite(contentLength)) {
-      headers['Content-Length'] = contentLength;
+      headers['content-length'] = contentLength;
     }
   }
 

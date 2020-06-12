@@ -27,6 +27,7 @@ test('load#auto detect loader', t => {
   };
   // @ts-ignore TS2345: Argument of type not assignable
   registerLoaders(TEST_LOADER);
+  debugger
   // @ts-ignore TODO remove this ts-ignore
   load('package.json', {JSON: {option: true}});
 });

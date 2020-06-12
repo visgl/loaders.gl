@@ -27,8 +27,9 @@ test('fetch polyfill (Node.js)#fetch() ignores url query params when loading fil
   t.end();
 });
 
-test.only('fetch polyfill (Node.js)#fetch() able to handle "Accept-Encoding: gzip"', async t => {
+test('fetch polyfill (Node.js)#fetch() able to handle "Accept-Encoding: gzip"', async t => {
   if (!isBrowser) {
+    // Github will serve the desired compression
     const headers = {
       'Accept-Encoding': 'gzip'
     };
@@ -44,6 +45,7 @@ test.only('fetch polyfill (Node.js)#fetch() able to handle "Accept-Encoding: gzi
 
 test('fetch polyfill (Node.js)#fetch() able to handle "Accept-Encoding: br"', async t => {
   if (!isBrowser) {
+    // Github will serve the desired compression
     const headers = {
       'Accept-Encoding': 'br'
     };
@@ -58,6 +60,7 @@ test('fetch polyfill (Node.js)#fetch() able to handle "Accept-Encoding: br"', as
 
 test('fetch polyfill (Node.js)#fetch() able to handle "Accept-Encoding: deflate"', async t => {
   if (!isBrowser) {
+    // Github will serve the desired compression
     const headers = {
       'Accept-Encoding': 'deflate'
     };

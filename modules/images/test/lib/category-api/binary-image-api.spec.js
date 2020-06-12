@@ -8,25 +8,32 @@ import {getBinaryImageMetadata} from '@loaders.gl/images';
 
 const readFile = url => fetchFile(url).then(response => response.arrayBuffer());
 
-const IMAGES = {};
-const IMAGES_PROMISE = Promise.all([
-  readFile('@loaders.gl/images/test/data/img1-preview.png').then(
-    data => (IMAGES['image/png'] = data)
-  ),
-  readFile('@loaders.gl/images/test/data/img1-preview.jpeg').then(
-    data => (IMAGES['image/jpeg'] = data)
-  ),
-  readFile('@loaders.gl/images/test/data/img1-preview.gif').then(
-    data => (IMAGES['image/gif'] = data)
-  ),
-  readFile('@loaders.gl/images/test/data/img1-preview.bmp').then(
-    data => (IMAGES['image/bmp'] = data)
-  )
-  // readFile('@loaders.gl/images/test/data/img1-preview.tiff').then(data => IMAGES.tiff = data)
-]).then(() => IMAGES);
+let imagesPromise = null;
+const images = {};
+
+export async function loadImages() {
+  imagesPromise = imagesPromise || Promise.all([
+    readFile('@loaders.gl/images/test/data/img1-preview.png').then(
+      data => (images['image/png'] = data)
+    ),
+    readFile('@loaders.gl/images/test/data/img1-preview.jpeg').then(
+      data => (images['image/jpeg'] = data)
+    ),
+    readFile('@loaders.gl/images/test/data/img1-preview.gif').then(
+      data => (images['image/gif'] = data)
+    ),
+    readFile('@loaders.gl/images/test/data/img1-preview.bmp').then(
+      data => (images['image/bmp'] = data)
+    )
+  ]);
+
+  await imagesPromise;
+
+  return images;
+}
 
 test('getBinaryImageMetadata#mimeType', async t => {
-  const images = await IMAGES_PROMISE;
+  const images = await loadImages();
 
   for (const mimeType in images) {
     const {mimeType: detectedMimeType} = getBinaryImageMetadata(images[mimeType]);
@@ -36,7 +43,7 @@ test('getBinaryImageMetadata#mimeType', async t => {
 });
 
 test('getBinaryImageMetadata#size', async t => {
-  const images = await IMAGES_PROMISE;
+  const images = await loadImages();
   for (const imageType in images) {
     const dimensions = getBinaryImageMetadata(images[imageType]);
     t.equals(dimensions.width, 480, `width, should work with ${imageType.toUpperCase()} files`);

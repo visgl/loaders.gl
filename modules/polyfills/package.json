@@ -40,6 +40,7 @@
     "fs": false,
     "http": false,
     "https": false,
+    "stream": false,
     "get-pixels": false,
     "ndarray": false,
     "save-pixels": false,

@@ -1,4 +1,4 @@
-/* global TextDecoder */
+/* global TextDecoder, TextEncoder */
 import assert from '../utils/assert';
 import {decompressReadStream, concatenateReadStream} from './utils/stream-utils.node';
 import Headers from './headers.node';
@@ -19,6 +19,8 @@ const isReadableNodeStream = x =>
  *
  * See https://developer.mozilla.org/en-US/docs/Web/API/Response
  */
+import {Readable} from 'stream';
+
 export default class Response {
   // TODO - handle ArrayBuffer, ArrayBufferView, Buffer
   constructor(body, options = {}) {
@@ -31,8 +33,15 @@ export default class Response {
     this._headers = new Headers(headers);
     this.bodyUsed = false;
 
-    debugger
-    this._body = isReadableNodeStream(body) ? decompressReadStream(body, headers) : body;
+    // Check for content-encoding and create a decompression stream
+    if (isReadableNodeStream(body)) {
+      this._body = decompressReadStream(body, headers);
+    } else {
+      if (typeof body === 'string') {
+        body = new TextEncoder().encode(body);
+      }
+      this._body = Readable.from([body]);
+    }
   }
 
   // Subset of Properties
@@ -76,7 +85,6 @@ export default class Response {
   }
 
   async text() {
-    debugger
     const arrayBuffer = await this.arrayBuffer();
     const textDecoder = new TextDecoder();
     return textDecoder.decode(arrayBuffer);

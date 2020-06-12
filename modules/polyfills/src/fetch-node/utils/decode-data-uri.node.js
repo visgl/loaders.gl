@@ -12,16 +12,16 @@ const isBuffer = x => x && x instanceof Buffer;
  * @param {string} uri - a data URI (assumed to be valid)
  * @returns {Object} { buffer, mimeType }
  */
-export default function decodeDataUri(uri) {
+export function decodeDataUri(uri) {
   const dataIndex = uri.indexOf(',');
 
   let buffer;
   let mimeType;
   if (uri.slice(dataIndex - 7, dataIndex) === ';base64') {
-    buffer = new Buffer(uri.slice(dataIndex + 1), 'base64');
+    buffer = Buffer.from(uri.slice(dataIndex + 1), 'base64');
     mimeType = uri.slice(5, dataIndex - 7).trim();
   } else {
-    buffer = new Buffer(decodeURIComponent(uri.slice(dataIndex + 1)));
+    buffer = Buffer.from(decodeURIComponent(uri.slice(dataIndex + 1)));
     mimeType = uri.slice(5, dataIndex).trim();
   }
 
@@ -60,5 +60,5 @@ export function toArrayBuffer(data) {
     return uint8Array.buffer;
   }
 
-  return assert(false);
+  return assert(false, `toArrayBuffer(${JSON.stringify(data, null, 2).slice(40)})`);
 }
