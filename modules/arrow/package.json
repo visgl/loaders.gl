@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/arrow",
-  "version": "2.2.0-alpha.2",
+  "version": "2.2.0-alpha.3",
   "description": "Simple columnar table loader for the Apache Arrow format",
   "license": "MIT",
   "publishConfig": {
