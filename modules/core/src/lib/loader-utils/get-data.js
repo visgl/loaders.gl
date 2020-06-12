@@ -105,12 +105,11 @@ export async function getAsyncIteratorFromData(data) {
     return data;
   }
 
-  // TODO: Our fetchFileReaderObject response does not yet support a body stream
-  if (isResponse(data) && data.body) {
+  if (isResponse(data)) {
     // Note Since this function is not async, we currently can't load error message, just status
     await checkFetchResponseStatus(data);
     // TODO - bug in polyfill, body can be a Promise under Node.js
-    return makeIterator(await data.body);
+    return makeIterator(data.body);
   }
 
   if (isReadableStream(data)) {

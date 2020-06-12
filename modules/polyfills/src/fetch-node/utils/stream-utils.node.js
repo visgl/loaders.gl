@@ -1,45 +1,101 @@
-const zlib = require('zlib');
+/* global URL */
+import fs from 'fs'; // `fs` will be empty object in browsers (see package.json "browser" field).
+import http from 'http';
+import https from 'https';
+import zlib from 'zlib';
 
-export function concatenateReadStream(readStream) {
+import {toArrayBuffer} from './decode-data-uri.node';
+
+const isRequestURL = url => url.startsWith('http:') || url.startsWith('https:');
+
+// Returns a promise that resolves to a readable stream
+export async function createReadStream(url, options) {
+  // Handle file streams in node
+  if (!isRequestURL(url)) {
+    const noqueryUrl = url.split('?')[0];
+    // const readFileOptions = getReadFileOptions(options);
+    const stream = fs.createReadStream(noqueryUrl, {encoding: null});
+    // TODO - if there is no error handler program dumps on EISDIR
+    // eslint-disable-next-line
+    stream.on('error', error => console.error(error));
+    return stream;
+  }
+
+  // HANDLE HTTP/HTTPS REQUESTS IN NODE
+  // TODO: THIS IS BAD SINCE WE RETURN A PROMISE INSTEAD OF A STREAM
+  return await new Promise((resolve, reject) => {
+    const requestFunction = url.startsWith('https:') ? https.request : http.request;
+
+    const requestOptions = getRequestOptions(url, options);
+    const req = requestFunction(requestOptions, res => resolve(res));
+    req.on('error', error => reject(error));
+    req.end();
+  });
+}
+
+export function decompressReadStream(readStream, headers) {
+  switch (headers.get('content-encoding')) {
+    case 'br':
+      return readStream.pipe(zlib.createBrotliDecompress());
+    case 'gzip':
+      return readStream.pipe(zlib.createGunzip());
+    case 'deflate':
+      return readStream.pipe(zlib.createDeflate());
+    default:
+      // No compression or an unknown one, just return it as is
+      return readStream;
+  }
+}
+
+export async function concatenateReadStream(readStream) {
   let arrayBuffer = new ArrayBuffer(0);
-  let string = '';
 
-  return new Promise((resolve, reject) => {
-    let wrappedStream;
-    switch (readStream.headers['content-encoding']) {
-      case 'br':
-        wrappedStream = readStream.pipe(zlib.createBrotliDecompress());
-        break;
-      case 'gzip':
-        wrappedStream = readStream.pipe(zlib.createGunzip());
-        break;
-      case 'deflate':
-        wrappedStream = readStream.pipe(zlib.createDeflate());
-        break;
-      default:
-        // No compression or an unknown one, just pipe it as is
-        wrappedStream = readStream;
-        break;
-    }
-
-    wrappedStream.on('data', chunk => {
+  return await new Promise((resolve, reject) => {
+    readStream.on('data', chunk => {
       if (typeof chunk === 'string') {
-        string += chunk;
-      } else {
-        arrayBuffer = concatenateArrayBuffers(arrayBuffer, chunk);
+        reject(new Error('Read stream not binary'));
       }
+      const chunkAsArrayBuffer = toArrayBuffer(chunk);
+      arrayBuffer = concatenateArrayBuffers(arrayBuffer, chunkAsArrayBuffer);
     });
 
-    wrappedStream.on('error', error => reject(error));
+    readStream.on('error', error => reject(error));
 
-    wrappedStream.on('end', () => {
-      if (readStream.complete) {
-        resolve(arrayBuffer || string);
-      } else {
-        reject('The connection was terminated while the message was still being sent');
-      }
+    readStream.on('end', () => {
+      // TODO verify if this code is still required
+      // if (readStream.complete) {
+      resolve(arrayBuffer);
+      // } else {
+      //   reject('The connection was terminated while the message was still being sent');
+      // }
     });
   });
+}
+
+// HELPERS
+
+function getRequestOptions(url, options = {}) {
+  // Ensure header keys are lower case so that we can merge without duplicates
+  const originalHeaders = options.headers || {};
+  const headers = {};
+  for (const key of Object.keys(originalHeaders)) {
+    headers[key.toLowerCase()] = originalHeaders[key];
+  }
+
+  // Add default accept-encoding to headers
+  headers['accept-encoding'] = headers['accept-encoding'] || 'gzip,br,deflate';
+
+  const urlObject = new URL(url);
+  return {
+    hostname: urlObject.hostname,
+    path: urlObject.pathname,
+    method: 'GET',
+    // Add options and user provided 'options.fetch' overrides if available
+    ...options,
+    ...(options.fetch || {}),
+    // Override with updated headers with accepted encodings:
+    headers
+  };
 }
 
 function concatenateArrayBuffers(source1, source2) {
@@ -48,5 +104,5 @@ function concatenateArrayBuffers(source1, source2) {
   const temp = new Uint8Array(sourceArray1.byteLength + sourceArray2.byteLength);
   temp.set(sourceArray1, 0);
   temp.set(sourceArray2, sourceArray1.byteLength);
-  return temp;
+  return temp.buffer;
 }

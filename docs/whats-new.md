@@ -59,6 +59,11 @@ The `Tile3DLoader` now installs the `DracoLoader`. The application no longer nee
 
 The `GLTFLoader` now installs the `DracoLoader`. The application no longer needs to import and register the `DracoWorkerLoader`.
 
+**@loaders.gl/polyfills**
+
+- The `fetch` and `Response` polyfills for Node.js have been significantly improved, supporting more types of input and parameters with higher fidelity
+- The `fetch` polyfill now automatically add the `accept-encoding` header and automatically decompresses `gzip`, `brotli` and `deflate` compressed responses.
+
 ## v2.1
 
 Release Date: Mar 16, 2020

@@ -11,7 +11,7 @@ test('fetch polyfill (Node.js)#fetch()', async t => {
   if (!isBrowser) {
     const response = await fetch(PLY_CUBE_ATT_URL);
     t.ok(response.headers, 'fetch polyfill successfully returned headers under Node.js');
-    const data = await response.text();
+    const data = await response.arrayBuffer();
     t.ok(data, 'fetch polyfill successfully loaded data under Node.js');
   }
   t.end();
@@ -21,8 +21,7 @@ test('fetch polyfill (Node.js)#fetch() ignores url query params when loading fil
   if (!isBrowser) {
     const response = await fetch(`${PLY_CUBE_ATT_URL}?v=1.2.3`);
     const data = await response.text();
-    // TODO - strip query params when doing stat in headers...
-    // t.ok(response.headers, 'fetch polyfill successfully returned headers under Node.js');
+    t.ok(response.headers, 'fetch polyfill successfully returned headers under Node.js');
     t.ok(data, 'fetch polyfill successfully loaded data under Node.js');
   }
   t.end();
@@ -30,6 +29,7 @@ test('fetch polyfill (Node.js)#fetch() ignores url query params when loading fil
 
 test('fetch polyfill (Node.js)#fetch() able to handle "Accept-Encoding: gzip"', async t => {
   if (!isBrowser) {
+    // Github will serve the desired compression
     const headers = {
       'Accept-Encoding': 'gzip'
     };
@@ -37,7 +37,7 @@ test('fetch polyfill (Node.js)#fetch() able to handle "Accept-Encoding: gzip"', 
     // In case of GitHub URL, it's honoring gzip and properly returning compressed data
     const response = await fetch(PLY_CUBE_ATT_URL, {headers});
     const data = await response.text();
-    t.ok(data.length === PLY_CUBE_ATT_SIZE, 'fetch polyfill data size as expected');
+    t.equal(data.length, PLY_CUBE_ATT_SIZE, 'fetch polyfill data size as expected');
     t.ok(data, 'fetch polyfill successfully loaded data under Node.js with "gzip" encoding');
   }
   t.end();
@@ -45,6 +45,7 @@ test('fetch polyfill (Node.js)#fetch() able to handle "Accept-Encoding: gzip"', 
 
 test('fetch polyfill (Node.js)#fetch() able to handle "Accept-Encoding: br"', async t => {
   if (!isBrowser) {
+    // Github will serve the desired compression
     const headers = {
       'Accept-Encoding': 'br'
     };
@@ -59,6 +60,7 @@ test('fetch polyfill (Node.js)#fetch() able to handle "Accept-Encoding: br"', as
 
 test('fetch polyfill (Node.js)#fetch() able to handle "Accept-Encoding: deflate"', async t => {
   if (!isBrowser) {
+    // Github will serve the desired compression
     const headers = {
       'Accept-Encoding': 'deflate'
     };

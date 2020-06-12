@@ -1,5 +1,7 @@
-// Based on https://github.com/github/fetch under MIT license
-
+/**
+ * Polyfill for Browser Headers
+ * Based on https://github.com/github/fetch under MIT license
+ */
 export default class Headers {
   constructor(headers) {
     this.map = {};
