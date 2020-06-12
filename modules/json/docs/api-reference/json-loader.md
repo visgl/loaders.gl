@@ -25,7 +25,7 @@ The JSONLoader supports streaming JSON parsing, in which case it will yield "bat
 import {JSONLoader} from '@loaders.gl/json';
 import {loadInBatches} from '@loaders.gl/core';
 
-const batches = await loadInBatches('geojson.json', JSONLoader, {json: {jsonpaths: '$.features'}});
+const batches = await loadInBatches('geojson.json', JSONLoader, {json: {jsonpaths: ['$.features']}});
 
 for await (const batch of batches) {
   // batch.data will contain a number of rows
