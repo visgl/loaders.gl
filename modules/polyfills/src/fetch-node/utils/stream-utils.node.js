@@ -5,13 +5,11 @@ import https from 'https';
 import zlib from 'zlib';
 
 import {toArrayBuffer} from './decode-data-uri.node';
-import {Stream} from 'stream';
 
 const DEFAULT_OPTIONS = {
   dataType: 'arraybuffer'
 };
 
-const isDataURL = url => url.startsWith('data:');
 const isRequestURL = url => url.startsWith('http:') || url.startsWith('https:');
 
 // Returns a promise that resolves to a readable stream
@@ -22,6 +20,7 @@ export async function createReadStream(url, options) {
     // const readFileOptions = getReadFileOptions(options);
     const stream = fs.createReadStream(noqueryUrl, {encoding: null});
     // TODO - if there is no error handler program dumps on EISDIR
+    // eslint-disable-next-line
     stream.on('error', error => console.error(error));
     return stream;
   }
@@ -33,10 +32,7 @@ export async function createReadStream(url, options) {
 
     const requestOptions = getRequestOptions(url, options);
     const req = requestFunction(requestOptions, res => resolve(res));
-    req.on('error', error => {
-      debugger;
-      reject(error);
-    });
+    req.on('error', error => reject(error));
     req.end();
   });
 }
@@ -67,10 +63,7 @@ export async function concatenateReadStream(readStream) {
       arrayBuffer = concatenateArrayBuffers(arrayBuffer, chunkAsArrayBuffer);
     });
 
-    readStream.on('error', error => {
-      debugger
-      reject(error);
-    });
+    readStream.on('error', error => reject(error));
 
     readStream.on('end', () => {
       // TODO verify if this code is still required
@@ -84,16 +77,6 @@ export async function concatenateReadStream(readStream) {
 }
 
 // HELPERS
-
-function getReadFileOptions(options = {}) {
-  options = Object.assign({}, DEFAULT_OPTIONS, options);
-  options.responseType = options.responseType || options.dataType;
-  if (fs) {
-    // set encoding for fs.readFile
-    options.encoding = options.encoding || (options.dataType === 'text' ? 'utf8' : null);
-  }
-  return options;
-}
 
 function getRequestOptions(url, options = {}) {
   // Ensure header keys are lower case so that we can merge without duplicates

@@ -2,12 +2,9 @@
 // Copyright (c) 2016-17 Karl Cheng, MIT license
 
 import test from 'tape-promise/tape';
-import {fetchFile} from '@loaders.gl/core';
 
 import {isBinaryImage, getBinaryImageMIMEType, getBinaryImageSize} from '@loaders.gl/images';
 import {loadImages} from '../category-api/binary-image-api.spec';
-
-const readFile = url => fetchFile(url).then(response => response.arrayBuffer());
 
 test('isBinaryImage (deprecated)', async t => {
   const images = await loadImages();

@@ -19,11 +19,13 @@ const IMAGE_URL = '@loaders.gl/images/test/data/img1-preview.png';
 let imagesPromise = null;
 
 async function loadImages() {
-  imagesPromise = imagesPromise || Promise.all(
-    IMAGE_TYPES.filter(isImageTypeSupported).map(type =>
-      load(IMAGE_URL, ImageLoader, {image: {type}})
-    )
-  );
+  imagesPromise =
+    imagesPromise ||
+    Promise.all(
+      IMAGE_TYPES.filter(isImageTypeSupported).map(type =>
+        load(IMAGE_URL, ImageLoader, {image: {type}})
+      )
+    );
   return await imagesPromise;
 }
 

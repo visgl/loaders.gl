@@ -9,27 +9,29 @@ import {getBinaryImageMetadata} from '@loaders.gl/images';
 const readFile = url => fetchFile(url).then(response => response.arrayBuffer());
 
 let imagesPromise = null;
-const images = {};
+const imageMap = {};
 
 export async function loadImages() {
-  imagesPromise = imagesPromise || Promise.all([
-    readFile('@loaders.gl/images/test/data/img1-preview.png').then(
-      data => (images['image/png'] = data)
-    ),
-    readFile('@loaders.gl/images/test/data/img1-preview.jpeg').then(
-      data => (images['image/jpeg'] = data)
-    ),
-    readFile('@loaders.gl/images/test/data/img1-preview.gif').then(
-      data => (images['image/gif'] = data)
-    ),
-    readFile('@loaders.gl/images/test/data/img1-preview.bmp').then(
-      data => (images['image/bmp'] = data)
-    )
-  ]);
+  imagesPromise =
+    imagesPromise ||
+    Promise.all([
+      readFile('@loaders.gl/images/test/data/img1-preview.png').then(
+        data => (imageMap['image/png'] = data)
+      ),
+      readFile('@loaders.gl/images/test/data/img1-preview.jpeg').then(
+        data => (imageMap['image/jpeg'] = data)
+      ),
+      readFile('@loaders.gl/images/test/data/img1-preview.gif').then(
+        data => (imageMap['image/gif'] = data)
+      ),
+      readFile('@loaders.gl/images/test/data/img1-preview.bmp').then(
+        data => (imageMap['image/bmp'] = data)
+      )
+    ]);
 
   await imagesPromise;
 
-  return images;
+  return imageMap;
 }
 
 test('getBinaryImageMetadata#mimeType', async t => {
