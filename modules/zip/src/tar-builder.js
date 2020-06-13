@@ -11,7 +11,7 @@ export default class TARBuilder {
       id: 'tar',
       name: 'TAR',
       extensions: ['tar'],
-      mimeType: 'application/x-tar',
+      mimeTypes: ['application/x-tar'],
       builder: TARBuilder,
       options: TAR_BUILDER_OPTIONS
     };

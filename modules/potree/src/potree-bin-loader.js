@@ -11,7 +11,7 @@ export default {
   id: 'potree',
   name: 'potree Binary Point Attributes',
   extensions: ['bin'],
-  mimeType: 'application/octet-stream',
+  mimeTypes: ['application/octet-stream'],
   // Unfortunately binary potree files have no header bytes, no test possible
   // test: ['...'],
   parseSync,

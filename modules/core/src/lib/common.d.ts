@@ -5,7 +5,7 @@ export type LoaderObject = {
   name: string;
   version: string;
   extensions: string[];
-  mimeType: string;
+  mimeTypes: string[];
   options: object;
 
   text?: boolean;

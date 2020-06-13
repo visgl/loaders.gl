@@ -1,19 +1,27 @@
-// __VERSION__ is injected by babel-plugin-version-inline
-/* global __VERSION__ */
 /* global TextDecoder */
 import {RowTableBatch} from '@loaders.gl/tables';
 import parseJSONSync from './lib/parse-json';
 import parseJSONInBatches from './lib/parse-json-in-batches';
+/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 
+// __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
+const JSONLoaderOptions = {
+  json: {
+    TableBatch: RowTableBatch,
+    batchSize: 'auto'
+  }
+};
+
+/** @type {LoaderObject} */
 export const JSONLoader = {
   id: 'json',
   name: 'JSON',
   version: VERSION,
   extensions: ['json', 'geojson'],
-  mimeType: 'text/json',
+  mimeTypes: ['text/json'],
   // TODO - support various line based JSON formats
   /*
   extensions: {
@@ -33,12 +41,7 @@ export const JSONLoader = {
   parse,
   parseTextSync,
   parseInBatches,
-  options: {
-    json: {
-      TableBatch: RowTableBatch,
-      batchSize: 'auto'
-    }
-  }
+  options: JSONLoaderOptions
 };
 
 async function parse(arrayBuffer, options) {
@@ -47,14 +50,14 @@ async function parse(arrayBuffer, options) {
 
 function parseTextSync(text, options) {
   // Apps can call the parse method directly, we so apply default options here
-  options = {...JSONLoader.options, ...options};
-  options.json = {...JSONLoader.options.json, ...options.json};
+  options = {...JSONLoaderOptions, ...options};
+  options.json = {...JSONLoaderOptions.json, ...options.json};
   return parseJSONSync(text, options);
 }
 
 async function parseInBatches(asyncIterator, options) {
   // Apps can call the parse method directly, we so apply default options here
-  options = {...JSONLoader.options, ...options};
-  options.json = {...JSONLoader.options.json, ...options.json};
+  options = {...JSONLoaderOptions, ...options};
+  options.json = {...JSONLoaderOptions.json, ...options.json};
   return parseJSONInBatches(asyncIterator, options);
 }

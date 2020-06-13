@@ -4,7 +4,7 @@ export const ZipWriter = {
   name: 'Zip Archive',
   extensions: ['zip'],
   category: 'archive',
-  mimeType: 'application/zip',
+  mimeTypes: ['application/zip'],
   encode: encodeZipAsync
 };
 

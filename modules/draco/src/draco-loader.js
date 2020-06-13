@@ -1,17 +1,18 @@
-// __VERSION__ is injected by babel-plugin-version-inline
-/* global __VERSION__ */
 import {loadDracoDecoderModule} from './lib/draco-module-loader';
 import DracoParser from './lib/draco-parser';
+/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 
+// __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
+/** @type {LoaderObject} */
 export const DracoWorkerLoader = {
   id: 'draco',
   name: 'Draco',
   version: VERSION,
   extensions: ['drc'],
-  mimeType: 'application/octet-stream',
+  mimeTypes: ['application/octet-stream'],
   binary: true,
   test: 'DRACO',
   options: {
@@ -24,6 +25,7 @@ export const DracoWorkerLoader = {
   }
 };
 
+/** @type {LoaderObject} */
 export const DracoLoader = {
   ...DracoWorkerLoader,
   parse

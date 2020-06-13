@@ -1,19 +1,28 @@
-// __VERSION__ is injected by babel-plugin-version-inline
-/* global __VERSION__ */
 /* global TextDecoder */
 import {RowTableBatch} from '@loaders.gl/tables';
 import parseJSONSync from './lib/parse-json';
 import parseJSONInBatches from './lib/parse-json-in-batches';
+/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 
+// __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
+const GeoJSONLoaderOptions = {
+  geojson: {
+    TableBatch: RowTableBatch,
+    batchSize: 'auto',
+    workerUrl: `https://unpkg.com/@loaders.gl/json@${VERSION}/dist/geojson-loader.worker.js`
+  }
+};
+
+/** @type {LoaderObject} */
 export const GeoJSONWorkerLoader = {
   id: 'geojson',
   name: 'GeoJSON',
   version: VERSION,
   extensions: ['geojson'],
-  mimeType: 'application/geo+json',
+  mimeTypes: ['application/geo+json'],
   // TODO - support various line based JSON formats
   /*
   extensions: {
@@ -30,15 +39,10 @@ export const GeoJSONWorkerLoader = {
   category: 'geometry',
   testText: null,
   text: true,
-  options: {
-    geojson: {
-      TableBatch: RowTableBatch,
-      batchSize: 'auto',
-      workerUrl: `https://unpkg.com/@loaders.gl/json@${VERSION}/dist/geojson-loader.worker.js`
-    }
-  }
+  options: GeoJSONLoaderOptions
 };
 
+/** @type {LoaderObject} */
 export const GeoJSONLoader = {
   ...GeoJSONWorkerLoader,
   parse,
@@ -52,14 +56,14 @@ async function parse(arrayBuffer, options) {
 
 function parseTextSync(text, options) {
   // Apps can call the parse method directly, we so apply default options here
-  options = {...GeoJSONLoader.options, ...options};
-  options.json = {...GeoJSONLoader.options.geojson, ...options.geojson};
+  options = {...GeoJSONLoaderOptions, ...options};
+  options.json = {...GeoJSONLoaderOptions.geojson, ...options.geojson};
   return parseJSONSync(text, options);
 }
 
 async function parseInBatches(asyncIterator, options) {
   // Apps can call the parse method directly, we so apply default options here
-  options = {...GeoJSONLoader.options, ...options};
-  options.json = {...GeoJSONLoader.options.geojson, ...options.geojson};
+  options = {...GeoJSONLoaderOptions, ...options};
+  options.json = {...GeoJSONLoaderOptions.geojson, ...options.geojson};
   return parseJSONInBatches(asyncIterator, options);
 }

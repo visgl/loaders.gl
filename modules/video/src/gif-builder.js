@@ -64,7 +64,7 @@ export default class GIFBuilder {
       id: 'gif',
       name: 'GIF',
       extensions: ['gif'],
-      mimeType: 'image/gif',
+      mimeTypes: ['image/gif'],
       builder: GIFBuilder,
       options: GIF_BUILDER_OPTIONS
     };

@@ -5,6 +5,9 @@ module.exports = {
   },
   extends: ['uber-es2015', 'prettier', 'plugin:import/errors'],
   plugins: ['import'],
+  globals: {
+    __VERSION__: 'readonly'
+  },
   rules: {
     'guard-for-in': 0,
     'generator-star-spacing': 0,

@@ -1,17 +1,18 @@
-// __VERSION__ is injected by babel-plugin-version-inline
-/* global __VERSION__ */
 /* global TextDecoder */
 import loadOBJ from './lib/load-obj';
+/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 
+// __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
+/** @type {LoaderObject} */
 export const OBJWorkerLoader = {
   id: 'obj',
   name: 'OBJ',
   version: VERSION,
   extensions: ['obj'],
-  mimeType: 'text/plain',
+  mimeTypes: ['text/plain'],
   testText: testOBJFile,
   options: {
     obj: {
@@ -20,6 +21,7 @@ export const OBJWorkerLoader = {
   }
 };
 
+/** @type {LoaderObject} */
 export const OBJLoader = {
   ...OBJWorkerLoader,
   parse: async (arrayBuffer, options) => loadOBJ(new TextDecoder().decode(arrayBuffer), options),

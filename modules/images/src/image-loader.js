@@ -1,8 +1,8 @@
-// __VERSION__ is injected by babel-plugin-version-inline
-/* global __VERSION__ */
 import parseImage from './lib/parsers/parse-image';
 import {getBinaryImageMetadata} from './lib/category-api/binary-image-api';
+/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 
+// __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
@@ -18,7 +18,9 @@ const MIME_TYPES = [
 ];
 
 // Loads a platform-specific image type that can be used as input data to WebGL textures
+/** @type {LoaderObject} */
 const ImageLoader = {
+  id: 'image',
   name: 'Images',
   version: VERSION,
   mimeTypes: MIME_TYPES,

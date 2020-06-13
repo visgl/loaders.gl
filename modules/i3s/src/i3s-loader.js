@@ -1,11 +1,11 @@
-/* global URL, TextDecoder,  __VERSION__ */ // __VERSION__ is injected by babel-plugin-version-inline
-
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
-
+/* global URL, TextDecoder */
 import {load} from '@loaders.gl/core';
-
 import {normalizeTileData, normalizeTilesetData} from './lib/parsers/parse-i3s';
 import {parseI3STileContent} from './lib/parsers/parse-i3s-tile-content';
+/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
+
+// __VERSION__ is injected by babel-plugin-version-inline
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 const TILESET_REGEX = /layers\/[0-9]+$/;
 const TILE_HEADER_REGEX = /nodes\/([0-9-]+|root)$/;
@@ -32,11 +32,12 @@ async function parseTile(data, options, context) {
   return normalizeTileData(data, options, context);
 }
 
+/** @type {LoaderObject} */
 const I3SLoader = {
   id: 'i3s',
   name: 'I3S 3D Tiles',
   version: VERSION,
-  mimeType: 'application/octet-stream',
+  mimeTypes: ['application/octet-stream'],
   parse,
   extensions: ['bin'],
   options: {

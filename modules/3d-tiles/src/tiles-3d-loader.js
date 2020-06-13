@@ -1,12 +1,12 @@
-/* global TextDecoder,  __VERSION__ */ // __VERSION__ is injected by babel-plugin-version-inline
-
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
-
+/* global TextDecoder */
 import {path} from '@loaders.gl/loader-utils';
 import {TILESET_TYPE, LOD_METRIC_TYPE} from '@loaders.gl/tiles';
-
 import {parse3DTile} from './lib/parsers/parse-3d-tile';
 import {normalizeTileHeaders} from './lib/parsers/parse-3d-tile-header';
+/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
+
+// __VERSION__ is injected by babel-plugin-version-inline
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 function getBaseUri(tileset) {
   return path.dirname(tileset.url);
@@ -55,13 +55,13 @@ async function parse(data, options, context, loader) {
   return data;
 }
 
-// Tiles3DLoader
+/** @type {LoaderObject} */
 const Tiles3DLoader = {
   id: '3d-tiles',
   name: '3D Tiles',
   version: VERSION,
   extensions: ['cmpt', 'pnts', 'b3dm', 'i3dm'],
-  mimeType: 'application/octet-stream',
+  mimeTypes: ['application/octet-stream'],
   test: ['cmpt', 'pnts', 'b3dm', 'i3dm'],
   parse,
   options: {

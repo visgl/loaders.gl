@@ -1,5 +1,5 @@
 // __VERSION__ is injected by babel-plugin-version-inline
-/* global __VERSION__ */
+
 import loadTerrain from './lib/parse-terrain';
 
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -10,7 +10,7 @@ export const TerrainWorkerLoader = {
   name: 'Terrain',
   version: VERSION,
   extensions: ['png', 'pngraw'],
-  mimeType: 'image/png',
+  mimeTypes: ['image/png'],
   options: {
     terrain: {
       workerUrl: `https://unpkg.com/@loaders.gl/terrain@${VERSION}/dist/terrain-loader.worker.js`,

@@ -1,18 +1,18 @@
-// Binary container format for GLB
+// GLB is the binary container format for GLTF
+import parseGLBSync from './lib/parse-glb';
+/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 
 // __VERSION__ is injected by babel-plugin-version-inline
-/* global __VERSION__ */
-import parseGLBSync from './lib/parse-glb';
-
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
+/** @type {LoaderObject} */
 export default {
   id: 'glb',
   name: 'GLB',
   version: VERSION,
   extensions: ['glb'],
-  mimeType: 'model/gltf-binary',
+  mimeTypes: ['model/gltf-binary'],
   binary: true,
   parse: async (arrayBuffer, options) => parseSync(arrayBuffer, options),
   parseSync,

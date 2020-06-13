@@ -3,8 +3,7 @@ import {encodeGLTFSync} from './lib/encode-gltf';
 export default {
   name: 'glTF',
   extensions: ['glb'], // We only support encoding to binary GLB, not to JSON GLTF
-  // mimeType: 'model/gltf-binary',
-  mimeType: 'model/gltf+json',
+  mimeTypes: ['model/gltf-binary'], // 'model/gltf+json',
   encodeSync,
   binary: true,
   options: {}

@@ -1,17 +1,17 @@
-// __VERSION__ is injected by babel-plugin-version-inline
-/* global __VERSION__ */
-
 import parsePCDSync from './lib/parse-pcd';
+/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 
+// __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
+/** @type {LoaderObject} */
 export const PCDWorkerLoader = {
   id: 'pcd',
   name: 'PCD',
   version: VERSION,
   extensions: ['pcd'],
-  mimeType: 'text/plain',
+  mimeTypes: ['text/plain'],
   options: {
     pcd: {
       workerUrl: `https://unpkg.com/@loaders.gl/pcd@${VERSION}/dist/pcd-loader.worker.js`
@@ -19,6 +19,7 @@ export const PCDWorkerLoader = {
   }
 };
 
+/** @type {LoaderObject} */
 export const PCDLoader = {
   ...PCDWorkerLoader,
   parse: async (arrayBuffer, options) => await parsePCDSync(arrayBuffer, options),

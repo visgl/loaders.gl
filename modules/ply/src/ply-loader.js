@@ -2,20 +2,21 @@
 // links: ['http://paulbourke.net/dataformats/ply/',
 // 'https://en.wikipedia.org/wiki/PLY_(file_format)']
 
-// __VERSION__ is injected by babel-plugin-version-inline
-/* global __VERSION__ */
 import parsePLY from './lib/parse-ply';
 import parsePLYInBatches from './lib/parse-ply-in-batches';
+/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 
+// __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
+/** @type {LoaderObject} */
 export const PLYWorkerLoader = {
   id: 'ply',
   name: 'PLY',
   version: VERSION,
   extensions: ['ply'],
-  mimeType: 'text/plain',
+  mimeTypes: ['text/plain'],
   // mimeType: 'application/octet-stream', TODO - binary version?
   text: true,
   binary: true,
@@ -27,6 +28,7 @@ export const PLYWorkerLoader = {
   }
 };
 
+/** @type {LoaderObject} */
 export const PLYLoader = {
   ...PLYWorkerLoader,
   // Note: parsePLY supports both text and binary

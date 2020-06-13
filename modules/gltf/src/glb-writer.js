@@ -3,7 +3,7 @@ import encodeGLBSync from './lib/encode-glb';
 export default {
   name: 'GLB',
   extensions: ['glb'],
-  mimeType: 'model/gltf-binary',
+  mimeTypes: ['model/gltf-binary'],
   encodeSync,
   binary: true,
   options: {
