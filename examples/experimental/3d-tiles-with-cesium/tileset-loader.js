@@ -1,8 +1,7 @@
 /* global Cesium, fetch */
 
 import {Vector3} from 'math.gl';
-import {registerLoaders, setLoaderOptions} from '@loaders.gl/core';
-import {DracoLoader} from '@loaders.gl/draco';
+import {setLoaderOptions} from '@loaders.gl/core';
 import {Tileset3D, _getIonTilesetMetadata} from '@loaders.gl/3d-tiles';
 import {Plane} from '@math.gl/culling';
 import {loadBatchedModelTile, loadPointTile} from './tile-parsers';
@@ -11,7 +10,6 @@ const tileMap = {}; // Map the contentUri -> tile so we can unload/set visibilit
 let viewer;
 
 // set up loaders
-registerLoaders([DracoLoader]);
 setLoaderOptions({worker: false});
 
 export async function loadTileset({tilesetUrl, ionAssetId, ionAccessToken, viewerInstance}) {

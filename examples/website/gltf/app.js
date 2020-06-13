@@ -1,8 +1,7 @@
 /* eslint-disable camelcase */
 /* global document, window */
-import {load, registerLoaders} from '@loaders.gl/core';
+import {load} from '@loaders.gl/core';
 import {GLTFLoader} from '@loaders.gl/gltf';
-import {DracoLoader} from '@loaders.gl/draco';
 import GL from '@luma.gl/constants';
 import {AnimationLoop, setParameters, clear, log, lumaStats} from '@luma.gl/core';
 import {GLTFEnvironment} from '@luma.gl/experimental';
@@ -28,8 +27,6 @@ const CUBE_FACE_TO_DIRECTION = {
   [GL.TEXTURE_CUBE_MAP_POSITIVE_Z]: 'front',
   [GL.TEXTURE_CUBE_MAP_NEGATIVE_Z]: 'back'
 };
-
-registerLoaders([GLTFLoader, DracoLoader]);
 
 export default class AppAnimationLoop extends AnimationLoop {
   // TODO - do we need both?
@@ -176,16 +173,9 @@ export default class AppAnimationLoop extends AnimationLoop {
 
     this._deleteScenes();
 
-    const rawGltf = await load(file, GLTFLoader, {
-      gltf: {
-        parserVersion: 2,
-        postProcess: true
-      }
-    });
+    const rawGltf = await load(file, GLTFLoader);
 
     const {gltf, scenes, animator} = await createGLTFObjects(gl, rawGltf, this.gltfCreateOptions);
-
-    scenes[0].traverse((node, {worldMatrix}) => log.info(4, 'Using model: ', node)());
 
     this.scenes = scenes;
     this.animator = animator;

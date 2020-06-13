@@ -9,9 +9,8 @@
     "open-vr": "adb reverse tcp:8080 tcp:8080 && adb shell am start -a android.intent.action.VIEW -d http://localhost:8080/"
   },
   "dependencies": {
-    "@loaders.gl/core": "^2.1.3",
-    "@loaders.gl/draco": "^2.1.3",
-    "@loaders.gl/gltf": "^2.1.3",
+    "@loaders.gl/core": "^2.2.0-alpha.3",
+    "@loaders.gl/gltf": "^2.2.0-alpha.3",
     "@luma.gl/constants": "^8.1.2",
     "@luma.gl/core": "^8.1.2",
     "@luma.gl/experimental": "^8.1.2",
