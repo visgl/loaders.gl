@@ -1,8 +1,10 @@
+/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
+
 // __VERSION__ is injected by babel-plugin-version-inline
-/* global __VERSION__ */
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
+/** @type {LoaderObject} */
 export const CompressedTextureWorkerLoader = {
   id: 'basis',
   name: 'CompressedTexture',
@@ -11,7 +13,7 @@ export const CompressedTextureWorkerLoader = {
     'dds', // WEBGL_compressed_texture_s3tc, WEBGL_compressed_texture_atc
     'pvr' // WEBGL_compressed_texture_pvrtc
   ],
-  mimeType: 'application/octet-stream',
+  mimeTypes: ['application/octet-stream'],
   test: 0x03525650, // PVR magic number
   binary: true,
   options: {
@@ -22,6 +24,7 @@ export const CompressedTextureWorkerLoader = {
   }
 };
 
+/** @type {LoaderObject} */
 export const CompressedTextureLoader = {
   ...CompressedTextureWorkerLoader,
   parse: async (arrayBuffer, options) => arrayBuffer

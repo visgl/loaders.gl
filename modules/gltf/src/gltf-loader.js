@@ -1,18 +1,17 @@
-// __VERSION__ is injected by babel-plugin-version-inline
-/* global __VERSION__ */
-
 import {parseGLTF} from './lib/parse-gltf';
+/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 
+// __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
+/** @type {LoaderObject} */
 const GLTFLoader = {
   id: 'gltf',
   name: 'glTF',
   version: VERSION,
   extensions: ['gltf', 'glb'],
-  // mimeType: 'model/gltf-binary',
-  mimeType: 'model/gltf+json',
+  mimeTypes: ['model/gltf+json', 'model/gltf-binary'],
 
   text: true,
   binary: true,

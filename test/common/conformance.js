@@ -2,8 +2,8 @@ export function validateLoader(t, loader, name = '') {
   t.ok(typeof loader.id === 'string', `Loader ${name} loader.id is not defined`);
   t.ok(loader, `Loader ${name} defined`);
   t.equal(typeof loader.name, 'string', `Loader ${name} has a name`);
-  t.ok(Array.isArray(loader.extensions), `Loader ${name} has extensions`);
-  t.equal(typeof loader.mimeType, 'string', `Loader ${name} has a mimeType`);
+  t.ok(Array.isArray(loader.extensions), `Loader ${name} has an extensions array`);
+  t.ok(Array.isArray(loader.mimeTypes), `Loader ${name} has a mimeTypes array`);
 
   const options = loader.options || {};
   t.ok(!('workerUrl' in options), 'workerUrl is not defined on loader.options');

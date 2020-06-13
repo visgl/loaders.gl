@@ -1,16 +1,17 @@
-// __VERSION__ is injected by babel-plugin-version-inline
-/* global __VERSION__ */
 import parseMVT from './lib/parse-mvt';
+/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 
+// __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
+/** @type {LoaderObject} */
 export const MVTWorkerLoader = {
   id: 'mvt',
   name: 'Mapbox Vector Tile',
   version: VERSION,
   extensions: ['mvt'],
-  mimeType: 'application/x-protobuf',
+  mimeTypes: ['application/x-protobuf'],
   category: 'geometry',
   options: {
     mvt: {
@@ -23,6 +24,7 @@ export const MVTWorkerLoader = {
   }
 };
 
+/** @type {LoaderObject} */
 export const MVTLoader = {
   ...MVTWorkerLoader,
   parse: async (arrayBuffer, options) => parseMVT(arrayBuffer, options),

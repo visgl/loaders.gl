@@ -2,9 +2,9 @@ import encode3DTile from './lib/encoders/encode-3d-tile';
 
 // TODO - target writer structure not yet clear
 export default {
-  name: 'GLB',
+  name: '3D Tile',
   extensions: ['cmpt', 'pnts', 'b3dm', 'i3dm'],
-  mimeType: 'application/octet-stream',
+  mimeTypes: ['application/octet-stream'],
   encodeSync,
   binary: true
 };

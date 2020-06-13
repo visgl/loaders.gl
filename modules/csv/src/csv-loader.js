@@ -1,40 +1,41 @@
-// __VERSION__ is injected by babel-plugin-version-inline
-/* global __VERSION__ */
 /* global TextDecoder */
 import {AsyncQueue, TableBatchBuilder, RowTableBatch} from '@loaders.gl/tables';
 import Papa from './libs/papaparse';
 import AsyncIteratorStreamer from './lib/async-iterator-streamer';
+/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 
+// __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-const CSVLoader = {
+const CSVLoaderOptions = {
+  csv: {
+    TableBatch: RowTableBatch,
+    batchSize: 10,
+    header: 'auto',
+    rowFormat: 'auto'
+  }
+};
+
+/** @type {LoaderObject} */
+export default {
   id: 'csv',
   name: 'CSV',
   version: VERSION,
   extensions: ['csv'],
-  mimeType: 'text/csv',
+  mimeTypes: ['text/csv'],
   category: 'table',
   parse: async (arrayBuffer, options) => parseCSV(new TextDecoder().decode(arrayBuffer), options),
   parseText: parseCSV,
   parseInBatches: parseCSVInBatches,
   testText: null,
-  options: {
-    csv: {
-      TableBatch: RowTableBatch,
-      batchSize: 10,
-      header: 'auto',
-      rowFormat: 'auto'
-    }
-  }
+  options: CSVLoaderOptions
 };
-
-export default CSVLoader;
 
 async function parseCSV(csvText, options) {
   // Apps can call the parse method directly, we so apply default options here
-  options = {...CSVLoader.options, ...options};
-  options.csv = {...CSVLoader.options.csv, ...options.csv};
+  options = {...CSVLoaderOptions, ...options};
+  options.csv = {...CSVLoaderOptions.csv, ...options.csv};
 
   const header = await hasHeader(csvText, options);
 
@@ -55,8 +56,8 @@ async function parseCSV(csvText, options) {
 // TODO - support batch size 0 = no batching/single batch?
 function parseCSVInBatches(asyncIterator, options) {
   // Apps can call the parse method directly, we so apply default options here
-  options = {...CSVLoader.options, ...options};
-  options.csv = {...CSVLoader.options.csv, ...options.csv};
+  options = {...CSVLoaderOptions, ...options};
+  options.csv = {...CSVLoaderOptions.csv, ...options.csv};
 
   const {batchSize} = options.csv;
   const TableBatchType = options.csv.TableBatch;

@@ -1,10 +1,10 @@
-// __VERSION__ is injected by babel-plugin-version-inline
-/* global __VERSION__ */
 /* global TextDecoder */
 import {XMLLoader} from '@loaders.gl/tables';
 import KMLParser from './lib/kml-parser';
 import normalizeKML from './lib/kml-normalizer';
+/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 
+// __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
@@ -24,12 +24,13 @@ function parseTextSync(text, options) {
   return options.normalize ? normalizeKML(kml) : kml;
 }
 
+/** @type {LoaderObject} */
 export default {
   id: 'kml',
   name: 'KML',
   version: VERSION,
   extensions: ['kml'],
-  mimeType: 'vnd.google-earth.kml+xml',
+  mimeTypes: ['vnd.google-earth.kml+xml'],
   supported: XMLLoader.supported,
   testText,
   parse: async (arrayBuffer, options) =>
