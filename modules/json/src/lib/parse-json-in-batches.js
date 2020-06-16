@@ -73,7 +73,7 @@ export default async function* parseJSONInBatches(asyncIterator, options) {
 
   if (metadata) {
     const initialBatch = {
-      batchType: 'complete-result',
+      batchType: 'final-result',
       container: parser.getPartialResult(),
       jsonpath: parser.getStreamingJsonPath(),
       data: [],

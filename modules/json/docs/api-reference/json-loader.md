@@ -68,15 +68,31 @@ for await (const batch of batches) {
 }
 ```
 
+## Data Format
+
+Parsed batches are of the format
+
+```ts
+{
+  batchType: 'metadata' | 'partial-result' | 'final-result' | undefined;
+  jsonpath: string;
+
+  // standard batch payload
+  data: any[] | any;
+  bytesUsed: number;
+  batchCount: number;
+}
+```
+
 ## Options
 
 Supports table category options such as `batchType` and `batchSize`.
 
-| Option                    | From                                                                                  | Type       | Default | Description                                                                                                                           |
-| ------------------------- | ------------------------------------------------------------------------------------- | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `json.table`              | [![Website shields.io](https://img.shields.io/badge/v2.0-blue.svg?style=flat-square)] | Boolean    | `false` | Parses non-streaming JSON as table, i.e. return the first embedded array in the JSON. Always `true` during batched/streaming parsing. |
-| `json.jsonpaths`          | [![Website shields.io](https://img.shields.io/badge/v2.2-blue.svg?style=flat-square)] | `string[]` | `[]`    | A list of JSON paths (see below) indicating the array that can be streamed.                                                           |
-| `json._rootObjectBatches` | [![Website shields.io](https://img.shields.io/badge/v2.1-blue.svg?style=flat-square)] | Boolean    | `false` | Yield an initial and final batch containing the partial and complete root object (excluding the array being streamed).                |
+| Option                 | From                                                                                  | Type       | Default                                                                                                                                          | Description                                                                                                                           |
+| ---------------------- | ------------------------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `json.table`           | [![Website shields.io](https://img.shields.io/badge/v2.0-blue.svg?style=flat-square)] | `boolean`  | `false`                                                                                                                                          | Parses non-streaming JSON as table, i.e. return the first embedded array in the JSON. Always `true` during batched/streaming parsing. |
+| `json.jsonpaths`       | [![Website shields.io](https://img.shields.io/badge/v2.2-blue.svg?style=flat-square)] | `string[]` | `[]`                                                                                                                                             | A list of JSON paths (see below) indicating the array that can be streamed.                                                           |
+| `metadata` (top level) | [![Website shields.io](https://img.shields.io/badge/v2.2-blue.svg?style=flat-square)] | `boolean`  | If `true`, yields an initial and final batch containing the partial and final result (i.e. the root object, excluding the array being streamed). |
 
 ## JSONPaths
 

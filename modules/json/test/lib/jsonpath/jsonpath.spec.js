@@ -15,3 +15,12 @@ test('JSONPath#parsing', async t => {
   }
   t.end();
 });
+
+test('JSONPath#deep set', async t => {
+  const jsonpath = new _JSONPath('$.a.b');
+  const deepValue = {a: {b: 1}};
+  t.equal(jsonpath.getFieldAtPath(deepValue), 1, 'JSONPath.getFieldAtPath');
+  jsonpath.setFieldAtPath(deepValue, 2);
+  t.equal(jsonpath.getFieldAtPath(deepValue), 2, 'JSONPath.setFieldAtPath');
+  t.end();
+});

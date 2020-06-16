@@ -71,6 +71,7 @@ export default class JSONPath {
    */
   setFieldAtPath(object, value) {
     const path = [...this.path];
+    path.shift();
     const field = path.pop();
     for (const component of path) {
       object = object[component];
@@ -85,6 +86,7 @@ export default class JSONPath {
    */
   getFieldAtPath(object) {
     const path = [...this.path];
+    path.shift();
     const field = path.pop();
     for (const component of path) {
       object = object[component];
