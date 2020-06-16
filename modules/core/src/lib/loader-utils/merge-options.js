@@ -24,7 +24,12 @@ export function mergeOptions(loader, options, url, topOptions = null) {
  * @param {object | null} topOptions
  * @param {*} log
  */
-function validateLoaderOptions(loader, options, topOptions, log = console) {
+function validateLoaderOptions(
+  loader,
+  options,
+  topOptions = DEFAULT_LOADER_OPTIONS,
+  log = console
+) {
   // Check top level options
   if (topOptions) {
     for (const key in options) {
