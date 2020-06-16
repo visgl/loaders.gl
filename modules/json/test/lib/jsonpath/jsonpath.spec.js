@@ -12,6 +12,15 @@ test('JSONPath#parsing', async t => {
     const jsonpath = new _JSONPath(tc.jsonpath);
     const expected = new _JSONPath(tc.expected);
     t.ok(jsonpath.equals(expected), `${tc.jsonpath} parses correctly`);
+    t.equals(jsonpath.toString(), tc.jsonpath, `${tc.jsonpath} generates original string`);
+
+    const jsonpathCopy = new _JSONPath(jsonpath);
+    t.ok(jsonpathCopy.equals(expected), `${tc.jsonpath} copy parses correctly`);
+    t.equals(jsonpathCopy.toString(), tc.jsonpath, `${tc.jsonpath} copy generates original string`);
+
+    const jsonpathClone = jsonpath.clone();
+    t.ok(jsonpathClone.equals(expected), `${tc.jsonpath} clone parses correctly`);
+    t.equals(jsonpathClone.toString(), tc.jsonpath, `${tc.jsonpath} clone generates original string`);
   }
   t.end();
 });

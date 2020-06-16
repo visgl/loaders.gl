@@ -30,7 +30,7 @@ export default class JSONPath {
   }
 
   clone() {
-    return new JSONPath(this.path);
+    return new JSONPath(this);
   }
 
   toString() {
