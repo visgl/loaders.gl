@@ -6,6 +6,15 @@ import ALIASES from './aliases.js';
 import {_addAliases} from '@loaders.gl/loader-utils';
 import {installFilePolyfills} from '@loaders.gl/polyfills';
 
+const TEST_CORE = false;
+const TEST_IMAGES = false;
+const TEST_MESHES = false;
+const TEST_SCENEGRAPHS = false;
+const TEST_TILES = false;
+const TEST_GEOSPATIAL = false;
+const TEST_TABLES = false;
+const TEST_ARCHIVES = true;
+
 _addAliases(ALIASES);
 // Install polyfills (primarily for Node)
 installFilePolyfills();

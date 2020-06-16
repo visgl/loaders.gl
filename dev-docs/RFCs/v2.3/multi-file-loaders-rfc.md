@@ -32,3 +32,16 @@ A file system would expose a `fetch` function that would resolve relative urls w
 ## Passthrough?
 
 Global urls should be redirected to normal `fetch` (which also needs to be overridable?)
+
+## Example: Shapefile parsing
+
+Drag-and-Drop: a `FileList` of `File` objects.
+
+##
+
+```ts
+interface FileSystem {
+  list();
+  fetch(filename: string, options?: object): Promise<Response>;
+}
+```
