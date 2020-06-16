@@ -36,7 +36,7 @@ const GLTFLoader = {
     decompress: 'gltf.decompressMeshes',
     postProcess: 'gltf.postProcess',
     gltf: {
-      decompress: 'gltf.decompressMeshes',
+      decompress: 'gltf.decompressMeshes'
     }
   }
 };

@@ -20,9 +20,9 @@ export function mergeOptions(loader, options, url, topOptions = null) {
 /**
  * Warn for unsupported options
  * @param {*} loader
- * @param {object} options 
- * @param {object | null} topOptions 
- * @param {*} log 
+ * @param {object} options
+ * @param {object | null} topOptions
+ * @param {*} log
  */
 function validateLoaderOptions(loader, options, topOptions, log = console) {
   // Check top level options
