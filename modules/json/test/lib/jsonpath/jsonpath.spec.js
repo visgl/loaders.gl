@@ -20,7 +20,11 @@ test('JSONPath#parsing', async t => {
 
     const jsonpathClone = jsonpath.clone();
     t.ok(jsonpathClone.equals(expected), `${tc.jsonpath} clone parses correctly`);
-    t.equals(jsonpathClone.toString(), tc.jsonpath, `${tc.jsonpath} clone generates original string`);
+    t.equals(
+      jsonpathClone.toString(),
+      tc.jsonpath,
+      `${tc.jsonpath} clone generates original string`
+    );
   }
   t.end();
 });
