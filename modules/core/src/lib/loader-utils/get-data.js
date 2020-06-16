@@ -5,6 +5,7 @@ import {
   isAsyncIterable,
   isIterable,
   isIterator,
+  isBlob,
   isFileReadable,
   isBuffer
 } from '../../javascript-utils/is-type';
@@ -112,7 +113,7 @@ export async function getAsyncIteratorFromData(data) {
     return makeIterator(data.body);
   }
 
-  if (isReadableStream(data)) {
+  if (isBlob(data) || isReadableStream(data)) {
     return makeIterator(data);
   }
 
