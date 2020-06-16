@@ -50,7 +50,10 @@ async function parseWithLoaderInBatches(loader, data, options, context) {
     metadata: {
       _loader: loader,
       _context: context
-    }
+    },
+    // Populate with some default fields to avoid crashing
+    data: [],
+    bytesUsed: 0
   };
 
   async function* makeMetadataBatchIterator() {
