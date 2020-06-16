@@ -3,10 +3,11 @@ import {TableBatchBuilder} from '@loaders.gl/tables';
 import StreamingJSONParser from './parser/streaming-json-parser';
 
 // TODO - support batch size 0 = no batching/single batch?
-// eslint-disable-next-line max-statements
+// eslint-disable-next-line max-statements, complexity
 export default async function* parseJSONInBatches(asyncIterator, options) {
   asyncIterator = makeTextDecoderIterator(asyncIterator);
 
+  const {metadata} = options;
   const {batchSize, _rootObjectBatches, jsonpaths} = options.json;
   const TableBatchType = options.json.TableBatch;
 
@@ -20,9 +21,21 @@ export default async function* parseJSONInBatches(asyncIterator, options) {
 
   for await (const chunk of asyncIterator) {
     const rows = parser.write(chunk);
-    const jsonPath = parser.getJsonPath().toString();
 
-    if (isFirstChunk) {
+    const jsonpath = rows.length > 0 && parser.getStreamingJsonPath().toString();
+
+    if (rows.length > 0 && isFirstChunk) {
+      if (metadata) {
+        const initialBatch = {
+          batchType: 'partial-result',
+          container: parser.getPartialResult(),
+          data: [],
+          bytesUsed: 0,
+          schema: null
+        };
+        yield initialBatch;
+      }
+      // Backwards compabitility
       if (_rootObjectBatches) {
         const initialBatch = {
           batchType: 'root-object-batch-partial',
@@ -41,23 +54,33 @@ export default async function* parseJSONInBatches(asyncIterator, options) {
       tableBatchBuilder.addRow(row);
       // If a batch has been completed, emit it
       if (tableBatchBuilder.isFull()) {
-        yield tableBatchBuilder.getBatch({jsonPath});
+        yield tableBatchBuilder.getBatch({jsonpath});
       }
     }
 
     tableBatchBuilder.chunkComplete(chunk);
     if (tableBatchBuilder.isFull()) {
-      yield tableBatchBuilder.getBatch({jsonPath});
+      yield tableBatchBuilder.getBatch({jsonpath});
     }
   }
 
   // yield final batch
-  const jsonPath = parser.getJsonPath().toString();
-  const batch = tableBatchBuilder.getBatch({jsonPath});
+  const jsonpath = parser.getJsonPath().toString();
+  const batch = tableBatchBuilder.getBatch({jsonpath});
   if (batch) {
     yield batch;
   }
 
+  if (metadata) {
+    const initialBatch = {
+      batchType: 'complete-result',
+      container: parser.getPartialResult(),
+      jsonpath: parser.getStreamingJsonPath(),
+      data: [],
+      schema: null
+    };
+    yield initialBatch;
+  }
   if (_rootObjectBatches) {
     const finalBatch = {
       batchType: 'root-object-batch-complete',

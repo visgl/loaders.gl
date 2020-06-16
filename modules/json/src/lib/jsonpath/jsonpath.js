@@ -42,7 +42,7 @@ export default class JSONPath {
   }
 
   pop() {
-    this.path.pop();
+    return this.path.pop();
   }
 
   set(name) {
@@ -61,5 +61,34 @@ export default class JSONPath {
     }
 
     return true;
+  }
+
+  /**
+   * Sets the value pointed at by path
+   * TODO - handle root path
+   * @param {*} object
+   * @param {*} value
+   */
+  setFieldAtPath(object, value) {
+    const path = [...this.path];
+    const field = path.pop();
+    for (const component of path) {
+      object = object[component];
+    }
+    object[field] = value;
+  }
+
+  /**
+   * Gets the value pointed at by path
+   * TODO - handle root path
+   * @param {*} object
+   */
+  getFieldAtPath(object) {
+    const path = [...this.path];
+    const field = path.pop();
+    for (const component of path) {
+      object = object[component];
+    }
+    return object[field];
   }
 }

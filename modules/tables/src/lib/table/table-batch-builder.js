@@ -46,8 +46,10 @@ export default class TableBatchBuilder {
       normalizedBatch.count = this.batchCount;
       this.batchCount++;
       normalizedBatch.bytesUsed = this.bytesUsed;
+      Object.assign(normalizedBatch, options);
       return normalizedBatch;
     }
+
     return null;
   }
 }
