@@ -36,7 +36,7 @@ export const EXAMPLES = {
   'New York': {
     name: 'New York',
     url:
-      'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/New_York_Mesh/SceneServer/layers/0?token=-z41IX8rVPKzOPyB_EcF_CDKhnBhcMHkeRsx9M7O40l-RHCTlGsYKjT1rAraIjWYQny2cwkBK2u3sw7L1PtPEmTkfjMqbokAlsapdxIZ-MnG_DcGPki4AZEaM5LI_wweCVMGcv59XLWARt97r8mQ4wJW8t1w87RAXtXVzyPa0WE_hrWQoGD6lu9MG6ohZnxBNAkt-F6wx5yxTeXEzdQnmw9s4BtLAM3zdzi7z2M_KqlAwxNJ8x18blGMsxddvUOa',
+      'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/New_York_Mesh/SceneServer/layers/0?token=epNIXupS0DwQBgeJkldNLQF_vJ7t4fKjUvas6_1mluYo11ej7BIJnOM5mPK0AJpCK1AwhnYC0Kcn7ntDlyV5_fgO9kpfhlOrnP2jCRU0UP3pRBUMB8XBeWQkvGgmcRtyU61Vx-0ioTcj8ZJsjdjFEbc24TbsUhXtVNc1BLOsvGAZjfMA_PuaFm18Cl1oOgM10C7ieRg2PJNO0-JeUHIKIgasNODDOTD0_LPqsInL_GQt_NRmnGwBN8mqElWltdy-',
     viewport: {
       ...VIEW_STATE,
       longitude: -74,
