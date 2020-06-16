@@ -14,7 +14,7 @@ export default function parseLAS(arraybuffer, options = {}) {
 
   const result = {};
   const {onProgress} = options;
-  const {skip = 1} = options.las || {};
+  const {skip} = options.las || {};
 
   parseLASChunked(arraybuffer, skip, (decoder, header) => {
     if (!originalHeader) {

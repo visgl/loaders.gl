@@ -1,4 +1,5 @@
 import {default as parsePotreeBin} from './parsers/parse-potree-bin';
+/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 
 function parseSync(arrayBuffer, options, url, loader) {
   const index = {};
@@ -7,6 +8,7 @@ function parseSync(arrayBuffer, options, url, loader) {
   return index;
 }
 
+/** @type {LoaderObject} */
 export default {
   id: 'potree',
   name: 'potree Binary Point Attributes',

@@ -29,6 +29,15 @@ const GLTFLoader = {
     // common?
     uri: '', // base URI
     log: console // eslint-disable-line
+  },
+  deprecatedOptions: {
+    fetchImages: 'gltf.loadImages',
+    createImages: 'gltf.loadImages',
+    decompress: 'gltf.decompressMeshes',
+    postProcess: 'gltf.postProcess',
+    gltf: {
+      decompress: 'gltf.decompressMeshes',
+    }
   }
 };
 

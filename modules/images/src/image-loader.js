@@ -30,7 +30,7 @@ const ImageLoader = {
   test: arrayBuffer => Boolean(getBinaryImageMetadata(new DataView(arrayBuffer))),
   options: {
     image: {
-      format: 'auto',
+      type: 'auto',
       decode: true // if format is HTML
     }
     // imagebitmap: {} - passes (platform dependent) parameters to ImageBitmap constructor

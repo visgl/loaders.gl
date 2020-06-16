@@ -1,3 +1,4 @@
+import {getValidatedLoaderOptions} from '@loaders.gl/loader-utils';
 import {DEFAULT_LOADER_OPTIONS} from '../constants';
 import {NullLog} from './loggers';
 
@@ -8,13 +9,46 @@ let globalOptions = {...DEFAULT_LOADER_OPTIONS};
 
 // Set global loader options
 export function setGlobalOptions(options) {
-  globalOptions = mergeOptions(globalOptions, options);
+  globalOptions = mergeOptionsInternal(globalOptions, options);
 }
 
 // Merges options with global opts and loader defaults, also injects baseUri
-export function mergeOptions(loader, options, url) {
-  const loaderDefaultOptions =
-    loader && (loader.DEFAULT_LOADER_OPTIONS || loader.defaultOptions || loader.options || {});
+export function mergeOptions(loader, options, url, topOptions = null) {
+  validateLoaderOptions(loader, options, topOptions);
+  return mergeOptionsInternal(loader, options, url);
+}
+
+/**
+ * Warn for unsupported options
+ * @param {*} loader
+ * @param {object} options 
+ * @param {object | null} topOptions 
+ * @param {*} log 
+ */
+function validateLoaderOptions(loader, options, topOptions, log = console) {
+  // Check top level options
+  if (topOptions) {
+    for (const key in options) {
+      // Only check non-object valued top-level keys
+      if (typeof options[key] !== 'object' && !topOptions[key]) {
+        log.warn(`Top-level loader option ${key} not recognized`);
+      }
+    }
+  }
+
+  // Get the loader specific options if any
+  const idOptions = (options && options[loader.id]) || {};
+
+  // Validate loader specific options
+  for (const key in idOptions) {
+    if (!(key in loader.options[loader.id])) {
+      log.warn(`${loader.name} loader option ${loader.id}.${key} not recognized`);
+    }
+  }
+}
+
+function mergeOptionsInternal(loader, options, url) {
+  const loaderDefaultOptions = loader.options || {};
 
   const mergedOptions = {...loaderDefaultOptions};
 

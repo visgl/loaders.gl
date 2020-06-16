@@ -18,7 +18,8 @@ export const LASWorkerLoader = {
   test: 'LAS',
   options: {
     las: {
-      workerUrl: `https://unpkg.com/@loaders.gl/las@${VERSION}/dist/las-loader.worker.js`
+      workerUrl: `https://unpkg.com/@loaders.gl/las@${VERSION}/dist/las-loader.worker.js`,
+      skip: 1
     }
   }
 };

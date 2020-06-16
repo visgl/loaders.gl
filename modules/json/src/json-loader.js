@@ -11,7 +11,10 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 const JSONLoaderOptions = {
   json: {
     TableBatch: RowTableBatch,
-    batchSize: 'auto'
+    batchSize: 'auto',
+    _rootObjectBatches: false,
+    table: false,
+    jsonpaths: []
   }
 };
 

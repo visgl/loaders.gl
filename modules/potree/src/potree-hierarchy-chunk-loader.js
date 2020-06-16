@@ -1,9 +1,11 @@
+/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 import {default as parsePotreeHierarchyChunk} from './parsers/parse-potree-hierarchy-chunk';
 
 function parseSync(arrayBuffer, options, url, loader) {
   return parsePotreeHierarchyChunk(arrayBuffer);
 }
 
+/** @type {LoaderObject} */
 export default {
   id: 'potree',
   name: 'potree Hierarchy Chunk',
