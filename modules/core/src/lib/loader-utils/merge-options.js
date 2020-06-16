@@ -1,4 +1,3 @@
-import {getValidatedLoaderOptions} from '@loaders.gl/loader-utils';
 import {DEFAULT_LOADER_OPTIONS} from '../constants';
 import {NullLog} from './loggers';
 
