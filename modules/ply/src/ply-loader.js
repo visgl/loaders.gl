@@ -16,8 +16,7 @@ export const PLYWorkerLoader = {
   name: 'PLY',
   version: VERSION,
   extensions: ['ply'],
-  mimeTypes: ['text/plain'],
-  // mimeType: 'application/octet-stream', TODO - binary version?
+  mimeTypes: ['text/plain', 'application/octet-stream'],
   text: true,
   binary: true,
   test: 'ply',
