@@ -10,6 +10,8 @@ const CSV_SAMPLE_URL = '@loaders.gl/csv/test/data/sample.csv';
 const CSV_SAMPLE_VERY_LONG_URL = '@loaders.gl/csv/test/data/sample-very-long.csv';
 const CSV_STATES_URL = '@loaders.gl/csv/test/data/states.csv';
 
+const CSV_NO_HEADER_URL = '@loaders.gl/csv/test/data/numbers-100-no-header.csv';
+
 function validateColumn(column, length, type) {
   if (column.length !== length) {
     return `column length should be ${length}`;
@@ -80,9 +82,9 @@ test('CSVLoader#loadInBatches(sample.csv, columns)', async t => {
     t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
     t.equal(batch.length, 2, 'Got correct batch size');
 
-    t.ok(validateColumn(batch.data[0], batch.length, 'string'), 'column 0 valid');
-    t.ok(validateColumn(batch.data[1], batch.length, 'string'), 'column 1 valid');
-    t.ok(validateColumn(batch.data[2], batch.length, 'float'), 'column 2 valid');
+    t.ok(validateColumn(batch.data.column1, batch.length, 'string'), 'column 0 valid');
+    t.ok(validateColumn(batch.data.column2, batch.length, 'string'), 'column 1 valid');
+    t.ok(validateColumn(batch.data.column3, batch.length, 'float'), 'column 2 valid');
 
     batchCount++;
   }
@@ -173,30 +175,22 @@ test('CSVLoader#loadInBatches(sample.csv, rows)', async t => {
   t.end();
 });
 
-test('CSVLoader#loadInBatches(sample-very-long.csv, rows)', async t => {
+test('CSVLoader#loadInBatches(no header, row format, prefix)', async t => {
   const batchSize = 25;
-  const iterator = await loadInBatches(CSV_SAMPLE_VERY_LONG_URL, CSVLoader, {
-    csv: {batchSize, rowFormat: 'object'}
-  });
-  t.ok(isIterator(iterator) || isAsyncIterable(iterator), 'loadInBatches returned iterator');
-
-  let batchCount = 0;
-  let byteLength = 0;
-  for await (const batch of iterator) {
-    t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
-    t.equal(batch.length, batchSize, 'Got correct batch size');
-    t.ok(batch.data[0].TLD, 'first row has TLD value');
-    t.ok(batch.data[0]['meaning of life'], 'first row has meaning of life value');
-    t.ok(batch.data[0].placeholder, 'first row has placeholder value');
-    byteLength = batch.bytesUsed;
-
-    batchCount++;
-    if (batchCount === 5) {
-      break;
+  const iterator = await loadInBatches(CSV_NO_HEADER_URL, CSVLoader, {
+    csv: {
+      batchSize,
+      rowFormat: 'object',
+      columnPrefix: 'column_'
     }
+  });
+
+  for await (const batch of iterator) {
+    t.comment(JSON.stringify(batch.data[0]));
+    t.ok(batch.data[0].column_1, 'first column has a value');
+    t.ok(batch.data[0].column_2, 'second column has a value value');
+    t.ok(batch.data[0].column_3, 'third column has a value');
   }
-  t.equal(batchCount, 5, 'Correct number of batches received');
-  t.equal(byteLength, 4528, 'Correct number of bytes received');
 
   t.end();
 });

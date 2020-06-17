@@ -13,7 +13,8 @@ const CSVLoaderOptions = {
     TableBatch: RowTableBatch,
     batchSize: 10,
     header: 'auto',
-    rowFormat: 'auto'
+    rowFormat: 'auto',
+    columnPrefix: 'column'
   }
 };
 
@@ -99,6 +100,12 @@ function parseCSVInBatches(asyncIterator, options) {
       // If first data row, we can deduce the schema
       if (isFirstRow) {
         isFirstRow = false;
+        if (!headerRow) {
+          headerRow = [];
+          for (let i = 0; i < row.length; i++) {
+            headerRow[i] = `${options.csv.columnPrefix}${i + 1}`;
+          }
+        }
         schema = deduceSchema(row, headerRow);
       }
 
