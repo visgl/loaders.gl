@@ -25,7 +25,11 @@ import {makeLineIterator, makeTextDecoderIterator, forEach} from '@loaders.gl/co
 import normalizePLY from './normalize-ply';
 
 // PARSER
-
+/**
+ *
+ * @param {AsyncIterable<ArrayBuffer>} iterator
+ * @param {object} options
+ */
 export default async function* parsePLYInBatches(iterator, options = {}) {
   const lineIterator = makeLineIterator(makeTextDecoderIterator(iterator));
   const header = await parseHeader(lineIterator, options);

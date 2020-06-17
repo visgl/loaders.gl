@@ -23,6 +23,10 @@ Some iterator utilities that are mostly used internally have been changed.
 
 - Header auto-detection now requires `options.csv.header` to be set to `'auto'` instead of `undefined`. `'auto'` is the new default value for this option, so this change is unlikely to affect applications.
 
+**`@loaders.gl/json`**
+
+- The experimental `json._rootObjectBatches` option is now deprecated. Use the top-level `metadata: true` option instead. Note that the `batchType` names have also changed, see the JSONLoader docs for details.
+
 **`@loaders.gl/ply`**
 
 The experimental streaming `_PLYStreamingLoader` has been removed. Use the non-streaming `PLYLoader` instead.

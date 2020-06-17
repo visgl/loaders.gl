@@ -121,12 +121,14 @@ async function testContainerBatches(t, iterator, expectedCount) {
 
   for await (const batch of iterator) {
     switch (batch.batchType) {
+      case 'partial-result':
       case 'root-object-batch-partial':
-        t.ok(batch.container.type, 'batch.container should be set on root-object-batch-partial');
+        t.ok(batch.container.type, 'batch.container should be set on partial-result');
         opencontainerBatchCount++;
         break;
+      case 'final-result':
       case 'root-object-batch-complete':
-        t.ok(batch.container.type, 'batch.container should be set on root-object-batch-complete');
+        t.ok(batch.container.type, 'batch.container should be set on final-result');
         closecontainerBatchCount++;
         break;
       default:
@@ -134,11 +136,27 @@ async function testContainerBatches(t, iterator, expectedCount) {
     }
   }
 
-  t.equal(opencontainerBatchCount, expectedCount, 'root-object-batch-partial batch as expected');
-  t.equal(closecontainerBatchCount, expectedCount, 'root-object-batch-complete batch as expected');
+  t.equal(opencontainerBatchCount, expectedCount, 'partial-result batch as expected');
+  t.equal(closecontainerBatchCount, expectedCount, 'final-result batch as expected');
 }
 
-test('JSONLoader#loadInBatches(geojson.json, {_rootObjectBatches: true})', async t => {
+test('JSONLoader#loadInBatches(geojson.json, {metadata: true})', async t => {
+  let iterator = await loadInBatches(GEOJSON_PATH, JSONLoader, {
+    metadata: true,
+    json: {table: true}
+  });
+  await testContainerBatches(t, iterator, 1);
+
+  iterator = await loadInBatches(GEOJSON_PATH, JSONLoader, {
+    metadata: false,
+    json: {table: true}
+  });
+  await testContainerBatches(t, iterator, 0);
+
+  t.end();
+});
+
+test('JSONLoader#loadInBatches(geojson.json, {json: {_rootObjectBatches: true}}) DEPRECATED', async t => {
   let iterator = await loadInBatches(GEOJSON_PATH, JSONLoader, {
     json: {table: true, _rootObjectBatches: true}
   });

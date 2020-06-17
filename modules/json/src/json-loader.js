@@ -44,7 +44,12 @@ export const JSONLoader = {
   parse,
   parseTextSync,
   parseInBatches,
-  options: JSONLoaderOptions
+  options: JSONLoaderOptions,
+  deprecatedOptions: {
+    json: {
+      _rootObjectBatches: 'metadata'
+    }
+  }
 };
 
 async function parse(arrayBuffer, options) {

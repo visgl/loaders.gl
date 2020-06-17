@@ -38,7 +38,7 @@ async function parseWithLoaderInBatches(loader, data, options, context) {
   // if (loader.text) {
   //   inputIterator = makeTextDecoderIterator(inputIterator);
   // }
-  const outputIterator = loader.parseInBatches(inputIterator, options, context, loader);
+  const outputIterator = await loader.parseInBatches(inputIterator, options, context, loader);
 
   // Generate metadata batch if requested
   if (!options.metadata) {
@@ -56,10 +56,10 @@ async function parseWithLoaderInBatches(loader, data, options, context) {
     bytesUsed: 0
   };
 
-  async function* makeMetadataBatchIterator() {
+  async function* makeMetadataBatchIterator(iterator) {
     yield metadataBatch;
-    yield* outputIterator;
+    yield* iterator;
   }
 
-  return makeMetadataBatchIterator();
+  return makeMetadataBatchIterator(outputIterator);
 }
