@@ -7,6 +7,44 @@ function concat(a, b) {
   return ab;
 }
 
+const SHAPE_HEADER_SIZE = 100;
+const SHAPE_RECORD_HEADER_SIZE = 12;
+
+export function parseShape(arrayBuffer) {
+  const headerView = new DataView(arrayBuffer, 0, SHAPE_HEADER_SIZE);
+  const header = parseHeader(headerView);
+
+  let currentIndex = 0;
+  const features = [];
+
+  let offset = SHAPE_HEADER_SIZE;
+
+  while (offset < arrayBuffer.length + SHAPE_RECORD_HEADER_SIZE) {
+    const recordHeaderView = new DataView(arrayBuffer, offset, SHAPE_RECORD_HEADER_SIZE);
+    const index = recordHeaderView.getInt32(0, false)
+    const byteLength = recordHeaderView.getInt32(4, false) * 2 - 4; // 2 byte words...
+    const type = recordHeaderView.getInt32(8, true);
+
+    // All records must have at least four bytes (for the record shape type)
+    if (byteLength < 4 || type !== header.type || index !== currentIndex) {
+      // Malformed record, try again after advancing 4 bytes
+      offset += 4;
+    } else {
+      const recordView = new DataView(arrayBuffer + offset + 8, 4 + length);
+      features.push(parseRecord(recordView));
+      currentIndex++;
+      offset += SHAPE_RECORD_HEADER_SIZE + byteLength;
+    }
+  }
+
+  // TODO convert to geojson?
+  return {
+    header,
+    features
+  };
+}
+
+/*
 export async function *parseShapeInBatches(asyncIterator) {
   const binaryReader = new BinaryReader(asyncIterator);
 
@@ -54,8 +92,22 @@ export async function *parseShapeInBatches(asyncIterator) {
     header.getInt32(0, false) !== that._index ? skip() : read();
   });
 }
+*/
 
-function parse(record) {
+function parseHeader(header) {
+  // TODO any other information of interest?
+  return {
+    type: header.getInt32(32, true),
+    bbox: [
+      header.getFloat64(36, true),
+      header.getFloat64(44, true),
+      header.getFloat64(52, true),
+      header.getFloat64(60, true)
+    ]
+  };
+}
+
+function parseRecord(record) {
   switch (type) {
     case 0: return parseNull(record);
     case 1: return parsePoint(record);
@@ -70,6 +122,7 @@ function parse(record) {
     case 23: return parsePolyLine(record); // PolyLineM
     case 25: return parsePolygon(record); // PolygonM
     case 28: return parseMultiPoint(record);// MultiPointM
+    default: throw new Error(`unsupported shape type: " + type`)
   };
 }
 
