@@ -1,6 +1,6 @@
 /* global File */
 import test from 'tape-promise/tape';
-import {fetchFile, load, loadInBatches, isBrowser} from '@loaders.gl/core';
+import {fetchFile, load, loadInBatches, selectLoader, isBrowser} from '@loaders.gl/core';
 import {_BrowserFileSystem as BrowserFileSystem} from '@loaders.gl/core';
 import {ShapefileLoader} from '@loaders.gl/shapefile';
 
@@ -62,6 +62,16 @@ test('ShapefileLoader#load (from files or URLs)', async t => {
     await testShapefileData(t, testFileName, data);
   }
 
+  t.end();
+});
+
+test('ShapefileLoader#load (from arrayBuffer)', async t => {
+  // test file load (node) or URL load (browser)
+  const filename = `${SHAPEFILE_JS_DATA_FOLDER}/boolean-property.shp`;
+  const response = await fetchFile(filename, ShapefileLoader);
+  const arrayBuffer = await response.arrayBuffer();
+  const loader = await selectLoader(arrayBuffer, [ShapefileLoader]);
+  t.equal(loader && loader.id, 'shapefile', 'Select loader using SHP magic number');
   t.end();
 });
 

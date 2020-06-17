@@ -9,16 +9,9 @@ export function padTo4Bytes(byteLength: number): number;
  * @param arrayBuffer
  * @param byteOffset
  * @param byteLength
- */
+ * @deprecated Use sliceArrayBuffer
+ */ 
 export function getZeroOffsetArrayBuffer(arrayBuffer: ArrayBuffer, byteOffset: number, byteLength?: number);
-
-/**
- * Concatenate a sequence of ArrayBuffers
- * @return A concatenated ArrayBuffer
- */
-export function concatenateArrayBuffers(
-  ...sources: (ArrayBuffer | Uint8Array)[]
-): ArrayBuffer;
 
 /**
  * Creates a new Uint8Array based on two different ArrayBuffers

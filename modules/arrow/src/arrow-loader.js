@@ -16,7 +16,7 @@ export const ArrowWorkerLoader = {
   mimeTypes: ['application/octet-stream'],
   category: 'table',
   binary: true,
-  test: 'ARROW',
+  tests: ['ARROW'],
   options: {
     arrow: {
       workerUrl: `https://unpkg.com/@loaders.gl/arrow@${VERSION}/dist/arrow-loader.worker.js`

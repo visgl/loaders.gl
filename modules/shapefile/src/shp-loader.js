@@ -6,6 +6,8 @@ import parseSHP from './lib/parse-shp';
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
+export const SHP_MAGIC_NUMBER = [0x00, 0x00, 0x27, 0x0a];
+
 /** @type {WorkerLoaderObject} */
 export const SHPWorkerLoader = {
   id: 'shp',
@@ -14,6 +16,7 @@ export const SHPWorkerLoader = {
   version: VERSION,
   extensions: ['shp'],
   mimeTypes: ['application/octet-stream'],
+  tests: [new Uint8Array(SHP_MAGIC_NUMBER).buffer],
   options: {
     shp: {
       // workerUrl: `https://unpkg.com/@loaders.gl/shapefile@${VERSION}/dist/shp-loader.worker.js`

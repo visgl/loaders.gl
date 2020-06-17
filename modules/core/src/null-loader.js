@@ -23,6 +23,6 @@ export const NullLoader = {
       // @ts-ignore
       yield* asyncIterator;
     })(),
-  test: () => false,
+  tests: [() => false],
   options: {}
 };

@@ -1,3 +1,4 @@
+import {compareArrayBuffers} from '@loaders.gl/loader-utils';
 import {normalizeLoader} from '../loader-utils/normalize-loader';
 import {getResourceUrlAndType} from '../utils/resource-utils';
 import {getRegisteredLoaders} from './register-loaders';
@@ -121,17 +122,17 @@ function findLoaderByExamingInitialData(loaders, data) {
 
   for (const loader of loaders) {
     if (typeof data === 'string') {
-      if (testText(data, loader)) {
+      if (testDataAgainstText(data, loader)) {
         return loader;
       }
     } else if (ArrayBuffer.isView(data)) {
       // Typed Arrays can have offsets into underlying buffer
-      if (testBinary(data.buffer, data.byteOffset, loader)) {
+      if (testDataAgainstBinary(data.buffer, data.byteOffset, loader)) {
         return loader;
       }
     } else if (data instanceof ArrayBuffer) {
       const byteOffset = 0;
-      if (testBinary(data, byteOffset, loader)) {
+      if (testDataAgainstBinary(data, byteOffset, loader)) {
         return loader;
       }
     }
@@ -140,25 +141,27 @@ function findLoaderByExamingInitialData(loaders, data) {
   return null;
 }
 
-function testText(data, loader) {
+function testDataAgainstText(data, loader) {
   return loader.testText && loader.testText(data);
 }
 
-function testBinary(data, byteOffset, loader) {
-  const type = Array.isArray(loader.test) ? 'array' : typeof loader.test;
-  switch (type) {
+function testDataAgainstBinary(data, byteOffset, loader) {
+  const tests = Array.isArray(loader.tests) ? loader.tests : [loader.tests];
+  return tests.some(test => testBinary(data, byteOffset, loader, test));
+}
+
+function testBinary(data, byteOffset, loader, test) {
+  if (test instanceof ArrayBuffer) {
+    return compareArrayBuffers(test, data, test.byteLength);
+  }
+  switch (typeof test) {
     case 'function':
-      return loader.test(data, loader);
+      return test(data, loader);
 
     case 'string':
-    case 'array':
-      // Magic bytes check: If `loader.test` is a string or array of strings,
-      // check if binary data starts with one of those strings
-      const tests = Array.isArray(loader.test) ? loader.test : [loader.test];
-      return tests.some(test => {
-        const magic = getMagicString(data, byteOffset, test.length);
-        return test === magic;
-      });
+      // Magic bytes check: If `test` is a string, check if binary data starts with that strings
+      const magic = getMagicString(data, byteOffset, test.length);
+      return test === magic;
 
     default:
       return false;

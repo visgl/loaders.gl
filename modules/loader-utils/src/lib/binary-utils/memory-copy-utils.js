@@ -1,38 +1,11 @@
+import {sliceArrayBuffer} from './array-buffer-utils';
+
 export function padTo4Bytes(byteLength) {
   return (byteLength + 3) & ~3;
 }
 
-// Copy a view of an ArrayBuffer into new ArrayBuffer with byteOffset = 0
 export function getZeroOffsetArrayBuffer(arrayBuffer, byteOffset, byteLength) {
-  const subArray = byteLength
-    ? new Uint8Array(arrayBuffer).subarray(byteOffset, byteOffset + byteLength)
-    : new Uint8Array(arrayBuffer).subarray(byteOffset);
-  const arrayCopy = new Uint8Array(subArray);
-  return arrayCopy.buffer;
-}
-
-// Concatenate ArrayBuffers
-export function concatenateArrayBuffers(...sources) {
-  // Make sure all inputs are wrapped in typed arrays
-  const sourceArrays = sources.map(
-    source2 => (source2 instanceof ArrayBuffer ? new Uint8Array(source2) : source2)
-  );
-
-  // Get length of all inputs
-  const byteLength = sourceArrays.reduce((length, typedArray) => length + typedArray.byteLength, 0);
-
-  // Allocate array with space for all inputs
-  const result = new Uint8Array(byteLength);
-
-  // Copy the subarrays
-  let offset = 0;
-  for (const sourceArray of sourceArrays) {
-    result.set(sourceArray, offset);
-    offset += sourceArray.byteLength;
-  }
-
-  // We work with ArrayBuffers, discard the typed array wrapper
-  return result.buffer;
+  return sliceArrayBuffer(arrayBuffer, byteOffset, byteLength);
 }
 
 /* Creates a new Uint8Array based on two different ArrayBuffers

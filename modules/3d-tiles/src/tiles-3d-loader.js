@@ -64,7 +64,7 @@ const Tiles3DLoader = {
   version: VERSION,
   extensions: ['cmpt', 'pnts', 'b3dm', 'i3dm'],
   mimeTypes: ['application/octet-stream'],
-  test: ['cmpt', 'pnts', 'b3dm', 'i3dm'],
+  tests: ['cmpt', 'pnts', 'b3dm', 'i3dm'],
   parse,
   options: {
     '3d-tiles': {
