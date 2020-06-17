@@ -30,7 +30,7 @@ export function parseShape(arrayBuffer) {
       // Malformed record, try again after advancing 4 bytes
       offset += 4;
     } else {
-      const recordView = new DataView(arrayBuffer + offset + 8, 4 + length);
+      const recordView = new DataView(arrayBuffer, offset + 8, 4 + length);
       features.push(parseRecord(recordView));
       currentIndex++;
       offset += SHAPE_RECORD_HEADER_SIZE + byteLength;
