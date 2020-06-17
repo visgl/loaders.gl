@@ -13,6 +13,7 @@ Typescript type definitions (`d.ts` files) are now provided for some loaders.gl 
 **@loaders.gl/core**
 
 - `parseInBatches` a new `options.metadata` option adds an initial batch with metadata about what data format is being loaded.
+- `selectLoader` (and `parse` etc) now recognizes unique unregistered MIME types (e.g `application/x.ply`) for every loader. This enable applications that can set `content-type` headers to have precise control over loader selection.
 
 **@loaders.gl/images**
 

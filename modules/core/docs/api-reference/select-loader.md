@@ -6,7 +6,11 @@
 
 A core feature of loaders.gl is the ability to automatically select an appropriate loader for a specific resource among a list of candidate loaders. This feature is built-in to the `parse` and `load` functions, but applications can also access this feature directly through the `selectLoader` API.
 
-Loader selection heuristics are based on both filename (url) extensions as well as comparison of initial data content against known headers for each file format.
+Loader selection heuristics are based on:
+
+- Filename (or url) extensions
+- MIME types (extracted from `Response` `content-type` headers or `Blob.type`/`File.type` fields)
+- Initial data - for certain inputs, the intial bytes can be compared against known headers for the candidate loaders. (Does not work for `Response`/`Stream`/`AsyncIterator` data).
 
 `selectLoader` is also aware of the [loader registry](docs/api-reference/core/register-loaders.md). If no loaders are provided (by passing in a falsy value such as `null`) `selectLoader` will search the list of pre-registered loaders.
 
@@ -32,6 +36,13 @@ import {CSVLoader} from '@loaders.gl/csv';
 registerLoaders(ArrowLoader, CSVLoader);
 
 selectLoader('filename.csv'); // => CSVLoader
+```
+
+Select a loader by specifying MIME type (using unregistered MIME types, see below)
+
+```js
+const data = new Blob([string], {type: 'application/x.csv'});
+selectLoader(blob); // => CSVLoader
 ```
 
 ## Functions
@@ -74,6 +85,10 @@ Peeking into batched input sources is not supported directly by `selectLoader`:
 - `Iterator/AsyncIterator`: it is not possible to peek into an iterator.
 
 Instead use helpers to get access to initialContents and pass it in separately.
+
+## MIME types
+
+If the standard MIME types for each format are not precise enough, loaders.gl also supports [unregistered](https://en.wikipedia.org/wiki/Media_type#Unregistered_tree) MIME types. Each loader will match the `application/x.<id>` where the `<id>` is the documented `id` of the loader, e.g. `application/x.ply`/`application/x.draco`/etc ...
 
 ## Remarks
 
