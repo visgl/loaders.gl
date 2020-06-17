@@ -22,7 +22,7 @@ export default async function* parseJSONInBatches(asyncIterator, options) {
   for await (const chunk of asyncIterator) {
     const rows = parser.write(chunk);
 
-    const jsonpath = rows.length > 0 && parser.getStreamingJsonPath().toString();
+    const jsonpath = rows.length > 0 && parser.getStreamingJsonPath();
 
     if (rows.length > 0 && isFirstChunk) {
       if (metadata) {
@@ -31,7 +31,8 @@ export default async function* parseJSONInBatches(asyncIterator, options) {
           container: parser.getPartialResult(),
           data: [],
           bytesUsed: 0,
-          schema: null
+          schema: null,
+          jsonpath
         };
         yield initialBatch;
       }
@@ -65,21 +66,21 @@ export default async function* parseJSONInBatches(asyncIterator, options) {
   }
 
   // yield final batch
-  const jsonpath = parser.getJsonPath().toString();
+  const jsonpath = parser.getStreamingJsonPath();
   const batch = tableBatchBuilder.getBatch({jsonpath});
   if (batch) {
     yield batch;
   }
 
   if (metadata) {
-    const initialBatch = {
+    const finalBatch = {
       batchType: 'final-result',
       container: parser.getPartialResult(),
       jsonpath: parser.getStreamingJsonPath(),
       data: [],
       schema: null
     };
-    yield initialBatch;
+    yield finalBatch;
   }
   if (_rootObjectBatches) {
     const finalBatch = {
