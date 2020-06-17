@@ -6,11 +6,13 @@ import test from 'tape-promise/tape';
 import {load} from '@loaders.gl/core';
 import {Tileset3D} from '@loaders.gl/tiles';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
+import {CesiumIonLoader} from '@loaders.gl/3d-tiles';
 // import {loadTileset} from '../utils/load-utils';
 
 // Parent tile with content and four child tiles with content
 const TILESET_URL = '@loaders.gl/3d-tiles/test/data/Tilesets/Tileset/tileset.json';
-
+const NESTED_TILESET_URL =
+  'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/3d-tiles/test/data/Tilesets/TilesetOfTilesets/tileset.json';
 /*
 // Parent tile with no content and four child tiles with content
 const TILESET_EMPTY_ROOT_URL =
@@ -214,6 +216,17 @@ test('Tileset3D#hasExtension returns true if the tileset JSON file uses the spec
 
   t.equals(tileset.hasExtension('3DTILES_batch_table_hierarchy'), true);
   t.equals(tileset.hasExtension('3DTILES_nonexistant_extension'), false);
+  t.end();
+});
+
+test('Tileset3D#gets all tilesets recursevly', async t => {
+  const tilesetJson = await load(NESTED_TILESET_URL, CesiumIonLoader);
+  const tileset = new Tileset3D(tilesetJson);
+  await tileset.loadAllTiles();
+  t.ok(tileset.root);
+  const firstLevel = tileset.root.children[0];
+  const secondLevel = firstLevel.children[1];
+  t.equal(secondLevel.contentReady, true);
   t.end();
 });
 

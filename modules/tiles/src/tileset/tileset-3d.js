@@ -257,6 +257,22 @@ export default class Tileset3D {
     return changed;
   }
 
+  async loadAllTiles() {
+    await this._loadTileWithChildren(this.root);
+  }
+
+  async _loadTileWithChildren(tile) {
+    if (!tile.contentReady) {
+      await this._loadTile(tile);
+    }
+    if (!(tile.children && tile.children.length)) {
+      return;
+    }
+    for (const childTile of tile.children) {
+      await this._loadTileWithChildren(childTile);
+    }
+  }
+
   _loadTiles(frameState) {
     // Sort requests by priority before making any requests.
     // This makes it less likely this requests will be cancelled after being issued.
