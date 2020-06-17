@@ -46,7 +46,7 @@ function validateLoaderOptions(
   const idOptions = (options && options[loader.id]) || {};
 
   // Get scoped, loader specific default and deprecated options from the selected loader
-  const loaderOptions = loader.options[loader.id] || {};
+  const loaderOptions = (loader.options && loader.options[loader.id]) || {};
   const deprecatedOptions = (loader.defaultOptions && loader.defaultOptions[loader.id]) || {};
 
   // Validate loader specific options
