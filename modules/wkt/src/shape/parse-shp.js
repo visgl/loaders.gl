@@ -19,7 +19,7 @@ export function parseShape(arrayBuffer) {
 
   let offset = SHAPE_HEADER_SIZE;
 
-  while (offset < arrayBuffer.length + SHAPE_RECORD_HEADER_SIZE) {
+  while (offset + SHAPE_RECORD_HEADER_SIZE < arrayBuffer.length) {
     const recordHeaderView = new DataView(arrayBuffer, offset, SHAPE_RECORD_HEADER_SIZE);
     const index = recordHeaderView.getInt32(0, false)
     const byteLength = recordHeaderView.getInt32(4, false) * 2 - 4; // 2 byte words...
