@@ -140,7 +140,7 @@ async function testContainerBatches(t, iterator, expectedCount) {
   t.equal(closecontainerBatchCount, expectedCount, 'final-result batch as expected');
 }
 
-test.only('JSONLoader#loadInBatches(geojson.json, {metadata: true})', async t => {
+test('JSONLoader#loadInBatches(geojson.json, {metadata: true})', async t => {
   let iterator = await loadInBatches(GEOJSON_PATH, JSONLoader, {
     metadata: true,
     json: {table: true}
