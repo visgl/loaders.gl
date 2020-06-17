@@ -1,6 +1,89 @@
 ## loaders.gl v2.0
 
-### 2.1 Prerelease
+### 2.2 Prerelease
+
+#### v2.2.0-beta.1
+
+core: Fix metadata batch (#795)
+ea9f8663 Ib/unregistered mime types (#794)
+14677e98 core: Add loader option warnings (#791)
+d29545a0 Add octet-stream to ply loader mimetypes (#793)
+07770fca json: Add `jsonpath` field to batches (#792)
+d3487d2e Allow Files/Blobs as an input type (#790)
+18c0a974 Updated token. (#789)
+ac6abcf2 test: Add node 14 to CI (#788)
+112b16c5 types: All loaders now declare LoaderObject type. Loader mimeTypes fixed (#785)
+db2b3d2a examples: Remove DracoLoader imports (no longer needed) (#786)
+
+#### v2.2.0-alpha.3
+
+- polyfill: Improved fetch and Response polyfills (#782)
+- json: Initial support for JSONPath syntax to control JSONLoader streaming (#784)
+- Experimental TARBuilder (#781)
+- WKBLoader (#775)
+- core: parseInBatches new metadata option returns additional metadata batch (#780)
+- typescript 3.9 fixes, yarn.lock refresh (dependabot alerts) (#778)
+- csv: Fix header detect, add `batch.bytesUsed`, add `options.csv.rowFormat` (#774)
+- json: Add batch.bytesRead field (#777)
+- File reader iterator (#773)
+
+#### v2.2.0-alpha.2
+
+- gltf/tiles: draco loader imported by default (#770)
+- examples: Move to website /experimental folders (#771)
+- build(deps): bump websocket-extensions from 0.1.3 to 0.1.4 (#769)
+- Fix website links (#766)
+- docs: Add version numbers to new exports, to let users understand what is available in each version (#763)
+- Update gifshot HTML example to use published video script (#761)
+
+#### v2.2.0-alpha.1
+
+- Quantized mesh loader (#729)
+- Update What's New (#760)
+- WKTWorkerLoader (#732)
+- GeoJSON Loader (#733)
+- Fix imports in JSONLoader docs (#719)
+- video: New experimental module (#755)
+- Bump Arrow to 0.17.0 (#758)
+- [Discussion] Simplify RequestScheduler API (#672)
+- core: selectLoader refresh, no longer experimental (#752)
+- core: Add typsecript types (#750)
+- Images Category RFC (#745)
+- images: module cleanup (#748)
+- Support compression in node polyfill (#743)
+- imagebitmap as default format. Support parse SVG to imagebitmap (#744)
+- 3d-tiles: fix parsing tileset option (#742)
+- i3s: skip parsing region data when not available (#739)
+- add a doc to compare 3d tiles and i3s spec (#731)
+- Fix for Node.js being unable to pull files from non local FS (#741)
+- tiles: fix loading tiles after resuming traversal (#736)
+- bump dependencies (#735)
+- 3d-tiles: restore parsing content url (#734)
+- website: fix gatsby config (#728)
+- Fix links in ImageLoader docs (#727)
+- Update visgl repo links (#726)
+- i3s: fix extensions (#721)
+- Service URL update for New York City (#720)
+- i3s example: enable throttle requests (#713)
+- i3s and 3d-tiles: remove json from extensions (#711)
+- Sanity check in fetch (#707)
+- Fixes to benchmark example (#708)
+- add benchmark examples (#706)
+- GeoJSON to binary arrays improvements (#703)
+- kml: fix parsing coordinate numbers (#705)
+- typescript: add initial `.d.ts` type definition files and `tsc` linting (#670)
+- tiles and i3s: update docs (#699)
+- bump dependencies and fix 3d tiles example (#700)
+- GeoJSON to flat binary arrays (#690)
+- i3s example: iframe dataset info page (#695)
+- polyfills: fix transpiling (#698)
+- v2.1 whats new (#697)
+- Add boundingBox to mesh category header (#696)
+- website: update doc and bring back point cloud example (#692)
+- Minor changes in examples plus a spelling fix (#694)
+- enable lint for examples and fix linting (#693)
+
+### 2.1 Release
 
 #### v2.1.0-beta.2
 
