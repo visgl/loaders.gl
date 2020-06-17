@@ -19,7 +19,6 @@ export const isResponse = x =>
 
 export const isFile = x => typeof File !== 'undefined' && x instanceof File;
 export const isBlob = x => typeof Blob !== 'undefined' && x instanceof Blob;
-export const isFileReadable = x => isFile(x) || isBlob(x); // Blob & File are FileReader compatible
 
 export const isWritableDOMStream = x => {
   return isObject(x) && isFunction(x.abort) && isFunction(x.getWriter);

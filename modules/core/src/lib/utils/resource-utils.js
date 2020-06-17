@@ -1,4 +1,4 @@
-import {isResponse, isBlob, isFile} from '../../javascript-utils/is-type';
+import {isResponse, isBlob} from '../../javascript-utils/is-type';
 import {parseMIMEType, parseMIMETypeFromURL} from './mime-type-utils';
 
 const QUERY_STRING_PATTERN = /\?.*/;

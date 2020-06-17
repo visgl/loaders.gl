@@ -8,7 +8,6 @@ export function isResponse(value: any): boolean;
 
 export function isFile(value: any): boolean;
 export function isBlob(value: any): boolean;
-export function isFileReadable(value: any): boolean;
 
 export function isWritableDOMStream(value: any): boolean;
 
