@@ -65,7 +65,7 @@ test('ShapefileLoader#load (from files or URLs)', async t => {
   t.end();
 });
 
-test('ShapefileLoader#load (from arrayBuffer)', async t => {
+test('ShapefileLoader#selectLoader (from arrayBuffer data)', async t => {
   // test file load (node) or URL load (browser)
   const filename = `${SHAPEFILE_JS_DATA_FOLDER}/boolean-property.shp`;
   const response = await fetchFile(filename, ShapefileLoader);

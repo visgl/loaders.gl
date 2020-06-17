@@ -1,11 +1,12 @@
-import {parseHeader} from './parse-shp';
+import {parseSHPHeader} from './parse-shp';
 
 const SHX_HEADER_SIZE = 100;
 const BIG_ENDIAN = false;
 
 export function parseShx(arrayBuffer) {
+  // SHX header is identical to SHP Header
   const headerView = new DataView(arrayBuffer, 0, SHX_HEADER_SIZE);
-  const header = parseHeader(headerView);
+  const header = parseSHPHeader(headerView);
   const contentLength = header.length - SHX_HEADER_SIZE;
 
   const contentView = new DataView(arrayBuffer, SHX_HEADER_SIZE, contentLength);
