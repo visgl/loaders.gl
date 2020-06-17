@@ -4,16 +4,18 @@
 
 #### v2.2.0-beta.1
 
-core: Fix metadata batch (#795)
-ea9f8663 Ib/unregistered mime types (#794)
-14677e98 core: Add loader option warnings (#791)
-d29545a0 Add octet-stream to ply loader mimetypes (#793)
-07770fca json: Add `jsonpath` field to batches (#792)
-d3487d2e Allow Files/Blobs as an input type (#790)
-18c0a974 Updated token. (#789)
-ac6abcf2 test: Add node 14 to CI (#788)
-112b16c5 types: All loaders now declare LoaderObject type. Loader mimeTypes fixed (#785)
-db2b3d2a examples: Remove DracoLoader imports (no longer needed) (#786)
+- Fix: expose the jsonpath property in a consistent shape (#798)
+- csv: Fix row object format. Configurable default column names. (#797)
+- core: Fix metadata batch (#795)
+- support unregistered mime types (#794)
+- core: Add loader option warnings (#791)
+- Add octet-stream to ply loader mimetypes (#793)
+- json: Add `jsonpath` field to batches (#792)
+- Allow Files/Blobs as an input type (#790)
+- Updated token. (#789)
+- test: Add node 14 to CI (#788)
+- types: All loaders now declare LoaderObject type. Loader mimeTypes fixed (#785)
+- examples: Remove DracoLoader imports (no longer needed) (#786)
 
 #### v2.2.0-alpha.3
 
