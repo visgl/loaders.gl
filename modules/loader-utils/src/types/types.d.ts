@@ -4,11 +4,12 @@
 export type LoaderObject = {
   id: string,
   name: string,
+  category?: string;
   version: string,
   extensions: string[],
   mimeTypes: string[],
   options: object;
-  category?: string;
+  deprecatedOptions?: object;
 
   binary?: boolean;
   text?: boolean;
@@ -19,7 +20,7 @@ export type LoaderObject = {
   parseSync?: (arrayBuffer, options) => any;
   parseText?: (string, options) => Promise<any>;
   parseTextSync?: (string, options) => any;
-  parseInBatches?: (any, options) => any; // TODO
+  parseInBatches?: (iterator: AsyncIterable<ArrayBuffer> | AsyncIterator<ArrayBuffer>, options: object) => any;
 
   // TODO - deprecated
   supported?: boolean;

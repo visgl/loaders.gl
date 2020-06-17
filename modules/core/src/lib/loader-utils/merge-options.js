@@ -24,6 +24,7 @@ export function mergeOptions(loader, options, url, topOptions = null) {
  * @param {object | null} topOptions
  * @param {*} log
  */
+// eslint-disable-next-line complexity
 function validateLoaderOptions(
   loader,
   options,
@@ -41,13 +42,27 @@ function validateLoaderOptions(
     }
   }
 
-  // Get the loader specific options if any
+  // Get the scoped, loader specific options from the user supplied options
   const idOptions = (options && options[loader.id]) || {};
+
+  // Get scoped, loader specific default and deprecated options from the selected loader
+  const loaderOptions = loader.options[loader.id] || {};
+  const deprecatedOptions = (loader.defaultOptions && loader.defaultOptions[loader.id]) || {};
 
   // Validate loader specific options
   for (const key in idOptions) {
-    if (!(key in loader.options[loader.id])) {
-      log.warn(`${loader.name} loader option ${loader.id}.${key} not recognized`);
+    if (!(key in loaderOptions)) {
+      // Issue deprecation warnings
+      if (key in deprecatedOptions) {
+        log.warn(
+          `${loader.name} loader option ${loader.id}.${key} deprecated, use ${
+            deprecatedOptions[key]
+          }`
+        );
+        // TODO - auto set updated option?
+      } else {
+        log.warn(`${loader.name} loader option ${loader.id}.${key} not recognized`);
+      }
     }
   }
 }

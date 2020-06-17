@@ -40,8 +40,9 @@ Worker support for the `WKTLoader`, designed to support future binary data impro
 **@loaders.gl/json**
 
 - `parseInBatches` now accepts `options.json.jsonpaths` to specify which array should be streamed using limited JSONPath syntax (e.g. `'$.features'` for GeoJSON).
-- `parseInBatches` now returns a `batch.bytesUsed` field to enable progress bars.
-- `.geojson` is now parsed by a new experimental `GeoJSONLoader` (exported with an underscore as `_GeoJSONLoader`), designed to support future binary data improvements.
+- `parseInBatches` returned batches now contain a `batch.bytesUsed` field to enable progress bars.
+- `parseInBatches` partial and final result batches are now generated when setting the `metadata: true` options.
+- `.geojson` files can now alternatively be parsed by a new experimental `GeoJSONLoader` (exported with an underscore as `_GeoJSONLoader`), introduced to support future binary data improvements.
 
 **@loaders.gl/csv**
 
