@@ -22,8 +22,7 @@ export default async function* parseJSONInBatches(asyncIterator, options) {
   for await (const chunk of asyncIterator) {
     const rows = parser.write(chunk);
 
-    const jsonpath =
-      rows.length > 0 && parser.getStreamingJsonPath() && parser.getStreamingJsonPath().toString();
+    const jsonpath = rows.length > 0 && parser.getStreamingJsonPathAsString();
 
     if (rows.length > 0 && isFirstChunk) {
       if (metadata) {
@@ -67,7 +66,7 @@ export default async function* parseJSONInBatches(asyncIterator, options) {
   }
 
   // yield final batch
-  const jsonpath = parser.getStreamingJsonPath() && parser.getStreamingJsonPath().toString();
+  const jsonpath = parser.getStreamingJsonPathAsString();
   const batch = tableBatchBuilder.getBatch({jsonpath});
   if (batch) {
     yield batch;
@@ -77,7 +76,7 @@ export default async function* parseJSONInBatches(asyncIterator, options) {
     const finalBatch = {
       batchType: 'final-result',
       container: parser.getPartialResult(),
-      jsonpath: parser.getStreamingJsonPath() && parser.getStreamingJsonPath().toString(),
+      jsonpath: parser.getStreamingJsonPathAsString(),
       data: [],
       schema: null
     };

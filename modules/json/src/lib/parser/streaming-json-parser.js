@@ -46,6 +46,10 @@ export default class StreamingJSONParser extends JSONParser {
     return this.streamingJsonPath;
   }
 
+  getStreamingJsonPathAsString() {
+    return this.streamingJsonPath && this.streamingJsonPath.toString();
+  }
+
   getJsonPath() {
     return this.jsonpath;
   }
