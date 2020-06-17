@@ -28,6 +28,7 @@ function validateLoaderOptions(
   loader,
   options,
   topOptions = DEFAULT_LOADER_OPTIONS,
+  // eslint-disable-next-line
   log = console
 ) {
   // Check top level options
