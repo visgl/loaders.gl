@@ -78,6 +78,12 @@ function findLoaderByContentType(loaders, mimeType) {
     if (loader.mimeTypes && loader.mimeTypes.includes(mimeType)) {
       return loader;
     }
+
+    // Support referring to loaders using the "unregistered tree"
+    // https://en.wikipedia.org/wiki/Media_type#Unregistered_tree
+    if (mimeType === `application/x.${loader.id}`) {
+      return loader;
+    }
   }
   return null;
 }

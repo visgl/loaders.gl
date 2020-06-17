@@ -1,4 +1,4 @@
-import {isFileReadable} from '../../javascript-utils/is-type';
+import {isBlob} from '../../javascript-utils/is-type';
 import {fetchFile} from '../fetch/fetch-file';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 
@@ -24,7 +24,7 @@ export async function load(url, loaders, options) {
   }
 
   // URL is Blob or File, fetchFile handles it (alt: we could generate ObjectURL here)
-  if (isFileReadable(url)) {
+  if (isBlob(url)) {
     // The fetch response object will contain blob.name
     data = await fetchFile(url, options);
     url = null;

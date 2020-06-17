@@ -1,6 +1,7 @@
 /* eslint-disable max-len */
+/* global Blob */
 import test from 'tape-promise/tape';
-import {fetchFile, selectLoader} from '@loaders.gl/core';
+import {fetchFile, selectLoader, isBrowser} from '@loaders.gl/core';
 import {ImageLoader} from '@loaders.gl/images';
 import {DracoLoader} from '@loaders.gl/draco';
 import {LASLoader} from '@loaders.gl/las';
@@ -84,5 +85,14 @@ test('selectLoader#data', async t => {
     'find loader by checking magic string in embedded tile data (with offset)'
   );
 
+  t.end();
+});
+
+test('selectLoader#unregistered MIME type', async t => {
+  if (isBrowser) {
+    const blob = new Blob([''], {type: 'application/x.draco'});
+    const loader = selectLoader(blob, [Tiles3DLoader, DracoLoader, LASLoader]);
+    t.is(loader, DracoLoader, 'find loader by unregistered MIME type');
+  }
   t.end();
 });

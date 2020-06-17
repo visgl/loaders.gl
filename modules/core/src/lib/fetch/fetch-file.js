@@ -1,6 +1,6 @@
 /* global fetch */
 import {resolvePath} from '@loaders.gl/loader-utils';
-import {isFileReadable} from '../../javascript-utils/is-type';
+import {isBlob} from '../../javascript-utils/is-type';
 import fetchFileReadable from './fetch-file.browser';
 import {getErrorMessageFromResponse} from './fetch-error-message';
 
@@ -10,7 +10,7 @@ import {getErrorMessageFromResponse} from './fetch-error-message';
 // * http/http urls
 // * File/Blob objects
 export async function fetchFile(url, options = {}) {
-  if (isFileReadable(url)) {
+  if (isBlob(url)) {
     return fetchFileReadable(url, options);
   }
   url = resolvePath(url);

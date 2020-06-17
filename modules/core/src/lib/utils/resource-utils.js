@@ -1,4 +1,4 @@
-import {isResponse, isFileReadable} from '../../javascript-utils/is-type';
+import {isResponse, isBlob} from '../../javascript-utils/is-type';
 import {parseMIMEType, parseMIMETypeFromURL} from './mime-type-utils';
 
 const QUERY_STRING_PATTERN = /\?.*/;
@@ -12,6 +12,13 @@ export function getResourceUrlAndType(resource) {
     return {
       url: resource.url || '',
       type: contentType || urlType || null
+    };
+  }
+
+  if (isBlob(resource)) {
+    return {
+      url: resource.url || '',
+      type: resource.type || ''
     };
   }
 
@@ -35,7 +42,7 @@ export function getResourceContentLength(resource) {
   if (isResponse(resource)) {
     return resource.headers['content-length'] || -1;
   }
-  if (isFileReadable(resource)) {
+  if (isBlob(resource)) {
     return resource.size;
   }
   if (typeof resource === 'string') {

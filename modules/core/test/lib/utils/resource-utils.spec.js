@@ -11,6 +11,12 @@ const DATA_URL =
 
 test('getResourceUrlAndType', t => {
   t.deepEqual(getResourceUrlAndType(DATA_URL), {type: 'image/png', url: DATA_URL});
+
+  if (isBrowser) {
+    const blob = new Blob(['abc'], {type: 'application/text'});
+    t.deepEqual(getResourceUrlAndType(blob), {type: 'application/text', url: ''});
+  }
+
   t.end();
 });
 

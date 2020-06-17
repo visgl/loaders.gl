@@ -10,7 +10,7 @@ import {LoaderObject, LoaderContext} from '../common';
  * @param context context object
  */
 export function selectLoader(
-  data?: Response | ArrayBuffer | string,
+  data?: Response | Blob | ArrayBuffer | string,
   loaders?: LoaderObject[] | LoaderObject,
   options?: {
     nothrow?: boolean;

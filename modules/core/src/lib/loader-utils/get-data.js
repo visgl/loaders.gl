@@ -6,7 +6,6 @@ import {
   isIterable,
   isIterator,
   isBlob,
-  isFileReadable,
   isBuffer
 } from '../../javascript-utils/is-type';
 import {makeIterator} from '../../iterator-utils/make-iterator/make-iterator';
@@ -21,7 +20,7 @@ const ERR_DATA = 'Cannot convert supplied data type';
 export function getUrlFromData(data, url) {
   if (isResponse(data)) {
     url = url || data.url;
-  } else if (isFileReadable(url)) {
+  } else if (isBlob(url)) {
     // File or Blob
     url = url.name;
   }
@@ -79,7 +78,7 @@ export async function getArrayBufferOrStringFromData(data, loader) {
   }
 
   // Blobs and files are FileReader compatible
-  if (isFileReadable(data)) {
+  if (isBlob(data)) {
     data = await fetchFileReadable(data);
   }
 
