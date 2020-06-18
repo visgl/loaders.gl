@@ -3,7 +3,7 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
-import {Vector2, Vector3, clamp, _MathUtils} from 'math.gl';
+import {Vector2, Vector3, clamp, _MathUtils} from '@math.gl/core';
 import assert from '../utils/assert';
 
 const RIGHT_SHIFT = 1.0 / 256.0;

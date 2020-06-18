@@ -1,5 +1,5 @@
 import test from 'tape';
-import {Vector3} from 'math.gl';
+import {Vector3} from '@math.gl/core';
 import {GL, computeVertexNormals} from '@loaders.gl/math';
 
 function getNormalsForVertices(vertices, t) {
