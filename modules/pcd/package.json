@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/pcd",
-  "version": "2.2.0-beta.1",
+  "version": "2.2.0",
   "description": "Framework-independent loader for the PCD format",
   "license": "MIT",
   "publishConfig": {

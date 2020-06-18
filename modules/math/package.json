@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/math",
-  "version": "2.2.0-beta.1",
+  "version": "2.2.0",
   "description": "Experimental math classes for loaders.gl",
   "license": "MIT",
   "publishConfig": {
