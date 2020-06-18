@@ -1,6 +1,6 @@
 /* eslint-disable max-statements */
 import {it, expect} from 'test/utils/expect-assertions';
-import {Vector2, Vector3, Vector4, _MathUtils} from 'math.gl';
+import {Vector2, Vector3, Vector4, _MathUtils} from '@math.gl/core';
 import {
   octEncodeInRange,
   octEncode,

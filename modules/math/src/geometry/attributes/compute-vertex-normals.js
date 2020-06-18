@@ -1,4 +1,4 @@
-import {Vector3} from 'math.gl';
+import {Vector3} from '@math.gl/core';
 import {GL} from '../constants';
 import assert from '../utils/assert';
 import primitiveIterator from '../iterators/primitive-iterator';
