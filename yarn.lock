@@ -1765,7 +1765,15 @@
     "@babel/runtime" "^7.0.0"
     gl-matrix "^3.0.0"
 
-"@math.gl/culling@^3.1.2", "@math.gl/culling@^3.1.3":
+"@math.gl/core@3.2.0", "@math.gl/core@^3.2.0":
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/@math.gl/core/-/core-3.2.0.tgz#1a53d8124c5ea32b71cfacf3919b6e16f4a1a736"
+  integrity sha512-8ZT+5m4V1yiCq5aE5Tp5m4lopf9JDlcqu/c+DNeA0y+oK4yAU/grAr3MX1wL/Ziege5DeEMUAdatybc6ZuyKjg==
+  dependencies:
+    "@babel/runtime" "^7.0.0"
+    gl-matrix "^3.0.0"
+
+"@math.gl/culling@^3.1.2":
   version "3.1.5"
   resolved "https://registry.yarnpkg.com/@math.gl/culling/-/culling-3.1.5.tgz#548635626a545ee3ac65f63d9e069498c18c7347"
   integrity sha512-Mop8SBB7ZF/tuJOKonHwlpH8YeZ7QtIHZS6M8fEM8BkXmchzQVBQRkuDZ9UhWOggO/NHOGV6K/rug2Io4y/i9w==
@@ -1774,7 +1782,16 @@
     "@math.gl/core" "3.1.5"
     gl-matrix "^3.0.0"
 
-"@math.gl/geospatial@^3.1.2", "@math.gl/geospatial@^3.1.3":
+"@math.gl/culling@^3.2.0":
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/@math.gl/culling/-/culling-3.2.0.tgz#ad1959ab6f42373d8314124f3bdfe613d753873a"
+  integrity sha512-mj/v2z8yjW+46Y8oJxIgoIrhA+aVHqmRUtxejTuDiF2tEXPpqz19oegdR8eaFtpy2KkICQ3R+O3Pbw/ajCuRSw==
+  dependencies:
+    "@babel/runtime" "^7.0.0"
+    "@math.gl/core" "3.2.0"
+    gl-matrix "^3.0.0"
+
+"@math.gl/geospatial@^3.1.2":
   version "3.1.5"
   resolved "https://registry.yarnpkg.com/@math.gl/geospatial/-/geospatial-3.1.5.tgz#98d944e33a8a45198e4d397bce2adde8157d46f0"
   integrity sha512-myHrtQ6U/3MOHcFDEi2iAy/rBXyrexngE1up+XKnu7Q2lHAUj4GCwKWGIEsYeKhGn1hTtx5kqWF43SB8jJICsQ==
@@ -1783,10 +1800,27 @@
     "@math.gl/core" "3.1.5"
     gl-matrix "^3.0.0"
 
+"@math.gl/geospatial@^3.2.0":
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/@math.gl/geospatial/-/geospatial-3.2.0.tgz#548a723064c02272c7a8a66ebd0dc20adb00d358"
+  integrity sha512-lNVSuUxEypL99r/HEt/dU6Me9Ch+fSCvC/WnHcsrQnwkgO4Qp/oYIKH/m6u14UAxHi8GQ9b2EUO11ShsLXKhkA==
+  dependencies:
+    "@babel/runtime" "^7.0.0"
+    "@math.gl/core" "3.2.0"
+    gl-matrix "^3.0.0"
+
 "@math.gl/web-mercator@^3.1.3":
   version "3.1.5"
   resolved "https://registry.yarnpkg.com/@math.gl/web-mercator/-/web-mercator-3.1.5.tgz#1746642a3a121774e929c20ce8eebbdeeeafa52f"
   integrity sha512-F8d2yDsnBWxIbuFffA5atTZZETapvH8J+H6wwfrplDf9kTWyQhlCcCZfy+3TkPXkNVky1ibcCaC6Py1LKlsamw==
+  dependencies:
+    "@babel/runtime" "^7.0.0"
+    gl-matrix "^3.0.0"
+
+"@math.gl/web-mercator@^3.2.0":
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/@math.gl/web-mercator/-/web-mercator-3.2.0.tgz#760eabda074b3cb695f4cb91533b10497ca68101"
+  integrity sha512-fv0XYb+pQ7txlZQuR3juIcz629oXItCjTr4o1J3GO49nsDjAyjmpdFtTzPWO7AC473fKY/n5DcFXI8SXIx2OAw==
   dependencies:
     "@babel/runtime" "^7.0.0"
     gl-matrix "^3.0.0"
