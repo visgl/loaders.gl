@@ -1,8 +1,8 @@
 # What's New
 
-## v2.2 (In Development)
+## v2.2
 
-Target Release Date: June 2020. Intention is to release in sync with deck.gl 8.2. Alpha releases are available.
+Release Date: June 18, 2020
 
 ### Typescript Type Definitions
 
