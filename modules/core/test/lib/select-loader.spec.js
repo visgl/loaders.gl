@@ -36,6 +36,16 @@ test('selectLoader#urls', async t => {
     ImageLoader,
     'find loader by data url mime type'
   );
+
+  t.is(
+    selectLoader(
+      'https://wms.chartbundle.com/tms/1.0.0/sec/{z}/{x}/{y}.png?origin=nw',
+      [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader]
+    ),
+    ImageLoader,
+    'find loader from URL with query params'
+  );
+
   t.throws(
     () => selectLoader('data.obj', [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader]),
     'find no loaders by url extension'
