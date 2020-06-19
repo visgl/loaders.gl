@@ -3,7 +3,7 @@ import parseShape from '@loaders.gl/shapefile/lib/parse-shp';
 import {fetchFile} from '@loaders.gl/core';
 import {geojsonToBinary} from '@loaders.gl/gis';
 
-const BOSTOCK_DATA_FOLDER = '@loaders.gl/shapefile/test/data/bostock';
+const BOSTOCK_DATA_FOLDER = '@loaders.gl/shapefile/test/data/shapefile-js';
 const BOSTOCK_POINT_TEST_FILES = ['points', 'multipoints'];
 const BOSTOCK_POLYLINE_TEST_FILES = ['polylines'];
 const BOSTOCK_POLYGON_TEST_FILES = ['polygons'];

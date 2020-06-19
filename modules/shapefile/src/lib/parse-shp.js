@@ -11,7 +11,6 @@ export default function parseShape(arrayBuffer) {
   const headerView = new DataView(arrayBuffer, 0, SHAPE_HEADER_SIZE);
   const header = parseHeader(headerView);
 
-  // eslint-disable-next-line
   // index numbering starts at 1
   let currentIndex = 1;
   const features = [];
@@ -20,8 +19,6 @@ export default function parseShape(arrayBuffer) {
 
   while (offset + SHAPE_RECORD_HEADER_SIZE < arrayBuffer.byteLength) {
     const recordHeaderView = new DataView(arrayBuffer, offset, SHAPE_RECORD_HEADER_SIZE);
-    // Numbering starts at 1
-    // eslint-disable-next-line
     const recordNumber = recordHeaderView.getInt32(0, BIG_ENDIAN);
     // 2 byte words; includes the four words of record header
     const byteLength = recordHeaderView.getInt32(4, BIG_ENDIAN) * 2;
