@@ -1,0 +1,8 @@
+{
+  "type": "FeatureCollection",
+  "bbox": [0, 0, 25, 25],
+  "features": [
+    {"type": "Feature", "properties": {}, "geometry": {"type": "LineString", "coordinates": [[0, 0], [5, 5], [10, 10]]}},
+    {"type": "Feature", "properties": {}, "geometry": {"type": "LineString", "coordinates": [[15, 15], [20, 20], [25, 25]]}}
+  ]
+}
