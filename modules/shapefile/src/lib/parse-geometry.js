@@ -21,18 +21,18 @@ export function parseRecord(view) {
     // exist
     case 11:
       return parsePoint(view, offset, 4); // PointZ
-    // case 13:
-    //   return parsePoly(view, offset, 4); // PolyLineZ
-    // case 15:
-    //   return parsePoly(view, offset, 4); // PolygonZ
+    case 13:
+      return parsePoly(view, offset, 4); // PolyLineZ
+    case 15:
+      return parsePoly(view, offset, 4); // PolygonZ
     case 18:
       return parseMultiPoint(view, offset, 4); // MultiPointZ
     case 21:
       return parsePoint(view, offset, 3); // PointM
-    // case 23:
-    //   return parsePoly(view, offset, 3); // PolyLineM
-    // case 25:
-    //   return parsePoly(view, offset, 3); // PolygonM
+    case 23:
+      return parsePoly(view, offset, 3); // PolyLineM
+    case 25:
+      return parsePoly(view, offset, 3); // PolygonM
     case 28:
       return parseMultiPoint(view, offset, 3); // MultiPointM
     default:
@@ -108,12 +108,28 @@ function parsePoly(view, offset, dim) {
   offset += nParts * Int32Array.BYTES_PER_ELEMENT;
 
   let xyPositions;
+  let mPositions;
+  let zPositions;
   [xyPositions, offset] = parsePositions(view, offset, nPoints, 2);
 
-  // TODO: parse 3/4D, concat and interleave
+  // Parse Z coordinates
+  if (dim === 4) {
+    // skip parsing range
+    offset += 2 * Float64Array.BYTES_PER_ELEMENT;
+    [zPositions, offset] = parsePositions(view, offset, nPoints, 1);
+  }
+
+  // Parse M coordinates
+  if (dim >= 3) {
+    // skip parsing range
+    offset += 2 * Float64Array.BYTES_PER_ELEMENT;
+    [mPositions, offset] = parsePositions(view, offset, nPoints, 1);
+  }
+
+  const positions = concatPositions(xyPositions, mPositions, zPositions);
 
   return {
-    positions: {value: xyPositions, size: dim},
+    positions: {value: positions, size: dim},
     indices: {value: indices, size: 1}
   };
 }
