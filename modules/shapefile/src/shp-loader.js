@@ -1,5 +1,5 @@
 // import parseSHP from './lib/parse-shp';
-const parseSHP = (arrayBuffer) => null;
+const parseSHP = arrayBuffer => null;
 
 /** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 
