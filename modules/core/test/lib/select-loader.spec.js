@@ -12,6 +12,8 @@ import KML_SAMPLE from '@loaders.gl/kml/test/data/KML_Samples.kml';
 
 const DRACO_URL = '@loaders.gl/draco/test/data/bunny.drc';
 const TILE_3D_URL = '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudRGB/pointCloudRGB.pnts';
+const URL_WITH_QUERYSTRING =
+  'https://wms.chartbundle.com/tms/1.0.0/sec/{z}/{x}/{y}.png?origin=nw.xy';
 
 test('selectLoader#urls', async t => {
   t.throws(() => selectLoader(null), 'selectedLoader throws if no loader found');
@@ -38,12 +40,7 @@ test('selectLoader#urls', async t => {
   );
 
   t.is(
-    selectLoader('https://wms.chartbundle.com/tms/1.0.0/sec/{z}/{x}/{y}.png?origin=nw', [
-      ImageLoader,
-      Tiles3DLoader,
-      DracoLoader,
-      LASLoader
-    ]),
+    selectLoader(URL_WITH_QUERYSTRING, [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader]),
     ImageLoader,
     'find loader from URL with query params'
   );

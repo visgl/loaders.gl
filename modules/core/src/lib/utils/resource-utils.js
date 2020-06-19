@@ -10,14 +10,14 @@ export function getResourceUrlAndType(resource) {
     const urlType = parseMIMETypeFromURL(resource.url);
 
     return {
-      url: resource.url || '',
+      url: stripQueryString(resource.url || ''),
       type: contentType || urlType || null
     };
   }
 
   if (isBlob(resource)) {
     return {
-      url: resource.url || '',
+      url: stripQueryString(resource.url || ''),
       type: resource.type || ''
     };
   }
@@ -25,7 +25,7 @@ export function getResourceUrlAndType(resource) {
   if (typeof resource === 'string') {
     return {
       // TODO this could mess up data URL but it doesn't matter as it is just used for inference
-      url: resource.replace(QUERY_STRING_PATTERN, ''),
+      url: stripQueryString(resource),
       // If a data url
       type: parseMIMETypeFromURL(resource)
     };
@@ -57,4 +57,8 @@ export function getResourceContentLength(resource) {
   }
 
   return -1;
+}
+
+function stripQueryString(url) {
+  return url.replace(QUERY_STRING_PATTERN, '');
 }
