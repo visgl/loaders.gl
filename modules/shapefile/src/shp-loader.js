@@ -1,6 +1,4 @@
-// import parseSHP from './lib/parse-shp';
-const parseSHP = arrayBuffer => null;
-
+import parseSHP from './lib/parse-shp';
 /** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 
 // __VERSION__ is injected by babel-plugin-version-inline
