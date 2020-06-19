@@ -13,6 +13,7 @@ export const TerrainWorkerLoader = {
   mimeTypes: ['image/png'],
   options: {
     terrain: {
+      bounds: null,
       workerUrl: `https://unpkg.com/@loaders.gl/terrain@${VERSION}/dist/terrain-loader.worker.js`,
       meshMaxError: 10,
       elevationDecoder: {

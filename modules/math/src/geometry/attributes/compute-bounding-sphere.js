@@ -1,6 +1,6 @@
 /* eslint-disable */
 
-import {Vector3} from 'math.gl';
+import {Vector3} from '@math.gl/core';
 import {getPositions} from './get-attribute-from-geometry';
 
 export function computeBoundingSphere(geometry, boundingBox) {

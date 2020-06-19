@@ -1,4 +1,4 @@
-import {equals, _withEpsilon} from 'math.gl';
+import {equals, withEpsilon} from '@math.gl/core';
 import './tape-deep-equal';
 
 // FOR TAPE TESTING
@@ -25,5 +25,5 @@ export function tapeEquals(t, a, b, msg, extra) {
 
 // eslint-disable-next-line max-params
 export function tapeEqualsEpsilon(t, a, b, epsilon, msg, extra) {
-  return _withEpsilon(epsilon, () => tapeEquals(t, a, b, msg, extra));
+  return withEpsilon(epsilon, () => tapeEquals(t, a, b, msg, extra));
 }
