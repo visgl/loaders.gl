@@ -2,6 +2,12 @@
 
 ## v2.2 Release
 
+#### v2.2.2
+
+- Fix: Add query param test case to select loaders (#807)
+- Fix: Add bounds: null default to TerrainLoader to prevent warnings (#808)
+- polyfills: Fix browser excludes (#806)
+
 #### v2.2.1
 
 - Pin module cross-dependencies
