@@ -38,10 +38,12 @@ test('selectLoader#urls', async t => {
   );
 
   t.is(
-    selectLoader(
-      'https://wms.chartbundle.com/tms/1.0.0/sec/{z}/{x}/{y}.png?origin=nw',
-      [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader]
-    ),
+    selectLoader('https://wms.chartbundle.com/tms/1.0.0/sec/{z}/{x}/{y}.png?origin=nw', [
+      ImageLoader,
+      Tiles3DLoader,
+      DracoLoader,
+      LASLoader
+    ]),
     ImageLoader,
     'find loader from URL with query params'
   );
