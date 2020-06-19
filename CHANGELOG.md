@@ -4,6 +4,12 @@
 
 #### v2.2.0
 
+- Pin module cross-dependencies
+- Bump to probe.gl@3.3.0
+- Bump example versions
+
+#### v2.2.0
+
 - Bump to math.gl@3.2.0 (#802)
 
 ### 2.2 Prerelease
