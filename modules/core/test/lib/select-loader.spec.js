@@ -12,7 +12,8 @@ import KML_SAMPLE from '@loaders.gl/kml/test/data/KML_Samples.kml';
 
 const DRACO_URL = '@loaders.gl/draco/test/data/bunny.drc';
 const TILE_3D_URL = '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudRGB/pointCloudRGB.pnts';
-const URL_WITH_QUERYSTRING = 'https://wms.chartbundle.com/tms/1.0.0/sec/{z}/{x}/{y}.png?origin=nw.xy';
+const URL_WITH_QUERYSTRING =
+  'https://wms.chartbundle.com/tms/1.0.0/sec/{z}/{x}/{y}.png?origin=nw.xy';
 const DRACO_URL_QUERYSTRING = '@loaders.gl/draco/test/data/bunny.drc?query.string';
 
 test('selectLoader#urls', async t => {
@@ -40,12 +41,7 @@ test('selectLoader#urls', async t => {
   );
 
   t.is(
-    selectLoader(URL_WITH_QUERYSTRING, [
-      ImageLoader,
-      Tiles3DLoader,
-      DracoLoader,
-      LASLoader
-    ]),
+    selectLoader(URL_WITH_QUERYSTRING, [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader]),
     ImageLoader,
     'find loader from URL with query params'
   );
@@ -53,16 +49,10 @@ test('selectLoader#urls', async t => {
   const response = await fetchFile(DRACO_URL_QUERYSTRING);
   t.ok(response.url.endsWith(DRACO_URL_QUERYSTRING.slice(-20)), 'URL ends with ');
   t.is(
-    selectLoader(response, [
-      ImageLoader,
-      Tiles3DLoader,
-      DracoLoader,
-      LASLoader
-    ]),
+    selectLoader(response, [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader]),
     DracoLoader,
     'find loader from response with query params'
   );
-
 
   t.throws(
     () => selectLoader('data.obj', [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader]),
