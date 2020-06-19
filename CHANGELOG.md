@@ -2,7 +2,7 @@
 
 ## v2.2 Release
 
-#### v2.2.0
+#### v2.2.1
 
 - Pin module cross-dependencies
 - Bump to probe.gl@3.3.0
