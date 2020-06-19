@@ -52,6 +52,6 @@
     "gatsby": "~2.22.17",
     "gatsby-plugin-no-sourcemaps": "^2.1.2",
     "gatsby-theme-ocular": "^1.2.0-beta.8",
-    "gh-pages": "^2.2.0"
+    "gh-pages": "2.2.0"
   }
 }
