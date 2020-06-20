@@ -15,7 +15,7 @@ export const SHPWorkerLoader = {
   mimeTypes: [],
   options: {
     shp: {
-      workerUrl: `https://unpkg.com/@loaders.gl/shp@${VERSION}/dist/shp-loader.worker.js`
+      workerUrl: `https://unpkg.com/@loaders.gl/shapefile@${VERSION}/dist/shp-loader.worker.js`
     }
   }
 };

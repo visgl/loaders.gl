@@ -1,7 +1,6 @@
 import {parseHeader, BIG_ENDIAN, LITTLE_ENDIAN} from './util';
 import {parseRecord} from './parse-geometry';
 
-
 const SHAPE_HEADER_SIZE = 100;
 // According to the spec, the record header is just 8 bytes, but here we set it
 // to 12 so that we can also access the record's type
