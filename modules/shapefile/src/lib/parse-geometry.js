@@ -101,11 +101,13 @@ function parsePoly(view, offset, dim) {
   const nPoints = view.getInt32(offset, LITTLE_ENDIAN);
   offset += Int32Array.BYTES_PER_ELEMENT;
 
-  // Load parts directly into int32 array
-  // Note, doesn't include length of positions; hence is one shorter than deck expects
+  // Create longer indices array by 1 because output format is expected to
+  // include the last index as the total number of positions
   const bufferOffset = view.byteOffset + offset;
   const bufferLength = nParts * Int32Array.BYTES_PER_ELEMENT;
-  const indices = new Int32Array(view.buffer.slice(bufferOffset, bufferOffset + bufferLength));
+  const indices = new Int32Array(nParts + 1);
+  indices.set(new Int32Array(view.buffer.slice(bufferOffset, bufferOffset + bufferLength)));
+  indices[nParts] = nPoints;
   offset += nParts * Int32Array.BYTES_PER_ELEMENT;
 
   let xyPositions;

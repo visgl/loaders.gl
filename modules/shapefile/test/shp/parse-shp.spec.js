@@ -36,8 +36,9 @@ test('Bostock Polyline tests', async t => {
     const output = parseShape(body);
 
     for (let i = 0; i < json.features.length; i++) {
-      const expBinary = geojsonToBinary([json.features[i]]).lines.positions;
-      t.deepEqual(output.features[i].positions, expBinary);
+      const expBinary = geojsonToBinary([json.features[i]]).lines;
+      t.deepEqual(output.features[i].positions, expBinary.positions);
+      t.deepEqual(output.features[i].indices, expBinary.pathIndices);
     }
   }
 
@@ -54,8 +55,9 @@ test('Bostock Polygon tests', async t => {
     const output = parseShape(body);
 
     for (let i = 0; i < json.features.length; i++) {
-      const expBinary = geojsonToBinary([json.features[i]]).polygons.positions;
-      t.deepEqual(output.features[i].positions, expBinary);
+      const expBinary = geojsonToBinary([json.features[i]]).polygons;
+      t.deepEqual(output.features[i].positions, expBinary.positions);
+      t.deepEqual(output.features[i].indices, expBinary.primitivePolygonIndices);
     }
   }
 
