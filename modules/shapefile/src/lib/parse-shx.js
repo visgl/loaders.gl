@@ -1,8 +1,4 @@
 import {parseHeader, BIG_ENDIAN} from './util';
-// var {readFileSync} = require('fs');
-// var path = '../../shp/PADUS2_0CO_Shapefile/PADUS2_0Proclamation_CO.shx';
-// var arrayBuffer = readFileSync(path).buffer;
-// readFileSync(path).length;
 
 const SHX_HEADER_SIZE = 100;
 
