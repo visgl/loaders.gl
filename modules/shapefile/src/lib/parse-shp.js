@@ -1,4 +1,4 @@
-import {parseHeader, BIG_ENDIAN} from './util';
+import {parseHeader, BIG_ENDIAN, LITTLE_ENDIAN} from './util';
 import {parseRecord} from './parse-geometry';
 
 
@@ -22,7 +22,7 @@ export default function parseShape(arrayBuffer) {
     const recordNumber = recordHeaderView.getInt32(0, BIG_ENDIAN);
     // 2 byte words; includes the four words of record header
     const byteLength = recordHeaderView.getInt32(4, BIG_ENDIAN) * 2;
-    const type = recordHeaderView.getInt32(8, true);
+    const type = recordHeaderView.getInt32(8, LITTLE_ENDIAN);
 
     // All records must have at least four bytes (for the record shape type)
     if (byteLength < 4 || type !== header.type || recordNumber !== currentIndex) {

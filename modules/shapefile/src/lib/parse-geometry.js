@@ -40,6 +40,7 @@ export function parseRecord(view) {
   }
 }
 
+// TODO handle null
 function parseNull(view, offset) {
   return null;
 }
@@ -146,6 +147,7 @@ function parsePositions(view, offset, nPoints, dim) {
 
 // Concatenate and interleave positions arrays
 // xy positions are interleaved; mPositions, zPositions are their own arrays
+// eslint-disable-next-line complexity
 function concatPositions(xyPositions, mPositions, zPositions) {
   if (!(mPositions || zPositions)) {
     return xyPositions;
