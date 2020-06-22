@@ -1,8 +1,8 @@
 // TODO - build/integrate proper MIME type parsing
 // https://mimesniff.spec.whatwg.org/
 
-const DATA_URL_PATTERN = /^data:(.*?)(;|,)/;
-const MIME_TYPE_PATTERN = /^(.*?)(;|,)/;
+const DATA_URL_PATTERN = /^data:([-\w.]+\/[-\w.+]+)(;|,)/;
+const MIME_TYPE_PATTERN = /^([-\w.]+\/[-\w.+]+)/;
 
 export function parseMIMEType(mimeString) {
   if (typeof mimeString !== 'string') {
@@ -15,7 +15,7 @@ export function parseMIMEType(mimeString) {
     return matches[1];
   }
 
-  return '';
+  return mimeString;
 }
 
 export function parseMIMETypeFromURL(dataUrl) {
