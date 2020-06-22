@@ -1,4 +1,4 @@
-import {LITTLE_ENDIAN} from './util';
+const LITTLE_ENDIAN = true;
 
 // eslint-disable-next-line complexity
 export function parseRecord(view) {

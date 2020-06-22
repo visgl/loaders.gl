@@ -1,6 +1,7 @@
-import {parseHeader, BIG_ENDIAN} from './util';
+import {parseHeader} from './parse-shp';
 
 const SHX_HEADER_SIZE = 100;
+const BIG_ENDIAN = false;
 
 export function parseShx(arrayBuffer) {
   const headerView = new DataView(arrayBuffer, 0, SHX_HEADER_SIZE);
