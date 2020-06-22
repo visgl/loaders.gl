@@ -6,21 +6,20 @@
  */
 
 /* global Blob */
-import * as utils from './utils';
-import * as header from './header';
+import {clean, pad, stringToUint8} from './utils';
+import {format} from './header';
 
 let blockSize;
 const recordSize = 512;
 
 class Tar {
-
   /**
    * @param {number} [recordsPerBlock]
    */
   constructor(recordsPerBlock) {
     this.written = 0;
     blockSize = (recordsPerBlock || 20) * recordSize;
-    this.out = utils.clean(blockSize);
+    this.out = clean(blockSize);
     /** @type {{ header: any; input: string | Uint8Array; headerLength: number; inputLength: number; }[]} */
     this.blocks = [];
     this.length = 0;
@@ -38,7 +37,7 @@ class Tar {
     let checksum;
 
     if (typeof input === 'string') {
-      input = utils.stringToUint8(input);
+      input = stringToUint8(input);
     } else if (input.constructor !== Uint8Array.prototype.constructor) {
       const errorInput = input.constructor
         .toString()
@@ -56,11 +55,11 @@ class Tar {
 
     const data = {
       fileName: filepath,
-      fileMode: utils.pad(mode, 7),
-      uid: utils.pad(uid, 7),
-      gid: utils.pad(gid, 7),
-      fileSize: utils.pad(input.length, 11),
-      mtime: utils.pad(mtime, 11),
+      fileMode: pad(mode, 7),
+      uid: pad(uid, 7),
+      gid: pad(gid, 7),
+      fileSize: pad(input.length, 11),
+      mtime: pad(mtime, 11),
       checksum: '        ',
       // 0 = just a file
       type: '0',
@@ -81,9 +80,9 @@ class Tar {
       }
     });
 
-    data.checksum = `${utils.pad(checksum, 6)}\u0000 `;
+    data.checksum = `${pad(checksum, 6)}\u0000 `;
 
-    const headerArr = header.format(data);
+    const headerArr = format(data);
 
     const headerLength = Math.ceil(headerArr.length / recordSize) * recordSize;
     const inputLength = Math.ceil(input.length / recordSize) * recordSize;
@@ -133,7 +132,7 @@ class Tar {
 
   clear() {
     this.written = 0;
-    this.out = utils.clean(blockSize);
+    this.out = clean(blockSize);
   }
 }
 

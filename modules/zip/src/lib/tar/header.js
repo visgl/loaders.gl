@@ -28,72 +28,25 @@ struct posix_header {             // byte offset
 };
 */
 
-export const structure = [
-  {
-    field: 'fileName',
-    length: 100
-  },
-  {
-    field: 'fileMode',
-    length: 8
-  },
-  {
-    field: 'uid',
-    length: 8
-  },
-  {
-    field: 'gid',
-    length: 8
-  },
-  {
-    field: 'fileSize',
-    length: 12
-  },
-  {
-    field: 'mtime',
-    length: 12
-  },
-  {
-    field: 'checksum',
-    length: 8
-  },
-  {
-    field: 'type',
-    length: 1
-  },
-  {
-    field: 'linkName',
-    length: 100
-  },
-  {
-    field: 'ustar',
-    length: 8
-  },
-  {
-    field: 'owner',
-    length: 32
-  },
-  {
-    field: 'group',
-    length: 32
-  },
-  {
-    field: 'majorNumber',
-    length: 8
-  },
-  {
-    field: 'minorNumber',
-    length: 8
-  },
-  {
-    field: 'filenamePrefix',
-    length: 155
-  },
-  {
-    field: 'padding',
-    length: 12
-  }
-];
+/** @type {{[field: string]: number}} */
+const structure = {
+  fileName: 100,
+  fileMode: 8,
+  uid: 8,
+  gid: 8,
+  fileSize: 12,
+  mtime: 12,
+  checksum: 8,
+  type: 1,
+  linkName: 100,
+  ustar: 8,
+  owner: 32,
+  group: 32,
+  majorNumber: 8,
+  minorNumber: 8,
+  filenamePrefix: 155,
+  padding: 12
+};
 
 /**
  * @param {{ [x: string]: string }} data
@@ -104,18 +57,18 @@ export function format(data, cb) {
   const buffer = utils.clean(512);
   let offset = 0;
 
-  structure.forEach(value => {
-    const str = data[value.field] || '';
+  Object.entries(structure).forEach(([field, length]) => {
+    const str = data[field] || '';
     let i;
-    let length;
+    let fieldLength;
 
-    for (i = 0, length = str.length; i < length; i += 1) {
+    for (i = 0, fieldLength = str.length; i < fieldLength; i += 1) {
       buffer[offset] = str.charCodeAt(i);
       offset += 1;
     }
 
     // space it out with nulls
-    offset += value.length - i;
+    offset += length - i;
   });
 
   if (typeof cb === 'function') {
