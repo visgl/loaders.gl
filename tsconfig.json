@@ -32,6 +32,8 @@
       "@loaders.gl/draco/test": ["modules/draco/test"],
       "@loaders.gl/images/*": ["modules/images/src/*"],
       "@loaders.gl/images/test": ["modules/images/test"],
+      "@loaders.gl/gdal/*": ["modules/gdal/src/*"],
+      "@loaders.gl/gdal/test": ["modules/gdal/test"],
       "@loaders.gl/gltf/*": ["modules/gltf/src/*"],
       "@loaders.gl/gltf/test": ["modules/gltf/test"],
       "@loaders.gl/json/*": ["modules/json/src/*"],
