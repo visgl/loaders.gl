@@ -63,7 +63,7 @@ test('JSONLoader#loadInBatches(geojson.json, rows, batchSize = 10)', async t => 
   t.end();
 });
 
-test('JSONLoader#loadInBatches(jsonpaths)', async t => {
+test.skip('JSONLoader#loadInBatches(jsonpaths)', async t => {
   let iterator = await loadInBatches(GEOJSON_PATH, JSONLoader, {json: {jsonpaths: ['$.features']}});
 
   let batchCount = 0;
