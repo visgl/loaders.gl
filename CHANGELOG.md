@@ -2,6 +2,10 @@
 
 ## v2.2 Release
 
+#### v2.2.3
+
+- Fix: Improve MIME regex to fix selecting loader based on MIME type (#815)
+
 #### v2.2.2
 
 - Fix: Add query param test case to select loaders (#807)
