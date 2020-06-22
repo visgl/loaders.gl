@@ -6,6 +6,7 @@ const DATA_URL =
 
 test('parseMIMEType', t => {
   t.equal(parseMIMEType('image/png;'), 'image/png');
+  t.equal(parseMIMEType('image/png'), 'image/png');
 
   t.end();
 });

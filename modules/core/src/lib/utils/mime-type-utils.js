@@ -2,7 +2,7 @@
 // https://mimesniff.spec.whatwg.org/
 
 const DATA_URL_PATTERN = /^data:(.*?)(;|,)/;
-const MIME_TYPE_PATTERN = /^(.*?)(;|,)/;
+const MIME_TYPE_PATTERN = /^([-\w.]+\/[-\w.+]+)/;
 
 export function parseMIMEType(mimeString) {
   if (typeof mimeString !== 'string') {
