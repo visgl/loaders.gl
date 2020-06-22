@@ -6,6 +6,10 @@ const DATA_URL =
 
 test('parseMIMEType', t => {
   t.equal(parseMIMEType('image/png;'), 'image/png');
+  t.equal(parseMIMEType('image/png'), 'image/png');
+  t.equal(parseMIMEType('application/octet-stream;'), 'application/octet-stream');
+  t.equal(parseMIMEType('text/csv;'), 'text/csv');
+  t.equal(parseMIMEType('application/zip;'), 'application/zip');
 
   t.end();
 });
