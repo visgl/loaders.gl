@@ -3,17 +3,17 @@ import parseShape from '@loaders.gl/shapefile/lib/parse-shp';
 import {fetchFile} from '@loaders.gl/core';
 import {geojsonToBinary} from '@loaders.gl/gis';
 
-const BOSTOCK_DATA_FOLDER = '@loaders.gl/shapefile/test/data/shapefile-js';
-const BOSTOCK_POINT_TEST_FILES = ['points', 'multipoints'];
-const BOSTOCK_POLYLINE_TEST_FILES = ['polylines'];
-const BOSTOCK_POLYGON_TEST_FILES = ['polygons'];
+const SHAPEFILE_JS_DATA_FOLDER = '@loaders.gl/shapefile/test/data/shapefile-js';
+const SHAPEFILE_JS_POINT_TEST_FILES = ['points', 'multipoints'];
+const SHAPEFILE_JS_POLYLINE_TEST_FILES = ['polylines'];
+const SHAPEFILE_JS_POLYGON_TEST_FILES = ['polygons'];
 
-test('Bostock Point tests', async t => {
-  for (const testFileName of BOSTOCK_POINT_TEST_FILES) {
-    let response = await fetchFile(`${BOSTOCK_DATA_FOLDER}/${testFileName}.shp`);
+test('Shapefile JS Point tests', async t => {
+  for (const testFileName of SHAPEFILE_JS_POINT_TEST_FILES) {
+    let response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`);
     const body = await response.arrayBuffer();
 
-    response = await fetchFile(`${BOSTOCK_DATA_FOLDER}/${testFileName}.json`);
+    response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.json`);
     const json = await response.json();
     const output = parseShape(body);
 
@@ -26,12 +26,12 @@ test('Bostock Point tests', async t => {
   t.end();
 });
 
-test('Bostock Polyline tests', async t => {
-  for (const testFileName of BOSTOCK_POLYLINE_TEST_FILES) {
-    let response = await fetchFile(`${BOSTOCK_DATA_FOLDER}/${testFileName}.shp`);
+test('Shapefile JS Polyline tests', async t => {
+  for (const testFileName of SHAPEFILE_JS_POLYLINE_TEST_FILES) {
+    let response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`);
     const body = await response.arrayBuffer();
 
-    response = await fetchFile(`${BOSTOCK_DATA_FOLDER}/${testFileName}.json`);
+    response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.json`);
     const json = await response.json();
     const output = parseShape(body);
 
@@ -45,12 +45,12 @@ test('Bostock Polyline tests', async t => {
   t.end();
 });
 
-test('Bostock Polygon tests', async t => {
-  for (const testFileName of BOSTOCK_POLYGON_TEST_FILES) {
-    let response = await fetchFile(`${BOSTOCK_DATA_FOLDER}/${testFileName}.shp`);
+test('Shapefile JS Polygon tests', async t => {
+  for (const testFileName of SHAPEFILE_JS_POLYGON_TEST_FILES) {
+    let response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`);
     const body = await response.arrayBuffer();
 
-    response = await fetchFile(`${BOSTOCK_DATA_FOLDER}/${testFileName}.json`);
+    response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.json`);
     const json = await response.json();
     const output = parseShape(body);
 
