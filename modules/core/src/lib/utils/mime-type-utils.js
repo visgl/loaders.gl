@@ -15,7 +15,7 @@ export function parseMIMEType(mimeString) {
     return matches[1];
   }
 
-  return '';
+  return mimeString;
 }
 
 export function parseMIMETypeFromURL(dataUrl) {
