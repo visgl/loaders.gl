@@ -2,6 +2,10 @@
 
 ## v2.2 Release
 
+#### v2.2.4
+
+- Fix: Pass through 'dynamicTyping' to the parser in 'parseInBatches' (CSV Loader) (#817)
+
 #### v2.2.3
 
 - Fix: Improve MIME regex to fix selecting loader based on MIME type (#815)
