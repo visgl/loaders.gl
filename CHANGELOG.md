@@ -2,7 +2,7 @@
 
 ## v2.2 Release
 
-#### v2.2.4
+#### v2.2.5
 
 - Fix: Pass through 'dynamicTyping' to the parser in 'parseInBatches' (CSV Loader) (#817)
 
