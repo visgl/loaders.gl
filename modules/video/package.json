@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/video",
-  "version": "2.2.3",
+  "version": "2.2.4",
   "description": "Framework-independent loaders and writers for video (MP4, WEBM, ...)",
   "license": "MIT",
   "publishConfig": {
@@ -33,7 +33,7 @@
     "build-worker": "webpack --entry ./src/image-loader.worker.js --output ./dist/image-loader.worker.js --config ../../scripts/worker-webpack-config.js"
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "2.2.3",
+    "@loaders.gl/loader-utils": "2.2.4",
     "gifshot": "^0.4.5"
   }
 }
