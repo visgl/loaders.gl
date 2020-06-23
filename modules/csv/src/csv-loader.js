@@ -14,7 +14,8 @@ const CSVLoaderOptions = {
     batchSize: 10,
     header: 'auto',
     rowFormat: 'auto',
-    columnPrefix: 'column'
+    columnPrefix: 'column',
+    dynamicTyping: true
   }
 };
 
@@ -73,9 +74,10 @@ function parseCSVInBatches(asyncIterator, options) {
   let schema = null;
 
   const config = {
-    download: false, // We handle loading, no need for papaparse to do it for us
-    dynamicTyping: true, // Convert numbers and boolean values in rows from strings
+    dynamicTyping: true, // Convert numbers and boolean values in rows from strings,
+    ...options.csv,
     header: false, // Unfortunately, header detection is not automatic and does not infer types
+    download: false, // We handle loading, no need for papaparse to do it for us
     // chunk(results, parser) {
     //   // TODO batch before adding to queue.
     //   console.log('Chunk:', results, parser);
