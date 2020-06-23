@@ -207,7 +207,7 @@ test('CSVLoader#loadInBatches(sample.csv, no dynamicTyping)', async t => {
   });
   t.ok(isIterator(iterator) || isAsyncIterable(iterator), 'loadInBatches returned iterator');
 
-  let batchCount = 0;
+  let rowCount = 0;
   for await (const batch of iterator) {
     t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
     t.equal(batch.length, 2, 'Got correct batch size');
@@ -219,8 +219,8 @@ test('CSVLoader#loadInBatches(sample.csv, no dynamicTyping)', async t => {
       'column 2 is a string and is valid'
     );
 
-    batchCount++;
+    rowCount = rowCount + batch.length;
   }
-  t.equal(batchCount, 1, 'Correct number of batches received');
+  t.equal(rowCount, 2, 'Correct number of rows received');
   t.end();
 });
