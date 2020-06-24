@@ -53,8 +53,7 @@ function parseColumnHeaders(view, textDecoder) {
   var fields = [];
   for (var i = 0; i < nFields; i++) {
     // Better way to read text?
-    // TODO: remove null \u0000; looks like they right fill with that
-    var name = textDecoder.decode(view.buffer.slice(view.byteOffset + offset, view.byteOffset + offset + 11))
+    var name = textDecoder.decode(view.buffer.slice(view.byteOffset + offset, view.byteOffset + offset + 11)).replace(/\u0000/g, '')
 
     var dataType = String.fromCharCode(view.getUint8(offset + 11));
     var fieldLength = view.getUint8(offset + 16);
