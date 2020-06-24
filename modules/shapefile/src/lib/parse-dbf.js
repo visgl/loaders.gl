@@ -2,7 +2,7 @@
 
 const LITTLE_ENDIAN = true;
 
-export function parseDbf(arrayBuffer) {
+export default function parseDbf(arrayBuffer) {
   // Global header
   const globalHeaderView = new DataView(arrayBuffer, 0, 32);
   const header = parseHeader(globalHeaderView);
