@@ -27,7 +27,7 @@ const data = await load(url, DBFLoader);
 
 ## Options
 
-N/A
+- `encoding`: text encoding of DBF file. For Shapefiles, there's often a `.cpg` file designating the encoding used.
 
 ## Format Summary
 

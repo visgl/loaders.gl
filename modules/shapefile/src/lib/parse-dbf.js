@@ -2,16 +2,15 @@
 
 const LITTLE_ENDIAN = true;
 
-export default function parseDbf(arrayBuffer) {
+export default function parseDbf(arrayBuffer, options) {
+  const {encoding} = options;
+
   // Global header
   const globalHeaderView = new DataView(arrayBuffer, 0, 32);
   const header = parseHeader(globalHeaderView);
   const {headerLength, recordLength, nRecords} = header;
 
   // Row headers
-  // TODO: use code page (.cpg) for encoding. Default to ASCII or UTF-8?
-  const encoding = 'utf-8';
-  // Requires Node 11+
   const textDecoder = new TextDecoder(encoding);
   const colHeaderView = new DataView(arrayBuffer, 32, headerLength - 32);
   const colHeaders = parseColumnHeaders(colHeaderView, textDecoder);
