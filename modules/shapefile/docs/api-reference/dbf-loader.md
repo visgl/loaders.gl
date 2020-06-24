@@ -8,7 +8,7 @@ Shapefile loader
 
 | Loader                | Characteristic                               |
 | --------------------- | -------------------------------------------- |
-| File Extension        | `.shp`,                                      |
+| File Extension        | `.dbf`,                                      |
 | File Type             | Binary                                       |
 | File Format           | Shapefiles                                   |
 | Data Format           | [Table](/docs/specifications/category-table) |

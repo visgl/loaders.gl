@@ -55,9 +55,8 @@ function parseColumnHeaders(view, textDecoder) {
   const fields = [];
   let offset = 0;
   for (let i = 0; i < nFields; i++) {
-    // Better way to read text?
     const name = textDecoder
-      .decode(view.buffer.slice(view.byteOffset + offset, view.byteOffset + offset + 11))
+      .decode(new Uint8Array(view.buffer, view.byteOffset + offset, 11))
       // eslint-disable-next-line no-control-regex
       .replace(/\u0000/g, '');
 
@@ -87,7 +86,7 @@ function parseRow(view, fields, textDecoder) {
   let offset = 0;
   for (const field of fields) {
     const text = textDecoder.decode(
-      view.buffer.slice(view.byteOffset + offset, view.byteOffset + offset + field.fieldLength)
+      new Uint8Array(view.buffer, view.byteOffset + offset, field.fieldLength)
     );
     out[field.name] = parseField(text, field.dataType);
     offset += field.fieldLength;
