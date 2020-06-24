@@ -16,7 +16,7 @@ export function parseDbf(arrayBuffer) {
   const colHeaderView = new DataView(arrayBuffer, 32, headerLength - 32);
   const colHeaders = parseColumnHeaders(colHeaderView, textDecoder);
 
-  // Not exactly sure why start offset is +1?
+  // Not exactly sure why start offset needs to be headerLength + 1?
   // parsedbf uses ((colHeaders.length + 1) << 5) + 2;
   const recordsView = new DataView(arrayBuffer, headerLength + 1);
   return parseRows(recordsView, colHeaders, nRecords, recordLength, textDecoder);
