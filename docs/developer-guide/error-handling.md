@@ -4,7 +4,7 @@ Applications typically want to provide solid error handling when loading and sav
 
 ## Types of Errors
 
-There are tree main types of errors that arise when attempting to load a data resource:
+There are three main types of errors that arise when attempting to load a data resource:
 
 1. There is some kind of network/resource access error, preventing the request for data from being issued
 2. A request is sent to a server, but the server is unable to service the request due to some error condition (often illegal access tokens or request parameters) and sends an error response.
@@ -14,7 +14,7 @@ loaders.gl can detect all of these error conditions and report the resulting err
 
 ### Error Messages
 
-loaders.gl aims to prodice concise, easy-to-understand error messages that can be presented directly to the end user.
+loaders.gl aims to produce concise, easy-to-understand error messages that can be presented directly to the end user.
 
 When the fetch call fails, the genereted exception is passed to the user, and the same is true when a loader fails. For server error responses, some basic information about the error is compiled into an error message (using e.g. `response.status`, `response.url` and occasionally `response.text`).
 
