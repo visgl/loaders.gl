@@ -1,3 +1,4 @@
+import {concatenateChunksAsync} from '@loaders.gl/core';
 import parseSHP from './lib/parse-shp';
 /** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 
@@ -24,5 +25,11 @@ export const SHPWorkerLoader = {
 export const SHPLoader = {
   ...SHPWorkerLoader,
   parse: async (arrayBuffer, options) => parseSHP(arrayBuffer),
-  parseSync: parseSHP
+  parseSync: parseSHP,
+  parseInBatches
 };
+
+async function* parseInBatches(asyncIterator, options) {
+  const arrayBuffer = await concatenateChunksAsync(asyncIterator);
+  yield parseSHP(arrayBuffer);
+}

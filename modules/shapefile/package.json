@@ -32,6 +32,7 @@
     "build-worker": "webpack --entry ./src/shp-loader.worker.js --output ./dist/shp-loader.worker.js --config ../../scripts/worker-webpack-config.js"
   },
   "dependencies": {
+    "@loaders.gl/core": "^2.1.1",
     "@loaders.gl/loader-utils": "^2.1.1"
   }
 }
