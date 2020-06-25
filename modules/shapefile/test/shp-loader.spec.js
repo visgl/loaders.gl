@@ -8,15 +8,14 @@ test('SHPLoader#loadInBatches polygons', async t => {
   const iterator = await loadInBatches(SHAPEFILE_POLYGON_PATH, SHPLoader);
   t.ok(isIterator(iterator) || isAsyncIterable(iterator), 'loadInBatches returned iterator');
 
-  let batch;
   let batchCount = 0;
   let rowCount = 0;
-  for await (batch of iterator) {
+  for await (const batch of iterator) {
     batchCount++;
     rowCount += batch.features.length;
   }
 
   t.equal(batchCount, 1, 'Correct number of batches received');
-  t.equal(rowCount, 3, 'Correct number of row received');
+  t.equal(rowCount, 3, 'Correct number of rows received');
   t.end();
 });
