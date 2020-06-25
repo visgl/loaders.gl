@@ -26,9 +26,13 @@ test('concatenateChunksAsync', async t => {
   t.is(text, RESULT, 'returns concatenated string');
 
   const arraybuffer = await concatenateChunksAsync(asyncArrayBuffers());
-  t.ok(arraybuffer instanceof Uint8Array, 'returns buffer');
+  t.ok(arraybuffer instanceof ArrayBuffer, 'returns ArrayBuffer');
   /* global TextEncoder */
-  t.deepEqual(arraybuffer, new TextEncoder().encode(RESULT), 'returns concatenated arraybuffer');
+  t.deepEqual(
+    arraybuffer,
+    new TextEncoder().encode(RESULT).buffer,
+    'returns concatenated ArrayBuffer'
+  );
 
   t.end();
 });
