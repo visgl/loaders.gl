@@ -14,8 +14,7 @@ export function binaryToGeoJson(binary, type, options = {}) {
 }
 
 function polygonToGeoJson(data) {
-  var positions = data.positions.value;
-  var positionsSize = data.positions.size;
+  var positions = data.positions;
   var polygonIndices = data.polygonIndices.value;
   var primitivePolygonIndices = data.primitivePolygonIndices.value;
   var multi = polygonIndices.length > 2;
@@ -23,16 +22,11 @@ function polygonToGeoJson(data) {
   var coordinates = [];
   if (!multi) {
     for (var i = 0; i < primitivePolygonIndices.length - 1; i++) {
-      var ringCoordinates = [];
-      var primitivePolygonIndex = primitivePolygonIndices[i];
-      var nextPrimitivePolygonIndex = primitivePolygonIndices[i + 1];
-
-      for (var j = primitivePolygonIndex; j < nextPrimitivePolygonIndex; j++) {
-        ringCoordinates.push(
-          Array.from(positions.subarray(j * positionsSize, (j + 1) * positionsSize))
-        );
-      }
-
+      var ringCoordinates = ringToGeoJson(
+        positions,
+        primitivePolygonIndices[i],
+        primitivePolygonIndices[i + 1]
+      );
       coordinates.push(ringCoordinates);
     }
 
@@ -42,3 +36,14 @@ function polygonToGeoJson(data) {
   // TODO handle MultiPolygon
   return {type: 'MultiPolygon', coordinates};
 }
+
+function ringToGeoJson(positions, startIndex, endIndex) {
+  var ringCoordinates = [];
+  for (var j = startIndex; j < endIndex; j++) {
+    ringCoordinates.push(
+      Array.from(positions.value.subarray(j * positions.size, (j + 1) * positions.size))
+    );
+  }
+  return ringCoordinates;
+}
+
