@@ -1,7 +1,7 @@
 /* global TextDecoder */
 import test from 'tape-promise/tape';
-import {fetchFile} from '@loaders.gl/core';
-import {makeIterator, concatenateChunksAsync, makeTextEncoderIterator} from '@loaders.gl/core';
+import {fetchFile, makeIterator} from '@loaders.gl/core';
+import {concatenateChunksAsync, makeTextEncoderIterator} from '@loaders.gl/loader-utils';
 
 /* global setTimeout */
 const setTimeoutPromise = timeout => new Promise(resolve => setTimeout(resolve, timeout));
