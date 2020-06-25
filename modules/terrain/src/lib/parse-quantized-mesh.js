@@ -47,7 +47,7 @@ function getMeshAttributes(vertexData, header, bounds, edgeIndices, skirtHeight)
 
     // Add positions
     let skirtIndex = nCoords;
-    for (const edge of [westIndices, southIndices, eastIndices, northIndices]) {
+    for (const edge of [westIndices, northIndices, eastIndices, southIndices]) {
       for (let i = 0; i < edge.length - 1; i++) {
         const index = edge[i];
         const x = vertexData[index] / 32767;
@@ -84,7 +84,7 @@ function addSkirtTriangles(triangleIndices, edgeIndices, nCoords) {
   const newTriangleIndices = new Uint32Array(triangleIndices.length + nSkirtTriangles);
   newTriangleIndices.set(triangleIndices);
 
-  for (const edge of [westIndices, southIndices, eastIndices, northIndices]) {
+  for (const edge of [westIndices, northIndices, eastIndices, southIndices]) {
     for (let i = 0; i < edge.length - 1; i++) {
       const index = edge[i];
       const nextIndex = edge[i + 1];
