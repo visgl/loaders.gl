@@ -105,11 +105,6 @@ function addSkirtTriangles(triangleIndices, edgeIndices, nCoords) {
   }
 
   return newTriangleIndices;
-
-  // Start skirtIndex at highest existing index value (positions.length / 3)?
-  // 1. Create new positions (and texCoords) for all indices on one edge
-  // 2. Create triangles for that edge. As long as you know the starting skirt index for that edge, you can loop over the `i` of the westIndices array
-  // 3. Repeat
 }
 
 function getTileMesh(arrayBuffer, options) {
