@@ -14,9 +14,11 @@ export function binaryToGeoJson(binary, type, options = {}) {
 }
 
 function polygonToGeoJson(data) {
-  var positions = data.positions;
-  var polygonIndices = data.polygonIndices.value;
-  var primitivePolygonIndices = data.primitivePolygonIndices.value;
+  var {
+    positions,
+    polygonIndices: {value: polygonIndices},
+    primitivePolygonIndices: {value: primitivePolygonIndices}
+  } = data;
   var multi = polygonIndices.length > 2;
 
   var coordinates = [];
@@ -37,7 +39,31 @@ function polygonToGeoJson(data) {
   return {type: 'MultiPolygon', coordinates};
 }
 
+function lineStringToGeoJson(data) {
+  var {
+    positions,
+    pathIndices: {value: pathIndices}
+  } = data;
+  var multi = pathIndices.length > 2;
+
+  var coordinates = [];
+  if (!multi) {
+    coordinates = ringToGeoJson(positions);
+    return {type: 'LineString', coordinates};
+  }
+
+  for (var i = 0; i < pathIndices.length - 1; i++) {
+    var ringCoordinates = ringToGeoJson(positions, pathIndices[i], pathIndices[i + 1]);
+    coordinates.push(ringCoordinates);
+  }
+
+  return {type: 'MultiLineString', coordinates};
+}
+
 function ringToGeoJson(positions, startIndex, endIndex) {
+  startIndex = startIndex || 0;
+  endIndex = endIndex || positions.value.length / positions.size;
+
   var ringCoordinates = [];
   for (var j = startIndex; j < endIndex; j++) {
     ringCoordinates.push(
