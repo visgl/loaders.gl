@@ -36,15 +36,13 @@ export {toArrayBuffer} from './javascript-utils/binary-utils';
 // ITERATOR UTILS
 export {makeIterator} from './iterator-utils/make-iterator/make-iterator';
 
-export {forEach} from './iterator-utils/async-iteration';
+export {forEach, concatenateChunksAsync} from './iterator-utils/async-iteration';
 export {
   makeTextDecoderIterator,
   makeTextEncoderIterator,
   makeLineIterator,
   makeNumberedLineIterator
 } from '@loaders.gl/loader-utils';
-
-export {concatenateChunksAsync} from './iterator-utils/async-iteration';
 
 // CORE UTILS SHARED WITH LOADERS (RE-EXPORTED FROM LOADER-UTILS)
 export {isBrowser, isWorker, self, window, global, document} from '@loaders.gl/loader-utils';
