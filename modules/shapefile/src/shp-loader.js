@@ -1,4 +1,4 @@
-import {concatenateChunksAsync} from '@loaders.gl/core';
+import {concatenateChunksAsync} from '@loaders.gl/loader-utils';
 import parseSHP from './lib/parse-shp';
 /** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 
