@@ -9,7 +9,7 @@ import {
   isBuffer
 } from '../../javascript-utils/is-type';
 import {makeIterator} from '../../iterator-utils/make-iterator/make-iterator';
-import {concatenateChunksAsync} from '../../iterator-utils/async-iteration';
+import {concatenateChunksAsync} from '@loaders.gl/loader-utils';
 import fetchFileReadable from '../fetch/fetch-file.browser';
 import {checkFetchResponseStatus} from './check-errors';
 
