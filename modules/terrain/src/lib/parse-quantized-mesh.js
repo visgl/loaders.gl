@@ -86,20 +86,23 @@ function addSkirtTriangles(triangleIndices, edgeIndices, nCoords) {
 
   for (const edge of [westIndices, northIndices, eastIndices, southIndices]) {
     for (let i = 0; i < edge.length - 1; i++) {
-      const index = edge[i];
+      const currIndex = edge[i];
       const nextIndex = edge[i + 1];
+      const currentSkirt = skirtIndex;
+      const nextSkirt = skirtIndex + 1;
 
       // add first triangle
-      newTriangleIndices[triangleIndex] = index;
-      newTriangleIndices[triangleIndex + 1] = nextIndex;
-      newTriangleIndices[triangleIndex + 2] = skirtIndex;
+      newTriangleIndices[triangleIndex] = currIndex;
+      newTriangleIndices[triangleIndex + 1] = currentSkirt;
+      newTriangleIndices[triangleIndex + 2] = nextIndex;
+      triangleIndex += 3;
 
       // add second triangle
-      newTriangleIndices[triangleIndex] = index;
-      newTriangleIndices[triangleIndex + 1] = nextIndex;
-      newTriangleIndices[triangleIndex + 2] = skirtIndex + 1;
+      newTriangleIndices[triangleIndex] = currentSkirt;
+      newTriangleIndices[triangleIndex + 1] = nextSkirt;
+      newTriangleIndices[triangleIndex + 2] = nextIndex;
+      triangleIndex += 3;
 
-      triangleIndex += 6;
       skirtIndex++;
     }
   }
