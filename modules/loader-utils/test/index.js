@@ -1,6 +1,9 @@
 import './lib/binary-utils/binary-copy-utils.spec';
 import './lib/binary-utils/memory-copy-utils.spec';
 
+import './lib/iterator-utils/async-iteration.spec';
+import './lib/iterator-utils/make-iterator.spec';
+
 import './lib/library-utils/require-utils.spec';
 import './lib/library-utils/library-utils.spec';
 

@@ -1,8 +1,8 @@
 // https://jakearchibald.com/2017/async-iterators-and-generators/
 import test from 'tape-promise/tape';
 
-import {forEach} from '@loaders.gl/core/iterator-utils/async-iteration';
 import {
+  forEach,
   makeTextDecoderIterator,
   makeTextEncoderIterator,
   makeLineIterator,
