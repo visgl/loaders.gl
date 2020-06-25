@@ -1,7 +1,8 @@
 import {getMeshBoundingBox} from '@loaders.gl/loader-utils';
 import decode, {DECODING_STEPS} from './decode-quantized-mesh';
 
-function getMeshAttributes(vertexData, header, bounds, edgeIndices) {
+// eslint-disable-next-line max-statements
+function getMeshAttributes(vertexData, header, bounds, edgeIndices, skirtHeight) {
   const {westIndices, northIndices, eastIndices, southIndices} = edgeIndices;
   const {minHeight, maxHeight} = header;
   const [minX, minY, maxX, maxY] = bounds || [0, 0, 1, 1];
@@ -10,8 +11,9 @@ function getMeshAttributes(vertexData, header, bounds, edgeIndices) {
   const zScale = maxHeight - minHeight;
 
   // Additional positions necessary for skirt
-  const nSkirtCoords =
-    westIndices.length + northIndices.length + eastIndices.length + southIndices.length - 4;
+  const nSkirtCoords = skirtHeight
+    ? westIndices.length + northIndices.length + eastIndices.length + southIndices.length - 4
+    : 0;
 
   const nCoords = vertexData.length / 3;
   // vec3. x, y defined by bounds, z in meters
@@ -34,32 +36,33 @@ function getMeshAttributes(vertexData, header, bounds, edgeIndices) {
     texCoords[2 * i + 1] = y;
   }
 
-  // Sort skirt indices to create adjacent triangles
-  westIndices.sort((a, b) => positions[3 * a + 1] - positions[3 * b + 1]);
-  // Reverse (b - a) to match triangle winding
-  eastIndices.sort((a, b) => positions[3 * b + 1] - positions[3 * a + 1]);
-  southIndices.sort((a, b) => positions[3 * b] - positions[3 * a]);
-  // Reverse (b - a) to match triangle winding
-  northIndices.sort((a, b) => positions[3 * a] - positions[3 * b]);
+  if (skirtHeight) {
+    // Sort skirt indices to create adjacent triangles
+    westIndices.sort((a, b) => positions[3 * a + 1] - positions[3 * b + 1]);
+    // Reverse (b - a) to match triangle winding
+    eastIndices.sort((a, b) => positions[3 * b + 1] - positions[3 * a + 1]);
+    southIndices.sort((a, b) => positions[3 * b] - positions[3 * a]);
+    // Reverse (b - a) to match triangle winding
+    northIndices.sort((a, b) => positions[3 * a] - positions[3 * b]);
 
-  // Add positions
-  let skirtIndex = nCoords;
-  let skirtHeight = 200;
-  for (const edge of [westIndices, southIndices, eastIndices, northIndices]) {
-    for (let i = 0; i < edge.length - 1; i++) {
-      const index = edge[i];
-      const x = vertexData[index] / 32767;
-      const y = vertexData[index + nCoords] / 32767;
-      const z = vertexData[index + nCoords * 2] / 32767;
+    // Add positions
+    let skirtIndex = nCoords;
+    for (const edge of [westIndices, southIndices, eastIndices, northIndices]) {
+      for (let i = 0; i < edge.length - 1; i++) {
+        const index = edge[i];
+        const x = vertexData[index] / 32767;
+        const y = vertexData[index + nCoords] / 32767;
+        const z = vertexData[index + nCoords * 2] / 32767;
 
-      positions[3 * skirtIndex] = x * xScale + minX;
-      positions[3 * skirtIndex + 1] = y * yScale + minY;
-      positions[3 * skirtIndex + 2] = z * zScale + minHeight - skirtHeight;
+        positions[3 * skirtIndex] = x * xScale + minX;
+        positions[3 * skirtIndex + 1] = y * yScale + minY;
+        positions[3 * skirtIndex + 2] = z * zScale + minHeight - skirtHeight;
 
-      texCoords[2 * skirtIndex] = x;
-      texCoords[2 * skirtIndex + 1] = y;
+        texCoords[2 * skirtIndex] = x;
+        texCoords[2 * skirtIndex + 1] = y;
 
-      skirtIndex++;
+        skirtIndex++;
+      }
     }
   }
 
@@ -113,8 +116,9 @@ function getTileMesh(arrayBuffer, options) {
   if (!arrayBuffer) {
     return null;
   }
-  const {bounds} = options;
-  const decoded = decode(arrayBuffer, DECODING_STEPS.edgeIndices);
+  const {bounds, skirtHeight} = options;
+  const maxDecodingStep = skirtHeight ? DECODING_STEPS.edgeIndices : DECODING_STEPS.triangleIndices;
+  const decoded = decode(arrayBuffer, maxDecodingStep);
   const {header, vertexData, westIndices, northIndices, eastIndices, southIndices} = decoded;
   let {triangleIndices} = decoded;
 
@@ -128,10 +132,13 @@ function getTileMesh(arrayBuffer, options) {
     vertexData,
     header,
     bounds,
-    edgeIndices
+    edgeIndices,
+    skirtHeight
   );
 
-  triangleIndices = addSkirtTriangles(triangleIndices, edgeIndices, nCoords);
+  if (skirtHeight) {
+    triangleIndices = addSkirtTriangles(triangleIndices, edgeIndices, nCoords);
+  }
 
   const attributes = {
     POSITION: {value: positions, size: 3},

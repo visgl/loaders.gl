@@ -15,7 +15,8 @@ export const QuantizedMeshWorkerLoader = {
   options: {
     'quantized-mesh': {
       workerUrl: `https://unpkg.com/@loaders.gl/terrain@${VERSION}/dist/quantized-mesh-loader.worker.js`,
-      bounds: [0, 0, 1, 1]
+      bounds: [0, 0, 1, 1],
+      skirtHeight: null
     }
   }
 };
