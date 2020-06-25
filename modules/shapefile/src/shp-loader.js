@@ -29,6 +29,7 @@ export const SHPLoader = {
   parseInBatches
 };
 
+// TODO actually parse .shp file in batches; instead of concatenating chunks
 async function* parseInBatches(asyncIterator, options) {
   const arrayBuffer = await concatenateChunksAsync(asyncIterator);
   yield parseSHP(arrayBuffer);
