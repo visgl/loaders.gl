@@ -58,7 +58,7 @@ export {
   makeLineIterator,
   makeNumberedLineIterator
 } from './lib/iterator-utils/text-iterators';
-
+export {forEach, concatenateChunksAsync} from './lib/iterator-utils/async-iteration';
 
 // REQUEST UTILS
 export {default as RequestScheduler} from './lib/request-utils/request-scheduler';
