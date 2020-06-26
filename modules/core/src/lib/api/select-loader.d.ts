@@ -1,4 +1,4 @@
-import {LoaderObject, LoaderContext} from '../common';
+import {LoaderObject, LoaderContext} from '@loaders.gl/loader-utils';
 
 /**
  * Find a loader that matches file extension and/or initial file content

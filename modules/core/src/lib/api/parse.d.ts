@@ -1,4 +1,4 @@
-import {DataType, LoaderObject} from '../common';
+import {DataType, LoaderObject} from '@loaders.gl/loader-utils';
 /**
  * Parses `data` using a specified loader
  * @param data
