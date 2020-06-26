@@ -62,8 +62,6 @@ function deduceReturnType(dataArray) {
 function parseFeatureCollection(dataArray) {
   const features = [];
   for (const data of dataArray) {
-    // Not sure how stable this is; even if all properties are numeric, will
-    // there still be a property object for each feature?
     let lastIndex = 0;
     let lastValue = data.featureIds.value[0];
 
@@ -74,8 +72,7 @@ function parseFeatureCollection(dataArray) {
         continue;
       }
 
-      // features.push(parseFeature(data, lastIndex, i));
-      features.push('hi');
+      features.push(parseFeature(data, lastIndex, i));
       lastIndex = i;
       lastValue = currValue;
     }
@@ -93,7 +90,11 @@ function parseFeature(data, startIndex, endIndex) {
 }
 
 function parseProperties(data, startIndex, endIndex) {
-  data;
+  const properties = Object.assign(data.properties[data.featureIds.value[startIndex]]);
+  for (const key in data.numericProps) {
+    properties[key] = data.numericProps[key].value[startIndex];
+  }
+  return properties;
 }
 
 function parseGeometry(data, startIdx, endIdx) {
