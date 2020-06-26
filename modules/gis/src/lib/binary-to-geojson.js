@@ -122,22 +122,20 @@ function parseType(data) {
   return 'Point';
 }
 
-function polygonToGeoJson(data) {
-  const {
-    positions,
-    polygonIndices: {value: polygonIndices},
-    primitivePolygonIndices: {value: primitivePolygonIndices}
-  } = data;
+function polygonToGeoJson(data, startIndex, endIndex) {
+  const {positions} = data;
+  const polygonIndices = data.polygonIndices.value.filter(x => x >= startIndex && x <= endIndex);
+  const primitivePolygonIndices = data.primitivePolygonIndices.value.filter(
+    x => x >= startIndex && x <= endIndex
+  );
   const multi = polygonIndices.length > 2;
 
   const coordinates = [];
   if (!multi) {
     for (let i = 0; i < primitivePolygonIndices.length - 1; i++) {
-      const ringCoordinates = ringToGeoJson(
-        positions,
-        primitivePolygonIndices[i],
-        primitivePolygonIndices[i + 1]
-      );
+      const startPolygonIndex = primitivePolygonIndices[i];
+      const endPolygonIndex = primitivePolygonIndices[i + 1];
+      const ringCoordinates = ringToGeoJson(positions, startPolygonIndex, endPolygonIndex);
       coordinates.push(ringCoordinates);
     }
 
