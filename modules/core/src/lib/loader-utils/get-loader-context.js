@@ -10,14 +10,8 @@ export function getLoaderContext(context, options, previousContext = null) {
     return previousContext;
   }
 
-  // TODO - document how to inject fetch, fetch options vs fetch function etc
-  let fetch = context.fetch || fetchFile;
-  if (typeof options.fetch === 'function') {
-    fetch = options.fetch;
-  }
-
   context = {
-    fetch,
+    fetch: getFetch(options, context),
     ...context
   };
 
@@ -46,4 +40,13 @@ export function getLoaders(loaders, context) {
   }
   // If no loaders, return null to look in globally registered loaders
   return candidateLoaders && candidateLoaders.length ? candidateLoaders : null;
+}
+
+export function getFetch(options, context) {
+  switch (typeof options.fetch) {
+    case 'function':
+      return options.fetch;
+    default:
+      return options.fetch ? fetchFile : url => fetchFile(url, options.fetch);
+  }
 }

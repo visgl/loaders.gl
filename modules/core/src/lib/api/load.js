@@ -1,6 +1,6 @@
 import {isBlob} from '../../javascript-utils/is-type';
-import {fetchFile} from '../fetch/fetch-file';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
+import {getFetch} from '../loader-utils/get-loader-context';
 
 import {parse} from './parse';
 
@@ -16,14 +16,14 @@ export async function load(url, loaders, options) {
   // Normalize arguments
   options = options || {};
 
-  // Select fetch function
-  const fetch = typeof options.fetch === 'function' ? options.fetch : fetchFile;
+  // Select fetch function (Note: binds options, if supplied)
+  const fetch = getFetch(options);
 
   // at this point, `url` could be already loaded binary data
   let data = url;
   // url is a string, fetch the url
   if (typeof url === 'string') {
-    data = await fetch(url, options);
+    data = await fetch(url);
   } else {
     url = null;
   }
@@ -31,7 +31,7 @@ export async function load(url, loaders, options) {
   // URL is Blob or File, fetchFile handles it (alt: we could generate ObjectURL here)
   if (isBlob(url)) {
     // The fetch response object will contain blob.name
-    data = await fetch(url, options);
+    data = await fetch(url);
     url = null;
   }
 
