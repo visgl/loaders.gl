@@ -14,6 +14,9 @@ export async function parseInBatches(data, loaders, options, url) {
     loaders = null;
   }
 
+  // Resolve any promise
+  data = await data;
+
   // Chooses a loader and normalizes it
   // TODO - only uses URL, need a selectLoader variant that peeks at first stream chunk...
   const loader = selectLoader(null, loaders, options, {url});

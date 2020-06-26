@@ -2,8 +2,7 @@
 import test from 'tape-promise/tape';
 import {
   getArrayBufferOrStringFromDataSync,
-  getAsyncIteratorFromData,
-  getIteratorFromData
+  getAsyncIteratorFromData
 } from '@loaders.gl/core/lib/loader-utils/get-data';
 
 import {isBrowser, isIterator} from '@loaders.gl/core';
@@ -70,25 +69,13 @@ test('parseWithLoader#getArrayBufferOrStringFromDataSync(embedded arrays/buffers
   t.end();
 });
 
-test('parseWithLoader#getIteratorFromData', t => {
-  const TESTS = [new Float32Array([1, 2, 3]), [1, 2, 3], new Set([1, 2, 3]).entries()];
-
-  for (const testCase of TESTS) {
-    const result = getIteratorFromData(testCase);
-    t.ok(isIterator(result), 'returns iterator');
-  }
-
-  t.throws(() => getIteratorFromData({}));
-
-  t.end();
-});
-
 test('parseWithLoader#getAsyncIteratorFromData', async t => {
   const TESTS = [
+    new Float32Array([1, 2, 3]).buffer,
     (async function* generator() {
-      yield 1;
+      yield new ArrayBuffer(0);
     })(),
-    new Set([1, 2, 3]).entries()
+    new Set([new ArrayBuffer(0), new ArrayBuffer(0)]).values()
   ];
 
   for (const testCase of TESTS) {
@@ -96,6 +83,7 @@ test('parseWithLoader#getAsyncIteratorFromData', async t => {
     t.ok(isIterator(result), 'returns iterator');
   }
 
+  // @ts-ignore
   t.rejects(async () => await getAsyncIteratorFromData({}), 'object conversion to iterator fails');
 
   t.end();

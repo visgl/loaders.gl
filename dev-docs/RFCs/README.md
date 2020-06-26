@@ -24,9 +24,9 @@ Writeups of directions in major areas of interest
 
 ## v2.3 RFCs
 
-| RFC                                                            | Author   | Status          | Description                                   |
-| -------------------------------------------------------------- | -------- | --------------- | --------------------------------------------- |
-| [**Fetch Options**](v2.3/fetch-option-rfc-v2.md)                  | @ibgreen | **Draft**       | Options for `fetch`                           |
+| RFC                                              | Author   | Status    | Description         |
+| ------------------------------------------------ | -------- | --------- | ------------------- |
+| [**Fetch Options**](v2.3/fetch-option-rfc-v2.md) | @ibgreen | **Draft** | Options for `fetch` |
 
 ## v2.0 RFCs
 

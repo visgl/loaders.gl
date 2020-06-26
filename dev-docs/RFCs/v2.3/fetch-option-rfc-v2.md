@@ -30,7 +30,7 @@ The ability for app to control how data is loaded (or "fetched") is important. A
 
 Overridable fetch function also enables a way to supply virtual file systems for ZIP files or Browser `FileList` objects to multi-file loaders (e.g. `ShapefileLoader` and `GLTFLoader`).
 
-Detail: File system support (separate RFC) - Some loaders can load additional files (Shapefile "sidecar" files, or glTF assets etc). Sometimes these files are provided together with the main file, and a way to handle this is to bundle them as a virtual file system (zip files, a list of dropped files in the browser, a dropbox loader) where files can be loaded with local names from a non-URL source. 
+Detail: File system support (separate RFC) - Some loaders can load additional files (Shapefile "sidecar" files, or glTF assets etc). Sometimes these files are provided together with the main file, and a way to handle this is to bundle them as a virtual file system (zip files, a list of dropped files in the browser, a dropbox loader) where files can be loaded with local names from a non-URL source.
 
 ### `load` vs `parse`
 
@@ -45,7 +45,6 @@ The user supplied fetch function/fetch options should be passed through the load
 ## Design Critera
 
 - deck.gl integration: The `fetch` options should automatically (or at least "naturally") extend to e.g. deck.gl (and luma.gl), avoiding designing a similar `fetch` override system twice. deck.gl already has `loadOptions` and a separate `fetch` prop. Can `loadOptions.fetch` replace the latter?
-
 
 ## Proposals
 

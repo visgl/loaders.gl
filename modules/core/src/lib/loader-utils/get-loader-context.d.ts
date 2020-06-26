@@ -1,4 +1,4 @@
-import {LoaderContext} from '../common';
+import {LoaderContext} from '@loaders.gl/loader-utils';
 
 /**
  * 
