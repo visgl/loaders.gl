@@ -1,16 +1,46 @@
 /* eslint-disable */
 
-export function binaryToGeoJson(binary, type, options = {}) {
-  switch (type) {
+function binaryToGeoJson(data, type) {
+  var isFeature = Boolean(
+    data.featureIds || data.globalFeatureIds || data.numericProps || data.properties
+  );
+
+  // If not a feature, return only the geometry
+  if (!isFeature) {
+    return parseGeometry(data, type);
+  }
+
+  // TODO parse binary features
+}
+
+function parseFeature(data, type) {
+  var geometry = parseGeometry(data, type);
+  return {type: 'Feature', geometry};
+}
+
+function parseGeometry(data, type) {
+  switch (type || parseType(data)) {
     case 'point':
-      return pointToGeoJson(binary);
+      return pointToGeoJson(data);
     case 'lineString':
-      return lineStringToGeoJson(binary);
+      return lineStringToGeoJson(data);
     case 'polygon':
-      return polygonToGeoJson(binary);
+      return polygonToGeoJson(data);
     default:
       throw new Error('Invalid type');
   }
+}
+
+function parseType(data) {
+  if (data.pathIndices) {
+    return 'lineString';
+  }
+
+  if (data.polygonIndices) {
+    return 'polygon';
+  }
+
+  return 'point';
 }
 
 function polygonToGeoJson(data) {
