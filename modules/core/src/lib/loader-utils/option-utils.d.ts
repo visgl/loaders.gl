@@ -1,4 +1,4 @@
-import {LoaderObject} from '@loaders.gl/loader-utils';
+import {LoaderObject, LoaderContext} from '@loaders.gl/loader-utils';
 
 /**
  * Set global loader options
@@ -27,3 +27,5 @@ type GlobalLoaderState = {
  * Internal helper for safely accessing global loaders.gl variables
  */
 export function getGlobalLoaderState(): GlobalLoaderState;
+
+export function getFetchFunction(options: object, context?: LoaderContext);

@@ -22,12 +22,17 @@ Writeups of directions in major areas of interest
 | [**Loader Lookup By Name**](vNext/loader-lookup-by-name-rfc.md)       | @ibgreen | **Draft** | Loader lookup among pre-registered loaders                  |
 | [**Loader Auto-Registration**](vNext/loader-auto-registration-rfc.md) | @ibgreen | **Draft** | Loader auto registration at import                          |
 
+## v2.3 RFCs
+
+| RFC                                              | Author   | Status    | Description         |
+| ------------------------------------------------ | -------- | --------- | ------------------- |
+| [**Fetch Options**](v2.3/fetch-option-rfc-v2.md) | @ibgreen | **Draft** | Options for `fetch` |
+
 ## v2.0 RFCs
 
 | RFC                                                            | Author   | Status          | Description                                   |
 | -------------------------------------------------------------- | -------- | --------------- | --------------------------------------------- |
 | [**Streaming JSON Loader**](v2.0/json-loader-rfc.md)           | @ibgreen | **Draft**       | Binary, streaming, worker-enabled JSON loader |
-| [**Fetch Options**](v2.0/fetch-option-rfc.md)                  | @ibgreen | **Draft**       | Options for `fetch`                           |
 | [**Loader Options**](v2.0/loader-options-rfc.md)               | @ibgreen | **Implemented** | Nested options scheme for loaders             |
 | [**Loader Auto-Detection**](v2.0/loader-auto-detection-rfc.md) | @ibgreen | **Implemented** | Improved support for loader auto detection    |
 | [**Remove Load-and-Parse**](v2.0/remove-load-and-parse-rfc.md) | @ibgreen | **Implemented** | All loaders now use `fetch` to retrieve data  |
