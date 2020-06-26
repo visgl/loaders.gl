@@ -1,7 +1,5 @@
-/* eslint-disable */
-
-function binaryToGeoJson(data, type) {
-  var isFeature = Boolean(
+export function binaryToGeoJson(data, type) {
+  const isFeature = Boolean(
     data.featureIds || data.globalFeatureIds || data.numericProps || data.properties
   );
 
@@ -10,11 +8,12 @@ function binaryToGeoJson(data, type) {
     return parseGeometry(data, type);
   }
 
-  // TODO parse binary features
+  // TODO parse binary features, incl properties
+  return parseFeature(data, type);
 }
 
 function parseFeature(data, type) {
-  var geometry = parseGeometry(data, type);
+  const geometry = parseGeometry(data, type);
   return {type: 'Feature', geometry};
 }
 
@@ -44,17 +43,17 @@ function parseType(data) {
 }
 
 function polygonToGeoJson(data) {
-  var {
+  const {
     positions,
     polygonIndices: {value: polygonIndices},
     primitivePolygonIndices: {value: primitivePolygonIndices}
   } = data;
-  var multi = polygonIndices.length > 2;
+  const multi = polygonIndices.length > 2;
 
-  var coordinates = [];
+  const coordinates = [];
   if (!multi) {
-    for (var i = 0; i < primitivePolygonIndices.length - 1; i++) {
-      var ringCoordinates = ringToGeoJson(
+    for (let i = 0; i < primitivePolygonIndices.length - 1; i++) {
+      const ringCoordinates = ringToGeoJson(
         positions,
         primitivePolygonIndices[i],
         primitivePolygonIndices[i + 1]
@@ -70,20 +69,20 @@ function polygonToGeoJson(data) {
 }
 
 function lineStringToGeoJson(data) {
-  var {
+  const {
     positions,
     pathIndices: {value: pathIndices}
   } = data;
-  var multi = pathIndices.length > 2;
+  const multi = pathIndices.length > 2;
 
-  var coordinates = [];
   if (!multi) {
-    coordinates = ringToGeoJson(positions);
+    const coordinates = ringToGeoJson(positions);
     return {type: 'LineString', coordinates};
   }
 
-  for (var i = 0; i < pathIndices.length - 1; i++) {
-    var ringCoordinates = ringToGeoJson(positions, pathIndices[i], pathIndices[i + 1]);
+  const coordinates = [];
+  for (let i = 0; i < pathIndices.length - 1; i++) {
+    const ringCoordinates = ringToGeoJson(positions, pathIndices[i], pathIndices[i + 1]);
     coordinates.push(ringCoordinates);
   }
 
@@ -91,9 +90,9 @@ function lineStringToGeoJson(data) {
 }
 
 function pointToGeoJson(data) {
-  var {positions} = data;
-  var multi = positions.value.length / positions.size > 1;
-  var coordinates = ringToGeoJson(positions);
+  const {positions} = data;
+  const multi = positions.value.length / positions.size > 1;
+  const coordinates = ringToGeoJson(positions);
 
   if (multi) {
     return {type: 'MultiPoint', coordinates};
@@ -106,12 +105,11 @@ function ringToGeoJson(positions, startIndex, endIndex) {
   startIndex = startIndex || 0;
   endIndex = endIndex || positions.value.length / positions.size;
 
-  var ringCoordinates = [];
-  for (var j = startIndex; j < endIndex; j++) {
+  const ringCoordinates = [];
+  for (let j = startIndex; j < endIndex; j++) {
     ringCoordinates.push(
       Array.from(positions.value.subarray(j * positions.size, (j + 1) * positions.size))
     );
   }
   return ringCoordinates;
 }
-
