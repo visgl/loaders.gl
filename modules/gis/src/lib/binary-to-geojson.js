@@ -60,6 +60,18 @@ function lineStringToGeoJson(data) {
   return {type: 'MultiLineString', coordinates};
 }
 
+function pointToGeoJson(data) {
+  var {positions} = data;
+  var multi = positions.value.length / positions.size > 1;
+  var coordinates = ringToGeoJson(positions);
+
+  if (multi) {
+    return {type: 'MultiPoint', coordinates};
+  }
+
+  return {type: 'Point', coordinates: coordinates[0]};
+}
+
 function ringToGeoJson(positions, startIndex, endIndex) {
   startIndex = startIndex || 0;
   endIndex = endIndex || positions.value.length / positions.size;
