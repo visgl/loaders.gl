@@ -2,6 +2,9 @@ import './javascript-utils/text-encoder.spec';
 import './javascript-utils/binary-utils.spec';
 import './javascript-utils/is-type.spec';
 
+import './iterator-utils/async-iteration.spec';
+import './iterator-utils/make-iterator.spec';
+
 import './lib/utils/mime-type-utils.spec';
 import './lib/utils/resource-utils.spec';
 

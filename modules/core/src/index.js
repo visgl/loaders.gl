@@ -36,6 +36,7 @@ export {toArrayBuffer} from './javascript-utils/binary-utils';
 // ITERATOR UTILS
 export {makeIterator} from './iterator-utils/make-iterator/make-iterator';
 
+export {forEach} from './iterator-utils/async-iteration';
 export {
   makeTextDecoderIterator,
   makeTextEncoderIterator,
@@ -43,12 +44,13 @@ export {
   makeNumberedLineIterator
 } from '@loaders.gl/loader-utils';
 
+export {concatenateChunksAsync} from './iterator-utils/async-iteration';
+
 // CORE UTILS SHARED WITH LOADERS (RE-EXPORTED FROM LOADER-UTILS)
 export {isBrowser, isWorker, self, window, global, document} from '@loaders.gl/loader-utils';
 export {assert} from '@loaders.gl/loader-utils';
 export {setPathPrefix, getPathPrefix, resolvePath} from '@loaders.gl/loader-utils';
 export {RequestScheduler} from '@loaders.gl/loader-utils';
-export {forEach, concatenateChunksAsync} from '@loaders.gl/loader-utils';
 
 // EXPERIMENTAL
 export {default as _WorkerThread} from './worker-utils/worker-thread';

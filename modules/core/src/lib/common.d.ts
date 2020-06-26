@@ -1,5 +1,3 @@
-import {FileReadableResponse} from '../../../polyfills/wip/fetch-browser/fetch-file.browser';
-
 export type LoaderObject = {
   id: string;
   name: string;
@@ -30,10 +28,15 @@ export type LoaderContext = {
   parseInBatches?: (data: AsyncIterator<any>, options?: object) => AsyncIterator<any>;
 };
 
-export type DataType = string | ArrayBuffer | Response | FileReadableResponse | File | Blob;
-export type DataTypeOrPromise =
-  string | ArrayBuffer | Response | FileReadableResponse | File | Blob |
-  Promise<string> | Promise<ArrayBuffer> | Promise<Response> | Promise<FileReadableResponse> |
-  Promise<File> | Promise<Blob>;
+/** Types that can be synchronously parsed */
+export type SyncDataType = string | ArrayBuffer; // TODO File | Blob can be read synchronously...
 
-export type BatchableDataType = DataType | AsyncIterable<ArrayBuffer> | Promise<AsyncIterable<ArrayBuffer>>;
+/** Types that can be parsed async */
+export type DataType = string | ArrayBuffer | Response | File | Blob;
+
+/** Types that can be parsed in batches */
+export type BatchableDataType =
+  DataType |
+  Iterable<ArrayBuffer> |
+  AsyncIterable<ArrayBuffer> |
+  Promise<AsyncIterable<ArrayBuffer>>;

@@ -1,4 +1,4 @@
-import {DataType, LoaderObject} from '../common';
+import {SyncDataType, LoaderObject} from '../common';
 /**
  * Parses `data` using a specified loader
  * @param data
@@ -6,7 +6,7 @@ import {DataType, LoaderObject} from '../common';
  * @param options
  * @param context
  */
-export function parseSync(data: DataType, loaders: LoaderObject | LoaderObject[], options?: object, context?: object): any;
+export function parseSync(data: SyncDataType, loaders: LoaderObject | LoaderObject[], options?: object, context?: object): any;
 
 /** @deprecated parse with URL as last parameter is deprecated */
-export function parseSync(data: DataType, loaders: LoaderObject | LoaderObject[], options: object, url: string): any;
+export function parseSync(data: SyncDataType, loaders: LoaderObject | LoaderObject[], options: object, url: string): any;

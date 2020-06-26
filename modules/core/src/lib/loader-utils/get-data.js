@@ -1,5 +1,4 @@
 /* global TextDecoder */
-import {concatenateChunksAsync} from '@loaders.gl/loader-utils';
 import {
   isResponse,
   isReadableStream,
@@ -10,6 +9,7 @@ import {
   isBuffer
 } from '../../javascript-utils/is-type';
 import {makeIterator} from '../../iterator-utils/make-iterator/make-iterator';
+import {concatenateChunksAsync} from '../../iterator-utils/async-iteration';
 import fetchFileReadable from '../fetch/fetch-file.browser';
 import {checkFetchResponseStatus} from './check-errors';
 
@@ -69,9 +69,6 @@ export function getArrayBufferOrStringFromDataSync(data, loader) {
 
 // Convert async iterator to a promise
 export async function getArrayBufferOrStringFromData(data, loader) {
-  // Resolve any promise
-  data = await data;
-
   const isArrayBuffer = data instanceof ArrayBuffer || ArrayBuffer.isView(data);
   if (typeof data === 'string' || isArrayBuffer) {
     return getArrayBufferOrStringFromDataSync(data, loader);
@@ -123,7 +120,7 @@ export async function getAsyncIteratorFromData(data) {
   return getIteratorFromData(data);
 }
 
-export function getIteratorFromData(data) {
+function getIteratorFromData(data) {
   // generate an iterator that emits a single chunk
   if (ArrayBuffer.isView(data)) {
     return (function* oneChunk() {
