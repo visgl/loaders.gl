@@ -1,29 +1,88 @@
 export function binaryToGeoJson(data, type) {
-  const isFeature = Boolean(
-    data.featureIds || data.globalFeatureIds || data.numericProps || data.properties
-  );
+  const dataArray = normalizeInput(data, type);
 
-  // If not a feature, return only the geometry
-  if (!isFeature) {
-    return parseGeometry(data, type);
+  switch (deduceReturnType(dataArray)) {
+    case 'Geometry':
+      return parseGeometry(dataArray[0]);
+    case 'Feature':
+      return parseFeature(dataArray[0]);
+    case 'FeatureCollection':
+      return parseFeatureCollection(dataArray);
+    default:
+      break;
   }
 
-  // TODO parse binary features, incl properties
-  return parseFeature(data, type);
+  return null;
 }
 
-function parseFeature(data, type) {
-  const geometry = parseGeometry(data, type);
+// Normalize features
+// Return an array of data objects, each of which have a type key
+function normalizeInput(data, type) {
+  const isHeterogeneousType = Boolean(data.points || data.lines || data.polygons);
+
+  if (!isHeterogeneousType) {
+    data.type = type || parseType(data);
+    return [data];
+  }
+
+  const features = [];
+  if (data.points) {
+    data.points.type = 'Point';
+    features.push(data.points);
+  }
+  if (data.lines) {
+    data.lines.type = 'LineString';
+    features.push(data.lines);
+  }
+  if (data.polygons) {
+    data.polygons.type = 'Polygon';
+    features.push(data.polygons);
+  }
+  return features;
+}
+
+// Determine whether a geometry, feature, or feature collection should be returned
+function deduceReturnType(dataArray) {
+  // If more than one item in dataArray, multiple geometry types, must be a featurecollection
+  if (dataArray.length > 1) {
+    return 'FeatureCollection';
+  }
+
+  const data = dataArray[0];
+  if (!(data.featureIds || data.globalFeatureIds || data.numericProps || data.properties)) {
+    return 'Geometry';
+  }
+
+  if (
+    (data.globalFeatureIds && data.globalFeatureIds.value.length > 1) ||
+    (data.featureIds && data.featureIds.value.length > 1)
+  ) {
+    return 'FeatureCollection';
+  }
+
+  return 'Feature';
+}
+
+function parseFeatureCollection(dataArray) {
+  const features = [];
+  for (const data of dataArray) {
+    features.push(parseFeature(data));
+  }
+  return features;
+}
+
+function parseFeature(data) {
+  const geometry = parseGeometry(data);
   return {type: 'Feature', geometry};
 }
 
-function parseGeometry(data, type) {
-  switch (type || parseType(data)) {
-    case 'point':
+function parseGeometry(data) {
+  switch (data.type) {
+    case 'Point':
       return pointToGeoJson(data);
-    case 'lineString':
+    case 'LineString':
       return lineStringToGeoJson(data);
-    case 'polygon':
+    case 'Polygon':
       return polygonToGeoJson(data);
     default:
       throw new Error('Invalid type');
@@ -32,14 +91,14 @@ function parseGeometry(data, type) {
 
 function parseType(data) {
   if (data.pathIndices) {
-    return 'lineString';
+    return 'LineString';
   }
 
   if (data.polygonIndices) {
-    return 'polygon';
+    return 'Polygon';
   }
 
-  return 'point';
+  return 'Point';
 }
 
 function polygonToGeoJson(data) {
