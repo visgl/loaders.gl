@@ -9,15 +9,9 @@ export function getLoaderContext(context, options, previousContext = null) {
   if (previousContext) {
     return previousContext;
   }
-
-  // TODO - document how to inject fetch, fetch options vs fetch function etc
-  let fetch = context.fetch || fetchFile;
-  if (typeof options.fetch === 'function') {
-    fetch = options.fetch;
-  }
-
   context = {
-    fetch,
+    // TODO - determine how to inject fetch, fetch in options etc
+    fetch: context.fetch || fetchFile,
     ...context
   };
 

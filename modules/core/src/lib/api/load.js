@@ -13,17 +13,12 @@ export async function load(url, loaders, options) {
     loaders = null;
   }
 
-  // Normalize arguments
-  options = options || {};
-
-  // Select fetch function
-  const fetch = typeof options.fetch === 'function' ? options.fetch : fetchFile;
-
   // at this point, `url` could be already loaded binary data
-  let data = url; 
+  let data = url;
+
   // url is a string, fetch the url
   if (typeof url === 'string') {
-    data = await fetch(url, options);
+    data = await fetchFile(url, options);
   } else {
     url = null;
   }
@@ -31,7 +26,7 @@ export async function load(url, loaders, options) {
   // URL is Blob or File, fetchFile handles it (alt: we could generate ObjectURL here)
   if (isBlob(url)) {
     // The fetch response object will contain blob.name
-    data = await fetch(url, options);
+    data = await fetchFile(url, options);
     url = null;
   }
 

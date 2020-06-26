@@ -25,9 +25,6 @@ export async function parse(data, loaders, options, context) {
 
   options = options || {};
 
-  // Resolve any promise
-  data = await data;
-
   // Extract a url for auto detection
   const autoUrl = getUrlFromData(data, url);
 

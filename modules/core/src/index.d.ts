@@ -35,7 +35,6 @@ export {
 export {toArrayBuffer} from './javascript-utils/binary-utils';
 
 // ITERATOR UTILS
-export {forEach, concatenateChunksAsync} from './iterator-utils/async-iteration';
 export {makeIterator} from './iterator-utils/make-iterator/make-iterator';
 export {
   makeTextEncoderIterator,
@@ -49,6 +48,7 @@ export {isBrowser, isWorker, self, window, global, document} from '@loaders.gl/l
 export {assert} from '@loaders.gl/loader-utils';
 export {setPathPrefix, getPathPrefix, resolvePath} from '@loaders.gl/loader-utils';
 export {RequestScheduler as RequestScheduler} from '@loaders.gl/loader-utils';
+export {forEach, concatenateChunksAsync} from '@loaders.gl/loader-utils';
 
 // EXPERIMENTAL
 export {default as _WorkerThread} from './worker-utils/worker-thread';

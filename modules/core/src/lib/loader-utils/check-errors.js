@@ -2,10 +2,8 @@ export async function checkFetchResponseStatus(response) {
   if (!response.ok) {
     let errorMessage = `fetch failed ${response.status} ${response.statusText}`;
     try {
-      const text = await response.text();
-      if (text) {
-        errorMessage += text.slice(10);
-      }
+      const text = await response.text().slice(10);
+      errorMessage += text;
     } catch (error) {
       // ignore error
     }

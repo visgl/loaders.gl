@@ -50,22 +50,18 @@ async function* makeNodeStreamIterator(stream) {
   // Node createStream will return promises to handle http requests
   stream = await stream;
 
-  try {
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      const data = stream.read();
-      if (data !== null) {
-        yield data;
-        // eslint-disable-next-line no-continue
-        continue;
-      }
-      if (stream._readableState.ended) {
-        return;
-      }
-      await onceReadable(stream);
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const data = stream.read();
+    if (data !== null) {
+      yield data;
+      // eslint-disable-next-line no-continue
+      continue;
     }
-  } catch (error) {
-    return;
+    if (stream._readableState.ended) {
+      return;
+    }
+    await onceReadable(stream);
   }
 }
 
