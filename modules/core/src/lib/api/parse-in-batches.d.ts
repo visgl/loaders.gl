@@ -1,4 +1,4 @@
-import {BatchableDataType, LoaderObject} from '../common';
+import {BatchableDataType, LoaderObject} from '@loaders.gl/loader-utils/';
 /**
  * Parses `data` using a specified loader
  * @param data
