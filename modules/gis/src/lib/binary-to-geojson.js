@@ -1,5 +1,10 @@
-export function binaryToGeoJson(data, type) {
-  const dataArray = normalizeInput(data, type);
+
+function binaryToGeoJson(data, type, format) {
+  if (format === 'geometry') {
+    return parseGeometry(data);
+  }
+
+  var dataArray = normalizeInput(data, type);
 
   switch (deduceReturnType(dataArray)) {
     case 'Geometry':
@@ -57,17 +62,41 @@ function deduceReturnType(dataArray) {
 function parseFeatureCollection(dataArray) {
   const features = [];
   for (const data of dataArray) {
-    features.push(parseFeature(data));
+    // Not sure how stable this is; even if all properties are numeric, will
+    // there still be a property object for each feature?
+    let lastIndex = 0;
+    let lastValue = data.featureIds.value[0];
+
+    // Need to deduce start, end indices of each feature
+    for (let i = 0; i < data.featureIds.value.length; i++) {
+      const currValue = data.featureIds.value[i];
+      if (currValue === lastValue) {
+        continue;
+      }
+
+      // features.push(parseFeature(data, lastIndex, i));
+      features.push('hi');
+      lastIndex = i;
+      lastValue = currValue;
+    }
+
+    // Last feature
+    features.push(parseFeature(data, lastIndex, data.featureIds.value.length));
   }
   return features;
 }
 
-function parseFeature(data) {
-  const geometry = parseGeometry(data);
-  return {type: 'Feature', geometry};
+function parseFeature(data, startIndex, endIndex) {
+  const geometry = parseGeometry(data, startIndex, endIndex);
+  const properties = parseProperties(data, startIndex, endIndex);
+  return {type: 'Feature', geometry, properties};
 }
 
-function parseGeometry(data) {
+function parseProperties(data, startIndex, endIndex) {
+  data;
+}
+
+function parseGeometry(data, startIdx, endIdx) {
   switch (data.type) {
     case 'Point':
       return pointToGeoJson(data);
