@@ -1,8 +1,8 @@
 import {concatenateChunksAsync} from '@loaders.gl/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
-import {mergeOptions} from '../loader-utils/merge-options';
+import {normalizeOptions} from '../loader-utils/option-utils';
+import {getLoaderContext} from '../loader-utils/context-utils';
 import {getAsyncIteratorFromData} from '../loader-utils/get-data';
-import {getLoaderContext} from '../loader-utils/get-loader-context';
 import {selectLoader} from './select-loader';
 
 export async function parseInBatches(data, loaders, options, url) {
@@ -21,7 +21,7 @@ export async function parseInBatches(data, loaders, options, url) {
   const loader = selectLoader(null, loaders, options, {url});
 
   // Normalize options
-  options = mergeOptions(loader, options, url);
+  options = normalizeOptions(options, loader, loaders, url);
 
   const context = getLoaderContext({url, loaders}, options);
 

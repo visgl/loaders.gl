@@ -1,9 +1,30 @@
 import {global} from '@loaders.gl/loader-utils';
-import {DEFAULT_LOADER_OPTIONS} from '../constants';
-import {NullLog} from './loggers';
+import {isPureObject, isObject} from '../../javascript-utils/is-type';
+import {NullLog, ConsoleLog} from './loggers';
 
-const isPureObject = value =>
-  value && typeof value === 'object' && value.constructor === {}.constructor;
+const DEFAULT_LOADER_OPTIONS = {
+  CDN: 'https://unpkg.com/@loaders.gl',
+  worker: true, // By default, use worker if provided by loader
+  log: new ConsoleLog(), // A probe.gl compatible (`log.log()()` syntax) that just logs to console
+  dataType: 'arraybuffer', // TODO - explain why this option is needed for parsing
+  metadata: false // TODO - currently only implemented for parseInBatches, adds initial metadata batch
+};
+
+const DEPRECATED_LOADER_OPTIONS = {
+  // Warn if fetch options are used on top-level
+  method: 'fetch.method',
+  headers: 'fetch.headers',
+  body: 'fetch.body',
+  mode: 'fetch.mode',
+  credentials: 'fetch.credentials',
+  cache: 'fetch.cache',
+  redirect: 'fetch.redirect',
+  referrer: 'fetch.referrer',
+  referrerPolicy: 'fetch.referrerPolicy',
+  integrity: 'fetch.integrity',
+  keepalive: 'fetch.keepalive',
+  signal: 'fetch.signal'
+};
 
 // Helper to reliably get global loader state
 // Wraps initialization of global variable in function to defeat overly agressive tree-shakers
@@ -31,39 +52,48 @@ const getGlobalLoaderOptions = () => {
 export function setGlobalOptions(options) {
   const state = getGlobalLoaderState();
   const globalOptions = getGlobalLoaderOptions();
-  state.globalOptions = mergeOptionsInternal(globalOptions, options);
+  state.globalOptions = normalizeOptionsInternal(globalOptions, options);
+}
+
+export function getOptions(options = {}) {
+  // Note: No options validation at this stage
+  const mergedOptions = {...options};
+
+  // LOGGING: options.log can be set to `null` to defeat logging, but should always be a valid log
+  // TODO - move to context, no need to modify options...
+  // @ts-ignore
+  if (mergedOptions.log === null) {
+    // @ts-ignore
+    mergedOptions.log = new NullLog();
+  }
+
+  mergeNestedFields(mergedOptions, getGlobalLoaderOptions());
+  return mergedOptions;
 }
 
 // Merges options with global opts and loader defaults, also injects baseUri
-export function mergeOptions(loader, options, url, topOptions = null) {
-  validateLoaderOptions(loader, options, topOptions);
-  return mergeOptionsInternal(loader, options, url);
+export function normalizeOptions(options, loader, candidateLoaders = [], url) {
+  validateLoaderOptions(options, loader);
+  return normalizeOptionsInternal(loader, options, url);
 }
+
+// VALIDATE OPTIONS
 
 /**
  * Warn for unsupported options
- * @param {*} loader
  * @param {object} options
- * @param {object | null} topOptions
+ * @param {*} loader
  * @param {*} log
  */
 // eslint-disable-next-line complexity
 function validateLoaderOptions(
-  loader,
   options,
-  topOptions = DEFAULT_LOADER_OPTIONS,
+  loader,
   // eslint-disable-next-line
   log = console
 ) {
   // Check top level options
-  if (topOptions) {
-    for (const key in options) {
-      // Only check non-object valued top-level keys
-      if (typeof options[key] !== 'object' && !topOptions[key]) {
-        log.warn(`Top-level loader option ${key} not recognized`);
-      }
-    }
-  }
+  validateOptionsObject(options, null, log, DEFAULT_LOADER_OPTIONS, DEPRECATED_LOADER_OPTIONS);
 
   // Get the scoped, loader specific options from the user supplied options
   const idOptions = (options && options[loader.id]) || {};
@@ -73,24 +103,29 @@ function validateLoaderOptions(
   const deprecatedOptions = (loader.defaultOptions && loader.defaultOptions[loader.id]) || {};
 
   // Validate loader specific options
-  for (const key in idOptions) {
-    if (!(key in loaderOptions)) {
+  validateOptionsObject(idOptions, loader.id, log, loaderOptions, deprecatedOptions);
+}
+
+function validateOptionsObject(options, id, log, defaultOptions, deprecatedOptions) {
+  const loaderName = id || 'Top level';
+  const prefix = id ? `${id}.` : '';
+
+  for (const key in options) {
+    const isSubOptions = !id && isObject(options[key]);
+    if (!isSubOptions && !(key in defaultOptions)) {
       // Issue deprecation warnings
       if (key in deprecatedOptions) {
         log.warn(
-          `${loader.name} loader option ${loader.id}.${key} deprecated, use ${
-            deprecatedOptions[key]
-          }`
+          `${loaderName} loader option ${prefix}${key} deprecated, use ${deprecatedOptions[key]}`
         );
-        // TODO - auto set updated option?
       } else {
-        log.warn(`${loader.name} loader option ${loader.id}.${key} not recognized`);
+        log.warn(`${loaderName} loader option ${prefix}${key} not recognized`);
       }
     }
   }
 }
 
-function mergeOptionsInternal(loader, options, url) {
+function normalizeOptionsInternal(loader, options, url) {
   const loaderDefaultOptions = loader.options || {};
 
   const mergedOptions = {...loaderDefaultOptions};

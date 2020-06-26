@@ -1,9 +1,9 @@
 import {assert, validateLoaderVersion} from '@loaders.gl/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
-import {mergeOptions} from '../loader-utils/merge-options';
+import {normalizeOptions} from '../loader-utils/option-utils';
 import {getUrlFromData} from '../loader-utils/get-data';
 import {getArrayBufferOrStringFromData} from '../loader-utils/get-data';
-import {getLoaders, getLoaderContext} from '../loader-utils/get-loader-context';
+import {getLoaders, getLoaderContext} from '../loader-utils/context-utils';
 import parseWithWorker, {canParseWithWorker} from '../loader-utils/parse-with-worker';
 import {selectLoader} from './select-loader';
 
@@ -41,7 +41,7 @@ export async function parse(data, loaders, options, context) {
   }
 
   // Normalize options
-  options = mergeOptions(loader, options, autoUrl);
+  options = normalizeOptions(options, loader, candidateLoaders, autoUrl);
 
   // Get a context (if already present, will be unchanged)
   context = getLoaderContext({url: autoUrl, parse, loaders: candidateLoaders}, options, context);

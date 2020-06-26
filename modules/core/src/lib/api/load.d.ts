@@ -6,4 +6,4 @@ import {DataType, LoaderObject} from '@loaders.gl/loader-utils';
  * @param options
  * @param context
  */
-export function load(url: string | ArrayBuffer | File | Blob | Response | ReadableStream, loaders: LoaderObject | LoaderObject[], options?: object, context?: object): Promise<any>;
+export function load(url: string | DataType, loaders: LoaderObject | LoaderObject[], options?: object, context?: object): Promise<any>;

@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
-import {mergeOptions} from '@loaders.gl/core/lib/loader-utils/merge-options';
+import {normalizeOptions} from '@loaders.gl/core/lib/loader-utils/option-utils';
 
 import {GLTFLoader} from '@loaders.gl/gltf';
 import {LASLoader} from '@loaders.gl/las';
@@ -23,9 +23,9 @@ const TEST_CASES = [
   }
 ];
 
-test('mergeOptions#mergeOptions', t => {
+test('normalizeOptions#normalizeOptions', t => {
   for (const tc of TEST_CASES) {
-    const options = mergeOptions(tc.loader, tc.options);
+    const options = normalizeOptions(tc.options, tc.loader);
     tc.assert(t, options);
   }
   t.end();

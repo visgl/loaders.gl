@@ -90,7 +90,10 @@ Note that additional data types can be converted to `Response` objects and used 
 
 Top-level options
 
-| Option           | Type    | Default   | Description                                                                                                              |
-| ---------------- | ------- | --------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `options.log`    | object  | `console` | By default set to a `console` wrapper. Setting log to `null` will turn off logging.                                      |
-| `options.worker` | boolean | `true`    | If the selected loader is equipped with a worker url (and the runtime environment supports it) parse on a worker thread. |
+| Option             | Type                                 | Default   | Description                                                                                                                                           |
+| ------------------ | ------------------------------------ | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `options.metadata` | boolean                              | `false`   | Currently only implemented for `parseInBatches`, adds initial metadata batch                                                                          |
+| `options.log`      | object                               | `console` | By default set to a `console` wrapper. Setting log to `null` will turn off logging.                                                                   |
+| `options.fetch`    | `object | (url: string) => Response` | `{}`      | Specifies either an object with options to pass to `fetchFile`, or a function that is called in place of `fetchFile` to fetch data in any subloaders. |
+| `options.worker`   | boolean                              | `true`    | If the selected loader is equipped with a worker url (and the runtime environment supports it) parse on a worker thread.                              |
+| `options.CDN`      | string                               | -         | Load workers and scripts from this source, defaults to `'https://unpkg.com/@loaders.gl'`                                                              |
