@@ -4,8 +4,6 @@ export function binaryToGeoJson(data, type) {
   switch (deduceReturnType(dataArray)) {
     case 'Geometry':
       return parseGeometry(dataArray[0]);
-    case 'Feature':
-      return parseFeature(dataArray[0]);
     case 'FeatureCollection':
       return parseFeatureCollection(dataArray);
     default:
@@ -53,14 +51,7 @@ function deduceReturnType(dataArray) {
     return 'Geometry';
   }
 
-  if (
-    (data.globalFeatureIds && data.globalFeatureIds.value.length > 1) ||
-    (data.featureIds && data.featureIds.value.length > 1)
-  ) {
-    return 'FeatureCollection';
-  }
-
-  return 'Feature';
+  return 'FeatureCollection';
 }
 
 function parseFeatureCollection(dataArray) {
