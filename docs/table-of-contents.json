@@ -97,6 +97,7 @@
             {"entry": "modules/core/docs/api-reference/parse-sync"},
             {"entry": "modules/core/docs/api-reference/parse-in-batches"},
             {"entry": "modules/core/docs/api-reference/load"},
+            {"entry": "modules/core/docs/api-reference/load-in-batches"},
             {"entry": "modules/core/docs/api-reference/encode"},
             {"entry": "modules/core/docs/api-reference/save"},
             {"entry": "modules/core/docs/api-reference/fetch-file"},

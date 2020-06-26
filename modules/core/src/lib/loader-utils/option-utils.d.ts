@@ -31,6 +31,6 @@ export function normalizeOptions(options: object, loader: LoaderObject, loaders?
 /**
  * Gets the current fetch function from options and context
  * @param options
- * @param context 
+ * @param context
  */
 export function getFetchFunction(options: object, context?: LoaderContext);
