@@ -1,5 +1,5 @@
 
-function binaryToGeoJson(data, type, format) {
+export function binaryToGeoJson(data, type, format) {
   if (format === 'geometry') {
     return parseGeometry(data);
   }
