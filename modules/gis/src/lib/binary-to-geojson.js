@@ -97,14 +97,14 @@ function parseProperties(data, startIndex, endIndex) {
   return properties;
 }
 
-function parseGeometry(data, startIdx, endIdx) {
+function parseGeometry(data, startIndex, endIndex) {
   switch (data.type) {
     case 'Point':
-      return pointToGeoJson(data);
+      return pointToGeoJson(data, startIndex, endIndex);
     case 'LineString':
-      return lineStringToGeoJson(data);
+      return lineStringToGeoJson(data, startIndex, endIndex);
     case 'Polygon':
-      return polygonToGeoJson(data);
+      return polygonToGeoJson(data, startIndex, endIndex);
     default:
       throw new Error('Invalid type');
   }
@@ -146,15 +146,13 @@ function polygonToGeoJson(data, startIndex, endIndex) {
   return {type: 'MultiPolygon', coordinates};
 }
 
-function lineStringToGeoJson(data) {
-  const {
-    positions,
-    pathIndices: {value: pathIndices}
-  } = data;
+function lineStringToGeoJson(data, startIndex, endIndex) {
+  const {positions} = data;
+  const pathIndices = data.pathIndices.value.filter(x => x >= startIndex && x <= endIndex);
   const multi = pathIndices.length > 2;
 
   if (!multi) {
-    const coordinates = ringToGeoJson(positions);
+    const coordinates = ringToGeoJson(positions, pathIndices[0], pathIndices[1]);
     return {type: 'LineString', coordinates};
   }
 
@@ -167,10 +165,10 @@ function lineStringToGeoJson(data) {
   return {type: 'MultiLineString', coordinates};
 }
 
-function pointToGeoJson(data) {
+function pointToGeoJson(data, startIndex, endIndex) {
   const {positions} = data;
-  const multi = positions.value.length / positions.size > 1;
-  const coordinates = ringToGeoJson(positions);
+  const coordinates = ringToGeoJson(positions, startIndex, endIndex);
+  const multi = coordinates.length > 1;
 
   if (multi) {
     return {type: 'MultiPoint', coordinates};
