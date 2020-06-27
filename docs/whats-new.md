@@ -1,5 +1,18 @@
 # What's New
 
+## v2.3 (In Development)
+
+Target Release Date: TBD (alpha releases will be made available)
+
+**@loaders.gl/core**
+
+- `parseInBatches` can now be called on all loaders. Non-batched loaders will just return a single batch.
+- `load`, `parse` etc: `options.fetch` can now be used to supply a replacement fetch function (instead of a `fetch` options object) with fetch functions, and this function is applied recursively to subloaders.
+
+**@loaders.gl/polyfills**
+
+- Improved robustness and error handling when calling `fetch` on unreadable or non-existent files under Node.js. Underlying errors (`ENOEXIST`, `EISDIR` etc) are now caught and reported in `Response.statusText`.
+
 ## v2.2
 
 Release Date: June 18, 2020
