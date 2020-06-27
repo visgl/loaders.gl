@@ -23,7 +23,10 @@ const CesiumIonLoader = {
     return Tiles3DLoader.parse(data, options, context, loader);
   },
   options: {
-    'cesium-ion': Tiles3DLoader.options['3d-tiles']
+    'cesium-ion': {
+      ...Tiles3DLoader.options['3d-tiles'],
+      accessToken: null
+    }
   }
 };
 

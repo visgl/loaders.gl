@@ -55,10 +55,11 @@ export default class I3STilesetTraverser extends TilesetTraverser {
     const options = {
       i3s: {
         ...tileset.fetchOptions,
-        isHeader: true,
+        isTileHeader: true,
         loadContent: false
       }
     };
+
     return await load(nodeUrl, loader, options);
   }
 
