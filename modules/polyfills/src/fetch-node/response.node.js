@@ -36,11 +36,10 @@ export default class Response {
     // Check for content-encoding and create a decompression stream
     if (isReadableNodeStream(body)) {
       this._body = decompressReadStream(body, headers);
+    } else if (typeof body === 'string') {
+      this._body = Readable.from([new TextEncoder().encode(body)]);
     } else {
-      if (typeof body === 'string') {
-        body = new TextEncoder().encode(body);
-      }
-      this._body = Readable.from([body]);
+      this._body = Readable.from([body || new ArrayBuffer(0)]);
     }
   }
 
@@ -78,7 +77,7 @@ export default class Response {
 
   async arrayBuffer() {
     if (!isReadableNodeStream(this._body)) {
-      return this._body;
+      return this._body || new ArrayBuffer(0);
     }
     const data = await concatenateReadStream(this._body);
     return data;

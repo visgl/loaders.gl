@@ -13,19 +13,18 @@ export async function createReadStream(url, options) {
   // Handle file streams in node
   if (!isRequestURL(url)) {
     const noqueryUrl = url.split('?')[0];
-    // const readFileOptions = getReadFileOptions(options);
-    const stream = fs.createReadStream(noqueryUrl, {encoding: null});
-    // TODO - if there is no error handler program dumps on EISDIR
-    // eslint-disable-next-line
-    stream.on('error', error => console.error(error));
-    return stream;
+    // Now open the stream
+    return await new Promise((resolve, reject) => {
+      const stream = fs.createReadStream(noqueryUrl, {encoding: null});
+      stream.once('readable', () => resolve(stream));
+      stream.on('error', error => reject(error));
+    });
   }
 
   // HANDLE HTTP/HTTPS REQUESTS IN NODE
   // TODO: THIS IS BAD SINCE WE RETURN A PROMISE INSTEAD OF A STREAM
   return await new Promise((resolve, reject) => {
     const requestFunction = url.startsWith('https:') ? https.request : http.request;
-
     const requestOptions = getRequestOptions(url, options);
     const req = requestFunction(requestOptions, res => resolve(res));
     req.on('error', error => reject(error));
@@ -48,10 +47,14 @@ export function decompressReadStream(readStream, headers) {
 }
 
 export async function concatenateReadStream(readStream) {
+  debugger
   let arrayBuffer = new ArrayBuffer(0);
 
   return await new Promise((resolve, reject) => {
+    readStream.on('error', error => reject(error));
+
     readStream.on('data', chunk => {
+      debugger
       if (typeof chunk === 'string') {
         reject(new Error('Read stream not binary'));
       }
@@ -59,16 +62,7 @@ export async function concatenateReadStream(readStream) {
       arrayBuffer = concatenateArrayBuffers(arrayBuffer, chunkAsArrayBuffer);
     });
 
-    readStream.on('error', error => reject(error));
-
-    readStream.on('end', () => {
-      // TODO verify if this code is still required
-      // if (readStream.complete) {
-      resolve(arrayBuffer);
-      // } else {
-      //   reject('The connection was terminated while the message was still being sent');
-      // }
-    });
+    readStream.on('end', () => resolve(arrayBuffer));
   });
 }
 

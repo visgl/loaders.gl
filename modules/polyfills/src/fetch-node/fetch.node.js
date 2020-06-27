@@ -31,7 +31,7 @@ export default async function fetchNode(url, options) {
     return new Response(body, {headers, status, statusText, url});
   } catch (error) {
     // TODO - what error code to use here?
-    return new Response(null, {status: 400, statusText: error, url});
+    return new Response(null, {status: 400, statusText: String(error), url});
   }
 }
 
