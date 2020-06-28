@@ -10,9 +10,7 @@ The advantages and characteristics of streaming are descriped in more detail in 
 
 ## Async Iterator based Streaming
 
-The loaders.gl streaming architecture is built on ES2018 async iterators rather than `Stream`s. Async iterators are arguably easier to work with than streams, are consistent across browsers and Node.js, and enable a "callback-less" programming style through built-in JavaScript language features, i.e. `for await (... of ...)` and `async function *`.
-
-Note: `Stream` input data is still accepted, but all processing is done via async iterators.
+The loaders.gl streaming architecture is built on ES2018 async iterators (rather than the "older" streams). Async iterators are easy to work with, are consistent across browsers and Node.js, and have built-in JavaScript language support such as `for await (... of ...)` and `async function *`.
 
 ```js
 import {JSONLoader} from '@loaders.gl/json';
