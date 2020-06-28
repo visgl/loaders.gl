@@ -1,14 +1,24 @@
+import {global} from '@loaders.gl/loader-utils';
 import {DEFAULT_LOADER_OPTIONS} from '../constants';
 import {NullLog} from './loggers';
 
 const isPureObject = value =>
   value && typeof value === 'object' && value.constructor === {}.constructor;
 
-let globalOptions = {...DEFAULT_LOADER_OPTIONS};
+// Store global loader options on the global object to increase chances of cross loaders-version interoperability
+// NOTE: This use case is not reliable but can help when testing new versions of loaders.gl with existing frameworks
+global.loaders = global.loaders || {};
+global.loaders._globalOptions = global.loaders._globalOptions || {};
+// Ensure all default loader options from this library are mentioned
+global.loaders._globalOptions = Object.assign(
+  {},
+  DEFAULT_LOADER_OPTIONS,
+  global.loaders._globalOptions
+);
 
 // Set global loader options
 export function setGlobalOptions(options) {
-  globalOptions = mergeOptionsInternal(globalOptions, options);
+  global.loaders._globalOptions = mergeOptionsInternal(global.loaders._globalOptions, options);
 }
 
 // Merges options with global opts and loader defaults, also injects baseUri
@@ -79,7 +89,7 @@ function mergeOptionsInternal(loader, options, url) {
     mergedOptions.log = new NullLog();
   }
 
-  mergeNestedFields(mergedOptions, globalOptions);
+  mergeNestedFields(mergedOptions, global.loaders._globalOptions);
   mergeNestedFields(mergedOptions, options);
 
   return mergedOptions;

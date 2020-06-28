@@ -1,7 +1,8 @@
 import {global} from '@loaders.gl/loader-utils';
 import {normalizeLoader} from '../loader-utils/normalize-loader';
 
-// HACK: We store this on a global object to increase the chance of cross-release interop
+// Store global registered loaders on the global object to increase chances of cross loaders-version interoperability
+// NOTE: This use case is not reliable but can help when testing new versions of loaders.gl with existing frameworks
 global.loaders = global.loaders || {};
 global.loaders._registeredLoaders = global.loaders._registeredLoaders || [];
 
