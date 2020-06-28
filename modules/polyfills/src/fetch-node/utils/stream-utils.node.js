@@ -47,14 +47,12 @@ export function decompressReadStream(readStream, headers) {
 }
 
 export async function concatenateReadStream(readStream) {
-  debugger
   let arrayBuffer = new ArrayBuffer(0);
 
   return await new Promise((resolve, reject) => {
     readStream.on('error', error => reject(error));
 
     readStream.on('data', chunk => {
-      debugger
       if (typeof chunk === 'string') {
         reject(new Error('Read stream not binary'));
       }
