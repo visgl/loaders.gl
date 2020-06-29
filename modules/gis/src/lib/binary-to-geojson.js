@@ -1,4 +1,5 @@
 
+// Top-level function to convert input of binary arrays to GeoJSON
 export function binaryToGeoJson(data, type, format) {
   if (format === 'geometry') {
     return parseGeometry(data);
@@ -44,7 +45,8 @@ function normalizeInput(data, type) {
   return features;
 }
 
-// Determine whether a geometry, feature, or feature collection should be returned
+// Determine whether a geometry or feature collection should be returned
+// If the input data doesn't have property identifiers, returns a single geometry
 function deduceReturnType(dataArray) {
   // If more than one item in dataArray, multiple geometry types, must be a featurecollection
   if (dataArray.length > 1) {
@@ -59,6 +61,7 @@ function deduceReturnType(dataArray) {
   return 'FeatureCollection';
 }
 
+// Parse input binary data and return an array of GeoJSON Features
 function parseFeatureCollection(dataArray) {
   const features = [];
   for (const data of dataArray) {
@@ -83,12 +86,14 @@ function parseFeatureCollection(dataArray) {
   return features;
 }
 
+// Parse input binary data and return a single GeoJSON Feature
 function parseFeature(data, startIndex, endIndex) {
   const geometry = parseGeometry(data, startIndex, endIndex);
   const properties = parseProperties(data, startIndex, endIndex);
   return {type: 'Feature', geometry, properties};
 }
 
+// Parse input binary data and return an object of properties
 function parseProperties(data, startIndex, endIndex) {
   const properties = Object.assign(data.properties[data.featureIds.value[startIndex]]);
   for (const key in data.numericProps) {
@@ -97,6 +102,7 @@ function parseProperties(data, startIndex, endIndex) {
   return properties;
 }
 
+// Parse input binary data and return a valid GeoJSON geometry object
 function parseGeometry(data, startIndex, endIndex) {
   switch (data.type) {
     case 'Point':
@@ -110,18 +116,7 @@ function parseGeometry(data, startIndex, endIndex) {
   }
 }
 
-function parseType(data) {
-  if (data.pathIndices) {
-    return 'LineString';
-  }
-
-  if (data.polygonIndices) {
-    return 'Polygon';
-  }
-
-  return 'Point';
-}
-
+// Parse binary data of type Polygon
 function polygonToGeoJson(data, startIndex, endIndex) {
   const {positions} = data;
   const polygonIndices = data.polygonIndices.value.filter(x => x >= startIndex && x <= endIndex);
@@ -146,6 +141,7 @@ function polygonToGeoJson(data, startIndex, endIndex) {
   return {type: 'MultiPolygon', coordinates};
 }
 
+// Parse binary data of type LineString
 function lineStringToGeoJson(data, startIndex, endIndex) {
   const {positions} = data;
   const pathIndices = data.pathIndices.value.filter(x => x >= startIndex && x <= endIndex);
@@ -165,6 +161,7 @@ function lineStringToGeoJson(data, startIndex, endIndex) {
   return {type: 'MultiLineString', coordinates};
 }
 
+// Parse binary data of type Point
 function pointToGeoJson(data, startIndex, endIndex) {
   const {positions} = data;
   const coordinates = ringToGeoJson(positions, startIndex, endIndex);
@@ -177,6 +174,7 @@ function pointToGeoJson(data, startIndex, endIndex) {
   return {type: 'Point', coordinates: coordinates[0]};
 }
 
+// Parse a linear ring of positions to a GeoJSON linear ring
 function ringToGeoJson(positions, startIndex, endIndex) {
   startIndex = startIndex || 0;
   endIndex = endIndex || positions.value.length / positions.size;
@@ -188,4 +186,17 @@ function ringToGeoJson(positions, startIndex, endIndex) {
     );
   }
   return ringCoordinates;
+}
+
+// Deduce geometry type of data object
+function parseType(data) {
+  if (data.pathIndices) {
+    return 'LineString';
+  }
+
+  if (data.polygonIndices) {
+    return 'Polygon';
+  }
+
+  return 'Point';
 }
