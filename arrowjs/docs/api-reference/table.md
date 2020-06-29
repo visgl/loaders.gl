@@ -76,9 +76,9 @@ Creates an empty table
 Creates an empty table
 
 ### Table.from(source: RecordBatchReader): Table
-### Table.from(source: Promise<RecordBatchReader>): Promise<Table>
+### Table.from(source: `Promise<RecordBatchReader>`): `Promise<Table>`
 ### Table.from(source?: any) : Table
-### Table.fromAsync(source: import('./ipc/reader').FromArgs): Promise<Table>
+### Table.fromAsync(source: import('./ipc/reader').FromArgs): `Promise<Table>`
 ### Table.fromVectors(vectors: any[], names?: String[]) : Table
 ### Table.fromStruct(struct: Vector) : Table
 

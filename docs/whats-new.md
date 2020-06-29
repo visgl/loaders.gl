@@ -90,7 +90,6 @@ Release Date: Mar 16, 2020
     </tr>
   </tbody>
 </table>
-<table style="border: 0;" align="center">
 
 The new loaders empowers rendering frameworks to visualize various geospatial datasets.
 
