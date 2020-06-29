@@ -1,10 +1,10 @@
 # parseInBatches
 
-> Streaming parsing is not supported by all loaders. Refer to the documentation for each loader.
+The `parseInBatches` function can parse incrementally from a stream of data as it arrives and emit "batches" of parsed data.
 
-For supporting loaders, the streaming `parseInBatches` function can parse incrementally from a stream as data arrives and emit "batches" of parsed data.
+Batched parsing is only supported by a subset of loaders. Check documentation of each loader before using this function.
 
-Batched (streaming) parsing is only supported by a subset of loaders. Check documentation of each loader before using this function.
+From [![Website shields.io](https://img.shields.io/badge/v2.3-blue.svg?style=flat-square)](http://shields.io) `parseInBatches` can be used with all loaders. Non-supporting loaders will wait until all data has arrived, and emit a single batch containing the parsed data for the entire input (effectively behave as if `parse` had been called).
 
 ## Usage
 

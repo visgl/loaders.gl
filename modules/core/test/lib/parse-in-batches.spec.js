@@ -1,6 +1,9 @@
 import test from 'tape-promise/tape';
 
-import {parseInBatches} from '@loaders.gl/core';
+import {parseInBatches, loadInBatches} from '@loaders.gl/core';
+import {OBJLoader} from '@loaders.gl/obj';
+
+const OBJ_ASCII_URL = '@loaders.gl/obj/test/data/bunny.obj';
 
 const NoOpLoader = {
   name: 'JSON',
@@ -37,5 +40,14 @@ test('parseInBatches', async t => {
   t.deepEquals(values, [1, 2], 'parseInBatches returned data');
   t.ok(metadata, 'metadata batch was generated');
 
+  t.end();
+});
+
+test('loadInBatches#non-batched loader', async t => {
+  const batches = await loadInBatches(OBJ_ASCII_URL, OBJLoader);
+  for await (const batch of batches) {
+    // Just the one batch...
+    t.equal(batch.mode, 4, 'mode is TRIANGLES (4)');
+  }
   t.end();
 });

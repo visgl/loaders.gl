@@ -1,5 +1,13 @@
 # What's New
 
+## v2.3 (In Development)
+
+Target Release Date: TBD (alpha releases will be made available)
+
+**@loaders.gl/core**
+
+- `parseInBatches` can now be called on all loaders. Non-batched loaders will just return a single batch.
+
 ## v2.2
 
 Release Date: June 18, 2020
