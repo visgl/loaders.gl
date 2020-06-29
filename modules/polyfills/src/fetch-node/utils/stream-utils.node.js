@@ -52,6 +52,10 @@ export async function concatenateReadStream(readStream) {
   return await new Promise((resolve, reject) => {
     readStream.on('error', error => reject(error));
 
+    // Once the readable callback has been added, stream switches to "flowing mode"
+    // In Node 10 (but not 12 and 14) this causes `data` and `end` to never be called unless we read data here
+    readStream.on('readable', () => readStream.read());
+
     readStream.on('data', chunk => {
       if (typeof chunk === 'string') {
         reject(new Error('Read stream not binary'));
