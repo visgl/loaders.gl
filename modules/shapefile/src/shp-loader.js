@@ -1,4 +1,3 @@
-import {concatenateChunksAsync} from '@loaders.gl/loader-utils';
 import parseSHP from './lib/parse-shp';
 /** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 
@@ -25,12 +24,5 @@ export const SHPWorkerLoader = {
 export const SHPLoader = {
   ...SHPWorkerLoader,
   parse: async (arrayBuffer, options) => parseSHP(arrayBuffer),
-  parseSync: parseSHP,
-  parseInBatches
+  parseSync: parseSHP
 };
-
-// TODO actually parse .shp file in batches; instead of concatenating chunks
-async function* parseInBatches(asyncIterator, options) {
-  const arrayBuffer = await concatenateChunksAsync(asyncIterator);
-  yield parseSHP(arrayBuffer);
-}
