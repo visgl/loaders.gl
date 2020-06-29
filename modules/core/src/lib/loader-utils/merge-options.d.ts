@@ -13,3 +13,16 @@ export function setGlobalOptions(options: object): void;
  * @param url 
  */
 export function mergeOptions(loader: LoaderObject, options: object, url?: string): object;
+
+/**
+ * Global state for loaders.gl. Stored on `global.loaders._state`
+ */
+type GlobalLoaderState = {
+  loaderRegistry: LoaderObject[];
+  globalOptions: {[key: string]: any};
+}
+
+/**
+ * Internal helper for safely accessing global loaders.gl variables
+ */
+export function getGlobalLoaderState(): GlobalLoaderState;

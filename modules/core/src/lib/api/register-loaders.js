@@ -1,31 +1,34 @@
-import {global} from '@loaders.gl/loader-utils';
 import {normalizeLoader} from '../loader-utils/normalize-loader';
+import {getGlobalLoaderState} from '../loader-utils/merge-options';
 
 // Store global registered loaders on the global object to increase chances of cross loaders-version interoperability
-// NOTE: This use case is not reliable but can help when testing new versions of loaders.gl with existing frameworks
-global.loaders = global.loaders || {};
-global.loaders._registeredLoaders = global.loaders._registeredLoaders || [];
+// This use case is not reliable but can help when testing new versions of loaders.gl with existing frameworks
+const getGlobalLoaderRegistry = () => {
+  const state = getGlobalLoaderState();
+  state.loaderRegistry = state.loaderRegistry || [];
+  return state.loaderRegistry;
+};
 
 export function registerLoaders(loaders) {
-  const {_registeredLoaders} = global.loaders;
+  const loaderRegistry = getGlobalLoaderRegistry();
 
   loaders = Array.isArray(loaders) ? loaders : [loaders];
 
   for (const loader of loaders) {
     const normalizedLoader = normalizeLoader(loader);
-    if (!_registeredLoaders.find(registeredLoader => normalizedLoader === registeredLoader)) {
-      // add to the beginning of the _registeredLoaders, so the last registeredLoader get picked
-      _registeredLoaders.unshift(normalizedLoader);
+    if (!loaderRegistry.find(registeredLoader => normalizedLoader === registeredLoader)) {
+      // add to the beginning of the loaderRegistry, so the last registeredLoader get picked
+      loaderRegistry.unshift(normalizedLoader);
     }
   }
 }
 
 export function getRegisteredLoaders() {
-  const {_registeredLoaders} = global.loaders;
-  return _registeredLoaders;
+  return getGlobalLoaderRegistry();
 }
 
 // For testing
 export function _unregisterLoaders() {
-  global.loaders._registeredLoaders = [];
+  const state = getGlobalLoaderState();
+  state.loaderRegistry = [];
 }

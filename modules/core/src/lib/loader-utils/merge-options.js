@@ -5,20 +5,33 @@ import {NullLog} from './loggers';
 const isPureObject = value =>
   value && typeof value === 'object' && value.constructor === {}.constructor;
 
+// Helper to reliably get global loader state
+// Wraps initialization of global variable in function to defeat overly agressive tree-shakers
+export const getGlobalLoaderState = () => {
+  // @ts-ignore
+  global.loaders = global.loaders || {};
+  // @ts-ignore
+  const {loaders} = global;
+
+  // Add _state object to keep separate from modules added to global.loaders
+  loaders._state = loaders._state || {};
+  return loaders._state;
+};
+
 // Store global loader options on the global object to increase chances of cross loaders-version interoperability
 // NOTE: This use case is not reliable but can help when testing new versions of loaders.gl with existing frameworks
-global.loaders = global.loaders || {};
-global.loaders._globalOptions = global.loaders._globalOptions || {};
-// Ensure all default loader options from this library are mentioned
-global.loaders._globalOptions = Object.assign(
-  {},
-  DEFAULT_LOADER_OPTIONS,
-  global.loaders._globalOptions
-);
+const getGlobalLoaderOptions = () => {
+  const state = getGlobalLoaderState();
+  // Ensure all default loader options from this library are mentioned
+  state.globalOptions = state.globalOptions || {...DEFAULT_LOADER_OPTIONS};
+  return state.globalOptions;
+};
 
 // Set global loader options
 export function setGlobalOptions(options) {
-  global.loaders._globalOptions = mergeOptionsInternal(global.loaders._globalOptions, options);
+  const state = getGlobalLoaderState();
+  const globalOptions = getGlobalLoaderOptions();
+  state.globalOptions = mergeOptionsInternal(globalOptions, options);
 }
 
 // Merges options with global opts and loader defaults, also injects baseUri
@@ -89,7 +102,7 @@ function mergeOptionsInternal(loader, options, url) {
     mergedOptions.log = new NullLog();
   }
 
-  mergeNestedFields(mergedOptions, global.loaders._globalOptions);
+  mergeNestedFields(mergedOptions, getGlobalLoaderOptions());
   mergeNestedFields(mergedOptions, options);
 
   return mergedOptions;
