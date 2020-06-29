@@ -73,6 +73,7 @@
           "value": [100.0, 0.0, 101.0, 1.0, 100.0, 0.0, 101.0, 1.0, 102.0, 2.0, 103.0, 3.0],
           "size": 2
         },
+        "pathIndices": {"value": [0, 2, 4, 6], "size": 1},
         "globalFeatureIds": {"value": [0, 0, 1, 1, 1, 1], "size": 1},
         "featureIds": {"value": [0, 0, 1, 1, 1, 1], "size": 1},
         "numericProps": {
