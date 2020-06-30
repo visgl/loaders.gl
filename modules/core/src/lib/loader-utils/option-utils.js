@@ -10,7 +10,7 @@ const DEFAULT_LOADER_OPTIONS = {
 };
 
 const DEPRECATED_LOADER_OPTIONS = {
-  dataType: "(no longer used)",
+  dataType: '(no longer used)',
   uri: 'baseUri'
 };
 
@@ -83,7 +83,14 @@ function validateOptions(
   log = console
 ) {
   // Check top level options
-  validateOptionsObject(options, null, log, DEFAULT_LOADER_OPTIONS, DEPRECATED_LOADER_OPTIONS, loaders);
+  validateOptionsObject(
+    options,
+    null,
+    log,
+    DEFAULT_LOADER_OPTIONS,
+    DEPRECATED_LOADER_OPTIONS,
+    loaders
+  );
 
   for (const loader of loaders) {
     // Get the scoped, loader specific options from the user supplied options
@@ -98,6 +105,7 @@ function validateOptions(
   }
 }
 
+// eslint-disable-next-line max-params
 function validateOptionsObject(options, id, log, defaultOptions, deprecatedOptions, loaders) {
   const loaderName = id || 'Top level';
   const prefix = id ? `${id}.` : '';
@@ -108,7 +116,9 @@ function validateOptionsObject(options, id, log, defaultOptions, deprecatedOptio
       // Issue deprecation warnings
       if (key in deprecatedOptions) {
         log.warn(
-          `${loaderName} loader option \'${prefix}${key}\' deprecated, use \'${deprecatedOptions[key]}\'`
+          `${loaderName} loader option \'${prefix}${key}\' deprecated, use \'${
+            deprecatedOptions[key]
+          }\'`
         );
       } else {
         const suggestion = findSimilarOption(key, loaders);
@@ -128,7 +138,9 @@ function findSimilarOption(optionKey, loaders) {
         return `Did you mean \'${loader.id}.${key}\'?`;
       }
       const lowerCaseKey = key.toLowerCase();
-      if (optionKey.startsWith(lowerCaseKey) || lowerCaseKey.startsWith(optionKey)) {
+      const isPartialMatch =
+        lowerCaseOptionKey.startsWith(lowerCaseKey) || lowerCaseKey.startsWith(lowerCaseOptionKey);
+      if (isPartialMatch) {
         bestSuggestion = bestSuggestion || `Did you mean \'${loader.id}.${key}\'?`;
       }
     }
