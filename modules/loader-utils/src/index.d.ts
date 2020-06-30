@@ -1,4 +1,4 @@
-export {LoaderObject, WriterObject} from './types/types';
+export {LoaderObject, WriterObject, LoaderContext, DataType, SyncDataType, BatchableDataType} from './types/types';
 
 export {default as createWorker} from './lib/create-worker';
 
@@ -58,7 +58,7 @@ export {
   makeLineIterator,
   makeNumberedLineIterator
 } from './lib/iterator-utils/text-iterators';
-
+export {forEach, concatenateChunksAsync} from './lib/iterator-utils/async-iteration';
 
 // REQUEST UTILS
 export {default as RequestScheduler} from './lib/request-utils/request-scheduler';

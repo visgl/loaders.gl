@@ -1,4 +1,4 @@
-import {WriterObject} from '../common';
+import {WriterObject} from '@loaders.gl/loader-utils';
 
 export function encode(data: any, writer: WriterObject, options?: object, url?: string): Promise<ArrayBuffer>;
 

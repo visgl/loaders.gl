@@ -1,5 +1,17 @@
 # What's New
 
+## v2.3 (In Development)
+
+Target Release Date: TBD (alpha releases will be made available)
+
+**@loaders.gl/core**
+
+- `parseInBatches` can now be called on all loaders. Non-batched loaders will just return a single batch.
+
+**@loaders.gl/polyfills**
+
+- Improved robustness and error handling in Node.js when calling the `fetch` polyfill on unreadable or non-existent files. Underlying errors (`ENOEXIST`, `EISDIR` etc) are now caught and reported in `Response.statusText`.
+
 ## v2.2
 
 Release Date: June 18, 2020
