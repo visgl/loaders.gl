@@ -13,19 +13,18 @@ export async function createReadStream(url, options) {
   // Handle file streams in node
   if (!isRequestURL(url)) {
     const noqueryUrl = url.split('?')[0];
-    // const readFileOptions = getReadFileOptions(options);
-    const stream = fs.createReadStream(noqueryUrl, {encoding: null});
-    // TODO - if there is no error handler program dumps on EISDIR
-    // eslint-disable-next-line
-    stream.on('error', error => console.error(error));
-    return stream;
+    // Now open the stream
+    return await new Promise((resolve, reject) => {
+      const stream = fs.createReadStream(noqueryUrl, {encoding: null});
+      stream.once('readable', () => resolve(stream));
+      stream.on('error', error => reject(error));
+    });
   }
 
   // HANDLE HTTP/HTTPS REQUESTS IN NODE
   // TODO: THIS IS BAD SINCE WE RETURN A PROMISE INSTEAD OF A STREAM
   return await new Promise((resolve, reject) => {
     const requestFunction = url.startsWith('https:') ? https.request : http.request;
-
     const requestOptions = getRequestOptions(url, options);
     const req = requestFunction(requestOptions, res => resolve(res));
     req.on('error', error => reject(error));
@@ -51,6 +50,12 @@ export async function concatenateReadStream(readStream) {
   let arrayBuffer = new ArrayBuffer(0);
 
   return await new Promise((resolve, reject) => {
+    readStream.on('error', error => reject(error));
+
+    // Once the readable callback has been added, stream switches to "flowing mode"
+    // In Node 10 (but not 12 and 14) this causes `data` and `end` to never be called unless we read data here
+    readStream.on('readable', () => readStream.read());
+
     readStream.on('data', chunk => {
       if (typeof chunk === 'string') {
         reject(new Error('Read stream not binary'));
@@ -59,16 +64,7 @@ export async function concatenateReadStream(readStream) {
       arrayBuffer = concatenateArrayBuffers(arrayBuffer, chunkAsArrayBuffer);
     });
 
-    readStream.on('error', error => reject(error));
-
-    readStream.on('end', () => {
-      // TODO verify if this code is still required
-      // if (readStream.complete) {
-      resolve(arrayBuffer);
-      // } else {
-      //   reject('The connection was terminated while the message was still being sent');
-      // }
-    });
+    readStream.on('end', () => resolve(arrayBuffer));
   });
 }
 
