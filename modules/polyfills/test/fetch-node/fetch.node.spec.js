@@ -7,7 +7,7 @@ const GITHUB_MASTER = 'https://raw.githubusercontent.com/visgl/loaders.gl/master
 const PLY_CUBE_ATT_URL = `${GITHUB_MASTER}ply/test/data/cube_att.ply`;
 const PLY_CUBE_ATT_SIZE = 853;
 
-test('fetch polyfill (Node.js)#fetch()', async t => {
+test('polyfills#fetch() (NODE)', async t => {
   if (!isBrowser) {
     const response = await fetch(PLY_CUBE_ATT_URL);
     t.ok(response.headers, 'fetch polyfill successfully returned headers under Node.js');
@@ -17,7 +17,7 @@ test('fetch polyfill (Node.js)#fetch()', async t => {
   t.end();
 });
 
-test('fetch polyfill (Node.js)#fetch() ignores url query params when loading file', async t => {
+test('polyfills#fetch() ignores url query params when loading file (NODE)', async t => {
   if (!isBrowser) {
     const response = await fetch(`${PLY_CUBE_ATT_URL}?v=1.2.3`);
     const data = await response.text();
@@ -27,7 +27,22 @@ test('fetch polyfill (Node.js)#fetch() ignores url query params when loading fil
   t.end();
 });
 
-test('fetch polyfill (Node.js)#fetch() able to handle "Accept-Encoding: gzip"', async t => {
+test('polyfills#fetch() error handling (NODE)', async t => {
+  if (!isBrowser) {
+    let response = await fetch('non-existent-file');
+    t.ok(response.statusText.includes('ENOENT'), 'fetch statusText forwards node ENOENT error');
+    t.notOk(response.ok, 'fetch polyfill fails cleanly on non-existent file');
+    t.ok(response.arrayBuffer(), 'Response.arrayBuffer() does not throw');
+
+    response = await fetch('.');
+    t.ok(response.statusText.includes('EISDIR'), 'fetch statusText forwards node EISDIR error');
+    t.notOk(response.ok, 'fetch polyfill fails cleanly on directory');
+    t.ok(response.arrayBuffer(), 'Response.arrayBuffer() does not throw');
+  }
+  t.end();
+});
+
+test('polyfills#fetch() able to handle "Accept-Encoding: gzip" (NODE)', async t => {
   if (!isBrowser) {
     // Github will serve the desired compression
     const headers = {
@@ -43,7 +58,7 @@ test('fetch polyfill (Node.js)#fetch() able to handle "Accept-Encoding: gzip"', 
   t.end();
 });
 
-test('fetch polyfill (Node.js)#fetch() able to handle "Accept-Encoding: br"', async t => {
+test('polyfills#fetch() able to handle "Accept-Encoding: br" (NODE)', async t => {
   if (!isBrowser) {
     // Github will serve the desired compression
     const headers = {
@@ -58,7 +73,7 @@ test('fetch polyfill (Node.js)#fetch() able to handle "Accept-Encoding: br"', as
   t.end();
 });
 
-test('fetch polyfill (Node.js)#fetch() able to handle "Accept-Encoding: deflate"', async t => {
+test('polyfills#fetch() able to handle "Accept-Encoding: deflate"', async t => {
   if (!isBrowser) {
     // Github will serve the desired compression
     const headers = {
