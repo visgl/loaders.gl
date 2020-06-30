@@ -1,8 +1,7 @@
 /* global console, process */
 /* eslint-disable no-console */
-const { Converter3dTilesToI3S } = require('@loaders.gl/cli');
-import "@loaders.gl/polyfills";
-
+const {Converter3dTilesToI3S} = require('@loaders.gl/cli');
+import '@loaders.gl/polyfills';
 
 function printHelp() {
   console.log('cli: converter 3dTiles to I3S...');
@@ -23,18 +22,18 @@ function main() {
 
   options = parseOptions(args);
 
-  converter(options.tileset, options.name, options.output);
+  convert(options.tileset, options.name, options.output);
 }
 
 main();
 
-function converter(tileset, tilesetName, output) {
-  console.log("Start load 3dTiles");
+function convert(tileset, tilesetName, output) {
+  console.log('Start load 3dTiles');
 
   const converter = new Converter3dTilesToI3S();
   const tilesetJson = converter.convert(tileset, output, tilesetName);
 
-  console.log("Stop load 3dTiles");
+  console.log('Stop load 3dTiles');
   console.log(tilesetJson);
 }
 
@@ -43,12 +42,12 @@ function converter(tileset, tilesetName, output) {
 function parseOptions(args) {
   const opts = {
     tileset: null,
-    name: "default",
+    name: 'default',
     output: null
   };
 
   const count = args.length;
-  const _getValue = (index) => {
+  const _getValue = index => {
     if (index >= count) {
       return null;
     }
@@ -66,7 +65,7 @@ function parseOptions(args) {
           opts.tileset = _getValue(index + 1);
           break;
         case '--name':
-          opts.name = _getValue(index + 1);;
+          opts.name = _getValue(index + 1);
           break;
         case '--output':
           opts.output = _getValue(index + 1);

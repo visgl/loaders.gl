@@ -14,6 +14,7 @@ const TEST_TILES = true;
 const TEST_GEOSPATIAL = true;
 const TEST_TABLES = true;
 const TEST_ARCHIVES = true;
+const TEST_CLI = true;
 
 // Install polyfills (primarily for Node)
 require('@loaders.gl/polyfills');
@@ -75,4 +76,9 @@ if (TEST_TABLES) {
 // Archive Formats
 if (TEST_ARCHIVES) {
   require('@loaders.gl/zip/test');
+}
+
+// Cli
+if (TEST_CLI) {
+  require('@loaders.gl/cli/test');
 }
