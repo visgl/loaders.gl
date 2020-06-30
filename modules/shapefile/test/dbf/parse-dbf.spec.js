@@ -23,7 +23,7 @@ test('Shapefile JS DBF tests', async t => {
   for (const testFileName of SHAPEFILE_JS_TEST_FILES) {
     let response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.dbf`);
     const body = await response.arrayBuffer();
-    const output = parseDbf(body, {encoding: 'utf8'});
+    const output = parseDbf(body, {dbf: {encoding: 'utf8'}});
 
     response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.json`);
     const {features} = await response.json();
