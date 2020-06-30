@@ -4,15 +4,18 @@ import {fetchFile} from '@loaders.gl/core';
 
 const SHAPEFILE_JS_DATA_FOLDER = '@loaders.gl/shapefile/test/data/shapefile-js';
 const SHAPEFILE_JS_TEST_FILES = [
-  'points',
-  'multipoints',
-  'polygons',
-  'polylines',
-  'mixed-properties',
   'boolean-property',
+  'mixed-properties',
+  'multipoints',
   'null',
   'number-null-property',
-  'number-property'
+  'number-property',
+  'points',
+  'polygons',
+  'polylines',
+  'string-property',
+  'utf8-property'
+  // 'latin1-property' fails on 'México'
   // 'date-property' need to coerce json from str to date
 ];
 
