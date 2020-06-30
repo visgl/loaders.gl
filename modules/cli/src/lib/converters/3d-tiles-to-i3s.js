@@ -8,7 +8,7 @@ import { promises, writeFile } from "fs";
 import { v4 as uuidv4 } from 'uuid';
 
 export default class Converter3dTilesToI3S {
-    async convert(inputFile, outputPath, tilesetsName): Promise<any> {
+    async convert(inputFile, outputPath, tilesetsName) {
         console.log("Start load 3dTiles");
         const tilesetJson = await load(inputFile, CesiumIonLoader);
         console.log(tilesetJson);
@@ -231,7 +231,7 @@ export default class Converter3dTilesToI3S {
         this._writeFile(rootPath, JSON.stringify(root0));
     }
 
-    _addChildren(data: {rootNode, count, tiles}, layers0path) {
+    _addChildren(data, layers0path) {
         const childNodes = [];
         for (const child of data.tiles) {
             if (child.type === "json") {

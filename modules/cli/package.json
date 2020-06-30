@@ -1,22 +1,37 @@
 {
-  "name": "nest-typescript-starter",
-  "private": true,
-  "version": "1.0.0",
-  "description": "Nest TypeScript starter repository",
+  "name": "@loaders.gl/cli",
+  "version": "0.1.0",
+  "description": "Converter",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/visgl/loaders.gl"
+  },
+  "keywords": [
+    "converter",
+    "3dTiles",
+    "i3s"
+  ],
+  "main": "dist/es5/index.js",
+  "module": "dist/esm/index.js",
+  "esnext": "dist/es6/index.js",
+  "sideEffects": false,
+  "bin": {
+    "converter": "./bin/converter.js"
+  },
+  "files": [
+    "src",
+    "dist",
+    "bin",
+    "README.md"
+  ],
   "scripts": {
-    "prebuild": "rimraf dist",
-    "build": "nest build",
-    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "console:dev": "node -r ts-node/register -r tsconfig-paths/register src/console.ts",
-    "console:debug": "node --inspect-brk -r ts-node/register -r tsconfig-paths/register src/console.ts",
-    "console": "node dist/console",
-    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:cov": "jest --coverage",
-    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "pre-build": "npm run build-bin && npm run build-bundle && npm run build-bundle -- --env.dev",
+    "build-bundle": "webpack --display=minimal --config ../../scripts/bundle.config.js",
+    "build-bin": "BABEL_ENV=es5 babel scripts --config-file ../../babel.config.js --out-dir dist/scripts"
   },
   "dependencies": {
     "@loaders.gl/3d-tiles": "^2.1.6",
@@ -26,53 +41,6 @@
     "@loaders.gl/tiles": "^2.1.6",
     "@math.gl/core": "^3.2.1",
     "@math.gl/geospatial": "^3.2.1",
-    "@nestjs/common": "^7.1.1",
-    "@nestjs/core": "^7.1.1",
-    "@nestjs/platform-express": "^7.1.1",
-    "commander": "^5.1.0",
-    "nestjs-console": "^3.0.6",
-    "reflect-metadata": "^0.1.13",
-    "rimraf": "^3.0.2",
-    "rxjs": "^6.5.5",
     "uuid": "^8.1.0"
-  },
-  "devDependencies": {
-    "@nestjs/cli": "^7.2.0",
-    "@nestjs/schematics": "^7.0.0",
-    "@nestjs/testing": "^7.1.1",
-    "@types/express": "^4.17.6",
-    "@types/jest": "^25.2.3",
-    "@types/node": "^14.0.6",
-    "@types/supertest": "^2.0.9",
-    "@typescript-eslint/eslint-plugin": "^3.0.2",
-    "@typescript-eslint/parser": "^3.0.2",
-    "eslint": "^7.1.0",
-    "eslint-config-prettier": "^6.11.0",
-    "eslint-plugin-import": "^2.20.2",
-    "jest": "^26.0.1",
-    "prettier": "^2.0.5",
-    "supertest": "^4.0.2",
-    "ts-jest": "^26.1.0",
-    "ts-loader": "^7.0.5",
-    "ts-node": "^8.10.2",
-    "tsconfig-paths": "^3.9.0",
-    "typescript": "^3.9.3"
-  },
-  "jest": {
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "ts"
-    ],
-    "rootDir": "src",
-    "testRegex": ".spec.ts$",
-    "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
-    },
-    "collectCoverageFrom": [
-      "**/*.(t|j)s"
-    ],
-    "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
   }
 }

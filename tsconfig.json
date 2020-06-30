@@ -20,6 +20,7 @@
       "@loaders.gl/polyfills/*": ["modules/polyfills/src/*"],
       "@loaders.gl/polyfills/test": ["modules/polyfills/test"],
 
+      "@loaders.gl/cli/*": ["modules/cli/src/*"],
       "@loaders.gl/3d-tiles/*": ["modules/3d-tiles/src/*"],
       "@loaders.gl/3d-tiles/test": ["modules/3d-tiles/test"],
       "@loaders.gl/arrow/*": ["modules/arrow/src/*"],
