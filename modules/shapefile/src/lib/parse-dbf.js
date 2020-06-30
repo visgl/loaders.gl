@@ -94,22 +94,23 @@ function parseRow(view, fields, textDecoder) {
   return out;
 }
 
+// Should NaN be coerced to null?
 function parseField(text, dataType) {
   switch (dataType) {
     case 'B':
-      return Number(text);
+      return parseNumber(text);
     case 'C':
-      return text.trim() || null;
+      return parseCharacter(text);
     case 'F':
-      return Number(text);
+      return parseNumber(text);
     case 'N':
-      return Number(text);
+      return parseNumber(text);
     case 'O':
-      return Number(text);
+      return parseNumber(text);
     case 'D':
       return parseDate(text);
     case 'L':
-      return readBoolean(text);
+      return parseBoolean(text);
     default:
       throw new Error('Unsupported data type');
   }
@@ -124,6 +125,16 @@ function parseDate(str) {
 // any of Y, y, T, t coerce to true
 // any of N, n, F, f coerce to false
 // otherwise null
-function readBoolean(value) {
+function parseBoolean(value) {
   return /^[nf]$/i.test(value) ? false : /^[yt]$/i.test(value) ? true : null;
+}
+
+// Return null instead of NaN
+function parseNumber(text) {
+  const number = Number(text);
+  return isNaN(number) ? null : number;
+}
+
+function parseCharacter(text) {
+  return text.trim() || null;
 }

@@ -25,6 +25,6 @@ export const DBFWorkerLoader = {
 /** @type {LoaderObject} */
 export const DBFLoader = {
   ...DBFWorkerLoader,
-  parse: async (arrayBuffer, options) => parseDBF(arrayBuffer),
+  parse: async (arrayBuffer, options) => parseDBF(arrayBuffer, options),
   parseSync: parseDBF
 };
