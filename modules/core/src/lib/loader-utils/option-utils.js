@@ -128,7 +128,6 @@ function validateOptionsObject(options, id, log, defaultOptions, deprecatedOptio
   }
 }
 
-// TODO - Look for similar options
 function findSimilarOption(optionKey, loaders) {
   const lowerCaseOptionKey = optionKey.toLowerCase();
   let bestSuggestion = '';
