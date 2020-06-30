@@ -6,11 +6,12 @@ const DEFAULT_LOADER_OPTIONS = {
   CDN: 'https://unpkg.com/@loaders.gl',
   worker: true, // By default, use worker if provided by loader
   log: new ConsoleLog(), // A probe.gl compatible (`log.log()()` syntax) that just logs to console
-  dataType: 'arraybuffer', // TODO - explain why this option is needed for parsing
-  metadata: false // TODO - currently only implemented for parseInBatches, adds initial metadata batch
+  metadata: false // TODO - currently only implemented for parseInBatches, adds initial metadata batch,
 };
 
 const DEPRECATED_LOADER_OPTIONS = {
+  dataType: "(no longer used)",
+  uri: 'baseUri'
 };
 
 // Helper to reliably get global loader state
@@ -59,8 +60,11 @@ export function getOptions(options = {}) {
 }
 
 // Merges options with global opts and loader defaults, also injects baseUri
-export function normalizeOptions(options, loader, candidateLoaders = [], url) {
-  validateLoaderOptions(options, loader);
+export function normalizeOptions(options, loader, loaders, url) {
+  loaders = loaders || [];
+  loaders = Array.isArray(loaders) ? loaders : [loaders];
+
+  validateOptions(options, loaders);
   return normalizeOptionsInternal(loader, options, url);
 }
 
@@ -69,31 +73,32 @@ export function normalizeOptions(options, loader, candidateLoaders = [], url) {
 /**
  * Warn for unsupported options
  * @param {object} options
- * @param {*} loader
+ * @param {*} loaders
  * @param {*} log
  */
-// eslint-disable-next-line complexity
-function validateLoaderOptions(
+function validateOptions(
   options,
-  loader,
+  loaders,
   // eslint-disable-next-line
   log = console
 ) {
   // Check top level options
-  validateOptionsObject(options, null, log, DEFAULT_LOADER_OPTIONS, DEPRECATED_LOADER_OPTIONS);
+  validateOptionsObject(options, null, log, DEFAULT_LOADER_OPTIONS, DEPRECATED_LOADER_OPTIONS, loaders);
 
-  // Get the scoped, loader specific options from the user supplied options
-  const idOptions = (options && options[loader.id]) || {};
+  for (const loader of loaders) {
+    // Get the scoped, loader specific options from the user supplied options
+    const idOptions = (options && options[loader.id]) || {};
 
-  // Get scoped, loader specific default and deprecated options from the selected loader
-  const loaderOptions = (loader.options && loader.options[loader.id]) || {};
-  const deprecatedOptions = (loader.defaultOptions && loader.defaultOptions[loader.id]) || {};
+    // Get scoped, loader specific default and deprecated options from the selected loader
+    const loaderOptions = (loader.options && loader.options[loader.id]) || {};
+    const deprecatedOptions = (loader.defaultOptions && loader.defaultOptions[loader.id]) || {};
 
-  // Validate loader specific options
-  validateOptionsObject(idOptions, loader.id, log, loaderOptions, deprecatedOptions);
+    // Validate loader specific options
+    validateOptionsObject(idOptions, loader.id, log, loaderOptions, deprecatedOptions, loaders);
+  }
 }
 
-function validateOptionsObject(options, id, log, defaultOptions, deprecatedOptions) {
+function validateOptionsObject(options, id, log, defaultOptions, deprecatedOptions, loaders) {
   const loaderName = id || 'Top level';
   const prefix = id ? `${id}.` : '';
 
@@ -103,13 +108,32 @@ function validateOptionsObject(options, id, log, defaultOptions, deprecatedOptio
       // Issue deprecation warnings
       if (key in deprecatedOptions) {
         log.warn(
-          `${loaderName} loader option ${prefix}${key} deprecated, use ${deprecatedOptions[key]}`
+          `${loaderName} loader option \'${prefix}${key}\' deprecated, use \'${deprecatedOptions[key]}\'`
         );
       } else {
-        log.warn(`${loaderName} loader option ${prefix}${key} not recognized`);
+        const suggestion = findSimilarOption(key, loaders);
+        log.warn(`${loaderName} loader option \'${prefix}${key}\' not recognized. ${suggestion}`);
       }
     }
   }
+}
+
+// TODO - Look for similar options
+function findSimilarOption(optionKey, loaders) {
+  const lowerCaseOptionKey = optionKey.toLowerCase();
+  let bestSuggestion = '';
+  for (const loader of loaders) {
+    for (const key in loader.options) {
+      if (optionKey === key) {
+        return `Did you mean \'${loader.id}.${key}\'?`;
+      }
+      const lowerCaseKey = key.toLowerCase();
+      if (optionKey.startsWith(lowerCaseKey) || lowerCaseKey.startsWith(optionKey)) {
+        bestSuggestion = bestSuggestion || `Did you mean \'${loader.id}.${key}\'?`;
+      }
+    }
+  }
+  return bestSuggestion;
 }
 
 function normalizeOptionsInternal(loader, options, url) {

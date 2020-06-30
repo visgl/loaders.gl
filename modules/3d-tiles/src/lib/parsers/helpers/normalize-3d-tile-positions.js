@@ -11,7 +11,7 @@ export function normalize3DTilePositionAttribute(tile, positions, options) {
   // https://github.com/AnalyticalGraphicsInc/3d-tiles/blob/master/specification/TileFormats/Instanced3DModel/README.md#quantized-positions
 
   // Optionally decodes quantized positions on GPU, for simpler renderers that don't accept normalized attributes
-  if (options.decodeQuantizedPositions) {
+  if (options['3d-tiles'] && options['3d-tiles'].decodeQuantizedPositions) {
     tile.isQuantized = false;
     return decodeQuantizedPositions(tile, positions);
   }

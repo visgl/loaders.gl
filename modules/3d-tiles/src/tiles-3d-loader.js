@@ -38,10 +38,10 @@ async function parseTileset(data, options, context) {
 
 async function parse(data, options, context, loader) {
   // auto detect file type
-  const loaderOptions = options['3d-tiles'] || {};
+  const tile3dOptions = options['3d-tiles'] || {};
   let isTileset;
-  if ('isTileset' in loaderOptions) {
-    isTileset = loaderOptions.isTileset;
+  if ('isTileset' in tile3dOptions) {
+    isTileset = tile3dOptions.isTileset;
   } else {
     isTileset = context.url && context.url.indexOf('.json') !== -1;
   }
