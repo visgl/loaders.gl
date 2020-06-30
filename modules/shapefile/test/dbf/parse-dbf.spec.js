@@ -5,6 +5,8 @@ import {fetchFile} from '@loaders.gl/core';
 const SHAPEFILE_JS_DATA_FOLDER = '@loaders.gl/shapefile/test/data/shapefile-js';
 const SHAPEFILE_JS_TEST_FILES = [
   'boolean-property',
+  'date-property',
+  // 'latin1-property' // fails on 'México'
   'mixed-properties',
   'multipoints',
   'null',
@@ -15,8 +17,6 @@ const SHAPEFILE_JS_TEST_FILES = [
   'polylines',
   'string-property',
   'utf8-property'
-  // 'latin1-property' fails on 'México'
-  // 'date-property' need to coerce json from str to date
 ];
 
 test('Shapefile JS DBF tests', async t => {
