@@ -75,8 +75,7 @@ Note that many other data sources can also be parsed by first converting them to
 
 ## Remarks
 
-| Option                       | Type                                 | Default | Description                                                                                                                                           |
-| ---------------------------- | ------------------------------------ | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `options.metadata`           | `boolean`                            | `false` | An initial batch with `batchType: 'metadata'` will be added with information about the data being loaded.                                             |
-| `options.batches.chunkSize?` | `number`                             | N/A     | When set, "atomic" inputs (like `ArrayBuffer` or `string`) are chunked, enabling batched parsing.                                                     | No effect if input is already an iterator or stream. |
-| `options.fetch`              | `object | (url: string) => Response` | `{}`    | Specifies either an object with options to pass to `fetchFile`, or a function that is called in place of `fetchFile` to fetch data in any subloaders. |
+| Option                       | Type      | Default | Description                                                                                               |
+| ---------------------------- | --------- | ------- | --------------------------------------------------------------------------------------------------------- |
+| `options.metadata`           | `boolean` | `false` | An initial batch with `batchType: 'metadata'` will be added with information about the data being loaded. |
+| `options.batches.chunkSize?` | `number`  | N/A     | When set, "atomic" inputs (like `ArrayBuffer` or `string`) are chunked, enabling batched parsing.         | No effect if input is already an iterator or stream. |

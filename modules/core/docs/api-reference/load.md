@@ -27,9 +27,13 @@ Notes:
 
 ## Options
 
-An object that can contain a mix of options accepted by:
+A loader object, that can contain a mix of options defined by:
 
-- the `parse` function
 - any loader(s) being used
+- the `parse` function
 
-Please refer to the corresponding documentation pages for details.
+In addition to the following options
+
+| Option             | Type   | Default       | Description                                                      |
+| ------------------ | ------ | ------------- | ---------------------------------------------------------------- |
+| `options.dataType` | string | `arraybuffer` | Default depends on loader object. Set to 'text' to read as text. |

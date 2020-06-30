@@ -11,19 +11,6 @@ const DEFAULT_LOADER_OPTIONS = {
 };
 
 const DEPRECATED_LOADER_OPTIONS = {
-  // Warn if fetch options are used on top-level
-  method: 'fetch.method',
-  headers: 'fetch.headers',
-  body: 'fetch.body',
-  mode: 'fetch.mode',
-  credentials: 'fetch.credentials',
-  cache: 'fetch.cache',
-  redirect: 'fetch.redirect',
-  referrer: 'fetch.referrer',
-  referrerPolicy: 'fetch.referrerPolicy',
-  integrity: 'fetch.integrity',
-  keepalive: 'fetch.keepalive',
-  signal: 'fetch.signal'
 };
 
 // Helper to reliably get global loader state

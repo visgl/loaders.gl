@@ -7,7 +7,6 @@ Target Release Date: TBD (alpha releases will be made available)
 **@loaders.gl/core**
 
 - `parseInBatches` can now be called on all loaders. Non-batched loaders will just return a single batch.
-- `load`, `parse` etc: `options.fetch` can now be used to supply a either a custom `fetch` function or a `fetch` options object.
 
 **@loaders.gl/polyfills**
 

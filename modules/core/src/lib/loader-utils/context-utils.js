@@ -11,7 +11,7 @@ export function getLoaderContext(context, options, previousContext = null) {
   }
 
   context = {
-    fetch: getFetchFunction(options || {}, context),
+    fetch: context.fetch || fetchFile,
     ...context
   };
 
@@ -40,20 +40,4 @@ export function getLoaders(loaders, context) {
   }
   // If no loaders, return null to look in globally registered loaders
   return candidateLoaders && candidateLoaders.length ? candidateLoaders : null;
-}
-
-export function getFetchFunction(options, context) {
-  switch (typeof options.fetch) {
-    case 'function':
-      return options.fetch;
-    case 'object':
-      return url => fetchFile(url, options.fetch);
-    default:
-      if (context && context.fetch) {
-        return context.fetch;
-      }
-      // TODO DEPRECATED, support for root level fetch options will be removed in 3.0
-      return url => fetchFile(url, options);
-    // return fetchFile;
-  }
 }
