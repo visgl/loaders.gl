@@ -9,7 +9,10 @@ const SHAPEFILE_JS_TEST_FILES = [
   'polygons',
   'polylines',
   'mixed-properties',
-  'boolean-property'
+  'boolean-property',
+  'null',
+  'number-null-property',
+  'number-property'
   // 'date-property' need to coerce json from str to date
 ];
 
@@ -23,7 +26,7 @@ test('Shapefile JS DBF tests', async t => {
     const {features} = await response.json();
 
     for (let i = 0; i < features.length; i++) {
-      t.deepEqual(output[i], features[i].properties);
+      t.deepEqual(output[i], features[i].properties, testFileName);
     }
   }
 

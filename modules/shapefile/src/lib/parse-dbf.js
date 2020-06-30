@@ -13,12 +13,12 @@ export default function parseDbf(arrayBuffer, options) {
   // Row headers
   const textDecoder = new TextDecoder(encoding);
   const colHeaderView = new DataView(arrayBuffer, 32, headerLength - 32);
-  const colHeaders = parseColumnHeaders(colHeaderView, textDecoder);
+  const fields = parseColumnHeaders(colHeaderView, textDecoder);
 
   // Not exactly sure why start offset needs to be headerLength + 1?
-  // parsedbf uses ((colHeaders.length + 1) << 5) + 2;
+  // parsedbf uses ((fields.length + 1) << 5) + 2;
   const recordsView = new DataView(arrayBuffer, headerLength + 1);
-  return parseRows(recordsView, colHeaders, nRecords, recordLength, textDecoder);
+  return parseRows(recordsView, fields, nRecords, recordLength, textDecoder);
 }
 
 function parseHeader(headerView) {
@@ -131,7 +131,7 @@ function parseBoolean(value) {
 
 // Return null instead of NaN
 function parseNumber(text) {
-  const number = Number(text);
+  const number = parseFloat(text);
   return isNaN(number) ? null : number;
 }
 
