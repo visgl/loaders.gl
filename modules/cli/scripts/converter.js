@@ -4,8 +4,6 @@ const { Converter3dTilesToI3S } = require('@loaders.gl/cli');
 import "@loaders.gl/polyfills";
 
 
-const MAX_LENGTH = 76;
-
 function printHelp() {
   console.log('cli: converter 3dTiles to I3S...');
   console.log('--tileset [tileset.json file]');
