@@ -4,7 +4,7 @@
   <img src="https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square" alt="From-v2.3" />
 </p>
 
-Shapefile loader
+Shapefile loader: DBF (attributes)
 
 | Loader                | Characteristic                               |
 | --------------------- | -------------------------------------------- |
@@ -18,25 +18,30 @@ Shapefile loader
 
 ## Usage
 
+The `DBFLoader` parses feature attributes from the Shapefile format.
+
 ```js
 import {DBFLoader} from '@loaders.gl/shapefile';
 import {load} from '@loaders.gl/core';
 
-const data = await load(url, DBFLoader);
+const options = {
+  dbf: {
+    encoding: 'utf8'
+  }
+};
+const data = await load(url, DBFLoader, options);
+// [{foo: null}, {foo: 'blue'}, {foo: 'green'}];
 ```
 
 ## Options
 
-- `encoding`: text encoding of DBF file. For Shapefiles, there's often a `.cpg` file designating the encoding used.
+- `encoding`: text encoding of DBF file: usually either `utf8`, or `ascii`/`windows-1252`. For Shapefiles, there's often a `.cpg` file designating the encoding used.
 
 ## Format Summary
 
-ESRI Shapefiles are the historical standard for storing Geospatial vector data.
-The format has been around since the late 90s, so a huge amount of data is in
-this format.
-
-The Shapefile format consists of a number of files that are designed to be kept
-together: `.shp`, `.shx`, `.dbf`, and possibly others.
+ESRI Shapefiles are a popular file format for storing geospatial vector data.
+The format consists of a number of files that must be stored together and with
+the same file name.
 
 ## References:
 
