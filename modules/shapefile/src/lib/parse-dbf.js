@@ -74,7 +74,7 @@ function parseRows(view, fields, nRecords, recordLength, textDecoder) {
   const rows = [];
   for (let i = 0; i < nRecords; i++) {
     const offset = i * recordLength;
-    const recordView = new DataView(view.buffer, view.byteOffset + offset, recordLength);
+    const recordView = new DataView(view.buffer, view.byteOffset + offset, recordLength - 1);
     rows.push(parseRow(recordView, fields, textDecoder));
   }
   return rows;
