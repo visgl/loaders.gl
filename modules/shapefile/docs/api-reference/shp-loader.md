@@ -31,9 +31,7 @@ N/A
 
 ## Format Summary
 
-ESRI Shapefiles are the historical standard for storing Geospatial vector data.
-The format has been around since the late 90s, so a huge amount of data is in
-this format.
-
-The Shapefile format consists of a number of files that are designed to be kept
-together: `.shp`, `.shx`, `.dbf`, and possibly others.
+ESRI Shapefiles are a popular file format for storing geospatial vector data.
+The format consists of a number of files that must be stored together and with
+the same file name. Files with extensions `.shp`, `.shx`, `.dbf` must exist;
+additional files with other extensions such as `.prj` and `.cpg` may exist.

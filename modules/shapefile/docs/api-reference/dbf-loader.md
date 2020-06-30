@@ -41,7 +41,8 @@ const data = await load(url, DBFLoader, options);
 
 ESRI Shapefiles are a popular file format for storing geospatial vector data.
 The format consists of a number of files that must be stored together and with
-the same file name.
+the same file name. Files with extensions `.shp`, `.shx`, `.dbf` must exist;
+additional files with other extensions such as `.prj` and `.cpg` may exist.
 
 ## References:
 
