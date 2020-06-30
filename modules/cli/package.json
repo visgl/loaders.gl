@@ -1,0 +1,46 @@
+{
+  "name": "@loaders.gl/cli",
+  "version": "0.1.0",
+  "description": "Converter",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/visgl/loaders.gl"
+  },
+  "keywords": [
+    "converter",
+    "3dTiles",
+    "i3s"
+  ],
+  "main": "dist/es5/index.js",
+  "module": "dist/esm/index.js",
+  "esnext": "dist/es6/index.js",
+  "sideEffects": false,
+  "bin": {
+    "converter": "./bin/converter.js"
+  },
+  "files": [
+    "src",
+    "dist",
+    "bin",
+    "README.md"
+  ],
+  "scripts": {
+    "pre-build": "npm run build-bin && npm run build-bundle && npm run build-bundle -- --env.dev",
+    "build-bundle": "webpack --display=minimal --config ../../scripts/bundle.config.js",
+    "build-bin": "BABEL_ENV=es5 babel scripts --config-file ../../babel.config.js --out-dir dist/scripts"
+  },
+  "dependencies": {
+    "@loaders.gl/3d-tiles": "^2.1.6",
+    "@loaders.gl/core": "^2.1.6",
+    "@loaders.gl/i3s": "^2.1.6",
+    "@loaders.gl/polyfills": "^2.1.6",
+    "@loaders.gl/tiles": "^2.1.6",
+    "@math.gl/core": "^3.2.1",
+    "@math.gl/geospatial": "^3.2.1",
+    "uuid": "^8.1.0"
+  }
+}
