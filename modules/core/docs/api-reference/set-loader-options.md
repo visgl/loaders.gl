@@ -1,8 +1,10 @@
 # setLoaderOptions
 
+Set the supplied options onto the current global options object
+
 ## Usage
 
-Bundling the entire `draco3d` library:
+Bundling the entire `draco3d` library (instead of loading it on-demand from CDN):
 
 ```js
 import draco from 'draco3d';
@@ -18,15 +20,11 @@ setLoaderOptions({
 
 ### setLoaderOptions(options : Object) : void
 
-Merge the options with the global options
+Merges the supplied options into the current global options
 
 ## Options
 
-Top-level options
+A loader object, that can contain a mix of options:
 
-| Option            | Type    | Default   | Description                                                                                                              |
-| ----------------- | ------- | --------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `options.log`     | object  | `console` | By default set to a `console` wrapper. Setting log to `null` will turn off logging.                                      |
-| `options.worker`  | boolean | `true`    | If the selected loader is equipped with a worker url (and the runtime environment supports it) parse on a worker thread. |
-| `options.cdn`     | boolean | string    | `true`                                                                                                                   | `true` loads from `unpkg.com/@loaders.gl`. `false` load from local urls. `string` alternate CDN url. |
-| `options.modules` | Object  | -         | Supply bundles modules or override local urls.                                                                           |
+- options defined by the `parse` function can be specified here. See the documentation page for `parse`.
+- options specific to any loaders can also be added. See the documentation pages for each loader.

@@ -11,8 +11,6 @@ import {parseComposite3DTile} from './parse-3d-tile-composite';
 
 // Extracts
 export async function parse3DTile(arrayBuffer, byteOffset = 0, options, context, tile = {}) {
-  options = options['3d-tiles'] || {};
-
   tile.byteOffset = byteOffset;
   tile.type = getMagicString(arrayBuffer, byteOffset);
 

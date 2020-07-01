@@ -50,9 +50,11 @@ export function parse3DTileGLTFViewSync(tile, arrayBuffer, byteOffset) {
 }
 
 export async function extractGLTF(tile, gltfFormat, options, context) {
+  const tile3DOptions = options['3d-tiles'] || {};
+
   extractGLTFBufferOrURL(tile, gltfFormat, options);
 
-  if (options.loadGLTF) {
+  if (tile3DOptions.loadGLTF) {
     const {parse, fetch} = context;
     if (tile.gltfUrl) {
       tile.gltfArrayBuffer = await fetch(tile.gltfUrl, options);

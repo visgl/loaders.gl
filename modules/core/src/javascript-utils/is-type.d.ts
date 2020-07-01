@@ -1,4 +1,5 @@
 export function isObject(value: any): boolean;
+export function isPureObject(value: any): boolean;
 export function isPromise(value: any): boolean;
 
 export function isIterable(value: any): boolean;
