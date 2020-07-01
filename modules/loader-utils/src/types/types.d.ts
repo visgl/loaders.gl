@@ -48,7 +48,7 @@ export type LoaderContext = {
 export type SyncDataType = string | ArrayBuffer; // TODO File | Blob can be read synchronously...
 
 /** Types that can be parsed async */
-export type DataType = string | ArrayBuffer | Response | File | Blob;
+export type DataType = string | ArrayBuffer | File | Blob | Response | ReadableStream;
 
 /** Types that can be parsed in batches */
 export type BatchableDataType =

@@ -90,7 +90,11 @@ Note that additional data types can be converted to `Response` objects and used 
 
 Top-level options
 
-| Option           | Type    | Default   | Description                                                                                                              |
-| ---------------- | ------- | --------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `options.log`    | object  | `console` | By default set to a `console` wrapper. Setting log to `null` will turn off logging.                                      |
-| `options.worker` | boolean | `true`    | If the selected loader is equipped with a worker url (and the runtime environment supports it) parse on a worker thread. |
+| Option                           | Type    | Default    | Description                                                                                                                                    |
+| -------------------------------- | ------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `options.metadata`               | boolean | `false`    | Currently only implemented for `parseInBatches`, adds initial metadata batch                                                                   |
+| `options.log`                    | object  | `console`  | By default set to a `console` wrapper. Setting log to `null` will turn off logging.                                                            |
+| `options.worker`                 | boolean | `true`     | If the selected loader is equipped with a worker url (and the runtime environment supports it) parse on a worker thread.                       |
+| `options.<loader-id>.workerUrl`  | string  | per-loader | If the corresponding loader can parse on a worker, the url to the worker script can be controller with this option.                            |
+| `options.modules` (experimental) | object  | -          | Supply bundled modules (like draco3d) instead of loading from CDN.                                                                             |
+| `options.CDN` (experimental)     | string  | -          | Controls certain script loading from CDN. `true` loads from `unpkg.com/@loaders.gl`. `false` load from local urls. `string` alternate CDN url. |

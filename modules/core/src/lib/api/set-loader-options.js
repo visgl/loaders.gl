@@ -1,4 +1,4 @@
-import {setGlobalOptions} from '../loader-utils/merge-options';
+import {setGlobalOptions} from '../loader-utils/option-utils';
 
 // Set global loader options
 export function setLoaderOptions(options) {

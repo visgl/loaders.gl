@@ -179,7 +179,7 @@ var utils = {
             }
         }
     },
-    mergeOptions: function mergeOptions(defaultOptions, userOptions) {
+    normalizeOptions: function normalizeOptions(defaultOptions, userOptions) {
         if (!utils.isObject(defaultOptions) || !utils.isObject(userOptions) || !Object.keys) {
             return;
         }
@@ -199,7 +199,7 @@ var utils = {
                 if (!defaultOptions[key]) {
                     newObj[key] = currentUserOption;
                 } else {
-                    newObj[key] = utils.mergeOptions(defaultOptions[key], currentUserOption);
+                    newObj[key] = utils.normalizeOptions(defaultOptions[key], currentUserOption);
                 }
             }
         });
@@ -2714,14 +2714,14 @@ function createGIF(userOptions, callback) {
     return;
   }
 
-  var options = utils.mergeOptions(defaultOptions, userOptions) || {};
+  var options = utils.normalizeOptions(defaultOptions, userOptions) || {};
   var lastCameraStream = userOptions.cameraStream;
   var images = options.images;
   var imagesLength = images ? images.length : 0;
   var video = options.video;
   var webcamVideoElement = options.webcamVideoElement;
 
-  options = utils.mergeOptions(options, {
+  options = utils.normalizeOptions(options, {
     'gifWidth': Math.floor(options.gifWidth),
     'gifHeight': Math.floor(options.gifHeight)
   });
@@ -2769,8 +2769,8 @@ function takeSnapShot(userOptions, callback) {
         return;
     }
 
-    var mergedOptions = utils.mergeOptions(defaultOptions, userOptions);
-    var options = utils.mergeOptions(mergedOptions, {
+    var mergedOptions = utils.normalizeOptions(defaultOptions, userOptions);
+    var options = utils.normalizeOptions(mergedOptions, {
         'interval': .1,
         'numFrames': 1,
         'gifWidth': Math.floor(mergedOptions.gifWidth),
