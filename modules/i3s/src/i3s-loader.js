@@ -42,7 +42,11 @@ const I3SLoader = {
   extensions: ['bin'],
   options: {
     i3s: {
-      loadContent: true
+      loadContent: true,
+      isTileset: 'auto',
+      isTileHeader: 'auto',
+      tile: null,
+      tileset: null
     }
   }
 };
@@ -53,17 +57,17 @@ async function parse(data, options, context, loader) {
 
   // auto detect file type based on url
   let isTileset;
-  if ('isTileset' in options.i3s) {
-    isTileset = options.i3s.isTileset;
-  } else {
+  if (options.i3s.isTileset === 'auto') {
     isTileset = TILESET_REGEX.test(url.pathname);
+  } else {
+    isTileset = options.i3s.isTileset;
   }
 
   let isTileHeader;
-  if ('isTileHeader' in options.i3s) {
-    isTileHeader = options.i3s.isTileHeader;
-  } else {
+  if (options.isTileHeader === 'auto') {
     isTileHeader = TILE_HEADER_REGEX.test(url.pathname);
+  } else {
+    isTileHeader = options.i3s.isTileHeader;
   }
 
   if (isTileset) {

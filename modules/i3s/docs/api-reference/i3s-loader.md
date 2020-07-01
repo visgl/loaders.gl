@@ -1,5 +1,9 @@
 # I3SLoader
 
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v2.1-blue.svg?style=flat-square" alt="From-v2.1" />
+</p>
+
 > The `I3SLoader` is experimental. Currently only support I3S `MeshPyramids` data format.
 
 A loader for loading an [Indexed 3d Scene (I3S) layer](https://github.com/Esri/i3s-spec), and its geometries and textures data.
@@ -27,7 +31,7 @@ As an I3S tileset contains multiple file formats, `I3SLoader` is needed to be ex
 
 **Load I3S tileset and render with [deck.gl](https://deck.gl/#/)**
 
-A simple react app uses `I3SLoader` to load [San Francisco Buildings](https://www.arcgis.com/home/item.html?id=d3344ba99c3f4efaa909ccfbcc052ed5), render with [deck.gl's](https://deck.gl/) [`Tile3Dlayer`](https://deck.gl/#/documentation/deckgl-api-reference/layers/tile-3d-layer) and dynamically load/unload tiles based on current viewport and adjust the level of details when zooming in and out.
+A simple react app umodules/3d-tiles/src/tiles-3d-loader.jsses `I3SLoader` to load [San Francisco Buildings](https://www.arcgis.com/home/item.html?id=d3344ba99c3f4efaa909ccfbcc052ed5), render with [deck.gl's](https://deck.gl/) [`Tile3Dlayer`](https://deck.gl/#/documentation/deckgl-api-reference/layers/tile-3d-layer) and dynamically load/unload tiles based on current viewport and adjust the level of details when zooming in and out.
 
 <table style="border: 0;" align="center">
   <tbody>
@@ -157,8 +161,8 @@ const visibleTiles = tileset3d.tiles.filter(tile => tile.selected);
 
 | Option                     | Type             | Default | Description                                                                                                                                                                                                                                                                                                                     |
 | -------------------------- | ---------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `options.i3s.isTileset`    | `Bool` or `null` | `null`  | Whether to load `Tileset` (Layer 3D Index) file. If not specifies, will decide if follow `ArcGIS` tile layers' url convention                                                                                                                                                                                                   |
-| `options.i3s.isTileHeader` | `Bool` or `null` | `null`  | Whether to load `TileHeader`(node) file. If not specifies, will decide if follow `argis` url convention                                                                                                                                                                                                                         |
+| `options.i3s.isTileset`    | `Bool` or `auto` | `auto`  | Whether to load `Tileset` (Layer 3D Index) file. If `auto`, will decide if follow `ArcGIS` tile layers' url convention                                                                                                                                                                                                          |
+| `options.i3s.isTileHeader` | `Bool` or `auto` | `auto`  | Whether to load `TileHeader`(node) file. If `auto`, will decide if follow `argis` url convention                                                                                                                                                                                                                                |
 | `options.i3s.loadContent`  | `Bool`           | `true`  | Whether to load tile content (geometries, texture, etc.). Note: I3S dataset, each tile node has separate urls pointing to tile metadata and its actual tile payload. If `loadContent` is true, i3s loader will make a request to fetch the content fiile and decoded to the format as specified in [Tile Object](#tile-object). |
 | `options.i3s.tileset`      | `Object`         | `null`  | `Tileset` object loaded by I3SLoader or follow the data format specified in [Tileset Object](#tileset-object). It is required when loading i3s geometry content                                                                                                                                                                 |
 | `options.i3s.tile`         | `Object`         | `null`  | `Tile` object loaded by I3SLoader or follow the data format [Tile Object](#tile-object). It is required when loading i3s geometry content                                                                                                                                                                                       |

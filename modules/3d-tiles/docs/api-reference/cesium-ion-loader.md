@@ -43,10 +43,12 @@ const visibleTiles = tileset3d.tiles.filter(tile => tile.selected);
 
 Inherit all the options from `Tiles3DLoader`.
 
-| Option                     | Type   | Default | Description                                                                            |
-| -------------------------- | ------ | ------- | -------------------------------------------------------------------------------------- |
-| `['cesium-ion'].isTileset` | Bool   | `false` | Whether to load a `Tileset` file. If not specifies, will infer based on url extension. |
-| `['cesium-ion'].headers`   | Object | `null`  | Used to load data from server                                                          |
+| Option                     | Type           | Default | Description                                                                                                                                                           |
+| -------------------------- | -------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `['cesium-ion'].isTileset` | Bool or `auto` | `auto`  | Whether to load a `Tileset` file. If `auto`, will infer based on url extension.                                                                                       |
+| `['cesium-ion'].headers`   | Object         | `null`  | Used to load data from server                                                                                                                                         |
+| `['cesium-ion'].tileset`   | `Object`       | `null`  | `Tileset` object loaded by `Tiles3DLoader` or follow the data format specified in [Tileset Object](#tileset-object). It is required when loading i3s geometry content |
+| `['cesium-ion'].tile`      | `Object`       | `null`  | `Tile` object loaded by `Tiles3DLoader` or follow the data format [Tile Object](#tile-object). It is required when loading i3s geometry content                       |
 
 To enable parsing of DRACO compressed point clouds and glTF tiles, make sure to first register the [DracoLoader](/docs/api-reference/draco/draco-loader).
 

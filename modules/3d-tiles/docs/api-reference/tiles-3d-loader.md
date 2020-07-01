@@ -1,5 +1,9 @@
 # Tiles3DLoader
 
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v2.1-blue.svg?style=flat-square" alt="From-v2.1" />
+</p>
+
 Parses a [3D tile](https://github.com/AnalyticalGraphicsInc/3d-tiles).
 
 | Loader                | Characteristic                                                                                                     |
@@ -66,10 +70,12 @@ const visibleTiles = tileset3d.tiles.filter(tile => tile.selected);
 
 ## Options
 
-| Option               | Type   | Default | Description                                                                            |
-| -------------------- | ------ | ------- | -------------------------------------------------------------------------------------- |
-| `3d-tiles.isTileset` | Bool   | `false` | Whether to load a `Tileset` file. If not specifies, will infer based on url extension. |
-| `3d-tiles.headers`   | Object | null    | Used to load data from server                                                          |
+| Option               | Type             | Default | Description                                                                                                                                                           |
+| -------------------- | ---------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `3d-tiles.isTileset` | `Bool` or `auto` | `auto`  | Whether to load a `Tileset` file. If `auto`, will infer based on url extension.                                                                                       |
+| `3d-tiles.headers`   | Object           | null    | Used to load data from server                                                                                                                                         |
+| `3d-tiles.tileset`   | `Object`         | `null`  | `Tileset` object loaded by `Tiles3DLoader` or follow the data format specified in [Tileset Object](#tileset-object). It is required when loading i3s geometry content |
+| `3d-tiles.tile`      | `Object`         | `null`  | `Tile` object loaded by `Tiles3DLoader` or follow the data format [Tile Object](#tile-object). It is required when loading i3s geometry content                       |
 
 To enable parsing of DRACO compressed point clouds and glTF tiles, make sure to first register the [DracoLoader](/docs/api-reference/draco/draco-loader).
 

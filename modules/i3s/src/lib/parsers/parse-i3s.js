@@ -41,7 +41,7 @@ export async function normalizeTilesetData(tileset, options, context) {
   const rootNodeUrl = getUrlWithToken(`${tileset.url}/nodes/root`, options.token);
   // eslint-disable-next-line no-use-before-define
   tileset.root = await load(rootNodeUrl, tileset.loader, {
-    i3s: {loadContent: false, isHeader: true}
+    i3s: {loadContent: false, isTileHeader: true, isTileset: false}
   });
 
   // base path that non-absolute paths in tileset are relative to.

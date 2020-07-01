@@ -17,18 +17,6 @@ function defined(x) {
   return x !== undefined && x !== null;
 }
 
-function updatePriority(tile) {
-  // Check if any reason to abort
-  if (!tile.isVisible) {
-    return -1;
-  }
-  if (tile.contentState === TILE_CONTENT_STATE.UNLOADED) {
-    return -1;
-  }
-
-  return Math.max(1e7 - tile._priority, 0) || 0;
-}
-
 // A Tile3DHeader represents a tile as Tileset3D. When a tile is first created, its content is not loaded;
 // the content is loaded on-demand when needed based on the view.
 // Do not construct this directly, instead access tiles through {@link Tileset3D#tileVisible}.
@@ -81,6 +69,8 @@ export default class TileHeader {
     // TODO Cesium 3d tiles specific
     this._expireDate = null;
     this._expiredContent = null;
+
+    this._getPriority = this._getPriority.bind(this);
 
     Object.seal(this);
   }
@@ -165,6 +155,18 @@ export default class TileHeader {
     }
   }
 
+  _getPriority() {
+    // Check if any reason to abort
+    if (!this.isVisible) {
+      return -1;
+    }
+    if (this.contentState === TILE_CONTENT_STATE.UNLOADED) {
+      return -1;
+    }
+
+    return Math.max(1e7 - this._priority, 0) || 0;
+  }
+
   // Requests the tile's content.
   // The request may not be made if the Request Scheduler can't prioritize it.
   // eslint-disable-next-line max-statements
@@ -187,7 +189,7 @@ export default class TileHeader {
 
     const requestToken = await this.tileset._requestScheduler.scheduleRequest(
       this.id,
-      updatePriority
+      this._getPriority
     );
 
     if (!requestToken) {
@@ -205,7 +207,9 @@ export default class TileHeader {
         ...fetchOptions,
         [loader.id]: {
           tile: this.header,
-          tileset: this.tileset.tileset
+          tileset: this.tileset.tileset,
+          isTileset: false,
+          isTileHeader: false
         }
       };
 
