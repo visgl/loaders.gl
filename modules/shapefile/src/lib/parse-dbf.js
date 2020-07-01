@@ -119,7 +119,7 @@ function parseField(text, dataType) {
 
 // Parse YYYYMMDD to date in milliseconds
 function parseDate(str) {
-  return new Date(str.slice(0, 4), parseInt(str.slice(4, 6), 10) - 1, str.slice(6, 8)).getTime();
+  return Date.UTC(str.slice(0, 4), parseInt(str.slice(4, 6), 10) - 1, str.slice(6, 8));
 }
 
 // Read boolean value

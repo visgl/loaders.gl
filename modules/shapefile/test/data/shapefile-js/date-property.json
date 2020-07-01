@@ -4,17 +4,17 @@
   "features": [
     {
       "type": "Feature",
-      "properties": {"date": 1357110000000},
+      "properties": {"date": 1357084800000},
       "geometry": {"type": "Point", "coordinates": [1, 2]}
     },
     {
       "type": "Feature",
-      "properties": {"date": 1359788400000},
+      "properties": {"date": 1359763200000},
       "geometry": {"type": "Point", "coordinates": [3, 4]}
     },
     {
       "type": "Feature",
-      "properties": {"date": 1357196400000},
+      "properties": {"date": 1357171200000},
       "geometry": {"type": "Point", "coordinates": [7, 8]}
     }
   ]
