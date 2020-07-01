@@ -129,8 +129,9 @@ function validateOptionsObject(options, id, log, defaultOptions, deprecatedOptio
   const prefix = id ? `${id}.` : '';
 
   for (const key in options) {
+    // If top level option value is an object it could options for a loader, so ignore
     const isSubOptions = !id && isObject(options[key]);
-    if (!isSubOptions && !(key in defaultOptions)) {
+    if (!(key in defaultOptions)) {
       // Issue deprecation warnings
       if (key in deprecatedOptions) {
         log.warn(
@@ -138,7 +139,7 @@ function validateOptionsObject(options, id, log, defaultOptions, deprecatedOptio
             deprecatedOptions[key]
           }\'`
         );
-      } else {
+      } else if (!isSubOptions) {
         const suggestion = findSimilarOption(key, loaders);
         log.warn(`${loaderName} loader option \'${prefix}${key}\' not recognized. ${suggestion}`);
       }
