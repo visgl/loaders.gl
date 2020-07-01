@@ -3,7 +3,8 @@
 const LITTLE_ENDIAN = true;
 
 export default function parseDbf(arrayBuffer, options) {
-  const {encoding} = options.dbf;
+  const loaderOptions = options.dbf || {};
+  const {encoding} = loaderOptions;
 
   // Global header
   const globalHeaderView = new DataView(arrayBuffer, 0, 32);
