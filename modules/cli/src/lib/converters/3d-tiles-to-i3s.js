@@ -200,9 +200,11 @@ export default class Converter3dTilesToI3S {
 
     await this._addChildren({rootNode: root0, count: 0, tiles: root.children}, layers0path);
     await this._writeFile(rootPath, JSON.stringify(root0));
-    const geometryBuffer = convertB3dmToI3sGeometry(root.content);
-    const geometryPath = join(rootPath, 'geometries/0/');
-    await this._writeFile(geometryPath, geometryBuffer, 'index.bin');
+    if (root.content && root.content.type === 'b3dm') {
+      const geometryBuffer = convertB3dmToI3sGeometry(root.content);
+      const geometryPath = join(rootPath, 'geometries/0/');
+      await this._writeFile(geometryPath, geometryBuffer, 'index.bin');
+    }
   }
 
   async _addChildren(data, layers0path) {
@@ -230,7 +232,8 @@ export default class Converter3dTilesToI3S {
   }
 
   async _addNeighbors(rootNode, childNodes, layers0path) {
-    for (const node of childNodes) {
+    for (const nodeObject of childNodes) {
+      const {node, sourceTile} = nodeObject;
       const childPath = join(layers0path, 'nodes', node.path);
       delete node.path;
       for (const neighbor of rootNode.children) {
@@ -249,9 +252,12 @@ export default class Converter3dTilesToI3S {
         });
       }
       await this._writeFile(childPath, JSON.stringify(node));
-      const geometryBuffer = convertB3dmToI3sGeometry(node.content);
-      const geometryPath = join(childPath, 'geometries/0/index.bin');
-      await this._writeFile(geometryPath, geometryBuffer);
+
+      if (sourceTile.content && sourceTile.content.type === 'b3dm') {
+        const geometryBuffer = convertB3dmToI3sGeometry(sourceTile.content);
+        const geometryPath = join(childPath, 'geometries/0/');
+        await this._writeFile(geometryPath, geometryBuffer, 'index.bin');
+      }
     }
   }
 
@@ -312,7 +318,10 @@ export default class Converter3dTilesToI3S {
       children: []
     };
     await this._addChildren({rootNode: node, count: 0, tiles: tile.children}, layers0path);
-    return node;
+    return {
+      node,
+      sourceTile: tile
+    };
   }
 
   async _writeFile(path, data, fileName = 'index.json') {

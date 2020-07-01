@@ -1,9 +1,7 @@
-// import {promises as fs} from 'fs';
 import {Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 
 const VALUES_PER_VERTEX = 3;
-// export default async function convertToI3s(filePath, content) {
 export default function convertB3dmToI3sGeometry(content) {
   const {positions, normals, texCoords, colors} = convertAttributes(content);
 
@@ -27,10 +25,11 @@ export default function convertB3dmToI3sGeometry(content) {
 
 function convertAttributes(content) {
   const {positions, normals} = convertPositionsAndNormals(content);
-  const vertexCount = positions.length / 3;
+  const vertexCount = positions.length / VALUES_PER_VERTEX;
   const VALUES_PER_COLOR_ELEMENT = 4;
   const colors = new Uint8Array(new ArrayBuffer(vertexCount * VALUES_PER_COLOR_ELEMENT));
   for (let index = 0; index < colors.length; index++) {
+    // TODO: to implement colors support (if applicable for gltf format)
     colors.set([255], index);
   }
 
@@ -39,6 +38,7 @@ function convertAttributes(content) {
     new ArrayBuffer(vertexCount * VALUES_PER_TEX_COORD_ELEMENT * Float32Array.BYTES_PER_ELEMENT)
   );
   for (let index = 0; index < texCoords.length; index += 2) {
+    // TODO: to implement textures support instead this hardcoded values
     texCoords.set([0.9846158027648926, 0.1158415824174881], index);
   }
   return {
@@ -69,7 +69,7 @@ function convertPositionsAndNormals(content) {
         );
         positions = concatenateTypedArrays(
           positions,
-          normalizePositions(
+          transformPositions(
             newPositions,
             content.cartographicOrigin,
             content.cartesianModelMatrix,
@@ -80,7 +80,7 @@ function convertPositionsAndNormals(content) {
 
         normals = concatenateTypedArrays(
           normals,
-          normalizeNormals(newNormals, primitive.indices.value)
+          transformNormals(newNormals, primitive.indices.value)
         );
       }
     }
@@ -107,7 +107,7 @@ function concatenateArrayBuffers(source1, source2) {
   return temp;
 }
 
-function normalizePositions(
+function transformPositions(
   vertices,
   cartographicOrigin,
   cartesianModelMatrix,
@@ -138,7 +138,7 @@ function normalizePositions(
   return positions;
 }
 
-function normalizeNormals(normals, indices) {
+function transformNormals(normals, indices) {
   const newNormals = new Float32Array(indices.length * VALUES_PER_VERTEX);
   for (let i = 0; i < indices.length; i++) {
     const coordIndex = indices[i] * VALUES_PER_VERTEX;
