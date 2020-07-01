@@ -14,7 +14,7 @@ test('load#load', async t => {
   t.end();
 });
 
-test.only('load#with fetch options', async t => {
+test('load#with fetch options', async t => {
   t.ok(
     await load(JSON_URL, JSONLoader, {headers: {'Content-Type': 'application/json'}}),
     'load with fetch options at the root should trigger warnings'
