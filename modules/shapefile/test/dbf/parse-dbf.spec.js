@@ -1,5 +1,5 @@
 import test from 'tape-promise/tape';
-import {fetchFile, load} from '@loaders.gl/core';
+import {fetchFile, parse} from '@loaders.gl/core';
 import {DBFLoader} from '@loaders.gl/shapefile';
 
 const SHAPEFILE_JS_DATA_FOLDER = '@loaders.gl/shapefile/test/data/shapefile-js';
@@ -21,15 +21,16 @@ const SHAPEFILE_JS_TEST_FILES = [
 
 test('Shapefile JS DBF tests', async t => {
   for (const testFileName of SHAPEFILE_JS_TEST_FILES) {
-    const url = `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.dbf`;
-    const options = {dbf: {encoding: 'utf8'}};
+    let response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.dbf`);
+    const body = await response.arrayBuffer();
+    const options = {worker: false, dbf: {encoding: 'utf8'}}
 
     if (testFileName === 'latin1-property') {
       options.dbf.encoding = 'latin1';
     }
-    const output = await load(url, DBFLoader, options);
+    const output = await parse(body, DBFLoader, options);
 
-    const response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.json`);
+    response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.json`);
     const {features} = await response.json();
 
     for (let i = 0; i < features.length; i++) {
