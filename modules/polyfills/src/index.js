@@ -12,13 +12,16 @@ import {encodeImageNode} from './images-node/encode-image.node';
 import {parseImageNode} from './images-node/parse-image.node';
 
 // POLYFILLS: TextEncoder, TextDecoder
-// - Node: v11 introduces these classes, for lower versions we use these polyfills
+// - Recent Node versions habe these classes but virtually no encodings unless special build.
 // - Browser: Edge, IE11 do not have these
 
-if (!('TextEncoder' in global) && TextEncoder) {
+const installTextEncoder = TextEncoder && (!isBrowser || !('TextEncoder' in global));
+if (installTextEncoder) {
   global['TextEncoder'] = TextEncoder;
 }
-if (!('TextDecoder' in global) && TextDecoder) {
+
+const installTextDecoder = TextEncoder && (!isBrowser || !('TextDecoder' in global));
+if (installTextDecoder) {
   global['TextDecoder'] = TextDecoder;
 }
 

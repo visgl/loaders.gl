@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-/* global TextEncoder, TextDecoder */
+/* global TextEncoder, TextDecoder, Buffer */
 import test from 'tape-promise/tape';
 
 test('TextEncoder', t => {
@@ -7,7 +7,13 @@ test('TextEncoder', t => {
   t.end();
 });
 
-test('TextDecoder', t => {
-  t.ok(new TextDecoder(), 'TextDecoder successfully instantiated (available or polyfilled)');
+test('TextDecoder', async t => {
+  const buffer = Buffer.from('México', 'latin1');
+  const arrayBuffer = buffer;
+  t.ok(arrayBuffer, 'node Buffer parses latin1 ');
+
+  const textDecoder = new TextDecoder('latin1');
+  t.ok(textDecoder, 'TextDecoder successfully instantiated (available or polyfilled)');
+  t.equals(textDecoder.decode(arrayBuffer), 'México');
   t.end();
 });

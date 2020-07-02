@@ -7,8 +7,8 @@
 // See LICENSE.md for more information.
 
 // FORK: indices add half a megabyte to bundle. Ignore, since we only want the built-in UTF8...
-global['encoding-indexes'] = require('./encoding-indexes.js')['encoding-indexes'];
-global['encoding-indexes'] = global['encoding-indexes'] || {};
+const indexes = require('./encoding-indexes.js')
+global['encoding-indexes'] = (indexes && indexes['encoding-indexes']) || {};
 
 //
 // Utilities
