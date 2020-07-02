@@ -1,9 +1,6 @@
 import test from 'tape-promise/tape';
 
-import {parseInBatches, loadInBatches, fetchFile, isBrowser} from '@loaders.gl/core';
-import {OBJLoader} from '@loaders.gl/obj';
-
-const OBJ_ASCII_URL = '@loaders.gl/obj/test/data/bunny.obj';
+import {parseInBatches} from '@loaders.gl/core';
 
 const NoOpLoader = {
   name: 'JSON',
