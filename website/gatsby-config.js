@@ -1,5 +1,7 @@
-const resolve = require('path').resolve;
+const {resolve} = require('path');
 const DOC_TABLE_OF_CONTENTS = require('../docs/table-of-contents.json');
+
+const ROOT_DIR = resolve('..');
 
 module.exports = {
   plugins: [
@@ -10,26 +12,30 @@ module.exports = {
 
         // Folders
         DIR_NAME: __dirname,
-        ROOT_FOLDER: `${__dirname}/../`,
+        ROOT_FOLDER: ROOT_DIR,
 
         DOCS: DOC_TABLE_OF_CONTENTS,
         DOC_FOLDERS: [
-          `${__dirname}/../docs/`,
-          `${__dirname}/../modules/`,
-          `${__dirname}/../arrowjs/`
+          resolve(ROOT_DIR, 'docs'),
+          resolve(ROOT_DIR, 'modules'),
+          resolve(ROOT_DIR, 'arrowjs')
         ],
-        SOURCE: [`${__dirname}/static`, `${__dirname}/src`],
+        SOURCE: [
+          resolve('./static'),
+          resolve('./src')
+        ],
 
         PROJECT_TYPE: 'github',
 
         PROJECT_NAME: 'loaders.gl',
         PROJECT_ORG: 'visgl',
-        PROJECT_ORG_LOGO: 'images/uber-logo.png',
-        PROJECT_URL: 'https://github.com/visgl/loaders.gl',
+        PROJECT_ORG_LOGO: 'images/visgl-logo.png',
+        PROJECT_URL: 'https://github.com/visgl/',
         PROJECT_DESC: 'Loaders for Big Data Visualization',
-        PATH_PREFIX: '/',
+        PROJECT_IMAGE: 'images/example-gltf.png',
+        PATH_PREFIX: '/loaders.gl',
 
-        GA_TRACKING: null,
+        GA_TRACKING_ID: 'UA-74374017-2',
 
         // For showing star counts and contributors.
         // Should be like btoa('YourUsername:YourKey') and should be readonly.
@@ -61,10 +67,12 @@ module.exports = {
         ADDITIONAL_LINKS: [{
           name: 'Blog',
           href: 'http://medium.com/vis-gl',
-          index: 1
+          index: 4
         }],
 
-        STYLESHEETS: [''],
+        THEME_OVERRIDES: require('./templates/theme.json'),
+
+        STYLESHEETS: ['/style.css'],
 
         INDEX_PAGE_URL: resolve(__dirname, './templates/index.jsx'),
 

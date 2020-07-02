@@ -5,12 +5,12 @@ A `Dictionary` stores index-to-value maps for dictionary encoded columns.
 
 ## Fields
 
-### indices: V<TKey> readonly
-### dictionary: Vector<T> readonly
+### indices: `V<TKey>` readonly
+### dictionary: `Vector<T>` readonly
 
 ## Static Methods
 
-### Dictionary.from(values: Vector, indices: TKey, keys: ArrayLike<number> | TKey['TArray']) : Dictionary
+### Dictionary.from(values: Vector, indices: TKey, keys: `ArrayLike<number>` | TKey['TArray']) : Dictionary
 
 ## Methods
 

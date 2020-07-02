@@ -27,11 +27,11 @@ const data = await load(url, TerrainLoader, options);
 
 ## Options
 
-| Option                     | Type          | Default   | Description                                                                                                                                   |
-| -------------------------- | ------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `terrain.meshMaxError`     | number        | `10`      | Mesh error in meters. The output mesh is in higher resolution (more vertices) if the error is smaller.                                        |
-| `terrain.bounds`           | array<number> | `null`    | Bounds of the image to fit x,y coordinates into. In `[minX, minY, maxX, maxY]`. If not supplied, x and y are in pixels relative to the image. |
-| `terrain.elevationDecoder` | object        | See below | See below                                                                                                                                     |
+| Option                     | Type            | Default   | Description                                                                                                                                   |
+| -------------------------- | --------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `terrain.meshMaxError`     | `number`        | `10`      | Mesh error in meters. The output mesh is in higher resolution (more vertices) if the error is smaller.                                        |
+| `terrain.bounds`           | `array<number>` | `null`    | Bounds of the image to fit x,y coordinates into. In `[minX, minY, maxX, maxY]`. If not supplied, x and y are in pixels relative to the image. |
+| `terrain.elevationDecoder` | `object`        | See below | See below                                                                                                                                     |
 
 ### elevationDecoder
 

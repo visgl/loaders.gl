@@ -32,7 +32,7 @@ Utility method that flattens a number of `Vector` instances or Arrays of `Vector
 
 Returns an Array of `Vector` instances.
 
-### Chunked.concat(...chunks: Vector<T>[]): Chunked
+### Chunked.concat(...chunks: `Vector<T>[]`): Chunked
 
 <p class="badges">
    <img src="https://img.shields.io/badge/zero-copy-green.svg?style=flat-square" alt="zero-copy" />
@@ -90,7 +90,7 @@ The number of elements in the underlying data buffer that constitute a single lo
 
 Number of null values across all Vector chunks in this chunked array.
 
-### indices : ChunkedKeys<T> | null  (read-only)
+### indices : `ChunkedKeys<T>` | null  (read-only)
 
 If this is a dictionary encoded column, returns a `Chunked` instance of the indicies of all the inner chunks. Otherwise, returns `null`.
 
@@ -125,7 +125,7 @@ TBD - Confirm/provide some information on how `offsets` can be used?
 Returns a new `Chunked` instance that is a clone of this instance. Does not copy the actual chunks, so the new `Chunked` instance will reference the same chunks.
 
 
-### concat(...others: Vector<T>[]): Chunked
+### concat(...others: `Vector<T>[]`): Chunked
 
 <p class="badges">
    <img src="https://img.shields.io/badge/zero-copy-green.svg?style=flat-square" alt="zero-copy" />
@@ -150,7 +150,7 @@ Returns a zero-copy slice of this Vector. The begin and end arguments are handle
 If this `Chunked` Vector's DataType is one of the nested types (Map or Struct), returns a `Chunked` Vector view over all the chunks for the child Vector at `index`.
 
 ### search(index: Number): [number, number] | null;
-### search(index: Number, then?: SearchContinuation): ReturnType<N>;
+### search(index: Number, then?: SearchContinuation): `ReturnType<N>`;
 ### search(index: Number, then?: SearchContinuation)
 
 Using an `index` that is relative to the whole `Chunked` Vector, binary search through the list of inner chunks using supplied "global" `index` to find the chunk at that location. Returns the child index of the inner chunk and an element index that has been adjusted to the keyspace of the found inner chunk.
