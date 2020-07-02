@@ -1,4 +1,4 @@
-/* global Blob */
+/* global Blob, Response */
 import test from 'tape-promise/tape';
 import {isBrowser, load, fetchFile, registerLoaders, resolvePath} from '@loaders.gl/core';
 import {JSONLoader} from '@loaders.gl/json';
@@ -6,6 +6,33 @@ import {JSONLoader} from '@loaders.gl/json';
 const JSON_URL = '@loaders.gl/core/test/data/files/basic.json';
 
 const JSON_DATA = [{col1: 22, col2: 'abc'}];
+
+test('load#load', async t => {
+  t.ok(load, 'load defined');
+  // @ts-ignore TS2554: Expected 2-4 arguments, but got 1.
+  await t.rejects(load('.'), 'load throws on undefined loaders');
+  t.end();
+});
+
+test('load#with fetch options', async t => {
+  t.ok(
+    await load(JSON_URL, JSONLoader, {headers: {'Content-Type': 'application/json'}}),
+    'load with fetch options at the root should trigger warnings'
+  );
+
+  t.ok(
+    await load(JSON_URL, JSONLoader, {fetch: {headers: {'Content-Type': 'application/json'}}}),
+    'load with fetch options work'
+  );
+
+  const fetch = url => new Response('{"abc": 1}');
+  t.deepEqual(
+    await load(JSON_URL, JSONLoader, {fetch}),
+    {abc: 1},
+    'load with fetch function works'
+  );
+  t.end();
+});
 
 test('load#load', async t => {
   t.ok(load, 'load defined');
