@@ -1,17 +1,33 @@
 import {global} from '@loaders.gl/loader-utils';
 import {isPureObject, isObject} from '../../javascript-utils/is-type';
+import {fetchFile} from '../fetch/fetch-file';
 import {NullLog, ConsoleLog} from './loggers';
 
 const DEFAULT_LOADER_OPTIONS = {
+  // baseUri
+  fetch: null,
   CDN: 'https://unpkg.com/@loaders.gl',
   worker: true, // By default, use worker if provided by loader
   log: new ConsoleLog(), // A probe.gl compatible (`log.log()()` syntax) that just logs to console
-  metadata: false // TODO - currently only implemented for parseInBatches, adds initial metadata batch,
+  metadata: false // TODO - currently only implemented for parseInBatches, adds initial metadata batch
 };
 
 const DEPRECATED_LOADER_OPTIONS = {
   dataType: '(no longer used)',
-  uri: 'baseUri'
+  uri: 'baseUri',
+  // Warn if fetch options are used on top-level
+  method: 'fetch.method',
+  headers: 'fetch.headers',
+  body: 'fetch.body',
+  mode: 'fetch.mode',
+  credentials: 'fetch.credentials',
+  cache: 'fetch.cache',
+  redirect: 'fetch.redirect',
+  referrer: 'fetch.referrer',
+  referrerPolicy: 'fetch.referrerPolicy',
+  integrity: 'fetch.integrity',
+  keepalive: 'fetch.keepalive',
+  signal: 'fetch.signal'
 };
 
 // Helper to reliably get global loader state
@@ -43,22 +59,7 @@ export function setGlobalOptions(options) {
   state.globalOptions = normalizeOptionsInternal(globalOptions, options);
 }
 
-export function getOptions(options = {}) {
-  // Note: No options validation at this stage
-  const mergedOptions = {...options};
-
-  // LOGGING: options.log can be set to `null` to defeat logging, but should always be a valid log
-  // TODO - move to context, no need to modify options...
-  // @ts-ignore
-  if (mergedOptions.log === null) {
-    // @ts-ignore
-    mergedOptions.log = new NullLog();
-  }
-
-  mergeNestedFields(mergedOptions, getGlobalLoaderOptions());
-  return mergedOptions;
-}
-
+// Merges options with global opts and loader defaults, also injects baseUri
 // Merges options with global opts and loader defaults, also injects baseUri
 export function normalizeOptions(options, loader, loaders, url) {
   loaders = loaders || [];
@@ -66,6 +67,24 @@ export function normalizeOptions(options, loader, loaders, url) {
 
   validateOptions(options, loaders);
   return normalizeOptionsInternal(loader, options, url);
+}
+
+export function getFetchFunction(options, context) {
+  const globalOptions = getGlobalLoaderOptions();
+  const fetchOptions = options.fetch || globalOptions.fetch;
+  switch (typeof fetchOptions) {
+    case 'function':
+      return fetchOptions;
+    case 'object':
+      return url => fetchFile(url, fetchOptions);
+    default:
+      if (context && context.fetch) {
+        return context.fetch;
+      }
+      // TODO DEPRECATED, support for root level fetch options will be removed in 3.0
+      return url => fetchFile(url, options);
+    // return fetchFile;
+  }
 }
 
 // VALIDATE OPTIONS
@@ -91,7 +110,6 @@ function validateOptions(
     DEPRECATED_LOADER_OPTIONS,
     loaders
   );
-
   for (const loader of loaders) {
     // Get the scoped, loader specific options from the user supplied options
     const idOptions = (options && options[loader.id]) || {};
@@ -111,8 +129,9 @@ function validateOptionsObject(options, id, log, defaultOptions, deprecatedOptio
   const prefix = id ? `${id}.` : '';
 
   for (const key in options) {
+    // If top level option value is an object it could options for a loader, so ignore
     const isSubOptions = !id && isObject(options[key]);
-    if (!isSubOptions && !(key in defaultOptions)) {
+    if (!(key in defaultOptions)) {
       // Issue deprecation warnings
       if (key in deprecatedOptions) {
         log.warn(
@@ -120,7 +139,7 @@ function validateOptionsObject(options, id, log, defaultOptions, deprecatedOptio
             deprecatedOptions[key]
           }\'`
         );
-      } else {
+      } else if (!isSubOptions) {
         const suggestion = findSimilarOption(key, loaders);
         log.warn(`${loaderName} loader option \'${prefix}${key}\' not recognized. ${suggestion}`);
       }
