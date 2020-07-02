@@ -52,7 +52,7 @@ test('loadInBatches#non-batched loader', async t => {
   t.end();
 });
 
-test.only('loadInBatches#FileList', async t => {
+test('loadInBatches#FileList', async t => {
   const response = await fetchFile(OBJ_ASCII_URL);
   const blob = await response.blob();
 
