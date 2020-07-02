@@ -80,21 +80,21 @@ constructor(options? : Object)
 * `options.autoDestroy`: boolean -
 
 
-### toString(sync: Boolean): string | Promise<string>
+### toString(sync: Boolean): string | `Promise<string>`
 
-### toUint8Array(sync: Boolean): Uint8Array | Promise<Uint8Array>
+### toUint8Array(sync: Boolean): Uint8Array | `Promise<Uint8Array>`
 
 
-### writeAll(input: Table | Iterable<RecordBatch>): this
-### writeAll(input: AsyncIterable<RecordBatch>): Promise<this>
-### writeAll(input: PromiseLike<AsyncIterable<RecordBatch>>): Promise<this>
-### writeAll(input: PromiseLike<Table | Iterable<RecordBatch>>): Promise<this>
+### writeAll(input: Table | `Iterable<RecordBatch>`): this
+### writeAll(input: `AsyncIterable<RecordBatch>`): `Promise<this>`
+### writeAll(input: `PromiseLike<AsyncIterable<RecordBatch>`>): `Promise<this>`
+### writeAll(input: PromiseLike<Table | `Iterable<RecordBatch>`>): `Promise<this>`
 
-* [Symbol.asyncIterator](): AsyncByteQueue<Uint8Array>
+* [Symbol.asyncIterator](): `AsyncByteQueue<Uint8Array>`
 
 Returns An async iterator that produces Uint8Arrays.
 
-### toDOMStream(options?: Object): ReadableStream<Uint8Array>
+### toDOMStream(options?: Object): `ReadableStream<Uint8Array>`
 
 Returns a new DOM/WhatWG stream that can be used to read the Uint8Array chunks produced by the RecordBatchWriter
 
@@ -110,11 +110,11 @@ Close the RecordBatchWriter. After close is called, no more chunks can be writte
 
 ### abort(reason?: any) : void
 ### finish() : this
-### reset(sink?: WritableSink<ArrayBufferViewInput>, schema?: Schema | null): this
+### reset(sink?: `WritableSink<ArrayBufferViewInput>`, schema?: Schema | null): this
 
 Change the sink
 
-### write(payload?: Table | RecordBatch | Iterable<Table> | Iterable<RecordBatch> | null): void
+### write(payload?: Table | RecordBatch | `Iterable<Table>` | `Iterable<RecordBatch>` | null): void
 
 Writes a `RecordBatch` or all the RecordBatches from a `Table`.
 

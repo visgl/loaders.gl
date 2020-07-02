@@ -12,7 +12,7 @@ Also referred to as `BaseVector`. An abstract base class for vector types.
 
 ## Fields
 
-### data: Data<T> (readonly)
+### data: `Data<T>` (readonly)
 
 The underlying Data instance for this Vector.
 
@@ -80,11 +80,11 @@ Returns the underlying valueOffsets buffer, if applicable. Only the List, Utf8, 
 
 ## Methods
 
-### clone(data: Data<R>, children): Vector<R>
+### clone(data: `Data<R>`, children): `Vector<R>`
 
 Returns a clone of the current Vector, using the supplied Data and optional children for the new clone. Does not copy any underlying buffers.
 
-### concat(...others: Vector<T>[])
+### concat(...others: `Vector<T>[]`)
 
 Returns a `Chunked` vector that concatenates this Vector with the supplied other Vectors. Other Vectors must be the same type as this Vector.
 
@@ -97,7 +97,7 @@ Returns a zero-copy slice of this Vector. The begin and end arguments are handle
 
 Returns whether the supplied index is valid in the underlying validity bitmap.
 
-### getChildAt<R extends DataType = any>(index: number): Vector<R> | null
+### getChildAt`<R extends DataType = any>`(index: number): `Vector<R>` | null
 
 Returns the inner Vector child if the DataType is one of the nested types (Map or Struct).
 

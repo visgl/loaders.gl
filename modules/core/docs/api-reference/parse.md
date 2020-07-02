@@ -42,7 +42,7 @@ try {
 
 ## Functions
 
-### parse(data: Response | ArrayBuffer | String, loaders: Object | Object\[], options?: Object) : Promise<Any>
+### parse(data: Response | ArrayBuffer | String, loaders: Object | Object\[], options?: Object) : Promise\<Any\>
 
 Parses data asynchronously either using the provided loader or loaders, or using the pre-registered loaders (see `register-loaders`).
 

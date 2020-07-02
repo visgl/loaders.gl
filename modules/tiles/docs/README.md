@@ -23,7 +23,7 @@
 - `maximumMemoryUsage` (`Number`): If tiles sized more than `maximumMemoryUsage` are needed to for the current view, when these tiles go out of view, they will be unloaded.`maximumMemoryUsage` must be greater than or equal to zero.
 - `modelMatrix` (`Matrix4: A [Matrix4](https://math.gl/modules/core/docs/api-reference/matrix4) instance (4x4 transformation matrix) that transforms the entire tileset.
 - `root` (`Tile3DHeader`): The root tile header.
-- tiles: Array<Tile3DHeader>: All the tiles that have been traversed.
+- `tiles`: (`Array<Tile3DHeader>`): All the tiles that have been traversed.
 - `stats` ([`Stats`](https://uber-web.github.io/probe.gl/docs/api-reference/log/stats))): An instance of a probe.gl `Stats` object that contains information on how many tiles have been loaded etc. Easy to display using a probe.gl `StatsWidget`.
 - `tileset` (`Object`): The original tileset data this object instanced from.
 - `tilesLoaded` (`Boolean`): When `true`, all tiles that meet the screen space error this frame are loaded. The tileset is completely loaded for this view.

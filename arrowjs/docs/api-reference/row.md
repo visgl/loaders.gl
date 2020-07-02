@@ -33,10 +33,10 @@ Notes:
 ## Methods
 
 ### [key: string]: T[keyof T]['TValue']
-### [kParent]: MapVector<T> | StructVector<T>
+### [kParent]: `MapVector<T>` | `StructVector<T>`
 ### [kRowIndex]: number
 ### [kLength]: number (readonly)
-### [Symbol.iterator](): IterableIterator<T[keyof T]["TValue"]>
+### [Symbol.iterator](): `IterableIterator<T[keyof T]["TValue"]>`
 ### get(key: K): T[K]["TValue"]
 
 Returns the value at the supplied `key`, where `key` is either the integer index of the set of child vectors, or the name of a child Vector
