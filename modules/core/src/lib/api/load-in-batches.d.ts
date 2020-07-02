@@ -1,4 +1,7 @@
-import {DataType, LoaderObject} from '@loaders.gl/loader-utils';
+import {LoaderObject} from '@loaders.gl/loader-utils';
+
+type FileType = string | File | Blob | Response;
+
 /**
  * Parses `data` using a specified loader
  * @param data
@@ -6,4 +9,9 @@ import {DataType, LoaderObject} from '@loaders.gl/loader-utils';
  * @param options
  * @param context
  */
-export function loadInBatches(url: string | File| Blob, loaders: LoaderObject | LoaderObject[], options?: object, context?: object): Promise<any>;
+export function loadInBatches(
+  url: FileType,
+  loaders: LoaderObject | LoaderObject[],
+  options?: object,
+  context?: object
+): Promise<AsyncIterable<any>>;

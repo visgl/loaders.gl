@@ -71,20 +71,30 @@ export function normalizeOptions(options, loader, loaders, url) {
 
 export function getFetchFunction(options, context) {
   const globalOptions = getGlobalLoaderOptions();
-  const fetchOptions = options.fetch || globalOptions.fetch;
-  switch (typeof fetchOptions) {
-    case 'function':
-      return fetchOptions;
-    case 'object':
-      return url => fetchFile(url, fetchOptions);
-    default:
-      if (context && context.fetch) {
-        return context.fetch;
-      }
-      // TODO DEPRECATED, support for root level fetch options will be removed in 3.0
-      return url => fetchFile(url, options);
-    // return fetchFile;
+
+  const fetch = options.fetch || globalOptions.fetch;
+
+  // options.fetch can be a function
+  if (typeof fetch === 'function') {
+    return fetch;
   }
+
+  // options.fetch can be an options object
+  if (isObject(fetch)) {
+    return url => fetchFile(url, fetch);
+  }
+
+  // else refer to context (from parent loader) if available
+  if (context && context.fetch) {
+    return context.fetch;
+  }
+
+  // else return the default fetch function
+
+  // TODO DEPRECATED, support for root level fetch options will be removed in 3.0
+  return url => fetchFile(url, options);
+
+  // return fetchFile;
 }
 
 // VALIDATE OPTIONS

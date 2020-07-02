@@ -10,7 +10,9 @@ The advantages and characteristics of streaming are descriped in more detail in 
 
 ## Async Iterator based Streaming
 
-The loaders.gl streaming architecture is built on ES2018 async iterators (rather than the "older" streams). Async iterators are easy to work with, are consistent across browsers and Node.js, and have built-in JavaScript language support such as `for await (... of ...)` and `async function *`.
+The loaders.gl streaming architecture is built on ES2018 async iterators rather than `Stream`s. Async iterators are arguably easier to work with than streams, are consistent across browsers and Node.js, and enable a "callback-less" programming style through built-in JavaScript language features, i.e. `for await (... of ...)` and `async function *`.
+
+Note: `Stream` input data is still accepted, but all processing is done via async iterators.
 
 ```js
 import {JSONLoader} from '@loaders.gl/json';
@@ -40,12 +42,10 @@ for await (const batch of batches) {
 
 ## Streaming Data Sources
 
-`parseInBatches` is quite flexible.
+While the primary input for `parseInBatches` is an async iterator many input types are supported:
 
-While the primary input for `parseInBatches` is an async iterator that yields raw `ArrayBuffer` chunks (and it returns an async iterator that yields parsed batches of data), many other input types are also supported.
+- `AsyncIterable<ArrayBuffer>` (i.e. the iterator must yield `ArrayBuffer` chunks).
+- `Stream` instances can be used as input to `parseInBatches`. An async iterator will automatically be created from the stream.
+- `Response` objects can also be used as input (the `Response.body` stream will be used).
 
-Any `Stream` can also be used as input to `parseInBatches`. An async iterator will automatically be created from the stream.
-
-As is usually the case in loaders.gl, `Response` can also be used as input (loaders.gl uses the `Response.body` stream).
-
-Note that while `Response` objects are normally returned from `fetch` calls, they can also be created directly by the application, and many data types can be trivially wrapped in `Response` objects (e.g. `FormData`, `Blob`, `File` etc), which makes it possible to do streaming loads from almost any data source.
+In addition, note that applications can easily wrap many data types in a `Response` object (e.g. `FormData`, `Blob`, `File`, `string`, `ArrayBuffer` etc), which makes it possible to do streaming loads from almost any data source.
