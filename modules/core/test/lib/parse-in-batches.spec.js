@@ -53,18 +53,20 @@ test('loadInBatches#non-batched loader', async t => {
 });
 
 test('loadInBatches#FileList', async t => {
-  const response = await fetchFile(OBJ_ASCII_URL);
-  const blob = await response.blob();
-
   if (isBrowser) {
-    const iteratorPromises = await loadInBatches([blob, blob], OBJLoader);
-    for await (const iterator of iteratorPromises) {
-      for await (const batch of iterator) {
-        // Just the one batch...
-        t.equal(batch.mode, 4, 'mode is TRIANGLES (4)');
+    const response = await fetchFile(OBJ_ASCII_URL);
+    const blob = await response.blob();
+
+    if (isBrowser) {
+      const iteratorPromises = await loadInBatches([blob, blob], OBJLoader);
+      for await (const iterator of iteratorPromises) {
+        for await (const batch of iterator) {
+          // Just the one batch...
+          t.equal(batch.mode, 4, 'mode is TRIANGLES (4)');
+        }
       }
     }
   }
-
+  
   t.end();
 });

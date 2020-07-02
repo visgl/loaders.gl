@@ -11,7 +11,6 @@ test('SHPLoader#loadInBatches polygons', async t => {
   let batchCount = 0;
   let rowCount = 0;
   for await (const batch of iterator) {
-    debugger;
     batchCount++;
     rowCount += batch.features.length;
   }
