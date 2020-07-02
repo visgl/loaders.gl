@@ -185,10 +185,12 @@ export default class App extends PureComponent {
 
   render() {
     const {viewState} = this.state;
-
+    const {panel = true} = this.props;
     return (
       <div style={{position: 'relative', height: '100%'}}>
-        {this._renderControlPanel()}
+        <div style={{visibility: panel ? 'default' : 'hidden'}}>
+          {this._renderControlPanel()}
+        </div>
         <DeckGL
           views={new OrbitView()}
           viewState={viewState}

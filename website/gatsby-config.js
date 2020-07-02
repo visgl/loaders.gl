@@ -8,7 +8,7 @@ module.exports = {
     {
       resolve: `gatsby-theme-ocular`,
       options: {
-        logLevel: 1, // Adjusts amount of debug information from ocular-gatsby
+        logLevel: 4, // Adjusts amount of debug information from ocular-gatsby
 
         // Folders
         DIR_NAME: __dirname,

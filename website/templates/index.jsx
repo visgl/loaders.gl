@@ -1,6 +1,7 @@
 import React from 'react';
 import {Home} from 'gatsby-theme-ocular/components';
-import GLTFExample from './example-gltf';
+import Example from '../../examples/website/pointcloud/app';
+// import Example from './example-gltf';
 import styled from 'styled-components';
 
 if (typeof window !== 'undefined') {
@@ -23,7 +24,7 @@ const Bullet = styled.li`
   font: ${props => props.theme.typography.font300};
 `;
 
-const HeroExample = () => <GLTFExample panel={false} />
+const HeroExample = () => <Example panel={false} />
 
 export default class IndexPage extends React.Component {
   render() {

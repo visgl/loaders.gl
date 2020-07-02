@@ -42,7 +42,7 @@
   },
   "devDependencies": {
     "babel-plugin-version-inline": "^1.0.0",
-    "gatsby": "^2.22.0",
+    "gatsby": "^2.22.17",
     "gatsby-plugin-no-sourcemaps": "^2.1.2",
     "gatsby-theme-ocular": "^1.2.1",
     "gatsby-plugin-env-variables": "^1.0.1",
