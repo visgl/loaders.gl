@@ -25,6 +25,11 @@ export function validateWriter(t, writer, name = '') {
   t.equal(typeof writer.name, 'string', `Writer ${name} has a name`);
 }
 
+export function validateBuilder(t, builder, name = '') {
+  t.ok(builder, `Builder ${name} defined`);
+  t.equal(typeof builder.name, 'string', `Builder ${name} has a name`);
+}
+
 /**
  * Check if the returned data from loaders use the format specified in:
  *  /docs/developer-guide/category-pointcloud.md
