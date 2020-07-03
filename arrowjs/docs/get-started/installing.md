@@ -4,7 +4,7 @@
 
 The Apache Arrow JS bindings are published as an npm module.
 
-```sh
+```shell
 npm install apache-arrow
 # or
 yarn add apache-arrow

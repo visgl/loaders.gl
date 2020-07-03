@@ -60,7 +60,7 @@ export function normalizeLoader(loader) {
   // NORMALIZE text and binary flags
 
   // Ensure at least one of text/binary flags are properly set
-  if (loader.parseTextSync) {
+  if (loader.parseTextSync || loader.parseText) {
     loader.text = true;
   }
 

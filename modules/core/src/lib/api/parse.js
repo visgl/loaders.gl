@@ -68,6 +68,10 @@ async function parseWithLoader(loader, data, options, context) {
   }
 
   // Check for asynchronous parser
+  if (loader.parseText && typeof data === 'string') {
+    return await loader.parseText(data, options, context, loader);
+  }
+
   if (loader.parse) {
     return await loader.parse(data, options, context, loader);
   }
