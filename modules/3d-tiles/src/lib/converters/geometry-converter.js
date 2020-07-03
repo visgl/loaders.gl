@@ -28,9 +28,9 @@ function convertAttributes(content) {
   const vertexCount = positions.length / VALUES_PER_VERTEX;
   const VALUES_PER_COLOR_ELEMENT = 4;
   const colors = new Uint8Array(new ArrayBuffer(vertexCount * VALUES_PER_COLOR_ELEMENT));
-  for (let index = 0; index < colors.length; index++) {
+  for (let index = 0; index < colors.length; index += 4) {
     // TODO: to implement colors support (if applicable for gltf format)
-    colors.set([255], index);
+    colors.set([255, 255, 255, 255], index);
   }
 
   const VALUES_PER_TEX_COORD_ELEMENT = 2;
@@ -39,7 +39,7 @@ function convertAttributes(content) {
   );
   for (let index = 0; index < texCoords.length; index += 2) {
     // TODO: to implement textures support instead this hardcoded values
-    texCoords.set([0.9846158027648926, 0.1158415824174881], index);
+    texCoords.set([1, 1], index);
   }
   return {
     positions,
