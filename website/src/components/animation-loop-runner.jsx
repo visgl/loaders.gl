@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/control-has-associated-label */
 import React, {Component} from 'react'; // eslint-disable-line
 import PropTypes from 'prop-types';
 import {lumaStats} from '@luma.gl/core';
