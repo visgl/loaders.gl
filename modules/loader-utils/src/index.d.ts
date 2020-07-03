@@ -1,4 +1,5 @@
-export {LoaderObject, WriterObject, LoaderContext, DataType, SyncDataType, BatchableDataType} from './types/types';
+export {LoaderObject, WriterObject, LoaderContext, DataType, SyncDataType, BatchableDataType,
+  IFileSystem, IRandomAccessReadFileSystem} from './types';
 
 export {default as createWorker} from './lib/create-worker';
 
