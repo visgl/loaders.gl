@@ -1,10 +1,6 @@
 /* global createImageBitmap */
-import {isSVG, getBlob} from './svg-utils';
+import {isSVG} from './svg-utils';
 import parseToImage from './parse-to-image';
-
-const EMPTY_OBJECT = {};
-
-let imagebitmapOptionsSupported = true;
 
 /**
  * Asynchronously parses an array buffer into an ImageBitmap - this contains the decoded data
@@ -14,50 +10,35 @@ let imagebitmapOptionsSupported = true;
  * TODO - createImageBitmap supports source rect (5 param overload), pass through?
  */
 export default async function parseToImageBitmap(arrayBuffer, options, url) {
-  let blob;
-
-  // Cannot parse SVG directly to ImageBitmap, parse to Image first
-  if (isSVG(url)) {
-    // Note: this only works on main thread
-    const image = await parseToImage(arrayBuffer, options, url);
-    blob = image;
-  } else {
+  // Cannot parse SVG directly to ImageBitmap, parse to Image first (only works on main thread)
+  const blobOrImage = isSVG(url)
+    ? await parseToImage(arrayBuffer, options, url)
     // Create blob from the array buffer
-    blob = getBlob(arrayBuffer, url);
-  }
+    : new Blob([arrayBuffer]);
 
   const imagebitmapOptions = options && options.imagebitmap;
 
-  return await safeCreateImageBitmap(blob, imagebitmapOptions);
+  return await safeCreateImageBitmap(blobOrImage, imagebitmapOptions);
 }
+
+let imagebitmapOptionsSupported = true;
 
 /**
  * Safely creates an imageBitmap with options
- * *
+ *
  * Firefox crashes if imagebitmapOptions is supplied
  * Avoid supplying if not provided or supported, remember if not supported
  */
 async function safeCreateImageBitmap(blob, imagebitmapOptions = null) {
-  if (isEmptyObject(imagebitmapOptions) || !imagebitmapOptionsSupported) {
-    imagebitmapOptions = null;
-  }
-
-  if (imagebitmapOptions) {
+  if (imagebitmapOptions && imagebitmapOptionsSupported) {
     try {
       // @ts-ignore Options
       return await createImageBitmap(blob, imagebitmapOptions);
     } catch (error) {
-      console.warn(error); // eslint-disable-line
       imagebitmapOptionsSupported = false;
     }
   }
 
+  // Call without imagebitmapOptions
   return await createImageBitmap(blob);
-}
-
-function isEmptyObject(object) {
-  for (const key in object || EMPTY_OBJECT) {
-    return true;
-  }
-  return false;
 }

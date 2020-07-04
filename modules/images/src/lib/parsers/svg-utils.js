@@ -14,23 +14,15 @@ export function getBlobOrSVGDataUrl(arrayBuffer, url) {
     // Prepare a properly tagged data URL, and load using normal mechanism
     const textDecoder = new TextDecoder();
     const xmlText = textDecoder.decode(arrayBuffer);
-    // TODO Escape in browser to support e.g. Chinese characters
+    // base64 encoding is safer. utf-8 fails in some browsers
+    return `data:image/svg+xml;base64,${btoa(xmlText)}`;
+
+    // TODO Escape in browser to support Chinese characters etc?
     // if (typeof unescape === 'function' && typeof encodeURLComponent === 'function') {
     //   xmlText = unescape(encodeURLComponent(xmlText));
     // }
-    // base64 encoding is safer. utf-8 fails in some browsers
-    const src = `data:image/svg+xml;base64,${btoa(xmlText)}`;
-    return src;
   }
-  return getBlob(arrayBuffer, url);
-}
 
-export function getBlob(arrayBuffer, url) {
-  if (isSVG(url)) {
-    // https://bugs.chromium.org/p/chromium/issues/detail?id=606319
-    // return new Blob([new Uint8Array(arrayBuffer)], {type: 'image/svg+xml'});
-    throw new Error('SVG cannot be parsed directly to imagebitmap');
-  }
-  // TODO - how to determine mime type? Param? Sniff here?
-  return new Blob([new Uint8Array(arrayBuffer)]); // MIME type not needed?
+  // TODO - MIME type not needed?
+  return new Blob([arrayBuffer]);
 }

@@ -1,5 +1,6 @@
 /* global ImageBitmap, Image */
 import {global, isBrowser} from '../utils/globals';
+import {assert} from '@loaders.gl/loader-utils';
 
 // @ts-ignore TS2339: Property does not exist on type
 const {_parseImageNode} = global;
@@ -23,14 +24,8 @@ export function isImageTypeSupported(type) {
     case 'data':
       return DATA_SUPPORTED;
 
-    // DEPRECATED types
-    case 'html':
-      return IMAGE_SUPPORTED;
-    case 'ndarray':
-      return DATA_SUPPORTED;
-
     default:
-      throw new Error(`@loaders.gl/images: image ${type} not supported in this environment`);
+      assert(false, '@loaders.gl/images: unknown image type');
   }
 }
 
@@ -47,5 +42,5 @@ export function getDefaultImageType() {
   }
 
   // This should only happen in Node.js
-  throw new Error(`Install '@loaders.gl/polyfills' to parse images under Node.js`);
+  assert(false, '@loaders.gl/polyfills not installed');
 }

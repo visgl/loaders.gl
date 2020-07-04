@@ -2,25 +2,23 @@
 import assert from '../utils/assert';
 
 export function isImage(image) {
-  return Boolean(getImageTypeOrNull(image));
+  return Boolean(getImageType(image, false));
 }
 
-export function deleteImage(image) {
-  switch (getImageType(image)) {
-    case 'imagebitmap':
-      image.close();
-      break;
-    default:
-    // Nothing to do for images and image data objects
+export function getImageType(image, throwOnError = false) {
+  if (typeof ImageBitmap !== 'undefined' && image instanceof ImageBitmap) {
+    return 'imagebitmap';
   }
-}
-
-export function getImageType(image) {
-  const format = getImageTypeOrNull(image);
-  if (!format) {
+  if (typeof Image !== 'undefined' && image instanceof Image) {
+    return 'image';
+  }
+  if (image && typeof image === 'object' && image.data && image.width && image.height) {
+    return 'data';
+  }
+  if (throwOnError) {
     throw new Error('Not an image');
   }
-  return format;
+  return null;
 }
 
 export function getImageData(image) {
@@ -31,35 +29,21 @@ export function getImageData(image) {
     case 'image':
     case 'imagebitmap':
       // Extract the image data from the image via a canvas
-      /* global document */
-      const canvas = document.createElement('canvas');
       // TODO - reuse the canvas?
+      const canvas = document.createElement('canvas');
       const context = canvas.getContext('2d');
       canvas.width = image.width;
       canvas.height = image.height;
       context.drawImage(image, 0, 0);
-      const imageData = context.getImageData(0, 0, image.width, image.height);
-      return imageData;
+      return context.getImageData(0, 0, image.width, image.height);
     default:
       return assert(false);
   }
 }
 
-// TODO DEPRECATED not needed (use getImageData)
-export {getImageData as getImageSize};
-
-// PRIVATE
-
-// eslint-disable-next-line complexity
-function getImageTypeOrNull(image) {
-  if (typeof ImageBitmap !== 'undefined' && image instanceof ImageBitmap) {
-    return 'imagebitmap';
-  }
-  if (typeof Image !== 'undefined' && image instanceof Image) {
-    return 'image';
-  }
-  if (image && typeof image === 'object' && image.data && image.width && image.height) {
-    return 'data';
-  }
-  return null;
+export function getImageSize(image) {
+  // imagebitmap and data has width, image has naturalWidth
+  return Number.isFinite(image.width)
+    ? {width: image.width, height: image.height}
+    : {width: image.naturalWidth, height: image.naturalHeight};
 }
