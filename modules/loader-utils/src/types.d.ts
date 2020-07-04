@@ -34,7 +34,7 @@ export type WriterObject = {
   options: object;
   deprecatedOptions?: object;
 
-  encode(data: any, options: object): Promise<any>; // TODO Promise<ArrayBuffer>
+  encode(data: any, options: object): Promise<ArrayBuffer>
 };
 
 export type LoaderContext = {
