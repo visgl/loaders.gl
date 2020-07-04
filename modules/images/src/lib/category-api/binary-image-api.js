@@ -10,8 +10,7 @@ const BIG_ENDIAN = false;
 const LITTLE_ENDIAN = true;
 
 export function getBinaryImageMetadata(binaryData) {
-  const dataView = binaryData instanceof ArrayBuffer ? new DataView(binaryData) : binaryData;
-
+  const dataView = toDataView(binaryData);
   return (
     getPngMetadata(dataView) ||
     getJpegMetadata(dataView) ||
@@ -22,7 +21,8 @@ export function getBinaryImageMetadata(binaryData) {
 
 // PNG
 
-function getPngMetadata(dataView) {
+function getPngMetadata(binaryData) {
+  const dataView = toDataView(binaryData);
   // Check file contains the first 4 bytes of the PNG signature.
   const isPng = dataView.byteLength >= 24 && dataView.getUint32(0, BIG_ENDIAN) === 0x89504e47;
   if (!isPng) {
@@ -41,7 +41,8 @@ function getPngMetadata(dataView) {
 
 // Extract size from a binary GIF file
 // TODO: GIF is not this simple
-function getGifMetadata(dataView) {
+function getGifMetadata(binaryData) {
+  const dataView = toDataView(binaryData);
   // Check first 4 bytes of the GIF signature ("GIF8").
   const isGif = dataView.byteLength >= 10 && dataView.getUint32(0, BIG_ENDIAN) === 0x47494638;
   if (!isGif) {
@@ -59,7 +60,8 @@ function getGifMetadata(dataView) {
 // BMP
 
 // TODO: BMP is not this simple
-export function getBmpMetadata(dataView) {
+export function getBmpMetadata(binaryData) {
+  const dataView = toDataView(binaryData);
   // Check magic number is valid (first 2 characters should be "BM").
   // The mandatory bitmap file header is 14 bytes long.
   const isBmp =
@@ -82,7 +84,8 @@ export function getBmpMetadata(dataView) {
 // JPEG
 
 // Extract width and height from a binary JPEG file
-function getJpegMetadata(dataView) {
+function getJpegMetadata(binaryData) {
+  const dataView = toDataView(binaryData);
   // Check file contains the JPEG "start of image" (SOI) marker
   // followed by another marker.
   const isJpeg =
@@ -151,4 +154,25 @@ function getJpegMarkers() {
   ]);
 
   return {tableMarkers, sofMarkers};
+}
+
+// TODO - move into image module?
+function toDataView(data) {
+  if (data instanceof DataView) {
+    return data;
+  }
+  if (ArrayBuffer.isView(data)) {
+    return new DataView(data.buffer);
+  }
+
+  // TODO: make these functions work for Node.js buffers?
+  // if (bufferToArrayBuffer) {
+  //   data = bufferToArrayBuffer(data);
+  // }
+
+  // Careful - Node Buffers will look like ArrayBuffers (keep after isBuffer)
+  if (data instanceof ArrayBuffer) {
+    return new DataView(data);
+  }
+  throw new Error('toDataView');
 }

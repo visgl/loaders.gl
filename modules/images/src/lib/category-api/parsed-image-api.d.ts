@@ -1,6 +1,6 @@
-import {ImageType} from './image-type';
+import {ImageType, ImageTypeEnum, ImageDataType} from '../../types';
 
-export function isImage(image: any): boolean;
-export function getImageType(image: any, throwOnError?: boolean): ImageType;
-export function getImageData(image: any): Uint8Array;
-export function getImageSize(image: any): {width: number; height: number};
+export function isImage(image: ImageType): boolean;
+export function getImageType(image: ImageType, throwOnError?: boolean): ImageTypeEnum;
+export function getImageData(image: ImageType): ImageDataType | ImageData;
+export function getImageSize(image: ImageType): {width: number; height: number};

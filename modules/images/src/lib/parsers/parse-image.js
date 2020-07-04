@@ -9,10 +9,10 @@ import parseToNodeImage from './parse-to-node-image';
 // eslint-disable-next-line complexity
 export default async function parseImage(arrayBuffer, options, context) {
   options = options || {};
-  options.image = options.image || {};
+  const imageOptions = options.image || {};
 
   // The user can request a specific output format via `options.image.type`
-  const imageType = options.image.type || 'auto';
+  const imageType = imageOptions.type || 'auto';
 
   const {url} = context || {};
 
@@ -48,10 +48,12 @@ function getLoadableImageType(type) {
   switch (type) {
     case 'auto':
     case 'data':
-      // Browser: For image type 'data' we need still need to load using an image format
+      // Browser: For image data we need still need to load using an image format
       // Node: the default image type is `data`.
       return getDefaultImageType();
     default:
+      // Throw an error if not supported
+      isImageTypeSupported(type);
       return type;
   }
 }

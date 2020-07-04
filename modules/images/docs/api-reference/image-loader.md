@@ -6,11 +6,9 @@ An image loader that works under both Node.js (requires `@loaders.gl/polyfills`)
 | -------------- | ---------------------------------------------------------------- |
 | File Extension | `.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`, `.bmp`, `.ico`, `.svg` |
 | File Type      | Binary                                                           |
-| File Format    | JPEG, PNG, ...                                                   |
-| Data Format    | `ImageBitmap`, `Image` or "image data"                           |
+| File Format    | Image                                                            |
+| Data Format    | `ImageBitmap`, `Image` (older browsers) or `data` (node.js)      |
 | Supported APIs | `load`, `parse`                                                  |
-| Worker Thread  | No (but may run on separate native thread in browsers)           |
-| Streaming      | No                                                               |
 
 ## Usage
 
@@ -21,14 +19,6 @@ import {load} from '@loaders.gl/core';
 
 const image = await load(url, ImageLoader, options);
 ```
-
-## Data Format
-
-The `ImageLoader` parses binary encoded images (such as JPEG or PNG images) into one of three different in-memory representations:
-
-- `ImageBitmap` (`type: 'imagebitmap`) - Optimized image class on modern browsers.
-- `Image` (`type: 'image`) - Works on all browsers, less performant.
-- An "image data object" (`type: 'data'`) - An `ImageData` like object that can holds the raw bytes to the image and works in both browsers and Node.js
 
 ## Options
 

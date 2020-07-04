@@ -8,16 +8,14 @@ export default async function parseToImage(arrayBuffer, options, url) {
   // But presumably not worth adding 'blob' flag to loader objects?
 
   const blobOrDataUrl = getBlobOrSVGDataUrl(arrayBuffer, url);
-  if (typeof blobOrDataUrl === 'string') {
-    return await loadToImage(blobOrDataUrl, options);
-  }
-
   const URL = self.URL || self.webkitURL;
-  const objectUrl = URL.createObjectURL(blobOrDataUrl);
+  const objectUrl = typeof blobOrDataUrl !== 'string' && URL.createObjectURL(blobOrDataUrl);
   try {
-    return await loadToImage(objectUrl, options);
+    return await loadToImage(objectUrl || blobOrDataUrl, options);
   } finally {
-    URL.revokeObjectURL(objectUrl);
+    if (objectUrl) {
+      URL.revokeObjectURL(objectUrl);
+    }
   }
 }
 
@@ -39,7 +37,11 @@ export async function loadToImage(url, options) {
 
   // Create a promise that tracks onload/onerror callbacks
   return await new Promise((resolve, reject) => {
-    image.onload = () => resolve(image);
-    image.onerror = err => reject(new Error(`Could not load image ${url}: ${err}`));
+    try {
+      image.onload = () => resolve(image);
+      image.onerror = err => reject(new Error(`Could not load image ${url}: ${err}`));
+    } catch (error) {
+      reject(error);
+    }
   });
 }

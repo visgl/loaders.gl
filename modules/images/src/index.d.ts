@@ -1,3 +1,7 @@
+// TYPES
+export {ImageDataType, ImageType, ImageTypeEnum} from './types';
+
+// LOADERS AND WRITERS
 export {default as ImageLoader} from './image-loader';
 export {default as ImageWriter} from './image-writer';
 
