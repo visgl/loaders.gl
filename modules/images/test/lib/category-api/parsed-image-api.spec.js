@@ -63,6 +63,7 @@ test('Image Category#isImage', async t => {
   for (const image of IMAGES) {
     t.equals(isImage(image), true, 'isImage recognizes image');
   }
+  // @ts-ignore
   t.equals(isImage('not an image'), false, 'isImage rejects non-image');
   t.end();
 });
@@ -72,6 +73,7 @@ test('Image Category#getImageType', async t => {
   for (const image of IMAGES) {
     t.ok(IMAGE_TYPES.includes(getImageType(image)), 'returns a valid image type');
   }
+  // @ts-ignore
   t.throws(() => getImageType('not an image'));
   t.end();
 });
@@ -81,6 +83,7 @@ test('Image Category#getImageSize', async t => {
   for (const image of IMAGES) {
     t.equals(typeof getImageSize(image), 'object', 'returns size object');
   }
+  // @ts-ignore
   t.throws(() => getImageSize('unknown type'));
   t.end();
 });
@@ -90,6 +93,7 @@ test('Image Category#getImageData', async t => {
   for (const image of IMAGES) {
     t.equals(typeof getImageData(image), 'object', 'returns data');
   }
+  // @ts-ignore
   t.throws(() => getImageData('not an image'));
   t.end();
 });

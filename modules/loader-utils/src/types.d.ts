@@ -31,7 +31,10 @@ export type LoaderObject = {
  * A writer defintion that can be used with `@loaders.gl/core` functions
  */
 export type WriterObject = {
-  encode();
+  options: object;
+  deprecatedOptions?: object;
+
+  encode(data: any, options: object): Promise<any>; // TODO Promise<ArrayBuffer>
 };
 
 export type LoaderContext = {
