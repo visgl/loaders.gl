@@ -38,8 +38,7 @@ export function getImageData(image) {
       canvas.width = image.width;
       canvas.height = image.height;
       context.drawImage(image, 0, 0);
-      const imageData = context.getImageData(0, 0, image.width, image.height);
-      return imageData;
+      return context.getImageData(0, 0, image.width, image.height);
     default:
       return assert(false);
   }
