@@ -1,7 +1,10 @@
+// LOADERS.GL-SPECIFIC TYPES
 export {LoaderObject, WriterObject, LoaderContext, DataType, SyncDataType, BatchableDataType,
   IFileSystem, IRandomAccessReadFileSystem} from './types';
 
-export {default as createWorker} from './lib/create-worker';
+// LOADERS.GL-SPECIFIC WORKER UTILS
+export {default as createWorker} from './lib/worker-loader-utils/create-worker';
+export {validateLoaderVersion} from './lib/worker-loader-utils/validate-loader-version';
 
 // GENERAL UTILS
 export {default as assert} from './lib/env-utils/assert';
@@ -15,19 +18,20 @@ export {
   document
 } from './lib/env-utils/globals';
 
-// LOADER UTILS
-export {validateLoaderVersion} from './lib/validate-loader-version';
+// WORKER UTILS
+export {default as _WorkerFarm} from './lib/worker-utils/worker-farm';
+export {default as _WorkerPool} from './lib/worker-utils/worker-pool';
+export {default as _WorkerThread} from './lib/worker-utils/worker-thread';
+export {getTransferList} from './lib/worker-utils/get-transfer-list';
 
 // LIBRARY UTILS
 export {getLibraryUrl, loadLibrary} from './lib/library-utils/library-utils';
-
-// WORKER UTILS
-export {getTransferList} from './lib/worker-utils/get-transfer-list';
 
 // PARSER UTILS
 export {parseJSON} from './lib/parser-utils/parse-json';
 
 // MEMORY COPY UTILS
+export {toArrayBuffer, toBuffer} from './lib/binary-utils/binary-utils';
 export {
   padTo4Bytes,
   copyToArray,

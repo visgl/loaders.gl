@@ -1,6 +1,6 @@
 /* global Buffer */
 import fs from 'fs';
-import {toArrayBuffer} from './utils/to-array-buffer.node';
+import {toArrayBuffer} from '@loaders.gl/loader-utils';
 
 const DEFAULT_OPTIONS = {
   dataType: 'arraybuffer',
