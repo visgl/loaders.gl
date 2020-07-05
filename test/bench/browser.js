@@ -23,6 +23,7 @@ import '@loaders.gl/polyfills';
 import {Bench} from '@probe.gl/bench';
 import {_addAliases} from '@loaders.gl/loader-utils';
 import ALIASES from '../aliases';
+const {Bench} = require('@probe.gl/Bench');
 import {addModuleBenchmarksToSuite} from './modules';
 
 // Sets up aliases for file reader

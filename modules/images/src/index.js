@@ -13,18 +13,13 @@ export {
   isImage,
   getImageType,
   getImageSize,
-  getImageData
+  getImageData,
+  getImageDataAsync
 } from './lib/category-api/parsed-image-api';
 
 // DEPRECATED
 // TODO - Remove in V3
 export {loadImage} from './lib/texture-api/load-image';
-
-import {getDefaultImageType} from './lib/category-api/image-type';
-
-export function getSupportedImageType(imageType = null) {
-  return getDefaultImageType();
-}
 
 export {
   isBinaryImage,

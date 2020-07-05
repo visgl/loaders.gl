@@ -1,6 +1,6 @@
 import assert from '../utils/assert';
 import parseImage from '../parsers/parse-image';
-import {getImageSize} from '../category-api/parsed-image-api';
+import {getImageData} from '../category-api/parsed-image-api';
 import {generateUrl} from './generate-url';
 import {deepLoad, shallowLoad} from './deep-load';
 
@@ -24,7 +24,7 @@ async function getMipmappedImageUrls(getUrl, mipLevels, options, urlOptions) {
     const url = generateUrl(getUrl, options, {...urlOptions, lod: 0});
     const image = await shallowLoad(url, parseImage, options);
 
-    const {width, height} = getImageSize(image);
+    const {width, height} = getImageData(image);
     mipLevels = getMipLevels({width, height});
 
     // TODO - push image and make `deepLoad` pass through non-url values, avoid loading twice?

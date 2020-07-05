@@ -1,13 +1,16 @@
 /* global ImageBitmap, Image */
-import {global, isBrowser} from '../utils/globals';
+import {global, isBrowser, isWorker} from '../utils/globals';
 
 // @ts-ignore TS2339: Property does not exist on type
 const {_parseImageNode} = global;
 
-const IMAGE_SUPPORTED = typeof Image !== 'undefined'; // NOTE: "false" positives if jsdom is installed
+// NOTE: "false" positives if jsdom is installed
+const IMAGE_SUPPORTED = typeof Image !== 'undefined' && !isWorker; // NOTE: "false" positives if jsdom is installed
 const IMAGE_BITMAP_SUPPORTED = typeof ImageBitmap !== 'undefined';
 const NODE_IMAGE_SUPPORTED = Boolean(_parseImageNode);
 const DATA_SUPPORTED = isBrowser ? true : NODE_IMAGE_SUPPORTED;
+
+const ERR_INSTALL_POLYFILLS = `Install '@loaders.gl/polyfills' to parse images under Node.js`;
 
 // Checks if a loaders.gl image type is supported
 export function isImageTypeSupported(type) {
@@ -30,7 +33,7 @@ export function isImageTypeSupported(type) {
       return DATA_SUPPORTED;
 
     default:
-      throw new Error(`@loaders.gl/images: image ${type} not supported in this environment`);
+      throw new Error(`@loaders.gl/images: unknown image type ${type}`);
   }
 }
 
@@ -47,5 +50,5 @@ export function getDefaultImageType() {
   }
 
   // This should only happen in Node.js
-  throw new Error(`Install '@loaders.gl/polyfills' to parse images under Node.js`);
+  throw new Error(ERR_INSTALL_POLYFILLS);
 }

@@ -107,11 +107,9 @@ Some iterator helper functions have been renamed, the old naming is now deprecat
 
 **`@loaders.gl/images`**
 
-The experimental ImageLoaders for individual formats introduced in 2.0 have been removed, use `ImageLoader` for all formats.
-`@loaders.gl/images`
-
 - `getImageData(image)` now returns an object with `{data, width, height}` instead of just the `data` array. This small breaking change ensures that the concept of _image data_ is consistent across the API.
 - `ImageLoader`: `options.image.type`: The `html` and `ndarray` image types are now deprecated and replaced with `image` and `data` respectively.
+- `ImageLoaders`: The experimental loaders for individual formats introduced in 2.0 have been removed, use `ImageLoader` for all formats.
 
 **`@loaders.gl/3d-tiles`**
 

@@ -230,8 +230,8 @@ The new loaders empowers rendering frameworks to visualize various geospatial da
 
 **@loaders.gl/images**
 
-- Images can now be loaded as data: Using the `ImageLoader` with `options.image.type: 'data'` parameter will return an _image data object_ with width, height and a typed array containing the image data (instead of an opaque `Image` or `ImageBitmap` instance).
-- `ImageBitmap` loading now works reliably, use `ImageLoader` with `options.image.type: 'imagebitmap'`.
+- `ImageLoader`: Images can now be (reliably) loaded as `ImageBitmap`, by specifying `options.image.type: 'imagebitmap'`.
+- `ImageLoader`: Images can now be loaded as data (instead of an opaque `Image` or `ImageBitmap` objects), by specifying `options.image.type: 'data'`. The loader will return an _image data object_ with a `data` field with a typed array containing the image data as well as `width` and `height` fields.
 
 **@loaders.gl/json**
 

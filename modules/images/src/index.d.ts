@@ -11,13 +11,14 @@ export {ImageWriter} from './image-writer';
 export {getBinaryImageMetadata} from './lib/category-api/binary-image-api';
 
 // Parsed Image API
-export {isImageTypeSupported, getDefaultImageType} from './lib/category-api/image-type';
+export {isImageTypeSupported} from './lib/category-api/image-type';
 
 export {
   isImage,
   getImageType,
   getImageSize,
-  getImageData
+  getImageData,
+  getImageDataAsync
 } from './lib/category-api/parsed-image-api';
 
 // DEPRECATED

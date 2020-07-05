@@ -1,7 +1,7 @@
 // Image loading/saving for browser and Node.js
 /* global document, ImageBitmap, ImageData */
 import {global} from '../utils/globals';
-import {getImageSize} from '../category-api/parsed-image-api';
+import {getImageData} from '../category-api/parsed-image-api';
 
 // @ts-ignore TS2339: Property does not exist on type
 const {_encodeImageNode} = global;
@@ -28,7 +28,8 @@ let qualityParamSupported = true;
 async function encodeImageInBrowser(image, options) {
   const {mimeType, jpegQuality} = options.image;
 
-  const {width, height} = getImageSize(image);
+  // TODO - we only need width and height
+  const {width, height} = getImageData(image);
 
   // create a canvas and resize it to the size of our image
   const canvas = document.createElement('canvas');

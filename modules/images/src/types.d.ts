@@ -7,6 +7,7 @@ export type ImageDataType = {
   width: number;
   height: number;
   compressed?: boolean;
+  worker?: boolean; // if processed on worker
 }
 
 /**

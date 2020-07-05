@@ -20,6 +20,7 @@ export const ImageLoader = {
   name: 'Images',
   id: 'image',
   module: 'images',
+  category: 'image',
   version: VERSION,
   mimeTypes: MIME_TYPES,
   extensions: EXTENSIONS,
@@ -29,8 +30,9 @@ export const ImageLoader = {
   options: {
     image: {
       type: 'auto',
-      decode: true // if format is HTML
+      decode: true, // applies only to images of type: 'image' (Image)
+      _extractDataOnWorker: true // whether to decode data asynchronously on worker
     }
-    // imagebitmap: {} - passes (platform dependent) parameters to ImageBitmap constructor
+    // imagebitmap: {} - if supplied, passes platform dependent parameters to `createImageBitmap`
   }
 };
