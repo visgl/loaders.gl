@@ -196,15 +196,22 @@ export default class Converter3dTilesToI3S {
         }
       ],
       children: [],
-      geometryData: undefined
+      geometryData: undefined,
+      textureData: undefined
     };
 
     await this._addChildren({rootNode: root0, count: 0, tiles: root.children}, layers0path);
     if (root.content && root.content.type === 'b3dm') {
       root0.geometryData = [{href: './geometries/0'}];
-      const geometryBuffer = convertB3dmToI3sGeometry(root.content);
+      const {geometry: geometryBuffer, textures} = convertB3dmToI3sGeometry(root.content);
       const geometryPath = join(rootPath, 'geometries/0/');
       await this._writeFile(geometryPath, geometryBuffer, 'index.bin');
+      if (textures) {
+        root0.textureData = [{href: './textures/0'}];
+        const texturesPath = join(rootPath, 'textures/0/');
+        const texturesData = textures.bufferView.data;
+        await this._writeFile(texturesPath, texturesData, 'index.jpeg');
+      }
     }
     await this._writeFile(rootPath, JSON.stringify(root0));
   }
@@ -253,13 +260,20 @@ export default class Converter3dTilesToI3S {
           obb: neighbor.obb
         });
       }
-      await this._writeFile(childPath, JSON.stringify(node));
 
       if (sourceTile.content && sourceTile.content.type === 'b3dm') {
-        const geometryBuffer = convertB3dmToI3sGeometry(sourceTile.content);
+        const {geometry: geometryBuffer, textures} = convertB3dmToI3sGeometry(sourceTile.content);
         const geometryPath = join(childPath, 'geometries/0/');
         await this._writeFile(geometryPath, geometryBuffer, 'index.bin');
+        if (textures) {
+          node.textureData = [{href: './textures/0'}];
+          const texturesPath = join(childPath, 'textures/0/');
+          const texturesData = textures.bufferView.data;
+          await this._writeFile(texturesPath, texturesData, 'index.jpeg');
+        }
       }
+
+      await this._writeFile(childPath, JSON.stringify(node));
     }
   }
 
@@ -307,8 +321,7 @@ export default class Converter3dTilesToI3S {
       ],
       featureData: [{href: './features/0'}],
       geometryData: [{href: './geometries/0'}],
-      // TODO: insert this textureData only if gltf has texture
-      // textureData: [{href: './textures/0'}, {href: './textures/0_0_1'}],
+      textureData: undefined,
       sharedResource: {href: './shared'},
       parentNode: {
         id: rootTileId,

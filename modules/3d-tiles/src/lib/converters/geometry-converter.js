@@ -2,6 +2,7 @@ import {Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 
 const VALUES_PER_VERTEX = 3;
+const VALUES_PER_TEX_COORD = 2;
 export default function convertB3dmToI3sGeometry(content) {
   const {positions, normals, texCoords, colors} = convertAttributes(content);
 
@@ -14,11 +15,11 @@ export default function convertB3dmToI3sGeometry(content) {
   fileBuffer = concatenateArrayBuffers(fileBuffer, normals.buffer);
   fileBuffer = concatenateArrayBuffers(fileBuffer, texCoords.buffer);
   fileBuffer = concatenateArrayBuffers(fileBuffer, colors.buffer);
-  return fileBuffer;
+  return {geometry: fileBuffer, textures: getTexture(content)};
 }
 
 function convertAttributes(content) {
-  const {positions, normals} = convertPositionsAndNormals(content);
+  const {positions, normals, texCoords: convertedTexCoords} = convertPositionsAndNormals(content);
   const vertexCount = positions.length / VALUES_PER_VERTEX;
   const VALUES_PER_COLOR_ELEMENT = 4;
   const colors = new Uint8Array(vertexCount * VALUES_PER_COLOR_ELEMENT);
@@ -27,12 +28,14 @@ function convertAttributes(content) {
     colors.set([255, 255, 255, 255], index);
   }
 
-  const VALUES_PER_TEX_COORD_ELEMENT = 2;
-  const texCoords = new Float32Array(vertexCount * VALUES_PER_TEX_COORD_ELEMENT);
-  for (let index = 0; index < texCoords.length; index += 2) {
-    // TODO: to implement textures support instead this hardcoded values
-    texCoords.set([1, 1], index);
+  let texCoords = convertedTexCoords;
+  if (!texCoords.length) {
+    texCoords = new Float32Array(vertexCount * VALUES_PER_TEX_COORD);
+    for (let index = 0; index < texCoords.length; index += 2) {
+      texCoords.set([1, 1], index);
+    }
   }
+
   return {
     positions,
     normals,
@@ -45,20 +48,43 @@ function convertPositionsAndNormals(content) {
   const nodes = content.gltf.nodes;
   let positions = new Float32Array(0);
   let normals = new Float32Array(0);
+  let texCoords = new Float32Array(0);
   for (const node of nodes) {
     const mesh = node.mesh;
     const nodeMatrix = node.matrix;
     for (const primitive of mesh.primitives) {
       const attributes = primitive.attributes;
-      let batchIds = content.batchTableJson && content.batchTableJson.id;
-      if (!(batchIds && batchIds.length)) {
-        batchIds = [0];
+      const batchIds = content.batchTableJson && content.batchTableJson.id;
+      if (!(batchIds && batchIds.length) || !isBatchedIndices(primitive.indices, attributes)) {
+        positions = concatenateTypedArrays(
+          positions,
+          transformPositions(
+            attributes.POSITION.value,
+            content.cartographicOrigin,
+            content.cartesianModelMatrix,
+            nodeMatrix,
+            primitive.indices.value
+          )
+        );
+        normals = concatenateTypedArrays(
+          normals,
+          transformNormals(attributes.NORMAL.value, primitive.indices.value)
+        );
+        texCoords = concatenateTypedArrays(
+          texCoords,
+          transformTexCoords(
+            attributes.TEXCOORD_0 && attributes.TEXCOORD_0.value,
+            primitive.indices.value
+          )
+        );
+        continue; // eslint-disable-line
       }
       for (const batchId of batchIds) {
-        const {positions: newPositions, normals: newNormals} = getValuesByBatchId(
-          attributes,
-          batchId
-        );
+        const {
+          positions: newPositions,
+          normals: newNormals,
+          texCoords: newTexCoords
+        } = getValuesByBatchId(attributes, batchId);
         positions = concatenateTypedArrays(
           positions,
           transformVertexArray(
@@ -80,12 +106,18 @@ function convertPositionsAndNormals(content) {
             primitive.indices.value
           )
         );
+
+        texCoords = concatenateTypedArrays(
+          texCoords,
+          transformTexCoords(newTexCoords, primitive.indices.value)
+        );
       }
     }
   }
   return {
     positions,
-    normals
+    normals,
+    texCoords
   };
 }
 
@@ -103,6 +135,11 @@ function concatenateArrayBuffers(source1, source2) {
   temp.set(sourceArray1, 0);
   temp.set(sourceArray2, sourceArray1.byteLength);
   return temp;
+}
+
+function isBatchedIndices(indices, attributes) {
+  const {positions} = getValuesByBatchId(attributes, 0);
+  return indices.max < positions.length;
 }
 
 function transformVertexArray(
@@ -136,21 +173,44 @@ function transformVertexArray(
   return newVertices;
 }
 
+function transformTexCoords(texCoords, indices) {
+  if (!texCoords) {
+    return new Float32Array(0);
+  }
+  const newTexCoords = new Float32Array(indices.length * VALUES_PER_TEX_COORD);
+  for (let i = 0; i < indices.length; i++) {
+    const coordIndex = indices[i] * VALUES_PER_TEX_COORD;
+    const texCoord = texCoords.subarray(coordIndex, coordIndex + VALUES_PER_TEX_COORD);
+    newTexCoords[i * VALUES_PER_TEX_COORD] = texCoord[0];
+    newTexCoords[i * VALUES_PER_TEX_COORD + 1] = texCoord[1];
+    newTexCoords[i * VALUES_PER_TEX_COORD + 2] = texCoord[2];
+  }
+  return newTexCoords;
+}
+
+/* eslint-disable max-statements */
 function getValuesByBatchId(attributes, batchId) {
   const batchIdAttribute = attributes._BATCHID;
   const positionsToBatch = attributes.POSITION.value;
   const normalsToBatch = attributes.NORMAL.value;
+  const texCoordsToBatch = attributes.TEXCOORD_0 && attributes.TEXCOORD_0.value;
   if (!batchIdAttribute) {
     return {
       positions: positionsToBatch,
-      normals: normalsToBatch
+      normals: normalsToBatch,
+      texCoords: texCoordsToBatch
     };
   }
   const batchIdRelations = batchIdAttribute.value;
   const batchIdCount = batchIdRelations.filter(id => id === batchId).length;
   const positions = new Float32Array(batchIdCount * VALUES_PER_VERTEX);
   const normals = new Float32Array(batchIdCount * VALUES_PER_VERTEX);
+  let texCoords = null;
+  if (texCoordsToBatch) {
+    texCoords = new Float32Array(batchIdCount * VALUES_PER_TEX_COORD);
+  }
   let resultArrayCounter = 0;
+  let texCoordsArrayCounter = 0;
   for (let index = 0; index < batchIdAttribute.count; index++) {
     if (batchIdRelations[index] === batchId) {
       positions[resultArrayCounter] = positionsToBatch[index * VALUES_PER_VERTEX];
@@ -160,10 +220,23 @@ function getValuesByBatchId(attributes, batchId) {
       normals[resultArrayCounter + 1] = normalsToBatch[index * VALUES_PER_VERTEX + 1];
       normals[resultArrayCounter + 2] = normalsToBatch[index * VALUES_PER_VERTEX + 2];
       resultArrayCounter += VALUES_PER_VERTEX;
+
+      if (texCoords) {
+        texCoords[texCoordsArrayCounter] = texCoordsToBatch[index * VALUES_PER_VERTEX];
+        texCoords[texCoordsArrayCounter + 1] = texCoordsToBatch[index * VALUES_PER_VERTEX + 1];
+        texCoordsArrayCounter += VALUES_PER_TEX_COORD;
+      }
     }
   }
   return {
     positions,
-    normals
+    normals,
+    texCoords
   };
+}
+/* eslint-enable max-statements */
+
+function getTexture(content) {
+  const images = content.gltf.images;
+  return images && images.length && images[0];
 }
