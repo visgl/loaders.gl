@@ -1,7 +1,7 @@
-import {assert} from '@loaders.gl/loader-utils';
+import assert from '../env-utils/assert';
 
 // Convert (copy) ArrayBuffer to Buffer
-export default function toBuffer(binaryData) {
+export function toBuffer(binaryData) {
   if (ArrayBuffer.isView(binaryData)) {
     binaryData = binaryData.buffer;
   }

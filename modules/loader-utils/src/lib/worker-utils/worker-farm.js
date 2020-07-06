@@ -10,7 +10,7 @@ export default class WorkerFarm {
     return typeof Worker !== 'undefined';
   }
 
-  constructor({maxConcurrency = DEFAULT_MAX_CONCURRENCY, onMessage, onDebug = () => {}}) {
+  constructor({maxConcurrency = DEFAULT_MAX_CONCURRENCY, onMessage = null, onDebug = () => {}}) {
     this.maxConcurrency = maxConcurrency;
     this.onMessage = onMessage;
     this.onDebug = onDebug;
@@ -49,12 +49,31 @@ export default class WorkerFarm {
       workerPool = new WorkerPool({
         source: workerSource,
         name: workerName,
-        onMessage: this.onMessage,
+        onMessage: onWorkerMessage.bind(null, this.onMessage),
         maxConcurrency: this.maxConcurrency,
         onDebug: this.onDebug
       });
       this.workerPools.set(workerName, workerPool);
     }
     return workerPool;
+  }
+}
+
+function onWorkerMessage(onMessage, {worker, data, resolve, reject}) {
+  if (onMessage) {
+    onMessage({worker, data, resolve, reject});
+    return;
+  }
+
+  switch (data.type) {
+    case 'done':
+      resolve(data.result);
+      break;
+
+    case 'error':
+      reject(data.message);
+      break;
+
+    default:
   }
 }

@@ -28,6 +28,14 @@
     "README.md"
   ],
   "browser": {
+    "./src/node/to-array-buffer.node.js": false,
+    "./dist/es5/node/to-array-buffer.node.js": false,
+    "./dist/esm/node/to-array-buffer.node.js": false,
+    "./dist/es6/node/to-array-buffer.node.js": false,
+    "./src/node/to-buffer.node.js": false,
+    "./dist/es5/node/to-buffer.node.js": false,
+    "./dist/esm/node/to-buffer.node.js": false,
+    "./dist/es6/node/to-buffer.node.js": false,
     "./src/lib/library-utils/require-utils.node.js": false,
     "./dist/es5/lib/library-utils/require-utils.node.js": false,
     "./dist/esm/lib/library-utils/require-utils.node.js": false,

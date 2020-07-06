@@ -1,6 +1,6 @@
 /* global Buffer */
 import test from 'tape-promise/tape';
-import {toArrayBuffer} from '@loaders.gl/core';
+import {toArrayBuffer} from '@loaders.gl/loader-utils';
 
 test('toArrayBuffer', t => {
   const typedArray = new Float32Array([0, 1, 2, 3]);
