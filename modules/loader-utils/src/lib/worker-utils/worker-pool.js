@@ -26,8 +26,8 @@ export default class WorkerPool {
   /**
    * Process binary data in a worker
    */
-  async process(data, jobName) {
-    return await new Promise((resolve, reject) => {
+  process(data, jobName) {
+    return new Promise((resolve, reject) => {
       this.jobQueue.push({data, jobName, resolve, reject});
       this._startQueuedJob();
     });

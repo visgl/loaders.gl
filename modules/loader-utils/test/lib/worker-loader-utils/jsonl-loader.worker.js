@@ -1,4 +1,4 @@
-import {createWorker} from '../../../src';
+import {createWorker} from '@loaders.gl/loader-utils';
 
 createWorker({
   name: 'TEST-JSONL_LOADER',

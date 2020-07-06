@@ -1,5 +1,5 @@
 import test from 'tape-promise/tape';
-import {validateLoaderVersion} from '@loaders.gl/loader-utils/lib/worker-loader-utils/validate-loader-version';
+import {validateLoaderVersion} from '@loaders.gl/loader-utils';
 
 test('validateLoaderVersion', t => {
   t.doesNotThrow(
