@@ -13,7 +13,7 @@ const MIME_TYPES = [
   'image/gif',
   'image/webp',
   'image/bmp',
-  'image/vndmicrosofticon',
+  'image/vnd.microsoft.icon',
   'image/svg+xml'
 ];
 
