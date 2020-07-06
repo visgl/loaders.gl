@@ -32,17 +32,18 @@ The supported image types are:
 
 - `ImageBitmap`- Optimized image class on modern browsers.
 - `Image` - Works on all browsers, less performant.
-- "image data object" - `ImageData` like objects that hold the raw decoded bytes of an image. Works in both browsers and Node.js
+- "image data object" - an `ImageData` like object that hold the raw decoded bytes of an image. Works in both browsers and Node.js.
 
 ## Options
 
 | Option              | Type            | Default                                | Description                  |
 | ------------------- | --------------- | -------------------------------------- | ---------------------------- |
-| `image.mimeType`    | `string`        | `'image/png'`                          | image type. Depends on brows |
-| `image.jpegQuality` | `number | null` | If provided and supported by browser } |
+| `image.mimeType`    | `string`        | `'image/png'`                          | image output format  |
+| `image.jpegQuality` | `number | null` | `image/jpeg: 0.92`, `image/webp: 0.80` | 
+ Image quality, between `0-1`. Only applies to `image/jpeg` and `image/webp`. |
 
 ## Remarks
 
 - Supported image types (MIME types) depend on the browser / environment. As a rule, `image/png` and `image/jpeg` are always supported. (Unfortunately it is not currently clear how to determine what formats are available on any given browser, other than "trial and error").
-- `jpegQuality` argument is not supported on all platforms, in which case it will have reasonable but platform-dependent defaults.
+- `jpegQuality` argument is not supported on all platforms (in which case it is assumed to have reasonable but platform-dependent defaults).
 - The `ImageWriter` currently uses [canvas.toBlob()](https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob) on browsers, so referring to related documentation might be helpful.
