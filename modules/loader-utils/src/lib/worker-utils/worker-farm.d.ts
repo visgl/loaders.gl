@@ -16,7 +16,7 @@ export default class WorkerFarm {
    */
   constructor(options: {
     maxConcurrency?: number,
-    onMessage: onMessageFunc,
+    onMessage?: onMessageFunc,
     onDebug?: () => void
   });
 

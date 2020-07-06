@@ -1,6 +1,6 @@
 import fs from 'fs';
 import {promisify} from 'util';
-import toBuffer from './utils/to-buffer.node';
+import {toBuffer} from '@loaders.gl/loader-utils';
 
 export function writeFile(filePath, arrayBufferOrString, options) {
   return promisify(fs.writeFile)(`${filePath}`, toBuffer(arrayBufferOrString), {flag: 'w'});

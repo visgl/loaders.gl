@@ -1,6 +1,6 @@
 /* global Worker */
 import {getWorkerURL} from './get-worker-url';
-import {getTransferList} from '@loaders.gl/loader-utils';
+import {getTransferList} from './get-transfer-list';
 
 let count = 0;
 
@@ -22,8 +22,9 @@ export default class WorkerThread {
    */
   async process(data) {
     return new Promise((resolve, reject) => {
-      this.worker.onmessage = event =>
+      this.worker.onmessage = event => {
         this.onMessage({worker: this.worker, data: event.data, resolve, reject});
+      };
       this.worker.onerror = error => {
         // Note Error object does not have the expected fields if loading failed completely
         // https://developer.mozilla.org/en-US/docs/Web/API/Worker#Event_handlers

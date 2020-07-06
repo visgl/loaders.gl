@@ -1,6 +1,7 @@
 /* global TextEncoder */
-import {assert} from '@loaders.gl/loader-utils';
-import {toArrayBuffer as bufferToArrayBuffer} from '../node/utils/to-array-buffer.node';
+import assert from '../env-utils/assert';
+import {toArrayBuffer as bufferToArrayBuffer} from '../node/to-array-buffer.node';
+import {toBuffer as toNodeBuffer} from '../node/to-buffer.node';
 
 export function toArrayBuffer(data) {
   if (bufferToArrayBuffer) {
@@ -26,15 +27,6 @@ export function toArrayBuffer(data) {
   return assert(false);
 }
 
-// export function blobToArrayBuffer(blob) {
-//   return new Promise((resolve, reject) => {
-//     let arrayBuffer;
-//     const fileReader = new FileReader();
-//     fileReader.onload = event => {
-//       arrayBuffer = event.target.result;
-//     };
-//     fileReader.onloadend = event => resolve(arrayBuffer);
-//     fileReader.onerror = reject;
-//     fileReader.readAsArrayBuffer(blob);
-//   });
-// }
+export function toBuffer(data) {
+  return toNodeBuffer ? toNodeBuffer(data) : data;
+}
