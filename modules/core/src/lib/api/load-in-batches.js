@@ -30,7 +30,7 @@ async function loadOneFileInBatches(file, loaders, options, fetch) {
   if (typeof file === 'string') {
     const url = file;
     const response = await fetch(url);
-    return parseInBatches(response, loaders, options, url);
+    return await parseInBatches(response, loaders, options, url);
   }
-  return parseInBatches(file, loaders, options);
+  return await parseInBatches(file, loaders, options);
 }

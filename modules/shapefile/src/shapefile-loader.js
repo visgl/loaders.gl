@@ -17,8 +17,8 @@ export const ShapefileLoader = {
   options: {
     shapefile: {}
   },
-  parse: parseShapefile,
-  parseInBatches: parseShapefileInBatches
+  parse: parseShapefile
+  // parseInBatches: parseShapefileInBatches
 };
 
 async function parseShapefile(arrayBuffer, options, context) {
@@ -43,7 +43,8 @@ async function parseShapefile(arrayBuffer, options, context) {
   };
 }
 
-async function parseShapefileInBatches(asyncIterator, options, context) {
+/*
+async function *parseShapefileInBatches(asyncIterator, options, context) {
   const {parseInBatches} = context;
   const {shx, cpg, prj} = await loadShapefileSidecarfiles(options, context);
 
@@ -54,7 +55,7 @@ async function parseShapefileInBatches(asyncIterator, options, context) {
   // let dbfResponse = fetch(`${baseName}.dbf`);
   // const properties = parseInBatches(dbfResponse, DBFLoader, {dbf: {cpg});
 
-  return {
+  yield {
     cpg,
     prj,
     shx,
@@ -62,6 +63,7 @@ async function parseShapefileInBatches(asyncIterator, options, context) {
     // properties
   };
 }
+*/
 
 // eslint-disable-next-line max-statements
 async function loadShapefileSidecarfiles(options, context) {
