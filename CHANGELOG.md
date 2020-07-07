@@ -1,5 +1,13 @@
 ## loaders.gl v2
 
+## v2.3 Prereleases
+
+#### v2.3.0-alpha.2
+- ShapefileLoader fixes
+
+#### v2.3.0-alpha.1
+- ShapefileLoader
+
 ## v2.2 Release
 
 #### v2.2.1
