@@ -5,6 +5,9 @@ import {getLoaderContext} from '../loader-utils/context-utils';
 import {getAsyncIteratorFromData} from '../loader-utils/get-data';
 import {selectLoader} from './select-loader';
 
+// Ensure `parse` is available in context if loader falls back to `parse`
+import {parse} from './parse';
+
 export async function parseInBatches(data, loaders, options, url) {
   // Signature: parseInBatches(data, options, url) - Uses registered loaders
   if (!Array.isArray(loaders) && !isLoaderObject(loaders)) {
@@ -23,7 +26,7 @@ export async function parseInBatches(data, loaders, options, url) {
   // Normalize options
   options = normalizeOptions(options, loader, loaders, url);
 
-  const context = getLoaderContext({url, loaders}, options);
+  const context = getLoaderContext({url, parseInBatches, parse, loaders}, options);
 
   return await parseWithLoaderInBatches(loader, data, options, context);
 }
