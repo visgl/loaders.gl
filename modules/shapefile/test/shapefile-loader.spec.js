@@ -1,6 +1,6 @@
 /* global File */
 import test from 'tape-promise/tape';
-import {fetchFile, load, isBrowser} from '@loaders.gl/core';
+import {fetchFile, load, loadInBatches, isBrowser} from '@loaders.gl/core';
 import {geojsonToBinary} from '@loaders.gl/gis';
 import {ShapefileLoader} from '@loaders.gl/shapefile';
 import {_BrowserFileSystem as BrowserFileSystem} from '@loaders.gl/shapefile';
@@ -60,6 +60,22 @@ test('ShapefileLoader#load (from files or URLs)', async t => {
     const data = await load(filename, ShapefileLoader);
     t.comment(`${filename}: ${JSON.stringify(data).slice(0, 70)}`);
 
+    await testShapefileData(t, testFileName, data);
+  }
+
+  t.end();
+});
+
+test('ShapefileLoader#loadInBatches', async t => {
+  // test file load (node) or URL load (browser)
+  for (const testFileName in SHAPEFILE_JS_TEST_FILES) {
+    const filename = `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`;
+    const batches = await loadInBatches(filename, ShapefileLoader);
+    let data;
+    for await (const batch of batches) {
+      data = batch;
+      t.comment(`${filename}: ${JSON.stringify(data).slice(0, 70)}`);
+    }
     await testShapefileData(t, testFileName, data);
   }
 
