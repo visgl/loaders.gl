@@ -21,6 +21,6 @@ export function checkFetchResponseStatusSync(response) {
 
 function getErrorText(text) {
   // Look for HTML error texts
-  const matches = text.match("<pre>(.*)</pre>");
+  const matches = text.match('<pre>(.*)</pre>');
   return matches ? matches[1] : ` ${text.slice(0, 10)}...`;
 }
