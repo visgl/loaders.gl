@@ -1,4 +1,4 @@
-import {DataType, LoaderObject} from '@loaders.gl/loader-utils';
+import {DataType, LoaderObject, LoaderContext} from '@loaders.gl/loader-utils';
 /**
  * Parses `data` using a specified loader
  * @param data
@@ -10,7 +10,7 @@ export function parse(
   data: DataType | Promise<DataType>,
   loaders: LoaderObject | LoaderObject[],
   options?: object,
-  context?: object
+  context?: LoaderContext
 ): Promise<any>;
 
 /** @deprecated parse with URL as last parameter is deprecated */

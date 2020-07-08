@@ -1,4 +1,4 @@
-import {BatchableDataType, LoaderObject} from '@loaders.gl/loader-utils/';
+import {BatchableDataType, LoaderObject, LoaderContext} from '@loaders.gl/loader-utils/';
 /**
  * Parses `data` using a specified loader
  * @param data
@@ -9,5 +9,14 @@ import {BatchableDataType, LoaderObject} from '@loaders.gl/loader-utils/';
 export function parseInBatches(
   data: BatchableDataType,
   loaders: LoaderObject | LoaderObject[],
-  options?: object, url?: string
+  options?: object,
+  context?: LoaderContext
+): Promise<any>;
+
+/** @deprecated parse with URL as last parameter is deprecated */
+export function parseInBatches(
+  data: BatchableDataType,
+  loaders: LoaderObject | LoaderObject[],
+  options: object,
+  url: string
 ): Promise<any>;

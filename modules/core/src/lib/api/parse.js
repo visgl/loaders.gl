@@ -16,17 +16,17 @@ export async function parse(data, loaders, options, context) {
     loaders = null;
   }
 
+  // Resolve any promise
+  data = await data;
+
+  options = options || {};
+
   // DEPRECATED - backwards compatibility, last param can be URL...
   let url = '';
   if (typeof context === 'string') {
     url = context;
     context = null;
   }
-
-  options = options || {};
-
-  // Resolve any promise
-  data = await data;
 
   // Extract a url for auto detection
   const autoUrl = getUrlFromData(data, url);
