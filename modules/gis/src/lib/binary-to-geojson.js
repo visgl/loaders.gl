@@ -112,7 +112,7 @@ function parseGeometry(data, startIndex, endIndex) {
     case 'Polygon':
       return polygonToGeoJson(data, startIndex, endIndex);
     default:
-      throw new Error('Invalid type');
+      throw new Error(`Unsupported geometry type: ${data.type}`);
   }
 }
 
