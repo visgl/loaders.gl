@@ -145,7 +145,7 @@
           "size": 2
         },
         "polygonIndices": {"value": [0, 5, 15, 20, 30], "size": 1},
-        "primitivePolygonIndices": {"value": [0, 5, 15, 20, 25, 30], "size": 1},
+        "primitivePolygonIndices": {"value": [0, 5, 10, 15, 20, 25, 30], "size": 1},
         "globalFeatureIds": {
           "value": [
             0,
