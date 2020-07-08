@@ -13,7 +13,7 @@ export default function parseShape(arrayBuffer) {
 
   // index numbering starts at 1
   let currentIndex = 1;
-  const features = [];
+  const geometries = [];
 
   let offset = SHAPE_HEADER_SIZE;
 
@@ -35,7 +35,7 @@ export default function parseShape(arrayBuffer) {
       offset += Int32Array.BYTES_PER_ELEMENT * 2;
 
       const recordView = new DataView(arrayBuffer, offset, byteLength);
-      features.push(parseRecord(recordView));
+      geometries.push(parseRecord(recordView));
       currentIndex++;
       offset += byteLength;
     }
@@ -43,7 +43,7 @@ export default function parseShape(arrayBuffer) {
 
   return {
     header,
-    features
+    geometries
   };
 }
 
