@@ -1,7 +1,6 @@
 /* global File */
 import test from 'tape-promise/tape';
 import {fetchFile, load, loadInBatches, isBrowser} from '@loaders.gl/core';
-import {geojsonToBinary} from '@loaders.gl/gis';
 import {ShapefileLoader} from '@loaders.gl/shapefile';
 import {_BrowserFileSystem as BrowserFileSystem} from '@loaders.gl/shapefile';
 
@@ -117,7 +116,6 @@ async function testShapefileData(t, testFileName, data) {
   const json = await response.json();
 
   for (let i = 0; i < json.features.length; i++) {
-    const expBinary = geojsonToBinary([json.features[i]]).points.positions;
-    t.deepEqual(data.data[i].positions, expBinary);
+    t.deepEqual(data.data[i], json.features[i]);
   }
 }
