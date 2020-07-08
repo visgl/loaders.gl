@@ -1,7 +1,6 @@
 /* global File */
 import test from 'tape-promise/tape';
 import {fetchFile, load, loadInBatches, isBrowser} from '@loaders.gl/core';
-import {geojsonToBinary} from '@loaders.gl/gis';
 import {ShapefileLoader} from '@loaders.gl/shapefile';
 import {_BrowserFileSystem as BrowserFileSystem} from '@loaders.gl/shapefile';
 

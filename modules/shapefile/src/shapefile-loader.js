@@ -71,7 +71,7 @@ async function parseShapefile(arrayBuffer, options, context) {
 
   // Join properties and geometries into features
   const features = [];
-  for (var i = 0; i < geojsonGeometries.length; i++) {
+  for (let i = 0; i < geojsonGeometries.length; i++) {
     const geometry = geojsonGeometries[i];
     const feature = {
       type: 'Feature',
