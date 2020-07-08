@@ -12,7 +12,7 @@ test('SHPLoader#loadInBatches polygons', async t => {
   let rowCount = 0;
   for await (const batch of iterator) {
     batchCount++;
-    rowCount += batch.features.length;
+    rowCount += batch.geometries.length;
   }
 
   t.equal(batchCount, 1, 'Correct number of batches received');
