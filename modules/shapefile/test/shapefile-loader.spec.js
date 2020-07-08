@@ -117,7 +117,6 @@ async function testShapefileData(t, testFileName, data) {
   const json = await response.json();
 
   for (let i = 0; i < json.features.length; i++) {
-    const expBinary = geojsonToBinary([json.features[i]]).points.positions;
-    t.deepEqual(data.data[i].positions, expBinary);
+    t.deepEqual(data.data[i], json.features[i]);
   }
 }

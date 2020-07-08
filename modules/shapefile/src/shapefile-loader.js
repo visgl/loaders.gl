@@ -50,15 +50,12 @@ async function parseShapefile(arrayBuffer, options, context) {
   const {shx, cpg, prj} = await loadShapefileSidecarFiles(options, context);
 
   // parse geometries
-  const shapes = await parse(arrayBuffer, SHPLoader); // , {shp: shx});
-  const {header, features} = shapes;
+  const {header, geometries} = await parse(arrayBuffer, SHPLoader); // , {shp: shx});
 
-  // TODO - clean up this code when binaryToGeoJSON stabilizes
-  let data = features;
-  try {
-    data = binaryToGeoJson(features);
-  } catch (error) {
-    // ignore
+  // Convert binary geometries to GeoJSON
+  const geojsonGeometries = [];
+  for (const geom of geometries) {
+    geojsonGeometries.push(binaryToGeoJson(geom));
   }
 
   // parse properties
@@ -72,9 +69,16 @@ async function parseShapefile(arrayBuffer, options, context) {
     // Ignore properties
   }
 
-  // Join properties and shapes
-  for (let i = 0; i < properties.length && i < features.length; ++i) {
-    features[i].properties = properties[i];
+  // Join properties and geometries into features
+  const features = [];
+  for (var i = 0; i < geojsonGeometries.length; i++) {
+    const geometry = geojsonGeometries[i];
+    const feature = {
+      type: 'Feature',
+      geometry,
+      properties: properties[i] || {}
+    };
+    features.push(feature);
   }
 
   return {
@@ -82,7 +86,7 @@ async function parseShapefile(arrayBuffer, options, context) {
     prj,
     shx,
     header,
-    data
+    data: features
   };
 }
 
