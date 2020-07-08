@@ -1,8 +1,10 @@
 /* eslint-disable max-statements */
 import test from 'tape-promise/tape';
 import {fetchFile} from '@loaders.gl/core';
-import {geojsonToBinary, TEST_EXPORTS} from '@loaders.gl/gis';
+import {geojsonToBinary} from '@loaders.gl/gis';
+import {TEST_EXPORTS} from '@loaders.gl/gis/lib/geojson-to-binary';
 
+// @ts-ignore
 const {firstPass, secondPass} = TEST_EXPORTS;
 
 // Sample GeoJSON data derived from examples in GeoJSON specification

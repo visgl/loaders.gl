@@ -33,6 +33,8 @@
       "@loaders.gl/draco/test": ["modules/draco/test"],
       "@loaders.gl/images/*": ["modules/images/src/*"],
       "@loaders.gl/images/test": ["modules/images/test"],
+      "@loaders.gl/gis/*": ["modules/gis/src/*"],
+      "@loaders.gl/gis/test": ["modules/gis/test"],
       "@loaders.gl/gltf/*": ["modules/gltf/src/*"],
       "@loaders.gl/gltf/test": ["modules/gltf/test"],
       "@loaders.gl/json/*": ["modules/json/src/*"],
