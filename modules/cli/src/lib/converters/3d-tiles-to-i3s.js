@@ -6,14 +6,24 @@ import {Vector3} from '@math.gl/core';
 import {join} from 'path';
 import {promises, writeFile} from 'fs';
 import {v4 as uuidv4} from 'uuid';
+import process from 'process';
+
+const ION_TOKEN =
+  process.env.IonToken || // eslint-disable-line
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ'; // eslint-disable-line
 
 export default class Converter3dTilesToI3S {
   async convert(inputFile, outputPath, tilesetsName) {
     console.log('Start load 3dTiles'); // eslint-disable-line
-    const tilesetJson = await load(inputFile, CesiumIonLoader);
+    const options = {
+      'cesium-ion': {accessToken: ION_TOKEN}
+    };
+    const preloadOptions = await CesiumIonLoader.preload(inputFile, options);
+    Object.assign(options, preloadOptions);
+    const tilesetJson = await load(inputFile, CesiumIonLoader, options);
     console.log(tilesetJson); // eslint-disable-line
-    const tilesets = new Tileset3D(tilesetJson);
-    await tilesets.loadAllTiles();
+    const tilesets = new Tileset3D(tilesetJson, options);
+    await tilesets.loadAllTiles(2);
 
     await this._creationOfStructure(tilesets, outputPath, tilesetsName);
 

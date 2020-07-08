@@ -258,19 +258,19 @@ export default class Tileset3D {
   }
 
   // Traversal all the tileset tree loading all tiles
-  async loadAllTiles() {
-    await this._loadTileWithChildren(this.root);
+  async loadAllTiles(maxLoadDepth) {
+    await this._loadTileWithChildren(this.root, 0, maxLoadDepth);
   }
   // Recursive loading tile with all children
-  async _loadTileWithChildren(tile) {
+  async _loadTileWithChildren(tile, loadDepth, maxLoadDepth) {
     if (!tile.contentReady) {
       await this._loadTile(tile);
     }
-    if (!(tile.children && tile.children.length)) {
+    if (!(tile.children && tile.children.length) || loadDepth >= maxLoadDepth) {
       return;
     }
     for (const childTile of tile.children) {
-      await this._loadTileWithChildren(childTile);
+      await this._loadTileWithChildren(childTile, loadDepth + 1, maxLoadDepth);
     }
   }
 

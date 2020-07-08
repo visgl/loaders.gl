@@ -1,8 +1,9 @@
-import {Vector3} from '@math.gl/core';
+import {Vector3, Matrix4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 
 const VALUES_PER_VERTEX = 3;
 const VALUES_PER_TEX_COORD = 2;
+const VALUES_PER_COLOR_ELEMENT = 4;
 export default function convertB3dmToI3sGeometry(content) {
   const {positions, normals, texCoords, colors} = convertAttributes(content);
 
@@ -19,9 +20,19 @@ export default function convertB3dmToI3sGeometry(content) {
 }
 
 function convertAttributes(content) {
-  const {positions, normals, texCoords: convertedTexCoords} = convertPositionsAndNormals(content);
+  let positions = new Float32Array(0);
+  let normals = new Float32Array(0);
+  let convertedTexCoords = new Float32Array(0);
+  const nodes = content.gltf.scene.nodes;
+  const convertedAttributes = convertNodes(nodes, content, {
+    positions,
+    normals,
+    texCoords: convertedTexCoords
+  });
+  positions = convertedAttributes.positions;
+  normals = convertedAttributes.normals;
+  convertedTexCoords = convertedAttributes.texCoords;
   const vertexCount = positions.length / VALUES_PER_VERTEX;
-  const VALUES_PER_COLOR_ELEMENT = 4;
   const colors = new Uint8Array(vertexCount * VALUES_PER_COLOR_ELEMENT);
   for (let index = 0; index < colors.length; index += 4) {
     // TODO: to implement colors support (if applicable for gltf format)
@@ -44,35 +55,61 @@ function convertAttributes(content) {
   };
 }
 
-function convertPositionsAndNormals(content) {
-  const nodes = content.gltf.nodes;
-  let positions = new Float32Array(0);
-  let normals = new Float32Array(0);
-  let texCoords = new Float32Array(0);
-  for (const node of nodes) {
-    const mesh = node.mesh;
-    const nodeMatrix = node.matrix;
+function convertNodes(
+  nodes,
+  content,
+  {positions, normals, texCoords},
+  matrix = new Matrix4([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])
+) {
+  if (nodes) {
+    for (const node of nodes) {
+      const newAttributes = convertNode(node, content, {positions, normals, texCoords}, matrix);
+      positions = newAttributes.positions;
+      normals = newAttributes.normals;
+      texCoords = newAttributes.texCoords;
+    }
+  }
+  return {positions, normals, texCoords};
+}
+
+function convertNode(
+  node,
+  content,
+  {positions, normals, texCoords},
+  matrix = new Matrix4([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])
+) {
+  const mesh = node.mesh;
+  const nodeMatrix = node.matrix;
+  const compositeMatrix = nodeMatrix ? matrix.multiplyRight(nodeMatrix) : matrix;
+  if (mesh) {
     for (const primitive of mesh.primitives) {
       const attributes = primitive.attributes;
       const batchIds = content.batchTableJson && content.batchTableJson.id;
       if (!(batchIds && batchIds.length) || !isBatchedIndices(primitive.indices, attributes)) {
+        // TODO: optimize arrays concatenation
         positions = concatenateTypedArrays(
           positions,
-          transformPositions(
+          transformVertexArray(
             attributes.POSITION.value,
             content.cartographicOrigin,
             content.cartesianModelMatrix,
-            nodeMatrix,
+            compositeMatrix,
             primitive.indices.value
           )
         );
         normals = concatenateTypedArrays(
           normals,
-          transformNormals(attributes.NORMAL.value, primitive.indices.value)
+          transformVertexArray(
+            attributes.NORMAL && attributes.NORMAL.value,
+            content.cartographicOrigin,
+            content.cartesianModelMatrix,
+            compositeMatrix,
+            primitive.indices.value
+          )
         );
         texCoords = concatenateTypedArrays(
           texCoords,
-          transformTexCoords(
+          flattenTexCoords(
             attributes.TEXCOORD_0 && attributes.TEXCOORD_0.value,
             primitive.indices.value
           )
@@ -91,7 +128,7 @@ function convertPositionsAndNormals(content) {
             newPositions,
             content.cartographicOrigin,
             content.cartesianModelMatrix,
-            nodeMatrix,
+            compositeMatrix,
             primitive.indices.value
           )
         );
@@ -109,16 +146,21 @@ function convertPositionsAndNormals(content) {
 
         texCoords = concatenateTypedArrays(
           texCoords,
-          transformTexCoords(newTexCoords, primitive.indices.value)
+          flattenTexCoords(newTexCoords, primitive.indices.value)
         );
       }
     }
   }
-  return {
-    positions,
-    normals,
-    texCoords
-  };
+  const newAttributes = convertNodes(
+    node.children,
+    content,
+    {positions, normals, texCoords},
+    compositeMatrix
+  );
+  positions = newAttributes.positions;
+  normals = newAttributes.normals;
+  texCoords = newAttributes.texCoords;
+  return {positions, normals, texCoords};
 }
 
 function concatenateTypedArrays(array1, array2) {
@@ -150,6 +192,9 @@ function transformVertexArray(
   indices
 ) {
   const newVertices = new Float32Array(indices.length * VALUES_PER_VERTEX);
+  if (!vertices) {
+    return newVertices;
+  }
   for (let i = 0; i < indices.length; i++) {
     const coordIndex = indices[i] * VALUES_PER_VERTEX;
     const vertex = vertices.subarray(coordIndex, coordIndex + VALUES_PER_VERTEX);
@@ -173,7 +218,7 @@ function transformVertexArray(
   return newVertices;
 }
 
-function transformTexCoords(texCoords, indices) {
+function flattenTexCoords(texCoords, indices) {
   if (!texCoords) {
     return new Float32Array(0);
   }
@@ -238,5 +283,7 @@ function getValuesByBatchId(attributes, batchId) {
 
 function getTexture(content) {
   const images = content.gltf.images;
+  // TODO: handle multiple images inside one gltf
+  // TODO: handle external images
   return images && images.length && images[0];
 }
