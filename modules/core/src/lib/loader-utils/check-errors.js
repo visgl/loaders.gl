@@ -4,7 +4,7 @@ export async function checkFetchResponseStatus(response) {
     try {
       const text = await response.text();
       if (text) {
-        errorMessage += text.slice(10);
+        errorMessage += `: ${getErrorText(text)}`;
       }
     } catch (error) {
       // ignore error
@@ -17,4 +17,10 @@ export function checkFetchResponseStatusSync(response) {
   if (!response.ok) {
     throw new Error(`fetch failed ${response.status}`);
   }
+}
+
+function getErrorText(text) {
+  // Look for HTML error texts
+  const matches = text.match("<pre>(.*)</pre>");
+  return matches ? matches[1] : ` ${text.slice(0, 10)}...`;
 }

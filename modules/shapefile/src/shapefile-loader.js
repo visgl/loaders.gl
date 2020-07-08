@@ -1,4 +1,5 @@
 import {SHPLoader} from './shp-loader';
+import {DBFLoader} from './dbf-loader';
 import {parseShx} from './lib/parse-shx';
 /** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 
@@ -27,19 +28,30 @@ async function parseShapefile(arrayBuffer, options, context) {
 
   // parse geometries
   const shapes = await parse(arrayBuffer, SHPLoader); // , {shp: shx});
+  const {header, features} = shapes;
 
   // parse properties
-  // const {url} = context;
-  // const baseName = basename(url);
-  // let dbfResponse = fetch(`${baseName}.dbf`);
-  // const properties = await parse(dbfResponse, DBFLoader, {dbf: {cpg});
+  let properties = [];
+  try {
+    const {url} = context;
+    const baseName = basename(url);
+    let dbfResponse = fetch(`${baseName}.dbf`);
+    properties = await parse(dbfResponse, DBFLoader, {dbf: {encoding: cpg || 'latin1'}});
+  } catch (error) {
+    // Ignore properties
+  }
+
+  // Join properties and shapes
+  for (let i = 0; i < properties.length && i < features.length; ++i) {
+    features[i].properties = properties[i];
+  }
 
   return {
-    cpg,
+    encoding: cpg,
     prj,
     shx,
-    shapes
-    // properties
+    header,
+    data: features
   };
 }
 

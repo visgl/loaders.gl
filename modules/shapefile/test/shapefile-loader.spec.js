@@ -112,13 +112,12 @@ async function testShapefileData(t, testFileName, data) {
   }
 
   // Compare with parsed json
-  const output = data.shapes;
 
   const response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.json`);
   const json = await response.json();
 
   for (let i = 0; i < json.features.length; i++) {
     const expBinary = geojsonToBinary([json.features[i]]).points.positions;
-    t.deepEqual(output.features[i].positions, expBinary);
+    t.deepEqual(data.data[i].positions, expBinary);
   }
 }
