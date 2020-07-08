@@ -22,6 +22,10 @@ export async function parseInBatches(data, loaders, options, url) {
   // Chooses a loader and normalizes it
   // TODO - only uses URL, need a selectLoader variant that peeks at first stream chunk...
   const loader = selectLoader(null, loaders, options, {url});
+  // Note: if nothrow option was set, it is possible that no loader was found, if so just return null
+  if (!loader) {
+    return null;
+  }
 
   // Normalize options
   options = normalizeOptions(options, loader, loaders, url);
