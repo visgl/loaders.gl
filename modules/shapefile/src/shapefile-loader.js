@@ -22,7 +22,7 @@ export const ShapefileLoader = {
   // parseInBatches: parseShapefileInBatches
 };
 
-/*
+/* TODO
 async function *parseShapefileInBatches(asyncIterator, options, context) {
   const {parseInBatches} = context;
   const {shx, cpg, prj} = await loadShapefileSidecarFiles(options, context);
@@ -56,8 +56,8 @@ async function parseShapefile(arrayBuffer, options, context) {
   let properties = [];
   try {
     const {url, fetch} = context;
-    const baseName = basename(url);
-    const dbfResponse = fetch(`${baseName}.dbf`);
+    const dbfResponse = fetch(replaceExtension(url, 'dbf'));
+    // NOTE: For some reason DBFLoader defaults to utf-8 so set default to be standards conformant
     properties = await parse(dbfResponse, DBFLoader, {dbf: {encoding: cpg || 'latin1'}});
   } catch (error) {
     // Ignore properties
