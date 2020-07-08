@@ -1,2 +1,4 @@
-export function geojsonToBinary(features, options);
-export const TEST_EXPORTS: any
+import {BinaryGeometryData} from '../types';
+
+export function geojsonToBinary(features: object[], options?: object): BinaryGeometryData;
+export const TEST_EXPORTS: object;

@@ -1,3 +1,4 @@
+import {binaryToGeoJson} from '@loaders.gl/gis';
 import {SHPLoader} from './shp-loader';
 import {DBFLoader} from './dbf-loader';
 import {parseShx} from './lib/parse-shx';
@@ -52,6 +53,14 @@ async function parseShapefile(arrayBuffer, options, context) {
   const shapes = await parse(arrayBuffer, SHPLoader); // , {shp: shx});
   const {header, features} = shapes;
 
+  // TODO - clean up this code when binaryToGeoJSON stabilizes
+  let data = features;
+  try {
+    data = binaryToGeoJson(features);
+  } catch (error) {
+    // ignore
+  }
+
   // parse properties
   let properties = [];
   try {
@@ -73,7 +82,7 @@ async function parseShapefile(arrayBuffer, options, context) {
     prj,
     shx,
     header,
-    data: features
+    data
   };
 }
 
