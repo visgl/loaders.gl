@@ -28,7 +28,7 @@ export async function parseInBatches(data, loaders, options, context) {
     url = context;
     context = null;
   }
-  
+
   // Extract a url for auto detection
   const autoUrl = getUrlFromData(data, url);
 
