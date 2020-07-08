@@ -1,11 +1,10 @@
-
 // Top-level function to convert input of binary arrays to GeoJSON
 export function binaryToGeoJson(data, type, format) {
   if (format === 'geometry') {
     return parseGeometry(data);
   }
 
-  var dataArray = normalizeInput(data, type);
+  const dataArray = normalizeInput(data, type);
 
   switch (deduceReturnType(dataArray)) {
     case 'Geometry':
@@ -72,6 +71,7 @@ function parseFeatureCollection(dataArray) {
     for (let i = 0; i < data.featureIds.value.length; i++) {
       const currValue = data.featureIds.value[i];
       if (currValue === lastValue) {
+        // eslint-disable-next-line no-continue
         continue;
       }
 
