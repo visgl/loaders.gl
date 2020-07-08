@@ -6,18 +6,12 @@ export default function convertB3dmToI3sGeometry(content) {
   const {positions, normals, texCoords, colors} = convertAttributes(content);
 
   const vertexCount = positions.length / VALUES_PER_VERTEX;
-  const header = new Uint32Array(new ArrayBuffer(2 * Uint32Array.BYTES_PER_ELEMENT));
+  const header = new Uint32Array(2);
   header.set([vertexCount], 0);
 
   let fileBuffer = header.buffer;
-  fileBuffer = concatenateArrayBuffers(
-    fileBuffer,
-    positions.buffer.slice(positions.byteOffset, positions.byteOffset + positions.byteLength)
-  );
-  fileBuffer = concatenateArrayBuffers(
-    fileBuffer,
-    normals.buffer.slice(normals.byteOffset, normals.byteOffset + normals.byteLength)
-  );
+  fileBuffer = concatenateArrayBuffers(fileBuffer, positions.buffer);
+  fileBuffer = concatenateArrayBuffers(fileBuffer, normals.buffer);
   fileBuffer = concatenateArrayBuffers(fileBuffer, texCoords.buffer);
   fileBuffer = concatenateArrayBuffers(fileBuffer, colors.buffer);
   return fileBuffer;
@@ -27,16 +21,14 @@ function convertAttributes(content) {
   const {positions, normals} = convertPositionsAndNormals(content);
   const vertexCount = positions.length / VALUES_PER_VERTEX;
   const VALUES_PER_COLOR_ELEMENT = 4;
-  const colors = new Uint8Array(new ArrayBuffer(vertexCount * VALUES_PER_COLOR_ELEMENT));
+  const colors = new Uint8Array(vertexCount * VALUES_PER_COLOR_ELEMENT);
   for (let index = 0; index < colors.length; index += 4) {
     // TODO: to implement colors support (if applicable for gltf format)
     colors.set([255, 255, 255, 255], index);
   }
 
   const VALUES_PER_TEX_COORD_ELEMENT = 2;
-  const texCoords = new Float32Array(
-    new ArrayBuffer(vertexCount * VALUES_PER_TEX_COORD_ELEMENT * Float32Array.BYTES_PER_ELEMENT)
-  );
+  const texCoords = new Float32Array(vertexCount * VALUES_PER_TEX_COORD_ELEMENT);
   for (let index = 0; index < texCoords.length; index += 2) {
     // TODO: to implement textures support instead this hardcoded values
     texCoords.set([1, 1], index);
@@ -69,7 +61,7 @@ function convertPositionsAndNormals(content) {
         );
         positions = concatenateTypedArrays(
           positions,
-          transformPositions(
+          transformVertexArray(
             newPositions,
             content.cartographicOrigin,
             content.cartesianModelMatrix,
@@ -80,7 +72,13 @@ function convertPositionsAndNormals(content) {
 
         normals = concatenateTypedArrays(
           normals,
-          transformNormals(newNormals, primitive.indices.value)
+          transformVertexArray(
+            newNormals,
+            content.cartographicOrigin,
+            content.cartesianModelMatrix,
+            nodeMatrix,
+            primitive.indices.value
+          )
         );
       }
     }
@@ -107,14 +105,14 @@ function concatenateArrayBuffers(source1, source2) {
   return temp;
 }
 
-function transformPositions(
+function transformVertexArray(
   vertices,
   cartographicOrigin,
   cartesianModelMatrix,
   nodeMatrix,
   indices
 ) {
-  const positions = new Float32Array(indices.length * VALUES_PER_VERTEX);
+  const newVertices = new Float32Array(indices.length * VALUES_PER_VERTEX);
   for (let i = 0; i < indices.length; i++) {
     const coordIndex = indices[i] * VALUES_PER_VERTEX;
     const vertex = vertices.subarray(coordIndex, coordIndex + VALUES_PER_VERTEX);
@@ -131,23 +129,11 @@ function transformPositions(
     );
     vertexVector = vertexVector.subtract(cartographicOrigin);
 
-    positions[i * VALUES_PER_VERTEX] = vertexVector.x;
-    positions[i * VALUES_PER_VERTEX + 1] = vertexVector.y;
-    positions[i * VALUES_PER_VERTEX + 2] = vertexVector.z;
+    newVertices[i * VALUES_PER_VERTEX] = vertexVector.x;
+    newVertices[i * VALUES_PER_VERTEX + 1] = vertexVector.y;
+    newVertices[i * VALUES_PER_VERTEX + 2] = vertexVector.z;
   }
-  return positions;
-}
-
-function transformNormals(normals, indices) {
-  const newNormals = new Float32Array(indices.length * VALUES_PER_VERTEX);
-  for (let i = 0; i < indices.length; i++) {
-    const coordIndex = indices[i] * VALUES_PER_VERTEX;
-    const normal = normals.subarray(coordIndex, coordIndex + VALUES_PER_VERTEX);
-    newNormals[i * VALUES_PER_VERTEX] = normal[0];
-    newNormals[i * VALUES_PER_VERTEX + 1] = normal[1];
-    newNormals[i * VALUES_PER_VERTEX + 2] = normal[2];
-  }
-  return newNormals;
+  return newVertices;
 }
 
 function getValuesByBatchId(attributes, batchId) {
