@@ -2,9 +2,22 @@
 
 ## v2.3 Prereleases
 
-#### v2.3.0-alpha.2
+#### v2.3.0-alpha.4
 
-- ShapefileLoader fixes
+- gis: Add multipolygon support (#853)
+- core: BrowserFileSystem (#851)
+- csv: List options to avoid incorrect warnings (#852)
+- core: Reorganize exports (#850)
+- core: parseInBatches context passing (#849)
+
+#### v2.3.0-alpha.3
+
+- Shapefile fixes (#847)
+- shapefile/gis: integrate binaryToGeoJson (#846)
+- shapefile: More fixes (#845)
+- gis: Binary to geojson converter (#824)
+
+#### v2.3.0-alpha.2
 
 #### v2.3.0-alpha.1
 
