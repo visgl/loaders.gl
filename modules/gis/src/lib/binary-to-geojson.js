@@ -126,18 +126,27 @@ function polygonToGeoJson(data, startIndex, endIndex) {
   const multi = polygonIndices.length > 2;
 
   const coordinates = [];
+  // Polygon
   if (!multi) {
     for (let i = 0; i < primitivePolygonIndices.length - 1; i++) {
-      const startPolygonIndex = primitivePolygonIndices[i];
-      const endPolygonIndex = primitivePolygonIndices[i + 1];
-      const ringCoordinates = ringToGeoJson(positions, startPolygonIndex, endPolygonIndex);
+      const startRingIndex = primitivePolygonIndices[i];
+      const endRingIndex = primitivePolygonIndices[i + 1];
+      const ringCoordinates = ringToGeoJson(positions, startRingIndex, endRingIndex);
       coordinates.push(ringCoordinates);
     }
 
     return {type: 'Polygon', coordinates};
   }
 
-  // TODO handle MultiPolygon
+  // MultiPolygon
+  for (let i = 0; i < polygonIndices.length - 1; i++) {
+    const startPolygonIndex = polygonIndices[i];
+    const endPolygonIndex = polygonIndices[i + 1];
+    const polygonCoordinates = polygonToGeoJson(data, startPolygonIndex, endPolygonIndex)
+      .coordinates;
+    coordinates.push(polygonCoordinates);
+  }
+
   return {type: 'MultiPolygon', coordinates};
 }
 
