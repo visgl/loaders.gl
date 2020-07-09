@@ -30,6 +30,7 @@ export {makeIterator} from './iterator-utils/make-iterator/make-iterator';
 
 // EXPERIMENTAL
 export {default as _fetchProgress} from './lib/progress/fetch-progress';
+export {default as _BrowserFileSystem} from './lib/filesystems/browser-filesystem';
 
 // FOR TESTING
 export {_unregisterLoaders} from './lib/api/register-loaders';
