@@ -19,3 +19,4 @@ import './lib/api/load-in-batches.spec';
 // EXPERIMENTAL
 
 import './lib/progress/fetch-progress.spec';
+import './lib/filesystems/browser-filesystem.spec';

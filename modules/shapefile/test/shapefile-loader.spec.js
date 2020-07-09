@@ -1,8 +1,8 @@
 /* global File */
 import test from 'tape-promise/tape';
 import {fetchFile, load, loadInBatches, isBrowser} from '@loaders.gl/core';
+import {_BrowserFileSystem as BrowserFileSystem} from '@loaders.gl/core';
 import {ShapefileLoader} from '@loaders.gl/shapefile';
-import {_BrowserFileSystem as BrowserFileSystem} from '@loaders.gl/shapefile';
 
 const SHAPEFILE_JS_DATA_FOLDER = '@loaders.gl/shapefile/test/data/shapefile-js';
 const SHAPEFILE_JS_TEST_FILES = {
