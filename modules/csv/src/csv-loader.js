@@ -12,10 +12,20 @@ const CSVLoaderOptions = {
   csv: {
     TableBatch: RowTableBatch,
     batchSize: 10,
+    // CSV options
     header: 'auto',
     rowFormat: 'auto',
     columnPrefix: 'column',
-    dynamicTyping: true
+    // delimiter: auto
+    // newline: auto
+    quoteChar: '"',
+    escapeChar: '"',
+    dynamicTyping: true,
+    comments: false,
+    skipEmptyLines: false,
+    // transform: null?
+    delimitersToGuess: [',', '\t', '|', ';']
+    // fastMode: auto
   }
 };
 
