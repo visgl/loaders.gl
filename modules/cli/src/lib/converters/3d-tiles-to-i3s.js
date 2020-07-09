@@ -1,8 +1,10 @@
 import {load} from '@loaders.gl/core';
 import {Tileset3D} from '@loaders.gl/tiles';
 import {CesiumIonLoader, convertB3dmToI3sGeometry} from '@loaders.gl/3d-tiles';
-import {Ellipsoid} from '@math.gl/geospatial';
-import {Vector3} from '@math.gl/core';
+import {
+  convertCommonToI3SCoordinate,
+  convertCommonToI3SExtentCoordinate
+} from './coordinate-converter';
 import {join} from 'path';
 import {promises, writeFile} from 'fs';
 import {v4 as uuidv4} from 'uuid';
@@ -32,7 +34,8 @@ export default class Converter3dTilesToI3S {
   }
 
   async _creationOfStructure(tileset, outputPath, tilesetName) {
-    const layers0path = join(outputPath, tilesetName, 'layers', '0');
+    const layers0path = join(`${outputPath}`, `${tilesetName}`, 'layers', '0');
+    const extent = convertCommonToI3SExtentCoordinate(tileset);
 
     const layers0 = {
       version: `{${uuidv4().toUpperCase()}}`,
@@ -55,7 +58,7 @@ export default class Converter3dTilesToI3S {
         version: '1.7',
         resourcePattern: ['3dNodeIndexDocument', 'Attributes', 'SharedResource', 'Geometry'],
         rootNode: './nodes/root',
-        extent: [-122.51473530281777, 37.70463582140094, -122.35672838423584, 37.83262838041543],
+        extent,
         indexCRS: 'http://www.opengis.net/def/crs/EPSG/0/4326',
         vertexCRS: 'http://www.opengis.net/def/crs/EPSG/0/4326',
         normalReferenceFrame: 'east-north-up',
@@ -189,7 +192,7 @@ export default class Converter3dTilesToI3S {
     await this._writeFile(layers0path, JSON.stringify(layers0));
     const root = tileset.root;
     const rootPath = join(layers0path, 'nodes', 'root');
-    const coordinates = this._getCoordinates(root);
+    const coordinates = convertCommonToI3SCoordinate(root);
     const root0 = {
       version: `{${uuidv4().toUpperCase()}}`,
       id: 'root',
@@ -235,7 +238,7 @@ export default class Converter3dTilesToI3S {
           layers0path
         );
       } else {
-        const coordinates = this._getCoordinates(child);
+        const coordinates = convertCommonToI3SCoordinate(child);
         data.rootNode.children.push({
           id: `${data.count}`,
           href: `./${data.count}`,
@@ -287,31 +290,10 @@ export default class Converter3dTilesToI3S {
     }
   }
 
-  _getCoordinates(tile) {
-    // TODO: from bounding-volume.js -> createSphere
-    const center = tile.boundingVolume.center;
-    const radius = tile.boundingVolume.radius;
-    const uniformScale = Math.max(Math.max(center[0], center[1]), center[2]);
-    const cartographicCenter = Ellipsoid.WGS84.cartesianToCartographic(center, new Vector3());
-    return {
-      mbs: [
-        cartographicCenter[0],
-        cartographicCenter[1],
-        cartographicCenter[2],
-        radius / uniformScale
-      ],
-      obb: {
-        center: [cartographicCenter[0], cartographicCenter[1], cartographicCenter[2]],
-        halfSize: [33.609211, 42.7426872, 4.93590784],
-        quaternion: [0.480679125, -0.159757987, -0.216719344, 0.834540367]
-      }
-    };
-  }
-
   async _createNode(rootTile, count, tile, layers0path) {
     const rootTileId = rootTile.id;
     const path = rootTileId === 'root' ? `${count}` : `${rootTile.path}/${count}`;
-    const coordinates = this._getCoordinates(tile);
+    const coordinates = convertCommonToI3SCoordinate(tile);
 
     const node = {
       version: rootTile.version,
