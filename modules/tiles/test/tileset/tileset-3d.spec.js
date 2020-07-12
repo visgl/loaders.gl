@@ -219,7 +219,7 @@ test('Tileset3D#hasExtension returns true if the tileset JSON file uses the spec
   t.end();
 });
 
-test('Tileset3D#gets all tilesets recursevly', async t => {
+test('Tileset3D#gets all tilesets recursively', async t => {
   const tilesetJson = await load(NESTED_TILESET_URL, CesiumIonLoader);
   const tileset = new Tileset3D(tilesetJson);
   await tileset.loadAllTiles();
