@@ -15,9 +15,12 @@ export function getResourceUrlAndType(resource) {
     };
   }
 
+  // If the resource is a Blob or a File (subclass of Blob)
   if (isBlob(resource)) {
     return {
-      url: stripQueryString(resource.url || ''),
+      // File objects have a "name" property. Blob objects don't have any
+      // url/name information
+      url: stripQueryString(resource.name || ''),
       type: resource.type || ''
     };
   }

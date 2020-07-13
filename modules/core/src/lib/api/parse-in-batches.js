@@ -34,16 +34,16 @@ export async function parseInBatches(data, loaders, options, context) {
 
   // Chooses a loader and normalizes it
   // TODO - only uses URL, need a selectLoader variant that peeks at first stream chunk...
-  const loader = selectLoader(null, loaders, options, {url: autoUrl});
+  const loader = selectLoader(data, loaders, options, {url: autoUrl});
   // Note: if nothrow option was set, it is possible that no loader was found, if so just return null
   if (!loader) {
     return null;
   }
 
   // Normalize options
-  options = normalizeOptions(options, loader, loaders, url);
+  options = normalizeOptions(options, loader, loaders, autoUrl);
 
-  context = getLoaderContext({url, parseInBatches, parse, loaders}, options, context);
+  context = getLoaderContext({url: autoUrl, parseInBatches, parse, loaders}, options, context);
 
   return await parseWithLoaderInBatches(loader, data, options, context);
 }
