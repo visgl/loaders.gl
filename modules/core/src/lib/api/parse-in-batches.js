@@ -1,7 +1,6 @@
 import {concatenateChunksAsync} from '@loaders.gl/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';
-import {getUrlFromData} from '../loader-utils/get-data';
 import {getLoaderContext} from '../loader-utils/context-utils';
 import {getAsyncIteratorFromData} from '../loader-utils/get-data';
 import {selectLoader} from './select-loader';
@@ -29,12 +28,9 @@ export async function parseInBatches(data, loaders, options, context) {
     context = null;
   }
 
-  // Extract a url for auto detection
-  const autoUrl = getUrlFromData(data, url);
-
   // Chooses a loader and normalizes it
   // TODO - only uses URL, need a selectLoader variant that peeks at first stream chunk...
-  const loader = selectLoader(null, loaders, options, {url: autoUrl});
+  const loader = selectLoader(data, loaders, options, {url});
   // Note: if nothrow option was set, it is possible that no loader was found, if so just return null
   if (!loader) {
     return null;
