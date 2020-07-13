@@ -2,6 +2,10 @@
 
 ## v2.2 Release
 
+#### v2.2.7
+
+- core: Fix stray FileReadableResponse import (#856)
+
 #### v2.2.6
 
 - Fix: Core: truly global loaders and options (#828)
