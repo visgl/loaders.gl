@@ -1,4 +1,4 @@
-import {FileReadableResponse} from '../../../polyfills/wip/fetch-browser/fetch-file.browser';
+import {FileReadableResponse} from './fetch/fetch-file.browser';
 
 export type LoaderObject = {
   id: string;
