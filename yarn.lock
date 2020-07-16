@@ -6386,6 +6386,11 @@ json-bignum@^0.0.3:
   resolved "https://registry.yarnpkg.com/json-bignum/-/json-bignum-0.0.3.tgz#41163b50436c773d82424dbc20ed70db7604b8d7"
   integrity sha1-QRY7UENsdz2CQk28IO1w23YEuNc=
 
+json-map-transform@^1.2.6:
+  version "1.2.6"
+  resolved "https://registry.yarnpkg.com/json-map-transform/-/json-map-transform-1.2.6.tgz#275295cdf0fa09d9d9536542854ef5e74cdd59ea"
+  integrity sha512-QyIKkQSqxo8lmwoU6fjcH9Ygp44XlSpnMiNa5qKkwsVggzqS3LfOOoICEYNWsin9R/3wGeFB/GIO7MLLNWzV7Q==
+
 json-parse-better-errors@^1.0.0, json-parse-better-errors@^1.0.1, json-parse-better-errors@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/json-parse-better-errors/-/json-parse-better-errors-1.0.2.tgz#bb867cfb3450e69107c131d1c514bab3dc8bcaa9"

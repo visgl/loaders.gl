@@ -1,15 +1,20 @@
 import {load} from '@loaders.gl/core';
 import {Tileset3D} from '@loaders.gl/tiles';
 import {CesiumIonLoader, convertB3dmToI3sGeometry} from '@loaders.gl/3d-tiles';
+import {join} from 'path';
+import {v4 as uuidv4} from 'uuid';
+import process from 'process';
+import transform from 'json-map-transform';
+
+import NodePages from './node-pages';
+import writeFile from './helpers/write-file';
 import {
   convertCommonToI3SCoordinate,
   convertCommonToI3SExtentCoordinate
 } from './coordinate-converter';
-import {join} from 'path';
-import {v4 as uuidv4} from 'uuid';
-import process from 'process';
-import NodePages from './node-pages';
-import writeFile from './helpers/write-file';
+
+import {layers as layersTemplate} from './templates/i3s/layers';
+import {node as nodeTemplate} from './templates/i3s/node';
 
 const ION_TOKEN =
   process.env.IonToken || // eslint-disable-line
@@ -45,167 +50,32 @@ export default class Converter3dTilesToI3S {
     const layers0path = join(`${outputPath}`, `${tilesetName}`, 'layers', '0');
     const extent = convertCommonToI3SExtentCoordinate(tileset);
 
-    const layers0 = {
+    const layers0data = {
       version: `{${uuidv4().toUpperCase()}}`,
       id: 0,
       name: tilesetName,
       href: './layers/0',
       layerType: 'IntegratedMesh',
-      spatialReference: {
-        wkid: 4326,
-        latestWkid: 4326,
-        vcsWkid: 3855,
-        latestVcsWkid: 3855
-      },
-      alias: 'AllRegions',
-      description: 'AllRegions',
-      capabilities: ['View', 'Query'],
       store: {
         id: `{${uuidv4().toUpperCase()}}`,
-        profile: 'meshpyramids',
-        version: '1.7',
-        resourcePattern: ['3dNodeIndexDocument', 'Attributes', 'SharedResource', 'Geometry'],
-        rootNode: './nodes/root',
-        extent,
-        indexCRS: 'http://www.opengis.net/def/crs/EPSG/0/4326',
-        vertexCRS: 'http://www.opengis.net/def/crs/EPSG/0/4326',
-        normalReferenceFrame: 'east-north-up',
-        attributeEncoding: 'application/octet-stream; version=1.6',
-        textureEncoding: ['image/jpeg'],
-        lodType: 'MeshPyramid',
-        lodModel: 'node-switching',
-        defaultGeometrySchema: {
-          geometryType: 'triangles',
-          header: [
-            {
-              property: 'vertexCount',
-              type: 'UInt32'
-            },
-            {
-              property: 'featureCount',
-              type: 'UInt32'
-            }
-          ],
-          topology: 'PerAttributeArray',
-          ordering: ['position', 'normal', 'uv0', 'color'],
-          vertexAttributes: {
-            position: {
-              valueType: 'Float32',
-              valuesPerElement: 3
-            },
-            normal: {
-              valueType: 'Float32',
-              valuesPerElement: 3
-            },
-            uv0: {
-              valueType: 'Float32',
-              valuesPerElement: 2
-            },
-            color: {
-              valueType: 'UInt8',
-              valuesPerElement: 4
-            }
-          },
-          featureAttributeOrder: ['id', 'faceRange'],
-          featureAttributes: {
-            id: {
-              valueType: 'UInt64',
-              valuesPerElement: 1
-            },
-            faceRange: {
-              valueType: 'UInt32',
-              valuesPerElement: 2
-            }
-          }
-        }
-      },
-      heightModelInfo: {
-        heightModel: 'orthometric',
-        vertCRS: 'WGS_84',
-        heightUnit: 'meter'
+        extent
       },
       nodePages: {
-        nodesPerPage: HARDCODED_NODES_PER_PAGE,
-        lodSelectionMetricType: 'maxScreenThresholdSQ'
-      },
-      materialDefinitions: [
-        {
-          doubleSided: true,
-          pbrMetallicRoughness: {
-            baseColorTexture: {
-              textureSetDefinitionId: 0
-            },
-            metallicFactor: 0
-          }
-        }
-      ],
-      textureSetDefinitions: [
-        {
-          formats: [
-            {
-              name: '0',
-              format: 'jpg'
-            },
-            {
-              name: '0_0_1',
-              format: 'dds'
-            }
-          ]
-        }
-      ],
-      geometryDefinitions: [
-        {
-          geometryBuffers: [
-            {
-              offset: 8,
-              position: {
-                type: 'Float32',
-                component: 3
-              },
-              normal: {
-                type: 'Float32',
-                component: 3
-              },
-              uv0: {
-                type: 'Float32',
-                component: 2
-              },
-              color: {
-                type: 'UInt8',
-                component: 4
-              },
-              featureId: {
-                type: 'UInt64',
-                component: 1,
-                binding: 'per-feature'
-              },
-              faceRange: {
-                type: 'UInt32',
-                component: 2,
-                binding: 'per-feature'
-              }
-            },
-            {
-              compressedAttributes: {
-                encoding: 'draco',
-                attributes: ['position', 'normal', 'uv0', 'color', 'feature-index']
-              }
-            }
-          ]
-        }
-        // ...
-      ]
+        nodesPerPage: HARDCODED_NODES_PER_PAGE
+      }
     };
 
+    const layers0 = transform(layers0data, layersTemplate);
+
     await writeFile(layers0path, JSON.stringify(layers0));
+
     const root = tileset.root;
     const rootPath = join(layers0path, 'nodes', 'root');
     const coordinates = convertCommonToI3SCoordinate(root);
-    const root0 = {
+    const root0data = {
       version: `{${uuidv4().toUpperCase()}}`,
       id: 'root',
       level: 0,
-      ...coordinates,
       lodSelection: [
         {
           metricType: 'maxScreenThresholdSQ',
@@ -216,8 +86,10 @@ export default class Converter3dTilesToI3S {
           maxError: 0
         }
       ],
+      ...coordinates,
       children: []
     };
+    const root0 = transform(root0data, nodeTemplate);
 
     const parentId = this.nodePages.push({
       lodThreshold: HARDCODED_MAX_SCREEN_THRESHOLD_SQ,
@@ -320,36 +192,25 @@ export default class Converter3dTilesToI3S {
     };
     const nodeId = this.nodePages.push(nodeInPage, parentId);
 
-    const node = {
+    const nodeData = {
       version: rootTile.version,
       id: nodeId.toString(),
       path: nodeId.toString(),
       level: rootTile.level + 1,
       ...coordinates,
-      lodSelection: [
-        {
-          metricType: 'maxScreenThresholdSQ',
-          maxError: HARDCODED_MAX_SCREEN_THRESHOLD_SQ
-        },
-        {
-          metricType: 'maxScreenThreshold',
-          maxError: 999.9999999999999
-        }
-      ],
-      featureData: [{href: './features/0'}],
-      geometryData: [{href: './geometries/0'}],
-      textureData: undefined,
-      sharedResource: {href: './shared'},
       parentNode: {
         id: rootTileId,
         href: `../${rootTileId}`,
         mbs: rootTile.mbs,
         obb: rootTile.obb
       },
-      features: null,
-      neighbors: [],
-      children: []
+      geometryData: {
+        href: './geometry/0'
+      },
+      children: [],
+      neighbors: []
     };
+    const node = transform(nodeData, nodeTemplate);
 
     if (tile.content && tile.content.type === 'b3dm') {
       const childPath = join(layers0path, 'nodes', node.path);
