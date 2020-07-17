@@ -1,15 +1,38 @@
 import {normalizeLoader} from '../loader-utils/normalize-loader';
 import {getResourceUrlAndType} from '../utils/resource-utils';
 import {getRegisteredLoaders} from './register-loaders';
-
+import {readFileSlice} from '../../iterator-utils/make-iterator/blob-iterator';
+import {isBlob} from '../../javascript-utils/is-type';
 const EXT_PATTERN = /\.([^.]+)$/;
 
 // TODO - Need a variant that peeks at streams for parseInBatches
 // TODO - Detect multiple matching loaders? Use heuristics to grade matches?
 // TODO - Allow apps to pass context to disambiguate between multiple matches (e.g. multiple .json formats)?
 
+export async function selectLoader(data, loaders = [], options = {}, context = {}) {
+  // First make a sync attempt, disabling exceptions
+  let loader = selectLoaderSync(data, loaders, {...options, nothrow: true}, context);
+  if (loader) {
+    return loader;
+  }
+
+  // For Blobs and Files, try to asynchronously read a small initial slice and test again with that
+  // to see if we can detect by initial content
+  if (isBlob(data)) {
+    data = await readFileSlice(data, 0, 10);
+    loader = selectLoaderSync(data, loaders, options, context);
+  }
+
+  // no loader available
+  if (!loader && !options.nothrow) {
+    throw new Error(getNoValidLoaderMessage(data));
+  }
+
+  return loader;
+}
+
 // eslint-disable-next-line complexity
-export function selectLoader(data, loaders = [], options = {}, context = {}) {
+export function selectLoaderSync(data, loaders = [], options = {}, context = {}) {
   // if only a single loader was provided (not as array), force its use
   // TODO - Should this behaviour be kept and documented?
   if (loaders && !Array.isArray(loaders)) {
@@ -28,19 +51,21 @@ export function selectLoader(data, loaders = [], options = {}, context = {}) {
 
   // no loader available
   if (!loader && !options.nothrow) {
-    throw new Error(getNoValidLoaderMessage(data, url, type));
+    throw new Error(getNoValidLoaderMessage(data));
   }
 
   return loader;
 }
 
-function getNoValidLoaderMessage(data, url, contentType) {
+function getNoValidLoaderMessage(data) {
+  const {url, type} = getResourceUrlAndType(data);
+
   let message = 'No valid loader found';
   if (data) {
-    message += ` data: "${getFirstCharacters(data)}"`;
+    message += ` data: "${getFirstCharacters(data)}", contentType: "${type}"`;
   }
   if (url) {
-    message += ` for ${url}`;
+    message += ` url: ${url}`;
   }
   return message;
 }
@@ -153,7 +178,7 @@ function getFirstCharacters(data, length = 5) {
 }
 
 function getMagicString(arrayBuffer, byteOffset, length) {
-  if (arrayBuffer.byteLength <= byteOffset + length) {
+  if (arrayBuffer.byteLength < byteOffset + length) {
     return '';
   }
   const dataView = new DataView(arrayBuffer);

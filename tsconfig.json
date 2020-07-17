@@ -12,6 +12,7 @@
     "noEmit": true,
     "resolveJsonModule": true,
     "baseUrl": ".",
+    "strict": true,
     "paths": {
       "@loaders.gl/core/*": ["modules/core/src/*"],
       "@loaders.gl/core/test": ["modules/core/test"],

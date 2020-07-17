@@ -14,16 +14,18 @@ Loader selection heuristics are based on:
 
 `selectLoader` is also aware of the [loader registry](docs/api-reference/core/register-loaders.md). If no loaders are provided (by passing in a falsy value such as `null`) `selectLoader` will search the list of pre-registered loaders.
 
+`selectLoaderSync` is also aware of the [loader registry](docs/api-reference/core/register-loaders.md). If no loaders are provided (by passing in a falsy value such as `null`) `selectLoader` will search the list of pre-registered loaders.
+
 ## Usage
 
 Select a loader from a list of provided loaders:
 
 ```js
-import {selectLoader} from '@loaders.gl/core';
+import {selectLoaderSync} from '@loaders.gl/core';
 import {ArrowLoader} from '@loaders.gl/arrow';
 import {CSVLoader} from '@loaders.gl/csv';
 
-selectLoader('filename.csv', [ArrowLoader, CSVLoader]); // => CSVLoader
+selectLoaderSync('filename.csv', [ArrowLoader, CSVLoader]); // => CSVLoader
 ```
 
 Select a loader from pre-registered loaders in the loader registry:
@@ -35,19 +37,26 @@ import {CSVLoader} from '@loaders.gl/csv';
 
 registerLoaders(ArrowLoader, CSVLoader);
 
-selectLoader('filename.csv'); // => CSVLoader
+await selectLoader('filename.csv'); // => CSVLoader
 ```
 
 Select a loader by specifying MIME type (using unregistered MIME types, see below)
 
 ```js
 const data = new Blob([string], {type: 'application/x.csv'});
-selectLoader(blob); // => CSVLoader
+await selectLoader(blob); // => CSVLoader
+```
+
+The async `selectLoader` function can identify loaders without extension and mimeType by content sniffing `Blob` and `File` objects (useful when user drags and drops files into your application).
+
+```js
+const data = new Blob(['DRACO...'] /* Binary Draco files start with these characters */]);
+await selectLoader(blob, DracoLoader); // => DracoLoader
 ```
 
 ## Functions
 
-### selectLoader(data: Response | ArrayBuffer | String, loaders?: Object | Object[] | null, options?: Object, info?: Object)
+### selectLoader(data: Response | ArrayBuffer | String | Blob, ..., loaders?: LoaderObject[], options?: object, context?: object): Promise<boolean>
 
 Selects an appropriate loader for a file from a list of candidate loaders by examining the `data` parameter, looking at URL extension, mimeType ('Content-Type') and/or an initial data chunk.
 
@@ -70,6 +79,8 @@ Regarding the `loaders` parameter:
 - A single loader object will be returned without matching.
 - a `null` loader list will use the pre-registered list of loaders.
 - A supplied list of loaders will be searched for a matching loader.
+
+### selectLoaderSync(data: Response | ArrayBuffer | String | Blob, ..., loaders?: LoaderObject[], options?: object, context?: object): boolean
 
 ## Supported Formats
 

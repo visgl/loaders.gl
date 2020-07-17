@@ -1,13 +1,15 @@
 import {assert, validateLoaderVersion} from '@loaders.gl/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';
-import {getUrlFromData} from '../loader-utils/get-data';
 import {getArrayBufferOrStringFromData} from '../loader-utils/get-data';
 import {getLoaders, getLoaderContext} from '../loader-utils/context-utils';
 import parseWithWorker, {canParseWithWorker} from '../loader-utils/parse-with-worker';
+import {getResourceUrlAndType} from '../utils/resource-utils';
 import {selectLoader} from './select-loader';
 
 export async function parse(data, loaders, options, context) {
+  assert(!context || typeof context !== 'string', 'parse no longer accepts final url');
+
   // Signature: parse(data, options, context | url)
   // Uses registered loaders
   if (loaders && !Array.isArray(loaders) && !isLoaderObject(loaders)) {
@@ -16,35 +18,26 @@ export async function parse(data, loaders, options, context) {
     loaders = null;
   }
 
-  // Resolve any promise
-  data = await data;
-
+  data = await data; // Resolve any promise
   options = options || {};
 
-  // DEPRECATED - backwards compatibility, last param can be URL...
-  let url = '';
-  if (typeof context === 'string') {
-    url = context;
-    context = null;
-  }
-
   // Extract a url for auto detection
-  const autoUrl = getUrlFromData(data, url);
+  const {url} = getResourceUrlAndType(data);
 
   // Chooses a loader (and normalizes it)
   // Also use any loaders in the context, new loaders take priority
   const candidateLoaders = getLoaders(loaders, context);
-  const loader = selectLoader(data, candidateLoaders, options, {url: autoUrl});
+  const loader = await selectLoader(data, candidateLoaders, options);
   // Note: if nothrow option was set, it is possible that no loader was found, if so just return null
   if (!loader) {
     return null;
   }
 
   // Normalize options
-  options = normalizeOptions(options, loader, candidateLoaders, autoUrl);
+  options = normalizeOptions(options, loader, candidateLoaders, url);
 
   // Get a context (if already present, will be unchanged)
-  context = getLoaderContext({url: autoUrl, parse, loaders: candidateLoaders}, options, context);
+  context = getLoaderContext({url, parse, loaders: candidateLoaders}, options, context);
 
   return await parseWithLoader(loader, data, options, context);
 }

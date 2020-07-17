@@ -2,18 +2,32 @@
 
 ## v2.3 (In Development)
 
-Target Release Date: TBD (alpha releases will be made available)
+Target Release Date: TBD (alpha releases are available)
+
+The release highlight is the new Shapefile loader, accompanied by a range of smaller but still important improvements supporting loaders.gl integration with a major geospatial application (kepler.gl).
 
 **@loaders.gl/core**
 
+- (BREAKING) `selectLoader()` is now async and returns a `Promise` that resolves to a loader, and can now identify loaders through content sniffing `Blob` and `File` objects.
+- `selectLoaderSync()` has been added for situations when calling an async function is not practial.
 - `parseInBatches` can now be called on all loaders. Non-batched loaders will just return a single batch.
-- `load`, `parse` etc: `options.fetch` can now be used to supply a either a custom `fetch` function or a `fetch` options object.
+- `options.fetch` (`load`, `parse` etc.) can now be used to supply a either a `fetch` options object or a custom `fetch` function.
 
 **@loaders.gl/polyfills**
 
 - Improved robustness and error handling in Node.js when calling the `fetch` polyfill on unreadable or non-existent files. Underlying errors (`ENOEXIST`, `EISDIR` etc) are now caught and reported in `Response.statusText`.
 
+**@loaders.gl/shapefile** (NEW)
+
+- A new loader for the ESRI Shapefile format has been added. It loads `.SHP` and (if available) `.DBF`, `.CPG` and `.PRJ` files and returns a geojson like geometry.
+
+**@loaders.gl/mvt**
+
+- An experimental binary output option is now available for Mapbox Vector Tiles.
+
 ## v2.2
+
+Framework and loader improvements based on usage in applications.
 
 Release Date: June 18, 2020
 
@@ -82,6 +96,8 @@ The `GLTFLoader` now installs the `DracoLoader`. The application no longer needs
 ## v2.1
 
 Release Date: Mar 16, 2020
+
+This release adds a number of new geospatial format loaders
 
 ### New Geospatial Loaders
 

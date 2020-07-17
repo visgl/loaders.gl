@@ -7,7 +7,7 @@ export {writeFile, writeFileSync} from './lib/fetch/write-file';
 // CONFIGURATION
 export {setLoaderOptions} from './lib/api/set-loader-options';
 export {registerLoaders} from './lib/api/register-loaders';
-export {selectLoader} from './lib/api/select-loader';
+export {selectLoader, selectLoaderSync} from './lib/api/select-loader';
 
 // LOADING (READING + PARSING)
 export {parse} from './lib/api/parse';
