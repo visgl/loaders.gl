@@ -189,7 +189,7 @@ test('Should return features from selected layers when layers property is provid
   t.end();
 });
 
-test.only('Polygon MVT to local coordinates binary', async t => {
+test('Polygon MVT to local coordinates binary', async t => {
   const response = await fetchFile(MVT_POLYGONS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
 
