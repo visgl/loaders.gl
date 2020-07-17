@@ -15,6 +15,7 @@ export async function createReadStream(url, options) {
     const noqueryUrl = url.split('?')[0];
     // Now open the stream
     return await new Promise((resolve, reject) => {
+      // @ts-ignore
       const stream = fs.createReadStream(noqueryUrl, {encoding: null});
       stream.once('readable', () => resolve(stream));
       stream.on('error', error => reject(error));
