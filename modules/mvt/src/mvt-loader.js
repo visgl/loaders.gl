@@ -19,6 +19,7 @@ export const MVTWorkerLoader = {
       layerProperty: 'layerName',
       layers: null,
       tileIndex: null,
+      _format: 'geojson',
       workerUrl: `https://unpkg.com/@loaders.gl/mvt@${VERSION}/dist/mvt-loader.worker.js`
     }
   }
