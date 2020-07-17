@@ -1,31 +1,40 @@
+// TODO - this import defeats the sophisticated typescript checking in ArrowJS
 import {RecordBatchReader} from 'apache-arrow/Arrow.es5.min';
-import {isIterable} from '@loaders.gl/core';
+// import {isIterable} from '@loaders.gl/core';
 
+/**
+ * @param {AsyncIterator<ArrayBuffer> | Iterator<ArrayBuffer>} asyncIterator
+ * @param {object} options
+ */
 export async function parseArrowInBatches(asyncIterator, options) {
   // Creates the appropriate RecordBatchReader subclasses from the input
   // This will also close the underlying source in case of early termination or errors
   const readers = await RecordBatchReader.readAll(asyncIterator);
 
   // As an optimization, return a non-async iterator
+  /*
   if (isIterable(readers)) {
-    return (function* arrowIterator() {
+    function* makeArrowIterator() {
       for (const reader of readers) {
         for (const batch of reader) {
           yield processBatch(batch, reader);
         }
         break; // only processing one stream of batches
       }
-    })();
+    }
+    const arrowIterator = makeArrowIterator();
   }
+  */
 
-  return (async function* arrowAsyncIterator() {
+  async function* makeArrowAsyncIterator() {
     for await (const reader of readers) {
       for await (const batch of reader) {
         yield processBatch(batch, reader);
       }
       break; // only processing one stream of batches
     }
-  })();
+  }
+  return makeArrowAsyncIterator();
 }
 
 function processBatch(batch, on) {

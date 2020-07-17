@@ -53,6 +53,7 @@ function getTileMesh(arrayBuffer, options) {
       header: {}
     },
     header: {
+      // @ts-ignore
       vertexCount: triangleIndices.length,
       // TODO: Find bounding box from header, instead of doing extra pass over
       // vertices.

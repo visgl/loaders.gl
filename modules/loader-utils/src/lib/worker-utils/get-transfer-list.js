@@ -28,7 +28,7 @@ export function getTransferList(object, recursive = true, transfers) {
 
   // If transfers is defined, is internal recursive call
   // Otherwise it's called by the user
-  return transfers === undefined ? Array.from(transfersSet) : null;
+  return transfers === undefined ? Array.from(transfersSet) : [];
 }
 
 // https://developer.mozilla.org/en-US/docs/Web/API/Transferable

@@ -43,7 +43,8 @@ export default function parseMVT(arrayBuffer, options) {
 
   if (options.mvt._format === 'binary') {
     const data = geojsonToBinary(features);
-    // TODO decide where to store this
+    // Add the original byteLength (as a reasonable approximation of the size of the binary data)
+    // TODO decide where to store extra fields like byteLength (header etc) and document
     // @ts-ignore
     data.byteLength = arrayBuffer.byteLength;
     return data;

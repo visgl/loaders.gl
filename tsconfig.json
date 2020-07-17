@@ -2,6 +2,8 @@
   "compilerOptions": {
     "target": "es2020",
     "jsx": "react",
+    "strict": true,
+    "noImplicitAny": false,
     "allowJs": true,
     "checkJs": true,
     "moduleResolution": "node",
@@ -11,12 +13,10 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
-      "@loaders.gl/core": ["modules/core/src"],
       "@loaders.gl/core/*": ["modules/core/src/*"],
       "@loaders.gl/core/test": ["modules/core/test"],
       "@loaders.gl/loader-utils/*": ["modules/loader-utils/src/*"],
       "@loaders.gl/loader-utils/test": ["modules/loader-utils/test"],
-      "@loaders.gl/polyfills": ["modules/polyfills/src"],
       "@loaders.gl/polyfills/*": ["modules/polyfills/src/*"],
       "@loaders.gl/polyfills/test": ["modules/polyfills/test"],
 

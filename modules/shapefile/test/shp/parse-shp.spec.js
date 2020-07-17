@@ -18,7 +18,9 @@ test('Shapefile JS Point tests', async t => {
     const output = parseShape(body);
 
     for (let i = 0; i < json.features.length; i++) {
-      const expBinary = geojsonToBinary([json.features[i]]).points.positions;
+      const binary = geojsonToBinary([json.features[i]]);
+      const expBinary = binary.points && binary.points.positions;
+      // @ts-ignore
       t.deepEqual(output.geometries[i].positions, expBinary);
     }
   }
@@ -37,7 +39,9 @@ test('Shapefile JS Polyline tests', async t => {
 
     for (let i = 0; i < json.features.length; i++) {
       const expBinary = geojsonToBinary([json.features[i]]).lines;
+      // @ts-ignore
       t.deepEqual(output.geometries[i].positions, expBinary.positions);
+      // @ts-ignore
       t.deepEqual(output.geometries[i].indices, expBinary.pathIndices);
     }
   }
@@ -56,7 +60,9 @@ test('Shapefile JS Polygon tests', async t => {
 
     for (let i = 0; i < json.features.length; i++) {
       const expBinary = geojsonToBinary([json.features[i]]).polygons;
+      // @ts-ignore
       t.deepEqual(output.geometries[i].positions, expBinary.positions);
+      // @ts-ignore
       t.deepEqual(output.geometries[i].indices, expBinary.primitivePolygonIndices);
     }
   }

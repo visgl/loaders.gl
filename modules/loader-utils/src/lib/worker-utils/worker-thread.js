@@ -44,6 +44,7 @@ export default class WorkerThread {
 
   destroy() {
     this.worker.terminate();
+    // @ts-ignore
     this.worker = null;
   }
 }

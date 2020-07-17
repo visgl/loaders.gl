@@ -14,7 +14,6 @@ export const WKTWorkerLoader = {
   extensions: ['wkt'],
   mimeTypes: ['text/plain'],
   category: 'geometry',
-  testText: null,
   text: true,
   options: {
     wkt: {

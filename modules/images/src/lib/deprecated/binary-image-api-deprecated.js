@@ -4,7 +4,7 @@ import {getBinaryImageMetadata} from '../category-api/binary-image-api';
 export function isBinaryImage(arrayBuffer, mimeType) {
   const metadata = getBinaryImageMetadata(arrayBuffer);
   if (mimeType) {
-    return Boolean(metadata) && metadata.mimeType === mimeType;
+    return Boolean(metadata && metadata.mimeType === mimeType);
   }
   // return true if any known type
   return Boolean(metadata);
@@ -26,6 +26,6 @@ export function getBinaryImageSize(arrayBuffer, mimeType = null) {
     };
   }
 
-  mimeType = mimeType || (metadata && metadata.mimeType) || 'unknown';
+  mimeType = mimeType || 'unknown';
   throw new Error(`invalid image data for type: ${mimeType}`);
 }

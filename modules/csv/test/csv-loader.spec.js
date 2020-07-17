@@ -40,7 +40,7 @@ test('CSVLoader#loader conformance', t => {
 
 test('CSVLoader#load(states.csv)', async t => {
   const response = await fetchFile(CSV_STATES_URL);
-  const rows = await load(response.body, CSVLoader);
+  const rows = await load(response, CSVLoader);
   t.equal(rows.length, 111);
   t.end();
 });
