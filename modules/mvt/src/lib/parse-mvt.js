@@ -9,15 +9,15 @@ import {transformCoordinates, transformToLocalCoordinates} from './transform-to-
   * @param {arrayBuffer} _ A MVT arrayBuffer
   * @return {?Object} A GeoJSON geometry object
   */
-export default function parseMVT(input, options) {
+export default function parseMVT(arrayBuffer, options) {
   options = options || {};
   options.mvt = options.mvt || {};
 
-  if (input.byteLength === 0) {
+  if (arrayBuffer.byteLength === 0) {
     return [];
   }
 
-  const tile = new VectorTile(new Protobuf(input));
+  const tile = new VectorTile(new Protobuf(arrayBuffer));
   const loaderOptions = options.mvt;
   const features = [];
 
@@ -41,7 +41,14 @@ export default function parseMVT(input, options) {
     }
   });
 
-  return options.mvt._format === 'binary' ? geojsonToBinary(features) : features;
+  if (options.mvt._format === 'binary') {
+    const data = geojsonToBinary(features);
+    // TODO decide where to store this
+    // @ts-ignore
+    data.byteLength = arrayBuffer.byteLength;
+    return data;
+  }
+  return features;
 }
 
 function getDecodedFeature(feature, options = {}) {
