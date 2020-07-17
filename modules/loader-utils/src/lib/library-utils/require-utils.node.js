@@ -29,7 +29,7 @@ export function requireFromFile(filename) {
 export function requireFromString(code, filename = '', options = {}) {
   if (typeof filename === 'object') {
     options = filename;
-    filename = undefined;
+    filename = '';
   }
 
   options = {

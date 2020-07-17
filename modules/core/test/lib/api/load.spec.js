@@ -78,6 +78,7 @@ test('load#Blob(text) - BROWSER ONLY', async t => {
 test('load#stream', async t => {
   const response = await fetchFile(JSON_URL);
   const stream = response.body;
+  // @ts-ignore
   const data = await load(stream, JSONLoader);
   t.equals(typeof data, 'object', 'load(stream) returned data');
   t.end();

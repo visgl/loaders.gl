@@ -20,7 +20,7 @@ export type LoaderObject = {
   parseSync?: (arrayBuffer, options) => any;
   parseText?: (string, options) => Promise<any>;
   parseTextSync?: (string, options) => any;
-  parseInBatches?: (iterator: AsyncIterable<ArrayBuffer> | AsyncIterator<ArrayBuffer>, options: object) => any;
+  parseInBatches?: (iterator: AsyncIterator<ArrayBuffer> | Iterator<ArrayBuffer>, options: object) => Promise<AsyncIterator<any>> | AsyncIterator<any>;
 
   // TODO - deprecated
   supported?: boolean;

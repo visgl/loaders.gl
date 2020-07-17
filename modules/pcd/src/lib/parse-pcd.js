@@ -79,8 +79,8 @@ function parsePCDHeader(data) {
   const result1 = data.search(/[\r\n]DATA\s(\S*)\s/i);
   const result2 = /[\r\n]DATA\s(\S*)\s/i.exec(data.substr(result1 - 1));
 
-  PCDheader.data = result2[1];
-  PCDheader.headerLen = result2[0].length + result1;
+  PCDheader.data = result2 && result2[1];
+  PCDheader.headerLen = (result2 && result2[0].length) + result1;
   PCDheader.str = data.substr(0, PCDheader.headerLen);
 
   // remove comments

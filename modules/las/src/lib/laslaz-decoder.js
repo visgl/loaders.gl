@@ -287,8 +287,7 @@ export class LASFile {
   constructor(arraybuffer) {
     this.arraybuffer = arraybuffer;
 
-    this.determineVersion();
-    if (this.version > 13) {
+    if (this.determineVersion() > 13) {
       throw new Error('Only file versions <= 1.3 are supported at this time');
     }
 
@@ -319,6 +318,7 @@ export class LASFile {
     const ver = new Int8Array(this.arraybuffer, 24, 2);
     this.version = ver[0] * 10 + ver[1];
     this.versionAsString = `${ver[0]}.${ver[1]}`;
+    return this.version;
   }
 
   open() {

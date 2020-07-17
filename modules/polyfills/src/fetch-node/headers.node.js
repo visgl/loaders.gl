@@ -7,17 +7,11 @@ export default class Headers {
     this.map = {};
 
     if (headers instanceof Headers) {
-      headers.forEach(function(value, name) {
-        this.append(name, value);
-      }, this);
+      headers.forEach((value, name) => this.append(name, value));
     } else if (Array.isArray(headers)) {
-      headers.forEach(function(header) {
-        this.append(header[0], header[1]);
-      }, this);
+      headers.forEach(header => this.append(header[0], header[1]));
     } else if (headers) {
-      Object.getOwnPropertyNames(headers).forEach(function(name) {
-        this.append(name, headers[name]);
-      }, this);
+      Object.getOwnPropertyNames(headers).forEach(name => this.append(name, headers[name]));
     }
   }
 
@@ -45,10 +39,14 @@ export default class Headers {
     this.map[normalizeName(name)] = normalizeValue(value);
   }
 
-  forEach(callback, thisArg) {
+  forEach(visitor, thisArg = null) {
     for (const name in this.map) {
       if (this.map.hasOwnProperty(name)) {
-        callback.call(thisArg, this.map[name], name, this);
+        if (thisArg) {
+          visitor.call(thisArg, this.map[name], name, this);
+        } else {
+          visitor(this.map[name], name, this);
+        }
       }
     }
   }

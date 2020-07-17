@@ -1,4 +1,6 @@
 // Convert GeoJSON features to flat binary arrays
+// @ts-nocheck
+
 export function geojsonToBinary(features, options = {}) {
   const firstPassData = firstPass(features);
   return secondPass(features, firstPassData, {

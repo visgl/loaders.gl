@@ -137,6 +137,7 @@ test('forEach accepts second thisArg argument', t => {
   const thisArg = 42;
   // eslint-disable-next-line no-invalid-this
   headers.forEach(function() {
+    // @ts-ignore
     t.equal(this, thisArg);
   }, thisArg);
   t.end();

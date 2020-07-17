@@ -1,4 +1,5 @@
 /* eslint-disable max-statements */
+// @ts-nocheck
 import test from 'tape-promise/tape';
 import {fetchFile} from '@loaders.gl/core';
 import {geojsonToBinary} from '@loaders.gl/gis';
@@ -386,6 +387,7 @@ test('gis#geojson-to-binary 3D features', async t => {
   t.end();
 });
 
+// eslint-disable-next-line complexity
 test('gis#geojson-to-binary position, featureId data types', async t => {
   const response = await fetchFile(FEATURES_2D);
   let {features} = await response.json();
@@ -402,18 +404,18 @@ test('gis#geojson-to-binary position, featureId data types', async t => {
   const options = {PositionDataType: Float64Array};
   const {points, lines, polygons} = geojsonToBinary(features, options);
 
-  t.ok(points.positions.value instanceof Float64Array);
-  t.ok(points.globalFeatureIds.value instanceof Uint32Array);
-  t.ok(points.featureIds.value instanceof Uint16Array);
-  t.ok(lines.positions.value instanceof Float64Array);
-  t.ok(lines.globalFeatureIds.value instanceof Uint32Array);
-  t.ok(lines.featureIds.value instanceof Uint16Array);
-  t.ok(lines.pathIndices.value instanceof Uint32Array);
-  t.ok(polygons.positions.value instanceof Float64Array);
-  t.ok(polygons.globalFeatureIds.value instanceof Uint32Array);
-  t.ok(polygons.featureIds.value instanceof Uint16Array);
-  t.ok(polygons.polygonIndices.value instanceof Uint32Array);
-  t.ok(polygons.primitivePolygonIndices.value instanceof Uint32Array);
+  t.ok(points && points.positions.value instanceof Float64Array);
+  t.ok(points && points.globalFeatureIds.value instanceof Uint32Array);
+  t.ok(points && points.featureIds.value instanceof Uint16Array);
+  t.ok(lines && lines.positions.value instanceof Float64Array);
+  t.ok(lines && lines.globalFeatureIds.value instanceof Uint32Array);
+  t.ok(lines && lines.featureIds.value instanceof Uint16Array);
+  t.ok(lines && lines.pathIndices.value instanceof Uint32Array);
+  t.ok(polygons && polygons.positions.value instanceof Float64Array);
+  t.ok(polygons && polygons.globalFeatureIds.value instanceof Uint32Array);
+  t.ok(polygons && polygons.featureIds.value instanceof Uint16Array);
+  t.ok(polygons && polygons.polygonIndices.value instanceof Uint32Array);
+  t.ok(polygons && polygons.primitivePolygonIndices.value instanceof Uint32Array);
   t.end();
 });
 

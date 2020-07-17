@@ -24,7 +24,7 @@ export async function* makeBlobIterator(file, options = {}) {
 async function readFileSlice(slice) {
   return await new Promise((resolve, reject) => {
     const fileReader = new FileReader();
-    fileReader.onloadend = event => resolve(event.target.result);
+    fileReader.onloadend = event => resolve(event.target && event.target.result);
     fileReader.onerror = error => reject(error);
     fileReader.readAsArrayBuffer(slice);
   });

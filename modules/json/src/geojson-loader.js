@@ -37,7 +37,6 @@ export const GeoJSONWorkerLoader = {
   },
   */
   category: 'geometry',
-  testText: null,
   text: true,
   options: GeoJSONLoaderOptions
 };

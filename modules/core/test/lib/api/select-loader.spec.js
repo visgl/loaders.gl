@@ -17,9 +17,11 @@ const URL_WITH_QUERYSTRING =
 const DRACO_URL_QUERYSTRING = '@loaders.gl/draco/test/data/bunny.drc?query.string';
 
 test('selectLoader#urls', async t => {
+  // @ts-ignore
   t.throws(() => selectLoader(null), 'selectedLoader throws if no loader found');
 
   t.equal(
+    // @ts-ignore
     selectLoader('.', null, {nothrow: true}),
     null,
     'selectedLoader({nothrow: true}) returns null instead of throwing'

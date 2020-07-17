@@ -85,9 +85,7 @@ test('PLYLoader#parse(WORKER)', async t => {
 // TODO - Update to use parseInBatches
 test('PLYLoader#parseInBatches(text)', async t => {
   const response = await fetchFile(PLY_CUBE_ATT_URL);
-  const stream = await response.body;
-
-  const batches = await parseInBatches(makeIterator(stream), PLYLoader);
+  const batches = await parseInBatches(makeIterator(response), PLYLoader);
 
   for await (const data of batches) {
     validateMeshCategoryData(t, data);

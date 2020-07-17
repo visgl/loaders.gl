@@ -2,6 +2,8 @@
   "compilerOptions": {
     "target": "es2020",
     "jsx": "react",
+    "strict": true,
+    "noImplicitAny": false,
     "allowJs": true,
     "checkJs": true,
     "moduleResolution": "node",

@@ -39,7 +39,6 @@ export const JSONLoader = {
   },
   */
   category: 'table',
-  testText: null,
   text: true,
   parse,
   parseTextSync,

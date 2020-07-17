@@ -21,6 +21,8 @@
 //   }
 // });
 
+// @ts-nocheck
+
 /* global TextDecoder */
 import normalizePLY from './normalize-ply';
 

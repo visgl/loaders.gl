@@ -21,14 +21,16 @@
 //   }
 // });
 
+// @ts-nocheck
+
 import {makeLineIterator, makeTextDecoderIterator, forEach} from '@loaders.gl/core';
 import normalizePLY from './normalize-ply';
 
 // PARSER
 /**
  *
- * @param {AsyncIterable<ArrayBuffer>} iterator
- * @param {object} options
+ * @param iterator
+ * @param options
  */
 export default async function* parsePLYInBatches(iterator, options = {}) {
   const lineIterator = makeLineIterator(makeTextDecoderIterator(iterator));
