@@ -1,4 +1,5 @@
 import {VectorTile} from '@mapbox/vector-tile';
+import {geojsonToBinary} from '@loaders.gl/gis';
 import Protobuf from 'pbf';
 import {transformCoordinates, transformToLocalCoordinates} from './transform-to-local-range';
 
@@ -9,6 +10,9 @@ import {transformCoordinates, transformToLocalCoordinates} from './transform-to-
   * @return {?Object} A GeoJSON geometry object
   */
 export default function parseMVT(input, options) {
+  options = options || {};
+  options.mvt = options.mvt || {};
+
   if (input.byteLength === 0) {
     return [];
   }
@@ -37,7 +41,7 @@ export default function parseMVT(input, options) {
     }
   });
 
-  return features;
+  return options.mvt._format === 'binary' ? geojsonToBinary(features) : features;
 }
 
 function getDecodedFeature(feature, options = {}) {

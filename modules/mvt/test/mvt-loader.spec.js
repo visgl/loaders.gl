@@ -1,6 +1,7 @@
 import test from 'tape-promise/tape';
 import {MVTLoader} from '@loaders.gl/mvt';
 import {setLoaderOptions, fetchFile, parse, parseSync} from '@loaders.gl/core';
+import {geojsonToBinary} from '@loaders.gl/gis';
 
 const MVT_POINTS_DATA_URL = '@loaders.gl/mvt/test/data/points_4-2-6.mvt';
 const MVT_LINES_DATA_URL = '@loaders.gl/mvt/test/data/lines_2-2-1.mvt';
@@ -184,6 +185,16 @@ test('Should return features from selected layers when layers property is provid
   );
   t.false(anyFeatureFromAnotherLayer);
   t.equals(geometryJSON[0].properties.layerName, 'layer1');
+
+  t.end();
+});
+
+test('Polygon MVT to local coordinates binary', async t => {
+  const response = await fetchFile(MVT_POLYGONS_DATA_URL);
+  const mvtArrayBuffer = await response.arrayBuffer();
+
+  const geometryJSON = await parse(mvtArrayBuffer, MVTLoader, {mvt: {_format: 'binary'}});
+  t.deepEqual(geometryJSON, geojsonToBinary(decodedPolygonsGeometry));
 
   t.end();
 });
