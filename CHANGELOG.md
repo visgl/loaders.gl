@@ -2,6 +2,19 @@
 
 ## v2.3 Prereleases
 
+#### v2.3.0-alpha.6
+
+- core: selectLoader/selectLoaderSync split (#863)
+- build(deps): bump lodash from 4.17.15 to 4.17.19 (#858)
+- typescript: Enable strict checking (#861)
+- mvt: Add result.byteLength (#862)
+- mvt: Support binary output format (#860)
+- perf: prevent iterating through typed array if using SharedArrayBuffer (#859)
+
+#### v2.3.0-alpha.5
+
+- [Bug/Enhancement] Pass actual resource so inference can be done via getResouceUrlAndType (#857)
+
 #### v2.3.0-alpha.4
 
 - gis: Add multipolygon support (#853)
