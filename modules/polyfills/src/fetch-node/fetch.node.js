@@ -19,9 +19,10 @@ export default async function fetchNode(url, options) {
     // Note - this loses the MIME type, data URIs are handled directly in fetch
     if (isDataURL(url)) {
       const {arrayBuffer, mimeType} = decodeDataUri(url);
-      return new Response(arrayBuffer, {
-        headers: {'content-type': mimeType}
+      const response = new Response(arrayBuffer, {
+        headers: {'content-type': mimeType, url}
       });
+      return response;
     }
     // Need to create the stream in advance since Response constructor needs to be sync
     const httpResponseOrStream = await createReadStream(url, options);

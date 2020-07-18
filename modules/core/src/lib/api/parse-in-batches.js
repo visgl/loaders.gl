@@ -1,15 +1,18 @@
+import {assert} from '@loaders.gl/loader-utils';
 import {concatenateChunksAsync} from '@loaders.gl/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';
-import {getUrlFromData} from '../loader-utils/get-data';
 import {getLoaderContext} from '../loader-utils/context-utils';
 import {getAsyncIteratorFromData} from '../loader-utils/get-data';
+import {getResourceUrlAndType} from '../utils/resource-utils';
 import {selectLoader} from './select-loader';
 
 // Ensure `parse` is available in context if loader falls back to `parse`
 import {parse} from './parse';
 
 export async function parseInBatches(data, loaders, options, context) {
+  assert(!context || typeof context !== 'string', 'parseInBatches no longer accepts final url');
+
   // Signature: parseInBatches(data, options, url) - Uses registered loaders
   if (!Array.isArray(loaders) && !isLoaderObject(loaders)) {
     context = options;
@@ -17,33 +20,23 @@ export async function parseInBatches(data, loaders, options, context) {
     loaders = null;
   }
 
-  // Resolve any promise
-  data = await data;
-
+  data = await data; // Resolve any promise
   options = options || {};
 
-  // DEPRECATED - backwards compatibility, last param can be URL...
-  let url = '';
-  if (typeof context === 'string') {
-    url = context;
-    context = null;
-  }
-
   // Extract a url for auto detection
-  const autoUrl = getUrlFromData(data, url);
+  const {url} = getResourceUrlAndType(data);
 
   // Chooses a loader and normalizes it
-  // TODO - only uses URL, need a selectLoader variant that peeks at first stream chunk...
-  const loader = selectLoader(data, loaders, options, {url: autoUrl});
-  // Note: if nothrow option was set, it is possible that no loader was found, if so just return null
+  // Note - only uses URL and contentType for streams and iterator inputs
+  const loader = await selectLoader(data, loaders, options);
+  // Note: if options.nothrow was set, it is possible that no loader was found, if so just return null
   if (!loader) {
     return null;
   }
 
   // Normalize options
-  options = normalizeOptions(options, loader, loaders, autoUrl);
-
-  context = getLoaderContext({url: autoUrl, parseInBatches, parse, loaders}, options, context);
+  options = normalizeOptions(options, loader, loaders, url);
+  context = getLoaderContext({url, parseInBatches, parse, loaders}, options, context);
 
   return await parseWithLoaderInBatches(loader, data, options, context);
 }

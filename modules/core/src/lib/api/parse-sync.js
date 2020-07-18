@@ -1,11 +1,15 @@
-import {selectLoader} from './select-loader';
+import {assert} from '@loaders.gl/loader-utils';
+import {selectLoaderSync} from './select-loader';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';
 import {getArrayBufferOrStringFromDataSync} from '../loader-utils/get-data';
 import {getLoaders, getLoaderContext} from '../loader-utils/context-utils';
+import {getResourceUrlAndType} from '../utils/resource-utils';
 
 export function parseSync(data, loaders, options, context) {
-  // Signature: parseSync(data, options, url)
+  assert(!context || typeof context !== 'string', 'parseSync no longer accepts final url');
+
+  // Signature: parseSync(data, options)
   // Uses registered loaders
   if (!Array.isArray(loaders) && !isLoaderObject(loaders)) {
     context = options;
@@ -13,26 +17,22 @@ export function parseSync(data, loaders, options, context) {
     loaders = null;
   }
 
-  // DEPRECATED - backwards compatibility, last param can be URL...
-  let url = '';
-  if (typeof context === 'string') {
-    url = context;
-    context = null;
-  }
-
   options = options || {};
 
   // Chooses a loader (and normalizes it)
   // Also use any loaders in the context, new loaders take priority
   const candidateLoaders = getLoaders(loaders, context);
-  const loader = selectLoader(data, candidateLoaders, options, {url});
+  const loader = selectLoaderSync(data, candidateLoaders, options);
   // Note: if nothrow option was set, it is possible that no loader was found, if so just return null
   if (!loader) {
     return null;
   }
 
   // Normalize options
-  options = normalizeOptions(options, loader, candidateLoaders, url);
+  options = normalizeOptions(options, loader, candidateLoaders);
+
+  // Extract a url for auto detection
+  const {url} = getResourceUrlAndType(data);
 
   context = getLoaderContext({url, parseSync, loaders}, options);
 

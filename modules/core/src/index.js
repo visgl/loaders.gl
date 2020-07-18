@@ -11,7 +11,7 @@ export {registerLoaders} from './lib/api/register-loaders';
 export {parse} from './lib/api/parse';
 export {parseSync} from './lib/api/parse-sync';
 export {parseInBatches} from './lib/api/parse-in-batches';
-export {selectLoader} from './lib/api/select-loader';
+export {selectLoader, selectLoaderSync} from './lib/api/select-loader';
 
 export {load} from './lib/api/load';
 export {loadInBatches} from './lib/api/load-in-batches';

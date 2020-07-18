@@ -15,19 +15,6 @@ import {checkFetchResponseStatus} from './check-errors';
 
 const ERR_DATA = 'Cannot convert supplied data type';
 
-// Extract a URL from `parse` arguments if possible
-// If a fetch Response object or File/Blob were passed in get URL from those objects
-export function getUrlFromData(data, url) {
-  if (isResponse(data)) {
-    url = url || data.url;
-  } else if (isBlob(url)) {
-    // File or Blob
-    url = url.name;
-  }
-  // Strip any query string
-  return typeof url === 'string' ? url.replace(/\?.*/, '') : url;
-}
-
 // eslint-disable-next-line complexity
 export function getArrayBufferOrStringFromDataSync(data, loader) {
   if (loader.text && typeof data === 'string') {

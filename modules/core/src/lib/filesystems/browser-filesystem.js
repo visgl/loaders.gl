@@ -29,7 +29,9 @@ export default class BrowserFileSystem {
     const file = this.files[path];
     if (file) {
       // return makeResponse()
-      return new Response(this.files[path]);
+      const response = new Response(this.files[path]);
+      Object.defineProperty(response, 'url', {value: path});
+      return response;
     }
     return new Response(path, {status: 400, statusText: 'NOT FOUND'});
   }
