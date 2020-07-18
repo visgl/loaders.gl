@@ -1,4 +1,6 @@
-import {VectorTile} from '@mapbox/vector-tile';
+// import {VectorTile} from '@mapbox/vector-tile';
+import VectorTile from './mapbox-vector-tile/vector-tile';
+
 import {geojsonToBinary} from '@loaders.gl/gis';
 import Protobuf from 'pbf';
 import {transformCoordinates, transformToLocalCoordinates} from './transform-to-local-range';
