@@ -25,7 +25,7 @@ export default class Converter3dTilesToI3S {
     const tilesetJson = await load(inputFile, CesiumIonLoader, options);
     console.log(tilesetJson); // eslint-disable-line
     const tilesets = new Tileset3D(tilesetJson, options);
-    await tilesets.loadAllTiles(2);
+    await tilesets.loadAllTiles();
 
     await this._creationOfStructure(tilesets, outputPath, tilesetsName);
 
@@ -240,7 +240,7 @@ export default class Converter3dTilesToI3S {
       } else {
         const coordinates = convertCommonToI3SCoordinate(child);
         data.rootNode.children.push({
-          id: `${data.count}`,
+          id: data.rootNode.id === 'root' ? `${data.count}` : `${data.rootNode.id}-${data.count}`,
           href: `./${data.count}`,
           ...coordinates
         });
@@ -292,12 +292,12 @@ export default class Converter3dTilesToI3S {
 
   async _createNode(rootTile, count, tile, layers0path) {
     const rootTileId = rootTile.id;
-    const path = rootTileId === 'root' ? `${count}` : `${rootTile.path}/${count}`;
+    const path = rootTileId === 'root' ? `${count}` : `${rootTile.path}-${count}`;
     const coordinates = convertCommonToI3SCoordinate(tile);
 
     const node = {
       version: rootTile.version,
-      id: `${count}`,
+      id: path,
       path,
       level: rootTile.level + 1,
       ...coordinates,
