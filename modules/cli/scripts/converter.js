@@ -14,6 +14,7 @@ function printHelp() {
   console.log('--tileset [tileset.json file]');
   console.log('--name [Tileset name, default: "default"]');
   console.log('--output [Output folder]');
+  console.log('--max-depth [Maximal depth of hieracical tiles tree traversal]');
   process.exit(0); // eslint-disable-line
 }
 
@@ -45,7 +46,12 @@ function convert(options) {
     case TILESET_TYPE._3DTILES:
       // eslint-disable-next-line no-shadow
       const converter = new Converter3dTilesToI3S();
-      tilesetJson = converter.convert(options.tileset, options.output, options.name);
+      tilesetJson = converter.convert(
+        options.tileset,
+        options.output,
+        options.name,
+        options.maxDepth
+      );
       break;
     default:
       printHelp();
@@ -91,6 +97,9 @@ function parseOptions(args) {
           break;
         case '--output':
           opts.output = _getValue(index);
+          break;
+        case '--max-depth':
+          opts.maxDepth = _getValue(index);
           break;
         case '--help':
           printHelp();

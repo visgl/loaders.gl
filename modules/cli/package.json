@@ -20,7 +20,8 @@
   "esnext": "dist/es6/index.js",
   "sideEffects": false,
   "bin": {
-    "converter": "./bin/converter.js"
+    "converter": "./bin/converter.js",
+    "i3s-server": "./src/i3s-server/bin/www"
   },
   "files": [
     "src",
@@ -41,6 +42,10 @@
     "@loaders.gl/tiles": "2.3.0-alpha.4",
     "@math.gl/core": "^3.2.1",
     "@math.gl/geospatial": "^3.2.1",
-    "uuid": "^8.1.0"
+    "uuid": "^8.1.0",
+    "cors": "^2.8.5",
+    "debug": "~2.6.9",
+    "express": "~4.16.1",
+    "morgan": "~1.9.1"
   }
 }

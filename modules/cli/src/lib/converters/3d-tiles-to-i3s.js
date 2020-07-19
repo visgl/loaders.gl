@@ -15,7 +15,7 @@ const ION_TOKEN =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ'; // eslint-disable-line
 
 export default class Converter3dTilesToI3S {
-  async convert(inputFile, outputPath, tilesetsName) {
+  async convert(inputFile, outputPath, tilesetsName, maxDepth) {
     console.log('Start load 3dTiles'); // eslint-disable-line
     const options = {
       'cesium-ion': {accessToken: ION_TOKEN}
@@ -25,7 +25,7 @@ export default class Converter3dTilesToI3S {
     const tilesetJson = await load(inputFile, CesiumIonLoader, options);
     console.log(tilesetJson); // eslint-disable-line
     const tilesets = new Tileset3D(tilesetJson, options);
-    await tilesets.loadAllTiles();
+    await tilesets.loadAllTiles(maxDepth);
 
     await this._creationOfStructure(tilesets, outputPath, tilesetsName);
 
