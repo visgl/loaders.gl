@@ -14,7 +14,9 @@ function printHelp() {
   console.log('--tileset [tileset.json file]');
   console.log('--name [Tileset name, default: "default"]');
   console.log('--output [Output folder]');
-  console.log('--max-depth [Maximal depth of hieracical tiles tree traversal]');
+  console.log(
+    '--max-depth [Maximal depth of hierarchical tiles tree traversal, default: infinite]'
+  );
   process.exit(0); // eslint-disable-line
 }
 
