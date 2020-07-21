@@ -2,6 +2,10 @@
 
 ## v2.2 Release
 
+#### v2.2.8
+
+- perf: prevent iterating through typed array if using SharedArrayBuffer (#859)
+
 #### v2.2.7
 
 - core: Fix stray FileReadableResponse import (#856)
