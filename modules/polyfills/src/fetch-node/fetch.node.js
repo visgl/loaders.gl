@@ -24,11 +24,19 @@ export default async function fetchNode(url, options) {
       });
       return response;
     }
+
+    // Automatically decompress gzipped files with .gz extension
+    const syntheticResponseHeaders = {};
+    const originalUrl = url;
+    if (url.endsWith('.gz')) {
+      url = url.slice(0, -3);
+      syntheticResponseHeaders['content-encoding'] = 'gzip';
+    }
+
     // Need to create the stream in advance since Response constructor needs to be sync
-    const httpResponseOrStream = await createReadStream(url, options);
-    const body = httpResponseOrStream;
-    const headers = getHeaders(url, httpResponseOrStream);
-    const {status, statusText} = getStatus(httpResponseOrStream);
+    const body = await createReadStream(originalUrl, options);
+    const headers = getHeaders(url, body, syntheticResponseHeaders);
+    const {status, statusText} = getStatus(body);
     return new Response(body, {headers, status, statusText, url});
   } catch (error) {
     // TODO - what error code to use here?
@@ -46,7 +54,7 @@ function getStatus(httpResponse) {
   return {status: 200, statusText: 'OK'};
 }
 
-function getHeaders(url, httpResponse) {
+function getHeaders(url, httpResponse, additionalHeaders = {}) {
   const headers = {};
 
   if (httpResponse && httpResponse.headers) {
@@ -64,6 +72,8 @@ function getHeaders(url, httpResponse) {
       headers['content-length'] = contentLength;
     }
   }
+
+  Object.assign(headers, additionalHeaders);
 
   return new Headers(headers);
 }
