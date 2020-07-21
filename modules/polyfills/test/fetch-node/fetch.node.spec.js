@@ -1,11 +1,13 @@
 /* global fetch */
 import test from 'tape-promise/tape';
 import '@loaders.gl/polyfills';
-import {isBrowser} from '@loaders.gl/core';
+import {isBrowser, fetchFile} from '@loaders.gl/core';
 
 const GITHUB_MASTER = 'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/';
 const PLY_CUBE_ATT_URL = `${GITHUB_MASTER}ply/test/data/cube_att.ply`;
 const PLY_CUBE_ATT_SIZE = 853;
+const TEXT_URL = `@loaders.gl/polyfills/test/data/data.txt`;
+const TEXT_URL_GZIPPED = `@loaders.gl/polyfills/test/data/data.txt.gz`;
 
 test('polyfills#fetch() (NODE)', async t => {
   if (!isBrowser) {
@@ -84,6 +86,21 @@ test('polyfills#fetch() able to handle "Accept-Encoding: deflate"', async t => {
     const data = await response.text();
     t.ok(data.length === PLY_CUBE_ATT_SIZE, 'fetch polyfill data size as expected');
     t.ok(data, 'fetch polyfill successfully loaded data under Node.js with "deflate" encoding');
+  }
+  t.end();
+});
+
+test('polyfills#fetch() able to decompress .gz extension (NODE)', async t => {
+  let response = await fetchFile(TEXT_URL);
+  t.ok(response.ok, response.statusText);
+  let data = await response.text();
+  t.equal(data, '123456', 'fetch polyfill correctly read text file');
+
+  if (!isBrowser) {
+    response = await fetchFile(TEXT_URL_GZIPPED);
+    t.ok(response.ok, response.statusText);
+    data = await response.text();
+    t.equal(data, '123456', 'fetch polyfill correctly decompressed gzipped ".gz" file');
   }
   t.end();
 });

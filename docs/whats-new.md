@@ -15,7 +15,8 @@ The release highlight is the new Shapefile loader, accompanied by a range of sma
 
 **@loaders.gl/polyfills**
 
-- Improved robustness and error handling in Node.js when calling the `fetch` polyfill on unreadable or non-existent files. Underlying errors (`ENOEXIST`, `EISDIR` etc) are now caught and reported in `Response.statusText`.
+- `fetch` polyfill: Files with `.gz` extension are automatically decompressed with gzip. The extension reported in the `fetch` response has the `.gz` extension removed.
+- `fetch` polyfill: Improved robustness and error handling in Node.js when opening unreadable or non-existent files. Underlying errors (`ENOEXIST`, `EISDIR` etc) are now caught and reported in `Response.statusText`.
 
 **@loaders.gl/shapefile** (NEW)
 

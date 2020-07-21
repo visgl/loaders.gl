@@ -38,6 +38,7 @@ The Node.js `fetch`, `Response` and `Headers` polyfills supports a large subset 
 - `headers`, `status`, `statusText` etc.
 - data uri / base64 decoding
 - automatic gzip, brotli and deflate decompression support for responses with `content-encoding` headers.
+- Files ending with `.gz` are automatically decompressed with gzip decompression (this is only done on Node.js, in the browser the content-encoding header must be set).
 
 # TextEncoder and TextDecoder Polyfills
 
