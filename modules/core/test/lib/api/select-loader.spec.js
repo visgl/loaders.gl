@@ -7,7 +7,7 @@ import {LASLoader} from '@loaders.gl/las';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {KMLLoader} from '@loaders.gl/kml';
 
-import KML_SAMPLE from '@loaders.gl/kml/test/data/KML_Samples.kml';
+const KML_URL = '@loaders.gl/kml/test/data/KML_Samples.kml';
 
 const DRACO_URL = '@loaders.gl/draco/test/data/bunny.drc';
 const TILE_3D_URL = '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudRGB/pointCloudRGB.pnts';
@@ -135,6 +135,9 @@ test('selectLoader#data', async t => {
     Tiles3DLoader,
     'find loader by checking magic string'
   );
+
+  const response = await fetchFile(KML_URL);
+  const KML_SAMPLE = await response.text();
 
   t.is(
     await selectLoader(KML_SAMPLE, [KMLLoader]),

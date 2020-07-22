@@ -193,7 +193,7 @@ test('Polygon MVT to local coordinates binary', async t => {
   const response = await fetchFile(MVT_POLYGONS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
 
-  const geometryBinary = await parse(mvtArrayBuffer, MVTLoader, {mvt: {_format: 'binary'}});
+  const geometryBinary = await parse(mvtArrayBuffer, MVTLoader, {gis: {format: 'binary'}});
   t.ok(geometryBinary.byteLength > 0);
   delete geometryBinary.byteLength;
   t.deepEqual(geometryBinary, geojsonToBinary(decodedPolygonsGeometry));

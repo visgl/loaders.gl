@@ -1,4 +1,4 @@
-type BinaryAttribute = {value: any[], size: number}
+export type BinaryAttribute = {value: any[], size: number}
 
 export type BinaryGeometryData = {
   points?: {
