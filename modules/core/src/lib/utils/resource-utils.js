@@ -8,7 +8,6 @@ export function getResourceUrlAndType(resource) {
   if (isResponse(resource)) {
     const contentType = parseMIMEType(resource.headers.get('content-type'));
     const urlType = parseMIMETypeFromURL(resource.url);
-
     return {
       url: stripQueryString(resource.url || ''),
       type: contentType || urlType || null
@@ -19,7 +18,7 @@ export function getResourceUrlAndType(resource) {
   if (isBlob(resource)) {
     return {
       // File objects have a "name" property. Blob objects don't have any
-      // url/name information
+      // url (name) information
       url: stripQueryString(resource.name || ''),
       type: resource.type || ''
     };
@@ -58,7 +57,6 @@ export function getResourceContentLength(resource) {
   if (ArrayBuffer.isView(resource)) {
     return resource.byteLength;
   }
-
   return -1;
 }
 

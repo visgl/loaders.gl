@@ -10,8 +10,7 @@ import {
   isBuffer
 } from '../../javascript-utils/is-type';
 import {makeIterator} from '../../iterator-utils/make-iterator/make-iterator';
-import fetchFileReadable from '../fetch/fetch-file.browser';
-import {checkFetchResponseStatus} from './check-errors';
+import {checkResponse, makeResponse} from '../utils/response-utils';
 
 const ERR_DATA = 'Cannot convert supplied data type';
 
@@ -63,12 +62,12 @@ export async function getArrayBufferOrStringFromData(data, loader) {
 
   // Blobs and files are FileReader compatible
   if (isBlob(data)) {
-    data = await fetchFileReadable(data);
+    data = await makeResponse(data);
   }
 
   if (isResponse(data)) {
     const response = data;
-    await checkFetchResponseStatus(response);
+    await checkResponse(response);
     return loader.binary ? await response.arrayBuffer() : await response.text();
   }
 
@@ -91,7 +90,7 @@ export async function getAsyncIteratorFromData(data) {
 
   if (isResponse(data)) {
     // Note Since this function is not async, we currently can't load error message, just status
-    await checkFetchResponseStatus(data);
+    await checkResponse(data);
     // TODO - bug in polyfill, body can be a Promise under Node.js
     return makeIterator(data.body);
   }

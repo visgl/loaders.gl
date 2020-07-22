@@ -133,7 +133,6 @@ export default class GIFBuilder {
         }
 
         // image - Base 64 image
-        console.debug(result.image); // eslint-disable-line
         resolve(result.image);
 
         // var image = obj.image,
