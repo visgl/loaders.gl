@@ -4,7 +4,7 @@
 
 Target Release Date: TBD (alpha releases are available)
 
-The release highlight is the new Shapefile loader, accompanied by a range of smaller but still important improvements supporting loaders.gl integration with a major geospatial application (kepler.gl).
+Thks release brings a new Shapefile loader, support for binary output from geospatial loaders, and a range of improvements supporting loaders.gl integration with kepler.gl, a major geospatial application.
 
 **@loaders.gl/core**
 
@@ -22,9 +22,17 @@ The release highlight is the new Shapefile loader, accompanied by a range of sma
 
 - A new loader for the ESRI Shapefile format has been added. It loads `.SHP` and (if available) `.DBF`, `.CPG` and `.PRJ` files and returns a geojson like geometry.
 
+**@loaders.gl/json**
+
+- Binary output is now available for the `GeoJsonLoader`, via `options.gis.format: 'binary'`.
+
+**@loaders.gl/kml**
+
+- Binary output is now available for the `KMLLoader`, via `options.gis.format: 'binary'`.
+
 **@loaders.gl/mvt**
 
-- An experimental binary output option is now available for Mapbox Vector Tiles.
+- Binary output is now available for the Mapbox Vector Tiles `MVTLoader`, via `options.gis.format: 'binary'`.
 
 ## v2.2
 

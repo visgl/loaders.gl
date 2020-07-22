@@ -1,7 +1,10 @@
 /* global TextDecoder */
 import {XMLLoader} from '@loaders.gl/tables';
+import {geojsonToBinary} from '@loaders.gl/gis';
 import KMLParser from './lib/kml-parser';
 import normalizeKML from './lib/kml-normalizer';
+import convertKMLToGeoJson from './lib/kml-to-geojson';
+
 /** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -18,10 +21,27 @@ function testText(text) {
 }
 
 function parseTextSync(text, options) {
+  options = options || {};
+  options.kml = options.kml || {};
+  options.gis = options.gis || {};
+
   const xml = XMLLoader.parseTextSync(text);
   const kmlLoader = new KMLParser();
-  const kml = kmlLoader.parse(xml, options);
-  return options.normalize ? normalizeKML(kml) : kml;
+  let kml = kmlLoader.parse(xml, options);
+
+  if (options.kml.normalize) {
+    kml = normalizeKML(kml);
+  }
+
+  switch (options.gis.format) {
+    case 'geojson':
+      return convertKMLToGeoJson(kml);
+    case 'binary':
+      const geojson = convertKMLToGeoJson(kml);
+      return geojsonToBinary(geojson.features);
+    default:
+      return kml;
+  }
 }
 
 /** @type {LoaderObject} */
@@ -38,6 +58,8 @@ export default {
   parseTextSync,
   browserOnly: true,
   options: {
-    normalize: true
+    kml: {
+      normalize: true
+    }
   }
 };

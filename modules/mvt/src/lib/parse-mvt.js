@@ -14,6 +14,7 @@ import {transformCoordinates, transformToLocalCoordinates} from './transform-to-
 export default function parseMVT(arrayBuffer, options) {
   options = options || {};
   options.mvt = options.mvt || {};
+  options.gis = options.gis || {};
 
   if (arrayBuffer.byteLength === 0) {
     return [];
@@ -43,7 +44,7 @@ export default function parseMVT(arrayBuffer, options) {
     }
   });
 
-  if (options.mvt._format === 'binary') {
+  if (options.gis.format === 'binary') {
     const data = geojsonToBinary(features);
     // Add the original byteLength (as a reasonable approximation of the size of the binary data)
     // TODO decide where to store extra fields like byteLength (header etc) and document

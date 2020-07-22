@@ -23,10 +23,10 @@ const data = await load(url, KMLLoader, options);
 
 ## Options
 
-| Option            | Type    | Default | Description                                                                                                |
-| ----------------- | ------- | ------- | ---------------------------------------------------------------------------------------------------------- |
-| `useLngLatFormat` | Boolean | `true`  | KML longitudes and latitudes are specified as `[lat, lng]`. This option "normalizes" them to `[lng, lat]`. |
-| `useColorArrays`  | Boolean | `true`  | Convert color strings to arrays.                                                                           |
+| Option          | Type    | Default     | Description                                                                                                |
+| --------------- | ------- | ----------- | ---------------------------------------------------------------------------------------------------------- |
+| `kml.normalize` | Boolean | `true`      | KML longitudes and latitudes are specified as `[lat, lng]`. This option "normalizes" them to `[lng, lat]`. |
+| `gis.format`    | string  | `'geojson'` | Can be set to `'raw'`, `'geojson'` or `'binary'`.                                                          |
 
 ## Limitations
 
