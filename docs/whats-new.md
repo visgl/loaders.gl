@@ -4,7 +4,7 @@
 
 Target Release Date: TBD (alpha releases are available)
 
-Thks release brings a new Shapefile loader, support for binary output from geospatial loaders, and a range of improvements supporting loaders.gl integration with kepler.gl, a major geospatial application.
+This release brings a new Shapefile loader, support for binary output from geospatial loaders, and a range of improvements supporting loaders.gl integration with kepler.gl, a major geospatial application.
 
 **@loaders.gl/core**
 
