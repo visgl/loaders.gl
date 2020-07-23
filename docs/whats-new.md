@@ -30,6 +30,10 @@ This release brings a new Shapefile loader, support for binary output from geosp
 
 - Binary output is now available for the `KMLLoader`, via `options.gis.format: 'binary'`.
 
+**@loaders.gl/las**
+
+- Uses a newer version of the `laz-perf` parser (1.4.4).
+
 **@loaders.gl/mvt**
 
 - Binary output is now available for the Mapbox Vector Tiles `MVTLoader`, via `options.gis.format: 'binary'`.
