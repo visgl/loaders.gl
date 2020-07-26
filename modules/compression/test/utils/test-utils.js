@@ -3,9 +3,9 @@
 import {concatenateArrayBuffers} from '@loaders.gl/loader-utils';
 import RandomNumberGenerator from './random-number-generator';
 
-const random = new RandomNumberGenerator();
-
 export function generateRandomArrayBuffer({size, repetitions = 1}) {
+  const random = new RandomNumberGenerator();
+
   const binaryArray = new Uint8Array(size);
 
   for (let i = binaryArray.byteLength - 1; i >= 0; i--) {

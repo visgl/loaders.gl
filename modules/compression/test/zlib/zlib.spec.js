@@ -13,7 +13,7 @@ test('lz4#defaults', t => {
 
   t.equal(repeatedData.byteLength, 100000, 'Repeated data length is correct');
   deflatedData = ZlibDeflateTransform.deflateSync(repeatedData);
-  t.equal(deflatedData.byteLength, 10904, 'Repeated data compresses well');
+  t.equal(deflatedData.byteLength, 10903, 'Repeated data compresses well');
   inflatedData = ZlibInflateTransform.inflateSync(deflatedData);
   t.equal(inflatedData.byteLength, 100000, 'Inflated data length is correct');
   t.ok(compareArrayBuffers(repeatedData, inflatedData), 'deflate/inflate default options');

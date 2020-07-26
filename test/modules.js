@@ -76,5 +76,6 @@ if (TEST_TABLES) {
 // Archive Formats
 if (TEST_ARCHIVES) {
   require('@loaders.gl/compression/test');
-  // require('@loaders.gl/zip/test');
+  require('@loaders.gl/crypto/test');
+  require('@loaders.gl/zip/test');
 }

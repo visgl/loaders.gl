@@ -20,6 +20,7 @@
 
 import '@loaders.gl/polyfills';
 
+import {Bench} from '@probe.gl/bench';
 import {_addAliases} from '@loaders.gl/loader-utils';
 import ALIASES from '../aliases';
 import {addModuleBenchmarksToSuite} from './modules';

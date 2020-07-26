@@ -8,6 +8,7 @@ export default class ZlibDeflateTransform {
   static deflateSync(input, options) {
     const uint8Array = new Uint8Array(input);
     const output = pako.deflate(uint8Array, options);
+    // @ts-ignore
     return output.buffer;
   }
 }
