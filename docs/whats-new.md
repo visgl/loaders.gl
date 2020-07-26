@@ -4,7 +4,15 @@
 
 Target Release Date: TBD (alpha releases are available)
 
-This release brings a new Shapefile loader, support for binary output from geospatial loaders, and a range of improvements supporting loaders.gl integration with kepler.gl, a major geospatial application.
+This release brings a new Shapefile loader, compression codecs (Zlib, LZ4, Zstandard), support for binary output from geospatial loaders, and a range of improvements supporting loaders.gl integration with kepler.gl, a major geospatial application.
+
+**@loaders.gl/shapefile** (NEW)
+
+- A new loader for the ESRI Shapefile format has been added. It loads `.SHP` and (if available) `.DBF`, `.CPG` and `.PRJ` files and returns a geojson like geometry.
+
+**@loaders.gl/compression** (NEW)
+
+- A new module with compression/decompression "transforms" for compression codecs (Zlib, LZ4, Zstandard). As always, these work reliably in both the browser and Node.
 
 **@loaders.gl/core**
 
@@ -17,10 +25,6 @@ This release brings a new Shapefile loader, support for binary output from geosp
 
 - `fetch` polyfill: Files with `.gz` extension are automatically decompressed with gzip. The extension reported in the `fetch` response has the `.gz` extension removed.
 - `fetch` polyfill: Improved robustness and error handling in Node.js when opening unreadable or non-existent files. Underlying errors (`ENOEXIST`, `EISDIR` etc) are now caught and reported in `Response.statusText`.
-
-**@loaders.gl/shapefile** (NEW)
-
-- A new loader for the ESRI Shapefile format has been added. It loads `.SHP` and (if available) `.DBF`, `.CPG` and `.PRJ` files and returns a geojson like geometry.
 
 **@loaders.gl/json**
 

@@ -32,6 +32,7 @@ export {toArrayBuffer, toBuffer} from './lib/binary-utils/binary-utils';
 export {
   padTo4Bytes,
   copyToArray,
+  concatenateArrayBuffers,
   copyArrayBuffer,
   getZeroOffsetArrayBuffer
 } from './lib/binary-utils/memory-copy-utils';

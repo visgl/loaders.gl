@@ -137,6 +137,18 @@
           ]
         },
         {
+          "title": "@loaders.gl/compression",
+          "entries": [
+            {"entry": "modules/compression/docs"},
+            {"entry": "modules/compression/docs/api-reference/zlib-deflate-transform"},
+            {"entry": "modules/compression/docs/api-reference/zlib-inflate-transform"},
+            {"entry": "modules/compression/docs/api-reference/lz4-deflate-transform"},
+            {"entry": "modules/compression/docs/api-reference/lz4-inflate-transform"},
+            {"entry": "modules/compression/docs/api-reference/zstd-deflate-transform"},
+            {"entry": "modules/compression/docs/api-reference/zstd-inflate-transform"}
+          ]
+        },
+        {
           "title": "@loaders.gl/draco",
           "entries": [
             {"entry": "modules/draco/docs"}

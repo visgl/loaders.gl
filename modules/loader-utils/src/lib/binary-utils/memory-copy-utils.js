@@ -11,14 +11,28 @@ export function getZeroOffsetArrayBuffer(arrayBuffer, byteOffset, byteLength) {
   return arrayCopy.buffer;
 }
 
-// Concatenate two ArrayBuffers
-export function concatenateArrayBuffers(source1, source2) {
-  const sourceArray1 = source1 instanceof ArrayBuffer ? new Uint8Array(source1) : source1;
-  const sourceArray2 = source2 instanceof ArrayBuffer ? new Uint8Array(source2) : source2;
-  const temp = new Uint8Array(sourceArray1.byteLength + sourceArray2.byteLength);
-  temp.set(sourceArray1, 0);
-  temp.set(sourceArray2, sourceArray1.byteLength);
-  return temp.buffer;
+// Concatenate ArrayBuffers
+export function concatenateArrayBuffers(...sources) {
+  // Make sure all inputs are wrapped in typed arrays
+  const sourceArrays = sources.map(
+    source2 => (source2 instanceof ArrayBuffer ? new Uint8Array(source2) : source2)
+  );
+
+  // Get length of all inputs
+  const byteLength = sourceArrays.reduce((length, typedArray) => length + typedArray.byteLength, 0);
+
+  // Allocate array with space for all inputs
+  const result = new Uint8Array(byteLength);
+
+  // Copy the subarrays
+  let offset = 0;
+  for (const sourceArray of sourceArrays) {
+    result.set(sourceArray, offset);
+    offset += sourceArray.byteLength;
+  }
+
+  // We work with ArrayBuffers, discard the typed array wrapper
+  return result.buffer;
 }
 
 /* Creates a new Uint8Array based on two different ArrayBuffers
