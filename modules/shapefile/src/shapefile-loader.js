@@ -15,7 +15,7 @@ export const ShapefileLoader = {
   category: 'geometry',
   version: VERSION,
   extensions: ['shp'],
-  mimeTypes: [],
+  mimeTypes: ['application/octet-stream'],
   options: {
     shapefile: {}
   },

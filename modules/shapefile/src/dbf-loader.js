@@ -12,7 +12,7 @@ export const DBFWorkerLoader = {
   category: 'table',
   version: VERSION,
   extensions: ['dbf'],
-  mimeTypes: [],
+  mimeTypes: ['application/x-dbf'],
   options: {
     dbf: {
       // Default to ASCII or UTF-8?
