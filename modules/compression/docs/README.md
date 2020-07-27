@@ -4,7 +4,7 @@
   <img src="https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square" alt="From-v2.3" /> 
 </p>
 
-The `@loaders.gl/decompress` module provides a small selection of lossless, legally unencumbered compression/decompression (aka deflate/inflate) "transforms" that work as plugins for loaders.gl
+The `@loaders.gl/compression` module provides a small selection of lossless, legally unencumbered compression/decompression (aka deflate/inflate) "transforms" that work as plugins for loaders.gl
 
 ## Compression Formats
 

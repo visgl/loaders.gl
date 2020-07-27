@@ -1,7 +1,7 @@
 /**
  * A transform that decompresses / inflates LZ4 compressed input bytes
  */
-export default class LZ4InlateTransform {
+export default class LZ4InflateTransform {
   /**
    * Atomic inflate
    */
