@@ -12,7 +12,7 @@ export const SHPWorkerLoader = {
   category: 'geometry',
   version: VERSION,
   extensions: ['shp'],
-  mimeTypes: [],
+  mimeTypes: ['application/octet-stream'],
   options: {
     shp: {
       // workerUrl: `https://unpkg.com/@loaders.gl/shapefile@${VERSION}/dist/shp-loader.worker.js`
