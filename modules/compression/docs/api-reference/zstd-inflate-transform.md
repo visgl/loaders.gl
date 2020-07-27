@@ -6,6 +6,6 @@
 
 ## Static Methods
 
-#### `ZstdInflateTransform.deflate(data: ArrayBuffer, options?: object): Promise<ArrayBuffer>`
+#### `ZstdInflateTransform.inflate(data: ArrayBuffer, options?: object): Promise<ArrayBuffer>`
 
-#### `ZstdInflateTransform.deflateSync(data: ArrayBuffer, options?: object): ArrayBuffer`
+#### `ZstdInflateTransform.inflateSync(data: ArrayBuffer, options?: object): ArrayBuffer`

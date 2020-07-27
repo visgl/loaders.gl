@@ -6,8 +6,8 @@
 
 ## Static Methods
 
-#### `LZ4InflateTransform.deflate(data: ArrayBuffer, options?: object): Promise<ArrayBuffer>`
+#### `LZ4InflateTransform.inflate(data: ArrayBuffer, options?: object): Promise<ArrayBuffer>`
 
-#### `LZ4InflateTransform.deflateSync(data: ArrayBuffer, options?: object): ArrayBuffer`
+#### `LZ4InflateTransform.inflateSync(data: ArrayBuffer, options?: object): ArrayBuffer`
 
 Note: options are passed through to the underlying `pako` library.

@@ -6,8 +6,8 @@
 
 ## Static Methods
 
-### `ZlibInflateTransform.deflate(data: ArrayBuffer, options?: object): Promise<ArrayBuffer>`
+### `ZlibInflateTransform.inflate(data: ArrayBuffer, options?: object): Promise<ArrayBuffer>`
 
-### `ZlibInflateTransform.deflateSync(data: ArrayBuffer, options?: object): ArrayBuffer`
+### `ZlibInflateTransform.inflateSync(data: ArrayBuffer, options?: object): ArrayBuffer`
 
 Note: options are passed through to the underlying `pako` library.
