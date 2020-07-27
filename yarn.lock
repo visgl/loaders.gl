@@ -6689,6 +6689,11 @@ lru-cache@^5.1.1:
   dependencies:
     yallist "^3.0.2"
 
+lz4js@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/lz4js/-/lz4js-0.2.0.tgz#09f1a397cb2158f675146c3351dde85058cb322f"
+  integrity sha1-CfGjl8shWPZ1FGwzUd3oUFjLMi8=
+
 macos-release@^2.2.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/macos-release/-/macos-release-2.3.0.tgz#eb1930b036c0800adebccd5f17bc4c12de8bb71f"
@@ -7848,7 +7853,7 @@ pad-left@^2.1.0:
   dependencies:
     repeat-string "^1.5.4"
 
-pako@~1.0.2, pako@~1.0.5:
+pako@^1.0.11, pako@~1.0.2, pako@~1.0.5:
   version "1.0.11"
   resolved "https://registry.yarnpkg.com/pako/-/pako-1.0.11.tgz#6c9599d340d54dfd3946380252a35705a6b992bf"
   integrity sha512-4hLB8Py4zZce5s4yd9XzopqwVv/yGNhV1Bl8NTmCq1763HeK2+EwVTv+leGeL13Dnh2wfbqowVPXCIO0z4taYw==
@@ -10861,3 +10866,8 @@ yauzl@^2.10.0:
   dependencies:
     buffer-crc32 "~0.2.3"
     fd-slicer "~1.1.0"
+
+zstd-codec@^0.1:
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/zstd-codec/-/zstd-codec-0.1.2.tgz#6a13b7e666d9066d5236cbab760862a44f2660a0"
+  integrity sha512-t1gdk33h1wT7YcBPebyGWGJTWodKsJVfDeVN0q2x/htPGLEX3BAuBvOFsU4W3BplbmTXwvH8c/TUZ/DPTXOFfg==

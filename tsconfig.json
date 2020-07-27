@@ -12,10 +12,11 @@
     "noEmit": true,
     "resolveJsonModule": true,
     "baseUrl": ".",
-    "strict": true,
     "paths": {
       "@loaders.gl/core/*": ["modules/core/src/*"],
       "@loaders.gl/core/test": ["modules/core/test"],
+      "@loaders.gl/compression/*": ["modules/compression/src/*"],
+      "@loaders.gl/compression/test": ["modules/compression/test"],
       "@loaders.gl/loader-utils/*": ["modules/loader-utils/src/*"],
       "@loaders.gl/loader-utils/test": ["modules/loader-utils/test"],
       "@loaders.gl/polyfills/*": ["modules/polyfills/src/*"],

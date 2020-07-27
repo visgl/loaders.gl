@@ -28,6 +28,7 @@ function makeAliases(basename = __dirname) {
     '@loaders.gl/3d-tiles/test': path.resolve(basename, '../modules/3d-tiles/test'),
     '@loaders.gl/arrow/test': path.resolve(basename, '../modules/arrow/test'),
     '@loaders.gl/basis/test': path.resolve(basename, '../modules/basis/test'),
+    '@loaders.gl/compression/test': path.resolve(basename, '../modules/compression/test'),
     '@loaders.gl/core/test': path.resolve(basename, '../modules/core/test'),
     '@loaders.gl/csv/test': path.resolve(basename, '../modules/csv/test'),
     '@loaders.gl/draco/test': path.resolve(basename, '../modules/draco/test'),

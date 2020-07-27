@@ -13,14 +13,11 @@ export function padTo4Bytes(byteLength);
 export function getZeroOffsetArrayBuffer(arrayBuffer, byteOffset, byteLength);
 
 /**
- * Concatenate two ArrayBuffers
- * @param source1 The first ArrayBuffer.
- * @param source2 The second ArrayBuffer.
+ * Concatenate a sequence of ArrayBuffers
  * @return A concatenated ArrayBuffer
  */
 export function concatenateArrayBuffers(
-  source1: ArrayBuffer | Uint8Array,
-  source2: ArrayBuffer | Uint8Array
+  ...sources: (ArrayBuffer | Uint8Array)[]
 ): ArrayBuffer;
 
 /**
