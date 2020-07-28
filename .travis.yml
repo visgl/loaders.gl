@@ -10,6 +10,6 @@ node_js:
 install:
   - yarn bootstrap
 script:
-  - npm run test ci && npm run bench
+  - npm run test ci
 after_success:
   - if [[ `node -v` == *"v12"* ]]; then (cat coverage/lcov.info | coveralls); fi
