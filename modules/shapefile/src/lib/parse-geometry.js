@@ -8,33 +8,46 @@ export function parseRecord(view) {
 
   switch (type) {
     case 0:
+      // Null Shape
       return parseNull(view, offset);
     case 1:
+      // Point
       return parsePoint(view, offset, 2);
     case 3:
-      return parsePoly(view, offset, 2);
+      // PolyLine
+      return parsePoly(view, offset, 2, 'LineString');
     case 5:
-      return parsePoly(view, offset, 2);
+      // Polygon
+      return parsePoly(view, offset, 2, 'Polygon');
     case 8:
+      // MultiPoint
       return parseMultiPoint(view, offset, 2);
     // GeometryZ can have 3 or 4 dimensions, since the M is not required to
     // exist
     case 11:
-      return parsePoint(view, offset, 4); // PointZ
+      // PointZ
+      return parsePoint(view, offset, 4);
     case 13:
-      return parsePoly(view, offset, 4); // PolyLineZ
+      // PolyLineZ
+      return parsePoly(view, offset, 4, 'LineString');
     case 15:
-      return parsePoly(view, offset, 4); // PolygonZ
+      // PolygonZ
+      return parsePoly(view, offset, 4, 'Polygon');
     case 18:
-      return parseMultiPoint(view, offset, 4); // MultiPointZ
+      // MultiPointZ
+      return parseMultiPoint(view, offset, 4);
     case 21:
-      return parsePoint(view, offset, 3); // PointM
+      // PointM
+      return parsePoint(view, offset, 3);
     case 23:
-      return parsePoly(view, offset, 3); // PolyLineM
+      // PolyLineM
+      return parsePoly(view, offset, 3, 'LineString');
     case 25:
-      return parsePoly(view, offset, 3); // PolygonM
+      // PolygonM
+      return parsePoly(view, offset, 3, 'Polygon');
     case 28:
-      return parseMultiPoint(view, offset, 3); // MultiPointM
+      // MultiPointM
+      return parseMultiPoint(view, offset, 3);
     default:
       throw new Error(`unsupported shape type: ${type}`);
   }
@@ -91,8 +104,7 @@ function parseMultiPoint(view, offset, dim) {
 
 // MultiPolygon doesn't exist? Multiple records with the same attributes?
 // polygon and polyline parsing
-// This is 2d only
-function parsePoly(view, offset, dim) {
+function parsePoly(view, offset, dim, type) {
   // skip parsing bounding box
   offset += 4 * Float64Array.BYTES_PER_ELEMENT;
 
@@ -133,7 +145,8 @@ function parsePoly(view, offset, dim) {
 
   return {
     positions: {value: positions, size: dim},
-    indices: {value: indices, size: 1}
+    indices: {value: indices, size: 1},
+    type
   };
 }
 
