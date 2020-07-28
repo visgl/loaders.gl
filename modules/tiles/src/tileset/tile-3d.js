@@ -209,7 +209,8 @@ export default class TileHeader {
           tile: this.header,
           tileset: this.tileset.tileset,
           isTileset: this.type === 'json',
-          isTileHeader: false
+          isTileHeader: false,
+          assetGltfUpAxis: this.tileset.asset.gltfUpAxis
         }
       };
 

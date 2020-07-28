@@ -25,7 +25,8 @@ const CesiumIonLoader = {
   options: {
     'cesium-ion': {
       ...Tiles3DLoader.options['3d-tiles'],
-      accessToken: null
+      accessToken: null,
+      assetGltfUpAxis: null
     }
   }
 };

@@ -17,11 +17,14 @@ export const GLTF_FORMAT = {
   EMBEDDED: 1
 };
 
-export function parse3DTileGLTFViewSync(tile, arrayBuffer, byteOffset) {
+export function parse3DTileGLTFViewSync(tile, arrayBuffer, byteOffset, options) {
   // Set flags
   // glTF models need to be rotated from Y to Z up
   // https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#y-up-to-z-up
   tile.rotateYtoZ = true;
+  if (options['cesium-ion'] && options['cesium-ion'].assetGltfUpAxis === 'Z') {
+    tile.rotateYtoZ = false;
+  }
 
   // Assume glTF consumes rest of tile
   const gltfByteLength = tile.byteOffset + tile.byteLength - byteOffset;
