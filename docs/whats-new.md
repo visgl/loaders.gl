@@ -14,6 +14,10 @@ This release brings a new Shapefile loader, compression codecs (Zlib, LZ4, Zstan
 
 - A new module with compression/decompression "transforms" for compression codecs (Zlib, LZ4, Zstandard). As always, these work reliably in both the browser and Node.
 
+**@loaders.gl/crypto** (NEW)
+
+- A new module with "transforms" for calculating cryptographic hashes (MD5, SHA256 etc) incrementally, e.g. on incoming binary chunks while streaming data into `parseInBatches1.
+
 **@loaders.gl/core**
 
 - (BREAKING) `selectLoader()` is now async and returns a `Promise` that resolves to a loader, and can now identify loaders through content sniffing `Blob` and `File` objects.

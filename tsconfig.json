@@ -17,6 +17,8 @@
       "@loaders.gl/core/test": ["modules/core/test"],
       "@loaders.gl/compression/*": ["modules/compression/src/*"],
       "@loaders.gl/compression/test": ["modules/compression/test"],
+      "@loaders.gl/crypto/*": ["modules/crypto/src/*"],
+      "@loaders.gl/crypto/test": ["modules/crypto/test"],
       "@loaders.gl/loader-utils/*": ["modules/loader-utils/src/*"],
       "@loaders.gl/loader-utils/test": ["modules/loader-utils/test"],
       "@loaders.gl/polyfills/*": ["modules/polyfills/src/*"],

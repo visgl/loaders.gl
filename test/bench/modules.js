@@ -29,11 +29,15 @@ import csvBench from '@loaders.gl/csv/test/csv.bench';
 import jsonBench from '@loaders.gl/json/test/json-loader.bench';
 // import dracoBench from '@loaders.gl/draco/test/draco.bench';
 
+import cryptoBench from '@loaders.gl/crypto/test/crypto.bench';
+
 _addAliases(ALIASES);
 
 export async function addModuleBenchmarksToSuite(suite) {
   // add tests
   await imageBench(suite);
+  await cryptoBench(suite);
+
   // await dracoBench(suite); - does not build in website
   await csvBench(suite);
   await jsonBench(suite);

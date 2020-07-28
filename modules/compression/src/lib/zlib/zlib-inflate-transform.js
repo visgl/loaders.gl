@@ -8,6 +8,7 @@ export default class ZlibInflateTransform {
   static inflateSync(input, options) {
     const compressed = new Uint8Array(input);
     const output = pako.inflate(compressed, options);
+    // @ts-ignore
     return output.buffer;
   }
 }
