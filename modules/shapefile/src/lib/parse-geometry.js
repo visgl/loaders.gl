@@ -143,6 +143,7 @@ function parsePoly(view, offset, dim, type) {
 
   const positions = concatPositions(xyPositions, mPositions, zPositions);
 
+  // parsePoly only accepts type = LineString or Polygon
   if (type === 'LineString') {
     return {
       positions: {value: positions, size: dim},
@@ -151,6 +152,7 @@ function parsePoly(view, offset, dim, type) {
     };
   }
 
+  // type is Polygon
   return {
     positions: {value: positions, size: dim},
     primitivePolygonIndices: {value: indices, size: 1},
