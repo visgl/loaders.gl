@@ -143,9 +143,19 @@ function parsePoly(view, offset, dim, type) {
 
   const positions = concatPositions(xyPositions, mPositions, zPositions);
 
+  if (type === 'LineString') {
+    return {
+      positions: {value: positions, size: dim},
+      pathIndices: {value: indices, size: 1},
+      type
+    };
+  }
+
   return {
     positions: {value: positions, size: dim},
-    indices: {value: indices, size: 1},
+    primitivePolygonIndices: {value: indices, size: 1},
+    // Shapefiles can only hold non-Multi-Polygons
+    polygonIndices: {value: new Uint16Array([0, nPoints]), size: 1},
     type
   };
 }
