@@ -2,6 +2,17 @@
 
 ## v2.3 Prereleases
 
+#### v2.3.0-alpha.7
+
+- Multipolygon parsing in binary-to-geojson conversion (#848)
+- crypto: New module for cryptographic hashing (#874)
+- compression: New module (#870)
+- las: upgrade the laz-perf script to the last version (#869)
+- gis loaders: Binary geospatial support via options.gis.format (#867)
+- core: makeResponse utility to unify handling of various input types (#787)
+- polyfills: Automatically decompress .gz files under Node (#866)
+- mvt: Fork @mapbox/vector-tile (prep for optimized binary loading) (#864)
+
 #### v2.3.0-alpha.6
 
 - core: selectLoader/selectLoaderSync split (#863)

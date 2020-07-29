@@ -11,9 +11,11 @@ export const ArrowWorkerLoader = {
   id: 'arrow',
   name: 'Apache Arrow',
   version: VERSION,
-  extensions: ['arrow'],
+  extensions: ['arrow', 'feather'],
   mimeTypes: ['application/octet-stream'],
   category: 'table',
+  binary: true,
+  test: 'ARROW',
   options: {
     arrow: {
       workerUrl: `https://unpkg.com/@loaders.gl/arrow@${VERSION}/dist/arrow-loader.worker.js`
