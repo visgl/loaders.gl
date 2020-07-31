@@ -56,23 +56,8 @@ This mailing list can also be utilized to reach out to the TSC.
 
 Please be mindful of and adhere to the Linux Foundation's [Code of Conduct](https://lfprojects.org/policies/code-of-conduct/) when contributing to loaders.gl.
 
-## Troubleshotting
+## Development Environment
 
-### Develop on Windows
+To contribute, you will likely want to clone the loaders.gl repository and start by making sure you can install, build and run tests.
 
-It is possible to build under Windows, but not directly in the Windows command prompt. You will need to install a Linux command line environment.
-
-Install [WSL (Windows Subsystem for Linux)](https://docs.microsoft.com/en-us/windows/wsl/install-win10) on Windows 10, and follow the [Linux](#develop-on-linux) directions.
-
-### Develop on Linux
-
-On Linux systems, install the following packages:
-
-- mesa-utils
-- xvfb
-- libgl1-mesa-dri
-- libglapi-mesa
-- libosmesa6
-- libxi-dev
-
-To get the headless tests working: `export DISPLAY=:99.0; sh -e /etc/init.d/xvfb start`
+See the [developer guide](https://loaders.gl/docs/dev-env) on the loaders.gl website for more information on how to get your environment set up for loaders.gl development.
