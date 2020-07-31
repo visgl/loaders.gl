@@ -1,4 +1,4 @@
-import parseImage from '../parsers/parse-image';
+import {_parseImage as parseImage} from '@loaders.gl/images';
 import {getImageUrls} from './load-image';
 import {deepLoad} from './deep-load';
 

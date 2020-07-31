@@ -2,13 +2,19 @@
 
 ## Upgrading to v2.3
 
-`@loaders.gl/core`:
+**@loaders.gl/core**
 
 - `selectLoader()` is now async and returns a `Promise` that resolves to a loader.
 - `selectLoaderSync()` is available for situations when calling an async function is inconvenient.
 - Passing `fetch` options to `load()` and `parse()` etc. should now be done via the `options.fetch` sub-options object. fetch options on the root object are now deprecated.
 
-`@loaders.gl/kml`:
+**@loaders.gl/images**
+
+- (BREAKING) Parsed image APIs have moved to `@loaders.gl/image-api`: `isImage`, `getImageType`, `getImageData`, `getImageSize`.
+- (BREAKING) Texture loading APIs have moved to `@loaders.gl/image-api`: `loadImage`, `loadImageArray`, `loadImageCube`.
+- `isBinaryImage`, `getBinaryImageMIMEType`, `getBinaryImageSize` are deprecated, use `getBinaryImageMetadata` instead.
+
+**@loaders.gl/kml**
 
 - The `KMLAsGeoJsonLoader` has been removed, use `KMLLoader`, with `options.gis.format: 'geojson'`.
 

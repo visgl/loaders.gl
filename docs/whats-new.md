@@ -18,6 +18,10 @@ This release brings a new Shapefile loader, compression codecs (Zlib, LZ4, Zstan
 
 - A new module with "transforms" for calculating cryptographic hashes (MD5, SHA256 etc) incrementally, e.g. on incoming binary chunks while streaming data into `parseInBatches`.
 
+**@loaders.gl/image-api** (NEW)
+
+- A new module with utility functions for image processing, complementing the existing `@loaders.gl/images` module.
+
 **@loaders.gl/core**
 
 - (BREAKING) `selectLoader()` is now async and returns a `Promise` that resolves to a loader, and can now identify loaders through content sniffing `Blob` and `File` objects.
@@ -29,6 +33,12 @@ This release brings a new Shapefile loader, compression codecs (Zlib, LZ4, Zstan
 
 - `fetch` polyfill: Files with `.gz` extension are automatically decompressed with gzip. The extension reported in the `fetch` response has the `.gz` extension removed.
 - `fetch` polyfill: Improved robustness and error handling in Node.js when opening unreadable or non-existent files. Underlying errors (`ENOEXIST`, `EISDIR` etc) are now caught and reported in `Response.statusText`.
+
+**@loaders.gl/images**
+
+- `ImageWriter` improved browser implementation.
+- (BREAKING) Parsed image APIs have moved to `@loaders.gl/image-api`.
+- (BREAKING) Texture loading APIs have moved to `@loaders.gl/image-api`.
 
 **@loaders.gl/json**
 

@@ -4,7 +4,7 @@
 import test from 'tape-promise/tape';
 
 import {isBinaryImage, getBinaryImageMIMEType, getBinaryImageSize} from '@loaders.gl/images';
-import {loadImages} from '../category-api/binary-image-api.spec';
+import {loadImages} from '@loaders.gl/images/test/lib/binary-image-api.spec';
 
 test('isBinaryImage (deprecated)', async t => {
   const images = await loadImages();

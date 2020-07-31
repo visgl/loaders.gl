@@ -10,7 +10,7 @@ import {
   getImageType,
   getImageSize,
   getImageData
-} from '@loaders.gl/images';
+} from '@loaders.gl/image-api';
 
 const IMAGE_TYPES = ['auto', 'image', 'imagebitmap', 'data'];
 

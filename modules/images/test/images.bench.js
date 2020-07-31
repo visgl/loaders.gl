@@ -1,4 +1,5 @@
-import {ImageLoader, isImageTypeSupported} from '@loaders.gl/images';
+import {ImageLoader} from '@loaders.gl/images';
+import {isImageTypeSupported} from '@loaders.gl/image-api';
 import {fetchFile, parse} from '@loaders.gl/core';
 
 const TEST_URL = '@loaders.gl/images/test/data/tiles/colortile-256x256.png';

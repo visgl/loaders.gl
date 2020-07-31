@@ -6,8 +6,7 @@
 };
 
 /**
- * Determines if the "raw" memory 
+ * Determines if a chunk of "raw" memory represents a binary encoded image
  * Currently supports `image/png`, `image/jpeg`, 'image/gif`, `image/bmp`.
- * @param binaryData "raw" memory to inspect
  */
 export function getBinaryImageMetadata(binaryData: DataView | ArrayBuffer): BinaryImageMetadata | null;

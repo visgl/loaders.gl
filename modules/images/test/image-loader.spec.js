@@ -1,6 +1,7 @@
 import test from 'tape-promise/tape';
 
-import {ImageLoader, isImageTypeSupported, getImageType, getImageData} from '@loaders.gl/images';
+import {ImageLoader} from '@loaders.gl/images';
+import {isImageTypeSupported, getImageType, getImageData} from '@loaders.gl/image-api';
 import {isBrowser, load} from '@loaders.gl/core';
 
 import {TEST_CASES, IMAGE_URL, IMAGE_DATA_URL, SVG_DATA_URL} from './lib/test-cases';

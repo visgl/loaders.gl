@@ -3,6 +3,7 @@ import {render} from 'react-dom';
 
 import {BenchResults} from '@probe.gl/react-bench';
 import {Bench} from '@probe.gl/bench';
+import {isBrowser} from '@loaders.gl/loader-utils';
 
 import {addModuleBenchmarksToSuite} from '../../test/bench/modules';
 
@@ -39,7 +40,10 @@ export default class App extends PureComponent {
     const suite = new Bench({
       log: this._logResult.bind(this)
     });
-    await addModuleBenchmarksToSuite(suite, addReferenceBenchmarks);
+    // Avoid server side rendering in gatsby
+    if (isBrowser) {
+      await addModuleBenchmarksToSuite(suite, addReferenceBenchmarks);
+    }
     suite
       // Calibrate performance
       .calibrate()

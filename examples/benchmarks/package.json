@@ -10,10 +10,10 @@
     "react": "^16.3.0",
     "react-dom": "^16.3.0",
     "@probe.gl/bench": "^3.3.0",
-    "@probe.gl/react-bench": "^3.3.0"
+    "@probe.gl/react-bench": "^3.3.0",
+    "@loaders.gl/loader-utils": "2.2.0"
   },
   "devDependencies": {
-    "@loaders.gl/core": "2.2.0",
     "@babel/cli": "^7.0.0",
     "@babel/core": "^7.4.0",
     "@babel/preset-react": "^7.0.0",

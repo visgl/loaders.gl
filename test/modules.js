@@ -28,8 +28,9 @@ if (TEST_CORE) {
 
 // Image Formats
 if (TEST_IMAGES) {
-  require('@loaders.gl/basis/test');
+  require('@loaders.gl/image-api/test');
   require('@loaders.gl/images/test');
+  require('@loaders.gl/basis/test');
   require('@loaders.gl/video/test');
 }
 

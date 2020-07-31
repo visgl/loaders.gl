@@ -25,13 +25,13 @@ if (medata) {
 
 ## Functions
 
-### getBinaryImageMetadata(imageData: ArrayBuffer | DataView): object | null
+### `getBinaryImageMetadata(imageData: ArrayBuffer | DataView): object | null`
 
 Parameters:
 
 - `imageData`: Binary encoded image data.
 
-Returns a metadata object describing the image. Returns `null` if the binary data does not represent a known binary image format.
+Returns a metadata object with if the binary data represents a known binary image format.
 
 ```js
 {
@@ -41,4 +41,8 @@ Returns a metadata object describing the image. Returns `null` if the binary dat
 }
 ```
 
-If `mimeType` is supplied, assumes the image is of that type. If not supplied, first attempts to auto deduce the image format (see `getImageMIMEType`).
+If image is not in a supported binary format, `getBinaryImageMetadata` returns `null`.
+
+## Remarks
+
+This is not a fool-proof test. Only a few initial header bytes are checked, and you can potentially get false positives if you call this funtion on arbitrary ArrayBuffers. However, in practice it works well for loader selection among a list of loaders.

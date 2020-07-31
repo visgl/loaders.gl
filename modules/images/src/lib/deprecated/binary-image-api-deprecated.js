@@ -1,4 +1,4 @@
-import {getBinaryImageMetadata} from '../category-api/binary-image-api';
+import {getBinaryImageMetadata} from '../api/binary-image-api';
 
 // Supported image types are PNG, JPEG, GIF and BMP.
 export function isBinaryImage(arrayBuffer, mimeType) {

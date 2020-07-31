@@ -1,4 +1,4 @@
-import {getBinaryImageMIMEType, getBinaryImageSize} from '@loaders.gl/images';
+import {getBinaryImageMetadata} from '@loaders.gl/images';
 import assert from '../utils/assert';
 import {UBER_POINT_CLOUD_EXTENSION} from '../gltf-constants';
 import GLBBuilder from './glb-builder';
@@ -147,9 +147,8 @@ export default class GLTFBuilder extends GLBBuilder {
     const bufferViewIndex = this.addBufferView(imageData);
 
     // Get the properties of the image to add as metadata.
-    const mimeType = getBinaryImageMIMEType(imageData) || {};
+    const {mimeType, width, height} = getBinaryImageMetadata(imageData) || {};
     if (mimeType) {
-      const {width, height} = getBinaryImageSize(imageData, mimeType) || {};
       this.json.images.push({
         bufferView: bufferViewIndex,
         mimeType,

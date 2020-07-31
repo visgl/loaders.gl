@@ -11,7 +11,6 @@ export function isFile(value: any): boolean;
 export function isBlob(value: any): boolean;
 
 export function isWritableDOMStream(value: any): boolean;
-
 export function isReadableDOMStream(value: any): boolean;
 
 /**
@@ -20,9 +19,6 @@ export function isReadableDOMStream(value: any): boolean;
 export function isBuffer(value: any): boolean;
 
 export function isWritableNodeStream(value: any): boolean;
-
 export function isReadableNodeStream(value: any): boolean;
-
 export function isReadableStream(value: any): boolean;
-
 export function isWritableStream(value: any): boolean;

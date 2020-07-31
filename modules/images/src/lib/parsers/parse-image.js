@@ -1,6 +1,6 @@
-import assert from '../utils/assert';
-import {isImageTypeSupported, getDefaultImageType} from '../category-api/image-type';
-import {getImageData} from '../category-api/parsed-image-api';
+import {assert} from '@loaders.gl/loader-utils';
+import {isImageTypeSupported, getDefaultImageType} from '../utils/image-type';
+import {getImageData} from '../deprecated/get-image-data';
 import parseToImage from './parse-to-image';
 import parseToImageBitmap from './parse-to-image-bitmap';
 import parseToNodeImage from './parse-to-node-image';

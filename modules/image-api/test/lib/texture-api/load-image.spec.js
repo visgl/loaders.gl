@@ -1,5 +1,5 @@
 import test from 'tape-promise/tape';
-import {loadImage, loadImageArray, loadImageCube, isImage} from '@loaders.gl/images';
+import {loadImage, loadImageArray, loadImageCube, isImage} from '@loaders.gl/image-api';
 
 const LUT_URL = '@loaders.gl/images/test/data/ibl/brdfLUT.png';
 const PAPERMILL_URL = '@loaders.gl/images/test/data/ibl/papermill';

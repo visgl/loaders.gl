@@ -1,5 +1,5 @@
 /* global Image, ImageBitmap */
-import assert from '../utils/assert';
+import {assert} from '@loaders.gl/loader-utils';
 
 export function isImage(image) {
   return Boolean(getImageTypeOrNull(image));

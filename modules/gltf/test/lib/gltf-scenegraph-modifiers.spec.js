@@ -23,7 +23,6 @@ test('GLTFScenegraph#addImage', t => {
   const gltfScenegraph = new GLTFScenegraph();
 
   // t.throws(() => gltfScenegraph.addImage(PNG1x1), 'addImage() throws if no MIMEType');
-
   const imageIndex = gltfScenegraph.addImage(PNG1x1);
   t.equal(imageIndex, 0, 'Image index should be 0');
 
