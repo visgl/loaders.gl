@@ -10,4 +10,4 @@
 
 #### `LZ4InflateTransform.inflateSync(data: ArrayBuffer, options?: object): ArrayBuffer`
 
-Note: options are passed through to the underlying `pako` library.
+Decompresses (inflates) LZ4 encoded data.

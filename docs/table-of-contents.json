@@ -149,6 +149,15 @@
           ]
         },
         {
+          "title": "@loaders.gl/crypto",
+          "entries": [
+            {"entry": "modules/crypto/docs"},
+            {"entry": "modules/crypto/docs/api-reference/crc32-hash-transform"},
+            {"entry": "modules/crypto/docs/api-reference/crypto-hash-transform"},
+            {"entry": "modules/crypto/docs/api-reference/md5-hash-transform"}
+          ]
+        },
+        {
           "title": "@loaders.gl/draco",
           "entries": [
             {"entry": "modules/draco/docs"}

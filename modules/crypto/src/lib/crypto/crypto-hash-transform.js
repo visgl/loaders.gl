@@ -1,5 +1,8 @@
-// This dependency is too big
+// This dependency is too big, application must provide it
 // import * as CryptoJS from 'crypto-js';
+import {assert} from '@loaders.gl/loader-utils';
+
+const ERR_LIBRARY_NOT_SUPPLIED = 'crypto-js lib must be supplied in options.module.CryptoJS';
 
 export default class CryptoHashTransform {
   static async hash(input, options) {
@@ -7,7 +10,8 @@ export default class CryptoHashTransform {
   }
 
   static hashSync(input, options = {}) {
-    const {CryptoJS} = options;
+    const {CryptoJS} = options.modules || {};
+    assert(CryptoJS, ERR_LIBRARY_NOT_SUPPLIED);
 
     const transform = new CryptoHashTransform(options);
     const typedWordArray = CryptoJS.lib.WordArray.create(input);
@@ -21,7 +25,9 @@ export default class CryptoHashTransform {
     options = options || {};
     options.crypto = options.crypto || {};
 
-    const {CryptoJS} = options;
+    const {CryptoJS} = options.modules || {};
+    assert(CryptoJS, ERR_LIBRARY_NOT_SUPPLIED);
+
     const {algorithm = CryptoJS.algo.MD5} = options.crypto;
 
     this.options = options;

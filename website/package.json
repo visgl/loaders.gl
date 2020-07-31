@@ -10,7 +10,7 @@
   "scripts": {
     "start": "yarn develop",
     "develop": "yarn clean-examples && yarn build:gallery && yarn gatsby develop",
-    "build": "yarn clean-examples && yarn build:gallery && gatsby build",
+    "build": "yarn clean && yarn clean-examples && yarn build:gallery && gatsby build",
     "build-staging": "yarn clean && yarn clean-examples && yarn build:gallery && gatsby build --prefix-paths",
     "serve": "gatsby serve",
     "deploy": "NODE_DEBUG=gh-pages gh-pages -d public",

@@ -9,3 +9,5 @@
 #### `LZ4DeflateTransform.deflate(data: ArrayBuffer, options?: object): Promise<ArrayBuffer>`
 
 #### `LZ4DeflateTransform.deflateSync(data: ArrayBuffer, options?: object): ArrayBuffer`
+
+Compresses (deflates) LZ4 encoded data.

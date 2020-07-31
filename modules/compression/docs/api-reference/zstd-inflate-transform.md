@@ -9,3 +9,5 @@
 #### `ZstdInflateTransform.inflate(data: ArrayBuffer, options?: object): Promise<ArrayBuffer>`
 
 #### `ZstdInflateTransform.inflateSync(data: ArrayBuffer, options?: object): ArrayBuffer`
+
+Decompresses (inflates) Zstandard encoded data.

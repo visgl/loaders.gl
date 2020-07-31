@@ -16,7 +16,7 @@ This release brings a new Shapefile loader, compression codecs (Zlib, LZ4, Zstan
 
 **@loaders.gl/crypto** (NEW)
 
-- A new module with "transforms" for calculating cryptographic hashes (MD5, SHA256 etc) incrementally, e.g. on incoming binary chunks while streaming data into `parseInBatches1.
+- A new module with "transforms" for calculating cryptographic hashes (MD5, SHA256 etc) incrementally, e.g. on incoming binary chunks while streaming data into `parseInBatches`.
 
 **@loaders.gl/core**
 
