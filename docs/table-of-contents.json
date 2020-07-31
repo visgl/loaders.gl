@@ -26,7 +26,7 @@
             {"entry": "docs/developer-guide/polyfills"},
             {"entry": "docs/developer-guide/dependencies"},
             {"entry": "docs/developer-guide/creating-loaders-and-writers"},
-            {"entry": "docs/contributing"}
+            {"entry": "docs/developer-guide/dev-env"}
           ]
         },
         {
