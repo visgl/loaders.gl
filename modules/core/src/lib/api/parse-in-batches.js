@@ -74,7 +74,7 @@ async function loadToOutputIterator(loader, data, options, context) {
     return await loader.parseInBatches(inputIterator, options, context, loader);
   }
   if (loader.parseStreamInBatches) {
-    let stream = await getReadableStream(data);
+    const stream = await getReadableStream(data);
     if (stream) {
       return loader.parseStreamInBatches(stream, options, context);
     }

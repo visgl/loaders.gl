@@ -1,5 +1,5 @@
 // import {deserialize} from 'flatgeobuf/lib/geojson/featurecollection';
-import {deserialize} from 'flatgeobuf/dist/flatgeobuf-geojson.min';
+import {deserialize, deserializeStream} from 'flatgeobuf/dist/flatgeobuf-geojson.min';
 
 /*
   * Parse FlatGeobuf arrayBuffer and return GeoJSON.
@@ -15,4 +15,15 @@ export default function parseFlatGeobuf(input, options) {
   const arr = new Uint8Array(input);
   const {features} = deserialize(arr);
   return features;
+}
+
+/*
+  * Parse FlatGeobuf arrayBuffer and return GeoJSON.
+  *
+  * @param {ReadableStream} _ A FlatGeobuf arrayBuffer
+  * @return  A GeoJSON geometry object iterator
+  */
+export function parseFlatGeobufInBatches(stream, options) {
+  const iterator = deserializeStream(stream);
+  return iterator;
 }
