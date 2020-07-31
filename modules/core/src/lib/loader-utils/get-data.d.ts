@@ -4,3 +4,4 @@ export function getInitialDataSync(data: SyncDataType): ArrayBuffer | string | n
 export function getArrayBufferOrStringFromDataSync(data: SyncDataType, loader): ArrayBuffer | string;
 export function getArrayBufferOrStringFromData(data: DataType, loader): Promise<ArrayBuffer | string>;
 export function getAsyncIteratorFromData(data: BatchableDataType): Promise<AsyncIterable<ArrayBuffer>>;
+export function getReadableStream(data: BatchableDataType): Promise<ReadableStream>;

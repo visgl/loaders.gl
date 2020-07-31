@@ -26,7 +26,8 @@ test('JSONLoader#loadInBatches(geojson.json, rows, batchSize = auto)', async t =
     // byteLength = batch.bytesUsed;
   }
 
-  t.ok(batchCount <= 3, 'Correct number of batches received');
+  t.comment(JSON.stringify(batchCount));
+  t.ok(batchCount <= 4, 'Correct number of batches received');
   t.equal(rowCount, 308, 'Correct number of row received');
   // t.equal(byteLength, 135910, 'Correct number of bytes received');
   t.end();

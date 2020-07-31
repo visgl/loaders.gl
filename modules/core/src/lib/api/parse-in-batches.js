@@ -3,7 +3,7 @@ import {concatenateChunksAsync} from '@loaders.gl/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';
 import {getLoaderContext} from '../loader-utils/context-utils';
-import {getAsyncIteratorFromData} from '../loader-utils/get-data';
+import {getAsyncIteratorFromData, getReadableStream} from '../loader-utils/get-data';
 import {getResourceUrlAndType} from '../utils/resource-utils';
 import {selectLoader} from './select-loader';
 
@@ -42,22 +42,7 @@ export async function parseInBatches(data, loaders, options, context) {
 }
 
 async function parseWithLoaderInBatches(loader, data, options, context) {
-  const inputIterator = await getAsyncIteratorFromData(data);
-
-  async function* parseChunkInBatches() {
-    // concatenating data iterator into single chunk
-    const arrayBuffer = await concatenateChunksAsync(inputIterator);
-    // yield a single batch, the output from loader.parse()
-    yield loader.parse(arrayBuffer, options, context, loader);
-  }
-
-  let outputIterator;
-
-  if (!loader.parseInBatches) {
-    outputIterator = await parseChunkInBatches();
-  } else {
-    outputIterator = await loader.parseInBatches(inputIterator, options, context, loader);
-  }
+  const outputIterator = await loadToOutputIterator(loader, data, options, context);
 
   // Generate metadata batch if requested
   if (!options.metadata) {
@@ -81,4 +66,27 @@ async function parseWithLoaderInBatches(loader, data, options, context) {
   }
 
   return makeMetadataBatchIterator(outputIterator);
+}
+
+async function loadToOutputIterator(loader, data, options, context) {
+  if (loader.parseInBatches) {
+    const inputIterator = await getAsyncIteratorFromData(data);
+    return await loader.parseInBatches(inputIterator, options, context, loader);
+  }
+  if (loader.parseStreamInBatches) {
+    const stream = await getReadableStream(data);
+    if (stream) {
+      return loader.parseStreamInBatches(stream, options, context);
+    }
+  }
+
+  // Fallback: load atomically using `parse` concatenating input iterator into single chunk
+  async function* parseChunkInBatches() {
+    const inputIterator = await getAsyncIteratorFromData(data);
+    const arrayBuffer = await concatenateChunksAsync(inputIterator);
+    // yield a single batch, the output from loader.parse()
+    yield loader.parse(arrayBuffer, options, context, loader);
+  }
+
+  return await parseChunkInBatches();
 }

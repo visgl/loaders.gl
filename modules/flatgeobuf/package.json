@@ -1,0 +1,41 @@
+{
+  "name": "@loaders.gl/flatgeobuf",
+  "description": "Loader for FlatGeobuf",
+  "version": "2.1.0-beta.2",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/uber-web/loaders.gl"
+  },
+  "keywords": [
+    "geometry",
+    "loader",
+    "parser",
+    "MVT",
+    "Mapbox Vector Tiles"
+  ],
+  "main": "dist/es5/index.js",
+  "module": "dist/esm/index.js",
+  "esnext": "dist/es6/index.js",
+  "sideEffects": false,
+  "files": [
+    "src",
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "pre-build": "npm run build-worker && npm run build-worker --env.dev && npm run build-bundle && npm run build-bundle -- --env.dev",
+    "build-worker": "webpack --entry ./src/workers/flatgeobuf-loader.worker.js --output ./dist/flatgeobuf-loader.worker.js --config ../../scripts/worker-webpack-config.js",
+    "build-bundle": "webpack --display=minimal --config ../../scripts/bundle.config.js"
+  },
+  "dependencies": {
+    "@loaders.gl/loader-utils": "^2.1.1",
+    "flatgeobuf": "^3.1.0"
+  },
+  "devDependencies": {
+    "esm": "^3.2.25"
+  }
+}
