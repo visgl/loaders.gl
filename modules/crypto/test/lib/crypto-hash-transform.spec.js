@@ -1,8 +1,5 @@
 import test from 'tape-promise/tape';
-import {
-  generateRandomArrayBuffer,
-  compareArrayBuffers
-} from '@loaders.gl/compression/test/utils/test-utils';
+import {compareArrayBuffers, getBinaryData} from '../test-utils/test-utils';
 import {makeTransformIterator, concatenateArrayBuffers} from '@loaders.gl/loader-utils';
 import {fetchFile, parseInBatches, makeIterator} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/csv';
@@ -12,13 +9,12 @@ import * as CryptoJS from 'crypto-js';
 const CSV_URL = '@loaders.gl/csv/test/data/sample-very-long.csv';
 /** Externally computed hash: `openssl md5 -binary sample-very-long.json | openssl base64` */
 const CSV_MD5 = 'zmLuuVSkigYR9r5FcsKkCw==';
-const SIZE = 100 * 1000;
 
 test('CryptoHashTransform#hashSync(CSV, against external hash)', async t => {
   const response = await fetchFile(CSV_URL);
   const data = await response.arrayBuffer();
 
-  const hash = CryptoHashTransform.hashSync(data, {CryptoJS});
+  const hash = CryptoHashTransform.hashSync(data, {modules: {CryptoJS}});
   t.equal(hash, CSV_MD5, 'repeated data MD5 hash is correct');
 
   t.end();
@@ -32,7 +28,7 @@ test('CryptoHashTransform#iterator(CSV stream, against external hash)', async t 
   let iterator = makeIterator(response);
   // @ts-ignore
   iterator = makeTransformIterator(iterator, CryptoHashTransform, {
-    CryptoJS,
+    modules: {CryptoJS},
     onEnd: result => {
       hash = result.hash;
     }
@@ -54,10 +50,10 @@ test('CryptoHashTransform#iterator(CSV stream, against external hash)', async t 
 test('CryptoHashTransform#hashSync(MD5 = default)', t => {
   const {binaryData, repeatedData} = getBinaryData();
 
-  let hash = CryptoHashTransform.hashSync(binaryData, {CryptoJS});
+  let hash = CryptoHashTransform.hashSync(binaryData, {modules: {CryptoJS}});
   t.equal(hash, 'YnxTb+lyen1CsNkpmLv+qA==', 'binary data MD5 hash is correct');
 
-  hash = CryptoHashTransform.hashSync(repeatedData, {CryptoJS});
+  hash = CryptoHashTransform.hashSync(repeatedData, {modules: {CryptoJS}});
   t.equal(hash, '2d4uZUoLXXO/XWJGnrVl5Q==', 'repeated data MD5 hash is correct');
 
   t.end();
@@ -67,7 +63,7 @@ test('CryptoHashTransform#hashSync(SHA256)', t => {
   const {binaryData, repeatedData} = getBinaryData();
 
   let hash = CryptoHashTransform.hashSync(binaryData, {
-    CryptoJS,
+    modules: {CryptoJS},
     crypto: {algorithm: CryptoJS.algo.SHA256}
   });
   t.equal(
@@ -77,7 +73,7 @@ test('CryptoHashTransform#hashSync(SHA256)', t => {
   );
 
   hash = CryptoHashTransform.hashSync(repeatedData, {
-    CryptoJS,
+    modules: {CryptoJS},
     crypto: {algorithm: CryptoJS.algo.SHA256}
   });
   t.equal(
@@ -100,7 +96,7 @@ test('makeTransformIterator#CryptoHashTransform(small chunks)', async t => {
 
   // @ts-ignore
   const transformIterator = makeTransformIterator(inputChunks, CryptoHashTransform, {
-    CryptoJS,
+    modules: {CryptoJS},
     onEnd: result => {
       hash = result.hash;
     }
@@ -130,7 +126,7 @@ test('makeTransformIterator#CryptoHashTransform(100K)', async t => {
 
   // @ts-ignore
   const transformIterator = makeTransformIterator(inputChunks, CryptoHashTransform, {
-    CryptoJS,
+    modules: {CryptoJS},
     onEnd: result => {
       hash = result.hash;
     }
@@ -150,14 +146,3 @@ test('makeTransformIterator#CryptoHashTransform(100K)', async t => {
 
   t.end();
 });
-
-// UTILITIES
-
-const data = {};
-
-export function getBinaryData() {
-  data.binaryData = data.binaryData || generateRandomArrayBuffer({size: SIZE});
-  data.repeatedData =
-    data.repeatedData || generateRandomArrayBuffer({size: SIZE / 10, repetitions: 10});
-  return data;
-}

@@ -10,4 +10,8 @@
 
 #### `ZlibDeflateTransform.deflateSync(data: ArrayBuffer, options?: object): ArrayBuffer`
 
-Note: options are passed through to the underlying `pako` library.
+Compresses (deflates) Zlib encoded data.
+
+## Remarks
+
+- options are passed through to the underlying `pako` library.

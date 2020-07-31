@@ -10,4 +10,8 @@
 
 ### `ZlibInflateTransform.inflateSync(data: ArrayBuffer, options?: object): ArrayBuffer`
 
-Note: options are passed through to the underlying `pako` library.
+Decompresses (inflates) Zlib encoded data.
+
+## Remarks
+
+- options are passed through to the underlying `pako` library.

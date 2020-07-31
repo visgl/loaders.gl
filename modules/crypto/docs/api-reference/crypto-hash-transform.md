@@ -10,4 +10,8 @@
 
 #### `CryptoHashTransform.hashSync(data: ArrayBuffer, options?: object): string`
 
-- `options.CryptoJS` needs to be supplied with the CryptoJS library
+- `options.modules.CryptoJS` the CryptoJS library needs to be supplied by the application.
+
+## Remarks
+
+- This transform supports streaming hashing.
