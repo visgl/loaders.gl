@@ -1,8 +1,9 @@
 import type {Batch} from '@loaders.gl/schema';
 import type {JSONLoaderOptions} from '../json-loader';
 import {TableBatchBuilder} from '@loaders.gl/schema';
-import {makeTextDecoderIterator} from '@loaders.gl/loader-utils';
+import {assert, makeTextDecoderIterator} from '@loaders.gl/loader-utils';
 import StreamingJSONParser from './parser/streaming-json-parser';
+import JSONPath from './jsonpath/jsonpath';
 
 // TODO - support batch size 0 = no batching/single batch?
 // eslint-disable-next-line max-statements, complexity
@@ -88,4 +89,25 @@ export default async function* parseJSONInBatches(
     };
     yield finalBatch;
   }
+}
+
+export function rebuildJsonObject(batch, data) {
+  // Last batch will have this special type and will provide all the root object of the parsed file
+  assert(batch.batchType === 'final-result');
+
+  // The streamed JSON data is a top level array (jsonpath = '$'), just return the array of row objects
+  if (batch.jsonpath === '$') {
+    return data;
+  }
+
+  // (jsonpath !== '$') The streamed data is not a top level array, so stitch it back in to the top-level object
+  if (batch.jsonpath && batch.jsonpath.length > 1) {
+    const topLevelObject = batch.container;
+    const streamingPath = new JSONPath(batch.jsonpath);
+    streamingPath.setFieldAtPath(topLevelObject, data);
+    return topLevelObject;
+  }
+
+  // No jsonpath, in this case nothing was streamed.
+  return batch.container;
 }
