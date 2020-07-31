@@ -4,31 +4,15 @@
 
 PRs and bug reports are welcome, and we are actively looking for new maintainers.
 
-## Setting Up Dev Environment
-
-The **master** branch is the active development branch.
-
-Building loaders.gl locally from the source requires node.js `>=10`.
-We use [yarn](https://yarnpkg.com/en/docs/install) to manage the dependencies.
-
-```bash
-git checkout master
-yarn bootstrap
-```
-
-Additional instructions for [Windows](#developing-on-windows) and [Linux](#developing-on-linux).
-
-### Running Tests
-
-- `yarn lint`: Check coding standards and formatting
-- `yarn lint fix`: Fix errors with formatting
-- `yarn test node`: Quick test run under Node.js
-- `yarn test browser`: Test run under browser, good for interactive debugging
-- `yarn test`: Run lint, node test, browser tests (in headless mode)
-
-If you consider opening a PR, here are some documentations to get you started:
+If you consider opening a PR, here is some documentation to get you started:
 
 - vis.gl [developer process](https://www.github.com/visgl/tsc/tree/master/developer-process)
+
+## Development Environment
+
+To contribute, you will likely want to clone the loaders.gl repository and start by making sure you can install, build and run tests.
+
+See the [developer guide](https://loaders.gl/docs/dev-env) on the loaders.gl website for more information on how to get your environment set up for loaders.gl development, including for Linux and Windows.
 
 ## Community Governance
 
@@ -43,7 +27,7 @@ loaders.gl development is governed by the vis.gl Technical Steering Committee (T
 - [Ib Green](https://github.com/ibgreen) - overall architecture
 - [Xiaoji Chen](https://github.com/pessimistress) - workers, mesh loaders
 - [Xintong Xia](https://github.com/xintongxia) - 3D tiles and I3S
-- [Kyle Barron](https://github.com/kylebarron) - terrain
+- [Kyle Barron](https://github.com/kylebarron) - terrain, geospatial loaders
 
 Maintainers of loaders.gl have commit access to this GitHub repository, and take part in the decision making process.
 
@@ -55,9 +39,3 @@ This mailing list can also be utilized to reach out to the TSC.
 ## Code of Conduct
 
 Please be mindful of and adhere to the Linux Foundation's [Code of Conduct](https://lfprojects.org/policies/code-of-conduct/) when contributing to loaders.gl.
-
-## Development Environment
-
-To contribute, you will likely want to clone the loaders.gl repository and start by making sure you can install, build and run tests.
-
-See the [developer guide](https://loaders.gl/docs/dev-env) on the loaders.gl website for more information on how to get your environment set up for loaders.gl development.

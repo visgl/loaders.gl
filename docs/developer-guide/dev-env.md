@@ -1,8 +1,29 @@
 # Development Environment
 
-Our primary development environment is MacOS, but it is also possible to build loaders.gl on Linux and Windows.
+The **master** branch is the active development branch.
 
-## Develop on Windows
+Building loaders.gl locally from the source requires node.js `>=10`.
+We use [yarn](https://yarnpkg.com/en/docs/install) to manage the dependencies.
+
+```bash
+git checkout master
+yarn bootstrap
+```
+
+## Running Tests
+
+- `yarn bootstrap`: Install and build workers etc. Run every time you pull a new branch.
+- `yarn lint`: Check coding standards and formatting
+- `yarn lint fix`: Fix errors with formatting
+- `yarn test node`: Quick test run under Node.js
+- `yarn test browser`: Test run under browser, good for interactive debugging
+- `yarn test`: Run lint, node test, browser tests (in headless mode)
+
+## Environment Setup
+
+Note that our primary development environment is MacOS, but it is also possible to build loaders.gl on Linux and Windows.
+
+### Develop on Windows
 
 It is possible to build loaders.gl on Windows 10, but not directly in the Windows command prompt. You will need to install a Linux command line environment.
 
@@ -12,7 +33,7 @@ Note that you may also need to make some decisions on where to place your code a
 
 Once this is done, follow the instructions for developing on Linux.
 
-## Developing on Linux
+### Develop on Linux
 
 On Linux systems, the following packages are necessary for running webgl-based headless render tests.
 
@@ -24,15 +45,6 @@ On Linux systems, the following packages are necessary for running webgl-based h
 - libxi-dev
 
 To get the headless tests working: `export DISPLAY=:99.0; sh -e /etc/init.d/xvfb start`
-
-## Running Tests
-
-- `yarn bootstrap`: Install and build workers etc. Run every time you pull a new branch.
-- `yarn lint`: Check coding standards and formatting
-- `yarn lint fix`: Fix errors with formatting
-- `yarn test node`: Quick test run under Node.js
-- `yarn test browser`: Test run under browser, good for interactive debugging
-- `yarn test`: Run lint, node test, browser tests (in headless mode)
 
 ## Appendix: Installing JavaScript Development Tools
 
