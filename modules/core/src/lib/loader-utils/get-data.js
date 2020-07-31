@@ -130,3 +130,14 @@ function getIteratorFromData(data) {
 
   throw new Error(ERR_DATA);
 }
+
+export async function getReadableStream(data) {
+  if (isReadableStream(data)) {
+    return data;
+  }
+  if (isResponse(data)) {
+    return data.body;
+  }
+  const response = await makeResponse(data);
+  return response.body;
+}

@@ -16,11 +16,16 @@ export type LoaderObject = {
 
   test?: ((ArrayBuffer) => boolean) | string | number;
 
-  parse?: (arrayBuffer, options) => Promise<any>;
-  parseSync?: (arrayBuffer, options) => any;
-  parseText?: (string, options) => Promise<any>;
-  parseTextSync?: (string, options) => any;
-  parseInBatches?: (iterator: AsyncIterable<ArrayBuffer> | AsyncIterator<ArrayBuffer>, options: object) => any;
+  parse?: (arrayBuffer, options, context?) => Promise<any>;
+  parseSync?: (arrayBuffer, options, context?) => any;
+  parseText?: (string, options, context?) => Promise<any>;
+  parseTextSync?: (string, options, context?) => any;
+  parseInBatches?: (
+    iterator: AsyncIterable<ArrayBuffer> | AsyncIterator<ArrayBuffer>, 
+    options: object,
+    context?: object
+  ) => any;
+  parseStreamInBatches?: (stream: ReadableStream, options: object, context?: object) => any;
 
   // TODO - deprecated
   supported?: boolean;
