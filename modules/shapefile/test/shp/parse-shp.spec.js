@@ -42,7 +42,7 @@ test('Shapefile JS Polyline tests', async t => {
       // @ts-ignore
       t.deepEqual(output.geometries[i].positions, expBinary.positions);
       // @ts-ignore
-      t.deepEqual(output.geometries[i].indices, expBinary.pathIndices);
+      t.deepEqual(output.geometries[i].pathIndices, expBinary.pathIndices);
     }
   }
 
@@ -63,7 +63,7 @@ test('Shapefile JS Polygon tests', async t => {
       // @ts-ignore
       t.deepEqual(output.geometries[i].positions, expBinary.positions);
       // @ts-ignore
-      t.deepEqual(output.geometries[i].indices, expBinary.primitivePolygonIndices);
+      t.deepEqual(output.geometries[i].primitivePolygonIndices, expBinary.primitivePolygonIndices);
     }
   }
 

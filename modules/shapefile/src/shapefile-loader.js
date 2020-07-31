@@ -55,7 +55,7 @@ async function parseShapefile(arrayBuffer, options, context) {
   // Convert binary geometries to GeoJSON
   const geojsonGeometries = [];
   for (const geom of geometries) {
-    geojsonGeometries.push(binaryToGeoJson(geom));
+    geojsonGeometries.push(binaryToGeoJson(geom, geom.type, 'geometry'));
   }
 
   // parse properties
