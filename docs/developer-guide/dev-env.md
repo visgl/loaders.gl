@@ -1,6 +1,16 @@
 # Development Environment
 
-Our primary development environment is MacOS, but it is also possible to build loaders.gl on Linux and Windows.
+The **master** branch is the active development branch.
+
+Building loaders.gl locally from the source requires node.js `>=10`.
+We use [yarn](https://yarnpkg.com/en/docs/install) to manage the dependencies.
+
+```bash
+git checkout master
+yarn bootstrap
+```
+
+Note that our primary development environment is MacOS, but it is also possible to build loaders.gl on Linux and Windows.
 
 ## Develop on Windows
 
