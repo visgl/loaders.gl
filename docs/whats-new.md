@@ -36,7 +36,7 @@ This release brings a new Shapefile loader, compression codecs (Zlib, LZ4, Zstan
 
 **@loaders.gl/images**
 
-- `ImageWriter` improved browser implementation.
+- `ImageWriter`: new improved browser implementation.
 - (BREAKING) Parsed image APIs have moved to `@loaders.gl/image-api`.
 - (BREAKING) Texture loading APIs have moved to `@loaders.gl/image-api`.
 
