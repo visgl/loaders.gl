@@ -201,30 +201,39 @@ export default class Converter3dTilesToI3S {
       lodSelection: [
         {
           metricType: 'maxScreenThresholdSQ',
-          maxError: 196349.54374999998
+          maxError: 0
         },
         {
           metricType: 'maxScreenThreshold',
-          maxError: 499.99999999999994
+          maxError: 0
         }
       ],
-      children: [],
-      geometryData: undefined,
-      textureData: undefined
+      children: []
     };
 
-    await this._addChildren({rootNode: root0, count: 0, tiles: root.children}, layers0path);
     if (root.content && root.content.type === 'b3dm') {
-      root0.geometryData = [{href: './geometries/0'}];
+      root0.children.push({
+        id: '0',
+        href: './0',
+        ...coordinates
+      });
+      const rootContentNodeObject = await this._createNode(root0, 0, root, layers0path);
+      const {node} = rootContentNodeObject;
+      const childPath = join(layers0path, 'nodes', node.path);
+      node.geometryData = [{href: './geometries/0'}];
       const {geometry: geometryBuffer, textures} = convertB3dmToI3sGeometry(root.content);
-      const geometryPath = join(rootPath, 'geometries/0/');
+      const geometryPath = join(childPath, 'geometries/0/');
       await this._writeFile(geometryPath, geometryBuffer, 'index.bin');
       if (textures) {
-        root0.textureData = [{href: './textures/0'}];
-        const texturesPath = join(rootPath, 'textures/0/');
+        node.textureData = [{href: './textures/0'}];
+        const texturesPath = join(childPath, 'textures/0/');
         const texturesData = textures.bufferView.data;
         await this._writeFile(texturesPath, texturesData, 'index.jpeg');
       }
+
+      await this._writeFile(childPath, JSON.stringify(node));
+    } else {
+      await this._addChildren({rootNode: root0, count: 0, tiles: root.children}, layers0path);
     }
     await this._writeFile(rootPath, JSON.stringify(root0));
   }
