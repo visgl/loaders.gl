@@ -4871,13 +4871,19 @@ flatbuffers@1.11.0:
   resolved "https://registry.yarnpkg.com/flatbuffers/-/flatbuffers-1.11.0.tgz#90a47e584dd7851ad7a913f5a0ee99c1d76ce59f"
   integrity sha512-0PqFKtXI4MjxomI7jO4g5XfLPm/15g2R+5WGCHBGYGh0ihQiypnHlJ6bMmkkrAe0GzZ4d7PDAfCONKIPUxNF+A==
 
-flatgeobuf@^3.1.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/flatgeobuf/-/flatgeobuf-3.1.0.tgz#acdb11ddfd5264d1202075af920a8e0851c68dd0"
-  integrity sha512-6MWZ7R10VJX3PD8AT3mlpDeyqAibzi4sxxqAIPN7B5LrwUasGC0Ow9mo6deFRMj//rwRl8jL9MFUY1Iv/dlZpA==
+flatbuffers@1.12.0:
+  version "1.12.0"
+  resolved "https://registry.yarnpkg.com/flatbuffers/-/flatbuffers-1.12.0.tgz#72e87d1726cb1b216e839ef02658aa87dcef68aa"
+  integrity sha512-c7CZADjRcl6j0PlvFy0ZqXQ67qSEZfrVPynmnL+2zPc+NtMvrF8Y0QceMo7QqnSPc7+uWjUIAbvCQ5WIKlMVdQ==
+
+flatgeobuf@^3.5.0:
+  version "3.5.0"
+  resolved "https://registry.yarnpkg.com/flatgeobuf/-/flatgeobuf-3.5.0.tgz#7e6c3661a0eb341641a15c7d9d48d1c074d4a287"
+  integrity sha512-NKmFhhX6vz9rRbCq4a2cyUdJyVEQO2eARisszWUlIbZCUlo1yENCXu9xnssc4Bqj5jCEE3fQgU6V2fIK2Aek/Q==
   dependencies:
-    flatbuffers "1.11.0"
+    flatbuffers "1.12.0"
     slice-source "0.4.1"
+    stream-buffers "3.0.2"
 
 flatted@^2.0.0:
   version "2.0.2"
@@ -9552,6 +9558,11 @@ stream-browserify@^2.0.1:
   dependencies:
     inherits "~2.0.1"
     readable-stream "^2.0.2"
+
+stream-buffers@3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/stream-buffers/-/stream-buffers-3.0.2.tgz#5249005a8d5c2d00b3a32e6e0a6ea209dc4f3521"
+  integrity sha512-DQi1h8VEBA/lURbSwFtEHnSTb9s2/pwLEaFuNhXwy1Dx3Sa0lOuYT2yNUr4/j2fs8oCAMANtrZ5OrPZtyVs3MQ==
 
 stream-each@^1.1.0:
   version "1.2.3"
