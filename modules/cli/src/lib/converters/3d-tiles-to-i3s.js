@@ -19,7 +19,7 @@ const HARDCODED_NODES_PER_PAGE = 64;
 
 export default class Converter3dTilesToI3S {
   constructor() {
-    this.nodePages = new NodePages(HARDCODED_NODES_PER_PAGE);
+    this.nodePages = new NodePages(writeFile, HARDCODED_NODES_PER_PAGE);
   }
 
   async convert(inputFile, outputPath, tilesetsName, maxDepth) {
