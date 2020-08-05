@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/las",
-  "version": "2.3.0-alpha.7",
+  "version": "2.3.0-alpha.8",
   "description": "Framework-independent loader for the LAS and LAZ formats",
   "license": "MIT",
   "publishConfig": {
@@ -42,6 +42,6 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
-    "@loaders.gl/loader-utils": "2.3.0-alpha.7"
+    "@loaders.gl/loader-utils": "2.3.0-alpha.8"
   }
 }

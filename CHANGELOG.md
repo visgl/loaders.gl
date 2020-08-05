@@ -2,6 +2,16 @@
 
 ## v2.3 Prereleases
 
+#### v2.3.0-alpha.8
+
+    crypto: Add crc32c transform (#882)
+    Remove duplicate shapefile worker loader files (#881)
+    flatgeobuf: New module for flatgeobuf format (#880)
+    Docs: contributing.md cleanup (#878)
+    Use template contributing.md (#753)
+    crypto: fixes and cleanup (#876)
+    Fix name of indices returned from SHPLoader (#875)
+
 #### v2.3.0-alpha.7
 
 - Multipolygon parsing in binary-to-geojson conversion (#848)

@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/flatgeobuf",
   "description": "Loader for FlatGeobuf",
-  "version": "2.1.0-beta.2",
+  "version": "2.3.0-alpha.8",
   "license": "MIT",
   "publishConfig": {
     "access": "public"
