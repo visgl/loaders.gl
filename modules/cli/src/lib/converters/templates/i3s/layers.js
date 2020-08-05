@@ -67,7 +67,7 @@ export const layers = {
   },
   spatialReference: {
     path: 'spatialReference',
-    default: _spatialReference
+    transform: val => transform(val, _spatialReference)
   },
   capabilities: {
     path: 'capabilities',
@@ -79,7 +79,7 @@ export const layers = {
   },
   heightModelInfo: {
     path: 'heightModelInfo',
-    default: _heightModelInfo
+    transform: val => transform(val, _heightModelInfo)
   },
   nodePages: {
     path: 'nodePages',

@@ -20,7 +20,7 @@ export const store = {
     default: './nodes/root'
   },
   extent: {
-    path: 'extent',
+    path: 'extent'
   },
   indexCRS: {
     path: 'indexCRS',

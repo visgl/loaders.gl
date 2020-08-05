@@ -76,7 +76,7 @@ export const node = {
       },
       {
         metricType: 'maxScreenThreshold',
-        maxError: 499.99999999999994
+        maxError: 999.99999999999994
       }
     ]
   },
@@ -95,22 +95,18 @@ export const node = {
   },
   sharedResource: {
     path: 'sharedResource',
-    transform: val => _transform(val, _href),
     default: null
   },
   featureData: {
     path: 'featureData',
-    transform: val => _transform(val, _href),
     default: null
   },
   geometryData: {
     path: 'geometryData',
-    transform: val => _transform(val, _href),
     default: null
   },
   textureData: {
     path: 'textureData',
-    transform: val => _transform(val, _href),
     default: null
   }
 };

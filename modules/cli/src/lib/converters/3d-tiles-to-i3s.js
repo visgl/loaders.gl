@@ -204,9 +204,11 @@ export default class Converter3dTilesToI3S {
         mbs: rootTile.mbs,
         obb: rootTile.obb
       },
-      geometryData: {
-        href: './geometry/0'
-      },
+      geometryData: [
+        {
+          href: './geometries/0'
+        }
+      ],
       children: [],
       neighbors: []
     };
