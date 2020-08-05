@@ -16,19 +16,22 @@ MD5, SHA256 and many more, see [crypto-js](https://github.com/brix/crypto-js)
 
 The API offers "transforms" that can calculate a cryptographic hash incrementally on data as it comes in on a stream.
 
-| Transforms                                                                                     | Sync | Description                       |
-| ---------------------------------------------------------------------------------------------- | ---- | --------------------------------- |
-| [`CRC32HashTransform`](modules/crypto/docs/api-reference/cryptographic-hash-transform)         | Y    | Base64-encoded Cryptographic Hash |
-| [`MD5HashTransform`](modules/crypto/docs/api-reference/cryptographic-hash-transform)           | Y    | Base64-encoded Cryptographic Hash |
-| [`CryptographicHashTransform`](modules/crypto/docs/api-reference/cryptographic-hash-transform) | Y    | Base64-encoded Cryptographic Hash |
+| Transforms                                                                              | Sync | Description                       |
+| --------------------------------------------------------------------------------------- | ---- | --------------------------------- |
+| [`CRC32HashTransform`](modules/crypto/docs/api-reference/crc32-hash-transform)          | Y    | Base64-encoded Cryptographic Hash |
+| [`CRC32CHashTransform`](modules/crypto/docs/api-reference/crc32c-hash-transform)        | Y    | Base64-encoded Cryptographic Hash |
+| [`MD5HashTransform`](modules/crypto/docs/api-reference/md5-hash-transform)              | Y    | Base64-encoded Cryptographic Hash |
+| [`CryptographicHashTransform`](modules/crypto/docs/api-reference/crypto-hash-transform) | Y    | Base64-encoded Cryptographic Hash |
 
 ## Performance
 
 Note that cryptographic hashing is a computationally expensive operation, linear in the size of the data being hashed. Hashing speeds are currently in the order of ~20-30MB/s on 2019 Macbook Pros.
 
 ```
-├─ CRC32HashTransform#hash(): 109M bytes/s
-├─ MD5HashTransform#hash(): 75.3M bytes/s
-├─ CryptoHashTransform#hashSync(SHA256): 29.8M bytes/s
-├─ CryptoHashTransform#hash(MD5): 19.0M bytes/s
+Cryptographic Hash
+├─ CRC32HashTransform#hash(): 150M bytes/s
+├─ CRC32CHashTransform#hash(): 151M bytes/s
+├─ MD5HashTransform#hash(): 75.8M bytes/s
+├─ CryptoHashTransform#hashSync(SHA256): 30.6M bytes/s
+├─ CryptoHashTransform#hash(MD5): 18.9M bytes/s
 ```

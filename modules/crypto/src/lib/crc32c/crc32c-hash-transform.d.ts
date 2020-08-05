@@ -3,7 +3,7 @@ import {IncrementalTransform} from "@loaders.gl/loader-utils";
 /**
  * A transform that calculates Cryptographic Hash
  */
-export default class CRC32HashTransform implements IncrementalTransform {
+export default class CRC32CHashTransform implements IncrementalTransform {
   /**
    * Atomic hash calculation
    * @returns base64 encoded hash

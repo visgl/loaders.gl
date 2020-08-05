@@ -13,7 +13,7 @@ test('CRC32HashTransform#hashSync(CRC32, CSV, against external hash)', async t =
   const data = await response.arrayBuffer();
 
   const hash = CRC32HashTransform.hashSync(data);
-  t.equal(hash, CSV_CRC32, 'repeated data MD5 hash is correct');
+  t.equal(hash, CSV_CRC32, 'sync hash is correct');
 
   t.end();
 });
@@ -39,7 +39,7 @@ test('CRC32HashTransform#iterator(CSV stream, against external hash)', async t =
   }
   t.ok(Array.isArray(csv.data), 'parsing from wrapped iterator works');
 
-  t.equal(hash, CSV_CRC32, 'streaming MD5 hash is correct');
+  t.equal(hash, CSV_CRC32, 'streaming hash is correct');
 
   t.end();
 });
