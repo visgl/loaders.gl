@@ -1,4 +1,14 @@
-// https://stackoverflow.com/questions/23190056/hex-to-base64-converter-for-javascript
+/**
+ *
+ */
+export function toHex(cipher) {
+  const hexString = cipher.toString(16);
+  return hexString === '0' ? `0${hexString}` : hexString;
+}
+
+/**
+ *
+ */
 export function hexToBase64(hexstring) {
   const string = hexstring
     .match(/\w{2}/g)
@@ -8,32 +18,31 @@ export function hexToBase64(hexstring) {
 }
 
 /**
- * btoa() polyfill as defined by the HTML and Infra specs, which mostly just references
+ * `btoa()` polyfill as defined by the HTML and Infra specs, which mostly just references
  * RFC 4648.
  */
-function toBase64(s) {
-  let i;
+export function toBase64(string) {
   // String conversion as required by Web IDL.
-  s = `${s}`;
+  string = `${string}`;
   // "The btoa() method must throw an "InvalidCharacterError" DOMException if
   // data contains any character whose code point is greater than U+00FF."
-  for (i = 0; i < s.length; i++) {
-    if (s.charCodeAt(i) > 255) {
+  for (let i = 0; i < string.length; i++) {
+    if (string.charCodeAt(i) > 255) {
       return null;
     }
   }
   let out = '';
-  for (i = 0; i < s.length; i += 3) {
+  for (let i = 0; i < string.length; i += 3) {
     const groupsOfSix = [undefined, undefined, undefined, undefined];
-    groupsOfSix[0] = s.charCodeAt(i) >> 2;
-    groupsOfSix[1] = (s.charCodeAt(i) & 0x03) << 4;
-    if (s.length > i + 1) {
-      groupsOfSix[1] |= s.charCodeAt(i + 1) >> 4;
-      groupsOfSix[2] = (s.charCodeAt(i + 1) & 0x0f) << 2;
+    groupsOfSix[0] = string.charCodeAt(i) >> 2;
+    groupsOfSix[1] = (string.charCodeAt(i) & 0x03) << 4;
+    if (string.length > i + 1) {
+      groupsOfSix[1] |= string.charCodeAt(i + 1) >> 4;
+      groupsOfSix[2] = (string.charCodeAt(i + 1) & 0x0f) << 2;
     }
-    if (s.length > i + 2) {
-      groupsOfSix[2] |= s.charCodeAt(i + 2) >> 6;
-      groupsOfSix[3] = s.charCodeAt(i + 2) & 0x3f;
+    if (string.length > i + 2) {
+      groupsOfSix[2] |= string.charCodeAt(i + 2) >> 6;
+      groupsOfSix[3] = string.charCodeAt(i + 2) & 0x3f;
     }
     for (let j = 0; j < groupsOfSix.length; j++) {
       if (typeof groupsOfSix[j] === 'undefined') {
@@ -66,6 +75,6 @@ function btoaLookup(idx) {
   if (idx === 63) {
     return '/';
   }
-  // Throw INVALID_CHARACTER_ERR exception here -- won't be hit in the tests.
+  // Throw INVALID_CHARACTER_ERR exception here -- won't be hit in the teststring.
   return undefined;
 }

@@ -1,7 +1,7 @@
 import {IncrementalTransform} from "@loaders.gl/loader-utils";
 
 /**
- * A transform that calcultes Cryptographic Hash
+ * A transform that calculates Cryptographic Hash
  */
 export default class CryptoHashTransform implements IncrementalTransform {
   /**

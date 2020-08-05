@@ -1,4 +1,9 @@
-import {CryptoHashTransform, CRC32HashTransform, MD5HashTransform} from '@loaders.gl/crypto';
+import {
+  CryptoHashTransform,
+  CRC32HashTransform,
+  CRC32CHashTransform,
+  MD5HashTransform
+} from '@loaders.gl/crypto';
 import {getBinaryData} from './test-utils/test-utils';
 import * as CryptoJS from 'crypto-js';
 
@@ -9,6 +14,10 @@ export default async function csvBench(bench) {
 
   bench = bench.addAsync('CRC32HashTransform#hash()', {multiplier: 100000, unit: 'bytes'}, () =>
     CRC32HashTransform.hash(binaryData)
+  );
+
+  bench = bench.addAsync('CRC32CHashTransform#hash()', {multiplier: 100000, unit: 'bytes'}, () =>
+    CRC32CHashTransform.hash(binaryData)
   );
 
   bench = bench.addAsync('MD5HashTransform#hash(warmup)', {multiplier: 100000, unit: 'bytes'}, () =>

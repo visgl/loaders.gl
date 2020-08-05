@@ -35,6 +35,10 @@
     "@babel/runtime": "^7.3.1",
     "@loaders.gl/loader-utils": "2.3.0-alpha.7",
     "@types/crypto-js": "*",
-    "crypto-js": "^3.0.0 || ^4.0.0"
+    "crypto-js": "^3.0.0 || ^4.0.0",
+    "sse4_crc32": "^6.0.1"
+  },
+  "browser": {
+    "sse4_crc32": false
   }
 }

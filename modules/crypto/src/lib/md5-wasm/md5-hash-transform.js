@@ -1,7 +1,7 @@
 // Fork of https://github.com/briantbutton/md5-wasm under MIT license
 // import {IncrementalTransform} from "@loaders.gl/loader-utils";
 import md5WASM from './md5-wasm';
-import {hexToBase64} from '../crc32/hex-to-base64';
+import {hexToBase64} from '../utils/base64-utils';
 
 /**
  * A transform that MD5 compresses / deflates input bytes

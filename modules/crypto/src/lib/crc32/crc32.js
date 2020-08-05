@@ -1,6 +1,6 @@
 // CRC32 doesn't appear to be supported natively by crypto-js
 // https://gist.github.com/wqli78/1330293/6d85cc967f32cccfcbad94ae7d088a3dcfc14bd9
-import {hexToBase64} from './hex-to-base64';
+import {hexToBase64} from '../utils/base64-utils';
 
 /**
  * Calculates the CRC32 checksum of a string.
@@ -31,7 +31,8 @@ export default class CRC32 {
   }
 }
 
-const CRC32TAB = [
+// Note: Using a typed array here doubles the speed of the cipher
+const CRC32TAB = Uint32Array.of(
   0x00000000,
   0x77073096,
   0xee0e612c,
@@ -288,7 +289,7 @@ const CRC32TAB = [
   0xc30c8ea1,
   0x5a05df1b,
   0x2d02ef8d
-];
+);
 
 function getCRC32Table() {
   return CRC32TAB;
