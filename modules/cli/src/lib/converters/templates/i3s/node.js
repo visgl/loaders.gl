@@ -1,13 +1,6 @@
 import transform from 'json-map-transform';
 
-const _transform = (val, template) => {
-  if (val === undefined) {
-    return undefined;
-  }
-  return transform(val, template);
-};
-
-const _lodSelection = {
+const LOD_SELECTION = {
   metricType: {
     path: 'metricType'
   },
@@ -16,7 +9,7 @@ const _lodSelection = {
   }
 };
 
-const _obb = {
+const OBB = {
   center: {
     path: 'center'
   },
@@ -28,13 +21,13 @@ const _obb = {
   }
 };
 
-const _coordinates = {
+const COORDINATES = {
   mbs: {
     path: 'mbs'
   },
   obb: {
     path: 'obb',
-    transform: val => _transform(val, _obb)
+    transform: val => transform(val, OBB)
   }
 };
 
@@ -44,15 +37,15 @@ const _href = {
   }
 };
 
-const _pareNode = {
+const PARENT_NODE = {
   id: {
     path: 'id'
   },
   ..._href,
-  ..._coordinates
+  ...COORDINATES
 };
 
-export const node = {
+export const NODE = {
   version: {
     path: 'version'
   },
@@ -65,10 +58,10 @@ export const node = {
   level: {
     path: 'level'
   },
-  ..._coordinates,
+  ...COORDINATES,
   lodSelection: {
     path: 'lodSelection',
-    transform: val => _transform(val, _lodSelection),
+    transform: val => transform(val, LOD_SELECTION),
     default: [
       {
         metricType: 'maxScreenThresholdSQ',
@@ -90,7 +83,7 @@ export const node = {
   },
   parentNode: {
     path: 'parentNode',
-    transform: val => _transform(val, _pareNode),
+    transform: val => transform(val, PARENT_NODE),
     default: null
   },
   sharedResource: {

@@ -1,7 +1,7 @@
 import transform from 'json-map-transform';
-import {store} from './store';
+import {STORE} from './store';
 
-const _spatialReference = {
+const SPATIAL_REFERENCE = {
   wkid: {
     path: 'wkid',
     default: 4326
@@ -20,7 +20,7 @@ const _spatialReference = {
   }
 };
 
-const _heightModelInfo = {
+const HEIGHT_MODEL_INFO = {
   heightModel: {
     path: 'heightModel',
     default: 'orthometric'
@@ -35,7 +35,7 @@ const _heightModelInfo = {
   }
 };
 
-const _nodePages = {
+const NODE_PAGES = {
   nodesPerPage: {
     path: 'nodesPerPage'
   },
@@ -45,7 +45,7 @@ const _nodePages = {
   }
 };
 
-export const layers = {
+export const LAYERS = {
   version: {
     path: 'version',
     transform: val => val.toUpperCase()
@@ -67,7 +67,7 @@ export const layers = {
   },
   spatialReference: {
     path: 'spatialReference',
-    transform: val => transform(val, _spatialReference)
+    transform: val => transform(val, SPATIAL_REFERENCE)
   },
   capabilities: {
     path: 'capabilities',
@@ -75,15 +75,15 @@ export const layers = {
   },
   store: {
     path: 'store',
-    transform: val => transform(val, store)
+    transform: val => transform(val, STORE)
   },
   heightModelInfo: {
     path: 'heightModelInfo',
-    transform: val => transform(val, _heightModelInfo)
+    transform: val => transform(val, HEIGHT_MODEL_INFO)
   },
   nodePages: {
     path: 'nodePages',
-    transform: val => transform(val, _nodePages)
+    transform: val => transform(val, NODE_PAGES)
   },
   materialDefinitions: {
     path: 'materialDefinitions',

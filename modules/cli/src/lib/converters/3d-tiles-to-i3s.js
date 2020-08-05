@@ -13,8 +13,8 @@ import {
   convertCommonToI3SExtentCoordinate
 } from './coordinate-converter';
 
-import {layers as layersTemplate} from './templates/i3s/layers';
-import {node as nodeTemplate} from './templates/i3s/node';
+import {LAYERS as layersTemplate} from './templates/i3s/layers';
+import {NODE as nodeTemplate} from './templates/i3s/node';
 
 const ION_TOKEN =
   process.env.IonToken || // eslint-disable-line

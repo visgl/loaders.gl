@@ -1,4 +1,4 @@
-export const store = {
+export const STORE = {
   id: {
     path: 'id',
     transform: val => val.toUpperCase()
