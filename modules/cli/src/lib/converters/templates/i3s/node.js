@@ -1,33 +1,11 @@
 import transform from 'json-map-transform';
 
-const LOD_SELECTION = {
-  metricType: {
-    path: 'metricType'
-  },
-  maxError: {
-    path: 'maxError'
-  }
-};
-
-const OBB = {
-  center: {
-    path: 'center'
-  },
-  halfSize: {
-    path: 'halfSize'
-  },
-  quaternion: {
-    path: 'quaternion'
-  }
-};
-
 const COORDINATES = {
   mbs: {
     path: 'mbs'
   },
   obb: {
-    path: 'obb',
-    transform: val => transform(val, OBB)
+    path: 'obb'
   }
 };
 
@@ -61,7 +39,6 @@ export const NODE = {
   ...COORDINATES,
   lodSelection: {
     path: 'lodSelection',
-    transform: val => transform(val, LOD_SELECTION),
     default: [
       {
         metricType: 'maxScreenThresholdSQ',
