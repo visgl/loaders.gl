@@ -1,14 +1,22 @@
-// import {deserialize} from 'flatgeobuf/lib/geojson/featurecollection';
-import {deserialize, deserializeStream} from 'flatgeobuf/dist/flatgeobuf-geojson.min';
+import {
+  deserialize as deserializeGeoJson,
+  deserializeStream as deserializeStreamGeoJson
+} from 'flatgeobuf/dist/flatgeobuf-geojson.min';
+import {
+  deserialize as deserializeGeneric,
+  deserializeStream as deserializeStreamGeneric
+} from 'flatgeobuf/dist/flatgeobuf.min';
+import {fromGeometry as binaryFromGeometry} from './binary-geometries';
+import {parseProperties} from './binary-properties';
 function binaryFromFeature(feature, header) {
-  var geometry = feature.geometry();
+  const geometry = feature.geometry();
 
   // FlatGeobuf files can only hold a single geometry type per file, otherwise
   // GeometryType is GeometryCollection
   // I believe geometry.type() is null (0) except when the geometry type isn't
   // known in the header?
-  var geometryType = header.geometryType || geometry.type();
-  var parsedGeometry = binaryFromGeometry(geometry, geometryType);
+  const geometryType = header.geometryType || geometry.type();
+  const parsedGeometry = binaryFromGeometry(geometry, geometryType);
   parsedGeometry.properties = parseProperties(feature, header.columns);
 
   // TODO: wrap binary data either in points, lines, or polygons key
@@ -27,7 +35,11 @@ export default function parseFlatGeobuf(input, options) {
   }
 
   const arr = new Uint8Array(input);
-  const {features} = deserialize(arr);
+  if (options && options.gis && options.gis.format === 'binary') {
+    return deserializeGeneric(arr, binaryFromFeature);
+  }
+
+  const {features} = deserializeGeoJson(arr);
   return features;
 }
 
@@ -38,6 +50,11 @@ export default function parseFlatGeobuf(input, options) {
   * @return  A GeoJSON geometry object iterator
   */
 export function parseFlatGeobufInBatches(stream, options) {
-  const iterator = deserializeStream(stream);
+  if (options && options.gis && options.gis.format === 'binary') {
+    const iterator = deserializeStreamGeneric(stream, binaryFromFeature);
+    return iterator;
+  }
+
+  const iterator = deserializeStreamGeoJson(stream);
   return iterator;
 }
