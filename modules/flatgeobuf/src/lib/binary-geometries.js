@@ -1,5 +1,5 @@
 // Eventually will be re-exported from generic module, hopefully
-var GeometryType = {
+const GeometryType = {
   Unknown: 0,
   Point: 1,
   LineString: 2,
@@ -22,24 +22,24 @@ var GeometryType = {
 
 // Parse Point to flat array
 function parsePoint(geometry) {
-  var xy = geometry.xyArray();
-  var z = geometry.zArray();
-  var positions = blitArrays(xy, z);
+  const xy = geometry.xyArray();
+  const z = geometry.zArray();
+  const positions = blitArrays(xy, z);
   return {positions};
 }
 
 function parseLines(geometry) {
-  var xy = geometry.xyArray();
-  var z = geometry.zArray();
-  var positions = blitArrays(xy, z);
+  const xy = geometry.xyArray();
+  const z = geometry.zArray();
+  const positions = blitArrays(xy, z);
 
   // If endsArray is null, a single LineString. Otherwise, contains the end
   // indices of each part of the MultiLineString. geometry.endsArray() omits the
   // initial 0 that we have in our internal format.
-  var ends = (geometry.endsArray() && Array.from(geometry.endsArray())) || [xy.length / 2];
+  const ends = (geometry.endsArray() && Array.from(geometry.endsArray())) || [xy.length / 2];
   ends.unshift(0);
 
-  var pathIndices = {value: new Uint16Array(ends), size: 1};
+  const pathIndices = {value: new Uint16Array(ends), size: 1};
 
   return {
     positions,
@@ -48,18 +48,18 @@ function parseLines(geometry) {
 }
 
 function parsePolygons(geometry) {
-  var xy = geometry.xyArray();
-  var z = geometry.zArray();
-  var positions = blitArrays(xy, z);
+  const xy = geometry.xyArray();
+  const z = geometry.zArray();
+  const positions = blitArrays(xy, z);
 
   // If endsArray is null, a simple Polygon with no inner rings. Otherwise,
   // contains the end indices of each ring of the Polygon. geometry.endsArray()
   // omits the initial 0 that we have in our internal format.
-  var ends = (geometry.endsArray() && Array.from(geometry.endsArray())) || [xy.length / 2];
+  const ends = (geometry.endsArray() && Array.from(geometry.endsArray())) || [xy.length / 2];
   ends.unshift(0);
 
-  var primitivePolygonIndices = {value: new Uint16Array(ends), size: 1};
-  var polygonIndices = {value: new Uint16Array([0, xy.length / 2]), size: 1};
+  const primitivePolygonIndices = {value: new Uint16Array(ends), size: 1};
+  const polygonIndices = {value: new Uint16Array([0, xy.length / 2]), size: 1};
 
   return {
     positions,
@@ -68,16 +68,17 @@ function parsePolygons(geometry) {
   };
 }
 
+// eslint-disable-next-line max-statements
 function parseMultiPolygons(geometry) {
   // Create arrays for each geometry part, then concatenate
-  var parsedParts = [];
-  var nPositions = 0;
-  var nPrimitivePolygonIndices = 1;
-  var nPolygonIndices = 1;
+  const parsedParts = [];
+  let nPositions = 0;
+  let nPrimitivePolygonIndices = 1;
+  let nPolygonIndices = 1;
 
-  for (var i = 0; i < geometry.partsLength(); i++) {
-    var part = geometry.parts(i);
-    var polygon = parsePolygons(part);
+  for (let i = 0; i < geometry.partsLength(); i++) {
+    const part = geometry.parts(i);
+    const polygon = parsePolygons(part);
 
     nPositions += polygon.positions.value.length;
     nPrimitivePolygonIndices += polygon.primitivePolygonIndices.value.length - 1;
@@ -86,18 +87,18 @@ function parseMultiPolygons(geometry) {
     parsedParts.push(polygon);
   }
 
-  var concatPositions = new Float64Array(nPositions);
-  var concatPrimitivePolygonIndices = new Uint32Array(nPrimitivePolygonIndices);
-  var concatPolygonIndices = new Uint32Array(nPolygonIndices);
+  const concatPositions = new Float64Array(nPositions);
+  const concatPrimitivePolygonIndices = new Uint32Array(nPrimitivePolygonIndices);
+  const concatPolygonIndices = new Uint32Array(nPolygonIndices);
 
-  var positionCounter = 0;
-  var primitivePolygonIndicesCounter = 1;
-  var polygonIndicesCounter = 1;
+  let positionCounter = 0;
+  let primitivePolygonIndicesCounter = 1;
+  let polygonIndicesCounter = 1;
 
   // Assumes all parts of the multipolygon have the same size
-  var positionSize = parsedParts[0].positions.size;
+  const positionSize = parsedParts[0].positions.size;
 
-  for (var parsedPart of parsedParts) {
+  for (const parsedPart of parsedParts) {
     concatPositions.set(parsedPart.positions.value, positionCounter * positionSize);
 
     // For indices, need to add positionCounter so that position indices are
@@ -129,11 +130,13 @@ function blitArrays(xy, z) {
     return {value: xy, size: 2};
   }
 
-  assert(z.length * 2 === xy.length, "Z array must be half XY array's length");
-  var totalLength = xy.length + z.length;
+  if (z.length * 2 !== xy.length) {
+    throw new Error("Z array must be half XY array's length");
+  }
+  const totalLength = xy.length + z.length;
 
-  var xyz = new Float64Array(totalLength);
-  for (var i = 0; i < xy.length / 2; i++) {
+  const xyz = new Float64Array(totalLength);
+  for (let i = 0; i < xy.length / 2; i++) {
     xyz[i * 3 + 0] = xy[i * 2 + 0];
     xyz[i * 3 + 1] = xy[i * 2 + 1];
     xyz[i * 3 + 2] = z[i];
