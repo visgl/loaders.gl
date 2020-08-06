@@ -47,9 +47,28 @@ function parseLines(geometry) {
   }
 }
 
+function parsePolygons(geometry) {
+  var xy = geometry.xyArray();
+  var z = geometry.zArray();
+  var positions = blitArrays(xy, z);
+
+  // If endsArray is null, a simple Polygon with no inner rings. Otherwise,
+  // contains the end indices of each ring of the Polygon. geometry.endsArray()
+  // omits the initial 0 that we have in our internal format.
+  var ends = (geometry.endsArray() && Array.from(geometry.endsArray())) || [xy.length / 2];
+  ends.unshift(0);
+
+  var primitivePolygonIndices = {value: new Uint16Array(ends), size: 1};
+  var polygonIndices = {value: new Uint16Array([0, xy.length / 2]), size: 1};
+
+  return {
+    positions,
+    primitivePolygonIndices,
+    polygonIndices
+  };
+}
 
 // Combine xy and z arrays
-// TODO: should I return the dimension from here? Or use hasZ elsewhere?
 function blitArrays(xy, z) {
   if (!z) {
     return {value: xy, size: 2};
@@ -83,8 +102,8 @@ export function fromGeometry(geometry, type) {
       break;
 
     case GeometryType.Polygon:
+      binaryGeometries.polygons = parsePolygons(geometry);
     case GeometryType.MultiPolygons:
-      binaryGeometries.lines = parsePolygons(geometry);
       break;
     default:
       throw new Error('Invalid geometry type.')
