@@ -12,6 +12,7 @@ import {
   convertCommonToI3SCoordinate,
   convertCommonToI3SExtentCoordinate
 } from './helpers/coordinate-converter';
+import {createSceneServerPath} from './helpers/create-scene-server-path';
 
 import {LAYERS as layersTemplate} from './json-templates/layers';
 import {NODE as nodeTemplate} from './json-templates/node';
@@ -47,7 +48,8 @@ export default class Converter3dTilesToI3S {
 
   /* eslint-disable max-statements */
   async _creationOfStructure(tileset, outputPath, tilesetName) {
-    const layers0path = join(`${outputPath}`, `${tilesetName}`, 'layers', '0');
+    const tilesetRootPath = join(`${outputPath}`, `${tilesetName}`);
+    const layers0path = join(tilesetRootPath, 'SceneServer', 'layers', '0');
     const extent = convertCommonToI3SExtentCoordinate(tileset);
 
     const layers0data = {
@@ -66,8 +68,8 @@ export default class Converter3dTilesToI3S {
     };
 
     const layers0 = transform(layers0data, layersTemplate);
-
     await writeFile(layers0path, JSON.stringify(layers0));
+    createSceneServerPath(tilesetName, layers0, tilesetRootPath);
 
     const root = tileset.root;
     const rootPath = join(layers0path, 'nodes', 'root');
