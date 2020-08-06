@@ -25,12 +25,26 @@ var GeometryType = {
 function parsePoint(geometry) {
   var xy = geometry.xyArray();
   var z = geometry.zArray();
-  var positions = {
-    value: blitArrays(xy, z),
-    // TODO: fix for correct dimension
-    size: 2
-  }
+  var positions = blitArrays(xy, z);
   return {positions};
+}
+
+function parseLines(geometry) {
+  var xy = geometry.xyArray();
+  var z = geometry.zArray();
+  var positions = blitArrays(xy, z);
+
+  // If endsArray is null, a single LineString. Otherwise, contains the end
+  // indices of each part of the MultiLineString. geometry.endsArray() omits the
+  // initial 0 that we have in our internal format.
+  var ends = Array.from(geometry.endsArray()) || [positions.value.length / positions.size]
+  ends.unshift(0)
+
+  var pathIndices = {value: new Uint16Array(ends), size: 1}
+
+  return {
+    positions, pathIndices
+  }
 }
 
 
@@ -38,7 +52,7 @@ function parsePoint(geometry) {
 // TODO: should I return the dimension from here? Or use hasZ elsewhere?
 function blitArrays(xy, z) {
   if (!z) {
-    return xy;
+    return {value: xy, size: 2};
   }
 
   assert(z.length * 2 === xy.length, "Z array must be half XY array's length")
@@ -50,7 +64,7 @@ function blitArrays(xy, z) {
     xyz[i * 3 + 1] = xy[i * 2 + 1]
     xyz[i * 3 + 2] = z[i]
   }
-  return xyz;
+  return {value: xyz, size: 3};
 }
 
 export function fromGeometry(geometry, type) {
