@@ -1,18 +1,19 @@
-# Using Streaming Loaders
+# Using Batched Loaders
 
-A major feature of loaders.gl is the availability of a number of streaming loaders.
+A major feature of loaders.gl is the availability of a number of batched (or streaming) loaders.
 
 The advantages and characteristics of streaming are descriped in more detail in the [streaming](./concepts/streaming.md) concepts section, but the highlights are:
 
 - Ability to parse large data sources that exceed browser memory limits (maximum allocation limits for a single `string` or `ArrayBuffer` etc tends to be less tha 1GB in most browsers).
-- While parsing is not done on a worker, it is broken into small pieces and does not freeze the main thread.,
-- data can be process and displayed as it arrives over the network, rather than at the end of a long request, leading to a more interactive experience.
+- While parsing is done on smaller chunks and does not freeze the main thread.
+- data can be processed (and displayed) as it arrives over the network, rather than at the end of a long request, leading to a more interactive experience.
+- transforms can be applied incrementally to the incoming data, e.g. to cryptographically hash or decrypt data
 
-## Async Iterator based Streaming
+## Batches: Async Iterator based Streaming
 
-The loaders.gl streaming architecture is built on ES2018 async iterators rather than `Stream`s. Async iterators are arguably easier to work with than streams, are consistent across browsers and Node.js, and enable a "callback-less" programming style through built-in JavaScript language features, i.e. `for await (... of ...)` and `async function *`.
+The loaders.gl streaming architecture is built around ES2018 async iterators rather than the more traditional `Stream`s. Async iterators are arguably easier to work with than streams, are consistent across browsers and Node.js, and enable a "callback-less" programming style supported by built-in JavaScript language features, such as `for await (... of ...)` and `async function *`.
 
-Note: `Stream` input data is still accepted, but all processing is done via async iterators.
+Note: `Stream` input sources is still accepted by loaders.gl functions, however internally processing is done via async iterators and the output of a batched parsing operation is an async iterator that yields "batches" of parsed data.
 
 ```js
 import {JSONLoader} from '@loaders.gl/json';
@@ -24,10 +25,10 @@ const data = await load(url, JSONLoader, {json: options});
 The JSONLoader supports streaming JSON parsing, in which case it will yield "batches" of rows from the first array it encounters in the JSON. To e.g. parse a stream of GeoJSON:
 
 ```js
-import {JSONLoader} from '@loaders.gl/json';
+import {GeoJSONLoader} from '@loaders.gl/json';
 import {load} from '@loaders.gl/core';
 
-const batches = await loadInBatches('geojson.json', JSONLoader);
+const batches = await loadInBatches('geojson.json', GeoJSONLoader);
 
 for await (const batch of batches) {
   // batch.data will contain a number of rows
