@@ -1,7 +1,6 @@
 import test from 'tape-promise/tape';
-import {makeTransformIterator} from '@loaders.gl/loader-utils';
-import {fetchFile, parseInBatches, makeIterator} from '@loaders.gl/core';
-import {CRC32CHashTransform, NullLoader, _hexToBase64, _toHex} from '@loaders.gl/crypto';
+import {fetchFile, loadInBatches, NullLoader} from '@loaders.gl/core';
+import {CRC32CHashTransform, _hexToBase64, _toHex} from '@loaders.gl/crypto';
 import TEST_CASES from './crc32c-test-cases.json';
 
 const CSV_URL = '@loaders.gl/csv/test/data/sample-very-long.csv';
@@ -18,19 +17,16 @@ test('CRC32CHashTransform#hashSync(CRC32, CSV, against external hash)', async t 
 });
 
 test('CRC32CHashTransform#iterator(CSV stream, against external hash)', async t => {
-  const response = await fetchFile(CSV_URL);
-
   let hash;
 
-  let iterator = makeIterator(response);
-  // @ts-ignore
-  iterator = makeTransformIterator(iterator, CRC32CHashTransform, {
-    onEnd: result => {
-      hash = result.hash;
+  const nullIterator = await loadInBatches(CSV_URL, NullLoader, {
+    transforms: [CRC32CHashTransform],
+    crypto: {
+      onEnd: result => {
+        hash = result.hash;
+      }
     }
   });
-
-  const nullIterator = await parseInBatches(iterator, NullLoader);
 
   // eslint-disable-next-line no-unused-vars, no-empty
   for await (const batch of nullIterator) {

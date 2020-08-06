@@ -23,6 +23,33 @@ The API offers "transforms" that can calculate a cryptographic hash incrementall
 | [`MD5HashTransform`](modules/crypto/docs/api-reference/md5-hash-transform)              | Y    | Base64-encoded Cryptographic Hash |
 | [`CryptographicHashTransform`](modules/crypto/docs/api-reference/crypto-hash-transform) | Y    | Base64-encoded Cryptographic Hash |
 
+## Using Transforms
+
+The `@loaders.gl/crypto` libraries exports transform that can be used to incrementally calculate a cryptographic hash as data is being loaded and parsed:
+
+```js
+  import {loadInBatches} from '@loaders.gl/core';
+  import {CRC32HashTransform} from '@loaders.gl/crypto';
+
+  let hash;
+
+  const csvIterator = await loadInBatches(CSV_URL, CSVLoader, {
+    transforms: [CRC32HashTransform],
+    crypto: {
+      onEnd: result => {
+        hash = result.hash;
+      }
+    }
+  });
+
+  let csv;
+  for await (const batch of csvIterator) {}
+
+  console.log(hash);
+```
+
+Note that by using a transform, the hash is calculated incrementally as batches are loaded and parsed, and does not require having the entire data source loaded into memory. It also distributes the potentially heavy hash calculation over the batches, keeping the main thread responsive.
+
 ## Performance
 
 Note that cryptographic hashing is a computationally expensive operation, linear in the size of the data being hashed. Hashing speeds are currently in the order of ~20-30MB/s on 2019 Macbook Pros.

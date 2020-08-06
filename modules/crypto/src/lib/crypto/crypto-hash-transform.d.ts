@@ -11,7 +11,7 @@ export default class CryptoHashTransform implements IncrementalTransform {
   static hash(input: ArrayBuffer, options?: object): Promise<string>;
   static hashSync(input: ArrayBuffer, options?: object): string;
 
-  constructor(options: object);
+  constructor(options?: object);
 
   write(chunk: ArrayBuffer): ArrayBuffer | null;
 

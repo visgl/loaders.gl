@@ -2,7 +2,7 @@
 // import * as CryptoJS from 'crypto-js';
 import {assert} from '@loaders.gl/loader-utils';
 
-const ERR_LIBRARY_NOT_SUPPLIED = 'crypto-js lib must be supplied in options.module.CryptoJS';
+const ERR_CRYPTO_LIBRARY_NOT_SUPPLIED = 'crypto-js lib must be supplied in options.module.CryptoJS';
 
 export default class CryptoHashTransform {
   static async hash(input, options) {
@@ -11,7 +11,7 @@ export default class CryptoHashTransform {
 
   static hashSync(input, options = {}) {
     const {CryptoJS} = options.modules || {};
-    assert(CryptoJS, ERR_LIBRARY_NOT_SUPPLIED);
+    assert(CryptoJS, ERR_CRYPTO_LIBRARY_NOT_SUPPLIED);
 
     const transform = new CryptoHashTransform(options);
     const typedWordArray = CryptoJS.lib.WordArray.create(input);
@@ -21,12 +21,11 @@ export default class CryptoHashTransform {
       .toString(CryptoJS.enc.Base64);
   }
 
-  constructor(options) {
-    options = options || {};
-    options.crypto = options.crypto || {};
+  constructor(options = {}) {
+    options = {crypto: {}, modules: {}, ...options};
 
-    const {CryptoJS} = options.modules || {};
-    assert(CryptoJS, ERR_LIBRARY_NOT_SUPPLIED);
+    const {CryptoJS} = options.modules;
+    assert(CryptoJS, ERR_CRYPTO_LIBRARY_NOT_SUPPLIED);
 
     const {algorithm = CryptoJS.algo.MD5} = options.crypto;
 
@@ -47,8 +46,8 @@ export default class CryptoHashTransform {
 
   end() {
     const hash = this._hash.finalize().toString(this.CryptoJS.enc.Base64);
-    if (this.options.onEnd) {
-      this.options.onEnd({hash});
+    if (this.options.crypto.onEnd) {
+      this.options.crypto.onEnd({hash});
     }
     return null;
   }
