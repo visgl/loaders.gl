@@ -142,30 +142,18 @@ function blitArrays(xy, z) {
 }
 
 export function fromGeometry(geometry, type) {
-  var binaryGeometries = {};
-
-  // FlatGeobuf files can only hold a single geometry type per file, otherwise
-  // GeometryType is GeometryCollection
   switch (type) {
     case GeometryType.Point:
     case GeometryType.MultiPoint:
-      binaryGeometries.points = parsePoint(geometry);
-      break;
+      return parsePoint(geometry);
     case GeometryType.LineString:
     case GeometryType.MultiLineString:
-      binaryGeometries.lines = parseLines(geometry);
-      break;
-
+      return parseLines(geometry);
     case GeometryType.Polygon:
-      binaryGeometries.polygons = parsePolygons(geometry);
-    case GeometryType.MultiPolygons:
-      binaryGeometries.polygons = parseMultiPolygons(geometry);
-      break;
+      return parsePolygons(geometry);
+    case GeometryType.MultiPolygon:
+      return parseMultiPolygons(geometry);
     default:
-      throw new Error('Invalid geometry type.');
+      throw new Error(`Unimplemented geometry type: ${type}`);
   }
-
-  // TODO: parse properties
-  return binaryGeometries;
-
 }
