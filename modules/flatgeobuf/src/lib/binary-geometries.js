@@ -68,6 +68,61 @@ function parsePolygons(geometry) {
   };
 }
 
+function parseMultiPolygons(geometry) {
+  // Create arrays for each geometry part, then concatenate
+  var parsedParts = [];
+  var nPositions = 0;
+  var nPrimitivePolygonIndices = 1;
+  var nPolygonIndices = 1;
+
+  for (var i = 0; i < geometry.partsLength(); i++) {
+    var part = geometry.parts(i);
+    var polygon = parsePolygons(part);
+
+    nPositions += polygon.positions.value.length;
+    nPrimitivePolygonIndices += polygon.primitivePolygonIndices.value.length - 1;
+    nPolygonIndices += polygon.polygonIndices.value.length - 1;
+
+    parsedParts.push(polygon);
+  }
+
+  var concatPositions = new Float64Array(nPositions);
+  var concatPrimitivePolygonIndices = new Uint32Array(nPrimitivePolygonIndices);
+  var concatPolygonIndices = new Uint32Array(nPolygonIndices);
+
+  var positionCounter = 0;
+  var primitivePolygonIndicesCounter = 1;
+  var polygonIndicesCounter = 1;
+
+  // Assumes all parts of the multipolygon have the same size
+  var positionSize = parsedParts[0].positions.size;
+
+  for (var parsedPart of parsedParts) {
+    concatPositions.set(parsedPart.positions.value, positionCounter * positionSize);
+
+    // For indices, need to add positionCounter so that position indices are
+    // correct in the concatenated positions
+    concatPrimitivePolygonIndices.set(
+      parsedPart.primitivePolygonIndices.value.subarray(1).map(x => x + positionCounter),
+      primitivePolygonIndicesCounter
+    );
+    concatPolygonIndices.set(
+      parsedPart.polygonIndices.value.subarray(1).map(x => x + positionCounter),
+      polygonIndicesCounter
+    );
+
+    positionCounter += parsedPart.positions.value.length / positionSize;
+    primitivePolygonIndicesCounter += parsedPart.primitivePolygonIndices.value.length - 1;
+    polygonIndicesCounter += parsedPart.polygonIndices.value.length - 1;
+  }
+
+  return {
+    positions: {value: concatPositions, size: positionSize},
+    primitivePolygonIndices: {value: concatPrimitivePolygonIndices, size: 1},
+    polygonIndices: {value: concatPolygonIndices, size: 1}
+  };
+}
+
 // Combine xy and z arrays
 function blitArrays(xy, z) {
   if (!z) {
