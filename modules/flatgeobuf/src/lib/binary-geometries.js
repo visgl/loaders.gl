@@ -20,7 +20,6 @@ var GeometryType = {
   Triangle: 17
 };
 
-
 // Parse Point to flat array
 function parsePoint(geometry) {
   var xy = geometry.xyArray();
@@ -37,14 +36,15 @@ function parseLines(geometry) {
   // If endsArray is null, a single LineString. Otherwise, contains the end
   // indices of each part of the MultiLineString. geometry.endsArray() omits the
   // initial 0 that we have in our internal format.
-  var ends = Array.from(geometry.endsArray()) || [positions.value.length / positions.size]
-  ends.unshift(0)
+  var ends = (geometry.endsArray() && Array.from(geometry.endsArray())) || [xy.length / 2];
+  ends.unshift(0);
 
-  var pathIndices = {value: new Uint16Array(ends), size: 1}
+  var pathIndices = {value: new Uint16Array(ends), size: 1};
 
   return {
-    positions, pathIndices
-  }
+    positions,
+    pathIndices
+  };
 }
 
 function parsePolygons(geometry) {
@@ -74,20 +74,20 @@ function blitArrays(xy, z) {
     return {value: xy, size: 2};
   }
 
-  assert(z.length * 2 === xy.length, "Z array must be half XY array's length")
-  var totalLength = xy.length + z.length
+  assert(z.length * 2 === xy.length, "Z array must be half XY array's length");
+  var totalLength = xy.length + z.length;
 
   var xyz = new Float64Array(totalLength);
   for (var i = 0; i < xy.length / 2; i++) {
-    xyz[i * 3 + 0] = xy[i * 2 + 0]
-    xyz[i * 3 + 1] = xy[i * 2 + 1]
-    xyz[i * 3 + 2] = z[i]
+    xyz[i * 3 + 0] = xy[i * 2 + 0];
+    xyz[i * 3 + 1] = xy[i * 2 + 1];
+    xyz[i * 3 + 2] = z[i];
   }
   return {value: xyz, size: 3};
 }
 
 export function fromGeometry(geometry, type) {
-  var binaryGeometries = {}
+  var binaryGeometries = {};
 
   // FlatGeobuf files can only hold a single geometry type per file, otherwise
   // GeometryType is GeometryCollection
@@ -104,9 +104,10 @@ export function fromGeometry(geometry, type) {
     case GeometryType.Polygon:
       binaryGeometries.polygons = parsePolygons(geometry);
     case GeometryType.MultiPolygons:
+      binaryGeometries.polygons = parseMultiPolygons(geometry);
       break;
     default:
-      throw new Error('Invalid geometry type.')
+      throw new Error('Invalid geometry type.');
   }
 
   // TODO: parse properties
