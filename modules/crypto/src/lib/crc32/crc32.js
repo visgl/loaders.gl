@@ -1,6 +1,4 @@
-// CRC32 doesn't appear to be supported natively by crypto-js
-// https://gist.github.com/wqli78/1330293/6d85cc967f32cccfcbad94ae7d088a3dcfc14bd9
-import {hexToBase64} from '../utils/base64-utils';
+// Inspired by https://gist.github.com/wqli78/1330293/6d85cc967f32cccfcbad94ae7d088a3dcfc14bd9
 
 /**
  * Calculates the CRC32 checksum of a string.
@@ -22,12 +20,7 @@ export default class CRC32 {
 
   finalize() {
     this.crc = Math.abs(this.crc ^ -1);
-    return {
-      toString: () => {
-        const hex = this.crc.toString(16);
-        return hexToBase64(hex);
-      }
-    };
+    return this.crc;
   }
 }
 

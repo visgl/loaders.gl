@@ -1,5 +1,5 @@
 import {assert} from '@loaders.gl/loader-utils';
-import {concatenateChunksAsync} from '@loaders.gl/loader-utils';
+import {concatenateChunksAsync, makeTransformIterator} from '@loaders.gl/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';
 import {getLoaderContext} from '../loader-utils/context-utils';
@@ -41,8 +41,11 @@ export async function parseInBatches(data, loaders, options, context) {
   return await parseWithLoaderInBatches(loader, data, options, context);
 }
 
+/**
+ * Loader has beens selected and context has been prepared, see if we need to emit a metadata batch
+ */
 async function parseWithLoaderInBatches(loader, data, options, context) {
-  const outputIterator = await loadToOutputIterator(loader, data, options, context);
+  const outputIterator = await parseToOutputIterator(loader, data, options, context);
 
   // Generate metadata batch if requested
   if (!options.metadata) {
@@ -68,14 +71,29 @@ async function parseWithLoaderInBatches(loader, data, options, context) {
   return makeMetadataBatchIterator(outputIterator);
 }
 
-async function loadToOutputIterator(loader, data, options, context) {
+/**
+ * Prep work is done, now it is time to start parsing into an output operator
+ * The approach depends on which parse function the loader exposes
+ * `parseInBatches` (preferred), `parseStreamInBatches` (limited), `parse` (fallback)
+ */
+async function parseToOutputIterator(loader, data, options, context) {
   if (loader.parseInBatches) {
     const inputIterator = await getAsyncIteratorFromData(data);
-    return await loader.parseInBatches(inputIterator, options, context, loader);
+
+    const iteratorChain = applyInputTransforms(inputIterator, options);
+
+    return await loader.parseInBatches(iteratorChain, options, context, loader);
   }
+
   if (loader.parseStreamInBatches) {
     const stream = await getReadableStream(data);
     if (stream) {
+      if (options.transforms) {
+        // eslint-disable-next-line
+        console.warn(
+          'options.transforms not implemented for loaders that use `parseStreamInBatches`'
+        );
+      }
       return loader.parseStreamInBatches(stream, options, context);
     }
   }
@@ -89,4 +107,18 @@ async function loadToOutputIterator(loader, data, options, context) {
   }
 
   return await parseChunkInBatches();
+}
+
+/**
+ * Create an iterator chain with any transform iterators (crypto, decompression)
+ * @param inputIterator
+ * @param options
+ */
+function applyInputTransforms(inputIterator, options) {
+  let iteratorChain = inputIterator;
+  for (const Transform of options.transforms || []) {
+    // @ts-ignore
+    iteratorChain = makeTransformIterator(iteratorChain, Transform, options);
+  }
+  return iteratorChain;
 }

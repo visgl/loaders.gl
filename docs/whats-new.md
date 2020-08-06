@@ -20,10 +20,12 @@ This release brings a new Shapefile loader, compression codecs (Zlib, LZ4, Zstan
 
 **@loaders.gl/core**
 
-- (BREAKING) `selectLoader()` is now async and returns a `Promise` that resolves to a loader, and can now identify loaders through content sniffing `Blob` and `File` objects.
-- `selectLoaderSync()` has been added for situations when calling an async function is not practial.
-- `parseInBatches` can now be called on all loaders. Non-batched loaders will just return a single batch.
+- `parseInBatches()` now allows the caller to specify "transforms" that shoud be applied on the input data before parsing, via `options.transforms`. See the new crypto and compression modules for available transforms to calculate cryptographic hashes on / decompress "streaming" data.
+- `parseInBatches()` can now be called on all loaders. Non-batched loaders will just return a single batch.
 - `options.fetch` (`load`, `parse` etc.) can now be used to supply a either a `fetch` options object or a custom `fetch` function.
+- (BREAKING) `selectLoader()` is now async and returns a `Promise` that resolves to a loader.
+- `selectLoader()` can now select loaders through content sniffing of `Blob` and `File` objects.
+- `selectLoaderSync()` has been added for situations when calling an async function is not practial.
 
 **@loaders.gl/polyfills**
 

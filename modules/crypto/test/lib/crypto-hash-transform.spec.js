@@ -1,7 +1,7 @@
 import test from 'tape-promise/tape';
 import {compareArrayBuffers, getBinaryData} from '../test-utils/test-utils';
 import {makeTransformIterator, concatenateArrayBuffers} from '@loaders.gl/loader-utils';
-import {fetchFile, parseInBatches, makeIterator} from '@loaders.gl/core';
+import {fetchFile, loadInBatches} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/csv';
 import {CryptoHashTransform} from '@loaders.gl/crypto';
 import * as CryptoJS from 'crypto-js';
@@ -21,20 +21,17 @@ test('CryptoHashTransform#hashSync(CSV, against external hash)', async t => {
 });
 
 test('CryptoHashTransform#iterator(CSV stream, against external hash)', async t => {
-  const response = await fetchFile(CSV_URL);
-
   let hash;
 
-  let iterator = makeIterator(response);
-  // @ts-ignore
-  iterator = makeTransformIterator(iterator, CryptoHashTransform, {
+  const csvIterator = await loadInBatches(CSV_URL, CSVLoader, {
     modules: {CryptoJS},
-    onEnd: result => {
-      hash = result.hash;
+    transforms: [CryptoHashTransform],
+    crypto: {
+      onEnd: result => {
+        hash = result.hash;
+      }
     }
   });
-
-  const csvIterator = await parseInBatches(iterator, CSVLoader);
 
   let csv;
   for await (const batch of csvIterator) {
@@ -97,8 +94,10 @@ test('makeTransformIterator#CryptoHashTransform(small chunks)', async t => {
   // @ts-ignore
   const transformIterator = makeTransformIterator(inputChunks, CryptoHashTransform, {
     modules: {CryptoJS},
-    onEnd: result => {
-      hash = result.hash;
+    crypto: {
+      onEnd: result => {
+        hash = result.hash;
+      }
     }
   });
 
@@ -127,8 +126,10 @@ test('makeTransformIterator#CryptoHashTransform(100K)', async t => {
   // @ts-ignore
   const transformIterator = makeTransformIterator(inputChunks, CryptoHashTransform, {
     modules: {CryptoJS},
-    onEnd: result => {
-      hash = result.hash;
+    crypto: {
+      onEnd: result => {
+        hash = result.hash;
+      }
     }
   });
 

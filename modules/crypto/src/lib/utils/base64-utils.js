@@ -1,23 +1,4 @@
 /**
- *
- */
-export function toHex(cipher) {
-  const hexString = cipher.toString(16);
-  return hexString === '0' ? `0${hexString}` : hexString;
-}
-
-/**
- *
- */
-export function hexToBase64(hexstring) {
-  const string = hexstring
-    .match(/\w{2}/g)
-    .map(a => String.fromCharCode(parseInt(a, 16)))
-    .join('');
-  return toBase64(string);
-}
-
-/**
  * `btoa()` polyfill as defined by the HTML and Infra specs, which mostly just references
  * RFC 4648.
  */

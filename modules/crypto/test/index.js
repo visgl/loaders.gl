@@ -1,4 +1,4 @@
-import './lib/base64-utils.spec';
+import './lib/digest-utils.spec';
 import './lib/crypto-hash-transform.spec';
 import './lib/crc32-hash-transform.spec';
 import './lib/crc32c-hash-transform.spec';

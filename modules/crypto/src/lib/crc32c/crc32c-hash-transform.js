@@ -1,5 +1,5 @@
 import CRC32C from './crc32c';
-import {toHex, hexToBase64} from '../utils/base64-utils';
+import {toHex, hexToBase64} from '../utils/digest-utils';
 
 export default class CRC32CHashTransform {
   static async hash(input, options) {
@@ -11,8 +11,8 @@ export default class CRC32CHashTransform {
     return transform._update(input)._finish();
   }
 
-  constructor(options) {
-    this.options = options;
+  constructor(options = {}) {
+    this.options = {crypto: {}, ...options};
     this._hash = new CRC32C(options);
   }
 
@@ -26,8 +26,8 @@ export default class CRC32CHashTransform {
 
   end() {
     const hash = this._finish();
-    if (this.options.onEnd) {
-      this.options.onEnd({hash});
+    if (this.options.crypto.onEnd) {
+      this.options.crypto.onEnd({hash});
     }
     return hash;
   }
