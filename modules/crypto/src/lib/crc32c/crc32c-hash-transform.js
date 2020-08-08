@@ -29,7 +29,7 @@ export default class CRC32CHashTransform {
     if (this.options.crypto.onEnd) {
       this.options.crypto.onEnd({hash});
     }
-    return hash;
+    return null;
   }
 
   _update(chunk) {

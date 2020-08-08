@@ -81,6 +81,22 @@ test('ShapefileLoader#loadInBatches', async t => {
   t.end();
 });
 
+test('ShapefileLoader#loadInBatches', async t => {
+  // test file load (node) or URL load (browser)
+  for (const testFileName in SHAPEFILE_JS_TEST_FILES) {
+    const filename = `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`;
+    const batches = await loadInBatches(filename, ShapefileLoader);
+    let data;
+    for await (const batch of batches) {
+      data = batch;
+      t.comment(`${filename}: ${JSON.stringify(data).slice(0, 70)}`);
+    }
+    await testShapefileData(t, testFileName, data);
+  }
+
+  t.end();
+});
+
 async function getFileList(testFileName) {
   const EXTENSIONS = ['.shp', '.shx', '.dbf', '.cpg', '.prj'];
   const fileList = [];
