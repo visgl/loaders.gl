@@ -40,9 +40,9 @@
     "pre-push": "ocular-test fast"
   },
   "devDependencies": {
-    "@luma.gl/core": "^8.1.2",
-    "@luma.gl/debug": "^8.1.2",
-    "@luma.gl/test-utils": "^8.1.2",
+    "@luma.gl/core": "^8.2.0",
+    "@luma.gl/debug": "^8.2.0",
+    "@luma.gl/test-utils": "^8.2.0",
     "@probe.gl/bench": "^3.3.0",
     "@probe.gl/test-utils": "^3.3.0",
     "babel-loader": "^8.0.6",
@@ -54,7 +54,7 @@
     "eslint-plugin-react": "^7.19.0",
     "gl": "^4.4.0",
     "gl-matrix": "^3.1.0",
-    "ocular-dev-tools": "^0.1.8",
+    "ocular-dev-tools": "^0.1.10",
     "pre-commit": "^1.2.2",
     "pre-push": "^0.1.1",
     "reify": "^0.19.1",
