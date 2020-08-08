@@ -71,7 +71,7 @@ function compareArrayBuffers(a, b) {
 }
 
 // Tests that iterator input and non-streaming loader does not crash
-test.only('makeTransformIterator', async t => {
+test('makeTransformIterator', async t => {
   // Run a streaming digest on all test cases.
   let hash;
 
