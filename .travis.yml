@@ -12,4 +12,7 @@ install:
 script:
   - npm run test ci
 after_success:
-  - if [[ `node -v` == *"v12"* ]]; then (cat coverage/lcov.info | coveralls); fi
+  - if [[ `node -v` == *"v12"* ]]; then (cat coverage/lcov.info | coveralls); ficache:
+  yarn: true
+  directories:
+    - node_modules
