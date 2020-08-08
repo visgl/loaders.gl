@@ -188,9 +188,9 @@ function parsePCDASCII(PCDheader, textData) {
       if (offset.rgb !== undefined) {
         const c = new Float32Array([parseFloat(line[offset.rgb])]);
         const dataview = new DataView(c.buffer, 0);
-        color.push(dataview.getUint8(0) / 255.0);
-        color.push(dataview.getUint8(1) / 255.0);
-        color.push(dataview.getUint8(2) / 255.0);
+        color.push(dataview.getUint8(0));
+        color.push(dataview.getUint8(1));
+        color.push(dataview.getUint8(2));
       }
 
       if (offset.normal_x !== undefined) {
@@ -220,9 +220,9 @@ function parsePCDBinary(PCDheader, data) {
     }
 
     if (offset.rgb !== undefined) {
-      color.push(dataview.getUint8(row + offset.rgb + 0) / 255.0);
-      color.push(dataview.getUint8(row + offset.rgb + 1) / 255.0);
-      color.push(dataview.getUint8(row + offset.rgb + 2) / 255.0);
+      color.push(dataview.getUint8(row + offset.rgb + 0));
+      color.push(dataview.getUint8(row + offset.rgb + 1));
+      color.push(dataview.getUint8(row + offset.rgb + 2));
     }
 
     if (offset.normal_x !== undefined) {
