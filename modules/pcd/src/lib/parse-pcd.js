@@ -57,20 +57,29 @@ function getNormalizedHeader(PCDheader, attributes) {
 }
 
 function getNormalizedAttributes(attributes) {
-  return {
+  const normalizedAttributes = {
     POSITION: {
       value: new Float32Array(attributes.position),
       size: 3
-    },
-    NORMAL: {
-      value: new Float32Array(attributes.normal),
-      size: 3
-    },
-    COLOR_0: {
-      value: new Uint8Array(attributes.color),
-      size: 3
     }
   };
+
+  if (attributes.normal && attributes.normal.length > 0) {
+    normalizedAttributes.NORMAL = {
+      value: new Float32Array(attributes.normal),
+      size: 3
+    };
+  }
+
+  if (attributes.color && attributes.color.length > 0) {
+    // TODO - RGBA
+    normalizedAttributes.COLOR_0 = {
+      value: new Uint8Array(attributes.color),
+      size: 3
+    };
+  }
+
+  return normalizedAttributes;
 }
 
 /* eslint-disable complexity, max-statements */
@@ -186,11 +195,13 @@ function parsePCDASCII(PCDheader, textData) {
       }
 
       if (offset.rgb !== undefined) {
-        const c = new Float32Array([parseFloat(line[offset.rgb])]);
-        const dataview = new DataView(c.buffer, 0);
+        const floatValue = parseFloat(line[offset.rgb]);
+        const binaryColor = new Float32Array([floatValue]);
+        const dataview = new DataView(binaryColor.buffer, 0);
         color.push(dataview.getUint8(0));
         color.push(dataview.getUint8(1));
         color.push(dataview.getUint8(2));
+        // TODO - handle alpha channel / RGBA?
       }
 
       if (offset.normal_x !== undefined) {

@@ -21,7 +21,7 @@ test('PCDLoader#loader conformance', t => {
 });
 
 test('PCDLoader#parse(text)', async t => {
-  const data = await parse(fetchFile(PCD_ASCII_URL), PCDLoader);
+  const data = await parse(fetchFile(PCD_ASCII_URL), PCDLoader, {worker: false});
   validateMeshCategoryData(t, data);
 
   t.equal(data.mode, 0, 'mode is POINTS (0)');
@@ -38,7 +38,9 @@ test('PCDLoader#parse(binary)', async t => {
   validateMeshCategoryData(t, data);
 
   t.equal(data.mode, 0, 'mode is POINTS (0)');
-  t.notOk(data.indices, 'INDICES attribute was not preset');
+  t.notOk(data.indices, 'indices were not preset');
+  t.notOk(data.attributes.COLOR_0, 'COLOR_0 attribute was not preset');
+  t.notOk(data.attributes.NORMAL, 'NORMAL attribute was not preset');
   t.equal(data.attributes.POSITION.value.length, 179250, 'POSITION attribute was found');
 
   t.end();
@@ -55,7 +57,9 @@ test('PCDWorkerLoader#parse(binary)', async t => {
   validateMeshCategoryData(t, data);
 
   t.equal(data.mode, 0, 'mode is POINTS (0)');
-  t.notOk(data.indices, 'INDICES attribute was not preset');
+  t.notOk(data.indices, 'indices were not preset');
+  t.notOk(data.attributes.COLOR_0, 'COLOR_0 attribute was not preset');
+  t.notOk(data.attributes.NORMAL, 'NORMAL attribute was not preset');
   t.equal(data.attributes.POSITION.value.length, 179250, 'POSITION attribute was found');
   t.end();
 });
