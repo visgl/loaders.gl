@@ -1,0 +1,50 @@
+{
+  "name": "@loaders.gl/type-analyzer",
+  "version": "3.3.0-alpha.10",
+  "description": "Type auto-deduction for (tabular) values",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/visgl/loaders.gl"
+  },
+  "keywords": [
+    "type",
+    "types",
+    "tables",
+    "analyzer"
+  ],
+  "contributors": [
+    {
+      "name": "Andrew McNutt",
+      "email": "mcnutt@uber.com"
+    },
+    {
+      "name": "Chris Chua",
+      "email": "chua@uber.com"
+    },
+    {
+      "name": "Shan He",
+      "email": "shan@uber.com"
+    }
+  ],
+  "types": "src/index.d.ts",
+  "main": "dist/es5/index.js",
+  "module": "dist/esm/index.js",
+  "esnext": "dist/es6/index.js",
+  "scripts": {
+    "pre-build": "npm run build-bundle",
+    "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/dist.min.js"
+  },
+  "sideEffects": false,
+  "files": [
+    "src",
+    "dist",
+    "README.md"
+  ],
+  "dependencies": {
+    "@loaders.gl/schema": "3.3.0-alpha.10"
+  }
+}

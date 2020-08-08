@@ -1,0 +1,102 @@
+[
+  {
+    "city_id": "1",
+    "ST_AsText": "MULTIPOLYGON (((30 20, 45 40, 10 40, 30 20)), ((15 5, 40 10, 10 20, 5 10, 15 5)))",
+    "slug": "san_francisco",
+    "lat": "37.7749295",
+    "lng": "-122.4194155",
+    "country_name": "United States",
+    "launch_date": "2010-06-05",
+    "region": "US West"
+  },
+  {
+    "city_id": "3",
+    "ST_AsText": "MULTIPOLYGON (((30 20, 45 40, 10 40, 30 20)), ((15 5, 40 10, 10 20, 5 10, 15 5)))",
+    "slug": "paris",
+    "lat": "48.856666",
+    "lng": "2.3509871",
+    "country_name": "France",
+    "launch_date": "2011-12-04",
+    "region": "EMEA - WE"
+  },
+  {
+    "city_id": "4",
+    "ST_AsText": "MULTIPOLYGON (((30 20, 45 40, 10 40, 30 20)), ((15 5, 40 10, 10 20, 5 10, 15 5)))",
+    "slug": "austin",
+    "lat": "30.27",
+    "lng": "-97.74",
+    "country_name": "United States",
+    "launch_date": "2011-03-11",
+    "region": "US Central & Canada"
+  },
+  {
+    "city_id": "5",
+    "ST_AsText": "MULTIPOLYGON (((30 20, 45 40, 10 40, 30 20)), ((15 5, 40 10, 10 20, 5 10, 15 5)))",
+    "slug": "new_york",
+    "lat": "40.744842",
+    "lng": "-73.991483",
+    "country_name": "United States",
+    "launch_date": "2011-04-07",
+    "region": "US East"
+  },
+  {
+    "city_id": "6",
+    "ST_AsText": "MULTIPOLYGON (((30 20, 45 40, 10 40, 30 20)), ((15 5, 40 10, 10 20, 5 10, 15 5)))",
+    "slug": "boston",
+    "lat": "42.3584308",
+    "lng": "-71.0597732",
+    "country_name": "United States",
+    "launch_date": "2011-10-05",
+    "region": "US East"
+  },
+  {
+    "city_id": "7",
+    "ST_AsText": "MULTIPOLYGON (((30 20, 45 40, 10 40, 30 20)), ((15 5, 40 10, 10 20, 5 10, 15 5)))",
+    "slug": "chicago",
+    "lat": "41.8781136",
+    "lng": "-87.6297982",
+    "country_name": "United States",
+    "launch_date": "2011-08-25",
+    "region": "US Central & Canada"
+  },
+  {
+    "city_id": "8",
+    "ST_AsText": "MULTIPOLYGON (((30 20, 45 40, 10 40, 30 20)), ((15 5, 40 10, 10 20, 5 10, 15 5)))",
+    "slug": "washington_DC",
+    "lat": "38.9",
+    "lng": "-77.04",
+    "country_name": "United States",
+    "launch_date": "2011-11-17",
+    "region": "US East"
+  },
+  {
+    "city_id": "10",
+    "ST_AsText": "MULTIPOLYGON (((30 20, 45 40, 10 40, 30 20)), ((15 5, 40 10, 10 20, 5 10, 15 5)))",
+    "slug": "seattle",
+    "lat": "47.6062095",
+    "lng": "-122.3320708",
+    "country_name": "United States",
+    "launch_date": "2011-07-25",
+    "region": "US West"
+  },
+  {
+    "city_id": "11",
+    "ST_AsText": "",
+    "slug": "hamptons",
+    "lat": "40.955011",
+    "lng": "-72.36145",
+    "country_name": "United States",
+    "launch_date": "2011-05-29",
+    "region": "US East"
+  },
+  {
+    "city_id": "12",
+    "ST_AsText": "MULTIPOLYGON (((30 20, 45 40, 10 40, 30 20)), ((15 5, 40 10, 10 20, 5 10, 15 5)))",
+    "slug": "los_angeles",
+    "lat": "34.0522342",
+    "lng": "-118.2436849",
+    "country_name": "United States",
+    "launch_date": "2012-02-13",
+    "region": "US West"
+  }
+]
