@@ -25,6 +25,10 @@
       "@loaders.gl/loader-utils/test": ["modules/loader-utils/test"],
       "@loaders.gl/polyfills": ["modules/polyfills/src"],
       "@loaders.gl/polyfills/test": ["modules/polyfills/test"],
+
+      "@loaders.gl/type-analyzer/*": ["modules/type-analyzer/src/*"],
+      "@loaders.gl/type-analyzer/test": ["modules/type-analyzer/test"],
+
       "@loaders.gl/core": ["modules/core/src"],
       "@loaders.gl/core/lib/*": ["modules/core/src/lib/*"],
       "@loaders.gl/core/test": ["modules/core/test"],
