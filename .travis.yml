@@ -13,6 +13,7 @@ script:
   - npm run test ci
 after_success:
   - if [[ `node -v` == *"v12"* ]]; then (cat coverage/lcov.info | coveralls); ficache:
+cache:
   yarn: true
   directories:
     - node_modules
