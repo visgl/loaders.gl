@@ -6,15 +6,15 @@ import {v4 as uuidv4} from 'uuid';
 import process from 'process';
 import transform from 'json-map-transform';
 
-import NodePages from './node-pages';
-import writeFile from './helpers/write-file';
+import NodePages from './helpers/node-pages';
+import writeFile from '../lib/utils/write-file';
 import {
   convertCommonToI3SCoordinate,
   convertCommonToI3SExtentCoordinate
-} from './coordinate-converter';
+} from './helpers/coordinate-converter';
 
-import {LAYERS as layersTemplate} from './templates/i3s/layers';
-import {NODE as nodeTemplate} from './templates/i3s/node';
+import {LAYERS as layersTemplate} from './json-templates/layers';
+import {NODE as nodeTemplate} from './json-templates/node';
 
 const ION_TOKEN =
   process.env.IonToken || // eslint-disable-line

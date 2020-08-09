@@ -1,5 +1,5 @@
 import test from 'tape-promise/tape';
-import {Converter3dTilesToI3S} from '@loaders.gl/cli';
+import {I3SConverter} from '@loaders.gl/cli';
 import {isBrowser} from '@loaders.gl/core';
 import {promises as fs} from 'fs';
 
@@ -11,7 +11,7 @@ async function cleanUpPath(testPath) {
 
 test('cli - Converters#converts 3d-tiles tileset to i3s tileset', async t => {
   if (!isBrowser) {
-    const converter = new Converter3dTilesToI3S();
+    const converter = new I3SConverter();
     const tilesetJson = await converter.convert(TILESET_URL, 'data', 'BatchedColors');
     t.ok(tilesetJson);
   }
@@ -21,7 +21,7 @@ test('cli - Converters#converts 3d-tiles tileset to i3s tileset', async t => {
 
 test('cli - Converters#root node should not contain geometry and textures', async t => {
   if (!isBrowser) {
-    const converter = new Converter3dTilesToI3S();
+    const converter = new I3SConverter();
     await converter.convert(TILESET_URL, 'data', 'BatchedColors');
     const rootTileJson = await fs.readFile(
       'data/BatchedColors/layers/0/nodes/root/index.json',

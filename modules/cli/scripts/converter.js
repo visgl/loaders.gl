@@ -1,6 +1,6 @@
 /* global console, process */
 /* eslint-disable no-console */
-const {Converter3dTilesToI3S} = require('@loaders.gl/cli');
+const {I3SConverter} = require('@loaders.gl/cli');
 import '@loaders.gl/polyfills';
 
 const TILESET_TYPE = {
@@ -47,7 +47,7 @@ function convert(options) {
       break;
     case TILESET_TYPE._3DTILES:
       // eslint-disable-next-line no-shadow
-      const converter = new Converter3dTilesToI3S();
+      const converter = new I3SConverter();
       tilesetJson = converter.convert(
         options.tileset,
         options.output,
