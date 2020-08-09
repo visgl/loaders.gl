@@ -1,0 +1,40 @@
+# Overview
+
+![logo](./images/3d-tiles-small.png)
+
+References
+
+- The `@loaders.gl/i3s` module supports loading and traversing Indexed 3d Scene Layer (I3S).
+- The `@loaders.gl/3d-tiles` module supports loading and traversing 3D Tiles.
+
+- [I3S Indexed Scene Layer Specification](https://github.com/Esri/i3s-spec) - The living specification.
+- [3D Tiles Specification](https://github.com/AnalyticalGraphicsInc/3d-tiles) - The living specification.
+- [OGC I3S Indexed Scene Layer Standard](http://www.ogc.org/standards/i3s) - The official standard from [OGC](https://www.opengeospatial.org/), the Open Geospatial Consortium.
+- [OGC 3D Tiles Standard](https://www.opengeospatial.org/standards/3DTiles) - The official standard from [OGC](https://www.opengeospatial.org/), the Open Geospatial Consortium.
+
+## Installation
+
+For CLI
+
+```bash
+npm install @loaders.gl/cli
+```
+
+For API
+
+```bash
+npm install @loaders.gl/core
+npm install @loaders.gl/cli
+```
+
+## Command Line Utilities
+
+`converter` -
+
+## API
+
+A JavaScript API is also available:
+
+- `I3SConverter` class that converts
+
+Note: the command line tools are implemented using this API and offer the same functions.

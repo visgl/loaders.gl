@@ -7,15 +7,20 @@ const TILESET_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedColors/tilese
 const TILESET_WITH_TEXTURES = '@loaders.gl/3d-tiles/test/data/Batched/BatchedTextured/tileset.json';
 
 async function cleanUpPath(testPath) {
-  await fs.rmdir(testPath, {recursive: true});
+  // Do not run under browser
+  if (!isBrowser) {
+    await fs.rmdir(testPath, {recursive: true});
+  }
 }
 
 test('cli - Converters#converts 3d-tiles tileset to i3s tileset', async t => {
-  if (!isBrowser) {
-    const converter = new I3SConverter();
-    const tilesetJson = await converter.convert(TILESET_URL, 'data', 'BatchedColors');
-    t.ok(tilesetJson);
-  }
+  const converter = new I3SConverter();
+  const tilesetJson = await converter.convert({
+    inputUrl: TILESET_URL,
+    outputPath: 'data',
+    tilesetName: 'BatchedColors'
+  });
+  t.ok(tilesetJson);
   cleanUpPath('data/BatchedColors');
   t.end();
 });
@@ -23,7 +28,13 @@ test('cli - Converters#converts 3d-tiles tileset to i3s tileset', async t => {
 test('cli - Converters#root node should not contain geometry and textures', async t => {
   if (!isBrowser) {
     const converter = new I3SConverter();
-    await converter.convert(TILESET_URL, 'data', 'BatchedColors');
+    await converter.convert({
+      inputUrl: TILESET_URL,
+      outputPath: 'data',
+      tilesetName: 'BatchedColors'
+    });
+
+    // Read the converted tileset json
     const rootTileJson = await fs.readFile(
       'data/BatchedColors/SceneServer/layers/0/nodes/root/index.json',
       'utf8'

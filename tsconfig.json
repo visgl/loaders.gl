@@ -21,6 +21,7 @@
 
       "@loaders.gl/cli/*": ["modules/cli/src/*"],
       "@loaders.gl/cli/test": ["modules/cli/test"],
+      "@loaders.gl/cli/test/*": ["modules/cli/test/*"],
 
       "@loaders.gl/3d-tiles/*": ["modules/3d-tiles/src/*"],
       "@loaders.gl/3d-tiles/test": ["modules/3d-tiles/test"],
