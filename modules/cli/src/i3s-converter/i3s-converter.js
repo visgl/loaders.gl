@@ -22,28 +22,29 @@ const ION_TOKEN =
 const HARDCODED_MAX_SCREEN_THRESHOLD_SQ = 196349.54374999998;
 const HARDCODED_NODES_PER_PAGE = 64;
 
-export default class Converter3dTilesToI3S {
+export default class I3SConverter {
   constructor() {
     this.nodePages = new NodePages(writeFile, HARDCODED_NODES_PER_PAGE);
   }
 
-  async convert(inputFile, outputPath, tilesetsName, maxDepth) {
-    console.log('Start load 3dTiles'); // eslint-disable-line
+  // Convert a 3d tileset
+  async convert({inputUrl, outputPath, tilesetName, maxDepth}) {
     const options = {
       'cesium-ion': {accessToken: ION_TOKEN}
     };
-    const preloadOptions = await CesiumIonLoader.preload(inputFile, options);
+    const preloadOptions = await CesiumIonLoader.preload(inputUrl, options);
     Object.assign(options, preloadOptions);
-    const tilesetJson = await load(inputFile, CesiumIonLoader, options);
-    console.log(tilesetJson); // eslint-disable-line
+    const tilesetJson = await load(inputUrl, CesiumIonLoader, options);
+    // console.log(tilesetJson); // eslint-disable-line
     const tilesets = new Tileset3D(tilesetJson, options);
     await tilesets.loadAllTiles(maxDepth);
 
-    await this._creationOfStructure(tilesets, outputPath, tilesetsName);
+    await this._creationOfStructure(tilesets, outputPath, tilesetName);
 
-    console.log('Stop load 3dTiles'); // eslint-disable-line
     return tilesetJson;
   }
+
+  // PRIVATE
 
   /* eslint-disable max-statements */
   async _creationOfStructure(tileset, outputPath, tilesetName) {
