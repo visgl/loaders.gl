@@ -1,4 +1,4 @@
-import {Vector3, Matrix4} from '@math.gl/core';
+import {Vector3, Matrix4, Vector4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 
 const VALUES_PER_VERTEX = 3;
@@ -16,7 +16,11 @@ export default function convertB3dmToI3sGeometry(content) {
   fileBuffer = concatenateArrayBuffers(fileBuffer, normals.buffer);
   fileBuffer = concatenateArrayBuffers(fileBuffer, texCoords.buffer);
   fileBuffer = concatenateArrayBuffers(fileBuffer, colors.buffer);
-  return {geometry: fileBuffer, textures: getTexture(content)};
+  return {
+    geometry: fileBuffer,
+    textures: getTexture(content),
+    sharedResources: getSharedResources(content)
+  };
 }
 
 function convertAttributes(content) {
@@ -286,4 +290,70 @@ function getTexture(content) {
   // TODO: handle multiple images inside one gltf
   // TODO: handle external images
   return images && images.length && images[0];
+}
+
+function getSharedResources(content) {
+  const materials = content.gltf.materials;
+  const result = {
+    materialDefinitionInfos: null,
+    textureDefinitionInfos: null
+  };
+  if (!materials || !materials.length) {
+    return result;
+  }
+
+  result.materialDefinitionInfos = [];
+  for (const material of materials) {
+    result.materialDefinitionInfos.push(
+      extractMaterialDefinitionInfo(
+        material.pbrMetallicRoughness.baseColorFactor,
+        material.pbrMetallicRoughness.metallicFactor
+      )
+    );
+
+    const texture = material.pbrMetallicRoughness.baseColorTexture;
+    if (texture) {
+      if (!result.textureDefinitionInfos) {
+        result.textureDefinitionInfos = [];
+      }
+      result.textureDefinitionInfos.push(extractTextureDefinitionInfo(texture.texture));
+    }
+  }
+  return result;
+}
+
+function extractMaterialDefinitionInfo(baseColorFactor, metallicFactor) {
+  const matDielectricColorComponent = 0.04 / 255; // Color from rgb (255) to 1..0 resolution
+  // All color resolutions are 0..1
+  const black = new Vector4(0, 0, 0, 1);
+  const unitVector = new Vector4(1, 1, 1, 1);
+  const dielectricSpecular = new Vector4(
+    matDielectricColorComponent,
+    matDielectricColorComponent,
+    matDielectricColorComponent,
+    0
+  );
+  const baseColorVector = new Vector4(baseColorFactor);
+  const diffuse = unitVector
+    .subtract(dielectricSpecular)
+    .multiply(baseColorVector)
+    .lerp(black, metallicFactor);
+  dielectricSpecular[4] = 1;
+  const specular = dielectricSpecular.lerp(baseColorVector, metallicFactor);
+  return {
+    diffuse: diffuse.toArray(),
+    specular: specular.toArray()
+  };
+}
+
+function extractTextureDefinitionInfo(texture) {
+  return {
+    encoding: [texture.source.mimeType],
+    images: [
+      {
+        size: texture.source.image.width,
+        length: [texture.source.image.data.length]
+      }
+    ]
+  };
 }

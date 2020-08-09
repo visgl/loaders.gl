@@ -4,6 +4,7 @@ import {isBrowser} from '@loaders.gl/core';
 import {promises as fs} from 'fs';
 
 const TILESET_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedColors/tileset.json';
+const TILESET_WITH_TEXTURES = '@loaders.gl/3d-tiles/test/data/Batched/BatchedTextured/tileset.json';
 
 async function cleanUpPath(testPath) {
   await fs.rmdir(testPath, {recursive: true});
@@ -45,5 +46,21 @@ test('cli - Converters#should create SceneServer path', async t => {
     t.equal(sceneServer.serviceVersion, '1.7');
   }
   cleanUpPath('data/BatchedColors');
+  t.end();
+});
+
+test('cli - Converters#should create sharedResources json file', async t => {
+  if (!isBrowser) {
+    const converter = new I3SConverter();
+    await converter.convert(TILESET_WITH_TEXTURES, 'data', 'BatchedTextured');
+    const sharedResourcesJson = await fs.readFile(
+      'data/BatchedTextured/SceneServer/layers/0/nodes/1/shared/0/index.json',
+      'utf8'
+    );
+    const sharedResources = JSON.parse(sharedResourcesJson);
+    t.ok(sharedResources.materialDefinitions);
+    t.ok(sharedResources.textureDefinitions);
+  }
+  cleanUpPath('data/BatchedTextured');
   t.end();
 });

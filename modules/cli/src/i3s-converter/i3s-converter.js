@@ -16,6 +16,7 @@ import {createSceneServerPath} from './helpers/create-scene-server-path';
 
 import {LAYERS as layersTemplate} from './json-templates/layers';
 import {NODE as nodeTemplate} from './json-templates/node';
+import {SHARED_RESOURCES_TEMPLATE} from './json-templates/shared-resources';
 
 const ION_TOKEN =
   process.env.IonToken || // eslint-disable-line
@@ -49,7 +50,7 @@ export default class Converter3dTilesToI3S {
   /* eslint-disable max-statements */
   async _creationOfStructure(tileset, outputPath, tilesetName) {
     const tilesetRootPath = join(`${outputPath}`, `${tilesetName}`);
-    const layers0path = join(tilesetRootPath, 'SceneServer', 'layers', '0');
+    this.layers0path = join(tilesetRootPath, 'SceneServer', 'layers', '0');
     const extent = convertCommonToI3SExtentCoordinate(tileset);
 
     const layers0data = {
@@ -68,11 +69,11 @@ export default class Converter3dTilesToI3S {
     };
 
     const layers0 = transform(layers0data, layersTemplate);
-    await writeFile(layers0path, JSON.stringify(layers0));
+    await writeFile(this.layers0path, JSON.stringify(layers0));
     createSceneServerPath(tilesetName, layers0, tilesetRootPath);
 
     const root = tileset.root;
-    const rootPath = join(layers0path, 'nodes', 'root');
+    const rootPath = join(this.layers0path, 'nodes', 'root');
     const coordinates = convertCommonToI3SCoordinate(root);
     const root0data = {
       version: `{${uuidv4().toUpperCase()}}`,
@@ -105,42 +106,27 @@ export default class Converter3dTilesToI3S {
         href: './1',
         ...coordinates
       });
-      const node = await this._createNode(root0, root, layers0path, parentId);
-      const childPath = join(layers0path, 'nodes', node.path);
-      node.geometryData = [{href: './geometries/0'}];
-      const {geometry: geometryBuffer, textures} = convertB3dmToI3sGeometry(root.content);
-      const geometryPath = join(childPath, 'geometries/0/');
-      await writeFile(geometryPath, geometryBuffer, 'index.bin');
-
-      if (textures) {
-        node.textureData = [{href: './textures/0'}];
-        const texturesPath = join(childPath, 'textures/0/');
-        const texturesData = textures.bufferView.data;
-        await writeFile(texturesPath, texturesData, 'index.jpeg');
-      }
-
+      const node = await this._createNode(root0, root, parentId);
+      this.convertResources(root0, node);
+      const childPath = join(this.layers0path, 'nodes', node.path);
       await writeFile(childPath, JSON.stringify(node));
     } else {
-      await this._addChildren({rootNode: root0, tiles: root.children}, layers0path, parentId);
+      await this._addChildren({rootNode: root0, tiles: root.children}, parentId);
     }
 
     await writeFile(rootPath, JSON.stringify(root0));
-    await this.nodePages.save(layers0path);
+    await this.nodePages.save(this.layers0path);
   }
   /* eslint-enable max-statements */
 
-  async _addChildren(data, layers0path, parentId) {
+  async _addChildren(data, parentId) {
     const childNodes = [];
     for (const child of data.tiles) {
       if (child.type === 'json') {
-        await this._addChildren(
-          {rootNode: data.rootNode, tiles: child.children},
-          layers0path,
-          parentId
-        );
+        await this._addChildren({rootNode: data.rootNode, tiles: child.children}, parentId);
       } else {
         const coordinates = convertCommonToI3SCoordinate(child);
-        const newChild = await this._createNode(data.rootNode, child, layers0path, parentId);
+        const newChild = await this._createNode(data.rootNode, child, parentId);
         data.rootNode.children.push({
           id: newChild.id,
           href: `../${newChild.path}`,
@@ -151,12 +137,12 @@ export default class Converter3dTilesToI3S {
       console.log(child.id); // eslint-disable-line
     }
 
-    await this._addNeighbors(data.rootNode, childNodes, layers0path);
+    await this._addNeighbors(data.rootNode, childNodes);
   }
 
-  async _addNeighbors(rootNode, childNodes, layers0path) {
+  async _addNeighbors(rootNode, childNodes) {
     for (const node of childNodes) {
-      const childPath = join(layers0path, 'nodes', node.path);
+      const childPath = join(this.layers0path, 'nodes', node.path);
       delete node.path;
       for (const neighbor of rootNode.children) {
         if (node.id === neighbor.id) {
@@ -175,7 +161,7 @@ export default class Converter3dTilesToI3S {
     }
   }
 
-  async _createNode(rootTile, tile, layers0path, parentId) {
+  async _createNode(rootTile, tile, parentId) {
     const rootTileId = rootTile.id;
     const coordinates = convertCommonToI3SCoordinate(tile);
 
@@ -211,25 +197,40 @@ export default class Converter3dTilesToI3S {
           href: './geometries/0'
         }
       ],
+      sharedResource: [
+        {
+          href: './shared/0'
+        }
+      ],
       children: [],
       neighbors: []
     };
     const node = transform(nodeData, nodeTemplate);
+    await this.convertResources(tile, node);
 
-    if (tile.content && tile.content.type === 'b3dm') {
-      const childPath = join(layers0path, 'nodes', node.path);
-      const {geometry: geometryBuffer, textures} = convertB3dmToI3sGeometry(tile.content);
-      const geometryPath = join(childPath, 'geometries/0/');
-      await writeFile(geometryPath, geometryBuffer, 'index.bin');
-      if (textures) {
-        node.textureData = [{href: './textures/0'}];
-        const texturesPath = join(childPath, 'textures/0/');
-        const texturesData = textures.bufferView.data;
-        await writeFile(texturesPath, texturesData, 'index.jpeg');
-      }
-    }
-
-    await this._addChildren({rootNode: node, tiles: tile.children}, layers0path, nodeId);
+    await this._addChildren({rootNode: node, tiles: tile.children}, nodeId);
     return node;
+  }
+
+  async convertResources(sourceTile, node) {
+    if (!sourceTile.content || sourceTile.content.type !== 'b3dm') {
+      return;
+    }
+    const childPath = join(this.layers0path, 'nodes', node.path);
+    const {geometry: geometryBuffer, textures, sharedResources} = convertB3dmToI3sGeometry(
+      sourceTile.content
+    );
+    const geometryPath = join(childPath, 'geometries/0/');
+    await writeFile(geometryPath, geometryBuffer, 'index.bin');
+    const sharedPath = join(childPath, 'shared/0/');
+    sharedResources.nodePath = node.path;
+    const sharedData = transform(sharedResources, SHARED_RESOURCES_TEMPLATE);
+    await writeFile(sharedPath, JSON.stringify(sharedData));
+    if (textures) {
+      node.textureData = [{href: './textures/0'}];
+      const texturesPath = join(childPath, 'textures/0/');
+      const texturesData = textures.bufferView.data;
+      await writeFile(texturesPath, texturesData, 'index.jpeg');
+    }
   }
 }
