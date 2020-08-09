@@ -1,6 +1,6 @@
 ## converter
 
-`converter` is a utility for converting 3d-tiles to i3s.
+`converter` is a command line utility for converting 3d-tiles to i3s.
 
 Installing `@loaders.gl/cli` makes the `converter` command line tool available. It can be run using `npx`.
 
