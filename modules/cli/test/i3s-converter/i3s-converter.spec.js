@@ -50,7 +50,11 @@ test('cli - Converters#root node should not contain geometry and textures', asyn
 test('cli - Converters#should create SceneServer path', async t => {
   if (!isBrowser) {
     const converter = new I3SConverter();
-    await converter.convert(TILESET_URL, 'data', 'BatchedColors');
+    await converter.convert({
+      inputUrl: TILESET_URL,
+      outputPath: 'data',
+      tilesetName: 'BatchedColors'
+    });
     const sceneServerJson = await fs.readFile('data/BatchedColors/SceneServer/index.json', 'utf8');
     const sceneServer = JSON.parse(sceneServerJson);
     t.ok(sceneServer.layers[0]);
@@ -63,7 +67,11 @@ test('cli - Converters#should create SceneServer path', async t => {
 test('cli - Converters#should create sharedResources json file', async t => {
   if (!isBrowser) {
     const converter = new I3SConverter();
-    await converter.convert(TILESET_WITH_TEXTURES, 'data', 'BatchedTextured');
+    await converter.convert({
+      inputUrl: TILESET_WITH_TEXTURES,
+      outputPath: 'data',
+      tilesetName: 'BatchedTextured'
+    });
     const sharedResourcesJson = await fs.readFile(
       'data/BatchedTextured/SceneServer/layers/0/nodes/1/shared/0/index.json',
       'utf8'

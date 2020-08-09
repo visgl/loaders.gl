@@ -48,12 +48,12 @@ function convert(options) {
     case TILESET_TYPE._3DTILES:
       // eslint-disable-next-line no-shadow
       const converter = new I3SConverter();
-      tilesetJson = converter.convert(
-        options.tileset,
-        options.output,
-        options.name,
-        options.maxDepth
-      );
+      tilesetJson = converter.convert({
+        inputUrl: options.tileset,
+        outputPath: options.output,
+        tilesetName: options.name,
+        maxDepth: options.maxDepth
+      });
       break;
     default:
       printHelp();
