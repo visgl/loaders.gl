@@ -1,2 +1,2 @@
-export {default as Converter3dTilesToI3S} from './lib/converters/3d-tiles-to-i3s';
-export {default as NodePages} from './lib/converters/node-pages';
+export {default as I3SConverter} from './i3s-converter/i3s-converter';
+export {default as NodePages} from './i3s-converter/helpers/node-pages';
