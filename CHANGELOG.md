@@ -2,6 +2,16 @@
 
 ## v2.3 Prereleases
 
+#### v2.3.0-alpha.9
+
+    CI: fix cache (#891)
+    CI: add cache to .travis.yml (#890)
+    bump ocular-dev-tools: no generator transpile in es6 dist (#889)
+    pcd: color and normal attribute fixes (#888)
+    crypto: fix transform iterators (#887)
+    pcd: Fix color = 0 after loading (#886)
+    core: `parseInBatches` support for `options.transforms` (#883)
+
 #### v2.3.0-alpha.8
 
     crypto: Add crc32c transform (#882)

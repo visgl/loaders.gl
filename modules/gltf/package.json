@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/gltf",
-  "version": "2.3.0-alpha.8",
+  "version": "2.3.0-alpha.9",
   "description": "Framework-independent loader for the glTF format",
   "license": "MIT",
   "publishConfig": {
@@ -38,9 +38,9 @@
     "build-bin": "BABEL_ENV=es5 babel scripts --config-file ../../babel.config.js --out-dir dist/scripts"
   },
   "dependencies": {
-    "@loaders.gl/core": "2.3.0-alpha.8",
-    "@loaders.gl/draco": "2.3.0-alpha.8",
-    "@loaders.gl/images": "2.3.0-alpha.8",
-    "@loaders.gl/loader-utils": "2.3.0-alpha.8"
+    "@loaders.gl/core": "2.3.0-alpha.9",
+    "@loaders.gl/draco": "2.3.0-alpha.9",
+    "@loaders.gl/images": "2.3.0-alpha.9",
+    "@loaders.gl/loader-utils": "2.3.0-alpha.9"
   }
 }

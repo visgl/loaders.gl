@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/crypto",
-  "version": "2.3.0-alpha.8",
+  "version": "2.3.0-alpha.9",
   "description": "Cryptographic/hashing plugins for loaders.gl",
   "license": "MIT",
   "publishConfig": {
@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
-    "@loaders.gl/loader-utils": "2.3.0-alpha.8",
+    "@loaders.gl/loader-utils": "2.3.0-alpha.9",
     "@types/crypto-js": "*",
     "crypto-js": "^3.0.0 || ^4.0.0"
   },
