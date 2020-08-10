@@ -6,20 +6,27 @@
 
 const app = require('../app');
 const debug = require('debug')('i3s-server:server');
-const http = require('http');
+const https = require('https');
+const fs = require('fs');
+const path = require('path');
 
 /**
  * Get port from environment and store in Express.
  */
 
-const port = normalizePort(process.env.PORT || '80'); // eslint-disable-line no-process-env, no-undef
+const port = normalizePort(process.env.PORT || '443'); // eslint-disable-line no-process-env, no-undef
 app.set('port', port);
 
 /**
  * Create HTTP server.
  */
 
-const server = http.createServer(app);
+const options = {
+  key: fs.readFileSync(path.join(__dirname, '../certs/key.pem')),
+  cert: fs.readFileSync(path.join(__dirname, '../certs/cert.pem'))
+};
+
+const server = https.createServer(options, app);
 
 /**
  * Listen on provided port, on all network interfaces.
