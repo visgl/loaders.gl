@@ -107,10 +107,6 @@ export const LAYERS = {
           {
             name: '0',
             format: 'jpg'
-          },
-          {
-            name: '0_0_1',
-            format: 'dds'
           }
         ]
       }
@@ -138,22 +134,6 @@ export const LAYERS = {
             color: {
               type: 'UInt8',
               component: 4
-            },
-            featureId: {
-              type: 'UInt64',
-              component: 1,
-              binding: 'per-feature'
-            },
-            faceRange: {
-              type: 'UInt32',
-              component: 2,
-              binding: 'per-feature'
-            }
-          },
-          {
-            compressedAttributes: {
-              encoding: 'draco',
-              attributes: ['position', 'normal', 'uv0', 'color', 'feature-index']
             }
           }
         ]

@@ -14,13 +14,15 @@ async function cleanUpPath(testPath) {
 }
 
 test('cli - Converters#converts 3d-tiles tileset to i3s tileset', async t => {
-  const converter = new I3SConverter();
-  const tilesetJson = await converter.convert({
-    inputUrl: TILESET_URL,
-    outputPath: 'data',
-    tilesetName: 'BatchedColors'
-  });
-  t.ok(tilesetJson);
+  if (!isBrowser) {
+    const converter = new I3SConverter();
+    const tilesetJson = await converter.convert({
+      inputUrl: TILESET_URL,
+      outputPath: 'data',
+      tilesetName: 'BatchedColors'
+    });
+    t.ok(tilesetJson);
+  }
   cleanUpPath('data/BatchedColors');
   t.end();
 });

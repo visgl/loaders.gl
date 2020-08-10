@@ -114,7 +114,7 @@ export default class NodePages {
   async save(layers0path) {
     const promises = [];
     for (const [index, nodePage] of this.nodePages.entries()) {
-      const nodePagePath = join(layers0path, 'nodePages', index.toString());
+      const nodePagePath = join(layers0path, 'nodepages', index.toString());
       promises.push(this.writeFile(nodePagePath, JSON.stringify(nodePage)));
     }
     await Promise.all(promises);
