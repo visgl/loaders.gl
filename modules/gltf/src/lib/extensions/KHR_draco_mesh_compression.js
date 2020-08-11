@@ -17,7 +17,7 @@ export async function decode(gltfData, options, context) {
 
   const scenegraph = new GLTFScenegraph(gltfData);
   const promises = [];
-  for (const primitive of meshPrimitiveIterator(scenegraph)) {
+  for (const primitive of makeMeshPrimitiveIterator(scenegraph)) {
     if (scenegraph.getObjectExtension(primitive, KHR_DRACO_MESH_COMPRESSION)) {
       promises.push(decompressPrimitive(primitive, scenegraph, options, context));
     }
@@ -121,7 +121,7 @@ function checkPrimitive(primitive) {
   }
 }
 
-function* meshPrimitiveIterator(scenegraph) {
+function* makeMeshPrimitiveIterator(scenegraph) {
   for (const mesh of scenegraph.json.meshes || []) {
     for (const primitive of mesh.primitives) {
       yield primitive;

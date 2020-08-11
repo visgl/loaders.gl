@@ -1,10 +1,11 @@
-/* eslint-disable */
+import {makeAttributeIterator} from '../iterators/attribute-iterator';
+import assert from '../utils/assert';
 
-export function computeBoundingBox(positions, target = new Box3()) {
-  const min = [+Infinity, +Infinity, +Infinity];
+export function computeBoundingBox(positions) {
+  const min = [Number(Infinity), Number(Infinity), Number(Infinity)];
   const max = [-Infinity, -Infinity, -Infinity];
 
-  for (const position of attributeIterator(positions)) {
+  for (const position of makeAttributeIterator(positions)) {
     const x = position[0];
     const y = position[1];
     const z = position[2];
