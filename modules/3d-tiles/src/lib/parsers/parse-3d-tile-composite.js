@@ -15,7 +15,7 @@ export async function parseComposite3DTile(
   context,
   parse3DTile
 ) {
-  byteOffset = parse3DTileHeaderSync(tile, arrayBuffer, byteOffset);
+  byteOffset = parse3DTileHeaderSync(tile, arrayBuffer, byteOffset, options);
 
   const view = new DataView(arrayBuffer);
 

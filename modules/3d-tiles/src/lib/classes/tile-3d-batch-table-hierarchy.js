@@ -3,7 +3,6 @@
 
 // TODO - Finish hierarchy suypport: this file is only half ported
 /* eslint-disable */
-// @ts-nocheck
 const defined = x => x !== undefined;
 
 export function initializeHierarchy(batchTable, jsonHeader, binaryBody) {
