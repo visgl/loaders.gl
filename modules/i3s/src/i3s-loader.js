@@ -1,10 +1,11 @@
 /* global URL, TextDecoder */
+/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 import {load} from '@loaders.gl/core';
 import {normalizeTileData, normalizeTilesetData} from './lib/parsers/parse-i3s';
 import {parseI3STileContent} from './lib/parsers/parse-i3s-tile-content';
-/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 
 // __VERSION__ is injected by babel-plugin-version-inline
+// @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 const TILESET_REGEX = /layers\/[0-9]+$/;
@@ -71,7 +72,7 @@ async function parse(data, options, context, loader) {
   }
 
   if (isTileset) {
-    data = await parseTileset(data, options, context, loader);
+    data = await parseTileset(data, options, context);
   } else if (isTileHeader) {
     data = await parseTile(data, options, context);
     if (options.i3s.loadContent) {

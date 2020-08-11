@@ -18,12 +18,12 @@ export async function parseInstancedModel3DTile(tile, arrayBuffer, byteOffset, o
 }
 
 function parseInstancedModel(tile, arrayBuffer, byteOffset, options, context) {
-  byteOffset = parse3DTileHeaderSync(tile, arrayBuffer, byteOffset, options);
+  byteOffset = parse3DTileHeaderSync(tile, arrayBuffer, byteOffset);
   if (tile.version !== 1) {
     throw new Error(`Instanced 3D Model version ${tile.version} is not supported`);
   }
 
-  byteOffset = parse3DTileTablesHeaderSync(tile, arrayBuffer, byteOffset, options);
+  byteOffset = parse3DTileTablesHeaderSync(tile, arrayBuffer, byteOffset);
 
   const view = new DataView(arrayBuffer);
 
@@ -33,7 +33,7 @@ function parseInstancedModel(tile, arrayBuffer, byteOffset, options, context) {
   // PARSE FEATURE TABLE
   byteOffset = parse3DTileTablesSync(tile, arrayBuffer, byteOffset, options);
 
-  byteOffset = parse3DTileGLTFViewSync(tile, arrayBuffer, byteOffset, options);
+  byteOffset = parse3DTileGLTFViewSync(tile, arrayBuffer, byteOffset);
 
   // TODO - Is the feature table sometimes optional or can check be moved into table header parser?
   if (tile.featureTableJsonByteLength === 0) {

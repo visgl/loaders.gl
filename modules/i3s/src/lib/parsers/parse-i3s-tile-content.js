@@ -28,7 +28,7 @@ export async function parseI3STileContent(arrayBuffer, tile, tileset, options) {
     tile.content.texture = await load(url, ImageLoader);
   }
 
-  return parseI3SNodeGeometry(arrayBuffer, tile, tileset);
+  return parseI3SNodeGeometry(arrayBuffer, tile);
 }
 
 /* eslint-disable max-statements */
@@ -202,6 +202,7 @@ function offsetsToCartesians(vertices, cartographicOrigin) {
   }
 
   for (let i = 0; i < positions.length; i += 3) {
+    // @ts-ignore
     Ellipsoid.WGS84.cartographicToCartesian(positions.subarray(i, i + 3), scratchVector);
     positions[i] = scratchVector.x;
     positions[i + 1] = scratchVector.y;

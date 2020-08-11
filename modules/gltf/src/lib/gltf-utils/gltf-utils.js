@@ -2,6 +2,7 @@ import assert from '../utils/assert';
 
 const TYPES = ['SCALAR', 'VEC2', 'VEC3', 'VEC4'];
 
+// @ts-ignore
 const ARRAY_TO_COMPONENT_TYPE = new Map([
   [Int8Array, 5120],
   [Uint8Array, 5121],

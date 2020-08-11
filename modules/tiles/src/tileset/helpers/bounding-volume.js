@@ -13,7 +13,7 @@ function defined(x) {
   return x !== undefined && x !== null;
 }
 
-const scratchMatrix = new Matrix3();
+// const scratchMatrix = new Matrix3();
 const scratchScale = new Vector3();
 const scratchNorthWest = new Vector3();
 const scratchSouthEast = new Vector3();
@@ -25,8 +25,8 @@ const scratchTransform = new Matrix4();
  * Create a bounding volume from the tile's bounding volume header.
  * @param {Object} boundingVolumeHeader The tile's bounding volume header.
  * @param {Matrix4} transform The transform to apply to the bounding volume.
- * @param {TileBoundingVolume} [result] The object onto which to store the result.
- * @returns {TileBoundingVolume} The modified result parameter or a new TileBoundingVolume instance if none was provided.
+ * @param [result] The object onto which to store the result.
+ * @returns The modified result parameter or a new TileBoundingVolume instance if none was provided.
  */
 export function createBoundingVolume(boundingVolumeHeader, transform, result) {
   assert(boundingVolumeHeader, '3D Tile: boundingVolume must be defined');
@@ -101,6 +101,7 @@ function createBox(box, transform, result) {
   return new OrientedBoundingBox(center, halfAxes);
 }
 
+/*
 function createBoxFromTransformedRegion(region, transform, initialTransform, result) {
   const rectangle = Rectangle.unpack(region, 0, scratchRectangle);
   const minimumHeight = region[4];
@@ -153,6 +154,7 @@ function createRegion(region, transform, initialTransform, result) {
     maximumHeight: region[5]
   });
 }
+*/
 
 function createSphere(sphere, transform, result) {
   // Find the transformed center

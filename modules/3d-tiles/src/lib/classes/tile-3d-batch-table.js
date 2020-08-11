@@ -10,7 +10,7 @@ function defined(x) {
   return x !== undefined && x !== null;
 }
 
-const clone = x => x;
+const clone = (x, y) => x;
 
 // These top level fields in the batch table json are not properties
 const IGNORED_PROPERTY_FIELDS = {
@@ -145,7 +145,7 @@ export default class Tile3DBatchTableParser {
   setProperty(batchId, name, value) {
     const featureCount = this.featureCount;
 
-    this._checkBatchId(batchId, featureCount);
+    this._checkBatchId(batchId);
     assert(typeof name === 'string', name);
 
     if (this._binaryProperties) {

@@ -22,12 +22,12 @@ export async function parseBatchedModel3DTile(tile, arrayBuffer, byteOffset, opt
 }
 
 function parseBatchedModel(tile, arrayBuffer, byteOffset, options, context) {
-  byteOffset = parse3DTileHeaderSync(tile, arrayBuffer, byteOffset, options);
+  byteOffset = parse3DTileHeaderSync(tile, arrayBuffer, byteOffset);
 
-  byteOffset = parse3DTileTablesHeaderSync(tile, arrayBuffer, byteOffset, options);
+  byteOffset = parse3DTileTablesHeaderSync(tile, arrayBuffer, byteOffset);
   byteOffset = parse3DTileTablesSync(tile, arrayBuffer, byteOffset, options);
 
-  byteOffset = parse3DTileGLTFViewSync(tile, arrayBuffer, byteOffset, options);
+  byteOffset = parse3DTileGLTFViewSync(tile, arrayBuffer, byteOffset);
 
   const featureTable = new Tile3DFeatureTable(tile.featureTableJson, tile.featureTableBinary);
   tile.rtcCenter = featureTable.getGlobalProperty('RTC_CENTER', GL.FLOAT, 3);

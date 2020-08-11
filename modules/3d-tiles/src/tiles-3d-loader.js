@@ -1,11 +1,13 @@
 /* global TextDecoder */
+/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
+/** @typedef {import('@loaders.gl/loader-utils').WorkerLoaderObject} WorkerLoaderObject */
 import {path} from '@loaders.gl/loader-utils';
 import {TILESET_TYPE, LOD_METRIC_TYPE} from '@loaders.gl/tiles';
 import {parse3DTile} from './lib/parsers/parse-3d-tile';
 import {normalizeTileHeaders} from './lib/parsers/parse-3d-tile-header';
-/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 
 // __VERSION__ is injected by babel-plugin-version-inline
+// @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 function getBaseUri(tileset) {
@@ -47,7 +49,7 @@ async function parse(data, options, context, loader) {
   }
 
   if (isTileset) {
-    data = await parseTileset(data, options, context, loader);
+    data = await parseTileset(data, options, context);
   } else {
     data = await parseTile(data, options, context);
   }
