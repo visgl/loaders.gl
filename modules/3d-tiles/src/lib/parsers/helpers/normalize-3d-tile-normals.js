@@ -12,6 +12,7 @@ export function normalize3DTileNormalAttribute(tile, normals) {
     const decodedArray = new Float32Array(tile.pointsLength * 3);
     for (let i = 0; i < tile.pointsLength; i++) {
       octDecode(normals[i * 2], normals[i * 2 + 1], scratchNormal);
+      // @ts-ignore
       scratchNormal.toArray(decodedArray, i * 3);
     }
 

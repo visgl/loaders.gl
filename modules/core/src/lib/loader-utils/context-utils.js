@@ -22,7 +22,7 @@ export function getLoaderContext(context, options, previousContext = null) {
 
 export function getLoaders(loaders, context) {
   // A single non-array loader is force selected, but only on top-level (context === null)
-  if (!context && !Array.isArray(loaders)) {
+  if (!context && loaders && !Array.isArray(loaders)) {
     return loaders;
   }
 

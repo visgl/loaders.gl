@@ -1,6 +1,9 @@
 // LOADERS.GL-SPECIFIC TYPES
-export {LoaderObject, WriterObject, LoaderContext, DataType, SyncDataType, BatchableDataType,
-  IFileSystem, IRandomAccessReadFileSystem} from './types';
+export {
+  WorkerLoaderObject, LoaderObject, WriterObject, LoaderContext, 
+  DataType, SyncDataType, BatchableDataType,
+  IFileSystem, IRandomAccessReadFileSystem
+} from './types';
 export {IncrementalTransform} from './lib/iterator-utils/incremental-transform';
 
 // LOADERS.GL-SPECIFIC WORKER UTILS

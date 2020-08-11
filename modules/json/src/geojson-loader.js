@@ -1,9 +1,10 @@
 /* global TextDecoder */
+/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
+/** @typedef {import('@loaders.gl/loader-utils').WorkerLoaderObject} WorkerLoaderObject */
 import {RowTableBatch} from '@loaders.gl/tables';
 import {geojsonToBinary} from '@loaders.gl/gis';
 import parseJSONSync from './lib/parse-json';
 import parseJSONInBatches from './lib/parse-json-in-batches';
-/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -23,7 +24,7 @@ const GeoJSONLoaderOptions = {
   }
 };
 
-/** @type {LoaderObject} */
+/** @type {WorkerLoaderObject} */
 export const GeoJSONWorkerLoader = {
   id: 'geojson',
   name: 'GeoJSON',

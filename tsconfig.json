@@ -91,8 +91,6 @@
 
     "modules/tiles/src/**/*",
     "modules/tiles/test/**/*",
-    "modules/3d-tiles/src/**/*",
-    "modules/3d-tiles/test/**/*",
     "modules/i3s/src/**/*",
     "modules/i3s/test/**/*"
   ]

@@ -1,12 +1,13 @@
 // LASER (LAS) FILE FORMAT
-import parseLAS from './lib/parse-las';
 /** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
+/** @typedef {import('@loaders.gl/loader-utils').WorkerLoaderObject} WorkerLoaderObject */
+import parseLAS from './lib/parse-las';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-/** @type {LoaderObject} */
+/** @type {WorkerLoaderObject} */
 export const LASWorkerLoader = {
   id: 'las',
   name: 'LAS',
