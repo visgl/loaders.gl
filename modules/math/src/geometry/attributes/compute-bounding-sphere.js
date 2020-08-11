@@ -1,6 +1,6 @@
 /* eslint-disable */
+// @ts-nocheck
 
-import {Vector3} from '@math.gl/core';
 import {getPositions} from './get-attribute-from-geometry';
 
 export function computeBoundingSphere(geometry, boundingBox) {
@@ -15,7 +15,7 @@ export function computeBoundingSphere(geometry, boundingBox) {
 
   var maxRadiusSq = 0;
 
-  for (const position of attributeIterator(positions)) {
+  for (const position of makeAttributeIterator(positions)) {
     vector.x = position[0];
     vector.y = position[1];
     vector.z = position[2];

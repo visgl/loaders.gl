@@ -1,10 +1,12 @@
+/** @typedef {import('./primitive-iterator')} types */
 import {GL} from '../constants';
 import {getPrimitiveModeType} from '../primitives/modes';
 import {assert} from '@loaders.gl/loader-utils';
 
 // Will iterate over each primitive, expanding (dereferencing) indices
+/** @type {types['makePrimitiveIterator']} */
 // eslint-disable-next-line complexity
-export default function* primitiveIterator({indices, attributes, mode, start = 0, end}) {
+export function* makePrimitiveIterator({indices, attributes, mode, start = 0, end}) {
   // support indices being an object with a values array
   if (indices) {
     indices = indices.values || indices.value || indices;
@@ -12,18 +14,20 @@ export default function* primitiveIterator({indices, attributes, mode, start = 0
 
   // Autodeduce length from indices
   if (end === undefined) {
-    if (indices) {
-      end = indices.length;
-    }
+    end = indices ? indices.length : start;
   }
 
   // iteration info
   const info = {
     attributes,
-    type: getPrimitiveModeType(mode)
+    type: getPrimitiveModeType(mode),
+    i1: 0,
+    i2: 0,
+    i3: 0
   };
 
   let i = start;
+  // @ts-ignore
   while (i < end) {
     switch (mode) {
       case GL.POINTS: // draw single points.
@@ -59,7 +63,7 @@ export default function* primitiveIterator({indices, attributes, mode, start = 0
       case GL.TRIANGLE_FAN: // draw a connected group of triangles.
         info.i1 = 1;
         info.i2 = i;
-        info.i2 = i + 1;
+        info.i3 = i + 1;
         i += 1;
         break;
 

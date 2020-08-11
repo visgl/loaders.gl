@@ -1,7 +1,7 @@
-// Iterates over a single attribute
-// NOTE: creates and re-yields a single element
+/** @typedef {import('./attribute-iterator')} types */
 
-export default function* attributeIterator({values, size}) {
+/** @type {types['makeAttributeIterator']} */
+export function* makeAttributeIterator({values, size}) {
   const ArrayType = values.constructor;
   const element = new ArrayType(size);
   for (let i = 0; i < values.length; i += size) {

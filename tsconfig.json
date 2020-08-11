@@ -83,8 +83,6 @@
   "exclude":[
     "modules/**/src/libs/*",
 
-    "modules/math/src/**/*",
-
     "modules/gltf/src/**/*",
     "modules/gltf/test/**/*",
 

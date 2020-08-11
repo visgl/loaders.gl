@@ -5,7 +5,7 @@ import {GL, computeVertexNormals} from '@loaders.gl/math';
 function getNormalsForVertices(vertices, t) {
   const positions = {values: new Float32Array(vertices), size: 3};
 
-  const normals = computeVertexNormals({mode: GL.TRIANGLES, positions});
+  const normals = computeVertexNormals({mode: GL.TRIANGLES, attributes: {positions}});
 
   t.ok(normals, 'normal attribute was created');
 
