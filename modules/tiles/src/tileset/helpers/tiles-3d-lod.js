@@ -5,6 +5,7 @@
 // tilesets from above
 
 /* eslint-disable */
+// @ts-nocheck
 import {Matrix4, Vector3, clamp} from '@math.gl/core';
 
 const scratchPositionNormal = new Vector3();

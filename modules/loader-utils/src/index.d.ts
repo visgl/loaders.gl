@@ -1,6 +1,6 @@
 // LOADERS.GL-SPECIFIC TYPES
 export {
-  WorkerLoaderObject, LoaderObject, WriterObject, LoaderContext, 
+  WorkerLoaderObject, LoaderObject, WriterObject, LoaderContext,
   DataType, SyncDataType, BatchableDataType,
   IFileSystem, IRandomAccessReadFileSystem
 } from './types';

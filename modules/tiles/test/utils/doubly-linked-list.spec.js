@@ -150,6 +150,7 @@ test('DoublyLinkedList#removes nothing', t => {
   const list = new DoublyLinkedList();
   const node = list.add(1);
 
+  // @ts-ignore
   list.remove();
 
   t.equals(list.head, node);

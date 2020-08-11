@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
 
-import {copyPaddedStringToDataView} from '@loaders.gl/lib/utils/encode-utils';
+import {copyPaddedStringToDataView} from '@loaders.gl/loader-utils';
 
 test('encode-utils', t => {
   const STRING = 'abcdef';

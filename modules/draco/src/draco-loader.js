@@ -1,6 +1,6 @@
-import {loadDracoDecoderModule} from './lib/draco-module-loader';
 /** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 /** @typedef {import('@loaders.gl/loader-utils').WorkerLoaderObject} WorkerLoaderObject */
+import {loadDracoDecoderModule} from './lib/draco-module-loader';
 import DracoParser from './lib/draco-parser';
 
 // __VERSION__ is injected by babel-plugin-version-inline

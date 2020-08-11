@@ -32,7 +32,7 @@ export function encode(gltfData, options) {
     for (const material of json.materials) {
       if (material.unlit) {
         delete material.unlit;
-        gltfScenegraph.addObjectExtension(material, KHR_MATERIALS_UNLIT);
+        gltfScenegraph.addObjectExtension(material, KHR_MATERIALS_UNLIT, {});
         gltfScenegraph.addExtension(KHR_MATERIALS_UNLIT);
       }
     }
