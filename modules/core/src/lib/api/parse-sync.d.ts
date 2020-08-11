@@ -6,7 +6,17 @@ import {SyncDataType, LoaderObject} from '@loaders.gl/loader-utils';
  * @param options
  * @param context
  */
-export function parseSync(data: SyncDataType, loaders: LoaderObject | LoaderObject[], options?: object, context?: object): any;
+export function parseSync(
+  data: SyncDataType,
+  loaders?: LoaderObject | LoaderObject[],
+  options?: object,
+  context?: object
+): any;
 
 /** @deprecated parse with URL as last parameter is deprecated */
-export function parseSync(data: SyncDataType, loaders: LoaderObject | LoaderObject[], options: object, url: string): any;
+export function parseSync(
+  data: SyncDataType,
+  loaders: LoaderObject | LoaderObject[],
+  options: object,
+  url: string
+): any;

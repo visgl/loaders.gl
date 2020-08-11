@@ -1,12 +1,13 @@
 /* global TextDecoder */
-import parseWKT from './lib/parse-wkt';
 /** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
+/** @typedef {import('@loaders.gl/loader-utils').WorkerLoaderObject} WorkerLoaderObject */
+import parseWKT from './lib/parse-wkt';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-/** @type {LoaderObject} */
+/** @type {WorkerLoaderObject} */
 export const WKTWorkerLoader = {
   id: 'wkt',
   name: 'WKT',
