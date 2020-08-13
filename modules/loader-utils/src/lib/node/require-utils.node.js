@@ -2,6 +2,8 @@
 // Copyright (c) Vsevolod Strukchinsky <floatdrop@gmail.com> (github.com/floatdrop)
 // MIT license
 
+// this file is not visible to webpack (it is excluded in the package.json "browser" field).
+
 /* global process */
 import Module from 'module';
 import path from 'path';

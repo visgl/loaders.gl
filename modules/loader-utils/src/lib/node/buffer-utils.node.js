@@ -1,4 +1,6 @@
-// Contains Buffer references to a file that is only bundled under Node.js
+// Isolates Buffer references to ensure they are only bundled under Node.js (avoids big webpack polyfill)
+// this file is not visible to webpack (it is excluded in the package.json "browser" field).
+
 /* global Buffer */
 import assert from '../env-utils/assert';
 
