@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {getBinaryImageMIMEType, getBinaryImageSize} from '@loaders.gl/images';
 import assert from '../utils/assert';
 import {UBER_POINT_CLOUD_EXTENSION} from '../gltf-constants';

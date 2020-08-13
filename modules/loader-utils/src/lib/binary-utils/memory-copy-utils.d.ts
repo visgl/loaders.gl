@@ -2,7 +2,7 @@
  *
  * @param byteLength
  */
-export function padTo4Bytes(byteLength);
+export function padTo4Bytes(byteLength: number): number;
 
 /**
  * Copy a view of an ArrayBuffer into new ArrayBuffer with byteOffset = 0
@@ -10,7 +10,7 @@ export function padTo4Bytes(byteLength);
  * @param byteOffset
  * @param byteLength
  */
-export function getZeroOffsetArrayBuffer(arrayBuffer, byteOffset, byteLength);
+export function getZeroOffsetArrayBuffer(arrayBuffer: ArrayBuffer, byteOffset: number, byteLength?: number);
 
 /**
  * Concatenate a sequence of ArrayBuffers

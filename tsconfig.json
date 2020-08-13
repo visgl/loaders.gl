@@ -83,9 +83,6 @@
   "exclude":[
     "modules/**/src/libs/*",
 
-    "modules/gltf/src/**/*",
-    "modules/gltf/test/**/*",
-
     "modules/tiles/src/**/*",
     "modules/tiles/test/**/*"
   ]
