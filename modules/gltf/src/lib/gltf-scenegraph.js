@@ -27,6 +27,7 @@ export default class GLTFScenegraph {
       };
     }
 
+    this.byteLength = 0;
     // TODO - this is too sloppy, define inputs more clearly
     this.gltf = gltf;
     assert(this.gltf.json);
@@ -259,6 +260,7 @@ export default class GLTFScenegraph {
   }
 
   addMesh(attributes, indices, mode = 4) {
+    // @ts-ignore
     const accessors = this._addAttributes(attributes);
 
     const glTFMesh = {
@@ -277,6 +279,7 @@ export default class GLTFScenegraph {
   }
 
   addPointCloud(attributes) {
+    // @ts-ignore
     const accessorIndices = this._addAttributes(attributes);
 
     const glTFMesh = {

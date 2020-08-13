@@ -18,6 +18,7 @@ export function isGLTF(arrayBuffer, options = {}) {
 export async function parseGLTF(gltf, arrayBufferOrString, byteOffset = 0, options, context) {
   parseGLTFContainerSync(gltf, arrayBufferOrString, byteOffset, options);
 
+  /** @type {Promise[]} */
   const promises = [];
 
   if (options.gltf.loadImages) {

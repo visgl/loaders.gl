@@ -28,6 +28,7 @@ export function encode(gltfData, options) {
 
   // Any nodes that have lights field pointing to light object
   // add the extension
+  // @ts-ignore
   if (gltfScenegraph.materials) {
     for (const material of json.materials) {
       if (material.unlit) {
