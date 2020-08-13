@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/compression",
-  "version": "2.3.0-alpha.9",
+  "version": "2.3.0-alpha.10",
   "description": "Decompression and compression plugins for loaders.gl",
   "license": "MIT",
   "publishConfig": {
@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
-    "@loaders.gl/loader-utils": "2.3.0-alpha.9",
+    "@loaders.gl/loader-utils": "2.3.0-alpha.10",
     "lz4js": "^0.2.0",
     "pako": "^1.0.11",
     "zstd-codec": "^0.1"
