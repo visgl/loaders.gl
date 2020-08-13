@@ -1,12 +1,12 @@
 /* global TextEncoder */
 import assert from '../env-utils/assert';
-import {toArrayBuffer as bufferToArrayBuffer} from '../node/to-array-buffer.node';
-import {toBuffer as toNodeBuffer} from '../node/to-buffer.node';
+import * as node from '../node/buffer-utils.node';
 
 export function toArrayBuffer(data) {
-  if (bufferToArrayBuffer) {
+  // Note: Should be called first, Buffers can trigger other detections below
+  if (node.toArrayBuffer) {
     // TODO - per docs we should just be able to call buffer.buffer, but there are issues
-    data = bufferToArrayBuffer(data);
+    data = node.toArrayBuffer(data);
   }
 
   if (data instanceof ArrayBuffer) {
@@ -28,5 +28,5 @@ export function toArrayBuffer(data) {
 }
 
 export function toBuffer(data) {
-  return toNodeBuffer ? toNodeBuffer(data) : data;
+  return node.toBuffer ? node.toBuffer(data) : data;
 }
