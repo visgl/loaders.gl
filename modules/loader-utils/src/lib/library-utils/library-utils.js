@@ -1,6 +1,6 @@
 /* global fetch, document */
 import {global, isBrowser, isWorker} from '../env-utils/globals';
-import * as node from './require-utils.node';
+import * as node from '../node/require-utils.node';
 import assert from '../env-utils/assert';
 
 // TODO - unpkg.com doesn't seem to have a `latest` specifier for alpha releases...
