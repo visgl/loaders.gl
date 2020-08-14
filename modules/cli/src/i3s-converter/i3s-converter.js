@@ -31,17 +31,16 @@ export default class I3SConverter {
 
   // Convert a 3d tileset
   async convert({inputUrl, outputPath, tilesetName, maxDepth}) {
+    this.maxDepth = maxDepth;
     const options = {
       'cesium-ion': {accessToken: ION_TOKEN}
     };
     const preloadOptions = await CesiumIonLoader.preload(inputUrl, options);
     Object.assign(options, preloadOptions);
     const tilesetJson = await load(inputUrl, CesiumIonLoader, options);
-    // console.log(tilesetJson); // eslint-disable-line
-    const tilesets = new Tileset3D(tilesetJson, options);
-    await tilesets.loadAllTiles(maxDepth);
+    this.tileset = new Tileset3D(tilesetJson, options);
 
-    await this._creationOfStructure(tilesets, outputPath, tilesetName);
+    await this._creationOfStructure(outputPath, tilesetName);
 
     return tilesetJson;
   }
@@ -49,10 +48,10 @@ export default class I3SConverter {
   // PRIVATE
 
   /* eslint-disable max-statements */
-  async _creationOfStructure(tileset, outputPath, tilesetName) {
+  async _creationOfStructure(outputPath, tilesetName) {
     const tilesetRootPath = join(`${outputPath}`, `${tilesetName}`);
     this.layers0path = join(tilesetRootPath, 'SceneServer', 'layers', '0');
-    const extent = convertCommonToI3SExtentCoordinate(tileset);
+    const extent = convertCommonToI3SExtentCoordinate(this.tileset);
 
     const layers0data = {
       version: `{${uuidv4().toUpperCase()}}`,
@@ -73,7 +72,7 @@ export default class I3SConverter {
     await writeFile(this.layers0path, JSON.stringify(layers0));
     createSceneServerPath(tilesetName, layers0, tilesetRootPath);
 
-    const root = tileset.root;
+    const root = this.tileset.root;
     const rootPath = join(this.layers0path, 'nodes', 'root');
     const coordinates = convertCommonToI3SCoordinate(root);
     const root0data = {
@@ -101,18 +100,19 @@ export default class I3SConverter {
       children: []
     });
 
+    await this.tileset._loadTile(root);
     if (root.content && root.content.type === 'b3dm') {
       root0.children.push({
         id: '1',
         href: './1',
         ...coordinates
       });
-      const node = await this._createNode(root0, root, parentId);
-      this.convertResources(root0, node);
+      const node = await this._createNode(root0, root, parentId, 0);
       const childPath = join(this.layers0path, 'nodes', node.path);
       await writeFile(childPath, JSON.stringify(node));
     } else {
-      await this._addChildren({rootNode: root0, tiles: root.children}, parentId);
+      await this._addChildren({rootNode: root0, tiles: root.children}, parentId, 1);
+      await root.unloadContent();
     }
 
     await writeFile(rootPath, JSON.stringify(root0));
@@ -120,14 +120,23 @@ export default class I3SConverter {
   }
   /* eslint-enable max-statements */
 
-  async _addChildren(data, parentId) {
+  async _addChildren(data, parentId, level) {
+    if (this.maxDepth && level > this.maxDepth) {
+      return;
+    }
     const childNodes = [];
     for (const child of data.tiles) {
       if (child.type === 'json') {
-        await this._addChildren({rootNode: data.rootNode, tiles: child.children}, parentId);
+        await this.tileset._loadTile(child);
+        await this._addChildren(
+          {rootNode: data.rootNode, tiles: child.children},
+          parentId,
+          level + 1
+        );
+        await child.unloadContent();
       } else {
         const coordinates = convertCommonToI3SCoordinate(child);
-        const newChild = await this._createNode(data.rootNode, child, parentId);
+        const newChild = await this._createNode(data.rootNode, child, parentId, level);
         data.rootNode.children.push({
           id: newChild.id,
           href: `../${newChild.path}`,
@@ -162,7 +171,7 @@ export default class I3SConverter {
     }
   }
 
-  async _createNode(rootTile, tile, parentId) {
+  async _createNode(rootTile, tile, parentId, level) {
     const rootTileId = rootTile.id;
     const coordinates = convertCommonToI3SCoordinate(tile);
 
@@ -207,13 +216,14 @@ export default class I3SConverter {
       neighbors: []
     };
     const node = transform(nodeData, nodeTemplate);
-    await this.convertResources(tile, node);
+    await this._convertResources(tile, node);
 
-    await this._addChildren({rootNode: node, tiles: tile.children}, nodeId);
+    await this._addChildren({rootNode: node, tiles: tile.children}, nodeId, level + 1);
     return node;
   }
 
-  async convertResources(sourceTile, node) {
+  async _convertResources(sourceTile, node) {
+    await this.tileset._loadTile(sourceTile);
     if (!sourceTile.content || sourceTile.content.type !== 'b3dm') {
       return;
     }
@@ -233,5 +243,6 @@ export default class I3SConverter {
       const texturesData = textures.bufferView.data;
       await writeFile(texturesPath, texturesData, 'index.jpeg');
     }
+    sourceTile.unloadContent();
   }
 }
