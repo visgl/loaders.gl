@@ -1,8 +1,8 @@
+/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 import {binaryToGeoJson} from '@loaders.gl/gis';
 import {SHPLoader, SHP_MAGIC_NUMBER} from './shp-loader';
 import {DBFLoader} from './dbf-loader';
-import {parseShx} from './lib/parse-shx';
-/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
+import {parseShx} from './lib/parsers/parse-shx';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -21,7 +21,6 @@ export const ShapefileLoader = {
     shapefile: {}
   },
   parse: parseShapefile
-  // parseInBatches: parseShapefileInBatches
 };
 
 /* TODO

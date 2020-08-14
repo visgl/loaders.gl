@@ -1,5 +1,5 @@
 import test from 'tape-promise/tape';
-import parseShape from '@loaders.gl/shapefile/lib/parse-shp';
+import parseShape from '@loaders.gl/shapefile/lib/parsers/parse-shp';
 import {fetchFile} from '@loaders.gl/core';
 import {geojsonToBinary} from '@loaders.gl/gis';
 

@@ -8,7 +8,7 @@ export default function parseDbf(arrayBuffer, options) {
 
   // Global header
   const globalHeaderView = new DataView(arrayBuffer, 0, 32);
-  const header = parseHeader(globalHeaderView);
+  const header = parseDBFHeader(globalHeaderView);
   const {headerLength, recordLength, nRecords} = header;
 
   // Row headers
@@ -22,29 +22,20 @@ export default function parseDbf(arrayBuffer, options) {
   return parseRows(recordsView, fields, nRecords, recordLength, textDecoder);
 }
 
-function parseHeader(headerView) {
-  // Last updated date
-  const year = headerView.getUint8(1) + 1900;
-  const month = headerView.getUint8(2);
-  const day = headerView.getUint8(3);
-
-  // Number of records in data file
-  const nRecords = headerView.getUint32(4, LITTLE_ENDIAN);
-  // Length of header in bytes
-  const headerLength = headerView.getUint16(8, LITTLE_ENDIAN);
-  // Length of each record
-  const recordLength = headerView.getUint16(10, LITTLE_ENDIAN);
-  // Not sure if this is usually set
-  const languageDriver = headerView.getUint8(29);
-
+function parseDBFHeader(headerView) {
   return {
-    year,
-    month,
-    day,
-    nRecords,
-    headerLength,
-    recordLength,
-    languageDriver
+    // Last updated date
+    year: headerView.getUint8(1) + 1900,
+    month: headerView.getUint8(2),
+    day: headerView.getUint8(3),
+    // Number of records in data file
+    nRecords: headerView.getUint32(4, LITTLE_ENDIAN),
+    // Length of header in bytes
+    headerLength: headerView.getUint16(8, LITTLE_ENDIAN),
+    // Length of each record
+    recordLength: headerView.getUint16(10, LITTLE_ENDIAN),
+    // Not sure if this is usually set
+    languageDriver: headerView.getUint8(29)
   };
 }
 
