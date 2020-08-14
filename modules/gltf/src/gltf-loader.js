@@ -15,7 +15,7 @@ const GLTFLoader = {
 
   text: true,
   binary: true,
-  test: 'glTF',
+  tests: ['glTF'],
   parse,
 
   options: {

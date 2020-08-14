@@ -15,7 +15,7 @@ export const DracoWorkerLoader = {
   extensions: ['drc'],
   mimeTypes: ['application/octet-stream'],
   binary: true,
-  test: 'DRACO',
+  tests: ['DRACO'],
   options: {
     draco: {
       decoderType: typeof WebAssembly === 'object' ? 'wasm' : 'js', // 'js' for IE11

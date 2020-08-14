@@ -1,4 +1,4 @@
-import {concatenateArrayBuffers} from '../binary-utils/memory-copy-utils';
+import {concatenateArrayBuffers} from '../binary-utils/array-buffer-utils';
 
 // GENERAL UTILITIES
 

@@ -20,7 +20,7 @@ export const PLYWorkerLoader = {
   mimeTypes: ['text/plain', 'application/octet-stream'],
   text: true,
   binary: true,
-  test: 'ply',
+  tests: ['ply'],
   options: {
     ply: {
       workerUrl: `https://unpkg.com/@loaders.gl/ply@${VERSION}/dist/ply-loader.worker.js`

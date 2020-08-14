@@ -13,7 +13,7 @@ export const BasisWorkerLoader = {
   version: VERSION,
   extensions: ['basis'],
   mimeTypes: ['application/octet-stream'],
-  test: 'sB',
+  tests: ['sB'],
   binary: true,
   options: {
     basis: {

@@ -1,5 +1,5 @@
 import {binaryToGeoJson} from '@loaders.gl/gis';
-import {SHPLoader} from './shp-loader';
+import {SHPLoader, SHP_MAGIC_NUMBER} from './shp-loader';
 import {DBFLoader} from './dbf-loader';
 import {parseShx} from './lib/parse-shx';
 /** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
@@ -10,12 +10,13 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /** @type {LoaderObject} */
 export const ShapefileLoader = {
-  id: 'shp',
+  id: 'shapefile',
   name: 'Shapefile',
   category: 'geometry',
   version: VERSION,
   extensions: ['shp'],
   mimeTypes: ['application/octet-stream'],
+  tests: [new Uint8Array(SHP_MAGIC_NUMBER).buffer],
   options: {
     shapefile: {}
   },

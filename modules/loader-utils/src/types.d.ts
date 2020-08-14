@@ -14,7 +14,7 @@ export type WorkerLoaderObject = {
   binary?: boolean;
   text?: boolean;
 
-  test?: ((ArrayBuffer) => boolean) | string | number;
+  tests?: (((ArrayBuffer) => boolean) | ArrayBuffer | string)[];
 
   // TODO - deprecated
   supported?: boolean;
@@ -34,7 +34,7 @@ export type LoaderObject = {
   binary?: boolean;
   text?: boolean;
 
-  test?: ((ArrayBuffer) => boolean) | string | number | string[];
+  tests?: (((ArrayBuffer) => boolean) | ArrayBuffer | string)[];
 
   parse: (arrayBuffer, options) => Promise<any>;
   parseSync?: (arrayBuffer, options) => any;

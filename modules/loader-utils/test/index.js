@@ -1,4 +1,4 @@
-import './lib/binary-utils/binary-utils.spec';
+import './lib/binary-utils/array-buffer-utils.spec';
 import './lib/binary-utils/binary-copy-utils.spec';
 import './lib/binary-utils/memory-copy-utils.spec';
 

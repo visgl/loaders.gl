@@ -28,15 +28,14 @@ export {getLibraryUrl, loadLibrary} from './lib/library-utils/library-utils';
 export {parseJSON} from './lib/parser-utils/parse-json';
 
 // MEMORY COPY UTILS
-export {toArrayBuffer, toBuffer} from './lib/binary-utils/binary-utils';
-
+export {isBuffer, toBuffer, bufferToArrayBuffer} from './lib/binary-utils/buffer-utils';
 export {
-  padTo4Bytes,
-  copyToArray,
+  toArrayBuffer,
+  sliceArrayBuffer,
   concatenateArrayBuffers,
-  copyArrayBuffer,
-  getZeroOffsetArrayBuffer
-} from './lib/binary-utils/memory-copy-utils';
+  compareArrayBuffers
+} from './lib/binary-utils/array-buffer-utils';
+export {padTo4Bytes, copyToArray, copyArrayBuffer} from './lib/binary-utils/memory-copy-utils';
 export {
   copyPaddedArrayBufferToDataView,
   copyPaddedStringToDataView
@@ -71,3 +70,6 @@ export {default as RequestScheduler} from './lib/request-utils/request-scheduler
 // MESH CATEGORY UTILS
 // Note: Should move to category specific module if code size increases
 export {getMeshSize as _getMeshSize, getMeshBoundingBox} from './categories/mesh/mesh-utils';
+
+// DEPRECATED IN 2.3
+export {getZeroOffsetArrayBuffer} from './lib/binary-utils/memory-copy-utils';
