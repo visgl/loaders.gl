@@ -1,6 +1,7 @@
 /** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 /** @typedef {import('@loaders.gl/loader-utils').WorkerLoaderObject} WorkerLoaderObject */
 import parseSHP from './lib/parsers/parse-shp';
+import parseSHPInBatches from './lib/parsers/parse-shp-in-batches';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -28,5 +29,6 @@ export const SHPWorkerLoader = {
 export const SHPLoader = {
   ...SHPWorkerLoader,
   parse: async (arrayBuffer, options) => parseSHP(arrayBuffer),
-  parseSync: parseSHP
+  parseSync: parseSHP,
+  parseInBatches: parseSHPInBatches
 };
