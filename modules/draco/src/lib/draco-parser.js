@@ -35,13 +35,6 @@ export default class DracoParser {
 
   destroy() {}
 
-  destroyGeometry(dracoGeometry) {
-    if (dracoGeometry) {
-      this.draco.destroy(dracoGeometry.dracoGeometry);
-    }
-  }
-
-  // NOTE: caller must call `destroyGeometry` on the return value after using it
   parseSync(arrayBuffer, options) {
     const buffer = new this.draco.DecoderBuffer();
     buffer.Init(new Int8Array(arrayBuffer), arrayBuffer.byteLength);
@@ -101,6 +94,7 @@ export default class DracoParser {
     } finally {
       this.draco.destroy(decoder);
       this.draco.destroy(buffer);
+      this.draco.destroy(dracoGeometry);
     }
 
     return data;
