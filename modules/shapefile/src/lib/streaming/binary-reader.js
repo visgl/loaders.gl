@@ -12,13 +12,19 @@ export default class BinaryReader {
 
   // Get the required number of bytes from the iterator
   getDataView(bytes) {
-    if (!this.hasAvailableBytes(bytes)) {
+    if (bytes && !this.hasAvailableBytes(bytes)) {
       throw new Error('binary data exhausted');
     }
 
-    const dataView = new DataView(this.arrayBuffer, this.offset, bytes);
+    const dataView = bytes
+      ? new DataView(this.arrayBuffer, this.offset, bytes)
+      : new DataView(this.arrayBuffer, this.offset);
     this.offset += bytes;
     return dataView;
+  }
+
+  skip(bytes) {
+    this.offset += bytes;
   }
 
   rewind(bytes) {

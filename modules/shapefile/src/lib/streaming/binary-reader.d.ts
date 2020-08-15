@@ -5,7 +5,8 @@ export default class BinaryReader {
   hasAvailableBytes(bytes: number): boolean;
 
   /** Get the required number of bytes from the iterator */
-  getDataView(bytes: number): DataView;
+  getDataView(bytes?: number): DataView;
 
+  skip(bytes: number);
   rewind(bytes: number);
 }
