@@ -1,10 +1,14 @@
 import {Vector3, Matrix4, Vector4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 
+import {DracoWriter} from '@loaders.gl/draco';
+import {encode} from '@loaders.gl/core';
+
 const VALUES_PER_VERTEX = 3;
 const VALUES_PER_TEX_COORD = 2;
 const VALUES_PER_COLOR_ELEMENT = 4;
-export default function convertB3dmToI3sGeometry(content) {
+
+export default async function convertB3dmToI3sGeometry(content, options = {}) {
   const {positions, normals, texCoords, colors} = convertAttributes(content);
 
   const vertexCount = positions.length / VALUES_PER_VERTEX;
@@ -16,8 +20,34 @@ export default function convertB3dmToI3sGeometry(content) {
   fileBuffer = concatenateArrayBuffers(fileBuffer, normals.buffer);
   fileBuffer = concatenateArrayBuffers(fileBuffer, texCoords.buffer);
   fileBuffer = concatenateArrayBuffers(fileBuffer, colors.buffer);
+
+  let compressedGeometry = null;
+  if (options.draco) {
+    const indices = new Uint32Array(positions.length);
+    let vertexCounter = 0;
+    for (let index = 0; index < indices.length; index += 3) {
+      indices.set([vertexCounter, vertexCounter, vertexCounter], index);
+      vertexCounter += 1;
+    }
+
+    const attributes = {
+      positions,
+      normals,
+      texCoords,
+      colors
+    };
+    compressedGeometry = new Uint8Array(
+      await encode({attributes, indices}, DracoWriter, {
+        draco: {
+          method: 'MESH_SEQUENTIAL_ENCODING'
+        }
+      })
+    );
+  }
+
   return {
     geometry: fileBuffer,
+    compressedGeometry,
     textures: getTexture(content),
     sharedResources: getSharedResources(content)
   };

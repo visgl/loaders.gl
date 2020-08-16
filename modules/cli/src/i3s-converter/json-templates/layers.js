@@ -1,6 +1,33 @@
 import transform from 'json-map-transform';
 import {STORE} from './store';
 
+const PLAIN_GEOMETRY_DEFINITION = {
+  offset: 8,
+  position: {
+    type: 'Float32',
+    component: 3
+  },
+  normal: {
+    type: 'Float32',
+    component: 3
+  },
+  uv0: {
+    type: 'Float32',
+    component: 2
+  },
+  color: {
+    type: 'UInt8',
+    component: 4
+  }
+};
+
+const COMPRESSED_GEOMETRY_DEFINITION = {
+  compressedAttributes: {
+    encoding: 'draco',
+    attributes: ['position', 'normal', 'uv0', 'color']
+  }
+};
+
 const SPATIAL_REFERENCE = {
   wkid: {
     path: 'wkid',
@@ -113,30 +140,17 @@ export const LAYERS = {
     ]
   },
   geometryDefinitions: {
-    path: 'geometryDefinitions',
+    path: 'compressGeometry',
+    transform: val => {
+      const result = [{geometryBuffers: [PLAIN_GEOMETRY_DEFINITION]}];
+      if (val) {
+        result[0].geometryBuffers.push(COMPRESSED_GEOMETRY_DEFINITION);
+      }
+      return result;
+    },
     default: [
       {
-        geometryBuffers: [
-          {
-            offset: 8,
-            position: {
-              type: 'Float32',
-              component: 3
-            },
-            normal: {
-              type: 'Float32',
-              component: 3
-            },
-            uv0: {
-              type: 'Float32',
-              component: 2
-            },
-            color: {
-              type: 'UInt8',
-              component: 4
-            }
-          }
-        ]
+        geometryBuffers: [PLAIN_GEOMETRY_DEFINITION]
       }
     ]
   }

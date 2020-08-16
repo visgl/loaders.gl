@@ -308,8 +308,8 @@ export default class DracoBuilder {
       case 'color':
       case 'colors':
         return this.draco.COLOR;
-      case 'texCoord':
-      case 'texCoords':
+      case 'texcoord':
+      case 'texcoords':
         return this.draco.TEX_COORD;
       default:
         return this.draco.GENERIC;

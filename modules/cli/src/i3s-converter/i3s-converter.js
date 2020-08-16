@@ -1,6 +1,6 @@
 import {load} from '@loaders.gl/core';
 import {Tileset3D} from '@loaders.gl/tiles';
-import {CesiumIonLoader, convertB3dmToI3sGeometry} from '@loaders.gl/3d-tiles';
+import {CesiumIonLoader} from '@loaders.gl/3d-tiles';
 import {join} from 'path';
 import {v4 as uuidv4} from 'uuid';
 import process from 'process';
@@ -8,6 +8,7 @@ import transform from 'json-map-transform';
 
 import NodePages from './helpers/node-pages';
 import writeFile from '../lib/utils/write-file';
+import convertB3dmToI3sGeometry from './helpers/geometry-converter';
 import {
   convertCommonToI3SCoordinate,
   convertCommonToI3SExtentCoordinate
@@ -30,14 +31,21 @@ export default class I3SConverter {
   }
 
   // Convert a 3d tileset
-  async convert({inputUrl, outputPath, tilesetName, maxDepth}) {
-    this.maxDepth = maxDepth;
+  async convert({inputUrl, outputPath, tilesetName, maxDepth, draco}) {
+    this.options = {maxDepth, draco};
+
     const options = {
       'cesium-ion': {accessToken: ION_TOKEN}
     };
     const preloadOptions = await CesiumIonLoader.preload(inputUrl, options);
     Object.assign(options, preloadOptions);
     const tilesetJson = await load(inputUrl, CesiumIonLoader, options);
+
+    /* TODO/ib - get rid of confusing options warnings, move into options sub-object */
+    // const tilesetJson = await load(inputUrl, CesiumIonLoader, {
+    //   'cesium-ion': preloadOptions
+    // });
+    // console.log(tilesetJson); // eslint-disable-line
     this.tileset = new Tileset3D(tilesetJson, options);
 
     await this._creationOfStructure(outputPath, tilesetName);
@@ -65,7 +73,8 @@ export default class I3SConverter {
       },
       nodePages: {
         nodesPerPage: HARDCODED_NODES_PER_PAGE
-      }
+      },
+      compressGeometry: this.options.draco
     };
 
     const layers0 = transform(layers0data, layersTemplate);
@@ -121,7 +130,7 @@ export default class I3SConverter {
   /* eslint-enable max-statements */
 
   async _addChildren(data, parentId, level) {
-    if (this.maxDepth && level > this.maxDepth) {
+    if (this.options.maxDepth && level > this.options.maxDepth) {
       return;
     }
     const childNodes = [];
@@ -228,11 +237,18 @@ export default class I3SConverter {
       return;
     }
     const childPath = join(this.layers0path, 'nodes', node.path);
-    const {geometry: geometryBuffer, textures, sharedResources} = convertB3dmToI3sGeometry(
-      sourceTile.content
-    );
+    const {
+      geometry: geometryBuffer,
+      compressedGeometry,
+      textures,
+      sharedResources
+    } = await convertB3dmToI3sGeometry(sourceTile.content, this.options);
     const geometryPath = join(childPath, 'geometries/0/');
     await writeFile(geometryPath, geometryBuffer, 'index.bin');
+    if (this.options.draco) {
+      const compressedGeometryPath = join(childPath, 'geometries/1/');
+      await writeFile(compressedGeometryPath, compressedGeometry, 'index.bin');
+    }
     const sharedPath = join(childPath, 'shared/0/');
     sharedResources.nodePath = node.path;
     const sharedData = transform(sharedResources, SHARED_RESOURCES_TEMPLATE);

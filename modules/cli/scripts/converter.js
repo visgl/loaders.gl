@@ -14,6 +14,7 @@ function printHelp() {
   console.log('--tileset [tileset.json file]');
   console.log('--name [Tileset name, default: "default"]');
   console.log('--output [Output folder]');
+  console.log('--draco Generate I3S 1.7 draco compressed geometries');
   console.log(
     '--max-depth [Maximal depth of hierarchical tiles tree traversal, default: infinite]'
   );
@@ -52,7 +53,8 @@ function convert(options) {
         inputUrl: options.tileset,
         outputPath: options.output,
         tilesetName: options.name,
-        maxDepth: options.maxDepth
+        maxDepth: options.maxDepth,
+        draco: options.draco
       });
       break;
     default:
@@ -102,6 +104,9 @@ function parseOptions(args) {
           break;
         case '--max-depth':
           opts.maxDepth = _getValue(index);
+          break;
+        case '--draco':
+          opts.draco = true;
           break;
         case '--help':
           printHelp();

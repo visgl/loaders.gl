@@ -12,6 +12,3 @@ export {default as Tile3DBatchTable} from './lib/classes/tile-3d-batch-table';
 // EXPERIMENTAL
 export {TILE3D_TYPE} from './lib/constants';
 export {getIonTilesetMetadata as _getIonTilesetMetadata} from './lib/ion/ion';
-
-// CONVERSION
-export {default as convertB3dmToI3sGeometry} from './lib/converters/geometry-converter';
