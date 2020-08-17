@@ -53,6 +53,18 @@ export default async function convertB3dmToI3sGeometry(content, options = {}) {
   };
 }
 
+/**
+ * Convert attributes from the gltf nodes tree to i3s plain geometry
+ * @param {Object} content - 3d tile content
+ * @returns {Object}
+ * {
+ *   positions: Float32Array,
+ *   normals: Float32Array,
+ *   colors: Uint8Array,
+ *   texCoords: Float32Array
+ * }
+ * @todo implement colors support (if applicable for gltf format)
+ */
 function convertAttributes(content) {
   let positions = new Float32Array(0);
   let normals = new Float32Array(0);
@@ -69,7 +81,6 @@ function convertAttributes(content) {
   const vertexCount = positions.length / VALUES_PER_VERTEX;
   const colors = new Uint8Array(vertexCount * VALUES_PER_COLOR_ELEMENT);
   for (let index = 0; index < colors.length; index += 4) {
-    // TODO: to implement colors support (if applicable for gltf format)
     colors.set([255, 255, 255, 255], index);
   }
 
@@ -89,6 +100,21 @@ function convertAttributes(content) {
   };
 }
 
+/**
+ * Gltf has hierarchical structure of nodes. This function converts nodes starting from those which are in gltf scene object.
+ *   The goal is applying tranformation matrix for all children. Functions "convertNodes" and "convertNode" work together recursively.
+ * @param {Object[]} nodes - gltf nodes array
+ * @param {Object} content - 3d tile content
+ * @param {Object} attributes {positions: Float32Array, normals: Float32Array, texCoords: Float32Array} - for recursive concatenation of
+ *   attributes
+ * @param {Matrix4} matrix - transformation matrix - cumulative transformation matrix formed from all parent node matrices
+ * @returns {Object}
+ * {
+ *   positions: Float32Array,
+ *   normals: Float32Array,
+ *   texCoords: Float32Array
+ * }
+ */
 function convertNodes(
   nodes,
   content,
@@ -106,6 +132,21 @@ function convertNodes(
   return {positions, normals, texCoords};
 }
 
+/**
+ * Convert all primitives of node and all children nodes
+ * @param {Object} node - gltf node
+ * @param {Object} content - 3d tile content
+ * @param {Object} attributes {positions: Float32Array, normals: Float32Array, texCoords: Float32Array} - for recursive concatenation of
+ *   attributes
+ * @param {Matrix4} matrix - transformation matrix - cumulative transformation matrix formed from all parent node matrices
+ * @returns {Object}
+ * {
+ *   positions: Float32Array,
+ *   normals: Float32Array,
+ *   texCoords: Float32Array
+ * }
+ * @todo: optimize arrays concatenation
+ */
 function convertNode(
   node,
   content,
@@ -119,8 +160,8 @@ function convertNode(
     for (const primitive of mesh.primitives) {
       const attributes = primitive.attributes;
       const batchIds = content.batchTableJson && content.batchTableJson.id;
+      // Common case - indices are applied for vertices
       if (!(batchIds && batchIds.length) || !isBatchedIndices(primitive.indices, attributes)) {
-        // TODO: optimize arrays concatenation
         positions = concatenateTypedArrays(
           positions,
           transformVertexArray(
@@ -150,6 +191,11 @@ function convertNode(
         );
         continue; // eslint-disable-line
       }
+      /* For this case indices are applicable for batch, not for all vertex array. 
+      1. Cut vertices with batchId===0, 
+      2. Apply indices on resulting array,
+      3. Cut next vertices' range by batchId,
+      4. Apply indices on resulting range etc.*/
       for (const batchId of batchIds) {
         const {
           positions: newPositions,
@@ -213,11 +259,26 @@ function concatenateArrayBuffers(source1, source2) {
   return temp;
 }
 
+/**
+ * Check if batchedIds are applied for vertex indices array, not for vertex array
+ * @param {Object} indices - gltf primitive indices array
+ * @param {Object} attributes - gltf primitive attributes
+ * @returns {boolean}
+ */
 function isBatchedIndices(indices, attributes) {
   const {positions} = getValuesByBatchId(attributes, 0);
   return indices.max < positions.length;
 }
 
+/**
+ * Convert vertices attributes (POSITIONS or NORMALS) to i3s compatible format
+ * @param {Float32Array} vertices - gltf primitive POSITION or NORMAL attribute
+ * @param {Object} cartographicOrigin - cartographic origin coordinates
+ * @param {Object} cartesianModelMatrix - a cartesian model matrix to transform coordnates from cartesian to cartographic format
+ * @param {Matrix4} nodeMatrix - a gltf node transformation matrix - cumulative transformation matrix formed from all parent node matrices
+ * @param {Uint8Array} indices - gltf primitive indices
+ * @returns {Float32Array}
+ */
 function transformVertexArray(
   vertices,
   cartographicOrigin,
@@ -232,7 +293,7 @@ function transformVertexArray(
   for (let i = 0; i < indices.length; i++) {
     const coordIndex = indices[i] * VALUES_PER_VERTEX;
     const vertex = vertices.subarray(coordIndex, coordIndex + VALUES_PER_VERTEX);
-    let vertexVector = new Vector3(vertex);
+    let vertexVector = new Vector3(Array.from(vertex));
 
     if (nodeMatrix) {
       vertexVector = vertexVector.transform(nodeMatrix);
@@ -252,6 +313,12 @@ function transformVertexArray(
   return newVertices;
 }
 
+/**
+ * Convert uv0 (texture coordinates) from coords based on indices to plain arrays, compatible with i3s
+ * @param {Float32Array} texCoords - gltf primitive TEXCOORD_0 attribute
+ * @param {Uint8Array} indices - gltf primitive indices
+ * @returns {Float32Array}
+ */
 function flattenTexCoords(texCoords, indices) {
   if (!texCoords) {
     return new Float32Array(0);
@@ -268,6 +335,17 @@ function flattenTexCoords(texCoords, indices) {
 }
 
 /* eslint-disable max-statements */
+/**
+ * Cut attributes from array by "batchId"
+ * @param {Object} attributes - gltf primitive attributes
+ * @param {number} batchId - batchId to select corresponding range of attributes
+ * @returns {Object}
+ * {
+ *   positions: Float32Array,
+ *   normals: Float32Array,
+ *   texCoords: Float32Array
+ * }
+ */
 function getValuesByBatchId(attributes, batchId) {
   const batchIdAttribute = attributes._BATCHID;
   const positionsToBatch = attributes.POSITION.value;
@@ -315,13 +393,23 @@ function getValuesByBatchId(attributes, batchId) {
 }
 /* eslint-enable max-statements */
 
+/**
+ * Get texture image from gltf object
+ * @param {Object} content - 3d tile content
+ * @returns {ArrayBuffer}
+ * @todo handle multiple images inside one gltf
+ * @todo handle external images
+ */
 function getTexture(content) {
   const images = content.gltf.images;
-  // TODO: handle multiple images inside one gltf
-  // TODO: handle external images
   return images && images.length && images[0];
 }
 
+/**
+ * Form "sharedResources" from gltf material object
+ * @param {Object} content - 3d tile content
+ * @returns {Object}
+ */
 function getSharedResources(content) {
   const materials = content.gltf.materials;
   const result = {
@@ -352,8 +440,14 @@ function getSharedResources(content) {
   return result;
 }
 
+/**
+ * Form "materialDefinition" which is part of "sharedResouces"
+ * @param {number[]} baseColorFactor - RGBA color in 0..1 format
+ * @param {number} metallicFactor - "metallicFactor" attribute of gltf material object
+ * @returns {Object}
+ */
 function extractMaterialDefinitionInfo(baseColorFactor, metallicFactor) {
-  const matDielectricColorComponent = 0.04 / 255; // Color from rgb (255) to 1..0 resolution
+  const matDielectricColorComponent = 0.04 / 255; // Color from rgb (255) to 0..1 resolution
   // All color resolutions are 0..1
   const black = new Vector4(0, 0, 0, 1);
   const unitVector = new Vector4(1, 1, 1, 1);
@@ -364,18 +458,23 @@ function extractMaterialDefinitionInfo(baseColorFactor, metallicFactor) {
     0
   );
   const baseColorVector = new Vector4(baseColorFactor);
-  const diffuse = unitVector
-    .subtract(dielectricSpecular)
-    .multiply(baseColorVector)
-    .lerp(black, metallicFactor);
+  // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#metallic-roughness-material
+  // Formulas for Cdiff & F0
+  const firstOperand = unitVector.subtract(dielectricSpecular).multiply(baseColorVector);
+  const diffuse = firstOperand.lerp(firstOperand, black, metallicFactor);
   dielectricSpecular[4] = 1;
-  const specular = dielectricSpecular.lerp(baseColorVector, metallicFactor);
+  const specular = dielectricSpecular.lerp(dielectricSpecular, baseColorVector, metallicFactor);
   return {
     diffuse: diffuse.toArray(),
     specular: specular.toArray()
   };
 }
 
+/**
+ * Form "textureDefinition" which is part of "sharedResouces"
+ * @param {Object} texture - texture image info
+ * @returns {Object}
+ */
 function extractTextureDefinitionInfo(texture) {
   return {
     encoding: [texture.source.mimeType],
