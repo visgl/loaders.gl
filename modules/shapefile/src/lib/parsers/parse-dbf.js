@@ -1,27 +1,34 @@
 /* global TextDecoder */
+import BinaryReader from '../streaming/binary-reader';
 
 const LITTLE_ENDIAN = true;
+const DBF_HEADER_SIZE = 32;
 
 export default function parseDbf(arrayBuffer, options) {
+  const binaryReader = new BinaryReader(arrayBuffer);
+
   const loaderOptions = options.dbf || {};
   const {encoding} = loaderOptions;
 
   // Global header
-  const globalHeaderView = new DataView(arrayBuffer, 0, 32);
-  const header = parseDBFHeader(globalHeaderView);
+  const fileHeaderView = binaryReader.getDataView(DBF_HEADER_SIZE);
+  const header = parseDBFHeader(fileHeaderView);
   const {headerLength, recordLength, nRecords} = header;
 
   // Row headers
   const textDecoder = new TextDecoder(encoding);
-  const colHeaderView = new DataView(arrayBuffer, 32, headerLength - 32);
+  const colHeaderView = binaryReader.getDataView(headerLength - DBF_HEADER_SIZE);
   const fields = parseColumnHeaders(colHeaderView, textDecoder);
 
   // Not exactly sure why start offset needs to be headerLength + 1?
   // parsedbf uses ((fields.length + 1) << 5) + 2;
-  const recordsView = new DataView(arrayBuffer, headerLength + 1);
-  return parseRows(recordsView, fields, nRecords, recordLength, textDecoder);
+  binaryReader.skip(1);
+  return parseRows(binaryReader, fields, nRecords, recordLength, textDecoder);
 }
 
+/**
+ * @param {DataView} headerView
+ */
 function parseDBFHeader(headerView) {
   return {
     // Last updated date
@@ -39,6 +46,9 @@ function parseDBFHeader(headerView) {
   };
 }
 
+/**
+ * @param {DataView} view
+ */
 function parseColumnHeaders(view, textDecoder) {
   // NOTE: this might overestimate the number of fields if the "Database
   // Container" container exists and is included in the headerLength
@@ -62,16 +72,22 @@ function parseColumnHeaders(view, textDecoder) {
   return fields;
 }
 
-function parseRows(view, fields, nRecords, recordLength, textDecoder) {
+/**
+ * @param {BinaryReader} binaryReader
+ */
+function parseRows(binaryReader, fields, nRecords, recordLength, textDecoder) {
   const rows = [];
   for (let i = 0; i < nRecords; i++) {
-    const offset = i * recordLength;
-    const recordView = new DataView(view.buffer, view.byteOffset + offset, recordLength - 1);
+    const recordView = binaryReader.getDataView(recordLength - 1);
+    binaryReader.skip(1);
     rows.push(parseRow(recordView, fields, textDecoder));
   }
   return rows;
 }
 
+/**
+ * @param {DataView} view
+ */
 function parseRow(view, fields, textDecoder) {
   const out = {};
   let offset = 0;
