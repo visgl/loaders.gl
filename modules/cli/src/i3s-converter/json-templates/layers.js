@@ -142,7 +142,8 @@ export const LAYERS = {
   geometryDefinitions: {
     path: 'compressGeometry',
     transform: val => {
-      const result = [{geometryBuffers: [PLAIN_GEOMETRY_DEFINITION]}];
+      const result = [{geometryBuffers: []}];
+      result[0].geometryBuffers.push(PLAIN_GEOMETRY_DEFINITION);
       if (val) {
         result[0].geometryBuffers.push(COMPRESSED_GEOMETRY_DEFINITION);
       }
