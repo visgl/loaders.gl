@@ -25,11 +25,11 @@ function reprojectGeometry(geometry, projection) {
 }
 
 function coordMap(array, fn) {
-  return array.map(item => {
-    if (isCoord(item)) {
-      return fn(item);
-    }
+  if (isCoord(array)) {
+    return fn(array);
+  }
 
+  return array.map(item => {
     return coordMap(item, fn);
   });
 }
