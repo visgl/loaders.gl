@@ -152,14 +152,14 @@ test('cli - Converters#NodePages', async t => {
 
   t.test('Should save node pages', async st => {
     const savedNodePages = [];
-    const writeFileFunc = (layerPath, data) => {
+    const writeFileFunc = (layerPath, data, slpk) => {
       savedNodePages.push(data);
     };
     const nodePages = new NodePages(writeFileFunc, 64);
     for (let i = 0; i <= 65; i++) {
       nodePages.push(newNodeStub);
     }
-    await nodePages.save('/layer/0');
+    await nodePages.save('/layer/0', {}, false);
     st.equal(typeof savedNodePages[1], 'string');
     st.equal(savedNodePages.length, 2);
     st.end();

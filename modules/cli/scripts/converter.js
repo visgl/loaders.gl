@@ -10,14 +10,15 @@ const TILESET_TYPE = {
 
 function printHelp() {
   console.log('cli: converter 3dTiles to I3S or I3S to 3dTiles...');
-  console.log('--type [tileset type: I3S or 3DTILES]');
-  console.log('--tileset [tileset.json file]');
-  console.log('--name [Tileset name, default: "default"]');
-  console.log('--output [Output folder]');
   console.log('--draco Generate I3S 1.7 draco compressed geometries');
   console.log(
     '--max-depth [Maximal depth of hierarchical tiles tree traversal, default: infinite]'
   );
+  console.log('--name [Tileset name, default: "default"]');
+  console.log('--output [Output folder]');
+  console.log('--slpk Generate slpk (Scene Layer Packages) output file');
+  console.log('--tileset [tileset.json file]');
+  console.log('--type [tileset type: I3S or 3DTILES]');
   process.exit(0); // eslint-disable-line
 }
 
@@ -54,7 +55,8 @@ function convert(options) {
         outputPath: options.output,
         tilesetName: options.name,
         maxDepth: options.maxDepth,
-        draco: options.draco
+        draco: options.draco,
+        slpk: options.slpk
       });
       break;
     default:
@@ -107,6 +109,9 @@ function parseOptions(args) {
           break;
         case '--draco':
           opts.draco = true;
+          break;
+        case '--slpk':
+          opts.slpk = true;
           break;
         case '--help':
           printHelp();

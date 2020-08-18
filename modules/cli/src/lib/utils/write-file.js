@@ -1,13 +1,18 @@
 import {promises as fs} from 'fs';
 import {join} from 'path';
+import {compressFile} from './compress-util';
 
-export default async function(path, data, fileName = 'index.json') {
+export default async function(path, data, slpk = false, fileName = 'index.json') {
   await fs.mkdir(path, {recursive: true});
-  const nodeFiles = join(path, fileName);
+  const pathFile = join(path, fileName);
   try {
-    await fs.writeFile(nodeFiles, data);
+    await fs.writeFile(pathFile, data);
   } catch (err) {
     throw err;
   }
-  console.log(`${nodeFiles} saved.`); // eslint-disable-line
+  console.log(`${pathFile} saved.`); // eslint-disable-line
+  if (slpk) {
+    return await compressFile(pathFile);
+  }
+  return pathFile;
 }

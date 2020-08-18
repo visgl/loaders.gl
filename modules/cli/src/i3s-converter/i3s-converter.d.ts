@@ -11,6 +11,8 @@ export default class I3SConverter {
    * @param options.outputPath the output filename
    * @param options.tilesetName the output name of the tileset
    * @param options.maxDepth The max tree depth of conversion
+   * @param options.draco Generate I3S 1.7 draco compressed geometries
+   * @param options.slpk Generate slpk (Scene Layer Packages) output file
    */
   convert(options: {
     inputUrl: string;
@@ -18,5 +20,6 @@ export default class I3SConverter {
     tilesetName: string;
     maxDepth?: number;
     draco?: boolean;
+    slpk?: boolean;
   }): Promise<any>;
 }

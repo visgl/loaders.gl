@@ -9,6 +9,7 @@ import md5 from 'md5';
 
 import NodePages from './helpers/node-pages';
 import writeFile from '../lib/utils/write-file';
+import {compressFiles} from '../lib/utils/compress-util';
 import convertB3dmToI3sGeometry from './helpers/geometry-converter';
 import {
   convertCommonToI3SCoordinate,
@@ -29,6 +30,7 @@ const HARDCODED_NODES_PER_PAGE = 64;
 export default class I3SConverter {
   constructor() {
     this.nodePages = new NodePages(writeFile, HARDCODED_NODES_PER_PAGE);
+    this.fileMap = {};
     this.options = {};
     this.layers0Path = '';
     this.materialMap = new Map();
@@ -36,8 +38,8 @@ export default class I3SConverter {
   }
 
   // Convert a 3d tileset
-  async convert({inputUrl, outputPath, tilesetName, maxDepth, draco}) {
-    this.options = {maxDepth, draco};
+  async convert({inputUrl, outputPath, tilesetName, maxDepth, draco, slpk}) {
+    this.options = {maxDepth, draco, slpk};
 
     const options = {
       'cesium-ion': {accessToken: ION_TOKEN}
@@ -114,6 +116,7 @@ export default class I3SConverter {
       children: []
     });
 
+    const isCreateSlpk = this.options.slpk;
     await this.sourceTileset._loadTile(sourceRootTile);
     if (sourceRootTile.content && sourceRootTile.content.type === 'b3dm') {
       root0.children.push({
@@ -123,7 +126,11 @@ export default class I3SConverter {
       });
       const child = await this._createNode(root0, sourceRootTile, parentId, 0);
       const childPath = join(this.layers0Path, 'nodes', child.path);
-      await writeFile(childPath, JSON.stringify(child));
+      this.fileMap['nodes/1/3dNodeIndexDocument.json.gz'] = await writeFile(
+        childPath,
+        JSON.stringify(child),
+        isCreateSlpk
+      );
     } else {
       await this._addChildrenWithNeighborsAndWriteFile(
         {rootNode: root0, sourceTiles: sourceRootTile.children},
@@ -134,11 +141,22 @@ export default class I3SConverter {
     }
 
     layers0.materialDefinitions = this.materialDefinitions;
-    await writeFile(this.layers0Path, JSON.stringify(layers0));
+    this.fileMap['3dSceneLayer.json.gz'] = await writeFile(
+      this.layers0Path,
+      JSON.stringify(layers0),
+      isCreateSlpk
+    );
     createSceneServerPath(tilesetName, layers0, tilesetPath);
 
-    await writeFile(rootPath, JSON.stringify(root0));
-    await this.nodePages.save(this.layers0Path);
+    this.fileMap['nodes/root/3dNodeIndexDocument.json.gz'] = await writeFile(
+      rootPath,
+      JSON.stringify(root0),
+      isCreateSlpk
+    );
+    await this.nodePages.save(this.layers0Path, this.fileMap, isCreateSlpk);
+    if (isCreateSlpk) {
+      await compressFiles(this.fileMap, `${tilesetPath}.slpk`);
+    }
   }
   /* eslint-enable max-statements */
 
@@ -179,6 +197,7 @@ export default class I3SConverter {
   async _addNeighborsAndWriteFile(rootNode, childNodes) {
     for (const node of childNodes) {
       const childPath = join(this.layers0Path, 'nodes', node.path);
+      const nodePath = node.path;
       delete node.path;
       for (const neighbor of rootNode.children) {
         if (node.id === neighbor.id) {
@@ -188,7 +207,11 @@ export default class I3SConverter {
         node.neighbors.push({...neighbor});
       }
 
-      await writeFile(childPath, JSON.stringify(node));
+      this.fileMap[`nodes/${nodePath}/3dNodeIndexDocument.json.gz`] = await writeFile(
+        childPath,
+        JSON.stringify(node),
+        this.options.slpk
+      );
     }
   }
 
@@ -250,12 +273,14 @@ export default class I3SConverter {
     return node;
   }
 
+  /* eslint-disable max-statements */
   async _convertResources(sourceTile, node) {
     await this.sourceTileset._loadTile(sourceTile);
     if (!sourceTile.content || sourceTile.content.type !== 'b3dm') {
       return;
     }
     const childPath = join(this.layers0Path, 'nodes', node.path);
+    const slpkChildPath = join('nodes', node.path);
     const {
       geometry: geometryBuffer,
       compressedGeometry,
@@ -264,20 +289,41 @@ export default class I3SConverter {
       meshMaterial
     } = await convertB3dmToI3sGeometry(sourceTile.content, this.options);
     const geometryPath = join(childPath, 'geometries/0/');
-    await writeFile(geometryPath, geometryBuffer, 'index.bin');
+    const isCreateSlpk = this.options.slpk;
+    this.fileMap[`${slpkChildPath}/geometries/0.bin.gz`] = await writeFile(
+      geometryPath,
+      geometryBuffer,
+      isCreateSlpk,
+      'index.bin'
+    );
     if (this.options.draco) {
       const compressedGeometryPath = join(childPath, 'geometries/1/');
-      await writeFile(compressedGeometryPath, compressedGeometry, 'index.bin');
+      this.fileMap[`${slpkChildPath}/geometries/1.bin.gz`] = await writeFile(
+        compressedGeometryPath,
+        compressedGeometry,
+        isCreateSlpk,
+        'index.bin'
+      );
     }
     const sharedPath = join(childPath, 'shared/0/');
     sharedResources.nodePath = node.path;
     const sharedData = transform(sharedResources, SHARED_RESOURCES_TEMPLATE);
-    await writeFile(sharedPath, JSON.stringify(sharedData));
+    const sharedDataStr = JSON.stringify(sharedData);
+    this.fileMap[`${slpkChildPath}/shared/sharedResource.json.gz`] = await writeFile(
+      sharedPath,
+      sharedDataStr,
+      isCreateSlpk
+    );
     if (textures) {
       node.textureData = [{href: './textures/0'}];
       const texturesPath = join(childPath, 'textures/0/');
       const texturesData = textures.bufferView.data;
-      await writeFile(texturesPath, texturesData, 'index.jpeg');
+      this.fileMap[`${slpkChildPath}/textures/0.jpeg`] = await writeFile(
+        texturesPath,
+        texturesData,
+        false,
+        'index.jpeg'
+      );
     }
     if (meshMaterial) {
       this.nodePages.updateMaterialByNodeId(node.id, this._findOrCreateMaterial(meshMaterial));

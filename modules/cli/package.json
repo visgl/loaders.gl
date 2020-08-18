@@ -45,12 +45,13 @@
     "@loaders.gl/loader-utils": "2.3.0-alpha.11",
     "@math.gl/core": "^3.2.1",
     "@math.gl/geospatial": "^3.2.1",
-    "uuid": "^8.1.0",
+    "archiver": "^5.0.0",
     "cors": "^2.8.5",
     "debug": "~2.6.9",
     "express": "~4.16.1",
+    "json-map-transform": "^1.2.6",
     "md5": "^2.3.0",
     "morgan": "~1.9.1",
-    "json-map-transform": "^1.2.6"
+    "uuid": "^8.1.0"
   }
 }

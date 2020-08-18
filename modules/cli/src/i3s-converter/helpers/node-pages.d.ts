@@ -103,7 +103,9 @@ export default class NodePages {
    * Save all the node pages
    * Run this method when all nodes is pushed in nodePages
    * @param {string} layers0path - path of layer
+   * @param {Object} fileMap - fileMap which keep info for slpk archive
+   * @param {boolean} slpk
    * @return {promise}
    */
-  save(layers0path: string): Promise<void>;
+  save(layers0path: string, fileMap: Object, slpk: boolean): Promise<void>;
 }

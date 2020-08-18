@@ -118,14 +118,18 @@ export default class NodePages {
   /**
    * Save all the node pages
    * Run this method when all nodes is pushed in nodePages
-   * @param {string} layers0path - path of layer
+   * @param {string} layers0Path - path of layer
+   * @param {Object} fileMap
+   * @param {boolean} slpk
    * @return {promise}
    */
-  async save(layers0path) {
+  async save(layers0Path, fileMap, slpk = false) {
     const promises = [];
     for (const [index, nodePage] of this.nodePages.entries()) {
-      const nodePagePath = join(layers0path, 'nodepages', index.toString());
-      promises.push(this.writeFile(nodePagePath, JSON.stringify(nodePage)));
+      const nodePagePath = join(layers0Path, 'nodepages', index.toString());
+      const nodePageStr = JSON.stringify(nodePage);
+      promises.push(this.writeFile(nodePagePath, nodePageStr, slpk));
+      fileMap[`nodePages/${index.toString()}.json.gz`] = `${nodePagePath}/index.json.gz`;
     }
     await Promise.all(promises);
   }
