@@ -23,6 +23,7 @@
 import ALIASES from '../../test/aliases';
 import {_addAliases} from '@loaders.gl/loader-utils';
 
+import loaderUtilsBench from '@loaders.gl/loader-utils/test/loader-utils.bench';
 import imageBench from '@loaders.gl/images/test/images.bench';
 import coreBench from '@loaders.gl/core/test/core.bench';
 import csvBench from '@loaders.gl/csv/test/csv.bench';
@@ -35,6 +36,8 @@ _addAliases(ALIASES);
 
 export async function addModuleBenchmarksToSuite(suite) {
   // add tests
+  await loaderUtilsBench(suite);
+
   await imageBench(suite);
   await cryptoBench(suite);
 

@@ -38,14 +38,23 @@ export async function forEach(iterator, visitor) {
  * This function can e.g. be used to enable atomic parsers to work on (async) iterator inputs
  */
 export async function concatenateChunksAsync(asyncIterator) {
-  let arrayBuffer = new ArrayBuffer(0);
-  let string = '';
+  const arrayBuffers = [new ArrayBuffer(0)];
+  const strings = [''];
   for await (const chunk of asyncIterator) {
     if (typeof chunk === 'string') {
-      string += chunk;
+      strings.push(chunk);
     } else {
-      arrayBuffer = concatenateArrayBuffers(arrayBuffer, chunk);
+      arrayBuffers.push(chunk);
     }
   }
-  return string || arrayBuffer;
+
+  if (arrayBuffers.length > 1) {
+    return concatenateArrayBuffers(...arrayBuffers);
+  }
+
+  if (strings.length > 1) {
+    return strings.join('');
+  }
+
+  return arrayBuffers[0];
 }
