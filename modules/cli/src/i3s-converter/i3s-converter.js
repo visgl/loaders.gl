@@ -120,7 +120,7 @@ export default class I3SConverter {
       const childPath = join(this.layers0path, 'nodes', node.path);
       await writeFile(childPath, JSON.stringify(node));
     } else {
-      await this._addChildren({rootNode: root0, tiles: root.children}, parentId, 1);
+      await this._addChildrenWithNeighbors({rootNode: root0, tiles: root.children}, parentId, 1);
       await root.unloadContent();
     }
 
@@ -129,18 +129,25 @@ export default class I3SConverter {
   }
   /* eslint-enable max-statements */
 
+  async _addChildrenWithNeighbors(data, parentId, level) {
+    const childNodes = [];
+    await this._addChildren({...data, childNodes}, parentId, level);
+    await this._addNeighbors(data.rootNode, childNodes);
+  }
+
   async _addChildren(data, parentId, level) {
     if (this.options.maxDepth && level > this.options.maxDepth) {
       return;
     }
-    const childNodes = [];
+    const childNodes = data.childNodes;
     for (const child of data.tiles) {
       if (child.type === 'json') {
         await this.tileset._loadTile(child);
         await this._addChildren(
-          {rootNode: data.rootNode, tiles: child.children},
+          {rootNode: data.rootNode, tiles: child.children, childNodes},
           parentId,
-          level + 1
+          level + 1,
+          true
         );
         await child.unloadContent();
       } else {
@@ -155,8 +162,6 @@ export default class I3SConverter {
       }
       console.log(child.id); // eslint-disable-line
     }
-
-    await this._addNeighbors(data.rootNode, childNodes);
   }
 
   async _addNeighbors(rootNode, childNodes) {
@@ -168,12 +173,7 @@ export default class I3SConverter {
           continue; // eslint-disable-line
         }
 
-        node.neighbors.push({
-          id: neighbor.id,
-          href: `../${neighbor.id}`,
-          mbs: neighbor.mbs,
-          obb: neighbor.obb
-        });
+        node.neighbors.push({...neighbor});
       }
 
       await writeFile(childPath, JSON.stringify(node));
@@ -227,7 +227,7 @@ export default class I3SConverter {
     const node = transform(nodeData, nodeTemplate);
     await this._convertResources(tile, node);
 
-    await this._addChildren({rootNode: node, tiles: tile.children}, nodeId, level + 1);
+    await this._addChildrenWithNeighbors({rootNode: node, tiles: tile.children}, nodeId, level + 1);
     return node;
   }
 
