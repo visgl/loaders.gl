@@ -1,5 +1,5 @@
 import test from 'tape-promise/tape';
-import {reprojectGeoJson} from '@loaders.gl/gis';
+import {reprojectBinary, reprojectGeoJson} from '@loaders.gl/gis';
 import {Proj4Projection} from '@math.gl/proj4';
 
 test('gis#reproject GeoJSON', t => {
@@ -27,6 +27,36 @@ test('gis#reproject GeoJSON', t => {
 
   const out = reprojectGeoJson(inputGeoJson, projection);
   t.deepEqual(out, expectedGeoJson);
+  t.end();
+});
+
+test('gis#reproject binary', t => {
+  const projection = new Proj4Projection({from: 'WGS84', to: 'EPSG:3857'});
+  const binaryData = {
+    points: {
+      positions: {value: new Float32Array([-74, 41]), size: 2},
+      globalFeatureIds: {value: [0, 1, 1], size: 1},
+      featureIds: {value: [0, 1, 1], size: 1},
+      numericProps: {
+        numeric1: {value: [1, 2, 2], size: 1}
+      },
+      properties: [{string1: 'a'}, {string1: 'b'}]
+    }
+  };
+  const expectedBinaryData = {
+    points: {
+      positions: {value: new Float32Array([-8237642.318702244, 5012341.663847514]), size: 2},
+      globalFeatureIds: {value: [0, 1, 1], size: 1},
+      featureIds: {value: [0, 1, 1], size: 1},
+      numericProps: {
+        numeric1: {value: [1, 2, 2], size: 1}
+      },
+      properties: [{string1: 'a'}, {string1: 'b'}]
+    }
+  };
+
+  const out = reprojectBinary(binaryData, projection);
+  t.deepEqual(out, expectedBinaryData);
   t.end();
 });
 
