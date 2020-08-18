@@ -1,26 +1,23 @@
-export function reprojectBinary(binaryFeatures, projection) {
+export function mapBinaryCoords(binaryFeatures, fn) {
   // Expect binaryFeatures to have points, lines, and polygons keys
   for (const binaryFeature of Object.values(binaryFeatures)) {
     const {positions} = binaryFeature;
     for (let i = 0; i < positions.value.length; i += positions.size) {
-      positions.value.set(
-        projection.project(Array.from(positions.value.subarray(i, i + positions.size))),
-        i
-      );
+      positions.value.set(fn(Array.from(positions.value.subarray(i, i + positions.size))), i);
     }
   }
   return binaryFeatures;
 }
 
-export function reprojectGeoJson(features, projection) {
+export function mapGeoJsonCoords(features, fn) {
   for (const feature of features) {
-    feature.geometry = reprojectGeometry(feature.geometry, projection);
+    feature.geometry = reprojectGeometry(feature.geometry, fn);
   }
   return features;
 }
 
-function reprojectGeometry(geometry, projection) {
-  geometry.coordinates = coordMap(geometry.coordinates, coord => projection.project(coord));
+function reprojectGeometry(geometry, fn) {
+  geometry.coordinates = coordMap(geometry.coordinates, coord => fn(coord));
   return geometry;
 }
 
