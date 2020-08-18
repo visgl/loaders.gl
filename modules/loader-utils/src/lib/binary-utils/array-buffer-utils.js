@@ -29,6 +29,7 @@ export function toArrayBuffer(data) {
   return assert(false);
 }
 
+/** @type {types['compareArrayBuffers']} */
 export function compareArrayBuffers(arrayBuffer1, arrayBuffer2, byteLength) {
   byteLength = byteLength || arrayBuffer1.byteLength;
   if (arrayBuffer1.byteLength < byteLength || arrayBuffer2.byteLength < byteLength) {
@@ -45,6 +46,7 @@ export function compareArrayBuffers(arrayBuffer1, arrayBuffer2, byteLength) {
 }
 
 // Concatenate ArrayBuffers
+/** @type {types['concatenateArrayBuffers']} */
 export function concatenateArrayBuffers(...sources) {
   // Make sure all inputs are wrapped in typed arrays
   const sourceArrays = sources.map(
