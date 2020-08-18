@@ -14,7 +14,7 @@ License: MIT
 const BASE_PATH = `${__dirname}/../../data/csv/`;
 const RECORD_SEP = String.fromCharCode(30);
 const UNIT_SEP = String.fromCharCode(31);
-const FILES_ENABLED = false;
+const FILES_ENABLED = true;
 const XHR_ENABLED = false;
 
 /*

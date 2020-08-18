@@ -26,6 +26,11 @@ export function toArrayBuffer(data) {
     return uint8Array.buffer;
   }
 
+  // HACK to support Blob polyfill
+  if (data && typeof data === 'object' && data._toArrayBuffer) {
+    return data._toArrayBuffer();
+  }
+
   return assert(false);
 }
 

@@ -31,6 +31,7 @@ This release brings a new Shapefile loader, compression codecs (Zlib, LZ4, Zstan
 
 - `fetch` polyfill: Files with `.gz` extension are automatically decompressed with gzip. The extension reported in the `fetch` response has the `.gz` extension removed.
 - `fetch` polyfill: Improved robustness and error handling in Node.js when opening unreadable or non-existent files. Underlying errors (`ENOEXIST`, `EISDIR` etc) are now caught and reported in `Response.statusText`.
+- `Blob` and `File`, new experimental polyfills.
 
 **@loaders.gl/json**
 

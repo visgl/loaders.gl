@@ -1,6 +1,6 @@
 /* global File */
 import test from 'tape-promise/tape';
-import {fetchFile, load, loadInBatches, selectLoader, isBrowser} from '@loaders.gl/core';
+import {fetchFile, load, loadInBatches, selectLoader} from '@loaders.gl/core';
 import {_BrowserFileSystem as BrowserFileSystem} from '@loaders.gl/core';
 import {ShapefileLoader} from '@loaders.gl/shapefile';
 
@@ -28,8 +28,8 @@ const SHAPEFILE_JS_TEST_FILES = {
   'utf8-property': null
 };
 
-test('ShapefileLoader#load (from browser File objects)', async t => {
-  if (isBrowser) {
+test.only('ShapefileLoader#load (from browser File objects)', async t => {
+  if (typeof File !== 'undefined') {
     // test `File` load (browser)
     t.comment('...FILE LOAD STARTING. FAILED FETCHES EXPECTED');
     for (const testFileName in SHAPEFILE_JS_TEST_FILES) {
