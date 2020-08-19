@@ -28,7 +28,7 @@ const SHAPEFILE_JS_TEST_FILES = {
   'utf8-property': null
 };
 
-test.only('ShapefileLoader#load (from browser File objects)', async t => {
+test('ShapefileLoader#load (from browser File objects)', async t => {
   if (typeof File !== 'undefined') {
     // test `File` load (browser)
     t.comment('...FILE LOAD STARTING. FAILED FETCHES EXPECTED');
