@@ -91,7 +91,7 @@ test('ShapefileLoader#loadInBatches(URL)', async t => {
   t.end();
 });
 
-test.only('ShapefileLoader#loadInBatches(File)', async t => {
+test('ShapefileLoader#loadInBatches(File)', async t => {
   // test file load (node) or URL load (browser)
   for (const testFileName in SHAPEFILE_JS_TEST_FILES) {
     if (testFileName === 'utf8-property') {
