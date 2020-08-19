@@ -8,6 +8,7 @@ test('_CompressedTextureWriter#write-and-read-image', async t => {
   if (isBrowser) {
     t.comment('CompressedTextureWriter only supported on Node.js');
     t.end();
+    return;
   }
   const outputFilename = await encodeURLtoURL(
     IMAGE_URL,
