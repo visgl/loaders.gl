@@ -1,10 +1,8 @@
 // Forked from @Gozala's https://github.com/Gozala/web-blob under MIT license
-
+/* global Blob */
 import test from 'tape-promise/tape';
 
-import {BlobPolyfill as Blob} from '@loaders.gl/polyfills';
-
-test('test baisc', async t => {
+test('test basic', async t => {
   t.isEqual(typeof Blob, 'function');
 });
 
