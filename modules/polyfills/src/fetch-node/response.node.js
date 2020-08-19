@@ -1,4 +1,4 @@
-/* global TextDecoder, TextEncoder */
+/* global TextDecoder, TextEncoder, Blob */
 import assert from '../utils/assert';
 import {decompressReadStream, concatenateReadStream} from './utils/stream-utils.node';
 import Headers from './headers.node';
@@ -92,5 +92,12 @@ export default class Response {
   async json() {
     const text = await this.text();
     return JSON.parse(text);
+  }
+
+  async blob() {
+    if (typeof Blob === 'undefined') {
+      throw new Error('Blob polyfill not installed');
+    }
+    return new Blob([await this.arrayBuffer()]);
   }
 }

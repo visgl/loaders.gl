@@ -24,23 +24,24 @@ test('makeResponse', async t => {
 });
 
 test('makeResponse(File)', async t => {
-  if (isBrowser) {
-    const file = new File(['abc'], 'foo.txt', {
-      type: 'text/plain'
-    });
-    const response = await makeResponse(file);
-    t.equal(
-      response.headers.get('content-length'),
-      '3',
-      '"content-length" header was set by makeResponse'
-    );
-    t.equal(
-      response.headers.get('content-type'),
-      'text/plain',
-      '"content-type" header was set by makeResponse'
-    );
-    t.equal(response.url, 'foo.txt', 'response.url was set by Response constructor');
+  const file = new File(['abc'], 'foo.txt', {
+    type: 'text/plain'
+  });
+  const response = await makeResponse(file);
+  t.equal(
+    response.headers.get('content-length'),
+    '3',
+    '"content-length" header was set by makeResponse'
+  );
+  t.equal(
+    response.headers.get('content-type'),
+    'text/plain',
+    '"content-type" header was set by makeResponse'
+  );
+  t.equal(response.url, 'foo.txt', 'response.url was set by Response constructor');
 
+  // TODO - File polyfills do not yet work for these
+  if (isBrowser) {
     t.equal(
       response.headers.get('x-first-bytes'),
       'data:application/octet-stream;base64,YWJj',
@@ -50,6 +51,7 @@ test('makeResponse(File)', async t => {
     const text = await response.text();
     t.equal(text, 'abc', 'could be read as text');
   }
+
   t.end();
 });
 

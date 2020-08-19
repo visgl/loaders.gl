@@ -11,6 +11,12 @@ import fetchNode from './fetch-node/fetch.node';
 import {encodeImageNode} from './images-node/encode-image.node';
 import {parseImageNode} from './images-node/parse-image.node';
 
+export {ReadableStreamPolyfill} from './file/readable-stream-polyfill';
+export {BlobPolyfill} from './file/blob-polyfill';
+export {FileReaderPolyfill} from './file/file-reader-polyfill';
+export {FilePolyfill} from './file/file-polyfill';
+export {installFilePolyfills} from './file/polyfills';
+
 // POLYFILLS: TextEncoder, TextDecoder
 // - Recent Node versions habe these classes but virtually no encodings unless special build.
 // - Browser: Edge, IE11 do not have these

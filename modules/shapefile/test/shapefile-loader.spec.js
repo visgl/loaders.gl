@@ -1,6 +1,6 @@
 /* global File */
 import test from 'tape-promise/tape';
-import {fetchFile, load, loadInBatches, selectLoader, isBrowser} from '@loaders.gl/core';
+import {fetchFile, load, loadInBatches, selectLoader} from '@loaders.gl/core';
 import {_BrowserFileSystem as BrowserFileSystem} from '@loaders.gl/core';
 import {ShapefileLoader} from '@loaders.gl/shapefile';
 
@@ -29,7 +29,7 @@ const SHAPEFILE_JS_TEST_FILES = {
 };
 
 test('ShapefileLoader#load (from browser File objects)', async t => {
-  if (isBrowser) {
+  if (typeof File !== 'undefined') {
     // test `File` load (browser)
     t.comment('...FILE LOAD STARTING. FAILED FETCHES EXPECTED');
     for (const testFileName in SHAPEFILE_JS_TEST_FILES) {
@@ -68,14 +68,14 @@ test('ShapefileLoader#load (from files or URLs)', async t => {
 test('ShapefileLoader#selectLoader (from arrayBuffer data)', async t => {
   // test file load (node) or URL load (browser)
   const filename = `${SHAPEFILE_JS_DATA_FOLDER}/boolean-property.shp`;
-  const response = await fetchFile(filename, ShapefileLoader);
+  const response = await fetchFile(filename);
   const arrayBuffer = await response.arrayBuffer();
   const loader = await selectLoader(arrayBuffer, [ShapefileLoader]);
   t.equal(loader && loader.id, 'shapefile', 'Select loader using SHP magic number');
   t.end();
 });
 
-test('ShapefileLoader#loadInBatches', async t => {
+test('ShapefileLoader#loadInBatches(URL)', async t => {
   // test file load (node) or URL load (browser)
   for (const testFileName in SHAPEFILE_JS_TEST_FILES) {
     const filename = `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`;
@@ -83,7 +83,7 @@ test('ShapefileLoader#loadInBatches', async t => {
     let data;
     for await (const batch of batches) {
       data = batch;
-      t.comment(`${filename}: ${JSON.stringify(data).slice(0, 70)}`);
+      // t.comment(`${filename}: ${JSON.stringify(data).slice(0, 70)}`);
     }
     await testShapefileData(t, testFileName, data);
   }
@@ -91,15 +91,26 @@ test('ShapefileLoader#loadInBatches', async t => {
   t.end();
 });
 
-test('ShapefileLoader#loadInBatches', async t => {
+test('ShapefileLoader#loadInBatches(File)', async t => {
   // test file load (node) or URL load (browser)
   for (const testFileName in SHAPEFILE_JS_TEST_FILES) {
+    if (testFileName === 'utf8-property') {
+      // requires CPG File
+      // eslint-disable-next-line no-continue
+      continue;
+    }
+    const dbfFilename = `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.dbf`;
+    const dbfResponse = await fetchFile(dbfFilename);
+    const dbfFile = new File([await dbfResponse.blob()], dbfFilename);
+    const fileSystem = new BrowserFileSystem([dbfFile]);
+
     const filename = `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`;
-    const batches = await loadInBatches(filename, ShapefileLoader);
+    const response = await fetchFile(filename);
+    const file = new File([await response.blob()], filename);
+    const batches = await loadInBatches(file, ShapefileLoader, {fetch: fileSystem.fetch});
     let data;
     for await (const batch of batches) {
       data = batch;
-      t.comment(`${filename}: ${JSON.stringify(data).slice(0, 70)}`);
     }
     await testShapefileData(t, testFileName, data);
   }

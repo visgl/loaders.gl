@@ -16,7 +16,9 @@ const TEST_TABLES = true;
 const TEST_ARCHIVES = true;
 
 // Install polyfills (primarily for Node)
-require('@loaders.gl/polyfills');
+const {installFilePolyfills} = require('@loaders.gl/polyfills');
+
+installFilePolyfills();
 
 // Core
 if (TEST_CORE) {
