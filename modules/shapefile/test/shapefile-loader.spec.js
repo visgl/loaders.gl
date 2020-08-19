@@ -96,6 +96,7 @@ test('ShapefileLoader#loadInBatches(File)', async t => {
   for (const testFileName in SHAPEFILE_JS_TEST_FILES) {
     if (testFileName === 'utf8-property') {
       // requires CPG File
+      // eslint-disable-next-line no-continue
       continue;
     }
     const dbfFilename = `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.dbf`;
