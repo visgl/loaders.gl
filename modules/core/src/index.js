@@ -17,7 +17,7 @@ export {load} from './lib/api/load';
 export {loadInBatches} from './lib/api/load-in-batches';
 
 // ENCODING (ENCODING AND WRITING)
-export {encode, encodeSync, encodeInBatches} from './lib/api/encode';
+export {encode, encodeSync, encodeInBatches, encodeText, encodeURLtoURL} from './lib/api/encode';
 export {save, saveSync} from './lib/api/save';
 
 // ITERATOR UTILS
