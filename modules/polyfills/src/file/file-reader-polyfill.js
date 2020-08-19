@@ -10,7 +10,7 @@ export class FileReaderPolyfill {
   async readAsArrayBuffer(blob) {
     const arrayBuffer = await blob.arrayBuffer();
     if (this.onload) {
-      this.onload({result: arrayBuffer});
+      this.onload({target: {result: arrayBuffer}});
     }
   }
 
@@ -22,14 +22,14 @@ export class FileReaderPolyfill {
     const text = await blob.text();
     const dataUrl = `data://;base64,${atob(text)}`;
     if (this.onload) {
-      this.onload({result: dataUrl});
+      this.onload({target: {result: dataUrl}});
     }
   }
 
   async readAsText(blob) {
     const text = await blob.text();
     if (this.onload) {
-      this.onload({result: text});
+      this.onload({target: {result: text}});
     }
   }
 }
