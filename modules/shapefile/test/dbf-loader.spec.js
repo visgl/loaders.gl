@@ -19,7 +19,7 @@ const SHAPEFILE_JS_TEST_FILES = [
   'utf8-property'
 ];
 
-test('Shapefile JS DBF tests', async t => {
+test.only('Shapefile JS DBF tests', async t => {
   for (const testFileName of SHAPEFILE_JS_TEST_FILES) {
     let response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.dbf`);
     const body = await response.arrayBuffer();

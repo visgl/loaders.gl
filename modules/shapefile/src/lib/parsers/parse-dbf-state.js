@@ -1,5 +1,5 @@
 /* global TextDecoder */
-import BinaryReader from '../streaming/binary-reader';
+import BinaryChunkReader from '../streaming/binary-chunk-reader';
 
 const LITTLE_ENDIAN = true;
 const DBF_HEADER_SIZE = 32;
@@ -13,8 +13,8 @@ const STATE = {
 }
 
 class DBFParser {
-  constructor(encoding) {
-    this.binaryReader = new BinaryReader();
+  constructor({encoding}) {
+    this.binaryReader = new BinaryChunkReader();
     this.textDecoder = new TextDecoder(encoding);
     this.state = STATE.START;
     this.result = {};
@@ -22,98 +22,105 @@ class DBFParser {
 
   write(arrayBuffer) {
     this.binaryReader.write(arrayBuffer);
-    this.state = parse(this.state, this.result, this.binaryReader, this.textDecoder);
+    this.state = parseState(this.state, this.result, this.binaryReader, this.textDecoder);
+    // this.result.progress.bytesUsed = this.binaryReader.bytesUsed();
 
     // important events:
     // - schema available
     // - first rows available
     // - all rows available
   }
+
   end() {
     this.binaryReader.end();
-    this.state = parse(this.state, this.result, this.binaryReader, this.textDecoder);
+    this.state = parseState(this.state, this.result, this.binaryReader, this.textDecoder);
+    // this.result.progress.bytesUsed = this.binaryReader.bytesUsed();
+    if (this.state !== STATE.END) {
+      this.state = STATE.ERROR;
+      this.result.error = 'DBF incomplete file';
+    }
   }
 }
 
-function parse(state, result = {}, binaryReader, textDecoder) {
-  // https://www.dbase.com/Knowledgebase/INT/db7_file_fmt.htm
-  try {
-    switch (state) {
-      case STATE.ERROR:
-      case STATE.END:
-          break;
+// https://www.dbase.com/Knowledgebase/INT/db7_file_fmt.htm
+function parseState(state, result = {}, binaryReader, textDecoder) {
+  while (true) {
+    try {
+      switch (state) {
+        case STATE.ERROR:
+        case STATE.END:
+            return state;
 
-      case STATE.START:
-        // Parse initial file header
-        const dataView = binaryReader.getDataView(DBF_HEADER_SIZE, 'DBF header');
-        if (!dataView) {
-          break;
-        }
-        result.dbfHeader = parseDBFHeader(dataView);
-        result.data = [];
-        result.progress = {
-          bytesUsed: 0,
-          rowsTotal: result.dbfHeader.nRecords,
-          rows: 0
-        };
-        state = STATE.FIELD_DESCRIPTORS;
-        break;
-
-      case STATE.FIELD_DESCRIPTORS:
-        // Parse DBF field descriptors (schema)
-        const fieldDescriptorView =
-          binaryReader.getDataView(result.dbfHeader.headerLength - DBF_HEADER_SIZE, 'DBF field descriptors');
-        if (!fieldDescriptorView) {
-          break;
-        }
-
-        result.dbfFields = parseFieldDescriptors(fieldDescriptorView, textDecoder);
-        state = state.FIELD_PROPERTIES;
-
-        // TODO(kyle) Not exactly sure why start offset needs to be headerLength + 1?
-        // parsedbf uses ((fields.length + 1) << 5) + 2;
-        binaryReader.skip(1);
-        break;
-
-      case STATE.FIELD_PROPERTIES:
-        const {headerLength, recordLength, nRecords} = result.dbfHeader;
-        while (result.data.length < result.dbfHeader.nRecords) {
-          const recordView = binaryReader.getDataView(recordLength - 1);
-          if (!recordView) {
-            break;
+        case STATE.START:
+          // Parse initial file header
+          const dataView = binaryReader.getDataView(DBF_HEADER_SIZE, 'DBF header');
+          if (!dataView) {
+            return state;
           }
-          // Note: Avoid actually reading the last byte, which may not be present
+          result.dbfHeader = parseDBFHeader(dataView);
+          result.data = [];
+          result.progress = {
+            bytesUsed: 0,
+            rowsTotal: result.dbfHeader.nRecords,
+            rows: 0
+          };
+          state = STATE.FIELD_DESCRIPTORS;
+          break;
+
+        case STATE.FIELD_DESCRIPTORS:
+          // Parse DBF field descriptors (schema)
+          const fieldDescriptorView =
+            binaryReader.getDataView(result.dbfHeader.headerLength - DBF_HEADER_SIZE, 'DBF field descriptors');
+          if (!fieldDescriptorView) {
+            return state;
+          }
+
+          result.dbfFields = parseFieldDescriptors(fieldDescriptorView, textDecoder);
+          state = STATE.FIELD_PROPERTIES;
+
+          // TODO(kyle) Not exactly sure why start offset needs to be headerLength + 1?
+          // parsedbf uses ((fields.length + 1) << 5) + 2;
           binaryReader.skip(1);
+          break;
 
-          const row = parseRow(recordView, result.dbfFields, textDecoder);
-          result.data.push(row);
-          result.progress.rows = result.data.length;
-        }
-        state = STATE.END;
-        break;
+        case STATE.FIELD_PROPERTIES:
+          const {headerLength, recordLength, nRecords} = result.dbfHeader;
+          while (result.data.length < result.dbfHeader.nRecords) {
+            const recordView = binaryReader.getDataView(recordLength - 1);
+            if (!recordView) {
+              return state;
+            }
+            // Note: Avoid actually reading the last byte, which may not be present
+            binaryReader.skip(1);
 
-      default:
-        state = STATE.ERROR;
-        result.error = `illegal parser state ${state}`;
+            const row = parseRow(recordView, result.dbfFields, textDecoder);
+            result.data.push(row);
+            result.progress.rows = result.data.length;
+          }
+          state = STATE.END;
+          break;
+
+        default:
+          state = STATE.ERROR;
+          result.error = `illegal parser state ${state}`;
+          return state;
+      }
+    } catch (error) {
+      state = STATE.ERROR;
+      result.error = `DBF parsing failed: ${error.message}`;
+      return state;
     }
-  } catch (error) {
-    state = STATE.ERROR;
-    result.error = `DBF parsing failed: ${error.message}`;
   }
-
-  result.progress.bytesUsed = binaryReader.bytesUsed();
-  return state;
 }
 
 export default function parseDbf(arrayBuffer, options) {
-  const binaryReader = new BinaryReader(arrayBuffer);
-
   const loaderOptions = options.dbf || {};
   const {encoding} = loaderOptions;
 
-  const dbfParser = new DBFParser();
+  const dbfParser = new DBFParser({encoding});
   dbfParser.write(arrayBuffer);
   dbfParser.end();
+
   return dbfParser.result.data;
 }
 
