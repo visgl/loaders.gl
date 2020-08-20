@@ -1,5 +1,5 @@
 import test from 'tape-promise/tape';
-import {mapBinaryCoords, mapGeoJsonCoords} from '@loaders.gl/gis';
+import {transformBinaryCoords, transformGeoJsonCoords} from '@loaders.gl/gis';
 import {Proj4Projection} from '@math.gl/proj4';
 
 test('gis#reproject GeoJSON', t => {
@@ -25,7 +25,7 @@ test('gis#reproject GeoJSON', t => {
     }
   ];
 
-  const out = mapGeoJsonCoords(inputGeoJson, coord => projection.project(coord));
+  const out = transformGeoJsonCoords(inputGeoJson, coord => projection.project(coord));
   t.deepEqual(out, expectedGeoJson);
   t.end();
 });
@@ -55,7 +55,7 @@ test('gis#reproject binary', t => {
     }
   };
 
-  const out = mapBinaryCoords(binaryData, coord => projection.project(coord));
+  const out = transformBinaryCoords(binaryData, coord => projection.project(coord));
   t.deepEqual(out, expectedBinaryData);
   t.end();
 });
