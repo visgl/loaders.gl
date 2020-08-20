@@ -23,9 +23,7 @@ class DBFParser {
   write() {
     // this.binaryReader.write(arrayBuffer);
     while (this.binaryReader.hasAvailableBytes(1)) {
-      const parsed = parse(this.state, this.result, this.binaryReader, this.textDecoder);
-      this.state = parsed.state;
-      this.result = parsed.result;
+      this._parse();
 
       if (this.state === STATE.END || this.state === STATE.ERROR) {
         break;
@@ -37,9 +35,16 @@ class DBFParser {
     // - first rows available
     // - all rows available
   }
+
+  _parse() {
+    const parsed = parse(this.state, this.result, this.binaryReader, this.textDecoder);
+    this.state = parsed.state;
+    this.result = parsed.result;
+  }
+
   end() {
-    this.binaryReader.end();
-    this.state = parse(this.state, this.result, this.binaryReader, this.textDecoder);
+    // this.binaryReader.end();
+    this._parse();
   }
 }
 
@@ -86,9 +91,10 @@ function parse(state, result = {}, binaryReader, textDecoder) {
         break;
 
       case STATE.FIELD_PROPERTIES:
-        const {headerLength, recordLength, nRecords} = result.dbfHeader;
-        while (result.data.length < result.dbfHeader.nRecords) {
+        const {recordLength, nRecords} = result.dbfHeader;
+        while (result.data.length < nRecords) {
           const recordView = binaryReader.getDataView(recordLength - 1);
+          // eslint-disable-next-line max-depth
           if (!recordView) {
             break;
           }
@@ -168,19 +174,6 @@ function parseFieldDescriptors(view, textDecoder) {
     offset += 32;
   }
   return fields;
-}
-
-/**
- * @param {BinaryReader} binaryReader
- */
-function parseRows(binaryReader, fields, nRecords, recordLength, textDecoder) {
-  const rows = [];
-  for (let i = 0; i < nRecords; i++) {
-    const recordView = binaryReader.getDataView(recordLength - 1);
-    binaryReader.skip(1);
-    rows.push(parseRow(recordView, fields, textDecoder));
-  }
-  return rows;
 }
 
 /**
