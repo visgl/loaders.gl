@@ -59,4 +59,3 @@ test('gis#reproject binary', t => {
   t.deepEqual(out, expectedBinaryData);
   t.end();
 });
-
