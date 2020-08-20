@@ -20,11 +20,17 @@ class DBFParser {
     this.result = {};
   }
 
-  write(arrayBuffer) {
+  write() {
     // this.binaryReader.write(arrayBuffer);
-    const parsed = parse(this.state, this.result, this.binaryReader, this.textDecoder);
-    this.state = parsed.state;
-    this.result = parsed.result;
+    while (this.binaryReader.hasAvailableBytes(1)) {
+      const parsed = parse(this.state, this.result, this.binaryReader, this.textDecoder);
+      this.state = parsed.state;
+      this.result = parsed.result;
+
+      if (this.state === STATE.END || this.state === STATE.ERROR) {
+        break;
+      }
+    }
 
     // important events:
     // - schema available
@@ -110,14 +116,11 @@ function parse(state, result = {}, binaryReader, textDecoder) {
 }
 
 export default function parseDbf(arrayBuffer, options) {
-  const binaryReader = new BinaryReader(arrayBuffer);
-
   const loaderOptions = options.dbf || {};
   const {encoding} = loaderOptions;
 
-  const dbfParser = new DBFParser();
-  dbfParser.write(arrayBuffer);
-  dbfParser.end();
+  const dbfParser = new DBFParser(arrayBuffer, encoding);
+  dbfParser.write();
   return dbfParser.result.data;
 }
 
