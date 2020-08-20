@@ -26,9 +26,15 @@ export function toArrayBuffer(data) {
     return uint8Array.buffer;
   }
 
+  // HACK to support Blob polyfill
+  if (data && typeof data === 'object' && data._toArrayBuffer) {
+    return data._toArrayBuffer();
+  }
+
   return assert(false);
 }
 
+/** @type {types['compareArrayBuffers']} */
 export function compareArrayBuffers(arrayBuffer1, arrayBuffer2, byteLength) {
   byteLength = byteLength || arrayBuffer1.byteLength;
   if (arrayBuffer1.byteLength < byteLength || arrayBuffer2.byteLength < byteLength) {
@@ -45,6 +51,7 @@ export function compareArrayBuffers(arrayBuffer1, arrayBuffer2, byteLength) {
 }
 
 // Concatenate ArrayBuffers
+/** @type {types['concatenateArrayBuffers']} */
 export function concatenateArrayBuffers(...sources) {
   // Make sure all inputs are wrapped in typed arrays
   const sourceArrays = sources.map(

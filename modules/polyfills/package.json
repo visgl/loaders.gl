@@ -62,6 +62,21 @@
     "./dist/es5/utils/to-array-buffer.node.js": false,
     "./dist/esm/utils/to-array-buffer.node.js": false,
     "./dist/es6/utils/to-array-buffer.node.js": false,
+
+    "./src/file/blob-polyfill.js": false,
+    "./dist/es5/file/blob-polyfill.js": false,
+    "./dist/esm/file/blob-polyfill.js": false,
+    "./dist/es6/file/blob-polyfill.js": false,
+    "./src/file/file-polyfill.js": false,
+    "./dist/es5/file/file-polyfill.js": false,
+    "./dist/esm/file/file-polyfill.js": false,
+    "./dist/es6/file/file-polyfill.js": false,
+
+    "./src/file/readable-stream-polyfill.js": false,
+    "./dist/es5/file/readable-stream-polyfill.js": false,
+    "./dist/esm/file/readable-stream-polyfill.js": false,
+    "./dist/es6/file/readable-stream-polyfill.js": false,
+
     "./src/libs/encoding-indices.js": false,
     "./dist/es5/libs/encoding-indices.js": false,
     "./dist/esm/libs/encoding-indices.js": false,
@@ -73,8 +88,11 @@
     "get-pixels": false,
     "ndarray": false,
     "save-pixels": false,
+    "stream-to-async-iterator": false,
+    "through": false,
     "util": false,
-    "zlib": false
+    "zlib": false,
+    "web-streams-polyfill": false
   },
   "scripts": {
     "pre-build": "npm run build-bundle && npm run build-bundle -- --env.dev",
@@ -86,6 +104,7 @@
     "ndarray": "^1.0.18",
     "save-pixels": "^2.3.2",
     "stream-to-async-iterator": "^0.2.0",
-    "through": "^2.3.8"
+    "through": "^2.3.8",
+    "web-streams-polyfill": "^3.0.0"
   }
 }

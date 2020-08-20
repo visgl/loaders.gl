@@ -56,7 +56,6 @@ export {
 export {getFirstCharacters, getMagicString} from './lib/binary-utils/get-first-characters';
 
 // PATH UTILS
-
 import * as path from './lib/path-utils/path';
 export {path};
 export {setPathPrefix, getPathPrefix, resolvePath} from './lib/path-utils/file-aliases';
@@ -73,6 +72,9 @@ export {forEach, concatenateChunksAsync} from './lib/iterator-utils/async-iterat
 
 // REQUEST UTILS
 export {default as RequestScheduler} from './lib/request-utils/request-scheduler';
+
+// PROCESS UTILS
+export {default as ChildProcessProxy} from './lib/process-utils/child-process-proxy';
 
 // MESH CATEGORY UTILS
 // Note: Should move to category specific module if code size increases
