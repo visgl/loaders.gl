@@ -17,8 +17,8 @@ async function loadBasis(options) {
   let wasmBinary = null;
 
   [BASIS, wasmBinary] = await Promise.all([
-    await loadLibrary('basis_transcoder.js', 'basis', options),
-    await loadLibrary('basis_transcoder.wasm', 'basis', options)
+    await loadLibrary('basis_transcoder.js', 'textures', options),
+    await loadLibrary('basis_transcoder.wasm', 'textures', options)
   ]);
 
   // Depends on how import happened...

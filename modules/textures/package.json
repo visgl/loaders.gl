@@ -1,7 +1,7 @@
 {
-  "name": "@loaders.gl/basis",
+  "name": "@loaders.gl/textures",
   "version": "3.0.0-alpha.1",
-  "description": "Framework-independent loader for the basis universal format",
+  "description": "Framework-independent loaders for compressed and super compressed (basis) textures ",
   "license": "MIT",
   "publishConfig": {
     "access": "public"
@@ -15,6 +15,10 @@
     "loader",
     "3d",
     "texture",
+    "compressed texture",
+    "gpu texture",
+    "PVR",
+    "ETC",
     "basis"
   ],
   "main": "dist/es5/index.js",

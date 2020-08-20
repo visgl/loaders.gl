@@ -81,6 +81,9 @@
         {"entry": "modules/terrain/docs/api-reference/quantized-mesh-loader"},
         {"entry": "modules/shapefile/docs/api-reference/shapefile-loader"},
         {"entry": "modules/terrain/docs/api-reference/terrain-loader"},
+        {"entry": "modules/textures/docs/api-reference/basis-loader"},
+        {"entry": "modules/textures/docs/api-reference/compressed-texture-loader"},
+        {"entry": "modules/textures/docs/api-reference/compressed-texture-writer"},
         {"entry": "modules/video/docs/api-reference/video-loader"},
         {"entry": "modules/wkt/docs/api-reference/wkb-loader"},
         {"entry": "modules/wkt/docs/api-reference/wkt-loader"},
@@ -131,12 +134,6 @@
           "title": "@loaders.gl/arrow",
           "entries": [
             {"entry": "modules/arrow/docs"}
-          ]
-        },
-        {
-          "title": "@loaders.gl/basis",
-          "entries": [
-            {"entry": "modules/basis/docs"}
           ]
         },
         {
@@ -272,6 +269,12 @@
             {"entry": "modules/tile-converter/docs/api-reference/i3s-converter"},
             {"entry": "modules/tile-converter/docs/api-reference/build-instructions"},
             {"entry": "modules/tile-converter/docs/api-reference/tile-converter-bundle"}
+          ]
+        },
+        {
+          "title": "@loaders.gl/textures",
+          "entries": [
+            {"entry": "modules/textures/docs"}
           ]
         },
         {

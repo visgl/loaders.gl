@@ -1,6 +1,6 @@
 /* global document */
 import {load} from '@loaders.gl/core';
-import {BasisLoader} from '@loaders.gl/basis';
+import {BasisLoader} from '@loaders.gl/textures';
 
 const canvas = document.createElement('canvas');
 document.body.appendChild(canvas);
@@ -23,7 +23,7 @@ if (dxtSupported) {
 
 // TODO - load images from github once the test images have been pushed to repo
 // const BASIS_URL =
-//   'https://raw.githubusercontent.com/uber-web/loaders.gl/master/modules/basis/test/data/alpha.3.basis';
+//   'https://raw.githubusercontent.com/uber-web/loaders.gl/master/modules/textures/test/data/alpha.3.basis';
 
 const textureRenderPogram = createProgram();
 

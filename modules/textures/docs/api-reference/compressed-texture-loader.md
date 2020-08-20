@@ -15,7 +15,7 @@ Loader for compressed textures in the PVR file format
 ## Usage
 
 ```js
-import {CompressedTextureLoader} from '@loaders.gl/basis';
+import {CompressedTextureLoader} from '@loaders.gl/textures';
 import {load} from '@loaders.gl/core';
 
 const mipLevels = await load(url, CompressedTextureLoader);
