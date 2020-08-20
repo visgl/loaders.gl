@@ -1,5 +1,5 @@
 import {loadBasisModule} from './basis-module-loader';
-import {GL} from './gl-constants';
+import {GL} from '../gl-constants';
 
 const OutputFormat = {
   etc1: {basisFormat: 0, compressed: true},
