@@ -1,4 +1,4 @@
-import {concatenateArrayBuffers} from "@loaders.gl/loader-utils";
+import {concatenateArrayBuffers} from '@loaders.gl/loader-utils';
 
 export default class BinaryChunkReader {
   constructor() {
@@ -35,14 +35,17 @@ export default class BinaryChunkReader {
     }
 
     const arrayBuffer = this.getArrayBuffer(bytes);
-    const dataView = new DataView(arrayBuffer);
-    return dataView;
+    return arrayBuffer && new DataView(arrayBuffer);
   }
 
   getArrayBuffer(bytes) {
     const chunks = [];
     while (bytes > 0) {
       const chunk = this._getChunk(bytes);
+      if (!chunk) {
+        // push back chunks?
+        return null;
+      }
       chunks.push(chunk);
       bytes -= chunk.byteLength;
     }

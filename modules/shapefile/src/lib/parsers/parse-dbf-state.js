@@ -10,7 +10,7 @@ const STATE = {
   FIELD_PROPERTIES: 2,
   END: 3,
   ERROR: 4
-}
+};
 
 class DBFParser {
   constructor({encoding}) {
@@ -43,13 +43,15 @@ class DBFParser {
 }
 
 // https://www.dbase.com/Knowledgebase/INT/db7_file_fmt.htm
+/* eslint-disable complexity, max-depth */
 function parseState(state, result = {}, binaryReader, textDecoder) {
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     try {
       switch (state) {
         case STATE.ERROR:
         case STATE.END:
-            return state;
+          return state;
 
         case STATE.START:
           // Parse initial file header
@@ -69,8 +71,10 @@ function parseState(state, result = {}, binaryReader, textDecoder) {
 
         case STATE.FIELD_DESCRIPTORS:
           // Parse DBF field descriptors (schema)
-          const fieldDescriptorView =
-            binaryReader.getDataView(result.dbfHeader.headerLength - DBF_HEADER_SIZE, 'DBF field descriptors');
+          const fieldDescriptorView = binaryReader.getDataView(
+            result.dbfHeader.headerLength - DBF_HEADER_SIZE,
+            'DBF field descriptors'
+          );
           if (!fieldDescriptorView) {
             return state;
           }
@@ -84,7 +88,7 @@ function parseState(state, result = {}, binaryReader, textDecoder) {
           break;
 
         case STATE.FIELD_PROPERTIES:
-          const {headerLength, recordLength, nRecords} = result.dbfHeader;
+          const {recordLength} = result.dbfHeader;
           while (result.data.length < result.dbfHeader.nRecords) {
             const recordView = binaryReader.getDataView(recordLength - 1);
             if (!recordView) {
@@ -170,18 +174,19 @@ function parseFieldDescriptors(view, textDecoder) {
   return fields;
 }
 
-/**
- * @param {BinaryReader} binaryReader
- */
+/*
+ * @param {BinaryChunkReader} binaryReader
 function parseRows(binaryReader, fields, nRecords, recordLength, textDecoder) {
   const rows = [];
   for (let i = 0; i < nRecords; i++) {
     const recordView = binaryReader.getDataView(recordLength - 1);
     binaryReader.skip(1);
+    // @ts-ignore
     rows.push(parseRow(recordView, fields, textDecoder));
   }
   return rows;
 }
+ */
 
 /**
  * @param {DataView} view
