@@ -3,7 +3,9 @@ export function mapBinaryCoords(binaryFeatures, fn) {
   for (const binaryFeature of Object.values(binaryFeatures)) {
     const {positions} = binaryFeature;
     for (let i = 0; i < positions.value.length; i += positions.size) {
-      positions.value.set(fn(Array.from(positions.value.subarray(i, i + positions.size))), i);
+      const coord = Array.from(positions.value.subarray(i, i + positions.size));
+      const transformedCoord = fn(coord);
+      positions.value.set(transformedCoord, i);
     }
   }
   return binaryFeatures;
@@ -11,14 +13,9 @@ export function mapBinaryCoords(binaryFeatures, fn) {
 
 export function mapGeoJsonCoords(features, fn) {
   for (const feature of features) {
-    feature.geometry = reprojectGeometry(feature.geometry, fn);
+    feature.geometry.coordinates = coordMap(feature.geometry.coordinates, coord => fn(coord));
   }
   return features;
-}
-
-function reprojectGeometry(geometry, fn) {
-  geometry.coordinates = coordMap(geometry.coordinates, coord => fn(coord));
-  return geometry;
 }
 
 function coordMap(array, fn) {
