@@ -1,3 +1,3 @@
 import './basis-loader.spec';
 
-import './ compressed-texture-writer.spec';
+import './compressed-texture-writer.spec';
