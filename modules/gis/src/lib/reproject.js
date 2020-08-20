@@ -28,7 +28,7 @@ export function transformBinaryCoords(binaryFeatures, fn) {
  */
 export function transformGeoJsonCoords(features, fn) {
   for (const feature of features) {
-    feature.geometry.coordinates = coordMap(feature.geometry.coordinates, coord => fn(coord));
+    feature.geometry.coordinates = coordMap(feature.geometry.coordinates, fn);
   }
   return features;
 }
