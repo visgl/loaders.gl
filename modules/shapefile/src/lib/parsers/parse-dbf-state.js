@@ -10,19 +10,21 @@ const STATE = {
   FIELD_PROPERTIES: 2,
   END: 3,
   ERROR: 4
-}
+};
 
 class DBFParser {
-  constructor(encoding) {
-    this.binaryReader = new BinaryReader();
+  constructor(arrayBuffer, encoding) {
+    this.binaryReader = new BinaryReader(arrayBuffer);
     this.textDecoder = new TextDecoder(encoding);
     this.state = STATE.START;
     this.result = {};
   }
 
   write(arrayBuffer) {
-    this.binaryReader.write(arrayBuffer);
-    this.state = parse(this.state, this.result, this.binaryReader, this.textDecoder);
+    // this.binaryReader.write(arrayBuffer);
+    const parsed = parse(this.state, this.result, this.binaryReader, this.textDecoder);
+    this.state = parsed.state;
+    this.result = parsed.result;
 
     // important events:
     // - schema available
@@ -41,7 +43,7 @@ function parse(state, result = {}, binaryReader, textDecoder) {
     switch (state) {
       case STATE.ERROR:
       case STATE.END:
-          break;
+        break;
 
       case STATE.START:
         // Parse initial file header
@@ -61,14 +63,16 @@ function parse(state, result = {}, binaryReader, textDecoder) {
 
       case STATE.FIELD_DESCRIPTORS:
         // Parse DBF field descriptors (schema)
-        const fieldDescriptorView =
-          binaryReader.getDataView(result.dbfHeader.headerLength - DBF_HEADER_SIZE, 'DBF field descriptors');
+        const fieldDescriptorView = binaryReader.getDataView(
+          result.dbfHeader.headerLength - DBF_HEADER_SIZE,
+          'DBF field descriptors'
+        );
         if (!fieldDescriptorView) {
           break;
         }
 
         result.dbfFields = parseFieldDescriptors(fieldDescriptorView, textDecoder);
-        state = state.FIELD_PROPERTIES;
+        state = STATE.FIELD_PROPERTIES;
 
         // TODO(kyle) Not exactly sure why start offset needs to be headerLength + 1?
         // parsedbf uses ((fields.length + 1) << 5) + 2;
@@ -101,8 +105,8 @@ function parse(state, result = {}, binaryReader, textDecoder) {
     result.error = `DBF parsing failed: ${error.message}`;
   }
 
-  result.progress.bytesUsed = binaryReader.bytesUsed();
-  return state;
+  result.progress.bytesUsed = binaryReader.offset;
+  return {state, result};
 }
 
 export default function parseDbf(arrayBuffer, options) {

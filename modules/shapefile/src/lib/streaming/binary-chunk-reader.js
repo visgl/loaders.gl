@@ -1,10 +1,9 @@
 export default class BinaryChunkReader {
-  constructor() {
+  constructor(arrayBuffer) {
     /** current global (stream) offset */
     this.offset = 0;
     /** current buffer from iterator */
     this.arrayBuffer = arrayBuffer;
-
   }
 
   hasAvailableBytes(bytes) {
