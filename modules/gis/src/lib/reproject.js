@@ -18,7 +18,6 @@ export function transformBinaryCoords(binaryFeatures, fn) {
   return binaryFeatures;
 }
 
-
 /**
  * Apply transformation to every coordinate of GeoJSON features
  *

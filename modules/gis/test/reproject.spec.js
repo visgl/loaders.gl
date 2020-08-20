@@ -35,10 +35,10 @@ test('gis#reproject binary', t => {
   const binaryData = {
     points: {
       positions: {value: new Float32Array([-74, 41]), size: 2},
-      globalFeatureIds: {value: [0, 1, 1], size: 1},
-      featureIds: {value: [0, 1, 1], size: 1},
+      globalFeatureIds: {value: new Uint16Array([0, 1, 1]), size: 1},
+      featureIds: {value: new Uint16Array([0, 1, 1]), size: 1},
       numericProps: {
-        numeric1: {value: [1, 2, 2], size: 1}
+        numeric1: {value: new Uint16Array([1, 2, 2]), size: 1}
       },
       properties: [{string1: 'a'}, {string1: 'b'}]
     }
@@ -46,10 +46,10 @@ test('gis#reproject binary', t => {
   const expectedBinaryData = {
     points: {
       positions: {value: new Float32Array([-8237642.318702244, 5012341.663847514]), size: 2},
-      globalFeatureIds: {value: [0, 1, 1], size: 1},
-      featureIds: {value: [0, 1, 1], size: 1},
+      globalFeatureIds: {value: new Uint16Array([0, 1, 1]), size: 1},
+      featureIds: {value: new Uint16Array([0, 1, 1]), size: 1},
       numericProps: {
-        numeric1: {value: [1, 2, 2], size: 1}
+        numeric1: {value: new Uint16Array([1, 2, 2]), size: 1}
       },
       properties: [{string1: 'a'}, {string1: 'b'}]
     }
