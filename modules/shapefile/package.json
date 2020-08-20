@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/shapefile",
   "description": "Loader for the Shapefile Format",
-  "version": "2.3.0-alpha.10",
+  "version": "2.3.0-alpha.11",
   "license": "MIT",
   "publishConfig": {
     "access": "public"
@@ -33,7 +33,7 @@
     "build-dbf-worker": "webpack --entry ./src/workers/dbf-loader.worker.js --output ./dist/dbf-loader.worker.js --config ../../scripts/worker-webpack-config.js"
   },
   "dependencies": {
-    "@loaders.gl/gis": "2.3.0-alpha.10",
-    "@loaders.gl/loader-utils": "2.3.0-alpha.10"
+    "@loaders.gl/gis": "2.3.0-alpha.11",
+    "@loaders.gl/loader-utils": "2.3.0-alpha.11"
   }
 }

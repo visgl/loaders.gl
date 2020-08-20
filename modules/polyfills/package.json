@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/polyfills",
-  "version": "2.3.0-alpha.10",
+  "version": "2.3.0-alpha.11",
   "description": "Polyfills for TextEncoder/TextDecoder",
   "license": "MIT",
   "publishConfig": {
@@ -62,7 +62,6 @@
     "./dist/es5/utils/to-array-buffer.node.js": false,
     "./dist/esm/utils/to-array-buffer.node.js": false,
     "./dist/es6/utils/to-array-buffer.node.js": false,
-
     "./src/file/blob-polyfill.js": false,
     "./dist/es5/file/blob-polyfill.js": false,
     "./dist/esm/file/blob-polyfill.js": false,
@@ -71,12 +70,10 @@
     "./dist/es5/file/file-polyfill.js": false,
     "./dist/esm/file/file-polyfill.js": false,
     "./dist/es6/file/file-polyfill.js": false,
-
     "./src/file/readable-stream-polyfill.js": false,
     "./dist/es5/file/readable-stream-polyfill.js": false,
     "./dist/esm/file/readable-stream-polyfill.js": false,
     "./dist/es6/file/readable-stream-polyfill.js": false,
-
     "./src/libs/encoding-indices.js": false,
     "./dist/es5/libs/encoding-indices.js": false,
     "./dist/esm/libs/encoding-indices.js": false,

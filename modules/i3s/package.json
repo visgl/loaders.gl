@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/i3s",
-  "version": "2.3.0-alpha.10",
+  "version": "2.3.0-alpha.11",
   "description": "i3s .",
   "license": "MIT",
   "publishConfig": {
@@ -31,10 +31,10 @@
     "build-bundle": "webpack --display=minimal --config ../../scripts/bundle.config.js"
   },
   "dependencies": {
-    "@loaders.gl/core": "2.3.0-alpha.10",
-    "@loaders.gl/images": "2.3.0-alpha.10",
-    "@loaders.gl/loader-utils": "2.3.0-alpha.10",
-    "@loaders.gl/tiles": "2.3.0-alpha.10",
+    "@loaders.gl/core": "2.3.0-alpha.11",
+    "@loaders.gl/images": "2.3.0-alpha.11",
+    "@loaders.gl/loader-utils": "2.3.0-alpha.11",
+    "@loaders.gl/tiles": "2.3.0-alpha.11",
     "@luma.gl/constants": "^8.1.2",
     "@math.gl/core": "^3.2.0",
     "@math.gl/geospatial": "^3.2.0",
