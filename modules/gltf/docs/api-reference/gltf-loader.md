@@ -4,14 +4,16 @@ Parses a glTF file. Can load both the `.glb` (binary) and `.gltf` (application/j
 
 A glTF file contains a hierarchical scenegraph description that can be used to instantiate corresponding hierarcy of actual `Scenegraph` related classes in most WebGL libraries.
 
-| Loader          | Characteristic                                                             |
-| --------------- | -------------------------------------------------------------------------- |
-| File Extensions | `.glb`, `.gltf`                                                            |
-| File Type       | Binary, JSON, Linked Assets                                                |
-| File Format     | [glTF](https://github.com/KhronosGroup/glTF/tree/master/specification/2.0) |
-| Data Format     | [Scenegraph](/docs/specifications/category-scenegraph)                     |
-| Supported APIs  | `load`, `parse`, `parseSync`                                               |
-| Subloaders      | `DracoLoader`, `ImageLoader`                                               |  |
+| Loader          | Characteristic                                                                                                                                                  |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| File Extensions | `.glb`, `.gltf`                                                                                                                                                 |
+| File Type       | Binary, JSON, Linked Assets                                                                                                                                     |
+| File Format     | [glTF v2](https://github.com/KhronosGroup/glTF/tree/master/specification/2.0), [GLTF v1](https://github.com/KhronosGroup/glTF/tree/master/specification/1.0) \* |
+| Data Format     | [Scenegraph](/docs/specifications/category-scenegraph)                                                                                                          |
+| Supported APIs  | `load`, `parse`                                                                                                                                                 |
+| Subloaders      | `DracoLoader`, `ImageLoader`                                                                                                                                    |  |
+
+\* From [![Website shields.io](https://img.shields.io/badge/v2.3-blue.svg?style=flat-square)](http://shields.io), the `GLTFLoader` offers optional, best-effort support for converting older glTF v1 files to glTF v2 format (`options.gltf.normalize: true`). This conversion has a number of limitations and the parsed data structure may be only partially converted to glTF v2, causing issues to show up later e.g. when attempting to render the scenegraphs.
 
 ## Usage
 
@@ -49,16 +51,17 @@ Note: while supported, synchronous parsing of glTF (e.g. using `parseSync()`) ha
 
 ## Options
 
-| Option                  | Type    | Default |                                                                                | Description |
-| ----------------------- | ------- | ------- | ------------------------------------------------------------------------------ | ----------- |
-| `gltf.fetchImages`      | Boolean | `false` | Fetch any referenced image files (and decode base64 encoded URIS). Async only. |
-| `gltf.parseImages`      | Boolean | `false` |
-| `gltf.decompressMeshes` | Boolean | `true`  | Decompress Draco compressed meshes (if DracoLoader available).                 |
-| `gltf.postProcess`      | Boolean | `true`  | Perform additional post processing on the loaded glTF data.                    |
+| Option                  | Type    | Default |                                                                            | Description |
+| ----------------------- | ------- | ------- | -------------------------------------------------------------------------- | ----------- |
+| `gltf.loadBuffers`      | Boolean | `false` | Fetch any referenced binary buffer files (and decode base64 encoded URIS). |
+| `gltf.loadImages`       | Boolean | `false` | Load any referenced image files (and decode base64 encoded URIS).          |
+| `gltf.decompressMeshes` | Boolean | `true`  | Decompress Draco compressed meshes (if DracoLoader available).             |
+| `gltf.postProcess`      | Boolean | `true`  | Perform additional post processing on the loaded glTF data.                |
+| `gltf.normalize`        | Boolean | `false` | Optional, best-effort attempt at converting glTF v1 files to glTF2 format. |
 
 Remarks:
 
-- The `gltf.postProcess` option activates additional [post processing](docs/api-reference/post-process-gltf) that transforms parts of JSON structure in the loaded glTF data, to make glTF data easier use in applications and WebGL libraries, however this changes the format of the data returned by the `GLTFLoader`.
+- The `gltf.postProcess` option activates additional [post processing](docs/api-reference/post-process-gltf) that transforms parts of JSON structure in the loaded glTF data, to make glTF data easier use in applications and WebGL libraries (e.g replacing indices with links to the indexed objects). However, the data structure returned by the `GLTFLoader` will no longer be fully glTF compatible.
 
 ## Data Format
 

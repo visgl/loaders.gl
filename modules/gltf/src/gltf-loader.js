@@ -20,6 +20,7 @@ const GLTFLoader = {
 
   options: {
     gltf: {
+      normalize: false, // Normalize glTF v1 to glTF v2 format (not yet stable)
       loadBuffers: true, // Fetch any linked .BIN buffers, decode base64
       loadImages: true, // Create image objects
       decompressMeshes: true, // Decompress Draco encoded meshes

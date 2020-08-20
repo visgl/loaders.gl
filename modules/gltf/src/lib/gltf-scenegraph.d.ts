@@ -71,7 +71,7 @@ export default class GLTFScenegraph {
 
   addObjectExtension(object: object, extensionName: string, data: object): GLTFScenegraph;
 
-  removeObjectExtension(object: object, extensionName: string): GLTFScenegraph;
+  removeObjectExtension(object: object, extensionName: string): object;
 
   // Add to standard GLTF top level extension object, mark as used
   addExtension(extensionName: string, extensionData?: object): object;
@@ -80,15 +80,15 @@ export default class GLTFScenegraph {
   addRequiredExtension(extensionName, extensionData?: object): object;
 
   // Add extensionName to list of used extensions
-  registerUsedExtension(extensionName: string);
+  registerUsedExtension(extensionName: string): void;
 
   // Add extensionName to list of required extensions
-  registerRequiredExtension(extensionName: string);
+  registerRequiredExtension(extensionName: string): void;
 
   // Removes an extension from the top-level list
-  removeExtension(extensionName: string);
+  removeExtension(extensionName: string): void;
 
-  setObjectExtension(object: object, extensionName: string, data: object);
+  setObjectExtension(object: object, extensionName: string, data: object): void;
 
   addMesh(attributes: object, indices: object, mode?: number): number;
 
