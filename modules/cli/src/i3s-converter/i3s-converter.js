@@ -39,27 +39,27 @@ export default class I3SConverter {
     };
     const preloadOptions = await CesiumIonLoader.preload(inputUrl, options);
     Object.assign(options, preloadOptions);
-    const tilesetJson = await load(inputUrl, CesiumIonLoader, options);
+    const sourceTilesetJson = await load(inputUrl, CesiumIonLoader, options);
 
     /* TODO/ib - get rid of confusing options warnings, move into options sub-object */
     // const tilesetJson = await load(inputUrl, CesiumIonLoader, {
     //   'cesium-ion': preloadOptions
     // });
     // console.log(tilesetJson); // eslint-disable-line
-    this.tileset = new Tileset3D(tilesetJson, options);
+    this.sourceTileset = new Tileset3D(sourceTilesetJson, options);
 
     await this._creationOfStructure(outputPath, tilesetName);
 
-    return tilesetJson;
+    return sourceTilesetJson;
   }
 
   // PRIVATE
 
   /* eslint-disable max-statements */
   async _creationOfStructure(outputPath, tilesetName) {
-    const tilesetRootPath = join(`${outputPath}`, `${tilesetName}`);
-    this.layers0path = join(tilesetRootPath, 'SceneServer', 'layers', '0');
-    const extent = convertCommonToI3SExtentCoordinate(this.tileset);
+    const tilesetPath = join(`${outputPath}`, `${tilesetName}`);
+    this.layers0Path = join(tilesetPath, 'SceneServer', 'layers', '0');
+    const extent = convertCommonToI3SExtentCoordinate(this.sourceTileset);
 
     const layers0data = {
       version: `{${uuidv4().toUpperCase()}}`,
@@ -78,12 +78,12 @@ export default class I3SConverter {
     };
 
     const layers0 = transform(layers0data, layersTemplate);
-    await writeFile(this.layers0path, JSON.stringify(layers0));
-    createSceneServerPath(tilesetName, layers0, tilesetRootPath);
+    await writeFile(this.layers0Path, JSON.stringify(layers0));
+    createSceneServerPath(tilesetName, layers0, tilesetPath);
 
-    const root = this.tileset.root;
-    const rootPath = join(this.layers0path, 'nodes', 'root');
-    const coordinates = convertCommonToI3SCoordinate(root);
+    const sourceRootTile = this.sourceTileset.root;
+    const rootPath = join(this.layers0Path, 'nodes', 'root');
+    const coordinates = convertCommonToI3SCoordinate(sourceRootTile);
     const root0data = {
       version: `{${uuidv4().toUpperCase()}}`,
       id: 'root',
@@ -109,30 +109,31 @@ export default class I3SConverter {
       children: []
     });
 
-    await this.tileset._loadTile(root);
-    if (root.content && root.content.type === 'b3dm') {
+    await this.sourceTileset._loadTile(sourceRootTile);
+    if (sourceRootTile.content && sourceRootTile.content.type === 'b3dm') {
       root0.children.push({
         id: '1',
         href: './1',
         ...coordinates
       });
-      const node = await this._createNode(root0, root, parentId, 0);
-      const childPath = join(this.layers0path, 'nodes', node.path);
-      await writeFile(childPath, JSON.stringify(node));
+      const child = await this._createNode(root0, sourceRootTile, parentId, 0);
+      const childPath = join(this.layers0Path, 'nodes', child.path);
+      await writeFile(childPath, JSON.stringify(child));
     } else {
-      await this._addChildrenWithNeighbors({rootNode: root0, tiles: root.children}, parentId, 1);
-      await root.unloadContent();
+      await this._addChildrenWithNeighborsAndWriteFile({rootNode: root0, sourceTiles: sourceRootTile.children},
+        parentId, 1);
+      await sourceRootTile.unloadContent();
     }
 
     await writeFile(rootPath, JSON.stringify(root0));
-    await this.nodePages.save(this.layers0path);
+    await this.nodePages.save(this.layers0Path);
   }
   /* eslint-enable max-statements */
 
-  async _addChildrenWithNeighbors(data, parentId, level) {
+  async _addChildrenWithNeighborsAndWriteFile(data, parentId, level) {
     const childNodes = [];
     await this._addChildren({...data, childNodes}, parentId, level);
-    await this._addNeighbors(data.rootNode, childNodes);
+    await this._addNeighborsAndWriteFile(data.rootNode, childNodes);
   }
 
   async _addChildren(data, parentId, level) {
@@ -140,33 +141,33 @@ export default class I3SConverter {
       return;
     }
     const childNodes = data.childNodes;
-    for (const child of data.tiles) {
-      if (child.type === 'json') {
-        await this.tileset._loadTile(child);
+    for (const sourceTile of data.sourceTiles) {
+      if (sourceTile.type === 'json') {
+        await this.sourceTileset._loadTile(sourceTile);
         await this._addChildren(
-          {rootNode: data.rootNode, tiles: child.children, childNodes},
+          {rootNode: data.rootNode, sourceTiles: sourceTile.children, childNodes},
           parentId,
           level + 1,
           true
         );
-        await child.unloadContent();
+        await sourceTile.unloadContent();
       } else {
-        const coordinates = convertCommonToI3SCoordinate(child);
-        const newChild = await this._createNode(data.rootNode, child, parentId, level);
+        const coordinates = convertCommonToI3SCoordinate(sourceTile);
+        const child = await this._createNode(data.rootNode, sourceTile, parentId, level);
         data.rootNode.children.push({
-          id: newChild.id,
-          href: `../${newChild.path}`,
+          id: child.id,
+          href: `../${child.path}`,
           ...coordinates
         });
-        childNodes.push(newChild);
+        childNodes.push(child);
       }
-      console.log(child.id); // eslint-disable-line
+      console.log(sourceTile.id); // eslint-disable-line
     }
   }
 
-  async _addNeighbors(rootNode, childNodes) {
+  async _addNeighborsAndWriteFile(rootNode, childNodes) {
     for (const node of childNodes) {
-      const childPath = join(this.layers0path, 'nodes', node.path);
+      const childPath = join(this.layers0Path, 'nodes', node.path);
       delete node.path;
       for (const neighbor of rootNode.children) {
         if (node.id === neighbor.id) {
@@ -180,9 +181,9 @@ export default class I3SConverter {
     }
   }
 
-  async _createNode(rootTile, tile, parentId, level) {
+  async _createNode(rootTile, sourceTile, parentId, level) {
     const rootTileId = rootTile.id;
-    const coordinates = convertCommonToI3SCoordinate(tile);
+    const coordinates = convertCommonToI3SCoordinate(sourceTile);
 
     const nodeInPage = {
       lodThreshold: HARDCODED_MAX_SCREEN_THRESHOLD_SQ,
@@ -225,18 +226,18 @@ export default class I3SConverter {
       neighbors: []
     };
     const node = transform(nodeData, nodeTemplate);
-    await this._convertResources(tile, node);
+    await this._convertResources(sourceTile, node);
 
-    await this._addChildrenWithNeighbors({rootNode: node, tiles: tile.children}, nodeId, level + 1);
+    await this._addChildrenWithNeighborsAndWriteFile({rootNode: node, sourceTiles: sourceTile.children}, nodeId, level + 1);
     return node;
   }
 
   async _convertResources(sourceTile, node) {
-    await this.tileset._loadTile(sourceTile);
+    await this.sourceTileset._loadTile(sourceTile);
     if (!sourceTile.content || sourceTile.content.type !== 'b3dm') {
       return;
     }
-    const childPath = join(this.layers0path, 'nodes', node.path);
+    const childPath = join(this.layers0Path, 'nodes', node.path);
     const {
       geometry: geometryBuffer,
       compressedGeometry,
