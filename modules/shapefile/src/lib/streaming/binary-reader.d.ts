@@ -1,5 +1,7 @@
-
 export default class BinaryReader {
+  offset: number;
+  arrayBuffer: ArrayBuffer;
+
   constructor(arrayBuffer: ArrayBuffer);
 
   hasAvailableBytes(bytes: number): boolean;

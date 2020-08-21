@@ -63,6 +63,8 @@ async function parseShapefile(arrayBuffer, options, context) {
   try {
     const {url, fetch} = context;
     const dbfResponse = await fetch(replaceExtension(url, 'dbf'));
+    // TODO dbfResponse.ok is true under Node when the file doesn't exist. See
+    // the `ignore-properties` test case
     if (dbfResponse.ok) {
       // NOTE: For some reason DBFLoader defaults to utf-8 so set default to be standards conformant
       properties = await parse(dbfResponse, DBFLoader, {dbf: {encoding: cpg || 'latin1'}});
@@ -78,7 +80,8 @@ async function parseShapefile(arrayBuffer, options, context) {
     const feature = {
       type: 'Feature',
       geometry,
-      properties: properties[i] || {}
+      // properties can be undefined if dbfResponse above was empty
+      properties: (properties && properties[i]) || {}
     };
     features.push(feature);
   }
