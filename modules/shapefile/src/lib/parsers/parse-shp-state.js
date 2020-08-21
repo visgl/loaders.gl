@@ -6,13 +6,11 @@ const BIG_ENDIAN = false;
 
 const SHP_MAGIC_NUMBER = 0x0000270a;
 const SHP_HEADER_SIZE = 100;
-// According to the spec, the record header is just 8 bytes, but here we set it
-// to 12 so that we can also access the record's type
 const SHP_RECORD_HEADER_SIZE = 8;
 
 const STATE = {
-  START: 0, // Expecting header
-  DATA: 1,
+  EXPECTING_HEADER: 0,
+  EXPECTING_RECORD: 1,
   END: 2,
   ERROR: 3
 };
@@ -20,7 +18,7 @@ const STATE = {
 class SHPParser {
   constructor() {
     this.binaryReader = new BinaryChunkReader();
-    this.state = STATE.START;
+    this.state = STATE.EXPECTING_HEADER;
     this.result = {};
   }
 
@@ -58,7 +56,7 @@ function parseState(state, result = {}, binaryReader) {
         case STATE.END:
           return state;
 
-        case STATE.START:
+        case STATE.EXPECTING_HEADER:
           // Parse initial file header
           const dataView = binaryReader.getDataView(SHP_HEADER_SIZE, 'SHP header');
           if (!dataView) {
@@ -71,13 +69,12 @@ function parseState(state, result = {}, binaryReader) {
             bytesTotal: result.header.length,
             rows: 0
           };
-          state = STATE.DATA;
+          // index numbering starts at 1
+          result.currentIndex = 1;
+          state = STATE.EXPECTING_RECORD;
           break;
 
-        case STATE.DATA:
-          // index numbering starts at 1
-          let currentIndex = 1;
-
+        case STATE.EXPECTING_RECORD:
           while (binaryReader.hasAvailableBytes(SHP_RECORD_HEADER_SIZE + 4)) {
             const recordHeaderView = binaryReader.getDataView(SHP_RECORD_HEADER_SIZE + 4);
             const recordHeader = {
@@ -91,22 +88,26 @@ function parseState(state, result = {}, binaryReader) {
             const invalidRecord =
               recordHeader.byteLength < 4 ||
               recordHeader.type !== result.header.type ||
-              recordHeader.recordNumber !== currentIndex;
+              recordHeader.recordNumber !== result.currentIndex;
 
             // All records must have at least four bytes (for the record shape type)
             if (invalidRecord) {
               // Malformed record, try again, advancing just 4 bytes
+              // Note: this is a rewind because binaryReader.getDataView above
+              // moved the pointer forward 12 bytes, so rewinding 8 bytes still
+              // leaves us 4 bytes ahead
               binaryReader.rewind(SHP_RECORD_HEADER_SIZE);
             } else {
-              // Note: type is actually part of the record, not the header, so rewind 4 bytes befor reading record
+              // Note: type is actually part of the record, not the header, so
+              // rewind 4 bytes before reading record
               binaryReader.rewind(4);
 
               const recordView = binaryReader.getDataView(recordHeader.byteLength);
               const geometry = parseRecord(recordView);
               result.geometries.push(geometry);
 
-              currentIndex++;
-              result.progress.rows = currentIndex;
+              result.currentIndex++;
+              result.progress.rows = result.currentIndex - 1;
             }
           }
           state = STATE.END;
