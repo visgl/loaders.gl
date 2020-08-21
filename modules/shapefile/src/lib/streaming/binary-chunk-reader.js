@@ -50,11 +50,12 @@ export default class BinaryChunkReader {
       // Current buffer isn't long enough
       if (offset + buf.byteLength <= 0) {
         // eslint-disable-next-line no-continue
+        offset += buf.byteLength;
         continue;
       }
 
       // Find start/end offsets for this buffer
-      var start = -offset;
+      var start = Math.max(Math.abs(offset), 0);
       var end;
 
       // Length of requested bytes is contained in current buffer
