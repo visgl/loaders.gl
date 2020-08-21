@@ -6,7 +6,9 @@ const BIG_ENDIAN = false;
 
 const SHP_MAGIC_NUMBER = 0x0000270a;
 const SHP_HEADER_SIZE = 100;
-const SHP_RECORD_HEADER_SIZE = 8;
+// According to the spec, the record header is just 8 bytes, but here we set it
+// to 12 so that we can also access the record's type
+const SHP_RECORD_HEADER_SIZE = 12;
 
 const STATE = {
   EXPECTING_HEADER: 0,
@@ -75,8 +77,8 @@ function parseState(state, result = {}, binaryReader) {
           break;
 
         case STATE.EXPECTING_RECORD:
-          while (binaryReader.hasAvailableBytes(SHP_RECORD_HEADER_SIZE + 4)) {
-            const recordHeaderView = binaryReader.getDataView(SHP_RECORD_HEADER_SIZE + 4);
+          while (binaryReader.hasAvailableBytes(SHP_RECORD_HEADER_SIZE)) {
+            const recordHeaderView = binaryReader.getDataView(SHP_RECORD_HEADER_SIZE);
             const recordHeader = {
               recordNumber: recordHeaderView.getInt32(0, BIG_ENDIAN),
               // 2 byte words; includes the four words of record header
@@ -85,10 +87,8 @@ function parseState(state, result = {}, binaryReader) {
               type: recordHeaderView.getInt32(8, LITTLE_ENDIAN)
             };
 
-            if (
-              !binaryReader.hasAvailableBytes(recordHeader.byteLength - SHP_RECORD_HEADER_SIZE - 4)
-            ) {
-              binaryReader.rewind(SHP_RECORD_HEADER_SIZE + 4);
+            if (!binaryReader.hasAvailableBytes(recordHeader.byteLength - SHP_RECORD_HEADER_SIZE)) {
+              binaryReader.rewind(SHP_RECORD_HEADER_SIZE);
               return state;
             }
 
@@ -103,7 +103,7 @@ function parseState(state, result = {}, binaryReader) {
               // Note: this is a rewind because binaryReader.getDataView above
               // moved the pointer forward 12 bytes, so rewinding 8 bytes still
               // leaves us 4 bytes ahead
-              binaryReader.rewind(SHP_RECORD_HEADER_SIZE);
+              binaryReader.rewind(SHP_RECORD_HEADER_SIZE - 4);
             } else {
               // Note: type is actually part of the record, not the header, so
               // rewind 4 bytes before reading record
