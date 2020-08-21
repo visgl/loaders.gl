@@ -36,7 +36,7 @@
     "test": "ocular-test",
     "metrics": "./scripts/metrics.sh && ocular-metrics",
     "version": "yarn build",
-    "pre-commit": "ocular-lint",
+    "pre-commit": "yarn lint",
     "pre-push": "ocular-test fast"
   },
   "devDependencies": {
