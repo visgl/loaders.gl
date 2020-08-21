@@ -28,7 +28,42 @@ export default class BinaryChunkReader {
     return false;
   }
 
-  // Get the required number of bytes from the iterator
+  /**
+   * Find offsets of byte ranges within this.arrayBuffers
+   *
+   * @param  {Number} bytes Byte length to read
+   * @return {any}       [description]
+   */
+  findBufferOffsets(bytes) {
+    var offset = -this.offset;
+    var selectedBuffers = [];
+
+    for (var i = 0; i < this.arrayBuffers.length; i++) {
+      var buf = this.arrayBuffers[i];
+
+      // Current buffer isn't long enough
+      if (offset + buf.byteLength <= 0) {
+        // eslint-disable-next-line no-continue
+        continue;
+      }
+
+      // Find start/end offsets for this buffer
+      var start = -offset;
+      var end;
+
+      // Length of requested bytes is contained in current buffer
+      if (start + bytes <= buf.byteLength) {
+        end = start + bytes;
+        selectedBuffers.push([i, [start, end]]);
+        return selectedBuffers;
+      }
+
+      end = buf.byteLength;
+      selectedBuffers.push([i, [start, end]]);
+      bytes -= buf.byteLength - start;
+    }
+  }
+
   getDataView(bytes) {
     if (bytes && !this.hasAvailableBytes(bytes)) {
       throw new Error('binary data exhausted');
