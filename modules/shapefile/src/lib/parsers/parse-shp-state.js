@@ -85,7 +85,9 @@ function parseState(state, result = {}, binaryReader) {
               type: recordHeaderView.getInt32(8, LITTLE_ENDIAN)
             };
 
-            if (!binaryReader.hasAvailableBytes(recordHeader.byteLength)) {
+            if (
+              !binaryReader.hasAvailableBytes(recordHeader.byteLength - SHP_RECORD_HEADER_SIZE - 4)
+            ) {
               binaryReader.rewind(SHP_RECORD_HEADER_SIZE + 4);
               return state;
             }
