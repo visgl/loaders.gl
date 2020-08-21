@@ -65,13 +65,38 @@ test('BinaryChunkReader#findBufferOffsets multiple views', t => {
   t.end();
 });
 
-test('BinaryChunkReader#findBufferOffsets single view from beginning', t => {
-  const reader = new BinaryChunkReader();
+test('BinaryChunkReader#getDataView single source array', t => {
+  var reader = new BinaryChunkReader();
   reader.write(buf1);
   reader.write(buf2);
-  const bufferOffsets = reader.findBufferOffsets(2);
+  reader.write(buf3);
 
-  t.deepEquals(bufferOffsets, [[0, [0, 2]]]);
+  var view = reader.getDataView(2);
+  t.equals(view.getUint8(0), 1);
+  t.equals(view.getUint8(1), 2);
 
+  reader.skip(2);
+  var view = reader.getDataView(2);
+  t.equals(view.getUint8(0), 5);
+  t.equals(view.getUint8(1), 6);
+  t.end();
+});
+
+test('BinaryChunkReader#getDataView multiple source arrays', t => {
+  var reader = new BinaryChunkReader();
+  reader.write(buf1);
+  reader.write(buf2);
+  reader.write(buf3);
+
+  reader.skip(2);
+  var view = reader.getDataView(2);
+  t.equals(view.getUint8(0), 3);
+  t.equals(view.getUint8(1), 4);
+
+  var view = reader.getDataView(4);
+  t.equals(view.getUint8(0), 5);
+  t.equals(view.getUint8(1), 6);
+  t.equals(view.getUint8(2), 7);
+  t.equals(view.getUint8(3), 8);
   t.end();
 });

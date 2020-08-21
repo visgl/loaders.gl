@@ -94,10 +94,14 @@ export default class BinaryChunkReader {
     if (bufferOffsets.length === 1) {
       const [bufferIndex, [start, end]] = bufferOffsets[0];
       const arrayBuffer = this.arrayBuffers[bufferIndex];
-      return new DataView(arrayBuffer, start, end - start);
+      const view = new DataView(arrayBuffer, start, end - start);
+
+      this.offset += bytes;
+      return view;
     }
 
     // Concatenate portions of multiple ArrayBuffers
+    this.offset += bytes;
     return new DataView(this.combineArrayBuffers(bufferOffsets));
   }
 
@@ -155,4 +159,4 @@ export default class BinaryChunkReader {
     // TODO - only works if offset is already set
     this.offset -= bytes;
   }
-};
+}
