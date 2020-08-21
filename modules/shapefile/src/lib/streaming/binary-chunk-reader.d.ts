@@ -2,8 +2,9 @@ export default class BinaryChunkReader {
   offset: number;
   arrayBuffers: ArrayBuffer[];
   ended: boolean;
+  maxRewindBytes: number;
 
-  constructor();
+  constructor(options?: Object);
 
   write(arrayBuffer: ArrayBuffer);
   end();

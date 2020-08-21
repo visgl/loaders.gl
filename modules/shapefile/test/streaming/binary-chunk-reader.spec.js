@@ -99,3 +99,41 @@ test('BinaryChunkReader#getDataView multiple source arrays', t => {
   t.equals(view.getUint8(3), 8);
   t.end();
 });
+
+test('BinaryChunkReader#disposeBuffers', t => {
+  const reader = new BinaryChunkReader();
+  reader.write(buf1);
+  reader.write(buf2);
+  reader.write(buf3);
+
+  reader.skip(2);
+  t.equals(reader.arrayBuffers.length, 3);
+
+  reader.getDataView(1);
+  t.equals(reader.arrayBuffers.length, 2);
+
+  reader.getDataView(3);
+  t.equals(reader.arrayBuffers.length, 1);
+
+  reader.getDataView(3);
+  t.equals(reader.arrayBuffers.length, 0);
+  t.end();
+});
+
+test('BinaryChunkReader#disposeBuffers with maxRewindBytes', t => {
+  const reader = new BinaryChunkReader({maxRewindBytes: 2});
+  reader.write(buf1);
+  reader.write(buf2);
+  reader.write(buf3);
+
+  reader.skip(2);
+  t.equals(reader.arrayBuffers.length, 3);
+
+  reader.getDataView(2);
+  t.equals(reader.arrayBuffers.length, 3);
+
+  reader.getDataView(1);
+  t.equals(reader.arrayBuffers.length, 2);
+
+  t.end();
+});

@@ -1,10 +1,15 @@
 export default class BinaryChunkReader {
-  constructor() {
+  constructor(options) {
+    const {maxRewindBytes = 0} = options || {};
+
     /** current global offset into current array buffer*/
     this.offset = 0;
     /** current buffer from iterator */
     this.arrayBuffers = [];
     this.ended = false;
+
+    /** bytes behind offset to hold on to */
+    this.maxRewindBytes = maxRewindBytes;
   }
 
   write(arrayBuffer) {
@@ -98,12 +103,28 @@ export default class BinaryChunkReader {
       const view = new DataView(arrayBuffer, start, end - start);
 
       this.offset += bytes;
+      this.disposeBuffers();
       return view;
     }
 
     // Concatenate portions of multiple ArrayBuffers
+    const view = new DataView(this._combineArrayBuffers(bufferOffsets));
     this.offset += bytes;
-    return new DataView(this._combineArrayBuffers(bufferOffsets));
+    this.disposeBuffers();
+    return view;
+  }
+
+  /**
+   * Dispose of old array buffers
+   */
+  disposeBuffers() {
+    while (
+      this.arrayBuffers.length > 0 &&
+      this.offset - this.maxRewindBytes >= this.arrayBuffers[0].byteLength
+    ) {
+      this.offset -= this.arrayBuffers[0].byteLength;
+      this.arrayBuffers.shift();
+    }
   }
 
   /**
