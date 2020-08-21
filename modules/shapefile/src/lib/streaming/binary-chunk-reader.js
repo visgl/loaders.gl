@@ -1,5 +1,3 @@
-import {concatenateArrayBuffers} from '@loaders.gl/loader-utils';
-
 export default class BinaryChunkReader {
   constructor() {
     /** current global offset into current array buffer*/
@@ -38,27 +36,27 @@ export default class BinaryChunkReader {
    * Find offsets of byte ranges within this.arrayBuffers
    *
    * @param  {Number} bytes Byte length to read
-   * @return {any}       [description]
+   * @return {any} Arrays with byte ranges pointing to this.arrayBuffers
    */
   findBufferOffsets(bytes) {
-    var offset = -this.offset;
-    var selectedBuffers = [];
+    let offset = -this.offset;
+    const selectedBuffers = [];
 
-    for (var i = 0; i < this.arrayBuffers.length; i++) {
-      var buf = this.arrayBuffers[i];
+    for (let i = 0; i < this.arrayBuffers.length; i++) {
+      const buf = this.arrayBuffers[i];
 
       // Current buffer isn't long enough to reach global offset
       if (offset + buf.byteLength <= 0) {
-        // eslint-disable-next-line no-continue
         offset += buf.byteLength;
+        // eslint-disable-next-line no-continue
         continue;
       }
 
       // Find start/end offsets for this buffer
       // When offset < 0, need to skip over Math.abs(offset) bytes
       // When offset > 0, implies bytes in previous buffer, start at 0
-      var start = offset <= 0 ? Math.abs(offset) : 0;
-      var end;
+      const start = offset <= 0 ? Math.abs(offset) : 0;
+      let end;
 
       // Length of requested bytes is contained in current buffer
       if (start + bytes <= buf.byteLength) {
@@ -75,20 +73,22 @@ export default class BinaryChunkReader {
       bytes -= buf.byteLength - start;
       offset += buf.byteLength;
     }
+
+    // Should only finish loop if exhausted all arrays
+    return null;
   }
 
   /**
    * Get the required number of bytes from the iterator
    *
    * @param  {Number} bytes Number of bytes
-   * @return {DataView?}    DataView with data
+   * @return {DataView}     DataView with data
    */
   getDataView(bytes) {
-    if (bytes && !this.hasAvailableBytes(bytes)) {
+    const bufferOffsets = this.findBufferOffsets(bytes);
+    if (!bufferOffsets) {
       throw new Error('binary data exhausted');
     }
-
-    const bufferOffsets = this.findBufferOffsets(bytes);
 
     // If only one arrayBuffer needed, return DataView directly
     if (bufferOffsets.length === 1) {
@@ -102,7 +102,7 @@ export default class BinaryChunkReader {
 
     // Concatenate portions of multiple ArrayBuffers
     this.offset += bytes;
-    return new DataView(this.combineArrayBuffers(bufferOffsets));
+    return new DataView(this._combineArrayBuffers(bufferOffsets));
   }
 
   /**
@@ -115,7 +115,7 @@ export default class BinaryChunkReader {
    * @param  {any} bufferOffsets List of internal array offsets
    * @return {ArrayBuffer}       New contiguous ArrayBuffer
    */
-  combineArrayBuffers(bufferOffsets) {
+  _combineArrayBuffers(bufferOffsets) {
     let byteLength = 0;
     for (const bufferOffset of bufferOffsets) {
       const [start, end] = bufferOffset[1];
