@@ -19,7 +19,7 @@ const STATE = {
 
 class SHPParser {
   constructor() {
-    this.binaryReader = new BinaryChunkReader();
+    this.binaryReader = new BinaryChunkReader({maxRewindBytes: 12});
     this.state = STATE.EXPECTING_HEADER;
     this.result = {};
   }
@@ -27,6 +27,13 @@ class SHPParser {
   write(arrayBuffer) {
     this.binaryReader.write(arrayBuffer);
     this.state = parseState(this.state, this.result, this.binaryReader);
+  }
+
+  /** Return current geometries then discard internal copy */
+  geometries() {
+    const geometries = this.result.geometries;
+    this.result.geometries = [];
+    return geometries;
   }
 
   end() {
@@ -40,12 +47,24 @@ class SHPParser {
   }
 }
 
-export default function parseSHP(arrayBuffer, options) {
+export function parseSHP(arrayBuffer, options) {
   const shpParser = new SHPParser();
   shpParser.write(arrayBuffer);
   shpParser.end();
 
   return shpParser.result;
+}
+
+export async function* parseSHPInBatches(asyncIterator, options) {
+  const shpParser = new SHPParser();
+
+  for await (const chunk of asyncIterator) {
+    shpParser.write(chunk);
+    const geometries = shpParser.geometries();
+    const header = shpParser.result.header();
+    yield {geometries, header};
+  }
+  shpParser.end();
 }
 
 /* eslint-disable complexity, max-depth */
