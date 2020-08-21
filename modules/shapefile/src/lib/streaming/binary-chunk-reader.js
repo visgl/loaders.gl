@@ -88,22 +88,48 @@ export default class BinaryChunkReader {
       throw new Error('binary data exhausted');
     }
 
-    const arrayBuffer = this.getArrayBuffer(bytes);
-    return arrayBuffer && new DataView(arrayBuffer);
+    const bufferOffsets = this.findBufferOffsets(bytes);
+
+    // If only one arrayBuffer needed, return DataView directly
+    if (bufferOffsets.length === 1) {
+      const [bufferIndex, [start, end]] = bufferOffsets[0];
+      const arrayBuffer = this.arrayBuffers[bufferIndex];
+      return new DataView(arrayBuffer, start, end - start);
+    }
+
+    // Concatenate portions of multiple ArrayBuffers
+    return new DataView(this.combineArrayBuffers(bufferOffsets));
   }
 
-  getArrayBuffer(bytes) {
-    const chunks = [];
-    while (bytes > 0) {
-      const chunk = this._getChunk(bytes);
-      if (!chunk) {
-        // push back chunks?
-        return null;
-      }
-      chunks.push(chunk);
-      bytes -= chunk.byteLength;
+  /**
+   * Copy multiple ArrayBuffers into one contiguous ArrayBuffer
+   *
+   * In contrast to concatenateArrayBuffers, this only copies the necessary
+   * portions of the source arrays, rather than first copying the entire arrays
+   * then taking a part of them.
+   *
+   * @param  {any} bufferOffsets List of internal array offsets
+   * @return {ArrayBuffer}       New contiguous ArrayBuffer
+   */
+  combineArrayBuffers(bufferOffsets) {
+    let byteLength = 0;
+    for (const bufferOffset of bufferOffsets) {
+      const [start, end] = bufferOffset[1];
+      byteLength += end - start;
     }
-    return concatenateArrayBuffers(...chunks);
+
+    const result = new Uint8Array(byteLength);
+
+    // Copy the subarrays
+    let resultOffset = 0;
+    for (const bufferOffset of bufferOffsets) {
+      const [bufferIndex, [start, end]] = bufferOffset;
+      const sourceArray = new Uint8Array(this.arrayBuffers[bufferIndex]);
+      result.set(sourceArray.subarray(start, end), resultOffset);
+      resultOffset += end - start;
+    }
+
+    return result.buffer;
   }
 
   _getChunk(bytes) {
