@@ -47,7 +47,7 @@ export default class BinaryChunkReader {
     for (var i = 0; i < this.arrayBuffers.length; i++) {
       var buf = this.arrayBuffers[i];
 
-      // Current buffer isn't long enough
+      // Current buffer isn't long enough to reach global offset
       if (offset + buf.byteLength <= 0) {
         // eslint-disable-next-line no-continue
         offset += buf.byteLength;
@@ -55,7 +55,9 @@ export default class BinaryChunkReader {
       }
 
       // Find start/end offsets for this buffer
-      var start = Math.max(Math.abs(offset), 0);
+      // When offset < 0, need to skip over Math.abs(offset) bytes
+      // When offset > 0, implies bytes in previous buffer, start at 0
+      var start = offset <= 0 ? Math.abs(offset) : 0;
       var end;
 
       // Length of requested bytes is contained in current buffer
@@ -65,9 +67,13 @@ export default class BinaryChunkReader {
         return selectedBuffers;
       }
 
+      // Will need to look into next buffer
       end = buf.byteLength;
       selectedBuffers.push([i, [start, end]]);
+
+      // Need to read fewer bytes in next iter
       bytes -= buf.byteLength - start;
+      offset += buf.byteLength;
     }
   }
 

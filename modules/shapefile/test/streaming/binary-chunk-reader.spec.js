@@ -25,8 +25,8 @@ test('BinaryChunkReader#findBufferOffsets single view', t => {
   reader.write(buf1);
   reader.write(buf2);
   reader.write(buf3);
-  var bufferOffsets = reader.findBufferOffsets(2);
 
+  var bufferOffsets = reader.findBufferOffsets(2);
   t.deepEquals(bufferOffsets, [[0, [0, 2]]]);
 
   reader.skip(1);
@@ -44,6 +44,24 @@ test('BinaryChunkReader#findBufferOffsets single view', t => {
   bufferOffsets = reader.findBufferOffsets(3);
   t.deepEquals(bufferOffsets, [[2, [0, 3]]]);
 
+  t.end();
+});
+
+test('BinaryChunkReader#findBufferOffsets multiple views', t => {
+  var reader = new BinaryChunkReader();
+  reader.write(buf1);
+  reader.write(buf2);
+  reader.write(buf3);
+
+  var bufferOffsets = reader.findBufferOffsets(5);
+  t.deepEquals(bufferOffsets, [[0, [0, 3]], [1, [0, 2]]]);
+
+  reader.skip(2);
+  bufferOffsets = reader.findBufferOffsets(5);
+  t.deepEquals(bufferOffsets, [[0, [2, 3]], [1, [0, 3]], [2, [0, 1]]]);
+
+  bufferOffsets = reader.findBufferOffsets(2);
+  t.deepEquals(bufferOffsets, [[0, [2, 3]], [1, [0, 1]]]);
   t.end();
 });
 
