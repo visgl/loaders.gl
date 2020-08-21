@@ -158,21 +158,6 @@ export default class BinaryChunkReader {
     return result.buffer;
   }
 
-  _getChunk(bytes) {
-    const arrayBuffer = this.arrayBuffers[0];
-    const remainingBytes = arrayBuffer.byteLength - this.offset;
-    let chunk;
-    if (bytes <= remainingBytes) {
-      chunk = new Uint8Array(arrayBuffer, this.offset, bytes);
-      this.offset += bytes;
-    } else if (remainingBytes > 0) {
-      chunk = new Uint8Array(arrayBuffer, this.offset, remainingBytes);
-      this.arrayBuffers.shift();
-      this.offset = 0;
-    }
-    return chunk;
-  }
-
   skip(bytes) {
     this.offset += bytes;
   }
