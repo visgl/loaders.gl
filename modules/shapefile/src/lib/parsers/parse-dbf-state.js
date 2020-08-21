@@ -31,6 +31,13 @@ class DBFParser {
     // - all rows available
   }
 
+  /** Return current data (geometries) then discard internal copy */
+  data() {
+    const data = this.result.data;
+    this.result.data = [];
+    return data;
+  }
+
   end() {
     this.binaryReader.end();
     this.state = parseState(this.state, this.result, this.binaryReader, this.textDecoder);
@@ -117,7 +124,7 @@ function parseState(state, result = {}, binaryReader, textDecoder) {
   }
 }
 
-export default function parseDbf(arrayBuffer, options) {
+export function parseDBF(arrayBuffer, options) {
   const loaderOptions = options.dbf || {};
   const {encoding} = loaderOptions;
 
@@ -126,6 +133,19 @@ export default function parseDbf(arrayBuffer, options) {
   dbfParser.end();
 
   return dbfParser.result.data;
+}
+
+export async function* parseDBFInBatches(asyncIterator, options) {
+  const loaderOptions = options.dbf || {};
+  const {encoding} = loaderOptions;
+
+  const dbfParser = new DBFParser({encoding});
+
+  for await (const chunk of asyncIterator) {
+    dbfParser.write(chunk);
+    yield dbfParser.data();
+  }
+  dbfParser.end();
 }
 
 /**

@@ -29,8 +29,8 @@ class SHPParser {
     this.state = parseState(this.state, this.result, this.binaryReader);
   }
 
-  /** Return current geometries then discard internal copy */
-  geometries() {
+  /** Return current data (geometries) then discard internal copy */
+  data() {
     const geometries = this.result.geometries;
     this.result.geometries = [];
     return geometries;
@@ -60,7 +60,7 @@ export async function* parseSHPInBatches(asyncIterator, options) {
 
   for await (const chunk of asyncIterator) {
     shpParser.write(chunk);
-    const geometries = shpParser.geometries();
+    const geometries = shpParser.data();
     const header = shpParser.result.header();
     yield {geometries, header};
   }

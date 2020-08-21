@@ -1,7 +1,7 @@
 /** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 /** @typedef {import('@loaders.gl/loader-utils').WorkerLoaderObject} WorkerLoaderObject */
-import parseDBF from './lib/parsers/parse-dbf';
-// import parseDBF from './lib/parsers/parse-dbf-state';
+// import parseDBF from './lib/parsers/parse-dbf';
+import {parseDBF, parseDBFInBatches} from './lib/parsers/parse-dbf-state';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -28,5 +28,6 @@ export const DBFWorkerLoader = {
 export const DBFLoader = {
   ...DBFWorkerLoader,
   parse: async (arrayBuffer, options) => parseDBF(arrayBuffer, options),
-  parseSync: parseDBF
+  parseSync: parseDBF,
+  parseInBatches: parseDBFInBatches
 };
