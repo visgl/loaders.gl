@@ -45,7 +45,7 @@ export default function parseSHP(arrayBuffer, options) {
   shpParser.write(arrayBuffer);
   shpParser.end();
 
-  return shpParser.result.data;
+  return shpParser.result;
 }
 
 /* eslint-disable complexity, max-depth */
@@ -64,11 +64,11 @@ function parseState(state, result = {}, binaryReader) {
           if (!dataView) {
             return state;
           }
-          result.shpHeader = parseSHPHeader(dataView);
-          result.data = [];
+          result.header = parseSHPHeader(dataView);
+          result.geometries = [];
           result.progress = {
             bytesUsed: 0,
-            bytesTotal: result.shpHeader.length,
+            bytesTotal: result.header.length,
             rows: 0
           };
           state = STATE.DATA;
@@ -90,7 +90,7 @@ function parseState(state, result = {}, binaryReader) {
 
             const invalidRecord =
               recordHeader.byteLength < 4 ||
-              recordHeader.type !== result.shpHeader.type ||
+              recordHeader.type !== result.header.type ||
               recordHeader.recordNumber !== currentIndex;
 
             // All records must have at least four bytes (for the record shape type)
@@ -103,7 +103,7 @@ function parseState(state, result = {}, binaryReader) {
 
               const recordView = binaryReader.getDataView(recordHeader.byteLength);
               const geometry = parseRecord(recordView);
-              result.data.push(geometry);
+              result.geometries.push(geometry);
 
               currentIndex++;
               result.progress.rows = currentIndex;
