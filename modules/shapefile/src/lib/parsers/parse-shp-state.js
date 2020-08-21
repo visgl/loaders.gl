@@ -85,6 +85,11 @@ function parseState(state, result = {}, binaryReader) {
               type: recordHeaderView.getInt32(8, LITTLE_ENDIAN)
             };
 
+            if (!binaryReader.hasAvailableBytes(recordHeader.byteLength)) {
+              binaryReader.rewind(SHP_RECORD_HEADER_SIZE + 4);
+              return state;
+            }
+
             const invalidRecord =
               recordHeader.byteLength < 4 ||
               recordHeader.type !== result.header.type ||
