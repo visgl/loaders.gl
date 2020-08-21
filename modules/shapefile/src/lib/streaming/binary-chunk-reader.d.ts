@@ -1,4 +1,8 @@
 export default class BinaryChunkReader {
+  offset: number;
+  arrayBuffers: ArrayBuffer[];
+  ended: boolean;
+
   constructor();
 
   write(arrayBuffer: ArrayBuffer);
