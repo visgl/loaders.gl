@@ -17,6 +17,12 @@ export default class BinaryChunkReader {
     this.ended = true;
   }
 
+  /**
+   * Has enough bytes available in array buffers
+   *
+   * @param  {Number}  bytes Number of bytes
+   * @return {Boolean}
+   */
   hasAvailableBytes(bytes) {
     let bytesAvailable = -this.offset;
     for (const arrayBuffer of this.arrayBuffers) {
@@ -64,6 +70,12 @@ export default class BinaryChunkReader {
     }
   }
 
+  /**
+   * Get the required number of bytes from the iterator
+   *
+   * @param  {Number} bytes Number of bytes
+   * @return {DataView?}    DataView with data
+   */
   getDataView(bytes) {
     if (bytes && !this.hasAvailableBytes(bytes)) {
       throw new Error('binary data exhausted');
@@ -110,4 +122,4 @@ export default class BinaryChunkReader {
     // TODO - only works if offset is already set
     this.offset -= bytes;
   }
-}
+};
