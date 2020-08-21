@@ -12,6 +12,7 @@ export default class BinaryChunkReader {
   }
 
   end() {
+    this.arrayBuffers = [];
     this.ended = true;
   }
 
