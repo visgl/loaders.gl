@@ -17,6 +17,7 @@ export const SHPWorkerLoader = {
   version: VERSION,
   extensions: ['shp'],
   mimeTypes: ['application/octet-stream'],
+  // ISSUE: This also identifies SHX files, which are identical to SHP for the first 100 bytes...
   tests: [new Uint8Array(SHP_MAGIC_NUMBER).buffer],
   options: {
     shp: {
