@@ -69,8 +69,8 @@ test('DracoWriter#encode(bunny.drc)', async t => {
     t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
 
     if (!tc.options.pointcloud) {
-      // Decode the mesh
-      const data2 = await parse(compressedMesh, DracoLoader);
+      // Decode the mesh (worker: false makes for easier debugging)
+      const data2 = await parse(compressedMesh, DracoLoader, {worker: false});
       validateMeshCategoryData(t, data2);
 
       // t.comment(JSON.stringify(data));

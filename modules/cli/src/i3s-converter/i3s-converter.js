@@ -147,8 +147,7 @@ export default class I3SConverter {
         await this._addChildren(
           {rootNode: data.rootNode, sourceTiles: sourceTile.children, childNodes},
           parentId,
-          level + 1,
-          true
+          level + 1
         );
         await sourceTile.unloadContent();
       } else {
