@@ -52,11 +52,22 @@ export default class I3STilesetTraverser extends TilesetTraverser {
     const {loader} = tileset;
     const nodeUrl = tileset.getTileUrl(`${tileset.url}/nodes/${nodeId}`);
     // load metadata
+    const geometryBuffers =
+      (tileset.tileset &&
+        tileset.tileset.geometryDefinitions &&
+        tileset.tileset.geometryDefinitions[0] &&
+        tileset.tileset.geometryDefinitions[0].geometryBuffers &&
+        tileset.tileset.geometryDefinitions[0].geometryBuffers) ||
+      [];
+    const dracoGeometryIndex = geometryBuffers.findIndex(
+      buffer => buffer.compressedAttributes && buffer.compressedAttributes.encoding === 'draco'
+    );
     const options = {
       i3s: {
         ...tileset.fetchOptions,
         isTileHeader: true,
-        loadContent: false
+        loadContent: false,
+        dracoGeometryIndex
       }
     };
 

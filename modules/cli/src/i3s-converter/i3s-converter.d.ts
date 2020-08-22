@@ -17,5 +17,6 @@ export default class I3SConverter {
     outputPath: string;
     tilesetName: string;
     maxDepth?: number;
+    draco?: boolean;
   }): Promise<any>;
 }

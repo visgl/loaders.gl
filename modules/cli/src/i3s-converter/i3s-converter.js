@@ -120,8 +120,11 @@ export default class I3SConverter {
       const childPath = join(this.layers0Path, 'nodes', child.path);
       await writeFile(childPath, JSON.stringify(child));
     } else {
-      await this._addChildrenWithNeighborsAndWriteFile({rootNode: root0, sourceTiles: sourceRootTile.children},
-        parentId, 1);
+      await this._addChildrenWithNeighborsAndWriteFile(
+        {rootNode: root0, sourceTiles: sourceRootTile.children},
+        parentId,
+        1
+      );
       await sourceRootTile.unloadContent();
     }
 
@@ -227,7 +230,11 @@ export default class I3SConverter {
     const node = transform(nodeData, nodeTemplate);
     await this._convertResources(sourceTile, node);
 
-    await this._addChildrenWithNeighborsAndWriteFile({rootNode: node, sourceTiles: sourceTile.children}, nodeId, level + 1);
+    await this._addChildrenWithNeighborsAndWriteFile(
+      {rootNode: node, sourceTiles: sourceTile.children},
+      nodeId,
+      level + 1
+    );
     return node;
   }
 

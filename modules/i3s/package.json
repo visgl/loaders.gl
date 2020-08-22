@@ -35,6 +35,7 @@
     "@loaders.gl/images": "2.3.0-alpha.4",
     "@loaders.gl/loader-utils": "2.3.0-alpha.4",
     "@loaders.gl/tiles": "2.3.0-alpha.4",
+    "@loaders.gl/draco": "2.3.0-alpha.4",
     "@luma.gl/constants": "^8.1.2",
     "@math.gl/core": "^3.2.0",
     "@math.gl/geospatial": "^3.2.0",

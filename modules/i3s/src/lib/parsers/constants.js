@@ -8,6 +8,18 @@ export const TYPE_ARRAY_MAP = {
   UInt64: Float64Array
 };
 
+export const TYPED_ARRAY_CONSTRUCTORS = {
+  Int8Array,
+  Uint8Array,
+  Uint8ClampedArray,
+  Int16Array,
+  Uint16Array,
+  Int32Array,
+  Uint32Array,
+  Float32Array,
+  Float64Array
+};
+
 export const GL_TYPE_MAP = {
   UInt8: GL.UNSIGNED_BYTE,
   UInt16: GL.UNSIGNED_INT,

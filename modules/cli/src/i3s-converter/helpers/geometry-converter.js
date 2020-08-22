@@ -23,11 +23,9 @@ export default async function convertB3dmToI3sGeometry(content, options = {}) {
 
   let compressedGeometry = null;
   if (options.draco) {
-    const indices = new Uint32Array(positions.length);
-    let vertexIndex = 0;
-    for (let index = 0; index < indices.length; index += 3) {
-      indices.set([vertexIndex + 0, vertexIndex + 1, vertexIndex + 2], index);
-      vertexIndex += 3;
+    const indices = new Uint32Array(vertexCount);
+    for (let index = 0; index < indices.length; index++) {
+      indices.set([index], index);
     }
 
     const attributes = {

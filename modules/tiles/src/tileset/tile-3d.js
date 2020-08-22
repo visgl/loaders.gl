@@ -169,7 +169,7 @@ export default class TileHeader {
 
   // Requests the tile's content.
   // The request may not be made if the Request Scheduler can't prioritize it.
-  // eslint-disable-next-line max-statements
+  // eslint-disable-next-line max-statements, complexity
   async loadContent() {
     if (this.hasEmptyContent) {
       return false;
@@ -203,6 +203,16 @@ export default class TileHeader {
       // The content can be a binary tile ot a JSON tileset
       const fetchOptions = this.tileset.fetchOptions;
       const loader = this.tileset.loader;
+      const geometryBuffers =
+        (this.tileset.tileset &&
+          this.tileset.tileset.geometryDefinitions &&
+          this.tileset.tileset.geometryDefinitions[0] &&
+          this.tileset.tileset.geometryDefinitions[0].geometryBuffers &&
+          this.tileset.tileset.geometryDefinitions[0].geometryBuffers) ||
+        [];
+      const dracoGeometryIndex = geometryBuffers.findIndex(
+        buffer => buffer.compressedAttributes && buffer.compressedAttributes.encoding === 'draco'
+      );
       const options = {
         ...fetchOptions,
         [loader.id]: {
@@ -210,7 +220,8 @@ export default class TileHeader {
           tileset: this.tileset.tileset,
           isTileset: this.type === 'json',
           isTileHeader: false,
-          assetGltfUpAxis: this.tileset.asset.gltfUpAxis
+          assetGltfUpAxis: this.tileset.asset.gltfUpAxis,
+          dracoGeometryIndex
         }
       };
 
