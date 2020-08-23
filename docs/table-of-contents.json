@@ -234,6 +234,15 @@
           ]
         },
         {
+          "title": "@loaders.gl/shapefile",
+          "entries": [
+            {"entry": "modules/shapefile/docs"},
+            {"entry": "modules/shapefile/docs/api-reference/shapefile-loader"},
+            {"entry": "modules/shapefile/docs/api-reference/shp-loader"},
+            {"entry": "modules/shapefile/docs/api-reference/dbf-loader"}
+          ]
+        },
+        {
           "title": "@loaders.gl/tiles",
           "entries": [
             {"entry": "modules/tiles/docs"},
