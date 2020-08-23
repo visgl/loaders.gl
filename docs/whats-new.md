@@ -12,11 +12,11 @@ This release brings a new Shapefile loader, compression codecs (Zlib, LZ4, Zstan
 
 **@loaders.gl/compression** (NEW)
 
-- A new module with compression/decompression "transforms" for compression codecs (Zlib, LZ4, Zstandard). As always, these work reliably in both the browser and Node.
+- A new module with compression/decompression transforms for compression codecs (Zlib, LZ4, Zstandard). As always, these work reliably in both browsers and Node.js.
 
 **@loaders.gl/crypto** (NEW)
 
-- A new module with "transforms" for calculating cryptographic hashes (MD5, SHA256 etc) incrementally, e.g. on incoming binary chunks while streaming data into `parseInBatches`.
+- A new module for calculating cryptographic hashes (MD5, SHA256 etc). Provided transforms enables hashes to be calculated incrementally, e.g. on incoming binary chunks while streaming data into `parseInBatches`.
 
 **@loaders.gl/core**
 
@@ -32,6 +32,11 @@ This release brings a new Shapefile loader, compression codecs (Zlib, LZ4, Zstan
 - `fetch` polyfill: Files with `.gz` extension are automatically decompressed with gzip. The extension reported in the `fetch` response has the `.gz` extension removed.
 - `fetch` polyfill: Improved robustness and error handling in Node.js when opening unreadable or non-existent files. Underlying errors (`ENOEXIST`, `EISDIR` etc) are now caught and reported in `Response.statusText`.
 - `Blob` and `File`, new experimental polyfills.
+
+**@loaders.gl/gltf**
+
+- `GLBLoader` can now read older GLB v1 files in addition to GLB v2.
+- `GLTFLoader` now offers optional, partial support for reading older glTF v1 files and automatically converting them to glTF v2 format (via `options.glt.normalize`).
 
 **@loaders.gl/json**
 
