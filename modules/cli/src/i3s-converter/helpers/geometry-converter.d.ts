@@ -14,4 +14,5 @@ export default function convertB3dmToI3sGeometry(
   compressedGeometry: ArrayBuffer;
   textures: any;
   sharedResources: any;
+  meshMaterial: any;
 }>;

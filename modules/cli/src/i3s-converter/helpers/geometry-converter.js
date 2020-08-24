@@ -10,6 +10,7 @@ const VALUES_PER_COLOR_ELEMENT = 4;
 
 export default async function convertB3dmToI3sGeometry(content, options = {}) {
   const {positions, normals, texCoords, colors} = convertAttributes(content);
+  const {material, texture} = convertMaterial(content);
 
   const vertexCount = positions.length / VALUES_PER_VERTEX;
   const header = new Uint32Array(2);
@@ -46,8 +47,9 @@ export default async function convertB3dmToI3sGeometry(content, options = {}) {
   return {
     geometry: fileBuffer,
     compressedGeometry,
-    textures: getTexture(content),
-    sharedResources: getSharedResources(content)
+    textures: texture,
+    sharedResources: getSharedResources(content),
+    meshMaterial: material
   };
 }
 
@@ -189,8 +191,8 @@ function convertNode(
         );
         continue; // eslint-disable-line
       }
-      /* For this case indices are applicable for batch, not for all vertex array. 
-      1. Cut vertices with batchId===0, 
+      /* For this case indices are applicable for batch, not for all vertex array.
+      1. Cut vertices with batchId===0,
       2. Apply indices on resulting array,
       3. Cut next vertices' range by batchId,
       4. Apply indices on resulting range etc.*/
@@ -392,15 +394,48 @@ function getValuesByBatchId(attributes, batchId) {
 /* eslint-enable max-statements */
 
 /**
- * Get texture image from gltf object
+ * Convert texture and material from gltf material object
  * @param {Object} content - 3d tile content
- * @returns {ArrayBuffer}
- * @todo handle multiple images inside one gltf
- * @todo handle external images
+ * @returns {Object}
  */
-function getTexture(content) {
-  const images = content.gltf.images;
-  return images && images.length && images[0];
+function convertMaterial(content) {
+  const sourceMaterials = content.gltf.materials;
+  if (!sourceMaterials || !sourceMaterials.length) {
+    return {};
+  }
+  let texture;
+  const sourceMaterial = sourceMaterials[0];
+  const sourceImages = content.gltf.images;
+  if (sourceMaterials.length > 1) {
+    // eslint-disable-next-line no-console, no-undef
+    console.warn(
+      `Warning: 3D tile contains multiple materials, only the first material was converted`
+    );
+  }
+  const material = {
+    doubleSided: sourceMaterial.doubleSided,
+    emissiveFactor: sourceMaterial.emissiveFactor.map(c => Math.round(c * 255)),
+    alphaMode: sourceMaterial.alphaMode,
+    pbrMetallicRoughness: {
+      roughnessFactor: sourceMaterial.pbrMetallicRoughness.roughnessFactor,
+      metallicFactor: sourceMaterial.pbrMetallicRoughness.metallicFactor
+    }
+  };
+  if (sourceMaterial.pbrMetallicRoughness.baseColorTexture) {
+    texture = sourceMaterial.pbrMetallicRoughness.baseColorTexture.texture.source;
+  } else if (sourceImages && sourceImages.length) {
+    texture = sourceImages[0];
+  }
+  if (texture) {
+    material.pbrMetallicRoughness.baseColorTexture = {
+      textureSetDefinitionId: 0
+    };
+  } else {
+    material.pbrMetallicRoughness.baseColorFactor = sourceMaterial.pbrMetallicRoughness.baseColorFactor.map(
+      c => Math.round(c * 255)
+    );
+  }
+  return {material, texture};
 }
 
 /**

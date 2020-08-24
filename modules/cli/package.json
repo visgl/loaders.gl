@@ -48,6 +48,7 @@
     "cors": "^2.8.5",
     "debug": "~2.6.9",
     "express": "~4.16.1",
+    "md5": "^2.3.0",
     "morgan": "~1.9.1",
     "json-map-transform": "^1.2.6"
   }

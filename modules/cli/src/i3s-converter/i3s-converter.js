@@ -5,6 +5,7 @@ import {join} from 'path';
 import {v4 as uuidv4} from 'uuid';
 import process from 'process';
 import transform from 'json-map-transform';
+import md5 from 'md5';
 
 import NodePages from './helpers/node-pages';
 import writeFile from '../lib/utils/write-file';
@@ -30,6 +31,8 @@ export default class I3SConverter {
     this.nodePages = new NodePages(writeFile, HARDCODED_NODES_PER_PAGE);
     this.options = {};
     this.layers0Path = '';
+    this.materialMap = new Map();
+    this.materialDefinitions = [];
   }
 
   // Convert a 3d tileset
@@ -80,8 +83,8 @@ export default class I3SConverter {
     };
 
     const layers0 = transform(layers0data, layersTemplate);
-    await writeFile(this.layers0Path, JSON.stringify(layers0));
-    createSceneServerPath(tilesetName, layers0, tilesetPath);
+    this.materialDefinitions = [];
+    this.materialMap = new Map();
 
     const sourceRootTile = this.sourceTileset.root;
     const rootPath = join(this.layers0Path, 'nodes', 'root');
@@ -129,6 +132,10 @@ export default class I3SConverter {
       );
       await sourceRootTile.unloadContent();
     }
+
+    layers0.materialDefinitions = this.materialDefinitions;
+    await writeFile(this.layers0Path, JSON.stringify(layers0));
+    createSceneServerPath(tilesetName, layers0, tilesetPath);
 
     await writeFile(rootPath, JSON.stringify(root0));
     await this.nodePages.save(this.layers0Path);
@@ -196,9 +203,6 @@ export default class I3SConverter {
       obb: coordinates.obb,
       children: [],
       mesh: {
-        material: {
-          definition: 0
-        },
         geometry: {
           definition: 0
         }
@@ -253,7 +257,8 @@ export default class I3SConverter {
       geometry: geometryBuffer,
       compressedGeometry,
       textures,
-      sharedResources
+      sharedResources,
+      meshMaterial
     } = await convertB3dmToI3sGeometry(sourceTile.content, this.options);
     const geometryPath = join(childPath, 'geometries/0/');
     await writeFile(geometryPath, geometryBuffer, 'index.bin');
@@ -271,6 +276,24 @@ export default class I3SConverter {
       const texturesData = textures.bufferView.data;
       await writeFile(texturesPath, texturesData, 'index.jpeg');
     }
+    if (meshMaterial) {
+      this.nodePages.updateMaterialByNodeId(node.id, this._findOrCreateMaterial(meshMaterial));
+    }
     sourceTile.unloadContent();
+  }
+
+  /**
+   * Find or create material in materialDefinitions array
+   * @param material - end-to-end index of the node
+   * @return material id
+   */
+  _findOrCreateMaterial(material) {
+    const hash = md5(Object.entries(material).toString());
+    if (this.materialMap.has(hash)) {
+      return this.materialMap.get(hash);
+    }
+    const newMaterialId = this.materialDefinitions.push(material) - 1;
+    this.materialMap.set(hash, newMaterialId);
+    return newMaterialId;
   }
 }

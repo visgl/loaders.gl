@@ -1,5 +1,8 @@
-/** Represents one page node */
-export type PageNodeType = {                                     
+/**
+ * Represents one page node
+ * {@link https://github.com/Esri/i3s-spec/blob/master/docs/1.7/node.cmn.md}
+ */
+export type PageNodeType = {
   lodThreshold: number;
   obb: any;
   children: any[];
@@ -8,7 +11,7 @@ export type PageNodeType = {
       resource?: number;
       definition?: number;
     },
-    material: {
+    material?: {
       resource?: number;
       definition?: number;
     }
@@ -17,38 +20,35 @@ export type PageNodeType = {
 
 /**
  * class NodePages - wrapper of nodePages array
- * 
+ *
  * @example
  * import writeFile from './helpers/write-file';
- * 
+ *
  * // create an instance of the class
- * const nodePages = new NodePages(writeFile, HARDCODED_NODES_PER_PAGE); 
+ * const nodePages = new NodePages(writeFile, HARDCODED_NODES_PER_PAGE);
  * ...
  * // push root node
- * const parentId = nodePages.push({                                     
+ * const parentId = nodePages.push({
       lodThreshold: HARDCODED_MAX_SCREEN_THRESHOLD_SQ,
       obb: coordinates.obb,
       children: []
     });
  * ...
  * // push node with parent relation
- * const nodeInPage = {                                                  
+ * const nodeInPage = {
       lodThreshold: HARDCODED_MAX_SCREEN_THRESHOLD_SQ,
       obb: coordinates.obb,
       children: [],
       mesh: {
-        material: {
-          definition: 0
-        },
         geometry: {
           definition: 0
         }
       }
     };
- * const nodeId = this.nodePages.push(nodeInPage, parentId);            
+ * const nodeId = this.nodePages.push(nodeInPage, parentId);
  * ...
  * // save all the nodePages in the end of pushing all the nodes
- * await this.nodePages.save(layers0path);                              
+ * await this.nodePages.save(layers0path);
  */
 export default class NodePages {
   readonly nodesPerPage: number;
@@ -85,10 +85,17 @@ export default class NodePages {
   updateResourceInMesh(node: object): void;
 
   /**
+   * Update material in node.mesh object by node id
+   * @param id - end-to-end index of the node
+   * @param materialId - id from scene layer materialDefinitions
+   */
+  updateMaterialByNodeId(id: number, materialId: number)
+
+  /**
    * Put new node in nodePages array
    * @param node - node object
    * @param parentId - index of parent node
-   * @return 
+   * @return
    */
   push(node: PageNodeType, parentId?: number): number;
 

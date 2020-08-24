@@ -6,6 +6,19 @@ import {promises as fs} from 'fs';
 const TILESET_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedColors/tileset.json';
 const TILESET_WITH_TEXTURES = '@loaders.gl/3d-tiles/test/data/Batched/BatchedTextured/tileset.json';
 
+const TEST_TEXTURE_MATERIAL = {
+  doubleSided: false,
+  emissiveFactor: [0, 0, 0],
+  alphaMode: 'OPAQUE',
+  pbrMetallicRoughness: {
+    roughnessFactor: 1,
+    metallicFactor: 0,
+    baseColorTexture: {
+      textureSetDefinitionId: 0
+    }
+  }
+};
+
 async function cleanUpPath(testPath) {
   // Do not run under browser
   if (!isBrowser) {
@@ -81,6 +94,27 @@ test('cli - Converters#should create sharedResources json file', async t => {
     const sharedResources = JSON.parse(sharedResourcesJson);
     t.ok(sharedResources.materialDefinitions);
     t.ok(sharedResources.textureDefinitions);
+  }
+  cleanUpPath('data/BatchedTextured');
+  t.end();
+});
+
+test('cli - Converters#should create only unique materials', async t => {
+  if (!isBrowser) {
+    const converter = new I3SConverter();
+    await converter.convert({
+      inputUrl: TILESET_WITH_TEXTURES,
+      outputPath: 'data',
+      tilesetName: 'BatchedTextured'
+    });
+    const layerJson = await fs.readFile(
+      'data/BatchedTextured/SceneServer/layers/0/index.json',
+      'utf8'
+    );
+    const layer = JSON.parse(layerJson);
+    t.ok(layer.materialDefinitions);
+    t.equal(layer.materialDefinitions.length, 1);
+    t.deepEqual(layer.materialDefinitions[0], TEST_TEXTURE_MATERIAL);
   }
   cleanUpPath('data/BatchedTextured');
   t.end();

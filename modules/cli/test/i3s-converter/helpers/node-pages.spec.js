@@ -12,7 +12,25 @@ const newNodeStub = {
   children: []
 };
 
-test('cli - Converters#NodePages', async t => {
+/**
+ * Return material and geometry from test objects
+ * @param nodePages
+ * @param id
+ * @returns {{material: Object, geometry: Object}}
+ */
+function getMaterialAndGeometryFromNode(nodePages, id) {
+  const mesh = (nodePages &&
+    nodePages.nodePages &&
+    nodePages.nodePages[0] &&
+    nodePages.nodePages[0].nodes &&
+    nodePages.nodePages[0].nodes[id] &&
+    nodePages.nodePages[0].nodes[id].mesh) || {material: null, geometry: null};
+  const material = (mesh && mesh.material) || {};
+  const geometry = (mesh && mesh.geometry) || {};
+  return {material, geometry};
+}
+
+test.only('cli - Converters#NodePages', async t => {
   if (isBrowser) {
     t.end();
     return;
@@ -84,9 +102,6 @@ test('cli - Converters#NodePages', async t => {
       const newNodeWithMesh = {
         ...newNodeStub,
         mesh: {
-          material: {
-            definition: 0
-          },
           geometry: {
             definition: 0
           }
@@ -94,19 +109,43 @@ test('cli - Converters#NodePages', async t => {
       };
       const nodePages = new NodePages(() => {}, 64);
       nodePages.push(newNodeWithMesh);
-      const mesh = (nodePages &&
-        nodePages.nodePages &&
-        nodePages.nodePages[0] &&
-        nodePages.nodePages[0].nodes &&
-        nodePages.nodePages[0].nodes[0] &&
-        nodePages.nodePages[0].nodes[0].mesh) || {material: null, geometry: null};
-      const material = (mesh && mesh.material) || {};
-      const geometry = (mesh && mesh.geometry) || {};
-      st.equal(material.resource, 0);
-      st.equal(geometry.resource, 0);
+      const {material: material0, geometry: geometry0} = getMaterialAndGeometryFromNode(
+        nodePages,
+        0
+      );
+      st.equal(geometry0.resource, 0);
+      st.deepEqual(material0, {});
       nodePages.push(newNodeWithMesh);
-      st.equal(material.resource, 1);
-      st.equal(geometry.resource, 1);
+      const {material: material1, geometry: geometry1} = getMaterialAndGeometryFromNode(
+        nodePages,
+        1
+      );
+      st.equal(geometry1.resource, 1);
+      st.deepEqual(material1, {});
+      st.end();
+    }
+  );
+
+  t.test(
+    'Update material method should set "material" object in the "mesh" with node index and material id',
+    async st => {
+      const newNodeWithMesh = {
+        ...newNodeStub,
+        mesh: {
+          geometry: {
+            definition: 0
+          }
+        }
+      };
+      const nodePages = new NodePages(() => {}, 64);
+      nodePages.updateMaterialByNodeId(nodePages.push(newNodeWithMesh), 0);
+      const {material: material0} = getMaterialAndGeometryFromNode(nodePages, 0);
+      st.equal(material0.resource, 0);
+      st.equal(material0.definition, 0);
+      nodePages.updateMaterialByNodeId(nodePages.push(newNodeWithMesh), 3);
+      const {material: material1} = getMaterialAndGeometryFromNode(nodePages, 1);
+      st.equal(material1.resource, 1);
+      st.equal(material1.definition, 3);
       st.end();
     }
   );

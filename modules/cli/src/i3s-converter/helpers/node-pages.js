@@ -2,38 +2,35 @@ import {join} from 'path';
 
 /**
  * class NodePages - wrapper of nodePages array
- * 
+ *
  * @example
  * import writeFile from './helpers/write-file';
- * 
+ *
  * // create an instance of the class
- * const nodePages = new NodePages(writeFile, HARDCODED_NODES_PER_PAGE); 
+ * const nodePages = new NodePages(writeFile, HARDCODED_NODES_PER_PAGE);
  * ...
  * // push root node
- * const parentId = nodePages.push({                                     
+ * const parentId = nodePages.push({
       lodThreshold: HARDCODED_MAX_SCREEN_THRESHOLD_SQ,
       obb: coordinates.obb,
       children: []
     });
  * ...
  * // push node with parent relation
- * const nodeInPage = {                                                  
+ * const nodeInPage = {
       lodThreshold: HARDCODED_MAX_SCREEN_THRESHOLD_SQ,
       obb: coordinates.obb,
       children: [],
       mesh: {
-        material: {
-          definition: 0
-        },
         geometry: {
           definition: 0
         }
       }
     };
- * const nodeId = this.nodePages.push(nodeInPage, parentId);            
+ * const nodeId = this.nodePages.push(nodeInPage, parentId);
  * ...
  * // save all the nodePages in the end of pushing all the nodes
- * await this.nodePages.save(layers0path);                              
+ * await this.nodePages.save(layers0path);
  */
 export default class NodePages {
   /**
@@ -62,6 +59,19 @@ export default class NodePages {
   }
 
   /**
+   * Update material in node.mesh object by node id
+   * @param id - end-to-end index of the node
+   * @param materialId - id from scene layer materialDefinitions
+   */
+  updateMaterialByNodeId(id, materialId) {
+    const node = this.getNodeById(id);
+    node.mesh.material = {
+      definition: materialId,
+      resource: node.index
+    };
+  }
+
+  /**
    * Add a child id into the parent node.children array
    * @param {number | null} parentId - end-to-end parent node index
    * @param {number} childId - end-to-end child node index
@@ -82,7 +92,6 @@ export default class NodePages {
    */
   updateResourceInMesh(node) {
     if (node.mesh) {
-      node.mesh.material.resource = node.index;
       node.mesh.geometry.resource = node.index;
     }
   }

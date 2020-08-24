@@ -114,17 +114,7 @@ export const LAYERS = {
   },
   materialDefinitions: {
     path: 'materialDefinitions',
-    default: [
-      {
-        doubleSided: true,
-        pbrMetallicRoughness: {
-          baseColorTexture: {
-            textureSetDefinitionId: 0
-          },
-          metallicFactor: 0
-        }
-      }
-    ]
+    default: []
   },
   textureSetDefinitions: {
     path: 'textureSetDefinitions',
