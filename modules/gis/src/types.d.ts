@@ -23,7 +23,8 @@ export type BinaryGeometryData = {
   polygonIndices?: BinaryAttribute;
   primitivePolygonIndices?: BinaryAttribute;
   // Can be passed separately
-  type?: 'Point' | 'LineString' | 'Polygon';
+  // 'Point' | 'LineString' | 'Polygon'
+  type?: string;
 };
 
 /**
