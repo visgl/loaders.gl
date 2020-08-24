@@ -1,11 +1,3 @@
-/**
- * Convert binary geometry representation to GeoJSON
- *
- * @param data   geometry data in binary representation
- * @param  {string?} type   Input data type: Point, LineString, or Polygon
- * @param  {string?} format Output format, either geometry or feature
- * @return GeoJSON objects
- */
 export function binaryToGeoJson(data, type, format) {
   if (format === 'geometry') {
     return parseGeometry(data);
