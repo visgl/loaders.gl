@@ -1,4 +1,4 @@
-import {BinaryGeometryData} from '../types';
+import {BinaryFeatureData} from '../types';
 
 /**
  * Apply transformation to every coordinate of binary features
@@ -8,9 +8,9 @@ import {BinaryGeometryData} from '../types';
  * @return          Transformed binary features
  */
 export function transformBinaryCoords(
-  binaryFeatures: BinaryGeometryData,
+  binaryFeatures: BinaryFeatureData,
   fn: (coord: number[]) => number[]
-): BinaryGeometryData;
+): BinaryFeatureData;
 
 /**
  * Apply transformation to every coordinate of GeoJSON features

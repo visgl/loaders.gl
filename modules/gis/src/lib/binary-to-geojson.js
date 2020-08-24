@@ -1,5 +1,5 @@
 /**
- * Convert binary array representation to GeoJSON
+ * Convert binary geometry representation to GeoJSON
  *
  * @param data   geometry data in binary representation
  * @param  {string?} type   Input data type: Point, LineString, or Polygon
