@@ -37,9 +37,11 @@ export function getFrameState(viewport, frameNumber) {
 
   // These should still be normalized as the transform has scale 1 (goes from meters to meters)
   const cameraDirectionCartesian = new Vector3(
+    // @ts-ignore
     enuToFixedTransform.transformAsVector(new Vector3(cameraDirection).scale(metersPerUnit))
   ).normalize();
   const cameraUpCartesian = new Vector3(
+    // @ts-ignore
     enuToFixedTransform.transformAsVector(new Vector3(cameraUp).scale(metersPerUnit))
   ).normalize();
 

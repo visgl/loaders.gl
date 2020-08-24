@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/gltf",
-  "version": "2.3.0-alpha.4",
+  "version": "2.3.0-alpha.11",
   "description": "Framework-independent loader for the glTF format",
   "license": "MIT",
   "publishConfig": {
@@ -19,6 +19,7 @@
     "GLB",
     "glTF"
   ],
+  "types": "src/types.js",
   "main": "dist/es5/index.js",
   "module": "dist/esm/index.js",
   "esnext": "dist/es6/index.js",
@@ -38,9 +39,9 @@
     "build-bin": "BABEL_ENV=es5 babel scripts --config-file ../../babel.config.js --out-dir dist/scripts"
   },
   "dependencies": {
-    "@loaders.gl/core": "2.3.0-alpha.4",
-    "@loaders.gl/draco": "2.3.0-alpha.4",
-    "@loaders.gl/images": "2.3.0-alpha.4",
-    "@loaders.gl/loader-utils": "2.3.0-alpha.4"
+    "@loaders.gl/core": "2.3.0-alpha.11",
+    "@loaders.gl/draco": "2.3.0-alpha.11",
+    "@loaders.gl/images": "2.3.0-alpha.11",
+    "@loaders.gl/loader-utils": "2.3.0-alpha.11"
   }
 }

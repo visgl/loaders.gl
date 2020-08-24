@@ -4,7 +4,9 @@
   <img src="https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square" alt="From-v2.3" />
 </p>
 
-Shapefile loader: DBF (attributes)
+A sub loader for the `.dbf` (attributes/properties) file component of a shapefile. This is essentially a loader for the legacy dBase 7 database format.
+
+Note: Most applications will want to use the `ShapefileLoader` instead of this loader.
 
 | Loader                | Characteristic                               |
 | --------------------- | -------------------------------------------- |

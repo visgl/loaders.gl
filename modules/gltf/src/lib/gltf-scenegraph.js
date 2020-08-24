@@ -20,13 +20,17 @@ export default class GLTFScenegraph {
     if (!gltf) {
       gltf = {
         json: {
-          version: 2,
+          asset: {
+            version: '2.0',
+            generator: 'loaders.gl'
+          },
           buffers: []
         },
         buffers: []
       };
     }
 
+    this.byteLength = 0;
     // TODO - this is too sloppy, define inputs more clearly
     this.gltf = gltf;
     assert(this.gltf.json);
@@ -199,10 +203,17 @@ export default class GLTFScenegraph {
     return this;
   }
 
+  setObjectExtension(object, extensionName, data) {
+    const extensions = object.extensions || {};
+    extensions[extensionName] = data;
+    // TODO - add to usedExtensions...
+  }
+
   removeObjectExtension(object, extensionName) {
     const extensions = object.extensions || {};
+    const extension = extensions[extensionName];
     delete extensions[extensionName];
-    return this;
+    return extension;
   }
 
   // Add to standard GLTF top level extension object, mark as used
@@ -252,13 +263,8 @@ export default class GLTFScenegraph {
     }
   }
 
-  setObjectExtension(object, extensionName, data) {
-    const extensions = object.extensions || {};
-    extensions[extensionName] = data;
-    // TODO - add to usedExtensions...
-  }
-
   addMesh(attributes, indices, mode = 4) {
+    // @ts-ignore
     const accessors = this._addAttributes(attributes);
 
     const glTFMesh = {
@@ -277,6 +283,7 @@ export default class GLTFScenegraph {
   }
 
   addPointCloud(attributes) {
+    // @ts-ignore
     const accessorIndices = this._addAttributes(attributes);
 
     const glTFMesh = {

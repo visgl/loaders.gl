@@ -10,23 +10,9 @@ import {
   isBuffer
 } from '../../javascript-utils/is-type';
 import {makeIterator} from '../../iterator-utils/make-iterator/make-iterator';
-import fetchFileReadable from '../fetch/fetch-file.browser';
-import {checkFetchResponseStatus} from './check-errors';
+import {checkResponse, makeResponse} from '../utils/response-utils';
 
 const ERR_DATA = 'Cannot convert supplied data type';
-
-// Extract a URL from `parse` arguments if possible
-// If a fetch Response object or File/Blob were passed in get URL from those objects
-export function getUrlFromData(data, url) {
-  if (isResponse(data)) {
-    url = url || data.url;
-  } else if (isBlob(url)) {
-    // File or Blob
-    url = url.name;
-  }
-  // Strip any query string
-  return typeof url === 'string' ? url.replace(/\?.*/, '') : url;
-}
 
 // eslint-disable-next-line complexity
 export function getArrayBufferOrStringFromDataSync(data, loader) {
@@ -76,12 +62,12 @@ export async function getArrayBufferOrStringFromData(data, loader) {
 
   // Blobs and files are FileReader compatible
   if (isBlob(data)) {
-    data = await fetchFileReadable(data);
+    data = await makeResponse(data);
   }
 
   if (isResponse(data)) {
     const response = data;
-    await checkFetchResponseStatus(response);
+    await checkResponse(response);
     return loader.binary ? await response.arrayBuffer() : await response.text();
   }
 
@@ -104,7 +90,7 @@ export async function getAsyncIteratorFromData(data) {
 
   if (isResponse(data)) {
     // Note Since this function is not async, we currently can't load error message, just status
-    await checkFetchResponseStatus(data);
+    await checkResponse(data);
     // TODO - bug in polyfill, body can be a Promise under Node.js
     return makeIterator(data.body);
   }
@@ -143,4 +129,15 @@ function getIteratorFromData(data) {
   }
 
   throw new Error(ERR_DATA);
+}
+
+export async function getReadableStream(data) {
+  if (isReadableStream(data)) {
+    return data;
+  }
+  if (isResponse(data)) {
+    return data.body;
+  }
+  const response = await makeResponse(data);
+  return response.body;
 }

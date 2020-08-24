@@ -1,8 +1,8 @@
-import {binaryToGeoJson} from '@loaders.gl/gis';
-import {SHPLoader} from './shp-loader';
-import {DBFLoader} from './dbf-loader';
-import {parseShx} from './lib/parse-shx';
 /** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
+import {binaryToGeoJson} from '@loaders.gl/gis';
+import {SHPLoader, SHP_MAGIC_NUMBER} from './shp-loader';
+import {DBFLoader} from './dbf-loader';
+import {parseShx} from './lib/parsers/parse-shx';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -10,17 +10,17 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /** @type {LoaderObject} */
 export const ShapefileLoader = {
-  id: 'shp',
+  id: 'shapefile',
   name: 'Shapefile',
   category: 'geometry',
   version: VERSION,
   extensions: ['shp'],
-  mimeTypes: [],
+  mimeTypes: ['application/octet-stream'],
+  tests: [new Uint8Array(SHP_MAGIC_NUMBER).buffer],
   options: {
     shapefile: {}
   },
   parse: parseShapefile
-  // parseInBatches: parseShapefileInBatches
 };
 
 /* TODO
@@ -55,7 +55,7 @@ async function parseShapefile(arrayBuffer, options, context) {
   // Convert binary geometries to GeoJSON
   const geojsonGeometries = [];
   for (const geom of geometries) {
-    geojsonGeometries.push(binaryToGeoJson(geom));
+    geojsonGeometries.push(binaryToGeoJson(geom, geom.type, 'geometry'));
   }
 
   // parse properties
@@ -63,6 +63,8 @@ async function parseShapefile(arrayBuffer, options, context) {
   try {
     const {url, fetch} = context;
     const dbfResponse = await fetch(replaceExtension(url, 'dbf'));
+    // TODO dbfResponse.ok is true under Node when the file doesn't exist. See
+    // the `ignore-properties` test case
     if (dbfResponse.ok) {
       // NOTE: For some reason DBFLoader defaults to utf-8 so set default to be standards conformant
       properties = await parse(dbfResponse, DBFLoader, {dbf: {encoding: cpg || 'latin1'}});
@@ -78,7 +80,8 @@ async function parseShapefile(arrayBuffer, options, context) {
     const feature = {
       type: 'Feature',
       geometry,
-      properties: properties[i] || {}
+      // properties can be undefined if dbfResponse above was empty
+      properties: (properties && properties[i]) || {}
     };
     features.push(feature);
   }

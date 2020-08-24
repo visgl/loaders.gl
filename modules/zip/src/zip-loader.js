@@ -11,7 +11,7 @@ export const ZipLoader = {
   extensions: ['zip'],
   mimeTypes: ['application/zip'],
   category: 'archive',
-  test: 'PK',
+  tests: ['PK'],
   parse: parseZipAsync
 };
 

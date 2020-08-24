@@ -24,7 +24,7 @@ export const JSONLoader = {
   name: 'JSON',
   version: VERSION,
   extensions: ['json', 'geojson'],
-  mimeTypes: ['text/json'],
+  mimeTypes: ['application/json'],
   // TODO - support various line based JSON formats
   /*
   extensions: {
@@ -39,7 +39,6 @@ export const JSONLoader = {
   },
   */
   category: 'table',
-  testText: null,
   text: true,
   parse,
   parseTextSync,

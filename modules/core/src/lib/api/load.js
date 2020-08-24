@@ -33,5 +33,5 @@ export async function load(url, loaders, options) {
   }
 
   // Data is loaded (at least we have a `Response` object) so time to hand over to `parse`
-  return await parse(data, loaders, options, url);
+  return await parse(data, loaders, options);
 }

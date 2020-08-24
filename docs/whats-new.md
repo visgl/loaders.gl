@@ -2,18 +2,61 @@
 
 ## v2.3 (In Development)
 
-Target Release Date: TBD (alpha releases will be made available)
+Target Release Date: TBD (alpha releases are available)
+
+This release brings a new Shapefile loader, compression codecs (Zlib, LZ4, Zstandard), support for binary output from geospatial loaders, and a range of improvements supporting loaders.gl integration with kepler.gl, a major geospatial application.
+
+**@loaders.gl/shapefile** (NEW)
+
+- A new loader for the ESRI Shapefile format has been added. It loads `.SHP` and (if available) `.DBF`, `.CPG` and `.PRJ` files and returns a geojson like geometry.
+
+**@loaders.gl/compression** (NEW)
+
+- A new module with compression/decompression transforms for compression codecs (Zlib, LZ4, Zstandard). As always, these work reliably in both browsers and Node.js.
+
+**@loaders.gl/crypto** (NEW)
+
+- A new module for calculating cryptographic hashes (MD5, SHA256 etc). Provided transforms enables hashes to be calculated incrementally, e.g. on incoming binary chunks while streaming data into `parseInBatches`.
 
 **@loaders.gl/core**
 
-- `parseInBatches` can now be called on all loaders. Non-batched loaders will just return a single batch.
-- `load`, `parse` etc: `options.fetch` can now be used to supply a either a custom `fetch` function or a `fetch` options object.
+- `parseInBatches()` now allows the caller to specify "transforms" that shoud be applied on the input data before parsing, via `options.transforms`. See the new crypto and compression modules for available transforms to calculate cryptographic hashes on / decompress "streaming" data.
+- `parseInBatches()` can now be called on all loaders. Non-batched loaders will just return a single batch.
+- `options.fetch` (`load`, `parse` etc.) can now be used to supply a either a `fetch` options object or a custom `fetch` function.
+- (BREAKING) `selectLoader()` is now async and returns a `Promise` that resolves to a loader.
+- `selectLoader()` can now select loaders through content sniffing of `Blob` and `File` objects.
+- `selectLoaderSync()` has been added for situations when calling an async function is not practial.
 
 **@loaders.gl/polyfills**
 
-- Improved robustness and error handling in Node.js when calling the `fetch` polyfill on unreadable or non-existent files. Underlying errors (`ENOEXIST`, `EISDIR` etc) are now caught and reported in `Response.statusText`.
+- `fetch` polyfill: Files with `.gz` extension are automatically decompressed with gzip. The extension reported in the `fetch` response has the `.gz` extension removed.
+- `fetch` polyfill: Improved robustness and error handling in Node.js when opening unreadable or non-existent files. Underlying errors (`ENOEXIST`, `EISDIR` etc) are now caught and reported in `Response.statusText`.
+- `Blob` and `File`, new experimental polyfills.
+
+**@loaders.gl/gltf**
+
+- `GLBLoader` can now read older GLB v1 files in addition to GLB v2.
+- `GLTFLoader` now offers optional, partial support for reading older glTF v1 files and automatically converting them to glTF v2 format (via `options.glt.normalize`).
+
+**@loaders.gl/json**
+
+- Binary output is now available for the `GeoJsonLoader`, via `options.gis.format: 'binary'`.
+
+**@loaders.gl/kml**
+
+- Binary output is now available for the `KMLLoader`, via `options.gis.format: 'binary'`.
+
+**@loaders.gl/las**
+
+- Uses a newer version of the `laz-perf` parser (1.4.4).
+
+**@loaders.gl/mvt**
+
+- Binary output is now available for the Mapbox Vector Tiles `MVTLoader`, via `options.gis.format: 'binary'`.
 
 ## v2.2
+
+Framework and loader improvements based on usage in applications.
 
 Release Date: June 18, 2020
 
@@ -82,6 +125,8 @@ The `GLTFLoader` now installs the `DracoLoader`. The application no longer needs
 ## v2.1
 
 Release Date: Mar 16, 2020
+
+This release adds a number of new geospatial format loaders
 
 ### New Geospatial Loaders
 

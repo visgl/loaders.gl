@@ -4,11 +4,13 @@
   <img src="https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square" alt="From-v2.3" />
 </p>
 
-Shapefile loader
+A "sub loader" for the `.shp` (geometries) file component of a shapefile.
+
+Note: Most applications will want to use the `ShapefileLoader` instead of this loader.
 
 | Loader                | Characteristic                                |
 | --------------------- | --------------------------------------------- |
-| File Extension        | `.shp`,                                       |
+| File Extension        | `.shp`                                        |
 | File Type             | Binary                                        |
 | File Format           | Shapefiles                                    |
 | Data Format           | [Geometry](/docs/specifications/category-gis) |

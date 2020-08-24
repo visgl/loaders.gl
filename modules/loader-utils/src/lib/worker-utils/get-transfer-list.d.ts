@@ -7,4 +7,4 @@
  * @param transfers - not for application use
  * @returns a transfer list that can be passed to postMessage
  */
-export function getTransferList(object: any, recursive?: boolean, transfers?: Set<any>): any[] | null;
+export function getTransferList(object: any, recursive?: boolean, transfers?: Set<any>): Transferable[];

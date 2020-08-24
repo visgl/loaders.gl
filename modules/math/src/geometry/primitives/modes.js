@@ -1,6 +1,8 @@
+/** @typedef {import('./modes')} types */
 import {GL} from '../constants';
 import assert from '../utils/assert';
 
+/** @type {types['getPrimitiveModeType']} */
 export function getPrimitiveModeType(mode) {
   switch (mode) {
     case GL.POINTS: // draw single points.
@@ -14,10 +16,12 @@ export function getPrimitiveModeType(mode) {
     case GL.TRIANGLE_FAN: // draw a connected group of triangles.
       return GL.TRIANGLES;
     default:
+      // @ts-ignore
       return assert(false);
   }
 }
 
+/** @type {types['isPrimitiveModeExpandable']} */
 export function isPrimitiveModeExpandable(mode) {
   switch (mode) {
     case GL.LINE_STRIP: // draw lines. Each vertex connects to the one after it.
@@ -30,6 +34,7 @@ export function isPrimitiveModeExpandable(mode) {
   }
 }
 
+/** @type {types['getPrimitiveModeExpandedLength']} */
 export function getPrimitiveModeExpandedLength(mode, length) {
   switch (mode) {
     case GL.POINTS: // draw single points.
@@ -46,6 +51,7 @@ export function getPrimitiveModeExpandedLength(mode, length) {
     case GL.TRIANGLE_FAN: // draw a connected group of triangles.
       return (length - 2) * 3;
     default:
+      // @ts-ignore
       return assert(false);
   }
 }

@@ -2,6 +2,50 @@
 
 ## v2.3 Prereleases
 
+#### v2.3.0-alpha.9
+
+    CI: fix cache (#891)
+    CI: add cache to .travis.yml (#890)
+    bump ocular-dev-tools: no generator transpile in es6 dist (#889)
+    pcd: color and normal attribute fixes (#888)
+    crypto: fix transform iterators (#887)
+    pcd: Fix color = 0 after loading (#886)
+    core: `parseInBatches` support for `options.transforms` (#883)
+
+#### v2.3.0-alpha.8
+
+    crypto: Add crc32c transform (#882)
+    Remove duplicate shapefile worker loader files (#881)
+    flatgeobuf: New module for flatgeobuf format (#880)
+    Docs: contributing.md cleanup (#878)
+    Use template contributing.md (#753)
+    crypto: fixes and cleanup (#876)
+    Fix name of indices returned from SHPLoader (#875)
+
+#### v2.3.0-alpha.7
+
+- Multipolygon parsing in binary-to-geojson conversion (#848)
+- crypto: New module for cryptographic hashing (#874)
+- compression: New module (#870)
+- las: upgrade the laz-perf script to the last version (#869)
+- gis loaders: Binary geospatial support via options.gis.format (#867)
+- core: makeResponse utility to unify handling of various input types (#787)
+- polyfills: Automatically decompress .gz files under Node (#866)
+- mvt: Fork @mapbox/vector-tile (prep for optimized binary loading) (#864)
+
+#### v2.3.0-alpha.6
+
+- core: selectLoader/selectLoaderSync split (#863)
+- build(deps): bump lodash from 4.17.15 to 4.17.19 (#858)
+- typescript: Enable strict checking (#861)
+- mvt: Add result.byteLength (#862)
+- mvt: Support binary output format (#860)
+- perf: prevent iterating through typed array if using SharedArrayBuffer (#859)
+
+#### v2.3.0-alpha.5
+
+- [Bug/Enhancement] Pass actual resource so inference can be done via getResouceUrlAndType (#857)
+
 #### v2.3.0-alpha.4
 
 - gis: Add multipolygon support (#853)

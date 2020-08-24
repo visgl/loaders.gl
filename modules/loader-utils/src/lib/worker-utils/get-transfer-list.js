@@ -16,6 +16,9 @@ export function getTransferList(object, recursive = true, transfers) {
   } else if (isTransferable(object.buffer)) {
     // Typed array
     transfersSet.add(object.buffer);
+  } else if (ArrayBuffer.isView(object)) {
+    // object is a TypeArray viewing into a SharedArrayBuffer (not transferable)
+    // Do not iterate through the content in this case
   } else if (recursive && typeof object === 'object') {
     for (const key in object) {
       // Avoid perf hit - only go one level deep
@@ -25,7 +28,7 @@ export function getTransferList(object, recursive = true, transfers) {
 
   // If transfers is defined, is internal recursive call
   // Otherwise it's called by the user
-  return transfers === undefined ? Array.from(transfersSet) : null;
+  return transfers === undefined ? Array.from(transfersSet) : [];
 }
 
 // https://developer.mozilla.org/en-US/docs/Web/API/Transferable

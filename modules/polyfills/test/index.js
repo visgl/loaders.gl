@@ -6,3 +6,6 @@ import './fetch-node/response.node.spec';
 import './fetch-node/fetch.node.spec';
 
 import './images-node/images-node.spec';
+
+import './file/blob-polyfill.spec';
+import './file/file-polyfill.spec';

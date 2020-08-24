@@ -38,8 +38,8 @@ test('getBinaryImageMetadata#mimeType', async t => {
   const images = await loadImages();
 
   for (const mimeType in images) {
-    const {mimeType: detectedMimeType} = getBinaryImageMetadata(images[mimeType]);
-    t.equals(detectedMimeType, mimeType, `getBinaryImageMetadata(${mimeType})`);
+    const metadata = getBinaryImageMetadata(images[mimeType]);
+    t.equals(metadata && metadata.mimeType, mimeType, `getBinaryImageMetadata(${mimeType})`);
   }
   t.end();
 });
@@ -48,8 +48,11 @@ test('getBinaryImageMetadata#size', async t => {
   const images = await loadImages();
   for (const imageType in images) {
     const dimensions = getBinaryImageMetadata(images[imageType]);
-    t.equals(dimensions.width, 480, `width, should work with ${imageType.toUpperCase()} files`);
-    t.equals(dimensions.height, 320, `height, should work with ${imageType.toUpperCase()} files`);
+    t.ok(dimensions, `got image metadata for ${imageType.toUpperCase()}`);
+    if (dimensions) {
+      t.equals(dimensions.width, 480, `width, should work with ${imageType.toUpperCase()} files`);
+      t.equals(dimensions.height, 320, `height, should work with ${imageType.toUpperCase()} files`);
+    }
   }
   t.end();
 });

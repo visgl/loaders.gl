@@ -1,10 +1,13 @@
 /** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
+/** @typedef {import('@loaders.gl/loader-utils').WorkerLoaderObject} WorkerLoaderObject */
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-/** @type {LoaderObject} */
+const PVR_MAGIC_BYTES = [0x03, 0x52, 0x56, 0x50]; // PVR file header magic number
+
+/** @type {WorkerLoaderObject} */
 export const CompressedTextureWorkerLoader = {
   id: 'basis',
   name: 'CompressedTexture',
@@ -14,7 +17,7 @@ export const CompressedTextureWorkerLoader = {
     'pvr' // WEBGL_compressed_texture_pvrtc
   ],
   mimeTypes: ['application/octet-stream'],
-  test: 0x03525650, // PVR magic number
+  tests: [new Uint8Array(PVR_MAGIC_BYTES).buffer],
   binary: true,
   options: {
     basis: {

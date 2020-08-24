@@ -94,11 +94,19 @@ test('cli - Converters#NodePages', async t => {
       };
       const nodePages = new NodePages(() => {}, 64);
       nodePages.push(newNodeWithMesh);
-      st.equal(nodePages.nodePages[0].nodes[0].mesh.material.resource, 0);
-      st.equal(nodePages.nodePages[0].nodes[0].mesh.geometry.resource, 0);
+      const mesh = (nodePages &&
+        nodePages.nodePages &&
+        nodePages.nodePages[0] &&
+        nodePages.nodePages[0].nodes &&
+        nodePages.nodePages[0].nodes[0] &&
+        nodePages.nodePages[0].nodes[0].mesh) || {material: null, geometry: null};
+      const material = (mesh && mesh.material) || {};
+      const geometry = (mesh && mesh.geometry) || {};
+      st.equal(material.resource, 0);
+      st.equal(geometry.resource, 0);
       nodePages.push(newNodeWithMesh);
-      st.equal(nodePages.nodePages[0].nodes[1].mesh.material.resource, 1);
-      st.equal(nodePages.nodePages[0].nodes[1].mesh.geometry.resource, 1);
+      st.equal(material.resource, 1);
+      st.equal(geometry.resource, 1);
       st.end();
     }
   );

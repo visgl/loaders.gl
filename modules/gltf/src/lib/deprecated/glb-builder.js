@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /* eslint-disable camelcase, max-statements */
 import {padTo4Bytes, copyToArray} from '@loaders.gl/loader-utils';
 import {isImage} from '@loaders.gl/images';

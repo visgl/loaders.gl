@@ -23,17 +23,24 @@
 import ALIASES from '../../test/aliases';
 import {_addAliases} from '@loaders.gl/loader-utils';
 
+import loaderUtilsBench from '@loaders.gl/loader-utils/test/loader-utils.bench';
 import imageBench from '@loaders.gl/images/test/images.bench';
 import coreBench from '@loaders.gl/core/test/core.bench';
 import csvBench from '@loaders.gl/csv/test/csv.bench';
 import jsonBench from '@loaders.gl/json/test/json-loader.bench';
 // import dracoBench from '@loaders.gl/draco/test/draco.bench';
 
+import cryptoBench from '@loaders.gl/crypto/test/crypto.bench';
+
 _addAliases(ALIASES);
 
 export async function addModuleBenchmarksToSuite(suite) {
   // add tests
+  await loaderUtilsBench(suite);
+
   await imageBench(suite);
+  await cryptoBench(suite);
+
   // await dracoBench(suite); - does not build in website
   await csvBench(suite);
   await jsonBench(suite);

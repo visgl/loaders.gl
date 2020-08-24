@@ -1,8 +1,10 @@
 /* global TextDecoder */
+/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
+/** @typedef {import('@loaders.gl/loader-utils').WorkerLoaderObject} WorkerLoaderObject */
 import {RowTableBatch} from '@loaders.gl/tables';
+import {geojsonToBinary} from '@loaders.gl/gis';
 import parseJSONSync from './lib/parse-json';
 import parseJSONInBatches from './lib/parse-json-in-batches';
-/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -13,10 +15,16 @@ const GeoJSONLoaderOptions = {
     TableBatch: RowTableBatch,
     batchSize: 'auto',
     workerUrl: `https://unpkg.com/@loaders.gl/json@${VERSION}/dist/geojson-loader.worker.js`
+  },
+  json: {
+    jsonpaths: ['$', '$.features']
+  },
+  gis: {
+    format: 'geojson'
   }
 };
 
-/** @type {LoaderObject} */
+/** @type {WorkerLoaderObject} */
 export const GeoJSONWorkerLoader = {
   id: 'geojson',
   name: 'GeoJSON',
@@ -37,7 +45,6 @@ export const GeoJSONWorkerLoader = {
   },
   */
   category: 'geometry',
-  testText: null,
   text: true,
   options: GeoJSONLoaderOptions
 };
@@ -58,12 +65,34 @@ function parseTextSync(text, options) {
   // Apps can call the parse method directly, we so apply default options here
   options = {...GeoJSONLoaderOptions, ...options};
   options.json = {...GeoJSONLoaderOptions.geojson, ...options.geojson};
-  return parseJSONSync(text, options);
+  options.gis = options.gis || {};
+  const json = parseJSONSync(text, options);
+  switch (options.gis.format) {
+    case 'binary':
+      return geojsonToBinary(json);
+    default:
+      return json;
+  }
 }
 
 async function parseInBatches(asyncIterator, options) {
   // Apps can call the parse method directly, we so apply default options here
   options = {...GeoJSONLoaderOptions, ...options};
   options.json = {...GeoJSONLoaderOptions.geojson, ...options.geojson};
-  return parseJSONInBatches(asyncIterator, options);
+
+  const geojsonIterator = parseJSONInBatches(asyncIterator, options);
+
+  switch (options.gis.format) {
+    case 'binary':
+      return makeBinaryGeometryIterator(geojsonIterator);
+    default:
+      return geojsonIterator;
+  }
+}
+
+async function* makeBinaryGeometryIterator(geojsonIterator) {
+  for await (const batch of geojsonIterator) {
+    batch.data = geojsonToBinary(batch.data);
+    yield batch;
+  }
 }

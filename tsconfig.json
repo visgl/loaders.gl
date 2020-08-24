@@ -2,6 +2,8 @@
   "compilerOptions": {
     "target": "es2020",
     "jsx": "react",
+    "strict": true,
+    "noImplicitAny": false,
     "allowJs": true,
     "checkJs": true,
     "moduleResolution": "node",
@@ -13,9 +15,12 @@
     "paths": {
       "@loaders.gl/core/*": ["modules/core/src/*"],
       "@loaders.gl/core/test": ["modules/core/test"],
+      "@loaders.gl/compression/*": ["modules/compression/src/*"],
+      "@loaders.gl/compression/test": ["modules/compression/test"],
+      "@loaders.gl/crypto/*": ["modules/crypto/src/*"],
+      "@loaders.gl/crypto/test": ["modules/crypto/test"],
       "@loaders.gl/loader-utils/*": ["modules/loader-utils/src/*"],
       "@loaders.gl/loader-utils/test": ["modules/loader-utils/test"],
-      "@loaders.gl/polyfills": ["modules/polyfills/src"],
       "@loaders.gl/polyfills/*": ["modules/polyfills/src/*"],
       "@loaders.gl/polyfills/test": ["modules/polyfills/test"],
 
@@ -82,17 +87,7 @@
   "exclude":[
     "modules/**/src/libs/*",
 
-    "modules/math/src/**/*",
-    "modules/math/test/**/*",
-
-    "modules/gltf/src/**/*",
-    "modules/gltf/test/**/*",
-
     "modules/tiles/src/**/*",
-    "modules/tiles/test/**/*",
-    "modules/3d-tiles/src/**/*",
-    "modules/3d-tiles/test/**/*",
-    "modules/i3s/src/**/*",
-    "modules/i3s/test/**/*"
+    "modules/tiles/test/**/*"
   ]
 }

@@ -29,7 +29,9 @@ export default class BrowserFileSystem {
     const file = this.files[path];
     if (file) {
       // return makeResponse()
-      return new Response(this.files[path]);
+      const response = new Response(this.files[path]);
+      Object.defineProperty(response, 'url', {value: path});
+      return response;
     }
     return new Response(path, {status: 400, statusText: 'NOT FOUND'});
   }
@@ -84,7 +86,7 @@ async function readFileSlice(file, start, end) {
   const slice = file.slice(start, end);
   return await new Promise((resolve, reject) => {
     const fileReader = new FileReader();
-    fileReader.onloadend = event => resolve(event.target.result);
+    fileReader.onload = event => resolve(event.target && event.target.result);
     fileReader.onerror = error => reject(error);
     fileReader.readAsArrayBuffer(slice);
   });

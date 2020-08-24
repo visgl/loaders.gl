@@ -45,7 +45,8 @@ export default class NodePages {
   constructor(writeFileFunc, nodesPerPage) {
     this.nodesPerPage = nodesPerPage;
     this.nodesCounter = 0;
-    this.nodePages = [{nodes: []}];
+    this.nodePages = [{}];
+    this.nodePages[0].nodes = [];
     this.writeFile = writeFileFunc;
   }
 
@@ -62,7 +63,7 @@ export default class NodePages {
 
   /**
    * Add a child id into the parent node.children array
-   * @param {number} parentId - end-to-end parent node index
+   * @param {number | null} parentId - end-to-end parent node index
    * @param {number} childId - end-to-end child node index
    * @return {void}
    */
@@ -89,7 +90,7 @@ export default class NodePages {
   /**
    * Put new node in nodePages array
    * @param {object} node - node object
-   * @param {number} parentId - index of parent node
+   * @param {number | null} parentId - index of parent node
    * @return {number}
    */
   push(node, parentId = null) {

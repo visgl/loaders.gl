@@ -33,6 +33,7 @@ const modules = [
 ];
 
 test('registerLoaders#isLoaderObject', t => {
+  // @ts-ignore
   t.notOk(isLoaderObject(null), 'null is not a loader');
 
   for (const module of modules) {

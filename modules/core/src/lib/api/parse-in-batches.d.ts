@@ -11,7 +11,7 @@ export function parseInBatches(
   loaders: LoaderObject | LoaderObject[],
   options?: object,
   context?: LoaderContext
-): Promise<any>;
+): Promise<AsyncIterable<any>>;
 
 /** @deprecated parse with URL as last parameter is deprecated */
 export function parseInBatches(
@@ -19,4 +19,4 @@ export function parseInBatches(
   loaders: LoaderObject | LoaderObject[],
   options: object,
   url: string
-): Promise<any>;
+): Promise<AsyncIterable<any>>;

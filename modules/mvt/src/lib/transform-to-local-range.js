@@ -108,7 +108,7 @@ function classifyRings(rings) {
       }
 
       polygon = [rings[i]];
-    } else {
+    } else if (polygon) {
       polygon.push(rings[i]);
     }
   }

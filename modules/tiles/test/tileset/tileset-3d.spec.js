@@ -148,7 +148,8 @@ test('Tileset3D#url set up correctly given tileset JSON filepath', async t => {
 
   const tilesetJson = await load(path, Tiles3DLoader);
   const tileset = new Tileset3D(tilesetJson);
-  t.equals(tileset.url, path);
+  // NOTE: The url has been resolved (@loaders.gl/3d-tiles => localhost) so initial part is now different
+  t.equals(tileset.url.slice(-30), path.slice(-30));
   t.end();
 });
 
@@ -178,7 +179,8 @@ test('Tileset3D#loads and initializes with tileset JSON file', async t => {
 
   t.equals(tileset.geometricError, 240.0);
   t.ok(tileset.root);
-  t.equals(tileset.url, TILESET_URL);
+  // NOTE: The url has been resolved (@loaders.gl/3d-tiles => localhost) so initial part is now different
+  t.equals(tileset.url.slice(-30), TILESET_URL.slice(-30));
 
   t.end();
 });

@@ -62,6 +62,7 @@ export default function parseWKT(input) {
         // For the case: Polygon(), ...
         if (pointer.length === 0) return null;
 
+        // @ts-ignore
         pointer = stack.pop();
         // the stack was empty, input was malformed
         if (!pointer) return null;

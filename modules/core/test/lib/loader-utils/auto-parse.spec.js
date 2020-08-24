@@ -1,18 +1,18 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
-import {parseSync} from '@loaders.gl/core';
+import {load} from '@loaders.gl/core';
 import {OBJLoader} from '@loaders.gl/obj';
 import {KMLLoader} from '@loaders.gl/kml';
 
-import KML_URL from '@loaders.gl/kml/test/data/KML_Samples.kml';
+const KML_URL = '@loaders.gl/kml/test/data/KML_Samples.kml';
 
 const LOADERS = [OBJLoader, KMLLoader];
 
-test('parseSync#autoParse', t => {
+test('parseSync#autoParse', async t => {
   if (!KMLLoader.supported) {
     t.comment('XML parsing not available');
   } else {
-    const data = parseSync(KML_URL, LOADERS);
+    const data = await load(KML_URL, LOADERS);
     t.equal(data.documents.length, 2, 'Documents were found');
     t.equal(data.markers.length, 4, 'Markers were found');
     t.equal(data.lines.length, 6, 'Lines were found');

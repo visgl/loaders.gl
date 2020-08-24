@@ -13,6 +13,7 @@ export {
 // WORKER LOADER UTILS
 export {default as createWorker} from './lib/worker-loader-utils/create-worker';
 export {validateLoaderVersion} from './lib/worker-loader-utils/validate-loader-version';
+export {makeTransformIterator} from './lib/iterator-utils/make-transform-iterator';
 
 // WORKER UTILS
 export {getTransferList} from './lib/worker-utils/get-transfer-list';
@@ -27,14 +28,14 @@ export {getLibraryUrl, loadLibrary} from './lib/library-utils/library-utils';
 export {parseJSON} from './lib/parser-utils/parse-json';
 
 // MEMORY COPY UTILS
-export {toArrayBuffer, toBuffer} from './lib/binary-utils/binary-utils';
-
+export {isBuffer, toBuffer, bufferToArrayBuffer} from './lib/binary-utils/buffer-utils';
 export {
-  padTo4Bytes,
-  copyToArray,
-  copyArrayBuffer,
-  getZeroOffsetArrayBuffer
-} from './lib/binary-utils/memory-copy-utils';
+  toArrayBuffer,
+  sliceArrayBuffer,
+  concatenateArrayBuffers,
+  compareArrayBuffers
+} from './lib/binary-utils/array-buffer-utils';
+export {padTo4Bytes, copyToArray, copyArrayBuffer} from './lib/binary-utils/memory-copy-utils';
 export {
   copyPaddedArrayBufferToDataView,
   copyPaddedStringToDataView
@@ -66,6 +67,12 @@ export {forEach, concatenateChunksAsync} from './lib/iterator-utils/async-iterat
 // REQUEST UTILS
 export {default as RequestScheduler} from './lib/request-utils/request-scheduler';
 
+// PROCESS UTILS
+export {default as ChildProcessProxy} from './lib/process-utils/child-process-proxy';
+
 // MESH CATEGORY UTILS
 // Note: Should move to category specific module if code size increases
 export {getMeshSize as _getMeshSize, getMeshBoundingBox} from './categories/mesh/mesh-utils';
+
+// DEPRECATED IN 2.3
+export {getZeroOffsetArrayBuffer} from './lib/binary-utils/memory-copy-utils';

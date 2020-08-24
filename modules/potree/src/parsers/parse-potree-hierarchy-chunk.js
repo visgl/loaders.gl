@@ -79,14 +79,13 @@ function parseBinaryChunk(arrayBuffer, byteOffset = 0) {
     let mask = 1;
 
     for (let i = 0; i < 8; i++) {
-      if ((snode.header.childMask & mask) !== 0) {
+      if (snode && (snode.header.childMask & mask) !== 0) {
         const tileHeader = {};
         byteOffset = decodeRow(dataView, byteOffset, tileHeader);
         tileHeader.name = snode.name + i;
 
         stack.push(tileHeader);
         tileHeaders.push(tileHeader);
-
         snode.header.childCount++;
       }
       mask = mask * 2;

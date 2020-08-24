@@ -70,11 +70,13 @@ test('makeIterator(fetch)#async iterate', async t => {
   const stream = await response.body;
   t.ok(stream);
 
-  const asyncIterator = makeIterator(stream);
-  t.ok(asyncIterator);
+  if (stream) {
+    const asyncIterator = makeIterator(stream);
+    t.ok(asyncIterator);
 
-  for await (const arrayBuffer of asyncIterator) {
-    t.ok(arrayBuffer, `Got chunk from stream ${arrayBuffer.byteLength}`);
+    for await (const arrayBuffer of asyncIterator) {
+      t.ok(arrayBuffer, `Got chunk from stream ${arrayBuffer.byteLength}`);
+    }
   }
 
   t.end();

@@ -28,6 +28,8 @@ const HARDCODED_NODES_PER_PAGE = 64;
 export default class I3SConverter {
   constructor() {
     this.nodePages = new NodePages(writeFile, HARDCODED_NODES_PER_PAGE);
+    this.options = {};
+    this.layers0Path = '';
   }
 
   // Convert a 3d tileset

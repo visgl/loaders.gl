@@ -7,6 +7,7 @@ import {resolveUrl} from './gltf-utils/resolve-url';
 import {getTypedArrayForBufferView} from './gltf-utils/get-typed-array';
 import {decodeExtensions} from './extensions/gltf-extensions';
 import parseGLBSync, {isGLB} from './parse-glb';
+import normalizeGLTFV1 from './normalize-gltf-v1';
 import postProcessGLTF from './post-process-gltf';
 
 export function isGLTF(arrayBuffer, options = {}) {
@@ -18,6 +19,9 @@ export function isGLTF(arrayBuffer, options = {}) {
 export async function parseGLTF(gltf, arrayBufferOrString, byteOffset = 0, options, context) {
   parseGLTFContainerSync(gltf, arrayBufferOrString, byteOffset, options);
 
+  normalizeGLTFV1(gltf, {normalize: options.gltf.normalize});
+
+  /** @type {Promise[]} */
   const promises = [];
 
   if (options.gltf.loadImages) {

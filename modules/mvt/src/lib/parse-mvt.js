@@ -1,4 +1,7 @@
-import {VectorTile} from '@mapbox/vector-tile';
+// import {VectorTile} from '@mapbox/vector-tile';
+import VectorTile from './mapbox-vector-tile/vector-tile';
+
+import {geojsonToBinary} from '@loaders.gl/gis';
 import Protobuf from 'pbf';
 import {transformCoordinates, transformToLocalCoordinates} from './transform-to-local-range';
 
@@ -8,12 +11,16 @@ import {transformCoordinates, transformToLocalCoordinates} from './transform-to-
   * @param {arrayBuffer} _ A MVT arrayBuffer
   * @return {?Object} A GeoJSON geometry object
   */
-export default function parseMVT(input, options) {
-  if (input.byteLength === 0) {
+export default function parseMVT(arrayBuffer, options) {
+  options = options || {};
+  options.mvt = options.mvt || {};
+  options.gis = options.gis || {};
+
+  if (arrayBuffer.byteLength === 0) {
     return [];
   }
 
-  const tile = new VectorTile(new Protobuf(input));
+  const tile = new VectorTile(new Protobuf(arrayBuffer));
   const loaderOptions = options.mvt;
   const features = [];
 
@@ -37,6 +44,14 @@ export default function parseMVT(input, options) {
     }
   });
 
+  if (options.gis.format === 'binary') {
+    const data = geojsonToBinary(features);
+    // Add the original byteLength (as a reasonable approximation of the size of the binary data)
+    // TODO decide where to store extra fields like byteLength (header etc) and document
+    // @ts-ignore
+    data.byteLength = arrayBuffer.byteLength;
+    return data;
+  }
   return features;
 }
 

@@ -1,4 +1,5 @@
 /* eslint-disable */
+// @ts-nocheck
 
 export function normalize(normals) {
   var normals = this.attributes.normal;

@@ -38,7 +38,6 @@ async function encodeImageInBrowser(image, options) {
   drawImageToCanvas(image, canvas);
 
   // The actual encoding is done asynchronously with `canvas.toBlob()`
-  /** @type {Blob} */
   const blob = await new Promise((resolve, reject) => {
     // get it back as a Blob
     if (jpegQuality && qualityParamSupported) {

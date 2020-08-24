@@ -410,10 +410,8 @@ function getTexture(content) {
  */
 function getSharedResources(content) {
   const materials = content.gltf.materials;
-  const result = {
-    materialDefinitionInfos: null,
-    textureDefinitionInfos: null
-  };
+  const result = {};
+
   if (!materials || !materials.length) {
     return result;
   }

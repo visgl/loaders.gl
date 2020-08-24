@@ -2,26 +2,16 @@
  *
  * @param byteLength
  */
-export function padTo4Bytes(byteLength);
+export function padTo4Bytes(byteLength: number): number;
 
 /**
  * Copy a view of an ArrayBuffer into new ArrayBuffer with byteOffset = 0
  * @param arrayBuffer
  * @param byteOffset
  * @param byteLength
- */
-export function getZeroOffsetArrayBuffer(arrayBuffer, byteOffset, byteLength);
-
-/**
- * Concatenate two ArrayBuffers
- * @param source1 The first ArrayBuffer.
- * @param source2 The second ArrayBuffer.
- * @return A concatenated ArrayBuffer
- */
-export function concatenateArrayBuffers(
-  source1: ArrayBuffer | Uint8Array,
-  source2: ArrayBuffer | Uint8Array
-): ArrayBuffer;
+ * @deprecated Use sliceArrayBuffer
+ */ 
+export function getZeroOffsetArrayBuffer(arrayBuffer: ArrayBuffer, byteOffset: number, byteLength?: number);
 
 /**
  * Creates a new Uint8Array based on two different ArrayBuffers

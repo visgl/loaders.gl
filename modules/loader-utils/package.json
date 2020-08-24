@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/loader-utils",
-  "version": "2.3.0-alpha.4",
+  "version": "2.3.0-alpha.11",
   "description": "Framework-independent loaders for 3D graphics formats",
   "license": "MIT",
   "publishConfig": {
@@ -28,18 +28,15 @@
     "README.md"
   ],
   "browser": {
-    "./src/node/to-array-buffer.node.js": false,
-    "./dist/es5/node/to-array-buffer.node.js": false,
-    "./dist/esm/node/to-array-buffer.node.js": false,
-    "./dist/es6/node/to-array-buffer.node.js": false,
-    "./src/node/to-buffer.node.js": false,
-    "./dist/es5/node/to-buffer.node.js": false,
-    "./dist/esm/node/to-buffer.node.js": false,
-    "./dist/es6/node/to-buffer.node.js": false,
-    "./src/lib/library-utils/require-utils.node.js": false,
-    "./dist/es5/lib/library-utils/require-utils.node.js": false,
-    "./dist/esm/lib/library-utils/require-utils.node.js": false,
-    "./dist/es6/lib/library-utils/require-utils.node.js": false
+    "./src/lib/node/buffer-utils.node.js": false,
+    "./dist/es5/lib/node/buffer-utils.node.js": false,
+    "./dist/esm/lib/node/buffer-utils.node.js": false,
+    "./dist/es6/lib/node/buffer-utils.node.js": false,
+    "./src/lib/node/require-utils.node.js": false,
+    "./dist/es5/lib/node/require-utils.node.js": false,
+    "./dist/esm/lib/node/require-utils.node.js": false,
+    "./dist/es6/lib/node/require-utils.node.js": false,
+    "child_process": false
   },
   "scripts": {
     "pre-build-disabled": "npm run build-bundle && npm run build-bundle -- --env.dev",

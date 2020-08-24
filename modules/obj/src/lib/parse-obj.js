@@ -4,6 +4,8 @@
 //
 // @author mrdoob / http://mrdoob.com/
 
+// @ts-nocheck
+
 // o object_name | g group_name
 const OBJECT_RE = /^[og]\s*(.+)?/;
 // mtllib file_reference

@@ -83,6 +83,7 @@ export default class StreamingJSONParser extends JSONParser {
     this.parser.onopenarray = () => {
       if (!this.streamingArray) {
         if (this._matchJSONPath()) {
+          // @ts-ignore
           this.streamingJsonPath = this.getJsonPath().clone();
           this.streamingArray = [];
           this._openArray(this.streamingArray);

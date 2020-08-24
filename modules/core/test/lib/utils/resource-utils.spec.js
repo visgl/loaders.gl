@@ -12,28 +12,26 @@ const DATA_URL =
 test('getResourceUrlAndType', t => {
   t.deepEqual(getResourceUrlAndType(DATA_URL), {type: 'image/png', url: DATA_URL});
 
-  if (isBrowser) {
-    const blob = new Blob(['abc'], {type: 'application/text'});
-    t.deepEqual(getResourceUrlAndType(blob), {type: 'application/text', url: ''});
+  const blob = new Blob(['abc'], {type: 'application/text'});
+  t.deepEqual(getResourceUrlAndType(blob), {type: 'application/text', url: ''});
 
-    const file = new File(['abc'], 'filename.csv', {type: 'text/csv'});
-    t.deepEqual(getResourceUrlAndType(file), {type: 'text/csv', url: 'filename.csv'});
+  const file = new File(['abc'], 'filename.csv', {type: 'text/csv'});
+  t.deepEqual(getResourceUrlAndType(file), {type: 'text/csv', url: 'filename.csv'});
 
-    const response = new Response(new Blob(['abc']), {
-      status: 200,
-      statusText: 'Success',
-      headers: {
-        'content-type': 'application/json'
-      }
-    });
-    // Inject a url property for testing, since url is read only property for the Response class
-    Object.defineProperty(response, 'url', {value: 'https://abc.com/file.json?variable=value'});
+  const response = new Response(new Blob(['abc']), {
+    status: 200,
+    statusText: 'Success',
+    headers: {
+      'content-type': 'application/json'
+    }
+  });
+  // Inject a url property for testing, since url is read only property for the Response class
+  Object.defineProperty(response, 'url', {value: 'https://abc.com/file.json?variable=value'});
 
-    t.deepEqual(getResourceUrlAndType(response), {
-      type: 'application/json',
-      url: 'https://abc.com/file.json'
-    });
-  }
+  t.deepEqual(getResourceUrlAndType(response), {
+    type: 'application/json',
+    url: 'https://abc.com/file.json'
+  });
 
   t.end();
 });

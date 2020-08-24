@@ -29,19 +29,22 @@ class Tar {
   }
 
   /**
+   * Append a file to the tar archive
    * @param {string} filepath
    * @param {string | Uint8Array} input
    * @param {{ mode?: any; mtime?: any; uid?: any; gid?: any; owner?: any; group?: any; }} [opts]
    */
+  // eslint-disable-next-line complexity
   append(filepath, input, opts) {
     let checksum;
 
     if (typeof input === 'string') {
       input = stringToUint8(input);
-    } else if (input.constructor !== Uint8Array.prototype.constructor) {
-      const errorInput = input.constructor
+    } else if (input.constructor && input.constructor !== Uint8Array.prototype.constructor) {
+      const errorInputMatch = input.constructor
         .toString()
-        .match(/function\s*([$A-Za-z_][0-9A-Za-z_]*)\s*\(/)[1];
+        .match(/function\s*([$A-Za-z_][0-9A-Za-z_]*)\s*\(/);
+      const errorInput = errorInputMatch && errorInputMatch[1];
       const errorMessage = `Invalid input type. You gave me: ${errorInput}`;
       throw errorMessage;
     }

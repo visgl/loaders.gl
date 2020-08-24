@@ -11,17 +11,20 @@ export {registerLoaders} from './lib/api/register-loaders';
 export {parse} from './lib/api/parse';
 export {parseSync} from './lib/api/parse-sync';
 export {parseInBatches} from './lib/api/parse-in-batches';
-export {selectLoader} from './lib/api/select-loader';
+export {selectLoader, selectLoaderSync} from './lib/api/select-loader';
 
 export {load} from './lib/api/load';
 export {loadInBatches} from './lib/api/load-in-batches';
 
 // ENCODING (ENCODING AND WRITING)
-export {encode, encodeSync, encodeInBatches} from './lib/api/encode';
+export {encode, encodeSync, encodeInBatches, encodeText, encodeURLtoURL} from './lib/api/encode';
 export {save, saveSync} from './lib/api/save';
 
 // ITERATOR UTILS
 export {makeIterator} from './iterator-utils/make-iterator/make-iterator';
+
+// CORE LOADERS
+export {NullLoader} from './null-loader';
 
 // CORE UTILS SHARED WITH LOADERS (RE-EXPORTED FROM LOADER-UTILS)
 export {setPathPrefix, getPathPrefix, resolvePath} from '@loaders.gl/loader-utils';

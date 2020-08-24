@@ -15,6 +15,7 @@ export default function KMLtoGeoJson(kml, options) {
     };
     delete feature.properties.type;
     delete feature.properties.coordinates;
+    // @ts-ignore
     geojson.features.push(feature);
   }
 
@@ -29,6 +30,7 @@ export default function KMLtoGeoJson(kml, options) {
     };
     delete feature.properties.type;
     delete feature.properties.coordinates;
+    // @ts-ignore
     geojson.features.push(feature);
   }
 
@@ -43,6 +45,7 @@ export default function KMLtoGeoJson(kml, options) {
     };
     delete feature.properties.type;
     delete feature.properties.coordinates;
+    // @ts-ignore
     geojson.features.push(feature);
   }
 

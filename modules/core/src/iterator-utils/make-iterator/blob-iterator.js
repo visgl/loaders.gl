@@ -9,22 +9,22 @@ export async function* makeBlobIterator(file, options = {}) {
   while (offset < file.size) {
     const end = offset + chunkSize;
 
-    // The trick when reading File objects is to read successive "slices" of the File
-    // Per spec https://w3c.github.io/FileAPI/, slicing a File should only update the start and end fields
-    // Actually reading from file should happen in `readAsArrayBuffer` (and as far we can tell it does)
-    const slice = file.slice(offset, end);
-
-    const chunk = await readFileSlice(slice);
+    const chunk = await readFileSlice(file, offset, end);
 
     offset = end;
     yield chunk;
   }
 }
 
-async function readFileSlice(slice) {
+export async function readFileSlice(file, offset, end) {
   return await new Promise((resolve, reject) => {
+    // The trick when reading File objects is to read successive "slices" of the File
+    // Per spec https://w3c.github.io/FileAPI/, slicing a File should only update the start and end fields
+    // Actually reading from file should happen in `readAsArrayBuffer` (and as far we can tell it does)
+    const slice = file.slice(offset, end);
+
     const fileReader = new FileReader();
-    fileReader.onloadend = event => resolve(event.target.result);
+    fileReader.onload = event => resolve(event.target && event.target.result);
     fileReader.onerror = error => reject(error);
     fileReader.readAsArrayBuffer(slice);
   });

@@ -17,9 +17,12 @@ test('ImageWriter#write-and-read-image', async t => {
     image: {mimeType: 'image/jpeg', jpegQuality: 90}
   });
   let metadata = getBinaryImageMetadata(arrayBuffer);
-  t.equal(metadata.width, IMAGE.width, 'encoded image width is correct');
-  t.equal(metadata.height, IMAGE.height, 'encoded image height is correct');
-  t.equal(metadata.mimeType, 'image/jpeg', 'encoded image mimeType is correct');
+  t.ok(metadata);
+  if (metadata) {
+    t.equal(metadata.width, IMAGE.width, 'encoded image width is correct');
+    t.equal(metadata.height, IMAGE.height, 'encoded image height is correct');
+    t.equal(metadata.mimeType, 'image/jpeg', 'encoded image mimeType is correct');
+  }
 
   let image = await parse(arrayBuffer, ImageLoader, {image: {type: 'data'}});
   t.deepEqual(image.width, IMAGE.width, 'encoded and parsed image widths are same');
@@ -30,9 +33,12 @@ test('ImageWriter#write-and-read-image', async t => {
 
   arrayBuffer = await encode(IMAGE, ImageWriter, {image: {mimeType: 'image/png'}});
   metadata = getBinaryImageMetadata(arrayBuffer);
-  t.equal(metadata.width, IMAGE.width, 'encoded image width is correct');
-  t.equal(metadata.height, IMAGE.height, 'encoded image height is correct');
-  t.equal(metadata.mimeType, 'image/png', 'encoded image mimeType is correct');
+  t.ok(metadata);
+  if (metadata) {
+    t.equal(metadata.width, IMAGE.width, 'encoded image width is correct');
+    t.equal(metadata.height, IMAGE.height, 'encoded image height is correct');
+    t.equal(metadata.mimeType, 'image/png', 'encoded image mimeType is correct');
+  }
 
   image = await parse(arrayBuffer, ImageLoader, {image: {type: 'data'}});
   t.deepEqual(image.width, IMAGE.width, 'encoded and parsed image widths are same');

@@ -57,20 +57,29 @@ function getNormalizedHeader(PCDheader, attributes) {
 }
 
 function getNormalizedAttributes(attributes) {
-  return {
+  const normalizedAttributes = {
     POSITION: {
       value: new Float32Array(attributes.position),
       size: 3
-    },
-    NORMAL: {
-      value: new Float32Array(attributes.normal),
-      size: 3
-    },
-    COLOR_0: {
-      value: new Uint8Array(attributes.color),
-      size: 3
     }
   };
+
+  if (attributes.normal && attributes.normal.length > 0) {
+    normalizedAttributes.NORMAL = {
+      value: new Float32Array(attributes.normal),
+      size: 3
+    };
+  }
+
+  if (attributes.color && attributes.color.length > 0) {
+    // TODO - RGBA
+    normalizedAttributes.COLOR_0 = {
+      value: new Uint8Array(attributes.color),
+      size: 3
+    };
+  }
+
+  return normalizedAttributes;
 }
 
 /* eslint-disable complexity, max-statements */
@@ -79,8 +88,8 @@ function parsePCDHeader(data) {
   const result1 = data.search(/[\r\n]DATA\s(\S*)\s/i);
   const result2 = /[\r\n]DATA\s(\S*)\s/i.exec(data.substr(result1 - 1));
 
-  PCDheader.data = result2[1];
-  PCDheader.headerLen = result2[0].length + result1;
+  PCDheader.data = result2 && result2[1];
+  PCDheader.headerLen = (result2 && result2[0].length) + result1;
   PCDheader.str = data.substr(0, PCDheader.headerLen);
 
   // remove comments
@@ -186,11 +195,13 @@ function parsePCDASCII(PCDheader, textData) {
       }
 
       if (offset.rgb !== undefined) {
-        const c = new Float32Array([parseFloat(line[offset.rgb])]);
-        const dataview = new DataView(c.buffer, 0);
-        color.push(dataview.getUint8(0) / 255.0);
-        color.push(dataview.getUint8(1) / 255.0);
-        color.push(dataview.getUint8(2) / 255.0);
+        const floatValue = parseFloat(line[offset.rgb]);
+        const binaryColor = new Float32Array([floatValue]);
+        const dataview = new DataView(binaryColor.buffer, 0);
+        color.push(dataview.getUint8(0));
+        color.push(dataview.getUint8(1));
+        color.push(dataview.getUint8(2));
+        // TODO - handle alpha channel / RGBA?
       }
 
       if (offset.normal_x !== undefined) {
@@ -220,9 +231,9 @@ function parsePCDBinary(PCDheader, data) {
     }
 
     if (offset.rgb !== undefined) {
-      color.push(dataview.getUint8(row + offset.rgb + 0) / 255.0);
-      color.push(dataview.getUint8(row + offset.rgb + 1) / 255.0);
-      color.push(dataview.getUint8(row + offset.rgb + 2) / 255.0);
+      color.push(dataview.getUint8(row + offset.rgb + 0));
+      color.push(dataview.getUint8(row + offset.rgb + 1));
+      color.push(dataview.getUint8(row + offset.rgb + 2));
     }
 
     if (offset.normal_x !== undefined) {

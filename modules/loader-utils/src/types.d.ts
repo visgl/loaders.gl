@@ -1,6 +1,26 @@
 /**
  * A loader defintion that can be used with `@loaders.gl/core` functions
  */
+export type WorkerLoaderObject = {
+  id: string,
+  name: string,
+  category?: string;
+  version: string,
+  extensions: string[],
+  mimeTypes: string[],
+  options: object;
+  deprecatedOptions?: object;
+
+  binary?: boolean;
+  text?: boolean;
+
+  tests?: (((ArrayBuffer) => boolean) | ArrayBuffer | string)[];
+
+  // TODO - deprecated
+  supported?: boolean;
+  testText?: (string) => boolean;
+};
+
 export type LoaderObject = {
   id: string,
   name: string,
@@ -14,13 +34,13 @@ export type LoaderObject = {
   binary?: boolean;
   text?: boolean;
 
-  test?: ((ArrayBuffer) => boolean) | string | number;
+  tests?: (((ArrayBuffer) => boolean) | ArrayBuffer | string)[];
 
-  parse?: (arrayBuffer, options) => Promise<any>;
+  parse: (arrayBuffer, options, context?) => Promise<any>;
   parseSync?: (arrayBuffer, options) => any;
   parseText?: (string, options) => Promise<any>;
   parseTextSync?: (string, options) => any;
-  parseInBatches?: (iterator: AsyncIterable<ArrayBuffer> | AsyncIterator<ArrayBuffer>, options: object) => any;
+  parseInBatches?: (iterator: AsyncIterator<ArrayBuffer> | Iterator<ArrayBuffer>, options: object) => Promise<AsyncIterator<any>> | AsyncIterator<any>;
 
   // TODO - deprecated
   supported?: boolean;
