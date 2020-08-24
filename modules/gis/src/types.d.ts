@@ -10,6 +10,7 @@ type TypedArray =
   | Float64Array;
 
 export type BinaryAttribute = {value: TypedArray; size: number};
+export type BinaryGeometryType = 'Point' | 'LineString' | 'Polygon';
 
 type NumericProps = {[key: string]: BinaryAttribute};
 type Properties = object[];
@@ -23,14 +24,13 @@ export type BinaryGeometryData = {
   polygonIndices?: BinaryAttribute;
   primitivePolygonIndices?: BinaryAttribute;
   // Can be passed separately
-  // 'Point' | 'LineString' | 'Polygon'
-  type?: string;
+  type?: BinaryGeometryType;
 };
 
 /**
  * Represent a collection of Features, similar to a GeoJSON FeatureCollection
  */
-export type BinaryFeatureData = {
+export type BinaryFeaturesData = {
   points?: {
     positions: BinaryAttribute;
     featureIds: BinaryAttribute;

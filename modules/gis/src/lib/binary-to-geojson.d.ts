@@ -1,4 +1,4 @@
-import {BinaryGeometryData, BinaryFeatureData} from '../types';
+import {BinaryGeometryData, BinaryFeaturesData, BinaryGeometryType} from '../types';
 
 /**
  * Convert binary geometry representation to GeoJSON
@@ -9,7 +9,7 @@ import {BinaryGeometryData, BinaryFeatureData} from '../types';
  * @return GeoJSON objects
  */
 export function binaryToGeoJson(
-  data: BinaryGeometryData | BinaryFeatureData,
-  type?: string,
-  format?: string
+  data: BinaryGeometryData | BinaryFeaturesData,
+  type?: BinaryGeometryType,
+  format?: 'geometry' | 'feature'
 ): object[];
