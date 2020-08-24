@@ -3,6 +3,8 @@ import test from 'tape-promise/tape';
 import {fetchFile} from '@loaders.gl/core';
 import {binaryToGeoJson} from '@loaders.gl/gis';
 
+import GEOMETRY_TEST_CASES from '@loaders.gl/gis/test/data/geometry';
+
 const FEATURE_COLLECTION_TEST_CASES = '@loaders.gl/gis/test/data/featurecollection.json';
 
 test('binary-to-geojson feature collections', async t => {
@@ -14,6 +16,17 @@ test('binary-to-geojson feature collections', async t => {
     if (testCase.geoJSON && testCase.binary) {
       t.deepEqual(binaryToGeoJson(testCase.binary), testCase.geoJSON.features);
     }
+  }
+
+  t.end();
+});
+
+test('binary-to-geojson geometries', t => {
+  for (const testCase of GEOMETRY_TEST_CASES) {
+    t.deepEqual(
+      binaryToGeoJson(testCase.binary, testCase.binary.type, 'geometry'),
+      testCase.geoJSON
+    );
   }
 
   t.end();
