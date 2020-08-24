@@ -48,6 +48,26 @@ export default function parseSHP(arrayBuffer, options) {
   return shpParser.result;
 }
 
+export async function* parseSHPInBatches(asyncIterator, options) {
+  const loaderOptions = options.dbf || {};
+  const {encoding} = loaderOptions;
+
+  const parser = new SHPParser();
+  for await (const arrayBuffer of asyncIterator) {
+    parser.write(arrayBuffer);
+    if (parser.result.data.length > 0) {
+      yield parser.result.data;
+      parser.result.data = [];
+    }
+  }
+  parser.end();
+  if (parser.result.data.length > 0) {
+    yield parser.result.data;
+  }
+
+  return ;
+}
+
 /* eslint-disable complexity, max-depth */
 function parseState(state, result = {}, binaryReader) {
   // eslint-disable-next-line no-constant-condition

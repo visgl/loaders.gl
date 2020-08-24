@@ -17,7 +17,9 @@ class DBFParser {
     this.binaryReader = new BinaryChunkReader();
     this.textDecoder = new TextDecoder(encoding);
     this.state = STATE.START;
-    this.result = {};
+    this.result = {
+      data: []
+    };
   }
 
   write(arrayBuffer) {
@@ -117,7 +119,7 @@ function parseState(state, result = {}, binaryReader, textDecoder) {
   }
 }
 
-export default function parseDbf(arrayBuffer, options) {
+export default function parseDBF(arrayBuffer, options) {
   const loaderOptions = options.dbf || {};
   const {encoding} = loaderOptions;
 
@@ -126,6 +128,24 @@ export default function parseDbf(arrayBuffer, options) {
   dbfParser.end();
 
   return dbfParser.result.data;
+}
+
+export async function* parseDBFInBatches(asyncIterator, options) {
+  const loaderOptions = options.dbf || {};
+  const {encoding} = loaderOptions;
+
+  const parser = new DBFParser({encoding});
+  for await (const arrayBuffer of asyncIterator) {
+    parser.write(arrayBuffer);
+    if (parser.result.data.length > 0) {
+      yield parser.result.data;
+      parser.result.data = [];
+    }
+  }
+  parser.end();
+  if (parser.result.data.length > 0) {
+    yield parser.result.data;
+  }
 }
 
 /**
