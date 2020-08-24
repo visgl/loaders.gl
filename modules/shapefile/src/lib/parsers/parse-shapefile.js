@@ -13,6 +13,8 @@ async function *parseShapefileInBatches(asyncIterator, options, context) {
   // parse geometries
   const shapes = parseInBatches(asyncIterator, SHPLoader, {shp: shx});
 
+  // const shapeIterator = parseSHPInBatches(asyncIterator);
+
   // parse properties
   // let dbfResponse = fetch(`${baseName}.dbf`);
   // const properties = parseInBatches(dbfResponse, DBFLoader, {dbf: {cpg});
@@ -30,7 +32,6 @@ export async function* parseShapefileInBatches(asyncIterator, options, context) 
   const {parse} = context;
   const {shx, cpg, prj} = await loadShapefileSidecarFiles(options, context);
 
-  // const dbfIterator = context.parseInBatches()
 
   const shapeIterator = parseSHPInBatches(asyncIterator);
 }
@@ -86,7 +87,7 @@ export async function parseShapefile(arrayBuffer, options, context) {
 }
 
 // eslint-disable-next-line max-statements
-async function loadShapefileSidecarFiles(options, context) {
+export async function loadShapefileSidecarFiles(options, context) {
   // Attempt a parallel load of the small sidecar files
   const {url, fetch} = context;
   const shxPromise = fetch(replaceExtension(url, 'shx'));
@@ -136,7 +137,7 @@ async function loadShapefileSidecarFiles(options, context) {
  * @param {string} newExtension
  * @returns {string}
  */
-function replaceExtension(url, newExtension) {
+export function replaceExtension(url, newExtension) {
   const baseName = basename(url);
   const extension = extname(url);
   const isUpperCase = extension === extension.toUpperCase();
