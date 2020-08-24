@@ -1,3 +1,4 @@
+/** @typedef {import('@loaders.gl/gis').BinaryGeometryData} BinaryGeometryData */
 /* eslint-disable max-depth */
 import test from 'tape-promise/tape';
 import {fetchFile} from '@loaders.gl/core';
@@ -23,10 +24,10 @@ test('binary-to-geojson feature collections', async t => {
 
 test('binary-to-geojson geometries', t => {
   for (const testCase of GEOMETRY_TEST_CASES) {
-    t.deepEqual(
-      binaryToGeoJson(testCase.binary, testCase.binary.type, 'geometry'),
-      testCase.geoJSON
-    );
+    /** @type {BinaryGeometryData} */
+    // @ts-ignore
+    const binaryData = testCase.binary;
+    t.deepEqual(binaryToGeoJson(binaryData, binaryData.type, 'geometry'), testCase.geoJSON);
   }
 
   t.end();
