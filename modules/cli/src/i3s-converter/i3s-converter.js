@@ -14,6 +14,7 @@ import {
   convertCommonToI3SExtentCoordinate
 } from './helpers/coordinate-converter';
 import {createSceneServerPath} from './helpers/create-scene-server-path';
+import {convertScreenSpaceErrorToScreenThreshold} from '../lib/utils/lod-conversion-utils';
 
 import {LAYERS as layersTemplate} from './json-templates/layers';
 import {NODE as nodeTemplate} from './json-templates/node';
@@ -22,7 +23,6 @@ import {SHARED_RESOURCES_TEMPLATE} from './json-templates/shared-resources';
 const ION_TOKEN =
   process.env.IonToken || // eslint-disable-line
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ'; // eslint-disable-line
-const HARDCODED_MAX_SCREEN_THRESHOLD_SQ = 196349.54374999998;
 const HARDCODED_NODES_PER_PAGE = 64;
 
 export default class I3SConverter {
@@ -106,7 +106,7 @@ export default class I3SConverter {
     const root0 = transform(root0data, nodeTemplate);
 
     const parentId = this.nodePages.push({
-      lodThreshold: HARDCODED_MAX_SCREEN_THRESHOLD_SQ,
+      lodThreshold: 0,
       obb: coordinates.obb,
       children: []
     });
@@ -189,8 +189,10 @@ export default class I3SConverter {
     const rootTileId = rootTile.id;
     const coordinates = convertCommonToI3SCoordinate(sourceTile);
 
+    const lodSelection = convertScreenSpaceErrorToScreenThreshold(sourceTile, coordinates);
+
     const nodeInPage = {
-      lodThreshold: HARDCODED_MAX_SCREEN_THRESHOLD_SQ,
+      lodThreshold: lodSelection.find(val => val.metricType === 'maxScreenThresholdSQ').maxError,
       obb: coordinates.obb,
       children: [],
       mesh: {
@@ -210,6 +212,7 @@ export default class I3SConverter {
       path: nodeId.toString(),
       level: rootTile.level + 1,
       ...coordinates,
+      lodSelection,
       parentNode: {
         id: rootTileId,
         href: `../${rootTileId}`,
