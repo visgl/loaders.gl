@@ -6,8 +6,6 @@
 
 The `@loaders.gl/crypto` module provides a selection of optional cryptographic hash plugins for loaders.gl.
 
-> This module is a wrapper around [crypto-js](https://github.com/brix/crypto-js) which is an archived project. Make your choices around whether and how to use this module accordingly (i.e. building on a module that is not actively maintenaned is not ideal for security related algorithms).
-
 ## Cryptographic Formats
 
 MD5, SHA256 and many more, see [crypto-js](https://github.com/brix/crypto-js)
