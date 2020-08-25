@@ -197,9 +197,12 @@ export default class I3SConverter {
     const coordinates = convertCommonToI3SCoordinate(sourceTile);
 
     const lodSelection = convertScreenSpaceErrorToScreenThreshold(sourceTile, coordinates);
+    const maxScreenThresholdSQ = lodSelection.find(
+      val => val.metricType === 'maxScreenThresholdSQ'
+    ) || {maxError: 0};
 
     const nodeInPage = {
-      lodThreshold: lodSelection.find(val => val.metricType === 'maxScreenThresholdSQ').maxError,
+      lodThreshold: maxScreenThresholdSQ.maxError,
       obb: coordinates.obb,
       children: [],
       mesh: {
