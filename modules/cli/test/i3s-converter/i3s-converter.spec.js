@@ -32,7 +32,8 @@ test('cli - Converters#converts 3d-tiles tileset to i3s tileset', async t => {
     const tilesetJson = await converter.convert({
       inputUrl: TILESET_URL,
       outputPath: 'data',
-      tilesetName: 'BatchedColors'
+      tilesetName: 'BatchedColors',
+      slpk: true
     });
     t.ok(tilesetJson);
   }

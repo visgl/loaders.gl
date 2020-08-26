@@ -8,7 +8,7 @@ import transform from 'json-map-transform';
 import md5 from 'md5';
 
 import NodePages from './helpers/node-pages';
-import writeFile from '../lib/utils/write-file';
+import {writeFile, removeDir} from '../lib/utils/file-utils';
 import {compressFilesWithZip} from '../lib/utils/compress-util';
 import convertB3dmToI3sGeometry from './helpers/geometry-converter';
 import {
@@ -65,6 +65,8 @@ export default class I3SConverter {
   /* eslint-disable max-statements */
   async _creationOfStructure(outputPath, tilesetName) {
     const tilesetPath = join(`${outputPath}`, `${tilesetName}`);
+    await removeDir(tilesetPath);
+
     this.layers0Path = join(tilesetPath, 'SceneServer', 'layers', '0');
     const extent = convertCommonToI3SExtentCoordinate(this.sourceTileset);
 
@@ -156,6 +158,7 @@ export default class I3SConverter {
     await this.nodePages.save(this.layers0Path, this.fileMap, isCreateSlpk);
     if (isCreateSlpk) {
       await compressFilesWithZip(this.fileMap, `${tilesetPath}.slpk`);
+      await removeDir(tilesetPath);
     }
   }
   /* eslint-enable max-statements */

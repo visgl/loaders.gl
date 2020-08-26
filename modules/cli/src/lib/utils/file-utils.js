@@ -2,7 +2,7 @@ import {promises as fs} from 'fs';
 import {join} from 'path';
 import {compressFileWithGzip} from './compress-util';
 
-export default async function(path, data, slpk = false, fileName = 'index.json') {
+export async function writeFile(path, data, slpk = false, fileName = 'index.json') {
   await fs.mkdir(path, {recursive: true});
   const pathFile = join(path, fileName);
   try {
@@ -15,4 +15,12 @@ export default async function(path, data, slpk = false, fileName = 'index.json')
     return await compressFileWithGzip(pathFile);
   }
   return pathFile;
+}
+
+export function removeDir(path) {
+  return fs.rmdir(path, {recursive: true});
+}
+
+export function removeFile(path) {
+  return fs.unlink(path);
 }

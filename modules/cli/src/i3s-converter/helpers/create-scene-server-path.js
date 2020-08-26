@@ -3,7 +3,7 @@ import transform from 'json-map-transform';
 import {join} from 'path';
 
 import {SCENE_SERVER_TEMPLATE} from '../json-templates/scene-server';
-import writeFile from '../../lib/utils/write-file';
+import {writeFile} from '../../lib/utils/file-utils';
 
 /**
  * Form and save sceneServer meta data into a file

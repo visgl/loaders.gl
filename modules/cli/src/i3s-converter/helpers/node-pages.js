@@ -4,7 +4,7 @@ import {join} from 'path';
  * class NodePages - wrapper of nodePages array
  *
  * @example
- * import writeFile from './helpers/write-file';
+ * import {writeFile} from './helpers/write-file';
  *
  * // create an instance of the class
  * const nodePages = new NodePages(writeFile, HARDCODED_NODES_PER_PAGE);
