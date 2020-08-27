@@ -3,10 +3,11 @@ import {ZstdDeflateTransform, ZstdInflateTransform} from '@loaders.gl/compressio
 import {generateRandomArrayBuffer, compareArrayBuffers} from '../utils/test-utils';
 
 const SIZE = 100 * 1000;
-const binaryData = generateRandomArrayBuffer({size: SIZE});
-const repeatedData = generateRandomArrayBuffer({size: SIZE / 10, repetitions: 10});
 
 test('lz4#defaults', async t => {
+  const binaryData = generateRandomArrayBuffer({size: SIZE});
+  const repeatedData = generateRandomArrayBuffer({size: SIZE / 10, repetitions: 10});
+
   let deflatedData = await ZstdDeflateTransform.deflate(binaryData);
   let inflatedData = await ZstdInflateTransform.inflate(deflatedData);
   t.ok(compareArrayBuffers(binaryData, inflatedData), 'deflate/inflate default options');

@@ -1,4 +1,5 @@
 import {ZstdCodec} from 'zstd-codec';
+import {concatenateArrayBuffers} from '@loaders.gl/loader-utils';
 
 export default class ZstdDeflateTransform {
   static deflate(input, options) {
@@ -13,5 +14,19 @@ export default class ZstdDeflateTransform {
         resolve(output.buffer);
       });
     });
+  }
+
+  constructor() {
+    this._chunks = [];
+  }
+
+  async write(chunk) {
+    this._chunks.push(null);
+    return null;
+  }
+
+  async end() {
+    const arrayBuffer = concatenateArrayBuffers(...this._chunks);
+    return ZstdDeflateTransform.deflate(arrayBuffer);
   }
 }

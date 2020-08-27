@@ -1,9 +1,21 @@
+import {IncrementalTransform} from "@loaders.gl/loader-utils";
+
 /**
- * A transform that Zstd compresses / deflates input byte chunks
+ * A transform that Zstd compresses / deflates input bytes
  */
-export default class ZstdDeflateTransform {
+export default class ZstdDeflateTransform implements IncrementalTransform {
   /**
    * Atomic deflate convenience
    */
   static deflate(input: ArrayBuffer, options?: object): Promise<ArrayBuffer>;
+
+  /**
+   * Alternate interface for chunking & without exceptions
+   * @param options
+   */
+  constructor(options: object);
+
+  write(chunk: ArrayBuffer): ArrayBuffer | null;
+
+  end(): ArrayBuffer | null;
 }
