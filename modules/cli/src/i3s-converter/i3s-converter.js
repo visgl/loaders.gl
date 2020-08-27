@@ -55,7 +55,7 @@ export default class I3SConverter {
     // console.log(tilesetJson); // eslint-disable-line
     this.sourceTileset = new Tileset3D(sourceTilesetJson, options);
 
-    await this._creationOfStructure(outputPath, tilesetName);
+    await this._createAndSaveTileset(outputPath, tilesetName);
 
     return sourceTilesetJson;
   }
@@ -63,7 +63,7 @@ export default class I3SConverter {
   // PRIVATE
 
   /* eslint-disable max-statements */
-  async _creationOfStructure(outputPath, tilesetName) {
+  async _createAndSaveTileset(outputPath, tilesetName) {
     const tilesetPath = join(`${outputPath}`, `${tilesetName}`);
     // Removing the tilesetPath needed to exclude erroneous files after conversion
     await removeDir(tilesetPath);
