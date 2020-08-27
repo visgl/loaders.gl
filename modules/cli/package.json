@@ -42,6 +42,7 @@
     "@loaders.gl/i3s": "2.3.0-alpha.11",
     "@loaders.gl/polyfills": "2.3.0-alpha.11",
     "@loaders.gl/tiles": "2.3.0-alpha.11",
+    "@loaders.gl/loader-utils": "2.3.0-alpha.11",
     "@math.gl/core": "^3.2.1",
     "@math.gl/geospatial": "^3.2.1",
     "uuid": "^8.1.0",

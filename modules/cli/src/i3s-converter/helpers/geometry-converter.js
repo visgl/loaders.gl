@@ -3,6 +3,7 @@ import {Ellipsoid} from '@math.gl/geospatial';
 
 import {DracoWriter} from '@loaders.gl/draco';
 import {encode} from '@loaders.gl/core';
+import {concatenateArrayBuffers, concatenateTypedArrays} from '@loaders.gl/loader-utils';
 
 const VALUES_PER_VERTEX = 3;
 const VALUES_PER_TEX_COORD = 2;
@@ -16,11 +17,15 @@ export default async function convertB3dmToI3sGeometry(content, options = {}) {
   const header = new Uint32Array(2);
   header.set([vertexCount], 0);
 
-  let fileBuffer = header.buffer;
-  fileBuffer = concatenateArrayBuffers(fileBuffer, positions.buffer);
-  fileBuffer = concatenateArrayBuffers(fileBuffer, normals.buffer);
-  fileBuffer = concatenateArrayBuffers(fileBuffer, texCoords.buffer);
-  fileBuffer = concatenateArrayBuffers(fileBuffer, colors.buffer);
+  const fileBuffer = new Uint8Array(
+    concatenateArrayBuffers(
+      header.buffer,
+      positions.buffer,
+      normals.buffer,
+      texCoords.buffer,
+      colors.buffer
+    )
+  );
 
   let compressedGeometry = null;
   if (options.draco) {
@@ -241,22 +246,6 @@ function convertNode(
   normals = newAttributes.normals;
   texCoords = newAttributes.texCoords;
   return {positions, normals, texCoords};
-}
-
-function concatenateTypedArrays(array1, array2) {
-  const newArray = new Float32Array(array1.length + array2.length);
-  newArray.set(array1);
-  newArray.set(array2, array1.length);
-  return newArray;
-}
-
-function concatenateArrayBuffers(source1, source2) {
-  const sourceArray1 = source1 instanceof ArrayBuffer ? new Uint8Array(source1) : source1;
-  const sourceArray2 = source2 instanceof ArrayBuffer ? new Uint8Array(source2) : source2;
-  const temp = new Uint8Array(sourceArray1.byteLength + sourceArray2.byteLength);
-  temp.set(sourceArray1, 0);
-  temp.set(sourceArray2, sourceArray1.byteLength);
-  return temp;
 }
 
 /**

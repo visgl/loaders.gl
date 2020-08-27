@@ -1,6 +1,10 @@
 /* global Buffer */
 import test from 'tape-promise/tape';
-import {toArrayBuffer, concatenateArrayBuffers} from '@loaders.gl/loader-utils';
+import {
+  toArrayBuffer,
+  concatenateArrayBuffers,
+  concatenateTypedArrays
+} from '@loaders.gl/loader-utils';
 
 test('toArrayBuffer', t => {
   const typedArray = new Float32Array([0, 1, 2, 3]);
@@ -39,5 +43,29 @@ test('concatenateArrayBuffers', t => {
   result = concatenateArrayBuffers(input1);
   t.deepEquals(result, input1.buffer, 'single array buffer concatenated as expected');
 
+  t.end();
+});
+
+test('concatenateTypedArrays', t => {
+  const array1 = new Int32Array(4);
+  array1.set([-100, 101]);
+  const array2 = new Int32Array([1, 2]);
+  const array3 = new Int32Array([-300]);
+  const result1 = concatenateTypedArrays(array1, array2, array3);
+  const expectedResult = new Int32Array([-100, 101, 0, 0, 1, 2, -300]);
+  t.deepEqual(result1, expectedResult, 'Correct result of concatenation');
+  t.equal(result1.constructor.name, 'Int32Array', 'Correct output data type');
+
+  const result2 = concatenateTypedArrays(new Int32Array(0), array2);
+  t.deepEqual(result2, array2, 'Correct result of concatenation');
+
+  t.throws(
+    () => concatenateTypedArrays(),
+    '"concatenateTypedArrays" - incorrect quantity of arguments or arguments have incompatible data types'
+  );
+  t.throws(
+    () => concatenateTypedArrays(array1),
+    '"concatenateTypedArrays" - incorrect quantity of arguments or arguments have incompatible data types'
+  );
   t.end();
 });

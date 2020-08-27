@@ -12,7 +12,7 @@ export function sliceArrayBuffer(arrayBuffer: ArrayBuffer, byteOffset: number, b
 /**
  * compare two binary arrays for equality
  * @param {ArrayBuffer} a
- * @param {ArrayBuffer} b 
+ * @param {ArrayBuffer} b
  * @param {number} byteLength
  */
 export function compareArrayBuffers(arrayBuffer1: ArrayBuffer, arrayBuffer2: ArrayBuffer, byteLength?: number);
@@ -24,3 +24,13 @@ export function compareArrayBuffers(arrayBuffer1: ArrayBuffer, arrayBuffer2: Arr
 export function concatenateArrayBuffers(
   ...sources: (ArrayBuffer | Uint8Array)[]
 ): ArrayBuffer;
+
+/**
+ * Concatenate arbitrary count of typed arrays
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays
+ *
+ * @param {...*} arrays - list of arrays. All arrays should be the same type
+ *
+ * @return A concatenated TypedArray 
+  */
+ export function concatenateTypedArrays<T>(...arrays: T[]): T;

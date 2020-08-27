@@ -74,6 +74,24 @@ export function concatenateArrayBuffers(...sources) {
   // We work with ArrayBuffers, discard the typed array wrapper
   return result.buffer;
 }
+// Concatenate arbitrary count of typed arrays
+export function concatenateTypedArrays(...arrays) {
+  const TypedArrayConstructor = (arrays && arrays.length > 1 && arrays[0].constructor) || null;
+  if (!TypedArrayConstructor) {
+    throw new Error(
+      '"concatenateTypedArrays" - incorrect quantity of arguments or arguments have incompatible data types'
+    );
+  }
+
+  const sumLength = arrays.reduce((acc, value) => acc + value.length, 0);
+  const result = new TypedArrayConstructor(sumLength);
+  let offset = 0;
+  for (const array of arrays) {
+    result.set(array, offset);
+    offset += array.length;
+  }
+  return result;
+}
 
 // Copy a view of an ArrayBuffer into new ArrayBuffer with byteOffset = 0
 export function sliceArrayBuffer(arrayBuffer, byteOffset, byteLength) {
