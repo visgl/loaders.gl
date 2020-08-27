@@ -12,7 +12,10 @@ export async function writeFile(path, data, slpk = false, fileName = 'index.json
   }
   console.log(`${pathFile} saved.`); // eslint-disable-line
   if (slpk) {
-    return await compressFileWithGzip(pathFile);
+    const pathGzFile = await compressFileWithGzip(pathFile);
+    // After compression, we don't need an uncompressed file
+    await removeFile(pathFile);
+    return pathGzFile;
   }
   return pathFile;
 }

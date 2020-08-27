@@ -65,6 +65,7 @@ export default class I3SConverter {
   /* eslint-disable max-statements */
   async _creationOfStructure(outputPath, tilesetName) {
     const tilesetPath = join(`${outputPath}`, `${tilesetName}`);
+    // Removing the tilesetPath needed to exclude erroneous files after conversion
     await removeDir(tilesetPath);
 
     this.layers0Path = join(tilesetPath, 'SceneServer', 'layers', '0');
@@ -158,6 +159,7 @@ export default class I3SConverter {
     await this.nodePages.save(this.layers0Path, this.fileMap, isCreateSlpk);
     if (isCreateSlpk) {
       await compressFilesWithZip(this.fileMap, `${tilesetPath}.slpk`);
+      // All converted files are contained in slpk now they can be deleted
       await removeDir(tilesetPath);
     }
   }
