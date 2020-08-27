@@ -1,6 +1,6 @@
 import {promises as fs} from 'fs';
 import {join} from 'path';
-import {compressFile} from './compress-util';
+import {compressFileWithGzip} from './compress-util';
 
 export default async function(path, data, slpk = false, fileName = 'index.json') {
   await fs.mkdir(path, {recursive: true});
@@ -12,7 +12,7 @@ export default async function(path, data, slpk = false, fileName = 'index.json')
   }
   console.log(`${pathFile} saved.`); // eslint-disable-line
   if (slpk) {
-    return await compressFile(pathFile);
+    return await compressFileWithGzip(pathFile);
   }
   return pathFile;
 }

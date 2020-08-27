@@ -2,26 +2,26 @@ import {createGzip} from 'zlib';
 import {createReadStream, createWriteStream} from 'fs';
 import archiver from 'archiver';
 
-export function compressFile(pathFile) {
+export function compressFileWithGzip(pathFile) {
   const compressedPathFile = `${pathFile}.gz`;
   const gzip = createGzip();
-  const inp = createReadStream(pathFile);
-  const out = createWriteStream(compressedPathFile);
+  const input = createReadStream(pathFile);
+  const output = createWriteStream(compressedPathFile);
 
   return new Promise((resolve, reject) => {
-    inp.on('end', () => {
+    input.on('end', () => {
       console.log(`${compressedPathFile} compressed and saved.`); // eslint-disable-line
       resolve(compressedPathFile);
     });
-    inp.on('error', error => {
+    input.on('error', error => {
       console.log(`${compressedPathFile}: compression error!`); // eslint-disable-line
       reject(error);
     });
-    inp.pipe(gzip).pipe(out);
+    input.pipe(gzip).pipe(output);
   });
 }
 
-export async function compressFiles(fileMap, outputFile, level = 0) {
+export async function compressFilesWithZip(fileMap, outputFile, level = 0) {
   const output = createWriteStream(outputFile);
   const archive = archiver('zip', {
     zlib: {level} // Sets the compression level.

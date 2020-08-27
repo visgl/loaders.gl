@@ -16,7 +16,7 @@ function printHelp() {
   );
   console.log('--name [Tileset name, default: "default"]');
   console.log('--output [Output folder]');
-  console.log('--slpk Generate slpk (Scene Layer Packages) output file');
+  console.log('--slpk Generate slpk (Scene Layer Packages) I3S output file');
   console.log('--tileset [tileset.json file]');
   console.log('--type [tileset type: I3S or 3DTILES]');
   process.exit(0); // eslint-disable-line

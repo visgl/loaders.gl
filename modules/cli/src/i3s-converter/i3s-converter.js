@@ -9,7 +9,7 @@ import md5 from 'md5';
 
 import NodePages from './helpers/node-pages';
 import writeFile from '../lib/utils/write-file';
-import {compressFiles} from '../lib/utils/compress-util';
+import {compressFilesWithZip} from '../lib/utils/compress-util';
 import convertB3dmToI3sGeometry from './helpers/geometry-converter';
 import {
   convertCommonToI3SCoordinate,
@@ -155,7 +155,7 @@ export default class I3SConverter {
     );
     await this.nodePages.save(this.layers0Path, this.fileMap, isCreateSlpk);
     if (isCreateSlpk) {
-      await compressFiles(this.fileMap, `${tilesetPath}.slpk`);
+      await compressFilesWithZip(this.fileMap, `${tilesetPath}.slpk`);
     }
   }
   /* eslint-enable max-statements */

@@ -4,7 +4,7 @@
  * @param pathFile - the path to the file
  * @return the path to the gzip file
  */
-export function compressFile(pathFile: string): Promise<string>;
+export function compressFileWithGzip(pathFile: string): Promise<string>;
 
 /**
  * Compress files from map into slpk file
@@ -13,4 +13,4 @@ export function compressFile(pathFile: string): Promise<string>;
  * @param outputFile - output slpk file
  * @param level - compression level
  */
-export function compressFiles(fileMap: object, outputFile: string, level: number): void;
+export function compressFilesWithZip(fileMap: object, outputFile: string, level: number): void;
