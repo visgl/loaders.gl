@@ -30,7 +30,7 @@ function getMaterialAndGeometryFromNode(nodePages, id) {
   return {material, geometry};
 }
 
-test.only('cli - Converters#NodePages', async t => {
+test('cli - Converters#NodePages', async t => {
   if (isBrowser) {
     t.end();
     return;

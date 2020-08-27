@@ -9,7 +9,6 @@ import {DracoLoader} from '@loaders.gl/draco';
 import {
   GL_TYPE_MAP,
   TYPE_ARRAY_MAP,
-  TYPED_ARRAY_CONSTRUCTORS,
   SIZEOF,
   I3S_NAMED_HEADER_ATTRIBUTES,
   I3S_NAMED_VERTEX_ATTRIBUTES,
@@ -31,11 +30,11 @@ export async function parseI3STileContent(arrayBuffer, tile, tileset, options) {
     tile.content.texture = await load(url, ImageLoader);
   }
 
-  return await parseI3SNodeGeometry(arrayBuffer, tile, tileset);
+  return await parseI3SNodeGeometry(arrayBuffer, tile, options);
 }
 
 /* eslint-disable max-statements */
-async function parseI3SNodeGeometry(arrayBuffer, tile = {}, tileset) {
+async function parseI3SNodeGeometry(arrayBuffer, tile = {}, options) {
   if (!tile.content) {
     return tile;
   }
@@ -44,26 +43,16 @@ async function parseI3SNodeGeometry(arrayBuffer, tile = {}, tileset) {
   let attributes;
   let vertexCount;
   let byteOffset = 0;
-  const geometryBuffers =
-    (tileset &&
-      tileset.geometryDefinitions &&
-      tileset.geometryDefinitions[0] &&
-      tileset.geometryDefinitions[0].geometryBuffers &&
-      tileset.geometryDefinitions[0].geometryBuffers) ||
-    [];
-  const dracoGeometryIndex = geometryBuffers.findIndex(
-    buffer => buffer.compressedAttributes && buffer.compressedAttributes.encoding === 'draco'
-  );
-  if (dracoGeometryIndex !== -1) {
+  if (options.i3s.dracoGeometryIndex !== -1) {
     const decompressedGeometry = await parse(arrayBuffer, DracoLoader);
     vertexCount = decompressedGeometry.header.vertexCount;
     const indices = decompressedGeometry.indices.value;
     const {POSITION, NORMAL, COLOR_0, TEXCOORD_0} = decompressedGeometry.attributes;
     attributes = {
-      position: flattenAttribute(POSITION, indices, vertexCount),
-      normal: flattenAttribute(NORMAL, indices, vertexCount),
-      color: flattenAttribute(COLOR_0, indices, vertexCount),
-      uv0: flattenAttribute(TEXCOORD_0, indices, vertexCount)
+      position: flattenAttribute(POSITION, indices),
+      normal: flattenAttribute(NORMAL, indices),
+      color: flattenAttribute(COLOR_0, indices),
+      uv0: flattenAttribute(TEXCOORD_0, indices)
     };
   } else {
     const {vertexAttributes, attributesOrder} = content.featureData;
@@ -104,18 +93,19 @@ async function parseI3SNodeGeometry(arrayBuffer, tile = {}, tileset) {
   return tile;
 }
 
-function flattenAttribute(attribute, indices, vertexCount) {
-  const TypedArrayConstructor = TYPED_ARRAY_CONSTRUCTORS[attribute.value.constructor.name];
+function flattenAttribute(attribute, indices) {
+  const TypedArrayConstructor = attribute.value.constructor;
   const result = new TypedArrayConstructor(indices.length * attribute.size);
   for (let i = 0; i < indices.length; i++) {
     const vertexIndex = indices[i] * attribute.size;
-    if (vertexIndex >= attribute.value.length) {
-      throw new Error('Index is out of bounds of attribute array');
-    }
-    const vertex = attribute.value.subarray(vertexIndex, vertexIndex + attribute.size);
-    for (let j = 0; j < attribute.size; j++) {
-      result[i * attribute.size + j] = vertex[j];
-    }
+    result.set(
+      new TypedArrayConstructor(
+        attribute.value.buffer,
+        vertexIndex * attribute.value.BYTES_PER_ELEMENT,
+        attribute.size
+      ),
+      i * attribute.size
+    );
   }
   return {size: attribute.size, value: result};
 }

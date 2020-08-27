@@ -10,6 +10,8 @@ import {TILE_REFINEMENT, TILE_CONTENT_STATE, TILESET_TYPE} from '../constants';
 import {createBoundingVolume} from './helpers/bounding-volume';
 import {getTiles3DScreenSpaceError} from './helpers/tiles-3d-lod';
 import {getI3ScreenSize} from './helpers/i3s-lod';
+import {getI3SOptions} from './helpers/i3s-options';
+import {get3dTilesOptions} from './helpers/3d-tiles-options';
 
 const scratchVector = new Vector3();
 
@@ -203,16 +205,6 @@ export default class TileHeader {
       // The content can be a binary tile ot a JSON tileset
       const fetchOptions = this.tileset.fetchOptions;
       const loader = this.tileset.loader;
-      const geometryBuffers =
-        (this.tileset.tileset &&
-          this.tileset.tileset.geometryDefinitions &&
-          this.tileset.tileset.geometryDefinitions[0] &&
-          this.tileset.tileset.geometryDefinitions[0].geometryBuffers &&
-          this.tileset.tileset.geometryDefinitions[0].geometryBuffers) ||
-        [];
-      const dracoGeometryIndex = geometryBuffers.findIndex(
-        buffer => buffer.compressedAttributes && buffer.compressedAttributes.encoding === 'draco'
-      );
       const options = {
         ...fetchOptions,
         [loader.id]: {
@@ -220,8 +212,7 @@ export default class TileHeader {
           tileset: this.tileset.tileset,
           isTileset: this.type === 'json',
           isTileHeader: false,
-          assetGltfUpAxis: this.tileset.asset.gltfUpAxis,
-          dracoGeometryIndex
+          ...this._getLoaderSpecificOptions(loader.id)
         }
       };
 
@@ -535,6 +526,18 @@ export default class TileHeader {
     this.computedTransform = computedTransform;
 
     this._updateBoundingVolume(this.header);
+  }
+
+  // Get options which are applicable only for the particular loader
+  _getLoaderSpecificOptions(loaderId) {
+    switch (loaderId) {
+      case 'i3s':
+        return getI3SOptions(this.tileset.tileset);
+      case '3d-tiles':
+      case 'cesium-ion':
+      default:
+        return get3dTilesOptions(this.tileset.tileset);
+    }
   }
 
   // TODO Cesium specific
