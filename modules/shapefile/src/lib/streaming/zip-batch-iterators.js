@@ -11,14 +11,14 @@ export async function* zipBatchIterators(iterator1, iterator2) {
   // however we might end up with a big temporary buffer
   while (!iterator1Done && !iterator2Done) {
     if (batch1.length === 0 && !iterator1Done) {
-      const {value, done} = await iterator1;
+      const {value, done} = await iterator1.next();
       if (done) {
         iterator1Done = true;
       } else {
         batch1 = value;
       }
     } else if (batch2.length === 0 && !iterator2Done) {
-      const {value, done} = await iterator2;
+      const {value, done} = await iterator2.next();
       if (done) {
         iterator2Done = true;
       } else {
