@@ -15,13 +15,16 @@ const STATE = {
 class DBFParser {
   constructor({encoding}) {
     this.binaryReader = new BinaryChunkReader();
-    this.textDecoder = new TextDecoder(encoding);
+    this.textDecoder = new TextDecoder(encoding || 'latin1');
     this.state = STATE.START;
-    this.result = {};
+    this.result = {
+      data: []
+    };
   }
 
   write(arrayBuffer) {
-    this.binaryReader.write(arrayBuffer);
+    // TODO: fix Node streaming to produce ArrayBuffers, not Buffers
+    this.binaryReader.write(toArrayBuffer(arrayBuffer));
     this.state = parseState(this.state, this.result, this.binaryReader, this.textDecoder);
     // this.result.progress.bytesUsed = this.binaryReader.bytesUsed();
 
@@ -50,8 +53,25 @@ export function parseDBF(arrayBuffer, options) {
   dbfParser.write(arrayBuffer);
   dbfParser.end();
 
-  const {data} = dbfParser.result;
-  return data;
+  return dbfParser.result.data;
+}
+
+export async function* parseDBFInBatches(asyncIterator, options) {
+  const loaderOptions = options.dbf || {};
+  const {encoding} = loaderOptions;
+
+  const parser = new DBFParser({encoding});
+  for await (const arrayBuffer of asyncIterator) {
+    parser.write(arrayBuffer);
+    if (parser.result.data.length > 0) {
+      yield parser.result.data;
+      parser.result.data = [];
+    }
+  }
+  parser.end();
+  if (parser.result.data.length > 0) {
+    yield parser.result.data;
+  }
 }
 
 // https://www.dbase.com/Knowledgebase/INT/db7_file_fmt.htm
@@ -72,7 +92,6 @@ function parseState(state, result = {}, binaryReader, textDecoder) {
             return state;
           }
           result.dbfHeader = parseDBFHeader(dataView);
-          result.data = [];
           result.progress = {
             bytesUsed: 0,
             rowsTotal: result.dbfHeader.nRecords,
@@ -250,4 +269,13 @@ function parseNumber(text) {
 
 function parseCharacter(text) {
   return text.trim() || null;
+}
+
+/** Coerce Node Buffer or ArrayBuffer to ArrayBuffer */
+function toArrayBuffer(buffer) {
+  // byteOffset required when dealing with small Buffers
+  // https://stackoverflow.com/a/31394257/7319250
+  return buffer.buffer
+    ? buffer.buffer.slice(buffer.byteOffset, buffer.byteLength + buffer.byteOffset)
+    : buffer;
 }
