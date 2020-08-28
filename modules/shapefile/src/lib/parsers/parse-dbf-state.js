@@ -23,7 +23,8 @@ class DBFParser {
   }
 
   write(arrayBuffer) {
-    this.binaryReader.write(arrayBuffer);
+    // TODO: fix Node streaming to produce ArrayBuffers, not Buffers
+    this.binaryReader.write(toArrayBuffer(arrayBuffer));
     this.state = parseState(this.state, this.result, this.binaryReader, this.textDecoder);
     // this.result.progress.bytesUsed = this.binaryReader.bytesUsed();
 
@@ -268,4 +269,9 @@ function parseNumber(text) {
 
 function parseCharacter(text) {
   return text.trim() || null;
+}
+
+/** Coerce Node Buffer or ArrayBuffer to ArrayBuffer */
+function toArrayBuffer(buffer) {
+  return buffer.buffer ? buffer.buffer : buffer;
 }

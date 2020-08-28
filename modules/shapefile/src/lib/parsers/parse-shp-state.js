@@ -25,7 +25,8 @@ class SHPParser {
   }
 
   write(arrayBuffer) {
-    this.binaryReader.write(arrayBuffer);
+    // TODO: fix Node streaming to produce ArrayBuffers, not Buffers
+    this.binaryReader.write(toArrayBuffer(arrayBuffer));
     this.state = parseState(this.state, this.result, this.binaryReader);
   }
 
@@ -186,4 +187,9 @@ function parseSHPHeader(headerView) {
     console.error(`SHP file: bad version ${header.version}`);
   }
   return header;
+}
+
+/** Coerce Node Buffer or ArrayBuffer to ArrayBuffer */
+function toArrayBuffer(buffer) {
+  return buffer.buffer ? buffer.buffer : buffer;
 }
