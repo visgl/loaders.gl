@@ -194,5 +194,9 @@ function parseSHPHeader(headerView) {
 
 /** Coerce Node Buffer or ArrayBuffer to ArrayBuffer */
 function toArrayBuffer(buffer) {
-  return buffer.buffer ? buffer.buffer : buffer;
+  // byteOffset required when dealing with small Buffers
+  // https://stackoverflow.com/a/31394257/7319250
+  return buffer.buffer
+    ? buffer.buffer.slice(buffer.byteOffset, buffer.byteLength + buffer.byteOffset)
+    : buffer;
 }
