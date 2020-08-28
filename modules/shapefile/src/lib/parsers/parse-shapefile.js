@@ -65,7 +65,7 @@ export async function parseShapefile(arrayBuffer, options, context) {
   };
 }
 
-function parseGeometries(geometries, {prj}) {
+function parseGeometries(geometries) {
   const geojsonGeometries = [];
   for (const geom of geometries) {
     geojsonGeometries.push(binaryToGeoJson(geom, geom.type, 'geometry'));
