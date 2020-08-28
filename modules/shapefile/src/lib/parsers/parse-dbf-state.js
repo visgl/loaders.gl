@@ -15,7 +15,7 @@ const STATE = {
 class DBFParser {
   constructor({encoding}) {
     this.binaryReader = new BinaryChunkReader();
-    this.textDecoder = new TextDecoder(encoding);
+    this.textDecoder = new TextDecoder(encoding || 'latin1');
     this.state = STATE.START;
     this.result = {
       data: []
@@ -63,7 +63,6 @@ function parseState(state, result = {}, binaryReader, textDecoder) {
             return state;
           }
           result.dbfHeader = parseDBFHeader(dataView);
-          result.data = [];
           result.progress = {
             bytesUsed: 0,
             rowsTotal: result.dbfHeader.nRecords,
