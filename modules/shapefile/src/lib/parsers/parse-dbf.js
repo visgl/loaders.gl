@@ -42,6 +42,18 @@ class DBFParser {
   }
 }
 
+export function parseDBF(arrayBuffer, options) {
+  const loaderOptions = options.dbf || {};
+  const {encoding} = loaderOptions;
+
+  const dbfParser = new DBFParser({encoding});
+  dbfParser.write(arrayBuffer);
+  dbfParser.end();
+
+  const {data} = dbfParser.result;
+  return data;
+}
+
 // https://www.dbase.com/Knowledgebase/INT/db7_file_fmt.htm
 /* eslint-disable complexity, max-depth */
 function parseState(state, result = {}, binaryReader, textDecoder) {
@@ -80,6 +92,7 @@ function parseState(state, result = {}, binaryReader, textDecoder) {
           }
 
           result.dbfFields = parseFieldDescriptors(fieldDescriptorView, textDecoder);
+
           state = STATE.FIELD_PROPERTIES;
 
           // TODO(kyle) Not exactly sure why start offset needs to be headerLength + 1?
@@ -115,17 +128,6 @@ function parseState(state, result = {}, binaryReader, textDecoder) {
       return state;
     }
   }
-}
-
-export default function parseDbf(arrayBuffer, options) {
-  const loaderOptions = options.dbf || {};
-  const {encoding} = loaderOptions;
-
-  const dbfParser = new DBFParser({encoding});
-  dbfParser.write(arrayBuffer);
-  dbfParser.end();
-
-  return dbfParser.result.data;
 }
 
 /**

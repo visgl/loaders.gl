@@ -1,7 +1,7 @@
 /** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 /** @typedef {import('@loaders.gl/loader-utils').WorkerLoaderObject} WorkerLoaderObject */
-import parseDBF from './lib/parsers/deprecated/parse-dbf-atomic';
-// import parseDBF from './lib/parsers/parse-dbf-state';
+// import parseDBF from './lib/parsers/deprecated/parse-dbf';
+import {parseDBF} from './lib/parsers/parse-dbf';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.

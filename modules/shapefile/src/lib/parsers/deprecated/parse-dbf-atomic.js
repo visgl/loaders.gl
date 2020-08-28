@@ -23,6 +23,7 @@ export default function parseDbf(arrayBuffer, options) {
   // Not exactly sure why start offset needs to be headerLength + 1?
   // parsedbf uses ((fields.length + 1) << 5) + 2;
   binaryReader.skip(1);
+
   return parseRows(binaryReader, fields, nRecords, recordLength, textDecoder);
 }
 
@@ -102,7 +103,12 @@ function parseRow(view, fields, textDecoder) {
   return out;
 }
 
-// Should NaN be coerced to null?
+/**
+ * Parse one field
+ * @param {string} text
+ * @param {*} dataType
+ * @todo Should NaN be coerced to null?
+ */
 function parseField(text, dataType) {
   switch (dataType) {
     case 'B':
@@ -124,20 +130,29 @@ function parseField(text, dataType) {
   }
 }
 
-// Parse YYYYMMDD to date in milliseconds
+/**
+ * Parse YYYYMMDD to date in milliseconds
+ * @param {*} str
+ */
 function parseDate(str) {
   return Date.UTC(str.slice(0, 4), parseInt(str.slice(4, 6), 10) - 1, str.slice(6, 8));
 }
 
-// Read boolean value
-// any of Y, y, T, t coerce to true
-// any of N, n, F, f coerce to false
-// otherwise null
+/**
+ * Read boolean value
+ * any of Y, y, T, t coerce to true
+ * any of N, n, F, f coerce to false
+ * otherwise null
+ * @param {*} value
+ */
 function parseBoolean(value) {
   return /^[nf]$/i.test(value) ? false : /^[yt]$/i.test(value) ? true : null;
 }
 
-// Return null instead of NaN
+/**
+ * Return null instead of NaN
+ * @param {*} text
+ */
 function parseNumber(text) {
   const number = parseFloat(text);
   return isNaN(number) ? null : number;

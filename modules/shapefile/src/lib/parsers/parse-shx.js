@@ -1,4 +1,4 @@
-import {parseSHPHeader} from './deprecated/parse-shp-atomic';
+import {parseSHPHeader} from './parse-shp-header';
 
 const SHX_HEADER_SIZE = 100;
 const BIG_ENDIAN = false;
