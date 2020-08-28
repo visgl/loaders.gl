@@ -1,5 +1,8 @@
+/**
+ * Zip two iterators together
+ */
 export async function* zipBatchIterators(iterator1, iterator2) {
-  let batch1 = []; 
+  let batch1 = [];
   let batch2 = [];
   let iterator1Done = false;
   let iterator2Done = false;
@@ -17,7 +20,7 @@ export async function* zipBatchIterators(iterator1, iterator2) {
     } else if (batch2.length === 0 && !iterator2Done) {
       const {value, done} = await iterator2;
       if (done) {
-        iterator1Done = true;
+        iterator2Done = true;
       } else {
         batch2 = value;
       }
@@ -30,20 +33,22 @@ export async function* zipBatchIterators(iterator1, iterator2) {
   }
 }
 
+/**
+ * Extract batch of same length from two batches
+ *
+ * @param  {Array} batch1
+ * @param  {Array} batch2
+ * @return {Array?}
+ */
 function extractBatch(batch1, batch2) {
   const batchLength = Math.min(batch1.length, batch2.length);
   if (batchLength === 0) {
     return null;
   }
 
-  const batch = new Array(batchLength);
-  for (let rowIndex = 0; rowIndex < batchLength; ++rowIndex) {
-    if (Array.isArray(batch1[rowIndex])) {
-      batch[rowIndex] = [...batch1[rowIndex], ...batch2[rowIndex]];
-    } else {
-      batch[rowIndex] = {...batch1[rowIndex], ...batch2[rowIndex]};
-    }
-  }
+  // Non interleaved arrays
+  const batch = [batch1.slice(0, batchLength), batch2.slice(0, batchLength)];
+
   // Modify the 2 batches
   batch1.splice(0, batchLength);
   batch2.splice(0, batchLength);
