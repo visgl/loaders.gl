@@ -25,7 +25,8 @@ class SHPParser {
   }
 
   write(arrayBuffer) {
-    this.binaryReader.write(arrayBuffer);
+    // TODO: fix Node streaming to produce ArrayBuffers, not Buffers
+    this.binaryReader.write(toArrayBuffer(arrayBuffer));
     this.state = parseState(this.state, this.result, this.binaryReader);
   }
 
@@ -46,6 +47,29 @@ export function parseSHP(arrayBuffer, options) {
   shpParser.end();
 
   return shpParser.result;
+}
+
+export async function* parseSHPInBatches(asyncIterator, options) {
+  const parser = new SHPParser();
+  let headerReturned = false;
+  for await (const arrayBuffer of asyncIterator) {
+    parser.write(arrayBuffer);
+    if (!headerReturned && parser.result.header) {
+      headerReturned = true;
+      yield parser.result.header;
+    }
+
+    if (parser.result.geometries.length > 0) {
+      yield parser.result.geometries;
+      parser.result.geometries = [];
+    }
+  }
+  parser.end();
+  if (parser.result.geometries.length > 0) {
+    yield parser.result.geometries;
+  }
+
+  return;
 }
 
 /* eslint-disable complexity, max-depth */
@@ -131,4 +155,13 @@ function parseState(state, result = {}, binaryReader) {
       return state;
     }
   }
+}
+
+/** Coerce Node Buffer or ArrayBuffer to ArrayBuffer */
+function toArrayBuffer(buffer) {
+  // byteOffset required when dealing with small Buffers
+  // https://stackoverflow.com/a/31394257/7319250
+  return buffer.buffer
+    ? buffer.buffer.slice(buffer.byteOffset, buffer.byteLength + buffer.byteOffset)
+    : buffer;
 }
