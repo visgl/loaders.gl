@@ -2,10 +2,6 @@
 import {SHP_MAGIC_NUMBER} from './shp-loader';
 import {parseShapefile, parseShapefileInBatches} from './lib/parsers/parse-shapefile';
 
-// import {parseShx} from './parse-shx';
-// import {parseDBFInBatches} from './parse-dbf-state';
-// import {parseSHPInBatches} from './parse-shp-state';
-
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
