@@ -9,13 +9,13 @@ export async function* parseShapefileInBatches(asyncIterator, options, context) 
   const {shx, cpg, prj} = await loadShapefileSidecarFiles(options, context);
 
   // parse geometries
-  const shapeIterator = parseInBatches(asyncIterator, SHPLoader); // {shp: shx}
+  const shapeIterator = await parseInBatches(asyncIterator, SHPLoader); // {shp: shx}
 
   // parse properties
-  const dbfResponse = fetch(replaceExtension(url, 'dbf'));
-  const propertyIterator = parseInBatches(dbfResponse, DBFLoader, {dbf: {encoding: cpg}});
+  const dbfResponse = await fetch(replaceExtension(url, 'dbf'));
+  const propertyIterator = await parseInBatches(dbfResponse, DBFLoader, {dbf: {encoding: cpg}});
 
-  const generator = zipBatchIterators(shapeIterator, propertyIterator);
+  const generator = await zipBatchIterators(shapeIterator, propertyIterator);
   for await (const [shapes, properties] of generator) {
     const {header, geometries} = shapes;
     const geojsonGeometries = parseGeometries(geometries);
