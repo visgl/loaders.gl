@@ -10,21 +10,21 @@ export async function* parseShapefileInBatches(asyncIterator, options, context) 
 
   // parse geometries
   const shapeIterator = await parseInBatches(asyncIterator, SHPLoader); // {shp: shx}
+  const shapeHeader = await shapeIterator.next();
 
   // parse properties
   const dbfResponse = await fetch(replaceExtension(url, 'dbf'));
   const propertyIterator = await parseInBatches(dbfResponse, DBFLoader, {dbf: {encoding: cpg}});
 
   const generator = await zipBatchIterators(shapeIterator, propertyIterator);
-  for await (const [shapes, properties] of generator) {
-    const {header, geometries} = shapes;
+  for await (const [geometries, properties] of generator) {
     const geojsonGeometries = parseGeometries(geometries);
     const features = joinProperties(geojsonGeometries, properties);
     yield {
       encoding: cpg,
       prj,
       shx,
-      header,
+      header: shapeHeader,
       data: features
     };
   }

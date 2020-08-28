@@ -50,23 +50,26 @@ export default function parseSHP(arrayBuffer, options) {
 }
 
 export async function* parseSHPInBatches(asyncIterator, options) {
-  const loaderOptions = options.dbf || {};
-  const {encoding} = loaderOptions;
-
   const parser = new SHPParser();
+  let headerReturned = false;
   for await (const arrayBuffer of asyncIterator) {
     parser.write(arrayBuffer);
-    if (parser.result.data.length > 0) {
-      yield parser.result.data;
-      parser.result.data = [];
+    if (!headerReturned && parser.result.header) {
+      headerReturned = true;
+      yield parser.result.header;
+    }
+
+    if (parser.result.geometries.length > 0) {
+      yield parser.result.geometries;
+      parser.result.geometries = [];
     }
   }
   parser.end();
-  if (parser.result.data.length > 0) {
-    yield parser.result.data;
+  if (parser.result.geometries.length > 0) {
+    yield parser.result.geometries;
   }
 
-  return ;
+  return;
 }
 
 /* eslint-disable complexity, max-depth */
