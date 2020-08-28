@@ -1,39 +1,33 @@
 import {binaryToGeoJson} from '@loaders.gl/gis';
 import {parseShx} from './parse-shx';
-import {parseDBFInBatches} from './parse-dbf-state';
-import {parseSHPInBatches} from './parse-shp-state';
+import {zipBatchIterators} from '../streaming/zip-batch-iterators';
+import {SHPLoader} from '../../shp-loader';
+import {DBFLoader} from '../../dbf-loader';
 
-// import {SHPLoader, SHP_MAGIC_NUMBER} from './shp-loader';
-// import {DBFLoader} from './dbf-loader';
-
-async function *parseShapefileInBatches(asyncIterator, options, context) {
-  const {parseInBatches} = context;
+export async function* parseShapefileInBatches(asyncIterator, options, context) {
+  const {parseInBatches, fetch} = context;
   const {shx, cpg, prj} = await loadShapefileSidecarFiles(options, context);
 
   // parse geometries
-  const shapes = parseInBatches(asyncIterator, SHPLoader, {shp: shx});
-
-  // const shapeIterator = parseSHPInBatches(asyncIterator);
+  const shapeIterator = parseInBatches(asyncIterator, SHPLoader, {shp: shx});
 
   // parse properties
-  // let dbfResponse = fetch(`${baseName}.dbf`);
-  // const properties = parseInBatches(dbfResponse, DBFLoader, {dbf: {cpg});
+  const dbfResponse = fetch(`${context.url}.dbf`);
+  const propertyIterator = parseInBatches(dbfResponse, DBFLoader, {dbf: {encoding: cpg}});
 
-  yield {
-    cpg,
-    prj,
-    shx,
-    shapes
-    // properties
-  };
-}
-
-export async function* parseShapefileInBatches(asyncIterator, options, context) {
-  const {parse} = context;
-  const {shx, cpg, prj} = await loadShapefileSidecarFiles(options, context);
-
-
-  const shapeIterator = parseSHPInBatches(asyncIterator);
+  const generator = zipBatchIterators(shapeIterator, propertyIterator);
+  for await (const [shapes, properties] of generator) {
+    const {header, geometries} = shapes;
+    const geojsonGeometries = parseGeometries(geometries);
+    const features = joinProperties(geojsonGeometries, properties);
+    yield {
+      encoding: cpg,
+      prj,
+      shx,
+      header,
+      data: features
+    };
+  }
 }
 
 export async function parseShapefile(arrayBuffer, options, context) {
@@ -41,13 +35,9 @@ export async function parseShapefile(arrayBuffer, options, context) {
   const {shx, cpg, prj} = await loadShapefileSidecarFiles(options, context);
 
   // parse geometries
-  const {header, geometries} = await parse(arrayBuffer, SHPLoader); // , {shp: shx});
+  const {header, geometries} = await parse(arrayBuffer, SHPLoader, {shp: shx});
 
-  // Convert binary geometries to GeoJSON
-  const geojsonGeometries = [];
-  for (const geom of geometries) {
-    geojsonGeometries.push(binaryToGeoJson(geom, geom.type, 'geometry'));
-  }
+  const geojsonGeometries = parseGeometries(geometries);
 
   // parse properties
   let properties = [];
@@ -64,10 +54,31 @@ export async function parseShapefile(arrayBuffer, options, context) {
     // Ignore properties
   }
 
+  const features = joinProperties(geojsonGeometries, properties);
+
+  return {
+    encoding: cpg,
+    prj,
+    shx,
+    header,
+    data: features
+  };
+}
+
+function parseGeometries(geometries, {prj}) {
+  const geojsonGeometries = [];
+  for (const geom of geometries) {
+    geojsonGeometries.push(binaryToGeoJson(geom, geom.type, 'geometry'));
+  }
+
+  return geojsonGeometries;
+}
+
+function joinProperties(geometries, properties) {
   // Join properties and geometries into features
   const features = [];
-  for (let i = 0; i < geojsonGeometries.length; i++) {
-    const geometry = geojsonGeometries[i];
+  for (let i = 0; i < geometries.length; i++) {
+    const geometry = geometries[i];
     const feature = {
       type: 'Feature',
       geometry,
@@ -77,13 +88,7 @@ export async function parseShapefile(arrayBuffer, options, context) {
     features.push(feature);
   }
 
-  return {
-    encoding: cpg,
-    prj,
-    shx,
-    header,
-    data: features
-  };
+  return features;
 }
 
 // eslint-disable-next-line max-statements
