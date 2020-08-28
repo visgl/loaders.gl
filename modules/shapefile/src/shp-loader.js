@@ -1,7 +1,7 @@
 /** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 /** @typedef {import('@loaders.gl/loader-utils').WorkerLoaderObject} WorkerLoaderObject */
-import parseSHP from './lib/parsers/deprecated/parse-shp-atomic';
-// import parseSHP from './lib/parsers/parse-shp-state';
+import {parseSHP} from './lib/parsers/parse-shp';
+// import parseSHP from './lib/parsers/deprecated/parse-shp';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
