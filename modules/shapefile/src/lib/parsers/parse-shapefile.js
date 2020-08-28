@@ -5,14 +5,14 @@ import {SHPLoader} from '../../shp-loader';
 import {DBFLoader} from '../../dbf-loader';
 
 export async function* parseShapefileInBatches(asyncIterator, options, context) {
-  const {parseInBatches, fetch} = context;
+  const {parseInBatches, fetch, url} = context;
   const {shx, cpg, prj} = await loadShapefileSidecarFiles(options, context);
 
   // parse geometries
-  const shapeIterator = parseInBatches(asyncIterator, SHPLoader, {shp: shx});
+  const shapeIterator = parseInBatches(asyncIterator, SHPLoader); // {shp: shx}
 
   // parse properties
-  const dbfResponse = fetch(`${context.url}.dbf`);
+  const dbfResponse = fetch(replaceExtension(url, 'dbf'));
   const propertyIterator = parseInBatches(dbfResponse, DBFLoader, {dbf: {encoding: cpg}});
 
   const generator = zipBatchIterators(shapeIterator, propertyIterator);
@@ -35,7 +35,7 @@ export async function parseShapefile(arrayBuffer, options, context) {
   const {shx, cpg, prj} = await loadShapefileSidecarFiles(options, context);
 
   // parse geometries
-  const {header, geometries} = await parse(arrayBuffer, SHPLoader, {shp: shx});
+  const {header, geometries} = await parse(arrayBuffer, SHPLoader); // {shp: shx}
 
   const geojsonGeometries = parseGeometries(geometries);
 
