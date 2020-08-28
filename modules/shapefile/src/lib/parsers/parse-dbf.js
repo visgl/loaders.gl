@@ -1,29 +1,131 @@
 /* global TextDecoder */
-import BinaryReader from '../streaming/binary-reader';
+import BinaryChunkReader from '../streaming/binary-chunk-reader';
 
 const LITTLE_ENDIAN = true;
 const DBF_HEADER_SIZE = 32;
 
-export default function parseDbf(arrayBuffer, options) {
-  const binaryReader = new BinaryReader(arrayBuffer);
+const STATE = {
+  START: 0, // Expecting header
+  FIELD_DESCRIPTORS: 1,
+  FIELD_PROPERTIES: 2,
+  END: 3,
+  ERROR: 4
+};
 
+class DBFParser {
+  constructor({encoding}) {
+    this.binaryReader = new BinaryChunkReader();
+    this.textDecoder = new TextDecoder(encoding);
+    this.state = STATE.START;
+    this.result = {};
+  }
+
+  write(arrayBuffer) {
+    this.binaryReader.write(arrayBuffer);
+    this.state = parseState(this.state, this.result, this.binaryReader, this.textDecoder);
+    // this.result.progress.bytesUsed = this.binaryReader.bytesUsed();
+
+    // important events:
+    // - schema available
+    // - first rows available
+    // - all rows available
+  }
+
+  end() {
+    this.binaryReader.end();
+    this.state = parseState(this.state, this.result, this.binaryReader, this.textDecoder);
+    // this.result.progress.bytesUsed = this.binaryReader.bytesUsed();
+    if (this.state !== STATE.END) {
+      this.state = STATE.ERROR;
+      this.result.error = 'DBF incomplete file';
+    }
+  }
+}
+
+// https://www.dbase.com/Knowledgebase/INT/db7_file_fmt.htm
+/* eslint-disable complexity, max-depth */
+function parseState(state, result = {}, binaryReader, textDecoder) {
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    try {
+      switch (state) {
+        case STATE.ERROR:
+        case STATE.END:
+          return state;
+
+        case STATE.START:
+          // Parse initial file header
+          const dataView = binaryReader.getDataView(DBF_HEADER_SIZE, 'DBF header');
+          if (!dataView) {
+            return state;
+          }
+          result.dbfHeader = parseDBFHeader(dataView);
+          result.data = [];
+          result.progress = {
+            bytesUsed: 0,
+            rowsTotal: result.dbfHeader.nRecords,
+            rows: 0
+          };
+          state = STATE.FIELD_DESCRIPTORS;
+          break;
+
+        case STATE.FIELD_DESCRIPTORS:
+          // Parse DBF field descriptors (schema)
+          const fieldDescriptorView = binaryReader.getDataView(
+            result.dbfHeader.headerLength - DBF_HEADER_SIZE,
+            'DBF field descriptors'
+          );
+          if (!fieldDescriptorView) {
+            return state;
+          }
+
+          result.dbfFields = parseFieldDescriptors(fieldDescriptorView, textDecoder);
+          state = STATE.FIELD_PROPERTIES;
+
+          // TODO(kyle) Not exactly sure why start offset needs to be headerLength + 1?
+          // parsedbf uses ((fields.length + 1) << 5) + 2;
+          binaryReader.skip(1);
+          break;
+
+        case STATE.FIELD_PROPERTIES:
+          const {recordLength} = result.dbfHeader;
+          while (result.data.length < result.dbfHeader.nRecords) {
+            const recordView = binaryReader.getDataView(recordLength - 1);
+            if (!recordView) {
+              return state;
+            }
+            // Note: Avoid actually reading the last byte, which may not be present
+            binaryReader.skip(1);
+
+            const row = parseRow(recordView, result.dbfFields, textDecoder);
+            result.data.push(row);
+            result.progress.rows = result.data.length;
+          }
+          state = STATE.END;
+          break;
+
+        default:
+          state = STATE.ERROR;
+          result.error = `illegal parser state ${state}`;
+          return state;
+      }
+    } catch (error) {
+      state = STATE.ERROR;
+      result.error = `DBF parsing failed: ${error.message}`;
+      return state;
+    }
+  }
+}
+
+export default function parseDbf(arrayBuffer, options) {
   const loaderOptions = options.dbf || {};
   const {encoding} = loaderOptions;
 
-  // Global header
-  const fileHeaderView = binaryReader.getDataView(DBF_HEADER_SIZE);
-  const header = parseDBFHeader(fileHeaderView);
-  const {headerLength, recordLength, nRecords} = header;
+  const dbfParser = new DBFParser({encoding});
+  dbfParser.write(arrayBuffer);
+  dbfParser.end();
 
-  // Row headers
-  const textDecoder = new TextDecoder(encoding);
-  const colHeaderView = binaryReader.getDataView(headerLength - DBF_HEADER_SIZE);
-  const fields = parseColumnHeaders(colHeaderView, textDecoder);
-
-  // Not exactly sure why start offset needs to be headerLength + 1?
-  // parsedbf uses ((fields.length + 1) << 5) + 2;
-  binaryReader.skip(1);
-  return parseRows(binaryReader, fields, nRecords, recordLength, textDecoder);
+  return dbfParser.result.data;
 }
 
 /**
@@ -49,7 +151,7 @@ function parseDBFHeader(headerView) {
 /**
  * @param {DataView} view
  */
-function parseColumnHeaders(view, textDecoder) {
+function parseFieldDescriptors(view, textDecoder) {
   // NOTE: this might overestimate the number of fields if the "Database
   // Container" container exists and is included in the headerLength
   const nFields = (view.byteLength - 1) / 32;
@@ -72,18 +174,19 @@ function parseColumnHeaders(view, textDecoder) {
   return fields;
 }
 
-/**
- * @param {BinaryReader} binaryReader
- */
+/*
+ * @param {BinaryChunkReader} binaryReader
 function parseRows(binaryReader, fields, nRecords, recordLength, textDecoder) {
   const rows = [];
   for (let i = 0; i < nRecords; i++) {
     const recordView = binaryReader.getDataView(recordLength - 1);
     binaryReader.skip(1);
+    // @ts-ignore
     rows.push(parseRow(recordView, fields, textDecoder));
   }
   return rows;
 }
+ */
 
 /**
  * @param {DataView} view
