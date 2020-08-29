@@ -13,10 +13,24 @@ export async function createReadStream(url, options) {
   // Handle file streams in node
   if (!isRequestURL(url)) {
     const noqueryUrl = url.split('?')[0];
+    let fileExists = true;
+    try {
+      await fs.promises.access(noqueryUrl);
+    } catch (error) {
+      fileExists = false;
+    }
+
     // Now open the stream
     return await new Promise((resolve, reject) => {
       // @ts-ignore
       const stream = fs.createReadStream(noqueryUrl, {encoding: null});
+      if (!fileExists) {
+        // @ts-ignore
+        stream.statusCode = 400;
+        // @ts-ignore
+        stream.statusMessage = 'File does not exist';
+      }
+
       stream.once('readable', () => resolve(stream));
       stream.on('error', error => reject(error));
     });
