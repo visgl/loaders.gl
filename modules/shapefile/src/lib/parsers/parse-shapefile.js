@@ -13,13 +13,33 @@ export async function* parseShapefileInBatches(asyncIterator, options, context) 
   const shapeHeader = await shapeIterator.next();
 
   // parse properties
-  const dbfResponse = await fetch(replaceExtension(url, 'dbf'));
-  const propertyIterator = await parseInBatches(dbfResponse, DBFLoader, {
-    dbf: {encoding: cpg || 'latin1'}
-  });
+  let propertyIterator;
+  let generator;
+  try {
+    const dbfResponse = await fetch(replaceExtension(url, 'dbf'));
+    if (dbfResponse.ok) {
+      propertyIterator = await parseInBatches(dbfResponse, DBFLoader, {
+        dbf: {encoding: cpg || 'latin1'}
+      });
+      generator = await zipBatchIterators(shapeIterator, propertyIterator);
+    } else {
+      // Ignore properties
+      generator = shapeIterator;
+    }
+  } catch (error) {
+    // Ignore properties
+    generator = shapeIterator;
+  }
 
-  const generator = await zipBatchIterators(shapeIterator, propertyIterator);
-  for await (const [geometries, properties] of generator) {
+  for await (const item of generator) {
+    let geometries;
+    let properties;
+    if (!propertyIterator) {
+      geometries = item;
+    } else {
+      [geometries, properties] = item;
+    }
+
     const geojsonGeometries = parseGeometries(geometries);
     const features = joinProperties(geojsonGeometries, properties);
     yield {
@@ -46,10 +66,7 @@ export async function parseShapefile(arrayBuffer, options, context) {
   try {
     const {url, fetch} = context;
     const dbfResponse = await fetch(replaceExtension(url, 'dbf'));
-    // TODO dbfResponse.ok is true under Node when the file doesn't exist. See
-    // the `ignore-properties` test case
     if (dbfResponse.ok) {
-      // NOTE: For some reason DBFLoader defaults to utf-8 so set default to be standards conformant
       properties = await parse(dbfResponse, DBFLoader, {dbf: {encoding: cpg || 'latin1'}});
     }
   } catch (error) {

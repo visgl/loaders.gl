@@ -16,8 +16,7 @@ export const DBFWorkerLoader = {
   mimeTypes: ['application/x-dbf'],
   options: {
     dbf: {
-      // Default to ASCII or UTF-8?
-      encoding: 'utf-8',
+      encoding: 'latin1',
       workerUrl: `https://unpkg.com/@loaders.gl/shapefile@${VERSION}/dist/dbf-loader.worker.js`
     }
   }
