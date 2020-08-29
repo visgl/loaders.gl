@@ -14,7 +14,9 @@ export async function* parseShapefileInBatches(asyncIterator, options, context) 
 
   // parse properties
   const dbfResponse = await fetch(replaceExtension(url, 'dbf'));
-  const propertyIterator = await parseInBatches(dbfResponse, DBFLoader, {dbf: {encoding: cpg}});
+  const propertyIterator = await parseInBatches(dbfResponse, DBFLoader, {
+    dbf: {encoding: cpg || 'latin1'}
+  });
 
   const generator = await zipBatchIterators(shapeIterator, propertyIterator);
   for await (const [geometries, properties] of generator) {

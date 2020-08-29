@@ -15,7 +15,7 @@ const STATE = {
 class DBFParser {
   constructor({encoding}) {
     this.binaryReader = new BinaryChunkReader();
-    this.textDecoder = new TextDecoder(encoding || 'latin1');
+    this.textDecoder = new TextDecoder(encoding);
     this.state = STATE.START;
     this.result = {
       data: []
