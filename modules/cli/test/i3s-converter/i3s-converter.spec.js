@@ -23,6 +23,11 @@ async function cleanUpPath(testPath) {
   // Do not run under browser
   if (!isBrowser) {
     await fs.rmdir(testPath, {recursive: true});
+    try {
+      await fs.unlink(`${testPath}.slpk`);
+    } catch (e) {
+      // Do nothing
+    }
   }
 }
 
@@ -37,7 +42,7 @@ test('cli - Converters#converts 3d-tiles tileset to i3s tileset', async t => {
     });
     t.ok(tilesetJson);
   }
-  cleanUpPath('data/BatchedColors');
+  await cleanUpPath('data/BatchedColors');
   t.end();
 });
 
@@ -59,7 +64,7 @@ test('cli - Converters#root node should not contain geometry and textures', asyn
     t.notOk(rootTile.geometryData);
     t.notOk(rootTile.textureData);
   }
-  cleanUpPath('data/BatchedColors');
+  await cleanUpPath('data/BatchedColors');
   t.end();
 });
 
@@ -76,7 +81,7 @@ test('cli - Converters#should create SceneServer path', async t => {
     t.ok(sceneServer.layers[0]);
     t.equal(sceneServer.serviceVersion, '1.7');
   }
-  cleanUpPath('data/BatchedColors');
+  await cleanUpPath('data/BatchedColors');
   t.end();
 });
 
@@ -96,7 +101,7 @@ test('cli - Converters#should create sharedResources json file', async t => {
     t.ok(sharedResources.materialDefinitions);
     t.ok(sharedResources.textureDefinitions);
   }
-  cleanUpPath('data/BatchedTextured');
+  await cleanUpPath('data/BatchedTextured');
   t.end();
 });
 
@@ -117,6 +122,6 @@ test('cli - Converters#should create only unique materials', async t => {
     t.equal(layer.materialDefinitions.length, 1);
     t.deepEqual(layer.materialDefinitions[0], TEST_TEXTURE_MATERIAL);
   }
-  cleanUpPath('data/BatchedTextured');
+  await cleanUpPath('data/BatchedTextured');
   t.end();
 });

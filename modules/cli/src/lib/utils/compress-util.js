@@ -24,7 +24,12 @@ export function compressFileWithGzip(pathFile) {
 
 export async function compressFilesWithZip(fileMap, outputFile, level = 0) {
   // Before creating a new file, we need to delete the old file
-  await removeFile(outputFile);
+  try {
+    await removeFile(outputFile);
+  } catch (e) {
+    // Do nothing if old file doesn't exist
+  }
+
   const output = createWriteStream(outputFile);
   const archive = archiver('zip', {
     zlib: {level} // Sets the compression level.
