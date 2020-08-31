@@ -65,6 +65,9 @@ export default class NodePages {
    */
   updateMaterialByNodeId(id, materialId) {
     const node = this.getNodeById(id);
+    if (!node.mesh) {
+      return;
+    }
     node.mesh.material = {
       definition: materialId,
       resource: node.index

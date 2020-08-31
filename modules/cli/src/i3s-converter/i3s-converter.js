@@ -221,6 +221,7 @@ export default class I3SConverter {
   }
 
   async _createNode(rootTile, sourceTile, parentId, level) {
+    await this.sourceTileset._loadTile(sourceTile);
     const rootTileId = rootTile.id;
     const coordinates = convertCommonToI3SCoordinate(sourceTile);
 
@@ -232,13 +233,15 @@ export default class I3SConverter {
     const nodeInPage = {
       lodThreshold: maxScreenThresholdSQ.maxError,
       obb: coordinates.obb,
-      children: [],
-      mesh: {
+      children: []
+    };
+    if (sourceTile.content && sourceTile.content.type === 'b3dm') {
+      nodeInPage.mesh = {
         geometry: {
           definition: 0
         }
-      }
-    };
+      };
+    }
     const nodeId = this.nodePages.push(nodeInPage, parentId);
 
     const nodeData = {
@@ -254,21 +257,12 @@ export default class I3SConverter {
         mbs: rootTile.mbs,
         obb: rootTile.obb
       },
-      geometryData: [
-        {
-          href: './geometries/0'
-        }
-      ],
-      sharedResource: [
-        {
-          href: './shared/0'
-        }
-      ],
       children: [],
       neighbors: []
     };
     const node = transform(nodeData, nodeTemplate);
     await this._convertResources(sourceTile, node);
+    sourceTile.unloadContent();
 
     await this._addChildrenWithNeighborsAndWriteFile(
       {rootNode: node, sourceTiles: sourceTile.children},
@@ -280,10 +274,11 @@ export default class I3SConverter {
 
   /* eslint-disable max-statements */
   async _convertResources(sourceTile, node) {
-    await this.sourceTileset._loadTile(sourceTile);
     if (!sourceTile.content || sourceTile.content.type !== 'b3dm') {
       return;
     }
+    node.geometryData = [{href: './geometries/0'}];
+    node.sharedResource = [{href: './shared/0'}];
     const childPath = join(this.layers0Path, 'nodes', node.path);
     const slpkChildPath = join('nodes', node.path);
     const {
@@ -333,7 +328,6 @@ export default class I3SConverter {
     if (meshMaterial) {
       this.nodePages.updateMaterialByNodeId(node.id, this._findOrCreateMaterial(meshMaterial));
     }
-    sourceTile.unloadContent();
   }
 
   /**

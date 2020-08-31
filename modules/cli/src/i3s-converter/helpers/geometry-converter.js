@@ -158,84 +158,22 @@ function convertNode(
   {positions, normals, texCoords},
   matrix = new Matrix4([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])
 ) {
-  const mesh = node.mesh;
   const nodeMatrix = node.matrix;
   const compositeMatrix = nodeMatrix ? matrix.multiplyRight(nodeMatrix) : matrix;
+
+  const mesh = node.mesh;
   if (mesh) {
-    for (const primitive of mesh.primitives) {
-      const attributes = primitive.attributes;
-      const batchIds = tileContent.batchTableJson && tileContent.batchTableJson.id;
-      // Common case - indices are applied for vertices
-      if (!(batchIds && batchIds.length) || !isBatchedIndices(primitive.indices, attributes)) {
-        positions = concatenateTypedArrays(
-          positions,
-          transformVertexArray(
-            attributes.POSITION.value,
-            tileContent.cartographicOrigin,
-            tileContent.cartesianModelMatrix,
-            compositeMatrix,
-            primitive.indices.value
-          )
-        );
-        normals = concatenateTypedArrays(
-          normals,
-          transformVertexArray(
-            attributes.NORMAL && attributes.NORMAL.value,
-            tileContent.cartographicOrigin,
-            tileContent.cartesianModelMatrix,
-            compositeMatrix,
-            primitive.indices.value
-          )
-        );
-        texCoords = concatenateTypedArrays(
-          texCoords,
-          flattenTexCoords(
-            attributes.TEXCOORD_0 && attributes.TEXCOORD_0.value,
-            primitive.indices.value
-          )
-        );
-        continue; // eslint-disable-line
-      }
-      /* For this case indices are applicable for batch, not for all vertex array.
-      1. Cut vertices with batchId===0,
-      2. Apply indices on resulting array,
-      3. Cut next vertices' range by batchId,
-      4. Apply indices on resulting range etc.*/
-      for (const batchId of batchIds) {
-        const {
-          positions: newPositions,
-          normals: newNormals,
-          texCoords: newTexCoords
-        } = getValuesByBatchId(attributes, batchId);
-        positions = concatenateTypedArrays(
-          positions,
-          transformVertexArray(
-            newPositions,
-            tileContent.cartographicOrigin,
-            tileContent.cartesianModelMatrix,
-            compositeMatrix,
-            primitive.indices.value
-          )
-        );
-
-        normals = concatenateTypedArrays(
-          normals,
-          transformVertexArray(
-            newNormals,
-            tileContent.cartographicOrigin,
-            tileContent.cartesianModelMatrix,
-            nodeMatrix,
-            primitive.indices.value
-          )
-        );
-
-        texCoords = concatenateTypedArrays(
-          texCoords,
-          flattenTexCoords(newTexCoords, primitive.indices.value)
-        );
-      }
-    }
+    const newAttributes = convertMesh(
+      mesh,
+      tileContent,
+      {positions, normals, texCoords},
+      compositeMatrix
+    );
+    positions = newAttributes.positions;
+    normals = newAttributes.normals;
+    texCoords = newAttributes.texCoords;
   }
+
   const newAttributes = convertNodes(
     node.children,
     tileContent,
@@ -245,6 +183,104 @@ function convertNode(
   positions = newAttributes.positions;
   normals = newAttributes.normals;
   texCoords = newAttributes.texCoords;
+
+  return {positions, normals, texCoords};
+}
+
+/**
+ * Convert all primitives of node and all children nodes
+ * @param {Object} mesh - gltf node
+ * @param {Object} content - 3d tile content
+ * @param {Object} attributes {positions: Float32Array, normals: Float32Array, texCoords: Float32Array} - for recursive concatenation of
+ *   attributes
+ * @param {Matrix4} matrix - transformation matrix - cumulative transformation matrix formed from all parent node matrices
+ * @returns {Object}
+ * {
+ *   positions: Float32Array,
+ *   normals: Float32Array,
+ *   texCoords: Float32Array
+ * }
+ * @todo: optimize arrays concatenation
+ */
+function convertMesh(
+  mesh,
+  content,
+  {positions, normals, texCoords},
+  matrix = new Matrix4([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])
+) {
+  for (const primitive of mesh.primitives) {
+    const attributes = primitive.attributes;
+    const batchIds = content.batchTableJson && content.batchTableJson.id;
+    // Common case - indices are applied for vertices
+    if (!(batchIds && batchIds.length) || !isBatchedIndices(primitive.indices, attributes)) {
+      positions = concatenateTypedArrays(
+        positions,
+        transformVertexArray(
+          attributes.POSITION.value,
+          content.cartographicOrigin,
+          content.cartesianModelMatrix,
+          matrix,
+          primitive.indices.value
+        )
+      );
+      normals = concatenateTypedArrays(
+        normals,
+        transformVertexArray(
+          attributes.NORMAL && attributes.NORMAL.value,
+          content.cartographicOrigin,
+          content.cartesianModelMatrix,
+          matrix,
+          primitive.indices.value
+        )
+      );
+      texCoords = concatenateTypedArrays(
+        texCoords,
+        flattenTexCoords(
+          attributes.TEXCOORD_0 && attributes.TEXCOORD_0.value,
+          primitive.indices.value
+        )
+      );
+      continue; // eslint-disable-line
+    }
+    /* For this case indices are applicable for batch, not for all vertex array.
+      1. Cut vertices with batchId===0,
+      2. Apply indices on resulting array,
+      3. Cut next vertices' range by batchId,
+      4. Apply indices on resulting range etc.*/
+    for (const batchId of batchIds) {
+      const {
+        positions: newPositions,
+        normals: newNormals,
+        texCoords: newTexCoords
+      } = getValuesByBatchId(attributes, batchId);
+      positions = concatenateTypedArrays(
+        positions,
+        transformVertexArray(
+          newPositions,
+          content.cartographicOrigin,
+          content.cartesianModelMatrix,
+          matrix,
+          primitive.indices.value
+        )
+      );
+
+      normals = concatenateTypedArrays(
+        normals,
+        transformVertexArray(
+          newNormals,
+          content.cartographicOrigin,
+          content.cartesianModelMatrix,
+          matrix,
+          primitive.indices.value
+        )
+      );
+
+      texCoords = concatenateTypedArrays(
+        texCoords,
+        flattenTexCoords(newTexCoords, primitive.indices.value)
+      );
+    }
+  }
   return {positions, normals, texCoords};
 }
 
@@ -392,15 +428,30 @@ function convertMaterial(tileContent) {
   if (!sourceMaterials || !sourceMaterials.length) {
     return {};
   }
-  let texture;
-  const sourceMaterial = sourceMaterials[0];
-  const sourceImages = tileContent.gltf.images;
   if (sourceMaterials.length > 1) {
     // eslint-disable-next-line no-console, no-undef
     console.warn(
       `Warning: 3D tile contains multiple materials, only the first material was converted`
     );
   }
+  const sourceMaterial = sourceMaterials[0];
+  const sourceImages = tileContent.gltf.images;
+  // Gltf 2.0
+  if (sourceMaterial.pbrMetallicRoughness) {
+    return convertMaterial20(sourceMaterial, sourceImages);
+  }
+
+  // Gltf 1.0
+  return convertMaterial10(sourceImages);
+}
+
+/**
+ * Convert texture and material from gltf 2.0 material object
+ * @param {Object} sourceMaterial - material object
+ * @param {Object[]} sourceImages - images array
+ * @returns {Object}
+ */
+function convertMaterial20(sourceMaterial, sourceImages) {
   const material = {
     doubleSided: sourceMaterial.doubleSided,
     emissiveFactor: sourceMaterial.emissiveFactor.map(c => Math.round(c * 255)),
@@ -410,6 +461,8 @@ function convertMaterial(tileContent) {
       metallicFactor: sourceMaterial.pbrMetallicRoughness.metallicFactor
     }
   };
+
+  let texture;
   if (sourceMaterial.pbrMetallicRoughness.baseColorTexture) {
     texture = sourceMaterial.pbrMetallicRoughness.baseColorTexture.texture.source;
   } else if (sourceImages && sourceImages.length) {
@@ -423,6 +476,28 @@ function convertMaterial(tileContent) {
     material.pbrMetallicRoughness.baseColorFactor = sourceMaterial.pbrMetallicRoughness.baseColorFactor.map(
       c => Math.round(c * 255)
     );
+  }
+  return {material, texture};
+}
+
+/**
+ * Convert texture and material from gltf 1.0 material object
+ * @param {Object[]} sourceImages - images array
+ * @returns {Object}
+ */
+function convertMaterial10(sourceImages) {
+  const material = {
+    doubleSided: true,
+    pbrMetallicRoughness: {
+      baseColorTexture: {
+        textureSetDefinitionId: 0
+      },
+      metallicFactor: 0
+    }
+  };
+  let texture;
+  if (sourceImages && sourceImages.length) {
+    texture = sourceImages[0];
   }
   return {material, texture};
 }

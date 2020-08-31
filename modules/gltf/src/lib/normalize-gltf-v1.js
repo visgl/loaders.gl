@@ -232,6 +232,9 @@ class GLTFV1Normalizer {
     if (node.children) {
       node.children = node.children.map(child => this._convertIdToIndex(child, 'node'));
     }
+    if (node.meshes) {
+      node.meshes = node.meshes.map(mesh => this._convertIdToIndex(mesh, 'mesh'));
+    }
   }
 
   _convertSceneIds(scene) {
@@ -242,6 +245,10 @@ class GLTFV1Normalizer {
 
   /** Go through all objects in a top-level array and replace ids with indices */
   _convertIdsToIndices(json, topLevelArrayName) {
+    if (!json[topLevelArrayName]) {
+      console.warn(`gltf v1: json doesn't contain attribute ${topLevelArrayName}`); // eslint-disable-line no-console, no-undef
+      json[topLevelArrayName] = [];
+    }
     for (const object of json[topLevelArrayName]) {
       for (const key in object) {
         const id = object[key];
