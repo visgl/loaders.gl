@@ -23,8 +23,7 @@ class DBFParser {
   }
 
   write(arrayBuffer) {
-    // TODO: fix Node streaming to produce ArrayBuffers, not Buffers
-    this.binaryReader.write(toArrayBuffer(arrayBuffer));
+    this.binaryReader.write(arrayBuffer);
     this.state = parseState(this.state, this.result, this.binaryReader, this.textDecoder);
     // this.result.progress.bytesUsed = this.binaryReader.bytesUsed();
 
@@ -269,13 +268,4 @@ function parseNumber(text) {
 
 function parseCharacter(text) {
   return text.trim() || null;
-}
-
-/** Coerce Node Buffer or ArrayBuffer to ArrayBuffer */
-function toArrayBuffer(buffer) {
-  // byteOffset required when dealing with small Buffers
-  // https://stackoverflow.com/a/31394257/7319250
-  return buffer.buffer
-    ? buffer.buffer.slice(buffer.byteOffset, buffer.byteLength + buffer.byteOffset)
-    : buffer;
 }
