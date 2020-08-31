@@ -1,18 +1,32 @@
+import {Vector3, Matrix4} from '@math.gl/core';
 /**
  * Convert binary data from b3dm file to i3s resources
  *
- * @param content - 3d tile content
+ * @param tileContent - 3d tile content
  * @param options - converter options
- * @returns A promise that resolves to object with `geometry`, compressedGeometry`, `textures` and `sharedResources` appropriate
+ * @returns A promise that resolves to object with `geometry`, compressedGeometry`, `texture` and `sharedResources` appropriate
  *  for use  I3S tiles.
  */
 export default function convertB3dmToI3sGeometry(
-  content: any,
+  tileContent: {
+    batchTableJson: {
+      id: [];
+    };
+    cartographicOrigin: Vector3;
+    cartesianModelMatrix: Matrix4;
+    gltf: {
+      scene: {
+        nodes: [];
+      };
+      images: [];
+      materials: [];
+    };
+  },
   options?: Object
 ): Promise<{
   geometry: ArrayBuffer;
   compressedGeometry: ArrayBuffer;
-  textures: any;
+  texture: any;
   sharedResources: any;
   meshMaterial: any;
 }>;

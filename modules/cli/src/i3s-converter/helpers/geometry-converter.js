@@ -9,9 +9,9 @@ const VALUES_PER_VERTEX = 3;
 const VALUES_PER_TEX_COORD = 2;
 const VALUES_PER_COLOR_ELEMENT = 4;
 
-export default async function convertB3dmToI3sGeometry(content, options = {}) {
-  const {positions, normals, texCoords, colors} = convertAttributes(content);
-  const {material, texture} = convertMaterial(content);
+export default async function convertB3dmToI3sGeometry(tileContent, options = {}) {
+  const {positions, normals, texCoords, colors} = convertAttributes(tileContent);
+  const {material, texture} = convertMaterial(tileContent);
 
   const vertexCount = positions.length / VALUES_PER_VERTEX;
   const header = new Uint32Array(2);
@@ -52,15 +52,15 @@ export default async function convertB3dmToI3sGeometry(content, options = {}) {
   return {
     geometry: fileBuffer,
     compressedGeometry,
-    textures: texture,
-    sharedResources: getSharedResources(content),
+    texture,
+    sharedResources: getSharedResources(tileContent),
     meshMaterial: material
   };
 }
 
 /**
  * Convert attributes from the gltf nodes tree to i3s plain geometry
- * @param {Object} content - 3d tile content
+ * @param {Object} tileContent - 3d tile content
  * @returns {Object}
  * {
  *   positions: Float32Array,
@@ -70,12 +70,12 @@ export default async function convertB3dmToI3sGeometry(content, options = {}) {
  * }
  * @todo implement colors support (if applicable for gltf format)
  */
-function convertAttributes(content) {
+function convertAttributes(tileContent) {
   let positions = new Float32Array(0);
   let normals = new Float32Array(0);
   let convertedTexCoords = new Float32Array(0);
-  const nodes = content.gltf.scene.nodes;
-  const convertedAttributes = convertNodes(nodes, content, {
+  const nodes = tileContent.gltf.scene.nodes;
+  const convertedAttributes = convertNodes(nodes, tileContent, {
     positions,
     normals,
     texCoords: convertedTexCoords
@@ -109,7 +109,7 @@ function convertAttributes(content) {
  * Gltf has hierarchical structure of nodes. This function converts nodes starting from those which are in gltf scene object.
  *   The goal is applying tranformation matrix for all children. Functions "convertNodes" and "convertNode" work together recursively.
  * @param {Object[]} nodes - gltf nodes array
- * @param {Object} content - 3d tile content
+ * @param {Object} tileContent - 3d tile content
  * @param {Object} attributes {positions: Float32Array, normals: Float32Array, texCoords: Float32Array} - for recursive concatenation of
  *   attributes
  * @param {Matrix4} matrix - transformation matrix - cumulative transformation matrix formed from all parent node matrices
@@ -122,13 +122,13 @@ function convertAttributes(content) {
  */
 function convertNodes(
   nodes,
-  content,
+  tileContent,
   {positions, normals, texCoords},
   matrix = new Matrix4([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])
 ) {
   if (nodes) {
     for (const node of nodes) {
-      const newAttributes = convertNode(node, content, {positions, normals, texCoords}, matrix);
+      const newAttributes = convertNode(node, tileContent, {positions, normals, texCoords}, matrix);
       positions = newAttributes.positions;
       normals = newAttributes.normals;
       texCoords = newAttributes.texCoords;
@@ -140,7 +140,7 @@ function convertNodes(
 /**
  * Convert all primitives of node and all children nodes
  * @param {Object} node - gltf node
- * @param {Object} content - 3d tile content
+ * @param {Object} tileContent - 3d tile content
  * @param {Object} attributes {positions: Float32Array, normals: Float32Array, texCoords: Float32Array} - for recursive concatenation of
  *   attributes
  * @param {Matrix4} matrix - transformation matrix - cumulative transformation matrix formed from all parent node matrices
@@ -154,7 +154,7 @@ function convertNodes(
  */
 function convertNode(
   node,
-  content,
+  tileContent,
   {positions, normals, texCoords},
   matrix = new Matrix4([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])
 ) {
@@ -164,15 +164,15 @@ function convertNode(
   if (mesh) {
     for (const primitive of mesh.primitives) {
       const attributes = primitive.attributes;
-      const batchIds = content.batchTableJson && content.batchTableJson.id;
+      const batchIds = tileContent.batchTableJson && tileContent.batchTableJson.id;
       // Common case - indices are applied for vertices
       if (!(batchIds && batchIds.length) || !isBatchedIndices(primitive.indices, attributes)) {
         positions = concatenateTypedArrays(
           positions,
           transformVertexArray(
             attributes.POSITION.value,
-            content.cartographicOrigin,
-            content.cartesianModelMatrix,
+            tileContent.cartographicOrigin,
+            tileContent.cartesianModelMatrix,
             compositeMatrix,
             primitive.indices.value
           )
@@ -181,8 +181,8 @@ function convertNode(
           normals,
           transformVertexArray(
             attributes.NORMAL && attributes.NORMAL.value,
-            content.cartographicOrigin,
-            content.cartesianModelMatrix,
+            tileContent.cartographicOrigin,
+            tileContent.cartesianModelMatrix,
             compositeMatrix,
             primitive.indices.value
           )
@@ -211,8 +211,8 @@ function convertNode(
           positions,
           transformVertexArray(
             newPositions,
-            content.cartographicOrigin,
-            content.cartesianModelMatrix,
+            tileContent.cartographicOrigin,
+            tileContent.cartesianModelMatrix,
             compositeMatrix,
             primitive.indices.value
           )
@@ -222,8 +222,8 @@ function convertNode(
           normals,
           transformVertexArray(
             newNormals,
-            content.cartographicOrigin,
-            content.cartesianModelMatrix,
+            tileContent.cartographicOrigin,
+            tileContent.cartesianModelMatrix,
             nodeMatrix,
             primitive.indices.value
           )
@@ -238,7 +238,7 @@ function convertNode(
   }
   const newAttributes = convertNodes(
     node.children,
-    content,
+    tileContent,
     {positions, normals, texCoords},
     compositeMatrix
   );
@@ -384,17 +384,17 @@ function getValuesByBatchId(attributes, batchId) {
 
 /**
  * Convert texture and material from gltf material object
- * @param {Object} content - 3d tile content
+ * @param {Object} tileContent - 3d tile content
  * @returns {Object}
  */
-function convertMaterial(content) {
-  const sourceMaterials = content.gltf.materials;
+function convertMaterial(tileContent) {
+  const sourceMaterials = tileContent.gltf.materials;
   if (!sourceMaterials || !sourceMaterials.length) {
     return {};
   }
   let texture;
   const sourceMaterial = sourceMaterials[0];
-  const sourceImages = content.gltf.images;
+  const sourceImages = tileContent.gltf.images;
   if (sourceMaterials.length > 1) {
     // eslint-disable-next-line no-console, no-undef
     console.warn(
@@ -428,45 +428,69 @@ function convertMaterial(content) {
 }
 
 /**
- * Form "sharedResources" from gltf material object
- * @param {Object} content - 3d tile content
- * @returns {Object}
+ * Form "sharedResources" from gltf materials array
+ * @param {Object} tileContent - 3d tile content
+ * @returns {Object} {materialDefinitionInfos: Object[], textureDefinitionInfos: Object[]} -
+ * 2 arrays in format of i3s sharedResources data https://github.com/Esri/i3s-spec/blob/master/docs/1.7/sharedResource.cmn.md
  */
-function getSharedResources(content) {
-  const materials = content.gltf.materials;
-  const result = {};
+function getSharedResources(tileContent) {
+  const gltfMaterials = tileContent.gltf.materials;
+  const i3sResources = {};
 
-  if (!materials || !materials.length) {
-    return result;
+  if (!gltfMaterials || !gltfMaterials.length) {
+    return i3sResources;
   }
 
-  result.materialDefinitionInfos = [];
-  for (const material of materials) {
-    result.materialDefinitionInfos.push(
-      extractMaterialDefinitionInfo(
-        material.pbrMetallicRoughness.baseColorFactor,
-        material.pbrMetallicRoughness.metallicFactor
-      )
+  i3sResources.materialDefinitionInfos = [];
+  for (const gltfMaterial of gltfMaterials) {
+    const {materialDefinitionInfo, textureDefinitionInfo} = convertGLTFMaterialToI3sSharedResources(
+      gltfMaterial
     );
-
-    const texture = material.pbrMetallicRoughness.baseColorTexture;
-    if (texture) {
-      if (!result.textureDefinitionInfos) {
-        result.textureDefinitionInfos = [];
-      }
-      result.textureDefinitionInfos.push(extractTextureDefinitionInfo(texture.texture));
+    i3sResources.materialDefinitionInfos.push(materialDefinitionInfo);
+    if (textureDefinitionInfo) {
+      i3sResources.textureDefinitionInfos = i3sResources.textureDefinitionInfos || [];
+      i3sResources.textureDefinitionInfos.push(textureDefinitionInfo);
     }
   }
-  return result;
+  return i3sResources;
+}
+
+/**
+ * Convert gltf material into I3S sharedResources data
+ * @param {Object} gltfMaterial - gltf material data
+ * @returns {Object} - Couple {materialDefinitionInfo, textureDefinitionInfo} extracted from gltf material data
+ */
+function convertGLTFMaterialToI3sSharedResources(gltfMaterial) {
+  const texture = gltfMaterial.pbrMetallicRoughness.baseColorTexture;
+  let textureDefinitionInfo = null;
+  if (texture) {
+    textureDefinitionInfo = extractSharedResourcesTextureInfo(texture.texture);
+  }
+  return {
+    materialDefinitionInfo: extractSharedResourcesMaterialInfo(
+      gltfMaterial.pbrMetallicRoughness.baseColorFactor,
+      gltfMaterial.pbrMetallicRoughness.metallicFactor
+    ),
+    textureDefinitionInfo
+  };
 }
 
 /**
  * Form "materialDefinition" which is part of "sharedResouces"
+ * https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#materials
+ * See formulas in appendix "Appendix B: BRDF Implementation":
+ * const dielectricSpecular = rgb(0.04, 0.04, 0.04)
+ * const black = rgb(0, 0, 0)
+ * cdiff = lerp(baseColor.rgb * (1 - dielectricSpecular.r), black, metallic)
+ * F0 = lerp(dieletricSpecular, baseColor.rgb, metallic)
+ *
+ * Assumption: F0 - specular in i3s ("specular reflection" <-> "reflectance value at normal incidence")
+ * cdiff - diffuse in i3s ("Diffuse color" <-> "'c' diffuse" (c means color?))
  * @param {number[]} baseColorFactor - RGBA color in 0..1 format
  * @param {number} metallicFactor - "metallicFactor" attribute of gltf material object
  * @returns {Object}
  */
-function extractMaterialDefinitionInfo(baseColorFactor, metallicFactor) {
+function extractSharedResourcesMaterialInfo(baseColorFactor, metallicFactor) {
   const matDielectricColorComponent = 0.04 / 255; // Color from rgb (255) to 0..1 resolution
   // All color resolutions are 0..1
   const black = new Vector4(0, 0, 0, 1);
@@ -482,7 +506,7 @@ function extractMaterialDefinitionInfo(baseColorFactor, metallicFactor) {
   // Formulas for Cdiff & F0
   const firstOperand = unitVector.subtract(dielectricSpecular).multiply(baseColorVector);
   const diffuse = firstOperand.lerp(firstOperand, black, metallicFactor);
-  dielectricSpecular[4] = 1;
+  dielectricSpecular[3] = 1;
   const specular = dielectricSpecular.lerp(dielectricSpecular, baseColorVector, metallicFactor);
   return {
     diffuse: diffuse.toArray(),
@@ -495,11 +519,13 @@ function extractMaterialDefinitionInfo(baseColorFactor, metallicFactor) {
  * @param {Object} texture - texture image info
  * @returns {Object}
  */
-function extractTextureDefinitionInfo(texture) {
+function extractSharedResourcesTextureInfo(texture) {
   return {
     encoding: [texture.source.mimeType],
     images: [
       {
+        // 'i3s' has just size which is width of the image. Images are supposed to be square.
+        // https://github.com/Esri/i3s-spec/blob/master/docs/1.7/image.cmn.md
         size: texture.source.image.width,
         length: [texture.source.image.data.length]
       }

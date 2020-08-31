@@ -289,7 +289,7 @@ export default class I3SConverter {
     const {
       geometry: geometryBuffer,
       compressedGeometry,
-      textures,
+      texture,
       sharedResources,
       meshMaterial
     } = await convertB3dmToI3sGeometry(sourceTile.content, this.options);
@@ -319,13 +319,13 @@ export default class I3SConverter {
       sharedDataStr,
       isCreateSlpk
     );
-    if (textures) {
+    if (texture) {
       node.textureData = [{href: './textures/0'}];
-      const texturesPath = join(childPath, 'textures/0/');
-      const texturesData = textures.bufferView.data;
+      const texturePath = join(childPath, 'textures/0/');
+      const textureData = texture.bufferView.data;
       this.fileMap[`${slpkChildPath}/textures/0.jpeg`] = await writeFile(
-        texturesPath,
-        texturesData,
+        texturePath,
+        textureData,
         false,
         'index.jpeg'
       );
