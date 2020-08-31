@@ -1,4 +1,3 @@
-// Copyright (c) 2020 Unfolded, Inc. All rights reserved.
 import assert from '../utils/assert';
 
 // ArrowJS `Schema` API-compatible class for row-based tables (returned from `DataTable`)

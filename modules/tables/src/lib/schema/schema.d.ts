@@ -1,4 +1,3 @@
-// Copyright (c) 2020 Unfolded, Inc. All rights reserved.
 import Field from './field';
 
 /**

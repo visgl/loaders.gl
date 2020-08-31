@@ -268,7 +268,6 @@ function parseCharacter(text) {
 /**
  * Create a standard Arrow-style `Field` from field descriptor.
  * TODO - use `fieldLength` and `decimal` to generate smaller types?
- * TODO - is everything nullable. Can we set this false for some fields?
  */
 function makeField({name, dataType, fieldLength, decimal}) {
   switch (dataType) {
@@ -283,7 +282,7 @@ function makeField({name, dataType, fieldLength, decimal}) {
     case 'O':
       return new Field(name, new Float64(), true);
     case 'D':
-      return new Field(name, new TimestampMillisecond(), false);
+      return new Field(name, new TimestampMillisecond(), true);
     case 'L':
       return new Field(name, new Bool(), true);
     default:

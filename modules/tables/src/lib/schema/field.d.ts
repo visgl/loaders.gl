@@ -1,5 +1,3 @@
-// Copyright (c) 2020 Unfolded, Inc. All rights reserved.
-
 import {DataType} from '../types/arrow-like/type';
 
 /**
