@@ -102,7 +102,12 @@ test('ShapefileLoader#loadInBatches(File)', async t => {
     const dbfFilename = `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.dbf`;
     const dbfResponse = await fetchFile(dbfFilename);
     const dbfFile = new File([await dbfResponse.blob()], dbfFilename);
-    const fileSystem = new BrowserFileSystem([dbfFile]);
+    let fileSystem;
+    if (dbfResponse.ok) {
+      fileSystem = new BrowserFileSystem([dbfFile]);
+    } else {
+      fileSystem = new BrowserFileSystem([]);
+    }
 
     const filename = `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`;
     const response = await fetchFile(filename);
