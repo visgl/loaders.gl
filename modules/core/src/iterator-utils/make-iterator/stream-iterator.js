@@ -5,7 +5,7 @@ export function makeStreamIterator(stream) {
   if (isBrowser || nodeVersion >= 10) {
     // NODE 10+: stream is an asyncIterator
     if (typeof stream[Symbol.asyncIterator] === 'function') {
-      return toArrayBufferChunks(stream);
+      return makeToArrayBufferIterator(stream);
     }
 
     // WhatWG: stream is supposed to have a `getIterator` method
@@ -18,7 +18,7 @@ export function makeStreamIterator(stream) {
 }
 
 /** Coerce each chunk to ArrayBuffer */
-async function* toArrayBufferChunks(asyncIterator) {
+async function* makeToArrayBufferIterator(asyncIterator) {
   for await (const chunk of asyncIterator) {
     yield toArrayBuffer(chunk);
   }
@@ -35,13 +35,14 @@ async function* makeBrowserStreamIterator(stream) {
     // eslint-disable-next-line no-constant-condition
     while (true) {
       // Read from the stream
+      // value is a Uint8Array
       const {done, value} = await reader.read();
       // Exit if we're done
       if (done) {
         return;
       }
       // Else yield the chunk
-      yield value;
+      yield toArrayBuffer(value);
     }
   } catch (error) {
     // TODO - examples makes it look like this should always be called,

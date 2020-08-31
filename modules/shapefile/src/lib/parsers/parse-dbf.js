@@ -1,3 +1,5 @@
+import {Schema, Field, Bool, Utf8, Float64, TimestampMillisecond} from '@loaders.gl/tables';
+
 /* global TextDecoder */
 import BinaryChunkReader from '../streaming/binary-chunk-reader';
 
@@ -52,7 +54,16 @@ export function parseDBF(arrayBuffer, options) {
   dbfParser.write(arrayBuffer);
   dbfParser.end();
 
-  return dbfParser.result.data;
+  const {data, schema} = dbfParser.result;
+  switch (options.tables && options.tables.format) {
+    case 'table':
+      // TODO - parse columns
+      return {schema, rows: data};
+
+    case 'rows':
+    default:
+      return data;
+  }
 }
 
 export async function* parseDBFInBatches(asyncIterator, options) {
@@ -110,6 +121,7 @@ function parseState(state, result = {}, binaryReader, textDecoder) {
           }
 
           result.dbfFields = parseFieldDescriptors(fieldDescriptorView, textDecoder);
+          result.schema = new Schema(result.dbfFields.map(dbfField => makeField(dbfField)));
 
           state = STATE.FIELD_PROPERTIES;
 
@@ -268,4 +280,29 @@ function parseNumber(text) {
 
 function parseCharacter(text) {
   return text.trim() || null;
+}
+
+/**
+ * Create a standard Arrow-style `Field` from field descriptor.
+ * TODO - use `fieldLength` and `decimal` to generate smaller types?
+ */
+function makeField({name, dataType, fieldLength, decimal}) {
+  switch (dataType) {
+    case 'B':
+      return new Field(name, new Float64(), true);
+    case 'C':
+      return new Field(name, new Utf8(), true);
+    case 'F':
+      return new Field(name, new Float64(), true);
+    case 'N':
+      return new Field(name, new Float64(), true);
+    case 'O':
+      return new Field(name, new Float64(), true);
+    case 'D':
+      return new Field(name, new TimestampMillisecond(), true);
+    case 'L':
+      return new Field(name, new Bool(), true);
+    default:
+      throw new Error('Unsupported data type');
+  }
 }
