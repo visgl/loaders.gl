@@ -21,7 +21,9 @@ class SHPParser {
   constructor() {
     this.binaryReader = new BinaryChunkReader();
     this.state = STATE.EXPECTING_HEADER;
-    this.result = {};
+    this.result = {
+      geometries: []
+    };
   }
 
   write(arrayBuffer) {
@@ -88,7 +90,6 @@ function parseState(state, result = {}, binaryReader) {
             return state;
           }
           result.header = parseSHPHeader(dataView);
-          result.geometries = [];
           result.progress = {
             bytesUsed: 0,
             bytesTotal: result.header.length,
