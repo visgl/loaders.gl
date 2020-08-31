@@ -14,24 +14,19 @@ export async function* parseShapefileInBatches(asyncIterator, options, context) 
 
   // parse properties
   let propertyIterator;
-  let generator;
-  try {
-    const dbfResponse = await fetch(replaceExtension(url, 'dbf'));
-    if (dbfResponse.ok) {
-      propertyIterator = await parseInBatches(dbfResponse, DBFLoader, {
-        dbf: {encoding: cpg || 'latin1'}
-      });
-      generator = await zipBatchIterators(shapeIterator, propertyIterator);
-    } else {
-      // Ignore properties
-      generator = shapeIterator;
-    }
-  } catch (error) {
+  let iterator;
+  const dbfResponse = await fetch(replaceExtension(url, 'dbf'));
+  if (dbfResponse.ok) {
+    propertyIterator = await parseInBatches(dbfResponse, DBFLoader, {
+      dbf: {encoding: cpg || 'latin1'}
+    });
+    iterator = await zipBatchIterators(shapeIterator, propertyIterator);
+  } else {
     // Ignore properties
-    generator = shapeIterator;
+    iterator = shapeIterator;
   }
 
-  for await (const item of generator) {
+  for await (const item of iterator) {
     let geometries;
     let properties;
     if (!propertyIterator) {
@@ -63,14 +58,10 @@ export async function parseShapefile(arrayBuffer, options, context) {
 
   // parse properties
   let properties = [];
-  try {
-    const {url, fetch} = context;
-    const dbfResponse = await fetch(replaceExtension(url, 'dbf'));
-    if (dbfResponse.ok) {
-      properties = await parse(dbfResponse, DBFLoader, {dbf: {encoding: cpg || 'latin1'}});
-    }
-  } catch (error) {
-    // Ignore properties
+  const {url, fetch} = context;
+  const dbfResponse = await fetch(replaceExtension(url, 'dbf'));
+  if (dbfResponse.ok) {
+    properties = await parse(dbfResponse, DBFLoader, {dbf: {encoding: cpg || 'latin1'}});
   }
 
   const features = joinProperties(geojsonGeometries, properties);
