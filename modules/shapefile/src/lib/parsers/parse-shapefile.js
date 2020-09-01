@@ -6,7 +6,7 @@ import {SHPLoader} from '../../shp-loader';
 import {DBFLoader} from '../../dbf-loader';
 
 export async function* parseShapefileInBatches(asyncIterator, options, context) {
-  const {_targetCrs = 'WGS84'} = options && options.gis;
+  const {_targetCrs = 'WGS84'} = (options && options.gis) || {};
   const {parseInBatches, fetch, url} = context;
   const {shx, cpg, prj} = await loadShapefileSidecarFiles(options, context);
 
@@ -51,7 +51,7 @@ export async function* parseShapefileInBatches(asyncIterator, options, context) 
 }
 
 export async function parseShapefile(arrayBuffer, options, context) {
-  const {_targetCrs = 'WGS84'} = options && options.gis;
+  const {_targetCrs = 'WGS84'} = (options && options.gis) || {};
   const {parse} = context;
   const {shx, cpg, prj} = await loadShapefileSidecarFiles(options, context);
 
