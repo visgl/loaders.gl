@@ -21,7 +21,9 @@ class SHPParser {
   constructor() {
     this.binaryReader = new BinaryChunkReader();
     this.state = STATE.EXPECTING_HEADER;
-    this.result = {};
+    this.result = {
+      geometries: []
+    };
   }
 
   write(arrayBuffer) {
@@ -48,6 +50,29 @@ export function parseSHP(arrayBuffer, options) {
   return shpParser.result;
 }
 
+export async function* parseSHPInBatches(asyncIterator, options) {
+  const parser = new SHPParser();
+  let headerReturned = false;
+  for await (const arrayBuffer of asyncIterator) {
+    parser.write(arrayBuffer);
+    if (!headerReturned && parser.result.header) {
+      headerReturned = true;
+      yield parser.result.header;
+    }
+
+    if (parser.result.geometries.length > 0) {
+      yield parser.result.geometries;
+      parser.result.geometries = [];
+    }
+  }
+  parser.end();
+  if (parser.result.geometries.length > 0) {
+    yield parser.result.geometries;
+  }
+
+  return;
+}
+
 /* eslint-disable complexity, max-depth */
 function parseState(state, result = {}, binaryReader) {
   // eslint-disable-next-line no-constant-condition
@@ -65,7 +90,6 @@ function parseState(state, result = {}, binaryReader) {
             return state;
           }
           result.header = parseSHPHeader(dataView);
-          result.geometries = [];
           result.progress = {
             bytesUsed: 0,
             bytesTotal: result.header.length,

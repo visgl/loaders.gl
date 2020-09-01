@@ -19,7 +19,9 @@ class DBFParser {
     this.binaryReader = new BinaryChunkReader();
     this.textDecoder = new TextDecoder(encoding);
     this.state = STATE.START;
-    this.result = {};
+    this.result = {
+      data: []
+    };
   }
 
   write(arrayBuffer) {
@@ -52,10 +54,7 @@ export function parseDBF(arrayBuffer, options) {
   dbfParser.write(arrayBuffer);
   dbfParser.end();
 
-  // const data = parseRows(binaryReader, fields, nRecords, recordLength, textDecoder);
-
   const {data, schema} = dbfParser.result;
-
   switch (options.tables && options.tables.format) {
     case 'table':
       // TODO - parse columns
@@ -66,6 +65,25 @@ export function parseDBF(arrayBuffer, options) {
       return data;
   }
 }
+
+export async function* parseDBFInBatches(asyncIterator, options) {
+  const loaderOptions = options.dbf || {};
+  const {encoding} = loaderOptions;
+
+  const parser = new DBFParser({encoding});
+  for await (const arrayBuffer of asyncIterator) {
+    parser.write(arrayBuffer);
+    if (parser.result.data.length > 0) {
+      yield parser.result.data;
+      parser.result.data = [];
+    }
+  }
+  parser.end();
+  if (parser.result.data.length > 0) {
+    yield parser.result.data;
+  }
+}
+
 // https://www.dbase.com/Knowledgebase/INT/db7_file_fmt.htm
 /* eslint-disable complexity, max-depth */
 function parseState(state, result = {}, binaryReader, textDecoder) {
@@ -84,7 +102,6 @@ function parseState(state, result = {}, binaryReader, textDecoder) {
             return state;
           }
           result.dbfHeader = parseDBFHeader(dataView);
-          result.data = [];
           result.progress = {
             bytesUsed: 0,
             rowsTotal: result.dbfHeader.nRecords,
