@@ -35,13 +35,14 @@ async function* makeBrowserStreamIterator(stream) {
     // eslint-disable-next-line no-constant-condition
     while (true) {
       // Read from the stream
+      // value is a Uint8Array
       const {done, value} = await reader.read();
       // Exit if we're done
       if (done) {
         return;
       }
       // Else yield the chunk
-      yield value;
+      yield toArrayBuffer(value);
     }
   } catch (error) {
     // TODO - examples makes it look like this should always be called,
