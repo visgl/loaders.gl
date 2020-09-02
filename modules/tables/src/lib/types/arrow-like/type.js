@@ -395,3 +395,29 @@ export class IntervalYearMonth extends Interval {
     super(IntervalUnit.YEAR_MONTH);
   }
 }
+
+export class FixedSizeList extends DataType {
+  constructor(listSize, child) {
+    super();
+    this.listSize = listSize;
+    this.children = [child];
+  }
+  get typeId() {
+    return Type.FixedSizeList;
+  }
+  get valueType() {
+    return this.children[0].type;
+  }
+  get valueField() {
+    return this.children[0];
+  }
+  get ArrayType() {
+    return this.valueType.ArrayType;
+  }
+  get [Symbol.toStringTag]() {
+    return 'FixedSizeList';
+  }
+  toString() {
+    return `FixedSizeList[${this.listSize}]<${this.valueType}>`;
+  }
+}

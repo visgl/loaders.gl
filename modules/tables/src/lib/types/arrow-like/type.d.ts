@@ -2,6 +2,7 @@
 // under Apache license http://www.apache.org/licenses/LICENSE-2.0
 
 // import {Type as TypeEnum} from './enum';
+import Field from '../../schema/field';
 
 type Type = number; // keyof typeof TypeEnum;
 
@@ -15,6 +16,8 @@ export type TypedFloatArray =
     Uint16Array |
     Float32Array |
     Float64Array;
+
+export type TypedArray = TypedIntArray | TypedFloatArray;
 
 export type AnyArrayType = Array<any> | TypedIntArray | TypedFloatArray;
 
@@ -168,3 +171,15 @@ export abstract class Interval extends DataType {
 
 export class IntervalDayTime extends Interval { constructor() }
 export class IntervalYearMonth extends Interval { constructor() }
+
+export class FixedSizeList extends DataType {
+  public readonly children: Field[];
+
+  constructor(listSize: number, child: Field);
+  public get typeId(): Type;
+  public get valueType(): DataType; //  { return this.children[0].type; }
+  public get valueField(): Field; //  { return this.children[0]; }
+  public get ArrayType(): TypedArray; //  { return this.valueType.ArrayType; }
+  readonly [Symbol.toStringTag]: string;
+  public toString(): string;
+}

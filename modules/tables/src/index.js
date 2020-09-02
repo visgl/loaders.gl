@@ -48,5 +48,6 @@ export {
   TimestampNanosecond,
   Interval,
   IntervalDayTime,
-  IntervalYearMonth
+  IntervalYearMonth,
+  FixedSizeList
 } from './lib/types/arrow-like/type';
