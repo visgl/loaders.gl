@@ -6,7 +6,7 @@ import {SHPLoader} from '../../shp-loader';
 import {DBFLoader} from '../../dbf-loader';
 
 export async function* parseShapefileInBatches(asyncIterator, options, context) {
-  const {_targetCrs = 'WGS84'} = (options && options.gis) || {};
+  const {reproject = false, _targetCrs = 'WGS84'} = (options && options.gis) || {};
   const {parseInBatches, fetch, url} = context;
   const {shx, cpg, prj} = await loadShapefileSidecarFiles(options, context);
 
@@ -38,20 +38,22 @@ export async function* parseShapefileInBatches(asyncIterator, options, context) 
     }
 
     const geojsonGeometries = parseGeometries(geometries);
-    const features = joinProperties(geojsonGeometries, properties);
-    const reprojectedFeatures = reprojectFeatures(features, prj, _targetCrs);
+    let features = joinProperties(geojsonGeometries, properties);
+    if (reproject) {
+      features = reprojectFeatures(features, prj, _targetCrs);
+    }
     yield {
       encoding: cpg,
       prj,
       shx,
       header: shapeHeader,
-      data: reprojectedFeatures
+      data: features
     };
   }
 }
 
 export async function parseShapefile(arrayBuffer, options, context) {
-  const {_targetCrs = 'WGS84'} = (options && options.gis) || {};
+  const {reproject = false, _targetCrs = 'WGS84'} = (options && options.gis) || {};
   const {parse} = context;
   const {shx, cpg, prj} = await loadShapefileSidecarFiles(options, context);
 
@@ -68,15 +70,17 @@ export async function parseShapefile(arrayBuffer, options, context) {
     properties = await parse(dbfResponse, DBFLoader, {dbf: {encoding: cpg || 'latin1'}});
   }
 
-  const features = joinProperties(geojsonGeometries, properties);
-  const reprojectedFeatures = reprojectFeatures(features, prj, _targetCrs);
+  let features = joinProperties(geojsonGeometries, properties);
+  if (reproject) {
+    features = reprojectFeatures(features, prj, _targetCrs);
+  }
 
   return {
     encoding: cpg,
     prj,
     shx,
     header,
-    data: reprojectedFeatures
+    data: features
   };
 }
 
