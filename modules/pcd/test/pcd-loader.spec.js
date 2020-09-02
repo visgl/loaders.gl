@@ -20,7 +20,7 @@ test('PCDLoader#loader conformance', t => {
   t.end();
 });
 
-test.only('PCDLoader#parse(text)', async t => {
+test('PCDLoader#parse(text)', async t => {
   const data = await parse(fetchFile(PCD_ASCII_URL), PCDLoader, {worker: false});
   validateMeshCategoryData(t, data);
 
