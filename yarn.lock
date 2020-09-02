@@ -1759,6 +1759,14 @@
     "@babel/runtime" "^7.0.0"
     gl-matrix "^3.0.0"
 
+"@math.gl/core@3.3.0-alpha.2":
+  version "3.3.0-alpha.2"
+  resolved "https://registry.yarnpkg.com/@math.gl/core/-/core-3.3.0-alpha.2.tgz#b88451f95be6161415b4362464bdbea8e941f014"
+  integrity sha512-G/aOXwVFwl8qWKM7WhIgvqXaxc77YvLqactmJ0MgWZXA4gph19Z2xXGGZFw4pYHT1gncl4egAcpMMzCe6ID6dA==
+  dependencies:
+    "@babel/runtime" "^7.0.0"
+    gl-matrix "^3.0.0"
+
 "@math.gl/culling@^3.2.0":
   version "3.2.2"
   resolved "https://registry.yarnpkg.com/@math.gl/culling/-/culling-3.2.2.tgz#8eaf51de5c409635d2a29b051a97ad81da2d55c0"
@@ -1784,6 +1792,16 @@
   dependencies:
     "@babel/runtime" "^7.0.0"
     "@math.gl/core" "3.3.0-alpha.1"
+    "@types/proj4" "^2.5.0"
+    proj4 "^2.6.2"
+
+"@math.gl/proj4@3.3.0-alpha.2":
+  version "3.3.0-alpha.2"
+  resolved "https://registry.yarnpkg.com/@math.gl/proj4/-/proj4-3.3.0-alpha.2.tgz#5077a011f2f951aa762b3d125cf11c0170c44a7c"
+  integrity sha512-fX6K5hfxnJIK0dToJK/6WGnDJHY+8HbehjLrlSrbBuNr31T9MndDIYO+/Qg7xMbmndZ4Hg/UAsPcZDYe8T36TA==
+  dependencies:
+    "@babel/runtime" "^7.0.0"
+    "@math.gl/core" "3.3.0-alpha.2"
     "@types/proj4" "^2.5.0"
     proj4 "^2.6.2"
 

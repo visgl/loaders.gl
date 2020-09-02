@@ -35,6 +35,7 @@
   "dependencies": {
     "@loaders.gl/gis": "2.3.0-alpha.11",
     "@loaders.gl/loader-utils": "2.3.0-alpha.11",
-    "@loaders.gl/tables": "2.3.0-alpha.11"
+    "@loaders.gl/tables": "2.3.0-alpha.11",
+    "@math.gl/proj4": "3.3.0-alpha.2"
   }
 }

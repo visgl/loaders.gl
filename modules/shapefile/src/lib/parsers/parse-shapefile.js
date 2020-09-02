@@ -1,10 +1,12 @@
-import {binaryToGeoJson} from '@loaders.gl/gis';
+import {Proj4Projection} from '@math.gl/proj4';
+import {binaryToGeoJson, transformGeoJsonCoords} from '@loaders.gl/gis';
 import {parseShx} from './parse-shx';
 import {zipBatchIterators} from '../streaming/zip-batch-iterators';
 import {SHPLoader} from '../../shp-loader';
 import {DBFLoader} from '../../dbf-loader';
 
 export async function* parseShapefileInBatches(asyncIterator, options, context) {
+  const {reproject = false, _targetCrs = 'WGS84'} = (options && options.gis) || {};
   const {parseInBatches, fetch, url} = context;
   const {shx, cpg, prj} = await loadShapefileSidecarFiles(options, context);
 
@@ -36,7 +38,10 @@ export async function* parseShapefileInBatches(asyncIterator, options, context) 
     }
 
     const geojsonGeometries = parseGeometries(geometries);
-    const features = joinProperties(geojsonGeometries, properties);
+    let features = joinProperties(geojsonGeometries, properties);
+    if (reproject) {
+      features = reprojectFeatures(features, prj, _targetCrs);
+    }
     yield {
       encoding: cpg,
       prj,
@@ -48,6 +53,7 @@ export async function* parseShapefileInBatches(asyncIterator, options, context) 
 }
 
 export async function parseShapefile(arrayBuffer, options, context) {
+  const {reproject = false, _targetCrs = 'WGS84'} = (options && options.gis) || {};
   const {parse} = context;
   const {shx, cpg, prj} = await loadShapefileSidecarFiles(options, context);
 
@@ -64,7 +70,10 @@ export async function parseShapefile(arrayBuffer, options, context) {
     properties = await parse(dbfResponse, DBFLoader, {dbf: {encoding: cpg || 'latin1'}});
   }
 
-  const features = joinProperties(geojsonGeometries, properties);
+  let features = joinProperties(geojsonGeometries, properties);
+  if (reproject) {
+    features = reprojectFeatures(features, prj, _targetCrs);
+  }
 
   return {
     encoding: cpg,
@@ -99,6 +108,19 @@ function joinProperties(geometries, properties) {
   }
 
   return features;
+}
+
+/**
+ * Reproject GeoJSON features to output CRS
+ *
+ * @param  {object[]} features parsed GeoJSON features
+ * @param  {string} sourceCrs source coordinate reference system
+ * @param  {string} targetCrs †arget coordinate reference system
+ * @return {object[]} Reprojected Features
+ */
+function reprojectFeatures(features, sourceCrs, targetCrs) {
+  const projection = new Proj4Projection({from: sourceCrs || 'WGS84', to: targetCrs || 'WGS84'});
+  return transformGeoJsonCoords(features, coord => projection.project(coord));
 }
 
 // eslint-disable-next-line max-statements

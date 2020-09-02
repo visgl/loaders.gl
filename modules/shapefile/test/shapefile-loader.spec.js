@@ -3,6 +3,8 @@ import test from 'tape-promise/tape';
 import {fetchFile, load, loadInBatches, selectLoader} from '@loaders.gl/core';
 import {_BrowserFileSystem as BrowserFileSystem} from '@loaders.gl/core';
 import {ShapefileLoader} from '@loaders.gl/shapefile';
+import {Proj4Projection} from '@math.gl/proj4';
+import {tapeEqualsEpsilon} from 'test/utils/tape-assertions';
 
 const SHAPEFILE_JS_DATA_FOLDER = '@loaders.gl/shapefile/test/data/shapefile-js';
 const SHAPEFILE_JS_TEST_FILES = {
@@ -60,6 +62,33 @@ test('ShapefileLoader#load (from files or URLs)', async t => {
     t.comment(`${filename}: ${JSON.stringify(data).slice(0, 70)}`);
 
     await testShapefileData(t, testFileName, data);
+  }
+
+  t.end();
+});
+
+test('ShapefileLoader#load and reproject (from files or URLs)', async t => {
+  // test file load (node) or URL load (browser)
+  const testFileName = 'points';
+  const filename = `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`;
+  const data = await load(filename, ShapefileLoader, {
+    gis: {reproject: true, _targetCrs: 'EPSG:3857'}
+  });
+  t.comment(`${filename}: ${JSON.stringify(data).slice(0, 70)}`);
+
+  // Compare with parsed json
+  // This is a special case with reprojected coordinates; otherwise use the
+  // testShapefileData helper
+  const response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.json`);
+  const json = await response.json();
+
+  const projection = new Proj4Projection({from: 'WGS84', to: 'EPSG:3857'});
+
+  for (let i = 0; i < json.features.length; i++) {
+    const shpFeature = data.data[i];
+    const jsonFeature = json.features[i];
+    const jsonPointGeom = projection.project(jsonFeature.geometry.coordinates);
+    tapeEqualsEpsilon(t, shpFeature.geometry.coordinates, jsonPointGeom, 0.00001);
   }
 
   t.end();
