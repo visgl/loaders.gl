@@ -175,14 +175,11 @@ export class IntervalYearMonth extends Interval { constructor() }
 export class FixedSizeList extends DataType {
   public readonly children: Field[];
 
-  constructor(public readonly listSize: number, child: Field) {
-    super();
-    this.children = [child];
-  }
+  constructor(listSize: number, child: Field);
   public get typeId(): Type;
   public get valueType(): DataType; //  { return this.children[0].type; }
   public get valueField(): Field; //  { return this.children[0]; }
   public get ArrayType(): TypedArray; //  { return this.valueType.ArrayType; }
   readonly [Symbol.toStringTag]: string;
-  public toString(): string; { return `FixedSizeList[${this.listSize}]<${this.valueType}>`; }
+  public toString(): string;
 }

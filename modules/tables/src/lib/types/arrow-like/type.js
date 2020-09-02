@@ -405,9 +405,19 @@ export class FixedSizeList extends DataType {
   get typeId() {
     return Type.FixedSizeList;
   }
-  get valueType() { return this.children[0].type; }
-  get valueField() { return this.children[0]; }
-  get ArrayType() { return this.valueType.ArrayType; }
-  get [Symbol.toStringTag]() { return 'FixedSizeList'; }
-  toString() { return `FixedSizeList[${this.listSize}]<${this.valueType}>`; }
+  get valueType() {
+    return this.children[0].type;
+  }
+  get valueField() {
+    return this.children[0];
+  }
+  get ArrayType() {
+    return this.valueType.ArrayType;
+  }
+  get [Symbol.toStringTag]() {
+    return 'FixedSizeList';
+  }
+  toString() {
+    return `FixedSizeList[${this.listSize}]<${this.valueType}>`;
+  }
 }

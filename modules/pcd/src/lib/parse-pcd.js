@@ -38,10 +38,7 @@ export default function parsePCD(data, url, options) {
   attributes = getNormalizedAttributes(attributes);
   const header = getNormalizedHeader(pcdHeader, attributes);
 
-  const metadata = new Map([
-    ['mode', '0'],
-    ['boundingBox', JSON.stringify(header.boundingBox)]
-  ]);
+  const metadata = new Map([['mode', '0'], ['boundingBox', JSON.stringify(header.boundingBox)]]);
 
   const schema = getSchemaFromPCDHeader(pcdHeader, metadata);
 
@@ -262,7 +259,9 @@ function getSchemaFromPCDHeader(PCDheader, metadata) {
   const fields = [];
 
   if (offset.x !== undefined) {
-    fields.push(new Field('POSITION', new FixedSizeList(3, new Field('xyz', new Float32())), false));
+    fields.push(
+      new Field('POSITION', new FixedSizeList(3, new Field('xyz', new Float32())), false)
+    );
   }
 
   if (offset.normal_x !== undefined) {
