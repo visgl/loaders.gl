@@ -28,7 +28,7 @@ export const SHPWorkerLoader = {
 /** @type {LoaderObject} */
 export const SHPLoader = {
   ...SHPWorkerLoader,
-  parse: async (arrayBuffer, options) => parseSHP(arrayBuffer),
+  parse: async (arrayBuffer, options) => parseSHP(arrayBuffer, options),
   parseSync: parseSHP,
   parseInBatches: parseSHPInBatches
 };

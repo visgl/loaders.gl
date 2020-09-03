@@ -93,8 +93,14 @@ function parseGeometries(geometries) {
   return geojsonGeometries;
 }
 
+/**
+ * Join properties and geometries into features
+ *
+ * @param  {object[]} geometries [description]
+ * @param  {object[]?} properties [description]
+ * @return {object[]}            [description]
+ */
 function joinProperties(geometries, properties) {
-  // Join properties and geometries into features
   const features = [];
   for (let i = 0; i < geometries.length; i++) {
     const geometry = geometries[i];
@@ -159,21 +165,6 @@ export async function loadShapefileSidecarFiles(options, context) {
   };
 }
 
-/**
- * Replace the extension at the end of a path.
- *
- * Matches the case of new extension with the case of the original file extension,
- * to increase the chance of finding files without firing off a request storm looking for various case combinations
- *
- * NOTE: Extensions can be both lower and uppercase
- * per spec, extensions should be lower case, but that doesn't mean they always are. See:
- * calvinmetcalf/shapefile-js#64, mapserver/mapserver#4712
- * https://trac.osgeo.org/mapserver/ticket/166
- *
- * @param {string} url
- * @param {string} newExtension
- * @returns {string}
- */
 export function replaceExtension(url, newExtension) {
   const baseName = basename(url);
   const extension = extname(url);

@@ -20,7 +20,8 @@ class DBFParser {
     this.textDecoder = new TextDecoder(encoding);
     this.state = STATE.START;
     this.result = {
-      data: []
+      data: [],
+      schema: null
     };
   }
 
