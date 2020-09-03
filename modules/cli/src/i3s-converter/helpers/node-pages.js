@@ -1,4 +1,7 @@
 import {join} from 'path';
+import transform from 'json-map-transform';
+import {METADATA as metadataTemplate} from '../json-templates/metadata';
+import {writeFile} from '../../lib/utils/file-utils';
 
 /**
  * class NodePages - wrapper of nodePages array
@@ -134,6 +137,17 @@ export default class NodePages {
       promises.push(this.writeFile(nodePagePath, nodePageStr, slpk));
       fileMap[`nodePages/${index.toString()}.json.gz`] = `${nodePagePath}/index.json.gz`;
     }
+
+    if (slpk) {
+      const metadata = transform({nodeCount: this.nodesCounter}, metadataTemplate);
+      fileMap['metadata.json'] = await writeFile(
+        layers0Path,
+        JSON.stringify(metadata),
+        false,
+        'metadata.json'
+      );
+    }
+
     await Promise.all(promises);
   }
 }
