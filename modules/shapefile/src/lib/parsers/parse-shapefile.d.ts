@@ -10,10 +10,10 @@ interface ShapefileOutput {
 }
 
 export function parseShapefileInBatches(
-  asyncIterator: AsyncIterable<ArrayBuffer>,
+  asyncIterator: AsyncIterator<ArrayBuffer> | Iterator<ArrayBuffer>,
   options: object,
   context
-): AsyncIterable<ShapefileOutput>;
+): AsyncIterator<ShapefileOutput>;
 
 export function parseShapefile(
   arrayBuffer: ArrayBuffer,

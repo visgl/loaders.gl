@@ -8,6 +8,6 @@ interface DBFTableOutput {
 export function parseDBF(arrayBuffer: ArrayBuffer, options): DBFRowsOutput | DBFTableOutput;
 
 export function parseDBFInBatches(
-  asyncIterator: AsyncIterable<ArrayBuffer>,
+  asyncIterator: AsyncIterator<ArrayBuffer> | Iterator<ArrayBuffer>,
   options
-): AsyncIterable<DBFRowsOutput | DBFTableOutput>;
+): AsyncIterator<DBFRowsOutput | DBFTableOutput>;
