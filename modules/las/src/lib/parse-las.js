@@ -12,10 +12,13 @@ function detectTwoByteColors(colorDepth, decoder, batchSize) {
       twoByteColor = true;
       break;
     case 'auto':
-      for (let i = 0; i < batchSize; i++) {
-        const {color} = decoder.getPoint(i);
-        if (color[0] > 255 || color[1] > 255 || color[2] > 255) {
-          twoByteColor = true;
+      if (decoder.getPoint(0).color) {
+        for (let i = 0; i < batchSize; i++) {
+          const {color} = decoder.getPoint(i);
+          // eslint-disable-next-line max-depth
+          if (color[0] > 255 || color[1] > 255 || color[2] > 255) {
+            twoByteColor = true;
+          }
         }
       }
       break;
