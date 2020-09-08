@@ -22,7 +22,11 @@ const TEST_TEXTURE_MATERIAL = {
 async function cleanUpPath(testPath) {
   // Do not run under browser
   if (!isBrowser) {
-    await fs.rmdir(testPath, {recursive: true});
+    try {
+      await fs.rmdir(testPath, {recursive: true});
+    } catch (e) {
+      // Do nothing
+    }
     try {
       await fs.unlink(`${testPath}.slpk`);
     } catch (e) {

@@ -263,6 +263,9 @@ class GLTFPostProcessor {
       material.emmisiveTexture = {...material.emmisiveTexture};
       material.emissiveTexture.texture = this.getTexture(material.emissiveTexture.index);
     }
+    if (!material.emissiveFactor) {
+      material.emissiveFactor = material.emmisiveTexture ? [1, 1, 1] : [0, 0, 0];
+    }
 
     if (material.pbrMetallicRoughness) {
       material.pbrMetallicRoughness = {...material.pbrMetallicRoughness};
@@ -275,6 +278,12 @@ class GLTFPostProcessor {
         mr.metallicRoughnessTexture = {...mr.metallicRoughnessTexture};
         mr.metallicRoughnessTexture.texture = this.getTexture(mr.metallicRoughnessTexture.index);
       }
+    } else {
+      material.pbrMetallicRoughness = {
+        baseColorFactor: [1, 1, 1, 1],
+        metallicFactor: 1,
+        roughnessFactor: 1
+      };
     }
     return material;
   }

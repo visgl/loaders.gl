@@ -66,7 +66,11 @@ export default class I3SConverter {
   async _createAndSaveTileset(outputPath, tilesetName) {
     const tilesetPath = join(`${outputPath}`, `${tilesetName}`);
     // Removing the tilesetPath needed to exclude erroneous files after conversion
-    await removeDir(tilesetPath);
+    try {
+      await removeDir(tilesetPath);
+    } catch (e) {
+      // do nothing
+    }
 
     this.layers0Path = join(tilesetPath, 'SceneServer', 'layers', '0');
     const extent = convertCommonToI3SExtentCoordinate(this.sourceTileset);
@@ -160,7 +164,11 @@ export default class I3SConverter {
     if (isCreateSlpk) {
       await compressFilesWithZip(this.fileMap, `${tilesetPath}.slpk`);
       // All converted files are contained in slpk now they can be deleted
-      await removeDir(tilesetPath);
+      try {
+        await removeDir(tilesetPath);
+      } catch (e) {
+        // do nothing
+      }
     }
   }
   /* eslint-enable max-statements */
