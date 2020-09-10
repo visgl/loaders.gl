@@ -1,12 +1,26 @@
 /**
  * Write a file with data and name fileName to path
  *
- * @param path
- * @param data
- * @param slpk
- * @param fileName
+ * @param path - output path
+ * @param data - file content
+ * @param fileName - name of output file (default: index.json)
  */
-export function writeFile(path: string, data: string|Uint8Array|ArrayBuffer, slpk?:boolean, fileName?:string);
+export function writeFile(path: string, data: string | Uint8Array | ArrayBuffer, fileName?: string);
+
+/**
+ * Write a file with data and name fileName to path - specific one for further packaging into slpk
+ *
+ * @param path - output path
+ * @param data - file content
+ * @param fileName - name of output file (default: index.json)
+ * @param compress - if need to compress file with gzip (default: true)
+ */
+export function writeFileForSlpk(
+  path: string,
+  data: string | Uint8Array | ArrayBuffer,
+  fileName?: string,
+  compress?: boolean
+);
 
 /**
  * Remove dir with path

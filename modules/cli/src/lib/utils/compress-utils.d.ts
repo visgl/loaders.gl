@@ -13,4 +13,21 @@ export function compressFileWithGzip(pathFile: string): Promise<string>;
  * @param outputFile - output slpk file
  * @param level - compression level
  */
-export function compressFilesWithZip(fileMap: object, outputFile: string, level: number): Promise<void>;
+export function compressFilesWithZip(
+  fileMap: object,
+  outputFile: string,
+  level: number
+): Promise<void>;
+
+/**
+ * Compress files using external tool 'zip'
+ *
+ * @param inputFolder - folder to archive
+ * @param outputFile - output slpk file
+ * @param level - compression level
+ */
+export function compressWithChildProcess(
+  inputFolder: string,
+  outputFile: string,
+  level: number
+): Promise<void>;

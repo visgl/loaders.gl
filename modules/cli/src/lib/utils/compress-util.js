@@ -1,7 +1,9 @@
 import {createGzip} from 'zlib';
+import {join} from 'path';
 import {createReadStream, createWriteStream} from 'fs';
 import archiver from 'archiver';
 import {removeFile} from './file-utils';
+import {ChildProcessProxy} from '@loaders.gl/loader-utils';
 
 export function compressFileWithGzip(pathFile) {
   const compressedPathFile = `${pathFile}.gz`;
@@ -73,5 +75,44 @@ export async function compressFilesWithZip(fileMap, outputFile, level = 0) {
 
     // finalize the archive (ie we are done appending files but streams have to finish yet)
     archive.finalize();
+  });
+}
+
+export async function compressWithChildProcess() {
+  // eslint-disable-next-line no-undef
+  if (process.platform === 'win32') {
+    await compressWithChildProcessWindows(...arguments);
+  } else {
+    await compressWithChildProcessUnix(...arguments);
+  }
+}
+
+async function compressWithChildProcessUnix(inputFolder, outputFile, level = 0) {
+  const fullOutputFile = join(process.cwd(), outputFile); // eslint-disable-line no-undef
+  const args = [`-${level}`, '-r', fullOutputFile, '.'];
+  const childProcess = new ChildProcessProxy();
+  await childProcess.start({
+    command: 'zip',
+    arguments: args,
+    spawn: {
+      cwd: inputFolder
+    },
+    wait: 0
+  });
+}
+
+async function compressWithChildProcessWindows(inputFolder, outputFile, level = 0) {
+  const fullOutputFile = join(process.cwd(), outputFile); // eslint-disable-line no-undef
+  const inputArgument = join('.', '*');
+  const archiverExecutable = join(process.cwd(), 'bin', '7z'); // eslint-disable-line no-undef
+  const args = ['a', '-tzip', `-mx=${level}`, fullOutputFile, inputArgument];
+  const childProcess = new ChildProcessProxy();
+  await childProcess.start({
+    command: archiverExecutable,
+    arguments: args,
+    spawn: {
+      cwd: `${inputFolder}`
+    },
+    wait: 0
   });
 }

@@ -8,8 +8,8 @@ import transform from 'json-map-transform';
 import md5 from 'md5';
 
 import NodePages from './helpers/node-pages';
-import {writeFile, removeDir} from '../lib/utils/file-utils';
-import {compressFilesWithZip} from '../lib/utils/compress-util';
+import {writeFile, removeDir, writeFileForSlpk} from '../lib/utils/file-utils';
+import {compressWithChildProcess} from '../lib/utils/compress-util';
 import convertB3dmToI3sGeometry from './helpers/geometry-converter';
 import {
   convertCommonToI3SCoordinate,
@@ -40,6 +40,10 @@ export default class I3SConverter {
   // Convert a 3d tileset
   async convert({inputUrl, outputPath, tilesetName, maxDepth, draco, slpk}) {
     this.options = {maxDepth, draco, slpk};
+
+    if (slpk) {
+      this.nodePages.useWriteFunction(writeFileForSlpk);
+    }
 
     const options = {
       'cesium-ion': {accessToken: ION_TOKEN}
@@ -133,11 +137,16 @@ export default class I3SConverter {
       });
       const child = await this._createNode(root0, sourceRootTile, parentId, 0);
       const childPath = join(this.layers0Path, 'nodes', child.path);
-      this.fileMap['nodes/1/3dNodeIndexDocument.json.gz'] = await writeFile(
-        childPath,
-        JSON.stringify(child),
-        isCreateSlpk
-      );
+
+      if (isCreateSlpk) {
+        this.fileMap['nodes/1/3dNodeIndexDocument.json.gz'] = await writeFileForSlpk(
+          childPath,
+          JSON.stringify(child),
+          '3dNodeIndexDocument.json'
+        );
+      } else {
+        await writeFile(childPath, JSON.stringify(child));
+      }
     } else {
       await this._addChildrenWithNeighborsAndWriteFile(
         {rootNode: root0, sourceTiles: sourceRootTile.children},
@@ -148,21 +157,30 @@ export default class I3SConverter {
     }
 
     layers0.materialDefinitions = this.materialDefinitions;
-    this.fileMap['3dSceneLayer.json.gz'] = await writeFile(
-      this.layers0Path,
-      JSON.stringify(layers0),
-      isCreateSlpk
-    );
+    if (isCreateSlpk) {
+      this.fileMap['3dSceneLayer.json.gz'] = await writeFileForSlpk(
+        this.layers0Path,
+        JSON.stringify(layers0),
+        '3dSceneLayer.json'
+      );
+    } else {
+      await writeFile(this.layers0Path, JSON.stringify(layers0));
+    }
     createSceneServerPath(tilesetName, layers0, tilesetPath);
 
-    this.fileMap['nodes/root/3dNodeIndexDocument.json.gz'] = await writeFile(
-      rootPath,
-      JSON.stringify(root0),
-      isCreateSlpk
-    );
+    if (isCreateSlpk) {
+      this.fileMap['nodes/root/3dNodeIndexDocument.json.gz'] = await writeFileForSlpk(
+        rootPath,
+        JSON.stringify(root0),
+        '3dNodeIndexDocument.json'
+      );
+    } else {
+      await writeFile(rootPath, JSON.stringify(root0));
+    }
     await this.nodePages.save(this.layers0Path, this.fileMap, isCreateSlpk);
     if (isCreateSlpk) {
-      await compressFilesWithZip(this.fileMap, `${tilesetPath}.slpk`);
+      const slpkTilesetPath = join(tilesetPath, 'SceneServer', 'layers', '0');
+      await compressWithChildProcess(slpkTilesetPath, `${tilesetPath}.slpk`);
       // All converted files are contained in slpk now they can be deleted
       try {
         await removeDir(tilesetPath);
@@ -220,11 +238,15 @@ export default class I3SConverter {
         node.neighbors.push({...neighbor});
       }
 
-      this.fileMap[`nodes/${nodePath}/3dNodeIndexDocument.json.gz`] = await writeFile(
-        childPath,
-        JSON.stringify(node),
-        this.options.slpk
-      );
+      if (this.options.slpk) {
+        this.fileMap[`nodes/${nodePath}/3dNodeIndexDocument.json.gz`] = await writeFileForSlpk(
+          childPath,
+          JSON.stringify(node),
+          '3dNodeIndexDocument.json'
+        );
+      } else {
+        await writeFile(childPath, JSON.stringify(node));
+      }
     }
   }
 
@@ -280,7 +302,7 @@ export default class I3SConverter {
     return node;
   }
 
-  /* eslint-disable max-statements */
+  /* eslint-disable max-statements, complexity*/
   async _convertResources(sourceTile, node) {
     if (!sourceTile.content || sourceTile.content.type !== 'b3dm') {
       return;
@@ -296,42 +318,60 @@ export default class I3SConverter {
       sharedResources,
       meshMaterial
     } = await convertB3dmToI3sGeometry(sourceTile.content, this.options);
-    const geometryPath = join(childPath, 'geometries/0/');
-    const isCreateSlpk = this.options.slpk;
-    this.fileMap[`${slpkChildPath}/geometries/0.bin.gz`] = await writeFile(
-      geometryPath,
-      geometryBuffer,
-      isCreateSlpk,
-      'index.bin'
-    );
-    if (this.options.draco) {
-      const compressedGeometryPath = join(childPath, 'geometries/1/');
-      this.fileMap[`${slpkChildPath}/geometries/1.bin.gz`] = await writeFile(
-        compressedGeometryPath,
-        compressedGeometry,
-        isCreateSlpk,
-        'index.bin'
+    if (this.options.slpk) {
+      const slpkGeometryPath = join(childPath, 'geometries');
+      this.fileMap[`${slpkChildPath}/geometries/0.bin.gz`] = await writeFileForSlpk(
+        slpkGeometryPath,
+        geometryBuffer,
+        '0.bin'
       );
+    } else {
+      const geometryPath = join(childPath, 'geometries/0/');
+      await writeFile(geometryPath, geometryBuffer, 'index.bin');
     }
-    const sharedPath = join(childPath, 'shared/0/');
+    if (this.options.draco) {
+      if (this.options.slpk) {
+        const slpkCompressedGeometryPath = join(childPath, 'geometries');
+        this.fileMap[`${slpkChildPath}/geometries/1.bin.gz`] = await writeFileForSlpk(
+          slpkCompressedGeometryPath,
+          compressedGeometry,
+          '1.bin'
+        );
+      } else {
+        const compressedGeometryPath = join(childPath, 'geometries/1/');
+        await writeFile(compressedGeometryPath, compressedGeometry, 'index.bin');
+      }
+    }
     sharedResources.nodePath = node.path;
     const sharedData = transform(sharedResources, SHARED_RESOURCES_TEMPLATE);
     const sharedDataStr = JSON.stringify(sharedData);
-    this.fileMap[`${slpkChildPath}/shared/sharedResource.json.gz`] = await writeFile(
-      sharedPath,
-      sharedDataStr,
-      isCreateSlpk
-    );
+    if (this.options.slpk) {
+      const slpkSharedPath = join(childPath, 'shared');
+      this.fileMap[`${slpkChildPath}/shared/sharedResource.json.gz`] = await writeFileForSlpk(
+        slpkSharedPath,
+        sharedDataStr,
+        'sharedResource.json'
+      );
+    } else {
+      const sharedPath = join(childPath, 'shared/0/');
+      await writeFile(sharedPath, sharedDataStr);
+    }
     if (texture) {
       node.textureData = [{href: './textures/0'}];
-      const texturePath = join(childPath, 'textures/0/');
       const textureData = texture.bufferView.data;
-      this.fileMap[`${slpkChildPath}/textures/0.jpeg`] = await writeFile(
-        texturePath,
-        textureData,
-        false,
-        'index.jpeg'
-      );
+      if (this.options.slpk) {
+        const slpkTexturePath = join(childPath, 'textures');
+        const compress = false;
+        this.fileMap[`${slpkChildPath}/textures/0.jpeg`] = await writeFileForSlpk(
+          slpkTexturePath,
+          textureData,
+          '0.jpeg',
+          compress
+        );
+      } else {
+        const texturePath = join(childPath, 'textures/0/');
+        await writeFile(texturePath, textureData, 'index.jpeg');
+      }
     }
     if (meshMaterial) {
       this.nodePages.updateMaterialByNodeId(node.id, this._findOrCreateMaterial(meshMaterial));

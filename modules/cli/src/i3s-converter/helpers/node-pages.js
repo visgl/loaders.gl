@@ -1,7 +1,6 @@
 import {join} from 'path';
 import transform from 'json-map-transform';
 import {METADATA as metadataTemplate} from '../json-templates/metadata';
-import {writeFile} from '../../lib/utils/file-utils';
 
 /**
  * class NodePages - wrapper of nodePages array
@@ -48,6 +47,10 @@ export default class NodePages {
     this.nodePages = [{}];
     this.nodePages[0].nodes = [];
     this.writeFile = writeFileFunc;
+  }
+
+  useWriteFunction(func) {
+    this.writeFile = func;
   }
 
   /**
@@ -131,21 +134,27 @@ export default class NodePages {
    */
   async save(layers0Path, fileMap, slpk = false) {
     const promises = [];
-    for (const [index, nodePage] of this.nodePages.entries()) {
-      const nodePagePath = join(layers0Path, 'nodepages', index.toString());
-      const nodePageStr = JSON.stringify(nodePage);
-      promises.push(this.writeFile(nodePagePath, nodePageStr, slpk));
-      fileMap[`nodePages/${index.toString()}.json.gz`] = `${nodePagePath}/index.json.gz`;
-    }
-
     if (slpk) {
+      for (const [index, nodePage] of this.nodePages.entries()) {
+        const nodePageStr = JSON.stringify(nodePage);
+        const slpkPath = join(layers0Path, 'nodepages');
+        promises.push(this.writeFile(slpkPath, nodePageStr, `${index.toString()}.json`));
+        fileMap[`nodePages/${index.toString()}.json.gz`] = `${slpkPath}.json.gz`;
+      }
       const metadata = transform({nodeCount: this.nodesCounter}, metadataTemplate);
-      fileMap['metadata.json'] = await writeFile(
+      const compress = false;
+      fileMap['metadata.json'] = await this.writeFile(
         layers0Path,
         JSON.stringify(metadata),
-        false,
-        'metadata.json'
+        'metadata.json',
+        compress
       );
+    } else {
+      for (const [index, nodePage] of this.nodePages.entries()) {
+        const nodePageStr = JSON.stringify(nodePage);
+        const nodePagePath = join(layers0Path, 'nodepages', index.toString());
+        promises.push(this.writeFile(nodePagePath, nodePageStr));
+      }
     }
 
     await Promise.all(promises);

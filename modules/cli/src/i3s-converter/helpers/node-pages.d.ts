@@ -65,6 +65,12 @@ export default class NodePages {
   constructor(writeFileFunc, nodesPerPage);
 
   /**
+   * Setup function to save node pages
+   * @param func - function which should be used to save node pages
+   */
+  useWriteFunction(func: Function): void;
+
+  /**
    * Get the node by its end-to-end index
    * @param id - end-to-end index of the node
    * @return the node object

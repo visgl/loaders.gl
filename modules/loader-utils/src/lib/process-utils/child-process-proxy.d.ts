@@ -10,7 +10,8 @@ export type ProcessProxyOptions = {
   /** Whether to search for an available port if the base port is occupied */
   autoPort?: boolean,
   /** Number of milliseconds to wait until concluding success */
-  waitMs?: number,
+  /** wait: 0 - infinity */
+  wait?: number,
   /** Options passed on to Node'.js `ChildProcess.spawn` */
   spawn?: ChildProcess.SpawnOptionsWithoutStdio,
   /** Callback when the  */
