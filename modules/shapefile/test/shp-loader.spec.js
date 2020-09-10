@@ -3,10 +3,6 @@ import {load, fetchFile} from '@loaders.gl/core';
 import {geojsonToBinary} from '@loaders.gl/gis';
 import {SHPLoader} from '@loaders.gl/shapefile';
 
-// import {parseSHP} from '@loaders.gl/shapefile/lib/parsers/parse-shp';
-// // import parseSHP from '@loaders.gl/shapefile/lib/parsers/deprecated/parse-shp-atomic';
-// import {fetchFile} from '@loaders.gl/core';
-
 const SHAPEFILE_POLYGON_PATH = '@loaders.gl/shapefile/test/data/shapefile-js/polygons.shp';
 const SHAPEFILE_JS_DATA_FOLDER = '@loaders.gl/shapefile/test/data/shapefile-js';
 const SHAPEFILE_JS_POINT_TEST_FILES = ['points', 'multipoints'];
