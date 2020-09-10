@@ -88,12 +88,17 @@ export default class BinaryChunkReader {
    * Get the required number of bytes from the iterator
    *
    * @param  {Number} bytes Number of bytes
-   * @return {DataView}     DataView with data
+   * @return {DataView?}     DataView with data
    */
   getDataView(bytes) {
     const bufferOffsets = this.findBufferOffsets(bytes);
-    if (!bufferOffsets) {
+    // return `null` if not enough data, except if end() already called, in
+    // which case throw an error.
+    if (!bufferOffsets && this.ended) {
       throw new Error('binary data exhausted');
+    }
+    if (!bufferOffsets) {
+      return null;
     }
 
     // If only one arrayBuffer needed, return DataView directly

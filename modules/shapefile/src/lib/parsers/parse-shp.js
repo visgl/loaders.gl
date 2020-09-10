@@ -98,12 +98,10 @@ function parseState(state, result = {}, binaryReader) {
 
         case STATE.EXPECTING_HEADER:
           // Parse initial file header
-          // Make sure bytes exist
-          if (!binaryReader.hasAvailableBytes(SHP_HEADER_SIZE)) {
+          const dataView = binaryReader.getDataView(SHP_HEADER_SIZE);
+          if (!dataView) {
             return state;
           }
-
-          const dataView = binaryReader.getDataView(SHP_HEADER_SIZE);
 
           result.header = parseSHPHeader(dataView);
           result.progress = {
