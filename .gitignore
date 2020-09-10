@@ -26,6 +26,7 @@ yarn-error.log
 .idea
 .project
 .DS_Store
+*.swp
 
 # local data
 data/**
