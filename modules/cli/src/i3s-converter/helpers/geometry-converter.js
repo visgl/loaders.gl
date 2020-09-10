@@ -14,8 +14,13 @@ export default async function convertB3dmToI3sGeometry(tileContent, options = {}
   const {material, texture} = convertMaterial(tileContent);
 
   const vertexCount = positions.length / VALUES_PER_VERTEX;
+  const triangleCount = vertexCount / 3;
+  const fetureCount = 1;
   const header = new Uint32Array(2);
-  header.set([vertexCount], 0);
+  header.set([vertexCount, fetureCount], 0);
+
+  const featureIds = new Float64Array([0]);
+  const faceRanges = new Uint32Array([0, triangleCount - 1]);
 
   const fileBuffer = new Uint8Array(
     concatenateArrayBuffers(
@@ -23,7 +28,9 @@ export default async function convertB3dmToI3sGeometry(tileContent, options = {}
       positions.buffer,
       normals.buffer,
       texCoords.buffer,
-      colors.buffer
+      colors.buffer,
+      featureIds.buffer,
+      faceRanges.buffer
     )
   );
 
@@ -34,11 +41,15 @@ export default async function convertB3dmToI3sGeometry(tileContent, options = {}
       indices.set([index], index);
     }
 
+    const featureIndices = new Uint32Array(vertexCount);
+    featureIndices.fill(0);
+
     const attributes = {
       positions,
       normals,
       texCoords,
-      colors
+      colors,
+      'feature-index': featureIndices
     };
     compressedGeometry = new Uint8Array(
       await encode({attributes, indices}, DracoWriter, {

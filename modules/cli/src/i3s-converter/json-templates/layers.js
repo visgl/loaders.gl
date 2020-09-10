@@ -18,13 +18,23 @@ const PLAIN_GEOMETRY_DEFINITION = {
   color: {
     type: 'UInt8',
     component: 4
+  },
+  featureId: {
+    binding: 'per-feature',
+    type: 'UInt64',
+    component: 1
+  },
+  faceRange: {
+    binding: 'per-feature',
+    type: 'UInt32',
+    component: 2
   }
 };
 
 const COMPRESSED_GEOMETRY_DEFINITION = {
   compressedAttributes: {
     encoding: 'draco',
-    attributes: ['position', 'normal', 'uv0', 'color']
+    attributes: ['position', 'normal', 'uv0', 'color', 'feature-index']
   }
 };
 
