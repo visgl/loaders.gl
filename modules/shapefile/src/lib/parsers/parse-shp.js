@@ -19,7 +19,7 @@ const STATE = {
 
 class SHPParser {
   constructor() {
-    this.binaryReader = new BinaryChunkReader({maxRewindBytes: 12});
+    this.binaryReader = new BinaryChunkReader({maxRewindBytes: SHP_RECORD_HEADER_SIZE});
     this.state = STATE.EXPECTING_HEADER;
     this.result = {
       geometries: []
