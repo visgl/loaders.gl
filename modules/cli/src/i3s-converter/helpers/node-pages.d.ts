@@ -97,6 +97,13 @@ export default class NodePages {
    */
   updateMaterialByNodeId(id: number, materialId: number)
 
+   /**
+   * Update vertexCount in node.mesh.geometry object by node id
+   * @param id - end-to-end index of the node
+   * @param vertexCount - vertex count for particular node
+   */
+  updateVertexCountByNodeId(id: number, vertexCount: number)
+
   /**
    * Put new node in nodePages array
    * @param node - node object

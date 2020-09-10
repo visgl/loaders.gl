@@ -81,6 +81,19 @@ export default class NodePages {
   }
 
   /**
+   * Update vertexCount in node.mesh.geometry object by node id
+   * @param id - end-to-end index of the node
+   * @param vertexCount - vertex count for particular node
+   */
+  updateVertexCountByNodeId(id, vertexCount) {
+    const node = this.getNodeById(id);
+    if (!node.mesh) {
+      return;
+    }
+    node.mesh.geometry.vertexCount = vertexCount;
+  }
+
+  /**
    * Add a child id into the parent node.children array
    * @param {number | null} parentId - end-to-end parent node index
    * @param {number} childId - end-to-end child node index

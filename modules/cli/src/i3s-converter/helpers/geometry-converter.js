@@ -65,7 +65,8 @@ export default async function convertB3dmToI3sGeometry(tileContent, options = {}
     compressedGeometry,
     texture,
     sharedResources: getSharedResources(tileContent),
-    meshMaterial: material
+    meshMaterial: material,
+    vertexCount
   };
 }
 

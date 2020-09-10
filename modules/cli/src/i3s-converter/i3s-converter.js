@@ -316,7 +316,8 @@ export default class I3SConverter {
       compressedGeometry,
       texture,
       sharedResources,
-      meshMaterial
+      meshMaterial,
+      vertexCount
     } = await convertB3dmToI3sGeometry(sourceTile.content, this.options);
     if (this.options.slpk) {
       const slpkGeometryPath = join(childPath, 'geometries');
@@ -375,6 +376,9 @@ export default class I3SConverter {
     }
     if (meshMaterial) {
       this.nodePages.updateMaterialByNodeId(node.id, this._findOrCreateMaterial(meshMaterial));
+    }
+    if (vertexCount) {
+      this.nodePages.updateVertexCountByNodeId(node.id, vertexCount);
     }
   }
 

@@ -29,4 +29,5 @@ export default function convertB3dmToI3sGeometry(
   texture: any;
   sharedResources: any;
   meshMaterial: any;
+  vertexCount: number;
 }>;
