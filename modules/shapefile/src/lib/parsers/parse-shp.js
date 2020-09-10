@@ -19,7 +19,7 @@ const STATE = {
 
 class SHPParser {
   constructor() {
-    this.binaryReader = new BinaryChunkReader();
+    this.binaryReader = new BinaryChunkReader({maxRewindBytes: 12});
     this.state = STATE.EXPECTING_HEADER;
     this.result = {
       geometries: []
@@ -73,6 +73,19 @@ export async function* parseSHPInBatches(asyncIterator, options) {
   return;
 }
 
+/**
+ * State-machine parser for SHP data
+ *
+ * Note that whenever more data is needed, a `return`, not a `break`, is
+ * necessary, as the `break` keeps the context within `parseState`, while
+ * `return` releases context so that more data can be written into the
+ * BinaryChunkReader.
+ *
+ * @param  {Number} state Current state
+ * @param  {Object} [result={}]  An object to hold result data
+ * @param  {BinaryChunkReader} binaryReader
+ * @return {Number} State at end of current parsing
+ */
 /* eslint-disable complexity, max-depth */
 function parseState(state, result = {}, binaryReader) {
   // eslint-disable-next-line no-constant-condition
@@ -85,10 +98,13 @@ function parseState(state, result = {}, binaryReader) {
 
         case STATE.EXPECTING_HEADER:
           // Parse initial file header
-          const dataView = binaryReader.getDataView(SHP_HEADER_SIZE, 'SHP header');
-          if (!dataView) {
+          // Make sure bytes exist
+          if (!binaryReader.hasAvailableBytes(SHP_HEADER_SIZE)) {
             return state;
           }
+
+          const dataView = binaryReader.getDataView(SHP_HEADER_SIZE);
+
           result.header = parseSHPHeader(dataView);
           result.progress = {
             bytesUsed: 0,
@@ -111,7 +127,7 @@ function parseState(state, result = {}, binaryReader) {
               type: recordHeaderView.getInt32(8, LITTLE_ENDIAN)
             };
 
-            if (!binaryReader.hasAvailableBytes(recordHeader.byteLength - SHP_RECORD_HEADER_SIZE)) {
+            if (!binaryReader.hasAvailableBytes(recordHeader.byteLength - 4)) {
               binaryReader.rewind(SHP_RECORD_HEADER_SIZE);
               return state;
             }
@@ -141,8 +157,12 @@ function parseState(state, result = {}, binaryReader) {
               result.progress.rows = result.currentIndex - 1;
             }
           }
-          state = STATE.END;
-          break;
+
+          if (binaryReader.ended) {
+            state = STATE.END;
+          }
+
+          return state;
 
         default:
           state = STATE.ERROR;

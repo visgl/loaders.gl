@@ -12,7 +12,7 @@ export async function* parseShapefileInBatches(asyncIterator, options, context) 
 
   // parse geometries
   const shapeIterator = await parseInBatches(asyncIterator, SHPLoader); // {shp: shx}
-  const shapeHeader = await shapeIterator.next();
+  const shapeHeader = (await shapeIterator.next()).value;
 
   // parse properties
   let propertyIterator;

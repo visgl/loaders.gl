@@ -1,17 +1,15 @@
 import test from 'tape-promise/tape';
-import {load, fetchFile} from '@loaders.gl/core';
+import {load, loadInBatches, fetchFile} from '@loaders.gl/core';
 import {geojsonToBinary} from '@loaders.gl/gis';
 import {SHPLoader} from '@loaders.gl/shapefile';
-
-// import {parseSHP} from '@loaders.gl/shapefile/lib/parsers/parse-shp';
-// // import parseSHP from '@loaders.gl/shapefile/lib/parsers/deprecated/parse-shp-atomic';
-// import {fetchFile} from '@loaders.gl/core';
 
 const SHAPEFILE_POLYGON_PATH = '@loaders.gl/shapefile/test/data/shapefile-js/polygons.shp';
 const SHAPEFILE_JS_DATA_FOLDER = '@loaders.gl/shapefile/test/data/shapefile-js';
 const SHAPEFILE_JS_POINT_TEST_FILES = ['points', 'multipoints'];
 const SHAPEFILE_JS_POLYLINE_TEST_FILES = ['polylines'];
 const SHAPEFILE_JS_POLYGON_TEST_FILES = ['polygons'];
+const SHAPEFILE_CONTOURS_PATH =
+  '@loaders.gl/shapefile/test/data/other/geo_export_14556060-0002-4a9e-8ef0-03da3e246166.shp';
 
 test('SHPLoader#load polygons', async t => {
   const result = await load(SHAPEFILE_POLYGON_PATH, SHPLoader);
@@ -74,5 +72,22 @@ test('Shapefile JS Polygon tests', async t => {
     }
   }
 
+  t.end();
+});
+
+test('SHPLoader#loadInBatches contours file', async t => {
+  const iter = await loadInBatches(SHAPEFILE_CONTOURS_PATH, SHPLoader);
+  // First batch is the SHP Header
+  const shpHeader = (await iter.next()).value;
+
+  const rows = [];
+  for await (const batch of iter) {
+    rows.push(...batch);
+  }
+
+  const output = await load(SHAPEFILE_CONTOURS_PATH, SHPLoader);
+
+  t.deepEqual(shpHeader, output.header);
+  t.deepEqual(rows, output.geometries);
   t.end();
 });
