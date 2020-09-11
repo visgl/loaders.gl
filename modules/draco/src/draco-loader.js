@@ -21,7 +21,8 @@ export const DracoWorkerLoader = {
       decoderType: typeof WebAssembly === 'object' ? 'wasm' : 'js', // 'js' for IE11
       libraryPath: `libs/`,
       workerUrl: `https://unpkg.com/@loaders.gl/draco@${VERSION}/dist/draco-loader.worker.js`,
-      localWorkerUrl: `modules/draco/dist/draco-loader.worker.dev.js`
+      localWorkerUrl: `modules/draco/dist/draco-loader.worker.dev.js`,
+      extraAttributes: null
     }
   }
 };
@@ -38,7 +39,9 @@ async function parse(arrayBuffer, options, context, loader) {
   try {
     // TODO passing in options causes CI failures...
     // @ts-ignore
-    return dracoParser.parseSync(arrayBuffer, {extraAttributes: options.extraAttributes || null});
+    return dracoParser.parseSync(arrayBuffer, {
+      extraAttributes: (options.draco && options.draco.extraAttributes) || null
+    });
   } finally {
     dracoParser.destroy();
   }

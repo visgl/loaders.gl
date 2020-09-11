@@ -30,9 +30,11 @@ test('DracoLoader#parse(mainthread)', async t => {
 test('DracoLoader#parse extra attributes(mainthread)', async t => {
   const data = await load(CESIUM_TILE_URL, DracoLoader, {
     worker: false,
-    extraAttributes: {
-      Intensity: 2,
-      Classification: 3
+    draco: {
+      extraAttributes: {
+        Intensity: 2,
+        Classification: 3
+      }
     }
   });
   t.equal(data.attributes.Intensity.value.length, 173210, 'Intensity attribute was found');
