@@ -92,7 +92,7 @@ export default class DracoParser {
 
       data.loaderData = {header};
 
-      this.extractDRACOGeometry(decoder, dracoGeometry, geometryType, data);
+      this.extractDRACOGeometry(decoder, dracoGeometry, geometryType, data, options);
 
       data.header = {
         vertexCount: header.vertexCount,
@@ -106,12 +106,12 @@ export default class DracoParser {
     return data;
   }
 
-  extractDRACOGeometry(decoder, dracoGeometry, geometryType, geometry) {
+  extractDRACOGeometry(decoder, dracoGeometry, geometryType, geometry, options) {
     // const numPoints = dracoGeometry.num_points();
     // const numAttributes = dracoGeometry.num_attributes();
 
     // Structure for converting to WebGL framework specific attributes later
-    const attributes = this.getAttributes(decoder, dracoGeometry);
+    const attributes = this.getAttributes(decoder, dracoGeometry, options);
 
     const positionAttribute = attributes.POSITION;
     if (!positionAttribute) {
@@ -161,19 +161,18 @@ export default class DracoParser {
     this.draco.destroy(posTransform);
   }
 
-  getAttributes(decoder, dracoGeometry) {
+  getAttributes(decoder, dracoGeometry, options) {
     const attributes = {};
     const numPoints = dracoGeometry.num_points();
     // const attributeUniqueIdMap = {};
 
-    // Add native Draco attribute type to geometry.
     for (const attributeName in DRACO_TO_GLTF_ATTRIBUTE_NAME_MAP) {
       // The native attribute type is only used when no unique Id is provided.
       // For example, loading .drc files.
-
       // if (attributeUniqueIdMap[attributeName] === undefined) {
       const attributeType = this.draco[attributeName];
       const attributeId = decoder.GetAttributeId(dracoGeometry, attributeType);
+
       if (attributeId !== -1) {
         const dracoAttribute = decoder.GetAttribute(dracoGeometry, attributeId);
         const {typedArray} = this.getAttributeTypedArray(
@@ -186,10 +185,24 @@ export default class DracoParser {
           value: typedArray,
           size: typedArray.length / numPoints
         };
-      }
-      // }
+      } // }
     }
+    if (options.extraAttributes) {
+      for (const [attributeName, attributeUniqueId] of Object.entries(options.extraAttributes)) {
+        const dracoAttribute = decoder.GetAttributeByUniqueId(dracoGeometry, attributeUniqueId);
 
+        const {typedArray} = this.getAttributeTypedArray(
+          decoder,
+          dracoGeometry,
+          dracoAttribute,
+          attributeName
+        );
+        attributes[attributeName] = {
+          value: typedArray,
+          size: typedArray.length / numPoints
+        };
+      }
+    }
     // // Add attributes of user specified unique id. E.g. GLTF models.
     // for (const attributeName in attributeUniqueIdMap) {
     //   const attributeType = attributeTypeMap[attributeName] || Float32Array;

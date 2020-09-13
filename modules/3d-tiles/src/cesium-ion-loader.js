@@ -20,7 +20,7 @@ const CesiumIonLoader = {
   parse: async (data, options, context, loader) => {
     options['3d-tiles'] = options['cesium-ion'];
     options.loader = CesiumIonLoader;
-    return Tiles3DLoader.parse(data, options); // , context, loader);
+    return Tiles3DLoader.parse(data, options, context); // , loader);
   },
   options: {
     'cesium-ion': {
