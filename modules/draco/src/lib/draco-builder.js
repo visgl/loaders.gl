@@ -1,12 +1,13 @@
-// This code is inspired by example code from the DRACO repository
-// Encoder API: https://github.com/google/draco/blob/master/src/draco/javascript/emscripten/draco_web_encoder.idl
-// Example: https://github.com/google/draco/blob/master/javascript/npm/draco3d/draco_nodejs_example.js
-
+// This code is inspired by example code in the DRACO repository
 /** @typedef {import('../types/draco-types')} Draco3D */
+/** @typedef {import('../types/draco-types').TypedArray} TypedArray */
+/** @typedef {import('../types/draco-types').DracoInt8Array} DracoInt8Array */
 /** @typedef {import('../types/draco-types').Encoder} Encoder */
 /** @typedef {import('../types/draco-types').Mesh} Mesh */
 /** @typedef {import('../types/draco-types').PointCloud} PointCloud */
-/** @typedef {import('../types/draco-types').TypedArray} TypedArray */
+/** @typedef {import('../types/draco-types').Metadata} Metadata */
+/** @typedef {import('../types/draco-types').PointCloudBuilder} PointCloudBuilder */
+/** @typedef {import('../types/draco-types').MetadataBuilder} MetadataBuilder */
 
 // Native Draco attribute names to GLTF attribute names.
 const GLTF_TO_DRACO_ATTRIBUTE_NAME_MAP = {
@@ -25,6 +26,7 @@ export default class DracoBuilder {
     this.draco = draco;
     this.dracoEncoder = new this.draco.Encoder();
     this.dracoMeshBuilder = new this.draco.MeshBuilder();
+    this.dracoMetadataBuilder = new this.draco.MetadataBuilder();
     this.log = options.log || noop;
   }
 
@@ -73,6 +75,10 @@ export default class DracoBuilder {
     // Build a `DracoPointCloud` from the input data
     const dracoPointCloud = this._createDracoPointCloud(attributes, options);
 
+    if (options.metadata) {
+      this._addGeometryMetadata(dracoPointCloud, options.metadata);
+    }
+
     const dracoData = new this.draco.DracoInt8Array();
 
     try {
@@ -101,6 +107,10 @@ export default class DracoBuilder {
 
     // Build a `DracoMesh` from the input data
     const dracoMesh = this._createDracoMesh(attributes, options);
+
+    if (options.metadata) {
+      this._addGeometryMetadata(dracoMesh, options.metadata);
+    }
 
     const dracoData = new this.draco.DracoInt8Array();
 
@@ -160,7 +170,11 @@ export default class DracoBuilder {
       for (let attributeName in attributes) {
         const attribute = attributes[attributeName];
         attributeName = GLTF_TO_DRACO_ATTRIBUTE_NAME_MAP[attributeName] || attributeName;
-        this._addAttributeToMesh(dracoMesh, attributeName, attribute, vertexCount);
+        const uniqueId = this._addAttributeToMesh(dracoMesh, attributeName, attribute, vertexCount);
+
+        if (uniqueId !== -1) {
+          this._addAttributeMetadata(dracoMesh, uniqueId, {name: attributeName});
+        }
       }
     } catch (error) {
       this.destroyEncodedObject(dracoMesh);
@@ -187,7 +201,15 @@ export default class DracoBuilder {
       for (let attributeName in attributes) {
         const attribute = attributes[attributeName];
         attributeName = GLTF_TO_DRACO_ATTRIBUTE_NAME_MAP[attributeName] || attributeName;
-        this._addAttributeToMesh(dracoPointCloud, attributeName, attribute, vertexCount);
+        const uniqueId = this._addAttributeToMesh(
+          dracoPointCloud,
+          attributeName,
+          attribute,
+          vertexCount
+        );
+        if (uniqueId !== -1) {
+          this._addAttributeMetadata(dracoPointCloud, uniqueId, {name: attributeName});
+        }
       }
     } catch (error) {
       this.destroyEncodedObject(dracoPointCloud);
@@ -289,13 +311,55 @@ export default class DracoBuilder {
     }
     return null;
   }
+
+  /**
+   * Add metadata for the geometry.
+   * @param {PointCloud} dracoGeometry - WASM Draco Object
+   * @param {Map<string, string>|{[key: string]: string}} metadata
+   */
+  _addGeometryMetadata(dracoGeometry, metadata) {
+    const dracoMetadata = new this.draco.Metadata();
+    this._populateDracoMetadata(dracoMetadata, metadata);
+    this.dracoMeshBuilder.AddMetadata(dracoGeometry, dracoMetadata);
+  }
+
+  /**
+   * Add metadata for an attribute to geometry.
+   * @param {PointCloud} dracoGeometry - WASM Draco Object
+   * @param {number} uniqueAttributeId
+   * @param {Map<string, string>|{[key: string]: string}} metadata
+   */
+  _addAttributeMetadata(dracoGeometry, uniqueAttributeId, metadata) {
+    // Note: Draco JS IDL doesn't seem to expose draco.AttributeMetadata, however it seems to
+    // create such objects automatically from draco.Metadata object.
+    const dracoAttributeMetadata = new this.draco.Metadata();
+    this._populateDracoMetadata(dracoAttributeMetadata, metadata);
+    // Draco3d doc note: Directly add attribute metadata to geometry.
+    // You can do this without explicitly adding |GeometryMetadata| to mesh.
+    this.dracoMeshBuilder.SetMetadataForAttribute(
+      dracoGeometry,
+      uniqueAttributeId,
+      dracoAttributeMetadata
+    );
+  }
+
+  /**
+   * Add contents of object or map to a WASM Draco Metadata Object
+   * @param {Metadata} dracoMetadata - WASM Draco Object
+   * @param {Map<string, string>|{[key: string]: string}} metadata
+   */
+  _populateDracoMetadata(dracoMetadata, metadata) {
+    for (const [key, value] of getEntries(metadata)) {
+      this.dracoMetadataBuilder.AddStringEntry(metadata, key, value);
+    }
+  }
 }
 
 // HELPER FUNCTIONS
 
 /**
  * Copy encoded data to buffer
- * @param {*} dracoData
+ * @param {DracoInt8Array} dracoData
  */
 function dracoInt8ArrayToArrayBuffer(dracoData) {
   const byteLength = dracoData.size();
@@ -305,4 +369,10 @@ function dracoInt8ArrayToArrayBuffer(dracoData) {
     outputData[i] = dracoData.GetValue(i);
   }
   return outputBuffer;
+}
+
+/** Enable iteration over either an object or a map */
+function getEntries(container) {
+  const hasEntriesFunc = container.entries && !container.hasOwnProperty('entries');
+  return hasEntriesFunc ? container.entries() : Object.entries(container);
 }

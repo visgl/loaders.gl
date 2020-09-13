@@ -42,6 +42,7 @@ export {
   // Mesh,
   // Metadata,
   // DracoInt8Array,
+  MetadataBuilder,
   PointCloudBuilder,
   MeshBuilder,
   Encoder,
