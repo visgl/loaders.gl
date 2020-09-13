@@ -218,7 +218,7 @@ export default class DracoBuilder {
       this.log(`Adding attribute ${attributeName}, size ${numFaces}`);
 
       // @ts-ignore assumes mesh is a Mesh, not a point cloud
-      this.meshBuilder.AddFacesToMesh(mesh, numFaces, attribute);
+      this.dracoMeshBuilder.AddFacesToMesh(mesh, numFaces, attribute);
       return -1;
     }
 

@@ -189,63 +189,6 @@ export default class DracoParser {
   }
 
   /**
-   * @param {Decoder} decoder
-   * @param {*} dracoGeometry
-   */
-  getAttributes(decoder, dracoGeometry, options) {
-    const attributes = {};
-    const numPoints = dracoGeometry.num_points();
-    // const attributeUniqueIdMap = {};
-
-    for (const attributeName in DRACO_TO_GLTF_ATTRIBUTE_NAME_MAP) {
-      // The native attribute type is only used when no unique Id is provided.
-      // For example, loading .drc files.
-      // if (attributeUniqueIdMap[attributeName] === undefined) {
-      const attributeType = this.draco[attributeName];
-      const attributeId = decoder.GetAttributeId(dracoGeometry, attributeType);
-
-      if (attributeId !== -1) {
-        const dracoAttribute = decoder.GetAttribute(dracoGeometry, attributeId);
-        const {typedArray} = this._getAttributeTypedArray(
-          decoder,
-          dracoGeometry,
-          dracoAttribute,
-          attributeName
-        );
-        attributes[DRACO_TO_GLTF_ATTRIBUTE_NAME_MAP[attributeName]] = {
-          value: typedArray,
-          size: typedArray.length / numPoints
-        };
-      }
-    }
-    if (options.extraAttributes) {
-      for (const [attributeName, attributeUniqueId] of Object.entries(options.extraAttributes)) {
-        const dracoAttribute = decoder.GetAttributeByUniqueId(dracoGeometry, attributeUniqueId);
-
-        const {typedArray} = this._getAttributeTypedArray(
-          decoder,
-          dracoGeometry,
-          dracoAttribute,
-          attributeName
-        );
-        attributes[attributeName] = {
-          value: typedArray,
-          size: typedArray.length / numPoints
-        };
-      }
-    }
-    // // Add attributes of user specified unique id. E.g. GLTF models.
-    // for (const attributeName in attributeUniqueIdMap) {
-    //   const attributeType = attributeTypeMap[attributeName] || Float32Array;
-    //   const attributeId = attributeUniqueIdMap[attributeName];
-    //   const attribute = decoder.GetAttributeByUniqueId(dracoGeometry, attributeId);
-    //   this._getAttributeTypedArray(decoder, dracoGeometry, attribute,attributeName,attributeType);
-    // }
-
-    return attributes;
-  }
-
-  /**
    * For meshes, we need indices to define the faces.
    * @param {Decoder} decoder
    * @param {*} dracoGeometry
