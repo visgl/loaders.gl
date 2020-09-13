@@ -27,8 +27,22 @@ test('DracoLoader#parse(mainthread)', async t => {
   t.end();
 });
 
-test('DracoLoader#parse extra attributes(mainthread)', async t => {
-  const data = await load(CESIUM_TILE_URL, DracoLoader, {
+test('DracoLoader#parse custom attributes(mainthread)', async t => {
+  let data = await load(CESIUM_TILE_URL, DracoLoader, {
+    worker: false
+  });
+  t.equal(
+    data.attributes.CUSTOM_ATTRIBUTE_2.value.length,
+    173210,
+    'Custom (Intensity) attribute was found'
+  );
+  t.equal(
+    data.attributes.CUSTOM_ATTRIBUTE_3.value.length,
+    173210,
+    'Custom (Classification) attribute was found'
+  );
+
+  data = await load(CESIUM_TILE_URL, DracoLoader, {
     worker: false,
     draco: {
       extraAttributes: {
@@ -43,6 +57,7 @@ test('DracoLoader#parse extra attributes(mainthread)', async t => {
     173210,
     'Classification attribute was found'
   );
+
   t.end();
 });
 
