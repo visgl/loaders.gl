@@ -1,6 +1,6 @@
-// This code is a fork of example code from the DRACO repository
-// Copyright 2017 The Draco Authors.
-// Licensed under the Apache License, Version 2.0 (the 'License');
+// This code is inspired by example code in the DRACO repository
+/** @typedef {import('../types/draco-types')} Draco3D */
+/** @typedef {import('../types/draco-types').Decoder} Decoder */
 import {getMeshBoundingBox} from '@loaders.gl/loader-utils';
 
 const GEOMETRY_TYPE = {
@@ -29,6 +29,7 @@ const DRACO_DATA_TYPE_TO_TYPED_ARRAY_MAP = {
 export default class DracoParser {
   // draco - the draco decoder, either import `draco3d` or load dynamically
   constructor(draco) {
+    /** @type {Draco3D} */
     this.draco = draco;
     this.drawMode = 'TRIANGLE';
   }
@@ -81,6 +82,7 @@ export default class DracoParser {
           throw new Error('Unknown DRACO geometry type.');
       }
 
+      // @ts-ignore .ptr
       if (!dracoStatus.ok() || !dracoGeometry.ptr) {
         const message = `DRACO decompression failed: ${dracoStatus.error_msg()}`;
         // console.error(message);
@@ -92,7 +94,7 @@ export default class DracoParser {
 
       data.loaderData = {header};
 
-      this.extractDRACOGeometry(decoder, dracoGeometry, geometryType, data, options);
+      this._extractDRACOGeometry(decoder, dracoGeometry, geometryType, data, options);
 
       data.header = {
         vertexCount: header.vertexCount,
@@ -106,10 +108,14 @@ export default class DracoParser {
     return data;
   }
 
-  extractDRACOGeometry(decoder, dracoGeometry, geometryType, geometry, options) {
-    // const numPoints = dracoGeometry.num_points();
-    // const numAttributes = dracoGeometry.num_attributes();
-
+  /**
+   * @param {Decoder} decoder
+   * @param {*} dracoGeometry
+   * @param {*} geometryType
+   * @param {*} geometry
+   * @param {object} options
+   */
+  _extractDRACOGeometry(decoder, dracoGeometry, geometryType, geometry, options) {
     // Structure for converting to WebGL framework specific attributes later
     const attributes = this.getAttributes(decoder, dracoGeometry, options);
 
@@ -124,8 +130,13 @@ export default class DracoParser {
     if (geometryType === this.draco.TRIANGULAR_MESH) {
       attributes.indices =
         this.drawMode === 'TRIANGLE_STRIP'
-          ? this.getMeshStripIndices(decoder, dracoGeometry)
-          : this.getMeshFaceIndices(decoder, dracoGeometry);
+          ? /**
+             *
+             * @param {*} decoder
+             * @param {*} dracoGeometry
+             */
+            this._getMeshStripIndices(decoder, dracoGeometry)
+          : this._getMeshFaceIndices(decoder, dracoGeometry);
       geometry.mode =
         this.drawMode === 'TRIANGLE_STRIP'
           ? 5 // GL.TRIANGLE_STRIP
@@ -161,6 +172,11 @@ export default class DracoParser {
     this.draco.destroy(posTransform);
   }
 
+  /**
+   *
+   * @param {Decoder} decoder
+   * @param {*} dracoGeometry
+   */
   getAttributes(decoder, dracoGeometry, options) {
     const attributes = {};
     const numPoints = dracoGeometry.num_points();
@@ -175,7 +191,7 @@ export default class DracoParser {
 
       if (attributeId !== -1) {
         const dracoAttribute = decoder.GetAttribute(dracoGeometry, attributeId);
-        const {typedArray} = this.getAttributeTypedArray(
+        const {typedArray} = this._getAttributeTypedArray(
           decoder,
           dracoGeometry,
           dracoAttribute,
@@ -185,13 +201,13 @@ export default class DracoParser {
           value: typedArray,
           size: typedArray.length / numPoints
         };
-      } // }
+      }
     }
     if (options.extraAttributes) {
       for (const [attributeName, attributeUniqueId] of Object.entries(options.extraAttributes)) {
         const dracoAttribute = decoder.GetAttributeByUniqueId(dracoGeometry, attributeUniqueId);
 
-        const {typedArray} = this.getAttributeTypedArray(
+        const {typedArray} = this._getAttributeTypedArray(
           decoder,
           dracoGeometry,
           dracoAttribute,
@@ -208,14 +224,18 @@ export default class DracoParser {
     //   const attributeType = attributeTypeMap[attributeName] || Float32Array;
     //   const attributeId = attributeUniqueIdMap[attributeName];
     //   const attribute = decoder.GetAttributeByUniqueId(dracoGeometry, attributeId);
-    //   this.getAttributeTypedArray(decoder, dracoGeometry, attribute,attributeName,attributeType);
+    //   this._getAttributeTypedArray(decoder, dracoGeometry, attribute,attributeName,attributeType);
     // }
 
     return attributes;
   }
 
-  // For meshes, we need indices to define the faces.
-  getMeshFaceIndices(decoder, dracoGeometry) {
+  /**
+   * For meshes, we need indices to define the faces.
+   * @param {Decoder} decoder
+   * @param {*} dracoGeometry
+   */
+  _getMeshFaceIndices(decoder, dracoGeometry) {
     // Example on how to retrieve mesh and attributes.
     const numFaces = dracoGeometry.num_faces();
 
@@ -234,8 +254,12 @@ export default class DracoParser {
     return indices;
   }
 
-  // For meshes, we need indices to define the faces.
-  getMeshStripIndices(decoder, dracoGeometry) {
+  /**
+   * For meshes, we need indices to define the faces.
+   * @param {Decoder} decoder
+   * @param {*} dracoGeometry
+   */
+  _getMeshStripIndices(decoder, dracoGeometry) {
     const dracoArray = new this.draco.DracoInt32Array();
     /* const numStrips = */ decoder.GetTriangleStripsFromMesh(dracoGeometry, dracoArray);
     const indices = new Uint32Array(dracoArray.size());
@@ -246,7 +270,14 @@ export default class DracoParser {
     return indices;
   }
 
-  getAttributeTypedArray(decoder, dracoGeometry, dracoAttribute, attributeName) {
+  /**
+   *
+   * @param {Decoder} decoder
+   * @param {*} dracoGeometry
+   * @param {*} dracoAttribute
+   * @param {*} attributeName
+   */
+  _getAttributeTypedArray(decoder, dracoGeometry, dracoAttribute, attributeName) {
     if (dracoAttribute.ptr === 0) {
       const message = `DRACO decode bad attribute ${attributeName}`;
       // console.error(message);
