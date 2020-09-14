@@ -10,16 +10,40 @@ const TILESET_TYPE = {
 
 function printHelp() {
   console.log('cli: converter 3dTiles to I3S or I3S to 3dTiles...');
-  console.log('--draco Generate I3S 1.7 draco compressed geometries');
   console.log(
     '--max-depth [Maximal depth of hierarchical tiles tree traversal, default: infinite]'
   );
-  console.log('--name [Tileset name, default: "default"]');
-  console.log('--output [Output folder]');
-  console.log('--slpk Generate slpk (Scene Layer Packages) I3S output file');
+  console.log('--name [Tileset name]');
+  console.log('--output [Output folder, default: "data" folder]');
+  console.log('--slpk [Generate slpk (Scene Layer Packages) I3S output file]');
   console.log('--tileset [tileset.json file]');
-  console.log('--type [tileset type: I3S or 3DTILES]');
+  console.log('--input-type [tileset input type: I3S or 3DTILES]');
   process.exit(0); // eslint-disable-line
+}
+
+function validateOptions(options) {
+  const mandatoryOptionsWithExceptions = {
+    name: () => console.log('Missed: --name [Tileset name]'),
+    tileset: () => console.log('Missed: --tileset [tileset.json file]'),
+    inputType: () =>
+      console.log('Missed/Incorrect: --input-type [tileset input type: I3S or 3DTILES]')
+  };
+  const exceptions = [];
+  for (const mandatoryOption in mandatoryOptionsWithExceptions) {
+    const optionValue = options[mandatoryOption];
+    const isWrongInputType =
+      Boolean(optionValue) &&
+      mandatoryOption === 'inputType' &&
+      !Object.values(TILESET_TYPE).includes(optionValue.toUpperCase());
+
+    if (!optionValue || isWrongInputType) {
+      exceptions.push(mandatoryOptionsWithExceptions[mandatoryOption]);
+    }
+  }
+  if (exceptions.length) {
+    exceptions.forEach(exeption => exeption());
+    process.exit(0); // eslint-disable-line
+  }
 }
 
 let options;
@@ -32,6 +56,7 @@ function main() {
   }
 
   options = parseOptions(args);
+  validateOptions(options);
 
   convert(options);
 }
@@ -40,10 +65,10 @@ main();
 
 // eslint-disable-next-line no-shadow
 function convert(options) {
-  const type = options.type.toUpperCase();
-  console.log(`Start convert ${type}`); // eslint-disable-line
+  const inputType = options.inputType.toUpperCase();
+  console.log(`Start convert ${inputType}`); // eslint-disable-line
   let tilesetJson = '';
-  switch (type) {
+  switch (inputType) {
     case TILESET_TYPE.I3S:
       console.log('I3S - Not implement!'); // eslint-disable-line
       break;
@@ -55,7 +80,6 @@ function convert(options) {
         outputPath: options.output,
         tilesetName: options.name,
         maxDepth: options.maxDepth,
-        draco: options.draco,
         slpk: options.slpk
       });
       break;
@@ -63,7 +87,7 @@ function convert(options) {
       printHelp();
   }
 
-  console.log(`Stop convert ${type}`); // eslint-disable-line
+  console.log(`Stop convert ${inputType}`); // eslint-disable-line
   console.log(tilesetJson); // eslint-disable-line
 }
 
@@ -71,10 +95,10 @@ function convert(options) {
 
 function parseOptions(args) {
   const opts = {
-    type: null,
+    inputType: null,
     tileset: null,
-    name: 'default',
-    output: null
+    name: null,
+    output: 'data'
   };
 
   const count = args.length;
@@ -92,8 +116,8 @@ function parseOptions(args) {
   args.forEach((arg, index) => {
     if (arg.indexOf('--') === 0) {
       switch (arg) {
-        case '--type':
-          opts.type = _getValue(index);
+        case '--input-type':
+          opts.inputType = _getValue(index);
           break;
         case '--tileset':
           opts.tileset = _getValue(index);
@@ -106,9 +130,6 @@ function parseOptions(args) {
           break;
         case '--max-depth':
           opts.maxDepth = _getValue(index);
-          break;
-        case '--draco':
-          opts.draco = true;
           break;
         case '--slpk':
           opts.slpk = true;

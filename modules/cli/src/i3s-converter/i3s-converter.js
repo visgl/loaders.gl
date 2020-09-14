@@ -38,8 +38,8 @@ export default class I3SConverter {
   }
 
   // Convert a 3d tileset
-  async convert({inputUrl, outputPath, tilesetName, maxDepth, draco, slpk}) {
-    this.options = {maxDepth, draco, slpk};
+  async convert({inputUrl, outputPath, tilesetName, maxDepth, slpk}) {
+    this.options = {maxDepth, slpk};
 
     if (slpk) {
       this.nodePages.useWriteFunction(writeFileForSlpk);
@@ -92,7 +92,7 @@ export default class I3SConverter {
       nodePages: {
         nodesPerPage: HARDCODED_NODES_PER_PAGE
       },
-      compressGeometry: this.options.draco
+      compressGeometry: true
     };
 
     const layers0 = transform(layers0data, layersTemplate);
@@ -330,19 +330,19 @@ export default class I3SConverter {
       const geometryPath = join(childPath, 'geometries/0/');
       await writeFile(geometryPath, geometryBuffer, 'index.bin');
     }
-    if (this.options.draco) {
-      if (this.options.slpk) {
-        const slpkCompressedGeometryPath = join(childPath, 'geometries');
-        this.fileMap[`${slpkChildPath}/geometries/1.bin.gz`] = await writeFileForSlpk(
-          slpkCompressedGeometryPath,
-          compressedGeometry,
-          '1.bin'
-        );
-      } else {
-        const compressedGeometryPath = join(childPath, 'geometries/1/');
-        await writeFile(compressedGeometryPath, compressedGeometry, 'index.bin');
-      }
+
+    if (this.options.slpk) {
+      const slpkCompressedGeometryPath = join(childPath, 'geometries');
+      this.fileMap[`${slpkChildPath}/geometries/1.bin.gz`] = await writeFileForSlpk(
+        slpkCompressedGeometryPath,
+        compressedGeometry,
+        '1.bin'
+      );
+    } else {
+      const compressedGeometryPath = join(childPath, 'geometries/1/');
+      await writeFile(compressedGeometryPath, compressedGeometry, 'index.bin');
     }
+
     sharedResources.nodePath = node.path;
     const sharedData = transform(sharedResources, SHARED_RESOURCES_TEMPLATE);
     const sharedDataStr = JSON.stringify(sharedData);

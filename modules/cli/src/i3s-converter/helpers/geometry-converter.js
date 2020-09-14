@@ -34,31 +34,24 @@ export default async function convertB3dmToI3sGeometry(tileContent, options = {}
     )
   );
 
-  let compressedGeometry = null;
-  if (options.draco) {
-    const indices = new Uint32Array(vertexCount);
-    for (let index = 0; index < indices.length; index++) {
-      indices.set([index], index);
-    }
-
-    const featureIndices = new Uint32Array(vertexCount);
-    featureIndices.fill(0);
-
-    const attributes = {
-      positions,
-      normals,
-      texCoords,
-      colors,
-      'feature-index': featureIndices
-    };
-    compressedGeometry = new Uint8Array(
-      await encode({attributes, indices}, DracoWriter, {
-        draco: {
-          method: 'MESH_SEQUENTIAL_ENCODING'
-        }
-      })
-    );
+  const indices = new Uint32Array(vertexCount);
+  for (let index = 0; index < indices.length; index++) {
+    indices.set([index], index);
   }
+
+  const attributes = {
+    positions,
+    normals,
+    texCoords,
+    colors
+  };
+  const compressedGeometry = new Uint8Array(
+    await encode({attributes, indices}, DracoWriter, {
+      draco: {
+        method: 'MESH_SEQUENTIAL_ENCODING'
+      }
+    })
+  );
 
   return {
     geometry: fileBuffer,
