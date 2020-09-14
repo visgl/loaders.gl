@@ -72,6 +72,8 @@ function parseGLBV1(glb, dataView, byteOffset, options) {
   // Sanity: ensure file is big enough to hold at least the headers
   assert(glb.header.byteLength > GLB_FILE_HEADER_SIZE + GLB_CHUNK_HEADER_SIZE);
 
+  // Explanation of GLB structure:
+  // https://cloud.githubusercontent.com/assets/3479527/22600725/36b87122-ea55-11e6-9d40-6fd42819fcab.png
   const contentLength = dataView.getUint32(byteOffset + 0, LE); // Byte length of chunk
   const contentFormat = dataView.getUint32(byteOffset + 4, LE); // Chunk format as uint32
   byteOffset += GLB_CHUNK_HEADER_SIZE;
@@ -79,7 +81,9 @@ function parseGLBV1(glb, dataView, byteOffset, options) {
   // GLB v1 only supports a single chunk type
   assert(contentFormat === GLB_V1_CONTENT_FORMAT_JSON);
 
-  byteOffset += parseJSONChunk(glb, dataView, byteOffset, contentLength, options);
+  parseJSONChunk(glb, dataView, byteOffset, contentLength, options);
+  // No need to call the function padTo4Bytes() from parseJSONChunk()
+  byteOffset += contentLength;
   byteOffset += parseBINChunk(glb, dataView, byteOffset, glb.header.byteLength, options);
 
   return byteOffset;
