@@ -6,14 +6,17 @@ import {loadLibrary, global} from '@loaders.gl/loader-utils';
 
 let loadDecoderPromise;
 let loadEncoderPromise;
+let dracoDecoderModule;
+let dracoEncoderModule;
 
 export async function loadDracoDecoderModule(options) {
   const modules = options.modules || {};
 
   // Check if a bundled draco3d library has been supplied by application
   if (modules.draco3d) {
+    dracoDecoderModule = dracoDecoderModule || modules.draco3d.createDecoderModule();
     return {
-      draco: modules.draco3d.createDecoderModule()
+      draco: dracoDecoderModule
     };
   }
 
@@ -27,8 +30,9 @@ export async function loadDracoEncoderModule(options) {
 
   // Check if a bundled draco3d library has been supplied by application
   if (modules.draco3d) {
+    dracoEncoderModule = dracoEncoderModule || modules.draco3d.createEncoderModule();
     return {
-      draco: modules.draco3d.createEncoderModule()
+      draco: dracoEncoderModule
     };
   }
 
