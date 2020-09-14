@@ -43,7 +43,7 @@ export default class DracoParser {
   }
 
   // NOTE: caller must call `destroyGeometry` on the return value after using it
-  parseSync(arrayBuffer, options) {
+  parseSync(arrayBuffer, options = {}) {
     const buffer = new this.draco.DecoderBuffer();
     buffer.Init(new Int8Array(arrayBuffer), arrayBuffer.byteLength);
 
@@ -116,15 +116,12 @@ export default class DracoParser {
    * @param {object} options
    */
   _extractDRACOGeometry(decoder, dracoGeometry, geometryType, geometry, options) {
-    // Structure for converting to WebGL framework specific attributes later
-    const attributes = this.getAttributes(decoder, dracoGeometry, options);
+    const attributes = this._getAttributes(decoder, dracoGeometry, options);
 
     const positionAttribute = attributes.POSITION;
     if (!positionAttribute) {
       throw new Error('DRACO decompressor: No position attribute found.');
     }
-
-    this.getPositionAttributeMetadata(positionAttribute);
 
     // For meshes, we need indices to define the faces.
     if (geometryType === this.draco.TRIANGULAR_MESH) {
@@ -154,78 +151,39 @@ export default class DracoParser {
     return geometry;
   }
 
-  getPositionAttributeMetadata(positionAttribute) {
-    this.metadata = this.metadata || {};
-    this.metadata.attributes = this.metadata.attributes || {};
-
-    const posTransform = new this.draco.AttributeQuantizationTransform();
-    if (posTransform.InitFromAttribute(positionAttribute)) {
-      // Quantized attribute. Store the quantization parameters into the attribute
-      this.metadata.attributes.position.isQuantized = true;
-      this.metadata.attributes.position.maxRange = posTransform.range();
-      this.metadata.attributes.position.numQuantizationBits = posTransform.quantization_bits();
-      this.metadata.attributes.position.minValues = new Float32Array(3);
-      for (let i = 0; i < 3; ++i) {
-        this.metadata.attributes.position.minValues[i] = posTransform.min_value(i);
-      }
-    }
-    this.draco.destroy(posTransform);
-  }
-
-  /**
-   *
-   * @param {Decoder} decoder
-   * @param {*} dracoGeometry
-   */
-  getAttributes(decoder, dracoGeometry, options) {
+  _getAttributes(decoder, dracoGeometry, options) {
     const attributes = {};
     const numPoints = dracoGeometry.num_points();
     // const attributeUniqueIdMap = {};
 
-    for (const attributeName in DRACO_TO_GLTF_ATTRIBUTE_NAME_MAP) {
-      // The native attribute type is only used when no unique Id is provided.
-      // For example, loading .drc files.
-      // if (attributeUniqueIdMap[attributeName] === undefined) {
-      const attributeType = this.draco[attributeName];
-      const attributeId = decoder.GetAttributeId(dracoGeometry, attributeType);
+    // Note: Draco docs do not seem clear on `GetAttribute` accepting a zero-based index,
+    // but it seems to work this way
+    for (let attributeId = 0; attributeId < dracoGeometry.num_attributes(); attributeId++) {
+      const dracoAttribute = decoder.GetAttribute(dracoGeometry, attributeId);
+      const attributeData = {
+        uniqueId: dracoAttribute.unique_id(),
+        attributeType: dracoAttribute.attribute_type(),
+        dataType: DRACO_DATA_TYPE_TO_TYPED_ARRAY_MAP[dracoAttribute.data_type()],
+        size: dracoAttribute.size(),
+        numComponents: dracoAttribute.num_components(),
+        byteOffset: dracoAttribute.byte_offset(),
+        byteStride: dracoAttribute.byte_stride(),
+        normalized: dracoAttribute.normalized()
+      };
 
-      if (attributeId !== -1) {
-        const dracoAttribute = decoder.GetAttribute(dracoGeometry, attributeId);
-        const {typedArray} = this._getAttributeTypedArray(
-          decoder,
-          dracoGeometry,
-          dracoAttribute,
-          attributeName
-        );
-        attributes[DRACO_TO_GLTF_ATTRIBUTE_NAME_MAP[attributeName]] = {
-          value: typedArray,
-          size: typedArray.length / numPoints
-        };
-      }
+      // DRACO does not save attribute names - We need to deduce an attribute name
+      const attributeName = this._deduceAttributeName(attributeData, options);
+      const {typedArray} = this._getAttributeTypedArray(
+        decoder,
+        dracoGeometry,
+        dracoAttribute,
+        attributeName
+      );
+      attributes[attributeName] = {
+        value: typedArray,
+        size: typedArray.length / numPoints
+      };
     }
-    if (options.extraAttributes) {
-      for (const [attributeName, attributeUniqueId] of Object.entries(options.extraAttributes)) {
-        const dracoAttribute = decoder.GetAttributeByUniqueId(dracoGeometry, attributeUniqueId);
-
-        const {typedArray} = this._getAttributeTypedArray(
-          decoder,
-          dracoGeometry,
-          dracoAttribute,
-          attributeName
-        );
-        attributes[attributeName] = {
-          value: typedArray,
-          size: typedArray.length / numPoints
-        };
-      }
-    }
-    // // Add attributes of user specified unique id. E.g. GLTF models.
-    // for (const attributeName in attributeUniqueIdMap) {
-    //   const attributeType = attributeTypeMap[attributeName] || Float32Array;
-    //   const attributeId = attributeUniqueIdMap[attributeName];
-    //   const attribute = decoder.GetAttributeByUniqueId(dracoGeometry, attributeId);
-    //   this._getAttributeTypedArray(decoder, dracoGeometry, attribute,attributeName,attributeType);
-    // }
 
     return attributes;
   }
@@ -349,6 +307,37 @@ export default class DracoParser {
     this.draco.destroy(dracoArray);
 
     return {typedArray, components: numComponents};
+  }
+
+  /**
+   * Deduce an attribute name.
+   * @note DRACO does not save attribute names, just general type (POSITION, COLOR)
+   * to help optimize compression. We generate GLTF compatible names for the Draco-recognized
+   * types
+   * @param {object} attributeData
+   */
+  _deduceAttributeName(attributeData, options) {
+    const {extraAttributes = {}} = options;
+    for (const [attributeName, attributeUniqueId] of Object.entries(extraAttributes)) {
+      if (attributeUniqueId === attributeData.uniqueId) {
+        return attributeName;
+      }
+    }
+
+    for (const dracoAttributeConstant in DRACO_TO_GLTF_ATTRIBUTE_NAME_MAP) {
+      const attributeType = this.draco[dracoAttributeConstant];
+      if (attributeData.attributeType === attributeType) {
+        // TODO - Return unique names if there multiple attributes per type
+        // (e.g. multiple TEX_COORDS or COLORS)
+        return DRACO_TO_GLTF_ATTRIBUTE_NAME_MAP[dracoAttributeConstant];
+      }
+    }
+
+    // TODO look for name in metadata?
+    // The loaders.gl DracoEncoder could write a name into metadata...
+
+    // Attribute of "GENERIC" type, we need to assign some name
+    return `CUSTOM_ATTRIBUTE_${attributeData.uniqueId}`;
   }
 
   // DEPRECATED

@@ -47,9 +47,12 @@ export default class DracoBuilder {
   }
 
   // Encode mesh=({})
-  encodeSync(mesh, options) {
+  encodeSync(mesh, options = {}) {
     this._setOptions(options);
-    return options.pointcloud ? this._encodePointCloud(mesh) : this._encodeMesh(mesh);
+
+    return options.pointcloud
+      ? this._encodePointCloud(mesh, options)
+      : this._encodeMesh(mesh, options);
   }
 
   // PRIVATE
@@ -64,11 +67,11 @@ export default class DracoBuilder {
     return attributes;
   }
 
-  _encodePointCloud(pointcloud) {
+  _encodePointCloud(pointcloud, options) {
     const attributes = this._getAttributesFromMesh(pointcloud);
 
     // Build a `DracoPointCloud` from the input data
-    const dracoPointCloud = this._createDracoPointCloud(attributes);
+    const dracoPointCloud = this._createDracoPointCloud(attributes, options);
 
     const dracoData = new this.draco.DracoInt8Array();
 
@@ -93,10 +96,11 @@ export default class DracoBuilder {
     }
   }
 
-  _encodeMesh(mesh) {
+  _encodeMesh(mesh, options) {
     const attributes = this._getAttributesFromMesh(mesh);
+
     // Build a `DracoMesh` from the input data
-    const dracoMesh = this._createDracoMesh(attributes);
+    const dracoMesh = this._createDracoMesh(attributes, options);
 
     const dracoData = new this.draco.DracoInt8Array();
 
@@ -143,7 +147,7 @@ export default class DracoBuilder {
    * @param {object} attributes
    * @returns {Mesh}
    */
-  _createDracoMesh(attributes) {
+  _createDracoMesh(attributes, options) {
     const dracoMesh = new this.draco.Mesh();
 
     try {
@@ -170,7 +174,7 @@ export default class DracoBuilder {
    * @param {object} attributes
    * @returns {PointCloud}
    */
-  _createDracoPointCloud(attributes) {
+  _createDracoPointCloud(attributes, options) {
     const dracoPointCloud = new this.draco.PointCloud();
 
     try {
@@ -194,103 +198,57 @@ export default class DracoBuilder {
   }
 
   /**
-   * @param {PointCloud} dracoMesh
+   * @param {PointCloud} mesh
    * @param {string} attributeName
    * @param {TypedArray} attribute
    * @param {number} vertexCount
    */
-  _addAttributeToMesh(dracoMesh, attributeName, attribute, vertexCount) {
+  _addAttributeToMesh(mesh, attributeName, attribute, vertexCount) {
     if (!ArrayBuffer.isView(attribute)) {
-      return;
+      return -1;
     }
 
-    const dracoAttributeType = this._getDracoAttributeType(attributeName);
+    const type = this._getDracoAttributeType(attributeName);
     // @ts-ignore TODO/fix types
     const size = attribute.length / vertexCount;
 
-    if (dracoAttributeType === 'indices') {
+    if (type === 'indices') {
       // @ts-ignore TODO/fix types
       const numFaces = attribute.length / 3;
       this.log(`Adding attribute ${attributeName}, size ${numFaces}`);
 
       // @ts-ignore assumes mesh is a Mesh, not a point cloud
-      this.dracoMeshBuilder.AddFacesToMesh(dracoMesh, numFaces, attribute);
-      return;
+      this.dracoMeshBuilder.AddFacesToMesh(mesh, numFaces, attribute);
+      return -1;
     }
 
     this.log(`Adding attribute ${attributeName}, size ${size}`);
 
+    const builder = this.dracoMeshBuilder;
+    const {buffer} = attribute;
+
     switch (attribute.constructor) {
       case Int8Array:
-        this.dracoMeshBuilder.AddInt8Attribute(
-          dracoMesh,
-          dracoAttributeType,
-          vertexCount,
-          size,
-          new Int8Array(attribute.buffer)
-        );
-        break;
+        return builder.AddInt8Attribute(mesh, type, vertexCount, size, new Int8Array(buffer));
 
       case Int16Array:
-        this.dracoMeshBuilder.AddInt16Attribute(
-          dracoMesh,
-          dracoAttributeType,
-          vertexCount,
-          size,
-          new Int16Array(attribute.buffer)
-        );
-        break;
+        return builder.AddInt16Attribute(mesh, type, vertexCount, size, new Int16Array(buffer));
 
       case Int32Array:
-        this.dracoMeshBuilder.AddInt32Attribute(
-          dracoMesh,
-          dracoAttributeType,
-          vertexCount,
-          size,
-          new Int32Array(attribute.buffer)
-        );
-        break;
-
+        return builder.AddInt32Attribute(mesh, type, vertexCount, size, new Int32Array(buffer));
       case Uint8Array:
       case Uint8ClampedArray:
-        this.dracoMeshBuilder.AddUInt8Attribute(
-          dracoMesh,
-          dracoAttributeType,
-          vertexCount,
-          size,
-          new Uint8Array(attribute.buffer)
-        );
-        break;
+        return builder.AddUInt8Attribute(mesh, type, vertexCount, size, new Uint8Array(buffer));
 
       case Uint16Array:
-        this.dracoMeshBuilder.AddUInt16Attribute(
-          dracoMesh,
-          dracoAttributeType,
-          vertexCount,
-          size,
-          new Uint16Array(attribute.buffer)
-        );
-        break;
+        return builder.AddUInt16Attribute(mesh, type, vertexCount, size, new Uint16Array(buffer));
 
       case Uint32Array:
-        this.dracoMeshBuilder.AddUInt32Attribute(
-          dracoMesh,
-          dracoAttributeType,
-          vertexCount,
-          size,
-          new Uint32Array(attribute.buffer)
-        );
-        break;
+        return builder.AddUInt32Attribute(mesh, type, vertexCount, size, new Uint32Array(buffer));
 
       case Float32Array:
       default:
-        this.dracoMeshBuilder.AddFloatAttribute(
-          dracoMesh,
-          dracoAttributeType,
-          vertexCount,
-          size,
-          new Float32Array(attribute.buffer)
-        );
+        return builder.AddFloatAttribute(mesh, type, vertexCount, size, new Float32Array(buffer));
     }
   }
 
@@ -335,7 +293,10 @@ export default class DracoBuilder {
 
 // HELPER FUNCTIONS
 
-// Copy encoded data to buffer
+/**
+ * Copy encoded data to buffer
+ * @param {*} dracoData
+ */
 function dracoInt8ArrayToArrayBuffer(dracoData) {
   const byteLength = dracoData.size();
   const outputBuffer = new ArrayBuffer(byteLength);

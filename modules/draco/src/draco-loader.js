@@ -22,7 +22,7 @@ export const DracoWorkerLoader = {
       libraryPath: `libs/`,
       workerUrl: `https://unpkg.com/@loaders.gl/draco@${VERSION}/dist/draco-loader.worker.js`,
       localWorkerUrl: `modules/draco/dist/draco-loader.worker.dev.js`,
-      extraAttributes: null
+      extraAttributes: {}
     }
   }
 };
