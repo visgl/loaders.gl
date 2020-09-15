@@ -4,6 +4,7 @@ import {Ellipsoid} from '@math.gl/geospatial';
 import {DracoWriter} from '@loaders.gl/draco';
 import {encode} from '@loaders.gl/core';
 import {concatenateArrayBuffers, concatenateTypedArrays} from '@loaders.gl/loader-utils';
+import draco3d from 'draco3d';
 
 const VALUES_PER_VERTEX = 3;
 const VALUES_PER_TEX_COORD = 2;
@@ -39,16 +40,23 @@ export default async function convertB3dmToI3sGeometry(tileContent, options = {}
     indices.set([index], index);
   }
 
+  const featureIndices = new Uint32Array(vertexCount);
+  featureIndices.fill(0);
+
   const attributes = {
     positions,
     normals,
     texCoords,
-    colors
+    colors,
+    'feature-index': featureIndices
   };
   const compressedGeometry = new Uint8Array(
     await encode({attributes, indices}, DracoWriter, {
       draco: {
         method: 'MESH_SEQUENTIAL_ENCODING'
+      },
+      modules: {
+        draco3d
       }
     })
   );

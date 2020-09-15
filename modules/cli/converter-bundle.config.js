@@ -2,15 +2,15 @@ const {resolve} = require('path');
 const PACKAGE_ROOT = resolve('.');
 
 module.exports = {
-  mode: 'development',
-  entry: './src/index.js',
+  mode: 'production',
+  entry: './scripts/converter.js',
   node: {
     fs: 'empty',
     process: false
   },
   output: {
     path: PACKAGE_ROOT,
-    filename: 'vendor/converter.min.js',
+    filename: 'dist/converter.min.js',
     library: 'converter',
     libraryTarget: 'commonjs'
   },

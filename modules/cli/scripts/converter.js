@@ -18,6 +18,9 @@ function printHelp() {
   console.log('--slpk [Generate slpk (Scene Layer Packages) I3S output file]');
   console.log('--tileset [tileset.json file]');
   console.log('--input-type [tileset input type: I3S or 3DTILES]');
+  console.log(
+    '--7zExe [location of 7z.exe archiver to create slpk on Windows, default: "C:\\Program Files\\7-Zip\\7z.exe"]'
+  );
   process.exit(0); // eslint-disable-line
 }
 
@@ -48,7 +51,7 @@ function validateOptions(options) {
 
 let options;
 
-function main() {
+async function main() {
   const [, , ...args] = process.argv;
 
   if (args.length === 0) {
@@ -58,16 +61,15 @@ function main() {
   options = parseOptions(args);
   validateOptions(options);
 
-  convert(options);
+  await convert(options);
 }
 
 main();
 
 // eslint-disable-next-line no-shadow
-function convert(options) {
+async function convert(options) {
   const inputType = options.inputType.toUpperCase();
-  console.log(`Start convert ${inputType}`); // eslint-disable-line
-  let tilesetJson = '';
+  console.log(`Start convert ${type}`); // eslint-disable-line
   switch (inputType) {
     case TILESET_TYPE.I3S:
       console.log('I3S - Not implement!'); // eslint-disable-line
@@ -75,12 +77,13 @@ function convert(options) {
     case TILESET_TYPE._3DTILES:
       // eslint-disable-next-line no-shadow
       const converter = new I3SConverter();
-      tilesetJson = converter.convert({
+      await converter.convert({
         inputUrl: options.tileset,
         outputPath: options.output,
         tilesetName: options.name,
         maxDepth: options.maxDepth,
-        slpk: options.slpk
+        slpk: options.slpk,
+        sevenZipExe: options.sevenZipExe
       });
       break;
     default:
@@ -88,7 +91,6 @@ function convert(options) {
   }
 
   console.log(`Stop convert ${inputType}`); // eslint-disable-line
-  console.log(tilesetJson); // eslint-disable-line
 }
 
 // OPTIONS
@@ -98,7 +100,8 @@ function parseOptions(args) {
     inputType: null,
     tileset: null,
     name: null,
-    output: 'data'
+    output: 'data',
+    sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe'
   };
 
   const count = args.length;
@@ -133,6 +136,9 @@ function parseOptions(args) {
           break;
         case '--slpk':
           opts.slpk = true;
+          break;
+        case '--7zExe':
+          opts.sevenZipExe = _getValue(index);
           break;
         case '--help':
           printHelp();

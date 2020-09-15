@@ -1,4 +1,4 @@
-import {load} from '@loaders.gl/core';
+import {load, setLoaderOptions} from '@loaders.gl/core';
 import {Tileset3D} from '@loaders.gl/tiles';
 import {CesiumIonLoader} from '@loaders.gl/3d-tiles';
 import {join} from 'path';
@@ -6,6 +6,7 @@ import {v4 as uuidv4} from 'uuid';
 import process from 'process';
 import transform from 'json-map-transform';
 import md5 from 'md5';
+import draco3d from 'draco3d';
 
 import NodePages from './helpers/node-pages';
 import {writeFile, removeDir, writeFileForSlpk} from '../lib/utils/file-utils';
@@ -27,6 +28,14 @@ const ION_TOKEN =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ'; // eslint-disable-line
 const HARDCODED_NODES_PER_PAGE = 64;
 
+// Bind draco3d to avoid dynamic loading
+// Converter bundle has incorrect links when using dynamic loading
+setLoaderOptions({
+  modules: {
+    draco3d
+  }
+});
+
 export default class I3SConverter {
   constructor() {
     this.nodePages = new NodePages(writeFile, HARDCODED_NODES_PER_PAGE);
@@ -38,8 +47,8 @@ export default class I3SConverter {
   }
 
   // Convert a 3d tileset
-  async convert({inputUrl, outputPath, tilesetName, maxDepth, slpk}) {
-    this.options = {maxDepth, slpk};
+  async convert({inputUrl, outputPath, tilesetName, maxDepth, slpk, sevenZipExe}) {
+    this.options = {maxDepth, slpk, sevenZipExe};
 
     if (slpk) {
       this.nodePages.useWriteFunction(writeFileForSlpk);
@@ -180,7 +189,12 @@ export default class I3SConverter {
     await this.nodePages.save(this.layers0Path, this.fileMap, isCreateSlpk);
     if (isCreateSlpk) {
       const slpkTilesetPath = join(tilesetPath, 'SceneServer', 'layers', '0');
-      await compressWithChildProcess(slpkTilesetPath, `${tilesetPath}.slpk`);
+      await compressWithChildProcess(
+        slpkTilesetPath,
+        `${tilesetPath}.slpk`,
+        0,
+        this.options.sevenZipExe
+      );
       // All converted files are contained in slpk now they can be deleted
       try {
         await removeDir(tilesetPath);

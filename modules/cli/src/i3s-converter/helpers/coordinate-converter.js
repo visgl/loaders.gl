@@ -1,5 +1,6 @@
 import {Matrix3, Quaternion, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
+import {OrientedBoundingBox} from '@math.gl/culling';
 
 export function convertCommonToI3SCoordinate(tile) {
   let radius;
@@ -11,7 +12,7 @@ export function convertCommonToI3SCoordinate(tile) {
     boundingVolume.center,
     new Vector3()
   );
-  if (boundingVolume.constructor.name === 'OrientedBoundingBox') {
+  if (boundingVolume instanceof OrientedBoundingBox) {
     const halfAxes = boundingVolume.halfAxes;
     halfSize = [
       new Vector3(halfAxes[0], halfAxes[1], halfAxes[2]).len(),

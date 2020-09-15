@@ -42,7 +42,8 @@ test('cli - Converters#converts 3d-tiles tileset to i3s tileset', async t => {
       inputUrl: TILESET_URL,
       outputPath: 'data',
       tilesetName: 'BatchedColors',
-      slpk: true
+      slpk: true,
+      sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe'
     });
     t.ok(tilesetJson);
   }
@@ -56,7 +57,8 @@ test('cli - Converters#root node should not contain geometry and textures', asyn
     await converter.convert({
       inputUrl: TILESET_URL,
       outputPath: 'data',
-      tilesetName: 'BatchedColors'
+      tilesetName: 'BatchedColors',
+      sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe'
     });
 
     // Read the converted tileset json
@@ -78,7 +80,8 @@ test('cli - Converters#should create SceneServer path', async t => {
     await converter.convert({
       inputUrl: TILESET_URL,
       outputPath: 'data',
-      tilesetName: 'BatchedColors'
+      tilesetName: 'BatchedColors',
+      sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe'
     });
     const sceneServerJson = await fs.readFile('data/BatchedColors/SceneServer/index.json', 'utf8');
     const sceneServer = JSON.parse(sceneServerJson);
@@ -95,7 +98,8 @@ test('cli - Converters#should create sharedResources json file', async t => {
     await converter.convert({
       inputUrl: TILESET_WITH_TEXTURES,
       outputPath: 'data',
-      tilesetName: 'BatchedTextured'
+      tilesetName: 'BatchedTextured',
+      sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe'
     });
     const sharedResourcesJson = await fs.readFile(
       'data/BatchedTextured/SceneServer/layers/0/nodes/1/shared/index.json',
@@ -115,7 +119,8 @@ test('cli - Converters#should create only unique materials', async t => {
     await converter.convert({
       inputUrl: TILESET_WITH_TEXTURES,
       outputPath: 'data',
-      tilesetName: 'BatchedTextured'
+      tilesetName: 'BatchedTextured',
+      sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe'
     });
     const layerJson = await fs.readFile(
       'data/BatchedTextured/SceneServer/layers/0/index.json',

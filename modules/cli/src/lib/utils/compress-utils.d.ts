@@ -29,5 +29,6 @@ export function compressFilesWithZip(
 export function compressWithChildProcess(
   inputFolder: string,
   outputFile: string,
-  level: number
+  level: number,
+  sevenZipExe: string
 ): Promise<void>;
