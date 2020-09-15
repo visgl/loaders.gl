@@ -98,7 +98,7 @@ test('cli - Converters#should create sharedResources json file', async t => {
       tilesetName: 'BatchedTextured'
     });
     const sharedResourcesJson = await fs.readFile(
-      'data/BatchedTextured/SceneServer/layers/0/nodes/1/shared/0/index.json',
+      'data/BatchedTextured/SceneServer/layers/0/nodes/1/shared/index.json',
       'utf8'
     );
     const sharedResources = JSON.parse(sharedResourcesJson);

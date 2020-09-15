@@ -308,7 +308,7 @@ export default class I3SConverter {
       return;
     }
     node.geometryData = [{href: './geometries/0'}];
-    node.sharedResource = [{href: './shared/0'}];
+    node.sharedResource = [{href: './shared'}];
     const childPath = join(this.layers0Path, 'nodes', node.path);
     const slpkChildPath = join('nodes', node.path);
     const {
@@ -354,7 +354,7 @@ export default class I3SConverter {
         'sharedResource.json'
       );
     } else {
-      const sharedPath = join(childPath, 'shared/0/');
+      const sharedPath = join(childPath, 'shared/');
       await writeFile(sharedPath, sharedDataStr);
     }
     if (texture) {

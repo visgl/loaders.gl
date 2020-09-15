@@ -15,16 +15,26 @@ const MATERIAL_DEFINITION_INFO_PARAMS = {
   },
   ambient: {
     path: 'ambient',
-    default: [0, 0, 0, 0]
+    default: [1, 1, 1, 1]
   },
   diffuse: {
-    path: 'diffuse'
+    path: 'diffuse',
+    default: [1, 1, 1, 1]
   },
   specular: {
-    path: 'specular'
+    path: 'specular',
+    default: [0, 0, 0, 0]
   },
   useVertexColorAlpha: {
     path: 'useVertexColorAlpha',
+    default: false
+  },
+  vertexRegions: {
+    path: 'vertexRegions',
+    default: false
+  },
+  vertexColors: {
+    path: 'vertexColors',
     default: true
   }
 };
@@ -79,7 +89,7 @@ const TEXTURE_DEFINITION_INFO = {
   },
   channels: {
     path: 'channels',
-    default: ['r', 'g', 'b']
+    default: 'rgb'
   },
   images: {
     path: 'images',

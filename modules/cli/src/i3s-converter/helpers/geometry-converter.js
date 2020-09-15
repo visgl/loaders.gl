@@ -541,16 +541,22 @@ function getSharedResources(tileContent) {
  * @returns {Object} - Couple {materialDefinitionInfo, textureDefinitionInfo} extracted from gltf material data
  */
 function convertGLTFMaterialToI3sSharedResources(gltfMaterial) {
-  const texture = gltfMaterial.pbrMetallicRoughness.baseColorTexture;
+  const texture =
+    gltfMaterial.pbrMetallicRoughness.baseColorTexture || gltfMaterial.emissiveTexture;
   let textureDefinitionInfo = null;
   if (texture) {
     textureDefinitionInfo = extractSharedResourcesTextureInfo(texture.texture);
   }
+  const {baseColorFactor, metallicFactor} = gltfMaterial.pbrMetallicRoughness;
+  let colorFactor = baseColorFactor;
+  // If alpha channel is 0 try to get emissive factor from gltf material.
+  if ((!baseColorFactor || baseColorFactor[3] === 0) && gltfMaterial.emissiveFactor) {
+    colorFactor = gltfMaterial.emissiveFactor;
+    colorFactor[3] = colorFactor[3] || 1;
+  }
+
   return {
-    materialDefinitionInfo: extractSharedResourcesMaterialInfo(
-      gltfMaterial.pbrMetallicRoughness.baseColorFactor,
-      gltfMaterial.pbrMetallicRoughness.metallicFactor
-    ),
+    materialDefinitionInfo: extractSharedResourcesMaterialInfo(colorFactor, metallicFactor),
     textureDefinitionInfo
   };
 }
@@ -570,7 +576,7 @@ function convertGLTFMaterialToI3sSharedResources(gltfMaterial) {
  * @param {number} metallicFactor - "metallicFactor" attribute of gltf material object
  * @returns {Object}
  */
-function extractSharedResourcesMaterialInfo(baseColorFactor, metallicFactor) {
+function extractSharedResourcesMaterialInfo(baseColorFactor, metallicFactor = 0) {
   const matDielectricColorComponent = 0.04 / 255; // Color from rgb (255) to 0..1 resolution
   // All color resolutions are 0..1
   const black = new Vector4(0, 0, 0, 1);
