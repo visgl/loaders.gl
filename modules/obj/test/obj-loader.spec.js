@@ -33,6 +33,27 @@ test('OBJLoader#parseText', async t => {
   t.end();
 });
 
+test('OBJLoader#parse(SCHEMA)', async t => {
+  const data = await load(OBJ_NORMALS_URL, OBJLoader);
+  validateMeshCategoryData(t, data);
+
+  t.equal(data.schema.fields.length, 3, 'schema field count is correct');
+  t.equal(data.schema.metadata.get('mode'), '4', 'schema metadata is correct');
+  t.ok(data.schema.metadata.get('boundingBox'), 'schema metadata is correct');
+
+  const positionField = data.schema.fields.find(field => field.name === 'POSITION');
+  t.equal(positionField.type.listSize, 3, 'schema size correct');
+  t.equal(positionField.type.valueType.precision, 32, 'schema type correct');
+
+  const colorField = data.schema.fields.find(field => field.name === 'TEXCOORD_0');
+  t.equal(colorField.type.listSize, 2, 'schema size correct');
+
+  t.equal(data.mode, 4, 'mode is correct');
+  t.notOk(data.indices, 'INDICES attribute was not found');
+
+  t.end();
+});
+
 test('OBJLoader#parseText - object with normals', async t => {
   const data = await load(OBJ_NORMALS_URL, OBJLoader);
   validateMeshCategoryData(t, data);

@@ -12,7 +12,7 @@ export function sliceArrayBuffer(arrayBuffer: ArrayBuffer, byteOffset: number, b
 /**
  * compare two binary arrays for equality
  * @param {ArrayBuffer} a
- * @param {ArrayBuffer} b
+ * @param {ArrayBuffer} b 
  * @param {number} byteLength
  */
 export function compareArrayBuffers(arrayBuffer1: ArrayBuffer, arrayBuffer2: ArrayBuffer, byteLength?: number);

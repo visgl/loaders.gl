@@ -27,6 +27,7 @@ yarn-error.log
 .project
 .DS_Store
 *.iml
+*.swp
 
 # local data
 data/**

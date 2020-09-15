@@ -37,10 +37,14 @@ export type LoaderObject = {
   tests?: (((ArrayBuffer) => boolean) | ArrayBuffer | string)[];
 
   parse: (arrayBuffer, options, context?) => Promise<any>;
-  parseSync?: (arrayBuffer, options) => any;
+  parseSync?: (arrayBuffer, options, context?) => any;
   parseText?: (string, options) => Promise<any>;
   parseTextSync?: (string, options) => any;
-  parseInBatches?: (iterator: AsyncIterator<ArrayBuffer> | Iterator<ArrayBuffer>, options: object) => Promise<AsyncIterator<any>> | AsyncIterator<any>;
+  parseInBatches?: (
+    iterator: AsyncIterator<ArrayBuffer> | Iterator<ArrayBuffer>, 
+    options: object, 
+    context?: object
+  ) => Promise<AsyncIterator<any>> | AsyncIterator<any>;
 
   // TODO - deprecated
   supported?: boolean;

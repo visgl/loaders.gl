@@ -23,7 +23,8 @@ const data = await load(url, LASLoader, options);
 
 ## Options
 
-| Option               | Type     | Default | Description                                                               |
-| -------------------- | -------- | ------- | ------------------------------------------------------------------------- |
-| `options.las.skip`   | Number   | `1`     | Read one from every _n_ points.                                           |
-| `options.onProgress` | Function | -       | Callback when a new chunk of data is read. Only works on the main thread. |
+| Option                   | Type             | Default | Description                                                                                                    |
+| ------------------------ | ---------------- | ------- | -------------------------------------------------------------------------------------------------------------- |
+| `options.las.skip`       | Number           | `1`     | Read one from every _n_ points.                                                                                |
+| `options.las.colorDepth` | Number or string | `8`     | Whether colors encoded using 8 or 16 bits? Can be set to `'auto'`. Note: LAS specification recommends 16 bits. |
+| `options.onProgress`     | Function         | -       | Callback when a new chunk of data is read. Only works on the main thread.                                      |

@@ -1,5 +1,6 @@
 import {getMeshBoundingBox} from '@loaders.gl/loader-utils';
 import parseOBJ from './parse-obj';
+import {makeSchemaFromAttributes} from './schema-attribute-utils';
 
 export default function loadOBJ(text, options) {
   const {meshes} = parseOBJ(text);
@@ -8,16 +9,25 @@ export default function loadOBJ(text, options) {
   // TODO - render objects separately
   const attributes = mergeAttributes(meshes, vertexCount);
 
+  const header = {
+    vertexCount,
+    boundingBox: getMeshBoundingBox(attributes)
+  };
+
+  const schema = makeSchemaFromAttributes(attributes, {
+    mode: 4,
+    boundingBox: header.boundingBox
+  });
+
   return {
     // Data return by this loader implementation
     loaderData: {
       header: {}
     },
+
     // Normalised data
-    header: {
-      vertexCount,
-      boundingBox: getMeshBoundingBox(attributes)
-    },
+    schema,
+    header,
     mode: 4, // TRIANGLES
 
     attributes

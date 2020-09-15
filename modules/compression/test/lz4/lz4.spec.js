@@ -3,10 +3,11 @@ import {LZ4DeflateTransform, LZ4InflateTransform} from '@loaders.gl/compression'
 import {generateRandomArrayBuffer, compareArrayBuffers} from '../utils/test-utils';
 
 const SIZE = 100 * 1000;
-const binaryData = generateRandomArrayBuffer({size: SIZE});
-const repeatedData = generateRandomArrayBuffer({size: SIZE / 10, repetitions: 10});
 
 test('lz4#defaults', t => {
+  const binaryData = generateRandomArrayBuffer({size: SIZE});
+  const repeatedData = generateRandomArrayBuffer({size: SIZE / 10, repetitions: 10});
+
   let deflatedData = LZ4DeflateTransform.deflateSync(binaryData);
   let inflatedData = LZ4InflateTransform.inflateSync(deflatedData);
   t.ok(compareArrayBuffers(binaryData, inflatedData), 'deflate/inflate default options');

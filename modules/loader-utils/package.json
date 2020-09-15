@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/loader-utils",
-  "version": "2.3.0-alpha.11",
+  "version": "2.3.0-alpha.12",
   "description": "Framework-independent loaders for 3D graphics formats",
   "license": "MIT",
   "publishConfig": {

@@ -24,6 +24,19 @@ test('PCDLoader#parse(text)', async t => {
   const data = await parse(fetchFile(PCD_ASCII_URL), PCDLoader, {worker: false});
   validateMeshCategoryData(t, data);
 
+  t.equal(data.schema.fields.length, 2, 'schema field count is correct');
+  t.equal(data.schema.metadata.get('mode'), '0', 'schema metadata is correct');
+  t.ok(data.schema.metadata.get('boundingBox'), 'schema metadata is correct');
+
+  const positionField = data.schema.fields.find(field => field.name === 'POSITION');
+  t.equal(positionField.type.listSize, 3, 'schema size correct');
+  t.equal(positionField.type.valueType.precision, 32, 'schema type correct');
+
+  const colorField = data.schema.fields.find(field => field.name === 'COLOR_0');
+  t.equal(colorField.type.listSize, 3, 'schema size correct');
+  t.equal(colorField.type.valueType.bitWidth, 8, 'schema type correct');
+  t.equal(colorField.type.valueType.isSigned, false, 'schema type correct');
+
   t.equal(data.mode, 0, 'mode is POINTS (0)');
   t.notOk(data.indices, 'INDICES attribute was not found');
 

@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/cli",
-  "version": "2.3.0-alpha.11",
+  "version": "2.3.0-alpha.12",
   "description": "Converter",
   "license": "MIT",
   "publishConfig": {
@@ -37,13 +37,13 @@
     "build-converter-bundle": "webpack --config ./converter-bundle.config.js"
   },
   "dependencies": {
-    "@loaders.gl/3d-tiles": "2.3.0-alpha.11",
-    "@loaders.gl/core": "2.3.0-alpha.11",
-    "@loaders.gl/draco": "2.3.0-alpha.11",
-    "@loaders.gl/i3s": "2.3.0-alpha.11",
-    "@loaders.gl/loader-utils": "2.3.0-alpha.11",
-    "@loaders.gl/polyfills": "2.3.0-alpha.11",
-    "@loaders.gl/tiles": "2.3.0-alpha.11",
+    "@loaders.gl/3d-tiles": "2.3.0-alpha.12",
+    "@loaders.gl/core": "2.3.0-alpha.12",
+    "@loaders.gl/draco": "2.3.0-alpha.12",
+    "@loaders.gl/i3s": "2.3.0-alpha.12",
+    "@loaders.gl/polyfills": "2.3.0-alpha.12",
+    "@loaders.gl/tiles": "2.3.0-alpha.12",
+    "@loaders.gl/loader-utils": "2.3.0-alpha.12",
     "@math.gl/core": "^3.2.1",
     "@math.gl/geospatial": "^3.2.1",
     "@math.gl/culling": "^3.2.1",

@@ -10,37 +10,44 @@
 
 /* global TextDecoder */
 import {getMeshBoundingBox} from '@loaders.gl/loader-utils';
+import {Field, Float32, Uint8, FixedSizeList, Schema} from '@loaders.gl/tables';
 const LITTLE_ENDIAN = true;
 
 export default function parsePCD(data, url, options) {
   // parse header (always ascii format)
   const textData = new TextDecoder().decode(data);
-  const header = parsePCDHeader(textData);
+  const pcdHeader = parsePCDHeader(textData);
 
   let attributes;
 
   // parse data
-  switch (header.data) {
+  switch (pcdHeader.data) {
     case 'ascii':
-      attributes = parsePCDASCII(header, textData);
+      attributes = parsePCDASCII(pcdHeader, textData);
       break;
 
     case 'binary':
-      attributes = parsePCDBinary(header, data);
+      attributes = parsePCDBinary(pcdHeader, data);
       break;
 
     case 'binary_compressed':
     default:
-      throw new Error(`PCD: ${header.data} files are not supported`);
+      throw new Error(`PCD: ${pcdHeader.data} files are not supported`);
   }
 
   attributes = getNormalizedAttributes(attributes);
+  const header = getNormalizedHeader(pcdHeader, attributes);
+
+  const metadata = new Map([['mode', '0'], ['boundingBox', JSON.stringify(header.boundingBox)]]);
+
+  const schema = getSchemaFromPCDHeader(pcdHeader, metadata);
 
   return {
     loaderData: {
-      header
+      header: pcdHeader
     },
-    header: getNormalizedHeader(header, attributes),
+    header,
+    schema,
     mode: 0, // POINTS
     indices: null,
     attributes
@@ -84,10 +91,10 @@ function getNormalizedAttributes(attributes) {
 
 /* eslint-disable complexity, max-statements */
 function parsePCDHeader(data) {
-  const PCDheader = {};
   const result1 = data.search(/[\r\n]DATA\s(\S*)\s/i);
   const result2 = /[\r\n]DATA\s(\S*)\s/i.exec(data.substr(result1 - 1));
 
+  const PCDheader = {};
   PCDheader.data = result2 && result2[1];
   PCDheader.headerLen = (result2 && result2[0].length) + result1;
   PCDheader.str = data.substr(0, PCDheader.headerLen);
@@ -244,4 +251,26 @@ function parsePCDBinary(PCDheader, data) {
   }
 
   return {position, normal, color};
+}
+
+function getSchemaFromPCDHeader(PCDheader, metadata) {
+  const offset = PCDheader.offset;
+
+  const fields = [];
+
+  if (offset.x !== undefined) {
+    fields.push(
+      new Field('POSITION', new FixedSizeList(3, new Field('xyz', new Float32())), false)
+    );
+  }
+
+  if (offset.normal_x !== undefined) {
+    fields.push(new Field('NORMAL', new FixedSizeList(3, new Field('xyz', new Float32())), false));
+  }
+
+  if (offset.rgb !== undefined) {
+    fields.push(new Field('COLOR_0', new FixedSizeList(3, new Field('rgb', new Uint8())), false));
+  }
+
+  return new Schema(fields, metadata);
 }

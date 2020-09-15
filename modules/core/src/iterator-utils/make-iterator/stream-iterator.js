@@ -1,11 +1,11 @@
-import {isBrowser, nodeVersion} from '@loaders.gl/loader-utils';
+import {isBrowser, nodeVersion, toArrayBuffer} from '@loaders.gl/loader-utils';
 
 export function makeStreamIterator(stream) {
   // Hacky test for node version to ensure we don't call bad polyfills
   if (isBrowser || nodeVersion >= 10) {
     // NODE 10+: stream is an asyncIterator
     if (typeof stream[Symbol.asyncIterator] === 'function') {
-      return stream;
+      return makeToArrayBufferIterator(stream);
     }
 
     // WhatWG: stream is supposed to have a `getIterator` method
@@ -15,6 +15,13 @@ export function makeStreamIterator(stream) {
   }
 
   return isBrowser ? makeBrowserStreamIterator(stream) : makeNodeStreamIterator(stream);
+}
+
+/** Coerce each chunk to ArrayBuffer */
+async function* makeToArrayBufferIterator(asyncIterator) {
+  for await (const chunk of asyncIterator) {
+    yield toArrayBuffer(chunk);
+  }
 }
 
 // BROWSER IMPLEMENTATION
@@ -28,13 +35,14 @@ async function* makeBrowserStreamIterator(stream) {
     // eslint-disable-next-line no-constant-condition
     while (true) {
       // Read from the stream
+      // value is a Uint8Array
       const {done, value} = await reader.read();
       // Exit if we're done
       if (done) {
         return;
       }
       // Else yield the chunk
-      yield value;
+      yield toArrayBuffer(value);
     }
   } catch (error) {
     // TODO - examples makes it look like this should always be called,
@@ -54,7 +62,7 @@ async function* makeNodeStreamIterator(stream) {
   while (true) {
     const data = stream.read();
     if (data !== null) {
-      yield data;
+      yield toArrayBuffer(data);
       // eslint-disable-next-line no-continue
       continue;
     }
