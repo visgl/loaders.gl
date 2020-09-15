@@ -43,6 +43,7 @@ test('cli - Converters#converts 3d-tiles tileset to i3s tileset', async t => {
       outputPath: 'data',
       tilesetName: 'BatchedColors',
       slpk: true,
+      inputType: '3dtiles',
       sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe'
     });
     t.ok(tilesetJson);
@@ -58,6 +59,7 @@ test('cli - Converters#root node should not contain geometry and textures', asyn
       inputUrl: TILESET_URL,
       outputPath: 'data',
       tilesetName: 'BatchedColors',
+      inputType: '3dtiles',
       sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe'
     });
 
@@ -81,6 +83,7 @@ test('cli - Converters#should create SceneServer path', async t => {
       inputUrl: TILESET_URL,
       outputPath: 'data',
       tilesetName: 'BatchedColors',
+      inputType: '3dtiles',
       sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe'
     });
     const sceneServerJson = await fs.readFile('data/BatchedColors/SceneServer/index.json', 'utf8');
@@ -99,6 +102,7 @@ test('cli - Converters#should create sharedResources json file', async t => {
       inputUrl: TILESET_WITH_TEXTURES,
       outputPath: 'data',
       tilesetName: 'BatchedTextured',
+      inputType: '3dtiles',
       sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe'
     });
     const sharedResourcesJson = await fs.readFile(
@@ -120,6 +124,7 @@ test('cli - Converters#should create only unique materials', async t => {
       inputUrl: TILESET_WITH_TEXTURES,
       outputPath: 'data',
       tilesetName: 'BatchedTextured',
+      inputType: '3dtiles',
       sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe'
     });
     const layerJson = await fs.readFile(

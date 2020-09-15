@@ -6,6 +6,7 @@ import {v4 as uuidv4} from 'uuid';
 import process from 'process';
 import transform from 'json-map-transform';
 import md5 from 'md5';
+import {promises as fs} from 'fs';
 import draco3d from 'draco3d';
 
 import NodePages from './helpers/node-pages';
@@ -27,6 +28,7 @@ const ION_TOKEN =
   process.env.IonToken || // eslint-disable-line
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ'; // eslint-disable-line
 const HARDCODED_NODES_PER_PAGE = 64;
+const _3D_TILES = '3DTILES';
 
 // Bind draco3d to avoid dynamic loading
 // Converter bundle has incorrect links when using dynamic loading
@@ -44,10 +46,14 @@ export default class I3SConverter {
     this.layers0Path = '';
     this.materialMap = new Map();
     this.materialDefinitions = [];
+    this.vertexCounter = 0;
   }
 
   // Convert a 3d tileset
   async convert({inputUrl, outputPath, tilesetName, maxDepth, slpk, sevenZipExe}) {
+    console.log(`Start convert ${_3D_TILES}`); // eslint-disable-line
+    console.log(`------------------------------------------------`); // eslint-disable-line
+    this.conversionStartTime = process.hrtime();
     this.options = {maxDepth, slpk, sevenZipExe};
 
     if (slpk) {
@@ -69,12 +75,11 @@ export default class I3SConverter {
     this.sourceTileset = new Tileset3D(sourceTilesetJson, options);
 
     await this._createAndSaveTileset(outputPath, tilesetName);
-
+    await this._finishConversion({slpk, outputPath, tilesetName});
     return sourceTilesetJson;
   }
 
   // PRIVATE
-
   /* eslint-disable max-statements */
   async _createAndSaveTileset(outputPath, tilesetName) {
     const tilesetPath = join(`${outputPath}`, `${tilesetName}`);
@@ -392,6 +397,7 @@ export default class I3SConverter {
       this.nodePages.updateMaterialByNodeId(node.id, this._findOrCreateMaterial(meshMaterial));
     }
     if (vertexCount) {
+      this.vertexCounter += vertexCount;
       this.nodePages.updateVertexCountByNodeId(node.id, vertexCount);
     }
   }
@@ -409,5 +415,72 @@ export default class I3SConverter {
     const newMaterialId = this.materialDefinitions.push(material) - 1;
     this.materialMap.set(hash, newMaterialId);
     return newMaterialId;
+  }
+
+  async _finishConversion(params) {
+    const filesSize = await this._calculateFilesSize(params);
+    const diff = process.hrtime(this.conversionStartTime);
+    const conversionTime = this._timeConverter(diff);
+    console.log(`------------------------------------------------`); // eslint-disable-line
+    console.log(`Stop conversion of ${_3D_TILES}`); // eslint-disable-line
+    console.log(`Total conversion time: ${conversionTime}`); // eslint-disable-line
+    console.log(`Vertex count: `, this.vertexCounter); // eslint-disable-line
+    console.log(`File(s) size: `, filesSize, ' bytes'); // eslint-disable-line
+    console.log(`------------------------------------------------`); // eslint-disable-line
+  }
+
+  _timeConverter(time) {
+    const timeInSecons = time[0];
+    const hours = Math.floor(timeInSecons / 60 / 60);
+    const minutes = Math.floor(timeInSecons / 60) % 60;
+    const seconds = Math.floor(timeInSecons - minutes * 60);
+    const milliseconds = time[1];
+    let result = '';
+
+    if (hours) {
+      result += `${hours}h `;
+    }
+    if (minutes) {
+      result += `${minutes}m `;
+    }
+
+    if (seconds) {
+      result += `${seconds}s`;
+    }
+
+    if (!result) {
+      result += `${milliseconds}ms`;
+    }
+
+    return result;
+  }
+
+  async _calculateFilesSize(params) {
+    const {slpk, outputPath, tilesetName} = params;
+
+    if (slpk) {
+      const slpkPath = join(process.cwd(), outputPath, `${tilesetName}.slpk`);
+      const stat = await fs.stat(slpkPath);
+      return stat.size;
+    }
+    const directoryPath = join(process.cwd(), outputPath, tilesetName);
+    const totalSize = await this._getTotalFilesSize(directoryPath);
+    return totalSize;
+  }
+
+  async _getTotalFilesSize(dirPath) {
+    let totalFileSize = 0;
+
+    const files = await fs.readdir(dirPath);
+
+    for (const file of files) {
+      const fileStat = await fs.stat(join(dirPath, file));
+      if (fileStat.isDirectory()) {
+        totalFileSize += await this._getTotalFilesSize(join(dirPath, file));
+      } else {
+        totalFileSize += fileStat.size;
+      }
+    }
+    return totalFileSize;
   }
 }

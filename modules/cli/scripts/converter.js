@@ -69,7 +69,6 @@ main();
 // eslint-disable-next-line no-shadow
 async function convert(options) {
   const inputType = options.inputType.toUpperCase();
-  console.log(`Start convert ${type}`); // eslint-disable-line
   switch (inputType) {
     case TILESET_TYPE.I3S:
       console.log('I3S - Not implement!'); // eslint-disable-line
@@ -89,10 +88,7 @@ async function convert(options) {
     default:
       printHelp();
   }
-
-  console.log(`Stop convert ${inputType}`); // eslint-disable-line
 }
-
 // OPTIONS
 
 function parseOptions(args) {
