@@ -2,6 +2,58 @@
 
 ## v2.3 Prereleases
 
+#### v2.3.0-alpha.13
+
+- draco: fixes draco3d memory leak (#944)
+- Fix docs link (#945)
+- draco: Custom attributes (#942)
+- gltf: parseGLBV1 function fixed (#943)
+- draco: Add draco3d types (#941)
+- Add support for extraAttributes in DracoLoader (#940)
+- Streaming shapefile fixes (#937)
+- las: add a safeguard for two bytes color detection (#935)
+- Shapefile: types (#931)
+
+#### v2.3.0-alpha.12
+
+- Reproject shapefile (#932)
+- obj: Add schema (#933)
+- pcd: Add schema (#930)
+- las: parse two-bytes colors (#927)
+- Shapefile: parse in batches (#925)
+- Coerce web stream from Uint8Array to ArrayBuffer (#929)
+- table: Add arrow-compatible types (#924)
+- Coerce each chunk of a Node stream to an ArrayBuffer (#928)
+- shapefile: cleanup (#923)
+- shapefile: rename files (#922)
+- compression: Support streaming (#871)
+- Crypto doc correction (#920)
+- Binary to GeoJson fix for individual geometries (#919)
+- gltf: partial support for GLBv1 and glTFv1 (#912)
+- shapefile: doc improvements (#917)
+- Shapefile: shp/dbf state parser (#913)
+- Include tsc in pre commit hook (#914)
+
+#### v2.3.0-alpha.11
+
+- Reprojection wrappers for binary and geojson (#906)
+- basis: Add CompressedTextureWriter (#909)
+- polyfills: Blob/File/FileReader polyfills (#907)
+- loader-utils: concatenateChunksAsync perf increase (#905)
+- shapefile: refactor DBF parser (#903)
+- shapefile: streaming (#901)
+- website: Bump deck.gl@8.2.5 (#900)
+- shapefile: detect magic number (#899)
+
+#### v2.3.0-alpha.10
+
+- Use namespace for node imports (#896)
+- typescript: gltf (#897)
+- typescript: enable math module (#895)
+- 3d-tiles: typescript (#894)
+- typescript updates (#893)
+- [Bug] Fix incorrect text/json mimeType (#892)
+
 #### v2.3.0-alpha.9
 
     CI: fix cache (#891)
