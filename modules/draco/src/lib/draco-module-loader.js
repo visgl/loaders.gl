@@ -12,13 +12,15 @@ export async function loadDracoDecoderModule(options) {
 
   // Check if a bundled draco3d library has been supplied by application
   if (modules.draco3d) {
-    return {
-      draco: modules.draco3d.createDecoderModule()
-    };
+    loadDecoderPromise =
+      loadDecoderPromise ||
+      Promise.resolve({
+        draco: modules.draco3d.createDecoderModule()
+      });
+  } else {
+    // If not, dynamically load the WASM script from our CDN
+    loadDecoderPromise = loadDecoderPromise || loadDracoDecoder(options);
   }
-
-  // If not, dynamically load the WASM script from our CDN
-  loadDecoderPromise = loadDecoderPromise || loadDracoDecoder(options);
   return await loadDecoderPromise;
 }
 
@@ -27,13 +29,15 @@ export async function loadDracoEncoderModule(options) {
 
   // Check if a bundled draco3d library has been supplied by application
   if (modules.draco3d) {
-    return {
-      draco: modules.draco3d.createEncoderModule()
-    };
+    loadEncoderPromise =
+      loadEncoderPromise ||
+      Promise.resolve({
+        draco: modules.draco3d.createEncoderModule()
+      });
+  } else {
+    // If not, dynamically load the WASM script from our CDN
+    loadEncoderPromise = loadEncoderPromise || loadDracoEncoder(options);
   }
-
-  // If not, dynamically load the WASM script from our CDN
-  loadEncoderPromise = loadEncoderPromise || loadDracoEncoder(options);
   return await loadEncoderPromise;
 }
 
