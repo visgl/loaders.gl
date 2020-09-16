@@ -4,6 +4,7 @@ import {load, loadInBatches, isIterator, isAsyncIterable} from '@loaders.gl/core
 import {JSONLoader} from '@loaders.gl/json';
 
 const GEOJSON_PATH = `@loaders.gl/json/test/data/geojson-big.json`;
+const GEOJSON_KEPLER_DATASET_PATH = `@loaders.gl/json/test/data/kepler-dataset-sf-incidents.json`;
 
 test('JSONLoader#load(geojson.json)', async t => {
   const data = await load(GEOJSON_PATH, JSONLoader, {json: {table: true}});
@@ -168,6 +169,24 @@ test('JSONLoader#loadInBatches(geojson.json, {json: {_rootObjectBatches: true}})
     json: {table: true, _rootObjectBatches: false}
   });
   await testContainerBatches(t, iterator, 0);
+
+  t.end();
+});
+
+test('JSONLoader#loadInBatches(streaming array of arrays)', async t => {
+  const iterator = await loadInBatches(GEOJSON_KEPLER_DATASET_PATH, JSONLoader, {
+    json: {
+      table: true,
+      jsonpaths: ['$.data.allData']
+    }
+  });
+
+  let rowCount = 0;
+  for await (const batch of iterator) {
+    rowCount += batch.data.length;
+    t.equal(batch.data[0].length, 10);
+  }
+  t.equal(rowCount, 247);
 
   t.end();
 });
