@@ -126,18 +126,12 @@ async function testContainerBatches(t, iterator, expectedCount) {
     switch (batch.batchType) {
       case 'partial-result':
       case 'root-object-batch-partial':
-        t.ok(
-          batch.container.type || batch.container.version,
-          'batch.container should be set on partial-result'
-        );
+        t.ok(batch.container.type, 'batch.container should be set on partial-result');
         opencontainerBatchCount++;
         break;
       case 'final-result':
       case 'root-object-batch-complete':
-        t.ok(
-          batch.container.type || batch.container.version,
-          'batch.container should be set on final-result'
-        );
+        t.ok(batch.container.type, 'batch.container should be set on final-result');
         closecontainerBatchCount++;
         break;
       default:
@@ -179,7 +173,7 @@ test('JSONLoader#loadInBatches(geojson.json, {json: {_rootObjectBatches: true}})
   t.end();
 });
 
-test.only('JSONLoader#loadInBatches(streaming array of arrays)', async t => {
+test('JSONLoader#loadInBatches(streaming array of arrays)', async t => {
   const iterator = await loadInBatches(GEOJSON_KEPLER_DATASET_PATH, JSONLoader, {
     json: {
       table: true,
@@ -187,10 +181,12 @@ test.only('JSONLoader#loadInBatches(streaming array of arrays)', async t => {
     }
   });
 
+  let rowCount = 0;
   for await (const batch of iterator) {
-    // t.equal(batch.data.length, 247);
+    rowCount += batch.data.length;
     t.equal(batch.data[0].length, 10);
   }
+  t.equal(rowCount, 247);
 
   t.end();
 });
