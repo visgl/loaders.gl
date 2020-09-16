@@ -4,6 +4,7 @@ import {load, loadInBatches, isIterator, isAsyncIterable} from '@loaders.gl/core
 import {JSONLoader} from '@loaders.gl/json';
 
 const GEOJSON_PATH = `@loaders.gl/json/test/data/geojson-big.json`;
+const GEOJSON_KEPLER_DATASET_PATH = `@loaders.gl/json/test/data/kepler-dataset-sf-incidents.json`;
 
 test('JSONLoader#load(geojson.json)', async t => {
   const data = await load(GEOJSON_PATH, JSONLoader, {json: {table: true}});
@@ -125,12 +126,18 @@ async function testContainerBatches(t, iterator, expectedCount) {
     switch (batch.batchType) {
       case 'partial-result':
       case 'root-object-batch-partial':
-        t.ok(batch.container.type, 'batch.container should be set on partial-result');
+        t.ok(
+          batch.container.type || batch.container.version,
+          'batch.container should be set on partial-result'
+        );
         opencontainerBatchCount++;
         break;
       case 'final-result':
       case 'root-object-batch-complete':
-        t.ok(batch.container.type, 'batch.container should be set on final-result');
+        t.ok(
+          batch.container.type || batch.container.version,
+          'batch.container should be set on final-result'
+        );
         closecontainerBatchCount++;
         break;
       default:
@@ -168,6 +175,22 @@ test('JSONLoader#loadInBatches(geojson.json, {json: {_rootObjectBatches: true}})
     json: {table: true, _rootObjectBatches: false}
   });
   await testContainerBatches(t, iterator, 0);
+
+  t.end();
+});
+
+test.only('JSONLoader#loadInBatches(streaming array of arrays)', async t => {
+  const iterator = await loadInBatches(GEOJSON_KEPLER_DATASET_PATH, JSONLoader, {
+    json: {
+      table: true,
+      jsonpaths: ['$.data.allData']
+    }
+  });
+
+  for await (const batch of iterator) {
+    // t.equal(batch.data.length, 247);
+    t.equal(batch.data[0].length, 10);
+  }
 
   t.end();
 });

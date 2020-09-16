@@ -18,7 +18,7 @@ export default async function* parseJSONInBatches(asyncIterator, options) {
   const parser = new StreamingJSONParser({jsonpaths});
   tableBatchBuilder =
     // @ts-ignore
-    tableBatchBuilder || new TableBatchBuilder(TableBatchType, schema, {batchSize});
+    tableBatchBuilder || new TableBatchBuilder(TableBatchType, schema, {batchSize}, options.json);
 
   for await (const chunk of asyncIterator) {
     const rows = parser.write(chunk);
