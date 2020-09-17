@@ -2,6 +2,10 @@
 
 ## v2.3 Prereleases
 
+#### v2.3.0-alpha.14
+
+- json: Fix streaming of array of arrays (#946)
+
 #### v2.3.0-alpha.13
 
 - draco: fixes draco3d memory leak (#944)
