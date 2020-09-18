@@ -1,6 +1,6 @@
 /* global console, process */
 /* eslint-disable no-console */
-const {I3SConverter} = require('@loaders.gl/cli');
+const {I3SConverter, Tiles3DConverter} = require('@loaders.gl/cli');
 import '@loaders.gl/polyfills';
 
 const TILESET_TYPE = {
@@ -71,10 +71,15 @@ async function convert(options) {
   const inputType = options.inputType.toUpperCase();
   switch (inputType) {
     case TILESET_TYPE.I3S:
-      console.log('I3S - Not implement!'); // eslint-disable-line
+      const tiles3DConverter = new Tiles3DConverter();
+      tiles3DConverter.convert({
+        inputUrl: options.tileset,
+        outputPath: options.output,
+        tilesetName: options.name,
+        maxDepth: options.maxDepth
+      });
       break;
     case TILESET_TYPE._3DTILES:
-      // eslint-disable-next-line no-shadow
       const converter = new I3SConverter();
       await converter.convert({
         inputUrl: options.tileset,

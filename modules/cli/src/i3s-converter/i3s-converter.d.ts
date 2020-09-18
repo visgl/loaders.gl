@@ -1,6 +1,6 @@
 /**
-  * Converter for a 3d tileset
-  */
+ * Converter from 3d-tiles tileset to i3s layer
+ */
 export default class I3SConverter {
   // constructor();
 
