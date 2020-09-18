@@ -318,9 +318,11 @@ export default class DracoParser {
    */
   _deduceAttributeName(attributeData, options) {
     const {extraAttributes = {}} = options;
-    for (const [attributeName, attributeUniqueId] of Object.entries(extraAttributes)) {
-      if (attributeUniqueId === attributeData.uniqueId) {
-        return attributeName;
+    if (extraAttributes && typeof extraAttributes === 'object') {
+      for (const [attributeName, attributeUniqueId] of Object.entries(extraAttributes)) {
+        if (attributeUniqueId === attributeData.uniqueId) {
+          return attributeName;
+        }
       }
     }
 
