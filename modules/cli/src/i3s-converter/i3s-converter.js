@@ -55,8 +55,6 @@ export default class I3SConverter {
 
   // Convert a 3d tileset
   async convert({inputUrl, outputPath, tilesetName, maxDepth, slpk, sevenZipExe, token}) {
-    console.log(`Start convert ${_3D_TILES}`); // eslint-disable-line
-    console.log(`------------------------------------------------`); // eslint-disable-line
     this.conversionStartTime = process.hrtime();
     this.options = {maxDepth, slpk, sevenZipExe};
 
@@ -431,7 +429,7 @@ export default class I3SConverter {
     const diff = process.hrtime(this.conversionStartTime);
     const conversionTime = this._timeConverter(diff);
     console.log(`------------------------------------------------`); // eslint-disable-line
-    console.log(`Stop conversion of ${_3D_TILES}`); // eslint-disable-line
+    console.log(`Finishing conversion of ${_3D_TILES}`); // eslint-disable-line
     console.log(`Total conversion time: ${conversionTime}`); // eslint-disable-line
     console.log(`Vertex count: `, this.vertexCounter); // eslint-disable-line
     console.log(`File(s) size: `, filesSize, ' bytes'); // eslint-disable-line

@@ -69,6 +69,9 @@ main();
 
 // eslint-disable-next-line no-shadow
 async function convert(options) {
+  console.log(`------------------------------------------------`); // eslint-disable-line
+  console.log(`Starting conversion of ${options.inputType}`); // eslint-disable-line
+  console.log(`------------------------------------------------`); // eslint-disable-line
   const inputType = options.inputType.toUpperCase();
   switch (inputType) {
     case TILESET_TYPE.I3S:
