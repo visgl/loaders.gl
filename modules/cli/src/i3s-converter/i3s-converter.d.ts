@@ -14,6 +14,7 @@ export default class I3SConverter {
    * @param options.slpk Generate slpk (Scene Layer Packages) output file
    * @param options.inputType Input type of file. Can be 3DTILES or I3S
    * @param options.sevenZipExe Location of 7z.exe archiver to create slpk on Windows
+   * @param options.token Token for Cesium ION tilesets authentication
    */
   convert(options: {
     inputUrl: string;
@@ -23,5 +24,6 @@ export default class I3SConverter {
     maxDepth?: number;
     slpk?: boolean;
     inputType: string;
+    token?: string;
   }): Promise<any>;
 }

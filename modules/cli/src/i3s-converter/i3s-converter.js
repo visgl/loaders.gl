@@ -28,7 +28,7 @@ import {LAYERS as layersTemplate} from './json-templates/layers';
 import {NODE as nodeTemplate} from './json-templates/node';
 import {SHARED_RESOURCES_TEMPLATE} from './json-templates/shared-resources';
 
-const ION_TOKEN =
+const ION_DEFAULT_TOKEN =
   process.env.IonToken || // eslint-disable-line
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ'; // eslint-disable-line
 const HARDCODED_NODES_PER_PAGE = 64;
@@ -54,7 +54,7 @@ export default class I3SConverter {
   }
 
   // Convert a 3d tileset
-  async convert({inputUrl, outputPath, tilesetName, maxDepth, slpk, sevenZipExe}) {
+  async convert({inputUrl, outputPath, tilesetName, maxDepth, slpk, sevenZipExe, token}) {
     console.log(`Start convert ${_3D_TILES}`); // eslint-disable-line
     console.log(`------------------------------------------------`); // eslint-disable-line
     this.conversionStartTime = process.hrtime();
@@ -65,7 +65,7 @@ export default class I3SConverter {
     }
 
     const options = {
-      'cesium-ion': {accessToken: ION_TOKEN}
+      'cesium-ion': {accessToken: token || ION_DEFAULT_TOKEN}
     };
     const preloadOptions = await CesiumIonLoader.preload(inputUrl, options);
     Object.assign(options, preloadOptions);

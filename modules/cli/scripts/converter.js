@@ -21,6 +21,7 @@ function printHelp() {
   console.log(
     '--7zExe [location of 7z.exe archiver to create slpk on Windows, default: "C:\\Program Files\\7-Zip\\7z.exe"]'
   );
+  console.log('--token [Token for Cesium ION tilesets authentication]');
   process.exit(0); // eslint-disable-line
 }
 
@@ -87,7 +88,8 @@ async function convert(options) {
         tilesetName: options.name,
         maxDepth: options.maxDepth,
         slpk: options.slpk,
-        sevenZipExe: options.sevenZipExe
+        sevenZipExe: options.sevenZipExe,
+        token: options.token
       });
       break;
     default:
@@ -102,7 +104,8 @@ function parseOptions(args) {
     tileset: null,
     name: null,
     output: 'data',
-    sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe'
+    sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
+    token: null
   };
 
   const count = args.length;
@@ -140,6 +143,9 @@ function parseOptions(args) {
           break;
         case '--7zExe':
           opts.sevenZipExe = _getValue(index);
+          break;
+        case '--token':
+          opts.token = _getValue(index);
           break;
         case '--help':
           printHelp();

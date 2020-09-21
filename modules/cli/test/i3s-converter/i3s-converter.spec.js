@@ -44,7 +44,9 @@ test('cli - Converters#converts 3d-tiles tileset to i3s tileset', async t => {
       tilesetName: 'BatchedColors',
       slpk: true,
       inputType: '3dtiles',
-      sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe'
+      sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
+      token:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ'
     });
     t.ok(tilesetJson);
   }
