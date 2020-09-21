@@ -11,7 +11,11 @@ import draco3d from 'draco3d';
 
 import NodePages from './helpers/node-pages';
 import {writeFile, removeDir, writeFileForSlpk} from '../lib/utils/file-utils';
-import {compressWithChildProcess} from '../lib/utils/compress-util';
+import {
+  compressWithChildProcess,
+  generateHash128FromZip,
+  addFileToZip
+} from '../lib/utils/compress-util';
 import convertB3dmToI3sGeometry from './helpers/geometry-converter';
 import {
   convertCommonToI3SCoordinate,
@@ -194,12 +198,17 @@ export default class I3SConverter {
     await this.nodePages.save(this.layers0Path, this.fileMap, isCreateSlpk);
     if (isCreateSlpk) {
       const slpkTilesetPath = join(tilesetPath, 'SceneServer', 'layers', '0');
+      const slpkFileName = `${tilesetPath}.slpk`;
       await compressWithChildProcess(
         slpkTilesetPath,
-        `${tilesetPath}.slpk`,
+        slpkFileName,
         0,
+        '.',
         this.options.sevenZipExe
       );
+      const fileHash128Path = `${tilesetPath}/@specialIndexFileHASH128@`;
+      await generateHash128FromZip(slpkFileName, fileHash128Path);
+      await addFileToZip(tilesetPath, '@specialIndexFileHASH128@', slpkFileName);
       // All converted files are contained in slpk now they can be deleted
       try {
         await removeDir(tilesetPath);

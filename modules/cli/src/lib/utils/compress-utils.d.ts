@@ -32,3 +32,21 @@ export function compressWithChildProcess(
   level: number,
   sevenZipExe: string
 ): Promise<void>;
+
+/**
+ * Generate hash file from zip archive
+ * https://github.com/Esri/i3s-spec/blob/master/docs/1.7/slpk_hashtable.cmn.md
+ *
+ * @param inputZipFile
+ * @param outputFile
+ */
+export function generateHash128FromZip(inputZipFile, outputFile): Promise<void>;
+
+/**
+ * Add file to zip archive
+ *
+ * @param inputFile
+ * @param fileName
+ * @param zipFile
+ */
+export function addFileToZip(inputFile, fileName, zipFile);
