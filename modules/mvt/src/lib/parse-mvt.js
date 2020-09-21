@@ -58,7 +58,10 @@ export default function parseMVT(arrayBuffer, options) {
 function getDecodedFeature(feature, options = {}) {
   const wgs84Coordinates = options.coordinates === 'wgs84';
   const hasTileIndex =
-    options.tileIndex && options.tileIndex.x && options.tileIndex.y && options.tileIndex.z;
+    options.tileIndex &&
+    Number.isFinite(options.tileIndex.x) &&
+    Number.isFinite(options.tileIndex.y) &&
+    Number.isFinite(options.tileIndex.z);
 
   if (wgs84Coordinates && !hasTileIndex) {
     throw new Error('MVT Loader: WGS84 coordinates need tileIndex property. Check documentation.');
