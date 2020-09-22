@@ -388,8 +388,15 @@ export default class I3SConverter {
       const sharedPath = join(childPath, 'shared/');
       await writeFile(sharedPath, sharedDataStr);
     }
+    if (meshMaterial) {
+      this.nodePages.updateMaterialByNodeId(node.id, this._findOrCreateMaterial(meshMaterial));
+    }
     if (texture) {
       node.textureData = [{href: './textures/0'}];
+
+      const texelCountHint = texture.image.height * texture.image.width;
+      this.nodePages.updateTexelCountHintByNodeId(node.id, texelCountHint);
+
       const textureData = texture.bufferView.data;
       if (this.options.slpk) {
         const slpkTexturePath = join(childPath, 'textures');
@@ -404,9 +411,6 @@ export default class I3SConverter {
         const texturePath = join(childPath, 'textures/0/');
         await writeFile(texturePath, textureData, 'index.jpeg');
       }
-    }
-    if (meshMaterial) {
-      this.nodePages.updateMaterialByNodeId(node.id, this._findOrCreateMaterial(meshMaterial));
     }
     if (vertexCount) {
       this.vertexCounter += vertexCount;

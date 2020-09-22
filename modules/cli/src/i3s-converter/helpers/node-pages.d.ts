@@ -10,13 +10,13 @@ export type PageNodeType = {
     geometry: {
       resource?: number;
       definition?: number;
-    },
+    };
     material?: {
       resource?: number;
       definition?: number;
-    }
+    };
   };
-}
+};
 
 /**
  * class NodePages - wrapper of nodePages array
@@ -95,14 +95,21 @@ export default class NodePages {
    * @param id - end-to-end index of the node
    * @param materialId - id from scene layer materialDefinitions
    */
-  updateMaterialByNodeId(id: number, materialId: number)
+  updateMaterialByNodeId(id: number, materialId: number);
 
-   /**
+  /**
    * Update vertexCount in node.mesh.geometry object by node id
    * @param id - end-to-end index of the node
    * @param vertexCount - vertex count for particular node
    */
-  updateVertexCountByNodeId(id: number, vertexCount: number)
+  updateVertexCountByNodeId(id: number, vertexCount: number);
+
+  /**
+   * Update texelCountHint in node.mesh.material object by node id
+   * @param id - end-to-end index of the node
+   * @param texelCountHint - texelCountHint of particular node
+   */
+  updateTexelCountHintByNodeId(id: number, texelCountHint: number);
 
   /**
    * Put new node in nodePages array

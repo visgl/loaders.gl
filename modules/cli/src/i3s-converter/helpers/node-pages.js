@@ -93,6 +93,14 @@ export default class NodePages {
     node.mesh.geometry.vertexCount = vertexCount;
   }
 
+  updateTexelCountHintByNodeId(id, texelCountHint) {
+    const node = this.getNodeById(id);
+    if (!node.mesh || !node.mesh.material) {
+      return;
+    }
+    node.mesh.material.texelCountHint = texelCountHint;
+  }
+
   /**
    * Add a child id into the parent node.children array
    * @param {number | null} parentId - end-to-end parent node index
