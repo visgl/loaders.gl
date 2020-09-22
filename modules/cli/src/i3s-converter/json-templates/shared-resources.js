@@ -94,9 +94,7 @@ const TEXTURE_DEFINITION_INFO = {
   images: {
     path: 'images',
     transform: (val, thisObject, originalObject) =>
-      val.map(image =>
-        transform({...image, id: originalObject.imageIndex}, TEXTURE_DEFINITION_IMAGE)
-      )
+      val.map(image => transform(image, TEXTURE_DEFINITION_IMAGE))
   }
 };
 

@@ -22,7 +22,7 @@ export default function convertB3dmToI3sGeometry(
       materials: [];
     };
   },
-  options?: Object
+  nodeId: number
 ): Promise<{
   geometry: ArrayBuffer;
   compressedGeometry: ArrayBuffer;

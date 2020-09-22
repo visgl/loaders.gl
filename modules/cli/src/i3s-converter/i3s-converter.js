@@ -344,7 +344,7 @@ export default class I3SConverter {
       sharedResources,
       meshMaterial,
       vertexCount
-    } = await convertB3dmToI3sGeometry(sourceTile.content, this.options);
+    } = await convertB3dmToI3sGeometry(sourceTile.content, Number(node.id));
     if (this.options.slpk) {
       const slpkGeometryPath = join(childPath, 'geometries');
       this.fileMap[`${slpkChildPath}/geometries/0.bin.gz`] = await writeFileForSlpk(

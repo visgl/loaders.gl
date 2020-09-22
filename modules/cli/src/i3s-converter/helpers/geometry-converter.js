@@ -10,7 +10,7 @@ const VALUES_PER_VERTEX = 3;
 const VALUES_PER_TEX_COORD = 2;
 const VALUES_PER_COLOR_ELEMENT = 4;
 
-export default async function convertB3dmToI3sGeometry(tileContent, options = {}) {
+export default async function convertB3dmToI3sGeometry(tileContent, nodeId) {
   const {positions, normals, texCoords, colors} = convertAttributes(tileContent);
   const {material, texture} = convertMaterial(tileContent);
 
@@ -65,7 +65,7 @@ export default async function convertB3dmToI3sGeometry(tileContent, options = {}
     geometry: fileBuffer,
     compressedGeometry,
     texture,
-    sharedResources: getSharedResources(tileContent),
+    sharedResources: getSharedResources(tileContent, nodeId),
     meshMaterial: material,
     vertexCount
   };
@@ -521,7 +521,7 @@ function convertMaterial10(sourceImages) {
  * @returns {Object} {materialDefinitionInfos: Object[], textureDefinitionInfos: Object[]} -
  * 2 arrays in format of i3s sharedResources data https://github.com/Esri/i3s-spec/blob/master/docs/1.7/sharedResource.cmn.md
  */
-function getSharedResources(tileContent) {
+function getSharedResources(tileContent, nodeId) {
   const gltfMaterials = tileContent.gltf.materials;
   const i3sResources = {};
 
@@ -532,7 +532,8 @@ function getSharedResources(tileContent) {
   i3sResources.materialDefinitionInfos = [];
   for (const gltfMaterial of gltfMaterials) {
     const {materialDefinitionInfo, textureDefinitionInfo} = convertGLTFMaterialToI3sSharedResources(
-      gltfMaterial
+      gltfMaterial,
+      nodeId
     );
     i3sResources.materialDefinitionInfos.push(materialDefinitionInfo);
     if (textureDefinitionInfo) {
@@ -548,12 +549,12 @@ function getSharedResources(tileContent) {
  * @param {Object} gltfMaterial - gltf material data
  * @returns {Object} - Couple {materialDefinitionInfo, textureDefinitionInfo} extracted from gltf material data
  */
-function convertGLTFMaterialToI3sSharedResources(gltfMaterial) {
+function convertGLTFMaterialToI3sSharedResources(gltfMaterial, nodeId) {
   const texture =
     gltfMaterial.pbrMetallicRoughness.baseColorTexture || gltfMaterial.emissiveTexture;
   let textureDefinitionInfo = null;
   if (texture) {
-    textureDefinitionInfo = extractSharedResourcesTextureInfo(texture.texture);
+    textureDefinitionInfo = extractSharedResourcesTextureInfo(texture.texture, nodeId);
   }
   const {baseColorFactor, metallicFactor} = gltfMaterial.pbrMetallicRoughness;
   let colorFactor = baseColorFactor;
@@ -613,16 +614,43 @@ function extractSharedResourcesMaterialInfo(baseColorFactor, metallicFactor = 0)
  * @param {Object} texture - texture image info
  * @returns {Object}
  */
-function extractSharedResourcesTextureInfo(texture) {
+function extractSharedResourcesTextureInfo(texture, nodeId) {
   return {
     encoding: [texture.source.mimeType],
     images: [
       {
         // 'i3s' has just size which is width of the image. Images are supposed to be square.
         // https://github.com/Esri/i3s-spec/blob/master/docs/1.7/image.cmn.md
+        id: generateImageId(texture, nodeId),
         size: texture.source.image.width,
         length: [texture.source.image.data.length]
       }
     ]
   };
+}
+/**
+ * Formula for counting imageId:
+ * https://github.com/Esri/i3s-spec/blob/0a6366a9249b831db8436c322f8d27521e86cf07/format/Indexed%203d%20Scene%20Layer%20Format%20Specification.md#generating-image-ids
+ * @param {Object} texture - texture image info
+ * @returns {string}
+ */
+function generateImageId(texture, nodeId) {
+  const {width, height} = texture.source.image;
+  const levelCountOfTexture = 1;
+  const indexOfLevel = 0;
+  const indexOfTextureInStore = nodeId + 1;
+
+  const zerosCount = 32 - indexOfTextureInStore.toString(2).length;
+  const rightHalf = '0'.repeat(zerosCount).concat(indexOfTextureInStore.toString(2));
+
+  const shiftedLevelCountOfTexture = levelCountOfTexture << 28;
+  const shiftedIndexOfLevel = indexOfLevel << 24;
+  const shiftedWidth = (width - 1) << 12;
+  const shiftedHeight = (height - 1) << 0;
+
+  const leftHalf = shiftedLevelCountOfTexture + shiftedIndexOfLevel + shiftedWidth + shiftedHeight;
+
+  // eslint-disable-next-line no-undef
+  const imageId = BigInt(`0b${leftHalf.toString(2)}${rightHalf}`);
+  return imageId.toString();
 }
