@@ -48,5 +48,6 @@ export function generateHash128FromZip(inputZipFile, outputFile): Promise<void>;
  * @param inputFile
  * @param fileName
  * @param zipFile
+ * @param sevenZipExe
  */
-export function addFileToZip(inputFile, fileName, zipFile);
+export function addFileToZip(inputFile, fileName, zipFile, sevenZipExe);

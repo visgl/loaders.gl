@@ -111,6 +111,12 @@ async function compressWithChildProcessWindows(
   inputFiles = join('.', '*'),
   sevenZipExe
 ) {
+  // Workaround for @listfile issue. In 7z.exe @-leading files are handled as listfiles
+  // https://sevenzip.osdn.jp/chm/cmdline/syntax.htm
+  if (inputFiles[0] === '@') {
+    inputFiles = `*${inputFiles.substr(1)}`;
+  }
+
   const fullOutputFile = join(process.cwd(), outputFile); // eslint-disable-line no-undef
   const args = ['a', '-tzip', `-mx=${level}`, fullOutputFile, inputFiles];
   const childProcess = new ChildProcessProxy();
@@ -178,8 +184,8 @@ function _longToByteArray(long) {
   return Array.from(new Uint8Array(buffer)).reverse(); // reverse to get little endian
 }
 
-export async function addFileToZip(inputFolder, fileName, zipFile) {
-  await compressWithChildProcess(inputFolder, zipFile, 0, fileName);
+export async function addFileToZip(inputFolder, fileName, zipFile, sevenZipExe) {
+  await compressWithChildProcess(inputFolder, zipFile, 0, fileName, sevenZipExe);
   console.log(`${fileName} added to ${zipFile}.`); // eslint-disable-line
 }
 

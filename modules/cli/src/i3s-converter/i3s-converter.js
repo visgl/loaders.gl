@@ -206,7 +206,12 @@ export default class I3SConverter {
       );
       const fileHash128Path = `${tilesetPath}/@specialIndexFileHASH128@`;
       await generateHash128FromZip(slpkFileName, fileHash128Path);
-      await addFileToZip(tilesetPath, '@specialIndexFileHASH128@', slpkFileName);
+      await addFileToZip(
+        tilesetPath,
+        '@specialIndexFileHASH128@',
+        slpkFileName,
+        this.options.sevenZipExe
+      );
       // All converted files are contained in slpk now they can be deleted
       try {
         await removeDir(tilesetPath);
