@@ -33,6 +33,7 @@ export default class DracoBuilder {
   destroy() {
     this.destroyEncodedObject(this.dracoMeshBuilder);
     this.destroyEncodedObject(this.dracoEncoder);
+    this.destroyEncodedObject(this.dracoMetadataBuilder);
     // @ts-ignore
     this.dracoMeshBuilder = null;
     // @ts-ignore
@@ -73,7 +74,7 @@ export default class DracoBuilder {
     const attributes = this._getAttributesFromMesh(pointcloud);
 
     // Build a `DracoPointCloud` from the input data
-    const dracoPointCloud = this._createDracoPointCloud(attributes, options);
+    const dracoPointCloud = this._createDracoPointCloud(attributes, pointcloud.metadata, options);
 
     if (options.metadata) {
       this._addGeometryMetadata(dracoPointCloud, options.metadata);
@@ -106,7 +107,7 @@ export default class DracoBuilder {
     const attributes = this._getAttributesFromMesh(mesh);
 
     // Build a `DracoMesh` from the input data
-    const dracoMesh = this._createDracoMesh(attributes, options);
+    const dracoMesh = this._createDracoMesh(attributes, mesh.metadata, options);
 
     if (options.metadata) {
       this._addGeometryMetadata(dracoMesh, options.metadata);
@@ -155,9 +156,10 @@ export default class DracoBuilder {
 
   /**
    * @param {object} attributes
+   * @param {object} optionalMetadata
    * @returns {Mesh}
    */
-  _createDracoMesh(attributes, options) {
+  _createDracoMesh(attributes, optionalMetadata = {}, options) {
     const dracoMesh = new this.draco.Mesh();
 
     try {
@@ -173,7 +175,10 @@ export default class DracoBuilder {
         const uniqueId = this._addAttributeToMesh(dracoMesh, attributeName, attribute, vertexCount);
 
         if (uniqueId !== -1) {
-          this._addAttributeMetadata(dracoMesh, uniqueId, {name: attributeName});
+          this._addAttributeMetadata(dracoMesh, uniqueId, {
+            name: attributeName,
+            ...(optionalMetadata[attributeName] || {})
+          });
         }
       }
     } catch (error) {
@@ -186,9 +191,10 @@ export default class DracoBuilder {
 
   /**
    * @param {object} attributes
+   * @param {object} metadata
    * @returns {PointCloud}
    */
-  _createDracoPointCloud(attributes, options) {
+  _createDracoPointCloud(attributes, metadata, options) {
     const dracoPointCloud = new this.draco.PointCloud();
 
     try {
@@ -350,8 +356,40 @@ export default class DracoBuilder {
    */
   _populateDracoMetadata(dracoMetadata, metadata) {
     for (const [key, value] of getEntries(metadata)) {
-      this.dracoMetadataBuilder.AddStringEntry(metadata, key, value);
+      switch (typeof value) {
+        case 'number':
+          this.dracoMetadataBuilder.AddIntEntry(metadata, key, value);
+          break;
+        case 'string':
+        default:
+          this.dracoMetadataBuilder.AddStringEntry(metadata, key, value);
+      }
     }
+  }
+
+  /**
+   * @param {PointCloud} mesh
+   * @param {number} attributeId
+   * @param {object} attributeMetadata
+   */
+  _addAttributeOptionalMetadata(mesh, attributeId, attributeMetadata) {
+    if (!attributeMetadata) {
+      return;
+    }
+    const metadata = new this.draco.Metadata();
+    for (const metadataItem in attributeMetadata) {
+      const metadataValue = attributeMetadata[metadataItem];
+      switch (typeof metadataValue) {
+        case 'number':
+          this.dracoMetadataBuilder.AddIntEntry(metadata, metadataItem, metadataValue);
+          break;
+        case 'string':
+        default:
+          this.dracoMetadataBuilder.AddStringEntry(metadata, metadataItem, metadataValue);
+      }
+    }
+    const builder = this.dracoMeshBuilder;
+    builder.SetMetadataForAttribute(mesh, attributeId, metadata);
   }
 }
 

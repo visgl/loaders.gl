@@ -32,6 +32,7 @@ export default class DracoParser {
     /** @type {Draco3D} */
     this.draco = draco;
     this.drawMode = 'TRIANGLE';
+    this.metadataQuerier = {};
   }
 
   destroy() {}
@@ -44,6 +45,7 @@ export default class DracoParser {
 
   // NOTE: caller must call `destroyGeometry` on the return value after using it
   parseSync(arrayBuffer, options = {}) {
+    this.metadataQuerier = new this.draco.MetadataQuerier();
     const buffer = new this.draco.DecoderBuffer();
     buffer.Init(new Int8Array(arrayBuffer), arrayBuffer.byteLength);
 
@@ -105,6 +107,8 @@ export default class DracoParser {
     } finally {
       this.draco.destroy(decoder);
       this.draco.destroy(buffer);
+      this.draco.destroy(dracoGeometry);
+      this.draco.destroy(this.metadataQuerier);
     }
 
     return data;
@@ -180,6 +184,7 @@ export default class DracoParser {
     // but it seems to work this way
     for (let attributeId = 0; attributeId < dracoGeometry.num_attributes(); attributeId++) {
       const dracoAttribute = decoder.GetAttribute(dracoGeometry, attributeId);
+      const attributeMetadata = this._getAttributeMetadata(decoder, dracoGeometry, attributeId);
       const attributeData = {
         uniqueId: dracoAttribute.unique_id(),
         attributeType: dracoAttribute.attribute_type(),
@@ -189,8 +194,7 @@ export default class DracoParser {
         byteOffset: dracoAttribute.byte_offset(),
         byteStride: dracoAttribute.byte_stride(),
         normalized: dracoAttribute.normalized(),
-
-        metadata: this._getAttributeMetadata(decoder, dracoAttribute)
+        metadata: attributeMetadata
       };
 
       // DRACO does not store attribute names - We need to deduce an attribute name
@@ -356,8 +360,12 @@ export default class DracoParser {
       }
     }
 
-    // TODO look for name in metadata?
-    // The loaders.gl DracoEncoder could write a name into metadata...
+    if (attributeData.metadata) {
+      const entryName = options.attributeNameEntry || 'name';
+      if (attributeData.metadata[entryName]) {
+        return attributeData.metadata[entryName];
+      }
+    }
 
     // Attribute of "GENERIC" type, we need to assign some name
     return `CUSTOM_ATTRIBUTE_${attributeData.uniqueId}`;
@@ -366,11 +374,6 @@ export default class DracoParser {
   _getGeometryMetadata(decoder, dracoGeometry) {
     const dracoMetadata = decoder.GetMetadata(dracoGeometry);
     return this._queryDracoMetadata(dracoMetadata);
-  }
-
-  _getAttributeMetadata(decoder, dracoAttribute) {
-    const attributeMetadata = decoder.GetAttributeMetadata(dracoAttribute.unique_id());
-    return this._queryDracoMetadata(attributeMetadata);
   }
 
   // The not so wonderful world of undocumented Draco APIs :(
@@ -384,6 +387,24 @@ export default class DracoParser {
       throw new Error(entryName);
     }
     return metadataMap;
+  }
+
+  _getAttributeMetadata(decoder, dracoGeometry, attributeId) {
+    const metadata = decoder.GetAttributeMetadata(dracoGeometry, attributeId);
+    if (!metadata || !metadata.ptr) {
+      return null;
+    }
+    const result = {};
+    const numEntries = this.metadataQuerier.NumEntries(metadata);
+    for (let entryIndex = 0; entryIndex < numEntries; entryIndex++) {
+      const entryName = this.metadataQuerier.GetEntryName(metadata, entryIndex);
+      if (this.metadataQuerier.HasIntEntry(metadata, entryName)) {
+        result[entryName] = this.metadataQuerier.GetIntEntry(metadata, entryName);
+      } else if (this.metadataQuerier.HasStringEntry(metadata, entryName)) {
+        result[entryName] = this.metadataQuerier.GetStringEntry(metadata, entryName);
+      }
+    }
+    return result;
   }
 
   // DEPRECATED
