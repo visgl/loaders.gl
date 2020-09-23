@@ -1,10 +1,25 @@
 /* global File */
 import test from 'tape-promise/tape';
-import {fetchFile, load, loadInBatches, selectLoader} from '@loaders.gl/core';
-import {_BrowserFileSystem as BrowserFileSystem} from '@loaders.gl/core';
+import {
+  setLoaderOptions,
+  fetchFile,
+  load,
+  loadInBatches,
+  selectLoader,
+  _BrowserFileSystem as BrowserFileSystem
+} from '@loaders.gl/core';
 import {ShapefileLoader} from '@loaders.gl/shapefile';
 import {Proj4Projection} from '@math.gl/proj4';
 import {tapeEqualsEpsilon} from 'test/utils/tape-assertions';
+
+setLoaderOptions({
+  dbf: {
+    workerUrl: 'modules/shapefile/dist/dbf-loader.worker.js'
+  },
+  shp: {
+    workerUrl: 'modules/shapefile/dist/shp-loader.worker.js'
+  }
+});
 
 const SHAPEFILE_JS_DATA_FOLDER = '@loaders.gl/shapefile/test/data/shapefile-js';
 const SHAPEFILE_JS_TEST_FILES = {
