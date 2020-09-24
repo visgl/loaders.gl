@@ -1,0 +1,27 @@
+{
+  "license": "MIT",
+  "scripts": {
+    "start": "webpack-dev-server --progress --hot --open",
+    "start-local": "webpack-dev-server --env.local --env.esnext --progress --hot --open",
+    "start-local-deck": "webpack-dev-server --env.local --env.esnext --env.deck --progress --hot --open",
+    "start-local-luma": "webpack-dev-server --env.local --env.esnext --env.luma --progress --hot --open",
+    "start-local-math": "webpack-dev-server --env.local --env.esnext --env.math --progress --hot --open",
+    "generate": "node ./generate-index/index.js"
+  },
+  "dependencies": {
+    "@deck.gl/arcgis": "^8.2.8",
+    "@deck.gl/core": "^8.1.4",
+    "@deck.gl/geo-layers": "^8.1.4",
+    "@deck.gl/layers": "^8.1.4",
+    "@deck.gl/mesh-layers": "^8.1.4",
+    "@loaders.gl/core": "2.2.0",
+    "@loaders.gl/i3s": "2.2.0"
+  },
+  "devDependencies": {
+    "@babel/preset-react": "^7.0.0",
+    "babel-plugin-inline-import": "^3.0.0",
+    "webpack": "^4.39.1",
+    "webpack-cli": "^3.1.2",
+    "webpack-dev-server": "^3.1.11"
+  }
+}
