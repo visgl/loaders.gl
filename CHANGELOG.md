@@ -2,6 +2,14 @@
 
 ## v2.3 Prereleases
 
+#### v2.3.0-beta.1
+
+- Added an I3S example that uses the Arcgis basemap. (#954)
+- Set worker url to local file for shapefile tests (#953)
+- website: Restore gltf frontpage
+- Delete less (#951)
+- [MVT] Fix tile index check (#950)
+
 #### v2.3.0-alpha.14
 
 - json: Fix streaming of array of arrays (#946)
