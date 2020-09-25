@@ -208,7 +208,7 @@ export default class TileHeader {
         [loader.id]: {
           tile: this.header,
           tileset: this.tileset.tileset,
-          isTileset: false,
+          isTileset: 'auto',
           isTileHeader: false
         }
       };
