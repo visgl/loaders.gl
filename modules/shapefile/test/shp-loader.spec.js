@@ -7,7 +7,7 @@ const SHAPEFILE_POLYGON_PATH = '@loaders.gl/shapefile/test/data/shapefile-js/pol
 const SHAPEFILE_JS_DATA_FOLDER = '@loaders.gl/shapefile/test/data/shapefile-js';
 const SHAPEFILE_JS_POINT_TEST_FILES = ['points', 'multipoints'];
 const SHAPEFILE_JS_POLYLINE_TEST_FILES = ['polylines'];
-const SHAPEFILE_JS_POLYGON_TEST_FILES = ['polygons'];
+const SHAPEFILE_JS_POLYGON_TEST_FILES = ['polygons', 'multipolygon_with_holes'];
 
 setLoaderOptions({
   shp: {
@@ -73,6 +73,8 @@ test('Shapefile JS Polygon tests', async t => {
       t.deepEqual(output.geometries[i].positions, expBinary.positions);
       // @ts-ignore
       t.deepEqual(output.geometries[i].primitivePolygonIndices, expBinary.primitivePolygonIndices);
+      // @ts-ignore
+      t.deepEqual(output.geometries[i].polygonIndices, expBinary.polygonIndices);
     }
   }
 
