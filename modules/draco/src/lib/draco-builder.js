@@ -358,38 +358,13 @@ export default class DracoBuilder {
     for (const [key, value] of getEntries(metadata)) {
       switch (typeof value) {
         case 'number':
-          this.dracoMetadataBuilder.AddIntEntry(metadata, key, value);
+          this.dracoMetadataBuilder.AddIntEntry(dracoMetadata, key, value);
           break;
         case 'string':
         default:
-          this.dracoMetadataBuilder.AddStringEntry(metadata, key, value);
+          this.dracoMetadataBuilder.AddStringEntry(dracoMetadata, key, value);
       }
     }
-  }
-
-  /**
-   * @param {PointCloud} mesh
-   * @param {number} attributeId
-   * @param {object} attributeMetadata
-   */
-  _addAttributeOptionalMetadata(mesh, attributeId, attributeMetadata) {
-    if (!attributeMetadata) {
-      return;
-    }
-    const metadata = new this.draco.Metadata();
-    for (const metadataItem in attributeMetadata) {
-      const metadataValue = attributeMetadata[metadataItem];
-      switch (typeof metadataValue) {
-        case 'number':
-          this.dracoMetadataBuilder.AddIntEntry(metadata, metadataItem, metadataValue);
-          break;
-        case 'string':
-        default:
-          this.dracoMetadataBuilder.AddStringEntry(metadata, metadataItem, metadataValue);
-      }
-    }
-    const builder = this.dracoMeshBuilder;
-    builder.SetMetadataForAttribute(mesh, attributeId, metadata);
   }
 }
 

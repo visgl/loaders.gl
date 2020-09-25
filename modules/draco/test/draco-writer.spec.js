@@ -131,13 +131,18 @@ test.only('DracoParser#metadata', async t => {
 
   const attributes = {
     POSITION: data.attributes.POSITION.value,
-    indices: data.indices.value
+    indices: data.indices.value,
+    metadata: {
+      POSITION: {
+        'optional-entry': 'optional-entry-value'
+      }
+    }
   };
 
   let compressedMesh = await encode(attributes, DracoWriter, {
     draco: {}
   });
-  t.equal(compressedMesh.byteLength, 435465, 'Correct length');
+  t.equal(compressedMesh.byteLength, 435515, 'Correct length');
 
   compressedMesh = await encode(attributes, DracoWriter, {
     draco: {
@@ -146,7 +151,7 @@ test.only('DracoParser#metadata', async t => {
       }
     }
   });
-  t.equal(compressedMesh.byteLength, 435465, 'Correct length');
+  t.equal(compressedMesh.byteLength, 435515, 'Correct length');
 
   // Decode the mesh
   const data2 = await parse(compressedMesh, DracoLoader, {

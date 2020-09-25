@@ -40,6 +40,7 @@ export {
   // PointAttribute,
   // PointCloud,
   // Mesh,
+  // Metadata,
   // DracoInt8Array,
   MetadataBuilder,
   PointCloudBuilder,

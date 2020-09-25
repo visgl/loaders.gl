@@ -363,7 +363,7 @@ export default class DracoParser {
     if (attributeData.metadata) {
       const entryName = options.attributeNameEntry || 'name';
       if (attributeData.metadata[entryName]) {
-        return attributeData.metadata[entryName];
+        return attributeData.metadata[entryName].string;
       }
     }
 
@@ -398,11 +398,12 @@ export default class DracoParser {
     const numEntries = this.metadataQuerier.NumEntries(metadata);
     for (let entryIndex = 0; entryIndex < numEntries; entryIndex++) {
       const entryName = this.metadataQuerier.GetEntryName(metadata, entryIndex);
-      if (this.metadataQuerier.HasIntEntry(metadata, entryName)) {
-        result[entryName] = this.metadataQuerier.GetIntEntry(metadata, entryName);
-      } else if (this.metadataQuerier.HasStringEntry(metadata, entryName)) {
-        result[entryName] = this.metadataQuerier.GetStringEntry(metadata, entryName);
-      }
+      result[entryName] = {
+        int: this.metadataQuerier.GetIntEntry(metadata, entryName),
+        string: this.metadataQuerier.GetStringEntry(metadata, entryName),
+        double: this.metadataQuerier.GetDoubleEntry(metadata, entryName),
+        intArray: this.metadataQuerier.GetIntEntryArray(metadata, entryName)
+      };
     }
     return result;
   }
