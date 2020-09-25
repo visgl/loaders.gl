@@ -1,5 +1,11 @@
 const LITTLE_ENDIAN = true;
 
+/**
+ * Parse individual record
+ *
+ * @param  {DataView} view Record data
+ * @return {object} Binary Geometry Object
+ */
 // eslint-disable-next-line complexity
 export function parseRecord(view) {
   let offset = 0;
@@ -9,7 +15,7 @@ export function parseRecord(view) {
   switch (type) {
     case 0:
       // Null Shape
-      return parseNull(view, offset);
+      return parseNull();
     case 1:
       // Point
       return parsePoint(view, offset, 2);
@@ -54,10 +60,23 @@ export function parseRecord(view) {
 }
 
 // TODO handle null
-function parseNull(view, offset) {
+/**
+ * Parse Null geometry
+ *
+ * @return {null}
+ */
+function parseNull() {
   return null;
 }
 
+/**
+ * Parse point geometry
+ *
+ * @param  {DataView} view Geometry data
+ * @param  {number} offset Offset in view
+ * @param  {number} dim Dimension size
+ * @return {object} Binary geometry object
+ */
 function parsePoint(view, offset, dim) {
   let positions;
   [positions, offset] = parsePositions(view, offset, 1, dim);
@@ -68,6 +87,14 @@ function parsePoint(view, offset, dim) {
   };
 }
 
+/**
+ * Parse MultiPoint geometry
+ *
+ * @param  {DataView} view Geometry data
+ * @param  {number} offset Offset in view
+ * @param  {number} dim Input dimension
+ * @return {object} Binary geometry object
+ */
 function parseMultiPoint(view, offset, dim) {
   // skip parsing box
   offset += 4 * Float64Array.BYTES_PER_ELEMENT;
@@ -102,8 +129,15 @@ function parseMultiPoint(view, offset, dim) {
   };
 }
 
-// MultiPolygon doesn't exist? Multiple records with the same attributes?
-// polygon and polyline parsing
+/**
+ * Polygon and PolyLine parsing
+ *
+ * @param  {DataView} view Geometry data
+ * @param  {number} offset Offset in view
+ * @param  {number} dim Input dimension
+ * @param  {string} type Either 'Polygon' or 'Polyline'
+ * @return {object} Binary geometry object
+ */
 // eslint-disable-next-line max-statements
 function parsePoly(view, offset, dim, type) {
   // skip parsing bounding box
@@ -179,7 +213,15 @@ function parsePoly(view, offset, dim, type) {
   };
 }
 
-// Parse a contiguous block of positions into a Float64Array
+/**
+ * Parse a contiguous block of positions into a Float64Array
+ *
+ * @param  {DataView} view  Geometry data
+ * @param  {number} offset  Offset in view
+ * @param  {number} nPoints Number of points
+ * @param  {number} dim     Input dimension
+ * @return {[Float64Array, number]} Data and offset
+ */
 function parsePositions(view, offset, nPoints, dim) {
   const bufferOffset = view.byteOffset + offset;
   const bufferLength = nPoints * dim * Float64Array.BYTES_PER_ELEMENT;
@@ -189,8 +231,15 @@ function parsePositions(view, offset, nPoints, dim) {
   ];
 }
 
-// Concatenate and interleave positions arrays
-// xy positions are interleaved; mPositions, zPositions are their own arrays
+/**
+ * Concatenate and interleave positions arrays
+ * xy positions are interleaved; mPositions, zPositions are their own arrays
+ *
+ * @param  {Float64Array} xyPositions 2d positions
+ * @param  {Float64Array?} mPositions  M positions
+ * @param  {Float64Array?} zPositions  Z positions
+ * @return {Float64Array} Combined interleaved positions
+ */
 // eslint-disable-next-line complexity
 function concatPositions(xyPositions, mPositions, zPositions) {
   if (!(mPositions || zPositions)) {
@@ -239,7 +288,7 @@ function concatPositions(xyPositions, mPositions, zPositions) {
  * A negative number is counter clockwise.
  *
  * @param  {Float64Array} positions
- * @return {Number} Sign of polygon ring
+ * @return {number} Sign of polygon ring
  */
 function getWindingDirection(positions) {
   return Math.sign(getSignedArea(positions));
@@ -249,7 +298,7 @@ function getWindingDirection(positions) {
  * Get signed area of flat typed array of 2d positions
  *
  * @param  {Float64Array} positions
- * @return {Number} Signed area of polygon ring
+ * @return {number} Signed area of polygon ring
  */
 function getSignedArea(positions) {
   let area = 0;
