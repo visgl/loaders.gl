@@ -104,6 +104,7 @@ function parseMultiPoint(view, offset, dim) {
 
 // MultiPolygon doesn't exist? Multiple records with the same attributes?
 // polygon and polyline parsing
+// eslint-disable-next-line max-statements
 function parsePoly(view, offset, dim, type) {
   // skip parsing bounding box
   offset += 4 * Float64Array.BYTES_PER_ELEMENT;
@@ -237,8 +238,8 @@ function concatPositions(xyPositions, mPositions, zPositions) {
  * A positive number is clockwise.
  * A negative number is counter clockwise.
  *
- * @param  {Float32Array} positions
- * @return {Number}           [description]
+ * @param  {Float64Array} positions
+ * @return {Number} Sign of polygon ring
  */
 function getWindingDirection(positions) {
   return Math.sign(getSignedArea(positions));
@@ -247,8 +248,8 @@ function getWindingDirection(positions) {
 /**
  * Get signed area of flat typed array of 2d positions
  *
- * @param  {Float64Array} positions [description]
- * @return {Number}           [description]
+ * @param  {Float64Array} positions
+ * @return {Number} Signed area of polygon ring
  */
 function getSignedArea(positions) {
   let area = 0;
