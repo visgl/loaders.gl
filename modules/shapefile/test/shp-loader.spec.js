@@ -73,6 +73,8 @@ test('Shapefile JS Polygon tests', async t => {
       t.deepEqual(output.geometries[i].positions, expBinary.positions);
       // @ts-ignore
       t.deepEqual(output.geometries[i].primitivePolygonIndices, expBinary.primitivePolygonIndices);
+      // @ts-ignore
+      t.deepEqual(output.geometries[i].polygonIndices, expBinary.polygonIndices);
     }
   }
 

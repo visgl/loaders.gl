@@ -117,9 +117,9 @@ function parsePoly(view, offset, dim, type) {
   // include the last index as the total number of positions
   const bufferOffset = view.byteOffset + offset;
   const bufferLength = nParts * Int32Array.BYTES_PER_ELEMENT;
-  const indices = new Int32Array(nParts + 1);
-  indices.set(new Int32Array(view.buffer.slice(bufferOffset, bufferOffset + bufferLength)));
-  indices[nParts] = nPoints;
+  const ringIndices = new Int32Array(nParts + 1);
+  ringIndices.set(new Int32Array(view.buffer.slice(bufferOffset, bufferOffset + bufferLength)));
+  ringIndices[nParts] = nPoints;
   offset += nParts * Int32Array.BYTES_PER_ELEMENT;
 
   let xyPositions;
@@ -147,17 +147,33 @@ function parsePoly(view, offset, dim, type) {
   if (type === 'LineString') {
     return {
       positions: {value: positions, size: dim},
-      pathIndices: {value: indices, size: 1},
+      pathIndices: {value: ringIndices, size: 1},
       type
     };
   }
 
-  // type is Polygon
+  // for every ring, determine sign of polygon
+  // Use only 2D positions for ring calc
+  const polygonIndices = [];
+  for (let i = 1; i < ringIndices.length; i++) {
+    const startRingIndex = ringIndices[i - 1];
+    const endRingIndex = ringIndices[i];
+    const ring = xyPositions.subarray(startRingIndex * 2, endRingIndex * 2);
+    const sign = getWindingDirection(ring);
+
+    // A positive sign implies clockwise
+    // A clockwise ring is a filled ring
+    if (sign > 0) {
+      polygonIndices.push(startRingIndex);
+    }
+  }
+
+  polygonIndices.push(nPoints);
+
   return {
     positions: {value: positions, size: dim},
-    primitivePolygonIndices: {value: indices, size: 1},
-    // Shapefiles can only hold non-Multi-Polygons
-    polygonIndices: {value: new Uint16Array([0, nPoints]), size: 1},
+    primitivePolygonIndices: {value: ringIndices, size: 1},
+    polygonIndices: {value: new Uint16Array(polygonIndices), size: 1},
     type
   };
 }
@@ -214,4 +230,36 @@ function concatPositions(xyPositions, mPositions, zPositions) {
   }
 
   return positions;
+}
+
+/**
+ * Returns the direction of the polygon path
+ * A positive number is clockwise.
+ * A negative number is counter clockwise.
+ *
+ * @param  {Float32Array} positions
+ * @return {Number}           [description]
+ */
+function getWindingDirection(positions) {
+  return Math.sign(getSignedArea(positions));
+}
+
+/**
+ * Get signed area of flat typed array of 2d positions
+ *
+ * @param  {Float64Array} positions [description]
+ * @return {Number}           [description]
+ */
+function getSignedArea(positions) {
+  let area = 0;
+
+  // Rings are closed according to shapefile spec
+  const nCoords = positions.length / 2 - 1;
+  for (let i = 0; i < nCoords; i++) {
+    const p1 = positions.subarray(i * 2, (i + 1) * 2);
+    const p2 = positions.subarray((i + 1) * 2, (i + 2) * 2);
+    area += (p1[0] + p2[0]) * (p1[1] - p2[1]);
+  }
+
+  return area / 2;
 }
