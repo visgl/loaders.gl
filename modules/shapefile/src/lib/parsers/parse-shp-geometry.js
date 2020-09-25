@@ -102,9 +102,9 @@ function parseMultiPoint(view, offset, dim) {
   const nPoints = view.getInt32(offset, LITTLE_ENDIAN);
   offset += Int32Array.BYTES_PER_ELEMENT;
 
-  let xyPositions;
-  let mPositions;
-  let zPositions;
+  let xyPositions = null;
+  let mPositions = null;
+  let zPositions = null;
   [xyPositions, offset] = parsePositions(view, offset, nPoints, 2);
 
   // Parse Z coordinates
@@ -157,9 +157,9 @@ function parsePoly(view, offset, dim, type) {
   ringIndices[nParts] = nPoints;
   offset += nParts * Int32Array.BYTES_PER_ELEMENT;
 
-  let xyPositions;
-  let mPositions;
-  let zPositions;
+  let xyPositions = null;
+  let mPositions = null;
+  let zPositions = null;
   [xyPositions, offset] = parsePositions(view, offset, nPoints, 2);
 
   // Parse Z coordinates
