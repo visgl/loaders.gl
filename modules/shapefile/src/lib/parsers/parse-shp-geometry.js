@@ -306,9 +306,9 @@ function getSignedArea(positions) {
   // Rings are closed according to shapefile spec
   const nCoords = positions.length / 2 - 1;
   for (let i = 0; i < nCoords; i++) {
-    const p1 = positions.subarray(i * 2, (i + 1) * 2);
-    const p2 = positions.subarray((i + 1) * 2, (i + 2) * 2);
-    area += (p1[0] + p2[0]) * (p1[1] - p2[1]);
+    area +=
+      (positions[i * 2] + positions[(i + 1) * 2]) *
+      (positions[i * 2 + 1] - positions[(i + 1) * 2 + 1]);
   }
 
   return area / 2;
