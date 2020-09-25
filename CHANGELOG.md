@@ -2,6 +2,12 @@
 
 ## v2.3 Prereleases
 
+#### v2.3.0-beta.2
+
+- Set isTileset to 'auto' in tile-3d to enable loading an external tileset json within a tile. (#947)
+- Draco: Fix for the case that extraAttributes are provided in options (#948)
+- Shapefile Multipolygon fix (#955)
+
 #### v2.3.0-beta.1
 
 - Added an I3S example that uses the Arcgis basemap. (#954)
