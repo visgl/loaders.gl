@@ -49,7 +49,7 @@ export default function parseLAS(arraybuffer, options = {}) {
       originalHeader = header;
       const total = header.totalToRead;
 
-      positions = new Float32Array(total * 3);
+      positions = new Float64Array(total * 3);
       // laslaz-decoder.js `pointFormatReaders`
       colors = header.pointsFormatId >= 2 ? new Uint8Array(total * 4) : null;
       intensities = new Uint16Array(total);
