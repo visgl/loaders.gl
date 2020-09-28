@@ -9,20 +9,24 @@ import draco3d from 'draco3d';
 const VALUES_PER_VERTEX = 3;
 const VALUES_PER_TEX_COORD = 2;
 const VALUES_PER_COLOR_ELEMENT = 4;
+/*
+* 'CUSTOM_ATTRIBUTE_2' - Attribute name which includes batch info and used by New York map.
+* _BATCHID - default attribute name which includes batch info.
+*/
+const BATCHED_ID_POSSIBLE_ATTRIBUTE_NAMES = ['CUSTOM_ATTRIBUTE_2', '_BATCHID'];
 
 export default async function convertB3dmToI3sGeometry(tileContent, nodeId) {
-  const {positions, normals, texCoords, colors} = convertAttributes(tileContent);
+  const {positions, normals, texCoords, colors, featureIndices} = convertAttributes(tileContent);
   const {material, texture} = convertMaterial(tileContent);
-
   const vertexCount = positions.length / VALUES_PER_VERTEX;
   const triangleCount = vertexCount / 3;
-  const fetureCount = 1;
+  const {faceRange, featureIds, featureCount} = generateFeatureAttributes(
+    featureIndices,
+    triangleCount
+  );
   const header = new Uint32Array(2);
-  header.set([vertexCount, fetureCount], 0);
 
-  const featureIds = new Float64Array([0]);
-  const faceRanges = new Uint32Array([0, triangleCount - 1]);
-
+  header.set([vertexCount, featureCount], 0);
   const fileBuffer = new Uint8Array(
     concatenateArrayBuffers(
       header.buffer,
@@ -31,7 +35,7 @@ export default async function convertB3dmToI3sGeometry(tileContent, nodeId) {
       texCoords.buffer,
       colors.buffer,
       featureIds.buffer,
-      faceRanges.buffer
+      faceRange.buffer
     )
   );
 
@@ -40,15 +44,14 @@ export default async function convertB3dmToI3sGeometry(tileContent, nodeId) {
     indices.set([index], index);
   }
 
-  const featureIndices = new Uint32Array(vertexCount);
-  featureIndices.fill(0);
+  const featureIndex = featureIndices.length ? featureIndices : new Uint32Array(vertexCount);
 
   const attributes = {
     positions,
     normals,
     texCoords,
     colors,
-    'feature-index': featureIndices
+    'feature-index': featureIndex
   };
   const compressedGeometry = new Uint8Array(
     await encode({attributes, indices}, DracoWriter, {
@@ -87,15 +90,19 @@ function convertAttributes(tileContent) {
   let positions = new Float32Array(0);
   let normals = new Float32Array(0);
   let convertedTexCoords = new Float32Array(0);
+  let featureIndices = new Uint32Array(0);
+
   const nodes = tileContent.gltf.scene.nodes;
   const convertedAttributes = convertNodes(nodes, tileContent, {
     positions,
     normals,
-    texCoords: convertedTexCoords
+    texCoords: convertedTexCoords,
+    featureIndices
   });
   positions = convertedAttributes.positions;
   normals = convertedAttributes.normals;
   convertedTexCoords = convertedAttributes.texCoords;
+  featureIndices = convertedAttributes.featureIndices;
   const vertexCount = positions.length / VALUES_PER_VERTEX;
   const colors = new Uint8Array(vertexCount * VALUES_PER_COLOR_ELEMENT);
   for (let index = 0; index < colors.length; index += 4) {
@@ -114,7 +121,8 @@ function convertAttributes(tileContent) {
     positions,
     normals,
     colors,
-    texCoords
+    texCoords,
+    featureIndices
   };
 }
 
@@ -136,18 +144,24 @@ function convertAttributes(tileContent) {
 function convertNodes(
   nodes,
   tileContent,
-  {positions, normals, texCoords},
+  {positions, normals, texCoords, featureIndices},
   matrix = new Matrix4([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])
 ) {
   if (nodes) {
     for (const node of nodes) {
-      const newAttributes = convertNode(node, tileContent, {positions, normals, texCoords}, matrix);
+      const newAttributes = convertNode(
+        node,
+        tileContent,
+        {positions, normals, texCoords, featureIndices},
+        matrix
+      );
       positions = newAttributes.positions;
       normals = newAttributes.normals;
       texCoords = newAttributes.texCoords;
+      featureIndices = newAttributes.featureIndices;
     }
   }
-  return {positions, normals, texCoords};
+  return {positions, normals, texCoords, featureIndices};
 }
 
 /**
@@ -168,7 +182,7 @@ function convertNodes(
 function convertNode(
   node,
   tileContent,
-  {positions, normals, texCoords},
+  {positions, normals, texCoords, featureIndices},
   matrix = new Matrix4([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])
 ) {
   const nodeMatrix = node.matrix;
@@ -179,25 +193,27 @@ function convertNode(
     const newAttributes = convertMesh(
       mesh,
       tileContent,
-      {positions, normals, texCoords},
+      {positions, normals, texCoords, featureIndices},
       compositeMatrix
     );
     positions = newAttributes.positions;
     normals = newAttributes.normals;
     texCoords = newAttributes.texCoords;
+    featureIndices = newAttributes.featureIndices;
   }
 
   const newAttributes = convertNodes(
     node.children,
     tileContent,
-    {positions, normals, texCoords},
+    {positions, normals, texCoords, featureIndices},
     compositeMatrix
   );
   positions = newAttributes.positions;
   normals = newAttributes.normals;
   texCoords = newAttributes.texCoords;
+  featureIndices = newAttributes.featureIndices;
 
-  return {positions, normals, texCoords};
+  return {positions, normals, texCoords, featureIndices};
 }
 
 /**
@@ -218,96 +234,73 @@ function convertNode(
 function convertMesh(
   mesh,
   content,
-  {positions, normals, texCoords},
+  {positions, normals, texCoords, featureIndices},
   matrix = new Matrix4([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])
 ) {
   for (const primitive of mesh.primitives) {
+    normalizeAttributesByIndicesRange(primitive.attributes, primitive.indices);
     const attributes = primitive.attributes;
-    const batchIds = content.batchTableJson && content.batchTableJson.id;
-    // Common case - indices are applied for vertices
-    if (!(batchIds && batchIds.length) || !isBatchedIndices(primitive.indices, attributes)) {
-      positions = concatenateTypedArrays(
-        positions,
-        transformVertexArray(
-          attributes.POSITION.value,
-          content.cartographicOrigin,
-          content.cartesianModelMatrix,
-          matrix,
-          primitive.indices.value
-        )
-      );
-      normals = concatenateTypedArrays(
-        normals,
-        transformVertexArray(
-          attributes.NORMAL && attributes.NORMAL.value,
-          content.cartographicOrigin,
-          content.cartesianModelMatrix,
-          matrix,
-          primitive.indices.value
-        )
-      );
-      texCoords = concatenateTypedArrays(
-        texCoords,
-        flattenTexCoords(
-          attributes.TEXCOORD_0 && attributes.TEXCOORD_0.value,
-          primitive.indices.value
-        )
-      );
-      continue; // eslint-disable-line
-    }
-    /* For this case indices are applicable for batch, not for all vertex array.
-      1. Cut vertices with batchId===0,
-      2. Apply indices on resulting array,
-      3. Cut next vertices' range by batchId,
-      4. Apply indices on resulting range etc.*/
-    for (const batchId of batchIds) {
-      const {
-        positions: newPositions,
-        normals: newNormals,
-        texCoords: newTexCoords
-      } = getValuesByBatchId(attributes, batchId);
-      positions = concatenateTypedArrays(
-        positions,
-        transformVertexArray(
-          newPositions,
-          content.cartographicOrigin,
-          content.cartesianModelMatrix,
-          matrix,
-          primitive.indices.value
-        )
-      );
 
-      normals = concatenateTypedArrays(
-        normals,
-        transformVertexArray(
-          newNormals,
-          content.cartographicOrigin,
-          content.cartesianModelMatrix,
-          matrix,
-          primitive.indices.value
-        )
-      );
+    positions = concatenateTypedArrays(
+      positions,
+      transformVertexArray(
+        attributes.POSITION.value,
+        content.cartographicOrigin,
+        content.cartesianModelMatrix,
+        matrix,
+        primitive.indices.value
+      )
+    );
+    normals = concatenateTypedArrays(
+      normals,
+      transformVertexArray(
+        attributes.NORMAL && attributes.NORMAL.value,
+        content.cartographicOrigin,
+        content.cartesianModelMatrix,
+        matrix,
+        primitive.indices.value
+      )
+    );
+    texCoords = concatenateTypedArrays(
+      texCoords,
+      flattenTexCoords(
+        attributes.TEXCOORD_0 && attributes.TEXCOORD_0.value,
+        primitive.indices.value
+      )
+    );
 
-      texCoords = concatenateTypedArrays(
-        texCoords,
-        flattenTexCoords(newTexCoords, primitive.indices.value)
-      );
-    }
+    featureIndices = concatenateTypedArrays(
+      featureIndices,
+      flattenBatchIds(getBatchIdsByAttributeName(attributes), primitive.indices.value)
+    );
   }
-  return {positions, normals, texCoords};
+
+  return {positions, normals, texCoords, featureIndices};
 }
 
 /**
- * Check if batchedIds are applied for vertex indices array, not for vertex array
+ * Do normalisation of arrtibutes based on indices range.
  * @param {Object} indices - gltf primitive indices array
  * @param {Object} attributes - gltf primitive attributes
- * @returns {boolean}
+ * @returns {void}
  */
-function isBatchedIndices(indices, attributes) {
-  const {positions} = getValuesByBatchId(attributes, 0);
-  return indices.max < positions.length;
-}
+function normalizeAttributesByIndicesRange(indices, attributes) {
+  if (!indices || !indices.min || !indices.max) {
+    return;
+  }
 
+  const maxIndex = indices.max[0];
+  const minIndex = indices.min[0];
+
+  for (const key in attributes) {
+    const attribute = attributes[key];
+    attribute.value = attribute.value.subarray(
+      minIndex * attribute.size,
+      maxIndex * attribute.size
+    );
+    attribute.count = maxIndex - minIndex;
+  }
+}
 /**
  * Convert vertices attributes (POSITIONS or NORMALS) to i3s compatible format
  * @param {Float32Array} vertices - gltf primitive POSITION or NORMAL attribute
@@ -367,69 +360,47 @@ function flattenTexCoords(texCoords, indices) {
     const texCoord = texCoords.subarray(coordIndex, coordIndex + VALUES_PER_TEX_COORD);
     newTexCoords[i * VALUES_PER_TEX_COORD] = texCoord[0];
     newTexCoords[i * VALUES_PER_TEX_COORD + 1] = texCoord[1];
-    newTexCoords[i * VALUES_PER_TEX_COORD + 2] = texCoord[2];
   }
   return newTexCoords;
 }
-
-/* eslint-disable max-statements */
 /**
- * Cut attributes from array by "batchId"
- * @param {Object} attributes - gltf primitive attributes
- * @param {number} batchId - batchId to select corresponding range of attributes
- * @returns {Object}
- * {
- *   positions: Float32Array,
- *   normals: Float32Array,
- *   texCoords: Float32Array
- * }
+ * Flatten batchedIds list based on indices to right ordered array, compatible with i3s
+ * @param {Uint32Array} batchedIds - gltf primitive
+ * @param {Uint8Array} indices - gltf primitive indices
+ * @returns {Uint32Array}
  */
-function getValuesByBatchId(attributes, batchId) {
-  const batchIdAttribute = attributes._BATCHID;
-  const positionsToBatch = attributes.POSITION.value;
-  const normalsToBatch = attributes.NORMAL.value;
-  const texCoordsToBatch = attributes.TEXCOORD_0 && attributes.TEXCOORD_0.value;
-  if (!batchIdAttribute) {
-    return {
-      positions: positionsToBatch,
-      normals: normalsToBatch,
-      texCoords: texCoordsToBatch
-    };
+function flattenBatchIds(batchedIds, indices) {
+  if (!batchedIds.length || !indices.length) {
+    return new Uint32Array(0);
   }
-  const batchIdRelations = batchIdAttribute.value;
-  const batchIdCount = batchIdRelations.filter(id => id === batchId).length;
-  const positions = new Float32Array(batchIdCount * VALUES_PER_VERTEX);
-  const normals = new Float32Array(batchIdCount * VALUES_PER_VERTEX);
-  let texCoords = null;
-  if (texCoordsToBatch) {
-    texCoords = new Float32Array(batchIdCount * VALUES_PER_TEX_COORD);
+  const newBatchIds = new Uint32Array(indices.length);
+  for (let i = 0; i < indices.length; i++) {
+    const coordIndex = indices[i];
+    newBatchIds.set([Math.round(batchedIds[coordIndex])], i);
   }
-  let resultArrayCounter = 0;
-  let texCoordsArrayCounter = 0;
-  for (let index = 0; index < batchIdAttribute.count; index++) {
-    if (batchIdRelations[index] === batchId) {
-      positions[resultArrayCounter] = positionsToBatch[index * VALUES_PER_VERTEX];
-      positions[resultArrayCounter + 1] = positionsToBatch[index * VALUES_PER_VERTEX + 1];
-      positions[resultArrayCounter + 2] = positionsToBatch[index * VALUES_PER_VERTEX + 2];
-      normals[resultArrayCounter] = normalsToBatch[index * VALUES_PER_VERTEX];
-      normals[resultArrayCounter + 1] = normalsToBatch[index * VALUES_PER_VERTEX + 1];
-      normals[resultArrayCounter + 2] = normalsToBatch[index * VALUES_PER_VERTEX + 2];
-      resultArrayCounter += VALUES_PER_VERTEX;
+  return newBatchIds;
+}
+/**
+ * Return batchIds based on possible attribute names for different kind of maps.
+ * @param {Object} attributes {attributeName: Float32Array}
+ * @returns {Uint32Array}
+ */
+function getBatchIdsByAttributeName(attributes) {
+  let batchIds = new Uint32Array(0);
 
-      if (texCoords) {
-        texCoords[texCoordsArrayCounter] = texCoordsToBatch[index * VALUES_PER_VERTEX];
-        texCoords[texCoordsArrayCounter + 1] = texCoordsToBatch[index * VALUES_PER_VERTEX + 1];
-        texCoordsArrayCounter += VALUES_PER_TEX_COORD;
-      }
+  for (let index = 0; index < BATCHED_ID_POSSIBLE_ATTRIBUTE_NAMES.length; index++) {
+    const possibleBatchIdAttributeName = BATCHED_ID_POSSIBLE_ATTRIBUTE_NAMES[index];
+    if (
+      attributes[possibleBatchIdAttributeName] &&
+      attributes[possibleBatchIdAttributeName].value
+    ) {
+      batchIds = attributes[possibleBatchIdAttributeName].value;
+      break;
     }
   }
-  return {
-    positions,
-    normals,
-    texCoords
-  };
+
+  return batchIds;
 }
-/* eslint-enable max-statements */
 
 /**
  * Convert texture and material from gltf material object
@@ -629,6 +600,55 @@ function extractSharedResourcesTextureInfo(texture, nodeId) {
   };
 }
 /**
+ * Calculate face range, features count and folded featureIds based on featureIndices array.
+ * @param {Uint32Array} featureIndices - texture image info
+ * @param {Number} triangleCount
+ * @returns {Object} {faceRange, featureIds, featureCount}.
+ */
+function generateFeatureAttributes(featureIndices, triangleCount) {
+  if (!featureIndices.length) {
+    return {
+      faceRange: new Uint32Array([0, triangleCount - 1]),
+      featureIds: new Float64Array([0]),
+      featureCount: 1
+    };
+  }
+
+  let rangeIndex = 1;
+  let featureIndex = 1;
+  let currentFeatureId = featureIndices[0];
+  const faceRangeList = [];
+  const featureIdsList = [];
+  const uniqueFeatureIds = [currentFeatureId];
+
+  faceRangeList[0] = 0;
+  featureIdsList[0] = currentFeatureId;
+
+  for (let index = 1; index < featureIndices.length; index++) {
+    if (currentFeatureId !== featureIndices[index]) {
+      faceRangeList[rangeIndex] = index / VALUES_PER_VERTEX - 1;
+      faceRangeList[rangeIndex + 1] = index / VALUES_PER_VERTEX;
+      featureIdsList[featureIndex] = featureIndices[index];
+
+      if (!uniqueFeatureIds.includes(featureIndices[index])) {
+        uniqueFeatureIds.push(featureIndices[index]);
+      }
+
+      rangeIndex += 2;
+      featureIndex += 1;
+    }
+    currentFeatureId = featureIndices[index];
+  }
+
+  faceRangeList[rangeIndex] = featureIndices.length / VALUES_PER_VERTEX - 1;
+
+  const faceRange = new Uint32Array(faceRangeList);
+  const featureIds = new Float64Array(featureIdsList);
+  const featureCount = uniqueFeatureIds.length;
+
+  return {faceRange, featureIds, featureCount};
+}
+/*
  * Formula for counting imageId:
  * https://github.com/Esri/i3s-spec/blob/0a6366a9249b831db8436c322f8d27521e86cf07/format/Indexed%203d%20Scene%20Layer%20Format%20Specification.md#generating-image-ids
  * @param {Object} texture - texture image info
