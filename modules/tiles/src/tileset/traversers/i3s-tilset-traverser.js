@@ -17,7 +17,7 @@ export default class I3STilesetTraverser extends TilesetTraverser {
     return tile._lodJudge === 'DIG';
   }
 
-  // eslint-disable-next-line complexity
+  /* eslint-disable max-depth */
   updateChildTiles(tile, frameState) {
     const children = tile.header.children || [];
     // children which are already fetched and constructed as Tile3D instances
@@ -28,9 +28,12 @@ export default class I3STilesetTraverser extends TilesetTraverser {
       // if child tile is not fetched
       const childTile = childTiles && childTiles.find(t => t.id === child.id);
       if (!childTile) {
-        const request = () => this._loadTile(child.id, tileset);
+        let request = () => this._loadTile(child.id, tileset);
         const cachedRequest = this._tileManager.find(child.id);
         if (!cachedRequest) {
+          if (tileset.tileset.nodePages) {
+            request = () => tileset.tileset.nodePagesTile.formTileFromNodePages(child.id);
+          }
           this._tileManager.add(
             request,
             child.id,
@@ -47,6 +50,7 @@ export default class I3STilesetTraverser extends TilesetTraverser {
       }
     }
   }
+  /* eslint-enable max-depth */
 
   async _loadTile(nodeId, tileset) {
     const {loader} = tileset;
