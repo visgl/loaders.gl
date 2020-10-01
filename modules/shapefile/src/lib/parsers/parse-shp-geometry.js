@@ -1,5 +1,11 @@
 const LITTLE_ENDIAN = true;
 
+/**
+ * Parse individual record
+ *
+ * @param  {DataView} view Record data
+ * @return {object} Binary Geometry Object
+ */
 // eslint-disable-next-line complexity
 export function parseRecord(view) {
   let offset = 0;
@@ -9,7 +15,7 @@ export function parseRecord(view) {
   switch (type) {
     case 0:
       // Null Shape
-      return parseNull(view, offset);
+      return parseNull();
     case 1:
       // Point
       return parsePoint(view, offset, 2);
@@ -54,10 +60,23 @@ export function parseRecord(view) {
 }
 
 // TODO handle null
-function parseNull(view, offset) {
+/**
+ * Parse Null geometry
+ *
+ * @return {null}
+ */
+function parseNull() {
   return null;
 }
 
+/**
+ * Parse point geometry
+ *
+ * @param  {DataView} view Geometry data
+ * @param  {number} offset Offset in view
+ * @param  {number} dim Dimension size
+ * @return {object} Binary geometry object
+ */
 function parsePoint(view, offset, dim) {
   let positions;
   [positions, offset] = parsePositions(view, offset, 1, dim);
@@ -68,6 +87,14 @@ function parsePoint(view, offset, dim) {
   };
 }
 
+/**
+ * Parse MultiPoint geometry
+ *
+ * @param  {DataView} view Geometry data
+ * @param  {number} offset Offset in view
+ * @param  {number} dim Input dimension
+ * @return {object} Binary geometry object
+ */
 function parseMultiPoint(view, offset, dim) {
   // skip parsing box
   offset += 4 * Float64Array.BYTES_PER_ELEMENT;
@@ -75,9 +102,9 @@ function parseMultiPoint(view, offset, dim) {
   const nPoints = view.getInt32(offset, LITTLE_ENDIAN);
   offset += Int32Array.BYTES_PER_ELEMENT;
 
-  let xyPositions;
-  let mPositions;
-  let zPositions;
+  let xyPositions = null;
+  let mPositions = null;
+  let zPositions = null;
   [xyPositions, offset] = parsePositions(view, offset, nPoints, 2);
 
   // Parse Z coordinates
@@ -102,8 +129,16 @@ function parseMultiPoint(view, offset, dim) {
   };
 }
 
-// MultiPolygon doesn't exist? Multiple records with the same attributes?
-// polygon and polyline parsing
+/**
+ * Polygon and PolyLine parsing
+ *
+ * @param  {DataView} view Geometry data
+ * @param  {number} offset Offset in view
+ * @param  {number} dim Input dimension
+ * @param  {string} type Either 'Polygon' or 'Polyline'
+ * @return {object} Binary geometry object
+ */
+// eslint-disable-next-line max-statements
 function parsePoly(view, offset, dim, type) {
   // skip parsing bounding box
   offset += 4 * Float64Array.BYTES_PER_ELEMENT;
@@ -117,14 +152,14 @@ function parsePoly(view, offset, dim, type) {
   // include the last index as the total number of positions
   const bufferOffset = view.byteOffset + offset;
   const bufferLength = nParts * Int32Array.BYTES_PER_ELEMENT;
-  const indices = new Int32Array(nParts + 1);
-  indices.set(new Int32Array(view.buffer.slice(bufferOffset, bufferOffset + bufferLength)));
-  indices[nParts] = nPoints;
+  const ringIndices = new Int32Array(nParts + 1);
+  ringIndices.set(new Int32Array(view.buffer.slice(bufferOffset, bufferOffset + bufferLength)));
+  ringIndices[nParts] = nPoints;
   offset += nParts * Int32Array.BYTES_PER_ELEMENT;
 
-  let xyPositions;
-  let mPositions;
-  let zPositions;
+  let xyPositions = null;
+  let mPositions = null;
+  let zPositions = null;
   [xyPositions, offset] = parsePositions(view, offset, nPoints, 2);
 
   // Parse Z coordinates
@@ -147,22 +182,46 @@ function parsePoly(view, offset, dim, type) {
   if (type === 'LineString') {
     return {
       positions: {value: positions, size: dim},
-      pathIndices: {value: indices, size: 1},
+      pathIndices: {value: ringIndices, size: 1},
       type
     };
   }
 
-  // type is Polygon
+  // for every ring, determine sign of polygon
+  // Use only 2D positions for ring calc
+  const polygonIndices = [];
+  for (let i = 1; i < ringIndices.length; i++) {
+    const startRingIndex = ringIndices[i - 1];
+    const endRingIndex = ringIndices[i];
+    const ring = xyPositions.subarray(startRingIndex * 2, endRingIndex * 2);
+    const sign = getWindingDirection(ring);
+
+    // A positive sign implies clockwise
+    // A clockwise ring is a filled ring
+    if (sign > 0) {
+      polygonIndices.push(startRingIndex);
+    }
+  }
+
+  polygonIndices.push(nPoints);
+
   return {
     positions: {value: positions, size: dim},
-    primitivePolygonIndices: {value: indices, size: 1},
-    // Shapefiles can only hold non-Multi-Polygons
-    polygonIndices: {value: new Uint16Array([0, nPoints]), size: 1},
+    primitivePolygonIndices: {value: ringIndices, size: 1},
+    polygonIndices: {value: new Uint16Array(polygonIndices), size: 1},
     type
   };
 }
 
-// Parse a contiguous block of positions into a Float64Array
+/**
+ * Parse a contiguous block of positions into a Float64Array
+ *
+ * @param  {DataView} view  Geometry data
+ * @param  {number} offset  Offset in view
+ * @param  {number} nPoints Number of points
+ * @param  {number} dim     Input dimension
+ * @return {[Float64Array, number]} Data and offset
+ */
 function parsePositions(view, offset, nPoints, dim) {
   const bufferOffset = view.byteOffset + offset;
   const bufferLength = nPoints * dim * Float64Array.BYTES_PER_ELEMENT;
@@ -172,8 +231,15 @@ function parsePositions(view, offset, nPoints, dim) {
   ];
 }
 
-// Concatenate and interleave positions arrays
-// xy positions are interleaved; mPositions, zPositions are their own arrays
+/**
+ * Concatenate and interleave positions arrays
+ * xy positions are interleaved; mPositions, zPositions are their own arrays
+ *
+ * @param  {Float64Array} xyPositions 2d positions
+ * @param  {Float64Array?} mPositions  M positions
+ * @param  {Float64Array?} zPositions  Z positions
+ * @return {Float64Array} Combined interleaved positions
+ */
 // eslint-disable-next-line complexity
 function concatPositions(xyPositions, mPositions, zPositions) {
   if (!(mPositions || zPositions)) {
@@ -214,4 +280,36 @@ function concatPositions(xyPositions, mPositions, zPositions) {
   }
 
   return positions;
+}
+
+/**
+ * Returns the direction of the polygon path
+ * A positive number is clockwise.
+ * A negative number is counter clockwise.
+ *
+ * @param  {Float64Array} positions
+ * @return {number} Sign of polygon ring
+ */
+function getWindingDirection(positions) {
+  return Math.sign(getSignedArea(positions));
+}
+
+/**
+ * Get signed area of flat typed array of 2d positions
+ *
+ * @param  {Float64Array} positions
+ * @return {number} Signed area of polygon ring
+ */
+function getSignedArea(positions) {
+  let area = 0;
+
+  // Rings are closed according to shapefile spec
+  const nCoords = positions.length / 2 - 1;
+  for (let i = 0; i < nCoords; i++) {
+    area +=
+      (positions[i * 2] + positions[(i + 1) * 2]) *
+      (positions[i * 2 + 1] - positions[(i + 1) * 2 + 1]);
+  }
+
+  return area / 2;
 }

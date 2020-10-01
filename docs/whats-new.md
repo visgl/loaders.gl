@@ -27,6 +27,10 @@ This release brings a new Shapefile loader, compression codecs (Zlib, LZ4, Zstan
 - `selectLoader()` can now select loaders through content sniffing of `Blob` and `File` objects.
 - `selectLoaderSync()` has been added for situations when calling an async function is not practial.
 
+**@loaders.gl/draco**
+
+- Draco3D libraries are upgraded to version 1.3.6.
+
 **@loaders.gl/polyfills**
 
 - `fetch` polyfill: Files with `.gz` extension are automatically decompressed with gzip. The extension reported in the `fetch` response has the `.gz` extension removed.

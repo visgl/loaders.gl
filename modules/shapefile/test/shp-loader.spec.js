@@ -1,5 +1,5 @@
 import test from 'tape-promise/tape';
-import {load, fetchFile} from '@loaders.gl/core';
+import {setLoaderOptions, load, fetchFile} from '@loaders.gl/core';
 import {geojsonToBinary} from '@loaders.gl/gis';
 import {SHPLoader} from '@loaders.gl/shapefile';
 
@@ -7,7 +7,13 @@ const SHAPEFILE_POLYGON_PATH = '@loaders.gl/shapefile/test/data/shapefile-js/pol
 const SHAPEFILE_JS_DATA_FOLDER = '@loaders.gl/shapefile/test/data/shapefile-js';
 const SHAPEFILE_JS_POINT_TEST_FILES = ['points', 'multipoints'];
 const SHAPEFILE_JS_POLYLINE_TEST_FILES = ['polylines'];
-const SHAPEFILE_JS_POLYGON_TEST_FILES = ['polygons'];
+const SHAPEFILE_JS_POLYGON_TEST_FILES = ['polygons', 'multipolygon_with_holes'];
+
+setLoaderOptions({
+  shp: {
+    workerUrl: 'modules/shapefile/dist/shp-loader.worker.js'
+  }
+});
 
 test('SHPLoader#load polygons', async t => {
   const result = await load(SHAPEFILE_POLYGON_PATH, SHPLoader);
@@ -67,6 +73,8 @@ test('Shapefile JS Polygon tests', async t => {
       t.deepEqual(output.geometries[i].positions, expBinary.positions);
       // @ts-ignore
       t.deepEqual(output.geometries[i].primitivePolygonIndices, expBinary.primitivePolygonIndices);
+      // @ts-ignore
+      t.deepEqual(output.geometries[i].polygonIndices, expBinary.polygonIndices);
     }
   }
 

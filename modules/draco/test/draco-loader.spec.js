@@ -4,6 +4,7 @@ import {validateLoader, validateMeshCategoryData} from 'test/common/conformance'
 
 import {DracoLoader, DracoWorkerLoader} from '@loaders.gl/draco';
 import {setLoaderOptions, load} from '@loaders.gl/core';
+import draco3d from 'draco3d';
 
 const BUNNY_DRC_URL = '@loaders.gl/draco/test/data/bunny.drc';
 const CESIUM_TILE_URL = '@loaders.gl/draco/test/data/cesium-tile.drc';
@@ -22,6 +23,18 @@ test('DracoLoader#loader conformance', t => {
 
 test('DracoLoader#parse(mainthread)', async t => {
   const data = await load(BUNNY_DRC_URL, DracoLoader, {worker: false});
+  validateMeshCategoryData(t, data);
+  t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
+  t.end();
+});
+
+test('DracoLoader#draco3d npm package', async t => {
+  const data = await load(BUNNY_DRC_URL, DracoLoader, {
+    worker: false,
+    modules: {
+      draco3d
+    }
+  });
   validateMeshCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
   t.end();
