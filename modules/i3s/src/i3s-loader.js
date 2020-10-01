@@ -33,10 +33,6 @@ async function parseTile(data, options, context) {
   return normalizeTileData(data, options, context);
 }
 
-async function parseNodePage(data) {
-  return JSON.parse(new TextDecoder().decode(data));
-}
-
 /** @type {LoaderObject} */
 const I3SLoader = {
   id: 'i3s',
@@ -50,7 +46,6 @@ const I3SLoader = {
       loadContent: true,
       isTileset: 'auto',
       isTileHeader: 'auto',
-      isNodePage: false,
       tile: null,
       tileset: null
     }
@@ -76,12 +71,8 @@ async function parse(data, options, context, loader) {
     isTileHeader = options.i3s.isTileHeader;
   }
 
-  const isNodePage = options.i3s.isNodePage;
-
   if (isTileset) {
     data = await parseTileset(data, options, context);
-  } else if (isNodePage) {
-    data = parseNodePage(data);
   } else if (isTileHeader) {
     data = await parseTile(data, options, context);
     if (options.i3s.loadContent) {

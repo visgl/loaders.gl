@@ -1,5 +1,7 @@
 import {load} from '@loaders.gl/core';
 import {normalizeTileNonUrlData} from '../lib/parsers/parse-i3s';
+import {convertI3SObbToMbs} from '../utils/convert-i3s-obb-to-mbs';
+import I3SNodePageLoader from '../i3s-node-page-loader';
 
 export default class I3SNodePagesTiles {
   constructor(tileset, options) {
@@ -14,13 +16,7 @@ export default class I3SNodePagesTiles {
     const pageIndex = Math.floor(id / this.nodesPerPage);
     if (!this.nodePages[pageIndex]) {
       const nodePageUrl = `${this.tileset.url}/nodepages/${pageIndex}`;
-      const options = {
-        i3s: {
-          ...this.tileset.fetchOptions,
-          isNodePage: true
-        }
-      };
-      this.nodePages[pageIndex] = load(nodePageUrl, this.tileset.loader, options);
+      this.nodePages[pageIndex] = load(nodePageUrl, I3SNodePageLoader, this.options);
       this.nodePages[pageIndex] = await this.nodePages[pageIndex];
     }
     if (this.nodePages[pageIndex] instanceof Promise) {
@@ -38,7 +34,7 @@ export default class I3SNodePagesTiles {
       children.push({
         id: child,
         obb: childNode.obb,
-        mbs: this._convertObbToMbs(childNode.obb)
+        mbs: convertI3SObbToMbs(childNode.obb)
       });
     }
 
@@ -48,8 +44,12 @@ export default class I3SNodePagesTiles {
       if (node.mesh.geometry) {
         contentUrl = `${this.tileset.url}/nodes/${node.mesh.geometry.resource}/geometries/0`;
       }
-      if (node.mesh.material) {
-        textureUrl = `${this.tileset.url}/nodes/${node.mesh.material.resource}/textures/0`;
+
+      const textureName = this._getTextureName(node.mesh.material);
+      if (textureName) {
+        textureUrl = `${this.tileset.url}/nodes/${
+          node.mesh.material.resource
+        }/textures/${textureName}`;
       }
     }
 
@@ -69,29 +69,31 @@ export default class I3SNodePagesTiles {
       id,
       lodSelection,
       obb: node.obb,
-      mbs: this._convertObbToMbs(node.obb),
+      mbs: convertI3SObbToMbs(node.obb),
       contentUrl,
       textureUrl,
       children
     });
   }
 
-  _convertObbToMbs(obb) {
-    const halfSize = obb.halfSize;
-    const radius =
-      (Math.sqrt(
-        Math.pow(Math.sqrt(Math.pow(halfSize[0], 2) + Math.pow(halfSize[1], 2)), 2) +
-          Math.pow(halfSize[2] * 2, 2)
-      ) +
-        Math.sqrt(
-          Math.pow(Math.sqrt(Math.pow(halfSize[0], 2) + Math.pow(halfSize[2], 2)), 2) +
-            Math.pow(halfSize[1] * 2, 2)
-        ) +
-        Math.sqrt(
-          Math.pow(Math.sqrt(Math.pow(halfSize[1], 2) + Math.pow(halfSize[2], 2)), 2) +
-            Math.pow(halfSize[0] * 2, 2)
-        )) /
-      3;
-    return [...obb.center, radius];
+  _getTextureName(material) {
+    if (material) {
+      const materialDefinition = this.tileset.materialDefinitions[material.definition];
+      const textureSetDefinitionIndex =
+        materialDefinition &&
+        materialDefinition.pbrMetallicRoughness &&
+        materialDefinition.pbrMetallicRoughness.baseColorTexture &&
+        materialDefinition.pbrMetallicRoughness.baseColorTexture.textureSetDefinitionId;
+      if (textureSetDefinitionIndex || textureSetDefinitionIndex === 0) {
+        const textureSetDefinition = this.tileset.textureSetDefinitions[textureSetDefinitionIndex];
+        const textureName =
+          textureSetDefinition &&
+          textureSetDefinition.formats &&
+          textureSetDefinition.formats[0] &&
+          textureSetDefinition.formats[0].name;
+        return textureName;
+      }
+    }
+    return null;
   }
 }
