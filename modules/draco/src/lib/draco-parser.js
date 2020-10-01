@@ -208,7 +208,8 @@ export default class DracoParser {
       );
       attributes[attributeName] = {
         value: typedArray,
-        size: typedArray.length / numPoints
+        size: typedArray.length / numPoints,
+        metadata: attributeMetadata
       };
     }
 
@@ -376,33 +377,25 @@ export default class DracoParser {
     return this._queryDracoMetadata(dracoMetadata);
   }
 
-  // The not so wonderful world of undocumented Draco APIs :(
-  _queryDracoMetadata(dracoMetadata) {
-    const metadataQuerier = new this.draco.MetadataQuerier();
-    const metadataEntries = metadataQuerier.NumEntries(dracoMetadata);
-
-    const metadataMap = new Map();
-    for (let i = 0; i < metadataEntries; i++) {
-      const entryName = metadataQuerier.GetEntryName(dracoMetadata, i);
-      throw new Error(entryName);
-    }
-    return metadataMap;
-  }
-
   _getAttributeMetadata(decoder, dracoGeometry, attributeId) {
-    const metadata = decoder.GetAttributeMetadata(dracoGeometry, attributeId);
-    if (!metadata || !metadata.ptr) {
+    const dracoMetadata = decoder.GetAttributeMetadata(dracoGeometry, attributeId);
+    if (!dracoMetadata || !dracoMetadata.ptr) {
       return null;
     }
+    return this._queryDracoMetadata(dracoMetadata);
+  }
+
+  // The not so wonderful world of undocumented Draco APIs :(
+  _queryDracoMetadata(dracoMetadata) {
     const result = {};
-    const numEntries = this.metadataQuerier.NumEntries(metadata);
+    const numEntries = this.metadataQuerier.NumEntries(dracoMetadata);
     for (let entryIndex = 0; entryIndex < numEntries; entryIndex++) {
-      const entryName = this.metadataQuerier.GetEntryName(metadata, entryIndex);
+      const entryName = this.metadataQuerier.GetEntryName(dracoMetadata, entryIndex);
       result[entryName] = {
-        int: this.metadataQuerier.GetIntEntry(metadata, entryName),
-        string: this.metadataQuerier.GetStringEntry(metadata, entryName),
-        double: this.metadataQuerier.GetDoubleEntry(metadata, entryName),
-        intArray: this.metadataQuerier.GetIntEntryArray(metadata, entryName)
+        int: this.metadataQuerier.GetIntEntry(dracoMetadata, entryName),
+        string: this.metadataQuerier.GetStringEntry(dracoMetadata, entryName),
+        double: this.metadataQuerier.GetDoubleEntry(dracoMetadata, entryName),
+        intArray: this.metadataQuerier.GetIntEntryArray(dracoMetadata, entryName)
       };
     }
     return result;

@@ -124,25 +124,20 @@ test('DracoParser#encode(bunny.drc)', async t => {
   t.end();
 });
 
-test.only('DracoParser#metadata', async t => {
+test.only('DracoParser#geometry metadata', async t => {
   const data = await loadBunny();
   validateMeshCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
 
   const attributes = {
     POSITION: data.attributes.POSITION.value,
-    indices: data.indices.value,
-    metadata: {
-      POSITION: {
-        'optional-entry': 'optional-entry-value'
-      }
-    }
+    indices: data.indices.value
   };
 
   let compressedMesh = await encode(attributes, DracoWriter, {
     draco: {}
   });
-  t.equal(compressedMesh.byteLength, 435515, 'Correct length');
+  t.equal(compressedMesh.byteLength, 435479, 'Correct length');
 
   compressedMesh = await encode(attributes, DracoWriter, {
     draco: {
@@ -151,22 +146,17 @@ test.only('DracoParser#metadata', async t => {
       }
     }
   });
-  t.equal(compressedMesh.byteLength, 435515, 'Correct length');
+  t.equal(compressedMesh.byteLength, 435479, 'Correct length');
 
   // Decode the mesh
   const data2 = await parse(compressedMesh, DracoLoader, {
     worker: false
   });
   validateMeshCategoryData(t, data2);
-
-  // t.comment(JSON.stringify(data));
   t.equal(
     data2.attributes.POSITION.value.length,
     data.attributes.POSITION.value.length,
     `decoded POSITION length matched`
   );
-
-  // debugger
-
   t.end();
 });

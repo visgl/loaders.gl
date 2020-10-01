@@ -74,7 +74,11 @@ export default class DracoBuilder {
     const attributes = this._getAttributesFromMesh(pointcloud);
 
     // Build a `DracoPointCloud` from the input data
-    const dracoPointCloud = this._createDracoPointCloud(attributes, pointcloud.metadata, options);
+    const dracoPointCloud = this._createDracoPointCloud(
+      attributes,
+      options.attributesMetadata,
+      options
+    );
 
     if (options.metadata) {
       this._addGeometryMetadata(dracoPointCloud, options.metadata);
@@ -107,7 +111,7 @@ export default class DracoBuilder {
     const attributes = this._getAttributesFromMesh(mesh);
 
     // Build a `DracoMesh` from the input data
-    const dracoMesh = this._createDracoMesh(attributes, mesh.metadata, options);
+    const dracoMesh = this._createDracoMesh(attributes, options.attributesMetadata, options);
 
     if (options.metadata) {
       this._addGeometryMetadata(dracoMesh, options.metadata);
@@ -191,10 +195,10 @@ export default class DracoBuilder {
 
   /**
    * @param {object} attributes
-   * @param {object} metadata
+   * @param {object} optionalMetadata
    * @returns {PointCloud}
    */
-  _createDracoPointCloud(attributes, metadata, options) {
+  _createDracoPointCloud(attributes, optionalMetadata = {}, options) {
     const dracoPointCloud = new this.draco.PointCloud();
 
     try {
@@ -214,7 +218,10 @@ export default class DracoBuilder {
           vertexCount
         );
         if (uniqueId !== -1) {
-          this._addAttributeMetadata(dracoPointCloud, uniqueId, {name: attributeName});
+          this._addAttributeMetadata(dracoPointCloud, uniqueId, {
+            name: attributeName,
+            ...(optionalMetadata[attributeName] || {})
+          });
         }
       }
     } catch (error) {
@@ -358,7 +365,11 @@ export default class DracoBuilder {
     for (const [key, value] of getEntries(metadata)) {
       switch (typeof value) {
         case 'number':
-          this.dracoMetadataBuilder.AddIntEntry(dracoMetadata, key, value);
+          if (Math.trunc(value) === value) {
+            this.dracoMetadataBuilder.AddIntEntry(dracoMetadata, key, value);
+          } else {
+            this.dracoMetadataBuilder.AddDoubleEntry(dracoMetadata, key, value);
+          }
           break;
         case 'string':
         default:
