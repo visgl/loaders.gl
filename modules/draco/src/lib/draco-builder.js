@@ -82,10 +82,6 @@ export default class DracoBuilder {
     // Build a `DracoPointCloud` from the input data
     this._createDracoPointCloud(dracoPointCloud, attributes, options);
 
-    if (options.metadata) {
-      this._addGeometryMetadata(dracoPointCloud, options.metadata);
-    }
-
     const dracoData = new this.draco.DracoInt8Array();
 
     try {
