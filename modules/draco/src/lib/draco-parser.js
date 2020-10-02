@@ -32,6 +32,7 @@ export default class DracoParser {
     /** @type {Draco3D} */
     this.draco = draco;
     this.drawMode = 'TRIANGLE';
+    this.metadataQuerier = {};
   }
 
   destroy() {}
@@ -44,6 +45,7 @@ export default class DracoParser {
 
   // NOTE: caller must call `destroyGeometry` on the return value after using it
   parseSync(arrayBuffer, options = {}) {
+    this.metadataQuerier = new this.draco.MetadataQuerier();
     const buffer = new this.draco.DecoderBuffer();
     buffer.Init(new Int8Array(arrayBuffer), arrayBuffer.byteLength);
 
@@ -95,14 +97,18 @@ export default class DracoParser {
       data.loaderData = {header};
 
       this._extractDRACOGeometry(decoder, dracoGeometry, geometryType, data, options);
+      const metadata = this._getGeometryMetadata(decoder, dracoGeometry);
 
       data.header = {
         vertexCount: header.vertexCount,
-        boundingBox: getMeshBoundingBox(data.attributes)
+        boundingBox: getMeshBoundingBox(data.attributes),
+        metadata
       };
     } finally {
       this.draco.destroy(decoder);
       this.draco.destroy(buffer);
+      this.draco.destroy(dracoGeometry);
+      this.draco.destroy(this.metadataQuerier);
     }
 
     return data;
@@ -151,6 +157,24 @@ export default class DracoParser {
     return geometry;
   }
 
+  getPositionAttributeMetadata(positionAttribute) {
+    this.metadata = this.metadata || {};
+    this.metadata.attributes = this.metadata.attributes || {};
+
+    const posTransform = new this.draco.AttributeQuantizationTransform();
+    if (posTransform.InitFromAttribute(positionAttribute)) {
+      // Quantized attribute. Store the quantization parameters into the attribute
+      this.metadata.attributes.position.isQuantized = true;
+      this.metadata.attributes.position.maxRange = posTransform.range();
+      this.metadata.attributes.position.numQuantizationBits = posTransform.quantization_bits();
+      this.metadata.attributes.position.minValues = new Float32Array(3);
+      for (let i = 0; i < 3; ++i) {
+        this.metadata.attributes.position.minValues[i] = posTransform.min_value(i);
+      }
+    }
+    this.draco.destroy(posTransform);
+  }
+
   _getAttributes(decoder, dracoGeometry, options) {
     const attributes = {};
     const numPoints = dracoGeometry.num_points();
@@ -160,6 +184,7 @@ export default class DracoParser {
     // but it seems to work this way
     for (let attributeId = 0; attributeId < dracoGeometry.num_attributes(); attributeId++) {
       const dracoAttribute = decoder.GetAttribute(dracoGeometry, attributeId);
+      const attributeMetadata = this._getAttributeMetadata(decoder, dracoGeometry, attributeId);
       const attributeData = {
         uniqueId: dracoAttribute.unique_id(),
         attributeType: dracoAttribute.attribute_type(),
@@ -168,11 +193,13 @@ export default class DracoParser {
         numComponents: dracoAttribute.num_components(),
         byteOffset: dracoAttribute.byte_offset(),
         byteStride: dracoAttribute.byte_stride(),
-        normalized: dracoAttribute.normalized()
+        normalized: dracoAttribute.normalized(),
+        metadata: attributeMetadata
       };
 
-      // DRACO does not save attribute names - We need to deduce an attribute name
+      // DRACO does not store attribute names - We need to deduce an attribute name
       const attributeName = this._deduceAttributeName(attributeData, options);
+
       const {typedArray} = this._getAttributeTypedArray(
         decoder,
         dracoGeometry,
@@ -181,7 +208,8 @@ export default class DracoParser {
       );
       attributes[attributeName] = {
         value: typedArray,
-        size: typedArray.length / numPoints
+        size: typedArray.length / numPoints,
+        metadata: attributeMetadata
       };
     }
 
@@ -335,11 +363,44 @@ export default class DracoParser {
       }
     }
 
-    // TODO look for name in metadata?
-    // The loaders.gl DracoEncoder could write a name into metadata...
+    if (attributeData.metadata) {
+      const entryName = options.attributeNameEntry || 'name';
+      if (attributeData.metadata[entryName]) {
+        return attributeData.metadata[entryName].string;
+      }
+    }
 
     // Attribute of "GENERIC" type, we need to assign some name
     return `CUSTOM_ATTRIBUTE_${attributeData.uniqueId}`;
+  }
+
+  _getGeometryMetadata(decoder, dracoGeometry) {
+    const dracoMetadata = decoder.GetMetadata(dracoGeometry);
+    return this._queryDracoMetadata(dracoMetadata);
+  }
+
+  _getAttributeMetadata(decoder, dracoGeometry, attributeId) {
+    const dracoMetadata = decoder.GetAttributeMetadata(dracoGeometry, attributeId);
+    return this._queryDracoMetadata(dracoMetadata);
+  }
+
+  // The not so wonderful world of undocumented Draco APIs :(
+  _queryDracoMetadata(dracoMetadata) {
+    if (!dracoMetadata || !dracoMetadata.ptr) {
+      return {};
+    }
+    const result = {};
+    const numEntries = this.metadataQuerier.NumEntries(dracoMetadata);
+    for (let entryIndex = 0; entryIndex < numEntries; entryIndex++) {
+      const entryName = this.metadataQuerier.GetEntryName(dracoMetadata, entryIndex);
+      result[entryName] = {
+        int: this.metadataQuerier.GetIntEntry(dracoMetadata, entryName),
+        string: this.metadataQuerier.GetStringEntry(dracoMetadata, entryName),
+        double: this.metadataQuerier.GetDoubleEntry(dracoMetadata, entryName),
+        intArray: this.metadataQuerier.GetIntEntryArray(dracoMetadata, entryName)
+      };
+    }
+    return result;
   }
 
   // DEPRECATED
