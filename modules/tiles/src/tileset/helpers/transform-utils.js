@@ -6,7 +6,7 @@ export function calculateTransformProps(tileHeader, tile) {
   assert(tileHeader);
   assert(tile);
 
-  const {rtcCenter, rotateYtoZ} = tile;
+  const {rtcCenter, gltfUpAxis} = tile;
   const {
     computedTransform,
     boundingVolume: {center}
@@ -21,9 +21,23 @@ export function calculateTransformProps(tileHeader, tile) {
 
   // glTF models need to be rotated from Y to Z up
   // https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#y-up-to-z-up
-  if (rotateYtoZ) {
-    const rotation = new Matrix4().rotateX(Math.PI / 2);
-    modelMatrix = modelMatrix.multiplyRight(rotation);
+  switch (gltfUpAxis) {
+    case 'Z':
+      break;
+    case 'Y':
+      const rotationX = new Matrix4().rotateX(Math.PI / 2);
+      modelMatrix = modelMatrix.multiplyRight(rotationX);
+      break;
+    case 'X':
+      const rotationY = new Matrix4().rotateX(Math.PI / 2);
+      const rotationZ = new Matrix4().rotateZ(Math.PI);
+      modelMatrix = modelMatrix.multiplyRight(rotationY);
+      modelMatrix = modelMatrix.multiplyRight(rotationZ);
+      break;
+    default:
+      const rotation = new Matrix4().rotateX(Math.PI / 2);
+      modelMatrix = modelMatrix.multiplyRight(rotation);
+      break;
   }
 
   // Scale/offset positions if normalized integers

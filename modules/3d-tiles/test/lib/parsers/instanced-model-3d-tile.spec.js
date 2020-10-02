@@ -52,6 +52,24 @@ test('instanced model tile#throws with invalid version', t => {
   t.end();
 });
 
+test.skip('instanced model tile#gltfUpAxis is supported', t => {
+  const TILE = {
+    type: TILE3D_TYPE.INSTANCED_3D_MODEL,
+    version: 1
+  };
+  const arrayBuffer = encodeSync(TILE, Tile3DWriter);
+  TILE.gltfUpAxis = 'Y';
+  let tile = parseSync(arrayBuffer);
+  t.ok(tile.matrix);
+  TILE.gltfUpAxis = 'Z';
+  tile = parseSync(arrayBuffer);
+  t.ok(tile.matrix);
+  TILE.gltfUpAxis = 'X';
+  tile = parseSync(arrayBuffer);
+  t.ok(tile.matrix);
+  t.end();
+});
+
 test.skip('instanced model tile#throws with empty gltf', t => {
   // Expect to throw DeveloperError in Model due to invalid gltf magic
   const TILE = {
