@@ -71,14 +71,16 @@ export default class DracoBuilder {
   }
 
   _encodePointCloud(pointcloud, options) {
+    const dracoPointCloud = new this.draco.PointCloud();
+
+    if (options.metadata) {
+      this._addGeometryMetadata(dracoPointCloud, options.metadata);
+    }
+
     const attributes = this._getAttributesFromMesh(pointcloud);
 
     // Build a `DracoPointCloud` from the input data
-    const dracoPointCloud = this._createDracoPointCloud(
-      attributes,
-      options.attributesMetadata,
-      options
-    );
+    this._createDracoPointCloud(dracoPointCloud, attributes, options);
 
     if (options.metadata) {
       this._addGeometryMetadata(dracoPointCloud, options.metadata);
@@ -108,14 +110,16 @@ export default class DracoBuilder {
   }
 
   _encodeMesh(mesh, options) {
-    const attributes = this._getAttributesFromMesh(mesh);
-
-    // Build a `DracoMesh` from the input data
-    const dracoMesh = this._createDracoMesh(attributes, options.attributesMetadata, options);
+    const dracoMesh = new this.draco.Mesh();
 
     if (options.metadata) {
       this._addGeometryMetadata(dracoMesh, options.metadata);
     }
+
+    const attributes = this._getAttributesFromMesh(mesh);
+
+    // Build a `DracoMesh` from the input data
+    this._createDracoMesh(dracoMesh, attributes, options);
 
     const dracoData = new this.draco.DracoInt8Array();
 
@@ -159,12 +163,12 @@ export default class DracoBuilder {
   }
 
   /**
+   * @param {Mesh} dracoMesh
    * @param {object} attributes
-   * @param {object} optionalMetadata
    * @returns {Mesh}
    */
-  _createDracoMesh(attributes, optionalMetadata = {}, options) {
-    const dracoMesh = new this.draco.Mesh();
+  _createDracoMesh(dracoMesh, attributes, options) {
+    const optionalMetadata = options.attributesMetadata || {};
 
     try {
       const positions = this._getPositionAttribute(attributes);
@@ -194,12 +198,12 @@ export default class DracoBuilder {
   }
 
   /**
+   * @param {PointCloud} dracoPointCloud
    * @param {object} attributes
-   * @param {object} optionalMetadata
    * @returns {PointCloud}
    */
-  _createDracoPointCloud(attributes, optionalMetadata = {}, options) {
-    const dracoPointCloud = new this.draco.PointCloud();
+  _createDracoPointCloud(dracoPointCloud, attributes, options) {
+    const optionalMetadata = options.attributesMetadata || {};
 
     try {
       const positions = this._getPositionAttribute(attributes);

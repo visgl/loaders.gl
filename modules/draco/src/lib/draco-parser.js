@@ -381,14 +381,14 @@ export default class DracoParser {
 
   _getAttributeMetadata(decoder, dracoGeometry, attributeId) {
     const dracoMetadata = decoder.GetAttributeMetadata(dracoGeometry, attributeId);
-    if (!dracoMetadata || !dracoMetadata.ptr) {
-      return null;
-    }
     return this._queryDracoMetadata(dracoMetadata);
   }
 
   // The not so wonderful world of undocumented Draco APIs :(
   _queryDracoMetadata(dracoMetadata) {
+    if (!dracoMetadata || !dracoMetadata.ptr) {
+      return {};
+    }
     const result = {};
     const numEntries = this.metadataQuerier.NumEntries(dracoMetadata);
     for (let entryIndex = 0; entryIndex < numEntries; entryIndex++) {
