@@ -24,7 +24,7 @@ export function encodeInstancedModel3DTile(tile, dataView, byteOffset, options) 
 
   const byteOffsetStart = byteOffset;
 
-  encode3DTileHeader(tile, dataView, 0);
+  byteOffset = encode3DTileHeader(tile, dataView, 0);
 
   if (dataView) {
     dataView.setUint32(12, featureTableJsonByteLength, true); // featureTableJsonByteLength
@@ -33,6 +33,8 @@ export function encodeInstancedModel3DTile(tile, dataView, byteOffset, options) 
     dataView.setUint32(24, 0, true); // batchTableBinaryByteLength
     dataView.setUint32(28, gltfFormat, true); // gltfFormat
   }
+
+  byteOffset += 20;
 
   byteOffset += copyStringToDataView(
     dataView,

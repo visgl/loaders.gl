@@ -2,7 +2,7 @@
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
 import test from 'tape-promise/tape';
-import {parse, parseSync, encodeSync} from '@loaders.gl/core';
+import {parse, encodeSync} from '@loaders.gl/core';
 import {Tiles3DLoader, Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/3d-tiles';
 import {loadRootTileFromTileset} from '../utils/load-utils';
 
@@ -32,55 +32,57 @@ const WITH_BATCH_IDS_URL =
   '@loaders.gl/3d-tiles/test/data/Instanced/InstancedWithBatchIds/tileset.json';
 const TEXTURED_URL = '@loaders.gl/3d-tiles/test/data/Instanced/InstancedTextured/tileset.json';
 
-test('instanced model tile#throws with invalid format', t => {
+const NO_GLTF = {
+  '3d-tiles': {
+    loadGLTF: false
+  }
+};
+
+test('instanced model tile#does not throw with valid format', async t => {
   const TILE = {
     type: TILE3D_TYPE.INSTANCED_3D_MODEL,
-    gltfFormat: 2
+    gltfFormat: 1
   };
   const arrayBuffer = encodeSync(TILE, Tile3DWriter);
-  t.throws(() => parseSync(arrayBuffer), 'throws on invalid version');
+  await t.doesNotReject(parse(arrayBuffer, Tiles3DLoader, NO_GLTF), 'throws on invalid version');
   t.end();
 });
 
-test('instanced model tile#throws with invalid version', t => {
+test('instanced model tile#throws with invalid version', async t => {
   const TILE = {
     type: TILE3D_TYPE.INSTANCED_3D_MODEL,
     version: 2
   };
   const arrayBuffer = encodeSync(TILE, Tile3DWriter);
-  t.throws(() => parseSync(arrayBuffer), 'throws on invalid version');
+  await t.rejects(
+    parse(arrayBuffer, Tiles3DLoader, NO_GLTF),
+    /Version/,
+    'throws on invalid version'
+  );
   t.end();
 });
 
-test.skip('instanced model tile#gltfUpAxis is supported', t => {
+test('instanced model tile#throws with invalid format', async t => {
   const TILE = {
     type: TILE3D_TYPE.INSTANCED_3D_MODEL,
-    version: 1
+    gltfFormat: 2
   };
   const arrayBuffer = encodeSync(TILE, Tile3DWriter);
-  TILE.gltfUpAxis = 'Y';
-  let tile = parseSync(arrayBuffer);
-  t.ok(tile.matrix);
-  TILE.gltfUpAxis = 'Z';
-  tile = parseSync(arrayBuffer);
-  t.ok(tile.matrix);
-  TILE.gltfUpAxis = 'X';
-  tile = parseSync(arrayBuffer);
-  t.ok(tile.matrix);
+  await t.rejects(parse(arrayBuffer, Tiles3DLoader, NO_GLTF), 'throws on invalid version');
   t.end();
 });
 
-test.skip('instanced model tile#throws with empty gltf', t => {
+test('instanced model tile#throws with empty gltf', async t => {
   // Expect to throw DeveloperError in Model due to invalid gltf magic
   const TILE = {
     type: TILE3D_TYPE.INSTANCED_3D_MODEL
   };
   const arrayBuffer = encodeSync(TILE, Tile3DWriter);
-  t.throws(() => parse(arrayBuffer), 'throws with empty gltf');
+  await t.rejects(parse(arrayBuffer, Tiles3DLoader), /valid loader/, 'throws with empty gltf');
   t.end();
 });
 
-test('instanced model tile#throws on invalid url', t => {
+test('instanced model tile#throws on invalid url', async t => {
   // Try loading a tile with an invalid url.
   // Expect promise to be rejected in Model, then in ModelInstanceCollection, and
   // finally in Instanced3DModel3DTileContent.
@@ -90,7 +92,7 @@ test('instanced model tile#throws on invalid url', t => {
     gltfUri: 'not-a-real-path'
   };
   const arrayBuffer = encodeSync(TILE, Tile3DWriter);
-  t.throws(() => parseSync(arrayBuffer, Tiles3DLoader), 'throws on invalid url');
+  await t.rejects(parse(arrayBuffer, Tiles3DLoader), /url/, 'throws on invalid url');
   t.end();
 });
 
