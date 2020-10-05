@@ -2,7 +2,7 @@
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
 import test from 'tape-promise/tape';
-import {parse, encodeSync} from '@loaders.gl/core';
+import {parse, parseSync, encodeSync} from '@loaders.gl/core';
 import {Tiles3DLoader, Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/3d-tiles';
 import {loadRootTileFromTileset} from '../utils/load-utils';
 
@@ -59,6 +59,24 @@ test('instanced model tile#throws with invalid version', async t => {
     /Version/,
     'throws on invalid version'
   );
+  t.end();
+});
+
+test('instanced model tile#gltfUpAxis is supported', t => {
+  const TILE = {
+    type: TILE3D_TYPE.INSTANCED_3D_MODEL,
+    version: 1
+  };
+  const arrayBuffer = encodeSync(TILE, Tile3DWriter);
+  TILE.gltfUpAxis = 'Y';
+  let tile = parseSync(arrayBuffer);
+  t.ok(tile.matrix);
+  TILE.gltfUpAxis = 'Z';
+  tile = parseSync(arrayBuffer);
+  t.ok(tile.matrix);
+  TILE.gltfUpAxis = 'X';
+  tile = parseSync(arrayBuffer);
+  t.ok(tile.matrix);
   t.end();
 });
 
