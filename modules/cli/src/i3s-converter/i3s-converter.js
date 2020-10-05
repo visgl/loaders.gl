@@ -401,15 +401,15 @@ export default class I3SConverter {
       if (this.options.slpk) {
         const slpkTexturePath = join(childPath, 'textures');
         const compress = false;
-        this.fileMap[`${slpkChildPath}/textures/0.jpeg`] = await writeFileForSlpk(
+        this.fileMap[`${slpkChildPath}/textures/0.jpg`] = await writeFileForSlpk(
           slpkTexturePath,
           textureData,
-          '0.jpeg',
+          '0.jpg',
           compress
         );
       } else {
         const texturePath = join(childPath, 'textures/0/');
-        await writeFile(texturePath, textureData, 'index.jpeg');
+        await writeFile(texturePath, textureData, 'index.jpg');
       }
     }
     if (vertexCount) {
