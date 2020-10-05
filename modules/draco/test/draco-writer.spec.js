@@ -4,6 +4,7 @@ import {validateWriter, validateMeshCategoryData} from 'test/common/conformance'
 import {DracoWriter, DracoLoader} from '@loaders.gl/draco';
 import {encode, fetchFile, parse} from '@loaders.gl/core';
 import {_getMeshSize} from '@loaders.gl/loader-utils';
+import draco3d from 'draco3d';
 
 const TEST_CASES = [
   {
@@ -85,6 +86,52 @@ test('DracoWriter#encode(bunny.drc)', async t => {
   t.end();
 });
 
+test('DracoWriter#encode via draco3d npm package (bunny.drc)', async t => {
+  const data = await loadBunny();
+  t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
+
+  const MESH = {
+    attributes: {
+      POSITION: data.attributes.POSITION.value
+    },
+    indices: data.indices.value
+  };
+  const POINTCLOUD = {
+    attributes: {
+      POSITION: data.attributes.POSITION.value
+    }
+  };
+
+  for (const tc of TEST_CASES) {
+    const mesh = tc.options.draco.pointcloud ? POINTCLOUD : MESH;
+    const meshSize = _getMeshSize(mesh.attributes);
+
+    const compressedMesh = await encode(mesh, DracoWriter, {
+      ...tc.options,
+      modules: {
+        draco3d
+      }
+    });
+    const ratio = meshSize / compressedMesh.byteLength;
+    t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
+
+    if (!tc.options.pointcloud) {
+      // Decode the mesh
+      const data2 = await parse(compressedMesh, DracoLoader);
+      validateMeshCategoryData(t, data2);
+
+      // t.comment(JSON.stringify(data));
+      t.equal(
+        data2.attributes.POSITION.value.length,
+        data.attributes.POSITION.value.length,
+        `${tc.title} decoded POSITION length matched`
+      );
+    }
+  }
+
+  t.end();
+});
+
 test('DracoParser#encode(bunny.drc)', async t => {
   const data = await loadBunny();
   validateMeshCategoryData(t, data);
@@ -121,5 +168,160 @@ test('DracoParser#encode(bunny.drc)', async t => {
     }
   }
 
+  t.end();
+});
+
+test('DracoParser#geometry metadata', async t => {
+  const data = await loadBunny();
+  validateMeshCategoryData(t, data);
+  t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
+
+  const attributes = {
+    POSITION: data.attributes.POSITION.value,
+    indices: data.indices.value
+  };
+
+  let compressedMesh = await encode(attributes, DracoWriter, {
+    draco: {}
+  });
+  t.equal(compressedMesh.byteLength, 435479, 'Correct length');
+
+  compressedMesh = await encode(attributes, DracoWriter, {
+    draco: {
+      metadata: {
+        author: 'loaders.gl',
+        'optional-entry-int': 1444,
+        'optional-entry-int-negative': -333333333,
+        'optional-entry-int-zero': 0,
+        'optional-entry-double': 1.00012323
+      }
+    }
+  });
+  t.equal(
+    compressedMesh.byteLength,
+    435614,
+    'Correct length - different from encoded geometry without metadata'
+  );
+
+  // Decode the mesh
+  const data2 = await parse(compressedMesh, DracoLoader, {
+    worker: false
+  });
+  validateMeshCategoryData(t, data2);
+
+  t.ok(data2.header.metadata);
+  t.ok(data2.header.metadata.author);
+  t.equal(data2.header.metadata.author.string, 'loaders.gl');
+
+  t.ok(data2.header.metadata['optional-entry-int']);
+  t.ok(data2.header.metadata['optional-entry-int-negative']);
+  t.ok(data2.header.metadata['optional-entry-int-zero']);
+  t.ok(data2.header.metadata['optional-entry-double']);
+
+  t.equal(data2.header.metadata['optional-entry-int'].int, 1444);
+  t.equal(data2.header.metadata['optional-entry-int-negative'].int, -333333333);
+  t.equal(data2.header.metadata['optional-entry-int-zero'].int, 0);
+  t.equal(data2.header.metadata['optional-entry-double'].double, 1.00012323);
+
+  t.equal(
+    data2.attributes.POSITION.value.length,
+    data.attributes.POSITION.value.length,
+    `decoded POSITION length matched`
+  );
+  t.end();
+});
+
+test('DracoParser#attributes metadata', async t => {
+  const data = await loadBunny();
+  validateMeshCategoryData(t, data);
+  t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
+
+  const attributes = {
+    POSITION: data.attributes.POSITION.value,
+    indices: data.indices.value
+  };
+
+  let compressedMesh = await encode(attributes, DracoWriter, {
+    draco: {}
+  });
+  t.equal(compressedMesh.byteLength, 435479, 'Correct length');
+
+  compressedMesh = await encode(attributes, DracoWriter, {
+    draco: {
+      attributesMetadata: {
+        POSITION: {
+          'optional-entry': 'optional-entry-value',
+          'optional-entry-int': 1444,
+          'optional-entry-int-negative': -333333333,
+          'optional-entry-int-zero': 0,
+          'optional-entry-double': 1.00012323
+        }
+      }
+    }
+  });
+  t.equal(
+    compressedMesh.byteLength,
+    435632,
+    'Correct length - different from encoded geometry without metadata'
+  );
+
+  // Decode the mesh
+  const data2 = await parse(compressedMesh, DracoLoader, {
+    worker: false
+  });
+  validateMeshCategoryData(t, data2);
+
+  t.ok(data2.attributes.POSITION.metadata);
+  t.ok(data2.attributes.POSITION.metadata.name);
+  t.ok(data2.attributes.POSITION.metadata['optional-entry']);
+  t.ok(data2.attributes.POSITION.metadata['optional-entry-int']);
+  t.ok(data2.attributes.POSITION.metadata['optional-entry-int-negative']);
+  t.ok(data2.attributes.POSITION.metadata['optional-entry-int-zero']);
+  t.ok(data2.attributes.POSITION.metadata['optional-entry-double']);
+
+  t.equal(data2.attributes.POSITION.metadata.name.string, 'POSITION');
+  t.equal(data2.attributes.POSITION.metadata['optional-entry'].string, 'optional-entry-value');
+  t.equal(data2.attributes.POSITION.metadata['optional-entry-int'].int, 1444);
+  t.equal(data2.attributes.POSITION.metadata['optional-entry-int-negative'].int, -333333333);
+  t.equal(data2.attributes.POSITION.metadata['optional-entry-int-zero'].int, 0);
+  t.equal(data2.attributes.POSITION.metadata['optional-entry-double'].double, 1.00012323);
+
+  t.equal(
+    data2.attributes.POSITION.value.length,
+    data.attributes.POSITION.value.length,
+    `decoded POSITION length matched`
+  );
+  t.end();
+});
+
+test('DracoParser#metadata - should be able to define optional "name entry" for custom attribute', async t => {
+  const data = await loadBunny();
+  const attributes = {
+    POSITION: data.attributes.POSITION.value,
+    featureId: data.attributes.POSITION.value,
+    indices: data.indices.value
+  };
+  const compressedMesh = await encode(attributes, DracoWriter, {
+    draco: {
+      attributesMetadata: {
+        featureId: {
+          'custom-attribute-name': 'featureId'
+        }
+      }
+    }
+  });
+  const data2 = await parse(compressedMesh, DracoLoader, {
+    worker: false,
+    draco: {
+      attributeNameEntry: 'custom-attribute-name'
+    }
+  });
+  validateMeshCategoryData(t, data2);
+  t.ok(data2.attributes.featureId);
+  t.equal(
+    data2.attributes.POSITION.value.length,
+    data.attributes.POSITION.value.length,
+    `decoded POSITION length matched`
+  );
   t.end();
 });

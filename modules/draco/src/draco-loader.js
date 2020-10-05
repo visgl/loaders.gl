@@ -40,7 +40,8 @@ async function parse(arrayBuffer, options, context, loader) {
     // TODO passing in options causes CI failures...
     // @ts-ignore
     return dracoParser.parseSync(arrayBuffer, {
-      extraAttributes: (options.draco && options.draco.extraAttributes) || null
+      extraAttributes: (options.draco && options.draco.extraAttributes) || null,
+      ...(options.parseOptions || {})
     });
   } finally {
     dracoParser.destroy();
