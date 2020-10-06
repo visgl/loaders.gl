@@ -455,7 +455,9 @@ function convertMaterial20(sourceMaterial, sourceImages) {
   const material = {
     doubleSided: sourceMaterial.doubleSided,
     emissiveFactor: sourceMaterial.emissiveFactor.map(c => Math.round(c * 255)),
-    alphaMode: sourceMaterial.alphaMode,
+    // It is in upper case in GLTF: https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#alpha-coverage
+    // But it is in lower case in I3S: https://github.com/Esri/i3s-spec/blob/master/docs/1.7/materialDefinitions.cmn.md
+    alphaMode: (sourceMaterial.alphaMode || 'OPAQUE').toLowerCase(),
     pbrMetallicRoughness: {
       roughnessFactor: sourceMaterial.pbrMetallicRoughness.roughnessFactor,
       metallicFactor: sourceMaterial.pbrMetallicRoughness.metallicFactor
