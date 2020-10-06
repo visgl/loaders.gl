@@ -22,7 +22,7 @@ import {
   convertCommonToI3SExtentCoordinate
 } from './helpers/coordinate-converter';
 import {createSceneServerPath} from './helpers/create-scene-server-path';
-import {convertScreenSpaceErrorToScreenThreshold} from '../lib/utils/lod-conversion-utils';
+import {convertGeometricErrorToScreenThreshold} from '../lib/utils/lod-conversion-utils';
 
 import {LAYERS as layersTemplate} from './json-templates/layers';
 import {NODE as nodeTemplate} from './json-templates/node';
@@ -288,7 +288,7 @@ export default class I3SConverter {
     const rootTileId = rootTile.id;
     const coordinates = convertCommonToI3SCoordinate(sourceTile);
 
-    const lodSelection = convertScreenSpaceErrorToScreenThreshold(sourceTile, coordinates);
+    const lodSelection = convertGeometricErrorToScreenThreshold(sourceTile, coordinates);
     const maxScreenThresholdSQ = lodSelection.find(
       val => val.metricType === 'maxScreenThresholdSQ'
     ) || {maxError: 0};

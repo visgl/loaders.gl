@@ -1,6 +1,13 @@
+import {join} from 'path';
+import transform from 'json-map-transform';
 import {load} from '@loaders.gl/core';
 import {I3SLoader} from '@loaders.gl/i3s';
 import {Tileset3D, Tile3D} from '@loaders.gl/tiles';
+
+import {i3sObbTo3dTilesObb} from './helpers/i3s-obb-to-3d-tiles-obb';
+import {convertScreenThresholdToGeometricError} from '../lib/utils/lod-conversion-utils';
+import {writeFile, removeDir} from '../lib/utils/file-utils';
+import {TILESET as tilesetTemplate} from './json-templates/tileset';
 
 const I3S = 'I3S';
 
@@ -13,24 +20,48 @@ export default class Tiles3DConverter {
     const sourceTilesetJson = await load(inputUrl, I3SLoader, {});
     this.sourceTileset = new Tileset3D(sourceTilesetJson, {});
 
-    await this._addChildren(this.sourceTileset.root, 1);
+    const tilesetPath = join(`${outputPath}`, `${tilesetName}`);
+    // Removing the tilesetPath needed to exclude erroneous files after conversion
+    try {
+      await removeDir(tilesetPath);
+    } catch (e) {
+      // do nothing
+    }
+
+    const rootTile = {
+      boundingVolume: i3sObbTo3dTilesObb(this.sourceTileset.root.header.obb),
+      geometricError: convertScreenThresholdToGeometricError(this.sourceTileset.root),
+      children: []
+    };
+
+    await this._addChildren(this.sourceTileset.root, rootTile, 1);
+
+    const tileset = transform({root: rootTile}, tilesetTemplate);
+    writeFile(tilesetPath, JSON.stringify(tileset), 'tileset.json');
 
     this._finishConversion();
   }
 
-  async _addChildren(parentNode, level) {
+  async _addChildren(parentSourceNode, parentNode, level) {
     if (this.options.maxDepth && level > this.options.maxDepth) {
       return;
     }
-    for (const childNodeInfo of parentNode.header.children || []) {
-      const child = await this._loadChildNode(parentNode, childNodeInfo);
+    for (const childNodeInfo of parentSourceNode.header.children || []) {
+      const sourceChild = await this._loadChildNode(parentSourceNode, childNodeInfo);
+      parentSourceNode.children.push(sourceChild);
+      await this.sourceTileset._loadTile(sourceChild);
+
+      const child = {
+        boundingVolume: i3sObbTo3dTilesObb(sourceChild.header.obb),
+        geometricError: convertScreenThresholdToGeometricError(sourceChild),
+        children: []
+      };
       parentNode.children.push(child);
-      await this.sourceTileset._loadTile(child);
 
       // TODO: convert node here
 
-      child.unloadContent();
-      await this._addChildren(child, level + 1);
+      sourceChild.unloadContent();
+      await this._addChildren(sourceChild, child, level + 1);
     }
   }
 

@@ -1,7 +1,7 @@
 // https://cesium.com/docs/cesiumjs-ref-doc/Cesium3DTileset.html
 const DEFAULT_MAXIMUM_SCREEN_SPACE_ERROR = 16;
 
-export function convertScreenSpaceErrorToScreenThreshold(tile, coordinates) {
+export function convertGeometricErrorToScreenThreshold(tile, coordinates) {
   const lodSelection = [];
   const boundingVolume = tile.boundingVolume;
   const maxScreenThreshold = {
@@ -24,6 +24,19 @@ export function convertScreenSpaceErrorToScreenThreshold(tile, coordinates) {
   return lodSelection;
 }
 
-export function convertScreenThresholdToScreenSpaceError() {
-  return {};
+export function convertScreenThresholdToGeometricError(node) {
+  const metricData = node.header.lodSelection.maxScreenThreshold || {};
+  let maxError = metricData.maxError;
+  if (!maxError) {
+    const sqMetricData = node.header.lodSelection.maxScreenThresholdSQ;
+    if (sqMetricData) {
+      maxError = Math.sqrt(sqMetricData.maxError / (Math.PI * 0.25));
+    }
+  }
+
+  if (!maxError) {
+    maxError = DEFAULT_MAXIMUM_SCREEN_SPACE_ERROR;
+  }
+
+  return (node.header.mbs[3] * 2 * DEFAULT_MAXIMUM_SCREEN_SPACE_ERROR) / maxError;
 }

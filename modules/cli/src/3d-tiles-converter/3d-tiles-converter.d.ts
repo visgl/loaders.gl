@@ -14,15 +14,16 @@ export default class Tiles3DConverter {
 
   /**
    * The recursive function of traversal of a nodes tree
-   * @param parentNode the parent node tile object (@loaders.gl/tiles/Tile3D)
+   * @param parentSourceNode the parent node tile object (@loaders.gl/tiles/Tile3D)
+   * @param parentNode object in resulting tileset
    * @param level a current level of a tree depth
    */
-  _addChildren(parentNode: object, level: number): Promise<void>;
+  _addChildren(parentSourceNode: object, parentNode: object, level: number): Promise<void>;
 
   /**
    * Load a child node having information from the node header
    * @param parentNode a parent node tile object (@loaders.gl/tiles/Tile3D)
-   * @param childNodeInfo child information from 3DNodeIndexDocument 
+   * @param childNodeInfo child information from 3DNodeIndexDocument
    *   (https://github.com/Esri/i3s-spec/blob/master/docs/1.7/nodeReference.cmn.md)
    */
   _loadChildNode(parentNode: object, childNodeInfo: object): Promise<void>;

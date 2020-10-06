@@ -16,17 +16,19 @@
         }
     ]
  */
-export function convertScreenSpaceErrorToScreenThreshold(
+export function convertGeometricErrorToScreenThreshold(
   tile: Object,
   coordinates: {
     mbs?: number[];
   }
 ): Array<{metricType: string; maxError: number}>;
 
-
 /**
  * Convert LOD metric from "Screen Threshold" to "Screen Space Error"
+ * @param node - i3s node data
  * @returns lod metric in 3d-tiles format
  * @todo implement this function
  */
-export function convertScreenThresholdToScreenSpaceError(): void;
+export function convertScreenThresholdToGeometricError(
+  node: Object
+): void;
