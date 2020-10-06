@@ -14,8 +14,12 @@ export async function loadDracoDecoderModule(options) {
   if (modules.draco3d) {
     loadDecoderPromise =
       loadDecoderPromise ||
-      Promise.resolve({
-        draco: modules.draco3d.createDecoderModule()
+      new Promise(resolve => {
+        const draco = modules.draco3d.createDecoderModule({
+          onModuleLoaded() {
+            resolve({draco});
+          }
+        });
       });
   } else {
     // If not, dynamically load the WASM script from our CDN
@@ -31,8 +35,12 @@ export async function loadDracoEncoderModule(options) {
   if (modules.draco3d) {
     loadEncoderPromise =
       loadEncoderPromise ||
-      Promise.resolve({
-        draco: modules.draco3d.createEncoderModule()
+      new Promise(resolve => {
+        const draco = modules.draco3d.createEncoderModule({
+          onModuleLoaded() {
+            resolve({draco});
+          }
+        });
       });
   } else {
     // If not, dynamically load the WASM script from our CDN

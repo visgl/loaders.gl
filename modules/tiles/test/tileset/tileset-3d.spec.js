@@ -10,6 +10,7 @@ import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 
 // Parent tile with content and four child tiles with content
 const TILESET_URL = '@loaders.gl/3d-tiles/test/data/Tilesets/Tileset/tileset.json';
+
 /*
 // Parent tile with no content and four child tiles with content
 const TILESET_EMPTY_ROOT_URL =

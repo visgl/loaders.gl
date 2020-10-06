@@ -36,7 +36,7 @@ export const EXAMPLES = {
   'New York': {
     name: 'New York',
     url:
-      'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/New_York_Mesh/SceneServer/layers/0?token=epNIXupS0DwQBgeJkldNLQF_vJ7t4fKjUvas6_1mluYo11ej7BIJnOM5mPK0AJpCK1AwhnYC0Kcn7ntDlyV5_fgO9kpfhlOrnP2jCRU0UP3pRBUMB8XBeWQkvGgmcRtyU61Vx-0ioTcj8ZJsjdjFEbc24TbsUhXtVNc1BLOsvGAZjfMA_PuaFm18Cl1oOgM10C7ieRg2PJNO0-JeUHIKIgasNODDOTD0_LPqsInL_GQt_NRmnGwBN8mqElWltdy-',
+      'https://tiles.arcgis.com/tiles/P3ePLMYs2RVChkJx/arcgis/rest/services/Buildings_NewYork_17/SceneServer/layers/0',
     viewport: {
       ...VIEW_STATE,
       longitude: -74,

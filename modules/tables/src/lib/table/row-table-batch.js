@@ -35,7 +35,9 @@ export default class RowTableBatch {
       this.cursor = cursor;
     }
 
-    this.rows[this.length] = this.convertToObject ? convertRowToObject(row, this._headers) : row;
+    // We can only convert if we were given a schema
+    const convertToObject = this.convertToObject && this.schema;
+    this.rows[this.length] = convertToObject ? convertRowToObject(row, this._headers) : row;
     this.length++;
   }
 

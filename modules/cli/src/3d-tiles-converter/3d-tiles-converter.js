@@ -66,20 +66,28 @@ export default class Tiles3DConverter {
   }
 
   async _loadChildNode(parentNode, childNodeInfo) {
-    const {loader} = this.sourceTileset;
-    const nodeUrl = this._relativeUrlToFullUrl(parentNode.url, childNodeInfo.href);
-    // load metadata
-    const options = {
-      i3s: {
-        ...this.sourceTileset.fetchOptions,
-        isTileHeader: true,
-        loadContent: false
-      }
-    };
+    let header;
+    if (this.sourceTileset.tileset.nodePages) {
+      console.log(`Node conversion: ${childNodeInfo.id}`); // eslint-disable-line no-console,no-undef
+      header = await this.sourceTileset.tileset.nodePagesTile.formTileFromNodePages(
+        childNodeInfo.id
+      );
+    } else {
+      const {loader} = this.sourceTileset;
+      const nodeUrl = this._relativeUrlToFullUrl(parentNode.url, childNodeInfo.href);
+      // load metadata
+      const options = {
+        i3s: {
+          ...this.sourceTileset.fetchOptions,
+          isTileHeader: true,
+          loadContent: false
+        }
+      };
 
-    console.log(`Node conversion: ${nodeUrl}`); // eslint-disable-line no-console,no-undef
-    const header = await load(nodeUrl, loader, options);
-    return new Tile3D(this.sourceTileset, header, parentNode, options.basePath);
+      console.log(`Node conversion: ${nodeUrl}`); // eslint-disable-line no-console,no-undef
+      header = await load(nodeUrl, loader, options);
+    }
+    return new Tile3D(this.sourceTileset, header, parentNode);
   }
 
   _relativeUrlToFullUrl(baseUrl, relativeUrl) {
