@@ -206,7 +206,7 @@ export async function loadDraco(tile, dracoData, options, context) {
   const {parse} = context;
   const data = await parse(dracoData.buffer, DracoLoader, {
     draco: {
-      extraAttributes: dracoData.batchTableProperties
+      extraAttributes: dracoData.batchTableProperties || {}
     }
   });
 

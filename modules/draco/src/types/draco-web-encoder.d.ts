@@ -86,16 +86,11 @@ export class DracoInt8Array {
 }
 */
 
-interface MetadataBuilder {
-  AddStringEntry(metadata: Metadata,
-                         entry_name: string,
-                         entry_value: string);
-  AddIntEntry(metadata: Metadata,
-                      entry_name: string,
-                      entry_value: number);
-  AddDoubleEntry(metadata: Metadata,
-      entry_name: string,
-      entry_value: number);
+export class MetadataBuilder {
+  constructor();
+  AddStringEntry(metadata: Metadata, entry_name: string, entry_value: string);
+  AddIntEntry(metadata: Metadata, entry_name: string, entry_value: number);
+  AddDoubleEntry(metadata: Metadata, entry_name: string, entry_value: number);
 }
 
 export class PointCloudBuilder {
@@ -147,50 +142,6 @@ export class PointCloudBuilder {
 export class MeshBuilder extends PointCloudBuilder {
   constructor();
   AddFacesToMesh(mesh: Mesh, num_faces: number, faces: number[]): boolean;
-
-  // From PointCloudBuilder
-  /*
-  AddFloatAttribute(
-    pc: PointCloud,
-    type: draco_GeometryAttribute_Type,
-    num_vertices: number, num_components: number,
-    att_values: number[]);
-  AddInt8Attribute(
-    pc: PointCloud,
-    type: draco_GeometryAttribute_Type,
-    num_vertices: number, num_components: number,
-    att_values: number[]);
-  AddUInt8Attribute(
-    pc: PointCloud,
-    type: draco_GeometryAttribute_Type,
-    num_vertices: number, num_components: number,
-    att_values: number[]);
-  AddInt16Attribute(
-    pc: PointCloud,
-    type: draco_GeometryAttribute_Type,
-    num_vertices: number, num_components: number,
-    att_values: number[]);
-  AddUInt16Attribute(
-    pc: PointCloud,
-    type: draco_GeometryAttribute_Type,
-    num_vertices: number, num_components: number,
-
-    att_values: number[]);
-  AddInt32Attribute(
-    pc: PointCloud,
-    type: draco_GeometryAttribute_Type,
-    num_vertices: number, num_components: number,
-    att_values: number[]);
-  AddUInt32Attribute(
-    pc: PointCloud,
-    type: draco_GeometryAttribute_Type,
-    num_vertices: number, num_components: number,
-    unsigned long[] att_values: number[]);
-
-  AddMetadata(pc: PointCloud, metadata: Metadata): boolean;
-  SetMetadataForAttribute(pc: PointCloud, attribute_id: number,
-                                  metadata: Metadata);
-  */
 }
 
 export class Encoder {

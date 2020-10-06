@@ -9,7 +9,7 @@ const TILESET_WITH_TEXTURES = '@loaders.gl/3d-tiles/test/data/Batched/BatchedTex
 const TEST_TEXTURE_MATERIAL = {
   doubleSided: false,
   emissiveFactor: [0, 0, 0],
-  alphaMode: 'opaque',
+  alphaMode: 'OPAQUE',
   pbrMetallicRoughness: {
     roughnessFactor: 1,
     metallicFactor: 0,

@@ -2,6 +2,7 @@ import {Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {load} from '@loaders.gl/core';
 import {TILE_TYPE, TILE_REFINEMENT, TILESET_TYPE} from '@loaders.gl/tiles';
+import I3SNodePagesTiles from '../../helpers/i3s-nodepages-tiles';
 
 import {getUrlWithToken} from './utils';
 
@@ -24,6 +25,10 @@ export function normalizeTileData(tile, options, context) {
     tile.textureUrl = `${tile.url}/${tile.textureData[0].href}`;
   }
 
+  return normalizeTileNonUrlData(tile);
+}
+
+export function normalizeTileNonUrlData(tile) {
   scratchCenter.copy(tile.mbs);
   const centerCartesian = Ellipsoid.WGS84.cartographicToCartesian(tile.mbs.slice(0, 3));
   tile.boundingVolume = {
@@ -42,11 +47,16 @@ export function normalizeTileData(tile, options, context) {
 export async function normalizeTilesetData(tileset, options, context) {
   tileset.url = context.url;
 
-  const rootNodeUrl = getUrlWithToken(`${tileset.url}/nodes/root`, options.token);
-  // eslint-disable-next-line no-use-before-define
-  tileset.root = await load(rootNodeUrl, tileset.loader, {
-    i3s: {loadContent: false, isTileHeader: true, isTileset: false}
-  });
+  if (tileset.nodePages) {
+    tileset.nodePagesTile = new I3SNodePagesTiles(tileset, options);
+    tileset.root = await tileset.nodePagesTile.formTileFromNodePages(0);
+  } else {
+    const rootNodeUrl = getUrlWithToken(`${tileset.url}/nodes/root`, options.token);
+    // eslint-disable-next-line no-use-before-define
+    tileset.root = await load(rootNodeUrl, tileset.loader, {
+      i3s: {loadContent: false, isTileHeader: true, isTileset: false}
+    });
+  }
 
   // base path that non-absolute paths in tileset are relative to.
   tileset.basePath = tileset.url;
