@@ -81,3 +81,24 @@ test('loadImage#formats', async t => {
 
   t.end();
 });
+
+test('loadImage#imagebitmap', async t => {
+  if (!isImageTypeSupported('imagebitmap')) {
+    t.comment('Browser only');
+    t.end();
+    return;
+  }
+  let image = await load(IMAGE_URL, ImageLoader, {
+    image: {type: 'imagebitmap'}
+  });
+  t.is(image.width, 480, 'Default imagebitmap options');
+
+  image = await load(IMAGE_URL, ImageLoader, {
+    image: {type: 'imagebitmap'},
+    imagebitmap: {resizeWidth: 240, resizeHeight: 160}
+  });
+
+  t.is(image.width, 240, 'Custom resizeWidth');
+
+  t.end();
+});
