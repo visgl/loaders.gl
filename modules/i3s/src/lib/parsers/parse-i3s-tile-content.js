@@ -43,7 +43,7 @@ async function parseI3SNodeGeometry(arrayBuffer, tile = {}, options) {
   let attributes;
   let vertexCount;
   let byteOffset = 0;
-  if (options.i3s.dracoGeometryIndex !== -1) {
+  if (options.i3s.useDracoGeometry && options.i3s.dracoGeometryIndex !== -1) {
     const decompressedGeometry = await parse(arrayBuffer, DracoLoader);
     vertexCount = decompressedGeometry.header.vertexCount;
     const indices = decompressedGeometry.indices.value;

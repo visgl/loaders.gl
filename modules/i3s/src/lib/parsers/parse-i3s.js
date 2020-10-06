@@ -14,7 +14,7 @@ export function normalizeTileData(tile, options, context) {
     tile.featureUrl = `${tile.url}/${tile.featureData[0].href}`;
   }
   if (tile.geometryData) {
-    if (options.i3s.dracoGeometryIndex !== -1) {
+    if (options.i3s.useDracoGeometry && options.i3s.dracoGeometryIndex !== -1) {
       tile.contentUrl = `${tile.url}/geometries/${options.i3s.dracoGeometryIndex}`;
     } else {
       tile.contentUrl = `${tile.url}/${tile.geometryData[0].href}`;
