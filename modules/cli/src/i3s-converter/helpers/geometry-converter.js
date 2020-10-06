@@ -5,6 +5,7 @@ import {DracoWriter} from '@loaders.gl/draco';
 import {encode} from '@loaders.gl/core';
 import {concatenateArrayBuffers, concatenateTypedArrays} from '@loaders.gl/loader-utils';
 import draco3d from 'draco3d';
+import md5 from 'md5';
 
 const VALUES_PER_VERTEX = 3;
 const VALUES_PER_TEX_COORD = 2;
@@ -15,7 +16,7 @@ const VALUES_PER_COLOR_ELEMENT = 4;
 */
 const BATCHED_ID_POSSIBLE_ATTRIBUTE_NAMES = ['CUSTOM_ATTRIBUTE_2', '_BATCHID'];
 
-export default async function convertB3dmToI3sGeometry(tileContent, nodeId) {
+export default async function convertB3dmToI3sGeometry(tileContent, nodeId, featuresHashArray) {
   const {positions, normals, texCoords, colors, featureIndices} = convertAttributes(tileContent);
   const {material, texture} = convertMaterial(tileContent);
   const vertexCount = positions.length / VALUES_PER_VERTEX;
@@ -24,7 +25,14 @@ export default async function convertB3dmToI3sGeometry(tileContent, nodeId) {
     featureIndices,
     triangleCount
   );
+
+  if (tileContent.batchTableJson) {
+    makeFeatureIdsUnique(featureIds, featureIndices, featuresHashArray, tileContent.batchTableJson);
+  }
+
   const header = new Uint32Array(2);
+  const typedFeatureIds = new Uint32Array(featureIds);
+  const featureIdsWithoutDuplicates = getFeatureIdsWithoutDuplicates(featureIds);
 
   header.set([vertexCount, featureCount], 0);
   const fileBuffer = new Uint8Array(
@@ -34,7 +42,7 @@ export default async function convertB3dmToI3sGeometry(tileContent, nodeId) {
       normals.buffer,
       texCoords.buffer,
       colors.buffer,
-      featureIds.buffer,
+      typedFeatureIds.buffer,
       faceRange.buffer
     )
   );
@@ -44,9 +52,9 @@ export default async function convertB3dmToI3sGeometry(tileContent, nodeId) {
     indices.set([index], index);
   }
 
-  const featureIndex = featureIndices.length ? featureIndices : new Uint32Array(vertexCount);
+  const featureIndex = new Uint32Array(featureIndices.length ? featureIndices : vertexCount);
 
-  const attributes = {
+  const compressedAttributes = {
     positions,
     normals,
     texCoords,
@@ -54,7 +62,7 @@ export default async function convertB3dmToI3sGeometry(tileContent, nodeId) {
     'feature-index': featureIndex
   };
   const compressedGeometry = new Uint8Array(
-    await encode({attributes, indices}, DracoWriter, {
+    await encode({attributes: compressedAttributes, indices}, DracoWriter, {
       draco: {
         method: 'MESH_SEQUENTIAL_ENCODING'
       },
@@ -64,13 +72,20 @@ export default async function convertB3dmToI3sGeometry(tileContent, nodeId) {
     })
   );
 
+  const attributes = convertBatchTableToAttributeBuffers(
+    tileContent.batchTableJson,
+    featureIdsWithoutDuplicates
+  );
+
   return {
     geometry: fileBuffer,
     compressedGeometry,
     texture,
     sharedResources: getSharedResources(tileContent, nodeId),
     meshMaterial: material,
-    vertexCount
+    vertexCount,
+    attributes,
+    featureCount
   };
 }
 
@@ -90,7 +105,7 @@ function convertAttributes(tileContent) {
   let positions = new Float32Array(0);
   let normals = new Float32Array(0);
   let convertedTexCoords = new Float32Array(0);
-  let featureIndices = new Uint32Array(0);
+  let featureIndices = [];
 
   const nodes = tileContent.gltf.scene.nodes;
   const convertedAttributes = convertNodes(nodes, tileContent, {
@@ -116,6 +131,8 @@ function convertAttributes(tileContent) {
       texCoords.set([1, 1], index);
     }
   }
+
+  featureIndices = featureIndices.flatMap(value => [...value]);
 
   return {
     positions,
@@ -269,8 +286,7 @@ function convertMesh(
       )
     );
 
-    featureIndices = concatenateTypedArrays(
-      featureIndices,
+    featureIndices.push(
       flattenBatchIds(getBatchIdsByAttributeName(attributes), primitive.indices.value)
     );
   }
@@ -365,28 +381,28 @@ function flattenTexCoords(texCoords, indices) {
 }
 /**
  * Flatten batchedIds list based on indices to right ordered array, compatible with i3s
- * @param {Uint32Array} batchedIds - gltf primitive
+ * @param {Array} batchedIds - gltf primitive
  * @param {Uint8Array} indices - gltf primitive indices
- * @returns {Uint32Array}
+ * @returns {Array}
  */
 function flattenBatchIds(batchedIds, indices) {
   if (!batchedIds.length || !indices.length) {
-    return new Uint32Array(0);
+    return [];
   }
-  const newBatchIds = new Uint32Array(indices.length);
+  const newBatchIds = [];
   for (let i = 0; i < indices.length; i++) {
     const coordIndex = indices[i];
-    newBatchIds.set([Math.round(batchedIds[coordIndex])], i);
+    newBatchIds.push(batchedIds[coordIndex]);
   }
   return newBatchIds;
 }
 /**
  * Return batchIds based on possible attribute names for different kind of maps.
  * @param {Object} attributes {attributeName: Float32Array}
- * @returns {Uint32Array}
+ * @returns {Array}
  */
 function getBatchIdsByAttributeName(attributes) {
-  let batchIds = new Uint32Array(0);
+  let batchIds = [];
 
   for (let index = 0; index < BATCHED_ID_POSSIBLE_ATTRIBUTE_NAMES.length; index++) {
     const possibleBatchIdAttributeName = BATCHED_ID_POSSIBLE_ATTRIBUTE_NAMES[index];
@@ -609,7 +625,7 @@ function generateFeatureAttributes(featureIndices, triangleCount) {
   if (!featureIndices.length) {
     return {
       faceRange: new Uint32Array([0, triangleCount - 1]),
-      featureIds: new Float64Array([0]),
+      featureIds: [0],
       featureCount: 1
     };
   }
@@ -618,17 +634,17 @@ function generateFeatureAttributes(featureIndices, triangleCount) {
   let featureIndex = 1;
   let currentFeatureId = featureIndices[0];
   const faceRangeList = [];
-  const featureIdsList = [];
+  const featureIds = [];
   const uniqueFeatureIds = [currentFeatureId];
 
   faceRangeList[0] = 0;
-  featureIdsList[0] = currentFeatureId;
+  featureIds[0] = currentFeatureId;
 
   for (let index = 1; index < featureIndices.length; index++) {
     if (currentFeatureId !== featureIndices[index]) {
       faceRangeList[rangeIndex] = index / VALUES_PER_VERTEX - 1;
       faceRangeList[rangeIndex + 1] = index / VALUES_PER_VERTEX;
-      featureIdsList[featureIndex] = featureIndices[index];
+      featureIds[featureIndex] = featureIndices[index];
 
       if (!uniqueFeatureIds.includes(featureIndices[index])) {
         uniqueFeatureIds.push(featureIndices[index]);
@@ -643,7 +659,6 @@ function generateFeatureAttributes(featureIndices, triangleCount) {
   faceRangeList[rangeIndex] = featureIndices.length / VALUES_PER_VERTEX - 1;
 
   const faceRange = new Uint32Array(faceRangeList);
-  const featureIds = new Float64Array(featureIdsList);
   const featureCount = uniqueFeatureIds.length;
 
   return {faceRange, featureIds, featureCount};
@@ -673,4 +688,151 @@ function generateImageId(texture, nodeId) {
   // eslint-disable-next-line no-undef
   const imageId = BigInt(`0b${leftHalf.toString(2)}${rightHalf}`);
   return imageId.toString();
+}
+
+/**
+ * Make all feature ids unique through all nodes in layout.
+ * @param {Array} featureIds
+ * @param {Array} featureIndices
+ * @param {Array} featuresHashArray
+ * @param {Object} batchTable
+ * @returns {void}
+ */
+function makeFeatureIdsUnique(featureIds, featureIndices, featuresHashArray, batchTable) {
+  const featureIdsWithoutDuplicates = getFeatureIdsWithoutDuplicates(featureIds);
+
+  for (let index = 0; index < featureIdsWithoutDuplicates.length; index++) {
+    const oldFeatureId = featureIdsWithoutDuplicates[index];
+    const uniqueFeatureId = getOrCreateUniqueFeatureId(index, batchTable, featuresHashArray);
+
+    replaceIndicesByUnique(featureIndices, oldFeatureId, uniqueFeatureId);
+    replaceIndicesByUnique(featureIds, oldFeatureId, uniqueFeatureId);
+  }
+}
+
+/**
+ * Generates string for unique batch id creation.
+ * @param {Object} batchTable
+ * @param {Number} index
+ * @returns {String}
+ */
+function generateStringFromBatchTableByIndex(batchTable, index) {
+  let str = '';
+  for (const key in batchTable) {
+    str += batchTable[key][index];
+  }
+  return str;
+}
+
+/**
+ * Return already exited featureId or creates and returns new to support unique feature ids throw nodes.
+ * @param {Number} index
+ * @param {Object} batchTable
+ * @param {Array} featuresHashArray
+ * @returns {Number}
+ */
+function getOrCreateUniqueFeatureId(index, batchTable, featuresHashArray) {
+  const batchTableStr = generateStringFromBatchTableByIndex(batchTable, index);
+  const hash = md5(batchTableStr);
+
+  if (featuresHashArray.includes(hash)) {
+    return featuresHashArray.indexOf(hash);
+  }
+  return featuresHashArray.push(hash) - 1;
+}
+
+/**
+ * Do replacement of indices for making them unique through all nodes.
+ * @param {Array} indicesArray
+ * @param {Number} oldFeatureId
+ * @param {Number} newFeatureId
+ * @returns {void}
+ */
+function replaceIndicesByUnique(indicesArray, oldFeatureId, newFeatureId) {
+  for (let index = 0; index < indicesArray.length; index++) {
+    if (indicesArray[index] === oldFeatureId) {
+      indicesArray[index] = newFeatureId;
+    }
+  }
+}
+
+/**
+ * Create feature ids array without duplicates;
+ * @param {Array} featureIds
+ * @returns {Array} - Array uniques feature ids.
+ */
+function getFeatureIdsWithoutDuplicates(featureIds) {
+  const uniqueFeatureIds = [];
+
+  for (let index = 0; index < featureIds.length; index++) {
+    const featureId = featureIds[index];
+    if (!uniqueFeatureIds.includes(featureId)) {
+      uniqueFeatureIds.push(featureId);
+    }
+  }
+
+  return uniqueFeatureIds;
+}
+/**
+ * Convert batch table data to attribute buffers.
+ * @param {Object} batchTable - table with metadata for particular feature.
+ * @param {Array} featureIds
+ * @returns {Array} - Array of file buffers.
+ */
+function convertBatchTableToAttributeBuffers(batchTable, featureIds) {
+  const attributeBuffers = [];
+
+  if (batchTable) {
+    const objectIdBuffer = generateObjectIdBuffer(new Uint32Array(featureIds));
+    attributeBuffers.push(objectIdBuffer);
+
+    for (const key in batchTable) {
+      const attributeBuffer = generateAttributeBuffer(batchTable[key]);
+      attributeBuffers.push(attributeBuffer);
+    }
+  }
+
+  return attributeBuffers;
+}
+
+/**
+ * Convert featureIds to objectId attribute array buffer.
+ * @param {Uint32Array} featureIds
+ * @returns {ArrayBuffer} - Buffer with objectId data.
+ */
+function generateObjectIdBuffer(featureIds) {
+  const count = new Uint32Array([featureIds.length]);
+  const valuesArray = new Uint32Array(featureIds);
+  return concatenateArrayBuffers(count.buffer, valuesArray.buffer);
+}
+
+/**
+ * Convert batch table attributes to array buffer with batch table data.
+ * @param {Array} batchAttributes
+ * @returns {ArrayBuffer} - Buffer with batch table data.
+ */
+function generateAttributeBuffer(batchAttributes) {
+  const stringCountArray = new Uint32Array([batchAttributes.length]);
+  let totalNumberOfBytes = 0;
+  const stringSizesArray = new Uint32Array(batchAttributes.length);
+  const stringBufferArray = [];
+
+  for (let index = 0; index < batchAttributes.length; index++) {
+    const currentString = batchAttributes[index] ? `${String(batchAttributes[index])}\0` : '';
+    // eslint-disable-next-line no-undef
+    const currentStringBuffer = Buffer.from(currentString);
+    const currentStringSize = currentStringBuffer.length;
+    totalNumberOfBytes += currentStringSize;
+    stringSizesArray[index] = currentStringSize;
+    stringBufferArray.push(currentStringBuffer);
+  }
+
+  const totalBytes = new Uint32Array([totalNumberOfBytes]);
+
+  return concatenateArrayBuffers(
+    stringCountArray.buffer,
+    totalBytes.buffer,
+    stringSizesArray.buffer,
+    ...stringBufferArray
+  );
 }

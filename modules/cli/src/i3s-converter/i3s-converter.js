@@ -33,6 +33,7 @@ const ION_DEFAULT_TOKEN =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ'; // eslint-disable-line
 const HARDCODED_NODES_PER_PAGE = 64;
 const _3D_TILES = '3DTILES';
+const _3D_OBJECT_LAYER_TYPE = '3DObject';
 
 // Bind draco3d to avoid dynamic loading
 // Converter bundle has incorrect links when using dynamic loading
@@ -51,6 +52,8 @@ export default class I3SConverter {
     this.materialMap = new Map();
     this.materialDefinitions = [];
     this.vertexCounter = 0;
+    this.layers0 = {};
+    this.featuresHashArray = [];
   }
 
   // Convert a 3d tileset
@@ -100,7 +103,6 @@ export default class I3SConverter {
       id: 0,
       name: tilesetName,
       href: './layers/0',
-      layerType: 'IntegratedMesh',
       store: {
         id: `{${uuidv4().toUpperCase()}}`,
         extent
@@ -111,7 +113,7 @@ export default class I3SConverter {
       compressGeometry: true
     };
 
-    const layers0 = transform(layers0data, layersTemplate);
+    this.layers0 = transform(layers0data, layersTemplate);
     this.materialDefinitions = [];
     this.materialMap = new Map();
 
@@ -172,17 +174,17 @@ export default class I3SConverter {
       await sourceRootTile.unloadContent();
     }
 
-    layers0.materialDefinitions = this.materialDefinitions;
+    this.layers0.materialDefinitions = this.materialDefinitions;
     if (isCreateSlpk) {
       this.fileMap['3dSceneLayer.json.gz'] = await writeFileForSlpk(
         this.layers0Path,
-        JSON.stringify(layers0),
+        JSON.stringify(this.layers0),
         '3dSceneLayer.json'
       );
     } else {
-      await writeFile(this.layers0Path, JSON.stringify(layers0));
+      await writeFile(this.layers0Path, JSON.stringify(this.layers0));
     }
-    createSceneServerPath(tilesetName, layers0, tilesetPath);
+    createSceneServerPath(tilesetName, this.layers0, tilesetPath);
 
     if (isCreateSlpk) {
       this.fileMap['nodes/root/3dNodeIndexDocument.json.gz'] = await writeFileForSlpk(
@@ -297,10 +299,15 @@ export default class I3SConverter {
       children: []
     };
     if (sourceTile.content && sourceTile.content.type === 'b3dm') {
+      const batchTable = sourceTile.content.batchTableJson;
+      if (batchTable && !this.layers0.attributeStorageInfo.length) {
+        this._convertBatchTableInfoToNodeAttributes(batchTable);
+      }
       nodeInPage.mesh = {
         geometry: {
           definition: 0
-        }
+        },
+        attribute: {}
       };
     }
     const nodeId = this.nodePages.push(nodeInPage, parentId);
@@ -348,8 +355,10 @@ export default class I3SConverter {
       texture,
       sharedResources,
       meshMaterial,
-      vertexCount
-    } = await convertB3dmToI3sGeometry(sourceTile.content, Number(node.id));
+      vertexCount,
+      attributes,
+      featureCount
+    } = await convertB3dmToI3sGeometry(sourceTile.content, Number(node.id), this.featuresHashArray);
     if (this.options.slpk) {
       const slpkGeometryPath = join(childPath, 'geometries');
       this.fileMap[`${slpkChildPath}/geometries/0.bin.gz`] = await writeFileForSlpk(
@@ -416,6 +425,36 @@ export default class I3SConverter {
       this.vertexCounter += vertexCount;
       this.nodePages.updateVertexCountByNodeId(node.id, vertexCount);
     }
+    this.nodePages.updateNodeAttributeByNodeId(node.id);
+    if (featureCount) {
+      this.nodePages.updateFeatureCountByNodeId(node.id, featureCount);
+    }
+    if (
+      attributes.length &&
+      this.layers0.attributeStorageInfo &&
+      this.layers0.attributeStorageInfo.length
+    ) {
+      node.attributeData = [];
+
+      for (let index = 0; index < attributes.length; index++) {
+        const folderName = this.layers0.attributeStorageInfo[index].key;
+        const fileBuffer = new Uint8Array(attributes[index]);
+
+        node.attributeData.push({href: `./attributes/${folderName}/0`});
+
+        if (this.options.slpk) {
+          const slpkAttributesPath = join(childPath, 'attributes', folderName);
+          this.fileMap[`${slpkChildPath}/attributes/${folderName}.bin.gz`] = await writeFileForSlpk(
+            slpkAttributesPath,
+            fileBuffer,
+            '0.bin'
+          );
+        } else {
+          const attributesPath = join(childPath, `attributes/${folderName}/0`);
+          await writeFile(attributesPath, fileBuffer, 'index.bin');
+        }
+      }
+    }
   }
 
   /**
@@ -431,6 +470,148 @@ export default class I3SConverter {
     const newMaterialId = this.materialDefinitions.push(material) - 1;
     this.materialMap.set(hash, newMaterialId);
     return newMaterialId;
+  }
+  /**
+   * Generate storage attribute for map segmentation.
+   * @param {Number} attributeIndex - order index of attribute (f_0, f_1 ...).
+   * @param {String} key - attribute key from batch table.
+   * @return {Object} Updated storageAttribute.
+   */
+  _createdStorageAttribute(attributeIndex, key) {
+    const storageAttribute = {
+      key: `f_${attributeIndex}`,
+      name: key,
+      ordering: ['attributeValues'],
+      header: [{property: 'count', valueType: 'UInt32'}],
+      attributeValues: {valueType: 'UInt32', valuesPerElement: 1}
+    };
+
+    if (key === 'OBJECTID') {
+      this._setupIdAttribute(storageAttribute);
+    } else {
+      this._setupAttribute(storageAttribute);
+    }
+
+    return storageAttribute;
+  }
+
+  /**
+   * Setup storage attribute as string.
+   * @param {Object} storageAttribute - attribute for map segmentation.
+   * @return {void}
+   */
+  _setupAttribute(storageAttribute) {
+    storageAttribute.ordering.unshift('attributeByteCounts');
+    storageAttribute.header.push({property: 'attributeValuesByteCount', valueType: 'UInt32'});
+    storageAttribute.attributeValues = {
+      valueType: 'String',
+      encoding: 'UTF-8',
+      valuesPerElement: 1
+    };
+    storageAttribute.attributeByteCounts = {
+      valueType: 'UInt32',
+      valuesPerElement: 1
+    };
+  }
+
+  /**
+   * Setup Id attribute for map segmentation.
+   * @param {Object} storageAttribute - attribute for map segmentation .
+   * @return {void}
+   */
+  _setupIdAttribute(storageAttribute) {
+    storageAttribute.attributeValues = {
+      valueType: 'Oid32',
+      valuesPerElement: 1
+    };
+  }
+
+  /**
+   * Setup field attribute for map segmentation.
+   * @param {String} key - attribute for map segmentation.
+   * @param {String} fieldAttributeType - esri attribute type ('esriFieldTypeString' or 'esriFieldTypeOID').
+   * @return {Object}
+   */
+  _createFieldAttribute(key, fieldAttributeType) {
+    return {
+      name: key,
+      type: fieldAttributeType,
+      alias: key
+    };
+  }
+  /**
+   * Do conversion of 3DTiles batch table to I3s node attributes.
+   * @param {Object} batchTable - Table with layer meta data.
+   * @return {void}
+   */
+  _convertBatchTableInfoToNodeAttributes(batchTable) {
+    let attributeIndex = 0;
+    const batchTableWithObjectId = {
+      OBJECTID: null,
+      ...batchTable
+    };
+
+    for (const key in batchTableWithObjectId) {
+      const storageAttribute = this._createdStorageAttribute(attributeIndex, key);
+      const fieldAttributeType = this._getFieldAttributeType(key);
+      const fieldAttribute = this._createFieldAttribute(key, fieldAttributeType);
+      const popupInfo = this._createPopupInfo(batchTableWithObjectId);
+
+      this.layers0.attributeStorageInfo.push(storageAttribute);
+      this.layers0.fields.push(fieldAttribute);
+      this.layers0.popupInfo = popupInfo;
+      this.layers0.layerType = _3D_OBJECT_LAYER_TYPE;
+
+      attributeIndex += 1;
+    }
+  }
+  /**
+   * Find and return attribute type based on key form Batch table.
+   * @param {String} key - Key from batch table with metadata.
+   * @return {String}
+   */
+  _getFieldAttributeType(key) {
+    const ESRI_STRING_TYPE = 'esriFieldTypeString';
+    const ESRI_OBJECTID_TYPE = 'esriFieldTypeOID';
+
+    if (key === 'OBJECTID') {
+      return ESRI_OBJECTID_TYPE;
+    }
+
+    return ESRI_STRING_TYPE;
+  }
+  /**
+   * Generate popup info to show metadata on the map.
+   * @param {Object} batchTable - Batch table data with OBJECTID.
+   * @return {Object} - data for correct rendering of popup.
+   */
+  _createPopupInfo(batchTable) {
+    const title = '{OBJECTID}';
+    const mediaInfos = [];
+    const fieldInfos = [];
+    const popupElements = [];
+    const expressionInfos = [];
+
+    for (const key in batchTable) {
+      fieldInfos.push({
+        fieldName: key,
+        visible: true,
+        isEditable: false,
+        label: key
+      });
+    }
+    popupElements.push({
+      fieldInfos,
+      type: 'fields'
+    });
+
+    return {
+      title,
+      mediaInfos,
+      popupElements,
+      fieldInfos,
+      expressionInfos
+    };
   }
 
   async _finishConversion(params) {

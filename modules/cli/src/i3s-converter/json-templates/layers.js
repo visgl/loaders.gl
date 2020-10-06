@@ -155,5 +155,17 @@ export const LAYERS = {
         geometryBuffers: [PLAIN_GEOMETRY_DEFINITION]
       }
     ]
+  },
+  attributeStorageInfo: {
+    path: 'attributeStorageInfo',
+    default: []
+  },
+  fields: {
+    path: 'fields',
+    default: []
+  },
+  popupInfo: {
+    path: 'popupInfo',
+    default: null
   }
 };

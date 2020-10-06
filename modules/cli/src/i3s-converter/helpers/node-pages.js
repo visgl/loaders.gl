@@ -93,6 +93,31 @@ export default class NodePages {
     node.mesh.geometry.vertexCount = vertexCount;
   }
 
+  /**
+   * Update resource in node.mesh.attribute object by node id
+   * @param id - end-to-end index of the node
+   */
+  updateNodeAttributeByNodeId(id) {
+    const node = this.getNodeById(id);
+    if (!node.mesh) {
+      return;
+    }
+    node.mesh.attribute.resource = node.index;
+  }
+
+  /**
+   * Update featureCount in node.mesh.geometry object by node id
+   * @param id - end-to-end index of the node
+   * @param featureCount - features count of the node
+   */
+  updateFeatureCountByNodeId(id, featureCount) {
+    const node = this.getNodeById(id);
+    if (!node.mesh) {
+      return;
+    }
+    node.mesh.geometry.featureCount = featureCount;
+  }
+
   updateTexelCountHintByNodeId(id, texelCountHint) {
     const node = this.getNodeById(id);
     if (!node.mesh || !node.mesh.material) {

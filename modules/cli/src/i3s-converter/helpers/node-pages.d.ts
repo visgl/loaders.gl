@@ -105,6 +105,19 @@ export default class NodePages {
   updateVertexCountByNodeId(id: number, vertexCount: number);
 
   /**
+   * Update resource in node.mesh.attribute object by node id
+   * @param id - end-to-end index of the node
+   */
+  updateNodeAttributeByNodeId(id: number);
+
+  /**
+   * Update featureCount in node.mesh.geometry object by node id
+   * @param id - end-to-end index of the node
+   * @param featureCount - features count of the node
+   */
+  updateFeatureCountByNodeId(id: number, featureCount: number);
+
+  /**
    * Update texelCountHint in node.mesh.material object by node id
    * @param id - end-to-end index of the node
    * @param texelCountHint - texelCountHint of particular node

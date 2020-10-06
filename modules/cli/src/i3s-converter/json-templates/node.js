@@ -78,5 +78,9 @@ export const NODE = {
   textureData: {
     path: 'textureData',
     default: null
+  },
+  attributeData: {
+    path: 'attributeData',
+    default: null
   }
 };

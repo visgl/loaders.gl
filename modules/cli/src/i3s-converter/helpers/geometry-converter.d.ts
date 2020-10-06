@@ -22,7 +22,8 @@ export default function convertB3dmToI3sGeometry(
       materials: [];
     };
   },
-  nodeId: number
+  nodeId: number,
+  featuresHashArray: any
 ): Promise<{
   geometry: ArrayBuffer;
   compressedGeometry: ArrayBuffer;
@@ -30,4 +31,6 @@ export default function convertB3dmToI3sGeometry(
   sharedResources: any;
   meshMaterial: any;
   vertexCount: number;
+  attributes: any;
+  featureCount: number
 }>;
