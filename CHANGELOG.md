@@ -2,6 +2,10 @@
 
 ## v2.2 Release
 
+#### v2.2.9
+
+- Fix image loader using imagebitmap options (#963)
+
 #### v2.2.8
 
 - perf: prevent iterating through typed array if using SharedArrayBuffer (#859)
