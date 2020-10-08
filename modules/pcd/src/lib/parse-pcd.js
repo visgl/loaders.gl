@@ -66,7 +66,8 @@ function getNormalizedHeader(PCDheader, attributes) {
 function getNormalizedAttributes(attributes) {
   const normalizedAttributes = {
     POSITION: {
-      value: new Float64Array(attributes.position),
+      // Binary PCD is only 32 bit
+      value: new Float32Array(attributes.position),
       size: 3
     }
   };
