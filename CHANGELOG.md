@@ -2,6 +2,14 @@
 
 ## v2.3 Prereleases
 
+#### v2.3.0-beta.3
+
+- Fix image loader using imagebitmap options (#963)
+- i3s: handle nodepages (#960)
+- 3d-tiles: Fix encodeSync based tests (#962)
+- vb/draco metadata (#956)
+- draco: upgrade libs to version 1.3.6 (#959)
+
 #### v2.3.0-beta.2
 
 - Set isTileset to 'auto' in tile-3d to enable loading an external tileset json within a tile. (#947)
