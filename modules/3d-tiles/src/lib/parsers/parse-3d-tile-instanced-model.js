@@ -33,7 +33,7 @@ function parseInstancedModel(tile, arrayBuffer, byteOffset, options, context) {
   // PARSE FEATURE TABLE
   byteOffset = parse3DTileTablesSync(tile, arrayBuffer, byteOffset, options);
 
-  byteOffset = parse3DTileGLTFViewSync(tile, arrayBuffer, byteOffset);
+  byteOffset = parse3DTileGLTFViewSync(tile, arrayBuffer, byteOffset, options);
 
   // TODO - Is the feature table sometimes optional or can check be moved into table header parser?
   if (tile.featureTableJsonByteLength === 0) {

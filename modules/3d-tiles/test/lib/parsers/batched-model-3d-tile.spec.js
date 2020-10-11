@@ -83,6 +83,13 @@ test('batched model tile#with batch table', async t => {
   t.end();
 });
 
+test('batched model tile#gltfUpAxis is supported', async t => {
+  const tileData = await loadRootTileFromTileset(t, WITH_BATCH_TABLE_URL);
+  const tile = await parse(tileData, Tiles3DLoader);
+  t.equal(tile.gltfUpAxis, 'Y', 'tile has default gltf up axis');
+  t.end();
+});
+
 test('batched model tile#with batch table binary', async t => {
   const tileData = await loadRootTileFromTileset(t, WITH_BATCH_TABLE_BINARY_URL);
   const tile = await parse(tileData, Tiles3DLoader);
