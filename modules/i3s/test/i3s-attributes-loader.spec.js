@@ -58,9 +58,16 @@ const attributeStorageInfo = [
   }
 ];
 
-test('I3SAttributesLoader# should return tile without attributes if no attributeUrls in tile ', async t => {
+test('I3SAttributesLoader# should return tile without attributes if no attributeUrls in tile', async t => {
   const tile = {};
-  const tileWithAtributes = await I3SAttributesLoader.parse(tile, {attributeStorageInfo});
+  const tileWithAtributes = await I3SAttributesLoader.parse(tile, attributeStorageInfo);
+  t.notOk(tileWithAtributes.attributes);
+  t.end();
+});
+
+test('I3SAttributesLoader# should return tile without attributes if no attributeStorageInfo', async t => {
+  const tile = {};
+  const tileWithAtributes = await I3SAttributesLoader.parse(tile, null);
   t.notOk(tileWithAtributes.attributes);
   t.end();
 });
@@ -76,7 +83,7 @@ test('I3SAttributesLoader# should load attributes', async t => {
   const tile = {
     attributeUrls: [objectIdsUrl, namesUrl, heightRoofUrl]
   };
-  const tileWithAtributes = await I3SAttributesLoader.parse(tile, {attributeStorageInfo});
+  const tileWithAtributes = await I3SAttributesLoader.parse(tile, attributeStorageInfo);
   t.ok(tileWithAtributes.attributes);
   t.ok(tileWithAtributes.attributes.OBJECTID);
   t.ok(tileWithAtributes.attributes.NAME);
