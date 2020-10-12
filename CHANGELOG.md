@@ -1,5 +1,11 @@
 ## loaders.gl v2
 
+## v2.3 Release
+
+#### v2.3.0
+
+- Bump to math.gl@3.3.0 (#968)
+
 ## v2.3 Prereleases
 
 #### v2.3.0-beta.3
