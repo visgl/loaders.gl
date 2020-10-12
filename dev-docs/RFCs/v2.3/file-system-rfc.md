@@ -15,6 +15,7 @@ This RFC explores the idea of loaders.gl defining a few simple file system "inte
 - a number of cloud providers have JavaScript SDKs that provide access to their remote file systems.
 
 Loaders that load sub-files may need to load additional files from the same source as the main file. Such loaders include:
+
 - shape files
 - glTF
 - 3d tiles
@@ -48,7 +49,6 @@ The value of this module would be to collect the already growing number of such 
 
 Existing code: Wrappers for dropbox, google drive (open PR) and aws (open PR) exist in kepler.gl, google cloud storage is also available.
 
-
 ### Proposal: File System Registration
 
 Some file systems like Google Storage and AWS S3 could be registered globally with URL schemes like `gs://bucket/file` etc and loaders.gl core functions could automatically access such paths.
@@ -56,7 +56,6 @@ Some file systems like Google Storage and AWS S3 could be registered globally wi
 This would further strengthen loaders.gl support for backend Node.js server use cases, where accessing cloud storage and papering over differences between different cloud storage APIs are very common.
 
 TODO: Investigate if such URL schemes are already supported through other means.
-
 
 ## Open Issues
 
