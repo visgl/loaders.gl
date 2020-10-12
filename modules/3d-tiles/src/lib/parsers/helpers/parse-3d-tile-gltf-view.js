@@ -31,8 +31,8 @@ export function parse3DTileGLTFViewSync(tile, arrayBuffer, byteOffset, options) 
 
   // Save gltf up axis
   tile.gltfUpAxis =
-    options['cesium-ion'] && options['cesium-ion'].assetGltfUpAxis
-      ? options['cesium-ion'].assetGltfUpAxis
+    options['3d-tiles'] && options['3d-tiles'].assetGltfUpAxis
+      ? options['3d-tiles'].assetGltfUpAxis
       : 'Y';
 
   // TODO - We can avoid copy if already 4-byte aligned...
