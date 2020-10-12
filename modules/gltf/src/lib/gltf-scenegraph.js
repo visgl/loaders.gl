@@ -270,7 +270,6 @@ export default class GLTFScenegraph {
     this.json.scene = sceneIndex;
   }
 
-  // Adds a scene to the json part
   // TODO: add more properties for scene initialization:
   //   `name`, `extensions`, `extras`
   //   https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#reference-scene
@@ -280,7 +279,6 @@ export default class GLTFScenegraph {
     return this.json.scenes.length - 1;
   }
 
-  // Adds a node to the json part
   // TODO: add more properties for node initialization:
   //   `name`, `extensions`, `extras`, `camera`, `children`, `skin`, `matrix`, `rotation`, `scale`, `translation`, `weights`
   //   https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#node
@@ -298,11 +296,14 @@ export default class GLTFScenegraph {
       primitives: [
         {
           attributes: accessors,
-          indices,
           mode
         }
       ]
     };
+
+    if (indices) {
+      glTFMesh.primitives[0].indices = indices;
+    }
 
     this.json.meshes = this.json.meshes || [];
     this.json.meshes.push(glTFMesh);
@@ -403,7 +404,6 @@ export default class GLTFScenegraph {
     return this.addAccessor(bufferViewIndex, Object.assign(accessorDefaults, accessor));
   }
 
-  // Adds a texture to the json part
   // TODO: add more properties for texture initialization
   //    `sampler`, `name`, `extensions`, `extras`
   //    https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#texture
@@ -417,14 +417,12 @@ export default class GLTFScenegraph {
     return this.json.textures.length - 1;
   }
 
-  // Adds a material to the json part
   addMaterial(pbrMaterialInfo) {
     this.json.materials = this.json.materials || [];
     this.json.materials.push(pbrMaterialInfo);
     return this.json.materials.length - 1;
   }
 
-  // Pack the binary chunk
   createBinaryChunk() {
     // Already packed
     if (this.arrayBuffer) {

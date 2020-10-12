@@ -59,7 +59,7 @@ export default class GLTFScenegraph {
 
   // accepts accessor index or accessor object
   // returns a `Uint8Array`
-  getTypedArrayForImageData(image: number | object): Uint8Array; 
+  getTypedArrayForImageData(image: number | object): Uint8Array;
 
   // MODIFERS
 
@@ -90,30 +90,44 @@ export default class GLTFScenegraph {
 
   setObjectExtension(object: object, extensionName: string, data: object): void;
 
+  // Adds a scene to the json part
+  addScene(nodeIndices: number[]): number;
+
+  // Adds a node to the json part
+  addNode(meshIndex: number): number;
+
   addMesh(attributes: object, indices: object, mode?: number): number;
 
   addPointCloud(attributes: object): number;
-
 
   /**
    * Adds a binary image. Builds glTF "JSON metadata" and saves buffer reference
    * Buffer will be copied into BIN chunk during "pack"
    * Currently encodes as glTF image
-   * @param imageData 
-   * @param mimeType 
+   * @param imageData
+   * @param mimeType
    */
   addImage(imageData: any, mimeType?: string): number;
 
   /**
    * Add one untyped source buffer, create a matching glTF `bufferView`, and return its index
-   * @param buffer 
+   * @param buffer
    */
   addBufferView(buffer: any): number;
 
+  // Adds a texture to the json part
+  addTexture(imageIndex: number): number;
+
+  // Adds a material to the json part
+  addMaterial(pbrMaterialInfo: Object): number;
+
+  // Pack the binary chunk
+  createBinaryChunk(): void;
+
   /**
    * Adds an accessor to a bufferView
-   * @param bufferViewIndex 
-   * @param accessor 
+   * @param bufferViewIndex
+   * @param accessor
    */
   addAccessor(bufferViewIndex: number, accessor: object): number;
 
@@ -121,8 +135,8 @@ export default class GLTFScenegraph {
    * Add a binary buffer. Builds glTF "JSON metadata" and saves buffer reference
    * Buffer will be copied into BIN chunk during "pack"
    * Currently encodes buffers as glTF accessors, but this could be optimized
-   * @param sourceBuffer 
-   * @param accessor 
+   * @param sourceBuffer
+   * @param accessor
    */
   addBinaryBuffer(sourceBuffer: any, accessor?: object): number;
 }
