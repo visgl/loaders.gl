@@ -493,6 +493,8 @@ export default class GLTFScenegraph {
       case 'texcoord':
       case 'texcoords':
         return 'TEXCOORD_0';
+      case 'batchid':
+        return '_BATCHID';
       default:
         return `CUSTOM_ATTRIBUTE_${this._newCustomAttributeNumber}`;
     }
