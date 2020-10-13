@@ -1728,7 +1728,7 @@
     "@babel/runtime" "^7.0.0"
     gl-matrix "^3.0.0"
 
-"@math.gl/core@3.3.0", "@math.gl/core@^3.2.1", "@math.gl/core@^3.3.0":
+"@math.gl/core@3.3.0", "@math.gl/core@^3.3.0":
   version "3.3.0"
   resolved "https://registry.yarnpkg.com/@math.gl/core/-/core-3.3.0.tgz#5fa6581c8ae8ff7ea7a2c03f5a8b8931879044f9"
   integrity sha512-3ghPZ3YRX+72wNoUEs8npwUcP3kOvaTZrLHxL+tDydvULkLLcOfwPisylNm3yFwRfyn9YownBbxlqa/PsbWPNg==
@@ -1736,7 +1736,7 @@
     "@babel/runtime" "^7.0.0"
     gl-matrix "^3.0.0"
 
-"@math.gl/culling@^3.2.1", "@math.gl/culling@^3.3.0":
+"@math.gl/culling@^3.3.0":
   version "3.3.0"
   resolved "https://registry.yarnpkg.com/@math.gl/culling/-/culling-3.3.0.tgz#48c9c059711796c7720be7c905657902362e6358"
   integrity sha512-STNAH/pl3f4b/J45QHMGI8eLRXsUr3Q/GfMMGzi7zAd5uljSWiQ42m3QvQBVyrsC/IjIhTCBDFeHHPWhCclIXg==
@@ -1745,7 +1745,7 @@
     "@math.gl/core" "3.3.0"
     gl-matrix "^3.0.0"
 
-"@math.gl/geospatial@^3.2.1", "@math.gl/geospatial@^3.3.0":
+"@math.gl/geospatial@^3.3.0":
   version "3.3.0"
   resolved "https://registry.yarnpkg.com/@math.gl/geospatial/-/geospatial-3.3.0.tgz#bbe222d6650a262f1cefb1f9796026923f67e8c8"
   integrity sha512-3PIQKBXQHOk8j+c7/BllBPvi8WiphpFJ/aIh2jWzTxNVSCME+yESwfbNVvcUhdQrAyTWYURNPFB26M9HU6FBoQ==
