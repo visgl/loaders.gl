@@ -34,6 +34,10 @@ const ION_DEFAULT_TOKEN =
 const HARDCODED_NODES_PER_PAGE = 64;
 const _3D_TILES = '3DTILES';
 const _3D_OBJECT_LAYER_TYPE = '3DObject';
+const STRING_TYPE = 'string';
+const SHORT_INT_TYPE = 'Int32';
+const DOUBLE_TYPE = 'double';
+const OBJECT_ID_TYPE = 'OBJECTID';
 
 // Bind draco3d to avoid dynamic loading
 // Converter bundle has incorrect links when using dynamic loading
@@ -349,6 +353,7 @@ export default class I3SConverter {
     node.sharedResource = [{href: './shared'}];
     const childPath = join(this.layers0Path, 'nodes', node.path);
     const slpkChildPath = join('nodes', node.path);
+    const attributeStorageInfo = this.layers0.attributeStorageInfo;
     const {
       geometry: geometryBuffer,
       compressedGeometry,
@@ -358,7 +363,12 @@ export default class I3SConverter {
       vertexCount,
       attributes,
       featureCount
-    } = await convertB3dmToI3sGeometry(sourceTile.content, Number(node.id), this.featuresHashArray);
+    } = await convertB3dmToI3sGeometry(
+      sourceTile.content,
+      Number(node.id),
+      this.featuresHashArray,
+      attributeStorageInfo
+    );
     if (this.options.slpk) {
       const slpkGeometryPath = join(childPath, 'geometries');
       this.fileMap[`${slpkChildPath}/geometries/0.bin.gz`] = await writeFileForSlpk(
@@ -474,25 +484,48 @@ export default class I3SConverter {
   /**
    * Generate storage attribute for map segmentation.
    * @param {Number} attributeIndex - order index of attribute (f_0, f_1 ...).
-   * @param {String} key - attribute key from batch table.
+   * @param {String} key - attribute key from batch table.\
+   * @param {String} attributeType - attribute type.
    * @return {Object} Updated storageAttribute.
    */
-  _createdStorageAttribute(attributeIndex, key) {
+  _createdStorageAttribute(attributeIndex, key, attributeType) {
     const storageAttribute = {
       key: `f_${attributeIndex}`,
       name: key,
       ordering: ['attributeValues'],
       header: [{property: 'count', valueType: 'UInt32'}],
-      attributeValues: {valueType: 'UInt32', valuesPerElement: 1}
+      attributeValues: {valueType: 'Int32', valuesPerElement: 1}
     };
 
-    if (key === 'OBJECTID') {
-      this._setupIdAttribute(storageAttribute);
-    } else {
-      this._setupAttribute(storageAttribute);
+    switch (attributeType) {
+      case OBJECT_ID_TYPE:
+        this._setupIdAttribute(storageAttribute);
+        break;
+      case STRING_TYPE:
+        this._setupStringAttribute(storageAttribute);
+        break;
+      case DOUBLE_TYPE:
+        this._setupDoubleAttribute(storageAttribute);
+        break;
+      case SHORT_INT_TYPE:
+        break;
+      default:
+        this._setupStringAttribute(storageAttribute);
     }
 
     return storageAttribute;
+  }
+
+  getAttributeType(key, attribute) {
+    if (key === OBJECT_ID_TYPE) {
+      return OBJECT_ID_TYPE;
+    }
+    if (typeof attribute === STRING_TYPE) {
+      return STRING_TYPE;
+    } else if (typeof attribute === 'number') {
+      return Number.isInteger(attribute) ? SHORT_INT_TYPE : DOUBLE_TYPE;
+    }
+    return STRING_TYPE;
   }
 
   /**
@@ -500,7 +533,7 @@ export default class I3SConverter {
    * @param {Object} storageAttribute - attribute for map segmentation.
    * @return {void}
    */
-  _setupAttribute(storageAttribute) {
+  _setupStringAttribute(storageAttribute) {
     storageAttribute.ordering.unshift('attributeByteCounts');
     storageAttribute.header.push({property: 'attributeValuesByteCount', valueType: 'UInt32'});
     storageAttribute.attributeValues = {
@@ -522,6 +555,17 @@ export default class I3SConverter {
   _setupIdAttribute(storageAttribute) {
     storageAttribute.attributeValues = {
       valueType: 'Oid32',
+      valuesPerElement: 1
+    };
+  }
+  /**
+   * Setup double attribute for map segmentation.
+   * @param {Object} storageAttribute - attribute for map segmentation .
+   * @return {void}
+   */
+  _setupDoubleAttribute(storageAttribute) {
+    storageAttribute.attributeValues = {
+      valueType: 'Float64',
       valuesPerElement: 1
     };
   }
@@ -547,13 +591,16 @@ export default class I3SConverter {
   _convertBatchTableInfoToNodeAttributes(batchTable) {
     let attributeIndex = 0;
     const batchTableWithObjectId = {
-      OBJECTID: null,
+      OBJECTID: [0],
       ...batchTable
     };
 
     for (const key in batchTableWithObjectId) {
-      const storageAttribute = this._createdStorageAttribute(attributeIndex, key);
-      const fieldAttributeType = this._getFieldAttributeType(key);
+      const firstAttribute = batchTableWithObjectId[key][0];
+      const attributeType = this.getAttributeType(key, firstAttribute);
+
+      const storageAttribute = this._createdStorageAttribute(attributeIndex, key, attributeType);
+      const fieldAttributeType = this._getFieldAttributeType(attributeType);
       const fieldAttribute = this._createFieldAttribute(key, fieldAttributeType);
       const popupInfo = this._createPopupInfo(batchTableWithObjectId);
 
@@ -567,18 +614,22 @@ export default class I3SConverter {
   }
   /**
    * Find and return attribute type based on key form Batch table.
-   * @param {String} key - Key from batch table with metadata.
+   * @param {String} attributeType
    * @return {String}
    */
-  _getFieldAttributeType(key) {
-    const ESRI_STRING_TYPE = 'esriFieldTypeString';
-    const ESRI_OBJECTID_TYPE = 'esriFieldTypeOID';
-
-    if (key === 'OBJECTID') {
-      return ESRI_OBJECTID_TYPE;
+  _getFieldAttributeType(attributeType) {
+    switch (attributeType) {
+      case OBJECT_ID_TYPE:
+        return 'esriFieldTypeOID';
+      case STRING_TYPE:
+        return 'esriFieldTypeString';
+      case SHORT_INT_TYPE:
+        return 'esriFieldTypeInteger';
+      case DOUBLE_TYPE:
+        return 'esriFieldTypeDouble';
+      default:
+        return 'esriFieldTypeString';
     }
-
-    return ESRI_STRING_TYPE;
   }
   /**
    * Generate popup info to show metadata on the map.

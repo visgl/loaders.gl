@@ -10,13 +10,23 @@ import md5 from 'md5';
 const VALUES_PER_VERTEX = 3;
 const VALUES_PER_TEX_COORD = 2;
 const VALUES_PER_COLOR_ELEMENT = 4;
+
+const STRING_TYPE = 'string';
+const SHORT_INT_TYPE = 'Int32';
+const DOUBLE_TYPE = 'Float64';
+const OBJECT_ID_TYPE = 'Oid32';
 /*
 * 'CUSTOM_ATTRIBUTE_2' - Attribute name which includes batch info and used by New York map.
 * _BATCHID - default attribute name which includes batch info.
 */
 const BATCHED_ID_POSSIBLE_ATTRIBUTE_NAMES = ['CUSTOM_ATTRIBUTE_2', '_BATCHID'];
 
-export default async function convertB3dmToI3sGeometry(tileContent, nodeId, featuresHashArray) {
+export default async function convertB3dmToI3sGeometry(
+  tileContent,
+  nodeId,
+  featuresHashArray,
+  attributeStorageInfo
+) {
   const {positions, normals, texCoords, colors, featureIndices} = convertAttributes(tileContent);
   const {material, texture} = convertMaterial(tileContent);
   const vertexCount = positions.length / VALUES_PER_VERTEX;
@@ -74,7 +84,8 @@ export default async function convertB3dmToI3sGeometry(tileContent, nodeId, feat
 
   const attributes = convertBatchTableToAttributeBuffers(
     tileContent.batchTableJson,
-    featureIdsWithoutDuplicates
+    featureIdsWithoutDuplicates,
+    attributeStorageInfo
   );
 
   return {
@@ -775,37 +786,82 @@ function getFeatureIdsWithoutDuplicates(featureIds) {
 
   return uniqueFeatureIds;
 }
+
 /**
  * Convert batch table data to attribute buffers.
  * @param {Object} batchTable - table with metadata for particular feature.
  * @param {Array} featureIds
+ * @param {Array} attributeStorageInfo
  * @returns {Array} - Array of file buffers.
  */
-function convertBatchTableToAttributeBuffers(batchTable, featureIds) {
+function convertBatchTableToAttributeBuffers(batchTable, featureIds, attributeStorageInfo) {
   const attributeBuffers = [];
 
   if (batchTable) {
-    const objectIdBuffer = generateObjectIdBuffer(new Uint32Array(featureIds));
-    attributeBuffers.push(objectIdBuffer);
+    const batchTableWithFeatureIds = {
+      OBJECTID: featureIds,
+      ...batchTable
+    };
 
-    for (const key in batchTable) {
-      const attributeBuffer = generateAttributeBuffer(batchTable[key]);
+    for (const key in batchTableWithFeatureIds) {
+      const type = getAttributeType(key, attributeStorageInfo);
+
+      let attributeBuffer = null;
+
+      switch (type) {
+        case OBJECT_ID_TYPE:
+        case SHORT_INT_TYPE:
+          attributeBuffer = generateShortIntegerAttributeBuffer(batchTableWithFeatureIds[key]);
+          break;
+        case DOUBLE_TYPE:
+          attributeBuffer = generateDoubleAttributeBuffer(batchTableWithFeatureIds[key]);
+          break;
+        case STRING_TYPE:
+          attributeBuffer = generateStringAttributeBuffer(batchTableWithFeatureIds[key]);
+          break;
+        default:
+          attributeBuffer = generateStringAttributeBuffer(batchTableWithFeatureIds[key]);
+      }
+
       attributeBuffers.push(attributeBuffer);
     }
   }
 
   return attributeBuffers;
 }
+/**
+ * Return attribute type.
+ * @param {String} key
+ * @param {Array} attributeStorageInfo
+ * @returns {String} attribute type.
+ */
+function getAttributeType(key, attributeStorageInfo) {
+  const attribute = attributeStorageInfo.find(attr => attr.name === key);
+  return attribute.attributeValues.valueType;
+}
 
 /**
- * Convert featureIds to objectId attribute array buffer.
- * @param {Uint32Array} featureIds
+ * Convert short integer to attribute arrayBuffer.
+ * @param {Array} featureIds
  * @returns {ArrayBuffer} - Buffer with objectId data.
  */
-function generateObjectIdBuffer(featureIds) {
+function generateShortIntegerAttributeBuffer(featureIds) {
   const count = new Uint32Array([featureIds.length]);
   const valuesArray = new Uint32Array(featureIds);
   return concatenateArrayBuffers(count.buffer, valuesArray.buffer);
+}
+
+/**
+ * Convert double to attribute arrayBuffer.
+ * @param {Array} featureIds
+ * @returns {ArrayBuffer} - Buffer with objectId data.
+ */
+function generateDoubleAttributeBuffer(featureIds) {
+  const count = new Uint32Array([featureIds.length]);
+  const padding = new Uint8Array(4);
+  const valuesArray = new Float64Array(featureIds);
+
+  return concatenateArrayBuffers(count.buffer, padding.buffer, valuesArray.buffer);
 }
 
 /**
@@ -813,7 +869,7 @@ function generateObjectIdBuffer(featureIds) {
  * @param {Array} batchAttributes
  * @returns {ArrayBuffer} - Buffer with batch table data.
  */
-function generateAttributeBuffer(batchAttributes) {
+function generateStringAttributeBuffer(batchAttributes) {
   const stringCountArray = new Uint32Array([batchAttributes.length]);
   let totalNumberOfBytes = 0;
   const stringSizesArray = new Uint32Array(batchAttributes.length);
