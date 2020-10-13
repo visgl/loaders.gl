@@ -32,6 +32,13 @@ export async function parseI3STileContent(arrayBuffer, tile, tileset, options) {
 }
 
 /* eslint-disable max-statements */
+/**
+ * Do parsing of node geometry and update tile content.
+ * Do parsing of arrayBuffer for getting attributes for particular tile.
+ * @param arrayBuffer
+ * @param tile
+ * @returns {Object} - return updated Tile.
+ */
 function parseI3SNodeGeometry(arrayBuffer, tile = {}) {
   if (!tile.content) {
     return tile;
@@ -46,6 +53,7 @@ function parseI3SNodeGeometry(arrayBuffer, tile = {}) {
   } = content.featureData;
   // First 8 bytes reserved for header (vertexCount and featureCount)
   const {vertexCount, byteOffset, featureCount} = parseHeaders(content, arrayBuffer);
+  // Getting vertex attributes such as positions, normals, colors, etc...
   const {attributes: normalizedVertexAttributes, byteOffset: offset} = normalizeAttributes(
     arrayBuffer,
     byteOffset,
@@ -53,7 +61,7 @@ function parseI3SNodeGeometry(arrayBuffer, tile = {}) {
     vertexCount,
     attributesOrder
   );
-
+  // Getting feature attributes such as featureIds and faceRange
   const {attributes: normalizedFeatureAttributes} = normalizeAttributes(
     arrayBuffer,
     offset,
@@ -62,10 +70,8 @@ function parseI3SNodeGeometry(arrayBuffer, tile = {}) {
     featureAttributeOrder
   );
 
-  const attributes = {...normalizedVertexAttributes, ...normalizedFeatureAttributes};
-
+  const attributes = concatAttributes(normalizedVertexAttributes, normalizedFeatureAttributes);
   const {enuMatrix, cartographicOrigin, cartesianOrigin} = parsePositions(
-    // @ts-ignore
     attributes.position,
     tile
   );
@@ -73,17 +79,11 @@ function parseI3SNodeGeometry(arrayBuffer, tile = {}) {
   const matrix = new Matrix4().multiplyRight(enuMatrix);
 
   content.attributes = {
-    // @ts-ignore
     positions: attributes.position,
-    // @ts-ignore
     normals: attributes.normal,
-    // @ts-ignore
     colors: attributes.color,
-    // @ts-ignore
     texCoords: attributes.uv0,
-    // @ts-ignore
     featureIds: attributes.id,
-    // @ts-ignore
     faceRange: attributes.faceRange
   };
 
@@ -94,6 +94,16 @@ function parseI3SNodeGeometry(arrayBuffer, tile = {}) {
   content.byteLength = arrayBuffer.byteLength;
 
   return tile;
+}
+/**
+ * Do concatenation of attribute objects.
+ * Done as separate fucntion to avoid ts errors.
+ * @param {Object} normalizedVertexAttributes
+ * @param {Object} normalizedFeatureAttributes
+ * @returns {object} - result of attributes concatenation.
+ */
+function concatAttributes(normalizedVertexAttributes, normalizedFeatureAttributes) {
+  return {...normalizedVertexAttributes, ...normalizedFeatureAttributes};
 }
 
 function constructFeatureDataStruct(tile, tileset) {
