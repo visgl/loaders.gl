@@ -50,50 +50,55 @@ export default class GLTFScenegraph {
 
   getObject(array: string, index: number): object;
 
-  // accepts buffer view index or buffer view object
+  /** accepts buffer view index or buffer view object  */
   getTypedArrayForBufferView(bufferView: number | object): Uint8Array;
 
-  // accepts accessor index or accessor object
-  // returns a typed array with type that matches the types
+  /** accepts accessor index or accessor object
+   * @returns a typed array with type that matches the types
+   */
   getTypedArrayForAccessor(accessor: number | object): any; // TODO typed array
 
-  // accepts accessor index or accessor object
-  // returns a `Uint8Array`
+  /** accepts accessor index or accessor object
+   * @returns a `Uint8Array`
+   */
   getTypedArrayForImageData(image: number | object): Uint8Array;
 
   // MODIFERS
 
-  // Add an extra application-defined key to the top-level data structure
+  /** Add an extra application-defined key to the top-level data structure */
   addApplicationData(key: string, data: object): GLTFScenegraph;
 
-  // `extras` - Standard GLTF field for storing application specific data
+  /** `extras` - Standard GLTF field for storing application specific data */
   addExtraData(key: string, data: object): GLTFScenegraph;
 
   addObjectExtension(object: object, extensionName: string, data: object): GLTFScenegraph;
 
   removeObjectExtension(object: object, extensionName: string): object;
 
-  // Add to standard GLTF top level extension object, mark as used
+  /** Add to standard GLTF top level extension object, mark as used */
   addExtension(extensionName: string, extensionData?: object): object;
 
-  // Standard GLTF top level extension object, mark as used and required
+  /** Standard GLTF top level extension object, mark as used and required */
   addRequiredExtension(extensionName, extensionData?: object): object;
 
-  // Add extensionName to list of used extensions
+  /** Add extensionName to list of used extensions */
   registerUsedExtension(extensionName: string): void;
 
-  // Add extensionName to list of required extensions
+  /** Add extensionName to list of required extensions */
   registerRequiredExtension(extensionName: string): void;
 
-  // Removes an extension from the top-level list
+  /** Removes an extension from the top-level list */
   removeExtension(extensionName: string): void;
 
   setObjectExtension(object: object, extensionName: string, data: object): void;
 
-  // Adds a scene to the json part
+  /** Set the default scene which is to be displayed at load time */
+  setDefaultScene(sceneIndex: number): void;
+
+  /** Adds a scene to the json part */
   addScene(nodeIndices: number[]): number;
 
-  // Adds a node to the json part
+  /** Adds a node to the json part */
   addNode(meshIndex: number): number;
 
   addMesh(attributes: object, indices: object, mode?: number): number;
@@ -115,13 +120,13 @@ export default class GLTFScenegraph {
    */
   addBufferView(buffer: any): number;
 
-  // Adds a texture to the json part
+  /** Adds a texture to the json part */
   addTexture(imageIndex: number): number;
 
-  // Adds a material to the json part
+  /** Adds a material to the json part */
   addMaterial(pbrMaterialInfo: Object): number;
 
-  // Pack the binary chunk
+  /** Pack the binary chunk */
   createBinaryChunk(): void;
 
   /**

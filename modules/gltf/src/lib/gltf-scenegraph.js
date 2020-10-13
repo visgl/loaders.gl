@@ -266,7 +266,7 @@ export default class GLTFScenegraph {
   }
 
   // Set default scene which is to be displayed at load time
-  defineDefaultScene(sceneIndex) {
+  setDefaultScene(sceneIndex) {
     this.json.scene = sceneIndex;
   }
 
