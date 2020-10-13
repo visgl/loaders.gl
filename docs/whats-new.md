@@ -1,8 +1,8 @@
 # What's New
 
-## v2.3 (In Development)
+## v2.3
 
-Target Release Date: TBD (alpha releases are available)
+Release Date: October 12, 2020
 
 This release brings a new Shapefile loader, compression codecs (Zlib, LZ4, Zstandard), support for binary output from geospatial loaders, and a range of improvements supporting loaders.gl integration with kepler.gl, a major geospatial application.
 
