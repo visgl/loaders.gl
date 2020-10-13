@@ -32,6 +32,12 @@ export function parse3DTileGLTFViewSync(tile, arrayBuffer, byteOffset, options) 
     throw new Error('glTF byte length must be greater than 0.');
   }
 
+  // Save gltf up axis
+  tile.gltfUpAxis =
+    options['3d-tiles'] && options['3d-tiles'].assetGltfUpAxis
+      ? options['3d-tiles'].assetGltfUpAxis
+      : 'Y';
+
   // TODO - We can avoid copy if already 4-byte aligned...
   // However the rest of the code may not be able to accept byteOffsets, so copy anyway
   tile.gltfArrayBuffer = getZeroOffsetArrayBuffer(arrayBuffer, byteOffset, gltfByteLength);

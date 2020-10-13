@@ -43,3 +43,7 @@ export const SIZEOF = {
   Float32: 4,
   UInt64: 8
 };
+
+export const STRING_ATTRIBUTE_TYPE = 'String';
+export const OBJECT_ID_ATTRIBUTE_TYPE = 'Oid32';
+export const FLOAT_64_TYPE = 'Float64';

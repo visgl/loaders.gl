@@ -5,6 +5,23 @@ import {fetchFile, load} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {Tileset3D} from '@loaders.gl/tiles';
 
+export async function loadRootTile(t, tilesetUrl) {
+  try {
+    // Load tileset
+    const tilesetJson = await load(tilesetUrl, Tiles3DLoader);
+    const tileset = new Tileset3D(tilesetJson, tilesetUrl);
+
+    // Load root tile
+    const sourceRootTile = tileset.root;
+    await tileset._loadTile(sourceRootTile);
+
+    return sourceRootTile;
+  } catch (error) {
+    t.fail(`Failed to load tile from ${tilesetUrl}: ${error}`);
+    throw error;
+  }
+}
+
 export async function loadTileset(t, tilesetUrl) {
   try {
     // Load tileset
