@@ -72,7 +72,8 @@ const Tiles3DLoader = {
       decodeQuantizedPositions: false,
       isTileset: 'auto',
       tile: null,
-      tileset: null
+      tileset: null,
+      assetGltfUpAxis: null
     }
   }
 };

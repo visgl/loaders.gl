@@ -17,7 +17,7 @@ export const GLTF_FORMAT = {
   EMBEDDED: 1
 };
 
-export function parse3DTileGLTFViewSync(tile, arrayBuffer, byteOffset) {
+export function parse3DTileGLTFViewSync(tile, arrayBuffer, byteOffset, options) {
   // Set flags
   // glTF models need to be rotated from Y to Z up
   // https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#y-up-to-z-up
@@ -28,6 +28,12 @@ export function parse3DTileGLTFViewSync(tile, arrayBuffer, byteOffset) {
   if (gltfByteLength === 0) {
     throw new Error('glTF byte length must be greater than 0.');
   }
+
+  // Save gltf up axis
+  tile.gltfUpAxis =
+    options['3d-tiles'] && options['3d-tiles'].assetGltfUpAxis
+      ? options['3d-tiles'].assetGltfUpAxis
+      : 'Y';
 
   // TODO - We can avoid copy if already 4-byte aligned...
   // However the rest of the code may not be able to accept byteOffsets, so copy anyway

@@ -5,10 +5,13 @@ import test from 'tape-promise/tape';
 import {parse, encodeSync} from '@loaders.gl/core';
 import {Tiles3DLoader, Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/3d-tiles';
 import {ImageLoader} from '@loaders.gl/images';
-import {loadRootTileFromTileset} from '../utils/load-utils';
+import {loadRootTileFromTileset, loadRootTile} from '../utils/load-utils';
+
+const EPSILON = 1e-12;
 
 const WITH_BATCH_TABLE_URL =
   '@loaders.gl/3d-tiles/test/data/Batched/BatchedWithBatchTable/tileset.json';
+const WITH_Z_UP_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedColorsZUp/tileset.json';
 const WITH_BATCH_TABLE_BINARY_URL =
   '@loaders.gl/3d-tiles/test/data/Batched/BatchedWithBatchTableBinary/tileset.json';
 const WITHOUT_BATCH_TABLE_URL =
@@ -80,6 +83,45 @@ test('batched model tile#with batch table', async t => {
   const tileData = await loadRootTileFromTileset(t, WITH_BATCH_TABLE_URL);
   const tile = await parse(tileData, Tiles3DLoader);
   t.ok(tile, 'loaded tile with batch table');
+  t.end();
+});
+
+test('batched model tile#default gltfUpAxis is supported', async t => {
+  const tileData = await loadRootTileFromTileset(t, WITH_BATCH_TABLE_URL);
+  const tile = await parse(tileData, Tiles3DLoader);
+  t.equal(tile.gltfUpAxis, 'Y', 'tile has default gltf up axis');
+  t.end();
+});
+
+test('batched model tile#validate rotate matrix for Y axis', async t => {
+  const tile = await loadRootTile(t, WITH_BATCH_TABLE_URL);
+  t.equal(tile.content.gltfUpAxis, 'Y', 'tile has default Y gltf up axis');
+  // rotation matrix
+  // 1  0  0  0
+  // 0  0  1  0
+  // 0 -1  0  0
+  // x  y  z  1
+  t.equal(tile.content.cartesianModelMatrix[0], 1);
+  t.equal(tile.content.cartesianModelMatrix[6], 1);
+  t.equal(tile.content.cartesianModelMatrix[9], -1);
+  t.equal(tile.content.cartesianModelMatrix[15], 1);
+  t.equal(Math.round(tile.content.cartesianModelMatrix[5] * EPSILON) / EPSILON, 0);
+  t.equal(Math.round(tile.content.cartesianModelMatrix[10] * EPSILON) / EPSILON, 0);
+  t.end();
+});
+
+test('batched model tile#validate rotate matrix for Z axis', async t => {
+  const tile = await loadRootTile(t, WITH_Z_UP_URL);
+  t.equal(tile.content.gltfUpAxis, 'Z', 'tile has Z gltf up axis');
+  // matrix without rotation
+  // 1  0  0  0
+  // 0  1  0  0
+  // 0  0  1  0
+  // 0  0  0  1
+  t.equal(tile.content.cartesianModelMatrix[0], 1);
+  t.equal(tile.content.cartesianModelMatrix[5], 1);
+  t.equal(tile.content.cartesianModelMatrix[10], 1);
+  t.equal(tile.content.cartesianModelMatrix[15], 1);
   t.end();
 });
 
