@@ -18,24 +18,11 @@ This release brings a new Shapefile loader, compression codecs (Zlib, LZ4, Zstan
 
 - A new module for calculating cryptographic hashes (MD5, SHA256 etc). Provided transforms enables hashes to be calculated incrementally, e.g. on incoming binary chunks while streaming data into `parseInBatches`.
 
-**@loaders.gl/core**
-
-- `parseInBatches()` now allows the caller to specify "transforms" that shoud be applied on the input data before parsing, via `options.transforms`. See the new crypto and compression modules for available transforms to calculate cryptographic hashes on / decompress "streaming" data.
-- `parseInBatches()` can now be called on all loaders. Non-batched loaders will just return a single batch.
-- `options.fetch` (`load`, `parse` etc.) can now be used to supply a either a `fetch` options object or a custom `fetch` function.
-- (BREAKING) `selectLoader()` is now async and returns a `Promise` that resolves to a loader.
-- `selectLoader()` can now select loaders through content sniffing of `Blob` and `File` objects.
-- `selectLoaderSync()` has been added for situations when calling an async function is not practial.
-
 **@loaders.gl/draco**
 
 - Draco3D libraries are upgraded to version 1.3.6.
-
-**@loaders.gl/polyfills**
-
-- `fetch` polyfill: Files with `.gz` extension are automatically decompressed with gzip. The extension reported in the `fetch` response has the `.gz` extension removed.
-- `fetch` polyfill: Improved robustness and error handling in Node.js when opening unreadable or non-existent files. Underlying errors (`ENOEXIST`, `EISDIR` etc) are now caught and reported in `Response.statusText`.
-- `Blob` and `File`, new experimental polyfills.
+- Draco metadata can now be encoded and decoded.
+- Custom Draco attributes are now decoded.
 
 **@loaders.gl/gltf**
 
@@ -57,6 +44,21 @@ This release brings a new Shapefile loader, compression codecs (Zlib, LZ4, Zstan
 **@loaders.gl/mvt**
 
 - Binary output is now available for the Mapbox Vector Tiles `MVTLoader`, via `options.gis.format: 'binary'`.
+
+**@loaders.gl/core**
+
+- `parseInBatches()` now allows the caller to specify "transforms" that shoud be applied on the input data before parsing, via `options.transforms`. See the new crypto and compression modules for available transforms to calculate cryptographic hashes on / decompress "streaming" data.
+- `parseInBatches()` can now be called on all loaders. Non-batched loaders will just return a single batch.
+- `options.fetch` (`load`, `parse` etc.) can now be used to supply a either a `fetch` options object or a custom `fetch` function.
+- (BREAKING) `selectLoader()` is now async and returns a `Promise` that resolves to a loader.
+- `selectLoader()` can now select loaders through content sniffing of `Blob` and `File` objects.
+- `selectLoaderSync()` has been added for situations when calling an async function is not practial.
+
+**@loaders.gl/polyfills**
+
+- `fetch` polyfill: Files with `.gz` extension are automatically decompressed with gzip. The extension reported in the `fetch` response has the `.gz` extension removed.
+- `fetch` polyfill: Improved robustness and error handling in Node.js when opening unreadable or non-existent files. Underlying errors (`ENOEXIST`, `EISDIR` etc) are now caught and reported in `Response.statusText`.
+- `Blob` and `File`, new experimental polyfills.
 
 ## v2.2
 
