@@ -38,10 +38,15 @@ function parseI3SNodeGeometry(arrayBuffer, tile = {}) {
   }
 
   const content = tile.content;
-  const {vertexAttributes, attributesOrder} = content.featureData;
+  const {
+    vertexAttributes,
+    attributesOrder,
+    featureAttributes,
+    featureAttributeOrder
+  } = content.featureData;
   // First 8 bytes reserved for header (vertexCount and featureCount)
-  const {vertexCount, byteOffset} = parseHeaders(content, arrayBuffer);
-  const {attributes} = normalizeAttributes(
+  const {vertexCount, byteOffset, featureCount} = parseHeaders(content, arrayBuffer);
+  const {attributes: normalizedVertexAttributes, byteOffset: offset} = normalizeAttributes(
     arrayBuffer,
     byteOffset,
     vertexAttributes,
@@ -49,7 +54,18 @@ function parseI3SNodeGeometry(arrayBuffer, tile = {}) {
     attributesOrder
   );
 
+  const {attributes: normalizedFeatureAttributes} = normalizeAttributes(
+    arrayBuffer,
+    offset,
+    featureAttributes,
+    featureCount,
+    featureAttributeOrder
+  );
+
+  const attributes = {...normalizedVertexAttributes, ...normalizedFeatureAttributes};
+
   const {enuMatrix, cartographicOrigin, cartesianOrigin} = parsePositions(
+    // @ts-ignore
     attributes.position,
     tile
   );
@@ -57,10 +73,18 @@ function parseI3SNodeGeometry(arrayBuffer, tile = {}) {
   const matrix = new Matrix4().multiplyRight(enuMatrix);
 
   content.attributes = {
+    // @ts-ignore
     positions: attributes.position,
+    // @ts-ignore
     normals: attributes.normal,
+    // @ts-ignore
     colors: attributes.color,
-    texCoords: attributes.uv0
+    // @ts-ignore
+    texCoords: attributes.uv0,
+    // @ts-ignore
+    featureIds: attributes.id,
+    // @ts-ignore
+    faceRange: attributes.faceRange
   };
 
   content.vertexCount = vertexCount;
