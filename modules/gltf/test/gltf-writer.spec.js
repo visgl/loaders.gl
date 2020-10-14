@@ -62,7 +62,12 @@ test('GLTFWriter#Should build a GLTF object with GLTFScenegraph builder function
 
   i3sContent.attributes.positions.value = new Float32Array(i3sContent.attributes.positions.value);
 
-  const meshIndex = gltfBuilder.addMesh(i3sContent.attributes);
+  const meshIndex = gltfBuilder.addMesh({
+    positions: i3sContent.attributes.positions,
+    normals: i3sContent.attributes.normals,
+    colors: i3sContent.attributes.colors,
+    texCoords: i3sContent.attributes.texCoords
+  });
   const nodeIndex = gltfBuilder.addNode(meshIndex);
   const sceneIndex = gltfBuilder.addScene([nodeIndex]);
   gltfBuilder.setDefaultScene(sceneIndex);
