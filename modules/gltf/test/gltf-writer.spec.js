@@ -2,7 +2,7 @@
 import test from 'tape-promise/tape';
 import {validateWriter} from 'test/common/conformance';
 
-import {parse, encodeSync, encode, isBrowser} from '@loaders.gl/core';
+import {parse, encodeSync, encode, isBrowser, load} from '@loaders.gl/core';
 import {GLTFLoader, GLTFWriter, GLTFScenegraph} from '@loaders.gl/gltf';
 import {ImageWriter} from '@loaders.gl/images';
 
@@ -16,6 +16,8 @@ const REQUIRED_EXTENSION_1 = 'UBER_extension_1';
 const REQUIRED_EXTENSION_2 = 'UBER_extension_2';
 const USED_EXTENSION_1 = 'UBER_extension_3';
 const USED_EXTENSION_2 = 'UBER_extension_4';
+
+const GLTF_BINARY_URL = '@loaders.gl/gltf/test/data/gltf-2.0/2CylinderEngine.glb';
 
 test('GLTFWriter#loader conformance', t => {
   validateWriter(t, GLTFWriter, 'GLTFWriter');
@@ -79,14 +81,62 @@ test('GLTFWriter#Should build a GLTF object with GLTFScenegraph builder function
 
   checkJson(t, gltfBuilder);
 
-  const gltfBuffer = GLTFWriter.encodeSync({
-    json: gltfBuilder.json,
-    binary: gltfBuilder.arrayBuffer
-  });
+  const gltfBuffer = GLTFWriter.encodeSync(gltfBuilder.gltf);
 
   const gltf = await parse(gltfBuffer, GLTFLoader, {gltf: {postProcess: false}});
 
   checkJson(t, new GLTFScenegraph(gltf));
+  t.end();
+});
+
+test('GLTFWriter#should write extra data to binary chunk', async t => {
+  const data = await load(GLTF_BINARY_URL, GLTFLoader, {gltf: {postProcess: false}});
+  const gltfScenegraph = new GLTFScenegraph(data);
+
+  const i3sContent = await loadI3STileContent();
+  i3sContent.attributes.positions.value = new Float32Array(i3sContent.attributes.positions.value);
+  const meshIndex = gltfScenegraph.addMesh({positions: i3sContent.attributes.positions});
+
+  t.equal(meshIndex, 29);
+
+  gltfScenegraph.createBinaryChunk();
+
+  const gltfBuffer = GLTFWriter.encodeSync(gltfScenegraph.gltf);
+  const gltf = await parse(gltfBuffer, GLTFLoader, {gltf: {postProcess: true}});
+
+  t.ok(gltf);
+  t.ok(gltf.meshes[29]);
+  t.equal(
+    gltf.meshes[29].primitives[0].attributes.POSITION.value.byteLength,
+    i3sContent.attributes.positions.value.byteLength
+  );
+  t.end();
+});
+
+test('GLTFWriter#should write extra data to binary chunk twice', async t => {
+  const data = await load(GLTF_BINARY_URL, GLTFLoader, {gltf: {postProcess: false}});
+  const gltfScenegraph = new GLTFScenegraph(data);
+
+  const i3sContent = await loadI3STileContent();
+  i3sContent.attributes.positions.value = new Float32Array(i3sContent.attributes.positions.value);
+  gltfScenegraph.addMesh({positions: i3sContent.attributes.positions});
+  gltfScenegraph.createBinaryChunk();
+  const imageBuffer = await encode(i3sContent.texture, ImageWriter);
+  gltfScenegraph.addImage(imageBuffer, 'image/jpeg');
+  gltfScenegraph.createBinaryChunk();
+  t.ok(gltfScenegraph);
+
+  const gltfBuffer = GLTFWriter.encodeSync(gltfScenegraph.gltf);
+  const gltf = await parse(gltfBuffer, GLTFLoader, {gltf: {postProcess: true}});
+
+  t.ok(gltf);
+  t.ok(gltf.meshes[29]);
+  t.equal(
+    gltf.meshes[29].primitives[0].attributes.POSITION.value.byteLength,
+    i3sContent.attributes.positions.value.byteLength
+  );
+
+  t.ok(gltf.images[0]);
   t.end();
 });
 
