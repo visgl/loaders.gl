@@ -2,6 +2,10 @@ import {I3SLoader} from '@loaders.gl/i3s';
 import {Tileset3D, Tile3D} from '@loaders.gl/tiles';
 import I3SNodePagesTiles from '../../../src/helpers/i3s-nodepages-tiles';
 
+/**
+ * The data stub of "tileset header" which I3SLoader returns after loading
+ * "/SceneServer/layers/0" json
+ */
 const TILESET_STUB = {
   fetchOptions: {},
   nodePages: {
