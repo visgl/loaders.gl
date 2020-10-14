@@ -11,6 +11,8 @@ import {
 export default class GLTFScenegraph {
   // eslint-disable-next-line consistent-return
   constructor(gltf) {
+    this._customAttributeCounter = 0;
+
     // Signature: new GLTFScenegraph(data : GLTFScenegraph)
     // Allow creation of a `GLTFScenegraph` object from gltf data without checking if already a `GLTFScenegraph`
     if (gltf instanceof GLTFScenegraph) {
@@ -263,6 +265,29 @@ export default class GLTFScenegraph {
     }
   }
 
+  // Set default scene which is to be displayed at load time
+  setDefaultScene(sceneIndex) {
+    this.json.scene = sceneIndex;
+  }
+
+  // TODO: add more properties for scene initialization:
+  //   `name`, `extensions`, `extras`
+  //   https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#reference-scene
+  addScene(nodeIndices) {
+    this.json.scenes = this.json.scenes || [];
+    this.json.scenes.push({nodes: nodeIndices});
+    return this.json.scenes.length - 1;
+  }
+
+  // TODO: add more properties for node initialization:
+  //   `name`, `extensions`, `extras`, `camera`, `children`, `skin`, `matrix`, `rotation`, `scale`, `translation`, `weights`
+  //   https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#node
+  addNode(meshIndex) {
+    this.json.nodes = this.json.nodes || [];
+    this.json.nodes.push({mesh: meshIndex});
+    return this.json.nodes.length - 1;
+  }
+
   addMesh(attributes, indices, mode = 4) {
     // @ts-ignore
     const accessors = this._addAttributes(attributes);
@@ -271,11 +296,14 @@ export default class GLTFScenegraph {
       primitives: [
         {
           attributes: accessors,
-          indices,
           mode
         }
       ]
     };
+
+    if (indices) {
+      glTFMesh.primitives[0].indices = indices;
+    }
 
     this.json.meshes = this.json.meshes || [];
     this.json.meshes.push(glTFMesh);
@@ -376,7 +404,25 @@ export default class GLTFScenegraph {
     return this.addAccessor(bufferViewIndex, Object.assign(accessorDefaults, accessor));
   }
 
-  // Pack the binary chunk
+  // TODO: add more properties for texture initialization
+  //    `sampler`, `name`, `extensions`, `extras`
+  //    https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#texture
+  addTexture(imageIndex) {
+    const glTFTexture = {
+      source: imageIndex
+    };
+
+    this.json.textures = this.json.textures || [];
+    this.json.textures.push(glTFTexture);
+    return this.json.textures.length - 1;
+  }
+
+  addMaterial(pbrMaterialInfo) {
+    this.json.materials = this.json.materials || [];
+    this.json.materials.push(pbrMaterialInfo);
+    return this.json.materials.length - 1;
+  }
+
   createBinaryChunk() {
     // Already packed
     if (this.arrayBuffer) {
@@ -396,7 +442,7 @@ export default class GLTFScenegraph {
     }
 
     // Update the glTF BIN CHUNK byte length
-    this.json.buffers[0].byteLength = totalByteLength;
+    this.json.buffers[0] = {byteLength: totalByteLength};
 
     // Save generated arrayBuffer
     this.arrayBuffer = arrayBuffer;
@@ -417,5 +463,45 @@ export default class GLTFScenegraph {
         found = false;
       }
     }
+  }
+
+  // Add attributes to buffers and create `attributes` object which is part of `mesh`
+  _addAttributes(attributes = {}) {
+    const result = {};
+    for (const attributeKey in attributes) {
+      const attributeData = attributes[attributeKey];
+      const attrName = this._getGltfAttributeName(attributeKey);
+      const accessor = this.addBinaryBuffer(attributeData.value, attributeData);
+      result[attrName] = accessor;
+    }
+    return result;
+  }
+
+  // Deduce gltf specific attribue name from input attribute name
+  _getGltfAttributeName(attributeName) {
+    switch (attributeName.toLowerCase()) {
+      case 'position':
+      case 'positions':
+      case 'vertices':
+        return 'POSITION';
+      case 'normal':
+      case 'normals':
+        return 'NORMAL';
+      case 'color':
+      case 'colors':
+        return 'COLOR_0';
+      case 'texcoord':
+      case 'texcoords':
+        return 'TEXCOORD_0';
+      default:
+        return `CUSTOM_ATTRIBUTE_${this._newCustomAttributeNumber}`;
+    }
+  }
+
+  // Get new number for custom attribute
+  get _newCustomAttributeNumber() {
+    const num = this._customAttributeCounter;
+    this._customAttributeCounter++;
+    return num;
   }
 }

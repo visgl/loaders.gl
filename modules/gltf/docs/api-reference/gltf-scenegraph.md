@@ -142,6 +142,18 @@ Removes an extension from the top-level list
 
 ### setObjectExtension(object, extensionName, data)
 
+### setDefaultScene(sceneIndex: number);
+
+Set the default scene which is to be displayed at load time
+
+### addScene(nodeIndices: number[]): number;
+
+Add a scene to the json part
+
+### addNode(meshIndex: number): number;
+
+Add a node to the json part
+
 ### addMesh(attributes, indices, mode = 4)
 
 ### addPointCloud(attributes)
@@ -151,6 +163,14 @@ Removes an extension from the top-level list
 Add one untyped source buffer, create a matching glTF `bufferView`, and return its index
 
 > The binary data will not be added to the gltf buffer until `createBinChunk()` is called.
+
+### addTexture(imageIndex: number): number;
+
+Add a texture to the json part
+
+### addMaterial(pbrMaterialInfo: Object): number;
+
+Add a material to the json part
 
 ### addAccessor(bufferViewIndex, accessor)
 
