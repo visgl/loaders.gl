@@ -184,7 +184,8 @@ function normalizeAttributes(
       }
 
       const TypedArrayType = TYPE_ARRAY_MAP[valueType];
-      const value = new TypedArrayType(arrayBuffer, byteOffset, count * valuesPerElement);
+      const buffer = arrayBuffer.slice(byteOffset);
+      const value = new TypedArrayType(buffer, 0, count * valuesPerElement);
 
       attributes[attribute] = {
         value,
