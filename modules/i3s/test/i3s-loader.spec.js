@@ -1,5 +1,8 @@
+/* global ImageBitmap */
+
 import test from 'tape-promise/tape';
 import {loadI3STileContent} from './lib/utils/load-utils';
+import {isBrowser} from '@loaders.gl/core';
 
 test('I3SLoader#Load tile content', async t => {
   const content = await loadI3STileContent();
@@ -19,7 +22,11 @@ test('I3SLoader#Load tile content', async t => {
   t.ok(content.attributes.featureIds);
   t.equal(content.attributes.featureIds.value.length, 122);
 
-  // This line fails in browser mode
-  // t.equal(content.texture.data.byteLength, 131072);
+  t.ok(content.texture);
+  if (isBrowser) {
+    t.ok(content.texture instanceof ImageBitmap);
+  } else {
+    t.equal(content.texture.data.byteLength, 131072);
+  }
   t.end();
 });
