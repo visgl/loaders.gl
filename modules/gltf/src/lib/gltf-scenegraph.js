@@ -13,8 +13,6 @@ import {
 export default class GLTFScenegraph {
   // eslint-disable-next-line consistent-return
   constructor(gltf) {
-    this._customAttributeCounter = 0;
-
     // Signature: new GLTFScenegraph(data : GLTFScenegraph)
     // Allow creation of a `GLTFScenegraph` object from gltf data without checking if already a `GLTFScenegraph`
     if (gltf instanceof GLTFScenegraph) {
@@ -487,7 +485,8 @@ export default class GLTFScenegraph {
     }
 
     // Update the glTF BIN CHUNK byte length
-    this.json.buffers[0] = {byteLength: totalByteLength};
+    this.json.buffers[0] = this.json.buffers[0] || {};
+    this.json.buffers[0].byteLength = totalByteLength;
 
     // Save generated arrayBuffer
     this.gltf.binary = arrayBuffer;

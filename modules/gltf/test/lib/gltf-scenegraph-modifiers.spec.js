@@ -1,9 +1,10 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
+import {load} from '@loaders.gl/core';
 
-import {GLTFScenegraph} from '@loaders.gl/gltf';
+import {GLTFLoader, GLTFScenegraph} from '@loaders.gl/gltf';
 
-import {loadI3STileContent} from '../../../i3s/test/lib/utils/load-utils';
+const GLTF_BINARY_URL = '@loaders.gl/gltf/test/data/3d-tiles/143.glb';
 
 // prettier-ignore
 const PNG1x1 = new Uint8Array([
@@ -41,13 +42,12 @@ test('GLTFScenegraph#addImage', t => {
 });
 
 test('GLTFWriter#Should be able to write custom attribute', async t => {
-  const i3sContent = await loadI3STileContent();
+  const inputData = await load(GLTF_BINARY_URL, GLTFLoader, {gltf: {postProcess: true}});
   const gltfBuilder = new GLTFScenegraph();
 
-  i3sContent.attributes.positions.value = new Float32Array(i3sContent.attributes.positions.value);
   gltfBuilder.addMesh({
-    positions: i3sContent.attributes.positions,
-    _BATCHID: i3sContent.attributes.normals
+    positions: inputData.meshes[0].primitives[0].attributes.POSITION,
+    _BATCHID: inputData.meshes[0].primitives[0].attributes.TEXCOORD_0
   });
   t.ok(gltfBuilder.gltf.json.meshes[0]);
   t.ok(gltfBuilder.gltf.json.meshes[0].primitives[0].attributes._BATCHID);

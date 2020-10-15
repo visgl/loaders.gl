@@ -5,7 +5,6 @@ import {parseJSON, getZeroOffsetArrayBuffer} from '@loaders.gl/loader-utils';
 import assert from './utils/assert';
 import {resolveUrl} from './gltf-utils/resolve-url';
 import {getTypedArrayForBufferView} from './gltf-utils/get-typed-array';
-import {decodeExtensions} from './extensions/gltf-extensions';
 import parseGLBSync, {isGLB} from './parse-glb';
 import normalizeGLTFV1 from './normalize-gltf-v1';
 import postProcessGLTF from './post-process-gltf';
@@ -34,14 +33,11 @@ export async function parseGLTF(gltf, arrayBufferOrString, byteOffset = 0, optio
     await loadBuffers(gltf, options, context);
   }
 
-  const promise = decodeExtensions(gltf, options, context);
-  promises.push(promise);
-
   // Parallelize image loading and buffer loading/extension decoding
   await Promise.all(promises);
 
   // Post processing resolves indices to objects, buffers
-  return options.gltf.postProcess ? postProcessGLTF(gltf, options) : gltf;
+  return options.gltf.postProcess ? postProcessGLTF(gltf, options, context) : gltf;
 }
 
 // `data` - can be ArrayBuffer (GLB), ArrayBuffer (Binary JSON), String (JSON), or Object (parsed JSON)

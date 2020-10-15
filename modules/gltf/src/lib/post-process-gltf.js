@@ -1,5 +1,6 @@
 import assert from './utils/assert';
 import {getAccessorArrayTypeAndLength} from './gltf-utils/gltf-utils';
+import {decodeExtensions} from './extensions/gltf-extensions';
 
 // This is a post processor for loaded glTF files
 // The goal is to make the loaded data easier to use in WebGL applications
@@ -68,7 +69,11 @@ function getSizeFromAccessorType(type) {
 }
 
 class GLTFPostProcessor {
-  postProcess(gltf, options = {}) {
+  async postProcess(gltf, options = {}, context) {
+    // decodeExtensions is moved into postProcess stage because it modifies
+    // the json part
+    await decodeExtensions(gltf, options, context);
+
     const {json, buffers = [], images = [], baseUri = ''} = gltf;
     assert(json);
 
@@ -368,6 +373,6 @@ class GLTFPostProcessor {
   }
 }
 
-export default function postProcessGLTF(gltf, options) {
-  return new GLTFPostProcessor().postProcess(gltf, options);
+export default function postProcessGLTF(gltf, options, context) {
+  return new GLTFPostProcessor().postProcess(gltf, options, context);
 }
