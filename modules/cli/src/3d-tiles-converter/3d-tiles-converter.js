@@ -8,6 +8,7 @@ import {i3sObbTo3dTilesObb} from './helpers/i3s-obb-to-3d-tiles-obb';
 import {convertScreenThresholdToGeometricError} from '../lib/utils/lod-conversion-utils';
 import {writeFile, removeDir} from '../lib/utils/file-utils';
 import {TILESET as tilesetTemplate} from './json-templates/tileset';
+import B3dmConverter from './helpers/b3dm-converter';
 
 const I3S = 'I3S';
 
@@ -59,6 +60,8 @@ export default class Tiles3DConverter {
       parentNode.children.push(child);
 
       // TODO: convert node here
+      const gltf = new B3dmConverter().convert(sourceChild.content);
+      console.log(gltf); // eslint-disable-line
 
       sourceChild.unloadContent();
       await this._addChildren(sourceChild, child, level + 1);

@@ -1,4 +1,4 @@
-/* global URL, TextDecoder */
+/* global TextDecoder */
 /** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 import {load} from '@loaders.gl/core';
 import {normalizeTileData, normalizeTilesetData} from './lib/parsers/parse-i3s';
@@ -57,20 +57,20 @@ const I3SLoader = {
 };
 
 async function parse(data, options, context, loader) {
-  const url = new URL(context.url);
+  const url = context.url;
   options.i3s = options.i3s || {};
 
   // auto detect file type based on url
   let isTileset;
   if (options.i3s.isTileset === 'auto') {
-    isTileset = TILESET_REGEX.test(url.pathname);
+    isTileset = TILESET_REGEX.test(url);
   } else {
     isTileset = options.i3s.isTileset;
   }
 
   let isTileHeader;
   if (options.isTileHeader === 'auto') {
-    isTileHeader = TILE_HEADER_REGEX.test(url.pathname);
+    isTileHeader = TILE_HEADER_REGEX.test(url);
   } else {
     isTileHeader = options.i3s.isTileHeader;
   }

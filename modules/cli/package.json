@@ -45,6 +45,7 @@
     "@loaders.gl/polyfills": "2.3.0",
     "@loaders.gl/tiles": "2.3.0",
     "@loaders.gl/loader-utils": "2.3.0",
+    "@loaders.gl/gltf": "2.3.0",
     "@math.gl/core": "^3.3.0",
     "@math.gl/geospatial": "^3.3.0",
     "@math.gl/culling": "^3.3.0",
