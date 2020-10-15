@@ -1,8 +1,8 @@
 /* global ImageBitmap */
 
 import test from 'tape-promise/tape';
-import {loadI3STileContent} from './lib/utils/load-utils';
 import {isBrowser} from '@loaders.gl/core';
+import {loadI3STileContent} from './lib/utils/load-utils';
 
 test('I3SLoader#Load tile content', async t => {
   const content = await loadI3STileContent();
@@ -18,6 +18,7 @@ test('I3SLoader#Load tile content', async t => {
   t.equal(content.attributes.texCoords.value.length, 51276);
 
   t.ok(content.texture);
+  // ImageLoader returns different things on browser and Node
   if (isBrowser) {
     t.ok(content.texture instanceof ImageBitmap);
   } else {
