@@ -71,10 +71,21 @@ export default async function convertB3dmToI3sGeometry(
     colors,
     'feature-index': featureIndex
   };
+
+  const attributesMetadata = {
+    'feature-index': {
+      'i3s-attribute-type': 'feature-index'
+      // Draco JS API v3.6 doesn't support writing arrays to attribute's metadata
+      // it must be array per spec https://github.com/Esri/i3s-spec/blob/master/docs/1.7/compressedAttributes.cmn.md
+      // 'i3s-feature-ids': [0]
+    }
+  };
+
   const compressedGeometry = new Uint8Array(
     await encode({attributes: compressedAttributes, indices}, DracoWriter, {
       draco: {
-        method: 'MESH_SEQUENTIAL_ENCODING'
+        method: 'MESH_SEQUENTIAL_ENCODING',
+        attributesMetadata
       },
       modules: {
         draco3d
