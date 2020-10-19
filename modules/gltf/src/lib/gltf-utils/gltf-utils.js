@@ -9,7 +9,8 @@ const ARRAY_TO_COMPONENT_TYPE = new Map([
   [Int16Array, 5122],
   [Uint16Array, 5123],
   [Uint32Array, 5125],
-  [Float32Array, 5126]
+  [Float32Array, 5126],
+  [Float64Array, 5130]
 ]);
 
 export const ATTRIBUTE_TYPE_TO_COMPONENTS = {
