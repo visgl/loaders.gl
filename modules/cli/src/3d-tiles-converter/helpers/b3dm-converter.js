@@ -2,6 +2,7 @@ import {encode} from '@loaders.gl/core';
 import {GLTFScenegraph, GLTFWriter} from '@loaders.gl/gltf';
 import {Tile3DWriter} from '@loaders.gl/3d-tiles';
 import {ImageWriter} from '@loaders.gl/images';
+import {Matrix4, Vector3} from '@math.gl/core';
 
 export default class B3dmConverter {
   constructor() {
@@ -20,21 +21,8 @@ export default class B3dmConverter {
     return b3dm;
   }
 
-  async buildGltf(i3sContent) {
+  async buildGltf(i3sContent, cartesianCenter) {
     const gltfBuilder = new GLTFScenegraph();
-
-    // Create RTC_CENTER for positions and shrink positions to Float32Array instead of Float64Array
-    const positions = i3sContent.attributes.positions.value;
-    this.rtcCenter[0] = this._axisAvg(positions, 0);
-    this.rtcCenter[1] = this._axisAvg(positions, 1);
-    this.rtcCenter[2] = this._axisAvg(positions, 2);
-    i3sContent.attributes.positions.value = new Float32Array(positions); // this._shrinkPositions(positions);
-    this._replaceFeatureIdsAndFaceRangeWithBatchId(i3sContent);
-
-    const meshIndex = gltfBuilder.addMesh(i3sContent.attributes);
-    const nodeIndex = gltfBuilder.addNode(meshIndex);
-    const sceneIndex = gltfBuilder.addScene([nodeIndex]);
-    gltfBuilder.setDefaultScene(sceneIndex);
 
     // TODO: Convert mime data from `layers/0`.`textureSetDefinitions`
     const imageBuffer = await encode(i3sContent.texture, ImageWriter);
@@ -42,21 +30,62 @@ export default class B3dmConverter {
     const textureIndex = gltfBuilder.addTexture(imageIndex);
     // TODO: Convert material data from `layers/0`.`materialDefinitions`
     const pbrMaterialInfo = {
+      alphaMode: 'OPAQUE',
+      doubleSided: false,
       pbrMetallicRoughness: {
-        baseColorTexture: textureIndex
+        baseColorTexture: {
+          index: textureIndex,
+          texCoord: 0
+        },
+        metallicFactor: 0,
+        roughnessFactor: 1
       }
     };
-    gltfBuilder.addMaterial(pbrMaterialInfo);
+    const materialIndex = gltfBuilder.addMaterial(pbrMaterialInfo);
+
+    // Create RTC_CENTER for positions and shrink positions to Float32Array instead of Float64Array
+    const positions = i3sContent.attributes.positions;
+    const positionsValue = positions.value;
+    this.rtcCenter[0] = this._axisAvg(positionsValue, 0);
+    this.rtcCenter[1] = this._axisAvg(positionsValue, 1);
+    this.rtcCenter[2] = this._axisAvg(positionsValue, 2);
+    i3sContent.attributes.positions.value = this._normalizePositions(positionsValue);
+    const indices = this._generateSynteticIndices(positionsValue.length / positions.size);
+    const meshIndex = gltfBuilder.addMesh(
+      {
+        positions: i3sContent.attributes.positions,
+        normals: i3sContent.attributes.normals,
+        texCoords: i3sContent.attributes.texCoords
+      },
+      indices,
+      materialIndex
+    );
+    const nodeIndex = gltfBuilder.addNode(meshIndex);
+    const sceneIndex = gltfBuilder.addScene([nodeIndex]);
+    gltfBuilder.setDefaultScene(sceneIndex);
 
     gltfBuilder.createBinaryChunk();
 
-    const gltfBuffer = GLTFWriter.encodeSync({
-      json: gltfBuilder.json,
-      binary: gltfBuilder.arrayBuffer
-    });
+    const gltfBuffer = GLTFWriter.encodeSync(gltfBuilder.gltf);
 
     return gltfBuffer;
   }
+
+  _normalizePositions(positionsValue) {
+    positionsValue = new Float32Array(positionsValue);
+
+    const zUpToYUpMatrix = new Matrix4([1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1]);
+
+    for (let index = 0; index < positionsValue.length; index += 3) {
+      const vertex = positionsValue.subarray(index, index + 3);
+      let vertexVector = new Vector3(Array.from(vertex));
+      vertexVector = vertexVector.transform(zUpToYUpMatrix);
+
+      positionsValue.set(vertexVector.toArray(), index);
+    }
+    return positionsValue;
+  }
+
   /**
    * Positions in I3S are represented in Float64Array.
    * GLTF doesn't have component type for Float64Array
@@ -75,6 +104,7 @@ export default class B3dmConverter {
 
     return newPositions;
   }
+
   /**
    * Calculate average positions value for some particular axis (x, y, z)
    * Weighted average
@@ -91,6 +121,7 @@ export default class B3dmConverter {
     }
     return result;
   }
+
   /**
    * Do replacement featureIds and faseRange in i3sContent object.
    * @param {Object} i3sContent - the source object
@@ -112,6 +143,7 @@ export default class B3dmConverter {
     delete i3sContent.attributes.faceRange;
     delete i3sContent.attributes.featureIds;
   }
+
   /**
    * Generate batchId attribute from featureIds and faceRanges.
    * @param {Uint32Array} faceRanges - the source array
@@ -132,5 +164,13 @@ export default class B3dmConverter {
       rangeIndex += 2;
     }
     return batchId;
+  }
+
+  _generateSynteticIndices(vertexCount) {
+    const result = new Uint16Array(vertexCount);
+    for (let index = 0; index < vertexCount; index++) {
+      result.set([index], index);
+    }
+    return result;
   }
 }
