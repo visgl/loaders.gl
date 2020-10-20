@@ -65,7 +65,7 @@ test('cli - b3dm converter#should convert i3s node data to b3dm encoded data', a
     t.ok(i3sContent);
 
     const b3dmConverter = new B3dmConverter();
-    const encodedContent = b3dmConverter.convert(i3sContent);
+    const encodedContent = await b3dmConverter.convert(i3sContent);
 
     t.ok(encodedContent);
     t.deepEqual(b3dmConverter.rtcCenter, [4051665.75, 618151.6875, 4870759]);

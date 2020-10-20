@@ -336,7 +336,6 @@ export default class GLTFScenegraph {
       primitives: [
         {
           attributes: accessors,
-          material,
           mode
         }
       ]
@@ -345,6 +344,10 @@ export default class GLTFScenegraph {
     if (indices) {
       const indicesAccessor = this._addIndices(indices);
       glTFMesh.primitives[0].indices = indicesAccessor;
+    }
+
+    if (material) {
+      glTFMesh.primitives[0].material = material;
     }
 
     this.json.meshes = this.json.meshes || [];

@@ -50,16 +50,9 @@ export default class B3dmConverter {
     this.rtcCenter[1] = this._axisAvg(positionsValue, 1);
     this.rtcCenter[2] = this._axisAvg(positionsValue, 2);
     i3sContent.attributes.positions.value = this._normalizePositions(positionsValue);
+    this._replaceFeatureIdsAndFaceRangeWithBatchId(i3sContent);
     const indices = this._generateSynteticIndices(positionsValue.length / positions.size);
-    const meshIndex = gltfBuilder.addMesh(
-      {
-        positions: i3sContent.attributes.positions,
-        normals: i3sContent.attributes.normals,
-        texCoords: i3sContent.attributes.texCoords
-      },
-      indices,
-      materialIndex
-    );
+    const meshIndex = gltfBuilder.addMesh(i3sContent.attributes, indices, materialIndex);
     const nodeIndex = gltfBuilder.addNode(meshIndex);
     const sceneIndex = gltfBuilder.addScene([nodeIndex]);
     gltfBuilder.setDefaultScene(sceneIndex);
