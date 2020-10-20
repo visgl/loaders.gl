@@ -25,7 +25,7 @@ export default class B3dmConverter {
     const meshIndex = gltfBuilder.addMesh(i3sContent.attributes);
     const nodeIndex = gltfBuilder.addNode(meshIndex);
     const sceneIndex = gltfBuilder.addScene([nodeIndex]);
-    gltfBuilder.defineDefaultScene(sceneIndex);
+    gltfBuilder.setDefaultScene(sceneIndex);
 
     // TODO: Convert mime data from `layers/0`.`textureSetDefinitions`
     const imageIndex = gltfBuilder.addImage(i3sContent.texture.data, 'image/jpeg');

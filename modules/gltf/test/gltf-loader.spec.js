@@ -36,6 +36,15 @@ test('GLTFLoader#load(binary)', async t => {
   t.end();
 });
 
+test('GLTFLoader#load(binary) - postProcess: false', async t => {
+  const data = await load(GLTF_BINARY_URL, GLTFLoader, {gltf: {postProcess: false}});
+  t.ok(data._glb, 'GLTFLoader without post-processing returned data._glb');
+  t.ok(data.buffers, 'GLTFLoader without post-processing returned data.buffers');
+  t.ok(data.images, 'GLTFLoader without post-processing returned data.images');
+  t.ok(data.json, 'GLTFLoader without post-processing returned data.json');
+  t.end();
+});
+
 test('GLTFLoader#load(text)', async t => {
   const data = await load(GLTF_JSON_URL, GLTFLoader, {gltf: {loadImages: false}});
   t.ok(data.asset, 'GLTFLoader returned parsed data');
