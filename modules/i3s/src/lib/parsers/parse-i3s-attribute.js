@@ -1,9 +1,10 @@
 /* global Buffer */
 import {STRING_ATTRIBUTE_TYPE, OBJECT_ID_ATTRIBUTE_TYPE, FLOAT_64_TYPE} from './constants';
+
 /**
  * Get particular tile and creates attribute object inside.
- * @param arrayBuffer
- * @param options
+ * @param {ArrayBuffer} arrayBuffer
+ * @param {Object} options
  * @returns {Promise<object>}
  */
 export async function parseI3STileAttribute(arrayBuffer, options) {
@@ -12,10 +13,11 @@ export async function parseI3STileAttribute(arrayBuffer, options) {
     [attributeName]: parseAttribute(attributeType, arrayBuffer)
   };
 }
+
 /**
  * Parse attributes based on attribute type.
- * @param attributeType
- * @param arrayBuffer
+ * @param {String} attributeType
+ * @param {ArrayBuffer} arrayBuffer
  * @returns {any}
  */
 function parseAttribute(attributeType, arrayBuffer) {
@@ -30,32 +32,33 @@ function parseAttribute(attributeType, arrayBuffer) {
       return parseShortNumberAttribute(arrayBuffer);
   }
 }
+
 /**
  * Parse short number attribute.
  * Short Integer spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.7/attributeStorageInfo.cmn.md
- * @param arrayBuffer
+ * @param {ArrayBuffer} arrayBuffer
  * @returns {Uint32Array}
  */
 function parseShortNumberAttribute(arrayBuffer) {
   const countOffset = 4;
-  const attributes = new Uint32Array(arrayBuffer, countOffset);
-  return attributes;
+  return new Uint32Array(arrayBuffer, countOffset);
 }
+
 /**
  * Parse float attribute.
  * Double Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.7/attributeStorageInfo.cmn.md
- * @param arrayBuffer
+ * @param {ArrayBuffer} arrayBuffer
  * @returns {Float64Array}
  */
 function parseFloatAttribute(arrayBuffer) {
   const countOffset = 8;
-  const arrtibutes = new Float64Array(arrayBuffer, countOffset);
-  return arrtibutes;
+  return new Float64Array(arrayBuffer, countOffset);
 }
+
 /**
  * Parse string attribute.
  * String spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.7/attributeStorageInfo.cmn.md
- * @param arrayBuffer
+ * @param {ArrayBuffer} arrayBuffer
  * @returns {Array}
  */
 function parseStringsAttribute(arrayBuffer) {
