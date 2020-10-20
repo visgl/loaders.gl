@@ -7,7 +7,7 @@ import {OrientedBoundingBox} from '@math.gl/culling';
  * @param i3SObb obb object based on quaternion https://github.com/Esri/i3s-spec/blob/master/docs/1.7/obb.cmn.md
  */
 export function i3sObbTo3dTilesObb(i3SObb) {
-  const cartesianCenter = Ellipsoid.WGS84.cartesianToCartographic(i3SObb.center, new Vector3());
+  const cartesianCenter = Ellipsoid.WGS84.cartographicToCartesian(i3SObb.center, new Vector3());
   const tiles3DObb = new OrientedBoundingBox().fromCenterHalfSizeQuaternion(
     cartesianCenter,
     i3SObb.halfSize,
