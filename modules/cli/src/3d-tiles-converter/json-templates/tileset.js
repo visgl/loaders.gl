@@ -14,6 +14,9 @@ const TILE = {
   geometricError: {
     path: 'geometricError'
   },
+  content: {
+    path: 'content'
+  },
   children: {
     path: 'children',
     transform: val => val.map(tile => transform(tile, TILE))

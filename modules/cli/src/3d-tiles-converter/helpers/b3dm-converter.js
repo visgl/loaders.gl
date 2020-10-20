@@ -1,4 +1,7 @@
+import {encode} from '@loaders.gl/core';
 import {GLTFScenegraph, GLTFWriter} from '@loaders.gl/gltf';
+import {Tile3DWriter} from '@loaders.gl/3d-tiles';
+import {ImageWriter} from '@loaders.gl/images';
 
 export default class B3dmConverter {
   constructor() {
@@ -6,13 +9,18 @@ export default class B3dmConverter {
     this.rtcCenter = new Float32Array(3);
   }
 
-  convert(i3sContent) {
+  async convert(i3sContent) {
     this.i3sContent = i3sContent;
-    const gltf = this.buildGltf(i3sContent);
-    return gltf;
+    const gltf = await this.buildGltf(i3sContent);
+    const b3dm = Tile3DWriter.encodeSync({
+      gltfEncoded: new Uint8Array(gltf),
+      type: 'b3dm',
+      featuresLength: 0
+    });
+    return b3dm;
   }
 
-  buildGltf(i3sContent) {
+  async buildGltf(i3sContent) {
     const gltfBuilder = new GLTFScenegraph();
 
     // Create RTC_CENTER for positions and shrink positions to Float32Array instead of Float64Array
@@ -20,7 +28,7 @@ export default class B3dmConverter {
     this.rtcCenter[0] = this._axisAvg(positions, 0);
     this.rtcCenter[1] = this._axisAvg(positions, 1);
     this.rtcCenter[2] = this._axisAvg(positions, 2);
-    i3sContent.attributes.positions.value = this._shrinkPositions(positions);
+    i3sContent.attributes.positions.value = new Float32Array(positions); // this._shrinkPositions(positions);
     this._replaceFeatureIdsAndFaceRangeWithBatchId(i3sContent);
 
     const meshIndex = gltfBuilder.addMesh(i3sContent.attributes);
@@ -29,7 +37,8 @@ export default class B3dmConverter {
     gltfBuilder.setDefaultScene(sceneIndex);
 
     // TODO: Convert mime data from `layers/0`.`textureSetDefinitions`
-    const imageIndex = gltfBuilder.addImage(i3sContent.texture.data, 'image/jpeg');
+    const imageBuffer = await encode(i3sContent.texture, ImageWriter);
+    const imageIndex = gltfBuilder.addImage(imageBuffer, 'image/jpeg');
     const textureIndex = gltfBuilder.addTexture(imageIndex);
     // TODO: Convert material data from `layers/0`.`materialDefinitions`
     const pbrMaterialInfo = {

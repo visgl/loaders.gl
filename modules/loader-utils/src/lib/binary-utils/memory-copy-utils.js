@@ -4,6 +4,10 @@ export function padTo4Bytes(byteLength) {
   return (byteLength + 3) & ~3;
 }
 
+export function padToNBytes(byteLength, padding = 4) {
+  return (byteLength + (padding - 1)) & ~(padding - 1);
+}
+
 export function getZeroOffsetArrayBuffer(arrayBuffer, byteOffset, byteLength) {
   return sliceArrayBuffer(arrayBuffer, byteOffset, byteLength);
 }
