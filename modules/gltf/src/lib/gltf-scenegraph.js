@@ -7,6 +7,11 @@ import {
   getComponentTypeFromArray
 } from './gltf-utils/gltf-utils';
 
+const EXTREMUM_FUNCTIONS = {
+  MIN: (a, b) => a < b,
+  MAX: (a, b) => a > b
+};
+
 /**
  * Class for structured access to GLTF data
  */
@@ -324,8 +329,7 @@ export default class GLTFScenegraph {
     return this.json.nodes.length - 1;
   }
 
-  addMesh(attributes, indices, mode = 4) {
-    // @ts-ignore
+  addMesh(attributes, indices, material, mode = 4) {
     const accessors = this._addAttributes(attributes);
 
     const glTFMesh = {
@@ -338,7 +342,12 @@ export default class GLTFScenegraph {
     };
 
     if (indices) {
-      glTFMesh.primitives[0].indices = indices;
+      const indicesAccessor = this._addIndices(indices);
+      glTFMesh.primitives[0].indices = indicesAccessor;
+    }
+
+    if (material) {
+      glTFMesh.primitives[0].material = material;
     }
 
     this.json.meshes = this.json.meshes || [];
@@ -424,7 +433,9 @@ export default class GLTFScenegraph {
       bufferView: bufferViewIndex,
       type: getAccessorTypeFromSize(accessor.size),
       componentType: accessor.componentType,
-      count: accessor.count
+      count: accessor.count,
+      max: accessor.max,
+      min: accessor.min
     };
 
     this.json.accessors = this.json.accessors || [];
@@ -439,11 +450,19 @@ export default class GLTFScenegraph {
    */
   addBinaryBuffer(sourceBuffer, accessor = {size: 3}) {
     const bufferViewIndex = this.addBufferView(sourceBuffer);
+    const max =
+      accessor.max ||
+      this._getAccessorExtremum(sourceBuffer, accessor.size, EXTREMUM_FUNCTIONS.MAX);
+    const min =
+      accessor.min ||
+      this._getAccessorExtremum(sourceBuffer, accessor.size, EXTREMUM_FUNCTIONS.MIN);
 
     const accessorDefaults = {
       size: accessor.size,
       componentType: getComponentTypeFromArray(sourceBuffer),
-      count: Math.round(sourceBuffer.length / accessor.size)
+      count: Math.round(sourceBuffer.length / accessor.size),
+      min,
+      max
     };
 
     return this.addAccessor(bufferViewIndex, Object.assign(accessorDefaults, accessor));
@@ -524,6 +543,10 @@ export default class GLTFScenegraph {
     return result;
   }
 
+  _addIndices(indices) {
+    return this.addBinaryBuffer(indices, {size: 1});
+  }
+
   /**
    * Deduce gltf specific attribue name from input attribute name
    */
@@ -545,5 +568,28 @@ export default class GLTFScenegraph {
       default:
         return attributeName;
     }
+  }
+
+  _getAccessorExtremum(buffer, size, extremumFunction) {
+    if (buffer.length < size) {
+      return null;
+    }
+    const initValues = buffer.subarray(0, size);
+    const result = [];
+    for (const value of initValues) {
+      result.push(value);
+    }
+
+    for (let index = size; index < buffer.length; index += size) {
+      for (let componentIndex = 0; componentIndex < size; componentIndex++) {
+        result[0 + componentIndex] = extremumFunction(
+          result[0 + componentIndex],
+          buffer[index + componentIndex]
+        )
+          ? result[0 + componentIndex]
+          : buffer[index + componentIndex];
+      }
+    }
+    return result;
   }
 }

@@ -51,25 +51,29 @@ export default class Tiles3DConverter {
     for (const childNodeInfo of parentSourceNode.header.children || []) {
       const sourceChild = await this._loadChildNode(parentSourceNode, childNodeInfo);
       parentSourceNode.children.push(sourceChild);
-      await this.sourceTileset._loadTile(sourceChild);
+      if (sourceChild.contentUrl) {
+        await this.sourceTileset._loadTile(sourceChild);
 
-      const boundingVolume = {box: i3sObbTo3dTilesObb(sourceChild.header.obb)};
-      const child = {
-        boundingVolume,
-        geometricError: convertScreenThresholdToGeometricError(sourceChild),
-        children: []
-      };
+        const boundingVolume = {box: i3sObbTo3dTilesObb(sourceChild.header.obb)};
+        const child = {
+          boundingVolume,
+          geometricError: convertScreenThresholdToGeometricError(sourceChild),
+          children: []
+        };
 
-      const b3dm = await new B3dmConverter().convert(sourceChild.content);
-      child.content = {
-        uri: `${sourceChild.id}.b3dm`,
-        boundingVolume
-      };
-      await writeFile(this.tilesetPath, new Uint8Array(b3dm), `${sourceChild.id}.b3dm`);
-      parentNode.children.push(child);
+        const b3dm = await new B3dmConverter().convert(sourceChild.content);
+        child.content = {
+          uri: `${sourceChild.id}.b3dm`,
+          boundingVolume
+        };
+        await writeFile(this.tilesetPath, new Uint8Array(b3dm), `${sourceChild.id}.b3dm`);
+        parentNode.children.push(child);
 
-      sourceChild.unloadContent();
-      await this._addChildren(sourceChild, child, level + 1);
+        sourceChild.unloadContent();
+        await this._addChildren(sourceChild, child, level + 1);
+      } else {
+        await this._addChildren(sourceChild, parentNode, level + 1);
+      }
     }
   }
 

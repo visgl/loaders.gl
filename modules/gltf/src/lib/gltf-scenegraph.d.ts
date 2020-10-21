@@ -101,7 +101,7 @@ export default class GLTFScenegraph {
   /** Adds a node to the json part */
   addNode(meshIndex: number): number;
 
-  addMesh(attributes: object, indices: object, mode?: number): number;
+  addMesh(attributes: object, indices: object, material: number, mode?: number): number;
 
   addPointCloud(attributes: object): number;
 

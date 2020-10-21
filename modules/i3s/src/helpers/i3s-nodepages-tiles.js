@@ -29,7 +29,7 @@ export default class I3SNodePagesTiles {
   async formTileFromNodePages(id) {
     const node = await this.getNodeById(id);
     const children = [];
-    for (const child of node.children) {
+    for (const child of node.children || []) {
       const childNode = await this.getNodeById(child);
       children.push({
         id: child,
