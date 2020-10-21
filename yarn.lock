@@ -1629,29 +1629,6 @@
     npmlog "^4.1.2"
     write-file-atomic "^2.3.0"
 
-"@loaders.gl/core@^2.2.3":
-  version "2.2.8"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/core/-/core-2.2.8.tgz#fb2060f3b90d3babe0de2a128fc5227f921c08ad"
-  integrity sha512-PM74zQA6Kn6NJCMoRdEDENy9jQWQyMkICKZ6o8UGa6/oi3dD4LO5GhFZSwU6W/Lxl/IeUwaZBQ3MqfT3aXA0Dg==
-  dependencies:
-    "@babel/runtime" "^7.3.1"
-    "@loaders.gl/loader-utils" "2.2.8"
-
-"@loaders.gl/images@^2.2.3":
-  version "2.2.8"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/images/-/images-2.2.8.tgz#7db7781fcc3aa60f3cf1109370ea87ac5bf78ad0"
-  integrity sha512-qFKdtD8Wo7wmqFJsaqBm5owrzl2vDMlTYzGaqnpNjqVCEmjp8f6mj+511FyXmE4vuPqiC/zOFg/pAKXi39bHRQ==
-  dependencies:
-    "@loaders.gl/loader-utils" "2.2.8"
-
-"@loaders.gl/loader-utils@2.2.8", "@loaders.gl/loader-utils@^2.1.1":
-  version "2.2.8"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/loader-utils/-/loader-utils-2.2.8.tgz#9f12f3460260b15e961fa46c3d3c867d7bf48bee"
-  integrity sha512-3F2VgxJPxjuZwAr8fDBkZzx3Wg275XdVaWnyYQ3uyZQ22yGEkrzKc+TlgcqSrxbO5pHrtS5PdS7dmyoJo2+Bdg==
-  dependencies:
-    "@babel/runtime" "^7.3.1"
-    "@probe.gl/stats" "^3.3.0"
-
 "@luma.gl/constants@8.2.0", "@luma.gl/constants@^8.1.2":
   version "8.2.0"
   resolved "https://registry.yarnpkg.com/@luma.gl/constants/-/constants-8.2.0.tgz#0789c629edbb8b69b7f810ae10c91501b97c634b"
