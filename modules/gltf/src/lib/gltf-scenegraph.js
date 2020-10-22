@@ -320,12 +320,16 @@ export default class GLTFScenegraph {
 
   /**
    * @todo: add more properties for node initialization:
-   *   `name`, `extensions`, `extras`, `camera`, `children`, `skin`, `matrix`, `rotation`, `scale`, `translation`, `weights`
+   *   `name`, `extensions`, `extras`, `camera`, `children`, `skin`, `rotation`, `scale`, `translation`, `weights`
    *   https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#node
    */
-  addNode(meshIndex) {
+  addNode(meshIndex, matrix) {
     this.json.nodes = this.json.nodes || [];
-    this.json.nodes.push({mesh: meshIndex});
+    const nodeData = {mesh: meshIndex};
+    if (matrix) {
+      nodeData.matrix = matrix;
+    }
+    this.json.nodes.push(nodeData);
     return this.json.nodes.length - 1;
   }
 
@@ -346,7 +350,7 @@ export default class GLTFScenegraph {
       glTFMesh.primitives[0].indices = indicesAccessor;
     }
 
-    if (material) {
+    if (material || material === 0) {
       glTFMesh.primitives[0].material = material;
     }
 

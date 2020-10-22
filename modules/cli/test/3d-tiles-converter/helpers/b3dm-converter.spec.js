@@ -68,11 +68,10 @@ test('cli - b3dm converter#should convert i3s node data to b3dm encoded data', a
     const encodedContent = await b3dmConverter.convert(i3sContent);
 
     t.ok(encodedContent);
-    t.deepEqual(b3dmConverter.rtcCenter, [4051665.75, 618151.6875, 4870759]);
     t.ok(b3dmConverter.i3sContent.attributes._BATCHID);
     t.notOk(b3dmConverter.i3sContent.attributes.featureIds);
     t.notOk(b3dmConverter.i3sContent.attributes.faceRange);
-    t.equal(b3dmConverter.i3sContent.attributes._BATCHID.value[0], 7.0345e-320);
+    t.equal(b3dmConverter.i3sContent.attributes._BATCHID.value[0], 0);
 
     t.end();
   }

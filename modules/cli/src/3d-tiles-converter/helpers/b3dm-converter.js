@@ -5,11 +5,6 @@ import {ImageWriter} from '@loaders.gl/images';
 import {Matrix4, Vector3} from '@math.gl/core';
 
 export default class B3dmConverter {
-  constructor() {
-    // TODO: Save this data in featureTable.RTC_CENTER
-    this.rtcCenter = new Float32Array(3);
-  }
-
   async convert(i3sContent) {
     this.i3sContent = i3sContent;
     const gltf = await this.buildGltf(i3sContent);
@@ -21,7 +16,7 @@ export default class B3dmConverter {
     return b3dm;
   }
 
-  async buildGltf(i3sContent, cartesianCenter) {
+  async buildGltf(i3sContent) {
     const gltfBuilder = new GLTFScenegraph();
 
     // TODO: Convert mime data from `layers/0`.`textureSetDefinitions`
@@ -43,17 +38,18 @@ export default class B3dmConverter {
     };
     const materialIndex = gltfBuilder.addMaterial(pbrMaterialInfo);
 
-    // Create RTC_CENTER for positions and shrink positions to Float32Array instead of Float64Array
     const positions = i3sContent.attributes.positions;
     const positionsValue = positions.value;
-    this.rtcCenter[0] = this._axisAvg(positionsValue, 0);
-    this.rtcCenter[1] = this._axisAvg(positionsValue, 1);
-    this.rtcCenter[2] = this._axisAvg(positionsValue, 2);
-    i3sContent.attributes.positions.value = this._normalizePositions(positionsValue);
+    i3sContent.attributes.positions.value = this._normalizePositions(
+      positionsValue,
+      i3sContent.cartesianOrigin
+    );
     this._replaceFeatureIdsAndFaceRangeWithBatchId(i3sContent);
+    delete i3sContent.attributes.colors;
     const indices = this._generateSynteticIndices(positionsValue.length / positions.size);
     const meshIndex = gltfBuilder.addMesh(i3sContent.attributes, indices, materialIndex);
-    const nodeIndex = gltfBuilder.addNode(meshIndex);
+    const transformMatrix = this._generateTransformMatrix(i3sContent.cartesianOrigin);
+    const nodeIndex = gltfBuilder.addNode(meshIndex, transformMatrix.toArray());
     const sceneIndex = gltfBuilder.addScene([nodeIndex]);
     gltfBuilder.setDefaultScene(sceneIndex);
 
@@ -64,54 +60,23 @@ export default class B3dmConverter {
     return gltfBuffer;
   }
 
-  _normalizePositions(positionsValue) {
-    positionsValue = new Float32Array(positionsValue);
-
-    const zUpToYUpMatrix = new Matrix4([1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1]);
-
+  _normalizePositions(positionsValue, cartesianOrigin) {
+    const newPositionsValue = new Float32Array(positionsValue.length);
     for (let index = 0; index < positionsValue.length; index += 3) {
       const vertex = positionsValue.subarray(index, index + 3);
+      const originVector = new Vector3(cartesianOrigin);
       let vertexVector = new Vector3(Array.from(vertex));
-      vertexVector = vertexVector.transform(zUpToYUpMatrix);
-
-      positionsValue.set(vertexVector.toArray(), index);
+      vertexVector = vertexVector.subtract(originVector);
+      newPositionsValue.set(vertexVector.toArray(), index);
     }
-    return positionsValue;
+    return newPositionsValue;
   }
 
-  /**
-   * Positions in I3S are represented in Float64Array.
-   * GLTF doesn't have component type for Float64Array
-   * This method deduce the `rtcCenter` vector and subtract it from each vertex
-   * After this operation positions array is converted to Float32Array
-   * @param {Float64Array} positions - the source array of positions
-   * @returns {Float32Array} - The converted positions array
-   */
-  _shrinkPositions(positions) {
-    const newPositions = new Float32Array(positions.length);
-    for (let index = 0; index < positions.length; index += 3) {
-      newPositions[index] = positions[index] - this.rtcCenter[0];
-      newPositions[index + 1] = positions[index + 1] - this.rtcCenter[1];
-      newPositions[index + 2] = positions[index + 2] - this.rtcCenter[2];
-    }
-
-    return newPositions;
-  }
-
-  /**
-   * Calculate average positions value for some particular axis (x, y, z)
-   * Weighted average
-   * @param {Array} arr - the source array
-   * @param {Number} axisNumber - number of an axis. Possible values are 0, 1 or 2
-   * @returns {Number} - The average value for some axis
-   */
-  _axisAvg(arr, axisNumber) {
-    let result = 0;
-    let currentWeight = 0;
-    for (let index = axisNumber; index < arr.length; index += 3) {
-      result = (result * currentWeight + arr[index]) / (currentWeight + 1);
-      currentWeight++;
-    }
+  _generateTransformMatrix(cartesianOrigin) {
+    const IDENTITY = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+    const translateOriginMatrix = new Matrix4(IDENTITY).translate(cartesianOrigin);
+    const zUpToYUpMatrix = new Matrix4([1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1]);
+    const result = translateOriginMatrix.multiplyLeft(zUpToYUpMatrix);
     return result;
   }
 
@@ -141,11 +106,11 @@ export default class B3dmConverter {
    * Generate batchId attribute from featureIds and faceRanges.
    * @param {Uint32Array} faceRanges - the source array
    * @param {Object} featureIds - Object with featureIds list
-   * @returns {Float64Array} batchId list.
+   * @returns {Float32Array} batchId list.
    */
   _generateBatchId(faceRanges, featureIds) {
     const batchIdArraySize = faceRanges[faceRanges.length - 1] + 1;
-    const batchId = new Float64Array(batchIdArraySize);
+    const batchId = new Float32Array(batchIdArraySize);
     let rangeIndex = 0;
 
     for (let index = 0; index < faceRanges.length / 2; index++) {
@@ -160,7 +125,7 @@ export default class B3dmConverter {
   }
 
   _generateSynteticIndices(vertexCount) {
-    const result = new Uint16Array(vertexCount);
+    const result = new Uint32Array(vertexCount);
     for (let index = 0; index < vertexCount; index++) {
       result.set([index], index);
     }

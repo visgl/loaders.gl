@@ -99,7 +99,7 @@ export default class GLTFScenegraph {
   addScene(nodeIndices: number[]): number;
 
   /** Adds a node to the json part */
-  addNode(meshIndex: number): number;
+  addNode(meshIndex: number, matrix: number[]): number;
 
   addMesh(attributes: object, indices: object, material: number, mode?: number): number;
 
