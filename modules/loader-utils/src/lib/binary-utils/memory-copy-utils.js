@@ -49,7 +49,9 @@ export function copyToArray(source, target, targetOffset) {
     // buffer for target.set() to work properly.
     const srcByteOffset = source.byteOffset;
     const srcByteLength = source.byteLength;
-    sourceArray = new Uint8Array(source.buffer, srcByteOffset, srcByteLength);
+    // In gltf parser it is set as "arrayBuffer" instead of "buffer"
+    // https://github.com/visgl/loaders.gl/blob/1e3a82a0a65d7b6a67b1e60633453e5edda2960a/modules/gltf/src/lib/parse-gltf.js#L85
+    sourceArray = new Uint8Array(source.buffer || source.arrayBuffer, srcByteOffset, srcByteLength);
   }
 
   // Pack buffer onto the big target array
