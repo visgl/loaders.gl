@@ -258,7 +258,9 @@ export default class I3SConverter {
         });
         childNodes.push(child);
       }
-      console.log(sourceTile.id); // eslint-disable-line
+      if (sourceTile.id) {
+        console.log(sourceTile.id); // eslint-disable-line
+      }
     }
   }
 
