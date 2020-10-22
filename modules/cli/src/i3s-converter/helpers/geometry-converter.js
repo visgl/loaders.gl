@@ -1,3 +1,5 @@
+/* global BigInt, BigUint64Array, Buffer */
+
 import {Vector3, Matrix4, Vector4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 
@@ -6,6 +8,7 @@ import {encode} from '@loaders.gl/core';
 import {concatenateArrayBuffers, concatenateTypedArrays} from '@loaders.gl/loader-utils';
 import draco3d from 'draco3d';
 import md5 from 'md5';
+import {generateAttributes} from './geometry-attributes';
 
 const VALUES_PER_VERTEX = 3;
 const VALUES_PER_TEX_COORD = 2;
@@ -27,22 +30,31 @@ export default async function convertB3dmToI3sGeometry(
   featuresHashArray,
   attributeStorageInfo
 ) {
-  const {positions, normals, texCoords, colors, featureIndices} = convertAttributes(tileContent);
+  const convertedAttributes = convertAttributes(tileContent);
   const {material, texture} = convertMaterial(tileContent);
-  const vertexCount = positions.length / VALUES_PER_VERTEX;
+  const vertexCount = convertedAttributes.positions.length / VALUES_PER_VERTEX;
   const triangleCount = vertexCount / 3;
-  const {faceRange, featureIds, featureCount} = generateFeatureAttributes(
-    featureIndices,
-    triangleCount
-  );
+  const {
+    faceRange,
+    featureIds,
+    positions,
+    normals,
+    colors,
+    texCoords,
+    featureCount
+  } = generateAttributes({triangleCount, ...convertedAttributes});
 
   if (tileContent.batchTableJson) {
-    makeFeatureIdsUnique(featureIds, featureIndices, featuresHashArray, tileContent.batchTableJson);
+    makeFeatureIdsUnique(
+      featureIds,
+      convertedAttributes.featureIndices,
+      featuresHashArray,
+      tileContent.batchTableJson
+    );
   }
 
   const header = new Uint32Array(2);
-  const typedFeatureIds = new Uint32Array(featureIds);
-  const featureIdsWithoutDuplicates = getFeatureIdsWithoutDuplicates(featureIds);
+  const typedFeatureIds = generateBigUint64Array(featureIds);
 
   header.set([vertexCount, featureCount], 0);
   const fileBuffer = new Uint8Array(
@@ -62,7 +74,9 @@ export default async function convertB3dmToI3sGeometry(
     indices.set([index], index);
   }
 
-  const featureIndex = new Uint32Array(featureIndices.length ? featureIndices : vertexCount);
+  const featureIndex = new Uint32Array(
+    convertedAttributes.featureIndices.length ? convertedAttributes.featureIndices : vertexCount
+  );
 
   const compressedAttributes = {
     positions,
@@ -95,7 +109,7 @@ export default async function convertB3dmToI3sGeometry(
 
   const attributes = convertBatchTableToAttributeBuffers(
     tileContent.batchTableJson,
-    featureIdsWithoutDuplicates,
+    featureIds,
     attributeStorageInfo
   );
 
@@ -639,54 +653,6 @@ function extractSharedResourcesTextureInfo(texture, nodeId) {
     ]
   };
 }
-/**
- * Calculate face range, features count and folded featureIds based on featureIndices array.
- * @param {Uint32Array} featureIndices - texture image info
- * @param {Number} triangleCount
- * @returns {Object} {faceRange, featureIds, featureCount}.
- */
-function generateFeatureAttributes(featureIndices, triangleCount) {
-  if (!featureIndices.length) {
-    return {
-      faceRange: new Uint32Array([0, triangleCount - 1]),
-      featureIds: [0],
-      featureCount: 1
-    };
-  }
-
-  let rangeIndex = 1;
-  let featureIndex = 1;
-  let currentFeatureId = featureIndices[0];
-  const faceRangeList = [];
-  const featureIds = [];
-  const uniqueFeatureIds = [currentFeatureId];
-
-  faceRangeList[0] = 0;
-  featureIds[0] = currentFeatureId;
-
-  for (let index = 1; index < featureIndices.length; index++) {
-    if (currentFeatureId !== featureIndices[index]) {
-      faceRangeList[rangeIndex] = index / VALUES_PER_VERTEX - 1;
-      faceRangeList[rangeIndex + 1] = index / VALUES_PER_VERTEX;
-      featureIds[featureIndex] = featureIndices[index];
-
-      if (!uniqueFeatureIds.includes(featureIndices[index])) {
-        uniqueFeatureIds.push(featureIndices[index]);
-      }
-
-      rangeIndex += 2;
-      featureIndex += 1;
-    }
-    currentFeatureId = featureIndices[index];
-  }
-
-  faceRangeList[rangeIndex] = featureIndices.length / VALUES_PER_VERTEX - 1;
-
-  const faceRange = new Uint32Array(faceRangeList);
-  const featureCount = uniqueFeatureIds.length;
-
-  return {faceRange, featureIds, featureCount};
-}
 /*
  * Formula for counting imageId:
  * https://github.com/Esri/i3s-spec/blob/0a6366a9249b831db8436c322f8d27521e86cf07/format/Indexed%203d%20Scene%20Layer%20Format%20Specification.md#generating-image-ids
@@ -708,8 +674,6 @@ function generateImageId(texture, nodeId) {
   const shiftedHeight = (height - 1) << 0;
 
   const leftHalf = shiftedLevelCountOfTexture + shiftedIndexOfLevel + shiftedWidth + shiftedHeight;
-
-  // eslint-disable-next-line no-undef
   const imageId = BigInt(`0b${leftHalf.toString(2)}${rightHalf}`);
   return imageId.toString();
 }
@@ -723,15 +687,28 @@ function generateImageId(texture, nodeId) {
  * @returns {void}
  */
 function makeFeatureIdsUnique(featureIds, featureIndices, featuresHashArray, batchTable) {
-  const featureIdsWithoutDuplicates = getFeatureIdsWithoutDuplicates(featureIds);
+  const replaceMap = getFeaturesReplaceMap(featureIds, batchTable, featuresHashArray);
+  replaceIndicesByUnique(featureIndices, replaceMap);
+  replaceIndicesByUnique(featureIds, replaceMap);
+}
 
-  for (let index = 0; index < featureIdsWithoutDuplicates.length; index++) {
-    const oldFeatureId = featureIdsWithoutDuplicates[index];
+/**
+ * Generate replace map to make featureIds unique.
+ * @param {Array} featureIds
+ * @param {Object} batchTable
+ * @param {Array} featuresHashArray
+ * @returns {Object}
+ */
+function getFeaturesReplaceMap(featureIds, batchTable, featuresHashArray) {
+  const featureMap = {};
+
+  for (let index = 0; index < featureIds.length; index++) {
+    const oldFeatureId = featureIds[index];
     const uniqueFeatureId = getOrCreateUniqueFeatureId(index, batchTable, featuresHashArray);
-
-    replaceIndicesByUnique(featureIndices, oldFeatureId, uniqueFeatureId);
-    replaceIndicesByUnique(featureIds, oldFeatureId, uniqueFeatureId);
+    featureMap[oldFeatureId.toString()] = uniqueFeatureId;
   }
+
+  return featureMap;
 }
 
 /**
@@ -768,34 +745,13 @@ function getOrCreateUniqueFeatureId(index, batchTable, featuresHashArray) {
 /**
  * Do replacement of indices for making them unique through all nodes.
  * @param {Array} indicesArray
- * @param {Number} oldFeatureId
- * @param {Number} newFeatureId
+ * @param {Object} featureMap
  * @returns {void}
  */
-function replaceIndicesByUnique(indicesArray, oldFeatureId, newFeatureId) {
+function replaceIndicesByUnique(indicesArray, featureMap) {
   for (let index = 0; index < indicesArray.length; index++) {
-    if (indicesArray[index] === oldFeatureId) {
-      indicesArray[index] = newFeatureId;
-    }
+    indicesArray[index] = featureMap[indicesArray[index]];
   }
-}
-
-/**
- * Create feature ids array without duplicates;
- * @param {Array} featureIds
- * @returns {Array} - Array uniques feature ids.
- */
-function getFeatureIdsWithoutDuplicates(featureIds) {
-  const uniqueFeatureIds = [];
-
-  for (let index = 0; index < featureIds.length; index++) {
-    const featureId = featureIds[index];
-    if (!uniqueFeatureIds.includes(featureId)) {
-      uniqueFeatureIds.push(featureId);
-    }
-  }
-
-  return uniqueFeatureIds;
 }
 
 /**
@@ -888,7 +844,6 @@ function generateStringAttributeBuffer(batchAttributes) {
 
   for (let index = 0; index < batchAttributes.length; index++) {
     const currentString = batchAttributes[index] ? `${String(batchAttributes[index])}\0` : '';
-    // eslint-disable-next-line no-undef
     const currentStringBuffer = Buffer.from(currentString);
     const currentStringSize = currentStringBuffer.length;
     totalNumberOfBytes += currentStringSize;
@@ -904,4 +859,17 @@ function generateStringAttributeBuffer(batchAttributes) {
     stringSizesArray.buffer,
     ...stringBufferArray
   );
+}
+
+/**
+ * Convert featureIds to BigUint64Array.
+ * @param {Array} featureIds
+ * @returns {BigUint64Array} - Array of feature ids in BigUint64 format.
+ */
+function generateBigUint64Array(featureIds) {
+  const typedFeatureIds = new BigUint64Array(featureIds.length);
+  for (let index = 0; index < featureIds.length; index++) {
+    typedFeatureIds[index] = BigInt(featureIds[index]);
+  }
+  return typedFeatureIds;
 }

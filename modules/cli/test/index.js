@@ -8,3 +8,4 @@ import './3d-tiles-converter/helpers/b3dm-converter.spec';
 import './3d-tiles-converter/helpers/i3s-obb-to-3d-tiles-obb.spec';
 
 import './3d-tiles-converter/3d-tiles-converter.spec';
+import './3d-tiles-converter/helpers/geometry-attributes.spec';
