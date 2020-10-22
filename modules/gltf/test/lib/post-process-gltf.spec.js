@@ -30,9 +30,9 @@ const TEST_CASES = [
   }
 ];
 
-test('gltf#postProcessGLTF', async t => {
+test('gltf#postProcessGLTF', t => {
   for (const testCase of TEST_CASES) {
-    const json = await postProcessGLTF(testCase.input, {}, {});
+    const json = postProcessGLTF(testCase.input);
     t.deepEqual(json, testCase.output, testCase.name);
   }
   t.end();

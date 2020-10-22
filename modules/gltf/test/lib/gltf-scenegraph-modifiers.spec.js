@@ -46,7 +46,7 @@ test('GLTFWriter#Should be able to write custom attribute', async t => {
   const gltfBuilder = new GLTFScenegraph();
 
   gltfBuilder.addMesh({
-    positions: inputData.meshes[0].primitives[0].attributes.POSITION,
+    POSITION: inputData.meshes[0].primitives[0].attributes.POSITION,
     _BATCHID: inputData.meshes[0].primitives[0].attributes.TEXCOORD_0
   });
   t.ok(gltfBuilder.gltf.json.meshes[0]);

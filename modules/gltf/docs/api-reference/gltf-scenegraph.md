@@ -65,7 +65,7 @@ const pbrMaterialInfo = {
 gltfBuilder.addMaterial(pbrMaterialInfo);
 gltfBuilder.createBinaryChunk();
 
-const gltfBuffer = GLTFWriter.encodeSync(gltfBuilder.gltf);
+const gltfBuffer = encodeSync(gltfBuilder.gltf, GLTFWriter);
 ```
 
 ## Fields

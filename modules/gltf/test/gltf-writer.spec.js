@@ -77,7 +77,7 @@ test('GLTFWriter#Should build a GLTF object with GLTFScenegraph builder function
 
   checkJson(t, gltfBuilder);
 
-  const gltfBuffer = GLTFWriter.encodeSync(gltfBuilder.gltf);
+  const gltfBuffer = encodeSync(gltfBuilder.gltf, GLTFWriter);
 
   const gltf = await parse(gltfBuffer, GLTFLoader, {gltf: {postProcess: false}});
 
@@ -87,7 +87,9 @@ test('GLTFWriter#Should build a GLTF object with GLTFScenegraph builder function
 
 test('GLTFWriter#should write extra data to binary chunk', async t => {
   const inputData = await load(GLTF_BINARY_URL, GLTFLoader, {gltf: {postProcess: true}});
-  const data = await load(GLTF_BINARY_URL, GLTFLoader, {gltf: {postProcess: false}});
+  const data = await load(GLTF_BINARY_URL, GLTFLoader, {
+    gltf: {postProcess: false, decompressMeshes: false}
+  });
   const gltfScenegraph = new GLTFScenegraph(data);
 
   const meshIndex = gltfScenegraph.addMesh(inputData.meshes[0].primitives[0].attributes);
@@ -96,7 +98,14 @@ test('GLTFWriter#should write extra data to binary chunk', async t => {
 
   gltfScenegraph.createBinaryChunk();
 
-  const gltfBuffer = GLTFWriter.encodeSync(gltfScenegraph.gltf);
+  t.ok(gltfScenegraph.gltf.json.meshes[0].primitives[0]);
+  t.equal(
+    gltfScenegraph.gltf.json.meshes[0].primitives[0].attributes.POSITION,
+    1,
+    'Input data should not be parsed'
+  );
+
+  const gltfBuffer = encodeSync(gltfScenegraph.gltf, GLTFWriter);
   const gltf = await parse(gltfBuffer, GLTFLoader, {gltf: {postProcess: true}});
 
   t.ok(gltf);
@@ -105,12 +114,15 @@ test('GLTFWriter#should write extra data to binary chunk', async t => {
     gltf.meshes[1].primitives[0].attributes.POSITION.value.byteLength,
     inputData.meshes[0].primitives[0].attributes.POSITION.value.byteLength
   );
+  t.ok(gltf.meshes[0]);
   t.end();
 });
 
 test('GLTFWriter#should write extra data to binary chunk twice', async t => {
   const inputData = await load(GLTF_BINARY_URL, GLTFLoader, {gltf: {postProcess: true}});
-  const data = await load(GLTF_BINARY_URL, GLTFLoader, {gltf: {postProcess: false}});
+  const data = await load(GLTF_BINARY_URL, GLTFLoader, {
+    gltf: {postProcess: false, decompressMeshes: false}
+  });
   const gltfScenegraph = new GLTFScenegraph(data);
 
   gltfScenegraph.addMesh({positions: inputData.meshes[0].primitives[0].attributes.POSITION});
@@ -120,7 +132,7 @@ test('GLTFWriter#should write extra data to binary chunk twice', async t => {
   gltfScenegraph.createBinaryChunk();
   t.ok(gltfScenegraph);
 
-  const gltfBuffer = GLTFWriter.encodeSync(gltfScenegraph.gltf);
+  const gltfBuffer = encodeSync(gltfScenegraph.gltf, GLTFWriter);
   const gltf = await parse(gltfBuffer, GLTFLoader, {gltf: {postProcess: true}});
 
   t.ok(gltf);
