@@ -1,6 +1,6 @@
 /** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 /** @typedef {import('@loaders.gl/loader-utils').WorkerLoaderObject} WorkerLoaderObject */
-import parseNPY from './lib/parse-npy';
+import {parseNPY} from './lib/parse-npy';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -17,7 +17,7 @@ export const NPYWorkerLoader = {
   extensions: ['npy'],
   tests: [NPY_MAGIC_NUMBER.buffer],
   options: {
-    'npy': {
+    npy: {
       workerUrl: `https://unpkg.com/@loaders.gl/terrain@${VERSION}/dist/npy-loader.worker.js`
     }
   }
