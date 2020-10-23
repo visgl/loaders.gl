@@ -1,4 +1,4 @@
-# NPY Loader
+# NPYLoader
 
 The `NPYLoader` parses an array from the [NPY format][npy-spec], a lightweight encoding of multidimensional arrays used by the Python NumPy library.
 

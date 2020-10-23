@@ -1,5 +1,13 @@
 # What's New
 
+## v2.4
+
+Release Date: TBD
+
+**@loaders.gl/terrain**
+
+- A new `NPYLoader` to parse N-dimensional arrays saved by the NumPy Python library
+
 ## v2.3
 
 Release Date: October 12, 2020

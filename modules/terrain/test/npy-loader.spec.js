@@ -24,7 +24,7 @@ test('NPYLoader#parse', async t => {
 
   const expectedData = new Uint8Array([1, 2, 3, 4]);
   // eslint-disable-next-line camelcase
-  const expectedHeader = {descr: '|u1', fortran_order: false, shape: [400]};
+  const expectedHeader = {descr: '|u1', fortran_order: false, shape: [4]};
 
   t.deepEqual(data, expectedData, 'data matches');
   t.deepEqual(header, expectedHeader, 'header matches');
@@ -43,7 +43,7 @@ test('NPYWorkerLoader#parse', async t => {
 
   const expectedData = new Uint8Array([1, 2, 3, 4]);
   // eslint-disable-next-line camelcase
-  const expectedHeader = {descr: '|u1', fortran_order: false, shape: [400]};
+  const expectedHeader = {descr: '|u1', fortran_order: false, shape: [4]};
 
   t.deepEqual(data, expectedData, 'data matches');
   t.deepEqual(header, expectedHeader, 'header matches');
