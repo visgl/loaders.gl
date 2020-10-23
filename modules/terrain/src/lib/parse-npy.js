@@ -27,7 +27,7 @@ const DTYPES = {
   f8: Float64Array
 };
 
-export function parseNPY(arrayBuffer) {
+export function parseNPY(arrayBuffer, options) {
   if (!arrayBuffer) {
     return null;
   }

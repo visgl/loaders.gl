@@ -15,6 +15,7 @@ export const NPYWorkerLoader = {
   name: 'NPY',
   version: VERSION,
   extensions: ['npy'],
+  mimeTypes: [],
   tests: [NPY_MAGIC_NUMBER.buffer],
   options: {
     npy: {
