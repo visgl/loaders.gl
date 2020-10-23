@@ -11,13 +11,17 @@ import {encode3DTileHeader, encode3DTileByteLength} from './helpers/encode-3d-ti
 
 // Procedurally encode the tile array dataView for testing purposes
 export function encodeBatchedModel3DTile(tile, dataView, byteOffset, options) {
-  const {featuresLength = 1} = tile;
+  const {featuresLength = 1, batchTable} = tile;
 
   const featureTableJson = {
     BATCH_LENGTH: featuresLength
   };
   const featureTableJsonString = JSON.stringify(featureTableJson);
+  const batchTableJsonString = batchTable ? JSON.stringify(batchTable) : '';
   const featureTableJsonByteLength = padToNBytes(featureTableJsonString.length, 8);
+  const batchTableJsonByteLength = batchTableJsonString
+    ? padToNBytes(batchTableJsonString.length, 8)
+    : 0;
 
   // Add default magic for this tile type
   tile = {magic: MAGIC_ARRAY.BATCHED_MODEL, ...tile};
@@ -29,14 +33,17 @@ export function encodeBatchedModel3DTile(tile, dataView, byteOffset, options) {
   if (dataView) {
     dataView.setUint32(12, featureTableJsonByteLength, true); // featureTableJsonByteLength
     dataView.setUint32(16, 0, true); // featureTableBinaryByteLength
-    dataView.setUint32(20, 0, true); // batchTableJsonByteLength
+    dataView.setUint32(20, batchTableJsonByteLength, true); // batchTableJsonByteLength
     dataView.setUint32(24, 0, true); // batchTableBinaryByteLength
   }
   byteOffset += 16;
 
   // TODO feature table binary
   byteOffset = copyPaddedStringToDataView(dataView, byteOffset, featureTableJsonString, 8);
-  // TODO batch table
+
+  if (batchTable) {
+    byteOffset = copyPaddedStringToDataView(dataView, byteOffset, batchTableJsonString, 8);
+  }
 
   // Add encoded GLTF to the end of data
   const gltfEncoded = tile.gltfEncoded;

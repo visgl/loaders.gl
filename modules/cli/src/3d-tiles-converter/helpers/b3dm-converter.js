@@ -5,13 +5,14 @@ import {ImageWriter} from '@loaders.gl/images';
 import {Matrix4, Vector3} from '@math.gl/core';
 
 export default class B3dmConverter {
-  async convert(i3sContent) {
+  async convert(i3sContent, attributes) {
     this.i3sContent = i3sContent;
     const gltf = await this.buildGltf(i3sContent);
     const b3dm = Tile3DWriter.encodeSync({
       gltfEncoded: new Uint8Array(gltf),
       type: 'b3dm',
-      featuresLength: 0
+      featuresLength: 0,
+      batchTable: attributes
     });
     return b3dm;
   }

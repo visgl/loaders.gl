@@ -1,7 +1,7 @@
 import {join} from 'path';
 import transform from 'json-map-transform';
 import {load} from '@loaders.gl/core';
-import {I3SLoader} from '@loaders.gl/i3s';
+import {I3SLoader, I3SAttributeLoader} from '@loaders.gl/i3s';
 import {Tileset3D, Tile3D} from '@loaders.gl/tiles';
 
 import {i3sObbTo3dTilesObb} from './helpers/i3s-obb-to-3d-tiles-obb';
@@ -23,6 +23,7 @@ export default class Tiles3DConverter {
     this.sourceTileset = new Tileset3D(sourceTilesetJson, {});
 
     this.tilesetPath = join(`${outputPath}`, `${tilesetName}`);
+    this.attributeStorageInfo = sourceTilesetJson.attributeStorageInfo;
     // Removing the tilesetPath needed to exclude erroneous files after conversion
     try {
       await removeDir(this.tilesetPath);
@@ -54,6 +55,11 @@ export default class Tiles3DConverter {
       if (sourceChild.contentUrl) {
         await this.sourceTileset._loadTile(sourceChild);
 
+        let attributes = null;
+        if (this.attributeStorageInfo) {
+          attributes = await this._loadChildAttributes(sourceChild, this.attributeStorageInfo);
+        }
+
         const boundingVolume = {box: i3sObbTo3dTilesObb(sourceChild.header.obb)};
         const child = {
           boundingVolume,
@@ -61,7 +67,7 @@ export default class Tiles3DConverter {
           children: []
         };
 
-        const b3dm = await new B3dmConverter().convert(sourceChild.content);
+        const b3dm = await new B3dmConverter().convert(sourceChild.content, attributes);
         child.content = {
           uri: `${sourceChild.id}.b3dm`,
           boundingVolume
@@ -117,6 +123,30 @@ export default class Tiles3DConverter {
       }
     }
     return resultArray.join('/');
+  }
+
+  /**
+   * Do loading all attributes related to particular node.
+   * @param {Object} sourceChild
+   * @param {Object} attributeStorageInfo
+   * @returns {Promise<Object>} - Promise of attributes object.
+   */
+  async _loadChildAttributes(sourceChild, attributeStorageInfo) {
+    const promises = [];
+    const {attributeUrls} = sourceChild.header;
+
+    for (let index = 0; index < attributeUrls.length; index++) {
+      const inputUrl = attributeUrls[index];
+      const attribute = attributeStorageInfo[index];
+      const options = {
+        attributeName: attribute.name,
+        attributeType: attribute.attributeValues.valueType
+      };
+
+      promises.push(load(inputUrl, I3SAttributeLoader, options));
+    }
+    const attributesList = await Promise.all(promises);
+    return Object.assign({}, ...attributesList);
   }
 
   // TODO fill this method with stats when conversion is implemented

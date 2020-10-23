@@ -40,6 +40,8 @@ export default class I3SNodePagesTiles {
 
     let contentUrl = null;
     let textureUrl = null;
+    let attributeUrls = [];
+
     if (node && node.mesh) {
       if (node.mesh.geometry) {
         contentUrl = `${this.tileset.url}/nodes/${node.mesh.geometry.resource}/geometries/0`;
@@ -50,6 +52,10 @@ export default class I3SNodePagesTiles {
         textureUrl = `${this.tileset.url}/nodes/${
           node.mesh.material.resource
         }/textures/${textureName}`;
+      }
+
+      if (this.tileset.attributeStorageInfo) {
+        attributeUrls = this._generateAttributeUrls(this.tileset, node);
       }
     }
 
@@ -72,6 +78,7 @@ export default class I3SNodePagesTiles {
       mbs: convertI3SObbToMbs(node.obb),
       contentUrl,
       textureUrl,
+      attributeUrls,
       children
     });
   }
@@ -95,5 +102,19 @@ export default class I3SNodePagesTiles {
       }
     }
     return null;
+  }
+
+  _generateAttributeUrls(tile, node) {
+    const attributeUrls = [];
+    const {attributeStorageInfo} = tile;
+
+    for (let index = 0; index < tile.attributeStorageInfo.length; index++) {
+      const fileName = attributeStorageInfo[index].key;
+      attributeUrls.push(
+        `${this.tileset.url}/nodes/${node.mesh.geometry.resource}/attributes/${fileName}/0`
+      );
+    }
+
+    return attributeUrls;
   }
 }
