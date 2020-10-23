@@ -242,6 +242,10 @@ export default class TileHeader {
       this.content.destroy();
     }
     this.content = null;
+    if (this.header.content && this.header.content.destroy) {
+      this.header.content.destroy();
+    }
+    this.header.content = null;
     this.contentState = TILE_CONTENT_STATE.UNLOADED;
     return true;
   }
