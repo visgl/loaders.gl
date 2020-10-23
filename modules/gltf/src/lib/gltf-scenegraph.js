@@ -7,11 +7,6 @@ import {
   getComponentTypeFromArray
 } from './gltf-utils/gltf-utils';
 
-const EXTREMUM_FUNCTIONS = {
-  MIN: (a, b) => a < b,
-  MAX: (a, b) => a > b
-};
-
 /**
  * Class for structured access to GLTF data
  */
@@ -321,7 +316,7 @@ export default class GLTFScenegraph {
    *   `name`, `extensions`, `extras`, `camera`, `children`, `skin`, `rotation`, `scale`, `translation`, `weights`
    *   https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#node
    */
-  addNode(meshIndex, matrix) {
+  addNode(meshIndex, matrix = null) {
     this.json.nodes = this.json.nodes || [];
     const nodeData = {mesh: meshIndex};
     if (matrix) {
@@ -338,7 +333,6 @@ export default class GLTFScenegraph {
       primitives: [
         {
           attributes: accessors,
-          material,
           mode
         }
       ]
@@ -349,7 +343,7 @@ export default class GLTFScenegraph {
       glTFMesh.primitives[0].indices = indicesAccessor;
     }
 
-    if (material || material === 0) {
+    if (Number.isFinite(material)) {
       glTFMesh.primitives[0].material = material;
     }
 
@@ -453,19 +447,17 @@ export default class GLTFScenegraph {
    */
   addBinaryBuffer(sourceBuffer, accessor = {size: 3}) {
     const bufferViewIndex = this.addBufferView(sourceBuffer);
-    const max =
-      accessor.max ||
-      this._getAccessorExtremum(sourceBuffer, accessor.size, EXTREMUM_FUNCTIONS.MAX);
-    const min =
-      accessor.min ||
-      this._getAccessorExtremum(sourceBuffer, accessor.size, EXTREMUM_FUNCTIONS.MIN);
+    let minMax = {min: accessor.min, max: accessor.max};
+    if (!minMax.min || !minMax.max) {
+      minMax = this._getAccessorMinMax(sourceBuffer, accessor.size);
+    }
 
     const accessorDefaults = {
       size: accessor.size,
       componentType: getComponentTypeFromArray(sourceBuffer),
       count: Math.round(sourceBuffer.length / accessor.size),
-      min,
-      max
+      min: minMax.min,
+      max: minMax.max
     };
 
     return this.addAccessor(bufferViewIndex, Object.assign(accessorDefaults, accessor));
@@ -547,6 +539,9 @@ export default class GLTFScenegraph {
     return result;
   }
 
+  /**
+   * Add indices to buffers
+   */
   _addIndices(indices) {
     return this.addBinaryBuffer(indices, {size: 1});
   }
@@ -574,24 +569,35 @@ export default class GLTFScenegraph {
     }
   }
 
-  _getAccessorExtremum(buffer, size, extremumFunction) {
+  /**
+   * Calculate `min` and `max` arrays of accessor according to spec:
+   * https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#reference-accessor
+   */
+  _getAccessorMinMax(buffer, size) {
+    const result = {};
+    result.min = null;
+    result.max = null;
     if (buffer.length < size) {
-      return null;
+      return result;
     }
+    result.min = [];
+    result.max = [];
     const initValues = buffer.subarray(0, size);
-    const result = [];
     for (const value of initValues) {
-      result.push(value);
+      result.min.push(value);
+      result.max.push(value);
     }
 
     for (let index = size; index < buffer.length; index += size) {
       for (let componentIndex = 0; componentIndex < size; componentIndex++) {
-        result[0 + componentIndex] = extremumFunction(
-          result[0 + componentIndex],
-          buffer[index + componentIndex]
-        )
-          ? result[0 + componentIndex]
-          : buffer[index + componentIndex];
+        result.min[0 + componentIndex] =
+          result.min[0 + componentIndex] <= buffer[index + componentIndex]
+            ? result.min[0 + componentIndex]
+            : buffer[index + componentIndex];
+        result.max[0 + componentIndex] =
+          result.max[0 + componentIndex] >= buffer[index + componentIndex]
+            ? result.max[0 + componentIndex]
+            : buffer[index + componentIndex];
       }
     }
     return result;
