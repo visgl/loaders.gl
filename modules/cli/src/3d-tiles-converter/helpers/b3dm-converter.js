@@ -1,19 +1,24 @@
-import {encode} from '@loaders.gl/core';
+import {encode, encodeSync} from '@loaders.gl/core';
 import {GLTFScenegraph, GLTFWriter} from '@loaders.gl/gltf';
 import {Tile3DWriter} from '@loaders.gl/3d-tiles';
 import {ImageWriter} from '@loaders.gl/images';
 import {Matrix4, Vector3} from '@math.gl/core';
 
+const Z_UP_TO_Y_UP_MATRIX = new Matrix4([1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1]);
+
 export default class B3dmConverter {
-  async convert(i3sContent, attributes) {
+  async convert(i3sContent, attributes = null) {
     this.i3sContent = i3sContent;
     const gltf = await this.buildGltf(i3sContent);
-    const b3dm = Tile3DWriter.encodeSync({
-      gltfEncoded: new Uint8Array(gltf),
-      type: 'b3dm',
-      featuresLength: 0,
-      batchTable: attributes
-    });
+    const b3dm = encodeSync(
+      {
+        gltfEncoded: new Uint8Array(gltf),
+        type: 'b3dm',
+        featuresLength: 0,
+        batchTable: attributes
+      },
+      Tile3DWriter
+    );
     return b3dm;
   }
 
@@ -50,17 +55,23 @@ export default class B3dmConverter {
     const indices = this._generateSynteticIndices(positionsValue.length / positions.size);
     const meshIndex = gltfBuilder.addMesh(i3sContent.attributes, indices, materialIndex);
     const transformMatrix = this._generateTransformMatrix(i3sContent.cartesianOrigin);
-    const nodeIndex = gltfBuilder.addNode(meshIndex, transformMatrix.toArray());
+    const nodeIndex = gltfBuilder.addNode(meshIndex, transformMatrix);
     const sceneIndex = gltfBuilder.addScene([nodeIndex]);
     gltfBuilder.setDefaultScene(sceneIndex);
 
     gltfBuilder.createBinaryChunk();
 
-    const gltfBuffer = GLTFWriter.encodeSync(gltfBuilder.gltf);
+    const gltfBuffer = encodeSync(gltfBuilder.gltf, GLTFWriter);
 
     return gltfBuffer;
   }
 
+  /**
+   * Generate a positions array which is correct for 3DTiles/GLTF format
+   * @param {Float64Array} positionsValue - the input geometry positions array
+   * @param {number[]} cartesianOrigin - the tile center in the cartesian coordinate system
+   * @returns {Float32Array} - the output geometry positions array
+   */
   _normalizePositions(positionsValue, cartesianOrigin) {
     const newPositionsValue = new Float32Array(positionsValue.length);
     for (let index = 0; index < positionsValue.length; index += 3) {
@@ -68,16 +79,22 @@ export default class B3dmConverter {
       const originVector = new Vector3(cartesianOrigin);
       let vertexVector = new Vector3(Array.from(vertex));
       vertexVector = vertexVector.subtract(originVector);
-      newPositionsValue.set(vertexVector.toArray(), index);
+      newPositionsValue.set(vertexVector, index);
     }
     return newPositionsValue;
   }
 
+  /**
+   * Generate the transformation matrix for GLTF node:
+   * https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#reference-node
+   * 1. Create the translate transformation from cartesianOrigin (the positions array stores offsets from this cartesianOrigin)
+   * 2. Create the rotation transformation to rotate model from z-up coordinates (I3S specific) to y-up coordinates (GLTF specific)
+   * @param {number[]} cartesianOrigin - the tile center in the cartesian coordinate system
+   * @returns {Matrix4} - an array of 16 numbers (4x4 matrix)
+   */
   _generateTransformMatrix(cartesianOrigin) {
-    const IDENTITY = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
-    const translateOriginMatrix = new Matrix4(IDENTITY).translate(cartesianOrigin);
-    const zUpToYUpMatrix = new Matrix4([1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1]);
-    const result = translateOriginMatrix.multiplyLeft(zUpToYUpMatrix);
+    const translateOriginMatrix = new Matrix4().translate(cartesianOrigin);
+    const result = translateOriginMatrix.multiplyLeft(Z_UP_TO_Y_UP_MATRIX);
     return result;
   }
 
@@ -125,6 +142,13 @@ export default class B3dmConverter {
     return batchId;
   }
 
+  /**
+   * luma.gl can not work without indices now:
+   * https://github.com/visgl/luma.gl/blob/d8cad75b9f8ca3e578cf078ed9d19e619c2ddbc9/modules/experimental/src/gltf/gltf-instantiator.js#L115
+   * This method generates syntetic indices array: [0, 1, 2, 3, .... , vertexCount-1]
+   * @param {number} vertexCount - vertex count in the geometry
+   * @returns {Uint32Array} indices array.
+   */
   _generateSynteticIndices(vertexCount) {
     const result = new Uint32Array(vertexCount);
     for (let index = 0; index < vertexCount; index++) {

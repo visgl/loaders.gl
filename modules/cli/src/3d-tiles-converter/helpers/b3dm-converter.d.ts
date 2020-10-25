@@ -12,7 +12,7 @@ export default class B3dmConverter {
    * @param i3sContent - content of I3S node
    * @returns - encoded content
    */
-  convert(i3sContent: Object, attributes: any): ArrayBuffer;
+  convert(i3sContent: Object, attributes?: any): ArrayBuffer;
 
   /**
    * Build and encode gltf
