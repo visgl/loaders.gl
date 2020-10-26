@@ -11,7 +11,7 @@ import {encode3DTileHeader, encode3DTileByteLength} from './helpers/encode-3d-ti
 
 // Procedurally encode the tile array dataView for testing purposes
 export function encodeBatchedModel3DTile(tile, dataView, byteOffset, options) {
-  const {featuresLength = 1, batchTable} = tile;
+  const {featuresLength = 0, batchTable} = tile;
 
   const featureTableJson = {
     BATCH_LENGTH: featuresLength
