@@ -40,6 +40,8 @@ export default class I3SNodePagesTiles {
 
     let contentUrl = null;
     let textureUrl = null;
+    let materialDefinition = null;
+    let textureFormat = 'jpeg';
     let attributeUrls = [];
 
     if (node && node.mesh) {
@@ -47,11 +49,15 @@ export default class I3SNodePagesTiles {
         contentUrl = `${this.tileset.url}/nodes/${node.mesh.geometry.resource}/geometries/0`;
       }
 
-      const textureName = this._getTextureName(node.mesh.material);
-      if (textureName) {
-        textureUrl = `${this.tileset.url}/nodes/${
-          node.mesh.material.resource
-        }/textures/${textureName}`;
+      const [textureData, nodeMaterialDefinition] = this._getInformationFromMaterial(
+        node.mesh.material
+      );
+      materialDefinition = nodeMaterialDefinition;
+      textureFormat = textureData.format || textureFormat;
+      if (textureData.name) {
+        textureUrl = `${this.tileset.url}/nodes/${node.mesh.material.resource}/textures/${
+          textureData.name
+        }`;
       }
 
       if (this.tileset.attributeStorageInfo) {
@@ -79,11 +85,14 @@ export default class I3SNodePagesTiles {
       contentUrl,
       textureUrl,
       attributeUrls,
+      materialDefinition,
+      textureFormat,
       children
     });
   }
 
-  _getTextureName(material) {
+  _getInformationFromMaterial(material) {
+    const textureDataDefault = {name: null, format: null};
     if (material) {
       const materialDefinition = this.tileset.materialDefinitions[material.definition];
       const textureSetDefinitionIndex =
@@ -93,15 +102,16 @@ export default class I3SNodePagesTiles {
         materialDefinition.pbrMetallicRoughness.baseColorTexture.textureSetDefinitionId;
       if (textureSetDefinitionIndex || textureSetDefinitionIndex === 0) {
         const textureSetDefinition = this.tileset.textureSetDefinitions[textureSetDefinitionIndex];
-        const textureName =
-          textureSetDefinition &&
-          textureSetDefinition.formats &&
-          textureSetDefinition.formats[0] &&
-          textureSetDefinition.formats[0].name;
-        return textureName;
+        const textureData =
+          (textureSetDefinition &&
+            textureSetDefinition.formats &&
+            textureSetDefinition.formats[0]) ||
+          textureDataDefault;
+        return [textureData, materialDefinition];
       }
+      return [textureDataDefault, materialDefinition];
     }
-    return null;
+    return [textureDataDefault, null];
   }
 
   _generateAttributeUrls(tile, node) {
