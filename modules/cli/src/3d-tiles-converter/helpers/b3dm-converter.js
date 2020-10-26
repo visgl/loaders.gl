@@ -14,7 +14,7 @@ export default class B3dmConverter {
       {
         gltfEncoded: new Uint8Array(gltf),
         type: 'b3dm',
-        featuresLength: 0,
+        featuresLength: this._getFeaturesLength(attributes),
         batchTable: attributes
       },
       Tile3DWriter
@@ -265,5 +265,18 @@ export default class B3dmConverter {
       materialDefinition.occlusionTexture.index = textureIndex;
       delete materialDefinition.occlusionTexture.textureSetDefinitionId;
     }
+  }
+
+  /*
+   * Returns Features length based on attribute array in attribute object.
+   * @param {Object} attributes
+   * @returns {Number} Features length .
+   */
+  _getFeaturesLength(attributes) {
+    if (!attributes) {
+      return 0;
+    }
+    const firstKey = Object.keys(attributes)[0];
+    return attributes[firstKey].length;
   }
 }
