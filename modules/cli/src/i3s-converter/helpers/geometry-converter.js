@@ -168,7 +168,7 @@ function convertAttributes(tileContent) {
     }
   }
 
-  featureIndices = featureIndices.flatMap(value => [...value]);
+  featureIndices = featureIndices.reduce((acc, value) => acc.concat(value));
 
   return {
     positions,
