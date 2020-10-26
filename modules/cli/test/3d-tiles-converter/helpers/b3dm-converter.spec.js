@@ -57,13 +57,13 @@ test('cli - b3dm converter#should convert i3s node data to b3dm encoded data', a
     t.ok(i3sContent);
     const attributes = await _loadAttributes(tile, ATTRIBUTES_STORAGE_INFO_STUB);
     const b3dmConverter = new B3dmConverter();
-    const encodedContent = await b3dmConverter.convert(i3sContent, attributes);
+    const encodedContent = await b3dmConverter.convert(tile, attributes);
 
     t.ok(encodedContent);
-    t.ok(b3dmConverter.i3sContent.attributes._BATCHID);
-    t.notOk(b3dmConverter.i3sContent.attributes.featureIds);
-    t.notOk(b3dmConverter.i3sContent.attributes.faceRange);
-    t.equal(b3dmConverter.i3sContent.attributes._BATCHID.value[0], 0);
+    t.ok(b3dmConverter.i3sTile.content.attributes._BATCHID);
+    t.notOk(b3dmConverter.i3sTile.content.attributes.featureIds);
+    t.notOk(b3dmConverter.i3sTile.content.attributes.faceRange);
+    t.equal(b3dmConverter.i3sTile.content.attributes._BATCHID.value[0], 0);
     t.ok(attributes);
     t.equal(attributes.OBJECTID[0], 4);
     t.equal(attributes.NAME[0], 'SanfranI_00004.flt\x00');
@@ -78,7 +78,7 @@ test('cli - b3dm converter#should normalise positions correctly', async t => {
     const i3sContent = tile.content;
     const originPositions = i3sContent.attributes.positions.value;
     const b3dmConverter = new B3dmConverter();
-    const encodedContent = await b3dmConverter.convert(i3sContent);
+    const encodedContent = await b3dmConverter.convert(tile);
 
     const decodedContent = await load(encodedContent, Tiles3DLoader, {
       isTileset: false,
@@ -90,6 +90,27 @@ test('cli - b3dm converter#should normalise positions correctly', async t => {
     const matrix = decodedContent.gltf.nodes[0].matrix;
     const positions = _transformPositionsWithMatrix(positionOffsets, matrix);
     t.ok(_areArraysEqualWithDelta(originPositions, positions, 0.0001));
+
+    t.end();
+  }
+});
+
+test('cli - b3dm converter#should convert material', async t => {
+  if (!isBrowser) {
+    const tile = await loadI3STile();
+    const b3dmConverter = new B3dmConverter();
+    const encodedContent = await b3dmConverter.convert(tile);
+
+    const decodedContent = await load(encodedContent, Tiles3DLoader, {
+      isTileset: false,
+      tile: {type: 'b3dm'}
+    });
+    t.ok(decodedContent);
+
+    t.ok(decodedContent.gltf.materials[0]);
+    t.ok(decodedContent.gltf.materials[0].doubleSided);
+    t.deepEqual(decodedContent.gltf.materials[0].emissiveFactor, [1, 1, 1]);
+    t.equal(decodedContent.gltf.materials[0].pbrMetallicRoughness.baseColorTexture.index, 0);
 
     t.end();
   }

@@ -7,9 +7,9 @@ import {Matrix4, Vector3} from '@math.gl/core';
 const Z_UP_TO_Y_UP_MATRIX = new Matrix4([1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1]);
 
 export default class B3dmConverter {
-  async convert(i3sContent, attributes = null) {
-    this.i3sContent = i3sContent;
-    const gltf = await this.buildGltf(i3sContent);
+  async convert(i3sTile, attributes = null) {
+    this.i3sTile = i3sTile;
+    const gltf = await this.buildGltf(i3sTile);
     const b3dm = encodeSync(
       {
         gltfEncoded: new Uint8Array(gltf),
@@ -22,26 +22,19 @@ export default class B3dmConverter {
     return b3dm;
   }
 
-  async buildGltf(i3sContent) {
+  async buildGltf(i3sTile) {
+    const i3sContent = i3sTile.content;
     const gltfBuilder = new GLTFScenegraph();
 
-    // TODO: Convert mime data from `layers/0`.`textureSetDefinitions`
+    const mimeType = this._deduceMimeTypeFromFormat(i3sTile.header.textureFormat);
     const imageBuffer = await encode(i3sContent.texture, ImageWriter);
-    const imageIndex = gltfBuilder.addImage(imageBuffer, 'image/jpeg');
+    const imageIndex = gltfBuilder.addImage(imageBuffer, mimeType);
     const textureIndex = gltfBuilder.addTexture(imageIndex);
-    // TODO: Convert material data from `layers/0`.`materialDefinitions`
-    const pbrMaterialInfo = {
-      alphaMode: 'OPAQUE',
-      doubleSided: false,
-      pbrMetallicRoughness: {
-        baseColorTexture: {
-          index: textureIndex,
-          texCoord: 0
-        },
-        metallicFactor: 0,
-        roughnessFactor: 1
-      }
-    };
+
+    const pbrMaterialInfo = this._convertI3sMaterialToGltfMaterial(
+      i3sTile.header.materialDefinition,
+      textureIndex
+    );
     const materialIndex = gltfBuilder.addMaterial(pbrMaterialInfo);
 
     const positions = i3sContent.attributes.positions;
@@ -158,6 +151,123 @@ export default class B3dmConverter {
   }
 
   /**
+   * Deduce mime type by format from `textureSetDefinition.formats[0].format`
+   * https://github.com/Esri/i3s-spec/blob/master/docs/1.7/textureSetDefinitionFormat.cmn.md
+   * @param {string} format - format name
+   * @returns {string} mime type.
+   */
+  _deduceMimeTypeFromFormat(format) {
+    switch (format) {
+      case 'jpg':
+        return 'image/jpeg';
+      case 'png':
+        return 'image/png';
+      default:
+        return 'image/jpeg';
+    }
+  }
+
+  /**
+   * Convert i3s materialDefinition to GLTF compatible material
+   * @param {object} materialDefinition - i3s material definition
+   * @param {number} textureIndex - texture index in GLTF
+   * @returns {object} GLTF material
+   */
+  _convertI3sMaterialToGltfMaterial(materialDefinition, textureIndex) {
+    if (!materialDefinition) {
+      return {
+        alphaMode: 'OPAQUE',
+        doubleSided: false,
+        pbrMetallicRoughness: {
+          baseColorTexture: {
+            index: textureIndex,
+            texCoord: 0
+          },
+          metallicFactor: 0,
+          roughnessFactor: 1
+        }
+      };
+    }
+
+    const materialCopy = this._getObjectDeepCopy(materialDefinition);
+
+    this._setGltfTexture(materialCopy, textureIndex);
+
+    // Convert colors from [255,255,255,255] to [1,1,1,1]
+    if (materialCopy.emissiveFactor) {
+      materialCopy.emissiveFactor = materialCopy.emissiveFactor.map(component => component / 255);
+    }
+    if (materialCopy.pbrMetallicRoughness && materialCopy.pbrMetallicRoughness.baseColorFactor) {
+      materialCopy.pbrMetallicRoughness.baseColorFactor = materialCopy.pbrMetallicRoughness.baseColorFactor.map(
+        component => component / 255
+      );
+    }
+
+    return materialCopy;
+  }
+
+  /**
+   * Create deep copy of the input object
+   * @param {object} object - arbitrary object
+   * @returns {object} - deep copy of input
+   */
+  _getObjectDeepCopy(object) {
+    if (typeof object !== 'object') {
+      return object;
+    }
+    let result;
+    if (object instanceof Array) {
+      result = [];
+      for (const item of object) {
+        result.push(this._getObjectDeepCopy(item));
+      }
+    } else if (object instanceof Object) {
+      result = {};
+      for (const propertyKey in object) {
+        if (object.hasOwnProperty(propertyKey)) {
+          result[propertyKey] = this._getObjectDeepCopy(object[propertyKey]);
+        }
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Set texture properties in material with GLTF textureIndex
+   * @param {object} materialDefinition - i3s material definition
+   * @param {number} textureIndex - texture index in GLTF
+   * @returns {void}
+   */
+  _setGltfTexture(materialDefinition, textureIndex) {
+    // I3SLoader now support loading only one texture. This elseif sequence will assign this texture to one of
+    // properties defined in materialDefinition
+    if (
+      materialDefinition.pbrMetallicRoughness &&
+      materialDefinition.pbrMetallicRoughness.baseColorTexture
+    ) {
+      materialDefinition.pbrMetallicRoughness.baseColorTexture.index = textureIndex;
+      delete materialDefinition.pbrMetallicRoughness.baseColorTexture.textureSetDefinitionId;
+    } else if (materialDefinition.emissiveTexture) {
+      materialDefinition.emissiveTexture.index = textureIndex;
+      delete materialDefinition.emissiveTexture.textureSetDefinitionId;
+    } else if (
+      materialDefinition.pbrMetallicRoughness &&
+      materialDefinition.pbrMetallicRoughness.metallicRoughnessTexture
+    ) {
+      materialDefinition.pbrMetallicRoughness.metallicRoughnessTexture.index = textureIndex;
+      delete materialDefinition.pbrMetallicRoughness.metallicRoughnessTexture
+        .textureSetDefinitionId;
+    } else if (materialDefinition.normalTexture) {
+      materialDefinition.normalTexture.index = textureIndex;
+      delete materialDefinition.normalTexture.textureSetDefinitionId;
+    } else if (materialDefinition.occlusionTexture) {
+      materialDefinition.occlusionTexture.index = textureIndex;
+      delete materialDefinition.occlusionTexture.textureSetDefinitionId;
+    }
+  }
+
+  /*
    * Returns Features length based on attribute array in attribute object.
    * @param {Object} attributes
    * @returns {Number} Features length .
