@@ -12,7 +12,7 @@ test('cli - Converters#converts i3s to 3d-tiles tileset', async t => {
       inputUrl: TILESET_URL,
       outputPath: 'data',
       tilesetName: 'Frankfurt',
-      maxDepth: 1
+      maxDepth: 2
     });
   }
   t.end();

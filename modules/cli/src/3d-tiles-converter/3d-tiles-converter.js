@@ -67,7 +67,7 @@ export default class Tiles3DConverter {
           children: []
         };
 
-        const b3dm = await new B3dmConverter().convert(sourceChild.content, attributes);
+        const b3dm = await new B3dmConverter().convert(sourceChild, attributes);
         child.content = {
           uri: `${sourceChild.id}.b3dm`,
           boundingVolume
