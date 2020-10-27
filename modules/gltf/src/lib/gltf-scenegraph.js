@@ -313,17 +313,20 @@ export default class GLTFScenegraph {
 
   /**
    * @todo: add more properties for node initialization:
-   *   `name`, `extensions`, `extras`, `camera`, `children`, `skin`, `matrix`, `rotation`, `scale`, `translation`, `weights`
+   *   `name`, `extensions`, `extras`, `camera`, `children`, `skin`, `rotation`, `scale`, `translation`, `weights`
    *   https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#node
    */
-  addNode(meshIndex) {
+  addNode(meshIndex, matrix = null) {
     this.json.nodes = this.json.nodes || [];
-    this.json.nodes.push({mesh: meshIndex});
+    const nodeData = {mesh: meshIndex};
+    if (matrix) {
+      nodeData.matrix = matrix;
+    }
+    this.json.nodes.push(nodeData);
     return this.json.nodes.length - 1;
   }
 
-  addMesh(attributes, indices, mode = 4) {
-    // @ts-ignore
+  addMesh(attributes, indices, material, mode = 4) {
     const accessors = this._addAttributes(attributes);
 
     const glTFMesh = {
@@ -336,7 +339,12 @@ export default class GLTFScenegraph {
     };
 
     if (indices) {
-      glTFMesh.primitives[0].indices = indices;
+      const indicesAccessor = this._addIndices(indices);
+      glTFMesh.primitives[0].indices = indicesAccessor;
+    }
+
+    if (Number.isFinite(material)) {
+      glTFMesh.primitives[0].material = material;
     }
 
     this.json.meshes = this.json.meshes || [];
@@ -422,7 +430,9 @@ export default class GLTFScenegraph {
       bufferView: bufferViewIndex,
       type: getAccessorTypeFromSize(accessor.size),
       componentType: accessor.componentType,
-      count: accessor.count
+      count: accessor.count,
+      max: accessor.max,
+      min: accessor.min
     };
 
     this.json.accessors = this.json.accessors || [];
@@ -437,11 +447,17 @@ export default class GLTFScenegraph {
    */
   addBinaryBuffer(sourceBuffer, accessor = {size: 3}) {
     const bufferViewIndex = this.addBufferView(sourceBuffer);
+    let minMax = {min: accessor.min, max: accessor.max};
+    if (!minMax.min || !minMax.max) {
+      minMax = this._getAccessorMinMax(sourceBuffer, accessor.size);
+    }
 
     const accessorDefaults = {
       size: accessor.size,
       componentType: getComponentTypeFromArray(sourceBuffer),
-      count: Math.round(sourceBuffer.length / accessor.size)
+      count: Math.round(sourceBuffer.length / accessor.size),
+      min: minMax.min,
+      max: minMax.max
     };
 
     return this.addAccessor(bufferViewIndex, Object.assign(accessorDefaults, accessor));
@@ -524,6 +540,13 @@ export default class GLTFScenegraph {
   }
 
   /**
+   * Add indices to buffers
+   */
+  _addIndices(indices) {
+    return this.addBinaryBuffer(indices, {size: 1});
+  }
+
+  /**
    * Deduce gltf specific attribue name from input attribute name
    */
   _getGltfAttributeName(attributeName) {
@@ -544,5 +567,39 @@ export default class GLTFScenegraph {
       default:
         return attributeName;
     }
+  }
+
+  /**
+   * Calculate `min` and `max` arrays of accessor according to spec:
+   * https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#reference-accessor
+   */
+  _getAccessorMinMax(buffer, size) {
+    const result = {};
+    result.min = null;
+    result.max = null;
+    if (buffer.length < size) {
+      return result;
+    }
+    result.min = [];
+    result.max = [];
+    const initValues = buffer.subarray(0, size);
+    for (const value of initValues) {
+      result.min.push(value);
+      result.max.push(value);
+    }
+
+    for (let index = size; index < buffer.length; index += size) {
+      for (let componentIndex = 0; componentIndex < size; componentIndex++) {
+        result.min[0 + componentIndex] =
+          result.min[0 + componentIndex] <= buffer[index + componentIndex]
+            ? result.min[0 + componentIndex]
+            : buffer[index + componentIndex];
+        result.max[0 + componentIndex] =
+          result.max[0 + componentIndex] >= buffer[index + componentIndex]
+            ? result.max[0 + componentIndex]
+            : buffer[index + componentIndex];
+      }
+    }
+    return result;
   }
 }
