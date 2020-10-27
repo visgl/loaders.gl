@@ -103,7 +103,7 @@ export default class B3dmConverter {
     }
 
     const faceRanges = faceRange.value;
-    const batchId = this._generateBatchId(faceRanges, featureIds);
+    const batchId = this._generateBatchId(faceRanges);
 
     i3sContent.attributes._BATCHID = {
       ...i3sContent.attributes.featureIds,
@@ -114,23 +114,23 @@ export default class B3dmConverter {
   }
 
   /**
-   * Generate batchId attribute from featureIds and faceRanges.
+   * Generate batchId attribute from faceRanges.
    * @param {Uint32Array} faceRanges - the source array
-   * @param {Object} featureIds - Object with featureIds list
    * @returns {Float32Array} batchId list.
    */
-  _generateBatchId(faceRanges, featureIds) {
-    const batchIdArraySize = faceRanges[faceRanges.length - 1] + 1;
+  _generateBatchId(faceRanges) {
+    const batchIdArraySize = (faceRanges[faceRanges.length - 1] + 1) * 3;
     const batchId = new Float32Array(batchIdArraySize);
     let rangeIndex = 0;
+    let currentBatchId = 0;
 
     for (let index = 0; index < faceRanges.length / 2; index++) {
-      const fromIndex = faceRanges[rangeIndex];
-      const untilPosition = faceRanges[rangeIndex + 1] + 1;
-      const featureId = featureIds.value[index];
+      const fromIndex = faceRanges[rangeIndex] * 3;
+      const untilPosition = (faceRanges[rangeIndex + 1] + 1) * 3;
 
-      batchId.fill(featureId, fromIndex, untilPosition);
+      batchId.fill(currentBatchId, fromIndex, untilPosition);
       rangeIndex += 2;
+      currentBatchId += 1;
     }
     return batchId;
   }

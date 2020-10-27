@@ -146,7 +146,23 @@ export default class Tiles3DConverter {
       promises.push(load(inputUrl, I3SAttributeLoader, options));
     }
     const attributesList = await Promise.all(promises);
+    this._replaceNestedArrays(attributesList);
     return Object.assign({}, ...attributesList);
+  }
+
+  /**
+   * Make simple arrays from attribute typed arrays.
+   * @param {Object} attributesList
+   * @returns {void}
+   */
+  _replaceNestedArrays(attributesList) {
+    for (let index = 0; index < attributesList.length; index++) {
+      const attributeObject = attributesList[index];
+
+      for (const key in attributeObject) {
+        attributeObject[key] = Array.from(attributeObject[key]);
+      }
+    }
   }
 
   // TODO fill this method with stats when conversion is implemented
