@@ -5,6 +5,10 @@
 #### v2.3.0
 
 - Bump to math.gl@3.3.0 (#968)
+- Gltf up axis support (#965)
+- Added attributes loader for I3s (#964)
+- Add NPY Loader (#986)
+- Add browser excludes (#989)
 
 ## v2.3 Prereleases
 
