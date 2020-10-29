@@ -1,6 +1,31 @@
 ## loaders.gl v2
 
+## v3.0 Prerelease
+
+#### v3.0.0-alpha.1
+
+- Added default options for i3s-attribute-loader (#990)
+- gltf: enhance gltf scenegraph (#987)
+- Option to use float64 for LAS positions (#958)
+- add browser excludes (#989)
+- Add NPY Loader (#986)
+- gltf: enhance gltf builder (#979)
+- Changed attribute loader logic (#984)
+- Support loading i3s feature ids (#971)
+- gltf: enhance GLTFScenegraph (#976)
+- update gltf builder (#970)
+- i3s: test I3S content loader (#966)
+- Added attributes loader for I3s (#964)
+- Gltf up axis support (#965)
+
 ## v2.3 Release
+
+#### v2.3.1
+
+- Gltf up axis support (#965)
+- Added attributes loader for I3s (#964)
+- Add NPY Loader (#986)
+- Add browser excludes (#989)
 
 #### v2.3.0
 
