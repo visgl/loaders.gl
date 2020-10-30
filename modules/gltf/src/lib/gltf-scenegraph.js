@@ -305,7 +305,7 @@ export default class GLTFScenegraph {
    *   https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#reference-scene
    */
 
-  addScene(nodeIndices) {
+  addScene({nodeIndices}) {
     this.json.scenes = this.json.scenes || [];
     this.json.scenes.push({nodes: nodeIndices});
     return this.json.scenes.length - 1;
@@ -316,7 +316,7 @@ export default class GLTFScenegraph {
    *   `name`, `extensions`, `extras`, `camera`, `children`, `skin`, `rotation`, `scale`, `translation`, `weights`
    *   https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#node
    */
-  addNode(meshIndex, matrix = null) {
+  addNode({meshIndex, matrix = null}) {
     this.json.nodes = this.json.nodes || [];
     const nodeData = {mesh: meshIndex};
     if (matrix) {
@@ -326,7 +326,7 @@ export default class GLTFScenegraph {
     return this.json.nodes.length - 1;
   }
 
-  addMesh(attributes, indices, material, mode = 4) {
+  addMesh({attributes, indices, material, mode = 4}) {
     const accessors = this._addAttributes(attributes);
 
     const glTFMesh = {
@@ -468,7 +468,7 @@ export default class GLTFScenegraph {
    * `sampler`, `name`, `extensions`, `extras`
    * https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#texture
    */
-  addTexture(imageIndex) {
+  addTexture({imageIndex}) {
     const glTFTexture = {
       source: imageIndex
     };
@@ -590,14 +590,14 @@ export default class GLTFScenegraph {
 
     for (let index = size; index < buffer.length; index += size) {
       for (let componentIndex = 0; componentIndex < size; componentIndex++) {
-        result.min[0 + componentIndex] =
-          result.min[0 + componentIndex] <= buffer[index + componentIndex]
-            ? result.min[0 + componentIndex]
-            : buffer[index + componentIndex];
-        result.max[0 + componentIndex] =
-          result.max[0 + componentIndex] >= buffer[index + componentIndex]
-            ? result.max[0 + componentIndex]
-            : buffer[index + componentIndex];
+        result.min[0 + componentIndex] = Math.min(
+          result.min[0 + componentIndex],
+          buffer[index + componentIndex]
+        );
+        result.max[0 + componentIndex] = Math.max(
+          result.max[0 + componentIndex],
+          buffer[index + componentIndex]
+        );
       }
     }
     return result;

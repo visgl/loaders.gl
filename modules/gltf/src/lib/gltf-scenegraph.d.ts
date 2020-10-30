@@ -96,13 +96,18 @@ export default class GLTFScenegraph {
   setDefaultScene(sceneIndex: number): void;
 
   /** Adds a scene to the json part */
-  addScene(nodeIndices: number[]): number;
+  addScene(arguments: {nodeIndices: number[]}): number;
 
   /** Adds a node to the json part */
-  addNode(meshIndex: number, matrix: number[]): number;
+  addNode(arguments: {meshIndex: number; matrix: number[]}): number;
 
   /** Adds a mesh to the json part */
-  addMesh(attributes: object, indices: object, material: number, mode?: number): number;
+  addMesh(arguments: {
+    attributes: object;
+    indices: object;
+    material: number;
+    mode?: number;
+  }): number;
 
   addPointCloud(attributes: object): number;
 
@@ -122,7 +127,7 @@ export default class GLTFScenegraph {
   addBufferView(buffer: any): number;
 
   /** Adds a texture to the json part */
-  addTexture(imageIndex: number): number;
+  addTexture(arguments: {imageIndex: number}): number;
 
   /** Adds a material to the json part */
   addMaterial(pbrMaterialInfo: Object): number;
