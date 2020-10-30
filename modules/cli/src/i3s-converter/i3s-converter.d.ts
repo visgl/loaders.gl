@@ -15,6 +15,7 @@ export default class I3SConverter {
    * @param options.inputType Input type of file. Can be 3DTILES or I3S
    * @param options.sevenZipExe Location of 7z.exe archiver to create slpk on Windows
    * @param options.token Token for Cesium ION tilesets authentication
+   * @param options.draco Generate I3S 1.7 draco compressed geometries
    */
   convert(options: {
     inputUrl: string;
@@ -25,5 +26,6 @@ export default class I3SConverter {
     slpk?: boolean;
     inputType: string;
     token?: string;
+    draco?: boolean
   }): Promise<any>;
 }

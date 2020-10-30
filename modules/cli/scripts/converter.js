@@ -22,6 +22,7 @@ function printHelp() {
     '--7zExe [location of 7z.exe archiver to create slpk on Windows, default: "C:\\Program Files\\7-Zip\\7z.exe"]'
   );
   console.log('--token [Token for Cesium ION tilesets authentication]');
+  console.log('--draco [Enable draco compression for geometry]');
   process.exit(0); // eslint-disable-line
 }
 
@@ -92,7 +93,8 @@ async function convert(options) {
         maxDepth: options.maxDepth,
         slpk: options.slpk,
         sevenZipExe: options.sevenZipExe,
-        token: options.token
+        token: options.token,
+        draco: options.draco
       });
       break;
     default:
@@ -108,7 +110,8 @@ function parseOptions(args) {
     name: null,
     output: 'data',
     sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
-    token: null
+    token: null,
+    draco: false
   };
 
   const count = args.length;
@@ -123,6 +126,7 @@ function parseOptions(args) {
     return value;
   };
 
+  // eslint-disable-next-line complexity
   args.forEach((arg, index) => {
     if (arg.indexOf('--') === 0) {
       switch (arg) {
@@ -149,6 +153,9 @@ function parseOptions(args) {
           break;
         case '--token':
           opts.token = _getValue(index);
+          break;
+        case '--draco':
+          opts.draco = true;
           break;
         case '--help':
           printHelp();

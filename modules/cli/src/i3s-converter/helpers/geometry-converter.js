@@ -28,7 +28,8 @@ export default async function convertB3dmToI3sGeometry(
   tileContent,
   nodeId,
   featuresHashArray,
-  attributeStorageInfo
+  attributeStorageInfo,
+  draco
 ) {
   const convertedAttributes = convertAttributes(tileContent);
   const {material, texture} = convertMaterial(tileContent);
@@ -68,44 +69,14 @@ export default async function convertB3dmToI3sGeometry(
       faceRange.buffer
     )
   );
-
-  const indices = new Uint32Array(vertexCount);
-  for (let index = 0; index < indices.length; index++) {
-    indices.set([index], index);
-  }
-
-  const featureIndex = new Uint32Array(
-    convertedAttributes.featureIndices.length ? convertedAttributes.featureIndices : vertexCount
-  );
-
-  const compressedAttributes = {
-    positions,
-    normals,
-    texCoords,
-    colors,
-    'feature-index': featureIndex
-  };
-
-  const attributesMetadata = {
-    'feature-index': {
-      'i3s-attribute-type': 'feature-index'
-      // Draco JS API v3.6 doesn't support writing arrays to attribute's metadata
-      // it must be array per spec https://github.com/Esri/i3s-spec/blob/master/docs/1.7/compressedAttributes.cmn.md
-      // 'i3s-feature-ids': [0]
-    }
-  };
-
-  const compressedGeometry = new Uint8Array(
-    await encode({attributes: compressedAttributes, indices}, DracoWriter, {
-      draco: {
-        method: 'MESH_SEQUENTIAL_ENCODING',
-        attributesMetadata
-      },
-      modules: {
-        draco3d
-      }
-    })
-  );
+  const compressedGeometry = draco
+    ? await generateCompressedGeometry(vertexCount, convertedAttributes, {
+        positions,
+        normals,
+        texCoords,
+        colors
+      })
+    : null;
 
   const attributes = convertBatchTableToAttributeBuffers(
     tileContent.batchTableJson,
@@ -872,4 +843,53 @@ function generateBigUint64Array(featureIds) {
     typedFeatureIds[index] = BigInt(featureIds[index]);
   }
   return typedFeatureIds;
+}
+
+/**
+ * Generates draco compressed geometry
+ * @param {Number} vertexCount
+ * @param {Object} convertedAttributes
+ * @returns {Promise<object>} - COmpressed geometry.
+ */
+async function generateCompressedGeometry(vertexCount, convertedAttributes, attributes) {
+  const {positions, normals, texCoords, colors} = attributes;
+  const indices = new Uint32Array(vertexCount);
+
+  for (let index = 0; index < indices.length; index++) {
+    indices.set([index], index);
+  }
+  // Uncomment after Draco JS API support feature-index logic
+  // const featureIndex = new Uint32Array(
+  //   convertedAttributes.featureIndices.length ? convertedAttributes.featureIndices : vertexCount
+  // );
+
+  const compressedAttributes = {
+    positions,
+    normals,
+    texCoords,
+    colors
+    // Uncomment after Draco JS API support feature-index logic
+    // 'feature-index': featureIndex
+  };
+
+  const attributesMetadata = {
+    'feature-index': {
+      'i3s-attribute-type': 'feature-index'
+      // Draco JS API v3.6 doesn't support writing arrays to attribute's metadata
+      // it must be array per spec https://github.com/Esri/i3s-spec/blob/master/docs/1.7/compressedAttributes.cmn.md
+      // 'i3s-feature-ids': [0]
+    }
+  };
+
+  return new Uint8Array(
+    await encode({attributes: compressedAttributes, indices}, DracoWriter, {
+      draco: {
+        method: 'MESH_SEQUENTIAL_ENCODING',
+        attributesMetadata
+      },
+      modules: {
+        draco3d
+      }
+    })
+  );
 }

@@ -24,7 +24,8 @@ export default function convertB3dmToI3sGeometry(
   },
   nodeId: number,
   featuresHashArray: any,
-  attributeStorageInfo: any
+  attributeStorageInfo: any,
+  draco: boolean
 ): Promise<{
   geometry: ArrayBuffer;
   compressedGeometry: ArrayBuffer;
