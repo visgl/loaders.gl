@@ -4,6 +4,7 @@
 
 #### v3.0.0-alpha.1
 
+- gltf: refactor GLTFScenegraph (#991)
 - Added default options for i3s-attribute-loader (#990)
 - gltf: enhance gltf scenegraph (#987)
 - Option to use float64 for LAS positions (#958)
