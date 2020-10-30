@@ -15,10 +15,8 @@ export async function loadDracoDecoderModule(options) {
     loadDecoderPromise =
       loadDecoderPromise ||
       new Promise(resolve => {
-        const draco = modules.draco3d.createDecoderModule({
-          onModuleLoaded() {
-            resolve({draco});
-          }
+        modules.draco3d.createDecoderModule({}).then(function(module) {
+          resolve(module);
         });
       });
   } else {
@@ -36,10 +34,8 @@ export async function loadDracoEncoderModule(options) {
     loadEncoderPromise =
       loadEncoderPromise ||
       new Promise(resolve => {
-        const draco = modules.draco3d.createEncoderModule({
-          onModuleLoaded() {
-            resolve({draco});
-          }
+        modules.draco3d.createEncoderModule({}).then(function(module) {
+          resolve(module);
         });
       });
   } else {
