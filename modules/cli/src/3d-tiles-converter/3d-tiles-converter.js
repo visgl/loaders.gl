@@ -1,4 +1,5 @@
 import {join} from 'path';
+import process from 'process';
 import transform from 'json-map-transform';
 import {load} from '@loaders.gl/core';
 import {I3SLoader, I3SAttributeLoader} from '@loaders.gl/i3s';
@@ -7,6 +8,7 @@ import {Tileset3D, Tile3D} from '@loaders.gl/tiles';
 import {i3sObbTo3dTilesObb} from './helpers/i3s-obb-to-3d-tiles-obb';
 import {convertScreenThresholdToGeometricError} from '../lib/utils/lod-conversion-utils';
 import {writeFile, removeDir} from '../lib/utils/file-utils';
+import {calculateFilesSize, timeConverter} from '../lib/utils/statistic-utills';
 import {TILESET as tilesetTemplate} from './json-templates/tileset';
 import B3dmConverter from './helpers/b3dm-converter';
 
@@ -16,8 +18,10 @@ export default class Tiles3DConverter {
   constructor() {
     this.options = {};
     this.tilesetPath = '';
+    this.vertexCounter = 0;
   }
   async convert({inputUrl, outputPath, tilesetName, maxDepth}) {
+    this.conversionStartTime = process.hrtime();
     this.options = {maxDepth};
     const sourceTilesetJson = await load(inputUrl, I3SLoader, {});
     this.sourceTileset = new Tileset3D(sourceTilesetJson, {});
@@ -42,7 +46,7 @@ export default class Tiles3DConverter {
     const tileset = transform({root: rootTile}, tilesetTemplate);
     await writeFile(this.tilesetPath, JSON.stringify(tileset), 'tileset.json');
 
-    this._finishConversion();
+    this._finishConversion({slpk: false, outputPath, tilesetName});
   }
 
   async _addChildren(parentSourceNode, parentNode, level) {
@@ -54,6 +58,7 @@ export default class Tiles3DConverter {
       parentSourceNode.children.push(sourceChild);
       if (sourceChild.contentUrl) {
         await this.sourceTileset._loadTile(sourceChild);
+        this.vertexCounter += sourceChild.content.vertexCount;
 
         let attributes = null;
         if (this.attributeStorageInfo) {
@@ -165,10 +170,16 @@ export default class Tiles3DConverter {
     }
   }
 
-  // TODO fill this method with stats when conversion is implemented
-  async _finishConversion() {
+  async _finishConversion(params) {
+    const filesSize = await calculateFilesSize(params);
+    const diff = process.hrtime(this.conversionStartTime);
+    const conversionTime = timeConverter(diff);
+
     console.log(`------------------------------------------------`); // eslint-disable-line
     console.log(`Finish conversion of ${I3S}`); // eslint-disable-line
+    console.log(`Total conversion time: ${conversionTime}`); // eslint-disable-line
+    console.log(`Vertex count: `, this.vertexCounter); // eslint-disable-line
+    console.log(`File(s) size: `, filesSize, ' bytes'); // eslint-disable-line
     console.log(`------------------------------------------------`); // eslint-disable-line
   }
 }

@@ -6,7 +6,6 @@ import {v4 as uuidv4} from 'uuid';
 import process from 'process';
 import transform from 'json-map-transform';
 import md5 from 'md5';
-import {promises as fs} from 'fs';
 import draco3d from 'draco3d';
 
 import NodePages from './helpers/node-pages';
@@ -16,6 +15,7 @@ import {
   generateHash128FromZip,
   addFileToZip
 } from '../lib/utils/compress-util';
+import {calculateFilesSize, timeConverter} from '../lib/utils/statistic-utills';
 import convertB3dmToI3sGeometry from './helpers/geometry-converter';
 import {
   convertCommonToI3SCoordinate,
@@ -670,69 +670,14 @@ export default class I3SConverter {
   }
 
   async _finishConversion(params) {
-    const filesSize = await this._calculateFilesSize(params);
+    const filesSize = await calculateFilesSize(params);
     const diff = process.hrtime(this.conversionStartTime);
-    const conversionTime = this._timeConverter(diff);
+    const conversionTime = timeConverter(diff);
     console.log(`------------------------------------------------`); // eslint-disable-line
     console.log(`Finishing conversion of ${_3D_TILES}`); // eslint-disable-line
     console.log(`Total conversion time: ${conversionTime}`); // eslint-disable-line
     console.log(`Vertex count: `, this.vertexCounter); // eslint-disable-line
     console.log(`File(s) size: `, filesSize, ' bytes'); // eslint-disable-line
     console.log(`------------------------------------------------`); // eslint-disable-line
-  }
-
-  _timeConverter(time) {
-    const timeInSecons = time[0];
-    const hours = Math.floor(timeInSecons / 60 / 60);
-    const minutes = Math.floor(timeInSecons / 60) % 60;
-    const seconds = Math.floor(timeInSecons - minutes * 60);
-    const milliseconds = time[1];
-    let result = '';
-
-    if (hours) {
-      result += `${hours}h `;
-    }
-    if (minutes) {
-      result += `${minutes}m `;
-    }
-
-    if (seconds) {
-      result += `${seconds}s`;
-    }
-
-    if (!result) {
-      result += `${milliseconds}ms`;
-    }
-
-    return result;
-  }
-
-  async _calculateFilesSize(params) {
-    const {slpk, outputPath, tilesetName} = params;
-
-    if (slpk) {
-      const slpkPath = join(process.cwd(), outputPath, `${tilesetName}.slpk`);
-      const stat = await fs.stat(slpkPath);
-      return stat.size;
-    }
-    const directoryPath = join(process.cwd(), outputPath, tilesetName);
-    const totalSize = await this._getTotalFilesSize(directoryPath);
-    return totalSize;
-  }
-
-  async _getTotalFilesSize(dirPath) {
-    let totalFileSize = 0;
-
-    const files = await fs.readdir(dirPath);
-
-    for (const file of files) {
-      const fileStat = await fs.stat(join(dirPath, file));
-      if (fileStat.isDirectory()) {
-        totalFileSize += await this._getTotalFilesSize(join(dirPath, file));
-      } else {
-        totalFileSize += fileStat.size;
-      }
-    }
-    return totalFileSize;
   }
 }
