@@ -13,14 +13,9 @@ export function convertCommonToI3SCoordinate(tile) {
     new Vector3()
   );
   if (boundingVolume instanceof OrientedBoundingBox) {
-    const halfAxes = boundingVolume.halfAxes;
-    halfSize = [
-      new Vector3(halfAxes[0], halfAxes[1], halfAxes[2]).len(),
-      new Vector3(halfAxes[3], halfAxes[4], halfAxes[5]).len(),
-      new Vector3(halfAxes[6], halfAxes[7], halfAxes[8]).len()
-    ];
+    halfSize = boundingVolume.halfSize;
     radius = new Vector3(halfSize[0], halfSize[1], halfSize[2]).len();
-    quaternion = new Quaternion().fromMatrix3(halfAxes).normalize();
+    quaternion = boundingVolume.quaternion;
   } else {
     radius = tile.boundingVolume.radius;
     halfSize = [radius, radius, radius];
