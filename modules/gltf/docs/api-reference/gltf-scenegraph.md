@@ -190,15 +190,15 @@ Removes an extension from the top-level list
 
 Set the default scene which is to be displayed at load time
 
-### addScene(nodeIndices: number[]): number;
+### addScene(arguments: {nodeIndices: number[]}): number;
 
 Add a scene to the json part
 
-### addNode(meshIndex: number): number;
+### addNode(arguments: {meshIndex: number}): number;
 
 Add a node to the json part
 
-### addMesh(attributes, indices, mode = 4)
+### addMesh(arguments: {attributes: object, indices: object, material: number, mode = 4})
 
 ### addPointCloud(attributes)
 
@@ -208,7 +208,7 @@ Add one untyped source buffer, create a matching glTF `bufferView`, and return i
 
 > The binary data will not be added to the gltf buffer until `createBinChunk()` is called.
 
-### addTexture(imageIndex: number): number;
+### addTexture(arguments: {imageIndex: number}): number;
 
 Add a texture to the json part
 

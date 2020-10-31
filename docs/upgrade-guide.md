@@ -1,5 +1,11 @@
 # Upgrade Guide
 
+## Upgrading to v3.0
+
+`@loaders.gl/gltf`:
+
+GLTFScenegraph is updated to provide modifying capabilities. Signatures of some methods have been changed to "named parameters".
+
 ## Upgrading to v2.3
 
 `@loaders.gl/core`:
