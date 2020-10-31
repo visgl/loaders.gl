@@ -42,14 +42,15 @@ export default function parseLAS(arraybuffer, options = {}) {
 
   const result = {};
   const {onProgress} = options;
-  const {skip, colorDepth} = options.las || {};
+  const {skip, colorDepth, fp64} = options.las || {};
 
   parseLASChunked(arraybuffer, skip, (decoder, header) => {
     if (!originalHeader) {
       originalHeader = header;
       const total = header.totalToRead;
 
-      positions = new Float32Array(total * 3);
+      const PositionsType = fp64 ? Float64Array : Float32Array;
+      positions = new PositionsType(total * 3);
       // laslaz-decoder.js `pointFormatReaders`
       colors = header.pointsFormatId >= 2 ? new Uint8Array(total * 4) : null;
       intensities = new Uint16Array(total);

@@ -26,5 +26,6 @@ const data = await load(url, LASLoader, options);
 | Option                   | Type             | Default | Description                                                                                                    |
 | ------------------------ | ---------------- | ------- | -------------------------------------------------------------------------------------------------------------- |
 | `options.las.skip`       | Number           | `1`     | Read one from every _n_ points.                                                                                |
+| `options.las.fp64`       | Number           | `false` | If `true`, positions are stored in 64-bit floats instead of 32-bit.                                            |
 | `options.las.colorDepth` | Number or string | `8`     | Whether colors encoded using 8 or 16 bits? Can be set to `'auto'`. Note: LAS specification recommends 16 bits. |
 | `options.onProgress`     | Function         | -       | Callback when a new chunk of data is read. Only works on the main thread.                                      |

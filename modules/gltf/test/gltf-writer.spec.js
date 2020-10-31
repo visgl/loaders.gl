@@ -60,13 +60,13 @@ test('GLTFWriter#Should build a GLTF object with GLTFScenegraph builder function
   const inputData = await load(GLTF_BINARY_URL, GLTFLoader, {gltf: {postProcess: true}});
   const gltfBuilder = new GLTFScenegraph();
 
-  const meshIndex = gltfBuilder.addMesh(inputData.meshes[0].primitives[0].attributes);
-  const nodeIndex = gltfBuilder.addNode(meshIndex);
-  const sceneIndex = gltfBuilder.addScene([nodeIndex]);
+  const meshIndex = gltfBuilder.addMesh({attributes: inputData.meshes[0].primitives[0].attributes});
+  const nodeIndex = gltfBuilder.addNode({meshIndex});
+  const sceneIndex = gltfBuilder.addScene({nodeIndices: [nodeIndex]});
   gltfBuilder.setDefaultScene(sceneIndex);
   const imageBuffer = await encode(inputData.images[0].image, ImageWriter);
   const imageIndex = gltfBuilder.addImage(imageBuffer, 'image/jpeg');
-  const textureIndex = gltfBuilder.addTexture(imageIndex);
+  const textureIndex = gltfBuilder.addTexture({imageIndex});
   const pbrMaterialInfo = {
     pbrMetallicRoughness: {
       baseColorTexture: textureIndex
@@ -92,7 +92,9 @@ test('GLTFWriter#should write extra data to binary chunk', async t => {
   });
   const gltfScenegraph = new GLTFScenegraph(data);
 
-  const meshIndex = gltfScenegraph.addMesh(inputData.meshes[0].primitives[0].attributes);
+  const meshIndex = gltfScenegraph.addMesh({
+    attributes: inputData.meshes[0].primitives[0].attributes
+  });
 
   t.equal(meshIndex, 1);
 
@@ -125,7 +127,9 @@ test('GLTFWriter#should write extra data to binary chunk twice', async t => {
   });
   const gltfScenegraph = new GLTFScenegraph(data);
 
-  gltfScenegraph.addMesh({positions: inputData.meshes[0].primitives[0].attributes.POSITION});
+  gltfScenegraph.addMesh({
+    attributes: {positions: inputData.meshes[0].primitives[0].attributes.POSITION}
+  });
   gltfScenegraph.createBinaryChunk();
   const imageBuffer = await encode(inputData.images[0].image, ImageWriter);
   gltfScenegraph.addImage(imageBuffer, 'image/jpeg');
