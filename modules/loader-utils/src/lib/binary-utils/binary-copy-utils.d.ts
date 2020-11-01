@@ -1,2 +1,2 @@
-export function copyPaddedArrayBufferToDataView(dataView, byteOffset, sourceBuffer);
-export function copyPaddedStringToDataView(dataView, byteOffset, string);
+export function copyPaddedArrayBufferToDataView(dataView, byteOffset, sourceBuffer, padding?);
+export function copyPaddedStringToDataView(dataView, byteOffset, string, padding?);

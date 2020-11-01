@@ -5,6 +5,15 @@
 export function padTo4Bytes(byteLength: number): number;
 
 /**
+ * Calculate new size of an arrayBuffer to be aligned to an n-byte boundary
+ * This function increases `byteLength` by the minimum delta, 
+ * allowing the total length to be divided by `padding`
+ * @param byteLength
+ * @param padding
+ */
+export function padToNBytes(byteLength: number, padding?: number): number;
+
+/**
  * Copy a view of an ArrayBuffer into new ArrayBuffer with byteOffset = 0
  * @param arrayBuffer
  * @param byteOffset

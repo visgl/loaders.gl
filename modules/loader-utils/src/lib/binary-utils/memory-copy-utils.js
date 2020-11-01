@@ -4,6 +4,16 @@ export function padTo4Bytes(byteLength) {
   return (byteLength + 3) & ~3;
 }
 
+export function padToNBytes(byteLength, padding = 4) {
+  if (byteLength < 0) {
+    throw new Error(`Incorrect 'byteLength' value: ${byteLength}`);
+  }
+  if (padding <= 0) {
+    throw new Error(`Incorrect 'padding' value: ${padding}`);
+  }
+  return (byteLength + (padding - 1)) & ~(padding - 1);
+}
+
 export function getZeroOffsetArrayBuffer(arrayBuffer, byteOffset, byteLength) {
   return sliceArrayBuffer(arrayBuffer, byteOffset, byteLength);
 }
