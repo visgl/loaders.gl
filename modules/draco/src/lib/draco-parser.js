@@ -37,13 +37,6 @@ export default class DracoParser {
 
   destroy() {}
 
-  destroyGeometry(dracoGeometry) {
-    if (dracoGeometry) {
-      this.draco.destroy(dracoGeometry.dracoGeometry);
-    }
-  }
-
-  // NOTE: caller must call `destroyGeometry` on the return value after using it
   parseSync(arrayBuffer, options = {}) {
     this.metadataQuerier = new this.draco.MetadataQuerier();
     const buffer = new this.draco.DecoderBuffer();
