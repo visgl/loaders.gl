@@ -32,7 +32,7 @@ export default class B3dmConverter {
     if (i3sContent.texture) {
       const imageBuffer = await encode(i3sContent.texture, ImageWriter);
       const imageIndex = gltfBuilder.addImage(imageBuffer, mimeType);
-      textureIndex = gltfBuilder.addTexture(imageIndex);
+      textureIndex = gltfBuilder.addTexture({imageIndex});
     }
 
     const pbrMaterialInfo = this._convertI3sMaterialToGltfMaterial(
