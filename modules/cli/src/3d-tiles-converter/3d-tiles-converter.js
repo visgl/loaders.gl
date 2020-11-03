@@ -145,7 +145,7 @@ export default class Tiles3DConverter {
       const attribute = attributeStorageInfo[index];
       const options = {
         attributeName: attribute.name,
-        attributeType: attribute.attributeValues.valueType
+        attributeType: this._getAttributeType(attribute)
       };
 
       promises.push(load(inputUrl, I3SAttributeLoader, options));
@@ -153,6 +153,22 @@ export default class Tiles3DConverter {
     const attributesList = await Promise.all(promises);
     this._replaceNestedArrays(attributesList);
     return Object.assign({}, ...attributesList);
+  }
+
+  /**
+   * Returns attribute type for loading attributes
+   * @param {Object} attribute
+   * Workaround for I3S v1.6. There is no attribute.attributeValues.valueType field in attribute.
+   * There is an 'Oid32' type if attribute has objectIds property.
+   * Doc: https://github.com/Esri/i3s-spec/blob/master/docs/1.6/attributeStorageInfo.cmn.md
+   */
+  _getAttributeType(attribute) {
+    if (attribute.attributeValues) {
+      return attribute.attributeValues.valueType;
+    } else if (attribute.objectIds) {
+      return 'Oid32';
+    }
+    return '';
   }
 
   /**

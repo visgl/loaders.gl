@@ -2,6 +2,7 @@ import {load} from '@loaders.gl/core';
 import {normalizeTileNonUrlData} from '../lib/parsers/parse-i3s';
 import {convertI3SObbToMbs} from '../utils/convert-i3s-obb-to-mbs';
 import I3SNodePageLoader from '../i3s-node-page-loader';
+import {generateTilesetAttributeUrls} from '../lib/parsers/url-utils';
 
 export default class I3SNodePagesTiles {
   constructor(tileset, options) {
@@ -61,7 +62,7 @@ export default class I3SNodePagesTiles {
       }
 
       if (this.tileset.attributeStorageInfo) {
-        attributeUrls = this._generateAttributeUrls(this.tileset, node);
+        attributeUrls = generateTilesetAttributeUrls(this.tileset, node.mesh.material.resource);
       }
     }
 
@@ -112,19 +113,5 @@ export default class I3SNodePagesTiles {
       return [textureDataDefault, materialDefinition];
     }
     return [textureDataDefault, null];
-  }
-
-  _generateAttributeUrls(tile, node) {
-    const attributeUrls = [];
-    const {attributeStorageInfo} = tile;
-
-    for (let index = 0; index < tile.attributeStorageInfo.length; index++) {
-      const fileName = attributeStorageInfo[index].key;
-      attributeUrls.push(
-        `${this.tileset.url}/nodes/${node.mesh.geometry.resource}/attributes/${fileName}/0`
-      );
-    }
-
-    return attributeUrls;
   }
 }

@@ -14,7 +14,7 @@ import {
   I3S_NAMED_VERTEX_ATTRIBUTES,
   I3S_NAMED_GEOMETRY_ATTRIBUTES
 } from './constants';
-import {getUrlWithToken} from './utils';
+import {getUrlWithToken} from './url-utils';
 
 const scratchVector = new Vector3([0, 0, 0]);
 
