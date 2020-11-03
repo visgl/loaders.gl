@@ -814,7 +814,7 @@ function generateStringAttributeBuffer(batchAttributes) {
   const stringBufferArray = [];
 
   for (let index = 0; index < batchAttributes.length; index++) {
-    const currentString = batchAttributes[index] ? `${String(batchAttributes[index])}\0` : '';
+    const currentString = `${String(batchAttributes[index])}\0`;
     const currentStringBuffer = Buffer.from(currentString);
     const currentStringSize = currentStringBuffer.length;
     totalNumberOfBytes += currentStringSize;
