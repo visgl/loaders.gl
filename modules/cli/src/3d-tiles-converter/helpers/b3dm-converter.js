@@ -25,11 +25,15 @@ export default class B3dmConverter {
   async buildGltf(i3sTile) {
     const i3sContent = i3sTile.content;
     const gltfBuilder = new GLTFScenegraph();
+    let textureIndex = null;
 
     const mimeType = this._deduceMimeTypeFromFormat(i3sTile.header.textureFormat);
-    const imageBuffer = await encode(i3sContent.texture, ImageWriter);
-    const imageIndex = gltfBuilder.addImage(imageBuffer, mimeType);
-    const textureIndex = gltfBuilder.addTexture({imageIndex});
+
+    if (i3sContent.texture) {
+      const imageBuffer = await encode(i3sContent.texture, ImageWriter);
+      const imageIndex = gltfBuilder.addImage(imageBuffer, mimeType);
+      textureIndex = gltfBuilder.addTexture(imageIndex);
+    }
 
     const pbrMaterialInfo = this._convertI3sMaterialToGltfMaterial(
       i3sTile.header.materialDefinition,
@@ -178,24 +182,35 @@ export default class B3dmConverter {
    * @returns {object} GLTF material
    */
   _convertI3sMaterialToGltfMaterial(materialDefinition, textureIndex) {
+    const isTextureIndexExists = textureIndex !== null;
+
     if (!materialDefinition) {
-      return {
+      const material = {
         alphaMode: 'OPAQUE',
         doubleSided: false,
         pbrMetallicRoughness: {
-          baseColorTexture: {
-            index: textureIndex,
-            texCoord: 0
-          },
           metallicFactor: 0,
           roughnessFactor: 1
         }
       };
+
+      if (isTextureIndexExists) {
+        material.pbrMetallicRoughness.baseColorTexture = {
+          index: textureIndex,
+          texCoord: 0
+        };
+      } else {
+        material.pbrMetallicRoughness.baseColorFactor = [1, 1, 1, 1];
+      }
+
+      return material;
     }
 
     const materialCopy = this._getObjectDeepCopy(materialDefinition);
 
-    this._setGltfTexture(materialCopy, textureIndex);
+    if (isTextureIndexExists) {
+      this._setGltfTexture(materialCopy, textureIndex);
+    }
 
     // Convert colors from [255,255,255,255] to [1,1,1,1]
     if (materialCopy.emissiveFactor) {
