@@ -32,3 +32,7 @@ Converts a tileset to I3S format
 - `options.outputPath` the output filename
 - `options.tilesetName` the output name of the tileset
 - `options.maxDepth` The max tree depth of conversion
+- `options.slpk` Whether the resulting layer be saved as "\*.slpk" package
+- `options.sevenZipExe` Windows only. The path of 7-zip archiver tool for creating "\*.slpk" file
+- `options.token` ION token of input tileset
+- `options.draco` Whether the converter create DRACO compressed geometry in path "layers/0/nodes/xxx/geometries/1" along with non-compressed geometry in path "layers/0/nodes/xxx/geometries/0"

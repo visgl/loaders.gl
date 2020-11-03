@@ -29,12 +29,13 @@ npm install @loaders.gl/cli
 
 ## Command Line Utilities
 
-`converter` -
+`converter` - the npx tool for launch conversion
 
 ## API
 
 A JavaScript API is also available:
 
-- `I3SConverter` class that converts
+- `I3SConverter` class that converts 3DTiles to I3S
+- `Tiles3DConverter` class that converts I3S to 3DTiles
 
 Note: the command line tools are implemented using this API and offer the same functions.

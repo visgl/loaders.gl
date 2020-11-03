@@ -16,7 +16,9 @@ function printHelp() {
   console.log('--name [Tileset name]');
   console.log('--output [Output folder, default: "data" folder]');
   console.log('--slpk [Generate slpk (Scene Layer Packages) I3S output file]');
-  console.log('--tileset [tileset.json file]');
+  console.log(
+    '--tileset [tileset.json file (3DTiles) / http://..../SceneServer/layers/0 resource (I3S)]'
+  );
   console.log('--input-type [tileset input type: I3S or 3DTILES]');
   console.log(
     '--7zExe [location of 7z.exe archiver to create slpk on Windows, default: "C:\\Program Files\\7-Zip\\7z.exe"]'
