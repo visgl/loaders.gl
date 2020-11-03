@@ -29,7 +29,7 @@ export default class B3dmConverter {
     const mimeType = this._deduceMimeTypeFromFormat(i3sTile.header.textureFormat);
     const imageBuffer = await encode(i3sContent.texture, ImageWriter);
     const imageIndex = gltfBuilder.addImage(imageBuffer, mimeType);
-    const textureIndex = gltfBuilder.addTexture(imageIndex);
+    const textureIndex = gltfBuilder.addTexture({imageIndex});
 
     const pbrMaterialInfo = this._convertI3sMaterialToGltfMaterial(
       i3sTile.header.materialDefinition,
@@ -46,10 +46,14 @@ export default class B3dmConverter {
     this._replaceFeatureIdsAndFaceRangeWithBatchId(i3sContent);
     delete i3sContent.attributes.colors;
     const indices = this._generateSynteticIndices(positionsValue.length / positions.size);
-    const meshIndex = gltfBuilder.addMesh(i3sContent.attributes, indices, materialIndex);
+    const meshIndex = gltfBuilder.addMesh({
+      attributes: i3sContent.attributes,
+      indices,
+      material: materialIndex
+    });
     const transformMatrix = this._generateTransformMatrix(i3sContent.cartesianOrigin);
-    const nodeIndex = gltfBuilder.addNode(meshIndex, transformMatrix);
-    const sceneIndex = gltfBuilder.addScene([nodeIndex]);
+    const nodeIndex = gltfBuilder.addNode({meshIndex, matrix: transformMatrix});
+    const sceneIndex = gltfBuilder.addScene({nodeIndices: [nodeIndex]});
     gltfBuilder.setDefaultScene(sceneIndex);
 
     gltfBuilder.createBinaryChunk();

@@ -41,16 +41,64 @@ test('GLTFScenegraph#addImage', t => {
   t.end();
 });
 
-test('GLTFWriter#Should be able to write custom attribute', async t => {
+test('GLTFScenegraph#Should be able to write custom attribute', async t => {
   const inputData = await load(GLTF_BINARY_URL, GLTFLoader, {gltf: {postProcess: true}});
   const gltfBuilder = new GLTFScenegraph();
 
   gltfBuilder.addMesh({
-    POSITION: inputData.meshes[0].primitives[0].attributes.POSITION,
-    _BATCHID: inputData.meshes[0].primitives[0].attributes.TEXCOORD_0
+    attributes: {
+      POSITION: inputData.meshes[0].primitives[0].attributes.POSITION,
+      _BATCHID: inputData.meshes[0].primitives[0].attributes.TEXCOORD_0
+    }
   });
   t.ok(gltfBuilder.gltf.json.meshes[0]);
   t.ok(gltfBuilder.gltf.json.meshes[0].primitives[0].attributes._BATCHID);
+
+  t.end();
+});
+
+test('GLTFScenegraph#Should calculate min and max arrays for accessor', async t => {
+  const inputData = await load(GLTF_BINARY_URL, GLTFLoader, {gltf: {postProcess: true}});
+  const gltfBuilder = new GLTFScenegraph();
+
+  gltfBuilder.addMesh({
+    attributes: {
+      POSITION: inputData.meshes[0].primitives[0].attributes.POSITION
+    }
+  });
+  t.ok(gltfBuilder.gltf.json.accessors[0]);
+  t.deepEqual(gltfBuilder.gltf.json.accessors[0].min, [
+    -2316.5927734375,
+    -3864.65771484375,
+    -3551.852294921875
+  ]);
+  t.deepEqual(gltfBuilder.gltf.json.accessors[0].max, [
+    2647.046875,
+    4302.39111328125,
+    3733.835205078125
+  ]);
+
+  t.end();
+});
+
+test('GLTFScenegraph#Nodes should store `matrix` transformation data', async t => {
+  const inputData = await load(GLTF_BINARY_URL, GLTFLoader, {gltf: {postProcess: true}});
+  const gltfBuilder = new GLTFScenegraph();
+
+  const meshIndex = gltfBuilder.addMesh({
+    attributes: {
+      POSITION: inputData.meshes[0].primitives[0].attributes.POSITION
+    }
+  });
+  const inputMatrix = [1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1];
+  const nodeIndex = gltfBuilder.addNode({meshIndex, matrix: inputMatrix});
+  t.ok(gltfBuilder.gltf.json.nodes[nodeIndex]);
+  const testMatrix = [1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1];
+  t.deepEqual(gltfBuilder.gltf.json.nodes[nodeIndex].matrix, testMatrix);
+
+  const nodeIndex2 = gltfBuilder.addNode({meshIndex});
+  t.ok(gltfBuilder.gltf.json.nodes[nodeIndex2]);
+  t.notOk(gltfBuilder.gltf.json.nodes[nodeIndex2].matrix);
 
   t.end();
 });
