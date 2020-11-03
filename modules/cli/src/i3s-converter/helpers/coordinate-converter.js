@@ -55,3 +55,15 @@ export function convertCommonToI3SExtentCoordinate(tileset) {
     isFirstTop ? leftBottom[1] : rightTop[1]
   ];
 }
+
+/**
+ * Creates oriented boundinb box from mbs.
+ * @param {Array} mbs
+ * @returns {Object} - obb
+ */
+export function createObbFromMbs(mbs) {
+  const radius = mbs[3];
+  const center = new Vector3(mbs[0], mbs[1], mbs[2]);
+  const halfAxex = new Matrix3([radius, 0, 0, 0, radius, 0, 0, 0, radius]);
+  return new OrientedBoundingBox(center, halfAxex);
+}

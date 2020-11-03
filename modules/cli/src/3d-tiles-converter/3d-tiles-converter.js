@@ -11,6 +11,7 @@ import {writeFile, removeDir} from '../lib/utils/file-utils';
 import {calculateFilesSize, timeConverter} from '../lib/utils/statistic-utills';
 import {TILESET as tilesetTemplate} from './json-templates/tileset';
 import B3dmConverter from './helpers/b3dm-converter';
+import {createObbFromMbs} from '../i3s-converter/helpers/coordinate-converter';
 
 const I3S = 'I3S';
 
@@ -25,6 +26,10 @@ export default class Tiles3DConverter {
     this.options = {maxDepth};
     const sourceTilesetJson = await load(inputUrl, I3SLoader, {});
     this.sourceTileset = new Tileset3D(sourceTilesetJson, {});
+
+    if (!this.sourceTileset.root.header.obb) {
+      this.sourceTileset.root.header.obb = createObbFromMbs(this.sourceTileset.root.header.mbs);
+    }
 
     this.tilesetPath = join(`${outputPath}`, `${tilesetName}`);
     this.attributeStorageInfo = sourceTilesetJson.attributeStorageInfo;
@@ -63,6 +68,10 @@ export default class Tiles3DConverter {
         let attributes = null;
         if (this.attributeStorageInfo) {
           attributes = await this._loadChildAttributes(sourceChild, this.attributeStorageInfo);
+        }
+
+        if (!sourceChild.header.obb) {
+          sourceChild.header.obb = createObbFromMbs(sourceChild.header.mbs);
         }
 
         const boundingVolume = {box: i3sObbTo3dTilesObb(sourceChild.header.obb)};

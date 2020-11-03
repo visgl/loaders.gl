@@ -3,9 +3,7 @@ import {Ellipsoid} from '@math.gl/geospatial';
 import {load} from '@loaders.gl/core';
 import {TILE_TYPE, TILE_REFINEMENT, TILESET_TYPE} from '@loaders.gl/tiles';
 import I3SNodePagesTiles from '../../helpers/i3s-nodepages-tiles';
-import {generateTileAttributeUrls} from './url-utils';
-
-import {getUrlWithToken} from './url-utils';
+import {generateTileAttributeUrls, getUrlWithToken} from './url-utils';
 
 const scratchCenter = new Vector3();
 
