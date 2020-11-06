@@ -184,6 +184,7 @@ export default class B3dmConverter {
       case 'png':
         return 'image/png';
       default:
+        console.warn(`Unexpected texture format in I3S: ${format}`); // eslint-disable-line no-console, no-undef
         return 'image/jpeg';
     }
   }
@@ -219,7 +220,7 @@ export default class B3dmConverter {
       return material;
     }
 
-    const materialCopy = this._getObjectDeepCopy(materialDefinition);
+    const materialCopy = _getObjectDeepCopy(materialDefinition);
 
     if (isTextureIndexExists) {
       this._setGltfTexture(materialCopy, textureIndex);
@@ -227,42 +228,13 @@ export default class B3dmConverter {
 
     // Convert colors from [255,255,255,255] to [1,1,1,1]
     if (materialCopy.emissiveFactor) {
-      materialCopy.emissiveFactor = materialCopy.emissiveFactor.map(component => component / 255);
+      this._convertColorFormat(materialCopy.emissiveFactor);
     }
     if (materialCopy.pbrMetallicRoughness && materialCopy.pbrMetallicRoughness.baseColorFactor) {
-      materialCopy.pbrMetallicRoughness.baseColorFactor = materialCopy.pbrMetallicRoughness.baseColorFactor.map(
-        component => component / 255
-      );
+      this._convertColorFormat(materialCopy.pbrMetallicRoughness.baseColorFactor);
     }
 
     return materialCopy;
-  }
-
-  /**
-   * Create deep copy of the input object
-   * @param {object} object - arbitrary object
-   * @returns {object} - deep copy of input
-   */
-  _getObjectDeepCopy(object) {
-    if (typeof object !== 'object') {
-      return object;
-    }
-    let result;
-    if (object instanceof Array) {
-      result = [];
-      for (const item of object) {
-        result.push(this._getObjectDeepCopy(item));
-      }
-    } else if (object instanceof Object) {
-      result = {};
-      for (const propertyKey in object) {
-        if (object.hasOwnProperty(propertyKey)) {
-          result[propertyKey] = this._getObjectDeepCopy(object[propertyKey]);
-        }
-      }
-    }
-
-    return result;
   }
 
   /**
@@ -299,6 +271,17 @@ export default class B3dmConverter {
     }
   }
 
+  /**
+   * Convert color from [255,255,255,255] to [1,1,1,1]
+   * @param {Array} colorFactor - color array
+   * @returns {void}
+   */
+  _convertColorFormat(colorFactor) {
+    for (let index = 0; index < colorFactor.length; index++) {
+      colorFactor[index] = colorFactor[index] / 255;
+    }
+  }
+
   /*
    * Returns Features length based on attribute array in attribute object.
    * @param {Object} attributes
@@ -320,4 +303,28 @@ export default class B3dmConverter {
     // If all normals === 0, the resulting tileset is all in black colors on Cesium
     return normals.find(value => value);
   }
+}
+
+/**
+ * Create deep copy of the input object
+ * @param {object} object - arbitrary object
+ * @returns {object} - deep copy of input
+ */
+function _getObjectDeepCopy(object) {
+  if (typeof object !== 'object') {
+    return object;
+  }
+  let result;
+  if (object instanceof Array) {
+    result = object.map(item => _getObjectDeepCopy(item));
+  } else if (object instanceof Object) {
+    result = {};
+    for (const propertyKey in object) {
+      if (object.hasOwnProperty(propertyKey)) {
+        result[propertyKey] = _getObjectDeepCopy(object[propertyKey]);
+      }
+    }
+  }
+
+  return result;
 }
