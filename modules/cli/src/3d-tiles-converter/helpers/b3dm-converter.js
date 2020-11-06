@@ -25,16 +25,8 @@ export default class B3dmConverter {
   async buildGltf(i3sTile) {
     const i3sContent = i3sTile.content;
     const gltfBuilder = new GLTFScenegraph();
-    let textureIndex = null;
 
-    const mimeType = this._deduceMimeTypeFromFormat(i3sTile.header.textureFormat);
-
-    if (i3sContent.texture) {
-      const imageBuffer = await encode(i3sContent.texture, ImageWriter);
-      const imageIndex = gltfBuilder.addImage(imageBuffer, mimeType);
-      textureIndex = gltfBuilder.addTexture({imageIndex});
-    }
-
+    const textureIndex = await this._addI3sTextureToGltf(i3sTile, gltfBuilder);
     const pbrMaterialInfo = this._convertI3sMaterialToGltfMaterial(
       i3sTile.header.materialDefinition,
       textureIndex
@@ -48,7 +40,9 @@ export default class B3dmConverter {
       i3sContent.cartesianOrigin
     );
     this._replaceFeatureIdsAndFaceRangeWithBatchId(i3sContent);
-    delete i3sContent.attributes.colors;
+    if (!this._checkNormals(i3sContent.attributes.normals.value)) {
+      delete i3sContent.attributes.normals;
+    }
     const indices = this._generateSynteticIndices(positionsValue.length / positions.size);
     const meshIndex = gltfBuilder.addMesh({
       attributes: i3sContent.attributes,
@@ -65,6 +59,25 @@ export default class B3dmConverter {
     const gltfBuffer = encodeSync(gltfBuilder.gltf, GLTFWriter);
 
     return gltfBuffer;
+  }
+
+  /**
+   * Update gltfBuilder with texture from I3S tile
+   * @param {object} i3sTile - Tile3D object
+   * @param {GLTFScenegraph} gltfBuilder - gltfScenegraph instance to construct GLTF
+   * @returns {Promise<number>} - GLTF texture index
+   */
+  async _addI3sTextureToGltf(i3sTile, gltfBuilder) {
+    const i3sContent = i3sTile.content;
+    let textureIndex = null;
+    if (i3sContent.texture) {
+      const mimeType = this._deduceMimeTypeFromFormat(i3sTile.header.textureFormat);
+      const imageBuffer = await encode(i3sContent.texture, ImageWriter);
+      const imageIndex = gltfBuilder.addImage(imageBuffer, mimeType);
+      textureIndex = gltfBuilder.addTexture({imageIndex});
+      delete i3sContent.attributes.colors;
+    }
+    return textureIndex;
   }
 
   /**
@@ -297,5 +310,14 @@ export default class B3dmConverter {
     }
     const firstKey = Object.keys(attributes)[0];
     return attributes[firstKey].length;
+  }
+
+  /* Checks that normals buffer is correct
+   * @param {TypedArray} normals
+   * @returns {boolean} true - normals are correct; false - normals are incorrect
+   */
+  _checkNormals(normals) {
+    // If all normals === 0, the resulting tileset is all in black colors on Cesium
+    return normals.find(value => value);
   }
 }
