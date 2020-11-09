@@ -38,6 +38,7 @@ const STRING_TYPE = 'string';
 const SHORT_INT_TYPE = 'Int32';
 const DOUBLE_TYPE = 'double';
 const OBJECT_ID_TYPE = 'OBJECTID';
+const REFRESH_TOKEN_TIMEOUT = 1800; // 30 minutes in seconds
 
 // Bind draco3d to avoid dynamic loading
 // Converter bundle has incorrect links when using dynamic loading
@@ -63,17 +64,13 @@ export default class I3SConverter {
   // Convert a 3d tileset
   async convert({inputUrl, outputPath, tilesetName, maxDepth, slpk, sevenZipExe, token, draco}) {
     this.conversionStartTime = process.hrtime();
-    this.options = {maxDepth, slpk, sevenZipExe, draco};
+    this.options = {maxDepth, slpk, sevenZipExe, draco, token, inputUrl};
 
     if (slpk) {
       this.nodePages.useWriteFunction(writeFileForSlpk);
     }
 
-    const options = {
-      'cesium-ion': {accessToken: token || ION_DEFAULT_TOKEN}
-    };
-    const preloadOptions = await CesiumIonLoader.preload(inputUrl, options);
-    Object.assign(options, preloadOptions);
+    const options = await this._fetchPreloadOptions();
     const sourceTilesetJson = await load(inputUrl, CesiumIonLoader, options);
 
     /* TODO/ib - get rid of confusing options warnings, move into options sub-object */
@@ -290,6 +287,7 @@ export default class I3SConverter {
   }
 
   async _createNode(rootTile, sourceTile, parentId, level) {
+    await this._updateTilesetOptions();
     await this.sourceTileset._loadTile(sourceTile);
     const rootTileId = rootTile.id;
     const coordinates = convertCommonToI3SCoordinate(sourceTile);
@@ -673,11 +671,46 @@ export default class I3SConverter {
     const filesSize = await calculateFilesSize(params);
     const diff = process.hrtime(this.conversionStartTime);
     const conversionTime = timeConverter(diff);
-    console.log(`------------------------------------------------`); // eslint-disable-line
-    console.log(`Finishing conversion of ${_3D_TILES}`); // eslint-disable-line
-    console.log(`Total conversion time: ${conversionTime}`); // eslint-disable-line
-    console.log(`Vertex count: `, this.vertexCounter); // eslint-disable-line
-    console.log(`File(s) size: `, filesSize, ' bytes'); // eslint-disable-line
-    console.log(`------------------------------------------------`); // eslint-disable-line
+    console.log(`------------------------------------------------`); // eslint-disable-line no-undef, no-console
+    console.log(`Finishing conversion of ${_3D_TILES}`); // eslint-disable-line no-undef, no-console
+    console.log(`Total conversion time: ${conversionTime}`); // eslint-disable-line no-undef, no-console
+    console.log(`Vertex count: `, this.vertexCounter); // eslint-disable-line no-undef, no-console
+    console.log(`File(s) size: `, filesSize, ' bytes'); // eslint-disable-line no-undef, no-console
+    console.log(`------------------------------------------------`); // eslint-disable-line no-undef, no-console
+  }
+
+  /**
+   * Fetch preload options for ION tileset
+   * @return {Promise<Object>} - full set of options for tileset
+   */
+  async _fetchPreloadOptions() {
+    const options = {
+      'cesium-ion': {accessToken: this.options.token || ION_DEFAULT_TOKEN}
+    };
+    const preloadOptions = await CesiumIonLoader.preload(this.options.inputUrl, options);
+    this.refreshTokenTime = process.hrtime();
+    return {...options, ...preloadOptions};
+  }
+
+  /**
+   * Update options of source tileset
+   * @return {Promise<void>}
+   */
+  async _updateTilesetOptions() {
+    const diff = process.hrtime(this.refreshTokenTime);
+    if (diff[0] < REFRESH_TOKEN_TIMEOUT) {
+      return;
+    }
+    this.refreshTokenTime = process.hrtime();
+
+    const options = await this._fetchPreloadOptions();
+    this.sourceTileset.options = {...this.sourceTileset.options, ...options};
+    if (options.headers) {
+      this.sourceTileset.fetchOptions.headers = options.headers;
+      console.log('Authorization Bearer token has been updated'); // eslint-disable-line no-undef, no-console
+    }
+    if (options.token) {
+      this.sourceTileset.fetchOptions.token = options.token;
+    }
   }
 }
