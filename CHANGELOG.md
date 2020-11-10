@@ -2,6 +2,10 @@
 
 ## v2.3 Release
 
+#### v2.3.2
+
+- Row based parsing: Option to enable memory usage optimizations. (#1005)
+
 #### v2.3.1
 
 - Gltf up axis support (#965)

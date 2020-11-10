@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/polyfills",
-  "version": "2.3.1",
+  "version": "2.3.2-alpha.0",
   "description": "Polyfills for TextEncoder/TextDecoder",
   "license": "MIT",
   "publishConfig": {
