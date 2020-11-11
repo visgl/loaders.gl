@@ -1,5 +1,5 @@
 import {getBinaryImageMIMEType} from '@loaders.gl/images';
-import {padTo4Bytes, copyToArray} from '@loaders.gl/loader-utils';
+import {padToNBytes, copyToArray} from '@loaders.gl/loader-utils';
 import assert from './utils/assert';
 import {
   getAccessorArrayTypeAndLength,
@@ -414,7 +414,7 @@ export default class GLTFScenegraph {
 
     // We've now added the contents to the body, so update the total length
     // Every sub-chunk needs to be 4-byte align ed
-    this.byteLength += padTo4Bytes(byteLength);
+    this.byteLength += padToNBytes(byteLength, 4);
 
     // Add a bufferView indicating start and length of this binary sub-chunk
     this.json.bufferViews = this.json.bufferViews || [];

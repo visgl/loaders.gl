@@ -5,11 +5,11 @@ import {copyPaddedStringToDataView} from '@loaders.gl/loader-utils';
 
 test('copyPaddedStringToDataView', t => {
   const STRING = 'abcdef';
-  const byteLength1 = copyPaddedStringToDataView(null, 0, STRING);
+  const byteLength1 = copyPaddedStringToDataView(null, 0, STRING, 4);
   t.equals(byteLength1, 8); // padded
   const arrayBuffer1 = new ArrayBuffer(byteLength1);
   const dataView1 = new DataView(arrayBuffer1);
-  const finalLength1 = copyPaddedStringToDataView(dataView1, 0, STRING);
+  const finalLength1 = copyPaddedStringToDataView(dataView1, 0, STRING, 4);
   t.equals(finalLength1, 8);
 
   // Optional padding === 8

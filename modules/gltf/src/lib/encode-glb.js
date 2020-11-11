@@ -37,7 +37,7 @@ export default function encodeGLBSync(glb, dataView, byteOffset = 0, options = {
 
   // Write the JSON chunk
   const jsonString = JSON.stringify(json);
-  byteOffset = copyPaddedStringToDataView(dataView, byteOffset, jsonString);
+  byteOffset = copyPaddedStringToDataView(dataView, byteOffset, jsonString, 4);
 
   // Now we know the JSON chunk length so we can write it.
   if (dataView) {
@@ -56,7 +56,7 @@ export default function encodeGLBSync(glb, dataView, byteOffset = 0, options = {
     }
     byteOffset += 8; // GLB_CHUNK_HEADER_SIZE
 
-    byteOffset = copyPaddedArrayBufferToDataView(dataView, byteOffset, binary);
+    byteOffset = copyPaddedArrayBufferToDataView(dataView, byteOffset, binary, 4);
 
     // Now we know the BIN chunk length so we can write it.
     if (dataView) {

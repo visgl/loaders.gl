@@ -11,7 +11,7 @@ export function padTo4Bytes(byteLength: number): number;
  * @param byteLength
  * @param padding
  */
-export function padToNBytes(byteLength: number, padding?: number): number;
+export function padToNBytes(byteLength: number, padding: number): number;
 
 /**
  * Copy a view of an ArrayBuffer into new ArrayBuffer with byteOffset = 0
