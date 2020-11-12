@@ -36,12 +36,7 @@ export {
   compareArrayBuffers,
   concatenateTypedArrays
 } from './lib/binary-utils/array-buffer-utils';
-export {
-  padTo4Bytes,
-  padToNBytes,
-  copyToArray,
-  copyArrayBuffer
-} from './lib/binary-utils/memory-copy-utils';
+export {padToNBytes, copyToArray, copyArrayBuffer} from './lib/binary-utils/memory-copy-utils';
 export {
   copyPaddedArrayBufferToDataView,
   copyPaddedStringToDataView

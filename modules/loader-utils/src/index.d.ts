@@ -1,8 +1,14 @@
 // LOADERS.GL-SPECIFIC TYPES
 export {
-  WorkerLoaderObject, LoaderObject, WriterObject, LoaderContext,
-  DataType, SyncDataType, BatchableDataType,
-  IFileSystem, IRandomAccessReadFileSystem
+  WorkerLoaderObject,
+  LoaderObject,
+  WriterObject,
+  LoaderContext,
+  DataType,
+  SyncDataType,
+  BatchableDataType,
+  IFileSystem,
+  IRandomAccessReadFileSystem
 } from './types';
 export {IncrementalTransform} from './lib/iterator-utils/incremental-transform';
 
@@ -44,7 +50,7 @@ export {
   concatenateTypedArrays,
   compareArrayBuffers
 } from './lib/binary-utils/array-buffer-utils';
-export {padTo4Bytes, padToNBytes, copyToArray, copyArrayBuffer} from './lib/binary-utils/memory-copy-utils';
+export {padToNBytes, copyToArray, copyArrayBuffer} from './lib/binary-utils/memory-copy-utils';
 export {
   copyPaddedArrayBufferToDataView,
   copyPaddedStringToDataView

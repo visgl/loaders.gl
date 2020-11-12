@@ -132,7 +132,7 @@ test('DracoWriter#encode via draco3d npm package (bunny.drc)', async t => {
   t.end();
 });
 
-test('DracoParser#encode(bunny.drc)', async t => {
+test('DracoWriter#encode(bunny.drc)', async t => {
   const data = await loadBunny();
   validateMeshCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
@@ -171,7 +171,49 @@ test('DracoParser#encode(bunny.drc)', async t => {
   t.end();
 });
 
-test('DracoParser#geometry metadata', async t => {
+test('DracoWriter#should encode texCoord/texCoords attribute as TEX_COORD attribute type', async t => {
+  const data = await loadBunny();
+  validateMeshCategoryData(t, data);
+  t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
+
+  const vertexCount = data.attributes.POSITION.value.length / 3;
+  const texCoord = new Float32Array(vertexCount * 2);
+  texCoord.fill(1);
+
+  const meshAttributes = {
+    POSITION: data.attributes.POSITION.value,
+    texCoord,
+    indices: data.indices.value
+  };
+
+  const compressedMesh = await encode(meshAttributes, DracoWriter);
+  const data2 = await parse(compressedMesh, DracoLoader);
+
+  t.equal(
+    data2.attributes.TEXCOORD_0.value.length,
+    texCoord.length,
+    `Decoded texCoord length matched`
+  );
+
+  const meshAttributes2 = {
+    POSITION: data.attributes.POSITION.value,
+    texCoords: texCoord,
+    indices: data.indices.value
+  };
+
+  const compressedMesh2 = await encode(meshAttributes2, DracoWriter);
+  const data3 = await parse(compressedMesh2, DracoLoader);
+
+  t.equal(
+    data3.attributes.TEXCOORD_0.value.length,
+    texCoord.length,
+    `Decoded texCoords length matched`
+  );
+
+  t.end();
+});
+
+test('DracoWriter#geometry metadata', async t => {
   const data = await loadBunny();
   validateMeshCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
@@ -231,7 +273,7 @@ test('DracoParser#geometry metadata', async t => {
   t.end();
 });
 
-test('DracoParser#attributes metadata', async t => {
+test('DracoWriter#attributes metadata', async t => {
   const data = await loadBunny();
   validateMeshCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
@@ -294,7 +336,7 @@ test('DracoParser#attributes metadata', async t => {
   t.end();
 });
 
-test('DracoParser#metadata - should be able to define optional "name entry" for custom attribute', async t => {
+test('DracoWriter#metadata - should be able to define optional "name entry" for custom attribute', async t => {
   const data = await loadBunny();
   const attributes = {
     POSITION: data.attributes.POSITION.value,
