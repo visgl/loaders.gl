@@ -2,8 +2,8 @@ import assert from '../env-utils/assert';
 import {sliceArrayBuffer} from './array-buffer-utils';
 
 export function padToNBytes(byteLength, padding) {
-  assert(byteLength >= 0, `Incorrect 'byteLength' value: ${byteLength}`);
-  assert(padding > 0, `Incorrect 'padding' value: ${padding}`);
+  assert(byteLength >= 0); // `Incorrect 'byteLength' value: ${byteLength}`
+  assert(padding > 0); // `Incorrect 'padding' value: ${padding}`
   return (byteLength + (padding - 1)) & ~(padding - 1);
 }
 
