@@ -25,6 +25,7 @@ export default class ChildProcessProxy {
     this.childProcess = null;
     this.port = null;
     this.successTimer = null;
+    this.options = {};
   }
 
   async start(options = {}) {
@@ -45,14 +46,12 @@ export default class ChildProcessProxy {
 
     return await new Promise((resolve, reject) => {
       try {
-        if (options.wait > 0) {
-          this.successTimer = setTimeout(() => {
-            if (options.onSuccess) {
-              options.onSuccess(this);
-            }
-            resolve({});
-          }, options.wait);
-        }
+        this._setTimeout(() => {
+          if (options.onSuccess) {
+            options.onSuccess(this);
+          }
+          resolve({});
+        });
 
         console.log(`Spawning ${options.command} ${options.arguments.join(' ')}`);
         this.childProcess = ChildProcess.spawn(options.command, args, options.spawn);
@@ -99,6 +98,12 @@ export default class ChildProcessProxy {
       console.error(error.message || error);
       // eslint-disable-next-line no-process-exit
       process.exit(1);
+    }
+  }
+
+  _setTimeout(callback) {
+    if (this.options.wait > 0) {
+      this.successTimer = setTimeout(callback, this.options.wait);
     }
   }
 
