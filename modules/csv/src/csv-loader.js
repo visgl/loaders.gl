@@ -12,6 +12,7 @@ const CSVLoaderOptions = {
   csv: {
     TableBatch: RowTableBatch,
     batchSize: 10,
+    optimizeMemoryUsage: false,
     // CSV options
     header: 'auto',
     rowFormat: 'auto',
@@ -71,7 +72,7 @@ function parseCSVInBatches(asyncIterator, options) {
   options = {...CSVLoaderOptions, ...options};
   options.csv = {...CSVLoaderOptions.csv, ...options.csv};
 
-  const {batchSize} = options.csv;
+  const {batchSize, optimizeMemoryUsage} = options.csv;
   const TableBatchType = options.csv.TableBatch;
 
   const asyncQueue = new AsyncQueue();
@@ -124,7 +125,11 @@ function parseCSVInBatches(asyncIterator, options) {
       // Add the row
       tableBatchBuilder =
         tableBatchBuilder ||
-        new TableBatchBuilder(TableBatchType, schema, {batchSize, convertToObject});
+        new TableBatchBuilder(TableBatchType, schema, {
+          batchSize,
+          convertToObject,
+          optimizeMemoryUsage
+        });
 
       tableBatchBuilder.addRow(row);
       // If a batch has been completed, emit it
