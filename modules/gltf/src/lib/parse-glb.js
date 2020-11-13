@@ -3,7 +3,7 @@
 // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#glb-file-format-specification
 // https://github.com/KhronosGroup/glTF/tree/master/extensions/1.0/Khronos/KHR_binary_glTF
 
-import {padTo4Bytes, assert} from '@loaders.gl/loader-utils';
+import {padToNBytes, assert} from '@loaders.gl/loader-utils';
 
 const MAGIC_glTF = 0x676c5446; // glTF in Big-Endian ASCII
 
@@ -132,7 +132,7 @@ function parseGLBChunksSync(glb, dataView, byteOffset, options) {
         break;
     }
 
-    byteOffset += padTo4Bytes(chunkLength);
+    byteOffset += padToNBytes(chunkLength, 4);
   }
 
   return byteOffset;
@@ -150,7 +150,7 @@ function parseJSONChunk(glb, dataView, byteOffset, chunkLength, options) {
   // 3. Parse the JSON text into a JavaScript data structure
   glb.json = JSON.parse(jsonText);
 
-  return padTo4Bytes(chunkLength);
+  return padToNBytes(chunkLength, 4);
 }
 
 // Parse a GLB BIN chunk
@@ -164,5 +164,5 @@ function parseBINChunk(glb, dataView, byteOffset, chunkLength, options) {
     // TODO - copy, or create typed array view?
   });
 
-  return padTo4Bytes(chunkLength);
+  return padToNBytes(chunkLength, 4);
 }

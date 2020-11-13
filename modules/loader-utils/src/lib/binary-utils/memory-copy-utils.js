@@ -1,10 +1,9 @@
+import assert from '../env-utils/assert';
 import {sliceArrayBuffer} from './array-buffer-utils';
 
-export function padTo4Bytes(byteLength) {
-  return (byteLength + 3) & ~3;
-}
-
-export function padToNBytes(byteLength, padding = 4) {
+export function padToNBytes(byteLength, padding) {
+  assert(byteLength >= 0); // `Incorrect 'byteLength' value: ${byteLength}`
+  assert(padding > 0); // `Incorrect 'padding' value: ${padding}`
   return (byteLength + (padding - 1)) & ~(padding - 1);
 }
 
@@ -61,5 +60,5 @@ export function copyToArray(source, target, targetOffset) {
   // Pack buffer onto the big target array
   target.set(sourceArray, targetOffset);
 
-  return targetOffset + padTo4Bytes(sourceArray.byteLength);
+  return targetOffset + padToNBytes(sourceArray.byteLength, 4);
 }
