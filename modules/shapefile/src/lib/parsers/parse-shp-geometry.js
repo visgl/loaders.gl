@@ -208,7 +208,7 @@ function parsePoly(view, offset, dim, type) {
   return {
     positions: {value: positions, size: dim},
     primitivePolygonIndices: {value: ringIndices, size: 1},
-    polygonIndices: {value: new Uint16Array(polygonIndices), size: 1},
+    polygonIndices: {value: new Uint32Array(polygonIndices), size: 1},
     type
   };
 }
