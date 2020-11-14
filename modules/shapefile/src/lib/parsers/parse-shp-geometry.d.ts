@@ -1,3 +1,3 @@
 import {BinaryGeometryData} from '@loaders.gl/gis';
 
-export function parseRecord(view: DataView): BinaryGeometryData | null;
+export function parseRecord(view: DataView, options: object): BinaryGeometryData | null;
