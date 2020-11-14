@@ -210,7 +210,11 @@ function parsePoly(view, offset, dim, type) {
   return {
     positions: {value: positions, size: dim},
     primitivePolygonIndices: {value: ringIndices, size: 1},
-    polygonIndices: {value: new Uint16Array(polygonIndices), size: 1},
+    // TODO: Dynamically choose Uint32Array over Uint16Array only when
+    // necessary. I believe the implementation requires nPoints to be the
+    // largest value in the array, so you should be able to use Uint32Array only
+    // when nPoints > 65535.
+    polygonIndices: {value: new Uint32Array(polygonIndices), size: 1},
     type
   };
 }
