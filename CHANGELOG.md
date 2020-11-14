@@ -2,6 +2,10 @@
 
 ## v2.3 Release
 
+#### v2.3.3
+
+- Properly pass optimizeMemoryUsage param during csv parsing (#1007)
+
 #### v2.3.2
 
 - Row based parsing: Option to enable memory usage optimizations. (#1005)
