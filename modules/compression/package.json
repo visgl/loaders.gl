@@ -37,5 +37,6 @@
     "lz4js": "^0.2.0",
     "pako": "^1.0.11",
     "zstd-codec": "^0.1"
-  }
+  },
+  "gitHead": "aeefe911b6d8393bc72edc9faa381c851a442397"
 }

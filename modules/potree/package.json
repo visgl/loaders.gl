@@ -37,5 +37,6 @@
   "dependencies": {
     "@loaders.gl/math": "2.3.3",
     "@math.gl/core": "^3.3.0"
-  }
+  },
+  "gitHead": "aeefe911b6d8393bc72edc9faa381c851a442397"
 }

@@ -43,5 +43,6 @@
     "@loaders.gl/draco": "2.3.3",
     "@loaders.gl/images": "2.3.3",
     "@loaders.gl/loader-utils": "2.3.3"
-  }
+  },
+  "gitHead": "aeefe911b6d8393bc72edc9faa381c851a442397"
 }
