@@ -7,7 +7,9 @@ const LITTLE_ENDIAN = true;
  * @return {object} Binary Geometry Object
  */
 // eslint-disable-next-line complexity
-export function parseRecord(view) {
+export function parseRecord(view, options) {
+  const {maxDim} = (options && options.shp) || {};
+
   let offset = 0;
   const type = view.getInt32(offset, LITTLE_ENDIAN);
   offset += Int32Array.BYTES_PER_ELEMENT;
@@ -18,42 +20,42 @@ export function parseRecord(view) {
       return parseNull();
     case 1:
       // Point
-      return parsePoint(view, offset, 2);
+      return parsePoint(view, offset, Math.min(2, maxDim));
     case 3:
       // PolyLine
-      return parsePoly(view, offset, 2, 'LineString');
+      return parsePoly(view, offset, Math.min(2, maxDim), 'LineString');
     case 5:
       // Polygon
-      return parsePoly(view, offset, 2, 'Polygon');
+      return parsePoly(view, offset, Math.min(2, maxDim), 'Polygon');
     case 8:
       // MultiPoint
-      return parseMultiPoint(view, offset, 2);
+      return parseMultiPoint(view, offset, Math.min(2, maxDim));
     // GeometryZ can have 3 or 4 dimensions, since the M is not required to
     // exist
     case 11:
       // PointZ
-      return parsePoint(view, offset, 4);
+      return parsePoint(view, offset, Math.min(4, maxDim));
     case 13:
       // PolyLineZ
-      return parsePoly(view, offset, 4, 'LineString');
+      return parsePoly(view, offset, Math.min(4, maxDim), 'LineString');
     case 15:
       // PolygonZ
-      return parsePoly(view, offset, 4, 'Polygon');
+      return parsePoly(view, offset, Math.min(4, maxDim), 'Polygon');
     case 18:
       // MultiPointZ
-      return parseMultiPoint(view, offset, 4);
+      return parseMultiPoint(view, offset, Math.min(4, maxDim));
     case 21:
       // PointM
-      return parsePoint(view, offset, 3);
+      return parsePoint(view, offset, Math.min(3, maxDim));
     case 23:
       // PolyLineM
-      return parsePoly(view, offset, 3, 'LineString');
+      return parsePoly(view, offset, Math.min(3, maxDim), 'LineString');
     case 25:
       // PolygonM
-      return parsePoly(view, offset, 3, 'Polygon');
+      return parsePoly(view, offset, Math.min(3, maxDim), 'Polygon');
     case 28:
       // MultiPointM
-      return parseMultiPoint(view, offset, 3);
+      return parseMultiPoint(view, offset, Math.min(3, maxDim));
     default:
       throw new Error(`unsupported shape type: ${type}`);
   }
