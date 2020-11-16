@@ -226,7 +226,11 @@ export default class I3SConverter {
         this.options.sevenZipExe
       );
       const fileHash128Path = `${tilesetPath}/@specialIndexFileHASH128@`;
-      await generateHash128FromZip(slpkFileName, fileHash128Path);
+      try {
+        await generateHash128FromZip(slpkFileName, fileHash128Path);
+      } catch (error) {
+        console.warn('Generating hash error: ', error); // eslint-disable-line
+      }
       await addFileToZip(
         tilesetPath,
         '@specialIndexFileHASH128@',
