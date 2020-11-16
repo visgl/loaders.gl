@@ -82,9 +82,9 @@ test('Shapefile JS Polygon tests', async t => {
   t.end();
 });
 
-test('SHPLoader#maxDimension', async t => {
+test('SHPLoader#_maxDimensions', async t => {
   const output2d = await load(`${SHAPEFILE_JS_DATA_FOLDER}/${POINT_Z_TEST_FILE}.shp`, SHPLoader, {
-    shp: {maxDimension: 2}
+    shp: {_maxDimensions: 2}
   });
   t.equal(output2d.geometries[0].positions.size, 2);
 
