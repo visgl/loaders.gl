@@ -23,6 +23,9 @@ function printHelp() {
   console.log(
     '--7zExe [location of 7z.exe archiver to create slpk on Windows, default: "C:\\Program Files\\7-Zip\\7z.exe"]'
   );
+  console.log(
+    '--egm [location of the Earth Gravitational Model *.pgm file to convert heights from ellipsoidal to gravity-related format, default: ""]'
+  );
   console.log('--token [Token for Cesium ION tilesets authentication]');
   console.log('--draco [Enable draco compression for geometry]');
   process.exit(0); // eslint-disable-line
@@ -95,6 +98,7 @@ async function convert(options) {
         maxDepth: options.maxDepth,
         slpk: options.slpk,
         sevenZipExe: options.sevenZipExe,
+        egmFilePath: options.egm,
         token: options.token,
         draco: options.draco
       });
@@ -112,6 +116,7 @@ function parseOptions(args) {
     name: null,
     output: 'data',
     sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
+    egm: '',
     token: null,
     draco: false
   };
@@ -152,6 +157,9 @@ function parseOptions(args) {
           break;
         case '--7zExe':
           opts.sevenZipExe = _getValue(index);
+          break;
+        case '--egm':
+          opts.egm = _getValue(index);
           break;
         case '--token':
           opts.token = _getValue(index);

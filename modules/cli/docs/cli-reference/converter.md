@@ -23,6 +23,7 @@ $ npx converter --help
 | max-depth  | \*                        | \*                        | Maximal depth of the hierarchical tiles tree traversal, default: infinite                                                              |
 | slpk       | \*                        |                           | Whether the converter generate \*.slpk (Scene Layer Packages) I3S output file                                                          |
 | 7zExe      | \*                        |                           | location of 7z.exe archiver to create slpk on Windows OS, default: "C:\\Program Files\\7-Zip\\7z.exe"                                  |
+| egm        | \*                        |                           | location of the Earth Gravitational Model (\*.pgm) file to convert heights from ellipsoidal to gravity-related format, default: ""     |
 | token      | \*                        |                           | Token for Cesium ION tilesets authentication                                                                                           |
 | draco      | \*                        |                           | Enable draco compression for geometry. Default: not set                                                                                |
 | help       | \*                        | \*                        | Show the converter tool options list                                                                                                   |

@@ -2,7 +2,7 @@ import {Matrix3, Quaternion, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {OrientedBoundingBox} from '@math.gl/culling';
 
-export function convertCommonToI3SCoordinate(tile) {
+export function convertCommonToI3SCoordinate(tile, geoidHeightModel) {
   let radius;
   let halfSize;
   let quaternion;
@@ -12,6 +12,9 @@ export function convertCommonToI3SCoordinate(tile) {
     boundingVolume.center,
     new Vector3()
   );
+  cartographicCenter[2] =
+    cartographicCenter[2] -
+    geoidHeightModel.getHeight(cartographicCenter[1], cartographicCenter[0]);
   if (boundingVolume instanceof OrientedBoundingBox) {
     halfSize = boundingVolume.halfSize;
     radius = new Vector3(halfSize[0], halfSize[1], halfSize[2]).len();

@@ -23,6 +23,7 @@ import {
 } from './helpers/coordinate-converter';
 import {createSceneServerPath} from './helpers/create-scene-server-path';
 import {convertGeometricErrorToScreenThreshold} from '../lib/utils/lod-conversion-utils';
+import {default as PGMLoader} from '../pgm-loader';
 
 import {LAYERS as layersTemplate} from './json-templates/layers';
 import {NODE as nodeTemplate} from './json-templates/node';
@@ -62,9 +63,26 @@ export default class I3SConverter {
   }
 
   // Convert a 3d tileset
-  async convert({inputUrl, outputPath, tilesetName, maxDepth, slpk, sevenZipExe, token, draco}) {
+  async convert({
+    inputUrl,
+    outputPath,
+    tilesetName,
+    maxDepth,
+    slpk,
+    sevenZipExe,
+    egmFilePath,
+    token,
+    draco
+  }) {
     this.conversionStartTime = process.hrtime();
-    this.options = {maxDepth, slpk, sevenZipExe, draco, token, inputUrl};
+    this.options = {maxDepth, slpk, sevenZipExe, egmFilePath, draco, token, inputUrl};
+
+    try {
+      this.geoidHeightModel = await load(egmFilePath, PGMLoader);
+    } catch (e) {
+      console.error(`EGM loading failed. Path to load from: ${egmFilePath}`); // eslint-disable-line no-console, no-undef
+      throw e;
+    }
 
     if (slpk) {
       this.nodePages.useWriteFunction(writeFileForSlpk);
@@ -120,7 +138,7 @@ export default class I3SConverter {
 
     const sourceRootTile = this.sourceTileset.root;
     const rootPath = join(this.layers0Path, 'nodes', 'root');
-    const coordinates = convertCommonToI3SCoordinate(sourceRootTile);
+    const coordinates = convertCommonToI3SCoordinate(sourceRootTile, this.geoidHeightModel);
     const root0data = {
       version: `{${uuidv4().toUpperCase()}}`,
       id: 'root',
@@ -246,7 +264,7 @@ export default class I3SConverter {
         );
         await sourceTile.unloadContent();
       } else {
-        const coordinates = convertCommonToI3SCoordinate(sourceTile);
+        const coordinates = convertCommonToI3SCoordinate(sourceTile, this.geoidHeightModel);
         const child = await this._createNode(data.rootNode, sourceTile, parentId, level);
         data.rootNode.children.push({
           id: child.id,
@@ -290,7 +308,7 @@ export default class I3SConverter {
     await this._updateTilesetOptions();
     await this.sourceTileset._loadTile(sourceTile);
     const rootTileId = rootTile.id;
-    const coordinates = convertCommonToI3SCoordinate(sourceTile);
+    const coordinates = convertCommonToI3SCoordinate(sourceTile, this.geoidHeightModel);
 
     const lodSelection = convertGeometricErrorToScreenThreshold(sourceTile, coordinates);
     const maxScreenThresholdSQ = lodSelection.find(
