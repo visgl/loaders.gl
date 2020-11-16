@@ -18,7 +18,7 @@ export const ShapefileLoader = {
   options: {
     shapefile: {},
     shp: {
-      maxDim: 4
+      maxDimension: 4
     }
   },
   parse: parseShapefile,

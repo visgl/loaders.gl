@@ -20,7 +20,7 @@ export const SHPWorkerLoader = {
   tests: [new Uint8Array(SHP_MAGIC_NUMBER).buffer],
   options: {
     shp: {
-      maxDim: 4
+      maxDimension: 4
       // workerUrl: `https://unpkg.com/@loaders.gl/shapefile@${VERSION}/dist/shp-loader.worker.js`
     }
   }
