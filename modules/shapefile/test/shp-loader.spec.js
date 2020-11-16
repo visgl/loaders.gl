@@ -92,7 +92,7 @@ test('SHPLoader#maxDimension', async t => {
     `${SHAPEFILE_JS_DATA_FOLDER}/${POINT_Z_TEST_FILE}.shp`,
     SHPLoader
   );
-  t.equal(defaultOutput.geometries[0].positions.size, 3);
+  t.equal(defaultOutput.geometries[0].positions.size, 4);
 
   t.end();
 });
