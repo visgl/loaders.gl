@@ -3,16 +3,20 @@ import process from 'process';
 import {promises as fs} from 'fs';
 
 export function timeConverter(time) {
-  const timeInSecons = time[0];
-  const hours = Math.floor(timeInSecons / 60 / 60);
-  const minutes = Math.floor(timeInSecons / 60) % 60;
-  const seconds = Math.floor(timeInSecons - minutes * 60);
-  const milliseconds = time[1];
+  const nanoSecondsInMillisecond = 1e6;
+  let timeInSeconds = time[0];
+  const hours = Math.floor(timeInSeconds / 3600);
+  timeInSeconds = timeInSeconds - hours * 3600;
+  const minutes = Math.floor(timeInSeconds / 60);
+  timeInSeconds = timeInSeconds - minutes * 60;
+  const seconds = Math.floor(timeInSeconds);
+  const milliseconds = time[1] / nanoSecondsInMillisecond;
   let result = '';
 
   if (hours) {
     result += `${hours}h `;
   }
+
   if (minutes) {
     result += `${minutes}m `;
   }
