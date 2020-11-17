@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/images",
-  "version": "2.3.4",
+  "version": "2.3.5",
   "description": "Framework-independent loaders and writers for images (PNG, JPG, ...)",
   "license": "MIT",
   "publishConfig": {
@@ -34,7 +34,7 @@
     "build-worker": "webpack --entry ./src/image-loader.worker.js --output ./dist/image-loader.worker.js --config ../../scripts/worker-webpack-config.js"
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "2.3.4"
+    "@loaders.gl/loader-utils": "2.3.5"
   },
   "gitHead": "aeefe911b6d8393bc72edc9faa381c851a442397"
 }

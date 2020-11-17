@@ -2,6 +2,10 @@
 
 ## v2.3 Release
 
+#### v2.3.5
+
+- Fix polygonIndices uint16 overflow with large rings (#1008)
+
 #### v2.3.4
 
 - Fix shapefile batch parsing when options.metadata: true (#1014)
