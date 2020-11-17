@@ -8,6 +8,7 @@ const SHAPEFILE_JS_DATA_FOLDER = '@loaders.gl/shapefile/test/data/shapefile-js';
 const SHAPEFILE_JS_POINT_TEST_FILES = ['points', 'multipoints'];
 const SHAPEFILE_JS_POLYLINE_TEST_FILES = ['polylines'];
 const SHAPEFILE_JS_POLYGON_TEST_FILES = ['polygons', 'multipolygon_with_holes'];
+const POINT_Z_TEST_FILE = 'point-z';
 
 setLoaderOptions({
   shp: {
@@ -77,6 +78,21 @@ test('Shapefile JS Polygon tests', async t => {
       t.deepEqual(output.geometries[i].polygonIndices, expBinary.polygonIndices);
     }
   }
+
+  t.end();
+});
+
+test('SHPLoader#_maxDimensions', async t => {
+  const output2d = await load(`${SHAPEFILE_JS_DATA_FOLDER}/${POINT_Z_TEST_FILE}.shp`, SHPLoader, {
+    shp: {_maxDimensions: 2}
+  });
+  t.equal(output2d.geometries[0].positions.size, 2);
+
+  const defaultOutput = await load(
+    `${SHAPEFILE_JS_DATA_FOLDER}/${POINT_Z_TEST_FILE}.shp`,
+    SHPLoader
+  );
+  t.equal(defaultOutput.geometries[0].positions.size, 4);
 
   t.end();
 });

@@ -16,7 +16,10 @@ export const ShapefileLoader = {
   mimeTypes: ['application/octet-stream'],
   tests: [new Uint8Array(SHP_MAGIC_NUMBER).buffer],
   options: {
-    shapefile: {}
+    shapefile: {},
+    shp: {
+      _maxDimensions: 4
+    }
   },
   parse: parseShapefile,
   parseInBatches: parseShapefileInBatches
