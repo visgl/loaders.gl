@@ -66,7 +66,7 @@ export async function* parseShapefileInBatches(asyncIterator, options, context) 
       encoding: cpg,
       prj,
       shx,
-      header: {shp: shapeHeader, dbf: dbfHeader},
+      header: shapeHeader,
       data: features
     };
   }
