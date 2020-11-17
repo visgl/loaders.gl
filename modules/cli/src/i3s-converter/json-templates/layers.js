@@ -49,22 +49,22 @@ const SPATIAL_REFERENCE = {
   },
   vcsWkid: {
     path: 'vcsWkid',
-    default: 115700
+    default: 5773
   },
   latestVcsWkid: {
     path: 'latestVcsWkid',
-    default: 115700
+    default: 5773
   }
 };
 
 const HEIGHT_MODEL_INFO = {
   heightModel: {
     path: 'heightModel',
-    default: 'ellipsoidal'
+    default: 'gravity_related_height'
   },
   vertCRS: {
     path: 'vertCRS',
-    default: 'WGS_1984'
+    default: 'EGM96_Geoid'
   },
   heightUnit: {
     path: 'heightUnit',
