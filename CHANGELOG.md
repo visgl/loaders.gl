@@ -2,6 +2,11 @@
 
 ## v2.3 Release
 
+#### v2.3.4
+
+- Fix shapefile batch parsing when options.metadata: true (#1014)
+- Enable setting maximum dimensions to parse for Shapefile (#1009)
+
 #### v2.3.3
 
 - Properly pass optimizeMemoryUsage param during csv parsing (#1007)
