@@ -14,7 +14,7 @@ const SHP_RECORD_HEADER_SIZE = 8;
  * Atomically parse a shapefile from an ArrayBuffer
  * @param {ArrayBuffer} arrayBuffer
  */
-export default function parseSHP(arrayBuffer) {
+export default function parseSHP(arrayBuffer, options) {
   const binaryReader = new BinaryReader(arrayBuffer);
 
   const headerView = binaryReader.getDataView(SHP_HEADER_SIZE);
@@ -48,7 +48,7 @@ export default function parseSHP(arrayBuffer) {
       binaryReader.rewind(4);
 
       const recordView = binaryReader.getDataView(recordHeader.byteLength);
-      geometries.push(parseRecord(recordView));
+      geometries.push(parseRecord(recordView, options));
       currentIndex++;
     }
   }

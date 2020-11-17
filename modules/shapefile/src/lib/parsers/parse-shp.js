@@ -18,7 +18,8 @@ const STATE = {
 };
 
 class SHPParser {
-  constructor() {
+  constructor(options) {
+    this.options = options;
     this.binaryReader = new BinaryChunkReader({maxRewindBytes: SHP_RECORD_HEADER_SIZE});
     this.state = STATE.EXPECTING_HEADER;
     this.result = {
@@ -28,12 +29,12 @@ class SHPParser {
 
   write(arrayBuffer) {
     this.binaryReader.write(arrayBuffer);
-    this.state = parseState(this.state, this.result, this.binaryReader);
+    this.state = parseState(this.state, this.result, this.binaryReader, this.options);
   }
 
   end() {
     this.binaryReader.end();
-    this.state = parseState(this.state, this.result, this.binaryReader);
+    this.state = parseState(this.state, this.result, this.binaryReader, this.options);
     // this.result.progress.bytesUsed = this.binaryReader.bytesUsed();
     if (this.state !== STATE.END) {
       this.state = STATE.ERROR;
@@ -43,7 +44,7 @@ class SHPParser {
 }
 
 export function parseSHP(arrayBuffer, options) {
-  const shpParser = new SHPParser();
+  const shpParser = new SHPParser(options);
   shpParser.write(arrayBuffer);
   shpParser.end();
 
@@ -51,7 +52,7 @@ export function parseSHP(arrayBuffer, options) {
 }
 
 export async function* parseSHPInBatches(asyncIterator, options) {
-  const parser = new SHPParser();
+  const parser = new SHPParser(options);
   let headerReturned = false;
   for await (const arrayBuffer of asyncIterator) {
     parser.write(arrayBuffer);
@@ -87,7 +88,7 @@ export async function* parseSHPInBatches(asyncIterator, options) {
  * @return {Number} State at end of current parsing
  */
 /* eslint-disable complexity, max-depth */
-function parseState(state, result = {}, binaryReader) {
+function parseState(state, result = {}, binaryReader, options) {
   // eslint-disable-next-line no-constant-condition
   while (true) {
     try {
@@ -148,7 +149,7 @@ function parseState(state, result = {}, binaryReader) {
               binaryReader.rewind(4);
 
               const recordView = binaryReader.getDataView(recordHeader.byteLength);
-              const geometry = parseRecord(recordView);
+              const geometry = parseRecord(recordView, options);
               result.geometries.push(geometry);
 
               result.currentIndex++;

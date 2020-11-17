@@ -11,7 +11,7 @@ export async function* parseShapefileInBatches(asyncIterator, options, context) 
   const {shx, cpg, prj} = await loadShapefileSidecarFiles(options, context);
 
   // parse geometries
-  const shapeIterator = await parseInBatches(asyncIterator, SHPLoader); // {shp: shx}
+  const shapeIterator = await parseInBatches(asyncIterator, SHPLoader, options); // {shp: shx}
   const shapeHeader = (await shapeIterator.next()).value;
 
   // parse properties
@@ -58,7 +58,7 @@ export async function parseShapefile(arrayBuffer, options, context) {
   const {shx, cpg, prj} = await loadShapefileSidecarFiles(options, context);
 
   // parse geometries
-  const {header, geometries} = await parse(arrayBuffer, SHPLoader); // {shp: shx}
+  const {header, geometries} = await parse(arrayBuffer, SHPLoader, options); // {shp: shx}
 
   const geojsonGeometries = parseGeometries(geometries);
 

@@ -18,3 +18,14 @@ gdf.to_file('multipolygon_with_holes.shp')
 with open('multipolygon_with_holes.json', 'w') as f:
     json.dump(gdf.to_json(), f)
 ```
+
+`point-z` is created with:
+
+```py
+import geopandas as gpd
+from shapely.geometry import Point
+
+gdf = gpd.GeoDataFrame({'a': [1]}, geometry=[Point(1, 2, 3)])
+gdf.to_file('point-z.shp')
+gdf.to_file('point-z.json', driver='GeoJSON')
+```
