@@ -5,9 +5,8 @@ import {zipBatchIterators} from '../streaming/zip-batch-iterators';
 import {SHPLoader} from '../../shp-loader';
 import {DBFLoader} from '../../dbf-loader';
 
-// eslint-disable-next-line max-statements
+// eslint-disable-next-line max-statements, complexity
 export async function* parseShapefileInBatches(asyncIterator, options, context) {
-  const {metadata} = options;
   const {reproject = false, _targetCrs = 'WGS84'} = (options && options.gis) || {};
   const {parseInBatches, fetch, url} = context;
   const {shx, cpg, prj} = await loadShapefileSidecarFiles(options, context);
@@ -29,15 +28,18 @@ export async function* parseShapefileInBatches(asyncIterator, options, context) 
   // object before the iterator starts. zipBatchIterators expects to receive
   // batches of Array objects, and will fail with non-iterable batches, so it's
   // important to skip over the first batch.
-  if (metadata) {
-    await shapeIterator.next();
-    if (propertyIterator) {
-      await propertyIterator.next();
-    }
+  let shapeHeader = (await shapeIterator.next()).value;
+  if (shapeHeader && shapeHeader.batchType === 'metadata') {
+    shapeHeader = (await shapeIterator.next()).value;
   }
 
-  // Shapefile has an extra metadata batch when loaded in batches
-  const shapeHeader = (await shapeIterator.next()).value;
+  let dbfHeader = {};
+  if (propertyIterator) {
+    dbfHeader = (await propertyIterator.next()).value;
+    if (dbfHeader && dbfHeader.batchType === 'metadata') {
+      dbfHeader = (await propertyIterator.next()).value;
+    }
+  }
 
   let iterator;
   if (propertyIterator) {
@@ -64,7 +66,7 @@ export async function* parseShapefileInBatches(asyncIterator, options, context) 
       encoding: cpg,
       prj,
       shx,
-      header: shapeHeader,
+      header: {shp: shapeHeader, dbf: dbfHeader},
       data: features
     };
   }
