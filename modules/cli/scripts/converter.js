@@ -24,7 +24,7 @@ function printHelp() {
     '--7zExe [location of 7z.exe archiver to create slpk on Windows, default: "C:\\Program Files\\7-Zip\\7z.exe"]'
   );
   console.log(
-    '--egm [location of the Earth Gravitational Model *.pgm file to convert heights from ellipsoidal to gravity-related format, default: ""]'
+    '--egm [location of Earth Gravity Model *.pgm file to convert heights from ellipsoidal to gravity-related format. A model file can be loaded from GeographicLib https://geographiclib.sourceforge.io/html/geoid.html]'
   );
   console.log('--token [Token for Cesium ION tilesets authentication]');
   console.log('--draco [Enable draco compression for geometry]');
