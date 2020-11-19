@@ -60,6 +60,10 @@ export default class I3SConverter {
     this.vertexCounter = 0;
     this.layers0 = {};
     this.featuresHashArray = [];
+    this.refinementCounter = {
+      tilesCount: 0,
+      tilesWithAddRefineCount: 0
+    };
   }
 
   // Convert a 3d tileset
@@ -309,6 +313,7 @@ export default class I3SConverter {
   }
 
   async _createNode(rootTile, sourceTile, parentId, level) {
+    this._checkAddRefinementTypeForTile(sourceTile);
     await this._updateTilesetOptions();
     await this.sourceTileset._loadTile(sourceTile);
     const rootTileId = rootTile.id;
@@ -690,6 +695,10 @@ export default class I3SConverter {
   }
 
   async _finishConversion(params) {
+    const {tilesCount, tilesWithAddRefineCount} = this.refinementCounter;
+    const addRefinementPercentage = tilesWithAddRefineCount
+      ? (tilesWithAddRefineCount / tilesCount) * 100
+      : 0;
     const filesSize = await calculateFilesSize(params);
     const diff = process.hrtime(this.conversionStartTime);
     const conversionTime = timeConverter(diff);
@@ -698,6 +707,7 @@ export default class I3SConverter {
     console.log(`Total conversion time: ${conversionTime}`); // eslint-disable-line no-undef, no-console
     console.log(`Vertex count: `, this.vertexCounter); // eslint-disable-line no-undef, no-console
     console.log(`File(s) size: `, filesSize, ' bytes'); // eslint-disable-line no-undef, no-console
+    console.log(`Percentage of tiles with "ADD" refinement type:`, addRefinementPercentage, '%'); // eslint-disable-line no-undef, no-console
     console.log(`------------------------------------------------`); // eslint-disable-line no-undef, no-console
   }
 
@@ -734,5 +744,19 @@ export default class I3SConverter {
     if (options.token) {
       this.sourceTileset.fetchOptions.token = options.token;
     }
+  }
+  /** Do calculations of all tiles and tiles with "ADD" type of refinement.
+   * @param {Object} tile
+   * @return {void}
+   */
+  _checkAddRefinementTypeForTile(tile) {
+    const ADD_TILE_REFINEMENT = 1;
+
+    if (tile.refine === ADD_TILE_REFINEMENT) {
+      this.refinementCounter.tilesWithAddRefineCount += 1;
+      console.warn('This tile uses "ADD" type of refinement'); // eslint-disable-line
+    }
+
+    this.refinementCounter.tilesCount += 1;
   }
 }
