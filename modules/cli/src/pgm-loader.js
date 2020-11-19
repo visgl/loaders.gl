@@ -14,11 +14,13 @@ const PGMLoader = {
   mimeTypes: ['image/x-portable-graymap'],
   parse,
   extensions: ['pgm'],
-  options: {}
+  options: {
+    cubic: false
+  }
 };
 
-async function parse(data) {
-  const model = parsePgm(new Uint8Array(data));
+async function parse(data, options) {
+  const model = parsePgm(new Uint8Array(data), options);
   return model;
 }
 
