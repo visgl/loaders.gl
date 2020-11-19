@@ -34,7 +34,8 @@ const PLAIN_GEOMETRY_DEFINITION = {
 const COMPRESSED_GEOMETRY_DEFINITION = {
   compressedAttributes: {
     encoding: 'draco',
-    attributes: ['position', 'normal', 'uv0', 'color', 'feature-index']
+    // TODO Add "feature-index" to attributes after Draco JS API support feature-index logic.
+    attributes: ['position', 'normal', 'uv0', 'color']
   }
 };
 
