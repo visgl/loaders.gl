@@ -36,7 +36,8 @@ function validateOptions(options) {
     name: () => console.log('Missed: --name [Tileset name]'),
     tileset: () => console.log('Missed: --tileset [tileset.json file]'),
     inputType: () =>
-      console.log('Missed/Incorrect: --input-type [tileset input type: I3S or 3DTILES]')
+      console.log('Missed/Incorrect: --input-type [tileset input type: I3S or 3DTILES]'),
+    egm: () => console.log('Missed: --egm [location of the Earth Gravitational Model *.pgm file]')
   };
   const exceptions = [];
   for (const mandatoryOption in mandatoryOptionsWithExceptions) {
