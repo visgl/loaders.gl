@@ -4,6 +4,7 @@ import {isBrowser} from '@loaders.gl/core';
 
 const TILESET_URL =
   'https://tiles.arcgis.com/tiles/u0sSNqDXr7puKJrF/arcgis/rest/services/Frankfurt2017_v17/SceneServer/layers/0';
+const PGM_FILE_PATH = '@loaders.gl/cli/test/data/egm84-30.pgm';
 
 test('cli - Converters#converts i3s to 3d-tiles tileset', async t => {
   if (!isBrowser) {
@@ -12,7 +13,8 @@ test('cli - Converters#converts i3s to 3d-tiles tileset', async t => {
       inputUrl: TILESET_URL,
       outputPath: 'data',
       tilesetName: 'Frankfurt',
-      maxDepth: 2
+      maxDepth: 2,
+      egmFilePath: PGM_FILE_PATH
     });
   }
   t.end();

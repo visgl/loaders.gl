@@ -34,4 +34,5 @@ Converts a tileset to 3DTiles format
 - `options.inputUrl` the url to read the tileset from. Required
 - `options.outputPath` the output path
 - `options.tilesetName` the output name of the tileset
+- `options.egmFilePath` location of \*.pgm file to convert heights from ellipsoidal to gravity-related format
 - `options.maxDepth` The max tree depth of conversion

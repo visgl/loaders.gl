@@ -5,6 +5,7 @@ import {load} from '@loaders.gl/core';
 import {I3SLoader, I3SAttributeLoader} from '@loaders.gl/i3s';
 import {Tileset3D, Tile3D} from '@loaders.gl/tiles';
 
+import {default as PGMLoader} from '../pgm-loader';
 import {i3sObbTo3dTilesObb} from './helpers/i3s-obb-to-3d-tiles-obb';
 import {convertScreenThresholdToGeometricError} from '../lib/utils/lod-conversion-utils';
 import {writeFile, removeDir} from '../lib/utils/file-utils';
@@ -21,9 +22,12 @@ export default class Tiles3DConverter {
     this.tilesetPath = '';
     this.vertexCounter = 0;
   }
-  async convert({inputUrl, outputPath, tilesetName, maxDepth}) {
+  async convert({inputUrl, outputPath, tilesetName, maxDepth, egmFilePath}) {
     this.conversionStartTime = process.hrtime();
     this.options = {maxDepth};
+
+    this.geoidHeightModel = await load(egmFilePath, PGMLoader);
+
     const sourceTilesetJson = await load(inputUrl, I3SLoader, {});
     this.sourceTileset = new Tileset3D(sourceTilesetJson, {});
 
@@ -41,7 +45,9 @@ export default class Tiles3DConverter {
     }
 
     const rootTile = {
-      boundingVolume: {box: i3sObbTo3dTilesObb(this.sourceTileset.root.header.obb)},
+      boundingVolume: {
+        box: i3sObbTo3dTilesObb(this.sourceTileset.root.header.obb, this.geoidHeightModel)
+      },
       geometricError: convertScreenThresholdToGeometricError(this.sourceTileset.root),
       children: []
     };
@@ -74,7 +80,9 @@ export default class Tiles3DConverter {
           sourceChild.header.obb = createObbFromMbs(sourceChild.header.mbs);
         }
 
-        const boundingVolume = {box: i3sObbTo3dTilesObb(sourceChild.header.obb)};
+        const boundingVolume = {
+          box: i3sObbTo3dTilesObb(sourceChild.header.obb, this.geoidHeightModel)
+        };
         const child = {
           boundingVolume,
           geometricError: convertScreenThresholdToGeometricError(sourceChild),

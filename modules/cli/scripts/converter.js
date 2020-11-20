@@ -86,7 +86,8 @@ async function convert(options) {
         inputUrl: options.tileset,
         outputPath: options.output,
         tilesetName: options.name,
-        maxDepth: options.maxDepth
+        maxDepth: options.maxDepth,
+        egmFilePath: options.egm
       });
       break;
     case TILESET_TYPE._3DTILES:
