@@ -1,13 +1,10 @@
-import {
-  deserialize as deserializeGeoJson,
-  deserializeStream as deserializeStreamGeoJson
-} from 'flatgeobuf/dist/flatgeobuf-geojson.min';
-import {
-  deserialize as deserializeGeneric,
-  deserializeStream as deserializeStreamGeneric
-} from 'flatgeobuf/dist/flatgeobuf.min';
+/* eslint-disable */
+import {deserialize as deserializeGeoJson} from 'flatgeobuf/lib/cjs/geojson';
+import {deserialize as deserializeGeneric} from 'flatgeobuf/lib/cjs/generic';
+import {parseProperties as parsePropertiesBinary} from 'flatgeobuf/lib/cjs/generic/feature';
+
 import {fromGeometry as binaryFromGeometry} from './binary-geometries';
-import {parseProperties} from './binary-properties';
+
 function binaryFromFeature(feature, header) {
   const geometry = feature.geometry();
 
@@ -51,10 +48,10 @@ export default function parseFlatGeobuf(input, options) {
   */
 export function parseFlatGeobufInBatches(stream, options) {
   if (options && options.gis && options.gis.format === 'binary') {
-    const iterator = deserializeStreamGeneric(stream, binaryFromFeature);
+    const iterator = deserializeGeneric(stream, binaryFromFeature);
     return iterator;
   }
 
-  const iterator = deserializeStreamGeoJson(stream);
+  const iterator = deserializeGeoJson(stream);
   return iterator;
 }

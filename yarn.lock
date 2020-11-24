@@ -4923,10 +4923,10 @@ flatbuffers@1.12.0:
   resolved "https://registry.yarnpkg.com/flatbuffers/-/flatbuffers-1.12.0.tgz#72e87d1726cb1b216e839ef02658aa87dcef68aa"
   integrity sha512-c7CZADjRcl6j0PlvFy0ZqXQ67qSEZfrVPynmnL+2zPc+NtMvrF8Y0QceMo7QqnSPc7+uWjUIAbvCQ5WIKlMVdQ==
 
-flatgeobuf@^3.1.0:
-  version "3.5.0"
-  resolved "https://registry.yarnpkg.com/flatgeobuf/-/flatgeobuf-3.5.0.tgz#7e6c3661a0eb341641a15c7d9d48d1c074d4a287"
-  integrity sha512-NKmFhhX6vz9rRbCq4a2cyUdJyVEQO2eARisszWUlIbZCUlo1yENCXu9xnssc4Bqj5jCEE3fQgU6V2fIK2Aek/Q==
+flatgeobuf@^3.5.0:
+  version "3.6.5"
+  resolved "https://registry.yarnpkg.com/flatgeobuf/-/flatgeobuf-3.6.5.tgz#756b9c0c2beb4acea4ea0a1ee1caada98463320b"
+  integrity sha512-qROJAh5iC0ueDBB4Q7WRL11mTmueinjAfMjgirxV8JI5JK4QV2Uht1naJVY3AP5+QSHhyxSnVuZl6MLapLiXzw==
   dependencies:
     flatbuffers "1.12.0"
     slice-source "0.4.1"
