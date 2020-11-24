@@ -2,23 +2,25 @@
  *
  * @param byteLength
  */
-export function padTo4Bytes(byteLength);
+export function padTo4Bytes(byteLength: number): number;
+
+/**
+ * Calculate new size of an arrayBuffer to be aligned to an n-byte boundary
+ * This function increases `byteLength` by the minimum delta, 
+ * allowing the total length to be divided by `padding`
+ * @param byteLength
+ * @param padding
+ */
+export function padToNBytes(byteLength: number, padding: number): number;
 
 /**
  * Copy a view of an ArrayBuffer into new ArrayBuffer with byteOffset = 0
  * @param arrayBuffer
  * @param byteOffset
  * @param byteLength
- */
-export function getZeroOffsetArrayBuffer(arrayBuffer, byteOffset, byteLength);
-
-/**
- * Concatenate a sequence of ArrayBuffers
- * @return A concatenated ArrayBuffer
- */
-export function concatenateArrayBuffers(
-  ...sources: (ArrayBuffer | Uint8Array)[]
-): ArrayBuffer;
+ * @deprecated Use sliceArrayBuffer
+ */ 
+export function getZeroOffsetArrayBuffer(arrayBuffer: ArrayBuffer, byteOffset: number, byteLength?: number);
 
 /**
  * Creates a new Uint8Array based on two different ArrayBuffers

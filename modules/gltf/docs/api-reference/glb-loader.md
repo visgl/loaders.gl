@@ -1,17 +1,19 @@
 # GLBLoader
 
-The `GLBLoader` parses a GLB binary "envelope".
+The `GLBLoader` parses a GLB binary "envelope" extracting the embedded JSON and binary chunks.
 
-Note: applications that want to parse GLB-formatted glTF files use the `GLTFLoader` instead. The `GLBLoader` is intended to be used to load custom data that combines JSON and binary resources.
+Note: applications that want to parse GLB-formatted glTF files would normally use the `GLTFLoader` instead. The `GLBLoader` can be used to load custom data that combines JSON and binary resources.
 
-| Loader          | Characteristic                                                                                          |
-| --------------- | ------------------------------------------------------------------------------------------------------- |
-| File Extensions | `.glb`                                                                                                  |
-| File Type       | Binary                                                                                                  |
-| File Format     | [GLB](https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#glb-file-format-specification) |
-| Data Format     | See below                                                                                               |
-| Supported APIs  | `load`, `parse`, `parseSync`                                                                            |
+| Loader          | Characteristic                                                                                                                                                                                                   |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| File Extensions | `.glb`                                                                                                                                                                                                           |
+| File Type       | Binary                                                                                                                                                                                                           |
+| File Format     | [GLB v2](https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#glb-file-format-specification), [GLB v1](https://github.com/KhronosGroup/glTF/tree/master/extensions/1.0/Khronos/KHR_binary_glTF) \* |
+| Data Format     | See below                                                                                                                                                                                                        |
+| Supported APIs  | `load`, `parse`, `parseSync`                                                                                                                                                                                     |
 |                 |
+
+\* From [![Website shields.io](https://img.shields.io/badge/v2.3-blue.svg?style=flat-square)](http://shields.io), the `GLBLoader` can also load GLB v1 formatted files, returning a normalized GLB v2 compatible data structure, but with the `version` field set to `1`.
 
 ## Usage
 

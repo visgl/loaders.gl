@@ -1,12 +1,13 @@
+/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
+/** @typedef {import('@loaders.gl/loader-utils').WorkerLoaderObject} WorkerLoaderObject */
 import {loadDracoDecoderModule} from './lib/draco-module-loader';
 import DracoParser from './lib/draco-parser';
-/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-/** @type {LoaderObject} */
+/** @type {WorkerLoaderObject} */
 export const DracoWorkerLoader = {
   id: 'draco',
   name: 'Draco',
@@ -14,13 +15,14 @@ export const DracoWorkerLoader = {
   extensions: ['drc'],
   mimeTypes: ['application/octet-stream'],
   binary: true,
-  test: 'DRACO',
+  tests: ['DRACO'],
   options: {
     draco: {
       decoderType: typeof WebAssembly === 'object' ? 'wasm' : 'js', // 'js' for IE11
       libraryPath: `libs/`,
       workerUrl: `https://unpkg.com/@loaders.gl/draco@${VERSION}/dist/draco-loader.worker.js`,
-      localWorkerUrl: `modules/draco/dist/draco-loader.worker.dev.js`
+      localWorkerUrl: `modules/draco/dist/draco-loader.worker.dev.js`,
+      extraAttributes: {}
     }
   }
 };
@@ -37,7 +39,10 @@ async function parse(arrayBuffer, options, context, loader) {
   try {
     // TODO passing in options causes CI failures...
     // @ts-ignore
-    return dracoParser.parseSync(arrayBuffer);
+    return dracoParser.parseSync(arrayBuffer, {
+      extraAttributes: (options.draco && options.draco.extraAttributes) || null,
+      ...(options.parseOptions || {})
+    });
   } finally {
     dracoParser.destroy();
   }

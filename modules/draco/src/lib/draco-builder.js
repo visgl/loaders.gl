@@ -1,17 +1,13 @@
-// This code is a fork of example code from the DRACO repository
-// Copyright 2017 The Draco Authors.
-// Licensed under the Apache License, Version 2.0 (the 'License');
-
-// TODO - seems to be some valid TS failures in this file
-// @ts-nocheck
-
-// const DEFAULT_ENCODING_OPTIONS = {
-//   method: 'MESH_EDGEBREAKER_ENCODING',
-//   speed: [5, 5],
-//   quantization: {
-//     POSITION: 10
-//   }
-// };
+// This code is inspired by example code in the DRACO repository
+/** @typedef {import('../types/draco-types')} Draco3D */
+/** @typedef {import('../types/draco-types').TypedArray} TypedArray */
+/** @typedef {import('../types/draco-types').DracoInt8Array} DracoInt8Array */
+/** @typedef {import('../types/draco-types').Encoder} Encoder */
+/** @typedef {import('../types/draco-types').Mesh} Mesh */
+/** @typedef {import('../types/draco-types').PointCloud} PointCloud */
+/** @typedef {import('../types/draco-types').Metadata} Metadata */
+/** @typedef {import('../types/draco-types').PointCloudBuilder} PointCloudBuilder */
+/** @typedef {import('../types/draco-types').MetadataBuilder} MetadataBuilder */
 
 // Native Draco attribute names to GLTF attribute names.
 const GLTF_TO_DRACO_ATTRIBUTE_NAME_MAP = {
@@ -23,36 +19,26 @@ const GLTF_TO_DRACO_ATTRIBUTE_NAME_MAP = {
 
 function noop() {}
 
-// Copy encoded data to buffer
-function dracoInt8ArrayToArrayBuffer(dracoData) {
-  const byteLength = dracoData.size();
-  const outputBuffer = new ArrayBuffer(byteLength);
-  const outputData = new Int8Array(outputBuffer);
-  for (let i = 0; i < byteLength; ++i) {
-    outputData[i] = dracoData.GetValue(i);
-  }
-  return outputBuffer;
-}
-
-/* Encoder API:
-https://github.com/google/draco/blob/master/src/draco/javascript/emscripten/draco_web_encoder.idl
-   Example:
-https://github.com/google/draco/blob/master/javascript/npm/draco3d/draco_nodejs_example.js
- */
 export default class DracoBuilder {
   // draco - the draco decoder, either import `draco3d` or load dynamically
   constructor(draco, options = {}) {
+    /** @type {Draco3D} */
     this.draco = draco;
     this.dracoEncoder = new this.draco.Encoder();
     this.dracoMeshBuilder = new this.draco.MeshBuilder();
+    this.dracoMetadataBuilder = new this.draco.MetadataBuilder();
     this.log = options.log || noop;
   }
 
   destroy() {
     this.destroyEncodedObject(this.dracoMeshBuilder);
     this.destroyEncodedObject(this.dracoEncoder);
+    this.destroyEncodedObject(this.dracoMetadataBuilder);
+    // @ts-ignore
     this.dracoMeshBuilder = null;
+    // @ts-ignore
     this.dracoEncoder = null;
+    // @ts-ignore
     this.draco = null;
   }
 
@@ -64,9 +50,12 @@ export default class DracoBuilder {
   }
 
   // Encode mesh=({})
-  encodeSync(mesh, options) {
+  encodeSync(mesh, options = {}) {
     this._setOptions(options);
-    return options.pointcloud ? this._encodePointCloud(mesh) : this._encodeMesh(mesh);
+
+    return options.pointcloud
+      ? this._encodePointCloud(mesh, options)
+      : this._encodeMesh(mesh, options);
   }
 
   // PRIVATE
@@ -81,11 +70,17 @@ export default class DracoBuilder {
     return attributes;
   }
 
-  _encodePointCloud(pointcloud) {
+  _encodePointCloud(pointcloud, options) {
+    const dracoPointCloud = new this.draco.PointCloud();
+
+    if (options.metadata) {
+      this._addGeometryMetadata(dracoPointCloud, options.metadata);
+    }
+
     const attributes = this._getAttributesFromMesh(pointcloud);
 
     // Build a `DracoPointCloud` from the input data
-    const dracoPointCloud = this._createDracoPointCloud(attributes);
+    this._createDracoPointCloud(dracoPointCloud, attributes, options);
 
     const dracoData = new this.draco.DracoInt8Array();
 
@@ -110,10 +105,17 @@ export default class DracoBuilder {
     }
   }
 
-  _encodeMesh(mesh) {
+  _encodeMesh(mesh, options) {
+    const dracoMesh = new this.draco.Mesh();
+
+    if (options.metadata) {
+      this._addGeometryMetadata(dracoMesh, options.metadata);
+    }
+
     const attributes = this._getAttributesFromMesh(mesh);
+
     // Build a `DracoMesh` from the input data
-    const dracoMesh = this._createDracoMesh(attributes);
+    this._createDracoMesh(dracoMesh, attributes, options);
 
     const dracoData = new this.draco.DracoInt8Array();
 
@@ -139,11 +141,12 @@ export default class DracoBuilder {
    */
   _setOptions(options) {
     if ('speed' in options) {
+      // @ts-ignore
       this.dracoEncoder.SetSpeedOptions(...options.speed);
     }
     if ('method' in options) {
       const dracoMethod = this.draco[options.method];
-      // if (dracoMethod === undefined) {}
+      // assert(dracoMethod)
       this.dracoEncoder.SetEncodingMethod(dracoMethod);
     }
     if ('quantization' in options) {
@@ -155,8 +158,13 @@ export default class DracoBuilder {
     }
   }
 
-  _createDracoMesh(attributes) {
-    const dracoMesh = new this.draco.Mesh();
+  /**
+   * @param {Mesh} dracoMesh
+   * @param {object} attributes
+   * @returns {Mesh}
+   */
+  _createDracoMesh(dracoMesh, attributes, options) {
+    const optionalMetadata = options.attributesMetadata || {};
 
     try {
       const positions = this._getPositionAttribute(attributes);
@@ -168,7 +176,14 @@ export default class DracoBuilder {
       for (let attributeName in attributes) {
         const attribute = attributes[attributeName];
         attributeName = GLTF_TO_DRACO_ATTRIBUTE_NAME_MAP[attributeName] || attributeName;
-        this._addAttributeToMesh(dracoMesh, attributeName, attribute, vertexCount);
+        const uniqueId = this._addAttributeToMesh(dracoMesh, attributeName, attribute, vertexCount);
+
+        if (uniqueId !== -1) {
+          this._addAttributeMetadata(dracoMesh, uniqueId, {
+            name: attributeName,
+            ...(optionalMetadata[attributeName] || {})
+          });
+        }
       }
     } catch (error) {
       this.destroyEncodedObject(dracoMesh);
@@ -178,8 +193,13 @@ export default class DracoBuilder {
     return dracoMesh;
   }
 
-  _createDracoPointCloud(attributes) {
-    const dracoPointCloud = new this.draco.PointCloud();
+  /**
+   * @param {PointCloud} dracoPointCloud
+   * @param {object} attributes
+   * @returns {PointCloud}
+   */
+  _createDracoPointCloud(dracoPointCloud, attributes, options) {
+    const optionalMetadata = options.attributesMetadata || {};
 
     try {
       const positions = this._getPositionAttribute(attributes);
@@ -191,7 +211,18 @@ export default class DracoBuilder {
       for (let attributeName in attributes) {
         const attribute = attributes[attributeName];
         attributeName = GLTF_TO_DRACO_ATTRIBUTE_NAME_MAP[attributeName] || attributeName;
-        this._addAttributeToMesh(dracoPointCloud, attributeName, attribute, vertexCount);
+        const uniqueId = this._addAttributeToMesh(
+          dracoPointCloud,
+          attributeName,
+          attribute,
+          vertexCount
+        );
+        if (uniqueId !== -1) {
+          this._addAttributeMetadata(dracoPointCloud, uniqueId, {
+            name: attributeName,
+            ...(optionalMetadata[attributeName] || {})
+          });
+        }
       }
     } catch (error) {
       this.destroyEncodedObject(dracoPointCloud);
@@ -201,100 +232,67 @@ export default class DracoBuilder {
     return dracoPointCloud;
   }
 
-  _addAttributeToMesh(dracoMesh, attributeName, attribute, vertexCount) {
+  /**
+   * @param {PointCloud} mesh
+   * @param {string} attributeName
+   * @param {TypedArray} attribute
+   * @param {number} vertexCount
+   */
+  _addAttributeToMesh(mesh, attributeName, attribute, vertexCount) {
     if (!ArrayBuffer.isView(attribute)) {
-      return;
+      return -1;
     }
 
-    const dracoAttributeType = this._getDracoAttributeType(attributeName, attribute);
+    const type = this._getDracoAttributeType(attributeName);
+    // @ts-ignore TODO/fix types
     const size = attribute.length / vertexCount;
 
-    if (dracoAttributeType === 'indices') {
+    if (type === 'indices') {
+      // @ts-ignore TODO/fix types
       const numFaces = attribute.length / 3;
       this.log(`Adding attribute ${attributeName}, size ${numFaces}`);
-      this.dracoMeshBuilder.AddFacesToMesh(dracoMesh, numFaces, attribute);
-      return;
+
+      // @ts-ignore assumes mesh is a Mesh, not a point cloud
+      this.dracoMeshBuilder.AddFacesToMesh(mesh, numFaces, attribute);
+      return -1;
     }
 
     this.log(`Adding attribute ${attributeName}, size ${size}`);
 
-    switch (attribute.constructor.name) {
-      case 'Int8Array':
-        this.dracoMeshBuilder.AddInt8Attribute(
-          dracoMesh,
-          dracoAttributeType,
-          vertexCount,
-          size,
-          attribute
-        );
-        break;
+    const builder = this.dracoMeshBuilder;
+    const {buffer} = attribute;
 
-      case 'Int16Array':
-        this.dracoMeshBuilder.AddInt16Attribute(
-          dracoMesh,
-          dracoAttributeType,
-          vertexCount,
-          size,
-          attribute
-        );
-        break;
+    switch (attribute.constructor) {
+      case Int8Array:
+        return builder.AddInt8Attribute(mesh, type, vertexCount, size, new Int8Array(buffer));
 
-      case 'Int32Array':
-        this.dracoMeshBuilder.AddInt32Attribute(
-          dracoMesh,
-          dracoAttributeType,
-          vertexCount,
-          size,
-          attribute
-        );
-        break;
+      case Int16Array:
+        return builder.AddInt16Attribute(mesh, type, vertexCount, size, new Int16Array(buffer));
 
-      case 'Uint8Array':
-      case 'Uint8ClampedArray':
-        this.dracoMeshBuilder.AddUInt8Attribute(
-          dracoMesh,
-          dracoAttributeType,
-          vertexCount,
-          size,
-          attribute
-        );
-        break;
+      case Int32Array:
+        return builder.AddInt32Attribute(mesh, type, vertexCount, size, new Int32Array(buffer));
+      case Uint8Array:
+      case Uint8ClampedArray:
+        return builder.AddUInt8Attribute(mesh, type, vertexCount, size, new Uint8Array(buffer));
 
-      case 'Uint16Array':
-        this.dracoMeshBuilder.AddUInt16Attribute(
-          dracoMesh,
-          dracoAttributeType,
-          vertexCount,
-          size,
-          attribute
-        );
-        break;
+      case Uint16Array:
+        return builder.AddUInt16Attribute(mesh, type, vertexCount, size, new Uint16Array(buffer));
 
-      case 'Uint32Array':
-        this.dracoMeshBuilder.AddUInt32Attribute(
-          dracoMesh,
-          dracoAttributeType,
-          vertexCount,
-          size,
-          attribute
-        );
-        break;
+      case Uint32Array:
+        return builder.AddUInt32Attribute(mesh, type, vertexCount, size, new Uint32Array(buffer));
 
-      case 'Float32Array':
+      case Float32Array:
       default:
-        this.dracoMeshBuilder.AddFloatAttribute(
-          dracoMesh,
-          dracoAttributeType,
-          vertexCount,
-          size,
-          attribute
-        );
+        return builder.AddFloatAttribute(mesh, type, vertexCount, size, new Float32Array(buffer));
     }
   }
 
-  // DRACO can compress attributes of know type better
-  // TODO - expose an attribute type map?
-  _getDracoAttributeType(attributeName, attribute) {
+  /**
+   * DRACO can compress attributes of know type better
+   * TODO - expose an attribute type map?
+   * @param {*} attributeName
+   */
+  _getDracoAttributeType(attributeName) {
     switch (attributeName.toLowerCase()) {
       case 'indices':
         return 'indices';
@@ -308,8 +306,8 @@ export default class DracoBuilder {
       case 'color':
       case 'colors':
         return this.draco.COLOR;
-      case 'texCoord':
-      case 'texCoords':
+      case 'texcoord':
+      case 'texcoords':
         return this.draco.TEX_COORD;
       default:
         return this.draco.GENERIC;
@@ -319,11 +317,86 @@ export default class DracoBuilder {
   _getPositionAttribute(attributes) {
     for (const attributeName in attributes) {
       const attribute = attributes[attributeName];
-      const dracoType = this._getDracoAttributeType(attributeName, attribute);
+      const dracoType = this._getDracoAttributeType(attributeName);
       if (dracoType === this.draco.POSITION) {
         return attribute;
       }
     }
     return null;
   }
+
+  /**
+   * Add metadata for the geometry.
+   * @param {PointCloud} dracoGeometry - WASM Draco Object
+   * @param {Map<string, string>|{[key: string]: string}} metadata
+   */
+  _addGeometryMetadata(dracoGeometry, metadata) {
+    const dracoMetadata = new this.draco.Metadata();
+    this._populateDracoMetadata(dracoMetadata, metadata);
+    this.dracoMeshBuilder.AddMetadata(dracoGeometry, dracoMetadata);
+  }
+
+  /**
+   * Add metadata for an attribute to geometry.
+   * @param {PointCloud} dracoGeometry - WASM Draco Object
+   * @param {number} uniqueAttributeId
+   * @param {Map<string, string>|{[key: string]: string}} metadata
+   */
+  _addAttributeMetadata(dracoGeometry, uniqueAttributeId, metadata) {
+    // Note: Draco JS IDL doesn't seem to expose draco.AttributeMetadata, however it seems to
+    // create such objects automatically from draco.Metadata object.
+    const dracoAttributeMetadata = new this.draco.Metadata();
+    this._populateDracoMetadata(dracoAttributeMetadata, metadata);
+    // Draco3d doc note: Directly add attribute metadata to geometry.
+    // You can do this without explicitly adding |GeometryMetadata| to mesh.
+    this.dracoMeshBuilder.SetMetadataForAttribute(
+      dracoGeometry,
+      uniqueAttributeId,
+      dracoAttributeMetadata
+    );
+  }
+
+  /**
+   * Add contents of object or map to a WASM Draco Metadata Object
+   * @param {Metadata} dracoMetadata - WASM Draco Object
+   * @param {Map<string, string>|{[key: string]: string}} metadata
+   */
+  _populateDracoMetadata(dracoMetadata, metadata) {
+    for (const [key, value] of getEntries(metadata)) {
+      switch (typeof value) {
+        case 'number':
+          if (Math.trunc(value) === value) {
+            this.dracoMetadataBuilder.AddIntEntry(dracoMetadata, key, value);
+          } else {
+            this.dracoMetadataBuilder.AddDoubleEntry(dracoMetadata, key, value);
+          }
+          break;
+        case 'string':
+        default:
+          this.dracoMetadataBuilder.AddStringEntry(dracoMetadata, key, value);
+      }
+    }
+  }
+}
+
+// HELPER FUNCTIONS
+
+/**
+ * Copy encoded data to buffer
+ * @param {DracoInt8Array} dracoData
+ */
+function dracoInt8ArrayToArrayBuffer(dracoData) {
+  const byteLength = dracoData.size();
+  const outputBuffer = new ArrayBuffer(byteLength);
+  const outputData = new Int8Array(outputBuffer);
+  for (let i = 0; i < byteLength; ++i) {
+    outputData[i] = dracoData.GetValue(i);
+  }
+  return outputBuffer;
+}
+
+/** Enable iteration over either an object or a map */
+function getEntries(container) {
+  const hasEntriesFunc = container.entries && !container.hasOwnProperty('entries');
+  return hasEntriesFunc ? container.entries() : Object.entries(container);
 }

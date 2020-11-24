@@ -12,6 +12,7 @@ export function decode(gltfData, options) {
   // Move the light array out of the extension and remove the extension
   const extension = gltfScenegraph.getExtension(KHR_LIGHTS_PUNCTUAL);
   if (extension) {
+    // @ts-ignore
     gltfScenegraph.json.lights = extension.lights;
     gltfScenegraph.removeExtension(KHR_LIGHTS_PUNCTUAL);
   }
@@ -21,6 +22,7 @@ export function decode(gltfData, options) {
   for (const node of json.nodes || []) {
     const nodeExtension = gltfScenegraph.getObjectExtension(node, KHR_LIGHTS_PUNCTUAL);
     if (nodeExtension) {
+      // @ts-ignore
       node.light = nodeExtension.light;
     }
     gltfScenegraph.removeObjectExtension(node, KHR_LIGHTS_PUNCTUAL);
@@ -34,7 +36,9 @@ export function encode(gltfData, options) {
 
   if (json.lights) {
     const extension = gltfScenegraph.addExtension(KHR_LIGHTS_PUNCTUAL);
+    // @ts-ignore
     assert(!extension.lights);
+    // @ts-ignore
     extension.lights = json.lights;
     delete json.lights;
   }

@@ -15,11 +15,12 @@ const GLTFLoader = {
 
   text: true,
   binary: true,
-  test: 'glTF',
+  tests: ['glTF'],
   parse,
 
   options: {
     gltf: {
+      normalize: false, // Normalize glTF v1 to glTF v2 format (not yet stable)
       loadBuffers: true, // Fetch any linked .BIN buffers, decode base64
       loadImages: true, // Create image objects
       decompressMeshes: true, // Decompress Draco encoded meshes
@@ -46,6 +47,7 @@ export default GLTFLoader;
 export async function parse(arrayBuffer, options = {}, context) {
   // Apps can call the parse method directly, we so apply default options here
   options = {...GLTFLoader.options, ...options};
+  // @ts-ignore
   options.gltf = {...GLTFLoader.options.gltf, ...options.gltf};
   addDeprecatedGLTFOptions(options);
 

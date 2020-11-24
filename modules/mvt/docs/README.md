@@ -11,9 +11,9 @@ npm install @loaders.gl/core
 
 ## Loaders and Writers
 
-| Loader                                                    |
-| --------------------------------------------------------- |
-| [`MVTLoader`](/modules/mvt/docs/api-reference/mvt-loader) |
+| Loader                                                   |
+| -------------------------------------------------------- |
+| [`MVTLoader`](modules/mvt/docs/api-reference/mvt-loader) |
 
 ## Attribution
 

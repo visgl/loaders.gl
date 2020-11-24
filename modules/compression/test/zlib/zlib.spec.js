@@ -1,12 +1,25 @@
 import test from 'tape-promise/tape';
 import {ZlibDeflateTransform, ZlibInflateTransform} from '@loaders.gl/compression';
+import {makeTransformIterator, concatenateArrayBuffers} from '@loaders.gl/loader-utils';
 import {generateRandomArrayBuffer, compareArrayBuffers} from '../utils/test-utils';
 
 const SIZE = 100 * 1000;
-const binaryData = generateRandomArrayBuffer({size: SIZE});
-const repeatedData = generateRandomArrayBuffer({size: SIZE / 10, repetitions: 10});
+const data = null;
 
-test('lz4#defaults', t => {
+// Avoid creating data in global scope
+function getData() {
+  if (data) {
+    return data;
+  }
+  return {
+    binaryData: generateRandomArrayBuffer({size: SIZE}),
+    repeatedData: generateRandomArrayBuffer({size: SIZE / 10, repetitions: 10})
+  };
+}
+
+test('zlib#defaults', t => {
+  const {binaryData, repeatedData} = getData();
+
   let deflatedData = ZlibDeflateTransform.deflateSync(binaryData);
   let inflatedData = ZlibInflateTransform.inflateSync(deflatedData);
   t.ok(compareArrayBuffers(binaryData, inflatedData), 'deflate/inflate default options');
@@ -21,7 +34,33 @@ test('lz4#defaults', t => {
   t.end();
 });
 
+test('zlib@transforms', async t => {
+  const inputChunks = [
+    new Uint8Array([1, 2, 3]).buffer,
+    new Uint8Array([4, 5, 6]).buffer,
+    new Uint8Array([7, 8, 9]).buffer
+  ];
+
+  // @ts-ignore
+  const deflateIterator = makeTransformIterator(inputChunks, ZlibDeflateTransform);
+  // @ts-ignore
+  const inflateIterator = makeTransformIterator(deflateIterator, ZlibInflateTransform);
+
+  const inflatedChunks = [];
+  for await (const chunk of inflateIterator) {
+    inflatedChunks.push(chunk);
+  }
+
+  const inputData = concatenateArrayBuffers(...inputChunks);
+  const inflatedData = concatenateArrayBuffers(...inflatedChunks);
+
+  t.ok(compareArrayBuffers(inputData, inflatedData), 'deflate/inflate default options');
+
+  t.end();
+});
+
 test('zlib#0', t => {
+  const {binaryData} = getData();
   const deflatedData = ZlibDeflateTransform.deflateSync(binaryData, {level: 0});
   const inflatedData = ZlibInflateTransform.inflateSync(deflatedData);
   t.ok(compareArrayBuffers(binaryData, inflatedData), 'deflate/inflate level 0');
@@ -29,6 +68,7 @@ test('zlib#0', t => {
 });
 
 test('zlib#1', t => {
+  const {binaryData} = getData();
   const deflatedData = ZlibDeflateTransform.deflateSync(binaryData, {level: 1});
   const inflatedData = ZlibInflateTransform.inflateSync(deflatedData);
   t.ok(compareArrayBuffers(binaryData, inflatedData), 'deflate/inflate level 1');
@@ -36,6 +76,7 @@ test('zlib#1', t => {
 });
 
 test('zlib#4', t => {
+  const {binaryData} = getData();
   const deflatedData = ZlibDeflateTransform.deflateSync(binaryData, {level: 4});
   const inflatedData = ZlibInflateTransform.inflateSync(deflatedData);
   t.ok(compareArrayBuffers(binaryData, inflatedData), 'deflate/inflate level 4');
@@ -43,6 +84,7 @@ test('zlib#4', t => {
 });
 
 test('zlib#6', t => {
+  const {binaryData} = getData();
   const deflatedData = ZlibDeflateTransform.deflateSync(binaryData, {level: 6});
   const inflatedData = ZlibInflateTransform.inflateSync(deflatedData);
   t.ok(compareArrayBuffers(binaryData, inflatedData), 'deflate/inflate level 6');

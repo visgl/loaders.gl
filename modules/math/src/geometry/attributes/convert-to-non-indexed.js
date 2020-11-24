@@ -1,4 +1,5 @@
 /* eslint-disable */
+// @ts-nocheck
 
 export function convertBuffersToNonIndexed({indices, attributes}) {
   const geometry2 = new BufferGeometry();
@@ -22,10 +23,7 @@ export function convertBuffersToNonIndexed({indices, attributes}) {
     geometry2.addAttribute(name, new BufferAttribute(array2, itemSize));
   }
 
-  var groups = this.groups;
-
-  for (var i = 0, l = groups.length; i < l; i++) {
-    var group = groups[i];
+  for (const group of this.groups) {
     geometry2.addGroup(group.start, group.count, group.materialIndex);
   }
 

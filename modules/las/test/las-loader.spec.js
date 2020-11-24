@@ -33,6 +33,28 @@ test('LASLoader#parse(binary)', async t => {
   t.end();
 });
 
+test('LASLoader#options', async t => {
+  const data = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {
+    las: {skip: 100, fp64: false},
+    worker: false
+  });
+  t.ok(
+    data.attributes.POSITION.value instanceof Float32Array,
+    'POSITION attribute is Float32Array'
+  );
+
+  const data64 = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {
+    las: {skip: 100, fp64: true},
+    worker: false
+  });
+  t.ok(
+    data64.attributes.POSITION.value instanceof Float64Array,
+    'POSITION attribute is Float64Array'
+  );
+
+  t.end();
+});
+
 test('LASWorker#parse(binary) extra bytes', async t => {
   const data = await parse(fetchFile(LAS_EXTRABYTES_BINARY_URL), LASLoader, {
     las: {skip: 10},

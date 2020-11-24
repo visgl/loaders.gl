@@ -25,7 +25,6 @@ export function copyBinaryToDataView(dataView, byteOffset, binary, byteLength) {
   if (dataView) {
     for (let i = 0; i < byteLength; i++) {
       dataView.setUint8(byteOffset + i, binary[i]);
-      byteOffset++;
     }
   }
   return byteOffset + byteLength;

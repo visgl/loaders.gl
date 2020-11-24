@@ -1,6 +1,8 @@
 const DEFAULT_OPTIONS = {
   batchSize: 'auto',
-  convertToObject: true
+  convertToObject: true,
+  // optimizes memory usage but increases parsing time.
+  optimizeMemoryUsage: false
 };
 
 export default class RowTableBatch {
@@ -10,6 +12,7 @@ export default class RowTableBatch {
     this.schema = schema;
     this.batchSize = options.batchSize;
     this.convertToObject = options.convertToObject;
+    this.optimizeMemoryUsage = options.optimizeMemoryUsage;
 
     this.rows = null;
     this.length = 0;
@@ -35,7 +38,16 @@ export default class RowTableBatch {
       this.cursor = cursor;
     }
 
-    this.rows[this.length] = this.convertToObject ? convertRowToObject(row, this._headers) : row;
+    // We can only convert if we were given a schema
+    const convertToObject = this.convertToObject && this.schema;
+    this.rows[this.length] = convertToObject ? convertRowToObject(row, this._headers) : row;
+
+    if (this.optimizeMemoryUsage) {
+      // A workaround to allocate new strings and don't retain pointers to original strings.
+      // https://bugs.chromium.org/p/v8/issues/detail?id=2869
+      this.rows[this.length] = JSON.parse(JSON.stringify(this.rows[this.length]));
+    }
+
     this.length++;
   }
 

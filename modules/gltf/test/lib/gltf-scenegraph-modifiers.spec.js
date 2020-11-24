@@ -1,7 +1,10 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
+import {load} from '@loaders.gl/core';
 
-import {GLTFScenegraph} from '@loaders.gl/gltf';
+import {GLTFLoader, GLTFScenegraph} from '@loaders.gl/gltf';
+
+const GLTF_BINARY_URL = '@loaders.gl/gltf/test/data/3d-tiles/143.glb';
 
 // prettier-ignore
 const PNG1x1 = new Uint8Array([
@@ -34,6 +37,68 @@ test('GLTFScenegraph#addImage', t => {
   const {bufferView, mimeType} = gltfScenegraph.json.images[0];
   t.equal(bufferView, 0, 'bufferView index is 0');
   t.equal(mimeType, 'image/png', 'mimeType is png');
+
+  t.end();
+});
+
+test('GLTFScenegraph#Should be able to write custom attribute', async t => {
+  const inputData = await load(GLTF_BINARY_URL, GLTFLoader, {gltf: {postProcess: true}});
+  const gltfBuilder = new GLTFScenegraph();
+
+  gltfBuilder.addMesh({
+    attributes: {
+      POSITION: inputData.meshes[0].primitives[0].attributes.POSITION,
+      _BATCHID: inputData.meshes[0].primitives[0].attributes.TEXCOORD_0
+    }
+  });
+  t.ok(gltfBuilder.gltf.json.meshes[0]);
+  t.ok(gltfBuilder.gltf.json.meshes[0].primitives[0].attributes._BATCHID);
+
+  t.end();
+});
+
+test('GLTFScenegraph#Should calculate min and max arrays for accessor', async t => {
+  const inputData = await load(GLTF_BINARY_URL, GLTFLoader, {gltf: {postProcess: true}});
+  const gltfBuilder = new GLTFScenegraph();
+
+  gltfBuilder.addMesh({
+    attributes: {
+      POSITION: inputData.meshes[0].primitives[0].attributes.POSITION
+    }
+  });
+  t.ok(gltfBuilder.gltf.json.accessors[0]);
+  t.deepEqual(gltfBuilder.gltf.json.accessors[0].min, [
+    -2316.5927734375,
+    -3864.65771484375,
+    -3551.852294921875
+  ]);
+  t.deepEqual(gltfBuilder.gltf.json.accessors[0].max, [
+    2647.046875,
+    4302.39111328125,
+    3733.835205078125
+  ]);
+
+  t.end();
+});
+
+test('GLTFScenegraph#Nodes should store `matrix` transformation data', async t => {
+  const inputData = await load(GLTF_BINARY_URL, GLTFLoader, {gltf: {postProcess: true}});
+  const gltfBuilder = new GLTFScenegraph();
+
+  const meshIndex = gltfBuilder.addMesh({
+    attributes: {
+      POSITION: inputData.meshes[0].primitives[0].attributes.POSITION
+    }
+  });
+  const inputMatrix = [1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1];
+  const nodeIndex = gltfBuilder.addNode({meshIndex, matrix: inputMatrix});
+  t.ok(gltfBuilder.gltf.json.nodes[nodeIndex]);
+  const testMatrix = [1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1];
+  t.deepEqual(gltfBuilder.gltf.json.nodes[nodeIndex].matrix, testMatrix);
+
+  const nodeIndex2 = gltfBuilder.addNode({meshIndex});
+  t.ok(gltfBuilder.gltf.json.nodes[nodeIndex2]);
+  t.notOk(gltfBuilder.gltf.json.nodes[nodeIndex2].matrix);
 
   t.end();
 });

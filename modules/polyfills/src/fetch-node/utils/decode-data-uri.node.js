@@ -60,5 +60,10 @@ export function toArrayBuffer(data) {
     return uint8Array.buffer;
   }
 
-  return assert(false, `toArrayBuffer(${JSON.stringify(data, null, 2).slice(40)})`);
+  // HACK to support Blob polyfill
+  if (data && typeof data === 'object' && data._toArrayBuffer) {
+    return data._toArrayBuffer();
+  }
+
+  return assert(false, `toArrayBuffer(${JSON.stringify(data, null, 2).slice(10)})`);
 }

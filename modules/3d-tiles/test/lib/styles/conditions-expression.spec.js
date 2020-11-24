@@ -3,6 +3,8 @@
 
 /* eslint-disable no-template-curly-in-string */
 /* eslint-disable */
+// @ts-nocheck
+
 import {it, expect} from 'test/utils/expect-assertions';
 
 import ConditionsExpression from '@loaders,gl/3d-tiles/styles/condition-expression';

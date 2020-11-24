@@ -76,7 +76,9 @@
         {"entry": "modules/obj/docs/api-reference/obj-loader"},
         {"entry": "modules/pcd/docs/api-reference/pcd-loader"},
         {"entry": "modules/ply/docs/api-reference/ply-loader"},
+        {"entry": "modules/terrain/docs/api-reference/npy-loader"},
         {"entry": "modules/terrain/docs/api-reference/quantized-mesh-loader"},
+        {"entry": "modules/shapefile/docs/api-reference/shapefile-loader"},
         {"entry": "modules/terrain/docs/api-reference/terrain-loader"},
         {"entry": "modules/video/docs/api-reference/video-loader"},
         {"entry": "modules/wkt/docs/api-reference/wkb-loader"},
@@ -153,6 +155,7 @@
           "entries": [
             {"entry": "modules/crypto/docs"},
             {"entry": "modules/crypto/docs/api-reference/crc32-hash-transform"},
+            {"entry": "modules/crypto/docs/api-reference/crc32c-hash-transform"},
             {"entry": "modules/crypto/docs/api-reference/crypto-hash-transform"},
             {"entry": "modules/crypto/docs/api-reference/md5-hash-transform"}
           ]
@@ -209,6 +212,12 @@
           ]
         },
         {
+          "title": "@loaders.gl/mvt",
+          "entries": [
+            {"entry": "modules/mvt/docs"}
+          ]
+        },
+        {
           "title": "@loaders.gl/obj",
           "entries": [
             {"entry": "modules/obj/docs"}
@@ -230,6 +239,14 @@
           "title": "@loaders.gl/polyfills",
           "entries": [
             {"entry": "modules/polyfills/docs/api-reference"}
+          ]
+        },
+        {
+          "title": "@loaders.gl/shapefile",
+          "entries": [
+            {"entry": "modules/shapefile/docs"},
+            {"entry": "modules/shapefile/docs/api-reference/shp-loader"},
+            {"entry": "modules/shapefile/docs/api-reference/dbf-loader"}
           ]
         },
         {

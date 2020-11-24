@@ -28,27 +28,49 @@ export async function parseI3STileContent(arrayBuffer, tile, tileset, options) {
     tile.content.texture = await load(url, ImageLoader);
   }
 
-  return parseI3SNodeGeometry(arrayBuffer, tile, tileset);
+  return parseI3SNodeGeometry(arrayBuffer, tile);
 }
 
 /* eslint-disable max-statements */
+/**
+ * Do parsing of node geometry and update tile content.
+ * Do parsing of arrayBuffer for getting attributes for particular tile.
+ * @param arrayBuffer
+ * @param tile
+ * @returns {Object} - return updated Tile.
+ */
 function parseI3SNodeGeometry(arrayBuffer, tile = {}) {
   if (!tile.content) {
     return tile;
   }
 
   const content = tile.content;
-  const {vertexAttributes, attributesOrder} = content.featureData;
+  const {
+    vertexAttributes,
+    attributesOrder,
+    featureAttributes,
+    featureAttributeOrder
+  } = content.featureData;
   // First 8 bytes reserved for header (vertexCount and featureCount)
-  const {vertexCount, byteOffset} = parseHeaders(content, arrayBuffer);
-  const {attributes} = normalizeAttributes(
+  const {vertexCount, byteOffset, featureCount} = parseHeaders(content, arrayBuffer);
+  // Getting vertex attributes such as positions, normals, colors, etc...
+  const {attributes: normalizedVertexAttributes, byteOffset: offset} = normalizeAttributes(
     arrayBuffer,
     byteOffset,
     vertexAttributes,
     vertexCount,
     attributesOrder
   );
+  // Getting feature attributes such as featureIds and faceRange
+  const {attributes: normalizedFeatureAttributes} = normalizeAttributes(
+    arrayBuffer,
+    offset,
+    featureAttributes,
+    featureCount,
+    featureAttributeOrder
+  );
 
+  const attributes = concatAttributes(normalizedVertexAttributes, normalizedFeatureAttributes);
   const {enuMatrix, cartographicOrigin, cartesianOrigin} = parsePositions(
     attributes.position,
     tile
@@ -60,7 +82,9 @@ function parseI3SNodeGeometry(arrayBuffer, tile = {}) {
     positions: attributes.position,
     normals: attributes.normal,
     colors: attributes.color,
-    texCoords: attributes.uv0
+    texCoords: attributes.uv0,
+    featureIds: attributes.id,
+    faceRange: attributes.faceRange
   };
 
   content.vertexCount = vertexCount;
@@ -70,6 +94,16 @@ function parseI3SNodeGeometry(arrayBuffer, tile = {}) {
   content.byteLength = arrayBuffer.byteLength;
 
   return tile;
+}
+/**
+ * Do concatenation of attribute objects.
+ * Done as separate fucntion to avoid ts errors.
+ * @param {Object} normalizedVertexAttributes
+ * @param {Object} normalizedFeatureAttributes
+ * @returns {object} - result of attributes concatenation.
+ */
+function concatAttributes(normalizedVertexAttributes, normalizedFeatureAttributes) {
+  return {...normalizedVertexAttributes, ...normalizedFeatureAttributes};
 }
 
 function constructFeatureDataStruct(tile, tileset) {
@@ -150,7 +184,8 @@ function normalizeAttributes(
       }
 
       const TypedArrayType = TYPE_ARRAY_MAP[valueType];
-      const value = new TypedArrayType(arrayBuffer, byteOffset, count * valuesPerElement);
+      const buffer = arrayBuffer.slice(byteOffset);
+      const value = new TypedArrayType(buffer, 0, count * valuesPerElement);
 
       attributes[attribute] = {
         value,
@@ -202,6 +237,7 @@ function offsetsToCartesians(vertices, cartographicOrigin) {
   }
 
   for (let i = 0; i < positions.length; i += 3) {
+    // @ts-ignore
     Ellipsoid.WGS84.cartographicToCartesian(positions.subarray(i, i + 3), scratchVector);
     positions[i] = scratchVector.x;
     positions[i + 1] = scratchVector.y;

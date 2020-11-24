@@ -5,7 +5,7 @@
 */
 
 // laslaz.js - treat as compiled code
-const getModule = require('../libs/laz-perf');
+import getModule from '../libs/laz-perf';
 
 let Module = null;
 

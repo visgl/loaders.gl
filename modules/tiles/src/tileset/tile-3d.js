@@ -208,8 +208,9 @@ export default class TileHeader {
         [loader.id]: {
           tile: this.header,
           tileset: this.tileset.tileset,
-          isTileset: false,
-          isTileHeader: false
+          isTileset: 'auto',
+          isTileHeader: false,
+          assetGltfUpAxis: this.tileset.asset.gltfUpAxis
         }
       };
 

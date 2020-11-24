@@ -18,6 +18,7 @@ export function decode(gltfData, options) {
         material.technique = Object.assign(
           {},
           materialExtension,
+          // @ts-ignore
           techniques[materialExtension.technique]
         );
         material.technique.values = resolveValues(material.technique, gltfScenegraph);

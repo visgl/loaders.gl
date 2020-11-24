@@ -44,12 +44,14 @@ it('oct encode(0, 0, 1)', () => {
 
 it('oct encode(0, 0, -1) to 4 components', () => {
   const result = new Vector4();
+  // @ts-ignore
   octEncodeToVector4(negativeUnitZ, result);
   expect(result).toEqual(new Vector4(255, 255, 255, 255));
 });
 
 it('oct encode(0, 0, 1) to 4 components', () => {
   const result = new Vector4();
+  // @ts-ignore
   octEncodeToVector4(VECTOR3_UNIT_Z, result);
   expect(result).toEqual(new Vector4(128, 0, 128, 0));
 });
@@ -73,6 +75,7 @@ it('oct extents are equal', () => {
 it('throws oct encode vector undefined', () => {
   const vector = undefined;
   const result = new Vector3();
+  // @ts-ignore
   expect(() => octEncode(vector, result)).toThrow();
 });
 
@@ -109,12 +112,16 @@ it('throws oct decode y out of bounds', () => {
 
 it('throws 4-component oct decode out of bounds', () => {
   const result = new Vector3();
+  // @ts-ignore
   expect(() => octDecodeFromVector4(new Vector4(256, 0, 0, 0), result)).toThrow();
 
+  // @ts-ignore
   expect(() => octDecodeFromVector4(new Vector4(0, 256, 0, 0), result)).toThrow();
 
+  // @ts-ignore
   expect(() => octDecodeFromVector4(new Vector4(0, 0, 256, 0), result)).toThrow();
 
+  // @ts-ignore
   expect(() => octDecodeFromVector4(new Vector4(0, 0, 0, 256), result)).toThrow();
 });
 
@@ -265,67 +272,95 @@ it('oct encoding to 4 components', () => {
   const encoded = new Vector4();
   const result = new Vector3();
   let normal = new Vector3(0.0, 0.0, 1.0);
+  // @ts-ignore
   octEncodeToVector4(normal, encoded);
+  // @ts-ignore
   expect(octDecodeFromVector4(encoded, result)).toEqualEpsilon(normal, epsilon);
 
   normal = new Vector3(0.0, 0.0, -1.0);
+  // @ts-ignore
   octEncodeToVector4(normal, encoded);
+  // @ts-ignore
   expect(octDecodeFromVector4(encoded, result)).toEqualEpsilon(normal, epsilon);
 
   normal = new Vector3(0.0, 1.0, 0.0);
+  // @ts-ignore
   octEncodeToVector4(normal, encoded);
+  // @ts-ignore
   expect(octDecodeFromVector4(encoded, result)).toEqualEpsilon(normal, epsilon);
 
   normal = new Vector3(0.0, -1.0, 0.0);
+  // @ts-ignore
   octEncodeToVector4(normal, encoded);
+  // @ts-ignore
   expect(octDecodeFromVector4(encoded, result)).toEqualEpsilon(normal, epsilon);
 
   normal = new Vector3(1.0, 0.0, 0.0);
+  // @ts-ignore
   octEncodeToVector4(normal, encoded);
+  // @ts-ignore
   expect(octDecodeFromVector4(encoded, result)).toEqualEpsilon(normal, epsilon);
 
   normal = new Vector3(-1.0, 0.0, 0.0);
+  // @ts-ignore
   octEncodeToVector4(normal, encoded);
+  // @ts-ignore
   expect(octDecodeFromVector4(encoded, result)).toEqualEpsilon(normal, epsilon);
 
   normal = new Vector3(1.0, 1.0, 1.0);
   normal.normalize();
+  // @ts-ignore
   octEncodeToVector4(normal, encoded);
+  // @ts-ignore
   expect(octDecodeFromVector4(encoded, result)).toEqualEpsilon(normal, epsilon);
 
   normal = new Vector3(1.0, -1.0, 1.0);
   normal.normalize();
+  // @ts-ignore
   octEncodeToVector4(normal, encoded);
+  // @ts-ignore
   expect(octDecodeFromVector4(encoded, result)).toEqualEpsilon(normal, epsilon);
 
   normal = new Vector3(-1.0, -1.0, 1.0);
   normal.normalize();
+  // @ts-ignore
   octEncodeToVector4(normal, encoded);
+  // @ts-ignore
   expect(octDecodeFromVector4(encoded, result)).toEqualEpsilon(normal, epsilon);
 
   normal = new Vector3(-1.0, 1.0, 1.0);
   normal.normalize();
+  // @ts-ignore
   octEncodeToVector4(normal, encoded);
+  // @ts-ignore
   expect(octDecodeFromVector4(encoded, result)).toEqualEpsilon(normal, epsilon);
 
   normal = new Vector3(1.0, 1.0, -1.0);
   normal.normalize();
+  // @ts-ignore
   octEncodeToVector4(normal, encoded);
+  // @ts-ignore
   expect(octDecodeFromVector4(encoded, result)).toEqualEpsilon(normal, epsilon);
 
   normal = new Vector3(1.0, -1.0, -1.0);
   normal.normalize();
+  // @ts-ignore
   octEncodeToVector4(normal, encoded);
+  // @ts-ignore
   expect(octDecodeFromVector4(encoded, result)).toEqualEpsilon(normal, epsilon);
 
   normal = new Vector3(-1.0, 1.0, -1.0);
   normal.normalize();
+  // @ts-ignore
   octEncodeToVector4(normal, encoded);
+  // @ts-ignore
   expect(octDecodeFromVector4(encoded, result)).toEqualEpsilon(normal, epsilon);
 
   normal = new Vector3(-1.0, -1.0, -1.0);
   normal.normalize();
+  // @ts-ignore
   octEncodeToVector4(normal, encoded);
+  // @ts-ignore
   expect(octDecodeFromVector4(encoded, result)).toEqualEpsilon(normal, epsilon);
 });
 
@@ -483,14 +518,17 @@ it('octFloat encoding is equivalent to oct encoding', () => {
 });
 
 it('encodeFloat throws without vector', () => {
+  // @ts-ignore
   expect(() => octEncodeFloat(undefined)).toThrow();
 });
 
 it('decodeFloat throws without value', () => {
+  // @ts-ignore
   expect(() => octDecodeFloat(undefined, new Vector3())).toThrow();
 });
 
 it('decodeFloat throws without result', () => {
+  // @ts-ignore
   expect(() => octDecodeFloat(0.0, undefined)).toThrow();
 });
 
@@ -506,6 +544,7 @@ it('encode and packFloat is equivalent to oct encoding', () => {
 });
 
 it('packFloat throws without encoded', () => {
+  // @ts-ignore
   expect(() => octPackFloat(undefined)).toThrow();
 });
 
@@ -526,34 +565,42 @@ it('pack is equivalent to oct encoding', () => {
 });
 
 it('pack throws without v1', () => {
+  // @ts-ignore
   expect(() => octPack(undefined, new Vector3(), new Vector3(), new Vector2())).toThrow();
 });
 
 it('pack throws without v2', () => {
+  // @ts-ignore
   expect(() => octPack(new Vector3(), undefined, new Vector3(), new Vector2())).toThrow();
 });
 
 it('pack throws without v3', () => {
+  // @ts-ignore
   expect(() => octPack(new Vector3(), new Vector3(), undefined, new Vector2())).toThrow();
 });
 
 it('pack throws without result', () => {
+  // @ts-ignore
   expect(() => octPack(new Vector3(), new Vector3(), new Vector3(), undefined)).toThrow();
 });
 
 it('unpack throws without packed', () => {
+  // @ts-ignore
   expect(() => octUnpack(undefined, new Vector3(), new Vector3(), new Vector3())).toThrow();
 });
 
 it('unpack throws without v1', () => {
+  // @ts-ignore
   expect(() => octUnpack(new Vector2(), undefined, new Vector3(), new Vector3())).toThrow();
 });
 
 it('unpack throws without v2', () => {
+  // @ts-ignore
   expect(() => octUnpack(new Vector2(), new Vector3(), undefined, new Vector3())).toThrow();
 });
 
 it('unpack throws without v3', () => {
+  // @ts-ignore
   expect(() => octUnpack(new Vector2(), new Vector3(), new Vector3(), undefined)).toThrow();
 });
 
@@ -565,14 +612,17 @@ it('compresses texture coordinates', () => {
 });
 
 it('compress texture coordinates throws without texture coordinates', () => {
+  // @ts-ignore
   expect(() => compressTextureCoordinates(undefined)).toThrow();
 });
 
 it('decompress texture coordinates throws without encoded texture coordinates', () => {
+  // @ts-ignore
   expect(() => decompressTextureCoordinates(undefined, new Vector2())).toThrow();
 });
 
 it('decompress texture coordinates throws without result', () => {
+  // @ts-ignore
   expect(() => decompressTextureCoordinates(0.0, undefined)).toThrow();
 });
 
@@ -694,10 +744,12 @@ it('decodes delta and ZigZag encoded vertices with height', () => {
 });
 
 it('throws when zigZagDeltaDecode has an undefined uBuffer', () => {
+  // @ts-ignore
   expect(() => zigZagDeltaDecode(undefined, new Uint16Array(10))).toThrow();
 });
 
 it('throws when zigZagDeltaDecode has an undefined vBuffer', () => {
+  // @ts-ignore
   expect(() => zigZagDeltaDecode(new Uint16Array(10), undefined)).toThrow();
 });
 

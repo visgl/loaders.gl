@@ -27,7 +27,7 @@ const ImageLoader = {
   extensions: EXTENSIONS,
   parse: parseImage,
   // TODO: byteOffset, byteLength;
-  test: arrayBuffer => Boolean(getBinaryImageMetadata(new DataView(arrayBuffer))),
+  tests: [arrayBuffer => Boolean(getBinaryImageMetadata(new DataView(arrayBuffer)))],
   options: {
     image: {
       type: 'auto',

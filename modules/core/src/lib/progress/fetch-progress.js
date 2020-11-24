@@ -13,7 +13,8 @@ export default async function fetchProgress(
     // ERROR checking needs to be done separately
     return response;
   }
-  if (!response.body) {
+  const body = response.body;
+  if (!body) {
     // 'ReadableStream not yet supported in this browser.
     return response;
   }
@@ -23,14 +24,14 @@ export default async function fetchProgress(
     return response;
   }
   // Currently override only implemented in browser
-  if (typeof ReadableStream === 'undefined') {
+  if (typeof ReadableStream === 'undefined' || !body.getReader) {
     return response;
   }
 
   // Create a new stream that invisbly wraps original stream
   const progressStream = new ReadableStream({
     start(controller) {
-      const reader = response.body.getReader();
+      const reader = body.getReader();
       read(controller, reader, 0, totalBytes, onProgress, onDone, onError);
     }
   });

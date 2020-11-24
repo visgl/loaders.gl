@@ -9,7 +9,10 @@ const DEFAULT_LOADER_OPTIONS = {
   CDN: 'https://unpkg.com/@loaders.gl',
   worker: true, // By default, use worker if provided by loader
   log: new ConsoleLog(), // A probe.gl compatible (`log.log()()` syntax) that just logs to console
-  metadata: false // TODO - currently only implemented for parseInBatches, adds initial metadata batch
+  metadata: false, // TODO - currently only implemented for parseInBatches, adds initial metadata batch,
+  transforms: [],
+  attributeName: null, // Used by i3s-attribute-loader to define attribute name.
+  attributeType: null // Used by i3s-attribute-loader to define attribute type.
 };
 
 const DEPRECATED_LOADER_OPTIONS = {

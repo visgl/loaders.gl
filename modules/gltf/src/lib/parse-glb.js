@@ -1,8 +1,9 @@
 /* eslint-disable camelcase, max-statements */
 /* global TextDecoder */
 // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#glb-file-format-specification
+// https://github.com/KhronosGroup/glTF/tree/master/extensions/1.0/Khronos/KHR_binary_glTF
 
-import {padTo4Bytes, assert} from '@loaders.gl/loader-utils';
+import {padToNBytes, assert} from '@loaders.gl/loader-utils';
 
 const MAGIC_glTF = 0x676c5446; // glTF in Big-Endian ASCII
 
@@ -13,6 +14,8 @@ const GLB_CHUNK_TYPE_JSON = 0x4e4f534a;
 const GLB_CHUNK_TYPE_BIN = 0x004e4942;
 const GLB_CHUNK_TYPE_JSON_XVIZ_DEPRECATED = 0; // DEPRECATED - Backward compatibility for old xviz files
 const GLB_CHUNK_TYPE_BIX_XVIZ_DEPRECATED = 1; // DEPRECATED - Backward compatibility for old xviz files
+
+const GLB_V1_CONTENT_FORMAT_JSON = 0x0;
 
 const LE = true; // Binary GLTF is little endian.
 
@@ -40,7 +43,7 @@ export default function parseGLBSync(glb, arrayBuffer, byteOffset = 0, options =
   // Compare format with GLBLoader documentation
   glb.type = getMagicString(dataView, byteOffset + 0);
   glb.version = dataView.getUint32(byteOffset + 4, LE); // Version 2 of binary glTF container format
-  const byteLength = dataView.getUint32(byteOffset + 8, LE); // Total byte length of generated file
+  const byteLength = dataView.getUint32(byteOffset + 8, LE); // Total byte length of binary file
 
   // Put less important stuff in a header, to avoid clutter
   glb.header = {
@@ -48,14 +51,49 @@ export default function parseGLBSync(glb, arrayBuffer, byteOffset = 0, options =
     byteLength
   };
 
-  assert(glb.version === 2, `Invalid GLB version ${glb.version}. Only supports v2.`);
-  assert(glb.header.byteLength > GLB_FILE_HEADER_SIZE + GLB_CHUNK_HEADER_SIZE);
-
   // Per spec we must iterate over chunks, ignoring all except JSON and BIN
   glb.json = {};
   glb.binChunks = [];
 
-  parseGLBChunksSync(glb, dataView, byteOffset + GLB_FILE_HEADER_SIZE, options);
+  byteOffset += GLB_FILE_HEADER_SIZE;
+
+  switch (glb.version) {
+    case 1:
+      // eslint-disable-next-line
+      return parseGLBV1(glb, dataView, byteOffset, (options = {}));
+    case 2:
+      return parseGLBV2(glb, dataView, byteOffset, (options = {}));
+    default:
+      throw new Error(`Invalid GLB version ${glb.version}. Only supports v1 and v2.`);
+  }
+}
+
+function parseGLBV1(glb, dataView, byteOffset, options) {
+  // Sanity: ensure file is big enough to hold at least the headers
+  assert(glb.header.byteLength > GLB_FILE_HEADER_SIZE + GLB_CHUNK_HEADER_SIZE);
+
+  // Explanation of GLB structure:
+  // https://cloud.githubusercontent.com/assets/3479527/22600725/36b87122-ea55-11e6-9d40-6fd42819fcab.png
+  const contentLength = dataView.getUint32(byteOffset + 0, LE); // Byte length of chunk
+  const contentFormat = dataView.getUint32(byteOffset + 4, LE); // Chunk format as uint32
+  byteOffset += GLB_CHUNK_HEADER_SIZE;
+
+  // GLB v1 only supports a single chunk type
+  assert(contentFormat === GLB_V1_CONTENT_FORMAT_JSON);
+
+  parseJSONChunk(glb, dataView, byteOffset, contentLength, options);
+  // No need to call the function padTo4Bytes() from parseJSONChunk()
+  byteOffset += contentLength;
+  byteOffset += parseBINChunk(glb, dataView, byteOffset, glb.header.byteLength, options);
+
+  return byteOffset;
+}
+
+function parseGLBV2(glb, dataView, byteOffset, options) {
+  // Sanity: ensure file is big enough to hold at least the first chunk header
+  assert(glb.header.byteLength > GLB_FILE_HEADER_SIZE + GLB_CHUNK_HEADER_SIZE);
+
+  parseGLBChunksSync(glb, dataView, byteOffset, options);
 
   return byteOffset + glb.header.byteLength;
 }
@@ -94,7 +132,7 @@ function parseGLBChunksSync(glb, dataView, byteOffset, options) {
         break;
     }
 
-    byteOffset += padTo4Bytes(chunkLength);
+    byteOffset += padToNBytes(chunkLength, 4);
   }
 
   return byteOffset;
@@ -111,6 +149,8 @@ function parseJSONChunk(glb, dataView, byteOffset, chunkLength, options) {
 
   // 3. Parse the JSON text into a JavaScript data structure
   glb.json = JSON.parse(jsonText);
+
+  return padToNBytes(chunkLength, 4);
 }
 
 // Parse a GLB BIN chunk
@@ -123,4 +163,6 @@ function parseBINChunk(glb, dataView, byteOffset, chunkLength, options) {
     arrayBuffer: dataView.buffer
     // TODO - copy, or create typed array view?
   });
+
+  return padToNBytes(chunkLength, 4);
 }

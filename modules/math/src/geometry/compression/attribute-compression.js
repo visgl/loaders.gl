@@ -1,8 +1,9 @@
-// Attribute compression and decompression functions.
-
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
+// Attribute compression and decompression functions.
+
+/** @typedef {import('@math.gl/core')} mathgl_core */
 import {Vector2, Vector3, clamp, _MathUtils} from '@math.gl/core';
 import assert from '../utils/assert';
 
@@ -115,8 +116,8 @@ export function octEncode(vector, result) {
 
 /**
  * @param {Vector3} vector The normalized vector to be compressed into 4 byte 'oct' encoding.
- * @param {Vector4} result The 4 byte oct-encoded unit length vector.
- * @returns {Vector4} The 4 byte oct-encoded unit length vector.
+ * @param {mathgl_core['Vector4']} result The 4 byte oct-encoded unit length vector.
+ * @returns {mathgl_core['Vector4']} The 4 byte oct-encoded unit length vector.
  *
  * @exception {Error} vector must be normalized.
  *
@@ -125,9 +126,13 @@ export function octEncode(vector, result) {
  */
 export function octEncodeToVector4(vector, result) {
   octEncodeInRange(vector, 65535, octEncodeScratch);
+  // @ts-ignore
   result.x = forceUint8(octEncodeScratch.x * RIGHT_SHIFT);
+  // @ts-ignore
   result.y = forceUint8(octEncodeScratch.x);
+  // @ts-ignore
   result.z = forceUint8(octEncodeScratch.y * RIGHT_SHIFT);
+  // @ts-ignore
   result.w = forceUint8(octEncodeScratch.y);
   return result;
 }
@@ -183,7 +188,7 @@ export function octDecode(x, y, result) {
 /**
  * Decodes a unit-length vector in 4 byte 'oct' encoding to a normalized 3-component vector.
  *
- * @param {Vector4} encoded The oct-encoded unit length vector.
+ * @param {mathgl_core['Vector4']} encoded The oct-encoded unit length vector.
  * @param {Vector3} result The decoded and normalized vector.
  * @returns {Vector3} The decoded and normalized vector.
  *
@@ -195,10 +200,15 @@ export function octDecode(x, y, result) {
 export function octDecodeFromVector4(encoded, result) {
   assert(encoded);
   assert(result);
+  // @ts-ignore
   const x = encoded.x;
+  // @ts-ignore
   const y = encoded.y;
+  // @ts-ignore
   const z = encoded.z;
+  // @ts-ignore
   const w = encoded.w;
+  // @ts-ignore
   if (x < 0 || x > 255 || y < 0 || y > 255 || z < 0 || z > 255 || w < 0 || w > 255) {
     throw new Error('x, y, z, and w must be unsigned normalized integers between 0 and 255');
   }

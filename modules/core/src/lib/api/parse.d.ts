@@ -8,7 +8,7 @@ import {DataType, LoaderObject, LoaderContext} from '@loaders.gl/loader-utils';
  */
 export function parse(
   data: DataType | Promise<DataType>,
-  loaders: LoaderObject | LoaderObject[],
+  loaders?: LoaderObject | LoaderObject[],
   options?: object,
   context?: LoaderContext
 ): Promise<any>;

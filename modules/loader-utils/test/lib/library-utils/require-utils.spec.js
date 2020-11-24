@@ -8,7 +8,7 @@ import {isBrowser} from '@loaders.gl/loader-utils';
 import {
   requireFromFile,
   requireFromString
-} from '@loaders.gl/loader-utils/lib/library-utils/require-utils.node';
+} from '@loaders.gl/loader-utils/lib/node/require-utils.node';
 
 const MODULE_URL = `${__dirname}/fixture/module.js`;
 const SUBMODULE_URL = `${__dirname}/fixture/submodule.js`;

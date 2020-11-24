@@ -2,6 +2,7 @@
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
 /* eslint-disable */
+// @ts-nocheck
 
 import Expression from '@loaders.gl/3d-tiles/styles/expression';
 import {Vector2, Vector3, Vector4, Color, CesiumMath} from '@math.gl/core';

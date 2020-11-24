@@ -1,5 +1,5 @@
-import './shp-loader.spec';
+import './streaming/binary-chunk-reader.spec';
 
-import './dbf/parse-dbf.spec';
-import './shp/parse-shp.spec';
+import './shp-loader.spec';
+import './dbf-loader.spec';
 import './shapefile-loader.spec';

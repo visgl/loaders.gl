@@ -1,5 +1,10 @@
 import test from 'tape-promise/tape';
 import {makeTransformIterator, concatenateArrayBuffers} from '@loaders.gl/loader-utils';
+import {fetchFile, parseInBatches, makeIterator} from '@loaders.gl/core';
+import {ShapefileLoader} from '@loaders.gl/shapefile';
+import {CRC32CHashTransform} from '@loaders.gl/crypto';
+
+const SHAPEFILE_URL = '@loaders.gl/shapefile/test/data/shapefile-js/boolean-property.shp';
 
 class ByteLengthTransform {
   constructor(options = {}) {
@@ -64,3 +69,29 @@ function compareArrayBuffers(a, b) {
   }
   return true;
 }
+
+// Tests that iterator input and non-streaming loader does not crash
+test('makeTransformIterator', async t => {
+  // Run a streaming digest on all test cases.
+  let hash;
+
+  const response = await fetchFile(SHAPEFILE_URL);
+  let iterator = makeIterator(response);
+
+  // @ts-ignore
+  iterator = makeTransformIterator(iterator, CRC32CHashTransform, {
+    crypto: {
+      onEnd: result => {
+        hash = result.hash;
+      }
+    }
+  });
+
+  const batchIterator = await parseInBatches(iterator, ShapefileLoader);
+  for await (const batch of batchIterator) {
+    t.ok(batch, 'streaming hash is correct');
+  }
+
+  t.equal(hash, 'sC9tGA==', `Shapefile hash should correct: "${hash}"`);
+  t.end();
+});
