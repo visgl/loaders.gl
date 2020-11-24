@@ -5,7 +5,6 @@ import {fetchFile, load} from '@loaders.gl/core';
 import {GPXLoader} from '@loaders.gl/kml';
 
 const GPX_URL = '@loaders.gl/kml/test/data/trek';
-require('@loaders.gl/polyfills');
 
 test('GPXLoader#loader conformance', t => {
   validateLoader(t, GPXLoader, 'GPXLoader');
