@@ -1,4 +1,5 @@
 /* eslint-disable dot-notation */
+import {DOMParser} from 'xmldom';
 import {isBrowser, global} from './utils/globals';
 
 import {TextDecoder, TextEncoder} from './libs/encoding';
@@ -56,6 +57,14 @@ if (!isBrowser && !('Response' in global) && ResponseNode) {
 
 if (!isBrowser && !('fetch' in global) && fetchNode) {
   global['fetch'] = fetchNode;
+}
+
+// POLYFILL: DOMParser
+// - Node: Yes
+// - Browser: No
+
+if (!isBrowser && !('DOMParser' in global) && DOMParser) {
+  global['DOMParser'] = DOMParser;
 }
 
 // NODE IMAGE FUNCTIONS:
