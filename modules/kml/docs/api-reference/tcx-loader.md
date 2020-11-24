@@ -1,26 +1,26 @@
-# KMLLoader
+# TCXLoader
 
-The `KMLLoader` parses [KML files][kml_wikipedia] into GeoJSON.
+The `TCXLoader` parses [TCX files][tcx_wikipedia] into GeoJSON.
 
 | Loader                | Characteristic                             |
 | --------------------- | ------------------------------------------ |
-| File Extension        | `.kml`                                     |
+| File Extension        | `.tcx`                                     |
 | File Type             | Text                                       |
-| File Format           | [KML][kml_wikipedia]                       |
+| File Format           | [TCX][tcx_wikipedia]                       |
 | Data Format           | [GIS](docs/specifications/category-gis.md) |
 | Decoder Type          | Synchronous                                |
 | Worker Thread Support | No                                         |
 | Streaming Support     | No                                         |
 
-[kml_wikipedia]: https://en.wikipedia.org/wiki/Keyhole_Markup_Language
+[tcx_wikipedia]: https://en.wikipedia.org/wiki/Training_Center_XML
 
 ## Usage
 
 ```js
-import {KMLLoader} from '@loaders.gl/kml';
+import {TCXLoader} from '@loaders.gl/kml';
 import {load} from '@loaders.gl/core';
 
-const data = await load(url, KMLLoader, options);
+const data = await load(url, TCXLoader, options);
 ```
 
 ## Options
