@@ -17,4 +17,4 @@ npm install @loaders.gl/core
 
 ## Attribution
 
-The `FlatGeobufLoader` uses the [`flatgeobuf`](https://github.com/mapbox/vector-tile-js) module under the ISC license.
+The `FlatGeobufLoader` wraps the [`flatgeobuf`](https://github.com/bjornharrtell/flatgeobuf) NPM module under the ISC license.
