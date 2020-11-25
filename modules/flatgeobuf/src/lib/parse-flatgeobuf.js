@@ -29,19 +29,30 @@ function binaryFromFeature(feature, header) {
   * @param {arrayBuffer} _ A FlatGeobuf arrayBuffer
   * @return {?Object} A GeoJSON geometry object
   */
-// eslint-disable-next-line complexity
 export function parseFlatGeobuf(arrayBuffer, options) {
-  const {reproject = false, _targetCrs = 'WGS84'} = (options && options.gis) || {};
-
   if (arrayBuffer.byteLength === 0) {
     return [];
   }
 
-  const arr = new Uint8Array(arrayBuffer);
-  // TODO: reproject binary features
   if (options && options.gis && options.gis.format === 'binary') {
-    return deserializeGeneric(arr, binaryFromFeature);
+    return parseFlatGeobufToBinary(arrayBuffer, options);
   }
+
+  return parseFlatGeobufToGeoJSON(arrayBuffer, options);
+}
+
+function parseFlatGeobufToBinary(arrayBuffer, options) {
+  // TODO: reproject binary features
+  // const {reproject = false, _targetCrs = 'WGS84'} = (options && options.gis) || {};
+
+  const arr = new Uint8Array(arrayBuffer);
+  return deserializeGeneric(arr, binaryFromFeature);
+}
+
+function parseFlatGeobufToGeoJSON(arrayBuffer, options) {
+  const {reproject = false, _targetCrs = 'WGS84'} = (options && options.gis) || {};
+
+  const arr = new Uint8Array(arrayBuffer);
 
   let headerMeta;
   const {features} = deserializeGeoJson(arr, false, header => {
@@ -67,16 +78,25 @@ export function parseFlatGeobuf(arrayBuffer, options) {
   * @return  A GeoJSON geometry object iterator
   */
 // eslint-disable-next-line complexity
-export async function* parseFlatGeobufInBatches(stream, options) {
-  const {reproject = false, _targetCrs = 'WGS84'} = (options && options.gis) || {};
-
+export function parseFlatGeobufInBatches(stream, options) {
   if (options && options.gis && options.gis.format === 'binary') {
-    const iterator = deserializeGeneric(stream, binaryFromFeature);
-    for await (const item of iterator) {
-      yield item;
-    }
-    return;
+    return parseFlatGeobufInBatchesToBinary(stream, options);
   }
+
+  return parseFlatGeobufInBatchesToGeoJSON(stream, options);
+}
+
+function parseFlatGeobufInBatchesToBinary(stream, options) {
+  // TODO: reproject binary streaming features
+  // const {reproject = false, _targetCrs = 'WGS84'} = (options && options.gis) || {};
+
+  const iterator = deserializeGeneric(stream, binaryFromFeature);
+  return iterator;
+}
+
+// eslint-disable-next-line complexity
+async function* parseFlatGeobufInBatchesToGeoJSON(stream, options) {
+  const {reproject = false, _targetCrs = 'WGS84'} = (options && options.gis) || {};
 
   let headerMeta;
   const iterator = deserializeGeoJson(stream, false, header => {
@@ -117,5 +137,5 @@ function reprojectFeatures(features, sourceCrs, targetCrs) {
   }
 
   const projection = new Proj4Projection({from: sourceCrs || 'WGS84', to: targetCrs || 'WGS84'});
-  return transformGeoJsonCoords(features, coord => projection.project(coord));
+  return transformGeoJsonCoords(features, projection.project);
 }
