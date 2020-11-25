@@ -2,6 +2,11 @@
 
 ## v2.3 Release
 
+#### v2.3.6
+
+- gltf: fixes - parse gltf without buffers (#1017)
+- Fix require is not defined (rollup) (#1011) (#1015)
+
 #### v2.3.5
 
 - Fix polygonIndices uint16 overflow with large rings (#1008)
