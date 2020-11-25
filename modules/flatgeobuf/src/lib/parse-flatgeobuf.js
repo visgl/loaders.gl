@@ -59,13 +59,19 @@ function parseFlatGeobufToGeoJSON(arrayBuffer, options) {
     headerMeta = header;
   });
 
-  if (
-    reproject &&
-    headerMeta &&
-    headerMeta.crs &&
-    (headerMeta.crs.org !== 'EPSG' || headerMeta.crs.code !== 4326)
-  ) {
-    return reprojectFeatures(features, headerMeta.crs.wkt, _targetCrs);
+  const crs = headerMeta && headerMeta.crs;
+  let projection;
+  if (reproject && crs) {
+    // Constructing the projection may fail for some invalid WKT strings
+    try {
+      projection = new Proj4Projection({from: crs.wkt, to: _targetCrs});
+    } catch (e) {
+      // no op
+    }
+  }
+
+  if (projection) {
+    return transformGeoJsonCoords(features, coords => projection.project(coords));
   }
 
   return features;
@@ -108,7 +114,7 @@ async function* parseFlatGeobufInBatchesToGeoJSON(stream, options) {
   for await (const feature of iterator) {
     if (firstRecord) {
       const crs = headerMeta && headerMeta.crs;
-      if (reproject && crs && (crs.org !== 'EPSG' || crs.code !== 4326)) {
+      if (reproject && crs) {
         projection = new Proj4Projection({from: crs.wkt, to: _targetCrs});
       }
 
@@ -116,26 +122,9 @@ async function* parseFlatGeobufInBatchesToGeoJSON(stream, options) {
     }
 
     if (reproject && projection) {
-      yield transformGeoJsonCoords([feature], projection.project)[0];
+      yield transformGeoJsonCoords([feature], coords => projection.project(coords));
     } else {
       yield feature;
     }
   }
-}
-
-/**
- * Reproject GeoJSON features to output CRS
- *
- * @param  {object[]} features parsed GeoJSON features
- * @param  {string} sourceCrs source coordinate reference system
- * @param  {string} targetCrs †arget coordinate reference system
- * @return {object[]} Reprojected Features
- */
-function reprojectFeatures(features, sourceCrs, targetCrs) {
-  if (!sourceCrs && !targetCrs) {
-    return features;
-  }
-
-  const projection = new Proj4Projection({from: sourceCrs || 'WGS84', to: targetCrs || 'WGS84'});
-  return transformGeoJsonCoords(features, projection.project);
 }
