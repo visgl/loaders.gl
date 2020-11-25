@@ -32,12 +32,10 @@
     "build-bundle": "webpack --display=minimal --config ../../scripts/bundle.config.js"
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "3.0.0-alpha.1",
     "@loaders.gl/gis": "3.0.0-alpha.1",
+    "@loaders.gl/loader-utils": "3.0.0-alpha.1",
     "@math.gl/proj4": "^3.3.1",
     "flatgeobuf": "^3.5.0"
   },
-  "devDependencies": {
-    "esm": "^3.2.25"
-  }
+  "devDependencies": {}
 }
