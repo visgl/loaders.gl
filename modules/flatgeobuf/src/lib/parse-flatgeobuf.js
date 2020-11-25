@@ -7,6 +7,7 @@ import {parseProperties as parsePropertiesBinary} from 'flatgeobuf/lib/cjs/gener
 
 import {fromGeometry as binaryFromGeometry} from './binary-geometries';
 
+// TODO: reproject binary features
 function binaryFromFeature(feature, header) {
   const geometry = feature.geometry();
 
@@ -16,7 +17,7 @@ function binaryFromFeature(feature, header) {
   // known in the header?
   const geometryType = header.geometryType || geometry.type();
   const parsedGeometry = binaryFromGeometry(geometry, geometryType);
-  parsedGeometry.properties = parseProperties(feature, header.columns);
+  parsedGeometry.properties = parsePropertiesBinary(feature, header.columns);
 
   // TODO: wrap binary data either in points, lines, or polygons key
   return parsedGeometry;
@@ -28,6 +29,7 @@ function binaryFromFeature(feature, header) {
   * @param {arrayBuffer} _ A FlatGeobuf arrayBuffer
   * @return {?Object} A GeoJSON geometry object
   */
+// eslint-disable-next-line complexity
 export function parseFlatGeobuf(arrayBuffer, options) {
   const {reproject = false, _targetCrs = 'WGS84'} = (options && options.gis) || {};
 
@@ -36,6 +38,7 @@ export function parseFlatGeobuf(arrayBuffer, options) {
   }
 
   const arr = new Uint8Array(arrayBuffer);
+  // TODO: reproject binary features
   if (options && options.gis && options.gis.format === 'binary') {
     return deserializeGeneric(arr, binaryFromFeature);
   }
@@ -63,14 +66,41 @@ export function parseFlatGeobuf(arrayBuffer, options) {
   * @param {ReadableStream} _ A FlatGeobuf arrayBuffer
   * @return  A GeoJSON geometry object iterator
   */
-export function parseFlatGeobufInBatches(stream, options) {
+// eslint-disable-next-line complexity
+export async function* parseFlatGeobufInBatches(stream, options) {
+  const {reproject = false, _targetCrs = 'WGS84'} = (options && options.gis) || {};
+
   if (options && options.gis && options.gis.format === 'binary') {
     const iterator = deserializeGeneric(stream, binaryFromFeature);
-    return iterator;
+    for await (const item of iterator) {
+      yield item;
+    }
+    return;
   }
 
-  const iterator = deserializeGeoJson(stream);
-  return iterator;
+  let headerMeta;
+  const iterator = deserializeGeoJson(stream, false, header => {
+    headerMeta = header;
+  });
+
+  let projection;
+  let firstRecord = true;
+  for await (const feature of iterator) {
+    if (firstRecord) {
+      const crs = headerMeta && headerMeta.crs;
+      if (reproject && crs && (crs.org !== 'EPSG' || crs.code !== 4326)) {
+        projection = new Proj4Projection({from: crs.wkt, to: _targetCrs});
+      }
+
+      firstRecord = false;
+    }
+
+    if (reproject && projection) {
+      yield transformGeoJsonCoords([feature], projection.project)[0];
+    } else {
+      yield feature;
+    }
+  }
 }
 
 /**

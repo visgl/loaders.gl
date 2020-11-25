@@ -145,6 +145,10 @@ function joinProperties(geometries, properties) {
  * @return {object[]} Reprojected Features
  */
 function reprojectFeatures(features, sourceCrs, targetCrs) {
+  if (!sourceCrs && !targetCrs) {
+    return features;
+  }
+
   const projection = new Proj4Projection({from: sourceCrs || 'WGS84', to: targetCrs || 'WGS84'});
   return transformGeoJsonCoords(features, coord => projection.project(coord));
 }
