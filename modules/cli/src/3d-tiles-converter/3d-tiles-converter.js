@@ -26,7 +26,9 @@ export default class Tiles3DConverter {
     this.conversionStartTime = process.hrtime();
     this.options = {maxDepth};
 
+    console.log('Loading egm file...'); // eslint-disable-line
     this.geoidHeightModel = await load(egmFilePath, PGMLoader);
+    console.log('Loading egm file completed!'); // eslint-disable-line
 
     const sourceTilesetJson = await load(inputUrl, I3SLoader, {});
     this.sourceTileset = new Tileset3D(sourceTilesetJson, {});

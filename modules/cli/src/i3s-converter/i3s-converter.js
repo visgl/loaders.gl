@@ -81,7 +81,9 @@ export default class I3SConverter {
     this.conversionStartTime = process.hrtime();
     this.options = {maxDepth, slpk, sevenZipExe, egmFilePath, draco, token, inputUrl};
 
+    console.log('Loading egm file...'); // eslint-disable-line
     this.geoidHeightModel = await load(egmFilePath, PGMLoader);
+    console.log('Loading egm file completed!'); // eslint-disable-line
 
     if (slpk) {
       this.nodePages.useWriteFunction(writeFileForSlpk);
