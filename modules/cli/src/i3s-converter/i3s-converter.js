@@ -230,7 +230,7 @@ export default class I3SConverter {
       try {
         await generateHash128FromZip(slpkFileName, fileHash128Path);
       } catch (error) {
-        console.warn('Generating hash error: ', error); // eslint-disable-line
+        console.warn(`${slpkFileName} file is too big to generate a hash`); // eslint-disable-line
       }
       await addFileToZip(
         tilesetPath,
