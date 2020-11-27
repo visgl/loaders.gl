@@ -9,6 +9,7 @@ import {setLoaderOptions, fetchFile, parse, parseInBatches} from '@loaders.gl/co
 const ARROW_SIMPLE = '@loaders.gl/arrow/test/data/simple.arrow';
 const ARROW_DICTIONARY = '@loaders.gl/arrow/test/data/dictionary.arrow';
 const ARROW_STRUCT = '@loaders.gl/arrow/test/data/struct.arrow';
+const ARROW_H3 = '@loaders.gl/arrow/test/data/test_h3.feather';
 
 // Bigger, batched sample file
 const ARROW_BIOGRID_NODES = '@loaders.gl/arrow/test/data/biogrid-nodes.arrow';
@@ -84,5 +85,22 @@ test('ArrowLoader#parseInBatches(Stream)', async t => {
   for await (const batch of asyncIterator) {
     t.ok(batch, 'received batch');
   }
+  t.end();
+});
+
+test('ArrowLoader#parse(H3 indices)', async t => {
+  const columns = await parse(fetchFile(ARROW_H3), ArrowLoader, {worker: false});
+  // Check loader specific results
+  t.ok(columns.h3, 'h3 column loaded');
+  t.equal(columns.h3.length, 7);
+  t.deepEquals(columns.h3, [
+    '862834707ffffff',
+    '86283470fffffff',
+    '862834717ffffff',
+    '86283471fffffff',
+    '862834727ffffff',
+    '86283472fffffff',
+    '862834737ffffff'
+  ]);
   t.end();
 });
