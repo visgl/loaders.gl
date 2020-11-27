@@ -27,7 +27,7 @@ function printHelp() {
     '--egm [location of Earth Gravity Model *.pgm file to convert heights from ellipsoidal to gravity-related format. A model file can be loaded from GeographicLib https://geographiclib.sourceforge.io/html/geoid.html]'
   );
   console.log('--token [Token for Cesium ION tilesets authentication]');
-  console.log('--draco [Enable draco compression for geometry]');
+  console.log('--no-draco [Disable draco compression for geometry]');
   process.exit(0); // eslint-disable-line
 }
 
@@ -120,7 +120,7 @@ function parseOptions(args) {
     sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
     egm: '',
     token: null,
-    draco: false
+    draco: true
   };
 
   const count = args.length;
@@ -166,8 +166,8 @@ function parseOptions(args) {
         case '--token':
           opts.token = _getValue(index);
           break;
-        case '--draco':
-          opts.draco = true;
+        case '--no-draco':
+          opts.draco = false;
           break;
         case '--help':
           printHelp();
