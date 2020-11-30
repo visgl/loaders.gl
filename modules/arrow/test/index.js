@@ -1,2 +1,2 @@
 import './arrow-loader.spec';
-// import './arrow-writer.spec';
+import './arrow-writer.spec';
