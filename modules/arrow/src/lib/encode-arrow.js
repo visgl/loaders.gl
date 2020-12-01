@@ -1,5 +1,4 @@
 import {Table, FloatVector, DateVector} from 'apache-arrow/Arrow.es5.min';
-
 import {VECTOR_TYPES} from './constants';
 
 export function encodeArrowSync(data, options) {
@@ -15,6 +14,12 @@ export function encodeArrowSync(data, options) {
   return arrowBuffer;
 }
 
+/**
+ * Create Arrow Vector from given data and vector type
+ * @param array {import('../types').AnyArrayType} - columns data
+ * @param type {number} - the writer options
+ * @return a vector of one of vector's types defined in the Apache Arrow library
+ */
 function createVector(array, type) {
   switch (type) {
     case VECTOR_TYPES.DATE:
