@@ -17,6 +17,10 @@ npm install @loaders.gl/core @loaders.gl/arrow
 | [`ArrowLoader`](modules/arrow/docs/api-reference/arrow-loader)       |
 | [`ArrowWorkerLoader`](modules/arrow/docs/api-reference/arrow-loader) |
 
+| Writer                                                         |
+| -------------------------------------------------------------- |
+| [`ArrowWriter`](modules/arrow/docs/api-reference/arrow-writer) |
+
 ## Additional APIs
 
 Arrow provides a rich JavaScript API for working with Arrow formatted data. Please refer to the [`ArrowJS`](arrowjs/docs) API documentation.

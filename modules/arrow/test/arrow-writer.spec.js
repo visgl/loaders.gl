@@ -5,12 +5,12 @@ import {validateWriter} from 'test/common/conformance';
 import {parseSync, encodeSync} from '@loaders.gl/core';
 import {ArrowLoader, ArrowWriter, VECTOR_TYPES} from '@loaders.gl/arrow';
 
-test('ArrowLoader#loader conformance', t => {
+test('ArrowWriter#writer conformance', t => {
   validateWriter(t, ArrowWriter, 'GLTFWriter');
   t.end();
 });
 
-test('ArrowLoader#encode', async t => {
+test('ArrowWriter#encode', async t => {
   const LENGTH = 2000;
 
   const rainAmounts = Float32Array.from({length: LENGTH}, () =>
