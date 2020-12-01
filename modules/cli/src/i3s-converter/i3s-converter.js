@@ -40,6 +40,7 @@ const SHORT_INT_TYPE = 'Int32';
 const DOUBLE_TYPE = 'double';
 const OBJECT_ID_TYPE = 'OBJECTID';
 const REFRESH_TOKEN_TIMEOUT = 1800; // 30 minutes in seconds
+const FS_FILE_TOO_LARGE = 'ERR_FS_FILE_TOO_LARGE';
 
 // Bind draco3d to avoid dynamic loading
 // Converter bundle has incorrect links when using dynamic loading
@@ -236,7 +237,11 @@ export default class I3SConverter {
           this.options.sevenZipExe
         );
       } catch (error) {
-        console.warn(`${slpkFileName} file is too big to generate a hash`); // eslint-disable-line
+        if (error.code === FS_FILE_TOO_LARGE) {
+          console.warn(`${slpkFileName} file is too big to generate a hash`); // eslint-disable-line
+        } else {
+          console.error(error); // eslint-disable-line
+        }
       }
       // All converted files are contained in slpk now they can be deleted
       try {
