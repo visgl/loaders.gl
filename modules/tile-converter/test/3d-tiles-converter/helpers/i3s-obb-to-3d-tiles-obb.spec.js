@@ -3,7 +3,7 @@ import {load} from '@loaders.gl/core';
 import {i3sObbTo3dTilesObb} from '../../../src/3d-tiles-converter/helpers/i3s-obb-to-3d-tiles-obb';
 import {default as PGMLoader} from '../../../src/pgm-loader';
 
-const PGM_FILE_PATH = '@loaders.gl/cli/test/data/egm84-30.pgm';
+const PGM_FILE_PATH = '@loaders.gl/tile-converter/test/data/egm84-30.pgm';
 
 test('cli - Converters#converts I3S OBB to 3D-Tiles OBB', async t => {
   const geoidHeightModel = await load(PGM_FILE_PATH, PGMLoader);

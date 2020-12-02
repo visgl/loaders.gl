@@ -1,6 +1,6 @@
 /* global console, process */
 /* eslint-disable no-console */
-const {I3SConverter, Tiles3DConverter} = require('@loaders.gl/cli');
+const {I3SConverter, Tiles3DConverter} = require('@loaders.gl/tile-converter');
 import '@loaders.gl/polyfills';
 
 const TILESET_TYPE = {

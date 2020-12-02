@@ -1,6 +1,6 @@
 {
-  "name": "@loaders.gl/cli",
-  "version": "2.3.0",
+  "name": "@loaders.gl/tile-converter",
+  "version": "1.0.0",
   "description": "Converter",
   "license": "MIT",
   "publishConfig": {

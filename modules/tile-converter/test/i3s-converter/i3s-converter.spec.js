@@ -1,12 +1,12 @@
 import test from 'tape-promise/tape';
-import {I3SConverter} from '@loaders.gl/cli';
+import {I3SConverter} from '@loaders.gl/tile-converter';
 import {isBrowser} from '@loaders.gl/core';
 import {promises as fs} from 'fs';
 
 const TILESET_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedColors/tileset.json';
 const TILESET_WITH_TEXTURES = '@loaders.gl/3d-tiles/test/data/Batched/BatchedTextured/tileset.json';
 
-const PGM_FILE_PATH = '@loaders.gl/cli/test/data/egm84-30.pgm';
+const PGM_FILE_PATH = '@loaders.gl/tile-converter/test/data/egm84-30.pgm';
 
 const TEST_TEXTURE_MATERIAL = {
   doubleSided: false,

@@ -1,5 +1,5 @@
 import test from 'tape-promise/tape';
-import {Tiles3DConverter} from '@loaders.gl/cli';
+import {Tiles3DConverter} from '@loaders.gl/tile-converter';
 import {isBrowser} from '@loaders.gl/core';
 
 const TILESET_URL =

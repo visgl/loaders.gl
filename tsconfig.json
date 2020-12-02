@@ -24,10 +24,6 @@
       "@loaders.gl/polyfills/*": ["modules/polyfills/src/*"],
       "@loaders.gl/polyfills/test": ["modules/polyfills/test"],
 
-      "@loaders.gl/cli/*": ["modules/cli/src/*"],
-      "@loaders.gl/cli/test": ["modules/cli/test"],
-      "@loaders.gl/cli/test/*": ["modules/cli/test/*"],
-
       "@loaders.gl/3d-tiles/*": ["modules/3d-tiles/src/*"],
       "@loaders.gl/3d-tiles/test": ["modules/3d-tiles/test"],
       "@loaders.gl/arrow/*": ["modules/arrow/src/*"],
@@ -68,6 +64,8 @@
       "@loaders.gl/tables/test": ["modules/tables/test"],
       "@loaders.gl/tiles/*": ["modules/tiles/src/*"],
       "@loaders.gl/tiles/test": ["modules/tiles/test"],
+      "@loaders.gl/tile-converter/*": ["modules/tile-converter/src/*"],
+      "@loaders.gl/tile-converter/test": ["modules/tile-converter/test"],
       "@loaders.gl/terrain/*": ["modules/terrain/src/*"],
       "@loaders.gl/terrain/test": ["modules/terrain/test"],
       "@loaders.gl/video/*": ["modules/video/src/*"],

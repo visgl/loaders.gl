@@ -1,11 +1,15 @@
 # Tiles3DConverter class
 
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />
+</p>
+
 The `Tiles3DConverter` class converts an I3S layer.
 
 ## Usage
 
 ```js
-import {Tiles3DConverter} from '@loaders.gl/cli';
+import {Tiles3DConverter} from '@loaders.gl/tile-converter';
 
 const TILESET_URL =
   'https://tiles.arcgis.com/tiles/u0sSNqDXr7puKJrF/arcgis/rest/services/Frankfurt2017_v17/SceneServer/layers/0';

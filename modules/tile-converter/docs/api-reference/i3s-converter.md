@@ -1,11 +1,15 @@
 # I3SConverter class
 
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />
+</p>
+
 The `I3SConverter` class converts a 3D Tiles tileset.
 
 ## Usage
 
 ```js
-import {I3SConverter} from '@loaders.gl/cli';
+import {I3SConverter} from '@loaders.gl/tile-converter';
 
 const converter = new I3SConverter();
 const tilesetJson = await converter.convert({

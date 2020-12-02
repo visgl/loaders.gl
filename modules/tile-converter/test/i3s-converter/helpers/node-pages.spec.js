@@ -1,5 +1,5 @@
 import test from 'tape-promise/tape';
-import {NodePages} from '@loaders.gl/cli';
+import {NodePages} from '@loaders.gl/tile-converter';
 import {isBrowser} from '@loaders.gl/core';
 
 const newNodeStub = {

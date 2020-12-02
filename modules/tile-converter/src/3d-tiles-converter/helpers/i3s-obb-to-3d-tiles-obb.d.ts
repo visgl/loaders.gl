@@ -1,4 +1,4 @@
-import { GeoidHeightModel } from "@loaders.gl/cli/lib/geoid-height-model";
+import { GeoidHeightModel } from "@loaders.gl/tile-converter/lib/geoid-height-model";
 
 /**
  * Convert quaternion-based OBB to half-axes-based OBB

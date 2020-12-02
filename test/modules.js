@@ -86,5 +86,5 @@ if (TEST_ARCHIVES) {
 
 // Cli
 if (TEST_CLI) {
-  require('@loaders.gl/cli/test');
+  require('@loaders.gl/tile-converter/test');
 }
