@@ -4137,7 +4137,7 @@ dotignore@~0.1.2:
   dependencies:
     minimatch "^3.0.4"
 
-draco3d@1.4.0, draco3d@^1.4.0:
+draco3d@1.4.0, draco3d@^1.3.6:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/draco3d/-/draco3d-1.4.0.tgz#f6749d9d98293ef505c7911cf00b13da275f3691"
   integrity sha512-1ZdM+q61AsVTaLr4v+xwG72kJIan7vIKfN0FB86xKvPJ1tZ/Lt0zgxMrMd8elyp3YuHqdA8Hrl4FTQemyZYJjA==
