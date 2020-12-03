@@ -384,15 +384,23 @@ export default class DracoParser {
     }
     const result = {};
     const numEntries = this.metadataQuerier.NumEntries(dracoMetadata);
+    const dracoArray = new this.draco.DracoInt32Array();
     for (let entryIndex = 0; entryIndex < numEntries; entryIndex++) {
       const entryName = this.metadataQuerier.GetEntryName(dracoMetadata, entryIndex);
+      this.metadataQuerier.GetIntEntryArray(dracoMetadata, entryName, dracoArray);
+      const numValues = dracoArray.size();
+      const intArray = new Int32Array(numValues);
+      for (let i = 0; i < numValues; i++) {
+        intArray[i] = dracoArray.GetValue(i);
+      }
       result[entryName] = {
         int: this.metadataQuerier.GetIntEntry(dracoMetadata, entryName),
         string: this.metadataQuerier.GetStringEntry(dracoMetadata, entryName),
         double: this.metadataQuerier.GetDoubleEntry(dracoMetadata, entryName),
-        intArray: this.metadataQuerier.GetIntEntryArray(dracoMetadata, entryName)
+        intArray
       };
     }
+    this.draco.destroy(dracoArray);
     return result;
   }
 
