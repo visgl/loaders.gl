@@ -21,7 +21,7 @@
   "esnext": "dist/es6/index.js",
   "sideEffects": false,
   "bin": {
-    "converter": "./bin/converter.js",
+    "tile-converter": "./bin/converter.js",
     "i3s-server": "./src/i3s-server/bin/www"
   },
   "files": [

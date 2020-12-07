@@ -23,7 +23,7 @@ npm install @loaders.gl/tile-converter
 
 ## Command Line Utilities
 
-`converter` - the npx tool for launch conversion
+`tile-converter` - the npx tool for launch conversion
 
 ## API
 
