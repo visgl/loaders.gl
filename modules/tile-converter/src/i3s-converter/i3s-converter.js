@@ -444,6 +444,17 @@ export default class I3SConverter {
     if (texture) {
       node.textureData = [{href: './textures/0'}];
 
+      if (!this.layers0.textureSetDefinitions.length) {
+        this.layers0.textureSetDefinitions.push({
+          formats: [
+            {
+              name: '0',
+              format: 'jpg'
+            }
+          ]
+        });
+      }
+
       const texelCountHint = texture.image.height * texture.image.width;
       this.nodePages.updateTexelCountHintByNodeId(node.id, texelCountHint);
 

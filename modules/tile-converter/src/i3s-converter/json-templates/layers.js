@@ -129,16 +129,7 @@ export const LAYERS = {
   },
   textureSetDefinitions: {
     path: 'textureSetDefinitions',
-    default: [
-      {
-        formats: [
-          {
-            name: '0',
-            format: 'jpg'
-          }
-        ]
-      }
-    ]
+    default: []
   },
   geometryDefinitions: {
     path: 'compressGeometry',
