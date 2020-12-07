@@ -23,8 +23,8 @@ test('ArrowWriter#encode', async t => {
   );
 
   const arraysData = [
-    {array: rainAmounts, name: 'precipitation', type: VECTOR_TYPES.FLOAT},
-    {array: rainDates, name: 'date', type: VECTOR_TYPES.DATE}
+    {array: rainAmounts, name: 'precipitation', type: VECTOR_TYPES.Float},
+    {array: rainDates, name: 'date', type: VECTOR_TYPES.Date}
   ];
 
   const arrayBuffer = encodeSync(arraysData, ArrowWriter);

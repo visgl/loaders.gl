@@ -13,6 +13,7 @@ type TypedArray = TypedIntArray | TypedFloatArray;
 export type AnyArrayType = Array<any> | TypedIntArray | TypedFloatArray;
 
 export enum VECTOR_TYPES {
-  FLOAT,
-  DATE
+  Int = 2,
+  Float = 3,
+  Date = 8
 }

@@ -1,4 +1,5 @@
 export const VECTOR_TYPES = {
-  FLOAT: 0,
-  DATE: 1
+  Int: 2,
+  Float: 3,
+  Date: 8
 };

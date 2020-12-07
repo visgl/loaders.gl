@@ -1,4 +1,4 @@
-import {Table, FloatVector, DateVector} from 'apache-arrow/Arrow.es5.min';
+import {Table, IntVector, FloatVector, DateVector} from 'apache-arrow/Arrow.es5.min';
 import {VECTOR_TYPES} from './constants';
 
 export function encodeArrowSync(data, options) {
@@ -22,9 +22,11 @@ export function encodeArrowSync(data, options) {
  */
 function createVector(array, type) {
   switch (type) {
-    case VECTOR_TYPES.DATE:
+    case VECTOR_TYPES.Date:
       return DateVector.from(array);
-    case VECTOR_TYPES.FLOAT:
+    case VECTOR_TYPES.Int:
+      return IntVector.from(array);
+    case VECTOR_TYPES.Float:
     default:
       return FloatVector.from(array);
   }
