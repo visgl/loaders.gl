@@ -29,7 +29,43 @@ const data = await load(url, SHPLoader);
 
 ## Options
 
-N/A
+| Option              | Type    | Default | Description                                                                                                                                                                                                                                                                |
+| ------------------- | ------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| shp.\_maxDimensions | Integer | `4`     | Shapefiles can hold up to 4 dimensions (XYZM). By default all dimensions are parsed; when set to `2` only the X and Y dimensions are parsed. Note that for some Shapefiles, the third dimension is M, not Z. `header.type` in the output designates the stored dimensions. |
+
+## Output
+
+The `ShapefileLoader`'s output looks like the following. `geometries` holds an
+array of features in loaders.gl's binary geometry format. `prj` contains the
+Shapefile's projection string. `header` contains the Shapefile's header values,
+including a bounding box of the data and the file's geometry type. Consult the
+[Shapefile specification][shapefile_spec] for the meaning of the numeric types.
+
+[shapefile_spec]: https://www.esri.com/library/whitepapers/pdfs/shapefile.pdf#page=8
+
+```
+{
+  geometries: [ { positions: [Object], type: 'Point' } ],
+  header: {
+    magic: 9994,
+    length: 136,
+    version: 1000,
+    type: 11,
+    bbox: {
+      minX: 1,
+      minY: 2,
+      minZ: 3,
+      minM: 0,
+      maxX: 1,
+      maxY: 2,
+      maxZ: 3,
+      maxM: 0
+    }
+  },
+  progress: { bytesUsed: 0, bytesTotal: 136, rows: 1 },
+  currentIndex: 2
+}
+```
 
 ## Format Summary
 

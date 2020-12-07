@@ -10,6 +10,34 @@ const name602 = 'West End Building\0';
 const objecId0 = 979297;
 const heightRoof0 = 32.18;
 
+test('I3SAttributeLoader# should return empty object if no attributeName provided', async t => {
+  const options = {
+    attributeType: 'Oid32'
+  };
+  const attributes = await load(objectIdsUrl, I3SAttributeLoader, options);
+  t.ok(attributes);
+  t.deepEqual(attributes, {});
+  t.end();
+});
+
+test('I3SAttributeLoader# should return empty object if no attributeType provided', async t => {
+  const options = {
+    attributeName: 'OBJECTID'
+  };
+  const attributes = await load(objectIdsUrl, I3SAttributeLoader, options);
+  t.ok(attributes);
+  t.deepEqual(attributes, {});
+  t.end();
+});
+
+test('I3SAttributeLoader# should return empty object if no attributeName and attributeType provided', async t => {
+  const options = {};
+  const attributes = await load(objectIdsUrl, I3SAttributeLoader, options);
+  t.ok(attributes);
+  t.deepEqual(attributes, {});
+  t.end();
+});
+
 test('I3SAttributeLoader# should load OBJECTID attribute', async t => {
   const options = {
     attributeName: 'OBJECTID',

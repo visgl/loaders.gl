@@ -1,13 +1,13 @@
 # Introduction
 
 <p align="center">
-  <img src="https://img.shields.io/badge/loaders.gl-v3.0.alpha-blue.svg?style=flat-square" />
+  <img src="https://img.shields.io/badge/loaders.gl-v2.3-blue.svg?style=flat-square" />
 </p>
 
 <p align="center">
   Docs for older versions are available on github, e.g.
-  <a href="https://github.com/visgl/loaders.gl/blob/2.3-release/docs/README.md">
-    <img src="https://img.shields.io/badge/loaders.gl-v2.3-green.svg?style=flat-square" />
+  <a href="https://github.com/visgl/loaders.gl/blob/2.2-release/docs/README.md">
+    <img src="https://img.shields.io/badge/loaders.gl-v2.2-green.svg?style=flat-square" />
   </a>
   <a href="https://github.com/visgl/loaders.gl/blob/1.3-release/docs/README.md">
     <img src="https://img.shields.io/badge/loaders.gl-v1.3-green.svg?style=flat-square" />

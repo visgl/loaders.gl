@@ -72,8 +72,14 @@ export async function* parseDBFInBatches(asyncIterator, options) {
   const {encoding} = loaderOptions;
 
   const parser = new DBFParser({encoding});
+  let headerReturned = false;
   for await (const arrayBuffer of asyncIterator) {
     parser.write(arrayBuffer);
+    if (!headerReturned && parser.result.dbfHeader) {
+      headerReturned = true;
+      yield parser.result.dbfHeader;
+    }
+
     if (parser.result.data.length > 0) {
       yield parser.result.data;
       parser.result.data = [];
