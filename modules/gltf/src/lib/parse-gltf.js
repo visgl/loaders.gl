@@ -30,7 +30,7 @@ export async function parseGLTF(gltf, arrayBufferOrString, byteOffset = 0, optio
   }
 
   // Load linked buffers asynchronously and decodes base64 buffers in parallel
-  if (options.gltf.loadBuffers) {
+  if (options.gltf.loadBuffers && gltf.json.buffers) {
     await loadBuffers(gltf, options, context);
   }
 

@@ -5,26 +5,46 @@ import {zipBatchIterators} from '../streaming/zip-batch-iterators';
 import {SHPLoader} from '../../shp-loader';
 import {DBFLoader} from '../../dbf-loader';
 
+// eslint-disable-next-line max-statements, complexity
 export async function* parseShapefileInBatches(asyncIterator, options, context) {
   const {reproject = false, _targetCrs = 'WGS84'} = (options && options.gis) || {};
   const {parseInBatches, fetch, url} = context;
   const {shx, cpg, prj} = await loadShapefileSidecarFiles(options, context);
 
   // parse geometries
-  const shapeIterator = await parseInBatches(asyncIterator, SHPLoader); // {shp: shx}
-  const shapeHeader = (await shapeIterator.next()).value;
+  const shapeIterator = await parseInBatches(asyncIterator, SHPLoader, options);
 
   // parse properties
   let propertyIterator;
-  let iterator;
   const dbfResponse = await fetch(replaceExtension(url, 'dbf'));
   if (dbfResponse.ok) {
     propertyIterator = await parseInBatches(dbfResponse, DBFLoader, {
+      ...options,
       dbf: {encoding: cpg || 'latin1'}
     });
+  }
+
+  // When `options.metadata` is `true`, there's an extra initial `metadata`
+  // object before the iterator starts. zipBatchIterators expects to receive
+  // batches of Array objects, and will fail with non-iterable batches, so it's
+  // important to skip over the first batch.
+  let shapeHeader = (await shapeIterator.next()).value;
+  if (shapeHeader && shapeHeader.batchType === 'metadata') {
+    shapeHeader = (await shapeIterator.next()).value;
+  }
+
+  let dbfHeader = {};
+  if (propertyIterator) {
+    dbfHeader = (await propertyIterator.next()).value;
+    if (dbfHeader && dbfHeader.batchType === 'metadata') {
+      dbfHeader = (await propertyIterator.next()).value;
+    }
+  }
+
+  let iterator;
+  if (propertyIterator) {
     iterator = await zipBatchIterators(shapeIterator, propertyIterator);
   } else {
-    // Ignore properties
     iterator = shapeIterator;
   }
 
@@ -58,7 +78,7 @@ export async function parseShapefile(arrayBuffer, options, context) {
   const {shx, cpg, prj} = await loadShapefileSidecarFiles(options, context);
 
   // parse geometries
-  const {header, geometries} = await parse(arrayBuffer, SHPLoader); // {shp: shx}
+  const {header, geometries} = await parse(arrayBuffer, SHPLoader, options); // {shp: shx}
 
   const geojsonGeometries = parseGeometries(geometries);
 
