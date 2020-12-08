@@ -20,7 +20,8 @@ export const ArrowWorkerLoader = {
   options: {
     arrow: {
       workerUrl: `https://unpkg.com/@loaders.gl/arrow@${VERSION}/dist/arrow-loader.worker.js`
-    }
+    },
+    rowBased: false
   }
 };
 

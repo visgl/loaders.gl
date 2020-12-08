@@ -17,5 +17,21 @@ export default function parseArrowSync(arrayBuffer, options) {
     columnarTable[field.name] = values;
   });
 
-  return columnarTable;
+  return options.rowBased ? convertColumnarToRowBasedTable(columnarTable) : columnarTable;
+}
+
+function convertColumnarToRowBasedTable(columnarTable) {
+  const tableKeys = Object.keys(columnarTable);
+  const tableRowsCount = columnarTable[tableKeys[0]].length;
+  const rowBasedTable = [];
+
+  for (let index = 0; index < tableRowsCount; index++) {
+    const tableItem = {};
+    for (let keyIndex = 0; keyIndex < tableKeys.length; keyIndex++) {
+      const fieldName = tableKeys[keyIndex];
+      tableItem[fieldName] = columnarTable[fieldName][index];
+    }
+    rowBasedTable.push(tableItem);
+  }
+  return rowBasedTable;
 }
