@@ -4,6 +4,9 @@
   <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />
 </p>
 
+![logo](./images/esri.jpeg) ![logo](./images/ogc.png)
+The tile-converter code was contributed by Esri. It converts between the OGC 3D Tiles and the I3S formats.
+
 `converter` is a command line utility for converting 3d-tiles to i3s and backward - i3s to 3d-tiles.
 
 Installing `@loaders.gl/tile-converter` makes the `converter` command line tool available. It can be run using `npx`.
