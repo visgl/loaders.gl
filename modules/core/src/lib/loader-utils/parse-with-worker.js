@@ -59,6 +59,10 @@ function getWorkerFarm(options = {}) {
   if (options.onDebug) {
     props.onDebug = options.onDebug;
   }
+  if ('notCashWorkers' in options) {
+    // @ts-ignore
+    props.notCashWorkers = options.notCashWorkers;
+  }
 
   if (!_workerFarm) {
     _workerFarm = new WorkerFarm({onMessage: onWorkerMessage});
