@@ -45,11 +45,52 @@ const TILESET_STUB = {
       }
     }
   },
+  attributeStorageInfo: [
+    {
+      key: 'f_0',
+      name: 'OBJECTID',
+      header: [
+        {
+          property: 'count',
+          valueType: 'UInt32'
+        }
+      ],
+      ordering: ['attributeValues'],
+      attributeValues: {
+        valueType: 'Oid32',
+        valuesPerElement: 1
+      }
+    },
+    {
+      key: 'f_1',
+      name: 'NAME',
+      header: [
+        {
+          property: 'count',
+          valueType: 'UInt32'
+        },
+        {
+          property: 'attributeValuesByteCount',
+          valueType: 'UInt32'
+        }
+      ],
+      ordering: ['attributeByteCounts', 'attributeValues'],
+      attributeValues: {
+        valueType: 'String',
+        encoding: 'UTF-8',
+        valuesPerElement: 1
+      },
+      attributeByteCounts: {
+        valueType: 'UInt32',
+        valuesPerElement: 1
+      }
+    }
+  ],
   type: 'I3S',
   loader: I3SLoader
 };
 
-export async function loadI3STileContent() {
+export async function loadI3STile() {
   const i3SNodePagesTiles = new I3SNodePagesTiles(TILESET_STUB, {});
   const nodeRoot = await i3SNodePagesTiles.formTileFromNodePages(0);
   const node1 = await i3SNodePagesTiles.formTileFromNodePages(1);
@@ -57,5 +98,10 @@ export async function loadI3STileContent() {
   const tileset = new Tileset3D(TILESET_STUB);
   const tile = new Tile3D(tileset, node1);
   await tileset._loadTile(tile);
+  return tile;
+}
+
+export async function loadI3STileContent() {
+  const tile = await loadI3STile();
   return tile.content;
 }

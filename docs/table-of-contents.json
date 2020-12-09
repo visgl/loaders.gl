@@ -259,6 +259,15 @@
           ]
         },
         {
+          "title": "@loaders.gl/tile-converter",
+          "entries": [
+            {"entry": "modules/tile-converter/docs"},
+            {"entry": "modules/tile-converter/docs/cli-reference/tile-converter"},
+            {"entry": "modules/tile-converter/docs/api-reference/3d-tiles-converter"},
+            {"entry": "modules/tile-converter/docs/api-reference/i3s-converter"}
+          ]
+        },
+        {
           "title": "@loaders.gl/video",
           "entries": [
             {"entry": "modules/video/docs"},
@@ -277,6 +286,12 @@
             {"entry": "modules/zip/docs"}
           ]
         }
+      ]
+    },
+    {
+      "title": "Command-Line Reference",
+      "entries": [
+        {"entry": "modules/tile-converter/docs/cli-reference/tile-converter"}
       ]
     }
   ]

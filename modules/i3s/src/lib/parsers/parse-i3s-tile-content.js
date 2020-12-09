@@ -3,6 +3,8 @@ import {Ellipsoid} from '@math.gl/geospatial';
 
 import {load} from '@loaders.gl/core';
 import {ImageLoader} from '@loaders.gl/images';
+import {parse} from '@loaders.gl/core';
+import {DracoLoader} from '@loaders.gl/draco';
 
 import {
   GL_TYPE_MAP,
@@ -12,7 +14,7 @@ import {
   I3S_NAMED_VERTEX_ATTRIBUTES,
   I3S_NAMED_GEOMETRY_ATTRIBUTES
 } from './constants';
-import {getUrlWithToken} from './utils';
+import {getUrlWithToken} from './url-utils';
 
 const scratchVector = new Vector3([0, 0, 0]);
 
@@ -28,49 +30,63 @@ export async function parseI3STileContent(arrayBuffer, tile, tileset, options) {
     tile.content.texture = await load(url, ImageLoader);
   }
 
-  return parseI3SNodeGeometry(arrayBuffer, tile);
+  return await parseI3SNodeGeometry(arrayBuffer, tile, options);
 }
 
 /* eslint-disable max-statements */
-/**
- * Do parsing of node geometry and update tile content.
- * Do parsing of arrayBuffer for getting attributes for particular tile.
- * @param arrayBuffer
- * @param tile
- * @returns {Object} - return updated Tile.
- */
-function parseI3SNodeGeometry(arrayBuffer, tile = {}) {
+async function parseI3SNodeGeometry(arrayBuffer, tile = {}, options) {
   if (!tile.content) {
     return tile;
   }
 
   const content = tile.content;
-  const {
-    vertexAttributes,
-    attributesOrder,
-    featureAttributes,
-    featureAttributeOrder
-  } = content.featureData;
-  // First 8 bytes reserved for header (vertexCount and featureCount)
-  const {vertexCount, byteOffset, featureCount} = parseHeaders(content, arrayBuffer);
-  // Getting vertex attributes such as positions, normals, colors, etc...
-  const {attributes: normalizedVertexAttributes, byteOffset: offset} = normalizeAttributes(
-    arrayBuffer,
-    byteOffset,
-    vertexAttributes,
-    vertexCount,
-    attributesOrder
-  );
-  // Getting feature attributes such as featureIds and faceRange
-  const {attributes: normalizedFeatureAttributes} = normalizeAttributes(
-    arrayBuffer,
-    offset,
-    featureAttributes,
-    featureCount,
-    featureAttributeOrder
-  );
+  let attributes;
+  let vertexCount;
+  let byteOffset = 0;
+  let featureCount = 0;
+  if (options.i3s.useDracoGeometry && options.i3s.dracoGeometryIndex !== -1) {
+    const decompressedGeometry = await parse(arrayBuffer, DracoLoader);
+    vertexCount = decompressedGeometry.header.vertexCount;
+    const indices = decompressedGeometry.indices.value;
+    const {POSITION, NORMAL, COLOR_0, TEXCOORD_0} = decompressedGeometry.attributes;
+    attributes = {
+      position: flattenAttribute(POSITION, indices),
+      normal: flattenAttribute(NORMAL, indices),
+      color: flattenAttribute(COLOR_0, indices),
+      uv0: flattenAttribute(TEXCOORD_0, indices)
+    };
+  } else {
+    const {
+      vertexAttributes,
+      attributesOrder,
+      featureAttributes,
+      featureAttributeOrder
+    } = content.featureData;
+    // First 8 bytes reserved for header (vertexCount and featureCount)
+    const headers = parseHeaders(content, arrayBuffer);
+    byteOffset = headers.byteOffset;
+    vertexCount = headers.vertexCount;
+    featureCount = headers.featureCount;
+    // Getting vertex attributes such as positions, normals, colors, etc...
+    const {attributes: normalizedVertexAttributes, byteOffset: offset} = normalizeAttributes(
+      arrayBuffer,
+      byteOffset,
+      vertexAttributes,
+      vertexCount,
+      attributesOrder
+    );
 
-  const attributes = concatAttributes(normalizedVertexAttributes, normalizedFeatureAttributes);
+    // Getting feature attributes such as featureIds and faceRange
+    const {attributes: normalizedFeatureAttributes} = normalizeAttributes(
+      arrayBuffer,
+      offset,
+      featureAttributes,
+      featureCount,
+      featureAttributeOrder
+    );
+    attributes = concatAttributes(normalizedVertexAttributes, normalizedFeatureAttributes);
+  }
+
   const {enuMatrix, cartographicOrigin, cartesianOrigin} = parsePositions(
     attributes.position,
     tile
@@ -104,6 +120,23 @@ function parseI3SNodeGeometry(arrayBuffer, tile = {}) {
  */
 function concatAttributes(normalizedVertexAttributes, normalizedFeatureAttributes) {
   return {...normalizedVertexAttributes, ...normalizedFeatureAttributes};
+}
+
+function flattenAttribute(attribute, indices) {
+  const TypedArrayConstructor = attribute.value.constructor;
+  const result = new TypedArrayConstructor(indices.length * attribute.size);
+  for (let i = 0; i < indices.length; i++) {
+    const vertexIndex = indices[i] * attribute.size;
+    result.set(
+      new TypedArrayConstructor(
+        attribute.value.buffer,
+        vertexIndex * attribute.value.BYTES_PER_ELEMENT,
+        attribute.size
+      ),
+      i * attribute.size
+    );
+  }
+  return {size: attribute.size, value: result};
 }
 
 function constructFeatureDataStruct(tile, tileset) {

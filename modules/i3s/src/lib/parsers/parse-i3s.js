@@ -3,8 +3,7 @@ import {Ellipsoid} from '@math.gl/geospatial';
 import {load} from '@loaders.gl/core';
 import {TILE_TYPE, TILE_REFINEMENT, TILESET_TYPE} from '@loaders.gl/tiles';
 import I3SNodePagesTiles from '../../helpers/i3s-nodepages-tiles';
-
-import {getUrlWithToken} from './utils';
+import {generateTileAttributeUrls, getUrlWithToken} from './url-utils';
 
 const scratchCenter = new Vector3();
 
@@ -15,10 +14,18 @@ export function normalizeTileData(tile, options, context) {
     tile.featureUrl = `${tile.url}/${tile.featureData[0].href}`;
   }
   if (tile.geometryData) {
-    tile.contentUrl = `${tile.url}/${tile.geometryData[0].href}`;
+    if (options.i3s.useDracoGeometry && options.i3s.dracoGeometryIndex !== -1) {
+      tile.contentUrl = `${tile.url}/geometries/${options.i3s.dracoGeometryIndex}`;
+    } else {
+      tile.contentUrl = `${tile.url}/${tile.geometryData[0].href}`;
+    }
   }
   if (tile.textureData) {
     tile.textureUrl = `${tile.url}/${tile.textureData[0].href}`;
+  }
+
+  if (tile.attributeData) {
+    tile.attributeUrls = generateTileAttributeUrls(tile);
   }
 
   return normalizeTileNonUrlData(tile);

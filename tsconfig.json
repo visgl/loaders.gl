@@ -64,6 +64,8 @@
       "@loaders.gl/tables/test": ["modules/tables/test"],
       "@loaders.gl/tiles/*": ["modules/tiles/src/*"],
       "@loaders.gl/tiles/test": ["modules/tiles/test"],
+      "@loaders.gl/tile-converter/*": ["modules/tile-converter/src/*"],
+      "@loaders.gl/tile-converter/test": ["modules/tile-converter/test"],
       "@loaders.gl/terrain/*": ["modules/terrain/src/*"],
       "@loaders.gl/terrain/test": ["modules/terrain/test"],
       "@loaders.gl/video/*": ["modules/video/src/*"],

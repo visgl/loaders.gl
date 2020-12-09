@@ -70,7 +70,7 @@ test('GLTFLoader#load(3d tile GLB)', async t => {
 
 test('GLTFLoader#load(glTF v1)', async t => {
   await t.rejects(
-    load(GLB_V1_TILE_CESIUM_AIR_URL, GLTFLoader),
+    load(GLB_V1_TILE_CESIUM_AIR_URL, GLTFLoader, {gltf: {normalize: false}}),
     /glTF v1 is not supported/,
     'glTF v1 generates error message'
   );

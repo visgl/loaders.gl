@@ -26,6 +26,8 @@ yarn-error.log
 .idea
 .project
 .DS_Store
+.vscode
+*.iml
 *.swp
 
 # local data
