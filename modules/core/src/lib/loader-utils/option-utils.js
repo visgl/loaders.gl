@@ -12,8 +12,7 @@ const DEFAULT_LOADER_OPTIONS = {
   metadata: false, // TODO - currently only implemented for parseInBatches, adds initial metadata batch,
   transforms: [],
   attributeName: null, // Used by i3s-attribute-loader to define attribute name.
-  attributeType: null, // Used by i3s-attribute-loader to define attribute type.,
-  rowBased: false // Used by arrow loader to make result as a row table.
+  attributeType: null // Used by i3s-attribute-loader to define attribute type.
 };
 
 const DEPRECATED_LOADER_OPTIONS = {

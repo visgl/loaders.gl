@@ -17,13 +17,13 @@ export default function parseArrowSync(arrayBuffer, options) {
     columnarTable[field.name] = values;
   });
 
-  return options.rowBased ? convertColumnarToRowBasedTable(columnarTable) : columnarTable;
+  return options.arrow.rowFormat ? convertColumnarToRowFormatTable(columnarTable) : columnarTable;
 }
 
-function convertColumnarToRowBasedTable(columnarTable) {
+function convertColumnarToRowFormatTable(columnarTable) {
   const tableKeys = Object.keys(columnarTable);
   const tableRowsCount = columnarTable[tableKeys[0]].length;
-  const rowBasedTable = [];
+  const rowFormatTable = [];
 
   for (let index = 0; index < tableRowsCount; index++) {
     const tableItem = {};
@@ -31,7 +31,7 @@ function convertColumnarToRowBasedTable(columnarTable) {
       const fieldName = tableKeys[keyIndex];
       tableItem[fieldName] = columnarTable[fieldName][index];
     }
-    rowBasedTable.push(tableItem);
+    rowFormatTable.push(tableItem);
   }
-  return rowBasedTable;
+  return rowFormatTable;
 }

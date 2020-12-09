@@ -33,14 +33,16 @@ test('ArrowLoader#parseSync(simple.arrow)', async t => {
   t.end();
 });
 
-test('ArrowLoader#parseSync(simple.arrow) rowBased type', async t => {
-  const rowBasedTable = await parse(fetchFile(ARROW_SIMPLE), ArrowLoader, {
+test('ArrowLoader#parseSync(simple.arrow) rowFormat type', async t => {
+  const rowFormatTable = await parse(fetchFile(ARROW_SIMPLE), ArrowLoader, {
     worker: false,
-    rowBased: true
+    arrow: {
+      rowFormat: true
+    }
   });
-  t.ok(rowBasedTable, 'Row based table loaded');
-  t.equal(rowBasedTable.length, 5);
-  t.deepEqual(rowBasedTable[0], {foo: 1, bar: 1, baz: 'aa'});
+  t.ok(rowFormatTable, 'Row based table loaded');
+  t.equal(rowFormatTable.length, 5);
+  t.deepEqual(rowFormatTable[0], {foo: 1, bar: 1, baz: 'aa'});
   t.end();
 });
 
