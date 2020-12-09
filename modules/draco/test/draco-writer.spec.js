@@ -117,7 +117,11 @@ test('DracoWriter#encode via draco3d npm package (bunny.drc)', async t => {
 
     if (!tc.options.pointcloud) {
       // Decode the mesh
-      const data2 = await parse(compressedMesh, DracoLoader);
+      const data2 = await parse(compressedMesh, DracoLoader, {
+        modules: {
+          draco3d
+        }
+      });
       validateMeshCategoryData(t, data2);
 
       // t.comment(JSON.stringify(data));
