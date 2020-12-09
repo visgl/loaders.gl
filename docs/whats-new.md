@@ -14,7 +14,7 @@ Target Release Date: Q1 2021. (Alpha releases are available).
 
 **@loaders.gl/draco**
 
-- Updated to `draco3d@1.4.0`, providing more efficient library loading and decoding. Support for binary arrays in metadata.
+- Updated to `draco3d@1.4.1`, providing more efficient library loading and decoding. Support for binary arrays in metadata.
 
 ## v2.3
 
