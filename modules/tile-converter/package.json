@@ -54,7 +54,7 @@
     "cors": "^2.8.5",
     "crypt": "^0.0.2",
     "debug": "~2.6.9",
-    "draco3d": "^1.3.6",
+    "draco3d": "1.4.1",
     "express": "~4.16.1",
     "json-map-transform": "^1.2.6",
     "jszip": "^3.5.0",

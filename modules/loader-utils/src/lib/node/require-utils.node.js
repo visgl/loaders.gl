@@ -4,7 +4,7 @@
 
 // this file is not visible to webpack (it is excluded in the package.json "browser" field).
 
-/* global process */
+/* global process, fetch */
 import Module from 'module';
 import path from 'path';
 
@@ -12,10 +12,13 @@ import path from 'path';
 // Relative names are resolved relative to cwd
 // This indirect function is provided because webpack will try to bundle `module.require`.
 // this file is not visible to webpack (it is excluded in the package.json "browser" field).
-export function requireFromFile(filename) {
+export async function requireFromFile(filename) {
   if (filename.startsWith('http')) {
-    throw new Error(`require from remote script not supported in Node.js: ${filename}`);
+    const response = await fetch(filename);
+    const code = await response.text();
+    return requireFromString(code);
   }
+
   if (!filename.startsWith('/')) {
     filename = `${process.cwd()}/${filename}`;
   }

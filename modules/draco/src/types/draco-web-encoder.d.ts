@@ -11,7 +11,6 @@ import {
   DracoInt8Array
 } from './draco-web-decoder';
 
-
 type draco_GeometryAttribute_Type = number;
 type draco_EncodedGeometryType = number;
 type draco_MeshEncoderMethod = number;
@@ -91,6 +90,12 @@ export class MetadataBuilder {
   AddStringEntry(metadata: Metadata, entry_name: string, entry_value: string);
   AddIntEntry(metadata: Metadata, entry_name: string, entry_value: number);
   AddDoubleEntry(metadata: Metadata, entry_name: string, entry_value: number);
+  AddIntEntryArray(
+    metadata: Metadata,
+    entry_name: string,
+    entry_value: Int32Array,
+    num_values: number
+  );
 }
 
 export class PointCloudBuilder {
@@ -101,39 +106,50 @@ export class PointCloudBuilder {
     type: draco_GeometryAttribute_Type,
     num_vertices: number,
     num_components: number,
-    att_values: Float32Array);
+    att_values: Float32Array
+  );
   AddInt8Attribute(
     pc: PointCloud,
     type: draco_GeometryAttribute_Type,
     num_vertices: number,
     num_components: number,
-    att_values: Int8Array);
+    att_values: Int8Array
+  );
   AddUInt8Attribute(
     pc: PointCloud,
     type: draco_GeometryAttribute_Type,
     num_vertices: number,
     num_components: number,
-    att_values: Uint8Array);
+    att_values: Uint8Array
+  );
   AddInt16Attribute(
     pc: PointCloud,
     type: draco_GeometryAttribute_Type,
-    num_vertices: number, num_components: number,
-    att_values: Int16Array);
+    num_vertices: number,
+    num_components: number,
+    att_values: Int16Array
+  );
   AddUInt16Attribute(
     pc: PointCloud,
     type: draco_GeometryAttribute_Type,
-    num_vertices: number, num_components: number,
-    att_values: Uint16Array);
+    num_vertices: number,
+    num_components: number,
+    att_values: Uint16Array
+  );
   AddInt32Attribute(
     pc: PointCloud,
     type: draco_GeometryAttribute_Type,
-    num_vertices: number, num_components: number,
-    att_values: Int32Array);
+    num_vertices: number,
+    num_components: number,
+    att_values: Int32Array
+  );
   AddUInt32Attribute(
     pc: PointCloud,
     type: draco_GeometryAttribute_Type,
-    num_vertices: number, num_components: number,
-    att_values: Uint32Array);
+    num_vertices: number,
+    num_components: number,
+    att_values: Uint32Array
+  );
 
   AddMetadata(pc: PointCloud, metadata: Metadata): boolean;
   SetMetadataForAttribute(pc: PointCloud, attribute_id: number, metadata: Metadata);
@@ -148,22 +164,18 @@ export class Encoder {
   constructor();
   Encoder(): void;
   SetEncodingMethod(method: number): void;
-  SetAttributeQuantization(
-    type: draco_GeometryAttribute_Type,
-    quantization_bits: number);
+  SetAttributeQuantization(type: draco_GeometryAttribute_Type, quantization_bits: number);
   SetAttributeExplicitQuantization(
     type: draco_GeometryAttribute_Type,
     quantization_bits: number,
     num_components: number,
     origin: number[],
-    range: number);
+    range: number
+  );
   SetSpeedOptions(encoding_speed: number, decoding_speed: number): void;
   SetTrackEncodedProperties(flag: boolean): void;
 
-  EncodeMeshToDracoBuffer(
-    mesh: Mesh,
-    encoded_data: DracoInt8Array
-  );
+  EncodeMeshToDracoBuffer(mesh: Mesh, encoded_data: DracoInt8Array);
   EncodePointCloudToDracoBuffer(
     pc: PointCloud,
     deduplicate_values: boolean,
@@ -186,14 +198,12 @@ export class ExpertEncoder {
     quantization_bits: number,
     num_components: number,
     origin: number[],
-    range: number);
+    range: number
+  );
   SetSpeedOptions(encoding_speed: number, decoding_speed: number): void;
   SetTrackEncodedProperties(flag: boolean): void;
 
-  EncodeToDracoBuffer(
-    deduplicate_values: boolean,
-    encoded_data: DracoInt8Array
-  );
+  EncodeToDracoBuffer(deduplicate_values: boolean, encoded_data: DracoInt8Array);
 
   // Returns the number of encoded points or faces from the last Encode
   // operation. Returns 0 if SetTrackEncodedProperties was not set to true.
