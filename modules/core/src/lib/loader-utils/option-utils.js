@@ -13,7 +13,7 @@ const DEFAULT_LOADER_OPTIONS = {
   transforms: [],
   attributeName: null, // Used by i3s-attribute-loader to define attribute name.
   attributeType: null, // Used by i3s-attribute-loader to define attribute type.
-  notCashWorkers: false
+  reuseWorkers: true // By default reuse workers
 };
 
 const DEPRECATED_LOADER_OPTIONS = {

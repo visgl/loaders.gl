@@ -10,14 +10,14 @@ export default class WorkerPool {
     maxConcurrency = 1,
     onMessage,
     onDebug = () => {},
-    notCashWorkers = false
+    reuseWorkers = true
   }) {
     this.source = source;
     this.name = name;
     this.maxConcurrency = maxConcurrency;
     this.onMessage = onMessage;
     this.onDebug = onDebug;
-    this.notCashWorkers = notCashWorkers;
+    this.reuseWorkers = reuseWorkers;
 
     this.jobQueue = [];
     this.idleQueue = [];
@@ -73,8 +73,9 @@ export default class WorkerPool {
   }
 
   _onWorkerDone(worker) {
-    if (this.isDestroyed || this.notCashWorkers) {
+    if (this.isDestroyed || !this.reuseWorkers) {
       worker.destroy();
+      this.count--;
     } else {
       this.idleQueue.push(worker);
       this._startQueuedJob();
@@ -88,7 +89,7 @@ export default class WorkerPool {
     }
 
     // Create fresh worker if we haven't yet created the max amount of worker threads for this worker source
-    if (this.count < this.maxConcurrency || this.notCashWorkers) {
+    if (this.count < this.maxConcurrency) {
       this.count++;
       const name = `${this.name.toLowerCase()} (#${this.count} of ${this.maxConcurrency})`;
       return new WorkerThread({source: this.source, onMessage: this.onMessage, name});

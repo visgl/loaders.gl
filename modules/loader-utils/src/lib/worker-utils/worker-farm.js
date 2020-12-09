@@ -14,13 +14,13 @@ export default class WorkerFarm {
     maxConcurrency = DEFAULT_MAX_CONCURRENCY,
     onMessage = null,
     onDebug = () => {},
-    notCashWorkers = false
+    reuseWorkers = true
   }) {
     this.maxConcurrency = maxConcurrency;
     this.onMessage = onMessage;
     this.onDebug = onDebug;
     this.workerPools = new Map();
-    this.notCashWorkers = notCashWorkers;
+    this.reuseWorkers = reuseWorkers;
   }
 
   setProps(props) {
@@ -32,8 +32,8 @@ export default class WorkerFarm {
       this.onDebug = props.onDebug;
     }
 
-    if ('notCashWorkers' in props) {
-      this.notCashWorkers = props.notCashWorkers;
+    if ('reuseWorkers' in props) {
+      this.reuseWorkers = props.reuseWorkers;
     }
   }
 
@@ -62,7 +62,7 @@ export default class WorkerFarm {
         onMessage: onWorkerMessage.bind(null, this.onMessage),
         maxConcurrency: this.maxConcurrency,
         onDebug: this.onDebug,
-        notCashWorkers: this.notCashWorkers
+        reuseWorkers: this.reuseWorkers
       });
       this.workerPools.set(workerName, workerPool);
     }
