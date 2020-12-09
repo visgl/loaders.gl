@@ -64,7 +64,7 @@ async function loadLibraryFromFile(libraryUrl) {
   }
 
   if (!isBrowser) {
-    return node.requireFromFile && await node.requireFromFile(libraryUrl);
+    return node.requireFromFile && (await node.requireFromFile(libraryUrl));
   }
   if (isWorker) {
     /* global importScripts */

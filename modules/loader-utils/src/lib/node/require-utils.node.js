@@ -4,7 +4,7 @@
 
 // this file is not visible to webpack (it is excluded in the package.json "browser" field).
 
-/* global process */
+/* global process, fetch */
 import Module from 'module';
 import path from 'path';
 
@@ -18,7 +18,7 @@ export async function requireFromFile(filename) {
     const code = await response.text();
     return requireFromString(code);
   }
-  
+
   if (!filename.startsWith('/')) {
     filename = `${process.cwd()}/${filename}`;
   }

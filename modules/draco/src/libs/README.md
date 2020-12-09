@@ -1,6 +1,6 @@
 # Draco 3D Data Compression Libraries
 
-## Version 1.3.6
+## Version 1.4.1
 
 Draco is an open-source library for compressing and decompressing 3D geometric meshes and point clouds. It is intended to improve the storage and transmission of 3D graphics.
 
@@ -8,14 +8,9 @@ Draco is an open-source library for compressing and decompressing 3D geometric m
 
 ## Contents
 
-This folder contains three utilities:
+This folder contains the encoder utility:
 
-- `draco_decoder.js` — Emscripten-compiled decoder, compatible with any modern browser.
-- `draco_decoder.wasm` — WebAssembly decoder, compatible with newer browsers and devices.
-- `draco_wasm_wrapper.js` — JavaScript wrapper for the WASM decoder.
-
-
-Further [documentation on GitHub](https://github.com/google/draco/tree/master/javascript/example#static-loading-javascript-decoder).
+- `draco_encoder.js` — Emscripten-compiled encoder, compatible with any modern browser.
 
 ## License
 
