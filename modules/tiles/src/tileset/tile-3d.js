@@ -10,6 +10,8 @@ import {TILE_REFINEMENT, TILE_CONTENT_STATE, TILESET_TYPE} from '../constants';
 import {createBoundingVolume} from './helpers/bounding-volume';
 import {getTiles3DScreenSpaceError} from './helpers/tiles-3d-lod';
 import {getI3ScreenSize} from './helpers/i3s-lod';
+import {getI3SOptions} from './helpers/i3s-options';
+import {get3dTilesOptions} from './helpers/3d-tiles-options';
 
 const scratchVector = new Vector3();
 
@@ -169,7 +171,7 @@ export default class TileHeader {
 
   // Requests the tile's content.
   // The request may not be made if the Request Scheduler can't prioritize it.
-  // eslint-disable-next-line max-statements
+  // eslint-disable-next-line max-statements, complexity
   async loadContent() {
     if (this.hasEmptyContent) {
       return false;
@@ -208,9 +210,9 @@ export default class TileHeader {
         [loader.id]: {
           tile: this.header,
           tileset: this.tileset.tileset,
-          isTileset: 'auto',
+          isTileset: this.type === 'json',
           isTileHeader: false,
-          assetGltfUpAxis: this.tileset.asset.gltfUpAxis
+          ...this._getLoaderSpecificOptions(loader.id)
         }
       };
 
@@ -240,6 +242,10 @@ export default class TileHeader {
       this.content.destroy();
     }
     this.content = null;
+    if (this.header.content && this.header.content.destroy) {
+      this.header.content.destroy();
+    }
+    this.header.content = null;
     this.contentState = TILE_CONTENT_STATE.UNLOADED;
     return true;
   }
@@ -524,6 +530,18 @@ export default class TileHeader {
     this.computedTransform = computedTransform;
 
     this._updateBoundingVolume(this.header);
+  }
+
+  // Get options which are applicable only for the particular loader
+  _getLoaderSpecificOptions(loaderId) {
+    switch (loaderId) {
+      case 'i3s':
+        return getI3SOptions(this.tileset.tileset);
+      case '3d-tiles':
+      case 'cesium-ion':
+      default:
+        return get3dTilesOptions(this.tileset.tileset);
+    }
   }
 
   // TODO Cesium specific
