@@ -17,7 +17,14 @@ export default function parseArrowSync(arrayBuffer, options) {
     columnarTable[field.name] = values;
   });
 
-  return options.arrow.rowFormat ? convertColumnarToRowFormatTable(columnarTable) : columnarTable;
+  switch (options.arrow.rowFormat) {
+    case 'auto':
+      return columnarTable;
+    case 'object':
+      return convertColumnarToRowFormatTable(columnarTable);
+    default:
+      return columnarTable;
+  }
 }
 
 function convertColumnarToRowFormatTable(columnarTable) {
