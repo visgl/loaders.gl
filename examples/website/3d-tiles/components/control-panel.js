@@ -3,7 +3,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import marked from 'marked';
 
-import {MAP_STYLES} from '../constants';
+import {MAP_STYLES} from '../../constants';
 
 const Container = styled.div`
   display: flex;
