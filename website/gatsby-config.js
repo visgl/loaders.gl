@@ -110,12 +110,6 @@ module.exports = {
         ]
       }
     },
-    {resolve: 'gatsby-plugin-no-sourcemaps'},
-    {
-      resolve: 'gatsby-plugin-env-variables',
-      options: {
-        whitelist: ['MapboxAccessToken']
-      }
-    }
+    {resolve: 'gatsby-plugin-no-sourcemaps'}
   ]
 };
