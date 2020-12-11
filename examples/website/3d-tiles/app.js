@@ -14,7 +14,7 @@ import {CesiumIonLoader} from '@loaders.gl/3d-tiles';
 
 import ControlPanel from './components/control-panel';
 import {loadExampleIndex, INITIAL_EXAMPLE_CATEGORY, INITIAL_EXAMPLE_NAME} from './examples';
-import {INITIAL_MAP_STYLE} from '../constants';
+import {INITIAL_MAP_STYLE} from './constants';
 
 // Set your mapbox token here
 const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line

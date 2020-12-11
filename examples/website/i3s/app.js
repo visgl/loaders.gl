@@ -16,7 +16,7 @@ import ControlPanel from './components/control-panel';
 
 // Set your mapbox token here
 const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
-import {INITIAL_MAP_STYLE} from '../constants';
+import {INITIAL_MAP_STYLE} from './constants';
 
 const TRANSITION_DURAITON = 4000;
 

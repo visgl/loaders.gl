@@ -2,7 +2,7 @@ import styled from 'styled-components';
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {EXAMPLES} from '../examples';
-import {MAP_STYLES} from '../../constants';
+import {MAP_STYLES} from '../constants';
 
 const Container = styled.div`
   display: flex;
