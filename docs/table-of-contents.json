@@ -90,6 +90,12 @@
       ]
     },
     {
+      "title": "Command-Line Reference",
+      "entries": [
+        {"entry": "modules/tile-converter/docs/cli-reference/tile-converter"}
+      ]
+    },
+    {
       "title": "API Reference",
       "chapters": [
         {
@@ -262,7 +268,6 @@
           "title": "@loaders.gl/tile-converter",
           "entries": [
             {"entry": "modules/tile-converter/docs"},
-            {"entry": "modules/tile-converter/docs/cli-reference/tile-converter"},
             {"entry": "modules/tile-converter/docs/api-reference/3d-tiles-converter"},
             {"entry": "modules/tile-converter/docs/api-reference/i3s-converter"}
           ]
@@ -286,12 +291,6 @@
             {"entry": "modules/zip/docs"}
           ]
         }
-      ]
-    },
-    {
-      "title": "Command-Line Reference",
-      "entries": [
-        {"entry": "modules/tile-converter/docs/cli-reference/tile-converter"}
       ]
     }
   ]
