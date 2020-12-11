@@ -4,12 +4,10 @@
 
 import {loadLibrary, global} from '@loaders.gl/loader-utils';
 
-const DRACO_JS_DECODER_URL =
-  'https://www.gstatic.com/draco/versioned/decoders/1.4.1/draco_decoder.js';
-const DRACO_WASM_WRAPPER_URL =
-  'https://www.gstatic.com/draco/versioned/decoders/1.4.1/draco_wasm_wrapper.js';
-const DRACO_WASM_DECODER_URL =
-  'https://www.gstatic.com/draco/versioned/decoders/1.4.1/draco_decoder.wasm';
+const DRACO_VERSION = '1.4.1';
+const DRACO_JS_DECODER_URL = `https://www.gstatic.com/draco/versioned/decoders/${DRACO_VERSION}/draco_decoder.js`;
+const DRACO_WASM_WRAPPER_URL = `https://www.gstatic.com/draco/versioned/decoders/${DRACO_VERSION}/draco_wasm_wrapper.js`;
+const DRACO_WASM_DECODER_URL = `https://www.gstatic.com/draco/versioned/decoders/${DRACO_VERSION}/draco_decoder.wasm`;
 
 const DRACO_ENCODER_URL = 'draco_encoder.js';
 
