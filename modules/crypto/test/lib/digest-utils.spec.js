@@ -17,3 +17,8 @@ test('hexToBase64', t => {
   }
   t.end();
 });
+
+test('hexToBase64#convert zero leading hex correctly', t => {
+  t.equal(_hexToBase64('f85d741'), 'D4XXQQ==');
+  t.end();
+});
