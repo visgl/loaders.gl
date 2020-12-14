@@ -74,7 +74,9 @@ export default async function convertB3dmToI3sGeometry(
         positions,
         normals,
         texCoords,
-        colors
+        colors,
+        featureIds,
+        faceRange
       })
     : null;
 
@@ -852,32 +854,31 @@ function generateBigUint64Array(featureIds) {
  * @returns {Promise<object>} - COmpressed geometry.
  */
 async function generateCompressedGeometry(vertexCount, convertedAttributes, attributes) {
-  const {positions, normals, texCoords, colors} = attributes;
+  const {positions, normals, texCoords, colors, featureIds, faceRange} = attributes;
   const indices = new Uint32Array(vertexCount);
 
   for (let index = 0; index < indices.length; index++) {
     indices.set([index], index);
   }
-  // Uncomment after Draco JS API support feature-index logic
-  // const featureIndex = new Uint32Array(
-  //   convertedAttributes.featureIndices.length ? convertedAttributes.featureIndices : vertexCount
-  // );
+
+  const featureIndices = new Uint32Array(
+    convertedAttributes.featureIndices.length ? convertedAttributes.featureIndices : vertexCount
+  );
+
+  const featureIndex = generateFeatureIndexAttribute(featureIndices, faceRange);
 
   const compressedAttributes = {
-    positions,
-    normals,
-    texCoords,
-    colors
-    // Uncomment after Draco JS API support feature-index logic
-    // 'feature-index': featureIndex
+    position: positions,
+    normal: normals,
+    uv0: texCoords,
+    color: colors,
+    'feature-index': featureIndex
   };
 
   const attributesMetadata = {
     'feature-index': {
-      'i3s-attribute-type': 'feature-index'
-      // Draco JS API v3.6 doesn't support writing arrays to attribute's metadata
-      // it must be array per spec https://github.com/Esri/i3s-spec/blob/master/docs/1.7/compressedAttributes.cmn.md
-      // 'i3s-feature-ids': [0]
+      'i3s-attribute-type': 'feature-index',
+      'i3s-feature-ids': new Int32Array(featureIds)
     }
   };
 
@@ -892,4 +893,27 @@ async function generateCompressedGeometry(vertexCount, convertedAttributes, attr
       }
     })
   );
+}
+
+/**
+ * Generates ordered feature indices based on face range
+ * @param {Uint32Array} featureIndex
+ * @param {Uint32Array} faceRange
+ * @returns {Uint32Array}
+ */
+function generateFeatureIndexAttribute(featureIndex, faceRange) {
+  const orderedFeatureIndices = new Uint32Array(featureIndex.length);
+  let fillIndex = 0;
+  let startIndex = 0;
+
+  for (let index = 1; index < faceRange.length; index += 2) {
+    const endIndex = (faceRange[index] + 1) * VALUES_PER_VERTEX;
+
+    orderedFeatureIndices.fill(fillIndex, startIndex, endIndex);
+
+    fillIndex++;
+    startIndex = endIndex + 1;
+  }
+
+  return orderedFeatureIndices;
 }
