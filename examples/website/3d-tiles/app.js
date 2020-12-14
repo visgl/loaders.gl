@@ -16,9 +16,6 @@ import ControlPanel from './components/control-panel';
 import {loadExampleIndex, INITIAL_EXAMPLE_CATEGORY, INITIAL_EXAMPLE_NAME} from './examples';
 import {INITIAL_MAP_STYLE} from './constants';
 
-// Set your mapbox token here
-const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
-
 const TILESET_SERVER_URL = 'https://assets.cesium.com';
 
 const TRANSITION_DURAITON = 4000;
@@ -264,11 +261,7 @@ export default class App extends PureComponent {
           controller={{type: MapController, maxPitch: 85}}
           onAfterRender={() => this._updateStatWidgets()}
         >
-          <StaticMap
-            mapStyle={selectedMapStyle}
-            mapboxApiAccessToken={MAPBOX_TOKEN}
-            preventStyleDiffing
-          />
+          <StaticMap mapStyle={selectedMapStyle} preventStyleDiffing />
         </DeckGL>
       </div>
     );

@@ -108,7 +108,6 @@ const LOCAL_DEVELOPMENT_CONFIG = {
   },
 
   plugins: [
-    new webpack.EnvironmentPlugin(['MapboxAccessToken']),
     new webpack.DefinePlugin({
       __VERSION__: JSON.stringify(LERNA_INFO.version)
     })

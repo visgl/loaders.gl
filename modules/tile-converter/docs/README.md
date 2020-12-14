@@ -43,3 +43,11 @@ Note: the command line tools are implemented using this API and offer the same f
 - [3D Tiles Specification](https://github.com/AnalyticalGraphicsInc/3d-tiles) - The living specification.
 - [OGC I3S Indexed Scene Layer Standard](http://www.ogc.org/standards/i3s) - The official standard from [OGC](https://www.opengeospatial.org/), the Open Geospatial Consortium.
 - [OGC 3D Tiles Standard](https://www.opengeospatial.org/standards/3DTiles) - The official standard from [OGC](https://www.opengeospatial.org/), the Open Geospatial Consortium.
+
+## Attribution
+
+The tile-converter module represents a major development effort and was funded and contributed to loaders.gl by Esri.
+
+![logo](../images/esri.jpeg)
+
+MIT License.

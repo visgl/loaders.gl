@@ -14,8 +14,6 @@ import {StatsWidget} from '@probe.gl/stats-widget';
 import {INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
 import ControlPanel from './components/control-panel';
 
-// Set your mapbox token here
-const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
 import {INITIAL_MAP_STYLE} from './constants';
 
 const TRANSITION_DURAITON = 4000;
@@ -198,11 +196,7 @@ export default class App extends PureComponent {
           controller={{type: MapController, maxPitch: 85}}
           onAfterRender={() => this._updateStatWidgets()}
         >
-          <StaticMap
-            mapStyle={selectedMapStyle}
-            mapboxApiAccessToken={MAPBOX_TOKEN}
-            preventStyleDiffing
-          />
+          <StaticMap mapStyle={selectedMapStyle} preventStyleDiffing />
         </DeckGL>
       </div>
     );
