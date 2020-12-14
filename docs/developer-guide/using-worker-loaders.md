@@ -29,6 +29,17 @@ async function loadwWithoutWorker(url1) {
 }
 ```
 
+## Disabling Reuse of Workers
+
+Applications reuse already created workers by default. To avoid `enlarge memory arrays` error it is really nesessary to disable it if you need to load multiple datasets in a sequence.
+This functionality can be disabled by `reuseWorkers: false` option:
+
+```js
+async function loadwWithoutWorker(url1) {
+  const data = await load(url1, DracoLoader, {worker: true, reuseWorkers: false});
+}
+```
+
 ## Concurrency Level
 
 Concurrency - The `options.maxConcurrency` parameter can be adjusted to define how many workers should be created for each format. Note that setting this higher than roughly the number CPU cores on your current machine will not provide much benefit and may create extra overhead.
