@@ -75,16 +75,17 @@ export default class WorkerPool {
   _onWorkerDone(worker) {
     if (this.isDestroyed) {
       worker.destroy();
-    } else {
-      if (this.reuseWorkers) {
-        this.idleQueue.push(worker);
-      } else {
-        worker.destroy();
-        this.count--;
-      }
-
-      this._startQueuedJob();
+      return;
     }
+
+    if (this.reuseWorkers) {
+      this.idleQueue.push(worker);
+    } else {
+      worker.destroy();
+      this.count--;
+    }
+
+    this._startQueuedJob();
   }
 
   _getAvailableWorker() {
