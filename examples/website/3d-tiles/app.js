@@ -179,7 +179,7 @@ export default class App extends PureComponent {
   }
 
   _renderControlPanel() {
-    const {examplesByCategory, category, name, viewState, tileset} = this.state;
+    const {examplesByCategory, category, name, viewState, tileset, selectedMapStyle} = this.state;
     if (!examplesByCategory) {
       return null;
     }
@@ -192,6 +192,7 @@ export default class App extends PureComponent {
         tileset={tileset}
         onMapStyleChange={this._onSelectMapStyle.bind(this)}
         onExampleChange={this._onSelectExample.bind(this)}
+        selectedMapStyle={selectedMapStyle}
       >
         <div style={{textAlign: 'center'}}>
           long/lat: {viewState.longitude.toFixed(5)},{viewState.latitude.toFixed(5)}, zoom:{' '}
