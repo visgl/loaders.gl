@@ -62,3 +62,55 @@ test('WorkerPool', async t => {
   workerPool.destroy();
   t.end();
 });
+
+test('WorkerPool with reuseWorkers === false param', async t => {
+  if (!hasWorker) {
+    t.comment('Worker test is browser only');
+    t.end();
+    return;
+  }
+
+  let workerPool = null;
+
+  workerPool = new _WorkerPool({
+    source: testWorkerSource,
+    name: 'test-worker',
+    maxConcurrency: MAX_CONCURRENCY,
+    reuseWorkers: false
+  });
+
+  const TEST_CASES = new Array(CHUNKS_TOTAL).fill(0).map((_, i) => ({chunk: i}));
+
+  Promise.all(TEST_CASES.map(testData => workerPool.process(testData))).then(() => {
+    console.log('workerPool.idleQueue ', workerPool.idleQueue.length); // eslint-disable-line
+    t.equal(workerPool.idleQueue.length, 0);
+    workerPool.destroy();
+    t.end();
+  });
+});
+
+test('WorkerPool with reuseWorkers === true param', async t => {
+  if (!hasWorker) {
+    t.comment('Worker test is browser only');
+    t.end();
+    return;
+  }
+
+  let workerPool = null;
+
+  workerPool = new _WorkerPool({
+    source: testWorkerSource,
+    name: 'test-worker',
+    maxConcurrency: MAX_CONCURRENCY,
+    reuseWorkers: true
+  });
+
+  const TEST_CASES = new Array(CHUNKS_TOTAL).fill(0).map((_, i) => ({chunk: i}));
+
+  Promise.all(TEST_CASES.map(testData => workerPool.process(testData))).then(() => {
+    console.log('workerPool.idleQueue ', workerPool.idleQueue.length); // eslint-disable-line
+    t.equal(workerPool.idleQueue.length, 3);
+    workerPool.destroy();
+    t.end();
+  });
+});
