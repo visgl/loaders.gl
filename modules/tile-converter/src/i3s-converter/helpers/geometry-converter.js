@@ -6,7 +6,6 @@ import {Ellipsoid} from '@math.gl/geospatial';
 import {DracoWriter} from '@loaders.gl/draco';
 import {encode} from '@loaders.gl/core';
 import {concatenateArrayBuffers, concatenateTypedArrays} from '@loaders.gl/loader-utils';
-import draco3d from 'draco3d';
 import md5 from 'md5';
 import {generateAttributes} from './geometry-attributes';
 
@@ -887,9 +886,6 @@ async function generateCompressedGeometry(vertexCount, convertedAttributes, attr
       draco: {
         method: 'MESH_SEQUENTIAL_ENCODING',
         attributesMetadata
-      },
-      modules: {
-        draco3d
       }
     })
   );
