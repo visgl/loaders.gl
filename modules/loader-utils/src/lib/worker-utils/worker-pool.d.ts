@@ -21,6 +21,7 @@ export default class WorkerPool {
     maxConcurrency?: number;
     onMessage?: onMessageFunc,
     onDebug?: (options: OnDebugParameters) => any;
+    reuseWorkers?: boolean;
   });
 
   /**

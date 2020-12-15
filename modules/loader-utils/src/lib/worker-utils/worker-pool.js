@@ -4,7 +4,14 @@ import WorkerThread from './worker-thread';
  * Process multiple data messages with small pool of identical workers
  */
 export default class WorkerPool {
-  constructor({source, name = 'unnamed', maxConcurrency = 1, onMessage, onDebug = () => {}}) {
+  constructor({
+    source,
+    name = 'unnamed',
+    maxConcurrency = 1,
+    onMessage,
+    onDebug = () => {},
+    reuseWorkers = true
+  }) {
     this.source = source;
     this.name = name;
     this.maxConcurrency = maxConcurrency;
@@ -15,6 +22,7 @@ export default class WorkerPool {
     this.idleQueue = [];
     this.count = 0;
     this.isDestroyed = false;
+    this.reuseWorkers = reuseWorkers;
   }
 
   destroy() {
@@ -67,10 +75,17 @@ export default class WorkerPool {
   _onWorkerDone(worker) {
     if (this.isDestroyed) {
       worker.destroy();
-    } else {
-      this.idleQueue.push(worker);
-      this._startQueuedJob();
+      return;
     }
+
+    if (this.reuseWorkers) {
+      this.idleQueue.push(worker);
+    } else {
+      worker.destroy();
+      this.count--;
+    }
+
+    this._startQueuedJob();
   }
 
   _getAvailableWorker() {

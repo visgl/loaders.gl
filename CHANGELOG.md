@@ -2,6 +2,10 @@
 
 ## v2.3 Release
 
+#### v2.3.7
+
+- Added reuseWorkers option (#1053)
+
 #### v2.3.6
 
 - gltf: fixes - parse gltf without buffers (#1017)
