@@ -1,6 +1,7 @@
 /* global console, process */
 /* eslint-disable no-console */
-const {I3SConverter, Tiles3DConverter} = require('@loaders.gl/tile-converter');
+import {join} from 'path';
+const {I3SConverter, Tiles3DConverter, DepsInstaller} = require('@loaders.gl/tile-converter');
 import '@loaders.gl/polyfills';
 
 const TILESET_TYPE = {
@@ -10,6 +11,9 @@ const TILESET_TYPE = {
 
 function printHelp() {
   console.log('cli: converter 3dTiles to I3S or I3S to 3dTiles...');
+  console.log(
+    '--install-dependencies [Run the script for installing dependencies. Run this options separate from others. Now "*.pgm" file installation is implemented]'
+  );
   console.log(
     '--max-depth [Maximal depth of hierarchical tiles tree traversal, default: infinite]'
   );
@@ -24,7 +28,7 @@ function printHelp() {
     '--7zExe [location of 7z.exe archiver to create slpk on Windows, default: "C:\\Program Files\\7-Zip\\7z.exe"]'
   );
   console.log(
-    '--egm [location of Earth Gravity Model *.pgm file to convert heights from ellipsoidal to gravity-related format. A model file can be loaded from GeographicLib https://geographiclib.sourceforge.io/html/geoid.html]'
+    '--egm [location of Earth Gravity Model *.pgm file to convert heights from ellipsoidal to gravity-related format. A model file can be loaded from GeographicLib https://geographiclib.sourceforge.io/html/geoid.html], default: "./deps/egm2008-5.zip"'
   );
   console.log('--token [Token for Cesium ION tilesets authentication]');
   console.log('--no-draco [Disable draco compression for geometry]');
@@ -36,8 +40,7 @@ function validateOptions(options) {
     name: () => console.log('Missed: --name [Tileset name]'),
     tileset: () => console.log('Missed: --tileset [tileset.json file]'),
     inputType: () =>
-      console.log('Missed/Incorrect: --input-type [tileset input type: I3S or 3DTILES]'),
-    egm: () => console.log('Missed: --egm [location of the Earth Gravitational Model *.pgm file]')
+      console.log('Missed/Incorrect: --input-type [tileset input type: I3S or 3DTILES]')
   };
   const exceptions = [];
   for (const mandatoryOption in mandatoryOptionsWithExceptions) {
@@ -67,6 +70,13 @@ async function main() {
   }
 
   options = parseOptions(args);
+
+  if (options.installDependencies) {
+    const depthInstaller = new DepsInstaller();
+    depthInstaller.install('deps');
+    return;
+  }
+
   validateOptions(options);
 
   await convert(options);
@@ -109,6 +119,7 @@ async function convert(options) {
       printHelp();
   }
 }
+
 // OPTIONS
 
 function parseOptions(args) {
@@ -118,9 +129,10 @@ function parseOptions(args) {
     name: null,
     output: 'data',
     sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
-    egm: '',
+    egm: join(process.cwd(), 'deps', 'egm2008-5.pgm'),
     token: null,
-    draco: true
+    draco: true,
+    installDependencies: false
   };
 
   const count = args.length;
@@ -168,6 +180,9 @@ function parseOptions(args) {
           break;
         case '--no-draco':
           opts.draco = false;
+          break;
+        case '--install-dependencies':
+          opts.installDependencies = true;
           break;
         case '--help':
           printHelp();

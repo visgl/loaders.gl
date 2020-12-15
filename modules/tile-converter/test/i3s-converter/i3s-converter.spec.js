@@ -3,6 +3,8 @@ import {I3SConverter} from '@loaders.gl/tile-converter';
 import {isBrowser} from '@loaders.gl/core';
 import {promises as fs} from 'fs';
 
+import {cleanUpPath} from '../utils/file-utils';
+
 const TILESET_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedColors/tileset.json';
 const TILESET_WITH_TEXTURES = '@loaders.gl/3d-tiles/test/data/Batched/BatchedTextured/tileset.json';
 
@@ -20,22 +22,6 @@ const TEST_TEXTURE_MATERIAL = {
     }
   }
 };
-
-async function cleanUpPath(testPath) {
-  // Do not run under browser
-  if (!isBrowser) {
-    try {
-      await fs.rmdir(testPath, {recursive: true});
-    } catch (e) {
-      // Do nothing
-    }
-    try {
-      await fs.unlink(`${testPath}.slpk`);
-    } catch (e) {
-      // Do nothing
-    }
-  }
-}
 
 test('cli - Converters#converts 3d-tiles tileset to i3s tileset', async t => {
   if (!isBrowser) {
