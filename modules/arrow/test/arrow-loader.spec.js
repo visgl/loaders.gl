@@ -33,6 +33,19 @@ test('ArrowLoader#parseSync(simple.arrow)', async t => {
   t.end();
 });
 
+test('ArrowLoader#parseSync(simple.arrow) rowFormat="object" type', async t => {
+  const rowFormatTable = await parse(fetchFile(ARROW_SIMPLE), ArrowLoader, {
+    worker: false,
+    arrow: {
+      rowFormat: 'object'
+    }
+  });
+  t.ok(rowFormatTable, 'Row based table loaded');
+  t.equal(rowFormatTable.length, 5);
+  t.deepEqual(rowFormatTable[0], {foo: 1, bar: 1, baz: 'aa'});
+  t.end();
+});
+
 test('ArrowLoader#parseSync(dictionary.arrow)', async t => {
   const columns = await parse(fetchFile(ARROW_DICTIONARY), ArrowLoader);
   // Check loader specific results

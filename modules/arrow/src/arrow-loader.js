@@ -19,7 +19,8 @@ export const ArrowWorkerLoader = {
   tests: ['ARROW'],
   options: {
     arrow: {
-      workerUrl: `https://unpkg.com/@loaders.gl/arrow@${VERSION}/dist/arrow-loader.worker.js`
+      workerUrl: `https://unpkg.com/@loaders.gl/arrow@${VERSION}/dist/arrow-loader.worker.js`,
+      rowFormat: 'auto'
     }
   }
 };
