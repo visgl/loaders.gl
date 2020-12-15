@@ -1,4 +1,4 @@
-import {load, setLoaderOptions} from '@loaders.gl/core';
+import {load} from '@loaders.gl/core';
 import {Tileset3D} from '@loaders.gl/tiles';
 import {CesiumIonLoader} from '@loaders.gl/3d-tiles';
 import {join} from 'path';
@@ -6,7 +6,6 @@ import {v4 as uuidv4} from 'uuid';
 import process from 'process';
 import transform from 'json-map-transform';
 import md5 from 'md5';
-import draco3d from 'draco3d';
 
 import NodePages from './helpers/node-pages';
 import {writeFile, removeDir, writeFileForSlpk} from '../lib/utils/file-utils';
@@ -41,14 +40,6 @@ const DOUBLE_TYPE = 'double';
 const OBJECT_ID_TYPE = 'OBJECTID';
 const REFRESH_TOKEN_TIMEOUT = 1800; // 30 minutes in seconds
 const FS_FILE_TOO_LARGE = 'ERR_FS_FILE_TOO_LARGE';
-
-// Bind draco3d to avoid dynamic loading
-// Converter bundle has incorrect links when using dynamic loading
-setLoaderOptions({
-  modules: {
-    draco3d
-  }
-});
 
 export default class I3SConverter {
   constructor() {

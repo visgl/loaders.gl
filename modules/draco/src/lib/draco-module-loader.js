@@ -9,7 +9,7 @@ const DRACO_JS_DECODER_URL = `https://www.gstatic.com/draco/versioned/decoders/$
 const DRACO_WASM_WRAPPER_URL = `https://www.gstatic.com/draco/versioned/decoders/${DRACO_VERSION}/draco_wasm_wrapper.js`;
 const DRACO_WASM_DECODER_URL = `https://www.gstatic.com/draco/versioned/decoders/${DRACO_VERSION}/draco_decoder.wasm`;
 
-const DRACO_ENCODER_URL = 'draco_encoder.js';
+const DRACO_ENCODER_URL = `https://raw.githubusercontent.com/google/draco/${DRACO_VERSION}/javascript/draco_encoder.js`;
 
 let loadDecoderPromise;
 let loadEncoderPromise;
