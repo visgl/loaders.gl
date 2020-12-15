@@ -4,6 +4,7 @@
 
 #### v2.3.7
 
+- Add "rowBased" option for arrow loader (#1035)
 - crypto: convert zero leading hex correctly (#1044)
 - Added reuseWorkers option (#1053)
 
