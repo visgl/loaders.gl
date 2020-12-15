@@ -60,6 +60,11 @@ function getWorkerFarm(options = {}) {
     props.onDebug = options.onDebug;
   }
 
+  if ('reuseWorkers' in options) {
+    // @ts-ignore
+    props.reuseWorkers = options.reuseWorkers;
+  }
+
   if (!_workerFarm) {
     _workerFarm = new WorkerFarm({onMessage: onWorkerMessage});
   }
