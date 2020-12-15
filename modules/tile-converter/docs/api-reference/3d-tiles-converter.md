@@ -4,7 +4,7 @@
   <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />
 </p>
 
-The `Tiles3DConverter` class converts an I3S layer. It converts between the I3S formats and the OGC 3D Tiles.
+The `Tiles3DConverter` class converts an I3S layer. It converts between the OGC I3S formats and the 3D Tiles.
 
 ## Usage
 
