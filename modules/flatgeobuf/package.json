@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/flatgeobuf",
   "description": "Loader for FlatGeobuf",
-  "version": "2.3.6",
+  "version": "2.3.7",
   "license": "MIT",
   "publishConfig": {
     "access": "public"
@@ -32,7 +32,7 @@
     "build-bundle": "webpack --display=minimal --config ../../scripts/bundle.config.js"
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "2.3.6",
+    "@loaders.gl/loader-utils": "2.3.7",
     "flatgeobuf": "^3.1.0"
   },
   "devDependencies": {
