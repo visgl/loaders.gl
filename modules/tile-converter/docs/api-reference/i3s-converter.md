@@ -4,7 +4,7 @@
   <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />
 </p>
 
-The `I3SConverter` class converts an I3S Tileset to 3D Tiles.
+The `I3SConverter` class converts a 3D Tiles tileset to I3S layer.
 
 ## Usage
 
