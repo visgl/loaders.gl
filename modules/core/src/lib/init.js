@@ -4,8 +4,7 @@ const version = typeof __VERSION__ !== 'undefined' ? __VERSION__ : '';
 
 // @ts-ignore
 global.loaders = Object.assign(global.loaders || {}, {
-  VERSION: version,
-  version
+  VERSION: version
 });
 
 // @ts-ignore
