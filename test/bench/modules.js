@@ -28,7 +28,7 @@ import imageBench from '@loaders.gl/images/test/images.bench';
 import coreBench from '@loaders.gl/core/test/core.bench';
 import csvBench from '@loaders.gl/csv/test/csv.bench';
 import jsonBench from '@loaders.gl/json/test/json-loader.bench';
-// import dracoBench from '@loaders.gl/draco/test/draco.bench';
+import dracoBench from '@loaders.gl/draco/test/draco.bench';
 
 import cryptoBench from '@loaders.gl/crypto/test/crypto.bench';
 
@@ -41,7 +41,7 @@ export async function addModuleBenchmarksToSuite(suite) {
   await imageBench(suite);
   await cryptoBench(suite);
 
-  // await dracoBench(suite); - does not build in website
+  await dracoBench(suite);
   await csvBench(suite);
   await jsonBench(suite);
   await coreBench(suite);
