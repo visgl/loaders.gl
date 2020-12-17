@@ -26,6 +26,8 @@ const DRACO_DATA_TYPE_TO_TYPED_ARRAY_MAP = {
   9: Float32Array
 };
 
+const INDEX_ITEM_SIZE = 4;
+
 export default class DracoParser {
   // draco - the draco decoder, either import `draco3d` or load dynamically
   constructor(draco) {
@@ -218,11 +220,11 @@ export default class DracoParser {
     // Example on how to retrieve mesh and attributes.
     const numFaces = dracoGeometry.num_faces();
     const numIndices = numFaces * 3;
-    const byteLength = numIndices * 4; // TODO: 4 - is type size of indices array. Possibly this data is defined in header
+    const byteLength = numIndices * INDEX_ITEM_SIZE;
 
     const ptr = this.draco._malloc(byteLength);
     decoder.GetTrianglesUInt32Array(dracoGeometry, byteLength, ptr);
-    const indices = new Uint32Array(this.draco.HEAPF32.buffer, ptr, numIndices).slice(); // TODO: why slice here?
+    const indices = new Uint32Array(this.draco.HEAPF32.buffer, ptr, numIndices).slice();
     this.draco._free(ptr);
 
     return indices;
@@ -274,7 +276,7 @@ export default class DracoParser {
       byteLength,
       ptr
     );
-    const typedArray = new TypedArrayCtor(this.draco.HEAPF32.buffer, ptr, numValues).slice(); // TODO: what `slice` here for?
+    const typedArray = new TypedArrayCtor(this.draco.HEAPF32.buffer, ptr, numValues).slice();
     this.draco._free(ptr);
 
     return {typedArray, components: numComponents};
