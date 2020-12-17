@@ -217,19 +217,14 @@ export default class DracoParser {
   _getMeshFaceIndices(decoder, dracoGeometry) {
     // Example on how to retrieve mesh and attributes.
     const numFaces = dracoGeometry.num_faces();
-
     const numIndices = numFaces * 3;
-    const indices = new Uint32Array(numIndices);
-    const dracoArray = new this.draco.DracoInt32Array();
-    for (let i = 0; i < numFaces; ++i) {
-      decoder.GetFaceFromMesh(dracoGeometry, i, dracoArray);
-      const index = i * 3;
-      indices[index] = dracoArray.GetValue(0);
-      indices[index + 1] = dracoArray.GetValue(1);
-      indices[index + 2] = dracoArray.GetValue(2);
-    }
+    const byteLength = numIndices * 4; // TODO: 4 - is type size of indices array. Possibly this data is defined in header
 
-    this.draco.destroy(dracoArray);
+    const ptr = this.draco._malloc(byteLength);
+    decoder.GetTrianglesUInt32Array(dracoGeometry, byteLength, ptr);
+    const indices = new Uint32Array(this.draco.HEAPF32.buffer, ptr, numIndices).slice(); // TODO: why slice here?
+    this.draco._free(ptr);
+
     return indices;
   }
 
@@ -263,71 +258,54 @@ export default class DracoParser {
       throw new Error(message);
     }
 
-    const attributeType = DRACO_DATA_TYPE_TO_TYPED_ARRAY_MAP[dracoAttribute.data_type()];
+    const TypedArrayCtor = DRACO_DATA_TYPE_TO_TYPED_ARRAY_MAP[dracoAttribute.data_type()];
     const numComponents = dracoAttribute.num_components();
     const numPoints = dracoGeometry.num_points();
     const numValues = numPoints * numComponents;
 
-    let dracoArray;
-    let typedArray;
+    const byteLength = numValues * TypedArrayCtor.BYTES_PER_ELEMENT;
+    const dataType = this._getDracoDataType(TypedArrayCtor);
 
-    switch (attributeType) {
-      case Float32Array:
-        dracoArray = new this.draco.DracoFloat32Array();
-        decoder.GetAttributeFloatForAllPoints(dracoGeometry, dracoAttribute, dracoArray);
-        typedArray = new Float32Array(numValues);
-        break;
-
-      case Int8Array:
-        dracoArray = new this.draco.DracoInt8Array();
-        decoder.GetAttributeInt8ForAllPoints(dracoGeometry, dracoAttribute, dracoArray);
-        typedArray = new Int8Array(numValues);
-        break;
-
-      case Int16Array:
-        dracoArray = new this.draco.DracoInt16Array();
-        decoder.GetAttributeInt16ForAllPoints(dracoGeometry, dracoAttribute, dracoArray);
-        typedArray = new Int16Array(numValues);
-        break;
-
-      case Int32Array:
-        dracoArray = new this.draco.DracoInt32Array();
-        decoder.GetAttributeInt32ForAllPoints(dracoGeometry, dracoAttribute, dracoArray);
-        typedArray = new Int32Array(numValues);
-        break;
-
-      case Uint8Array:
-        dracoArray = new this.draco.DracoUInt8Array();
-        decoder.GetAttributeUInt8ForAllPoints(dracoGeometry, dracoAttribute, dracoArray);
-        typedArray = new Uint8Array(numValues);
-        break;
-
-      case Uint16Array:
-        dracoArray = new this.draco.DracoUInt16Array();
-        decoder.GetAttributeUInt16ForAllPoints(dracoGeometry, dracoAttribute, dracoArray);
-        typedArray = new Uint16Array(numValues);
-        break;
-
-      case Uint32Array:
-        dracoArray = new this.draco.DracoUInt32Array();
-        decoder.GetAttributeUInt32ForAllPoints(dracoGeometry, dracoAttribute, dracoArray);
-        typedArray = new Uint32Array(numValues);
-        break;
-
-      default:
-        const errorMsg = 'DRACO decoder: unexpected attribute type.';
-        // console.error(errorMsg);
-        throw new Error(errorMsg);
-    }
-
-    // Copy data from decoder.
-    for (let i = 0; i < numValues; i++) {
-      typedArray[i] = dracoArray.GetValue(i);
-    }
-
-    this.draco.destroy(dracoArray);
+    const ptr = this.draco._malloc(byteLength);
+    decoder.GetAttributeDataArrayForAllPoints(
+      dracoGeometry,
+      dracoAttribute,
+      dataType,
+      byteLength,
+      ptr
+    );
+    const typedArray = new TypedArrayCtor(this.draco.HEAPF32.buffer, ptr, numValues).slice(); // TODO: what `slice` here for?
+    this.draco._free(ptr);
 
     return {typedArray, components: numComponents};
+  }
+
+  /**
+   * Get draco specific data type by TypedArray constructor type
+   * @param {*} attributeType
+   * @returns {number} draco specific data type
+   */
+  _getDracoDataType(attributeType) {
+    switch (
+      attributeType // eslint-disable-line default-case
+    ) {
+      case Float32Array:
+        return this.draco.DT_FLOAT32;
+      case Int8Array:
+        return this.draco.DT_INT8;
+      case Int16Array:
+        return this.draco.DT_INT16;
+      case Int32Array:
+        return this.draco.DT_INT32;
+      case Uint8Array:
+        return this.draco.DT_UINT8;
+      case Uint16Array:
+        return this.draco.DT_UINT16;
+      case Uint32Array:
+        return this.draco.DT_UINT32;
+      default:
+        return this.draco.DT_INVALID;
+    }
   }
 
   /**
