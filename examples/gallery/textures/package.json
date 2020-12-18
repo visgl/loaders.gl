@@ -1,0 +1,18 @@
+{
+  "license": "MIT",
+  "description": "Minimal example of using loaders.gl with basis.",
+  "scripts": {
+    "start": "webpack-dev-server --progress --hot --open -d",
+    "start-local": "webpack-dev-server --env.local --progress --hot --open"
+  },
+  "dependencies": {
+    "@loaders.gl/basis": "2.2.0",
+    "@loaders.gl/core": "2.2.0",
+    "@loaders.gl/images": "^2.3.7"
+  },
+  "devDependencies": {
+    "babel-plugin-inline-import": "^3.0.0",
+    "webpack": "^4.3.0",
+    "webpack-dev-server": "^3.1.1"
+  }
+}
