@@ -1,0 +1,159 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset='UTF-8' />
+    <title>Texture Format Tester</title>
+    <style>
+        body {
+            background: burlywood;
+        }
+
+        .texture-set {
+            display: flex;
+            flex-flow: row nowrap;
+            justify-content: flex-start;
+        }
+
+        .texture {
+            height: 256px;
+            width: 256px;
+            border: 1px solid black;
+            margin: 1em;
+            position: relative;
+        }
+
+        .button-text {
+            position: absolute;
+            top: 0;
+            left: 0;
+            margin: 0;
+            color: white;
+            font-size: 16px;
+        }
+
+        .black-text {
+            color: black;
+        }
+
+        .sub-formats {
+            border-bottom: 1px solid black;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrapper">
+        <div class="texture-format-tester">
+            <h1>Texture Format Tester</h1>
+            <div>
+                <h2 class="sub-formats">Browser Native Formats (Uncompressed)</h2>
+                <div class="texture-set">
+                    <button class="texture" tex-src="test/data/compressed/shannon.jpg">
+                        <h1 class="button-text">JPG</h1>
+                    </button>
+                    <button class="texture" tex-src="test/data/compressed/shannon.gif">
+                        <h1 class="button-text">GIF</h1>
+                    </button>
+                    <button class="texture" tex-src="test/data/compressed/shannon.png">
+                        <h1 class="button-text">PNG</h1>
+                    </button>
+                    <button class="texture" tex-src="test/data/compressed/shannon.bmp">
+                        <h1 class="button-text">BMP</h1>
+                    </button>
+                    <button class="texture" tex-src="test/data/compressed/shannon.webp">
+                        <h1 class="button-text">WEBP</h1>
+                    </button>
+                </div>
+            </div>
+            <div>
+                <h2 class="sub-formats">WEBGL_compressed_texture_s3tc</h2>
+                <div class="texture-set">
+                    <button class="texture" tex-src="test/data/compressed/shannon-dxt1.dds">
+                        <h1 class="button-text">DXT1</h1>
+                    </button>
+                    <button class="texture" tex-src="test/data/compressed/shannon-dxt3.dds">
+                        <h1 class="button-text">DXT3</h1>
+                    </button>
+                    <button class="texture" tex-src="test/data/compressed/shannon-dxt5.dds">
+                        <h1 class="button-text">DXT5</h1>
+                    </button>
+                </div>
+            </div>
+            <div>
+                <h2 class="sub-formats">WEBGL_compressed_texture_s3tc with Crunch Compression</h2>
+                <div class="texture-set">
+                    <button class="texture" tex-src="test/data/compressed/shannon-dxt1.crn">
+                        <h1 class="button-text">DXT1 (Crunch)</h1>
+                    </button>
+                    <button class="texture" tex-src="test/data/compressed/shannon-dxt5.crn">
+                        <h1 class="button-text">DXT5 (Crunch)</h1>
+                    </button>
+                </div>
+            </div>
+            <div>
+                <h2 class="sub-formats">WEBGL_compressed_texture_pvrtc</h2>
+                <div class="texture-set">
+                    <button class="texture" tex-src="test/data/compressed/shannon-pvrtc-2bpp-rgb.pvr">
+                        <h1 class="button-text">PVRTC (2BPP RGB)</h1>
+                    </button>
+                    <button class="texture" tex-src="test/data/compressed/shannon-pvrtc-2bpp-rgba.pvr">
+                        <h1 class="button-text">PVRTC (2BPP RGBA)</h1>
+                    </button>
+                    <button class="texture" tex-src="test/data/compressed/shannon-pvrtc-4bpp-rgb.pvr">
+                        <h1 class="button-text">PVRTC (4BPP RGB)</h1>
+                    </button>
+                    <button class="texture" tex-src="test/data/compressed/shannon-pvrtc-4bpp-rgba.pvr">
+                        <h1 class="button-text">PVRTC (4BPP RGBA)</h1>
+                    </button>
+                </div>
+            </div>
+            <div>
+                <h2 class="sub-formats">WEBGL_compressed_texture_atc</h2>
+                <div class="texture-set">
+                    <button class="texture" tex-src="test/data/compressed/shannon-atc-rgb.dds">
+                        <h1 class="button-text">ATC (RGB)</h1>
+                    </button>
+                    <button class="texture" tex-src="test/data/compressed/shannon-atc-rgba-explicit.dds">
+                        <h1 class="button-text">ATC (RGBA, Explicit)</h1>
+                    </button>
+                    <button class="texture" tex-src="test/data/compressed/shannon-atc-rgba-interpolated.dds">
+                        <h1 class="button-text">ATC (RGBA, Interpolated)</h1>
+                    </button>
+                </div>
+            </div>
+            <div>
+                <h2 class="sub-formats">WEBGL_compressed_texture_etc1</h2>
+                <div class="texture-set">
+                    <button class="texture" tex-src="test/data/compressed/shannon-etc1.pvr">
+                        <h1 class="button-text">ETC1</h1>
+                    </button>
+                </div>
+            </div>
+            <div>
+                <h2 class="sub-formats">WEBGL_compressed_texture_BASIS</h2>
+                <div class="texture-set">
+                    <button class="texture" tex-src="test/data/compressed/alpha3.basis">
+                        <h1 class="button-text black-text">BASIS</h1>
+                    </button>
+                    <button class="texture" tex-src="test/data/compressed/kodim01.basis">
+                        <h1 class="button-text">BASIS</h1>
+                    </button>
+                    <button class="texture" tex-src="test/data/compressed/kodim18.basis">
+                        <h1 class="button-text">BASIS</h1>
+                    </button>
+                    <button class="texture" tex-src="test/data/compressed/kodim20_1024x1024.basis">
+                        <h1 class="button-text black-text">BASIS</h1>
+                    </button>
+                    <button class="texture" tex-src="test/data/compressed/kodim20.basis">
+                        <h1 class="button-text black-text">BASIS</h1>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src='./app.js'></script>
+</body>
+
+</html>
