@@ -21,10 +21,6 @@ if (dxtSupported) {
   };
 }
 
-// TODO - load images from github once the test images have been pushed to repo
-// const BASIS_URL =
-//   'https://raw.githubusercontent.com/uber-web/loaders.gl/master/modules/basis/test/data/alpha.3.basis';
-
 const textureRenderPogram = createProgram();
 
 document.addEventListener('DOMContentLoaded', async () => await loadTextures());
