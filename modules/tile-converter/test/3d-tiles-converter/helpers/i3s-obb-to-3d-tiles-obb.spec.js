@@ -5,7 +5,7 @@ import {default as PGMLoader} from '../../../src/pgm-loader';
 
 const PGM_FILE_PATH = '@loaders.gl/tile-converter/test/data/egm84-30.pgm';
 
-test('cli - Converters#converts I3S OBB to 3D-Tiles OBB', async t => {
+test('tile-converter - Converters#converts I3S OBB to 3D-Tiles OBB', async t => {
   const geoidHeightModel = await load(PGM_FILE_PATH, PGMLoader);
   // Frankfurt coordinates
   const tiles3DObb = i3sObbTo3dTilesObb(

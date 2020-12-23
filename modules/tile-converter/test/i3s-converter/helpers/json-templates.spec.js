@@ -9,7 +9,7 @@ const inputData = {
   }
 };
 
-test('cli - Converters#json transform - should fill input data into the template', async t => {
+test('tile-converter - Converters#json transform - should fill input data into the template', async t => {
   const template = {
     b: {
       path: 'b',

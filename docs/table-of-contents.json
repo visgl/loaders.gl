@@ -269,7 +269,9 @@
           "entries": [
             {"entry": "modules/tile-converter/docs"},
             {"entry": "modules/tile-converter/docs/api-reference/3d-tiles-converter"},
-            {"entry": "modules/tile-converter/docs/api-reference/i3s-converter"}
+            {"entry": "modules/tile-converter/docs/api-reference/i3s-converter"},
+            {"entry": "modules/tile-converter/docs/api-reference/build-instructions"},
+            {"entry": "modules/tile-converter/docs/api-reference/tile-converter-bundle"}
           ]
         },
         {
