@@ -50,7 +50,7 @@ const ATTRIBUTES_STORAGE_INFO_STUB = [
 ];
 const Y_UP_TO_Z_UP_MATRIX = new Matrix4([1, 0, 0, 0, 0, 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1]);
 
-test('cli - b3dm converter#should convert i3s node data to b3dm encoded data', async t => {
+test('tile-converter - b3dm converter#should convert i3s node data to b3dm encoded data', async t => {
   if (!isBrowser) {
     const tile = await loadI3STile();
     const i3sContent = tile.content;
@@ -76,7 +76,7 @@ test('cli - b3dm converter#should convert i3s node data to b3dm encoded data', a
   }
 });
 
-test('cli - b3dm converter#should normalise positions correctly', async t => {
+test('tile-converter - b3dm converter#should normalise positions correctly', async t => {
   if (!isBrowser) {
     const tile = await loadI3STile();
     const i3sContent = tile.content;
@@ -99,7 +99,7 @@ test('cli - b3dm converter#should normalise positions correctly', async t => {
   }
 });
 
-test('cli - b3dm converter#should convert material', async t => {
+test('tile-converter - b3dm converter#should convert material', async t => {
   if (!isBrowser) {
     const tile = await loadI3STile();
     const b3dmConverter = new B3dmConverter();
@@ -120,7 +120,7 @@ test('cli - b3dm converter#should convert material', async t => {
   }
 });
 
-test('cli - b3dm converter#should not convert incorrect normals', async t => {
+test('tile-converter - b3dm converter#should not convert incorrect normals', async t => {
   if (!isBrowser) {
     const tile = await loadI3STile();
     const b3dmConverter = new B3dmConverter();

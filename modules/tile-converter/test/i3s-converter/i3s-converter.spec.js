@@ -23,7 +23,7 @@ const TEST_TEXTURE_MATERIAL = {
   }
 };
 
-test('cli - Converters#converts 3d-tiles tileset to i3s tileset', async t => {
+test('tile-converter - Converters#converts 3d-tiles tileset to i3s tileset', async t => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     const tilesetJson = await converter.convert({
@@ -43,7 +43,7 @@ test('cli - Converters#converts 3d-tiles tileset to i3s tileset', async t => {
   t.end();
 });
 
-test('cli - Converters#root node should not contain geometry and textures', async t => {
+test('tile-converter - Converters#root node should not contain geometry and textures', async t => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     await converter.convert({
@@ -68,7 +68,7 @@ test('cli - Converters#root node should not contain geometry and textures', asyn
   t.end();
 });
 
-test('cli - Converters#should create SceneServer path', async t => {
+test('tile-converter - Converters#should create SceneServer path', async t => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     await converter.convert({
@@ -88,7 +88,7 @@ test('cli - Converters#should create SceneServer path', async t => {
   t.end();
 });
 
-test('cli - Converters#should create sharedResources json file', async t => {
+test('tile-converter - Converters#should create sharedResources json file', async t => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     await converter.convert({
@@ -111,7 +111,7 @@ test('cli - Converters#should create sharedResources json file', async t => {
   t.end();
 });
 
-test('cli - Converters#should create only unique materials', async t => {
+test('tile-converter - Converters#should create only unique materials', async t => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     await converter.convert({

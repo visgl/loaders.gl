@@ -44,10 +44,17 @@ Note: the command line tools are implemented using this API and offer the same f
 - [OGC I3S Indexed Scene Layer Standard](http://www.ogc.org/standards/i3s) - The official standard from [OGC](https://www.opengeospatial.org/), the Open Geospatial Consortium.
 - [OGC 3D Tiles Standard](https://www.opengeospatial.org/standards/3DTiles) - The official standard from [OGC](https://www.opengeospatial.org/), the Open Geospatial Consortium.
 
+## Build instructions
+
+There are two ways to perform conversion:
+
+- [`npx tile-converter` command](modules/tile-converter/docs/api-reference/build-instructions.md).
+- [autonomous bundle script](modules/tile-converter/docs/api-reference/tile-converter-bundle.md).
+
 ## Attribution
 
 The tile-converter module represents a major development effort and was funded and contributed to loaders.gl by Esri.
 
-![logo](../images/esri.jpeg)
+![logo](./images/esri.jpeg)
 
 MIT License.
