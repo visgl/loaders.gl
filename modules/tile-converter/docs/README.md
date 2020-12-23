@@ -44,12 +44,12 @@ Note: the command line tools are implemented using this API and offer the same f
 - [OGC I3S Indexed Scene Layer Standard](http://www.ogc.org/standards/i3s) - The official standard from [OGC](https://www.opengeospatial.org/), the Open Geospatial Consortium.
 - [OGC 3D Tiles Standard](https://www.opengeospatial.org/standards/3DTiles) - The official standard from [OGC](https://www.opengeospatial.org/), the Open Geospatial Consortium.
 
-## Build instructions
+## Additional build instructions
 
-There are two ways to perform conversion:
+There are additional ways to perform conversion:
 
-- [`npx tile-converter` command](modules/tile-converter/docs/api-reference/build-instructions.md).
-- [autonomous bundle script](modules/tile-converter/docs/api-reference/tile-converter-bundle.md).
+- Tile converter can be run right on a repository branch. It might be helpful if some updates are needed which last release doesn't contain [Build instructions](modules/tile-converter/docs/api-reference/build-instructions.md).
+- An autonomous bundle script can be built. It is entire converter in just 1 file. This file can be destributed directly to interested but not experienced user. [See instructions](modules/tile-converter/docs/api-reference/tile-converter-bundle.md).
 
 ## Attribution
 
