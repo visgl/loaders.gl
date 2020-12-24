@@ -32,7 +32,7 @@ class TextureTesterApp {
   async renderTextures() {
     const canvas = this.setupCanvas();
     const gl = canvas.getContext('webgl');
-    this.setupSupportedForamts(gl);
+    this.setupSupportedFormats(gl);
     const program = this.createProgram(gl);
     this.createAndFillBufferObject(gl, this.data);
 
@@ -91,7 +91,7 @@ class TextureTesterApp {
     return program;
   }
 
-  setupSupportedForamts(gl) {
+  setupSupportedFormats(gl) {
     this.dxtSupported = Boolean(gl.getExtension('WEBGL_compressed_texture_s3tc'));
     this.pvrtcSupported = Boolean(gl.getExtension('WEBGL_compressed_texture_pvrtc'));
     this.atcSupported = Boolean(gl.getExtension('WEBGL_compressed_texture_atc'));
@@ -115,8 +115,8 @@ class TextureTesterApp {
   async loadTestTextures(canvas, gl, loadOptions, program) {
     const textures = document.querySelectorAll('.texture');
 
-    for (let index = 0; index < textures.length; index++) {
-      await this.loadTexture(canvas, gl, textures[index], loadOptions, program);
+    for (const texture of textures) {
+      await this.loadTexture(canvas, gl, texture, loadOptions, program);
     }
   }
 
