@@ -1,8 +1,10 @@
-## npx command usage
+# Build Instructions
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />
 </p>
+
+Following steps are for running converter right on a repository branch. It might be helpful if latest changes from any repository branch are needed. E.g. if latest `master` branch has some important updates in `tile-converter` module or other module that `tile converter` module depends on, a user can run it. It doesn't need to wait for new release.
 
 1. Using [yarn](https://yarnpkg.com/getting-started/install) instead of npm is recommended because it is general practice in vis.gl repos;
 
@@ -24,6 +26,8 @@ yarn bootstrap
 ```
 npx tile-converter --install-dependencies
 ```
+
+You can use custom Earth Gravity Model using `--egm` option.
 
 5. [Convert some tileset](modules/tile-converter/docs/cli-reference/tile-converter.md)
    Examples:

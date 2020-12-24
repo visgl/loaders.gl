@@ -4,6 +4,9 @@
   <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />
 </p>
 
+The converter can be run with autonomous script. It might be helpful for users which are not experienced in npm/yarn tools. All what they have to have to run conversion is a built script (converter.min.js) and NodeJS. If making \*.slpk is necessary, a zip archiver is "must have" as well.
+The "bundle script" is good options for fast and easy destribution of the converter.
+
 1. Create bundle:
 
 ```yarn boostrap
