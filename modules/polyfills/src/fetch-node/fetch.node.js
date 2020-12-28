@@ -37,6 +37,12 @@ export default async function fetchNode(url, options) {
     const body = await createReadStream(originalUrl, options);
     const headers = getHeaders(url, body, syntheticResponseHeaders);
     const {status, statusText} = getStatus(body);
+
+    if (status >= 300 && status < 400 && headers.has('location') && options.followRedirect) {
+      // Redirect
+      return await fetchNode(headers.get('location'), options);
+    }
+
     return new Response(body, {headers, status, statusText, url});
   } catch (error) {
     // TODO - what error code to use here?
