@@ -5,7 +5,7 @@ The `@loaders.gl/textures` module contains a loader for Basis encoded compressed
 ## Installation
 
 ```bash
-npm install @loaders.gl/tetures
+npm install @loaders.gl/textures
 npm install @loaders.gl/core
 ```
 
