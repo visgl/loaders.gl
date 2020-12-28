@@ -1,6 +1,6 @@
 # Overview
 
-The `@loaders.gl/textues` module contains a loader for Basis encoded compressed textures (images).
+The `@loaders.gl/textures` module contains a loader for Basis encoded compressed textures (images).
 
 ## Installation
 
