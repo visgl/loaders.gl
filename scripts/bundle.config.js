@@ -42,6 +42,16 @@ const NODE = {
   crypto: 'empty'
 };
 
+const BABEL_CONFIG = {
+  presets: [
+    ['@babel/preset-env', {modules: false}]
+  ],
+  plugins: [
+    ['@babel/plugin-transform-runtime', {useESModules: false}], 
+    'version-inline'
+  ]
+};
+
 const config = {
   mode: 'production',
 
@@ -67,8 +77,9 @@ const config = {
         // Compile ES2015 using babel
         test: /\.js$/,
         loader: 'babel-loader',
-        include: /src/
+        include: /src/,
         // exclude: /transpiled/
+        options: BABEL_CONFIG
       }
     ]
   },
