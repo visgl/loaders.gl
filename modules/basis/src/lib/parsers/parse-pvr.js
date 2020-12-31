@@ -3,8 +3,9 @@
 // Copyright (c) 2017 Tarek Sherif, The MIT License (MIT)
 import {GL} from '../gl-constants';
 
-const PVR_CONSTANTS = {
+export const PVR_CONSTANTS = {
   MAGIC_NUMBER: 0x03525650,
+  MAGIC_NUMBER_EXTRA: 0x50565203,
   HEADER_LENGTH: 13,
   HEADER_SIZE: 52,
   MAGIC_NUMBER_INDEX: 0,
