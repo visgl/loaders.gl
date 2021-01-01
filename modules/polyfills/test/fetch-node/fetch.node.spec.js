@@ -9,6 +9,9 @@ const PLY_CUBE_ATT_SIZE = 853;
 const TEXT_URL = `@loaders.gl/polyfills/test/data/data.txt`;
 const TEXT_URL_GZIPPED = `@loaders.gl/polyfills/test/data/data.txt.gz`;
 
+const REDIRECT_URL =
+  'https://github.com/visgl/deck.gl-data/raw/master/3d-tiles/RoyalExhibitionBuilding/1/1.pnts';
+
 test('polyfills#fetch() (NODE)', async t => {
   if (!isBrowser) {
     const response = await fetch(PLY_CUBE_ATT_URL);
@@ -101,6 +104,14 @@ test('polyfills#fetch() able to decompress .gz extension (NODE)', async t => {
     t.ok(response.ok, response.statusText);
     data = await response.text();
     t.equal(data, '123456', 'fetch polyfill correctly decompressed gzipped ".gz" file');
+  }
+  t.end();
+});
+
+test('polyfills#fetch() should follow redirect if `followRedirect` option is true', async t => {
+  if (!isBrowser) {
+    const response = await fetch(REDIRECT_URL);
+    t.equal(response.status, 200);
   }
   t.end();
 });

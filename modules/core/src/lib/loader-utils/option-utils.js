@@ -13,8 +13,7 @@ const DEFAULT_LOADER_OPTIONS = {
   transforms: [],
   attributeName: null, // Used by i3s-attribute-loader to define attribute name.
   attributeType: null, // Used by i3s-attribute-loader to define attribute type.
-  reuseWorkers: true, // By default reuse workers
-  followRedirect: false // Follow 30X redirect during loading (implemented only for polyfills)
+  reuseWorkers: true // By default reuse workers
 };
 
 const DEPRECATED_LOADER_OPTIONS = {

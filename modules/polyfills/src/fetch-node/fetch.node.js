@@ -38,7 +38,7 @@ export default async function fetchNode(url, options) {
     const headers = getHeaders(url, body, syntheticResponseHeaders);
     const {status, statusText} = getStatus(body);
 
-    if (status >= 300 && status < 400 && headers.has('location') && options.followRedirect) {
+    if (status >= 300 && status < 400 && headers.has('location')) {
       // Redirect
       return await fetchNode(headers.get('location'), options);
     }
