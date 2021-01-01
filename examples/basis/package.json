@@ -6,7 +6,7 @@
     "start-local": "webpack-dev-server --env.local --progress --hot --open"
   },
   "dependencies": {
-    "@loaders.gl/basis": "2.2.0",
+    "@loaders.gl/textures": "2.2.0",
     "@loaders.gl/core": "2.2.0"
   },
   "devDependencies": {
