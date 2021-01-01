@@ -1,14 +1,14 @@
 import test from 'tape-promise/tape';
 
-import {BasisLoader} from '@loaders.gl/basis';
+import {BasisLoader} from '@loaders.gl/textures';
 import {load, setLoaderOptions} from '@loaders.gl/core';
 
-const TEST_URL = '@loaders.gl/basis/test/data/alpha3.basis';
+const TEST_URL = '@loaders.gl/textures/test/data/alpha3.basis';
 
 setLoaderOptions({
   CDN: null,
   basis: {
-    workerUrl: 'modules/basis/dist/basis-loader.worker.js'
+    workerUrl: 'modules/textures/dist/basis-loader.worker.js'
   }
 });
 

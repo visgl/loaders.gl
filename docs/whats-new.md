@@ -1,5 +1,24 @@
 # What's New
 
+<table style="border: 0;" align="center">
+  <tbody>
+    <tr>
+      <td>
+        <img style="max-height:200px" src="https://raw.github.com/visgl/deck.gl-data/master/images/whats-new/mvt-layer.jpg" />
+        <p><i>MVTLoader + <a target="_blank" href="https://deck.gl/#/documentation/deckgl-api-reference/layers/mvt-layer">MVTLayer</a></i> (v2.1)</p>
+      </td>
+      <td>
+        <img style="max-height:200px" src="https://raw.github.com/visgl/deck.gl-data/master/images/whats-new/terrain.jpg" />
+        <p><i>TerrainLoader + <a target="_blank" href="https://deck.gl/#/documentation/deckgl-api-reference/layers/terrain-layer">TerrainLayer</a></i> (v2.1)</p>
+      </td>
+      <td>
+        <img style="max-height:200px" src="https://raw.github.com/visgl/deck.gl-data/master/images/whats-new/esri-i3s.gif" />
+        <p><i>I3SLoader + <a target="_blank" href="https://deck.gl/#/documentation/deckgl-api-reference/layers/tile-3d-layer">Tile3DLayer</a> + I3S</i> (v2.1)</p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
 ## v3.0 (In Development)
 
 Target Release Date: Q1 2021. (Alpha releases are available).
@@ -15,6 +34,11 @@ Target Release Date: Q1 2021. (Alpha releases are available).
 **@loaders.gl/draco**
 
 - Updated to `draco3d@1.4.1`, providing more efficient library loading and decoding. Support for binary arrays in metadata.
+
+**@loaders.gl/textures**
+
+- `@loaders.gl/basis` has been renamed to `@loaders.gl/textures`
+- A new experimental `CompressedTextureWriter` is available (for Node.js only)
 
 ## v2.3
 
@@ -151,25 +175,6 @@ Release Date: Mar 16, 2020
 This release adds a number of new geospatial format loaders
 
 ### New Geospatial Loaders
-
-<table style="border: 0;" align="center">
-  <tbody>
-    <tr>
-      <td>
-        <img style="max-height:200px" src="https://raw.github.com/visgl/deck.gl-data/master/images/whats-new/mvt-layer.jpg" />
-        <p><i>MVTLoader + <a target="_blank" href="https://deck.gl/#/documentation/deckgl-api-reference/layers/mvt-layer">MVTLayer</a></i></p>
-      </td>
-      <td>
-        <img style="max-height:200px" src="https://raw.github.com/visgl/deck.gl-data/master/images/whats-new/terrain.jpg" />
-        <p><i>TerrainLoader + <a target="_blank" href="https://deck.gl/#/documentation/deckgl-api-reference/layers/terrain-layer">TerrainLayer</a></i></p>
-      </td>
-      <td>
-        <img style="max-height:200px" src="https://raw.github.com/visgl/deck.gl-data/master/images/whats-new/esri-i3s.gif" />
-        <p><i>I3SLoader + <a target="_blank" href="https://deck.gl/#/documentation/deckgl-api-reference/layers/tile-3d-layer">Tile3DLayer</a> + I3S</i></p>
-      </td>
-    </tr>
-  </tbody>
-</table>
 
 The new loaders empowers rendering frameworks to visualize various geospatial datasets.
 

@@ -1,8 +1,8 @@
 # CompressedTextureWriter
 
 <p class="badges">
-  <img src="https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square" alt="From-v2.3" /> 
-  <img src="https://img.shields.io/badge/Node.js-only-red.svg?style=flat-square" alt="Node.js-only" /> 
+  <img src="https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square" alt="From-v2.3" />
+  <img src="https://img.shields.io/badge/Node.js-only-red.svg?style=flat-square" alt="Node.js-only" />
 </p>
 
 > The experimental `CompressedTextureWriter` class can encode a binary encoded image into a compressed texture.
@@ -22,7 +22,7 @@
 ```js
 import '@loaders.gl/polyfill'; // only if using under Node
 import {encodeURLtoURL} from '@loaders.gl/core';
-import {_CompressedTextureWriter} from '@loaders.gl/basis';
+import {_CompressedTextureWriter} from '@loaders.gl/textures';
 
 export const IMAGE_URL = 'image.png';
 

@@ -1,6 +1,6 @@
 import test from 'tape-promise/tape';
 import {encodeURLtoURL, isBrowser} from '@loaders.gl/core';
-import {_CompressedTextureWriter} from '@loaders.gl/basis';
+import {_CompressedTextureWriter} from '@loaders.gl/textures';
 
 export const IMAGE_URL = '@loaders.gl/images/test/data/img1-preview.png';
 
