@@ -10,7 +10,7 @@ const PGM_LINK = 'https://github.com/visgl/deck.gl-data/raw/master/egm/egm2008-5
 export class DepsInstaller {
   async install(path = '') {
     console.log('Installing "EGM2008-5" model...'); // eslint-disable-line no-console
-    const fileMap = await load(PGM_LINK, ZipLoader, {followRedirect: true});
+    const fileMap = await load(PGM_LINK, ZipLoader, {fetch: {followRedirect: true}});
 
     let depsPath = process.cwd();
     if (path) {
