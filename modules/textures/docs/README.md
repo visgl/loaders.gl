@@ -1,19 +1,19 @@
 # Overview
 
-The `@loaders.gl/basis` module contains a loader for Basis encoded compressed textures (images).
+The `@loaders.gl/textures` module contains a loader for Basis encoded compressed textures (images).
 
 ## Installation
 
 ```bash
-npm install @loaders.gl/basis
+npm install @loaders.gl/textures
 npm install @loaders.gl/core
 ```
 
 ## API
 
-| Loader                                                         | Description |
-| -------------------------------------------------------------- | ----------- |
-| [`BasisLoader`](modules/basis/docs/api-reference/basis-loader) |             |
+| Loader                                                            | Description |
+| ----------------------------------------------------------------- | ----------- |
+| [`BasisLoader`](modules/textures/docs/api-reference/basis-loader) |             |
 
 ### Compressed Texture API
 
@@ -29,9 +29,7 @@ TBA
 
 The `BasisLoader` returns Array of Array of ArrayBuffer
 
-TODO - Node.js handling - expand to normal image?
-
-See [`BasisLoader`](modules/basis/docs/api-reference/image-loader) for more details on options etc.
+See [`BasisLoader`](modules/textures/docs/api-reference/image-loader) for more details on options etc.
 
 ## Attributions
 

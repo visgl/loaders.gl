@@ -31,8 +31,8 @@ if (TEST_CORE) {
 
 // Image Formats
 if (TEST_IMAGES) {
-  require('@loaders.gl/basis/test');
   require('@loaders.gl/images/test');
+  require('@loaders.gl/textures/test');
   require('@loaders.gl/video/test');
 }
 

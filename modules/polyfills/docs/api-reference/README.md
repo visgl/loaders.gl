@@ -53,6 +53,8 @@ The Node.js `fetch`, `Response` and `Headers` polyfills supports a large subset 
 - automatic gzip, brotli and deflate decompression support for responses with `content-encoding` headers.
 - Files ending with `.gz` are automatically decompressed with gzip decompression (this is only done on Node.js, in the browser the content-encoding header must be set).
 
+The Node.js `fetch` is able to follow 30X redirect: if `Response` has status 300-399 and `location` header is set, the `fetch` polyfill re-requests data from `location`.
+
 # TextEncoder and TextDecoder Polyfills
 
 `TextEncoder` and `TextDecoder` polyfills are provided to ensure these APIs are always available. In modern browsers these will evaluate to the built-in objects of the same name, however under Node.js polyfills are transparently installed.
