@@ -2,7 +2,7 @@
 /* eslint-disable complexity */
 /* global document */
 import {load, selectLoader} from '@loaders.gl/core';
-import {BasisLoader, _CompressedTextureLoader} from '@loaders.gl/basis';
+import {BasisLoader, _CompressedTextureLoader} from '@loaders.gl/textures';
 import {ImageLoader} from '@loaders.gl/images';
 import {
   COMPRESSED_RGB_S3TC_DXT1_EXT,
