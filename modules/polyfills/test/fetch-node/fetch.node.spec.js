@@ -112,11 +112,17 @@ test('polyfills#fetch() able to decompress .gz extension (NODE)', async t => {
 
 test('polyfills#fetch() should follow redirect if `followRedirect` option is true', async t => {
   if (!isBrowser) {
-    const response = await fetchFile(REDIRECT_URL, {});
-    t.equal(response.status, 302);
+    const defaultFetchResponse = await fetch(REDIRECT_URL);
+    t.equal(defaultFetchResponse.status, 200);
+
+    const defaultResponse = await fetchFile(REDIRECT_URL, {});
+    t.equal(defaultResponse.status, 200);
 
     const successResponse = await fetchFile(REDIRECT_URL, {followRedirect: true});
     t.equal(successResponse.status, 200);
+
+    const failedResponse = await fetchFile(REDIRECT_URL, {followRedirect: false});
+    t.equal(failedResponse.status, 302);
   }
   t.end();
 });
