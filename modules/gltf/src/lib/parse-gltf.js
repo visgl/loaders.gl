@@ -24,14 +24,14 @@ export async function parseGLTF(gltf, arrayBufferOrString, byteOffset = 0, optio
   /** @type {Promise[]} */
   const promises = [];
 
-  if (options.gltf.loadImages) {
-    const promise = loadImages(gltf, options, context);
-    promises.push(promise);
-  }
-
   // Load linked buffers asynchronously and decodes base64 buffers in parallel
   if (options.gltf.loadBuffers && gltf.json.buffers) {
     await loadBuffers(gltf, options, context);
+  }
+
+  if (options.gltf.loadImages) {
+    const promise = loadImages(gltf, options, context);
+    promises.push(promise);
   }
 
   const promise = decodeExtensions(gltf, options, context);
