@@ -1,3 +1,6 @@
+// Intialize globals, check version
+import './lib/init';
+
 // FILE READING AND WRITING
 export {fetchFile} from './lib/fetch/fetch-file';
 export {readFileSync} from './lib/fetch/read-file';
