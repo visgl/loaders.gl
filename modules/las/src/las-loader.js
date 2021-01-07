@@ -20,6 +20,7 @@ export const LASWorkerLoader = {
   options: {
     las: {
       workerUrl: `https://unpkg.com/@loaders.gl/las@${VERSION}/dist/las-loader.worker.js`,
+      fp64: false,
       skip: 1,
       colorDepth: 8
     }
