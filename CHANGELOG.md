@@ -2,6 +2,9 @@
 
 ## v2.3 Release
 
+- Option to use float64 for LAS positions (#958) (#1081)
+- Add loaders global version to 2.3-release branch (#1062)
+
 #### v2.3.7
 
 - Add "rowBased" option for arrow loader (#1035)
