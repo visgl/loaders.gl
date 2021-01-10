@@ -109,7 +109,7 @@ class TextureTesterApp {
 
     try {
       const loader = await selectLoader(path, [CompressedTextureLoader, BasisLoader, ImageLoader]);
-      const result = loader && await load(path, loader, this.loadOptions);
+      const result = loader && (await load(path, loader, this.loadOptions));
 
       switch (loader && loader.name) {
         case 'CompressedTexture': {
@@ -224,6 +224,7 @@ class TextureTesterApp {
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   }
 
+  // eslint-disable-next-line max-params
   renderCompressedTexture(gl, program, images, texElem, loaderName, texturePath) {
     if (!images || !images.length) {
       throw new Error(`${loaderName} loader doesn't support texture ${texturePath} format`);
@@ -240,14 +241,14 @@ class TextureTesterApp {
   }
 
   renderErrorMessage(texElem, message) {
-    const textNode = document.createElement('error-message'); 
-    texElem.appendChild(textNode); 
+    const textNode = document.createElement('error-message');
+    texElem.appendChild(textNode);
 
     textNode.innerHTML = message;
     textNode.style.fontSize = 'large';
     textNode.style.fontWight = 'bold';
     textNode.style.color = 'red';
-    }
+  }
 
   getSupportedFormats(gl) {
     return {
@@ -258,6 +259,7 @@ class TextureTesterApp {
     };
   }
 
+  // eslint-disable-next-line complexity
   isFormatSupported(format) {
     if (typeof format !== 'number') {
       throw new Error('Invalid internal format of compressed texture');

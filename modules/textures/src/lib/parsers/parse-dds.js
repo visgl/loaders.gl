@@ -38,7 +38,6 @@ export function parseDds(data) {
   const sizeFunction = DDS_CONSTANTS.SIZE_FUNCTIONS[fourCC];
   assert(internalFormat && sizeFunction, `DDS: Unknown pixel format ${pixelFormatNumber}`);
 
-
   let mipMapLevels = 1;
   if (header[DDS_CONSTANTS.HEADER_FLAGS_INDEX] & DDS_CONSTANTS.DDSD_MIPMAPCOUNT) {
     mipMapLevels = Math.max(1, header[DDS_CONSTANTS.MIPMAPCOUNT_INDEX]);
