@@ -39,7 +39,7 @@ const DECK_LINK_ALIASES = {
 };
 
 const MATH_LINK_ALIASES = {
-  'math.gl': resolve(ROOT_DIR, '../math.gl/modules/core/src'),
+  '@math.gl/core': resolve(ROOT_DIR, '../math.gl/modules/core/src'),
   '@math.gl/culling': resolve(ROOT_DIR, '../math.gl/modules/culling/src'),
   '@math.gl/geospatial': resolve(ROOT_DIR, '../math.gl/modules/geospatial/src')
 };

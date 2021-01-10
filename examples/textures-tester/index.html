@@ -3,12 +3,8 @@
 
 <head>
     <meta charset='UTF-8' />
-    <title>Texture Format Tester</title>
+    <title>Textures</title>
     <style>
-        body {
-            background: burlywood;
-        }
-
         .texture-set {
             display: flex;
             flex-flow: row nowrap;
@@ -45,7 +41,19 @@
 <body>
     <div class="wrapper">
         <div class="texture-format-tester">
-            <h1>Texture Format Tester</h1>
+            <h1>Texture Loaders</h1>
+            <p>
+                <i>Inspired by toji's <a href='http://toji.github.io/texture-tester'>texture-tester</a></i>
+            </p>
+            <p>
+                This page loads every texture format supported by loaders.gl and attempts to 
+                display them in WebGL using the <a href='https://luma.gl'><b>luma.gl</b></a> <code>Texture2D</code> class. 
+                It demonstrates working code for using loaders.gl to load compressed textures, 
+                and also shows which formats your browser/device supports.</p>
+            </p>
+            <p>
+                <i>Note: It is expected that multiple textures on this page will fail to display due to lack of GPU support. (For example: DXT formats are usually only supported on Desktops while PVRTC is typically only available on mobile devices with PowerVR chipsets.) Your hardware may support other formats beyond what is shown here, but only the following formats have had WebGL extensions specified for their use.</i>
+            </p>
             <div>
                 <h2 class="sub-formats">Browser Native Formats (Uncompressed)</h2>
                 <div class="texture-set">
@@ -80,6 +88,7 @@
                     </button>
                 </div>
             </div>
+            <!-- Crunch is not supported
             <div>
                 <h2 class="sub-formats">WEBGL_compressed_texture_s3tc with Crunch Compression</h2>
                 <div class="texture-set">
@@ -91,6 +100,7 @@
                     </button>
                 </div>
             </div>
+            -->
             <div>
                 <h2 class="sub-formats">WEBGL_compressed_texture_pvrtc</h2>
                 <div class="texture-set">

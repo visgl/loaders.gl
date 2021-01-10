@@ -20,6 +20,7 @@
     "KML"
   ],
   "workspaces": [
+    "examples/textures-tester",
     "modules/*"
   ],
   "scripts": {
@@ -40,9 +41,9 @@
     "pre-push": "ocular-test fast"
   },
   "devDependencies": {
-    "@luma.gl/core": "^8.2.0",
-    "@luma.gl/debug": "^8.2.0",
-    "@luma.gl/test-utils": "^8.2.0",
+    "@luma.gl/core": "^8.3.0",
+    "@luma.gl/debug": "^8.3.0",
+    "@luma.gl/test-utils": "^8.3.0",
     "@probe.gl/bench": "^3.3.0",
     "@probe.gl/test-utils": "^3.3.0",
     "babel-loader": "^8.0.6",
