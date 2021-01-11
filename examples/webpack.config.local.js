@@ -49,6 +49,9 @@ const LUMA_LINK_ALIASES = {
   '@luma.gl/constants': resolve(ROOT_DIR, '../luma.gl/modules/constants/src'),
   '@luma.gl/core': resolve(ROOT_DIR, '../luma.gl/modules/core/src'),
   '@luma.gl/debug': resolve(ROOT_DIR, '../luma.gl/modules/debug/src'),
+  '@luma.gl/engine': resolve(ROOT_DIR, '../luma.gl/modules/engine/src'),
+  '@luma.gl/gltools': resolve(ROOT_DIR, '../luma.gl/modules/gltools/src'),
+  '@luma.gl/shadertools': resolve(ROOT_DIR, '../luma.gl/modules/shadertools/src'),
   '@luma.gl/webgl': resolve(ROOT_DIR, '../luma.gl/modules/webgl/src')
 };
 

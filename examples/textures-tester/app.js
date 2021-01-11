@@ -141,45 +141,6 @@ class TextureTesterApp {
     texElem.style.backgroundImage = `url(${dataUrl})`;
   }
 
-  createCompressedTexture2D(gl, images) {
-    const texture = new Texture2D(gl, {
-      data: images,
-      parameters: {
-        [gl.TEXTURE_MAG_FILTER]: gl.LINEAR,
-        [gl.TEXTURE_MIN_FILTER]: images.length > 1 ? gl.LINEAR_MIPMAP_NEAREST : gl.LINEAR,
-        [gl.TEXTURE_WRAP_S]: gl.CLAMP_TO_EDGE,
-        [gl.TEXTURE_WRAP_T]: gl.CLAMP_TO_EDGE
-      }
-    });
-
-    return texture.handle;
-  }
-
-  createCompressedTexture(gl, images) {
-    const texture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-    for (let index = 0; index < images.length; ++index) {
-      const image = images[index];
-      const {width, height, format, data} = image;
-
-      gl.compressedTexImage2D(gl.TEXTURE_2D, index, format, width, height, 0, data);
-    }
-
-    if (images.length > 1) {
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
-    } else {
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    }
-
-    return texture;
-  }
-
   renderEmptyTexture(gl, program) {
     const brownColor = new Uint8Array([68, 0, 0, 255]);
 
@@ -234,7 +195,7 @@ class TextureTesterApp {
       throw new Error(`Texture format ${images[0].format} not supported by this GPU`);
     }
 
-    const texture = this.createCompressedTexture(gl, images);
+    const texture = this.createCompressedTexture2D(gl, images);
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.useProgram(program);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
@@ -248,6 +209,48 @@ class TextureTesterApp {
     textNode.style.fontSize = 'large';
     textNode.style.fontWight = 'bold';
     textNode.style.color = 'red';
+  }
+
+  createCompressedTexture2D(gl, images) {
+    debugger;
+    const texture = new Texture2D(gl, {
+      data: images,
+      compressed: true,
+
+      parameters: {
+        [gl.TEXTURE_MAG_FILTER]: gl.LINEAR,
+        [gl.TEXTURE_MIN_FILTER]: images.length > 1 ? gl.LINEAR_MIPMAP_NEAREST : gl.LINEAR,
+        [gl.TEXTURE_WRAP_S]: gl.CLAMP_TO_EDGE,
+        [gl.TEXTURE_WRAP_T]: gl.CLAMP_TO_EDGE
+      }
+    });
+
+    return texture.handle;
+  }
+
+  createCompressedTexture(gl, images) {
+    const texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+    for (let index = 0; index < images.length; ++index) {
+      const image = images[index];
+      const {width, height, format, data} = image;
+
+      gl.compressedTexImage2D(gl.TEXTURE_2D, index, format, width, height, 0, data);
+    }
+
+    if (images.length > 1) {
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+    } else {
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    }
+
+    return texture;
   }
 
   getSupportedFormats(gl) {

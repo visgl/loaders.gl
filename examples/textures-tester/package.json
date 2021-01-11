@@ -6,7 +6,8 @@
   "description": "Minimal example of using loaders.gl with basis.",
   "scripts": {
     "start": "webpack-dev-server --progress --hot --open -d",
-    "start-local": "webpack-dev-server --env.local --progress --hot --open"
+    "start-local": "webpack-dev-server --env.local --progress --hot --open",
+    "start-local-luma": "webpack-dev-server --env.local --env.luma --progress --hot --open"
   },
   "dependencies": {
     "@loaders.gl/textures": "3.0.0-alpha.1",
