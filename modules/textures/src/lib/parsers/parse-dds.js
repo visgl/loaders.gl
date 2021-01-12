@@ -1,5 +1,6 @@
-import {assert} from '@loaders.gl/core/';
+import {assert} from '@loaders.gl/loader-utils';
 import {GL} from '../gl-constants';
+import {sliceLevels} from '../utils/slice-levels-util';
 
 export const DDS_CONSTANTS = {
   MAGIC_NUMBER: 0x20534444,
@@ -46,29 +47,13 @@ export function parseDds(data) {
   const dataOffset = header[DDS_CONSTANTS.HEADER_SIZE_INDEX] + 4;
   const image = new Uint8Array(data, dataOffset);
 
-  const images = new Array(mipMapLevels);
-
-  let levelWidth = width;
-  let levelHeight = height;
-  let offset = 0;
-
-  for (let i = 0; i < mipMapLevels; ++i) {
-    const levelSize = sizeFunction(levelWidth, levelHeight);
-    images[i] = {
-      compressed: true,
-      format: internalFormat,
-      data: new Uint8Array(image.buffer, image.byteOffset + offset, levelSize),
-      width: levelWidth,
-      height: levelHeight
-    };
-
-    levelWidth = Math.max(1, levelWidth >> 1);
-    levelHeight = Math.max(1, levelHeight >> 1);
-
-    offset += levelSize;
-  }
-
-  return images;
+  return sliceLevels(image, {
+    mipMapLevels,
+    width,
+    height,
+    sizeFunction,
+    internalFormat
+  });
 }
 
 function int32ToFourCC(value) {
@@ -80,10 +65,10 @@ function int32ToFourCC(value) {
   );
 }
 
-function getDxt1LevelSize(width, height) {
+export function getDxt1LevelSize(width, height) {
   return ((width + 3) >> 2) * ((height + 3) >> 2) * 8;
 }
 
-function getDxtXLevelSize(width, height) {
+export function getDxtXLevelSize(width, height) {
   return ((width + 3) >> 2) * ((height + 3) >> 2) * 16;
 }

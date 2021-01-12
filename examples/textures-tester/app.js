@@ -2,7 +2,7 @@
 /* eslint-disable complexity */
 /* global document */
 import {load, selectLoader} from '@loaders.gl/core';
-import {BasisLoader, _CompressedTextureLoader} from '@loaders.gl/textures';
+import {BasisLoader, _CompressedTextureLoader, CrunchLoader} from '@loaders.gl/textures';
 import {ImageLoader} from '@loaders.gl/images';
 import {
   COMPRESSED_RGB_S3TC_DXT1_EXT,
@@ -124,10 +124,16 @@ class TextureTesterApp {
     const path = texElem.getAttribute('tex-src');
 
     try {
-      const loader = await selectLoader(path, [_CompressedTextureLoader, BasisLoader, ImageLoader]);
+      const loader = await selectLoader(path, [
+        _CompressedTextureLoader,
+        CrunchLoader,
+        BasisLoader,
+        ImageLoader
+      ]);
       const result = await load(path, loader, loadOptions);
 
       switch (loader.name) {
+        case 'Crunch':
         case 'CompressedTexture': {
           this.renderCompresedTexture(gl, program, result, texElem, loader.name, path);
           break;
