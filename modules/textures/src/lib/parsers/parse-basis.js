@@ -86,6 +86,7 @@ function transcodeImage(basisFile, imageIndex, levelIndex, options) {
     compressed,
 
     // Additional fields
+    // Add levelSize field.
     hasAlpha,
     format
   };
