@@ -106,7 +106,8 @@ export function parsePvr(data) {
       format: formatEnum,
       data: new Uint8Array(image.buffer, image.byteOffset + offset, levelSize),
       width: levelWidth,
-      height: levelHeight
+      height: levelHeight,
+      levelSize
     };
 
     levelWidth = Math.max(1, levelWidth >> 1);

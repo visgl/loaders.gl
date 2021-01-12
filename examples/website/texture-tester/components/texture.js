@@ -41,6 +41,23 @@ const ErrorFormatHeader = styled.h1`
   font-size: 16px;
 `;
 
+const TextureInfo = styled.ul`
+  position: absolute;
+  transition: opacity 0.2s;
+  top: 20px;
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: flex-start;
+  padding: 10px;
+  opacity: 0.8;
+  background-color: black;
+  color: white;
+  border-radius: 5px;
+  min-width: 200px;
+  list-style: none;
+  font-size: 14px;
+`;
+
 registerLoaders([BasisLoader, CompressedTextureLoader, ImageLoader]);
 
 const propTypes = {
@@ -67,13 +84,16 @@ export default class CompressedTexture extends PureComponent {
       supportedFormats: this.getSupportedFormats(props.gl),
       // Temporary decision to disable worker untill texture module will be published to npm
       loadOptions: {basis: {}, worker: false},
-      textureError: null
+      textureError: null,
+      showStats: false,
+      stats: []
     };
 
     this.getTextureDataUrl = this.getTextureDataUrl.bind(this);
     this.renderImageTexture = this.renderImageTexture.bind(this);
     this.renderCompressedTexture = this.renderCompressedTexture.bind(this);
     this.setupBasisLoadOptionsIfNeeded = this.setupBasisLoadOptionsIfNeeded.bind(this);
+    this.addStat = this.addStat.bind(this);
   }
 
   async componentDidMount() {
@@ -108,10 +128,13 @@ export default class CompressedTexture extends PureComponent {
     }
   }
 
+  // eslint-disable-next-line max-statements
   async getTextureDataUrl() {
     const {loadOptions} = this.state;
     const {canvas, gl, program, image} = this.props;
     const {src} = image;
+
+    this.addStat('File Size', Math.floor(image.size / 1024), 'Kb');
 
     try {
       const loader = await selectLoader(src, [CompressedTextureLoader, BasisLoader, ImageLoader]);
@@ -215,27 +238,51 @@ export default class CompressedTexture extends PureComponent {
     const texture = gl.createTexture();
 
     gl.bindTexture(gl.TEXTURE_2D, texture);
+    const startTime = new Date();
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 8);
+
+    const uploadTime = Date.now() - startTime;
+
+    this.addStat('Upload time', `${Math.floor(uploadTime)} ms`);
+    this.addStat('Dimensions', `${image.width} x ${image.height}`);
+    this.addStat(
+      'Size in memory (Lvl 0)',
+      Math.floor((image.width * image.height * 4) / 1024),
+      'Kb'
+    );
   }
 
   renderCompressedTexture(gl, program, images, loaderName, texturePath) {
     if (!images || !images.length) {
       throw new Error(`${loaderName} loader doesn't support texture ${texturePath} format`);
     }
+    // We take the first image because it has main propeties of compressed image.
+    const {format, width, height, levelSize} = images[0];
 
-    if (!this.isFormatSupported(images[0].format)) {
-      throw new Error(`Texture format ${images[0].format} not supported by this GPU`);
+    if (!this.isFormatSupported(format)) {
+      throw new Error(`Texture format ${format} not supported by this GPU`);
     }
 
-    const texture = this.createCompressedTexture2D(gl, images);
+    const startTime = new Date();
+    // We should use createCompressedTexture2D here after luma.gl fix
+    const texture = this.createCompressedTexture(gl, images);
+
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.useProgram(program);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+    const uploadTime = Date.now() - startTime;
+
+    this.addStat('Upload time', `${Math.floor(uploadTime)} ms`);
+    this.addStat('Dimensions', `${width} x ${height}`);
+    if (levelSize) {
+      this.addStat('Size in memory (Lvl 0)', Math.floor(levelSize / 1024), 'Kb');
+    }
   }
 
   // eslint-disable-next-line complexity
@@ -271,17 +318,41 @@ export default class CompressedTexture extends PureComponent {
     }
   }
 
+  addStat(name, value, units = '') {
+    const newStats = [...this.state.stats, {name, value, units}];
+    this.setState({stats: newStats});
+  }
+
+  renderStats() {
+    const {stats} = this.state;
+
+    if (!stats.length) {
+      return null;
+    }
+
+    const infoList = [];
+    for (let index = 0; index < stats.length; index++) {
+      infoList.push(<li>{`${stats[index].name}: ${stats[index].value}${stats[index].units}`}</li>);
+    }
+    return <TextureInfo style={{opacity: this.state.showStats ? 0.8 : 0}}>{infoList}</TextureInfo>;
+  }
+
   render() {
     const {dataUrl, textureError} = this.state;
     const {format} = this.props.image;
 
     return dataUrl ? (
-      <TextureButton style={{backgroundImage: `url(${dataUrl})`}}>
+      <TextureButton
+        style={{backgroundImage: `url(${dataUrl})`}}
+        onMouseEnter={() => this.setState({showStats: true})}
+        onMouseLeave={() => this.setState({showStats: false})}
+      >
         {!textureError ? (
           <ImageFormatHeader>{format}</ImageFormatHeader>
         ) : (
           <ErrorFormatHeader style={{color: 'red'}}>{textureError}</ErrorFormatHeader>
         )}
+        {this.renderStats()}
       </TextureButton>
     ) : null;
   }
