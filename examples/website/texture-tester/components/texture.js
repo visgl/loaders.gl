@@ -1,9 +1,10 @@
 import React, {PureComponent} from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
-import {BasisLoader, _CompressedTextureLoader} from '@loaders.gl/textures';
+import {BasisLoader, CompressedTextureLoader} from '@loaders.gl/textures';
 import {ImageLoader} from '@loaders.gl/images';
 import {load, registerLoaders, selectLoader} from '@loaders.gl/core';
+import {Texture2D} from '@luma.gl/core';
 import {
   COMPRESSED_RGB_S3TC_DXT1_EXT,
   COMPRESSED_RGBA_S3TC_DXT1_EXT,
@@ -40,7 +41,7 @@ const ErrorFormatHeader = styled.h1`
   font-size: 16px;
 `;
 
-registerLoaders([BasisLoader, _CompressedTextureLoader, ImageLoader]);
+registerLoaders([BasisLoader, CompressedTextureLoader, ImageLoader]);
 
 const propTypes = {
   canvas: PropTypes.object,
@@ -63,96 +64,37 @@ export default class CompressedTexture extends PureComponent {
     super(props);
 
     this.state = {
-      dxtSupported: false,
-      pvrtcSupported: false,
-      atcSupported: false,
-      etc1Supported: false,
+      supportedFormats: this.getSupportedFormats(props.gl),
       // Temporary decision to disable worker untill texture module will be published to npm
-      loadOptions: {basis: {}, image: {decode: true, type: 'image'}, worker: false},
+      loadOptions: {basis: {}, worker: false},
       textureError: null
     };
 
-    this.renderTexture = this.renderTexture.bind(this);
     this.getTextureDataUrl = this.getTextureDataUrl.bind(this);
-    this.renderCompresedTexture = this.renderCompresedTexture.bind(this);
     this.renderImageTexture = this.renderImageTexture.bind(this);
-    this.renderTextureError = this.renderTextureError.bind(this);
-    this.setupSupportedFormats = this.setupSupportedFormats.bind(this);
+    this.renderCompressedTexture = this.renderCompressedTexture.bind(this);
+    this.setupBasisLoadOptionsIfNeeded = this.setupBasisLoadOptionsIfNeeded.bind(this);
   }
 
   async componentDidMount() {
-    this.setupSupportedFormats();
+    this.setupBasisLoadOptionsIfNeeded();
+
     const dataUrl = await this.getTextureDataUrl();
     this.setState({dataUrl});
   }
 
-  setupSupportedFormats() {
+  getSupportedFormats() {
     const {gl} = this.props;
-
-    this.setState({
-      dxtSupported: Boolean(gl.getExtension('WEBGL_compressed_texture_s3tc')),
-      pvrtcSupported: Boolean(gl.getExtension('WEBGL_compressed_texture_pvrtc')),
-      atcSupported: Boolean(gl.getExtension('WEBGL_compressed_texture_atc')),
-      etc1Supported: Boolean(gl.getExtension('WEBGL_compressed_texture_etc1'))
-    });
+    return {
+      DXT: Boolean(gl.getExtension('WEBGL_compressed_texture_s3tc')),
+      PVRTC: Boolean(gl.getExtension('WEBGL_compressed_texture_pvrtc')),
+      ATC: Boolean(gl.getExtension('WEBGL_compressed_texture_atc')),
+      ETC1: Boolean(gl.getExtension('WEBGL_compressed_texture_etc1'))
+    };
   }
 
-  async getTextureDataUrl() {
-    const {loadOptions} = this.state;
-    const {canvas, gl, program, image} = this.props;
-    const {src} = image;
-
-    try {
-      const loader = await selectLoader(src, [_CompressedTextureLoader, BasisLoader, ImageLoader]);
-      const result = await load(src, loader, loadOptions);
-
-      switch (loader.name) {
-        case 'CompressedTexture': {
-          this.renderCompresedTexture(gl, program, result, loader.name, src);
-          break;
-        }
-        case 'Images': {
-          this.renderImageTexture(gl, program, result);
-          break;
-        }
-        case 'Basis': {
-          const basisTextures = result[0];
-          this.renderCompresedTexture(gl, program, basisTextures, loader.name, src);
-          break;
-        }
-        default: {
-          this.renderTextureError(gl, program, 'No available loader for this texture');
-        }
-      }
-    } catch (error) {
-      console.error(error); // eslint-disable-line
-      this.renderTextureError(gl, program, error);
-    }
-
-    return canvas.toDataURL();
-  }
-
-  renderTexture(dataUrl, header) {
-    const {textureError} = this.state;
-
-    return (
-      <TextureButton style={{backgroundImage: `url(${dataUrl})`}}>
-        {!textureError ? (
-          <ImageFormatHeader>{header}</ImageFormatHeader>
-        ) : (
-          <ErrorFormatHeader style={{color: 'red'}}>{textureError}</ErrorFormatHeader>
-        )}
-      </TextureButton>
-    );
-  }
-
-  // eslint-disable-next-line max-params
-  renderCompresedTexture(gl, program, images, loaderName, texturePath) {
-    if (!images || !images.length) {
-      throw new Error(`${loaderName} loader doesn't support texture ${texturePath} format`);
-    }
-
-    if (this.state.dxtSupported) {
+  setupBasisLoadOptionsIfNeeded() {
+    if (this.state.supportedFormats.DTX) {
       const loadOptions = {
         ...this.state.loadOptions,
         basis: {
@@ -164,28 +106,74 @@ export default class CompressedTexture extends PureComponent {
       };
       this.setState({loadOptions});
     }
+  }
 
-    if (!this.isFormatSupported(images[0].format)) {
-      throw new Error('Texture format not supported');
-    }
-
-    gl.useProgram(program);
-    const texture = gl.createTexture();
-
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  async getTextureDataUrl() {
+    const {loadOptions} = this.state;
+    const {canvas, gl, program, image} = this.props;
+    const {src} = image;
 
     try {
-      for (let index = 0; index < images.length; ++index) {
-        const image = images[index];
-        const {width, height, format, data} = image;
+      const loader = await selectLoader(src, [CompressedTextureLoader, BasisLoader, ImageLoader]);
+      const result = loader && (await load(src, loader, loadOptions));
 
-        gl.compressedTexImage2D(gl.TEXTURE_2D, index, format, width, height, 0, data);
+      switch (loader && loader.name) {
+        case 'CompressedTexture': {
+          this.renderEmptyTexture(gl, program);
+          this.renderCompressedTexture(gl, program, result, loader.name, src);
+          break;
+        }
+        case 'Images': {
+          this.renderEmptyTexture(gl, program);
+          this.renderImageTexture(gl, program, result);
+          break;
+        }
+        case 'Basis': {
+          const basisTextures = result[0];
+          this.renderEmptyTexture(gl, program);
+          this.renderCompressedTexture(gl, program, basisTextures, loader.name, src);
+          break;
+        }
+        default: {
+          throw new Error('Unknown texture loader');
+        }
       }
     } catch (error) {
       console.error(error); // eslint-disable-line
-      this.renderTextureError(gl, program, error);
+      this.renderEmptyTexture(gl, program);
+      this.setState({textureError: error.message});
+    }
+
+    return canvas.toDataURL();
+  }
+
+  createCompressedTexture2D(gl, images) {
+    const texture = new Texture2D(gl, {
+      data: images,
+      compressed: true,
+      parameters: {
+        [gl.TEXTURE_MAG_FILTER]: gl.LINEAR,
+        [gl.TEXTURE_MIN_FILTER]: images.length > 1 ? gl.LINEAR_MIPMAP_NEAREST : gl.LINEAR,
+        [gl.TEXTURE_WRAP_S]: gl.CLAMP_TO_EDGE,
+        [gl.TEXTURE_WRAP_T]: gl.CLAMP_TO_EDGE
+      }
+    });
+
+    return texture.handle;
+  }
+
+  createCompressedTexture(gl, images) {
+    const texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+    for (let index = 0; index < images.length; ++index) {
+      const image = images[index];
+      const {width, height, format, data} = image;
+
+      gl.compressedTexImage2D(gl.TEXTURE_2D, index, format, width, height, 0, data);
     }
 
     if (images.length > 1) {
@@ -196,6 +184,29 @@ export default class CompressedTexture extends PureComponent {
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     }
 
+    return texture;
+  }
+
+  renderEmptyTexture(gl, program) {
+    const brownColor = new Uint8Array([68, 0, 0, 255]);
+    const lumaTexture = new Texture2D(gl, {
+      width: 1,
+      height: 1,
+      data: brownColor,
+      mipmaps: true,
+      parameters: {
+        [gl.TEXTURE_MAG_FILTER]: gl.LINEAR,
+        [gl.TEXTURE_MIN_FILTER]: gl.LINEAR,
+        [gl.TEXTURE_WRAP_S]: gl.CLAMP_TO_EDGE,
+        [gl.TEXTURE_WRAP_T]: gl.CLAMP_TO_EDGE
+      }
+    });
+
+    const texture = lumaTexture.handle;
+
+    gl.useProgram(program);
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    // Looks like formats can still be rendered, but presumably as converted textures...
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   }
 
@@ -212,19 +223,19 @@ export default class CompressedTexture extends PureComponent {
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 8);
   }
 
-  renderTextureError(gl, program, error) {
-    gl.useProgram(program);
-    const texture = gl.createTexture();
-    const brownColor = new Uint8Array([68, 0, 0, 255]);
+  renderCompressedTexture(gl, program, images, loaderName, texturePath) {
+    if (!images || !images.length) {
+      throw new Error(`${loaderName} loader doesn't support texture ${texturePath} format`);
+    }
 
+    if (!this.isFormatSupported(images[0].format)) {
+      throw new Error(`Texture format ${images[0].format} not supported by this GPU`);
+    }
+
+    const texture = this.createCompressedTexture2D(gl, images);
     gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, brownColor); // eslint-disable-line
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 8);
-    this.setState({textureError: error.message});
+    gl.useProgram(program);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   }
 
   // eslint-disable-next-line complexity
@@ -232,27 +243,28 @@ export default class CompressedTexture extends PureComponent {
     if (typeof format !== 'number') {
       throw new Error('Invalid internal format of compressed texture');
     }
+    const {DXT, PVRTC, ATC, ETC1} = this.state.supportedFormats;
 
     switch (format) {
       case COMPRESSED_RGB_S3TC_DXT1_EXT:
       case COMPRESSED_RGBA_S3TC_DXT3_EXT:
       case COMPRESSED_RGBA_S3TC_DXT5_EXT:
       case COMPRESSED_RGBA_S3TC_DXT1_EXT:
-        return this.state.dxtSupported;
+        return DXT;
 
       case COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
       case COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
       case COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
       case COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
-        return this.state.pvrtcSupported;
+        return PVRTC;
 
       case COMPRESSED_RGB_ATC_WEBGL:
       case COMPRESSED_RGBA_ATC_EXPLICIT_ALPHA_WEBGL:
       case COMPRESSED_RGBA_ATC_INTERPOLATED_ALPHA_WEBGL:
-        return this.state.atcSupported;
+        return ATC;
 
       case COMPRESSED_RGB_ETC1_WEBGL:
-        return this.state.etc1Supported;
+        return ETC1;
 
       default:
         return false;
@@ -260,10 +272,18 @@ export default class CompressedTexture extends PureComponent {
   }
 
   render() {
-    const {dataUrl} = this.state;
-    const {image} = this.props;
+    const {dataUrl, textureError} = this.state;
+    const {format} = this.props.image;
 
-    return dataUrl ? this.renderTexture(dataUrl, image.format) : null;
+    return dataUrl ? (
+      <TextureButton style={{backgroundImage: `url(${dataUrl})`}}>
+        {!textureError ? (
+          <ImageFormatHeader>{format}</ImageFormatHeader>
+        ) : (
+          <ErrorFormatHeader style={{color: 'red'}}>{textureError}</ErrorFormatHeader>
+        )}
+      </TextureButton>
+    ) : null;
   }
 }
 

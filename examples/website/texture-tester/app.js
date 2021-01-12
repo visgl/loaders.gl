@@ -1,8 +1,34 @@
 /* eslint-disable react/no-unescaped-entities */
 import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
+import {instrumentGLContext, Program} from '@luma.gl/core';
 import TexturesBlock from './components/textures-block';
 import {IMAGES_DATA} from './textures-data';
+
+// TEXTURE SHADERS
+
+const vs = `
+precision highp float;
+
+attribute vec2 position;
+varying vec2 uv;
+
+void main() {
+  gl_Position = vec4(position, 0.0, 1.0);
+  uv = vec2(position.x * .5, -position.y * .5) + vec2(.5, .5);
+}
+`;
+
+const fs = `
+precision highp float;
+
+uniform sampler2D tex;
+varying vec2 uv;
+
+void main() {
+  gl_FragColor = vec4(texture2D(tex, uv).rgb, 1.);
+}
+`;
 
 export default class App extends PureComponent {
   constructor(props) {
@@ -15,7 +41,6 @@ export default class App extends PureComponent {
     };
 
     this.setupCanvas = this.setupCanvas.bind(this);
-    this.createProgram = this.createProgram.bind(this);
     this.createAndFillBufferObject = this.createAndFillBufferObject.bind(this);
     this.renderTexturesBlocks = this.renderTexturesBlocks.bind(this);
     this.renderDescription = this.renderDescription.bind(this);
@@ -24,10 +49,11 @@ export default class App extends PureComponent {
   componentDidMount() {
     const canvas = this.setupCanvas();
     const gl = canvas.getContext('webgl');
-    const program = this.createProgram(gl);
-
-    this.setState({canvas, gl, program});
+    instrumentGLContext(gl);
     this.createAndFillBufferObject(gl);
+    const program = new Program(gl, {vs, fs});
+
+    this.setState({canvas, gl, program: program.handle});
   }
 
   setupCanvas() {
@@ -36,51 +62,6 @@ export default class App extends PureComponent {
     canvas.width = 256;
     canvas.height = 256;
     return canvas;
-  }
-
-  createProgram(gl) {
-    const vs = `
-      precision highp float;
-    
-      attribute vec2 position;
-      varying vec2 uv;
-    
-      void main() {
-        gl_Position = vec4(position, 0.0, 1.0);
-        uv = vec2(position.x * .5, -position.y * .5) + vec2(.5, .5);
-      }
-    `;
-
-    const fs = `
-      precision highp float;
-    
-      uniform sampler2D tex;
-      varying vec2 uv;
-    
-      void main() {
-        gl_FragColor = vec4(texture2D(tex, uv).rgb, 1.);
-      }
-    `;
-
-    const vertexShader = gl.createShader(gl.VERTEX_SHADER);
-    gl.shaderSource(vertexShader, vs);
-    gl.compileShader(vertexShader);
-
-    const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-    gl.shaderSource(fragmentShader, fs);
-    gl.compileShader(fragmentShader);
-
-    const program = gl.createProgram();
-    gl.attachShader(program, vertexShader);
-    gl.attachShader(program, fragmentShader);
-    gl.linkProgram(program);
-
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-      // eslint-disable-next-line
-      throw new Error(gl.getProgramInfoLog(program));
-    }
-
-    return program;
   }
 
   createAndFillBufferObject(gl) {
