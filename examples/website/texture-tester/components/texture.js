@@ -269,7 +269,8 @@ export default class CompressedTexture extends PureComponent {
     }
 
     const startTime = new Date();
-    const texture = this.createCompressedTexture2D(gl, images);
+    // We should use createCompressedTexture2D here after luma.gl fix
+    const texture = this.createCompressedTexture(gl, images);
 
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.useProgram(program);
