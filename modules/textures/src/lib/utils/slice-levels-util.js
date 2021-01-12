@@ -12,7 +12,8 @@ export function sliceLevels(data, options) {
       format: options.internalFormat,
       data: new Uint8Array(data.buffer, data.byteOffset + offset, levelSize),
       width: levelWidth,
-      height: levelHeight
+      height: levelHeight,
+      levelSize
     };
 
     levelWidth = Math.max(1, levelWidth >> 1);
