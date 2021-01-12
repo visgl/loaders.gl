@@ -20,7 +20,7 @@
     "KML"
   ],
   "workspaces": [
-    "examples/textures-tester",
+    "examples/website/textures",
     "modules/*"
   ],
   "scripts": {

@@ -84,6 +84,12 @@ module.exports = {
             path: 'examples/pointcloud'
           },
           {
+            title: 'Textures',
+            image: 'images/example-pointcloud.jpg',
+            componentUrl: resolve(__dirname, '../examples/website/textures/app.js'),
+            path: 'examples/textures'
+          },
+          {
             title: 'glTF Helmet',
             image: 'images/example-gltf.jpg',
             componentUrl: resolve(__dirname, './templates/example-gltf.jsx'),
