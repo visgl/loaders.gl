@@ -20,6 +20,9 @@ import {
   COMPRESSED_RGB_ETC1_WEBGL
 } from '../constants';
 
+const TEXTURES_BASE_URL =
+  'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/textures/test/data/';
+
 const TextureButton = styled.button`
   height: 256px;
   width: 256px;
@@ -137,8 +140,9 @@ export default class CompressedTexture extends PureComponent {
     this.addStat('File Size', Math.floor(image.size / 1024), 'Kb');
 
     try {
-      const loader = await selectLoader(src, [CompressedTextureLoader, BasisLoader, ImageLoader]);
-      const result = loader && (await load(src, loader, loadOptions));
+      const url = `${TEXTURES_BASE_URL}${src}`;
+      const loader = await selectLoader(url, [CompressedTextureLoader, BasisLoader, ImageLoader]);
+      const result = loader && (await load(url, loader, loadOptions));
 
       switch (loader && loader.name) {
         case 'CompressedTexture': {
