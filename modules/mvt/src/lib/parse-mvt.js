@@ -3,7 +3,6 @@ import VectorTile from './mapbox-vector-tile/vector-tile';
 
 import {geojsonToBinary} from '@loaders.gl/gis';
 import Protobuf from 'pbf';
-import {transformCoordinates, transformToLocalCoordinates} from './transform-to-local-range';
 
 /*
   * Parse MVT arrayBuffer and return GeoJSON.
@@ -70,7 +69,7 @@ function getDecodedFeature(feature, options = {}) {
   const decodedFeature =
     wgs84Coordinates && hasTileIndex
       ? feature.toGeoJSON(options.tileIndex.x, options.tileIndex.y, options.tileIndex.z)
-      : transformCoordinates(feature, transformToLocalCoordinates);
+      : feature.toJSON(transformToLocalCoordinates);
 
   // Add layer name to GeoJSON properties
   if (options.layerProperty) {
@@ -78,4 +77,18 @@ function getDecodedFeature(feature, options = {}) {
   }
 
   return decodedFeature;
+}
+
+function transformToLocalCoordinates(line, feature) {
+  // This function transforms local coordinates in a
+  // [0 - bufferSize, this.extent + bufferSize] range to a
+  // [0 - (bufferSize / this.extent), 1 + (bufferSize / this.extent)] range.
+  // The resulting extent would be 1.
+  const {extent} = feature;
+
+  for (let i = 0; i < line.length; i++) {
+    const p = line[i];
+    p[0] /= extent;
+    p[1] /= extent;
+  }
 }

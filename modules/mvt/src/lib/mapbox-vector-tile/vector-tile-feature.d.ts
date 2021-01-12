@@ -6,10 +6,12 @@ export default class VectorTileFeature {
   properties: object;
   extent: any;
   type: number;
+  id?: number;
 
 	constructor(pbf: Protobuf, end, extent, keys, values);
 
 	loadGeometry(); any;
   bbox(): [number, number, number, number];
+  toJSON(transform: ([[number]], VectorTileFeature) => object);
 	toGeoJSON(x, y, z): object;
 }
