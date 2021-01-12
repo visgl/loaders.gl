@@ -11,9 +11,7 @@ import Protobuf from 'pbf';
   * @return {?Object} A GeoJSON geometry object
   */
 export default function parseMVT(arrayBuffer, options) {
-  options = options || {};
-  options.mvt = options.mvt || {};
-  options.gis = options.gis || {};
+  options = normalizeOptions(options);
 
   if (arrayBuffer.byteLength === 0) {
     return [];
@@ -54,21 +52,31 @@ export default function parseMVT(arrayBuffer, options) {
   return features;
 }
 
-function getDecodedFeature(feature, options = {}) {
+function normalizeOptions(options) {
+  options = options || {};
+  options.mvt = options.mvt || {};
+  options.gis = options.gis || {};
+
+  // Validate
   const wgs84Coordinates = options.coordinates === 'wgs84';
+  const {tileIndex} = options;
   const hasTileIndex =
-    options.tileIndex &&
-    Number.isFinite(options.tileIndex.x) &&
-    Number.isFinite(options.tileIndex.y) &&
-    Number.isFinite(options.tileIndex.z);
+    tileIndex &&
+    Number.isFinite(tileIndex.x) &&
+    Number.isFinite(tileIndex.y) &&
+    Number.isFinite(tileIndex.z);
 
   if (wgs84Coordinates && !hasTileIndex) {
     throw new Error('MVT Loader: WGS84 coordinates need tileIndex property. Check documentation.');
   }
 
+  return options;
+}
+
+function getDecodedFeature(feature, options = {}) {
   const decodedFeature =
-    wgs84Coordinates && hasTileIndex
-      ? feature.toGeoJSON(options.tileIndex.x, options.tileIndex.y, options.tileIndex.z)
+    options.coordinates === 'wgs84'
+      ? feature.toGeoJSON(options.tileIndex)
       : feature.toJSON(transformToLocalCoordinates);
 
   // Add layer name to GeoJSON properties
