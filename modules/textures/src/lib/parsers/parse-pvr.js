@@ -2,6 +2,7 @@
 // Forked from PicoGL: https://github.com/tsherif/picogl.js/blob/master/examples/utils/utils.js
 // Copyright (c) 2017 Tarek Sherif, The MIT License (MIT)
 import {GL} from '../gl-constants';
+import {sliceLevels} from '../utils/slice-levels-util';
 
 export const PVR_CONSTANTS = {
   MAGIC_NUMBER: 0x03525650,
@@ -93,30 +94,13 @@ export function parsePvr(data) {
 
   const image = new Uint8Array(data, dataOffset);
 
-  const images = new Array(mipMapLevels);
-
-  let levelWidth = width;
-  let levelHeight = height;
-  let offset = 0;
-
-  for (let i = 0; i < mipMapLevels; ++i) {
-    const levelSize = sizeFunction(levelWidth, levelHeight);
-    images[i] = {
-      compressed: true,
-      format: formatEnum,
-      data: new Uint8Array(image.buffer, image.byteOffset + offset, levelSize),
-      width: levelWidth,
-      height: levelHeight,
-      levelSize
-    };
-
-    levelWidth = Math.max(1, levelWidth >> 1);
-    levelHeight = Math.max(1, levelHeight >> 1);
-
-    offset += levelSize;
-  }
-
-  return images;
+  return sliceLevels(image, {
+    mipMapLevels,
+    width,
+    height,
+    sizeFunction,
+    internalFormat: formatEnum
+  });
 }
 
 // https://www.khronos.org/registry/webgl/extensions/WEBGL_compressed_texture_pvrtc/
