@@ -11,7 +11,7 @@ const PVR_MAGIC_BYTES = [0x03, 0x52, 0x56, 0x50]; // PVR file header magic numbe
 
 /** @type {WorkerLoaderObject} */
 export const CompressedTextureWorkerLoader = {
-  id: 'crunch',
+  id: 'compressed-texture',
   name: 'CompressedTexture',
   version: VERSION,
   extensions: [

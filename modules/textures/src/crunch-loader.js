@@ -9,7 +9,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /** @type {WorkerLoaderObject} */
 export const CrunchWorkerLoader = {
-  id: 'basis',
+  id: 'crunch',
   name: 'Crunch',
   version: VERSION,
   extensions: ['crn'],
