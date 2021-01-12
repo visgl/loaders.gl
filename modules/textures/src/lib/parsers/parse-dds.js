@@ -32,11 +32,12 @@ export function parseDds(data) {
   const pixelFormatNumber = header[DDS_CONSTANTS.HEADER_PF_FOURCC_INDEX];
   assert(
     Boolean(header[DDS_CONSTANTS.HEADER_PF_FLAGS_INDEX] & DDS_CONSTANTS.DDPF_FOURCC),
-    'Unsupported format, must contain a FourCC code'
+    'DDS: Unsupported format, must contain a FourCC code'
   );
   const fourCC = int32ToFourCC(pixelFormatNumber);
   const internalFormat = DDS_CONSTANTS.PIXEL_FORMATS[fourCC];
   const sizeFunction = DDS_CONSTANTS.SIZE_FUNCTIONS[fourCC];
+  assert(internalFormat && sizeFunction, `DDS: Unknown pixel format ${pixelFormatNumber}`);
 
   let mipMapLevels = 1;
   if (header[DDS_CONSTANTS.HEADER_FLAGS_INDEX] & DDS_CONSTANTS.DDSD_MIPMAPCOUNT) {
