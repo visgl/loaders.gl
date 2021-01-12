@@ -6,7 +6,7 @@ import GL from '@luma.gl/constants';
 import {AnimationLoop, setParameters, clear, log, lumaStats} from '@luma.gl/core';
 import {GLTFEnvironment} from '@luma.gl/experimental';
 import {createGLTFObjects} from './create-gltf-objects';
-import {Matrix4, radians} from 'math.gl';
+import {Matrix4, radians} from '@math.gl/core';
 
 import {loadModelList, GLTF_ENV_BASE_URL} from './components/examples';
 import {
