@@ -1,7 +1,7 @@
 import React, {PureComponent} from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
-import {BasisLoader, CompressedTextureLoader} from '@loaders.gl/textures';
+import {BasisLoader, CompressedTextureLoader, CrunchLoader} from '@loaders.gl/textures';
 import {ImageLoader} from '@loaders.gl/images';
 import {load, registerLoaders, selectLoader} from '@loaders.gl/core';
 import {Texture2D} from '@luma.gl/core';
@@ -141,29 +141,31 @@ export default class CompressedTexture extends PureComponent {
 
     try {
       const url = `${TEXTURES_BASE_URL}${src}`;
-      const loader = await selectLoader(url, [CompressedTextureLoader, BasisLoader, ImageLoader]);
+      const loader = await selectLoader(url, [
+        CompressedTextureLoader,
+        CrunchLoader,
+        BasisLoader,
+        ImageLoader
+      ]);
       const result = loader && (await load(url, loader, loadOptions));
 
       switch (loader && loader.name) {
-        case 'CompressedTexture': {
+        case 'Crunch':
+        case 'CompressedTexture':
           this.renderEmptyTexture(gl, program);
           this.renderCompressedTexture(gl, program, result, loader.name, src);
           break;
-        }
-        case 'Images': {
+        case 'Images':
           this.renderEmptyTexture(gl, program);
           this.renderImageTexture(gl, program, result);
           break;
-        }
-        case 'Basis': {
+        case 'Basis':
           const basisTextures = result[0];
           this.renderEmptyTexture(gl, program);
           this.renderCompressedTexture(gl, program, basisTextures, loader.name, src);
           break;
-        }
-        default: {
+        default:
           throw new Error('Unknown texture loader');
-        }
       }
     } catch (error) {
       console.error(error); // eslint-disable-line
