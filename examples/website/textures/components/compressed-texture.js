@@ -91,12 +91,6 @@ export default class CompressedTexture extends PureComponent {
       showStats: false,
       stats: []
     };
-
-    this.getTextureDataUrl = this.getTextureDataUrl.bind(this);
-    this.renderImageTexture = this.renderImageTexture.bind(this);
-    this.renderCompressedTexture = this.renderCompressedTexture.bind(this);
-    this.setupBasisLoadOptionsIfNeeded = this.setupBasisLoadOptionsIfNeeded.bind(this);
-    this.addStat = this.addStat.bind(this);
   }
 
   async componentDidMount() {
@@ -338,7 +332,9 @@ export default class CompressedTexture extends PureComponent {
 
     const infoList = [];
     for (let index = 0; index < stats.length; index++) {
-      infoList.push(<li>{`${stats[index].name}: ${stats[index].value}${stats[index].units}`}</li>);
+      infoList.push(
+        <li key={index}>{`${stats[index].name}: ${stats[index].value}${stats[index].units}`}</li>
+      );
     }
     return <TextureInfo style={{opacity: this.state.showStats ? 0.8 : 0}}>{infoList}</TextureInfo>;
   }
