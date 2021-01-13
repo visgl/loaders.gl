@@ -18,18 +18,6 @@ On the downside:
 - Compression tends to be relatively slow. In combination with some IP issues this usually makes it impractical to create GPU compressed textures on the fly.
 - Since different devices have different GPUs that support different compressed texture formats, one typically has to provide compressed textures in multiple formats and decide which ones to load at runtime (although basis avoids this problem).
 
-## Compression Formats
-
-| Format                                               | Description                 |
-| ---------------------------------------------------- | --------------------------- |
-| [`S3TC]() | S3 texture compression formats           |
-| [`S3TC_SRGB]() | S3 SRGB texture compression formats |
-| [`PVRTC]() | PowerVR texture compression formats     |
-| [`ETC1]() | texture compression formats              |
-| [`ETC]() | texture compression formats               |
-| [`ASTC`]()                                           | texture compression formats |
-| [`ATC]() | AMD texture compression formats           |
-
 ## Container Formats
 
 > [Texture Containers](http://www.devans.xyz/2017/04/04/texture-containers.html) This section is based on the information in Dave Evan's helpful Texture Containers article, please refer to it for additional details.
@@ -61,11 +49,21 @@ The PVR texture compression format defines its own container
 
 http://cdn.imgtec.com/sdk-documentation/PVR+File+Format.Specification.pdf
 
-## Compressing Textures
+## Compression Formats
 
-Texture compression code is usually not readily available, particulary not in JavaScript. Compression is typically done by binary programs.
+As mentioned the actual compressed subimages are not parsed or modified by loaders.gl, however loaders.gl attempts to identify the formats using metadata and return the appropiate format fields to facilitate use in WebGL and WebGPU. 
 
-loaders.gl supports texture compression under Node.js by executing a binary with the appropriate command line and then loading the output.
+The following is the typical list of compressed texture formats, which loaders.gl can properly tag:
+
+| Format                                               | Description                 |
+| ---------------------------------------------------- | --------------------------- |
+| [`S3TC]() | S3 texture compression formats           |
+| [`S3TC_SRGB]() | S3 SRGB texture compression formats |
+| [`PVRTC]() | PowerVR texture compression formats     |
+| [`ETC1]() | texture compression formats              |
+| [`ETC]() | texture compression formats               |
+| [`ASTC`]()                                           | texture compression formats |
+| [`ATC]() | AMD texture compression formats           |
 
 ## Using Compressed Textures
 
@@ -146,6 +144,14 @@ It looks like S3 texture compression
     "bc7-rgba-unorm",
     "bc7-rgba-unorm-srgb",
 ```
+
+## Creating Compressed Textures
+
+Texture compression code is usually not readily available, particulary not in JavaScript. Compression is typically done by binary programs.
+
+loaders.gl supports texture compression under Node.js by executing a binary with the appropriate command line and then loading the output.
+
+The `CompressedTextureWriter` uses this technique.
 
 ## IP and Patent Considerations
 

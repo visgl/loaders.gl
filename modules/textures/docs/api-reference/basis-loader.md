@@ -1,6 +1,8 @@
 # BasisLoader
 
-> The `BasisLoader` is experimental
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />
+</p>
 
 A loader for Basis Universal "supercompressed" GPU textures. Extracts supercompressed textures from the basis container and efficiently "transpiles" them into the specified compressed texture format.
 

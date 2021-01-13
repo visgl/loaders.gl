@@ -1,6 +1,8 @@
 # CompressedTextureLoader
 
-> The `CompressedTextureLoader` is experimental
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />
+</p>
 
 Loader for compressed textures in the PVR file format
 
