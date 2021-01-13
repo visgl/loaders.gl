@@ -51,7 +51,7 @@ http://cdn.imgtec.com/sdk-documentation/PVR+File+Format.Specification.pdf
 
 ## Compression Formats
 
-As mentioned the actual compressed subimages are not parsed or modified by loaders.gl, however loaders.gl attempts to identify the formats using metadata and return the appropiate format fields to facilitate use in WebGL and WebGPU. 
+As mentioned the actual compressed subimages are not parsed or modified by loaders.gl, however loaders.gl attempts to identify the formats using metadata and return the appropiate format fields to facilitate use in WebGL and WebGPU.
 
 The following is the typical list of compressed texture formats, which loaders.gl can properly tag:
 

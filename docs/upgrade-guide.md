@@ -22,7 +22,6 @@ GLTFScenegraph is updated to provide modifying capabilities. Signatures of some 
 
 - The `KMLAsGeoJsonLoader` has been removed, use `KMLLoader`, with `options.gis.format: 'geojson'`.
 
-
 ## Upgrading to v2.2
 
 **`@loaders.gl/core`**
