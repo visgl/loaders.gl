@@ -131,8 +131,6 @@ export default class CompressedTexture extends PureComponent {
     const {canvas, gl, program, image} = this.props;
     const {src} = image;
 
-    this.addStat('File Size', Math.floor(image.size / 1024), 'Kb');
-
     try {
       const url = `${TEXTURES_BASE_URL}${src}`;
       const loader = await selectLoader(url, [
@@ -250,6 +248,7 @@ export default class CompressedTexture extends PureComponent {
 
     this.addStat('Upload time', `${Math.floor(uploadTime)} ms`);
     this.addStat('Dimensions', `${image.width} x ${image.height}`);
+    this.addStat('File Size', Math.floor(image.fileSize / 1024), 'Kb');
     this.addStat(
       'Size in memory (Lvl 0)',
       Math.floor((image.width * image.height * 4) / 1024),
@@ -280,9 +279,22 @@ export default class CompressedTexture extends PureComponent {
 
     this.addStat('Upload time', `${Math.floor(uploadTime)} ms`);
     this.addStat('Dimensions', `${width} x ${height}`);
+
     if (levelSize) {
+      const fileSize = this.getCompressedTexturesFileSize(images);
+      this.addStat('File Size', Math.floor(fileSize / 1024), 'Kb');
       this.addStat('Size in memory (Lvl 0)', Math.floor(levelSize / 1024), 'Kb');
     }
+  }
+
+  getCompressedTexturesFileSize(images) {
+    let fileSize = 0;
+
+    for (let index = 0; index < images.length; index++) {
+      fileSize += images[index].levelSize;
+    }
+
+    return fileSize;
   }
 
   // eslint-disable-next-line complexity
