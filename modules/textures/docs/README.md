@@ -1,6 +1,12 @@
 # Overview
 
-The `@loaders.gl/textures` module contains a loader for Basis encoded compressed textures (images).
+The `@loaders.gl/textures` module contains a loader for compressed textures.
+
+Note that a texture is more complex than an image. A texture typically has many subimages. A texture can represent a single logical image but can also be a texture cube, a texture array etc representing many logical images. In addition, each "image" typically has many mipmap levels.
+
+In addition, in compressed textures each mipmap image is compressed opaquely into a format that can only be understood by certain GPUs.
+
+Basis encoded textures are super compressed. A more recent addition, they can be efficiently transcoded on the client into actual compressed texture formats appropriate for each device and are therefore quite convenient to use.
 
 ## Installation
 
