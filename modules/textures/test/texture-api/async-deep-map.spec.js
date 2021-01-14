@@ -1,5 +1,5 @@
 import test from 'tape-promise/tape';
-import {asyncDeepMap} from '@loaders.gl/images/lib/texture-api/async-deep-map';
+import {asyncDeepMap} from '@loaders.gl/textures/lib/texture-api/async-deep-map';
 
 const INPUT = {
   a: [1, 2, 3],

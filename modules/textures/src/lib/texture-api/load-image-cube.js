@@ -1,4 +1,4 @@
-import parseImage from '../parsers/parse-image';
+import {ImageLoader} from '@loaders.gl/images';
 import {getImageUrls} from './load-image';
 import {deepLoad} from './deep-load';
 
@@ -42,7 +42,7 @@ export async function getImageCubeUrls(getUrl, options) {
 
 // Returns an object with six key-value pairs containing the images (or image mip arrays)
 // for each cube face
-export async function loadImageCube(getUrl, options = {}) {
+export async function loadImageTextureCube(getUrl, options = {}) {
   const urls = await getImageCubeUrls(getUrl, options);
-  return await deepLoad(urls, parseImage, options);
+  return await deepLoad(urls, ImageLoader.parse, options);
 }

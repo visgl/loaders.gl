@@ -1,5 +1,4 @@
-import {resolvePath} from '@loaders.gl/loader-utils';
-import assert from '../utils/assert';
+import {resolvePath, assert} from '@loaders.gl/loader-utils';
 
 // Generate a url by calling getUrl with mix of options, applying options.baseUrl
 export function generateUrl(getUrl, options, urlOptions) {
