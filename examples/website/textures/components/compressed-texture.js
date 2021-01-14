@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import {BasisLoader, CompressedTextureLoader, CrunchLoader} from '@loaders.gl/textures';
 import {ImageLoader} from '@loaders.gl/images';
-import {load, registerLoaders, selectLoader} from '@loaders.gl/core';
+import {load, registerLoaders, selectLoader, fetchFile} from '@loaders.gl/core';
 import {Texture2D} from '@luma.gl/core';
 import {
   COMPRESSED_RGB_S3TC_DXT1_EXT,
@@ -139,7 +139,13 @@ export default class CompressedTexture extends PureComponent {
         BasisLoader,
         ImageLoader
       ]);
-      const result = loader && (await load(url, loader, loadOptions));
+
+      const response = await fetchFile(url);
+      const arrayBuffer = await response.arrayBuffer();
+      const length = arrayBuffer.byteLength;
+      const result = loader && (await load(arrayBuffer, loader, loadOptions));
+
+      this.addStat('File Size', Math.floor(length / 1024), 'Kb');
 
       switch (loader && loader.name) {
         case 'Crunch':
@@ -248,7 +254,6 @@ export default class CompressedTexture extends PureComponent {
 
     this.addStat('Upload time', `${Math.floor(uploadTime)} ms`);
     this.addStat('Dimensions', `${image.width} x ${image.height}`);
-    this.addStat('File Size', Math.floor(image.fileSize / 1024), 'Kb');
     this.addStat(
       'Size in memory (Lvl 0)',
       Math.floor((image.width * image.height * 4) / 1024),
@@ -279,22 +284,9 @@ export default class CompressedTexture extends PureComponent {
 
     this.addStat('Upload time', `${Math.floor(uploadTime)} ms`);
     this.addStat('Dimensions', `${width} x ${height}`);
-
     if (levelSize) {
-      const fileSize = this.getCompressedTexturesFileSize(images);
-      this.addStat('File Size', Math.floor(fileSize / 1024), 'Kb');
       this.addStat('Size in memory (Lvl 0)', Math.floor(levelSize / 1024), 'Kb');
     }
-  }
-
-  getCompressedTexturesFileSize(images) {
-    let fileSize = 0;
-
-    for (let index = 0; index < images.length; index++) {
-      fileSize += images[index].levelSize;
-    }
-
-    return fileSize;
   }
 
   // eslint-disable-next-line complexity

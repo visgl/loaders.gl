@@ -40,8 +40,6 @@ export default async function parseImage(arrayBuffer, options, context) {
     image = getImageData(image);
   }
 
-  image.fileSize = arrayBuffer.byteLength;
-
   return image;
 }
 

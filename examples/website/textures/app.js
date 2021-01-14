@@ -82,7 +82,7 @@ export default class App extends PureComponent {
 
       return (
         <div key={index}>
-          <h2 style={{'border-bottom': '1px solid black'}}>{formatName}</h2>
+          <h2 style={{borderBottom: '1px solid black'}}>{formatName}</h2>
           {this.renderTextures(gl, canvas, program, images)}
         </div>
       );
