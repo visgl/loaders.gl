@@ -1,6 +1,16 @@
 # Overview
 
-The `@loaders.gl/textures` module contains a loader for Basis encoded compressed textures (images).
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />
+</p>
+
+The `@loaders.gl/textures` module contains loaders for compressed textures. More specifically it contains loaders and writers for compressed texture **container** formats, including KTX, DDS and PVR. It also supports supercompressed Basis textures.
+
+Note that a texture is more complex than an image. A texture typically has many subimages. A texture can represent a single logical image but can also be a texture cube, a texture array etc representing many logical images. In addition, each "image" typically has many mipmap levels.
+
+In addition, in compressed textures each mipmap image is compressed opaquely into a format that can only be understood by certain GPUs.
+
+Basis encoded textures are super compressed. A more recent addition, they can be efficiently transcoded on the client into actual compressed texture formats appropriate for each device and are therefore quite convenient to use.
 
 ## Installation
 

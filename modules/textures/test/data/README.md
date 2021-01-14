@@ -1,5 +1,13 @@
 # Data Licenses
 
+- ktx files
+
+  From https://github.com/donmccurdy/KTX-Parse under MIT license
+
+- basis files
+
+  From binomial repository
+
 - `shannon` files - Sample files from texture-tester repo https://github.com/toji/texture-tester under following license:
 
 - Copyright (c) 2014, Brandon Jones. All rights reserved.
