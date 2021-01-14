@@ -78,15 +78,49 @@ export default class App extends PureComponent {
     const {canvas, gl, program} = this.state;
 
     return IMAGES_DATA.map((imagesData, index) => {
-      const {formatName, images} = imagesData;
-
       return (
         <div key={index}>
-          <h2 style={{borderBottom: '1px solid black'}}>{formatName}</h2>
-          {this.renderTextures(gl, canvas, program, images)}
+          {this.renderTexturesDescription(imagesData)}
+          {this.renderTextures(gl, canvas, program, imagesData.images)}
         </div>
       );
     });
+  }
+
+  renderTexturesDescription(imagesData) {
+    const {formatName, description, codeSample, availability, link} = imagesData;
+
+    return (
+      <div style={{display: 'flex', flexFlow: 'column'}}>
+        <h2 style={{borderBottom: '1px solid black', marginBottom: 0}}>
+          {link ? (
+            <a style={{textDecoration: 'none'}} href={link}>
+              {formatName}
+            </a>
+          ) : (
+            formatName
+          )}
+        </h2>
+        {description && (
+          <div>
+            <h3 style={{marginBottom: 0}}>{'Description: '}</h3>
+            <i>{description}</i>
+          </div>
+        )}
+        {codeSample && (
+          <div>
+            <h3 style={{marginBottom: 0}}>{'Code sample: '}</h3>
+            <code>{codeSample}</code>
+          </div>
+        )}
+        {availability && (
+          <div>
+            <h3 style={{marginBottom: 0}}>{'Availability: '}</h3>
+            <i>{availability}</i>
+          </div>
+        )}
+      </div>
+    );
   }
 
   renderTextures(gl, canvas, program, images) {
