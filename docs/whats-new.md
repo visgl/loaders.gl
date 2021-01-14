@@ -34,7 +34,7 @@ Target Release Date: Q1 2021. (Alpha releases are available).
 - `BasisLoader` with latest binaries.
 - `CrunchLoader`
 - `CompressedTextureWriter` is available (for Node.js only)
-- Texture loading API for multi-image-based textures `loadImageTexture`, `loadImageTextureArray`, `loadImageTextureCube` 
+- Texture loading API for multi-image-based textures `loadImageTexture`, `loadImageTextureArray`, `loadImageTextureCube`
 
 **@loaders.gl/terrain**
 

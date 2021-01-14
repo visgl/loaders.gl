@@ -78,14 +78,16 @@
       "test": ["test"]
     }
   },
-  "include":[
-    "modules/**/src/**/*",
-    "modules/**/test/**/*"
-  ],
   "exclude":[
-    "modules/**/src/libs/*",
-
-    "modules/tiles/src/**/*",
-    "modules/tiles/test/**/*"
+    "**/modules/**/src/libs/*",
+    "**/modules/tiles/src/**/*",
+    "**/modules/tiles/test/**/*",
+    "**/modules/*/dist/**/*",
+    "**/modules/**/wip/**/*",
+    "**/examples/**/*",
+    "**/coverage/**/*",
+    "**/arrowjs/**/*",
+    "**/website/**/*",
+    "**/test/**/*"
   ]
 }

@@ -23,21 +23,29 @@ test('loadImageTexture#mipLevels=auto', async t => {
 });
 
 test('loadImageTextureArray#mipLevels=0', async t => {
-  const images = await loadImageTextureArray(10, ({index}) => `specular/specular_back_${index}.jpg`, {
-    baseUrl: PAPERMILL_URL
-  });
+  const images = await loadImageTextureArray(
+    10,
+    ({index}) => `specular/specular_back_${index}.jpg`,
+    {
+      baseUrl: PAPERMILL_URL
+    }
+  );
   t.equal(images.length, 10, 'loadArray loaded 10 images');
   t.ok(images.every(isImage));
   t.end();
 });
 
 test('loadImageTextureArray#mipLevels=auto', async t => {
-  const images = await loadImageTextureArray(1, ({index, lod}) => `specular/specular_back_${lod}.jpg`, {
-    baseUrl: PAPERMILL_URL,
-    image: {
-      mipLevels: 'auto'
+  const images = await loadImageTextureArray(
+    1,
+    ({index, lod}) => `specular/specular_back_${lod}.jpg`,
+    {
+      baseUrl: PAPERMILL_URL,
+      image: {
+        mipLevels: 'auto'
+      }
     }
-  });
+  );
   t.equal(images.length, 1, 'loadArray loaded 1 image');
   images.every(imageMips => {
     t.equal(imageMips.length, 10, `array of mip images has correct length`);
@@ -47,9 +55,12 @@ test('loadImageTextureArray#mipLevels=auto', async t => {
 });
 
 test('loadImageTextureCube#mipLevels=0', async t => {
-  const imageCube = await loadImageTextureCube(({direction}) => `diffuse/diffuse_${direction}_0.jpg`, {
-    baseUrl: PAPERMILL_URL
-  });
+  const imageCube = await loadImageTextureCube(
+    ({direction}) => `diffuse/diffuse_${direction}_0.jpg`,
+    {
+      baseUrl: PAPERMILL_URL
+    }
+  );
   t.equal(Object.keys(imageCube).length, 6, 'image cube has 6 images');
   for (const face in imageCube) {
     const image = imageCube[face];
