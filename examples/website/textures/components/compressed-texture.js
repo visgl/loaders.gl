@@ -67,7 +67,6 @@ const propTypes = {
   canvas: PropTypes.object,
   image: PropTypes.object,
   gl: PropTypes.object,
-  loadOptions: PropTypes.object,
   program: PropTypes.object
 };
 
@@ -75,7 +74,6 @@ const defaultProps = {
   canvas: null,
   image: null,
   gl: null,
-  loadOptions: null,
   program: null
 };
 
@@ -94,7 +92,7 @@ export default class CompressedTexture extends PureComponent {
   }
 
   async componentDidMount() {
-    this.setupBasisLoadOptionsIfNeeded();
+    await this.setupBasisLoadOptionsIfNeeded();
 
     const dataUrl = await this.getTextureDataUrl();
     this.setState({dataUrl});
@@ -111,7 +109,7 @@ export default class CompressedTexture extends PureComponent {
   }
 
   setupBasisLoadOptionsIfNeeded() {
-    if (this.state.supportedFormats.DTX) {
+    if (this.state.supportedFormats.DXT) {
       const loadOptions = {
         ...this.state.loadOptions,
         basis: {
