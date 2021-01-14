@@ -1,12 +1,11 @@
-import assert from '../utils/assert';
-import parseImage from '../parsers/parse-image';
-import {getImageSize} from '../category-api/parsed-image-api';
+import {assert} from '@loaders.gl/loader-utils';
+import {ImageLoader, getImageSize} from '@loaders.gl/images';
 import {generateUrl} from './generate-url';
 import {deepLoad, shallowLoad} from './deep-load';
 
-export async function loadImage(getUrl, options = {}) {
+export async function loadImageTexture(getUrl, options = {}) {
   const imageUrls = await getImageUrls(getUrl, options);
-  return await deepLoad(imageUrls, parseImage, options);
+  return await deepLoad(imageUrls, ImageLoader.parse, options);
 }
 
 export async function getImageUrls(getUrl, options, urlOptions = {}) {
@@ -22,7 +21,7 @@ async function getMipmappedImageUrls(getUrl, mipLevels, options, urlOptions) {
   // If no mip levels supplied, we need to load the level 0 image and calculate based on size
   if (mipLevels === 'auto') {
     const url = generateUrl(getUrl, options, {...urlOptions, lod: 0});
-    const image = await shallowLoad(url, parseImage, options);
+    const image = await shallowLoad(url, ImageLoader.parse, options);
 
     const {width, height} = getImageSize(image);
     mipLevels = getMipLevels({width, height});

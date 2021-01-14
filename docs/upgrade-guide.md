@@ -10,6 +10,10 @@ GLTFScenegraph is updated to provide modifying capabilities. Signatures of some 
 
 - Module has been moved to `@loaders.gl/textures`.
 
+`@loaders.gl/images`:
+
+The texture API `loadImage`, `loadImageArray`, `loadImageCube` has been moved to the new `@loaders.gl/textures` module, and have been renamed to `loadImageTexture*`.
+
 ## Upgrading to v2.3
 
 `@loaders.gl/core`:

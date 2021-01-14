@@ -30,9 +30,11 @@ Target Release Date: Q1 2021. (Alpha releases are available).
 **@loaders.gl/textures** (NEW)
 
 - [`textures`](https://loaders.gl/examples/textures) website example shows which compressed texture formats work on the current device.
-- `@loaders.gl/basis` has been moved to `@loaders.gl/textures`
 - `CompressedTextureLoader` now supports KTX2, DDS and PVR containers.
-- A new `CompressedTextureWriter` is available (for Node.js only)
+- `BasisLoader` with latest binaries.
+- `CrunchLoader`
+- `CompressedTextureWriter` is available (for Node.js only)
+- Texture loading API for multi-image-based textures `loadImageTexture`, `loadImageTextureArray`, `loadImageTextureCube` 
 
 **@loaders.gl/terrain**
 

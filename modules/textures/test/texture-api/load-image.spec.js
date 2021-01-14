@@ -1,17 +1,18 @@
 import test from 'tape-promise/tape';
-import {loadImage, loadImageArray, loadImageCube, isImage} from '@loaders.gl/images';
+import {loadImageTexture, loadImageTextureArray, loadImageTextureCube} from '@loaders.gl/textures';
+import {isImage} from '@loaders.gl/images';
 
 const LUT_URL = '@loaders.gl/images/test/data/ibl/brdfLUT.png';
 const PAPERMILL_URL = '@loaders.gl/images/test/data/ibl/papermill';
 
-test('loadImage#mipLevels=0', async t => {
-  const image = await loadImage(LUT_URL);
+test('loadImageTexture#mipLevels=0', async t => {
+  const image = await loadImageTexture(LUT_URL);
   t.ok(isImage(image));
   t.end();
 });
 
-test('loadImage#mipLevels=auto', async t => {
-  const mipmappedImage = await loadImage(({lod}) => `specular/specular_back_${lod}.jpg`, {
+test('loadImageTexture#mipLevels=auto', async t => {
+  const mipmappedImage = await loadImageTexture(({lod}) => `specular/specular_back_${lod}.jpg`, {
     baseUrl: PAPERMILL_URL,
     image: {
       mipLevels: 'auto'
@@ -21,8 +22,8 @@ test('loadImage#mipLevels=auto', async t => {
   t.end();
 });
 
-test('loadImageArray#mipLevels=0', async t => {
-  const images = await loadImageArray(10, ({index}) => `specular/specular_back_${index}.jpg`, {
+test('loadImageTextureArray#mipLevels=0', async t => {
+  const images = await loadImageTextureArray(10, ({index}) => `specular/specular_back_${index}.jpg`, {
     baseUrl: PAPERMILL_URL
   });
   t.equal(images.length, 10, 'loadArray loaded 10 images');
@@ -30,8 +31,8 @@ test('loadImageArray#mipLevels=0', async t => {
   t.end();
 });
 
-test('loadImageArray#mipLevels=auto', async t => {
-  const images = await loadImageArray(1, ({index, lod}) => `specular/specular_back_${lod}.jpg`, {
+test('loadImageTextureArray#mipLevels=auto', async t => {
+  const images = await loadImageTextureArray(1, ({index, lod}) => `specular/specular_back_${lod}.jpg`, {
     baseUrl: PAPERMILL_URL,
     image: {
       mipLevels: 'auto'
@@ -45,8 +46,8 @@ test('loadImageArray#mipLevels=auto', async t => {
   t.end();
 });
 
-test('loadImageCube#mipLevels=0', async t => {
-  const imageCube = await loadImageCube(({direction}) => `diffuse/diffuse_${direction}_0.jpg`, {
+test('loadImageTextureCube#mipLevels=0', async t => {
+  const imageCube = await loadImageTextureCube(({direction}) => `diffuse/diffuse_${direction}_0.jpg`, {
     baseUrl: PAPERMILL_URL
   });
   t.equal(Object.keys(imageCube).length, 6, 'image cube has 6 images');
@@ -57,8 +58,8 @@ test('loadImageCube#mipLevels=0', async t => {
   t.end();
 });
 
-test('loadImageCube#mipLevels=auto', async t => {
-  const imageCube = await loadImageCube(
+test('loadImageTextureCube#mipLevels=auto', async t => {
+  const imageCube = await loadImageTextureCube(
     ({direction, lod}) => `specular/specular_${direction}_${lod}.jpg`,
     {
       baseUrl: PAPERMILL_URL,
