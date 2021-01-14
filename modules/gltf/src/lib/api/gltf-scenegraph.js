@@ -1,4 +1,4 @@
-import {getBinaryImageMIMEType} from '@loaders.gl/images';
+import {getBinaryImageMetadata} from '@loaders.gl/images';
 import {padToNBytes, copyToArray} from '@loaders.gl/loader-utils';
 import {assert} from '../utils/assert';
 import {
@@ -380,7 +380,8 @@ export default class GLTFScenegraph {
     // If image is referencing a bufferView instead of URI, mimeType must be defined:
     //   https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#images
     //   "a reference to a bufferView; in that case mimeType must be defined."
-    mimeType = mimeType || getBinaryImageMIMEType(imageData);
+    const metadata = getBinaryImageMetadata(imageData);
+    mimeType = mimeType || metadata?.mimeType;
 
     const bufferViewIndex = this.addBufferView(imageData);
 
@@ -497,8 +498,7 @@ export default class GLTFScenegraph {
 
     // Copy each array into
     let dstByteOffset = 0;
-    for (let i = 0; i < sourceBuffers.length; i++) {
-      const sourceBuffer = sourceBuffers[i];
+    for (const sourceBuffer of this.sourceBuffers || []) {
       dstByteOffset = copyToArray(sourceBuffer, targetArray, dstByteOffset);
     }
 

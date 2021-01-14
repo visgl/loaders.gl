@@ -8,7 +8,7 @@ import {getResourceUrlAndType} from '../utils/resource-utils';
 import {selectLoader} from './select-loader';
 
 export async function parse(data, loaders, options, context) {
-  assert(!context || typeof context !== 'string', 'parse no longer accepts final url');
+  assert(!context || typeof context === 'object'); // parse no longer accepts final url
 
   // Signature: parse(data, options, context | url)
   // Uses registered loaders

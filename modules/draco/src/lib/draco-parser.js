@@ -383,10 +383,4 @@ export default class DracoParser {
     this.draco.destroy(dracoArray);
     return result;
   }
-
-  // DEPRECATED
-
-  decode(arrayBuffer, options) {
-    return this.parseSync(arrayBuffer, options);
-  }
 }

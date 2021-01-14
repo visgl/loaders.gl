@@ -7,7 +7,7 @@ import {getLoaders, getLoaderContext} from '../loader-utils/context-utils';
 import {getResourceUrlAndType} from '../utils/resource-utils';
 
 export function parseSync(data, loaders, options, context) {
-  assert(!context || typeof context !== 'string', 'parseSync no longer accepts final url');
+  assert(!context || typeof context === 'object'); // parseSync no longer accepts final url
 
   // Signature: parseSync(data, options)
   // Uses registered loaders

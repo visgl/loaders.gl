@@ -78,6 +78,3 @@ export type _Attributes = import('./categories/mesh/mesh-utils').Attributes;
 
 export {NullWorkerLoader, NullLoader} from './null-loader';
 export {JSONLoader} from './json-loader';
-
-// DEPRECATED IN 2.3
-export {getZeroOffsetArrayBuffer} from './lib/binary-utils/memory-copy-utils';

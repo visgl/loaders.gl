@@ -22,6 +22,10 @@ export function getImageType(image) {
   return format;
 }
 
+export function getImageSize(image) {
+  return getImageData(image);
+}
+
 export function getImageData(image) {
   switch (getImageType(image)) {
     case 'data':
@@ -44,9 +48,6 @@ export function getImageData(image) {
       return assert(false);
   }
 }
-
-// TODO DEPRECATED not needed (use getImageData)
-export {getImageData as getImageSize};
 
 // PRIVATE
 
