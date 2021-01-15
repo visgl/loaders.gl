@@ -1,7 +1,6 @@
 /* eslint-disable react/no-unescaped-entities */
 import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
-import styled from 'styled-components';
 import {instrumentGLContext, Program} from '@luma.gl/core';
 import {IMAGES_DATA} from './textures-data';
 import CompressedTexture from './components/compressed-texture';
@@ -29,10 +28,6 @@ varying vec2 uv;
 void main() {
   gl_FragColor = vec4(texture2D(tex, uv).rgb, 1.);
 }
-`;
-
-const Header = styled.h2`
-  border-bottom: 1px solid black;
 `;
 
 export default class App extends PureComponent {
@@ -87,7 +82,7 @@ export default class App extends PureComponent {
 
       return (
         <div key={index}>
-          <Header>{formatName}</Header>
+          <h2 style={{borderBottom: '1px solid black'}}>{formatName}</h2>
           {this.renderTextures(gl, canvas, program, images)}
         </div>
       );

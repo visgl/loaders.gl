@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import {BasisLoader, CompressedTextureLoader, CrunchLoader} from '@loaders.gl/textures';
 import {ImageLoader} from '@loaders.gl/images';
-import {load, registerLoaders, selectLoader} from '@loaders.gl/core';
+import {load, registerLoaders, selectLoader, fetchFile} from '@loaders.gl/core';
 import {Texture2D} from '@luma.gl/core';
 import {
   COMPRESSED_RGB_S3TC_DXT1_EXT,
@@ -131,8 +131,6 @@ export default class CompressedTexture extends PureComponent {
     const {canvas, gl, program, image} = this.props;
     const {src} = image;
 
-    this.addStat('File Size', Math.floor(image.size / 1024), 'Kb');
-
     try {
       const url = `${TEXTURES_BASE_URL}${src}`;
       const loader = await selectLoader(url, [
@@ -141,7 +139,13 @@ export default class CompressedTexture extends PureComponent {
         BasisLoader,
         ImageLoader
       ]);
-      const result = loader && (await load(url, loader, loadOptions));
+
+      const response = await fetchFile(url);
+      const arrayBuffer = await response.arrayBuffer();
+      const length = arrayBuffer.byteLength;
+      const result = loader && (await load(arrayBuffer, loader, loadOptions));
+
+      this.addStat('File Size', Math.floor(length / 1024), 'Kb');
 
       switch (loader && loader.name) {
         case 'Crunch':
