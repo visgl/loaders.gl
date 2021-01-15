@@ -14,9 +14,8 @@ export async function parseExcel(arrayBuffer, options, context) {
   // const dataFileType: string = dataUrl.substr(dataUrl.lastIndexOf('.')); // file extension
 
   // create Excel 'workbook'
-  debugger
   const workbook = xlsx.read(arrayBuffer, {
-    cellDates: true
+    // cellDates: true
   });
 
   // load data sheets

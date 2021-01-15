@@ -16,8 +16,8 @@ test.only('ExcelLoader#load(ZIPCODES)', async t => {
   data = await load(ZIPCODES_XLSB_PATH, ExcelLoader);
   t.equal(data.length, 42050, 'XLSB: Correct number of row received');
 
-  // data = await load(ZIPCODES_XLSX_PATH, ExcelLoader);
-  // t.equal(data.length, 42050, 'XLSX: Correct number of row received');
+  data = await load(ZIPCODES_XLSX_PATH, ExcelLoader);
+  t.equal(data.length, 42050, 'XLSX: Correct number of row received');
 
   t.end();
 });
