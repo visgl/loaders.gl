@@ -22,6 +22,7 @@ export {
 
 // DEPRECATED
 // TODO - Remove in V3
+export {loadImage} from './lib/texture-api/load-image';
 
 export {default as HTMLImageLoader} from './image-loader';
 
