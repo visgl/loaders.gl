@@ -85,7 +85,7 @@ module.exports = {
           },
           {
             title: 'Textures',
-            image: 'images/example-pointcloud.jpg',
+            image: 'images/example-textures.png',
             componentUrl: resolve(__dirname, '../examples/website/textures/app.js'),
             path: 'examples/textures'
           },
