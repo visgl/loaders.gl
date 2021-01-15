@@ -1,10 +1,10 @@
-import parseImage from '../parsers/parse-image';
+import {ImageLoader} from '@loaders.gl/images';
 import {getImageUrls} from './load-image';
 import {deepLoad} from './deep-load';
 
-export async function loadImageArray(count, getUrl, options = {}) {
+export async function loadImageTextureArray(count, getUrl, options = {}) {
   const imageUrls = await getImageArrayUrls(count, getUrl, options);
-  return await deepLoad(imageUrls, parseImage, options);
+  return await deepLoad(imageUrls, ImageLoader.parse, options);
 }
 
 export async function getImageArrayUrls(count, getUrl, options = {}) {

@@ -274,7 +274,8 @@
         {
           "title": "@loaders.gl/textures",
           "entries": [
-            {"entry": "modules/textures/docs"}
+            {"entry": "modules/textures/docs"},
+            {"entry": "modules/textures/docs/using-compressed-textures"}
           ]
         },
         {

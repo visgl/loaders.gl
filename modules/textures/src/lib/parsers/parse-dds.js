@@ -2,7 +2,7 @@ import {assert} from '@loaders.gl/loader-utils';
 import {GL} from '../gl-constants';
 import {sliceLevels} from '../utils/slice-levels-util';
 
-export const DDS_CONSTANTS = {
+const DDS_CONSTANTS = {
   MAGIC_NUMBER: 0x20534444,
   HEADER_LENGTH: 31,
   MAGIC_NUMBER_INDEX: 0,
@@ -27,7 +27,14 @@ export const DDS_CONSTANTS = {
   }
 };
 
-export function parseDds(data) {
+export function isDDS(data) {
+  const header = new Uint32Array(data, 0, DDS_CONSTANTS.HEADER_LENGTH);
+  const magic = header[DDS_CONSTANTS.MAGIC_NUMBER_INDEX];
+
+  return magic === DDS_CONSTANTS.MAGIC_NUMBER;
+}
+
+export function parseDDS(data) {
   const header = new Int32Array(data, 0, DDS_CONSTANTS.HEADER_LENGTH);
   const pixelFormatNumber = header[DDS_CONSTANTS.HEADER_PF_FOURCC_INDEX];
   assert(

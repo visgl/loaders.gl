@@ -39,7 +39,9 @@
   },
   "dependencies": {
     "@loaders.gl/core": "3.0.0-alpha.1",
+    "@loaders.gl/images": "3.0.0-alpha.1",
     "@loaders.gl/loader-utils": "3.0.0-alpha.1",
+    "ktx-parse": "^0.0.4",
     "texture-compressor": "^1.0.2"
   }
 }

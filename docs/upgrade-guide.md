@@ -4,7 +4,15 @@
 
 `@loaders.gl/gltf`:
 
-GLTFScenegraph is updated to provide modifying capabilities. Signatures of some methods have been changed to "named parameters".
+GLTFScenegraph is updated to provide modifying capabilities. Signatures of some methods have been changed to use named parameters (rather than positional parameters).
+
+`@loaders.gl/basis`:
+
+- Module has been moved to `@loaders.gl/textures`.
+
+`@loaders.gl/images`:
+
+The texture API `loadImage`, `loadImageArray`, `loadImageCube` has been moved to the new `@loaders.gl/textures` module, and have been renamed to `loadImageTexture*`.
 
 ## Upgrading to v2.3
 
@@ -13,10 +21,6 @@ GLTFScenegraph is updated to provide modifying capabilities. Signatures of some 
 - `selectLoader()` is now async and returns a `Promise` that resolves to a loader.
 - `selectLoaderSync()` is available for situations when calling an async function is inconvenient.
 - Passing `fetch` options to `load()` and `parse()` etc. should now be done via the `options.fetch` sub-options object. fetch options on the root object are now deprecated.
-
-`@loaders.gl/basis`:
-
-- Module has been renamed to `@loaders.gl/textures`.
 
 `@loaders.gl/kml`:
 

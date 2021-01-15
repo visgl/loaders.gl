@@ -61,9 +61,9 @@ test('BasisLoader#imports', t => {
 // });
 
 /*
-test('loadImage#worker', t => {
+test('loadImageTexture#worker', t => {
   if (typeof Worker === 'undefined') {
-    t.comment('loadImage only works under browser');
+    t.comment('loadImageTexture only works under browser');
     t.end();
     return;
   }
@@ -93,7 +93,7 @@ test('loadImage#worker', t => {
       if (data.error) {
         t.fail(data.error);
       } else {
-        t.ok(data.image, 'loadImage loaded data from url');
+        t.ok(data.image, 'loadImageTexture loaded data from url');
         t.ok(
           data.image.width === width && data.image.height === height,
           'loaded image has correct content'

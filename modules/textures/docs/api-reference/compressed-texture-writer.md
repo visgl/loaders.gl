@@ -1,7 +1,7 @@
 # CompressedTextureWriter
 
 <p class="badges">
-  <img src="https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square" alt="From-v2.3" />
+  <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />
   <img src="https://img.shields.io/badge/Node.js-only-red.svg?style=flat-square" alt="Node.js-only" />
 </p>
 
@@ -22,11 +22,11 @@
 ```js
 import '@loaders.gl/polyfill'; // only if using under Node
 import {encodeURLtoURL} from '@loaders.gl/core';
-import {_CompressedTextureWriter} from '@loaders.gl/textures';
+import {CompressedTextureWriter} from '@loaders.gl/textures';
 
 export const IMAGE_URL = 'image.png';
 
-const outputFilename = await encodeURLtoURL(IMAGE_URL, '/tmp/test.ktx', _CompressedTextureWriter);
+const outputFilename = await encodeURLtoURL(IMAGE_URL, '/tmp/test.ktx', CompressedTextureWriter);
 
 // app can now read the file from outputFilename
 ```

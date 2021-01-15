@@ -1,9 +1,10 @@
 /* eslint-disable react/no-unescaped-entities */
 import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
+import styled from 'styled-components';
 import {instrumentGLContext, Program} from '@luma.gl/core';
-import TexturesBlock from './components/textures-block';
 import {IMAGES_DATA} from './textures-data';
+import CompressedTexture from './components/compressed-texture';
 
 // TEXTURE SHADERS
 
@@ -30,6 +31,10 @@ void main() {
 }
 `;
 
+const Header = styled.h2`
+  border-bottom: 1px solid black;
+`;
+
 export default class App extends PureComponent {
   constructor(props) {
     super(props);
@@ -39,11 +44,6 @@ export default class App extends PureComponent {
       gl: null,
       program: null
     };
-
-    this.setupCanvas = this.setupCanvas.bind(this);
-    this.createAndFillBufferObject = this.createAndFillBufferObject.bind(this);
-    this.renderTexturesBlocks = this.renderTexturesBlocks.bind(this);
-    this.renderDescription = this.renderDescription.bind(this);
   }
 
   componentDidMount() {
@@ -86,16 +86,18 @@ export default class App extends PureComponent {
       const {formatName, images} = imagesData;
 
       return (
-        <TexturesBlock
-          key={index}
-          gl={gl}
-          canvas={canvas}
-          program={program}
-          blockName={formatName}
-          images={images}
-        />
+        <div key={index}>
+          <Header>{formatName}</Header>
+          {this.renderTextures(gl, canvas, program, images)}
+        </div>
       );
     });
+  }
+
+  renderTextures(gl, canvas, program, images) {
+    return images.map((image, index) => (
+      <CompressedTexture key={index} image={image} canvas={canvas} gl={gl} program={program} />
+    ));
   }
 
   renderDescription() {

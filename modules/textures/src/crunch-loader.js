@@ -7,7 +7,10 @@ import {parseCrunch} from './lib/parsers/parse-crunch';
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-/** @type {WorkerLoaderObject} */
+/**
+ * Loader for the Crunch compressed texture container format
+ * @type {WorkerLoaderObject}
+ */
 export const CrunchWorkerLoader = {
   id: 'crunch',
   name: 'Crunch',
@@ -23,7 +26,10 @@ export const CrunchWorkerLoader = {
   }
 };
 
-/** @type {LoaderObject} */
+/**
+ * Loader for the Crunch compressed texture container format
+ * @type {LoaderObject}
+ */
 export const CrunchLoader = {
   ...CrunchWorkerLoader,
   parse: parseCrunch
