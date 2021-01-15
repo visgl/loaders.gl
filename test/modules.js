@@ -75,6 +75,7 @@ if (TEST_TABLES) {
   require('@loaders.gl/arrow/test');
   require('@loaders.gl/csv/test');
   require('@loaders.gl/json/test');
+  require('@loaders.gl/excel/test');
 }
 
 // Archive Formats
