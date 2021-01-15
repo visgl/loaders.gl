@@ -43,7 +43,7 @@ export async function* parseShapefileInBatches(asyncIterator, options, context) 
 
   let iterator;
   if (propertyIterator) {
-    iterator = await zipBatchIterators(shapeIterator, propertyIterator);
+    iterator = await zipBatchIterators(shapeIterator, propertyIterator, {key1: 'data'});
   } else {
     iterator = shapeIterator;
   }
@@ -51,10 +51,13 @@ export async function* parseShapefileInBatches(asyncIterator, options, context) 
   for await (const item of iterator) {
     let geometries;
     let properties;
+    let progress;
     if (!propertyIterator) {
-      geometries = item;
+      geometries = item.data;
+      progress = item.progress;
     } else {
-      [geometries, properties] = item;
+      [geometries, properties] = item.data;
+      progress = item.progress;
     }
 
     const geojsonGeometries = parseGeometries(geometries);
@@ -67,7 +70,9 @@ export async function* parseShapefileInBatches(asyncIterator, options, context) 
       prj,
       shx,
       header: shapeHeader,
-      data: features
+      data: features,
+      bytesUsed: progress.bytesUsed,
+      bytesTotal: progress.bytesTotal
     };
   }
 }

@@ -28,7 +28,6 @@ class DBFParser {
   write(arrayBuffer) {
     this.binaryReader.write(arrayBuffer);
     this.state = parseState(this.state, this.result, this.binaryReader, this.textDecoder);
-    // this.result.progress.bytesUsed = this.binaryReader.bytesUsed();
 
     // important events:
     // - schema available
@@ -39,7 +38,7 @@ class DBFParser {
   end() {
     this.binaryReader.end();
     this.state = parseState(this.state, this.result, this.binaryReader, this.textDecoder);
-    // this.result.progress.bytesUsed = this.binaryReader.bytesUsed();
+
     if (this.state !== STATE.END) {
       this.state = STATE.ERROR;
       this.result.error = 'DBF incomplete file';

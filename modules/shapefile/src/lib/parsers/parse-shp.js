@@ -35,7 +35,7 @@ class SHPParser {
   end() {
     this.binaryReader.end();
     this.state = parseState(this.state, this.result, this.binaryReader, this.options);
-    // this.result.progress.bytesUsed = this.binaryReader.bytesUsed();
+
     if (this.state !== STATE.END) {
       this.state = STATE.ERROR;
       this.result.error = 'SHP incomplete file';
@@ -62,13 +62,19 @@ export async function* parseSHPInBatches(asyncIterator, options) {
     }
 
     if (parser.result.geometries.length > 0) {
-      yield parser.result.geometries;
+      yield {
+        data: parser.result.geometries,
+        progress: parser.result.progress
+      };
       parser.result.geometries = [];
     }
   }
   parser.end();
   if (parser.result.geometries.length > 0) {
-    yield parser.result.geometries;
+    yield {
+      data: parser.result.geometries,
+      progress: parser.result.progress
+    };
   }
 
   return;
@@ -106,10 +112,11 @@ function parseState(state, result = {}, binaryReader, options) {
 
           result.header = parseSHPHeader(dataView);
           result.progress = {
-            bytesUsed: 0,
+            bytesUsed: SHP_HEADER_SIZE,
             bytesTotal: result.header.length,
             rows: 0
           };
+
           // index numbering starts at 1
           result.currentIndex = 1;
           state = STATE.EXPECTING_RECORD;
@@ -120,7 +127,7 @@ function parseState(state, result = {}, binaryReader, options) {
             const recordHeaderView = binaryReader.getDataView(SHP_RECORD_HEADER_SIZE);
             const recordHeader = {
               recordNumber: recordHeaderView.getInt32(0, BIG_ENDIAN),
-              // 2 byte words; includes the four words of record header
+              // 2 byte words; excludes the four words of record header
               byteLength: recordHeaderView.getInt32(4, BIG_ENDIAN) * 2,
               // This is actually part of the record, not the header...
               type: recordHeaderView.getInt32(8, LITTLE_ENDIAN)
@@ -154,6 +161,10 @@ function parseState(state, result = {}, binaryReader, options) {
 
               result.currentIndex++;
               result.progress.rows = result.currentIndex - 1;
+
+              // +8 because the content length field in the record's header
+              // excludes the 8-byte record header itself
+              result.progress.bytesUsed += recordHeader.byteLength + 8;
             }
           }
 
