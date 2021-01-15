@@ -1,0 +1,14 @@
+{
+  "version": "1.0",
+  "name": "loaders.gl-website",
+  "description": null,
+  "icons": {
+    "60": "/icons-b56407db0877c3a33f0f9dd263bbf475/firefox_app_60x60.png",
+    "128": "/icons-b56407db0877c3a33f0f9dd263bbf475/firefox_app_128x128.png",
+    "512": "/icons-b56407db0877c3a33f0f9dd263bbf475/firefox_app_512x512.png"
+  },
+  "developer": {
+    "name": null,
+    "url": null
+  }
+}
