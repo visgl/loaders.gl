@@ -5,13 +5,14 @@
   "license": "MIT",
   "scripts": {
     "start": "webpack-dev-server --progress --hot --open",
-    "start-local": "webpack-dev-server --env.local --progress --hot --open"
+    "start-local": "webpack-dev-server --env.local --progress --hot --open",
+    "start-local-luma": "webpack-dev-server --env.local --env.esnext --env.luma --progress --hot --open"
   },
   "dependencies": {
     "@loaders.gl/textures": "3.0.0-alpha.1",
     "@loaders.gl/core": "2.2.0",
     "@loaders.gl/images": "^2.3.7",
-    "@luma.gl/core": "^8.3.0",
+    "@luma.gl/core": "8.3.3",
     "prop-types": "^15.7.2",
     "react": "^16.3.0",
     "react-dom": "^16.3.0",
