@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import {BasisLoader, CompressedTextureLoader, CrunchLoader} from '@loaders.gl/textures';
 import {ImageLoader} from '@loaders.gl/images';
-import {load, registerLoaders, selectLoader} from '@loaders.gl/core';
+import {load, registerLoaders, selectLoader, fetchFile} from '@loaders.gl/core';
 import {Texture2D} from '@luma.gl/core';
 import {
   COMPRESSED_RGB_S3TC_DXT1_EXT,
@@ -67,7 +67,6 @@ const propTypes = {
   canvas: PropTypes.object,
   image: PropTypes.object,
   gl: PropTypes.object,
-  loadOptions: PropTypes.object,
   program: PropTypes.object
 };
 
@@ -75,7 +74,6 @@ const defaultProps = {
   canvas: null,
   image: null,
   gl: null,
-  loadOptions: null,
   program: null
 };
 
@@ -94,7 +92,7 @@ export default class CompressedTexture extends PureComponent {
   }
 
   async componentDidMount() {
-    this.setupBasisLoadOptionsIfNeeded();
+    await this.setupBasisLoadOptionsIfNeeded();
 
     const dataUrl = await this.getTextureDataUrl();
     this.setState({dataUrl});
@@ -111,7 +109,7 @@ export default class CompressedTexture extends PureComponent {
   }
 
   setupBasisLoadOptionsIfNeeded() {
-    if (this.state.supportedFormats.DTX) {
+    if (this.state.supportedFormats.DXT) {
       const loadOptions = {
         ...this.state.loadOptions,
         basis: {
@@ -131,8 +129,6 @@ export default class CompressedTexture extends PureComponent {
     const {canvas, gl, program, image} = this.props;
     const {src} = image;
 
-    this.addStat('File Size', Math.floor(image.size / 1024), 'Kb');
-
     try {
       const url = `${TEXTURES_BASE_URL}${src}`;
       const loader = await selectLoader(url, [
@@ -141,7 +137,13 @@ export default class CompressedTexture extends PureComponent {
         BasisLoader,
         ImageLoader
       ]);
-      const result = loader && (await load(url, loader, loadOptions));
+
+      const response = await fetchFile(url);
+      const arrayBuffer = await response.arrayBuffer();
+      const length = arrayBuffer.byteLength;
+      const result = loader && (await load(arrayBuffer, loader, loadOptions));
+
+      this.addStat('File Size', Math.floor(length / 1024), 'Kb');
 
       switch (loader && loader.name) {
         case 'Crunch':
@@ -248,7 +250,7 @@ export default class CompressedTexture extends PureComponent {
 
     gl.bindTexture(gl.TEXTURE_2D, lumaTexture.handle);
     const startTime = new Date();
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 8);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
     const uploadTime = Date.now() - startTime;
 

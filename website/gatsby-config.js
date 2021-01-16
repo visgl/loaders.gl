@@ -6,6 +6,12 @@ const ROOT_DIR = resolve('..');
 module.exports = {
   plugins: [
     {
+      resolve: `gatsby-plugin-favicon`,
+      options: {
+        logo: './static/images/favicon.png'
+      }
+    },
+    {
       resolve: `gatsby-theme-ocular`,
       options: {
         logLevel: 1, // Adjusts amount of debug information from ocular-gatsby
@@ -85,7 +91,7 @@ module.exports = {
           },
           {
             title: 'Textures',
-            image: 'images/example-pointcloud.jpg',
+            image: 'images/example-textures.png',
             componentUrl: resolve(__dirname, '../examples/website/textures/app.js'),
             path: 'examples/textures'
           },

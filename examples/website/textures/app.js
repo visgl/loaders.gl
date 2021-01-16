@@ -1,7 +1,6 @@
 /* eslint-disable react/no-unescaped-entities */
 import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
-import styled from 'styled-components';
 import {instrumentGLContext, Program} from '@luma.gl/core';
 import {IMAGES_DATA} from './textures-data';
 import CompressedTexture from './components/compressed-texture';
@@ -29,10 +28,6 @@ varying vec2 uv;
 void main() {
   gl_FragColor = vec4(texture2D(tex, uv).rgb, 1.);
 }
-`;
-
-const Header = styled.h2`
-  border-bottom: 1px solid black;
 `;
 
 export default class App extends PureComponent {
@@ -83,15 +78,59 @@ export default class App extends PureComponent {
     const {canvas, gl, program} = this.state;
 
     return IMAGES_DATA.map((imagesData, index) => {
-      const {formatName, images} = imagesData;
-
       return (
         <div key={index}>
-          <Header>{formatName}</Header>
-          {this.renderTextures(gl, canvas, program, images)}
+          {this.renderTexturesHeader(imagesData)}
+          {this.renderTextures(gl, canvas, program, imagesData.images)}
+          {this.renderTexturesDescription(imagesData)}
         </div>
       );
     });
+  }
+
+  renderTexturesHeader(imagesData) {
+    const {formatName, link} = imagesData;
+
+    return (
+      <div style={{display: 'flex', flexFlow: 'column'}}>
+        <h2 style={{borderBottom: '1px solid black', marginBottom: 0}}>
+          {link ? (
+            <a style={{textDecoration: 'none'}} href={link}>
+              {formatName}
+            </a>
+          ) : (
+            formatName
+          )}
+        </h2>
+      </div>
+    );
+  }
+
+  renderTexturesDescription(imagesData) {
+    const {description, codeSample, availability} = imagesData;
+    return (
+      <div>
+        {description && (
+          <p>
+            <b>{'Description: '}</b>
+            {description}
+          </p>
+        )}
+        {availability && (
+          <p>
+            <b>{'Availability: '}</b>
+            {availability}
+          </p>
+        )}
+        {codeSample && (
+          <div>
+            <p>
+              <code>{codeSample}</code>
+            </p>
+          </div>
+        )}
+      </div>
+    );
   }
 
   renderTextures(gl, canvas, program, images) {
@@ -105,26 +144,34 @@ export default class App extends PureComponent {
       <div>
         <h1>Texture Loaders</h1>
         <p>
-          <i>
-            Inspired by toji's <a href="http://toji.github.io/texture-tester">texture-tester</a>
-          </i>
-        </p>
-        <p>
-          This page loads every texture format supported by loaders.gl and attempts to display them
-          in WebGL using the{' '}
+          This page loads every &nbsp;
+          <a href="https://loaders.gl/modules/textures/docs/using-compressed-textures">
+            texture format
+          </a>{' '}
+          &nbsp; supported by loaders.gl and attempts to display them in WebGL using the{' '}
           <a href="https://luma.gl">
             <b>luma.gl</b>
           </a>{' '}
-          <code>Texture2D</code> class. It demonstrates working code for using loaders.gl to load
-          compressed textures, and also shows which formats your browser/device supports.
+          <code>Texture2D</code> class.
+        </p>
+        <p>
+          The <code>@loaders.gl/textures</code> &nbsp; module provides loaders for compressed
+          textures stored in <b>KTX</b>, <b>DDS</b> and <b>PVR</b> container files, plus <b>CRN</b>{' '}
+          (Crunch), and <b>Basis</b> supercompressed textures.
+        </p>
+        <p>This page also shows which compressed texture types your device and browser supports.</p>
+        <p>
+          <i>
+            Note that multiple textures on this page will fail to display due to lack of GPU support
+            (reported via WebGL extensions). For example: DXT formats are usually only supported on
+            Desktops while PVRTC is typically only available on mobile devices with PowerVR
+            chipsets.
+          </i>
         </p>
         <p>
           <i>
-            Note: It is expected that multiple textures on this page will fail to display due to
-            lack of GPU support. (For example: DXT formats are usually only supported on Desktops
-            while PVRTC is typically only available on mobile devices with PowerVR chipsets.) Your
-            hardware may support other formats beyond what is shown here, but only the following
-            formats have had WebGL extensions specified for their use.
+            Inspired by toji's awesome{' '}
+            <a href="http://toji.github.io/texture-tester">texture-tester</a>
           </i>
         </p>
       </div>
@@ -133,7 +180,7 @@ export default class App extends PureComponent {
 
   render() {
     return (
-      <div>
+      <div style={{margin: 30}}>
         {this.renderDescription()}
         {this.state.gl && this.renderTexturesBlocks()}
       </div>

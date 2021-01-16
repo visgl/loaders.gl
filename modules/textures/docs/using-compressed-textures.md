@@ -1,6 +1,6 @@
 # About Compressed Textures
 
-**Compressed textures** are different from compressed images in that they do not have to be decompressed, they can be used directly by a supporting GPU. Also a compressed texture typically includes a number of compressed subimages, representing mipmaps etc. In fact, these compressed subimages themselves are normally not parsed at all by loaders.gl, they are treated as binary blobs. Only the container file is parsed, extracting metadata and the binary buffers representing subimages.
+**Compressed textures** are different from compressed images in that they do not have to be decompressed, they can be used directly by a supporting GPU. A compressed texture typically consists of a collection of compressed subimages, representing mipmaps etc. These compressed subimages extracted as binary blobs by loaders.gl, intended to be passed directly to a GPU that understands how to read them. Only the container file is parsed, extracting metadata and the binary buffers representing subimages.
 
 **Supercompressed textures** can be cheaply transcoded to different compressed texture formats without first decompressing and then recompressing the texture. This allows a single supercompressed texture to be portbably used on multiple platforms even though those platforms do not support the same compressed texture formats.
 
