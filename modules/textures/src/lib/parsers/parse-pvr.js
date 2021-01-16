@@ -2,7 +2,7 @@
 // Forked from PicoGL: https://github.com/tsherif/picogl.js/blob/master/examples/utils/utils.js
 // Copyright (c) 2017 Tarek Sherif, The MIT License (MIT)
 import {GL} from '../gl-constants';
-import {sliceLevels} from '../utils/slice-levels-util';
+import {extractMipmapImages} from '../utils/extract-mipmap-images';
 
 const PVR_CONSTANTS = {
   MAGIC_NUMBER: 0x03525650,
@@ -103,7 +103,7 @@ export function parsePVR(data) {
 
   const image = new Uint8Array(data, dataOffset);
 
-  return sliceLevels(image, {
+  return extractMipmapImages(image, {
     mipMapLevels,
     width,
     height,

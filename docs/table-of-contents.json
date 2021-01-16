@@ -84,6 +84,7 @@
         {"entry": "modules/textures/docs/api-reference/basis-loader"},
         {"entry": "modules/textures/docs/api-reference/compressed-texture-loader"},
         {"entry": "modules/textures/docs/api-reference/compressed-texture-writer"},
+        {"entry": "modules/textures/docs/api-reference/crunch-loader"},
         {"entry": "modules/video/docs/api-reference/video-loader"},
         {"entry": "modules/wkt/docs/api-reference/wkb-loader"},
         {"entry": "modules/wkt/docs/api-reference/wkt-loader"},

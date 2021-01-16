@@ -2,7 +2,7 @@ import {loadCrunchModule} from './crunch-module-loader';
 import {GL} from '../gl-constants';
 import {assert} from '@loaders.gl/loader-utils';
 import {getDxt1LevelSize, getDxtXLevelSize} from './parse-dds';
-import {sliceLevels} from '../utils/slice-levels-util';
+import {extractMipmapImages} from '../utils/extract-mipmap-images';
 
 // Taken from crnlib.h
 const CRN_FORMAT = {
@@ -78,7 +78,7 @@ export async function parseCrunch(data, options = {}) {
   crunchModule._free(src);
 
   const image = new Uint8Array(crunchModule.HEAPU8.buffer, dst, dstSize).slice();
-  return sliceLevels(image, {
+  return extractMipmapImages(image, {
     mipMapLevels,
     width,
     height,
@@ -87,17 +87,24 @@ export async function parseCrunch(data, options = {}) {
   });
 }
 
-// Copy an array of bytes into or out of the emscripten heap.
-function arrayBufferCopy(srcPtr, dstPtr, dstByteOffset, numBytes) {
+/**
+ * Copy an array of bytes into or out of the emscripten heap
+ * @param {Uint8Array} srcData - Source data array
+ * @param {Uint8Array} dstData - Destination data array
+ * @param {number} dstByteOffset - Destination data offset
+ * @param {number} numBytes - number of bytes to copy
+ * @returns {void}
+ */
+function arrayBufferCopy(srcData, dstData, dstByteOffset, numBytes) {
   let i;
   const dst32Offset = dstByteOffset / 4;
   const tail = numBytes % 4;
-  const src32 = new Uint32Array(srcPtr.buffer, 0, (numBytes - tail) / 4);
-  const dst32 = new Uint32Array(dstPtr.buffer);
+  const src32 = new Uint32Array(srcData.buffer, 0, (numBytes - tail) / 4);
+  const dst32 = new Uint32Array(dstData.buffer);
   for (i = 0; i < src32.length; i++) {
     dst32[dst32Offset + i] = src32[i];
   }
   for (i = numBytes - tail; i < numBytes; i++) {
-    dstPtr[dstByteOffset + i] = srcPtr[i];
+    dstData[dstByteOffset + i] = srcData[i];
   }
 }

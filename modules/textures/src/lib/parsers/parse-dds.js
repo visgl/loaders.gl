@@ -1,6 +1,6 @@
 import {assert} from '@loaders.gl/loader-utils';
 import {GL} from '../gl-constants';
-import {sliceLevels} from '../utils/slice-levels-util';
+import {extractMipmapImages} from '../utils/extract-mipmap-images';
 
 const DDS_CONSTANTS = {
   MAGIC_NUMBER: 0x20534444,
@@ -41,7 +41,7 @@ export function parseDDS(data) {
     Boolean(header[DDS_CONSTANTS.HEADER_PF_FLAGS_INDEX] & DDS_CONSTANTS.DDPF_FOURCC),
     'DDS: Unsupported format, must contain a FourCC code'
   );
-  const fourCC = int32ToFourCC(pixelFormatNumber);
+  const fourCC = _int32ToFourCC(pixelFormatNumber);
   const internalFormat = DDS_CONSTANTS.PIXEL_FORMATS[fourCC];
   const sizeFunction = DDS_CONSTANTS.SIZE_FUNCTIONS[fourCC];
   assert(internalFormat && sizeFunction, `DDS: Unknown pixel format ${pixelFormatNumber}`);
@@ -55,7 +55,7 @@ export function parseDDS(data) {
   const dataOffset = header[DDS_CONSTANTS.HEADER_SIZE_INDEX] + 4;
   const image = new Uint8Array(data, dataOffset);
 
-  return sliceLevels(image, {
+  return extractMipmapImages(image, {
     mipMapLevels,
     width,
     height,
@@ -64,19 +64,24 @@ export function parseDDS(data) {
   });
 }
 
-function int32ToFourCC(value) {
-  return String.fromCharCode(
-    value & 0xff,
-    (value >> 8) & 0xff,
-    (value >> 16) & 0xff,
-    (value >> 24) & 0xff
-  );
-}
-
 export function getDxt1LevelSize(width, height) {
   return ((width + 3) >> 2) * ((height + 3) >> 2) * 8;
 }
 
 export function getDxtXLevelSize(width, height) {
   return ((width + 3) >> 2) * ((height + 3) >> 2) * 16;
+}
+
+/**
+ * Convert every byte of Int32 value to char
+ * @param {number} value - Int32 number
+ * @returns {string} string of 4 characters
+ */
+function _int32ToFourCC(value) {
+  return String.fromCharCode(
+    value & 0xff,
+    (value >> 8) & 0xff,
+    (value >> 16) & 0xff,
+    (value >> 24) & 0xff
+  );
 }
