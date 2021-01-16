@@ -187,31 +187,6 @@ export default class CompressedTexture extends PureComponent {
     return texture.handle;
   }
 
-  createCompressedTexture(gl, images) {
-    const texture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-    for (let index = 0; index < images.length; ++index) {
-      const image = images[index];
-      const {width, height, format, data} = image;
-
-      gl.compressedTexImage2D(gl.TEXTURE_2D, index, format, width, height, 0, data);
-    }
-
-    if (images.length > 1) {
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
-    } else {
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    }
-
-    return texture;
-  }
-
   renderEmptyTexture(gl, program) {
     const brownColor = new Uint8Array([68, 0, 0, 255]);
     const lumaTexture = new Texture2D(gl, {
@@ -236,16 +211,20 @@ export default class CompressedTexture extends PureComponent {
   }
 
   renderImageTexture(gl, program, image) {
-    gl.useProgram(program);
-    const texture = gl.createTexture();
+    const lumaTexture = new Texture2D(gl, {
+      data: image,
+      parameters: {
+        [gl.TEXTURE_MAG_FILTER]: gl.LINEAR,
+        [gl.TEXTURE_MIN_FILTER]: gl.LINEAR,
+        [gl.TEXTURE_WRAP_S]: gl.CLAMP_TO_EDGE,
+        [gl.TEXTURE_WRAP_T]: gl.CLAMP_TO_EDGE
+      }
+    });
 
-    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.useProgram(program);
+
+    gl.bindTexture(gl.TEXTURE_2D, lumaTexture.handle);
     const startTime = new Date();
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
     const uploadTime = Date.now() - startTime;
@@ -271,8 +250,7 @@ export default class CompressedTexture extends PureComponent {
     }
 
     const startTime = new Date();
-    // We should use createCompressedTexture2D here after luma.gl fix
-    const texture = this.createCompressedTexture(gl, images);
+    const texture = this.createCompressedTexture2D(gl, images);
 
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.useProgram(program);
