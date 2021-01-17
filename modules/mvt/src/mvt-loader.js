@@ -12,7 +12,7 @@ export const MVTWorkerLoader = {
   name: 'Mapbox Vector Tile',
   version: VERSION,
   extensions: ['mvt'],
-  mimeTypes: ['application/x-protobuf'],
+  mimeTypes: ['application/x-protobuf', 'application/vnd.mapbox-vector-tile'],
   category: 'geometry',
   options: {
     mvt: {
