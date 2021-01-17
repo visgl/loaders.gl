@@ -109,7 +109,7 @@ export default class VectorTileFeature {
     return [x1, y1, x2, y2];
   }
 
-  toJSON(transform) {
+  _toGeoJSON(transform) {
     let coords = this.loadGeometry();
     let type = VectorTileFeature.types[this.type];
     let i;
@@ -163,7 +163,11 @@ export default class VectorTileFeature {
     return result;
   }
 
-  toGeoJSON({x, y, z}) {
+  toGeoJSON(options) {
+    if (typeof options === 'function') {
+      return this._toGeoJSON(options);
+    }
+    const {x, y, z} = options;
     const size = this.extent * Math.pow(2, z);
     const x0 = this.extent * x;
     const y0 = this.extent * y;
@@ -176,7 +180,7 @@ export default class VectorTileFeature {
         p[1] = (360 / Math.PI) * Math.atan(Math.exp((y2 * Math.PI) / 180)) - 90;
       }
     }
-    return this.toJSON(project);
+    return this._toGeoJSON(project);
   }
 }
 

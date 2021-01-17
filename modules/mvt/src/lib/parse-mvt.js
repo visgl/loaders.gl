@@ -53,9 +53,11 @@ export default function parseMVT(arrayBuffer, options) {
 }
 
 function normalizeOptions(options) {
-  options = options || {};
-  options.mvt = options.mvt || {};
-  options.gis = options.gis || {};
+  options = options || {
+    ...options,
+    mvt: options.mvt || {},
+    gis: options.gis || {}
+  };
 
   // Validate
   const wgs84Coordinates = options.coordinates === 'wgs84';
@@ -74,10 +76,9 @@ function normalizeOptions(options) {
 }
 
 function getDecodedFeature(feature, options = {}) {
-  const decodedFeature =
-    options.coordinates === 'wgs84'
-      ? feature.toGeoJSON(options.tileIndex)
-      : feature.toJSON(transformToLocalCoordinates);
+  const decodedFeature = feature.toGeoJSON(
+    options.coordinates === 'wgs84' ? options.tileIndex : transformToLocalCoordinates
+  );
 
   // Add layer name to GeoJSON properties
   if (options.layerProperty) {

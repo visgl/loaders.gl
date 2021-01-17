@@ -12,6 +12,5 @@ export default class VectorTileFeature {
 
 	loadGeometry(); any;
   bbox(): [number, number, number, number];
-  toJSON(transform: ([[number]], VectorTileFeature) => void);
-	toGeoJSON(tileIndex: {x: number, y: number, z: number}): object;
+  toGeoJSON(options: {x: number, y: number, z: number} | (([[number]], VectorTileFeature) => void)): object;
 }
