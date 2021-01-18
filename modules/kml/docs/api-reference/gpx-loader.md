@@ -8,7 +8,6 @@ The `GPXLoader` parses [GPX files][gpx_wikipedia] into GeoJSON. From Wikipedia:
 > other information) is stored in tags and can be interchanged between GPS
 > devices and software.
 
-
 | Loader                | Characteristic                             |
 | --------------------- | ------------------------------------------ |
 | File Extension        | `.gpx`                                     |
