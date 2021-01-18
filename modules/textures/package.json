@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/textures",
-  "version": "3.0.0-alpha.1",
+  "version": "3.0.0-alpha.2",
   "description": "Framework-independent loaders for compressed and super compressed (basis) textures ",
   "license": "MIT",
   "publishConfig": {
@@ -38,9 +38,9 @@
     "build-worker": "webpack --entry ./src/workers/basis-loader.worker.js --output ./dist/basis-loader.worker.js --config ../../scripts/worker-webpack-config.js"
   },
   "dependencies": {
-    "@loaders.gl/core": "3.0.0-alpha.1",
-    "@loaders.gl/images": "3.0.0-alpha.1",
-    "@loaders.gl/loader-utils": "3.0.0-alpha.1",
+    "@loaders.gl/core": "3.0.0-alpha.2",
+    "@loaders.gl/images": "3.0.0-alpha.2",
+    "@loaders.gl/loader-utils": "3.0.0-alpha.2",
     "ktx-parse": "^0.0.4",
     "texture-compressor": "^1.0.2"
   }
