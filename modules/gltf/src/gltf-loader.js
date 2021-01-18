@@ -26,9 +26,7 @@ const GLTFLoader = {
       decompressMeshes: true, // Decompress Draco encoded meshes
       postProcess: true // Postprocess glTF and return json structure directly
     },
-
-    // common?
-    uri: '', // base URI
+    baseUri: '',
     log: console // eslint-disable-line
   },
   deprecatedOptions: {

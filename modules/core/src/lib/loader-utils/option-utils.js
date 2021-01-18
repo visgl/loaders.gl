@@ -4,7 +4,7 @@ import {fetchFile} from '../fetch/fetch-file';
 import {NullLog, ConsoleLog} from './loggers';
 
 const DEFAULT_LOADER_OPTIONS = {
-  // baseUri
+  baseUri: '',
   fetch: null,
   CDN: 'https://unpkg.com/@loaders.gl',
   worker: true, // By default, use worker if provided by loader
@@ -16,7 +16,6 @@ const DEFAULT_LOADER_OPTIONS = {
 
 const DEPRECATED_LOADER_OPTIONS = {
   dataType: '(no longer used)',
-  uri: 'baseUri',
   // Warn if fetch options are used on top-level
   method: 'fetch.method',
   headers: 'fetch.headers',
@@ -183,8 +182,6 @@ function normalizeOptionsInternal(loader, options, url) {
 
   const mergedOptions = {...loaderDefaultOptions};
 
-  addUrlOptions(mergedOptions, url);
-
   // LOGGING: options.log can be set to `null` to defeat logging
   if (mergedOptions.log === null) {
     mergedOptions.log = new NullLog();
@@ -192,6 +189,8 @@ function normalizeOptionsInternal(loader, options, url) {
 
   mergeNestedFields(mergedOptions, getGlobalLoaderOptions());
   mergeNestedFields(mergedOptions, options);
+
+  addUrlOptions(mergedOptions, url);
 
   return mergedOptions;
 }
@@ -222,7 +221,7 @@ function mergeNestedFields(mergedOptions, options) {
 // TODO - extract query parameters?
 // TODO - should these be injected on context instead of options?
 function addUrlOptions(options, url) {
-  if (url && !('baseUri' in options)) {
+  if (url && !options.baseUri) {
     options.baseUri = url;
   }
 }

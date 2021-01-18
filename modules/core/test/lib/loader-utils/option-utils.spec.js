@@ -19,6 +19,7 @@ const TEST_CASES = [
     assert: (t, options) => {
       t.equal(options.las.skip, 10);
       t.equal(options.worker, false);
+      t.equal(options.baseUri, '');
     }
   }
 ];
