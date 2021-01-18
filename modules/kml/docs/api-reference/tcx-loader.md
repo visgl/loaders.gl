@@ -1,5 +1,9 @@
 # TCXLoader
 
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />
+</p>
+
 The `TCXLoader` parses [TCX files][tcx_wikipedia] into GeoJSON. From Wikipedia:
 
 > Training Center XML (TCX) is a data exchange format introduced in 2007 as part

@@ -1,5 +1,9 @@
 # GPXLoader
 
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />
+</p>
+
 The `GPXLoader` parses [GPX files][gpx_wikipedia] into GeoJSON. From Wikipedia:
 
 > GPX, or GPS Exchange Format, is an XML schema designed as a common GPS data
