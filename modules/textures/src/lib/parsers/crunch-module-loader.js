@@ -11,6 +11,11 @@ export async function loadCrunchModule(options) {
   return loadCrunch(options);
 }
 
+/**
+ * Load crunch decoder module
+ * @param {any} options - Loader options
+ * @returns {Promise<any>} Promise of Module object
+ */
 async function loadCrunch(options) {
   if (CrunchModule) {
     return CrunchModule;

@@ -1,4 +1,4 @@
-export function sliceLevels(data, options) {
+export function extractMipmapImages(data, options) {
   const images = new Array(options.mipMapLevels);
 
   let levelWidth = options.width;
