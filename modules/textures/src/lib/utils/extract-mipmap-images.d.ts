@@ -10,4 +10,4 @@ import { CompressedTextureExtractOptions, TextureLevel } from "@loaders.gl/textu
  * @param options.internalFormat - WebGL compatible format code
  * @returns Array of the texture levels
  */
-export function extractMipmapImages(data: Uint8Array, options: CompressedTextureExtractOptions): TextureLevel[];
+export function extractMipmapImages(data: any, options: CompressedTextureExtractOptions): TextureLevel[];

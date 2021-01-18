@@ -1,4 +1,6 @@
 import {read} from 'ktx-parse';
+import {extractMipmapImages} from '../utils/extract-mipmap-images';
+import {GL} from '../gl-constants';
 
 const KTX2_ID = [
   // '´', 'K', 'T', 'X', '2', '0', 'ª', '\r', '\n', '\x1A', '\n'
@@ -15,6 +17,15 @@ const KTX2_ID = [
   0x1a,
   0x0a
 ];
+
+// TODO Extend mapping vkFormat to WebGl internal formats.
+// Mapping provided here http://github.khronos.org/KTX-Specification/#formatMapping
+// Vulkan format mapping numbers to names: https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VkFormat.html
+const PIXEL_FORMATS = {
+  133: GL.COMPRESSED_RGBA_S3TC_DXT1_EXT,
+  135: GL.COMPRESSED_RGBA_S3TC_DXT3_EXT,
+  137: GL.COMPRESSED_RGBA_S3TC_DXT3_EXT
+};
 
 // eslint-disable-next-line complexity
 export function isKTX(data) {
@@ -38,10 +49,17 @@ export function isKTX(data) {
 
 export function parseKTX(arrayBuffer) {
   const uint8Array = new Uint8Array(arrayBuffer);
-
   const ktx = read(uint8Array);
+  const mipMapLevels = Math.max(1, ktx.levels.length);
+  const width = ktx.pixelWidth;
+  const height = ktx.pixelHeight;
+  const internalFormat = PIXEL_FORMATS[ktx.vkFormat];
 
-  // TODO - normalize to loaders.gl texture format
-
-  return ktx;
+  return extractMipmapImages(ktx.levels, {
+    mipMapLevels,
+    width,
+    height,
+    sizeFunction: level => level.uncompressedByteLength,
+    internalFormat
+  });
 }
