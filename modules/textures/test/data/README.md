@@ -2,11 +2,11 @@
 
 #### ktx files
 
-  From https://github.com/donmccurdy/KTX-Parse under MIT license
+From https://github.com/donmccurdy/KTX-Parse under MIT license
 
 #### basis files
 
-  From binomial repository
+From binomial repository
 
 #### `shannon` files
 
