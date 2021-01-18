@@ -1,6 +1,14 @@
 # KMLLoader
 
-The `KMLLoader` parses [KML files][kml_wikipedia] into GeoJSON.
+The `KMLLoader` parses [KML files][kml_wikipedia] into GeoJSON. From Wikipedia:
+
+> Keyhole Markup Language (KML) is an XML notation for expressing geographic
+> annotation and visualization within two-dimensional maps and three-dimensional
+> Earth browsers.
+
+KML is now an [Open Geospatial Consortium standard][kml_ogc_standard].
+
+[kml_ogc_standard]: https://www.ogc.org/standards/kml
 
 | Loader                | Characteristic                             |
 | --------------------- | ------------------------------------------ |

@@ -14,6 +14,10 @@ GLTFScenegraph is updated to provide modifying capabilities. Signatures of some 
 
 The texture API `loadImage`, `loadImageArray`, `loadImageCube` has been moved to the new `@loaders.gl/textures` module, and have been renamed to `loadImageTexture*`.
 
+`@loaders.gl/kml`:
+
+The `KMLLoader`, `GPXLoader`, and `TCXLoader` now require a value for `options.gis.format`. Previously, the lack of a value would return data in "raw" format, i.e. not normalized to GeoJSON. To return GeoJSON-formatted data, use `options.gis.format: 'geojson'`. Other options are `binary` and `raw`.
+
 ## Upgrading to v2.3
 
 `@loaders.gl/core`:

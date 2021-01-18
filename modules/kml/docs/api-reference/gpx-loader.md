@@ -1,6 +1,13 @@
 # GPXLoader
 
-The `GPXLoader` parses [GPX files][gpx_wikipedia] into GeoJSON.
+The `GPXLoader` parses [GPX files][gpx_wikipedia] into GeoJSON. From Wikipedia:
+
+> GPX, or GPS Exchange Format, is an XML schema designed as a common GPS data
+> format for software applications. It can be used to describe waypoints,
+> tracks, and routes. ... Location data (and optionally elevation, time, and
+> other information) is stored in tags and can be interchanged between GPS
+> devices and software.
+
 
 | Loader                | Characteristic                             |
 | --------------------- | ------------------------------------------ |

@@ -46,6 +46,10 @@ Target Release Date: Q1 2021. (Alpha releases are available).
 - Supports binary array fields in draco metadata.
 - Significant performance improvements for library loading and decoding.
 
+**@loaders.gl/kml**
+
+- New loaders: `GPXLoader` and `TCXLoader` to parse common formats for recorded GPS tracks.
+
 ## v2.3
 
 Release Date: October 12, 2020
