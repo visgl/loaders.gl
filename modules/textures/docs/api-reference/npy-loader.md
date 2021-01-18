@@ -1,5 +1,9 @@
 # NPYLoader
 
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />
+</p>
+
 The `NPYLoader` parses an array from the [NPY format][npy-spec], a lightweight encoding of multidimensional arrays used by the Python NumPy library.
 
 [npy-spec]: https://numpy.org/doc/stable/reference/generated/numpy.lib.format.html
