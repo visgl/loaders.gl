@@ -8,3 +8,5 @@ export {CompressedTextureWriter} from './compressed-texture-writer';
 export {loadImageTexture} from './lib/texture-api/load-image';
 export {loadImageTextureArray} from './lib/texture-api/load-image-array';
 export {loadImageTextureCube} from './lib/texture-api/load-image-cube';
+
+export {GL as GL_CONSTANTS} from './lib/gl-constants';
