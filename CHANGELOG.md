@@ -2,6 +2,15 @@
 
 ## v2.3 Release
 
+#### v2.3.9
+
+- Add MVT MIME type (#1108)
+- gltf: change buffer parsing order (#1080)
+- Add baseUri options to default options (#1103)
+- Changed bundle config to produce dist.min.js in ES5 (#1074)
+
+#### v2.3.8
+
 - Option to use float64 for LAS positions (#958) (#1081)
 - Add loaders global version to 2.3-release branch (#1062)
 
