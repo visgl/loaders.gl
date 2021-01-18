@@ -59,7 +59,9 @@ async function decompressPrimitive(primitive, scenegraph, options, context) {
 
   // this will generate an exception if DracoLoader is not installed
   const {parse} = context;
-  const dracoOptions = {
+  const dracoOptions = {...options};
+  // The entire tileset might be included, too expensive to serialize
+  delete options['3d-tiles'];
     draco: {
       ...options.draco
     },
