@@ -1,14 +1,14 @@
 import test from 'tape-promise/tape';
 import {validateLoader} from 'test/common/conformance';
 
-import {_NPYLoader, _NPYWorkerLoader} from '@loaders.gl/terrain';
+import {_NPYLoader, _NPYWorkerLoader} from '@loaders.gl/textures';
 import {setLoaderOptions, load} from '@loaders.gl/core';
 
-const NPY_UINT8_URL = '@loaders.gl/terrain/test/data/uint8.npy';
+const NPY_UINT8_URL = '@loaders.gl/textures/test/data/uint8.npy';
 
 setLoaderOptions({
   npy: {
-    workerUrl: 'modules/terrain/dist/npy-loader.worker.js'
+    workerUrl: 'modules/textures/dist/npy-loader.worker.js'
   }
 });
 
