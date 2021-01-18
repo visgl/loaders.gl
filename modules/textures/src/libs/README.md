@@ -1,5 +1,7 @@
 # Basis decoder
 
+Version 1.12
+
 [Website](https://github.com/BinomialLLC/basis_universal)
 
 ## License
