@@ -1,7 +1,6 @@
 # About Compressed Textures
 
-
-**Compressed textures** are different from compressed images in that they do not have to be decompressed, they can be used directly by a supporting GPU. However, a compressed texture typically consists of a collection of compressed subimages, representing mipmaps etc. These compressed subimages are stored as an array of "binary blobs" in a container file. Only the container file is parsed, extracting metadata and the binary buffers representing subimages.  The binary subimages can then be passed directly to a GPU that understands how to read pixels directly from them without decompressing them first. 
+**Compressed textures** are different from compressed images in that they do not have to be decompressed, they can be used directly by a supporting GPU. However, a compressed texture typically consists of a collection of compressed subimages, representing mipmaps etc. These compressed subimages are stored as an array of "binary blobs" in a container file. Only the container file is parsed, extracting metadata and the binary buffers representing subimages. The binary subimages can then be passed directly to a GPU that understands how to read pixels directly from them without decompressing them first.
 
 **Supercompressed textures** are an intermediate format whose subimages are compressed in a common format. This format can be cheaply transcoded on to a real compressed texture format supported on the current client, without decompressing and recompressing the texture. This allows a single supercompressed texture to be portably used on multiple platforms even though those platforms do not support the same compressed texture formats.
 
@@ -71,15 +70,18 @@ The following is the typical list of compressed texture formats, which loaders.g
 The following could be a starting point for choosing texture formats
 
 Desktop:
--	`BC3`(`DXT5`) - transparent textures with full alpha range
+
+- `BC3`(`DXT5`) - transparent textures with full alpha range
 - `BC1`(`DXT1`) - opaque textures
 
 iOS:
+
 - `PVR4` - transparent textures with alpha
 - `PVR2` - opaque textures
 
 Android:
--  `ASTC_4x4`, `ASTC8x8` - transparent textures with full alpha range
+
+- `ASTC_4x4`, `ASTC8x8` - transparent textures with full alpha range
 - `ETC1` - opaque textures
 
 ## Using Compressed Textures
