@@ -2,6 +2,9 @@ import {assert} from '@loaders.gl/loader-utils';
 import {GL} from '../gl-constants';
 import {extractMipmapImages} from '../utils/extract-mipmap-images';
 
+const getATCLevelSize = getDxt1LevelSize;
+const getATCALevelSize = getDxtXLevelSize;
+const getATCILevelSize = getDxtXLevelSize;
 const DDS_CONSTANTS = {
   MAGIC_NUMBER: 0x20534444,
   HEADER_LENGTH: 31,
@@ -18,12 +21,18 @@ const DDS_CONSTANTS = {
   PIXEL_FORMATS: {
     DXT1: GL.COMPRESSED_RGB_S3TC_DXT1_EXT,
     DXT3: GL.COMPRESSED_RGBA_S3TC_DXT3_EXT,
-    DXT5: GL.COMPRESSED_RGBA_S3TC_DXT5_EXT
+    DXT5: GL.COMPRESSED_RGBA_S3TC_DXT5_EXT,
+    'ATC ': GL.COMPRESSED_RGB_ATC_WEBGL,
+    ATCA: GL.COMPRESSED_RGBA_ATC_EXPLICIT_ALPHA_WEBGL,
+    ATCI: GL.COMPRESSED_RGBA_ATC_INTERPOLATED_ALPHA_WEBGL
   },
   SIZE_FUNCTIONS: {
     DXT1: getDxt1LevelSize,
     DXT3: getDxtXLevelSize,
-    DXT5: getDxtXLevelSize
+    DXT5: getDxtXLevelSize,
+    'ATC ': getATCLevelSize,
+    ATCA: getATCALevelSize,
+    ATCI: getATCILevelSize
   }
 };
 
