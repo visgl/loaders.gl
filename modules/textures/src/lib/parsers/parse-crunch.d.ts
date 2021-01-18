@@ -1,4 +1,4 @@
-import { TextureLevel } from "@loaders.gl/textures/types/textrure";
+import { TextureLevel } from "@loaders.gl/textures/types/texture";
 
 /**
  * Parse texture data as "CRN" format. 

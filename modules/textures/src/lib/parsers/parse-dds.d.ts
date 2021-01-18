@@ -1,4 +1,4 @@
-import { TextureLevel } from "@loaders.gl/textures/types/textrure";
+import { TextureLevel } from "@loaders.gl/textures/types/texture";
 
 /**
  * Check if data is in "DDS" format by its magic number

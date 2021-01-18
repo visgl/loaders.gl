@@ -1,3 +1,4 @@
+/** @typedef {import('./parse-crunch')} types */
 import {loadCrunchModule} from './crunch-module-loader';
 import {GL} from '../gl-constants';
 import {assert} from '@loaders.gl/loader-utils';
@@ -34,6 +35,7 @@ DXT_FORMAT_MAP[CRN_FORMAT.cCRNFmtDXT5] = {
 let cachedDstSize = 0;
 let dst = null;
 
+/** @type {types['parseCrunch']} */
 export async function parseCrunch(data, options = {}) {
   const crunchModule = await loadCrunchModule(options);
 
