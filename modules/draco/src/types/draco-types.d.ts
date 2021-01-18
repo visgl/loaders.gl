@@ -50,6 +50,11 @@ export {
 } from './draco-web-encoder';
 
 export function destroy(resource: any): void;
+export function _malloc(byteLength: number): number;
+export function _free(ptr: number): void;
+export class HEAPF32 {
+  static buffer: ArrayBuffer;
+}
 
 // ENUMS
 
@@ -65,3 +70,18 @@ export const NORMAL: number;
 export const COLOR: number;
 export const TEX_COORD: number;
 export const GENERIC: number;
+
+// draco_DataType
+export const DT_INVALID: number;
+export const DT_INT8: number;
+export const DT_UINT8: number;
+export const DT_INT16: number;
+export const DT_UINT16: number;
+export const DT_INT32: number;
+export const DT_UINT32: number;
+export const DT_INT64: number;
+export const DT_UINT64: number;
+export const DT_FLOAT32: number;
+export const DT_FLOAT64: number;
+export const DT_BOOL: number;
+export const DT_TYPES_COUNT: number;

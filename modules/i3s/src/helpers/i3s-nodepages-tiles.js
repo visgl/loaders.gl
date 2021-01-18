@@ -2,6 +2,7 @@ import {load} from '@loaders.gl/core';
 import {normalizeTileNonUrlData} from '../lib/parsers/parse-i3s';
 import {convertI3SObbToMbs} from '../utils/convert-i3s-obb-to-mbs';
 import I3SNodePageLoader from '../i3s-node-page-loader';
+import {generateTilesetAttributeUrls} from '../lib/parsers/url-utils';
 
 export default class I3SNodePagesTiles {
   constructor(tileset, options) {
@@ -29,7 +30,7 @@ export default class I3SNodePagesTiles {
   async formTileFromNodePages(id) {
     const node = await this.getNodeById(id);
     const children = [];
-    for (const child of node.children) {
+    for (const child of node.children || []) {
       const childNode = await this.getNodeById(child);
       children.push({
         id: child,
@@ -40,16 +41,28 @@ export default class I3SNodePagesTiles {
 
     let contentUrl = null;
     let textureUrl = null;
+    let materialDefinition = null;
+    let textureFormat = 'jpeg';
+    let attributeUrls = [];
+
     if (node && node.mesh) {
       if (node.mesh.geometry) {
         contentUrl = `${this.tileset.url}/nodes/${node.mesh.geometry.resource}/geometries/0`;
       }
 
-      const textureName = this._getTextureName(node.mesh.material);
-      if (textureName) {
-        textureUrl = `${this.tileset.url}/nodes/${
-          node.mesh.material.resource
-        }/textures/${textureName}`;
+      const [textureData, nodeMaterialDefinition] = this._getInformationFromMaterial(
+        node.mesh.material
+      );
+      materialDefinition = nodeMaterialDefinition;
+      textureFormat = textureData.format || textureFormat;
+      if (textureData.name) {
+        textureUrl = `${this.tileset.url}/nodes/${node.mesh.material.resource}/textures/${
+          textureData.name
+        }`;
+      }
+
+      if (this.tileset.attributeStorageInfo) {
+        attributeUrls = generateTilesetAttributeUrls(this.tileset, node.mesh.material.resource);
       }
     }
 
@@ -72,11 +85,15 @@ export default class I3SNodePagesTiles {
       mbs: convertI3SObbToMbs(node.obb),
       contentUrl,
       textureUrl,
+      attributeUrls,
+      materialDefinition,
+      textureFormat,
       children
     });
   }
 
-  _getTextureName(material) {
+  _getInformationFromMaterial(material) {
+    const textureDataDefault = {name: null, format: null};
     if (material) {
       const materialDefinition = this.tileset.materialDefinitions[material.definition];
       const textureSetDefinitionIndex =
@@ -86,14 +103,15 @@ export default class I3SNodePagesTiles {
         materialDefinition.pbrMetallicRoughness.baseColorTexture.textureSetDefinitionId;
       if (textureSetDefinitionIndex || textureSetDefinitionIndex === 0) {
         const textureSetDefinition = this.tileset.textureSetDefinitions[textureSetDefinitionIndex];
-        const textureName =
-          textureSetDefinition &&
-          textureSetDefinition.formats &&
-          textureSetDefinition.formats[0] &&
-          textureSetDefinition.formats[0].name;
-        return textureName;
+        const textureData =
+          (textureSetDefinition &&
+            textureSetDefinition.formats &&
+            textureSetDefinition.formats[0]) ||
+          textureDataDefault;
+        return [textureData, materialDefinition];
       }
+      return [textureDataDefault, materialDefinition];
     }
-    return null;
+    return [textureDataDefault, null];
   }
 }

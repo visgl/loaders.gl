@@ -14,6 +14,7 @@ const TEST_TILES = true;
 const TEST_GEOSPATIAL = true;
 const TEST_TABLES = true;
 const TEST_ARCHIVES = true;
+const TEST_CLI = true;
 
 // Install polyfills (primarily for Node)
 const {installFilePolyfills} = require('@loaders.gl/polyfills');
@@ -30,8 +31,8 @@ if (TEST_CORE) {
 
 // Image Formats
 if (TEST_IMAGES) {
-  require('@loaders.gl/basis/test');
   require('@loaders.gl/images/test');
+  require('@loaders.gl/textures/test');
   require('@loaders.gl/video/test');
 }
 
@@ -81,4 +82,9 @@ if (TEST_ARCHIVES) {
   require('@loaders.gl/compression/test');
   require('@loaders.gl/crypto/test');
   require('@loaders.gl/zip/test');
+}
+
+// Cli
+if (TEST_CLI) {
+  require('@loaders.gl/tile-converter/test');
 }

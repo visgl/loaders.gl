@@ -2,14 +2,7 @@ import styled from 'styled-components';
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {EXAMPLES} from '../examples';
-
-const MAP_STYLES = {
-  'Base Map: Satellite': 'mapbox://styles/mapbox/satellite-v9',
-  'Base Map: Light': 'mapbox://styles/mapbox/light-v9',
-  'Base Map: Dark': 'mapbox://styles/mapbox/dark-v9'
-};
-
-const INITIAL_MAP_STYLE = MAP_STYLES['Base Map: Dark'];
+import {MAP_STYLES} from '../constants';
 
 const Container = styled.div`
   display: flex;
@@ -73,7 +66,9 @@ const propTypes = {
   metadata: PropTypes.object,
   token: PropTypes.string,
   onExampleChange: PropTypes.func,
-  children: PropTypes.node
+  children: PropTypes.node,
+  selectedMapStyle: PropTypes.string,
+  onMapStyleChange: PropTypes.func
 };
 
 const defaultProps = {
@@ -86,8 +81,7 @@ export default class ControlPanel extends PureComponent {
     super(props);
     this._renderMapStyles = this._renderMapStyles.bind(this);
     this.state = {
-      showFullInfo: false,
-      selectedMapStyle: INITIAL_MAP_STYLE
+      showFullInfo: false
     };
   }
 
@@ -120,15 +114,13 @@ export default class ControlPanel extends PureComponent {
   }
 
   _renderMapStyles() {
-    const {mapStyles = MAP_STYLES} = this.props;
-    const {selectedMapStyle} = this.state;
-
+    const {mapStyles = MAP_STYLES, selectedMapStyle, onMapStyleChange} = this.props;
     return (
       <DropDown
         value={selectedMapStyle}
         onChange={evt => {
           const selected = evt.target.value;
-          this.setState({selectedMapStyle: selected});
+          onMapStyleChange({selectedMapStyle: selected});
         }}
       >
         {Object.keys(mapStyles).map(key => {

@@ -6,6 +6,12 @@ const ROOT_DIR = resolve('..');
 module.exports = {
   plugins: [
     {
+      resolve: `gatsby-plugin-favicon`,
+      options: {
+        logo: './static/images/favicon.png'
+      }
+    },
+    {
       resolve: `gatsby-theme-ocular`,
       options: {
         logLevel: 1, // Adjusts amount of debug information from ocular-gatsby
@@ -84,6 +90,12 @@ module.exports = {
             path: 'examples/pointcloud'
           },
           {
+            title: 'Textures',
+            image: 'images/example-textures.png',
+            componentUrl: resolve(__dirname, '../examples/website/textures/app.js'),
+            path: 'examples/textures'
+          },
+          {
             title: 'glTF Helmet',
             image: 'images/example-gltf.jpg',
             componentUrl: resolve(__dirname, './templates/example-gltf.jsx'),
@@ -110,12 +122,6 @@ module.exports = {
         ]
       }
     },
-    {resolve: 'gatsby-plugin-no-sourcemaps'},
-    {
-      resolve: 'gatsby-plugin-env-variables',
-      options: {
-        whitelist: ['MapboxAccessToken']
-      }
-    }
+    {resolve: 'gatsby-plugin-no-sourcemaps'}
   ]
 };

@@ -16,6 +16,7 @@ import './lib/api/parse.spec';
 import './lib/api/load.spec';
 import './lib/api/parse-in-batches.spec';
 import './lib/api/load-in-batches.spec';
+import './lib/init.spec';
 
 // EXPERIMENTAL
 

@@ -117,7 +117,11 @@ test('DracoWriter#encode via draco3d npm package (bunny.drc)', async t => {
 
     if (!tc.options.pointcloud) {
       // Decode the mesh
-      const data2 = await parse(compressedMesh, DracoLoader);
+      const data2 = await parse(compressedMesh, DracoLoader, {
+        modules: {
+          draco3d
+        }
+      });
       validateMeshCategoryData(t, data2);
 
       // t.comment(JSON.stringify(data));
@@ -296,14 +300,15 @@ test('DracoWriter#attributes metadata', async t => {
           'optional-entry-int': 1444,
           'optional-entry-int-negative': -333333333,
           'optional-entry-int-zero': 0,
-          'optional-entry-double': 1.00012323
+          'optional-entry-double': 1.00012323,
+          'optional-entry-int-array': new Int32Array([0, 1, 2, -3000, 31987, 77])
         }
       }
     }
   });
   t.equal(
     compressedMesh.byteLength,
-    435632,
+    435682,
     'Correct length - different from encoded geometry without metadata'
   );
 
@@ -312,21 +317,7 @@ test('DracoWriter#attributes metadata', async t => {
     worker: false
   });
   validateMeshCategoryData(t, data2);
-
-  t.ok(data2.attributes.POSITION.metadata);
-  t.ok(data2.attributes.POSITION.metadata.name);
-  t.ok(data2.attributes.POSITION.metadata['optional-entry']);
-  t.ok(data2.attributes.POSITION.metadata['optional-entry-int']);
-  t.ok(data2.attributes.POSITION.metadata['optional-entry-int-negative']);
-  t.ok(data2.attributes.POSITION.metadata['optional-entry-int-zero']);
-  t.ok(data2.attributes.POSITION.metadata['optional-entry-double']);
-
-  t.equal(data2.attributes.POSITION.metadata.name.string, 'POSITION');
-  t.equal(data2.attributes.POSITION.metadata['optional-entry'].string, 'optional-entry-value');
-  t.equal(data2.attributes.POSITION.metadata['optional-entry-int'].int, 1444);
-  t.equal(data2.attributes.POSITION.metadata['optional-entry-int-negative'].int, -333333333);
-  t.equal(data2.attributes.POSITION.metadata['optional-entry-int-zero'].int, 0);
-  t.equal(data2.attributes.POSITION.metadata['optional-entry-double'].double, 1.00012323);
+  validatePositionMetadata(t, data2);
 
   t.equal(
     data2.attributes.POSITION.value.length,
@@ -367,3 +358,29 @@ test('DracoWriter#metadata - should be able to define optional "name entry" for 
   );
   t.end();
 });
+
+function validatePositionMetadata(t, data) {
+  t.ok(data.attributes.POSITION.metadata);
+  t.ok(data.attributes.POSITION.metadata.name);
+  t.ok(data.attributes.POSITION.metadata['optional-entry']);
+  t.ok(data.attributes.POSITION.metadata['optional-entry-int']);
+  t.ok(data.attributes.POSITION.metadata['optional-entry-int-negative']);
+  t.ok(data.attributes.POSITION.metadata['optional-entry-int-zero']);
+  t.ok(data.attributes.POSITION.metadata['optional-entry-double']);
+  t.ok(data.attributes.POSITION.metadata['optional-entry-int-array']);
+
+  t.equal(data.attributes.POSITION.metadata.name.string, 'POSITION');
+  t.equal(data.attributes.POSITION.metadata['optional-entry'].string, 'optional-entry-value');
+  t.equal(data.attributes.POSITION.metadata['optional-entry-int'].int, 1444);
+  t.equal(data.attributes.POSITION.metadata['optional-entry-int-negative'].int, -333333333);
+  t.equal(data.attributes.POSITION.metadata['optional-entry-int-zero'].int, 0);
+  t.equal(data.attributes.POSITION.metadata['optional-entry-double'].double, 1.00012323);
+  t.deepEqual(data.attributes.POSITION.metadata['optional-entry-int-array'].intArray, [
+    0,
+    1,
+    2,
+    -3000,
+    31987,
+    77
+  ]);
+}

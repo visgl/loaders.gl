@@ -9,6 +9,11 @@ const PLY_CUBE_ATT_SIZE = 853;
 const TEXT_URL = `@loaders.gl/polyfills/test/data/data.txt`;
 const TEXT_URL_GZIPPED = `@loaders.gl/polyfills/test/data/data.txt.gz`;
 
+// This type of links on github works via 302 redirect
+// ("https://github.com/repository/raw/branch-name/path/to/file/file-name.extension")
+const REDIRECT_URL =
+  'https://github.com/visgl/deck.gl-data/raw/master/3d-tiles/RoyalExhibitionBuilding/1/1.pnts';
+
 test('polyfills#fetch() (NODE)', async t => {
   if (!isBrowser) {
     const response = await fetch(PLY_CUBE_ATT_URL);
@@ -101,6 +106,23 @@ test('polyfills#fetch() able to decompress .gz extension (NODE)', async t => {
     t.ok(response.ok, response.statusText);
     data = await response.text();
     t.equal(data, '123456', 'fetch polyfill correctly decompressed gzipped ".gz" file');
+  }
+  t.end();
+});
+
+test('polyfills#fetch() should follow redirect if `followRedirect` option is true', async t => {
+  if (!isBrowser) {
+    const defaultFetchResponse = await fetch(REDIRECT_URL);
+    t.equal(defaultFetchResponse.status, 200);
+
+    const defaultResponse = await fetchFile(REDIRECT_URL, {});
+    t.equal(defaultResponse.status, 200);
+
+    const successResponse = await fetchFile(REDIRECT_URL, {followRedirect: true});
+    t.equal(successResponse.status, 200);
+
+    const failedResponse = await fetchFile(REDIRECT_URL, {followRedirect: false});
+    t.equal(failedResponse.status, 302);
   }
   t.end();
 });

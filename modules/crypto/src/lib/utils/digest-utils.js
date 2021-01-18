@@ -12,6 +12,11 @@ export function toHex(cipher) {
  *
  */
 export function hexToBase64(hexstring) {
+  // Add leading zero to keep even count of digits
+  // eg. f85d741 => 0f85d741
+  if (hexstring.length % 2 !== 0) {
+    hexstring = `0${hexstring}`;
+  }
   const string = hexstring
     .match(/\w{2}/g)
     .map(a => String.fromCharCode(parseInt(a, 16)))

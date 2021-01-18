@@ -14,8 +14,7 @@ import {StatsWidget} from '@probe.gl/stats-widget';
 import {INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
 import ControlPanel from './components/control-panel';
 
-// Set your mapbox token here
-const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
+import {INITIAL_MAP_STYLE} from './constants';
 
 const TRANSITION_DURAITON = 4000;
 
@@ -67,7 +66,8 @@ export default class App extends PureComponent {
       url: null,
       token: null,
       name: INITIAL_EXAMPLE_NAME,
-      viewState: INITIAL_VIEW_STATE
+      viewState: INITIAL_VIEW_STATE,
+      selectedMapStyle: INITIAL_MAP_STYLE
     };
     this._onSelectTileset = this._onSelectTileset.bind(this);
   }
@@ -139,6 +139,10 @@ export default class App extends PureComponent {
     this.setState({viewState});
   }
 
+  _onSelectMapStyle({selectedMapStyle}) {
+    this.setState({selectedMapStyle});
+  }
+
   _renderLayers() {
     const {tilesetUrl, token} = this.state;
     const loadOptions = {throttleRequests: true};
@@ -163,7 +167,7 @@ export default class App extends PureComponent {
   }
 
   _renderControlPanel() {
-    const {name, tileset, token, metadata} = this.state;
+    const {name, tileset, token, metadata, selectedMapStyle} = this.state;
     return (
       <ControlPanel
         tileset={tileset}
@@ -171,13 +175,15 @@ export default class App extends PureComponent {
         metadata={metadata}
         token={token}
         onExampleChange={this._onSelectTileset}
+        onMapStyleChange={this._onSelectMapStyle.bind(this)}
+        selectedMapStyle={selectedMapStyle}
       />
     );
   }
 
   render() {
     const layers = this._renderLayers();
-    const {viewState} = this.state;
+    const {viewState, selectedMapStyle} = this.state;
 
     return (
       <div style={{position: 'relative', height: '100%'}}>
@@ -190,11 +196,7 @@ export default class App extends PureComponent {
           controller={{type: MapController, maxPitch: 85}}
           onAfterRender={() => this._updateStatWidgets()}
         >
-          <StaticMap
-            mapStyle={'mapbox://styles/mapbox/dark-v9'}
-            mapboxApiAccessToken={MAPBOX_TOKEN}
-            preventStyleDiffing
-          />
+          <StaticMap mapStyle={selectedMapStyle} preventStyleDiffing />
         </DeckGL>
       </div>
     );

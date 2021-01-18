@@ -26,6 +26,11 @@ export async function loadLibrary(libraryUrl, moduleName = null, options = {}) {
 
 // TODO - sort out how to resolve paths for main/worker and dev/prod
 export function getLibraryUrl(library, moduleName, options) {
+  // Check if already a URL
+  if (library.startsWith('http')) {
+    return library;
+  }
+
   // Allow application to import and supply libraries through `options.modules`
   const modules = options.modules || {};
   if (modules[library]) {
@@ -59,7 +64,7 @@ async function loadLibraryFromFile(libraryUrl) {
   }
 
   if (!isBrowser) {
-    return node.requireFromFile && node.requireFromFile(libraryUrl);
+    return node.requireFromFile && (await node.requireFromFile(libraryUrl));
   }
   if (isWorker) {
     /* global importScripts */

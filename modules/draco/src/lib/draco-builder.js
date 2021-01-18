@@ -371,6 +371,11 @@ export default class DracoBuilder {
             this.dracoMetadataBuilder.AddDoubleEntry(dracoMetadata, key, value);
           }
           break;
+        case 'object':
+          if (value instanceof Int32Array) {
+            this.dracoMetadataBuilder.AddIntEntryArray(dracoMetadata, key, value, value.length);
+          }
+          break;
         case 'string':
         default:
           this.dracoMetadataBuilder.AddStringEntry(dracoMetadata, key, value);

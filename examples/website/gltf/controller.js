@@ -1,4 +1,4 @@
-import {Matrix4} from 'math.gl';
+import {Matrix4} from '@math.gl/core';
 
 // Simple controller that keeps updating translation and rotation
 export default class Controller {
