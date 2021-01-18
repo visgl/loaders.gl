@@ -1,34 +1,37 @@
-# KMLLoader
+# TCXLoader
 
-The `KMLLoader` parses [KML files][kml_wikipedia] into GeoJSON. From Wikipedia:
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />
+</p>
 
-> Keyhole Markup Language (KML) is an XML notation for expressing geographic
-> annotation and visualization within two-dimensional maps and three-dimensional
-> Earth browsers.
+The `TCXLoader` parses [TCX files][tcx_wikipedia] into GeoJSON. From Wikipedia:
 
-KML is now an [Open Geospatial Consortium standard][kml_ogc_standard].
-
-[kml_ogc_standard]: https://www.ogc.org/standards/kml
+> Training Center XML (TCX) is a data exchange format introduced in 2007 as part
+> of Garmin's Training Center product. The XML is similar to GPX since it
+> exchanges GPS tracks, but treats a track as an Activity rather than simply a
+> series of GPS points. TCX provides standards for transferring heart rate,
+> running cadence, bicycle cadence, calories in the detailed track. It also
+> provides summary data in the form of laps.
 
 | Loader                | Characteristic                             |
 | --------------------- | ------------------------------------------ |
-| File Extension        | `.kml`                                     |
+| File Extension        | `.tcx`                                     |
 | File Type             | Text                                       |
-| File Format           | [KML][kml_wikipedia]                       |
+| File Format           | [TCX][tcx_wikipedia]                       |
 | Data Format           | [GIS](docs/specifications/category-gis.md) |
 | Decoder Type          | Synchronous                                |
 | Worker Thread Support | No                                         |
 | Streaming Support     | No                                         |
 
-[kml_wikipedia]: https://en.wikipedia.org/wiki/Keyhole_Markup_Language
+[tcx_wikipedia]: https://en.wikipedia.org/wiki/Training_Center_XML
 
 ## Usage
 
 ```js
-import {KMLLoader} from '@loaders.gl/kml';
+import {TCXLoader} from '@loaders.gl/kml';
 import {load} from '@loaders.gl/core';
 
-const data = await load(url, KMLLoader, options);
+const data = await load(url, TCXLoader, options);
 ```
 
 ## Options

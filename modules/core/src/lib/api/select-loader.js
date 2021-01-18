@@ -142,7 +142,12 @@ function findLoaderByExamingInitialData(loaders, data) {
 }
 
 function testDataAgainstText(data, loader) {
-  return loader.testText && loader.testText(data);
+  if (loader.testText) {
+    return loader.testText(data);
+  }
+
+  const tests = Array.isArray(loader.tests) ? loader.tests : [loader.tests];
+  return tests.some(test => data.startsWith(test));
 }
 
 function testDataAgainstBinary(data, byteOffset, loader) {

@@ -8,9 +8,11 @@ Several geospatial formats return data in the form of lists of lng/lat encoded g
 
 | Loader                                                   | Notes |
 | -------------------------------------------------------- | ----- |
+| [`GPXLoader`](modules/kml/docs/api-reference/gpx-loader) |       |
 | [`KMLLoader`](modules/kml/docs/api-reference/kml-loader) |       |
-| [`WKTLoader`](modules/wkt/docs/api-reference/wkt-loader) |       |
 | [`MVTLoader`](modules/mvt/docs/api-reference/mvt-loader) |       |
+| [`TCXLoader`](modules/kml/docs/api-reference/tcx-loader) |       |
+| [`WKTLoader`](modules/wkt/docs/api-reference/wkt-loader) |       |
 
 ## Data Format
 
