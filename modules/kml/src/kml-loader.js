@@ -10,12 +10,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 const KML_HEADER = `\
 <?xml version="1.0" encoding="UTF-8"?>
-<kml xmlns="http://www.opengis.net/kml/2.2">
-`;
-
-function testText(text) {
-  return text.startsWith(KML_HEADER);
-}
+<kml xmlns="http://www.opengis.net/kml/2.2">`;
 
 function parseTextSync(text, options) {
   options = options || {};
@@ -30,8 +25,10 @@ function parseTextSync(text, options) {
       return geojson;
     case 'binary':
       return geojsonToBinary(geojson.features);
-    default:
+    case 'raw':
       return doc;
+    default:
+      throw new Error();
   }
 }
 
@@ -42,7 +39,8 @@ export default {
   version: VERSION,
   extensions: ['kml'],
   mimeTypes: ['vnd.google-earth.kml+xml'],
-  testText,
+  text: true,
+  tests: [KML_HEADER],
   parse: async (arrayBuffer, options) =>
     parseTextSync(new TextDecoder().decode(arrayBuffer), options),
   parseTextSync

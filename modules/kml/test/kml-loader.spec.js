@@ -25,10 +25,10 @@ test('KMLLoader#testText', async t => {
   const response = await fetchFile(KML_URL);
   const KML = await response.text();
 
-  let isKML = KMLLoader.testText(KML);
+  let isKML = KML.startsWith(KMLLoader.tests[0]);
   t.equal(isKML, true, 'Correctly accepted valid KML');
 
-  isKML = KMLLoader.testText(INVALID_KML);
+  isKML = INVALID_KML.startsWith(KMLLoader.tests[0]);
   t.equal(isKML, false, 'Correctly rejected invalid KML');
 
   t.end();

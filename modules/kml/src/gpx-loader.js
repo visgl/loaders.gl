@@ -12,10 +12,6 @@ const GPX_HEADER = `\
 <?xml version="1.0" encoding="UTF-8"?>
 <gpx`;
 
-function testText(text) {
-  return text.startsWith(GPX_HEADER);
-}
-
 function parseTextSync(text, options) {
   options = options || {};
   options.gis = options.gis || {};
@@ -28,8 +24,10 @@ function parseTextSync(text, options) {
       return geojson;
     case 'binary':
       return geojsonToBinary(geojson.features);
-    default:
+    case 'raw':
       return doc;
+    default:
+      throw new Error();
   }
 }
 
@@ -40,7 +38,8 @@ export default {
   version: VERSION,
   extensions: ['gpx'],
   mimeTypes: ['application/gpx+xml'],
-  testText,
+  text: true,
+  tests: [GPX_HEADER],
   parse: async (arrayBuffer, options) =>
     parseTextSync(new TextDecoder().decode(arrayBuffer), options),
   parseTextSync
