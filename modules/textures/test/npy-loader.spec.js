@@ -1,26 +1,26 @@
 import test from 'tape-promise/tape';
 import {validateLoader} from 'test/common/conformance';
 
-import {_NPYLoader, _NPYWorkerLoader} from '@loaders.gl/terrain';
+import {NPYLoader, NPYWorkerLoader} from '@loaders.gl/textures';
 import {setLoaderOptions, load} from '@loaders.gl/core';
 
-const NPY_UINT8_URL = '@loaders.gl/terrain/test/data/uint8.npy';
+const NPY_UINT8_URL = '@loaders.gl/textures/test/data/uint8.npy';
 
 setLoaderOptions({
   npy: {
-    workerUrl: 'modules/terrain/dist/npy-loader.worker.js'
+    workerUrl: 'modules/textures/dist/npy-loader.worker.js'
   }
 });
 
 test('NPYLoader#loader objects', async t => {
-  validateLoader(t, _NPYLoader, 'NPYLoader');
-  validateLoader(t, _NPYWorkerLoader, 'NPYWorkerLoader');
+  validateLoader(t, NPYLoader, 'NPYLoader');
+  validateLoader(t, NPYWorkerLoader, 'NPYWorkerLoader');
   t.end();
 });
 
 test('NPYLoader#parse', async t => {
   const options = {};
-  const {data, header} = await load(NPY_UINT8_URL, _NPYLoader, options);
+  const {data, header} = await load(NPY_UINT8_URL, NPYLoader, options);
 
   const expectedData = new Uint8Array([1, 2, 3, 4]);
   // eslint-disable-next-line camelcase
@@ -39,7 +39,7 @@ test('NPYWorkerLoader#parse', async t => {
   }
 
   const options = {};
-  const {data, header} = await load(NPY_UINT8_URL, _NPYWorkerLoader, options);
+  const {data, header} = await load(NPY_UINT8_URL, NPYWorkerLoader, options);
 
   const expectedData = new Uint8Array([1, 2, 3, 4]);
   // eslint-disable-next-line camelcase

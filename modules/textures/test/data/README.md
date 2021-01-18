@@ -1,14 +1,16 @@
 # Data Licenses
 
-- ktx files
+#### ktx files
 
-  From https://github.com/donmccurdy/KTX-Parse under MIT license
+From https://github.com/donmccurdy/KTX-Parse under MIT license
 
-- basis files
+#### basis files
 
-  From binomial repository
+From binomial repository
 
-- `shannon` files - Sample files from texture-tester repo https://github.com/toji/texture-tester under following license:
+#### `shannon` files
+
+- Sample files from texture-tester repo https://github.com/toji/texture-tester under following license:
 
 - Copyright (c) 2014, Brandon Jones. All rights reserved.
   Redistribution and use in source and binary forms, with or without modification,
@@ -28,3 +30,8 @@
     ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+#### NPY files
+
+`*.npy` are created from the `create_npy_test_data.py` script. You can run it
+with `python create_npy_test_data.py`.
