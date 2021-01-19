@@ -1,6 +1,6 @@
 /** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 /** @typedef {import('@loaders.gl/loader-utils').WorkerLoaderObject} WorkerLoaderObject */
-import {parseNPY} from './lib/parse-npy';
+import {parseNPY} from './lib/parsers/parse-npy';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.

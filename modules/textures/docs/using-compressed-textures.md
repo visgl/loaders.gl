@@ -1,8 +1,8 @@
 # About Compressed Textures
 
-**Compressed textures** are different from compressed images in that they do not have to be decompressed, they can be used directly by a supporting GPU. A compressed texture typically consists of a collection of compressed subimages, representing mipmaps etc. These compressed subimages extracted as binary blobs by loaders.gl, intended to be passed directly to a GPU that understands how to read them. Only the container file is parsed, extracting metadata and the binary buffers representing subimages.
+**Compressed textures** are different from compressed images in that they do not have to be decompressed, they can be used directly by a supporting GPU. However, a compressed texture typically consists of a collection of compressed subimages, representing mipmaps etc. These compressed subimages are stored as an array of "binary blobs" in a container file. Only the container file is parsed, extracting metadata and the binary buffers representing subimages. The binary subimages can then be passed directly to a GPU that understands how to read pixels directly from them without decompressing them first.
 
-**Supercompressed textures** can be cheaply transcoded to different compressed texture formats without first decompressing and then recompressing the texture. This allows a single supercompressed texture to be portbably used on multiple platforms even though those platforms do not support the same compressed texture formats.
+**Supercompressed textures** are an intermediate format whose subimages are compressed in a common format. This format can be cheaply transcoded on to a real compressed texture format supported on the current client, without decompressing and recompressing the texture. This allows a single supercompressed texture to be portably used on multiple platforms even though those platforms do not support the same compressed texture formats.
 
 ## Performance Considerations
 
@@ -65,21 +65,40 @@ The following is the typical list of compressed texture formats, which loaders.g
 | [`ASTC`]()                                           | texture compression formats |
 | [`ATC]() | AMD texture compression formats           |
 
+### Recommnended Formats
+
+The following could be a starting point for choosing texture formats
+
+Desktop:
+
+- `BC3`(`DXT5`) - transparent textures with full alpha range
+- `BC1`(`DXT1`) - opaque textures
+
+iOS:
+
+- `PVR4` - transparent textures with alpha
+- `PVR2` - opaque textures
+
+Android:
+
+- `ASTC_4x4`, `ASTC8x8` - transparent textures with full alpha range
+- `ETC1` - opaque textures
+
 ## Using Compressed Textures
 
 Compressed textures are designed to be directly uploaded to GPUs that have the required decoding support implemented in hardware.
 
 ### Using compressed textures in JS
 
-loaders.gl currently does not contain general software decoding capabilities for compressed textures, meaning that they can only be uploaded directly to supporting GPUs.
+loaders.gl currently does not provide CPU-side decoding capabilities for compressed textures, meaning that they can only be uploaded directly to supporting GPUs. Use a WebGL context and read back the rendered texture to the client.
 
 ### Using Compressed Textures in luma.gl
 
-luma.gl (and by extension other vis.gl frameworks like deck.gl) are designed to integrate seamlessly with loaders.gl.
+While loaders.gl itself is framework-independent, luma.gl (and other vis.gl frameworks like deck.gl) are designed to seamless consume data loaded by loaders.gl.
 
-Accordingly, the data returned by any "image" category loader can be passed directly to
+Data returned by any loaders.gl "image" category loader (including texture loaders) can be passed directly to luma.gl `Texture2D` class.
 
-### Using Compressed Textures in WebGL
+### Using Compressed Textures in raw WebGL
 
 To use compressed textures in WebGL
 
@@ -122,9 +141,9 @@ Used to query if the GPU supports specific proprietary compressed texture format
 
 ### Using Compressed Textures in WebGPU
 
-TBA - Support for compressed textures is a work in progress in the [WebGPU standard](https://gpuweb.github.io/gpuweb/#texture-formats).
+Support for compressed textures is a work in progress in the [WebGPU standard](https://gpuweb.github.io/gpuweb/#texture-formats).
 
-It looks like S3 texture compression
+At the time of writing, only S3 texture compression has been specified:
 
 ```js
     // BC compressed formats usable if "texture-compression-bc" is both
@@ -147,17 +166,15 @@ It looks like S3 texture compression
 
 ## Creating Compressed Textures
 
-Texture compression code is usually not readily available, particulary not in JavaScript. Compression is typically done by binary programs.
+Texture compression code is usually not readily available, particulary not in JavaScript. Compression is typically done by binary programs, e.g. [PVRTexTool](https://www.imaginationtech.com/developers/powervr-sdk-tools/pvrtextool/).
 
-loaders.gl supports texture compression under Node.js by executing a binary with the appropriate command line and then loading the output.
-
-The `CompressedTextureWriter` uses this technique.
+The loaders.gl `CompressedTextureWriter` can compress textures (under Node.js only) by executing a binary with the appropriate command line, and then loading back the output.
 
 ## IP and Patent Considerations
 
-Traditionally an issue with compressed texture formats is that they tend to be highly propietary and patent-encumbered, and while it is usually not an issue, there can be cases where royalty requirements come into play when using them.
+An issue with compressed texture formats is that they tend to be highly propietary and patent-encumbered, and while it is usually no longer an issue, there can be cases where e.g. royalty requirements come into play when using them.
 
-To side-step patent issues when using these formats a loaders.gl application would typically:
+To side-step patent issues when using these formats an application would typically:
 
 1. Generate compressed textures in external applications (which should already have licensed any required formats and libraries).
 2. Load them in binary form without touching the content.

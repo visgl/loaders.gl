@@ -6,6 +6,3 @@ terrarium.png is from [Mapzen Terrain Tiles](https://registry.opendata.aws/terra
 
 `tile-with-extensions.terrain` is from [Cesium World Terrain from Cesium
 ion](https://cesiumjs.org/Cesium/Build/Apps/Sandcastle/index.html?src=Terrain.html)
-
-`*.npy` are created from the `create_npy_test_data.py` script. You can run it
-with `python create_npy_test_data.py`.

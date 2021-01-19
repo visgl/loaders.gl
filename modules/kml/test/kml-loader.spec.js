@@ -6,6 +6,7 @@ import {fetchFile, load} from '@loaders.gl/core';
 import {KMLLoader} from '@loaders.gl/kml';
 
 const KML_URL = '@loaders.gl/kml/test/data/KML_Samples.kml';
+const KML_LINESTRING_URL = '@loaders.gl/kml/test/data/linestring';
 
 const INVALID_KML = `\
 <?xml version="1.0" encoding="UTF-8"?>
@@ -24,10 +25,10 @@ test('KMLLoader#testText', async t => {
   const response = await fetchFile(KML_URL);
   const KML = await response.text();
 
-  let isKML = KMLLoader.testText(KML);
+  let isKML = KML.startsWith(KMLLoader.tests[0]);
   t.equal(isKML, true, 'Correctly accepted valid KML');
 
-  isKML = KMLLoader.testText(INVALID_KML);
+  isKML = INVALID_KML.startsWith(KMLLoader.tests[0]);
   t.equal(isKML, false, 'Correctly rejected invalid KML');
 
   t.end();
@@ -71,19 +72,11 @@ test('KMLLoader#parse(text)', async t => {
   t.end();
 });
 
-test('KMLLoader#parse(text)', async t => {
-  if (!KMLLoader.supported) {
-    t.comment('XML parsing not available');
-  } else {
-    const data = await load(KML_URL, KMLLoader, {gis: {format: 'geojson'}});
-    t.equal(data.type, 'FeatureCollection', 'FeatureCollection found');
-    t.equal(data.features.length, 19, 'Features were found');
+test('KMLLoader#parse', async t => {
+  const data = await load(`${KML_LINESTRING_URL}.kml`, KMLLoader, {gis: {format: 'geojson'}});
+  const resp = await fetchFile(`${KML_LINESTRING_URL}.geojson`);
+  const geojson = await resp.json();
 
-    const feature = data.features[0];
-    t.ok(Number.isFinite(feature.geometry.coordinates[0]));
-    t.ok(Number.isFinite(feature.geometry.coordinates[1]));
-    t.ok(Number.isFinite(feature.geometry.coordinates[2]));
-  }
-
+  t.deepEqual(data, geojson, 'Data matches GeoJSON');
   t.end();
 });

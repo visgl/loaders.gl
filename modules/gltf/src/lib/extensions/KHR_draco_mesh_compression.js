@@ -59,7 +59,10 @@ async function decompressPrimitive(primitive, scenegraph, options, context) {
 
   // this will generate an exception if DracoLoader is not installed
   const {parse} = context;
-  const decodedData = await parse(bufferCopy, DracoLoader, options, context);
+  const dracoOptions = {...options};
+  // The entire tileset might be included, too expensive to serialize
+  delete dracoOptions['3d-tiles'];
+  const decodedData = await parse(bufferCopy, DracoLoader, dracoOptions, context);
 
   primitive.attributes = getGLTFAccessors(decodedData.attributes);
   if (decodedData.indices) {

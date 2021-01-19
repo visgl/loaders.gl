@@ -1,9 +1,6 @@
-/* global TextDecoder */
-import {XMLLoader} from '@loaders.gl/tables';
+/* global TextDecoder, DOMParser */
 import {geojsonToBinary} from '@loaders.gl/gis';
-import KMLParser from './lib/kml-parser';
-import normalizeKML from './lib/kml-normalizer';
-import convertKMLToGeoJson from './lib/kml-to-geojson';
+import {kml} from '@tmcw/togeojson';
 
 /** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 
@@ -13,34 +10,25 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 const KML_HEADER = `\
 <?xml version="1.0" encoding="UTF-8"?>
-<kml xmlns="http://www.opengis.net/kml/2.2">
-`;
-
-function testText(text) {
-  return text.startsWith(KML_HEADER);
-}
+<kml xmlns="http://www.opengis.net/kml/2.2">`;
 
 function parseTextSync(text, options) {
   options = options || {};
   options.kml = options.kml || {};
   options.gis = options.gis || {};
 
-  const xml = XMLLoader.parseTextSync(text);
-  const kmlLoader = new KMLParser();
-  let kml = kmlLoader.parse(xml, options);
-
-  if (options.kml.normalize) {
-    kml = normalizeKML(kml);
-  }
+  const doc = new DOMParser().parseFromString(text, 'text/xml');
+  const geojson = kml(doc);
 
   switch (options.gis.format) {
     case 'geojson':
-      return convertKMLToGeoJson(kml);
+      return geojson;
     case 'binary':
-      const geojson = convertKMLToGeoJson(kml);
       return geojsonToBinary(geojson.features);
+    case 'raw':
+      return doc;
     default:
-      return kml;
+      throw new Error();
   }
 }
 
@@ -51,15 +39,9 @@ export default {
   version: VERSION,
   extensions: ['kml'],
   mimeTypes: ['vnd.google-earth.kml+xml'],
-  supported: XMLLoader.supported,
-  testText,
+  text: true,
+  tests: [KML_HEADER],
   parse: async (arrayBuffer, options) =>
     parseTextSync(new TextDecoder().decode(arrayBuffer), options),
-  parseTextSync,
-  browserOnly: true,
-  options: {
-    kml: {
-      normalize: true
-    }
-  }
+  parseTextSync
 };

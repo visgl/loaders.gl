@@ -66,8 +66,126 @@ export const IMAGES_DATA = [
     ]
   },
   {
-    formatName: 'ASTN (WEBGL_compressed_texture_astn)',
-    images: []
+    formatName: 'ASTC (WEBGL_compressed_texture_astc)',
+    images: [
+      {
+        format: 'ASTC 4x4',
+        src: 'shannon-astc-4x4.pvr'
+      },
+      {
+        format: 'ASTC 5x4',
+        src: 'shannon-astc-5x4.pvr'
+      },
+      {
+        format: 'ASTC 5x5',
+        src: 'shannon-astc-5x5.pvr'
+      },
+      {
+        format: 'ASTC 6x5',
+        src: 'shannon-astc-6x5.pvr'
+      },
+      {
+        format: 'ASTC 6x6',
+        src: 'shannon-astc-6x6.pvr'
+      },
+      {
+        format: 'ASTC 8x5',
+        src: 'shannon-astc-8x5.pvr'
+      },
+      {
+        format: 'ASTC 8x6',
+        src: 'shannon-astc-8x6.pvr'
+      },
+      {
+        format: 'ASTC 8x8',
+        src: 'shannon-astc-8x8.pvr'
+      },
+      {
+        format: 'ASTC 10x5',
+        src: 'shannon-astc-10x5.pvr'
+      },
+      {
+        format: 'ASTC 10x6',
+        src: 'shannon-astc-10x6.pvr'
+      },
+      {
+        format: 'ASTC 10x8',
+        src: 'shannon-astc-10x8.pvr'
+      },
+      {
+        format: 'ASTC 10x10',
+        src: 'shannon-astc-10x10.pvr'
+      },
+      {
+        format: 'ASTC 12x10',
+        src: 'shannon-astc-12x10.pvr'
+      },
+      {
+        format: 'ASTC 12x12',
+        src: 'shannon-astc-12x12.pvr'
+      }
+    ]
+  },
+  {
+    formatName: 'ASTC (sRGB) (WEBGL_compressed_texture_astc)',
+    images: [
+      {
+        format: 'ASTC (sRGB) 4x4',
+        src: 'shannon-astc-srgb-4x4.pvr'
+      },
+      {
+        format: 'ASTC (sRGB) 5x4',
+        src: 'shannon-astc-srgb-5x4.pvr'
+      },
+      {
+        format: 'ASTC (sRGB) 5x5',
+        src: 'shannon-astc-srgb-5x5.pvr'
+      },
+      {
+        format: 'ASTC (sRGB) 6x5',
+        src: 'shannon-astc-srgb-6x5.pvr'
+      },
+      {
+        format: 'ASTC (sRGB) 6x6',
+        src: 'shannon-astc-srgb-6x6.pvr'
+      },
+      {
+        format: 'ASTC (sRGB) 8x5',
+        src: 'shannon-astc-srgb-8x5.pvr'
+      },
+      {
+        format: 'ASTC (sRGB) 8x6',
+        src: 'shannon-astc-srgb-8x6.pvr'
+      },
+      {
+        format: 'ASTC (sRGB) 8x8',
+        src: 'shannon-astc-srgb-8x8.pvr'
+      },
+      {
+        format: 'ASTC (sRGB) 10x5',
+        src: 'shannon-astc-srgb-10x5.pvr'
+      },
+      {
+        format: 'ASTC (sRGB) 10x6',
+        src: 'shannon-astc-srgb-10x6.pvr'
+      },
+      {
+        format: 'ASTC (sRGB) 10x8',
+        src: 'shannon-astc-srgb-10x8.pvr'
+      },
+      {
+        format: 'ASTC (sRGB) 10x10',
+        src: 'shannon-astc-srgb-10x10.pvr'
+      },
+      {
+        format: 'ASTC (sRGB) 12x10',
+        src: 'shannon-astc-srgb-12x10.pvr'
+      },
+      {
+        format: 'ASTC (sRGB) 12x12',
+        src: 'shannon-astc-srgb-12x12.pvr'
+      }
+    ]
   },
   {
     formatName: 'ETC1 (WEBGL_compressed_texture_etc1)',
@@ -81,6 +199,15 @@ export const IMAGES_DATA = [
     images: [
       {format: 'DXT1 (Crunch)', src: 'shannon-dxt1.crn'},
       {format: 'DXT5 (Crunch)', src: 'shannon-dxt5.crn'}
+    ]
+  },
+  {
+    formatName: 'KTX',
+    codeSample: 'load(url, CompressedTextureLoader)',
+    images: [
+      {format: 'DXT1', src: 'shannon-dxt1.ktx2'},
+      {format: 'DXT3', src: 'shannon-dxt3.ktx2'},
+      {format: 'DXT5', src: 'shannon-dxt5.ktx2'}
     ]
   },
   {

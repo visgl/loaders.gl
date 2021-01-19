@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/textures",
-  "version": "3.0.0-alpha.1",
+  "version": "3.0.0-alpha.2",
   "description": "Framework-independent loaders for compressed and super compressed (basis) textures ",
   "license": "MIT",
   "publishConfig": {
@@ -21,6 +21,7 @@
     "ETC",
     "basis"
   ],
+  "types": "src/index.d.ts",
   "main": "dist/es5/index.js",
   "module": "dist/esm/index.js",
   "esnext": "dist/es6/index.js",
@@ -35,12 +36,12 @@
     "pre-build": "npm run copy-libs && npm run build-worker && npm run build-bundle && npm run build-bundle -- --env.dev",
     "copy-libs": "cp -rf ./src/libs ./dist/libs",
     "build-bundle": "webpack --display=minimal --config ../../scripts/bundle.config.js",
-    "build-worker": "webpack --entry ./src/workers/basis-loader.worker.js --output ./dist/basis-loader.worker.js --config ../../scripts/worker-webpack-config.js"
+    "build-worker": "webpack --entry ./src/workers/basis-loader.worker.js --output ./dist/basis-loader.worker.js --config ../../scripts/worker-webpack-config.js && webpack --entry ./src/npy-loader.worker.js --output ./dist/npy-loader.worker.js --config ../../scripts/worker-webpack-config.js"
   },
   "dependencies": {
-    "@loaders.gl/core": "3.0.0-alpha.1",
-    "@loaders.gl/images": "3.0.0-alpha.1",
-    "@loaders.gl/loader-utils": "3.0.0-alpha.1",
+    "@loaders.gl/core": "3.0.0-alpha.2",
+    "@loaders.gl/images": "3.0.0-alpha.2",
+    "@loaders.gl/loader-utils": "3.0.0-alpha.2",
     "ktx-parse": "^0.0.4",
     "texture-compressor": "^1.0.2"
   }

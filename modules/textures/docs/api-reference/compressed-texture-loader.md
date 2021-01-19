@@ -6,13 +6,13 @@
 
 Loader for compressed textures in the PVR file format
 
-| Loader         | Characteristic                                                                   |
-| -------------- | -------------------------------------------------------------------------------- |
-| File Format    | [PVR](http://cdn.imgtec.com/sdk-documentation/PVR+File+Format.Specification.pdf) |
-| File Extension | `.dds`, `.pvr`                                                                   |
-| File Type      | Binary                                                                           |
-| Data Format    | Array of compressed image data objects                                           |
-| Supported APIs | `load`, `parse`                                                                  |
+| Loader         | Characteristic                                                                                                                                                             |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| File Format    | [PVR](http://cdn.imgtec.com/sdk-documentation/PVR+File+Format.Specification.pdf), [DDS](https://docs.microsoft.com/en-us/windows/win32/direct3ddds/dx-graphics-dds-pguide) |
+| File Extension | `.dds`, `.pvr`                                                                                                                                                             |
+| File Type      | Binary                                                                                                                                                                     |
+| Data Format    | Array of compressed image data objects                                                                                                                                     |
+| Supported APIs | `load`, `parse`                                                                                                                                                            |
 
 ## Usage
 
@@ -30,7 +30,7 @@ for (const image of mipLevels) {
 
 Returns an array of image data objects representing mip levels.
 
-`{compressed: true, format, width, height, data: ...}`
+`{compressed: true, format, width, height, data: ..., levelSize}`
 
 ## Options
 
