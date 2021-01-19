@@ -16,14 +16,20 @@ async function loadBasis(options) {
   let BASIS = null;
   let wasmBinary = null;
 
+  const modules = {
+    // Uncomment for local testing libs files
+    // 'basis_transcoder.js': 'http://localhost:8080/modules/textures/src/libs/basis_transcoder.js',
+    // 'basis_transcoder.wasm': 'http://localhost:8080/modules/textures/src/libs/basis_transcoder.wasm'
+  };
+
   // TODO: load the module from 'textures' as soon as 'textures' npm package is published
   // [BASIS, wasmBinary] = await Promise.all([
   //   await loadLibrary('basis_transcoder.js', 'textures', options),
   //   await loadLibrary('basis_transcoder.wasm', 'textures', options)
   // ]);
   [BASIS, wasmBinary] = await Promise.all([
-    await loadLibrary('basis_transcoder.js', 'basis', options),
-    await loadLibrary('basis_transcoder.wasm', 'basis', options)
+    await loadLibrary('basis_transcoder.js', 'basis', {...options, modules}),
+    await loadLibrary('basis_transcoder.wasm', 'basis', {...options, modules})
   ]);
 
   // Depends on how import happened...
