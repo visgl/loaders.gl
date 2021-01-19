@@ -1,11 +1,17 @@
 import React, {PureComponent} from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
-import {BasisLoader, CompressedTextureLoader, CrunchLoader} from '@loaders.gl/textures';
+import {
+  BasisLoader,
+  CompressedTextureLoader,
+  CrunchLoader,
+  GL_CONSTANTS
+} from '@loaders.gl/textures';
 import {ImageLoader} from '@loaders.gl/images';
 import {load, registerLoaders, selectLoader, fetchFile} from '@loaders.gl/core';
 import {Texture2D} from '@luma.gl/core';
-import {
+
+const {
   COMPRESSED_RGB_S3TC_DXT1_EXT,
   COMPRESSED_RGBA_S3TC_DXT1_EXT,
   COMPRESSED_RGBA_S3TC_DXT3_EXT,
@@ -17,8 +23,36 @@ import {
   COMPRESSED_RGB_ATC_WEBGL,
   COMPRESSED_RGBA_ATC_EXPLICIT_ALPHA_WEBGL,
   COMPRESSED_RGBA_ATC_INTERPOLATED_ALPHA_WEBGL,
-  COMPRESSED_RGB_ETC1_WEBGL
-} from '../constants';
+  COMPRESSED_RGB_ETC1_WEBGL,
+  COMPRESSED_RGBA_ASTC_4X4_KHR,
+  COMPRESSED_RGBA_ASTC_5X4_KHR,
+  COMPRESSED_RGBA_ASTC_5X5_KHR,
+  COMPRESSED_RGBA_ASTC_6X5_KHR,
+  COMPRESSED_RGBA_ASTC_6X6_KHR,
+  COMPRESSED_RGBA_ASTC_8X5_KHR,
+  COMPRESSED_RGBA_ASTC_8X6_KHR,
+  COMPRESSED_RGBA_ASTC_8X8_KHR,
+  COMPRESSED_RGBA_ASTC_10X5_KHR,
+  COMPRESSED_RGBA_ASTC_10X6_KHR,
+  COMPRESSED_RGBA_ASTC_10X8_KHR,
+  COMPRESSED_RGBA_ASTC_10X10_KHR,
+  COMPRESSED_RGBA_ASTC_12X10_KHR,
+  COMPRESSED_RGBA_ASTC_12X12_KHR,
+  COMPRESSED_SRGB8_ALPHA8_ASTC_4X4_KHR,
+  COMPRESSED_SRGB8_ALPHA8_ASTC_5X4_KHR,
+  COMPRESSED_SRGB8_ALPHA8_ASTC_5X5_KHR,
+  COMPRESSED_SRGB8_ALPHA8_ASTC_6X5_KHR,
+  COMPRESSED_SRGB8_ALPHA8_ASTC_6X6_KHR,
+  COMPRESSED_SRGB8_ALPHA8_ASTC_8X5_KHR,
+  COMPRESSED_SRGB8_ALPHA8_ASTC_8X6_KHR,
+  COMPRESSED_SRGB8_ALPHA8_ASTC_8X8_KHR,
+  COMPRESSED_SRGB8_ALPHA8_ASTC_10X5_KHR,
+  COMPRESSED_SRGB8_ALPHA8_ASTC_10X6_KHR,
+  COMPRESSED_SRGB8_ALPHA8_ASTC_10X8_KHR,
+  COMPRESSED_SRGB8_ALPHA8_ASTC_10X10_KHR,
+  COMPRESSED_SRGB8_ALPHA8_ASTC_12X10_KHR,
+  COMPRESSED_SRGB8_ALPHA8_ASTC_12X12_KHR
+} = GL_CONSTANTS;
 
 const TEXTURES_BASE_URL =
   'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/textures/test/data/';
@@ -104,7 +138,8 @@ export default class CompressedTexture extends PureComponent {
       DXT: Boolean(gl.getExtension('WEBGL_compressed_texture_s3tc')),
       PVRTC: Boolean(gl.getExtension('WEBGL_compressed_texture_pvrtc')),
       ATC: Boolean(gl.getExtension('WEBGL_compressed_texture_atc')),
-      ETC1: Boolean(gl.getExtension('WEBGL_compressed_texture_etc1'))
+      ETC1: Boolean(gl.getExtension('WEBGL_compressed_texture_etc1')),
+      ASTC: Boolean(gl.getExtension('WEBGL_compressed_texture_astc'))
     };
   }
 
@@ -270,7 +305,7 @@ export default class CompressedTexture extends PureComponent {
     if (typeof format !== 'number') {
       throw new Error('Invalid internal format of compressed texture');
     }
-    const {DXT, PVRTC, ATC, ETC1} = this.state.supportedFormats;
+    const {DXT, PVRTC, ATC, ETC1, ASTC} = this.state.supportedFormats;
 
     switch (format) {
       case COMPRESSED_RGB_S3TC_DXT1_EXT:
@@ -292,6 +327,36 @@ export default class CompressedTexture extends PureComponent {
 
       case COMPRESSED_RGB_ETC1_WEBGL:
         return ETC1;
+
+      case COMPRESSED_RGBA_ASTC_4X4_KHR:
+      case COMPRESSED_RGBA_ASTC_5X4_KHR:
+      case COMPRESSED_RGBA_ASTC_5X5_KHR:
+      case COMPRESSED_RGBA_ASTC_6X5_KHR:
+      case COMPRESSED_RGBA_ASTC_6X6_KHR:
+      case COMPRESSED_RGBA_ASTC_8X5_KHR:
+      case COMPRESSED_RGBA_ASTC_8X6_KHR:
+      case COMPRESSED_RGBA_ASTC_8X8_KHR:
+      case COMPRESSED_RGBA_ASTC_10X5_KHR:
+      case COMPRESSED_RGBA_ASTC_10X6_KHR:
+      case COMPRESSED_RGBA_ASTC_10X8_KHR:
+      case COMPRESSED_RGBA_ASTC_10X10_KHR:
+      case COMPRESSED_RGBA_ASTC_12X10_KHR:
+      case COMPRESSED_RGBA_ASTC_12X12_KHR:
+      case COMPRESSED_SRGB8_ALPHA8_ASTC_4X4_KHR:
+      case COMPRESSED_SRGB8_ALPHA8_ASTC_5X4_KHR:
+      case COMPRESSED_SRGB8_ALPHA8_ASTC_5X5_KHR:
+      case COMPRESSED_SRGB8_ALPHA8_ASTC_6X5_KHR:
+      case COMPRESSED_SRGB8_ALPHA8_ASTC_6X6_KHR:
+      case COMPRESSED_SRGB8_ALPHA8_ASTC_8X5_KHR:
+      case COMPRESSED_SRGB8_ALPHA8_ASTC_8X6_KHR:
+      case COMPRESSED_SRGB8_ALPHA8_ASTC_8X8_KHR:
+      case COMPRESSED_SRGB8_ALPHA8_ASTC_10X5_KHR:
+      case COMPRESSED_SRGB8_ALPHA8_ASTC_10X6_KHR:
+      case COMPRESSED_SRGB8_ALPHA8_ASTC_10X8_KHR:
+      case COMPRESSED_SRGB8_ALPHA8_ASTC_10X10_KHR:
+      case COMPRESSED_SRGB8_ALPHA8_ASTC_12X10_KHR:
+      case COMPRESSED_SRGB8_ALPHA8_ASTC_12X12_KHR:
+        return ASTC;
 
       default:
         return false;
