@@ -202,6 +202,15 @@ export const IMAGES_DATA = [
     ]
   },
   {
+    formatName: 'KTX',
+    codeSample: 'load(url, CompressedTextureLoader)',
+    images: [
+      {format: 'DXT1', src: 'shannon-dxt1.ktx2'},
+      {format: 'DXT3', src: 'shannon-dxt3.ktx2'},
+      {format: 'DXT5', src: 'shannon-dxt5.ktx2'}
+    ]
+  },
+  {
     formatName: 'Basis Universal',
     description: 'Supercompressed GPU Texture Codec',
     link: 'https://github.com/BinomialLLC/basis_universal',
