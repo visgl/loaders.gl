@@ -53,7 +53,7 @@ export default function parseMVT(arrayBuffer, options) {
 }
 
 function normalizeOptions(options) {
-  options = options || {
+  options = {
     ...options,
     mvt: options.mvt || {},
     gis: options.gis || {}
