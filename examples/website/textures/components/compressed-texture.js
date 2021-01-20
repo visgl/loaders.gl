@@ -81,6 +81,7 @@ const TextureButton = styled.button`
   border: 1px solid black;
   margin: 1em;
   position: relative;
+  margin-left: 0;
 `;
 
 const ImageFormatHeader = styled.h1`
@@ -183,20 +184,9 @@ export default class CompressedTexture extends PureComponent {
   async getTextureDataUrl() {
     const {loadOptions} = this.state;
     const {canvas, gl, program, image} = this.props;
-    const {src} = image;
 
     try {
-      const url = `${TEXTURES_BASE_URL}${src}`;
-      const loader = await selectLoader(url, [
-        CompressedTextureLoader,
-        CrunchLoader,
-        BasisLoader,
-        ImageLoader
-      ]);
-
-      const response = await fetchFile(url);
-      const arrayBuffer = await response.arrayBuffer();
-      const length = arrayBuffer.byteLength;
+      const {loader, arrayBuffer, length, src} = await this.getLoaderData(image);
       const result = loader && (await load(arrayBuffer, loader, loadOptions));
 
       this.addStat('File Size', Math.floor(length / 1024), 'Kb');
@@ -226,6 +216,39 @@ export default class CompressedTexture extends PureComponent {
     }
 
     return canvas.toDataURL();
+  }
+
+  async getLoaderData(image) {
+    let loader = null;
+    let arrayBuffer = null;
+    let length = 0;
+    let src = '';
+
+    // eslint-disable-next-line no-undef
+    if (image instanceof File) {
+      arrayBuffer = await image.arrayBuffer();
+      length = image.size;
+      loader = await selectLoader(arrayBuffer, [
+        CompressedTextureLoader,
+        CrunchLoader,
+        BasisLoader,
+        ImageLoader
+      ]);
+      src = image.name;
+    } else {
+      src = `${TEXTURES_BASE_URL}${image.src}`;
+      loader = await selectLoader(src, [
+        CompressedTextureLoader,
+        CrunchLoader,
+        BasisLoader,
+        ImageLoader
+      ]);
+      const response = await fetchFile(src);
+      arrayBuffer = await response.arrayBuffer();
+      length = arrayBuffer.byteLength;
+    }
+
+    return {loader, arrayBuffer, length, src};
   }
 
   createCompressedTexture2D(gl, images) {
@@ -430,7 +453,7 @@ export default class CompressedTexture extends PureComponent {
 
   render() {
     const {dataUrl, textureError} = this.state;
-    const {format} = this.props.image;
+    const {format, name} = this.props.image;
 
     return dataUrl ? (
       <TextureButton
@@ -439,7 +462,7 @@ export default class CompressedTexture extends PureComponent {
         onMouseLeave={() => this.setState({showStats: false})}
       >
         {!textureError ? (
-          <ImageFormatHeader>{format}</ImageFormatHeader>
+          <ImageFormatHeader>{format || name}</ImageFormatHeader>
         ) : (
           <ErrorFormatHeader style={{color: 'red'}}>{textureError}</ErrorFormatHeader>
         )}
