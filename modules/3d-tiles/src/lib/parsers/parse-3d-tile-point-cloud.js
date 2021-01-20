@@ -204,9 +204,16 @@ async function parseDraco(tile, featureTable, batchTable, options, context) {
 // eslint-disable-next-line complexity, max-statements
 export async function loadDraco(tile, dracoData, options, context) {
   const {parse} = context;
+  const dracoOptions = {...options};
+
+  // The entire tileset might be included, too expensive to serialize
+  delete dracoOptions['3d-tiles'];
+
   const data = await parse(dracoData.buffer, DracoLoader, {
+    ...dracoOptions,
     draco: {
-      extraAttributes: dracoData.batchTableProperties || {}
+      ...dracoOptions.draco,
+      extraAtributes: dracoData.batchTableProperties || {}
     }
   });
 
