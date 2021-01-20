@@ -1,6 +1,5 @@
 // This code is forked from https://github.com/mapbox/vector-tile-js under BSD 3-clause license.
 /* eslint-disable */
-import Point from '@mapbox/point-geometry';
 
 export default class VectorTileFeature {
   static get types() {
@@ -12,6 +11,7 @@ export default class VectorTileFeature {
     this.properties = {};
     this.extent = extent;
     this.type = 0;
+    this.id = null;
 
     // Private
     this._pbf = pbf;
@@ -54,11 +54,11 @@ export default class VectorTileFeature {
           line = [];
         }
         // @ts-ignore
-        line.push(new Point(x, y));
+        line.push([x, y]);
       } else if (cmd === 7) {
         // Workaround for https://github.com/mapbox/mapnik-vector-tile/issues/90
         if (line) {
-          line.push(line[0].clone()); // closePolygon
+          line.push(line[0].slice()); // closePolygon
         }
       } else {
         throw new Error(`unknown command ${cmd}`);
@@ -109,25 +109,11 @@ export default class VectorTileFeature {
     return [x1, y1, x2, y2];
   }
 
-  toGeoJSON(x, y, z) {
-    const size = this.extent * Math.pow(2, z);
-    const x0 = this.extent * x;
-    const y0 = this.extent * y;
+  _toGeoJSON(transform) {
     let coords = this.loadGeometry();
     let type = VectorTileFeature.types[this.type];
     let i;
     let j;
-
-    function project(line) {
-      for (let j = 0; j < line.length; j++) {
-        const p = line[j];
-        const y2 = 180 - ((p.y + y0) * 360) / size;
-        line[j] = [
-          ((p.x + x0) * 360) / size - 180,
-          (360 / Math.PI) * Math.atan(Math.exp((y2 * Math.PI) / 180)) - 90
-        ];
-      }
-    }
 
     switch (this.type) {
       case 1:
@@ -136,12 +122,12 @@ export default class VectorTileFeature {
           points[i] = coords[i][0];
         }
         coords = points;
-        project(coords);
+        transform(coords, this);
         break;
 
       case 2:
         for (i = 0; i < coords.length; i++) {
-          project(coords[i]);
+          transform(coords[i], this);
         }
         break;
 
@@ -149,7 +135,7 @@ export default class VectorTileFeature {
         coords = classifyRings(coords);
         for (i = 0; i < coords.length; i++) {
           for (j = 0; j < coords[i].length; j++) {
-            project(coords[i][j]);
+            transform(coords[i][j], this);
           }
         }
         break;
@@ -170,12 +156,31 @@ export default class VectorTileFeature {
       properties: this.properties
     };
 
-    if ('id' in this) {
-      // @ts-igore
-      // result.id = this.id;
+    if (this.id !== null) {
+      result.id = this.id;
     }
 
     return result;
+  }
+
+  toGeoJSON(options) {
+    if (typeof options === 'function') {
+      return this._toGeoJSON(options);
+    }
+    const {x, y, z} = options;
+    const size = this.extent * Math.pow(2, z);
+    const x0 = this.extent * x;
+    const y0 = this.extent * y;
+
+    function project(line) {
+      for (let j = 0; j < line.length; j++) {
+        const p = line[j];
+        p[0] = ((p[0] + x0) * 360) / size - 180;
+        const y2 = 180 - ((p[1] + y0) * 360) / size;
+        p[1] = (360 / Math.PI) * Math.atan(Math.exp((y2 * Math.PI) / 180)) - 90;
+      }
+    }
+    return this._toGeoJSON(project);
   }
 }
 
