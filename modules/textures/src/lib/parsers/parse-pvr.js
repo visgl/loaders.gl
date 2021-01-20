@@ -1,3 +1,4 @@
+/** @typedef {import('./parse-pvr')} types */
 /* eslint-disable camelcase */
 // Forked from PicoGL: https://github.com/tsherif/picogl.js/blob/master/examples/utils/utils.js
 // Copyright (c) 2017 Tarek Sherif, The MIT License (MIT)
@@ -78,6 +79,7 @@ const PVR_SIZE_FUNCTIONS = {
   40: atc12x12Size
 };
 
+/** @type {types['isPVR']} */
 export function isPVR(data) {
   const header = new Uint32Array(data, 0, PVR_CONSTANTS.HEADER_LENGTH);
   const version = header[PVR_CONSTANTS.MAGIC_NUMBER_INDEX];
@@ -86,6 +88,7 @@ export function isPVR(data) {
 }
 
 // http://cdn.imgtec.com/sdk-documentation/PVR+File+Format.Specification.pdf
+/** @type {types['parsePVR']} */
 export function parsePVR(data) {
   const header = new Uint32Array(data, 0, PVR_CONSTANTS.HEADER_LENGTH);
 

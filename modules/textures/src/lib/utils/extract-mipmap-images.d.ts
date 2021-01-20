@@ -1,4 +1,4 @@
-import { CompressedTextureExtractOptions, TextureLevel } from "@loaders.gl/textures/types/textrure";
+import { CompressedTextureExtractOptions, TextureLevel } from "@loaders.gl/textures/types/texture";
 
 /**
  * Extract mimpap images from compressed texture buffer

@@ -1,3 +1,5 @@
+/** @typedef {import('./extract-mipmap-images')} types */
+/** @type types['extractMipmapImages'] */
 export function extractMipmapImages(data, options) {
   const images = new Array(options.mipMapLevels);
 

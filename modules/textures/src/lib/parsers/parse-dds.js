@@ -1,3 +1,4 @@
+/** @typedef {import('./parse-dds')} types */
 import {assert} from '@loaders.gl/loader-utils';
 import {GL} from '../gl-constants';
 import {extractMipmapImages} from '../utils/extract-mipmap-images';
@@ -36,6 +37,7 @@ const DDS_CONSTANTS = {
   }
 };
 
+/** @type {types['isDDS']} */
 export function isDDS(data) {
   const header = new Uint32Array(data, 0, DDS_CONSTANTS.HEADER_LENGTH);
   const magic = header[DDS_CONSTANTS.MAGIC_NUMBER_INDEX];
@@ -43,6 +45,7 @@ export function isDDS(data) {
   return magic === DDS_CONSTANTS.MAGIC_NUMBER;
 }
 
+/** @type {types['parseDDS']} */
 export function parseDDS(data) {
   const header = new Int32Array(data, 0, DDS_CONSTANTS.HEADER_LENGTH);
   const pixelFormatNumber = header[DDS_CONSTANTS.HEADER_PF_FOURCC_INDEX];
@@ -50,7 +53,7 @@ export function parseDDS(data) {
     Boolean(header[DDS_CONSTANTS.HEADER_PF_FLAGS_INDEX] & DDS_CONSTANTS.DDPF_FOURCC),
     'DDS: Unsupported format, must contain a FourCC code'
   );
-  const fourCC = _int32ToFourCC(pixelFormatNumber);
+  const fourCC = int32ToFourCC(pixelFormatNumber);
   const internalFormat = DDS_CONSTANTS.PIXEL_FORMATS[fourCC];
   const sizeFunction = DDS_CONSTANTS.SIZE_FUNCTIONS[fourCC];
   assert(internalFormat && sizeFunction, `DDS: Unknown pixel format ${pixelFormatNumber}`);
@@ -73,10 +76,12 @@ export function parseDDS(data) {
   });
 }
 
+/** @type {types['getDxt1LevelSize']} */
 export function getDxt1LevelSize(width, height) {
   return ((width + 3) >> 2) * ((height + 3) >> 2) * 8;
 }
 
+/** @type {types['getDxtXLevelSize']} */
 export function getDxtXLevelSize(width, height) {
   return ((width + 3) >> 2) * ((height + 3) >> 2) * 16;
 }
@@ -86,7 +91,7 @@ export function getDxtXLevelSize(width, height) {
  * @param {number} value - Int32 number
  * @returns {string} string of 4 characters
  */
-function _int32ToFourCC(value) {
+function int32ToFourCC(value) {
   return String.fromCharCode(
     value & 0xff,
     (value >> 8) & 0xff,

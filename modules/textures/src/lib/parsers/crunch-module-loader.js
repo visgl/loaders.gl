@@ -1,7 +1,9 @@
+/** @typedef {import('./crunch-module-loader')} types */
 import {loadLibrary, global} from '@loaders.gl/loader-utils';
 
 let CrunchModule;
 
+/** @type {types['loadCrunchModule']} */
 export async function loadCrunchModule(options) {
   const modules = options.modules || {};
   if (modules.crunch) {
