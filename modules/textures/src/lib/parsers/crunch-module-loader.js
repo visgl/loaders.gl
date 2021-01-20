@@ -25,9 +25,7 @@ async function loadCrunch(options) {
 
   let LoadCrunchDecoder = null;
 
-  // TODO: load the module from 'textures' as soon as 'textures' npm package is published
-  // [LoadCrunchDecoder] = await Promise.all([await loadLibrary('crunch.js', 'textures', options)]);
-  [LoadCrunchDecoder] = await Promise.all([await loadLibrary('crunch.js', 'basis', options)]);
+  [LoadCrunchDecoder] = await Promise.all([await loadLibrary('crunch.js', 'textures', options)]);
 
   // Depends on how import happened...
   // @ts-ignore TS2339: Property does not exist on type
