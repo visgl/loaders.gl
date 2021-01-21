@@ -1,0 +1,36 @@
+# tests
+test
+website
+
+# dists
+dist/*
+**/dist/*
+dist.js
+dist.min.js
+
+# logs and cache
+.reify-cache
+.nyc_output/
+coverage/
+node_modules/
+npm-debug.log
+stats.json
+package-lock.json
+*/**/yarn.lock
+yarn-error.log
+
+# misc files
+*.zip
+*.rar
+*.log
+
+# editor files
+.idea
+.project
+.DS_Store
+.vscode
+*.iml
+*.swp
+
+# local data
+data/**
