@@ -14,7 +14,7 @@ const TextureFrame = styled.div`
   height: 256px;
   align-items: center;
   justify-content: center;
-  border: 1px solid black;
+  border: 1px dashed black;
 `;
 
 const ImageContainer = styled.div`
@@ -67,7 +67,7 @@ export default class TextureUploader extends PureComponent {
         {!uploadedImage && (
           <Container>
             <TextureFrame onDrop={this.handleLoadFile} onDragOver={event => event.preventDefault()}>
-              Drag and drop texture
+              Drag&Drop texture
             </TextureFrame>
             <input style={{display: 'none'}} type="file" id="fileInput" files={files} />
           </Container>

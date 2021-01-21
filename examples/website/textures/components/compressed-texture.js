@@ -186,7 +186,13 @@ export default class CompressedTexture extends PureComponent {
     const {canvas, gl, program, image} = this.props;
 
     try {
-      const {loader, arrayBuffer, length, src} = await this.getLoaderData(image);
+      const {arrayBuffer, length, src} = await this.getLoadedData(image);
+      const loader = await selectLoader(src, [
+        CompressedTextureLoader,
+        CrunchLoader,
+        BasisLoader,
+        ImageLoader
+      ]);
       const result = loader && (await load(arrayBuffer, loader, loadOptions));
 
       this.addStat('File Size', Math.floor(length / 1024), 'Kb');
@@ -218,8 +224,7 @@ export default class CompressedTexture extends PureComponent {
     return canvas.toDataURL();
   }
 
-  async getLoaderData(image) {
-    let loader = null;
+  async getLoadedData(image) {
     let arrayBuffer = null;
     let length = 0;
     let src = '';
@@ -228,27 +233,15 @@ export default class CompressedTexture extends PureComponent {
     if (image instanceof File) {
       arrayBuffer = await image.arrayBuffer();
       length = image.size;
-      loader = await selectLoader(arrayBuffer, [
-        CompressedTextureLoader,
-        CrunchLoader,
-        BasisLoader,
-        ImageLoader
-      ]);
       src = image.name;
     } else {
       src = `${TEXTURES_BASE_URL}${image.src}`;
-      loader = await selectLoader(src, [
-        CompressedTextureLoader,
-        CrunchLoader,
-        BasisLoader,
-        ImageLoader
-      ]);
       const response = await fetchFile(src);
       arrayBuffer = await response.arrayBuffer();
       length = arrayBuffer.byteLength;
     }
 
-    return {loader, arrayBuffer, length, src};
+    return {arrayBuffer, length, src};
   }
 
   createCompressedTexture2D(gl, images) {
