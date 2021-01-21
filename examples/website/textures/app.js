@@ -4,6 +4,7 @@ import {render} from 'react-dom';
 import {instrumentGLContext, Program} from '@luma.gl/core';
 import {IMAGES_DATA} from './textures-data';
 import CompressedTexture from './components/compressed-texture';
+import TextureUploader from './components/textures-uploader';
 
 // TEXTURE SHADERS
 
@@ -179,10 +180,12 @@ export default class App extends PureComponent {
   }
 
   render() {
+    const {gl, canvas, program} = this.state;
     return (
       <div style={{margin: 30}}>
         {this.renderDescription()}
-        {this.state.gl && this.renderTexturesBlocks()}
+        {gl && <TextureUploader canvas={canvas} gl={gl} program={program} />}
+        {gl && this.renderTexturesBlocks()}
       </div>
     );
   }
