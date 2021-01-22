@@ -7,14 +7,16 @@ import {parseExcel} from './lib/parse-excel';
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 const ExcelLoaderOptions = {
-  excel: {}
+  excel: {
+    sheet: null // Load default Sheet
+  }
 };
 
 /**
  * Loader for Excel files
- * @type {LoaderObject}
+ * @type {WorkerLoaderObject}
  */
-export const ExcelLoader = {
+export const ExcelWorkerLoader = {
   id: 'excel',
   name: 'Excel',
   version: VERSION,
@@ -27,6 +29,14 @@ export const ExcelLoader = {
   binary: true,
   parse,
   options: ExcelLoaderOptions
+};
+
+/**
+ * Loader for Excel files
+ * @type {LoaderObject}
+ */
+export const ExcelLoader = {
+  ...ExcelWorkerLoader
 };
 
 async function parse(arrayBuffer, options, context) {

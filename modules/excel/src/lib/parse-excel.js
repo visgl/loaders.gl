@@ -10,11 +10,14 @@ const dataTableNamesMap = {};
  * @param context Load data callback.
  */
 export async function parseExcel(arrayBuffer, options, context) {
+  const excelOptions = options.excel || {};
+  
   const dataUrl = 'dummy';
   // const dataFileType: string = dataUrl.substr(dataUrl.lastIndexOf('.')); // file extension
 
   // create Excel 'workbook'
   const workbook = xlsx.read(arrayBuffer, {
+    type: 'array'
     // cellDates: true
   });
 
@@ -31,29 +34,14 @@ export async function parseExcel(arrayBuffer, options, context) {
 
     // determine spreadsheet to load
     let sheetName = workbook.SheetNames[0];
-    if (options.dataTable.length > 0 && workbook.SheetNames.indexOf(options.dataTable) >= 0) {
+    if (excelOptions.sheet && workbook.SheetNames.indexOf(excelOptions.sheet) >= 0) {
       // reset to requested table name
-      sheetName = options.dataTable;
+      sheetName = excelOptions.sheet;
     }
 
     // get worksheet data row objects array
     const worksheet = workbook.Sheets[sheetName];
     dataRows = xlsx.utils.sheet_to_json(worksheet);
-
-    // create json data file for binary Excel file text data preview
-    /*
-    if (options.createJsonFiles && config.supportedBinaryDataFiles.test(dataFileName)) {
-      // create json data file path
-      let jsonFilePath = dataUrl.replace(dataFileType, '.json');
-      if (options.dataTable.length > 0 && workbook.SheetNames.length > 1) {
-        // append table name to the generated json data file name
-        jsonFilePath = jsonFilePath.replace('.json', `-${options.dataTable}.json`);
-      }
-      // if (!fs.existsSync(jsonFilePath)) {
-      //   fileUtils.createJsonFile(jsonFilePath, dataRows);
-      // }
-    }
-    */
   }
 
   return dataRows;
