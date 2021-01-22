@@ -2,13 +2,13 @@
 
 (Non-streaming) table loader for Excel files.
 
-| Loader         | Characteristic                                       |
-| -------------- | ---------------------------------------------------- |
-| File Extension | `.xls`, `.xlsb`, '.xlsx`                             |
-| File Type      | Text                                                 |
-| File Format    | [Excel]()                                            |
-| Data Format    | [Classic Table](/docs/specifications/category-table) |
-| Supported APIs | `load`, `parse`                                      |
+| Loader         | Characteristic                                                                                                      |
+| -------------- | ------------------------------------------------------------------------------------------------------------------- |
+| File Extension | `.xls`, `.xlsb`, '.xlsx`                                                                                            |
+| File Type      | Binary / Text                                                                                                       |
+| File Format    | [Excel](https://docs.microsoft.com/en-us/openspecs/office_file_formats/ms-xls/cd03cb5f-ca02-4934-a391-bb674cb8aa06) |
+| Data Format    | [Classic Table](/docs/specifications/category-table)                                                                |
+| Supported APIs | `load`, `parse`                                                                                                     |
 
 ## Usage
 

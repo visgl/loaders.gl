@@ -1,4 +1,4 @@
-# @loaders.gl/json
+# Overview
 
 The `@loaders.gl/json` module handles tabular data stored in the [JSON file format](https://www.json.org/json-en.html).
 
