@@ -27,6 +27,10 @@ Target Release Date: Q1 2021. (Alpha releases are available).
 
 - A major new module contributed by ESRI, that implements conversion between the OGC 3D tiles and the OGC I3S tileset formats. A `tile-converter` CLI tool is avaible for automated batch conversion of multi-terabyte tilesets. A converter class API is also available for programmatic use.
 
+**@loaders.gl/excel** (NEW)
+
+- New table category loader for Excel spreadsheets in both binary `.xls`, `.xlsb` and XML-based `.xlsx` formats.
+
 **@loaders.gl/textures** (NEW)
 
 - [`textures`](https://loaders.gl/examples/textures) website example shows which compressed texture formats work on the current device.
