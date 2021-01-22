@@ -1,5 +1,24 @@
-# Docker Image for BuildKite CI
+# Docker image for tile-converter module
 # -----------------------------
+# To build docker image run in cli:
+# docker build -t loaders .
+#
+# Use image to convert tileset:
+# docker run --rm \
+#   -v /path/to/output_folder:/loaders-bundle/data \
+#   loaders \
+#   --input-type 3dtiles \
+#   --token ... \
+#   --tileset ... \
+#   --name ... \
+#   --output data \
+#   --max-depth 3
+#
+# Description of arguments:
+# --rm              Remove container after conversion
+# -v                Create docker volume, linked to internal data folder
+# loaders           Image name
+# ...               Converter options (described here: modules/tile-converter/docs/cli-reference/tile-converter.md)
 
 FROM node:12 AS BUILD_IMAGE
 
