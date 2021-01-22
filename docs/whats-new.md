@@ -29,7 +29,7 @@ Target Release Date: Q1 2021. (Alpha releases are available).
 
 **@loaders.gl/excel** (NEW)
 
-- New table category loader for Excel spreadsheets, based on [SheetJS](https://github.com/SheetJS).
+- New table category loader for Excel spreadsheets in both binary `.xls`, `.xlsb` and XML-based `.xlsx` formats.
 
 **@loaders.gl/textures** (NEW)
 
