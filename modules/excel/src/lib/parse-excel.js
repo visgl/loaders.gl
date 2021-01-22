@@ -11,7 +11,7 @@ const dataTableNamesMap = {};
  */
 export async function parseExcel(arrayBuffer, options, context) {
   const excelOptions = options.excel || {};
-  
+
   const dataUrl = 'dummy';
   // const dataFileType: string = dataUrl.substr(dataUrl.lastIndexOf('.')); // file extension
 

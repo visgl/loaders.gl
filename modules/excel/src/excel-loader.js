@@ -1,3 +1,4 @@
+/** @typedef {import('@loaders.gl/loader-utils').WorkerLoaderObject} WorkerLoaderObject */
 /** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 
 import {parseExcel} from './lib/parse-excel';
@@ -13,7 +14,7 @@ const ExcelLoaderOptions = {
 };
 
 /**
- * Loader for Excel files
+ * Worker Loader for Excel files
  * @type {WorkerLoaderObject}
  */
 export const ExcelWorkerLoader = {
@@ -27,7 +28,6 @@ export const ExcelWorkerLoader = {
   ],
   category: 'table',
   binary: true,
-  parse,
   options: ExcelLoaderOptions
 };
 
@@ -36,7 +36,8 @@ export const ExcelWorkerLoader = {
  * @type {LoaderObject}
  */
 export const ExcelLoader = {
-  ...ExcelWorkerLoader
+  ...ExcelWorkerLoader,
+  parse
 };
 
 async function parse(arrayBuffer, options, context) {
