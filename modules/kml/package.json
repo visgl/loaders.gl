@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/kml",
-  "version": "3.0.0-alpha.2",
+  "version": "3.0.0-alpha.3",
   "description": "Framework-independent loader for the KML format",
   "license": "MIT",
   "publishConfig": {
@@ -32,9 +32,9 @@
     "build-bundle": "webpack --display=minimal --config ../../scripts/bundle.config.js"
   },
   "dependencies": {
-    "@loaders.gl/core": "3.0.0-alpha.2",
-    "@loaders.gl/gis": "3.0.0-alpha.2",
-    "@loaders.gl/tables": "3.0.0-alpha.2",
+    "@loaders.gl/core": "3.0.0-alpha.3",
+    "@loaders.gl/gis": "3.0.0-alpha.3",
+    "@loaders.gl/tables": "3.0.0-alpha.3",
     "@tmcw/togeojson": "^4.2.0"
   }
 }
