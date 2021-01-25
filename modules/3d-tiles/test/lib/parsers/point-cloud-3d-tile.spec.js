@@ -4,6 +4,7 @@
 import test from 'tape-promise/tape';
 import {parseSync, encodeSync} from '@loaders.gl/core';
 import {Tiles3DLoader, Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/3d-tiles';
+import {loadDraco} from '../../../src/lib/parsers/parse-3d-tile-point-cloud';
 // import {loadRootTileFromTileset} from '../utils/load-utils';
 
 /*
@@ -86,6 +87,36 @@ test('point cloud tile#throws if the feature table does not contain POSITION or 
     'throws if feature table has no POSITION or POSITION_QUANTIZED'
   );
   t.end();
+});
+
+test('loadDraco# Pass options to draco loader properly', async t => {
+  const resultObject = {
+    draco: {
+      decoderType: 'js',
+      extraAttributes: {test: 'yes'}
+    },
+    worker: true,
+    reuseWorkers: true
+  };
+  const tile = null;
+  const context = {
+    parse: async (buffer, loader, resultOptions) => {
+      t.deepEqual(resultOptions, resultObject);
+      t.equal(resultOptions['3d-tiles'], undefined);
+      t.end();
+    }
+  };
+
+  const dracoData = {buffer: null, batchTableProperties: {test: 'yes'}};
+  const options = {
+    draco: {
+      decoderType: 'js'
+    },
+    '3d-tiles': 'test 3d-tiles',
+    worker: true,
+    reuseWorkers: true
+  };
+  await loadDraco(tile, dracoData, options, context);
 });
 
 /*
