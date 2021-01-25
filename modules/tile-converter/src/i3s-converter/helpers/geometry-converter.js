@@ -483,9 +483,12 @@ function convertMaterial20(sourceMaterial, sourceImages) {
       textureSetDefinitionId: 0
     };
   } else {
-    material.pbrMetallicRoughness.baseColorFactor = sourceMaterial.pbrMetallicRoughness.baseColorFactor.map(
-      c => Math.round(c * 255)
-    );
+    // Should use default baseColorFactor if it is not present in source material
+    // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#reference-pbrmetallicroughness
+    const defaultBaseColorFactor = [1, 1, 1, 1];
+    const baseColorFactor =
+      sourceMaterial.pbrMetallicRoughness.baseColorFactor || defaultBaseColorFactor;
+    material.pbrMetallicRoughness.baseColorFactor = baseColorFactor.map(c => Math.round(c * 255));
   }
   return {material, texture};
 }
