@@ -1,9 +1,9 @@
 # Docker image for tile-converter module
 # -----------------------------
-# To build docker image run in cli:
-# docker build -t loaders .
+# To build a docker image, run in the root folder of the repository:
+# docker build -t loaders -f modules/tile-converter/Dockerfile .
 #
-# Use image to convert tileset:
+# Use the image to convert tileset:
 # docker run --rm \
 #   -v /path/to/output_folder:/loaders-bundle/data \
 #   loaders \
