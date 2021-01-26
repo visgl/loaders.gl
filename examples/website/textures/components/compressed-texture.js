@@ -151,17 +151,30 @@ export default class CompressedTexture extends PureComponent {
     this.setState({dataUrl});
   }
 
-  getSupportedFormats() {
+  getExtension(name) {
     const {gl} = this.props;
+    const vendorPrefixes = ['', 'WEBKIT_', 'MOZ_'];
+    let ext = null;
+
+    for (const index in vendorPrefixes) {
+      ext = Boolean(gl.getExtension(vendorPrefixes[index] + name));
+      if (ext) {
+        break;
+      }
+    }
+    return ext;
+  }
+
+  getSupportedFormats() {
     return {
-      DXT: Boolean(gl.getExtension('WEBGL_compressed_texture_s3tc')),
-      PVRTC: Boolean(gl.getExtension('WEBGL_compressed_texture_pvrtc')),
-      ATC: Boolean(gl.getExtension('WEBGL_compressed_texture_atc')),
-      ETC1: Boolean(gl.getExtension('WEBGL_compressed_texture_etc1')),
-      ASTC: Boolean(gl.getExtension('WEBGL_compressed_texture_astc')),
-      ETC: Boolean(gl.getExtension('WEBGL_compressed_texture_etc')),
-      RGTC: Boolean(gl.getExtension('EXT_texture_compression_rgtc')),
-      SRGB: Boolean(gl.getExtension('WEBGL_compressed_texture_s3tc_srgb'))
+      DXT: this.getExtension('WEBGL_compressed_texture_s3tc'),
+      PVRTC: this.getExtension('WEBGL_compressed_texture_pvrtc'),
+      ATC: this.getExtension('WEBGL_compressed_texture_atc'),
+      ETC1: this.getExtension('WEBGL_compressed_texture_etc1'),
+      ASTC: this.getExtension('WEBGL_compressed_texture_astc'),
+      ETC: this.getExtension('WEBGL_compressed_texture_etc'),
+      RGTC: this.getExtension('EXT_texture_compression_rgtc'),
+      SRGB: this.getExtension('WEBGL_compressed_texture_s3tc_srgb')
     };
   }
 
