@@ -47,7 +47,7 @@ function getWebGLContext() {
     /* global document */
     const canvas = document.createElement('canvas');
     return canvas.getContext('webgl');
-  } catch {
+  } catch (error) {
     return null;
   }
 }

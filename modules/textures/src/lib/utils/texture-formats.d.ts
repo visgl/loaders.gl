@@ -19,4 +19,4 @@ export type GPUTextureFormat =
  * 
  * @param gl - Optional context. 
  */
-export function getSupportedGPUTextureFormats(gl?: WebGL2RenderingContext): string[];
+export function getSupportedGPUTextureFormats(gl?: WebGL2RenderingContext): Set<String>;
