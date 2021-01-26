@@ -63,24 +63,27 @@ function deduceReturnType(dataArray) {
 function parseFeatureCollection(dataArray) {
   const features = [];
   for (const data of dataArray) {
-    let lastIndex = 0;
-    let lastValue = data.featureIds.value[0];
+    if (data.featureIds.value.length) {
+      let lastIndex = 0;
+      let lastValue = data.featureIds.value[0];
 
-    // Need to deduce start, end indices of each feature
-    for (let i = 0; i < data.featureIds.value.length; i++) {
-      const currValue = data.featureIds.value[i];
-      if (currValue === lastValue) {
-        // eslint-disable-next-line no-continue
-        continue;
+      // Need to deduce start, end indices of each feature
+      for (let i = 0; i < data.featureIds.value.length; i++) {
+        const currValue = data.featureIds.value[i];
+        // eslint-disable-next-line max-depth
+        if (currValue === lastValue) {
+          // eslint-disable-next-line no-continue
+          continue;
+        }
+
+        features.push(parseFeature(data, lastIndex, i));
+        lastIndex = i;
+        lastValue = currValue;
       }
 
-      features.push(parseFeature(data, lastIndex, i));
-      lastIndex = i;
-      lastValue = currValue;
+      // Last feature
+      features.push(parseFeature(data, lastIndex, data.featureIds.value.length));
     }
-
-    // Last feature
-    features.push(parseFeature(data, lastIndex, data.featureIds.value.length));
   }
   return features;
 }
@@ -94,7 +97,7 @@ function parseFeature(data, startIndex, endIndex) {
 
 /** Parse input binary data and return an object of properties */
 function parseProperties(data, startIndex, endIndex) {
-  const properties = Object.assign(data.properties[data.featureIds.value[startIndex]]);
+  const properties = Object.assign({}, data.properties[data.featureIds.value[startIndex]]);
   for (const key in data.numericProps) {
     properties[key] = data.numericProps[key].value[startIndex];
   }
