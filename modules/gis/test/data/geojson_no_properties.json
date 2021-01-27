@@ -1,0 +1,23 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "geometry": {
+        "type": "Point",
+        "coordinates": [100, 0]
+      }
+    },
+    {
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[100, 0], [101, 1]]
+      }
+    },
+    {
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[100, 0], [101, 0], [101, 10], [100, 10], [100, 0]]]
+      }
+    }
+  ]
+}

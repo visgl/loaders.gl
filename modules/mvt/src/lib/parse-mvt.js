@@ -13,10 +13,6 @@ import Protobuf from 'pbf';
 export default function parseMVT(arrayBuffer, options) {
   options = normalizeOptions(options);
 
-  if (arrayBuffer.byteLength === 0) {
-    return [];
-  }
-
   const features = [];
 
   if (arrayBuffer.byteLength > 0) {
