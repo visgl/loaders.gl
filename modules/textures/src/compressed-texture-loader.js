@@ -20,13 +20,12 @@ export const CompressedTextureWorkerLoader = {
     'dds', // WEBGL_compressed_texture_s3tc, WEBGL_compressed_texture_atc
     'pvr' // WEBGL_compressed_texture_pvrtc
   ],
-  mimeTypes: ['application/octet-stream'],
-  // tests: [new Uint8Array(PVR_MAGIC_BYTES).buffer],
+  mimeTypes: ['application/octet-stream', 'image/vnd-ms.dds'],
   binary: true,
   options: {
-    basis: {
+    'compressed-texture': {
       libraryPath: `libs/`
-      // workerUrl: `https://unpkg.com/@loaders.gl/textures@${VERSION}/dist/basis-loader.worker.js`
+      // workerUrl: `https://unpkg.com/@loaders.gl/textures@${VERSION}/dist/compressed-texture-loader.worker.js`
     }
   }
 };
