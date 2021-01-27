@@ -16,6 +16,7 @@ const FEATURES_2D = '@loaders.gl/gis/test/data/2d_features.json';
 const FEATURES_3D = '@loaders.gl/gis/test/data/3d_features.json';
 // All features have 3D coordinates
 const FEATURES_MIXED = '@loaders.gl/gis/test/data/mixed_features.json';
+const FEATURE_COLLECTION = '@loaders.gl/gis/test/data/featurecollection.json';
 
 // Example GeoJSON with no properties
 const GEOJSON_NO_PROPERTIES = '@loaders.gl/gis/test/data/geojson_no_properties.json';
@@ -430,7 +431,16 @@ test('gis#geojson-to-binary with empty properties', async t => {
   t.ok(points.properties[0] instanceof Object && points.properties[0].length === undefined);
   t.ok(lines.properties[0] instanceof Object && lines.properties[0].length === undefined);
   t.ok(polygons.properties[0] instanceof Object && polygons.properties[0].length === undefined);
+  t.end();
+});
 
+test("gis#geojson-to-binary doesn't mutate properties from input object", async t => {
+  const response = await fetchFile(FEATURE_COLLECTION);
+  const json = await response.json();
+  geojsonToBinary(json.point.geoJSON.features);
+
+  t.equal(json.point.geoJSON.features[0].properties.numeric1, 1);
+  t.equal(json.point.geoJSON.features[0].properties.string1, 'a');
   t.end();
 });
 
