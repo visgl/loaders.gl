@@ -7,7 +7,7 @@ test('getSupportedGPUTextureFormats', t => {
   if (isBrowser) {
     // Minimal test as this is WebGL dependent
     const formats = getSupportedGPUTextureFormats();
-    t.ok(formats.forEach(format => typeof format === 'string'));
+    formats.forEach(format => t.ok(typeof format === 'string'));
     t.end();
   } else {
     const formats = getSupportedGPUTextureFormats();
