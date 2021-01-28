@@ -36,8 +36,7 @@ test('CompressedTextureLoader#pvr', async t => {
     const response = await fetchFile(testCase.url);
     const data = await response.arrayBuffer();
     const result = parsePVR(data);
-    t.ok(result);
-    checkCompressedTexture(result, testCase, t);
+    checkCompressedTexture(t, result, testCase);
   }
   t.end();
 });

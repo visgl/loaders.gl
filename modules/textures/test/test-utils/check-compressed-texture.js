@@ -1,4 +1,4 @@
-export function checkCompressedTexture(imageData, testCase, t) {
+export function checkCompressedTexture(t, imageData, testCase) {
   t.ok(imageData instanceof Array);
   t.ok(imageData.length > 0);
   for (const level of imageData) {
