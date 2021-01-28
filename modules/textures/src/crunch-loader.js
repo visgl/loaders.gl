@@ -19,7 +19,7 @@ export const CrunchWorkerLoader = {
   mimeTypes: ['application/octet-stream'],
   binary: true,
   options: {
-    basis: {
+    crunch: {
       libraryPath: `libs/`
       // workerUrl: `https://unpkg.com/@loaders.gl/textures@${VERSION}/dist/crunch-loader.worker.js`
     }
