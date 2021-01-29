@@ -48,6 +48,7 @@ const BABEL_CONFIG = {
   ],
   plugins: [
     '@babel/transform-runtime',
+    ["@babel/plugin-transform-modules-commonjs", { allowTopLevelThis: true }],
     'version-inline'
   ]
 };
