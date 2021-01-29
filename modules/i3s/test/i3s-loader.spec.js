@@ -25,7 +25,7 @@ test('I3SLoader#Load tile content', async t => {
   t.ok(content.texture);
   // ImageLoader returns different things on browser and Node
   if (isBrowser) {
-    t.ok(content.texture instanceof ImageBitmap);
+    t.ok(content.texture instanceof ImageBitmap || content.texture.compressed);
   } else {
     t.equal(content.texture.data.byteLength, 131072);
   }
