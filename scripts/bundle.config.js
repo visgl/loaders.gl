@@ -44,10 +44,10 @@ const NODE = {
 
 const BABEL_CONFIG = {
   presets: [
-    ['@babel/preset-env', {modules: false}]
+    ['@babel/preset-env', {forceAllTransforms: true}]
   ],
   plugins: [
-    ['@babel/plugin-transform-runtime', {useESModules: false}], 
+    '@babel/transform-runtime',
     'version-inline'
   ]
 };
