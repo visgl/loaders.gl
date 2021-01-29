@@ -1,25 +1,25 @@
 export default {
   points: {
-    positions: {value: {}, size: null},
-    globalFeatureIds: {value: {}, size: 1},
-    featureIds: {value: {}, size: 1},
+    positions: {value: new Float32Array(), size: -Infinity},
+    globalFeatureIds: {value: new Uint16Array(), size: 1},
+    featureIds: {value: new Uint16Array(), size: 1},
     numericProps: {},
     properties: []
   },
   lines: {
-    pathIndices: {value: {0: 0}, size: 1},
-    positions: {value: {}, size: null},
-    globalFeatureIds: {value: {}, size: 1},
-    featureIds: {value: {}, size: 1},
+    pathIndices: {value: new Uint16Array(1), size: 1},
+    positions: {value: new Float32Array(), size: -Infinity},
+    globalFeatureIds: {value: new Uint16Array(), size: 1},
+    featureIds: {value: new Uint16Array(), size: 1},
     numericProps: {},
     properties: []
   },
   polygons: {
-    polygonIndices: {value: {0: 0}, size: 1},
-    primitivePolygonIndices: {value: {0: 0}, size: 1},
-    positions: {value: {}, size: null},
-    globalFeatureIds: {value: {}, size: 1},
-    featureIds: {value: {}, size: 1},
+    polygonIndices: {value: new Uint16Array(1), size: 1},
+    primitivePolygonIndices: {value: new Uint16Array(1), size: 1},
+    positions: {value: new Float32Array(), size: -Infinity},
+    globalFeatureIds: {value: new Uint16Array(), size: 1},
+    featureIds: {value: new Uint16Array(), size: 1},
     numericProps: {},
     properties: []
   }

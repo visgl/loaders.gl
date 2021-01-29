@@ -427,9 +427,9 @@ test('gis#geojson-to-binary with empty properties', async t => {
   const {features} = await response.json();
   const {points, lines, polygons} = geojsonToBinary(features);
 
-  t.equal(points.properties[0].toString(), '[object Object]');
-  t.equal(lines.properties[0].toString(), '[object Object]');
-  t.equal(polygons.properties[0].toString(), '[object Object]');
+  t.ok(points.properties[0] instanceof Object && points.properties[0].length === undefined);
+  t.ok(lines.properties[0] instanceof Object && lines.properties[0].length === undefined);
+  t.ok(polygons.properties[0] instanceof Object && polygons.properties[0].length === undefined);
 
   t.end();
 });
