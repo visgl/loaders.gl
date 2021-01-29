@@ -1,5 +1,7 @@
 import test from 'tape-promise/tape';
+import {getSupportedGPUTextureFormats} from '@loaders.gl/textures';
 import I3SNodePagesTiles from '../../src/helpers/i3s-nodepages-tiles';
+import {isBrowser} from '@loaders.gl/core';
 
 const TILESET_STUB = {
   fetchOptions: {},
@@ -92,5 +94,60 @@ test('I3SNodePagesTiles#Tile should have mbs converted from obb', async t => {
     189.47502169783516,
     3243.264050599379
   ]);
+  t.end();
+});
+
+test('I3SNodePagesTiles#Select "dds" texture if it is supported', async t => {
+  const i3SNodePagesTiles = new I3SNodePagesTiles(
+    {
+      ...TILESET_STUB,
+      textureSetDefinitions: [
+        {
+          formats: [
+            {
+              name: '0',
+              format: 'jpg'
+            },
+            {
+              name: '0_0_1',
+              format: 'dds'
+            }
+          ]
+        }
+      ]
+    },
+    {}
+  );
+  const node = await i3SNodePagesTiles.formTileFromNodePages(2);
+  t.ok(node);
+
+  if (isBrowser) {
+    const supportedFormats = getSupportedGPUTextureFormats();
+
+    if (supportedFormats.has('dxt')) {
+      t.equal(
+        node.textureUrl,
+        '@loaders.gl/i3s/test/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/2/textures/0_0_1'
+      );
+      t.deepEqual(i3SNodePagesTiles.textureDefinitionsSelectedFormats, [
+        {name: '0_0_1', format: 'dds'}
+      ]);
+    } else {
+      t.equal(
+        node.textureUrl,
+        '@loaders.gl/i3s/test/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/2/textures/0'
+      );
+      t.deepEqual(i3SNodePagesTiles.textureDefinitionsSelectedFormats, [
+        {name: '0', format: 'jpg'}
+      ]);
+    }
+  } else {
+    t.equal(
+      node.textureUrl,
+      '@loaders.gl/i3s/test/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/2/textures/0'
+    );
+    t.deepEqual(i3SNodePagesTiles.textureDefinitionsSelectedFormats, [{name: '0', format: 'jpg'}]);
+  }
+
   t.end();
 });

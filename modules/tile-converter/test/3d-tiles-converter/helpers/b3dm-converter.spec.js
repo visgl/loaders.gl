@@ -1,6 +1,6 @@
 import test from 'tape-promise/tape';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
-import {loadI3STile} from '@loaders.gl/i3s/test/lib/utils/load-utils';
+import {loadI3STile} from '@loaders.gl/i3s/test/test-utils/load-utils';
 import B3dmConverter from '../../../src/3d-tiles-converter/helpers/b3dm-converter';
 import {isBrowser} from '@loaders.gl/core';
 import {load} from '@loaders.gl/core';

@@ -1,12 +1,12 @@
 import {I3SLoader} from '@loaders.gl/i3s';
 import {Tileset3D, Tile3D} from '@loaders.gl/tiles';
-import I3SNodePagesTiles from '../../../src/helpers/i3s-nodepages-tiles';
+import I3SNodePagesTiles from '../../src/helpers/i3s-nodepages-tiles';
 
 /**
  * The data stub of "tileset header" which I3SLoader returns after loading
  * "/SceneServer/layers/0" json
  */
-const TILESET_STUB = {
+export const TILESET_STUB = () => ({
   fetchOptions: {},
   nodePages: {
     nodesPerPage: 64,
@@ -22,7 +22,7 @@ const TILESET_STUB = {
       }
     }
   ],
-  textureSetDefinitions: [{formats: [{name: '0', format: 'jpg'}]}],
+  textureSetDefinitions: [{formats: [{name: '0', format: 'jpg'}, {name: '0_0_1', format: 'dds'}]}],
   store: {
     defaultGeometrySchema: {
       geometryType: 'triangles',
@@ -88,14 +88,15 @@ const TILESET_STUB = {
   ],
   type: 'I3S',
   loader: I3SLoader
-};
+});
 
 export async function loadI3STile() {
-  const i3SNodePagesTiles = new I3SNodePagesTiles(TILESET_STUB, {});
+  const i3sTilesetData = TILESET_STUB();
+  const i3SNodePagesTiles = new I3SNodePagesTiles(i3sTilesetData, {});
   const nodeRoot = await i3SNodePagesTiles.formTileFromNodePages(0);
   const node1 = await i3SNodePagesTiles.formTileFromNodePages(1);
-  TILESET_STUB.root = nodeRoot;
-  const tileset = new Tileset3D(TILESET_STUB);
+  i3sTilesetData.root = nodeRoot;
+  const tileset = new Tileset3D(i3sTilesetData);
   const tile = new Tile3D(tileset, node1);
   await tileset._loadTile(tile);
   return tile;

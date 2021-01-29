@@ -2,7 +2,7 @@
 
 import test from 'tape-promise/tape';
 import {isBrowser} from '@loaders.gl/core';
-import {loadI3STileContent} from './lib/utils/load-utils';
+import {loadI3STileContent} from './test-utils/load-utils';
 
 test('I3SLoader#Load tile content', async t => {
   const content = await loadI3STileContent();
