@@ -73,7 +73,6 @@ function parseFeatureCollection(dataArray) {
     // Need to deduce start, end indices of each feature
     for (let i = 0; i < data.featureIds.value.length; i++) {
       const currValue = data.featureIds.value[i];
-      // eslint-disable-next-line max-depth
       if (currValue === lastValue) {
         // eslint-disable-next-line no-continue
         continue;
