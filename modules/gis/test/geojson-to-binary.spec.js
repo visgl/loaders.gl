@@ -434,16 +434,6 @@ test('gis#geojson-to-binary with empty properties', async t => {
   t.end();
 });
 
-test("gis#geojson-to-binary doesn't mutate properties from input object", async t => {
-  const response = await fetchFile(FEATURE_COLLECTION);
-  const json = await response.json();
-  geojsonToBinary(json.point.geoJSON.features);
-
-  t.equal(json.point.geoJSON.features[0].properties.numeric1, 1);
-  t.equal(json.point.geoJSON.features[0].properties.string1, 'a');
-  t.end();
-});
-
 function flatten(arr) {
   return arr.reduce(function(flat, toFlatten) {
     return flat.concat(Array.isArray(toFlatten) ? flatten(toFlatten) : toFlatten);

@@ -392,10 +392,10 @@ function fillNumericProperties(object, properties, index, length) {
 
 // Keep string properties in object
 function keepStringProperties(properties, numericKeys) {
-  const props = {...properties};
-  for (const key in props) {
-    if (numericKeys.includes(key)) {
-      delete props[key];
+  const props = {};
+  for (const key in properties) {
+    if (!numericKeys.includes(key)) {
+      props[key] = properties[key];
     }
   }
   return props;
