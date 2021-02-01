@@ -7,8 +7,7 @@ export default class LZ4DeflateTransform implements IncrementalTransform {
   /**
    * Atomic deflate
    */
-  static deflate(input: ArrayBuffer, options?: object): Promise<ArrayBuffer>;
-  static deflateSync(input: ArrayBuffer, options?: object): ArrayBuffer;
+  static run(input: ArrayBuffer, options?: object): Promise<ArrayBuffer>;
 
   /**
    * Alternate interface for chunking & without exceptions

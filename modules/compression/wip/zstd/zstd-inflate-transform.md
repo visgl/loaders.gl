@@ -6,8 +6,6 @@
 
 ## Static Methods
 
-#### `ZstdInflateTransform.inflate(data: ArrayBuffer, options?: object): Promise<ArrayBuffer>`
-
-#### `ZstdInflateTransform.inflateSync(data: ArrayBuffer, options?: object): ArrayBuffer`
+#### `ZstdInflateTransform.run(data: ArrayBuffer, options?: object): Promise<ArrayBuffer>`
 
 Decompresses (inflates) Zstandard encoded data.

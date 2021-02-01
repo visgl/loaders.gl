@@ -6,8 +6,6 @@
 
 ## Static Methods
 
-#### `LZ4InflateTransform.inflate(data: ArrayBuffer, options?: object): Promise<ArrayBuffer>`
-
-#### `LZ4InflateTransform.inflateSync(data: ArrayBuffer, options?: object): ArrayBuffer`
+#### `LZ4InflateTransform.run(data: ArrayBuffer, options?: object): Promise<ArrayBuffer>`
 
 Decompresses (inflates) LZ4 encoded data.
