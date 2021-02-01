@@ -17,6 +17,9 @@ const FEATURES_3D = '@loaders.gl/gis/test/data/3d_features.json';
 // All features have 3D coordinates
 const FEATURES_MIXED = '@loaders.gl/gis/test/data/mixed_features.json';
 
+// Example GeoJSON with no properties
+const GEOJSON_NO_PROPERTIES = '@loaders.gl/gis/test/data/geojson_no_properties.json';
+
 test('gis#geojson-to-binary firstPass 2D features, no properties', async t => {
   const response = await fetchFile(FEATURES_2D);
   const {features} = await response.json();
@@ -416,6 +419,18 @@ test('gis#geojson-to-binary position, featureId data types', async t => {
   t.ok(polygons && polygons.featureIds.value instanceof Uint16Array);
   t.ok(polygons && polygons.polygonIndices.value instanceof Uint32Array);
   t.ok(polygons && polygons.primitivePolygonIndices.value instanceof Uint32Array);
+  t.end();
+});
+
+test('gis#geojson-to-binary with empty properties', async t => {
+  const response = await fetchFile(GEOJSON_NO_PROPERTIES);
+  const {features} = await response.json();
+  const {points, lines, polygons} = geojsonToBinary(features);
+
+  t.ok(points.properties[0] instanceof Object && points.properties[0].length === undefined);
+  t.ok(lines.properties[0] instanceof Object && lines.properties[0].length === undefined);
+  t.ok(polygons.properties[0] instanceof Object && polygons.properties[0].length === undefined);
+
   t.end();
 });
 

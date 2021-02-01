@@ -5,6 +5,7 @@ import {fetchFile} from '@loaders.gl/core';
 import {binaryToGeoJson} from '@loaders.gl/gis';
 
 import GEOMETRY_TEST_CASES from '@loaders.gl/gis/test/data/geometry';
+import EMPTY_BINARY_DATA from '@loaders.gl/gis/test/data/empty_binary';
 
 const FEATURE_COLLECTION_TEST_CASES = '@loaders.gl/gis/test/data/featurecollection.json';
 
@@ -29,6 +30,14 @@ test('binary-to-geojson geometries', t => {
     const binaryData = testCase.binary;
     t.deepEqual(binaryToGeoJson(binaryData, binaryData.type, 'geometry'), testCase.geoJSON);
   }
+
+  t.end();
+});
+
+test('binary-to-geojson from empty binary object returns empty features array', t => {
+  const geojson = binaryToGeoJson(EMPTY_BINARY_DATA);
+  t.ok(Array.isArray(geojson));
+  t.equal(geojson.length, 0);
 
   t.end();
 });

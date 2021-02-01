@@ -200,3 +200,13 @@ test('Polygon MVT to local coordinates binary', async t => {
 
   t.end();
 });
+
+test('Empty MVT must return empty binary format', async t => {
+  const emptyMVTArrayBuffer = new Uint8Array();
+  const geometryBinary = await parse(emptyMVTArrayBuffer, MVTLoader, {gis: {format: 'binary'}});
+  t.ok(geometryBinary.points);
+  t.ok(geometryBinary.lines);
+  t.ok(geometryBinary.polygons);
+
+  t.end();
+});

@@ -216,7 +216,7 @@ function secondPass(features, firstPassData = {}, options = {}) {
 
   for (const feature of features) {
     const geometry = feature.geometry;
-    const properties = feature.properties;
+    const properties = feature.properties || {};
 
     switch (geometry.type) {
       case 'Point':

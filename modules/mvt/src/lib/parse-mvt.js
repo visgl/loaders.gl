@@ -13,33 +13,32 @@ import Protobuf from 'pbf';
 export default function parseMVT(arrayBuffer, options) {
   options = normalizeOptions(options);
 
-  if (arrayBuffer.byteLength === 0) {
-    return [];
-  }
-
-  const tile = new VectorTile(new Protobuf(arrayBuffer));
-  const loaderOptions = options.mvt;
   const features = [];
 
-  const selectedLayers = Array.isArray(loaderOptions.layers)
-    ? loaderOptions.layers
-    : Object.keys(tile.layers);
+  if (arrayBuffer.byteLength > 0) {
+    const tile = new VectorTile(new Protobuf(arrayBuffer));
+    const loaderOptions = options.mvt;
 
-  selectedLayers.forEach(layerName => {
-    const vectorTileLayer = tile.layers[layerName];
-    const featureOptions = {...loaderOptions, layerName};
+    const selectedLayers = Array.isArray(loaderOptions.layers)
+      ? loaderOptions.layers
+      : Object.keys(tile.layers);
 
-    if (!vectorTileLayer) {
-      return;
-    }
+    selectedLayers.forEach(layerName => {
+      const vectorTileLayer = tile.layers[layerName];
+      const featureOptions = {...loaderOptions, layerName};
 
-    for (let i = 0; i < vectorTileLayer.length; i++) {
-      const vectorTileFeature = vectorTileLayer.feature(i);
+      if (!vectorTileLayer) {
+        return;
+      }
 
-      const decodedFeature = getDecodedFeature(vectorTileFeature, featureOptions);
-      features.push(decodedFeature);
-    }
-  });
+      for (let i = 0; i < vectorTileLayer.length; i++) {
+        const vectorTileFeature = vectorTileLayer.feature(i);
+
+        const decodedFeature = getDecodedFeature(vectorTileFeature, featureOptions);
+        features.push(decodedFeature);
+      }
+    });
+  }
 
   if (options.gis.format === 'binary') {
     const data = geojsonToBinary(features);
@@ -49,6 +48,7 @@ export default function parseMVT(arrayBuffer, options) {
     data.byteLength = arrayBuffer.byteLength;
     return data;
   }
+
   return features;
 }
 
