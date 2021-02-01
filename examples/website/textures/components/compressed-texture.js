@@ -5,7 +5,8 @@ import {
   BasisLoader,
   CompressedTextureLoader,
   CrunchLoader,
-  GL_CONSTANTS
+  GL_CONSTANTS,
+  getSupportedGPUTextureFormats
 } from '@loaders.gl/textures';
 import {ImageLoader} from '@loaders.gl/images';
 import {load, registerLoaders, selectLoader, fetchFile} from '@loaders.gl/core';
@@ -135,9 +136,8 @@ export default class CompressedTexture extends PureComponent {
     super(props);
 
     this.state = {
-      supportedFormats: this.getSupportedFormats(props.gl),
-      // Temporary decision to disable worker untill texture module will be published to npm
-      loadOptions: {basis: {}, worker: false},
+      supportedFormats: getSupportedGPUTextureFormats(props.gl),
+      loadOptions: {basis: {}},
       textureError: null,
       showStats: false,
       stats: []
@@ -165,21 +165,8 @@ export default class CompressedTexture extends PureComponent {
     return ext;
   }
 
-  getSupportedFormats() {
-    return {
-      DXT: this.getExtension('WEBGL_compressed_texture_s3tc'),
-      PVRTC: this.getExtension('WEBGL_compressed_texture_pvrtc'),
-      ATC: this.getExtension('WEBGL_compressed_texture_atc'),
-      ETC1: this.getExtension('WEBGL_compressed_texture_etc1'),
-      ASTC: this.getExtension('WEBGL_compressed_texture_astc'),
-      ETC: this.getExtension('WEBGL_compressed_texture_etc'),
-      RGTC: this.getExtension('EXT_texture_compression_rgtc'),
-      SRGB: this.getExtension('WEBGL_compressed_texture_s3tc_srgb')
-    };
-  }
-
   setupBasisLoadOptionsIfNeeded() {
-    if (this.state.supportedFormats.DXT) {
+    if (this.state.supportedFormats.has('dxt')) {
       const loadOptions = {
         ...this.state.loadOptions,
         basis: {
@@ -355,28 +342,28 @@ export default class CompressedTexture extends PureComponent {
     if (typeof format !== 'number') {
       throw new Error('Invalid internal format of compressed texture');
     }
-    const {DXT, PVRTC, ATC, ETC1, ASTC, ETC, RGTC, SRGB} = this.state.supportedFormats;
+    const {supportedFormats} = this.state;
 
     switch (format) {
       case COMPRESSED_RGB_S3TC_DXT1_EXT:
       case COMPRESSED_RGBA_S3TC_DXT3_EXT:
       case COMPRESSED_RGBA_S3TC_DXT5_EXT:
       case COMPRESSED_RGBA_S3TC_DXT1_EXT:
-        return DXT;
+        return supportedFormats.has('dxt');
 
       case COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
       case COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
       case COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
       case COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
-        return PVRTC;
+        return supportedFormats.has('pvrtc');
 
       case COMPRESSED_RGB_ATC_WEBGL:
       case COMPRESSED_RGBA_ATC_EXPLICIT_ALPHA_WEBGL:
       case COMPRESSED_RGBA_ATC_INTERPOLATED_ALPHA_WEBGL:
-        return ATC;
+        return supportedFormats.has('atc');
 
       case COMPRESSED_RGB_ETC1_WEBGL:
-        return ETC1;
+        return supportedFormats.has('etc1');
 
       case COMPRESSED_RGBA_ASTC_4X4_KHR:
       case COMPRESSED_RGBA_ASTC_5X4_KHR:
@@ -406,7 +393,7 @@ export default class CompressedTexture extends PureComponent {
       case COMPRESSED_SRGB8_ALPHA8_ASTC_10X10_KHR:
       case COMPRESSED_SRGB8_ALPHA8_ASTC_12X10_KHR:
       case COMPRESSED_SRGB8_ALPHA8_ASTC_12X12_KHR:
-        return ASTC;
+        return supportedFormats.has('astc');
 
       case COMPRESSED_R11_EAC:
       case COMPRESSED_SIGNED:
@@ -418,19 +405,19 @@ export default class CompressedTexture extends PureComponent {
       case COMPRESSED_SRGB8_ALPHA8_ETC2_EAC:
       case COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2:
       case COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2:
-        return ETC;
+        return supportedFormats.has('etc2');
 
       case COMPRESSED_RED_RGTC1_EXT:
       case COMPRESSED_SIGNED_RED_RGTC1_EXT:
       case COMPRESSED_RED_GREEN_RGTC2_EXT:
       case COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT:
-        return RGTC;
+        return supportedFormats.has('rgtc');
 
       case COMPRESSED_SRGB_S3TC_DXT1_EXT:
       case COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT:
       case COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT:
       case COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT:
-        return SRGB;
+        return supportedFormats.has('dxt-srgb');
       default:
         return false;
     }
