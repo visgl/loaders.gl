@@ -3,6 +3,7 @@ import {normalizeTileNonUrlData} from '../lib/parsers/parse-i3s';
 import {convertI3SObbToMbs} from '../utils/convert-i3s-obb-to-mbs';
 import I3SNodePageLoader from '../i3s-node-page-loader';
 import {generateTilesetAttributeUrls} from '../lib/parsers/url-utils';
+import {getSupportedGPUTextureFormats} from '@loaders.gl/textures';
 
 export default class I3SNodePagesTiles {
   constructor(tileset, options) {
@@ -11,6 +12,9 @@ export default class I3SNodePagesTiles {
     this.lodSelectionMetricType = tileset.nodePages.lodSelectionMetricType;
     this.options = options;
     this.nodePages = [];
+    this.textureDefinitionsSelectedFormats = [];
+
+    this._initSelectedFormatsForTextureDefinitions(tileset);
   }
 
   async getNodeById(id) {
@@ -102,16 +106,46 @@ export default class I3SNodePagesTiles {
         materialDefinition.pbrMetallicRoughness.baseColorTexture &&
         materialDefinition.pbrMetallicRoughness.baseColorTexture.textureSetDefinitionId;
       if (textureSetDefinitionIndex || textureSetDefinitionIndex === 0) {
-        const textureSetDefinition = this.tileset.textureSetDefinitions[textureSetDefinitionIndex];
         const textureData =
-          (textureSetDefinition &&
-            textureSetDefinition.formats &&
-            textureSetDefinition.formats[0]) ||
-          textureDataDefault;
+          this.textureDefinitionsSelectedFormats[textureSetDefinitionIndex] || textureDataDefault;
         return [textureData, materialDefinition];
       }
       return [textureDataDefault, materialDefinition];
     }
     return [textureDataDefault, null];
+  }
+
+  _initSelectedFormatsForTextureDefinitions(tileset) {
+    this.textureDefinitionsSelectedFormats = [];
+    const possibleI3sFormats = this._getSupportedTextureFormats();
+    const textureSetDefinitions = tileset.textureSetDefinitions || [];
+    for (const textureSetDefinition of textureSetDefinitions) {
+      const formats = (textureSetDefinition && textureSetDefinition.formats) || [];
+      let selectedFormat = null;
+      for (const i3sFormat of possibleI3sFormats) {
+        const format = formats.find(value => value.format === i3sFormat);
+        if (format) {
+          selectedFormat = format;
+          break;
+        }
+      }
+      this.textureDefinitionsSelectedFormats.push(selectedFormat);
+    }
+  }
+
+  _getSupportedTextureFormats() {
+    const result = [];
+    const supportedCompressedFormats = getSupportedGPUTextureFormats();
+    // List of possible in i3s formats:
+    // https://github.com/Esri/i3s-spec/blob/master/docs/1.7/textureSetDefinitionFormat.cmn.md
+    if (supportedCompressedFormats.has('etc2')) {
+      result.push('ktx-etc2');
+    }
+    if (supportedCompressedFormats.has('dxt')) {
+      result.push('dds');
+    }
+    result.push('jpg');
+    result.push('png');
+    return result;
   }
 }

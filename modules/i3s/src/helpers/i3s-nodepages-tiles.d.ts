@@ -21,10 +21,4 @@ export default class I3SNodePagesTiles {
    * @param id - id of node through all node pages
    */
   formTileFromNodePages(id: number);
-
-  /**
-   * Get texture name by material.definition from tileset data
-   * @param material - mesh material object (https://github.com/Esri/i3s-spec/blob/master/docs/1.7/meshMaterial.cmn.md)
-   */
-  _getTextureName(material: Object);
 }

@@ -62,7 +62,7 @@ export function parseDDS(data) {
   if (header[DDS_CONSTANTS.HEADER_FLAGS_INDEX] & DDS_CONSTANTS.DDSD_MIPMAPCOUNT) {
     mipMapLevels = Math.max(1, header[DDS_CONSTANTS.MIPMAPCOUNT_INDEX]);
   }
-  const width = header[DDS_CONSTANTS.HEADER_HEIGHT_INDEX];
+  const width = header[DDS_CONSTANTS.HEADER_WIDTH_INDEX];
   const height = header[DDS_CONSTANTS.HEADER_HEIGHT_INDEX];
   const dataOffset = header[DDS_CONSTANTS.HEADER_SIZE_INDEX] + 4;
   const image = new Uint8Array(data, dataOffset);

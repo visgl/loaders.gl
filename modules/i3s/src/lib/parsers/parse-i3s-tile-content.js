@@ -15,8 +15,16 @@ import {
   I3S_NAMED_GEOMETRY_ATTRIBUTES
 } from './constants';
 import {getUrlWithToken} from './url-utils';
+import {CompressedTextureLoader} from '@loaders.gl/textures';
 
 const scratchVector = new Vector3([0, 0, 0]);
+
+const FORMAT_LOADER_MAP = {
+  jpeg: ImageLoader,
+  png: ImageLoader,
+  'ktx-etc2': CompressedTextureLoader,
+  dds: CompressedTextureLoader
+};
 
 export async function parseI3STileContent(arrayBuffer, tile, tileset, options) {
   tile.content = tile.content || {};
@@ -27,7 +35,17 @@ export async function parseI3STileContent(arrayBuffer, tile, tileset, options) {
 
   if (tile.textureUrl) {
     const url = getUrlWithToken(tile.textureUrl, options.token);
-    tile.content.texture = await load(url, ImageLoader);
+    const loader = FORMAT_LOADER_MAP[tile.textureFormat] || ImageLoader;
+    tile.content.texture = await load(url, loader);
+    if (loader === CompressedTextureLoader) {
+      tile.content.texture = {
+        compressed: true,
+        mipmaps: false,
+        width: tile.content.texture[0].width,
+        height: tile.content.texture[0].height,
+        data: tile.content.texture
+      };
+    }
   }
 
   return await parseI3SNodeGeometry(arrayBuffer, tile, options);
