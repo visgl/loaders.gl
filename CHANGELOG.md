@@ -2,6 +2,13 @@
 
 ## v2.3 Release
 
+#### v2.3.10
+
+- Fix dracoOptions on 2.3-release (#1126)
+- Fix for Pre-built bundles broken in 2.3.9 (#1134)
+- Change babel config to fix es5 modules transpilation (#1144)
+- Remove parseSync option from draco loader documentation (#1146)
+
 #### v2.3.9
 
 - Add MVT MIME type (#1108)
