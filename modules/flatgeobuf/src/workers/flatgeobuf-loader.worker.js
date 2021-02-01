@@ -1,4 +1,4 @@
 import {FlatGeobufLoader} from '../flatgeobuf-loader';
-import {createWorker} from '@loaders.gl/loader-utils';
+import {createLoaderWorker} from '@loaders.gl/loader-utils';
 
-createWorker(FlatGeobufLoader);
+createLoaderWorker(FlatGeobufLoader);

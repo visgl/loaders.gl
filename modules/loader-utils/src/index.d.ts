@@ -1,4 +1,4 @@
-// LOADERS.GL-SPECIFIC TYPES
+// TYPES
 export {
   WorkerLoaderObject,
   LoaderObject,
@@ -12,11 +12,6 @@ export {
 } from './types';
 export {IncrementalTransform} from './lib/iterator-utils/incremental-transform';
 
-// LOADERS.GL-SPECIFIC WORKER UTILS
-export {default as createWorker} from './lib/worker-loader-utils/create-worker';
-export {validateLoaderVersion} from './lib/worker-loader-utils/validate-loader-version';
-export {makeTransformIterator} from './lib/iterator-utils/make-transform-iterator';
-
 // GENERAL UTILS
 export {default as assert} from './lib/env-utils/assert';
 export {
@@ -29,11 +24,16 @@ export {
   document
 } from './lib/env-utils/globals';
 
+// LOADERS.GL-SPECIFIC WORKER UTILS
+export {createLoaderWorker} from './lib/worker-loader-utils/create-loader-worker';
+export {validateLoaderVersion} from './lib/worker-loader-utils/validate-loader-version';
+export {makeTransformIterator} from './lib/iterator-utils/make-transform-iterator';
+
 // WORKER UTILS
+export {getTransferList} from './lib/worker-utils/get-transfer-list';
 export {default as _WorkerFarm} from './lib/worker-utils/worker-farm';
 export {default as _WorkerPool} from './lib/worker-utils/worker-pool';
 export {default as _WorkerThread} from './lib/worker-utils/worker-thread';
-export {getTransferList} from './lib/worker-utils/get-transfer-list';
 
 // LIBRARY UTILS
 export {getLibraryUrl, loadLibrary} from './lib/library-utils/library-utils';

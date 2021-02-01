@@ -1,4 +1,4 @@
 import {MVTLoader} from '../mvt-loader';
-import {createWorker} from '@loaders.gl/loader-utils';
+import {createLoaderWorker} from '@loaders.gl/loader-utils';
 
-createWorker(MVTLoader);
+createLoaderWorker(MVTLoader);

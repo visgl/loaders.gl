@@ -1,4 +1,4 @@
 import {OBJLoader} from './obj-loader';
-import {createWorker} from '@loaders.gl/loader-utils';
+import {createLoaderWorker} from '@loaders.gl/loader-utils';
 
-createWorker(OBJLoader);
+createLoaderWorker(OBJLoader);

@@ -1,4 +1,4 @@
-import {createWorker} from '@loaders.gl/loader-utils';
+import {createLoaderWorker} from '@loaders.gl/loader-utils';
 import {CompressedTextureLoader} from '../compressed-texture-loader';
 
-createWorker(CompressedTextureLoader);
+createLoaderWorker(CompressedTextureLoader);

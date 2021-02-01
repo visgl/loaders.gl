@@ -11,10 +11,9 @@ export default class WorkerFarm {
   readonly onDebug: () => void;
 
   /**
-   * @param processor {function | string} - worker function
    * @param maxConcurrency {number} - max count of workers
    */
-  constructor(options: {
+  constructor(props: {
     maxConcurrency?: number,
     onMessage?: onMessageFunc,
     onDebug?: () => void

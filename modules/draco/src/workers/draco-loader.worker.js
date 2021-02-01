@@ -1,4 +1,4 @@
-import {createWorker} from '@loaders.gl/loader-utils';
+import {createLoaderWorker} from '@loaders.gl/loader-utils';
 
 import {DracoLoader} from '../draco-loader';
 
@@ -8,4 +8,4 @@ const BundledDracoLoader = {
   ...DracoLoader
 };
 
-createWorker(BundledDracoLoader);
+createLoaderWorker(BundledDracoLoader);
