@@ -16,6 +16,8 @@ export {validateLoaderVersion} from './lib/worker-loader-utils/validate-loader-v
 export {makeTransformIterator} from './lib/iterator-utils/make-transform-iterator';
 
 // WORKER UTILS
+export {processOnWorker} from './lib/worker-utils/process-on-worker';
+export {createWorker} from './lib/worker-utils/create-worker';
 export {getTransferList} from './lib/worker-utils/get-transfer-list';
 export {default as _WorkerFarm} from './lib/worker-utils/worker-farm';
 export {default as _WorkerPool} from './lib/worker-utils/worker-pool';

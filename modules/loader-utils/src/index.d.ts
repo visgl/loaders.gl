@@ -1,5 +1,6 @@
 // TYPES
 export {
+  WorkerObject,
   WorkerLoaderObject,
   LoaderObject,
   WriterObject,
@@ -31,6 +32,8 @@ export {makeTransformIterator} from './lib/iterator-utils/make-transform-iterato
 
 // WORKER UTILS
 export {getTransferList} from './lib/worker-utils/get-transfer-list';
+export {processOnWorker} from './lib/worker-utils/process-on-worker';
+export {createWorker} from './lib/worker-utils/create-worker';
 export {default as _WorkerFarm} from './lib/worker-utils/worker-farm';
 export {default as _WorkerPool} from './lib/worker-utils/worker-pool';
 export {default as _WorkerThread} from './lib/worker-utils/worker-thread';

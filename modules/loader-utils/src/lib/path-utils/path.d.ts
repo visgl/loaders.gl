@@ -6,6 +6,6 @@ export function dirname(url: string): string;
 
 /**
  * Replacement for Node.js path.join
- * @param parts 
+ * @param parts
  */
 export function join(...parts: string[]): string

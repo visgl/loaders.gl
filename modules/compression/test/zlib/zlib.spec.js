@@ -1,6 +1,7 @@
 import test from 'tape-promise/tape';
-import {ZlibDeflateTransform, ZlibInflateTransform} from '@loaders.gl/compression';
-import {makeTransformIterator, concatenateArrayBuffers} from '@loaders.gl/loader-utils';
+import {ZlibDeflateTransform, ZlibInflateTransform, ZlibWorker} from '@loaders.gl/compression';
+import {makeTransformIterator, concatenateArrayBuffers, isBrowser} from '@loaders.gl/loader-utils';
+import {processOnWorker} from '@loaders.gl/loader-utils';
 import {generateRandomArrayBuffer, compareArrayBuffers} from '../utils/test-utils';
 
 const SIZE = 100 * 1000;
@@ -88,5 +89,35 @@ test('zlib#6', async t => {
   const deflatedData = await ZlibDeflateTransform.run(binaryData, {level: 6});
   const inflatedData = await ZlibInflateTransform.run(deflatedData);
   t.ok(compareArrayBuffers(binaryData, inflatedData), 'deflate/inflate level 6');
+  t.end();
+});
+
+test('zlib#worker', async t => {
+  if (!isBrowser) {
+    t.end();
+    return;
+  }
+
+  const {binaryData} = getData();
+
+  t.equal(binaryData.byteLength, 100000, 'Length correct');
+
+  const deflatedData = await processOnWorker(ZlibWorker, binaryData.slice(), {
+    transform: 'deflate',
+    worker: 'local',
+    zlib: {level: 6}
+  });
+
+  t.equal(deflatedData.byteLength, 12813, 'Length correct');
+
+  const inflatedData = await processOnWorker(ZlibWorker, deflatedData, {
+    transform: 'inflate',
+    worker: 'local',
+    zlib: {level: 6}
+  });
+
+  t.equal(inflatedData.byteLength, 100000, 'Length correct');
+
+  t.ok(compareArrayBuffers(inflatedData, binaryData), 'deflate/inflate level 6');
   t.end();
 });

@@ -25,7 +25,7 @@ const BABEL_CONFIG = {
     ['@babel/preset-env', {modules: false}]
   ],
   plugins: [
-    ['@babel/plugin-transform-runtime', {useESModules: false}], 
+    ['@babel/plugin-transform-runtime', {useESModules: false}],
     'version-inline'
   ]
 };

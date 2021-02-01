@@ -33,6 +33,9 @@ export {NullLoader} from './null-loader';
 export {setPathPrefix, getPathPrefix, resolvePath} from '@loaders.gl/loader-utils';
 export {RequestScheduler} from '@loaders.gl/loader-utils';
 
+// WORKERS
+export {processOnWorker} from '@loaders.gl/loader-utils';
+
 // EXPERIMENTAL
 export {default as _fetchProgress} from './lib/progress/fetch-progress';
 export {default as _BrowserFileSystem} from './lib/filesystems/browser-filesystem';

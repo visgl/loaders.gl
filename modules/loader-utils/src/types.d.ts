@@ -1,7 +1,19 @@
 /**
+ * A worker description
+ */
+export type WorkerObject = {
+  id: string,
+  name: string,
+  version: string,
+  options: object;
+  deprecatedOptions?: object;
+};
+
+/**
  * A worker loader defintion that can be used with `@loaders.gl/core` functions
  */
 export type WorkerLoaderObject = {
+  // WorkerObject
   id: string,
   name: string,
   version: string,
