@@ -23,7 +23,7 @@
  */
 
 // laz-perf.js
-export default function getModule() {
+module.exports = function getModule() {
   var Module = typeof Module !== "undefined" ? Module : {};
   var moduleOverrides = {};
   var key;
