@@ -14,7 +14,6 @@ export default class WorkerThread {
     const url = getWorkerURL(source, name);
     this.worker = new Worker(url, {name});
     this.name = name;
-    this.url = url;
     this.onMessage = onMessage || defaultOnMessage;
   }
 
@@ -33,8 +32,6 @@ export default class WorkerThread {
         let message = `${this.name}: WorkerThread.process() failed`;
         if (error.message) {
           message += ` ${error.message} ${error.filename}:${error.lineno}:${error.colno}`;
-        } else {
-          message += ` ${this.url.slice(0, 100)}`;
         }
         const betterError = new Error(message);
         console.error(error); // eslint-disable-line

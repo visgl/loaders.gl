@@ -45,6 +45,5 @@ try {
   importScripts('${workerUrl}');
 } catch (error) {
   console.error(error);
-  throw error;
 }`;
 }

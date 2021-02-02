@@ -1,18 +1,18 @@
-/* eslint-disable */ // TODO
-// import transform from 'json-map-transform';
+import {join} from 'path';
+import process from 'process';
+import transform from 'json-map-transform';
 import {load} from '@loaders.gl/core';
 import {I3SLoader, I3SAttributeLoader} from '@loaders.gl/i3s';
 import {Tileset3D, Tile3D} from '@loaders.gl/tiles';
-import {path} from '@loaders.gl/loader-utils';
 
 import {default as PGMLoader} from '../pgm-loader';
 import {i3sObbTo3dTilesObb} from './helpers/i3s-obb-to-3d-tiles-obb';
 import {convertScreenThresholdToGeometricError} from '../lib/utils/lod-conversion-utils';
+import {writeFile, removeDir} from '../lib/utils/file-utils';
 import {calculateFilesSize, timeConverter} from '../lib/utils/statistic-utills';
 import {TILESET as tilesetTemplate} from './json-templates/tileset';
 import B3dmConverter from './helpers/b3dm-converter';
 import {createObbFromMbs} from '../i3s-converter/helpers/coordinate-converter';
-// import {writeFile, removeDir} from '../lib/utils/file-utils';
 
 const I3S = 'I3S';
 
@@ -23,7 +23,7 @@ export default class Tiles3DConverter {
     this.vertexCounter = 0;
   }
   async convert({inputUrl, outputPath, tilesetName, maxDepth, egmFilePath}) {
-    this.conversionStartTime = [0, 0]; // Use probe.gl process.hrtime();
+    this.conversionStartTime = process.hrtime();
     this.options = {maxDepth};
 
     console.log('Loading egm file...'); // eslint-disable-line
@@ -37,7 +37,7 @@ export default class Tiles3DConverter {
       this.sourceTileset.root.header.obb = createObbFromMbs(this.sourceTileset.root.header.mbs);
     }
 
-    this.tilesetPath = path.join(outputPath, tilesetName);
+    this.tilesetPath = join(`${outputPath}`, `${tilesetName}`);
     this.attributeStorageInfo = sourceTilesetJson.attributeStorageInfo;
     // Removing the tilesetPath needed to exclude erroneous files after conversion
     try {
@@ -146,7 +146,7 @@ export default class Tiles3DConverter {
           resultArray.push(folder);
       }
     }
-    return resultArray.path.join('/');
+    return resultArray.join('/');
   }
 
   /**
@@ -207,7 +207,7 @@ export default class Tiles3DConverter {
 
   async _finishConversion(params) {
     const filesSize = await calculateFilesSize(params);
-    const diff = [0, 0]; // Use probe.gl to avoid process. process.hrtime(this.conversionStartTime);
+    const diff = process.hrtime(this.conversionStartTime);
     const conversionTime = timeConverter(diff);
 
     console.log(`------------------------------------------------`); // eslint-disable-line

@@ -1,4 +1,3 @@
-/* eslint-disable */
 import {load} from '@loaders.gl/core';
 import {Tileset3D} from '@loaders.gl/tiles';
 import {CesiumIonLoader} from '@loaders.gl/3d-tiles';
@@ -8,9 +7,8 @@ import process from 'process';
 import transform from 'json-map-transform';
 import md5 from 'md5';
 
-// import {writeFile, removeDir, writeFileForSlpk} from '../lib/utils/file-utils';
-
 import NodePages from './helpers/node-pages';
+import {writeFile, removeDir, writeFileForSlpk} from '../lib/utils/file-utils';
 import {
   compressWithChildProcess,
   generateHash128FromZip,
