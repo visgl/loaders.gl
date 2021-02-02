@@ -248,6 +248,7 @@ export default class CompressedTexture extends PureComponent {
     const texture = new Texture2D(gl, {
       data: images,
       compressed: true,
+      mipmaps: false,
       parameters: {
         [gl.TEXTURE_MAG_FILTER]: gl.LINEAR,
         [gl.TEXTURE_MIN_FILTER]: images.length > 1 ? gl.LINEAR_MIPMAP_NEAREST : gl.LINEAR,
