@@ -108,3 +108,7 @@ corresponds to 3D coordinates, where each vertex is defined by three numbers.
 | PositionDataType | `class`  | `Float32Array`    | Data type used for positions arrays.                                                                                                                    |
 | numericPropKeys  | `Array`  | Derived from data | Names of feature properties that should be converted to numeric `TypedArray`s. Passing `[]` will force all properties to be returned as normal objects. |
 | coordLength      | `number` | Derived from data | Number of dimensions per coordinate.                                                                                                                    |
+
+## Notes
+
+In the case of the source geoJson features having an object as a property, it would not be deep cloned, so it would be linked from the output object (be careful on further mutations).

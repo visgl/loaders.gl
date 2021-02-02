@@ -391,14 +391,14 @@ function fillNumericProperties(object, properties, index, length) {
 }
 
 // Keep string properties in object
-// Note: this mutates the properties object
 function keepStringProperties(properties, numericKeys) {
+  const props = {};
   for (const key in properties) {
-    if (numericKeys.includes(key)) {
-      delete properties[key];
+    if (!numericKeys.includes(key)) {
+      props[key] = properties[key];
     }
   }
-  return properties;
+  return props;
 }
 
 // coords is expected to be a list of arrays, each with length 2-3
