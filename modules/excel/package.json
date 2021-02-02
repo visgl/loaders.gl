@@ -36,8 +36,8 @@
     "build-worker": "webpack --entry ./src/workers/excel-loader.worker.js --output ./dist/excel-loader.worker.js --config ../../scripts/worker-webpack-config.js"
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "3.0.0-alpha.1",
-    "@loaders.gl/tables": "3.0.0-alpha.1",
+    "@loaders.gl/loader-utils": "3.0.0-alpha.4",
+    "@loaders.gl/tables": "3.0.0-alpha.4",
     "xlsx": "^0.16.9"
   }
 }
