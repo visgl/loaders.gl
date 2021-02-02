@@ -16,7 +16,6 @@ const FEATURES_2D = '@loaders.gl/gis/test/data/2d_features.json';
 const FEATURES_3D = '@loaders.gl/gis/test/data/3d_features.json';
 // All features have 3D coordinates
 const FEATURES_MIXED = '@loaders.gl/gis/test/data/mixed_features.json';
-const FEATURE_COLLECTION = '@loaders.gl/gis/test/data/featurecollection.json';
 
 // Example GeoJSON with no properties
 const GEOJSON_NO_PROPERTIES = '@loaders.gl/gis/test/data/geojson_no_properties.json';
