@@ -1,4 +1,4 @@
 import {PLYLoader} from './ply-loader';
-import {createWorker} from '@loaders.gl/loader-utils';
+import {createLoaderWorker} from '@loaders.gl/loader-utils';
 
-createWorker(PLYLoader);
+createLoaderWorker(PLYLoader);

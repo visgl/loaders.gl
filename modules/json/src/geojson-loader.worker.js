@@ -1,4 +1,4 @@
 import {GeoJSONLoader} from './geojson-loader';
-import {createWorker} from '@loaders.gl/loader-utils';
+import {createLoaderWorker} from '@loaders.gl/loader-utils';
 
-createWorker(GeoJSONLoader);
+createLoaderWorker(GeoJSONLoader);

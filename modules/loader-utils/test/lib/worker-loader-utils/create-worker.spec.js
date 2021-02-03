@@ -20,7 +20,7 @@ const JSONWorkerLoader = {
   }
 };
 
-test.skip('createWorker', async t => {
+test.skip('createLoaderWorker', async t => {
   if (!hasWorker) {
     t.comment('Worker test is browser only');
     t.end();
@@ -61,7 +61,7 @@ test.skip('createWorker', async t => {
   t.end();
 });
 
-test.skip('createWorker#nested', async t => {
+test.skip('createLoaderWorker#nested', async t => {
   if (!hasWorker) {
     t.comment('Worker test is browser only');
     t.end();

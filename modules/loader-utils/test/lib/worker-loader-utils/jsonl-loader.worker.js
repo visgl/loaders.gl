@@ -1,6 +1,6 @@
-import {createWorker} from '@loaders.gl/loader-utils';
+import {createLoaderWorker} from '@loaders.gl/loader-utils';
 
-createWorker({
+createLoaderWorker({
   name: 'TEST-JSONL_LOADER',
   extensions: ['jsonl'],
   parse: async (arrayBuffer, options, context) => {

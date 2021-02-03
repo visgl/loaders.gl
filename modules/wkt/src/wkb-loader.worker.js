@@ -1,4 +1,4 @@
 import {WKBLoader} from './wkb-loader';
-import {createWorker} from '@loaders.gl/loader-utils';
+import {createLoaderWorker} from '@loaders.gl/loader-utils';
 
-createWorker(WKBLoader);
+createLoaderWorker(WKBLoader);

@@ -1,15 +1,16 @@
 /**
- * A loader defintion that can be used with `@loaders.gl/core` functions
+ * A worker loader defintion that can be used with `@loaders.gl/core` functions
  */
 export type WorkerLoaderObject = {
   id: string,
   name: string,
-  category?: string;
   version: string,
-  extensions: string[],
-  mimeTypes: string[],
   options: object;
   deprecatedOptions?: object;
+
+  category?: string;
+  extensions: string[],
+  mimeTypes: string[],
 
   binary?: boolean;
   text?: boolean;
@@ -21,20 +22,29 @@ export type WorkerLoaderObject = {
   testText?: (string) => boolean;
 };
 
+/**
+ * A "bundled" loader defintion that can be used with `@loaders.gl/core` functions
+ * If a worker loader is supported it will also be supported.
+ */
 export type LoaderObject = {
   id: string,
   name: string,
-  category?: string;
   version: string,
-  extensions: string[],
-  mimeTypes: string[],
   options: object;
   deprecatedOptions?: object;
+
+  category?: string;
+  extensions: string[],
+  mimeTypes: string[],
 
   binary?: boolean;
   text?: boolean;
 
   tests?: (((ArrayBuffer) => boolean) | ArrayBuffer | string)[];
+
+  // TODO - deprecated
+  supported?: boolean;
+  testText?: (string) => boolean;
 
   parse: (arrayBuffer, options, context?) => Promise<any>;
   parseSync?: (arrayBuffer, options, context?) => any;
@@ -45,10 +55,6 @@ export type LoaderObject = {
     options: object, 
     context?: object
   ) => Promise<AsyncIterator<any>> | AsyncIterator<any>;
-
-  // TODO - deprecated
-  supported?: boolean;
-  testText?: (string) => boolean;
 };
 
 /**
