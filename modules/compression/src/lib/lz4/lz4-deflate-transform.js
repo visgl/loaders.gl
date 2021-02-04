@@ -19,6 +19,6 @@ export default class LZ4DeflateTransform {
 
   async end() {
     const arrayBuffer = concatenateArrayBuffers(...this._chunks);
-    return LZ4DeflateTransform.deflateSync(arrayBuffer);
+    return await LZ4DeflateTransform.run(arrayBuffer);
   }
 }
