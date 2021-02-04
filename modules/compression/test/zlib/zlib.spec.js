@@ -1,6 +1,6 @@
 import test from 'tape-promise/tape';
 import {ZlibDeflateTransform, ZlibInflateTransform} from '@loaders.gl/compression';
-import {makeTransformIterator, concatenateArrayBuffers, isBrowser} from '@loaders.gl/loader-utils';
+import {makeTransformIterator, concatenateArrayBuffers} from '@loaders.gl/loader-utils';
 import {generateRandomArrayBuffer, compareArrayBuffers} from '../utils/test-utils';
 
 const SIZE = 100 * 1000;
