@@ -1,4 +1,4 @@
-import {createWorker} from '@loaders.gl/loader-utils';
+import {createWorker} from '@loaders.gl/worker-utils';
 import ZlibDeflateTransform from '../lib/zlib/zlib-deflate-transform';
 import ZlibInflateTransform from '../lib/zlib/zlib-inflate-transform';
 

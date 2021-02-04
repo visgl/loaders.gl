@@ -1,4 +1,5 @@
-import {_WorkerFarm as WorkerFarm, toArrayBuffer, getTransferList} from '@loaders.gl/loader-utils';
+import {WorkerFarm, getTransferList} from '@loaders.gl/worker-utils';
+import {toArrayBuffer} from '@loaders.gl/loader-utils';
 import {parse} from '../api/parse';
 
 // __VERSION__ is injected by babel-plugin-version-inline

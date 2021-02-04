@@ -1,5 +1,5 @@
 import test from 'tape-promise/tape';
-// import {loadLibrary, getLibraryUrl} from '@loaders.gl/loader-utils';
+// import {loadLibrary, getLibraryUrl} from '@loaders.gl/worker-utils';
 
 test('getLibraryUrl', t => {
   // getLibraryUrl({});

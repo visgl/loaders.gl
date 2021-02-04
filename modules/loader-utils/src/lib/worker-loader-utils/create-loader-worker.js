@@ -1,7 +1,7 @@
 /* eslint-disable no-restricted-globals */
 /* global TextDecoder, self */
 
-import {getTransferList} from '../worker-utils/get-transfer-list';
+import {getTransferList} from '@loaders.gl/worker-utils';
 import {validateLoaderVersion} from './validate-loader-version';
 
 // TODO - rewrite, rebase on create-generic-worker

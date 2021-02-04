@@ -1,6 +1,7 @@
 /* global Worker, location */
 import test from 'tape-catch';
-import {_WorkerPool, toArrayBuffer} from '@loaders.gl/loader-utils';
+import {WorkerPool} from '@loaders.gl/worker-utils';
+import {toArrayBuffer} from '@loaders.gl/loader-utils';
 import parseWithWorker from '@loaders.gl/core/lib/loader-utils/parse-with-worker';
 import {registerLoaders, _unregisterLoaders} from '@loaders.gl/core/lib/api/register-loaders';
 
@@ -30,7 +31,7 @@ test.skip('createLoaderWorker', async t => {
   const callback = message =>
     t.comment(`Processing with worker ${message.worker}, backlog ${message.backlog}`);
 
-  const workerPool = new _WorkerPool({
+  const workerPool = new WorkerPool({
     source: `url(./json-loader.worker.js)`,
     name: 'test-json-loader',
     maxConcurrency: MAX_CONCURRENCY,

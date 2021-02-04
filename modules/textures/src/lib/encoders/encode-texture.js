@@ -1,4 +1,4 @@
-import {ChildProcessProxy} from '@loaders.gl/loader-utils';
+import {ChildProcessProxy} from '@loaders.gl/worker-utils';
 
 const MODULE_ROOT = `${__dirname}/../../..`;
 

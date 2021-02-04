@@ -17,17 +17,6 @@ export {createLoaderWorker} from './lib/worker-loader-utils/create-loader-worker
 export {validateLoaderVersion} from './lib/worker-loader-utils/validate-loader-version';
 export {makeTransformIterator} from './lib/iterator-utils/make-transform-iterator';
 
-// WORKER UTILS
-export {processOnWorker} from './lib/worker-utils/process-on-worker';
-export {createWorker} from './lib/worker-utils/create-worker';
-export {getTransferList} from './lib/worker-utils/get-transfer-list';
-export {default as _WorkerFarm} from './lib/worker-utils/worker-farm';
-export {default as _WorkerPool} from './lib/worker-utils/worker-pool';
-export {default as _WorkerThread} from './lib/worker-utils/worker-thread';
-
-// LIBRARY UTILS
-export {getLibraryUrl, loadLibrary} from './lib/library-utils/library-utils';
-
 // PARSER UTILS
 export {parseJSON} from './lib/parser-utils/parse-json';
 
@@ -72,26 +61,9 @@ export {forEach, concatenateChunksAsync} from './lib/iterator-utils/async-iterat
 // REQUEST UTILS
 export {default as RequestScheduler} from './lib/request-utils/request-scheduler';
 
-// PROCESS UTILS
-export {default as ChildProcessProxy} from './lib/process-utils/child-process-proxy';
-
 // MESH CATEGORY UTILS
 // Note: Should move to category specific module if code size increases
 export {getMeshSize as _getMeshSize, getMeshBoundingBox} from './categories/mesh/mesh-utils';
-
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
-
-export const NullWorker = {
-  id: 'null',
-  name: 'null',
-  module: 'loader-utils',
-  version: VERSION,
-  options: {
-    null: {}
-  }
-};
 
 // DEPRECATED IN 2.3
 export {getZeroOffsetArrayBuffer} from './lib/binary-utils/memory-copy-utils';

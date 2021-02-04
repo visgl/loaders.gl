@@ -3,7 +3,7 @@ import {join} from 'path';
 import {promises as fs, createReadStream, createWriteStream} from 'fs';
 import archiver from 'archiver';
 import {removeFile} from './file-utils';
-import {ChildProcessProxy} from '@loaders.gl/loader-utils';
+import {ChildProcessProxy} from '@loaders.gl/worker-utils';
 import JSZip from 'jszip';
 import {MD5HashTransform} from '@loaders.gl/crypto';
 import crypt from 'crypt';

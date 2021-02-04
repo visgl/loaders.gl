@@ -11,11 +11,9 @@
     "url": "https://github.com/visgl/loaders.gl"
   },
   "keywords": [
-    "webgl",
-    "loader",
-    "3d",
-    "mesh",
-    "point cloud"
+    "worker",
+    "process",
+    "thread"
   ],
   "types": "src/index.d.ts",
   "main": "dist/es5/index.js",
@@ -28,10 +26,6 @@
     "README.md"
   ],
   "browser": {
-    "./src/lib/node/buffer-utils.node.js": false,
-    "./dist/es5/lib/node/buffer-utils.node.js": false,
-    "./dist/esm/lib/node/buffer-utils.node.js": false,
-    "./dist/es6/lib/node/buffer-utils.node.js": false,
     "./src/lib/node/require-utils.node.js": false,
     "./dist/es5/lib/node/require-utils.node.js": false,
     "./dist/esm/lib/node/require-utils.node.js": false,
