@@ -4,11 +4,7 @@ export default class ZlibInflateTransform {
   /**
    * Inflate (simple wrapper can throw exception on broken stream)
    */
-  static async inflate(input, options) {
-    return ZlibInflateTransform.inflateSync(input, options);
-  }
-
-  static inflateSync(input, options) {
+  static async run(input, options) {
     const compressed = new Uint8Array(input);
     const output = pako.inflate(compressed, options);
     // @ts-ignore @types/pako say strings are always returned

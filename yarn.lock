@@ -1884,14 +1884,6 @@
     "@babel/runtime" "^7.3.1"
     "@loaders.gl/loader-utils" "^2.1.3"
 
-"@loaders.gl/core@3.0.0-alpha.1":
-  version "3.0.0-alpha.1"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/core/-/core-3.0.0-alpha.1.tgz#a643a050966e49bc9fe0a488bf213fcf3878dcfa"
-  integrity sha512-SPTbdYf3SSX/AgyvC/IngjwIZyMLKbkmwtwcKn9Gugx7Hl/zgKD/AwpaIQgbDigwTr93nB+gmzb4hE/VTtKnPQ==
-  dependencies:
-    "@babel/runtime" "^7.3.1"
-    "@loaders.gl/loader-utils" "3.0.0-alpha.1"
-
 "@loaders.gl/core@^2.2.3":
   version "2.3.6"
   resolved "https://registry.yarnpkg.com/@loaders.gl/core/-/core-2.3.6.tgz#dbed0cc6ef5995301446f9dcf2afda28d60e411c"
@@ -1929,22 +1921,6 @@
   dependencies:
     "@babel/runtime" "^7.3.1"
     "@probe.gl/stats" "^3.3.0"
-
-"@loaders.gl/loader-utils@3.0.0-alpha.1":
-  version "3.0.0-alpha.1"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/loader-utils/-/loader-utils-3.0.0-alpha.1.tgz#bddb9d4591a1250e41862c2668c2070c5da4d833"
-  integrity sha512-4slAbW95YtnP76A8cNP+wwjP63z0Mcro97qXMecbgW1PKkiuEfp5aUQPWYq4W/aOVb6Kxeg2CBNmoMpxJs3bGQ==
-  dependencies:
-    "@babel/runtime" "^7.3.1"
-    "@probe.gl/stats" "^3.3.0"
-
-"@loaders.gl/tables@3.0.0-alpha.1":
-  version "3.0.0-alpha.1"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/tables/-/tables-3.0.0-alpha.1.tgz#4520211b6056a189ded094dd1387870b5597d5d3"
-  integrity sha512-HNUg1mycHPLnS6bRD2Bnx3UQDFf/MrMRl3TCWCjtyfBgTCNtzmGLfCj9he2GNksaH9XA+WQbN72syz4W1Wqv/g==
-  dependencies:
-    "@loaders.gl/core" "3.0.0-alpha.1"
-    d3-dsv "^1.2.0"
 
 "@luma.gl/constants@8.2.0":
   version "8.2.0"

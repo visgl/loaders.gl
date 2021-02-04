@@ -7,8 +7,7 @@ export default class ZlibDeflateTransform implements IncrementalTransform {
   /**
    * Deflate
    */
-  static deflate(input: ArrayBuffer, options?: object): Promise<ArrayBuffer>;
-  static deflateSync(input: ArrayBuffer, options?: object): ArrayBuffer;
+  static run(input: ArrayBuffer, options?: object): Promise<ArrayBuffer>;
 
   /**
    * Alternate interface for chunking & without exceptions

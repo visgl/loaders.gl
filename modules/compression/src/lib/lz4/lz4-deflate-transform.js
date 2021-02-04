@@ -2,11 +2,7 @@ import lz4 from 'lz4js';
 import {concatenateArrayBuffers} from '@loaders.gl/loader-utils';
 
 export default class LZ4DeflateTransform {
-  static async deflate(input, options) {
-    return LZ4DeflateTransform.deflateSync(input, options);
-  }
-
-  static deflateSync(input, options) {
+  static async run(input, options) {
     const inputArray = new Uint8Array(input);
     const output = lz4.compress(inputArray);
     return output.buffer;
@@ -23,6 +19,6 @@ export default class LZ4DeflateTransform {
 
   async end() {
     const arrayBuffer = concatenateArrayBuffers(...this._chunks);
-    return LZ4DeflateTransform.deflateSync(arrayBuffer);
+    return await LZ4DeflateTransform.run(arrayBuffer);
   }
 }

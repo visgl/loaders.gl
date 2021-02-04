@@ -32,9 +32,9 @@
   ],
   "scripts": {
     "pre-build": "npm run build-bin && npm run build-bundle && npm run build-bundle -- --env.dev",
-    "build-bundle": "webpack --display=minimal --config ../../scripts/bundle.config.js",
+    "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js",
     "build-bin": "BABEL_ENV=es5 babel scripts --config-file ../../babel.config.js --out-dir dist/scripts",
-    "build-converter-bundle": "webpack --config ./converter-bundle.config.js"
+    "build-converter-bundle": "webpack --config ./converter-webpack/bundle.js"
   },
   "dependencies": {
     "@loaders.gl/3d-tiles": "3.0.0-alpha.4",
