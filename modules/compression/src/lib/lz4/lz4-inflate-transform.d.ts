@@ -8,7 +8,7 @@ export default class LZ4InflateTransform implements IncrementalTransform {
    * Atomic inflate
    */
   static run(input: ArrayBuffer, options?: object): Promise<ArrayBuffer>;
-  
+
   /**
    * Alternate interface for chunking & without exceptions
    * @param options

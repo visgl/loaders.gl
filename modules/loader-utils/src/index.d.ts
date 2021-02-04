@@ -1,5 +1,6 @@
 // TYPES
 export {
+  WorkerObject,
   WorkerLoaderObject,
   LoaderObject,
   WriterObject,
@@ -31,6 +32,8 @@ export {makeTransformIterator} from './lib/iterator-utils/make-transform-iterato
 
 // WORKER UTILS
 export {getTransferList} from './lib/worker-utils/get-transfer-list';
+export {processOnWorker} from './lib/worker-utils/process-on-worker';
+export {createWorker} from './lib/worker-utils/create-worker';
 export {default as _WorkerFarm} from './lib/worker-utils/worker-farm';
 export {default as _WorkerPool} from './lib/worker-utils/worker-pool';
 export {default as _WorkerThread} from './lib/worker-utils/worker-thread';
@@ -86,6 +89,11 @@ export {default as ChildProcessProxy} from './lib/process-utils/child-process-pr
 // MESH CATEGORY UTILS
 // Note: Should move to category specific module if code size increases
 export {getMeshSize as _getMeshSize, getMeshBoundingBox} from './categories/mesh/mesh-utils';
+
+import {WorkerObject} from './types';
+
+/** A null worker to test that worker processing is functional */
+export const NullWorker: WorkerObject;
 
 // DEPRECATED IN 2.3
 export {getZeroOffsetArrayBuffer} from './lib/binary-utils/memory-copy-utils';

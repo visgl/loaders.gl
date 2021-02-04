@@ -15,6 +15,7 @@ import './lib/request-utils/request-scheduler.spec';
 
 import './lib/worker-utils/get-transfer-list.spec';
 import './lib/worker-utils/worker-farm.spec';
+import './lib/worker-utils/process-on-worker.spec';
 
 import './lib/worker-loader-utils/validate-loader-version.spec';
 import './lib/worker-loader-utils/create-worker.spec';

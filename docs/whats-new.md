@@ -23,6 +23,14 @@
 
 Target Release Date: Q1 2021. (Alpha releases are available).
 
+**@loaders.gl/core**
+
+- New `processOnWorker()` function allows applications to run certain non-loader tasks (such as compression and decompression) on workers.
+
+**@loaders.gl/compression**
+
+- The new `ZlibWorker` and `LZ4Worker` objects enable compression and decompression of data to be done on worker threads using the new `processOnWorker()` function.
+
 **@loaders.gl/tile-converter** (NEW)
 
 - A major new module contributed by ESRI, that implements conversion between the OGC 3D tiles and the OGC I3S tileset formats. A `tile-converter` CLI tool is avaible for automated batch conversion of multi-terabyte tilesets. A converter class API is also available for programmatic use.
