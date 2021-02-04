@@ -1,4 +1,4 @@
-import assert from '../env-utils/assert';
+/** @typedef {import('../../types').WorkerObject} WorkerObject */
 import WorkerFarm from './worker-farm';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -10,10 +10,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
  * this can be automated if the worker is wrapper by a call to createLoaderWorker in @loaders.gl/loader-utils.
  */
 export function processOnWorker(worker, data, options = {}) {
-  const workerOptions = {...worker.options[worker.id], ...options[worker.id]};
-  const workerUrl =
-    options.worker === 'local' ? workerOptions.localWorkerUrl : workerOptions.workerUrl;
-  assert(workerUrl, 'processOnWorker: Empty worker URL');
+  const workerUrl = buildWorkerURL(worker, options);
 
   // Mark as URL
   const workerSource = `url(${workerUrl})`;
@@ -57,4 +54,32 @@ export function getWorkerFarm(options = {}) {
   _workerFarm.setProps(props);
 
   return _workerFarm;
+}
+
+/**
+ * Generate a worker URL:
+ * - a published worker on unpkg CDN
+ * - a local test worker
+ * - overridden by user
+ * @param {WorkerObject} worker
+ * @param {object} options
+ */
+function buildWorkerURL(worker, options) {
+  const workerOptions = (options && options[worker.id]) || {};
+
+  const workerFile = `${worker.id}-worker.js`;
+
+  // If url not provided, load from CDN
+  if (!workerOptions.workerUrl) {
+    // GENERATE
+    return `https://unpkg.com/@loaders.gl/${worker.module}@${worker.version}/dist/${workerFile}`;
+  }
+
+  // If URL is test, generate local loaders.gl url
+  if (workerOptions.workerUrl === 'test') {
+    return `modules/${worker.module}/dist/${workerFile}`;
+  }
+
+  // Allow user to override location
+  return workerOptions.workerUrl;
 }

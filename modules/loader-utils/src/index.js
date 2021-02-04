@@ -1,3 +1,5 @@
+/** @typedef {import('@loaders.gl/loader-utils').WorkerObject} WorkerObject */
+
 // GENERAL UTILS
 export {default as assert} from './lib/env-utils/assert';
 export {
@@ -76,6 +78,20 @@ export {default as ChildProcessProxy} from './lib/process-utils/child-process-pr
 // MESH CATEGORY UTILS
 // Note: Should move to category specific module if code size increases
 export {getMeshSize as _getMeshSize, getMeshBoundingBox} from './categories/mesh/mesh-utils';
+
+// __VERSION__ is injected by babel-plugin-version-inline
+// @ts-ignore TS2304: Cannot find name '__VERSION__'.
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+
+export const NullWorker = {
+  id: 'null',
+  name: 'null',
+  module: 'loader-utils',
+  version: VERSION,
+  options: {
+    null: {}
+  }
+};
 
 // DEPRECATED IN 2.3
 export {getZeroOffsetArrayBuffer} from './lib/binary-utils/memory-copy-utils';

@@ -6,7 +6,7 @@ export {LZ4DeflateTransform, LZ4InflateTransform};
 
 createWorker(async ({data, options = {}}) => {
   // @ts-ignore
-  switch (options.transform) {
+  switch (options.operation) {
     case 'deflate':
       return await LZ4DeflateTransform.run(data);
     case 'inflate':

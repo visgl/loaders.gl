@@ -6,7 +6,7 @@ export {ZlibDeflateTransform, ZlibInflateTransform};
 
 createWorker(async ({data, options = {}}) => {
   // @ts-ignore
-  switch (options.transform) {
+  switch (options.operation) {
     case 'deflate':
       return await ZlibDeflateTransform.run(data);
     case 'inflate':

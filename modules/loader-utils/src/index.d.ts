@@ -90,5 +90,10 @@ export {default as ChildProcessProxy} from './lib/process-utils/child-process-pr
 // Note: Should move to category specific module if code size increases
 export {getMeshSize as _getMeshSize, getMeshBoundingBox} from './categories/mesh/mesh-utils';
 
+import {WorkerObject} from '@loaders.gl/loader-utils';
+
+/** A null worker to test that worker processing is functional */
+export const NullWorker: WorkerObject;
+
 // DEPRECATED IN 2.3
 export {getZeroOffsetArrayBuffer} from './lib/binary-utils/memory-copy-utils';
