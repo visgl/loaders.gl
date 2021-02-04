@@ -2,7 +2,7 @@
 /** @typedef {import('@loaders.gl/loader-utils').WorkerLoaderObject} WorkerLoaderObject */
 
 // eslint-disable-next-line import/no-unresolved
-import {parseCompressedTexture} from '@loaders.gl/textures/lib/parsers/parse-compressed-texture';
+import {parseCompressedTexture} from './lib/parsers/parse-compressed-texture';
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
