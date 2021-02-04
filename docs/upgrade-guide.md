@@ -2,22 +2,32 @@
 
 ## Upgrading to v3.0
 
-`@loaders.gl/gltf`:
+**@loaders.gl/gltf**
 
 GLTFScenegraph is updated to provide modifying capabilities. Signatures of some methods have been changed to use named parameters (rather than positional parameters).
 
-`@loaders.gl/basis`:
+**@loaders.gl/basis**
 
 - Module has been moved to `@loaders.gl/textures`.
 
-`@loaders.gl/images`:
+**@loaders.gl/images**
 
 The texture API `loadImage`, `loadImageArray`, `loadImageCube` has been moved to the new `@loaders.gl/textures` module, and have been renamed to `loadImageTexture*`.
 
-`@loaders.gl/kml`:
+**@loaders.gl/kml**
 
 - The `KMLLoader`, `GPXLoader`, and `TCXLoader` now require a value for `options.gis.format`. Previously, the lack of a value would return data in "raw" format, i.e. not normalized to GeoJSON. To return GeoJSON-formatted data, use `options.gis.format: 'geojson'`. Other options are `binary` and `raw`.
 - The `kml.normalize` option has been deprecated. When `options.gis.format` is `geojson`, coordinates will always be in longitude-latitude ordering.
+
+**@loaders.gl/compression**
+
+- Sync transforms no longer supported (enables dynamic library loading).
+- Transform static members now named `run()` instead of `inflate()` and `deflate()`.
+- Zstandard transforms removed due to excessive bundle size impact.
+
+**@loaders.gl/loader-utils**
+
+- `createWorker()` now creates a generic worker. For loader workers use the new `createLoaderWorker()` function.
 
 ## Upgrading to v2.3
 

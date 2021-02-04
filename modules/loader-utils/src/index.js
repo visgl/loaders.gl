@@ -11,7 +11,7 @@ export {
 } from './lib/env-utils/globals';
 
 // WORKER LOADER UTILS
-export {default as createWorker} from './lib/worker-loader-utils/create-worker';
+export {createLoaderWorker} from './lib/worker-loader-utils/create-loader-worker';
 export {validateLoaderVersion} from './lib/worker-loader-utils/validate-loader-version';
 export {makeTransformIterator} from './lib/iterator-utils/make-transform-iterator';
 

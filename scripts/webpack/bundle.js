@@ -3,7 +3,7 @@ const webpack = require('webpack');
 
 const ALIASES = require('ocular-dev-tools/config/ocular.config')({
   aliasMode: 'src',
-  root: resolve(__dirname, '..')
+  root: resolve(__dirname, '../..')
 }).aliases;
 
 const PACKAGE_ROOT = resolve('.');

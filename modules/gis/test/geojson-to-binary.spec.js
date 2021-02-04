@@ -430,7 +430,6 @@ test('gis#geojson-to-binary with empty properties', async t => {
   t.ok(points.properties[0] instanceof Object && points.properties[0].length === undefined);
   t.ok(lines.properties[0] instanceof Object && lines.properties[0].length === undefined);
   t.ok(polygons.properties[0] instanceof Object && polygons.properties[0].length === undefined);
-
   t.end();
 });
 

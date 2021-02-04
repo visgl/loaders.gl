@@ -8,7 +8,7 @@ The `DracoWriter` encodes a mesh or point cloud using [Draco](https://google.git
 | File Type      | Binary                                       |
 | File Format    | [Draco](https://google.github.io/draco/)     |
 | Data Format    | [Mesh](docs/specifications/category-mesh.md) |
-| Support API    | `encode`, `encodeSync`                       |
+| Support API    | `encode`                                     |
 
 ## Usage
 

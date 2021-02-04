@@ -152,9 +152,7 @@
             {"entry": "modules/compression/docs/api-reference/zlib-deflate-transform"},
             {"entry": "modules/compression/docs/api-reference/zlib-inflate-transform"},
             {"entry": "modules/compression/docs/api-reference/lz4-deflate-transform"},
-            {"entry": "modules/compression/docs/api-reference/lz4-inflate-transform"},
-            {"entry": "modules/compression/docs/api-reference/zstd-deflate-transform"},
-            {"entry": "modules/compression/docs/api-reference/zstd-inflate-transform"}
+            {"entry": "modules/compression/docs/api-reference/lz4-inflate-transform"}
           ]
         },
         {

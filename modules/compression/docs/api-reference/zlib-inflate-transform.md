@@ -6,9 +6,7 @@
 
 ## Static Methods
 
-### `ZlibInflateTransform.inflate(data: ArrayBuffer, options?: object): Promise<ArrayBuffer>`
-
-### `ZlibInflateTransform.inflateSync(data: ArrayBuffer, options?: object): ArrayBuffer`
+### `ZlibInflateTransform.run(data: ArrayBuffer, options?: object): Promise<ArrayBuffer>`
 
 Decompresses (inflates) Zlib encoded data.
 

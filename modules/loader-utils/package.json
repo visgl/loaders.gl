@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/loader-utils",
-  "version": "3.0.0-alpha.3",
+  "version": "3.0.0-alpha.4",
   "description": "Framework-independent loaders for 3D graphics formats",
   "license": "MIT",
   "publishConfig": {
@@ -40,7 +40,7 @@
   },
   "scripts": {
     "pre-build-disabled": "npm run build-bundle && npm run build-bundle -- --env.dev",
-    "build-bundle": "webpack --display=minimal --config ../../scripts/bundle.config.js"
+    "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js"
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",

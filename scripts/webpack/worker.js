@@ -16,7 +16,7 @@
 const {resolve} = require('path');
 const ALIASES = require('ocular-dev-tools/config/ocular.config')({
   aliasMode: 'src',
-  root: resolve(__dirname, '..')
+  root: resolve(__dirname, '../..')
 }).aliases;
 
 const BABEL_CONFIG = {
@@ -102,7 +102,7 @@ function addESNextSettings(config) {
         return [
           '@babel/preset-env',
           {
-            targets: {chrome: 74},
+            targets: {chrome: 80},
             exclude: [/transform-async-to-generator/, /transform-regenerator/]
           }
         ];
