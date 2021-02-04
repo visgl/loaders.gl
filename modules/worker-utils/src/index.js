@@ -34,7 +34,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 export const NullWorker = {
   id: 'null',
   name: 'null',
-  module: 'loader-utils',
+  module: 'worker-utils',
   version: VERSION,
   options: {
     null: {}

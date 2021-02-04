@@ -1,6 +1,6 @@
 /* global Worker */
 import test from 'tape-catch';
-import {_WorkerThread, _WorkerPool} from '@loaders.gl/loader-utils';
+import {WorkerThread, WorkerPool} from '@loaders.gl/worker-utils';
 
 const CHUNKS_TOTAL = 6;
 const MAX_CONCURRENCY = 3;
@@ -20,7 +20,7 @@ test('WorkerThread', async t => {
   }
   const testBuffer = new Float32Array(100).buffer;
 
-  const workerThread = new _WorkerThread({source: testWorkerSource});
+  const workerThread = new WorkerThread({source: testWorkerSource});
 
   const result = await workerThread.process(testBuffer);
 
@@ -44,7 +44,7 @@ test('WorkerPool', async t => {
   const callback = message =>
     t.comment(`Processing with worker ${message.worker}, backlog ${message.backlog}`);
 
-  const workerPool = new _WorkerPool({
+  const workerPool = new WorkerPool({
     source: testWorkerSource,
     name: 'test-worker',
     maxConcurrency: MAX_CONCURRENCY,
@@ -72,7 +72,7 @@ test('WorkerPool with reuseWorkers === false param', async t => {
 
   let workerPool = null;
 
-  workerPool = new _WorkerPool({
+  workerPool = new WorkerPool({
     source: testWorkerSource,
     name: 'test-worker',
     maxConcurrency: MAX_CONCURRENCY,
@@ -98,7 +98,7 @@ test('WorkerPool with reuseWorkers === true param', async t => {
 
   let workerPool = null;
 
-  workerPool = new _WorkerPool({
+  workerPool = new WorkerPool({
     source: testWorkerSource,
     name: 'test-worker',
     maxConcurrency: MAX_CONCURRENCY,
