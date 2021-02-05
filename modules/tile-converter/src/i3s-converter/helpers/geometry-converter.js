@@ -40,6 +40,7 @@ export default async function convertB3dmToI3sGeometry(
   }
 
   const result = [];
+  let nodesCounter = nodeId;
   for (let i = 0; i < (tileContent.gltf.materials.length || 1); i++) {
     const sourceMaterial = tileContent.gltf.materials[i] || {id: 'default'};
     if (!convertedAttributesMap.has(sourceMaterial.id)) {
@@ -47,73 +48,97 @@ export default async function convertB3dmToI3sGeometry(
     }
     const convertedAttributes = convertedAttributesMap.get(sourceMaterial.id);
     const {material, texture} = materialAndTextureList[i];
-
-    const vertexCount = convertedAttributes.positions.length / VALUES_PER_VERTEX;
-    const triangleCount = vertexCount / 3;
-    const {
-      faceRange,
-      featureIds,
-      positions,
-      normals,
-      colors,
-      texCoords,
-      featureCount
-    } = generateAttributes({triangleCount, ...convertedAttributes});
-
-    if (tileContent.batchTableJson) {
-      makeFeatureIdsUnique(
-        featureIds,
-        convertedAttributes.featureIndices,
+    result.push(
+      await _makeNodeResources({
+        convertedAttributes,
+        material,
+        texture,
+        tileContent,
+        nodeId: nodesCounter,
         featuresHashArray,
-        tileContent.batchTableJson
-      );
-    }
-
-    const header = new Uint32Array(2);
-    const typedFeatureIds = generateBigUint64Array(featureIds);
-
-    header.set([vertexCount, featureCount], 0);
-    const fileBuffer = new Uint8Array(
-      concatenateArrayBuffers(
-        header.buffer,
-        positions.buffer,
-        normals.buffer,
-        texCoords.buffer,
-        colors.buffer,
-        typedFeatureIds.buffer,
-        faceRange.buffer
-      )
+        attributeStorageInfo,
+        draco
+      })
     );
-    const compressedGeometry = draco
-      ? await generateCompressedGeometry(vertexCount, convertedAttributes, {
-          positions,
-          normals,
-          texCoords,
-          colors,
-          featureIds,
-          faceRange
-        })
-      : null;
-
-    const attributes = convertBatchTableToAttributeBuffers(
-      tileContent.batchTableJson,
-      featureIds,
-      attributeStorageInfo
-    );
-
-    result.push({
-      geometry: fileBuffer,
-      compressedGeometry,
-      texture,
-      sharedResources: getSharedResources(tileContent, nodeId + i),
-      meshMaterial: material,
-      vertexCount,
-      attributes,
-      featureCount
-    });
+    nodesCounter++;
   }
 
   return result;
+}
+
+async function _makeNodeResources({
+  convertedAttributes,
+  material,
+  texture,
+  tileContent,
+  nodeId,
+  featuresHashArray,
+  attributeStorageInfo,
+  draco
+}) {
+  const vertexCount = convertedAttributes.positions.length / VALUES_PER_VERTEX;
+  const triangleCount = vertexCount / 3;
+  const {
+    faceRange,
+    featureIds,
+    positions,
+    normals,
+    colors,
+    texCoords,
+    featureCount
+  } = generateAttributes({triangleCount, ...convertedAttributes});
+
+  if (tileContent.batchTableJson) {
+    makeFeatureIdsUnique(
+      featureIds,
+      convertedAttributes.featureIndices,
+      featuresHashArray,
+      tileContent.batchTableJson
+    );
+  }
+
+  const header = new Uint32Array(2);
+  const typedFeatureIds = generateBigUint64Array(featureIds);
+
+  header.set([vertexCount, featureCount], 0);
+  const fileBuffer = new Uint8Array(
+    concatenateArrayBuffers(
+      header.buffer,
+      positions.buffer,
+      normals.buffer,
+      texCoords.buffer,
+      colors.buffer,
+      typedFeatureIds.buffer,
+      faceRange.buffer
+    )
+  );
+  const compressedGeometry = draco
+    ? await generateCompressedGeometry(vertexCount, convertedAttributes, {
+        positions,
+        normals,
+        texCoords,
+        colors,
+        featureIds,
+        faceRange
+      })
+    : null;
+
+  const attributes = convertBatchTableToAttributeBuffers(
+    tileContent.batchTableJson,
+    featureIds,
+    attributeStorageInfo
+  );
+
+  return {
+    geometry: fileBuffer,
+    compressedGeometry,
+    texture,
+    sharedResources: getSharedResources(tileContent, nodeId),
+    meshMaterial: material,
+    vertexCount,
+    attributes,
+    featureCount
+  };
 }
 
 /**

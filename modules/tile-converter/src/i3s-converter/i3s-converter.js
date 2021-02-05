@@ -10,9 +10,9 @@ import md5 from 'md5';
 import NodePages from './helpers/node-pages';
 import {writeFile, removeDir, writeFileForSlpk} from '../lib/utils/file-utils';
 import {
-  compressWithChildProcess,
-  generateHash128FromZip,
-  addFileToZip
+  compressWithChildProcess
+  // generateHash128FromZip,
+  // addFileToZip
 } from '../lib/utils/compress-util';
 import {calculateFilesSize, timeConverter} from '../lib/utils/statistic-utills';
 import convertB3dmToI3sGeometry from './helpers/geometry-converter';
@@ -39,7 +39,7 @@ const SHORT_INT_TYPE = 'Int32';
 const DOUBLE_TYPE = 'double';
 const OBJECT_ID_TYPE = 'OBJECTID';
 const REFRESH_TOKEN_TIMEOUT = 1800; // 30 minutes in seconds
-const FS_FILE_TOO_LARGE = 'ERR_FS_FILE_TOO_LARGE';
+// const FS_FILE_TOO_LARGE = 'ERR_FS_FILE_TOO_LARGE';
 
 export default class I3SConverter {
   constructor() {
@@ -218,22 +218,24 @@ export default class I3SConverter {
         '.',
         this.options.sevenZipExe
       );
-      const fileHash128Path = `${tilesetPath}/@specialIndexFileHASH128@`;
-      try {
-        await generateHash128FromZip(slpkFileName, fileHash128Path);
-        await addFileToZip(
-          tilesetPath,
-          '@specialIndexFileHASH128@',
-          slpkFileName,
-          this.options.sevenZipExe
-        );
-      } catch (error) {
-        if (error.code === FS_FILE_TOO_LARGE) {
-          console.warn(`${slpkFileName} file is too big to generate a hash`); // eslint-disable-line
-        } else {
-          console.error(error); // eslint-disable-line
-        }
-      }
+
+      // TODO: `addFileToZip` corrupts archive so it can't be validated with windows i3s_converter.exe
+      // const fileHash128Path = `${tilesetPath}/@specialIndexFileHASH128@`;
+      // try {
+      //   await generateHash128FromZip(slpkFileName, fileHash128Path);
+      //   await addFileToZip(
+      //     tilesetPath,
+      //     '@specialIndexFileHASH128@',
+      //     slpkFileName,
+      //     this.options.sevenZipExe
+      //   );
+      // } catch (error) {
+      //   if (error.code === FS_FILE_TOO_LARGE) {
+      //     console.warn(`${slpkFileName} file is too big to generate a hash`); // eslint-disable-line
+      //   } else {
+      //     console.error(error); // eslint-disable-line
+      //   }
+      // }
       // All converted files are contained in slpk now they can be deleted
       try {
         await removeDir(tilesetPath);
@@ -388,7 +390,7 @@ export default class I3SConverter {
     }
     const resourcesData = await convertB3dmToI3sGeometry(
       sourceTile.content,
-      Number(this.nodePages.nodesCounter + 1),
+      Number(this.nodePages.nodesCounter),
       this.featuresHashArray,
       this.layers0.attributeStorageInfo,
       this.options.draco
