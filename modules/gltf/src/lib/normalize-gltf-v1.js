@@ -145,6 +145,8 @@ class GLTFV1Normalizer {
     this._convertObjectIdsToArrayIndices(json);
 
     this._updateObjects(json);
+
+    this._updateMaterial(json);
   }
 
   // asset is now required, #642 https://github.com/KhronosGroup/glTF/issues/639
@@ -278,6 +280,26 @@ class GLTFV1Normalizer {
     for (const buffer of this.json.buffers) {
       // - [x] Removed buffer.type, #786, #629
       delete buffer.type;
+    }
+  }
+
+  /**
+   * Update material (set pbrMetallicRoughness)
+   * @param {*} json
+   */
+  _updateMaterial(json) {
+    for (const material of json.materials) {
+      material.pbrMetallicRoughness = {
+        baseColorFactor: [1, 1, 1, 1],
+        metallicFactor: 1,
+        roughnessFactor: 1
+      };
+
+      const textureId = material.values && material.values.tex;
+      const textureIndex = json.textures.findIndex(texture => texture.id === textureId);
+      if (textureIndex !== -1) {
+        material.pbrMetallicRoughness.baseColorTexture = {index: textureIndex};
+      }
     }
   }
 }

@@ -1,4 +1,4 @@
-import {Vector3, Matrix4} from '@math.gl/core';
+import { Vector3, Matrix4 } from '@math.gl/core';
 /**
  * Convert binary data from b3dm file to i3s resources
  *
@@ -26,7 +26,7 @@ export default function convertB3dmToI3sGeometry(
   featuresHashArray: any,
   attributeStorageInfo: any,
   draco: boolean
-): Promise<{
+): Promise<Array<{
   geometry: ArrayBuffer;
   compressedGeometry: ArrayBuffer;
   texture: any;
@@ -35,4 +35,4 @@ export default function convertB3dmToI3sGeometry(
   vertexCount: number;
   attributes: any;
   featureCount: number
-}>;
+}>>;

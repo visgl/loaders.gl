@@ -278,12 +278,6 @@ class GLTFPostProcessor {
         mr.metallicRoughnessTexture = {...mr.metallicRoughnessTexture};
         mr.metallicRoughnessTexture.texture = this.getTexture(mr.metallicRoughnessTexture.index);
       }
-    } else {
-      material.pbrMetallicRoughness = {
-        baseColorFactor: [1, 1, 1, 1],
-        metallicFactor: 1,
-        roughnessFactor: 1
-      };
     }
     return material;
   }

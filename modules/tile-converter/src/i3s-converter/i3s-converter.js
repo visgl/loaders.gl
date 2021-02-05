@@ -10,9 +10,9 @@ import md5 from 'md5';
 import NodePages from './helpers/node-pages';
 import {writeFile, removeDir, writeFileForSlpk} from '../lib/utils/file-utils';
 import {
-  compressWithChildProcess,
-  generateHash128FromZip,
-  addFileToZip
+  compressWithChildProcess
+  // generateHash128FromZip,
+  // addFileToZip
 } from '../lib/utils/compress-util';
 import {calculateFilesSize, timeConverter} from '../lib/utils/statistic-utills';
 import convertB3dmToI3sGeometry from './helpers/geometry-converter';
@@ -39,7 +39,7 @@ const SHORT_INT_TYPE = 'Int32';
 const DOUBLE_TYPE = 'double';
 const OBJECT_ID_TYPE = 'OBJECTID';
 const REFRESH_TOKEN_TIMEOUT = 1800; // 30 minutes in seconds
-const FS_FILE_TOO_LARGE = 'ERR_FS_FILE_TOO_LARGE';
+// const FS_FILE_TOO_LARGE = 'ERR_FS_FILE_TOO_LARGE';
 
 export default class I3SConverter {
   constructor() {
@@ -165,7 +165,7 @@ export default class I3SConverter {
         href: './1',
         ...coordinates
       });
-      const child = await this._createNode(root0, sourceRootTile, parentId, 0);
+      const [child] = await this._createNode(root0, sourceRootTile, parentId, 0);
       const childPath = join(this.layers0Path, 'nodes', child.path);
 
       if (isCreateSlpk) {
@@ -218,22 +218,24 @@ export default class I3SConverter {
         '.',
         this.options.sevenZipExe
       );
-      const fileHash128Path = `${tilesetPath}/@specialIndexFileHASH128@`;
-      try {
-        await generateHash128FromZip(slpkFileName, fileHash128Path);
-        await addFileToZip(
-          tilesetPath,
-          '@specialIndexFileHASH128@',
-          slpkFileName,
-          this.options.sevenZipExe
-        );
-      } catch (error) {
-        if (error.code === FS_FILE_TOO_LARGE) {
-          console.warn(`${slpkFileName} file is too big to generate a hash`); // eslint-disable-line
-        } else {
-          console.error(error); // eslint-disable-line
-        }
-      }
+
+      // TODO: `addFileToZip` corrupts archive so it can't be validated with windows i3s_converter.exe
+      // const fileHash128Path = `${tilesetPath}/@specialIndexFileHASH128@`;
+      // try {
+      //   await generateHash128FromZip(slpkFileName, fileHash128Path);
+      //   await addFileToZip(
+      //     tilesetPath,
+      //     '@specialIndexFileHASH128@',
+      //     slpkFileName,
+      //     this.options.sevenZipExe
+      //   );
+      // } catch (error) {
+      //   if (error.code === FS_FILE_TOO_LARGE) {
+      //     console.warn(`${slpkFileName} file is too big to generate a hash`); // eslint-disable-line
+      //   } else {
+      //     console.error(error); // eslint-disable-line
+      //   }
+      // }
       // All converted files are contained in slpk now they can be deleted
       try {
         await removeDir(tilesetPath);
@@ -266,13 +268,15 @@ export default class I3SConverter {
         await sourceTile.unloadContent();
       } else {
         const coordinates = convertCommonToI3SCoordinate(sourceTile, this.geoidHeightModel);
-        const child = await this._createNode(data.rootNode, sourceTile, parentId, level);
-        data.rootNode.children.push({
-          id: child.id,
-          href: `../${child.path}`,
-          ...coordinates
-        });
-        childNodes.push(child);
+        const children = await this._createNode(data.rootNode, sourceTile, parentId, level);
+        for (const child of children) {
+          data.rootNode.children.push({
+            id: child.id,
+            href: `../${child.path}`,
+            ...coordinates
+          });
+          childNodes.push(child);
+        }
       }
       if (sourceTile.id) {
         console.log(sourceTile.id); // eslint-disable-line
@@ -285,12 +289,19 @@ export default class I3SConverter {
       const childPath = join(this.layers0Path, 'nodes', node.path);
       const nodePath = node.path;
       delete node.path;
-      for (const neighbor of rootNode.children) {
-        if (node.id === neighbor.id) {
-          continue; // eslint-disable-line
-        }
 
-        node.neighbors.push({...neighbor});
+      // Don't do large amount of "neightbors" to avoid big memory consumption
+      if (rootNode.children.length < 1000) {
+        for (const neighbor of rootNode.children) {
+          // eslint-disable-next-line max-depth
+          if (node.id === neighbor.id) {
+            continue; // eslint-disable-line
+          }
+
+          node.neighbors.push({...neighbor});
+        }
+      } else {
+        delete node.neighbors;
       }
 
       if (this.options.slpk) {
@@ -302,6 +313,7 @@ export default class I3SConverter {
       } else {
         await writeFile(childPath, JSON.stringify(node));
       }
+      node.neighbors = [];
     }
   }
 
@@ -309,7 +321,6 @@ export default class I3SConverter {
     this._checkAddRefinementTypeForTile(sourceTile);
     await this._updateTilesetOptions();
     await this.sourceTileset._loadTile(sourceTile);
-    const rootTileId = rootTile.id;
     const coordinates = convertCommonToI3SCoordinate(sourceTile, this.geoidHeightModel);
 
     const lodSelection = convertGeometricErrorToScreenThreshold(sourceTile, coordinates);
@@ -317,16 +328,89 @@ export default class I3SConverter {
       val => val.metricType === 'maxScreenThresholdSQ'
     ) || {maxError: 0};
 
+    this._convertAttributeStorageInfo(sourceTile.content);
+
+    const resourcesData = await this._convertResources(sourceTile);
+
+    const nodes = [];
+    const emptyResources = {
+      geometry: null,
+      compressedGeometry: null,
+      texture: null,
+      sharedResources: null,
+      meshMaterial: null,
+      vertexCount: null,
+      attributes: null,
+      featureCount: null
+    };
+    for (const resources of resourcesData || [emptyResources]) {
+      const nodeInPage = this._createNodeInNodePages(
+        maxScreenThresholdSQ,
+        coordinates,
+        sourceTile,
+        parentId,
+        resources
+      );
+      const node = this._createNodeIndexDocument(
+        rootTile,
+        coordinates,
+        lodSelection,
+        nodeInPage,
+        resources
+      );
+
+      if (nodeInPage.mesh) {
+        await this._writeResources(resources, node.path);
+      }
+
+      nodes.push(node);
+    }
+
+    sourceTile.unloadContent();
+
+    const firstNode = nodes[0];
+    await this._addChildrenWithNeighborsAndWriteFile(
+      {rootNode: firstNode, sourceTiles: sourceTile.children},
+      firstNode.id,
+      level + 1
+    );
+    return nodes;
+  }
+
+  _convertAttributeStorageInfo(sourceTileContent) {
+    const batchTable = sourceTileContent.batchTableJson;
+    if (batchTable && !this.layers0.attributeStorageInfo.length) {
+      this._convertBatchTableInfoToNodeAttributes(batchTable);
+    }
+  }
+
+  async _convertResources(sourceTile) {
+    if (!sourceTile.content || sourceTile.content.type !== 'b3dm') {
+      return null;
+    }
+    const resourcesData = await convertB3dmToI3sGeometry(
+      sourceTile.content,
+      Number(this.nodePages.nodesCounter),
+      this.featuresHashArray,
+      this.layers0.attributeStorageInfo,
+      this.options.draco
+    );
+    return resourcesData;
+  }
+
+  _createNodeInNodePages(
+    maxScreenThresholdSQ,
+    coordinates,
+    sourceTile,
+    parentId,
+    {meshMaterial, texture, vertexCount, featureCount}
+  ) {
     const nodeInPage = {
       lodThreshold: maxScreenThresholdSQ.maxError,
       obb: coordinates.obb,
       children: []
     };
     if (sourceTile.content && sourceTile.content.type === 'b3dm') {
-      const batchTable = sourceTile.content.batchTableJson;
-      if (batchTable && !this.layers0.attributeStorageInfo.length) {
-        this._convertBatchTableInfoToNodeAttributes(batchTable);
-      }
       nodeInPage.mesh = {
         geometry: {
           definition: 0
@@ -336,6 +420,29 @@ export default class I3SConverter {
     }
     const nodeId = this.nodePages.push(nodeInPage, parentId);
 
+    if (meshMaterial) {
+      this.nodePages.updateMaterialByNodeId(nodeId, this._findOrCreateMaterial(meshMaterial));
+    }
+
+    if (texture) {
+      const texelCountHint = texture.image.height * texture.image.width;
+      this.nodePages.updateTexelCountHintByNodeId(nodeId, texelCountHint);
+    }
+
+    if (vertexCount) {
+      this.vertexCounter += vertexCount;
+      this.nodePages.updateVertexCountByNodeId(nodeId, vertexCount);
+    }
+    this.nodePages.updateNodeAttributeByNodeId(nodeId);
+    if (featureCount) {
+      this.nodePages.updateFeatureCountByNodeId(nodeId, featureCount);
+    }
+
+    return nodeInPage;
+  }
+
+  _createNodeIndexDocument(rootTile, coordinates, lodSelection, nodeInPage, resources) {
+    const nodeId = nodeInPage.index;
     const nodeData = {
       version: rootTile.version,
       id: nodeId.toString(),
@@ -344,8 +451,8 @@ export default class I3SConverter {
       ...coordinates,
       lodSelection,
       parentNode: {
-        id: rootTileId,
-        href: `../${rootTileId}`,
+        id: rootTile.id,
+        href: `../${rootTile.id}`,
         mbs: rootTile.mbs,
         obb: rootTile.obb
       },
@@ -353,28 +460,34 @@ export default class I3SConverter {
       neighbors: []
     };
     const node = transform(nodeData, nodeTemplate);
-    await this._convertResources(sourceTile, node);
-    sourceTile.unloadContent();
 
-    await this._addChildrenWithNeighborsAndWriteFile(
-      {rootNode: node, sourceTiles: sourceTile.children},
-      nodeId,
-      level + 1
-    );
+    if (nodeInPage.mesh) {
+      node.geometryData = [{href: './geometries/0'}];
+      node.sharedResource = [{href: './shared'}];
+
+      if (resources.texture) {
+        node.textureData = [{href: './textures/0'}];
+      }
+
+      const attributes = resources.attributes;
+      if (
+        attributes.length &&
+        this.layers0.attributeStorageInfo &&
+        this.layers0.attributeStorageInfo.length
+      ) {
+        node.attributeData = [];
+        for (let index = 0; index < attributes.length; index++) {
+          const folderName = this.layers0.attributeStorageInfo[index].key;
+          node.attributeData.push({href: `./attributes/${folderName}/0`});
+        }
+      }
+    }
+
     return node;
   }
 
-  /* eslint-disable max-statements, complexity*/
-  async _convertResources(sourceTile, node) {
-    if (!sourceTile.content || sourceTile.content.type !== 'b3dm') {
-      return;
-    }
-    node.geometryData = [{href: './geometries/0'}];
-    node.sharedResource = [{href: './shared'}];
-    const childPath = join(this.layers0Path, 'nodes', node.path);
-    const slpkChildPath = join('nodes', node.path);
-    const attributeStorageInfo = this.layers0.attributeStorageInfo;
-    const {
+  async _writeResources(
+    {
       geometry: geometryBuffer,
       compressedGeometry,
       texture,
@@ -383,13 +496,19 @@ export default class I3SConverter {
       vertexCount,
       attributes,
       featureCount
-    } = await convertB3dmToI3sGeometry(
-      sourceTile.content,
-      Number(node.id),
-      this.featuresHashArray,
-      attributeStorageInfo,
-      this.options.draco
-    );
+    },
+    nodePath
+  ) {
+    const childPath = join(this.layers0Path, 'nodes', nodePath);
+    const slpkChildPath = join('nodes', nodePath);
+
+    await this._writeGeometries(geometryBuffer, compressedGeometry, childPath, slpkChildPath);
+    await this._writeShared(sharedResources, childPath, slpkChildPath, nodePath);
+    await this._writeTexture(texture, childPath, slpkChildPath);
+    await this._writeAttributes(attributes, childPath, slpkChildPath);
+  }
+
+  async _writeGeometries(geometryBuffer, compressedGeometry, childPath, slpkChildPath) {
     if (this.options.slpk) {
       const slpkGeometryPath = join(childPath, 'geometries');
       this.fileMap[`${slpkChildPath}/geometries/0.bin.gz`] = await writeFileForSlpk(
@@ -401,6 +520,7 @@ export default class I3SConverter {
       const geometryPath = join(childPath, 'geometries/0/');
       await writeFile(geometryPath, geometryBuffer, 'index.bin');
     }
+
     if (this.options.draco) {
       if (this.options.slpk) {
         const slpkCompressedGeometryPath = join(childPath, 'geometries');
@@ -414,8 +534,10 @@ export default class I3SConverter {
         await writeFile(compressedGeometryPath, compressedGeometry, 'index.bin');
       }
     }
+  }
 
-    sharedResources.nodePath = node.path;
+  async _writeShared(sharedResources, childPath, slpkChildPath, nodePath) {
+    sharedResources.nodePath = nodePath;
     const sharedData = transform(sharedResources, SHARED_RESOURCES_TEMPLATE);
     const sharedDataStr = JSON.stringify(sharedData);
     if (this.options.slpk) {
@@ -429,61 +551,48 @@ export default class I3SConverter {
       const sharedPath = join(childPath, 'shared/');
       await writeFile(sharedPath, sharedDataStr);
     }
-    if (meshMaterial) {
-      this.nodePages.updateMaterialByNodeId(node.id, this._findOrCreateMaterial(meshMaterial));
-    }
-    if (texture) {
-      node.textureData = [{href: './textures/0'}];
+  }
 
+  async _writeTexture(texture, childPath, slpkChildPath) {
+    if (texture) {
+      const format = this._getFormatByMimeType(texture.mimeType);
       if (!this.layers0.textureSetDefinitions.length) {
         this.layers0.textureSetDefinitions.push({
           formats: [
             {
               name: '0',
-              format: 'jpg'
+              format
             }
           ]
         });
       }
 
-      const texelCountHint = texture.image.height * texture.image.width;
-      this.nodePages.updateTexelCountHintByNodeId(node.id, texelCountHint);
-
       const textureData = texture.bufferView.data;
       if (this.options.slpk) {
         const slpkTexturePath = join(childPath, 'textures');
         const compress = false;
-        this.fileMap[`${slpkChildPath}/textures/0.jpg`] = await writeFileForSlpk(
+        this.fileMap[`${slpkChildPath}/textures/0.${format}`] = await writeFileForSlpk(
           slpkTexturePath,
           textureData,
-          '0.jpg',
+          `0.${format}`,
           compress
         );
       } else {
         const texturePath = join(childPath, 'textures/0/');
-        await writeFile(texturePath, textureData, 'index.jpg');
+        await writeFile(texturePath, textureData, `index.${format}`);
       }
     }
-    if (vertexCount) {
-      this.vertexCounter += vertexCount;
-      this.nodePages.updateVertexCountByNodeId(node.id, vertexCount);
-    }
-    this.nodePages.updateNodeAttributeByNodeId(node.id);
-    if (featureCount) {
-      this.nodePages.updateFeatureCountByNodeId(node.id, featureCount);
-    }
+  }
+
+  async _writeAttributes(attributes, childPath, slpkChildPath) {
     if (
       attributes.length &&
       this.layers0.attributeStorageInfo &&
       this.layers0.attributeStorageInfo.length
     ) {
-      node.attributeData = [];
-
       for (let index = 0; index < attributes.length; index++) {
         const folderName = this.layers0.attributeStorageInfo[index].key;
         const fileBuffer = new Uint8Array(attributes[index]);
-
-        node.attributeData.push({href: `./attributes/${folderName}/0`});
 
         if (this.options.slpk) {
           const slpkAttributesPath = join(childPath, 'attributes', folderName);
@@ -497,6 +606,17 @@ export default class I3SConverter {
           await writeFile(attributesPath, fileBuffer, 'index.bin');
         }
       }
+    }
+  }
+
+  _getFormatByMimeType(mimeType) {
+    switch (mimeType) {
+      case 'image/jpeg':
+        return 'jpg';
+      case 'image/png':
+        return 'png';
+      default:
+        return 'jpg';
     }
   }
 
