@@ -31,9 +31,6 @@ export {makeIterator} from './iterator-utils/make-iterator/make-iterator';
 // CORE LOADERS
 export {NullLoader} from './null-loader';
 
-// WORKERS
-export {processOnWorker} from '@loaders.gl/loader-utils';
-
 // EXPERIMENTAL
 export {default as _fetchProgress} from './lib/progress/fetch-progress';
 export {default as _BrowserFileSystem} from './lib/filesystems/browser-filesystem';

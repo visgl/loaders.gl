@@ -25,6 +25,7 @@ installFilePolyfills();
 if (TEST_CORE) {
   require('@loaders.gl/polyfills/test');
   require('@loaders.gl/core/test');
+  require('@loaders.gl/worker-utils/test');
   require('@loaders.gl/loader-utils/test');
   require('@loaders.gl/math/test');
 }

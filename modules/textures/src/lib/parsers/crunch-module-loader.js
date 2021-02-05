@@ -1,5 +1,5 @@
 /** @typedef {import('./crunch-module-loader')} types */
-import {loadLibrary, global} from '@loaders.gl/loader-utils';
+import {loadLibrary, global} from '@loaders.gl/worker-utils';
 
 let CrunchModule;
 

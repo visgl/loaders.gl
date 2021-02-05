@@ -18,7 +18,7 @@ export type ProcessProxyOptions = {
   onStart?: (proxy: ChildProcessProxy) => void
 };
 
-/** 
+/**
  * Manager for a Node.js child process
  * Prepares arguments, starts, stops and tracks output
  */

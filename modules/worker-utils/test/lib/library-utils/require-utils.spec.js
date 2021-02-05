@@ -4,11 +4,11 @@
 
 import test from 'tape-promise/tape';
 import fs from 'fs';
-import {isBrowser} from '@loaders.gl/loader-utils';
+import {isBrowser} from '@loaders.gl/worker-utils';
 import {
   requireFromFile,
   requireFromString
-} from '@loaders.gl/loader-utils/lib/node/require-utils.node';
+} from '@loaders.gl/worker-utils/lib/node/require-utils.node';
 
 const MODULE_URL = `${__dirname}/fixture/module.js`;
 const SUBMODULE_URL = `${__dirname}/fixture/submodule.js`;

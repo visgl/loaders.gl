@@ -1,6 +1,5 @@
 import test from 'tape-promise/tape';
-import {NullWorker, isBrowser} from '@loaders.gl/loader-utils';
-import {processOnWorker} from '@loaders.gl/loader-utils';
+import {processOnWorker, NullWorker, isBrowser} from '@loaders.gl/worker-utils';
 
 test('processOnWorker', async t => {
   if (!isBrowser) {
