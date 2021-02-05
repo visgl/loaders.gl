@@ -413,7 +413,7 @@ export default class I3SConverter {
     if (sourceTile.content && sourceTile.content.type === 'b3dm') {
       nodeInPage.mesh = {
         geometry: {
-          definition: 0
+          definition: texture ? 0 : 1
         },
         attribute: {}
       };
