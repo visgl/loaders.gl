@@ -7,7 +7,7 @@ import {hexToBase64} from '../utils/digest-utils';
  * A transform that MD5 compresses / deflates input bytes
  */
 export default class MD5HashTransform {
-  static async hash(input, options = {}) {
+  static async run(input, options = {}) {
     const md5Promise = new Promise((resolve, reject) => {
       md5WASM(input)
         .then(resolve)

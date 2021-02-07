@@ -21,9 +21,14 @@ The texture API `loadImage`, `loadImageArray`, `loadImageCube` has been moved to
 
 **@loaders.gl/compression**
 
-- Sync transforms no longer supported (enables dynamic library loading).
+- Sync transforms no longer supported (this enables dynamic library loading).
 - Transform static members now named `run()` instead of `inflate()` and `deflate()`.
-- Zstandard transforms removed due to excessive bundle size impact.
+- Zstandard transforms removed due to excessive bundle size impact. Use the new `ZstdWorker` object instead.
+
+**@loaders.gl/crypto**
+
+- Sync hashing no longer supported (this enables dynamic library loading).
+- Transform static members now named `run()` instead of `hash()`.
 
 **@loaders.gl/loader-utils**
 

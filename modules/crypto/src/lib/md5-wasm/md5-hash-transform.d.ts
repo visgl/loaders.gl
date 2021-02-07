@@ -6,5 +6,5 @@ export default class MD5HashTransform {
    * Atomic hash calculation
    * @returns base64 encoded hash
    */
-  static hash(input: ArrayBuffer, options?: object): Promise<string>;
+  static run(input: ArrayBuffer, options?: object): Promise<string>;
 }

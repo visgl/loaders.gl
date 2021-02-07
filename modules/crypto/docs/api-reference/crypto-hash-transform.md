@@ -8,9 +8,7 @@
 
 ## Static Methods
 
-#### `CryptoHashTransform.hash(data: ArrayBuffer, options?: object): Promise<string>`
-
-#### `CryptoHashTransform.hashSync(data: ArrayBuffer, options?: object): string`
+#### `CryptoHashTransform.run(data: ArrayBuffer, options?: object): Promise<string>`
 
 - `options.modules.CryptoJS` the CryptoJS library needs to be supplied by the application.
 

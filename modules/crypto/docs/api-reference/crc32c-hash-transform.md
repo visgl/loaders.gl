@@ -6,9 +6,7 @@
 
 ## Static Methods
 
-#### `CRC32CHashTransform.hash(data: ArrayBuffer, options?: object): Promise<string>`
-
-#### `CRC32CHashTransform.hashSync(data: ArrayBuffer, options?: object): string`
+#### `CRC32CHashTransform.run(data: ArrayBuffer, options?: object): Promise<string>`
 
 Calculates the CRC32c hash of a byte array.
 

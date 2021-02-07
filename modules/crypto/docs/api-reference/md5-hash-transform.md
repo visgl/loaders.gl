@@ -6,7 +6,7 @@
 
 ## Static Methods
 
-#### `MD5HashTransform.hash(data: ArrayBuffer, options?: object): Promise<string>`
+#### `MD5HashTransform.run(data: ArrayBuffer, options?: object): Promise<string>`
 
 Calculates the MD5 hash of a byte array.
 
