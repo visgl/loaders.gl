@@ -10,11 +10,11 @@ const CSV_URL = '@loaders.gl/csv/test/data/sample-very-long.csv';
 /** Externally computed hash: `openssl md5 -binary sample-very-long.json | openssl base64` */
 const CSV_MD5 = 'zmLuuVSkigYR9r5FcsKkCw==';
 
-test('CryptoHashTransform#hashSync(CSV, against external hash)', async t => {
+test('CryptoHashTransform#run(CSV, against external hash)', async t => {
   const response = await fetchFile(CSV_URL);
   const data = await response.arrayBuffer();
 
-  const hash = CryptoHashTransform.hashSync(data, {modules: {CryptoJS}});
+  const hash = await CryptoHashTransform.run(data, {modules: {CryptoJS}});
   t.equal(hash, CSV_MD5, 'repeated data MD5 hash is correct');
 
   t.end();
@@ -44,22 +44,22 @@ test('CryptoHashTransform#iterator(CSV stream, against external hash)', async t 
   t.end();
 });
 
-test('CryptoHashTransform#hashSync(MD5 = default)', t => {
+test('CryptoHashTransform#run(MD5 = default)', async t => {
   const {binaryData, repeatedData} = getBinaryData();
 
-  let hash = CryptoHashTransform.hashSync(binaryData, {modules: {CryptoJS}});
+  let hash = await CryptoHashTransform.run(binaryData, {modules: {CryptoJS}});
   t.equal(hash, 'YnxTb+lyen1CsNkpmLv+qA==', 'binary data MD5 hash is correct');
 
-  hash = CryptoHashTransform.hashSync(repeatedData, {modules: {CryptoJS}});
+  hash = await CryptoHashTransform.run(repeatedData, {modules: {CryptoJS}});
   t.equal(hash, '2d4uZUoLXXO/XWJGnrVl5Q==', 'repeated data MD5 hash is correct');
 
   t.end();
 });
 
-test('CryptoHashTransform#hashSync(SHA256)', t => {
+test('CryptoHashTransform#run(SHA256)', async t => {
   const {binaryData, repeatedData} = getBinaryData();
 
-  let hash = CryptoHashTransform.hashSync(binaryData, {
+  let hash = await CryptoHashTransform.run(binaryData, {
     modules: {CryptoJS},
     crypto: {algorithm: CryptoJS.algo.SHA256}
   });
@@ -69,7 +69,7 @@ test('CryptoHashTransform#hashSync(SHA256)', t => {
     'binary data SHA256 hash is correct'
   );
 
-  hash = CryptoHashTransform.hashSync(repeatedData, {
+  hash = await CryptoHashTransform.run(repeatedData, {
     modules: {CryptoJS},
     crypto: {algorithm: CryptoJS.algo.SHA256}
   });

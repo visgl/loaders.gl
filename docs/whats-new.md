@@ -29,7 +29,7 @@ Target Release Date: Q1 2021. (Alpha releases are available).
 
 **@loaders.gl/compression**
 
-- The new `ZlibWorker` and `LZ4Worker` objects enable compression and decompression of data to be done on worker threads using the new `processOnWorker()` function.
+- The new `ZlibWorker`, `LZ4Worker` and `ZstdWorker` exports enable compression and decompression of data to be done on worker threads using the new `processOnWorker()` function.
 
 **@loaders.gl/tile-converter** (NEW)
 

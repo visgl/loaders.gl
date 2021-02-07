@@ -5,11 +5,11 @@ import {assert} from '@loaders.gl/loader-utils';
 const ERR_CRYPTO_LIBRARY_NOT_SUPPLIED = 'crypto-js lib must be supplied in options.module.CryptoJS';
 
 export default class CryptoHashTransform {
-  static async hash(input, options) {
-    return CryptoHashTransform.hashSync(input, options);
+  static async run(input, options) {
+    return CryptoHashTransform.runSync(input, options);
   }
 
-  static hashSync(input, options = {}) {
+  static runSync(input, options = {}) {
     const {CryptoJS} = options.modules || {};
     assert(CryptoJS, ERR_CRYPTO_LIBRARY_NOT_SUPPLIED);
 

@@ -8,8 +8,7 @@ export default class CryptoHashTransform implements IncrementalTransform {
    * Atomic hash calculation
    * @returns base64 encoded hash
    */
-  static hash(input: ArrayBuffer, options?: object): Promise<string>;
-  static hashSync(input: ArrayBuffer, options?: object): string;
+  static run(input: ArrayBuffer, options?: object): Promise<string>;
 
   constructor(options?: object);
 

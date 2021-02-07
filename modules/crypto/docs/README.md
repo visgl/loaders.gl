@@ -54,9 +54,9 @@ Note that cryptographic hashing is a computationally expensive operation, linear
 
 ```
 Cryptographic Hash
-├─ CRC32HashTransform#hash(): 150M bytes/s
-├─ CRC32CHashTransform#hash(): 151M bytes/s
-├─ MD5HashTransform#hash(): 75.8M bytes/s
-├─ CryptoHashTransform#hashSync(SHA256): 30.6M bytes/s
-├─ CryptoHashTransform#hash(MD5): 18.9M bytes/s
+├─ CRC32HashTransform#run(): 150M bytes/s
+├─ CRC32CHashTransform#run(): 151M bytes/s
+├─ MD5HashTransform#run(): 75.8M bytes/s
+├─ CryptoHashTransform#run(SHA256): 30.6M bytes/s
+├─ CryptoHashTransform#run(MD5): 18.9M bytes/s
 ```

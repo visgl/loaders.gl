@@ -2,11 +2,7 @@ import CRC32C from './crc32c';
 import {toHex, hexToBase64} from '../utils/digest-utils';
 
 export default class CRC32CHashTransform {
-  static async hash(input, options) {
-    return CRC32CHashTransform.hashSync(input, options);
-  }
-
-  static hashSync(input, options) {
+  static async run(input, options) {
     const transform = new CRC32CHashTransform(options);
     return transform._update(input)._finish();
   }

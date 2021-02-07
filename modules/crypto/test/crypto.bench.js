@@ -12,34 +12,34 @@ export default async function csvBench(bench) {
 
   bench = bench.group('Cryptographic Hash');
 
-  bench = bench.addAsync('CRC32HashTransform#hash()', {multiplier: 100000, unit: 'bytes'}, () =>
-    CRC32HashTransform.hash(binaryData)
+  bench = bench.addAsync('CRC32HashTransform#run()', {multiplier: 100000, unit: 'bytes'}, () =>
+    CRC32HashTransform.run(binaryData)
   );
 
-  bench = bench.addAsync('CRC32CHashTransform#hash()', {multiplier: 100000, unit: 'bytes'}, () =>
-    CRC32CHashTransform.hash(binaryData)
+  bench = bench.addAsync('CRC32CHashTransform#run()', {multiplier: 100000, unit: 'bytes'}, () =>
+    CRC32CHashTransform.run(binaryData)
   );
 
-  bench = bench.addAsync('MD5HashTransform#hash(warmup)', {multiplier: 100000, unit: 'bytes'}, () =>
-    MD5HashTransform.hash(binaryData)
+  bench = bench.addAsync('MD5HashTransform#run(warmup)', {multiplier: 100000, unit: 'bytes'}, () =>
+    MD5HashTransform.run(binaryData)
   );
 
-  bench = bench.addAsync('MD5HashTransform#hash()', {multiplier: 100000, unit: 'bytes'}, () =>
-    MD5HashTransform.hash(binaryData)
+  bench = bench.addAsync('MD5HashTransform#run()', {multiplier: 100000, unit: 'bytes'}, () =>
+    MD5HashTransform.run(binaryData)
   );
 
-  bench = bench.add(
-    'CryptoHashTransform#hashSync(SHA256)',
+  bench = bench.addAsync(
+    'CryptoHashTransform#run(SHA256)',
     {multiplier: 100000, unit: 'bytes'},
     () =>
-      CryptoHashTransform.hashSync(binaryData, {
+      CryptoHashTransform.run(binaryData, {
         modules: {CryptoJS},
         crypto: {algorithm: CryptoJS.algo.SHA256}
       })
   );
 
-  bench = bench.addAsync('CryptoHashTransform#hash(MD5)', {multiplier: 100000, unit: 'bytes'}, () =>
-    CryptoHashTransform.hash(binaryData, {modules: {CryptoJS}})
+  bench = bench.addAsync('CryptoHashTransform#run(MD5)', {multiplier: 100000, unit: 'bytes'}, () =>
+    CryptoHashTransform.run(binaryData, {modules: {CryptoJS}})
   );
 
   return bench;

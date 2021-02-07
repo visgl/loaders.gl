@@ -7,11 +7,11 @@ const CSV_URL = '@loaders.gl/csv/test/data/sample-very-long.csv';
 /** Externally computed hash: `openssl md5 -binary sample-very-long.json | openssl base64` */
 const CSV_CRC32 = 'W5bZ9Q==';
 
-test('CRC32HashTransform#hashSync(CRC32, CSV, against external hash)', async t => {
+test('CRC32HashTransform#run(CRC32, CSV, against external hash)', async t => {
   const response = await fetchFile(CSV_URL);
   const data = await response.arrayBuffer();
 
-  const hash = CRC32HashTransform.hashSync(data);
+  const hash = await CRC32HashTransform.run(data);
   t.equal(hash, CSV_CRC32, 'sync hash is correct');
 
   t.end();
