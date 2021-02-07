@@ -6,10 +6,6 @@ const ERR_CRYPTO_LIBRARY_NOT_SUPPLIED = 'crypto-js lib must be supplied in optio
 
 export default class CryptoHashTransform {
   static async run(input, options) {
-    return CryptoHashTransform.runSync(input, options);
-  }
-
-  static runSync(input, options = {}) {
     const {CryptoJS} = options.modules || {};
     assert(CryptoJS, ERR_CRYPTO_LIBRARY_NOT_SUPPLIED);
 
