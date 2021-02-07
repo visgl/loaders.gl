@@ -14,6 +14,7 @@ export {default as LZ4InflateTransform} from './lib/lz4/lz4-inflate-transform';
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
+/** @type {WorkerObject} */
 export const ZlibWorker = {
   id: 'zlib',
   name: 'zlib',
@@ -26,6 +27,7 @@ export const ZlibWorker = {
   }
 };
 
+/** @type {WorkerObject} */
 export const LZ4Worker = {
   id: 'lz4',
   name: 'lz4',
@@ -38,6 +40,7 @@ export const LZ4Worker = {
   }
 };
 
+/** @type {WorkerObject} */
 export const ZstdWorker = {
   id: 'zstd',
   name: 'zstd',

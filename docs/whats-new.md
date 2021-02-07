@@ -31,9 +31,9 @@ Target Release Date: Q1 2021. (Alpha releases are available).
 
 - The new `ZlibWorker`, `LZ4Worker` and `ZstdWorker` exports enable compression and decompression of data to be done on worker threads using the new `processOnWorker()` function.
 
-**@loaders.gl/crypt**
+**@loaders.gl/crypto**
 
-- The new `CRC32Worker` export enables hashing to be done on worker threads using the new `processOnWorker()` function.
+- The new `CryptoWorker` export enables CRC32, CRC32c and MD5 hashing to be done on worker threads using the new `processOnWorker()` function.
 
 **@loaders.gl/tile-converter** (NEW)
 
