@@ -10,7 +10,7 @@ test('CRC32CHashTransform#run(CRC32, CSV, against external hash)', async t => {
   const response = await fetchFile(CSV_URL);
   const data = await response.arrayBuffer();
 
-  const hash = CRC32CHashTransform.run(data);
+  const hash = await CRC32CHashTransform.run(data);
   t.equal(hash, CSV_CRC32, 'sync hash is correct');
 
   t.end();
@@ -54,7 +54,7 @@ test('crc32c', async t => {
     // Run the test cases
     for (const tc of set.cases) {
       if (tc.expected && !tc.charset) {
-        const hash = CRC32CHashTransform.run(tc.arrayBuffer);
+        const hash = await CRC32CHashTransform.run(tc.arrayBuffer);
         t.equals(
           hash,
           tc.expected,
