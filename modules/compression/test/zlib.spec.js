@@ -2,21 +2,7 @@ import test from 'tape-promise/tape';
 import {ZlibDeflateTransform, ZlibInflateTransform, ZlibWorker} from '@loaders.gl/compression';
 import {processOnWorker} from '@loaders.gl/worker-utils';
 import {makeTransformIterator, concatenateArrayBuffers, isBrowser} from '@loaders.gl/loader-utils';
-import {generateRandomArrayBuffer, compareArrayBuffers} from '../utils/test-utils';
-
-const SIZE = 100 * 1000;
-const data = null;
-
-// Avoid creating data in global scope
-function getData() {
-  if (data) {
-    return data;
-  }
-  return {
-    binaryData: generateRandomArrayBuffer({size: SIZE}),
-    repeatedData: generateRandomArrayBuffer({size: SIZE / 10, repetitions: 10})
-  };
-}
+import {getData, compareArrayBuffers} from './utils/test-utils';
 
 test('zlib#defaults', async t => {
   const {binaryData, repeatedData} = getData();
@@ -91,6 +77,8 @@ test('zlib#6', async t => {
   t.ok(compareArrayBuffers(binaryData, inflatedData), 'deflate/inflate level 6');
   t.end();
 });
+
+// WORKER TESTS
 
 test('zlib#worker', async t => {
   if (!isBrowser) {

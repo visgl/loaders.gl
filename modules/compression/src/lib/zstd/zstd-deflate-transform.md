@@ -6,6 +6,6 @@
 
 ## Static Methods
 
-#### `ZstdDeflateTransform.deflate(data: ArrayBuffer, options?: object): Promise<ArrayBuffer>`
+#### `ZstdDeflateTransform.run(data: ArrayBuffer, options?: object): Promise<ArrayBuffer>`
 
 Compresses (deflates) Zstandard encoded data.

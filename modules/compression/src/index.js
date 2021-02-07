@@ -25,3 +25,27 @@ export const ZlibWorker = {
     }
   }
 };
+
+export const LZ4Worker = {
+  id: 'lz4',
+  name: 'lz4',
+  module: 'compression',
+  version: VERSION,
+  options: {
+    lz4: {
+      // level
+    }
+  }
+};
+
+export const ZstdWorker = {
+  id: 'zstd',
+  name: 'zstd',
+  module: 'compression',
+  version: VERSION,
+  options: {
+    zstd: {
+      // level
+    }
+  }
+};
