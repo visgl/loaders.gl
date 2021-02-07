@@ -3,6 +3,20 @@
 import {concatenateArrayBuffers} from '@loaders.gl/loader-utils';
 import RandomNumberGenerator from './random-number-generator';
 
+const SIZE = 100 * 1000;
+const data = null;
+
+// Avoid creating data in global scope
+export function getData() {
+  if (data) {
+    return data;
+  }
+  return {
+    binaryData: generateRandomArrayBuffer({size: SIZE}),
+    repeatedData: generateRandomArrayBuffer({size: SIZE / 10, repetitions: 10})
+  };
+}
+
 export function generateRandomArrayBuffer({size, repetitions = 1}) {
   const random = new RandomNumberGenerator();
 

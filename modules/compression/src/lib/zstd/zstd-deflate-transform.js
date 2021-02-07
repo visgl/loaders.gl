@@ -1,8 +1,10 @@
+// zstd-codec is a dev dependency due to big size
+// eslint-disable-next-line import/no-extraneous-dependencies
 import {ZstdCodec} from 'zstd-codec';
 import {concatenateArrayBuffers} from '@loaders.gl/loader-utils';
 
 export default class ZstdDeflateTransform {
-  static deflate(input, options) {
+  static run(input, options) {
     const inputArray = new Uint8Array(input);
 
     return new Promise(resolve => {
@@ -27,6 +29,6 @@ export default class ZstdDeflateTransform {
 
   async end() {
     const arrayBuffer = concatenateArrayBuffers(...this._chunks);
-    return ZstdDeflateTransform.deflate(arrayBuffer);
+    return ZstdDeflateTransform.run(arrayBuffer);
   }
 }
