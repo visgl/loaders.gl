@@ -14,8 +14,20 @@ export {default as LZ4InflateTransform} from './lib/lz4/lz4-inflate-transform';
 
 export interface CompressionWorkerObject extends WorkerObject {}
 
+/**
+ * Worker for Zlib real-time compression and decompression
+ */
 export const ZlibWorker: CompressionWorkerObject;
+
+/**
+ * Worker for LZ4 real-time compression and decompression
+ */
 export const LZ4Worker: CompressionWorkerObject;
+
+/**
+ * Worker for Zstandard real-time compression and decompression
+ * @note this is a large worker due to big Zstd-codec library.
+ */
 export const ZstdWorker: CompressionWorkerObject;
 
 // Overload parseOnWorker to provide type safety
