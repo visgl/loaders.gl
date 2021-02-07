@@ -1,13 +1,26 @@
 import WorkerPool from './worker-pool';
+import WorkerThread from './worker-thread';
 
 const DEFAULT_MAX_CONCURRENCY = 5;
+
+let _workerFarm = null;
 
 /**
  * Process multiple data messages with a "farm" of different workers (in worker pools)
  */
 export default class WorkerFarm {
   static isSupported() {
-    return typeof Worker !== 'undefined';
+    return WorkerThread.isSupported();
+  }
+
+  // Create a single instance of a worker farm
+  static getWorkerFarm(props = {}) {
+    if (!_workerFarm) {
+      _workerFarm = new WorkerFarm({});
+    }
+    _workerFarm.setProps(props);
+
+    return _workerFarm;
   }
 
   constructor({
@@ -59,7 +72,7 @@ export default class WorkerFarm {
       workerPool = new WorkerPool({
         source: workerSource,
         name: workerName,
-        onMessage: onWorkerMessage.bind(null, this.onMessage),
+        onMessage: this._onWorkerMessage.bind(this),
         maxConcurrency: this.maxConcurrency,
         onDebug: this.onDebug,
         reuseWorkers: this.reuseWorkers
@@ -68,23 +81,23 @@ export default class WorkerFarm {
     }
     return workerPool;
   }
-}
 
-function onWorkerMessage(onMessage, {worker, data, resolve, reject}) {
-  if (onMessage) {
-    onMessage({worker, data, resolve, reject});
-    return;
-  }
+  _onWorkerMessage({workerThread, data, resolve, reject}) {
+    if (this.onMessage) {
+      this.onMessage({workerThread, data, resolve, reject});
+      return;
+    }
 
-  switch (data.type) {
-    case 'done':
-      resolve(data.result);
-      break;
+    switch (data.type) {
+      case 'done':
+        resolve(data.result);
+        break;
 
-    case 'error':
-      reject(data.message);
-      break;
+      case 'error':
+        reject(data.message);
+        break;
 
-    default:
+      default:
+    }
   }
 }

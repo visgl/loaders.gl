@@ -1,4 +1,4 @@
-import {WorkerFarm, getTransferList} from '@loaders.gl/worker-utils';
+import {WorkerFarm} from '@loaders.gl/worker-utils';
 import {toArrayBuffer} from '@loaders.gl/loader-utils';
 import {parse} from '../api/parse';
 
@@ -74,7 +74,7 @@ function getWorkerFarm(options = {}) {
 }
 
 // Handle sub workers on the main thread and respond to worker
-async function onWorkerMessage({worker, data, resolve, reject}) {
+async function onWorkerMessage({workerThread, data, resolve, reject}) {
   switch (data.type) {
     case 'done':
       resolve(data.result);
@@ -83,9 +83,9 @@ async function onWorkerMessage({worker, data, resolve, reject}) {
     case 'parse':
       try {
         const result = await parse(data.arraybuffer, data.options, data.url);
-        worker.postMessage({type: 'parse-done', id: data.id, result}, getTransferList(result));
+        workerThread.postMessage({type: 'parse-done', id: data.id, result}, result);
       } catch (error) {
-        worker.postMessage({type: 'parse-error', id: data.id, message: error.message});
+        workerThread.postMessage({type: 'parse-error', id: data.id, message: error.message});
       }
       break;
 

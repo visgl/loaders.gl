@@ -1,23 +1,29 @@
-import {onMessageFunc} from './worker-thread';
+import {WorkerMessage} from './worker-thread';
+
+export type WorkerFarmProps = {
+  maxConcurrency?: number;
+  reuseWorkers?: boolean;
+  onMessage?: (WorkerMessage) => any;
+  onDebug?: () => void;
+}
 
 /**
  * Process multiple data messages with a "farm" of different workers (in worker pools)
  */
 export default class WorkerFarm {
+  /** Check if Workers are supported */
   static isSupported(): boolean;
+  /** Get a single instance of a worker farm */
+  static getWorkerFarm(props: WorkerFarmProps): WorkerFarm;
 
   readonly maxConcurrency: number;
-  readonly onMessage: onMessageFunc;
+  readonly onMessage: (WorkerMessage) => any;
   readonly onDebug: () => void;
 
   /**
    * @param maxConcurrency {number} - max count of workers
    */
-  constructor(props: {
-    maxConcurrency?: number,
-    onMessage?: onMessageFunc,
-    onDebug?: () => void
-  });
+  constructor(props: WorkerFarmProps);
 
   setProps(props: object);
 

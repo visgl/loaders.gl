@@ -1,4 +1,4 @@
-import {onMessageFunc} from './worker-thread';
+import {WorkerMessage} from './worker-thread';
 
 type OnDebugParameters = {
   message: string;
@@ -19,7 +19,7 @@ export default class WorkerPool {
     source: string | Function;
     name?: string;
     maxConcurrency?: number;
-    onMessage?: onMessageFunc,
+    onMessage?: (WorkerMessage) => any,
     onDebug?: (options: OnDebugParameters) => any;
     reuseWorkers?: boolean
   });

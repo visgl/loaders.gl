@@ -3,7 +3,7 @@ import {compareArrayBuffers, getBinaryData} from '../test-utils/test-utils';
 import {makeTransformIterator, concatenateArrayBuffers} from '@loaders.gl/loader-utils';
 import {fetchFile, loadInBatches} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/csv';
-import CryptoHashTransform from '@loaders.gl/crypto/lib/crypto/crypto-hash-transform';
+import {CryptoHashTransform} from '@loaders.gl/crypto';
 import * as CryptoJS from 'crypto-js';
 
 const CSV_URL = '@loaders.gl/csv/test/data/sample-very-long.csv';
