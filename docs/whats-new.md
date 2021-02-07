@@ -31,6 +31,10 @@ Target Release Date: Q1 2021. (Alpha releases are available).
 
 - The new `ZlibWorker`, `LZ4Worker` and `ZstdWorker` exports enable compression and decompression of data to be done on worker threads using the new `processOnWorker()` function.
 
+**@loaders.gl/crypt**
+
+- The new `CRC32Worker` export enables hashing to be done on worker threads using the new `processOnWorker()` function.
+
 **@loaders.gl/tile-converter** (NEW)
 
 - A major new module contributed by ESRI, that implements conversion between the OGC 3D tiles and the OGC I3S tileset formats. A `tile-converter` CLI tool is avaible for automated batch conversion of multi-terabyte tilesets. A converter class API is also available for programmatic use.
