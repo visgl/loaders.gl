@@ -463,7 +463,7 @@ export default class I3SConverter {
 
     if (nodeInPage.mesh) {
       node.geometryData = [{href: './geometries/0'}];
-      node.sharedResource = [{href: './shared'}];
+      node.sharedResource = {href: './shared'};
 
       if (resources.texture) {
         node.textureData = [{href: './textures/0'}];
