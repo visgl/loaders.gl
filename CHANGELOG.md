@@ -2,6 +2,11 @@
 
 ## v2.3 Release
 
+#### v2.3.11
+
+- Avoid mutating input object in geojsonToBinary function (#1139)
+- Fix binary-geojson transformations for empty objects (#1137)
+
 #### v2.3.10
 
 - Fix dracoOptions on 2.3-release (#1126)
