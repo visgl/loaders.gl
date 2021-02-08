@@ -31,10 +31,43 @@ const PLAIN_GEOMETRY_DEFINITION = {
   }
 };
 
+const PLAIN_GEOMETRY_DEFINITION_WITHOUT_UV0 = {
+  offset: 8,
+  position: {
+    type: 'Float32',
+    component: 3
+  },
+  normal: {
+    type: 'Float32',
+    component: 3
+  },
+  color: {
+    type: 'UInt8',
+    component: 4
+  },
+  featureId: {
+    binding: 'per-feature',
+    type: 'UInt64',
+    component: 1
+  },
+  faceRange: {
+    binding: 'per-feature',
+    type: 'UInt32',
+    component: 2
+  }
+};
+
 const COMPRESSED_GEOMETRY_DEFINITION = {
   compressedAttributes: {
     encoding: 'draco',
     attributes: ['position', 'normal', 'uv0', 'color', 'feature-index']
+  }
+};
+
+const COMPRESSED_GEOMETRY_DEFINITION_WITHOUT_UV0 = {
+  compressedAttributes: {
+    encoding: 'draco',
+    attributes: ['position', 'normal', 'color', 'feature-index']
   }
 };
 
@@ -133,17 +166,21 @@ export const LAYERS = {
   geometryDefinitions: {
     path: 'compressGeometry',
     transform: val => {
-      const result = [{}];
+      const result = [{}, {}];
       result[0].geometryBuffers = [];
+      result[1].geometryBuffers = [];
+
       result[0].geometryBuffers.push(PLAIN_GEOMETRY_DEFINITION);
+      result[1].geometryBuffers.push(PLAIN_GEOMETRY_DEFINITION_WITHOUT_UV0);
       if (val) {
         result[0].geometryBuffers.push(COMPRESSED_GEOMETRY_DEFINITION);
+        result[1].geometryBuffers.push(COMPRESSED_GEOMETRY_DEFINITION_WITHOUT_UV0);
       }
       return result;
     },
     default: [
       {
-        geometryBuffers: [PLAIN_GEOMETRY_DEFINITION]
+        geometryBuffers: [PLAIN_GEOMETRY_DEFINITION, PLAIN_GEOMETRY_DEFINITION_WITHOUT_UV0]
       }
     ]
   },

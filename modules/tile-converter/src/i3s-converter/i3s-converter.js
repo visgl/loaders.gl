@@ -535,7 +535,7 @@ export default class I3SConverter {
     if (sourceTile.content && sourceTile.content.type === 'b3dm') {
       nodeInPage.mesh = {
         geometry: {
-          definition: 0
+          definition: texture ? 0 : 1
         },
         attribute: {}
       };
@@ -602,7 +602,7 @@ export default class I3SConverter {
 
     if (nodeInPage.mesh) {
       node.geometryData = [{href: './geometries/0'}];
-      node.sharedResource = [{href: './shared'}];
+      node.sharedResource = {href: './shared'};
 
       if (texture) {
         node.textureData = [{href: './textures/0'}];
