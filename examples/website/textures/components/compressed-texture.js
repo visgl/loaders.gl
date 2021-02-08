@@ -137,7 +137,12 @@ export default class CompressedTexture extends PureComponent {
 
     this.state = {
       supportedFormats: getSupportedGPUTextureFormats(props.gl),
-      loadOptions: {basis: {}},
+      loadOptions: {
+        basis: {
+          workerUrl:
+            'https://unpkg.com/@loaders.gl/textures@3.0.0-alpha.4/dist/basis-loader.worker.js'
+        }
+      },
       textureError: null,
       showStats: false,
       stats: []
@@ -170,6 +175,7 @@ export default class CompressedTexture extends PureComponent {
       const loadOptions = {
         ...this.state.loadOptions,
         basis: {
+          ...this.state.loadOptions.basis,
           format: {
             alpha: 'BC3',
             noAlpha: 'BC1'
