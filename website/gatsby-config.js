@@ -86,11 +86,11 @@ module.exports = {
 
         EXAMPLES: [
           {
-            title: 'Point Cloud Loaders',
+            title: 'glTF Loader',
             category: "Loaders",
-            image: 'images/example-pointcloud.jpg',
-            componentUrl: resolve(__dirname, '../examples/website/pointcloud/app.js'),
-            path: 'examples/pointcloud'
+            image: 'images/example-gltf.jpg',
+            componentUrl: resolve(__dirname, './templates/example-gltf.jsx'),
+            path: 'examples/gltf'
           },
           {
             title: 'Texture Loaders',
@@ -100,11 +100,11 @@ module.exports = {
             path: 'examples/textures'
           },
           {
-            title: 'glTF Loader',
+            title: 'Point Cloud Loaders',
             category: "Loaders",
-            image: 'images/example-gltf.jpg',
-            componentUrl: resolve(__dirname, './templates/example-gltf.jsx'),
-            path: 'examples/gltf'
+            image: 'images/example-pointcloud.jpg',
+            componentUrl: resolve(__dirname, '../examples/website/pointcloud/app.js'),
+            path: 'examples/pointcloud'
           },
           {
             title: '3D Tiles Loader',
