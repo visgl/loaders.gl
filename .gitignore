@@ -7,14 +7,18 @@ dist/*
 dist.js
 dist.min.js
 
+# lock files
+package-lock.json
+*/**/package-lock.json
+examples/**/yarn.lock
+
+
 .reify-cache
 .nyc_output/
 coverage/
 node_modules/
 npm-debug.log
 stats.json
-package-lock.json
-*/**/yarn.lock
 yarn-error.log
 
 # Misc files
