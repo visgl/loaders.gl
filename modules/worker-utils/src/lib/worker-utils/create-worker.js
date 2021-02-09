@@ -1,8 +1,6 @@
 /* eslint-disable no-restricted-globals */
 /* global self */
 
-import {getTransferList} from './get-transfer-list';
-
 export function createWorker(processFunc) {
   // Check that we are actually in a worker thread
   if (typeof self === 'undefined') {
@@ -19,10 +17,8 @@ export function createWorker(processFunc) {
 
       const result = await processFunc(data);
 
-      const transferList = getTransferList(result);
-
       // @ts-ignore self is WorkerGlobalScope
-      self.postMessage({type: 'done', result}, transferList);
+      self.postMessage({type: 'done', result});
     } catch (error) {
       // @ts-ignore self is WorkerGlobalScope
       self.postMessage({type: 'error', message: error.message});

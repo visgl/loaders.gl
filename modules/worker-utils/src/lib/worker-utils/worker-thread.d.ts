@@ -1,19 +1,26 @@
-/* global Worker */
 
-
-export type onMessageFunc = (options: {
-  worker: Worker,
+export type WorkerMessage = {
+  workerThread?: WorkerThread,
   data: any,
   resolve: (result) => any,
-  reject: (error) => any
-}) => any;
+  reject?: (error) => any
+};
 
+/**
+ * Represents one worker thread
+ */
 export default class WorkerThread {
+  static isSupported(): boolean;
+
   constructor(options: {
     source: string,
     name?: string,
-    onMessage?: onMessageFunc
+    onMessage?: (WorkerMessage) => any;
   });
+
+  destroy(): void;
+
+  postMessage(data, transferList?: any[]): void;
 
   /**
    * Process binary data in a worker
@@ -21,6 +28,4 @@ export default class WorkerThread {
    * @returns a Promise with data (containing typed arrays) transferred back from worker
    */
   process(data: any): Promise<any>;
-
-  destroy(): void;
 }

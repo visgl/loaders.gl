@@ -26,11 +26,11 @@
     "README.md"
   ],
   "browser": {
+    "child_process": false,
     "./src/lib/node/require-utils.node.js": false,
     "./dist/es5/lib/node/require-utils.node.js": false,
     "./dist/esm/lib/node/require-utils.node.js": false,
-    "./dist/es6/lib/node/require-utils.node.js": false,
-    "child_process": false
+    "./dist/es6/lib/node/require-utils.node.js": false
   },
   "scripts": {
     "pre-build": "npm run build-workers",
