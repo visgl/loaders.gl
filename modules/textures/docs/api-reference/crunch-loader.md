@@ -1,4 +1,4 @@
-# CrunchLoader
+# Worker
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />
@@ -17,10 +17,10 @@ Loader for compressed textures in the Crunch file format
 ## Usage
 
 ```js
-import {CrunchLoader} from '@loaders.gl/textures';
+import {CrunchWorkerLoader} from '@loaders.gl/textures';
 import {load} from '@loaders.gl/core';
 
-const mipLevels = await load(url, CrunchLoader);
+const mipLevels = await load(url, CrunchWorkerLoader);
 for (const image of mipLevels) {
   ...
 }
