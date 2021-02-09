@@ -97,7 +97,12 @@ export default class I3SConverter {
   }
 
   // PRIVATE
-  /* eslint-disable max-statements */
+  /**
+   * Convert and save the layer and embedded tiles
+   * @param {string} outputPath - path to save output data
+   * @param {string} tilesetName - new tileset path
+   * @return {Promise<void>}
+   */
   async _createAndSaveTileset(outputPath, tilesetName) {
     const tilesetPath = join(`${outputPath}`, `${tilesetName}`);
     // Removing the tilesetPath needed to exclude erroneous files after conversion
@@ -108,8 +113,40 @@ export default class I3SConverter {
     }
 
     this.layers0Path = join(tilesetPath, 'SceneServer', 'layers', '0');
-    const extent = convertCommonToI3SExtentCoordinate(this.sourceTileset);
 
+    this._formLayers0(tilesetName);
+
+    this.materialDefinitions = [];
+    this.materialMap = new Map();
+
+    const sourceRootTile = this.sourceTileset.root;
+    const coordinates = convertCommonToI3SCoordinate(sourceRootTile, this.geoidHeightModel);
+    const parentId = this.nodePages.push({
+      lodThreshold: 0,
+      obb: coordinates.obb,
+      children: []
+    });
+
+    const isCreateSlpk = this.options.slpk;
+    const root0 = this._formRootNodeIndexDocument(coordinates);
+
+    await this._convertNodesTree(root0, sourceRootTile, parentId, coordinates);
+
+    this.layers0.materialDefinitions = this.materialDefinitions;
+    await this._writeLayers0();
+    createSceneServerPath(tilesetName, this.layers0, tilesetPath);
+    await this._writeNodeIndexDocument(root0, 'root', join(this.layers0Path, 'nodes', 'root'));
+    await this.nodePages.save(this.layers0Path, this.fileMap, isCreateSlpk);
+    await this._createSlpk(tilesetPath);
+  }
+
+  /**
+   * Form object of 3DSceneLayer https://github.com/Esri/i3s-spec/blob/master/docs/1.7/3DSceneLayer.cmn.md
+   * @param {string} tilesetName - Name of layer
+   * @return {void}
+   */
+  _formLayers0(tilesetName) {
+    const extent = convertCommonToI3SExtentCoordinate(this.sourceTileset);
     const layers0data = {
       version: `{${uuidv4().toUpperCase()}}`,
       id: 0,
@@ -126,12 +163,14 @@ export default class I3SConverter {
     };
 
     this.layers0 = transform(layers0data, layersTemplate);
-    this.materialDefinitions = [];
-    this.materialMap = new Map();
+  }
 
-    const sourceRootTile = this.sourceTileset.root;
-    const rootPath = join(this.layers0Path, 'nodes', 'root');
-    const coordinates = convertCommonToI3SCoordinate(sourceRootTile, this.geoidHeightModel);
+  /**
+   * Convert and save the layer and embedded tiles
+   * @param {object} coordinates - mbs and obb data about node's bounding volume
+   * @return {object} - 3DNodeIndexDocument data https://github.com/Esri/i3s-spec/blob/master/docs/1.7/3DNodeIndexDocument.cmn.md
+   */
+  _formRootNodeIndexDocument(coordinates) {
     const root0data = {
       version: `{${uuidv4().toUpperCase()}}`,
       id: 'root',
@@ -149,15 +188,18 @@ export default class I3SConverter {
       ...coordinates,
       children: []
     };
-    const root0 = transform(root0data, nodeTemplate);
+    return transform(root0data, nodeTemplate);
+  }
 
-    const parentId = this.nodePages.push({
-      lodThreshold: 0,
-      obb: coordinates.obb,
-      children: []
-    });
-
-    const isCreateSlpk = this.options.slpk;
+  /**
+   * Form object of 3DSceneLayer https://github.com/Esri/i3s-spec/blob/master/docs/1.7/3DSceneLayer.cmn.md
+   * @param {object} root0 - 3DNodeIndexDocument of root node https://github.com/Esri/i3s-spec/blob/master/docs/1.7/3DNodeIndexDocument.cmn.md
+   * @param {object} sourceRootTile - Source (3DTile) tile data
+   * @param {number} parentId - node id in node pages
+   * @param {object} coordinates - mbs and obb data about node's bounding volume
+   * @return {Promise<void>}
+   */
+  async _convertNodesTree(root0, sourceRootTile, parentId, coordinates) {
     await this.sourceTileset._loadTile(sourceRootTile);
     if (sourceRootTile.content && sourceRootTile.content.type === 'b3dm') {
       root0.children.push({
@@ -168,7 +210,7 @@ export default class I3SConverter {
       const [child] = await this._createNode(root0, sourceRootTile, parentId, 0);
       const childPath = join(this.layers0Path, 'nodes', child.path);
 
-      if (isCreateSlpk) {
+      if (this.options.slpk) {
         this.fileMap['nodes/1/3dNodeIndexDocument.json.gz'] = await writeFileForSlpk(
           childPath,
           JSON.stringify(child),
@@ -178,16 +220,22 @@ export default class I3SConverter {
         await writeFile(childPath, JSON.stringify(child));
       }
     } else {
-      await this._addChildrenWithNeighborsAndWriteFile(
-        {rootNode: root0, sourceTiles: sourceRootTile.children},
+      await this._addChildrenWithNeighborsAndWriteFile({
+        parentNode: root0,
+        sourceTiles: sourceRootTile.children,
         parentId,
-        1
-      );
-      await sourceRootTile.unloadContent();
+        level: 1
+      });
     }
+    await sourceRootTile.unloadContent();
+  }
 
-    this.layers0.materialDefinitions = this.materialDefinitions;
-    if (isCreateSlpk) {
+  /**
+   * Write 3DSceneLayer https://github.com/Esri/i3s-spec/blob/master/docs/1.7/3DSceneLayer.cmn.md in file
+   * @return {Promise<void>}
+   */
+  async _writeLayers0() {
+    if (this.options.slpk) {
       this.fileMap['3dSceneLayer.json.gz'] = await writeFileForSlpk(
         this.layers0Path,
         JSON.stringify(this.layers0),
@@ -196,10 +244,15 @@ export default class I3SConverter {
     } else {
       await writeFile(this.layers0Path, JSON.stringify(this.layers0));
     }
-    createSceneServerPath(tilesetName, this.layers0, tilesetPath);
+  }
 
-    if (isCreateSlpk) {
-      this.fileMap['nodes/root/3dNodeIndexDocument.json.gz'] = await writeFileForSlpk(
+  /**
+   * Write 3DNodeIndexDocument https://github.com/Esri/i3s-spec/blob/master/docs/1.7/3DNodeIndexDocument.cmn.md in file
+   * @return {Promise<void>}
+   */
+  async _writeNodeIndexDocument(root0, nodePath, rootPath) {
+    if (this.options.slpk) {
+      this.fileMap[`nodes/${nodePath}/3dNodeIndexDocument.json.gz`] = await writeFileForSlpk(
         rootPath,
         JSON.stringify(root0),
         '3dNodeIndexDocument.json'
@@ -207,8 +260,15 @@ export default class I3SConverter {
     } else {
       await writeFile(rootPath, JSON.stringify(root0));
     }
-    await this.nodePages.save(this.layers0Path, this.fileMap, isCreateSlpk);
-    if (isCreateSlpk) {
+  }
+
+  /**
+   * Pack files into *.slpk archive
+   * @param {string} tilesetPath - Path to save file
+   * @return {Promise<void>}
+   */
+  async _createSlpk(tilesetPath) {
+    if (this.options.slpk) {
       const slpkTilesetPath = join(tilesetPath, 'SceneServer', 'layers', '0');
       const slpkFileName = `${tilesetPath}.slpk`;
       await compressWithChildProcess(
@@ -244,33 +304,52 @@ export default class I3SConverter {
       }
     }
   }
-  /* eslint-enable max-statements */
 
-  async _addChildrenWithNeighborsAndWriteFile(data, parentId, level) {
+  /**
+   * Add child nodes recursively and write them to files
+   * @param {object} data - arguments
+   * @param {object} data.sourceTiles - array of source child nodes
+   * @param {object} data.parentNode - 3DNodeIndexDocument of parent node for processing child nodes
+   * @param {number} data.parentId - id of parent node in node pages
+   * @param {number} data.level - level of node (distanse to root node in the tree)
+   * @return {Promise<void>}
+   */
+  async _addChildrenWithNeighborsAndWriteFile(data) {
     const childNodes = [];
-    await this._addChildren({...data, childNodes}, parentId, level);
-    await this._addNeighborsAndWriteFile(data.rootNode, childNodes);
+    await this._addChildren({...data, childNodes});
+    await this._addNeighborsAndWriteFile(data.parentNode, childNodes);
   }
 
-  async _addChildren(data, parentId, level) {
+  /**
+   * Add child nodes recursively and write them to files
+   * @param {object} data - arguments
+   * @param {array} data.childNodes - array of target child nodes
+   * @param {array} data.sourceTiles - array of source child nodes
+   * @param {object} data.parentNode - 3DNodeIndexDocument of parent node for processing child nodes
+   * @param {number} data.parentId - id of parent node in node pages
+   * @param {number} data.level - level of node (distanse to root node in the tree)
+   * @return {Promise<void>}
+   */
+  async _addChildren({childNodes, sourceTiles, parentNode, parentId, level}) {
     if (this.options.maxDepth && level > this.options.maxDepth) {
       return;
     }
-    const childNodes = data.childNodes;
-    for (const sourceTile of data.sourceTiles) {
+    for (const sourceTile of sourceTiles) {
       if (sourceTile.type === 'json') {
         await this.sourceTileset._loadTile(sourceTile);
-        await this._addChildren(
-          {rootNode: data.rootNode, sourceTiles: sourceTile.children, childNodes},
+        await this._addChildren({
+          parentNode,
+          sourceTiles: sourceTile.children,
+          childNodes,
           parentId,
-          level + 1
-        );
+          level: level + 1
+        });
         await sourceTile.unloadContent();
       } else {
         const coordinates = convertCommonToI3SCoordinate(sourceTile, this.geoidHeightModel);
-        const children = await this._createNode(data.rootNode, sourceTile, parentId, level);
+        const children = await this._createNode(parentNode, sourceTile, parentId, level);
         for (const child of children) {
-          data.rootNode.children.push({
+          parentNode.children.push({
             id: child.id,
             href: `../${child.path}`,
             ...coordinates
@@ -284,15 +363,21 @@ export default class I3SConverter {
     }
   }
 
-  async _addNeighborsAndWriteFile(rootNode, childNodes) {
+  /**
+   * Add neightbors to 3DNodeIndexDocument and write it in a file
+   * @param {object} parentNode - arguments
+   * @param {array} childNodes - array of target child nodes
+   * @return {Promise<void>}
+   */
+  async _addNeighborsAndWriteFile(parentNode, childNodes) {
     for (const node of childNodes) {
       const childPath = join(this.layers0Path, 'nodes', node.path);
       const nodePath = node.path;
       delete node.path;
 
       // Don't do large amount of "neightbors" to avoid big memory consumption
-      if (rootNode.children.length < 1000) {
-        for (const neighbor of rootNode.children) {
+      if (parentNode.children.length < 1000) {
+        for (const neighbor of parentNode.children) {
           // eslint-disable-next-line max-depth
           if (node.id === neighbor.id) {
             continue; // eslint-disable-line
@@ -301,23 +386,26 @@ export default class I3SConverter {
           node.neighbors.push({...neighbor});
         }
       } else {
+        // eslint-disable-next-line no-console, no-undef
+        console.warn(
+          `Node ${node.id}: neighbors attribute is omited because of large number of neigbors`
+        );
         delete node.neighbors;
       }
-
-      if (this.options.slpk) {
-        this.fileMap[`nodes/${nodePath}/3dNodeIndexDocument.json.gz`] = await writeFileForSlpk(
-          childPath,
-          JSON.stringify(node),
-          '3dNodeIndexDocument.json'
-        );
-      } else {
-        await writeFile(childPath, JSON.stringify(node));
-      }
+      await this._writeNodeIndexDocument(node, nodePath, childPath);
       node.neighbors = [];
     }
   }
 
-  async _createNode(rootTile, sourceTile, parentId, level) {
+  /**
+   * Convert tile to one or more I3S nodes
+   * @param {object} parentTile - parent 3DNodeIndexDocument
+   * @param {object} sourceTile - source tile (3DTile)
+   * @param {number} parentId - id of parent node in node pages
+   * @param {number} level - level of node (distanse to root node in the tree)
+   * @return {Promise<object[]>}
+   */
+  async _createNode(parentTile, sourceTile, parentId, level) {
     this._checkAddRefinementTypeForTile(sourceTile);
     await this._updateTilesetOptions();
     await this.sourceTileset._loadTile(sourceTile);
@@ -352,7 +440,7 @@ export default class I3SConverter {
         resources
       );
       const node = this._createNodeIndexDocument(
-        rootTile,
+        parentTile,
         coordinates,
         lodSelection,
         nodeInPage,
@@ -369,14 +457,21 @@ export default class I3SConverter {
     sourceTile.unloadContent();
 
     const firstNode = nodes[0];
-    await this._addChildrenWithNeighborsAndWriteFile(
-      {rootNode: firstNode, sourceTiles: sourceTile.children},
-      firstNode.id,
-      level + 1
-    );
+    await this._addChildrenWithNeighborsAndWriteFile({
+      parentNode: firstNode,
+      sourceTiles: sourceTile.children,
+      parentId: firstNode.id,
+      level: level + 1
+    });
     return nodes;
   }
 
+  /**
+   * Convert attributesStorageInfo https://github.com/Esri/i3s-spec/blob/master/docs/1.7/attributeStorageInfo.cmn.md
+   * from B3DM batch table
+   * @param {object} sourceTileContent - tile content of 3DTile
+   * @return {void}
+   */
   _convertAttributeStorageInfo(sourceTileContent) {
     const batchTable = sourceTileContent.batchTableJson;
     if (batchTable && !this.layers0.attributeStorageInfo.length) {
@@ -384,6 +479,19 @@ export default class I3SConverter {
     }
   }
 
+  /**
+   * Convert tile to one or more I3S nodes
+   * @param {object} sourceTile - source tile (3DTile)
+   * @return {Promise<null | object[]>} If B3DM - returns resources for I3S node:
+   * result.geometry - Uint8Array with geometry attributes
+   * result.compressedGeometry - Uint8Array with compressed (draco) geometry
+   * result.texture - texture image
+   * result.sharedResources - shared resource data object
+   * result.meshMaterial - PBR-like material object
+   * result.vertexCount - number of vertices in geometry
+   * result.attributes - feature attributes
+   * result.featureCount - number of features
+   */
   async _convertResources(sourceTile) {
     if (!sourceTile.content || sourceTile.content.type !== 'b3dm') {
       return null;
@@ -398,6 +506,20 @@ export default class I3SConverter {
     return resourcesData;
   }
 
+  /**
+   * Create a new node object (https://github.com/Esri/i3s-spec/blob/master/docs/1.7/node.cmn.md)
+   * in node pages (https://github.com/Esri/i3s-spec/blob/master/docs/1.7/nodePage.cmn.md)
+   * @param {object} maxScreenThresholdSQ - Level of Details (LOD) metric
+   * @param {object} coordinates - Bounding volume coordinates
+   * @param {object} sourceTile - source tile (3DTile)
+   * @param {number} parentId - id of parent node in node pages
+   * @param {object} resources - the node resources data
+   * @param {object} resources.meshMaterial - PBR-like material object
+   * @param {object} resources.texture - texture image
+   * @param {number} resources.vertexCount - number of vertices in geometry
+   * @param {number} resources.featureCount - number of features
+   * @return {object} - the node object in node pages
+   */
   _createNodeInNodePages(
     maxScreenThresholdSQ,
     coordinates,
@@ -441,20 +563,37 @@ export default class I3SConverter {
     return nodeInPage;
   }
 
-  _createNodeIndexDocument(rootTile, coordinates, lodSelection, nodeInPage, resources) {
+  /**
+   * Create a new node page object in node pages
+   * @param {object} parentNode - 3DNodeIndexDocument https://github.com/Esri/i3s-spec/blob/master/docs/1.7/3DNodeIndexDocument.cmn.md object of the parent node
+   * @param {object} coordinates - Bounding volume coordinates
+   * @param {object} lodSelection - Level of Details (LOD) metrics
+   * @param {object} nodeInPage - corresponding node object in a node page
+   * @param {object} resources - the node resources data
+   * @param {object} resources.texture - texture image
+   * @param {object} resources.attributes - feature attributes
+   * @return {object} - 3DNodeIndexDocument https://github.com/Esri/i3s-spec/blob/master/docs/1.7/3DNodeIndexDocument.cmn.md object
+   */
+  _createNodeIndexDocument(
+    parentNode,
+    coordinates,
+    lodSelection,
+    nodeInPage,
+    {texture, attributes}
+  ) {
     const nodeId = nodeInPage.index;
     const nodeData = {
-      version: rootTile.version,
+      version: parentNode.version,
       id: nodeId.toString(),
       path: nodeId.toString(),
-      level: rootTile.level + 1,
+      level: parentNode.level + 1,
       ...coordinates,
       lodSelection,
       parentNode: {
-        id: rootTile.id,
-        href: `../${rootTile.id}`,
-        mbs: rootTile.mbs,
-        obb: rootTile.obb
+        id: parentNode.id,
+        href: `../${parentNode.id}`,
+        mbs: parentNode.mbs,
+        obb: parentNode.obb
       },
       children: [],
       neighbors: []
@@ -465,12 +604,12 @@ export default class I3SConverter {
       node.geometryData = [{href: './geometries/0'}];
       node.sharedResource = {href: './shared'};
 
-      if (resources.texture) {
+      if (texture) {
         node.textureData = [{href: './textures/0'}];
       }
 
-      const attributes = resources.attributes;
       if (
+        attributes &&
         attributes.length &&
         this.layers0.attributeStorageInfo &&
         this.layers0.attributeStorageInfo.length
@@ -486,17 +625,18 @@ export default class I3SConverter {
     return node;
   }
 
+  /**
+   * Write node resources in files
+   * @param {object} resources - source tile (3DTile)
+   * @param {Uint8Array} resources.geometry - Uint8Array with geometry attributes
+   * @param {Uint8Array} resources.compressedGeometry - Uint8Array with compressed (draco) geometry
+   * @param {object} resources.texture - texture image
+   * @param {object} resources.sharedResources - shared resource data object
+   * @param {object} resources.attributes - feature attributes
+   * @return {Promise<void>}
+   */
   async _writeResources(
-    {
-      geometry: geometryBuffer,
-      compressedGeometry,
-      texture,
-      sharedResources,
-      meshMaterial,
-      vertexCount,
-      attributes,
-      featureCount
-    },
+    {geometry: geometryBuffer, compressedGeometry, texture, sharedResources, attributes},
     nodePath
   ) {
     const childPath = join(this.layers0Path, 'nodes', nodePath);
@@ -508,6 +648,14 @@ export default class I3SConverter {
     await this._writeAttributes(attributes, childPath, slpkChildPath);
   }
 
+  /**
+   * Write non-compressed and compressed geometries in files
+   * @param {Uint8Array} geometryBuffer - Uint8Array with geometry attributes
+   * @param {Uint8Array} compressedGeometry - Uint8Array with compressed (draco) geometry
+   * @param {string} childPath - a child path to write resources
+   * @param {string} slpkChildPath - resource path inside *slpk file
+   * @return {Promise<void>}
+   */
   async _writeGeometries(geometryBuffer, compressedGeometry, childPath, slpkChildPath) {
     if (this.options.slpk) {
       const slpkGeometryPath = join(childPath, 'geometries');
@@ -536,6 +684,14 @@ export default class I3SConverter {
     }
   }
 
+  /**
+   * Write shared resources in a file
+   * @param {object} sharedResources - shared resource data object
+   * @param {string} childPath - a child path to write resources
+   * @param {string} slpkChildPath - resource path inside *slpk file
+   * @param {Uint8Array} nodePath - a node path
+   * @return {Promise<void>}
+   */
   async _writeShared(sharedResources, childPath, slpkChildPath, nodePath) {
     sharedResources.nodePath = nodePath;
     const sharedData = transform(sharedResources, SHARED_RESOURCES_TEMPLATE);
@@ -553,6 +709,13 @@ export default class I3SConverter {
     }
   }
 
+  /**
+   * Write the texture image in a file
+   * @param {object} texture - the texture image
+   * @param {string} childPath - a child path to write resources
+   * @param {string} slpkChildPath - the resource path inside *slpk file
+   * @return {Promise<void>}
+   */
   async _writeTexture(texture, childPath, slpkChildPath) {
     if (texture) {
       const format = this._getFormatByMimeType(texture.mimeType);
@@ -584,6 +747,13 @@ export default class I3SConverter {
     }
   }
 
+  /**
+   * Write feature attributes in files
+   * @param {object} attributes - feature attributes
+   * @param {string} childPath - a child path to write resources
+   * @param {string} slpkChildPath - the resource path inside *slpk file
+   * @return {Promise<void>}
+   */
   async _writeAttributes(attributes, childPath, slpkChildPath) {
     if (
       attributes.length &&
@@ -609,6 +779,11 @@ export default class I3SConverter {
     }
   }
 
+  /**
+   * Return file format by its MIME type
+   * @param {string} mimeType - feature attributes
+   * @return {string}
+   */
   _getFormatByMimeType(mimeType) {
     switch (mimeType) {
       case 'image/jpeg':
@@ -634,6 +809,7 @@ export default class I3SConverter {
     this.materialMap.set(hash, newMaterialId);
     return newMaterialId;
   }
+
   /**
    * Generate storage attribute for map segmentation.
    * @param {Number} attributeIndex - order index of attribute (f_0, f_1 ...).
@@ -669,6 +845,12 @@ export default class I3SConverter {
     return storageAttribute;
   }
 
+  /**
+   * Get the attribute type for attributeStorageInfo https://github.com/Esri/i3s-spec/blob/master/docs/1.7/attributeStorageInfo.cmn.md
+   * @param {string} key - attribute's key
+   * @param {string} attribute - attribute's type in batchTable
+   * @return {string}
+   */
   getAttributeType(key, attribute) {
     if (key === OBJECT_ID_TYPE) {
       return OBJECT_ID_TYPE;
@@ -711,6 +893,7 @@ export default class I3SConverter {
       valuesPerElement: 1
     };
   }
+
   /**
    * Setup double attribute for map segmentation.
    * @param {Object} storageAttribute - attribute for map segmentation .
@@ -736,6 +919,7 @@ export default class I3SConverter {
       alias: key
     };
   }
+
   /**
    * Do conversion of 3DTiles batch table to I3s node attributes.
    * @param {Object} batchTable - Table with layer meta data.
@@ -765,6 +949,7 @@ export default class I3SConverter {
       attributeIndex += 1;
     }
   }
+
   /**
    * Find and return attribute type based on key form Batch table.
    * @param {String} attributeType
@@ -784,6 +969,7 @@ export default class I3SConverter {
         return 'esriFieldTypeString';
     }
   }
+
   /**
    * Generate popup info to show metadata on the map.
    * @param {Object} batchTable - Batch table data with OBJECTID.
@@ -818,6 +1004,11 @@ export default class I3SConverter {
     };
   }
 
+  /**
+   * Print statistics in the end of conversion
+   * @param {object} params - output files data
+   * @return {Promise<void>}
+   */
   async _finishConversion(params) {
     const {tilesCount, tilesWithAddRefineCount} = this.refinementCounter;
     const addRefinementPercentage = tilesWithAddRefineCount
@@ -869,6 +1060,7 @@ export default class I3SConverter {
       this.sourceTileset.fetchOptions.token = options.token;
     }
   }
+
   /** Do calculations of all tiles and tiles with "ADD" type of refinement.
    * @param {Object} tile
    * @return {void}
