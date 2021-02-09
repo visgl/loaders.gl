@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import {
   BasisLoader,
   CompressedTextureLoader,
-  CrunchLoader,
+  CrunchWorkerLoader,
   GL_CONSTANTS,
   getSupportedGPUTextureFormats
 } from '@loaders.gl/textures';
@@ -195,7 +195,7 @@ export default class CompressedTexture extends PureComponent {
       const {arrayBuffer, length, src} = await this.getLoadedData(image);
       const loader = await selectLoader(src, [
         CompressedTextureLoader,
-        CrunchLoader,
+        CrunchWorkerLoader,
         BasisLoader,
         ImageLoader
       ]);

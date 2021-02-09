@@ -24,8 +24,8 @@ export const CompressedTextureWorkerLoader = {
   binary: true,
   options: {
     'compressed-texture': {
-      libraryPath: `libs/`
-      // workerUrl: `https://unpkg.com/@loaders.gl/textures@${VERSION}/dist/compressed-texture-loader.worker.js`
+      libraryPath: `libs/`,
+      workerUrl: `https://unpkg.com/@loaders.gl/textures@${VERSION}/dist/compressed-texture-loader.worker.js`
     }
   }
 };

@@ -1,7 +1,7 @@
 // Loaders
 export {BasisLoader, BasisWorkerLoader} from './basis-loader';
-export {CompressedTextureLoader} from './compressed-texture-loader';
-export {CrunchLoader, CrunchWorkerLoader} from './crunch-loader';
+export {CompressedTextureLoader, CompressedTextureWorkerLoader} from './compressed-texture-loader';
+export {CrunchWorkerLoader} from './crunch-loader';
 export {NPYLoader, NPYWorkerLoader} from './npy-loader';
 
 // Writers
