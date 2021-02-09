@@ -1,0 +1,49 @@
+<!-- Forked from github AnthumChris/fetch-progress-indicators under MIT license -->
+<!doctype html>
+<body>
+  <main>
+    <div id="status"></div>
+    <img id="img" />
+  </main>
+</body>
+<script src="https://unpkg.com/@loaders.gl/core@2.2.0/dist/dist.js"></script>
+<script src="https://unpkg.com/@loaders.gl/images@2.2.0/dist/dist.js"></script>
+<script src="https://unpkg.com/@loaders.gl/video@2.2.0/dist/dist.js"></script>
+
+<script>
+  const elStatus = document.getElementById('status');
+  const elProgress = document.getElementById('progress');
+  const elImage = document.getElementById('img');
+
+  async function main() {
+    elStatus.innerHTML = 'Generating GIF...';
+
+    const IMAGE_URLS =  [
+      'http://i.imgur.com/2OO33vX.jpg',
+      'http://i.imgur.com/qOwVaSN.png',
+      'http://i.imgur.com/Vo5mFZJ.gif'
+    ];
+
+    const images = await Promise.all(
+      IMAGE_URLS.map(url => load(url, ImageLoader, {image: {type: 'image'}}))
+    );
+
+    const gifBuilder = new GIFBuilder({source: 'images', width: 400, height: 400});
+
+    for (const image of images) {
+      await gifBuilder.add(image);
+    }
+
+    try {
+      const gifDataUrl = await gifBuilder.build();
+      animatedImage = document.createElement('img');
+      animatedImage.src = gifDataUrl;
+      document.body.appendChild(animatedImage);
+      elStatus.innerHTML = '...GIF generation completed';
+    } catch (error) {
+      elStatus.innerHTML = `...GIF generation failed: ${error}`;
+    }
+  }
+
+  main();
+</script>
