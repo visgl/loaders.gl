@@ -12,6 +12,7 @@ export const BasisWorkerLoader = {
   id: 'basis',
   module: 'textures',
   version: VERSION,
+  worker: true,
   extensions: ['basis'],
   mimeTypes: ['application/octet-stream'],
   tests: ['sB'],
@@ -19,8 +20,7 @@ export const BasisWorkerLoader = {
   options: {
     basis: {
       format: 'rgb565', // TODO: auto...
-      libraryPath: `libs/`,
-      workerUrl: `https://unpkg.com/@loaders.gl/textures@${VERSION}/dist/basis-loader.worker.js`
+      libraryPath: `libs/`
     }
   }
 };

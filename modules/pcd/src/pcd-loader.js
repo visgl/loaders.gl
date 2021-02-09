@@ -15,12 +15,11 @@ export const PCDWorkerLoader = {
   id: 'pcd',
   module: 'pcd',
   version: VERSION,
+  worker: true,
   extensions: ['pcd'],
   mimeTypes: ['text/plain'],
   options: {
-    pcd: {
-      workerUrl: `https://unpkg.com/@loaders.gl/pcd@${VERSION}/dist/pcd-loader.worker.js`
-    }
+    pcd: {}
   }
 };
 

@@ -5,9 +5,7 @@ import {setLoaderOptions, fetchFile, parse, parseInBatches} from '@loaders.gl/co
 const FLATGEOBUF_COUNTRIES_DATA_URL = '@loaders.gl/flatgeobuf/test/data/countries.fgb';
 
 setLoaderOptions({
-  fgb: {
-    workerUrl: 'modules/flatgeobuf/dist/flatgeobuf-loader.worker.js'
-  }
+  _workerType: 'test'
 });
 
 test('Load FlatGeobuf file', async t => {

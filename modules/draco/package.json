@@ -33,8 +33,8 @@
   "scripts": {
     "pre-build": "npm run build-worker && npm run build-worker-dev && npm run build-bundle && npm run build-bundle -- --env.dev",
     "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js",
-    "build-worker": "webpack --entry ./src/workers/draco-loader.worker.js --output ./dist/draco-loader.worker.js --config ../../scripts/webpack/worker.js",
-    "build-worker-dev": "webpack --entry ./src/workers/draco-loader.worker.js --output ./dist/draco-loader.worker.dev.js --config ../../scripts/webpack/worker.js --env.dev"
+    "build-worker": "webpack --entry ./src/workers/draco-worker.js --output ./dist/draco-worker.js --config ../../scripts/webpack/worker.js",
+    "build-worker-dev": "webpack --entry ./src/workers/draco-worker.js --output ./dist/draco-worker.dev.js --config ../../scripts/webpack/worker.js --env.dev"
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",

@@ -22,6 +22,7 @@ export const MVTWorkerLoader = {
     'application/x-protobuf'
     // 'application/octet-stream'
   ],
+  worker: true,
   category: 'geometry',
   options: {
     mvt: {
@@ -29,8 +30,7 @@ export const MVTWorkerLoader = {
       layerProperty: 'layerName',
       layers: null,
       tileIndex: null,
-      _format: 'geojson',
-      workerUrl: `https://unpkg.com/@loaders.gl/mvt@${VERSION}/dist/mvt-loader.worker.js`
+      _format: 'geojson'
     }
   }
 };

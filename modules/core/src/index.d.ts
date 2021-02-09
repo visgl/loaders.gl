@@ -29,7 +29,8 @@ export {RequestScheduler as RequestScheduler} from '@loaders.gl/loader-utils';
 export {makeIterator} from './iterator-utils/make-iterator/make-iterator';
 
 // CORE LOADERS
-export {NullLoader} from './null-loader';
+export {NullWorkerLoader, NullLoader} from '@loaders.gl/loader-utils';
+export {JSONLoader} from '@loaders.gl/loader-utils';
 
 // EXPERIMENTAL
 export {default as _fetchProgress} from './lib/progress/fetch-progress';

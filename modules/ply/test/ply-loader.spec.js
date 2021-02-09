@@ -18,9 +18,7 @@ const PLY_BUN_ZIPPER_URL = '@loaders.gl/ply/test/data/bun_zipper.ply';
 const PLY_BUN_BINARY_URL = '@loaders.gl/ply/test/data/bunny.ply';
 
 setLoaderOptions({
-  ply: {
-    workerUrl: 'modules/ply/dist/ply-loader.worker.js'
-  }
+  _workerType: 'test'
 });
 
 function validateTextPLY(t, data) {

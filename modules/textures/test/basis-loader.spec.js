@@ -6,10 +6,8 @@ import {load, setLoaderOptions} from '@loaders.gl/core';
 const TEST_URL = '@loaders.gl/textures/test/data/alpha3.basis';
 
 setLoaderOptions({
-  CDN: null,
-  basis: {
-    workerUrl: 'modules/textures/dist/basis-loader.worker.js'
-  }
+  _workerType: 'test',
+  CDN: null
 });
 
 test('BasisLoader#imports', t => {

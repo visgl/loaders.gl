@@ -1,3 +1,3 @@
-import {WorkerObject} from "@loaders.gl/loader-utils";
+import {LoaderObject} from "@loaders.gl/loader-utils";
 
-export const JSONLoader: WorkerObject;
+export const JSONLoader: LoaderObject;

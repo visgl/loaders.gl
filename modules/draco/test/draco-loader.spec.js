@@ -10,9 +10,7 @@ const BUNNY_DRC_URL = '@loaders.gl/draco/test/data/bunny.drc';
 const CESIUM_TILE_URL = '@loaders.gl/draco/test/data/cesium-tile.drc';
 
 setLoaderOptions({
-  draco: {
-    workerUrl: 'modules/draco/dist/draco-loader.worker.js'
-  }
+  _workerType: 'test'
 });
 
 test('DracoLoader#loader conformance', t => {

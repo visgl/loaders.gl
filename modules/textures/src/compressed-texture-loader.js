@@ -15,6 +15,7 @@ export const CompressedTextureWorkerLoader = {
   id: 'compressed-texture',
   module: 'textures',
   version: VERSION,
+  worker: true,
   extensions: [
     'ktx',
     'ktx2',
@@ -25,8 +26,7 @@ export const CompressedTextureWorkerLoader = {
   binary: true,
   options: {
     'compressed-texture': {
-      libraryPath: `libs/`,
-      workerUrl: `https://unpkg.com/@loaders.gl/textures@${VERSION}/dist/compressed-texture-loader.worker.js`
+      libraryPath: `libs/`
     }
   }
 };

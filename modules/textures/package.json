@@ -36,10 +36,10 @@
     "copy-libs": "cp -rf ./src/libs ./dist/libs",
     "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js",
     "build-worker": "npm run build-basis-worker && npm run build-npy-worker && npm run build-compressed-texture-worker && npm run build-crunch-worker",
-    "build-basis-worker": "webpack --entry ./src/workers/basis-loader.worker.js --output ./dist/basis-loader.worker.js --config ../../scripts/webpack/worker.js",
-    "build-npy-worker": "webpack --entry ./src/workers/npy-loader.worker.js --output ./dist/npy-loader.worker.js --config ../../scripts/webpack/worker.js",
-    "build-compressed-texture-worker": "webpack --entry ./src/workers/compressed-texture-loader.worker.js --output ./dist/compressed-texture-loader.worker.js --config ../../scripts/webpack/worker.js",
-    "build-crunch-worker": "webpack --entry ./src/workers/crunch-loader.worker.js --output ./dist/crunch-loader.worker.js --config ../../scripts/webpack/worker.js"
+    "build-basis-worker": "webpack --entry ./src/workers/basis-worker.js --output ./dist/basis-worker.js --config ../../scripts/webpack/worker.js",
+    "build-npy-worker": "webpack --entry ./src/workers/npy-worker.js --output ./dist/npy-worker.js --config ../../scripts/webpack/worker.js",
+    "build-compressed-texture-worker": "webpack --entry ./src/workers/compressed-texture-worker.js --output ./dist/compressed-texture-worker.js --config ../../scripts/webpack/worker.js",
+    "build-crunch-worker": "webpack --entry ./src/workers/crunch-worker.js --output ./dist/crunch-worker.js --config ../../scripts/webpack/worker.js"
   },
   "dependencies": {
     "@loaders.gl/core": "3.0.0-alpha.4",

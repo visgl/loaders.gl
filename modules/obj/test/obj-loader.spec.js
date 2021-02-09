@@ -10,9 +10,7 @@ const OBJ_NORMALS_URL = '@loaders.gl/obj/test/data/cube.obj';
 const OBJ_MULTI_PART_URL = '@loaders.gl/obj/test/data/magnolia.obj';
 
 setLoaderOptions({
-  obj: {
-    workerUrl: 'modules/obj/dist/obj-loader.worker.js'
-  }
+  _workerType: 'test'
 });
 
 test('OBJLoader#loader objects', t => {

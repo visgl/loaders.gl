@@ -1,4 +1,4 @@
-/** @typedef {import('@loaders.gl/loader-utils').WorkerObject} WorkerObject */
+/** @typedef {import('@loaders.gl/worker-utils').WorkerObject} WorkerObject */
 
 export {default as CRC32HashTransform} from './lib/crc32/crc32-hash-transform';
 export {default as CRC32CHashTransform} from './lib/crc32c/crc32c-hash-transform';

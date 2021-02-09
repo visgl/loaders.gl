@@ -18,9 +18,7 @@ import decodedLinesGeoJSON from '@loaders.gl/mvt/test/results/decoded_mvt_lines.
 import decodedPolygonsGeoJSON from '@loaders.gl/mvt/test/results/decoded_mvt_polygons.json';
 
 setLoaderOptions({
-  mvt: {
-    workerUrl: 'modules/mvt/dist/mvt-loader.worker.js'
-  }
+  _workerType: 'test'
 });
 
 test('Point MVT to local coordinates JSON', async t => {

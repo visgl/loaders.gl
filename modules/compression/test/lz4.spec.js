@@ -37,18 +37,14 @@ test('lz4#worker', async t => {
 
   const deflatedData = await processOnWorker(LZ4Worker, binaryData.slice(), {
     operation: 'deflate',
-    lz4: {
-      workerUrl: 'test'
-    }
+    _workerType: 'test'
   });
 
   t.equal(deflatedData.byteLength, 12813, 'Length correct');
 
   const inflatedData = await processOnWorker(LZ4Worker, deflatedData, {
     operation: 'inflate',
-    lz4: {
-      workerUrl: 'test'
-    }
+    _workerType: 'test'
   });
 
   t.equal(inflatedData.byteLength, 100000, 'Length correct');

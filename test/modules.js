@@ -6,6 +6,7 @@ const {_addAliases} = require('@loaders.gl/loader-utils');
 const ALIASES = require('./aliases');
 _addAliases(ALIASES);
 
+const TEST_BASE = true;
 const TEST_CORE = true;
 const TEST_IMAGES = true;
 const TEST_MESHES = true;
@@ -13,21 +14,25 @@ const TEST_SCENEGRAPHS = true;
 const TEST_TILES = true;
 const TEST_GEOSPATIAL = true;
 const TEST_TABLES = true;
-const TEST_ARCHIVES = true;
-const TEST_CLI = true;
+const TEST_ARCHIVES = false;
+const TEST_CLI = false;
 
 // Install polyfills (primarily for Node)
 const {installFilePolyfills} = require('@loaders.gl/polyfills');
 
 installFilePolyfills();
 
+// base
+if (TEST_BASE) {
+  require('@loaders.gl/polyfills/test');
+  require('@loaders.gl/worker-utils/test');
+  require('@loaders.gl/math/test');
+}
+
 // Core
 if (TEST_CORE) {
-  require('@loaders.gl/polyfills/test');
-  require('@loaders.gl/core/test');
-  require('@loaders.gl/worker-utils/test');
   require('@loaders.gl/loader-utils/test');
-  require('@loaders.gl/math/test');
+  require('@loaders.gl/core/test');
 }
 
 // Image Formats

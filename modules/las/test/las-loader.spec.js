@@ -9,9 +9,7 @@ const LAS_BINARY_URL = '@loaders.gl/las/test/data/indoor.laz';
 const LAS_EXTRABYTES_BINARY_URL = '@loaders.gl/las/test/data/extrabytes.laz';
 
 setLoaderOptions({
-  las: {
-    workerUrl: 'modules/las/dist/las-loader.worker.js'
-  }
+  _workerType: 'test'
 });
 
 test('LASLoader#loader conformance', t => {

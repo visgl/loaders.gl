@@ -11,9 +11,7 @@ const SHAPEFILE_JS_POLYGON_TEST_FILES = ['polygons', 'multipolygon_with_holes'];
 const POINT_Z_TEST_FILE = 'point-z';
 
 setLoaderOptions({
-  shp: {
-    workerUrl: 'modules/shapefile/dist/shp-loader.worker.js'
-  }
+  _workerType: 'test'
 });
 
 test('SHPLoader#load polygons', async t => {

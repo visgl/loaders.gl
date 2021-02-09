@@ -1,39 +1,48 @@
-import {WorkerMessage} from './worker-thread';
+import {WorkerPool} from '../..';
 
+/**
+ * @param maxConcurrency {number} - max count of workers
+ */
 export type WorkerFarmProps = {
   maxConcurrency?: number;
   reuseWorkers?: boolean;
-  onMessage?: (WorkerMessage) => any;
   onDebug?: () => void;
 }
 
 /**
- * Process multiple data messages with a "farm" of different workers (in worker pools)
+ * Process multiple jobs with a "farm" of different workers in worker pools.
  */
 export default class WorkerFarm {
   /** Check if Workers are supported */
   static isSupported(): boolean;
-  /** Get a single instance of a worker farm */
+  /** Get the singleton instance of the global worker farm */
   static getWorkerFarm(props: WorkerFarmProps): WorkerFarm;
 
   readonly maxConcurrency: number;
-  readonly onMessage: (WorkerMessage) => any;
   readonly onDebug: () => void;
 
-  /**
-   * @param maxConcurrency {number} - max count of workers
-   */
   constructor(props: WorkerFarmProps);
 
-  setProps(props: object);
-
+  /**
+   * Terminate all workers in the farm
+   * @note Can free up significant memory
+   */
   destroy(): void;
 
   /**
-   * Process binary data in a worker
-   * @param data data (containing binary typed arrays) to be transferred to worker
-   * @param jobName name of the job
-   * @returns a Promise with data (containing typed arrays) transferred back from worker
+   * Set props used when initializing worker pools
+   * @param props
    */
-  process(workerSource: string | Function, workerName: string, data: any): Promise<any>;
+  setProps(props: WorkerFarmProps);
+
+  /**
+   * Returns a worker pool for the specified worker
+   * @param options - only used first time for a specific worker name
+   * @param options.name - the name of the worker - used to identify worker pool
+   * @param options.url -
+   * @param options.source -
+   * @example
+   *   const job = WorkerFarm.getWorkerFarm().getWorkerPool({name, url}).startJob(...);
+   */
+  getWorkerPool(options: {name: string, source?: string, url?: string}): WorkerPool;
 }

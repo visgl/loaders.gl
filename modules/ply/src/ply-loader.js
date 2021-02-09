@@ -20,15 +20,14 @@ export const PLYWorkerLoader = {
   id: 'ply',
   module: 'ply',
   version: VERSION,
+  worker: true,
   extensions: ['ply'],
   mimeTypes: ['text/plain', 'application/octet-stream'],
   text: true,
   binary: true,
   tests: ['ply'],
   options: {
-    ply: {
-      workerUrl: `https://unpkg.com/@loaders.gl/ply@${VERSION}/dist/ply-loader.worker.js`
-    }
+    ply: {}
   }
 };
 

@@ -3,6 +3,6 @@
 // so no need to support it here
 export default function assert(condition, message) {
   if (!condition) {
-    throw new Error(message || 'loader assertion failed.');
+    throw new Error(message || 'loaders.gl assertion failed.');
   }
 }

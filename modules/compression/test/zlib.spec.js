@@ -92,8 +92,8 @@ test('zlib#worker', async t => {
 
   const deflatedData = await processOnWorker(ZlibWorker, binaryData.slice(), {
     operation: 'deflate',
+    _workerType: 'test',
     zlib: {
-      workerUrl: 'test',
       level: 6
     }
   });
@@ -102,8 +102,8 @@ test('zlib#worker', async t => {
 
   const inflatedData = await processOnWorker(ZlibWorker, deflatedData, {
     operation: 'inflate',
+    _workerType: 'test',
     zlib: {
-      workerUrl: 'test',
       level: 6
     }
   });

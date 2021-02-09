@@ -29,27 +29,21 @@ test('CryptoWorker', async t => {
 
   let hash = await processOnWorker(CryptoWorker, binaryData.slice(), {
     operation: 'crc32',
-    crypto: {
-      workerUrl: 'test'
-    }
+    _workerType: 'test'
   });
 
   t.equal(hash, 'beRTbw==', 'CRC32 Hash correct');
 
   hash = await processOnWorker(CryptoWorker, binaryData.slice(), {
     operation: 'crc32c',
-    crypto: {
-      workerUrl: 'test'
-    }
+    workerLocation: 'test'
   });
 
   t.equal(hash, 'PDGE8A==', 'CRC32c Hash correct');
 
   hash = await processOnWorker(CryptoWorker, binaryData.slice(), {
     operation: 'md5',
-    crypto: {
-      workerUrl: 'test'
-    }
+    _workerType: 'test'
   });
 
   t.equal(hash, 'YnxTb+lyen1CsNkpmLv+qA==', 'MD5 Hash correct');
@@ -69,27 +63,21 @@ test.skip('CryptoJSWorker', async t => {
 
   let hash = await processOnWorker(CryptoJSWorker, binaryData.slice(), {
     operation: 'crc32',
-    cryptojs: {
-      workerUrl: 'test'
-    }
+    _workerType: 'test'
   });
 
   t.equal(hash, 'beRTbw==', 'CRC32 Hash correct');
 
   hash = await processOnWorker(CryptoJSWorker, binaryData.slice(), {
     operation: 'crc32c',
-    cryptojs: {
-      workerUrl: 'test'
-    }
+    _workerType: 'test'
   });
 
   t.equal(hash, '==', 'CRC32c Hash correct');
 
   hash = await processOnWorker(CryptoJSWorker, binaryData.slice(), {
     operation: 'md5',
-    cryptojs: {
-      workerUrl: 'test'
-    }
+    _workerType: 'test'
   });
 
   t.equal(hash, '==', 'CRC32c Hash correct');

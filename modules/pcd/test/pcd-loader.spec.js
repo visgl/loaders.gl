@@ -9,9 +9,7 @@ const PCD_ASCII_URL = '@loaders.gl/pcd/test/data/simple-ascii.pcd';
 const PCD_BINARY_URL = '@loaders.gl/pcd/test/data/Zaghetto.pcd';
 
 setLoaderOptions({
-  pcd: {
-    workerUrl: 'modules/pcd/dist/pcd-loader.worker.js'
-  }
+  _workerType: 'test'
 });
 
 test('PCDLoader#loader conformance', t => {

@@ -15,13 +15,12 @@ export const NPYWorkerLoader = {
   id: 'npy',
   module: 'textures',
   version: VERSION,
+  worker: true,
   extensions: ['npy'],
   mimeTypes: [],
   tests: [NPY_MAGIC_NUMBER.buffer],
   options: {
-    npy: {
-      workerUrl: `https://unpkg.com/@loaders.gl/terrain@${VERSION}/dist/npy-loader.worker.js`
-    }
+    npy: {}
   }
 };
 

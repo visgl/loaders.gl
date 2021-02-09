@@ -22,6 +22,7 @@ export const ExcelWorkerLoader = {
   id: 'excel',
   module: 'excel',
   version: VERSION,
+  worker: true,
   extensions: ['xls', 'xlsb', 'xlsm', 'xlsx'],
   mimeTypes: [
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',

@@ -12,12 +12,12 @@ export const TerrainWorkerLoader = {
   id: 'terrain',
   module: 'terrain',
   version: VERSION,
+  worker: true,
   extensions: ['png', 'pngraw'],
   mimeTypes: ['image/png'],
   options: {
     terrain: {
       bounds: null,
-      workerUrl: `https://unpkg.com/@loaders.gl/terrain@${VERSION}/dist/terrain-loader.worker.js`,
       meshMaxError: 10,
       elevationDecoder: {
         rScaler: 1,

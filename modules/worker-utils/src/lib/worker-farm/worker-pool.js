@@ -1,25 +1,40 @@
+/** @typedef {import('../worker-protocol/protocol').WorkerMessageType} WorkerMessageType  */
+/** @typedef {import('../worker-protocol/protocol').WorkerMessagePayload} WorkerMessagePayload */
+import assert from '../env-utils/assert';
 import WorkerThread from './worker-thread';
+import WorkerJob from './worker-job';
 
 /**
- * Process multiple data messages with small pool of identical workers
+ * @typedef {{
+ *   name: string;
+ *   onMessage: (job: WorkerJob, type: WorkerMessageType, payload: WorkerMessagePayload) => void,
+ *   onError: (job: WorkerJob, error: Error) => void;
+ *   onStart: (value: any) => void; // Resolve job start promise
+ * }} QueuedJob
  */
+
 export default class WorkerPool {
   constructor({
     source,
+    url,
     name = 'unnamed',
     maxConcurrency = 1,
     onMessage,
     onDebug = () => {},
     reuseWorkers = true
   }) {
+    assert(source || url);
     this.source = source;
+    this.url = url;
     this.name = name;
     this.maxConcurrency = maxConcurrency;
     this.onMessage = onMessage;
     this.onDebug = onDebug;
     this.reuseWorkers = reuseWorkers;
 
+    /** @type {QueuedJob[]} */
     this.jobQueue = [];
+    /** @type {WorkerThread[]} */
     this.idleQueue = [];
     this.count = 0;
     this.isDestroyed = false;
@@ -31,48 +46,67 @@ export default class WorkerPool {
     this.isDestroyed = true;
   }
 
-  /**
-   * Process binary data in a worker
-   */
-  process(data, jobName) {
-    return new Promise((resolve, reject) => {
-      this.jobQueue.push({data, jobName, resolve, reject});
-      this._startQueuedJob();
+  async startJob(
+    name,
+    onMessage = (job, type, data) => job.done(data),
+    onError = (job, error) => job.error(error)
+  ) {
+    // Promise resolves when thread starts working on this job
+    const startPromise = new Promise(onStart => {
+      // Promise resolves when thread completes or fails working on this job
+      this.jobQueue.push({name, onMessage, onError, onStart});
     });
+    this._startQueuedJob();
+    return startPromise;
   }
 
   // PRIVATE
 
+  /**
+   * @returns {Promise<void>}
+   */
   async _startQueuedJob() {
     if (!this.jobQueue.length) {
       return;
     }
-    const worker = this._getAvailableWorker();
-    if (!worker) {
+
+    const workerThread = this._getAvailableWorker();
+    if (!workerThread) {
       return;
     }
 
     // We have a worker, dequeue and start the job
-    const job = this.jobQueue.shift();
+    const queuedJob = this.jobQueue.shift();
+    if (queuedJob) {
+      // Emit a debug event
+      // @ts-ignore
+      this.onDebug({
+        message: 'Starting job',
+        jobName: queuedJob.name,
+        workerThread,
+        backlog: this.jobQueue.length
+      });
 
-    // @ts-ignore
-    this.onDebug({
-      message: 'processing',
-      worker: worker.name,
-      job: job.jobName,
-      backlog: this.jobQueue.length
-    });
+      // Create a worker job to let the app access thread and manage job completion
+      const job = new WorkerJob(queuedJob.name, workerThread);
 
-    try {
-      job.resolve(await worker.process(job.data));
-    } catch (error) {
-      job.reject(error);
-    } finally {
-      this._onWorkerDone(worker);
+      // Set the worker thread's message handlers
+      workerThread.onMessage = data => queuedJob.onMessage(job, data.type, data.payload);
+      workerThread.onError = error => queuedJob.onError(job, error);
+
+      // Resolve the start promise so that the app can start sending messages to worker
+      queuedJob.onStart(job);
+
+      // Wait for the app to signal that the job is complete, then return worker to queue
+      try {
+        await job.result;
+      } finally {
+        this.returnWorkerToQueue(workerThread);
+      }
     }
   }
 
-  _onWorkerDone(worker) {
+  returnWorkerToQueue(worker) {
     if (this.isDestroyed) {
       worker.destroy();
       return;
@@ -88,17 +122,20 @@ export default class WorkerPool {
     this._startQueuedJob();
   }
 
+  /**
+   * @returns {WorkerThread?}
+   */
   _getAvailableWorker() {
     // If a worker has completed and returned to the queue, it can be used
     if (this.idleQueue.length > 0) {
-      return this.idleQueue.shift();
+      return this.idleQueue.shift() || null;
     }
 
     // Create fresh worker if we haven't yet created the max amount of worker threads for this worker source
     if (this.count < this.maxConcurrency) {
       this.count++;
       const name = `${this.name.toLowerCase()} (#${this.count} of ${this.maxConcurrency})`;
-      return new WorkerThread({source: this.source, onMessage: this.onMessage, name});
+      return new WorkerThread({name, source: this.source, url: this.url});
     }
 
     // No worker available, have to wait

@@ -1,6 +1,6 @@
 // This dependency is too big, application must provide it
 // import * as CryptoJS from 'crypto-js';
-import {assert} from '@loaders.gl/loader-utils';
+import {assert} from '@loaders.gl/worker-utils';
 
 const ERR_CRYPTO_LIBRARY_NOT_SUPPLIED = 'crypto-js lib must be supplied in options.module.CryptoJS';
 

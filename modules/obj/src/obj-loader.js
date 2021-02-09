@@ -16,13 +16,12 @@ export const OBJWorkerLoader = {
   id: 'obj',
   module: 'obj',
   version: VERSION,
+  worker: true,
   extensions: ['obj'],
   mimeTypes: ['text/plain'],
   testText: testOBJFile,
   options: {
-    obj: {
-      workerUrl: `https://unpkg.com/@loaders.gl/obj@${VERSION}/dist/obj-loader.worker.js`
-    }
+    obj: {}
   }
 };
 
