@@ -20,7 +20,7 @@ export default class WorkerThread {
     this.resolve = _ => {};
     this.reject = _ => {};
 
-    this._createBrowserWorker(source, name);
+    this.worker = this._createBrowserWorker(source, name);
   }
 
   destroy() {
@@ -41,8 +41,8 @@ export default class WorkerThread {
     });
   }
 
-  postMessage(data) {
-    const transferList = getTransferList(data);
+  postMessage(data, transferList) {
+    transferList = transferList || getTransferList(data);
     // @ts-ignore
     this.worker.postMessage(data, transferList);
   }

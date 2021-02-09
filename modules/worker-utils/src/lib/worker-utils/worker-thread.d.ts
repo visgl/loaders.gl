@@ -20,6 +20,8 @@ export default class WorkerThread {
 
   destroy(): void;
 
+  postMessage(data, transferList?: any[]): void;
+
   /**
    * Process binary data in a worker
    * @param data data (containing binary typed arrays) to be transferred to worker
