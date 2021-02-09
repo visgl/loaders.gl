@@ -474,7 +474,7 @@ function convertMaterial(sourceMaterial) {
     };
   } else if (sourceMaterial.emissiveTexture) {
     texture = sourceMaterial.emissiveTexture.texture.source;
-    material.emissiveTexture = {
+    material.pbrMetallicRoughness.baseColorTexture = {
       textureSetDefinitionId: 0
     };
   }
@@ -853,10 +853,10 @@ async function generateCompressedGeometry(vertexCount, convertedAttributes, attr
   const featureIndex = generateFeatureIndexAttribute(featureIndices, faceRange);
 
   const compressedAttributes = {
-    position: positions,
-    normal: normals,
-    uv0: texCoords,
-    color: colors,
+    positions,
+    normals,
+    texCoords,
+    colors,
     'feature-index': featureIndex
   };
 
