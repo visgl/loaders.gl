@@ -5,7 +5,10 @@
 import {parseCompressedTexture} from './lib/parsers/parse-compressed-texture';
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+
+// Uncomment this line when latest version will be updated to '3.0.0-alpha.4'
+// const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+const VERSION = '3.0.0-alpha.4';
 
 // const PVR_MAGIC_BYTES = [0x03, 0x52, 0x56, 0x50]; // PVR file header magic number
 
