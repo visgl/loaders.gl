@@ -53,8 +53,6 @@
     "eslint-plugin-babel": "^5.3.0",
     "eslint-plugin-import": "^2.20.1",
     "eslint-plugin-react": "^7.19.0",
-    "gl": "^4.4.0",
-    "gl-matrix": "^3.1.0",
     "ocular-dev-tools": "^0.3.0",
     "pre-commit": "^1.2.2",
     "pre-push": "^0.1.1",
