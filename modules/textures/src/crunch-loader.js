@@ -3,7 +3,9 @@
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+// Uncomment this line when latest version will be updated to '3.0.0-alpha.4'
+// const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+const VERSION = '3.0.0-alpha.4';
 
 /**
  * Loader for the Crunch compressed texture container format
