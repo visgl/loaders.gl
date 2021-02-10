@@ -1,5 +1,5 @@
-import WorkerFarm from './worker-farm';
-import {getURLfromWorkerObject} from './get-worker-url';
+import WorkerFarm from '../worker-farm/worker-farm';
+import {getURLfromWorkerObject} from '../worker-farm/get-worker-url';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.

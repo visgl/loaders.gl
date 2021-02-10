@@ -15,11 +15,12 @@ export {
 // WORKER UTILS
 export {processOnWorker} from './lib/worker-utils/process-on-worker';
 export {createWorker} from './lib/worker-utils/create-worker';
-export {getTransferList} from './lib/worker-utils/get-transfer-list';
+
+export {default as WorkerFarm} from './lib/worker-farm/worker-farm';
+export {default as WorkerPool} from './lib/worker-farm/worker-pool';
+export {default as WorkerThread} from './lib/worker-farm/worker-thread';
+export {getTransferList} from './lib/worker-farm/get-transfer-list';
 export {validateWorkerVersion} from './lib/worker-utils/validate-worker-version';
-export {default as WorkerFarm} from './lib/worker-utils/worker-farm';
-export {default as WorkerPool} from './lib/worker-utils/worker-pool';
-export {default as WorkerThread} from './lib/worker-utils/worker-thread';
 
 // LIBRARY UTILS
 export {getLibraryUrl, loadLibrary} from './lib/library-utils/library-utils';
