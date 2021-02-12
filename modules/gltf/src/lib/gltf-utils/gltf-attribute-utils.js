@@ -4,12 +4,12 @@ import {getAccessorTypeFromSize, getComponentTypeFromArray} from './gltf-utils';
 // Returns a fresh attributes object with glTF-standardized attributes names
 // Attributes that cannot be identified will not be included
 // Removes `indices` if present, as it should be stored separately from the attributes
-export function getGLTFAccessors(attributes) {
+export function getGLTFAccessors(attributes, jsonAccessors = {}) {
   const accessors = {};
   for (const name in attributes) {
     const attribute = attributes[name];
     if (name !== 'indices') {
-      const glTFAccessor = getGLTFAccessor(attribute);
+      const glTFAccessor = getGLTFAccessor(attribute, jsonAccessors[name] || {});
       accessors[name] = glTFAccessor;
     }
   }
@@ -19,10 +19,11 @@ export function getGLTFAccessors(attributes) {
 // Fix up a single accessor.
 // Input: typed array or a partial accessor object
 // Return: accessor object
-export function getGLTFAccessor(attribute, gltfAttributeName) {
-  const {buffer, size, count} = getAccessorData(attribute, gltfAttributeName);
+export function getGLTFAccessor(attribute, jsonAccessor = {}) {
+  const {buffer, size, count} = getAccessorData(attribute);
 
   const glTFAccessor = {
+    ...jsonAccessor,
     // TODO: Deprecate `value` in favor of bufferView?
     value: buffer,
     size, // Decoded `type` (e.g. SCALAR)
@@ -43,7 +44,7 @@ export function getGLTFAttribute(data, gltfAttributeName) {
   return data.attributes[data.glTFAttributeMap[gltfAttributeName]];
 }
 
-function getAccessorData(attribute, attributeName) {
+function getAccessorData(attribute) {
   let buffer = attribute;
   let size = 1;
   let count = 0;
