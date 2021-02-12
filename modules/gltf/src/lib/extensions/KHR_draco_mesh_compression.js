@@ -64,9 +64,18 @@ async function decompressPrimitive(primitive, scenegraph, options, context) {
   delete dracoOptions['3d-tiles'];
   const decodedData = await parse(bufferCopy, DracoLoader, dracoOptions, context);
 
-  primitive.attributes = getGLTFAccessors(decodedData.attributes);
+  const originalAccessors = {};
+  for (const [name, index] of [
+    ...Object.entries(primitive.attributes),
+    ['indices', primitive.indices]
+  ]) {
+    originalAccessors[name] = scenegraph.getAccessor(index);
+  }
+
+  primitive.attributes = getGLTFAccessors(decodedData.attributes, originalAccessors);
+
   if (decodedData.indices) {
-    primitive.indices = getGLTFAccessor(decodedData.indices);
+    primitive.indices = getGLTFAccessor(decodedData.indices, originalAccessors.indices || {});
   }
 
   // Extension has been processed, delete it
