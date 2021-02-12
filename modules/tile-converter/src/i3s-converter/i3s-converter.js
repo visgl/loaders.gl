@@ -801,7 +801,7 @@ export default class I3SConverter {
    * @return material id
    */
   _findOrCreateMaterial(material) {
-    const hash = md5(Object.entries(material).toString());
+    const hash = md5(JSON.stringify(material));
     if (this.materialMap.has(hash)) {
       return this.materialMap.get(hash);
     }
