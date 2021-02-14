@@ -1,11 +1,24 @@
+/** @typedef {import('@loaders.gl/loader-utils').WriterObject} WriterObject */
+import {VERSION} from './lib/utils/version';
 import encodeGLBSync from './lib/encode-glb';
 
-export default {
+/**
+ * GLB exporter
+ * GLB is the binary container format for GLTF
+ * @type {WriterObject}
+ */
+export const GLBWriter = {
   name: 'GLB',
+  id: 'glb',
+  module: 'gltf',
+  version: VERSION,
+
   extensions: ['glb'],
   mimeTypes: ['model/gltf-binary'],
-  encodeSync,
   binary: true,
+
+  encodeSync,
+
   options: {
     glb: {}
   }

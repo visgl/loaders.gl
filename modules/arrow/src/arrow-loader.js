@@ -9,12 +9,13 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /** @type {WorkerLoaderObject} */
 export const ArrowWorkerLoader = {
-  id: 'arrow',
   name: 'Apache Arrow',
+  id: 'arrow',
+  module: 'arrow',
   version: VERSION,
+  category: 'table',
   extensions: ['arrow', 'feather'],
   mimeTypes: ['application/octet-stream'],
-  category: 'table',
   binary: true,
   tests: ['ARROW'],
   options: {

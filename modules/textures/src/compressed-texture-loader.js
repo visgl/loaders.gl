@@ -1,21 +1,19 @@
 /** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 /** @typedef {import('@loaders.gl/loader-utils').WorkerLoaderObject} WorkerLoaderObject */
-
-// eslint-disable-next-line import/no-unresolved
-import {parseCompressedTexture} from './lib/parsers/parse-compressed-texture';
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-
 // Uncomment this line when latest version will be updated to '3.0.0-alpha.4'
-// const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+// import {VERSION} from './lib/utils/version';
+import {parseCompressedTexture} from './lib/parsers/parse-compressed-texture';
+
 const VERSION = '3.0.0-alpha.4';
 
-// const PVR_MAGIC_BYTES = [0x03, 0x52, 0x56, 0x50]; // PVR file header magic number
-
-/** @type {WorkerLoaderObject} */
+/**
+ * Worker Loader for KTX, DDS, and PVR texture container formats
+ * @type {WorkerLoaderObject}
+ */
 export const CompressedTextureWorkerLoader = {
+  name: 'Texture Containers',
   id: 'compressed-texture',
-  name: 'CompressedTexture',
+  module: 'textures',
   version: VERSION,
   extensions: [
     'ktx',
@@ -33,7 +31,10 @@ export const CompressedTextureWorkerLoader = {
   }
 };
 
-/** @type {LoaderObject} */
+/**
+ * Loader for KTX, DDS, and PVR texture container formats
+ * @type {LoaderObject}
+ */
 export const CompressedTextureLoader = {
   ...CompressedTextureWorkerLoader,
   parse: async (arrayBuffer, options) => parseCompressedTexture(arrayBuffer)

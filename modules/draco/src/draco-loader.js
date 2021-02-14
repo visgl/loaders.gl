@@ -1,16 +1,17 @@
-/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 /** @typedef {import('@loaders.gl/loader-utils').WorkerLoaderObject} WorkerLoaderObject */
+/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
+import {VERSION} from './lib/utils/version';
 import {loadDracoDecoderModule} from './lib/draco-module-loader';
 import DracoParser from './lib/draco-parser';
 
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
-
-/** @type {WorkerLoaderObject} */
+/**
+ * Worker loader for Draco3D compressed geometries
+ * @type {WorkerLoaderObject}
+ */
 export const DracoWorkerLoader = {
-  id: 'draco',
   name: 'Draco',
+  id: 'draco',
+  module: 'draco',
   version: VERSION,
   extensions: ['drc'],
   mimeTypes: ['application/octet-stream'],
@@ -27,7 +28,10 @@ export const DracoWorkerLoader = {
   }
 };
 
-/** @type {LoaderObject} */
+/**
+ * Loader for Draco3D compressed geometries
+ * @type {LoaderObject}
+ */
 export const DracoLoader = {
   ...DracoWorkerLoader,
   parse

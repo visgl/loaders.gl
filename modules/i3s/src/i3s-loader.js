@@ -11,32 +11,14 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 const TILESET_REGEX = /layers\/[0-9]+$/;
 const TILE_HEADER_REGEX = /nodes\/([0-9-]+|root)$/;
 
-async function parseTileContent(arrayBuffer, options, context) {
-  const tile = options.i3s.tile;
-  const tileset = options.i3s.tileset;
-  tile.content = tile.content || {};
-  await parseI3STileContent(arrayBuffer, tile, tileset, options);
-  return tile.content;
-}
-
-async function parseTileset(data, options, context) {
-  const tilesetJson = JSON.parse(new TextDecoder().decode(data));
-  // eslint-disable-next-line no-use-before-define
-  tilesetJson.loader = I3SLoader;
-  await normalizeTilesetData(tilesetJson, options, context);
-
-  return tilesetJson;
-}
-
-async function parseTile(data, options, context) {
-  data = JSON.parse(new TextDecoder().decode(data));
-  return normalizeTileData(data, options, context);
-}
-
-/** @type {LoaderObject} */
-const I3SLoader = {
+/**
+ * Loader for I3S - Indexed 3D Scene Layer
+ * @type {LoaderObject}
+ */
+export const I3SLoader = {
+  name: 'I3S (Indexed Scene Layers)',
   id: 'i3s',
-  name: 'I3S 3D Tiles',
+  module: 'i3s',
   version: VERSION,
   mimeTypes: ['application/octet-stream'],
   parse,
@@ -90,4 +72,24 @@ async function parse(data, options, context, loader) {
   return data;
 }
 
-export default I3SLoader;
+async function parseTileContent(arrayBuffer, options, context) {
+  const tile = options.i3s.tile;
+  const tileset = options.i3s.tileset;
+  tile.content = tile.content || {};
+  await parseI3STileContent(arrayBuffer, tile, tileset, options);
+  return tile.content;
+}
+
+async function parseTileset(data, options, context) {
+  const tilesetJson = JSON.parse(new TextDecoder().decode(data));
+  // eslint-disable-next-line no-use-before-define
+  tilesetJson.loader = I3SLoader;
+  await normalizeTilesetData(tilesetJson, options, context);
+
+  return tilesetJson;
+}
+
+async function parseTile(data, options, context) {
+  data = JSON.parse(new TextDecoder().decode(data));
+  return normalizeTileData(data, options, context);
+}

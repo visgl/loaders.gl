@@ -24,10 +24,13 @@ const GeoJSONLoaderOptions = {
   }
 };
 
-/** @type {WorkerLoaderObject} */
+/**
+ * @type {WorkerLoaderObject}
+ */
 export const GeoJSONWorkerLoader = {
-  id: 'geojson',
   name: 'GeoJSON',
+  id: 'geojson',
+  module: 'geojson',
   version: VERSION,
   extensions: ['geojson'],
   mimeTypes: ['application/geo+json'],

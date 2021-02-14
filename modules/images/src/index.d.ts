@@ -2,8 +2,8 @@
 export {ImageDataType, ImageType, ImageTypeEnum} from './types';
 
 // LOADERS AND WRITERS
-export {default as ImageLoader} from './image-loader';
-export {default as ImageWriter} from './image-writer';
+export {ImageLoader} from './image-loader';
+export {ImageWriter} from './image-writer';
 
 // IMAGE CATEGORY API
 
@@ -23,10 +23,6 @@ export {
 // DEPRECATED
 // TODO - Remove in V3
 export {loadImage} from './lib/texture-api/load-image';
-
-export {default as HTMLImageLoader} from './image-loader';
-
-import {getDefaultImageType} from './lib/category-api/image-type';
 
 export function getSupportedImageType(imageType?);
 

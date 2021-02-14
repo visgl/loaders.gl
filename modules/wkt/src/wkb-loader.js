@@ -1,17 +1,18 @@
-/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 /** @typedef {import('@loaders.gl/loader-utils').WorkerLoaderObject} WorkerLoaderObject */
+/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
+import {VERSION} from './lib/utils/version';
 import parseWKB from './lib/parse-wkb';
 
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
-
-/** @type {WorkerLoaderObject} */
+/**
+ * Worker loader for WKB (Well-Known Binary)
+ * @type {WorkerLoaderObject}
+ */
 export const WKBWorkerLoader = {
-  id: 'wkb',
   name: 'WKB',
-  category: 'geometry',
+  id: 'wkb',
+  module: 'wkt',
   version: VERSION,
+  category: 'geometry',
   extensions: ['wkb'],
   mimeTypes: [],
   options: {
@@ -21,7 +22,10 @@ export const WKBWorkerLoader = {
   }
 };
 
-/** @type {LoaderObject} */
+/**
+ * Loader for WKB (Well-Known Binary)
+ * @type {LoaderObject}
+ */
 export const WKBLoader = {
   ...WKBWorkerLoader,
   parse: async (arrayBuffer, options) => parseWKB(arrayBuffer),

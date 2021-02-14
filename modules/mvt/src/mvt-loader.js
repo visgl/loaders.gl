@@ -6,10 +6,14 @@ import parseMVT from './lib/parse-mvt';
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-/** @type {WorkerLoaderObject} */
+/**
+ * Worker loader for the Mapbox Vector Tile format
+ * @type {WorkerLoaderObject}
+ */
 export const MVTWorkerLoader = {
-  id: 'mvt',
   name: 'Mapbox Vector Tile',
+  id: 'mvt',
+  module: 'mvt',
   version: VERSION,
   extensions: ['mvt'],
   mimeTypes: ['application/x-protobuf', 'application/vnd.mapbox-vector-tile'],
@@ -26,7 +30,10 @@ export const MVTWorkerLoader = {
   }
 };
 
-/** @type {LoaderObject} */
+/**
+ * Loader for the Mapbox Vector Tile format
+ * @type {LoaderObject}
+ */
 export const MVTLoader = {
   ...MVTWorkerLoader,
   parse: async (arrayBuffer, options) => parseMVT(arrayBuffer, options),

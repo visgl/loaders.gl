@@ -6,12 +6,17 @@ import {parseShapefile, parseShapefileInBatches} from './lib/parsers/parse-shape
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-/** @type {LoaderObject} */
+/**
+ * Shapefile loader
+ * @note Shapefile is multifile format and requires providing additional files
+ * @type {LoaderObject}
+ */
 export const ShapefileLoader = {
-  id: 'shapefile',
   name: 'Shapefile',
-  category: 'geometry',
+  id: 'shapefile',
+  module: 'shapefile',
   version: VERSION,
+  category: 'geometry',
   extensions: ['shp'],
   mimeTypes: ['application/octet-stream'],
   tests: [new Uint8Array(SHP_MAGIC_NUMBER).buffer],

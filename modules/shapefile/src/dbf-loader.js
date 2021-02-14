@@ -6,12 +6,16 @@ import {parseDBF, parseDBFInBatches} from './lib/parsers/parse-dbf';
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-/** @type {WorkerLoaderObject} */
+/**
+ * DBFLoader - DBF files are used to contain non-geometry columns in Shapefiles
+ * @type {WorkerLoaderObject}
+ */
 export const DBFWorkerLoader = {
-  id: 'dbf',
   name: 'DBF',
-  category: 'table',
+  id: 'dbf',
+  module: 'shapefile',
   version: VERSION,
+  category: 'table',
   extensions: ['dbf'],
   mimeTypes: ['application/x-dbf'],
   options: {

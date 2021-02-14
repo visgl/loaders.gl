@@ -20,8 +20,9 @@ const JSONLoaderOptions = {
 
 /** @type {LoaderObject} */
 export const JSONLoader = {
-  id: 'json',
   name: 'JSON',
+  id: 'json',
+  module: 'json',
   version: VERSION,
   extensions: ['json', 'geojson'],
   mimeTypes: ['application/json'],

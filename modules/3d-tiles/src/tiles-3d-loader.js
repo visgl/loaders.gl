@@ -1,14 +1,35 @@
 /* global TextDecoder */
 /** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
-/** @typedef {import('@loaders.gl/loader-utils').WorkerLoaderObject} WorkerLoaderObject */
 import {path} from '@loaders.gl/loader-utils';
 import {TILESET_TYPE, LOD_METRIC_TYPE} from '@loaders.gl/tiles';
+import {VERSION} from './lib/utils/version';
 import {parse3DTile} from './lib/parsers/parse-3d-tile';
 import {normalizeTileHeaders} from './lib/parsers/parse-3d-tile-header';
 
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+/**
+ * Loader for 3D Tiles
+ * @type {LoaderObject}
+ */
+export const Tiles3DLoader = {
+  id: '3d-tiles',
+  name: '3D Tiles',
+  module: '3d-tiles',
+  version: VERSION,
+  extensions: ['cmpt', 'pnts', 'b3dm', 'i3dm'],
+  mimeTypes: ['application/octet-stream'],
+  tests: ['cmpt', 'pnts', 'b3dm', 'i3dm'],
+  parse,
+  options: {
+    '3d-tiles': {
+      loadGLTF: true,
+      decodeQuantizedPositions: false,
+      isTileset: 'auto',
+      tile: null,
+      tileset: null,
+      assetGltfUpAxis: null
+    }
+  }
+};
 
 function getBaseUri(tileset) {
   return path.dirname(tileset.url);
@@ -56,26 +77,3 @@ async function parse(data, options, context, loader) {
 
   return data;
 }
-
-/** @type {LoaderObject} */
-const Tiles3DLoader = {
-  id: '3d-tiles',
-  name: '3D Tiles',
-  version: VERSION,
-  extensions: ['cmpt', 'pnts', 'b3dm', 'i3dm'],
-  mimeTypes: ['application/octet-stream'],
-  tests: ['cmpt', 'pnts', 'b3dm', 'i3dm'],
-  parse,
-  options: {
-    '3d-tiles': {
-      loadGLTF: true,
-      decodeQuantizedPositions: false,
-      isTileset: 'auto',
-      tile: null,
-      tileset: null,
-      assetGltfUpAxis: null
-    }
-  }
-};
-
-export default Tiles3DLoader;

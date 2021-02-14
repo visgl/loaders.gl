@@ -9,10 +9,14 @@ async function parseNodePage(data) {
   return JSON.parse(new TextDecoder().decode(data));
 }
 
-/** @type {LoaderObject} */
-const I3SNodePageLoader = {
-  id: 'i3s-node-page',
+/**
+ * Loader for I3S node pages
+ * @type {LoaderObject}
+ */
+export const I3SNodePageLoader = {
   name: 'I3S Node Page',
+  id: 'i3s-node-page',
+  module: 'i3s',
   version: VERSION,
   mimeTypes: ['application/json'],
   parse,
@@ -24,5 +28,3 @@ async function parse(data) {
   data = parseNodePage(data);
   return data;
 }
-
-export default I3SNodePageLoader;

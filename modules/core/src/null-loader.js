@@ -10,8 +10,9 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
  * @todo Should be moved to `@loaders.gl/core`
  * */
 export const NullLoader = {
-  id: 'image',
-  name: 'Images',
+  name: 'Null loader',
+  id: 'null',
+  module: 'core',
   version: VERSION,
   mimeTypes: ['application/x.empty'],
   extensions: ['null'],
@@ -24,5 +25,7 @@ export const NullLoader = {
       yield* asyncIterator;
     })(),
   tests: [() => false],
-  options: {}
+  options: {
+    null: {}
+  }
 };

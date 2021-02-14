@@ -1,18 +1,19 @@
 /** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 /** @typedef {import('@loaders.gl/loader-utils').WorkerLoaderObject} WorkerLoaderObject */
+import {VERSION} from './lib/utils/version';
 import {parseNPY} from './lib/parsers/parse-npy';
-
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 // \x93NUMPY
 const NPY_MAGIC_NUMBER = new Uint8Array([147, 78, 85, 77, 80, 89]);
 
-/** @type {WorkerLoaderObject} */
+/**
+ * Worker loader for numpy "tiles"
+ * @type {WorkerLoaderObject}
+ */
 export const NPYWorkerLoader = {
-  id: 'npy',
   name: 'NPY',
+  id: 'npy',
+  module: 'textures',
   version: VERSION,
   extensions: ['npy'],
   mimeTypes: [],
@@ -24,7 +25,10 @@ export const NPYWorkerLoader = {
   }
 };
 
-/** @type {LoaderObject} */
+/**
+ * Loader for numpy "tiles"
+ * @type {LoaderObject}
+ */
 export const NPYLoader = {
   ...NPYWorkerLoader,
   parseSync: parseNPY,

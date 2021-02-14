@@ -12,8 +12,9 @@ const MIME_TYPES = ['video/mp4'];
 
 /** @type {LoaderObject} */
 const VideoLoader = {
-  id: 'video',
   name: 'Video',
+  id: 'video',
+  module: 'video',
   version: VERSION,
   extensions: EXTENSIONS,
   mimeTypes: MIME_TYPES,
