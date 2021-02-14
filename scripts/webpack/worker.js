@@ -118,6 +118,10 @@ module.exports = (env = {}) => {
   if (env.dev) {
     config.mode = 'development';
     config = addESNextSettings(config);
+  } else {
+    // Generate a separate source map
+    // @ts-ignore
+    config.devtool = 'source-map';
   }
   // console.log(JSON.stringify(config, null, 2));
   return config;
