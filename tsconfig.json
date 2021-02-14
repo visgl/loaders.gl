@@ -83,15 +83,26 @@
     }
   },
   "exclude":[
-    "**/modules/**/src/libs/*",
+    "SPECIFIC-MODULE-EXCEPTIONS-TO-BE-REMOVED-ASAP",
+    "**/modules/compression/test/**/*",
+    "**/modules/crypto/test/**/*",
+    "**/modules/excel/test/**/*",
+    "**/modules/loader-utils/test/**/*",
     "**/modules/tiles/src/**/*",
     "**/modules/tiles/test/**/*",
+    "**/modules/i3s/test/**/*",
+    "**/modules/tile-converter/test/**/*",
+    "**/modules/textures/test/**/*",
+    "**/modules/worker-utils/test/**/*",
+
+    "GENERAL_EXCEPTIONS",
+    "**/modules/**/src/libs/*",
     "**/modules/*/dist/**/*",
     "**/modules/**/wip/**/*",
     "**/examples/**/*",
     "**/coverage/**/*",
     "**/arrowjs/**/*",
     "**/website/**/*",
-    "**/test/**/*"
+    "test/**/*"
   ]
 }
