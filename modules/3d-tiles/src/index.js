@@ -1,9 +1,9 @@
 // LOADERS
-export {default as Tiles3DLoader} from './tiles-3d-loader';
-export {default as CesiumIonLoader} from './cesium-ion-loader';
+export {Tiles3DLoader} from './tiles-3d-loader';
+export {CesiumIonLoader} from './cesium-ion-loader';
 
 // WRITERS
-export {default as Tile3DWriter} from './tile-3d-writer';
+export {Tile3DWriter} from './tile-3d-writer';
 
 // CLASSES
 export {default as Tile3DFeatureTable} from './lib/classes/tile-3d-feature-table';

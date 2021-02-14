@@ -22,7 +22,7 @@ import {
 } from './helpers/coordinate-converter';
 import {createSceneServerPath} from './helpers/create-scene-server-path';
 import {convertGeometricErrorToScreenThreshold} from '../lib/utils/lod-conversion-utils';
-import {default as PGMLoader} from '../pgm-loader';
+import {PGMLoader} from '../pgm-loader';
 
 import {LAYERS as layersTemplate} from './json-templates/layers';
 import {NODE as nodeTemplate} from './json-templates/node';

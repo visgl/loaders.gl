@@ -1,13 +1,16 @@
-// __VERSION__ is injected by babel-plugin-version-inline
-
+/** @typedef {import('@loaders.gl/loader-utils').WorkerLoaderObject} WorkerLoaderObject */
+/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
+import {VERSION} from './lib/utils/version';
 import loadTerrain from './lib/parse-terrain';
 
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
-
+/**
+ * Worker loader for quantized meshes
+ * @type {WorkerLoaderObject}
+ */
 export const TerrainWorkerLoader = {
-  id: 'terrain',
   name: 'Terrain',
+  id: 'terrain',
+  module: 'terrain',
   version: VERSION,
   extensions: ['png', 'pngraw'],
   mimeTypes: ['image/png'],
@@ -26,6 +29,10 @@ export const TerrainWorkerLoader = {
   }
 };
 
+/**
+ * Loader for quantized meshes
+ * @type {LoaderObject}
+ */
 export const TerrainLoader = {
   ...TerrainWorkerLoader,
   parse: loadTerrain

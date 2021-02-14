@@ -6,10 +6,14 @@ import parsePCDSync from './lib/parse-pcd';
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-/** @type {WorkerLoaderObject} */
+/**
+ * Worker loader for PCD - Point Cloud Data
+ * @type {WorkerLoaderObject}
+ */
 export const PCDWorkerLoader = {
+  name: 'PCD (Point Cloud Data)',
   id: 'pcd',
-  name: 'PCD',
+  module: 'pcd',
   version: VERSION,
   extensions: ['pcd'],
   mimeTypes: ['text/plain'],
@@ -20,7 +24,10 @@ export const PCDWorkerLoader = {
   }
 };
 
-/** @type {LoaderObject} */
+/**
+ * Loader for PCD - Point Cloud Data
+ * @type {LoaderObject}
+ */
 export const PCDLoader = {
   ...PCDWorkerLoader,
   parse: async (arrayBuffer, options) => await parsePCDSync(arrayBuffer, options),

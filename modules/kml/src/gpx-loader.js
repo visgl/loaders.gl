@@ -12,6 +12,27 @@ const GPX_HEADER = `\
 <?xml version="1.0" encoding="UTF-8"?>
 <gpx`;
 
+/**
+ * Loader for GPX (GPS exchange format)
+ * @type {LoaderObject}
+ */
+export const GPXLoader = {
+  name: 'GPX (GPS exchange format)',
+  id: 'gpx',
+  module: 'kml',
+  version: VERSION,
+  extensions: ['gpx'],
+  mimeTypes: ['application/gpx+xml'],
+  text: true,
+  tests: [GPX_HEADER],
+  parse: async (arrayBuffer, options) =>
+    parseTextSync(new TextDecoder().decode(arrayBuffer), options),
+  parseTextSync,
+  options: {
+    gpx: {}
+  }
+};
+
 function parseTextSync(text, options) {
   options = options || {};
   options.gis = options.gis || {};
@@ -30,17 +51,3 @@ function parseTextSync(text, options) {
       throw new Error();
   }
 }
-
-/** @type {LoaderObject} */
-export default {
-  id: 'gpx',
-  name: 'GPX',
-  version: VERSION,
-  extensions: ['gpx'],
-  mimeTypes: ['application/gpx+xml'],
-  text: true,
-  tests: [GPX_HEADER],
-  parse: async (arrayBuffer, options) =>
-    parseTextSync(new TextDecoder().decode(arrayBuffer), options),
-  parseTextSync
-};

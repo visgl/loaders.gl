@@ -6,22 +6,20 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 import {parsePgm} from './lib/pgm-parser';
 
-/** @type {LoaderObject} */
-const PGMLoader = {
-  id: 'pgm',
+/**
+ * Loader for PGM - Netpbm grayscale image format
+ * @type {LoaderObject}
+ */
+export const PGMLoader = {
   name: 'PGM - Netpbm grayscale image format',
+  id: 'pgm',
+  module: 'tile-converter',
   version: VERSION,
   mimeTypes: ['image/x-portable-graymap'],
-  parse,
+  parse: (arrayBuffer, options) => parsePgm(new Uint8Array(arrayBuffer), options),
   extensions: ['pgm'],
   options: {
+    // TODO - use pgm namespace
     cubic: false
   }
 };
-
-async function parse(data, options) {
-  const model = parsePgm(new Uint8Array(data), options);
-  return model;
-}
-
-export default PGMLoader;

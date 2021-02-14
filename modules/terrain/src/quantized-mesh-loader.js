@@ -1,15 +1,16 @@
-/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 /** @typedef {import('@loaders.gl/loader-utils').WorkerLoaderObject} WorkerLoaderObject */
+/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
+import {VERSION} from './lib/utils/version';
 import parseQuantizedMesh from './lib/parse-quantized-mesh';
 
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
-
-/** @type {WorkerLoaderObject} */
+/**
+ * Worker loader for quantized meshes
+ * @type {WorkerLoaderObject}
+ */
 export const QuantizedMeshWorkerLoader = {
-  id: 'quantized-mesh',
   name: 'Quantized Mesh',
+  id: 'quantized-mesh',
+  module: 'terrain',
   version: VERSION,
   extensions: ['terrain'],
   mimeTypes: ['application/vnd.quantized-mesh'],
@@ -21,7 +22,10 @@ export const QuantizedMeshWorkerLoader = {
   }
 };
 
-/** @type {LoaderObject} */
+/**
+ * Loader for quantized meshes
+ * @type {LoaderObject}
+ */
 export const QuantizedMeshLoader = {
   ...QuantizedMeshWorkerLoader,
   parseSync: parseQuantizedMesh,

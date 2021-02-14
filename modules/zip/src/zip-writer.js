@@ -1,10 +1,16 @@
+/** @typedef {import('@loaders.gl/loader-utils').WriterObject} WriterObject */
 import JSZip from 'jszip';
 
+/**
+ * Zip exporter
+ * @type {WriterObject}
+ */
 export const ZipWriter = {
   name: 'Zip Archive',
   extensions: ['zip'],
   category: 'archive',
   mimeTypes: ['application/zip'],
+  // @ts-ignore
   encode: encodeZipAsync
 };
 

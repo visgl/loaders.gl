@@ -1,5 +1,5 @@
 import test from 'tape-promise/tape';
-import I3SAttributeLoader from '../src/i3s-attribute-loader';
+import {I3SAttributeLoader} from '@loaders.gl/i3s/i3s-attribute-loader';
 import {load} from '@loaders.gl/core';
 
 const objectIdsUrl = '@loaders.gl/i3s/test/data/attributes/f_0/0/index.bin';

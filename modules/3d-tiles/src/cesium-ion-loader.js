@@ -1,4 +1,5 @@
-import Tiles3DLoader from './tiles-3d-loader';
+/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
+import {Tiles3DLoader} from './tiles-3d-loader';
 import {getIonTilesetMetadata} from './lib/ion/ion';
 
 async function preload(url, options = {}) {
@@ -12,10 +13,15 @@ async function preload(url, options = {}) {
   return getIonTilesetMetadata(accessToken, assetId);
 }
 
-const CesiumIonLoader = {
+/**
+ * Loader for 3D tiles from Cesium ION
+ * @type {LoaderObject}
+ */
+export const CesiumIonLoader = {
   ...Tiles3DLoader,
   id: 'cesium-ion',
   name: 'Cesium Ion',
+  // @ts-ignore
   preload,
   parse: async (data, options, context, loader) => {
     options['3d-tiles'] = options['cesium-ion'];
@@ -29,5 +35,3 @@ const CesiumIonLoader = {
     }
   }
 };
-
-export default CesiumIonLoader;

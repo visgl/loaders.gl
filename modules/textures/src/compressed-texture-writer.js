@@ -1,8 +1,19 @@
+/** @typedef {import('@loaders.gl/loader-utils').WriterObject} WriterObject */
+import {VERSION} from './lib/utils/version';
 import {encodeImageURLToCompressedTextureURL} from './lib/encoders/encode-texture';
 
+/**
+ * DDS Texture Container Exporter
+ * @type {WriterObject}
+ */
 export const CompressedTextureWriter = {
-  name: 'Textures',
+  name: 'DDS Texture Container',
+  id: 'dds',
+  module: 'textures',
+  version: VERSION,
+
   extensions: ['dds'],
+
   options: {
     texture: {
       format: 'auto',
@@ -13,5 +24,6 @@ export const CompressedTextureWriter = {
       toolFlags: ''
     }
   },
+
   encodeURLtoURL: encodeImageURLToCompressedTextureURL
 };

@@ -1,1 +1,1 @@
-export {default as CSVLoader} from './csv-loader';
+export {CSVLoader} from './csv-loader';

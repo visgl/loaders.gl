@@ -7,10 +7,14 @@ import loadOBJ from './lib/load-obj';
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-/** @type {WorkerLoaderObject} */
+/**
+ * Worker loader for the OBJ geometry format
+ * @type {WorkerLoaderObject}
+ */
 export const OBJWorkerLoader = {
-  id: 'obj',
   name: 'OBJ',
+  id: 'obj',
+  module: 'obj',
   version: VERSION,
   extensions: ['obj'],
   mimeTypes: ['text/plain'],
@@ -22,7 +26,10 @@ export const OBJWorkerLoader = {
   }
 };
 
-/** @type {LoaderObject} */
+/**
+ * Loader for the OBJ geometry format
+ * @type {LoaderObject}
+ */
 export const OBJLoader = {
   ...OBJWorkerLoader,
   parse: async (arrayBuffer, options) => loadOBJ(new TextDecoder().decode(arrayBuffer), options),

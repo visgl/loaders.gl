@@ -1,14 +1,15 @@
-import {parseGLTF} from './lib/parse-gltf';
 /** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
+import {VERSION} from './lib/utils/version';
+import {parseGLTF} from './lib/parse-gltf';
 
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
-
-/** @type {LoaderObject} */
-const GLTFLoader = {
-  id: 'gltf',
+/**
+ * GLTF loader
+ * @type {LoaderObject}
+ */
+export const GLTFLoader = {
   name: 'glTF',
+  id: 'gltf',
+  module: 'gltf',
   version: VERSION,
   extensions: ['gltf', 'glb'],
   mimeTypes: ['model/gltf+json', 'model/gltf-binary'],
@@ -41,8 +42,6 @@ const GLTFLoader = {
     }
   }
 };
-
-export default GLTFLoader;
 
 export async function parse(arrayBuffer, options = {}, context) {
   // Apps can call the parse method directly, we so apply default options here

@@ -1,12 +1,26 @@
+/** @typedef {import('@loaders.gl/loader-utils').WriterObject} WriterObject */
+import {VERSION} from './lib/utils/version';
 import {encodeGLTFSync} from './lib/encode-gltf';
 
-export default {
+/**
+ * GLTF exporter
+ * @type {WriterObject}
+ */
+export const GLTFWriter = {
   name: 'glTF',
+  id: 'gltf',
+  module: 'gltf',
+  version: VERSION,
+
   extensions: ['glb'], // We only support encoding to binary GLB, not to JSON GLTF
   mimeTypes: ['model/gltf-binary'], // 'model/gltf+json',
-  encodeSync,
   binary: true,
-  options: {}
+
+  encodeSync,
+
+  options: {
+    gltf: {}
+  }
 };
 
 function encodeSync(gltf, options = {}) {

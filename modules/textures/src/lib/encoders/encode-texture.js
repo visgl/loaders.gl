@@ -2,7 +2,7 @@ import {ChildProcessProxy} from '@loaders.gl/worker-utils';
 
 const MODULE_ROOT = `${__dirname}/../../..`;
 
-/**
+/*
  * @see https://github.com/TimvanScherpenzeel/texture-compressor
  */
 export async function encodeImageURLToCompressedTextureURL(inputUrl, outputUrl, options) {

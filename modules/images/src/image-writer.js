@@ -1,7 +1,12 @@
+/** @typedef {import('@loaders.gl/loader-utils').WriterObject} WriterObject */
+import {VERSION} from './lib/utils/version';
 import {encodeImage} from './lib/encoders/encode-image';
 
-export default {
+export const ImageWriter = {
   name: 'Images',
+  id: 'image',
+  module: 'images',
+  version: VERSION,
   extensions: ['jpeg'],
   options: {
     image: {

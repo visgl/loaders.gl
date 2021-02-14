@@ -18,8 +18,9 @@ const ExcelLoaderOptions = {
  * @type {WorkerLoaderObject}
  */
 export const ExcelWorkerLoader = {
-  id: 'excel',
   name: 'Excel',
+  id: 'excel',
+  module: 'excel',
   version: VERSION,
   extensions: ['xls', 'xlsb', 'xlsm', 'xlsx'],
   mimeTypes: [

@@ -1,8 +1,17 @@
+/** @typedef {import('@loaders.gl/loader-utils').WriterObject} WriterObject */
+import {VERSION} from './lib/utils/version';
 import {loadDracoEncoderModule} from './lib/draco-module-loader';
 import DRACOBuilder from './lib/draco-builder';
 
-export default {
+/**
+ * Exporter for Draco3D compressed geometries
+ * @type {WriterObject}
+ */
+export const DracoWriter = {
   name: 'DRACO',
+  id: 'draco',
+  module: 'draco',
+  version: VERSION,
   extensions: ['drc'],
   encode,
   options: {

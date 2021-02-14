@@ -1,7 +1,7 @@
 import {load} from '@loaders.gl/core';
 import {normalizeTileNonUrlData} from '../lib/parsers/parse-i3s';
 import {convertI3SObbToMbs} from '../utils/convert-i3s-obb-to-mbs';
-import I3SNodePageLoader from '../i3s-node-page-loader';
+import {I3SNodePageLoader} from '../i3s-node-page-loader';
 import {generateTilesetAttributeUrls} from '../lib/parsers/url-utils';
 import {getSupportedGPUTextureFormats} from '@loaders.gl/textures';
 
