@@ -6,7 +6,8 @@ function parseSync(arrayBuffer, options, url, loader) {
 }
 
 /** @type {LoaderObject} */
-export default {
+// @ts-ignore
+export const PotreeHierarchyChunkLoader = {
   id: 'potree',
   name: 'potree Hierarchy Chunk',
   extensions: ['hrc'],

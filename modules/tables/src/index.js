@@ -8,8 +8,8 @@ export {default as RowTableBatch} from './lib/table/row-table-batch';
 export {default as ColumnarTableBatch} from './lib/table/columnar-table-batch';
 
 // EXPERIMENTAL MICRO-LOADERS
-export {default as JSONLoader} from './json-loader';
-export {default as XMLLoader} from './xml-loader';
+export {JSONLoader} from './json-loader';
+export {XMLLoader} from './xml-loader';
 
 // EXPERIMENTAL APIs
 export {default as AsyncQueue} from './lib/utils/async-queue';

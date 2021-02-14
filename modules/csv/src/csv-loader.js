@@ -31,7 +31,7 @@ const CSVLoaderOptions = {
 };
 
 /** @type {LoaderObject} */
-export default {
+export const CSVLoader = {
   id: 'csv',
   name: 'CSV',
   version: VERSION,
@@ -41,6 +41,7 @@ export default {
   parse: async (arrayBuffer, options) => parseCSV(new TextDecoder().decode(arrayBuffer), options),
   parseText: parseCSV,
   parseInBatches: parseCSVInBatches,
+  // @ts-ignore
   testText: null,
   options: CSVLoaderOptions
 };

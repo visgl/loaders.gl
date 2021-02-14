@@ -1,3 +1,3 @@
-export {default as PotreeLoader} from './potree-loader';
-export {default as PotreeHierarchyChunkLoader} from './potree-hierarchy-chunk-loader';
-export {default as PotreeBinLoader} from './potree-bin-loader';
+export {PotreeLoader} from './potree-loader';
+export {PotreeHierarchyChunkLoader} from './potree-hierarchy-chunk-loader';
+export {PotreeBinLoader} from './potree-bin-loader';

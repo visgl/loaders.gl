@@ -5,11 +5,17 @@
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /** @type {LoaderObject} */
-export default {
-  id: 'potree',
+// @ts-ignore
+export const PotreeLoader = {
   name: 'potree',
+  id: 'potree',
+  module: 'potree',
   version: VERSION,
   extensions: ['json'],
+  mimeTypes: ['application/json'],
   testText: text => text.indexOf('octreeDir') >= 0,
-  parseTextSync: JSON.parse
+  parseTextSync: JSON.parse,
+  options: {
+    potree: {}
+  }
 };

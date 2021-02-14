@@ -35,5 +35,3 @@ export const CesiumIonLoader = {
     }
   }
 };
-
-export default CesiumIonLoader;
