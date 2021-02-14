@@ -301,7 +301,8 @@ class GLTFPostProcessor {
     if (accessor.bufferView) {
       const buffer = accessor.bufferView.buffer;
       const {ArrayType, byteLength} = getAccessorArrayTypeAndLength(accessor, accessor.bufferView);
-      const byteOffset = (accessor.bufferView.byteOffset || 0) + buffer.byteOffset;
+      const byteOffset =
+        (accessor.bufferView.byteOffset || 0) + (accessor.byteOffset || 0) + buffer.byteOffset;
       const cutBufffer = buffer.arrayBuffer.slice(byteOffset, byteOffset + byteLength);
       accessor.value = new ArrayType(cutBufffer);
     }

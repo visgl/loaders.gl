@@ -106,7 +106,7 @@ async function _makeNodeResources({
       header.buffer,
       positions.buffer,
       normals.buffer,
-      texCoords.buffer,
+      texture ? texCoords.buffer : new ArrayBuffer(0),
       colors.buffer,
       typedFeatureIds.buffer,
       faceRange.buffer
@@ -116,7 +116,7 @@ async function _makeNodeResources({
     ? await generateCompressedGeometry(vertexCount, convertedAttributes, {
         positions,
         normals,
-        texCoords,
+        texCoords: texture ? texCoords : new Float32Array(0),
         colors,
         featureIds,
         faceRange
@@ -161,6 +161,7 @@ function convertAttributes(tileContent) {
       positions: new Float32Array(0),
       normals: new Float32Array(0),
       texCoords: new Float32Array(0),
+      colors: new Uint8Array(0),
       featureIndices: []
     });
   }
@@ -175,9 +176,11 @@ function convertAttributes(tileContent) {
       continue; // eslint-disable-line no-continue
     }
     const vertexCount = attributes.positions.length / VALUES_PER_VERTEX;
-    attributes.colors = new Uint8Array(vertexCount * VALUES_PER_COLOR_ELEMENT);
-    for (let index = 0; index < attributes.colors.length; index += 4) {
-      attributes.colors.set([255, 255, 255, 255], index);
+    if (!attributes.colors.length) {
+      attributes.colors = new Uint8Array(vertexCount * VALUES_PER_COLOR_ELEMENT);
+      for (let index = 0; index < attributes.colors.length; index += 4) {
+        attributes.colors.set([255, 255, 255, 255], index);
+      }
     }
     if (!attributes.texCoords.length) {
       attributes.texCoords = new Float32Array(vertexCount * VALUES_PER_TEX_COORD);
@@ -196,7 +199,7 @@ function convertAttributes(tileContent) {
  *   The goal is applying tranformation matrix for all children. Functions "convertNodes" and "convertNode" work together recursively.
  * @param {Object[]} nodes - gltf nodes array
  * @param {Object} tileContent - 3d tile content
- * @param {Map} attributesMap Map<{positions: Float32Array, normals: Float32Array, texCoords: Float32Array, featureIndices: Array}> - for recursive concatenation of
+ * @param {Map} attributesMap Map<{positions: Float32Array, normals: Float32Array, texCoords: Float32Array, colors: UInt8Array, featureIndices: Array}> - for recursive concatenation of
  *   attributes
  * @param {Matrix4} matrix - transformation matrix - cumulative transformation matrix formed from all parent node matrices
  * @returns {void}
@@ -218,15 +221,9 @@ function convertNodes(
  * Convert all primitives of node and all children nodes
  * @param {Object} node - gltf node
  * @param {Object} tileContent - 3d tile content
- * @param {Map} attributesMap Map<{positions: Float32Array, normals: Float32Array, texCoords: Float32Array, featureIndices: Array}> - for recursive concatenation of
+ * @param {Map} attributesMap Map<{positions: Float32Array, normals: Float32Array, texCoords: Float32Array, colors: Uint8Array, featureIndices: Array}> - for recursive concatenation of
  *   attributes
  * @param {Matrix4} matrix - transformation matrix - cumulative transformation matrix formed from all parent node matrices
- * @returns {Object}
- * {
- *   positions: Float32Array,
- *   normals: Float32Array,
- *   texCoords: Float32Array
- * }
  * @todo: optimize arrays concatenation
  */
 function convertNode(
@@ -250,15 +247,9 @@ function convertNode(
  * Convert all primitives of node and all children nodes
  * @param {Object} mesh - gltf node
  * @param {Object} content - 3d tile content
- * @param {Map} attributesMap Map<{positions: Float32Array, normals: Float32Array, texCoords: Float32Array, featureIndices: Array}> - for recursive concatenation of
+ * @param {Map} attributesMap Map<{positions: Float32Array, normals: Float32Array, texCoords: Float32Array, colors: Uint8Array, featureIndices: Array}> - for recursive concatenation of
  *   attributes
  * @param {Matrix4} matrix - transformation matrix - cumulative transformation matrix formed from all parent node matrices
- * @returns {Object}
- * {
- *   positions: Float32Array,
- *   normals: Float32Array,
- *   texCoords: Float32Array
- * }
  * @todo: optimize arrays concatenation
  */
 function convertMesh(
@@ -304,6 +295,11 @@ function convertMesh(
         attributes.TEXCOORD_0 && attributes.TEXCOORD_0.value,
         primitive.indices.value
       )
+    );
+
+    outputAttributes.colors = concatenateTypedArrays(
+      outputAttributes.colors,
+      flattenColors(attributes.COLOR_0, primitive.indices.value)
     );
 
     outputAttributes.featureIndices.push(
@@ -400,6 +396,32 @@ function flattenTexCoords(texCoords, indices) {
   }
   return newTexCoords;
 }
+
+/**
+ * Convert color from COLOR_0 based on indices to plain arrays, compatible with i3s
+ * @param {object} colorsAttribute - gltf primitive COLOR_0 attribute
+ * @param {Uint8Array} indices - gltf primitive indices
+ * @returns {Uint8Array}
+ */
+function flattenColors(colorsAttribute, indices) {
+  if (!colorsAttribute) {
+    return new Uint8Array(0);
+  }
+  const components = colorsAttribute.components;
+  const colors = colorsAttribute.value;
+  const newColors = new Uint8Array(indices.length * components);
+  for (let i = 0; i < indices.length; i++) {
+    const colorIndex = indices[i] * components;
+    const color = colors.subarray(colorIndex, colorIndex + components);
+    const colorUint8 = new Uint8Array(components);
+    for (let j = 0; j < color.length; j++) {
+      colorUint8[j] = color[j] * 255;
+    }
+    newColors.set(colorUint8, i * components);
+  }
+  return newColors;
+}
+
 /**
  * Flatten batchedIds list based on indices to right ordered array, compatible with i3s
  * @param {Array} batchedIds - gltf primitive
@@ -474,6 +496,7 @@ function convertMaterial(sourceMaterial) {
     };
   } else if (sourceMaterial.emissiveTexture) {
     texture = sourceMaterial.emissiveTexture.texture.source;
+    // ArcGIS webscene doesn't show emissiveTexture but shows baseColorTexture
     material.pbrMetallicRoughness.baseColorTexture = {
       textureSetDefinitionId: 0
     };
@@ -482,10 +505,9 @@ function convertMaterial(sourceMaterial) {
   if (!texture) {
     // Should use default baseColorFactor if it is not present in source material
     // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#reference-pbrmetallicroughness
-    const DEFAULT_BASE_COLOR_FACTOR = [1, 1, 1, 1];
-    const baseColorFactor =
-      sourceMaterial.pbrMetallicRoughness.baseColorFactor || DEFAULT_BASE_COLOR_FACTOR;
-    material.pbrMetallicRoughness.baseColorFactor = baseColorFactor.map(c => Math.round(c * 255));
+    const baseColorFactor = sourceMaterial.pbrMetallicRoughness.baseColorFactor;
+    material.pbrMetallicRoughness.baseColorFactor =
+      (baseColorFactor && baseColorFactor.map(c => Math.round(c * 255))) || undefined;
   }
 
   return {material, texture};
@@ -855,10 +877,13 @@ async function generateCompressedGeometry(vertexCount, convertedAttributes, attr
   const compressedAttributes = {
     positions,
     normals,
-    texCoords,
     colors,
     'feature-index': featureIndex
   };
+
+  if (texCoords.length) {
+    compressedAttributes.texCoords = texCoords;
+  }
 
   const attributesMetadata = {
     'feature-index': {
