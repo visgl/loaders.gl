@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import * as KHR_binary_glTF from './extensions/KHR_binary_gltf';
+import * as KHR_binary_glTF from '../extensions/KHR_binary_gltf';
 
 // Binary format changes (mainly implemented by GLBLoader)
 // https://github.com/KhronosGroup/glTF/tree/master/extensions/1.0/Khronos/KHR_binary_glTF
@@ -304,6 +304,6 @@ class GLTFV1Normalizer {
   }
 }
 
-export default function normalizeGLTFV1(gltf, options = {}) {
+export function normalizeGLTFV1(gltf, options = {}) {
   return new GLTFV1Normalizer().normalize(gltf, options);
 }

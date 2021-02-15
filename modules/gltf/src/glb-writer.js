@@ -1,6 +1,6 @@
 /** @typedef {import('@loaders.gl/loader-utils').WriterObject} WriterObject */
 import {VERSION} from './lib/utils/version';
-import encodeGLBSync from './lib/encode-glb';
+import encodeGLBSync from './lib/encoders/encode-glb';
 
 /**
  * GLB exporter

@@ -4,7 +4,8 @@
 
 **@loaders.gl/gltf**
 
-GLTFScenegraph is updated to provide modifying capabilities. Signatures of some methods have been changed to use named parameters (rather than positional parameters).
+- `GLTFScenegraph` is updated to provide modifying capabilities. Signatures of some methods have been changed to use named parameters (rather than positional parameters).
+- The deprecated `GLBBuilder` class and `encodeGLTFSync` functions have now been removed.
 
 **@loaders.gl/basis**
 

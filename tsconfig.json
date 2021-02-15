@@ -102,7 +102,6 @@
     "**/examples/**/*",
     "**/coverage/**/*",
     "**/arrowjs/**/*",
-    "**/website/**/*",
-    "test/**/*"
+    "**/website/**/*"
   ]
 }

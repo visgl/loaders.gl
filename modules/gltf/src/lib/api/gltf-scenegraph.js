@@ -1,11 +1,11 @@
 import {getBinaryImageMIMEType} from '@loaders.gl/images';
 import {padToNBytes, copyToArray} from '@loaders.gl/loader-utils';
-import assert from './utils/assert';
+import assert from '../utils/assert';
 import {
   getAccessorArrayTypeAndLength,
   getAccessorTypeFromSize,
   getComponentTypeFromArray
-} from './gltf-utils/gltf-utils';
+} from '../gltf-utils/gltf-utils';
 
 /**
  * Class for structured access to GLTF data
