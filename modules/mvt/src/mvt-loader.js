@@ -11,8 +11,13 @@ export const MVTWorkerLoader = {
   id: 'mvt',
   name: 'Mapbox Vector Tile',
   version: VERSION,
-  extensions: ['mvt'],
-  mimeTypes: ['application/x-protobuf', 'application/vnd.mapbox-vector-tile'],
+  // Note: ArcGIS uses '.pbf' extension and 'application/octet-stream'
+  extensions: ['mvt', 'pbf'],
+  mimeTypes: [
+    'application/vnd.mapbox-vector-tile',
+    'application/x-protobuf',
+    'application/octet-stream'
+  ],
   category: 'geometry',
   options: {
     mvt: {
