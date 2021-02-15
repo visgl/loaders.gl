@@ -1,6 +1,6 @@
 /** @typedef {import('@loaders.gl/loader-utils').WriterObject} WriterObject */
 import {VERSION} from './lib/utils/version';
-import {encodeGLTFSync} from './lib/encode-gltf';
+import {encodeGLTFSync} from './lib/encoders/encode-gltf';
 
 /**
  * GLTF exporter

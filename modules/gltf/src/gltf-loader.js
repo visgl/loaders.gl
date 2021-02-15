@@ -1,6 +1,6 @@
 /** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 import {VERSION} from './lib/utils/version';
-import {parseGLTF} from './lib/parse-gltf';
+import {parseGLTF} from './lib/parsers/parse-gltf';
 
 /**
  * GLTF loader

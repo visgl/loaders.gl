@@ -1,8 +1,8 @@
 // GLTF EXTENSION: KHR_techniques_webgl
 // https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_techniques_webgl
 /* global TextDecoder */
-import GLTFScenegraph from '../gltf-scenegraph';
-import {KHR_TECHNIQUES_WEBGL} from '../gltf-constants';
+import GLTFScenegraph from '../api/gltf-scenegraph';
+import {KHR_TECHNIQUES_WEBGL} from '../gltf-utils/gltf-constants';
 
 export function decode(gltfData, options) {
   const gltfScenegraph = new GLTFScenegraph(gltfData);

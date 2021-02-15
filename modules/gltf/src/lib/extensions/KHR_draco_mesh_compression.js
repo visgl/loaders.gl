@@ -5,11 +5,11 @@
 
 import {DracoLoader} from '@loaders.gl/draco';
 import {getZeroOffsetArrayBuffer} from '@loaders.gl/loader-utils';
-import GLTFScenegraph from '../gltf-scenegraph';
-import {KHR_DRACO_MESH_COMPRESSION} from '../gltf-constants';
+import GLTFScenegraph from '../api/gltf-scenegraph';
+import {KHR_DRACO_MESH_COMPRESSION} from '../gltf-utils/gltf-constants';
 import {getGLTFAccessors, getGLTFAccessor} from '../gltf-utils/gltf-attribute-utils';
 
-// Note: We have a "soft dependency" on Draco to avoid bundling it when not needed
+// Note: We have a "soft dependency" on DracoWriter to avoid bundling it when not needed
 export async function decode(gltfData, options, context) {
   if (!options.gltf.decompressMeshes) {
     return;
@@ -57,7 +57,6 @@ async function decompressPrimitive(primitive, scenegraph, options, context) {
   // TODO - remove when `parse` is fixed to handle `byteOffset`s
   const bufferCopy = getZeroOffsetArrayBuffer(buffer.buffer, buffer.byteOffset); // , buffer.byteLength);
 
-  // this will generate an exception if DracoLoader is not installed
   const {parse} = context;
   const dracoOptions = {...options};
   // The entire tileset might be included, too expensive to serialize
@@ -80,8 +79,8 @@ async function decompressPrimitive(primitive, scenegraph, options, context) {
 // eslint-disable-next-line max-len
 // Only TRIANGLES: 0x0004 and TRIANGLE_STRIP: 0x0005 are supported
 function compressMesh(attributes, indices, mode = 4, options, context) {
-  if (!options.DracoWriter || !options.DracoLoader) {
-    throw new Error('DracoWriter/DracoLoader not available');
+  if (!options.DracoWriter) {
+    throw new Error('options.gltf.DracoWriter not provided');
   }
 
   // TODO - use DracoWriter using encode w/ registered DracoWriter...

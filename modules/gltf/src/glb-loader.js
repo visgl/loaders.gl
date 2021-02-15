@@ -1,6 +1,6 @@
 /** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 import {VERSION} from './lib/utils/version';
-import parseGLBSync from './lib/parse-glb';
+import parseGLBSync from './lib/parsers/parse-glb';
 
 /**
  * GLB Loader -

@@ -2,8 +2,8 @@
 // https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_lights_punctual
 
 import assert from '../utils/assert';
-import GLTFScenegraph from '../gltf-scenegraph';
-import {KHR_LIGHTS_PUNCTUAL} from '../gltf-constants';
+import GLTFScenegraph from '../api/gltf-scenegraph';
+import {KHR_LIGHTS_PUNCTUAL} from '../gltf-utils/gltf-constants';
 
 export function decode(gltfData, options) {
   const gltfScenegraph = new GLTFScenegraph(gltfData);

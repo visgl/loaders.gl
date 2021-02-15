@@ -2,13 +2,13 @@
 /* global TextDecoder */
 import {ImageLoader} from '@loaders.gl/images';
 import {parseJSON, getZeroOffsetArrayBuffer} from '@loaders.gl/loader-utils';
-import assert from './utils/assert';
-import {resolveUrl} from './gltf-utils/resolve-url';
-import {getTypedArrayForBufferView} from './gltf-utils/get-typed-array';
-import {decodeExtensions} from './extensions/gltf-extensions';
+import assert from '../utils/assert';
+import {resolveUrl} from '../gltf-utils/resolve-url';
+import {getTypedArrayForBufferView} from '../gltf-utils/get-typed-array';
+import {decodeExtensions} from '../extensions/gltf-extensions';
+import {normalizeGLTFV1} from '../api/normalize-gltf-v1';
+import {postProcessGLTF} from '../api/post-process-gltf';
 import parseGLBSync, {isGLB} from './parse-glb';
-import normalizeGLTFV1 from './normalize-gltf-v1';
-import postProcessGLTF from './post-process-gltf';
 
 export function isGLTF(arrayBuffer, options = {}) {
   const dataView = new DataView(arrayBuffer);

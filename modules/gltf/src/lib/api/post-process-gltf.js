@@ -1,5 +1,5 @@
-import assert from './utils/assert';
-import {getAccessorArrayTypeAndLength} from './gltf-utils/gltf-utils';
+import assert from '../utils/assert';
+import {getAccessorArrayTypeAndLength} from '../gltf-utils/gltf-utils';
 
 // This is a post processor for loaded glTF files
 // The goal is to make the loaded data easier to use in WebGL applications
@@ -383,6 +383,6 @@ class GLTFPostProcessor {
   }
 }
 
-export default function postProcessGLTF(gltf, options) {
+export function postProcessGLTF(gltf, options) {
   return new GLTFPostProcessor().postProcess(gltf, options);
 }
