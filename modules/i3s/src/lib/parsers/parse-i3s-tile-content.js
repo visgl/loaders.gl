@@ -62,7 +62,7 @@ async function parseI3SNodeGeometry(arrayBuffer, tile = {}, options) {
   let vertexCount;
   let byteOffset = 0;
   let featureCount = 0;
-  if (options.i3s.useDracoGeometry && options.i3s.dracoGeometryIndex !== -1) {
+  if (tile.isDracoGeometry) {
     const decompressedGeometry = await parse(arrayBuffer, DracoLoader);
     vertexCount = decompressedGeometry.header.vertexCount;
     const indices = decompressedGeometry.indices.value;
@@ -121,6 +121,12 @@ async function parseI3SNodeGeometry(arrayBuffer, tile = {}, options) {
     faceRange: attributes.faceRange
   };
 
+  for (const attributeIndex in content.attributes) {
+    if (!content.attributes[attributeIndex]) {
+      delete content.attributes[attributeIndex];
+    }
+  }
+
   content.vertexCount = vertexCount;
   content.cartographicCenter = cartographicOrigin;
   content.cartesianOrigin = cartesianOrigin;
@@ -141,6 +147,9 @@ function concatAttributes(normalizedVertexAttributes, normalizedFeatureAttribute
 }
 
 function flattenAttribute(attribute, indices) {
+  if (!attribute) {
+    return null;
+  }
   const TypedArrayConstructor = attribute.value.constructor;
   const result = new TypedArrayConstructor(indices.length * attribute.size);
   for (let i = 0; i < indices.length; i++) {
@@ -154,7 +163,7 @@ function flattenAttribute(attribute, indices) {
       i * attribute.size
     );
   }
-  return {size: attribute.size, value: result};
+  return {...attribute, value: result};
 }
 
 function constructFeatureDataStruct(tile, tileset) {
@@ -264,12 +273,13 @@ function normalizeAttributes(
 function parsePositions(attribute, tile) {
   const mbs = tile.mbs;
   const value = attribute.value;
+  const metadata = attribute.metadata;
   const enuMatrix = new Matrix4();
   const cartographicOrigin = new Vector3(mbs[0], mbs[1], mbs[2]);
   const cartesianOrigin = new Vector3();
   Ellipsoid.WGS84.cartographicToCartesian(cartographicOrigin, cartesianOrigin);
   Ellipsoid.WGS84.eastNorthUpToFixedFrame(cartesianOrigin, enuMatrix);
-  attribute.value = offsetsToCartesians(value, cartographicOrigin);
+  attribute.value = offsetsToCartesians(value, metadata, cartographicOrigin);
 
   return {
     enuMatrix,
@@ -279,11 +289,13 @@ function parsePositions(attribute, tile) {
   };
 }
 
-function offsetsToCartesians(vertices, cartographicOrigin) {
+function offsetsToCartesians(vertices, metadata, cartographicOrigin) {
   const positions = new Float64Array(vertices.length);
+  const scaleX = (metadata && metadata['i3s-scale_x'] && metadata['i3s-scale_x'].double) || 1;
+  const scaleY = (metadata && metadata['i3s-scale_y'] && metadata['i3s-scale_y'].double) || 1;
   for (let i = 0; i < positions.length; i += 3) {
-    positions[i] = vertices[i] + cartographicOrigin.x;
-    positions[i + 1] = vertices[i + 1] + cartographicOrigin.y;
+    positions[i] = vertices[i] * scaleX + cartographicOrigin.x;
+    positions[i + 1] = vertices[i + 1] * scaleY + cartographicOrigin.y;
     positions[i + 2] = vertices[i + 2] + cartographicOrigin.z;
   }
 

@@ -22,6 +22,16 @@ export const EXAMPLES = {
       latitude: 34
     }
   },
+  'San Francisco v1.7': {
+    name: 'San Francisco v1.7',
+    url:
+      'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_3DObjects_1_7/SceneServer/layers/0',
+    viewport: {
+      ...VIEW_STATE,
+      longitude: -120,
+      latitude: 34
+    }
+  },
   // use for debugging/testing purpose only
   // 'Lyon': {
   //  name: 'Lyon',
