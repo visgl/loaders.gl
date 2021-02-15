@@ -8,6 +8,10 @@ The `tile-converter` is a command line utility (CLI) for two-way batch conversio
 
 ## Installation
 
+```bash
+$ npm i @loaders.gl/tile-converter
+```
+
 Installing `@loaders.gl/tile-converter` makes the `converter` command line tool available. It can be run using `npx`.
 
 ```bash
@@ -38,3 +42,17 @@ $ npx tile-converter --help
 | token                | \*                        |                           | Token for Cesium ION tilesets authentication                                                                                                                                                                                                         |
 | no-draco             | \*                        |                           | Disable draco compression for geometry. Default: not set                                                                                                                                                                                             |
 | help                 | \*                        | \*                        | Show the converter tool options list                                                                                                                                                                                                                 |
+
+## Running local server to handle i3s layer.
+
+After conversion there are new i3s layers in output ("data" in example) directory.
+
+Run it with the local web server from project directory:
+
+```bash
+$ I3sLayerPath="./data/CairoLayer" DEBUG=i3s-server:* npx i3s-server
+```
+
+## Show converted layer on a map.
+
+open https://loaders.gl/examples/i3s?url=http://localhost/SceneServer/layers/0
