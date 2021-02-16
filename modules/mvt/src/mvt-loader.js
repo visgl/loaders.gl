@@ -15,8 +15,8 @@ export const MVTWorkerLoader = {
   extensions: ['mvt', 'pbf'],
   mimeTypes: [
     'application/vnd.mapbox-vector-tile',
-    'application/x-protobuf',
-    'application/octet-stream'
+    'application/x-protobuf'
+    // 'application/octet-stream'
   ],
   category: 'geometry',
   options: {
