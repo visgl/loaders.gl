@@ -7,6 +7,7 @@ import {lumaStats} from '@luma.gl/core';
 import DeckGL from '@deck.gl/react';
 import {MapController, FlyToInterpolator} from '@deck.gl/core';
 import {Tile3DLayer} from '@deck.gl/geo-layers';
+import MeshLayer from './mesh-layer/mesh-layer';
 
 import {I3SLoader} from '@loaders.gl/i3s';
 import {StatsWidget} from '@probe.gl/stats-widget';
@@ -40,6 +41,14 @@ const STATS_WIDGET_STYLE = {
   background: '#000',
   color: '#fff'
 };
+
+// Use our custom MeshLayer
+class TileLayer extends Tile3DLayer {
+  getSubLayerClass(id) {
+    // if (id.startsWith('mesh')) - we only have one sublayer type
+    return MeshLayer;
+  }
+}
 
 function parseTilesetUrlFromUrl() {
   const parsedUrl = new URL(window.location.href);
@@ -150,7 +159,7 @@ export default class App extends PureComponent {
       loadOptions.token = token;
     }
     return [
-      new Tile3DLayer({
+      new TileLayer({
         data: tilesetUrl,
         loader: I3SLoader,
         onTilesetLoad: this._onTilesetLoad.bind(this),
