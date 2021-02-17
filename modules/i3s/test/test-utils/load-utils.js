@@ -147,9 +147,9 @@ export const TILESET_STUB = () => ({
   loader: I3SLoader
 });
 
-export async function loadI3STile() {
+export async function loadI3STile(options = {}) {
   const i3sTilesetData = TILESET_STUB();
-  const i3SNodePagesTiles = new I3SNodePagesTiles(i3sTilesetData, {});
+  const i3SNodePagesTiles = new I3SNodePagesTiles(i3sTilesetData, options);
   const nodeRoot = await i3SNodePagesTiles.formTileFromNodePages(0);
   const node1 = await i3SNodePagesTiles.formTileFromNodePages(1);
   i3sTilesetData.root = nodeRoot;
@@ -159,7 +159,7 @@ export async function loadI3STile() {
   return tile;
 }
 
-export async function loadI3STileContent() {
-  const tile = await loadI3STile();
+export async function loadI3STileContent(options = {}) {
+  const tile = await loadI3STile(options);
   return tile.content;
 }

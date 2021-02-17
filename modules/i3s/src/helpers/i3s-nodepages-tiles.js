@@ -92,14 +92,17 @@ export default class I3SNodePagesTiles {
   _getContentUrl(meshGeometryData) {
     let result = {};
     const geometryDefinition = this.tileset.geometryDefinitions[meshGeometryData.definition];
-    const geometryIndex = geometryDefinition.geometryBuffers.findIndex(
-      buffer =>
-        (this.options.i3s &&
-          this.options.i3s.useDracoGeometry &&
-          buffer.compressedAttributes &&
-          buffer.compressedAttributes.encoding === 'draco') ||
-        ((!this.options.i3s || !this.options.i3s.useDracoGeometry) && !buffer.compressedAttributes)
-    );
+    let geometryIndex = -1;
+    if (this.options.i3s && this.options.i3s.useDracoGeometry) {
+      geometryIndex = geometryDefinition.geometryBuffers.findIndex(
+        buffer => buffer.compressedAttributes && buffer.compressedAttributes.encoding === 'draco'
+      );
+    }
+    if (geometryIndex === -1) {
+      geometryIndex = geometryDefinition.geometryBuffers.findIndex(
+        buffer => !buffer.compressedAttributes
+      );
+    }
     if (geometryIndex !== -1) {
       const isDracoGeometry = Boolean(
         geometryDefinition.geometryBuffers[geometryIndex].compressedAttributes

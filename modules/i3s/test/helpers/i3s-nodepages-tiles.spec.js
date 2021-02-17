@@ -144,3 +144,28 @@ test('I3SNodePagesTiles#Select "dds" texture if it is supported', async t => {
 
   t.end();
 });
+
+test('I3SNodePagesTiles#Should load DRACO geometry', async t => {
+  const i3SNodePagesTiles = new I3SNodePagesTiles(TILESET_STUB(), {i3s: {useDracoGeometry: true}});
+  const node1 = await i3SNodePagesTiles.formTileFromNodePages(1);
+  t.ok(node1);
+  t.equal(
+    node1.contentUrl,
+    '@loaders.gl/i3s/test/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/1/geometries/1'
+  );
+
+  const tilesetJson = TILESET_STUB();
+  // Remove compressed geometry metadata from geometry definitions
+  tilesetJson.geometryDefinitions[0].geometryBuffers = tilesetJson.geometryDefinitions[0].geometryBuffers.slice(
+    0,
+    1
+  );
+  const i3SNodePagesTiles2 = new I3SNodePagesTiles(tilesetJson, {i3s: {useDracoGeometry: true}});
+  const node12 = await i3SNodePagesTiles2.formTileFromNodePages(1);
+  t.equal(
+    node12.contentUrl,
+    '@loaders.gl/i3s/test/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/1/geometries/0'
+  );
+
+  t.end();
+});
