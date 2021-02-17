@@ -2,7 +2,6 @@ import {load} from '@loaders.gl/core';
 import TilesetTraverser from './tileset-traverser';
 
 import {lodJudge} from '../helpers/i3s-lod';
-import {getI3SOptions} from '../helpers/i3s-options';
 import TileHeader from '../tile-3d';
 import I3STileManager from './i3s-tile-manager';
 
@@ -60,8 +59,7 @@ export default class I3STilesetTraverser extends TilesetTraverser {
       i3s: {
         ...tileset.fetchOptions,
         isTileHeader: true,
-        loadContent: false,
-        ...getI3SOptions(tileset.tileset)
+        loadContent: false
       }
     };
 

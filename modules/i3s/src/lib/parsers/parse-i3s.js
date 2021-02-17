@@ -13,13 +13,11 @@ export function normalizeTileData(tile, options, context) {
   if (tile.featureData) {
     tile.featureUrl = `${tile.url}/${tile.featureData[0].href}`;
   }
+
   if (tile.geometryData) {
-    if (options.i3s.useDracoGeometry && options.i3s.dracoGeometryIndex !== -1) {
-      tile.contentUrl = `${tile.url}/geometries/${options.i3s.dracoGeometryIndex}`;
-    } else {
-      tile.contentUrl = `${tile.url}/${tile.geometryData[0].href}`;
-    }
+    tile.contentUrl = `${tile.url}/${tile.geometryData[0].href}`;
   }
+
   if (tile.textureData) {
     tile.textureUrl = `${tile.url}/${tile.textureData[0].href}`;
   }

@@ -23,6 +23,63 @@ export const TILESET_STUB = () => ({
     }
   ],
   textureSetDefinitions: [{formats: [{name: '0', format: 'jpg'}, {name: '0_0_1', format: 'dds'}]}],
+  geometryDefinitions: [
+    {
+      geometryBuffers: [
+        {
+          offset: 8,
+          position: {type: 'Float32', component: 3},
+          normal: {type: 'Float32', component: 3},
+          uv0: {type: 'Float32', component: 2},
+          color: {type: 'UInt8', component: 4},
+          featureId: {
+            type: 'UInt64',
+            component: 1,
+            binding: 'per-feature'
+          },
+          faceRange: {
+            type: 'UInt32',
+            component: 2,
+            binding: 'per-feature'
+          }
+        },
+        {
+          compressedAttributes: {
+            encoding: 'draco',
+            attributes: ['position', 'uv0', 'color', 'feature-index']
+          }
+        }
+      ]
+    },
+    {
+      geometryBuffers: [
+        {
+          offset: 8,
+          position: {type: 'Float32', component: 3},
+          normal: {type: 'Float32', component: 3},
+          uv0: {type: 'Float32', component: 2},
+          color: {type: 'UInt8', component: 4},
+          uvRegion: {type: 'UInt16', component: 4},
+          featureId: {
+            type: 'UInt64',
+            component: 1,
+            binding: 'per-feature'
+          },
+          faceRange: {
+            type: 'UInt32',
+            component: 2,
+            binding: 'per-feature'
+          }
+        },
+        {
+          compressedAttributes: {
+            encoding: 'draco',
+            attributes: ['position', 'uv0', 'color', 'feature-index', 'uv-region']
+          }
+        }
+      ]
+    }
+  ],
   store: {
     defaultGeometrySchema: {
       geometryType: 'triangles',
@@ -90,9 +147,9 @@ export const TILESET_STUB = () => ({
   loader: I3SLoader
 });
 
-export async function loadI3STile() {
+export async function loadI3STile(options = {}) {
   const i3sTilesetData = TILESET_STUB();
-  const i3SNodePagesTiles = new I3SNodePagesTiles(i3sTilesetData, {});
+  const i3SNodePagesTiles = new I3SNodePagesTiles(i3sTilesetData, options);
   const nodeRoot = await i3SNodePagesTiles.formTileFromNodePages(0);
   const node1 = await i3SNodePagesTiles.formTileFromNodePages(1);
   i3sTilesetData.root = nodeRoot;
@@ -102,7 +159,7 @@ export async function loadI3STile() {
   return tile;
 }
 
-export async function loadI3STileContent() {
-  const tile = await loadI3STile();
+export async function loadI3STileContent(options = {}) {
+  const tile = await loadI3STile(options);
   return tile.content;
 }

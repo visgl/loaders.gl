@@ -30,10 +30,7 @@ export const I3SLoader = {
       isTileHeader: 'auto',
       tile: null,
       tileset: null,
-      // Index of 'draco' geometry definition in 'geometryDefinitions' array
-      // https://github.com/Esri/i3s-spec/blob/master/docs/1.7/geometryDefinition.cmn.md
-      dracoGeometryIndex: -1,
-      useDracoGeometry: false
+      useDracoGeometry: true
     }
   }
 };

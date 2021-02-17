@@ -31,3 +31,18 @@ test('I3SLoader#Load tile content', async t => {
   }
   t.end();
 });
+
+test('I3SLoader#DRACO geometry', async t => {
+  const content = await loadI3STileContent({i3s: {useDracoGeometry: true}});
+  t.ok(content);
+  t.ok(content.attributes);
+  t.ok(content.attributes.positions);
+  t.equal(content.attributes.positions.value.length, 1854);
+  t.notOk(content.attributes.normals);
+  t.ok(content.attributes.colors);
+  t.equal(content.attributes.colors.value.length, 2472);
+  t.ok(content.attributes.texCoords);
+  t.equal(content.attributes.texCoords.value.length, 1236);
+
+  t.end();
+});

@@ -6,7 +6,7 @@ import {generateTilesetAttributeUrls} from '../lib/parsers/url-utils';
 import {getSupportedGPUTextureFormats} from '@loaders.gl/textures';
 
 export default class I3SNodePagesTiles {
-  constructor(tileset, options) {
+  constructor(tileset, options = {}) {
     this.tileset = tileset;
     this.nodesPerPage = tileset.nodePages.nodesPerPage;
     this.lodSelectionMetricType = tileset.nodePages.lodSelectionMetricType;
@@ -48,11 +48,13 @@ export default class I3SNodePagesTiles {
     let materialDefinition = null;
     let textureFormat = 'jpeg';
     let attributeUrls = [];
+    let isDracoGeometry = false;
 
     if (node && node.mesh) {
-      if (node.mesh.geometry) {
-        contentUrl = `${this.tileset.url}/nodes/${node.mesh.geometry.resource}/geometries/0`;
-      }
+      const {url, isDracoGeometry: isDracoGeometryResult} = (node.mesh.geometry &&
+        this._getContentUrl(node.mesh.geometry)) || {url: null, isDracoGeometry: null};
+      contentUrl = url;
+      isDracoGeometry = isDracoGeometryResult;
 
       const [textureData, nodeMaterialDefinition] = this._getInformationFromMaterial(
         node.mesh.material
@@ -70,17 +72,7 @@ export default class I3SNodePagesTiles {
       }
     }
 
-    const lodSelection = [];
-    if (this.lodSelectionMetricType === 'maxScreenThresholdSQ') {
-      lodSelection.push({
-        metricType: 'maxScreenThreshold',
-        maxError: Math.sqrt(node.lodThreshold / (Math.PI * 0.25))
-      });
-    }
-    lodSelection.push({
-      metricType: this.lodSelectionMetricType,
-      maxError: node.lodThreshold
-    });
+    const lodSelection = this._getLodSelection(node);
 
     return normalizeTileNonUrlData({
       id,
@@ -92,8 +84,50 @@ export default class I3SNodePagesTiles {
       attributeUrls,
       materialDefinition,
       textureFormat,
-      children
+      children,
+      isDracoGeometry
     });
+  }
+
+  _getContentUrl(meshGeometryData) {
+    let result = {};
+    const geometryDefinition = this.tileset.geometryDefinitions[meshGeometryData.definition];
+    let geometryIndex = -1;
+    if (this.options.i3s && this.options.i3s.useDracoGeometry) {
+      geometryIndex = geometryDefinition.geometryBuffers.findIndex(
+        buffer => buffer.compressedAttributes && buffer.compressedAttributes.encoding === 'draco'
+      );
+    }
+    if (geometryIndex === -1) {
+      geometryIndex = geometryDefinition.geometryBuffers.findIndex(
+        buffer => !buffer.compressedAttributes
+      );
+    }
+    if (geometryIndex !== -1) {
+      const isDracoGeometry = Boolean(
+        geometryDefinition.geometryBuffers[geometryIndex].compressedAttributes
+      );
+      result = {
+        url: `${this.tileset.url}/nodes/${meshGeometryData.resource}/geometries/${geometryIndex}`,
+        isDracoGeometry
+      };
+    }
+    return result;
+  }
+
+  _getLodSelection(node) {
+    const lodSelection = [];
+    if (this.lodSelectionMetricType === 'maxScreenThresholdSQ') {
+      lodSelection.push({
+        metricType: 'maxScreenThreshold',
+        maxError: Math.sqrt(node.lodThreshold / (Math.PI * 0.25))
+      });
+    }
+    lodSelection.push({
+      metricType: this.lodSelectionMetricType,
+      maxError: node.lodThreshold
+    });
+    return lodSelection;
   }
 
   _getInformationFromMaterial(material) {
