@@ -9,7 +9,7 @@ const VIEW_STATE = {
   zoom: 14.5
 };
 
-export const INITIAL_EXAMPLE_NAME = 'San Francisco';
+export const INITIAL_EXAMPLE_NAME = 'San Francisco v1.6';
 
 export const EXAMPLES = {
   'San Francisco v1.6': {
