@@ -121,6 +121,7 @@ async function parseI3SNodeGeometry(arrayBuffer, tile = {}, options) {
     faceRange: attributes.faceRange
   };
 
+  // Remove undefined attributes
   for (const attributeIndex in content.attributes) {
     if (!content.attributes[attributeIndex]) {
       delete content.attributes[attributeIndex];
@@ -289,10 +290,18 @@ function parsePositions(attribute, tile) {
   };
 }
 
-function offsetsToCartesians(vertices, metadata, cartographicOrigin) {
+/**
+ * Converts position coordinates to absolute cartesian coordinates
+ * @param {Float32Array} vertices - "position" attribute data
+ * @param {Object} metadata - When the geometry is DRACO compressed, contain position attribute's metadata
+ *  https://github.com/Esri/i3s-spec/blob/master/docs/1.7/compressedAttributes.cmn.md
+ * @param {Vector3} cartographicOrigin - Cartographic origin coordinates
+ * @returns {Float64Array} - converted "position" data
+ */
+function offsetsToCartesians(vertices, metadata = {}, cartographicOrigin) {
   const positions = new Float64Array(vertices.length);
-  const scaleX = (metadata && metadata['i3s-scale_x'] && metadata['i3s-scale_x'].double) || 1;
-  const scaleY = (metadata && metadata['i3s-scale_y'] && metadata['i3s-scale_y'].double) || 1;
+  const scaleX = (metadata['i3s-scale_x'] && metadata['i3s-scale_x'].double) || 1;
+  const scaleY = (metadata['i3s-scale_y'] && metadata['i3s-scale_y'].double) || 1;
   for (let i = 0; i < positions.length; i += 3) {
     positions[i] = vertices[i] * scaleX + cartographicOrigin.x;
     positions[i + 1] = vertices[i + 1] * scaleY + cartographicOrigin.y;

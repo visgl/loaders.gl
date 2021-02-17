@@ -12,8 +12,8 @@ const VIEW_STATE = {
 export const INITIAL_EXAMPLE_NAME = 'San Francisco';
 
 export const EXAMPLES = {
-  'San Francisco': {
-    name: 'San Francisco',
+  'San Francisco v1.6': {
+    name: 'San Francisco v1.6',
     url:
       'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_Bldgs/SceneServer/layers/0',
     viewport: {
