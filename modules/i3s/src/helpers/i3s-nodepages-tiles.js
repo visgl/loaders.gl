@@ -51,6 +51,7 @@ export default class I3SNodePagesTiles {
     let isDracoGeometry = false;
 
     if (node && node.mesh) {
+      // Get geometry resource URL and type (compressed / non-compressed)
       const {url, isDracoGeometry: isDracoGeometryResult} = (node.mesh.geometry &&
         this._getContentUrl(node.mesh.geometry)) || {url: null, isDracoGeometry: null};
       contentUrl = url;
@@ -89,15 +90,24 @@ export default class I3SNodePagesTiles {
     });
   }
 
+  /**
+   * Forms url and type of geometry resource by nodepage's data and `geometryDefinitions` in the tileset
+   * @param {Object} meshGeometryData - data about the node's mesh from the nodepage
+   * @returns {Object} -
+   *   {string} url - url to the geometry resource
+   *   {boolean} isDracoGeometry - whether the geometry resource contain DRACO compressed geometry
+   */
   _getContentUrl(meshGeometryData) {
     let result = {};
     const geometryDefinition = this.tileset.geometryDefinitions[meshGeometryData.definition];
     let geometryIndex = -1;
+    // Try to find DRACO geometryDefinition of `useDracoGeometry` option is set
     if (this.options.i3s && this.options.i3s.useDracoGeometry) {
       geometryIndex = geometryDefinition.geometryBuffers.findIndex(
         buffer => buffer.compressedAttributes && buffer.compressedAttributes.encoding === 'draco'
       );
     }
+    // If DRACO geometry is not applicable try to select non-compressed geometry
     if (geometryIndex === -1) {
       geometryIndex = geometryDefinition.geometryBuffers.findIndex(
         buffer => !buffer.compressedAttributes
@@ -115,6 +125,13 @@ export default class I3SNodePagesTiles {
     return result;
   }
 
+  /**
+   * Forms 1.6 compatible LOD selection object from a nodepage's node data
+   * @param {Object} node - a node from nodepage
+   * @returns {Object[]} - Array of object of following properties:
+   *   {string} metricType - the label of the LOD metric
+   *   {number} maxError - the value of the metric
+   */
   _getLodSelection(node) {
     const lodSelection = [];
     if (this.lodSelectionMetricType === 'maxScreenThresholdSQ') {
@@ -130,6 +147,14 @@ export default class I3SNodePagesTiles {
     return lodSelection;
   }
 
+  /**
+   * Returns information about texture and material from `materialDefinitions`
+   * @param {Object} material - material data from nodepage
+   * @returns {Object[]} - Couple [textureData, materialDefinition]
+   * {string} textureData.name - path name of the texture
+   * {string} textureData.format - format of the texture
+   * materialDefinition - PBR-like material definition from `materialDefinitions`
+   */
   _getInformationFromMaterial(material) {
     const textureDataDefault = {name: null, format: null};
     if (material) {
@@ -149,6 +174,11 @@ export default class I3SNodePagesTiles {
     return [textureDataDefault, null];
   }
 
+  /**
+   * Sets preferrable and supported format for each texutureDefinition of the tileset
+   * @param {Object} tileset - I3S layer data
+   * @returns {void}
+   */
   _initSelectedFormatsForTextureDefinitions(tileset) {
     this.textureDefinitionsSelectedFormats = [];
     const possibleI3sFormats = this._getSupportedTextureFormats();
@@ -167,6 +197,10 @@ export default class I3SNodePagesTiles {
     }
   }
 
+  /**
+   * Returns the array of supported texture format
+   * @returns {string[]}
+   */
   _getSupportedTextureFormats() {
     const result = [];
     const supportedCompressedFormats = getSupportedGPUTextureFormats();
