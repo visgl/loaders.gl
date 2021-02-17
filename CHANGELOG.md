@@ -2,6 +2,13 @@
 
 ## v2.3 Release
 
+#### v2.3.12
+
+- fix(gltf): Add `accessor.byteOffset` in accessor post-processing (#1175)
+- fix(mvt): Add extensions/mime types to support ArcGIS server(#1180)
+- Comment out octet-stream MIMEtype for the MVTLoader (#1184)
+- gltf: Preserve original accessor properties in Draco decoded mesh attributes (#1176)
+
 #### v2.3.11
 
 - Avoid mutating input object in geojsonToBinary function (#1139)
