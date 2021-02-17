@@ -6,7 +6,7 @@ import {generateTilesetAttributeUrls} from '../lib/parsers/url-utils';
 import {getSupportedGPUTextureFormats} from '@loaders.gl/textures';
 
 export default class I3SNodePagesTiles {
-  constructor(tileset, options) {
+  constructor(tileset, options = {}) {
     this.tileset = tileset;
     this.nodesPerPage = tileset.nodePages.nodesPerPage;
     this.lodSelectionMetricType = tileset.nodePages.lodSelectionMetricType;
@@ -94,10 +94,11 @@ export default class I3SNodePagesTiles {
     const geometryDefinition = this.tileset.geometryDefinitions[meshGeometryData.definition];
     const geometryIndex = geometryDefinition.geometryBuffers.findIndex(
       buffer =>
-        (this.options.i3s.useDracoGeometry &&
+        (this.options.i3s &&
+          this.options.i3s.useDracoGeometry &&
           buffer.compressedAttributes &&
           buffer.compressedAttributes.encoding === 'draco') ||
-        (!this.options.i3s.useDracoGeometry && !buffer.compressedAttributes)
+        ((!this.options.i3s || !this.options.i3s.useDracoGeometry) && !buffer.compressedAttributes)
     );
     if (geometryIndex !== -1) {
       const isDracoGeometry = Boolean(
