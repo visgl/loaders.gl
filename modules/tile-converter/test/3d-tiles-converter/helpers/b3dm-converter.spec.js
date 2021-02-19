@@ -154,7 +154,6 @@ test('tile-converter - b3dm converter#should handle geometry without normals', a
     const tile = await loadI3STile();
     const b3dmConverter = new B3dmConverter();
 
-    // If all normals are 0, converter should not convert such normals
     delete tile.content.attributes.normals;
     const encodedContent = await b3dmConverter.convert(tile);
     const decodedContent = await load(encodedContent, Tiles3DLoader, {
