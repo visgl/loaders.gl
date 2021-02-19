@@ -271,23 +271,25 @@ function convertMesh(
 
     outputAttributes.positions = concatenateTypedArrays(
       outputAttributes.positions,
-      transformVertexArray(
-        attributes.POSITION.value,
-        content.cartographicOrigin,
-        content.cartesianModelMatrix,
-        matrix,
-        primitive.indices.value
-      )
+      transformVertexArray({
+        vertices: attributes.POSITION.value,
+        cartographicOrigin: content.cartographicOrigin,
+        cartesianModelMatrix: content.cartesianModelMatrix,
+        nodeMatrix: matrix,
+        indices: primitive.indices.value,
+        attributeSpecificTransformation: transformVertexPositions
+      })
     );
     outputAttributes.normals = concatenateTypedArrays(
       outputAttributes.normals,
-      transformVertexArray(
-        attributes.NORMAL && attributes.NORMAL.value,
-        content.cartographicOrigin,
-        content.cartesianModelMatrix,
-        matrix,
-        primitive.indices.value
-      )
+      transformVertexArray({
+        vertices: attributes.NORMAL && attributes.NORMAL.value,
+        cartographicOrigin: content.cartographicOrigin,
+        cartesianModelMatrix: content.cartesianModelMatrix,
+        nodeMatrix: matrix,
+        indices: primitive.indices.value,
+        attributeSpecificTransformation: transformVertexNormals
+      })
     );
     outputAttributes.texCoords = concatenateTypedArrays(
       outputAttributes.texCoords,
@@ -333,25 +335,19 @@ function normalizeAttributesByIndicesRange(indices, attributes) {
 }
 /**
  * Convert vertices attributes (POSITIONS or NORMALS) to i3s compatible format
- * @param {Float32Array} vertices - gltf primitive POSITION or NORMAL attribute
- * @param {Object} cartographicOrigin - cartographic origin coordinates
- * @param {Object} cartesianModelMatrix - a cartesian model matrix to transform coordnates from cartesian to cartographic format
- * @param {Matrix4} nodeMatrix - a gltf node transformation matrix - cumulative transformation matrix formed from all parent node matrices
- * @param {Uint8Array} indices - gltf primitive indices
+ * @param {object} args - source tile (3DTile)
+ * @param {Float32Array} args.vertices - gltf primitive POSITION or NORMAL attribute
+ * @param {Object} args.cartographicOrigin - cartographic origin coordinates
+ * @param {Object} args.cartesianModelMatrix - a cartesian model matrix to transform coordnates from cartesian to cartographic format
+ * @param {Matrix4} args.nodeMatrix - a gltf node transformation matrix - cumulative transformation matrix formed from all parent node matrices
+ * @param {Uint8Array} args.indices - gltf primitive indices
+ * @param {Function} args.attributeSpecificTransformation - function to do attribute - specific transformations
  * @returns {Float32Array}
  */
-function transformVertexArray(
-  vertices,
-  cartographicOrigin,
-  cartesianModelMatrix,
-  nodeMatrix,
-  indices
-) {
+function transformVertexArray(args) {
+  const {vertices, indices, attributeSpecificTransformation} = args;
   const newVertices = new Float32Array(indices.length * VALUES_PER_VERTEX);
   if (!vertices) {
-    for (let i = 0; i < indices.length; i += VALUES_PER_VERTEX) {
-      newVertices[i + 1] = 1;
-    }
     return newVertices;
   }
   for (let i = 0; i < indices.length; i++) {
@@ -359,22 +355,40 @@ function transformVertexArray(
     const vertex = vertices.subarray(coordIndex, coordIndex + VALUES_PER_VERTEX);
     let vertexVector = new Vector3(Array.from(vertex));
 
-    if (nodeMatrix) {
-      vertexVector = vertexVector.transform(nodeMatrix);
-    }
-
-    vertexVector = vertexVector.transform(cartesianModelMatrix);
-    Ellipsoid.WGS84.cartesianToCartographic(
-      [vertexVector[0], vertexVector[1], vertexVector[2]],
-      vertexVector
-    );
-    vertexVector = vertexVector.subtract(cartographicOrigin);
+    vertexVector = attributeSpecificTransformation(vertexVector, args);
 
     newVertices[i * VALUES_PER_VERTEX] = vertexVector.x;
     newVertices[i * VALUES_PER_VERTEX + 1] = vertexVector.y;
     newVertices[i * VALUES_PER_VERTEX + 2] = vertexVector.z;
   }
   return newVertices;
+}
+
+function transformVertexPositions(vertexVector, calleeArgs) {
+  const {cartesianModelMatrix, cartographicOrigin, nodeMatrix} = calleeArgs;
+
+  if (nodeMatrix) {
+    vertexVector = vertexVector.transform(nodeMatrix);
+  }
+
+  vertexVector = vertexVector.transform(cartesianModelMatrix);
+  Ellipsoid.WGS84.cartesianToCartographic(
+    [vertexVector[0], vertexVector[1], vertexVector[2]],
+    vertexVector
+  );
+  vertexVector = vertexVector.subtract(cartographicOrigin);
+  return vertexVector;
+}
+
+function transformVertexNormals(vertexVector, calleeArgs) {
+  const {cartesianModelMatrix, nodeMatrix} = calleeArgs;
+
+  if (nodeMatrix) {
+    vertexVector = vertexVector.transformAsVector(nodeMatrix);
+  }
+
+  vertexVector = vertexVector.transformAsVector(cartesianModelMatrix);
+  return vertexVector;
 }
 
 /**
