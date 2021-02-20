@@ -3,6 +3,11 @@ import GL from '@luma.gl/constants';
 import vs from './simple-mesh-layer-vertex.glsl';
 import fs from './simple-mesh-layer-fragment.glsl';
 export default class MeshLayer extends SimpleMeshLayer {
+  getPickingInfo({info}) {
+    console.log('MeshLayer.getPickingInfo', info);
+    return info;
+  }
+
   getShaders() {
     const shaders = super.getShaders();
     return {...shaders, vs, fs};
@@ -36,3 +41,5 @@ export default class MeshLayer extends SimpleMeshLayer {
     attribute.value = value;
   }
 }
+
+MeshLayer.layerName = 'MeshLayer';
