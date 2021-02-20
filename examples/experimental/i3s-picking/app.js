@@ -2,14 +2,14 @@
 import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
-
+import {load} from '@loaders.gl/core';
 import {lumaStats} from '@luma.gl/core';
 import DeckGL from '@deck.gl/react';
 import {MapController, FlyToInterpolator} from '@deck.gl/core';
 import {Tile3DLayer} from '@deck.gl/geo-layers';
 import MeshLayer from './mesh-layer/mesh-layer';
 
-import {I3SLoader} from '@loaders.gl/i3s';
+import {I3SLoader, I3SAttributeLoader} from '@loaders.gl/i3s';
 import {StatsWidget} from '@probe.gl/stats-widget';
 
 import {INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
@@ -76,7 +76,8 @@ export default class App extends PureComponent {
       token: null,
       name: INITIAL_EXAMPLE_NAME,
       viewState: INITIAL_VIEW_STATE,
-      selectedMapStyle: INITIAL_MAP_STYLE
+      selectedMapStyle: INITIAL_MAP_STYLE,
+      attributeStorageInfo: []
     };
     this._onSelectTileset = this._onSelectTileset.bind(this);
   }
@@ -131,9 +132,11 @@ export default class App extends PureComponent {
       longitude,
       latitude
     };
+    const attributeStorageInfo = tileset.tileset.attributeStorageInfo;
 
     this.setState({
       tileset,
+      attributeStorageInfo,
       viewState: {
         ...viewState,
         transitionDuration: TRANSITION_DURAITON,
@@ -165,9 +168,38 @@ export default class App extends PureComponent {
         onTilesetLoad: this._onTilesetLoad.bind(this),
         onTileLoad: () => this._updateStatWidgets(),
         onTileUnload: () => this._updateStatWidgets(),
+        onClick: info => this.handleRenderAttributes(info),
+        pickable: true,
         loadOptions
       })
     ];
+  }
+
+  async handleRenderAttributes(info) {
+    const {attributeStorageInfo} = this.state;
+    console.log('color', info.color); //eslint-disable-line
+
+    const attributeUrls = info.object.header.attributeUrls;
+    const attributes = [];
+
+    for (let index = 0; index < attributeStorageInfo.length; index++) {
+      const url = attributeUrls[index];
+      const attributeName = attributeStorageInfo[index].name;
+      const attributeType = this.getAttributeValueType(attributeStorageInfo[index]);
+      const attribute = await load(url, I3SAttributeLoader, {attributeName, attributeType});
+      attributes.push(attribute);
+    }
+
+    console.log('attributes', attributes); //eslint-disable-line
+  }
+
+  getAttributeValueType(attribute) {
+    if (attribute.hasOwnProperty('objectIds')) {
+      return 'Oid32';
+    } else if (attribute.hasOwnProperty('attributeValues')) {
+      return attribute.attributeValues.valueType;
+    }
+    return null;
   }
 
   _renderStats() {
