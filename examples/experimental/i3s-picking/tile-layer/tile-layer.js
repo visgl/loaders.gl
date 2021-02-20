@@ -83,15 +83,13 @@ export async function loadFeatureAttributesForNode(tile) {
 }
 
 export function getFeatureAttributes(tile, featureIndex) {
+  if (featureIndex < 0 || !tile || !tile.header) {
+    return null;
+  }
+
   // Check if loaded
-  if (featureIndex < 0) {
-    return;
-  }
-  if (!tile || !tile.header) {
-    return;
-  }
   if (!tile.userData.layerFeaturesAttributes) {
-    return;
+    return null;
   }
 
   const {attributeStorageInfo} = tile.tileset.tileset;
@@ -130,7 +128,6 @@ async function getAllFeatureAttributesOfLayer(attributeStorageInfo, attributeUrl
   }
   return attributes;
 }
-
 
 function getAttributeValueType(attribute) {
   if (attribute.hasOwnProperty('objectIds')) {

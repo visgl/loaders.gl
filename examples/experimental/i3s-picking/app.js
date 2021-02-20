@@ -156,14 +156,13 @@ export default class App extends PureComponent {
         data: tilesetUrl,
         loader: I3SLoader,
         onTilesetLoad: this._onTilesetLoad.bind(this),
-        onTileLoad: (tile) => {
-          // console.log('TileLayer.onTileLoad', tile);
+        onTileLoad: tile => {
           TileLayer.loadFeatureAttributesForNode(tile, this.state.tileset);
           this._updateStatWidgets();
         },
         onTileUnload: () => this._updateStatWidgets(),
         onClick: info => {
-          console.log('App.TileLayer.onClick', info);
+          // console.log('App.TileLayer.onClick', info);
         },
         pickable: true,
         loadOptions
@@ -206,11 +205,11 @@ export default class App extends PureComponent {
           controller={{type: MapController, maxPitch: 85}}
           onAfterRender={() => this._updateStatWidgets()}
           getTooltip={info => {
-            const attributes = info.object && TileLayer.getFeatureAttributes(info.object, info.index)
-            console.log('Deck.getTooltip', info, attributes);
+            const attributes =
+              info.object && TileLayer.getFeatureAttributes(info.object, info.index);
             return attributes ? JSON.stringify(attributes, null, 2) : 'loading metadata...';
           }}
-          >
+        >
           <StaticMap mapStyle={selectedMapStyle} preventStyleDiffing />
         </DeckGL>
         {selectedAttribute &&
