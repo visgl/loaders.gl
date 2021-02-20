@@ -66,12 +66,19 @@ async function parseI3SNodeGeometry(arrayBuffer, tile = {}, options) {
     const decompressedGeometry = await parse(arrayBuffer, DracoLoader);
     vertexCount = decompressedGeometry.header.vertexCount;
     const indices = decompressedGeometry.indices.value;
-    const {POSITION, NORMAL, COLOR_0, TEXCOORD_0} = decompressedGeometry.attributes;
+    const {
+      POSITION,
+      NORMAL,
+      COLOR_0,
+      TEXCOORD_0,
+      CUSTOM_ATTRIBUTE_3
+    } = decompressedGeometry.attributes;
     attributes = {
       position: flattenAttribute(POSITION, indices),
       normal: flattenAttribute(NORMAL, indices),
       color: flattenAttribute(COLOR_0, indices),
-      uv0: flattenAttribute(TEXCOORD_0, indices)
+      uv0: flattenAttribute(TEXCOORD_0, indices),
+      id: flattenAttribute(CUSTOM_ATTRIBUTE_3, indices)
     };
   } else {
     const {
@@ -101,6 +108,14 @@ async function parseI3SNodeGeometry(arrayBuffer, tile = {}, options) {
       featureAttributes,
       featureCount,
       featureAttributeOrder
+    );
+
+    // TODO parse Uint64 attributes properly.
+    // They are not the same as in compressed attributes.
+    // Also featureIds needs to be flatten by face range.
+    // Lets set them as new Float32Array(0) for now to avoid error in non compressed attributes.
+    normalizedFeatureAttributes.id.value = new Float32Array(
+      normalizedVertexAttributes.position.value.length
     );
     attributes = concatAttributes(normalizedVertexAttributes, normalizedFeatureAttributes);
   }

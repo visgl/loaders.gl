@@ -3,9 +3,10 @@ import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
 import {load} from '@loaders.gl/core';
-import {lumaStats} from '@luma.gl/core';
+import {lumaStats, Geometry} from '@luma.gl/core';
+import GL from '@luma.gl/constants';
 import DeckGL from '@deck.gl/react';
-import {MapController, FlyToInterpolator} from '@deck.gl/core';
+import {MapController, FlyToInterpolator, COORDINATE_SYSTEM} from '@deck.gl/core';
 import {Tile3DLayer} from '@deck.gl/geo-layers';
 import MeshLayer from './mesh-layer/mesh-layer';
 
@@ -14,6 +15,7 @@ import {StatsWidget} from '@probe.gl/stats-widget';
 
 import {INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
 import ControlPanel from './components/control-panel';
+import AttributesPanel from './components/attributes-panel';
 
 import {INITIAL_MAP_STYLE} from './constants';
 
@@ -42,12 +44,58 @@ const STATS_WIDGET_STYLE = {
   color: '#fff'
 };
 
+const SINGLE_DATA = [0];
 // Use our custom MeshLayer
 class TileLayer extends Tile3DLayer {
-  getSubLayerClass(id) {
-    // if (id.startsWith('mesh')) - we only have one sublayer type
-    return MeshLayer;
+  _makeSimpleMeshLayer(tileHeader, oldLayer) {
+    const content = tileHeader.content;
+    const {attributes, modelMatrix, cartographicOrigin, texture} = content;
+
+    const geometry =
+      (oldLayer && oldLayer.props.mesh) ||
+      new Geometry({
+        drawMode: GL.TRIANGLES,
+        attributes: getMeshGeometry(attributes)
+      });
+
+    return new MeshLayer(
+      this.getSubLayerProps({
+        id: 'mesh'
+      }),
+      {
+        id: `${this.id}-mesh-${tileHeader.id}`,
+        mesh: geometry,
+        data: SINGLE_DATA,
+        getPosition: [0, 0, 0],
+        getColor: [255, 255, 255],
+        texture,
+        modelMatrix,
+        coordinateOrigin: cartographicOrigin,
+        coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS,
+        pickable: true,
+        autoHighlight: true,
+        highlightColor: [252, 255, 132, 150]
+      }
+    );
   }
+}
+
+function getMeshGeometry(contentAttributes) {
+  const attributes = {};
+  attributes.positions = {
+    ...contentAttributes.positions,
+    value: new Float32Array(contentAttributes.positions.value)
+  };
+  if (contentAttributes.normals) {
+    attributes.normals = contentAttributes.normals;
+  }
+  if (contentAttributes.texCoords) {
+    attributes.texCoords = contentAttributes.texCoords;
+  }
+  if (contentAttributes.featureIds) {
+    attributes.featureIds = contentAttributes.featureIds;
+  }
+  return attributes;
 }
 
 function parseTilesetUrlFromUrl() {
@@ -60,6 +108,7 @@ function parseTilesetUrlParams(url, options) {
   const index = url.lastIndexOf('/layers/0');
   let metadataUrl = url.substring(0, index);
   let token = options && options.token;
+
   if (parsedUrl.search) {
     token = parsedUrl.searchParams.get('token');
     metadataUrl = `${metadataUrl}${parsedUrl.search}`;
@@ -77,7 +126,9 @@ export default class App extends PureComponent {
       name: INITIAL_EXAMPLE_NAME,
       viewState: INITIAL_VIEW_STATE,
       selectedMapStyle: INITIAL_MAP_STYLE,
-      attributeStorageInfo: []
+      attributeStorageInfo: [],
+      selectedAttribute: null,
+      selectedfeatureLoading: false
     };
     this._onSelectTileset = this._onSelectTileset.bind(this);
   }
@@ -177,9 +228,23 @@ export default class App extends PureComponent {
 
   async handleRenderAttributes(info) {
     const {attributeStorageInfo} = this.state;
-    console.log('color', info.color); //eslint-disable-line
-
     const attributeUrls = info.object.header.attributeUrls;
+    this.setState({selectedfeatureLoading: true});
+
+    const layerFeaturesAttributes = await this.getAllFeatureAttributesOfLayer(
+      attributeStorageInfo,
+      attributeUrls
+    );
+    const featureAttributes = this.getAttributesByFeature(
+      info.index,
+      attributeStorageInfo,
+      layerFeaturesAttributes
+    );
+
+    this.setState({selectedAttribute: featureAttributes, selectedfeatureLoading: false});
+  }
+
+  async getAllFeatureAttributesOfLayer(attributeStorageInfo, attributeUrls) {
     const attributes = [];
 
     for (let index = 0; index < attributeStorageInfo.length; index++) {
@@ -189,8 +254,19 @@ export default class App extends PureComponent {
       const attribute = await load(url, I3SAttributeLoader, {attributeName, attributeType});
       attributes.push(attribute);
     }
+    return attributes;
+  }
 
-    console.log('attributes', attributes); //eslint-disable-line
+  getAttributesByFeature(featureIndex, attributeStorageInfo, attributes) {
+    const featureAttributes = {};
+
+    for (let index = 0; index < attributeStorageInfo.length; index++) {
+      const attributeName = attributeStorageInfo[index].name;
+      const attributeValue = attributes[index][attributeName][featureIndex];
+      featureAttributes[attributeName] = attributeValue;
+    }
+
+    return featureAttributes;
   }
 
   getAttributeValueType(attribute) {
@@ -224,7 +300,7 @@ export default class App extends PureComponent {
 
   render() {
     const layers = this._renderLayers();
-    const {viewState, selectedMapStyle} = this.state;
+    const {viewState, selectedMapStyle, selectedAttribute, selectedfeatureLoading} = this.state;
 
     return (
       <div style={{position: 'relative', height: '100%'}}>
@@ -239,6 +315,8 @@ export default class App extends PureComponent {
         >
           <StaticMap mapStyle={selectedMapStyle} preventStyleDiffing />
         </DeckGL>
+        {selectedAttribute &&
+          !selectedfeatureLoading && <AttributesPanel attributesObject={selectedAttribute} />}
       </div>
     );
   }

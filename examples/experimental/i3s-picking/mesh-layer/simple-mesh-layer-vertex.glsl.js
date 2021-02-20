@@ -10,6 +10,7 @@ in vec3 positions;
 in vec3 normals;
 in vec3 colors;
 in vec2 texCoords;
+in vec3 pickingColors;
 
 // Instance attributes
 in vec3 instancePositions;
@@ -29,7 +30,7 @@ out vec4 vColor;
 void main(void) {
   geometry.worldPosition = instancePositions;
   geometry.uv = texCoords;
-  geometry.pickingColor = instancePickingColors;
+  geometry.pickingColor = pickingColors;
 
   vTexCoord = texCoords;
   cameraPosition = project_uCameraPosition;
