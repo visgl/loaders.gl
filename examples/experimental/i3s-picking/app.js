@@ -205,8 +205,10 @@ export default class App extends PureComponent {
           controller={{type: MapController, maxPitch: 85}}
           onAfterRender={() => this._updateStatWidgets()}
           getTooltip={info => {
-            const attributes =
-              info.object && TileLayer.getFeatureAttributes(info.object, info.index);
+            if (!info.object || info.index < 0) {
+              return null;
+            }
+            const attributes = TileLayer.getFeatureAttributes(info.object, info.index);
             return attributes ? JSON.stringify(attributes, null, 2) : 'loading metadata...';
           }}
         >
