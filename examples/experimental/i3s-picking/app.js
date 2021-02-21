@@ -2,15 +2,12 @@
 import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
-import {load} from '@loaders.gl/core';
-import {lumaStats, Geometry} from '@luma.gl/core';
-import GL from '@luma.gl/constants';
+import {lumaStats} from '@luma.gl/core';
 import DeckGL from '@deck.gl/react';
-import {MapController, FlyToInterpolator, COORDINATE_SYSTEM} from '@deck.gl/core';
-import {Tile3DLayer} from '@deck.gl/geo-layers';
-import MeshLayer from './mesh-layer/mesh-layer';
+import {MapController, FlyToInterpolator} from '@deck.gl/core';
 
-import {I3SLoader, I3SAttributeLoader} from '@loaders.gl/i3s';
+import TileLayer from './tile-layer/tile-layer';
+import {I3SLoader} from '@loaders.gl/i3s';
 import {StatsWidget} from '@probe.gl/stats-widget';
 
 import {INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
@@ -44,60 +41,6 @@ const STATS_WIDGET_STYLE = {
   color: '#fff'
 };
 
-const SINGLE_DATA = [0];
-// Use our custom MeshLayer
-class TileLayer extends Tile3DLayer {
-  _makeSimpleMeshLayer(tileHeader, oldLayer) {
-    const content = tileHeader.content;
-    const {attributes, modelMatrix, cartographicOrigin, texture} = content;
-
-    const geometry =
-      (oldLayer && oldLayer.props.mesh) ||
-      new Geometry({
-        drawMode: GL.TRIANGLES,
-        attributes: getMeshGeometry(attributes)
-      });
-
-    return new MeshLayer(
-      this.getSubLayerProps({
-        id: 'mesh'
-      }),
-      {
-        id: `${this.id}-mesh-${tileHeader.id}`,
-        mesh: geometry,
-        data: SINGLE_DATA,
-        getPosition: [0, 0, 0],
-        getColor: [255, 255, 255],
-        texture,
-        modelMatrix,
-        coordinateOrigin: cartographicOrigin,
-        coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS,
-        pickable: true,
-        autoHighlight: true,
-        highlightColor: [252, 255, 132, 150]
-      }
-    );
-  }
-}
-
-function getMeshGeometry(contentAttributes) {
-  const attributes = {};
-  attributes.positions = {
-    ...contentAttributes.positions,
-    value: new Float32Array(contentAttributes.positions.value)
-  };
-  if (contentAttributes.normals) {
-    attributes.normals = contentAttributes.normals;
-  }
-  if (contentAttributes.texCoords) {
-    attributes.texCoords = contentAttributes.texCoords;
-  }
-  if (contentAttributes.featureIds) {
-    attributes.featureIds = contentAttributes.featureIds;
-  }
-  return attributes;
-}
-
 function parseTilesetUrlFromUrl() {
   const parsedUrl = new URL(window.location.href);
   return parsedUrl.searchParams.get('url');
@@ -115,7 +58,6 @@ function parseTilesetUrlParams(url, options) {
   }
   return {...options, tilesetUrl: url, token, metadataUrl};
 }
-
 export default class App extends PureComponent {
   constructor(props) {
     super(props);
@@ -126,7 +68,6 @@ export default class App extends PureComponent {
       name: INITIAL_EXAMPLE_NAME,
       viewState: INITIAL_VIEW_STATE,
       selectedMapStyle: INITIAL_MAP_STYLE,
-      attributeStorageInfo: [],
       selectedAttribute: null,
       selectedfeatureLoading: false
     };
@@ -183,11 +124,9 @@ export default class App extends PureComponent {
       longitude,
       latitude
     };
-    const attributeStorageInfo = tileset.tileset.attributeStorageInfo;
 
     this.setState({
       tileset,
-      attributeStorageInfo,
       viewState: {
         ...viewState,
         transitionDuration: TRANSITION_DURAITON,
@@ -217,65 +156,18 @@ export default class App extends PureComponent {
         data: tilesetUrl,
         loader: I3SLoader,
         onTilesetLoad: this._onTilesetLoad.bind(this),
-        onTileLoad: () => this._updateStatWidgets(),
+        onTileLoad: tile => {
+          TileLayer.loadFeatureAttributesForNode(tile, this.state.tileset);
+          this._updateStatWidgets();
+        },
         onTileUnload: () => this._updateStatWidgets(),
-        onClick: info => this.handleRenderAttributes(info),
+        onClick: info => {
+          // console.log('App.TileLayer.onClick', info);
+        },
         pickable: true,
         loadOptions
       })
     ];
-  }
-
-  async handleRenderAttributes(info) {
-    const {attributeStorageInfo} = this.state;
-    const attributeUrls = info.object.header.attributeUrls;
-    this.setState({selectedfeatureLoading: true});
-
-    const layerFeaturesAttributes = await this.getAllFeatureAttributesOfLayer(
-      attributeStorageInfo,
-      attributeUrls
-    );
-    const featureAttributes = this.getAttributesByFeature(
-      info.index,
-      attributeStorageInfo,
-      layerFeaturesAttributes
-    );
-
-    this.setState({selectedAttribute: featureAttributes, selectedfeatureLoading: false});
-  }
-
-  async getAllFeatureAttributesOfLayer(attributeStorageInfo, attributeUrls) {
-    const attributes = [];
-
-    for (let index = 0; index < attributeStorageInfo.length; index++) {
-      const url = attributeUrls[index];
-      const attributeName = attributeStorageInfo[index].name;
-      const attributeType = this.getAttributeValueType(attributeStorageInfo[index]);
-      const attribute = await load(url, I3SAttributeLoader, {attributeName, attributeType});
-      attributes.push(attribute);
-    }
-    return attributes;
-  }
-
-  getAttributesByFeature(featureIndex, attributeStorageInfo, attributes) {
-    const featureAttributes = {};
-
-    for (let index = 0; index < attributeStorageInfo.length; index++) {
-      const attributeName = attributeStorageInfo[index].name;
-      const attributeValue = attributes[index][attributeName][featureIndex];
-      featureAttributes[attributeName] = attributeValue;
-    }
-
-    return featureAttributes;
-  }
-
-  getAttributeValueType(attribute) {
-    if (attribute.hasOwnProperty('objectIds')) {
-      return 'Oid32';
-    } else if (attribute.hasOwnProperty('attributeValues')) {
-      return attribute.attributeValues.valueType;
-    }
-    return null;
   }
 
   _renderStats() {
@@ -312,6 +204,13 @@ export default class App extends PureComponent {
           onViewStateChange={this._onViewStateChange.bind(this)}
           controller={{type: MapController, maxPitch: 85}}
           onAfterRender={() => this._updateStatWidgets()}
+          getTooltip={info => {
+            if (!info.object || info.index < 0) {
+              return null;
+            }
+            const attributes = TileLayer.getFeatureAttributes(info.object, info.index);
+            return attributes ? JSON.stringify(attributes, null, 2) : 'loading metadata...';
+          }}
         >
           <StaticMap mapStyle={selectedMapStyle} preventStyleDiffing />
         </DeckGL>

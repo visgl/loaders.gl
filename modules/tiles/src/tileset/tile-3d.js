@@ -52,6 +52,7 @@ export default class TileHeader {
     this.children = [];
 
     this.depth = 0;
+    this.userData = {};
 
     // PRIVATE MEMBERS
     this._cacheNode = null;
