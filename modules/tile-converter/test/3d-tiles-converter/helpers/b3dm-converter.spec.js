@@ -149,6 +149,25 @@ test('tile-converter - b3dm converter#should not convert incorrect normals', asy
   }
 });
 
+test('tile-converter - b3dm converter#should handle geometry without normals', async t => {
+  if (!isBrowser) {
+    const tile = await loadI3STile();
+    const b3dmConverter = new B3dmConverter();
+
+    delete tile.content.attributes.normals;
+    const encodedContent = await b3dmConverter.convert(tile);
+    const decodedContent = await load(encodedContent, Tiles3DLoader, {
+      isTileset: false,
+      tile: {type: 'b3dm'}
+    });
+    t.ok(decodedContent);
+    t.ok(decodedContent.gltf.meshes[0].primitives[0].attributes);
+    t.notOk(decodedContent.gltf.meshes[0].primitives[0].attributes.NORMAL);
+
+    t.end();
+  }
+});
+
 async function _loadAttributes(tile, attributeStorageInfo) {
   const promises = [];
   const {attributeUrls} = tile.header;

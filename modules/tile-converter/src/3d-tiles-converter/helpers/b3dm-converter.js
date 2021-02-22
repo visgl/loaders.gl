@@ -40,7 +40,7 @@ export default class B3dmConverter {
       i3sContent.cartesianOrigin
     );
     this._replaceFeatureIdsAndFaceRangeWithBatchId(i3sContent);
-    if (!this._checkNormals(i3sContent.attributes.normals.value)) {
+    if (i3sContent.attributes.normals && !this._checkNormals(i3sContent.attributes.normals.value)) {
       delete i3sContent.attributes.normals;
     }
     const indices = this._generateSynteticIndices(positionsValue.length / positions.size);
