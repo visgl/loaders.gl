@@ -370,6 +370,11 @@ function convertColorFormat(colorFactor) {
   }
 }
 
+/**
+ * Make a deep copy of the input object
+ * @param {object} object - object to copy
+ * @returns {object}
+ */
 function getObjectDeepCopy(object) {
   if (typeof object !== 'object') {
     return object;
