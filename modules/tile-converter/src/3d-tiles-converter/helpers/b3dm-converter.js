@@ -28,7 +28,7 @@ export default class B3dmConverter {
 
     const textureIndex = await this._addI3sTextureToGltf(i3sTile, gltfBuilder);
     const pbrMaterialInfo = this._convertI3sMaterialToGltfMaterial(
-      i3sTile.header.materialDefinition,
+      i3sContent.material,
       textureIndex
     );
     const materialIndex = gltfBuilder.addMaterial(pbrMaterialInfo);
@@ -190,16 +190,16 @@ export default class B3dmConverter {
   }
 
   /**
-   * Convert i3s materialDefinition to GLTF compatible material
-   * @param {object} materialDefinition - i3s material definition
+   * Convert i3s material to GLTF compatible material
+   * @param {object} material - i3s material definition
    * @param {number} textureIndex - texture index in GLTF
    * @returns {object} GLTF material
    */
-  _convertI3sMaterialToGltfMaterial(materialDefinition, textureIndex) {
+  _convertI3sMaterialToGltfMaterial(material, textureIndex) {
     const isTextureIndexExists = textureIndex !== null;
 
-    if (!materialDefinition) {
-      const material = {
+    if (!material) {
+      material = {
         alphaMode: 'OPAQUE',
         doubleSided: false,
         pbrMetallicRoughness: {
@@ -220,21 +220,11 @@ export default class B3dmConverter {
       return material;
     }
 
-    const materialCopy = _getObjectDeepCopy(materialDefinition);
-
     if (isTextureIndexExists) {
-      this._setGltfTexture(materialCopy, textureIndex);
+      this._setGltfTexture(material, textureIndex);
     }
 
-    // Convert colors from [255,255,255,255] to [1,1,1,1]
-    if (materialCopy.emissiveFactor) {
-      this._convertColorFormat(materialCopy.emissiveFactor);
-    }
-    if (materialCopy.pbrMetallicRoughness && materialCopy.pbrMetallicRoughness.baseColorFactor) {
-      this._convertColorFormat(materialCopy.pbrMetallicRoughness.baseColorFactor);
-    }
-
-    return materialCopy;
+    return material;
   }
 
   /**
@@ -250,35 +240,33 @@ export default class B3dmConverter {
       materialDefinition.pbrMetallicRoughness &&
       materialDefinition.pbrMetallicRoughness.baseColorTexture
     ) {
-      materialDefinition.pbrMetallicRoughness.baseColorTexture.index = textureIndex;
-      delete materialDefinition.pbrMetallicRoughness.baseColorTexture.textureSetDefinitionId;
+      materialDefinition.pbrMetallicRoughness.baseColorTexture = {
+        index: textureIndex,
+        texCoord: 0
+      };
     } else if (materialDefinition.emissiveTexture) {
-      materialDefinition.emissiveTexture.index = textureIndex;
-      delete materialDefinition.emissiveTexture.textureSetDefinitionId;
+      materialDefinition.emissiveTexture = {
+        index: textureIndex,
+        texCoord: 0
+      };
     } else if (
       materialDefinition.pbrMetallicRoughness &&
       materialDefinition.pbrMetallicRoughness.metallicRoughnessTexture
     ) {
-      materialDefinition.pbrMetallicRoughness.metallicRoughnessTexture.index = textureIndex;
-      delete materialDefinition.pbrMetallicRoughness.metallicRoughnessTexture
-        .textureSetDefinitionId;
+      materialDefinition.pbrMetallicRoughness.metallicRoughnessTexture = {
+        index: textureIndex,
+        texCoord: 0
+      };
     } else if (materialDefinition.normalTexture) {
-      materialDefinition.normalTexture.index = textureIndex;
-      delete materialDefinition.normalTexture.textureSetDefinitionId;
+      materialDefinition.normalTexture = {
+        index: textureIndex,
+        texCoord: 0
+      };
     } else if (materialDefinition.occlusionTexture) {
-      materialDefinition.occlusionTexture.index = textureIndex;
-      delete materialDefinition.occlusionTexture.textureSetDefinitionId;
-    }
-  }
-
-  /**
-   * Convert color from [255,255,255,255] to [1,1,1,1]
-   * @param {Array} colorFactor - color array
-   * @returns {void}
-   */
-  _convertColorFormat(colorFactor) {
-    for (let index = 0; index < colorFactor.length; index++) {
-      colorFactor[index] = colorFactor[index] / 255;
+      materialDefinition.occlusionTexture = {
+        index: textureIndex,
+        texCoord: 0
+      };
     }
   }
 
@@ -303,28 +291,4 @@ export default class B3dmConverter {
     // If all normals === 0, the resulting tileset is all in black colors on Cesium
     return normals.find(value => value);
   }
-}
-
-/**
- * Create deep copy of the input object
- * @param {object} object - arbitrary object
- * @returns {object} - deep copy of input
- */
-function _getObjectDeepCopy(object) {
-  if (typeof object !== 'object') {
-    return object;
-  }
-  let result;
-  if (object instanceof Array) {
-    result = object.map(item => _getObjectDeepCopy(item));
-  } else if (object instanceof Object) {
-    result = {};
-    for (const propertyKey in object) {
-      if (object.hasOwnProperty(propertyKey)) {
-        result[propertyKey] = _getObjectDeepCopy(object[propertyKey]);
-      }
-    }
-  }
-
-  return result;
 }
