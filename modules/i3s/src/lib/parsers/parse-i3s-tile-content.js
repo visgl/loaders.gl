@@ -48,6 +48,8 @@ export async function parseI3STileContent(arrayBuffer, tile, tileset, options) {
     }
   }
 
+  tile.content.material = makePbrMaterial(tile.materialDefinition, tile.content.texture);
+
   return await parseI3SNodeGeometry(arrayBuffer, tile, options);
 }
 
@@ -332,4 +334,87 @@ function offsetsToCartesians(vertices, metadata = {}, cartographicOrigin) {
   }
 
   return positions;
+}
+
+/**
+ * Makes PBR material from material definition
+ * @returns {object}
+ */
+function makePbrMaterial(materialDefinition, texture) {
+  if (!materialDefinition) {
+    return null;
+  }
+  const material = getObjectDeepCopy(materialDefinition);
+
+  // Convert colors from [255,255,255,255] to [1,1,1,1]
+  if (material.emissiveFactor) {
+    convertColorFormat(material.emissiveFactor);
+  }
+  if (material.pbrMetallicRoughness && material.pbrMetallicRoughness.baseColorFactor) {
+    convertColorFormat(material.pbrMetallicRoughness.baseColorFactor);
+  }
+
+  setMaterialTexture(material, texture);
+
+  return material;
+}
+
+/**
+ * Convert color from [255,255,255,255] to [1,1,1,1]
+ * @param {Array} colorFactor - color array
+ * @returns {void}
+ */
+function convertColorFormat(colorFactor) {
+  for (let index = 0; index < colorFactor.length; index++) {
+    colorFactor[index] = colorFactor[index] / 255;
+  }
+}
+
+/**
+ * Make a deep copy of the input object
+ * @param {object} object - object to copy
+ * @returns {object}
+ */
+function getObjectDeepCopy(object) {
+  if (typeof object !== 'object') {
+    return object;
+  }
+  let result;
+  if (object instanceof Array) {
+    result = object.map(item => getObjectDeepCopy(item));
+  } else if (object instanceof Object) {
+    result = {};
+    for (const propertyKey in object) {
+      if (object.hasOwnProperty(propertyKey)) {
+        result[propertyKey] = getObjectDeepCopy(object[propertyKey]);
+      }
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Set texture in PBR material
+ * @param {object} material - i3s material definition
+ * @param {object} texture - texture image
+ * @returns {void}
+ */
+function setMaterialTexture(material, texture) {
+  // I3SLoader now support loading only one texture. This elseif sequence will assign this texture to one of
+  // properties defined in materialDefinition
+  if (material.pbrMetallicRoughness && material.pbrMetallicRoughness.baseColorTexture) {
+    material.pbrMetallicRoughness.baseColorTexture.texture = texture;
+  } else if (material.emissiveTexture) {
+    material.emissiveTexture.texture = texture;
+  } else if (
+    material.pbrMetallicRoughness &&
+    material.pbrMetallicRoughness.metallicRoughnessTexture
+  ) {
+    material.pbrMetallicRoughness.metallicRoughnessTexture.texture = texture;
+  } else if (material.normalTexture) {
+    material.normalTexture.texture = texture;
+  } else if (material.occlusionTexture) {
+    material.occlusionTexture.texture = texture;
+  }
 }

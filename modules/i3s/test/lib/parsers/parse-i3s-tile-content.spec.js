@@ -51,3 +51,36 @@ test('ParseI3sTileContent#should load "dds" texture if it is supported', async t
   }
   t.end();
 });
+
+test('ParseI3sTileContent#should make PBR material', async t => {
+  const i3sTilesetData = TILESET_STUB();
+  const i3SNodePagesTiles = new I3SNodePagesTiles(i3sTilesetData, {});
+  const tile = await i3SNodePagesTiles.formTileFromNodePages(1);
+  const response = await fetchFile(I3S_TILE_CONTENT);
+  const data = await response.arrayBuffer();
+  const result = await parseI3STileContent(data, tile, i3sTilesetData, {
+    i3s: {
+      useDracoGeometry: false
+    }
+  });
+  const material = result.content.material;
+  t.ok(material.doubleSided);
+  t.deepEqual(material.emissiveFactor, [1, 1, 1]);
+  t.ok(material.pbrMetallicRoughness);
+  t.ok(material.pbrMetallicRoughness.baseColorTexture);
+
+  const texture = material.pbrMetallicRoughness.baseColorTexture.texture;
+  if (isBrowser) {
+    const supportedFormats = getSupportedGPUTextureFormats();
+    if (supportedFormats.has('dxt')) {
+      t.ok(texture.compressed);
+      t.ok(texture.data instanceof Array);
+    } else {
+      t.ok(texture instanceof ImageBitmap);
+    }
+  } else {
+    t.ok(texture instanceof Object);
+    t.ok(texture.data instanceof Buffer);
+  }
+  t.end();
+});
