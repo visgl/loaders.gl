@@ -337,26 +337,34 @@ function offsetsToCartesians(vertices, metadata = {}, cartographicOrigin) {
 }
 
 /**
- * Makes PBR material from material definition
+ * Makes a glTF-compatible PBR material from an I3S material definition
+ * @param {object} materialDefinition - i3s material definition
+ *  https://github.com/Esri/i3s-spec/blob/master/docs/1.7/materialDefinitions.cmn.md
+ * @param {object} texture - texture image
  * @returns {object}
  */
 function makePbrMaterial(materialDefinition, texture) {
   if (!materialDefinition) {
     return null;
   }
-  const material = getObjectDeepCopy(materialDefinition);
+  const pbrMaterial = {
+    ...materialDefinition,
+    pbrMetallicRoughness: materialDefinition.pbrMetallicRoughness
+      ? {...materialDefinition.pbrMetallicRoughness}
+      : undefined
+  };
 
   // Convert colors from [255,255,255,255] to [1,1,1,1]
-  if (material.emissiveFactor) {
-    convertColorFormat(material.emissiveFactor);
+  if (pbrMaterial.emissiveFactor) {
+    convertColorFormat(pbrMaterial.emissiveFactor);
   }
-  if (material.pbrMetallicRoughness && material.pbrMetallicRoughness.baseColorFactor) {
-    convertColorFormat(material.pbrMetallicRoughness.baseColorFactor);
+  if (pbrMaterial.pbrMetallicRoughness && pbrMaterial.pbrMetallicRoughness.baseColorFactor) {
+    convertColorFormat(pbrMaterial.pbrMetallicRoughness.baseColorFactor);
   }
 
-  setMaterialTexture(material, texture);
+  setMaterialTexture(pbrMaterial, texture);
 
-  return material;
+  return pbrMaterial;
 }
 
 /**
@@ -368,30 +376,6 @@ function convertColorFormat(colorFactor) {
   for (let index = 0; index < colorFactor.length; index++) {
     colorFactor[index] = colorFactor[index] / 255;
   }
-}
-
-/**
- * Make a deep copy of the input object
- * @param {object} object - object to copy
- * @returns {object}
- */
-function getObjectDeepCopy(object) {
-  if (typeof object !== 'object') {
-    return object;
-  }
-  let result;
-  if (object instanceof Array) {
-    result = object.map(item => getObjectDeepCopy(item));
-  } else if (object instanceof Object) {
-    result = {};
-    for (const propertyKey in object) {
-      if (object.hasOwnProperty(propertyKey)) {
-        result[propertyKey] = getObjectDeepCopy(object[propertyKey]);
-      }
-    }
-  }
-
-  return result;
 }
 
 /**
