@@ -66,6 +66,5 @@
   "pre-push": "pre-push",
   "resolutions": {
     "draco3d": "1.4.1"
-  },
-  "dependencies": {}
+  }
 }
