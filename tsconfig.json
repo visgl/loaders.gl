@@ -94,6 +94,7 @@
     "**/modules/tile-converter/test/**/*",
     "**/modules/textures/test/**/*",
     "**/modules/worker-utils/test/**/*",
+    "**/modules/gltf/test/**/*",
 
     "GENERAL_EXCEPTIONS",
     "**/modules/**/src/libs/*",
