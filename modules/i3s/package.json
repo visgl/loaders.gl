@@ -19,7 +19,6 @@
   ],
   "main": "dist/es5/index.js",
   "module": "dist/esm/index.js",
-  "esnext": "dist/es6/index.js",
   "sideEffects": false,
   "files": [
     "src",
@@ -41,7 +40,6 @@
     "@math.gl/core": "^3.3.0",
     "@math.gl/culling": "^3.3.0",
     "@math.gl/geospatial": "^3.3.0",
-    "@probe.gl/stats": "^3.3.0",
     "probe.gl": "^3.3.0"
   }
 }

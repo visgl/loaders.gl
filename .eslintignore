@@ -5,6 +5,7 @@ dist
 **/wip/*
 node_modules/
 *.min.js
+*.md
 **/*.minified.js
 bundle.js
 

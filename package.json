@@ -45,7 +45,7 @@
     "@luma.gl/debug": "^8.3.0",
     "@luma.gl/test-utils": "^8.3.0",
     "@probe.gl/bench": "^3.3.0",
-    "@probe.gl/test-utils": "^3.3.0",
+    "@probe.gl/test-utils": "^3.3.1",
     "babel-loader": "^8.0.6",
     "core-js": "^3.2.1",
     "coveralls": "^3.0.3",
@@ -55,7 +55,7 @@
     "eslint-plugin-react": "^7.19.0",
     "gl": "^4.4.0",
     "gl-matrix": "^3.1.0",
-    "ocular-dev-tools": "^0.1.10",
+    "ocular-dev-tools": "^0.3.0",
     "pre-commit": "^1.2.2",
     "pre-push": "^0.1.1",
     "reify": "^0.19.1",
@@ -65,7 +65,6 @@
   "pre-commit": "pre-commit",
   "pre-push": "pre-push",
   "resolutions": {
-    "puppeteer": "1.16.0",
     "draco3d": "1.4.1"
   }
 }
