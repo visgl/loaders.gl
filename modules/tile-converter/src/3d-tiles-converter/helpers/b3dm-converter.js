@@ -65,7 +65,7 @@ export default class B3dmConverter {
    * Update gltfBuilder with texture from I3S tile
    * @param {object} i3sTile - Tile3D object
    * @param {GLTFScenegraph} gltfBuilder - gltfScenegraph instance to construct GLTF
-   * @returns {Promise<number>} - GLTF texture index
+   * @returns {Promise<number | null>} - GLTF texture index
    */
   async _addI3sTextureToGltf(i3sTile, gltfBuilder) {
     const i3sContent = i3sTile.content;
@@ -192,7 +192,7 @@ export default class B3dmConverter {
   /**
    * Convert i3s material to GLTF compatible material
    * @param {object} material - i3s material definition
-   * @param {number} textureIndex - texture index in GLTF
+   * @param {number | null} textureIndex - texture index in GLTF
    * @returns {object} GLTF material
    */
   _convertI3sMaterialToGltfMaterial(material, textureIndex) {
@@ -220,7 +220,7 @@ export default class B3dmConverter {
       return material;
     }
 
-    if (isTextureIndexExists) {
+    if (textureIndex !== null) {
       this._setGltfTexture(material, textureIndex);
     }
 

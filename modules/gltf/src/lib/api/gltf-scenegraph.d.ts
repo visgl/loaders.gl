@@ -150,4 +150,7 @@ export default class GLTFScenegraph {
    * @param accessor
    */
   addBinaryBuffer(sourceBuffer: any, accessor?: object): number;
+
+  // internal
+  gltf: any;
 }
