@@ -10,8 +10,7 @@ const CONTAINER_STYLE = {
   right: '20px',
   width: '300px',
   padding: '12px 18px',
-  maxHeight: '50%',
-  overflowY: 'auto'
+  maxHeight: '50%'
 };
 
 const STYLED_TH = {
@@ -26,16 +25,22 @@ const STYLED_TD = {
   padding: '.5em .7em'
 };
 
+const TABLE_WRAPPER_STYLE = {
+  maxHeight: '50%',
+  overflowY: 'auto'
+};
+
 const propTypes = {
   attributesObject: PropTypes.object,
-  attributesHeader: PropTypes.string
+  attributesHeader: PropTypes.string,
+  handleClosePanel: PropTypes.func
 };
 
 const defaultProps = {
   attributesObject: {},
-  attributesHeader: 'NAME'
+  attributesHeader: 'NAME',
+  handleClosePanel: () => {}
 };
-
 export default class AttributesPanel extends PureComponent {
   prepareTable() {
     const {attributesObject, attributesHeader} = this.props;
@@ -48,7 +53,7 @@ export default class AttributesPanel extends PureComponent {
     }
 
     return (
-      <div>
+      <div style={TABLE_WRAPPER_STYLE}>
         <h2>{attributesObject[attributesHeader]}</h2>
         <table>
           <tbody>{tableColumns}</tbody>
@@ -67,8 +72,12 @@ export default class AttributesPanel extends PureComponent {
   }
 
   render() {
-    const {attributesObject} = this.props;
-    return <div style={CONTAINER_STYLE}>{attributesObject && this.prepareTable()}</div>;
+    const {attributesObject, handleClosePanel} = this.props;
+    return (
+      <div style={CONTAINER_STYLE}>
+        {attributesObject && this.prepareTable()} <button onClick={handleClosePanel}>Close</button>
+      </div>
+    );
   }
 }
 

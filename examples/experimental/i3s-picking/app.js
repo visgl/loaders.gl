@@ -68,10 +68,10 @@ export default class App extends PureComponent {
       name: INITIAL_EXAMPLE_NAME,
       viewState: INITIAL_VIEW_STATE,
       selectedMapStyle: INITIAL_MAP_STYLE,
-      selectedAttribute: null,
-      selectedfeatureLoading: false
+      selectedAttribute: null
     };
     this._onSelectTileset = this._onSelectTileset.bind(this);
+    this.handleClosePanel = this.handleClosePanel.bind(this);
   }
 
   componentDidMount() {
@@ -161,13 +161,17 @@ export default class App extends PureComponent {
           this._updateStatWidgets();
         },
         onTileUnload: () => this._updateStatWidgets(),
-        onClick: info => {
-          // console.log('App.TileLayer.onClick', info);
-        },
+        onClick: info => this.handleShowAttributesPanel(info),
         pickable: true,
+        autoHighlight: true,
         loadOptions
       })
     ];
+  }
+
+  handleShowAttributesPanel(info) {
+    const attributes = TileLayer.getFeatureAttributes(info.object, info.index);
+    this.setState({selectedAttribute: attributes});
   }
 
   _renderStats() {
@@ -190,9 +194,24 @@ export default class App extends PureComponent {
     );
   }
 
+  getTooltip(info) {
+    if (!info.object || info.index < 0) {
+      return null;
+    }
+
+    const attributes = TileLayer.getFeatureAttributes(info.object, info.index);
+    return attributes
+      ? JSON.stringify(attributes, null, 2).replace(/[\{\}']+/g, '')
+      : 'loading metadata...';
+  }
+
+  handleClosePanel() {
+    this.setState({selectedAttribute: null});
+  }
+
   render() {
     const layers = this._renderLayers();
-    const {viewState, selectedMapStyle, selectedAttribute, selectedfeatureLoading} = this.state;
+    const {viewState, selectedMapStyle, selectedAttribute} = this.state;
 
     return (
       <div style={{position: 'relative', height: '100%'}}>
@@ -204,18 +223,16 @@ export default class App extends PureComponent {
           onViewStateChange={this._onViewStateChange.bind(this)}
           controller={{type: MapController, maxPitch: 85}}
           onAfterRender={() => this._updateStatWidgets()}
-          getTooltip={info => {
-            if (!info.object || info.index < 0) {
-              return null;
-            }
-            const attributes = TileLayer.getFeatureAttributes(info.object, info.index);
-            return attributes ? JSON.stringify(attributes, null, 2) : 'loading metadata...';
-          }}
+          getTooltip={info => this.getTooltip(info)}
         >
           <StaticMap mapStyle={selectedMapStyle} preventStyleDiffing />
         </DeckGL>
-        {selectedAttribute &&
-          !selectedfeatureLoading && <AttributesPanel attributesObject={selectedAttribute} />}
+        {selectedAttribute && (
+          <AttributesPanel
+            handleClosePanel={this.handleClosePanel}
+            attributesObject={selectedAttribute}
+          />
+        )}
       </div>
     );
   }

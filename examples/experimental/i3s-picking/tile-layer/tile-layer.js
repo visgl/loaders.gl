@@ -20,6 +20,7 @@ export default class TileLayer extends Tile3DLayer {
   _makeSimpleMeshLayer(tileHeader, oldLayer) {
     const content = tileHeader.content;
     const {attributes, modelMatrix, cartographicOrigin, texture} = content;
+    const {pickable, autoHighlight} = this.props;
 
     const geometry =
       (oldLayer && oldLayer.props.mesh) ||
@@ -42,8 +43,8 @@ export default class TileLayer extends Tile3DLayer {
         modelMatrix,
         coordinateOrigin: cartographicOrigin,
         coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS,
-        pickable: true,
-        autoHighlight: true,
+        pickable,
+        autoHighlight,
         highlightColor: [0, 0, 255, 150]
       }
     );
@@ -100,7 +101,8 @@ export function getFeatureAttributes(tile, featureIndex) {
   for (let index = 0; index < attributeStorageInfo.length; index++) {
     const attributeName = attributeStorageInfo[index].name;
     const attributeValue = layerFeaturesAttributes[index][attributeName][featureIndex];
-    featureAttributes[attributeName] = attributeValue;
+    // eslint-disable-next-line no-control-regex
+    featureAttributes[attributeName] = attributeValue.toString().replace(/\u0000/g, '');
   }
 
   return featureAttributes;
