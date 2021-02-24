@@ -156,10 +156,7 @@ export default class App extends PureComponent {
         data: tilesetUrl,
         loader: I3SLoader,
         onTilesetLoad: this._onTilesetLoad.bind(this),
-        onTileLoad: tile => {
-          TileLayer.loadFeatureAttributesForNode(tile, this.state.tileset);
-          this._updateStatWidgets();
-        },
+        onTileLoad: () => this._updateStatWidgets(),
         onTileUnload: () => this._updateStatWidgets(),
         onClick: info => this.handleShowAttributesPanel(info),
         pickable: true,
