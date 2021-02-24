@@ -18,7 +18,6 @@
   "types": "src/index.d.ts",
   "main": "dist/es5/index.js",
   "module": "dist/esm/index.js",
-  "esnext": "dist/es6/index.js",
   "sideEffects": false,
   "files": [
     "src",
@@ -39,7 +38,6 @@
     "build-workers": "webpack --entry ./src/workers/null-worker.js --output ./dist/null-worker.js --env.dev --config ../../scripts/webpack/worker.js"
   },
   "dependencies": {
-    "@babel/runtime": "^7.3.1",
-    "@probe.gl/stats": "^3.3.0"
+    "@babel/runtime": "^7.3.1"
   }
 }

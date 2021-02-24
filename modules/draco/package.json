@@ -21,7 +21,6 @@
   "types": "src/index.d.ts",
   "main": "dist/es5/index.js",
   "module": "dist/esm/index.js",
-  "esnext": "dist/es6/index.js",
   "sideEffects": false,
   "browser": {
     "fs": false

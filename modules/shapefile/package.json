@@ -19,7 +19,6 @@
   ],
   "main": "dist/es5/index.js",
   "module": "dist/esm/index.js",
-  "esnext": "dist/es6/index.js",
   "sideEffects": false,
   "browser": {
     "./src/lib/filesystems/node-filesystem.js": false,
