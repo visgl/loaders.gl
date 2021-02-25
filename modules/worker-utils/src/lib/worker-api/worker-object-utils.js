@@ -38,21 +38,21 @@ export function getWorkerObjectName(worker) {
 }
 
 // Returns `true` if the two versions are compatible
-export function validateWorkerVersion(loader, coreVersion = VERSION) {
-  assert(loader, 'no worker provided');
+export function validateWorkerVersion(worker, coreVersion = VERSION) {
+  assert(worker, 'no worker provided');
 
-  let loaderVersion = loader.version;
-  if (!coreVersion || !loaderVersion) {
+  let workerVersion = worker.version;
+  if (!coreVersion || !workerVersion) {
     return;
   }
 
   coreVersion = parseVersion(coreVersion);
-  loaderVersion = parseVersion(loaderVersion);
+  workerVersion = parseVersion(workerVersion);
 
   // TODO enable when fix the __version__ injection
   // assert(
-  //   coreVersion.major === loaderVersion.major && coreVersion.minor <= loaderVersion.minor,
-  //   `loader: ${loader.name} is not compatible. ${coreVersion.major}.${
+  //   coreVersion.major === workerVersion.major && coreVersion.minor <= workerVersion.minor,
+  //   `worker: ${worker.name} is not compatible. ${coreVersion.major}.${
   //     coreVersion.minor
   //   }+ is required.`
   // );
