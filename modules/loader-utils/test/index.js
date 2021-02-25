@@ -10,5 +10,4 @@ import './lib/path-utils/file-aliases.spec';
 
 import './lib/request-utils/request-scheduler.spec';
 
-import './lib/worker-loader-utils/validate-loader-version.spec';
 import './lib/worker-loader-utils/parse-with-worker.spec';

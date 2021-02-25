@@ -15,7 +15,7 @@ export {
 // WORKER UTILS
 export {processOnWorker} from './lib/worker-api/process-on-worker';
 export {createWorker} from './lib/worker-api/create-worker';
-export {getWorkerObjectURL} from './lib/worker-api/worker-object-utils';
+export {getWorkerObjectURL, validateWorkerVersion} from './lib/worker-api/worker-object-utils';
 
 export {default as WorkerFarm} from './lib/worker-farm/worker-farm';
 export {default as WorkerPool} from './lib/worker-farm/worker-pool';

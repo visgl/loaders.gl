@@ -27,7 +27,6 @@ export {
 // LOADERS.GL-SPECIFIC WORKER UTILS
 export {createLoaderWorker} from './lib/worker-loader-utils/create-loader-worker';
 export {parseWithWorker, canParseWithWorker} from './lib/worker-loader-utils/parse-with-worker';
-export {validateLoaderVersion} from './lib/worker-loader-utils/validate-loader-version';
 export {makeTransformIterator} from './lib/iterator-utils/make-transform-iterator';
 
 // PARSER UTILS
