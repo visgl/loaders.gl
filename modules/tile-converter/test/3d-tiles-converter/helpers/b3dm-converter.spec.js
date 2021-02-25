@@ -71,6 +71,8 @@ test('tile-converter - b3dm converter#should convert i3s node data to b3dm encod
     t.ok(attributes);
     t.equal(attributes.OBJECTID[0], 14238);
     t.equal(attributes.NAME[0], 'Sanfran_island_0197.flt\x00');
+    t.ok(tile.header.userData.layerFeaturesAttributes);
+    t.deepEqual(tile.header.userData.layerFeaturesAttributes, []);
 
     t.end();
   }

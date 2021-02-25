@@ -3,6 +3,7 @@
 import {load} from '@loaders.gl/core';
 import {normalizeTileData, normalizeTilesetData} from './lib/parsers/parse-i3s';
 import {parseI3STileContent} from './lib/parsers/parse-i3s-tile-content';
+import {I3SAttributeLoader} from './i3s-attribute-loader';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -74,7 +75,9 @@ async function parseTileContent(arrayBuffer, options, context) {
   const tile = options.i3s.tile;
   const tileset = options.i3s.tileset;
   tile.content = tile.content || {};
+  tile.userData = tile.userData || {};
   await parseI3STileContent(arrayBuffer, tile, tileset, options);
+  await parseFeatureAttributes(tile, tileset);
   return tile.content;
 }
 
@@ -90,4 +93,34 @@ async function parseTileset(data, options, context) {
 async function parseTile(data, options, context) {
   data = JSON.parse(new TextDecoder().decode(data));
   return normalizeTileData(data, options, context);
+}
+
+async function parseFeatureAttributes(tile, tileset) {
+  const attributeStorageInfo = tileset.attributeStorageInfo;
+  const attributeUrls = tile.attributeUrls;
+  const attributes = [];
+
+  for (let index = 0; index < attributeStorageInfo.length; index++) {
+    const url = attributeUrls[index];
+    const attributeName = attributeStorageInfo[index].name;
+    const attributeType = getAttributeValueType(attributeStorageInfo[index]);
+
+    try {
+      const attribute = await load(url, I3SAttributeLoader, {attributeName, attributeType});
+      attributes.push(attribute);
+    } catch (error) {
+      // do nothing
+    }
+  }
+
+  tile.userData.layerFeaturesAttributes = attributes;
+}
+
+function getAttributeValueType(attribute) {
+  if (attribute.hasOwnProperty('objectIds')) {
+    return 'Oid32';
+  } else if (attribute.hasOwnProperty('attributeValues')) {
+    return attribute.attributeValues.valueType;
+  }
+  return null;
 }
