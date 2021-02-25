@@ -43,7 +43,7 @@ export const isBrowser =
 
 export const isWorker = typeof importScripts === 'function';
 
-export const isMobile = typeof window.orientation !== 'undefined';
+export const isMobile = typeof window !== 'undefined' && typeof window.orientation !== 'undefined';
 
 // Extract node major version
 const matches =
