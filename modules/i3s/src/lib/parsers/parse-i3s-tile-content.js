@@ -351,15 +351,25 @@ function makePbrMaterial(materialDefinition, texture) {
     ...materialDefinition,
     pbrMetallicRoughness: materialDefinition.pbrMetallicRoughness
       ? {...materialDefinition.pbrMetallicRoughness}
-      : undefined
+      : {baseColorFactor: [255, 255, 255, 255]}
   };
+
+  // Set default 0.25 per spec https://github.com/Esri/i3s-spec/blob/master/docs/1.7/materialDefinitions.cmn.md
+  pbrMaterial.alphaCutoff = pbrMaterial.alphaCutoff || 0.25;
+
+  if (pbrMaterial.alphaMode) {
+    // I3S contain alphaMode in lowerCase
+    pbrMaterial.alphaMode = pbrMaterial.alphaMode.toUpperCase();
+  }
 
   // Convert colors from [255,255,255,255] to [1,1,1,1]
   if (pbrMaterial.emissiveFactor) {
-    convertColorFormat(pbrMaterial.emissiveFactor);
+    pbrMaterial.emissiveFactor = convertColorFormat(pbrMaterial.emissiveFactor);
   }
   if (pbrMaterial.pbrMetallicRoughness && pbrMaterial.pbrMetallicRoughness.baseColorFactor) {
-    convertColorFormat(pbrMaterial.pbrMetallicRoughness.baseColorFactor);
+    pbrMaterial.pbrMetallicRoughness.baseColorFactor = convertColorFormat(
+      pbrMaterial.pbrMetallicRoughness.baseColorFactor
+    );
   }
 
   setMaterialTexture(pbrMaterial, texture);
@@ -370,12 +380,14 @@ function makePbrMaterial(materialDefinition, texture) {
 /**
  * Convert color from [255,255,255,255] to [1,1,1,1]
  * @param {Array} colorFactor - color array
- * @returns {void}
+ * @returns {Array} - new color array
  */
 function convertColorFormat(colorFactor) {
+  const normalizedColor = [...colorFactor];
   for (let index = 0; index < colorFactor.length; index++) {
-    colorFactor[index] = colorFactor[index] / 255;
+    normalizedColor[index] = colorFactor[index] / 255;
   }
+  return normalizedColor;
 }
 
 /**

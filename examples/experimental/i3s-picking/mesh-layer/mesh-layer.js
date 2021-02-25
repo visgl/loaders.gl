@@ -101,15 +101,17 @@ export default class MeshLayer extends SimpleMeshLayer {
   }
 
   setTexture(texture) {
-    const {emptyTexture, model} = this.state;
+    if (!this.props.material) {
+      const {emptyTexture, model} = this.state;
 
-    if (model) {
-      // props.mesh may not be ready at this time.
-      // The sampler will be set when `getModel` is called
-      model.setUniforms({
-        sampler: texture || emptyTexture,
-        hasTexture: Boolean(texture)
-      });
+      if (model) {
+        // props.mesh may not be ready at this time.
+        // The sampler will be set when `getModel` is called
+        model.setUniforms({
+          sampler: texture || emptyTexture,
+          hasTexture: Boolean(texture)
+        });
+      }
     }
   }
 
