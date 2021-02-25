@@ -83,12 +83,12 @@ export async function* parseSHPInBatches(asyncIterator, options) {
  * BinaryChunkReader.
  *
  * @param  {Number} state Current state
- * @param  {Object} [result={}]  An object to hold result data
+ * @param  {Object} result  An object to hold result data
  * @param  {BinaryChunkReader} binaryReader
  * @return {Number} State at end of current parsing
  */
 /* eslint-disable complexity, max-depth */
-function parseState(state, result = {}, binaryReader, options) {
+function parseState(state, result, binaryReader, options) {
   // eslint-disable-next-line no-constant-condition
   while (true) {
     try {

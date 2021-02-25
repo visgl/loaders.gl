@@ -19,15 +19,15 @@ export {FilePolyfill} from './file/file-polyfill';
 export {installFilePolyfills} from './file/polyfills';
 
 // POLYFILLS: TextEncoder, TextDecoder
-// - Recent Node versions habe these classes but virtually no encodings unless special build.
+// - Recent Node versions have these classes but virtually no encodings unless special build.
 // - Browser: Edge, IE11 do not have these
 
-const installTextEncoder = TextEncoder && (!isBrowser || !('TextEncoder' in global));
+const installTextEncoder = !isBrowser || !('TextEncoder' in global);
 if (installTextEncoder) {
   global['TextEncoder'] = TextEncoder;
 }
 
-const installTextDecoder = TextEncoder && (!isBrowser || !('TextDecoder' in global));
+const installTextDecoder = !isBrowser || !('TextDecoder' in global);
 if (installTextDecoder) {
   global['TextDecoder'] = TextDecoder;
 }

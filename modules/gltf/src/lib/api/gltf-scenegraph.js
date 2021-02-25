@@ -493,10 +493,12 @@ export default class GLTFScenegraph {
     const arrayBuffer = new ArrayBuffer(totalByteLength);
     const targetArray = new Uint8Array(arrayBuffer);
 
+    const sourceBuffers = this.sourceBuffers || [];
+
     // Copy each array into
     let dstByteOffset = 0;
-    for (let i = 0; i < this.sourceBuffers.length; i++) {
-      const sourceBuffer = this.sourceBuffers[i];
+    for (let i = 0; i < sourceBuffers.length; i++) {
+      const sourceBuffer = sourceBuffers[i];
       dstByteOffset = copyToArray(sourceBuffer, targetArray, dstByteOffset);
     }
 

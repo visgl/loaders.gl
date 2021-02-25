@@ -347,7 +347,7 @@ export function decompressTextureCoordinates(compressed, result) {
  * @param {Uint16Array} vBuffer The buffer view of v values.
  * @param {Uint16Array} [heightBuffer] The buffer view of height values.
  *
- * @see {@link https://github.com/AnalyticalGraphicsInc/quantized-mesh|quantized-mesh-1.0 terrain format}
+ * @see https://github.com/AnalyticalGraphicsInc/quantized-mesh|quantized-mesh-1.0
  */
 export function zigZagDeltaDecode(uBuffer, vBuffer, heightBuffer) {
   assert(uBuffer);
