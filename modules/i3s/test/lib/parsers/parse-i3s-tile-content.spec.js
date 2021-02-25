@@ -70,17 +70,19 @@ test('ParseI3sTileContent#should make PBR material', async t => {
   t.ok(material.pbrMetallicRoughness.baseColorTexture);
 
   const texture = material.pbrMetallicRoughness.baseColorTexture.texture;
+  t.ok(texture);
+  t.ok(texture.source);
   if (isBrowser) {
     const supportedFormats = getSupportedGPUTextureFormats();
     if (supportedFormats.has('dxt')) {
-      t.ok(texture.compressed);
-      t.ok(texture.data instanceof Array);
+      t.ok(texture.source.image.compressed);
+      t.ok(texture.source.image.data instanceof Array);
     } else {
-      t.ok(texture instanceof ImageBitmap);
+      t.ok(texture.source.image instanceof ImageBitmap);
     }
   } else {
-    t.ok(texture instanceof Object);
-    t.ok(texture.data instanceof Buffer);
+    t.ok(texture.source.image instanceof Object);
+    t.ok(texture.source.image.data instanceof Buffer);
   }
   t.end();
 });

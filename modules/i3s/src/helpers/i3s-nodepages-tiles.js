@@ -201,17 +201,20 @@ export default class I3SNodePagesTiles {
    * Returns the array of supported texture format
    * @returns {string[]}
    */
-  _getSupportedTextureFormats() {
+  _getSupportedTextureFormats(options = {}) {
     const result = [];
-    const supportedCompressedFormats = getSupportedGPUTextureFormats();
-    // List of possible in i3s formats:
-    // https://github.com/Esri/i3s-spec/blob/master/docs/1.7/textureSetDefinitionFormat.cmn.md
-    if (supportedCompressedFormats.has('etc2')) {
-      result.push('ktx-etc2');
+    if (!this.options.i3s || !this.options.i3s.ignoreCompressedTextures) {
+      const supportedCompressedFormats = getSupportedGPUTextureFormats();
+      // List of possible in i3s formats:
+      // https://github.com/Esri/i3s-spec/blob/master/docs/1.7/textureSetDefinitionFormat.cmn.md
+      if (supportedCompressedFormats.has('etc2')) {
+        result.push('ktx-etc2');
+      }
+      if (supportedCompressedFormats.has('dxt')) {
+        result.push('dds');
+      }
     }
-    // if (supportedCompressedFormats.has('dxt')) {
-    //   result.push('dds');
-    // }
+
     result.push('jpg');
     result.push('png');
     return result;

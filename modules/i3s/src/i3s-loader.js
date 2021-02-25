@@ -30,7 +30,8 @@ export const I3SLoader = {
       isTileHeader: 'auto',
       tile: null,
       tileset: null,
-      useDracoGeometry: true
+      useDracoGeometry: true,
+      ignoreCompressedTextures: false
     }
   }
 };
