@@ -5,10 +5,14 @@ import {
 } from '@loaders.gl/worker-utils/lib/worker-api/worker-object-utils';
 import {NullWorker} from '@loaders.gl/worker-utils';
 
+// __VERSION__ is injected by babel-plugin-version-inline
+// @ts-ignore TS2304: Cannot find name '__VERSION__'.
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+
 test('getWorkerObjectURL', t => {
   t.equals(
     getWorkerObjectURL(NullWorker, {}),
-    'https://unpkg.com/@loaders.gl/worker-utils@3.0.0-alpha.4/dist/null-worker.js',
+    `https://unpkg.com/@loaders.gl/worker-utils@${VERSION}/dist/null-worker.js`,
     'worker url with no options'
   );
 
