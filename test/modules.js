@@ -14,8 +14,8 @@ const TEST_SCENEGRAPHS = true;
 const TEST_TILES = true;
 const TEST_GEOSPATIAL = true;
 const TEST_TABLES = true;
-const TEST_ARCHIVES = false;
-const TEST_CLI = false;
+const TEST_ARCHIVES = true;
+const TEST_CLI = true;
 
 // Install polyfills (primarily for Node)
 const {installFilePolyfills} = require('@loaders.gl/polyfills');
