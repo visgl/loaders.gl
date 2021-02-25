@@ -115,6 +115,7 @@ function addESNextSettings(config) {
 
 module.exports = (env = {}) => {
   let config = CONFIG;
+  env.dev = true;
   if (env.dev) {
     config.mode = 'development';
     config = addESNextSettings(config);

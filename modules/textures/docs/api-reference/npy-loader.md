@@ -42,6 +42,6 @@ const {data, header} = await load(url, _NPYLoader);
 
 Currently no options are supported for this loader.
 
-| Option          | Type     | Default   | Description           |
-| --------------- | -------- | --------- | --------------------- |
-| `npy.workerUrl` | `string` | unpkg CDN | URL to worker script. |
+| Option | Type | Default | Description |
+| ------ | ---- | ------- | ----------- |
+

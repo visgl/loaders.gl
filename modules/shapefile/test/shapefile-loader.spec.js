@@ -13,12 +13,7 @@ import {Proj4Projection} from '@math.gl/proj4';
 import {tapeEqualsEpsilon} from 'test/utils/tape-assertions';
 
 setLoaderOptions({
-  dbf: {
-    workerUrl: 'modules/shapefile/dist/dbf-loader.worker.js'
-  },
-  shp: {
-    workerUrl: 'modules/shapefile/dist/shp-loader.worker.js'
-  }
+  _workerType: 'test'
 });
 
 const SHAPEFILE_JS_DATA_FOLDER = '@loaders.gl/shapefile/test/data/shapefile-js';

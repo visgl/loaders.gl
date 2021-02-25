@@ -14,9 +14,7 @@ const ARROW_STRUCT = '@loaders.gl/arrow/test/data/struct.arrow';
 const ARROW_BIOGRID_NODES = '@loaders.gl/arrow/test/data/biogrid-nodes.arrow';
 
 setLoaderOptions({
-  arrow: {
-    workerUrl: 'modules/arrow/dist/arrow-loader.worker.js'
-  }
+  _workerType: 'test'
 });
 
 test('ArrowLoader#loader conformance', t => {

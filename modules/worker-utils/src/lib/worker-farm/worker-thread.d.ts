@@ -1,10 +1,9 @@
 
-export type WorkerMessage = {
-  workerThread?: WorkerThread,
-  data: any,
-  resolve: (result) => any,
-  reject?: (error) => any
-};
+export type WorkerThreadProps = {
+  name: string;
+  source?: string;
+  url?: string;
+}
 
 /**
  * Represents one worker thread
@@ -12,20 +11,24 @@ export type WorkerMessage = {
 export default class WorkerThread {
   static isSupported(): boolean;
 
-  constructor(options: {
-    source: string,
-    name?: string,
-    onMessage?: (WorkerMessage) => any;
-  });
+  readonly name: string;
+  readonly terminated: boolean;
 
-  destroy(): void;
+  onMessage: (message: any) => void;
+  onError: (error: Error) => void;
 
-  postMessage(data, transferList?: any[]): void;
+  constructor(options: WorkerThreadProps);
 
   /**
-   * Process binary data in a worker
-   * @param data data (containing binary typed arrays) to be transferred to worker
-   * @returns a Promise with data (containing typed arrays) transferred back from worker
+   * Terminate this worker thread
+   * @note Can free up significant memory
    */
-  process(data: any): Promise<any>;
+  destroy(): void;
+
+  /**
+   * Send a message to this worker thread
+   * @param data any data structure, ideally consisting mostly of transferrable objects
+   * @param transferList If not supplied, calculated automatically by traversing data
+   */
+  postMessage(data: any, transferList?: any[]): void;
 }

@@ -36,10 +36,9 @@ const data = await load(url, QuantizedMeshLoader, options);
 
 ## Options
 
-| Option                     | Type            | Default        | Description                                                                     |
-| -------------------------- | --------------- | -------------- | ------------------------------------------------------------------------------- |
-| `quantized-mesh.bounds`    | `array<number>` | `[0, 0, 1, 1]` | Bounds of the image to fit x,y coordinates into. In `[minX, minY, maxX, maxY]`. |
-| `quantized-mesh.workerUrl` | `string`        |                | Custom worker url. Defaults to the unpkg CDN.                                   |
+| Option                  | Type            | Default        | Description                                                                     |
+| ----------------------- | --------------- | -------------- | ------------------------------------------------------------------------------- |
+| `quantized-mesh.bounds` | `array<number>` | `[0, 0, 1, 1]` | Bounds of the image to fit x,y coordinates into. In `[minX, minY, maxX, maxY]`. |
 
 ## Remarks
 

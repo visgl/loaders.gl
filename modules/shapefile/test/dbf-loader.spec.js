@@ -3,9 +3,7 @@ import {setLoaderOptions, fetchFile, parse} from '@loaders.gl/core';
 import {DBFLoader} from '@loaders.gl/shapefile';
 
 setLoaderOptions({
-  dbf: {
-    workerUrl: 'modules/shapefile/dist/dbf-loader.worker.js'
-  }
+  _workerType: 'test'
 });
 
 const SHAPEFILE_JS_DATA_FOLDER = '@loaders.gl/shapefile/test/data/shapefile-js';

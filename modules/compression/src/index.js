@@ -1,4 +1,4 @@
-/** @typedef {import('@loaders.gl/loader-utils').WorkerObject} WorkerObject */
+/** @typedef {import('@loaders.gl/worker-utils').WorkerObject} WorkerObject */
 
 export {default as ZlibDeflateTransform} from './lib/zlib/zlib-deflate-transform';
 export {default as ZlibInflateTransform} from './lib/zlib/zlib-inflate-transform';

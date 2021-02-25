@@ -14,13 +14,13 @@ export const CrunchWorkerLoader = {
   name: 'Crunch',
   module: 'crunch',
   version: VERSION,
+  worker: true,
   extensions: ['crn'],
   mimeTypes: ['application/octet-stream'],
   binary: true,
   options: {
     crunch: {
-      libraryPath: `libs/`,
-      workerUrl: `https://unpkg.com/@loaders.gl/textures@${VERSION}/dist/crunch-loader.worker.js`
+      libraryPath: `libs/`
     }
   }
 };

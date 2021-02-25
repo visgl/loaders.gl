@@ -15,13 +15,13 @@ export const DBFWorkerLoader = {
   id: 'dbf',
   module: 'shapefile',
   version: VERSION,
+  worker: true,
   category: 'table',
   extensions: ['dbf'],
   mimeTypes: ['application/x-dbf'],
   options: {
     dbf: {
-      encoding: 'latin1',
-      workerUrl: `https://unpkg.com/@loaders.gl/shapefile@${VERSION}/dist/dbf-loader.worker.js`
+      encoding: 'latin1'
     }
   }
 };

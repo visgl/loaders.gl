@@ -7,9 +7,7 @@ import {setLoaderOptions, load} from '@loaders.gl/core';
 const NPY_UINT8_URL = '@loaders.gl/textures/test/data/uint8.npy';
 
 setLoaderOptions({
-  npy: {
-    workerUrl: 'modules/textures/dist/npy-loader.worker.js'
-  }
+  _workerType: 'test'
 });
 
 test('NPYLoader#loader objects', async t => {

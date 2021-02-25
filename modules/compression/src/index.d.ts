@@ -1,4 +1,4 @@
-import {WorkerObject} from '@loaders.gl/loader-utils';
+import {WorkerObject} from '@loaders.gl/worker-utils';
 
 // Zlib (via Pako)
 export {default as ZlibDeflateTransform} from './lib/zlib/zlib-deflate-transform';

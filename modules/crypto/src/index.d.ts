@@ -1,4 +1,4 @@
-import {WorkerObject} from '@loaders.gl/loader-utils';
+import {WorkerObject} from '@loaders.gl/worker-utils';
 
 // Cryptographic hash
 export {default as CRC32HashTransform} from './lib/crc32/crc32-hash-transform';

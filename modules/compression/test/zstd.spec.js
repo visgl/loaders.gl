@@ -41,18 +41,14 @@ test.skip('zstd#worker', async t => {
 
   const deflatedData = await processOnWorker(ZstdWorker, binaryData.slice(), {
     operation: 'deflate',
-    zstd: {
-      workerUrl: 'test'
-    }
+    _workerType: 'test'
   });
 
   t.equal(deflatedData.byteLength, 11936, 'Length correct');
 
   const inflatedData = await processOnWorker(ZstdWorker, deflatedData, {
     operation: 'inflate',
-    zstd: {
-      workerUrl: 'test'
-    }
+    _workerType: 'test'
   });
 
   t.equal(inflatedData.byteLength, 100000, 'Length correct');

@@ -13,6 +13,7 @@ export const ArrowWorkerLoader = {
   id: 'arrow',
   module: 'arrow',
   version: VERSION,
+  worker: true,
   category: 'table',
   extensions: ['arrow', 'feather'],
   mimeTypes: ['application/octet-stream'],
@@ -20,7 +21,6 @@ export const ArrowWorkerLoader = {
   tests: ['ARROW'],
   options: {
     arrow: {
-      workerUrl: `https://unpkg.com/@loaders.gl/arrow@${VERSION}/dist/arrow-loader.worker.js`,
       rowFormat: 'auto'
     }
   }

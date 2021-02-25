@@ -12,13 +12,12 @@ export const WKBWorkerLoader = {
   id: 'wkb',
   module: 'wkt',
   version: VERSION,
+  worker: true,
   category: 'geometry',
   extensions: ['wkb'],
   mimeTypes: [],
   options: {
-    wkb: {
-      workerUrl: `https://unpkg.com/@loaders.gl/wkb@${VERSION}/dist/wkb-loader.worker.js`
-    }
+    wkb: {}
   }
 };
 

@@ -13,20 +13,24 @@ export {
 } from './lib/env-utils/globals';
 
 // WORKER UTILS
-export {processOnWorker} from './lib/worker-utils/process-on-worker';
-export {createWorker} from './lib/worker-utils/create-worker';
+export {processOnWorker} from './lib/worker-api/process-on-worker';
+export {createWorker} from './lib/worker-api/create-worker';
+export {getWorkerObjectURL} from './lib/worker-api/worker-object-utils';
 
 export {default as WorkerFarm} from './lib/worker-farm/worker-farm';
 export {default as WorkerPool} from './lib/worker-farm/worker-pool';
-export {default as WorkerThread} from './lib/worker-farm/worker-thread';
-export {getTransferList} from './lib/worker-farm/get-transfer-list';
-export {validateWorkerVersion} from './lib/worker-utils/validate-worker-version';
+export {default as WorkerBody} from './lib/worker-farm/worker-body';
 
 // LIBRARY UTILS
 export {getLibraryUrl, loadLibrary} from './lib/library-utils/library-utils';
 
 // PROCESS UTILS
 export {default as ChildProcessProxy} from './lib/process-utils/child-process-proxy';
+
+// PARSER UTILS
+export {default as AsyncQueue} from './lib/async-queue/async-queue';
+
+// WORKER OBJECTS
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.

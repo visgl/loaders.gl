@@ -9,9 +9,7 @@ const MAPBOX_TERRAIN_PNG_URL = '@loaders.gl/terrain/test/data/mapbox.png';
 const TERRARIUM_TERRAIN_PNG_URL = '@loaders.gl/terrain/test/data/terrarium.png';
 
 setLoaderOptions({
-  terrain: {
-    workerUrl: 'modules/terrain/dist/terrain-loader.worker.js'
-  }
+  _workerType: 'test'
 });
 
 test('TerrainLoader#loader objects', async t => {

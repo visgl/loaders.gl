@@ -16,6 +16,7 @@ export const LASWorkerLoader = {
   id: 'las',
   module: 'las',
   version: VERSION,
+  worker: true,
   extensions: ['las', 'laz'], // LAZ is the "compressed" flavor of LAS,
   mimeTypes: ['application/octet-stream'], // TODO - text version?
   text: true,
@@ -23,7 +24,6 @@ export const LASWorkerLoader = {
   tests: ['LAS'],
   options: {
     las: {
-      workerUrl: `https://unpkg.com/@loaders.gl/las@${VERSION}/dist/las-loader.worker.js`,
       fp64: false,
       skip: 1,
       colorDepth: 8

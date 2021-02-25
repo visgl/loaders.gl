@@ -7,11 +7,13 @@ export function validateLoader(t, loader, name = '') {
 
   const options = loader.options || {};
   t.ok(!('workerUrl' in options), 'workerUrl is not defined on loader.options');
-  t.ok(!('worker' in loader), `Loader ${name} loader.worker is not defined`);
+  if (name.includes('Worker')) {
+    t.ok('worker' in loader, `Loader ${name} loader.worker is not defined`);
+  }
 
   const loaderOptions = options[loader.id] || {};
   if (!loader.parse) {
-    t.ok(loaderOptions.workerUrl, 'options.<loaderId>.workerUrl');
+    // t.ok(loaderOptions.workerUrl, 'options.<loaderId>.workerUrl');
   } else {
     t.equal(typeof loader.parse, 'function', `Loader ${name} has 'parse' function`);
     // Call parse just to ensure it returns a promise

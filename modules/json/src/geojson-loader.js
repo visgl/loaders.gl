@@ -13,8 +13,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 const GeoJSONLoaderOptions = {
   geojson: {
     TableBatch: RowTableBatch,
-    batchSize: 'auto',
-    workerUrl: `https://unpkg.com/@loaders.gl/json@${VERSION}/dist/geojson-loader.worker.js`
+    batchSize: 'auto'
   },
   json: {
     jsonpaths: ['$', '$.features']
@@ -32,6 +31,7 @@ export const GeoJSONWorkerLoader = {
   id: 'geojson',
   module: 'geojson',
   version: VERSION,
+  worker: true,
   extensions: ['geojson'],
   mimeTypes: ['application/geo+json'],
   // TODO - support various line based JSON formats

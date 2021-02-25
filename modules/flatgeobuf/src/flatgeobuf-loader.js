@@ -5,15 +5,15 @@ import parseFlatGeobuf, {parseFlatGeobufInBatches} from './lib/parse-flatgeobuf'
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export const FlatGeobufWorkerLoader = {
-  id: 'fgb',
+  id: 'flatgeobuf',
   name: 'FlatGeobuf',
+  module: 'flatgeobuf',
   version: VERSION,
+  worker: true,
   extensions: ['fgb'],
   category: 'geometry',
   options: {
-    fgb: {
-      workerUrl: `https://unpkg.com/@loaders.gl/flatgeobuf@${VERSION}/dist/flatgeobuf-loader.worker.js`
-    }
+    flatgeobuf: {}
   }
 };
 

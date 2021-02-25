@@ -1,25 +1,26 @@
 import {assert} from '@loaders.gl/loader-utils';
 
 export function isLoaderObject(loader) {
-  if (!loader) {
-    return false;
-  }
-
   if (Array.isArray(loader)) {
     loader = loader[0];
   }
 
+  if (!loader) {
+    return false;
+  }
+
+  const hasExtensions = Array.isArray(loader.extensions);
+
+  /* Now handled by types and worker loaders do not have these
   let hasParser =
     loader.parseTextSync ||
     loader.parseSync ||
     loader.parse ||
     loader.parseStream || // TODO Remove, Replace with parseInBatches
     loader.parseInBatches;
+  */
 
-  const loaderOptions = loader.options && loader.options[loader.id];
-  hasParser = hasParser || (loaderOptions && loaderOptions.workerUrl);
-
-  return hasParser;
+  return hasExtensions;
 }
 
 export function normalizeLoader(loader) {
@@ -42,24 +43,9 @@ export function normalizeLoader(loader) {
     };
   }
 
-  // NORMALIZE LOADER.EXTENSIONS
-
-  // Remove `extension`` prop, replace with `extensions``
-  if (loader.extension) {
-    loader.extensions = loader.extensions || loader.extension;
-    delete loader.extension;
-  }
-
-  // Ensure loader.extensions is an array
-  if (!Array.isArray(loader.extensions)) {
-    loader.extensions = [loader.extensions];
-  }
-
-  assert(loader.extensions && loader.extensions.length > 0 && loader.extensions[0]);
-
   // NORMALIZE text and binary flags
-
   // Ensure at least one of text/binary flags are properly set
+
   if (loader.parseTextSync || loader.parseText) {
     loader.text = true;
   }

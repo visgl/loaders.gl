@@ -1,8 +1,10 @@
 /* eslint-disable no-restricted-globals */
 /* global TextDecoder, self */
 
-import {getTransferList} from '@loaders.gl/worker-utils';
-import {validateLoaderVersion} from './validate-loader-version';
+import {WorkerBody} from '@loaders.gl/worker-utils';
+// import {validateLoaderVersion} from './validate-loader-version';
+
+let requestId = 0;
 
 // TODO - rewrite, rebase on create-generic-worker
 export function createLoaderWorker(loader) {
@@ -11,80 +13,83 @@ export function createLoaderWorker(loader) {
     return;
   }
 
-  let requestId = 0;
-  const parse = (arraybuffer, options = {}, url) =>
-    new Promise((resolve, reject) => {
-      const id = requestId++;
+  WorkerBody.onmessage = async (type, payload) => {
+    switch (type) {
+      case 'process':
+        try {
+          // validateLoaderVersion(loader, data.source.split('@')[1]);
 
-      const onMessage = ({data}) => {
-        if (!data || data.id !== id) {
-          // not ours
-          return;
+          const {input, options = {}} = payload;
+
+          const result = await parseData({
+            loader,
+            arrayBuffer: input,
+            byteOffset: 0,
+            byteLength: 0,
+            options,
+            context: {
+              parse: parseOnMainThread
+            }
+          });
+          WorkerBody.postMessage('done', {result});
+        } catch (error) {
+          WorkerBody.postMessage('error', {error: error.message});
         }
-        switch (data.type) {
-          case 'parse-done':
-            self.removeEventListener('message', onMessage);
-            resolve(data.result);
-            break;
+        break;
+      default:
+    }
+  };
+}
 
-          case 'parse-error':
-            self.removeEventListener('message', onMessage);
-            reject(data.message);
-            break;
+function parseOnMainThread(arrayBuffer, options = {}) {
+  return new Promise((resolve, reject) => {
+    const id = requestId++;
 
-          default:
-          // ignore
-        }
-      };
-      self.addEventListener('message', onMessage);
-      // Ask the main thread to decode data
-      // @ts-ignore self is WorkerGlobalScope
-      self.postMessage({type: 'parse', id, arraybuffer, options, url}, [arraybuffer]);
-    });
-
-  self.onmessage = async evt => {
-    const {data} = evt;
-
-    try {
-      if (!isKnownMessage(data, loader.name)) {
+    /**
+     */
+    const onMessage = (type, payload) => {
+      if (payload.id !== id) {
+        // not ours
         return;
       }
 
-      validateLoaderVersion(loader, data.source.split('@')[1]);
+      switch (type) {
+        case 'done':
+          WorkerBody.removeEventListener(onMessage);
+          resolve(payload.result);
+          break;
 
-      const {arraybuffer, byteOffset = 0, byteLength = 0, options = {}} = data;
+        case 'error':
+          WorkerBody.removeEventListener(onMessage);
+          reject(payload.error);
+          break;
 
-      const result = await parseData({
-        loader,
-        arraybuffer,
-        byteOffset,
-        byteLength,
-        options,
-        context: {parse}
-      });
-      const transferList = getTransferList(result);
-      // @ts-ignore self is WorkerGlobalScope
-      self.postMessage({type: 'done', result}, transferList);
-    } catch (error) {
-      // @ts-ignore self is WorkerGlobalScope
-      self.postMessage({type: 'error', message: error.message});
-    }
-  };
+        default:
+        // ignore
+      }
+    };
+
+    WorkerBody.addEventListener(onMessage);
+
+    // Ask the main thread to decode data
+    const payload = {id, input: arrayBuffer, options};
+    WorkerBody.postMessage('process', payload);
+  });
 }
 
 // TODO - Support byteOffset and byteLength (enabling parsing of embedded binaries without copies)
 // TODO - Why not support async loader.parse* funcs here?
 // TODO - Why not reuse a common function instead of reimplementing loader.parse* selection logic? Keeping loader small?
 // TODO - Lack of appropriate parser functions can be detected when we create worker, no need to wait until parse
-async function parseData({loader, arraybuffer, byteOffset, byteLength, options, context}) {
+async function parseData({loader, arrayBuffer, byteOffset, byteLength, options, context}) {
   let data;
   let parser;
   if (loader.parseSync || loader.parse) {
-    data = arraybuffer;
+    data = arrayBuffer;
     parser = loader.parseSync || loader.parse;
   } else if (loader.parseTextSync) {
     const textDecoder = new TextDecoder();
-    data = textDecoder.decode(arraybuffer);
+    data = textDecoder.decode(arrayBuffer);
     parser = loader.parseTextSync;
   } else {
     throw new Error(`Could not load data with ${loader.name} loader`);
@@ -98,9 +103,4 @@ async function parseData({loader, arraybuffer, byteOffset, byteLength, options, 
   };
 
   return await parser(data, {...options}, context, loader);
-}
-
-// Filter out noise messages sent to workers
-function isKnownMessage(data, name) {
-  return data && data.type === 'parse' && data.source && data.source.startsWith('loaders.gl');
 }

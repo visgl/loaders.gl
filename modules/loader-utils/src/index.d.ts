@@ -1,6 +1,5 @@
 // TYPES
 export {
-  WorkerObject,
   WorkerLoaderObject,
   LoaderObject,
   WriterObject,
@@ -27,6 +26,7 @@ export {
 
 // LOADERS.GL-SPECIFIC WORKER UTILS
 export {createLoaderWorker} from './lib/worker-loader-utils/create-loader-worker';
+export {parseWithWorker, canParseWithWorker} from './lib/worker-loader-utils/parse-with-worker';
 export {validateLoaderVersion} from './lib/worker-loader-utils/validate-loader-version';
 export {makeTransformIterator} from './lib/iterator-utils/make-transform-iterator';
 
@@ -76,10 +76,8 @@ export {default as RequestScheduler} from './lib/request-utils/request-scheduler
 // Note: Should move to category specific module if code size increases
 export {getMeshSize as _getMeshSize, getMeshBoundingBox} from './categories/mesh/mesh-utils';
 
-import {WorkerObject} from './types';
-
-/** A null worker to test that worker processing is functional */
-export const NullWorker: WorkerObject;
+export {NullWorkerLoader, NullLoader} from './null-loader';
+export {JSONLoader} from './json-loader';
 
 // DEPRECATED IN 2.3
 export {getZeroOffsetArrayBuffer} from './lib/binary-utils/memory-copy-utils';

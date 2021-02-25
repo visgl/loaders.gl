@@ -32,7 +32,7 @@ const modules = [
   zip
 ];
 
-test('registerLoaders#isLoaderObject', t => {
+test('isLoaderObject', t => {
   // @ts-ignore
   t.notOk(isLoaderObject(null), 'null is not a loader');
 
@@ -49,7 +49,7 @@ test('registerLoaders#isLoaderObject', t => {
   t.end();
 });
 
-test('registerLoaders#normalizeLoader', t => {
+test('normalizeLoader', t => {
   const TESTS = [
     {
       title: 'loader',
@@ -59,20 +59,6 @@ test('registerLoaders#normalizeLoader', t => {
       title: 'loader with options',
       input: [images.ImageLoader, {image: {imageOrientation: 'flipY'}}],
       options: {image: {imageOrientation: 'flipY'}}
-    },
-    {
-      title: 'extension field',
-      input: {
-        parseTextSync: d => d,
-        extension: 'txt'
-      }
-    },
-    {
-      title: 'malformed extensions field',
-      input: {
-        parseTextSync: d => d,
-        extensions: 'txt'
-      }
     }
   ];
 
@@ -84,6 +70,16 @@ test('registerLoaders#normalizeLoader', t => {
       t.deepEqual(loader.options, testCase.options, `${testCase.title}: options populated`);
     }
   }
+
+  t.throws(
+    () =>
+      normalizeLoader({
+        ...images.ImageLoader,
+        // @ts-ignore
+        extensions: 'jpg'
+      }),
+    'should throw on malformed extensions field'
+  );
 
   t.end();
 });

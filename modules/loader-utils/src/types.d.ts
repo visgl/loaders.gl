@@ -1,11 +1,12 @@
 /**
+export {WorkerObject} from '@loaders.gl/worker-utils'
  * A worker description
- */
 export type WorkerObject = {
   name: string;
   id: string;
   module: string;
   version: string;
+  worker?: string;
   options: object;
   deprecatedOptions?: object;
 
@@ -15,6 +16,7 @@ export type WorkerObject = {
     options: object
   ) => Promise<AsyncIterator<any>>;
 };
+ */
 
 /**
  * A worker loader defintion that can be used with `@loaders.gl/core` functions
@@ -25,6 +27,7 @@ export type WorkerLoaderObject = {
   id: string,
   module: string;
   version: string,
+  worker: string | boolean;
   options: object;
   deprecatedOptions?: object;
   // end WorkerObject
@@ -53,6 +56,8 @@ export type LoaderObject = {
   id: string,
   module: string;
   version: string,
+  worker?: string | boolean;
+
   options: object;
   deprecatedOptions?: object;
   // end WorkerObject

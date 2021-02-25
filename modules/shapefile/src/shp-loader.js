@@ -15,6 +15,7 @@ export const SHPWorkerLoader = {
   id: 'shp',
   module: 'shapefile',
   version: VERSION,
+  worker: true,
   category: 'geometry',
   extensions: ['shp'],
   mimeTypes: ['application/octet-stream'],
@@ -23,7 +24,6 @@ export const SHPWorkerLoader = {
   options: {
     shp: {
       _maxDimensions: 4
-      // workerUrl: `https://unpkg.com/@loaders.gl/shapefile@${VERSION}/dist/shp-loader.worker.js`
     }
   }
 };

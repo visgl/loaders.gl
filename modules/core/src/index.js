@@ -27,7 +27,8 @@ export {save, saveSync} from './lib/api/save';
 export {makeIterator} from './iterator-utils/make-iterator/make-iterator';
 
 // CORE LOADERS
-export {NullLoader} from './null-loader';
+export {NullWorkerLoader, NullLoader} from '@loaders.gl/loader-utils';
+export {JSONLoader} from '@loaders.gl/loader-utils';
 
 // CORE UTILS SHARED WITH LOADERS (RE-EXPORTED FROM LOADER-UTILS)
 export {setPathPrefix, getPathPrefix, resolvePath} from '@loaders.gl/loader-utils';

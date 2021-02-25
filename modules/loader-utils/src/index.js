@@ -1,5 +1,3 @@
-/** @typedef {import('@loaders.gl/loader-utils').WorkerObject} WorkerObject */
-
 // GENERAL UTILS
 export {default as assert} from './lib/env-utils/assert';
 export {
@@ -14,6 +12,7 @@ export {
 
 // WORKER LOADER UTILS
 export {createLoaderWorker} from './lib/worker-loader-utils/create-loader-worker';
+export {parseWithWorker, canParseWithWorker} from './lib/worker-loader-utils/parse-with-worker';
 export {validateLoaderVersion} from './lib/worker-loader-utils/validate-loader-version';
 export {makeTransformIterator} from './lib/iterator-utils/make-transform-iterator';
 
@@ -64,6 +63,10 @@ export {default as RequestScheduler} from './lib/request-utils/request-scheduler
 // MESH CATEGORY UTILS
 // Note: Should move to category specific module if code size increases
 export {getMeshSize as _getMeshSize, getMeshBoundingBox} from './categories/mesh/mesh-utils';
+
+// Loaders
+export {NullWorkerLoader, NullLoader} from './null-loader';
+export {JSONLoader} from './json-loader';
 
 // DEPRECATED IN 2.3
 export {getZeroOffsetArrayBuffer} from './lib/binary-utils/memory-copy-utils';
