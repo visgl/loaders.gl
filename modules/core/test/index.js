@@ -5,7 +5,6 @@ import './lib/utils/mime-type-utils.spec';
 import './lib/utils/resource-utils.spec';
 import './lib/utils/response-utils.spec';
 
-import './lib/loader-utils';
 import './lib/loader-utils/loggers.spec';
 import './lib/loader-utils/option-utils.spec';
 import './lib/loader-utils/normalize-loader.spec';
