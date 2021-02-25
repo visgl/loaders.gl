@@ -1,5 +1,5 @@
 /** @typedef {import('./worker-farm').WorkerFarmProps} WorkerFarmProps */
-import {isMobile} from '../env-utils/global';
+import {isMobile} from '../env-utils/globals';
 import WorkerPool from './worker-pool';
 import WorkerThread from './worker-thread';
 
@@ -10,8 +10,6 @@ const DEFAULT_PROPS = {
   onDebug: () => {},
   reuseWorkers: true
 };
-
-const DEFAULT_MAX_CONCURRENCY = 5;
 
 let _workerFarm = null;
 
@@ -48,7 +46,7 @@ export default class WorkerFarm {
         name,
         source,
         url,
-        maxConcurrency: isProps ? this.props.maxMobileConcurrency : this.props.maxConcurrency,
+        maxConcurrency: isMobile ? this.props.maxMobileConcurrency : this.props.maxConcurrency,
         onDebug: this.props.onDebug,
         reuseWorkers: this.props.reuseWorkers
       });

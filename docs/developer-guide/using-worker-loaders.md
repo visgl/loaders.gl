@@ -63,9 +63,11 @@ async function loadwWithoutWorker(url1) {
 }
 ```
 
-## Concurrency Level
+## Concurrency Level and Worker Reuse
 
-Concurrency - The `options.maxConcurrency` parameter can be adjusted to define how many workers should be created for each format. Note that setting this higher than roughly the number CPU cores on your current machine will not provide much benefit and may create extra overhead.
+Concurrency - The `options.maxConcurrency` and `option.maxMobileConcurrency` options can be adjusted to define how many worker instances should be created for each format. Note that setting this higher than roughly the number CPU cores on your current machine will not provide much benefit and may create extra overhead.
+
+Worker reuse - Workers threads can occupy memoery and
 
 ## ArrayBuffer Neutering
 
