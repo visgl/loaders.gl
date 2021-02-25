@@ -1,9 +1,9 @@
 /** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 /** @typedef {import('@loaders.gl/loader-utils').WorkerLoaderObject} WorkerLoaderObject */
-// Uncomment this line when latest version will be updated to '3.0.0-alpha.4'
+// Uncomment this line when latest version will be updated to '3.0.0-alpha.5'
 // import {VERSION} from './lib/utils/version';
 
-const VERSION = '3.0.0-alpha.4';
+const VERSION = '3.0.0-alpha.5';
 
 /**
  * Worker loader for the Crunch compressed texture container format
