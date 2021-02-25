@@ -49,7 +49,7 @@ export class DataType {
 // NULL
 
 export class Null extends DataType {
-  readonly typeId: Type;
+  get typeId(): Type;
   readonly [Symbol.toStringTag]: string;
   toString(): string;
 }
@@ -57,8 +57,8 @@ export class Null extends DataType {
 // BOOLEANS
 
 export class Bool extends DataType  {
-  readonly typeId: Type;
-  readonly ArrayType: Uint8Array;
+  get typeId(): Type;
+  get ArrayType(): Uint8Array;
   readonly [Symbol.toStringTag]: string;
   toString(): string;
 }
@@ -67,8 +67,8 @@ export class Bool extends DataType  {
 
 export abstract class Int extends DataType  {
   constructor(isSigned: boolean, bitWidth: number);
-  readonly typeId: Type;
-  readonly ArrayType: TypedIntArray;
+  get typeId(): Type;
+  get ArrayType(): TypedIntArray;
   readonly [Symbol.toStringTag]: string;
   toString(): string;
 }
@@ -86,8 +86,8 @@ export class Uint64 extends Int { constructor(); }
 
 export abstract class Float extends DataType  {
   constructor(precision: number);
-  readonly typeId: Type;
-  readonly ArrayType: TypedFloatArray;
+  get typeId(): Type;
+  get ArrayType(): TypedFloatArray;
   readonly [Symbol.toStringTag]: string;
   toString(): string;
 }
@@ -99,8 +99,8 @@ export class Float64 extends Float { constructor(); }
 // STRINGS
 
 export class Utf8 extends DataType {
-  readonly typeId: Type;
-  readonly ArrayType: Uint8Array;
+  get typeId(): Type;
+  get ArrayType(): Uint8Array;
   readonly [Symbol.toStringTag]: string;
   toString(): string;
 }
@@ -114,8 +114,8 @@ type DateUnit = {
 
 export abstract class Date extends DataType {
   constructor(unit: number);
-  readonly typeId: Type;
-  readonly ArrayType: Int32Array;
+  get typeId(): Type;
+  get ArrayType(): Int32Array;
   readonly [Symbol.toStringTag]: string;
   toString(): string;
 }
@@ -132,8 +132,8 @@ type TimeUnit = {
 
 export abstract class Time extends DataType {
   constructor(unit, bitWidth);
-  readonly typeId: Type;
-  readonly ArrayType: Int32Array;
+  get typeId(): Type;
+  get ArrayType(): Int32Array;
   readonly [Symbol.toStringTag]: string;
   toString(): string;
 }
@@ -145,8 +145,8 @@ export class TimeMillisecond extends Time { constructor() }
 
 export abstract class Timestamp extends DataType {
   constructor(unit, timezone?);
-  readonly typeId: Type;
-  readonly ArrayType: Int32Array;
+  get typeId(): Type;
+  get ArrayType(): Int32Array;
   readonly [Symbol.toStringTag]: string;
   toString(): string;
 }
@@ -163,8 +163,8 @@ type IntervalUnit = {
 
 export abstract class Interval extends DataType {
   constructor(unit: number);
-  readonly typeId: Type;
-  readonly ArrayType: Int32Array;
+  get typeId(): Type;
+  get ArrayType(): Int32Array;
   readonly [Symbol.toStringTag]: string;
   toString(): string;
 }

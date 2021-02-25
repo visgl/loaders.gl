@@ -2,8 +2,17 @@ import assert from '../utils/assert';
 
 const TYPES = ['SCALAR', 'VEC2', 'VEC3', 'VEC4'];
 
-// @ts-ignore
-const ARRAY_TO_COMPONENT_TYPE = new Map([
+/** @typedef {
+  Int8ArrayConstructor | Uint8ArrayConstructor | Int16ArrayConstructor | Uint16ArrayConstructor |
+  Int32ArrayConstructor | Uint32ArrayConstructor |
+  Int32ArrayConstructor | Uint32ArrayConstructor |
+  Float32ArrayConstructor |
+  Float64ArrayConstructor
+} TypedArrayConstructor
+*/
+
+/** @type {[TypedArrayConstructor, number][]} */
+const ARRAY_CONSTRUCTOR_TO_WEBGL_CONSTANT = [
   [Int8Array, 5120],
   [Uint8Array, 5121],
   [Int16Array, 5122],
@@ -11,9 +20,10 @@ const ARRAY_TO_COMPONENT_TYPE = new Map([
   [Uint32Array, 5125],
   [Float32Array, 5126],
   [Float64Array, 5130]
-]);
+];
+const ARRAY_TO_COMPONENT_TYPE = new Map(ARRAY_CONSTRUCTOR_TO_WEBGL_CONSTANT);
 
-export const ATTRIBUTE_TYPE_TO_COMPONENTS = {
+const ATTRIBUTE_TYPE_TO_COMPONENTS = {
   SCALAR: 1,
   VEC2: 2,
   VEC3: 3,
@@ -23,7 +33,7 @@ export const ATTRIBUTE_TYPE_TO_COMPONENTS = {
   MAT4: 16
 };
 
-export const ATTRIBUTE_COMPONENT_TYPE_TO_BYTE_SIZE = {
+const ATTRIBUTE_COMPONENT_TYPE_TO_BYTE_SIZE = {
   5120: 1,
   5121: 1,
   5122: 2,
@@ -32,7 +42,7 @@ export const ATTRIBUTE_COMPONENT_TYPE_TO_BYTE_SIZE = {
   5126: 4
 };
 
-export const ATTRIBUTE_COMPONENT_TYPE_TO_ARRAY = {
+const ATTRIBUTE_COMPONENT_TYPE_TO_ARRAY = {
   5120: Int8Array,
   5121: Uint8Array,
   5122: Int16Array,

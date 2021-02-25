@@ -11,6 +11,7 @@ export default class JSONPath {
     this.path = ['$'];
 
     if (path instanceof JSONPath) {
+      // @ts-ignore
       this.path = [...path.path];
       return;
     }
