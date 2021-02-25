@@ -1,4 +1,4 @@
-import {TypedArray} from '@loaders.gl/tables/src/lib/types/arrow-like/type';
+import {TypedArray} from '../../types';
 
 /**
  * Copy sourceBuffer to dataView with some padding

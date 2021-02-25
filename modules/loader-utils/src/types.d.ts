@@ -1,3 +1,18 @@
+export type TypedIntArray =
+  Int8Array | Uint8Array |
+  Int16Array | Uint16Array |
+  Int32Array | Uint32Array |
+  Int32Array | Uint32Array;
+
+export type TypedFloatArray =
+    Uint16Array |
+    Float32Array |
+    Float64Array;
+
+export type TypedArray = TypedIntArray | TypedFloatArray;
+
+export type NumericArray = Array<number> | TypedIntArray | TypedFloatArray;
+
 /**
 export {WorkerObject} from '@loaders.gl/worker-utils'
  * A worker description
