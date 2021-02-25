@@ -1,6 +1,11 @@
-## loaders.gl v2
-
 ## v3.0 Prerelease
+
+#### v3.0.0-alpha.6
+
+- chore: Adjust default worker concurrency. Add mobile concurrency (#1213)
+- fix(loader-utils): TypedArray type import (#1219)
+- tests: fix VERSION issues (#1216)
+- Move attributes loading logic to i3s-loader (#1209)
 
 #### v3.0.0-alpha.5
 
