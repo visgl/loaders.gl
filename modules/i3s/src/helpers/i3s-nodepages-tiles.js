@@ -209,9 +209,9 @@ export default class I3SNodePagesTiles {
     if (supportedCompressedFormats.has('etc2')) {
       result.push('ktx-etc2');
     }
-    if (supportedCompressedFormats.has('dxt')) {
-      result.push('dds');
-    }
+    // if (supportedCompressedFormats.has('dxt')) {
+    //   result.push('dds');
+    // }
     result.push('jpg');
     result.push('png');
     return result;

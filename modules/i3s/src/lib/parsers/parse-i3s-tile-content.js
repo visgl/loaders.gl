@@ -381,24 +381,31 @@ function convertColorFormat(colorFactor) {
 /**
  * Set texture in PBR material
  * @param {object} material - i3s material definition
- * @param {object} texture - texture image
+ * @param {object} image - texture image
  * @returns {void}
  */
-function setMaterialTexture(material, texture) {
+function setMaterialTexture(material, image) {
+  const texture = {source: {image}};
   // I3SLoader now support loading only one texture. This elseif sequence will assign this texture to one of
   // properties defined in materialDefinition
   if (material.pbrMetallicRoughness && material.pbrMetallicRoughness.baseColorTexture) {
-    material.pbrMetallicRoughness.baseColorTexture.texture = texture;
+    material.pbrMetallicRoughness.baseColorTexture = {
+      ...material.pbrMetallicRoughness.baseColorTexture,
+      texture
+    };
   } else if (material.emissiveTexture) {
-    material.emissiveTexture.texture = texture;
+    material.emissiveTexture = {...material.emissiveTexture, texture};
   } else if (
     material.pbrMetallicRoughness &&
     material.pbrMetallicRoughness.metallicRoughnessTexture
   ) {
-    material.pbrMetallicRoughness.metallicRoughnessTexture.texture = texture;
+    material.pbrMetallicRoughness.metallicRoughnessTexture = {
+      ...material.pbrMetallicRoughness.metallicRoughnessTexture,
+      texture
+    };
   } else if (material.normalTexture) {
-    material.normalTexture.texture = texture;
+    material.normalTexture = {...material.normalTexture, texture};
   } else if (material.occlusionTexture) {
-    material.occlusionTexture.texture = texture;
+    material.occlusionTexture = {...material.occlusionTexture, texture};
   }
 }
