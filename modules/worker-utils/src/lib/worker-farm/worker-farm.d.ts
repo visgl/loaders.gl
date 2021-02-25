@@ -5,6 +5,7 @@ import {WorkerPool} from '../..';
  */
 export type WorkerFarmProps = {
   maxConcurrency?: number;
+  maxMobileConcurrency?: number;
   reuseWorkers?: boolean;
   onDebug?: () => void;
 }

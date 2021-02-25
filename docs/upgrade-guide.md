@@ -6,6 +6,10 @@
 
 The module entry point is now only lightly transpiled for the most commonly used evergreen browsers. This change offers significant savings on bundle size. If your application needs to support older browsers such as IE 11, make sure to include `node_modules` in your babel config.
 
+**Worker Concurrency**
+
+Default number of worker threads for each loader has been reduced from `5` to `3` on non mobile devices and to `1` on mobile devices to reduce memory use. Generally, increasing the number of workers has diminishing returns.
+
 **@loaders.gl/gltf**
 
 - `GLTFScenegraph` is updated to provide modifying capabilities. Signatures of some methods have been changed to use named parameters (rather than positional parameters).
