@@ -1,5 +1,15 @@
+/** @typedef {import('./worker-farm').WorkerFarmProps} WorkerFarmProps */
+import {isMobile} from '../env-utils/global';
 import WorkerPool from './worker-pool';
 import WorkerThread from './worker-thread';
+
+/** @type {WorkerFarmProps} */
+const DEFAULT_PROPS = {
+  maxConcurrency: 3,
+  maxMobileConcurrency: 1,
+  onDebug: () => {},
+  reuseWorkers: true
+};
 
 const DEFAULT_MAX_CONCURRENCY = 5;
 
@@ -16,12 +26,11 @@ export default class WorkerFarm {
     return _workerFarm;
   }
 
-  constructor({maxConcurrency = DEFAULT_MAX_CONCURRENCY, onDebug = () => {}, reuseWorkers = true}) {
-    this.maxConcurrency = maxConcurrency;
-    this.onDebug = onDebug;
+  constructor(props) {
+    this.props = {...DEFAULT_PROPS};
+    this.setProps(props);
     /** @type Map<string, WorkerPool>} */
     this.workerPools = new Map();
-    this.reuseWorkers = reuseWorkers;
   }
 
   destroy() {
@@ -29,17 +38,7 @@ export default class WorkerFarm {
   }
 
   setProps(props) {
-    if ('maxConcurrency' in props) {
-      this.maxConcurrency = props.maxConcurrency;
-    }
-
-    if ('onDebug' in props) {
-      this.onDebug = props.onDebug;
-    }
-
-    if ('reuseWorkers' in props) {
-      this.reuseWorkers = props.reuseWorkers;
-    }
+    this.props = {...this.props, ...props};
   }
 
   getWorkerPool({name, source, url}) {
@@ -49,9 +48,9 @@ export default class WorkerFarm {
         name,
         source,
         url,
-        maxConcurrency: this.maxConcurrency,
-        onDebug: this.onDebug,
-        reuseWorkers: this.reuseWorkers
+        maxConcurrency: isProps ? this.props.maxMobileConcurrency : this.props.maxConcurrency,
+        onDebug: this.props.onDebug,
+        reuseWorkers: this.props.reuseWorkers
       });
       this.workerPools.set(name, workerPool);
     }
