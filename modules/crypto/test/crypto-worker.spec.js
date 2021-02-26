@@ -51,7 +51,7 @@ test('CryptoWorker', async t => {
   t.end();
 });
 
-test('CryptoJSWorker', async t => {
+test.skip('CryptoJSWorker', async t => {
   if (!isBrowser) {
     t.end();
     return;

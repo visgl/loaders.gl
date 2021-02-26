@@ -13,9 +13,9 @@ createWorker(async (data, options) => {
 
   switch (operation) {
     case 'crc32':
-      return await CryptoHashTransform.run(data);
+      return await CryptoHashTransform.run(data, options);
     case 'crc32c':
-      return await CryptoHashTransform.run(data);
+      return await CryptoHashTransform.run(data, options);
     default:
       throw new Error(`invalid option: ${operation}`);
   }

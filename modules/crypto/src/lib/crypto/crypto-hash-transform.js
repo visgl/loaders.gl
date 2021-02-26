@@ -5,7 +5,7 @@ import {assert} from '@loaders.gl/worker-utils';
 const ERR_CRYPTO_LIBRARY_NOT_SUPPLIED = 'crypto-js lib must be supplied in options.module.CryptoJS';
 
 export default class CryptoHashTransform {
-  static async run(input, options) {
+  static async run(input, options = {}) {
     const {CryptoJS} = options.modules || {};
     assert(CryptoJS, ERR_CRYPTO_LIBRARY_NOT_SUPPLIED);
 
