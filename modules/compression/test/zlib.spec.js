@@ -80,7 +80,7 @@ test('zlib#6', async t => {
 
 // WORKER TESTS
 
-test.only('zlib#worker', async t => {
+test('zlib#worker', async t => {
   if (!isBrowser) {
     t.end();
     return;
