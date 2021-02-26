@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <title>Raw WebGL (partial) GLTF loader</title>
+
+        <script type="text/javascript" src="lib/gl-matrix.js"></script>
+        <script type="text/javascript" src="lib/loaders.gl.webpack/lib/loaders.gl.js"></script>
+        <script type="text/javascript" src="Utils.js"></script>
+        <script type="text/javascript" src="Glb.js"></script>
+        <script type="text/javascript" src="GlbBuilder.js"></script>
+
+        <script type="text/javascript" src="index.js"></script>
+        <link rel="stylesheet" href="index.css" />
+
+        <script language="javascript">
+            window.onload = function(e) {
+                init();
+            }
+        </script>
+
+    </head>
+
+    <body>
+        <canvas id="canvas"></canvas>
+    </body>
+
+</html>
