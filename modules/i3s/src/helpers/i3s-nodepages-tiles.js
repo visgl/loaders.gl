@@ -203,7 +203,7 @@ export default class I3SNodePagesTiles {
    */
   _getSupportedTextureFormats(options = {}) {
     const result = [];
-    if (!this.options.i3s || !this.options.i3s.ignoreCompressedTextures) {
+    if (!this.options.i3s || this.options.i3s.useCompressedTextures) {
       const supportedCompressedFormats = getSupportedGPUTextureFormats();
       // List of possible in i3s formats:
       // https://github.com/Esri/i3s-spec/blob/master/docs/1.7/textureSetDefinitionFormat.cmn.md

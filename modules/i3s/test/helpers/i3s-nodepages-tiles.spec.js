@@ -145,6 +145,47 @@ test('I3SNodePagesTiles#Select "dds" texture if it is supported', async t => {
   t.end();
 });
 
+test('I3SNodePagesTiles#Switch off compressed textures', async t => {
+  const i3SNodePagesTiles = new I3SNodePagesTiles(
+    {
+      ...TILESET_STUB(),
+      textureSetDefinitions: [
+        {
+          formats: [
+            {
+              name: '0',
+              format: 'jpg'
+            },
+            {
+              name: '0_0_1',
+              format: 'dds'
+            }
+          ]
+        }
+      ]
+    },
+    {i3s: {useCompressedTextures: false}}
+  );
+  const node = await i3SNodePagesTiles.formTileFromNodePages(2);
+  t.ok(node);
+
+  if (isBrowser) {
+    const supportedFormats = getSupportedGPUTextureFormats();
+
+    if (supportedFormats.has('dxt')) {
+      t.equal(
+        node.textureUrl,
+        '@loaders.gl/i3s/test/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/2/textures/0'
+      );
+      t.deepEqual(i3SNodePagesTiles.textureDefinitionsSelectedFormats, [
+        {name: '0', format: 'jpg'}
+      ]);
+    }
+  }
+
+  t.end();
+});
+
 test('I3SNodePagesTiles#Should load DRACO geometry', async t => {
   const i3SNodePagesTiles = new I3SNodePagesTiles(TILESET_STUB(), {i3s: {useDracoGeometry: true}});
   const node1 = await i3SNodePagesTiles.formTileFromNodePages(1);
