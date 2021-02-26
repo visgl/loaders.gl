@@ -8,7 +8,7 @@ import ZstdInflateTransform from '../lib/zstd/zstd-inflate-transform';
 
 export {ZstdDeflateTransform, ZstdInflateTransform};
 
-createWorker(async ({data, options}) => {
+createWorker(async (data, options) => {
   options = options || {};
   options.modules = {'zstd-codec': ZstdCodec};
 

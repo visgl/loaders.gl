@@ -18,7 +18,7 @@ export function canParseWithWorker(loader, data, options, context) {
  * This function expects that the worker function sends certain messages,
  * That can be automated if the worker is wrapped by a call to `createLoaderWorker`
  */
-export async function parseWithWorker(loader, data, options, context, parse) {
+export async function parseWithWorker(loader, data, options, context, parseOnMainThread) {
   const name = loader.id; // TODO
   const url = getWorkerObjectURL(loader, options);
 
@@ -29,7 +29,10 @@ export async function parseWithWorker(loader, data, options, context, parse) {
   // TODO - decide how to handle logging on workers
   options = JSON.parse(JSON.stringify(options));
 
-  const job = await workerPool.startJob('process-on-worker', onMessage.bind(null, parse));
+  const job = await workerPool.startJob(
+    'process-on-worker',
+    onMessage.bind(null, parseOnMainThread)
+  );
 
   job.postMessage('process', {
     // @ts-ignore
@@ -47,7 +50,7 @@ export async function parseWithWorker(loader, data, options, context, parse) {
  * @param {WorkerMessageType} type
  * @param {WorkerMessagePayload} payload
  */
-async function onMessage(parse, job, type, payload) {
+async function onMessage(parseOnMainThread, job, type, payload) {
   switch (type) {
     case 'done':
       job.done(payload);
@@ -58,10 +61,10 @@ async function onMessage(parse, job, type, payload) {
       break;
 
     case 'process':
-      // Worker is asking for main thread to parse
+      // Worker is asking for main thread to parseO
       const {id, input, options} = payload;
       try {
-        const result = await parse(input, options);
+        const result = await parseOnMainThread(input, options);
         job.postMessage('done', {id, result});
       } catch (error) {
         job.postMessage('error', {id, error: error.message});

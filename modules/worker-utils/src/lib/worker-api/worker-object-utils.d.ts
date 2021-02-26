@@ -23,3 +23,9 @@ export function getWorkerObjectName(worker: WorkerObject, options: object): stri
  * @returns `true` if the two versions are compatible
  */
 export function validateWorkerVersion(worker: WorkerObject, libVersion?: string): boolean;
+
+/**
+ * Safely stringify JSON (drop non serializable values like functions and regexps)
+ * @param value 
+ */
+export function removeNontransferableOptions(object: object): object;
