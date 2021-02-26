@@ -1,6 +1,10 @@
 
 class Utils {
 
+    static isPowerOf2(value) {
+        return (value & (value - 1)) == 0;
+    }
+
     static toRadian(a) {
         return a * Utils.DEGREE;
     }
@@ -13,18 +17,30 @@ class Utils {
         return window.devicePixelRatio || 1;
     }
 
-    static loadTextureFromImageBitmap(gl, demWidth, demHeight, imageBitmap, wrapS = gl.CLAMP_TO_EDGE, wrapT = gl.CLAMP_TO_EDGE) {
+    static loadTextureFromImageBitmap(gl, width, height, imageBitmap, wrapS = gl.CLAMP_TO_EDGE, wrapT = gl.CLAMP_TO_EDGE, minFilter = gl.NEAREST_MIPMAP_LINEAR, magFilter = gl.LINEAR) {
 
         const texture = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, texture);
 
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, imageBitmap);
 
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, demWidth, demHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, imageBitmap);
+        if (Utils.isPowerOf2(width) && Utils.isPowerOf2(height)) {
+            switch (minFilter) {
+                case gl.NEAREST_MIPMAP_NEAREST:
+                case gl.NEAREST_MIPMAP_LINEAR:
+                case gl.LINEAR_MIPMAP_NEAREST:
+                case gl.LINEAR_MIPMAP_LINEAR: {
+                    gl.generateMipmap(gl.TEXTURE_2D);
+                    break;
+                }
+            }
+        }
+
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, wrapS);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, wrapT);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, minFilter);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, magFilter);
 
         return texture;
     }

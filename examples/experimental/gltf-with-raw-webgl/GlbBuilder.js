@@ -155,7 +155,7 @@ class GlbBuilder {
                 }
             }
         }
-        
+
         return new Glb(this.gl, this, primitives);
     }
 
@@ -175,7 +175,7 @@ class GlbBuilder {
             const materialDef = glb.json.materials[primitiveDef.material];
 
             const textureIndex = materialDef.pbrMetallicRoughness.baseColorTexture.index;
-            texture = await this.getTexture(gl, glb, textureIndex);
+            texture = await GlbBuilder.getTexture(this.gl, glb, textureIndex);
         }
         catch (error) {
             console.warn(error);
@@ -258,7 +258,7 @@ class GlbBuilder {
     // -----------------------------------------------------------------------------------------------------------------
     // region Utils
 
-    async getTexture(gl, glb, textureIndex) {
+    static async getTexture(gl, glb, textureIndex) {
 
         const textureDef = glb.json.textures[textureIndex];
         const samplerDef = glb.json.samplers[textureDef.sampler];
@@ -269,7 +269,15 @@ class GlbBuilder {
         const data = new Uint8Array(binChunk.arrayBuffer, binChunk.byteOffset + bufferViewDef.byteOffset, bufferViewDef.byteLength);
         const bitmap = await createImageBitmap(new Blob([data], { type: imageDef.mimeType } ));
 
-        return Utils.loadTextureFromImageBitmap(this.gl, bitmap.width, bitmap.height, bitmap, GlbBuilder.getTextureWrap(gl, samplerDef.wrapS), GlbBuilder.getTextureWrap(gl, samplerDef.wrapS));
+        return Utils.loadTextureFromImageBitmap(
+            gl,
+            bitmap.width, bitmap.height,
+            bitmap,
+            GlbBuilder.getTextureWrap(gl, samplerDef.wrapS),
+            GlbBuilder.getTextureWrap(gl, samplerDef.wrapS),
+            GlbBuilder.getTextureMinFilter(gl, samplerDef.minFilter),
+            GlbBuilder.getTextureMagFilter(gl, samplerDef.magFilter)
+        );
     }
 
     static getTextureWrap(gl, id) {
@@ -278,6 +286,26 @@ class GlbBuilder {
             case 33071: return gl.CLAMP_TO_EDGE;
             case 33648: return gl.MIRRORED_REPEAT;
             default: case 10497: return gl.REPEAT;
+        }
+    }
+
+    static getTextureMinFilter(gl, id) {
+
+        switch (id) {
+            case 9728: return gl.NEAREST;
+            case 9729: return gl.LINEAR;
+            case 9984: return gl.NEAREST_MIPMAP_NEAREST;
+            case 9985: return gl.LINEAR_MIPMAP_NEAREST;
+            default: case 9986: return gl.NEAREST_MIPMAP_LINEAR;
+            case 9987: return gl.LINEAR_MIPMAP_LINEAR;
+        }
+    }
+
+    static getTextureMagFilter(gl, id) {
+
+        switch (id) {
+            default: case 9728: return gl.NEAREST;
+            case 9729: return gl.LINEAR;
         }
     }
 

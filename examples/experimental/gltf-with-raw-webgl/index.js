@@ -15,7 +15,7 @@ init = async function() {
     canvas.width = canvas.parentNode.offsetWidth * devicePixelRatio;
     canvas.height = canvas.parentNode.offsetHeight * devicePixelRatio;
 
-    gl = canvas.getContext('webgl2', {antialias : false});
+    gl = canvas.getContext('webgl2');
 
     if (!gl) {
         console.error('Unable to initialize WebGL. Your browser or machine may not support it.');
@@ -29,8 +29,8 @@ init = async function() {
 
     // Set projection matrix:
     const fov = 45;
-    const zNear = 1;
-    const zFar = 10000.0;
+    const zNear = 1.0;
+    const zFar = 100.0;
     const ratio = gl.canvas.clientWidth / gl.canvas.clientHeight;
     mat4.identity(projectionMatrix);
     mat4.perspective(projectionMatrix, fov, ratio, zNear, zFar);
@@ -55,7 +55,6 @@ init = async function() {
 
     requestAnimationFrame(render);
 };
-
 
 draw = function() {
 
