@@ -4,7 +4,7 @@ import LZ4InflateTransform from '../lib/zlib/zlib-inflate-transform';
 
 export {LZ4DeflateTransform, LZ4InflateTransform};
 
-createWorker(async ({data, options = {}}) => {
+createWorker(async (data, options = {}) => {
   // @ts-ignore
   switch (options.operation) {
     case 'deflate':

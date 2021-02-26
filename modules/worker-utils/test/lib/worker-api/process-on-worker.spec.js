@@ -7,7 +7,7 @@ test('processOnWorker', async t => {
     return;
   }
 
-  const nullData = await processOnWorker(NullWorker, 'test', 'abc', {
+  const nullData = await processOnWorker(NullWorker, 'abc', {
     _workerType: 'test'
   });
 

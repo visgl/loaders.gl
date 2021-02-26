@@ -6,7 +6,6 @@ import {WorkerObject} from '../../types';
  */
 export function processOnWorker(
   worker: WorkerObject,
-  jobName: string,
   data: any,
   options?: object
 ): Promise<any>;

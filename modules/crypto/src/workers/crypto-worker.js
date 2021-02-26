@@ -6,7 +6,7 @@ import MD5HashTransform from '../lib/md5-wasm/md5-hash-transform';
 // Assuming we can bundle as module
 export {CRC32HashTransform, CRC32CHashTransform};
 
-createWorker(async ({data, options = {}}) => {
+createWorker(async (data, options = {}) => {
   // @ts-ignore
   const {operation} = options;
 

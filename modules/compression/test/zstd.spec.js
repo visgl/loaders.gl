@@ -29,7 +29,7 @@ test('lz4#defaults', async t => {
 
 // WORKER TESTS
 
-test.skip('zstd#worker', async t => {
+test('zstd#worker', async t => {
   if (!isBrowser) {
     t.end();
     return;
@@ -39,7 +39,7 @@ test.skip('zstd#worker', async t => {
 
   t.equal(binaryData.byteLength, 100000, 'Length correct');
 
-  const deflatedData = await processOnWorker(ZstdWorker, binaryData.slice(), {
+  const deflatedData = await processOnWorker(ZstdWorker, binaryData.slice(0), {
     operation: 'deflate',
     _workerType: 'test'
   });

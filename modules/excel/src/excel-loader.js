@@ -39,9 +39,5 @@ export const ExcelWorkerLoader = {
  */
 export const ExcelLoader = {
   ...ExcelWorkerLoader,
-  parse
+  parse: (arrayBuffer, options, context) => parseExcel(arrayBuffer, options, context)
 };
-
-async function parse(arrayBuffer, options, context) {
-  return parseExcel(arrayBuffer, options, context);
-}

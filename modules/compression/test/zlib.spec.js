@@ -90,7 +90,7 @@ test('zlib#worker', async t => {
 
   t.equal(binaryData.byteLength, 100000, 'Length correct');
 
-  const deflatedData = await processOnWorker(ZlibWorker, binaryData.slice(), {
+  const deflatedData = await processOnWorker(ZlibWorker, binaryData.slice(0), {
     operation: 'deflate',
     _workerType: 'test',
     zlib: {

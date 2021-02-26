@@ -6,7 +6,10 @@ import RandomNumberGenerator from './random-number-generator';
 const SIZE = 100 * 1000;
 const data = null;
 
-// Avoid creating data in global scope
+/**
+ *  Avoid creating data in global scope
+ * @returns {{binaryData: ArrayBuffer, repeatedData: ArrayBuffer}}
+ */
 export function getData() {
   if (data) {
     return data;
