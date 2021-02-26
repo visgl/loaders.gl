@@ -1,5 +1,5 @@
 /** @typedef {import('@loaders.gl/worker-utils').WorkerJob} WorkerJob */
-/** @typedef {import('@loaders.gl/worker-utils/lib/worker-protocol/protocol').WorkerMessageType} WorkerMessageType */
+/** @typedef {import('@loaders.gl/worker-utils/src/lib/worker-protocol/protocol').WorkerMessageType} WorkerMessageType */
 /** @typedef {import('@loaders.gl/worker-utils/').WorkerMessagePayload} WorkerMessagePayload */
 import {WorkerFarm, getWorkerObjectURL} from '@loaders.gl/worker-utils';
 
