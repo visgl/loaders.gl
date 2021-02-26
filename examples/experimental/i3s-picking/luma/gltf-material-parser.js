@@ -1,5 +1,4 @@
 import {Texture2D, hasFeature, FEATURES, log} from '@luma.gl/webgl';
-
 export default class GLTFMaterialParser {
   constructor(
     gl,
@@ -75,14 +74,22 @@ export default class GLTFMaterialParser {
         gltfTexture.texture.sampler.parameters) ||
       {};
 
+    const image = gltfTexture.texture.source.image;
+    let textureOptions;
+    if (image.compressed) {
+      textureOptions = image;
+    } else {
+      // Texture2D accepts a promise that returns an image as data (Async Textures)
+      textureOptions = {data: image};
+    }
+
     const texture = new Texture2D(this.gl, {
       id: gltfTexture.name || gltfTexture.id,
       parameters,
       pixelStore: {
         [this.gl.UNPACK_FLIP_Y_WEBGL]: false
       },
-      // Texture2D accepts a promise that returns an image as data (Async Textures)
-      data: gltfTexture.texture.source.image
+      ...textureOptions
     });
     this.uniforms[name] = texture;
     this.defineIfPresent(define, define);
