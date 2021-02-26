@@ -13,7 +13,7 @@ export default class TileLayer extends Tile3DLayer {
 
   _makeSimpleMeshLayer(tileHeader, oldLayer) {
     const content = tileHeader.content;
-    const {attributes, modelMatrix, cartographicOrigin, texture} = content;
+    const {attributes, modelMatrix, cartographicOrigin, texture, material} = content;
     const {pickable, autoHighlight} = this.props;
 
     const geometry =
@@ -34,6 +34,7 @@ export default class TileLayer extends Tile3DLayer {
         getPosition: [0, 0, 0],
         getColor: [255, 255, 255],
         texture,
+        material,
         modelMatrix,
         coordinateOrigin: cartographicOrigin,
         coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS,
