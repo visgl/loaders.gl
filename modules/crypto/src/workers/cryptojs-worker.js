@@ -1,5 +1,6 @@
 import {createWorker} from '@loaders.gl/worker-utils';
 import CryptoHashTransform from '../lib/crypto/crypto-hash-transform';
+// eslint-disable-next-line import/no-extraneous-dependencies
 import * as CryptoJS from 'crypto-js';
 
 // Assuming we can bundle as module
