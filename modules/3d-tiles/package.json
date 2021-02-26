@@ -29,8 +29,8 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-bundle -- --env.dev",
-    "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js"
+    "pre-build": "npm run build-bundle",
+    "build-bundle": "webpack --stats=none --config ../../scripts/webpack/bundle.js"
   },
   "dependencies": {
     "@loaders.gl/core": "3.0.0-alpha.6",

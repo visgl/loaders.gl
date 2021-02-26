@@ -74,8 +74,6 @@
       "@loaders.gl/video/test": ["modules/video/test"],
       "@loaders.gl/wkt/*": ["modules/wkt/src/*"],
       "@loaders.gl/wkt/test": ["modules/wkt/test"],
-      "@loaders.gl/worker-utils/*": ["modules/worker-utils/src/*"],
-      "@loaders.gl/worker-utils/test": ["modules/worker-utils/test"],
       "@loaders.gl/zip/*": ["modules/zip/src/*"],
       "@loaders.gl/zip/test": ["modules/zip/test"],
 
@@ -83,21 +81,25 @@
     }
   },
   "exclude":[
-    "modules/tiles/src/**/*",
-    "modules/tiles/test/**/*",
-    "modules/i3s/test/**/*",
-    "modules/tile-converter/**/*",
-    "modules/textures/test/**/*",
-    "modules/gltf/test/**/*",
-    "modules/excel",
+    "**/modules/tile-converter/src/**/*",
+    "**/modules/3d-tiles/src/**/*",
+    "**/modules/i3s/src/**/*",
+    "**/modules/tiles/src/**/*",
+    "**/modules/tiles/test/**/*",
+    "**/modules/*/dist/**/*",
+    "**/modules/**/wip/**/*",
+    "**/arrowjs/**/*",
 
-    "modules/**/src/libs/*",
-    "modules/*/dist/**/*",
-    "modules/**/wip/**/*",
-    "examples",
-    "coverage",
-    "arrowjs",
+    "**/modules/**/src/libs/*",
+    "**/modules/*/dist/**/*",
+
+    "**/examples/**/*",
+    "**/coverage/**/*",
     "website",
-    "test"
+    "test/**/*",
+    "**/website/**/*",
+    "**/test/**/*",
+
+    "**/node_modules"
   ]
 }

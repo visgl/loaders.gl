@@ -11,7 +11,7 @@
 #   --token ... \
 #   --tileset ... \
 #   --name ... \
-#   --output data \
+#   -o data \
 #   --max-depth 3
 #
 # Description of arguments:

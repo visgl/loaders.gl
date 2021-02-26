@@ -27,12 +27,12 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-workers && npm run build-bundle -- --env.dev",
-    "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js",
-    "build-workers": "npm run build-zlib-worker && npm run build-lz4-worker && npm run build-zstd-worker",
-    "build-zlib-worker": "webpack --entry ./src/workers/zlib-worker.js --output ./dist/zlib-worker.js --env.dev --config ../../scripts/webpack/worker.js",
-    "build-lz4-worker": "webpack --entry ./src/workers/lz4-worker.js --output ./dist/lz4-worker.js --env.dev --config ../../scripts/webpack/worker.js",
-    "build-zstd-worker": "webpack --entry ./src/workers/zstd-worker.js --output ./dist/zstd-worker.js --env.dev --config ../../scripts/webpack/worker.js"
+    "pre-build": "npm run build-bundle && npm run build-workers",
+    "build-bundle": "webpack --stats=none --config ../../scripts/webpack/bundle.js",
+    "build-workers": "npm run build-zlib-worker && npm run build-lz4-worker",
+    "build-zlib-worker": "webpack --entry ./src/workers/zlib-worker.js -o ./dist/zlib-worker.js --config ../../scripts/webpack/worker.js",
+    "build-lz4-worker": "webpack --entry ./src/workers/lz4-worker.js -o ./dist/lz4-worker.js --config ../../scripts/webpack/worker.js",
+    "build-zstd-worker": "webpack --entry ./src/workers/zstd-worker.js -o ./dist/zstd-worker.js --config ../../scripts/webpack/worker.js"
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",

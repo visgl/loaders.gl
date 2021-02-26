@@ -19,7 +19,7 @@ $ npx tile-converter --install-dependencies
 ```
 
 ```bash
-$ npx tile-converter --input-type <I3S | 3DTILES> --tileset <tileset> --name <tileset name> [--output <output folder>] [--draco] [--max-depth 4] [--slpk] [--7zExe <path/to/7z.exe>] [--token <ION token>] [--egm <pat/to/*.pgm>]
+$ npx tile-converter --input-type <I3S | 3DTILES> --tileset <tileset> --name <tileset name> [-o <output folder>] [--draco] [--max-depth 4] [--slpk] [--7zExe <path/to/7z.exe>] [--token <ION token>] [--egm <pat/to/*.pgm>]
 ```
 
 ```bash

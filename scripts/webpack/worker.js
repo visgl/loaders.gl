@@ -25,7 +25,7 @@ const BABEL_CONFIG = {
     ['@babel/preset-env', {modules: false}]
   ],
   plugins: [
-    ['@babel/plugin-transform-runtime', {useESModules: false}],
+    ['@babel/plugin-transform-runtime', {useESModules: false}], 
     'version-inline'
   ]
 };
@@ -71,8 +71,8 @@ const CONFIG = {
   },
 
   node: {
-    fs: 'empty',
-    Buffer: false
+    // fs: 'empty',
+    // Buffer: false
   }
 };
 
@@ -102,7 +102,7 @@ function addESNextSettings(config) {
         return [
           '@babel/preset-env',
           {
-            targets: {chrome: 80},
+            targets: {chrome: 74},
             exclude: [/transform-async-to-generator/, /transform-regenerator/]
           }
         ];
@@ -115,14 +115,9 @@ function addESNextSettings(config) {
 
 module.exports = (env = {}) => {
   let config = CONFIG;
-  env.dev = true;
   if (env.dev) {
     config.mode = 'development';
     config = addESNextSettings(config);
-  } else {
-    // Generate a separate source map
-    // @ts-ignore
-    config.devtool = 'source-map';
   }
   // console.log(JSON.stringify(config, null, 2));
   return config;

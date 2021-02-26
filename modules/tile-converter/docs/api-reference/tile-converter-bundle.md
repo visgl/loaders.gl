@@ -31,7 +31,7 @@ You can use custom Earth Gravity Model using `--egm` option.
 5. Example:
 
 ```
-node converter.min.js --input-type 3dtiles --tileset ../Frankfurt-3d-tiles/cesiumJpg/tileset.json --name Frankfurt_completed_bundle --output data --max-depth 6 --slpk
+node converter.min.js --input-type 3dtiles --tileset ../Frankfurt-3d-tiles/cesiumJpg/tileset.json --name Frankfurt_completed_bundle -o data --max-depth 6 --slpk
 ```
 
 6. Requirements:

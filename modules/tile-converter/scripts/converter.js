@@ -18,7 +18,7 @@ function printHelp() {
     '--max-depth [Maximal depth of hierarchical tiles tree traversal, default: infinite]'
   );
   console.log('--name [Tileset name]');
-  console.log('--output [Output folder, default: "data" folder]');
+  console.log('-o [Output folder, default: "data" folder]');
   console.log('--slpk [Generate slpk (Scene Layer Packages) I3S output file]');
   console.log(
     '--tileset [tileset.json file (3DTiles) / http://..../SceneServer/layers/0 resource (I3S)]'
@@ -160,7 +160,7 @@ function parseOptions(args) {
         case '--name':
           opts.name = _getValue(index);
           break;
-        case '--output':
+        case '-o':
           opts.output = _getValue(index);
           break;
         case '--max-depth':

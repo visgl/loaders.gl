@@ -34,12 +34,12 @@ function getExternals(packageInfo) {
 }
 
 const NODE = {
-  Buffer: false,
-  fs: 'empty',
-  http: 'empty',
-  https: 'empty',
-  path: 'empty',
-  crypto: 'empty'
+  // Buffer: false,
+  // fs: 'empty',
+  // http: 'empty',
+  // https: 'empty',
+  // path: 'empty',
+  // crypto: 'empty'
 };
 
 const BABEL_CONFIG = {
@@ -110,12 +110,7 @@ module.exports = (env = {}) => {
     config.output.filename = 'dist/dist.dev.js';
     // Disable transpilation
     config.module.rules = [];
-  } else {
-    // Generate a separate source map
-    // @ts-ignore
-    config.devtool = 'source-map';
   }
-
 
   // NOTE uncomment to display config
   // console.log('webpack config', JSON.stringify(config, null, 2));

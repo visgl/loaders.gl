@@ -14,7 +14,7 @@ export async function encodeImageURLToCompressedTextureURL(inputUrl, outputUrl, 
     '--compression', 'DXT1',
     '--quality', 'normal',
     '--input', inputUrl,
-    '--output', outputUrl
+    '-o', outputUrl
   ];
   const childProcess = new ChildProcessProxy();
   await childProcess.start({

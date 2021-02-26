@@ -40,6 +40,7 @@
     "pre-commit": "yarn lint",
     "pre-push": "ocular-test fast"
   },
+  "dependencies": {},
   "devDependencies": {
     "@luma.gl/core": "^8.3.0",
     "@luma.gl/debug": "^8.3.0",
@@ -60,10 +61,14 @@
     "source-map-support": "^0.5.12",
     "typescript": "^4.2.2"
   },
-  "pre-commit": "pre-commit",
-  "pre-push": "pre-push",
   "resolutions": {
+    "webpack": "5.24.2",
+    "webpack-cli": "4.4.0",
+    "babel-loader": "8.2.2",
+    "@babel/runtime": "7.12.0",
+    "puppeteer": "1.16.0",
     "draco3d": "1.4.1"
   },
-  "dependencies": {}
+  "pre-commit": "pre-commit",
+  "pre-push": "pre-push"
 }
