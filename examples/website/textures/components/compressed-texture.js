@@ -205,7 +205,7 @@ export default class CompressedTexture extends PureComponent {
 
       switch (loader && loader.name) {
         case 'Crunch':
-        case 'CompressedTexture':
+        case 'Texture Containers':
           this.renderEmptyTexture(gl, program);
           this.renderCompressedTexture(gl, program, result, loader.name, src);
           break;
