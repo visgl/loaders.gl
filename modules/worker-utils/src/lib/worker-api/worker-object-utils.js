@@ -1,9 +1,11 @@
 /** @typedef {import('../../types').WorkerObject} WorkerObject */
 import assert from '../env-utils/assert';
 
+const NPM_TAG = 'beta'; // Change to 'latest' on release-branch
+
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : NPM_TAG;
 
 export function getWorkerObjectURL(worker, options) {
   const topOptions = options || {};
@@ -18,11 +20,16 @@ export function getWorkerObjectURL(worker, options) {
     url = `modules/${worker.module}/dist/${workerFile}`;
   }
 
-  // If url not provided, load from CDN
+  // If url override is not provided, generate a URL to published version on npm CDN unpkg.com
   if (!url) {
     // GENERATE
-    const version = worker.version ? `@${worker.version}` : '';
-    url = `https://unpkg.com/@loaders.gl/${worker.module}${version}/dist/${workerFile}`;
+    let version = worker.version;
+    // On master we need to load npm alpha releases published with the `beta` tag
+    if (version === 'latest') {
+      version = NPM_TAG;
+    }
+    const versionTag = version ? `@${version}` : '';
+    url = `https://unpkg.com/@loaders.gl/${worker.module}${versionTag}/dist/${workerFile}`;
   }
 
   assert(url);

@@ -205,7 +205,7 @@ export default class App extends PureComponent {
       info.index
     );
     return selectedFeatureAttributes
-      ? JSON.stringify(selectedFeatureAttributes, null, 2).replace(/[\{\}']+/g, '')
+      ? JSON.stringify(selectedFeatureAttributes, null, 2).replace(/[{}']+/g, '')
       : 'loading metadata...';
   }
 
