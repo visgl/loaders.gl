@@ -61,7 +61,7 @@ export default class TileLayer extends Tile3DLayer {
       // For case where featureIndex is an index in attributeData;
       let attributeValue = attributeData[featureIndex];
       // For case where featureIndex is a featureId in attributeData.OBJECTID;
-      if (!attributeValue) {
+      if (attributeValue === undefined) {
         calculatedFeatureIndex =
           calculatedFeatureIndex !== null
             ? calculatedFeatureIndex
