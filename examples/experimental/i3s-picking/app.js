@@ -105,7 +105,7 @@ export default class App extends PureComponent {
     const {tilesetUrl, token, name, metadataUrl} = params;
     this.setState({tilesetUrl, name, token});
     const metadata = await fetch(metadataUrl).then(resp => resp.json());
-    this.setState({metadata});
+    this.setState({metadata, selectedFeatureAttributes: null});
   }
 
   // Updates stats, called every frame
