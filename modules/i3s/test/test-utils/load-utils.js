@@ -153,7 +153,7 @@ export async function loadI3STile(options = {}) {
   const nodeRoot = await i3SNodePagesTiles.formTileFromNodePages(0);
   const node1 = await i3SNodePagesTiles.formTileFromNodePages(1);
   i3sTilesetData.root = nodeRoot;
-  const tileset = new Tileset3D(i3sTilesetData);
+  const tileset = new Tileset3D(i3sTilesetData, options);
   const tile = new Tile3D(tileset, node1);
   await tileset._loadTile(tile);
   return tile;

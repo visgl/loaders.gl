@@ -32,7 +32,8 @@ export const I3SLoader = {
       tile: null,
       tileset: null,
       useDracoGeometry: true,
-      useCompressedTextures: true
+      useCompressedTextures: true,
+      loadFeatureAttributes: true
     }
   }
 };
@@ -72,12 +73,15 @@ async function parse(data, options, context, loader) {
 }
 
 async function parseTileContent(arrayBuffer, options, context) {
-  const tile = options.i3s.tile;
-  const tileset = options.i3s.tileset;
+  const {tile, tileset, loadFeatureAttributes} = options.i3s;
   tile.content = tile.content || {};
   tile.userData = tile.userData || {};
   await parseI3STileContent(arrayBuffer, tile, tileset, options);
-  await parseFeatureAttributes(tile, tileset);
+
+  if (loadFeatureAttributes) {
+    await parseFeatureAttributes(tile, tileset);
+  }
+
   return tile.content;
 }
 
