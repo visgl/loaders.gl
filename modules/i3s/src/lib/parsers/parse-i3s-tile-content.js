@@ -112,13 +112,7 @@ async function parseI3SNodeGeometry(arrayBuffer, tile = {}, options) {
       featureAttributeOrder
     );
 
-    // TODO parse Uint64 attributes properly.
-    // They are not the same as in compressed attributes.
-    // Also featureIds needs to be flatten by face range.
-    // Lets set them as new Float32Array(0) for now to avoid error in non compressed attributes.
-    normalizedFeatureAttributes.id.value = new Float32Array(
-      normalizedVertexAttributes.position.value.length
-    );
+    flattenFeatureIdsByFaceRanges(normalizedFeatureAttributes);
     attributes = concatAttributes(normalizedVertexAttributes, normalizedFeatureAttributes);
   }
 
@@ -420,4 +414,34 @@ function setMaterialTexture(material, image) {
   } else if (material.occlusionTexture) {
     material.occlusionTexture = {...material.occlusionTexture, texture};
   }
+}
+
+/**
+ * Flatten feature ids using face ranges
+ * @param {object} normalizedFeatureAttributes
+ * @returns {void}
+ */
+function flattenFeatureIdsByFaceRanges(normalizedFeatureAttributes) {
+  const featureIds = normalizedFeatureAttributes.id.value;
+  const faceRange = normalizedFeatureAttributes.faceRange.value;
+  const featureIdsLength = faceRange[faceRange.length - 1] + 1;
+  const orderedFeatureIndices = new Uint32Array(featureIdsLength * 3);
+
+  let featureIndex = 0;
+  let startIndex = 0;
+
+  for (let index = 1; index < faceRange.length; index += 2) {
+    const fillId = Number(featureIds[featureIndex]);
+    const endValue = faceRange[index];
+    const prevValue = faceRange[index - 1];
+    const trianglesCount = endValue - prevValue + 1;
+    const endIndex = startIndex + trianglesCount * 3;
+
+    orderedFeatureIndices.fill(fillId, startIndex, endIndex);
+
+    featureIndex++;
+    startIndex = endIndex;
+  }
+
+  normalizedFeatureAttributes.id.value = orderedFeatureIndices;
 }
