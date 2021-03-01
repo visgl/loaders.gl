@@ -52,12 +52,22 @@ export default class TileLayer extends Tile3DLayer {
 
     const {attributeStorageInfo} = tile.tileset.tileset;
     const {layerFeaturesAttributes} = tile.header.userData;
-
     const featureAttributes = {};
+    let calculatedFeatureIndex = null;
 
     for (let index = 0; index < attributeStorageInfo.length; index++) {
       const attributeName = attributeStorageInfo[index].name;
-      const attributeValue = layerFeaturesAttributes[index][attributeName][featureIndex];
+      const attributeData = layerFeaturesAttributes[index][attributeName];
+      // For case where featureIndex is an index in attributeData;
+      let attributeValue = attributeData[featureIndex];
+      // For case where featureIndex is a featureId in attributeData.OBJECTID;
+      if (!attributeValue) {
+        calculatedFeatureIndex =
+          calculatedFeatureIndex !== null
+            ? calculatedFeatureIndex
+            : attributeData.indexOf(featureIndex);
+        attributeValue = attributeData[calculatedFeatureIndex];
+      }
       // eslint-disable-next-line no-control-regex
       featureAttributes[attributeName] = attributeValue.toString().replace(/\u0000/g, '');
     }
