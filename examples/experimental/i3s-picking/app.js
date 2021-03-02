@@ -77,7 +77,8 @@ export default class App extends PureComponent {
       name: INITIAL_EXAMPLE_NAME,
       viewState: INITIAL_VIEW_STATE,
       selectedMapStyle: INITIAL_MAP_STYLE,
-      selectedFeatureAttributes: null
+      selectedFeatureAttributes: null,
+      selectedFeatureIndex: -1
     };
     this._onSelectTileset = this._onSelectTileset.bind(this);
     this.handleClosePanel = this.handleClosePanel.bind(this);
@@ -155,7 +156,7 @@ export default class App extends PureComponent {
   }
 
   _renderLayers() {
-    const {tilesetUrl, token} = this.state;
+    const {tilesetUrl, token, selectedFeatureIndex} = this.state;
     // TODO: support compressed textures in GLTFMaterialParser
     const loadOptions = {throttleRequests: true, loadFeatureAttributes: true};
     if (token) {
@@ -169,15 +170,15 @@ export default class App extends PureComponent {
         onTileLoad: () => this._updateStatWidgets(),
         onTileUnload: () => this._updateStatWidgets(),
         pickable: true,
-        autoHighlight: true,
-        loadOptions
+        loadOptions,
+        highlightedObjectIndex: selectedFeatureIndex
       })
     ];
   }
 
   handleClick(info) {
     if (!info.object || info.index < 0 || !info.layer) {
-      this.setState({selectedFeatureAttributes: null});
+      this.handleClosePanel();
       return;
     }
 
@@ -185,7 +186,7 @@ export default class App extends PureComponent {
       info.object,
       info.index
     );
-    this.setState({selectedFeatureAttributes});
+    this.setState({selectedFeatureAttributes, selectedFeatureIndex: info.index});
   }
 
   _renderStats() {
@@ -257,7 +258,7 @@ export default class App extends PureComponent {
   }
 
   handleClosePanel() {
-    this.setState({selectedFeatureAttributes: null});
+    this.setState({selectedFeatureAttributes: null, selectedFeatureIndex: -1});
   }
 
   renderAttributesPanel() {
