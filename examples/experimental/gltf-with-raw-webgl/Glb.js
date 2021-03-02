@@ -1,5 +1,5 @@
 
-class Glb {
+class GLB {
 
     gl = null;
     mBuilder = null;

@@ -24,7 +24,7 @@ init = async function() {
 
     // Load GLB:
     const GLB_URL = "/glb-files/DamagedHelmet.glb";
-    glbBuilder = new GlbBuilder(gl);
+    glbBuilder = new GLBBuilder(gl);
     glb = await glbBuilder.load(GLB_URL);
 
     // Set projection matrix:

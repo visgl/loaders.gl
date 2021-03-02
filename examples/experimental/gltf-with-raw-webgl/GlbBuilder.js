@@ -1,5 +1,5 @@
 
-class GlbBuilder {
+class GLBBuilder {
 
     // -----------------------------------------------------------------------------------------------------------------
     // region Shaders
@@ -143,7 +143,7 @@ class GlbBuilder {
     async load(glbUrl) {
 
         // Fetch GLB file:
-        const glb = await Loaders.load(glbUrl, Loaders.GLBLoader, { gltf: { postProcess: false } });
+        const glb = await load(glbUrl, GLBLoader);
 
         // Parse meshes primitives:
         const primitives = [];
@@ -156,16 +156,16 @@ class GlbBuilder {
             }
         }
 
-        return new Glb(this.gl, this, primitives);
+        return new GLB(this.gl, this, primitives);
     }
 
     async loadPrimitive(glb, primitiveDef) {
 
         // Load data:
-        const indices = GlbBuilder.getAccessorData(glb, primitiveDef.indices);
-        const vertices = GlbBuilder.getAccessorData(glb, primitiveDef.attributes.POSITION);
-        const normals = GlbBuilder.getAccessorData(glb, primitiveDef.attributes.NORMAL);
-        const textureCoordinates = GlbBuilder.getAccessorData(glb, primitiveDef.attributes.TEXCOORD_0, true);
+        const indices = GLBBuilder.getAccessorData(glb, primitiveDef.indices);
+        const vertices = GLBBuilder.getAccessorData(glb, primitiveDef.attributes.POSITION);
+        const normals = GLBBuilder.getAccessorData(glb, primitiveDef.attributes.NORMAL);
+        const textureCoordinates = GLBBuilder.getAccessorData(glb, primitiveDef.attributes.TEXCOORD_0, true);
 
         if (!indices || !vertices || !normals || !textureCoordinates) return null;
 
@@ -175,7 +175,7 @@ class GlbBuilder {
             const materialDef = glb.json.materials[primitiveDef.material];
 
             const textureIndex = materialDef.pbrMetallicRoughness.baseColorTexture.index;
-            texture = await GlbBuilder.getTexture(this.gl, glb, textureIndex);
+            texture = await GLBBuilder.getTexture(this.gl, glb, textureIndex);
         }
         catch (error) {
             console.warn(error);
@@ -204,31 +204,31 @@ class GlbBuilder {
             indices: {
                 data: indicesBuffer,
                 length: indices.length,
-                dataType: GlbBuilder.getAccessorDataType(this.gl, glb, primitiveDef.indices),
-                numberOfComponents: GlbBuilder.getAccessorNumberOfComponents(glb, primitiveDef.indices)
+                dataType: GLBBuilder.getAccessorDataType(this.gl, glb, primitiveDef.indices),
+                numberOfComponents: GLBBuilder.getAccessorNumberOfComponents(glb, primitiveDef.indices)
             },
 
             vertices: {
                 data: verticesBuffer,
                 length: vertices.length,
-                dataType: GlbBuilder.getAccessorDataType(this.gl, glb, primitiveDef.attributes.POSITION),
-                numberOfComponents: GlbBuilder.getAccessorNumberOfComponents(glb, primitiveDef.attributes.POSITION),
+                dataType: GLBBuilder.getAccessorDataType(this.gl, glb, primitiveDef.attributes.POSITION),
+                numberOfComponents: GLBBuilder.getAccessorNumberOfComponents(glb, primitiveDef.attributes.POSITION),
                 stride: glb.json.bufferViews[glb.json.accessors[primitiveDef.attributes.POSITION].bufferView].byteStride || 0
             },
 
             normals: {
                 data: normalsBuffer,
                 length: normals.length,
-                dataType: GlbBuilder.getAccessorDataType(this.gl, glb, primitiveDef.attributes.NORMAL),
-                numberOfComponents: GlbBuilder.getAccessorNumberOfComponents(glb, primitiveDef.attributes.NORMAL),
+                dataType: GLBBuilder.getAccessorDataType(this.gl, glb, primitiveDef.attributes.NORMAL),
+                numberOfComponents: GLBBuilder.getAccessorNumberOfComponents(glb, primitiveDef.attributes.NORMAL),
                 stride: glb.json.bufferViews[glb.json.accessors[primitiveDef.attributes.NORMAL].bufferView].byteStride || 0
             },
 
             textureCoordinates: textureCoordinatesBuffer === null ? null : {
                 data: textureCoordinatesBuffer,
                 length: textureCoordinates.length,
-                dataType: GlbBuilder.getAccessorDataType(this.gl, glb, primitiveDef.attributes.TEXCOORD_0),
-                numberOfComponents: GlbBuilder.getAccessorNumberOfComponents(glb, primitiveDef.attributes.TEXCOORD_0),
+                dataType: GLBBuilder.getAccessorDataType(this.gl, glb, primitiveDef.attributes.TEXCOORD_0),
+                numberOfComponents: GLBBuilder.getAccessorNumberOfComponents(glb, primitiveDef.attributes.TEXCOORD_0),
                 stride: glb.json.bufferViews[glb.json.accessors[primitiveDef.attributes.TEXCOORD_0].bufferView].byteStride || 0
             }
         };
@@ -273,10 +273,10 @@ class GlbBuilder {
             gl,
             bitmap.width, bitmap.height,
             bitmap,
-            GlbBuilder.getTextureWrap(gl, samplerDef.wrapS),
-            GlbBuilder.getTextureWrap(gl, samplerDef.wrapS),
-            GlbBuilder.getTextureMinFilter(gl, samplerDef.minFilter),
-            GlbBuilder.getTextureMagFilter(gl, samplerDef.magFilter)
+            GLBBuilder.getTextureWrap(gl, samplerDef.wrapS),
+            GLBBuilder.getTextureWrap(gl, samplerDef.wrapS),
+            GLBBuilder.getTextureMinFilter(gl, samplerDef.minFilter),
+            GLBBuilder.getTextureMagFilter(gl, samplerDef.magFilter)
         );
     }
 
@@ -323,7 +323,7 @@ class GlbBuilder {
 
             const byteOffset = binChunk.byteOffset + (accessorDef.byteOffset || 0) + bufferViewDef.byteOffset;
 
-            let numberOfComponents = GlbBuilder.getAccessorNumberOfComponents(glb, accessorIndex);
+            let numberOfComponents = GLBBuilder.getAccessorNumberOfComponents(glb, accessorIndex);
 
             switch (componentType) {
                 case 5120: { return new Int8Array(binChunk.arrayBuffer, byteOffset, count * numberOfComponents); }
