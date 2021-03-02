@@ -208,10 +208,7 @@ export default class TileHeader {
       const options = {
         ...fetchOptions,
         [loader.id]: {
-          tile: this.header,
-          tileset: this.tileset.tileset,
           isTileset: this.type === 'json',
-          isTileHeader: false,
           ...this._getLoaderSpecificOptions(loader.id)
         }
       };
@@ -536,7 +533,12 @@ export default class TileHeader {
   _getLoaderSpecificOptions(loaderId) {
     switch (loaderId) {
       case 'i3s':
-        return this.tileset.options.i3s || {};
+        return {
+          ...this.tileset.options.i3s,
+          tile: this.header,
+          tileset: this.tileset.tileset,
+          isTileHeader: false
+        };
       case '3d-tiles':
       case 'cesium-ion':
       default:

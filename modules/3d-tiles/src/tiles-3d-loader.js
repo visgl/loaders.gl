@@ -24,8 +24,6 @@ export const Tiles3DLoader = {
       loadGLTF: true,
       decodeQuantizedPositions: false,
       isTileset: 'auto',
-      tile: null,
-      tileset: null,
       assetGltfUpAxis: null
     }
   }
