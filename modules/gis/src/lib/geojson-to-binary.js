@@ -4,7 +4,7 @@
 export function geojsonToBinary(features, options = {}) {
   const firstPassData = firstPass(features);
   return secondPass(features, firstPassData, {
-    coordLength: options.coordLength || firstPassData.coordLength,
+    coordLength: options.coordLength || firstPassData.coordLength || 2,
     numericPropKeys: options.numericPropKeys || firstPassData.numericPropKeys,
     PositionDataType: options.PositionDataType || Float32Array
   });
@@ -30,7 +30,7 @@ function firstPass(features) {
   let polygonObjectsCount = 0;
   let polygonRingsCount = 0;
   let polygonFeaturesCount = 0;
-  const coordLengths = new Set([2]);
+  const coordLengths = new Set();
   const numericPropKeys = {};
 
   for (const feature of features) {
@@ -117,7 +117,7 @@ function firstPass(features) {
     linePositionsCount,
     linePathsCount,
     lineFeaturesCount,
-    coordLength: Math.max(...coordLengths),
+    coordLength: coordLengths.size > 0 && Math.max(...coordLengths),
     polygonPositionsCount,
     polygonObjectsCount,
     polygonRingsCount,
