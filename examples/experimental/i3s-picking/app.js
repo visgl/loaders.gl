@@ -17,6 +17,7 @@ import AttributesPanel from './components/attributes-panel';
 import {INITIAL_MAP_STYLE} from './constants';
 
 const TRANSITION_DURAITON = 4000;
+const NO_DATA = 'No Data';
 
 const INITIAL_VIEW_STATE = {
   longitude: -120,
@@ -38,6 +39,14 @@ const STATS_WIDGET_STYLE = {
   zIndex: '10000',
   maxWidth: 300,
   background: '#000',
+  color: '#fff'
+};
+
+const TH_STYLE = {
+  textAlign: 'left'
+};
+
+const TOOLTIP_STYLE = {
   color: '#fff'
 };
 
@@ -204,9 +213,43 @@ export default class App extends PureComponent {
       info.object,
       info.index
     );
-    return selectedFeatureAttributes
-      ? JSON.stringify(selectedFeatureAttributes, null, 2).replace(/[{}']+/g, '')
-      : 'loading metadata...';
+    // eslint-disable-next-line no-undef
+    const tooltip = document.createElement('div');
+    render(this.renderTooltip(selectedFeatureAttributes), tooltip);
+
+    return {html: tooltip.innerHTML};
+  }
+
+  renderTooltip(selectedFeatureAttributes) {
+    const rows = [];
+
+    for (const key in selectedFeatureAttributes) {
+      const row = (
+        <tr key={key}>
+          <th style={TH_STYLE}>{key}</th>
+          <td>{this.formatTooltipValue(selectedFeatureAttributes[key])}</td>
+        </tr>
+      );
+
+      rows.push(row);
+    }
+
+    return (
+      <div style={TOOLTIP_STYLE}>
+        <table>
+          <tbody>{rows}</tbody>
+        </table>
+      </div>
+    );
+  }
+
+  formatTooltipValue(value) {
+    return (
+      value
+        .toString()
+        .replace(/[{}']+/g, '')
+        .trim() || NO_DATA
+    );
   }
 
   handleClosePanel() {
