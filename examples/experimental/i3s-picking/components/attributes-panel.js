@@ -6,11 +6,13 @@ const CONTAINER_STYLE = {
   position: 'absolute',
   backgroundColor: 'white',
   flexFlow: 'column',
-  top: '150px',
-  right: '20px',
+  top: 0,
+  right: 0,
   width: '300px',
   padding: '12px 18px',
-  maxHeight: '50%'
+  maxHeight: '80%',
+  margin: '20px',
+  zIndex: 1000
 };
 
 const STYLED_TH = {
@@ -30,6 +32,22 @@ const TABLE_WRAPPER_STYLE = {
   overflowY: 'auto'
 };
 
+const HEADER_STYLE = {
+  display: 'flex',
+  flexFlow: 'row nowrap',
+  justifyContent: 'space-between',
+  alignItems: 'center'
+};
+
+const CLOSE_BUTTON_STYLE = {
+  height: '30px',
+  color: '#6e6e6e',
+  border: 'none',
+  cursor: 'pointer',
+  outline: 'none',
+  fontSize: '19px'
+};
+
 const propTypes = {
   attributesObject: PropTypes.object,
   attributesHeader: PropTypes.string,
@@ -41,20 +59,21 @@ const defaultProps = {
   attributesHeader: 'NAME',
   handleClosePanel: () => {}
 };
+
+const NO_DATA = 'No Data';
 export default class AttributesPanel extends PureComponent {
   prepareTable() {
-    const {attributesObject, attributesHeader} = this.props;
+    const {attributesObject} = this.props;
     const tableColumns = [];
 
     for (const key in attributesObject) {
-      const value = attributesObject[key];
+      const value = this.formatValue(attributesObject[key]);
       const column = this.createTableColumn(key, value);
       tableColumns.push(column);
     }
 
     return (
       <div style={TABLE_WRAPPER_STYLE}>
-        <h2>{attributesObject[attributesHeader]}</h2>
         <table>
           <tbody>{tableColumns}</tbody>
         </table>
@@ -71,11 +90,27 @@ export default class AttributesPanel extends PureComponent {
     );
   }
 
+  formatValue(value) {
+    return (
+      value
+        .toString()
+        .replace(/[{}']+/g, '')
+        .trim() || NO_DATA
+    );
+  }
+
   render() {
-    const {attributesObject, handleClosePanel} = this.props;
+    const {attributesObject, handleClosePanel, attributesHeader} = this.props;
+
     return (
       <div style={CONTAINER_STYLE}>
-        {attributesObject && this.prepareTable()} <button onClick={handleClosePanel}>Close</button>
+        <div style={HEADER_STYLE}>
+          <h2>{attributesObject[attributesHeader]}</h2>
+          <button style={CLOSE_BUTTON_STYLE} onClick={handleClosePanel}>
+            X
+          </button>
+        </div>
+        {attributesObject && this.prepareTable()}
       </div>
     );
   }

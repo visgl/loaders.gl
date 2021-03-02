@@ -168,7 +168,6 @@ export default class App extends PureComponent {
         onTilesetLoad: this._onTilesetLoad.bind(this),
         onTileLoad: () => this._updateStatWidgets(),
         onTileUnload: () => this._updateStatWidgets(),
-        onClick: info => this.handleShowAttributesPanel(info),
         pickable: true,
         autoHighlight: true,
         loadOptions
@@ -176,7 +175,12 @@ export default class App extends PureComponent {
     ];
   }
 
-  handleShowAttributesPanel(info) {
+  handleClick(info) {
+    if (!info.object || info.index < 0 || !info.layer) {
+      this.setState({selectedFeatureAttributes: null});
+      return;
+    }
+
     const selectedFeatureAttributes = info.layer.getSelectedFeatureAttributes(
       info.object,
       info.index
@@ -256,6 +260,17 @@ export default class App extends PureComponent {
     this.setState({selectedFeatureAttributes: null});
   }
 
+  renderAttributesPanel() {
+    const {selectedFeatureAttributes} = this.state;
+
+    return (
+      <AttributesPanel
+        handleClosePanel={this.handleClosePanel}
+        attributesObject={selectedFeatureAttributes}
+      />
+    );
+  }
+
   render() {
     const layers = this._renderLayers();
     const {viewState, selectedMapStyle, selectedFeatureAttributes} = this.state;
@@ -263,7 +278,7 @@ export default class App extends PureComponent {
     return (
       <div style={{position: 'relative', height: '100%'}}>
         {this._renderStats()}
-        {this._renderControlPanel()}
+        {selectedFeatureAttributes ? this.renderAttributesPanel() : this._renderControlPanel()}
         <DeckGL
           layers={layers}
           viewState={viewState}
@@ -271,15 +286,10 @@ export default class App extends PureComponent {
           controller={{type: MapController, maxPitch: 85}}
           onAfterRender={() => this._updateStatWidgets()}
           getTooltip={info => this.getTooltip(info)}
+          onClick={info => this.handleClick(info)}
         >
           <StaticMap mapStyle={selectedMapStyle} preventStyleDiffing />
         </DeckGL>
-        {selectedFeatureAttributes && (
-          <AttributesPanel
-            handleClosePanel={this.handleClosePanel}
-            attributesObject={selectedFeatureAttributes}
-          />
-        )}
       </div>
     );
   }
