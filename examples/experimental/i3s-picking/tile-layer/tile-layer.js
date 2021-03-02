@@ -41,8 +41,8 @@ export default class TileLayer extends Tile3DLayer {
     );
   }
 
-  getSelectedFeatureAttributes(tile, featureIndex) {
-    if (featureIndex < 0 || !tile || !tile.header) {
+  getSelectedFeatureAttributes(tile, featureId) {
+    if (featureId < 0 || !tile || !tile.header) {
       return null;
     }
 
@@ -58,16 +58,11 @@ export default class TileLayer extends Tile3DLayer {
     for (let index = 0; index < attributeStorageInfo.length; index++) {
       const attributeName = attributeStorageInfo[index].name;
       const attributeData = layerFeaturesAttributes[index][attributeName];
-      // For case where featureIndex is an index in attributeData;
-      let attributeValue = attributeData[featureIndex];
-      // For case where featureIndex is a featureId in attributeData.OBJECTID;
-      if (attributeValue === undefined) {
-        calculatedFeatureIndex =
-          calculatedFeatureIndex !== null
-            ? calculatedFeatureIndex
-            : attributeData.indexOf(featureIndex);
-        attributeValue = attributeData[calculatedFeatureIndex];
-      }
+      let attributeValue = '';
+
+      calculatedFeatureIndex =
+        calculatedFeatureIndex !== null ? calculatedFeatureIndex : attributeData.indexOf(featureId);
+      attributeValue = attributeData[calculatedFeatureIndex];
       // eslint-disable-next-line no-control-regex
       featureAttributes[attributeName] = attributeValue.toString().replace(/\u0000/g, '');
     }
