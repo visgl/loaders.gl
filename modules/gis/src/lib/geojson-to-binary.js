@@ -30,7 +30,7 @@ function firstPass(features) {
   let polygonObjectsCount = 0;
   let polygonRingsCount = 0;
   let polygonFeaturesCount = 0;
-  const coordLengths = new Set();
+  const coordLengths = new Set([2]);
   const numericPropKeys = {};
 
   for (const feature of features) {
