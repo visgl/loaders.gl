@@ -207,6 +207,9 @@ test('Empty MVT must return empty binary format', async t => {
   t.ok(geometryBinary.points);
   t.ok(geometryBinary.lines);
   t.ok(geometryBinary.polygons);
+  t.ok(geometryBinary.points.positions.size === 2);
+  t.ok(geometryBinary.lines.positions.size === 2);
+  t.ok(geometryBinary.polygons.positions.size === 2);
 
   t.end();
 });
