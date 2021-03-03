@@ -40,35 +40,6 @@ export default class TileLayer extends Tile3DLayer {
       }
     );
   }
-
-  getSelectedFeatureAttributes(tile, featureId) {
-    if (featureId < 0 || !tile || !tile.header) {
-      return null;
-    }
-
-    if (!tile.header.userData.layerFeaturesAttributes) {
-      return null;
-    }
-
-    const {attributeStorageInfo} = tile.tileset.tileset;
-    const {layerFeaturesAttributes} = tile.header.userData;
-    const featureAttributes = {};
-    let calculatedFeatureIndex = null;
-
-    for (let index = 0; index < attributeStorageInfo.length; index++) {
-      const attributeName = attributeStorageInfo[index].name;
-      const attributeData = layerFeaturesAttributes[index][attributeName];
-      let attributeValue = '';
-
-      calculatedFeatureIndex =
-        calculatedFeatureIndex !== null ? calculatedFeatureIndex : attributeData.indexOf(featureId);
-      attributeValue = attributeData[calculatedFeatureIndex];
-      // eslint-disable-next-line no-control-regex
-      featureAttributes[attributeName] = attributeValue.toString().replace(/\u0000/g, '');
-    }
-
-    return featureAttributes;
-  }
 }
 
 function getMeshGeometry(contentAttributes) {
