@@ -137,12 +137,7 @@ export default class CompressedTexture extends PureComponent {
 
     this.state = {
       supportedFormats: getSupportedGPUTextureFormats(props.gl),
-      loadOptions: {
-        basis: {
-          workerUrl:
-            'https://unpkg.com/@loaders.gl/textures@3.0.0-alpha.4/dist/basis-loader.worker.js'
-        }
-      },
+      loadOptions: {},
       textureError: null,
       showStats: false,
       stats: []
@@ -203,17 +198,17 @@ export default class CompressedTexture extends PureComponent {
 
       this.addStat('File Size', Math.floor(length / 1024), 'Kb');
 
-      switch (loader && loader.name) {
-        case 'Crunch':
-        case 'Texture Containers':
+      switch (loader && loader.id) {
+        case 'crunch':
+        case 'compressed-texture':
           this.renderEmptyTexture(gl, program);
           this.renderCompressedTexture(gl, program, result, loader.name, src);
           break;
-        case 'Images':
+        case 'image':
           this.renderEmptyTexture(gl, program);
           this.renderImageTexture(gl, program, result);
           break;
-        case 'Basis':
+        case 'basis':
           const basisTextures = result[0];
           this.renderEmptyTexture(gl, program);
           this.renderCompressedTexture(gl, program, basisTextures, loader.name, src);
