@@ -117,7 +117,7 @@ module.exports = {
             title: 'I3S Loader',
             category: "Loaders",
             image: 'images/example-i3s.jpg',
-            componentUrl: resolve(__dirname, '../examples/website/i3s/app.js'),
+            componentUrl: resolve(__dirname, '../examples/experimental/i3s-picking/app.js'),
             path: 'examples/i3s'
           },
           {

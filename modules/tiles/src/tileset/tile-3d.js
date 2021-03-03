@@ -536,7 +536,7 @@ export default class TileHeader {
   _getLoaderSpecificOptions(loaderId) {
     switch (loaderId) {
       case 'i3s':
-        return {};
+        return this.tileset.options.i3s || {};
       case '3d-tiles':
       case 'cesium-ion':
       default:

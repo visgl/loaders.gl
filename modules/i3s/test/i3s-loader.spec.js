@@ -2,7 +2,7 @@
 
 import test from 'tape-promise/tape';
 import {isBrowser} from '@loaders.gl/core';
-import {loadI3STileContent} from './test-utils/load-utils';
+import {loadI3STileContent, loadI3STile} from './test-utils/load-utils';
 
 test('I3SLoader#Load tile content', async t => {
   const content = await loadI3STileContent();
@@ -20,7 +20,7 @@ test('I3SLoader#Load tile content', async t => {
   t.ok(content.attributes.faceRange);
   t.equal(content.attributes.faceRange.value.length, 244);
   t.ok(content.attributes.featureIds);
-  t.equal(content.attributes.featureIds.value.length, 76914);
+  t.equal(content.attributes.featureIds.value.length, 25638);
 
   t.ok(content.texture);
   // ImageLoader returns different things on browser and Node
@@ -44,5 +44,28 @@ test('I3SLoader#DRACO geometry', async t => {
   t.ok(content.attributes.texCoords);
   t.equal(content.attributes.texCoords.value.length, 1236);
 
+  t.end();
+});
+
+test('I3SLoader parsing featureAttributes by default', async t => {
+  const tile = await loadI3STile();
+  t.ok(tile);
+  t.ok(tile.header.userData.layerFeaturesAttributes);
+  t.equal(tile.header.userData.layerFeaturesAttributes.length, 0);
+  t.end();
+});
+
+test('I3SLoader parsing featureAttributes disabled', async t => {
+  const tile = await loadI3STile({i3s: {loadFeatureAttributes: false}});
+  t.ok(tile);
+  t.notOk(tile.header.userData.layerFeaturesAttributes);
+  t.end();
+});
+
+test('I3SLoader parsing featureAttributes enabled', async t => {
+  const tile = await loadI3STile({i3s: {loadFeatureAttributes: true}});
+  t.ok(tile);
+  t.ok(tile.header.userData.layerFeaturesAttributes);
+  t.equal(tile.header.userData.layerFeaturesAttributes.length, 0);
   t.end();
 });

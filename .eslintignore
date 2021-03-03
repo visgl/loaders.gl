@@ -13,3 +13,4 @@ public/
 .cache/
 
 modules/potree/test/data/**/cloud.js
+examples/experimental/gltf-with-raw-webgl/

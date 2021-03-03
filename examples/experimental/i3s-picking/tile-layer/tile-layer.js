@@ -7,10 +7,6 @@ import MeshLayer from '../mesh-layer/mesh-layer';
 const SINGLE_DATA = [0];
 // Use our custom MeshLayer
 export default class TileLayer extends Tile3DLayer {
-  static getFeatureAttributes(tile, featureIndex) {
-    return getFeatureAttributes(tile, featureIndex);
-  }
-
   _makeSimpleMeshLayer(tileHeader, oldLayer) {
     const content = tileHeader.content;
     const {attributes, modelMatrix, cartographicOrigin, texture, material} = content;
@@ -44,6 +40,35 @@ export default class TileLayer extends Tile3DLayer {
       }
     );
   }
+
+  getSelectedFeatureAttributes(tile, featureId) {
+    if (featureId < 0 || !tile || !tile.header) {
+      return null;
+    }
+
+    if (!tile.header.userData.layerFeaturesAttributes) {
+      return null;
+    }
+
+    const {attributeStorageInfo} = tile.tileset.tileset;
+    const {layerFeaturesAttributes} = tile.header.userData;
+    const featureAttributes = {};
+    let calculatedFeatureIndex = null;
+
+    for (let index = 0; index < attributeStorageInfo.length; index++) {
+      const attributeName = attributeStorageInfo[index].name;
+      const attributeData = layerFeaturesAttributes[index][attributeName];
+      let attributeValue = '';
+
+      calculatedFeatureIndex =
+        calculatedFeatureIndex !== null ? calculatedFeatureIndex : attributeData.indexOf(featureId);
+      attributeValue = attributeData[calculatedFeatureIndex];
+      // eslint-disable-next-line no-control-regex
+      featureAttributes[attributeName] = attributeValue.toString().replace(/\u0000/g, '');
+    }
+
+    return featureAttributes;
+  }
 }
 
 function getMeshGeometry(contentAttributes) {
@@ -62,28 +87,4 @@ function getMeshGeometry(contentAttributes) {
     attributes.featureIds = contentAttributes.featureIds;
   }
   return attributes;
-}
-
-export function getFeatureAttributes(tile, featureIndex) {
-  if (featureIndex < 0 || !tile || !tile.header) {
-    return null;
-  }
-
-  if (!tile.header.userData.layerFeaturesAttributes) {
-    return null;
-  }
-
-  const {attributeStorageInfo} = tile.tileset.tileset;
-  const {layerFeaturesAttributes} = tile.header.userData;
-
-  const featureAttributes = {};
-
-  for (let index = 0; index < attributeStorageInfo.length; index++) {
-    const attributeName = attributeStorageInfo[index].name;
-    const attributeValue = layerFeaturesAttributes[index][attributeName][featureIndex];
-    // eslint-disable-next-line no-control-regex
-    featureAttributes[attributeName] = attributeValue.toString().replace(/\u0000/g, '');
-  }
-
-  return featureAttributes;
 }
