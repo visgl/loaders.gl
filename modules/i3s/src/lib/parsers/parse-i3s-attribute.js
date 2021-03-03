@@ -9,11 +9,12 @@ import {STRING_ATTRIBUTE_TYPE, OBJECT_ID_ATTRIBUTE_TYPE, FLOAT_64_TYPE} from './
  */
 export async function parseI3STileAttribute(arrayBuffer, options) {
   const {attributeName, attributeType} = options;
-  if (!attributeName || !attributeType) {
+
+  if (!attributeName) {
     return {};
   }
   return {
-    [attributeName]: parseAttribute(attributeType, arrayBuffer)
+    [attributeName]: attributeType ? parseAttribute(attributeType, arrayBuffer) : null
   };
 }
 
