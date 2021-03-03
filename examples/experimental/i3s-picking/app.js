@@ -17,6 +17,7 @@ import AttributesPanel from './components/attributes-panel';
 import {INITIAL_MAP_STYLE} from './constants';
 
 const TRANSITION_DURAITON = 4000;
+const NO_DATA = 'No Data';
 
 const INITIAL_VIEW_STATE = {
   longitude: -120,
@@ -38,6 +39,14 @@ const STATS_WIDGET_STYLE = {
   zIndex: '10000',
   maxWidth: 300,
   background: '#000',
+  color: '#fff'
+};
+
+const TH_STYLE = {
+  textAlign: 'left'
+};
+
+const TOOLTIP_STYLE = {
   color: '#fff'
 };
 
@@ -68,7 +77,8 @@ export default class App extends PureComponent {
       name: INITIAL_EXAMPLE_NAME,
       viewState: INITIAL_VIEW_STATE,
       selectedMapStyle: INITIAL_MAP_STYLE,
-      selectedFeatureAttributes: null
+      selectedFeatureAttributes: null,
+      selectedFeatureIndex: -1
     };
     this._onSelectTileset = this._onSelectTileset.bind(this);
     this.handleClosePanel = this.handleClosePanel.bind(this);
@@ -146,7 +156,7 @@ export default class App extends PureComponent {
   }
 
   _renderLayers() {
-    const {tilesetUrl, token} = this.state;
+    const {tilesetUrl, token, selectedFeatureIndex} = this.state;
     // TODO: support compressed textures in GLTFMaterialParser
     const loadOptions = {throttleRequests: true, loadFeatureAttributes: true};
     if (token) {
@@ -159,20 +169,24 @@ export default class App extends PureComponent {
         onTilesetLoad: this._onTilesetLoad.bind(this),
         onTileLoad: () => this._updateStatWidgets(),
         onTileUnload: () => this._updateStatWidgets(),
-        onClick: info => this.handleShowAttributesPanel(info),
         pickable: true,
-        autoHighlight: true,
-        loadOptions
+        loadOptions,
+        highlightedObjectIndex: selectedFeatureIndex
       })
     ];
   }
 
-  handleShowAttributesPanel(info) {
+  handleClick(info) {
+    if (!info.object || info.index < 0 || !info.layer) {
+      this.handleClosePanel();
+      return;
+    }
+
     const selectedFeatureAttributes = info.layer.getSelectedFeatureAttributes(
       info.object,
       info.index
     );
-    this.setState({selectedFeatureAttributes});
+    this.setState({selectedFeatureAttributes, selectedFeatureIndex: info.index});
   }
 
   _renderStats() {
@@ -204,13 +218,58 @@ export default class App extends PureComponent {
       info.object,
       info.index
     );
-    return selectedFeatureAttributes
-      ? JSON.stringify(selectedFeatureAttributes, null, 2).replace(/[\{\}']+/g, '')
-      : 'loading metadata...';
+    // eslint-disable-next-line no-undef
+    const tooltip = document.createElement('div');
+    render(this.renderTooltip(selectedFeatureAttributes), tooltip);
+
+    return {html: tooltip.innerHTML};
+  }
+
+  renderTooltip(selectedFeatureAttributes) {
+    const rows = [];
+
+    for (const key in selectedFeatureAttributes) {
+      const row = (
+        <tr key={key}>
+          <th style={TH_STYLE}>{key}</th>
+          <td>{this.formatTooltipValue(selectedFeatureAttributes[key])}</td>
+        </tr>
+      );
+
+      rows.push(row);
+    }
+
+    return (
+      <div style={TOOLTIP_STYLE}>
+        <table>
+          <tbody>{rows}</tbody>
+        </table>
+      </div>
+    );
+  }
+
+  formatTooltipValue(value) {
+    return (
+      value
+        .toString()
+        .replace(/[{}']+/g, '')
+        .trim() || NO_DATA
+    );
   }
 
   handleClosePanel() {
-    this.setState({selectedFeatureAttributes: null});
+    this.setState({selectedFeatureAttributes: null, selectedFeatureIndex: -1});
+  }
+
+  renderAttributesPanel() {
+    const {selectedFeatureAttributes} = this.state;
+
+    return (
+      <AttributesPanel
+        handleClosePanel={this.handleClosePanel}
+        attributesObject={selectedFeatureAttributes}
+      />
+    );
   }
 
   render() {
@@ -220,7 +279,7 @@ export default class App extends PureComponent {
     return (
       <div style={{position: 'relative', height: '100%'}}>
         {this._renderStats()}
-        {this._renderControlPanel()}
+        {selectedFeatureAttributes ? this.renderAttributesPanel() : this._renderControlPanel()}
         <DeckGL
           layers={layers}
           viewState={viewState}
@@ -228,15 +287,10 @@ export default class App extends PureComponent {
           controller={{type: MapController, maxPitch: 85}}
           onAfterRender={() => this._updateStatWidgets()}
           getTooltip={info => this.getTooltip(info)}
+          onClick={info => this.handleClick(info)}
         >
           <StaticMap mapStyle={selectedMapStyle} preventStyleDiffing />
         </DeckGL>
-        {selectedFeatureAttributes && (
-          <AttributesPanel
-            handleClosePanel={this.handleClosePanel}
-            attributesObject={selectedFeatureAttributes}
-          />
-        )}
       </div>
     );
   }

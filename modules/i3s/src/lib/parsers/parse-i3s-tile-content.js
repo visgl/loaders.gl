@@ -5,6 +5,7 @@ import {load} from '@loaders.gl/core';
 import {ImageLoader} from '@loaders.gl/images';
 import {parse} from '@loaders.gl/core';
 import {DracoLoader} from '@loaders.gl/draco';
+import {I3SAttributeLoader} from '../../i3s-attribute-loader';
 
 import {
   GL_TYPE_MAP,
@@ -48,6 +49,10 @@ export async function parseI3STileContent(arrayBuffer, tile, tileset, options) {
     }
   }
 
+  if (options.i3s.loadFeatureAttributes) {
+    await loadFeatureAttributes(tile, tileset);
+  }
+
   tile.content.material = makePbrMaterial(tile.materialDefinition, tile.content.texture);
 
   return await parseI3SNodeGeometry(arrayBuffer, tile, options);
@@ -82,6 +87,8 @@ async function parseI3SNodeGeometry(arrayBuffer, tile = {}, options) {
       uv0: flattenAttribute(TEXCOORD_0, indices),
       id: flattenAttribute(CUSTOM_ATTRIBUTE_3, indices)
     };
+
+    flattenFeatureIdsByFeatureIndices(attributes, tile);
   } else {
     const {
       vertexAttributes,
@@ -444,4 +451,83 @@ function flattenFeatureIdsByFaceRanges(normalizedFeatureAttributes) {
   }
 
   normalizedFeatureAttributes.id.value = orderedFeatureIndices;
+}
+
+/**
+ * Flatten feature ids using featureIndices
+ * @param {object} attributes
+ * @param {object} tile
+ * @returns {void}
+ */
+function flattenFeatureIdsByFeatureIndices(attributes, tile) {
+  const loadedFeatureIds = tile.userData.layerFeaturesAttributes.find(
+    attributesObject => attributesObject.OBJECTID
+  );
+
+  if (loadedFeatureIds && loadedFeatureIds.OBJECTID) {
+    attributes.id.value = generateFeatureIdsUsingFeatureIndices(
+      loadedFeatureIds.OBJECTID,
+      attributes.id.value
+    );
+  }
+}
+
+/**
+ * Generate feature ids using featureIndices
+ * @param {Float32Array} loadedFeatureIds
+ * @param {Float32Array} featureIndices
+ * @returns {Float32Array}
+ */
+function generateFeatureIdsUsingFeatureIndices(loadedFeatureIds, featureIndices) {
+  const featureIds = new Float32Array(featureIndices.length);
+
+  for (let index = 0; index < featureIndices.length; index++) {
+    featureIds[index] = loadedFeatureIds[featureIndices[index]];
+  }
+  return featureIds;
+}
+
+/**
+ * Load layer feature attributes and put them to user Data object
+ * @param {Object} tile
+ * @param {Object} tileset
+ * @returns {Promise}
+ */
+async function loadFeatureAttributes(tile, tileset) {
+  const attributeStorageInfo = tileset.attributeStorageInfo;
+  const attributeUrls = tile.attributeUrls;
+  let attributes = [];
+
+  console.time('load attributes'); //eslint-disable-line
+  const attributeLoadPromises = [];
+
+  for (let index = 0; index < attributeStorageInfo.length; index++) {
+    const url = attributeUrls[index];
+    const attributeName = attributeStorageInfo[index].name;
+    const attributeType = getAttributeValueType(attributeStorageInfo[index]);
+    const promise = load(url, I3SAttributeLoader, {attributeName, attributeType});
+    attributeLoadPromises.push(promise);
+  }
+  try {
+    attributes = await Promise.all(attributeLoadPromises);
+  } catch (error) {
+    // do nothing
+  } finally {
+    console.timeEnd('load attributes'); //eslint-disable-line
+  }
+  tile.userData.layerFeaturesAttributes = attributes;
+}
+
+/**
+ * Get attribute value type based on property names
+ * @param {Object} attribute
+ * @returns {String}
+ */
+function getAttributeValueType(attribute) {
+  if (attribute.hasOwnProperty('objectIds')) {
+    return 'Oid32';
+  } else if (attribute.hasOwnProperty('attributeValues')) {
+    return attribute.attributeValues.valueType;
+  }
+  return '';
 }
