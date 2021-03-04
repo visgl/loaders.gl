@@ -26,18 +26,18 @@ export function generateTileAttributeUrls(tile) {
 }
 
 /**
- * Generates attribute urls for tileset based on tileset and nodeId
+ * Generates attribute urls for tileset based on tileset and resource
  * @param {Object} tileset
- * @param {String} nodeId
+ * @param {number} resource
  * @returns {Array}
  */
-export function generateTilesetAttributeUrls(tileset, nodeId) {
+export function generateTilesetAttributeUrls(tileset, resource) {
   const attributeUrls = [];
   const {attributeStorageInfo, url} = tileset;
 
   for (let index = 0; index < attributeStorageInfo.length; index++) {
     const fileName = attributeStorageInfo[index].key;
-    attributeUrls.push(`${url}/nodes/${nodeId}/attributes/${fileName}/0`);
+    attributeUrls.push(`${url}/nodes/${resource}/attributes/${fileName}/0`);
   }
 
   return attributeUrls;

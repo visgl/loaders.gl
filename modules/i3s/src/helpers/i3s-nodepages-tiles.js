@@ -31,6 +31,7 @@ export default class I3SNodePagesTiles {
     return this.nodePages[pageIndex].nodes[nodeIndex];
   }
 
+  // eslint-disable-next-line complexity
   async formTileFromNodePages(id) {
     const node = await this.getNodeById(id);
     const children = [];
@@ -69,7 +70,7 @@ export default class I3SNodePagesTiles {
       }
 
       if (this.tileset.attributeStorageInfo) {
-        attributeUrls = generateTilesetAttributeUrls(this.tileset, node.mesh.material.resource);
+        attributeUrls = generateTilesetAttributeUrls(this.tileset, node.mesh.attribute.resource);
       }
     }
 
