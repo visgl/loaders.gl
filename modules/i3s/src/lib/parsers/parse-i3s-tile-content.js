@@ -31,6 +31,7 @@ const I3S_ATTRIBUTE_TYPE = 'i3s-attribute-type';
 
 export async function parseI3STileContent(arrayBuffer, tile, tileset, options) {
   tile.content = tile.content || {};
+  tile.userData = tile.userData || {};
 
   // construct featureData from defaultGeometrySchema;
   tile.content.featureData = constructFeatureDataStruct(tile, tileset);
@@ -51,7 +52,7 @@ export async function parseI3STileContent(arrayBuffer, tile, tileset, options) {
     }
   }
 
-  if (options.i3s.loadFeatureAttributes) {
+  if (options.i3s.loadFeatureAttributes && tileset.attributeStorageInfo) {
     await loadFeatureAttributes(tile, tileset);
   }
 
@@ -97,7 +98,7 @@ async function parseI3SNodeGeometry(arrayBuffer, tile = {}, options) {
       id: flattenAttribute(featureIndex, indices)
     };
 
-    if (featureIndex) {
+    if (featureIndex && tile.userData.layerFeaturesAttributes) {
       flattenFeatureIdsByFeatureIndices(attributes, tile);
     }
   } else {

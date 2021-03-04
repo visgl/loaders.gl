@@ -10,6 +10,9 @@ import {parseI3STileContent} from '@loaders.gl/i3s/lib/parsers/parse-i3s-tile-co
 const I3S_TILE_CONTENT =
   '@loaders.gl/i3s/test/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/1/geometries/0';
 
+const I3S_TILE_COMPRESSED_CONTENT =
+  '@loaders.gl/i3s/test/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/1/geometries/1';
+
 test('ParseI3sTileContent#should parse tile content', async t => {
   const i3sTilesetData = TILESET_STUB();
   const i3SNodePagesTiles = new I3SNodePagesTiles(i3sTilesetData, {});
@@ -84,5 +87,75 @@ test('ParseI3sTileContent#should make PBR material', async t => {
     t.ok(texture.source.image instanceof Object);
     t.ok(texture.source.image.data instanceof Buffer);
   }
+  t.end();
+});
+
+test('ParseI3sTileContent#should parse tile content with simple geometry if loadFeatureAttributes false', async t => {
+  const i3sTilesetData = TILESET_STUB();
+  const i3SNodePagesTiles = new I3SNodePagesTiles(i3sTilesetData, {i3s: {useDracoGeometry: false}});
+  const tile = await i3SNodePagesTiles.formTileFromNodePages(1);
+  const response = await fetchFile(I3S_TILE_CONTENT);
+  const data = await response.arrayBuffer();
+  const result = await parseI3STileContent(data, tile, i3sTilesetData, {
+    i3s: {
+      useDracoGeometry: false,
+      loadFeatureAttributes: false
+    }
+  });
+  t.ok(result);
+  t.deepEqual(result.userData, {});
+  t.end();
+});
+
+test('ParseI3sTileContent#should parse tile content with simple geometry if loadFeatureAttributes true', async t => {
+  const i3sTilesetData = TILESET_STUB();
+  const i3SNodePagesTiles = new I3SNodePagesTiles(i3sTilesetData, {i3s: {useDracoGeometry: false}});
+  const tile = await i3SNodePagesTiles.formTileFromNodePages(1);
+  const response = await fetchFile(I3S_TILE_CONTENT);
+  const data = await response.arrayBuffer();
+  const result = await parseI3STileContent(data, tile, i3sTilesetData, {
+    i3s: {
+      useDracoGeometry: false,
+      loadFeatureAttributes: true
+    }
+  });
+  t.ok(result);
+  t.ok(result.userData.layerFeaturesAttributes);
+  t.equal(result.userData.layerFeaturesAttributes.length, 0);
+  t.end();
+});
+
+test('ParseI3sTileContent#should parse tile content with compressed geometry if loadFeatureAttributes false', async t => {
+  const i3sTilesetData = TILESET_STUB();
+  const i3SNodePagesTiles = new I3SNodePagesTiles(i3sTilesetData, {i3s: {useDracoGeometry: true}});
+  const tile = await i3SNodePagesTiles.formTileFromNodePages(1);
+  const response = await fetchFile(I3S_TILE_COMPRESSED_CONTENT);
+  const data = await response.arrayBuffer();
+  const result = await parseI3STileContent(data, tile, i3sTilesetData, {
+    i3s: {
+      useDracoGeometry: true,
+      loadFeatureAttributes: false
+    }
+  });
+  t.ok(result);
+  t.deepEqual(result.userData, {});
+  t.end();
+});
+
+test('ParseI3sTileContent#should parse tile content with compressed geometry if loadFeatureAttributes true', async t => {
+  const i3sTilesetData = TILESET_STUB();
+  const i3SNodePagesTiles = new I3SNodePagesTiles(i3sTilesetData, {i3s: {useDracoGeometry: true}});
+  const tile = await i3SNodePagesTiles.formTileFromNodePages(1);
+  const response = await fetchFile(I3S_TILE_COMPRESSED_CONTENT);
+  const data = await response.arrayBuffer();
+  const result = await parseI3STileContent(data, tile, i3sTilesetData, {
+    i3s: {
+      useDracoGeometry: true,
+      loadFeatureAttributes: true
+    }
+  });
+  t.ok(result);
+  t.ok(result.userData.layerFeaturesAttributes);
+  t.equal(result.userData.layerFeaturesAttributes.length, 0);
   t.end();
 });
