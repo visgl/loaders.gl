@@ -35,7 +35,7 @@ test.onFailure(window.browserTestDriver_fail);
 window.__VERSION__ = require('../lerna.json').version;
 
 test('Browser tests', t => {
-  require('./modules');
+  require('./browser.js');
   // Render tests too flaky - disable for now
   // require('./render');
   t.end();
