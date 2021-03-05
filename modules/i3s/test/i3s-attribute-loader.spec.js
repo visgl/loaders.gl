@@ -26,7 +26,7 @@ test('I3SAttributeLoader# should return empty object if no attributeType provide
   };
   const attributes = await load(objectIdsUrl, I3SAttributeLoader, options);
   t.ok(attributes);
-  t.deepEqual(attributes, {});
+  t.deepEqual(attributes, {OBJECTID: null});
   t.end();
 });
 

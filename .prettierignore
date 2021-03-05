@@ -8,5 +8,4 @@ node_modules/
 public
 
 modules/potree/test/data/**/cloud.js
-
-
+examples/experimental/gltf-with-raw-webgl/

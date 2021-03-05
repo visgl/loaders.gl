@@ -30,7 +30,8 @@
       "children": [2],
       "mesh": {
         "geometry": { "definition": 0, "resource": 1, "vertexCount": 15312 },
-        "material": { "definition": 0, "resource": 1 }
+        "material": { "definition": 0, "resource": 1 },
+        "attribute": { "definition": 0, "resource": 1 }
       },
       "index": 1
     },
@@ -49,7 +50,8 @@
       "children": [3],
       "mesh": {
         "geometry": { "definition": 0, "resource": 2, "vertexCount": 15318 },
-        "material": { "definition": 0, "resource": 2 }
+        "material": { "definition": 0, "resource": 2 },
+        "attribute": { "definition": 0, "resource": 2 }
       },
       "index": 2
     },
@@ -68,7 +70,8 @@
       "children": [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
       "mesh": {
         "geometry": { "definition": 0, "resource": 3, "vertexCount": 119730 },
-        "material": { "definition": 0, "resource": 3 }
+        "material": { "definition": 0, "resource": 3 },
+        "attribute": { "definition": 0, "resource": 3 }
       },
       "index": 3
     },
@@ -87,7 +90,8 @@
       "children": [],
       "mesh": {
         "geometry": { "definition": 0, "resource": 4, "vertexCount": 301386 },
-        "material": { "definition": 0, "resource": 4 }
+        "material": { "definition": 0, "resource": 4 },
+        "attribute": { "definition": 0, "resource": 4 }
       },
       "index": 4
     },
@@ -106,7 +110,8 @@
       "children": [],
       "mesh": {
         "geometry": { "definition": 0, "resource": 5, "vertexCount": 405339 },
-        "material": { "definition": 0, "resource": 5 }
+        "material": { "definition": 0, "resource": 5 },
+        "attribute": { "definition": 0, "resource": 5 }
       },
       "index": 5
     },
@@ -125,7 +130,8 @@
       "children": [],
       "mesh": {
         "geometry": { "definition": 0, "resource": 6, "vertexCount": 508920 },
-        "material": { "definition": 0, "resource": 6 }
+        "material": { "definition": 0, "resource": 6 },
+        "attribute": { "definition": 0, "resource": 6 }
       },
       "index": 6
     },
@@ -144,7 +150,8 @@
       "children": [],
       "mesh": {
         "geometry": { "definition": 0, "resource": 7, "vertexCount": 148281 },
-        "material": { "definition": 0, "resource": 7 }
+        "material": { "definition": 0, "resource": 7 },
+        "attribute": { "definition": 0, "resource": 7 }
       },
       "index": 7
     },
@@ -163,7 +170,8 @@
       "children": [],
       "mesh": {
         "geometry": { "definition": 0, "resource": 8, "vertexCount": 644754 },
-        "material": { "definition": 0, "resource": 8 }
+        "material": { "definition": 0, "resource": 8 },
+        "attribute": { "definition": 0, "resource": 8 }
       },
       "index": 8
     },
@@ -182,7 +190,8 @@
       "children": [],
       "mesh": {
         "geometry": { "definition": 0, "resource": 9, "vertexCount": 438000 },
-        "material": { "definition": 0, "resource": 9 }
+        "material": { "definition": 0, "resource": 9 },
+        "attribute": { "definition": 0, "resource": 9 }
       },
       "index": 9
     },
@@ -201,7 +210,8 @@
       "children": [],
       "mesh": {
         "geometry": { "definition": 0, "resource": 10, "vertexCount": 490713 },
-        "material": { "definition": 0, "resource": 10 }
+        "material": { "definition": 0, "resource": 10 },
+        "attribute": { "definition": 0, "resource": 10 }
       },
       "index": 10
     },
@@ -220,7 +230,8 @@
       "children": [],
       "mesh": {
         "geometry": { "definition": 0, "resource": 11, "vertexCount": 783066 },
-        "material": { "definition": 0, "resource": 11 }
+        "material": { "definition": 0, "resource": 11 },
+        "attribute": { "definition": 0, "resource": 11 }
       },
       "index": 11
     },
@@ -239,7 +250,8 @@
       "children": [],
       "mesh": {
         "geometry": { "definition": 0, "resource": 12, "vertexCount": 217542 },
-        "material": { "definition": 0, "resource": 12 }
+        "material": { "definition": 0, "resource": 12 },
+        "attribute": { "definition": 0, "resource": 12 }
       },
       "index": 12
     },
@@ -262,7 +274,8 @@
       "children": [],
       "mesh": {
         "geometry": { "definition": 0, "resource": 13, "vertexCount": 284583 },
-        "material": { "definition": 0, "resource": 13 }
+        "material": { "definition": 0, "resource": 13 },
+        "attribute": { "definition": 0, "resource": 13 }
       },
       "index": 13
     },
@@ -281,7 +294,8 @@
       "children": [],
       "mesh": {
         "geometry": { "definition": 0, "resource": 14, "vertexCount": 242259 },
-        "material": { "definition": 0, "resource": 14 }
+        "material": { "definition": 0, "resource": 14 },
+        "attribute": { "definition": 0, "resource": 14 }
       },
       "index": 14
     },
@@ -300,7 +314,8 @@
       "children": [],
       "mesh": {
         "geometry": { "definition": 0, "resource": 15, "vertexCount": 265176 },
-        "material": { "definition": 0, "resource": 15 }
+        "material": { "definition": 0, "resource": 15 },
+        "attribute": { "definition": 0, "resource": 15 }
       },
       "index": 15
     }

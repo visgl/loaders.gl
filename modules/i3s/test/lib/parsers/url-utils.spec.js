@@ -39,8 +39,8 @@ test('i3s-utils#generateTilesetAttributeUrls Should return attribute URLs for ti
     attributeStorageInfo: [{key: 'f_0'}, {key: 'f_1'}],
     url: 'test'
   };
-  const nodeId = '1';
-  const attributeUrls = generateTilesetAttributeUrls(tileset, nodeId);
+  const resource = '1';
+  const attributeUrls = generateTilesetAttributeUrls(tileset, resource);
   const attrUrlsStub = ['test/nodes/1/attributes/f_0/0', 'test/nodes/1/attributes/f_1/0'];
 
   t.ok(attributeUrls);
