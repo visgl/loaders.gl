@@ -2,6 +2,11 @@
 
 ## v2.3 Release
 
+#### v2.3.13
+
+- fix MVT empty binary tiles (#1235) (#1248)
+- Small fix in camera position for loading 3dtiles (#1247)
+
 #### v2.3.12
 
 - fix(gltf): Add `accessor.byteOffset` in accessor post-processing (#1175)

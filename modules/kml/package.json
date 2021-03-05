@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/kml",
-  "version": "2.3.12",
+  "version": "2.3.13",
   "description": "Framework-independent loader for the KML format",
   "license": "MIT",
   "publishConfig": {
@@ -32,9 +32,9 @@
     "build-bundle": "webpack --display=minimal --config ../../scripts/bundle.config.js"
   },
   "dependencies": {
-    "@loaders.gl/core": "2.3.12",
-    "@loaders.gl/gis": "2.3.12",
-    "@loaders.gl/tables": "2.3.12"
+    "@loaders.gl/core": "2.3.13",
+    "@loaders.gl/gis": "2.3.13",
+    "@loaders.gl/tables": "2.3.13"
   },
   "gitHead": "aeefe911b6d8393bc72edc9faa381c851a442397"
 }
