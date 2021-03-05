@@ -57,15 +57,21 @@ function parseTilesetUrlFromUrl() {
 
 function parseTilesetUrlParams(url, options) {
   const parsedUrl = new URL(url);
-  const index = url.lastIndexOf('/layers/0');
-  let metadataUrl = url.substring(0, index);
   let token = options && options.token;
+  const tilesetUrl = url.includes('layers/0')
+    ? url
+    : // Add '/' to url if needed.
+      url.replace(/\/?$/, '/').concat('layers/0');
+
+  const index = tilesetUrl.lastIndexOf('/layers/0');
+  let metadataUrl = tilesetUrl.substring(0, index);
 
   if (parsedUrl.search) {
     token = parsedUrl.searchParams.get('token');
     metadataUrl = `${metadataUrl}${parsedUrl.search}`;
   }
-  return {...options, tilesetUrl: url, token, metadataUrl};
+
+  return {...options, tilesetUrl, token, metadataUrl};
 }
 export default class App extends PureComponent {
   constructor(props) {
