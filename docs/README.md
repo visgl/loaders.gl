@@ -2,9 +2,8 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/loaders.gl-v2.3-blue.svg?style=flat-square" />
-</p>
-
-<p align="center">
+  <img src="https://img.shields.io/badge/loaders.gl-v3.0alpha-blue.svg?style=flat-square" />
+  <br />
   Docs for older versions are available on github, e.g.
   <a href="https://github.com/visgl/loaders.gl/blob/2.2-release/docs/README.md">
     <img src="https://img.shields.io/badge/loaders.gl-v2.2-green.svg?style=flat-square" />
@@ -14,9 +13,29 @@
   </a>
 </p>
 
-loaders.gl is a suite of loaders for file formats focused on visualization of big data, including point clouds, 3D geometries, images, geospatial formats as well as tabular data.
+## A Linux Foundation Project
 
-loaders.gl is part of the [vis.gl](https://vis.gl) ecosystem, and frameworks like [deck.gl](https://deck.gl) and [luma.gl](https://luma.gl) come pre-integrated with loaders.gl. However, all the provided loaders and writers are framework-independent, and can be used with any application or framework.
+loaders.gl is part of the **[vis.gl](https://vis.gl) framework ecosystem** which is under developed under open governance through the Linux Foundation and the Urban Computing Foundation.
+
+<p style="margin-left: auto; margin-right: auto;">
+  <a href="https://vis.gl">
+    <img height="40" src="https://raw.githubusercontent.com/visgl/vis.gl/master/src/images/logos/vis-logo.png" />
+    <span style="margin-left: 30px;" />
+    <img height="40" src="https://raw.githubusercontent.com/visgl/vis.gl/master/src/images/logos/linux-foundation.svg" />
+  <span style="margin-left: 30px;" />
+  <img height="40" src="https://raw.githubusercontent.com/visgl/vis.gl/master/src/images/logos/ucf-color-hztl.svg" />
+  </a>
+</p>
+
+## Overview
+
+loaders.gl is a is a collection of the best open source loaders and writers for file formats focused on visualization of big data, including point clouds, 3D geometries, images, geospatial formats as well as tabular data.
+
+loader.gl is packaged and published as a composable module suite with consistent APIs and features across the suite, and supports advanced features such as running loaders on workers and incremental loading (streaming) in a consistent way across the entire suite, and all loaders work in both the browser and in Node.js.
+
+loaders.gl is framework-agnostic, and all loaders and writers are designed to be usable with any JavaScript application or framework with a minimal amount of glue code.
+
+Naturally, other [vis.gl frameworks](https://vis.gl/frameworks) such as [deck.gl](https://deck.gl) and [luma.gl](https://luma.gl) are designed to integrate seamlessly with loaders.gl.
 
 ## Loaders
 
@@ -31,9 +50,9 @@ loaders.gl provides a wide selection of loaders organized into categories:
 | [3D Tile Loaders](docs/specifications/category-3d-tiles)         | Loaders for 3D tile formats such as [3D Tiles](modules/3d-tiles/docs/api-reference/tile-3d-loader), [I3S](modules/i3s/docs/api-reference/i3s) and potree                                                                                                                                                                                                                                                                                                                             |
 | [Geospatial Loaders](docs/specifications/category-gis)           | Loaders for geospatial formats such as [GeoJSON](<(modules/json/docs/api-reference/geojson-loader)>) [KML](modules/kml/docs/api-reference/kml-loader), [WKT/WKB](modules/wkt/docs/api-reference/wkt-loader), [Mapbox Vector Tiles](modules/mvt/docs/api-reference/mvt-loader) etc.                                                                                                                                                                                                   |
 
-## Quick Code Examples
+## Code Examples
 
-loaders.gl provides a small core API module with common functions to load and save data, and a number of additional modules that provide loaders and writers for specific file formats.
+loaders.gl provides a small core API module with common functions to load and save data, and a range of optional modules that provide loaders and writers for specific file formats.
 
 A minimal example using the `load` function and the `CSVLoader` to load a CSV formatted table into a JavaScript array:
 
@@ -48,7 +67,7 @@ for (const row of data) {
 }
 ```
 
-Streaming parsing is available using ES2018 async iterators, allowing "larger than memory" files to be processed:
+Streaming parsing is available using ES2018 async iterators, e.g. allowing "larger than memory" files to be incrementally processed:
 
 ```js
 import {loadInBatches} from '@loaders.gl/core';
@@ -63,26 +82,13 @@ for await (const batch of await loadInBatches('data.csv', CSVLoader)) {
 
 To quickly get up to speed on how the loaders.gl API works, please see [Get Started](docs/developer-guide/get-started).
 
-## Why loaders.gl?
-
-loaders.gl collects a mix of the best existing and a handful of newly written loaders, and package them all in a consistent, portable, framework-independent open source module suite.
-
-There were already many excellent open source loaders available on e.g github and npm. However, these can be sometimes be hard to use in applications, due to various limitations such as:
-
-- dependencies on a certain framework you are not able to use
-- not packaged for easy (re)use
-- Lack of Node.js support or browser support
-- inability to run in worker threads
-- lack of streaming support
-  etc.
-
 ## Supported Platforms
 
 loaders.gl provides consistent support for both browsers and Node.js. The following platforms are supported:
 
 - **Evergreen Browsers** loaders.gl supports recent versions of the major evergreen browsers (e.g. Chrome, Firefox, Safari) on both desktop and mobile.
-- **Edge and IE11** loaders.gl runs on Edge and IE11, assuming that both `@loaders.gl/polyfills` and additional appropriate polyfills (e.g. babel polyfills) are installed. Note that testing on these older platforms is less frequent, so temporary regressions can occur.
 - **Node.js** LTS (Long-Term Support) [releases](https://nodejs.org/en/about/releases/) are also supported through the `@loaders.gl/polyfills` module.
+- **Edge and IE11** are not actively supported, however loaders.gl 2.3 is known to run on Edge and IE11. Both `@loaders.gl/polyfills` and additional appropriate polyfills (e.g. babel polyfills) need to be installed which will increase your application bundle size. For loaders.gl 3.0, additional transpilation of your `node_modules` folder may also be required. Note that because of lack of regualar testing on these older platforms, regressions can occur. Pinning your loaders.gl version is advisable.
 
 ## Main Design Goals
 
@@ -106,12 +112,24 @@ loaders.gl provides consistent support for both browsers and Node.js. The follow
 
 **Multi-Asset Loading** - Some formats like glTF, or mipmapped cube textures, can required dozens of separate loads to resolve all linked assets (external buffers, images etc). Tracking all the resulting async loads can cause complications for applications. By default, loaders.gl loads all linked assets before resolving a returned `Promise`.
 
-## Licenses, Credits and Attributions
+## Licenses
 
 loaders.gl contains code under several permissive open source licenses, currently MIT, BSD and Apache licenses. Additional licenses might be included in the future, however loaders.gl will never include code with non-permissive, commercial or copy-left licenses.
 
 Note that each loader module comes with its own license, so if the distinction matters to you, please check and decide accordingly.
 
-Regading attributions, loaders.gl is partly a repackaging of superb work done by many others in the open source community. We try to be as explicit as we can about the origins and attributions of each loader, both in the documentation page for each loader and in the preservation of comments relating to authorship and contributions inside forked source code.
+## Credits and Attributions
+
+loaders.gl is maintained by a group of organizations collaborating through open governance under the Linux Foundation.
+
+loaders.gl is partly a repackaging of superb work done by many others in the open source community. We try to be as explicit as we can about the origins and attributions of each loader, both in the documentation page for each loader and in the preservation of comments relating to authorship and contributions inside forked source code.
 
 Even so, we can make mistakes, and we may not have the full history of the code we are reusing. If you think that we have missed something, or that we could do better in regard to attribution, please let us know.
+
+### Primary maintainers
+
+<p style="margin-left: auto; margin-right: auto;">
+  <img height="40" src="https://raw.githubusercontent.com/visgl/vis.gl/master/src/images/logos/unfolded-logo.png" />
+  <span style="margin-left: 30px;" />
+  <img height="40" src="https://raw.githubusercontent.com/visgl/vis.gl/master/src/images/logos/CARTO-logo-positive.png" />
+</p>
