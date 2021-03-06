@@ -17,6 +17,7 @@
 
 loaders.gl is part of the **[vis.gl](https://vis.gl) framework ecosystem** which is under developed under open governance through the Linux Foundation and the Urban Computing Foundation.
 
+<br/>
 <p style="margin-left: auto; margin-right: auto;">
   <a href="https://vis.gl">
     <img height="40" src="https://raw.githubusercontent.com/visgl/vis.gl/master/src/images/logos/vis-logo.png" />
@@ -129,7 +130,11 @@ Even so, we can make mistakes, and we may not have the full history of the code 
 ### Primary maintainers
 
 <p style="margin-left: auto; margin-right: auto;">
-  <img height="40" src="https://raw.githubusercontent.com/visgl/vis.gl/master/src/images/logos/unfolded-logo.png" />
+  <a href="https://unfolded.ai">
+    <img height="40" src="https://raw.githubusercontent.com/visgl/vis.gl/master/src/images/logos/unfolded-logo.png" />
+  </a>
   <span style="margin-left: 30px;" />
-  <img height="40" src="https://raw.githubusercontent.com/visgl/vis.gl/master/src/images/logos/CARTO-logo-positive.png" />
+  <a href="https://carto.com">
+    <img height="40" src="https://raw.githubusercontent.com/visgl/vis.gl/master/src/images/logos/CARTO-logo-positive.png" />
+  </a>
 </p>
