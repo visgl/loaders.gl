@@ -121,6 +121,13 @@ module.exports = {
             path: 'examples/i3s'
           },
           {
+            title: 'I3S Debug',
+            category: "Loaders",
+            image: 'images/example-i3s.jpg',
+            componentUrl: resolve(__dirname, '../examples/experimental/i3s-debug/app.js'),
+            path: 'examples/i3s-debug'
+          },
+          {
             title: 'Benchmarks',
             category: "Benchmarks",
             image: 'images/benchmark.png',
