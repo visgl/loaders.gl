@@ -29,7 +29,6 @@ export const GLTFLoader = {
     },
 
     // common?
-    uri: '', // base URI
     log: console // eslint-disable-line
   },
   deprecatedOptions: {
