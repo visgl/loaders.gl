@@ -53,11 +53,6 @@ void main(void) {
   vColor = vec4(colors * instanceColors.rgb, instanceColors.a);
   geometry.normal = normals_commonspace;
 
-  #ifdef MODULE_PBR
-    // set PBR data
-    pbr_vPosition = geometry.position.xyz;
-  #endif
-
   vec3 pos = (instanceModelMatrix * positions) * sizeScale + instanceTranslation;
 
   if (composeModelMatrix) {
@@ -71,6 +66,12 @@ void main(void) {
   }
 
   geometry.position = position_commonspace;
+
+  #ifdef MODULE_PBR
+    // set PBR data
+    pbr_vPosition = geometry.position.xyz;
+  #endif
+
   DECKGL_FILTER_GL_POSITION(gl_Position, geometry);
 
   DECKGL_FILTER_COLOR(vColor, geometry);

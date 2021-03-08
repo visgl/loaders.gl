@@ -6,6 +6,7 @@ import {Model, Geometry} from '@luma.gl/core';
 import vs from './simple-mesh-layer-vertex.glsl';
 import fs from './simple-mesh-layer-fragment.glsl';
 import GLTFMaterialParser from '../luma/gltf-material-parser';
+import {shouldComposeModelMatrix} from './matrix';
 
 function validateGeometryAttributes(attributes, useMeshColors) {
   const hasColorAttribute = attributes.COLOR_0 || attributes.colors;
@@ -62,12 +63,36 @@ export default class MeshLayer extends SimpleMeshLayer {
     });
   }
 
+  draw({uniforms}) {
+    if (!this.state.model) {
+      return;
+    }
+
+    const {viewport} = this.context;
+    const {sizeScale, coordinateSystem, _instanced} = this.props;
+
+    this.state.model.draw({
+      uniforms: Object.assign({}, uniforms, {
+        sizeScale,
+        composeModelMatrix: !_instanced || shouldComposeModelMatrix(viewport, coordinateSystem),
+        flatShading: !this.state.hasNormals,
+        // Needed for PBR (TODO: find better way to get it)
+        // eslint-disable-next-line camelcase
+        u_Camera: this.state.model.getUniforms().project_uCameraPosition
+      })
+    });
+  }
+
   getModel(mesh) {
     let materialParser = null;
     if (this.props.material) {
+      const material = this.props.material;
+      const unlit = Boolean(
+        material.pbrMetallicRoughness && material.pbrMetallicRoughness.baseColorTexture
+      );
       materialParser = new GLTFMaterialParser(this.context.gl, {
         attributes: {NORMAL: mesh.attributes.normals, TEXCOORD_0: mesh.attributes.texCoords},
-        material: this.props.material,
+        material: {unlit, ...material},
         pbrDebug: false,
         imageBasedLightingEnvironment: null,
         lights: true,
