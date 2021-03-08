@@ -75,6 +75,7 @@ const defaultProps = {
   droppedFile: null,
   onChange: () => {}
 };
+const CUSTOM_EXAMPLE = 'Custom example';
 
 export default class ControlPanel extends PureComponent {
   constructor(props) {
@@ -87,9 +88,11 @@ export default class ControlPanel extends PureComponent {
 
   _renderExamples() {
     const {name, onExampleChange} = this.props;
+    const value = name || CUSTOM_EXAMPLE;
+
     return (
       <TilesetDropDown
-        value={name}
+        value={value}
         onChange={evt => {
           const selected = evt.target.value;
           this.setState({selected});
@@ -98,7 +101,7 @@ export default class ControlPanel extends PureComponent {
       >
         {!name && (
           <option key={'custom-example'} value={'custom-example'}>
-            {'Custom example'}
+            {CUSTOM_EXAMPLE}
           </option>
         )}
         {Object.keys(EXAMPLES).map(key => {
