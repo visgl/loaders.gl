@@ -104,7 +104,7 @@ export default class MeshLayer extends SimpleMeshLayer {
       this.context.gl,
       Object.assign({}, this.getShaders(), {
         id: this.props.id,
-        geometry: getGeometry(mesh, this.props._useMeshColors),
+        geometry: getGeometry(mesh, true),
         defines: materialParser?.defines,
         parameters: materialParser?.parameters,
         isInstanced: true
