@@ -28,6 +28,7 @@ const FORMAT_LOADER_MAP = {
 };
 
 const I3S_ATTRIBUTE_TYPE = 'i3s-attribute-type';
+const EMPTY_VALUE = '';
 
 export async function parseI3STileContent(arrayBuffer, tile, tileset, options) {
   tile.content = tile.content || {};
@@ -98,8 +99,8 @@ async function parseI3SNodeGeometry(arrayBuffer, tile = {}, options) {
       id: flattenAttribute(featureIndex, indices)
     };
 
-    if (featureIndex && tile.userData.layerFeaturesAttributes) {
-      flattenFeatureIdsByFeatureIndices(attributes, tile);
+    if (featureIndex && tile.userData.objectIds) {
+      flattenFeatureIdsByFeatureIndices(attributes, tile.userData.objectIds);
     }
   } else {
     const {
@@ -486,35 +487,18 @@ function flattenFeatureIdsByFaceRanges(normalizedFeatureAttributes) {
 /**
  * Flatten feature ids using featureIndices
  * @param {object} attributes
- * @param {object} tile
+ * @param {any} objectIds
  * @returns {void}
  */
-function flattenFeatureIdsByFeatureIndices(attributes, tile) {
-  const loadedFeatureIds = tile.userData.layerFeaturesAttributes.find(
-    attributesObject => attributesObject.OBJECTID
-  );
-
-  if (loadedFeatureIds && loadedFeatureIds.OBJECTID) {
-    attributes.id.value = generateFeatureIdsUsingFeatureIndices(
-      loadedFeatureIds.OBJECTID,
-      attributes.id.value
-    );
-  }
-}
-
-/**
- * Generate feature ids using featureIndices
- * @param {Float32Array} loadedFeatureIds
- * @param {Float32Array} featureIndices
- * @returns {Float32Array}
- */
-function generateFeatureIdsUsingFeatureIndices(loadedFeatureIds, featureIndices) {
+function flattenFeatureIdsByFeatureIndices(attributes, objectIds) {
+  const featureIndices = attributes.id.value;
   const featureIds = new Float32Array(featureIndices.length);
 
   for (let index = 0; index < featureIndices.length; index++) {
-    featureIds[index] = loadedFeatureIds[featureIndices[index]];
+    featureIds[index] = objectIds[featureIndices[index]];
   }
-  return featureIds;
+
+  attributes.id.value = featureIds;
 }
 
 /**
@@ -545,7 +529,16 @@ async function loadFeatureAttributes(tile, tileset) {
   } finally {
     console.timeEnd('load attributes'); //eslint-disable-line
   }
-  tile.userData.layerFeaturesAttributes = attributes;
+  const loadedFeatureIds = attributes.find(attributesObject => attributesObject.OBJECTID);
+
+  if (loadedFeatureIds && loadedFeatureIds.OBJECTID) {
+    tile.userData.objectIds = loadedFeatureIds.OBJECTID;
+    tile.userData.attributesByObjectId = generateAttributesByObjectId(
+      attributes,
+      attributeStorageInfo,
+      loadedFeatureIds
+    );
+  }
 }
 
 /**
@@ -560,4 +553,56 @@ function getAttributeValueType(attribute) {
     return attribute.attributeValues.valueType;
   }
   return '';
+}
+
+/**
+ * Generates mapping featureId to feature attributes
+ * @param {Array} attributes
+ * @param {Object} attributeStorageInfo
+ * @param {Object} loadedFeatureIds
+ * @returns {Map}
+ */
+function generateAttributesByObjectId(attributes, attributeStorageInfo, loadedFeatureIds) {
+  const attributesByObjectId = new Map();
+
+  for (let index = 0; index < loadedFeatureIds.OBJECTID.length; index++) {
+    const featureId = loadedFeatureIds.OBJECTID[index];
+    const featureAttributes = getFeatureAttributesByIndex(attributes, index, attributeStorageInfo);
+
+    attributesByObjectId.set(featureId, featureAttributes);
+  }
+
+  return attributesByObjectId;
+}
+
+/**
+ * Generates attribute object for feature mapping by feature id
+ * @param {Array} attributes
+ * @param {Number} featureIdIndex
+ * @param {Object} attributeStorageInfo
+ * @returns {Object}
+ */
+function getFeatureAttributesByIndex(attributes, featureIdIndex, attributeStorageInfo) {
+  const attributesObject = {};
+
+  for (let index = 0; index < attributeStorageInfo.length; index++) {
+    const attributeName = attributeStorageInfo[index].name;
+    const attribute = attributes[index][attributeName];
+    attributesObject[attributeName] = formatAttributeValue(attribute, featureIdIndex);
+  }
+
+  return attributesObject;
+}
+
+/**
+ * Do formatting of attribute values or return empty string.
+ * @param {Array} attribute
+ * @param {Number} featureIdIndex
+ * @returns {String}
+ */
+function formatAttributeValue(attribute, featureIdIndex) {
+  return attribute && attribute[featureIdIndex]
+    ? // eslint-disable-next-line no-control-regex
+      attribute[featureIdIndex].toString().replace(/\u0000/g, '')
+    : EMPTY_VALUE;
 }

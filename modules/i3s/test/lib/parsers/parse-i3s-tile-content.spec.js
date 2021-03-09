@@ -120,8 +120,8 @@ test('ParseI3sTileContent#should parse tile content with simple geometry if load
     }
   });
   t.ok(result);
-  t.ok(result.userData.layerFeaturesAttributes);
-  t.equal(result.userData.layerFeaturesAttributes.length, 0);
+  t.notOk(result.userData.attributesByObjectId);
+  t.notOk(result.userData.objectIds);
   t.end();
 });
 
@@ -155,7 +155,7 @@ test('ParseI3sTileContent#should parse tile content with compressed geometry if 
     }
   });
   t.ok(result);
-  t.ok(result.userData.layerFeaturesAttributes);
-  t.equal(result.userData.layerFeaturesAttributes.length, 0);
+  t.notOk(result.userData.attributesByObjectId);
+  t.notOk(result.userData.objectIds);
   t.end();
 });
