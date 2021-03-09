@@ -76,8 +76,13 @@ export default class GLTFMaterialParser {
 
     const image = gltfTexture.texture.source.image;
     let textureOptions;
+    let specialTextureParameters = {};
     if (image.compressed) {
       textureOptions = image;
+      specialTextureParameters = {
+        [this.gl.TEXTURE_MIN_FILTER]:
+          image.data.length > 1 ? this.gl.LINEAR_MIPMAP_NEAREST : this.gl.LINEAR
+      };
     } else {
       // Texture2D accepts a promise that returns an image as data (Async Textures)
       textureOptions = {data: image};
@@ -85,7 +90,10 @@ export default class GLTFMaterialParser {
 
     const texture = new Texture2D(this.gl, {
       id: gltfTexture.name || gltfTexture.id,
-      parameters,
+      parameters: {
+        ...parameters,
+        ...specialTextureParameters
+      },
       pixelStore: {
         [this.gl.UNPACK_FLIP_Y_WEBGL]: false
       },
