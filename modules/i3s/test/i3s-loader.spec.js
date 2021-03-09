@@ -50,22 +50,27 @@ test('I3SLoader#DRACO geometry', async t => {
 test('I3SLoader parsing featureAttributes by default', async t => {
   const tile = await loadI3STile();
   t.ok(tile);
-  t.ok(tile.header.userData.layerFeaturesAttributes);
-  t.equal(tile.header.userData.layerFeaturesAttributes.length, 0);
+  t.notOk(tile.header.userData.attributesByObjectId);
+  t.notOk(tile.header.userData.objectIds);
   t.end();
 });
 
 test('I3SLoader parsing featureAttributes disabled', async t => {
   const tile = await loadI3STile({i3s: {loadFeatureAttributes: false}});
   t.ok(tile);
-  t.notOk(tile.header.userData.layerFeaturesAttributes);
+  t.notOk(tile.header.userData.attributesByObjectId);
+  t.notOk(tile.header.userData.objectIds);
   t.end();
 });
 
+// Also attributesByObjectId and objectIds will be undefined because we can't load attributes because we don't use I3S server
+// For example we can't get 0.bin file from:
+// @loaders.gl/i3s/test/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/1/attributes/f_0/0
+// when we use simple file structure instead of web server.
 test('I3SLoader parsing featureAttributes enabled', async t => {
   const tile = await loadI3STile({i3s: {loadFeatureAttributes: true}});
   t.ok(tile);
-  t.ok(tile.header.userData.layerFeaturesAttributes);
-  t.equal(tile.header.userData.layerFeaturesAttributes.length, 0);
+  t.notOk(tile.header.userData.attributesByObjectId);
+  t.notOk(tile.header.userData.objectIds);
   t.end();
 });
