@@ -59,6 +59,18 @@ const FrameButton = styled.div`
   }
 `;
 
+const CheckboxContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  font-size: 14px;
+  margin-bottom: 10px;
+`;
+
+const PickingCheckBox = styled.input`
+  margin-left: 0;
+`;
+
 const propTypes = {
   name: PropTypes.string,
   tileset: PropTypes.object,
@@ -68,12 +80,16 @@ const propTypes = {
   onExampleChange: PropTypes.func,
   children: PropTypes.node,
   selectedMapStyle: PropTypes.string,
-  onMapStyleChange: PropTypes.func
+  pickable: PropTypes.bool,
+  onMapStyleChange: PropTypes.func,
+  onPickingChange: PropTypes.func
 };
 
 const defaultProps = {
   droppedFile: null,
-  onChange: () => {}
+  pickable: true,
+  onChange: () => {},
+  onPickingChange: () => {}
 };
 const CUSTOM_EXAMPLE = 'Custom example';
 
@@ -173,11 +189,28 @@ export default class ControlPanel extends PureComponent {
     );
   }
 
+  _renderAttributesCheckBox() {
+    const {pickable, onPickingChange} = this.props;
+
+    return (
+      <CheckboxContainer>
+        <PickingCheckBox
+          id="attributesCheckBox"
+          type="checkbox"
+          checked={pickable}
+          onChange={onPickingChange}
+        />
+        <label>Picking objects</label>
+      </CheckboxContainer>
+    );
+  }
+
   render() {
     return (
       <Container>
         {this._renderExamples()}
         {this._renderMapStyles()}
+        {this._renderAttributesCheckBox()}
         {this._renderInfo()}
         {this.props.children}
       </Container>

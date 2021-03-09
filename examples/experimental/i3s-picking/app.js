@@ -84,10 +84,12 @@ export default class App extends PureComponent {
       viewState: INITIAL_VIEW_STATE,
       selectedMapStyle: INITIAL_MAP_STYLE,
       selectedFeatureAttributes: null,
-      selectedFeatureIndex: -1
+      selectedFeatureIndex: -1,
+      pickable: true
     };
     this._onSelectTileset = this._onSelectTileset.bind(this);
     this.handleClosePanel = this.handleClosePanel.bind(this);
+    this.onPickingChange = this.onPickingChange.bind(this);
   }
 
   componentDidMount() {
@@ -161,8 +163,12 @@ export default class App extends PureComponent {
     this.setState({selectedMapStyle});
   }
 
+  onPickingChange(event) {
+    this.setState({pickable: event.target.checked});
+  }
+
   _renderLayers() {
-    const {tilesetUrl, token, selectedFeatureIndex} = this.state;
+    const {tilesetUrl, token, selectedFeatureIndex, pickable} = this.state;
     // TODO: support compressed textures in GLTFMaterialParser
     const loadOptions = {throttleRequests: true, loadFeatureAttributes: true};
     if (token) {
@@ -175,7 +181,7 @@ export default class App extends PureComponent {
         onTilesetLoad: this._onTilesetLoad.bind(this),
         onTileLoad: () => this._updateStatWidgets(),
         onTileUnload: () => this._updateStatWidgets(),
-        pickable: true,
+        pickable,
         loadOptions,
         highlightedObjectIndex: selectedFeatureIndex
       })
@@ -198,7 +204,7 @@ export default class App extends PureComponent {
   }
 
   _renderControlPanel() {
-    const {name, tileset, token, metadata, selectedMapStyle} = this.state;
+    const {name, tileset, token, metadata, selectedMapStyle, pickable} = this.state;
     return (
       <ControlPanel
         tileset={tileset}
@@ -208,6 +214,8 @@ export default class App extends PureComponent {
         onExampleChange={this._onSelectTileset}
         onMapStyleChange={this._onSelectMapStyle.bind(this)}
         selectedMapStyle={selectedMapStyle}
+        onPickingChange={this.onPickingChange}
+        pickable={pickable}
       />
     );
   }
