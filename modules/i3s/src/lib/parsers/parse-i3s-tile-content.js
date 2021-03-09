@@ -93,7 +93,7 @@ async function parseI3SNodeGeometry(arrayBuffer, tile = {}, options) {
     attributes = {
       position: flattenAttribute(POSITION, indices),
       normal: flattenAttribute(NORMAL, indices),
-      color: flattenAttribute(COLOR_0, indices),
+      color: normalizeColors(flattenAttribute(COLOR_0, indices)),
       uv0: flattenAttribute(TEXCOORD_0, indices),
       id: flattenAttribute(featureIndex, indices)
     };
@@ -166,6 +166,7 @@ async function parseI3SNodeGeometry(arrayBuffer, tile = {}, options) {
 
   return tile;
 }
+
 /**
  * Do concatenation of attribute objects.
  * Done as separate fucntion to avoid ts errors.
@@ -195,6 +196,20 @@ function flattenAttribute(attribute, indices) {
     );
   }
   return {...attribute, value: result};
+}
+
+/**
+ * Convert colors buffer from [255,255,255,255] to [1,1,1,1]
+ * @param {Object} colors - color attribute
+ * @returns {Object} - color attribute in right format
+ */
+function normalizeColors(colors) {
+  const normalizedColors = new Float32Array(colors.value.length);
+  for (let index = 0; index < normalizedColors.length; index++) {
+    normalizedColors[index] = colors.value[index] / 255;
+  }
+  colors.value = normalizedColors;
+  return colors;
 }
 
 function constructFeatureDataStruct(tile, tileset) {
