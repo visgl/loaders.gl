@@ -6,9 +6,9 @@ import {StaticMap} from 'react-map-gl';
 import {lumaStats} from '@luma.gl/core';
 import DeckGL from '@deck.gl/react';
 import {FlyToInterpolator, View, MapView, WebMercatorViewport} from '@deck.gl/core';
-import {Tile3DLayer} from '@deck.gl/geo-layers';
 import {LineLayer} from '@deck.gl/layers';
 
+import TileColoredLayer, {COLORED_BY} from './tile-layer/tile-colored-layer';
 import {I3SLoader} from '@loaders.gl/i3s';
 import {StatsWidget} from '@probe.gl/stats-widget';
 
@@ -40,6 +40,12 @@ const STATS_WIDGET_STYLE = {
   maxWidth: 300,
   background: '#000',
   color: '#fff'
+};
+
+const CUSTOM_COLORS = {
+  1: [84, 65, 247],
+  2: [255, 255, 255],
+  '*': [50, 50, 50]
 };
 
 const VIEWS = [
@@ -216,12 +222,14 @@ export default class App extends PureComponent {
     const frustomBounds = getFrustumBounds(viewport);
 
     return [
-      new Tile3DLayer({
+      new TileColoredLayer({
         data: tilesetUrl,
         loader: I3SLoader,
         onTilesetLoad: this._onTilesetLoad.bind(this),
         onTileLoad: () => this._updateStatWidgets(),
         onTileUnload: () => this._updateStatWidgets(),
+        coloredBy: COLORED_BY.TILE,
+        coloredMap: CUSTOM_COLORS,
         loadOptions
       }),
       new LineLayer({
