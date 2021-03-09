@@ -93,7 +93,7 @@ async function parseI3SNodeGeometry(arrayBuffer, tile = {}, options) {
     attributes = {
       position: flattenAttribute(POSITION, indices),
       normal: flattenAttribute(NORMAL, indices),
-      color: normalizeColors(flattenAttribute(COLOR_0, indices)),
+      color: flattenAttribute(COLOR_0, indices),
       uv0: flattenAttribute(TEXCOORD_0, indices),
       id: flattenAttribute(featureIndex, indices)
     };
@@ -145,7 +145,7 @@ async function parseI3SNodeGeometry(arrayBuffer, tile = {}, options) {
   content.attributes = {
     positions: attributes.position,
     normals: attributes.normal,
-    colors: attributes.color,
+    colors: normalizeColors(attributes.color),
     texCoords: attributes.uv0,
     featureIds: attributes.id,
     faceRange: attributes.faceRange
@@ -204,6 +204,9 @@ function flattenAttribute(attribute, indices) {
  * @returns {Object} - color attribute in right format
  */
 function normalizeColors(colors) {
+  if (!colors) {
+    return colors;
+  }
   const normalizedColors = new Float32Array(colors.value.length);
   for (let index = 0; index < normalizedColors.length; index++) {
     normalizedColors[index] = colors.value[index] / 255;
