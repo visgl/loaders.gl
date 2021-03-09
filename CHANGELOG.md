@@ -1,5 +1,40 @@
 ## v3.0 Prerelease
 
+#### v3.0.0-alpha.7
+
+- chore: typescript 4.2.2 (#1220)
+- chore: Improve coverage further (#1212)
+- examples: fix i3s "yarn start" (#1192)
+- i3s: material support (#1217)
+- i3s: support compressed textures in material (#1224)
+- I3s picking refactoring (#1215)
+- Add i3s 1.6 picking support (#1228)
+- I3s 1.6 picking support small fixes (#1229)
+- texture: load worker from "beta" (#1223)
+- Change I3S example to I3S with picking feature (#1230)
+- GLTF with raw webgl (#1225)
+- I3s Picking improve tooltip view (#1231)
+- I3s Picking improve attributes panel (#1233)
+- I3S picking - Select building using only onclick event (#1234)
+- I3S picking - flatten feature ids by feature indices for compressed geometry (#1236)
+- Update eslintignore and prettierignore (#1244)
+- fix MVT empty binary tiles (#1235)
+- textures example: fixes basis (#1239)
+- I3S-picking - change attribute parsing logic (#1240)
+- I3s-picking - fix feature-index parsing in compressed geometry (#1241)
+- I3s-picking - fix tileset attribute urls generation (#1242)
+- Small fix in camera position for loading 3dtiles (#1247)
+- I3S-picking - refactor getting attributes from selected feature (#1243)
+- I3S-picking fix for integrated mesh layers (#1227)
+- docs: Add vis.gl, Linux Foundation and UCF links (#1252)
+- i3s: fix material lighting (#1237)
+- i3s: debug application (#1249)
+- i3s-debug: publish on site (#1253)
+- I3S-picking - fix for custom example in control panel (#1250)
+- Fixes for warnings regarding unresolved options (#1232)
+- I3S-picking - auto add 'layers/0' if needed to tileset url (#1251)
+- i3s: fix vertex colors (#1255)
+
 #### v3.0.0-alpha.6
 
 - chore: Adjust default worker concurrency. Add mobile concurrency (#1213)
