@@ -1,5 +1,13 @@
 ## v3.0 Prerelease
 
+#### v3.0.0-alpha.8
+
+- i3s: fix compressed texture issue (#1256)
+- build(deps): bump elliptic from 6.5.3 to 6.5.4 (#1254)
+- I3s-picking - add feature ids to feature attributes mapping (#1257)
+- chore: code cleanup (#1261)
+- fix(compression): zlib compression writes in gzip format by default (#1262)
+
 #### v3.0.0-alpha.7
 
 - chore: typescript 4.2.2 (#1220)
