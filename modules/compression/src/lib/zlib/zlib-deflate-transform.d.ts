@@ -1,5 +1,10 @@
 import {IncrementalTransform} from "@loaders.gl/loader-utils";
 
+export type ZlibDeflateOptions = {
+  format?: 'gzip' | 'deflate';
+  level?: number;
+}
+
 /**
  * A transform that incrementally zlib compresses / deflates input bytes
  */

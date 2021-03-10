@@ -1,10 +1,15 @@
 import pako from 'pako';
 
+const DEFAULT_OPTIONS = {
+  gzip: true
+};
+
 export default class ZlibInflateTransform {
   /**
    * Inflate (simple wrapper can throw exception on broken stream)
    */
   static async run(input, options) {
+    options = {...DEFAULT_OPTIONS, ...options};
     const compressed = new Uint8Array(input);
     const output = pako.inflate(compressed, options);
     // @ts-ignore @types/pako say strings are always returned
@@ -15,7 +20,8 @@ export default class ZlibInflateTransform {
   // Alternate interface for chunking & without exceptions
   //
   constructor(options) {
-    this._inflator = new pako.Inflate();
+    options = {...DEFAULT_OPTIONS, ...options};
+    this._inflator = new pako.Inflate(options);
     this._inflator.onData = this._onData.bind(this);
     this._inflator.onEnd = this._onEnd.bind(this);
     this.chunks = [];
