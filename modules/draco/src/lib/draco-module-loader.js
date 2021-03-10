@@ -2,7 +2,7 @@
 // https://github.com/mrdoob/three.js/blob/398c4f39ebdb8b23eefd4a7a5ec49ec0c96c7462/examples/jsm/loaders/DRACOLoader.js
 // by Don McCurdy / https://www.donmccurdy.com / MIT license
 
-import {loadLibrary, global} from '@loaders.gl/worker-utils';
+import {loadLibrary} from '@loaders.gl/worker-utils';
 
 const DRACO_VERSION = '1.4.1';
 const DRACO_JS_DECODER_URL = `https://www.gstatic.com/draco/versioned/decoders/${DRACO_VERSION}/draco_decoder.js`;
@@ -67,7 +67,7 @@ async function loadDracoDecoder(options) {
   }
   // Depends on how import happened...
   // @ts-ignore
-  DracoDecoderModule = DracoDecoderModule || global.DracoDecoderModule;
+  DracoDecoderModule = DracoDecoderModule || globalThis.DracoDecoderModule;
   return await initializeDracoDecoder(DracoDecoderModule, wasmBinary);
 }
 
@@ -90,7 +90,7 @@ function initializeDracoDecoder(DracoDecoderModule, wasmBinary) {
 async function loadDracoEncoder(options) {
   let DracoEncoderModule = await loadLibrary(DRACO_ENCODER_URL, 'draco', options);
   // @ts-ignore
-  DracoEncoderModule = DracoEncoderModule || global.DracoEncoderModule;
+  DracoEncoderModule = DracoEncoderModule || globalThis.DracoEncoderModule;
 
   return new Promise(resolve => {
     DracoEncoderModule({

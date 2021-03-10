@@ -1,4 +1,4 @@
-import {loadLibrary, global} from '@loaders.gl/worker-utils';
+import {loadLibrary} from '@loaders.gl/worker-utils';
 
 let loadGifshotPromise;
 
@@ -17,5 +17,5 @@ async function loadGifshot(options) {
 
   // Depends on how import happened...
   // @ts-ignore TS2339: Property does not exist on type
-  return gifshot || global.gifshot;
+  return gifshot || globalThis.gifshot;
 }

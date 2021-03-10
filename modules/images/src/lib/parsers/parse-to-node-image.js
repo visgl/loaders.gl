@@ -1,5 +1,5 @@
 import {global} from '../utils/globals';
-import assert from '../utils/assert';
+import {assert} from '../utils/assert';
 import {getBinaryImageMetadata} from '../category-api/binary-image-api';
 
 // Use polyfills if installed to p[arsed image using get-pixels

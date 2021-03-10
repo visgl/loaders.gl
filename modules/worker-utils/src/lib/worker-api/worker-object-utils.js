@@ -1,5 +1,5 @@
 /** @typedef {import('../../types').WorkerObject} WorkerObject */
-import assert from '../env-utils/assert';
+import {assert} from '../env-utils/assert';
 
 const NPM_TAG = 'beta'; // Change to 'latest' on release-branch
 

@@ -5,16 +5,8 @@ export {WorkerObject} from './types';
 export {WorkerMessage, WorkerMessageData, WorkerMessagePayload} from './lib/worker-protocol/protocol';
 
 // GENERAL UTILS
-export {default as assert} from './lib/env-utils/assert';
-export {
-  isBrowser,
-  isWorker,
-  nodeVersion,
-  self,
-  window,
-  global,
-  document
-} from './lib/env-utils/globals';
+export {assert} from './lib/env-utils/assert';
+export {isBrowser, isWorker} from './lib/env-utils/globals';
 
 // WORKER UTILS - TYPES
 export {default as WorkerJob} from './lib/worker-farm/worker-job';

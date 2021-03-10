@@ -5,7 +5,7 @@
 
 /** @typedef {import('@math.gl/core')} mathgl_core */
 import {Vector2, Vector3, clamp, _MathUtils} from '@math.gl/core';
-import assert from '../utils/assert';
+import {assert} from '../utils/assert';
 
 const RIGHT_SHIFT = 1.0 / 256.0;
 const LEFT_SHIFT = 256.0;

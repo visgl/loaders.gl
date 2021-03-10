@@ -1,4 +1,4 @@
-import {loadLibrary, global} from '@loaders.gl/worker-utils';
+import {loadLibrary} from '@loaders.gl/worker-utils';
 
 let loadBasisPromise;
 
@@ -23,7 +23,7 @@ async function loadBasis(options) {
 
   // Depends on how import happened...
   // @ts-ignore TS2339: Property does not exist on type
-  BASIS = BASIS || global.BASIS;
+  BASIS = BASIS || globalThis.BASIS;
   return await initializeBasisModule(BASIS, wasmBinary);
 }
 

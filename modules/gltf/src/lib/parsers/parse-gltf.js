@@ -2,7 +2,7 @@
 /* global TextDecoder */
 import {ImageLoader} from '@loaders.gl/images';
 import {parseJSON, getZeroOffsetArrayBuffer} from '@loaders.gl/loader-utils';
-import assert from '../utils/assert';
+import {assert} from '../utils/assert';
 import {resolveUrl} from '../gltf-utils/resolve-url';
 import {getTypedArrayForBufferView} from '../gltf-utils/get-typed-array';
 import {decodeExtensions} from '../extensions/gltf-extensions';

@@ -1,5 +1,5 @@
 import isGeometry from '../is-geometry';
-import assert from '../utils/assert';
+import {assert} from '../utils/assert';
 
 export function getPositions(geometry) {
   // If geometry, extract positions

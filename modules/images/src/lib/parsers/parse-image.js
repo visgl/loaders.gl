@@ -1,4 +1,4 @@
-import assert from '../utils/assert';
+import {assert} from '../utils/assert';
 import {isImageTypeSupported, getDefaultImageType} from '../category-api/image-type';
 import {getImageData} from '../category-api/parsed-image-api';
 import parseToImage from './parse-to-image';

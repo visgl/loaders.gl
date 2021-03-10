@@ -1,6 +1,6 @@
 /** @typedef {import('./array-buffer-utils')} types */
 /* global TextEncoder */
-import assert from '../env-utils/assert';
+import {assert} from '../env-utils/assert';
 import * as node from '../node/buffer-utils.node';
 
 /** @type {types['toArrayBuffer']} */

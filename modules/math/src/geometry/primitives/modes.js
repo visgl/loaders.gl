@@ -1,6 +1,6 @@
 /** @typedef {import('./modes')} types */
 import {GL} from '../constants';
-import assert from '../utils/assert';
+import {assert} from '../utils/assert';
 
 /** @type {types['getPrimitiveModeType']} */
 export function getPrimitiveModeType(mode) {

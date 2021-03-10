@@ -3,7 +3,7 @@
 /* eslint-disable no-console */
 /* global process, setTimeout, clearTimeout, console */
 import ChildProcess from 'child_process';
-import assert from '../env-utils/assert';
+import {assert} from '../env-utils/assert';
 import {getAvailablePort} from './process-utils';
 
 const DEFAULT_PROCESS_OPTIONS = {

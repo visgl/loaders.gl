@@ -2,7 +2,7 @@
 // this file is not visible to webpack (it is excluded in the package.json "browser" field).
 
 /* global Buffer */
-import assert from '../env-utils/assert';
+import {assert} from '../env-utils/assert';
 
 /**
  * Convert Buffer to ArrayBuffer

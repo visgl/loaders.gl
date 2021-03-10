@@ -17,6 +17,9 @@ const TEST_TABLES = true;
 const TEST_ARCHIVES = true;
 const TEST_CLI = true;
 
+export const isBrowser =
+  typeof process !== 'object' || String(process) !== '[object process]' || process.browser;
+
 // Install polyfills (primarily for Node)
 const {installFilePolyfills} = require('@loaders.gl/polyfills');
 
@@ -92,6 +95,6 @@ if (TEST_ARCHIVES) {
 }
 
 // Cli
-if (TEST_CLI) {
+if (!isBrowser && TEST_CLI) {
   require('@loaders.gl/tile-converter/test');
 }

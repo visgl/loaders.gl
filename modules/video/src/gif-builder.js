@@ -1,5 +1,5 @@
 // A GIFBuilder based on the gifshot module
-import assert from './lib/utils/assert';
+import {assert} from './lib/utils/assert';
 import gifshot from './libs/gifshot'; // TODO - load dynamically to avoid bloating
 
 // These are gifshot module options

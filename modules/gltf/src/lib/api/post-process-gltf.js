@@ -1,4 +1,4 @@
-import assert from '../utils/assert';
+import {assert} from '../utils/assert';
 import {getAccessorArrayTypeAndLength} from '../gltf-utils/gltf-utils';
 
 // This is a post processor for loaded glTF files
