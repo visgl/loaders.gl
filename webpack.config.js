@@ -10,7 +10,7 @@ module.exports = (env = {}) => {
     use: {
       loader: 'worker-loader'
     }
-  }); 
+  });
 
   // Uncomment to debug config
   console.log(JSON.stringify(config, null, 2));

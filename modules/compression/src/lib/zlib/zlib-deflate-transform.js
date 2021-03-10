@@ -1,12 +1,7 @@
 import pako from 'pako';
 
-const DEFAULT_OPTIONS = {
-  gzip: true
-};
-
 export default class ZlibDeflateTransform {
   static async run(input, options) {
-    options = {...DEFAULT_OPTIONS, ...options};
     const uint8Array = new Uint8Array(input);
     const output = pako.deflate(uint8Array, options);
     // @ts-ignore @types/pako say strings are always returned
@@ -17,8 +12,7 @@ export default class ZlibDeflateTransform {
    * Alternate interface for chunking & without exceptions
    */
   constructor(options) {
-    options = {...DEFAULT_OPTIONS, ...options};
-    this._deflator = new pako.Deflate(options);
+    this._deflator = new pako.Deflate();
     this._deflator.onData = this._onData.bind(this);
     this._deflator.onEnd = this._onEnd.bind(this);
     this.chunks = [];
