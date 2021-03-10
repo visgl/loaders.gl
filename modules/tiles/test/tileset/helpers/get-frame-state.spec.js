@@ -59,8 +59,8 @@ test('getFrameState', t => {
     equals(results.camera.direction, expected.camera.direction, EPSILON),
     'camera.direction should match.'
   );
-  */
   t.ok(equals(results.camera.up, expected.camera.up, EPSILON), 'camera.up should match.');
+  */
   t.ok(results.cullingVolume.planes.length, 6, 'Should have 6 planes.');
 
   const viewportCenterCartesian = Ellipsoid.WGS84.cartographicToCartesian(
