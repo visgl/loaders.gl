@@ -12,25 +12,27 @@ export {default as LZ4InflateTransform} from './lib/lz4/lz4-inflate-transform';
 // export {default as ZstdDeflateTransform} from './lib/zstd/zstd-deflate-transform';
 // export {default as ZstdInflateTransform} from './lib/zstd/zstd-inflate-transform';
 
-export interface CompressionWorkerObject extends WorkerObject {}
-
 /**
  * Worker for Zlib real-time compression and decompression
  */
-export const ZlibWorker: CompressionWorkerObject;
+export const ZlibWorker: WorkerObject;
 
 /**
  * Worker for LZ4 real-time compression and decompression
  */
-export const LZ4Worker: CompressionWorkerObject;
+export const LZ4Worker: WorkerObject;
 
 /**
  * Worker for Zstandard real-time compression and decompression
  * @note this is a large worker due to big Zstd-codec library.
  */
-export const ZstdWorker: CompressionWorkerObject;
+export declare const ZstdWorker: WorkerObject;
 
-// Overload parseOnWorker to provide type safety
+/**
+ * Overload parseOnWorker to provide type safety
 export function parseOnWorker(
-  worker: CompressionWorkerObject, data: ArrayBuffer, options?: object
+  worker: ZlibWorker | LZ4Worker | ZstdWorker,
+  data: ArrayBuffer,
+  options?: object
 ): Promise<ArrayBuffer>;
+ */

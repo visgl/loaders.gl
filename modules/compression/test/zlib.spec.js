@@ -13,7 +13,8 @@ test('zlib#defaults', async t => {
 
   t.equal(repeatedData.byteLength, 100000, 'Repeated data length is correct');
   deflatedData = await ZlibDeflateTransform.run(repeatedData);
-  t.equal(deflatedData.byteLength, 10903, 'Repeated data compresses well');
+
+  t.equal(deflatedData.byteLength, 10915, 'Repeated data compresses well');
   inflatedData = await ZlibInflateTransform.run(deflatedData);
   t.equal(inflatedData.byteLength, 100000, 'Inflated data length is correct');
   t.ok(compareArrayBuffers(repeatedData, inflatedData), 'deflate/inflate default options');
@@ -98,7 +99,7 @@ test('zlib#worker', async t => {
     }
   });
 
-  t.equal(deflatedData.byteLength, 12813, 'Length correct');
+  t.equal(deflatedData.byteLength, 12825, 'Length correct');
 
   const inflatedData = await processOnWorker(ZlibWorker, deflatedData, {
     operation: 'inflate',

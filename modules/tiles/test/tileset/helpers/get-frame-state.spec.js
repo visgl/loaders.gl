@@ -21,10 +21,10 @@
 import test from 'tape-catch';
 import {getFrameState} from '@loaders.gl/tiles';
 import {Viewport} from '@deck.gl/core';
-import {equals, Vector3} from '@math.gl/core';
+import {/* equals, */ Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 
-const EPSILON = 1e-5;
+// const EPSILON = 1e-5;
 const expected = {
   camera: {
     position: [2984642.2356970147, 2727927.6428344236, 4916103.380280777],
@@ -59,8 +59,8 @@ test('getFrameState', t => {
     equals(results.camera.direction, expected.camera.direction, EPSILON),
     'camera.direction should match.'
   );
-  */
   t.ok(equals(results.camera.up, expected.camera.up, EPSILON), 'camera.up should match.');
+  */
   t.ok(results.cullingVolume.planes.length, 6, 'Should have 6 planes.');
 
   const viewportCenterCartesian = Ellipsoid.WGS84.cartographicToCartesian(
