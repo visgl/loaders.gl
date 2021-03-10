@@ -1,6 +1,6 @@
 /** @typedef {import('../worker-protocol/protocol').WorkerMessageType} WorkerMessageType  */
 /** @typedef {import('../worker-protocol/protocol').WorkerMessagePayload} WorkerMessagePayload */
-import assert from '../env-utils/assert';
+import {assert} from '../env-utils/assert';
 import WorkerThread from './worker-thread';
 import WorkerJob from './worker-job';
 

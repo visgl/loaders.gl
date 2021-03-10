@@ -1,5 +1,5 @@
 // TODO - GLTFScenegraph should use these
-import assert from '../utils/assert';
+import {assert} from '../utils/assert';
 
 // accepts buffer view index or buffer view object
 // returns a `Uint8Array`

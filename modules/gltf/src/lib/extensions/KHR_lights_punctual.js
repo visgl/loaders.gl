@@ -1,7 +1,7 @@
 // GLTF EXTENSION: KHR_lights_punctual
 // https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_lights_punctual
 
-import assert from '../utils/assert';
+import {assert} from '../utils/assert';
 import GLTFScenegraph from '../api/gltf-scenegraph';
 import {KHR_LIGHTS_PUNCTUAL} from '../gltf-utils/gltf-constants';
 

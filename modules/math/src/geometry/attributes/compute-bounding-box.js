@@ -1,5 +1,5 @@
 import {makeAttributeIterator} from '../iterators/attribute-iterator';
-import assert from '../utils/assert';
+import {assert} from '../utils/assert';
 
 export function computeBoundingBox(positions) {
   const min = [Number(Infinity), Number(Infinity), Number(Infinity)];

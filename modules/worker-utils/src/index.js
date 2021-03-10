@@ -1,16 +1,8 @@
 /** @typedef {import('./types').WorkerObject} WorkerObject */
 
 // GENERAL UTILS
-export {default as assert} from './lib/env-utils/assert';
-export {
-  isBrowser,
-  isWorker,
-  nodeVersion,
-  self,
-  window,
-  global,
-  document
-} from './lib/env-utils/globals';
+export {assert} from './lib/env-utils/assert';
+export {isBrowser, isWorker} from './lib/env-utils/globals';
 
 // WORKER UTILS
 export {processOnWorker} from './lib/worker-api/process-on-worker';

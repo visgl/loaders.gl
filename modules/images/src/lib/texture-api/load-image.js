@@ -1,4 +1,4 @@
-import assert from '../utils/assert';
+import {assert} from '../utils/assert';
 import parseImage from '../parsers/parse-image';
 import {getImageSize} from '../category-api/parsed-image-api';
 import {generateUrl} from './generate-url';

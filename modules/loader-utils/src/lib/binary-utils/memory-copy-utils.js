@@ -1,4 +1,4 @@
-import assert from '../env-utils/assert';
+import {assert} from '../env-utils/assert';
 import {sliceArrayBuffer} from './array-buffer-utils';
 
 export function padToNBytes(byteLength, padding) {

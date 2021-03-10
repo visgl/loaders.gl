@@ -1,7 +1,7 @@
 /** @typedef {import('./compute-vertex-normals')} types */
 import {Vector3} from '@math.gl/core';
 import {GL} from '../constants';
-import assert from '../utils/assert';
+import {assert} from '../utils/assert';
 import {makePrimitiveIterator} from '../iterators/primitive-iterator';
 import {getPrimitiveModeType} from '../primitives/modes';
 import {getPositions} from './get-attribute-from-geometry';

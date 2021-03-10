@@ -13,7 +13,7 @@ module.exports = (env = {}) => {
   });
 
   // Uncomment to debug config
-  // console.error(JSON.stringify(config, null, 2));
+  console.log(JSON.stringify(config, null, 2));
 
   return [config];
 };

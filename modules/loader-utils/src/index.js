@@ -1,5 +1,5 @@
 // GENERAL UTILS
-export {default as assert} from './lib/env-utils/assert';
+export {assert} from './lib/env-utils/assert';
 export {
   isBrowser,
   isWorker,

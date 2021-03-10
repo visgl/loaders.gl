@@ -1,4 +1,4 @@
-import assert from '../utils/assert';
+import {assert} from '../utils/assert';
 import {DataType} from '../types/arrow-like/type';
 
 // ArrowJS `Schema` API-compatible class for row-based tables (returned from `DataTable`)

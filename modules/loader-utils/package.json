@@ -30,7 +30,8 @@
     "./src/lib/node/buffer-utils.node.js": false,
     "./dist/es5/lib/node/buffer-utils.node.js": false,
     "./dist/esm/lib/node/buffer-utils.node.js": false,
-    "./dist/es6/lib/node/buffer-utils.node.js": false
+    "./dist/es6/lib/node/buffer-utils.node.js": false,
+    "fs": false
   },
   "scripts": {
     "pre-build-disabled": "npm run build-bundle && npm run build-bundle -- --env.dev",

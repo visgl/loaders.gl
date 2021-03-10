@@ -1,5 +1,5 @@
 /** @typedef {import('./crunch-module-loader')} types */
-import {loadLibrary, global} from '@loaders.gl/worker-utils';
+import {loadLibrary} from '@loaders.gl/worker-utils';
 
 let CrunchModule;
 
@@ -29,7 +29,7 @@ async function loadCrunch(options) {
 
   // Depends on how import happened...
   // @ts-ignore TS2339: Property does not exist on type
-  LoadCrunchDecoder = LoadCrunchDecoder || global.LoadCrunchDecoder;
+  LoadCrunchDecoder = LoadCrunchDecoder || globalThis.LoadCrunchDecoder;
   CrunchModule = LoadCrunchDecoder();
   return CrunchModule;
 }

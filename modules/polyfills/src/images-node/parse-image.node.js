@@ -1,7 +1,7 @@
 /* global Buffer */
 import getPixels from 'get-pixels';
 import util from 'util';
-import assert from 'assert';
+import {assert} from '../utils/assert';
 
 export async function parseImageNode(arrayBuffer, mimeType, options) {
   assert(mimeType, 'MIMEType is required to parse image under Node.js');

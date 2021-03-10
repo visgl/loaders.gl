@@ -6,6 +6,7 @@ module.exports = {
   extends: ['uber-es2015', 'prettier', 'plugin:import/errors'],
   plugins: ['import'],
   globals: {
+    globalThis: 'readonly',
     __VERSION__: 'readonly'
   },
   rules: {

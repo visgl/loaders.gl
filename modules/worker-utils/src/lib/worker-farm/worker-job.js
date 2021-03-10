@@ -1,4 +1,4 @@
-import assert from '../env-utils/assert';
+import {assert} from '../env-utils/assert';
 
 export default class WorkerJob {
   constructor(jobName, workerThread) {
