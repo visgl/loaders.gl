@@ -21,7 +21,7 @@
 import test from 'tape-catch';
 import {getFrameState} from '@loaders.gl/tiles';
 import {Viewport} from '@deck.gl/core';
-import {/* equals, */Vector3} from '@math.gl/core';
+import {/* equals, */ Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 
 // const EPSILON = 1e-5;
