@@ -117,14 +117,14 @@ module.exports = {
             title: 'I3S Loader',
             category: "Loaders",
             image: 'images/example-i3s.jpg',
-            componentUrl: resolve(__dirname, '../examples/experimental/i3s-picking/app.js'),
+            componentUrl: resolve(__dirname, '../examples/experimental/i3s-17-and-debug/app.js'),
             path: 'examples/i3s'
           },
           {
             title: 'I3S Debug',
             category: "Loaders",
             image: 'images/example-i3s.jpg',
-            componentUrl: resolve(__dirname, '../examples/experimental/i3s-debug/app.js'),
+            componentUrl: resolve(__dirname, '../examples/experimental/i3s-17-and-debug/app-debug.js'),
             path: 'examples/i3s-debug'
           },
           {
