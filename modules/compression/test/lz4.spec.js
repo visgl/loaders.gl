@@ -40,7 +40,7 @@ test('lz4#worker', async t => {
     _workerType: 'test'
   });
 
-  t.equal(deflatedData.byteLength, 12813, 'Length correct');
+  t.equal(deflatedData.byteLength, 12331, 'Length correct');
 
   const inflatedData = await processOnWorker(LZ4Worker, deflatedData, {
     operation: 'inflate',

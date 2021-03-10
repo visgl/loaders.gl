@@ -99,7 +99,7 @@ test('zlib#worker', async t => {
     }
   });
 
-  t.equal(deflatedData.byteLength, 12813, 'Length correct');
+  t.equal(deflatedData.byteLength, 12825, 'Length correct');
 
   const inflatedData = await processOnWorker(ZlibWorker, deflatedData, {
     operation: 'inflate',
