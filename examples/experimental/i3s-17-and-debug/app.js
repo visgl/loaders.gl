@@ -7,7 +7,7 @@ import DeckGL from '@deck.gl/react';
 import {MapController, FlyToInterpolator} from '@deck.gl/core';
 
 import TileLayer from './tile-layer/tile-layer';
-import {I3SLoader, getAttributesFromTileByFeatureId} from '@loaders.gl/i3s';
+import {I3SLoader, getTileAttributesFromFeatureId} from '@loaders.gl/i3s';
 import {StatsWidget} from '@probe.gl/stats-widget';
 
 import {INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
@@ -188,7 +188,7 @@ export default class App extends PureComponent {
       return;
     }
 
-    const selectedFeatureAttributes = getAttributesFromTileByFeatureId(info.object, info.index);
+    const selectedFeatureAttributes = getTileAttributesFromFeatureId(info.object, info.index);
     this.setState({selectedFeatureAttributes, selectedFeatureIndex: info.index});
   }
 
@@ -217,7 +217,7 @@ export default class App extends PureComponent {
       return null;
     }
 
-    const selectedFeatureAttributes = getAttributesFromTileByFeatureId(info.object, info.index);
+    const selectedFeatureAttributes = getTileAttributesFromFeatureId(info.object, info.index);
 
     if (!selectedFeatureAttributes) {
       return null;

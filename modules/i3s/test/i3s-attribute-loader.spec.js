@@ -1,7 +1,7 @@
 import test from 'tape-promise/tape';
 import {
   I3SAttributeLoader,
-  getAttributesFromTileByFeatureId
+  getTileAttributesFromFeatureId
 } from '@loaders.gl/i3s/i3s-attribute-loader';
 import {load} from '@loaders.gl/core';
 
@@ -100,50 +100,50 @@ test('I3SAttributeLoader# should load float attribute', async t => {
   t.end();
 });
 
-test('I3SAttributeLoader#getAttributesFromTileByFeatureId should return null if tile has no header prop', async t => {
+test('I3SAttributeLoader#getTileAttributesFromFeatureId should return null if tile has no header prop', async t => {
   const featureId = 1;
   const tile = {};
-  const attributes = getAttributesFromTileByFeatureId(tile, featureId);
+  const attributes = getTileAttributesFromFeatureId(tile, featureId);
 
   t.equal(attributes, null);
   t.end();
 });
 
-test('I3SAttributeLoader#getAttributesFromTileByFeatureId should return null if tile has no userData prop', async t => {
+test('I3SAttributeLoader#getTileAttributesFromFeatureId should return null if tile has no userData prop', async t => {
   const featureId = 1;
   const tile = {
     header: {}
   };
-  const attributes = getAttributesFromTileByFeatureId(tile, featureId);
+  const attributes = getTileAttributesFromFeatureId(tile, featureId);
 
   t.equal(attributes, null);
   t.end();
 });
 
-test('I3SAttributeLoader#getAttributesFromTileByFeatureId should return null if no attributesByObjectId', async t => {
+test('I3SAttributeLoader#getTileAttributesFromFeatureId should return null if no attributesByObjectId', async t => {
   const featureId = 1;
   const tile = {
     header: {
       userData: {}
     }
   };
-  const attributes = getAttributesFromTileByFeatureId(tile, featureId);
+  const attributes = getTileAttributesFromFeatureId(tile, featureId);
 
   t.equal(attributes, null);
   t.end();
 });
 
-test('I3SAttributeLoader#getAttributesFromTileByFeatureId should return null if no featureId in attributesByObjectId map', async t => {
+test('I3SAttributeLoader#getTileAttributesFromFeatureId should return null if no featureId in attributesByObjectId map', async t => {
   const featureId = 6;
-  const attributes = getAttributesFromTileByFeatureId(TILE, featureId);
+  const attributes = getTileAttributesFromFeatureId(TILE, featureId);
 
   t.equal(attributes, null);
   t.end();
 });
 
-test('I3SAttributeLoader#getAttributesFromTileByFeatureId should return first attributes object from attributesByObjectId map', async t => {
+test('I3SAttributeLoader#getTileAttributesFromFeatureId should return first attributes object from attributesByObjectId map', async t => {
   const featureId = 1;
-  const attributes = getAttributesFromTileByFeatureId(TILE, featureId);
+  const attributes = getTileAttributesFromFeatureId(TILE, featureId);
   t.ok(attributes);
   t.deepEqual(attributes, {OBJECTID: 1, NAME: 'Name_1'});
   t.end();
