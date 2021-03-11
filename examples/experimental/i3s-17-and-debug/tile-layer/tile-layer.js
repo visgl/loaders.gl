@@ -49,7 +49,7 @@ export default class TileLayer extends Tile3DLayer {
   _makeSimpleMeshLayer(tileHeader, oldLayer) {
     const content = tileHeader.content;
     const {attributes, modelMatrix, cartographicOrigin, texture, material} = content;
-    const {pickable, autoHighlight, coloredBy} = this.props;
+    const {pickable, autoHighlight, coloredBy, isDebugMode} = this.props;
     const {colorsMap} = this.state;
 
     const geometry =
@@ -76,7 +76,8 @@ export default class TileLayer extends Tile3DLayer {
         coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS,
         pickable,
         autoHighlight,
-        highlightColor: [0, 0, 255, 150]
+        highlightColor: [0, 0, 255, 150],
+        isDebugMode
       }
     );
   }
