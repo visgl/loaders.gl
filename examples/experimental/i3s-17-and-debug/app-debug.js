@@ -6,7 +6,6 @@ import {StaticMap} from 'react-map-gl';
 import {lumaStats} from '@luma.gl/core';
 import DeckGL from '@deck.gl/react';
 import {FlyToInterpolator, View, MapView, WebMercatorViewport} from '@deck.gl/core';
-import {Tile3DLayer} from '@deck.gl/geo-layers';
 import {LineLayer} from '@deck.gl/layers';
 
 import {I3SLoader} from '@loaders.gl/i3s';
@@ -17,6 +16,7 @@ import ControlPanel from './components/control-panel';
 
 import {INITIAL_MAP_STYLE} from './constants';
 import {getFrustumBounds} from './frustum-utils';
+import TileLayer from './tile-layer/tile-layer';
 
 const TRANSITION_DURAITON = 4000;
 
@@ -207,16 +207,16 @@ export default class App extends PureComponent {
 
   _renderLayers() {
     const {tilesetUrl, token, viewState} = this.state;
-    const loadOptions = {throttleRequests: true};
+    const loadOptions = {throttleRequests: true, loadFeatureAttributes: false};
     if (token) {
       loadOptions.token = token;
     }
 
     const viewport = new WebMercatorViewport(viewState.main);
-    const frustomBounds = getFrustumBounds(viewport);
+    const frustumBounds = getFrustumBounds(viewport);
 
     return [
-      new Tile3DLayer({
+      new TileLayer({
         data: tilesetUrl,
         loader: I3SLoader,
         onTilesetLoad: this._onTilesetLoad.bind(this),
@@ -226,7 +226,7 @@ export default class App extends PureComponent {
       }),
       new LineLayer({
         id: 'frustum',
-        data: frustomBounds,
+        data: frustumBounds,
         getSourcePosition: d => d.source,
         getTargetPosition: d => d.target,
         getColor: d => d.color,
@@ -255,6 +255,14 @@ export default class App extends PureComponent {
     );
   }
 
+  _layerFilter({layer, viewport}) {
+    if (viewport.id !== 'minimap' && layer.id === 'frustum') {
+      // only display frustum in the minimap
+      return false;
+    }
+    return true;
+  }
+
   render() {
     const layers = this._renderLayers();
     const {viewState, selectedMapStyle} = this.state;
@@ -267,6 +275,7 @@ export default class App extends PureComponent {
           layers={layers}
           viewState={viewState}
           views={VIEWS}
+          layerFilter={this._layerFilter}
           onViewStateChange={this._onViewStateChange.bind(this)}
           onAfterRender={() => this._updateStatWidgets()}
         >
