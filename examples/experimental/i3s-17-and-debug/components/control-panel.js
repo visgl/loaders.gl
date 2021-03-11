@@ -2,7 +2,7 @@ import styled from 'styled-components';
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {EXAMPLES} from '../examples';
-import {MAP_STYLES} from '../constants';
+import {MAP_STYLES, MAP_COLORING_MODES} from '../constants';
 
 const Container = styled.div`
   display: flex;
@@ -63,17 +63,21 @@ const propTypes = {
   name: PropTypes.string,
   tileset: PropTypes.object,
   mapStyles: PropTypes.object,
+  coloringModes: PropTypes.object,
   metadata: PropTypes.object,
   token: PropTypes.string,
   onExampleChange: PropTypes.func,
   children: PropTypes.node,
   selectedMapStyle: PropTypes.string,
-  onMapStyleChange: PropTypes.func
+  onMapStyleChange: PropTypes.func,
+  selectedColoringMode: PropTypes.number,
+  onColoringModeChange: PropTypes.func
 };
 
 const defaultProps = {
   droppedFile: null,
-  onChange: () => {}
+  onChange: () => {},
+  onColoringModeChange: () => {}
 };
 const CUSTOM_EXAMPLE = 'Custom example';
 
@@ -81,6 +85,7 @@ export default class ControlPanel extends PureComponent {
   constructor(props) {
     super(props);
     this._renderMapStyles = this._renderMapStyles.bind(this);
+    this._renderColoringModes = this._renderColoringModes.bind(this);
     this.state = {
       showFullInfo: false
     };
@@ -137,6 +142,31 @@ export default class ControlPanel extends PureComponent {
     );
   }
 
+  _renderColoringModes() {
+    const {
+      coloringModes = MAP_COLORING_MODES,
+      selectedColoringMode,
+      onColoringModeChange
+    } = this.props;
+    return (
+      <DropDown
+        value={selectedColoringMode}
+        onChange={evt => {
+          const selected = evt.target.value;
+          onColoringModeChange({selectedColoringMode: parseInt(selected, 10)});
+        }}
+      >
+        {Object.keys(coloringModes).map(key => {
+          return (
+            <option key={key} value={coloringModes[key]}>
+              {key}
+            </option>
+          );
+        })}
+      </DropDown>
+    );
+  }
+
   _renderInfo() {
     const {metadata, token} = this.props;
     const {showFullInfo} = this.state;
@@ -178,6 +208,7 @@ export default class ControlPanel extends PureComponent {
       <Container>
         {this._renderExamples()}
         {this._renderMapStyles()}
+        {this._renderColoringModes()}
         {this._renderInfo()}
         {this.props.children}
       </Container>
