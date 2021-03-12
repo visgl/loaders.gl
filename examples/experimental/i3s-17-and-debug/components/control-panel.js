@@ -76,8 +76,7 @@ const propTypes = {
 
 const defaultProps = {
   droppedFile: null,
-  onChange: () => {},
-  onColoringModeChange: () => {}
+  onChange: () => {}
 };
 const CUSTOM_EXAMPLE = 'Custom example';
 
@@ -148,6 +147,9 @@ export default class ControlPanel extends PureComponent {
       selectedColoringMode,
       onColoringModeChange
     } = this.props;
+    if (!onColoringModeChange) {
+      return null;
+    }
     return (
       <DropDown
         value={selectedColoringMode}
