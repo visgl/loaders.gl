@@ -24,6 +24,9 @@
     "@deck.gl/layers": "^8.4.2",
     "@deck.gl/mesh-layers": "^8.4.2",
     "@deck.gl/react": "^8.4.2",
+    "@fortawesome/fontawesome-svg-core": "^1.2.34",
+    "@fortawesome/free-solid-svg-icons": "^5.15.2",
+    "@fortawesome/react-fontawesome": "^0.1.14",
     "@luma.gl/constants": "^8.4.2",
     "@luma.gl/core": "^8.4.2",
     "@luma.gl/experimental": "^8.4.2",
@@ -44,10 +47,10 @@
   "devDependencies": {
     "babel-plugin-version-inline": "^1.0.0",
     "gatsby": "^2.32.0",
-    "sharp": "^0.27.1",
     "gatsby-plugin-env-variables": "^1.0.1",
     "gatsby-plugin-no-sourcemaps": "^2.1.2",
     "gatsby-theme-ocular": "1.2.3",
-    "gh-pages": "2.2.0"
+    "gh-pages": "2.2.0",
+    "sharp": "^0.27.1"
   }
 }

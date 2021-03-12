@@ -1,0 +1,8 @@
+.debug-panel .expand {
+  margin-left: 20px;
+  transition: margin-left 800ms;
+}
+.debug-panel .collapse {
+  margin-left: -300px; 
+  transition: margin-left 800ms;
+}
