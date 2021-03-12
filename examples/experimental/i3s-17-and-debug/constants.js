@@ -1,4 +1,4 @@
-import {COLORED_BY} from './tile-layer/tile-layer';
+import {COLORED_BY} from './coloring-utils';
 
 export const MAP_STYLES = {
   'Base Map: Satellite': 'https://basemaps.cartocdn.com/gl/voyager-nolabels-gl-style/style.json',
