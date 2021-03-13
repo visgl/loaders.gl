@@ -220,6 +220,10 @@ export default class Tileset3D {
   }
 
   update(viewport) {
+    // TODO: update traverser to work with multiple viewports. Take viewport[0] for now
+    if (viewport instanceof Array) {
+      viewport = viewport[0];
+    }
     this._cache.reset();
     this._frameNumber++;
     this._frameState = getFrameState(viewport, this._frameNumber);

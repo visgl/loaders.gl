@@ -435,7 +435,7 @@ export default class TileHeader {
 
   // TODO - remove anything not related to basic visibility detection
   _initializeRenderingState(header) {
-    this.depth = header.level || this.parent?.depth + 1 || 0;
+    this.depth = header.level || (this.parent ? this.parent.depth + 1 : 0);
     this._shouldRefine = false;
 
     // Members this are updated every frame for tree traversal and rendering optimizations:

@@ -22,6 +22,30 @@ export default class TileLayer extends Tile3DLayer {
     };
   }
 
+  // Method is taken from the base class https://github.com/visgl/deck.gl/blob/15b65748adacb96d3d9d5ce0515fe785c1318167/modules/geo-layers/src/tile-3d-layer/tile-3d-layer.js#L128
+  _updateTileset(tileset3d) {
+    // OLD CODE
+    // const {timeline, viewport} = this.context;
+    // if (!timeline || !viewport || !tileset3d) {
+    //   return;
+    // }
+    // const frameNumber = tileset3d.update(viewport);
+
+    // NEW CODE START
+    const {timeline, deck} = this.context;
+    const viewports = deck.viewManager.getViewports();
+    if (!timeline || !viewports || !tileset3d) {
+      return;
+    }
+    const frameNumber = tileset3d.update(viewports);
+    // NEW CODE END
+
+    const tilesetChanged = this.state.frameNumber !== frameNumber;
+    if (tilesetChanged) {
+      this.setState({frameNumber});
+    }
+  }
+
   _makeSimpleMeshLayer(tileHeader, oldLayer) {
     const content = tileHeader.content;
     const {attributes, modelMatrix, cartographicOrigin, texture, material} = content;
