@@ -2,11 +2,26 @@ import GL from '@luma.gl/constants';
 import {Geometry} from '@luma.gl/core';
 import {COORDINATE_SYSTEM} from '@deck.gl/core';
 import {Tile3DLayer} from '@deck.gl/geo-layers';
+import {log} from '@deck.gl/core';
 import MeshLayer from '../mesh-layer/mesh-layer';
+import {getTileColor} from '../coloring-utils';
 
 const SINGLE_DATA = [0];
+
 // Use our custom MeshLayer
 export default class TileLayer extends Tile3DLayer {
+  initializeState() {
+    if ('onTileLoadFail' in this.props) {
+      log.removed('onTileLoadFail', 'onTileError')();
+    }
+
+    this.state = {
+      layerMap: {},
+      colorsMap: {},
+      tileset3d: null
+    };
+  }
+
   // Method is taken from the base class https://github.com/visgl/deck.gl/blob/15b65748adacb96d3d9d5ce0515fe785c1318167/modules/geo-layers/src/tile-3d-layer/tile-3d-layer.js#L128
   _updateTileset(tileset3d) {
     // OLD CODE
@@ -34,7 +49,8 @@ export default class TileLayer extends Tile3DLayer {
   _makeSimpleMeshLayer(tileHeader, oldLayer) {
     const content = tileHeader.content;
     const {attributes, modelMatrix, cartographicOrigin, texture, material} = content;
-    const {pickable, autoHighlight} = this.props;
+    const {pickable, autoHighlight, coloredBy} = this.props;
+    const {colorsMap} = this.state;
 
     const geometry =
       (oldLayer && oldLayer.props.mesh) ||
@@ -52,7 +68,7 @@ export default class TileLayer extends Tile3DLayer {
         mesh: geometry,
         data: SINGLE_DATA,
         getPosition: [0, 0, 0],
-        getColor: [255, 255, 255],
+        getColor: getTileColor(tileHeader, {coloredBy, colorsMap}),
         texture,
         material,
         modelMatrix,

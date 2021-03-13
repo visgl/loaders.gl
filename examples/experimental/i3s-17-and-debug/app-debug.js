@@ -14,7 +14,7 @@ import {StatsWidget} from '@probe.gl/stats-widget';
 import {INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
 import ControlPanel from './components/control-panel';
 
-import {INITIAL_MAP_STYLE} from './constants';
+import {INITIAL_MAP_STYLE, INITIAL_COLORING_MODE} from './constants';
 import {getFrustumBounds} from './frustum-utils';
 import TileLayer from './tile-layer/tile-layer';
 
@@ -103,6 +103,7 @@ export default class App extends PureComponent {
           bearing: 0
         }
       },
+      selectedColoringMode: INITIAL_COLORING_MODE,
       selectedMapStyle: INITIAL_MAP_STYLE
     };
     this._onSelectTileset = this._onSelectTileset.bind(this);
@@ -205,8 +206,12 @@ export default class App extends PureComponent {
     this.setState({selectedMapStyle});
   }
 
+  _onSelectColoringMode({selectedColoringMode}) {
+    this.setState({selectedColoringMode});
+  }
+
   _renderLayers() {
-    const {tilesetUrl, token, viewState} = this.state;
+    const {tilesetUrl, token, viewState, selectedColoringMode} = this.state;
     const loadOptions = {throttleRequests: true, loadFeatureAttributes: false};
     if (token) {
       loadOptions.token = token;
@@ -222,6 +227,7 @@ export default class App extends PureComponent {
         onTilesetLoad: this._onTilesetLoad.bind(this),
         onTileLoad: () => this._updateStatWidgets(),
         onTileUnload: () => this._updateStatWidgets(),
+        coloredBy: selectedColoringMode,
         loadOptions
       }),
       new LineLayer({
@@ -241,7 +247,7 @@ export default class App extends PureComponent {
   }
 
   _renderControlPanel() {
-    const {name, tileset, token, metadata, selectedMapStyle} = this.state;
+    const {name, tileset, token, metadata, selectedMapStyle, selectedColoringMode} = this.state;
     return (
       <ControlPanel
         tileset={tileset}
@@ -250,7 +256,9 @@ export default class App extends PureComponent {
         token={token}
         onExampleChange={this._onSelectTileset}
         onMapStyleChange={this._onSelectMapStyle.bind(this)}
+        onColoringModeChange={this._onSelectColoringMode.bind(this)}
         selectedMapStyle={selectedMapStyle}
+        selectedColoringMode={selectedColoringMode}
       />
     );
   }
