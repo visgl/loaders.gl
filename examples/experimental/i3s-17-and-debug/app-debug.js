@@ -15,9 +15,11 @@ import {INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
 import DebugPanel from './components/debug-panel';
 import ControlPanel from './components/control-panel';
 
-import {INITIAL_MAP_STYLE, CONTRAST_MAP_STYLES} from './constants';
+import {INITIAL_MAP_STYLE, CONTRAST_MAP_STYLES, INITIAL_COLORING_MODE} from './constants';
 import {getFrustumBounds} from './frustum-utils';
 import TileLayer from './tile-layer/tile-layer';
+import AttributesTooltip from './components/attributes-tooltip';
+import {getTileDebugInfo} from './tile-debug';
 
 const TRANSITION_DURAITON = 4000;
 
@@ -104,6 +106,7 @@ export default class App extends PureComponent {
           bearing: 0
         }
       },
+      selectedColoringMode: INITIAL_COLORING_MODE,
       selectedMapStyle: INITIAL_MAP_STYLE,
       debugOptions: {
         showStatistics: true,
@@ -236,8 +239,12 @@ export default class App extends PureComponent {
     this.setState({debugOptions});
   }
 
+  _onSelectColoringMode({selectedColoringMode}) {
+    this.setState({selectedColoringMode});
+  }
+
   _renderLayers() {
-    const {tilesetUrl, token, viewState} = this.state;
+    const {tilesetUrl, token, viewState, selectedColoringMode} = this.state;
     const loadOptions = {throttleRequests: true, loadFeatureAttributes: false};
     if (token) {
       loadOptions.token = token;
@@ -253,7 +260,11 @@ export default class App extends PureComponent {
         onTilesetLoad: this._onTilesetLoad.bind(this),
         onTileLoad: () => this._updateStatWidgets(),
         onTileUnload: () => this._updateStatWidgets(),
-        loadOptions
+        coloredBy: selectedColoringMode,
+        loadOptions,
+        pickable: true,
+        autoHighlight: true,
+        isDebugMode: true
       }),
       new LineLayer({
         id: 'frustum',
@@ -288,7 +299,7 @@ export default class App extends PureComponent {
   }
 
   _renderControlPanel() {
-    const {name, tileset, token, metadata, selectedMapStyle} = this.state;
+    const {name, tileset, token, metadata, selectedMapStyle, selectedColoringMode} = this.state;
     return (
       <ControlPanel
         tileset={tileset}
@@ -297,7 +308,9 @@ export default class App extends PureComponent {
         token={token}
         onExampleChange={this._onSelectTileset}
         onMapStyleChange={this._onSelectMapStyle.bind(this)}
+        onColoringModeChange={this._onSelectColoringMode.bind(this)}
         selectedMapStyle={selectedMapStyle}
+        selectedColoringMode={selectedColoringMode}
       />
     );
   }
@@ -308,6 +321,18 @@ export default class App extends PureComponent {
       return false;
     }
     return true;
+  }
+
+  getTooltip(info) {
+    if (!info.object || info.index < 0 || !info.layer) {
+      return null;
+    }
+    const tileInfo = getTileDebugInfo(info.object);
+    // eslint-disable-next-line no-undef
+    const tooltip = document.createElement('div');
+    render(<AttributesTooltip data={tileInfo} />, tooltip);
+
+    return {html: tooltip.innerHTML};
   }
 
   render() {
@@ -325,6 +350,7 @@ export default class App extends PureComponent {
           layerFilter={this._layerFilter}
           onViewStateChange={this._onViewStateChange.bind(this)}
           onAfterRender={() => this._updateStatWidgets()}
+          getTooltip={info => this.getTooltip(info)}
         >
           {/* <StaticMap mapStyle={selectedMapStyle} preventStyleDiffing /> */}
           <StaticMap reuseMaps mapStyle={selectedMapStyle} preventStyleDiffing={true} />
