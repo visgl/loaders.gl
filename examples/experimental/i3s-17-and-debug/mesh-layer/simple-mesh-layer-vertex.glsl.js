@@ -30,7 +30,12 @@ out vec4 vColor;
 void main(void) {
   geometry.worldPosition = instancePositions;
   geometry.uv = texCoords;
-  geometry.pickingColor = pickingColors;
+
+  #ifdef INSTANCE_PICKING_MODE
+    geometry.pickingColor = instancePickingColors;
+  #else
+    geometry.pickingColor = pickingColors;
+  #endif
 
   #ifdef MODULE_PBR
     // set PBR data
