@@ -12,9 +12,10 @@ import {I3SLoader} from '@loaders.gl/i3s';
 import {StatsWidget} from '@probe.gl/stats-widget';
 
 import {INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
+import DebugPanel from './components/debug-panel';
 import ControlPanel from './components/control-panel';
 
-import {INITIAL_MAP_STYLE, INITIAL_COLORING_MODE} from './constants';
+import {INITIAL_MAP_STYLE, CONTRAST_MAP_STYLES, INITIAL_COLORING_MODE} from './constants';
 import {getFrustumBounds} from './frustum-utils';
 import TileLayer from './tile-layer/tile-layer';
 import AttributesTooltip from './components/attributes-tooltip';
@@ -36,12 +37,12 @@ const INITIAL_VIEW_STATE = {
 };
 const STATS_WIDGET_STYLE = {
   wordBreak: 'break-word',
-  position: 'absolute',
   padding: 12,
   zIndex: '10000',
   maxWidth: 300,
   background: '#000',
-  color: '#fff'
+  color: '#fff',
+  alignSelf: 'flex-start'
 };
 
 const VIEWS = [
@@ -106,9 +107,14 @@ export default class App extends PureComponent {
         }
       },
       selectedColoringMode: INITIAL_COLORING_MODE,
-      selectedMapStyle: INITIAL_MAP_STYLE
+      selectedMapStyle: INITIAL_MAP_STYLE,
+      debugOptions: {
+        showStatistics: true,
+        showFrustumCullingMinimap: true
+      }
     };
     this._onSelectTileset = this._onSelectTileset.bind(this);
+    this._applyDebugOptions = this._applyDebugOptions.bind(this);
   }
 
   componentDidMount() {
@@ -135,6 +141,27 @@ export default class App extends PureComponent {
       tileset = EXAMPLES[INITIAL_EXAMPLE_NAME];
     }
     this._onSelectTileset(tileset);
+  }
+
+  _getViewState() {
+    const {
+      viewState,
+      debugOptions: {showFrustumCullingMinimap}
+    } = this.state;
+    if (showFrustumCullingMinimap) {
+      return viewState;
+    }
+    return {main: viewState.main};
+  }
+
+  _getViews() {
+    const {
+      debugOptions: {showFrustumCullingMinimap}
+    } = this.state;
+    if (showFrustumCullingMinimap) {
+      return VIEWS;
+    }
+    return [VIEWS[0]];
   }
 
   async _onSelectTileset(tileset) {
@@ -208,6 +235,10 @@ export default class App extends PureComponent {
     this.setState({selectedMapStyle});
   }
 
+  _applyDebugOptions(debugOptions) {
+    this.setState({debugOptions});
+  }
+
   _onSelectColoringMode({selectedColoringMode}) {
     this.setState({selectedColoringMode});
   }
@@ -246,9 +277,25 @@ export default class App extends PureComponent {
     ];
   }
 
+  _renderDebugOptions() {
+    return <DebugPanel onOptionsChange={this._applyDebugOptions}>{this._renderStats()}</DebugPanel>;
+  }
+
   _renderStats() {
+    const {
+      debugOptions: {showStatistics}
+    } = this.state;
+    const display = {};
+    if (!showStatistics) {
+      display.display = 'none';
+    }
     // TODO - too verbose, get more default styling from stats widget?
-    return <div style={STATS_WIDGET_STYLE} ref={_ => (this._statsWidgetContainer = _)} />;
+    return (
+      <div
+        style={{...STATS_WIDGET_STYLE, ...display}}
+        ref={_ => (this._statsWidgetContainer = _)}
+      />
+    );
   }
 
   _renderControlPanel() {
@@ -290,24 +337,29 @@ export default class App extends PureComponent {
 
   render() {
     const layers = this._renderLayers();
-    const {viewState, selectedMapStyle} = this.state;
+    const {selectedMapStyle} = this.state;
 
     return (
       <div style={{position: 'relative', height: '100%'}}>
-        {this._renderStats()}
+        {this._renderDebugOptions()}
         {this._renderControlPanel()}
         <DeckGL
           layers={layers}
-          viewState={viewState}
-          views={VIEWS}
+          viewState={this._getViewState()}
+          views={this._getViews()}
           layerFilter={this._layerFilter}
           onViewStateChange={this._onViewStateChange.bind(this)}
           onAfterRender={() => this._updateStatWidgets()}
           getTooltip={info => this.getTooltip(info)}
         >
+          {/* <StaticMap mapStyle={selectedMapStyle} preventStyleDiffing /> */}
           <StaticMap reuseMaps mapStyle={selectedMapStyle} preventStyleDiffing={true} />
           <View id="minimap">
-            <StaticMap reuseMaps mapStyle={selectedMapStyle} preventStyleDiffing={true} />
+            <StaticMap
+              reuseMaps
+              mapStyle={CONTRAST_MAP_STYLES[selectedMapStyle]}
+              preventStyleDiffing={true}
+            />
           </View>
         </DeckGL>
       </div>
