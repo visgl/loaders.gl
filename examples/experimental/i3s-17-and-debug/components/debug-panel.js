@@ -4,7 +4,6 @@ import PropTypes from 'prop-types';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faAngleDoubleLeft, faAngleDoubleRight} from '@fortawesome/free-solid-svg-icons';
 import DebugOptionGroup from './debug-option-group';
-import './debug-panel.css';
 
 const Container = styled.div`
   position: absolute;
@@ -64,59 +63,69 @@ export default class DebugPanel extends PureComponent {
   constructor(props) {
     super(props);
     this.state = {
-      expandClass: '',
-      showStatistics: true,
-      showFrustumCullingMinimap: true
+      expand: true,
+      statistics: true,
+      minimap: true
     };
 
     this.toggleDebugPanel = this.toggleDebugPanel.bind(this);
     this.toggleStatistics = this.toggleStatistics.bind(this);
-    this.toggleFrustumCullingMinimap = this.toggleFrustumCullingMinimap.bind(this);
+    this.toggleMinimap = this.toggleMinimap.bind(this);
   }
 
   toggleDebugPanel() {
-    const {expandClass} = this.state;
-    if (expandClass === 'collapse') {
-      this.setState({expandClass: 'expand'});
-    } else {
-      this.setState({expandClass: 'collapse'});
-    }
+    const {expand} = this.state;
+    this.setState({expand: !expand});
   }
 
   toggleStatistics() {
-    const {showStatistics} = this.state;
-    this.setState({showStatistics: !showStatistics}, () => {
+    const {statistics} = this.state;
+    this.setState({statistics: !statistics}, () => {
       this.applyOptions();
     });
   }
 
-  toggleFrustumCullingMinimap() {
-    const {showFrustumCullingMinimap} = this.state;
-    this.setState({showFrustumCullingMinimap: !showFrustumCullingMinimap}, () => {
+  toggleMinimap() {
+    const {minimap} = this.state;
+    this.setState({minimap: !minimap}, () => {
       this.applyOptions();
     });
   }
 
   applyOptions() {
-    const {showStatistics, showFrustumCullingMinimap} = this.state;
+    const {statistics, minimap} = this.state;
     const {onOptionsChange} = this.props;
-    onOptionsChange({showStatistics, showFrustumCullingMinimap});
+    onOptionsChange({statistics, minimap});
+  }
+
+  getExpandStyles() {
+    const {expand} = this.state;
+    if (expand) {
+      return {
+        marginLeft: '20px',
+        transition: 'margin-left 800ms'
+      };
+    }
+    return {
+      marginLeft: '-300px',
+      transition: 'margin-left 800ms'
+    };
   }
 
   renderExpandIcon() {
-    const {expandClass} = this.state;
-    if (expandClass === 'collapse') {
-      return <FontAwesomeIcon icon={faAngleDoubleRight} />;
+    const {expand} = this.state;
+    if (expand) {
+      return <FontAwesomeIcon icon={faAngleDoubleLeft} />;
     }
-    return <FontAwesomeIcon icon={faAngleDoubleLeft} />;
+    return <FontAwesomeIcon icon={faAngleDoubleRight} />;
   }
 
   render() {
     const {children} = this.props;
-    const {expandClass, showStatistics, showFrustumCullingMinimap} = this.state;
+    const {statistics, minimap} = this.state;
     return (
       <Container className="debug-panel">
-        <DebugOptions className={expandClass}>
+        <DebugOptions style={this.getExpandStyles()}>
           <Header>Debug Options</Header>
           <DebugOptionGroup title="Statistics">
             <CheckboxOption>
@@ -124,8 +133,8 @@ export default class DebugPanel extends PureComponent {
                 onChange={this.toggleStatistics}
                 type="checkbox"
                 id="showStatistics"
-                value={showStatistics}
-                checked={showStatistics}
+                value={statistics}
+                checked={statistics}
               />
               <label htmlFor="showStatistics">Show</label>
             </CheckboxOption>
@@ -133,11 +142,11 @@ export default class DebugPanel extends PureComponent {
           <DebugOptionGroup title="Frustum Culling">
             <CheckboxOption>
               <InputCheckbox
-                onChange={this.toggleFrustumCullingMinimap}
+                onChange={this.toggleMinimap}
                 type="checkbox"
                 id="showFrustumCullingMinimap"
-                value={showFrustumCullingMinimap}
-                checked={showFrustumCullingMinimap}
+                value={minimap}
+                checked={minimap}
               />
               <label htmlFor="showFrustumCullingMinimap">Show</label>
             </CheckboxOption>
