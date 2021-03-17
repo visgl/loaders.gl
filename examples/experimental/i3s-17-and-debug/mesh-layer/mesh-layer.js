@@ -107,12 +107,17 @@ export default class MeshLayer extends SimpleMeshLayer {
 
     const shaders = this.getShaders();
 
+    const customDefines = {};
+    if (mesh.attributes.uvRegions) {
+      customDefines.HAS_UV_REGION = 1;
+    }
+
     const model = new Model(
       this.context.gl,
       Object.assign({}, shaders, {
         id: this.props.id,
         geometry: getGeometry(mesh, true),
-        defines: {...shaders.defines, ...materialParser?.defines},
+        defines: {...shaders.defines, ...materialParser?.defines, ...customDefines},
         parameters: materialParser?.parameters,
         isInstanced: true
       })

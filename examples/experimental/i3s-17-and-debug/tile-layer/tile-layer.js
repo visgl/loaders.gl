@@ -95,6 +95,9 @@ function getMeshGeometry(contentAttributes) {
   if (contentAttributes.texCoords) {
     attributes.texCoords = contentAttributes.texCoords;
   }
+  if (contentAttributes.uvRegions) {
+    attributes.uvRegions = contentAttributes.uvRegions;
+  }
   if (contentAttributes.colors) {
     attributes.colors = contentAttributes.colors;
   }
