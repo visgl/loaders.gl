@@ -213,6 +213,7 @@ function normalizeColors(colors) {
     normalizedColors[index] = colors.value[index] / 255;
   }
   colors.value = normalizedColors;
+  colors.type = GL_TYPE_MAP.Float32;
   return colors;
 }
 
