@@ -109,12 +109,12 @@ export default class App extends PureComponent {
       selectedColoringMode: INITIAL_COLORING_MODE,
       selectedMapStyle: INITIAL_MAP_STYLE,
       debugOptions: {
-        showStatistics: true,
-        showFrustumCullingMinimap: true
+        statistics: true,
+        minimap: true
       }
     };
     this._onSelectTileset = this._onSelectTileset.bind(this);
-    this._applyDebugOptions = this._applyDebugOptions.bind(this);
+    this._setDebugOptions = this._setDebugOptions.bind(this);
   }
 
   componentDidMount() {
@@ -144,24 +144,13 @@ export default class App extends PureComponent {
   }
 
   _getViewState() {
-    const {
-      viewState,
-      debugOptions: {showFrustumCullingMinimap}
-    } = this.state;
-    if (showFrustumCullingMinimap) {
-      return viewState;
-    }
-    return {main: viewState.main};
+    const {viewState, debugOptions} = this.state;
+    return debugOptions.minimap ? viewState : {main: viewState.main};
   }
 
   _getViews() {
-    const {
-      debugOptions: {showFrustumCullingMinimap}
-    } = this.state;
-    if (showFrustumCullingMinimap) {
-      return VIEWS;
-    }
-    return [VIEWS[0]];
+    const {debugOptions} = this.state;
+    return debugOptions.minimap ? VIEWS : [VIEWS[0]];
   }
 
   async _onSelectTileset(tileset) {
@@ -235,7 +224,7 @@ export default class App extends PureComponent {
     this.setState({selectedMapStyle});
   }
 
-  _applyDebugOptions(debugOptions) {
+  _setDebugOptions(debugOptions) {
     this.setState({debugOptions});
   }
 
@@ -277,18 +266,13 @@ export default class App extends PureComponent {
     ];
   }
 
-  _renderDebugOptions() {
-    return <DebugPanel onOptionsChange={this._applyDebugOptions}>{this._renderStats()}</DebugPanel>;
+  _renderDebugPanel() {
+    return <DebugPanel onOptionsChange={this._setDebugOptions}>{this._renderStats()}</DebugPanel>;
   }
 
   _renderStats() {
-    const {
-      debugOptions: {showStatistics}
-    } = this.state;
-    const display = {};
-    if (!showStatistics) {
-      display.display = 'none';
-    }
+    const {debugOptions} = this.state;
+    const display = debugOptions.statistics ? {} : {display: 'none'};
     // TODO - too verbose, get more default styling from stats widget?
     return (
       <div
@@ -341,7 +325,7 @@ export default class App extends PureComponent {
 
     return (
       <div style={{position: 'relative', height: '100%'}}>
-        {this._renderDebugOptions()}
+        {this._renderDebugPanel()}
         {this._renderControlPanel()}
         <DeckGL
           layers={layers}
