@@ -15,7 +15,12 @@ import {INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
 import DebugPanel from './components/debug-panel';
 import ControlPanel from './components/control-panel';
 
-import {INITIAL_MAP_STYLE, CONTRAST_MAP_STYLES, INITIAL_COLORING_MODE} from './constants';
+import {
+  INITIAL_MAP_STYLE,
+  CONTRAST_MAP_STYLES,
+  INITIAL_TILE_COLORING_MODE,
+  INITIAL_OBB_COLORING_MODE
+} from './constants';
 import {getFrustumBounds} from './frustum-utils';
 import TileLayer from './tile-layer/tile-layer';
 import AttributesTooltip from './components/attributes-tooltip';
@@ -106,11 +111,14 @@ export default class App extends PureComponent {
           bearing: 0
         }
       },
-      selectedColoringMode: INITIAL_COLORING_MODE,
       selectedMapStyle: INITIAL_MAP_STYLE,
       debugOptions: {
         statistics: true,
-        minimap: true
+        minimap: true,
+        showObb: false,
+        tileColoringMode: INITIAL_TILE_COLORING_MODE,
+        obbColoringMode: INITIAL_OBB_COLORING_MODE,
+        pickable: false
       }
     };
     this._onSelectTileset = this._onSelectTileset.bind(this);
@@ -228,12 +236,13 @@ export default class App extends PureComponent {
     this.setState({debugOptions});
   }
 
-  _onSelectColoringMode({selectedColoringMode}) {
-    this.setState({selectedColoringMode});
-  }
-
   _renderLayers() {
-    const {tilesetUrl, token, viewState, selectedColoringMode} = this.state;
+    const {
+      tilesetUrl,
+      token,
+      viewState,
+      debugOptions: {showObb, tileColoringMode, obbColoringMode, pickable}
+    } = this.state;
     const loadOptions = {throttleRequests: true, loadFeatureAttributes: false};
     if (token) {
       loadOptions.token = token;
@@ -249,9 +258,11 @@ export default class App extends PureComponent {
         onTilesetLoad: this._onTilesetLoad.bind(this),
         onTileLoad: () => this._updateStatWidgets(),
         onTileUnload: () => this._updateStatWidgets(),
-        coloredBy: selectedColoringMode,
+        showObb,
+        tileColoringMode,
+        obbColoringMode,
         loadOptions,
-        pickable: true,
+        pickable,
         autoHighlight: true,
         isDebugMode: true
       }),
@@ -283,7 +294,7 @@ export default class App extends PureComponent {
   }
 
   _renderControlPanel() {
-    const {name, tileset, token, metadata, selectedMapStyle, selectedColoringMode} = this.state;
+    const {name, tileset, token, metadata, selectedMapStyle} = this.state;
     return (
       <ControlPanel
         tileset={tileset}
@@ -292,9 +303,7 @@ export default class App extends PureComponent {
         token={token}
         onExampleChange={this._onSelectTileset}
         onMapStyleChange={this._onSelectMapStyle.bind(this)}
-        onColoringModeChange={this._onSelectColoringMode.bind(this)}
         selectedMapStyle={selectedMapStyle}
-        selectedColoringMode={selectedColoringMode}
       />
     );
   }

@@ -17,7 +17,7 @@ export const CONTRAST_MAP_STYLES = {
 
 export const INITIAL_MAP_STYLE = MAP_STYLES['Base Map: Dark'];
 
-export const MAP_COLORING_MODES = {
+export const TILE_COLORING_MODES = {
   'Tile coloring: Original': COLORED_BY.ORIGINAL,
   'Tile coloring: By tile': COLORED_BY.TILE,
   'Tile coloring: By depth': COLORED_BY.DEPTH
@@ -25,4 +25,11 @@ export const MAP_COLORING_MODES = {
   // 'Tile coloring: Custom (by selected object)': COLORED_BY.CUSTOM,
 };
 
-export const INITIAL_COLORING_MODE = COLORED_BY.TILE;
+export const INITIAL_TILE_COLORING_MODE = COLORED_BY.TILE;
+
+export const OBB_COLORING_MODES = {
+  'Obb coloring: White': COLORED_BY.ORIGINAL,
+  'Obb coloring: By tile': COLORED_BY.TILE
+};
+
+export const INITIAL_OBB_COLORING_MODE = COLORED_BY.ORIGINAL;
