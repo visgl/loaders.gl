@@ -109,7 +109,6 @@ export default class App extends PureComponent {
       selectedColoringMode: INITIAL_COLORING_MODE,
       selectedMapStyle: INITIAL_MAP_STYLE,
       debugOptions: {
-        statistics: true,
         minimap: true
       }
     };
@@ -271,15 +270,8 @@ export default class App extends PureComponent {
   }
 
   _renderStats() {
-    const {debugOptions} = this.state;
-    const display = debugOptions.statistics ? {} : {display: 'none'};
     // TODO - too verbose, get more default styling from stats widget?
-    return (
-      <div
-        style={{...STATS_WIDGET_STYLE, ...display}}
-        ref={_ => (this._statsWidgetContainer = _)}
-      />
-    );
+    return <div style={STATS_WIDGET_STYLE} ref={_ => (this._statsWidgetContainer = _)} />;
   }
 
   _renderControlPanel() {
