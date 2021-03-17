@@ -20,6 +20,7 @@ import {getFrustumBounds} from './frustum-utils';
 import TileLayer from './tile-layer/tile-layer';
 import AttributesTooltip from './components/attributes-tooltip';
 import {getTileDebugInfo} from './tile-debug';
+import {createTilesetUrl} from './url-utils';
 
 const TRANSITION_DURAITON = 4000;
 
@@ -78,14 +79,17 @@ function parseTilesetUrlFromUrl() {
 
 function parseTilesetUrlParams(url, options) {
   const parsedUrl = new URL(url);
-  const index = url.lastIndexOf('/layers/0');
-  let metadataUrl = url.substring(0, index);
   let token = options && options.token;
+  const tilesetUrl = createTilesetUrl(parsedUrl);
+  const index = tilesetUrl.lastIndexOf('/layers/0');
+  let metadataUrl = tilesetUrl.substring(0, index);
+
   if (parsedUrl.search) {
     token = parsedUrl.searchParams.get('token');
     metadataUrl = `${metadataUrl}${parsedUrl.search}`;
   }
-  return {...options, tilesetUrl: url, token, metadataUrl};
+
+  return {...options, tilesetUrl, token, metadataUrl};
 }
 
 export default class App extends PureComponent {

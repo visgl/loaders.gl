@@ -14,6 +14,7 @@ import {INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
 import ControlPanel from './components/control-panel';
 import AttributesPanel from './components/attributes-panel';
 import AttributesTooltip from './components/attributes-tooltip';
+import {createTilesetUrl} from './url-utils';
 
 import {INITIAL_MAP_STYLE} from './constants';
 
@@ -50,11 +51,7 @@ function parseTilesetUrlFromUrl() {
 function parseTilesetUrlParams(url, options) {
   const parsedUrl = new URL(url);
   let token = options && options.token;
-  const tilesetUrl = url.includes('layers/0')
-    ? url
-    : // Add '/' to url if needed.
-      url.replace(/\/?$/, '/').concat('layers/0');
-
+  const tilesetUrl = createTilesetUrl(parsedUrl);
   const index = tilesetUrl.lastIndexOf('/layers/0');
   let metadataUrl = tilesetUrl.substring(0, index);
 
