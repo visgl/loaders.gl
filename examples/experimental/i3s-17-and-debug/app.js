@@ -1,4 +1,4 @@
-/* global window, fetch, URL */
+/* global fetch */
 import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
@@ -14,7 +14,7 @@ import {INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
 import ControlPanel from './components/control-panel';
 import AttributesPanel from './components/attributes-panel';
 import AttributesTooltip from './components/attributes-tooltip';
-import {createTilesetUrl} from './url-utils';
+import {parseTilesetUrlFromUrl, parseTilesetUrlParams} from './url-utils';
 
 import {INITIAL_MAP_STYLE} from './constants';
 
@@ -43,25 +43,6 @@ const STATS_WIDGET_STYLE = {
   color: '#fff'
 };
 
-function parseTilesetUrlFromUrl() {
-  const parsedUrl = new URL(window.location.href);
-  return parsedUrl.searchParams.get('url');
-}
-
-function parseTilesetUrlParams(url, options) {
-  const parsedUrl = new URL(url);
-  let token = options && options.token;
-  const tilesetUrl = createTilesetUrl(parsedUrl);
-  const index = tilesetUrl.lastIndexOf('/layers/0');
-  let metadataUrl = tilesetUrl.substring(0, index);
-
-  if (parsedUrl.search) {
-    token = parsedUrl.searchParams.get('token');
-    metadataUrl = `${metadataUrl}${parsedUrl.search}`;
-  }
-
-  return {...options, tilesetUrl, token, metadataUrl};
-}
 export default class App extends PureComponent {
   constructor(props) {
     super(props);
