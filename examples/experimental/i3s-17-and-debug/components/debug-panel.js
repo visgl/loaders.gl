@@ -52,6 +52,10 @@ const InputCheckbox = styled.input`
   height: 18px;
 `;
 
+const ChildWrapper = styled.div`
+  margin-top: 10px;
+`;
+
 const propTypes = {
   children: PropTypes.object,
   onOptionsChange: PropTypes.func
@@ -64,25 +68,16 @@ export default class DebugPanel extends PureComponent {
     super(props);
     this.state = {
       expand: true,
-      statistics: true,
       minimap: true
     };
 
     this.toggleDebugPanel = this.toggleDebugPanel.bind(this);
-    this.toggleStatistics = this.toggleStatistics.bind(this);
     this.toggleMinimap = this.toggleMinimap.bind(this);
   }
 
   toggleDebugPanel() {
     const {expand} = this.state;
     this.setState({expand: !expand});
-  }
-
-  toggleStatistics() {
-    const {statistics} = this.state;
-    this.setState({statistics: !statistics}, () => {
-      this.applyOptions();
-    });
   }
 
   toggleMinimap() {
@@ -93,9 +88,9 @@ export default class DebugPanel extends PureComponent {
   }
 
   applyOptions() {
-    const {statistics, minimap} = this.state;
+    const {minimap} = this.state;
     const {onOptionsChange} = this.props;
-    onOptionsChange({statistics, minimap});
+    onOptionsChange({minimap});
   }
 
   getExpandStyles() {
@@ -122,23 +117,11 @@ export default class DebugPanel extends PureComponent {
 
   render() {
     const {children} = this.props;
-    const {statistics, minimap} = this.state;
+    const {minimap} = this.state;
     return (
       <Container className="debug-panel">
         <DebugOptions style={this.getExpandStyles()}>
-          <Header>Debug Options</Header>
-          <DebugOptionGroup title="Statistics">
-            <CheckboxOption>
-              <InputCheckbox
-                onChange={this.toggleStatistics}
-                type="checkbox"
-                id="showStatistics"
-                value={statistics}
-                checked={statistics}
-              />
-              <label htmlFor="showStatistics">Show</label>
-            </CheckboxOption>
-          </DebugOptionGroup>
+          <Header>Debug Panel</Header>
           <DebugOptionGroup title="Frustum Culling">
             <CheckboxOption>
               <InputCheckbox
@@ -151,9 +134,9 @@ export default class DebugPanel extends PureComponent {
               <label htmlFor="showFrustumCullingMinimap">Show</label>
             </CheckboxOption>
           </DebugOptionGroup>
+          <ChildWrapper>{children}</ChildWrapper>
         </DebugOptions>
         <Expander onClick={this.toggleDebugPanel}>{this.renderExpandIcon()}</Expander>
-        {children}
       </Container>
     );
   }
