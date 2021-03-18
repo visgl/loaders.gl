@@ -1,4 +1,4 @@
-/* global window, fetch, URL */
+/* global fetch */
 import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
@@ -20,6 +20,7 @@ import {getFrustumBounds} from './frustum-utils';
 import TileLayer from './tile-layer/tile-layer';
 import AttributesTooltip from './components/attributes-tooltip';
 import {getTileDebugInfo} from './tile-debug';
+import {parseTilesetUrlFromUrl, parseTilesetUrlParams} from './url-utils';
 
 const TRANSITION_DURAITON = 4000;
 
@@ -70,23 +71,6 @@ const VIEWS = [
     }
   })
 ];
-
-function parseTilesetUrlFromUrl() {
-  const parsedUrl = new URL(window.location.href);
-  return parsedUrl.searchParams.get('url');
-}
-
-function parseTilesetUrlParams(url, options) {
-  const parsedUrl = new URL(url);
-  const index = url.lastIndexOf('/layers/0');
-  let metadataUrl = url.substring(0, index);
-  let token = options && options.token;
-  if (parsedUrl.search) {
-    token = parsedUrl.searchParams.get('token');
-    metadataUrl = `${metadataUrl}${parsedUrl.search}`;
-  }
-  return {...options, tilesetUrl: url, token, metadataUrl};
-}
 
 export default class App extends PureComponent {
   constructor(props) {
