@@ -43,6 +43,10 @@ Target Release Date: Q1 2021. (Alpha releases are available).
 
 - New table category loader for Excel spreadsheets in both binary `.xls`, `.xlsb` and XML-based `.xlsx` formats.
 
+**@loaders.gl/mvt**
+
+- Binary output is now 2-3X faster for large datasets thanks to parsing directly from PBF to binary, rather than going through geoJSON as an intermediate representation
+
 **@loaders.gl/textures** (NEW)
 
 - [`textures`](https://loaders.gl/examples/textures) website example shows which compressed texture formats work on the current device.
