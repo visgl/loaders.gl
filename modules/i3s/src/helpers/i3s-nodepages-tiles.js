@@ -4,7 +4,7 @@ import {convertI3SObbToMbs} from '../utils/convert-i3s-obb-to-mbs';
 import {I3SNodePageLoader} from '../i3s-node-page-loader';
 import {generateTilesetAttributeUrls} from '../lib/parsers/url-utils';
 import {getSupportedGPUTextureFormats} from '@loaders.gl/textures';
-
+import {getUrlWithToken} from '../lib/parsers/url-utils';
 export default class I3SNodePagesTiles {
   constructor(tileset, options = {}) {
     this.tileset = tileset;
@@ -20,7 +20,10 @@ export default class I3SNodePagesTiles {
   async getNodeById(id) {
     const pageIndex = Math.floor(id / this.nodesPerPage);
     if (!this.nodePages[pageIndex]) {
-      const nodePageUrl = `${this.tileset.url}/nodepages/${pageIndex}`;
+      const nodePageUrl = getUrlWithToken(
+        `${this.tileset.url}/nodepages/${pageIndex}`,
+        this.options.token
+      );
       this.nodePages[pageIndex] = load(nodePageUrl, I3SNodePageLoader, this.options);
       this.nodePages[pageIndex] = await this.nodePages[pageIndex];
     }

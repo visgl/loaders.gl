@@ -153,6 +153,10 @@ export default class MeshLayer extends SimpleMeshLayer {
   }
 
   calculatePickingColors(attribute) {
+    if (!this.props.mesh.attributes.featureIds) {
+      return;
+    }
+
     const featuresIds = this.props.mesh.attributes.featureIds.value;
     const value = new Uint8ClampedArray(featuresIds.length * attribute.size);
 
