@@ -1,5 +1,12 @@
 import VectorTileFeature from './vector-tile-feature';
 
+/**
+ * Wrapper around Mapbox PBF representation of
+ * a vector tile layer. It has the same semantics
+ * as the original library (https://github.com/mapbox/vector-tile-js)
+ * except that the features it contains expose their data
+ * in a binary optimized format, rather than geoJSON
+ */
 export default class VectorTileLayer{
   // Public
   readonly version: number;
@@ -9,6 +16,6 @@ export default class VectorTileLayer{
 
   constructor(pbf, end);
 
-	/** return feature `i` from this layer as a `VectorTileFeature` */
-	feature(i: number, firstPassData: object): VectorTileFeature;
+  /** return feature `i` from this layer as a `VectorTileFeature` */
+  feature(i: number, firstPassData: object): VectorTileFeature;
 }

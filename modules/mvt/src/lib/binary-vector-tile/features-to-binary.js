@@ -1,6 +1,12 @@
-// Convert binary features to flat binary arrays
 // @ts-nocheck
-
+/**
+ * Convert binary features to flat binary arrays. Similar to
+ * `geojsonToBinary` helper function, except that it expects
+ * a binary representation of the feature data, which enables
+ * 2X-3X speed increase in parse speed, compared to using
+ * geoJSON. See `binary-vector-tile/VectorTileFeature` for
+ * data format detais
+ */
 export function featuresToBinary(features, firstPassData, options = {}) {
   return fillArrays(features, firstPassData, {
     numericPropKeys: options.numericPropKeys || extractNumericPropKeys(features),
