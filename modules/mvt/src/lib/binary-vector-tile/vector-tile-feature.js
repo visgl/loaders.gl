@@ -80,7 +80,7 @@ export default class VectorTileFeature {
     return {data, lines};
   }
 
-  _toLines(transform) {
+  _toBinaryCoordinates(transform) {
     // Expands the protobuf data to an intermediate `lines`
     // data format, which maps closely to the binary data buffers.
     // It is similar to GeoJSON, but rather than storing the coordinates
@@ -154,9 +154,9 @@ export default class VectorTileFeature {
     return result;
   }
 
-  toLines(options) {
+  toBinaryCoordinates(options) {
     if (typeof options === 'function') {
-      return this._toLines(options);
+      return this._toBinaryCoordinates(options);
     }
     const {x, y, z} = options;
     const size = this.extent * Math.pow(2, z);
@@ -170,7 +170,7 @@ export default class VectorTileFeature {
         data[j + 1] = (360 / Math.PI) * Math.atan(Math.exp((y2 * Math.PI) / 180)) - 90;
       }
     }
-    return this._toLines(project);
+    return this._toBinaryCoordinates(project);
   }
 }
 

@@ -106,7 +106,7 @@ function getDecodedFeature(feature, options = {}) {
 }
 
 function getDecodedFeatureBinary(feature, options = {}) {
-  const decodedFeature = feature.toLines(
+  const decodedFeature = feature.toBinaryCoordinates(
     options.coordinates === 'wgs84' ? options.tileIndex : transformToLocalCoordinatesBinary
   );
 

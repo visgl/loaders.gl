@@ -26,5 +26,5 @@ export default class VectorTileFeature {
 
   loadGeometry(); any;
   classifyRings([number]): [[number]];
-  toLines(options: {x: number, y: number, z: number} | (([number], VectorTileFeature) => void)): object;
+  toBinaryCoordinates(options: {x: number, y: number, z: number} | (([number], VectorTileFeature) => void)): object;
 }
