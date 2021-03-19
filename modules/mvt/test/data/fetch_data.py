@@ -28,8 +28,12 @@ TILES = [
 ]
 for name, dataset in DATASETS.items():
     # Get url pattern for tiles
-    url = f'{SERVER}/tileset?source={dataset}&format=tilejson'
-    r = requests.get(url)
+    params = {
+        'source': dataset,
+        'format': 'tilejson'
+    }
+    url = f'{SERVER}/tileset'
+    r = requests.get(url, params)
     parsed = r.json()
     tileformat = parsed['tiles'][0]
 
