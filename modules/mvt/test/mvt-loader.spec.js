@@ -199,6 +199,27 @@ test('Polygon MVT to local coordinates binary', async t => {
   t.end();
 });
 
+// Test to sanity check that old method of parsing binary
+// format via an intermediate geojson step produces the
+// same result
+const TEST_FILES = [
+  MVT_POINTS_DATA_URL,
+  MVT_LINES_DATA_URL,
+  MVT_POLYGONS_DATA_URL,
+  MVT_MULTIPLE_LAYERS_DATA_URL
+];
+for (const filename of TEST_FILES) {
+  test(`Legacy MVT binary generation is equivalent ${filename}`, async t => {
+    const response = await fetchFile(filename);
+    const mvtArrayBuffer = await response.arrayBuffer();
+    const geojson = await parse(mvtArrayBuffer, MVTLoader);
+    const binary = await parse(mvtArrayBuffer, MVTLoader, {gis: {format: 'binary'}});
+    delete binary.byteLength;
+    t.deepEqual(geojsonToBinary(geojson), binary);
+    t.end();
+  });
+}
+
 test('Empty MVT must return empty binary format', async t => {
   const emptyMVTArrayBuffer = new Uint8Array();
   const geometryBinary = await parse(emptyMVTArrayBuffer, MVTLoader, {gis: {format: 'binary'}});
