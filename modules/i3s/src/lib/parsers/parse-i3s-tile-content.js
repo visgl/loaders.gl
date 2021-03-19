@@ -148,9 +148,9 @@ async function parseI3SNodeGeometry(arrayBuffer, tile = {}, options) {
   content.attributes = {
     positions: attributes.position,
     normals: attributes.normal,
-    colors: normalizeAttribute(attributes.color, 1 / 255), // Normalize from UInt8
+    colors: normalizeAttribute(attributes.color), // Normalize from UInt8
     texCoords: attributes.uv0,
-    uvRegions: normalizeAttribute(attributes.uvRegion, 1 / 65535), // Normalize from UInt16
+    uvRegions: normalizeAttribute(attributes.uvRegion), // Normalize from UInt16
     featureIds: attributes.id,
     faceRange: attributes.faceRange
   };
@@ -207,16 +207,11 @@ function flattenAttribute(attribute, indices) {
  * @param {Object} attribute - geometry attribute
  * @returns {Object} - geometry attribute in right format
  */
-function normalizeAttribute(attribute, multiplyer) {
+function normalizeAttribute(attribute) {
   if (!attribute) {
     return attribute;
   }
-  const normalizedAttribute = new Float32Array(attribute.value.length);
-  for (let index = 0; index < normalizedAttribute.length; index++) {
-    normalizedAttribute[index] = attribute.value[index] * multiplyer;
-  }
-  attribute.value = normalizedAttribute;
-  attribute.type = GL_TYPE_MAP.Float32;
+  attribute.normalized = true;
   return attribute;
 }
 
