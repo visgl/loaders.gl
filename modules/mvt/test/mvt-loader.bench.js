@@ -1,10 +1,6 @@
 import {MVTLoader} from '@loaders.gl/mvt';
-import {setLoaderOptions, fetchFile, parse} from '@loaders.gl/core';
+import {fetchFile, parse} from '@loaders.gl/core';
 import {geojsonToBinary} from '@loaders.gl/gis';
-
-setLoaderOptions({
-  _workerType: 'test'
-});
 
 // Define MVT files to run bench tests over
 const testfiles = {
@@ -35,16 +31,16 @@ export default async function mvtLoaderBench(suite) {
     // Actually define perf test
     suite.addAsync(`${name} MVT -> geojson`, options, async () => {
       // Conversion to geojson only
-      await parse(mvtArrayBuffer, MVTLoader);
+      await parse(mvtArrayBuffer, MVTLoader, {worker: true});
     });
     suite.addAsync(`${name} MVT -> binary (legacy)`, options, async () => {
       // Conversion to binary, via intermediate geojson
-      const geometryJSON = await parse(mvtArrayBuffer, MVTLoader);
+      const geometryJSON = await parse(mvtArrayBuffer, MVTLoader, {worker: true});
       geojsonToBinary(geometryJSON);
     });
     suite.addAsync(`${name} MVT -> binary`, options, async () => {
       // Conversion to binary directly
-      await parse(mvtArrayBuffer, MVTLoader, {gis: {format: 'binary'}});
+      await parse(mvtArrayBuffer, MVTLoader, {gis: {format: 'binary'}, worker: true});
     });
   }
 }

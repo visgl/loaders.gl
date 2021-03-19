@@ -2,7 +2,7 @@ import VectorTileFeature from './vector-tile-feature';
 
 export default class VectorTileLayer{
   // Public
-  version: number;
+  readonly version: number;
   name: string;
   extent: number;
   length: number;
