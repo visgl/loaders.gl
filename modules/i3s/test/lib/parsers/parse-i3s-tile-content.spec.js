@@ -103,7 +103,7 @@ test('ParseI3sTileContent#should parse tile content with simple geometry if load
     }
   });
   t.ok(result);
-  t.deepEqual(result.userData, {});
+  t.deepEqual(result.content.userData, {});
   t.end();
 });
 
@@ -120,8 +120,8 @@ test('ParseI3sTileContent#should parse tile content with simple geometry if load
     }
   });
   t.ok(result);
-  t.notOk(result.userData.attributesByObjectId);
-  t.notOk(result.userData.objectIds);
+  t.notOk(result.content.userData.attributesByObjectId);
+  t.notOk(result.content.userData.objectIds);
   t.end();
 });
 
@@ -138,7 +138,7 @@ test('ParseI3sTileContent#should parse tile content with compressed geometry if 
     }
   });
   t.ok(result);
-  t.deepEqual(result.userData, {});
+  t.deepEqual(result.content.userData, {});
   t.end();
 });
 
@@ -155,7 +155,7 @@ test('ParseI3sTileContent#should parse tile content with compressed geometry if 
     }
   });
   t.ok(result);
-  t.notOk(result.userData.attributesByObjectId);
-  t.notOk(result.userData.objectIds);
+  t.notOk(result.content.userData.attributesByObjectId);
+  t.notOk(result.content.userData.objectIds);
   t.end();
 });
