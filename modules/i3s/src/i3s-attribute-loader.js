@@ -28,7 +28,7 @@ async function parse(data, options) {
 
 export function getTileAttributesFromFeatureId(tile, featureId) {
   const attributesByObjectId =
-    tile.header && tile.header.userData && tile.header.userData.attributesByObjectId;
+    tile && tile.content && tile.content.userData && tile.content.userData.attributesByObjectId;
 
   if (!attributesByObjectId || !attributesByObjectId.get(featureId)) {
     return null;
