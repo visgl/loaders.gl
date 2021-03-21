@@ -7,7 +7,7 @@ import {getSupportedGPUTextureFormats} from '@loaders.gl/textures';
 
 export default class I3SNodePagesTiles {
   constructor(tileset, options = {}) {
-    this.tileset = tileset;
+    this.tileset = {...tileset}; // spread the tileset to avoid circular reference
     this.nodesPerPage = tileset.nodePages.nodesPerPage;
     this.lodSelectionMetricType = tileset.nodePages.lodSelectionMetricType;
     this.options = options;
