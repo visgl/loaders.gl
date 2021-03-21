@@ -1,4 +1,4 @@
-/* global window, fetch, URL */
+/* global fetch */
 import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
@@ -27,6 +27,7 @@ import ObbLayer from './obb-utils';
 import ColorMap from './coloring-utils';
 import AttributesTooltip from './components/attributes-tooltip';
 import {getTileDebugInfo} from './tile-debug';
+import {parseTilesetUrlFromUrl, parseTilesetUrlParams} from './url-utils';
 
 const TRANSITION_DURAITON = 4000;
 
@@ -78,23 +79,6 @@ const VIEWS = [
   })
 ];
 
-function parseTilesetUrlFromUrl() {
-  const parsedUrl = new URL(window.location.href);
-  return parsedUrl.searchParams.get('url');
-}
-
-function parseTilesetUrlParams(url, options) {
-  const parsedUrl = new URL(url);
-  const index = url.lastIndexOf('/layers/0');
-  let metadataUrl = url.substring(0, index);
-  let token = options && options.token;
-  if (parsedUrl.search) {
-    token = parsedUrl.searchParams.get('token');
-    metadataUrl = `${metadataUrl}${parsedUrl.search}`;
-  }
-  return {...options, tilesetUrl: url, token, metadataUrl};
-}
-
 export default class App extends PureComponent {
   constructor(props) {
     super(props);
@@ -117,7 +101,6 @@ export default class App extends PureComponent {
       },
       selectedMapStyle: INITIAL_MAP_STYLE,
       debugOptions: {
-        statistics: true,
         minimap: true,
         obb: false,
         tileColoringMode: INITIAL_TILE_COLORING_MODE,
@@ -302,15 +285,8 @@ export default class App extends PureComponent {
   }
 
   _renderStats() {
-    const {debugOptions} = this.state;
-    const display = debugOptions.statistics ? {} : {display: 'none'};
     // TODO - too verbose, get more default styling from stats widget?
-    return (
-      <div
-        style={{...STATS_WIDGET_STYLE, ...display}}
-        ref={_ => (this._statsWidgetContainer = _)}
-      />
-    );
+    return <div style={STATS_WIDGET_STYLE} ref={_ => (this._statsWidgetContainer = _)} />;
   }
 
   _renderControlPanel() {
