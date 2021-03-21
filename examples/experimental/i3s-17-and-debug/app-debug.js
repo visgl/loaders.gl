@@ -23,6 +23,8 @@ import {
 } from './constants';
 import {getFrustumBounds} from './frustum-utils';
 import TileLayer from './tile-layer/tile-layer';
+import ObbLayer from './obb-utils';
+import ColorMap from './coloring-utils';
 import AttributesTooltip from './components/attributes-tooltip';
 import {getTileDebugInfo} from './tile-debug';
 
@@ -97,6 +99,8 @@ export default class App extends PureComponent {
   constructor(props) {
     super(props);
     this._tilesetStatsWidget = null;
+    this._obbLayer = null;
+    this._colorMap = null;
     this.state = {
       url: null,
       token: null,
@@ -115,7 +119,7 @@ export default class App extends PureComponent {
       debugOptions: {
         statistics: true,
         minimap: true,
-        showObb: false,
+        obb: false,
         tileColoringMode: INITIAL_TILE_COLORING_MODE,
         obbColoringMode: INITIAL_OBB_COLORING_MODE,
         pickable: false
@@ -173,6 +177,15 @@ export default class App extends PureComponent {
   _updateStatWidgets() {
     this._memWidget.update();
     this._tilesetStatsWidget.update();
+  }
+
+  _onTileLoad(tile) {
+    this._updateStatWidgets();
+    this._obbLayer.addTile(tile);
+  }
+
+  _onTileUnload() {
+    this._updateStatWidgets();
   }
 
   _onTilesetLoad(tileset) {
@@ -241,12 +254,19 @@ export default class App extends PureComponent {
       tilesetUrl,
       token,
       viewState,
-      debugOptions: {showObb, tileColoringMode, obbColoringMode, pickable}
+      debugOptions: {obb, tileColoringMode, obbColoringMode, pickable}
     } = this.state;
     const loadOptions = {throttleRequests: true, loadFeatureAttributes: false};
     if (token) {
       loadOptions.token = token;
     }
+
+    this._colorsMap = this._colorsMap || new ColorMap();
+    this._obbLayer = new ObbLayer({
+      visible: obb,
+      coloredBy: obbColoringMode,
+      colorsMap: this._colorsMap
+    });
 
     const viewport = new WebMercatorViewport(viewState.main);
     const frustumBounds = getFrustumBounds(viewport);
@@ -256,11 +276,10 @@ export default class App extends PureComponent {
         data: tilesetUrl,
         loader: I3SLoader,
         onTilesetLoad: this._onTilesetLoad.bind(this),
-        onTileLoad: () => this._updateStatWidgets(),
-        onTileUnload: () => this._updateStatWidgets(),
-        showObb,
+        onTileLoad: this._onTileLoad.bind(this),
+        onTileUnload: this._onTileUnload.bind(this),
+        colorsMap: this._colorsMap,
         tileColoringMode,
-        obbColoringMode,
         loadOptions,
         pickable,
         autoHighlight: true,
@@ -273,7 +292,8 @@ export default class App extends PureComponent {
         getTargetPosition: d => d.target,
         getColor: d => d.color,
         getWidth: 2
-      })
+      }),
+      this._obbLayer
     ];
   }
 

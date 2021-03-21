@@ -4,8 +4,6 @@ import {COORDINATE_SYSTEM} from '@deck.gl/core';
 import {Tile3DLayer} from '@deck.gl/geo-layers';
 import {log} from '@deck.gl/core';
 import MeshLayer from '../mesh-layer/mesh-layer';
-import {getTileColor} from '../coloring-utils';
-import {getObbLayer} from '../obb-utils';
 
 const SINGLE_DATA = [0];
 
@@ -18,7 +16,6 @@ export default class TileLayer extends Tile3DLayer {
 
     this.state = {
       layerMap: {},
-      colorsMap: {},
       tileset3d: null
     };
   }
@@ -50,8 +47,7 @@ export default class TileLayer extends Tile3DLayer {
   _makeSimpleMeshLayer(tileHeader, oldLayer) {
     const content = tileHeader.content;
     const {attributes, modelMatrix, cartographicOrigin, texture, material} = content;
-    const {pickable, autoHighlight, tileColoringMode, isDebugMode} = this.props;
-    const {colorsMap} = this.state;
+    const {pickable, autoHighlight, tileColoringMode, isDebugMode, colorsMap} = this.props;
 
     const geometry =
       (oldLayer && oldLayer.props.mesh) ||
@@ -69,7 +65,7 @@ export default class TileLayer extends Tile3DLayer {
         mesh: geometry,
         data: SINGLE_DATA,
         getPosition: [0, 0, 0],
-        getColor: getTileColor(tileHeader, {coloredBy: tileColoringMode, colorsMap}),
+        getColor: colorsMap.getTileColor(tileHeader, {coloredBy: tileColoringMode}),
         texture,
         material,
         modelMatrix,
@@ -81,80 +77,6 @@ export default class TileLayer extends Tile3DLayer {
         isDebugMode
       }
     );
-  }
-
-  renderLayers() {
-    const {tileset3d, layerMap, colorsMap} = this.state;
-
-    const {obbColoringMode, showObb} = this.props;
-
-    if (!tileset3d) {
-      return null;
-    }
-
-    let layers = tileset3d.tiles
-      .map(tile => {
-        const layerCache = (layerMap[tile.id] = layerMap[tile.id] || {
-          tile
-        });
-        let {layer} = layerCache;
-
-        if (tile.selected) {
-          if (!layer) {
-            layer = this._getSubLayer(tile);
-          } else if (layerCache.needsUpdate) {
-            layer = this._getSubLayer(tile, layer);
-            layerCache.needsUpdate = false;
-          } else if (!layer.props.visible) {
-            layer = layer.clone({
-              visible: true
-            });
-          }
-        } else if (layer && layer.props.visible) {
-          layer = layer.clone({
-            visible: false
-          });
-        }
-
-        layerCache.layer = layer;
-        return layer;
-      })
-      .filter(Boolean);
-
-    if (showObb) {
-      const debugLayers = tileset3d.tiles
-        .map(tile => {
-          const layerCache = (layerMap[`obb-debug-${tile.id}`] = layerMap[
-            `obb-debug-${tile.id}`
-          ] || {
-            tile
-          });
-          let {layer} = layerCache;
-
-          if (tile.selected) {
-            if (!layer) {
-              layer = getObbLayer(tile, {coloredBy: obbColoringMode, colorsMap});
-            } else if (layerCache.needsUpdate) {
-              layer = getObbLayer(tile, {coloredBy: obbColoringMode, colorsMap});
-              layerCache.needsUpdate = false;
-            } else if (!layer.props.visible) {
-              layer = layer.clone({
-                visible: true
-              });
-            }
-          } else if (layer && layer.props.visible) {
-            layer = layer.clone({
-              visible: false
-            });
-          }
-
-          layerCache.layer = layer;
-          return layer;
-        })
-        .filter(Boolean);
-      layers = layers.concat(debugLayers);
-    }
-    return layers;
   }
 }
 

@@ -80,7 +80,7 @@ export default class DebugPanel extends PureComponent {
       expand: true,
       statistics: true,
       minimap: true,
-      showObb: false,
+      obb: false,
       tileColoringMode: INITIAL_TILE_COLORING_MODE,
       obbColoringMode: INITIAL_OBB_COLORING_MODE,
       pickable: false
@@ -116,8 +116,8 @@ export default class DebugPanel extends PureComponent {
   }
 
   toggleObb() {
-    const {showObb} = this.state;
-    this.setState({showObb: !showObb}, () => {
+    const {obb} = this.state;
+    this.setState({obb: !obb}, () => {
       this.applyOptions();
     });
   }
@@ -142,12 +142,12 @@ export default class DebugPanel extends PureComponent {
   }
 
   applyOptions() {
-    const {showObb, tileColoringMode, obbColoringMode, pickable, statistics, minimap} = this.state;
+    const {obb, tileColoringMode, obbColoringMode, pickable, statistics, minimap} = this.state;
     const {onOptionsChange} = this.props;
     onOptionsChange({
       statistics,
       minimap,
-      showObb,
+      obb,
       tileColoringMode,
       obbColoringMode,
       pickable
@@ -177,18 +177,18 @@ export default class DebugPanel extends PureComponent {
   }
 
   renderObbOptions() {
-    const {obbColoringMode, showObb} = this.state;
+    const {obbColoringMode, obb} = this.state;
     return (
       <DebugOptionGroup title="Oriented bounding box">
         <CheckboxOption>
           <InputCheckbox
             onChange={this.toggleObb}
             type="checkbox"
-            id="showObb"
-            value={showObb}
-            checked={showObb}
+            id="obb"
+            value={obb}
+            checked={obb}
           />
-          <label htmlFor="showObb">Show</label>
+          <label htmlFor="obb">Show</label>
         </CheckboxOption>
         <DropDown
           value={obbColoringMode}

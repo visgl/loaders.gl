@@ -1,8 +1,9 @@
 export const COLORED_BY = {
   ORIGINAL: 0,
-  TILE: 1,
+  RANDOM: 1,
   DEPTH: 2,
-  CUSTOM: 3
+  CUSTOM: 3,
+  TILE: 4
 };
 
 export const DEPTH_COLOR_MAP = {
@@ -20,33 +21,54 @@ export const DEPTH_COLOR_MAP = {
   12: [125, 58, 174]
 };
 
-export const DEPTH_MAX_LEVEL = 12;
+const DEPTH_MAX_LEVEL = 12;
+const DEFAULT_COLOR = [255, 255, 255];
 
-export function getTileColor(tile, options) {
-  switch (options.coloredBy) {
-    case COLORED_BY.TILE:
-      return getColorByTile(tile.id, options.colorsMap);
-    case COLORED_BY.DEPTH:
-      return getColorByDepth(tile.depth);
-    case COLORED_BY.CUSTOM:
-      return getCustomColor();
-    default:
-      return [255, 255, 255];
+export default class ColorMap {
+  constructor() {
+    this.state = {
+      randomColorMap: {},
+      colorMap: {}
+    };
   }
-}
 
-function getColorByDepth(level) {
-  return DEPTH_COLOR_MAP[level] || DEPTH_COLOR_MAP[DEPTH_MAX_LEVEL];
-}
+  getTileColor(tile, options) {
+    switch (options.coloredBy) {
+      case COLORED_BY.RANDOM:
+        return this._getRandomColor(tile.id);
+      case COLORED_BY.DEPTH:
+        return this._getColorByDepth(tile.id, tile.depth);
+      case COLORED_BY.TILE:
+        return this._getColorByTile(tile.id);
+      case COLORED_BY.CUSTOM:
+        return this._getCustomColor();
+      default:
+        return DEFAULT_COLOR;
+    }
+  }
 
-function getCustomColor() {
-  // TODO: implement after tile-selecting feature
-  return [255, 255, 255];
-}
+  _getColorByTile(id) {
+    const {colorMap} = this.state;
+    return colorMap[id] || DEFAULT_COLOR;
+  }
 
-function getColorByTile(id, colorsMap) {
-  const randomColor = Array.from({length: 3}, _ => Math.round(Math.random() * 255));
+  _getColorByDepth(id, level) {
+    const {colorMap} = this.state;
+    colorMap[id] = DEPTH_COLOR_MAP[level] || DEPTH_COLOR_MAP[DEPTH_MAX_LEVEL];
+    return colorMap[id];
+  }
 
-  colorsMap[id] = colorsMap[id] || randomColor;
-  return colorsMap[id];
+  _getCustomColor() {
+    // TODO: implement after tile-selecting feature
+    return [255, 255, 255];
+  }
+
+  _getRandomColor(id) {
+    const {colorMap, randomColorMap} = this.state;
+    const randomColor = Array.from({length: 3}, _ => Math.round(Math.random() * 255));
+
+    randomColorMap[id] = randomColorMap[id] || randomColor;
+    colorMap[id] = randomColorMap[id];
+    return colorMap[id];
+  }
 }
