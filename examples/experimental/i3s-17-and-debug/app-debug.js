@@ -1,4 +1,4 @@
-/* global window, fetch, URL */
+/* global fetch */
 import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
@@ -12,11 +12,15 @@ import {I3SLoader} from '@loaders.gl/i3s';
 import {StatsWidget} from '@probe.gl/stats-widget';
 
 import {INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
+import DebugPanel from './components/debug-panel';
 import ControlPanel from './components/control-panel';
 
-import {INITIAL_MAP_STYLE} from './constants';
+import {INITIAL_MAP_STYLE, CONTRAST_MAP_STYLES, INITIAL_COLORING_MODE} from './constants';
 import {getFrustumBounds} from './frustum-utils';
 import TileLayer from './tile-layer/tile-layer';
+import AttributesTooltip from './components/attributes-tooltip';
+import {getTileDebugInfo} from './tile-debug';
+import {parseTilesetUrlFromUrl, parseTilesetUrlParams} from './url-utils';
 
 const TRANSITION_DURAITON = 4000;
 
@@ -34,12 +38,12 @@ const INITIAL_VIEW_STATE = {
 };
 const STATS_WIDGET_STYLE = {
   wordBreak: 'break-word',
-  position: 'absolute',
   padding: 12,
   zIndex: '10000',
   maxWidth: 300,
   background: '#000',
-  color: '#fff'
+  color: '#fff',
+  alignSelf: 'flex-start'
 };
 
 const VIEWS = [
@@ -68,23 +72,6 @@ const VIEWS = [
   })
 ];
 
-function parseTilesetUrlFromUrl() {
-  const parsedUrl = new URL(window.location.href);
-  return parsedUrl.searchParams.get('url');
-}
-
-function parseTilesetUrlParams(url, options) {
-  const parsedUrl = new URL(url);
-  const index = url.lastIndexOf('/layers/0');
-  let metadataUrl = url.substring(0, index);
-  let token = options && options.token;
-  if (parsedUrl.search) {
-    token = parsedUrl.searchParams.get('token');
-    metadataUrl = `${metadataUrl}${parsedUrl.search}`;
-  }
-  return {...options, tilesetUrl: url, token, metadataUrl};
-}
-
 export default class App extends PureComponent {
   constructor(props) {
     super(props);
@@ -103,9 +90,14 @@ export default class App extends PureComponent {
           bearing: 0
         }
       },
-      selectedMapStyle: INITIAL_MAP_STYLE
+      selectedColoringMode: INITIAL_COLORING_MODE,
+      selectedMapStyle: INITIAL_MAP_STYLE,
+      debugOptions: {
+        minimap: true
+      }
     };
     this._onSelectTileset = this._onSelectTileset.bind(this);
+    this._setDebugOptions = this._setDebugOptions.bind(this);
   }
 
   componentDidMount() {
@@ -132,6 +124,16 @@ export default class App extends PureComponent {
       tileset = EXAMPLES[INITIAL_EXAMPLE_NAME];
     }
     this._onSelectTileset(tileset);
+  }
+
+  _getViewState() {
+    const {viewState, debugOptions} = this.state;
+    return debugOptions.minimap ? viewState : {main: viewState.main};
+  }
+
+  _getViews() {
+    const {debugOptions} = this.state;
+    return debugOptions.minimap ? VIEWS : [VIEWS[0]];
   }
 
   async _onSelectTileset(tileset) {
@@ -205,8 +207,16 @@ export default class App extends PureComponent {
     this.setState({selectedMapStyle});
   }
 
+  _setDebugOptions(debugOptions) {
+    this.setState({debugOptions});
+  }
+
+  _onSelectColoringMode({selectedColoringMode}) {
+    this.setState({selectedColoringMode});
+  }
+
   _renderLayers() {
-    const {tilesetUrl, token, viewState} = this.state;
+    const {tilesetUrl, token, viewState, selectedColoringMode} = this.state;
     const loadOptions = {throttleRequests: true, loadFeatureAttributes: false};
     if (token) {
       loadOptions.token = token;
@@ -222,7 +232,11 @@ export default class App extends PureComponent {
         onTilesetLoad: this._onTilesetLoad.bind(this),
         onTileLoad: () => this._updateStatWidgets(),
         onTileUnload: () => this._updateStatWidgets(),
-        loadOptions
+        coloredBy: selectedColoringMode,
+        loadOptions,
+        pickable: true,
+        autoHighlight: true,
+        isDebugMode: true
       }),
       new LineLayer({
         id: 'frustum',
@@ -235,13 +249,17 @@ export default class App extends PureComponent {
     ];
   }
 
+  _renderDebugPanel() {
+    return <DebugPanel onOptionsChange={this._setDebugOptions}>{this._renderStats()}</DebugPanel>;
+  }
+
   _renderStats() {
     // TODO - too verbose, get more default styling from stats widget?
     return <div style={STATS_WIDGET_STYLE} ref={_ => (this._statsWidgetContainer = _)} />;
   }
 
   _renderControlPanel() {
-    const {name, tileset, token, metadata, selectedMapStyle} = this.state;
+    const {name, tileset, token, metadata, selectedMapStyle, selectedColoringMode} = this.state;
     return (
       <ControlPanel
         tileset={tileset}
@@ -250,7 +268,9 @@ export default class App extends PureComponent {
         token={token}
         onExampleChange={this._onSelectTileset}
         onMapStyleChange={this._onSelectMapStyle.bind(this)}
+        onColoringModeChange={this._onSelectColoringMode.bind(this)}
         selectedMapStyle={selectedMapStyle}
+        selectedColoringMode={selectedColoringMode}
       />
     );
   }
@@ -263,25 +283,43 @@ export default class App extends PureComponent {
     return true;
   }
 
+  getTooltip(info) {
+    if (!info.object || info.index < 0 || !info.layer) {
+      return null;
+    }
+    const tileInfo = getTileDebugInfo(info.object);
+    // eslint-disable-next-line no-undef
+    const tooltip = document.createElement('div');
+    render(<AttributesTooltip data={tileInfo} />, tooltip);
+
+    return {html: tooltip.innerHTML};
+  }
+
   render() {
     const layers = this._renderLayers();
-    const {viewState, selectedMapStyle} = this.state;
+    const {selectedMapStyle} = this.state;
 
     return (
       <div style={{position: 'relative', height: '100%'}}>
-        {this._renderStats()}
+        {this._renderDebugPanel()}
         {this._renderControlPanel()}
         <DeckGL
           layers={layers}
-          viewState={viewState}
-          views={VIEWS}
+          viewState={this._getViewState()}
+          views={this._getViews()}
           layerFilter={this._layerFilter}
           onViewStateChange={this._onViewStateChange.bind(this)}
           onAfterRender={() => this._updateStatWidgets()}
+          getTooltip={info => this.getTooltip(info)}
         >
+          {/* <StaticMap mapStyle={selectedMapStyle} preventStyleDiffing /> */}
           <StaticMap reuseMaps mapStyle={selectedMapStyle} preventStyleDiffing={true} />
           <View id="minimap">
-            <StaticMap reuseMaps mapStyle={selectedMapStyle} preventStyleDiffing={true} />
+            <StaticMap
+              reuseMaps
+              mapStyle={CONTRAST_MAP_STYLES[selectedMapStyle]}
+              preventStyleDiffing={true}
+            />
           </View>
         </DeckGL>
       </div>

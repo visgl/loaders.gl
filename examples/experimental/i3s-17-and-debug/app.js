@@ -1,4 +1,4 @@
-/* global window, fetch, URL */
+/* global fetch */
 import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
@@ -13,11 +13,12 @@ import {StatsWidget} from '@probe.gl/stats-widget';
 import {INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
 import ControlPanel from './components/control-panel';
 import AttributesPanel from './components/attributes-panel';
+import AttributesTooltip from './components/attributes-tooltip';
+import {parseTilesetUrlFromUrl, parseTilesetUrlParams} from './url-utils';
 
 import {INITIAL_MAP_STYLE} from './constants';
 
 const TRANSITION_DURAITON = 4000;
-const NO_DATA = 'No Data';
 
 const INITIAL_VIEW_STATE = {
   longitude: -120,
@@ -42,37 +43,6 @@ const STATS_WIDGET_STYLE = {
   color: '#fff'
 };
 
-const TH_STYLE = {
-  textAlign: 'left'
-};
-
-const TOOLTIP_STYLE = {
-  color: '#fff'
-};
-
-function parseTilesetUrlFromUrl() {
-  const parsedUrl = new URL(window.location.href);
-  return parsedUrl.searchParams.get('url');
-}
-
-function parseTilesetUrlParams(url, options) {
-  const parsedUrl = new URL(url);
-  let token = options && options.token;
-  const tilesetUrl = url.includes('layers/0')
-    ? url
-    : // Add '/' to url if needed.
-      url.replace(/\/?$/, '/').concat('layers/0');
-
-  const index = tilesetUrl.lastIndexOf('/layers/0');
-  let metadataUrl = tilesetUrl.substring(0, index);
-
-  if (parsedUrl.search) {
-    token = parsedUrl.searchParams.get('token');
-    metadataUrl = `${metadataUrl}${parsedUrl.search}`;
-  }
-
-  return {...options, tilesetUrl, token, metadataUrl};
-}
 export default class App extends PureComponent {
   constructor(props) {
     super(props);
@@ -219,46 +189,11 @@ export default class App extends PureComponent {
 
     const selectedFeatureAttributes = getTileAttributesFromFeatureId(info.object, info.index);
 
-    if (!selectedFeatureAttributes) {
-      return null;
-    }
     // eslint-disable-next-line no-undef
     const tooltip = document.createElement('div');
-    render(this.renderTooltip(selectedFeatureAttributes), tooltip);
+    render(<AttributesTooltip data={selectedFeatureAttributes} />, tooltip);
 
     return {html: tooltip.innerHTML};
-  }
-
-  renderTooltip(selectedFeatureAttributes) {
-    const rows = [];
-
-    for (const key in selectedFeatureAttributes) {
-      const row = (
-        <tr key={key}>
-          <th style={TH_STYLE}>{key}</th>
-          <td>{this.formatTooltipValue(selectedFeatureAttributes[key])}</td>
-        </tr>
-      );
-
-      rows.push(row);
-    }
-
-    return (
-      <div style={TOOLTIP_STYLE}>
-        <table>
-          <tbody>{rows}</tbody>
-        </table>
-      </div>
-    );
-  }
-
-  formatTooltipValue(value) {
-    return (
-      value
-        .toString()
-        .replace(/[{}']+/g, '')
-        .trim() || NO_DATA
-    );
   }
 
   handleClosePanel() {

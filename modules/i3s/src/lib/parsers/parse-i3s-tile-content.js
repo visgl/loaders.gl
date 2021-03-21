@@ -54,7 +54,7 @@ export async function parseI3STileContent(arrayBuffer, tile, tileset, options) {
   }
 
   if (options.i3s.loadFeatureAttributes && tileset.attributeStorageInfo) {
-    await loadFeatureAttributes(tile, tileset);
+    await loadFeatureAttributes(tile, tileset, options);
   }
 
   tile.content.material = makePbrMaterial(tile.materialDefinition, tile.content.texture);
@@ -213,6 +213,7 @@ function normalizeColors(colors) {
     normalizedColors[index] = colors.value[index] / 255;
   }
   colors.value = normalizedColors;
+  colors.type = GL_TYPE_MAP.Float32;
   return colors;
 }
 
@@ -507,7 +508,7 @@ function flattenFeatureIdsByFeatureIndices(attributes, objectIds) {
  * @param {Object} tileset
  * @returns {Promise}
  */
-async function loadFeatureAttributes(tile, tileset) {
+async function loadFeatureAttributes(tile, tileset, options) {
   const attributeStorageInfo = tileset.attributeStorageInfo;
   const attributeUrls = tile.attributeUrls;
   let attributes = [];
@@ -516,7 +517,7 @@ async function loadFeatureAttributes(tile, tileset) {
   const attributeLoadPromises = [];
 
   for (let index = 0; index < attributeStorageInfo.length; index++) {
-    const url = attributeUrls[index];
+    const url = getUrlWithToken(attributeUrls[index], options.token);
     const attributeName = attributeStorageInfo[index].name;
     const attributeType = getAttributeValueType(attributeStorageInfo[index]);
     const promise = load(url, I3SAttributeLoader, {attributeName, attributeType});

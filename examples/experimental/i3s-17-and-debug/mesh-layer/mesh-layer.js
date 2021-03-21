@@ -42,10 +42,15 @@ function getGeometry(data, useMeshColors) {
 
 export default class MeshLayer extends SimpleMeshLayer {
   getShaders() {
+    const {material, isDebugMode} = this.props;
     const shaders = super.getShaders();
     const modules = shaders.modules;
-    if (this.props.material) {
+    if (material) {
       modules.push(pbr);
+    }
+
+    if (isDebugMode) {
+      shaders.defines.INSTANCE_PICKING_MODE = 1;
     }
     return {...shaders, vs, fs};
   }
@@ -100,12 +105,14 @@ export default class MeshLayer extends SimpleMeshLayer {
       });
     }
 
+    const shaders = this.getShaders();
+
     const model = new Model(
       this.context.gl,
-      Object.assign({}, this.getShaders(), {
+      Object.assign({}, shaders, {
         id: this.props.id,
         geometry: getGeometry(mesh, true),
-        defines: materialParser?.defines,
+        defines: {...shaders.defines, ...materialParser?.defines},
         parameters: materialParser?.parameters,
         isInstanced: true
       })
@@ -141,6 +148,10 @@ export default class MeshLayer extends SimpleMeshLayer {
   }
 
   calculatePickingColors(attribute) {
+    if (!this.props.mesh.attributes.featureIds) {
+      return;
+    }
+
     const featuresIds = this.props.mesh.attributes.featureIds.value;
     const value = new Uint8ClampedArray(featuresIds.length * attribute.size);
 
