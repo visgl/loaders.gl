@@ -1,11 +1,12 @@
-import {Vector3} from '@math.gl/core';
-import {OrientedBoundingBox} from '@math.gl/culling';
-import {Ellipsoid} from '@math.gl/geospatial';
-import {PolygonLayer} from '@deck.gl/layers';
-import {CompositeLayer, log} from '@deck.gl/core';
+import {CompositeLayer, COORDINATE_SYSTEM, log} from '@deck.gl/core';
+import {SimpleMeshLayer} from '@deck.gl/mesh-layers';
+import SphereGeometry from './geometry/sphere-geometry';
+import CubeGeometry from './geometry/cube-geometry';
+import OrientedBoundingBox from '@math.gl/culling';
 
-const LINE_WIDTH = 3;
-const BG_OPACITY = 20;
+const BG_OPACITY = 100;
+const GEOMETRY_STEP = 50;
+const SINGLE_DATA = [0];
 
 export default class ObbLayer extends CompositeLayer {
   initializeState() {
@@ -19,96 +20,42 @@ export default class ObbLayer extends CompositeLayer {
     };
   }
 
-  _getObbBounds(boundingVolume) {
-    let center;
-    let halfSize;
-    let radius;
-
-    if (boundingVolume instanceof OrientedBoundingBox) {
-      halfSize = boundingVolume.halfSize;
-      radius = new Vector3(halfSize[0], halfSize[1], halfSize[2]).len();
-      center = boundingVolume.center;
-    } else {
-      radius = boundingVolume.radius;
-      center = boundingVolume.center;
-      halfSize = [radius, radius, radius];
+  _generateMesh(tile) {
+    if (tile.header.obb) {
+      return new CubeGeometry({
+        halfSize: tile.header.obb.halfSize,
+        quaternion: tile.header.obb.quaternion
+      });
+    }
+    if (tile.boundingVolume instanceof OrientedBoundingBox) {
+      return new CubeGeometry({
+        halfSize: tile.boundingVolume.halfSize
+      });
     }
 
-    const rightTop = Ellipsoid.WGS84.cartesianToCartographic(
-      new Vector3(center[0] + radius, center[1] + radius, center[2]),
-      new Vector3()
-    );
-
-    const rightBottom = Ellipsoid.WGS84.cartesianToCartographic(
-      new Vector3(center[0] + radius, center[1] - radius, center[2]),
-      new Vector3()
-    );
-
-    const leftTop = Ellipsoid.WGS84.cartesianToCartographic(
-      new Vector3(center[0] - radius, center[1] + radius, center[2]),
-      new Vector3()
-    );
-
-    const leftBottom = Ellipsoid.WGS84.cartesianToCartographic(
-      new Vector3(center[0] - radius, center[1] - radius, center[2]),
-      new Vector3()
-    );
-
-    const bottomElevation = Ellipsoid.WGS84.cartesianToCartographic(
-      new Vector3(center[0], center[1], center[2]),
-      new Vector3()
-    );
-
-    const topElevation = Ellipsoid.WGS84.cartesianToCartographic(
-      new Vector3(center[0], center[1], center[2] + halfSize[2]),
-      new Vector3()
-    );
-
-    const elevation = topElevation[2] - bottomElevation[2];
-    const boundaries = [
-      [
-        [leftTop[0], leftTop[1]],
-        [rightTop[0], rightTop[1]],
-        [rightBottom[0], rightBottom[1]],
-        [leftBottom[0], leftBottom[1]],
-        [leftTop[0], leftTop[1]]
-      ]
-    ];
-
-    return {boundaries, elevation};
+    return new SphereGeometry({
+      radius: tile.boundingVolume.radius,
+      nlat: GEOMETRY_STEP,
+      nlong: GEOMETRY_STEP
+    });
   }
 
-  _getObbColors(tile) {
+  _getObbLayer(tile, oldLayer) {
+    const content = tile.content;
     const {coloredBy, colorsMap} = this.props;
+    const {cartographicOrigin, material} = content;
 
-    const lineColor = colorsMap.getTileColor(tile, {coloredBy});
-    const fillColor = [...lineColor, BG_OPACITY];
+    const geometry = (oldLayer && oldLayer.props.mesh) || this._generateMesh(tile);
 
-    return {fillColor, lineColor};
-  }
-
-  _getObbLayer(tile) {
-    const data = [
-      {
-        ...this._getObbBounds(tile.boundingVolume),
-        ...this._getObbColors(tile)
-      }
-    ];
-
-    return new PolygonLayer({
+    return new SimpleMeshLayer({
       id: `obb-debug-${tile.id}`,
-      data,
-      extruded: true,
-      filled: true,
-      getPolygon: d => d.boundaries,
-      getLineWidth: LINE_WIDTH,
-      lineWidthMinPixels: LINE_WIDTH,
-      getFillColor: d => d.fillColor,
-      getLineColor: d => d.lineColor,
-      getElevation: d => d.elevation,
-      pickable: false,
-      stroked: true,
-      wireframe: true
+      mesh: geometry,
+      data: SINGLE_DATA,
+      getPosition: [0, 0, 0],
+      getColor: [...colorsMap.getTileColor(tile, {coloredBy}), BG_OPACITY],
+      material,
+      coordinateOrigin: cartographicOrigin,
+      coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS
     });
   }
 
@@ -120,6 +67,13 @@ export default class ObbLayer extends CompositeLayer {
         layerMap[key].needsUpdate = true;
       }
     }
+  }
+
+  resetTiles() {
+    this.setState({
+      layerMap: {},
+      colorsMap: {}
+    });
   }
 
   addTile(tile) {
@@ -144,7 +98,7 @@ export default class ObbLayer extends CompositeLayer {
           if (!layer) {
             layer = this._getObbLayer(tile);
           } else if (layerCache.needsUpdate) {
-            layer = this._getObbLayer(tile);
+            layer = this._getObbLayer(tile, layer);
             layerCache.needsUpdate = false;
           } else if (!layer.props.visible) {
             layer = layer.clone({

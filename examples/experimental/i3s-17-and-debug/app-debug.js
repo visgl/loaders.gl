@@ -154,6 +154,7 @@ export default class App extends PureComponent {
     this.setState({tilesetUrl, name, token});
     const metadata = await fetch(metadataUrl).then(resp => resp.json());
     this.setState({metadata});
+    this._obbLayer.resetTiles();
   }
 
   // Updates stats, called every frame
