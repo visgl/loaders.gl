@@ -316,7 +316,7 @@ function convertMesh(
  * @param {Object} attributes - gltf primitive attributes
  * @returns {void}
  */
-function normalizeAttributesByIndicesRange(indices, attributes) {
+function normalizeAttributesByIndicesRange(attributes, indices) {
   if (!indices || !indices.min || !indices.max) {
     return;
   }
