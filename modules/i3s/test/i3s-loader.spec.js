@@ -2,7 +2,7 @@
 
 import test from 'tape-promise/tape';
 import {isBrowser} from '@loaders.gl/core';
-import {loadI3STileContent, loadI3STile} from './test-utils/load-utils';
+import {loadI3STileContent} from './test-utils/load-utils';
 
 test('I3SLoader#Load tile content', async t => {
   const content = await loadI3STileContent({fetchOptions: {worker: false}});
@@ -47,39 +47,5 @@ test('I3SLoader#DRACO geometry', async t => {
   t.ok(content.attributes.texCoords);
   t.equal(content.attributes.texCoords.value.length, 1236);
 
-  t.end();
-});
-
-test('I3SLoader parsing featureAttributes by default', async t => {
-  const tile = await loadI3STile({fetchOptions: {worker: false}});
-  t.ok(tile);
-  t.notOk(tile.content.userData.attributesByObjectId);
-  t.notOk(tile.content.userData.objectIds);
-  t.end();
-});
-
-test('I3SLoader parsing featureAttributes disabled', async t => {
-  const tile = await loadI3STile({
-    i3s: {loadFeatureAttributes: false},
-    fetchOptions: {worker: false}
-  });
-  t.ok(tile);
-  t.notOk(tile.header.userData.attributesByObjectId);
-  t.notOk(tile.header.userData.objectIds);
-  t.end();
-});
-
-// Also attributesByObjectId and objectIds will be undefined because we can't load attributes because we don't use I3S server
-// For example we can't get 0.bin file from:
-// @loaders.gl/i3s/test/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/1/attributes/f_0/0
-// when we use simple file structure instead of web server.
-test('I3SLoader parsing featureAttributes enabled', async t => {
-  const tile = await loadI3STile({
-    i3s: {loadFeatureAttributes: true},
-    fetchOptions: {worker: false}
-  });
-  t.ok(tile);
-  t.notOk(tile.header.userData.attributesByObjectId);
-  t.notOk(tile.header.userData.objectIds);
   t.end();
 });

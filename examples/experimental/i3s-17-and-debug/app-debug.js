@@ -217,7 +217,8 @@ export default class App extends PureComponent {
 
   _renderLayers() {
     const {tilesetUrl, token, viewState, selectedColoringMode} = this.state;
-    const loadOptions = {throttleRequests: true, loadFeatureAttributes: false};
+    const loadOptions = {throttleRequests: true};
+
     if (token) {
       loadOptions.token = token;
     }

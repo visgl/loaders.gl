@@ -5,7 +5,6 @@ import {load} from '@loaders.gl/core';
 import {ImageLoader} from '@loaders.gl/images';
 import {parse} from '@loaders.gl/core';
 import {DracoLoader} from '@loaders.gl/draco';
-import {I3SAttributeLoader} from '../../i3s-attribute-loader';
 
 import {
   GL_TYPE_MAP,
@@ -28,11 +27,9 @@ const FORMAT_LOADER_MAP = {
 };
 
 const I3S_ATTRIBUTE_TYPE = 'i3s-attribute-type';
-const EMPTY_VALUE = '';
 
 export async function parseI3STileContent(arrayBuffer, tile, tileset, options) {
   tile.content = tile.content || {};
-  tile.content.userData = tile.content.userData || {};
 
   // construct featureData from defaultGeometrySchema;
   tile.content.featureData = constructFeatureDataStruct(tile, tileset);
@@ -51,10 +48,6 @@ export async function parseI3STileContent(arrayBuffer, tile, tileset, options) {
         data: tile.content.texture
       };
     }
-  }
-
-  if (options.i3s.loadFeatureAttributes && tileset.attributeStorageInfo) {
-    await loadFeatureAttributes(tile, tileset, options);
   }
 
   tile.content.material = makePbrMaterial(tile.materialDefinition, tile.content.texture);
@@ -99,8 +92,10 @@ async function parseI3SNodeGeometry(arrayBuffer, tile = {}, options) {
       id: flattenAttribute(featureIndex, indices)
     };
 
-    if (featureIndex && tile.content.userData.objectIds) {
-      flattenFeatureIdsByFeatureIndices(attributes, tile.content.userData.objectIds);
+    const featureIds = getFeatureIdsFromFeatureIndexMetadata(featureIndex);
+
+    if (featureIds) {
+      flattenFeatureIdsByFeatureIndices(attributes, featureIds);
     }
   } else {
     const {
@@ -509,107 +504,15 @@ function flattenFeatureIdsByFeatureIndices(attributes, objectIds) {
 }
 
 /**
- * Load layer feature attributes and put them to user Data object
- * @param {Object} tile
- * @param {Object} tileset
- * @returns {Promise}
+ * Flatten feature ids using featureIndices
+ * @param {object} featureIndex
+ * @returns {Int32Array}
  */
-async function loadFeatureAttributes(tile, tileset, options) {
-  const attributeStorageInfo = tileset.attributeStorageInfo;
-  const attributeUrls = tile.attributeUrls;
-  let attributes = [];
-
-  console.time('load attributes'); //eslint-disable-line
-  const attributeLoadPromises = [];
-
-  for (let index = 0; index < attributeStorageInfo.length; index++) {
-    const url = getUrlWithToken(attributeUrls[index], options.token);
-    const attributeName = attributeStorageInfo[index].name;
-    const attributeType = getAttributeValueType(attributeStorageInfo[index]);
-    const promise = load(url, I3SAttributeLoader, {attributeName, attributeType});
-    attributeLoadPromises.push(promise);
-  }
-  try {
-    attributes = await Promise.all(attributeLoadPromises);
-  } catch (error) {
-    // do nothing
-  } finally {
-    console.timeEnd('load attributes'); //eslint-disable-line
-  }
-  const loadedFeatureIds = attributes.find(attributesObject => attributesObject.OBJECTID);
-
-  if (loadedFeatureIds && loadedFeatureIds.OBJECTID) {
-    tile.content.userData.objectIds = loadedFeatureIds.OBJECTID;
-    tile.content.userData.attributesByObjectId = generateAttributesByObjectId(
-      attributes,
-      attributeStorageInfo,
-      loadedFeatureIds
-    );
-  }
-}
-
-/**
- * Get attribute value type based on property names
- * @param {Object} attribute
- * @returns {String}
- */
-function getAttributeValueType(attribute) {
-  if (attribute.hasOwnProperty('objectIds')) {
-    return 'Oid32';
-  } else if (attribute.hasOwnProperty('attributeValues')) {
-    return attribute.attributeValues.valueType;
-  }
-  return '';
-}
-
-/**
- * Generates mapping featureId to feature attributes
- * @param {Array} attributes
- * @param {Object} attributeStorageInfo
- * @param {Object} loadedFeatureIds
- * @returns {Map}
- */
-function generateAttributesByObjectId(attributes, attributeStorageInfo, loadedFeatureIds) {
-  const attributesByObjectId = new Map();
-
-  for (let index = 0; index < loadedFeatureIds.OBJECTID.length; index++) {
-    const featureId = loadedFeatureIds.OBJECTID[index];
-    const featureAttributes = getFeatureAttributesByIndex(attributes, index, attributeStorageInfo);
-
-    attributesByObjectId.set(featureId, featureAttributes);
-  }
-
-  return attributesByObjectId;
-}
-
-/**
- * Generates attribute object for feature mapping by feature id
- * @param {Array} attributes
- * @param {Number} featureIdIndex
- * @param {Object} attributeStorageInfo
- * @returns {Object}
- */
-function getFeatureAttributesByIndex(attributes, featureIdIndex, attributeStorageInfo) {
-  const attributesObject = {};
-
-  for (let index = 0; index < attributeStorageInfo.length; index++) {
-    const attributeName = attributeStorageInfo[index].name;
-    const attribute = attributes[index][attributeName];
-    attributesObject[attributeName] = formatAttributeValue(attribute, featureIdIndex);
-  }
-
-  return attributesObject;
-}
-
-/**
- * Do formatting of attribute values or return empty string.
- * @param {Array} attribute
- * @param {Number} featureIdIndex
- * @returns {String}
- */
-function formatAttributeValue(attribute, featureIdIndex) {
-  return attribute && attribute[featureIdIndex]
-    ? // eslint-disable-next-line no-control-regex
-      attribute[featureIdIndex].toString().replace(/\u0000/g, '')
-    : EMPTY_VALUE;
+function getFeatureIdsFromFeatureIndexMetadata(featureIndex) {
+  return (
+    featureIndex &&
+    featureIndex.metadata &&
+    featureIndex.metadata['i3s-feature-ids'] &&
+    featureIndex.metadata['i3s-feature-ids'].intArray
+  );
 }
