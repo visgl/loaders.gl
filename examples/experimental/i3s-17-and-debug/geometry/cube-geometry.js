@@ -65,9 +65,10 @@ export default class CubeGeometry extends Geometry {
 
 function tesselateCude(props) {
   const numVertices = 24;
-  const {halfSize, quaternion} = props;
+  const {halfSize} = props;
   const colors = new Float32Array(numVertices * 4);
   const positions = new Float32Array(CUBE_POSITIONS);
+  const normals = new Float32Array(CUBE_NORMALS);
   for (let i = 0; i < numVertices * 4; i += 4) {
     colors.set([1, 1, 1, 1], i);
   }
@@ -76,14 +77,11 @@ function tesselateCude(props) {
     positions[i + 1] = positions[i + 1] * halfSize[1] * 2;
     positions[i + 2] = positions[i + 2] * halfSize[2] * 2;
   }
-  if (quaternion) {
-    // TODO: rotate obb
-  }
   return {
     indices: {size: 1, value: new Uint16Array(CUBE_INDICES)},
     attributes: {
       positions: {size: 3, value: positions},
-      normals: {size: 3, value: new Float32Array(CUBE_NORMALS)},
+      normals: {size: 3, value: normals},
       texCoords: {size: 2, value: new Float32Array(CUBE_TEX_COORDS)},
       colors: {size: 4, value: colors, normalized: true}
     }

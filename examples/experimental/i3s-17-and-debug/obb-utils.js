@@ -2,7 +2,7 @@ import {CompositeLayer, COORDINATE_SYSTEM, log} from '@deck.gl/core';
 import {SimpleMeshLayer} from '@deck.gl/mesh-layers';
 import SphereGeometry from './geometry/sphere-geometry';
 import CubeGeometry from './geometry/cube-geometry';
-import OrientedBoundingBox from '@math.gl/culling';
+import {OrientedBoundingBox} from '@math.gl/culling';
 
 const BG_OPACITY = 100;
 const GEOMETRY_STEP = 50;
@@ -23,8 +23,7 @@ export default class ObbLayer extends CompositeLayer {
   _generateMesh(tile) {
     if (tile.header.obb) {
       return new CubeGeometry({
-        halfSize: tile.header.obb.halfSize,
-        quaternion: tile.header.obb.quaternion
+        halfSize: tile.header.obb.halfSize
       });
     }
     if (tile.boundingVolume instanceof OrientedBoundingBox) {
