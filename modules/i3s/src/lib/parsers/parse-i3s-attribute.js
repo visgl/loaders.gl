@@ -75,9 +75,9 @@ function parseStringsAttribute(arrayBuffer) {
   let stringOffset = dataOffset + stringsCount * bytesPerStringSize;
 
   for (const stringByteSize of stringSizes) {
-    const enc = new TextDecoder('utf-8');
+    const textDecoder = new TextDecoder('utf-8');
     const stringAttribute = new Uint8Array(arrayBuffer, stringOffset, stringByteSize);
-    stringsArray.push(enc.decode(stringAttribute));
+    stringsArray.push(textDecoder.decode(stringAttribute));
     stringOffset += stringByteSize;
   }
 
