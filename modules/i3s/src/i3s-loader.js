@@ -72,7 +72,7 @@ async function parseI3S(data, options, context, loader) {
 }
 
 async function parseTileContent(arrayBuffer, options, context) {
-  return await parse(arrayBuffer, I3SContentLoader, {...options});
+  return await parse(arrayBuffer, I3SContentLoader, options);
 }
 
 async function parseTileset(data, options, context) {

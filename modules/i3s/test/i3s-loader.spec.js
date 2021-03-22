@@ -5,7 +5,7 @@ import {isBrowser} from '@loaders.gl/core';
 import {loadI3STileContent, loadI3STile} from './test-utils/load-utils';
 
 test('I3SLoader#Load tile content', async t => {
-  const content = await loadI3STileContent();
+  const content = await loadI3STileContent({fetchOptions: {worker: false}});
   t.ok(content);
   t.ok(content.attributes);
   t.ok(content.attributes.positions);
@@ -33,7 +33,10 @@ test('I3SLoader#Load tile content', async t => {
 });
 
 test('I3SLoader#DRACO geometry', async t => {
-  const content = await loadI3STileContent({i3s: {useDracoGeometry: true}});
+  const content = await loadI3STileContent({
+    i3s: {useDracoGeometry: true},
+    fetchOptions: {worker: false}
+  });
   t.ok(content);
   t.ok(content.attributes);
   t.ok(content.attributes.positions);
@@ -48,15 +51,18 @@ test('I3SLoader#DRACO geometry', async t => {
 });
 
 test('I3SLoader parsing featureAttributes by default', async t => {
-  const tile = await loadI3STile();
+  const tile = await loadI3STile({fetchOptions: {worker: false}});
   t.ok(tile);
-  t.notOk(tile.header.userData.attributesByObjectId);
-  t.notOk(tile.header.userData.objectIds);
+  t.notOk(tile.content.userData.attributesByObjectId);
+  t.notOk(tile.content.userData.objectIds);
   t.end();
 });
 
 test('I3SLoader parsing featureAttributes disabled', async t => {
-  const tile = await loadI3STile({i3s: {loadFeatureAttributes: false}});
+  const tile = await loadI3STile({
+    i3s: {loadFeatureAttributes: false},
+    fetchOptions: {worker: false}
+  });
   t.ok(tile);
   t.notOk(tile.header.userData.attributesByObjectId);
   t.notOk(tile.header.userData.objectIds);
@@ -68,7 +74,10 @@ test('I3SLoader parsing featureAttributes disabled', async t => {
 // @loaders.gl/i3s/test/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/1/attributes/f_0/0
 // when we use simple file structure instead of web server.
 test('I3SLoader parsing featureAttributes enabled', async t => {
-  const tile = await loadI3STile({i3s: {loadFeatureAttributes: true}});
+  const tile = await loadI3STile({
+    i3s: {loadFeatureAttributes: true},
+    fetchOptions: {worker: false}
+  });
   t.ok(tile);
   t.notOk(tile.header.userData.attributesByObjectId);
   t.notOk(tile.header.userData.objectIds);
