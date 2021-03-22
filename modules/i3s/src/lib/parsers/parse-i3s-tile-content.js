@@ -461,18 +461,24 @@ function setMaterialTexture(material, image) {
  * @returns {void}
  */
 function flattenFeatureIdsByFaceRanges(normalizedFeatureAttributes) {
-  const featureIds = normalizedFeatureAttributes.id.value;
-  const faceRange = normalizedFeatureAttributes.faceRange.value;
-  const featureIdsLength = faceRange[faceRange.length - 1] + 1;
+  const {id, faceRange} = normalizedFeatureAttributes;
+
+  if (!id || !faceRange) {
+    return;
+  }
+
+  const featureIds = id.value;
+  const range = faceRange.value;
+  const featureIdsLength = range[range.length - 1] + 1;
   const orderedFeatureIndices = new Uint32Array(featureIdsLength * 3);
 
   let featureIndex = 0;
   let startIndex = 0;
 
-  for (let index = 1; index < faceRange.length; index += 2) {
+  for (let index = 1; index < range.length; index += 2) {
     const fillId = Number(featureIds[featureIndex]);
-    const endValue = faceRange[index];
-    const prevValue = faceRange[index - 1];
+    const endValue = range[index];
+    const prevValue = range[index - 1];
     const trianglesCount = endValue - prevValue + 1;
     const endIndex = startIndex + trianglesCount * 3;
 
