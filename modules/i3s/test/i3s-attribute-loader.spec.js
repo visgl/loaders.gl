@@ -19,7 +19,7 @@ const TILE = {
       attributeStorageInfo: [{key: 'f_0', name: 'OBJECTID'}, {key: 'f_1', name: 'NAME'}]
     }
   },
-  header: {
+  content: {
     userData: {
       attributesByObjectId: prepareAttributesByObjectIdMap()
     }

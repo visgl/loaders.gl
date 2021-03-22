@@ -32,7 +32,7 @@ const EMPTY_VALUE = '';
 
 export async function parseI3STileContent(arrayBuffer, tile, tileset, options) {
   tile.content = tile.content || {};
-  tile.userData = tile.userData || {};
+  tile.content.userData = tile.content.userData || {};
 
   // construct featureData from defaultGeometrySchema;
   tile.content.featureData = constructFeatureDataStruct(tile, tileset);
@@ -99,8 +99,8 @@ async function parseI3SNodeGeometry(arrayBuffer, tile = {}, options) {
       id: flattenAttribute(featureIndex, indices)
     };
 
-    if (featureIndex && tile.userData.objectIds) {
-      flattenFeatureIdsByFeatureIndices(attributes, tile.userData.objectIds);
+    if (featureIndex && tile.content.userData.objectIds) {
+      flattenFeatureIdsByFeatureIndices(attributes, tile.content.userData.objectIds);
     }
   } else {
     const {
@@ -533,8 +533,8 @@ async function loadFeatureAttributes(tile, tileset, options) {
   const loadedFeatureIds = attributes.find(attributesObject => attributesObject.OBJECTID);
 
   if (loadedFeatureIds && loadedFeatureIds.OBJECTID) {
-    tile.userData.objectIds = loadedFeatureIds.OBJECTID;
-    tile.userData.attributesByObjectId = generateAttributesByObjectId(
+    tile.content.userData.objectIds = loadedFeatureIds.OBJECTID;
+    tile.content.userData.attributesByObjectId = generateAttributesByObjectId(
       attributes,
       attributeStorageInfo,
       loadedFeatureIds
