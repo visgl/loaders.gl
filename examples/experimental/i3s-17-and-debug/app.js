@@ -7,14 +7,15 @@ import DeckGL from '@deck.gl/react';
 import {MapController, FlyToInterpolator} from '@deck.gl/core';
 
 import TileLayer from './tile-layer/tile-layer';
-import {I3SLoader, getTileAttributesFromFeatureId} from '@loaders.gl/i3s';
+import {I3SLoader, loadFeatureAttributes} from '@loaders.gl/i3s';
 import {StatsWidget} from '@probe.gl/stats-widget';
 
 import {INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
 import ControlPanel from './components/control-panel';
 import AttributesPanel from './components/attributes-panel';
-import AttributesTooltip from './components/attributes-tooltip';
 import {parseTilesetUrlFromUrl, parseTilesetUrlParams} from './url-utils';
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import {faSpinner} from '@fortawesome/free-solid-svg-icons';
 
 import {INITIAL_MAP_STYLE} from './constants';
 
@@ -54,7 +55,8 @@ export default class App extends PureComponent {
       viewState: INITIAL_VIEW_STATE,
       selectedMapStyle: INITIAL_MAP_STYLE,
       selectedFeatureAttributes: null,
-      selectedFeatureIndex: -1
+      selectedFeatureIndex: -1,
+      isAttributesLoading: false
     };
     this._onSelectTileset = this._onSelectTileset.bind(this);
     this.handleClosePanel = this.handleClosePanel.bind(this);
@@ -134,7 +136,7 @@ export default class App extends PureComponent {
   _renderLayers() {
     const {tilesetUrl, token, selectedFeatureIndex} = this.state;
     // TODO: support compressed textures in GLTFMaterialParser
-    const loadOptions = {throttleRequests: true, loadFeatureAttributes: true};
+    const loadOptions = {throttleRequests: true};
     if (token) {
       loadOptions.token = token;
     }
@@ -152,13 +154,22 @@ export default class App extends PureComponent {
     ];
   }
 
-  handleClick(info) {
+  async handleClick(info) {
     if (!info.object || info.index < 0 || !info.layer) {
       this.handleClosePanel();
       return;
     }
 
-    const selectedFeatureAttributes = getTileAttributesFromFeatureId(info.object, info.index);
+    const {token} = this.state;
+    const options = {};
+
+    if (token) {
+      options.token = token;
+    }
+
+    this.setState({isAttributesLoading: true});
+    const selectedFeatureAttributes = await loadFeatureAttributes(info.object, info.index, options);
+    this.setState({isAttributesLoading: false});
     this.setState({selectedFeatureAttributes, selectedFeatureIndex: info.index});
   }
 
@@ -182,18 +193,17 @@ export default class App extends PureComponent {
     );
   }
 
-  getTooltip(info) {
-    if (!info.object || info.index < 0 || !info.layer) {
-      return null;
+  getTooltip() {
+    const {isAttributesLoading} = this.state;
+
+    if (isAttributesLoading) {
+      // eslint-disable-next-line no-undef
+      const tooltip = document.createElement('div');
+      render(<FontAwesomeIcon icon={faSpinner} />, tooltip);
+      return {html: tooltip.innerHTML};
     }
 
-    const selectedFeatureAttributes = getTileAttributesFromFeatureId(info.object, info.index);
-
-    // eslint-disable-next-line no-undef
-    const tooltip = document.createElement('div');
-    render(<AttributesTooltip data={selectedFeatureAttributes} />, tooltip);
-
-    return {html: tooltip.innerHTML};
+    return null;
   }
 
   handleClosePanel() {

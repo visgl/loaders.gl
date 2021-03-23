@@ -1,5 +1,23 @@
 ## v3.0 Prerelease
 
+#### v3.0.0-alpha.9
+
+- i3s example: refactoring (#1264)
+- Fix test for get frame state (#1263)
+- I3S-Picking - small naming refactoring (#1260)
+- i3s debug: use main viewport for frustum culling (#1266)
+- I3S - Tile coloring in debug application (#1268)
+- I3S - Tileset debugging (#1265)
+- i3s-debug: options panel (#1269)
+- i3s-debug: app refactoring (#1275)
+- I3S - picking add url token support (#1277)
+- i3s: fix coloring in 1.6 (#1276)
+- I3S-debug - move memory usage to debug panel (#1278)
+- build(deps): bump xmldom from 0.4.0 to 0.5.0 (#1270)
+- i3s: content worker (#1285)
+- I3S Converter - Fix params order in normalizeAttributesByIndicesRange function (#1284)
+- I3S Parse content - check attributes before flatten process (#1283)
+
 #### v3.0.0-alpha.8
 
 - i3s: fix compressed texture issue (#1256)

@@ -240,7 +240,8 @@ export default class App extends PureComponent {
       viewState,
       debugOptions: {obb, tileColorMode, obbColorMode, pickable}
     } = this.state;
-    const loadOptions = {throttleRequests: true, loadFeatureAttributes: false};
+    const loadOptions = {throttleRequests: true};
+
     if (token) {
       loadOptions.token = token;
     }

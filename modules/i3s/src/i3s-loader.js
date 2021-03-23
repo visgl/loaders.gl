@@ -1,8 +1,8 @@
 /* global TextDecoder */
 /** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
-import {load} from '@loaders.gl/core';
+import {load, parse} from '@loaders.gl/core';
+import {I3SContentLoader} from './i3s-content-loader';
 import {normalizeTileData, normalizeTilesetData} from './lib/parsers/parse-i3s';
-import {parseI3STileContent} from './lib/parsers/parse-i3s-tile-content';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -21,7 +21,7 @@ export const I3SLoader = {
   module: 'i3s',
   version: VERSION,
   mimeTypes: ['application/octet-stream'],
-  parse,
+  parse: parseI3S,
   extensions: ['bin'],
   options: {
     i3s: {
@@ -31,13 +31,12 @@ export const I3SLoader = {
       tile: null,
       tileset: null,
       useDracoGeometry: true,
-      useCompressedTextures: true,
-      loadFeatureAttributes: true
+      useCompressedTextures: true
     }
   }
 };
 
-async function parse(data, options, context, loader) {
+async function parseI3S(data, options, context, loader) {
   const url = context.url;
   options.i3s = options.i3s || {};
 
@@ -72,11 +71,7 @@ async function parse(data, options, context, loader) {
 }
 
 async function parseTileContent(arrayBuffer, options, context) {
-  const {tile, tileset} = options.i3s;
-  tile.content = tile.content || {};
-  tile.userData = tile.userData || {};
-  await parseI3STileContent(arrayBuffer, tile, tileset, options);
-  return tile.content;
+  return await parse(arrayBuffer, I3SContentLoader, options);
 }
 
 async function parseTileset(data, options, context) {

@@ -1,4 +1,4 @@
-/* global Buffer */
+/* global TextDecoder */
 import {STRING_ATTRIBUTE_TYPE, OBJECT_ID_ATTRIBUTE_TYPE, FLOAT_64_TYPE} from './constants';
 
 /**
@@ -75,8 +75,9 @@ function parseStringsAttribute(arrayBuffer) {
   let stringOffset = dataOffset + stringsCount * bytesPerStringSize;
 
   for (const stringByteSize of stringSizes) {
-    const stringAttribute = Buffer.from(arrayBuffer, stringOffset, stringByteSize).toString();
-    stringsArray.push(stringAttribute);
+    const textDecoder = new TextDecoder('utf-8');
+    const stringAttribute = new Uint8Array(arrayBuffer, stringOffset, stringByteSize);
+    stringsArray.push(textDecoder.decode(stringAttribute));
     stringOffset += stringByteSize;
   }
 
