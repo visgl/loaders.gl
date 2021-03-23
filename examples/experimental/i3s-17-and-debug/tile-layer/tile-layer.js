@@ -53,7 +53,8 @@ export default class TileLayer extends Tile3DLayer {
       tileColorMode,
       isDebugMode,
       colorsMap,
-      selectedTileId
+      selectedTileId,
+      coloredTilesMap
     } = this.props;
 
     const geometry =
@@ -64,7 +65,11 @@ export default class TileLayer extends Tile3DLayer {
       });
 
     const color = colorsMap
-      ? colorsMap.getTileColor(tileHeader, {coloredBy: tileColorMode, selectedTileId})
+      ? colorsMap.getTileColor(tileHeader, {
+          coloredBy: tileColorMode,
+          selectedTileId,
+          coloredTilesMap
+        })
       : [255, 255, 255];
 
     return new MeshLayer(

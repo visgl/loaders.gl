@@ -51,7 +51,7 @@ const CLOSE_BUTTON_STYLE = {
 
 const propTypes = {
   attributesObject: PropTypes.object,
-  children: PropTypes.object,
+  children: PropTypes.any,
   attributesHeader: PropTypes.string,
   handleClosePanel: PropTypes.func
 };
@@ -59,8 +59,8 @@ const propTypes = {
 const defaultProps = {
   attributesObject: {},
   attributesHeader: 'NAME',
-  handleClosePanel: () => {},
-  children: null
+  children: null,
+  handleClosePanel: () => {}
 };
 
 const NO_DATA = 'No Data';
