@@ -1,13 +1,13 @@
 import {CompositeLayer, COORDINATE_SYSTEM, log} from '@deck.gl/core';
 import {SimpleMeshLayer} from '@deck.gl/mesh-layers';
-import SphereGeometry from './geometry/sphere-geometry';
-import CubeGeometry from './geometry/cube-geometry';
 import {OrientedBoundingBox} from '@math.gl/culling';
+import {CubeGeometry, SphereGeometry} from '@luma.gl/engine';
 
 const BG_OPACITY = 100;
 const GEOMETRY_STEP = 50;
 const SINGLE_DATA = [0];
 
+// TODO: replace CompositeLayer to SimpleMeshLayer
 export default class ObbLayer extends CompositeLayer {
   initializeState() {
     if ('onTileLoadFail' in this.props) {
@@ -20,23 +20,40 @@ export default class ObbLayer extends CompositeLayer {
     };
   }
 
-  _generateMesh(tile) {
-    if (tile.header.obb) {
-      return new CubeGeometry({
-        halfSize: tile.header.obb.halfSize
-      });
-    }
-    if (tile.boundingVolume instanceof OrientedBoundingBox) {
-      return new CubeGeometry({
-        halfSize: tile.boundingVolume.halfSize
-      });
-    }
+  _generateCubeMesh(tile) {
+    const geometry = new CubeGeometry();
+    const halfSize = tile.header.obb.halfSize;
+    const {attributes} = geometry;
 
+    const POSITION = {
+      ...attributes.POSITION,
+      value: new Float32Array(attributes.POSITION.value)
+    };
+    for (let i = 0; i < POSITION.value.length; i += 3) {
+      POSITION.value[i] *= halfSize[0] * 2;
+      POSITION.value[i + 1] *= halfSize[1] * 2;
+      POSITION.value[i + 2] *= halfSize[2] * 2;
+    }
+    geometry.attributes = {
+      ...attributes,
+      POSITION
+    };
+    return geometry;
+  }
+
+  _generateSphereMesh(tile) {
     return new SphereGeometry({
       radius: tile.boundingVolume.radius,
       nlat: GEOMETRY_STEP,
       nlong: GEOMETRY_STEP
     });
+  }
+
+  _generateMesh(tile) {
+    if (tile.header.obb || tile.boundingVolume instanceof OrientedBoundingBox) {
+      return this._generateCubeMesh(tile);
+    }
+    return this._generateSphereMesh(tile);
   }
 
   _getObbLayer(tile, oldLayer) {

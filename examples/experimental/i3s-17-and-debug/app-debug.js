@@ -18,13 +18,13 @@ import ControlPanel from './components/control-panel';
 import {
   INITIAL_MAP_STYLE,
   CONTRAST_MAP_STYLES,
-  INITIAL_TILE_COLORING_MODE,
-  INITIAL_OBB_COLORING_MODE
+  INITIAL_TILE_COLOR_MODE,
+  INITIAL_OBB_COLOR_MODE
 } from './constants';
 import {getFrustumBounds} from './frustum-utils';
 import TileLayer from './tile-layer/tile-layer';
-import ObbLayer from './obb-utils';
-import ColorMap from './coloring-utils';
+import ObbLayer from './obb-layer';
+import ColorMap from './color-map';
 import AttributesTooltip from './components/attributes-tooltip';
 import {getTileDebugInfo} from './tile-debug';
 import {parseTilesetUrlFromUrl, parseTilesetUrlParams} from './url-utils';
@@ -103,8 +103,8 @@ export default class App extends PureComponent {
       debugOptions: {
         minimap: true,
         obb: false,
-        tileColoringMode: INITIAL_TILE_COLORING_MODE,
-        obbColoringMode: INITIAL_OBB_COLORING_MODE,
+        tileColorMode: INITIAL_TILE_COLOR_MODE,
+        obbColorMode: INITIAL_OBB_COLOR_MODE,
         pickable: false
       }
     };
@@ -238,7 +238,7 @@ export default class App extends PureComponent {
       tilesetUrl,
       token,
       viewState,
-      debugOptions: {obb, tileColoringMode, obbColoringMode, pickable}
+      debugOptions: {obb, tileColorMode, obbColorMode, pickable}
     } = this.state;
     const loadOptions = {throttleRequests: true, loadFeatureAttributes: false};
     if (token) {
@@ -248,7 +248,7 @@ export default class App extends PureComponent {
     this._colorsMap = this._colorsMap || new ColorMap();
     this._obbLayer = new ObbLayer({
       visible: obb,
-      coloredBy: obbColoringMode,
+      coloredBy: obbColorMode,
       colorsMap: this._colorsMap
     });
 
@@ -263,7 +263,7 @@ export default class App extends PureComponent {
         onTileLoad: this._onTileLoad.bind(this),
         onTileUnload: this._onTileUnload.bind(this),
         colorsMap: this._colorsMap,
-        tileColoringMode,
+        tileColorMode,
         loadOptions,
         pickable,
         autoHighlight: true,

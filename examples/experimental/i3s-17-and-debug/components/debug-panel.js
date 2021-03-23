@@ -6,10 +6,10 @@ import {faAngleDoubleLeft, faAngleDoubleRight} from '@fortawesome/free-solid-svg
 import DebugOptionGroup from './debug-option-group';
 
 import {
-  TILE_COLORING_MODES,
-  OBB_COLORING_MODES,
-  INITIAL_TILE_COLORING_MODE,
-  INITIAL_OBB_COLORING_MODE
+  TILE_COLOR_MODES,
+  OBB_COLOR_MODES,
+  INITIAL_TILE_COLOR_MODE,
+  INITIAL_OBB_COLOR_MODE
 } from '../constants';
 
 const Container = styled.div`
@@ -84,8 +84,8 @@ export default class DebugPanel extends PureComponent {
       expand: true,
       minimap: true,
       obb: false,
-      tileColoringMode: INITIAL_TILE_COLORING_MODE,
-      obbColoringMode: INITIAL_OBB_COLORING_MODE,
+      tileColorMode: INITIAL_TILE_COLOR_MODE,
+      obbColorMode: INITIAL_OBB_COLOR_MODE,
       pickable: false
     };
 
@@ -94,8 +94,8 @@ export default class DebugPanel extends PureComponent {
     this.toggleObb = this.toggleObb.bind(this);
     this.togglePickable = this.togglePickable.bind(this);
 
-    this.changedTileColoringMode = this.changedTileColoringMode.bind(this);
-    this.changedObbColoringMode = this.changedObbColoringMode.bind(this);
+    this.changedTileColorMode = this.changedTileColorMode.bind(this);
+    this.changedObbColorMode = this.changedObbColorMode.bind(this);
   }
 
   toggleDebugPanel() {
@@ -124,26 +124,26 @@ export default class DebugPanel extends PureComponent {
     });
   }
 
-  changedTileColoringMode({tileColoringMode}) {
-    this.setState({tileColoringMode}, () => {
+  changedTileColorMode({tileColorMode}) {
+    this.setState({tileColorMode}, () => {
       this.applyOptions();
     });
   }
 
-  changedObbColoringMode({obbColoringMode}) {
-    this.setState({obbColoringMode}, () => {
+  changedObbColorMode({obbColorMode}) {
+    this.setState({obbColorMode}, () => {
       this.applyOptions();
     });
   }
 
   applyOptions() {
-    const {obb, tileColoringMode, obbColoringMode, pickable, minimap} = this.state;
+    const {obb, tileColorMode, obbColorMode, pickable, minimap} = this.state;
     const {onOptionsChange} = this.props;
     onOptionsChange({
       minimap,
       obb,
-      tileColoringMode,
-      obbColoringMode,
+      tileColorMode,
+      obbColorMode,
       pickable
     });
   }
@@ -171,9 +171,9 @@ export default class DebugPanel extends PureComponent {
   }
 
   renderObbOptions() {
-    const {obbColoringMode, obb} = this.state;
+    const {obbColorMode, obb} = this.state;
     return (
-      <DebugOptionGroup title="Oriented bounding box">
+      <DebugOptionGroup title="Bounding volumes">
         <CheckboxOption>
           <InputCheckbox
             onChange={this.toggleObb}
@@ -185,15 +185,15 @@ export default class DebugPanel extends PureComponent {
           <label htmlFor="obb">Show</label>
         </CheckboxOption>
         <DropDown
-          value={obbColoringMode}
+          value={obbColorMode}
           onChange={evt => {
             const selected = evt.target.value;
-            this.changedObbColoringMode({obbColoringMode: parseInt(selected, 10)});
+            this.changedObbColorMode({obbColorMode: parseInt(selected, 10)});
           }}
         >
-          {Object.keys(OBB_COLORING_MODES).map(key => {
+          {Object.keys(OBB_COLOR_MODES).map(key => {
             return (
-              <option key={key} value={OBB_COLORING_MODES[key]}>
+              <option key={key} value={OBB_COLOR_MODES[key]}>
                 {key}
               </option>
             );
@@ -204,7 +204,7 @@ export default class DebugPanel extends PureComponent {
   }
 
   renderTileOptions() {
-    const {tileColoringMode, pickable} = this.state;
+    const {tileColorMode, pickable} = this.state;
     return (
       <DebugOptionGroup title="Tiles">
         <CheckboxOption>
@@ -218,15 +218,15 @@ export default class DebugPanel extends PureComponent {
           <label htmlFor="pickable">Pickable</label>
         </CheckboxOption>
         <DropDown
-          value={tileColoringMode}
+          value={tileColorMode}
           onChange={evt => {
             const selected = evt.target.value;
-            this.changedTileColoringMode({tileColoringMode: parseInt(selected, 10)});
+            this.changedTileColorMode({tileColorMode: parseInt(selected, 10)});
           }}
         >
-          {Object.keys(TILE_COLORING_MODES).map(key => {
+          {Object.keys(TILE_COLOR_MODES).map(key => {
             return (
-              <option key={key} value={TILE_COLORING_MODES[key]}>
+              <option key={key} value={TILE_COLOR_MODES[key]}>
                 {key}
               </option>
             );
