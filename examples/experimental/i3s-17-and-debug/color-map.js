@@ -23,6 +23,7 @@ export const DEPTH_COLOR_MAP = {
 
 const DEPTH_MAX_LEVEL = 12;
 const DEFAULT_COLOR = [255, 255, 255];
+const DEFAULT_HIGLIGHT_COLOR = [0, 100, 255];
 
 export default class ColorMap {
   constructor() {
@@ -41,7 +42,7 @@ export default class ColorMap {
       case COLORED_BY.TILE:
         return this._getColorByTile(tile.id);
       case COLORED_BY.CUSTOM:
-        return this._getCustomColor();
+        return this._getCustomColor(tile.id, options);
       default:
         return DEFAULT_COLOR;
     }
@@ -58,9 +59,12 @@ export default class ColorMap {
     return colorMap[id];
   }
 
-  _getCustomColor() {
-    // TODO: implement after tile-selecting feature
-    return [255, 255, 255];
+  _getCustomColor(tileId, options) {
+    if (options.selectedTileId === tileId) {
+      return DEFAULT_HIGLIGHT_COLOR;
+    }
+    // TODO: implement individual selectable colors
+    return DEFAULT_COLOR;
   }
 
   _getRandomColor(id) {

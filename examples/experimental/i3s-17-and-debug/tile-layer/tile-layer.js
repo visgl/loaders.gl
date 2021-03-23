@@ -47,7 +47,14 @@ export default class TileLayer extends Tile3DLayer {
   _makeSimpleMeshLayer(tileHeader, oldLayer) {
     const content = tileHeader.content;
     const {attributes, modelMatrix, cartographicOrigin, texture, material} = content;
-    const {pickable, autoHighlight, tileColorMode, isDebugMode, colorsMap} = this.props;
+    const {
+      pickable,
+      autoHighlight,
+      tileColorMode,
+      isDebugMode,
+      colorsMap,
+      selectedTileId
+    } = this.props;
 
     const geometry =
       (oldLayer && oldLayer.props.mesh) ||
@@ -57,7 +64,7 @@ export default class TileLayer extends Tile3DLayer {
       });
 
     const color = colorsMap
-      ? colorsMap.getTileColor(tileHeader, {coloredBy: tileColorMode})
+      ? colorsMap.getTileColor(tileHeader, {coloredBy: tileColorMode, selectedTileId})
       : [255, 255, 255];
 
     return new MeshLayer(

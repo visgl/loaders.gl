@@ -12,6 +12,7 @@ import {I3SLoader} from '@loaders.gl/i3s';
 import {StatsWidget} from '@probe.gl/stats-widget';
 
 import {INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
+import AttributesPanel from './components/attributes-panel';
 import DebugPanel from './components/debug-panel';
 import ControlPanel from './components/control-panel';
 
@@ -106,10 +107,13 @@ export default class App extends PureComponent {
         tileColorMode: INITIAL_TILE_COLOR_MODE,
         obbColorMode: INITIAL_OBB_COLOR_MODE,
         pickable: false
-      }
+      },
+      tileInfo: null,
+      selectedTileId: null
     };
     this._onSelectTileset = this._onSelectTileset.bind(this);
     this._setDebugOptions = this._setDebugOptions.bind(this);
+    this.handleClosePanel = this.handleClosePanel.bind(this);
   }
 
   componentDidMount() {
@@ -238,7 +242,8 @@ export default class App extends PureComponent {
       tilesetUrl,
       token,
       viewState,
-      debugOptions: {obb, tileColorMode, obbColorMode, pickable}
+      debugOptions: {obb, tileColorMode, obbColorMode, pickable},
+      selectedTileId
     } = this.state;
     const loadOptions = {throttleRequests: true};
 
@@ -268,7 +273,8 @@ export default class App extends PureComponent {
         loadOptions,
         pickable,
         autoHighlight: true,
-        isDebugMode: true
+        isDebugMode: true,
+        selectedTileId
       }),
       new LineLayer({
         id: 'frustum',
@@ -326,14 +332,40 @@ export default class App extends PureComponent {
     return {html: tooltip.innerHTML};
   }
 
+  handleClick(info) {
+    if (!info.object) {
+      this.handleClosePanel();
+      return;
+    }
+    // TODO add more info to panel about tile
+    const tileInfo = getTileDebugInfo(info.object);
+    this.setState({tileInfo, selectedTileId: info.object.id});
+  }
+
+  handleClosePanel() {
+    this.setState({tileInfo: null, selectedTileId: null});
+  }
+
+  renderAttributesPanel() {
+    const {tileInfo} = this.state;
+
+    return (
+      <AttributesPanel
+        handleClosePanel={this.handleClosePanel}
+        attributesObject={tileInfo}
+        attributesHeader={'TILE_ID'}
+      />
+    );
+  }
+
   render() {
     const layers = this._renderLayers();
-    const {selectedMapStyle} = this.state;
+    const {selectedMapStyle, tileInfo} = this.state;
 
     return (
       <div style={{position: 'relative', height: '100%'}}>
         {this._renderDebugPanel()}
-        {this._renderControlPanel()}
+        {tileInfo ? this.renderAttributesPanel() : this._renderControlPanel()}
         <DeckGL
           layers={layers}
           viewState={this._getViewState()}
@@ -342,6 +374,7 @@ export default class App extends PureComponent {
           onViewStateChange={this._onViewStateChange.bind(this)}
           onAfterRender={() => this._updateStatWidgets()}
           getTooltip={info => this.getTooltip(info)}
+          onClick={info => this.handleClick(info)}
         >
           {/* <StaticMap mapStyle={selectedMapStyle} preventStyleDiffing /> */}
           <StaticMap reuseMaps mapStyle={selectedMapStyle} preventStyleDiffing={true} />
