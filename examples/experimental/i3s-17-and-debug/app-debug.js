@@ -15,9 +15,16 @@ import {INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
 import DebugPanel from './components/debug-panel';
 import ControlPanel from './components/control-panel';
 
-import {INITIAL_MAP_STYLE, CONTRAST_MAP_STYLES, INITIAL_COLORING_MODE} from './constants';
+import {
+  INITIAL_MAP_STYLE,
+  CONTRAST_MAP_STYLES,
+  INITIAL_TILE_COLOR_MODE,
+  INITIAL_OBB_COLOR_MODE
+} from './constants';
 import {getFrustumBounds} from './frustum-utils';
 import TileLayer from './tile-layer/tile-layer';
+import ObbLayer from './obb-layer';
+import ColorMap from './color-map';
 import AttributesTooltip from './components/attributes-tooltip';
 import {getTileDebugInfo} from './tile-debug';
 import {parseTilesetUrlFromUrl, parseTilesetUrlParams} from './url-utils';
@@ -76,6 +83,8 @@ export default class App extends PureComponent {
   constructor(props) {
     super(props);
     this._tilesetStatsWidget = null;
+    this._obbLayer = null;
+    this._colorMap = null;
     this.state = {
       url: null,
       token: null,
@@ -90,10 +99,13 @@ export default class App extends PureComponent {
           bearing: 0
         }
       },
-      selectedColoringMode: INITIAL_COLORING_MODE,
       selectedMapStyle: INITIAL_MAP_STYLE,
       debugOptions: {
-        minimap: true
+        minimap: true,
+        obb: false,
+        tileColorMode: INITIAL_TILE_COLOR_MODE,
+        obbColorMode: INITIAL_OBB_COLOR_MODE,
+        pickable: false
       }
     };
     this._onSelectTileset = this._onSelectTileset.bind(this);
@@ -142,12 +154,22 @@ export default class App extends PureComponent {
     this.setState({tilesetUrl, name, token});
     const metadata = await fetch(metadataUrl).then(resp => resp.json());
     this.setState({metadata});
+    this._obbLayer.resetTiles();
   }
 
   // Updates stats, called every frame
   _updateStatWidgets() {
     this._memWidget.update();
     this._tilesetStatsWidget.update();
+  }
+
+  _onTileLoad(tile) {
+    this._updateStatWidgets();
+    this._obbLayer.addTile(tile);
+  }
+
+  _onTileUnload() {
+    this._updateStatWidgets();
   }
 
   _onTilesetLoad(tileset) {
@@ -211,17 +233,25 @@ export default class App extends PureComponent {
     this.setState({debugOptions});
   }
 
-  _onSelectColoringMode({selectedColoringMode}) {
-    this.setState({selectedColoringMode});
-  }
-
   _renderLayers() {
-    const {tilesetUrl, token, viewState, selectedColoringMode} = this.state;
+    const {
+      tilesetUrl,
+      token,
+      viewState,
+      debugOptions: {obb, tileColorMode, obbColorMode, pickable}
+    } = this.state;
     const loadOptions = {throttleRequests: true};
 
     if (token) {
       loadOptions.token = token;
     }
+
+    this._colorsMap = this._colorsMap || new ColorMap();
+    this._obbLayer = new ObbLayer({
+      visible: obb,
+      coloredBy: obbColorMode,
+      colorsMap: this._colorsMap
+    });
 
     const viewport = new WebMercatorViewport(viewState.main);
     const frustumBounds = getFrustumBounds(viewport);
@@ -231,11 +261,12 @@ export default class App extends PureComponent {
         data: tilesetUrl,
         loader: I3SLoader,
         onTilesetLoad: this._onTilesetLoad.bind(this),
-        onTileLoad: () => this._updateStatWidgets(),
-        onTileUnload: () => this._updateStatWidgets(),
-        coloredBy: selectedColoringMode,
+        onTileLoad: this._onTileLoad.bind(this),
+        onTileUnload: this._onTileUnload.bind(this),
+        colorsMap: this._colorsMap,
+        tileColorMode,
         loadOptions,
-        pickable: true,
+        pickable,
         autoHighlight: true,
         isDebugMode: true
       }),
@@ -246,7 +277,8 @@ export default class App extends PureComponent {
         getTargetPosition: d => d.target,
         getColor: d => d.color,
         getWidth: 2
-      })
+      }),
+      this._obbLayer
     ];
   }
 
@@ -260,7 +292,7 @@ export default class App extends PureComponent {
   }
 
   _renderControlPanel() {
-    const {name, tileset, token, metadata, selectedMapStyle, selectedColoringMode} = this.state;
+    const {name, tileset, token, metadata, selectedMapStyle} = this.state;
     return (
       <ControlPanel
         tileset={tileset}
@@ -269,9 +301,7 @@ export default class App extends PureComponent {
         token={token}
         onExampleChange={this._onSelectTileset}
         onMapStyleChange={this._onSelectMapStyle.bind(this)}
-        onColoringModeChange={this._onSelectColoringMode.bind(this)}
         selectedMapStyle={selectedMapStyle}
-        selectedColoringMode={selectedColoringMode}
       />
     );
   }

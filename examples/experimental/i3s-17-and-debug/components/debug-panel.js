@@ -5,6 +5,13 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faAngleDoubleLeft, faAngleDoubleRight} from '@fortawesome/free-solid-svg-icons';
 import DebugOptionGroup from './debug-option-group';
 
+import {
+  TILE_COLOR_MODES,
+  OBB_COLOR_MODES,
+  INITIAL_TILE_COLOR_MODE,
+  INITIAL_OBB_COLOR_MODE
+} from '../constants';
+
 const Container = styled.div`
   position: absolute;
   display: flex;
@@ -31,6 +38,13 @@ const DebugOptions = styled.div`
 
 const Header = styled.h3`
   margin: 0;
+`;
+
+const DropDown = styled.select`
+  margin-bottom: 10px;
+  margin-left: 3px;
+  display: flex;
+  width: 80%;
 `;
 
 const Expander = styled.div`
@@ -68,11 +82,20 @@ export default class DebugPanel extends PureComponent {
     super(props);
     this.state = {
       expand: true,
-      minimap: true
+      minimap: true,
+      obb: false,
+      tileColorMode: INITIAL_TILE_COLOR_MODE,
+      obbColorMode: INITIAL_OBB_COLOR_MODE,
+      pickable: false
     };
 
     this.toggleDebugPanel = this.toggleDebugPanel.bind(this);
     this.toggleMinimap = this.toggleMinimap.bind(this);
+    this.toggleObb = this.toggleObb.bind(this);
+    this.togglePickable = this.togglePickable.bind(this);
+
+    this.changedTileColorMode = this.changedTileColorMode.bind(this);
+    this.changedObbColorMode = this.changedObbColorMode.bind(this);
   }
 
   toggleDebugPanel() {
@@ -87,10 +110,42 @@ export default class DebugPanel extends PureComponent {
     });
   }
 
+  toggleObb() {
+    const {obb} = this.state;
+    this.setState({obb: !obb}, () => {
+      this.applyOptions();
+    });
+  }
+
+  togglePickable() {
+    const {pickable} = this.state;
+    this.setState({pickable: !pickable}, () => {
+      this.applyOptions();
+    });
+  }
+
+  changedTileColorMode({tileColorMode}) {
+    this.setState({tileColorMode}, () => {
+      this.applyOptions();
+    });
+  }
+
+  changedObbColorMode({obbColorMode}) {
+    this.setState({obbColorMode}, () => {
+      this.applyOptions();
+    });
+  }
+
   applyOptions() {
-    const {minimap} = this.state;
+    const {obb, tileColorMode, obbColorMode, pickable, minimap} = this.state;
     const {onOptionsChange} = this.props;
-    onOptionsChange({minimap});
+    onOptionsChange({
+      minimap,
+      obb,
+      tileColorMode,
+      obbColorMode,
+      pickable
+    });
   }
 
   getExpandStyles() {
@@ -115,6 +170,72 @@ export default class DebugPanel extends PureComponent {
     return <FontAwesomeIcon icon={faAngleDoubleRight} />;
   }
 
+  renderObbOptions() {
+    const {obbColorMode, obb} = this.state;
+    return (
+      <DebugOptionGroup title="Bounding volumes">
+        <CheckboxOption>
+          <InputCheckbox
+            onChange={this.toggleObb}
+            type="checkbox"
+            id="obb"
+            value={obb}
+            checked={obb}
+          />
+          <label htmlFor="obb">Show</label>
+        </CheckboxOption>
+        <DropDown
+          value={obbColorMode}
+          onChange={evt => {
+            const selected = evt.target.value;
+            this.changedObbColorMode({obbColorMode: parseInt(selected, 10)});
+          }}
+        >
+          {Object.keys(OBB_COLOR_MODES).map(key => {
+            return (
+              <option key={key} value={OBB_COLOR_MODES[key]}>
+                {key}
+              </option>
+            );
+          })}
+        </DropDown>
+      </DebugOptionGroup>
+    );
+  }
+
+  renderTileOptions() {
+    const {tileColorMode, pickable} = this.state;
+    return (
+      <DebugOptionGroup title="Tiles">
+        <CheckboxOption>
+          <InputCheckbox
+            onChange={this.togglePickable}
+            type="checkbox"
+            id="pickable"
+            value={pickable}
+            checked={pickable}
+          />
+          <label htmlFor="pickable">Pickable</label>
+        </CheckboxOption>
+        <DropDown
+          value={tileColorMode}
+          onChange={evt => {
+            const selected = evt.target.value;
+            this.changedTileColorMode({tileColorMode: parseInt(selected, 10)});
+          }}
+        >
+          {Object.keys(TILE_COLOR_MODES).map(key => {
+            return (
+              <option key={key} value={TILE_COLOR_MODES[key]}>
+                {key}
+              </option>
+            );
+          })}
+        </DropDown>
+      </DebugOptionGroup>
+    );
+  }
+
   render() {
     const {children} = this.props;
     const {minimap} = this.state;
@@ -134,6 +255,8 @@ export default class DebugPanel extends PureComponent {
               <label htmlFor="showFrustumCullingMinimap">Show</label>
             </CheckboxOption>
           </DebugOptionGroup>
+          {this.renderTileOptions()}
+          {this.renderObbOptions()}
           <ChildWrapper>{children}</ChildWrapper>
         </DebugOptions>
         <Expander onClick={this.toggleDebugPanel}>{this.renderExpandIcon()}</Expander>
