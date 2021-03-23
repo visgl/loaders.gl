@@ -175,7 +175,7 @@ export default class VectorTileFeature {
 }
 
 /**
- * In the original geojson implementation this function
+ * In the original GeoJSON implementation this function
  * classifies the rings in a polygon into outlines & holes,
  * based on the vertex winding order. However the implementation
  * was broken and all it did was classify each ring as a separate
@@ -193,6 +193,7 @@ function classifyRings(rings) {
   return rings.map(r => [r]);
 }
 
+// All code below is unchanged from the original Mapbox implemenation
 function readFeature(tag, feature, pbf) {
   if (tag === 1) feature.id = pbf.readVarint();
   else if (tag === 2) readTag(pbf, feature);

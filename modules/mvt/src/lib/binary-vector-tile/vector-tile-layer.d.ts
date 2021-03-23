@@ -5,7 +5,11 @@ import VectorTileFeature from './vector-tile-feature';
  * a vector tile layer. It has the same semantics
  * as the original library (https://github.com/mapbox/vector-tile-js)
  * except that the features it contains expose their data
- * in a binary optimized format, rather than geoJSON
+ * in a binary optimized format, rather than GeoJSON
+ *
+ * The VectorTileLayer class is unmodified from the original source,
+ * except that the `feature` method passes through an additional
+ * `firstPassData` parameter to the VectorTileFeature
  */
 export default class VectorTileLayer{
   // Public
