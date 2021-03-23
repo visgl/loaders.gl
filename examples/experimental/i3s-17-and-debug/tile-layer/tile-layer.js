@@ -56,6 +56,10 @@ export default class TileLayer extends Tile3DLayer {
         attributes: getMeshGeometry(attributes)
       });
 
+    const color = colorsMap
+      ? colorsMap.getTileColor(tileHeader, {coloredBy: tileColorMode})
+      : [255, 255, 255];
+
     return new MeshLayer(
       this.getSubLayerProps({
         id: 'mesh'
@@ -65,7 +69,7 @@ export default class TileLayer extends Tile3DLayer {
         mesh: geometry,
         data: SINGLE_DATA,
         getPosition: [0, 0, 0],
-        getColor: colorsMap.getTileColor(tileHeader, {coloredBy: tileColorMode}),
+        getColor: color,
         texture,
         material,
         modelMatrix,
