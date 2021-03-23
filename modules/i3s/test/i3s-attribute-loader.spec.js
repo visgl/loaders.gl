@@ -1,8 +1,5 @@
 import test from 'tape-promise/tape';
-import {
-  I3SAttributeLoader,
-  getTileAttributesFromFeatureId
-} from '@loaders.gl/i3s/i3s-attribute-loader';
+import {I3SAttributeLoader, loadFeatureAttributes} from '@loaders.gl/i3s/i3s-attribute-loader';
 import {load} from '@loaders.gl/core';
 
 const objectIdsUrl = '@loaders.gl/i3s/test/data/attributes/f_0/0/index.bin';
@@ -13,28 +10,30 @@ const name602 = 'West End Building\0';
 const objecId0 = 979297;
 const heightRoof0 = 32.18;
 
-const TILE = {
+const TILE_WITHOUT_URLS = {
   tileset: {
     tileset: {
-      attributeStorageInfo: [{key: 'f_0', name: 'OBJECTID'}, {key: 'f_1', name: 'NAME'}]
-    }
-  },
-  content: {
-    userData: {
-      attributesByObjectId: prepareAttributesByObjectIdMap()
+      attributeStorageInfo: [
+        {key: 'f_0', name: 'OBJECTID', objectIds: []},
+        {key: 'f_1', name: 'NAME', attributeValues: {valueType: 'String'}}
+      ]
     }
   }
 };
 
-function prepareAttributesByObjectIdMap() {
-  const attributesByObjectId = new Map();
-
-  for (let index = 1; index < 6; index++) {
-    attributesByObjectId.set(index, {OBJECTID: index, NAME: `Name_${index}`});
+const TILE = {
+  tileset: {
+    tileset: {
+      attributeStorageInfo: [
+        {key: 'f_0', name: 'OBJECTID', objectIds: []},
+        {key: 'f_1', name: 'NAME', attributeValues: {valueType: 'String'}}
+      ]
+    }
+  },
+  header: {
+    attributeUrls: [objectIdsUrl, namesUrl, heightRoofUrl]
   }
-
-  return attributesByObjectId;
-}
+};
 
 test('I3SAttributeLoader# should return empty object if no attributeName provided', async t => {
   const options = {
@@ -100,51 +99,72 @@ test('I3SAttributeLoader# should load float attribute', async t => {
   t.end();
 });
 
-test('I3SAttributeLoader#getTileAttributesFromFeatureId should return null if tile has no header prop', async t => {
+test('I3SAttributeLoader#loadFeatureAttributes should return null if no tile', async t => {
+  const tile = null;
   const featureId = 1;
-  const tile = {};
-  const attributes = getTileAttributesFromFeatureId(tile, featureId);
+  const options = {};
 
+  const attributes = await loadFeatureAttributes(tile, featureId, options);
   t.equal(attributes, null);
   t.end();
 });
 
-test('I3SAttributeLoader#getTileAttributesFromFeatureId should return null if tile has no userData prop', async t => {
+test('I3SAttributeLoader#loadFeatureAttributes should return null if no attributeUrls', async t => {
+  const tile = TILE_WITHOUT_URLS;
   const featureId = 1;
-  const tile = {
-    header: {}
-  };
-  const attributes = getTileAttributesFromFeatureId(tile, featureId);
+  const options = {};
 
+  const attributes = await loadFeatureAttributes(tile, featureId, options);
   t.equal(attributes, null);
   t.end();
 });
 
-test('I3SAttributeLoader#getTileAttributesFromFeatureId should return null if no attributesByObjectId', async t => {
-  const featureId = 1;
+test('I3SAttributeLoader#loadFeatureAttributes should return null if no featureId', async t => {
+  const tile = TILE;
+  const featureId = null;
+  const options = {};
+
+  const attributes = await loadFeatureAttributes(tile, featureId, options);
+  t.equal(attributes, null);
+  t.end();
+});
+
+test('I3SAttributeLoader#loadFeatureAttributes should return null if no objectIds in attributes', async t => {
   const tile = {
+    ...TILE,
+    tileset: {
+      tileset: {
+        attributeStorageInfo: [{key: 'f_1', name: 'NAME', attributeValues: {valueType: 'String'}}]
+      }
+    },
     header: {
-      userData: {}
+      attributeUrls: [namesUrl, heightRoofUrl]
     }
   };
-  const attributes = getTileAttributesFromFeatureId(tile, featureId);
+  const featureId = objecId0;
+  const options = {};
 
+  const attributes = await loadFeatureAttributes(tile, featureId, options);
   t.equal(attributes, null);
   t.end();
 });
 
-test('I3SAttributeLoader#getTileAttributesFromFeatureId should return null if no featureId in attributesByObjectId map', async t => {
-  const featureId = 6;
-  const attributes = getTileAttributesFromFeatureId(TILE, featureId);
+test('I3SAttributeLoader#loadFeatureAttributes should return null if no such objectId in objectIds array', async t => {
+  const tile = TILE;
+  const featureId = 12345;
+  const options = {};
 
+  const attributes = await loadFeatureAttributes(tile, featureId, options);
   t.equal(attributes, null);
   t.end();
 });
 
-test('I3SAttributeLoader#getTileAttributesFromFeatureId should return first attributes object from attributesByObjectId map', async t => {
-  const featureId = 1;
-  const attributes = getTileAttributesFromFeatureId(TILE, featureId);
-  t.ok(attributes);
-  t.deepEqual(attributes, {OBJECTID: 1, NAME: 'Name_1'});
+test('I3SAttributeLoader#loadFeatureAttributes should return attributes object', async t => {
+  const tile = TILE;
+  const featureId = objecId0;
+  const options = {};
+
+  const attributes = await loadFeatureAttributes(tile, featureId, options);
+  t.deepEqual(attributes, {OBJECTID: '979297', NAME: ' '});
   t.end();
 });
