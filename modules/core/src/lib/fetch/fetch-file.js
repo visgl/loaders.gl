@@ -1,4 +1,3 @@
-/* global fetch */
 import {resolvePath} from '@loaders.gl/loader-utils';
 import {makeResponse} from '../utils/response-utils';
 import {getErrorMessageFromResponse} from './fetch-error-message';

@@ -1,4 +1,3 @@
-/* global Buffer */
 import test from 'tape-promise/tape';
 import {
   toArrayBuffer,

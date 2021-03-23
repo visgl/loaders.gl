@@ -1,5 +1,3 @@
-/* globals TextDecoder */
-
 function systemIsLittleEndian() {
   const a = new Uint32Array([0x12345678]);
   const b = new Uint8Array(a.buffer, a.byteOffset, a.byteLength);

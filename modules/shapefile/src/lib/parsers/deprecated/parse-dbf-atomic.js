@@ -1,4 +1,3 @@
-/* global TextDecoder */
 import BinaryReader from '../../streaming/binary-reader';
 
 const LITTLE_ENDIAN = true;

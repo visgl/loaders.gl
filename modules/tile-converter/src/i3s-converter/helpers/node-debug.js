@@ -35,9 +35,7 @@ function validateMbs(tileWarnings, node) {
   const distanceBetweenCenters = tileMbs.center.distanceTo(parentMbs.center);
 
   if (distanceBetweenCenters + tileMbs.radius > parentMbs.radius) {
-    const title = `MBS of Tile (${node.id}) doesn't fit into Parent (${
-      node.parentNode.id
-    }) tile MBS`;
+    const title = `MBS of Tile (${node.id}) doesn't fit into Parent (${node.parentNode.id}) tile MBS`;
     tileWarnings.push(title);
   }
 }

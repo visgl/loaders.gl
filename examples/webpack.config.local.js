@@ -202,7 +202,6 @@ module.exports = (baseConfig, opts = {}) => env => {
   let config = baseConfig;
 
   /* eslint-disable no-console */
-  /* global console */
   if (env && env.help) {
     console.log(
       '--env.esnext: Use non-transpiled vis.gl dependencies and disable regenerator transforms'

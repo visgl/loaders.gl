@@ -70,27 +70,49 @@ test('WKTLoader', async t => {
   });
   t.deepEqual(parseSync('LINESTRING (30 10, 10 30, 40 40)', WKTLoader), {
     type: 'LineString',
-    coordinates: [[30, 10], [10, 30], [40, 40]]
+    coordinates: [
+      [30, 10],
+      [10, 30],
+      [40, 40]
+    ]
   });
   t.deepEqual(parseSync('LINESTRING(30 10, 10 30, 40 40)', WKTLoader), {
     type: 'LineString',
-    coordinates: [[30, 10], [10, 30], [40, 40]]
+    coordinates: [
+      [30, 10],
+      [10, 30],
+      [40, 40]
+    ]
   });
   t.deepEqual(parseSync('LineString(30 10, 10 30, 40 40)', WKTLoader), {
     type: 'LineString',
-    coordinates: [[30, 10], [10, 30], [40, 40]]
+    coordinates: [
+      [30, 10],
+      [10, 30],
+      [40, 40]
+    ]
   });
   t.deepEqual(parseSync('LINESTRING (1 2 3, 4 5 6)', WKTLoader), {
     type: 'LineString',
-    coordinates: [[1, 2, 3], [4, 5, 6]]
+    coordinates: [
+      [1, 2, 3],
+      [4, 5, 6]
+    ]
   });
   t.deepEqual(parseSync('LINESTRING (1 2 3 4, 5 6 7 8)', WKTLoader), {
     type: 'LineString',
-    coordinates: [[1, 2, 3, 4], [5, 6, 7, 8]]
+    coordinates: [
+      [1, 2, 3, 4],
+      [5, 6, 7, 8]
+    ]
   });
   t.deepEqual(parseSync('SRID=3857;LINESTRING (30 10, 10 30, 40 40)', WKTLoader), {
     type: 'LineString',
-    coordinates: [[30, 10], [10, 30], [40, 40]],
+    coordinates: [
+      [30, 10],
+      [10, 30],
+      [40, 40]
+    ],
     crs: {
       type: 'name',
       properties: {
@@ -100,15 +122,39 @@ test('WKTLoader', async t => {
   });
   t.deepEqual(parseSync('POLYGON ((30 10, 10 20, 20 40, 40 40, 30 10))', WKTLoader), {
     type: 'Polygon',
-    coordinates: [[[30, 10], [10, 20], [20, 40], [40, 40], [30, 10]]]
+    coordinates: [
+      [
+        [30, 10],
+        [10, 20],
+        [20, 40],
+        [40, 40],
+        [30, 10]
+      ]
+    ]
   });
   t.deepEqual(parseSync('POLYGON((30 10, 10 20, 20 40, 40 40, 30 10))', WKTLoader), {
     type: 'Polygon',
-    coordinates: [[[30, 10], [10, 20], [20, 40], [40, 40], [30, 10]]]
+    coordinates: [
+      [
+        [30, 10],
+        [10, 20],
+        [20, 40],
+        [40, 40],
+        [30, 10]
+      ]
+    ]
   });
   t.deepEqual(parseSync('SRID=3857;POLYGON ((30 10, 10 20, 20 40, 40 40, 30 10))', WKTLoader), {
     type: 'Polygon',
-    coordinates: [[[30, 10], [10, 20], [20, 40], [40, 40], [30, 10]]],
+    coordinates: [
+      [
+        [30, 10],
+        [10, 20],
+        [20, 40],
+        [40, 40],
+        [30, 10]
+      ]
+    ],
     crs: {
       type: 'name',
       properties: {
@@ -124,26 +170,49 @@ test('WKTLoader', async t => {
     {
       type: 'Polygon',
       coordinates: [
-        [[35, 10], [10, 20], [15, 40], [45, 45], [35, 10]],
-        [[20, 30], [35, 35], [30, 20], [20, 30]]
+        [
+          [35, 10],
+          [10, 20],
+          [15, 40],
+          [45, 45],
+          [35, 10]
+        ],
+        [
+          [20, 30],
+          [35, 35],
+          [30, 20],
+          [20, 30]
+        ]
       ]
     }
   );
   t.deepEqual(parseSync('MULTIPOINT (0 0, 2 3)', WKTLoader), {
     type: 'MultiPoint',
-    coordinates: [[0, 0], [2, 3]]
+    coordinates: [
+      [0, 0],
+      [2, 3]
+    ]
   });
   t.deepEqual(parseSync('MULTIPOINT (1 1, 2 3)', WKTLoader), {
     type: 'MultiPoint',
-    coordinates: [[1, 1], [2, 3]]
+    coordinates: [
+      [1, 1],
+      [2, 3]
+    ]
   });
   t.deepEqual(parseSync('MultiPoint (1 1, 2 3)', WKTLoader), {
     type: 'MultiPoint',
-    coordinates: [[1, 1], [2, 3]]
+    coordinates: [
+      [1, 1],
+      [2, 3]
+    ]
   });
   t.deepEqual(parseSync('SRID=3857;MULTIPOINT (1 1, 2 3)', WKTLoader), {
     type: 'MultiPoint',
-    coordinates: [[1, 1], [2, 3]],
+    coordinates: [
+      [1, 1],
+      [2, 3]
+    ],
     crs: {
       type: 'name',
       properties: {
@@ -153,19 +222,31 @@ test('WKTLoader', async t => {
   });
   t.deepEqual(parseSync('MULTIPOINT ((0 0), (2 3))', WKTLoader), {
     type: 'MultiPoint',
-    coordinates: [[0, 0], [2, 3]]
+    coordinates: [
+      [0, 0],
+      [2, 3]
+    ]
   });
   t.deepEqual(parseSync('MULTIPOINT ((1 1), (2 3))', WKTLoader), {
     type: 'MultiPoint',
-    coordinates: [[1, 1], [2, 3]]
+    coordinates: [
+      [1, 1],
+      [2, 3]
+    ]
   });
   t.deepEqual(parseSync('MultiPoint ((1 1), (2 3))', WKTLoader), {
     type: 'MultiPoint',
-    coordinates: [[1, 1], [2, 3]]
+    coordinates: [
+      [1, 1],
+      [2, 3]
+    ]
   });
   t.deepEqual(parseSync('SRID=3857;MULTIPOINT ((1 1), (2 3))', WKTLoader), {
     type: 'MultiPoint',
-    coordinates: [[1, 1], [2, 3]],
+    coordinates: [
+      [1, 1],
+      [2, 3]
+    ],
     crs: {
       type: 'name',
       properties: {
@@ -177,7 +258,18 @@ test('WKTLoader', async t => {
     parseSync('MULTILINESTRING ((30 10, 10 30, 40 40), (30 10, 10 30, 40 40))', WKTLoader),
     {
       type: 'MultiLineString',
-      coordinates: [[[30, 10], [10, 30], [40, 40]], [[30, 10], [10, 30], [40, 40]]]
+      coordinates: [
+        [
+          [30, 10],
+          [10, 30],
+          [40, 40]
+        ],
+        [
+          [30, 10],
+          [10, 30],
+          [40, 40]
+        ]
+      ]
     }
   );
   t.deepEqual(
@@ -187,7 +279,18 @@ test('WKTLoader', async t => {
     ),
     {
       type: 'MultiLineString',
-      coordinates: [[[30, 10], [10, 30], [40, 40]], [[30, 10], [10, 30], [40, 40]]],
+      coordinates: [
+        [
+          [30, 10],
+          [10, 30],
+          [40, 40]
+        ],
+        [
+          [30, 10],
+          [10, 30],
+          [40, 40]
+        ]
+      ],
       crs: {
         type: 'name',
         properties: {
@@ -204,8 +307,23 @@ test('WKTLoader', async t => {
     {
       type: 'MultiPolygon',
       coordinates: [
-        [[[30, 20], [10, 40], [45, 40], [30, 20]]],
-        [[[15, 5], [40, 10], [10, 20], [5, 10], [15, 5]]]
+        [
+          [
+            [30, 20],
+            [10, 40],
+            [45, 40],
+            [30, 20]
+          ]
+        ],
+        [
+          [
+            [15, 5],
+            [40, 10],
+            [10, 20],
+            [5, 10],
+            [15, 5]
+          ]
+        ]
       ]
     }
   );
@@ -221,8 +339,29 @@ test('WKTLoader', async t => {
     {
       type: 'MultiPolygon',
       coordinates: [
-        [[[30, 20], [10, 40], [45, 40], [30, 20]]],
-        [[[15, 5], [40, 10], [10, 20], [5, 10], [15, 5]], [[10, 10], [15, 10], [15, 15], [10, 10]]]
+        [
+          [
+            [30, 20],
+            [10, 40],
+            [45, 40],
+            [30, 20]
+          ]
+        ],
+        [
+          [
+            [15, 5],
+            [40, 10],
+            [10, 20],
+            [5, 10],
+            [15, 5]
+          ],
+          [
+            [10, 10],
+            [15, 10],
+            [15, 15],
+            [10, 10]
+          ]
+        ]
       ]
     }
   );
@@ -234,8 +373,23 @@ test('WKTLoader', async t => {
     {
       type: 'MultiPolygon',
       coordinates: [
-        [[[30, 20], [10, 40], [45, 40], [30, 20]]],
-        [[[15, 5], [40, 10], [10, 20], [5, 10], [15, 5]]]
+        [
+          [
+            [30, 20],
+            [10, 40],
+            [45, 40],
+            [30, 20]
+          ]
+        ],
+        [
+          [
+            [15, 5],
+            [40, 10],
+            [10, 20],
+            [5, 10],
+            [15, 5]
+          ]
+        ]
       ],
       crs: {
         type: 'name',
@@ -255,7 +409,10 @@ test('WKTLoader', async t => {
       },
       {
         type: 'LineString',
-        coordinates: [[4, 6], [7, 10]]
+        coordinates: [
+          [4, 6],
+          [7, 10]
+        ]
       }
     ]
   });
@@ -268,7 +425,10 @@ test('WKTLoader', async t => {
       },
       {
         type: 'LineString',
-        coordinates: [[4, 6], [7, 10]]
+        coordinates: [
+          [4, 6],
+          [7, 10]
+        ]
       }
     ]
   });
@@ -290,12 +450,24 @@ test('WKTLoader', async t => {
 
   t.deepEqual(parseSync('LINESTRING Z (30 10 1, 10 30 2, 40 40 3)', WKTLoader), {
     type: 'LineString',
-    coordinates: [[30, 10, 1], [10, 30, 2], [40, 40, 3]]
+    coordinates: [
+      [30, 10, 1],
+      [10, 30, 2],
+      [40, 40, 3]
+    ]
   });
 
   t.deepEqual(parseSync('POLYGON Z ((30 10 1, 10 20 2, 20 40 3, 40 40 4, 30 10 5))', WKTLoader), {
     type: 'Polygon',
-    coordinates: [[[30, 10, 1], [10, 20, 2], [20, 40, 3], [40, 40, 4], [30, 10, 5]]]
+    coordinates: [
+      [
+        [30, 10, 1],
+        [10, 20, 2],
+        [20, 40, 3],
+        [40, 40, 4],
+        [30, 10, 5]
+      ]
+    ]
   });
 
   t.end();

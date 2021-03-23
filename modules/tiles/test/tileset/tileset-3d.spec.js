@@ -1,7 +1,6 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
-/* global btoa, setInterval, clearInterval, setTimeout */ // loaders.gl/polyfills under Node.js
 import test from 'tape-promise/tape';
 import {WebMercatorViewport} from '@deck.gl/core';
 import {load} from '@loaders.gl/core';

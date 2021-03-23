@@ -1,4 +1,3 @@
-/* global fetch, document */
 import {global, isBrowser, isWorker} from '../env-utils/globals';
 import * as node from '../node/require-utils.node';
 import {assert} from '../env-utils/assert';
@@ -67,7 +66,6 @@ async function loadLibraryFromFile(libraryUrl) {
     return node.requireFromFile && (await node.requireFromFile(libraryUrl));
   }
   if (isWorker) {
-    /* global importScripts */
     return importScripts(libraryUrl);
   }
   // TODO - fix - should be more secure than string parsing since observes CORS

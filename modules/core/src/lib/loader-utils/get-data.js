@@ -1,4 +1,3 @@
-/* global TextDecoder */
 import {concatenateChunksAsync} from '@loaders.gl/loader-utils';
 import {
   isResponse,

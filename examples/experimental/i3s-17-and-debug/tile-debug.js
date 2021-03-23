@@ -289,16 +289,12 @@ function checkLOD(tile, tileWarnings) {
       warning => warning.tileId === tile.parent.id && warning.type === PARENT_LOD_WARNING_TYPE
     )
   ) {
-    const title = `Tile (${
-      tile.parent.id
-    }) LOD/Radius ratio "${parentLodRatio}" > mean child LOD/Radius ratio "${meanRatio}"`;
+    const title = `Tile (${tile.parent.id}) LOD/Radius ratio "${parentLodRatio}" > mean child LOD/Radius ratio "${meanRatio}"`;
     tileWarnings.push({type: PARENT_LOD_WARNING_TYPE, title, tileId: tile.parent.id});
   }
 
   if (Math.abs(tileLodRatio - meanRatio) > divergence) {
-    const title = `Tile (${
-      tile.id
-    }) LOD/Radius ratio "${tileLodRatio}" has large deviation from mean LOD/Radius ratio of neighbors "${meanRatio}"`;
+    const title = `Tile (${tile.id}) LOD/Radius ratio "${tileLodRatio}" has large deviation from mean LOD/Radius ratio of neighbors "${meanRatio}"`;
     tileWarnings.push({type: LOD_WARNING_TYPE, title, tileId: tile.parent.id});
   }
 }

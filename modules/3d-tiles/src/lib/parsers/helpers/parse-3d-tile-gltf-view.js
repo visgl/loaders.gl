@@ -1,8 +1,6 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
-/* global TextDecoder */
-
 // TODO - should we automatically parse the embedded glTF or leave it to the app?
 // - I.e. some apps might work directly on a GLB, in that case no need for us to decode...
 // - And if we decode, do we still keep the GLB in case it is needed?

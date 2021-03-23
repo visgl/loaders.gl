@@ -1,4 +1,3 @@
-/* global TextDecoder, DOMParser */
 import {geojsonToBinary} from '@loaders.gl/gis';
 import {gpx} from '@tmcw/togeojson';
 

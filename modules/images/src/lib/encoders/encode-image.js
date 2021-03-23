@@ -1,5 +1,4 @@
 // Image loading/saving for browser and Node.js
-/* global document, ImageBitmap, ImageData */
 import {global} from '../utils/globals';
 import {getImageSize} from '../category-api/parsed-image-api';
 

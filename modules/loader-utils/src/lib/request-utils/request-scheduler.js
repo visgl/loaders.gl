@@ -1,6 +1,5 @@
 // TODO - this should move to core when test cases are more complete
 
-/* global setTimeout */
 import {Stats} from '@probe.gl/stats';
 
 const STAT_QUEUED_REQUESTS = 'Queued Requests';

@@ -1,4 +1,3 @@
-/* global TextEncoder */
 import {padToNBytes} from './memory-copy-utils';
 
 export function copyPaddedArrayBufferToDataView(dataView, byteOffset, sourceBuffer, padding) {

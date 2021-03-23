@@ -1,8 +1,6 @@
 // TextDecoder iterators
 // TextDecoder will keep any partial undecoded bytes between calls to `decode`
 
-/* global TextDecoder, TextEncoder */
-
 export async function* makeTextDecoderIterator(arrayBufferIterator, options) {
   const textDecoder = new TextDecoder(options);
   for await (const arrayBuffer of arrayBufferIterator) {

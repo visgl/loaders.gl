@@ -1,8 +1,6 @@
 // NOTE - there is a copy of this function is both in core and loader-utils
 // core does not need all the utils in loader-utils, just this one.
 
-/* global MessagePort, ImageBitmap, OffscreenCanvas */
-
 // Returns an array of Transferrable objects that can be used with postMessage
 // https://developer.mozilla.org/en-US/docs/Web/API/Worker/postMessage
 export function getTransferList(object, recursive = true, transfers) {

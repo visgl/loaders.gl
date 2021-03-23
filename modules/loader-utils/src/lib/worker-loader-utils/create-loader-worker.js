@@ -1,5 +1,4 @@
 /* eslint-disable no-restricted-globals */
-/* global TextDecoder, self */
 
 import {WorkerBody} from '@loaders.gl/worker-utils';
 // import {validateLoaderVersion} from './validate-loader-version';

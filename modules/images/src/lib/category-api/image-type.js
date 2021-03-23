@@ -1,4 +1,3 @@
-/* global ImageBitmap, Image */
 import {global, isBrowser} from '../utils/globals';
 
 // @ts-ignore TS2339: Property does not exist on type

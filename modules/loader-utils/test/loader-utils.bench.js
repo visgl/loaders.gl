@@ -1,4 +1,3 @@
-/* global File */
 import {concatenateChunksAsync, concatenateArrayBuffers} from '@loaders.gl/loader-utils';
 
 export default async function loaderUtilsBench(suite) {

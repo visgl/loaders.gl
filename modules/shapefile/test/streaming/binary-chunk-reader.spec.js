@@ -53,14 +53,24 @@ test('BinaryChunkReader#findBufferOffsets multiple views', t => {
   reader.write(buf3);
 
   let bufferOffsets = reader.findBufferOffsets(5);
-  t.deepEquals(bufferOffsets, [[0, [0, 3]], [1, [0, 2]]]);
+  t.deepEquals(bufferOffsets, [
+    [0, [0, 3]],
+    [1, [0, 2]]
+  ]);
 
   reader.skip(2);
   bufferOffsets = reader.findBufferOffsets(5);
-  t.deepEquals(bufferOffsets, [[0, [2, 3]], [1, [0, 3]], [2, [0, 1]]]);
+  t.deepEquals(bufferOffsets, [
+    [0, [2, 3]],
+    [1, [0, 3]],
+    [2, [0, 1]]
+  ]);
 
   bufferOffsets = reader.findBufferOffsets(2);
-  t.deepEquals(bufferOffsets, [[0, [2, 3]], [1, [0, 1]]]);
+  t.deepEquals(bufferOffsets, [
+    [0, [2, 3]],
+    [1, [0, 1]]
+  ]);
   t.end();
 });
 

@@ -1,4 +1,3 @@
-/* global global */
 import {ReadableStreamPolyfill} from './readable-stream-polyfill';
 import {BlobPolyfill} from './blob-polyfill';
 import {FileReaderPolyfill} from './file-reader-polyfill';

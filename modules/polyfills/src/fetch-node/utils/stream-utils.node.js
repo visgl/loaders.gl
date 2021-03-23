@@ -1,4 +1,3 @@
-/* global URL */
 import fs from 'fs'; // `fs` will be empty object in browsers (see package.json "browser" field).
 import http from 'http';
 import https from 'https';

@@ -1,4 +1,3 @@
-/* global Blob */
 import test from 'tape-promise/tape';
 import {fetchFile, selectLoader, selectLoaderSync, isBrowser} from '@loaders.gl/core';
 import {ImageLoader} from '@loaders.gl/images';

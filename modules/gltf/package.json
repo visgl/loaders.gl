@@ -35,7 +35,7 @@
   "scripts": {
     "pre-build": "npm run build-bin && npm run build-bundle",
     "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js",
-    "build-bin": "BABEL_ENV=es5 babel scripts --config-file ../../babel.config.js --out-dir dist/scripts"
+    "build-bin": "BABEL_ENV=es5 babel scripts --config-file ../../.babelrc.js --out-dir dist/scripts"
   },
   "dependencies": {
     "@loaders.gl/core": "3.0.0-alpha.18",

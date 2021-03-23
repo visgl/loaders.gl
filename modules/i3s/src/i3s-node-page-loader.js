@@ -1,4 +1,3 @@
-/* global TextDecoder */
 /** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 
 // __VERSION__ is injected by babel-plugin-version-inline

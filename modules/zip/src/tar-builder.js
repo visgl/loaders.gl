@@ -1,4 +1,3 @@
-/* global Response */
 import Tar from './lib/tar/tar';
 
 const TAR_BUILDER_OPTIONS = {

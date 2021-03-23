@@ -1,5 +1,4 @@
-/* global Cesium, fetch */
-
+/* global Cesium */
 import {Vector3} from '@math.gl/core';
 import {setLoaderOptions} from '@loaders.gl/core';
 import {Tileset3D, _getIonTilesetMetadata} from '@loaders.gl/3d-tiles';

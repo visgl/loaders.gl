@@ -1,4 +1,4 @@
-/* global Cesium, document  */
+/* global Cesium */
 import {loadTileset} from './tileset-loader';
 
 // This is taken from this blog: https://cesium.com/blog/2019/08/06/webodm-ships-with-cesium-ion/

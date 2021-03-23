@@ -43,5 +43,8 @@ export function getMeshBoundingBox(attributes) {
     maxY = y > maxY ? y : maxY;
     maxZ = z > maxZ ? z : maxZ;
   }
-  return [[minX, minY, minZ], [maxX, maxY, maxZ]];
+  return [
+    [minX, minY, minZ],
+    [maxX, maxY, maxZ]
+  ];
 }

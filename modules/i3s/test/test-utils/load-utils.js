@@ -23,7 +23,14 @@ export const TILESET_STUB = () => ({
       }
     }
   ],
-  textureSetDefinitions: [{formats: [{name: '0', format: 'jpg'}, {name: '0_0_1', format: 'dds'}]}],
+  textureSetDefinitions: [
+    {
+      formats: [
+        {name: '0', format: 'jpg'},
+        {name: '0_0_1', format: 'dds'}
+      ]
+    }
+  ],
   geometryDefinitions: [
     {
       geometryBuffers: [

@@ -1,4 +1,3 @@
-/* global fetch */
 import * as THREE from 'three';
 import THREETileset from '../threejs-3d-tiles/three-tileset';
 import {transform2mapbox} from './web-mercator';

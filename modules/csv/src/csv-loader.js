@@ -1,4 +1,3 @@
-/* global TextDecoder */
 import {AsyncQueue, TableBatchBuilder, RowTableBatch} from '@loaders.gl/tables';
 import Papa from './libs/papaparse';
 import AsyncIteratorStreamer from './lib/async-iterator-streamer';

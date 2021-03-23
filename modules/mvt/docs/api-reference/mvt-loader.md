@@ -71,14 +71,14 @@ import {MVTLoader} from '@loaders.gl/mvt';
 import {load} from '@loaders.gl/core';
 
 /*
-* Default loader options are:
-*
-* {
-*   mvt: {
-*     coordinates: 'local'
-*   }
-* }
-*/
+ * Default loader options are:
+ *
+ * {
+ *   mvt: {
+ *     coordinates: 'local'
+ *   }
+ * }
+ */
 
 const geoJSONfeatures = await load(url, MVTLoader);
 ```

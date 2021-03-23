@@ -1,5 +1,3 @@
-/* global fetch */
-
 export const GLTF_BASE_URL =
   'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/';
 export const GLTF_MODEL_INDEX = `${GLTF_BASE_URL}model-index.json`;

@@ -1,9 +1,7 @@
-/* global TextDecoder */
 import test from 'tape-promise/tape';
 import {fetchFile, makeIterator} from '@loaders.gl/core';
 import {concatenateChunksAsync, makeTextEncoderIterator} from '@loaders.gl/loader-utils';
 
-/* global setTimeout */
 const setTimeoutPromise = timeout => new Promise(resolve => setTimeout(resolve, timeout));
 
 async function* asyncTexts() {
@@ -27,7 +25,6 @@ test('concatenateChunksAsync', async t => {
 
   const arraybuffer = await concatenateChunksAsync(asyncArrayBuffers());
   t.ok(arraybuffer instanceof ArrayBuffer, 'returns ArrayBuffer');
-  /* global TextEncoder */
   t.deepEqual(
     arraybuffer,
     new TextEncoder().encode(RESULT).buffer,

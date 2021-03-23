@@ -1,6 +1,5 @@
 // Use stackgl modules for DOM-less reading and writing of images
 
-/* global Buffer */
 import savePixels from 'save-pixels';
 import ndarray from 'ndarray';
 import {bufferToArrayBuffer} from '../utils/to-array-buffer.node';
