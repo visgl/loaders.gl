@@ -253,6 +253,7 @@ export default class App extends PureComponent {
 
     this._colorsMap = this._colorsMap || new ColorMap();
     this._obbLayer = new ObbLayer({
+      id: 'obb-layer',
       visible: obb,
       coloredBy: obbColorMode,
       colorsMap: this._colorsMap

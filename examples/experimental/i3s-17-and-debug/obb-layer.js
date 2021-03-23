@@ -2,10 +2,17 @@ import {CompositeLayer, COORDINATE_SYSTEM, log} from '@deck.gl/core';
 import {SimpleMeshLayer} from '@deck.gl/mesh-layers';
 import {OrientedBoundingBox} from '@math.gl/culling';
 import {CubeGeometry, SphereGeometry} from '@luma.gl/engine';
+import {COLORED_BY} from './color-map';
 
 const BG_OPACITY = 100;
 const GEOMETRY_STEP = 50;
 const SINGLE_DATA = [0];
+
+const defaultProps = {
+  visible: false,
+  coloredBy: COLORED_BY.ORIGINAL,
+  colorsMap: null
+};
 
 // TODO: replace CompositeLayer to SimpleMeshLayer
 export default class ObbLayer extends CompositeLayer {
@@ -63,12 +70,14 @@ export default class ObbLayer extends CompositeLayer {
 
     const geometry = (oldLayer && oldLayer.props.mesh) || this._generateMesh(tile);
 
+    const color = colorsMap ? colorsMap.getTileColor(tile, {coloredBy}) : [255, 255, 255];
+
     return new SimpleMeshLayer({
       id: `obb-debug-${tile.id}`,
       mesh: geometry,
       data: SINGLE_DATA,
       getPosition: [0, 0, 0],
-      getColor: [...colorsMap.getTileColor(tile, {coloredBy}), BG_OPACITY],
+      getColor: [...color, BG_OPACITY],
       material,
       coordinateOrigin: cartographicOrigin,
       coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS
@@ -133,3 +142,6 @@ export default class ObbLayer extends CompositeLayer {
       .filter(Boolean);
   }
 }
+
+ObbLayer.layerName = 'ObbLayer';
+ObbLayer.defaultProps = defaultProps;
