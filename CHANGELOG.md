@@ -1,5 +1,11 @@
 ## v3.0 Prerelease
 
+#### v3.0.0-alpha.10
+
+- i3s: switch content worker on (#1287)
+- I3S-Picking - Load attributes only on click event (#1286)
+- i3s-debug: obb layers (#1279)
+
 #### v3.0.0-alpha.9
 
 - i3s example: refactoring (#1264)
