@@ -45,7 +45,7 @@ Target Release Date: Q1 2021. (Alpha releases are available).
 
 **@loaders.gl/mvt**
 
-- Binary output is now 2-3X faster for large datasets thanks to parsing directly from PBF to binary, rather than going through geoJSON as an intermediate representation
+- Binary output is now 2-3X faster for large datasets thanks to parsing directly from PBF to binary, rather than going through GeoJSON as an intermediate representation
 
 **@loaders.gl/textures** (NEW)
 
