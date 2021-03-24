@@ -60,10 +60,13 @@ export default class ColorMap {
   }
 
   _getCustomColor(tileId, options) {
+    if (options.coloredTilesMap && options.coloredTilesMap[tileId]) {
+      return options.coloredTilesMap[tileId];
+    }
     if (options.selectedTileId === tileId) {
       return DEFAULT_HIGLIGHT_COLOR;
     }
-    // TODO: implement individual selectable colors
+
     return DEFAULT_COLOR;
   }
 
@@ -75,4 +78,20 @@ export default class ColorMap {
     colorMap[id] = randomColorMap[id];
     return colorMap[id];
   }
+}
+
+export function getRGBValueFromColorObject(color) {
+  const {r, g, b} = color.rgb;
+  return [r, g, b];
+}
+
+export function makeRGBObjectFromColor(color) {
+  if (!color) {
+    return {
+      r: DEFAULT_HIGLIGHT_COLOR[0],
+      g: DEFAULT_HIGLIGHT_COLOR[1],
+      b: DEFAULT_HIGLIGHT_COLOR[2]
+    };
+  }
+  return {r: color[0], g: color[1], b: color[2]};
 }

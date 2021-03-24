@@ -2,6 +2,7 @@
 import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
+import {CompactPicker} from 'react-color';
 
 import {lumaStats} from '@luma.gl/core';
 import DeckGL from '@deck.gl/react';
@@ -22,6 +23,7 @@ import {
   INITIAL_TILE_COLOR_MODE,
   INITIAL_OBB_COLOR_MODE
 } from './constants';
+import {COLORED_BY, makeRGBObjectFromColor, getRGBValueFromColorObject} from './color-map';
 import {getFrustumBounds} from './frustum-utils';
 import TileLayer from './tile-layer/tile-layer';
 import ObbLayer from './obb-layer';
@@ -80,6 +82,8 @@ const VIEWS = [
   })
 ];
 
+const TILE_COLOR_SELECTOR = 'Tile Color Selector';
+
 export default class App extends PureComponent {
   constructor(props) {
     super(props);
@@ -109,11 +113,13 @@ export default class App extends PureComponent {
         pickable: false
       },
       tileInfo: null,
-      selectedTileId: null
+      selectedTileId: null,
+      coloredTilesMap: {}
     };
     this._onSelectTileset = this._onSelectTileset.bind(this);
     this._setDebugOptions = this._setDebugOptions.bind(this);
     this.handleClosePanel = this.handleClosePanel.bind(this);
+    this.handleSelectTileColor = this.handleSelectTileColor.bind(this);
   }
 
   componentDidMount() {
@@ -234,6 +240,9 @@ export default class App extends PureComponent {
   }
 
   _setDebugOptions(debugOptions) {
+    if (debugOptions.tileColorMode !== COLORED_BY.CUSTOM) {
+      this.setState({coloredTilesMap: {}, selectedTileId: null});
+    }
     this.setState({debugOptions});
   }
 
@@ -243,7 +252,8 @@ export default class App extends PureComponent {
       token,
       viewState,
       debugOptions: {obb, tileColorMode, obbColorMode, pickable},
-      selectedTileId
+      selectedTileId,
+      coloredTilesMap
     } = this.state;
     const loadOptions = {throttleRequests: true};
 
@@ -275,7 +285,8 @@ export default class App extends PureComponent {
         pickable,
         autoHighlight: true,
         isDebugMode: true,
-        selectedTileId
+        selectedTileId,
+        coloredTilesMap
       }),
       new LineLayer({
         id: 'frustum',
@@ -338,7 +349,7 @@ export default class App extends PureComponent {
       this.handleClosePanel();
       return;
     }
-    // TODO add more info to panel about tile
+    // TODO add more tile info to panel.
     const tileInfo = getTileDebugInfo(info.object);
     this.setState({tileInfo, selectedTileId: info.object.id});
   }
@@ -347,15 +358,39 @@ export default class App extends PureComponent {
     this.setState({tileInfo: null, selectedTileId: null});
   }
 
+  handleSelectTileColor(tileId, selectedColor) {
+    const {coloredTilesMap} = this.state;
+    const color = getRGBValueFromColorObject(selectedColor);
+    const updatedMap = {
+      ...coloredTilesMap,
+      ...{[tileId]: color}
+    };
+    this.setState({coloredTilesMap: updatedMap});
+  }
+  // TODO add custom colors for ColorPicker.
   renderAttributesPanel() {
-    const {tileInfo} = this.state;
+    const {tileInfo, debugOptions, coloredTilesMap} = this.state;
+    const isShowColorPicker = debugOptions.tileColorMode === COLORED_BY.CUSTOM;
+    const tileId = tileInfo.TILE_ID;
+    const tileSelectedColor = makeRGBObjectFromColor(coloredTilesMap[tileId]);
 
     return (
       <AttributesPanel
         handleClosePanel={this.handleClosePanel}
         attributesObject={tileInfo}
         attributesHeader={'TILE_ID'}
-      />
+        selectTileColor={this.handleSelectTileColor}
+      >
+        {isShowColorPicker && (
+          <div>
+            <h3>{TILE_COLOR_SELECTOR}</h3>
+            <CompactPicker
+              color={tileSelectedColor}
+              onChange={color => this.handleSelectTileColor(tileId, color)}
+            />
+          </div>
+        )}
+      </AttributesPanel>
     );
   }
 
