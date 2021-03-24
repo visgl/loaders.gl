@@ -213,7 +213,11 @@ for (const filename of TEST_FILES) {
     const response = await fetchFile(filename);
     const mvtArrayBuffer = await response.arrayBuffer();
     const geojson = await parse(mvtArrayBuffer, MVTLoader);
-    const binary = await parse(mvtArrayBuffer, MVTLoader, {gis: {format: 'binary'}});
+
+    // Pass a fresh response otherwise get CI testing errors
+    const response2 = await fetchFile(filename);
+    const mvtArrayBuffer2 = await response2.arrayBuffer();
+    const binary = await parse(mvtArrayBuffer2, MVTLoader, {gis: {format: 'binary'}});
     delete binary.byteLength;
     t.deepEqual(geojsonToBinary(geojson), binary);
     t.end();
