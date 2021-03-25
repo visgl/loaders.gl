@@ -1,14 +1,63 @@
-// TODO Find out what else we can show to user in debug mode.
-export function getTileDebugInfo(tileheader) {
+import {OrientedBoundingBox} from '@math.gl/culling';
+
+const NO_DATA = 'No Data';
+const OBB = 'Oriented Bounding Box';
+const MBS = 'Minimum Bounding Sphere';
+
+const REFINEMENT_TYPES = {
+  1: 'Add',
+  2: 'Replace'
+};
+
+export function getShortTileDebugInfo(tileHeader) {
+  const clildrenInfo = getChildrenInfo(tileHeader.header.children);
+
   return {
-    TILE_ID: tileheader.id,
-    LOD_METRIC_VALUE: tileheader.lodMetricValue,
-    TYPE: tileheader.type,
-    BOUNDING_TYPE: tileheader.boundingVolume.constructor.name,
-    CHILDREN_COUNT: tileheader.header.children ? tileheader.header.children.length : 0,
-    DISTANCE_TO_CAMERA: tileheader._distanceToCamera,
-    VERTEX_COUNT: tileheader.content.vertexCount,
-    HAS_TEXTURE: Boolean(tileheader.content.texture),
-    HAS_MATERIAL: Boolean(tileheader.content.material)
+    ['Tile Id']: tileHeader.id,
+    ['Children Count']: clildrenInfo.count,
+    ['Children Ids']: clildrenInfo.ids,
+    ['Vertex count']: tileHeader.content.vertexCount || NO_DATA,
+    ['Distance to camera']: tileHeader._distanceToCamera || NO_DATA
+  };
+}
+
+export function getTileDebugInfo(tileHeader) {
+  return {
+    ...getShortTileDebugInfo(tileHeader),
+    ['Refinement Type']: REFINEMENT_TYPES[tileHeader.refine] || NO_DATA,
+    Type: tileHeader.type || NO_DATA,
+    ['Has Texture']: Boolean(tileHeader.content.texture),
+    ['Has Material']: Boolean(tileHeader.content.material),
+    ['Bounding Type']: getBoundingType(tileHeader),
+    ['LOD Metric Type']: tileHeader.lodMetricType || NO_DATA,
+    ['LOD Metric Value']: tileHeader.lodMetricValue || NO_DATA,
+    ['Screen Space Error']: tileHeader._screenSpaceError || NO_DATA
+  };
+}
+
+function getBoundingType(tile) {
+  if (tile.header.obb || tile.boundingVolume instanceof OrientedBoundingBox) {
+    return OBB;
+  }
+  return MBS;
+}
+
+function getChildrenInfo(children) {
+  if (!children || !children.length) {
+    return {
+      count: NO_DATA,
+      ids: NO_DATA
+    };
+  }
+
+  const clildrenIds = [];
+
+  for (const index in children) {
+    clildrenIds.push(children[index].id);
+  }
+
+  return {
+    count: clildrenIds.length,
+    ids: clildrenIds.join(', ')
   };
 }

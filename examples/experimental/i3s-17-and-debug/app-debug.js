@@ -2,7 +2,7 @@
 import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
-import {CompactPicker} from 'react-color';
+import {HuePicker, MaterialPicker} from 'react-color';
 
 import {lumaStats} from '@luma.gl/core';
 import DeckGL from '@deck.gl/react';
@@ -29,7 +29,7 @@ import TileLayer from './tile-layer/tile-layer';
 import ObbLayer from './obb-layer';
 import ColorMap from './color-map';
 import AttributesTooltip from './components/attributes-tooltip';
-import {getTileDebugInfo} from './tile-debug';
+import {getTileDebugInfo, getShortTileDebugInfo} from './tile-debug';
 import {parseTilesetUrlFromUrl, parseTilesetUrlParams} from './url-utils';
 
 const TRANSITION_DURAITON = 4000;
@@ -46,6 +46,7 @@ const INITIAL_VIEW_STATE = {
   maxZoom: 30,
   zoom: 14.5
 };
+
 const STATS_WIDGET_STYLE = {
   wordBreak: 'break-word',
   padding: 12,
@@ -336,7 +337,7 @@ export default class App extends PureComponent {
     if (!info.object || info.index < 0 || !info.layer) {
       return null;
     }
-    const tileInfo = getTileDebugInfo(info.object);
+    const tileInfo = getShortTileDebugInfo(info.object);
     // eslint-disable-next-line no-undef
     const tooltip = document.createElement('div');
     render(<AttributesTooltip data={tileInfo} />, tooltip);
@@ -367,27 +368,60 @@ export default class App extends PureComponent {
     };
     this.setState({coloredTilesMap: updatedMap});
   }
-  // TODO add custom colors for ColorPicker.
+
+  handleResetColor(tileId) {
+    const {coloredTilesMap} = this.state;
+    const updatedColoredMap = {...coloredTilesMap};
+    delete updatedColoredMap[tileId];
+
+    this.setState({coloredTilesMap: updatedColoredMap});
+  }
+
+  getResetButtonStyle(isResetButtonDisabled) {
+    return {
+      display: 'flex',
+      padding: '6px 12px',
+      color: 'white',
+      background: isResetButtonDisabled ? 'gray' : 'red',
+      alignItems: 'center',
+      height: '20px',
+      marginTop: '10px',
+      cursor: isResetButtonDisabled ? 'auto' : 'pointer'
+    };
+  }
+
   renderAttributesPanel() {
     const {tileInfo, debugOptions, coloredTilesMap} = this.state;
     const isShowColorPicker = debugOptions.tileColorMode === COLORED_BY.CUSTOM;
-    const tileId = tileInfo.TILE_ID;
+    const tileId = tileInfo['Tile Id'];
     const tileSelectedColor = makeRGBObjectFromColor(coloredTilesMap[tileId]);
+    const isResetButtonDisabled = !coloredTilesMap[tileId];
 
     return (
       <AttributesPanel
         handleClosePanel={this.handleClosePanel}
         attributesObject={tileInfo}
-        attributesHeader={'TILE_ID'}
+        attributesHeader={'Tile Id'}
         selectTileColor={this.handleSelectTileColor}
       >
         {isShowColorPicker && (
           <div>
             <h3>{TILE_COLOR_SELECTOR}</h3>
-            <CompactPicker
+            <HuePicker
               color={tileSelectedColor}
               onChange={color => this.handleSelectTileColor(tileId, color)}
             />
+            <MaterialPicker
+              color={tileSelectedColor}
+              onChange={color => this.handleSelectTileColor(tileId, color)}
+            />
+            <button
+              disabled={isResetButtonDisabled}
+              style={this.getResetButtonStyle(isResetButtonDisabled)}
+              onClick={() => this.handleResetColor(tileId)}
+            >
+              Reset
+            </button>
           </div>
         )}
       </AttributesPanel>
