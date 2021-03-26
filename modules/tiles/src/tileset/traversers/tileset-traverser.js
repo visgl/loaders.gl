@@ -188,7 +188,6 @@ export default class TilesetTraverser {
     if (this.shouldSelectTile(tile, frameState)) {
       // The tile can be selected right away and does not require traverseAndSelect
       tile._selectedFrame = frameState.frameNumber;
-      tile.id = `${tile.header.id}-${frameState.viewport.id}`;
       this.selectedTiles[tile.id] = tile;
     }
   }
@@ -253,7 +252,17 @@ export default class TilesetTraverser {
   }
 
   updateTileVisibility(tile, frameState) {
-    tile.updateVisibility(frameState);
+    const viewportIds = [];
+    if (this.options.viewportTraversersMap) {
+      for (const value of this.options.viewportTraversersMap) {
+        if (value[1] === frameState.viewport.id) {
+          viewportIds.push(value[0]);
+        }
+      }
+    } else {
+      viewportIds.push(frameState.viewport.id);
+    }
+    tile.updateVisibility(frameState, viewportIds);
   }
 
   // UTILITIES
