@@ -74,9 +74,9 @@ export default class MeshLayer extends SimpleMeshLayer {
     }
 
     const {viewport} = this.context;
-    const {sizeScale, coordinateSystem, _instanced, viewportId} = this.props;
+    const {sizeScale, coordinateSystem, _instanced, viewportIds} = this.props;
 
-    if (viewportId !== viewport.id) {
+    if (!viewportIds.includes(viewport.id)) {
       return;
     }
 
