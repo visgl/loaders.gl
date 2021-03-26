@@ -83,6 +83,7 @@ export default class DebugPanel extends PureComponent {
     this.state = {
       expand: true,
       minimap: true,
+      minimapViewport: false,
       obb: false,
       tileColorMode: INITIAL_TILE_COLOR_MODE,
       obbColorMode: INITIAL_OBB_COLOR_MODE,
@@ -91,6 +92,7 @@ export default class DebugPanel extends PureComponent {
 
     this.toggleDebugPanel = this.toggleDebugPanel.bind(this);
     this.toggleMinimap = this.toggleMinimap.bind(this);
+    this.toggleMinimapViewport = this.toggleMinimapViewport.bind(this);
     this.toggleObb = this.toggleObb.bind(this);
     this.togglePickable = this.togglePickable.bind(this);
 
@@ -106,6 +108,13 @@ export default class DebugPanel extends PureComponent {
   toggleMinimap() {
     const {minimap} = this.state;
     this.setState({minimap: !minimap}, () => {
+      this.applyOptions();
+    });
+  }
+
+  toggleMinimapViewport() {
+    const {minimapViewport} = this.state;
+    this.setState({minimapViewport: !minimapViewport}, () => {
       this.applyOptions();
     });
   }
@@ -137,10 +146,11 @@ export default class DebugPanel extends PureComponent {
   }
 
   applyOptions() {
-    const {obb, tileColorMode, obbColorMode, pickable, minimap} = this.state;
+    const {obb, tileColorMode, obbColorMode, pickable, minimap, minimapViewport} = this.state;
     const {onOptionsChange} = this.props;
     onOptionsChange({
       minimap,
+      minimapViewport,
       obb,
       tileColorMode,
       obbColorMode,
@@ -238,7 +248,7 @@ export default class DebugPanel extends PureComponent {
 
   render() {
     const {children} = this.props;
-    const {minimap} = this.state;
+    const {minimap, minimapViewport} = this.state;
     return (
       <Container className="debug-panel">
         <DebugOptions style={this.getExpandStyles()}>
@@ -253,6 +263,16 @@ export default class DebugPanel extends PureComponent {
                 checked={minimap}
               />
               <label htmlFor="showFrustumCullingMinimap">Show</label>
+            </CheckboxOption>
+            <CheckboxOption>
+              <InputCheckbox
+                onChange={this.toggleMinimapViewport}
+                type="checkbox"
+                id="showFrustumCullingMinimapViewport"
+                value={minimapViewport}
+                checked={minimapViewport}
+              />
+              <label htmlFor="showFrustumCullingMinimapViewport">Use different viewports</label>
             </CheckboxOption>
           </DebugOptionGroup>
           {this.renderTileOptions()}

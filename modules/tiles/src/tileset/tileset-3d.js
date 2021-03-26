@@ -230,21 +230,43 @@ export default class Tileset3D {
 
     this._cache.reset();
     this._frameNumber++;
-    this.travererseCounter = viewports.length;
+    this.traverseCounter = viewports.length;
+    // First loop to decrement traverseCounter
+    for (const viewport of viewports) {
+      const id = viewport.id;
+      this._initTraverser(id);
+    }
+
+    // Second loop to traverse
     for (const viewport of viewports) {
       const id = viewport.id;
       if (!this.rootsMap.has(id)) {
         this.rootsMap.set(id, this._initializeTileHeaders(this.tileset, null, this.basePath));
       }
+
       if (!this._traversersMap.has(id)) {
-        this._traversersMap.set(id, this._initializeTraverser());
+        continue; // eslint-disable-line no-continue
       }
-
       const traverser = this._traversersMap.get(id);
-
       const frameState = getFrameState(viewport, this._frameNumber);
       traverser.traverse(this.rootsMap.get(id), frameState, this.options);
     }
+  }
+
+  _initTraverser(viewportId) {
+    let traverserId = viewportId;
+    if (this.options.viewportTraversersMap) {
+      traverserId = this.options.viewportTraversersMap.get(viewportId);
+    }
+    if (traverserId !== viewportId) {
+      this.traverseCounter--;
+      return null;
+    }
+
+    if (!this._traversersMap.has(traverserId)) {
+      this._traversersMap.set(traverserId, this._initializeTraverser());
+    }
+    return this._traversersMap.get(traverserId);
   }
 
   _onTraversalEnd(traverser, frameState) {
@@ -258,8 +280,8 @@ export default class Tileset3D {
     currentFrameStateData._requestedTiles = Object.values(traverser.requestedTiles);
     currentFrameStateData._emptyTiles = Object.values(traverser.emptyTiles);
 
-    this.travererseCounter--;
-    if (this.travererseCounter > 0) {
+    this.traverseCounter--;
+    if (this.traverseCounter > 0) {
       return;
     }
 
