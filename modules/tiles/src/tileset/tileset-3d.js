@@ -139,7 +139,7 @@ export default class Tileset3D {
       this.fetchOptions.token = this.options.token;
     }
 
-    this.root = null;
+    this.rootsMap = new Map();
     // view props
     this.cartographicCenter = null;
     this.cartesianCenter = null;
@@ -147,7 +147,7 @@ export default class Tileset3D {
     this.boundingVolume = null;
 
     // TRAVERSAL
-    this._traverser = this._initializeTraverser();
+    this._traversersMap = new Map();
     this._cache = new TilesetCache();
     this._requestScheduler = new RequestScheduler({
       throttleRequests: this.options.throttleRequests
@@ -166,6 +166,7 @@ export default class Tileset3D {
     this._emptyTiles = [];
     this._requestedTiles = [];
     this._selectedTilesToStyle = [];
+    this.frameStateDataMap = new Map();
 
     this._queryParams = {};
     this._queryParamsString = null;
@@ -219,35 +220,70 @@ export default class Tileset3D {
     return `${tilePath}${this.queryParams}`;
   }
 
-  update(viewport) {
-    // TODO: update traverser to work with multiple viewports. Take viewport[0] for now
-    if (viewport instanceof Array) {
-      viewport = viewport[0];
+  update(viewports) {
+    if (this.travererseCounter > 0) {
+      return;
     }
+    if (!(viewports instanceof Array)) {
+      viewports = [viewports];
+    }
+
     this._cache.reset();
     this._frameNumber++;
-    this._frameState = getFrameState(viewport, this._frameNumber);
-    this._traverser.traverse(this.root, this._frameState, this.options);
+    this.travererseCounter = viewports.length;
+    for (const viewport of viewports) {
+      const id = viewport.id;
+      if (!this.rootsMap.has(id)) {
+        this.rootsMap.set(id, this._initializeTileHeaders(this.tileset, null, this.basePath));
+      }
+      if (!this._traversersMap.has(id)) {
+        this._traversersMap.set(id, this._initializeTraverser());
+      }
+
+      const traverser = this._traversersMap.get(id);
+
+      const frameState = getFrameState(viewport, this._frameNumber);
+      traverser.traverse(this.rootsMap.get(id), frameState, this.options);
+    }
   }
 
-  _onTraversalEnd() {
-    const selectedTiles = Object.values(this._traverser.selectedTiles);
-    if (this._tilesChanged(this.selectedTiles, selectedTiles)) {
-      this._updateFrameNumber++;
+  _onTraversalEnd(traverser, frameState) {
+    const id = frameState.viewport.id;
+    if (!this.frameStateDataMap.has(id)) {
+      this.frameStateDataMap.set(id, {selectedTiles: [], _requestedTiles: [], _emptyTiles: []});
+    }
+    const currentFrameStateData = this.frameStateDataMap.get(id);
+    const selectedTiles = Object.values(traverser.selectedTiles);
+    currentFrameStateData.selectedTiles = selectedTiles;
+    currentFrameStateData._requestedTiles = Object.values(traverser.requestedTiles);
+    currentFrameStateData._emptyTiles = Object.values(traverser.emptyTiles);
+
+    this.travererseCounter--;
+    if (this.travererseCounter > 0) {
+      return;
     }
 
-    this.selectedTiles = selectedTiles;
+    this._updateTiles();
+  }
+
+  _updateTiles() {
+    this.selectedTiles = [];
+    this._requestedTiles = [];
+    this._emptyTiles = [];
+
+    for (const frameStateData of this.frameStateDataMap.values()) {
+      this.selectedTiles = this.selectedTiles.concat(frameStateData.selectedTiles);
+      this._requestedTiles = this._requestedTiles.concat(frameStateData._requestedTiles);
+      this._emptyTiles = this._emptyTiles.concat(frameStateData._emptyTiles);
+    }
+
     for (const tile of this.selectedTiles) {
       this._tiles[tile.id] = tile;
     }
-    this._requestedTiles = Object.values(this._traverser.requestedTiles);
-    this._emptyTiles = Object.values(this._traverser.emptyTiles);
 
-    this._loadTiles(this._frameState);
+    this._loadTiles();
     this._unloadTiles();
     this._updateStats();
-
-    return this._updateFrameNumber;
   }
 
   _tilesChanged(oldSelectedTiles, selectedTiles) {
@@ -261,13 +297,13 @@ export default class Tileset3D {
     return changed;
   }
 
-  _loadTiles(frameState) {
+  _loadTiles() {
     // Sort requests by priority before making any requests.
     // This makes it less likely this requests will be cancelled after being issued.
     // requestedTiles.sort((a, b) => a._priority - b._priority);
     for (const tile of this._requestedTiles) {
       if (tile.contentUnloaded) {
-        this._loadTile(tile, frameState);
+        this._loadTile(tile);
       }
     }
   }
@@ -398,11 +434,11 @@ export default class Tileset3D {
     this._destroySubtree(parentTile);
   }
 
-  async _loadTile(tile, frameState) {
+  async _loadTile(tile) {
     let loaded;
     try {
       this._onStartTileLoading();
-      loaded = await tile.loadContent(frameState);
+      loaded = await tile.loadContent();
     } catch (error) {
       this._onTileLoadError(tile, error);
     } finally {

@@ -65,6 +65,7 @@ export default class TileLayer extends Tile3DLayer {
       }),
       {
         id: `${this.id}-mesh-${tileHeader.id}`,
+        viewportId: tileHeader.viewportId,
         mesh: geometry,
         data: SINGLE_DATA,
         getPosition: [0, 0, 0],
