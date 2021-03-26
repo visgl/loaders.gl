@@ -1,5 +1,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import {faWindowClose} from '@fortawesome/free-solid-svg-icons';
 
 const CONTAINER_STYLE = {
   display: 'flex',
@@ -8,7 +10,7 @@ const CONTAINER_STYLE = {
   flexFlow: 'column',
   top: 0,
   right: 0,
-  width: '300px',
+  minWidth: '300px',
   padding: '12px 18px',
   maxHeight: '80%',
   margin: '20px',
@@ -41,7 +43,6 @@ const HEADER_STYLE = {
 
 const CLOSE_BUTTON_STYLE = {
   height: '30px',
-  color: '#6e6e6e',
   border: 'none',
   cursor: 'pointer',
   outline: 'none',
@@ -50,6 +51,7 @@ const CLOSE_BUTTON_STYLE = {
 
 const propTypes = {
   attributesObject: PropTypes.object,
+  children: PropTypes.any,
   attributesHeader: PropTypes.string,
   handleClosePanel: PropTypes.func
 };
@@ -57,6 +59,7 @@ const propTypes = {
 const defaultProps = {
   attributesObject: {},
   attributesHeader: 'NAME',
+  children: null,
   handleClosePanel: () => {}
 };
 
@@ -100,17 +103,18 @@ export default class AttributesPanel extends PureComponent {
   }
 
   render() {
-    const {attributesObject, handleClosePanel, attributesHeader} = this.props;
+    const {attributesObject, handleClosePanel, attributesHeader, children} = this.props;
 
     return (
       <div style={CONTAINER_STYLE}>
         <div style={HEADER_STYLE}>
           <h2>{attributesObject[attributesHeader]}</h2>
           <button style={CLOSE_BUTTON_STYLE} onClick={handleClosePanel}>
-            X
+            <FontAwesomeIcon icon={faWindowClose} />
           </button>
         </div>
         {attributesObject && this.prepareTable()}
+        {children}
       </div>
     );
   }

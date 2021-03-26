@@ -52,7 +52,6 @@ export default class TileHeader {
     this.children = [];
 
     this.depth = 0;
-    this.userData = {};
     this.viewportId = null;
 
     // PRIVATE MEMBERS

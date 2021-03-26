@@ -4,7 +4,6 @@ import {COORDINATE_SYSTEM} from '@deck.gl/core';
 import {Tile3DLayer} from '@deck.gl/geo-layers';
 import {log} from '@deck.gl/core';
 import MeshLayer from '../mesh-layer/mesh-layer';
-import {getTileColor} from '../coloring-utils';
 
 const SINGLE_DATA = [0];
 
@@ -17,7 +16,6 @@ export default class TileLayer extends Tile3DLayer {
 
     this.state = {
       layerMap: {},
-      colorsMap: {},
       tileset3d: null
     };
   }
@@ -49,8 +47,15 @@ export default class TileLayer extends Tile3DLayer {
   _makeSimpleMeshLayer(tileHeader, oldLayer) {
     const content = tileHeader.content;
     const {attributes, modelMatrix, cartographicOrigin, texture, material} = content;
-    const {pickable, autoHighlight, coloredBy, isDebugMode} = this.props;
-    const {colorsMap} = this.state;
+    const {
+      pickable,
+      autoHighlight,
+      tileColorMode,
+      isDebugMode,
+      colorsMap,
+      selectedTileId,
+      coloredTilesMap
+    } = this.props;
 
     const geometry =
       (oldLayer && oldLayer.props.mesh) ||
@@ -58,6 +63,14 @@ export default class TileLayer extends Tile3DLayer {
         drawMode: GL.TRIANGLES,
         attributes: getMeshGeometry(attributes)
       });
+
+    const color = colorsMap
+      ? colorsMap.getTileColor(tileHeader, {
+          coloredBy: tileColorMode,
+          selectedTileId,
+          coloredTilesMap
+        })
+      : [255, 255, 255];
 
     return new MeshLayer(
       this.getSubLayerProps({
@@ -69,7 +82,7 @@ export default class TileLayer extends Tile3DLayer {
         mesh: geometry,
         data: SINGLE_DATA,
         getPosition: [0, 0, 0],
-        getColor: getTileColor(tileHeader, {coloredBy, colorsMap}),
+        getColor: color,
         texture,
         material,
         modelMatrix,

@@ -16,7 +16,7 @@ const TitleLabel = styled.div`
 `;
 
 const propTypes = {
-  children: PropTypes.object,
+  children: PropTypes.any,
   title: PropTypes.string
 };
 
