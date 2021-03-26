@@ -118,7 +118,7 @@ export default class TilesetTraverser {
     }
 
     if (this.options.onTraversalEnd) {
-      this.options.onTraversalEnd(frameState);
+      this.options.onTraversalEnd(this, frameState);
     }
   }
 
@@ -188,6 +188,7 @@ export default class TilesetTraverser {
     if (this.shouldSelectTile(tile, frameState)) {
       // The tile can be selected right away and does not require traverseAndSelect
       tile._selectedFrame = frameState.frameNumber;
+      tile.id = `${tile.header.id}-${frameState.viewport.id}`;
       this.selectedTiles[tile.id] = tile;
     }
   }

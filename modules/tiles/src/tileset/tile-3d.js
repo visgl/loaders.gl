@@ -52,6 +52,7 @@ export default class TileHeader {
     this.children = [];
 
     this.depth = 0;
+    this.viewportId = null;
 
     // PRIVATE MEMBERS
     this._cacheNode = null;
@@ -269,6 +270,7 @@ export default class TileHeader {
 
     this._priority = this.lodMetricValue;
     this._frameNumber = frameState.frameNumber;
+    this.viewportId = frameState.viewport.id;
   }
 
   // Determines whether the tile's bounding volume intersects the culling volume.
