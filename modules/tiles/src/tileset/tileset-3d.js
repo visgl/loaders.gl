@@ -221,7 +221,7 @@ export default class Tileset3D {
   }
 
   update(viewports) {
-    if (this.travererseCounter > 0) {
+    if (this.traverseCounter > 0) {
       return;
     }
     if (!(viewports instanceof Array)) {
