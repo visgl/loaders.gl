@@ -87,7 +87,8 @@ export default class DebugPanel extends PureComponent {
       obb: false,
       tileColorMode: INITIAL_TILE_COLOR_MODE,
       obbColorMode: INITIAL_OBB_COLOR_MODE,
-      pickable: false
+      pickable: false,
+      stopLoading: false
     };
 
     this.toggleDebugPanel = this.toggleDebugPanel.bind(this);
@@ -95,6 +96,7 @@ export default class DebugPanel extends PureComponent {
     this.toggleMinimapViewport = this.toggleMinimapViewport.bind(this);
     this.toggleObb = this.toggleObb.bind(this);
     this.togglePickable = this.togglePickable.bind(this);
+    this.toggleStopLoading = this.toggleStopLoading.bind(this);
 
     this.changedTileColorMode = this.changedTileColorMode.bind(this);
     this.changedObbColorMode = this.changedObbColorMode.bind(this);
@@ -133,6 +135,13 @@ export default class DebugPanel extends PureComponent {
     });
   }
 
+  toggleStopLoading() {
+    const {stopLoading} = this.state;
+    this.setState({stopLoading: !stopLoading}, () => {
+      this.applyOptions();
+    });
+  }
+
   changedTileColorMode({tileColorMode}) {
     this.setState({tileColorMode}, () => {
       this.applyOptions();
@@ -146,7 +155,15 @@ export default class DebugPanel extends PureComponent {
   }
 
   applyOptions() {
-    const {obb, tileColorMode, obbColorMode, pickable, minimap, minimapViewport} = this.state;
+    const {
+      obb,
+      tileColorMode,
+      obbColorMode,
+      pickable,
+      stopLoading,
+      minimap,
+      minimapViewport
+    } = this.state;
     const {onOptionsChange} = this.props;
     onOptionsChange({
       minimap,
@@ -154,7 +171,8 @@ export default class DebugPanel extends PureComponent {
       obb,
       tileColorMode,
       obbColorMode,
-      pickable
+      pickable,
+      stopLoading
     });
   }
 
@@ -214,7 +232,7 @@ export default class DebugPanel extends PureComponent {
   }
 
   renderTileOptions() {
-    const {tileColorMode, pickable} = this.state;
+    const {tileColorMode, pickable, stopLoading} = this.state;
     return (
       <DebugOptionGroup title="Tiles">
         <CheckboxOption>
@@ -226,6 +244,16 @@ export default class DebugPanel extends PureComponent {
             checked={pickable}
           />
           <label htmlFor="pickable">Pickable</label>
+        </CheckboxOption>
+        <CheckboxOption>
+          <InputCheckbox
+            onChange={this.toggleStopLoading}
+            type="checkbox"
+            id="stopLoading"
+            value={stopLoading}
+            checked={stopLoading}
+          />
+          <label htmlFor="stopLoading">Stop loading</label>
         </CheckboxOption>
         <DropDown
           value={tileColorMode}
