@@ -7,7 +7,10 @@ import {CompactPicker} from 'react-color';
 import {lumaStats} from '@luma.gl/core';
 import DeckGL from '@deck.gl/react';
 import {FlyToInterpolator, View, MapView, WebMercatorViewport} from '@deck.gl/core';
-import {LineLayer} from '@deck.gl/layers';
+import {LineLayer, ScatterplotLayer} from '@deck.gl/layers';
+
+import {Vector3} from '@math.gl/core';
+import {Ellipsoid} from '@math.gl/geospatial';
 
 import {I3SLoader} from '@loaders.gl/i3s';
 import {StatsWidget} from '@probe.gl/stats-widget';
@@ -31,6 +34,7 @@ import ColorMap from './color-map';
 import AttributesTooltip from './components/attributes-tooltip';
 import {getTileDebugInfo} from './tile-debug';
 import {parseTilesetUrlFromUrl, parseTilesetUrlParams} from './url-utils';
+import {OrientedBoundingBox} from '@math.gl/culling';
 
 const TRANSITION_DURAITON = 4000;
 
@@ -93,6 +97,8 @@ export default class App extends PureComponent {
     this.state = {
       url: null,
       token: null,
+      tileset: null,
+      frameNumber: 0,
       name: INITIAL_EXAMPLE_NAME,
       viewState: {
         main: INITIAL_VIEW_STATE,
@@ -179,6 +185,7 @@ export default class App extends PureComponent {
   _onTileLoad(tile) {
     this._updateStatWidgets();
     this._obbLayer.addTile(tile);
+    this.setState({frameNumber: this.state.tileset.frameNumber});
   }
 
   _onTileUnload() {
@@ -249,6 +256,54 @@ export default class App extends PureComponent {
     this.setState({debugOptions});
   }
 
+  _renderMainOnMinimap() {
+    const {
+      tileset,
+      debugOptions: {minimapViewport}
+    } = this.state;
+    if (!minimapViewport) {
+      return null;
+    }
+    let data = [];
+    if (tileset) {
+      data = tileset.tiles
+        .map(tile => {
+          if (!tile.selected || !tile.viewportIds.includes('main')) {
+            return null;
+          }
+          const boundingVolume = tile.boundingVolume;
+          const cartographicOrigin = new Vector3();
+          Ellipsoid.WGS84.cartesianToCartographic(boundingVolume.center, cartographicOrigin);
+          let radius = boundingVolume.radius;
+          if (!radius && boundingVolume instanceof OrientedBoundingBox) {
+            const halfSize = boundingVolume.halfSize;
+            radius = new Vector3(halfSize[0], halfSize[1], halfSize[2]).len();
+          }
+          return {
+            coordinates: [cartographicOrigin[0], cartographicOrigin[1], cartographicOrigin[2]],
+            radius: boundingVolume.radius
+          };
+        })
+        .filter(tile => tile);
+    }
+    return new ScatterplotLayer({
+      id: 'main-on-minimap',
+      data,
+      pickable: true,
+      opacity: 0.8,
+      stroked: true,
+      filled: true,
+      radiusScale: 1,
+      radiusMinPixels: 1,
+      radiusMaxPixels: 100,
+      lineWidthMinPixels: 1,
+      getPosition: d => d.coordinates,
+      getRadius: d => d.radius,
+      getFillColor: d => [255, 140, 0, 100],
+      getLineColor: d => [0, 0, 0, 120]
+    });
+  }
+
   _renderLayers() {
     const {
       tilesetUrl,
@@ -303,7 +358,8 @@ export default class App extends PureComponent {
         getColor: d => d.color,
         getWidth: 2
       }),
-      this._obbLayer
+      this._obbLayer,
+      this._renderMainOnMinimap()
     ];
   }
 
@@ -332,7 +388,7 @@ export default class App extends PureComponent {
   }
 
   _layerFilter({layer, viewport}) {
-    if (viewport.id !== 'minimap' && layer.id === 'frustum') {
+    if (viewport.id !== 'minimap' && (layer.id === 'frustum' || layer.id === 'main-on-minimap')) {
       // only display frustum in the minimap
       return false;
     }

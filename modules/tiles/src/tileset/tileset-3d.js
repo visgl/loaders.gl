@@ -212,6 +212,10 @@ export default class Tileset3D {
     return Object.values(this._tiles);
   }
 
+  get frameNumber() {
+    return this._frameNumber;
+  }
+
   getTileUrl(tilePath) {
     const isDataUrl = tilePath.startsWith('data:');
     if (isDataUrl) {
