@@ -302,7 +302,7 @@ export default class App extends PureComponent {
     return new ScatterplotLayer({
       id: 'main-on-minimap',
       data,
-      pickable: true,
+      pickable: false,
       opacity: 0.8,
       stroked: true,
       filled: true,
