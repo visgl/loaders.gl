@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faAngleDoubleLeft, faAngleDoubleRight} from '@fortawesome/free-solid-svg-icons';
 import DebugOptionGroup from './debug-option-group';
+import SemanticValidator from './semantic-validator';
 
 import {
   TILE_COLOR_MODES,
@@ -236,27 +237,47 @@ export default class DebugPanel extends PureComponent {
     );
   }
 
+  renderFrustumCullingOption() {
+    const {minimap} = this.state;
+    return (
+      <DebugOptionGroup title="Frustum Culling">
+        <CheckboxOption>
+          <InputCheckbox
+            onChange={this.toggleMinimap}
+            type="checkbox"
+            id="showFrustumCullingMinimap"
+            value={minimap}
+            checked={minimap}
+          />
+          <label htmlFor="showFrustumCullingMinimap">Show</label>
+        </CheckboxOption>
+      </DebugOptionGroup>
+    );
+  }
+  // Remove "Not Implemented" after semantic validation will be implemented
+  renderSemanticValidator() {
+    return (
+      <DebugOptionGroup title="Validator Warnings">
+        <SemanticValidator
+          boundingVolumeWarnings={['Not Implemented']}
+          maxScreenTresholdsWarnings={['Not Implemented']}
+          geometricAndTexturesWarnings={['Not Implemented']}
+        />
+      </DebugOptionGroup>
+    );
+  }
+
   render() {
     const {children} = this.props;
-    const {minimap} = this.state;
+
     return (
       <Container className="debug-panel">
         <DebugOptions style={this.getExpandStyles()}>
           <Header>Debug Panel</Header>
-          <DebugOptionGroup title="Frustum Culling">
-            <CheckboxOption>
-              <InputCheckbox
-                onChange={this.toggleMinimap}
-                type="checkbox"
-                id="showFrustumCullingMinimap"
-                value={minimap}
-                checked={minimap}
-              />
-              <label htmlFor="showFrustumCullingMinimap">Show</label>
-            </CheckboxOption>
-          </DebugOptionGroup>
+          {this.renderFrustumCullingOption()}
           {this.renderTileOptions()}
           {this.renderObbOptions()}
+          {this.renderSemanticValidator()}
           <ChildWrapper>{children}</ChildWrapper>
         </DebugOptions>
         <Expander onClick={this.toggleDebugPanel}>{this.renderExpandIcon()}</Expander>
