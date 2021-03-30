@@ -246,20 +246,20 @@ test('Tileset3D#loads tileset with extras', async t => {
   t.end();
 });
 
+test('Tileset3D#gets root tile', async t => {
+  const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
+  const tileset = new Tileset3D(tilesetJson);
+
+  t.ok(tileset.root);
+  t.end();
+});
+
 test('Tileset3D#hasExtension returns true if the tileset JSON file uses the specified extension', async t => {
   const tilesetJson = await load(TILESET_WITH_BATCH_TABLE_HIERARCHY_URL, Tiles3DLoader);
   const tileset = new Tileset3D(tilesetJson);
 
   t.equals(tileset.hasExtension('3DTILES_batch_table_hierarchy'), true);
   t.equals(tileset.hasExtension('3DTILES_nonexistant_extension'), false);
-  t.end();
-});
-
-test('Tileset3D#gets root tile', async t => {
-  const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
-  const tileset = new Tileset3D(tilesetJson);
-
-  t.ok(tileset.root);
   t.end();
 });
 
