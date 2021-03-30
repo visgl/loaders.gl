@@ -13,7 +13,7 @@ export default class Tileset3DTraverser extends TilesetTraverser {
   }
 
   updateTileVisibility(tile, frameState) {
-    tile.updateVisibility(frameState);
+    super.updateTileVisibility(tile, frameState);
 
     //  Optimization - if none of the tile's children are visible then this tile isn't visible
     if (!tile.isVisibleAndInRequestVolume) {
