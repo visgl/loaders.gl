@@ -22,6 +22,16 @@ function defined(x) {
 // the content is loaded on-demand when needed based on the view.
 // Do not construct this directly, instead access tiles through {@link Tileset3D#tileVisible}.
 export default class TileHeader {
+  /**
+   * @constructs
+   * Create a TileHeader instance
+   * @param {Tileset3D} tileset - Tileset3D instance
+   * @param {Object} header - tile header - JSON loaded from a dataset
+   * @param {TileHeader} parentHeader - parent TileHeader instance
+   * @param {string} basePath - base path / url of the tile
+   * @param {string} extendedId - optional ID to separate copies of a tile for different viewports.
+   *                              const extendedId = `${tile.id}-${frameState.viewport.id}`;
+   */
   // eslint-disable-next-line max-statements
   constructor(tileset, header, parentHeader, basePath, extendedId) {
     assert(typeof header === 'object');
@@ -247,7 +257,12 @@ export default class TileHeader {
     return true;
   }
 
-  // Update the tile's visibility.
+  /**
+   * Update the tile's visibility
+   * @param {Object} frameState - frame state for tile culling
+   * @param {string[]} viewportIds - a list of viewport ids that show this tile
+   * @return {void}
+   */
   updateVisibility(frameState, viewportIds) {
     if (this._frameNumber === frameState.frameNumber) {
       // Return early if visibility has already been checked during the traversal.

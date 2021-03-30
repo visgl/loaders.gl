@@ -67,6 +67,14 @@ export default class I3STilesetTraverser extends TilesetTraverser {
     return await load(nodeUrl, loader, options);
   }
 
+  /**
+   * The callback to init TileHeader instance after loading the tile JSON
+   * @param {Object} header - the tile JSON from a dataset
+   * @param {TileHeader} tile - the parent TileHeader instance
+   * @param {string} extendedId - optional ID to separate copies of a tile for different viewports.
+   *                              const extendedId = `${tile.id}-${frameState.viewport.id}`;
+   * @return {void}
+   */
   _onTileLoad(header, tile, extendedId) {
     const basePath = this.options.basePath;
     // after child tile is fetched

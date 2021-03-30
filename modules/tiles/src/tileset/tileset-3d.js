@@ -221,6 +221,11 @@ export default class Tileset3D {
     return `${tilePath}${this.queryParams}`;
   }
 
+  /**
+   * Update visible tiles relying on a list of deck.gl viewports
+   * @param {WebMercatorViewport} viewports - list of deck.gl viewports
+   * @return {void}
+   */
   update(viewports) {
     if (this.travererseCounter > 0) {
       return;
@@ -254,6 +259,11 @@ export default class Tileset3D {
     }
   }
 
+  /**
+   * Create a traverser for a viewport if necessary
+   * @param {string} viewportId - id of a viewport
+   * @return {TilesetTraverser}
+   */
   _initTraverser(viewportId) {
     let traverserId = viewportId;
     if (this.options.viewportTraversersMap) {
@@ -270,6 +280,12 @@ export default class Tileset3D {
     return this._traversers[traverserId];
   }
 
+  /**
+   * The callback to post-process tiles after traversal procedure
+   * @param {TilesetTraverser} traverser - the TilesetTraverser instance that just finished traversal
+   * @param {Object} frameState - frame state for tile culling
+   * @return {void}
+   */
   _onTraversalEnd(traverser, frameState) {
     const id = frameState.viewport.id;
     if (!this.frameStateData[id]) {
@@ -289,6 +305,10 @@ export default class Tileset3D {
     this._updateTiles();
   }
 
+  /**
+   * Update tiles relying on data from all traversers
+   * @return {void}
+   */
   _updateTiles() {
     this.selectedTiles = [];
     this._requestedTiles = [];
