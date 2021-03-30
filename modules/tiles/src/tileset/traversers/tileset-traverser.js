@@ -254,9 +254,10 @@ export default class TilesetTraverser {
   updateTileVisibility(tile, frameState) {
     const viewportIds = [];
     if (this.options.viewportTraversersMap) {
-      for (const value of this.options.viewportTraversersMap) {
-        if (value[1] === frameState.viewport.id) {
-          viewportIds.push(value[0]);
+      for (const key in this.options.viewportTraversersMap) {
+        const value = this.options.viewportTraversersMap[key];
+        if (value === frameState.viewport.id) {
+          viewportIds.push(key);
         }
       }
     } else {

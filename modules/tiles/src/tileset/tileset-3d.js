@@ -139,7 +139,8 @@ export default class Tileset3D {
       this.fetchOptions.token = this.options.token;
     }
 
-    this.rootsMap = new Map();
+    this.root = null;
+    this.roots = {};
     // view props
     this.cartographicCenter = null;
     this.cartesianCenter = null;
@@ -147,7 +148,7 @@ export default class Tileset3D {
     this.boundingVolume = null;
 
     // TRAVERSAL
-    this._traversersMap = new Map();
+    this._traversers = {};
     this._cache = new TilesetCache();
     this._requestScheduler = new RequestScheduler({
       throttleRequests: this.options.throttleRequests
@@ -166,7 +167,7 @@ export default class Tileset3D {
     this._emptyTiles = [];
     this._requestedTiles = [];
     this._selectedTilesToStyle = [];
-    this.frameStateDataMap = new Map();
+    this.frameStateData = {};
 
     this._queryParams = {};
     this._queryParamsString = null;
@@ -240,41 +241,41 @@ export default class Tileset3D {
     // Second loop to traverse
     for (const viewport of viewports) {
       const id = viewport.id;
-      if (!this.rootsMap.has(id)) {
-        this.rootsMap.set(id, this._initializeTileHeaders(this.tileset, null, this.basePath));
+      if (!this.roots[id]) {
+        this.roots[id] = this._initializeTileHeaders(this.tileset, null, this.basePath);
       }
 
-      if (!this._traversersMap.has(id)) {
+      if (!this._traversers[id]) {
         continue; // eslint-disable-line no-continue
       }
-      const traverser = this._traversersMap.get(id);
+      const traverser = this._traversers[id];
       const frameState = getFrameState(viewport, this._frameNumber);
-      traverser.traverse(this.rootsMap.get(id), frameState, this.options);
+      traverser.traverse(this.roots[id], frameState, this.options);
     }
   }
 
   _initTraverser(viewportId) {
     let traverserId = viewportId;
     if (this.options.viewportTraversersMap) {
-      traverserId = this.options.viewportTraversersMap.get(viewportId);
+      traverserId = this.options.viewportTraversersMap[viewportId];
     }
     if (traverserId !== viewportId) {
       this.traverseCounter--;
       return null;
     }
 
-    if (!this._traversersMap.has(traverserId)) {
-      this._traversersMap.set(traverserId, this._initializeTraverser());
+    if (!this._traversers[traverserId]) {
+      this._traversers[traverserId] = this._initializeTraverser();
     }
-    return this._traversersMap.get(traverserId);
+    return this._traversers[traverserId];
   }
 
   _onTraversalEnd(traverser, frameState) {
     const id = frameState.viewport.id;
-    if (!this.frameStateDataMap.has(id)) {
-      this.frameStateDataMap.set(id, {selectedTiles: [], _requestedTiles: [], _emptyTiles: []});
+    if (!this.frameStateData[id]) {
+      this.frameStateData[id] = {selectedTiles: [], _requestedTiles: [], _emptyTiles: []};
     }
-    const currentFrameStateData = this.frameStateDataMap.get(id);
+    const currentFrameStateData = this.frameStateData[id];
     const selectedTiles = Object.values(traverser.selectedTiles);
     currentFrameStateData.selectedTiles = selectedTiles;
     currentFrameStateData._requestedTiles = Object.values(traverser.requestedTiles);
@@ -293,10 +294,11 @@ export default class Tileset3D {
     this._requestedTiles = [];
     this._emptyTiles = [];
 
-    for (const frameStateData of this.frameStateDataMap.values()) {
-      this.selectedTiles = this.selectedTiles.concat(frameStateData.selectedTiles);
-      this._requestedTiles = this._requestedTiles.concat(frameStateData._requestedTiles);
-      this._emptyTiles = this._emptyTiles.concat(frameStateData._emptyTiles);
+    for (const frameStateKey in this.frameStateData) {
+      const frameStateDataValue = this.frameStateData[frameStateKey];
+      this.selectedTiles = this.selectedTiles.concat(frameStateDataValue.selectedTiles);
+      this._requestedTiles = this._requestedTiles.concat(frameStateDataValue._requestedTiles);
+      this._emptyTiles = this._emptyTiles.concat(frameStateDataValue._emptyTiles);
     }
 
     for (const tile of this.selectedTiles) {
