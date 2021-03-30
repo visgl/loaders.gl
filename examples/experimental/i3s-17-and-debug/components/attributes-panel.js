@@ -11,6 +11,7 @@ const CONTAINER_STYLE = {
   top: 0,
   right: 0,
   minWidth: '300px',
+  maxWidth: '400px',
   padding: '12px 18px',
   maxHeight: '80%',
   margin: '20px',

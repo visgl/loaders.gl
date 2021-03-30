@@ -24,7 +24,7 @@ export const TILE_COLOR_MODES = {
   'Tile coloring: Custom (by selected object)': COLORED_BY.CUSTOM
 };
 
-export const INITIAL_TILE_COLOR_MODE = COLORED_BY.RANDOM;
+export const INITIAL_TILE_COLOR_MODE = COLORED_BY.ORIGINAL;
 
 export const OBB_COLOR_MODES = {
   'Color: White': COLORED_BY.ORIGINAL,
