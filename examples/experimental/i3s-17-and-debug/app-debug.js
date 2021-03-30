@@ -107,7 +107,6 @@ export default class App extends PureComponent {
       selectedMapStyle: INITIAL_MAP_STYLE,
       debugOptions: {
         minimap: true,
-        minimapViewport: false,
         obb: false,
         tileColorMode: INITIAL_TILE_COLOR_MODE,
         obbColorMode: INITIAL_OBB_COLOR_MODE,
@@ -115,8 +114,7 @@ export default class App extends PureComponent {
       },
       tileInfo: null,
       selectedTileId: null,
-      coloredTilesMap: {},
-      viewportTraversersMap: new Map()
+      coloredTilesMap: {}
     };
     this._onSelectTileset = this._onSelectTileset.bind(this);
     this._setDebugOptions = this._setDebugOptions.bind(this);
@@ -253,14 +251,11 @@ export default class App extends PureComponent {
       tilesetUrl,
       token,
       viewState,
-      debugOptions: {obb, tileColorMode, obbColorMode, pickable, minimapViewport},
+      debugOptions: {obb, tileColorMode, obbColorMode, pickable},
       selectedTileId,
-      coloredTilesMap,
-      viewportTraversersMap
+      coloredTilesMap
     } = this.state;
-    viewportTraversersMap.set('main', 'main');
-    viewportTraversersMap.set('minimap', minimapViewport ? 'minimap' : 'main');
-    const loadOptions = {throttleRequests: true, viewportTraversersMap};
+    const loadOptions = {throttleRequests: true};
 
     if (token) {
       loadOptions.token = token;
