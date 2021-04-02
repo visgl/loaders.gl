@@ -30,7 +30,7 @@ import TileLayer from './tile-layer/tile-layer';
 import ObbLayer from './obb-layer';
 import ColorMap from './color-map';
 import AttributesTooltip from './components/attributes-tooltip';
-import {getTileDebugInfo, getShortTileDebugInfo} from './tile-debug';
+import {getTileDebugInfo, getShortTileDebugInfo, validateTile} from './tile-debug';
 import {parseTilesetUrlFromUrl, parseTilesetUrlParams} from './url-utils';
 
 const TRANSITION_DURAITON = 4000;
@@ -117,7 +117,8 @@ export default class App extends PureComponent {
       },
       tileInfo: null,
       selectedTileId: null,
-      coloredTilesMap: {}
+      coloredTilesMap: {},
+      warnings: []
     };
     this._onSelectTileset = this._onSelectTileset.bind(this);
     this._setDebugOptions = this._setDebugOptions.bind(this);
@@ -164,7 +165,7 @@ export default class App extends PureComponent {
   async _onSelectTileset(tileset) {
     const params = parseTilesetUrlParams(tileset.url, tileset);
     const {tilesetUrl, token, name, metadataUrl} = params;
-    this.setState({tilesetUrl, name, token});
+    this.setState({tilesetUrl, name, token, warnings: []});
     const metadata = await fetch(metadataUrl).then(resp => resp.json());
     this.setState({metadata});
     this._obbLayer.resetTiles();
@@ -179,6 +180,7 @@ export default class App extends PureComponent {
   _onTileLoad(tile) {
     this._updateStatWidgets();
     this._obbLayer.addTile(tile);
+    this.validateTile(tile);
   }
 
   _onTileUnload() {
@@ -247,6 +249,15 @@ export default class App extends PureComponent {
       this.setState({coloredTilesMap: {}, selectedTileId: null});
     }
     this.setState({debugOptions});
+  }
+
+  validateTile(tile) {
+    const {warnings} = this.state;
+    const newWarings = validateTile(tile);
+
+    if (newWarings.length) {
+      this.setState({warnings: [...warnings, ...newWarings]});
+    }
   }
 
   _renderLayers() {
@@ -430,9 +441,9 @@ export default class App extends PureComponent {
     );
   }
 
-  // TODO add warnings prop after validation will be done.
   renderSemanticValidator() {
-    return <SemanticValidator />;
+    const {warnings} = this.state;
+    return <SemanticValidator warnings={warnings} />;
   }
 
   render() {

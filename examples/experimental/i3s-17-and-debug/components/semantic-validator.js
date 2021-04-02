@@ -1,11 +1,6 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import {
-  BOUNDING_VOLUME_WARNING_TYPE,
-  LOD_WARNING_TYPE,
-  GEMETRY_VS_TEXTURE_WARNING_TYPE
-} from '../constants';
 
 const SemanticValidatorContainer = styled.div`
   position: absolute;
@@ -35,15 +30,6 @@ const NoIssuesItem = styled.h1`
   margin: auto;
   color: green;
 `;
-// TODO remove stub after validation will be implemented
-const warningsStub = [
-  {type: BOUNDING_VOLUME_WARNING_TYPE, title: 'Bounding Volume validation is not implemented!'},
-  {type: LOD_WARNING_TYPE, title: 'LOD validation is not implemented!'},
-  {
-    type: GEMETRY_VS_TEXTURE_WARNING_TYPE,
-    title: 'Geometry vs Textures validation is not implemented!'
-  }
-];
 
 const NO_ISSUES = 'No Issues';
 
@@ -61,7 +47,7 @@ const propTypes = {
 };
 
 const defaultProps = {
-  warnings: warningsStub
+  warnings: []
 };
 
 export default class SemanticValidator extends PureComponent {
