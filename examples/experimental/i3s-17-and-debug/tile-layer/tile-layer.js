@@ -36,7 +36,7 @@ export default class TileLayer extends Tile3DLayer {
       return;
     }
 
-    if (this.internalState.component.props.stopLoading) {
+    if (!this.internalState.component.props.loadTiles) {
       return;
     }
 

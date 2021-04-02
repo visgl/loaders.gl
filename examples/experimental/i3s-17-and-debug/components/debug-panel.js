@@ -88,14 +88,14 @@ export default class DebugPanel extends PureComponent {
       tileColorMode: INITIAL_TILE_COLOR_MODE,
       obbColorMode: INITIAL_OBB_COLOR_MODE,
       pickable: false,
-      stopLoading: false
+      loadTiles: true
     };
 
     this.toggleDebugPanel = this.toggleDebugPanel.bind(this);
     this.toggleMinimap = this.toggleMinimap.bind(this);
     this.toggleObb = this.toggleObb.bind(this);
     this.togglePickable = this.togglePickable.bind(this);
-    this.toggleStopLoading = this.toggleStopLoading.bind(this);
+    this.toggleLoading = this.toggleLoading.bind(this);
 
     this.changedTileColorMode = this.changedTileColorMode.bind(this);
     this.changedObbColorMode = this.changedObbColorMode.bind(this);
@@ -127,9 +127,9 @@ export default class DebugPanel extends PureComponent {
     });
   }
 
-  toggleStopLoading() {
-    const {stopLoading} = this.state;
-    this.setState({stopLoading: !stopLoading}, () => {
+  toggleLoading() {
+    const {loadTiles} = this.state;
+    this.setState({loadTiles: !loadTiles}, () => {
       this.applyOptions();
     });
   }
@@ -147,7 +147,7 @@ export default class DebugPanel extends PureComponent {
   }
 
   applyOptions() {
-    const {obb, tileColorMode, obbColorMode, pickable, stopLoading, minimap} = this.state;
+    const {obb, tileColorMode, obbColorMode, pickable, loadTiles, minimap} = this.state;
     const {onOptionsChange} = this.props;
     onOptionsChange({
       minimap,
@@ -155,7 +155,7 @@ export default class DebugPanel extends PureComponent {
       tileColorMode,
       obbColorMode,
       pickable,
-      stopLoading
+      loadTiles
     });
   }
 
@@ -215,7 +215,7 @@ export default class DebugPanel extends PureComponent {
   }
 
   renderTileOptions() {
-    const {tileColorMode, pickable, stopLoading} = this.state;
+    const {tileColorMode, pickable, loadTiles} = this.state;
     return (
       <DebugOptionGroup title="Tiles">
         <CheckboxOption>
@@ -230,13 +230,13 @@ export default class DebugPanel extends PureComponent {
         </CheckboxOption>
         <CheckboxOption>
           <InputCheckbox
-            onChange={this.toggleStopLoading}
+            onChange={this.toggleLoading}
             type="checkbox"
-            id="stopLoading"
-            value={stopLoading}
-            checked={stopLoading}
+            id="loadTiles"
+            value={loadTiles}
+            checked={loadTiles}
           />
-          <label htmlFor="stopLoading">Stop loading</label>
+          <label htmlFor="loadTiles">Load tiles</label>
         </CheckboxOption>
         <DropDown
           value={tileColorMode}
