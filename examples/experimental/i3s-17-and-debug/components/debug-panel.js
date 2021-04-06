@@ -72,10 +72,15 @@ const ChildWrapper = styled.div`
 
 const propTypes = {
   children: PropTypes.object,
-  onOptionsChange: PropTypes.func
+  isClearButtonDisabled: PropTypes.bool,
+  onOptionsChange: PropTypes.func,
+  clearWarnings: PropTypes.func
 };
 
-const defaultProps = {};
+const defaultProps = {
+  clearWarnings: () => {},
+  isClearButtonDisabled: true
+};
 
 export default class DebugPanel extends PureComponent {
   constructor(props) {
@@ -172,6 +177,18 @@ export default class DebugPanel extends PureComponent {
     };
   }
 
+  clearButtonStyles(isClearButtonDisabled) {
+    return {
+      display: 'flex',
+      color: 'white',
+      background: isClearButtonDisabled ? 'gray' : 'red',
+      alignItems: 'center',
+      height: '20px',
+      marginLeft: '50%',
+      cursor: isClearButtonDisabled ? 'auto' : 'pointer'
+    };
+  }
+
   renderExpandIcon() {
     const {expand} = this.state;
     if (expand) {
@@ -265,6 +282,7 @@ export default class DebugPanel extends PureComponent {
   }
 
   renderSemanticValidatorOption() {
+    const {clearWarnings, isClearButtonDisabled} = this.props;
     const {semanticValidator} = this.state;
     return (
       <DebugOptionGroup title="Semantic Validator">
@@ -277,6 +295,13 @@ export default class DebugPanel extends PureComponent {
             checked={semanticValidator}
           />
           <label htmlFor="showSemanticValidator">Show</label>
+          <button
+            style={this.clearButtonStyles(isClearButtonDisabled)}
+            disabled={isClearButtonDisabled}
+            onClick={clearWarnings}
+          >
+            Clear All
+          </button>
         </CheckboxOption>
       </DebugOptionGroup>
     );
