@@ -43,6 +43,19 @@ Target Release Date: Q1 2021. (Alpha releases are available).
 
 - New table category loader for Excel spreadsheets in both binary `.xls`, `.xlsb` and XML-based `.xlsx` formats.
 
+**@loaders.gl/mvt**
+
+- Binary output is now 2-3X faster for large datasets thanks to parsing directly from PBF to binary, rather than going through GeoJSON as an intermediate representation. Speed comparison on some example data sets (MVT tiles parsed per second):
+
+|                    | Via GeoJSON | Direct | Speed increase |
+| ------------------ | ----------- | ------ | -------------- |
+| Block groups       | 2.86/s      | 5.57/s | 1.94X          |
+| Census layer       | 6.09/s      | 11.9/s | 1.95X          |
+| Counties Layer     | 72.5/s      | 141/s  | 1.94X          |
+| Usa Zip Code Layer | 8.45/s      | 20.3/s | 2.4X           |
+
+_Benchmarks ran using scripts on a 2012 MacBook Pro, 2.3 GHz Intel Core i7, 8 GB, measuring parsing time of MVTLoader only (network time and rendering is not included)_
+
 **@loaders.gl/textures** (NEW)
 
 - [`textures`](https://loaders.gl/examples/textures) website example shows which compressed texture formats work on the current device.
