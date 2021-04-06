@@ -1,89 +1,105 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
+import {
+  BOUNDING_VOLUME_WARNING_TYPE,
+  LOD_WARNING_TYPE,
+  GEMETRY_VS_TEXTURE_WARNING_TYPE
+} from '../constants';
 
 const SemanticValidatorContainer = styled.div`
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%);
+  bottom: 20px;
   display: flex;
   flex-flow: column nowrap;
-  width: 100%;
-`;
-const ValidatorItem = styled.div`
-  display: flex;
-  flex-flow: column nowrap;
-  margin-left: 3px;
-`;
-
-const ValidatorTitle = styled.h4`
-  margin: 0;
-`;
-
-const ValidatorList = styled.div`
-  max-height: 50px;
+  min-width: 35%;
+  min-height: 100px;
+  max-height: 150px;
   overflow-y: auto;
-  display: flex;
-  flex-flow: column nowrap;
+  background-color: white;
+  z-index: 1000;
 `;
 
-const WarningItem = styled.div`
-  margin-left: 5px;
-  color: red;
+const TableHeader = styled.th`
+  position: sticky;
+  top: 0;
+  background-color: brown;
+  text-align: left;
+  padding: 3px;
+  color: white;
 `;
-const NoIssuesItem = styled.div`
-  margin-left: 5px;
+
+const NoIssuesItem = styled.h1`
+  margin: auto;
   color: green;
 `;
+// TODO remove stub after validation will be implemented
+const warningsStub = [
+  {type: BOUNDING_VOLUME_WARNING_TYPE, title: 'Bounding Volume validation is not implemented!'},
+  {type: LOD_WARNING_TYPE, title: 'LOD validation is not implemented!'},
+  {
+    type: GEMETRY_VS_TEXTURE_WARNING_TYPE,
+    title: 'Geometry vs Textures validation is not implemented!'
+  }
+];
+
+const NO_ISSUES = 'No Issues';
+
+const WARNING_TYPES = {
+  lod: 'LOD metric',
+  boundingVolume: 'Bounding Volume',
+  geometryVsTextures: 'Geometry vs Textures'
+};
+
+const WARNING_TYPE = 'Type';
+const WARNING = 'Warning';
 
 const propTypes = {
-  boundingVolumeWarnings: PropTypes.array,
-  maxScreenTresholdsWarnings: PropTypes.array,
-  geometricAndTexturesWarnings: PropTypes.array
+  warnings: PropTypes.array
 };
 
 const defaultProps = {
-  boundingVolumeWarnings: [],
-  maxScreenTresholdsWarnings: [],
-  geometricAndTexturesWarnings: []
+  warnings: warningsStub
 };
 
-const NO_ISSUES = 'No Issues';
-const BOUNDING_VOLUMES_WARNINGS = 'Bounding Volumes';
-const MAX_SCREEN_TRESHOLDS_WARNINGS = 'Max Screen Tresholds';
-const GEOMETRIC_TEXTURES_WARNINGS = 'Geometric and Textures';
-
 export default class SemanticValidator extends PureComponent {
-  renderWarningItem(warnings) {
-    const warnList = warnings
-      ? warnings.map(warning => <WarningItem key={warning}>{warning}</WarningItem>)
-      : [];
+  renderColumns(warnings) {
+    return warnings.map((warning, index) => (
+      <tr key={`${warning.title}-${index}`}>
+        <td style={{padding: '3px'}}>{WARNING_TYPES[warning.type]}</td>
+        <td style={{color: 'red', padding: '3px'}}>{warning.title}</td>
+      </tr>
+    ));
+  }
+
+  renderWarnings(warnings) {
+    const columns = this.renderColumns(warnings);
 
     return (
-      <ValidatorList>
-        {warnList.length ? warnList : <NoIssuesItem>{NO_ISSUES}</NoIssuesItem>}
-      </ValidatorList>
+      <table>
+        <thead>
+          <tr>
+            <TableHeader>{WARNING_TYPE}</TableHeader>
+            <TableHeader>{WARNING}</TableHeader>
+          </tr>
+        </thead>
+        <tbody>{columns}</tbody>
+      </table>
     );
   }
 
   render() {
-    const {
-      boundingVolumeWarnings,
-      maxScreenTresholdsWarnings,
-      geometricAndTexturesWarnings
-    } = this.props;
+    const {warnings} = this.props;
 
     return (
       <SemanticValidatorContainer>
-        <ValidatorItem>
-          <ValidatorTitle>{BOUNDING_VOLUMES_WARNINGS}</ValidatorTitle>
-          {this.renderWarningItem(boundingVolumeWarnings)}
-        </ValidatorItem>
-        <ValidatorItem>
-          <ValidatorTitle>{MAX_SCREEN_TRESHOLDS_WARNINGS}</ValidatorTitle>
-          {this.renderWarningItem(maxScreenTresholdsWarnings)}
-        </ValidatorItem>
-        <ValidatorItem>
-          <ValidatorTitle>{GEOMETRIC_TEXTURES_WARNINGS}</ValidatorTitle>
-          {this.renderWarningItem(geometricAndTexturesWarnings)}
-        </ValidatorItem>
+        {warnings && Boolean(warnings.length) ? (
+          this.renderWarnings(warnings)
+        ) : (
+          <NoIssuesItem>{NO_ISSUES}</NoIssuesItem>
+        )}
       </SemanticValidatorContainer>
     );
   }

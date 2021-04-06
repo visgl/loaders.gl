@@ -16,6 +16,7 @@ import {INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
 import AttributesPanel from './components/attributes-panel';
 import DebugPanel from './components/debug-panel';
 import ControlPanel from './components/control-panel';
+import SemanticValidator from './components/semantic-validator';
 
 import {
   INITIAL_MAP_STYLE,
@@ -111,7 +112,8 @@ export default class App extends PureComponent {
         obb: false,
         tileColorMode: INITIAL_TILE_COLOR_MODE,
         obbColorMode: INITIAL_OBB_COLOR_MODE,
-        pickable: false
+        pickable: false,
+        semanticValidator: false
       },
       tileInfo: null,
       selectedTileId: null,
@@ -428,14 +430,20 @@ export default class App extends PureComponent {
     );
   }
 
+  // TODO add warnings prop after validation will be done.
+  renderSemanticValidator() {
+    return <SemanticValidator />;
+  }
+
   render() {
     const layers = this._renderLayers();
-    const {selectedMapStyle, tileInfo} = this.state;
+    const {selectedMapStyle, tileInfo, debugOptions} = this.state;
 
     return (
       <div style={{position: 'relative', height: '100%'}}>
         {this._renderDebugPanel()}
         {tileInfo ? this.renderAttributesPanel() : this._renderControlPanel()}
+        {debugOptions.semanticValidator && this.renderSemanticValidator()}
         <DeckGL
           layers={layers}
           viewState={this._getViewState()}

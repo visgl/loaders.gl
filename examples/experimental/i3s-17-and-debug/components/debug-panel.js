@@ -4,7 +4,6 @@ import PropTypes from 'prop-types';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faAngleDoubleLeft, faAngleDoubleRight} from '@fortawesome/free-solid-svg-icons';
 import DebugOptionGroup from './debug-option-group';
-import SemanticValidator from './semantic-validator';
 
 import {
   TILE_COLOR_MODES,
@@ -87,13 +86,15 @@ export default class DebugPanel extends PureComponent {
       obb: false,
       tileColorMode: INITIAL_TILE_COLOR_MODE,
       obbColorMode: INITIAL_OBB_COLOR_MODE,
-      pickable: false
+      pickable: false,
+      semanticValidator: false
     };
 
     this.toggleDebugPanel = this.toggleDebugPanel.bind(this);
     this.toggleMinimap = this.toggleMinimap.bind(this);
     this.toggleObb = this.toggleObb.bind(this);
     this.togglePickable = this.togglePickable.bind(this);
+    this.toggleSemanticValidator = this.toggleSemanticValidator.bind(this);
 
     this.changedTileColorMode = this.changedTileColorMode.bind(this);
     this.changedObbColorMode = this.changedObbColorMode.bind(this);
@@ -125,6 +126,13 @@ export default class DebugPanel extends PureComponent {
     });
   }
 
+  toggleSemanticValidator() {
+    const {semanticValidator} = this.state;
+    this.setState({semanticValidator: !semanticValidator}, () => {
+      this.applyOptions();
+    });
+  }
+
   changedTileColorMode({tileColorMode}) {
     this.setState({tileColorMode}, () => {
       this.applyOptions();
@@ -138,14 +146,15 @@ export default class DebugPanel extends PureComponent {
   }
 
   applyOptions() {
-    const {obb, tileColorMode, obbColorMode, pickable, minimap} = this.state;
+    const {obb, tileColorMode, obbColorMode, pickable, minimap, semanticValidator} = this.state;
     const {onOptionsChange} = this.props;
     onOptionsChange({
       minimap,
       obb,
       tileColorMode,
       obbColorMode,
-      pickable
+      pickable,
+      semanticValidator
     });
   }
 
@@ -254,15 +263,21 @@ export default class DebugPanel extends PureComponent {
       </DebugOptionGroup>
     );
   }
-  // Remove "Not Implemented" after semantic validation will be implemented
-  renderSemanticValidator() {
+
+  renderSemanticValidatorOption() {
+    const {semanticValidator} = this.state;
     return (
-      <DebugOptionGroup title="Validator Warnings">
-        <SemanticValidator
-          boundingVolumeWarnings={['Not Implemented']}
-          maxScreenTresholdsWarnings={['Not Implemented']}
-          geometricAndTexturesWarnings={['Not Implemented']}
-        />
+      <DebugOptionGroup title="Semantic Validator">
+        <CheckboxOption>
+          <InputCheckbox
+            onChange={this.toggleSemanticValidator}
+            type="checkbox"
+            id="showSemanticValidator"
+            value={semanticValidator}
+            checked={semanticValidator}
+          />
+          <label htmlFor="showSemanticValidator">Show</label>
+        </CheckboxOption>
       </DebugOptionGroup>
     );
   }
@@ -277,7 +292,7 @@ export default class DebugPanel extends PureComponent {
           {this.renderFrustumCullingOption()}
           {this.renderTileOptions()}
           {this.renderObbOptions()}
-          {this.renderSemanticValidator()}
+          {this.renderSemanticValidatorOption()}
           <ChildWrapper>{children}</ChildWrapper>
         </DebugOptions>
         <Expander onClick={this.toggleDebugPanel}>{this.renderExpandIcon()}</Expander>
