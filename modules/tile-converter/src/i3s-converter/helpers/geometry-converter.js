@@ -327,8 +327,8 @@ function normalizeAttributesByIndicesRange(attributes, indices) {
   for (const key in attributes) {
     const attribute = attributes[key];
     attribute.value = attribute.value.subarray(
-      minIndex * attribute.size,
-      maxIndex * attribute.size
+      minIndex * attribute.components,
+      (maxIndex + 1) * attribute.components
     );
     attribute.count = maxIndex - minIndex;
   }
