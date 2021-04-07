@@ -117,6 +117,7 @@ export default class App extends PureComponent {
         tileColorMode: INITIAL_TILE_COLOR_MODE,
         obbColorMode: INITIAL_OBB_COLOR_MODE,
         pickable: false,
+        loadTiles: true,
         semanticValidator: false
       },
       tileInfo: null,
@@ -301,7 +302,7 @@ export default class App extends PureComponent {
       tilesetUrl,
       token,
       viewState,
-      debugOptions: {obb, tileColorMode, obbColorMode, pickable, minimapViewport},
+      debugOptions: {obb, tileColorMode, obbColorMode, pickable, minimapViewport, loadTiles},
       selectedTileId,
       coloredTilesMap,
       viewportTraversersMap
@@ -335,6 +336,7 @@ export default class App extends PureComponent {
         tileColorMode,
         loadOptions,
         pickable,
+        loadTiles,
         autoHighlight: true,
         isDebugMode: true,
         selectedTileId,
