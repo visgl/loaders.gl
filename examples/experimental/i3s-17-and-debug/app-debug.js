@@ -9,12 +9,10 @@ import DeckGL from '@deck.gl/react';
 import {FlyToInterpolator, View, MapView, WebMercatorViewport} from '@deck.gl/core';
 import {LineLayer, ScatterplotLayer} from '@deck.gl/layers';
 
-import {Vector3} from '@math.gl/core';
-import {Ellipsoid} from '@math.gl/geospatial';
-
 import {I3SLoader} from '@loaders.gl/i3s';
 import {StatsWidget} from '@probe.gl/stats-widget';
 
+import {buildMinimapData} from './helpers/build-minimap-data';
 import {INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
 import AttributesPanel from './components/attributes-panel';
 import DebugPanel from './components/debug-panel';
@@ -35,7 +33,6 @@ import ColorMap from './color-map';
 import AttributesTooltip from './components/attributes-tooltip';
 import {getTileDebugInfo, getShortTileDebugInfo, validateTile} from './tile-debug';
 import {parseTilesetUrlFromUrl, parseTilesetUrlParams} from './url-utils';
-import {OrientedBoundingBox} from '@math.gl/culling';
 
 const TRANSITION_DURAITON = 4000;
 
@@ -126,7 +123,7 @@ export default class App extends PureComponent {
       selectedTileId: null,
       coloredTilesMap: {},
       warnings: [],
-      viewportTraversersMap: new Map()
+      viewportTraversersMap: {main: 'main'}
     };
     this._onSelectTileset = this._onSelectTileset.bind(this);
     this._setDebugOptions = this._setDebugOptions.bind(this);
@@ -279,25 +276,7 @@ export default class App extends PureComponent {
     }
     let data = [];
     if (tileset) {
-      data = tileset.tiles
-        .map(tile => {
-          if (!tile.selected || !tile.viewportIds.includes('main')) {
-            return null;
-          }
-          const boundingVolume = tile.boundingVolume;
-          const cartographicOrigin = new Vector3();
-          Ellipsoid.WGS84.cartesianToCartographic(boundingVolume.center, cartographicOrigin);
-          let radius = boundingVolume.radius;
-          if (!radius && boundingVolume instanceof OrientedBoundingBox) {
-            const halfSize = boundingVolume.halfSize;
-            radius = new Vector3(halfSize[0], halfSize[1], halfSize[2]).len();
-          }
-          return {
-            coordinates: [cartographicOrigin[0], cartographicOrigin[1], cartographicOrigin[2]],
-            radius: boundingVolume.radius
-          };
-        })
-        .filter(tile => tile);
+      data = buildMinimapData(tileset.tiles);
     }
     return new ScatterplotLayer({
       id: 'main-on-minimap',
@@ -327,8 +306,7 @@ export default class App extends PureComponent {
       coloredTilesMap,
       viewportTraversersMap
     } = this.state;
-    viewportTraversersMap.set('main', 'main');
-    viewportTraversersMap.set('minimap', minimapViewport ? 'minimap' : 'main');
+    viewportTraversersMap.minimap = minimapViewport ? 'minimap' : 'main';
     const loadOptions = {throttleRequests: true, viewportTraversersMap};
 
     if (token) {
