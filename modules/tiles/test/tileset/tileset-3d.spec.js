@@ -1,8 +1,9 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
-/* global btoa */ // loaders.gl/polyfills under Node.js
+/* global btoa, setInterval, clearInterval */ // loaders.gl/polyfills under Node.js
 import test from 'tape-promise/tape';
+import {WebMercatorViewport} from '@deck.gl/core';
 import {load} from '@loaders.gl/core';
 import {Tileset3D} from '@loaders.gl/tiles';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
@@ -109,6 +110,49 @@ const POINT_CLOUD_URL = '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudRGB
 const POINT_CLOUD_BATCHED_URL =
   '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudBatched/tileset.json';
 */
+
+const VIEWPORTS = [
+  new WebMercatorViewport({
+    altitude: 1.5,
+    bearing: 0,
+    far: 1000,
+    fovy: 50,
+    height: 600,
+    id: 'view0',
+    latitude: 40.049483884253355,
+    longitude: -75.60783109310839,
+    maxPitch: 85,
+    maxZoom: 30,
+    minPitch: 0,
+    minZoom: 2,
+    modelMatrix: null,
+    near: 0.1,
+    pitch: 45,
+    projectionMatrix: null,
+    width: 1848,
+    zoom: 12.660812211760435
+  }),
+  new WebMercatorViewport({
+    altitude: 1.5,
+    bearing: 0,
+    far: 1000,
+    fovy: 50,
+    height: 600,
+    id: 'view1',
+    latitude: 40.04263801150246,
+    longitude: -75.61214643071165,
+    maxPitch: 85,
+    maxZoom: 30,
+    minPitch: 0,
+    minZoom: 2,
+    modelMatrix: null,
+    near: 0.1,
+    pitch: 45,
+    projectionMatrix: null,
+    width: 1848,
+    zoom: 14.687765254329607
+  })
+];
 
 test('Tileset3D#throws with undefined url', t => {
   t.throws(() => new Tileset3D());
@@ -217,6 +261,86 @@ test('Tileset3D#hasExtension returns true if the tileset JSON file uses the spec
   t.equals(tileset.hasExtension('3DTILES_batch_table_hierarchy'), true);
   t.equals(tileset.hasExtension('3DTILES_nonexistant_extension'), false);
   t.end();
+});
+
+test('Tileset3D#one viewport traversal', async t => {
+  const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
+  const viewport = VIEWPORTS[0];
+  let tileLoadCounter = 0;
+  const tileset = new Tileset3D(tilesetJson, {
+    onTileLoad: () => {
+      tileset.update(viewport);
+      tileLoadCounter++;
+      t.end();
+    }
+  });
+  tileset.update(viewport);
+
+  t.timeoutAfter(1000);
+  const setIntervalId = setInterval(() => {
+    if (tileLoadCounter > 0) {
+      clearInterval(setIntervalId);
+      tileset.update(viewport);
+      t.equals(tileset.selectedTiles.length, 1);
+      t.end();
+    }
+  }, 100);
+});
+
+test('Tileset3D#two viewports traversal', async t => {
+  const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
+  const viewports = VIEWPORTS;
+  let tileLoadCounter = 0;
+  const tileset = new Tileset3D(tilesetJson, {
+    onTileLoad: () => {
+      tileset.update(viewports);
+      tileLoadCounter++;
+      t.end();
+    }
+  });
+  tileset.update(viewports);
+
+  t.timeoutAfter(1000);
+  const setIntervalId = setInterval(() => {
+    if (tileLoadCounter > 2) {
+      clearInterval(setIntervalId);
+      tileset.update(viewports);
+      t.equals(tileset.selectedTiles.length, 6);
+      t.equals(tileset.selectedTiles.filter(tile => tile.viewportIds.includes('view0')).length, 1);
+      t.equals(tileset.selectedTiles.filter(tile => tile.viewportIds.includes('view1')).length, 5);
+      t.end();
+    }
+  }, 100);
+});
+
+test('Tileset3D#viewportTraversersMap (one viewport shows tiles selected for another viewport)', async t => {
+  const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
+  const viewports = VIEWPORTS;
+  let tileLoadCounter = 0;
+  const tileset = new Tileset3D(tilesetJson, {
+    onTileLoad: () => {
+      tileset.update(viewports);
+      tileLoadCounter++;
+      t.end();
+    },
+    viewportTraversersMap: {
+      view0: 'view1',
+      view1: 'view1'
+    }
+  });
+  tileset.update(viewports);
+
+  t.timeoutAfter(1000);
+  const setIntervalId = setInterval(() => {
+    if (tileLoadCounter > 1) {
+      clearInterval(setIntervalId);
+      tileset.update(viewports);
+      t.equals(tileset.selectedTiles.length, 5);
+      t.equals(tileset.selectedTiles.filter(tile => tile.viewportIds.includes('view0')).length, 5);
+      t.equals(tileset.selectedTiles.filter(tile => tile.viewportIds.includes('view1')).length, 5);
+      t.end();
+    }
+  }, 100);
 });
 
 /*
