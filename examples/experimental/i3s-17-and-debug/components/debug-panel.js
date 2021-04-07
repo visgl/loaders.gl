@@ -87,6 +87,7 @@ export default class DebugPanel extends PureComponent {
       tileColorMode: INITIAL_TILE_COLOR_MODE,
       obbColorMode: INITIAL_OBB_COLOR_MODE,
       pickable: false,
+      loadTiles: true,
       semanticValidator: false
     };
 
@@ -94,6 +95,7 @@ export default class DebugPanel extends PureComponent {
     this.toggleMinimap = this.toggleMinimap.bind(this);
     this.toggleObb = this.toggleObb.bind(this);
     this.togglePickable = this.togglePickable.bind(this);
+    this.toggleLoading = this.toggleLoading.bind(this);
     this.toggleSemanticValidator = this.toggleSemanticValidator.bind(this);
 
     this.changedTileColorMode = this.changedTileColorMode.bind(this);
@@ -126,6 +128,13 @@ export default class DebugPanel extends PureComponent {
     });
   }
 
+  toggleLoading() {
+    const {loadTiles} = this.state;
+    this.setState({loadTiles: !loadTiles}, () => {
+      this.applyOptions();
+    });
+  }
+
   toggleSemanticValidator() {
     const {semanticValidator} = this.state;
     this.setState({semanticValidator: !semanticValidator}, () => {
@@ -146,7 +155,15 @@ export default class DebugPanel extends PureComponent {
   }
 
   applyOptions() {
-    const {obb, tileColorMode, obbColorMode, pickable, minimap, semanticValidator} = this.state;
+    const {
+      obb,
+      tileColorMode,
+      obbColorMode,
+      pickable,
+      loadTiles,
+      minimap,
+      semanticValidator
+    } = this.state;
     const {onOptionsChange} = this.props;
     onOptionsChange({
       minimap,
@@ -154,6 +171,7 @@ export default class DebugPanel extends PureComponent {
       tileColorMode,
       obbColorMode,
       pickable,
+      loadTiles,
       semanticValidator
     });
   }
@@ -214,7 +232,7 @@ export default class DebugPanel extends PureComponent {
   }
 
   renderTileOptions() {
-    const {tileColorMode, pickable} = this.state;
+    const {tileColorMode, pickable, loadTiles} = this.state;
     return (
       <DebugOptionGroup title="Tiles">
         <CheckboxOption>
@@ -226,6 +244,16 @@ export default class DebugPanel extends PureComponent {
             checked={pickable}
           />
           <label htmlFor="pickable">Pickable</label>
+        </CheckboxOption>
+        <CheckboxOption>
+          <InputCheckbox
+            onChange={this.toggleLoading}
+            type="checkbox"
+            id="loadTiles"
+            value={loadTiles}
+            checked={loadTiles}
+          />
+          <label htmlFor="loadTiles">Load tiles</label>
         </CheckboxOption>
         <DropDown
           value={tileColorMode}

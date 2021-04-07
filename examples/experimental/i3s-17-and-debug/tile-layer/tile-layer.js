@@ -35,6 +35,11 @@ export default class TileLayer extends Tile3DLayer {
     if (!timeline || !viewports || !tileset3d) {
       return;
     }
+
+    if (!this.internalState.component.props.loadTiles) {
+      return;
+    }
+
     const frameNumber = tileset3d.update(viewports);
     // NEW CODE END
 
