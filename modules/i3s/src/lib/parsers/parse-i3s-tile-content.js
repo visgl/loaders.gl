@@ -81,7 +81,8 @@ async function parseI3SNodeGeometry(arrayBuffer, tile = {}, options) {
       NORMAL,
       COLOR_0,
       TEXCOORD_0,
-      ['feature-index']: featureIndex
+      ['feature-index']: featureIndex,
+      ['uv-region']: uvRegion
     } = decompressedGeometry.attributes;
 
     attributes = {
@@ -89,6 +90,7 @@ async function parseI3SNodeGeometry(arrayBuffer, tile = {}, options) {
       normal: flattenAttribute(NORMAL, indices),
       color: flattenAttribute(COLOR_0, indices),
       uv0: flattenAttribute(TEXCOORD_0, indices),
+      uvRegion: flattenAttribute(uvRegion, indices),
       id: flattenAttribute(featureIndex, indices)
     };
 
@@ -141,8 +143,9 @@ async function parseI3SNodeGeometry(arrayBuffer, tile = {}, options) {
   content.attributes = {
     positions: attributes.position,
     normals: attributes.normal,
-    colors: normalizeColors(attributes.color),
+    colors: normalizeAttribute(attributes.color), // Normalize from UInt8
     texCoords: attributes.uv0,
+    uvRegions: normalizeAttribute(attributes.uvRegion), // Normalize from UInt16
     featureIds: attributes.id,
     faceRange: attributes.faceRange
   };
@@ -195,21 +198,16 @@ function flattenAttribute(attribute, indices) {
 }
 
 /**
- * Convert colors buffer from [255,255,255,255] to [1,1,1,1]
- * @param {Object} colors - color attribute
- * @returns {Object} - color attribute in right format
+ * Normalize attribute to range [0..1] . Eg. convert colors buffer from [255,255,255,255] to [1,1,1,1]
+ * @param {Object} attribute - geometry attribute
+ * @returns {Object} - geometry attribute in right format
  */
-function normalizeColors(colors) {
-  if (!colors) {
-    return colors;
+function normalizeAttribute(attribute) {
+  if (!attribute) {
+    return attribute;
   }
-  const normalizedColors = new Float32Array(colors.value.length);
-  for (let index = 0; index < normalizedColors.length; index++) {
-    normalizedColors[index] = colors.value[index] / 255;
-  }
-  colors.value = normalizedColors;
-  colors.type = GL_TYPE_MAP.Float32;
-  return colors;
+  attribute.normalized = true;
+  return attribute;
 }
 
 function constructFeatureDataStruct(tile, tileset) {

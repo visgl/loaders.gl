@@ -16,6 +16,7 @@ import {INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
 import AttributesPanel from './components/attributes-panel';
 import DebugPanel from './components/debug-panel';
 import ControlPanel from './components/control-panel';
+import SemanticValidator from './components/semantic-validator';
 
 import {
   INITIAL_MAP_STYLE,
@@ -29,7 +30,7 @@ import TileLayer from './tile-layer/tile-layer';
 import ObbLayer from './obb-layer';
 import ColorMap from './color-map';
 import AttributesTooltip from './components/attributes-tooltip';
-import {getTileDebugInfo, getShortTileDebugInfo} from './tile-debug';
+import {getTileDebugInfo, getShortTileDebugInfo, validateTile} from './tile-debug';
 import {parseTilesetUrlFromUrl, parseTilesetUrlParams} from './url-utils';
 
 const TRANSITION_DURAITON = 4000;
@@ -112,11 +113,13 @@ export default class App extends PureComponent {
         tileColorMode: INITIAL_TILE_COLOR_MODE,
         obbColorMode: INITIAL_OBB_COLOR_MODE,
         pickable: false,
-        loadTiles: true
+        loadTiles: true,
+        semanticValidator: false
       },
       tileInfo: null,
       selectedTileId: null,
-      coloredTilesMap: {}
+      coloredTilesMap: {},
+      warnings: []
     };
     this._onSelectTileset = this._onSelectTileset.bind(this);
     this._setDebugOptions = this._setDebugOptions.bind(this);
@@ -163,7 +166,7 @@ export default class App extends PureComponent {
   async _onSelectTileset(tileset) {
     const params = parseTilesetUrlParams(tileset.url, tileset);
     const {tilesetUrl, token, name, metadataUrl} = params;
-    this.setState({tilesetUrl, name, token});
+    this.setState({tilesetUrl, name, token, warnings: []});
     const metadata = await fetch(metadataUrl).then(resp => resp.json());
     this.setState({metadata});
     this._obbLayer.resetTiles();
@@ -178,6 +181,7 @@ export default class App extends PureComponent {
   _onTileLoad(tile) {
     this._updateStatWidgets();
     this._obbLayer.addTile(tile);
+    this.validateTile(tile);
   }
 
   _onTileUnload() {
@@ -246,6 +250,15 @@ export default class App extends PureComponent {
       this.setState({coloredTilesMap: {}, selectedTileId: null});
     }
     this.setState({debugOptions});
+  }
+
+  validateTile(tile) {
+    const {warnings} = this.state;
+    const newWarings = validateTile(tile);
+
+    if (newWarings.length) {
+      this.setState({warnings: [...warnings, ...newWarings]});
+    }
   }
 
   _renderLayers() {
@@ -430,14 +443,20 @@ export default class App extends PureComponent {
     );
   }
 
+  renderSemanticValidator() {
+    const {warnings} = this.state;
+    return <SemanticValidator warnings={warnings} />;
+  }
+
   render() {
     const layers = this._renderLayers();
-    const {selectedMapStyle, tileInfo} = this.state;
+    const {selectedMapStyle, tileInfo, debugOptions} = this.state;
 
     return (
       <div style={{position: 'relative', height: '100%'}}>
         {this._renderDebugPanel()}
         {tileInfo ? this.renderAttributesPanel() : this._renderControlPanel()}
+        {debugOptions.semanticValidator && this.renderSemanticValidator()}
         <DeckGL
           layers={layers}
           viewState={this._getViewState()}

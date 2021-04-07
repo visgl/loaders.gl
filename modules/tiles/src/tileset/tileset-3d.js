@@ -140,6 +140,7 @@ export default class Tileset3D {
     }
 
     this.root = null;
+    this.roots = {};
     // view props
     this.cartographicCenter = null;
     this.cartesianCenter = null;
@@ -147,7 +148,7 @@ export default class Tileset3D {
     this.boundingVolume = null;
 
     // TRAVERSAL
-    this._traverser = this._initializeTraverser();
+    this._traversers = {};
     this._cache = new TilesetCache();
     this._requestScheduler = new RequestScheduler({
       throttleRequests: this.options.throttleRequests
@@ -166,6 +167,7 @@ export default class Tileset3D {
     this._emptyTiles = [];
     this._requestedTiles = [];
     this._selectedTilesToStyle = [];
+    this.frameStateData = {};
 
     this._queryParams = {};
     this._queryParamsString = null;
@@ -219,35 +221,113 @@ export default class Tileset3D {
     return `${tilePath}${this.queryParams}`;
   }
 
-  update(viewport) {
-    // TODO: update traverser to work with multiple viewports. Take viewport[0] for now
-    if (viewport instanceof Array) {
-      viewport = viewport[0];
+  /**
+   * Update visible tiles relying on a list of deck.gl viewports
+   * @param {WebMercatorViewport} viewports - list of deck.gl viewports
+   * @return {void}
+   */
+  update(viewports) {
+    if (this.travererseCounter > 0) {
+      return;
     }
+    if (!(viewports instanceof Array)) {
+      viewports = [viewports];
+    }
+
     this._cache.reset();
     this._frameNumber++;
-    this._frameState = getFrameState(viewport, this._frameNumber);
-    this._traverser.traverse(this.root, this._frameState, this.options);
-  }
-
-  _onTraversalEnd() {
-    const selectedTiles = Object.values(this._traverser.selectedTiles);
-    if (this._tilesChanged(this.selectedTiles, selectedTiles)) {
-      this._updateFrameNumber++;
+    this.traverseCounter = viewports.length;
+    // First loop to decrement traverseCounter
+    for (const viewport of viewports) {
+      const id = viewport.id;
+      this._initTraverser(id);
     }
 
-    this.selectedTiles = selectedTiles;
+    // Second loop to traverse
+    for (const viewport of viewports) {
+      const id = viewport.id;
+      if (!this.roots[id]) {
+        this.roots[id] = this._initializeTileHeaders(this.tileset, null, this.basePath);
+      }
+
+      if (!this._traversers[id]) {
+        continue; // eslint-disable-line no-continue
+      }
+      const traverser = this._traversers[id];
+      const frameState = getFrameState(viewport, this._frameNumber);
+      traverser.traverse(this.roots[id], frameState, this.options);
+    }
+  }
+
+  /**
+   * Create a traverser for a viewport if necessary
+   * @param {string} viewportId - id of a viewport
+   * @return {TilesetTraverser}
+   */
+  _initTraverser(viewportId) {
+    let traverserId = viewportId;
+    if (this.options.viewportTraversersMap) {
+      traverserId = this.options.viewportTraversersMap[viewportId];
+    }
+    if (traverserId !== viewportId) {
+      this.traverseCounter--;
+      return null;
+    }
+
+    if (!this._traversers[traverserId]) {
+      this._traversers[traverserId] = this._initializeTraverser();
+    }
+    return this._traversers[traverserId];
+  }
+
+  /**
+   * The callback to post-process tiles after traversal procedure
+   * @param {TilesetTraverser} traverser - the TilesetTraverser instance that just finished traversal
+   * @param {Object} frameState - frame state for tile culling
+   * @return {void}
+   */
+  _onTraversalEnd(traverser, frameState) {
+    const id = frameState.viewport.id;
+    if (!this.frameStateData[id]) {
+      this.frameStateData[id] = {selectedTiles: [], _requestedTiles: [], _emptyTiles: []};
+    }
+    const currentFrameStateData = this.frameStateData[id];
+    const selectedTiles = Object.values(traverser.selectedTiles);
+    currentFrameStateData.selectedTiles = selectedTiles;
+    currentFrameStateData._requestedTiles = Object.values(traverser.requestedTiles);
+    currentFrameStateData._emptyTiles = Object.values(traverser.emptyTiles);
+
+    this.traverseCounter--;
+    if (this.traverseCounter > 0) {
+      return;
+    }
+
+    this._updateTiles();
+  }
+
+  /**
+   * Update tiles relying on data from all traversers
+   * @return {void}
+   */
+  _updateTiles() {
+    this.selectedTiles = [];
+    this._requestedTiles = [];
+    this._emptyTiles = [];
+
+    for (const frameStateKey in this.frameStateData) {
+      const frameStateDataValue = this.frameStateData[frameStateKey];
+      this.selectedTiles = this.selectedTiles.concat(frameStateDataValue.selectedTiles);
+      this._requestedTiles = this._requestedTiles.concat(frameStateDataValue._requestedTiles);
+      this._emptyTiles = this._emptyTiles.concat(frameStateDataValue._emptyTiles);
+    }
+
     for (const tile of this.selectedTiles) {
       this._tiles[tile.id] = tile;
     }
-    this._requestedTiles = Object.values(this._traverser.requestedTiles);
-    this._emptyTiles = Object.values(this._traverser.emptyTiles);
 
-    this._loadTiles(this._frameState);
+    this._loadTiles();
     this._unloadTiles();
     this._updateStats();
-
-    return this._updateFrameNumber;
   }
 
   _tilesChanged(oldSelectedTiles, selectedTiles) {
@@ -261,13 +341,13 @@ export default class Tileset3D {
     return changed;
   }
 
-  _loadTiles(frameState) {
+  _loadTiles() {
     // Sort requests by priority before making any requests.
     // This makes it less likely this requests will be cancelled after being issued.
     // requestedTiles.sort((a, b) => a._priority - b._priority);
     for (const tile of this._requestedTiles) {
       if (tile.contentUnloaded) {
-        this._loadTile(tile, frameState);
+        this._loadTile(tile);
       }
     }
   }
@@ -398,11 +478,11 @@ export default class Tileset3D {
     this._destroySubtree(parentTile);
   }
 
-  async _loadTile(tile, frameState) {
+  async _loadTile(tile) {
     let loaded;
     try {
       this._onStartTileLoading();
-      loaded = await tile.loadContent(frameState);
+      loaded = await tile.loadContent();
     } catch (error) {
       this._onTileLoadError(tile, error);
     } finally {

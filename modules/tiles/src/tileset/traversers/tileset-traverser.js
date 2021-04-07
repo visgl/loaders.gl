@@ -118,7 +118,7 @@ export default class TilesetTraverser {
     }
 
     if (this.options.onTraversalEnd) {
-      this.options.onTraversalEnd(frameState);
+      this.options.onTraversalEnd(this, frameState);
     }
   }
 
@@ -252,7 +252,18 @@ export default class TilesetTraverser {
   }
 
   updateTileVisibility(tile, frameState) {
-    tile.updateVisibility(frameState);
+    const viewportIds = [];
+    if (this.options.viewportTraversersMap) {
+      for (const key in this.options.viewportTraversersMap) {
+        const value = this.options.viewportTraversersMap[key];
+        if (value === frameState.viewport.id) {
+          viewportIds.push(key);
+        }
+      }
+    } else {
+      viewportIds.push(frameState.viewport.id);
+    }
+    tile.updateVisibility(frameState, viewportIds);
   }
 
   // UTILITIES

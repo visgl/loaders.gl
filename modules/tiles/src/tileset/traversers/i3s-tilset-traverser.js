@@ -24,11 +24,12 @@ export default class I3STilesetTraverser extends TilesetTraverser {
     const tileset = tile.tileset;
 
     for (const child of children) {
+      const extendedId = `${child.id}-${frameState.viewport.id}`;
       // if child tile is not fetched
-      const childTile = childTiles && childTiles.find(t => t.id === child.id);
+      const childTile = childTiles && childTiles.find(t => t.id === extendedId);
       if (!childTile) {
         let request = () => this._loadTile(child.id, tileset);
-        const cachedRequest = this._tileManager.find(child.id);
+        const cachedRequest = this._tileManager.find(extendedId);
         if (!cachedRequest) {
           // eslint-disable-next-line max-depth
           if (tileset.tileset.nodePages) {
@@ -36,13 +37,13 @@ export default class I3STilesetTraverser extends TilesetTraverser {
           }
           this._tileManager.add(
             request,
-            child.id,
-            header => this._onTileLoad(header, tile),
+            extendedId,
+            header => this._onTileLoad(header, tile, extendedId),
             frameState
           );
         } else {
           // update frameNumber since it is still needed in current frame
-          this._tileManager.update(child.id, frameState);
+          this._tileManager.update(extendedId, frameState);
         }
       } else if (childTile) {
         // if child tile is fetched and available
@@ -66,10 +67,18 @@ export default class I3STilesetTraverser extends TilesetTraverser {
     return await load(nodeUrl, loader, options);
   }
 
-  _onTileLoad(header, tile) {
+  /**
+   * The callback to init TileHeader instance after loading the tile JSON
+   * @param {Object} header - the tile JSON from a dataset
+   * @param {TileHeader} tile - the parent TileHeader instance
+   * @param {string} extendedId - optional ID to separate copies of a tile for different viewports.
+   *                              const extendedId = `${tile.id}-${frameState.viewport.id}`;
+   * @return {void}
+   */
+  _onTileLoad(header, tile, extendedId) {
     const basePath = this.options.basePath;
     // after child tile is fetched
-    const childTile = new TileHeader(tile.tileset, header, tile, basePath);
+    const childTile = new TileHeader(tile.tileset, header, tile, basePath, extendedId);
     tile.children.push(childTile);
     const frameState = this._tileManager.find(childTile.id).frameState;
     this.updateTile(childTile, frameState);
