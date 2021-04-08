@@ -1,4 +1,4 @@
-import {OrientedBoundingBox} from '@math.gl/culling';
+import {OrientedBoundingBox, BoundingSphere} from '@math.gl/culling';
 import {CubeGeometry} from '@luma.gl/engine';
 import {BOUNDING_VOLUME_WARNING_TYPE, LOD_WARNING_TYPE} from './constants';
 import {Vector3} from 'math.gl';
@@ -69,14 +69,18 @@ function getChildrenInfo(children) {
 export function validateTile(tile) {
   const tileWarnings = [];
 
-  checkBoundingVolumes(tileWarnings, tile);
-  checkLOD(tileWarnings, tile);
-  checkGeometryVsTexture(tileWarnings, tile);
+  checkBoundingVolumes(tile, tileWarnings);
+  checkLOD(tile, tileWarnings);
+  checkGeometryVsTexture(tile, tileWarnings);
 
   return tileWarnings;
 }
 
-function checkBoundingVolumes(tileWarnings, tile) {
+function checkBoundingVolumes(tile, tileWarnings) {
+  if (!tile.parent) {
+    return;
+  }
+
   const boundingType = getBoundingType(tile);
 
   switch (boundingType) {
@@ -94,10 +98,6 @@ function checkBoundingVolumes(tileWarnings, tile) {
 }
 
 function validateObb(tileWarnings, tile) {
-  if (!tile.parent) {
-    return;
-  }
-
   const parentObb = getParentObb(tile);
   const tileVertices = getTileObbVertices(tile);
   const isTileObbInsideParentObb = isAllObbVerticesInsideParentObb(parentObb, tileVertices);
@@ -106,30 +106,40 @@ function validateObb(tileWarnings, tile) {
     return;
   }
 
-  const title = `OBB of ${tile.id} tile doesn't fit into ${tile.parent.id} parent tile OBB`;
-  tileWarnings.push({id: tile.id, type: BOUNDING_VOLUME_WARNING_TYPE, title});
+  const title = `OBB of Tile (${tile.id}) doesn't fit into Parent (${tile.parent.id}) tile OBB`;
+  tileWarnings.push({type: BOUNDING_VOLUME_WARNING_TYPE, title});
 }
 
 function validateMbs(tileWarnings, tile) {
-  // TODO MBS Validation
-  return;
+  const tileMbs = createBoundingSphereFromTileMbs(tile.header.mbs);
+  const parentMbs = createBoundingSphereFromTileMbs(tile.parent.header.mbs);
+  const distanceBetweenCenters = tileMbs.center.distanceTo(parentMbs.center);
+
+  if (distanceBetweenCenters + tileMbs.radius > parentMbs.radius) {
+    const title = `MBS of Tile (${tile.id}) doesn't fit into Parent (${tile.parent.id}) tile MBS`;
+    tileWarnings.push({type: BOUNDING_VOLUME_WARNING_TYPE, title});
+  }
+}
+
+function createBoundingSphereFromTileMbs(mbs) {
+  return new BoundingSphere([mbs[0], mbs[1], mbs[2]], mbs[3]);
 }
 
 // LOD spec https://github.com/Esri/i3s-spec/blob/master/format/LevelofDetail.md
-function checkLOD(tileWarnings, tile) {
+function checkLOD(tile, tileWarnings) {
   const parentLod = tile.parent && tile.parent.lodMetricValue;
 
   if (!parentLod || tile.lodMetricValue > parentLod) {
     return;
   }
 
-  const title = `${tile.id} tile LOD ${tile.lodMetricValue} < parent ${tile.parent.id} tile ${
-    tile.parent.lodMetricValue
-  } LOD`;
-  tileWarnings.push({id: tile.id, type: LOD_WARNING_TYPE, title});
+  const title = `Tile (${tile.id}) LOD = "${tile.lodMetricValue}" < Parent (${
+    tile.parent.id
+  }) tile LOD = "${tile.parent.lodMetricValue}"`;
+  tileWarnings.push({type: LOD_WARNING_TYPE, title});
 }
 
-function checkGeometryVsTexture(tileWarnings, tile) {
+function checkGeometryVsTexture(tile, tileWarnings) {
   // TODO Geometry vs Texture Validation
   return;
 }
