@@ -107,7 +107,7 @@ function validateObb(tileWarnings, tile) {
   }
 
   const title = `OBB of ${tile.id} tile doesn't fit into ${tile.parent.id} parent tile OBB`;
-  tileWarnings.push({type: BOUNDING_VOLUME_WARNING_TYPE, title});
+  tileWarnings.push({id: tile.id, type: BOUNDING_VOLUME_WARNING_TYPE, title});
 }
 
 function validateMbs(tileWarnings, tile) {
@@ -126,7 +126,7 @@ function checkLOD(tileWarnings, tile) {
   const title = `${tile.id} tile LOD ${tile.lodMetricValue} < parent ${tile.parent.id} tile ${
     tile.parent.lodMetricValue
   } LOD`;
-  tileWarnings.push({type: LOD_WARNING_TYPE, title});
+  tileWarnings.push({id: tile.id, type: LOD_WARNING_TYPE, title});
 }
 
 function checkGeometryVsTexture(tileWarnings, tile) {

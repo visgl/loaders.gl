@@ -41,6 +41,7 @@ const WARNING_TYPES = {
 
 const WARNING_TYPE = 'Type';
 const WARNING = 'Warning';
+const COLUMN_NUMBER = '№';
 
 const propTypes = {
   warnings: PropTypes.array
@@ -54,6 +55,7 @@ export default class SemanticValidator extends PureComponent {
   renderColumns(warnings) {
     return warnings.map((warning, index) => (
       <tr key={`${warning.title}-${index}`}>
+        <td style={{padding: '3px'}}>{index + 1}</td>
         <td style={{padding: '3px'}}>{WARNING_TYPES[warning.type]}</td>
         <td style={{color: 'red', padding: '3px'}}>{warning.title}</td>
       </tr>
@@ -67,6 +69,7 @@ export default class SemanticValidator extends PureComponent {
       <table>
         <thead>
           <tr>
+            <TableHeader>{COLUMN_NUMBER}</TableHeader>
             <TableHeader>{WARNING_TYPE}</TableHeader>
             <TableHeader>{WARNING}</TableHeader>
           </tr>

@@ -125,6 +125,7 @@ export default class App extends PureComponent {
     this._setDebugOptions = this._setDebugOptions.bind(this);
     this.handleClosePanel = this.handleClosePanel.bind(this);
     this.handleSelectTileColor = this.handleSelectTileColor.bind(this);
+    this.handleClearWarnings = this.handleClearWarnings.bind(this);
   }
 
   componentDidMount() {
@@ -166,7 +167,8 @@ export default class App extends PureComponent {
   async _onSelectTileset(tileset) {
     const params = parseTilesetUrlParams(tileset.url, tileset);
     const {tilesetUrl, token, name, metadataUrl} = params;
-    this.setState({tilesetUrl, name, token, warnings: []});
+    this.setState({tilesetUrl, name, token});
+    this.handleClearWarnings();
     const metadata = await fetch(metadataUrl).then(resp => resp.json());
     this.setState({metadata});
     this._obbLayer.resetTiles();
@@ -254,10 +256,12 @@ export default class App extends PureComponent {
 
   validateTile(tile) {
     const {warnings} = this.state;
-    const newWarings = validateTile(tile);
+    const newWarnings = validateTile(tile);
 
-    if (newWarings.length) {
-      this.setState({warnings: [...warnings, ...newWarings]});
+    if (newWarnings.length) {
+      this.setState({
+        warnings: [...warnings, ...newWarnings]
+      });
     }
   }
 
@@ -317,7 +321,18 @@ export default class App extends PureComponent {
   }
 
   _renderDebugPanel() {
-    return <DebugPanel onOptionsChange={this._setDebugOptions}>{this._renderStats()}</DebugPanel>;
+    const {warnings, debugOptions} = this.state;
+    const isClearButtonDisabled = !warnings.length || !debugOptions.semanticValidator;
+
+    return (
+      <DebugPanel
+        onOptionsChange={this._setDebugOptions}
+        clearWarnings={this.handleClearWarnings}
+        isClearButtonDisabled={isClearButtonDisabled}
+      >
+        {this._renderStats()}
+      </DebugPanel>
+    );
   }
 
   _renderStats() {
@@ -405,7 +420,11 @@ export default class App extends PureComponent {
     };
   }
 
-  renderAttributesPanel() {
+  handleClearWarnings() {
+    this.setState({warnings: []});
+  }
+
+  _renderAttributesPanel() {
     const {tileInfo, debugOptions, coloredTilesMap} = this.state;
     const isShowColorPicker = debugOptions.tileColorMode === COLORED_BY.CUSTOM;
     const tileId = tileInfo['Tile Id'];
@@ -443,7 +462,7 @@ export default class App extends PureComponent {
     );
   }
 
-  renderSemanticValidator() {
+  _renderSemanticValidator() {
     const {warnings} = this.state;
     return <SemanticValidator warnings={warnings} />;
   }
@@ -455,8 +474,8 @@ export default class App extends PureComponent {
     return (
       <div style={{position: 'relative', height: '100%'}}>
         {this._renderDebugPanel()}
-        {tileInfo ? this.renderAttributesPanel() : this._renderControlPanel()}
-        {debugOptions.semanticValidator && this.renderSemanticValidator()}
+        {tileInfo ? this._renderAttributesPanel() : this._renderControlPanel()}
+        {debugOptions.semanticValidator && this._renderSemanticValidator()}
         <DeckGL
           layers={layers}
           viewState={this._getViewState()}
