@@ -98,9 +98,9 @@ function checkBoundingVolumes(tile, tileWarnings) {
 }
 
 function validateObb(tileWarnings, tile) {
-  const parentObb = getParentObb(tile);
+  const parentObb = createBoundingBoxFromTileObb(tile.parent.header.obb);
   const tileVertices = getTileObbVertices(tile);
-  const isTileObbInsideParentObb = isAllObbVerticesInsideParentObb(parentObb, tileVertices);
+  const isTileObbInsideParentObb = isAllVerticesInsideBoundingVolume(parentObb, tileVertices);
 
   if (isTileObbInsideParentObb) {
     return;
@@ -125,6 +125,11 @@ function createBoundingSphereFromTileMbs(mbs) {
   return new BoundingSphere([mbs[0], mbs[1], mbs[2]], mbs[3]);
 }
 
+function createBoundingBoxFromTileObb(obb) {
+  const {center, halfSize, quaternion} = obb;
+  return new OrientedBoundingBox().fromCenterHalfSizeQuaternion(center, halfSize, quaternion);
+}
+
 // LOD spec https://github.com/Esri/i3s-spec/blob/master/format/LevelofDetail.md
 function checkLOD(tile, tileWarnings) {
   const parentLod = tile.parent && tile.parent.lodMetricValue;
@@ -144,11 +149,6 @@ function checkGeometryVsTexture(tile, tileWarnings) {
   return;
 }
 
-function getParentObb(tile) {
-  const {center, halfSize, quaternion} = tile.parent.header.obb;
-
-  return new OrientedBoundingBox().fromCenterHalfSizeQuaternion(center, halfSize, quaternion);
-}
 // TODO check if Obb generates properly
 function getTileObbVertices(tile) {
   const geometry = new CubeGeometry();
@@ -174,19 +174,45 @@ function getTileObbVertices(tile) {
   return vertices;
 }
 
-function isAllObbVerticesInsideParentObb(parentObb, tilePositions) {
-  let isTileObbInsideParent = true;
+function isAllVerticesInsideBoundingVolume(boundingVolume, positions) {
+  let isVerticesInsideObb = true;
 
-  for (let index = 0; index < tilePositions.length / 3; index += 3) {
-    const point = [tilePositions[index], tilePositions[index + 1], tilePositions[index + 2]];
+  for (let index = 0; index < positions.length / 3; index += 3) {
+    const point = [positions[index], positions[index + 1], positions[index + 2]];
     const cartographicPoint = Ellipsoid.WGS84.cartesianToCartographic(point);
-    const distance = parentObb.distanceTo(cartographicPoint);
+
+    const distance = boundingVolume.distanceTo(cartographicPoint);
 
     if (distance > 0) {
-      isTileObbInsideParent = false;
+      isVerticesInsideObb = false;
       break;
     }
   }
 
-  return isTileObbInsideParent;
+  return isVerticesInsideObb;
+}
+
+export function isTileGeometryInsideBoundingVolume(tile) {
+  const boundingType = getBoundingType(tile);
+  const positions = tile.content.attributes.positions.value;
+  let boundingVolume = null;
+
+  switch (boundingType) {
+    case OBB: {
+      boundingVolume = createBoundingBoxFromTileObb(tile.header.obb);
+      break;
+    }
+    case MBS: {
+      boundingVolume = createBoundingSphereFromTileMbs(tile.header.mbs);
+      break;
+    }
+    default:
+      console.error('Validator - Not supported Bounding Volume Type'); //eslint-disable-line
+  }
+
+  try {
+    return isAllVerticesInsideBoundingVolume(boundingVolume, positions);
+  } catch (error) {
+    return error;
+  }
 }

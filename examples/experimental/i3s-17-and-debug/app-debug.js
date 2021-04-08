@@ -32,6 +32,7 @@ import ColorMap from './color-map';
 import AttributesTooltip from './components/attributes-tooltip';
 import {getTileDebugInfo, getShortTileDebugInfo, validateTile} from './tile-debug';
 import {parseTilesetUrlFromUrl, parseTilesetUrlParams} from './url-utils';
+import TileValidator from './components/tile-validator';
 
 const TRANSITION_DURAITON = 4000;
 
@@ -425,11 +426,12 @@ export default class App extends PureComponent {
   }
 
   _renderAttributesPanel() {
-    const {tileInfo, debugOptions, coloredTilesMap} = this.state;
+    const {tileInfo, debugOptions, coloredTilesMap, tileset} = this.state;
     const isShowColorPicker = debugOptions.tileColorMode === COLORED_BY.CUSTOM;
     const tileId = tileInfo['Tile Id'];
     const tileSelectedColor = makeRGBObjectFromColor(coloredTilesMap[tileId]);
     const isResetButtonDisabled = !coloredTilesMap[tileId];
+    const currenTile = tileset._tiles[tileId];
 
     return (
       <AttributesPanel
@@ -438,6 +440,7 @@ export default class App extends PureComponent {
         attributesHeader={'Tile Id'}
         selectTileColor={this.handleSelectTileColor}
       >
+        <TileValidator tile={currenTile} />
         {isShowColorPicker && (
           <div>
             <h3>{TILE_COLOR_SELECTOR}</h3>
