@@ -1,7 +1,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import {isTileGeometryInsideBoundingVolume} from '../tile-debug';
+import {isTileGeometryInsideBoundingVolume, getGeometryVsTextureMetrics} from '../tile-debug';
 
 const TileValidatorContainer = styled.div`
   display: flex;
@@ -24,6 +24,8 @@ const ValidateButton = styled.button`
 const ValidatorInfoList = styled.div`
   display: flex;
   flex-direction: column;
+  max-height: 100px;
+  overflow-y: scroll;
 `;
 
 const VALIDATE_TILE = 'Validate Tile';
@@ -43,7 +45,8 @@ export default class TileValidator extends PureComponent {
     super(props);
 
     this.state = {
-      geometryInfo: null
+      geometryInfo: null,
+      triangleMessages: null
     };
   }
 
@@ -53,7 +56,12 @@ export default class TileValidator extends PureComponent {
     }
   }
 
-  handleValidateTile(tile) {
+  _onValidateTile(tile) {
+    this._validateGeometryInsideBoundingVolume(tile);
+    this._validateGeometryVsTexture(tile);
+  }
+
+  _validateGeometryInsideBoundingVolume(tile) {
     const result = isTileGeometryInsideBoundingVolume(tile);
 
     if (result instanceof Error) {
@@ -70,11 +78,114 @@ export default class TileValidator extends PureComponent {
     }
   }
 
+  _validateGeometryVsTexture(tile) {
+    const triangleMetrics = getGeometryVsTextureMetrics(tile);
+    if (!triangleMetrics) {
+      return;
+    }
+    const triangleMessages = [];
+    triangleMessages.push({
+      key: 'trianglesTotal',
+      text: `Triangles total: ${triangleMetrics.triangles}`
+    });
+    if (triangleMetrics.geometryNullTriangleCount) {
+      triangleMessages.push({
+        key: 'geometryNullTriangleCount',
+        type: WARNING_TYPE,
+        text: `Geometry triangles area is null: ${triangleMetrics.geometryNullTriangleCount}`
+      });
+    } else {
+      triangleMessages.push({
+        key: 'geometryNullTriangleCount',
+        type: OK_TYPE,
+        text: `Geometry triangles area is null: ${triangleMetrics.geometryNullTriangleCount}`
+      });
+    }
+
+    if (triangleMetrics.geometrySmallTriangleCount) {
+      triangleMessages.push({
+        key: 'geometrySmallTriangleCount',
+        type: WARNING_TYPE,
+        text: `Geometry small triangles (less than 1 squared mm): ${
+          triangleMetrics.geometrySmallTriangleCount
+        }`
+      });
+      triangleMessages.push({
+        key: 'minGeometryArea',
+        type: WARNING_TYPE,
+        text: `Geometry smallest triangle: ${triangleMetrics.minGeometryArea} m^2`
+      });
+    } else {
+      triangleMessages.push({
+        key: 'geometrySmallTriangleCount',
+        type: OK_TYPE,
+        text: `Geometry small triangles (less than 1 squared mm): ${
+          triangleMetrics.geometrySmallTriangleCount
+        }`
+      });
+    }
+
+    if (triangleMetrics.texCoordNullTriangleCount) {
+      triangleMessages.push({
+        key: 'texCoordNullTriangleCount',
+        type: WARNING_TYPE,
+        text: `UV0 triangles area is null: ${triangleMetrics.texCoordNullTriangleCount}`
+      });
+    } else {
+      triangleMessages.push({
+        key: 'texCoordNullTriangleCount',
+        type: OK_TYPE,
+        text: `UV0 triangles area is null: ${triangleMetrics.texCoordNullTriangleCount}`
+      });
+    }
+
+    if (triangleMetrics.texCoordSmallTriangleCount) {
+      triangleMessages.push({
+        key: 'texCoordSmallTriangleCount',
+        type: WARNING_TYPE,
+        text: `UV0 small triangles (occupies less than 1 pixel): ${
+          triangleMetrics.texCoordSmallTriangleCount
+        }`
+      });
+      triangleMessages.push({
+        key: 'minTexCoordArea',
+        type: WARNING_TYPE,
+        text: `UV0 smallest triangle: ${triangleMetrics.minTexCoordArea}`
+      });
+      triangleMessages.push({
+        key: 'pixelArea',
+        type: WARNING_TYPE,
+        text: `UV0 pixel area: ${triangleMetrics.pixelArea}`
+      });
+    } else {
+      triangleMessages.push({
+        key: 'texCoordSmallTriangleCount',
+        type: OK_TYPE,
+        text: `UV0 small triangles (less than 1 squared mm): ${
+          triangleMetrics.texCoordSmallTriangleCount
+        }`
+      });
+    }
+    this.setState({triangleMessages});
+  }
+
   getInfoStyle(type) {
     return {
       color: type === WARNING_TYPE ? 'red' : 'green',
       marginTop: '10px'
     };
+  }
+
+  _renderTriangleMetrics() {
+    const {triangleMessages} = this.state;
+    if (!triangleMessages) {
+      return null;
+    }
+    return triangleMessages.map(message => (
+      <span key={message.key} style={this.getInfoStyle(message.type)}>
+        {message.text}
+      </span>
+    ));
   }
 
   render() {
@@ -83,13 +194,12 @@ export default class TileValidator extends PureComponent {
 
     return (
       <TileValidatorContainer>
-        <ValidateButton onClick={() => this.handleValidateTile(tile)}>
-          {VALIDATE_TILE}
-        </ValidateButton>
+        <ValidateButton onClick={() => this._onValidateTile(tile)}>{VALIDATE_TILE}</ValidateButton>
         <ValidatorInfoList>
           {geometryInfo && (
             <span style={this.getInfoStyle(geometryInfo.type)}>{geometryInfo.title}</span>
           )}
+          {this._renderTriangleMetrics()}
         </ValidatorInfoList>
       </TileValidatorContainer>
     );
