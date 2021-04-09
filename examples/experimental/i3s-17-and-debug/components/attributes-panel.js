@@ -109,7 +109,7 @@ export default class AttributesPanel extends PureComponent {
     return (
       <div style={CONTAINER_STYLE}>
         <div style={HEADER_STYLE}>
-          <h2>{attributesObject[attributesHeader]}</h2>
+          <h2>{`Tile: ${attributesObject[attributesHeader]}`}</h2>
           <button style={CLOSE_BUTTON_STYLE} onClick={handleClosePanel}>
             <FontAwesomeIcon icon={faWindowClose} />
           </button>
