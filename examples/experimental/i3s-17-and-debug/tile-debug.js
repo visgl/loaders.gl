@@ -261,7 +261,7 @@ function getTriangleArea(vertices) {
   const edge1 = new Vector3(vertices[0].x, vertices[0].y, vertices[0].z).subtract(vertices[1]);
   const edge2 = new Vector3(vertices[1].x, vertices[1].y, vertices[1].z).subtract(vertices[2]);
   const angle = edge1.angle(edge2);
-  const area = 0.5 * edge1.magnitude() * edge2.magnitude() * angle;
+  const area = 0.5 * edge1.magnitude() * edge2.magnitude() * Math.sin(angle);
 
   return area;
 }
