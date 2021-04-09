@@ -1,7 +1,11 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import {isTileGeometryInsideBoundingVolume, getGeometryVsTextureMetrics} from '../tile-debug';
+import {
+  isTileGeometryInsideBoundingVolume,
+  getGeometryVsTextureMetrics,
+  isGeometryBoundingVolumeMoreSuitable
+} from '../tile-debug';
 
 const TileValidatorContainer = styled.div`
   display: flex;
@@ -46,25 +50,27 @@ export default class TileValidator extends PureComponent {
 
     this.state = {
       geometryInfo: null,
-      triangleMessages: null
+      triangleMessages: null,
+      boundingVolumeInfo: null
     };
   }
 
   componentDidUpdate(prevProps) {
     if (this.props.tile.id !== prevProps.tile.id) {
-      this.setState({geometryInfo: null, triangleMessages: null});
+      this.setState({geometryInfo: null, triangleMessages: null, boundingVolumeInfo: null});
     }
   }
 
   _onValidateTile(tile) {
     this._validateGeometryInsideBoundingVolume(tile);
     this._validateGeometryVsTexture(tile);
+    this.compareGeometryBoundingVolumeVsTileBoundingVolume(tile);
   }
 
   _validateGeometryInsideBoundingVolume(tile) {
     const result = isTileGeometryInsideBoundingVolume(tile);
 
-    if (result instanceof Error) {
+    if (result === null) {
       const geometryError = 'Geometry validation error';
       this.setState({geometryInfo: {type: WARNING_TYPE, title: geometryError}});
     }
@@ -169,6 +175,23 @@ export default class TileValidator extends PureComponent {
     this.setState({triangleMessages});
   }
 
+  compareGeometryBoundingVolumeVsTileBoundingVolume(tile) {
+    const result = isGeometryBoundingVolumeMoreSuitable(tile);
+
+    if (result === null) {
+      const geometryError = 'Bounding volume validation error';
+      this.setState({boundingVolumeInfo: {type: WARNING_TYPE, title: geometryError}});
+    }
+
+    if (!result) {
+      const geometryError = 'Tile bounding volume is suitable for geometry';
+      this.setState({boundingVolumeInfo: {type: OK_TYPE, title: geometryError}});
+    } else {
+      const geometryError = 'Geometry bounding volume is more suitable than tile bounding volume';
+      this.setState({boundingVolumeInfo: {type: WARNING_TYPE, title: geometryError}});
+    }
+  }
+
   getInfoStyle(type) {
     return {
       color: type === WARNING_TYPE ? 'red' : 'green',
@@ -188,17 +211,32 @@ export default class TileValidator extends PureComponent {
     ));
   }
 
+  _renderBoundingVolumesMetrics() {
+    const {boundingVolumeInfo} = this.state;
+    if (!boundingVolumeInfo) {
+      return null;
+    }
+    return (
+      <span style={this.getInfoStyle(boundingVolumeInfo.type)}>{boundingVolumeInfo.title}</span>
+    );
+  }
+  _renderGeometryMetrics() {
+    const {geometryInfo} = this.state;
+    if (!geometryInfo) {
+      return null;
+    }
+    return <span style={this.getInfoStyle(geometryInfo.type)}>{geometryInfo.title}</span>;
+  }
+
   render() {
     const {tile} = this.props;
-    const {geometryInfo} = this.state;
 
     return (
       <TileValidatorContainer>
         <ValidateButton onClick={() => this._onValidateTile(tile)}>{VALIDATE_TILE}</ValidateButton>
         <ValidatorInfoList>
-          {geometryInfo && (
-            <span style={this.getInfoStyle(geometryInfo.type)}>{geometryInfo.title}</span>
-          )}
+          {this._renderGeometryMetrics()}
+          {this._renderBoundingVolumesMetrics()}
           {this._renderTriangleMetrics()}
         </ValidatorInfoList>
       </TileValidatorContainer>
