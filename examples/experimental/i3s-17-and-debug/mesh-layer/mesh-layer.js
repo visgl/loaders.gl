@@ -74,7 +74,11 @@ export default class MeshLayer extends SimpleMeshLayer {
     }
 
     const {viewport} = this.context;
-    const {sizeScale, coordinateSystem, _instanced} = this.props;
+    const {sizeScale, coordinateSystem, _instanced, viewportIds} = this.props;
+
+    if (!viewportIds.includes(viewport.id)) {
+      return;
+    }
 
     this.state.model.draw({
       uniforms: Object.assign({}, uniforms, {

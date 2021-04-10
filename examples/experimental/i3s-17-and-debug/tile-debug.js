@@ -13,15 +13,18 @@ const REFINEMENT_TYPES = {
   2: 'Replace'
 };
 
+const FLOAT_VALUES_FIXED_COUNT = 3;
+
 export function getShortTileDebugInfo(tileHeader) {
   const clildrenInfo = getChildrenInfo(tileHeader.header.children);
 
   return {
     ['Tile Id']: tileHeader.id,
+    Type: tileHeader.type || NO_DATA,
     ['Children Count']: clildrenInfo.count,
     ['Children Ids']: clildrenInfo.ids,
     ['Vertex count']: tileHeader.content.vertexCount || NO_DATA,
-    ['Distance to camera']: tileHeader._distanceToCamera || NO_DATA
+    ['Distance to camera']: `${formatFloatNumber(tileHeader._distanceToCamera)} m` || NO_DATA
   };
 }
 
@@ -29,13 +32,12 @@ export function getTileDebugInfo(tileHeader) {
   return {
     ...getShortTileDebugInfo(tileHeader),
     ['Refinement Type']: REFINEMENT_TYPES[tileHeader.refine] || NO_DATA,
-    Type: tileHeader.type || NO_DATA,
     ['Has Texture']: Boolean(tileHeader.content.texture),
     ['Has Material']: Boolean(tileHeader.content.material),
     ['Bounding Type']: getBoundingType(tileHeader),
     ['LOD Metric Type']: tileHeader.lodMetricType || NO_DATA,
-    ['LOD Metric Value']: tileHeader.lodMetricValue || NO_DATA,
-    ['Screen Space Error']: tileHeader._screenSpaceError || NO_DATA
+    ['LOD Metric Value']: formatFloatNumber(tileHeader.lodMetricValue) || NO_DATA,
+    ['Screen Space Error']: formatFloatNumber(tileHeader._screenSpaceError) || NO_DATA
   };
 }
 
@@ -129,6 +131,14 @@ export function getGeometryVsTextureMetrics(tile) {
     minTexCoordArea,
     pixelArea
   };
+}
+
+function formatFloatNumber(value) {
+  if (!value) {
+    return null;
+  }
+
+  return value.toFixed(FLOAT_VALUES_FIXED_COUNT);
 }
 
 function getBoundingType(tile) {

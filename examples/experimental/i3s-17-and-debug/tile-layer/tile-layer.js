@@ -36,7 +36,11 @@ export default class TileLayer extends Tile3DLayer {
       return;
     }
 
-    if (!this.internalState.component.props.loadTiles) {
+    // Make loadTiles property is true by default when merge the layer back into deck.gl
+    if (
+      Object.prototype.hasOwnProperty.call(this.internalState.component.props, 'loadTiles') &&
+      !this.internalState.component.props.loadTiles
+    ) {
       return;
     }
 
@@ -83,6 +87,7 @@ export default class TileLayer extends Tile3DLayer {
       }),
       {
         id: `${this.id}-mesh-${tileHeader.id}`,
+        viewportIds: tileHeader.viewportIds,
         mesh: geometry,
         data: SINGLE_DATA,
         getPosition: [0, 0, 0],

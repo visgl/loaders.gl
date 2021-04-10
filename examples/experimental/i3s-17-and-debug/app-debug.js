@@ -7,11 +7,12 @@ import {HuePicker, MaterialPicker} from 'react-color';
 import {lumaStats} from '@luma.gl/core';
 import DeckGL from '@deck.gl/react';
 import {FlyToInterpolator, View, MapView, WebMercatorViewport} from '@deck.gl/core';
-import {LineLayer} from '@deck.gl/layers';
+import {LineLayer, ScatterplotLayer} from '@deck.gl/layers';
 
 import {I3SLoader} from '@loaders.gl/i3s';
 import {StatsWidget} from '@probe.gl/stats-widget';
 
+import {buildMinimapData} from './helpers/build-minimap-data';
 import {INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
 import AttributesPanel from './components/attributes-panel';
 import DebugPanel from './components/debug-panel';
@@ -96,6 +97,8 @@ export default class App extends PureComponent {
     this.state = {
       url: null,
       token: null,
+      tileset: null,
+      frameNumber: 0,
       name: INITIAL_EXAMPLE_NAME,
       viewState: {
         main: INITIAL_VIEW_STATE,
@@ -110,6 +113,7 @@ export default class App extends PureComponent {
       selectedMapStyle: INITIAL_MAP_STYLE,
       debugOptions: {
         minimap: true,
+        minimapViewport: false,
         obb: false,
         tileColorMode: INITIAL_TILE_COLOR_MODE,
         obbColorMode: INITIAL_OBB_COLOR_MODE,
@@ -120,7 +124,8 @@ export default class App extends PureComponent {
       tileInfo: null,
       selectedTileId: null,
       coloredTilesMap: {},
-      warnings: []
+      warnings: [],
+      viewportTraversersMap: {main: 'main'}
     };
     this._onSelectTileset = this._onSelectTileset.bind(this);
     this._setDebugOptions = this._setDebugOptions.bind(this);
@@ -185,6 +190,7 @@ export default class App extends PureComponent {
     this._updateStatWidgets();
     this._obbLayer.addTile(tile);
     this.validateTile(tile);
+    this.setState({frameNumber: this.state.tileset.frameNumber});
   }
 
   _onTileUnload() {
@@ -266,16 +272,48 @@ export default class App extends PureComponent {
     }
   }
 
+  _renderMainOnMinimap() {
+    const {
+      tileset,
+      debugOptions: {minimapViewport}
+    } = this.state;
+    if (!minimapViewport) {
+      return null;
+    }
+    let data = [];
+    if (tileset) {
+      data = buildMinimapData(tileset.tiles);
+    }
+    return new ScatterplotLayer({
+      id: 'main-on-minimap',
+      data,
+      pickable: false,
+      opacity: 0.8,
+      stroked: true,
+      filled: true,
+      radiusScale: 1,
+      radiusMinPixels: 1,
+      radiusMaxPixels: 100,
+      lineWidthMinPixels: 1,
+      getPosition: d => d.coordinates,
+      getRadius: d => d.radius,
+      getFillColor: d => [255, 140, 0, 100],
+      getLineColor: d => [0, 0, 0, 120]
+    });
+  }
+
   _renderLayers() {
     const {
       tilesetUrl,
       token,
       viewState,
-      debugOptions: {obb, tileColorMode, obbColorMode, pickable, loadTiles},
+      debugOptions: {obb, tileColorMode, obbColorMode, pickable, minimapViewport, loadTiles},
       selectedTileId,
-      coloredTilesMap
+      coloredTilesMap,
+      viewportTraversersMap
     } = this.state;
-    const loadOptions = {throttleRequests: true};
+    viewportTraversersMap.minimap = minimapViewport ? 'minimap' : 'main';
+    const loadOptions = {throttleRequests: true, viewportTraversersMap};
 
     if (token) {
       loadOptions.token = token;
@@ -317,7 +355,8 @@ export default class App extends PureComponent {
         getColor: d => d.color,
         getWidth: 2
       }),
-      this._obbLayer
+      this._obbLayer,
+      this._renderMainOnMinimap()
     ];
   }
 
@@ -357,7 +396,7 @@ export default class App extends PureComponent {
   }
 
   _layerFilter({layer, viewport}) {
-    if (viewport.id !== 'minimap' && layer.id === 'frustum') {
+    if (viewport.id !== 'minimap' && (layer.id === 'frustum' || layer.id === 'main-on-minimap')) {
       // only display frustum in the minimap
       return false;
     }
