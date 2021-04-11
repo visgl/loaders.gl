@@ -35,6 +35,7 @@ const NO_ISSUES = 'No Issues';
 
 const WARNING_TYPES = {
   lod: 'LOD metric',
+  parentLod: 'LOD metric',
   boundingVolume: 'Bounding Volume',
   geometryVsTextures: 'Geometry vs Textures'
 };
