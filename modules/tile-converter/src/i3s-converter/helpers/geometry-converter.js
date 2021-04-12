@@ -266,7 +266,6 @@ function convertMesh(
       outputAttributes = attributesMap.get('default');
     }
     assert(outputAttributes !== null, 'Primitive - material mapping failed');
-    normalizeAttributesByIndicesRange(primitive.attributes, primitive.indices);
     const attributes = primitive.attributes;
 
     outputAttributes.positions = concatenateTypedArrays(
@@ -310,29 +309,6 @@ function convertMesh(
   }
 }
 
-/**
- * Do normalisation of arrtibutes based on indices range.
- * @param {Object} indices - gltf primitive indices array
- * @param {Object} attributes - gltf primitive attributes
- * @returns {void}
- */
-function normalizeAttributesByIndicesRange(attributes, indices) {
-  if (!indices || !indices.min || !indices.max) {
-    return;
-  }
-
-  const maxIndex = indices.max[0];
-  const minIndex = indices.min[0];
-
-  for (const key in attributes) {
-    const attribute = attributes[key];
-    attribute.value = attribute.value.subarray(
-      minIndex * attribute.components,
-      (maxIndex + 1) * attribute.components
-    );
-    attribute.count = maxIndex - minIndex;
-  }
-}
 /**
  * Convert vertices attributes (POSITIONS or NORMALS) to i3s compatible format
  * @param {object} args - source tile (3DTile)
