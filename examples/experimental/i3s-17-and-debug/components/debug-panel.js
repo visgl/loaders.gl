@@ -97,78 +97,78 @@ export default class DebugPanel extends PureComponent {
       semanticValidator: false
     };
 
-    this.toggleDebugPanel = this.toggleDebugPanel.bind(this);
-    this.toggleMinimap = this.toggleMinimap.bind(this);
-    this.toggleMinimapViewport = this.toggleMinimapViewport.bind(this);
-    this.toggleObb = this.toggleObb.bind(this);
-    this.togglePickable = this.togglePickable.bind(this);
-    this.toggleLoading = this.toggleLoading.bind(this);
-    this.toggleSemanticValidator = this.toggleSemanticValidator.bind(this);
+    this._onToggleDebugPanel = this._onToggleDebugPanel.bind(this);
+    this._onToggleMinimap = this._onToggleMinimap.bind(this);
+    this._onToggleMinimapViewport = this._onToggleMinimapViewport.bind(this);
+    this._onToggleObb = this._onToggleObb.bind(this);
+    this._onTogglePickable = this._onTogglePickable.bind(this);
+    this._onToggleLoading = this._onToggleLoading.bind(this);
+    this._onToggleSemanticValidator = this._onToggleSemanticValidator.bind(this);
 
-    this.changedTileColorMode = this.changedTileColorMode.bind(this);
-    this.changedObbColorMode = this.changedObbColorMode.bind(this);
+    this._onChangedTileColorMode = this._onChangedTileColorMode.bind(this);
+    this._onChangedObbColorMode = this._onChangedObbColorMode.bind(this);
   }
 
-  toggleDebugPanel() {
+  _onToggleDebugPanel() {
     const {expand} = this.state;
     this.setState({expand: !expand});
   }
 
-  toggleMinimap() {
+  _onToggleMinimap() {
     const {minimap} = this.state;
     this.setState({minimap: !minimap}, () => {
-      this.applyOptions();
+      this._applyOptions();
     });
   }
 
-  toggleMinimapViewport() {
+  _onToggleMinimapViewport() {
     const {minimapViewport} = this.state;
     this.setState({minimapViewport: !minimapViewport}, () => {
-      this.applyOptions();
+      this._applyOptions();
     });
   }
 
-  toggleObb() {
+  _onToggleObb() {
     const {obb} = this.state;
     this.setState({obb: !obb}, () => {
-      this.applyOptions();
+      this._applyOptions();
     });
   }
 
-  togglePickable() {
+  _onTogglePickable() {
     const {pickable} = this.state;
     this.setState({pickable: !pickable}, () => {
-      this.applyOptions();
+      this._applyOptions();
     });
   }
 
-  toggleLoading() {
+  _onToggleLoading() {
     const {loadTiles} = this.state;
     this.setState({loadTiles: !loadTiles}, () => {
-      this.applyOptions();
+      this._applyOptions();
     });
   }
 
-  toggleSemanticValidator() {
+  _onToggleSemanticValidator() {
     const {semanticValidator} = this.state;
     this.setState({semanticValidator: !semanticValidator}, () => {
-      this.applyOptions();
+      this._applyOptions();
     });
   }
 
-  changedTileColorMode({tileColorMode}) {
+  _onChangedTileColorMode({tileColorMode}) {
     this.setState({tileColorMode}, () => {
-      this.applyOptions();
+      this._applyOptions();
     });
   }
 
-  changedObbColorMode({obbColorMode}) {
+  _onChangedObbColorMode({obbColorMode}) {
     this.setState({obbColorMode}, () => {
-      this.applyOptions();
+      this._applyOptions();
     });
   }
 
-  applyOptions() {
+  _applyOptions() {
     const {
       obb,
       tileColorMode,
@@ -192,7 +192,7 @@ export default class DebugPanel extends PureComponent {
     });
   }
 
-  getExpandStyles() {
+  _getExpandStyles() {
     const {expand} = this.state;
     if (expand) {
       return {
@@ -206,7 +206,7 @@ export default class DebugPanel extends PureComponent {
     };
   }
 
-  clearButtonStyles(isClearButtonDisabled) {
+  _clearButtonStyles(isClearButtonDisabled) {
     return {
       display: 'flex',
       color: 'white',
@@ -218,7 +218,7 @@ export default class DebugPanel extends PureComponent {
     };
   }
 
-  renderExpandIcon() {
+  _renderExpandIcon() {
     const {expand} = this.state;
     if (expand) {
       return <FontAwesomeIcon icon={faAngleDoubleLeft} />;
@@ -226,13 +226,13 @@ export default class DebugPanel extends PureComponent {
     return <FontAwesomeIcon icon={faAngleDoubleRight} />;
   }
 
-  renderObbOptions() {
+  _renderObbOptions() {
     const {obbColorMode, obb} = this.state;
     return (
       <DebugOptionGroup title="Bounding volumes">
         <CheckboxOption>
           <InputCheckbox
-            onChange={this.toggleObb}
+            onChange={this._onToggleObb}
             type="checkbox"
             id="obb"
             value={obb}
@@ -244,7 +244,7 @@ export default class DebugPanel extends PureComponent {
           value={obbColorMode}
           onChange={evt => {
             const selected = evt.target.value;
-            this.changedObbColorMode({obbColorMode: parseInt(selected, 10)});
+            this._onChangedObbColorMode({obbColorMode: parseInt(selected, 10)});
           }}
         >
           {Object.keys(OBB_COLOR_MODES).map(key => {
@@ -259,13 +259,13 @@ export default class DebugPanel extends PureComponent {
     );
   }
 
-  renderTileOptions() {
+  _renderTileOptions() {
     const {tileColorMode, pickable, loadTiles} = this.state;
     return (
       <DebugOptionGroup title="Tiles">
         <CheckboxOption>
           <InputCheckbox
-            onChange={this.togglePickable}
+            onChange={this._onTogglePickable}
             type="checkbox"
             id="pickable"
             value={pickable}
@@ -275,7 +275,7 @@ export default class DebugPanel extends PureComponent {
         </CheckboxOption>
         <CheckboxOption>
           <InputCheckbox
-            onChange={this.toggleLoading}
+            onChange={this._onToggleLoading}
             type="checkbox"
             id="loadTiles"
             value={loadTiles}
@@ -287,7 +287,7 @@ export default class DebugPanel extends PureComponent {
           value={tileColorMode}
           onChange={evt => {
             const selected = evt.target.value;
-            this.changedTileColorMode({tileColorMode: parseInt(selected, 10)});
+            this._onChangedTileColorMode({tileColorMode: parseInt(selected, 10)});
           }}
         >
           {Object.keys(TILE_COLOR_MODES).map(key => {
@@ -302,13 +302,13 @@ export default class DebugPanel extends PureComponent {
     );
   }
 
-  renderFrustumCullingOption() {
+  _renderFrustumCullingOption() {
     const {minimap, minimapViewport} = this.state;
     return (
       <DebugOptionGroup title="Frustum Culling">
         <CheckboxOption>
           <InputCheckbox
-            onChange={this.toggleMinimap}
+            onChange={this._onToggleMinimap}
             type="checkbox"
             id="showFrustumCullingMinimap"
             value={minimap}
@@ -318,7 +318,7 @@ export default class DebugPanel extends PureComponent {
         </CheckboxOption>
         <CheckboxOption>
           <InputCheckbox
-            onChange={this.toggleMinimapViewport}
+            onChange={this._onToggleMinimapViewport}
             type="checkbox"
             id="showFrustumCullingMinimapViewport"
             value={minimapViewport}
@@ -330,14 +330,14 @@ export default class DebugPanel extends PureComponent {
     );
   }
 
-  renderSemanticValidatorOption() {
+  _renderSemanticValidatorOption() {
     const {clearWarnings, isClearButtonDisabled} = this.props;
     const {semanticValidator} = this.state;
     return (
       <DebugOptionGroup title="Semantic Validator">
         <CheckboxOption>
           <InputCheckbox
-            onChange={this.toggleSemanticValidator}
+            onChange={this._onToggleSemanticValidator}
             type="checkbox"
             id="showSemanticValidator"
             value={semanticValidator}
@@ -345,7 +345,7 @@ export default class DebugPanel extends PureComponent {
           />
           <label htmlFor="showSemanticValidator">Show</label>
           <button
-            style={this.clearButtonStyles(isClearButtonDisabled)}
+            style={this._clearButtonStyles(isClearButtonDisabled)}
             disabled={isClearButtonDisabled}
             onClick={clearWarnings}
           >
@@ -360,15 +360,15 @@ export default class DebugPanel extends PureComponent {
     const {children} = this.props;
     return (
       <Container className="debug-panel">
-        <DebugOptions style={this.getExpandStyles()}>
+        <DebugOptions style={this._getExpandStyles()}>
           <Header>Debug Panel</Header>
-          {this.renderFrustumCullingOption()}
-          {this.renderTileOptions()}
-          {this.renderObbOptions()}
-          {this.renderSemanticValidatorOption()}
+          {this._renderFrustumCullingOption()}
+          {this._renderTileOptions()}
+          {this._renderObbOptions()}
+          {this._renderSemanticValidatorOption()}
           <ChildWrapper>{children}</ChildWrapper>
         </DebugOptions>
-        <Expander onClick={this.toggleDebugPanel}>{this.renderExpandIcon()}</Expander>
+        <Expander onClick={this._onToggleDebugPanel}>{this._renderExpandIcon()}</Expander>
       </Container>
     );
   }
