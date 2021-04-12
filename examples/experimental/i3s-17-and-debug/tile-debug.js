@@ -1,6 +1,6 @@
 import {OrientedBoundingBox, BoundingSphere} from '@math.gl/culling';
 import {CubeGeometry} from '@luma.gl/engine';
-import {BOUNDING_VOLUME_WARNING_TYPE, LOD_WARNING_TYPE} from './constants';
+import {BOUNDING_VOLUME_WARNING_TYPE, LOD_WARNING_TYPE} from '@loaders.gl/tile-converter';
 import {Vector3} from 'math.gl';
 import {Ellipsoid} from '@math.gl/geospatial';
 

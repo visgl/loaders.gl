@@ -32,7 +32,3 @@ export const OBB_COLOR_MODES = {
 };
 
 export const INITIAL_OBB_COLOR_MODE = COLORED_BY.ORIGINAL;
-
-export const BOUNDING_VOLUME_WARNING_TYPE = 'boundingVolume';
-export const LOD_WARNING_TYPE = 'lod';
-export const GEMETRY_VS_TEXTURE_WARNING_TYPE = 'geometryVsTextures';
