@@ -8,18 +8,20 @@ export function buildMinimapData(tiles) {
       if (!tile.selected || !tile.viewportIds.includes('main')) {
         return null;
       }
-      const boundingVolume = tile.boundingVolume;
+      const {boundingVolume} = tile;
       const cartographicOrigin = new Vector3();
       Ellipsoid.WGS84.cartesianToCartographic(boundingVolume.center, cartographicOrigin);
-      let radius = boundingVolume.radius;
-      if (!radius && boundingVolume instanceof OrientedBoundingBox) {
-        const halfSize = boundingVolume.halfSize;
-        radius = new Vector3(halfSize[0], halfSize[1], halfSize[2]).len();
+      let radius = 10; // Set default radius to 10 meters
+      if (boundingVolume.radius) {
+        radius = boundingVolume.radius;
+      } else if (boundingVolume instanceof OrientedBoundingBox) {
+        const boundingShpere = boundingVolume.getBoundingSphere();
+        radius = boundingShpere.radius();
       }
       return {
-        coordinates: [cartographicOrigin[0], cartographicOrigin[1], cartographicOrigin[2]],
-        radius: boundingVolume.radius
+        coordinates: cartographicOrigin,
+        radius
       };
     })
-    .filter(tile => tile);
+    .filter(Boolean);
 }

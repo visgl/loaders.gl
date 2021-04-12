@@ -37,10 +37,8 @@ export default class TileLayer extends Tile3DLayer {
     }
 
     // Make loadTiles property is true by default when merge the layer back into deck.gl
-    if (
-      Object.prototype.hasOwnProperty.call(this.internalState.component.props, 'loadTiles') &&
-      !this.internalState.component.props.loadTiles
-    ) {
+    const currentProps = this.getCurrentLayer().props;
+    if ('loadTiles' in currentProps && !currentProps.loadTiles) {
       return;
     }
 
