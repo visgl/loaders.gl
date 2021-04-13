@@ -92,7 +92,6 @@ export default class App extends PureComponent {
   constructor(props) {
     super(props);
     this._tilesetStatsWidget = null;
-    this._obbLayer = null;
     this._colorMap = null;
     this.state = {
       url: null,
@@ -129,6 +128,7 @@ export default class App extends PureComponent {
     };
     this._onSelectTileset = this._onSelectTileset.bind(this);
     this._setDebugOptions = this._setDebugOptions.bind(this);
+    this._layerFilter = this._layerFilter.bind(this);
     this.handleClosePanel = this.handleClosePanel.bind(this);
     this.handleSelectTileColor = this.handleSelectTileColor.bind(this);
     this.handleClearWarnings = this.handleClearWarnings.bind(this);
@@ -177,7 +177,6 @@ export default class App extends PureComponent {
     this.handleClearWarnings();
     const metadata = await fetch(metadataUrl).then(resp => resp.json());
     this.setState({metadata});
-    this._obbLayer.resetTiles();
   }
 
   // Updates stats, called every frame
@@ -188,7 +187,6 @@ export default class App extends PureComponent {
 
   _onTileLoad(tile) {
     this._updateStatWidgets();
-    this._obbLayer.addTile(tile);
     this.validateTile(tile);
     this.setState({frameNumber: this.state.tileset.frameNumber});
   }
@@ -310,7 +308,8 @@ export default class App extends PureComponent {
       debugOptions: {obb, tileColorMode, obbColorMode, pickable, minimapViewport, loadTiles},
       selectedTileId,
       coloredTilesMap,
-      viewportTraversersMap
+      viewportTraversersMap,
+      tileset
     } = this.state;
     viewportTraversersMap.minimap = minimapViewport ? 'minimap' : 'main';
     const loadOptions = {throttleRequests: true, viewportTraversersMap};
@@ -320,13 +319,7 @@ export default class App extends PureComponent {
     }
 
     this._colorsMap = this._colorsMap || new ColorMap();
-    this._obbLayer = new ObbLayer({
-      id: 'obb-layer',
-      visible: obb,
-      coloredBy: obbColorMode,
-      colorsMap: this._colorsMap
-    });
-
+    const tiles = (tileset || {}).tiles || [];
     const viewport = new WebMercatorViewport(viewState.main);
     const frustumBounds = getFrustumBounds(viewport);
 
@@ -355,7 +348,13 @@ export default class App extends PureComponent {
         getColor: d => d.color,
         getWidth: 2
       }),
-      this._obbLayer,
+      new ObbLayer({
+        id: 'obb-layer',
+        visible: obb,
+        tiles,
+        coloredBy: obbColorMode,
+        colorsMap: this._colorsMap
+      }),
       this._renderMainOnMinimap()
     ];
   }
@@ -396,8 +395,22 @@ export default class App extends PureComponent {
   }
 
   _layerFilter({layer, viewport}) {
-    if (viewport.id !== 'minimap' && (layer.id === 'frustum' || layer.id === 'main-on-minimap')) {
+    const {
+      debugOptions: {minimapViewport}
+    } = this.state;
+    const {id: viewportId} = viewport;
+    const {
+      id: layerId,
+      props: {viewportIds = null}
+    } = layer;
+    if (viewportId !== 'minimap' && (layerId === 'frustum' || layerId === 'main-on-minimap')) {
       // only display frustum in the minimap
+      return false;
+    }
+    if (minimapViewport && viewportId === 'minimap' && layerId.indexOf('obb-debug-') !== -1) {
+      return false;
+    }
+    if (viewportIds && !viewportIds.includes(viewportId)) {
       return false;
     }
     return true;
@@ -528,7 +541,6 @@ export default class App extends PureComponent {
           getTooltip={info => this.getTooltip(info)}
           onClick={info => this.handleClick(info)}
         >
-          {/* <StaticMap mapStyle={selectedMapStyle} preventStyleDiffing /> */}
           <StaticMap reuseMaps mapStyle={selectedMapStyle} preventStyleDiffing={true} />
           <View id="minimap">
             <StaticMap
