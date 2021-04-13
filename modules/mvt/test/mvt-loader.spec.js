@@ -246,6 +246,8 @@ test('Triangulation is supported', async t => {
 
   t.ok(geometry.polygons.positions);
   t.equals(geometry.polygons.positions.value.length, 62);
+  t.ok(geometry.polygons.triangles);
+  t.equals(geometry.polygons.triangles.value.length, 1024);
 
   t.end();
 });

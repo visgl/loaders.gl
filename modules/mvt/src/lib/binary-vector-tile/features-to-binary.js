@@ -10,7 +10,8 @@
 export function featuresToBinary(features, firstPassData, options = {}) {
   return fillArrays(features, firstPassData, {
     numericPropKeys: options.numericPropKeys || extractNumericPropKeys(features),
-    PositionDataType: options.PositionDataType || Float32Array
+    PositionDataType: options.PositionDataType || Float32Array,
+    triangulate: options.triangulate
   });
 }
 
@@ -159,8 +160,12 @@ function fillArrays(features, firstPassData = {}, options = {}) {
     indexMap.feature++;
   }
 
+  if (options.triangulate) {
+    polygons.triangles = new Uint32Array(1024);
+  }
+
   // Wrap each array in an accessor object with value and size keys
-  return makeAccessorObjects(points, lines, polygons, coordLength);
+  return makeAccessorObjects(points, lines, polygons, coordLength, options);
 }
 
 // Fills (Multi)Point coordinates into points object of arrays
@@ -256,7 +261,7 @@ function handlePolygon(geometry, polygons, indexMap, coordLength, properties) {
 }
 
 // Wrap each array in an accessor object with value and size keys
-function makeAccessorObjects(points, lines, polygons, coordLength) {
+function makeAccessorObjects(points, lines, polygons, coordLength, options) {
   const returnObj = {
     points: {
       positions: {value: points.positions, size: coordLength},
@@ -283,6 +288,10 @@ function makeAccessorObjects(points, lines, polygons, coordLength) {
       properties: polygons.properties
     }
   };
+
+  if (options.triangulate) {
+    returnObj.polygons.triangles = {value: polygons.triangles, size: 1};
+  }
 
   for (const geomType in returnObj) {
     for (const numericProp in returnObj[geomType].numericProps) {
