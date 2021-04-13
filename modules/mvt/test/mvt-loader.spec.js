@@ -244,10 +244,20 @@ test('Triangulation is supported', async t => {
     gis: {format: 'binary', triangulate: true}
   });
 
+  // Closed polygon with 31 vertices (0===30)
   t.ok(geometry.polygons.positions);
   t.equals(geometry.polygons.positions.value.length, 62);
+
   t.ok(geometry.polygons.triangles);
-  t.equals(geometry.polygons.triangles.value.length, 1024);
+  t.equals(geometry.polygons.triangles.value.length, 84);
+
+  // Basic check that triangulation is valid
+  const minI = Math.min(...geometry.polygons.triangles.value);
+  const maxI = Math.max(...geometry.polygons.triangles.value);
+  t.equals(minI, 0);
+  t.equals(maxI, 29); // Don't expect to find 30 as closed polygon
+
+  // t.deepEqual(geometry.polygons.triangles.value, []);
 
   t.end();
 });

@@ -7,6 +7,7 @@
  * geoJSON. See `binary-vector-tile/VectorTileFeature` for
  * data format detais
  */
+import earcut from 'earcut';
 export function featuresToBinary(features, firstPassData, options = {}) {
   return fillArrays(features, firstPassData, {
     numericPropKeys: options.numericPropKeys || extractNumericPropKeys(features),
@@ -161,7 +162,7 @@ function fillArrays(features, firstPassData = {}, options = {}) {
   }
 
   if (options.triangulate) {
-    polygons.triangles = new Uint32Array(1024);
+    polygons.triangles = earcut(polygons.positions, [], coordLength);
   }
 
   // Wrap each array in an accessor object with value and size keys

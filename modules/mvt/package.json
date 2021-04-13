@@ -31,6 +31,7 @@
     "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js"
   },
   "dependencies": {
+    "earcut": "^2.0.6",
     "@loaders.gl/gis": "3.0.0-alpha.12",
     "@loaders.gl/loader-utils": "3.0.0-alpha.12",
     "pbf": "^3.2.1"
