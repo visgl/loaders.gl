@@ -353,9 +353,7 @@ export default class App extends PureComponent {
         visible: obb,
         tiles,
         coloredBy: obbColorMode,
-        colorsMap: this._colorsMap,
-        selectedTileId,
-        coloredTilesMap
+        colorsMap: this._colorsMap
       }),
       this._renderMainOnMinimap()
     ];
@@ -405,11 +403,11 @@ export default class App extends PureComponent {
       id: layerId,
       props: {viewportIds = null}
     } = layer;
-    if (viewport.id !== 'minimap' && (layerId === 'frustum' || layerId === 'main-on-minimap')) {
+    if (viewportId !== 'minimap' && (layerId === 'frustum' || layerId === 'main-on-minimap')) {
       // only display frustum in the minimap
       return false;
     }
-    if (minimapViewport && viewport.id === 'minimap' && layerId.indexOf('obb-debug-') !== -1) {
+    if (minimapViewport && viewportId === 'minimap' && layerId.indexOf('obb-debug-') !== -1) {
       return false;
     }
     if (viewportIds && !viewportIds.includes(viewportId)) {
