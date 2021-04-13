@@ -60,14 +60,15 @@ export default class ColorMap {
   }
 
   _getCustomColor(tileId, options) {
+    const {colorMap} = this.state;
+    let color = DEFAULT_COLOR;
     if (options.coloredTilesMap && options.coloredTilesMap[tileId]) {
-      return options.coloredTilesMap[tileId];
+      color = options.coloredTilesMap[tileId];
+    } else if (options.selectedTileId === tileId) {
+      color = DEFAULT_HIGLIGHT_COLOR;
     }
-    if (options.selectedTileId === tileId) {
-      return DEFAULT_HIGLIGHT_COLOR;
-    }
-
-    return DEFAULT_COLOR;
+    colorMap[tileId] = color;
+    return color;
   }
 
   _getRandomColor(id) {
