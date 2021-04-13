@@ -131,6 +131,7 @@ function fillArrays(features, firstPassData = {}, options = {}) {
     feature: 0
   };
 
+  const opts = {coordLength, triangulate: options.triangulate};
   for (const feature of features) {
     const geometry = feature.geometry;
     const properties = feature.properties || {};
@@ -150,7 +151,7 @@ function fillArrays(features, firstPassData = {}, options = {}) {
         break;
       case 'Polygon':
       case 'MultiPolygon':
-        handlePolygon(geometry, polygons, indexMap, coordLength, properties);
+        handlePolygon(geometry, polygons, indexMap, properties, opts);
         polygons.properties.push(keepStringProperties(properties, numericPropKeys));
         indexMap.polygonFeature++;
         break;
@@ -222,7 +223,7 @@ function handleLineString(geometry, lines, indexMap, coordLength, properties) {
 }
 
 // Fills (Multi)Polygon coordinates into polygons object of arrays
-function handlePolygon(geometry, polygons, indexMap, coordLength, properties) {
+function handlePolygon(geometry, polygons, indexMap, properties, {coordLength, triangulate}) {
   polygons.positions.set(geometry.data, indexMap.polygonPosition * coordLength);
 
   const nPositions = geometry.data.length / coordLength;
