@@ -236,3 +236,16 @@ test('Empty MVT must return empty binary format', async t => {
 
   t.end();
 });
+
+test('Triangulation is supported', async t => {
+  const response = await fetchFile(MVT_POLYGONS_DATA_URL);
+  const mvtArrayBuffer = await response.arrayBuffer();
+  const geometry = await parse(mvtArrayBuffer, MVTLoader, {
+    gis: {format: 'binary', triangulate: true}
+  });
+
+  t.ok(geometry.polygons.positions);
+  t.equals(geometry.polygons.positions.value.length, 62);
+
+  t.end();
+});
