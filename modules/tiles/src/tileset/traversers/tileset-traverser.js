@@ -118,7 +118,7 @@ export default class TilesetTraverser {
     }
 
     if (this.options.onTraversalEnd) {
-      this.options.onTraversalEnd(this, frameState);
+      this.options.onTraversalEnd(frameState);
     }
   }
 
