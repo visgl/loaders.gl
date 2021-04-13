@@ -30,10 +30,31 @@ test('tile-converter - Converters#converts 3d-tiles tileset to i3s tileset', asy
       inputUrl: TILESET_URL,
       outputPath: 'data',
       tilesetName: 'BatchedColors',
+      slpk: false,
+      inputType: '3dtiles',
+      sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
+      egmFilePath: PGM_FILE_PATH,
+      token:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ'
+    });
+    t.ok(tilesetJson);
+  }
+  await cleanUpPath('data/BatchedColors');
+  t.end();
+});
+
+test('tile-converter - Converters#converts 3d-tiles tileset to i3s tileset with validation', async t => {
+  if (!isBrowser) {
+    const converter = new I3SConverter();
+    const tilesetJson = await converter.convert({
+      inputUrl: TILESET_URL,
+      outputPath: 'data',
+      tilesetName: 'BatchedColors',
       slpk: true,
       inputType: '3dtiles',
       sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
       egmFilePath: PGM_FILE_PATH,
+      validateBoundingVolumes: true,
       token:
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ'
     });

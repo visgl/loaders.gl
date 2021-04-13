@@ -51,6 +51,7 @@
     "@loaders.gl/tiles": "3.0.0-alpha.10",
     "@loaders.gl/worker-utils": "3.0.0-alpha.10",
     "@loaders.gl/zip": "3.0.0-alpha.10",
+    "@luma.gl/engine": "^8.4.4",
     "@math.gl/core": "^3.3.0",
     "@math.gl/culling": "^3.3.0",
     "@math.gl/geospatial": "^3.3.0",
@@ -61,6 +62,7 @@
     "express": "~4.16.1",
     "json-map-transform": "^1.2.6",
     "jszip": "^3.5.0",
+    "math.gl": "^3.4.2",
     "md5": "^2.3.0",
     "morgan": "~1.9.1",
     "uuid": "^8.1.0"

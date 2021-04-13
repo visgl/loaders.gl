@@ -1799,7 +1799,7 @@
     "@math.gl/core" "^3.4.2"
     probe.gl "^3.2.1"
 
-"@luma.gl/engine@8.4.4":
+"@luma.gl/engine@8.4.4", "@luma.gl/engine@^8.4.4":
   version "8.4.4"
   resolved "https://registry.yarnpkg.com/@luma.gl/engine/-/engine-8.4.4.tgz#2f070cc5f113368a6e7b626ddc55d48d1c4966ef"
   integrity sha512-QOXCaL++cESH0+ebK77MbGDOAmJhsV2iO0Dyf4qhoDBk+8fjvB5ZnzIpv41ccTyOmPJAvmyP+kqFZRfxZKPjGw==
