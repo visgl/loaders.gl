@@ -104,6 +104,12 @@ function fillArrays(features, firstPassData = {}, options = {}) {
     properties: []
   };
 
+  // If performing triangulation, need to add array to store
+  // indices that define the triangles
+  if (options.triangulate) {
+    polygons.triangles = [];
+  }
+
   // Instantiate numeric properties arrays; one value per vertex
   for (const object of [points, lines, polygons]) {
     for (const propName of numericPropKeys) {
@@ -160,10 +166,6 @@ function fillArrays(features, firstPassData = {}, options = {}) {
     }
 
     indexMap.feature++;
-  }
-
-  if (options.triangulate) {
-    polygons.triangles = earcut(polygons.positions, [], coordLength);
   }
 
   // Wrap each array in an accessor object with value and size keys
@@ -241,7 +243,8 @@ function handlePolygon(geometry, polygons, indexMap, properties, {coordLength, t
 
   // Unlike Point & LineString geometry.lines is a 2D array
   for (let l = 0, ll = geometry.lines.length; l < ll; ++l) {
-    polygons.polygonIndices[indexMap.polygonObject++] = indexMap.polygonPosition;
+    const startPosition = indexMap.polygonPosition;
+    polygons.polygonIndices[indexMap.polygonObject++] = startPosition;
 
     const lines = geometry.lines[l];
     const nextLines = geometry.lines[l + 1];
@@ -258,6 +261,26 @@ function handlePolygon(geometry, polygons, indexMap, properties, {coordLength, t
 
       polygons.primitivePolygonIndices[indexMap.polygonRing++] = indexMap.polygonPosition;
       indexMap.polygonPosition += (end - start) / coordLength;
+    }
+
+    if (triangulate) {
+      const start = startPosition * coordLength;
+      const end = indexMap.polygonPosition * coordLength;
+
+      // Extract positions and holes for just this polygon
+      const polygonPositions = polygons.positions.subarray(start, end);
+
+      // TODO compute and don't forget to offset!
+      const holes = [];
+
+      // Compute triangulation
+      const indices = earcut(polygonPositions, holes, coordLength);
+
+      // Indices returned by trinagulation are relative to start
+      // of polygon, so we need to offset
+      for (let t = 0, tl = indices.length; t < tl; ++t) {
+        polygons.triangles.push(start + indices[t]);
+      }
     }
   }
 }
