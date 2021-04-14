@@ -27,6 +27,7 @@ import {PGMLoader} from '../pgm-loader';
 import {LAYERS as layersTemplate} from './json-templates/layers';
 import {NODE as nodeTemplate} from './json-templates/node';
 import {SHARED_RESOURCES_TEMPLATE} from './json-templates/shared-resources';
+import {validateNodeBoundingVolumes} from './helpers/node-debug';
 
 const ION_DEFAULT_TOKEN =
   process.env.IonToken || // eslint-disable-line
@@ -56,6 +57,8 @@ export default class I3SConverter {
       tilesCount: 0,
       tilesWithAddRefineCount: 0
     };
+    this.validateBoundingVolumes = false;
+    this.boundingVolumeWarnings = null;
   }
 
   // Convert a 3d tileset
@@ -68,10 +71,12 @@ export default class I3SConverter {
     sevenZipExe,
     egmFilePath,
     token,
-    draco
+    draco,
+    validateBoundingVolumes
   }) {
     this.conversionStartTime = process.hrtime();
     this.options = {maxDepth, slpk, sevenZipExe, egmFilePath, draco, token, inputUrl};
+    this.validateBoundingVolumes = validateBoundingVolumes;
 
     console.log('Loading egm file...'); // eslint-disable-line
     this.geoidHeightModel = await load(egmFilePath, PGMLoader);
@@ -449,6 +454,14 @@ export default class I3SConverter {
 
       if (nodeInPage.mesh) {
         await this._writeResources(resources, node.path);
+      }
+
+      if (this.validateBoundingVolumes) {
+        this.boundingVolumeWarnings = validateNodeBoundingVolumes(node);
+
+        if (this.boundingVolumeWarnings && this.boundingVolumeWarnings.length) {
+          console.warn('Bounding Volume Warnings: ', ...this.boundingVolumeWarnings); //eslint-disable-line
+        }
       }
 
       nodes.push(node);

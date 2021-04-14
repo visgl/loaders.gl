@@ -41,3 +41,4 @@ Converts a tileset to I3S format
 - `options.egmFilePath` location of \*.pgm file to convert heights from ellipsoidal to gravity-related format. A model file can be loaded from GeographicLib https://geographiclib.sourceforge.io/html/geoid.html
 - `options.token` ION token of input tileset
 - `options.draco` Whether the converter create DRACO compressed geometry in path "layers/0/nodes/xxx/geometries/1" along with non-compressed geometry in path "layers/0/nodes/xxx/geometries/0"
+- `options.validateBoundingVolumes` Enable/Disable Bounding Volumes Validation (Check if child bounding volume inside parent bounding volume)
