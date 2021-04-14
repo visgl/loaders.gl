@@ -1,5 +1,37 @@
 ## v3.0 Prerelease
 
+#### v3.0.0-alpha.11
+
+- I3s-Debug - Add tile info panel + initial selection logic for custom colors (#1288)
+- i3s-debug: improve layer with obb (#1289)
+- I3s-Debug - Add color picker to custom tile selection mode (#1290)
+- website: add react-color component (#1291)
+- I3SLoader - Add benchmark (#1294)
+- I3S-Debug - Add semantic validator ui (#1295)
+- I3S-Debug - Improve attributes panel in debug mode (#1292)
+- I3S-Debug - Change Semantic Validator UI (#1299)
+- I3S-Debug - Add LOD + OBB Validation (#1300)
+- Modify MVTLoader to output binary without going through geojson (#1281)
+- i3s: support texture atlas (#1282)
+- tile-converter: fix attributes normalization (#1301)
+- tiles: handle multiple viewports v2 (#1296)
+- workflow: don't test nodejs v10 (#1307)
+- i3s debug: stop loading button (#1298)
+- I3S-Debug - Add clear button to semantic validator (#1302)
+- I3S-Debug - Add MBS validation (#1303)
+- I3S-Debug - Add validator for tile geometry (#1305)
+- I3S-Debug - Attributes panel improvemets (#1308)
+- i3s-debug: multiple viewports traversal (#1306)
+- i3s: fix stop loading logic (#1311)
+- i3s-debug: geometry & texture validation (#1309)
+- tile-converter: fixes issue 1313 (#1314)
+- i3s-debug: debug panel refactoring (#1316)
+- tiles: refactor tileset-3d (#1315)
+- i3s debug: fix obb rotation (#1320)
+- i3s-debug: LOD validation (#1312)
+- Tile-converter - Add Node Bounding Volumes Validation (#1319)
+- i3s debug: multiple viewports refactoring (#1317)
+
 #### v3.0.0-alpha.10
 
 - i3s: switch content worker on (#1287)
