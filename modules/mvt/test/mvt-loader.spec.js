@@ -257,7 +257,8 @@ test('Triangulation is supported', async t => {
   t.equals(minI, 0);
   t.equals(maxI, 29); // Don't expect to find 30 as closed polygon
 
-  // t.deepEqual(geometry.polygons.triangles.value, []);
+  t.ok(geometry.polygons.triangleIndices);
+  t.equals(geometry.polygons.triangleIndices.value.length, 1);
 
   t.end();
 });
