@@ -50,6 +50,25 @@ const INITIAL_VIEW_STATE = {
   zoom: 14.5
 };
 
+const INITIAL_DEBUG_OPTIONS_STATE = {
+  // Show minimap
+  minimap: true,
+  // Use separate traversal for the minimap viewport
+  minimapViewport: false,
+  // Show bounding volumes
+  obb: false,
+  // Tile coloring mode selector
+  tileColorMode: INITIAL_TILE_COLOR_MODE,
+  // Bounding volume coloring mode selector
+  obbColorMode: INITIAL_OBB_COLOR_MODE,
+  // Select tiles with a mouse button
+  pickable: false,
+  // Load tiles after traversal.
+  // Use this to freeze loaded tiles and see on them from different perspective
+  loadTiles: true,
+  // Show the semantic validation warnings window
+  semanticValidator: false
+};
 const STATS_WIDGET_STYLE = {
   wordBreak: 'break-word',
   padding: 12,
@@ -110,16 +129,7 @@ export default class App extends PureComponent {
         }
       },
       selectedMapStyle: INITIAL_MAP_STYLE,
-      debugOptions: {
-        minimap: true,
-        minimapViewport: false,
-        obb: false,
-        tileColorMode: INITIAL_TILE_COLOR_MODE,
-        obbColorMode: INITIAL_OBB_COLOR_MODE,
-        pickable: false,
-        loadTiles: true,
-        semanticValidator: false
-      },
+      debugOptions: INITIAL_DEBUG_OPTIONS_STATE,
       tileInfo: null,
       selectedTileId: null,
       coloredTilesMap: {},
