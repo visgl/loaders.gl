@@ -279,7 +279,7 @@ function handlePolygon(geometry, polygons, indexMap, properties, {coordLength, t
       // Indices returned by trinagulation are relative to start
       // of polygon, so we need to offset
       for (let t = 0, tl = indices.length; t < tl; ++t) {
-        polygons.triangles.push(start + indices[t]);
+        polygons.triangles.push(startPosition + indices[t]);
       }
     }
   }
