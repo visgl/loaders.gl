@@ -1,4 +1,9 @@
-import {OrientedBoundingBox, BoundingSphere} from '@math.gl/culling';
+import {
+  OrientedBoundingBox,
+  BoundingSphere,
+  makeOrientedBoundingBoxFromPoints,
+  makeBoundingSphereFromPoints
+} from '@math.gl/culling';
 import {CubeGeometry} from '@luma.gl/engine';
 import {BOUNDING_VOLUME_WARNING_TYPE, LOD_WARNING_TYPE, PARENT_LOD_WARNING_TYPE} from './constants';
 import {Vector3} from 'math.gl';
@@ -48,31 +53,6 @@ export function validateTile(tile) {
   checkLOD(tile, tileWarnings);
 
   return tileWarnings;
-}
-
-export function isTileGeometryInsideBoundingVolume(tile) {
-  const boundingType = getBoundingType(tile);
-  const positions = tile.content.attributes.positions.value;
-  let boundingVolume = null;
-
-  switch (boundingType) {
-    case OBB: {
-      boundingVolume = createBoundingBoxFromTileObb(tile.header.obb);
-      break;
-    }
-    case MBS: {
-      boundingVolume = createBoundingSphereFromTileMbs(tile.header.mbs);
-      break;
-    }
-    default:
-      console.error('Validator - Not supported Bounding Volume Type'); //eslint-disable-line
-  }
-
-  try {
-    return isAllVerticesInsideBoundingVolume(boundingVolume, positions);
-  } catch (error) {
-    return error;
-  }
 }
 
 // eslint-disable-next-line max-statements, complexity
@@ -323,7 +303,8 @@ function isAllVerticesInsideBoundingVolume(boundingVolume, positions) {
   for (let index = 0; index < positions.length / 3; index += 3) {
     const point = [positions[index], positions[index + 1], positions[index + 2]];
     const cartographicPoint = Ellipsoid.WGS84.cartesianToCartographic(point);
-
+    // If point inside sphere then distance is NaN because of sqrt of negative value.
+    // If point inside box then distance is 0.
     const distance = boundingVolume.distanceTo(cartographicPoint);
 
     if (distance > 0) {
@@ -333,4 +314,81 @@ function isAllVerticesInsideBoundingVolume(boundingVolume, positions) {
   }
 
   return isVerticesInsideObb;
+}
+
+export function isTileGeometryInsideBoundingVolume(tile) {
+  const tileData = getTileDataForValidation(tile);
+
+  if (!tileData) {
+    return null;
+  }
+
+  const {positions, boundingVolume} = tileData;
+
+  return isAllVerticesInsideBoundingVolume(boundingVolume, positions);
+}
+
+export function isGeometryBoundingVolumeMoreSuitable(tile) {
+  const tileData = getTileDataForValidation(tile);
+
+  if (!tileData) {
+    return null;
+  }
+
+  const {positions, boundingVolume, boundingType} = tileData;
+  const cartographicPositions = convertPositionsToVectors(positions);
+
+  if (boundingType === OBB) {
+    const geometryObb = makeOrientedBoundingBoxFromPoints(
+      cartographicPositions,
+      new OrientedBoundingBox()
+    );
+    const geometryObbVolume = geometryObb.halfSize.reduce((result, halfSize) => result * halfSize);
+    const tileObbVolume = boundingVolume.halfSize.reduce((result, halfSize) => result * halfSize);
+    return geometryObbVolume < tileObbVolume;
+  }
+
+  const geometrySphere = makeBoundingSphereFromPoints(cartographicPositions, new BoundingSphere());
+  return geometrySphere.radius < boundingVolume.radius;
+}
+
+function getTileDataForValidation(tile) {
+  if (!tile.content && !tile.content.attributes && !tile.content.attributes.POSITION) {
+    return null;
+  }
+
+  const boundingType = getBoundingType(tile);
+  const positions = tile.content.attributes.positions.value;
+  const boundingVolume = createBoundingVolumeFromTile(tile, boundingType);
+
+  if (!boundingVolume) {
+    return null;
+  }
+
+  return {positions, boundingType, boundingVolume};
+}
+
+function createBoundingVolumeFromTile(tile, boundingType) {
+  switch (boundingType) {
+    case OBB: {
+      return createBoundingBoxFromTileObb(tile.header.obb);
+    }
+    case MBS: {
+      return createBoundingSphereFromTileMbs(tile.header.mbs);
+    }
+    default:
+      console.warning('Validator - Not supported Bounding Volume Type'); //eslint-disable-line
+      return null;
+  }
+}
+
+function convertPositionsToVectors(positions) {
+  const result = [];
+
+  for (let i = 0; i < positions.length; i += 3) {
+    const positionVector = new Vector3(positions[i], positions[i + 1], positions[i + 2]);
+    result.push(positionVector);
+  }
+
+  return result;
 }
