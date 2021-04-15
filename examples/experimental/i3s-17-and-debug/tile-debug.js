@@ -20,19 +20,29 @@ const REFINEMENT_TYPES = {
 
 const FLOAT_VALUES_FIXED_COUNT = 3;
 
+/**
+ * Return short tile info
+ * @param {object} tileHeader
+ * @returns {object} - short tile info for debugging purposes
+ */
 export function getShortTileDebugInfo(tileHeader) {
-  const clildrenInfo = getChildrenInfo(tileHeader.header.children);
+  const childrenInfo = getChildrenInfo(tileHeader.header.children);
 
   return {
     ['Tile Id']: tileHeader.id,
     Type: tileHeader.type || NO_DATA,
-    ['Children Count']: clildrenInfo.count,
-    ['Children Ids']: clildrenInfo.ids,
+    ['Children Count']: childrenInfo.count,
+    ['Children Ids']: childrenInfo.ids,
     ['Vertex count']: tileHeader.content.vertexCount || NO_DATA,
     ['Distance to camera']: `${formatFloatNumber(tileHeader._distanceToCamera)} m` || NO_DATA
   };
 }
 
+/**
+ * Return extended tile info
+ * @param {object} tileHeader
+ * @returns {object} - extended tile info for debugging purposes
+ */
 export function getTileDebugInfo(tileHeader) {
   return {
     ...getShortTileDebugInfo(tileHeader),
@@ -46,6 +56,11 @@ export function getTileDebugInfo(tileHeader) {
   };
 }
 
+/**
+ * Generates list of tile warnings
+ * @param {object} tile
+ * @returns {{message: {type: string, title: string}}[]} -List of warnings
+ */
 export function validateTile(tile) {
   const tileWarnings = [];
 
@@ -55,6 +70,11 @@ export function validateTile(tile) {
   return tileWarnings;
 }
 
+/**
+ * Generates geometry vs texture metrics
+ * @param {object} tile
+ * @returns {object} - List of warnings
+ */
 // eslint-disable-next-line max-statements, complexity
 export function getGeometryVsTextureMetrics(tile) {
   if (!(tile && tile.content && tile.content.attributes)) {
@@ -113,6 +133,11 @@ export function getGeometryVsTextureMetrics(tile) {
   };
 }
 
+/**
+ * Do float numbers formatting based on fixed value
+ * @param {number} tile
+ * @returns {number}
+ */
 function formatFloatNumber(value) {
   if (!value) {
     return null;
@@ -121,6 +146,11 @@ function formatFloatNumber(value) {
   return value.toFixed(FLOAT_VALUES_FIXED_COUNT);
 }
 
+/**
+ * Defines the Bounding Box type
+ * @param {number} tile
+ * @returns {string} - defined Bounding box type
+ */
 function getBoundingType(tile) {
   if (tile.header.obb || tile.boundingVolume instanceof OrientedBoundingBox) {
     return OBB;
@@ -128,6 +158,11 @@ function getBoundingType(tile) {
   return MBS;
 }
 
+/**
+ * Get tile's children info (count, ids)
+ * @param {array} children
+ * @returns {object} - children data
+ */
 function getChildrenInfo(children) {
   if (!children || !children.length) {
     return {
@@ -148,6 +183,12 @@ function getChildrenInfo(children) {
   };
 }
 
+/**
+ * Do validation of tile's Bounding Volumes
+ * @param {object} tile
+ * @param {array} tileWarnings
+ * @returns {void}
+ */
 function checkBoundingVolumes(tile, tileWarnings) {
   if (!tile.parent) {
     return;
@@ -157,11 +198,11 @@ function checkBoundingVolumes(tile, tileWarnings) {
 
   switch (boundingType) {
     case OBB: {
-      validateObb(tileWarnings, tile);
+      validateObb(tile, tileWarnings);
       break;
     }
     case MBS: {
-      validateMbs(tileWarnings, tile);
+      validateMbs(tile, tileWarnings);
       break;
     }
     default:
@@ -169,7 +210,14 @@ function checkBoundingVolumes(tile, tileWarnings) {
   }
 }
 
-function validateObb(tileWarnings, tile) {
+/**
+ * Do validation of tile OBB
+ * @param {object} tile
+ * @param {array} tileWarnings
+ * @returns {void}
+ * Check if child OBB inside parent OBB
+ */
+function validateObb(tile, tileWarnings) {
   const parentObb = createBoundingBoxFromTileObb(tile.parent.header.obb);
   const tileVertices = getTileObbVertices(tile);
   const isTileObbInsideParentObb = isAllVerticesInsideBoundingVolume(parentObb, tileVertices);
@@ -182,7 +230,14 @@ function validateObb(tileWarnings, tile) {
   tileWarnings.push({type: BOUNDING_VOLUME_WARNING_TYPE, title});
 }
 
-function validateMbs(tileWarnings, tile) {
+/**
+ * Do validation of tile MBS
+ * @param {object} tile
+ * @param {array} tileWarnings
+ * @returns {void}
+ * Check if child MBS inside parent MBS
+ */
+function validateMbs(tile, tileWarnings) {
   const tileMbs = createBoundingSphereFromTileMbs(tile.header.mbs);
   const parentMbs = createBoundingSphereFromTileMbs(tile.parent.header.mbs);
   const distanceBetweenCenters = tileMbs.center.distanceTo(parentMbs.center);
@@ -193,16 +248,32 @@ function validateMbs(tileWarnings, tile) {
   }
 }
 
+/**
+ * Generates BoundingSphere from tile mbs data
+ * @param {array} mbs
+ * @returns {BoundingSphere}
+ */
 function createBoundingSphereFromTileMbs(mbs) {
   return new BoundingSphere([mbs[0], mbs[1], mbs[2]], mbs[3]);
 }
 
+/**
+ * Generates OrientedBoundingBox from tile obb data
+ * @param {array} obb
+ * @returns {OrientedBoundingBox}
+ */
 function createBoundingBoxFromTileObb(obb) {
   const {center, halfSize, quaternion} = obb;
   return new OrientedBoundingBox().fromCenterHalfSizeQuaternion(center, halfSize, quaternion);
 }
 
-// LOD spec https://github.com/Esri/i3s-spec/blob/master/format/LevelofDetail.md
+/**
+ * Check LOD value of tile
+ * @param {object} tile
+ * @param {array} tileWarnings
+ * @returns {void}
+ * LOD spec https://github.com/Esri/i3s-spec/blob/master/format/LevelofDetail.md
+ */
 function checkLOD(tile, tileWarnings) {
   const divergence = 0.05;
   const tileLodRatio = tile.lodMetricValue / tile.boundingVolume.radius;
@@ -232,6 +303,11 @@ function checkLOD(tile, tileWarnings) {
   }
 }
 
+/**
+ * Calculate texture size of tile
+ * @param {object} tile
+ * @returns {number}
+ */
 function getTextureSize(tile) {
   if (!tile.content) {
     return 0;
@@ -249,6 +325,12 @@ function getTextureSize(tile) {
   return texture.height * texture.width;
 }
 
+/**
+ * Calculate triangle vertices of tile
+ * @param {object} attribute
+ * @param {number} offset
+ * @returns {number}
+ */
 function getTriangleVertices(attribute, offset) {
   const geometryVertices = [];
   for (let i = 0; i < 3; i++) {
@@ -263,6 +345,11 @@ function getTriangleVertices(attribute, offset) {
   return geometryVertices;
 }
 
+/**
+ * Calculates triangles area based on vertices
+ * @param {array} vertices
+ * @returns {number}
+ */
 function getTriangleArea(vertices) {
   const edge1 = new Vector3(vertices[0].x, vertices[0].y, vertices[0].z).subtract(vertices[1]);
   const edge2 = new Vector3(vertices[1].x, vertices[1].y, vertices[1].z).subtract(vertices[2]);
@@ -272,7 +359,11 @@ function getTriangleArea(vertices) {
   return area;
 }
 
-// TODO check if Obb generates properly
+/**
+ * Calculates  obb vertices of tile
+ * @param {object} tile
+ * @returns {number[]}
+ */
 function getTileObbVertices(tile) {
   const geometry = new CubeGeometry();
   const halfSize = tile.header.obb.halfSize;
@@ -297,6 +388,12 @@ function getTileObbVertices(tile) {
   return vertices;
 }
 
+/**
+ * Check if provided vertices are inside bounding volume
+ * @param {OrientedBoundingBox | BoundingSphere} boundingVolume
+ * @param {array} positions
+ * @returns {boolean}
+ */
 function isAllVerticesInsideBoundingVolume(boundingVolume, positions) {
   let isVerticesInsideObb = true;
 
@@ -316,58 +413,83 @@ function isAllVerticesInsideBoundingVolume(boundingVolume, positions) {
   return isVerticesInsideObb;
 }
 
+/**
+ * Check if geometry of tile inside bounding volume
+ * @param {object} tile
+ * @returns {boolean}
+ */
 export function isTileGeometryInsideBoundingVolume(tile) {
-  const tileData = getTileDataForValidation(tile);
+  try {
+    const tileData = getTileDataForValidation(tile);
+    const {positions, boundingVolume} = tileData;
 
-  if (!tileData) {
-    return null;
+    return isAllVerticesInsideBoundingVolume(boundingVolume, positions);
+  } catch (error) {
+    throw error;
   }
-
-  const {positions, boundingVolume} = tileData;
-
-  return isAllVerticesInsideBoundingVolume(boundingVolume, positions);
 }
 
+/**
+ * Check if bounding volume made of geometry is more suitable than tile bounding volume
+ * @param {object} tile
+ * @returns {boolean}
+ */
 export function isGeometryBoundingVolumeMoreSuitable(tile) {
-  const tileData = getTileDataForValidation(tile);
+  try {
+    const tileData = getTileDataForValidation(tile);
+    const {positions, boundingVolume, boundingType} = tileData;
+    const cartographicPositions = convertPositionsToVectors(positions);
 
-  if (!tileData) {
-    return null;
-  }
+    if (boundingType === OBB) {
+      const geometryObb = makeOrientedBoundingBoxFromPoints(
+        cartographicPositions,
+        new OrientedBoundingBox()
+      );
+      const geometryObbVolume = geometryObb.halfSize.reduce(
+        (result, halfSize) => result * halfSize
+      );
+      const tileObbVolume = boundingVolume.halfSize.reduce((result, halfSize) => result * halfSize);
+      return geometryObbVolume < tileObbVolume;
+    }
 
-  const {positions, boundingVolume, boundingType} = tileData;
-  const cartographicPositions = convertPositionsToVectors(positions);
-
-  if (boundingType === OBB) {
-    const geometryObb = makeOrientedBoundingBoxFromPoints(
+    const geometrySphere = makeBoundingSphereFromPoints(
       cartographicPositions,
-      new OrientedBoundingBox()
+      new BoundingSphere()
     );
-    const geometryObbVolume = geometryObb.halfSize.reduce((result, halfSize) => result * halfSize);
-    const tileObbVolume = boundingVolume.halfSize.reduce((result, halfSize) => result * halfSize);
-    return geometryObbVolume < tileObbVolume;
-  }
 
-  const geometrySphere = makeBoundingSphereFromPoints(cartographicPositions, new BoundingSphere());
-  return geometrySphere.radius < boundingVolume.radius;
+    return geometrySphere.radius < boundingVolume.radius;
+  } catch (error) {
+    throw error;
+  }
 }
 
+/**
+ * Generates data for tile validation
+ * @param {object} tile
+ * @returns {object} - {positions, boundingType, boundingVolume}
+ */
 function getTileDataForValidation(tile) {
   if (!tile.content && !tile.content.attributes && !tile.content.attributes.POSITION) {
-    return null;
+    throw new Error('Validator - There are no positions in tile');
   }
 
   const boundingType = getBoundingType(tile);
   const positions = tile.content.attributes.positions.value;
-  const boundingVolume = createBoundingVolumeFromTile(tile, boundingType);
 
-  if (!boundingVolume) {
-    return null;
+  try {
+    const boundingVolume = createBoundingVolumeFromTile(tile, boundingType);
+    return {positions, boundingType, boundingVolume};
+  } catch (error) {
+    throw error;
   }
-
-  return {positions, boundingType, boundingVolume};
 }
 
+/**
+ * Generates needed bounding volume from tile bounding volume
+ * @param {object} tile
+ * @param {string} boundingType
+ * @returns {BoundingSphere | OrientedBoundingBox}
+ */
 function createBoundingVolumeFromTile(tile, boundingType) {
   switch (boundingType) {
     case OBB: {
@@ -377,11 +499,15 @@ function createBoundingVolumeFromTile(tile, boundingType) {
       return createBoundingSphereFromTileMbs(tile.header.mbs);
     }
     default:
-      console.warning('Validator - Not supported Bounding Volume Type'); //eslint-disable-line
-      return null;
+      throw new Error('Validator - Not supported Bounding Volume Type');
   }
 }
 
+/**
+ * Create array of posisitons where each vertex is vector
+ * @param {array} positions
+ * @returns {Vector3[]}
+ */
 function convertPositionsToVectors(positions) {
   const result = [];
 
