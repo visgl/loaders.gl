@@ -34,8 +34,15 @@ import AttributesTooltip from './components/attributes-tooltip';
 import {getTileDebugInfo, getShortTileDebugInfo, validateTile} from './tile-debug';
 import {parseTilesetUrlFromUrl, parseTilesetUrlParams} from './url-utils';
 import TileValidator from './components/tile-validator';
+import {
+  generateBinaryNormalsDebugData,
+  getNormalSourcePosition,
+  getNormalTargetPosition
+} from './normals-utils';
 
 const TRANSITION_DURAITON = 4000;
+const DEFAULT_NORMALS_GAP = 30; // Gap for normals visualisation to avoid mess on the screen.
+const NORMALS_COLOR = [255, 0, 0];
 
 const INITIAL_VIEW_STATE = {
   longitude: -120,
@@ -130,6 +137,8 @@ export default class App extends PureComponent {
       },
       selectedMapStyle: INITIAL_MAP_STYLE,
       debugOptions: INITIAL_DEBUG_OPTIONS_STATE,
+      normalsDebugData: [],
+      normalsGap: DEFAULT_NORMALS_GAP,
       tileInfo: null,
       selectedTileId: null,
       coloredTilesMap: {},
@@ -142,6 +151,8 @@ export default class App extends PureComponent {
     this.handleClosePanel = this.handleClosePanel.bind(this);
     this.handleSelectTileColor = this.handleSelectTileColor.bind(this);
     this.handleClearWarnings = this.handleClearWarnings.bind(this);
+    this.handleShowNormals = this.handleShowNormals.bind(this);
+    this.handleChangeNormalsGap = this.handleChangeNormalsGap.bind(this);
   }
 
   componentDidMount() {
@@ -319,7 +330,9 @@ export default class App extends PureComponent {
       selectedTileId,
       coloredTilesMap,
       viewportTraversersMap,
-      tileset
+      tileset,
+      normalsDebugData,
+      normalsGap
     } = this.state;
     viewportTraversersMap.minimap = minimapViewport ? 'minimap' : 'main';
     const loadOptions = {throttleRequests: true, viewportTraversersMap};
@@ -364,6 +377,14 @@ export default class App extends PureComponent {
         tiles,
         coloredBy: obbColorMode,
         colorsMap: this._colorsMap
+      }),
+      new LineLayer({
+        id: 'normals-debug',
+        data: normalsDebugData,
+        getSourcePosition: (_, {index, data}) => getNormalSourcePosition(index, data, normalsGap),
+        getTargetPosition: (_, {index, data}) => getNormalTargetPosition(index, data, normalsGap),
+        getColor: () => NORMALS_COLOR,
+        getWidth: 1
       }),
       this._renderMainOnMinimap()
     ];
@@ -445,11 +466,11 @@ export default class App extends PureComponent {
     }
     // TODO add more tile info to panel.
     const tileInfo = getTileDebugInfo(info.object);
-    this.setState({tileInfo, selectedTileId: info.object.id});
+    this.setState({tileInfo, selectedTileId: info.object.id, normalsDebugData: []});
   }
 
   handleClosePanel() {
-    this.setState({tileInfo: null, selectedTileId: null});
+    this.setState({tileInfo: null, selectedTileId: null, normalsDebugData: []});
   }
 
   handleSelectTileColor(tileId, selectedColor) {
@@ -487,8 +508,33 @@ export default class App extends PureComponent {
     this.setState({warnings: []});
   }
 
+  handleShowNormals(tile) {
+    const {normalsDebugData} = this.state;
+
+    this.setState({
+      normalsDebugData: !normalsDebugData.length ? generateBinaryNormalsDebugData(tile) : []
+    });
+  }
+
+  handleChangeNormalsGap(tile, newValue) {
+    const {normalsDebugData} = this.state;
+
+    if (normalsDebugData.length) {
+      this.setState({normalsDebugData: generateBinaryNormalsDebugData(tile)});
+    }
+
+    this.setState({normalsGap: newValue});
+  }
+
   _renderAttributesPanel() {
-    const {tileInfo, debugOptions, coloredTilesMap, tileset} = this.state;
+    const {
+      tileInfo,
+      debugOptions,
+      coloredTilesMap,
+      tileset,
+      normalsDebugData,
+      normalsGap
+    } = this.state;
     const isShowColorPicker = debugOptions.tileColorMode === COLORED_BY.CUSTOM;
     const tileId = tileInfo['Tile Id'];
     const tileSelectedColor = makeRGBObjectFromColor(coloredTilesMap[tileId]);
@@ -502,7 +548,13 @@ export default class App extends PureComponent {
         attributesHeader={'Tile Id'}
         selectTileColor={this.handleSelectTileColor}
       >
-        <TileValidator tile={currenTile} />
+        <TileValidator
+          tile={currenTile}
+          showNormals={Boolean(normalsDebugData.length)}
+          normalsGap={normalsGap}
+          handleShowNormals={this.handleShowNormals}
+          handleChangeNormalsGap={this.handleChangeNormalsGap}
+        />
         {isShowColorPicker && (
           <div>
             <h3>{TILE_COLOR_SELECTOR}</h3>

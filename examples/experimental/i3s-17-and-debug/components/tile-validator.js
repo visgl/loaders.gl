@@ -25,6 +25,12 @@ const ValidateButton = styled.button`
   margin-bottom: 5px;
 `;
 
+const NormalsValidator = styled.div`
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+`;
+
 const ValidatorInfoList = styled.div`
   display: flex;
   flex-direction: column;
@@ -32,16 +38,30 @@ const ValidatorInfoList = styled.div`
   overflow-y: scroll;
 `;
 
+const GapInput = styled.input`
+  max-width: 50px;
+  margin: 0 5px;
+`;
+
 const VALIDATE_TILE = 'Validate Tile';
+const SHOW_NORMALS = 'Show Normals for each: ';
 const WARNING_TYPE = 'warning';
 const OK_TYPE = 'ok';
+const VERTEX = 'vertex (min = 1)';
 
 const propTypes = {
-  tile: PropTypes.object
+  tile: PropTypes.object,
+  normalsGap: PropTypes.number,
+  showNormals: PropTypes.bool,
+  handleShowNormals: PropTypes.func,
+  handleChangeNormalsGap: PropTypes.func
 };
 
 const defaultProps = {
-  tile: null
+  tile: null,
+  showNormals: false,
+  handleShowNormals: () => {},
+  handleChangeNormalsGap: () => {}
 };
 
 export default class TileValidator extends PureComponent {
@@ -229,10 +249,30 @@ export default class TileValidator extends PureComponent {
   }
 
   render() {
-    const {tile} = this.props;
+    const {tile, handleShowNormals, showNormals, normalsGap, handleChangeNormalsGap} = this.props;
+    const isTileHasNormals =
+      tile.content && tile.content.attributes && tile.content.attributes.normals;
 
     return (
       <TileValidatorContainer>
+        {isTileHasNormals && (
+          <NormalsValidator>
+            <input
+              id="normals-checkbox"
+              type="checkbox"
+              checked={showNormals}
+              onChange={() => handleShowNormals(tile)}
+            />
+            <label htmlFor="normals-checkbox">{SHOW_NORMALS}</label>
+            <GapInput
+              type="number"
+              min="1"
+              value={normalsGap}
+              onChange={event => handleChangeNormalsGap(tile, Number(event.target.value))}
+            />
+            <label htmlFor="normals-checkbox">{VERTEX}</label>
+          </NormalsValidator>
+        )}
         <ValidateButton onClick={() => this._onValidateTile(tile)}>{VALIDATE_TILE}</ValidateButton>
         <ValidatorInfoList>
           {this._renderGeometryMetrics()}
