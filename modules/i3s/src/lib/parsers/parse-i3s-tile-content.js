@@ -36,17 +36,22 @@ export async function parseI3STileContent(arrayBuffer, tile, tileset, options) {
   tile.content.attributes = {};
 
   if (tile.textureUrl) {
-    const url = getUrlWithToken(tile.textureUrl, options.token);
-    const loader = FORMAT_LOADER_MAP[tile.textureFormat] || ImageLoader;
-    tile.content.texture = await load(url, loader);
-    if (loader === CompressedTextureLoader) {
-      tile.content.texture = {
-        compressed: true,
-        mipmaps: false,
-        width: tile.content.texture[0].width,
-        height: tile.content.texture[0].height,
-        data: tile.content.texture
-      };
+    const uvChecker = options.i3s.uvChecker;
+    if (uvChecker) {
+      tile.content.texture = uvChecker;
+    } else {
+      const url = getUrlWithToken(tile.textureUrl, options.token);
+      const loader = FORMAT_LOADER_MAP[tile.textureFormat] || ImageLoader;
+      tile.content.texture = await load(url, loader);
+      if (loader === CompressedTextureLoader) {
+        tile.content.texture = {
+          compressed: true,
+          mipmaps: false,
+          width: tile.content.texture[0].width,
+          height: tile.content.texture[0].height,
+          data: tile.content.texture
+        };
+      }
     }
   }
 

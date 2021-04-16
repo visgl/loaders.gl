@@ -9,7 +9,9 @@ import DeckGL from '@deck.gl/react';
 import {FlyToInterpolator, View, MapView, WebMercatorViewport} from '@deck.gl/core';
 import {LineLayer, ScatterplotLayer} from '@deck.gl/layers';
 
+import {load} from '@loaders.gl/core';
 import {I3SLoader} from '@loaders.gl/i3s';
+import {ImageLoader} from '@loaders.gl/images';
 import {StatsWidget} from '@probe.gl/stats-widget';
 
 import {buildMinimapData} from './helpers/build-minimap-data';
@@ -43,6 +45,8 @@ import {
 const TRANSITION_DURAITON = 4000;
 const DEFAULT_NORMALS_GAP = 30; // Gap for normals visualisation to avoid mess on the screen.
 const NORMALS_COLOR = [255, 0, 0];
+const TEXTURE_CHECKER_URL =
+  'https://scontent-hel3-1.xx.fbcdn.net/v/t1.6435-9/116019162_10223606159768024_6216501327358967749_n.jpg?_nc_cat=101&ccb=1-3&_nc_sid=730e14&_nc_eui2=AeGeE5GbbgdnY5DyFEFh7_SAfB_WmpVGZ8Z8H9aalUZnxtVAya4cClSGCHz_zTdCpGTOXg-YouAPCzup1QAzUEuf&_nc_ohc=6p6RG-5ClQAAX_gxaQi&_nc_ht=scontent-hel3-1.xx&oh=171d6693915fe1881b4015892d483311&oe=609C9819';
 
 const INITIAL_VIEW_STATE = {
   longitude: -120,
@@ -74,7 +78,9 @@ const INITIAL_DEBUG_OPTIONS_STATE = {
   // Use this to freeze loaded tiles and see on them from different perspective
   loadTiles: true,
   // Show the semantic validation warnings window
-  semanticValidator: false
+  semanticValidator: false,
+  // Use "uv-checker" texture to check UV coordinates
+  useUvChecker: false
 };
 const STATS_WIDGET_STYLE = {
   wordBreak: 'break-word',
@@ -119,6 +125,7 @@ export default class App extends PureComponent {
     super(props);
     this._tilesetStatsWidget = null;
     this._colorMap = null;
+    this._uvChecker = null;
     this.state = {
       url: null,
       token: null,
@@ -143,7 +150,8 @@ export default class App extends PureComponent {
       selectedTileId: null,
       coloredTilesMap: {},
       warnings: [],
-      viewportTraversersMap: {main: 'main'}
+      viewportTraversersMap: {main: 'main'},
+      i3sOptions: {uvChecker: null}
     };
     this._onSelectTileset = this._onSelectTileset.bind(this);
     this._setDebugOptions = this._setDebugOptions.bind(this);
@@ -179,6 +187,7 @@ export default class App extends PureComponent {
       tileset = EXAMPLES[INITIAL_EXAMPLE_NAME];
     }
     this._onSelectTileset(tileset);
+    load(TEXTURE_CHECKER_URL, ImageLoader).then(image => (this._uvChecker = image));
   }
 
   _getViewState() {
@@ -326,16 +335,30 @@ export default class App extends PureComponent {
       tilesetUrl,
       token,
       viewState,
-      debugOptions: {obb, tileColorMode, obbColorMode, pickable, minimapViewport, loadTiles},
+      debugOptions: {
+        obb,
+        tileColorMode,
+        obbColorMode,
+        pickable,
+        minimapViewport,
+        loadTiles,
+        useUvChecker
+      },
       selectedTileId,
       coloredTilesMap,
       viewportTraversersMap,
       tileset,
       normalsDebugData,
-      normalsGap
+      normalsGap,
+      i3sOptions
     } = this.state;
     viewportTraversersMap.minimap = minimapViewport ? 'minimap' : 'main';
-    const loadOptions = {throttleRequests: true, viewportTraversersMap};
+    i3sOptions.uvChecker = useUvChecker ? this._uvChecker : null;
+    const loadOptions = {
+      throttleRequests: true,
+      viewportTraversersMap,
+      i3s: i3sOptions
+    };
 
     if (token) {
       loadOptions.token = token;
@@ -348,6 +371,7 @@ export default class App extends PureComponent {
 
     return [
       new TileLayer({
+        id: `i3s-${useUvChecker ? 'uv-checker' : ''}`,
         data: tilesetUrl,
         loader: I3SLoader,
         onTilesetLoad: this._onTilesetLoad.bind(this),

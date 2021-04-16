@@ -94,7 +94,8 @@ export default class DebugPanel extends PureComponent {
       obbColorMode: INITIAL_OBB_COLOR_MODE,
       pickable: false,
       loadTiles: true,
-      semanticValidator: false
+      semanticValidator: false,
+      useUvChecker: false
     };
 
     this._onToggleDebugPanel = this._onToggleDebugPanel.bind(this);
@@ -104,6 +105,7 @@ export default class DebugPanel extends PureComponent {
     this._onTogglePickable = this._onTogglePickable.bind(this);
     this._onToggleLoading = this._onToggleLoading.bind(this);
     this._onToggleSemanticValidator = this._onToggleSemanticValidator.bind(this);
+    this._onToggleUvChecker = this._onToggleUvChecker.bind(this);
 
     this._onChangedTileColorMode = this._onChangedTileColorMode.bind(this);
     this._onChangedObbColorMode = this._onChangedObbColorMode.bind(this);
@@ -156,6 +158,13 @@ export default class DebugPanel extends PureComponent {
     });
   }
 
+  _onToggleUvChecker() {
+    const {useUvChecker} = this.state;
+    this.setState({useUvChecker: !useUvChecker}, () => {
+      this._applyOptions();
+    });
+  }
+
   _onChangedTileColorMode({tileColorMode}) {
     this.setState({tileColorMode}, () => {
       this._applyOptions();
@@ -177,7 +186,8 @@ export default class DebugPanel extends PureComponent {
       minimap,
       loadTiles,
       minimapViewport,
-      semanticValidator
+      semanticValidator,
+      useUvChecker
     } = this.state;
     const {onOptionsChange} = this.props;
     onOptionsChange({
@@ -188,7 +198,8 @@ export default class DebugPanel extends PureComponent {
       obbColorMode,
       pickable,
       loadTiles,
-      semanticValidator
+      semanticValidator,
+      useUvChecker
     });
   }
 
@@ -260,7 +271,7 @@ export default class DebugPanel extends PureComponent {
   }
 
   _renderTileOptions() {
-    const {tileColorMode, pickable, loadTiles} = this.state;
+    const {tileColorMode, pickable, loadTiles, uvChecker} = this.state;
     return (
       <DebugOptionGroup title="Tiles">
         <CheckboxOption>
@@ -282,6 +293,16 @@ export default class DebugPanel extends PureComponent {
             checked={loadTiles}
           />
           <label htmlFor="loadTiles">Load tiles</label>
+        </CheckboxOption>
+        <CheckboxOption>
+          <InputCheckbox
+            onChange={this._onToggleUvChecker}
+            type="checkbox"
+            id="uvChecker"
+            value={uvChecker}
+            checked={uvChecker}
+          />
+          <label htmlFor="uvChecker">UV checker</label>
         </CheckboxOption>
         <DropDown
           value={tileColorMode}
