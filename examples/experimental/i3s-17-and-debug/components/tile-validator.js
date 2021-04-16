@@ -88,19 +88,18 @@ export default class TileValidator extends PureComponent {
   }
 
   _validateGeometryInsideBoundingVolume(tile) {
-    const result = isTileGeometryInsideBoundingVolume(tile);
+    try {
+      const result = isTileGeometryInsideBoundingVolume(tile);
 
-    if (result === null) {
-      const geometryError = 'Geometry validation error';
-      this.setState({geometryInfo: {type: WARNING_TYPE, title: geometryError}});
-    }
-
-    if (!result) {
-      const geometryError = `Geometry doesn't fit into BoundingVolume`;
-      this.setState({geometryInfo: {type: WARNING_TYPE, title: geometryError}});
-    } else {
-      const geometryError = `Geometry fits into BoundingVolume`;
-      this.setState({geometryInfo: {type: OK_TYPE, title: geometryError}});
+      if (!result) {
+        const geometryError = `Geometry doesn't fit into BoundingVolume`;
+        this.setState({geometryInfo: {type: WARNING_TYPE, title: geometryError}});
+      } else {
+        const title = `Geometry fits into BoundingVolume`;
+        this.setState({geometryInfo: {type: OK_TYPE, title}});
+      }
+    } catch (error) {
+      this.setState({geometryInfo: {type: WARNING_TYPE, title: error}});
     }
   }
 
@@ -196,19 +195,18 @@ export default class TileValidator extends PureComponent {
   }
 
   compareGeometryBoundingVolumeVsTileBoundingVolume(tile) {
-    const result = isGeometryBoundingVolumeMoreSuitable(tile);
+    try {
+      const result = isGeometryBoundingVolumeMoreSuitable(tile);
 
-    if (result === null) {
-      const geometryError = 'Bounding volume validation error';
-      this.setState({boundingVolumeInfo: {type: WARNING_TYPE, title: geometryError}});
-    }
-
-    if (!result) {
-      const geometryError = 'Tile bounding volume is suitable for geometry';
-      this.setState({boundingVolumeInfo: {type: OK_TYPE, title: geometryError}});
-    } else {
-      const geometryError = 'Geometry bounding volume is more suitable than tile bounding volume';
-      this.setState({boundingVolumeInfo: {type: WARNING_TYPE, title: geometryError}});
+      if (!result) {
+        const title = 'Tile bounding volume is suitable for geometry';
+        this.setState({boundingVolumeInfo: {type: OK_TYPE, title}});
+      } else {
+        const geometryError = 'Geometry bounding volume is more suitable than tile bounding volume';
+        this.setState({boundingVolumeInfo: {type: WARNING_TYPE, title: geometryError}});
+      }
+    } catch (error) {
+      this.setState({boundingVolumeInfo: {type: WARNING_TYPE, title: error}});
     }
   }
 
