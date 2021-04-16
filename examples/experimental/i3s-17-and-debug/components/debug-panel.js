@@ -45,6 +45,7 @@ const DropDown = styled.select`
   margin-left: 3px;
   display: flex;
   width: 80%;
+  cursor: pointer;
 `;
 
 const Expander = styled.div`
@@ -55,19 +56,26 @@ const Expander = styled.div`
   z-index: 1;
   align-self: center;
   margin: 0 2px;
+  cursor: pointer;
 `;
 
 const CheckboxOption = styled.div`
   display: flex;
   width: 100%;
+  align-items: center;
 `;
 
 const InputCheckbox = styled.input`
   height: 18px;
+  cursor: pointer;
 `;
 
 const ChildWrapper = styled.div`
   margin-top: 10px;
+`;
+
+const Label = styled.label`
+  cursor: pointer;
 `;
 
 const propTypes = {
@@ -248,7 +256,7 @@ export default class DebugPanel extends PureComponent {
             value={obb}
             checked={obb}
           />
-          <label htmlFor="obb">Show</label>
+          <Label htmlFor="obb">Show</Label>
         </CheckboxOption>
         <DropDown
           value={obbColorMode}
@@ -281,7 +289,7 @@ export default class DebugPanel extends PureComponent {
             value={pickable}
             checked={pickable}
           />
-          <label htmlFor="pickable">Pickable</label>
+          <Label htmlFor="pickable">Pickable</Label>
         </CheckboxOption>
         <CheckboxOption>
           <InputCheckbox
@@ -291,7 +299,7 @@ export default class DebugPanel extends PureComponent {
             value={loadTiles}
             checked={loadTiles}
           />
-          <label htmlFor="loadTiles">Load tiles</label>
+          <Label htmlFor="loadTiles">Load tiles</Label>
         </CheckboxOption>
         <DropDown
           value={tileColorMode}
@@ -324,7 +332,7 @@ export default class DebugPanel extends PureComponent {
             value={minimap}
             checked={minimap}
           />
-          <label htmlFor="showFrustumCullingMinimap">Show</label>
+          <Label htmlFor="showFrustumCullingMinimap">Show</Label>
         </CheckboxOption>
         <CheckboxOption>
           <InputCheckbox
@@ -334,7 +342,7 @@ export default class DebugPanel extends PureComponent {
             value={minimapViewport}
             checked={minimapViewport}
           />
-          <label htmlFor="showFrustumCullingMinimapViewport">Use different viewports</label>
+          <Label htmlFor="showFrustumCullingMinimapViewport">Use different viewports</Label>
         </CheckboxOption>
       </DebugOptionGroup>
     );
@@ -353,7 +361,7 @@ export default class DebugPanel extends PureComponent {
             value={semanticValidator}
             checked={semanticValidator}
           />
-          <label htmlFor="showSemanticValidator">Show</label>
+          <Label htmlFor="showSemanticValidator">Show</Label>
           <button
             style={this._clearButtonStyles(isClearButtonDisabled)}
             disabled={isClearButtonDisabled}
@@ -378,7 +386,7 @@ export default class DebugPanel extends PureComponent {
             value={wireframe}
             checked={wireframe}
           />
-          <label htmlFor="wireframe">Show</label>
+          <Label htmlFor="wireframe">Show</Label>
         </CheckboxOption>
       </DebugOptionGroup>
     );

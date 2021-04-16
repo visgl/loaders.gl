@@ -8,14 +8,14 @@ const CONTAINER_STYLE = {
   position: 'absolute',
   backgroundColor: 'white',
   flexFlow: 'column',
-  top: 0,
-  right: 0,
-  minWidth: '300px',
-  maxWidth: '400px',
+  top: 20,
+  right: 20,
+  width: '350px',
   padding: '12px 18px',
-  maxHeight: '80%',
-  margin: '20px',
-  zIndex: 1000
+  maxHeight: '90%',
+  marginBottom: '20px',
+  zIndex: 1000,
+  overflowY: 'auto'
 };
 
 const STYLED_TH = {
@@ -28,11 +28,6 @@ const STYLED_TH = {
 const STYLED_TD = {
   width: '50%',
   padding: '.5em .7em'
-};
-
-const TABLE_WRAPPER_STYLE = {
-  maxHeight: '50%',
-  overflowY: 'auto'
 };
 
 const HEADER_STYLE = {
@@ -77,7 +72,7 @@ export default class AttributesPanel extends PureComponent {
     }
 
     return (
-      <div style={TABLE_WRAPPER_STYLE}>
+      <div>
         <table>
           <tbody>{tableColumns}</tbody>
         </table>

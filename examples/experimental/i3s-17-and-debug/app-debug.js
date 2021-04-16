@@ -88,6 +88,15 @@ const STATS_WIDGET_STYLE = {
   alignSelf: 'flex-start'
 };
 
+const MATERIAL_PICKER_STYLE = {
+  default: {
+    material: {
+      height: 'auto',
+      width: 'auto'
+    }
+  }
+};
+
 const VIEWS = [
   new MapView({
     id: 'main',
@@ -570,10 +579,12 @@ export default class App extends PureComponent {
           <div>
             <h3>{TILE_COLOR_SELECTOR}</h3>
             <HuePicker
+              width={'auto'}
               color={tileSelectedColor}
               onChange={color => this.handleSelectTileColor(tileId, color)}
             />
             <MaterialPicker
+              styles={MATERIAL_PICKER_STYLE}
               color={tileSelectedColor}
               onChange={color => this.handleSelectTileColor(tileId, color)}
             />

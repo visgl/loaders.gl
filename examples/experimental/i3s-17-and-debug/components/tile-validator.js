@@ -29,13 +29,12 @@ const NormalsValidator = styled.div`
   display: flex;
   align-items: center;
   margin-bottom: 10px;
+  flex-flow: column nowrap;
 `;
 
 const ValidatorInfoList = styled.div`
   display: flex;
   flex-direction: column;
-  max-height: 100px;
-  overflow-y: scroll;
 `;
 
 const GapInput = styled.input`
@@ -43,11 +42,25 @@ const GapInput = styled.input`
   margin: 0 5px;
 `;
 
+const NormalsControl = styled.div`
+  width: 100%;
+  display flex;
+  align-items: center;
+  margin-bottom: 5px;
+`;
+
+const NormalsCheckbox = styled.input`
+  cursor: pointer;
+  margin-left: 0;
+`;
+
+const NormalsLabel = styled.label`
+  cursor: pointer;
+`;
+
 const VALIDATE_TILE = 'Validate Tile';
-const SHOW_NORMALS = 'Show Normals for each: ';
 const WARNING_TYPE = 'warning';
 const OK_TYPE = 'ok';
-const VERTEX = 'vertex (min = 1)';
 
 const propTypes = {
   tile: PropTypes.object,
@@ -246,31 +259,41 @@ export default class TileValidator extends PureComponent {
     return <span style={this.getInfoStyle(geometryInfo.type)}>{geometryInfo.title}</span>;
   }
 
-  render() {
+  _renderNormalsValidationControl() {
     const {tile, handleShowNormals, showNormals, normalsGap, handleChangeNormalsGap} = this.props;
     const isTileHasNormals =
       tile.content && tile.content.attributes && tile.content.attributes.normals;
+    return isTileHasNormals ? (
+      <NormalsValidator>
+        <NormalsControl>
+          <NormalsCheckbox
+            id="normals-checkbox"
+            type="checkbox"
+            checked={showNormals}
+            onChange={() => handleShowNormals(tile)}
+          />
+          <NormalsLabel htmlFor="normals-checkbox">Show Normals</NormalsLabel>
+        </NormalsControl>
+        <NormalsControl>
+          <span>For each</span>
+          <GapInput
+            type="number"
+            min="1"
+            value={normalsGap}
+            onChange={event => handleChangeNormalsGap(tile, Number(event.target.value))}
+          />
+          <span>vertex (min = 1)</span>
+        </NormalsControl>
+      </NormalsValidator>
+    ) : null;
+  }
+
+  render() {
+    const {tile} = this.props;
 
     return (
       <TileValidatorContainer>
-        {isTileHasNormals && (
-          <NormalsValidator>
-            <input
-              id="normals-checkbox"
-              type="checkbox"
-              checked={showNormals}
-              onChange={() => handleShowNormals(tile)}
-            />
-            <label htmlFor="normals-checkbox">{SHOW_NORMALS}</label>
-            <GapInput
-              type="number"
-              min="1"
-              value={normalsGap}
-              onChange={event => handleChangeNormalsGap(tile, Number(event.target.value))}
-            />
-            <label htmlFor="normals-checkbox">{VERTEX}</label>
-          </NormalsValidator>
-        )}
+        {this._renderNormalsValidationControl()}
         <ValidateButton onClick={() => this._onValidateTile(tile)}>{VALIDATE_TILE}</ValidateButton>
         <ValidatorInfoList>
           {this._renderGeometryMetrics()}
