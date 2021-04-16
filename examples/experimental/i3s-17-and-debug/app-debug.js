@@ -74,7 +74,9 @@ const INITIAL_DEBUG_OPTIONS_STATE = {
   // Use this to freeze loaded tiles and see on them from different perspective
   loadTiles: true,
   // Show the semantic validation warnings window
-  semanticValidator: false
+  semanticValidator: false,
+  // Enable/Disable wireframe mode
+  wireframe: false
 };
 const STATS_WIDGET_STYLE = {
   wordBreak: 'break-word',
@@ -326,7 +328,15 @@ export default class App extends PureComponent {
       tilesetUrl,
       token,
       viewState,
-      debugOptions: {obb, tileColorMode, obbColorMode, pickable, minimapViewport, loadTiles},
+      debugOptions: {
+        obb,
+        tileColorMode,
+        obbColorMode,
+        pickable,
+        minimapViewport,
+        loadTiles,
+        wireframe
+      },
       selectedTileId,
       coloredTilesMap,
       viewportTraversersMap,
@@ -361,7 +371,8 @@ export default class App extends PureComponent {
         autoHighlight: true,
         isDebugMode: true,
         selectedTileId,
-        coloredTilesMap
+        coloredTilesMap,
+        wireframe
       }),
       new LineLayer({
         id: 'frustum',
