@@ -95,6 +95,7 @@ export default class DebugPanel extends PureComponent {
       pickable: false,
       loadTiles: true,
       semanticValidator: false,
+      useUvChecker: false,
       wireframe: false
     };
 
@@ -105,6 +106,7 @@ export default class DebugPanel extends PureComponent {
     this._onTogglePickable = this._onTogglePickable.bind(this);
     this._onToggleLoading = this._onToggleLoading.bind(this);
     this._onToggleSemanticValidator = this._onToggleSemanticValidator.bind(this);
+    this._onToggleUvChecker = this._onToggleUvChecker.bind(this);
     this._onChangedTileColorMode = this._onChangedTileColorMode.bind(this);
     this._onChangedObbColorMode = this._onChangedObbColorMode.bind(this);
     this._onChangeWireframeMode = this._onChangeWireframeMode.bind(this);
@@ -157,6 +159,13 @@ export default class DebugPanel extends PureComponent {
     });
   }
 
+  _onToggleUvChecker() {
+    const {useUvChecker} = this.state;
+    this.setState({useUvChecker: !useUvChecker}, () => {
+      this._applyOptions();
+    });
+  }
+
   _onChangedTileColorMode({tileColorMode}) {
     this.setState({tileColorMode}, () => {
       this._applyOptions();
@@ -186,6 +195,7 @@ export default class DebugPanel extends PureComponent {
       loadTiles,
       minimapViewport,
       semanticValidator,
+      useUvChecker,
       wireframe
     } = this.state;
     const {onOptionsChange} = this.props;
@@ -198,6 +208,7 @@ export default class DebugPanel extends PureComponent {
       pickable,
       loadTiles,
       semanticValidator,
+      useUvChecker,
       wireframe
     });
   }
@@ -270,7 +281,7 @@ export default class DebugPanel extends PureComponent {
   }
 
   _renderTileOptions() {
-    const {tileColorMode, pickable, loadTiles} = this.state;
+    const {tileColorMode, pickable, loadTiles, uvChecker} = this.state;
     return (
       <DebugOptionGroup title="Tiles">
         <CheckboxOption>
@@ -292,6 +303,16 @@ export default class DebugPanel extends PureComponent {
             checked={loadTiles}
           />
           <label htmlFor="loadTiles">Load tiles</label>
+        </CheckboxOption>
+        <CheckboxOption>
+          <InputCheckbox
+            onChange={this._onToggleUvChecker}
+            type="checkbox"
+            id="uvChecker"
+            value={uvChecker}
+            checked={uvChecker}
+          />
+          <label htmlFor="uvChecker">UV checker</label>
         </CheckboxOption>
         <DropDown
           value={tileColorMode}
