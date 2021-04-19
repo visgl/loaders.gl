@@ -61,7 +61,8 @@ export default class TileLayer extends Tile3DLayer {
       isDebugMode,
       colorsMap,
       selectedTileId,
-      coloredTilesMap
+      coloredTilesMap,
+      wireframe
     } = this.props;
 
     const geometry =
@@ -98,7 +99,8 @@ export default class TileLayer extends Tile3DLayer {
         pickable,
         autoHighlight,
         highlightColor: [0, 0, 255, 150],
-        isDebugMode
+        isDebugMode,
+        wireframe
       }
     );
   }

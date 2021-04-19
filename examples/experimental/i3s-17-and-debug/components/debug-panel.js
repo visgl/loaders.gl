@@ -95,7 +95,8 @@ export default class DebugPanel extends PureComponent {
       pickable: false,
       loadTiles: true,
       semanticValidator: false,
-      useUvChecker: false
+      useUvChecker: false,
+      wireframe: false
     };
 
     this._onToggleDebugPanel = this._onToggleDebugPanel.bind(this);
@@ -106,9 +107,9 @@ export default class DebugPanel extends PureComponent {
     this._onToggleLoading = this._onToggleLoading.bind(this);
     this._onToggleSemanticValidator = this._onToggleSemanticValidator.bind(this);
     this._onToggleUvChecker = this._onToggleUvChecker.bind(this);
-
     this._onChangedTileColorMode = this._onChangedTileColorMode.bind(this);
     this._onChangedObbColorMode = this._onChangedObbColorMode.bind(this);
+    this._onChangeWireframeMode = this._onChangeWireframeMode.bind(this);
   }
 
   _onToggleDebugPanel() {
@@ -177,6 +178,13 @@ export default class DebugPanel extends PureComponent {
     });
   }
 
+  _onChangeWireframeMode() {
+    const {wireframe} = this.state;
+    this.setState({wireframe: !wireframe}, () => {
+      this._applyOptions();
+    });
+  }
+
   _applyOptions() {
     const {
       obb,
@@ -187,7 +195,8 @@ export default class DebugPanel extends PureComponent {
       loadTiles,
       minimapViewport,
       semanticValidator,
-      useUvChecker
+      useUvChecker,
+      wireframe
     } = this.state;
     const {onOptionsChange} = this.props;
     onOptionsChange({
@@ -199,7 +208,8 @@ export default class DebugPanel extends PureComponent {
       pickable,
       loadTiles,
       semanticValidator,
-      useUvChecker
+      useUvChecker,
+      wireframe
     });
   }
 
@@ -377,6 +387,24 @@ export default class DebugPanel extends PureComponent {
     );
   }
 
+  _renderWireframeOption() {
+    const {wireframe} = this.state;
+    return (
+      <DebugOptionGroup title="Wireframe Mode">
+        <CheckboxOption>
+          <InputCheckbox
+            onChange={this._onChangeWireframeMode}
+            type="checkbox"
+            id="wireframe"
+            value={wireframe}
+            checked={wireframe}
+          />
+          <label htmlFor="wireframe">Show</label>
+        </CheckboxOption>
+      </DebugOptionGroup>
+    );
+  }
+
   render() {
     const {children} = this.props;
     return (
@@ -387,6 +415,7 @@ export default class DebugPanel extends PureComponent {
           {this._renderTileOptions()}
           {this._renderObbOptions()}
           {this._renderSemanticValidatorOption()}
+          {this._renderWireframeOption()}
           <ChildWrapper>{children}</ChildWrapper>
         </DebugOptions>
         <Expander onClick={this._onToggleDebugPanel}>{this._renderExpandIcon()}</Expander>

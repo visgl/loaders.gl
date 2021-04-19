@@ -80,7 +80,9 @@ const INITIAL_DEBUG_OPTIONS_STATE = {
   // Show the semantic validation warnings window
   semanticValidator: false,
   // Use "uv-checker" texture to check UV coordinates
-  useUvChecker: false
+  useUvChecker: false,
+  // Enable/Disable wireframe mode
+  wireframe: false
 };
 const STATS_WIDGET_STYLE = {
   wordBreak: 'break-word',
@@ -342,7 +344,8 @@ export default class App extends PureComponent {
         pickable,
         minimapViewport,
         loadTiles,
-        useUvChecker
+        useUvChecker,
+        wireframe
       },
       selectedTileId,
       coloredTilesMap,
@@ -385,7 +388,8 @@ export default class App extends PureComponent {
         autoHighlight: true,
         isDebugMode: true,
         selectedTileId,
-        coloredTilesMap
+        coloredTilesMap,
+        wireframe
       }),
       new LineLayer({
         id: 'frustum',
