@@ -95,7 +95,7 @@ export default class DebugPanel extends PureComponent {
       pickable: false,
       loadTiles: true,
       semanticValidator: false,
-      useUvChecker: false,
+      showUVDebugTexture: false,
       wireframe: false
     };
 
@@ -106,7 +106,7 @@ export default class DebugPanel extends PureComponent {
     this._onTogglePickable = this._onTogglePickable.bind(this);
     this._onToggleLoading = this._onToggleLoading.bind(this);
     this._onToggleSemanticValidator = this._onToggleSemanticValidator.bind(this);
-    this._onToggleUvChecker = this._onToggleUvChecker.bind(this);
+    this._onToggleUvDebugTexture = this._onToggleUvDebugTexture.bind(this);
     this._onChangedTileColorMode = this._onChangedTileColorMode.bind(this);
     this._onChangedObbColorMode = this._onChangedObbColorMode.bind(this);
     this._onChangeWireframeMode = this._onChangeWireframeMode.bind(this);
@@ -159,9 +159,9 @@ export default class DebugPanel extends PureComponent {
     });
   }
 
-  _onToggleUvChecker() {
-    const {useUvChecker} = this.state;
-    this.setState({useUvChecker: !useUvChecker}, () => {
+  _onToggleUvDebugTexture() {
+    const {showUVDebugTexture} = this.state;
+    this.setState({showUVDebugTexture: !showUVDebugTexture}, () => {
       this._applyOptions();
     });
   }
@@ -195,7 +195,7 @@ export default class DebugPanel extends PureComponent {
       loadTiles,
       minimapViewport,
       semanticValidator,
-      useUvChecker,
+      showUVDebugTexture,
       wireframe
     } = this.state;
     const {onOptionsChange} = this.props;
@@ -208,7 +208,7 @@ export default class DebugPanel extends PureComponent {
       pickable,
       loadTiles,
       semanticValidator,
-      useUvChecker,
+      showUVDebugTexture,
       wireframe
     });
   }
@@ -281,7 +281,7 @@ export default class DebugPanel extends PureComponent {
   }
 
   _renderTileOptions() {
-    const {tileColorMode, pickable, loadTiles, uvChecker} = this.state;
+    const {tileColorMode, pickable, loadTiles, showUVDebugTexture} = this.state;
     return (
       <DebugOptionGroup title="Tiles">
         <CheckboxOption>
@@ -306,13 +306,13 @@ export default class DebugPanel extends PureComponent {
         </CheckboxOption>
         <CheckboxOption>
           <InputCheckbox
-            onChange={this._onToggleUvChecker}
+            onChange={this._onToggleUvDebugTexture}
             type="checkbox"
-            id="uvChecker"
-            value={uvChecker}
-            checked={uvChecker}
+            id="uvDebugTexture"
+            value={showUVDebugTexture}
+            checked={showUVDebugTexture}
           />
-          <label htmlFor="uvChecker">UV checker</label>
+          <label htmlFor="uvDebugTexture">UV debug texture</label>
         </CheckboxOption>
         <DropDown
           value={tileColorMode}

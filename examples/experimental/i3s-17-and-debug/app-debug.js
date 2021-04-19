@@ -45,7 +45,7 @@ import {
 const TRANSITION_DURAITON = 4000;
 const DEFAULT_NORMALS_GAP = 30; // Gap for normals visualisation to avoid mess on the screen.
 const NORMALS_COLOR = [255, 0, 0];
-const TEXTURE_CHECKER_URL =
+const UV_DEBUG_TEXTURE_URL =
   'https://scontent-hel3-1.xx.fbcdn.net/v/t1.6435-9/116019162_10223606159768024_6216501327358967749_n.jpg?_nc_cat=101&ccb=1-3&_nc_sid=730e14&_nc_eui2=AeGeE5GbbgdnY5DyFEFh7_SAfB_WmpVGZ8Z8H9aalUZnxtVAya4cClSGCHz_zTdCpGTOXg-YouAPCzup1QAzUEuf&_nc_ohc=6p6RG-5ClQAAX_gxaQi&_nc_ht=scontent-hel3-1.xx&oh=171d6693915fe1881b4015892d483311&oe=609C9819';
 
 const INITIAL_VIEW_STATE = {
@@ -79,8 +79,8 @@ const INITIAL_DEBUG_OPTIONS_STATE = {
   loadTiles: true,
   // Show the semantic validation warnings window
   semanticValidator: false,
-  // Use "uv-checker" texture to check UV coordinates
-  useUvChecker: false,
+  // Use "uv-debug-texture" texture to check UV coordinates
+  showUVDebugTexture: false,
   // Enable/Disable wireframe mode
   wireframe: false
 };
@@ -127,7 +127,7 @@ export default class App extends PureComponent {
     super(props);
     this._tilesetStatsWidget = null;
     this._colorMap = null;
-    this._uvChecker = null;
+    this._uvDebugTexture = null;
     this.state = {
       url: null,
       token: null,
@@ -153,7 +153,7 @@ export default class App extends PureComponent {
       coloredTilesMap: {},
       warnings: [],
       viewportTraversersMap: {main: 'main'},
-      i3sOptions: {uvChecker: null}
+      i3sOptions: {uvDebugTexture: null}
     };
     this._onSelectTileset = this._onSelectTileset.bind(this);
     this._setDebugOptions = this._setDebugOptions.bind(this);
@@ -189,7 +189,7 @@ export default class App extends PureComponent {
       tileset = EXAMPLES[INITIAL_EXAMPLE_NAME];
     }
     this._onSelectTileset(tileset);
-    load(TEXTURE_CHECKER_URL, ImageLoader).then(image => (this._uvChecker = image));
+    load(UV_DEBUG_TEXTURE_URL, ImageLoader).then(image => (this._uvDebugTexture = image));
   }
 
   _getViewState() {
@@ -344,7 +344,7 @@ export default class App extends PureComponent {
         pickable,
         minimapViewport,
         loadTiles,
-        useUvChecker,
+        showUVDebugTexture,
         wireframe
       },
       selectedTileId,
@@ -356,7 +356,7 @@ export default class App extends PureComponent {
       i3sOptions
     } = this.state;
     viewportTraversersMap.minimap = minimapViewport ? 'minimap' : 'main';
-    i3sOptions.uvChecker = useUvChecker ? this._uvChecker : null;
+    i3sOptions.uvDebugTexture = showUVDebugTexture ? this._uvDebugTexture : null;
     const loadOptions = {
       throttleRequests: true,
       viewportTraversersMap,
@@ -374,7 +374,7 @@ export default class App extends PureComponent {
 
     return [
       new TileLayer({
-        id: `i3s-${useUvChecker ? 'uv-checker' : ''}`,
+        id: `i3s-${showUVDebugTexture ? 'uv-debug-texture' : ''}`,
         data: tilesetUrl,
         loader: I3SLoader,
         onTilesetLoad: this._onTilesetLoad.bind(this),
