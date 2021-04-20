@@ -1,8 +1,6 @@
 import {Vector3} from 'math.gl';
 import {Ellipsoid} from '@math.gl/geospatial';
 
-const ADDITIONAL_SCALE = 200; // scaling to make normals visible on the map.
-
 /**
  * Generates data for display normals by Line layer.
  * @param {object} tile
@@ -51,9 +49,10 @@ export function getNormalSourcePosition(index, data, normalsGap) {
  * @param {number} index
  * @param {object} data
  * @param {number} normalsGap - allows to show every x normal per tile normals to avoid mess on the screen
+ * @param {number} normalsLength - allows change visible normals length
  * @returns {array} - target position in cartographic coordinates
  */
-export function getNormalTargetPosition(index, data, normalsGap) {
+export function getNormalTargetPosition(index, data, normalsGap, normalsLength) {
   let targetPosition = {};
 
   if (index % normalsGap === 0 || normalsGap === 0) {
@@ -69,7 +68,7 @@ export function getNormalTargetPosition(index, data, normalsGap) {
       normals[index * 3],
       normals[index * 3 + 1],
       normals[index * 3 + 2]
-    ]).multiplyByScalar(ADDITIONAL_SCALE);
+    ]).multiplyByScalar(normalsLength);
     targetPosition = Ellipsoid.WGS84.cartesianToCartographic(position.add(normal));
   }
 
