@@ -65,16 +65,19 @@ const OK_TYPE = 'ok';
 const propTypes = {
   tile: PropTypes.object,
   normalsGap: PropTypes.number,
+  normalsLength: PropTypes.number,
   showNormals: PropTypes.bool,
   handleShowNormals: PropTypes.func,
-  handleChangeNormalsGap: PropTypes.func
+  handleChangeNormalsGap: PropTypes.func,
+  handleChangeNormalsLength: PropTypes.func
 };
 
 const defaultProps = {
   tile: null,
   showNormals: false,
   handleShowNormals: () => {},
-  handleChangeNormalsGap: () => {}
+  handleChangeNormalsGap: () => {},
+  handleChangeNormalsLength: () => {}
 };
 
 export default class TileValidator extends PureComponent {
@@ -260,7 +263,15 @@ export default class TileValidator extends PureComponent {
   }
 
   _renderNormalsValidationControl() {
-    const {tile, handleShowNormals, showNormals, normalsGap, handleChangeNormalsGap} = this.props;
+    const {
+      tile,
+      handleShowNormals,
+      showNormals,
+      normalsGap,
+      normalsLength,
+      handleChangeNormalsGap,
+      handleChangeNormalsLength
+    } = this.props;
     const isTileHasNormals =
       tile.content && tile.content.attributes && tile.content.attributes.normals;
     return isTileHasNormals ? (
@@ -283,6 +294,16 @@ export default class TileValidator extends PureComponent {
             onChange={event => handleChangeNormalsGap(tile, Number(event.target.value))}
           />
           <span>vertex (min = 1)</span>
+        </NormalsControl>
+        <NormalsControl>
+          <span>Normals length</span>
+          <GapInput
+            type="number"
+            min="1"
+            value={normalsLength}
+            onChange={event => handleChangeNormalsLength(tile, Number(event.target.value))}
+          />
+          <span>m</span>
         </NormalsControl>
       </NormalsValidator>
     ) : null;
