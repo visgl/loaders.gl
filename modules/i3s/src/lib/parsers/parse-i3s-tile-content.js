@@ -36,9 +36,9 @@ export async function parseI3STileContent(arrayBuffer, tile, tileset, options) {
   tile.content.attributes = {};
 
   if (tile.textureUrl) {
-    const uvChecker = options.i3s.uvChecker;
-    if (uvChecker) {
-      tile.content.texture = uvChecker;
+    const uvDebugTexture = options.i3s.uvDebugTexture;
+    if (uvDebugTexture) {
+      tile.content.texture = uvDebugTexture;
     } else {
       const url = getUrlWithToken(tile.textureUrl, options.token);
       const loader = FORMAT_LOADER_MAP[tile.textureFormat] || ImageLoader;

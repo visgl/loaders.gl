@@ -32,7 +32,7 @@ export const I3SLoader = {
       tileset: null,
       useDracoGeometry: true,
       useCompressedTextures: true,
-      uvChecker: null
+      uvDebugTexture: null
     }
   }
 };
