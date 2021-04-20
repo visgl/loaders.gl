@@ -1,5 +1,15 @@
 ## v3.0 Prerelease
 
+#### v3.0.0-alpha.12
+
+- I3S-Debug - Compare geometry volume vs Tile volume (#1310)
+- I3S-Debug - Add normals debug feature (#1321)
+- I3S-Debug - Tile debug refactoring (#1323)
+- I3S-Debug - Add wireframe mode (#1327)
+- i3s-debug: texture checker (#1330)
+- I3S-Debug - Refactor attributes panel (#1328)
+- Tile-Converter - Add '--validate-bounding-volumes' option to script (#1329)
+
 #### v3.0.0-alpha.11
 
 - I3s-Debug - Add tile info panel + initial selection logic for custom colors (#1288)
