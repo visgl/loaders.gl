@@ -92,7 +92,9 @@ export default class TileValidator extends PureComponent {
   }
 
   componentDidUpdate(prevProps) {
-    if (this.props.tile.id !== prevProps.tile.id) {
+    const isNoTile = !this.props.tile || !prevProps.tile;
+
+    if (isNoTile || this.props.tile.id !== prevProps.tile.id) {
       this.setState({geometryInfo: null, triangleMessages: null, boundingVolumeInfo: null});
     }
   }
@@ -273,7 +275,7 @@ export default class TileValidator extends PureComponent {
       handleChangeNormalsLength
     } = this.props;
     const isTileHasNormals =
-      tile.content && tile.content.attributes && tile.content.attributes.normals;
+      tile && tile.content && tile.content.attributes && tile.content.attributes.normals;
     return isTileHasNormals ? (
       <NormalsValidator>
         <NormalsControl>
