@@ -15,7 +15,8 @@ const CONTAINER_STYLE = {
   maxHeight: '90%',
   marginBottom: '20px',
   zIndex: 1000,
-  overflowY: 'auto'
+  overflowY: 'auto',
+  wordBreak: 'break-word'
 };
 
 const STYLED_TH = {
@@ -30,13 +31,6 @@ const STYLED_TD = {
   padding: '.5em .7em'
 };
 
-const HEADER_STYLE = {
-  display: 'flex',
-  flexFlow: 'row nowrap',
-  justifyContent: 'space-between',
-  alignItems: 'center'
-};
-
 const CLOSE_BUTTON_STYLE = {
   height: '30px',
   border: 'none',
@@ -46,15 +40,15 @@ const CLOSE_BUTTON_STYLE = {
 };
 
 const propTypes = {
+  title: PropTypes.string,
   attributesObject: PropTypes.object,
   children: PropTypes.any,
-  attributesHeader: PropTypes.string,
   handleClosePanel: PropTypes.func
 };
 
 const defaultProps = {
+  title: null,
   attributesObject: {},
-  attributesHeader: 'NAME',
   children: null,
   handleClosePanel: () => {}
 };
@@ -98,13 +92,22 @@ export default class AttributesPanel extends PureComponent {
     );
   }
 
+  getHeaderStyle(isTitleExists) {
+    return {
+      display: 'flex',
+      flexFlow: 'row nowrap',
+      justifyContent: isTitleExists ? 'space-between' : 'flex-end',
+      alignItems: 'center'
+    };
+  }
+
   render() {
-    const {attributesObject, handleClosePanel, attributesHeader, children} = this.props;
+    const {title, attributesObject, handleClosePanel, children} = this.props;
 
     return (
       <div style={CONTAINER_STYLE}>
-        <div style={HEADER_STYLE}>
-          <h2>{`Tile: ${attributesObject[attributesHeader]}`}</h2>
+        <div style={this.getHeaderStyle(title)}>
+          {title && <h2>{title}</h2>}
           <button style={CLOSE_BUTTON_STYLE} onClick={handleClosePanel}>
             <FontAwesomeIcon icon={faWindowClose} />
           </button>

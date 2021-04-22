@@ -593,12 +593,13 @@ export default class App extends PureComponent {
     const tileSelectedColor = makeRGBObjectFromColor(coloredTilesMap[tileId]);
     const isResetButtonDisabled = !coloredTilesMap[tileId];
     const currenTile = tileset._tiles[tileId];
+    const title = `Tile: ${tileId}`;
 
     return (
       <AttributesPanel
+        title={title}
         handleClosePanel={this.handleClosePanel}
         attributesObject={tileInfo}
-        attributesHeader={'Tile Id'}
         selectTileColor={this.handleSelectTileColor}
       >
         <TileValidator

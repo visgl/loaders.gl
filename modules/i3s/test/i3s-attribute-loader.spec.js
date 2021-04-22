@@ -165,6 +165,6 @@ test('I3SAttributeLoader#loadFeatureAttributes should return attributes object',
   const options = {};
 
   const attributes = await loadFeatureAttributes(tile, featureId, options);
-  t.deepEqual(attributes, {OBJECTID: '979297', NAME: ' '});
+  t.deepEqual(attributes, {OBJECTID: '979297', NAME: ''});
   t.end();
 });
