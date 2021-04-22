@@ -50,6 +50,7 @@ import {
 
 const TRANSITION_DURAITON = 4000;
 const DEFAULT_NORMALS_GAP = 30; // Gap for normals visualisation to avoid mess on the screen.
+const DEFAULT_NORMALS_LENGTH = 200; // Normals length in meters
 const NORMALS_COLOR = [255, 0, 0];
 const UV_DEBUG_TEXTURE_URL =
   'https://raw.githubusercontent.com/visgl/deck.gl-data/master/images/uv-debug-texture.jpg';
@@ -163,6 +164,7 @@ export default class App extends PureComponent {
       debugOptions: INITIAL_DEBUG_OPTIONS_STATE,
       normalsDebugData: [],
       normalsGap: DEFAULT_NORMALS_GAP,
+      normalsLength: DEFAULT_NORMALS_LENGTH,
       tileInfo: null,
       selectedTileId: null,
       coloredTilesMap: {},
@@ -177,6 +179,7 @@ export default class App extends PureComponent {
     this.handleClearWarnings = this.handleClearWarnings.bind(this);
     this.handleShowNormals = this.handleShowNormals.bind(this);
     this.handleChangeNormalsGap = this.handleChangeNormalsGap.bind(this);
+    this.handleChangeNormalsLength = this.handleChangeNormalsLength.bind(this);
   }
 
   componentDidMount() {
@@ -379,7 +382,8 @@ export default class App extends PureComponent {
       viewportTraversersMap,
       tileset,
       normalsDebugData,
-      normalsGap
+      normalsGap,
+      normalsLength
     } = this.state;
     viewportTraversersMap.minimap = minimapViewport ? 'minimap' : 'main';
     const loadOptions = {
@@ -433,7 +437,8 @@ export default class App extends PureComponent {
         id: 'normals-debug',
         data: normalsDebugData,
         getSourcePosition: (_, {index, data}) => getNormalSourcePosition(index, data, normalsGap),
-        getTargetPosition: (_, {index, data}) => getNormalTargetPosition(index, data, normalsGap),
+        getTargetPosition: (_, {index, data}) =>
+          getNormalTargetPosition(index, data, normalsGap, normalsLength),
         getColor: () => NORMALS_COLOR,
         getWidth: 1
       }),
@@ -577,6 +582,16 @@ export default class App extends PureComponent {
     this.setState({normalsGap: newValue});
   }
 
+  handleChangeNormalsLength(tile, newValue) {
+    const {normalsDebugData} = this.state;
+
+    if (normalsDebugData.length) {
+      this.setState({normalsDebugData: generateBinaryNormalsDebugData(tile)});
+    }
+
+    this.setState({normalsLength: newValue});
+  }
+
   _renderAttributesPanel() {
     const {
       tileInfo,
@@ -584,7 +599,8 @@ export default class App extends PureComponent {
       coloredTilesMap,
       tileset,
       normalsDebugData,
-      normalsGap
+      normalsGap,
+      normalsLength
     } = this.state;
     const isShowColorPicker = debugOptions.tileColorMode === COLORED_BY.CUSTOM;
     const tileId = tileInfo['Tile Id'];
@@ -603,8 +619,10 @@ export default class App extends PureComponent {
           tile={currenTile}
           showNormals={Boolean(normalsDebugData.length)}
           normalsGap={normalsGap}
+          normalsLength={normalsLength}
           handleShowNormals={this.handleShowNormals}
           handleChangeNormalsGap={this.handleChangeNormalsGap}
+          handleChangeNormalsLength={this.handleChangeNormalsLength}
         />
         {isShowColorPicker && (
           <div>
