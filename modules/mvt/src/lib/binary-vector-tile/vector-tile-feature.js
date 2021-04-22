@@ -174,26 +174,47 @@ export default class VectorTileFeature {
   }
 }
 
-/**
- * In the original GeoJSON implementation this function
- * classifies the rings in a polygon into outlines & holes,
- * based on the vertex winding order. However the implementation
- * was broken and all it did was classify each ring as a separate
- * polygon outline. In order to maintain compatibility with the
- * original, we keep this behavior, but simplify the implementation
- * to an equivalent function:
- * [A, B, C] => [[A], [B], [C]]
- *
- * TODO in the future, the classification could be fixed following
- * https://github.com/mapbox/vector-tile-js, but this would require
- * confirming that the renderer of deck.gl is actually capable of
- * drawing polygons with holes in them.
- */
+// All code below is unchanged from the original Mapbox implemenation
+
+// classifies an array of rings into polygons with outer rings and holes
 function classifyRings(rings) {
-  return rings.map(r => [r]);
+  const len = rings.length;
+
+  if (len <= 1) return [rings];
+
+  const polygons = [];
+  let polygon;
+  let ccw;
+
+  for (let i = 0; i < len; i++) {
+    const area = signedArea(rings[i]);
+    if (area === 0) continue;
+
+    if (ccw === undefined) ccw = area < 0;
+
+    if (ccw === area < 0) {
+      if (polygon) polygons.push(polygon);
+      polygon = [rings[i]];
+    } else {
+      // @ts-ignore
+      polygon.push(rings[i]);
+    }
+  }
+  if (polygon) polygons.push(polygon);
+
+  return polygons;
 }
 
-// All code below is unchanged from the original Mapbox implemenation
+function signedArea(ring) {
+  let sum = 0;
+  for (let i = 0, len = ring.length, j = len - 1, p1, p2; i < len; j = i++) {
+    p1 = ring[i];
+    p2 = ring[j];
+    sum += (p2.x - p1.x) * (p1.y + p2.y);
+  }
+  return sum;
+}
+
 function readFeature(tag, feature, pbf) {
   if (tag === 1) feature.id = pbf.readVarint();
   else if (tag === 2) readTag(pbf, feature);
