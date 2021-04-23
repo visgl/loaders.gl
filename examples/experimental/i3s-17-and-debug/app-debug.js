@@ -49,8 +49,8 @@ import {
 } from './normals-utils';
 
 const TRANSITION_DURAITON = 4000;
-const DEFAULT_NORMALS_GAP = 30; // Gap for normals visualisation to avoid mess on the screen.
-const DEFAULT_NORMALS_LENGTH = 200; // Normals length in meters
+const DEFAULT_TRIANGLES_PERCENTAGE = 30; // Percentage of triangles to show normals for.
+const DEFAULT_NORMALS_LENGTH = 20; // Normals length in meters
 const NORMALS_COLOR = [255, 0, 0];
 const UV_DEBUG_TEXTURE_URL =
   'https://scontent-hel3-1.xx.fbcdn.net/v/t1.6435-9/116019162_10223606159768024_6216501327358967749_n.jpg?_nc_cat=101&ccb=1-3&_nc_sid=730e14&_nc_eui2=AeGeE5GbbgdnY5DyFEFh7_SAfB_WmpVGZ8Z8H9aalUZnxtVAya4cClSGCHz_zTdCpGTOXg-YouAPCzup1QAzUEuf&_nc_ohc=6p6RG-5ClQAAX_gxaQi&_nc_ht=scontent-hel3-1.xx&oh=171d6693915fe1881b4015892d483311&oe=609C9819';
@@ -163,7 +163,7 @@ export default class App extends PureComponent {
       selectedMapStyle: INITIAL_MAP_STYLE,
       debugOptions: INITIAL_DEBUG_OPTIONS_STATE,
       normalsDebugData: [],
-      normalsGap: DEFAULT_NORMALS_GAP,
+      trianglesPercentage: DEFAULT_TRIANGLES_PERCENTAGE,
       normalsLength: DEFAULT_NORMALS_LENGTH,
       tileInfo: null,
       selectedTileId: null,
@@ -179,7 +179,7 @@ export default class App extends PureComponent {
     this.handleSelectTileColor = this.handleSelectTileColor.bind(this);
     this.handleClearWarnings = this.handleClearWarnings.bind(this);
     this.handleShowNormals = this.handleShowNormals.bind(this);
-    this.handleChangeNormalsGap = this.handleChangeNormalsGap.bind(this);
+    this.handleChangeTrianglesPercentage = this.handleChangeTrianglesPercentage.bind(this);
     this.handleChangeNormalsLength = this.handleChangeNormalsLength.bind(this);
   }
 
@@ -370,7 +370,7 @@ export default class App extends PureComponent {
       viewportTraversersMap,
       tileset,
       normalsDebugData,
-      normalsGap,
+      trianglesPercentage,
       normalsLength,
       i3sOptions
     } = this.state;
@@ -428,9 +428,10 @@ export default class App extends PureComponent {
       new LineLayer({
         id: 'normals-debug',
         data: normalsDebugData,
-        getSourcePosition: (_, {index, data}) => getNormalSourcePosition(index, data, normalsGap),
+        getSourcePosition: (_, {index, data}) =>
+          getNormalSourcePosition(index, data, trianglesPercentage),
         getTargetPosition: (_, {index, data}) =>
-          getNormalTargetPosition(index, data, normalsGap, normalsLength),
+          getNormalTargetPosition(index, data, trianglesPercentage, normalsLength),
         getColor: () => NORMALS_COLOR,
         modelMatrix: normalsDebugData.modelMatrix,
         coordinateOrigin: normalsDebugData.cartographicOrigin,
@@ -567,14 +568,15 @@ export default class App extends PureComponent {
     });
   }
 
-  handleChangeNormalsGap(tile, newValue) {
+  handleChangeTrianglesPercentage(tile, newValue) {
     const {normalsDebugData} = this.state;
 
     if (normalsDebugData.length) {
       this.setState({normalsDebugData: generateBinaryNormalsDebugData(tile)});
     }
+    const percent = this.validateTrianglesPercentage(newValue);
 
-    this.setState({normalsGap: newValue});
+    this.setState({trianglesPercentage: percent});
   }
 
   handleChangeNormalsLength(tile, newValue) {
@@ -587,6 +589,15 @@ export default class App extends PureComponent {
     this.setState({normalsLength: newValue});
   }
 
+  validateTrianglesPercentage(newValue) {
+    if (newValue < 0) {
+      return 1;
+    } else if (newValue > 100) {
+      return 100;
+    }
+    return newValue;
+  }
+
   _renderAttributesPanel() {
     const {
       tileInfo,
@@ -594,7 +605,7 @@ export default class App extends PureComponent {
       coloredTilesMap,
       tileset,
       normalsDebugData,
-      normalsGap,
+      trianglesPercentage,
       normalsLength
     } = this.state;
     const isShowColorPicker = debugOptions.tileColorMode === COLORED_BY.CUSTOM;
@@ -613,10 +624,10 @@ export default class App extends PureComponent {
         <TileValidator
           tile={currenTile}
           showNormals={Boolean(normalsDebugData.length)}
-          normalsGap={normalsGap}
+          trianglesPercentage={trianglesPercentage}
           normalsLength={normalsLength}
           handleShowNormals={this.handleShowNormals}
-          handleChangeNormalsGap={this.handleChangeNormalsGap}
+          handleChangeTrianglesPercentage={this.handleChangeTrianglesPercentage}
           handleChangeNormalsLength={this.handleChangeNormalsLength}
         />
         {isShowColorPicker && (

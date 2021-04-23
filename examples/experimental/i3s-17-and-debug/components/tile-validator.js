@@ -64,11 +64,11 @@ const OK_TYPE = 'ok';
 
 const propTypes = {
   tile: PropTypes.object,
-  normalsGap: PropTypes.number,
+  trianglesPercentage: PropTypes.number,
   normalsLength: PropTypes.number,
   showNormals: PropTypes.bool,
   handleShowNormals: PropTypes.func,
-  handleChangeNormalsGap: PropTypes.func,
+  handleChangeTrianglesPercentage: PropTypes.func,
   handleChangeNormalsLength: PropTypes.func
 };
 
@@ -76,7 +76,7 @@ const defaultProps = {
   tile: null,
   showNormals: false,
   handleShowNormals: () => {},
-  handleChangeNormalsGap: () => {},
+  handleChangeTrianglesPercentage: () => {},
   handleChangeNormalsLength: () => {}
 };
 
@@ -267,13 +267,13 @@ export default class TileValidator extends PureComponent {
       tile,
       handleShowNormals,
       showNormals,
-      normalsGap,
+      trianglesPercentage,
       normalsLength,
-      handleChangeNormalsGap,
+      handleChangeTrianglesPercentage,
       handleChangeNormalsLength
     } = this.props;
     const isTileHasNormals =
-      tile.content && tile.content.attributes && tile.content.attributes.normals;
+      tile && tile.content && tile.content.attributes && tile.content.attributes.normals;
     return isTileHasNormals ? (
       <NormalsValidator>
         <NormalsControl>
@@ -286,14 +286,15 @@ export default class TileValidator extends PureComponent {
           <NormalsLabel htmlFor="normals-checkbox">Show Normals</NormalsLabel>
         </NormalsControl>
         <NormalsControl>
-          <span>For each</span>
+          <span>Percent</span>
           <GapInput
             type="number"
             min="1"
-            value={normalsGap}
-            onChange={event => handleChangeNormalsGap(tile, Number(event.target.value))}
+            max="100"
+            value={trianglesPercentage}
+            onChange={event => handleChangeTrianglesPercentage(tile, Number(event.target.value))}
           />
-          <span>vertex (min = 1)</span>
+          <span>% triangles with normals</span>
         </NormalsControl>
         <NormalsControl>
           <span>Normals length</span>
