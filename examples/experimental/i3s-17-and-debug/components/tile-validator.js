@@ -92,7 +92,9 @@ export default class TileValidator extends PureComponent {
   }
 
   componentDidUpdate(prevProps) {
-    if (this.props.tile.id !== prevProps.tile.id) {
+    const isNoTile = !this.props.tile || !prevProps.tile;
+
+    if (isNoTile || this.props.tile.id !== prevProps.tile.id) {
       this.setState({geometryInfo: null, triangleMessages: null, boundingVolumeInfo: null});
     }
   }
