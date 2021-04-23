@@ -6,7 +6,13 @@ import {HuePicker, MaterialPicker} from 'react-color';
 
 import {lumaStats} from '@luma.gl/core';
 import DeckGL from '@deck.gl/react';
-import {FlyToInterpolator, View, MapView, WebMercatorViewport} from '@deck.gl/core';
+import {
+  FlyToInterpolator,
+  View,
+  MapView,
+  WebMercatorViewport,
+  COORDINATE_SYSTEM
+} from '@deck.gl/core';
 import {LineLayer, ScatterplotLayer} from '@deck.gl/layers';
 
 import {load} from '@loaders.gl/core';
@@ -426,6 +432,9 @@ export default class App extends PureComponent {
         getTargetPosition: (_, {index, data}) =>
           getNormalTargetPosition(index, data, normalsGap, normalsLength),
         getColor: () => NORMALS_COLOR,
+        modelMatrix: normalsDebugData.modelMatrix,
+        coordinateOrigin: normalsDebugData.cartographicOrigin,
+        coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS,
         getWidth: 1
       }),
       this._renderMainOnMinimap()

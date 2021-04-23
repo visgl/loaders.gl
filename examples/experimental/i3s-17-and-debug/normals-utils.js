@@ -1,5 +1,4 @@
 import {Vector3} from 'math.gl';
-import {Ellipsoid} from '@math.gl/geospatial';
 
 /**
  * Generates data for display normals by Line layer.
@@ -18,8 +17,10 @@ export function generateBinaryNormalsDebugData(tile) {
 
   const normals = tile.content.attributes.normals.value;
   const positions = tile.content.attributes.positions.value;
+  const modelMatrix = tile.content.modelMatrix;
+  const cartographicOrigin = tile.content.cartographicOrigin;
 
-  return {src: {normals, positions}, length: positions.length};
+  return {src: {normals, positions}, length: positions.length, modelMatrix, cartographicOrigin};
 }
 
 /**
@@ -38,7 +39,7 @@ export function getNormalSourcePosition(index, data, normalsGap) {
       positions[index * 3 + 1],
       positions[index * 3 + 2]
     ]);
-    sourcePosition = Ellipsoid.WGS84.cartesianToCartographic(position);
+    sourcePosition = position;
   }
 
   return sourcePosition;
@@ -69,7 +70,7 @@ export function getNormalTargetPosition(index, data, normalsGap, normalsLength) 
       normals[index * 3 + 1],
       normals[index * 3 + 2]
     ]).multiplyByScalar(normalsLength);
-    targetPosition = Ellipsoid.WGS84.cartesianToCartographic(position.add(normal));
+    targetPosition = position.add(normal);
   }
 
   return targetPosition;
