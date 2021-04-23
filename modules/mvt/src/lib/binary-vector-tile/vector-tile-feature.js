@@ -121,7 +121,7 @@ export default class VectorTileFeature {
         break;
 
       case 3: // Polygon
-        const rings = classifyRings(geom.lines);
+        const rings = classifyRings(geom);
         this._firstPassData.polygonFeaturesCount++;
         this._firstPassData.polygonObjectsCount += geom.lines.length;
 
@@ -177,27 +177,33 @@ export default class VectorTileFeature {
 // All code below is unchanged from the original Mapbox implemenation
 
 // classifies an array of rings into polygons with outer rings and holes
-function classifyRings(rings) {
-  const len = rings.length;
+function classifyRings(geom) {
+  const len = geom.lines.length;
 
-  if (len <= 1) return [rings];
+  if (len <= 1) return [geom.lines];
 
   const polygons = [];
   let polygon;
   let ccw;
 
-  for (let i = 0; i < len; i++) {
-    const area = signedArea(rings[i]);
+  for (let i = 0, startIndex, endIndex; i < len; i++) {
+    startIndex = geom.lines[i];
+
+    // endIndex will be undefined for last polygon
+    // but that is fine as we only pass it to slice()
+    endIndex = geom.lines[i + 1];
+    const shape = geom.data.slice(startIndex, endIndex);
+    const area = signedArea(shape);
     if (area === 0) continue;
 
     if (ccw === undefined) ccw = area < 0;
 
     if (ccw === area < 0) {
       if (polygon) polygons.push(polygon);
-      polygon = [rings[i]];
+      polygon = [startIndex];
     } else {
       // @ts-ignore
-      polygon.push(rings[i]);
+      polygon.push(startIndex);
     }
   }
   if (polygon) polygons.push(polygon);
@@ -206,11 +212,17 @@ function classifyRings(rings) {
 }
 
 function signedArea(ring) {
-  let sum = 0;
-  for (let i = 0, len = ring.length, j = len - 1, p1, p2; i < len; j = i++) {
-    p1 = ring[i];
-    p2 = ring[j];
-    sum += (p2.x - p1.x) * (p1.y + p2.y);
+  let sum = 0,
+    p1x,
+    p1y,
+    p2x,
+    p2y;
+  for (let i = 0, len = ring.length / 2, j = len - 1; i < len; j = i++) {
+    p1x = ring[2 * i];
+    p1y = ring[2 * i + 1];
+    p2x = ring[2 * j];
+    p2y = ring[2 * j + 1];
+    sum += (p2x - p1x) * (p1y + p2y);
   }
   return sum;
 }
