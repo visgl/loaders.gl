@@ -11,6 +11,7 @@ import fetchNode from './fetch-node/fetch.node';
 
 import {encodeImageNode} from './images-node/encode-image.node';
 import {parseImageNode} from './images-node/parse-image.node';
+import {allSettled} from './promise/all-settled';
 
 export {ReadableStreamPolyfill} from './file/readable-stream-polyfill';
 export {BlobPolyfill} from './file/blob-polyfill';
@@ -77,4 +78,9 @@ if (!isBrowser && !('_encodeImageNode' in global) && encodeImageNode) {
 
 if (!isBrowser && !('_parseImageNode' in global) && parseImageNode) {
   global['_parseImageNode'] = parseImageNode;
+}
+
+if (!('allSettled' in Promise)) {
+  // @ts-ignore
+  Promise.allSettled = allSettled;
 }
