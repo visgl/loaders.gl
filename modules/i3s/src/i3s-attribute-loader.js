@@ -155,7 +155,10 @@ function getAttributeByIndexAndAttributeName(attributes, index, attributesName) 
  */
 function formatAttributeValue(attribute, featureIdIndex) {
   return attribute && attribute[featureIdIndex]
-    ? // eslint-disable-next-line no-control-regex
-      attribute[featureIdIndex].toString().replace(/\u0000/g, '')
+    ? attribute[featureIdIndex]
+        .toString()
+        // eslint-disable-next-line no-control-regex
+        .replace(/\u0000/g, '')
+        .trim()
     : EMPTY_VALUE;
 }
