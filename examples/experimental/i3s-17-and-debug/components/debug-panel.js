@@ -289,7 +289,7 @@ export default class DebugPanel extends PureComponent {
   }
 
   _renderTileOptions() {
-    const {tileColorMode, pickable, loadTiles, showUVDebugTexture} = this.state;
+    const {tileColorMode, pickable, loadTiles, showUVDebugTexture, wireframe} = this.state;
     return (
       <DebugOptionGroup title="Tiles">
         <CheckboxOption>
@@ -320,7 +320,17 @@ export default class DebugPanel extends PureComponent {
             value={showUVDebugTexture}
             checked={showUVDebugTexture}
           />
-          <label htmlFor="uvDebugTexture">UV debug texture</label>
+          <Label htmlFor="uvDebugTexture">UV debug texture</Label>
+        </CheckboxOption>
+        <CheckboxOption>
+          <InputCheckbox
+            onChange={this._onChangeWireframeMode}
+            type="checkbox"
+            id="wireframe"
+            value={wireframe}
+            checked={wireframe}
+          />
+          <Label htmlFor="wireframe">Wireframe mode</Label>
         </CheckboxOption>
         <DropDown
           value={tileColorMode}
@@ -395,24 +405,6 @@ export default class DebugPanel extends PureComponent {
     );
   }
 
-  _renderWireframeOption() {
-    const {wireframe} = this.state;
-    return (
-      <DebugOptionGroup title="Wireframe Mode">
-        <CheckboxOption>
-          <InputCheckbox
-            onChange={this._onChangeWireframeMode}
-            type="checkbox"
-            id="wireframe"
-            value={wireframe}
-            checked={wireframe}
-          />
-          <Label htmlFor="wireframe">Show</Label>
-        </CheckboxOption>
-      </DebugOptionGroup>
-    );
-  }
-
   render() {
     const {children} = this.props;
     return (
@@ -423,7 +415,6 @@ export default class DebugPanel extends PureComponent {
           {this._renderTileOptions()}
           {this._renderObbOptions()}
           {this._renderSemanticValidatorOption()}
-          {this._renderWireframeOption()}
           <ChildWrapper>{children}</ChildWrapper>
         </DebugOptions>
         <Expander onClick={this._onToggleDebugPanel}>{this._renderExpandIcon()}</Expander>
