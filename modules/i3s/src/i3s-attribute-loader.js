@@ -2,12 +2,12 @@
 import {parseI3STileAttribute} from './lib/parsers/parse-i3s-attribute';
 import {load} from '@loaders.gl/core';
 import {getUrlWithToken} from './lib/parsers/url-utils';
+import {handlePromises, REJECTED_STATUS} from './helpers/promises-handler';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 const EMPTY_VALUE = '';
-
 /**
  * Loader for I3S attributes
  * @type {LoaderObject}
@@ -28,7 +28,7 @@ async function parse(data, options) {
   data = parseI3STileAttribute(data, options);
   return data;
 }
-// TODO add loaded attributes to cache
+
 /**
  * Load attributes based on feature id
  * @param {Object} tile
@@ -55,7 +55,7 @@ export async function loadFeatureAttributes(tile, featureId, options = {}) {
     attributeLoadPromises.push(promise);
   }
   try {
-    attributes = await Promise.all(attributeLoadPromises);
+    attributes = await handlePromises(attributeLoadPromises);
   } catch (error) {
     // do nothing
   }
@@ -97,13 +97,13 @@ function getAttributeValueType(attribute) {
  * @returns {Object}
  */
 function generateAttributesByFeatureId(attributes, attributeStorageInfo, featureId) {
-  const objectIds = attributes.find(attribute => attribute.OBJECTID);
+  const objectIds = attributes.find(attribute => attribute.value.OBJECTID);
 
   if (!objectIds) {
     return null;
   }
 
-  const attributeIndex = objectIds.OBJECTID.indexOf(featureId);
+  const attributeIndex = objectIds.value.OBJECTID.indexOf(featureId);
 
   if (attributeIndex < 0) {
     return null;
@@ -124,11 +124,27 @@ function getFeatureAttributesByIndex(attributes, featureIdIndex, attributeStorag
 
   for (let index = 0; index < attributeStorageInfo.length; index++) {
     const attributeName = attributeStorageInfo[index].name;
-    const attribute = attributes[index][attributeName];
+    const attribute = getAttributeByIndexAndAttributeName(attributes, index, attributeName);
     attributesObject[attributeName] = formatAttributeValue(attribute, featureIdIndex);
   }
 
   return attributesObject;
+}
+
+/**
+ * Return attribute value if it presents in atrributes list
+ * @param {array} attributes
+ * @param {number} index
+ * @param {string} attributesName
+ */
+function getAttributeByIndexAndAttributeName(attributes, index, attributesName) {
+  const attributeObject = attributes[index];
+
+  if (attributeObject.status === REJECTED_STATUS) {
+    return null;
+  }
+
+  return attributeObject.value[attributesName];
 }
 
 /**
@@ -139,7 +155,10 @@ function getFeatureAttributesByIndex(attributes, featureIdIndex, attributeStorag
  */
 function formatAttributeValue(attribute, featureIdIndex) {
   return attribute && attribute[featureIdIndex]
-    ? // eslint-disable-next-line no-control-regex
-      attribute[featureIdIndex].toString().replace(/\u0000/g, '')
+    ? attribute[featureIdIndex]
+        .toString()
+        // eslint-disable-next-line no-control-regex
+        .replace(/\u0000/g, '')
+        .trim()
     : EMPTY_VALUE;
 }

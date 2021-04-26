@@ -6,7 +6,13 @@ import {HuePicker, MaterialPicker} from 'react-color';
 
 import {lumaStats} from '@luma.gl/core';
 import DeckGL from '@deck.gl/react';
-import {FlyToInterpolator, View, MapView, WebMercatorViewport} from '@deck.gl/core';
+import {
+  FlyToInterpolator,
+  View,
+  MapView,
+  WebMercatorViewport,
+  COORDINATE_SYSTEM
+} from '@deck.gl/core';
 import {LineLayer, ScatterplotLayer} from '@deck.gl/layers';
 
 import {load} from '@loaders.gl/core';
@@ -49,8 +55,8 @@ import {
 } from './utils/texture-selector-utils';
 
 const TRANSITION_DURAITON = 4000;
-const DEFAULT_NORMALS_GAP = 30; // Gap for normals visualisation to avoid mess on the screen.
-const DEFAULT_NORMALS_LENGTH = 200; // Normals length in meters
+const DEFAULT_TRIANGLES_PERCENTAGE = 30; // Percentage of triangles to show normals for.
+const DEFAULT_NORMALS_LENGTH = 20; // Normals length in meters
 const NORMALS_COLOR = [255, 0, 0];
 const UV_DEBUG_TEXTURE_URL =
   'https://raw.githubusercontent.com/visgl/deck.gl-data/master/images/uv-debug-texture.jpg';
@@ -163,7 +169,7 @@ export default class App extends PureComponent {
       selectedMapStyle: INITIAL_MAP_STYLE,
       debugOptions: INITIAL_DEBUG_OPTIONS_STATE,
       normalsDebugData: [],
-      normalsGap: DEFAULT_NORMALS_GAP,
+      trianglesPercentage: DEFAULT_TRIANGLES_PERCENTAGE,
       normalsLength: DEFAULT_NORMALS_LENGTH,
       tileInfo: null,
       selectedTileId: null,
@@ -178,7 +184,7 @@ export default class App extends PureComponent {
     this.handleSelectTileColor = this.handleSelectTileColor.bind(this);
     this.handleClearWarnings = this.handleClearWarnings.bind(this);
     this.handleShowNormals = this.handleShowNormals.bind(this);
-    this.handleChangeNormalsGap = this.handleChangeNormalsGap.bind(this);
+    this.handleChangeTrianglesPercentage = this.handleChangeTrianglesPercentage.bind(this);
     this.handleChangeNormalsLength = this.handleChangeNormalsLength.bind(this);
   }
 
@@ -382,7 +388,7 @@ export default class App extends PureComponent {
       viewportTraversersMap,
       tileset,
       normalsDebugData,
-      normalsGap,
+      trianglesPercentage,
       normalsLength
     } = this.state;
     viewportTraversersMap.minimap = minimapViewport ? 'minimap' : 'main';
@@ -436,10 +442,14 @@ export default class App extends PureComponent {
       new LineLayer({
         id: 'normals-debug',
         data: normalsDebugData,
-        getSourcePosition: (_, {index, data}) => getNormalSourcePosition(index, data, normalsGap),
+        getSourcePosition: (_, {index, data}) =>
+          getNormalSourcePosition(index, data, trianglesPercentage),
         getTargetPosition: (_, {index, data}) =>
-          getNormalTargetPosition(index, data, normalsGap, normalsLength),
+          getNormalTargetPosition(index, data, trianglesPercentage, normalsLength),
         getColor: () => NORMALS_COLOR,
+        modelMatrix: normalsDebugData.modelMatrix,
+        coordinateOrigin: normalsDebugData.cartographicOrigin,
+        coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS,
         getWidth: 1
       }),
       this._renderMainOnMinimap()
@@ -572,14 +582,15 @@ export default class App extends PureComponent {
     });
   }
 
-  handleChangeNormalsGap(tile, newValue) {
+  handleChangeTrianglesPercentage(tile, newValue) {
     const {normalsDebugData} = this.state;
 
     if (normalsDebugData.length) {
       this.setState({normalsDebugData: generateBinaryNormalsDebugData(tile)});
     }
+    const percent = this.validateTrianglesPercentage(newValue);
 
-    this.setState({normalsGap: newValue});
+    this.setState({trianglesPercentage: percent});
   }
 
   handleChangeNormalsLength(tile, newValue) {
@@ -592,6 +603,15 @@ export default class App extends PureComponent {
     this.setState({normalsLength: newValue});
   }
 
+  validateTrianglesPercentage(newValue) {
+    if (newValue < 0) {
+      return 1;
+    } else if (newValue > 100) {
+      return 100;
+    }
+    return newValue;
+  }
+
   _renderAttributesPanel() {
     const {
       tileInfo,
@@ -599,7 +619,7 @@ export default class App extends PureComponent {
       coloredTilesMap,
       tileset,
       normalsDebugData,
-      normalsGap,
+      trianglesPercentage,
       normalsLength
     } = this.state;
     const isShowColorPicker = debugOptions.tileColorMode === COLORED_BY.CUSTOM;
@@ -607,21 +627,22 @@ export default class App extends PureComponent {
     const tileSelectedColor = makeRGBObjectFromColor(coloredTilesMap[tileId]);
     const isResetButtonDisabled = !coloredTilesMap[tileId];
     const currenTile = tileset._tiles[tileId];
+    const title = `Tile: ${tileId}`;
 
     return (
       <AttributesPanel
+        title={title}
         handleClosePanel={this.handleClosePanel}
         attributesObject={tileInfo}
-        attributesHeader={'Tile Id'}
         selectTileColor={this.handleSelectTileColor}
       >
         <TileValidator
           tile={currenTile}
           showNormals={Boolean(normalsDebugData.length)}
-          normalsGap={normalsGap}
+          trianglesPercentage={trianglesPercentage}
           normalsLength={normalsLength}
           handleShowNormals={this.handleShowNormals}
-          handleChangeNormalsGap={this.handleChangeNormalsGap}
+          handleChangeTrianglesPercentage={this.handleChangeTrianglesPercentage}
           handleChangeNormalsLength={this.handleChangeNormalsLength}
         />
         {isShowColorPicker && (

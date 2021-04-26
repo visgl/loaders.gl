@@ -212,9 +212,11 @@ export default class App extends PureComponent {
 
   renderAttributesPanel() {
     const {selectedFeatureAttributes} = this.state;
+    const title = selectedFeatureAttributes.NAME || selectedFeatureAttributes.OBJECTID;
 
     return (
       <AttributesPanel
+        title={title}
         handleClosePanel={this.handleClosePanel}
         attributesObject={selectedFeatureAttributes}
       />
