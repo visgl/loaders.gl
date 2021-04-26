@@ -68,6 +68,13 @@ export default class MeshLayer extends SimpleMeshLayer {
     });
   }
 
+  updateState({props, oldProps, changeFlags}) {
+    super.updateState({props, oldProps, changeFlags});
+    if (props.material !== oldProps.material) {
+      this.setMaterial(props.material);
+    }
+  }
+
   draw({uniforms}) {
     if (!this.state.model) {
       return;
@@ -148,6 +155,29 @@ export default class MeshLayer extends SimpleMeshLayer {
           hasTexture: Boolean(texture)
         });
       }
+    }
+  }
+
+  setMaterial(material) {
+    if (!material) {
+      return;
+    }
+    const {model} = this.state;
+    if (model) {
+      const unlit = Boolean(
+        material.pbrMetallicRoughness && material.pbrMetallicRoughness.baseColorTexture
+      );
+      const {mesh} = this.props;
+      const materialParser = new GLTFMaterialParser(this.context.gl, {
+        attributes: {NORMAL: mesh.attributes.normals, TEXCOORD_0: mesh.attributes.texCoords},
+        material: {unlit, ...material},
+        pbrDebug: false,
+        imageBasedLightingEnvironment: null,
+        lights: true,
+        useTangents: false
+      });
+
+      model.setUniforms(materialParser.uniforms);
     }
   }
 
