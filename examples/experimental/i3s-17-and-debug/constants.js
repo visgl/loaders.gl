@@ -21,7 +21,7 @@ export const TILE_COLOR_MODES = {
   'Color: Original': COLORED_BY.ORIGINAL,
   'Color: By tile (random)': COLORED_BY.RANDOM,
   'Color: By depth': COLORED_BY.DEPTH,
-  'Tile coloring: Custom (by selected object)': COLORED_BY.CUSTOM
+  'Color: Custom (user selected)': COLORED_BY.CUSTOM
 };
 
 export const INITIAL_TILE_COLOR_MODE = COLORED_BY.ORIGINAL;
