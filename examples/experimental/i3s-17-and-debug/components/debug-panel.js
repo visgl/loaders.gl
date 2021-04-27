@@ -78,11 +78,16 @@ const Label = styled.label`
   cursor: pointer;
 `;
 
+const DebugTextureContainer = styled.div`
+  padding: 2px;
+`;
+
 const propTypes = {
   children: PropTypes.object,
   isClearButtonDisabled: PropTypes.bool,
   onOptionsChange: PropTypes.func,
-  clearWarnings: PropTypes.func
+  clearWarnings: PropTypes.func,
+  debugTextureImage: PropTypes.string
 };
 
 const defaultProps = {
@@ -288,6 +293,14 @@ export default class DebugPanel extends PureComponent {
     );
   }
 
+  _renderDebugTextureImage() {
+    return (
+      <DebugTextureContainer>
+        <img src={this.props.debugTextureImage} alt="Debug Texture Image" width="100%" />
+      </DebugTextureContainer>
+    );
+  }
+
   _renderTileOptions() {
     const {tileColorMode, pickable, loadTiles, showUVDebugTexture, wireframe} = this.state;
     return (
@@ -322,6 +335,7 @@ export default class DebugPanel extends PureComponent {
           />
           <Label htmlFor="uvDebugTexture">UV debug texture</Label>
         </CheckboxOption>
+        {showUVDebugTexture ? this._renderDebugTextureImage() : null}
         <CheckboxOption>
           <InputCheckbox
             onChange={this._onChangeWireframeMode}

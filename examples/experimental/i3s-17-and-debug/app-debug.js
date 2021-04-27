@@ -465,6 +465,7 @@ export default class App extends PureComponent {
         onOptionsChange={this._setDebugOptions}
         clearWarnings={this.handleClearWarnings}
         isClearButtonDisabled={isClearButtonDisabled}
+        debugTextureImage={UV_DEBUG_TEXTURE_URL}
       >
         {this._renderStats()}
       </DebugPanel>
