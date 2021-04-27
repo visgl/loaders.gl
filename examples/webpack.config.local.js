@@ -133,6 +133,10 @@ function addLocalDependency(config, dependency) {
       break;
     default:
   }
+  // We need to have 1 `React` instance when running `yarn start-local-deck`
+  Object.assign(config.resolve.alias, {
+    react: resolve(ROOT_DIR, 'node_modules/react')
+  });
 
   return config;
 }
