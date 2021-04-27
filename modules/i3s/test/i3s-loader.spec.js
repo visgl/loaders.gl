@@ -17,12 +17,6 @@ test('I3SLoader#Load tile content', async t => {
   t.ok(content.attributes.texCoords);
   t.equal(content.attributes.texCoords.value.length, 51276);
   t.ok(content.texture);
-  t.ok(content.attributes.faceRange);
-  t.equal(content.attributes.faceRange.value.length, 244);
-  t.ok(content.attributes.featureIds);
-  t.equal(content.attributes.featureIds.value.length, 25638);
-
-  t.ok(content.texture);
   // ImageLoader returns different things on browser and Node
   if (isBrowser) {
     t.ok(content.texture instanceof ImageBitmap || content.texture.compressed);

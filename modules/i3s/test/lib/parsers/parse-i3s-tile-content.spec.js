@@ -87,7 +87,7 @@ test('ParseI3sTileContent#should make PBR material', async t => {
   t.end();
 });
 
-test('ParseI3sTileContent#should has segmentationData', async t => {
+test('ParseI3sTileContent#should have segmentationData', async t => {
   const i3sTilesetData = TILESET_STUB();
   const i3SNodePagesTiles = new I3SNodePagesTiles(i3sTilesetData, {});
   const tile = await i3SNodePagesTiles.formTileFromNodePages(1);
