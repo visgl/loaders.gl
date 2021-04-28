@@ -270,9 +270,7 @@ function handlePolygon(geometry, polygons, indexMap, properties, {coordLength, t
 
       // Extract positions and holes for just this polygon
       const polygonPositions = polygons.positions.subarray(start, end);
-
-      // TODO compute and don't forget to offset!
-      const holes = [];
+      const holes = lines.slice(1).map(n => n / coordLength);
 
       // Compute triangulation
       const indices = earcut(polygonPositions, holes, coordLength);
