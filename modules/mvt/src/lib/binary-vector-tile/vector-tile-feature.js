@@ -4,6 +4,10 @@
 // Reduce GC by reusing variables
 let endPos, cmd, cmdLen, length, x, y, i;
 
+export const TEST_EXPORTS = {
+  classifyRings
+};
+
 export default class VectorTileFeature {
   static get types() {
     return ['Unknown', 'Point', 'LineString', 'Polygon'];

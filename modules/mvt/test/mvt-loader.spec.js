@@ -2,6 +2,9 @@ import test from 'tape-promise/tape';
 import {MVTLoader} from '@loaders.gl/mvt';
 import {setLoaderOptions, fetchFile, parse, parseSync} from '@loaders.gl/core';
 import {geojsonToBinary} from '@loaders.gl/gis';
+import {TEST_EXPORTS} from '@loaders.gl/mvt/lib/binary-vector-tile/vector-tile-feature';
+
+const {classifyRings} = TEST_EXPORTS;
 
 const MVT_POINTS_DATA_URL = '@loaders.gl/mvt/test/data/points_4-2-6.mvt';
 const MVT_LINES_DATA_URL = '@loaders.gl/mvt/test/data/lines_2-2-1.mvt';
@@ -16,6 +19,11 @@ import decodedPolygonsGeometry from '@loaders.gl/mvt/test/results/decoded_mvt_po
 import decodedPointsGeoJSON from '@loaders.gl/mvt/test/results/decoded_mvt_points.json';
 import decodedLinesGeoJSON from '@loaders.gl/mvt/test/results/decoded_mvt_lines.json';
 import decodedPolygonsGeoJSON from '@loaders.gl/mvt/test/results/decoded_mvt_polygons.json';
+
+// Rings
+import ringsSingleRing from '@loaders.gl/mvt/test/data/rings_single_ring.json';
+import ringsRingAndHole from '@loaders.gl/mvt/test/data/rings_ring_and_hole.json';
+import ringsTwoRings from '@loaders.gl/mvt/test/data/rings_two_rings.json';
 
 setLoaderOptions({
   _workerType: 'test'
@@ -260,5 +268,23 @@ test('Triangulation is supported', async t => {
   t.ok(geometry.polygons.triangleIndices);
   t.equals(geometry.polygons.triangleIndices.value.length, 1);
 
+  t.end();
+});
+
+test('Rings - single ring', async t => {
+  const result = classifyRings(ringsSingleRing);
+  t.deepEqual(result, [[0]]);
+  t.end();
+});
+
+test('Rings - ring and hole', async t => {
+  const result = classifyRings(ringsRingAndHole);
+  t.deepEqual(result, [[0, 10]]);
+  t.end();
+});
+
+test('Rings - two rings', async t => {
+  const result = classifyRings(ringsTwoRings);
+  t.deepEqual(result, [[0], [10]]);
   t.end();
 });
