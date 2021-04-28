@@ -317,7 +317,10 @@ export default class App extends PureComponent {
       this.setState({coloredTilesMap: {}, selectedTileId: null});
     }
 
-    const {showUVDebugTexture, tileset} = this.state;
+    const {
+      tileset,
+      debugOptions: {showUVDebugTexture}
+    } = this.state;
     if (debugOptions.showUVDebugTexture !== showUVDebugTexture) {
       if (debugOptions.showUVDebugTexture) {
         selectDebugTextureForTileset(tileset, this._uvDebugTexture);
