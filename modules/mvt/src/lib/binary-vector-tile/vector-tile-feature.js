@@ -127,7 +127,7 @@ export default class VectorTileFeature {
       case 3: // Polygon
         const rings = classifyRings(geom);
         this._firstPassData.polygonFeaturesCount++;
-        this._firstPassData.polygonObjectsCount += geom.lines.length;
+        this._firstPassData.polygonObjectsCount += rings.length;
 
         for (const lines of rings) {
           this._firstPassData.polygonRingsCount += lines.length;
