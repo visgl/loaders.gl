@@ -28,3 +28,5 @@ export default class VectorTileFeature {
   classifyRings([number]): [[number]];
   toBinaryCoordinates(options: {x: number, y: number, z: number} | (([number], VectorTileFeature) => void)): object;
 }
+
+export const TEST_EXPORTS;

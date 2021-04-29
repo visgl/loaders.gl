@@ -24,6 +24,7 @@ import decodedPolygonsGeoJSON from '@loaders.gl/mvt/test/results/decoded_mvt_pol
 import ringsSingleRing from '@loaders.gl/mvt/test/data/rings_single_ring.json';
 import ringsRingAndHole from '@loaders.gl/mvt/test/data/rings_ring_and_hole.json';
 import ringsTwoRings from '@loaders.gl/mvt/test/data/rings_two_rings.json';
+import ringsZeroSizeHole from '@loaders.gl/mvt/test/data/rings_zero_size_hole.json';
 
 setLoaderOptions({
   _workerType: 'test'
@@ -285,3 +286,30 @@ test('Rings - two rings', async t => {
   t.deepEqual(result, [[0], [10]]);
   t.end();
 });
+
+test('Rings - zero sized hole', async t => {
+  const result = classifyRings(ringsZeroSizeHole);
+  t.deepEqual(result, [[0]]);
+  t.end();
+});
+
+const TEST_TILES = ['./6/13/23.mvt', './6/12/23.mvt'];
+
+for (const f of TEST_TILES) {
+  test(`Legacy MVT binary generation is equivalent ${f}`, async t => {
+    const filename = `@loaders.gl/mvt/test/data/tiles/${f.slice(2)}`;
+    const response = await fetchFile(filename);
+    const mvtArrayBuffer = await response.arrayBuffer();
+    const geojson = await parse(mvtArrayBuffer, MVTLoader);
+
+    // Pass a fresh response otherwise get CI testing errors
+    const response2 = await fetchFile(filename);
+    const mvtArrayBuffer2 = await response2.arrayBuffer();
+    const binary = await parse(mvtArrayBuffer2, MVTLoader, {gis: {format: 'binary'}});
+    delete binary.byteLength;
+    const b = binary.polygons;
+    const g = geojsonToBinary(geojson).polygons || {polygonIndices: 0};
+    t.deepEqual(b.polygonIndices, g.polygonIndices);
+    t.end();
+  });
+}
