@@ -198,7 +198,9 @@ function classifyRings(geom) {
     endIndex = geom.lines[i + 1];
     const shape = geom.data.slice(startIndex, endIndex);
     const area = signedArea(shape);
-    if (area === 0) continue;
+
+    // TODO would strip out some data, which we want to avoid
+    // if (area === 0) continue;
 
     if (ccw === undefined) ccw = area < 0;
 
