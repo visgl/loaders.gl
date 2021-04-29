@@ -422,7 +422,6 @@ export default class App extends PureComponent {
         pickable,
         loadTiles,
         autoHighlight: true,
-        isDebugMode: true,
         selectedTileId,
         coloredTilesMap,
         wireframe

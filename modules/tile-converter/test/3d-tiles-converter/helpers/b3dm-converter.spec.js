@@ -58,16 +58,11 @@ test('tile-converter - b3dm converter#should convert i3s node data to b3dm encod
     const attributes = await _loadAttributes(tile, ATTRIBUTES_STORAGE_INFO_STUB);
     const b3dmConverter = new B3dmConverter();
     const encodedContent = await b3dmConverter.convert(tile, attributes);
-    const batchId = b3dmConverter.i3sTile.content.attributes._BATCHID;
+    const batchId = b3dmConverter.i3sTile.header.segmentationData;
 
     t.ok(encodedContent);
     t.ok(batchId);
-    t.notOk(b3dmConverter.i3sTile.content.attributes.featureIds);
-    t.notOk(b3dmConverter.i3sTile.content.attributes.faceRange);
-    t.equal(batchId.value[0], 0);
-    t.equal(batchId.value[batchId.value.length - 1], 121);
-    t.equal(batchId.value[batchId.value.length - 1] + 1, attributes.OBJECTID.length);
-    t.equal(batchId.value[batchId.value.length - 1] + 1, attributes.NAME.length);
+    t.equal(batchId.length, i3sContent.attributes.positions.value.length / 3);
     t.ok(attributes);
     t.equal(attributes.OBJECTID[0], 14238);
     t.equal(attributes.NAME[0], 'Sanfran_island_0197.flt\x00');
