@@ -150,7 +150,7 @@ export default class App extends PureComponent {
         pickable: true,
         loadOptions,
         highlightedObjectIndex: selectedFeatureIndex,
-        segmentationMode: true
+        pickFeatures: true
       })
     ];
   }
