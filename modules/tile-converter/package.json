@@ -33,7 +33,7 @@
     "fs": false
   },
   "scripts": {
-    "pre-build": "npm run build-bin && npm run build-bundle && npm run build-bundle -- --env.dev",
+    "pre-build": "npm run build-bin && npm run build-bundle",
     "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js",
     "build-bin": "BABEL_ENV=es5 babel scripts --config-file ../../babel.config.js --out-dir dist/scripts",
     "build-converter-bundle": "webpack --config ./converter-webpack/bundle.js"
