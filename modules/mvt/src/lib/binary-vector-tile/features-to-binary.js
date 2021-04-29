@@ -108,7 +108,6 @@ function fillArrays(features, firstPassData = {}, options = {}) {
   // indices that define the triangles
   if (options.triangulate) {
     polygons.triangles = [];
-    polygons.triangleIndices = [];
   }
 
   // Instantiate numeric properties arrays; one value per vertex
@@ -278,10 +277,6 @@ function handlePolygon(geometry, polygons, indexMap, properties, {coordLength, t
       // Compute triangulation
       const indices = earcut(polygonPositions, holes, coordLength);
 
-      // deck.gl also need the indices of where the polygons
-      // begin in the triangles array
-      polygons.triangleIndices.push(polygons.triangles.length);
-
       // Indices returned by triangulation are relative to start
       // of polygon, so we need to offset
       for (let t = 0, tl = indices.length; t < tl; ++t) {
@@ -322,7 +317,6 @@ function makeAccessorObjects(points, lines, polygons, coordLength, options) {
 
   if (options.triangulate) {
     returnObj.polygons.triangles = {value: polygons.triangles, size: 1};
-    returnObj.polygons.triangleIndices = {value: polygons.triangleIndices, size: 1};
   }
 
   for (const geomType in returnObj) {
