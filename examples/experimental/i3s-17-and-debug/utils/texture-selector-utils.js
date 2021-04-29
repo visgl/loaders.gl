@@ -1,5 +1,6 @@
+// The tiles list in the tileset mutates continually.
+// We need to store tiles when we replace texture
 const tiles = {};
-const originalTileTextures = {};
 
 export function selectDebugTextureForTileset(tileset, uvDebugTexture) {
   if (!uvDebugTexture) {
@@ -21,7 +22,7 @@ export function selectOriginalTextureForTileset(tileset) {
 
 export function selectDebugTextureForTile(tile, uvDebugTexture) {
   tiles[tile.id] = tile;
-  if (!uvDebugTexture || originalTileTextures[tile.id]) {
+  if (!uvDebugTexture || tile.userData.originalTexture) {
     return;
   }
   const {texture, material} = tile.content || {};
@@ -31,20 +32,24 @@ export function selectDebugTextureForTile(tile, uvDebugTexture) {
     ) {
       return;
     }
-    originalTileTextures[tile.id] =
+    tile.userData.originalTexture =
       material.pbrMetallicRoughness.baseColorTexture.texture.source.image;
     material.pbrMetallicRoughness.baseColorTexture.texture.source.image = uvDebugTexture;
     tile.content.material = {...tile.content.material};
   } else if (texture) {
-    originalTileTextures[tile.id] = texture;
+    tile.userData.originalTexture = texture;
     tile.content.texture = uvDebugTexture;
   }
 }
 
 export function selectOriginalTextureForTile(tile) {
   tiles[tile.id] = tile;
-  const {texture, material} = tile.content || {};
-  if (!originalTileTextures[tile.id]) {
+  const {
+    content,
+    userData: {originalTexture}
+  } = tile;
+  const {texture, material} = content || {};
+  if (!originalTexture) {
     return;
   }
   if (material) {
@@ -53,11 +58,10 @@ export function selectOriginalTextureForTile(tile) {
     ) {
       return;
     }
-    material.pbrMetallicRoughness.baseColorTexture.texture.source.image =
-      originalTileTextures[tile.id];
+    material.pbrMetallicRoughness.baseColorTexture.texture.source.image = originalTexture;
     tile.content.material = {...tile.content.material};
   } else if (texture) {
-    tile.content.texture = originalTileTextures[tile.id];
+    tile.content.texture = originalTexture;
   }
-  delete originalTileTextures[tile.id];
+  delete tile.userData.originalTexture;
 }

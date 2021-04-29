@@ -84,6 +84,9 @@ export default class TileHeader {
 
     this._getPriority = this._getPriority.bind(this);
 
+    // Container to store application specific data
+    this.userData = {};
+
     Object.seal(this);
   }
 
