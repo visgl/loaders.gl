@@ -235,3 +235,22 @@ test('CSVLoader#loadInBatches(sample.csv, no dynamicTyping)', async t => {
   t.equal(rowCount, 2, 'Correct number of rows received');
   t.end();
 });
+
+test('CSVLoader#loadInBatches(sample.csv, duplicate columns)', async t => {
+  const iterator = await loadInBatches(CSV_SAMPLE_URL_DUPLICATE_COLS, CSVLoader, {
+    csv: {rowFormat: 'object'}
+  });
+
+  const rows = [];
+
+  for await (const batch of iterator) {
+    rows.push(...batch.data);
+  }
+
+  t.is(rows.length, 3, 'Got correct table size');
+  t.deepEqual(rows, [
+    {A: 'x', B: 1, A1: 'y', A2: 'z', B1: 2},
+    {A: 'y', B: 29, A1: 'z', A2: 'y', B1: 19},
+    {A: 'x', B: 1, A1: 'y', A2: 'z', B1: 2}
+  ]);
+});

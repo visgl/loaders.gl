@@ -52,7 +52,7 @@ async function parseCSV(csvText, options) {
   options.csv = {...CSVLoaderOptions.csv, ...options.csv};
 
   const firstRow = readFirstRow(csvText);
-  const parseWithHeader = Boolean(options.csv.header) && isHeaderRow(firstRow, options);
+  const parseWithHeader = isHeaderRow(firstRow, options);
 
   const config = {
     dynamicTyping: true, // Convert numbers and boolean values in rows from strings
@@ -108,7 +108,9 @@ function parseCSVInBatches(asyncIterator, options) {
         // Auto detects or can be forced with options.csv.header
         const header = isHeaderRow(row, options);
         if (header) {
-          headerRow = row;
+          headerRow = row.map(duplicateColumnTransformer());
+          // eslint-disable-next-line no-undef, no-console
+          console.log(header, row, headerRow);
           return;
         }
       }
@@ -165,17 +167,29 @@ function isHeaderRow(row, options) {
     return Boolean(options.csv.header);
   }
 
-  return row.every(value => typeof value === 'string');
+  return row && row.every(value => typeof value === 'string');
 }
 
+/**
+ * Reads, parses, and returns the first row of a CSV text
+ * @param {string} csvText the csv text to parse
+ * @returns the first row
+ */
 function readFirstRow(csvText) {
-  return Papa.parse(csvText, {
+  const result = Papa.parse(csvText, {
     download: false,
     dynamicTyping: true,
     preview: 1
   });
+  return result.data[0];
 }
 
+/**
+ * Creates a transformer that renames duplicate columns. This is needed as Papaparse doesn't handle
+ * duplicate header columns and would use the latest occurance by default.
+ * See the header option in https://www.papaparse.com/docs#config
+ * @returns a transform function that returns sanitized names for duplicate fields
+ */
 function duplicateColumnTransformer() {
   const columnCount = {};
   return col => {
