@@ -22,7 +22,7 @@ export const MVTWorkerLoader = {
     'application/x-protobuf'
     // 'application/octet-stream'
   ],
-  worker: false,
+  worker: true,
   category: 'geometry',
   options: {
     mvt: {
