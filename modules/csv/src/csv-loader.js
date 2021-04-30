@@ -58,7 +58,7 @@ async function parseCSV(csvText, options) {
     dynamicTyping: true, // Convert numbers and boolean values in rows from strings
     ...options.csv,
     header: parseWithHeader,
-    download: false, // We handle loading, no need for papaparse to do it for us,
+    download: false, // We handle loading, no need for papaparse to do it for us
     transformHeader: parseWithHeader ? duplicateColumnTransformer() : undefined,
     error: e => {
       throw new Error(e);
@@ -189,13 +189,15 @@ function readFirstRow(csvText) {
  * @returns a transform function that returns sanitized names for duplicate fields
  */
 function duplicateColumnTransformer() {
-  const columnCount = {};
+  const observedColumns = new Set();
   return col => {
     let colName = col;
-    if (columnCount[col]) {
-      colName = `${col}${columnCount[col]}`;
+    let counter = 1;
+    while (observedColumns.has(colName)) {
+      colName = `${col}.${counter}`;
+      counter++;
     }
-    columnCount[col] = (columnCount[col] || 0) + 1;
+    observedColumns.add(colName);
     return colName;
   };
 }
