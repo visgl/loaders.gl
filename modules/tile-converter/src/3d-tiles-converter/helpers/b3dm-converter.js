@@ -39,7 +39,6 @@ export default class B3dmConverter {
       positionsValue,
       i3sContent.cartesianOrigin
     );
-    this._replaceFeatureIdsAndFaceRangeWithBatchId(i3sContent);
     if (i3sContent.attributes.normals && !this._checkNormals(i3sContent.attributes.normals.value)) {
       delete i3sContent.attributes.normals;
     }
@@ -110,28 +109,6 @@ export default class B3dmConverter {
     const translateOriginMatrix = new Matrix4().translate(cartesianOrigin);
     const result = translateOriginMatrix.multiplyLeft(Z_UP_TO_Y_UP_MATRIX);
     return result;
-  }
-
-  /**
-   * Do replacement featureIds and faseRange in i3sContent object.
-   * @param {Object} i3sContent - the source object
-   * @returns {void}
-   */
-  _replaceFeatureIdsAndFaceRangeWithBatchId(i3sContent) {
-    const {featureIds, faceRange} = i3sContent.attributes;
-    if (!featureIds || !faceRange) {
-      return;
-    }
-
-    const faceRanges = faceRange.value;
-    const batchId = this._generateBatchId(faceRanges);
-
-    i3sContent.attributes._BATCHID = {
-      ...i3sContent.attributes.featureIds,
-      value: batchId
-    };
-    delete i3sContent.attributes.faceRange;
-    delete i3sContent.attributes.featureIds;
   }
 
   /**

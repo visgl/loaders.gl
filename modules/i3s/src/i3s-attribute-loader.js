@@ -2,12 +2,12 @@
 import {parseI3STileAttribute} from './lib/parsers/parse-i3s-attribute';
 import {load} from '@loaders.gl/core';
 import {getUrlWithToken} from './lib/parsers/url-utils';
-import {handlePromises, REJECTED_STATUS} from './helpers/promises-handler';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 const EMPTY_VALUE = '';
+const REJECTED_STATUS = 'rejected';
 /**
  * Loader for I3S attributes
  * @type {LoaderObject}
@@ -55,7 +55,7 @@ export async function loadFeatureAttributes(tile, featureId, options = {}) {
     attributeLoadPromises.push(promise);
   }
   try {
-    attributes = await handlePromises(attributeLoadPromises);
+    attributes = await Promise.allSettled(attributeLoadPromises);
   } catch (error) {
     // do nothing
   }

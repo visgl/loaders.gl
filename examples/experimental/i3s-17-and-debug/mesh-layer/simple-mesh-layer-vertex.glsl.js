@@ -11,7 +11,7 @@ in vec3 normals;
 in vec3 colors;
 in vec2 texCoords;
 in vec4 uvRegions;
-in vec3 pickingColors;
+in vec3 segmentationPickingColors;
 
 // Instance attributes
 in vec3 instancePositions;
@@ -38,10 +38,10 @@ void main(void) {
   geometry.worldPosition = instancePositions;
   geometry.uv = uv;
 
-  #ifdef INSTANCE_PICKING_MODE
-    geometry.pickingColor = instancePickingColors;
+  #ifdef SEGMENTATION_MODE
+    geometry.pickingColor = segmentationPickingColors;
   #else
-    geometry.pickingColor = pickingColors;
+    geometry.pickingColor = instancePickingColors;
   #endif
 
   #ifdef MODULE_PBR

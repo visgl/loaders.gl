@@ -30,28 +30,24 @@ const I3S_ATTRIBUTE_TYPE = 'i3s-attribute-type';
 
 export async function parseI3STileContent(arrayBuffer, tile, tileset, options) {
   tile.content = tile.content || {};
+  tile.segmentationData = tile.segmentationData || null;
 
   // construct featureData from defaultGeometrySchema;
   tile.content.featureData = constructFeatureDataStruct(tile, tileset);
   tile.content.attributes = {};
 
   if (tile.textureUrl) {
-    const uvDebugTexture = options.i3s.uvDebugTexture;
-    if (uvDebugTexture) {
-      tile.content.texture = uvDebugTexture;
-    } else {
-      const url = getUrlWithToken(tile.textureUrl, options.token);
-      const loader = FORMAT_LOADER_MAP[tile.textureFormat] || ImageLoader;
-      tile.content.texture = await load(url, loader);
-      if (loader === CompressedTextureLoader) {
-        tile.content.texture = {
-          compressed: true,
-          mipmaps: false,
-          width: tile.content.texture[0].width,
-          height: tile.content.texture[0].height,
-          data: tile.content.texture
-        };
-      }
+    const url = getUrlWithToken(tile.textureUrl, options.token);
+    const loader = FORMAT_LOADER_MAP[tile.textureFormat] || ImageLoader;
+    tile.content.texture = await load(url, loader);
+    if (loader === CompressedTextureLoader) {
+      tile.content.texture = {
+        compressed: true,
+        mipmaps: false,
+        width: tile.content.texture[0].width,
+        height: tile.content.texture[0].height,
+        data: tile.content.texture
+      };
     }
   }
 
@@ -150,10 +146,12 @@ async function parseI3SNodeGeometry(arrayBuffer, tile = {}, options) {
     normals: attributes.normal,
     colors: normalizeAttribute(attributes.color), // Normalize from UInt8
     texCoords: attributes.uv0,
-    uvRegions: normalizeAttribute(attributes.uvRegion), // Normalize from UInt16
-    featureIds: attributes.id,
-    faceRange: attributes.faceRange
+    uvRegions: normalizeAttribute(attributes.uvRegion) // Normalize from UInt16
   };
+
+  if (attributes.id && attributes.id.value) {
+    tile.segmentationData = attributes.id.value;
+  }
 
   // Remove undefined attributes
   for (const attributeIndex in content.attributes) {

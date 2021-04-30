@@ -58,12 +58,14 @@ export default class TileLayer extends Tile3DLayer {
       pickable,
       autoHighlight,
       tileColorMode,
-      isDebugMode,
+      segmentationMode,
       colorsMap,
       selectedTileId,
       coloredTilesMap,
       wireframe
     } = this.props;
+
+    const segmentationData = tileHeader.header.segmentationData;
 
     const geometry =
       (oldLayer && oldLayer.props.mesh) ||
@@ -99,8 +101,9 @@ export default class TileLayer extends Tile3DLayer {
         pickable,
         autoHighlight,
         highlightColor: [0, 0, 255, 150],
-        isDebugMode,
-        wireframe
+        wireframe,
+        segmentationMode,
+        segmentationData
       }
     );
   }

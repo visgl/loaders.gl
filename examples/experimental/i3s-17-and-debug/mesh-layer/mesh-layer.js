@@ -42,30 +42,41 @@ function getGeometry(data, useMeshColors) {
 
 export default class MeshLayer extends SimpleMeshLayer {
   getShaders() {
-    const {material, isDebugMode} = this.props;
+    const {material, segmentationMode, segmentationData} = this.props;
     const shaders = super.getShaders();
     const modules = shaders.modules;
+
     if (material) {
       modules.push(pbr);
     }
 
-    if (isDebugMode) {
-      shaders.defines.INSTANCE_PICKING_MODE = 1;
+    if (segmentationMode && segmentationData) {
+      shaders.defines.SEGMENTATION_MODE = 1;
     }
     return {...shaders, vs, fs};
   }
 
   initializeState() {
+    const {segmentationMode, segmentationData} = this.props;
     super.initializeState();
 
-    this.state.attributeManager.add({
-      pickingColors: {
-        type: GL.UNSIGNED_BYTE,
-        size: 3,
-        noAlloc: true,
-        update: this.calculatePickingColors
-      }
-    });
+    if (segmentationMode && segmentationData) {
+      this.state.attributeManager.add({
+        segmentationPickingColors: {
+          type: GL.UNSIGNED_BYTE,
+          size: 3,
+          noAlloc: true,
+          update: this.calculateSegmentationPickingColors
+        }
+      });
+    }
+  }
+
+  updateState({props, oldProps, changeFlags}) {
+    super.updateState({props, oldProps, changeFlags});
+    if (props.material !== oldProps.material) {
+      this.setMaterial(props.material);
+    }
   }
 
   draw({uniforms}) {
@@ -151,16 +162,40 @@ export default class MeshLayer extends SimpleMeshLayer {
     }
   }
 
-  calculatePickingColors(attribute) {
-    if (!this.props.mesh.attributes.featureIds) {
+  setMaterial(material) {
+    if (!material) {
+      return;
+    }
+    const {model} = this.state;
+    if (model) {
+      const unlit = Boolean(
+        material.pbrMetallicRoughness && material.pbrMetallicRoughness.baseColorTexture
+      );
+      const {mesh} = this.props;
+      const materialParser = new GLTFMaterialParser(this.context.gl, {
+        attributes: {NORMAL: mesh.attributes.normals, TEXCOORD_0: mesh.attributes.texCoords},
+        material: {unlit, ...material},
+        pbrDebug: false,
+        imageBasedLightingEnvironment: null,
+        lights: true,
+        useTangents: false
+      });
+
+      model.setUniforms(materialParser.uniforms);
+    }
+  }
+
+  calculateSegmentationPickingColors(attribute) {
+    const {segmentationData} = this.props;
+
+    if (!segmentationData) {
       return;
     }
 
-    const featuresIds = this.props.mesh.attributes.featureIds.value;
-    const value = new Uint8ClampedArray(featuresIds.length * attribute.size);
+    const value = new Uint8ClampedArray(segmentationData.length * attribute.size);
 
-    for (let index = 0; index < featuresIds.length; index++) {
-      const color = this.encodePickingColor(featuresIds[index]);
+    for (let index = 0; index < segmentationData.length; index++) {
+      const color = this.encodePickingColor(segmentationData[index]);
 
       value[index * 3] = color[0];
       value[index * 3 + 1] = color[1];

@@ -47,13 +47,19 @@ import {
   getNormalSourcePosition,
   getNormalTargetPosition
 } from './normals-utils';
+import {
+  selectDebugTextureForTile,
+  selectDebugTextureForTileset,
+  selectOriginalTextureForTile,
+  selectOriginalTextureForTileset
+} from './utils/texture-selector-utils';
 
 const TRANSITION_DURAITON = 4000;
 const DEFAULT_TRIANGLES_PERCENTAGE = 30; // Percentage of triangles to show normals for.
 const DEFAULT_NORMALS_LENGTH = 20; // Normals length in meters
 const NORMALS_COLOR = [255, 0, 0];
 const UV_DEBUG_TEXTURE_URL =
-  'https://scontent-hel3-1.xx.fbcdn.net/v/t1.6435-9/116019162_10223606159768024_6216501327358967749_n.jpg?_nc_cat=101&ccb=1-3&_nc_sid=730e14&_nc_eui2=AeGeE5GbbgdnY5DyFEFh7_SAfB_WmpVGZ8Z8H9aalUZnxtVAya4cClSGCHz_zTdCpGTOXg-YouAPCzup1QAzUEuf&_nc_ohc=6p6RG-5ClQAAX_gxaQi&_nc_ht=scontent-hel3-1.xx&oh=171d6693915fe1881b4015892d483311&oe=609C9819';
+  'https://raw.githubusercontent.com/visgl/deck.gl-data/master/images/uv-debug-texture.jpg';
 
 const INITIAL_VIEW_STATE = {
   longitude: -120,
@@ -169,8 +175,7 @@ export default class App extends PureComponent {
       selectedTileId: null,
       coloredTilesMap: {},
       warnings: [],
-      viewportTraversersMap: {main: 'main'},
-      i3sOptions: {uvDebugTexture: null}
+      viewportTraversersMap: {main: 'main'}
     };
     this._onSelectTileset = this._onSelectTileset.bind(this);
     this._setDebugOptions = this._setDebugOptions.bind(this);
@@ -239,6 +244,11 @@ export default class App extends PureComponent {
     this._updateStatWidgets();
     this.validateTile(tile);
     this.setState({frameNumber: this.state.tileset.frameNumber});
+    if (this.state.debugOptions.showUVDebugTexture) {
+      selectDebugTextureForTile(tile, this._uvDebugTexture);
+    } else {
+      selectOriginalTextureForTile(tile);
+    }
   }
 
   _onTileUnload() {
@@ -306,6 +316,18 @@ export default class App extends PureComponent {
     if (debugOptions.tileColorMode !== COLORED_BY.CUSTOM) {
       this.setState({coloredTilesMap: {}, selectedTileId: null});
     }
+
+    const {
+      tileset,
+      debugOptions: {showUVDebugTexture}
+    } = this.state;
+    if (debugOptions.showUVDebugTexture !== showUVDebugTexture) {
+      if (debugOptions.showUVDebugTexture) {
+        selectDebugTextureForTileset(tileset, this._uvDebugTexture);
+      } else {
+        selectOriginalTextureForTileset(tileset);
+      }
+    }
     this.setState({debugOptions});
   }
 
@@ -362,7 +384,6 @@ export default class App extends PureComponent {
         pickable,
         minimapViewport,
         loadTiles,
-        showUVDebugTexture,
         wireframe
       },
       selectedTileId,
@@ -371,15 +392,12 @@ export default class App extends PureComponent {
       tileset,
       normalsDebugData,
       trianglesPercentage,
-      normalsLength,
-      i3sOptions
+      normalsLength
     } = this.state;
     viewportTraversersMap.minimap = minimapViewport ? 'minimap' : 'main';
-    i3sOptions.uvDebugTexture = showUVDebugTexture ? this._uvDebugTexture : null;
     const loadOptions = {
       throttleRequests: true,
-      viewportTraversersMap,
-      i3s: i3sOptions
+      viewportTraversersMap
     };
 
     if (token) {
@@ -393,7 +411,6 @@ export default class App extends PureComponent {
 
     return [
       new TileLayer({
-        id: `i3s-${showUVDebugTexture ? 'uv-debug-texture' : ''}`,
         data: tilesetUrl,
         loader: I3SLoader,
         onTilesetLoad: this._onTilesetLoad.bind(this),
@@ -405,7 +422,6 @@ export default class App extends PureComponent {
         pickable,
         loadTiles,
         autoHighlight: true,
-        isDebugMode: true,
         selectedTileId,
         coloredTilesMap,
         wireframe
@@ -451,6 +467,7 @@ export default class App extends PureComponent {
         onOptionsChange={this._setDebugOptions}
         clearWarnings={this.handleClearWarnings}
         isClearButtonDisabled={isClearButtonDisabled}
+        debugTextureImage={UV_DEBUG_TEXTURE_URL}
       >
         {this._renderStats()}
       </DebugPanel>
