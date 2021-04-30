@@ -4,6 +4,7 @@ export default `#version 300 es
 // Scale the model
 uniform float sizeScale;
 uniform bool composeModelMatrix;
+uniform bool u_pickSegmentation;
 
 // Primitive attributes
 in vec3 positions;
@@ -38,11 +39,11 @@ void main(void) {
   geometry.worldPosition = instancePositions;
   geometry.uv = uv;
 
-  #ifdef SEGMENTATION_MODE
+  if (u_pickSegmentation) {
     geometry.pickingColor = segmentationPickingColors;
-  #else
+  } else {
     geometry.pickingColor = instancePickingColors;
-  #endif
+  }
 
   #ifdef MODULE_PBR
     // set PBR data

@@ -42,7 +42,7 @@ function getGeometry(data, useMeshColors) {
 
 export default class MeshLayer extends SimpleMeshLayer {
   getShaders() {
-    const {material, segmentationMode, segmentationData} = this.props;
+    const {material} = this.props;
     const shaders = super.getShaders();
     const modules = shaders.modules;
 
@@ -50,17 +50,14 @@ export default class MeshLayer extends SimpleMeshLayer {
       modules.push(pbr);
     }
 
-    if (segmentationMode && segmentationData) {
-      shaders.defines.SEGMENTATION_MODE = 1;
-    }
     return {...shaders, vs, fs};
   }
 
   initializeState() {
-    const {segmentationMode, segmentationData} = this.props;
+    const {pickFeatures, segmentationData} = this.props;
     super.initializeState();
 
-    if (segmentationMode && segmentationData) {
+    if (pickFeatures && segmentationData) {
       this.state.attributeManager.add({
         segmentationPickingColors: {
           type: GL.UNSIGNED_BYTE,
@@ -99,6 +96,7 @@ export default class MeshLayer extends SimpleMeshLayer {
   }
 
   getModel(mesh) {
+    const {pickFeatures, segmentationData} = this.props;
     let materialParser = null;
     if (this.props.material) {
       const material = this.props.material;
@@ -143,6 +141,11 @@ export default class MeshLayer extends SimpleMeshLayer {
         hasTexture: Boolean(texture)
       });
     }
+
+    model.setUniforms({
+      // eslint-disable-next-line camelcase
+      u_pickSegmentation: Boolean(pickFeatures && segmentationData)
+    });
 
     return model;
   }

@@ -58,7 +58,7 @@ export default class TileLayer extends Tile3DLayer {
       pickable,
       autoHighlight,
       tileColorMode,
-      segmentationMode,
+      pickFeatures,
       colorsMap,
       selectedTileId,
       coloredTilesMap,
@@ -102,7 +102,7 @@ export default class TileLayer extends Tile3DLayer {
         autoHighlight,
         highlightColor: [0, 0, 255, 150],
         wireframe,
-        segmentationMode,
+        pickFeatures,
         segmentationData
       }
     );
