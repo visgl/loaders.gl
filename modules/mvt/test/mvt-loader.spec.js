@@ -9,6 +9,8 @@ const {classifyRings} = TEST_EXPORTS;
 const MVT_POINTS_DATA_URL = '@loaders.gl/mvt/test/data/points_4-2-6.mvt';
 const MVT_LINES_DATA_URL = '@loaders.gl/mvt/test/data/lines_2-2-1.mvt';
 const MVT_POLYGONS_DATA_URL = '@loaders.gl/mvt/test/data/polygons_10-133-325.mvt';
+const MVT_POLYGON_ZERO_SIZE_HOLE_DATA_URL =
+  '@loaders.gl/mvt/test/data/polygon_with_zero_size_hole.mvt';
 const MVT_MULTIPLE_LAYERS_DATA_URL =
   '@loaders.gl/mvt/test/data/lines_10-501-386_multiplelayers.mvt';
 
@@ -215,6 +217,7 @@ const TEST_FILES = [
   MVT_POINTS_DATA_URL,
   MVT_LINES_DATA_URL,
   MVT_POLYGONS_DATA_URL,
+  MVT_POLYGON_ZERO_SIZE_HOLE_DATA_URL,
   MVT_MULTIPLE_LAYERS_DATA_URL
 ];
 for (const filename of TEST_FILES) {
@@ -288,28 +291,11 @@ test('Rings - two rings', async t => {
 });
 
 test('Rings - zero sized hole', async t => {
+  // In addition to checking the result,
+  // verify that the data array is shortened
+  t.equal(ringsZeroSizeHole.data.length, 20);
   const result = classifyRings(ringsZeroSizeHole);
   t.deepEqual(result, [[0]]);
+  t.equal(ringsZeroSizeHole.data.length, 12);
   t.end();
 });
-
-const TEST_TILES = ['./6/13/23.mvt', './6/12/23.mvt'];
-
-for (const f of TEST_TILES) {
-  test(`Legacy MVT binary generation is equivalent ${f}`, async t => {
-    const filename = `@loaders.gl/mvt/test/data/tiles/${f.slice(2)}`;
-    const response = await fetchFile(filename);
-    const mvtArrayBuffer = await response.arrayBuffer();
-    const geojson = await parse(mvtArrayBuffer, MVTLoader);
-
-    // Pass a fresh response otherwise get CI testing errors
-    const response2 = await fetchFile(filename);
-    const mvtArrayBuffer2 = await response2.arrayBuffer();
-    const binary = await parse(mvtArrayBuffer2, MVTLoader, {gis: {format: 'binary'}});
-    delete binary.byteLength;
-    const b = binary.polygons;
-    const g = geojsonToBinary(geojson).polygons || {polygonIndices: 0};
-    t.deepEqual(b.polygonIndices, g.polygonIndices);
-    t.end();
-  });
-}

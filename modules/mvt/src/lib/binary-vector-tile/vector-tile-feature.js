@@ -178,8 +178,6 @@ export default class VectorTileFeature {
   }
 }
 
-// All code below is unchanged from the original Mapbox implemenation
-
 // classifies an array of rings into polygons with outer rings and holes
 function classifyRings(geom) {
   const len = geom.lines.length;
@@ -189,18 +187,29 @@ function classifyRings(geom) {
   const polygons = [];
   let polygon;
   let ccw;
+  let offset = 0;
 
   for (let i = 0, startIndex, endIndex; i < len; i++) {
-    startIndex = geom.lines[i];
+    startIndex = geom.lines[i] - offset;
 
-    // endIndex will be undefined for last polygon
-    // but that is fine as we only pass it to slice()
-    endIndex = geom.lines[i + 1];
+    endIndex = geom.lines[i + 1] - offset || geom.data.length;
     const shape = geom.data.slice(startIndex, endIndex);
     const area = signedArea(shape);
 
-    // TODO would strip out some data, which we want to avoid
-    // if (area === 0) continue;
+    if (area === 0) {
+      // This polygon has no area, so remove it from the shape
+      // Remove the section from the data array
+      const before = geom.data.slice(0, startIndex);
+      const after = geom.data.slice(endIndex);
+      geom.data = before.concat(after);
+
+      // Need to offset any remaining indices as we have
+      // modified the data buffer
+      offset += endIndex - startIndex;
+
+      // Do not add this index to the output and process next shape
+      continue;
+    }
 
     if (ccw === undefined) ccw = area < 0;
 
@@ -232,6 +241,8 @@ function signedArea(ring) {
   }
   return sum;
 }
+
+// All code below is unchanged from the original Mapbox implemenation
 
 function readFeature(tag, feature, pbf) {
   if (tag === 1) feature.id = pbf.readVarint();
