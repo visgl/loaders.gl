@@ -8,6 +8,7 @@ import {CSVLoader} from '@loaders.gl/csv';
 // Small CSV Sample Files
 const CSV_SAMPLE_URL = '@loaders.gl/csv/test/data/sample.csv';
 const CSV_SAMPLE_VERY_LONG_URL = '@loaders.gl/csv/test/data/sample-very-long.csv';
+const CSV_SAMPLE_URL_DUPLICATE_COLS = '@loaders.gl/csv/test/data/sample-duplicate-cols.csv';
 const CSV_STATES_URL = '@loaders.gl/csv/test/data/states.csv';
 
 const CSV_NO_HEADER_URL = '@loaders.gl/csv/test/data/numbers-100-no-header.csv';
@@ -67,6 +68,16 @@ test('CSVLoader#load', async t => {
   );
 
   t.end();
+});
+
+test('CSVLoader#load(sample.csv, duplicate columns)', async t => {
+  const rows = await load(CSV_SAMPLE_URL_DUPLICATE_COLS, CSVLoader);
+  t.is(rows.length, 3, 'Got correct table size');
+  t.deepEqual(rows, [
+    {A: 'x', B: 1, A1: 'y', A2: 'z', B1: 2},
+    {A: 'y', B: 29, A1: 'z', A2: 'y', B1: 19},
+    {A: 'x', B: 1, A1: 'y', A2: 'z', B1: 2}
+  ]);
 });
 
 test('CSVLoader#loadInBatches(sample.csv, columns)', async t => {

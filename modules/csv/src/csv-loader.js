@@ -51,13 +51,15 @@ async function parseCSV(csvText, options) {
   options = {...CSVLoaderOptions, ...options};
   options.csv = {...CSVLoaderOptions.csv, ...options.csv};
 
-  const header = await hasHeader(csvText, options);
+  const firstRow = readFirstRow(csvText);
+  const parseWithHeader = Boolean(options.csv.header) && isHeaderRow(firstRow, options);
 
   const config = {
     dynamicTyping: true, // Convert numbers and boolean values in rows from strings
     ...options.csv,
-    header,
-    download: false, // We handle loading, no need for papaparse to do it for us
+    header: parseWithHeader,
+    download: false, // We handle loading, no need for papaparse to do it for us,
+    transformHeader: parseWithHeader ? duplicateColumnTransformer() : undefined,
     error: e => {
       throw new Error(e);
     }
@@ -166,26 +168,24 @@ function isHeaderRow(row, options) {
   return row.every(value => typeof value === 'string');
 }
 
-async function hasHeader(csvText, options) {
-  if (options.csv.header !== 'auto') {
-    return Boolean(options.csv.header);
-  }
-
-  return await new Promise((resolve, reject) => {
-    Papa.parse(csvText, {
-      download: false,
-      dynamicTyping: true,
-      step: (results, parser) => {
-        parser.abort();
-        const row = results.data;
-        // Test the row
-        resolve(isHeaderRow(row));
-      },
-      error: e => {
-        reject(new Error(e));
-      }
-    });
+function readFirstRow(csvText) {
+  return Papa.parse(csvText, {
+    download: false,
+    dynamicTyping: true,
+    preview: 1
   });
+}
+
+function duplicateColumnTransformer() {
+  const columnCount = {};
+  return col => {
+    let colName = col;
+    if (columnCount[col]) {
+      colName = `${col}${columnCount[col]}`;
+    }
+    columnCount[col] = (columnCount[col] || 0) + 1;
+    return colName;
+  };
 }
 
 function deduceSchema(row, headerRow) {
