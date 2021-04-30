@@ -316,7 +316,10 @@ function makeAccessorObjects(points, lines, polygons, coordLength, options) {
   };
 
   if (options.triangulate) {
-    returnObj.polygons.triangles = {value: polygons.triangles, size: 1};
+    returnObj.polygons.triangles = {
+      value: new Uint32Array(polygons.triangles),
+      size: 1
+    };
   }
 
   for (const geomType in returnObj) {
