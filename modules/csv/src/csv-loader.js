@@ -71,7 +71,7 @@ async function parseCSV(csvText, options) {
 
 // TODO - support batch size 0 = no batching/single batch?
 function parseCSVInBatches(asyncIterator, options) {
-  // Apps can call the parse method directly, we so apply default options herhttps://www.papaparse.com/docs#confige
+  // Apps can call the parse method directly, we so apply default options here
   options = {...CSVLoaderOptions, ...options};
   options.csv = {...CSVLoaderOptions.csv, ...options.csv};
 
