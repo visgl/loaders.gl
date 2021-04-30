@@ -71,7 +71,7 @@ async function parseCSV(csvText, options) {
 
 // TODO - support batch size 0 = no batching/single batch?
 function parseCSVInBatches(asyncIterator, options) {
-  // Apps can call the parse method directly, we so apply default options here
+  // Apps can call the parse method directly, we so apply default options herhttps://www.papaparse.com/docs#confige
   options = {...CSVLoaderOptions, ...options};
   options.csv = {...CSVLoaderOptions.csv, ...options.csv};
 
@@ -109,8 +109,6 @@ function parseCSVInBatches(asyncIterator, options) {
         const header = isHeaderRow(row, options);
         if (header) {
           headerRow = row.map(duplicateColumnTransformer());
-          // eslint-disable-next-line no-undef, no-console
-          console.log(header, row, headerRow);
           return;
         }
       }
