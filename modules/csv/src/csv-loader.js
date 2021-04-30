@@ -51,13 +51,15 @@ async function parseCSV(csvText, options) {
   options = {...CSVLoaderOptions, ...options};
   options.csv = {...CSVLoaderOptions.csv, ...options.csv};
 
-  const header = await hasHeader(csvText, options);
+  const firstRow = readFirstRow(csvText);
+  const parseWithHeader = isHeaderRow(firstRow, options);
 
   const config = {
     dynamicTyping: true, // Convert numbers and boolean values in rows from strings
     ...options.csv,
-    header,
+    header: parseWithHeader,
     download: false, // We handle loading, no need for papaparse to do it for us
+    transformHeader: parseWithHeader ? duplicateColumnTransformer() : undefined,
     error: e => {
       throw new Error(e);
     }
@@ -106,7 +108,7 @@ function parseCSVInBatches(asyncIterator, options) {
         // Auto detects or can be forced with options.csv.header
         const header = isHeaderRow(row, options);
         if (header) {
-          headerRow = row;
+          headerRow = row.map(duplicateColumnTransformer());
           return;
         }
       }
@@ -163,29 +165,41 @@ function isHeaderRow(row, options) {
     return Boolean(options.csv.header);
   }
 
-  return row.every(value => typeof value === 'string');
+  return row && row.every(value => typeof value === 'string');
 }
 
-async function hasHeader(csvText, options) {
-  if (options.csv.header !== 'auto') {
-    return Boolean(options.csv.header);
-  }
-
-  return await new Promise((resolve, reject) => {
-    Papa.parse(csvText, {
-      download: false,
-      dynamicTyping: true,
-      step: (results, parser) => {
-        parser.abort();
-        const row = results.data;
-        // Test the row
-        resolve(isHeaderRow(row));
-      },
-      error: e => {
-        reject(new Error(e));
-      }
-    });
+/**
+ * Reads, parses, and returns the first row of a CSV text
+ * @param {string} csvText the csv text to parse
+ * @returns the first row
+ */
+function readFirstRow(csvText) {
+  const result = Papa.parse(csvText, {
+    download: false,
+    dynamicTyping: true,
+    preview: 1
   });
+  return result.data[0];
+}
+
+/**
+ * Creates a transformer that renames duplicate columns. This is needed as Papaparse doesn't handle
+ * duplicate header columns and would use the latest occurance by default.
+ * See the header option in https://www.papaparse.com/docs#config
+ * @returns a transform function that returns sanitized names for duplicate fields
+ */
+function duplicateColumnTransformer() {
+  const observedColumns = new Set();
+  return col => {
+    let colName = col;
+    let counter = 1;
+    while (observedColumns.has(colName)) {
+      colName = `${col}.${counter}`;
+      counter++;
+    }
+    observedColumns.add(colName);
+    return colName;
+  };
 }
 
 function deduceSchema(row, headerRow) {
