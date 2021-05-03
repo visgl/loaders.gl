@@ -58,7 +58,7 @@ export default function parseMVT(arrayBuffer, options) {
   }
 
   if (binary) {
-    const data = featuresToBinary(features, firstPassData, options.gis);
+    const data = featuresToBinary(features, firstPassData);
     // Add the original byteLength (as a reasonable approximation of the size of the binary data)
     // TODO decide where to store extra fields like byteLength (header etc) and document
     // @ts-ignore

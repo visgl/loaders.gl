@@ -205,6 +205,7 @@ test('Polygon MVT to local coordinates binary', async t => {
   const geometryBinary = await parse(mvtArrayBuffer, MVTLoader, {gis: {format: 'binary'}});
   t.ok(geometryBinary.byteLength > 0);
   delete geometryBinary.byteLength;
+  delete geometryBinary.polygons.triangles;
   t.deepEqual(geometryBinary, geojsonToBinary(decodedPolygonsGeometry));
 
   t.end();
@@ -231,6 +232,7 @@ for (const filename of TEST_FILES) {
     const mvtArrayBuffer2 = await response2.arrayBuffer();
     const binary = await parse(mvtArrayBuffer2, MVTLoader, {gis: {format: 'binary'}});
     delete binary.byteLength;
+    delete binary.polygons.triangles;
     t.deepEqual(geojsonToBinary(geojson), binary);
     t.end();
   });
@@ -253,7 +255,7 @@ test('Triangulation is supported', async t => {
   const response = await fetchFile(MVT_POLYGONS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
   const geometry = await parse(mvtArrayBuffer, MVTLoader, {
-    gis: {format: 'binary', triangulate: true}
+    gis: {format: 'binary'}
   });
 
   // Closed polygon with 31 vertices (0===30)

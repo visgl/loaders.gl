@@ -11,8 +11,7 @@ import earcut from 'earcut';
 export function featuresToBinary(features, firstPassData, options = {}) {
   return fillArrays(features, firstPassData, {
     numericPropKeys: options.numericPropKeys || extractNumericPropKeys(features),
-    PositionDataType: options.PositionDataType || Float32Array,
-    triangulate: options.triangulate
+    PositionDataType: options.PositionDataType || Float32Array
   });
 }
 
@@ -95,6 +94,7 @@ function fillArrays(features, firstPassData = {}, options = {}) {
         ? new Uint32Array(polygonRingsCount + 1)
         : new Uint16Array(polygonRingsCount + 1),
     positions: new PositionDataType(polygonPositionsCount * coordLength),
+    triangles: [],
     globalFeatureIds: new GlobalFeatureIdsDataType(polygonPositionsCount),
     featureIds:
       polygonFeaturesCount > 65535
@@ -103,12 +103,6 @@ function fillArrays(features, firstPassData = {}, options = {}) {
     numericProps: {},
     properties: []
   };
-
-  // If performing triangulation, need to add array to store
-  // indices that define the triangles
-  if (options.triangulate) {
-    polygons.triangles = [];
-  }
 
   // Instantiate numeric properties arrays; one value per vertex
   for (const object of [points, lines, polygons]) {
@@ -137,7 +131,6 @@ function fillArrays(features, firstPassData = {}, options = {}) {
     feature: 0
   };
 
-  const opts = {coordLength, triangulate: options.triangulate};
   for (const feature of features) {
     const geometry = feature.geometry;
     const properties = feature.properties || {};
@@ -157,7 +150,7 @@ function fillArrays(features, firstPassData = {}, options = {}) {
         break;
       case 'Polygon':
       case 'MultiPolygon':
-        handlePolygon(geometry, polygons, indexMap, properties, opts);
+        handlePolygon(geometry, polygons, indexMap, coordLength, properties);
         polygons.properties.push(keepStringProperties(properties, numericPropKeys));
         indexMap.polygonFeature++;
         break;
@@ -169,7 +162,7 @@ function fillArrays(features, firstPassData = {}, options = {}) {
   }
 
   // Wrap each array in an accessor object with value and size keys
-  return makeAccessorObjects(points, lines, polygons, coordLength, options);
+  return makeAccessorObjects(points, lines, polygons, coordLength);
 }
 
 // Fills (Multi)Point coordinates into points object of arrays
@@ -225,7 +218,7 @@ function handleLineString(geometry, lines, indexMap, coordLength, properties) {
 }
 
 // Fills (Multi)Polygon coordinates into polygons object of arrays
-function handlePolygon(geometry, polygons, indexMap, properties, {coordLength, triangulate}) {
+function handlePolygon(geometry, polygons, indexMap, coordLength, properties) {
   polygons.positions.set(geometry.data, indexMap.polygonPosition * coordLength);
 
   const nPositions = geometry.data.length / coordLength;
@@ -263,31 +256,30 @@ function handlePolygon(geometry, polygons, indexMap, properties, {coordLength, t
       indexMap.polygonPosition += (end - start) / coordLength;
     }
 
-    if (triangulate) {
-      const start = startPosition * coordLength;
-      const end = indexMap.polygonPosition * coordLength;
+    // Triangulate polygon using earcut
+    const start = startPosition * coordLength;
+    const end = indexMap.polygonPosition * coordLength;
 
-      // Extract positions and holes for just this polygon
-      const polygonPositions = polygons.positions.subarray(start, end);
+    // Extract positions and holes for just this polygon
+    const polygonPositions = polygons.positions.subarray(start, end);
 
-      // Holes are referenced relative to outer polygon
-      const offset = lines[0];
-      const holes = lines.slice(1).map(n => (n - offset) / coordLength);
+    // Holes are referenced relative to outer polygon
+    const offset = lines[0];
+    const holes = lines.slice(1).map(n => (n - offset) / coordLength);
 
-      // Compute triangulation
-      const indices = earcut(polygonPositions, holes, coordLength);
+    // Compute triangulation
+    const indices = earcut(polygonPositions, holes, coordLength);
 
-      // Indices returned by triangulation are relative to start
-      // of polygon, so we need to offset
-      for (let t = 0, tl = indices.length; t < tl; ++t) {
-        polygons.triangles.push(startPosition + indices[t]);
-      }
+    // Indices returned by triangulation are relative to start
+    // of polygon, so we need to offset
+    for (let t = 0, tl = indices.length; t < tl; ++t) {
+      polygons.triangles.push(startPosition + indices[t]);
     }
   }
 }
 
 // Wrap each array in an accessor object with value and size keys
-function makeAccessorObjects(points, lines, polygons, coordLength, options) {
+function makeAccessorObjects(points, lines, polygons, coordLength) {
   const returnObj = {
     points: {
       positions: {value: points.positions, size: coordLength},
@@ -308,19 +300,13 @@ function makeAccessorObjects(points, lines, polygons, coordLength, options) {
       polygonIndices: {value: polygons.polygonIndices, size: 1},
       primitivePolygonIndices: {value: polygons.primitivePolygonIndices, size: 1},
       positions: {value: polygons.positions, size: coordLength},
+      triangles: {value: new Uint32Array(polygons.triangles), size: 1},
       globalFeatureIds: {value: polygons.globalFeatureIds, size: 1},
       featureIds: {value: polygons.featureIds, size: 1},
       numericProps: polygons.numericProps,
       properties: polygons.properties
     }
   };
-
-  if (options.triangulate) {
-    returnObj.polygons.triangles = {
-      value: new Uint32Array(polygons.triangles),
-      size: 1
-    };
-  }
 
   for (const geomType in returnObj) {
     for (const numericProp in returnObj[geomType].numericProps) {
