@@ -58,8 +58,6 @@
         {"entry": "modules/3d-tiles/docs/api-reference/cesium-ion-loader"},
         {"entry": "modules/arrow/docs/api-reference/arrow-loader"},
         {"entry": "modules/arrow/docs/api-reference/arrow-writer"},
-        {"entry": "modules/basis/docs/api-reference/basis-loader"},
-        {"entry": "modules/basis/docs/api-reference/compressed-texture-loader"},
         {"entry": "modules/csv/docs/api-reference/csv-loader"},
         {"entry": "modules/draco/docs/api-reference/draco-loader"},
         {"entry": "modules/draco/docs/api-reference/draco-writer"},
