@@ -53,6 +53,12 @@ async function parseCSV(csvText, options) {
 
   const {rowFormat} = options.csv;
 
+  if (!['objects', 'array'].includes(rowFormat)) {
+    throw new Error(
+      `Invalid option ${rowFormat} for rowFormat. Valid values are 'objects' or 'array'`
+    );
+  }
+
   const firstRow = readFirstRow(csvText);
   const header =
     options.csv.header === 'auto' ? isHeaderRow(firstRow) : Boolean(options.csv.header);
@@ -97,7 +103,15 @@ function parseCSVInBatches(asyncIterator, options) {
 
   const asyncQueue = new AsyncQueue();
 
-  const convertToObject = options.csv.rowFormat === 'object';
+  const {rowFormat} = options.csv;
+
+  if (!['objects', 'array'].includes(rowFormat)) {
+    throw new Error(
+      `Invalid option ${rowFormat} for rowFormat. Valid values are 'objects' or 'array'`
+    );
+  }
+
+  const convertToObject = rowFormat === 'object';
 
   let isFirstRow = true;
   let headerRow = null;

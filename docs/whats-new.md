@@ -29,7 +29,7 @@ Target Release Date: Q1 2021. (Alpha releases are available).
 
 **@loaders.gl/csv**
 
-- The `rowFormat` option can be explicitly set to either `'objects'`, which transforms rows to JS object with the header row as keys (default), or `'array'` in which the row will be returned as an array of values.
+- The `rowFormat` option can be explicitly set to either `'object'`, which transforms rows to JS objects with the header row as keys (default), or `'array'` in which the row will be returned as an array of values.
 - Datasets with duplicate column names will have columns renamed with a counter suffix.
 
 **@loaders.gl/compression**
