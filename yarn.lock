@@ -1916,6 +1916,13 @@
     "@math.gl/core" "3.4.2"
     gl-matrix "^3.0.0"
 
+"@math.gl/polygon@^3.3.0":
+  version "3.4.2"
+  resolved "https://registry.yarnpkg.com/@math.gl/polygon/-/polygon-3.4.2.tgz#36c327257959c8edcc258c4ddeaecf04b125cb90"
+  integrity sha512-ANbZmcrzavzEe0bHbdEYyiudPdGGV/quB3FxUJa3L1QCcZbnrqvnuwqX+8U8ltIDhbACG1x0Uxefwo8p77aMNw==
+  dependencies:
+    "@math.gl/core" "3.4.2"
+
 "@math.gl/proj4@^3.3.0":
   version "3.4.2"
   resolved "https://registry.yarnpkg.com/@math.gl/proj4/-/proj4-3.4.2.tgz#d4006482648e936d9429d8afbaaae7d811429281"
@@ -4530,6 +4537,11 @@ duplexify@^3.4.2, duplexify@^3.6.0:
     inherits "^2.0.1"
     readable-stream "^2.0.0"
     stream-shift "^1.0.0"
+
+earcut@^2.0.6:
+  version "2.2.2"
+  resolved "https://registry.yarnpkg.com/earcut/-/earcut-2.2.2.tgz#41b0bc35f63e0fe80da7cddff28511e7e2e80d11"
+  integrity sha512-eZoZPPJcUHnfRZ0PjLvx2qBordSiO8ofC3vt+qACLM95u+4DovnbYNpQtJh0DNsWj8RnxrQytD4WA8gj5cRIaQ==
 
 ecc-jsbn@~0.1.1:
   version "0.1.2"

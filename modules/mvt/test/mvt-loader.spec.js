@@ -2,10 +2,15 @@ import test from 'tape-promise/tape';
 import {MVTLoader} from '@loaders.gl/mvt';
 import {setLoaderOptions, fetchFile, parse, parseSync} from '@loaders.gl/core';
 import {geojsonToBinary} from '@loaders.gl/gis';
+import {TEST_EXPORTS} from '@loaders.gl/mvt/lib/binary-vector-tile/vector-tile-feature';
+
+const {classifyRings} = TEST_EXPORTS;
 
 const MVT_POINTS_DATA_URL = '@loaders.gl/mvt/test/data/points_4-2-6.mvt';
 const MVT_LINES_DATA_URL = '@loaders.gl/mvt/test/data/lines_2-2-1.mvt';
 const MVT_POLYGONS_DATA_URL = '@loaders.gl/mvt/test/data/polygons_10-133-325.mvt';
+const MVT_POLYGON_ZERO_SIZE_HOLE_DATA_URL =
+  '@loaders.gl/mvt/test/data/polygon_with_zero_size_hole.mvt';
 const MVT_MULTIPLE_LAYERS_DATA_URL =
   '@loaders.gl/mvt/test/data/lines_10-501-386_multiplelayers.mvt';
 
@@ -16,6 +21,12 @@ import decodedPolygonsGeometry from '@loaders.gl/mvt/test/results/decoded_mvt_po
 import decodedPointsGeoJSON from '@loaders.gl/mvt/test/results/decoded_mvt_points.json';
 import decodedLinesGeoJSON from '@loaders.gl/mvt/test/results/decoded_mvt_lines.json';
 import decodedPolygonsGeoJSON from '@loaders.gl/mvt/test/results/decoded_mvt_polygons.json';
+
+// Rings
+import ringsSingleRing from '@loaders.gl/mvt/test/data/rings_single_ring.json';
+import ringsRingAndHole from '@loaders.gl/mvt/test/data/rings_ring_and_hole.json';
+import ringsTwoRings from '@loaders.gl/mvt/test/data/rings_two_rings.json';
+import ringsZeroSizeHole from '@loaders.gl/mvt/test/data/rings_zero_size_hole.json';
 
 setLoaderOptions({
   _workerType: 'test'
@@ -194,6 +205,7 @@ test('Polygon MVT to local coordinates binary', async t => {
   const geometryBinary = await parse(mvtArrayBuffer, MVTLoader, {gis: {format: 'binary'}});
   t.ok(geometryBinary.byteLength > 0);
   delete geometryBinary.byteLength;
+  delete geometryBinary.polygons.triangles;
   t.deepEqual(geometryBinary, geojsonToBinary(decodedPolygonsGeometry));
 
   t.end();
@@ -206,6 +218,7 @@ const TEST_FILES = [
   MVT_POINTS_DATA_URL,
   MVT_LINES_DATA_URL,
   MVT_POLYGONS_DATA_URL,
+  MVT_POLYGON_ZERO_SIZE_HOLE_DATA_URL,
   MVT_MULTIPLE_LAYERS_DATA_URL
 ];
 for (const filename of TEST_FILES) {
@@ -219,6 +232,7 @@ for (const filename of TEST_FILES) {
     const mvtArrayBuffer2 = await response2.arrayBuffer();
     const binary = await parse(mvtArrayBuffer2, MVTLoader, {gis: {format: 'binary'}});
     delete binary.byteLength;
+    delete binary.polygons.triangles;
     t.deepEqual(geojsonToBinary(geojson), binary);
     t.end();
   });
@@ -234,5 +248,56 @@ test('Empty MVT must return empty binary format', async t => {
   t.ok(geometryBinary.lines.positions.size === 2);
   t.ok(geometryBinary.polygons.positions.size === 2);
 
+  t.end();
+});
+
+test('Triangulation is supported', async t => {
+  const response = await fetchFile(MVT_POLYGONS_DATA_URL);
+  const mvtArrayBuffer = await response.arrayBuffer();
+  const geometry = await parse(mvtArrayBuffer, MVTLoader, {
+    gis: {format: 'binary'}
+  });
+
+  // Closed polygon with 31 vertices (0===30)
+  t.ok(geometry.polygons.positions);
+  t.equals(geometry.polygons.positions.value.length, 62);
+
+  t.ok(geometry.polygons.triangles);
+  t.equals(geometry.polygons.triangles.value.length, 84);
+
+  // Basic check that triangulation is valid
+  const minI = Math.min(...geometry.polygons.triangles.value);
+  const maxI = Math.max(...geometry.polygons.triangles.value);
+  t.equals(minI, 0);
+  t.equals(maxI, 29); // Don't expect to find 30 as closed polygon
+
+  t.end();
+});
+
+test('Rings - single ring', async t => {
+  const result = classifyRings(ringsSingleRing);
+  t.deepEqual(result, [[0]]);
+  t.end();
+});
+
+test('Rings - ring and hole', async t => {
+  const result = classifyRings(ringsRingAndHole);
+  t.deepEqual(result, [[0, 10]]);
+  t.end();
+});
+
+test('Rings - two rings', async t => {
+  const result = classifyRings(ringsTwoRings);
+  t.deepEqual(result, [[0], [10]]);
+  t.end();
+});
+
+test('Rings - zero sized hole', async t => {
+  // In addition to checking the result,
+  // verify that the data array is shortened
+  t.equal(ringsZeroSizeHole.data.length, 20);
+  const result = classifyRings(ringsZeroSizeHole);
+  t.deepEqual(result, [[0]]);
+  t.equal(ringsZeroSizeHole.data.length, 12);
   t.end();
 });

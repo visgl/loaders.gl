@@ -1,8 +1,14 @@
 // This code is forked from https://github.com/mapbox/vector-tile-js under BSD 3-clause license.
 /* eslint-disable */
 
+import {getPolygonSignedArea} from '@math.gl/polygon';
+
 // Reduce GC by reusing variables
 let endPos, cmd, cmdLen, length, x, y, i;
+
+export const TEST_EXPORTS = {
+  classifyRings
+};
 
 export default class VectorTileFeature {
   static get types() {
@@ -121,9 +127,9 @@ export default class VectorTileFeature {
         break;
 
       case 3: // Polygon
-        const rings = classifyRings(geom.lines);
+        const rings = classifyRings(geom);
         this._firstPassData.polygonFeaturesCount++;
-        this._firstPassData.polygonObjectsCount += geom.lines.length;
+        this._firstPassData.polygonObjectsCount += rings.length;
 
         for (const lines of rings) {
           this._firstPassData.polygonRingsCount += lines.length;
@@ -175,25 +181,60 @@ export default class VectorTileFeature {
 }
 
 /**
- * In the original GeoJSON implementation this function
- * classifies the rings in a polygon into outlines & holes,
- * based on the vertex winding order. However the implementation
- * was broken and all it did was classify each ring as a separate
- * polygon outline. In order to maintain compatibility with the
- * original, we keep this behavior, but simplify the implementation
- * to an equivalent function:
- * [A, B, C] => [[A], [B], [C]]
- *
- * TODO in the future, the classification could be fixed following
- * https://github.com/mapbox/vector-tile-js, but this would require
- * confirming that the renderer of deck.gl is actually capable of
- * drawing polygons with holes in them.
+ * Classifies an array of rings into polygons with outer rings and holes
+ * The function also detects holes which have zero area and
+ * removes them. In doing so it modifies the input
+ * `geom.data` array to remove the unneeded data
  */
-function classifyRings(rings) {
-  return rings.map(r => [r]);
+function classifyRings(geom) {
+  const len = geom.lines.length;
+
+  if (len <= 1) return [geom.lines];
+
+  const polygons = [];
+  let polygon;
+  let ccw;
+  let offset = 0;
+
+  for (let i = 0, startIndex, endIndex; i < len; i++) {
+    startIndex = geom.lines[i] - offset;
+
+    endIndex = geom.lines[i + 1] - offset || geom.data.length;
+    const shape = geom.data.slice(startIndex, endIndex);
+    const area = getPolygonSignedArea(shape);
+
+    if (area === 0) {
+      // This polygon has no area, so remove it from the shape
+      // Remove the section from the data array
+      const before = geom.data.slice(0, startIndex);
+      const after = geom.data.slice(endIndex);
+      geom.data = before.concat(after);
+
+      // Need to offset any remaining indices as we have
+      // modified the data buffer
+      offset += endIndex - startIndex;
+
+      // Do not add this index to the output and process next shape
+      continue;
+    }
+
+    if (ccw === undefined) ccw = area < 0;
+
+    if (ccw === area < 0) {
+      if (polygon) polygons.push(polygon);
+      polygon = [startIndex];
+    } else {
+      // @ts-ignore
+      polygon.push(startIndex);
+    }
+  }
+  if (polygon) polygons.push(polygon);
+
+  return polygons;
 }
 
 // All code below is unchanged from the original Mapbox implemenation
+
 function readFeature(tag, feature, pbf) {
   if (tag === 1) feature.id = pbf.readVarint();
   else if (tag === 2) readTag(pbf, feature);

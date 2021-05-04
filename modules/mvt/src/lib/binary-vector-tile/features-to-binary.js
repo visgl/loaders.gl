@@ -1,4 +1,5 @@
 // @ts-nocheck
+import earcut from 'earcut';
 /**
  * Convert binary features to flat binary arrays. Similar to
  * `geojsonToBinary` helper function, except that it expects
@@ -93,6 +94,7 @@ function fillArrays(features, firstPassData = {}, options = {}) {
         ? new Uint32Array(polygonRingsCount + 1)
         : new Uint16Array(polygonRingsCount + 1),
     positions: new PositionDataType(polygonPositionsCount * coordLength),
+    triangles: [],
     globalFeatureIds: new GlobalFeatureIdsDataType(polygonPositionsCount),
     featureIds:
       polygonFeaturesCount > 65535
@@ -234,7 +236,8 @@ function handlePolygon(geometry, polygons, indexMap, coordLength, properties) {
 
   // Unlike Point & LineString geometry.lines is a 2D array
   for (let l = 0, ll = geometry.lines.length; l < ll; ++l) {
-    polygons.polygonIndices[indexMap.polygonObject++] = indexMap.polygonPosition;
+    const startPosition = indexMap.polygonPosition;
+    polygons.polygonIndices[indexMap.polygonObject++] = startPosition;
 
     const lines = geometry.lines[l];
     const nextLines = geometry.lines[l + 1];
@@ -252,6 +255,32 @@ function handlePolygon(geometry, polygons, indexMap, coordLength, properties) {
       polygons.primitivePolygonIndices[indexMap.polygonRing++] = indexMap.polygonPosition;
       indexMap.polygonPosition += (end - start) / coordLength;
     }
+
+    triangulatePolygon(polygons, lines, startPosition, indexMap.polygonPosition, coordLength);
+  }
+}
+
+/**
+ * Triangulate polygon using earcut
+ */
+function triangulatePolygon(polygons, lines, startPosition, endPosition, coordLength) {
+  const start = startPosition * coordLength;
+  const end = endPosition * coordLength;
+
+  // Extract positions and holes for just this polygon
+  const polygonPositions = polygons.positions.subarray(start, end);
+
+  // Holes are referenced relative to outer polygon
+  const offset = lines[0];
+  const holes = lines.slice(1).map(n => (n - offset) / coordLength);
+
+  // Compute triangulation
+  const indices = earcut(polygonPositions, holes, coordLength);
+
+  // Indices returned by triangulation are relative to start
+  // of polygon, so we need to offset
+  for (let t = 0, tl = indices.length; t < tl; ++t) {
+    polygons.triangles.push(startPosition + indices[t]);
   }
 }
 
@@ -277,6 +306,7 @@ function makeAccessorObjects(points, lines, polygons, coordLength) {
       polygonIndices: {value: polygons.polygonIndices, size: 1},
       primitivePolygonIndices: {value: polygons.primitivePolygonIndices, size: 1},
       positions: {value: polygons.positions, size: coordLength},
+      triangles: {value: new Uint32Array(polygons.triangles), size: 1},
       globalFeatureIds: {value: polygons.globalFeatureIds, size: 1},
       featureIds: {value: polygons.featureIds, size: 1},
       numericProps: polygons.numericProps,

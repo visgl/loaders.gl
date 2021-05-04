@@ -86,6 +86,8 @@ corresponds to 3D coordinates, where each vertex is defined by three numbers.
     polygonIndices: {value: Uint16Array || Uint32Array, size: 1},
     // Indices within positions of the start of each primitive Polygon/ring
     primitivePolygonIndices: {value: Uint16Array || Uint32Array, size: 1},
+    // (Optional) triangle indices. Returned by MVTLoader when `binary` option is used. Allows deck.gl to skip performing costly triangulation on main thread (https://github.com/visgl/loaders.gl/pull/1356)
+    triangles: {value: Uint32Array, size: 1},
     // Array of original feature indexes by vertex
     globalFeatureIds: {value: Uint16Array || Uint32Array, size: 1},
     // Array of Polygon feature indexes by vertex
