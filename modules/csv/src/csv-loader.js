@@ -8,6 +8,11 @@ import AsyncIteratorStreamer from './lib/async-iterator-streamer';
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
+const ROW_FORMAT_OPTIONS = {
+  OBJECT: 'object',
+  ARRAY: 'array'
+};
+
 const CSVLoaderOptions = {
   csv: {
     TableBatch: RowTableBatch,
@@ -15,7 +20,7 @@ const CSVLoaderOptions = {
     optimizeMemoryUsage: false,
     // CSV options
     header: 'auto',
-    rowFormat: 'object',
+    rowFormat: ROW_FORMAT_OPTIONS.OBJECT,
     columnPrefix: 'column',
     // delimiter: auto
     // newline: auto
@@ -52,10 +57,9 @@ async function parseCSV(csvText, options) {
   options.csv = {...CSVLoaderOptions.csv, ...options.csv};
 
   const {rowFormat} = options.csv;
-
-  if (!['objects', 'array'].includes(rowFormat)) {
+  if (!Object.values(ROW_FORMAT_OPTIONS).includes(rowFormat)) {
     throw new Error(
-      `Invalid option ${rowFormat} for rowFormat. Valid values are 'objects' or 'array'`
+      `Invalid option ${rowFormat} for rowFormat. Valid values are 'object' or 'array'`
     );
   }
 
@@ -63,7 +67,7 @@ async function parseCSV(csvText, options) {
   const header =
     options.csv.header === 'auto' ? isHeaderRow(firstRow) : Boolean(options.csv.header);
 
-  const parseWithHeader = rowFormat === 'object' && header;
+  const parseWithHeader = rowFormat === ROW_FORMAT_OPTIONS.OBJECT && header;
 
   const config = {
     dynamicTyping: true, // Convert numbers and boolean values in rows from strings
@@ -104,14 +108,13 @@ function parseCSVInBatches(asyncIterator, options) {
   const asyncQueue = new AsyncQueue();
 
   const {rowFormat} = options.csv;
-
-  if (!['objects', 'array'].includes(rowFormat)) {
+  if (!Object.values(ROW_FORMAT_OPTIONS).includes(rowFormat)) {
     throw new Error(
-      `Invalid option ${rowFormat} for rowFormat. Valid values are 'objects' or 'array'`
+      `Invalid option ${rowFormat} for rowFormat. Valid values are 'object' or 'array'`
     );
   }
 
-  const convertToObject = rowFormat === 'object';
+  const convertToObject = rowFormat === ROW_FORMAT_OPTIONS.OBJECT;
 
   let isFirstRow = true;
   let headerRow = null;
