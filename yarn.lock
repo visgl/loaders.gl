@@ -1916,6 +1916,13 @@
     "@math.gl/core" "3.4.2"
     gl-matrix "^3.0.0"
 
+"@math.gl/polygon@^3.3.0":
+  version "3.4.2"
+  resolved "https://registry.yarnpkg.com/@math.gl/polygon/-/polygon-3.4.2.tgz#36c327257959c8edcc258c4ddeaecf04b125cb90"
+  integrity sha512-ANbZmcrzavzEe0bHbdEYyiudPdGGV/quB3FxUJa3L1QCcZbnrqvnuwqX+8U8ltIDhbACG1x0Uxefwo8p77aMNw==
+  dependencies:
+    "@math.gl/core" "3.4.2"
+
 "@math.gl/proj4@^3.3.0":
   version "3.4.2"
   resolved "https://registry.yarnpkg.com/@math.gl/proj4/-/proj4-3.4.2.tgz#d4006482648e936d9429d8afbaaae7d811429281"

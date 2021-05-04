@@ -1,6 +1,8 @@
 // This code is forked from https://github.com/mapbox/vector-tile-js under BSD 3-clause license.
 /* eslint-disable */
 
+import {getPolygonSignedArea} from '@math.gl/polygon';
+
 // Reduce GC by reusing variables
 let endPos, cmd, cmdLen, length, x, y, i;
 
@@ -194,7 +196,7 @@ function classifyRings(geom) {
 
     endIndex = geom.lines[i + 1] - offset || geom.data.length;
     const shape = geom.data.slice(startIndex, endIndex);
-    const area = signedArea(shape);
+    const area = getPolygonSignedArea(shape);
 
     if (area === 0) {
       // This polygon has no area, so remove it from the shape
@@ -224,22 +226,6 @@ function classifyRings(geom) {
   if (polygon) polygons.push(polygon);
 
   return polygons;
-}
-
-function signedArea(ring) {
-  let sum = 0,
-    p1x,
-    p1y,
-    p2x,
-    p2y;
-  for (let i = 0, len = ring.length / 2, j = len - 1; i < len; j = i++) {
-    p1x = ring[2 * i];
-    p1y = ring[2 * i + 1];
-    p2x = ring[2 * j];
-    p2y = ring[2 * j + 1];
-    sum += (p2x - p1x) * (p1y + p2y);
-  }
-  return sum;
 }
 
 // All code below is unchanged from the original Mapbox implemenation
