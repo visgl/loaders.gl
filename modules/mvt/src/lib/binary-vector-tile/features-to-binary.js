@@ -1,4 +1,5 @@
 // @ts-nocheck
+import earcut from 'earcut';
 /**
  * Convert binary features to flat binary arrays. Similar to
  * `geojsonToBinary` helper function, except that it expects
@@ -7,7 +8,6 @@
  * geoJSON. See `binary-vector-tile/VectorTileFeature` for
  * data format detais
  */
-import earcut from 'earcut';
 export function featuresToBinary(features, firstPassData, options = {}) {
   return fillArrays(features, firstPassData, {
     numericPropKeys: options.numericPropKeys || extractNumericPropKeys(features),
