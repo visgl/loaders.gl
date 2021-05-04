@@ -513,6 +513,9 @@ export default class App extends PureComponent {
     if (viewportIds && !viewportIds.includes(viewportId)) {
       return false;
     }
+    if (viewportId === 'minimap' && layerId === 'normals-debug') {
+      return false;
+    }
     return true;
   }
 
