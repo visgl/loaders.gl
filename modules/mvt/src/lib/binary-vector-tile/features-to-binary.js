@@ -256,25 +256,31 @@ function handlePolygon(geometry, polygons, indexMap, coordLength, properties) {
       indexMap.polygonPosition += (end - start) / coordLength;
     }
 
-    // Triangulate polygon using earcut
-    const start = startPosition * coordLength;
-    const end = indexMap.polygonPosition * coordLength;
+    triangulatePolygon(polygons, lines, startPosition, indexMap.polygonPosition, coordLength);
+  }
+}
 
-    // Extract positions and holes for just this polygon
-    const polygonPositions = polygons.positions.subarray(start, end);
+/**
+ * Triangulate polygon using earcut
+ */
+function triangulatePolygon(polygons, lines, startPosition, endPosition, coordLength) {
+  const start = startPosition * coordLength;
+  const end = endPosition * coordLength;
 
-    // Holes are referenced relative to outer polygon
-    const offset = lines[0];
-    const holes = lines.slice(1).map(n => (n - offset) / coordLength);
+  // Extract positions and holes for just this polygon
+  const polygonPositions = polygons.positions.subarray(start, end);
 
-    // Compute triangulation
-    const indices = earcut(polygonPositions, holes, coordLength);
+  // Holes are referenced relative to outer polygon
+  const offset = lines[0];
+  const holes = lines.slice(1).map(n => (n - offset) / coordLength);
 
-    // Indices returned by triangulation are relative to start
-    // of polygon, so we need to offset
-    for (let t = 0, tl = indices.length; t < tl; ++t) {
-      polygons.triangles.push(startPosition + indices[t]);
-    }
+  // Compute triangulation
+  const indices = earcut(polygonPositions, holes, coordLength);
+
+  // Indices returned by triangulation are relative to start
+  // of polygon, so we need to offset
+  for (let t = 0, tl = indices.length; t < tl; ++t) {
+    polygons.triangles.push(startPosition + indices[t]);
   }
 }
 
