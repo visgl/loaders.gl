@@ -25,7 +25,7 @@ export default class VectorTileFeature {
   constructor(pbf: Protobuf, end, extent, keys, values, firstPassData);
 
   loadGeometry(); any;
-  classifyRings([number]): [[number]];
+  classifyRings(geom: {data: [number], lines: [number]}): [[number]];
   toBinaryCoordinates(options: {x: number, y: number, z: number} | (([number], VectorTileFeature) => void)): object;
 }
 

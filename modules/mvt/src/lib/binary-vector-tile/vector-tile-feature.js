@@ -180,7 +180,12 @@ export default class VectorTileFeature {
   }
 }
 
-// classifies an array of rings into polygons with outer rings and holes
+/**
+ * Classifies an array of rings into polygons with outer rings and holes
+ * The function also detects holes which have zero area and
+ * removes them. In doing so it modifies the input
+ * `geom.data` array to remove the unneeded data
+ */
 function classifyRings(geom) {
   const len = geom.lines.length;
 
