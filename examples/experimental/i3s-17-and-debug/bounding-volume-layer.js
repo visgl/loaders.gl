@@ -5,29 +5,31 @@ import {CubeGeometry, SphereGeometry} from '@luma.gl/engine';
 import {CompositeLayer, COORDINATE_SYSTEM, log} from '@deck.gl/core';
 
 import MeshLayer from './mesh-layer/mesh-layer';
-import {COLORED_BY} from './color-map';
 
-const BG_OPACITY = 100;
+const DEFAULT_BG_OPACITY = 100;
 const GEOMETRY_STEP = 50;
 const SINGLE_DATA = [0];
 
 const defaultProps = {
   visible: false,
-  coloredBy: COLORED_BY.ORIGINAL,
-  colorsMap: null,
-  tiles: []
+  tiles: [],
+  material: {pbrMetallicRoughness: {baseColorFactor: [1, 1, 1, 1]}},
+  getBoundingVolumeColor: {
+    type: 'function',
+    value: tile => [255, 255, 255, DEFAULT_BG_OPACITY],
+    compare: false
+  }
 };
 
 // TODO: replace CompositeLayer to SimpleMeshLayer
-export default class ObbLayer extends CompositeLayer {
+export default class BoundingVolumeLayer extends CompositeLayer {
   initializeState() {
     if ('onTileLoadFail' in this.props) {
       log.removed('onTileLoadFail', 'onTileError')();
     }
 
     this.state = {
-      layerMap: {},
-      colorsMap: {}
+      layerMap: {}
     };
   }
 
@@ -96,22 +98,19 @@ export default class ObbLayer extends CompositeLayer {
     return this._generateSphereMesh(tile);
   }
 
-  _getObbLayer(tile, oldLayer) {
+  _getBoundingVolumeLayer(tile, oldLayer) {
     const {content, viewportIds} = tile;
-    const {coloredBy, colorsMap} = this.props;
+    const {material, getBoundingVolumeColor} = this.props;
     const {cartographicOrigin, modelMatrix} = content;
 
     const geometry = (oldLayer && oldLayer.props.mesh) || this._generateMesh(tile);
-
-    const color = colorsMap ? colorsMap.getTileColor(tile, {coloredBy}) : [255, 255, 255];
-    const material = {pbrMetallicRoughness: {baseColorFactor: [1, 1, 1, 1]}};
 
     return new MeshLayer({
       id: `obb-debug-${tile.id}`,
       mesh: geometry,
       data: SINGLE_DATA,
       getPosition: [0, 0, 0],
-      getColor: [...color, BG_OPACITY],
+      getColor: getBoundingVolumeColor(tile),
       viewportIds,
       material,
       modelMatrix,
@@ -131,10 +130,7 @@ export default class ObbLayer extends CompositeLayer {
   }
 
   resetTiles() {
-    this.setState({
-      layerMap: {},
-      colorsMap: {}
-    });
+    this.setState({layerMap: {}});
   }
 
   addTile(tile) {
@@ -158,9 +154,9 @@ export default class ObbLayer extends CompositeLayer {
 
         if (tile.selected) {
           if (!layer) {
-            layer = this._getObbLayer(tile);
+            layer = this._getBoundingVolumeLayer(tile);
           } else if (needsUpdate) {
-            layer = this._getObbLayer(tile, layer);
+            layer = this._getBoundingVolumeLayer(tile, layer);
             needsUpdate = false;
           } else if (!layer.props.visible) {
             layer = layer.clone({
@@ -180,5 +176,5 @@ export default class ObbLayer extends CompositeLayer {
   }
 }
 
-ObbLayer.layerName = 'ObbLayer';
-ObbLayer.defaultProps = defaultProps;
+BoundingVolumeLayer.layerName = 'BoundingVolumeLayer';
+BoundingVolumeLayer.defaultProps = defaultProps;

@@ -26,12 +26,12 @@ export const TILE_COLOR_MODES = {
 
 export const INITIAL_TILE_COLOR_MODE = COLORED_BY.ORIGINAL;
 
-export const OBB_COLOR_MODES = {
+export const BOUNDING_VOLUME_COLOR_MODES = {
   'Color: White': COLORED_BY.ORIGINAL,
   'Color: By tile': COLORED_BY.TILE
 };
 
-export const INITIAL_OBB_COLOR_MODE = COLORED_BY.ORIGINAL;
+export const INITIAL_BOUNDING_VOLUME_COLOR_MODE = COLORED_BY.ORIGINAL;
 
 export const BOUNDING_VOLUME_WARNING_TYPE = 'boundingVolume';
 export const LOD_WARNING_TYPE = 'lod';

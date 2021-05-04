@@ -59,7 +59,7 @@ export default class TileLayer extends Tile3DLayer {
       autoHighlight,
       tileColorMode,
       pickFeatures,
-      colorsMap,
+      colorMap,
       selectedTileId,
       coloredTilesMap,
       wireframe
@@ -74,8 +74,8 @@ export default class TileLayer extends Tile3DLayer {
         attributes: getMeshGeometry(attributes)
       });
 
-    const color = colorsMap
-      ? colorsMap.getTileColor(tileHeader, {
+    const color = colorMap
+      ? colorMap.getColor(tileHeader, {
           coloredBy: tileColorMode,
           selectedTileId,
           coloredTilesMap
