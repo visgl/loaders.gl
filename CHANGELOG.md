@@ -1,5 +1,34 @@
 ## v3.0 Prerelease
 
+#### v3.0.0-alpha.13
+
+- Chore(CSV): improve rowFormat handling and consistency (#1360)
+- i3s-debug: remove yarn.lock (#1359)
+- I3S-Debug - Remove normals from minimap view (#1361)
+- MVT triangulation (#1356)
+- Website - Remove Basis + Compressed texture loader from loaders list (#1353)
+- i3s-debug: texture refactoring (#1350)
+- FIX(CSVLoader): Handle duplicate header column names in CSVs (#1355)
+- I3S-Picking - Use u_pickSegmentation uniform (#1354)
+- Add segmentationData to tiles documentation (#1351)
+- Create polyfill for Promise.allSettled() method (#1342)
+- Refactoring in I3S loaders (#1347)
+- i3s-debug: fix debug texture (#1348)
+- i3s-debug: show-debug-texture-image (#1346)
+- examples: fix yarn start-local-deck (#1345)
+- I3S-Debug - Rename custom color option (#1344)
+- I3S-Debug - Move Wireframe mode to tile options (#1343)
+- i3s-debug: improve uv debug texture (#1338)
+- I3S-Debug - Fix for tile validation (#1340)
+- I3S-Debug and I3S-Picking - Fix for attributes panel (#1339)
+- I3S-attribute-loader - Fix for attributes loading (#1337)
+- I3S-Debug - Show normals in percentage way (#1336)
+- I3S-Debug - Normals refactoring (#1335)
+- build(deps): bump ssri from 6.0.1 to 6.0.2 (#1331)
+- I3S-Debug - Add input for changing debug normals length (#1333)
+- fix babel-runtime version (#1334)
+- i3s-debug: uv debug refactoring (#1332)
+
 #### v3.0.0-alpha.12
 
 - I3S-Debug - Compare geometry volume vs Tile volume (#1310)
