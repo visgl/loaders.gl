@@ -34,7 +34,6 @@
     "@loaders.gl/gis": "3.0.0-alpha.15",
     "@loaders.gl/loader-utils": "3.0.0-alpha.15",
     "@math.gl/polygon": "^3.3.0",
-    "earcut": "^2.0.6",
     "pbf": "^3.2.1"
   },
   "devDependencies": {

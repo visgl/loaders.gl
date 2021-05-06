@@ -1,5 +1,6 @@
 // @ts-nocheck
-import earcut from 'earcut';
+import {earcut} from '@math.gl/polygon';
+
 /**
  * Convert binary features to flat binary arrays. Similar to
  * `geojsonToBinary` helper function, except that it expects
