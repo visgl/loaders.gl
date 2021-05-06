@@ -33,7 +33,7 @@ export default class ColorMap {
     };
   }
 
-  getTileColor(tile, options) {
+  getColor(tile, options) {
     switch (options.coloredBy) {
       case COLORED_BY.RANDOM:
         return this._getRandomColor(tile.id);

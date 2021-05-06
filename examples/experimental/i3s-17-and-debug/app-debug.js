@@ -31,12 +31,12 @@ import {
   INITIAL_MAP_STYLE,
   CONTRAST_MAP_STYLES,
   INITIAL_TILE_COLOR_MODE,
-  INITIAL_OBB_COLOR_MODE
+  INITIAL_BOUNDING_VOLUME_COLOR_MODE
 } from './constants';
 import {COLORED_BY, makeRGBObjectFromColor, getRGBValueFromColorObject} from './color-map';
 import {getFrustumBounds} from './frustum-utils';
 import TileLayer from './tile-layer/tile-layer';
-import ObbLayer from './obb-layer';
+import BoundingVolumeLayer from './bounding-volume-layer';
 import ColorMap from './color-map';
 import AttributesTooltip from './components/attributes-tooltip';
 import {getTileDebugInfo, getShortTileDebugInfo, validateTile} from './tile-debug';
@@ -58,6 +58,8 @@ const TRANSITION_DURAITON = 4000;
 const DEFAULT_TRIANGLES_PERCENTAGE = 30; // Percentage of triangles to show normals for.
 const DEFAULT_NORMALS_LENGTH = 20; // Normals length in meters
 const NORMALS_COLOR = [255, 0, 0];
+const DEFAULT_COLOR = [255, 255, 255];
+const DEFAULT_BG_OPACITY = 100;
 const UV_DEBUG_TEXTURE_URL =
   'https://raw.githubusercontent.com/visgl/deck.gl-data/master/images/uv-debug-texture.jpg';
 
@@ -80,11 +82,11 @@ const INITIAL_DEBUG_OPTIONS_STATE = {
   // Use separate traversal for the minimap viewport
   minimapViewport: false,
   // Show bounding volumes
-  obb: false,
+  boundingVolume: false,
   // Tile coloring mode selector
   tileColorMode: INITIAL_TILE_COLOR_MODE,
   // Bounding volume coloring mode selector
-  obbColorMode: INITIAL_OBB_COLOR_MODE,
+  boundingVolumeColorMode: INITIAL_BOUNDING_VOLUME_COLOR_MODE,
   // Select tiles with a mouse button
   pickable: false,
   // Load tiles after traversal.
@@ -342,6 +344,14 @@ export default class App extends PureComponent {
     }
   }
 
+  getBoundingVolumeColor(tile) {
+    const {boundingVolumeColorMode} = this.state.debugOptions;
+    const color =
+      this._colorMap.getColor(tile, {coloredBy: boundingVolumeColorMode}) || DEFAULT_COLOR;
+
+    return [...color, DEFAULT_BG_OPACITY];
+  }
+
   _renderMainOnMinimap() {
     const {
       tileset,
@@ -378,9 +388,8 @@ export default class App extends PureComponent {
       token,
       viewState,
       debugOptions: {
-        obb,
+        boundingVolume,
         tileColorMode,
-        obbColorMode,
         pickable,
         minimapViewport,
         loadTiles,
@@ -404,7 +413,7 @@ export default class App extends PureComponent {
       loadOptions.token = token;
     }
 
-    this._colorsMap = this._colorsMap || new ColorMap();
+    this._colorMap = this._colorMap || new ColorMap();
     const tiles = (tileset || {}).tiles || [];
     const viewport = new WebMercatorViewport(viewState.main);
     const frustumBounds = getFrustumBounds(viewport);
@@ -416,7 +425,7 @@ export default class App extends PureComponent {
         onTilesetLoad: this._onTilesetLoad.bind(this),
         onTileLoad: this._onTileLoad.bind(this),
         onTileUnload: this._onTileUnload.bind(this),
-        colorsMap: this._colorsMap,
+        colorMap: this._colorMap,
         tileColorMode,
         loadOptions,
         pickable,
@@ -434,12 +443,11 @@ export default class App extends PureComponent {
         getColor: d => d.color,
         getWidth: 2
       }),
-      new ObbLayer({
-        id: 'obb-layer',
-        visible: obb,
+      new BoundingVolumeLayer({
+        id: 'bounding-volume-layer',
+        visible: boundingVolume,
         tiles,
-        coloredBy: obbColorMode,
-        colorsMap: this._colorsMap
+        getBoundingVolumeColor: this.getBoundingVolumeColor.bind(this)
       }),
       new LineLayer({
         id: 'normals-debug',
