@@ -1233,6 +1233,14 @@ function Parser(config) {
             cursor = quoteSearch + 1 + spacesBetweenQuoteAndDelimiter + delimLen;
             nextDelim = input.indexOf(delim, cursor);
             nextNewline = input.indexOf(newline, cursor);
+
+            if (stepIsFunction) {
+              doStep();
+              if (aborted) return returnable();
+            }
+
+            if (preview && data.length >= preview) return returnable(true);
+
             break;
           }
 
@@ -1269,6 +1277,12 @@ function Parser(config) {
           continue;
         }
 
+        if (stepIsFunction) {
+          doStep();
+          if (aborted) return returnable();
+        }
+
+        if (preview && data.length >= preview) return returnable(true);
         continue;
       }
 

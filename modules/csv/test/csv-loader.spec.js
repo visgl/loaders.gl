@@ -9,6 +9,7 @@ import {CSVLoader} from '@loaders.gl/csv';
 const CSV_SAMPLE_URL = '@loaders.gl/csv/test/data/sample.csv';
 const CSV_SAMPLE_VERY_LONG_URL = '@loaders.gl/csv/test/data/sample-very-long.csv';
 const CSV_SAMPLE_URL_DUPLICATE_COLS = '@loaders.gl/csv/test/data/sample-duplicate-cols.csv';
+const CSV_SAMPLE_URL_EMPTY_LINES = '@loaders.gl/csv/test/data/sample-empty-line.csv';
 const CSV_STATES_URL = '@loaders.gl/csv/test/data/states.csv';
 
 const CSV_NO_HEADER_URL = '@loaders.gl/csv/test/data/numbers-100-no-header.csv';
@@ -297,4 +298,24 @@ test('CSVLoader#loadInBatches(sample.csv, duplicate columns)', async t => {
     [['x', 1, 'y', 'z', 'w', 2], ['y', 29, 'z', 'y', 'w', 19], ['x', 1, 'y', 'z', 'w', 2]],
     'dataset should be parsed correctly in the array rowFormat'
   );
+});
+
+test('CSVLoader#loadInBatches(skipEmptyLines)', async t => {
+  const iterator = await loadInBatches(CSV_SAMPLE_URL_EMPTY_LINES, CSVLoader, {
+    csv: {rowFormat: 'object', skipEmptyLines: true}
+  });
+
+  const rows = [];
+
+  for await (const batch of iterator) {
+    rows.push(...batch.data);
+  }
+
+  t.is(rows.length, 2, 'Got correct table size');
+  t.deepEqual(
+    rows,
+    [{A: 'x', B: 1, C: 'some text'}, {A: 'y', B: 2, C: 'other text'}],
+    'dataset should be parsed with the correct content'
+  );
+  t.end();
 });

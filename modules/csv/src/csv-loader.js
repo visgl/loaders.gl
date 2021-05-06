@@ -126,15 +126,31 @@ function parseCSVInBatches(asyncIterator, options) {
     ...options.csv,
     header: false, // Unfortunately, header detection is not automatic and does not infer types
     download: false, // We handle loading, no need for papaparse to do it for us
-    // chunk(results, parser) {
-    //   // TODO batch before adding to queue.
-    //   console.log('Chunk:', results, parser);
-    //   asyncQueue.enqueue(results.data);
-    // },
+    // chunkSize is set to 5MB explicitly (same as Papaparse default) due to a bug where the
+    // streaming parser gets stuck if skipEmptyLines and a step callback are both supplied.
+    // See https://github.com/mholt/PapaParse/issues/465
+    chunkSize: 1024 * 1024 * 5,
+    // skipEmptyLines is set to a boolean value if supplied. Greedy is set to true
+    // skipEmptyLines is handled manually given two bugs where the streaming parser gets stuck if
+    // both of the skipEmptyLines and step callback options are provided:
+    // - true doesn't work unless chunkSize is set: https://github.com/mholt/PapaParse/issues/465
+    // - greedy doesn't work: https://github.com/mholt/PapaParse/issues/825
+    skipEmptyLines: false,
 
     // step is called on every row
     step(results, parser) {
       const row = results.data;
+
+      if (options.csv.skipEmptyLines) {
+        // Manually reject lines that are empty
+        const collapsedRow = row
+          .flat()
+          .join('')
+          .trim();
+        if (collapsedRow === '') {
+          return;
+        }
+      }
       const bytesUsed = results.meta.cursor;
 
       // Check if we need to save a header row
