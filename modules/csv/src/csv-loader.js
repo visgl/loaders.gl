@@ -144,9 +144,9 @@ function parseCSVInBatches(asyncIterator, options) {
       if (options.csv.skipEmptyLines) {
         // Manually reject lines that are empty
         const collapsedRow = row
-            .flat()
-            .join('')
-            .trim();
+          .flat()
+          .join('')
+          .trim();
         if (collapsedRow === '') {
           return;
         }
