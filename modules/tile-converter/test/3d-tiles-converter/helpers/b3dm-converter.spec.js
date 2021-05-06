@@ -79,7 +79,9 @@ test('tile-converter - b3dm converter#should normalise positions correctly', asy
     const encodedContent = await b3dmConverter.convert(tile);
 
     const decodedContent = await load(encodedContent, Tiles3DLoader, {
-      isTileset: false,
+      '3d-tiles': {
+        isTileset: false
+      },
       tile: {type: 'b3dm'}
     });
     t.ok(decodedContent);
@@ -100,7 +102,9 @@ test('tile-converter - b3dm converter#should convert material', async t => {
     const encodedContent = await b3dmConverter.convert(tile);
 
     const decodedContent = await load(encodedContent, Tiles3DLoader, {
-      isTileset: false,
+      '3d-tiles': {
+        isTileset: false
+      },
       tile: {type: 'b3dm'}
     });
     t.ok(decodedContent);
@@ -120,7 +124,9 @@ test('tile-converter - b3dm converter#should not convert incorrect normals', asy
     const b3dmConverter = new B3dmConverter();
     const encodedContent = await b3dmConverter.convert(tile);
     const decodedContent = await load(encodedContent, Tiles3DLoader, {
-      isTileset: false,
+      '3d-tiles': {
+        isTileset: false
+      },
       tile: {type: 'b3dm'}
     });
     t.ok(decodedContent);
@@ -132,7 +138,9 @@ test('tile-converter - b3dm converter#should not convert incorrect normals', asy
     tile.content.attributes.normals.value.fill(0);
     const encodedContent2 = await b3dmConverter.convert(tile);
     const decodedContent2 = await load(encodedContent2, Tiles3DLoader, {
-      isTileset: false,
+      '3d-tiles': {
+        isTileset: false
+      },
       tile: {type: 'b3dm'}
     });
     t.ok(decodedContent2);
@@ -151,7 +159,9 @@ test('tile-converter - b3dm converter#should handle geometry without normals', a
     delete tile.content.attributes.normals;
     const encodedContent = await b3dmConverter.convert(tile);
     const decodedContent = await load(encodedContent, Tiles3DLoader, {
-      isTileset: false,
+      '3d-tiles': {
+        isTileset: false
+      },
       tile: {type: 'b3dm'}
     });
     t.ok(decodedContent);
