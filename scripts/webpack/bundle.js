@@ -7,6 +7,7 @@ const ALIASES = require('ocular-dev-tools/config/ocular.config')({
 }).aliases;
 
 const PACKAGE_ROOT = resolve('.');
+const DIST_PATH = resolve('dist');
 const PACKAGE_INFO = require(resolve(PACKAGE_ROOT, 'package.json'));
 
 /**
@@ -42,7 +43,7 @@ const NODE = {
   crypto: 'empty'
 };
 
-const BABEL_CONFIG = {
+const ES5_BABEL_CONFIG = {
   presets: [
     ['@babel/preset-env', {forceAllTransforms: true}]
   ],
@@ -54,6 +55,7 @@ const BABEL_CONFIG = {
 };
 
 const config = {
+  name: 'production',
   mode: 'production',
 
   entry: {
@@ -62,8 +64,8 @@ const config = {
 
   output: {
     libraryTarget: 'umd',
-    path: PACKAGE_ROOT,
-    filename: 'dist/dist.min.js'
+    path: DIST_PATH,
+    filename: 'dist.min.js'
   },
 
   node: NODE,
@@ -75,12 +77,9 @@ const config = {
   module: {
     rules: [
       {
-        // Compile ES2015 using babel
         test: /\.js$/,
         loader: 'babel-loader',
         include: /src/,
-        // exclude: /transpiled/
-        options: BABEL_CONFIG
       }
     ]
   },
@@ -100,25 +99,33 @@ const config = {
   devtool: false
 };
 
-module.exports = (env = {}) => {
-  // console.log(JSON.stringify(env, null, 2));
-
-  if (env.dev) {
-    // Set development mode (no minification)
-    config.mode = 'development';
-    // Remove .min from the name
-    config.output.filename = 'dist/dist.dev.js';
-    // Disable transpilation
-    config.module.rules = [];
-  } else {
-    // Generate a separate source map
-    // @ts-ignore
-    config.devtool = 'source-map';
+const developmentConfig = {
+  ...config,
+  name: 'development',
+  mode: 'development',
+  output: {
+    filename: 'dist.dev.js'
+  },
+  module: {
+    rules: []
   }
-
-
-  // NOTE uncomment to display config
-  // console.log('webpack config', JSON.stringify(config, null, 2));
-
-  return config;
 };
+
+const es5Config = {
+  ...config,
+  name: 'es5',
+  output: {
+    filename: 'dist.es5.min.js'
+  },
+  module: {
+    rules: [{
+      // Compile ES2015 using babel
+      test: /\.js$/,
+      loader: 'babel-loader',
+      include: /src/,
+      options: ES5_BABEL_CONFIG
+    }]
+  }
+};
+
+module.exports = [config, developmentConfig, es5Config];
