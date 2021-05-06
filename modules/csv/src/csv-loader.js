@@ -143,12 +143,11 @@ function parseCSVInBatches(asyncIterator, options) {
 
       if (options.csv.skipEmptyLines) {
         // Manually reject lines that are empty
-        if (
-          row
+        const collapsedRow = row
             .flat()
             .join('')
-            .trim() === ''
-        ) {
+            .trim();
+        if (collapsedRow === '') {
           return;
         }
       }
