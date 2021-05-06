@@ -92,7 +92,7 @@
     "web-streams-polyfill": false
   },
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-bundle -- --env.dev",
+    "pre-build": "npm run build-bundle",
     "build-bundle": "webpack --display=minimal --config ../../scripts/bundle.config.js"
   },
   "dependencies": {

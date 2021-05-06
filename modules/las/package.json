@@ -36,7 +36,7 @@
   ],
   "scripts": {
     "pre-build": "npm run build-worker && npm run build-bundle",
-    "pre-build-disabled": "npm run copy-libs && npm run build-worker && npm run build-worker-dev && npm run build-bundle && npm run build-bundle -- --env.dev",
+    "pre-build-disabled": "npm run copy-libs && npm run build-worker && npm run build-worker-dev && npm run build-bundle",
     "build-bundle": "webpack --display=minimal --config ../../scripts/bundle.config.js",
     "build-worker": "webpack --entry ./src/las-loader.worker.js --output ./dist/las-loader.worker.js --config ../../scripts/worker-webpack-config.js"
   },

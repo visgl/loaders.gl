@@ -39,7 +39,7 @@
     "child_process": false
   },
   "scripts": {
-    "pre-build-disabled": "npm run build-bundle && npm run build-bundle -- --env.dev",
+    "pre-build-disabled": "npm run build-bundle",
     "build-bundle": "webpack --display=minimal --config ../../scripts/bundle.config.js"
   },
   "dependencies": {

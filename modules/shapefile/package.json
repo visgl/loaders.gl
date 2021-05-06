@@ -31,7 +31,7 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-shp-worker && npm run build-dbf-worker && npm run build-bundle && npm run build-bundle -- --env.dev",
+    "pre-build": "npm run build-shp-worker && npm run build-dbf-worker && npm run build-bundle",
     "build-bundle": "webpack --display=minimal --config ../../scripts/bundle.config.js",
     "build-shp-worker": "webpack --entry ./src/workers/shp-loader.worker.js --output ./dist/shp-loader.worker.js --config ../../scripts/worker-webpack-config.js",
     "build-dbf-worker": "webpack --entry ./src/workers/dbf-loader.worker.js --output ./dist/dbf-loader.worker.js --config ../../scripts/worker-webpack-config.js"
