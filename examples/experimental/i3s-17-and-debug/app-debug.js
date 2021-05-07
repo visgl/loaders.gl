@@ -352,6 +352,19 @@ export default class App extends PureComponent {
     return [...color, DEFAULT_BG_OPACITY];
   }
 
+  getMeshColor(tile) {
+    const {selectedTileId, coloredTilesMap, debugOptions} = this.state;
+    const {tileColorMode} = debugOptions;
+
+    return (
+      this._colorMap.getColor(tile, {
+        coloredBy: tileColorMode,
+        selectedTileId,
+        coloredTilesMap
+      }) || DEFAULT_COLOR
+    );
+  }
+
   _renderMainOnMinimap() {
     const {
       tileset,
@@ -387,16 +400,7 @@ export default class App extends PureComponent {
       tilesetUrl,
       token,
       viewState,
-      debugOptions: {
-        boundingVolume,
-        tileColorMode,
-        pickable,
-        minimapViewport,
-        loadTiles,
-        wireframe
-      },
-      selectedTileId,
-      coloredTilesMap,
+      debugOptions: {boundingVolume, pickable, minimapViewport, loadTiles, wireframe},
       viewportTraversersMap,
       tileset,
       normalsDebugData,
@@ -425,15 +429,12 @@ export default class App extends PureComponent {
         onTilesetLoad: this._onTilesetLoad.bind(this),
         onTileLoad: this._onTileLoad.bind(this),
         onTileUnload: this._onTileUnload.bind(this),
-        colorMap: this._colorMap,
-        tileColorMode,
         loadOptions,
         pickable,
         loadTiles,
         autoHighlight: true,
-        selectedTileId,
-        coloredTilesMap,
-        wireframe
+        wireframe,
+        getMeshColor: this.getMeshColor.bind(this)
       }),
       new LineLayer({
         id: 'frustum',

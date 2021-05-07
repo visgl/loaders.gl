@@ -54,16 +54,7 @@ export default class TileLayer extends Tile3DLayer {
   _makeSimpleMeshLayer(tileHeader, oldLayer) {
     const content = tileHeader.content;
     const {attributes, modelMatrix, cartographicOrigin, texture, material} = content;
-    const {
-      pickable,
-      autoHighlight,
-      tileColorMode,
-      pickFeatures,
-      colorMap,
-      selectedTileId,
-      coloredTilesMap,
-      wireframe
-    } = this.props;
+    const {pickable, autoHighlight, pickFeatures, wireframe, getMeshColor} = this.props;
 
     const segmentationData = tileHeader.header.segmentationData;
 
@@ -73,14 +64,6 @@ export default class TileLayer extends Tile3DLayer {
         drawMode: GL.TRIANGLES,
         attributes: getMeshGeometry(attributes)
       });
-
-    const color = colorMap
-      ? colorMap.getColor(tileHeader, {
-          coloredBy: tileColorMode,
-          selectedTileId,
-          coloredTilesMap
-        })
-      : [255, 255, 255];
 
     return new MeshLayer(
       this.getSubLayerProps({
@@ -92,7 +75,7 @@ export default class TileLayer extends Tile3DLayer {
         mesh: geometry,
         data: SINGLE_DATA,
         getPosition: [0, 0, 0],
-        getColor: color,
+        getColor: getMeshColor(tileHeader),
         texture,
         material,
         modelMatrix,
