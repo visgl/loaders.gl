@@ -2,7 +2,7 @@
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
 /* eslint-disable */
-import {Vector3, Matrix3, Matrix4, degrees} from '@math.gl/core';
+import {Quaternion, Vector3, Matrix3, Matrix4, degrees} from '@math.gl/core';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {assert} from '@loaders.gl/loader-utils';
@@ -69,17 +69,41 @@ export function createBoundingVolume(boundingVolumeHeader, transform, result) {
 }
 
 function createBox(box, transform, result) {
+  // https://math.gl/modules/culling/docs/api-reference/oriented-bounding-box
+  // 1. A half-axes based representation.
   // box: An array of 12 numbers that define an oriented bounding box.
   // The first three elements define the x, y, and z values for the center of the box.
   // The next three elements (with indices 3, 4, and 5) define the x axis direction and half-length.
   // The next three elements (indices 6, 7, and 8) define the y axis direction and half-length.
   // The last three elements (indices 9, 10, and 11) define the z axis direction and half-length.
+  // 2. A half-size-quaternion based representation.
+  // box: An array of 10 numbers that define an oriented bounding box.
+  // The first three elements define the x, y, and z values for the center of the box in a right-handed 3-axis (x, y, z) Cartesian coordinate system where the z-axis is up.
+  // The next three elements (with indices 3, 4, and 5) define the halfSize.
+  // The last four elements (indices 6, 7, 8 and 10) define the quaternion.
   const center = new Vector3(box[0], box[1], box[2]);
   transform.transform(center, center);
-
-  const xAxis = transform.transformAsVector(box.slice(3, 6));
-  const yAxis = transform.transformAsVector(box.slice(6, 9));
-  const zAxis = transform.transformAsVector(box.slice(9, 12));
+  let origin = [];
+  if (box.length === 10) {
+    const halfSize = box.slice(3, 6);
+    const quaternion = new Quaternion();
+    quaternion.fromArray(box, 6);
+    const x = new Vector3([1, 0, 0]);
+    const y = new Vector3([0, 1, 0]);
+    const z = new Vector3([0, 0, 1]);
+    x.transformByQuaternion(quaternion);
+    x.scale(halfSize[0]);
+    y.transformByQuaternion(quaternion);
+    y.scale(halfSize[1]);
+    z.transformByQuaternion(quaternion);
+    z.scale(halfSize[2]);
+    origin = [...x.toArray(), ...y.toArray(), ...z.toArray()];
+  } else {
+    origin = [...box.slice(3, 6), ...box.slice(6, 9), ...box.slice(9, 12)];
+  }
+  const xAxis = transform.transformAsVector(origin.slice(0, 3));
+  const yAxis = transform.transformAsVector(origin.slice(3, 6));
+  const zAxis = transform.transformAsVector(origin.slice(6, 9));
   const halfAxes = new Matrix3([
     xAxis[0],
     xAxis[1],

@@ -31,9 +31,20 @@ export function normalizeTileData(tile, options, context) {
 
 export function normalizeTileNonUrlData(tile) {
   scratchCenter.copy(tile.mbs);
-  const centerCartesian = Ellipsoid.WGS84.cartographicToCartesian(tile.mbs.slice(0, 3));
+  const sphere = [
+    ...Ellipsoid.WGS84.cartographicToCartesian(tile.mbs.slice(0, 3)), // cartesian center of sphere
+    tile.mbs[3] // radius of sphere
+  ];
+  const box = tile.obb
+    ? [
+        ...Ellipsoid.WGS84.cartographicToCartesian(tile.obb.center), // cartesian center of box
+        ...tile.obb.halfSize, // halfSize
+        ...tile.obb.quaternion // quaternion
+      ]
+    : undefined;
   tile.boundingVolume = {
-    sphere: [...centerCartesian, tile.mbs[3]]
+    sphere,
+    box
   };
   tile.lodMetricType = tile.lodSelection[0].metricType;
   tile.lodMetricValue = tile.lodSelection[0].maxError;
