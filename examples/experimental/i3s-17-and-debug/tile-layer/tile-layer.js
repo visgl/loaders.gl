@@ -75,7 +75,7 @@ export default class TileLayer extends Tile3DLayer {
         mesh: geometry,
         data: SINGLE_DATA,
         getPosition: [0, 0, 0],
-        getColor: getMeshColor(tileHeader),
+        getColor: getMeshColor ? getMeshColor(tileHeader) : [255, 255, 255],
         texture,
         material,
         modelMatrix,
