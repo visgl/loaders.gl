@@ -89,7 +89,11 @@ loaders.gl provides consistent support for both browsers and Node.js. The follow
 
 - **Evergreen Browsers** loaders.gl supports recent versions of the major evergreen browsers (e.g. Chrome, Firefox, Safari) on both desktop and mobile.
 - **Node.js** LTS (Long-Term Support) [releases](https://nodejs.org/en/about/releases/) are also supported through the `@loaders.gl/polyfills` module.
-- **Edge and IE11** are not actively supported, however loaders.gl 2.3 is known to run on Edge and IE11. Both `@loaders.gl/polyfills` and additional appropriate polyfills (e.g. babel polyfills) need to be installed which will increase your application bundle size. For loaders.gl 3.0, additional transpilation of your `node_modules` folder may also be required. Note that because of lack of regualar testing on these older platforms, regressions can occur. Pinning your loaders.gl version is advisable.
+- **Edge and IE11** are not actively supported, however loaders.gl 2.3 is known to run on Edge and IE11.
+  - Both `@loaders.gl/polyfills` and additional appropriate polyfills (e.g. babel polyfills) need to be installed which will increase your application bundle size.
+  - Note that because of lack of regular testing on these older platforms, regressions can occur, so pinning your loaders.gl versions in package.json is advisable.
+  - For loaders.gl 3.0, additional transpilation of loaders.gl packages in your `node_modules` folder may also be required for IE11.
+  - If you are importing prebuilt scripts, a `dist/es5.min.js` bundle is provided in each loader module. It is fully transpiled to ES5.
 
 ## Main Design Goals
 
