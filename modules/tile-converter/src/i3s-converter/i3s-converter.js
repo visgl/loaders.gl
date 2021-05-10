@@ -86,15 +86,12 @@ export default class I3SConverter {
       this.nodePages.useWriteFunction(writeFileForSlpk);
     }
 
-    const options = await this._fetchPreloadOptions();
-    const sourceTilesetJson = await load(inputUrl, CesiumIonLoader, options);
-
-    /* TODO/ib - get rid of confusing options warnings, move into options sub-object */
-    // const tilesetJson = await load(inputUrl, CesiumIonLoader, {
-    //   'cesium-ion': preloadOptions
-    // });
+    const fetchOptions = await this._fetchPreloadOptions();
+    const sourceTilesetJson = await load(inputUrl, CesiumIonLoader, {
+      fetch: fetchOptions
+    });
     // console.log(tilesetJson); // eslint-disable-line
-    this.sourceTileset = new Tileset3D(sourceTilesetJson, options);
+    this.sourceTileset = new Tileset3D(sourceTilesetJson, fetchOptions);
 
     await this._createAndSaveTileset(outputPath, tilesetName);
     await this._finishConversion({slpk, outputPath, tilesetName});
