@@ -17,7 +17,7 @@ export const TerrainWorkerLoader = {
 	mimeTypes: ['image/png'],
 	options: {
 		terrain: {
-			tesselector: 'delatin',
+			tesselector: 'martini',
 			bounds: null,
 			meshMaxError: 10,
 			elevationDecoder: {
