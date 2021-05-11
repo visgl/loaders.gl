@@ -1,7 +1,7 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
-/* global btoa, setInterval, clearInterval */ // loaders.gl/polyfills under Node.js
+/* global btoa, setInterval, clearInterval, setTimeout */ // loaders.gl/polyfills under Node.js
 import test from 'tape-promise/tape';
 import {WebMercatorViewport} from '@deck.gl/core';
 import {load} from '@loaders.gl/core';
@@ -271,7 +271,6 @@ test('Tileset3D#one viewport traversal', async t => {
     onTileLoad: () => {
       tileset.update(viewport);
       tileLoadCounter++;
-      t.end();
     }
   });
   tileset.update(viewport);
@@ -295,7 +294,6 @@ test('Tileset3D#two viewports traversal', async t => {
     onTileLoad: () => {
       tileset.update(viewports);
       tileLoadCounter++;
-      t.end();
     }
   });
   tileset.update(viewports);
@@ -321,7 +319,6 @@ test('Tileset3D#viewportTraversersMap (one viewport shows tiles selected for ano
     onTileLoad: () => {
       tileset.update(viewports);
       tileLoadCounter++;
-      t.end();
     },
     viewportTraversersMap: {
       view0: 'view1',
@@ -339,6 +336,39 @@ test('Tileset3D#viewportTraversersMap (one viewport shows tiles selected for ano
       t.equals(tileset.selectedTiles.filter(tile => tile.viewportIds.includes('view0')).length, 5);
       t.equals(tileset.selectedTiles.filter(tile => tile.viewportIds.includes('view1')).length, 5);
       t.end();
+    }
+  }, 100);
+});
+
+test('Tileset3D#loadTiles option', async t => {
+  const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
+  let viewport = VIEWPORTS[0];
+  let tileLoadCounter = 0;
+  const loadTiles = {value: true};
+  const tileset = new Tileset3D(tilesetJson, {
+    onTileLoad: () => {
+      tileset.update(viewport);
+      tileLoadCounter++;
+    },
+    loadTiles
+  });
+  tileset.update(viewport);
+
+  t.timeoutAfter(1000);
+  const setIntervalId = setInterval(() => {
+    if (tileLoadCounter > 0) {
+      clearInterval(setIntervalId);
+      tileset.update(viewport);
+      t.equals(tileset.selectedTiles.length, 1);
+      tileLoadCounter = 0;
+
+      loadTiles.value = false;
+      viewport = VIEWPORTS[1];
+      tileset.update(viewport);
+      setTimeout(() => {
+        t.equals(tileLoadCounter, 0);
+        t.end();
+      }, 300);
     }
   }, 100);
 });

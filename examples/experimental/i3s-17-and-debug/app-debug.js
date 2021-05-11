@@ -176,9 +176,10 @@ export default class App extends PureComponent {
       tileInfo: null,
       selectedTileId: null,
       coloredTilesMap: {},
-      warnings: [],
-      viewportTraversersMap: {main: 'main'}
+      warnings: []
     };
+    this.viewportTraversersMap = {main: 'main'};
+    this.loadTiles = {value: true};
     this._onSelectTileset = this._onSelectTileset.bind(this);
     this._setDebugOptions = this._setDebugOptions.bind(this);
     this._layerFilter = this._layerFilter.bind(this);
@@ -400,17 +401,25 @@ export default class App extends PureComponent {
       tilesetUrl,
       token,
       viewState,
-      debugOptions: {boundingVolume, pickable, minimapViewport, loadTiles, wireframe},
-      viewportTraversersMap,
+      debugOptions: {
+        boundingVolume,
+        pickable,
+        minimapViewport,
+        loadTiles: shouldLoadTiles,
+        wireframe
+      },
       tileset,
       normalsDebugData,
       trianglesPercentage,
       normalsLength
     } = this.state;
+    const {viewportTraversersMap, loadTiles} = this;
     viewportTraversersMap.minimap = minimapViewport ? 'minimap' : 'main';
+    loadTiles.value = shouldLoadTiles;
     const loadOptions = {
       throttleRequests: true,
-      viewportTraversersMap
+      viewportTraversersMap,
+      loadTiles
     };
 
     if (token) {
@@ -431,7 +440,6 @@ export default class App extends PureComponent {
         onTileUnload: this._onTileUnload.bind(this),
         loadOptions,
         pickable,
-        loadTiles,
         autoHighlight: true,
         wireframe,
         getMeshColor: this.getMeshColor.bind(this)

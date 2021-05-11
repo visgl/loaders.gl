@@ -231,6 +231,9 @@ export default class Tileset3D {
    * @return {void}
    */
   update(viewports) {
+    if (this.options.loadTiles && !this.options.loadTiles.value) {
+      return;
+    }
     if (this.traverseCounter > 0) {
       return;
     }
