@@ -240,6 +240,7 @@ function handlePolygon(geometry, polygons, indexMap, coordLength, properties) {
     const startPosition = indexMap.polygonPosition;
     polygons.polygonIndices[indexMap.polygonObject++] = startPosition;
 
+    const areas = geometry.areas[l];
     const lines = geometry.lines[l];
     const nextLines = geometry.lines[l + 1];
 
@@ -257,14 +258,15 @@ function handlePolygon(geometry, polygons, indexMap, coordLength, properties) {
       indexMap.polygonPosition += (end - start) / coordLength;
     }
 
-    triangulatePolygon(polygons, lines, startPosition, indexMap.polygonPosition, coordLength);
+    const endPosition = indexMap.polygonPosition;
+    triangulatePolygon(polygons, areas, lines, {startPosition, endPosition, coordLength});
   }
 }
 
 /**
  * Triangulate polygon using earcut
  */
-function triangulatePolygon(polygons, lines, startPosition, endPosition, coordLength) {
+function triangulatePolygon(polygons, areas, lines, {startPosition, endPosition, coordLength}) {
   const start = startPosition * coordLength;
   const end = endPosition * coordLength;
 
@@ -276,7 +278,7 @@ function triangulatePolygon(polygons, lines, startPosition, endPosition, coordLe
   const holes = lines.slice(1).map(n => (n - offset) / coordLength);
 
   // Compute triangulation
-  const indices = earcut(polygonPositions, holes, coordLength);
+  const indices = earcut(polygonPositions, holes, coordLength, areas);
 
   // Indices returned by triangulation are relative to start
   // of polygon, so we need to offset
