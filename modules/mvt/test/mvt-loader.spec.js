@@ -275,29 +275,33 @@ test('Triangulation is supported', async t => {
 });
 
 test('Rings - single ring', async t => {
-  const result = classifyRings(ringsSingleRing);
-  t.deepEqual(result, [[0]]);
+  const geom = {...ringsSingleRing};
+  classifyRings(geom);
+  t.deepEqual(geom.lines, [[0]]);
   t.end();
 });
 
 test('Rings - ring and hole', async t => {
-  const result = classifyRings(ringsRingAndHole);
-  t.deepEqual(result, [[0, 10]]);
+  const geom = {...ringsRingAndHole};
+  classifyRings(geom);
+  t.deepEqual(geom.lines, [[0, 10]]);
   t.end();
 });
 
 test('Rings - two rings', async t => {
-  const result = classifyRings(ringsTwoRings);
-  t.deepEqual(result, [[0], [10]]);
+  const geom = {...ringsTwoRings};
+  classifyRings(geom);
+  t.deepEqual(geom.lines, [[0], [10]]);
   t.end();
 });
 
 test('Rings - zero sized hole', async t => {
   // In addition to checking the result,
   // verify that the data array is shortened
-  t.equal(ringsZeroSizeHole.data.length, 20);
-  const result = classifyRings(ringsZeroSizeHole);
-  t.deepEqual(result, [[0]]);
-  t.equal(ringsZeroSizeHole.data.length, 12);
+  const geom = {...ringsZeroSizeHole};
+  t.equal(geom.data.length, 20);
+  classifyRings(geom);
+  t.deepEqual(geom.lines, [[0]]);
+  t.equal(geom.data.length, 12);
   t.end();
 });

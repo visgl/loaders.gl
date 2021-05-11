@@ -127,18 +127,18 @@ export default class VectorTileFeature {
         break;
 
       case 3: // Polygon
-        const rings = classifyRings(geom);
-        this._firstPassData.polygonFeaturesCount++;
-        this._firstPassData.polygonObjectsCount += rings.length;
+        classifyRings(geom);
 
-        for (const lines of rings) {
+        // Unlike Point & LineString geom.lines is a 2D array, thanks
+        // to the classifyRings method
+        this._firstPassData.polygonFeaturesCount++;
+        this._firstPassData.polygonObjectsCount += geom.lines.length;
+
+        for (const lines of geom.lines) {
           this._firstPassData.polygonRingsCount += lines.length;
         }
         this._firstPassData.polygonPositionsCount += geom.data.length / coordLength;
 
-        // Unlike Point & LineString geom.lines is a 2D array, thanks
-        // to the classifyRings method
-        geom.lines = rings;
         break;
     }
 
@@ -189,7 +189,10 @@ export default class VectorTileFeature {
 function classifyRings(geom) {
   const len = geom.lines.length;
 
-  if (len <= 1) return [geom.lines];
+  if (len <= 1) {
+    geom.lines = [geom.lines];
+    return;
+  }
 
   const polygons = [];
   let polygon;
@@ -230,7 +233,7 @@ function classifyRings(geom) {
   }
   if (polygon) polygons.push(polygon);
 
-  return polygons;
+  geom.lines = polygons;
 }
 
 // All code below is unchanged from the original Mapbox implemenation
