@@ -191,10 +191,13 @@ function classifyRings(geom) {
 
   if (len <= 1) {
     geom.lines = [geom.lines];
+    geom.areas = [[getPolygonSignedArea(geom.data)]];
     return;
   }
 
+  const areas = [];
   const polygons = [];
+  let ringAreas;
   let polygon;
   let ccw;
   let offset = 0;
@@ -224,15 +227,22 @@ function classifyRings(geom) {
     if (ccw === undefined) ccw = area < 0;
 
     if (ccw === area < 0) {
-      if (polygon) polygons.push(polygon);
+      if (polygon) {
+        areas.push(ringAreas);
+        polygons.push(polygon);
+      }
       polygon = [startIndex];
+      ringAreas = [area];
     } else {
       // @ts-ignore
+      ringAreas.push(area);
       polygon.push(startIndex);
     }
   }
+  if (ringAreas) areas.push(ringAreas);
   if (polygon) polygons.push(polygon);
 
+  geom.areas = areas;
   geom.lines = polygons;
 }
 

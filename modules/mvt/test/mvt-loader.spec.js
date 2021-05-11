@@ -277,6 +277,7 @@ test('Triangulation is supported', async t => {
 test('Rings - single ring', async t => {
   const geom = {...ringsSingleRing};
   classifyRings(geom);
+  t.deepEqual(geom.areas, [[-0.02624368667602539]]);
   t.deepEqual(geom.lines, [[0]]);
   t.end();
 });
@@ -284,6 +285,7 @@ test('Rings - single ring', async t => {
 test('Rings - ring and hole', async t => {
   const geom = {...ringsRingAndHole};
   classifyRings(geom);
+  t.deepEqual(geom.areas, [[-0.02624368667602539, 0.001363515853881836]]);
   t.deepEqual(geom.lines, [[0, 10]]);
   t.end();
 });
@@ -291,6 +293,7 @@ test('Rings - ring and hole', async t => {
 test('Rings - two rings', async t => {
   const geom = {...ringsTwoRings};
   classifyRings(geom);
+  t.deepEqual(geom.areas, [[-0.02624368667602539], [-0.001363515853881836]]);
   t.deepEqual(geom.lines, [[0], [10]]);
   t.end();
 });
@@ -301,6 +304,7 @@ test('Rings - zero sized hole', async t => {
   const geom = {...ringsZeroSizeHole};
   t.equal(geom.data.length, 20);
   classifyRings(geom);
+  t.deepEqual(geom.areas, [[-0.44582176208496094]]);
   t.deepEqual(geom.lines, [[0]]);
   t.equal(geom.data.length, 12);
   t.end();
