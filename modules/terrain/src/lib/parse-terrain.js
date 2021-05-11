@@ -74,9 +74,9 @@ function getMesh(terrainImage, terrainOptions) {
 
   let mesh;
   if (terrainOptions.tesselector === 'martini' && width === height) {
-    mesh = getMartiniTileMesh(meshMaxError, bounds, width, height, terrain)
+    mesh = getMartiniTileMesh(meshMaxError, width, terrain)
   } else {
-    mesh = getDelatinTileMesh(meshMaxError, bounds, width, height, terrain)
+    mesh = getDelatinTileMesh(meshMaxError, width, height, terrain)
   }
   const { vertices, triangles } = mesh;
   const attributes = getMeshAttributes(vertices, terrain, width, height, bounds);
@@ -96,7 +96,7 @@ function getMesh(terrainImage, terrainOptions) {
   };
 }
 
-function getMartiniTileMesh(meshMaxError, bounds, width, height, terrain) {
+function getMartiniTileMesh(meshMaxError, width, terrain) {
   const gridSize = width + 1;
   const martini = new Martini(gridSize);
   const tile = martini.createTile(terrain);
@@ -105,7 +105,7 @@ function getMartiniTileMesh(meshMaxError, bounds, width, height, terrain) {
   return { vertices, triangles }
 }
 
-function getDelatinTileMesh(meshMaxError, bounds, width, height, terrain) {
+function getDelatinTileMesh(meshMaxError, width, height, terrain) {
   const tin = new Delatin(terrain, width + 1, height + 1);
   tin.run(meshMaxError)
   const { coords, triangles } = tin;
