@@ -78,8 +78,7 @@ function getMesh(terrainImage, terrainOptions) {
   } else {
     mesh = getDelatinTileMesh(meshMaxError, bounds, width, height, terrain)
   }
-  const { vertices, triangles } = mesh
-
+  const { vertices, triangles } = mesh;
   const attributes = getMeshAttributes(vertices, terrain, width, height, bounds);
 
   return {
@@ -92,7 +91,7 @@ function getMesh(terrainImage, terrainOptions) {
       boundingBox: getMeshBoundingBox(attributes)
     },
     mode: 4, // TRIANGLES
-    indices: { value: triangles, size: 1 },
+    indices: { value: Uint32Array.from(triangles), size: 1 },
     attributes
   };
 }
@@ -110,8 +109,8 @@ function getDelatinTileMesh(meshMaxError, bounds, width, height, terrain) {
   const tin = new Delatin(terrain, width + 1, height + 1);
   tin.run(meshMaxError)
   const { coords, triangles } = tin;
-
-  return { coords, triangles };
+  const vertices = coords
+  return { vertices, triangles };
 }
 
 export default async function loadTerrain(arrayBuffer, options, context) {
