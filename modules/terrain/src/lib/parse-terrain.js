@@ -92,11 +92,10 @@ function getMesh(terrainImage, terrainOptions) {
     default:
       if (width === height && width !== 0 && !(width & (width - 1))) {
         mesh = getMartiniTileMesh(meshMaxError, width, terrain);
-        break;
       } else {
         mesh = getDelatinTileMesh(meshMaxError, width, height, terrain);
-        break;
       }
+      break;
   }
 
   const {vertices, triangles} = mesh;
