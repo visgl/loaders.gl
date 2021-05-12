@@ -74,9 +74,7 @@ function getMesh(terrainImage, terrainOptions) {
   }
   const {meshMaxError, bounds, elevationDecoder} = terrainOptions;
 
-  const data = terrainImage.data;
-  const width = terrainImage.width;
-  const height = terrainImage.height;
+  const {data, width, height} = terrainImage;
   const terrain = getTerrain(data, width, height, elevationDecoder);
 
   let mesh;
@@ -88,7 +86,7 @@ function getMesh(terrainImage, terrainOptions) {
     case 'delatin':
       mesh = getDelatinTileMesh(meshMaxError, width, height, terrain);
       break;
-    //auto
+    // auto
     default:
       if (width === height && width !== 0 && !(width & (width - 1))) {
         mesh = getMartiniTileMesh(meshMaxError, width, terrain);
