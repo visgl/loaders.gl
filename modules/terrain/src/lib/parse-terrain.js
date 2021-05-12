@@ -79,7 +79,7 @@ function getMesh(terrainImage, terrainOptions) {
 
   let mesh;
 
-  switch (terrainOptions.tesselactor) {
+  switch (terrainOptions.tesselator) {
     case 'martini':
       mesh = getMartiniTileMesh(meshMaxError, width, terrain);
       break;
