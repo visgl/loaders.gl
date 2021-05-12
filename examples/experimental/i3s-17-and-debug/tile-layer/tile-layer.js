@@ -36,12 +36,6 @@ export default class TileLayer extends Tile3DLayer {
       return;
     }
 
-    // Make loadTiles property is true by default when merge the layer back into deck.gl
-    const currentProps = this.getCurrentLayer().props;
-    if ('loadTiles' in currentProps && !currentProps.loadTiles) {
-      return;
-    }
-
     const frameNumber = tileset3d.update(viewports);
     // NEW CODE END
 
