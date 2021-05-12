@@ -344,13 +344,12 @@ test('Tileset3D#loadTiles option', async t => {
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   let viewport = VIEWPORTS[0];
   let tileLoadCounter = 0;
-  const loadTiles = {value: true};
   const tileset = new Tileset3D(tilesetJson, {
     onTileLoad: () => {
       tileset.update(viewport);
       tileLoadCounter++;
     },
-    loadTiles
+    loadTiles: true
   });
   tileset.update(viewport);
 
@@ -362,8 +361,8 @@ test('Tileset3D#loadTiles option', async t => {
       t.equals(tileset.selectedTiles.length, 1);
       tileLoadCounter = 0;
 
-      loadTiles.value = false;
       viewport = VIEWPORTS[1];
+      tileset.setOptions({loadTiles: false});
       tileset.update(viewport);
       setTimeout(() => {
         t.equals(tileLoadCounter, 0);

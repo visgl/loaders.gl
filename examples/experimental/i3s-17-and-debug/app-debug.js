@@ -178,8 +178,6 @@ export default class App extends PureComponent {
       coloredTilesMap: {},
       warnings: []
     };
-    this.viewportTraversersMap = {main: 'main'};
-    this.loadTiles = {value: true};
     this._onSelectTileset = this._onSelectTileset.bind(this);
     this._setDebugOptions = this._setDebugOptions.bind(this);
     this._layerFilter = this._layerFilter.bind(this);
@@ -331,6 +329,13 @@ export default class App extends PureComponent {
         selectOriginalTextureForTileset(tileset);
       }
     }
+
+    const {minimapViewport, loadTiles} = debugOptions;
+    const viewportTraversersMap = {main: 'main', minimap: minimapViewport ? 'minimap' : 'main'};
+    tileset.setOptions({
+      viewportTraversersMap,
+      loadTiles
+    });
     this.setState({debugOptions});
   }
 
@@ -401,21 +406,13 @@ export default class App extends PureComponent {
       tilesetUrl,
       token,
       viewState,
-      debugOptions: {
-        boundingVolume,
-        pickable,
-        minimapViewport,
-        loadTiles: shouldLoadTiles,
-        wireframe
-      },
+      debugOptions: {boundingVolume, pickable, minimapViewport, loadTiles, wireframe},
       tileset,
       normalsDebugData,
       trianglesPercentage,
       normalsLength
     } = this.state;
-    const {viewportTraversersMap, loadTiles} = this;
-    viewportTraversersMap.minimap = minimapViewport ? 'minimap' : 'main';
-    loadTiles.value = shouldLoadTiles;
+    const viewportTraversersMap = {main: 'main', minimap: minimapViewport ? 'minimap' : 'main'};
     const loadOptions = {
       throttleRequests: true,
       viewportTraversersMap,
