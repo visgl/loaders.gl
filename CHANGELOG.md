@@ -1,5 +1,19 @@
 ## v3.0 Prerelease
 
+#### v3.0.0-alpha.14
+
+- I3S-Debug - Rename ObbLayer -> BoundingVolumeLayer (#1363)
+- Add ES5 bundle + fix webpack configuration (#1352)
+- Chore(CSV): fix skipEmptyLines handling for streaming parsing (#1364)
+- I3S-Debug - Add JSDoc for color-map.js file (#1366)
+- I3S-Debug - Refactoring for tiles color (#1357)
+- feat(tiles): OBB transformation (#1370)
+- I3S-Converter - Cleanup top level warnings (#1365)
+- Add dist.es5.min.js description to readme file (#1369)
+- i3s: fix get color function (#1371)
+- tiles: fix zoom evaluation for OBB (#1373)
+- I3S-Debug - Fix for i3s-content-loader worker (#1375)
+
 #### v3.0.0-alpha.13
 
 - Chore(CSV): improve rowFormat handling and consistency (#1360)
