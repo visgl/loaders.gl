@@ -27,9 +27,6 @@ export const I3SContentLoader = {
 
 async function parse(data, options) {
   const {tile, tileset} = options.i3s;
-  tile.content = tile.content || {};
-  tile.segmentationData = tile.segmentationData || null;
-  tile.userData = tile.userData || {};
   await parseI3STileContent(data, tile, tileset, options);
   return tile.content;
 }

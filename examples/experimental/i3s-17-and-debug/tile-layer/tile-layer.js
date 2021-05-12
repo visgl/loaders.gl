@@ -53,10 +53,15 @@ export default class TileLayer extends Tile3DLayer {
 
   _makeSimpleMeshLayer(tileHeader, oldLayer) {
     const content = tileHeader.content;
-    const {attributes, modelMatrix, cartographicOrigin, texture, material} = content;
+    const {
+      attributes,
+      modelMatrix,
+      cartographicOrigin,
+      texture,
+      material,
+      segmentationData
+    } = content;
     const {pickable, autoHighlight, pickFeatures, wireframe, getMeshColor} = this.props;
-
-    const segmentationData = tileHeader.header.segmentationData;
 
     const geometry =
       (oldLayer && oldLayer.props.mesh) ||
