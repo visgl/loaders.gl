@@ -127,7 +127,7 @@ function getMesh(terrainImage, terrainOptions) {
  * @param {number} meshMaxError threshold for simplifying mesh
  * @param {number} width width of the input data
  * @param {number[] | Float32Array} terrain elevation data
- * @returns generated vertices: Uint16Array and triangles: Uint32Array
+ * @returns {object} vertices and triangles data
  */
 function getMartiniTileMesh(meshMaxError, width, terrain) {
   const gridSize = width + 1;
@@ -145,7 +145,7 @@ function getMartiniTileMesh(meshMaxError, width, terrain) {
  * @param {number} width width of the input data array
  * @param {number} height height of the input data array
  * @param {number[] | Float32Array} terrain elevation data
- * @returns generated vertices: number[] and triangles number[]
+ * @returns {object} vertices and triangles data
  */
 function getDelatinTileMesh(meshMaxError, width, height, terrain) {
   const tin = new Delatin(terrain, width + 1, height + 1);
