@@ -7,6 +7,7 @@ import {ChildProcessProxy} from '@loaders.gl/worker-utils';
 import JSZip from 'jszip';
 import {MD5HashTransform} from '@loaders.gl/crypto';
 import crypt from 'crypt';
+import {getAbsoluteFilePath} from './file-utils';
 
 export function compressFileWithGzip(pathFile) {
   const compressedPathFile = `${pathFile}.gz`;
@@ -91,7 +92,7 @@ export async function compressWithChildProcess() {
 }
 
 async function compressWithChildProcessUnix(inputFolder, outputFile, level = 0, inputFiles = '.') {
-  const fullOutputFile = join(process.cwd(), outputFile); // eslint-disable-line no-undef
+  const fullOutputFile = getAbsoluteFilePath(outputFile);
   const args = [`-${level}`, '-r', fullOutputFile, inputFiles];
   const childProcess = new ChildProcessProxy();
   await childProcess.start({
@@ -117,7 +118,7 @@ async function compressWithChildProcessWindows(
     inputFiles = `*${inputFiles.substr(1)}`;
   }
 
-  const fullOutputFile = join(process.cwd(), outputFile); // eslint-disable-line no-undef
+  const fullOutputFile = getAbsoluteFilePath(outputFile);
   const args = ['a', '-tzip', `-mx=${level}`, fullOutputFile, inputFiles];
   const childProcess = new ChildProcessProxy();
   await childProcess.start({

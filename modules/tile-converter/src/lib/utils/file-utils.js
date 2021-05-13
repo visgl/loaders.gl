@@ -1,5 +1,5 @@
 import {promises as fs} from 'fs';
-import {join} from 'path';
+import {isAbsolute, join} from 'path';
 import {compressFileWithGzip} from './compress-util';
 
 export async function writeFile(path, data, fileName = 'index.json') {
@@ -31,4 +31,8 @@ export function removeDir(path) {
 
 export function removeFile(path) {
   return fs.unlink(path);
+}
+
+export function getAbsoluteFilePath(filePath) {
+  return isAbsolute(filePath) ? filePath : join(process.cwd(), filePath); // eslint-disable-line no-undef
 }
