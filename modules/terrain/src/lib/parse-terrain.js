@@ -2,7 +2,7 @@ import {getMeshBoundingBox} from '@loaders.gl/loader-utils';
 import Martini from '@mapbox/martini';
 import Delatin from 'delatin';
 
-function getTerrain(imageData, width, height, elevationDecoder) {
+function getTerrain(imageData, width, height, elevationDecoder, tesselator) {
   const {rScaler, bScaler, gScaler, offset} = elevationDecoder;
 
   // From Martini demo
@@ -18,14 +18,18 @@ function getTerrain(imageData, width, height, elevationDecoder) {
       terrain[i + y] = r * rScaler + g * gScaler + b * bScaler + offset;
     }
   }
-  // backfill bottom border
-  for (let i = width * (width - 1), x = 0; x < width - 1; x++, i++) {
-    terrain[i] = terrain[i - width];
+
+  if (tesselator === 'martini') {
+    // backfill bottom border
+    for (let i = width * (width - 1), x = 0; x < width - 1; x++, i++) {
+      terrain[i] = terrain[i - width];
+    }
+    // backfill right border
+    for (let i = height - 1, y = 0; y < height; y++, i += height) {
+      terrain[i] = terrain[i - 1];
+    }
   }
-  // backfill right border
-  for (let i = height - 1, y = 0; y < height; y++, i += height) {
-    terrain[i] = terrain[i - 1];
-  }
+
   return terrain;
 }
 
@@ -64,7 +68,7 @@ function getMeshAttributes(vertices, terrain, width, height, bounds) {
 /**
  * Returns generated mesh object from image data
  *
- * @param {Array} terrainImage terrain image data
+ * @param {object} terrainImage terrain image data
  * @param {object} terrainOptions terrain options
  * @returns mesh object
  */
@@ -75,22 +79,25 @@ function getMesh(terrainImage, terrainOptions) {
   const {meshMaxError, bounds, elevationDecoder} = terrainOptions;
 
   const {data, width, height} = terrainImage;
-  const terrain = getTerrain(data, width, height, elevationDecoder);
 
+  let terrain;
   let mesh;
-
   switch (terrainOptions.tesselator) {
     case 'martini':
+      terrain = getTerrain(data, width, height, elevationDecoder, terrainOptions.tesselator);
       mesh = getMartiniTileMesh(meshMaxError, width, terrain);
       break;
     case 'delatin':
+      terrain = getTerrain(data, width, height, elevationDecoder, terrainOptions.tesselator);
       mesh = getDelatinTileMesh(meshMaxError, width, height, terrain);
       break;
     // auto
     default:
-      if (width === height && width !== 0 && !(width & (width - 1))) {
+      if (width === height && !(height & (width - 1))) {
+        terrain = getTerrain(data, width, height, elevationDecoder, 'martini');
         mesh = getMartiniTileMesh(meshMaxError, width, terrain);
       } else {
+        terrain = getTerrain(data, width, height, elevationDecoder, 'delatin');
         mesh = getDelatinTileMesh(meshMaxError, width, height, terrain);
       }
       break;
@@ -119,8 +126,8 @@ function getMesh(terrainImage, terrainOptions) {
  *
  * @param {number} meshMaxError threshold for simplifying mesh
  * @param {number} width width of the input data
- * @param {*} terrain elevation data
- * @returns generated vertices and triangles
+ * @param {number[] | Float32Array} terrain elevation data
+ * @returns generated vertices: Uint16Array and triangles: Uint32Array
  */
 function getMartiniTileMesh(meshMaxError, width, terrain) {
   const gridSize = width + 1;
@@ -137,8 +144,8 @@ function getMartiniTileMesh(meshMaxError, width, terrain) {
  * @param {number} meshMaxError threshold for simplifying mesh
  * @param {number} width width of the input data array
  * @param {number} height height of the input data array
- * @param {*} terrain elevation data
- * @returns generated vertices and triangles
+ * @param {number[] | Float32Array} terrain elevation data
+ * @returns generated vertices: number[] and triangles number[]
  */
 function getDelatinTileMesh(meshMaxError, width, height, terrain) {
   const tin = new Delatin(terrain, width + 1, height + 1);
