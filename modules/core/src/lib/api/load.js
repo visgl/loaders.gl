@@ -1,7 +1,6 @@
 import {isBlob} from '../../javascript-utils/is-type';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {getFetchFunction} from '../loader-utils/option-utils';
-
 import {parse} from './parse';
 
 // Note: Load does duplicate a lot of parse.
@@ -12,14 +11,15 @@ export async function load(url, loaders, options) {
     options = loaders;
     loaders = null;
   }
-
   // Select fetch function
   const fetch = getFetchFunction(options || {});
 
   // at this point, `url` could be already loaded binary data
   let data = url;
+
   // url is a string, fetch the url
   if (typeof url === 'string') {
+    url = setTokenIfNeeded(url, options);
     data = await fetch(url);
   } else {
     url = null;
@@ -34,4 +34,15 @@ export async function load(url, loaders, options) {
 
   // Data is loaded (at least we have a `Response` object) so time to hand over to `parse`
   return await parse(data, loaders, options);
+}
+
+function setTokenIfNeeded(url, options = {}) {
+  if (options.token) {
+    // eslint-disable-next-line no-undef
+    const urlObject = new URL(url);
+    urlObject.searchParams.set('token', options.token);
+    return urlObject.toString();
+  }
+
+  return url;
 }
