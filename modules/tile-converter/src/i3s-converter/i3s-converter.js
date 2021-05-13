@@ -57,7 +57,7 @@ export default class I3SConverter {
       tilesCount: 0,
       tilesWithAddRefineCount: 0
     };
-    this.validateBoundingVolumes = false;
+    this.validate = false;
     this.boundingVolumeWarnings = null;
   }
 
@@ -72,11 +72,11 @@ export default class I3SConverter {
     egmFilePath,
     token,
     draco,
-    validateBoundingVolumes
+    validate
   }) {
     this.conversionStartTime = process.hrtime();
     this.options = {maxDepth, slpk, sevenZipExe, egmFilePath, draco, token, inputUrl};
-    this.validateBoundingVolumes = validateBoundingVolumes;
+    this.validate = validate;
 
     console.log('Loading egm file...'); // eslint-disable-line
     this.geoidHeightModel = await load(egmFilePath, PGMLoader);
@@ -408,7 +408,10 @@ export default class I3SConverter {
    * @return {Promise<object[]>}
    */
   async _createNode(parentTile, sourceTile, parentId, level) {
-    this._checkAddRefinementTypeForTile(sourceTile);
+    if (this.validate) {
+      this._checkAddRefinementTypeForTile(sourceTile);
+    }
+
     await this._updateTilesetOptions();
     await this.sourceTileset._loadTile(sourceTile);
     const coordinates = convertCommonToI3SCoordinate(sourceTile, this.geoidHeightModel);
@@ -453,7 +456,7 @@ export default class I3SConverter {
         await this._writeResources(resources, node.path);
       }
 
-      if (this.validateBoundingVolumes) {
+      if (this.validate) {
         this.boundingVolumeWarnings = validateNodeBoundingVolumes(node);
 
         if (this.boundingVolumeWarnings && this.boundingVolumeWarnings.length) {
