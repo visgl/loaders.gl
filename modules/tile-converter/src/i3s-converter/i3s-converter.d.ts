@@ -16,7 +16,7 @@ export default class I3SConverter {
    * @param options.egmFilePath location of *.pgm file to convert heights from ellipsoidal to gravity-related format
    * @param options.token Token for Cesium ION tilesets authentication
    * @param options.draco Generate I3S 1.7 draco compressed geometries
-   * @param options.validateBoundingVolumes -enaable/disable bounding volume validation
+   * @param options.validate -enable validation
    */
   convert(options: {
     inputUrl: string;
@@ -27,7 +27,7 @@ export default class I3SConverter {
     maxDepth?: number;
     slpk?: boolean;
     token?: string;
-    draco?: boolean;,
-    validateBoundingVolumes?: boolean
+    draco?: boolean;
+    validate?: boolean;
   }): Promise<any>;
 }
