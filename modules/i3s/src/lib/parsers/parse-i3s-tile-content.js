@@ -30,7 +30,7 @@ const I3S_ATTRIBUTE_TYPE = 'i3s-attribute-type';
 
 export async function parseI3STileContent(arrayBuffer, tile, tileset, options) {
   tile.content = tile.content || {};
-  tile.segmentationData = tile.segmentationData || null;
+  tile.content.segmentationData = tile.content.segmentationData || null;
 
   // construct featureData from defaultGeometrySchema;
   tile.content.featureData = constructFeatureDataStruct(tile, tileset);
@@ -150,7 +150,7 @@ async function parseI3SNodeGeometry(arrayBuffer, tile = {}, options) {
   };
 
   if (attributes.id && attributes.id.value) {
-    tile.segmentationData = attributes.id.value;
+    tile.content.segmentationData = attributes.id.value;
   }
 
   // Remove undefined attributes

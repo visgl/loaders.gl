@@ -99,7 +99,7 @@ test('ParseI3sTileContent#should have segmentationData', async t => {
     }
   });
   t.ok(result);
-  t.ok(result.segmentationData);
-  t.equal(result.segmentationData.length, 25638);
+  t.ok(result.content.segmentationData);
+  t.equal(result.content.segmentationData.length, 25638);
   t.end();
 });

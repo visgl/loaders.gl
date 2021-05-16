@@ -135,13 +135,13 @@ export default class TileValidator extends PureComponent {
       triangleMessages.push({
         key: 'geometryNullTriangleCount',
         type: WARNING_TYPE,
-        text: `Geometry triangles area is null: ${triangleMetrics.geometryNullTriangleCount}`
+        text: `Geometry degenerate triangles: ${triangleMetrics.geometryNullTriangleCount}`
       });
     } else {
       triangleMessages.push({
         key: 'geometryNullTriangleCount',
         type: OK_TYPE,
-        text: `Geometry triangles area is null: ${triangleMetrics.geometryNullTriangleCount}`
+        text: `Geometry degenerate triangles: ${triangleMetrics.geometryNullTriangleCount}`
       });
     }
 
@@ -172,13 +172,13 @@ export default class TileValidator extends PureComponent {
       triangleMessages.push({
         key: 'texCoordNullTriangleCount',
         type: WARNING_TYPE,
-        text: `UV0 triangles area is null: ${triangleMetrics.texCoordNullTriangleCount}`
+        text: `UV0 degenerate triangles: ${triangleMetrics.texCoordNullTriangleCount}`
       });
     } else {
       triangleMessages.push({
         key: 'texCoordNullTriangleCount',
         type: OK_TYPE,
-        text: `UV0 triangles area is null: ${triangleMetrics.texCoordNullTriangleCount}`
+        text: `UV0 degenerate triangles: ${triangleMetrics.texCoordNullTriangleCount}`
       });
     }
 
