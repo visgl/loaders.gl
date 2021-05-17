@@ -31,7 +31,8 @@ import {
   INITIAL_MAP_STYLE,
   CONTRAST_MAP_STYLES,
   INITIAL_TILE_COLOR_MODE,
-  INITIAL_BOUNDING_VOLUME_COLOR_MODE
+  INITIAL_BOUNDING_VOLUME_COLOR_MODE,
+  INITIAL_BOUNDING_VOLUME_TYPE_MODE
 } from './constants';
 import {COLORED_BY, makeRGBObjectFromColor, getRGBValueFromColorObject} from './color-map';
 import {getFrustumBounds} from './frustum-utils';
@@ -87,6 +88,8 @@ const INITIAL_DEBUG_OPTIONS_STATE = {
   tileColorMode: INITIAL_TILE_COLOR_MODE,
   // Bounding volume coloring mode selector
   boundingVolumeColorMode: INITIAL_BOUNDING_VOLUME_COLOR_MODE,
+  // Bounding volume geometry shape selector
+  boundingVolumeType: INITIAL_BOUNDING_VOLUME_TYPE_MODE,
   // Select tiles with a mouse button
   pickable: false,
   // Load tiles after traversal.
@@ -406,7 +409,14 @@ export default class App extends PureComponent {
       tilesetUrl,
       token,
       viewState,
-      debugOptions: {boundingVolume, pickable, minimapViewport, loadTiles, wireframe},
+      debugOptions: {
+        boundingVolume,
+        boundingVolumeType,
+        pickable,
+        minimapViewport,
+        loadTiles,
+        wireframe
+      },
       tileset,
       normalsDebugData,
       trianglesPercentage,
@@ -453,7 +463,8 @@ export default class App extends PureComponent {
         id: 'bounding-volume-layer',
         visible: boundingVolume,
         tiles,
-        getBoundingVolumeColor: this.getBoundingVolumeColor.bind(this)
+        getBoundingVolumeColor: this.getBoundingVolumeColor.bind(this),
+        boundingVolumeType
       }),
       new LineLayer({
         id: 'normals-debug',
