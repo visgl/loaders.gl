@@ -14,8 +14,7 @@ export const I3SContentLoader = {
   name: 'I3S Content (Indexed Scene Layers)',
   id: 'i3s-content',
   module: 'i3s',
-  // Return "true" after featureIds replaced with segmentationData in I3S-picking-app
-  worker: false,
+  worker: true,
   version: VERSION,
   mimeTypes: ['application/octet-stream'],
   parse,

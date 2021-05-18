@@ -6,6 +6,11 @@ const WGS84_RADIUS_Z = 6356752.3142451793;
 
 const scratchVector = new Vector3();
 
+/**
+ * Calculate appropriate zoom value for a particular boundingVolume
+ * @param {BoundingSphere, OrientedBoundingBox} boundingVolume - the instance of bounding volume
+ * @returns {number} - zoom value
+ */
 export function getZoomFromBoundingVolume(boundingVolume) {
   const {halfAxes, radius, width, height} = boundingVolume;
 

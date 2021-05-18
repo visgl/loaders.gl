@@ -1,6 +1,5 @@
 import {Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
-import {OrientedBoundingBox} from '@math.gl/culling';
 
 export function buildMinimapData(tiles) {
   return tiles
@@ -14,9 +13,9 @@ export function buildMinimapData(tiles) {
       let radius = 10; // Set default radius to 10 meters
       if (boundingVolume.radius) {
         radius = boundingVolume.radius;
-      } else if (boundingVolume instanceof OrientedBoundingBox) {
+      } else if (boundingVolume.halfAxes) {
         const boundingShpere = boundingVolume.getBoundingSphere();
-        radius = boundingShpere.radius();
+        radius = boundingShpere.radius;
       }
       return {
         coordinates: cartographicOrigin,
