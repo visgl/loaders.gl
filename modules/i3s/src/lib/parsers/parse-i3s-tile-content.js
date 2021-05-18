@@ -373,15 +373,24 @@ function offsetsToCartesians(vertices, metadata = {}, cartographicOrigin) {
  * @returns {object}
  */
 function makePbrMaterial(materialDefinition, texture) {
-  if (!materialDefinition) {
-    return null;
+  let pbrMaterial;
+  if (materialDefinition) {
+    pbrMaterial = {
+      ...materialDefinition,
+      pbrMetallicRoughness: materialDefinition.pbrMetallicRoughness
+        ? {...materialDefinition.pbrMetallicRoughness}
+        : {baseColorFactor: [255, 255, 255, 255]}
+    };
+  } else {
+    pbrMaterial = {
+      pbrMetallicRoughness: {}
+    };
+    if (texture) {
+      pbrMaterial.pbrMetallicRoughness.baseColorTexture = {texCoord: 0};
+    } else {
+      pbrMaterial.pbrMetallicRoughness.baseColorFactor = [255, 255, 255, 255];
+    }
   }
-  const pbrMaterial = {
-    ...materialDefinition,
-    pbrMetallicRoughness: materialDefinition.pbrMetallicRoughness
-      ? {...materialDefinition.pbrMetallicRoughness}
-      : {baseColorFactor: [255, 255, 255, 255]}
-  };
 
   // Set default 0.25 per spec https://github.com/Esri/i3s-spec/blob/master/docs/1.7/materialDefinitions.cmn.md
   pbrMaterial.alphaCutoff = pbrMaterial.alphaCutoff || 0.25;
