@@ -21,11 +21,11 @@ function getTerrain(imageData, width, height, elevationDecoder, tesselator) {
 
   if (tesselator === 'martini') {
     // backfill bottom border
-    for (let i = width * (width - 1), x = 0; x < width - 1; x++, i++) {
-      terrain[i] = terrain[i - width];
+    for (let i = (width + 1) * width, x = 0; x < width; x++, i++) {
+      terrain[i] = terrain[i - width - 1];
     }
     // backfill right border
-    for (let i = height - 1, y = 0; y < height; y++, i += height) {
+    for (let i = height, y = 0; y < height + 1; y++, i += height + 1) {
       terrain[i] = terrain[i - 1];
     }
   }
