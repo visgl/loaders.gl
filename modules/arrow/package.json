@@ -38,6 +38,6 @@
     "@loaders.gl/core": "3.0.0-alpha.14",
     "@loaders.gl/loader-utils": "3.0.0-alpha.14",
     "@loaders.gl/tables": "3.0.0-alpha.14",
-    "apache-arrow": "^0.17.0"
+    "apache-arrow": "^4.0.0"
   }
 }
