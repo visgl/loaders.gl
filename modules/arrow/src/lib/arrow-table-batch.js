@@ -31,7 +31,7 @@ function getArrowSchema(schema) {
     if (field.type === Float32Array) {
       const metadata = field; // just store the original field as metadata
       // arrow: new Field(name, nullable, metadata)
-      const arrowField = new Field(field.name, Float32, field.nullable, metadata);
+      const arrowField = new Field(field.name, new Float32(), field.nullable, metadata);
       arrowFields.push(arrowField);
     }
   }
