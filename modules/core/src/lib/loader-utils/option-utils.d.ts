@@ -34,3 +34,10 @@ export function normalizeOptions(options: object, loader: LoaderObject, loaders?
  * @param context
  */
 export function getFetchFunction(options: object, context?: LoaderContext);
+
+/**
+ * Applies serach params to url if exists.
+ * @param url 
+ * @param options 
+ */
+export function applySearchParamsToUrl(url: string, options: object): string;

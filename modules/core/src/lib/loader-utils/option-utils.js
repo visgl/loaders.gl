@@ -1,3 +1,4 @@
+/* global URL */
 import {global} from '@loaders.gl/loader-utils';
 import {isPureObject, isObject} from '../../javascript-utils/is-type';
 import {fetchFile} from '../fetch/fetch-file';
@@ -17,9 +18,10 @@ const DEFAULT_LOADER_OPTIONS = {
   attributeType: null, // Used by i3s-attribute-loader to define attribute type.
   reuseWorkers: true, // By default reuse workers,
   // EPERIMENTAL
-  _workerType: undefined // 'test' to use locally generated workers
+  _workerType: undefined, // 'test' to use locally generated workers
   // DEPRECATED
   // baseUri: undefined
+  searchParams: null // Option allows to set search params to url.
 };
 
 const DEPRECATED_LOADER_OPTIONS = {
@@ -105,6 +107,27 @@ export function getFetchFunction(options, context) {
   return url => fetchFile(url, options);
 
   // return fetchFile;
+}
+
+export function applySearchParamsToUrl(url, options) {
+  const searchParams = options && options.searchParams;
+
+  if (!searchParams || typeof searchParams !== 'object') {
+    return url;
+  }
+
+  try {
+    const urlObject = new URL(url);
+
+    for (const param in searchParams) {
+      urlObject.searchParams.set(param, searchParams[param]);
+    }
+
+    return urlObject.toString();
+  } catch (error) {
+    console.warn(error.message); // eslint-disable-line
+    return url;
+  }
 }
 
 // VALIDATE OPTIONS

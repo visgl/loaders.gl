@@ -1,5 +1,5 @@
 import {isLoaderObject} from '../loader-utils/normalize-loader';
-import {getFetchFunction} from '../loader-utils/option-utils';
+import {getFetchFunction, applySearchParamsToUrl} from '../loader-utils/option-utils';
 
 import {parseInBatches} from './parse-in-batches';
 
@@ -28,7 +28,8 @@ export function loadInBatches(files, loaders, options) {
 
 async function loadOneFileInBatches(file, loaders, options, fetch) {
   if (typeof file === 'string') {
-    const url = file;
+    let url = file;
+    url = applySearchParamsToUrl(url, options);
     const response = await fetch(url);
     return await parseInBatches(response, loaders, options);
   }

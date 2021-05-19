@@ -47,3 +47,13 @@ test('loadInBatches#FileList', async t => {
 
   t.end();
 });
+
+test('loadInBatches#Should not fail if urls are relative and search params are passed', async t => {
+  const batches = await loadInBatches([OBJ_ASCII_URL, OBJ_ASCII_URL], OBJLoader, {
+    searchParams: {token: '12345'}
+  });
+  for await (const batch of batches) {
+    t.ok(batch);
+  }
+  t.end();
+});

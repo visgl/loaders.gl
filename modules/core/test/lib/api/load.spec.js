@@ -99,3 +99,9 @@ test('load#Node stream - NODE ONLY', async t => {
 
   t.end();
 });
+
+test('load#Should not fail if url is relative and search params are passed', async t => {
+  const data = await load(JSON_URL, JSONLoader, {searchParams: {token: '12345'}});
+  t.ok(data);
+  t.end();
+});

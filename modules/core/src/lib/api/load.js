@@ -1,6 +1,6 @@
 import {isBlob} from '../../javascript-utils/is-type';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
-import {getFetchFunction} from '../loader-utils/option-utils';
+import {getFetchFunction, applySearchParamsToUrl} from '../loader-utils/option-utils';
 
 import {parse} from './parse';
 
@@ -20,6 +20,7 @@ export async function load(url, loaders, options) {
   let data = url;
   // url is a string, fetch the url
   if (typeof url === 'string') {
+    url = applySearchParamsToUrl(url, options);
     data = await fetch(url);
   } else {
     url = null;
