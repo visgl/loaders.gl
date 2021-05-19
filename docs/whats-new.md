@@ -83,6 +83,10 @@ _Benchmarks ran using scripts on a 2012 MacBook Pro, 2.3 GHz Intel Core i7, 8 GB
 
 - New loaders: `GPXLoader` and `TCXLoader` to parse common formats for recorded GPS tracks.
 
+**@loaders.gl/arrow**
+
+- Upgraded `apache-arrow` version to 4.0.0
+
 ## v2.3
 
 Release Date: October 12, 2020

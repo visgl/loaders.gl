@@ -2,6 +2,22 @@
 # yarn lockfile v1
 
 
+"@apache-arrow/es5-cjs@^4.0.0":
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/@apache-arrow/es5-cjs/-/es5-cjs-4.0.0.tgz#8bceceb6c6a917bfb55c399e40f61b283c1357fa"
+  integrity sha512-9Ce6pRJGfsvt3JpESdGQSltHw1Vvk2lLxHchoDRXQvTvuTohF+DA9bSkTua0I07OjnCWgu78PQ71PC9tx+NqzQ==
+  dependencies:
+    "@types/flatbuffers" "^1.10.0"
+    "@types/node" "^14.14.37"
+    "@types/text-encoding-utf-8" "^1.0.1"
+    command-line-args "5.1.1"
+    command-line-usage "6.1.1"
+    flatbuffers "1.12.0"
+    json-bignum "^0.0.3"
+    pad-left "^2.1.0"
+    text-encoding-utf-8 "^1.0.2"
+    tslib "^2.2.0"
+
 "@babel/cli@^7.8.7":
   version "7.13.10"
   resolved "https://registry.yarnpkg.com/@babel/cli/-/cli-7.13.10.tgz#3a9254cbe806639c8ca4ebd49ebe54b4267b88c9"
@@ -2540,22 +2556,6 @@ anymatch@~3.1.1:
   dependencies:
     normalize-path "^3.0.0"
     picomatch "^2.0.4"
-
-apache-arrow@^4.0.0:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/apache-arrow/-/apache-arrow-4.0.0.tgz#29616f5b5959cf0b0a6e49f8aa060ea53d4429ba"
-  integrity sha512-Y1o9UfCVhh7IB+RPVbCx7SgF51SjvT9ZKxCtFU1eaqleFZNxj89mH2gvQia4uA197x158XDemTz9O+Rrv+f5tg==
-  dependencies:
-    "@types/flatbuffers" "^1.10.0"
-    "@types/node" "^14.14.37"
-    "@types/text-encoding-utf-8" "^1.0.1"
-    command-line-args "5.1.1"
-    command-line-usage "6.1.1"
-    flatbuffers "1.12.0"
-    json-bignum "^0.0.3"
-    pad-left "^2.1.0"
-    text-encoding-utf-8 "^1.0.2"
-    tslib "^2.2.0"
 
 append-transform@^2.0.0:
   version "2.0.0"
