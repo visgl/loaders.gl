@@ -35,9 +35,9 @@
     "build-worker": "webpack --entry ./src/workers/arrow-worker.js --output ./dist/arrow-worker.js --config ../../scripts/webpack/worker.js"
   },
   "dependencies": {
-    "@apache-arrow/es5-cjs": "^4.0.0",
     "@loaders.gl/core": "3.0.0-alpha.14",
     "@loaders.gl/loader-utils": "3.0.0-alpha.14",
-    "@loaders.gl/tables": "3.0.0-alpha.14"
+    "@loaders.gl/tables": "3.0.0-alpha.14",
+    "apache-arrow": "^4.0.0"
   }
 }
