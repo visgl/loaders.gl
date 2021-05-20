@@ -49,6 +49,7 @@ export default class TileLayer extends Tile3DLayer {
     const content = tileHeader.content;
     const {
       attributes,
+      indices,
       modelMatrix,
       cartographicOrigin,
       texture,
@@ -61,7 +62,8 @@ export default class TileLayer extends Tile3DLayer {
       (oldLayer && oldLayer.props.mesh) ||
       new Geometry({
         drawMode: GL.TRIANGLES,
-        attributes: getMeshGeometry(attributes)
+        attributes: getMeshGeometry(attributes),
+        indices
       });
 
     return new MeshLayer(

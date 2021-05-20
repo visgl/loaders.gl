@@ -1,6 +1,5 @@
 import {load} from '@loaders.gl/core';
 import {normalizeTileNonUrlData} from '../lib/parsers/parse-i3s';
-import {convertI3SObbToMbs} from '../utils/convert-i3s-obb-to-mbs';
 import {I3SNodePageLoader} from '../i3s-node-page-loader';
 import {generateTilesetAttributeUrls} from '../lib/parsers/url-utils';
 import {getSupportedGPUTextureFormats} from '@loaders.gl/textures';
@@ -42,8 +41,7 @@ export default class I3SNodePagesTiles {
       const childNode = await this.getNodeById(child);
       children.push({
         id: child,
-        obb: childNode.obb,
-        mbs: convertI3SObbToMbs(childNode.obb)
+        obb: childNode.obb
       });
     }
 
@@ -83,7 +81,6 @@ export default class I3SNodePagesTiles {
       id,
       lodSelection,
       obb: node.obb,
-      mbs: convertI3SObbToMbs(node.obb),
       contentUrl,
       textureUrl,
       attributeUrls,

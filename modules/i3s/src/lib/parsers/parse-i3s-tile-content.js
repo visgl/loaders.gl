@@ -52,6 +52,9 @@ export async function parseI3STileContent(arrayBuffer, tile, tileset, options) {
   }
 
   tile.content.material = makePbrMaterial(tile.materialDefinition, tile.content.texture);
+  if (tile.content.material) {
+    tile.content.texture = null;
+  }
 
   return await parseI3SNodeGeometry(arrayBuffer, tile, options);
 }
@@ -87,12 +90,13 @@ async function parseI3SNodeGeometry(arrayBuffer, tile = {}, options) {
     } = decompressedGeometry.attributes;
 
     attributes = {
-      position: flattenAttribute(POSITION, indices),
-      normal: flattenAttribute(NORMAL, indices),
-      color: flattenAttribute(COLOR_0, indices),
-      uv0: flattenAttribute(TEXCOORD_0, indices),
-      uvRegion: flattenAttribute(uvRegion, indices),
-      id: flattenAttribute(featureIndex, indices)
+      position: POSITION,
+      normal: NORMAL,
+      color: COLOR_0,
+      uv0: TEXCOORD_0,
+      uvRegion,
+      id: featureIndex,
+      indices
     };
 
     const featureIds = getFeatureIdsFromFeatureIndexMetadata(featureIndex);
@@ -148,6 +152,7 @@ async function parseI3SNodeGeometry(arrayBuffer, tile = {}, options) {
     texCoords: attributes.uv0,
     uvRegions: normalizeAttribute(attributes.uvRegion) // Normalize from UInt16
   };
+  content.indices = attributes.indices || null;
 
   if (attributes.id && attributes.id.value) {
     tile.content.segmentationData = attributes.id.value;
@@ -178,26 +183,6 @@ async function parseI3SNodeGeometry(arrayBuffer, tile = {}, options) {
  */
 function concatAttributes(normalizedVertexAttributes, normalizedFeatureAttributes) {
   return {...normalizedVertexAttributes, ...normalizedFeatureAttributes};
-}
-
-function flattenAttribute(attribute, indices) {
-  if (!attribute) {
-    return null;
-  }
-  const TypedArrayConstructor = attribute.value.constructor;
-  const result = new TypedArrayConstructor(indices.length * attribute.size);
-  for (let i = 0; i < indices.length; i++) {
-    const vertexIndex = indices[i] * attribute.size;
-    result.set(
-      new TypedArrayConstructor(
-        attribute.value.buffer,
-        vertexIndex * attribute.value.BYTES_PER_ELEMENT,
-        attribute.size
-      ),
-      i * attribute.size
-    );
-  }
-  return {...attribute, value: result};
 }
 
 /**
@@ -373,15 +358,24 @@ function offsetsToCartesians(vertices, metadata = {}, cartographicOrigin) {
  * @returns {object}
  */
 function makePbrMaterial(materialDefinition, texture) {
-  if (!materialDefinition) {
-    return null;
+  let pbrMaterial;
+  if (materialDefinition) {
+    pbrMaterial = {
+      ...materialDefinition,
+      pbrMetallicRoughness: materialDefinition.pbrMetallicRoughness
+        ? {...materialDefinition.pbrMetallicRoughness}
+        : {baseColorFactor: [255, 255, 255, 255]}
+    };
+  } else {
+    pbrMaterial = {
+      pbrMetallicRoughness: {}
+    };
+    if (texture) {
+      pbrMaterial.pbrMetallicRoughness.baseColorTexture = {texCoord: 0};
+    } else {
+      pbrMaterial.pbrMetallicRoughness.baseColorFactor = [255, 255, 255, 255];
+    }
   }
-  const pbrMaterial = {
-    ...materialDefinition,
-    pbrMetallicRoughness: materialDefinition.pbrMetallicRoughness
-      ? {...materialDefinition.pbrMetallicRoughness}
-      : {baseColorFactor: [255, 255, 255, 255]}
-  };
 
   // Set default 0.25 per spec https://github.com/Esri/i3s-spec/blob/master/docs/1.7/materialDefinitions.cmn.md
   pbrMaterial.alphaCutoff = pbrMaterial.alphaCutoff || 0.25;
