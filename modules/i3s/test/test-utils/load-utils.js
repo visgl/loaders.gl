@@ -12,7 +12,8 @@ export const TILESET_STUB = () => ({
     nodesPerPage: 64,
     lodSelectionMetricType: 'maxScreenThresholdSQ'
   },
-  url: '@loaders.gl/i3s/test/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0',
+  url:
+    'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/i3s/test/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0',
   materialDefinitions: [
     {
       doubleSided: true,
