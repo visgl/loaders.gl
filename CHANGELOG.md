@@ -1,5 +1,17 @@
 ## v3.0 Prerelease
 
+#### v3.0.0-alpha.15
+
+- tiles: loadTiles option (#1376)
+- I3S-Converter - Add validation flag (#1379)
+- Converter - Fix file for file path (#1378)
+- i3s debug app - renamed warnings in TileValidator (#1374)
+- tiles: update documentation (#1383)
+- i3s-debug: fix multiple viewports (#1385)
+- i3s: fix tests (#1386)
+- gis: Fix inefficient test (#1395)
+- Chore(Arrow): Upgrade apache-arrow to 4.0.0 (#1390)
+
 #### v3.0.0-alpha.14
 
 - I3S-Debug - Rename ObbLayer -> BoundingVolumeLayer (#1363)
