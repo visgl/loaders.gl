@@ -1,6 +1,6 @@
 import {getMeshBoundingBox} from '@loaders.gl/loader-utils';
 import Martini from '@mapbox/martini';
-import Delatin from 'delatin';
+import Delatin from './delatin';
 
 function getTerrain(imageData, width, height, elevationDecoder, tesselator) {
   const {rScaler, bScaler, gScaler, offset} = elevationDecoder;
@@ -145,7 +145,7 @@ function getMartiniTileMesh(meshMaxError, width, terrain) {
  * @param {number} width width of the input data array
  * @param {number} height height of the input data array
  * @param {number[] | Float32Array} terrain elevation data
- * @returns {{vertices: Uint16Array, triangles: number[]}} vertices and triangles data
+ * @returns {{vertices: number[], triangles: number[]}} vertices and triangles data
  */
 function getDelatinTileMesh(meshMaxError, width, height, terrain) {
   const tin = new Delatin(terrain, width + 1, height + 1);
