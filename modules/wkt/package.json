@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/wkt",
   "description": "Loader and Writer for the WKT (Well Known Text) Format",
-  "version": "3.0.0-alpha.13",
+  "version": "3.0.0-alpha.15",
   "license": "MIT",
   "publishConfig": {
     "access": "public"
@@ -26,7 +26,7 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-worker && npm run build-bundle && npm run build-bundle -- --env.dev",
+    "pre-build": "npm run build-worker && npm run build-bundle",
     "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js",
     "build-worker": "webpack --entry ./src/workers/wkt-worker.js --output ./dist/wkt-worker.js --config ../../scripts/webpack/worker.js"
   },
@@ -34,6 +34,6 @@
     "fuzzer": "^0.2.1"
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "3.0.0-alpha.13"
+    "@loaders.gl/loader-utils": "3.0.0-alpha.15"
   }
 }

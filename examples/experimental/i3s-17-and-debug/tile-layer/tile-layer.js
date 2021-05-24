@@ -36,12 +36,6 @@ export default class TileLayer extends Tile3DLayer {
       return;
     }
 
-    // Make loadTiles property is true by default when merge the layer back into deck.gl
-    const currentProps = this.getCurrentLayer().props;
-    if ('loadTiles' in currentProps && !currentProps.loadTiles) {
-      return;
-    }
-
     const frameNumber = tileset3d.update(viewports);
     // NEW CODE END
 
@@ -53,34 +47,24 @@ export default class TileLayer extends Tile3DLayer {
 
   _makeSimpleMeshLayer(tileHeader, oldLayer) {
     const content = tileHeader.content;
-    const {attributes, modelMatrix, cartographicOrigin, texture, material} = content;
     const {
-      pickable,
-      autoHighlight,
-      tileColorMode,
-      pickFeatures,
-      colorsMap,
-      selectedTileId,
-      coloredTilesMap,
-      wireframe
-    } = this.props;
-
-    const segmentationData = tileHeader.header.segmentationData;
+      attributes,
+      indices,
+      modelMatrix,
+      cartographicOrigin,
+      texture,
+      material,
+      segmentationData
+    } = content;
+    const {pickable, autoHighlight, pickFeatures, wireframe, getMeshColor} = this.props;
 
     const geometry =
       (oldLayer && oldLayer.props.mesh) ||
       new Geometry({
         drawMode: GL.TRIANGLES,
-        attributes: getMeshGeometry(attributes)
+        attributes: getMeshGeometry(attributes),
+        indices
       });
-
-    const color = colorsMap
-      ? colorsMap.getTileColor(tileHeader, {
-          coloredBy: tileColorMode,
-          selectedTileId,
-          coloredTilesMap
-        })
-      : [255, 255, 255];
 
     return new MeshLayer(
       this.getSubLayerProps({
@@ -92,7 +76,7 @@ export default class TileLayer extends Tile3DLayer {
         mesh: geometry,
         data: SINGLE_DATA,
         getPosition: [0, 0, 0],
-        getColor: color,
+        getColor: getMeshColor ? getMeshColor(tileHeader) : [255, 255, 255],
         texture,
         material,
         modelMatrix,

@@ -32,7 +32,7 @@ function printHelp() {
   );
   console.log('--token [Token for Cesium ION tilesets authentication]');
   console.log('--no-draco [Disable draco compression for geometry]');
-  console.log('--validate-bounding-volumes [Enable/Disable Bounding Volumes Validation]');
+  console.log('--validate [Enable validation]');
   process.exit(0); // eslint-disable-line
 }
 
@@ -114,7 +114,7 @@ async function convert(options) {
         egmFilePath: options.egm,
         token: options.token,
         draco: options.draco,
-        validateBoundingVolumes: options.validateBoundingVolumes
+        validate: options.validate
       });
       break;
     default:
@@ -135,7 +135,7 @@ function parseOptions(args) {
     token: null,
     draco: true,
     installDependencies: false,
-    validateBoundingVolumes: false
+    validate: false
   };
 
   const count = args.length;
@@ -184,8 +184,8 @@ function parseOptions(args) {
         case '--no-draco':
           opts.draco = false;
           break;
-        case '--validate-bounding-volumes':
-          opts.validateBoundingVolumes = true;
+        case '--validate':
+          opts.validate = true;
           break;
         case '--install-dependencies':
           opts.installDependencies = true;

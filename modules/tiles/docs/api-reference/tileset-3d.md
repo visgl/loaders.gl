@@ -73,6 +73,7 @@ Parameters:
   - `options.modelMatrix`=`Matrix4.IDENTITY` (`Matrix4`) - A 4x4 transformation matrix this transforms the entire tileset.
   - `options.maximumMemoryUsage`=`512`] (`Number`) - The maximum amount of memory in MB that can be used by the tileset.
   - `options.fetchOptions` - fetchOptions, i.e. headers, used to load tiles from tiling server
+  - `options.loadTiles`=`true` (`Boolean`) - Whether the tileset traverse and update tiles. Set this options to `false` during the run time to freeze the scene.
 
 Callbacks:
 
@@ -271,6 +272,16 @@ Once an object is destroyed, it should not be used; calling any function other t
 Wxception This object was destroyed, i.e., destroy() was called.
 
 ## Methods
+
+##### `setOptions`
+
+`setOptions(options: Object) : void`:
+
+Parameters:
+
+- `options`: the options map to apply
+
+Apply new options to an instance of the class. Use this method to update options of the tileset during the run time.
 
 ##### `update`
 

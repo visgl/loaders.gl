@@ -393,19 +393,18 @@ test('gis#geojson-to-binary 3D features', async t => {
 // eslint-disable-next-line complexity
 test('gis#geojson-to-binary position, featureId data types', async t => {
   const response = await fetchFile(FEATURES_2D);
-  let {features} = await response.json();
+  const {features} = await response.json();
 
   // Duplicate features so that there are >65535 total features but <65535 of
   // any one geometry type
-  // Dividing by 6 means enough coordinates to test featureIds and path/polygon indices
-  const duplicateCount = Math.ceil(65535 / 6);
-  const origLength = features.length;
+  const duplicateCount = 65535 * 2;
+  const testFeatures = [];
   for (let i = 0; i < duplicateCount; i++) {
-    features = features.concat(features.slice(0, origLength));
+    testFeatures.push(features[i % features.length]);
   }
 
   const options = {PositionDataType: Float64Array};
-  const {points, lines, polygons} = geojsonToBinary(features, options);
+  const {points, lines, polygons} = geojsonToBinary(testFeatures, options);
 
   t.ok(points && points.positions.value instanceof Float64Array);
   t.ok(points && points.globalFeatureIds.value instanceof Uint32Array);

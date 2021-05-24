@@ -1,6 +1,6 @@
 import {join} from 'path';
-import process from 'process';
 import {promises as fs} from 'fs';
+import {getAbsoluteFilePath} from './file-utils';
 
 export function timeConverter(time) {
   const nanoSecondsInMillisecond = 1e6;
@@ -34,15 +34,22 @@ export function timeConverter(time) {
 
 export async function calculateFilesSize(params) {
   const {slpk, outputPath, tilesetName} = params;
+  const fullOutputPath = getAbsoluteFilePath(outputPath);
 
-  if (slpk) {
-    const slpkPath = join(process.cwd(), outputPath, `${tilesetName}.slpk`);
-    const stat = await fs.stat(slpkPath);
-    return stat.size;
+  try {
+    if (slpk) {
+      const slpkPath = join(fullOutputPath, `${tilesetName}.slpk`);
+      const stat = await fs.stat(slpkPath);
+      return stat.size;
+    }
+
+    const directoryPath = join(fullOutputPath, tilesetName);
+    const totalSize = await getTotalFilesSize(directoryPath);
+    return totalSize;
+  } catch (error) {
+    console.log('Calculate file sizes error: ', error); // eslint-disable-line
+    return null;
   }
-  const directoryPath = join(process.cwd(), outputPath, tilesetName);
-  const totalSize = await getTotalFilesSize(directoryPath);
-  return totalSize;
 }
 
 async function getTotalFilesSize(dirPath) {

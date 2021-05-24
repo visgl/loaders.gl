@@ -1,4 +1,4 @@
-import {Table} from 'apache-arrow/Arrow.es5.min';
+import {Table} from 'apache-arrow';
 
 // Parses arrow to a columnar table
 export default function parseArrowSync(arrayBuffer, options) {

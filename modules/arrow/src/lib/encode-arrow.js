@@ -1,4 +1,4 @@
-import {Table, FloatVector, DateVector} from 'apache-arrow/Arrow.es5.min';
+import {Table, FloatVector, DateVector} from 'apache-arrow';
 import {VECTOR_TYPES} from './constants';
 
 export function encodeArrowSync(data, options) {

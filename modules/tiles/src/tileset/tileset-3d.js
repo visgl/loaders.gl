@@ -217,6 +217,10 @@ export default class Tileset3D {
     return this._frameNumber;
   }
 
+  setOptions(options) {
+    this.options = {...this.options, ...options};
+  }
+
   getTileUrl(tilePath) {
     const isDataUrl = tilePath.startsWith('data:');
     if (isDataUrl) {
@@ -231,6 +235,9 @@ export default class Tileset3D {
    * @return {void}
    */
   update(viewports) {
+    if ('loadTiles' in this.options && !this.options.loadTiles) {
+      return;
+    }
     if (this.traverseCounter > 0) {
       return;
     }

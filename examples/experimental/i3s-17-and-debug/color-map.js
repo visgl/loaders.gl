@@ -33,7 +33,12 @@ export default class ColorMap {
     };
   }
 
-  getTileColor(tile, options) {
+  /**
+   * Returns color in RGB format depends on coloredBy param.
+   * @param {object} tile
+   * @param {object} options
+   */
+  getColor(tile, options) {
     switch (options.coloredBy) {
       case COLORED_BY.RANDOM:
         return this._getRandomColor(tile.id);
@@ -48,17 +53,31 @@ export default class ColorMap {
     }
   }
 
+  /**
+   * Returns color in RGB format by tile id if it exists in colors map.
+   * @param {string} id
+   */
   _getColorByTile(id) {
     const {colorMap} = this.state;
     return colorMap[id] || DEFAULT_COLOR;
   }
 
+  /**
+   * Returns color in RGB format depends on depth level.
+   * @param {string} id
+   * @param {number} level
+   */
   _getColorByDepth(id, level) {
     const {colorMap} = this.state;
     colorMap[id] = DEPTH_COLOR_MAP[level] || DEPTH_COLOR_MAP[DEPTH_MAX_LEVEL];
     return colorMap[id];
   }
 
+  /**
+   * Returns custom color in RGB format for tile.
+   * @param {string} tileId
+   * @param {object} options
+   */
   _getCustomColor(tileId, options) {
     const {colorMap} = this.state;
     let color = DEFAULT_COLOR;
@@ -71,6 +90,10 @@ export default class ColorMap {
     return color;
   }
 
+  /**
+   * Generates randorm RGB color by tile id.
+   * @param {string} id
+   */
   _getRandomColor(id) {
     const {colorMap, randomColorMap} = this.state;
     const randomColor = Array.from({length: 3}, _ => Math.round(Math.random() * 255));
@@ -81,11 +104,19 @@ export default class ColorMap {
   }
 }
 
+/**
+ * Convert array of RGB values from color object.
+ * @param {object} color
+ */
 export function getRGBValueFromColorObject(color) {
   const {r, g, b} = color.rgb;
   return [r, g, b];
 }
 
+/**
+ * Convert {r,g,b} color object from color array [r,g,b].
+ * @param {array} color
+ */
 export function makeRGBObjectFromColor(color) {
   if (!color) {
     return {

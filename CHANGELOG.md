@@ -1,5 +1,31 @@
 ## v3.0 Prerelease
 
+#### v3.0.0-alpha.15
+
+- tiles: loadTiles option (#1376)
+- I3S-Converter - Add validation flag (#1379)
+- Converter - Fix file for file path (#1378)
+- i3s debug app - renamed warnings in TileValidator (#1374)
+- tiles: update documentation (#1383)
+- i3s-debug: fix multiple viewports (#1385)
+- i3s: fix tests (#1386)
+- gis: Fix inefficient test (#1395)
+- Chore(Arrow): Upgrade apache-arrow to 4.0.0 (#1390)
+
+#### v3.0.0-alpha.14
+
+- I3S-Debug - Rename ObbLayer -> BoundingVolumeLayer (#1363)
+- Add ES5 bundle + fix webpack configuration (#1352)
+- Chore(CSV): fix skipEmptyLines handling for streaming parsing (#1364)
+- I3S-Debug - Add JSDoc for color-map.js file (#1366)
+- I3S-Debug - Refactoring for tiles color (#1357)
+- feat(tiles): OBB transformation (#1370)
+- I3S-Converter - Cleanup top level warnings (#1365)
+- Add dist.es5.min.js description to readme file (#1369)
+- i3s: fix get color function (#1371)
+- tiles: fix zoom evaluation for OBB (#1373)
+- I3S-Debug - Fix for i3s-content-loader worker (#1375)
+
 #### v3.0.0-alpha.13
 
 - Chore(CSV): improve rowFormat handling and consistency (#1360)

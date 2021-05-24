@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/worker-utils",
-  "version": "3.0.0-alpha.13",
+  "version": "3.0.0-alpha.15",
   "description": "Utilities for running tasks on worker threads",
   "license": "MIT",
   "publishConfig": {
@@ -34,7 +34,7 @@
   },
   "scripts": {
     "pre-build": "npm run build-workers",
-    "pre-build-disabled": "npm run build-bundle && npm run build-workers && npm run build-bundle -- --env.dev",
+    "pre-build-disabled": "npm run build-bundle && npm run build-workers",
     "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js",
     "build-workers": "webpack --entry ./src/workers/null-worker.js --output ./dist/null-worker.js --env.dev --config ../../scripts/webpack/worker.js"
   },

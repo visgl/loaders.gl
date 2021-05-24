@@ -216,10 +216,9 @@ export default class TileHeader {
     try {
       const contentUrl = this.tileset.getTileUrl(this.contentUrl);
       // The content can be a binary tile ot a JSON tileset
-      const fetchOptions = this.tileset.fetchOptions;
       const loader = this.tileset.loader;
       const options = {
-        ...fetchOptions,
+        fetch: this.tileset.fetchOptions,
         [loader.id]: {
           isTileset: this.type === 'json',
           ...this._getLoaderSpecificOptions(loader.id)

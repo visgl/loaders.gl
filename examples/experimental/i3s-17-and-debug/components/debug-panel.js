@@ -7,9 +7,9 @@ import DebugOptionGroup from './debug-option-group';
 
 import {
   TILE_COLOR_MODES,
-  OBB_COLOR_MODES,
+  BOUNDING_VOLUME_COLOR_MODES,
   INITIAL_TILE_COLOR_MODE,
-  INITIAL_OBB_COLOR_MODE
+  INITIAL_BOUNDING_VOLUME_COLOR_MODE
 } from '../constants';
 
 const Container = styled.div`
@@ -102,9 +102,9 @@ export default class DebugPanel extends PureComponent {
       expand: true,
       minimap: true,
       minimapViewport: false,
-      obb: false,
+      boundingVolume: false,
       tileColorMode: INITIAL_TILE_COLOR_MODE,
-      obbColorMode: INITIAL_OBB_COLOR_MODE,
+      boundingVolumeColorMode: INITIAL_BOUNDING_VOLUME_COLOR_MODE,
       pickable: false,
       loadTiles: true,
       semanticValidator: false,
@@ -115,13 +115,13 @@ export default class DebugPanel extends PureComponent {
     this._onToggleDebugPanel = this._onToggleDebugPanel.bind(this);
     this._onToggleMinimap = this._onToggleMinimap.bind(this);
     this._onToggleMinimapViewport = this._onToggleMinimapViewport.bind(this);
-    this._onToggleObb = this._onToggleObb.bind(this);
+    this._onToggleBoundingVolume = this._onToggleBoundingVolume.bind(this);
     this._onTogglePickable = this._onTogglePickable.bind(this);
     this._onToggleLoading = this._onToggleLoading.bind(this);
     this._onToggleSemanticValidator = this._onToggleSemanticValidator.bind(this);
     this._onToggleUvDebugTexture = this._onToggleUvDebugTexture.bind(this);
     this._onChangedTileColorMode = this._onChangedTileColorMode.bind(this);
-    this._onChangedObbColorMode = this._onChangedObbColorMode.bind(this);
+    this._onChangedBoundingVolumeColorMode = this._onChangedBoundingVolumeColorMode.bind(this);
     this._onChangeWireframeMode = this._onChangeWireframeMode.bind(this);
   }
 
@@ -144,9 +144,9 @@ export default class DebugPanel extends PureComponent {
     });
   }
 
-  _onToggleObb() {
-    const {obb} = this.state;
-    this.setState({obb: !obb}, () => {
+  _onToggleBoundingVolume() {
+    const {boundingVolume} = this.state;
+    this.setState({boundingVolume: !boundingVolume}, () => {
       this._applyOptions();
     });
   }
@@ -185,8 +185,8 @@ export default class DebugPanel extends PureComponent {
     });
   }
 
-  _onChangedObbColorMode({obbColorMode}) {
-    this.setState({obbColorMode}, () => {
+  _onChangedBoundingVolumeColorMode({boundingVolumeColorMode}) {
+    this.setState({boundingVolumeColorMode}, () => {
       this._applyOptions();
     });
   }
@@ -200,9 +200,9 @@ export default class DebugPanel extends PureComponent {
 
   _applyOptions() {
     const {
-      obb,
+      boundingVolume,
       tileColorMode,
-      obbColorMode,
+      boundingVolumeColorMode,
       pickable,
       minimap,
       loadTiles,
@@ -215,9 +215,9 @@ export default class DebugPanel extends PureComponent {
     onOptionsChange({
       minimap,
       minimapViewport,
-      obb,
+      boundingVolume,
       tileColorMode,
-      obbColorMode,
+      boundingVolumeColorMode,
       pickable,
       loadTiles,
       semanticValidator,
@@ -260,30 +260,32 @@ export default class DebugPanel extends PureComponent {
     return <FontAwesomeIcon icon={faAngleDoubleRight} />;
   }
 
-  _renderObbOptions() {
-    const {obbColorMode, obb} = this.state;
+  _renderBoundingVolumeOptions() {
+    const {boundingVolumeColorMode, boundingVolume} = this.state;
     return (
       <DebugOptionGroup title="Bounding volumes">
         <CheckboxOption>
           <InputCheckbox
-            onChange={this._onToggleObb}
+            onChange={this._onToggleBoundingVolume}
             type="checkbox"
-            id="obb"
-            value={obb}
-            checked={obb}
+            id="boundingVolume"
+            value={boundingVolume}
+            checked={boundingVolume}
           />
-          <Label htmlFor="obb">Show</Label>
+          <Label htmlFor="boundingVolume">Show</Label>
         </CheckboxOption>
         <DropDown
-          value={obbColorMode}
+          value={boundingVolumeColorMode}
           onChange={evt => {
             const selected = evt.target.value;
-            this._onChangedObbColorMode({obbColorMode: parseInt(selected, 10)});
+            this._onChangedBoundingVolumeColorMode({
+              boundingVolumeColorMode: parseInt(selected, 10)
+            });
           }}
         >
-          {Object.keys(OBB_COLOR_MODES).map(key => {
+          {Object.keys(BOUNDING_VOLUME_COLOR_MODES).map(key => {
             return (
-              <option key={key} value={OBB_COLOR_MODES[key]}>
+              <option key={key} value={BOUNDING_VOLUME_COLOR_MODES[key]}>
                 {key}
               </option>
             );
@@ -427,7 +429,7 @@ export default class DebugPanel extends PureComponent {
           <Header>Debug Panel</Header>
           {this._renderFrustumCullingOption()}
           {this._renderTileOptions()}
-          {this._renderObbOptions()}
+          {this._renderBoundingVolumeOptions()}
           {this._renderSemanticValidatorOption()}
           <ChildWrapper>{children}</ChildWrapper>
         </DebugOptions>

@@ -35,8 +35,9 @@ function getBaseUri(tileset) {
 
 async function parseTile(arrayBuffer, options, context) {
   const tile = {
-    content: {},
-    segmentationData: null
+    content: {
+      segmentationData: null
+    }
   };
   const byteOffset = 0;
   await parse3DTile(arrayBuffer, byteOffset, options, context, tile.content);

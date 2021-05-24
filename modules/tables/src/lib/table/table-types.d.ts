@@ -1,4 +1,4 @@
-export type Field = Date | Float32Array | String;
+export type Field = any;
 
 export type Schema = {
   [key: string]: Field;
@@ -8,7 +8,7 @@ export type Batch = {
   data: any;
   schema: Schema;
   length: number;
-  bytesUsed: number;
+  bytesUsed?: number;
 };
 
 export interface IBatchBuilder {

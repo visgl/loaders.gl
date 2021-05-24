@@ -1,5 +1,5 @@
 // TODO - this import defeats the sophisticated typescript checking in ArrowJS
-import {RecordBatchReader} from 'apache-arrow/Arrow.es5.min';
+import {RecordBatchReader} from 'apache-arrow';
 // import {isIterable} from '@loaders.gl/core';
 
 /**

@@ -16,12 +16,14 @@ test('I3SLoader#Load tile content', async t => {
   t.equal(content.attributes.colors.value.length, 102552);
   t.ok(content.attributes.texCoords);
   t.equal(content.attributes.texCoords.value.length, 51276);
-  t.ok(content.texture);
+  t.notOk(content.texture);
+  t.ok(content.material);
   // ImageLoader returns different things on browser and Node
+  const texture = content.material.pbrMetallicRoughness.baseColorTexture.texture.source.image;
   if (isBrowser) {
-    t.ok(content.texture instanceof ImageBitmap || content.texture.compressed);
+    t.ok(texture instanceof ImageBitmap || texture);
   } else {
-    t.equal(content.texture.data.byteLength, 131072);
+    t.equal(texture.data.byteLength, 131072);
   }
   t.end();
 });
@@ -34,12 +36,12 @@ test('I3SLoader#DRACO geometry', async t => {
   t.ok(content);
   t.ok(content.attributes);
   t.ok(content.attributes.positions);
-  t.equal(content.attributes.positions.value.length, 1854);
+  t.equal(content.attributes.positions.value.length, 888);
   t.notOk(content.attributes.normals);
   t.ok(content.attributes.colors);
-  t.equal(content.attributes.colors.value.length, 2472);
+  t.equal(content.attributes.colors.value.length, 1184);
   t.ok(content.attributes.texCoords);
-  t.equal(content.attributes.texCoords.value.length, 1236);
+  t.equal(content.attributes.texCoords.value.length, 592);
 
   t.end();
 });

@@ -23,32 +23,27 @@ export default class B3dmConverter {
   }
 
   async buildGltf(i3sTile) {
-    const i3sContent = i3sTile.content;
+    const {material, attributes, indices: originalIndices, cartesianOrigin} = i3sTile.content;
     const gltfBuilder = new GLTFScenegraph();
 
     const textureIndex = await this._addI3sTextureToGltf(i3sTile, gltfBuilder);
-    const pbrMaterialInfo = this._convertI3sMaterialToGltfMaterial(
-      i3sContent.material,
-      textureIndex
-    );
+    const pbrMaterialInfo = this._convertI3sMaterialToGltfMaterial(material, textureIndex);
     const materialIndex = gltfBuilder.addMaterial(pbrMaterialInfo);
 
-    const positions = i3sContent.attributes.positions;
+    const positions = attributes.positions;
     const positionsValue = positions.value;
-    i3sContent.attributes.positions.value = this._normalizePositions(
-      positionsValue,
-      i3sContent.cartesianOrigin
-    );
-    if (i3sContent.attributes.normals && !this._checkNormals(i3sContent.attributes.normals.value)) {
-      delete i3sContent.attributes.normals;
+    attributes.positions.value = this._normalizePositions(positionsValue, cartesianOrigin);
+    if (attributes.normals && !this._checkNormals(attributes.normals.value)) {
+      delete attributes.normals;
     }
-    const indices = this._generateSynteticIndices(positionsValue.length / positions.size);
+    const indices =
+      originalIndices || this._generateSynteticIndices(positionsValue.length / positions.size);
     const meshIndex = gltfBuilder.addMesh({
-      attributes: i3sContent.attributes,
+      attributes,
       indices,
       material: materialIndex
     });
-    const transformMatrix = this._generateTransformMatrix(i3sContent.cartesianOrigin);
+    const transformMatrix = this._generateTransformMatrix(cartesianOrigin);
     const nodeIndex = gltfBuilder.addNode({meshIndex, matrix: transformMatrix});
     const sceneIndex = gltfBuilder.addScene({nodeIndices: [nodeIndex]});
     gltfBuilder.setDefaultScene(sceneIndex);
@@ -67,14 +62,24 @@ export default class B3dmConverter {
    * @returns {Promise<number | null>} - GLTF texture index
    */
   async _addI3sTextureToGltf(i3sTile, gltfBuilder) {
-    const i3sContent = i3sTile.content;
+    const {
+      content: {texture, material, attributes},
+      header: {textureFormat}
+    } = i3sTile;
     let textureIndex = null;
-    if (i3sContent.texture) {
-      const mimeType = this._deduceMimeTypeFromFormat(i3sTile.header.textureFormat);
-      const imageBuffer = await encode(i3sContent.texture, ImageWriter);
+    let selectedTexture = texture;
+    if (!texture && material) {
+      selectedTexture =
+        material.pbrMetallicRoughness &&
+        material.pbrMetallicRoughness.baseColorTexture &&
+        material.pbrMetallicRoughness.baseColorTexture.texture.source.image;
+    }
+    if (selectedTexture) {
+      const mimeType = this._deduceMimeTypeFromFormat(textureFormat);
+      const imageBuffer = await encode(selectedTexture, ImageWriter);
       const imageIndex = gltfBuilder.addImage(imageBuffer, mimeType);
       textureIndex = gltfBuilder.addTexture({imageIndex});
-      delete i3sContent.attributes.colors;
+      delete attributes.colors;
     }
     return textureIndex;
   }
@@ -198,7 +203,7 @@ export default class B3dmConverter {
     }
 
     if (textureIndex !== null) {
-      this._setGltfTexture(material, textureIndex);
+      material = this._setGltfTexture(material, textureIndex);
     }
 
     return material;
@@ -211,18 +216,22 @@ export default class B3dmConverter {
    * @returns {void}
    */
   _setGltfTexture(materialDefinition, textureIndex) {
+    const material = {
+      ...materialDefinition,
+      pbrMetallicRoughness: {...materialDefinition.pbrMetallicRoughness}
+    };
     // I3SLoader now support loading only one texture. This elseif sequence will assign this texture to one of
     // properties defined in materialDefinition
     if (
       materialDefinition.pbrMetallicRoughness &&
       materialDefinition.pbrMetallicRoughness.baseColorTexture
     ) {
-      materialDefinition.pbrMetallicRoughness.baseColorTexture = {
+      material.pbrMetallicRoughness.baseColorTexture = {
         index: textureIndex,
         texCoord: 0
       };
     } else if (materialDefinition.emissiveTexture) {
-      materialDefinition.emissiveTexture = {
+      material.emissiveTexture = {
         index: textureIndex,
         texCoord: 0
       };
@@ -230,21 +239,22 @@ export default class B3dmConverter {
       materialDefinition.pbrMetallicRoughness &&
       materialDefinition.pbrMetallicRoughness.metallicRoughnessTexture
     ) {
-      materialDefinition.pbrMetallicRoughness.metallicRoughnessTexture = {
+      material.pbrMetallicRoughness.metallicRoughnessTexture = {
         index: textureIndex,
         texCoord: 0
       };
     } else if (materialDefinition.normalTexture) {
-      materialDefinition.normalTexture = {
+      material.normalTexture = {
         index: textureIndex,
         texCoord: 0
       };
     } else if (materialDefinition.occlusionTexture) {
-      materialDefinition.occlusionTexture = {
+      material.occlusionTexture = {
         index: textureIndex,
         texCoord: 0
       };
     }
+    return material;
   }
 
   /*

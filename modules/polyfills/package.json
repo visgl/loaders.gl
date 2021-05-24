@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/polyfills",
-  "version": "3.0.0-alpha.13",
+  "version": "3.0.0-alpha.15",
   "description": "Polyfills for TextEncoder/TextDecoder",
   "license": "MIT",
   "publishConfig": {
@@ -91,7 +91,7 @@
     "web-streams-polyfill": false
   },
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-bundle -- --env.dev",
+    "pre-build": "npm run build-bundle",
     "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js"
   },
   "dependencies": {

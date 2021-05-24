@@ -6,26 +6,19 @@ const WGS84_RADIUS_Z = 6356752.3142451793;
 
 const scratchVector = new Vector3();
 
+/**
+ * Calculate appropriate zoom value for a particular boundingVolume
+ * @param {BoundingSphere, OrientedBoundingBox} boundingVolume - the instance of bounding volume
+ * @returns {number} - zoom value
+ */
 export function getZoomFromBoundingVolume(boundingVolume) {
   const {halfAxes, radius, width, height} = boundingVolume;
 
   if (halfAxes) {
     // OrientedBoundingBox
-    halfAxes.getColumn(0, scratchVector);
-    const x = scratchVector.len();
-    halfAxes.getColumn(1, scratchVector);
-    const y = scratchVector.len();
-    halfAxes.getColumn(2, scratchVector);
-    const z = scratchVector.len();
-
-    const halfX = x / 2;
-    const halfY = y / 2;
-    const halfZ = z / 2;
-
-    const zoomX = Math.log2(WGS84_RADIUS_X / halfX);
-    const zoomY = Math.log2(WGS84_RADIUS_Y / halfY);
-    const zoomZ = Math.log2(WGS84_RADIUS_Z / halfZ);
-    return (zoomX + zoomY + zoomZ) / 3;
+    const obbSize = getObbSize(halfAxes);
+    // Use WGS84_RADIUS_Z to allign with BoundingSphere algorithm
+    return Math.log2(WGS84_RADIUS_Z / obbSize);
   } else if (radius) {
     // BoundingSphere
     return Math.log2(WGS84_RADIUS_Z / radius);
@@ -38,4 +31,13 @@ export function getZoomFromBoundingVolume(boundingVolume) {
   }
 
   return 1;
+}
+
+function getObbSize(halfAxes) {
+  halfAxes.getColumn(0, scratchVector);
+  const axeY = halfAxes.getColumn(1);
+  const axeZ = halfAxes.getColumn(2);
+  const farthestVertex = scratchVector.add(axeY).add(axeZ);
+  const size = farthestVertex.len();
+  return size;
 }

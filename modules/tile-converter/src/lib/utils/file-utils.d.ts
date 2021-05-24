@@ -35,3 +35,9 @@ export function removeDir(path: string): Promise<void>;
  * @param path
  */
 export function removeFile(path: string): Promise<void>;
+
+/**
+ * Generates absolute file path
+ * @param filePath 
+ */
+export function getAbsoluteFilePath(filePath: string): string;

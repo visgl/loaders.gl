@@ -127,18 +127,20 @@ export default class VectorTileFeature {
         break;
 
       case 3: // Polygon
-        const rings = classifyRings(geom);
-        this._firstPassData.polygonFeaturesCount++;
-        this._firstPassData.polygonObjectsCount += rings.length;
-
-        for (const lines of rings) {
-          this._firstPassData.polygonRingsCount += lines.length;
-        }
-        this._firstPassData.polygonPositionsCount += geom.data.length / coordLength;
+        const classified = classifyRings(geom);
 
         // Unlike Point & LineString geom.lines is a 2D array, thanks
         // to the classifyRings method
-        geom.lines = rings;
+        this._firstPassData.polygonFeaturesCount++;
+        this._firstPassData.polygonObjectsCount += classified.lines.length;
+
+        for (const lines of classified.lines) {
+          this._firstPassData.polygonRingsCount += lines.length;
+        }
+        this._firstPassData.polygonPositionsCount += classified.data.length / coordLength;
+
+        // @ts-ignore
+        geom = classified;
         break;
     }
 
@@ -189,9 +191,17 @@ export default class VectorTileFeature {
 function classifyRings(geom) {
   const len = geom.lines.length;
 
-  if (len <= 1) return [geom.lines];
+  if (len <= 1) {
+    return {
+      data: geom.data,
+      areas: [[getPolygonSignedArea(geom.data)]],
+      lines: [geom.lines]
+    };
+  }
 
+  const areas = [];
   const polygons = [];
+  let ringAreas;
   let polygon;
   let ccw;
   let offset = 0;
@@ -221,16 +231,23 @@ function classifyRings(geom) {
     if (ccw === undefined) ccw = area < 0;
 
     if (ccw === area < 0) {
-      if (polygon) polygons.push(polygon);
+      if (polygon) {
+        areas.push(ringAreas);
+        polygons.push(polygon);
+      }
       polygon = [startIndex];
+      ringAreas = [area];
     } else {
+      // @ts-ignore
+      ringAreas.push(area);
       // @ts-ignore
       polygon.push(startIndex);
     }
   }
+  if (ringAreas) areas.push(ringAreas);
   if (polygon) polygons.push(polygon);
 
-  return polygons;
+  return {areas, lines: polygons, data: geom.data};
 }
 
 // All code below is unchanged from the original Mapbox implemenation
