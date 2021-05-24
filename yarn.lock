@@ -1898,6 +1898,14 @@
     "@babel/runtime" "^7.12.0"
     gl-matrix "^3.0.0"
 
+"@math.gl/core@3.5.0-alpha.1":
+  version "3.5.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/@math.gl/core/-/core-3.5.0-alpha.1.tgz#c5c55d8737189f957775fb0b9c23bc526891e1a7"
+  integrity sha512-Hj8ZvWQvRQo/gIeung709KODkhl9kHH75wZHBK7jVwkRxLS1TMq/niB6yL9w1HQtdTNjae4SjOGOH7nzCbAW1g==
+  dependencies:
+    "@babel/runtime" "^7.12.0"
+    gl-matrix "^3.0.0"
+
 "@math.gl/culling@^3.3.0":
   version "3.4.2"
   resolved "https://registry.yarnpkg.com/@math.gl/culling/-/culling-3.4.2.tgz#a3d9a80e3c69c3613591a732515875dbdcf54e6a"
@@ -1916,12 +1924,12 @@
     "@math.gl/core" "3.4.2"
     gl-matrix "^3.0.0"
 
-"@math.gl/polygon@^3.3.0":
-  version "3.4.2"
-  resolved "https://registry.yarnpkg.com/@math.gl/polygon/-/polygon-3.4.2.tgz#36c327257959c8edcc258c4ddeaecf04b125cb90"
-  integrity sha512-ANbZmcrzavzEe0bHbdEYyiudPdGGV/quB3FxUJa3L1QCcZbnrqvnuwqX+8U8ltIDhbACG1x0Uxefwo8p77aMNw==
+"@math.gl/polygon@^3.5.0-alpha.1":
+  version "3.5.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/@math.gl/polygon/-/polygon-3.5.0-alpha.1.tgz#79fece9a082f7cc5250614ccee86f560499e4b48"
+  integrity sha512-3fg/c5XCr92mE9p3eCXoYdecGA359ZwWZPD4P31JlkMHPpX2mSZIC/XJ2QabAvdis2WNBkKrrjZvKBGtQKqvNg==
   dependencies:
-    "@math.gl/core" "3.4.2"
+    "@math.gl/core" "3.5.0-alpha.1"
 
 "@math.gl/proj4@^3.3.0":
   version "3.4.2"
@@ -4531,11 +4539,6 @@ duplexify@^3.4.2, duplexify@^3.6.0:
     inherits "^2.0.1"
     readable-stream "^2.0.0"
     stream-shift "^1.0.0"
-
-earcut@^2.0.6:
-  version "2.2.2"
-  resolved "https://registry.yarnpkg.com/earcut/-/earcut-2.2.2.tgz#41b0bc35f63e0fe80da7cddff28511e7e2e80d11"
-  integrity sha512-eZoZPPJcUHnfRZ0PjLvx2qBordSiO8ofC3vt+qACLM95u+4DovnbYNpQtJh0DNsWj8RnxrQytD4WA8gj5cRIaQ==
 
 ecc-jsbn@~0.1.1:
   version "0.1.2"
