@@ -77,7 +77,8 @@ test('I3SNodePagesTiles#Layer without textures', async t => {
   t.end();
 });
 
-test('I3SNodePagesTiles#Tile should have mbs converted from obb', async t => {
+// Logic moved to parse-i3s.js to avoid calling extra conversion the center from cartographic to cartesian
+test.skip('I3SNodePagesTiles#Tile should have mbs converted from obb', async t => {
   const i3SNodePagesTiles = new I3SNodePagesTiles(TILESET_STUB(), {});
   const node1 = await i3SNodePagesTiles.formTileFromNodePages(1);
   t.ok(node1);
