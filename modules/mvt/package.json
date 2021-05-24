@@ -33,7 +33,7 @@
   "dependencies": {
     "@loaders.gl/gis": "3.0.0-alpha.15",
     "@loaders.gl/loader-utils": "3.0.0-alpha.15",
-    "@math.gl/polygon": "^3.3.0",
+    "@math.gl/polygon": "^3.5.0-alpha.1",
     "pbf": "^3.2.1"
   },
   "devDependencies": {
