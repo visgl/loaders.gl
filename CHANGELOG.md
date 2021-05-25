@@ -1,5 +1,10 @@
 ## v3.0 Prerelease
 
+#### v3.0.0-alpha.16
+
+- chore(mvt): Use earcut from math.gl (#1391)
+- i3s: optimization (#1396)
+
 #### v3.0.0-alpha.15
 
 - tiles: loadTiles option (#1376)
