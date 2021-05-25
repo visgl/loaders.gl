@@ -1,5 +1,10 @@
 ## v3.0 Prerelease
 
+#### v3.0.0-alpha.17
+
+- B3dm - Support legacy b3dm data format (#1382)
+- Tile-converter - Fix attributes loading for legacy b3dm (#1389)
+
 #### v3.0.0-alpha.16
 
 - chore(mvt): Use earcut from math.gl (#1391)
