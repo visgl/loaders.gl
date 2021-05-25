@@ -19,9 +19,10 @@ const DOUBLE_TYPE = 'Float64';
 const OBJECT_ID_TYPE = 'Oid32';
 /*
 * 'CUSTOM_ATTRIBUTE_2' - Attribute name which includes batch info and used by New York map.
-* _BATCHID - default attribute name which includes batch info.
+* _BATCHID - Default attribute name which includes batch info.
+* BATCHID - Legacy attribute name which includes batch info.
 */
-const BATCHED_ID_POSSIBLE_ATTRIBUTE_NAMES = ['CUSTOM_ATTRIBUTE_2', '_BATCHID'];
+const BATCHED_ID_POSSIBLE_ATTRIBUTE_NAMES = ['CUSTOM_ATTRIBUTE_2', '_BATCHID', 'BATCHID'];
 
 export default async function convertB3dmToI3sGeometry(
   tileContent,
