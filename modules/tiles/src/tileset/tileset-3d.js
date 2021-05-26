@@ -202,7 +202,8 @@ export default class Tileset3D {
   }
 
   isLoaded() {
-    return this._pendingCount === 0;
+    // Check that `_frameNumber !== 0` which means that update was called at least once
+    return this._pendingCount === 0 && this._frameNumber !== 0;
   }
 
   destroy() {
