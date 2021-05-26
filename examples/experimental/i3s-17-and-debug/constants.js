@@ -45,5 +45,3 @@ export const BOUNDING_VOLUME_TYPE = {
   MBS: BOUNDING_SPHERE,
   OBB: ORIENTED_BOUNDING_BOX
 };
-
-export const INITIAL_BOUNDING_VOLUME_TYPE = 'Bounding Sphere';

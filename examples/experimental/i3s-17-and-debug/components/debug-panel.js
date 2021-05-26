@@ -11,7 +11,7 @@ import {
   INITIAL_TILE_COLOR_MODE,
   INITIAL_BOUNDING_VOLUME_COLOR_MODE,
   BOUNDING_VOLUME_TYPE,
-  INITIAL_BOUNDING_VOLUME_TYPE
+  BOUNDING_SPHERE
 } from '../constants';
 
 const Container = styled.div`
@@ -113,7 +113,7 @@ export default class DebugPanel extends PureComponent {
       minimap: true,
       minimapViewport: false,
       boundingVolume: false,
-      boundingVolumeType: INITIAL_BOUNDING_VOLUME_TYPE,
+      boundingVolumeType: BOUNDING_SPHERE,
       tileColorMode: INITIAL_TILE_COLOR_MODE,
       boundingVolumeColorMode: INITIAL_BOUNDING_VOLUME_COLOR_MODE,
       pickable: false,
