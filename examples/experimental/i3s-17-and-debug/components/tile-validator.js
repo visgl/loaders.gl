@@ -54,8 +54,11 @@ const NormalsCheckbox = styled.input`
   margin-left: 0;
 `;
 
-const NormalsLabel = styled.label`
-  cursor: pointer;
+const NoNormalsInfo = styled.span`
+  display: flex;
+  align-self: flex-start;
+  margin-bottom: 5px;
+  color: red;
 `;
 
 const VALIDATE_TILE = 'Validate Tile';
@@ -235,6 +238,20 @@ export default class TileValidator extends PureComponent {
     };
   }
 
+  getNormalControlsStyle(isTileHasNormals, element = null) {
+    switch (element) {
+      case 'checkbox':
+        return {
+          cursor: isTileHasNormals ? 'pointer' : 'auto',
+          color: isTileHasNormals ? 'black' : 'grey'
+        };
+      default:
+        return {
+          color: isTileHasNormals ? 'black' : 'grey'
+        };
+    }
+  }
+
   _renderTriangleMetrics() {
     const {triangleMessages} = this.state;
     if (!triangleMessages) {
@@ -276,40 +293,52 @@ export default class TileValidator extends PureComponent {
     } = this.props;
     const isTileHasNormals =
       tile && tile.content && tile.content.attributes && tile.content.attributes.normals;
-    return isTileHasNormals ? (
+    return (
       <NormalsValidator>
+        {!isTileHasNormals && <NoNormalsInfo>{'Tile has no normals'}</NoNormalsInfo>}
         <NormalsControl>
           <NormalsCheckbox
+            style={this.getNormalControlsStyle(isTileHasNormals, 'checkbox')}
             id="normals-checkbox"
             type="checkbox"
+            disabled={!isTileHasNormals}
             checked={showNormals}
             onChange={() => handleShowNormals(tile)}
           />
-          <NormalsLabel htmlFor="normals-checkbox">Show Normals</NormalsLabel>
+          <label
+            style={this.getNormalControlsStyle(isTileHasNormals, 'checkbox')}
+            htmlFor="normals-checkbox"
+          >
+            Show Normals
+          </label>
         </NormalsControl>
         <NormalsControl>
-          <span>Percent</span>
+          <span style={this.getNormalControlsStyle(isTileHasNormals)}>Percent</span>
           <GapInput
             type="number"
             min="1"
             max="100"
             value={trianglesPercentage}
+            disabled={!isTileHasNormals}
             onChange={event => handleChangeTrianglesPercentage(tile, Number(event.target.value))}
           />
-          <span>% triangles with normals</span>
+          <span style={this.getNormalControlsStyle(isTileHasNormals)}>
+            % triangles with normals
+          </span>
         </NormalsControl>
         <NormalsControl>
-          <span>Normals length</span>
+          <span style={this.getNormalControlsStyle(isTileHasNormals)}>Normals length</span>
           <GapInput
             type="number"
             min="1"
             value={normalsLength}
+            disabled={!isTileHasNormals}
             onChange={event => handleChangeNormalsLength(tile, Number(event.target.value))}
           />
-          <span>m</span>
+          <span style={this.getNormalControlsStyle(isTileHasNormals)}>m</span>
         </NormalsControl>
       </NormalsValidator>
-    ) : null;
+    );
   }
 
   render() {
