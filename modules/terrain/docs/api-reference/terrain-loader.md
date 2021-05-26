@@ -32,6 +32,7 @@ const data = await load(url, TerrainLoader, options);
 | `terrain.meshMaxError`     | `number`        | `10`      | Mesh error in meters. The output mesh is in higher resolution (more vertices) if the error is smaller.                                        |
 | `terrain.bounds`           | `array<number>` | `null`    | Bounds of the image to fit x,y coordinates into. In `[minX, minY, maxX, maxY]`. If not supplied, x and y are in pixels relative to the image. |
 | `terrain.elevationDecoder` | `object`        | See below | See below                                                                                                                                     |
+| `terrain.tesselator` | `string`        | `auto` | Library used for mesh reconstruction. If `auto`, [MARTINI](https://github.com/mapbox/martini) will be used if the the image is a square and if it's dimension is the power of 2. Otherwise, [DELATIN](https://github.com/mapbox/delatin) will be used instead, which has no input limitations. Can also specify desired tesselator `martini` or `delatin` directly                                                                                                                                      |
 
 ### elevationDecoder
 
