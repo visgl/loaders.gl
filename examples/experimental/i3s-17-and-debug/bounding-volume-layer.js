@@ -3,6 +3,7 @@ import {Ellipsoid} from '@math.gl/geospatial';
 import {CubeGeometry, SphereGeometry} from '@luma.gl/engine';
 import {CompositeLayer, COORDINATE_SYSTEM, log} from '@deck.gl/core';
 import MeshLayer from './mesh-layer/mesh-layer';
+import {ORIENTED_BOUNDING_BOX, BOUNDING_SPHERE} from './constants';
 
 const DEFAULT_BG_OPACITY = 100;
 const GEOMETRY_STEP = 50;
@@ -91,9 +92,9 @@ export default class BoundingVolumeLayer extends CompositeLayer {
 
   _generateMesh(tile, boundingVolumeType) {
     switch (boundingVolumeType) {
-      case 'Oriented Bounding Box':
+      case ORIENTED_BOUNDING_BOX:
         return tile.header.obb ? this._generateCubeMesh(tile) : null;
-      case 'Bounding Sphere':
+      case BOUNDING_SPHERE:
         return tile.header.mbs ? this._generateSphereMesh(tile) : null;
       default:
         return null;
