@@ -10,8 +10,8 @@ import {
   BOUNDING_VOLUME_COLOR_MODES,
   INITIAL_TILE_COLOR_MODE,
   INITIAL_BOUNDING_VOLUME_COLOR_MODE,
-  BOUNDING_VOLUME_SHAPE_MODE,
-  INITIAL_BOUNDING_VOLUME_TYPE_MODE
+  BOUNDING_VOLUME_TYPE,
+  INITIAL_BOUNDING_VOLUME_TYPE
 } from '../constants';
 
 const Container = styled.div`
@@ -113,7 +113,7 @@ export default class DebugPanel extends PureComponent {
       minimap: true,
       minimapViewport: false,
       boundingVolume: false,
-      boundingVolumeType: INITIAL_BOUNDING_VOLUME_TYPE_MODE,
+      boundingVolumeType: INITIAL_BOUNDING_VOLUME_TYPE,
       tileColorMode: INITIAL_TILE_COLOR_MODE,
       boundingVolumeColorMode: INITIAL_BOUNDING_VOLUME_COLOR_MODE,
       pickable: false,
@@ -298,9 +298,8 @@ export default class DebugPanel extends PureComponent {
         <DropDown
           value={boundingVolumeColorMode}
           onChange={evt => {
-            const selected = evt.target.value;
             this._onChangedBoundingVolumeColorMode({
-              boundingVolumeColorMode: parseInt(selected, 10)
+              boundingVolumeColorMode: parseInt(evt.target.value, 10)
             });
           }}
         >
@@ -323,14 +322,13 @@ export default class DebugPanel extends PureComponent {
       <Shapes
         value={boundingVolumeType}
         onChange={evt => {
-          const selected = evt.target.value;
           this._onChangeBoundingVolumeType({
-            boundingVolumeType: selected
+            boundingVolumeType: evt.target.value
           });
         }}
       >
-        {Object.keys(BOUNDING_VOLUME_SHAPE_MODE).map(key => {
-          const shape = BOUNDING_VOLUME_SHAPE_MODE[key];
+        {Object.keys(BOUNDING_VOLUME_TYPE).map(key => {
+          const shape = BOUNDING_VOLUME_TYPE[key];
           return (
             <option key={key} value={shape}>
               {key}
@@ -397,8 +395,7 @@ export default class DebugPanel extends PureComponent {
         <DropDown
           value={tileColorMode}
           onChange={evt => {
-            const selected = evt.target.value;
-            this._onChangedTileColorMode({tileColorMode: parseInt(selected, 10)});
+            this._onChangedTileColorMode({tileColorMode: parseInt(evt.target.value, 10)});
           }}
         >
           {Object.keys(TILE_COLOR_MODES).map(key => {

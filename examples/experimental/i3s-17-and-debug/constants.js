@@ -38,9 +38,9 @@ export const LOD_WARNING_TYPE = 'lod';
 export const PARENT_LOD_WARNING_TYPE = 'parentLod';
 export const GEMETRY_VS_TEXTURE_WARNING_TYPE = 'geometryVsTextures';
 
-export const BOUNDING_VOLUME_SHAPE_MODE = {
-  MBS: 'SphereGeometry',
-  OBB: 'CubeGeometry'
+export const BOUNDING_VOLUME_TYPE = {
+  MBS: 'Bounding Sphere',
+  OBB: 'Oriented Bounding Box'
 };
 
-export const INITIAL_BOUNDING_VOLUME_TYPE_MODE = 'SphereGeometry';
+export const INITIAL_BOUNDING_VOLUME_TYPE = 'Bounding Sphere';

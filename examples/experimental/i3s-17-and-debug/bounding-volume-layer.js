@@ -91,9 +91,9 @@ export default class BoundingVolumeLayer extends CompositeLayer {
 
   _generateMesh(tile, boundingVolumeType) {
     switch (boundingVolumeType) {
-      case 'CubeGeometry':
+      case 'Oriented Bounding Box':
         return tile.header.obb ? this._generateCubeMesh(tile) : null;
-      case 'SphereGeometry':
+      case 'Bounding Sphere':
         return tile.header.mbs ? this._generateSphereMesh(tile) : null;
       default:
         return null;
