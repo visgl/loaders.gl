@@ -11,6 +11,7 @@
     "allowSyntheticDefaultImports": true,
     "noEmit": true,
     "resolveJsonModule": true,
+    "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
       "@loaders.gl/core/*": ["modules/core/src/*"],

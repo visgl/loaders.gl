@@ -2,7 +2,7 @@ import test from 'tape-promise/tape';
 import {loadInBatches, isIterator, isAsyncIterable} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/csv';
 import {ArrowTableBatch} from '@loaders.gl/arrow';
-import {RecordBatch} from 'apache-arrow/Arrow.es5.min';
+import {RecordBatch} from 'apache-arrow';
 // import {Schema, Field, RecordBatch, Float32Vector} from 'apache-arrow';
 
 // Small CSV Sample Files
