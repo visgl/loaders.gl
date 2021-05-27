@@ -80,16 +80,18 @@ The choices for tesselator are as follows:
 
 `auto`:
 
-- Chooses Martini if the possible, otherwise use Delatin instead.
+- Chooses [Martini](https://github.com/mapbox/martini) if possible (if the image is a square where both height and width are powers of 2), otherwise uses [Delatin](https://github.com/mapbox/delatin) instead, which has no input image limitations.
 
 `martini`:
 
+- Uses the [Martini](https://github.com/mapbox/martini) algorithm for constructing a mesh.
 - Only works on square 2^n+1 x 2^n+1 grids.
 - Generates a hierarchy of meshes (pick arbitrary detail after a single run)
 - Optimized for meshing speed rather than quality.
 
 `delatin`:
 
+- Uses the [Delatin](https://github.com/mapbox/delatin) algorithm for constructing a mesh.
 - Works on arbitrary raster grids.
 - Generates a single mesh for a particular detail.
 - Optimized for quality (as little triangles as possible for a given error).
