@@ -9,7 +9,9 @@ import {
   TILE_COLOR_MODES,
   BOUNDING_VOLUME_COLOR_MODES,
   INITIAL_TILE_COLOR_MODE,
-  INITIAL_BOUNDING_VOLUME_COLOR_MODE
+  INITIAL_BOUNDING_VOLUME_COLOR_MODE,
+  BOUNDING_VOLUME_TYPE,
+  BOUNDING_SPHERE
 } from '../constants';
 
 const Container = styled.div`
@@ -70,6 +72,14 @@ const InputCheckbox = styled.input`
   cursor: pointer;
 `;
 
+const Shapes = styled.select`
+  position: relative;
+  margin: 5px;
+  width: 50px;
+  margin-left: 40px;
+  background-color: white;
+`;
+
 const ChildWrapper = styled.div`
   margin-top: 10px;
 `;
@@ -103,6 +113,7 @@ export default class DebugPanel extends PureComponent {
       minimap: true,
       minimapViewport: false,
       boundingVolume: false,
+      boundingVolumeType: BOUNDING_SPHERE,
       tileColorMode: INITIAL_TILE_COLOR_MODE,
       boundingVolumeColorMode: INITIAL_BOUNDING_VOLUME_COLOR_MODE,
       pickable: false,
@@ -116,6 +127,7 @@ export default class DebugPanel extends PureComponent {
     this._onToggleMinimap = this._onToggleMinimap.bind(this);
     this._onToggleMinimapViewport = this._onToggleMinimapViewport.bind(this);
     this._onToggleBoundingVolume = this._onToggleBoundingVolume.bind(this);
+    this._onChangeBoundingVolumeType = this._onChangeBoundingVolumeType.bind(this);
     this._onTogglePickable = this._onTogglePickable.bind(this);
     this._onToggleLoading = this._onToggleLoading.bind(this);
     this._onToggleSemanticValidator = this._onToggleSemanticValidator.bind(this);
@@ -191,6 +203,12 @@ export default class DebugPanel extends PureComponent {
     });
   }
 
+  _onChangeBoundingVolumeType({boundingVolumeType}) {
+    this.setState({boundingVolumeType}, () => {
+      this._applyOptions();
+    });
+  }
+
   _onChangeWireframeMode() {
     const {wireframe} = this.state;
     this.setState({wireframe: !wireframe}, () => {
@@ -203,6 +221,7 @@ export default class DebugPanel extends PureComponent {
       boundingVolume,
       tileColorMode,
       boundingVolumeColorMode,
+      boundingVolumeType,
       pickable,
       minimap,
       loadTiles,
@@ -218,6 +237,7 @@ export default class DebugPanel extends PureComponent {
       boundingVolume,
       tileColorMode,
       boundingVolumeColorMode,
+      boundingVolumeType,
       pickable,
       loadTiles,
       semanticValidator,
@@ -273,13 +293,13 @@ export default class DebugPanel extends PureComponent {
             checked={boundingVolume}
           />
           <Label htmlFor="boundingVolume">Show</Label>
+          {boundingVolume ? this._renderBoundingTypes() : null}
         </CheckboxOption>
         <DropDown
           value={boundingVolumeColorMode}
           onChange={evt => {
-            const selected = evt.target.value;
             this._onChangedBoundingVolumeColorMode({
-              boundingVolumeColorMode: parseInt(selected, 10)
+              boundingVolumeColorMode: parseInt(evt.target.value, 10)
             });
           }}
         >
@@ -292,6 +312,30 @@ export default class DebugPanel extends PureComponent {
           })}
         </DropDown>
       </DebugOptionGroup>
+    );
+  }
+
+  _renderBoundingTypes() {
+    const {boundingVolumeType} = this.state;
+
+    return (
+      <Shapes
+        value={boundingVolumeType}
+        onChange={evt => {
+          this._onChangeBoundingVolumeType({
+            boundingVolumeType: evt.target.value
+          });
+        }}
+      >
+        {Object.keys(BOUNDING_VOLUME_TYPE).map(key => {
+          const shape = BOUNDING_VOLUME_TYPE[key];
+          return (
+            <option key={key} value={shape}>
+              {key}
+            </option>
+          );
+        })}
+      </Shapes>
     );
   }
 
@@ -351,8 +395,7 @@ export default class DebugPanel extends PureComponent {
         <DropDown
           value={tileColorMode}
           onChange={evt => {
-            const selected = evt.target.value;
-            this._onChangedTileColorMode({tileColorMode: parseInt(selected, 10)});
+            this._onChangedTileColorMode({tileColorMode: parseInt(evt.target.value, 10)});
           }}
         >
           {Object.keys(TILE_COLOR_MODES).map(key => {

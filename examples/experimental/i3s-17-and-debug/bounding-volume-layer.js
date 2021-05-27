@@ -1,10 +1,9 @@
 import {Vector3} from '@math.gl/core';
-import {OrientedBoundingBox} from '@math.gl/culling';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {CubeGeometry, SphereGeometry} from '@luma.gl/engine';
 import {CompositeLayer, COORDINATE_SYSTEM, log} from '@deck.gl/core';
-
 import MeshLayer from './mesh-layer/mesh-layer';
+import {ORIENTED_BOUNDING_BOX, BOUNDING_SPHERE} from './constants';
 
 const DEFAULT_BG_OPACITY = 100;
 const GEOMETRY_STEP = 50;
@@ -66,9 +65,9 @@ export default class BoundingVolumeLayer extends CompositeLayer {
   }
 
   _generateSphereMesh(tile) {
-    const {
-      boundingVolume: {radius, center}
-    } = tile;
+    const mbs = tile.header.mbs;
+    const center = Ellipsoid.WGS84.cartographicToCartesian([mbs[0], mbs[1], mbs[2]]);
+    const radius = mbs[3];
     const geometry = new SphereGeometry({
       radius,
       nlat: GEOMETRY_STEP,
@@ -91,19 +90,33 @@ export default class BoundingVolumeLayer extends CompositeLayer {
     return geometry;
   }
 
-  _generateMesh(tile) {
-    if (tile.header.obb || tile.boundingVolume instanceof OrientedBoundingBox) {
-      return this._generateCubeMesh(tile);
+  _generateMesh(tile, boundingVolumeType) {
+    switch (boundingVolumeType) {
+      case ORIENTED_BOUNDING_BOX:
+        return tile.header.obb ? this._generateCubeMesh(tile) : null;
+      case BOUNDING_SPHERE:
+        return tile.header.mbs ? this._generateSphereMesh(tile) : null;
+      default:
+        return null;
     }
-    return this._generateSphereMesh(tile);
+  }
+
+  _getBoundingVolumeGeometry(tile, oldLayer, boundingVolumeType) {
+    const mesh = oldLayer && oldLayer.props.mesh;
+
+    if (!mesh || mesh.constructor.name !== boundingVolumeType) {
+      return this._generateMesh(tile, boundingVolumeType);
+    }
+
+    return mesh;
   }
 
   _getBoundingVolumeLayer(tile, oldLayer) {
     const {content, viewportIds} = tile;
-    const {material, getBoundingVolumeColor} = this.props;
+    const {material, getBoundingVolumeColor, boundingVolumeType} = this.props;
     const {cartographicOrigin, modelMatrix} = content;
 
-    const geometry = (oldLayer && oldLayer.props.mesh) || this._generateMesh(tile);
+    const geometry = this._getBoundingVolumeGeometry(tile, oldLayer, boundingVolumeType);
 
     return new MeshLayer({
       id: `obb-debug-${tile.id}`,
