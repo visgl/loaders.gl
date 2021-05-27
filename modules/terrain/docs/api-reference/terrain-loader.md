@@ -80,7 +80,7 @@ The choices for tesselator are as follows:
 
 `auto`:
 
-- Chooses Martini if the possible, else use Delatin instead.
+- Chooses Martini if the possible, otherwise use Delatin instead.
 
 `martini`:
 
