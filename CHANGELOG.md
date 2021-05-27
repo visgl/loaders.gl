@@ -1,5 +1,11 @@
 ## v3.0 Prerelease
 
+#### v3.0.0-alpha.18
+
+- i3s-debug: added selector for changing bounding volumes geometry (#1387)
+- tiles: update isLoaded logic (#1398)
+- I3S-Debug - Disable normals Validation controls if there are no normals in Tile (#1394)
+
 #### v3.0.0-alpha.17
 
 - B3dm - Support legacy b3dm data format (#1382)
@@ -9,6 +15,7 @@
 
 - chore(mvt): Use earcut from math.gl (#1391)
 - i3s: optimization (#1396)
+- build(deps): bump browserslist from 4.16.3 to 4.16.6 (#1397)
 
 #### v3.0.0-alpha.15
 
