@@ -20,5 +20,5 @@ The `QuantizedMeshLoader` is a fork of
 [`quantized-mesh-decoder`](https://github.com/heremaps/quantized-mesh-decoder)
 from HERE under the MIT license to decode quantized mesh.
 
-The `TerrainLoader` uses [MARTINI](https://github.com/mapbox/martini) for mesh
-reconstruction under the ISC License.
+The `TerrainLoader` uses [MARTINI](https://github.com/mapbox/martini) or [Delatin](https://github.com/mapbox/delatin) for mesh
+reconstruction which are both under the ISC License.

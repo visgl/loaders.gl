@@ -32,6 +32,7 @@ const data = await load(url, TerrainLoader, options);
 | `terrain.meshMaxError`     | `number`        | `10`      | Mesh error in meters. The output mesh is in higher resolution (more vertices) if the error is smaller.                                        |
 | `terrain.bounds`           | `array<number>` | `null`    | Bounds of the image to fit x,y coordinates into. In `[minX, minY, maxX, maxY]`. If not supplied, x and y are in pixels relative to the image. |
 | `terrain.elevationDecoder` | `object`        | See below | See below                                                                                                                                     |
+| `terrain.tesselator`       | `string`        | `auto`    | See below                                                                                                                                     |
 
 ### elevationDecoder
 
@@ -72,3 +73,25 @@ The default value of `elevationDecoder` decodes a grayscale image:
   "offset": 0
 }
 ```
+
+### tesselator
+
+The choices for tesselator are as follows:
+
+`auto`:
+
+- Chooses [Martini](https://github.com/mapbox/martini) if possible (if the image is a square where both height and width are powers of 2), otherwise uses [Delatin](https://github.com/mapbox/delatin) instead, which has no input image limitations.
+
+`martini`:
+
+- Uses the [Martini](https://github.com/mapbox/martini) algorithm for constructing a mesh.
+- Only works on square 2^n+1 x 2^n+1 grids.
+- Generates a hierarchy of meshes (pick arbitrary detail after a single run)
+- Optimized for meshing speed rather than quality.
+
+`delatin`:
+
+- Uses the [Delatin](https://github.com/mapbox/delatin) algorithm for constructing a mesh.
+- Works on arbitrary raster grids.
+- Generates a single mesh for a particular detail.
+- Optimized for quality (as little triangles as possible for a given error).
