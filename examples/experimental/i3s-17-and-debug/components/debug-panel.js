@@ -87,7 +87,8 @@ const propTypes = {
   isClearButtonDisabled: PropTypes.bool,
   onOptionsChange: PropTypes.func,
   clearWarnings: PropTypes.func,
-  debugTextureImage: PropTypes.string
+  debugTextureImage: PropTypes.string,
+  tilesetUrl: PropTypes.string
 };
 
 const defaultProps = {
@@ -123,6 +124,13 @@ export default class DebugPanel extends PureComponent {
     this._onChangedTileColorMode = this._onChangedTileColorMode.bind(this);
     this._onChangedBoundingVolumeColorMode = this._onChangedBoundingVolumeColorMode.bind(this);
     this._onChangeWireframeMode = this._onChangeWireframeMode.bind(this);
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.tilesetUrl && prevProps.tilesetUrl !== this.props.tilesetUrl) {
+      this._enableTileLoading();
+    }
+    return null;
   }
 
   _onToggleDebugPanel() {
@@ -161,6 +169,12 @@ export default class DebugPanel extends PureComponent {
   _onToggleLoading() {
     const {loadTiles} = this.state;
     this.setState({loadTiles: !loadTiles}, () => {
+      this._applyOptions();
+    });
+  }
+
+  _enableTileLoading() {
+    this.setState({loadTiles: true}, () => {
       this._applyOptions();
     });
   }

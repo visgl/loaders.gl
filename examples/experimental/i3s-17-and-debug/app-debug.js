@@ -279,6 +279,7 @@ export default class App extends PureComponent {
       }
     });
 
+    tileset.setOptions({loadTiles: true});
     this._tilesetStatsWidget.setStats(tileset.stats);
   }
 
@@ -473,7 +474,7 @@ export default class App extends PureComponent {
   }
 
   _renderDebugPanel() {
-    const {warnings, debugOptions} = this.state;
+    const {tilesetUrl, warnings, debugOptions} = this.state;
     const isClearButtonDisabled = !warnings.length || !debugOptions.semanticValidator;
 
     return (
@@ -482,6 +483,7 @@ export default class App extends PureComponent {
         clearWarnings={this.handleClearWarnings}
         isClearButtonDisabled={isClearButtonDisabled}
         debugTextureImage={UV_DEBUG_TEXTURE_URL}
+        tilesetUrl={tilesetUrl}
       >
         {this._renderStats()}
       </DebugPanel>
