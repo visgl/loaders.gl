@@ -5,14 +5,7 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faAngleDoubleLeft, faAngleDoubleRight} from '@fortawesome/free-solid-svg-icons';
 import DebugOptionGroup from './debug-option-group';
 
-import {
-  TILE_COLOR_MODES,
-  BOUNDING_VOLUME_COLOR_MODES,
-  INITIAL_TILE_COLOR_MODE,
-  INITIAL_BOUNDING_VOLUME_COLOR_MODE,
-  BOUNDING_VOLUME_TYPE,
-  BOUNDING_SPHERE
-} from '../constants';
+import {TILE_COLOR_MODES, BOUNDING_VOLUME_COLOR_MODES, BOUNDING_VOLUME_TYPE} from '../constants';
 
 const Container = styled.div`
   position: absolute;
@@ -97,7 +90,8 @@ const propTypes = {
   isClearButtonDisabled: PropTypes.bool,
   onOptionsChange: PropTypes.func,
   clearWarnings: PropTypes.func,
-  debugTextureImage: PropTypes.string
+  debugTextureImage: PropTypes.string,
+  debugOptions: PropTypes.object
 };
 
 const defaultProps = {
@@ -109,18 +103,7 @@ export default class DebugPanel extends PureComponent {
   constructor(props) {
     super(props);
     this.state = {
-      expand: true,
-      minimap: true,
-      minimapViewport: false,
-      boundingVolume: false,
-      boundingVolumeType: BOUNDING_SPHERE,
-      tileColorMode: INITIAL_TILE_COLOR_MODE,
-      boundingVolumeColorMode: INITIAL_BOUNDING_VOLUME_COLOR_MODE,
-      pickable: false,
-      loadTiles: true,
-      semanticValidator: false,
-      showUVDebugTexture: false,
-      wireframe: false
+      expand: true
     };
 
     this._onToggleDebugPanel = this._onToggleDebugPanel.bind(this);
@@ -143,107 +126,76 @@ export default class DebugPanel extends PureComponent {
   }
 
   _onToggleMinimap() {
-    const {minimap} = this.state;
-    this.setState({minimap: !minimap}, () => {
-      this._applyOptions();
-    });
+    const {
+      debugOptions: {minimap}
+    } = this.props;
+    this._applyOptions({minimap: !minimap});
   }
 
   _onToggleMinimapViewport() {
-    const {minimapViewport} = this.state;
-    this.setState({minimapViewport: !minimapViewport}, () => {
-      this._applyOptions();
-    });
+    const {
+      debugOptions: {minimapViewport}
+    } = this.props;
+    this._applyOptions({minimapViewport: !minimapViewport});
   }
 
   _onToggleBoundingVolume() {
-    const {boundingVolume} = this.state;
-    this.setState({boundingVolume: !boundingVolume}, () => {
-      this._applyOptions();
-    });
+    const {
+      debugOptions: {boundingVolume}
+    } = this.props;
+    this._applyOptions({boundingVolume: !boundingVolume});
   }
 
   _onTogglePickable() {
-    const {pickable} = this.state;
-    this.setState({pickable: !pickable}, () => {
-      this._applyOptions();
-    });
+    const {
+      debugOptions: {pickable}
+    } = this.props;
+    this._applyOptions({pickable: !pickable});
   }
 
   _onToggleLoading() {
-    const {loadTiles} = this.state;
-    this.setState({loadTiles: !loadTiles}, () => {
-      this._applyOptions();
-    });
+    const {
+      debugOptions: {loadTiles}
+    } = this.props;
+    this._applyOptions({loadTiles: !loadTiles});
   }
 
   _onToggleSemanticValidator() {
-    const {semanticValidator} = this.state;
-    this.setState({semanticValidator: !semanticValidator}, () => {
-      this._applyOptions();
-    });
+    const {
+      debugOptions: {semanticValidator}
+    } = this.props;
+    this._applyOptions({semanticValidator: !semanticValidator});
   }
 
   _onToggleUvDebugTexture() {
-    const {showUVDebugTexture} = this.state;
-    this.setState({showUVDebugTexture: !showUVDebugTexture}, () => {
-      this._applyOptions();
-    });
+    const {
+      debugOptions: {showUVDebugTexture}
+    } = this.props;
+    this._applyOptions({showUVDebugTexture: !showUVDebugTexture});
   }
 
   _onChangedTileColorMode({tileColorMode}) {
-    this.setState({tileColorMode}, () => {
-      this._applyOptions();
-    });
+    this._applyOptions({tileColorMode});
   }
 
   _onChangedBoundingVolumeColorMode({boundingVolumeColorMode}) {
-    this.setState({boundingVolumeColorMode}, () => {
-      this._applyOptions();
-    });
+    this._applyOptions({boundingVolumeColorMode});
   }
 
   _onChangeBoundingVolumeType({boundingVolumeType}) {
-    this.setState({boundingVolumeType}, () => {
-      this._applyOptions();
-    });
+    this._applyOptions({boundingVolumeType});
   }
 
   _onChangeWireframeMode() {
-    const {wireframe} = this.state;
-    this.setState({wireframe: !wireframe}, () => {
-      this._applyOptions();
-    });
+    const {
+      debugOptions: {wireframe}
+    } = this.props;
+    this._applyOptions({wireframe: !wireframe});
   }
 
-  _applyOptions() {
-    const {
-      boundingVolume,
-      tileColorMode,
-      boundingVolumeColorMode,
-      boundingVolumeType,
-      pickable,
-      minimap,
-      loadTiles,
-      minimapViewport,
-      semanticValidator,
-      showUVDebugTexture,
-      wireframe
-    } = this.state;
+  _applyOptions({...options}) {
     const {onOptionsChange} = this.props;
-    onOptionsChange({
-      minimap,
-      minimapViewport,
-      boundingVolume,
-      tileColorMode,
-      boundingVolumeColorMode,
-      boundingVolumeType,
-      pickable,
-      loadTiles,
-      semanticValidator,
-      showUVDebugTexture,
-      wireframe
-    });
+    onOptionsChange(options);
   }
 
   _getExpandStyles() {
@@ -281,7 +233,9 @@ export default class DebugPanel extends PureComponent {
   }
 
   _renderBoundingVolumeOptions() {
-    const {boundingVolumeColorMode, boundingVolume} = this.state;
+    const {
+      debugOptions: {boundingVolumeColorMode, boundingVolume}
+    } = this.props;
     return (
       <DebugOptionGroup title="Bounding volumes">
         <CheckboxOption>
@@ -316,7 +270,9 @@ export default class DebugPanel extends PureComponent {
   }
 
   _renderBoundingTypes() {
-    const {boundingVolumeType} = this.state;
+    const {
+      debugOptions: {boundingVolumeType}
+    } = this.props;
 
     return (
       <Shapes
@@ -348,7 +304,9 @@ export default class DebugPanel extends PureComponent {
   }
 
   _renderTileOptions() {
-    const {tileColorMode, pickable, loadTiles, showUVDebugTexture, wireframe} = this.state;
+    const {
+      debugOptions: {tileColorMode, pickable, loadTiles, showUVDebugTexture, wireframe}
+    } = this.props;
     return (
       <DebugOptionGroup title="Tiles">
         <CheckboxOption>
@@ -411,7 +369,9 @@ export default class DebugPanel extends PureComponent {
   }
 
   _renderFrustumCullingOption() {
-    const {minimap, minimapViewport} = this.state;
+    const {
+      debugOptions: {minimap, minimapViewport}
+    } = this.props;
     return (
       <DebugOptionGroup title="Frustum Culling">
         <CheckboxOption>
@@ -439,8 +399,11 @@ export default class DebugPanel extends PureComponent {
   }
 
   _renderSemanticValidatorOption() {
-    const {clearWarnings, isClearButtonDisabled} = this.props;
-    const {semanticValidator} = this.state;
+    const {
+      clearWarnings,
+      isClearButtonDisabled,
+      debugOptions: {semanticValidator}
+    } = this.props;
     return (
       <DebugOptionGroup title="Semantic Validator">
         <CheckboxOption>

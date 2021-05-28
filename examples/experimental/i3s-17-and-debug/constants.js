@@ -36,7 +36,6 @@ export const INITIAL_BOUNDING_VOLUME_COLOR_MODE = COLORED_BY.ORIGINAL;
 export const BOUNDING_VOLUME_WARNING_TYPE = 'boundingVolume';
 export const LOD_WARNING_TYPE = 'lod';
 export const PARENT_LOD_WARNING_TYPE = 'parentLod';
-export const GEMETRY_VS_TEXTURE_WARNING_TYPE = 'geometryVsTextures';
 
 export const BOUNDING_SPHERE = 'Bounding Sphere';
 export const ORIENTED_BOUNDING_BOX = 'Oriented Bounding Box';
