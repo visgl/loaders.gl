@@ -58,7 +58,7 @@ test('tile-converter - b3dm converter#should convert i3s node data to b3dm encod
     const attributes = await _loadAttributes(tile, ATTRIBUTES_STORAGE_INFO_STUB);
     const b3dmConverter = new B3dmConverter();
     const encodedContent = await b3dmConverter.convert(tile, attributes);
-    const batchId = i3sContent.segmentationData;
+    const batchId = i3sContent.objectIds;
 
     t.ok(encodedContent);
     t.ok(batchId);
