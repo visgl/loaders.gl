@@ -96,6 +96,7 @@ const propTypes = {
 
 const defaultProps = {
   clearWarnings: () => {},
+  onOptionsChange: () => {},
   isClearButtonDisabled: true
 };
 
@@ -107,95 +108,11 @@ export default class DebugPanel extends PureComponent {
     };
 
     this._onToggleDebugPanel = this._onToggleDebugPanel.bind(this);
-    this._onToggleMinimap = this._onToggleMinimap.bind(this);
-    this._onToggleMinimapViewport = this._onToggleMinimapViewport.bind(this);
-    this._onToggleBoundingVolume = this._onToggleBoundingVolume.bind(this);
-    this._onChangeBoundingVolumeType = this._onChangeBoundingVolumeType.bind(this);
-    this._onTogglePickable = this._onTogglePickable.bind(this);
-    this._onToggleLoading = this._onToggleLoading.bind(this);
-    this._onToggleSemanticValidator = this._onToggleSemanticValidator.bind(this);
-    this._onToggleUvDebugTexture = this._onToggleUvDebugTexture.bind(this);
-    this._onChangedTileColorMode = this._onChangedTileColorMode.bind(this);
-    this._onChangedBoundingVolumeColorMode = this._onChangedBoundingVolumeColorMode.bind(this);
-    this._onChangeWireframeMode = this._onChangeWireframeMode.bind(this);
   }
 
   _onToggleDebugPanel() {
     const {expand} = this.state;
     this.setState({expand: !expand});
-  }
-
-  _onToggleMinimap() {
-    const {
-      debugOptions: {minimap}
-    } = this.props;
-    this._applyOptions({minimap: !minimap});
-  }
-
-  _onToggleMinimapViewport() {
-    const {
-      debugOptions: {minimapViewport}
-    } = this.props;
-    this._applyOptions({minimapViewport: !minimapViewport});
-  }
-
-  _onToggleBoundingVolume() {
-    const {
-      debugOptions: {boundingVolume}
-    } = this.props;
-    this._applyOptions({boundingVolume: !boundingVolume});
-  }
-
-  _onTogglePickable() {
-    const {
-      debugOptions: {pickable}
-    } = this.props;
-    this._applyOptions({pickable: !pickable});
-  }
-
-  _onToggleLoading() {
-    const {
-      debugOptions: {loadTiles}
-    } = this.props;
-    this._applyOptions({loadTiles: !loadTiles});
-  }
-
-  _onToggleSemanticValidator() {
-    const {
-      debugOptions: {semanticValidator}
-    } = this.props;
-    this._applyOptions({semanticValidator: !semanticValidator});
-  }
-
-  _onToggleUvDebugTexture() {
-    const {
-      debugOptions: {showUVDebugTexture}
-    } = this.props;
-    this._applyOptions({showUVDebugTexture: !showUVDebugTexture});
-  }
-
-  _onChangedTileColorMode({tileColorMode}) {
-    this._applyOptions({tileColorMode});
-  }
-
-  _onChangedBoundingVolumeColorMode({boundingVolumeColorMode}) {
-    this._applyOptions({boundingVolumeColorMode});
-  }
-
-  _onChangeBoundingVolumeType({boundingVolumeType}) {
-    this._applyOptions({boundingVolumeType});
-  }
-
-  _onChangeWireframeMode() {
-    const {
-      debugOptions: {wireframe}
-    } = this.props;
-    this._applyOptions({wireframe: !wireframe});
-  }
-
-  _applyOptions({...options}) {
-    const {onOptionsChange} = this.props;
-    onOptionsChange(options);
   }
 
   _getExpandStyles() {
@@ -234,13 +151,14 @@ export default class DebugPanel extends PureComponent {
 
   _renderBoundingVolumeOptions() {
     const {
-      debugOptions: {boundingVolumeColorMode, boundingVolume}
+      debugOptions: {boundingVolumeColorMode, boundingVolume},
+      onOptionsChange
     } = this.props;
     return (
       <DebugOptionGroup title="Bounding volumes">
         <CheckboxOption>
           <InputCheckbox
-            onChange={this._onToggleBoundingVolume}
+            onChange={() => onOptionsChange({boundingVolume: !boundingVolume})}
             type="checkbox"
             id="boundingVolume"
             value={boundingVolume}
@@ -251,11 +169,9 @@ export default class DebugPanel extends PureComponent {
         </CheckboxOption>
         <DropDown
           value={boundingVolumeColorMode}
-          onChange={evt => {
-            this._onChangedBoundingVolumeColorMode({
-              boundingVolumeColorMode: parseInt(evt.target.value, 10)
-            });
-          }}
+          onChange={evt =>
+            onOptionsChange({boundingVolumeColorMode: parseInt(evt.target.value, 10)})
+          }
         >
           {Object.keys(BOUNDING_VOLUME_COLOR_MODES).map(key => {
             return (
@@ -271,17 +187,14 @@ export default class DebugPanel extends PureComponent {
 
   _renderBoundingTypes() {
     const {
-      debugOptions: {boundingVolumeType}
+      debugOptions: {boundingVolumeType},
+      onOptionsChange
     } = this.props;
 
     return (
       <Shapes
         value={boundingVolumeType}
-        onChange={evt => {
-          this._onChangeBoundingVolumeType({
-            boundingVolumeType: evt.target.value
-          });
-        }}
+        onChange={evt => onOptionsChange({boundingVolumeType: evt.target.value})}
       >
         {Object.keys(BOUNDING_VOLUME_TYPE).map(key => {
           const shape = BOUNDING_VOLUME_TYPE[key];
@@ -305,13 +218,14 @@ export default class DebugPanel extends PureComponent {
 
   _renderTileOptions() {
     const {
-      debugOptions: {tileColorMode, pickable, loadTiles, showUVDebugTexture, wireframe}
+      debugOptions: {tileColorMode, pickable, loadTiles, showUVDebugTexture, wireframe},
+      onOptionsChange
     } = this.props;
     return (
       <DebugOptionGroup title="Tiles">
         <CheckboxOption>
           <InputCheckbox
-            onChange={this._onTogglePickable}
+            onChange={() => onOptionsChange({pickable: !pickable})}
             type="checkbox"
             id="pickable"
             value={pickable}
@@ -321,7 +235,7 @@ export default class DebugPanel extends PureComponent {
         </CheckboxOption>
         <CheckboxOption>
           <InputCheckbox
-            onChange={this._onToggleLoading}
+            onChange={() => onOptionsChange({loadTiles: !loadTiles})}
             type="checkbox"
             id="loadTiles"
             value={loadTiles}
@@ -331,7 +245,7 @@ export default class DebugPanel extends PureComponent {
         </CheckboxOption>
         <CheckboxOption>
           <InputCheckbox
-            onChange={this._onToggleUvDebugTexture}
+            onChange={() => onOptionsChange({showUVDebugTexture: !showUVDebugTexture})}
             type="checkbox"
             id="uvDebugTexture"
             value={showUVDebugTexture}
@@ -342,7 +256,7 @@ export default class DebugPanel extends PureComponent {
         {showUVDebugTexture ? this._renderDebugTextureImage() : null}
         <CheckboxOption>
           <InputCheckbox
-            onChange={this._onChangeWireframeMode}
+            onChange={() => onOptionsChange({wireframe: !wireframe})}
             type="checkbox"
             id="wireframe"
             value={wireframe}
@@ -352,9 +266,7 @@ export default class DebugPanel extends PureComponent {
         </CheckboxOption>
         <DropDown
           value={tileColorMode}
-          onChange={evt => {
-            this._onChangedTileColorMode({tileColorMode: parseInt(evt.target.value, 10)});
-          }}
+          onChange={evt => onOptionsChange({tileColorMode: parseInt(evt.target.value, 10)})}
         >
           {Object.keys(TILE_COLOR_MODES).map(key => {
             return (
@@ -370,13 +282,14 @@ export default class DebugPanel extends PureComponent {
 
   _renderFrustumCullingOption() {
     const {
-      debugOptions: {minimap, minimapViewport}
+      debugOptions: {minimap, minimapViewport},
+      onOptionsChange
     } = this.props;
     return (
       <DebugOptionGroup title="Frustum Culling">
         <CheckboxOption>
           <InputCheckbox
-            onChange={this._onToggleMinimap}
+            onChange={() => onOptionsChange({minimap: !minimap})}
             type="checkbox"
             id="showFrustumCullingMinimap"
             value={minimap}
@@ -386,7 +299,7 @@ export default class DebugPanel extends PureComponent {
         </CheckboxOption>
         <CheckboxOption>
           <InputCheckbox
-            onChange={this._onToggleMinimapViewport}
+            onChange={() => onOptionsChange({minimapViewport: !minimapViewport})}
             type="checkbox"
             id="showFrustumCullingMinimapViewport"
             value={minimapViewport}
@@ -402,13 +315,14 @@ export default class DebugPanel extends PureComponent {
     const {
       clearWarnings,
       isClearButtonDisabled,
-      debugOptions: {semanticValidator}
+      debugOptions: {semanticValidator},
+      onOptionsChange
     } = this.props;
     return (
       <DebugOptionGroup title="Semantic Validator">
         <CheckboxOption>
           <InputCheckbox
-            onChange={this._onToggleSemanticValidator}
+            onChange={() => onOptionsChange({semanticValidator: !semanticValidator})}
             type="checkbox"
             id="showSemanticValidator"
             value={semanticValidator}
