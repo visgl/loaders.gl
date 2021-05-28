@@ -1,6 +1,6 @@
 import test from 'tape-promise/tape';
 import {load, fetchFile} from '@loaders.gl/core';
-import {GeoPackageLoader} from '@unfoldedinc/geopackage-loader';
+import {GeoPackageLoader} from '@loaders.gl/sql';
 
 const GPKG_RIVERS = 'data/geopackage/rivers_small.gpkg';
 const GPKG_RIVERS_GEOJSON = 'data/geopackage/rivers_small.geojson';
