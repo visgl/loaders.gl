@@ -6,7 +6,7 @@ const defaultConfig = getESLintConfig({react: '16.8.2'});
 const config = deepMerge(defaultConfig, {
   env: {
     browser: true,
-    es2021: true,
+    es2020: true,
     node: true
   },
 

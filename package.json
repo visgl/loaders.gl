@@ -57,9 +57,6 @@
   },
   "pre-commit": "pre-commit",
   "pre-push": "pre-push",
-  "resolutions": {
-    "draco3d": "1.4.1"
-  },
   "dependencies": {},
   "resolutions_notes": [
     "Note: tape 4.12 and higher no longer compares 0 and -0 equally..."
