@@ -1,4 +1,3 @@
-/* global Image, ImageBitmap */
 import {assert} from '../utils/assert';
 
 export function isImage(image) {
@@ -31,7 +30,6 @@ export function getImageData(image) {
     case 'image':
     case 'imagebitmap':
       // Extract the image data from the image via a canvas
-      /* global document */
       const canvas = document.createElement('canvas');
       // TODO - reuse the canvas?
       const context = canvas.getContext('2d');

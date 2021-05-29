@@ -1,4 +1,3 @@
-/* global TextDecoder, TextEncoder, Blob */
 import {assert} from '../utils/assert';
 import {decompressReadStream, concatenateReadStream} from './utils/stream-utils.node';
 import Headers from './headers.node';

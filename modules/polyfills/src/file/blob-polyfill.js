@@ -1,5 +1,4 @@
 // Forked from @gozala's web-blob under MIT license https://github.com/Gozala/web-blob
-/* global TextEncoder, TextDecoder */
 import {ReadableStreamPolyfill} from './readable-stream-polyfill';
 
 /**

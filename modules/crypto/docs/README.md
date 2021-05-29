@@ -26,24 +26,25 @@ The API offers "transforms" that can calculate a cryptographic hash incrementall
 The `@loaders.gl/crypto` libraries exports transform that can be used to incrementally calculate a cryptographic hash as data is being loaded and parsed:
 
 ```js
-  import {loadInBatches} from '@loaders.gl/core';
-  import {CRC32HashTransform} from '@loaders.gl/crypto';
+import {loadInBatches} from '@loaders.gl/core';
+import {CRC32HashTransform} from '@loaders.gl/crypto';
 
-  let hash;
+let hash;
 
-  const csvIterator = await loadInBatches(CSV_URL, CSVLoader, {
-    transforms: [CRC32HashTransform],
-    crypto: {
-      onEnd: result => {
-        hash = result.hash;
-      }
+const csvIterator = await loadInBatches(CSV_URL, CSVLoader, {
+  transforms: [CRC32HashTransform],
+  crypto: {
+    onEnd: result => {
+      hash = result.hash;
     }
-  });
+  }
+});
 
-  let csv;
-  for await (const batch of csvIterator) {}
+let csv;
+for await (const batch of csvIterator) {
+}
 
-  console.log(hash);
+console.log(hash);
 ```
 
 Note that by using a transform, the hash is calculated incrementally as batches are loaded and parsed, and does not require having the entire data source loaded into memory. It also distributes the potentially heavy hash calculation over the batches, keeping the main thread responsive.

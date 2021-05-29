@@ -1,4 +1,3 @@
-/* global document */
 import {load} from '@loaders.gl/core';
 import {BasisLoader} from '@loaders.gl/textures';
 

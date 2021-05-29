@@ -247,7 +247,10 @@ it('sets show value to expression', function() {
 
 it('sets show value to conditional', function() {
   var jsonExp = {
-    conditions: [['${height} > 2', 'false'], ['true', 'true']]
+    conditions: [
+      ['${height} > 2', 'false'],
+      ['true', 'true']
+    ]
   };
 
   var style = new Cesium3DTileStyle({
@@ -260,7 +263,10 @@ it('sets show expressions in setter', function() {
   var style = new Cesium3DTileStyle();
 
   var condExp = new ConditionsExpression({
-    conditions: [['${height} > 2', 'false'], ['true', 'true']]
+    conditions: [
+      ['${height} > 2', 'false'],
+      ['true', 'true']
+    ]
   });
 
   style.show = condExp;
@@ -284,7 +290,10 @@ it('sets show values in setter', function() {
   expect(style.show).toEqual(new Expression('false'));
 
   var jsonExp = {
-    conditions: [['${height} > ${showFactor}', 'false'], ['true', 'true']]
+    conditions: [
+      ['${height} > ${showFactor}', 'false'],
+      ['true', 'true']
+    ]
   };
 
   style.show = jsonExp;
@@ -303,7 +312,10 @@ it('sets style.show values in setter', function() {
   expect(style.style.show).toEqual('false');
 
   var jsonExp = {
-    conditions: [['${height} > ${showFactor}', 'false'], ['true', 'true']]
+    conditions: [
+      ['${height} > ${showFactor}', 'false'],
+      ['true', 'true']
+    ]
   };
 
   style.show = jsonExp;
@@ -342,7 +354,10 @@ it('sets color value to expression', function() {
 
 it('sets color value to conditional', function() {
   var jsonExp = {
-    conditions: [['${height} > 2', 'color("cyan")'], ['true', 'color("blue")']]
+    conditions: [
+      ['${height} > 2', 'color("cyan")'],
+      ['true', 'color("blue")']
+    ]
   };
 
   var style = new Cesium3DTileStyle({
@@ -359,7 +374,10 @@ it('sets color expressions in setter', function() {
   expect(style.color).toEqual(exp);
 
   var condExp = new ConditionsExpression({
-    conditions: [['${height} > 2', 'color("cyan")'], ['true', 'color("blue")']]
+    conditions: [
+      ['${height} > 2', 'color("cyan")'],
+      ['true', 'color("blue")']
+    ]
   });
 
   style.color = condExp;
@@ -377,7 +395,10 @@ it('sets style.color expression in setter', function() {
   expect(style.style.color).toEqual(stringExp);
 
   var jsonExp = {
-    conditions: [['${height} > 2', 'color("cyan")'], ['true', 'color("blue")']]
+    conditions: [
+      ['${height} > 2', 'color("cyan")'],
+      ['true', 'color("blue")']
+    ]
   };
 
   style.color = new ConditionsExpression(jsonExp);
@@ -397,7 +418,10 @@ it('sets color values in setter', function() {
   expect(style.color).toEqual(new Expression('color("${targetColor}")', defines));
 
   var jsonExp = {
-    conditions: [['${height} > 2', 'color("cyan")'], ['true', 'color("${targetColor}")']]
+    conditions: [
+      ['${height} > 2', 'color("cyan")'],
+      ['true', 'color("${targetColor}")']
+    ]
   };
 
   style.color = jsonExp;
@@ -411,7 +435,10 @@ it('sets style.color values in setter', function() {
   expect(style.style.color).toEqual('color("${targetColor}")');
 
   var jsonExp = {
-    conditions: [['${height} > 2', 'color("cyan")'], ['true', 'color("${targetColor}")']]
+    conditions: [
+      ['${height} > 2', 'color("cyan")'],
+      ['true', 'color("${targetColor}")']
+    ]
   };
 
   style.color = jsonExp;
@@ -445,7 +472,10 @@ it('sets pointSize value to expression', function() {
 
 it('sets pointSize value to conditional', function() {
   var jsonExp = {
-    conditions: [['${height} > 2', '1.0'], ['true', '2.0']]
+    conditions: [
+      ['${height} > 2', '1.0'],
+      ['true', '2.0']
+    ]
   };
 
   var style = new Cesium3DTileStyle({
@@ -465,7 +495,10 @@ it('sets pointSize expressions in setter', function() {
   expect(style.pointSize).toEqual(exp);
 
   var condExp = new ConditionsExpression({
-    conditions: [['${height} > 2', '1.0'], ['true', '2.0']]
+    conditions: [
+      ['${height} > 2', '1.0'],
+      ['true', '2.0']
+    ]
   });
 
   style.pointSize = condExp;
@@ -482,7 +515,10 @@ it('sets style.pointSize expressions in setter', function() {
   expect(style.style.pointSize).toEqual('2');
 
   var jsonExp = {
-    conditions: [['${height} > 2', '1.0'], ['true', '2.0']]
+    conditions: [
+      ['${height} > 2', '1.0'],
+      ['true', '2.0']
+    ]
   };
   style.pointSize = new ConditionsExpression(jsonExp);
   expect(style.style.pointSize).toEqual(jsonExp);
@@ -512,7 +548,10 @@ it('sets pointSize values in setter', function() {
   expect(style.pointSize).toEqual(new Expression('${targetPointSize} + 1.0', defines));
 
   var jsonExp = {
-    conditions: [['${height} > 2', '1.0'], ['true', '${targetPointSize}']]
+    conditions: [
+      ['${height} > 2', '1.0'],
+      ['true', '${targetPointSize}']
+    ]
   };
 
   style.pointSize = jsonExp;
@@ -532,7 +571,10 @@ it('sets style.pointSize values in setter', function() {
   expect(style.style.pointSize).toEqual('${targetPointSize} + 1.0');
 
   var jsonExp = {
-    conditions: [['${height} > 2', '1.0'], ['true', '${targetPointSize}']]
+    conditions: [
+      ['${height} > 2', '1.0'],
+      ['true', '${targetPointSize}']
+    ]
   };
 
   style.pointSize = jsonExp;
@@ -568,7 +610,10 @@ it('sets pointOutlineColor value to expression', function() {
 
 it('sets pointOutlineColor value to conditional', function() {
   var jsonExp = {
-    conditions: [['${height} > 2', 'color("cyan")'], ['true', 'color("blue")']]
+    conditions: [
+      ['${height} > 2', 'color("cyan")'],
+      ['true', 'color("blue")']
+    ]
   };
 
   var style = new Cesium3DTileStyle({
@@ -585,7 +630,10 @@ it('sets pointOutlineColor expressions in setter', function() {
   expect(style.pointOutlineColor).toEqual(exp);
 
   var condExp = new ConditionsExpression({
-    conditions: [['${height} > 2', 'color("cyan")'], ['true', 'color("blue")']]
+    conditions: [
+      ['${height} > 2', 'color("cyan")'],
+      ['true', 'color("blue")']
+    ]
   });
 
   style.pointOutlineColor = condExp;
@@ -602,7 +650,10 @@ it('sets style.pointOutlineColor expressions in setter', function() {
   expect(style.style.pointOutlineColor).toEqual('color("red")');
 
   var jsonExp = {
-    conditions: [['${height} > 2', 'color("cyan")'], ['true', 'color("blue")']]
+    conditions: [
+      ['${height} > 2', 'color("cyan")'],
+      ['true', 'color("blue")']
+    ]
   };
 
   style.pointOutlineColor = new ConditionsExpression(jsonExp);
@@ -633,7 +684,10 @@ it('sets pointOutlineColor values in setter', function() {
   expect(style.pointOutlineColor).toEqual(new Expression('color("${targetColor}")', defines));
 
   var jsonExp = {
-    conditions: [['${height} > 2', 'color("cyan")'], ['true', 'color("${targetColor}")']]
+    conditions: [
+      ['${height} > 2', 'color("cyan")'],
+      ['true', 'color("${targetColor}")']
+    ]
   };
 
   style.pointOutlineColor = jsonExp;
@@ -650,7 +704,10 @@ it('sets style.pointOutlineColor values in setter', function() {
   expect(style.style.pointOutlineColor).toEqual('color("${targetColor}")');
 
   var jsonExp = {
-    conditions: [['${height} > 2', 'color("cyan")'], ['true', 'color("${targetColor}")']]
+    conditions: [
+      ['${height} > 2', 'color("cyan")'],
+      ['true', 'color("${targetColor}")']
+    ]
   };
 
   style.pointOutlineColor = jsonExp;
@@ -684,7 +741,10 @@ it('sets pointOutlineWidth value to expression', function() {
 
 it('sets pointOutlineWidth value to conditional', function() {
   var jsonExp = {
-    conditions: [['${height} > 2', '1.0'], ['true', '2.0']]
+    conditions: [
+      ['${height} > 2', '1.0'],
+      ['true', '2.0']
+    ]
   };
 
   var style = new Cesium3DTileStyle({
@@ -704,7 +764,10 @@ it('sets pointOutlineWidth expressions in setter', function() {
   expect(style.pointOutlineWidth).toEqual(exp);
 
   var condExp = new ConditionsExpression({
-    conditions: [['${height} > 2', '1.0'], ['true', '2.0']]
+    conditions: [
+      ['${height} > 2', '1.0'],
+      ['true', '2.0']
+    ]
   });
 
   style.pointOutlineWidth = condExp;
@@ -721,7 +784,10 @@ it('sets style.pointOutlineWidth expressions in setter', function() {
   expect(style.style.pointOutlineWidth).toEqual('2');
 
   var jsonExp = {
-    conditions: [['${height} > 2', '1.0'], ['true', '2.0']]
+    conditions: [
+      ['${height} > 2', '1.0'],
+      ['true', '2.0']
+    ]
   };
   style.pointOutlineWidth = new ConditionsExpression(jsonExp);
   expect(style.style.pointOutlineWidth).toEqual(jsonExp);
@@ -751,7 +817,10 @@ it('sets pointOutlineWidth values in setter', function() {
   expect(style.pointOutlineWidth).toEqual(new Expression('${targetPointSize} + 1.0', defines));
 
   var jsonExp = {
-    conditions: [['${height} > 2', '1.0'], ['true', '${targetPointSize}']]
+    conditions: [
+      ['${height} > 2', '1.0'],
+      ['true', '${targetPointSize}']
+    ]
   };
 
   style.pointOutlineWidth = jsonExp;
@@ -771,7 +840,10 @@ it('sets style.pointOutlineWidth values in setter', function() {
   expect(style.style.pointOutlineWidth).toEqual('${targetPointSize} + 1.0');
 
   var jsonExp = {
-    conditions: [['${height} > 2', '1.0'], ['true', '${targetPointSize}']]
+    conditions: [
+      ['${height} > 2', '1.0'],
+      ['true', '${targetPointSize}']
+    ]
   };
 
   style.pointOutlineWidth = jsonExp;
@@ -807,7 +879,10 @@ it('sets labelColor value to expression', function() {
 
 it('sets labelColor value to conditional', function() {
   var jsonExp = {
-    conditions: [['${height} > 2', 'color("cyan")'], ['true', 'color("blue")']]
+    conditions: [
+      ['${height} > 2', 'color("cyan")'],
+      ['true', 'color("blue")']
+    ]
   };
 
   var style = new Cesium3DTileStyle({
@@ -824,7 +899,10 @@ it('sets labelColor expressions in setter', function() {
   expect(style.labelColor).toEqual(exp);
 
   var condExp = new ConditionsExpression({
-    conditions: [['${height} > 2', 'color("cyan")'], ['true', 'color("blue")']]
+    conditions: [
+      ['${height} > 2', 'color("cyan")'],
+      ['true', 'color("blue")']
+    ]
   });
 
   style.labelColor = condExp;
@@ -840,7 +918,10 @@ it('sets style.labelColor expressions in setter', function() {
   style.labelColor = new Expression('color("red")');
   expect(style.style.labelColor).toEqual('color("red")');
   var jsonExp = {
-    conditions: [['${height} > 2', 'color("cyan")'], ['true', 'color("blue")']]
+    conditions: [
+      ['${height} > 2', 'color("cyan")'],
+      ['true', 'color("blue")']
+    ]
   };
 
   style.labelColor = new ConditionsExpression(jsonExp);
@@ -871,7 +952,10 @@ it('sets labelColor values in setter', function() {
   expect(style.labelColor).toEqual(new Expression('color("${targetColor}")', defines));
 
   var jsonExp = {
-    conditions: [['${height} > 2', 'color("cyan")'], ['true', 'color("${targetColor}")']]
+    conditions: [
+      ['${height} > 2', 'color("cyan")'],
+      ['true', 'color("${targetColor}")']
+    ]
   };
 
   style.labelColor = jsonExp;
@@ -888,7 +972,10 @@ it('sets style.labelColor values in setter', function() {
   expect(style.style.labelColor).toEqual('color("${targetColor}")');
 
   var jsonExp = {
-    conditions: [['${height} > 2', 'color("cyan")'], ['true', 'color("${targetColor}")']]
+    conditions: [
+      ['${height} > 2', 'color("cyan")'],
+      ['true', 'color("${targetColor}")']
+    ]
   };
 
   style.labelColor = jsonExp;
@@ -924,7 +1011,10 @@ it('sets labelOutlineColor value to expression', function() {
 
 it('sets labelOutlineColor value to conditional', function() {
   var jsonExp = {
-    conditions: [['${height} > 2', 'color("cyan")'], ['true', 'color("blue")']]
+    conditions: [
+      ['${height} > 2', 'color("cyan")'],
+      ['true', 'color("blue")']
+    ]
   };
 
   var style = new Cesium3DTileStyle({
@@ -941,7 +1031,10 @@ it('sets labelOutlineColor expressions in setter', function() {
   expect(style.labelOutlineColor).toEqual(exp);
 
   var condExp = new ConditionsExpression({
-    conditions: [['${height} > 2', 'color("cyan")'], ['true', 'color("blue")']]
+    conditions: [
+      ['${height} > 2', 'color("cyan")'],
+      ['true', 'color("blue")']
+    ]
   });
 
   style.labelOutlineColor = condExp;
@@ -958,7 +1051,10 @@ it('sets style.labelOutlineColor expressions in setter', function() {
   expect(style.style.labelOutlineColor).toEqual('color("red")');
 
   var jsonExp = {
-    conditions: [['${height} > 2', 'color("cyan")'], ['true', 'color("blue")']]
+    conditions: [
+      ['${height} > 2', 'color("cyan")'],
+      ['true', 'color("blue")']
+    ]
   };
 
   style.labelOutlineColor = new ConditionsExpression(jsonExp);
@@ -989,7 +1085,10 @@ it('sets labelOutlineColor values in setter', function() {
   expect(style.labelOutlineColor).toEqual(new Expression('color("${targetColor}")', defines));
 
   var jsonExp = {
-    conditions: [['${height} > 2', 'color("cyan")'], ['true', 'color("${targetColor}")']]
+    conditions: [
+      ['${height} > 2', 'color("cyan")'],
+      ['true', 'color("${targetColor}")']
+    ]
   };
 
   style.labelOutlineColor = jsonExp;
@@ -1006,7 +1105,10 @@ it('sets style.labelOutlineColor values in setter', function() {
   expect(style.style.labelOutlineColor).toEqual('color("${targetColor}")');
 
   var jsonExp = {
-    conditions: [['${height} > 2', 'color("cyan")'], ['true', 'color("${targetColor}")']]
+    conditions: [
+      ['${height} > 2', 'color("cyan")'],
+      ['true', 'color("${targetColor}")']
+    ]
   };
 
   style.labelOutlineColor = jsonExp;
@@ -1040,7 +1142,10 @@ it('sets labelOutlineWidth value to expression', function() {
 
 it('sets labelOutlineWidth value to conditional', function() {
   var jsonExp = {
-    conditions: [['${height} > 2', '1.0'], ['true', '2.0']]
+    conditions: [
+      ['${height} > 2', '1.0'],
+      ['true', '2.0']
+    ]
   };
 
   var style = new Cesium3DTileStyle({
@@ -1060,7 +1165,10 @@ it('sets labelOutlineWidth expressions in setter', function() {
   expect(style.labelOutlineWidth).toEqual(exp);
 
   var condExp = new ConditionsExpression({
-    conditions: [['${height} > 2', '1.0'], ['true', '2.0']]
+    conditions: [
+      ['${height} > 2', '1.0'],
+      ['true', '2.0']
+    ]
   });
 
   style.labelOutlineWidth = condExp;
@@ -1076,7 +1184,10 @@ it('sets style.labelOutlineWidth expressions in setter', function() {
   style.labelOutlineWidth = new Expression('2');
   expect(style.style.labelOutlineWidth).toEqual('2');
   var jsonExp = {
-    conditions: [['${height} > 2', '1.0'], ['true', '2.0']]
+    conditions: [
+      ['${height} > 2', '1.0'],
+      ['true', '2.0']
+    ]
   };
   style.labelOutlineWidth = new ConditionsExpression(jsonExp);
   expect(style.style.labelOutlineWidth).toEqual(jsonExp);
@@ -1106,7 +1217,10 @@ it('sets labelOutlineWidth values in setter', function() {
   expect(style.labelOutlineWidth).toEqual(new Expression('${targetLabelSize} + 1.0', defines));
 
   var jsonExp = {
-    conditions: [['${height} > 2', '1.0'], ['true', '${targetLabelSize}']]
+    conditions: [
+      ['${height} > 2', '1.0'],
+      ['true', '${targetLabelSize}']
+    ]
   };
 
   style.labelOutlineWidth = jsonExp;
@@ -1126,7 +1240,10 @@ it('sets style.labelOutlineWidth values in setter', function() {
   expect(style.style.labelOutlineWidth).toEqual('${targetLabelSize} + 1.0');
 
   var jsonExp = {
-    conditions: [['${height} > 2', '1.0'], ['true', '${targetLabelSize}']]
+    conditions: [
+      ['${height} > 2', '1.0'],
+      ['true', '${targetLabelSize}']
+    ]
   };
 
   style.labelOutlineWidth = jsonExp;
@@ -1160,7 +1277,10 @@ it('sets font value to expression', function() {
 
 it('sets font value to conditional', function() {
   var jsonExp = {
-    conditions: [['${height} > 2', "'30px Helvetica'"], ['true', "'24px Helvetica'"]]
+    conditions: [
+      ['${height} > 2', "'30px Helvetica'"],
+      ['true', "'24px Helvetica'"]
+    ]
   };
 
   var style = new Cesium3DTileStyle({
@@ -1180,7 +1300,10 @@ it('sets font expressions in setter', function() {
   expect(style.font).toEqual(exp);
 
   var condExp = new ConditionsExpression({
-    conditions: [['${height} > 2', "'30px Helvetica'"], ['true', "'24px Helvetica'"]]
+    conditions: [
+      ['${height} > 2', "'30px Helvetica'"],
+      ['true', "'24px Helvetica'"]
+    ]
   });
 
   style.font = condExp;
@@ -1197,7 +1320,10 @@ it('sets style.font expressions in setter', function() {
   expect(style.style.font).toEqual("'24px Helvetica'");
 
   var jsonExp = {
-    conditions: [['${height} > 2', "'30px Helvetica'"], ['true', "'24px Helvetica'"]]
+    conditions: [
+      ['${height} > 2', "'30px Helvetica'"],
+      ['true', "'24px Helvetica'"]
+    ]
   };
 
   style.font = new ConditionsExpression(jsonExp);
@@ -1228,7 +1354,10 @@ it('sets font values in setter', function() {
   expect(style.font).toEqual(new Expression('${targetFont}', defines));
 
   var jsonExp = {
-    conditions: [['${height} > 2', "'24px Helvetica'"], ['true', '${targetFont}']]
+    conditions: [
+      ['${height} > 2', "'24px Helvetica'"],
+      ['true', '${targetFont}']
+    ]
   };
 
   style.font = jsonExp;
@@ -1248,7 +1377,10 @@ it('sets style.font values in setter', function() {
   expect(style.style.font).toEqual('${targetFont}');
 
   var jsonExp = {
-    conditions: [['${height} > 2', "'24px Helvetica'"], ['true', '${targetFont}']]
+    conditions: [
+      ['${height} > 2', "'24px Helvetica'"],
+      ['true', '${targetFont}']
+    ]
   };
 
   style.font = jsonExp;
@@ -1272,7 +1404,10 @@ it('sets labelStyle value to expression', function() {
 
 it('sets labelStyle value to conditional', function() {
   var jsonExp = {
-    conditions: [['${height} > 2', '1'], ['true', '2']]
+    conditions: [
+      ['${height} > 2', '1'],
+      ['true', '2']
+    ]
   };
 
   var style = new Cesium3DTileStyle({
@@ -1292,7 +1427,10 @@ it('sets labelStyle expressions in setter', function() {
   expect(style.labelStyle).toEqual(exp);
 
   var condExp = new ConditionsExpression({
-    conditions: [['${height} > 2', '1'], ['true', '2']]
+    conditions: [
+      ['${height} > 2', '1'],
+      ['true', '2']
+    ]
   });
 
   style.labelStyle = condExp;
@@ -1309,7 +1447,10 @@ it('sets style.labelStyle expressions in setter', function() {
   expect(style.style.labelStyle).toEqual('2');
 
   var jsonExp = {
-    conditions: [['${height} > 2', '1'], ['true', '2']]
+    conditions: [
+      ['${height} > 2', '1'],
+      ['true', '2']
+    ]
   };
   style.labelStyle = new ConditionsExpression(jsonExp);
   expect(style.style.labelStyle).toEqual(jsonExp);
@@ -1339,7 +1480,10 @@ it('sets labelStyle values in setter', function() {
   expect(style.labelStyle).toEqual(new Expression('${targetLabelStyle}', defines));
 
   var jsonExp = {
-    conditions: [['${height} > 2', '1.0'], ['true', '${targetLabelStyle}']]
+    conditions: [
+      ['${height} > 2', '1.0'],
+      ['true', '${targetLabelStyle}']
+    ]
   };
 
   style.labelStyle = jsonExp;
@@ -1359,7 +1503,10 @@ it('sets style.labelStyle values in setter', function() {
   expect(style.style.labelStyle).toEqual('${targetLabelStyle}');
 
   var jsonExp = {
-    conditions: [['${height} > 2', '1.0'], ['true', '${targetLabelStyle}']]
+    conditions: [
+      ['${height} > 2', '1.0'],
+      ['true', '${targetLabelStyle}']
+    ]
   };
 
   style.labelStyle = jsonExp;
@@ -1393,7 +1540,10 @@ it('sets labelText value to expression', function() {
 
 it('sets labelText value to conditional', function() {
   var jsonExp = {
-    conditions: [['${height} > 2', "'test text 1'"], ['true', "'test text 2'"]]
+    conditions: [
+      ['${height} > 2', "'test text 1'"],
+      ['true', "'test text 2'"]
+    ]
   };
 
   var style = new Cesium3DTileStyle({
@@ -1413,7 +1563,10 @@ it('sets labelText expressions in setter', function() {
   expect(style.labelText).toEqual(exp);
 
   var condExp = new ConditionsExpression({
-    conditions: [['${height} > 2', "'test text 1'"], ['true', "'test text 2'"]]
+    conditions: [
+      ['${height} > 2', "'test text 1'"],
+      ['true', "'test text 2'"]
+    ]
   });
 
   style.labelText = condExp;
@@ -1430,7 +1583,10 @@ it('sets style.labelText expressions in setter', function() {
   expect(style.style.labelText).toEqual("'test text'");
 
   var jsonExp = {
-    conditions: [['${height} > 2', "'test text 1'"], ['true', "'test text 2'"]]
+    conditions: [
+      ['${height} > 2', "'test text 1'"],
+      ['true', "'test text 2'"]
+    ]
   };
 
   style.labelText = new ConditionsExpression(jsonExp);
@@ -1461,7 +1617,10 @@ it('sets labelText values in setter', function() {
   expect(style.labelText).toEqual(new Expression('${targetText}', defines));
 
   var jsonExp = {
-    conditions: [['${height} > 2', "'test text 2'"], ['true', '${targetText}']]
+    conditions: [
+      ['${height} > 2', "'test text 2'"],
+      ['true', '${targetText}']
+    ]
   };
 
   style.labelText = jsonExp;
@@ -1481,7 +1640,10 @@ it('sets style.labelText values in setter', function() {
   expect(style.style.labelText).toEqual('${targetText}');
 
   var jsonExp = {
-    conditions: [['${height} > 2', "'test text 2'"], ['true', '${targetText}']]
+    conditions: [
+      ['${height} > 2', "'test text 2'"],
+      ['true', '${targetText}']
+    ]
   };
 
   style.labelText = jsonExp;
@@ -1517,7 +1679,10 @@ it('sets backgroundColor value to expression', function() {
 
 it('sets backgroundColor value to conditional', function() {
   var jsonExp = {
-    conditions: [['${height} > 2', 'color("cyan")'], ['true', 'color("blue")']]
+    conditions: [
+      ['${height} > 2', 'color("cyan")'],
+      ['true', 'color("blue")']
+    ]
   };
 
   var style = new Cesium3DTileStyle({
@@ -1534,7 +1699,10 @@ it('sets backgroundColor expressions in setter', function() {
   expect(style.backgroundColor).toEqual(exp);
 
   var condExp = new ConditionsExpression({
-    conditions: [['${height} > 2', 'color("cyan")'], ['true', 'color("blue")']]
+    conditions: [
+      ['${height} > 2', 'color("cyan")'],
+      ['true', 'color("blue")']
+    ]
   });
 
   style.backgroundColor = condExp;
@@ -1551,7 +1719,10 @@ it('sets style.backgroundColor expressions in setter', function() {
   expect(style.style.backgroundColor).toEqual('color("red")');
 
   var jsonExp = {
-    conditions: [['${height} > 2', 'color("cyan")'], ['true', 'color("blue")']]
+    conditions: [
+      ['${height} > 2', 'color("cyan")'],
+      ['true', 'color("blue")']
+    ]
   };
 
   style.backgroundColor = new ConditionsExpression(jsonExp);
@@ -1582,7 +1753,10 @@ it('sets backgroundColor values in setter', function() {
   expect(style.backgroundColor).toEqual(new Expression('color("${targetColor}")', defines));
 
   var jsonExp = {
-    conditions: [['${height} > 2', 'color("cyan")'], ['true', 'color("${targetColor}")']]
+    conditions: [
+      ['${height} > 2', 'color("cyan")'],
+      ['true', 'color("${targetColor}")']
+    ]
   };
 
   style.backgroundColor = jsonExp;
@@ -1599,7 +1773,10 @@ it('sets style.backgroundColor values in setter', function() {
   expect(style.style.backgroundColor).toEqual('color("${targetColor}")');
 
   var jsonExp = {
-    conditions: [['${height} > 2', 'color("cyan")'], ['true', 'color("${targetColor}")']]
+    conditions: [
+      ['${height} > 2', 'color("cyan")'],
+      ['true', 'color("${targetColor}")']
+    ]
   };
 
   style.backgroundColor = jsonExp;
@@ -1635,7 +1812,10 @@ it('sets backgroundPadding value to expression', function() {
 
 it('sets backgroundPadding value to conditional', function() {
   var jsonExp = {
-    conditions: [['${height} > 2', 'vec2(1.0, 2.0)'], ['true', 'vec2(3.0, 4.0)']]
+    conditions: [
+      ['${height} > 2', 'vec2(1.0, 2.0)'],
+      ['true', 'vec2(3.0, 4.0)']
+    ]
   };
 
   var style = new Cesium3DTileStyle({
@@ -1652,7 +1832,10 @@ it('sets backgroundPadding expressions in setter', function() {
   expect(style.backgroundPadding).toEqual(exp);
 
   var condExp = new ConditionsExpression({
-    conditions: [['${height} > 2', 'vec2(1.0, 2.0)'], ['true', 'vec2(3.0, 4.0)']]
+    conditions: [
+      ['${height} > 2', 'vec2(1.0, 2.0)'],
+      ['true', 'vec2(3.0, 4.0)']
+    ]
   });
 
   style.backgroundPadding = condExp;
@@ -1669,7 +1852,10 @@ it('sets style.backgroundPadding expressions in setter', function() {
   expect(style.style.backgroundPadding).toEqual('vec2(1.0, 2.0)');
 
   var jsonExp = {
-    conditions: [['${height} > 2', 'vec2(1.0, 2.0)'], ['true', 'vec2(3.0, 4.0)']]
+    conditions: [
+      ['${height} > 2', 'vec2(1.0, 2.0)'],
+      ['true', 'vec2(3.0, 4.0)']
+    ]
   };
 
   var customExpression = {
@@ -1697,7 +1883,10 @@ it('sets backgroundPadding values in setter', function() {
   expect(style.backgroundPadding).toEqual(new Expression('vec2("${targetPadding}")', defines));
 
   var jsonExp = {
-    conditions: [['${height} > 2', 'vec2(1.0, 2.0)'], ['true', 'vec2("${targetPadding}")']]
+    conditions: [
+      ['${height} > 2', 'vec2(1.0, 2.0)'],
+      ['true', 'vec2("${targetPadding}")']
+    ]
   };
 
   style.backgroundPadding = jsonExp;
@@ -1714,7 +1903,10 @@ it('sets style.backgroundPadding values in setter', function() {
   expect(style.style.backgroundPadding).toEqual('vec2("${targetPadding}")');
 
   var jsonExp = {
-    conditions: [['${height} > 2', 'vec2(1.0, 2.0)'], ['true', 'vec2("${targetPadding}")']]
+    conditions: [
+      ['${height} > 2', 'vec2(1.0, 2.0)'],
+      ['true', 'vec2("${targetPadding}")']
+    ]
   };
 
   style.backgroundPadding = jsonExp;
@@ -1758,7 +1950,10 @@ it('sets backgroundEnabled value to expression', function() {
 
 it('sets backgroundEnabled value to conditional', function() {
   var jsonExp = {
-    conditions: [['${height} > 2', 'false'], ['true', 'true']]
+    conditions: [
+      ['${height} > 2', 'false'],
+      ['true', 'true']
+    ]
   };
 
   var style = new Cesium3DTileStyle({
@@ -1771,7 +1966,10 @@ it('sets backgroundEnabled expressions in setter', function() {
   var style = new Cesium3DTileStyle();
 
   var condExp = new ConditionsExpression({
-    conditions: [['${height} > 2', 'false'], ['true', 'true']]
+    conditions: [
+      ['${height} > 2', 'false'],
+      ['true', 'true']
+    ]
   });
 
   style.backgroundEnabled = condExp;
@@ -1789,7 +1987,10 @@ it('sets style.backgroundEnabled expressions in setter', function() {
   expect(style.style.backgroundEnabled).toEqual('false');
 
   var jsonExp = {
-    conditions: [['${height} > 2', 'false'], ['true', 'true']]
+    conditions: [
+      ['${height} > 2', 'false'],
+      ['true', 'true']
+    ]
   };
 
   style.backgroundEnabled = new ConditionsExpression(jsonExp);
@@ -1819,7 +2020,10 @@ it('sets backgroundEnabled values in setter', function() {
   expect(style.backgroundEnabled).toEqual(new Expression('false'));
 
   var jsonExp = {
-    conditions: [['${height} > ${backgroundFactor}', 'false'], ['true', 'true']]
+    conditions: [
+      ['${height} > ${backgroundFactor}', 'false'],
+      ['true', 'true']
+    ]
   };
 
   style.backgroundEnabled = jsonExp;
@@ -1842,7 +2046,10 @@ it('sets style.backgroundEnabled values in setter', function() {
   expect(style.style.backgroundEnabled).toEqual('false');
 
   var jsonExp = {
-    conditions: [['${height} > ${backgroundFactor}', 'false'], ['true', 'true']]
+    conditions: [
+      ['${height} > ${backgroundFactor}', 'false'],
+      ['true', 'true']
+    ]
   };
 
   style.backgroundEnabled = jsonExp;
@@ -1953,7 +2160,10 @@ it('sets scaleByDistance values in setter', function() {
   expect(style.scaleByDistance).toEqual(new Expression('vec4("${targetScale}")', defines));
 
   var jsonExp = {
-    conditions: [['${height} > 2', 'vec4(5.0, 6.0, 7.0, 8.0)'], ['true', 'vec4("${targetScale}")']]
+    conditions: [
+      ['${height} > 2', 'vec4(5.0, 6.0, 7.0, 8.0)'],
+      ['true', 'vec4("${targetScale}")']
+    ]
   };
 
   style.scaleByDistance = jsonExp;
@@ -1970,7 +2180,10 @@ it('sets style.scaleByDistance values in setter', function() {
   expect(style.style.scaleByDistance).toEqual('vec4("${targetScale}")');
 
   var jsonExp = {
-    conditions: [['${height} > 2', 'vec4(5.0, 6.0, 7.0, 8.0)'], ['true', 'vec4("${targetScale}")']]
+    conditions: [
+      ['${height} > 2', 'vec4(5.0, 6.0, 7.0, 8.0)'],
+      ['true', 'vec4("${targetScale}")']
+    ]
   };
 
   style.scaleByDistance = jsonExp;
@@ -2137,7 +2350,10 @@ it('sets heightOffset value to expression', function() {
 
 it('sets heightOffset value to conditional', function() {
   var jsonExp = {
-    conditions: [['${height} > 2', '1.0'], ['true', '2.0']]
+    conditions: [
+      ['${height} > 2', '1.0'],
+      ['true', '2.0']
+    ]
   };
 
   var style = new Cesium3DTileStyle({
@@ -2157,7 +2373,10 @@ it('sets heightOffset expressions in setter', function() {
   expect(style.heightOffset).toEqual(exp);
 
   var condExp = new ConditionsExpression({
-    conditions: [['${height} > 2', '1.0'], ['true', '2.0']]
+    conditions: [
+      ['${height} > 2', '1.0'],
+      ['true', '2.0']
+    ]
   });
 
   style.heightOffset = condExp;
@@ -2174,7 +2393,10 @@ it('sets style.heightOffset expressions in setter', function() {
   expect(style.style.heightOffset).toEqual('2');
 
   var jsonExp = {
-    conditions: [['${height} > 2', '1.0'], ['true', '2.0']]
+    conditions: [
+      ['${height} > 2', '1.0'],
+      ['true', '2.0']
+    ]
   };
 
   style.heightOffset = new ConditionsExpression(jsonExp);
@@ -2205,7 +2427,10 @@ it('sets heightOffset values in setter', function() {
   expect(style.heightOffset).toEqual(new Expression('${targetHeight} + 1.0', defines));
 
   var jsonExp = {
-    conditions: [['${height} > 2', '1.0'], ['true', '${targetHeight}']]
+    conditions: [
+      ['${height} > 2', '1.0'],
+      ['true', '${targetHeight}']
+    ]
   };
 
   style.heightOffset = jsonExp;
@@ -2222,7 +2447,10 @@ it('sets style.heightOffset values in setter', function() {
   expect(style.style.heightOffset).toEqual('${targetHeight} + 1.0');
 
   var jsonExp = {
-    conditions: [['${height} > 2', '1.0'], ['true', '${targetHeight}']]
+    conditions: [
+      ['${height} > 2', '1.0'],
+      ['true', '${targetHeight}']
+    ]
   };
 
   style.heightOffset = jsonExp;
@@ -2266,7 +2494,10 @@ it('sets anchorLineEnabled value to expression', function() {
 
 it('sets anchorLineEnabled value to conditional', function() {
   var jsonExp = {
-    conditions: [['${height} > 2', 'false'], ['true', 'true']]
+    conditions: [
+      ['${height} > 2', 'false'],
+      ['true', 'true']
+    ]
   };
 
   var style = new Cesium3DTileStyle({
@@ -2279,7 +2510,10 @@ it('sets anchorLineEnabled expressions in setter', function() {
   var style = new Cesium3DTileStyle();
 
   var condExp = new ConditionsExpression({
-    conditions: [['${height} > 2', 'false'], ['true', 'true']]
+    conditions: [
+      ['${height} > 2', 'false'],
+      ['true', 'true']
+    ]
   });
 
   style.anchorLineEnabled = condExp;
@@ -2297,7 +2531,10 @@ it('sets style.anchorLineEnabled expressions in setter', function() {
   expect(style.style.anchorLineEnabled).toEqual('false');
 
   var jsonExp = {
-    conditions: [['${height} > 2', 'false'], ['true', 'true']]
+    conditions: [
+      ['${height} > 2', 'false'],
+      ['true', 'true']
+    ]
   };
 
   style.anchorLineEnabled = new ConditionsExpression(jsonExp);
@@ -2327,7 +2564,10 @@ it('sets anchorLineEnabled values in setter', function() {
   expect(style.anchorLineEnabled).toEqual(new Expression('false'));
 
   var jsonExp = {
-    conditions: [['${height} > ${anchorFactor}', 'false'], ['true', 'true']]
+    conditions: [
+      ['${height} > ${anchorFactor}', 'false'],
+      ['true', 'true']
+    ]
   };
 
   style.anchorLineEnabled = jsonExp;
@@ -2350,7 +2590,10 @@ it('sets style.anchorLineEnabled values in setter', function() {
   expect(style.style.anchorLineEnabled).toEqual('false');
 
   var jsonExp = {
-    conditions: [['${height} > ${anchorFactor}', 'false'], ['true', 'true']]
+    conditions: [
+      ['${height} > ${anchorFactor}', 'false'],
+      ['true', 'true']
+    ]
   };
 
   style.anchorLineEnabled = jsonExp;
@@ -2389,7 +2632,10 @@ it('sets anchorLineColor value to expression', function() {
 
 it('sets anchorLineColor value to conditional', function() {
   var jsonExp = {
-    conditions: [['${height} > 2', 'color("cyan")'], ['true', 'color("blue")']]
+    conditions: [
+      ['${height} > 2', 'color("cyan")'],
+      ['true', 'color("blue")']
+    ]
   };
 
   var style = new Cesium3DTileStyle({
@@ -2406,7 +2652,10 @@ it('sets anchorLineColor expressions in setter', function() {
   expect(style.anchorLineColor).toEqual(exp);
 
   var condExp = new ConditionsExpression({
-    conditions: [['${height} > 2', 'color("cyan")'], ['true', 'color("blue")']]
+    conditions: [
+      ['${height} > 2', 'color("cyan")'],
+      ['true', 'color("blue")']
+    ]
   });
 
   style.anchorLineColor = condExp;
@@ -2423,7 +2672,10 @@ it('sets style.anchorLineColor expressions in setter', function() {
   expect(style.style.anchorLineColor).toEqual('color("red")');
 
   var jsonExp = {
-    conditions: [['${height} > 2', 'color("cyan")'], ['true', 'color("blue")']]
+    conditions: [
+      ['${height} > 2', 'color("cyan")'],
+      ['true', 'color("blue")']
+    ]
   };
 
   style.anchorLineColor = new ConditionsExpression(jsonExp);
@@ -2454,7 +2706,10 @@ it('sets anchorLineColor values in setter', function() {
   expect(style.anchorLineColor).toEqual(new Expression('color("${targetColor}")', defines));
 
   var jsonExp = {
-    conditions: [['${height} > 2', 'color("cyan")'], ['true', 'color("${targetColor}")']]
+    conditions: [
+      ['${height} > 2', 'color("cyan")'],
+      ['true', 'color("${targetColor}")']
+    ]
   };
 
   style.anchorLineColor = jsonExp;
@@ -2471,7 +2726,10 @@ it('sets style.anchorLineColor values in setter', function() {
   expect(style.style.anchorLineColor).toEqual('color("${targetColor}")');
 
   var jsonExp = {
-    conditions: [['${height} > 2', 'color("cyan")'], ['true', 'color("${targetColor}")']]
+    conditions: [
+      ['${height} > 2', 'color("cyan")'],
+      ['true', 'color("${targetColor}")']
+    ]
   };
 
   style.anchorLineColor = jsonExp;
@@ -2505,7 +2763,10 @@ it('sets image value to expression', function() {
 
 it('sets image value to conditional', function() {
   var jsonExp = {
-    conditions: [['${height} > 2', "'url/to/image1'"], ['true', "'url/to/image2'"]]
+    conditions: [
+      ['${height} > 2', "'url/to/image1'"],
+      ['true', "'url/to/image2'"]
+    ]
   };
 
   var style = new Cesium3DTileStyle({
@@ -2525,7 +2786,10 @@ it('sets image expressions in setter', function() {
   expect(style.image).toEqual(exp);
 
   var condExp = new ConditionsExpression({
-    conditions: [['${height} > 2', "'url/to/image1'"], ['true', "'url/to/image2'"]]
+    conditions: [
+      ['${height} > 2', "'url/to/image1'"],
+      ['true', "'url/to/image2'"]
+    ]
   });
 
   style.image = condExp;
@@ -2542,7 +2806,10 @@ it('sets style.image expressions in setter', function() {
   expect(style.style.image).toEqual("'url/to/image'");
 
   var jsonExp = {
-    conditions: [['${height} > 2', "'url/to/image1'"], ['true', "'url/to/image2'"]]
+    conditions: [
+      ['${height} > 2', "'url/to/image1'"],
+      ['true', "'url/to/image2'"]
+    ]
   };
 
   style.image = new ConditionsExpression(jsonExp);
@@ -2573,7 +2840,10 @@ it('sets image values in setter', function() {
   expect(style.image).toEqual(new Expression('${targetUrl}', defines));
 
   var jsonExp = {
-    conditions: [['${height} > 2', "'url/to/image2'"], ['true', '${targetUrl}']]
+    conditions: [
+      ['${height} > 2', "'url/to/image2'"],
+      ['true', '${targetUrl}']
+    ]
   };
 
   style.image = jsonExp;
@@ -2593,7 +2863,10 @@ it('sets style.image values in setter', function() {
   expect(style.style.image).toEqual('${targetUrl}');
 
   var jsonExp = {
-    conditions: [['${height} > 2', "'url/to/image2'"], ['true', '${targetUrl}']]
+    conditions: [
+      ['${height} > 2', "'url/to/image2'"],
+      ['true', '${targetUrl}']
+    ]
   };
 
   style.image = jsonExp;
@@ -2627,7 +2900,10 @@ it('sets disableDepthTestDistance value to expression', function() {
 
 it('sets disableDepthTestDistance value to conditional', function() {
   var jsonExp = {
-    conditions: [['${height} > 2', '1.0'], ['true', '2.0']]
+    conditions: [
+      ['${height} > 2', '1.0'],
+      ['true', '2.0']
+    ]
   };
 
   var style = new Cesium3DTileStyle({
@@ -2647,7 +2923,10 @@ it('sets disableDepthTestDistance expressions in setter', function() {
   expect(style.disableDepthTestDistance).toEqual(exp);
 
   var condExp = new ConditionsExpression({
-    conditions: [['${height} > 2', '1.0'], ['true', '2.0']]
+    conditions: [
+      ['${height} > 2', '1.0'],
+      ['true', '2.0']
+    ]
   });
 
   style.disableDepthTestDistance = condExp;
@@ -2664,7 +2943,10 @@ it('sets style.disableDepthTestDistance expressions in setter', function() {
   expect(style.style.disableDepthTestDistance).toEqual('2');
 
   var jsonExp = {
-    conditions: [['${height} > 2', '1.0'], ['true', '2.0']]
+    conditions: [
+      ['${height} > 2', '1.0'],
+      ['true', '2.0']
+    ]
   };
 
   style.disableDepthTestDistance = new ConditionsExpression(jsonExp);
@@ -2697,7 +2979,10 @@ it('sets disableDepthTestDistance values in setter', function() {
   );
 
   var jsonExp = {
-    conditions: [['${height} > 2', '1.0'], ['true', '${targetDistance}']]
+    conditions: [
+      ['${height} > 2', '1.0'],
+      ['true', '${targetDistance}']
+    ]
   };
 
   style.disableDepthTestDistance = jsonExp;
@@ -2721,7 +3006,10 @@ it('sets horizontalOrigin value to expression', function() {
 
 it('sets horizontalOrigin value to conditional', function() {
   var jsonExp = {
-    conditions: [['${height} > 2', '1'], ['true', '-1']]
+    conditions: [
+      ['${height} > 2', '1'],
+      ['true', '-1']
+    ]
   };
 
   var style = new Cesium3DTileStyle({
@@ -2741,7 +3029,10 @@ it('sets horizontalOrigin expressions in setter', function() {
   expect(style.horizontalOrigin).toEqual(exp);
 
   var condExp = new ConditionsExpression({
-    conditions: [['${height} > 2', '1'], ['true', '-1']]
+    conditions: [
+      ['${height} > 2', '1'],
+      ['true', '-1']
+    ]
   });
 
   style.horizontalOrigin = condExp;
@@ -2758,7 +3049,10 @@ it('sets style.horizontalOrigin expressions in setter', function() {
   expect(style.style.horizontalOrigin).toEqual('1');
 
   var jsonExp = {
-    conditions: [['${height} > 2', '1'], ['true', '-1']]
+    conditions: [
+      ['${height} > 2', '1'],
+      ['true', '-1']
+    ]
   };
 
   style.horizontalOrigin = new ConditionsExpression(jsonExp);
@@ -2789,7 +3083,10 @@ it('sets horizontalOrigin values in setter', function() {
   expect(style.horizontalOrigin).toEqual(new Expression('${targetOrigin}', defines));
 
   var jsonExp = {
-    conditions: [['${height} > 2', '1'], ['true', '${targetOrigin}']]
+    conditions: [
+      ['${height} > 2', '1'],
+      ['true', '${targetOrigin}']
+    ]
   };
 
   style.horizontalOrigin = jsonExp;
@@ -2809,7 +3106,10 @@ it('sets style.horizontalOrigin values in setter', function() {
   expect(style.style.horizontalOrigin).toEqual('${targetOrigin}');
 
   var jsonExp = {
-    conditions: [['${height} > 2', '1'], ['true', '${targetOrigin}']]
+    conditions: [
+      ['${height} > 2', '1'],
+      ['true', '${targetOrigin}']
+    ]
   };
 
   style.horizontalOrigin = jsonExp;
@@ -2833,7 +3133,10 @@ it('sets verticalOrigin value to expression', function() {
 
 it('sets verticalOrigin value to conditional', function() {
   var jsonExp = {
-    conditions: [['${height} > 2', '1'], ['true', '-1']]
+    conditions: [
+      ['${height} > 2', '1'],
+      ['true', '-1']
+    ]
   };
 
   var style = new Cesium3DTileStyle({
@@ -2853,7 +3156,10 @@ it('sets verticalOrigin expressions in setter', function() {
   expect(style.verticalOrigin).toEqual(exp);
 
   var condExp = new ConditionsExpression({
-    conditions: [['${height} > 2', '1'], ['true', '-1']]
+    conditions: [
+      ['${height} > 2', '1'],
+      ['true', '-1']
+    ]
   });
 
   style.verticalOrigin = condExp;
@@ -2870,7 +3176,10 @@ it('sets style.styleverticalOrigin expressions in setter', function() {
   expect(style.style.verticalOrigin).toEqual('1');
 
   var jsonExp = {
-    conditions: [['${height} > 2', '1'], ['true', '-1']]
+    conditions: [
+      ['${height} > 2', '1'],
+      ['true', '-1']
+    ]
   };
 
   style.verticalOrigin = new ConditionsExpression(jsonExp);
@@ -2901,7 +3210,10 @@ it('sets verticalOrigin values in setter', function() {
   expect(style.verticalOrigin).toEqual(new Expression('${targetOrigin}', defines));
 
   var jsonExp = {
-    conditions: [['${height} > 2', '1'], ['true', '${targetOrigin}']]
+    conditions: [
+      ['${height} > 2', '1'],
+      ['true', '${targetOrigin}']
+    ]
   };
 
   style.verticalOrigin = jsonExp;
@@ -2921,7 +3233,10 @@ it('sets style.verticalOrigin values in setter', function() {
   expect(style.style.verticalOrigin).toEqual('${targetOrigin}');
 
   var jsonExp = {
-    conditions: [['${height} > 2', '1'], ['true', '${targetOrigin}']]
+    conditions: [
+      ['${height} > 2', '1'],
+      ['true', '${targetOrigin}']
+    ]
   };
 
   style.verticalOrigin = jsonExp;
@@ -2945,7 +3260,10 @@ it('sets labelHorizontalOrigin value to expression', function() {
 
 it('sets labelHorizontalOrigin value to conditional', function() {
   var jsonExp = {
-    conditions: [['${height} > 2', '1'], ['true', '-1']]
+    conditions: [
+      ['${height} > 2', '1'],
+      ['true', '-1']
+    ]
   };
 
   var style = new Cesium3DTileStyle({
@@ -2965,7 +3283,10 @@ it('sets labelHorizontalOrigin expressions in setter', function() {
   expect(style.labelHorizontalOrigin).toEqual(exp);
 
   var condExp = new ConditionsExpression({
-    conditions: [['${height} > 2', '1'], ['true', '-1']]
+    conditions: [
+      ['${height} > 2', '1'],
+      ['true', '-1']
+    ]
   });
 
   style.labelHorizontalOrigin = condExp;
@@ -2982,7 +3303,10 @@ it('sets style.labelHorizontalOrigin expressions in setter', function() {
   expect(style.style.labelHorizontalOrigin).toEqual('1');
 
   var jsonExp = {
-    conditions: [['${height} > 2', '1'], ['true', '-1']]
+    conditions: [
+      ['${height} > 2', '1'],
+      ['true', '-1']
+    ]
   };
 
   style.labelHorizontalOrigin = new ConditionsExpression(jsonExp);
@@ -3013,7 +3337,10 @@ it('sets labelHorizontalOrigin values in setter', function() {
   expect(style.labelHorizontalOrigin).toEqual(new Expression('${targetOrigin}', defines));
 
   var jsonExp = {
-    conditions: [['${height} > 2', '1'], ['true', '${targetOrigin}']]
+    conditions: [
+      ['${height} > 2', '1'],
+      ['true', '${targetOrigin}']
+    ]
   };
 
   style.labelHorizontalOrigin = jsonExp;
@@ -3033,7 +3360,10 @@ it('sets style.labelHorizontalOrigin values in setter', function() {
   expect(style.style.labelHorizontalOrigin).toEqual('${targetOrigin}');
 
   var jsonExp = {
-    conditions: [['${height} > 2', '1'], ['true', '${targetOrigin}']]
+    conditions: [
+      ['${height} > 2', '1'],
+      ['true', '${targetOrigin}']
+    ]
   };
 
   style.labelHorizontalOrigin = jsonExp;
@@ -3057,7 +3387,10 @@ it('sets labelVerticalOrigin value to expression', function() {
 
 it('sets labelVerticalOrigin value to conditional', function() {
   var jsonExp = {
-    conditions: [['${height} > 2', '1'], ['true', '-1']]
+    conditions: [
+      ['${height} > 2', '1'],
+      ['true', '-1']
+    ]
   };
 
   var style = new Cesium3DTileStyle({
@@ -3077,7 +3410,10 @@ it('sets labelVerticalOrigin expressions in setter', function() {
   expect(style.labelVerticalOrigin).toEqual(exp);
 
   var condExp = new ConditionsExpression({
-    conditions: [['${height} > 2', '1'], ['true', '-1']]
+    conditions: [
+      ['${height} > 2', '1'],
+      ['true', '-1']
+    ]
   });
 
   style.labelVerticalOrigin = condExp;
@@ -3094,7 +3430,10 @@ it('sets style.labelVerticalOrigin expressions in setter', function() {
   expect(style.style.labelVerticalOrigin).toEqual('1');
 
   var jsonExp = {
-    conditions: [['${height} > 2', '1'], ['true', '-1']]
+    conditions: [
+      ['${height} > 2', '1'],
+      ['true', '-1']
+    ]
   };
 
   style.labelVerticalOrigin = new ConditionsExpression(jsonExp);
@@ -3125,7 +3464,10 @@ it('sets labelVerticalOrigin values in setter', function() {
   expect(style.labelVerticalOrigin).toEqual(new Expression('${targetOrigin}', defines));
 
   var jsonExp = {
-    conditions: [['${height} > 2', '1'], ['true', '${targetOrigin}']]
+    conditions: [
+      ['${height} > 2', '1'],
+      ['true', '${targetOrigin}']
+    ]
   };
 
   style.labelVerticalOrigin = jsonExp;
@@ -3145,7 +3487,10 @@ it('sets style.labelVerticalOrigin values in setter', function() {
   expect(style.style.labelVerticalOrigin).toEqual('${targetOrigin}');
 
   var jsonExp = {
-    conditions: [['${height} > 2', '1'], ['true', '${targetOrigin}']]
+    conditions: [
+      ['${height} > 2', '1'],
+      ['true', '${targetOrigin}']
+    ]
   };
 
   style.labelVerticalOrigin = jsonExp;

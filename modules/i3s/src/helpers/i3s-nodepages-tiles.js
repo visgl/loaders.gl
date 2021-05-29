@@ -65,9 +65,7 @@ export default class I3SNodePagesTiles {
       materialDefinition = nodeMaterialDefinition;
       textureFormat = textureData.format || textureFormat;
       if (textureData.name) {
-        textureUrl = `${this.tileset.url}/nodes/${node.mesh.material.resource}/textures/${
-          textureData.name
-        }`;
+        textureUrl = `${this.tileset.url}/nodes/${node.mesh.material.resource}/textures/${textureData.name}`;
       }
 
       if (this.tileset.attributeStorageInfo) {

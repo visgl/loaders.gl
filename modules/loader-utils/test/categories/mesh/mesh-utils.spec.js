@@ -14,7 +14,10 @@ test('getMeshBoundingBox', t => {
     getMeshBoundingBox({
       POSITION: {value: new Float32Array([-1, 1, 2, -3, 1, 4, -2, 1, 3])}
     }),
-    [[-3, 1, 2], [-1, 1, 4]],
+    [
+      [-3, 1, 2],
+      [-1, 1, 4]
+    ],
     'returns correct bounding box'
   );
 

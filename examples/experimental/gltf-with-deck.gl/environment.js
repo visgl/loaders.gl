@@ -17,8 +17,6 @@ export default function loadIBLEnvironment(gl) {
   return new GLTFEnvironment(gl, {
     brdfLutUrl: `${GLTF_ENV_BASE_URL}/brdfLUT.png`,
     getTexUrl: (type, dir, mipLevel) =>
-      `${GLTF_ENV_BASE_URL}/papermill/${type}/${type}_${
-        CUBE_FACE_TO_DIRECTION[dir]
-      }_${mipLevel}.jpg`
+      `${GLTF_ENV_BASE_URL}/papermill/${type}/${type}_${CUBE_FACE_TO_DIRECTION[dir]}_${mipLevel}.jpg`
   });
 }

@@ -1,5 +1,4 @@
 // Forked from github AnthumChris/fetch-progress-indicators under MIT license
-/* global Response, ReadableStream */
 
 // Intercepts the Response stream and creates a new Response
 export default async function fetchProgress(

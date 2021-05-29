@@ -1,4 +1,3 @@
-/* global Worker */
 import test from 'tape-catch';
 import {WorkerPool} from '@loaders.gl/worker-utils';
 import {toArrayBuffer} from '@loaders.gl/loader-utils';
@@ -83,7 +82,10 @@ test.skip('createLoaderWorker#nested', async t => {
 
   registerLoaders(NullWorkerLoader);
 
-  const TEST_CASES = [[{chunk: 0}, {chunk: 1}, {chunk: 2}], [{chunk: 3}, {chunk: 4}]];
+  const TEST_CASES = [
+    [{chunk: 0}, {chunk: 1}, {chunk: 2}],
+    [{chunk: 3}, {chunk: 4}]
+  ];
 
   const result = await Promise.all(
     TEST_CASES.map(testData =>

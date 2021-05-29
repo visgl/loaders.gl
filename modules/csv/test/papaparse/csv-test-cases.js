@@ -9,7 +9,6 @@ License: MIT
 */
 
 /* eslint-disable camelcase, quotes, max-len, prefer-template, wrap-regex */
-/* global File */
 
 const BASE_PATH = `${__dirname}/../../data/csv/`;
 const RECORD_SEP = String.fromCharCode(30);
@@ -42,7 +41,10 @@ export const CORE_PARSER_TESTS = [
     description: 'Two rows',
     input: 'A,b,c\nd,E,f',
     expected: {
-      data: [['A', 'b', 'c'], ['d', 'E', 'f']],
+      data: [
+        ['A', 'b', 'c'],
+        ['d', 'E', 'f']
+      ],
       errors: []
     }
   },
@@ -50,7 +52,11 @@ export const CORE_PARSER_TESTS = [
     description: 'Three rows',
     input: 'A,b,c\nd,E,f\nG,h,i',
     expected: {
-      data: [['A', 'b', 'c'], ['d', 'E', 'f'], ['G', 'h', 'i']],
+      data: [
+        ['A', 'b', 'c'],
+        ['d', 'E', 'f'],
+        ['G', 'h', 'i']
+      ],
       errors: []
     }
   },
@@ -107,7 +113,10 @@ export const CORE_PARSER_TESTS = [
     description: 'Quoted fields at end of row with delimiter and line break',
     input: 'a,b,"c,c\nc"\nd,e,f',
     expected: {
-      data: [['a', 'b', 'c,c\nc'], ['d', 'e', 'f']],
+      data: [
+        ['a', 'b', 'c,c\nc'],
+        ['d', 'e', 'f']
+      ],
       errors: []
     }
   },
@@ -305,7 +314,10 @@ export const CORE_PARSER_TESTS = [
     input: 'a,"b",c\nd,e,f',
     notes: 'Trailing quote is valid due to trailing delimiter',
     expected: {
-      data: [['a', 'b', 'c'], ['d', 'e', 'f']],
+      data: [
+        ['a', 'b', 'c'],
+        ['d', 'e', 'f']
+      ],
       errors: []
     }
   },
@@ -314,7 +326,10 @@ export const CORE_PARSER_TESTS = [
     input: 'a,b,"c"\nd,e,f',
     notes: 'Trailing quote is valid due to trailing new line delimiter',
     expected: {
-      data: [['a', 'b', 'c'], ['d', 'e', 'f']],
+      data: [
+        ['a', 'b', 'c'],
+        ['d', 'e', 'f']
+      ],
       errors: []
     }
   },
@@ -323,7 +338,10 @@ export const CORE_PARSER_TESTS = [
     input: 'a,b,c\nd,e,"f"',
     notes: 'Trailing quote is valid due to EOF',
     expected: {
-      data: [['a', 'b', 'c'], ['d', 'e', 'f']],
+      data: [
+        ['a', 'b', 'c'],
+        ['d', 'e', 'f']
+      ],
       errors: []
     }
   },
@@ -340,7 +358,10 @@ export const CORE_PARSER_TESTS = [
     description: 'Line starts with quoted field',
     input: 'a,b,c\n"d",e,f',
     expected: {
-      data: [['a', 'b', 'c'], ['d', 'e', 'f']],
+      data: [
+        ['a', 'b', 'c'],
+        ['d', 'e', 'f']
+      ],
       errors: []
     }
   },
@@ -348,7 +369,12 @@ export const CORE_PARSER_TESTS = [
     description: 'Line ends with quoted field',
     input: 'a,b,c\nd,e,f\n"g","h","i"\n"j","k","l"',
     expected: {
-      data: [['a', 'b', 'c'], ['d', 'e', 'f'], ['g', 'h', 'i'], ['j', 'k', 'l']],
+      data: [
+        ['a', 'b', 'c'],
+        ['d', 'e', 'f'],
+        ['g', 'h', 'i'],
+        ['j', 'k', 'l']
+      ],
       errors: []
     }
   },
@@ -359,7 +385,12 @@ export const CORE_PARSER_TESTS = [
       newline: '\n'
     },
     expected: {
-      data: [['a', 'b', 'c'], ['', 'e', 'f'], ['', 'h', 'i'], ['', 'k', 'l']],
+      data: [
+        ['a', 'b', 'c'],
+        ['', 'e', 'f'],
+        ['', 'h', 'i'],
+        ['', 'k', 'l']
+      ],
       errors: []
     }
   },
@@ -367,7 +398,10 @@ export const CORE_PARSER_TESTS = [
     description: 'Quoted field at end of row (but not at EOF) has quotes',
     input: 'a,b,"c""c"""\nd,e,f',
     expected: {
-      data: [['a', 'b', 'c"c"'], ['d', 'e', 'f']],
+      data: [
+        ['a', 'b', 'c"c"'],
+        ['d', 'e', 'f']
+      ],
       errors: []
     }
   },
@@ -375,7 +409,10 @@ export const CORE_PARSER_TESTS = [
     description: 'Empty quoted field at EOF is empty',
     input: 'a,b,""\na,b,""',
     expected: {
-      data: [['a', 'b', ''], ['a', 'b', '']],
+      data: [
+        ['a', 'b', ''],
+        ['a', 'b', '']
+      ],
       errors: []
     }
   },
@@ -383,7 +420,10 @@ export const CORE_PARSER_TESTS = [
     description: 'Multiple consecutive empty fields',
     input: 'a,b,,,c,d\n,,e,,,f',
     expected: {
-      data: [['a', 'b', '', '', 'c', 'd'], ['', '', 'e', '', '', 'f']],
+      data: [
+        ['a', 'b', '', '', 'c', 'd'],
+        ['', '', 'e', '', '', 'f']
+      ],
       errors: []
     }
   },
@@ -407,7 +447,10 @@ export const CORE_PARSER_TESTS = [
     description: 'Input is just empty fields',
     input: ',,\n,,,',
     expected: {
-      data: [['', '', ''], ['', '', '', '']],
+      data: [
+        ['', '', ''],
+        ['', '', '', '']
+      ],
       errors: []
     }
   },
@@ -433,7 +476,10 @@ export const CORE_PARSER_TESTS = [
     input: 'a,b,c\n# Comment\nd,e,f',
     config: {comments: true},
     expected: {
-      data: [['a', 'b', 'c'], ['d', 'e', 'f']],
+      data: [
+        ['a', 'b', 'c'],
+        ['d', 'e', 'f']
+      ],
       errors: []
     }
   },
@@ -451,7 +497,10 @@ export const CORE_PARSER_TESTS = [
     input: 'a,b,c\n#comment1\n#comment2\nd,e,f',
     config: {comments: true},
     expected: {
-      data: [['a', 'b', 'c'], ['d', 'e', 'f']],
+      data: [
+        ['a', 'b', 'c'],
+        ['d', 'e', 'f']
+      ],
       errors: []
     }
   },
@@ -487,7 +536,10 @@ export const CORE_PARSER_TESTS = [
     input: 'a,b,c\n!Comment goes here\nd,e,f',
     config: {comments: '!'},
     expected: {
-      data: [['a', 'b', 'c'], ['d', 'e', 'f']],
+      data: [
+        ['a', 'b', 'c'],
+        ['d', 'e', 'f']
+      ],
       errors: []
     }
   },
@@ -506,7 +558,10 @@ export const CORE_PARSER_TESTS = [
     input: 'a,b,c\n=N(Comment)\nd,e,f',
     config: {comments: '=N('},
     expected: {
-      data: [['a', 'b', 'c'], ['d', 'e', 'f']],
+      data: [
+        ['a', 'b', 'c'],
+        ['d', 'e', 'f']
+      ],
       errors: []
     }
   },
@@ -568,7 +623,10 @@ export const CORE_PARSER_TESTS = [
     input: 'a,b,c\nd,e,f',
     config: {fastMode: true},
     expected: {
-      data: [['a', 'b', 'c'], ['d', 'e', 'f']],
+      data: [
+        ['a', 'b', 'c'],
+        ['d', 'e', 'f']
+      ],
       errors: []
     }
   },
@@ -586,7 +644,10 @@ export const CORE_PARSER_TESTS = [
     input: 'a,b,c\nd,e,f\nh,j,i\n',
     config: {fastMode: true, preview: 2},
     expected: {
-      data: [['a', 'b', 'c'], ['d', 'e', 'f']],
+      data: [
+        ['a', 'b', 'c'],
+        ['d', 'e', 'f']
+      ],
       errors: []
     }
   },
@@ -607,7 +668,10 @@ export const PARSE_TESTS = [
     description: 'Two rows, just \\r',
     input: 'A,b,c\rd,E,f',
     expected: {
-      data: [['A', 'b', 'c'], ['d', 'E', 'f']],
+      data: [
+        ['A', 'b', 'c'],
+        ['d', 'E', 'f']
+      ],
       errors: []
     }
   },
@@ -615,7 +679,10 @@ export const PARSE_TESTS = [
     description: 'Two rows, \\r\\n',
     input: 'A,b,c\r\nd,E,f',
     expected: {
-      data: [['A', 'b', 'c'], ['d', 'E', 'f']],
+      data: [
+        ['A', 'b', 'c'],
+        ['d', 'E', 'f']
+      ],
       errors: []
     }
   },
@@ -647,7 +714,10 @@ export const PARSE_TESTS = [
     description: 'Quoted fields with spaces between closing quote and next delimiter',
     input: 'A,"B" ,C,D\r\nE,F,"G"  ,H',
     expected: {
-      data: [['A', 'B', 'C', 'D'], ['E', 'F', 'G', 'H']],
+      data: [
+        ['A', 'B', 'C', 'D'],
+        ['E', 'F', 'G', 'H']
+      ],
       errors: []
     }
   },
@@ -655,7 +725,11 @@ export const PARSE_TESTS = [
     description: 'Quoted fields with spaces between closing quote and next new line',
     input: 'A,B,C,"D" \r\nE,F,G,"H"  \r\nQ,W,E,R',
     expected: {
-      data: [['A', 'B', 'C', 'D'], ['E', 'F', 'G', 'H'], ['Q', 'W', 'E', 'R']],
+      data: [
+        ['A', 'B', 'C', 'D'],
+        ['E', 'F', 'G', 'H'],
+        ['Q', 'W', 'E', 'R']
+      ],
       errors: []
     }
   },
@@ -663,7 +737,11 @@ export const PARSE_TESTS = [
     description: 'Quoted fields with spaces after closing quote',
     input: 'A,"B" ,C,"D" \r\nE,F,"G"  ,"H"  \r\nQ,W,"E" ,R',
     expected: {
-      data: [['A', 'B', 'C', 'D'], ['E', 'F', 'G', 'H'], ['Q', 'W', 'E', 'R']],
+      data: [
+        ['A', 'B', 'C', 'D'],
+        ['E', 'F', 'G', 'H'],
+        ['Q', 'W', 'E', 'R']
+      ],
       errors: []
     }
   },
@@ -714,7 +792,10 @@ export const PARSE_TESTS = [
     input: 'A,B,C\r\na,b,c,d,e\r\nf,g,h',
     config: {header: true},
     expected: {
-      data: [{A: 'a', B: 'b', C: 'c', __parsed_extra: ['d', 'e']}, {A: 'f', B: 'g', C: 'h'}],
+      data: [
+        {A: 'a', B: 'b', C: 'c', __parsed_extra: ['d', 'e']},
+        {A: 'f', B: 'g', C: 'h'}
+      ],
       errors: [
         {
           type: 'FieldMismatch',
@@ -751,7 +832,11 @@ export const PARSE_TESTS = [
       newline: '\r\n'
     },
     expected: {
-      data: [{a: 'd', b: 'e', c: 'f'}, {a: '', b: 'h', c: 'i'}, {a: '', b: 'k', c: 'l'}],
+      data: [
+        {a: 'd', b: 'e', c: 'f'},
+        {a: '', b: 'h', c: 'i'},
+        {a: '', b: 'k', c: 'l'}
+      ],
       errors: []
     }
   },
@@ -760,7 +845,10 @@ export const PARSE_TESTS = [
     input: 'a\tb\tc\r\nd\te\tf',
     config: {delimiter: '\t'},
     expected: {
-      data: [['a', 'b', 'c'], ['d', 'e', 'f']],
+      data: [
+        ['a', 'b', 'c'],
+        ['d', 'e', 'f']
+      ],
       errors: []
     }
   },
@@ -769,7 +857,10 @@ export const PARSE_TESTS = [
     input: 'a|b|c\r\nd|e|f',
     config: {delimiter: '|'},
     expected: {
-      data: [['a', 'b', 'c'], ['d', 'e', 'f']],
+      data: [
+        ['a', 'b', 'c'],
+        ['d', 'e', 'f']
+      ],
       errors: []
     }
   },
@@ -778,7 +869,10 @@ export const PARSE_TESTS = [
     input: 'a' + RECORD_SEP + 'b' + RECORD_SEP + 'c\r\nd' + RECORD_SEP + 'e' + RECORD_SEP + 'f',
     config: {delimiter: RECORD_SEP},
     expected: {
-      data: [['a', 'b', 'c'], ['d', 'e', 'f']],
+      data: [
+        ['a', 'b', 'c'],
+        ['d', 'e', 'f']
+      ],
       errors: []
     }
   },
@@ -787,7 +881,10 @@ export const PARSE_TESTS = [
     input: 'a' + UNIT_SEP + 'b' + UNIT_SEP + 'c\r\nd' + UNIT_SEP + 'e' + UNIT_SEP + 'f',
     config: {delimiter: UNIT_SEP},
     expected: {
-      data: [['a', 'b', 'c'], ['d', 'e', 'f']],
+      data: [
+        ['a', 'b', 'c'],
+        ['d', 'e', 'f']
+      ],
       errors: []
     }
   },
@@ -828,7 +925,11 @@ export const PARSE_TESTS = [
     input: '1,2.2,1e3\r\n-4,-4.5,-4e-5\r\n-,5a,5-2',
     config: {dynamicTyping: true},
     expected: {
-      data: [[1, 2.2, 1000], [-4, -4.5, -0.00004], ['-', '5a', '5-2']],
+      data: [
+        [1, 2.2, 1000],
+        [-4, -4.5, -0.00004],
+        ['-', '5a', '5-2']
+      ],
       errors: []
     }
   },
@@ -846,7 +947,11 @@ export const PARSE_TESTS = [
     input: 'A,B,C\r\nundefined,null,[\r\nvar,float,if',
     config: {dynamicTyping: true},
     expected: {
-      data: [['A', 'B', 'C'], ['undefined', 'null', '['], ['var', 'float', 'if']],
+      data: [
+        ['A', 'B', 'C'],
+        ['undefined', 'null', '['],
+        ['var', 'float', 'if']
+      ],
       errors: []
     }
   },
@@ -855,7 +960,10 @@ export const PARSE_TESTS = [
     input: 'A,B,C\r\n1,2.2,1e3\r\n-4,-4.5,-4e-5',
     config: {header: true, dynamicTyping: {A: true, C: true}},
     expected: {
-      data: [{A: 1, B: '2.2', C: 1000}, {A: -4, B: '-4.5', C: -0.00004}],
+      data: [
+        {A: 1, B: '2.2', C: 1000},
+        {A: -4, B: '-4.5', C: -0.00004}
+      ],
       errors: []
     }
   },
@@ -864,7 +972,11 @@ export const PARSE_TESTS = [
     input: '1,2.2,1e3\r\n-4,-4.5,-4e-5\r\n-,5a,5-2',
     config: {dynamicTyping: {1: true}},
     expected: {
-      data: [['1', 2.2, '1e3'], ['-4', -4.5, '-4e-5'], ['-', '5a', '5-2']],
+      data: [
+        ['1', 2.2, '1e3'],
+        ['-4', -4.5, '-4e-5'],
+        ['-', '5a', '5-2']
+      ],
       errors: []
     }
   },
@@ -873,7 +985,10 @@ export const PARSE_TESTS = [
     input: 'A,B,C\r\n1,2.2,1e3,5.5\r\n-4,-4.5,-4e-5',
     config: {header: true, dynamicTyping: {A: true, C: true, __parsed_extra: true}},
     expected: {
-      data: [{A: 1, B: '2.2', C: 1000, __parsed_extra: [5.5]}, {A: -4, B: '-4.5', C: -0.00004}],
+      data: [
+        {A: 1, B: '2.2', C: 1000, __parsed_extra: [5.5]},
+        {A: -4, B: '-4.5', C: -0.00004}
+      ],
       errors: [
         {
           type: 'FieldMismatch',
@@ -907,7 +1022,11 @@ export const PARSE_TESTS = [
     input: '1,2.2,1e3\r\n,NULL,\r\n-,5a,null',
     config: {dynamicTyping: true},
     expected: {
-      data: [[1, 2.2, 1000], [null, 'NULL', null], ['-', '5a', 'null']],
+      data: [
+        [1, 2.2, 1000],
+        [null, 'NULL', null],
+        ['-', '5a', 'null']
+      ],
       errors: []
     }
   },
@@ -918,7 +1037,10 @@ export const PARSE_TESTS = [
       transform: value => value.toLowerCase()
     },
     expected: {
-      data: [['a', 'b', 'c'], ['d', 'e', 'f']],
+      data: [
+        ['a', 'b', 'c'],
+        ['d', 'e', 'f']
+      ],
       errors: []
     }
   },
@@ -934,7 +1056,10 @@ export const PARSE_TESTS = [
       }
     },
     expected: {
-      data: [['A', 'b', 'C'], ['d', 'e', 'f']],
+      data: [
+        ['A', 'b', 'C'],
+        ['d', 'e', 'f']
+      ],
       errors: []
     }
   },
@@ -1007,7 +1132,10 @@ export const PARSE_TESTS = [
     description: 'First field of a line is empty',
     input: 'a,b,c\r\n,e,f',
     expected: {
-      data: [['a', 'b', 'c'], ['', 'e', 'f']],
+      data: [
+        ['a', 'b', 'c'],
+        ['', 'e', 'f']
+      ],
       errors: []
     }
   },
@@ -1015,7 +1143,10 @@ export const PARSE_TESTS = [
     description: 'Last field of a line is empty',
     input: 'a,b,\r\nd,e,f',
     expected: {
-      data: [['a', 'b', ''], ['d', 'e', 'f']],
+      data: [
+        ['a', 'b', ''],
+        ['d', 'e', 'f']
+      ],
       errors: []
     }
   },
@@ -1023,7 +1154,10 @@ export const PARSE_TESTS = [
     description: 'Other fields are empty',
     input: 'a,,c\r\n,,',
     expected: {
-      data: [['a', '', 'c'], ['', '', '']],
+      data: [
+        ['a', '', 'c'],
+        ['', '', '']
+      ],
       errors: []
     }
   },
@@ -1068,7 +1202,11 @@ export const PARSE_TESTS = [
     input: 'a,b,c\r\nd,e,f\r\ng,h,i',
     config: {preview: 0},
     expected: {
-      data: [['a', 'b', 'c'], ['d', 'e', 'f'], ['g', 'h', 'i']],
+      data: [
+        ['a', 'b', 'c'],
+        ['d', 'e', 'f'],
+        ['g', 'h', 'i']
+      ],
       errors: []
     }
   },
@@ -1086,7 +1224,10 @@ export const PARSE_TESTS = [
     input: 'a,b,c\r\nd,e,f\r\ng,h,i',
     config: {preview: 2},
     expected: {
-      data: [['a', 'b', 'c'], ['d', 'e', 'f']],
+      data: [
+        ['a', 'b', 'c'],
+        ['d', 'e', 'f']
+      ],
       errors: []
     }
   },
@@ -1095,7 +1236,11 @@ export const PARSE_TESTS = [
     input: 'a,b,c\r\nd,e,f\r\ng,h,i',
     config: {preview: 3},
     expected: {
-      data: [['a', 'b', 'c'], ['d', 'e', 'f'], ['g', 'h', 'i']],
+      data: [
+        ['a', 'b', 'c'],
+        ['d', 'e', 'f'],
+        ['g', 'h', 'i']
+      ],
       errors: []
     }
   },
@@ -1104,7 +1249,11 @@ export const PARSE_TESTS = [
     input: 'a,b,c\r\nd,e,f\r\ng,h,i',
     config: {preview: 4},
     expected: {
-      data: [['a', 'b', 'c'], ['d', 'e', 'f'], ['g', 'h', 'i']],
+      data: [
+        ['a', 'b', 'c'],
+        ['d', 'e', 'f'],
+        ['g', 'h', 'i']
+      ],
       errors: []
     }
   },
@@ -1113,7 +1262,10 @@ export const PARSE_TESTS = [
     input: 'a,b,c\r\nd,e,"f\r\nf",g,h,i',
     config: {preview: 2},
     expected: {
-      data: [['a', 'b', 'c'], ['d', 'e', 'f\r\nf', 'g', 'h', 'i']],
+      data: [
+        ['a', 'b', 'c'],
+        ['d', 'e', 'f\r\nf', 'g', 'h', 'i']
+      ],
       errors: []
     }
   },
@@ -1123,7 +1275,10 @@ export const PARSE_TESTS = [
     input: 'a,b,c\r\nd,e,f\r\ng,h,i\r\nj,k,l',
     config: {header: true, preview: 2},
     expected: {
-      data: [{a: 'd', b: 'e', c: 'f'}, {a: 'g', b: 'h', c: 'i'}],
+      data: [
+        {a: 'd', b: 'e', c: 'f'},
+        {a: 'g', b: 'h', c: 'i'}
+      ],
       errors: []
     }
   },
@@ -1141,7 +1296,10 @@ export const PARSE_TESTS = [
     input: 'a,b,c\n\nd,e,f',
     config: {skipEmptyLines: true},
     expected: {
-      data: [['a', 'b', 'c'], ['d', 'e', 'f']],
+      data: [
+        ['a', 'b', 'c'],
+        ['d', 'e', 'f']
+      ],
       errors: []
     }
   },
@@ -1150,7 +1308,10 @@ export const PARSE_TESTS = [
     input: 'a,b,c\r\n\r\nd,e,f\r\n',
     config: {skipEmptyLines: true},
     expected: {
-      data: [['a', 'b', 'c'], ['d', 'e', 'f']],
+      data: [
+        ['a', 'b', 'c'],
+        ['d', 'e', 'f']
+      ],
       errors: []
     }
   },
@@ -1186,7 +1347,10 @@ export const PARSE_TESTS = [
     input: 'a,b\n1,2\n3,4\n',
     config: {header: true, skipEmptyLines: true},
     expected: {
-      data: [{a: '1', b: '2'}, {a: '3', b: '4'}],
+      data: [
+        {a: '1', b: '2'},
+        {a: '3', b: '4'}
+      ],
       errors: []
     }
   },
@@ -1197,7 +1361,10 @@ export const PARSE_TESTS = [
     input: '#1\n#2\n#3\n#4\n#5\n#6\n#7\n#8\n#9\n#10\none,"t,w,o",three\nfour,five,six',
     config: {comments: '#'},
     expected: {
-      data: [['one', 't,w,o', 'three'], ['four', 'five', 'six']],
+      data: [
+        ['one', 't,w,o', 'three'],
+        ['four', 'five', 'six']
+      ],
       errors: []
     }
   },
@@ -1209,7 +1376,10 @@ export const PARSE_TESTS = [
     input: '#1\n#2\n#3\n#4\n#5\n#6\n#7\n#8\n#9\n#10\n#11\none,two,three\nfour,five,six',
     config: {comments: '#'},
     expected: {
-      data: [['one', 'two', 'three'], ['four', 'five', 'six']],
+      data: [
+        ['one', 'two', 'three'],
+        ['four', 'five', 'six']
+      ],
       errors: []
     }
   },
@@ -1220,7 +1390,10 @@ export const PARSE_TESTS = [
     input: 'one|two,two|three\nfour|five,five|six',
     config: {},
     expected: {
-      data: [['one', 'two,two', 'three'], ['four', 'five,five', 'six']],
+      data: [
+        ['one', 'two,two', 'three'],
+        ['four', 'five,five', 'six']
+      ],
       errors: []
     }
   },
@@ -1282,7 +1455,13 @@ export const PARSE_TESTS = [
     input: '"a\r\na","b"\n"c","d"\n"e","f"\n"g","h"\n"i","j"',
     config: {},
     expected: {
-      data: [['a\r\na', 'b'], ['c', 'd'], ['e', 'f'], ['g', 'h'], ['i', 'j']],
+      data: [
+        ['a\r\na', 'b'],
+        ['c', 'd'],
+        ['e', 'f'],
+        ['g', 'h'],
+        ['i', 'j']
+      ],
       errors: []
     }
   },
@@ -1291,7 +1470,13 @@ export const PARSE_TESTS = [
     input: '"a\na","b"\r\n"c","d"\r\n"e","f"\r\n"g","h"\r\n"i","j"',
     config: {},
     expected: {
-      data: [['a\na', 'b'], ['c', 'd'], ['e', 'f'], ['g', 'h'], ['i', 'j']],
+      data: [
+        ['a\na', 'b'],
+        ['c', 'd'],
+        ['e', 'f'],
+        ['g', 'h'],
+        ['i', 'j']
+      ],
       errors: []
     }
   },
@@ -1300,7 +1485,13 @@ export const PARSE_TESTS = [
     input: 'a,b\r\nc,d\r\ne,f\r\ng,h\r\ni,j',
     config: {},
     expected: {
-      data: [['a', 'b'], ['c', 'd'], ['e', 'f'], ['g', 'h'], ['i', 'j']],
+      data: [
+        ['a', 'b'],
+        ['c', 'd'],
+        ['e', 'f'],
+        ['g', 'h'],
+        ['i', 'j']
+      ],
       errors: [],
       meta: {
         linebreak: '\r\n',
@@ -1316,7 +1507,13 @@ export const PARSE_TESTS = [
     input: 'a,b\nc,d\ne,f\ng,h\ni,j',
     config: {},
     expected: {
-      data: [['a', 'b'], ['c', 'd'], ['e', 'f'], ['g', 'h'], ['i', 'j']],
+      data: [
+        ['a', 'b'],
+        ['c', 'd'],
+        ['e', 'f'],
+        ['g', 'h'],
+        ['i', 'j']
+      ],
       errors: [],
       meta: {
         linebreak: '\n',
@@ -1332,7 +1529,13 @@ export const PARSE_TESTS = [
     input: '"a\r\na",b\r\nc,d\r\ne,f\r\ng,h\r\ni,j',
     config: {},
     expected: {
-      data: [['a\r\na', 'b'], ['c', 'd'], ['e', 'f'], ['g', 'h'], ['i', 'j']],
+      data: [
+        ['a\r\na', 'b'],
+        ['c', 'd'],
+        ['e', 'f'],
+        ['g', 'h'],
+        ['i', 'j']
+      ],
       errors: [],
       meta: {
         linebreak: '\r\n',
@@ -1348,7 +1551,13 @@ export const PARSE_TESTS = [
     input: '"a\na",b\r\nc,d\r\ne,f\r\ng,h\r\ni,j',
     config: {},
     expected: {
-      data: [['a\na', 'b'], ['c', 'd'], ['e', 'f'], ['g', 'h'], ['i', 'j']],
+      data: [
+        ['a\na', 'b'],
+        ['c', 'd'],
+        ['e', 'f'],
+        ['g', 'h'],
+        ['i', 'j']
+      ],
       errors: [],
       meta: {
         linebreak: '\r\n',
@@ -1365,7 +1574,13 @@ export const PARSE_TESTS = [
     input: '"a\na",b\r\nc,d\r\ne,f\r\ng,h\r\ni,j\r\n',
     config: {skipEmptyLines: true},
     expected: {
-      data: [['a\na', 'b'], ['c', 'd'], ['e', 'f'], ['g', 'h'], ['i', 'j']],
+      data: [
+        ['a\na', 'b'],
+        ['c', 'd'],
+        ['e', 'f'],
+        ['g', 'h'],
+        ['i', 'j']
+      ],
       errors: [],
       meta: {
         linebreak: '\r\n',
@@ -1381,7 +1596,13 @@ export const PARSE_TESTS = [
     input: '"a\r\na",b\nc,d\ne,f\ng,h\ni,j',
     config: {},
     expected: {
-      data: [['a\r\na', 'b'], ['c', 'd'], ['e', 'f'], ['g', 'h'], ['i', 'j']],
+      data: [
+        ['a\r\na', 'b'],
+        ['c', 'd'],
+        ['e', 'f'],
+        ['g', 'h'],
+        ['i', 'j']
+      ],
       errors: [],
       meta: {
         linebreak: '\n',
@@ -1397,7 +1618,13 @@ export const PARSE_TESTS = [
     input: '.a\na.,b\r\nc,d\r\ne,f\r\ng,h\r\ni,j',
     config: {quoteChar: '.'},
     expected: {
-      data: [['a\na', 'b'], ['c', 'd'], ['e', 'f'], ['g', 'h'], ['i', 'j']],
+      data: [
+        ['a\na', 'b'],
+        ['c', 'd'],
+        ['e', 'f'],
+        ['g', 'h'],
+        ['i', 'j']
+      ],
       errors: [],
       meta: {
         linebreak: '\r\n',
@@ -1413,7 +1640,13 @@ export const PARSE_TESTS = [
     input: '|a\na|,b\r\nc,d\r\ne,f\r\ng,h\r\ni,j',
     config: {quoteChar: '|'},
     expected: {
-      data: [['a\na', 'b'], ['c', 'd'], ['e', 'f'], ['g', 'h'], ['i', 'j']],
+      data: [
+        ['a\na', 'b'],
+        ['c', 'd'],
+        ['e', 'f'],
+        ['g', 'h'],
+        ['i', 'j']
+      ],
       errors: [],
       meta: {
         linebreak: '\r\n',
@@ -1430,7 +1663,10 @@ export const PARSE_TESTS = [
     input: 'a,b\n\n,\nc,d\n , \n""," "\n  , \n,,,,\n',
     config: {skipEmptyLines: 'greedy'},
     expected: {
-      data: [['a', 'b'], ['c', 'd']],
+      data: [
+        ['a', 'b'],
+        ['c', 'd']
+      ],
       errors: []
     }
   },
@@ -1441,7 +1677,12 @@ export const PARSE_TESTS = [
     input: 'a,b\n\n,\nc,d\n" , ",","\n""" """,""""""\n\n\n',
     config: {skipEmptyLines: 'greedy'},
     expected: {
-      data: [['a', 'b'], ['c', 'd'], [' , ', ','], ['" "', '""']],
+      data: [
+        ['a', 'b'],
+        ['c', 'd'],
+        [' , ', ','],
+        ['" "', '""']
+      ],
       errors: []
     }
   }
@@ -1456,7 +1697,10 @@ export const PARSE_ASYNC_TESTS = [
       worker: true
     },
     expected: {
-      data: [['A', 'B', 'C'], ['X', 'Y', 'Z']],
+      data: [
+        ['A', 'B', 'C'],
+        ['X', 'Y', 'Z']
+      ],
       errors: []
     }
   },
@@ -1468,7 +1712,10 @@ export const PARSE_ASYNC_TESTS = [
     },
     disabled: !XHR_ENABLED,
     expected: {
-      data: [['A', 'B', 'C'], ['X', 'Y', 'Z']],
+      data: [
+        ['A', 'B', 'C'],
+        ['X', 'Y', 'Z']
+      ],
       errors: []
     }
   },
@@ -1481,7 +1728,10 @@ export const PARSE_ASYNC_TESTS = [
     },
     disabled: !XHR_ENABLED,
     expected: {
-      data: [['A', 'B', 'C'], ['X', 'Y', 'Z']],
+      data: [
+        ['A', 'B', 'C'],
+        ['X', 'Y', 'Z']
+      ],
       errors: []
     }
   },
@@ -1491,7 +1741,10 @@ export const PARSE_ASYNC_TESTS = [
     input: FILES_ENABLED ? new File(['A,B,C\nX,Y,Z'], 'sample.csv') : false,
     config: {},
     expected: {
-      data: [['A', 'B', 'C'], ['X', 'Y', 'Z']],
+      data: [
+        ['A', 'B', 'C'],
+        ['X', 'Y', 'Z']
+      ],
       errors: []
     }
   },
@@ -1503,7 +1756,10 @@ export const PARSE_ASYNC_TESTS = [
       worker: true
     },
     expected: {
-      data: [['A', 'B', 'C'], ['X', 'Y', 'Z']],
+      data: [
+        ['A', 'B', 'C'],
+        ['X', 'Y', 'Z']
+      ],
       errors: []
     }
   }

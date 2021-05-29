@@ -6,11 +6,11 @@ import {featuresToBinary} from './binary-vector-tile/features-to-binary';
 import Protobuf from 'pbf';
 
 /*
-  * Parse MVT arrayBuffer and return GeoJSON.
-  *
-  * @param {arrayBuffer} _ A MVT arrayBuffer
-  * @return {?Object} A GeoJSON geometry object or a binary representation
-  */
+ * Parse MVT arrayBuffer and return GeoJSON.
+ *
+ * @param {arrayBuffer} _ A MVT arrayBuffer
+ * @return {?Object} A GeoJSON geometry object or a binary representation
+ */
 export default function parseMVT(arrayBuffer, options) {
   options = normalizeOptions(options);
 

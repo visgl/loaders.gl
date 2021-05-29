@@ -1,5 +1,3 @@
-/* global document, URL, Blob */
-
 // Parse to platform defined video type (HTMLVideoElement in browser)
 export default async function parseVideo(arrayBuffer, options) {
   // TODO It is probably somewhat inefficent to convert a File/Blob to ArrayBuffer and back

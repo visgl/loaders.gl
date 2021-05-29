@@ -1,5 +1,4 @@
 /** @typedef {import('./array-buffer-utils')} types */
-/* global TextEncoder */
 import {assert} from '../env-utils/assert';
 import * as node from '../node/buffer-utils.node';
 
@@ -54,8 +53,8 @@ export function compareArrayBuffers(arrayBuffer1, arrayBuffer2, byteLength) {
 /** @type {types['concatenateArrayBuffers']} */
 export function concatenateArrayBuffers(...sources) {
   // Make sure all inputs are wrapped in typed arrays
-  const sourceArrays = sources.map(
-    source2 => (source2 instanceof ArrayBuffer ? new Uint8Array(source2) : source2)
+  const sourceArrays = sources.map(source2 =>
+    (source2 instanceof ArrayBuffer ? new Uint8Array(source2) : source2)
   );
 
   // Get length of all inputs

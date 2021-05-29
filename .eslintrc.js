@@ -1,25 +1,30 @@
-module.exports = {
-  parser: 'babel-eslint',
-  parserOptions: {
-    ecmaVersion: 2018
+const {getESLintConfig, deepMerge} = require('ocular-dev-tools');
+
+const defaultConfig = getESLintConfig({react: '16.8.2'});
+
+// Make any changes to default config here
+const config = deepMerge(defaultConfig, {
+  env: {
+    browser: true,
+    es2020: true,
+    node: true
   },
-  extends: ['uber-es2015', 'prettier', 'plugin:import/errors'],
-  plugins: ['import'],
-  globals: {
-    globalThis: 'readonly',
-    __VERSION__: 'readonly'
-  },
+
   rules: {
-    'guard-for-in': 0,
-    'generator-star-spacing': 0,
-    'func-names': 0,
-    'no-inline-comments': 0,
-    'no-multi-str': 0,
-    'space-before-function-paren': 0,
-    'import/no-unresolved': ['error'],
-    'import/no-extraneous-dependencies': ['error', {devDependencies: false, peerDependencies: true}]
+    // 'accessor-pairs': ['error', {getWithoutSet: false, setWithoutGet: false}]
   },
+
   overrides: [
+    {
+      // scripts use devDependencies
+      files: ['*worker*.js', '**/worker-utils/**/*.js'],
+      env: {
+        browser: true,
+        es2020: true,
+        node: true,
+        worker: true
+      }
+    },
     // tests are run with aliases set up in node and webpack.
     // This means lint will not find the imported files and generate false warnings
     {
@@ -37,4 +42,9 @@ module.exports = {
       }
     }
   ]
-};
+});
+
+// Uncomment to log the eslint config
+// console.debug(config);
+
+module.exports = config;

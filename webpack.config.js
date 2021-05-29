@@ -1,5 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
-const getWebpackConfig = require('ocular-dev-tools/config/webpack.config');
+const {getWebpackConfig} = require('ocular-dev-tools');
 
 module.exports = (env = {}) => {
   const config = getWebpackConfig(env);

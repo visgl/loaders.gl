@@ -158,7 +158,10 @@ test('Tile3DBatchTable#setProperty with existing batch table', t => {
 
 test('Tile3DBatchTable#setProperty with object value', t => {
   const BATCH_TABLE_JSON = {
-    info: [{name: 'building0', year: 2000}, {name: 'building1', year: 2001}]
+    info: [
+      {name: 'building0', year: 2000},
+      {name: 'building1', year: 2001}
+    ]
   };
   const batchTable = new Tile3DBatchTable(BATCH_TABLE_JSON, null, 2);
   batchTable.setProperty(0, 'info', {name: 'building0_new', year: 2002});
@@ -170,7 +173,10 @@ test('Tile3DBatchTable#setProperty with object value', t => {
 
 test('Tile3DBatchTable#setProperty with array value', t => {
   const BATCH_TABLE_JSON = {
-    rooms: [['room1', 'room2'], ['room3', 'room4']]
+    rooms: [
+      ['room1', 'room2'],
+      ['room3', 'room4']
+    ]
   };
   const batchTable = new Tile3DBatchTable(BATCH_TABLE_JSON, null, 2);
   batchTable.setProperty(0, 'rooms', ['room1_new', 'room2']);

@@ -1,4 +1,3 @@
-/* global TextEncoder, TextDecoder */
 /** @typedef {import('./encode')} types */
 import {concatenateArrayBuffers, resolvePath} from '@loaders.gl/loader-utils';
 import {isBrowser} from '@loaders.gl/loader-utils';

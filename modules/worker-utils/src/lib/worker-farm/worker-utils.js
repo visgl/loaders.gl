@@ -1,4 +1,3 @@
-/* global URL, Blob */
 import {assert} from '../env-utils/assert';
 
 const workerURLCache = new Map();

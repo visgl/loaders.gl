@@ -88,5 +88,4 @@ export function renderToDOM(container) {
   render(<App />, container);
 }
 
-/* global document */
 renderToDOM(document.body.appendChild(document.createElement('div')));

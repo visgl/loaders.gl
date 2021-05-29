@@ -1,4 +1,3 @@
-/* global TextDecoder */
 /** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 import {path} from '@loaders.gl/loader-utils';
 import {TILESET_TYPE, LOD_METRIC_TYPE} from '@loaders.gl/tiles';

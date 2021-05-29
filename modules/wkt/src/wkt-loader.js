@@ -1,4 +1,3 @@
-/* global TextDecoder */
 /** @typedef {import('@loaders.gl/loader-utils').WorkerLoaderObject} WorkerLoaderObject */
 /** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 import {VERSION} from './lib/utils/version';

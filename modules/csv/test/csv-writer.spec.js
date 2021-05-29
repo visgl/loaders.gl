@@ -28,38 +28,62 @@ var UNPARSE_TESTS = [
   },
   {
     description: 'Two rows',
-    input: [['A', 'b', 'c'], ['d', 'E', 'f']],
+    input: [
+      ['A', 'b', 'c'],
+      ['d', 'E', 'f']
+    ],
     expected: 'A,b,c\r\nd,E,f'
   },
   {
     description: 'Data with quotes',
-    input: [['a', '"b"', 'c'], ['"d"', 'e', 'f']],
+    input: [
+      ['a', '"b"', 'c'],
+      ['"d"', 'e', 'f']
+    ],
     expected: 'a,"""b""",c\r\n"""d""",e,f'
   },
   {
     description: 'Data with newlines',
-    input: [['a', 'b\nb', 'c'], ['d', 'e', 'f\r\nf']],
+    input: [
+      ['a', 'b\nb', 'c'],
+      ['d', 'e', 'f\r\nf']
+    ],
     expected: 'a,"b\nb",c\r\nd,e,"f\r\nf"'
   },
   {
     description: 'Array of objects (header row)',
-    input: [{Col1: 'a', Col2: 'b', Col3: 'c'}, {Col1: 'd', Col2: 'e', Col3: 'f'}],
+    input: [
+      {Col1: 'a', Col2: 'b', Col3: 'c'},
+      {Col1: 'd', Col2: 'e', Col3: 'f'}
+    ],
     expected: 'Col1,Col2,Col3\r\na,b,c\r\nd,e,f'
   },
   {
     description: 'With header row, missing a field in a row',
-    input: [{Col1: 'a', Col2: 'b', Col3: 'c'}, {Col1: 'd', Col3: 'f'}],
+    input: [
+      {Col1: 'a', Col2: 'b', Col3: 'c'},
+      {Col1: 'd', Col3: 'f'}
+    ],
     expected: 'Col1,Col2,Col3\r\na,b,c\r\nd,,f'
   },
   {
     description: 'With header row, with extra field in a row',
     notes: 'Extra field should be ignored; first object in array dictates header row',
-    input: [{Col1: 'a', Col2: 'b', Col3: 'c'}, {Col1: 'd', Col2: 'e', Extra: 'g', Col3: 'f'}],
+    input: [
+      {Col1: 'a', Col2: 'b', Col3: 'c'},
+      {Col1: 'd', Col2: 'e', Extra: 'g', Col3: 'f'}
+    ],
     expected: 'Col1,Col2,Col3\r\na,b,c\r\nd,e,f'
   },
   {
     description: 'Specifying column names and data separately',
-    input: {fields: ['Col1', 'Col2', 'Col3'], data: [['a', 'b', 'c'], ['d', 'e', 'f']]},
+    input: {
+      fields: ['Col1', 'Col2', 'Col3'],
+      data: [
+        ['a', 'b', 'c'],
+        ['d', 'e', 'f']
+      ]
+    },
     expected: 'Col1,Col2,Col3\r\na,b,c\r\nd,e,f'
   },
   {
@@ -85,74 +109,110 @@ var UNPARSE_TESTS = [
   },
   {
     description: 'Custom delimiter (semicolon)',
-    input: [['A', 'b', 'c'], ['d', 'e', 'f']],
+    input: [
+      ['A', 'b', 'c'],
+      ['d', 'e', 'f']
+    ],
     config: {delimiter: ';'},
     expected: 'A;b;c\r\nd;e;f'
   },
   {
     description: 'Custom delimiter (tab)',
-    input: [['Ab', 'cd', 'ef'], ['g', 'h', 'ij']],
+    input: [
+      ['Ab', 'cd', 'ef'],
+      ['g', 'h', 'ij']
+    ],
     config: {delimiter: '\t'},
     expected: 'Ab\tcd\tef\r\ng\th\tij'
   },
   {
     description: 'Custom delimiter (ASCII 30)',
-    input: [['a', 'b', 'c'], ['d', 'e', 'f']],
+    input: [
+      ['a', 'b', 'c'],
+      ['d', 'e', 'f']
+    ],
     config: {delimiter: RECORD_SEP},
     expected: 'a' + RECORD_SEP + 'b' + RECORD_SEP + 'c\r\nd' + RECORD_SEP + 'e' + RECORD_SEP + 'f'
   },
   {
     description: 'Custom delimiter (Multi-character)',
-    input: [['A', 'b', 'c'], ['d', 'e', 'f']],
+    input: [
+      ['A', 'b', 'c'],
+      ['d', 'e', 'f']
+    ],
     config: {delimiter: ', '},
     expected: 'A, b, c\r\nd, e, f'
   },
   {
     description: 'Bad delimiter (\\n)',
     notes: 'Should default to comma',
-    input: [['a', 'b', 'c'], ['d', 'e', 'f']],
+    input: [
+      ['a', 'b', 'c'],
+      ['d', 'e', 'f']
+    ],
     config: {delimiter: '\n'},
     expected: 'a,b,c\r\nd,e,f'
   },
   {
     description: 'Custom line ending (\\r)',
-    input: [['a', 'b', 'c'], ['d', 'e', 'f']],
+    input: [
+      ['a', 'b', 'c'],
+      ['d', 'e', 'f']
+    ],
     config: {newline: '\r'},
     expected: 'a,b,c\rd,e,f'
   },
   {
     description: 'Custom line ending (\\n)',
-    input: [['a', 'b', 'c'], ['d', 'e', 'f']],
+    input: [
+      ['a', 'b', 'c'],
+      ['d', 'e', 'f']
+    ],
     config: {newline: '\n'},
     expected: 'a,b,c\nd,e,f'
   },
   {
     description: 'Custom, but strange, line ending ($)',
-    input: [['a', 'b', 'c'], ['d', 'e', 'f']],
+    input: [
+      ['a', 'b', 'c'],
+      ['d', 'e', 'f']
+    ],
     config: {newline: '$'},
     expected: 'a,b,c$d,e,f'
   },
   {
     description: 'Force quotes around all fields',
-    input: [['a', 'b', 'c'], ['d', 'e', 'f']],
+    input: [
+      ['a', 'b', 'c'],
+      ['d', 'e', 'f']
+    ],
     config: {quotes: true},
     expected: '"a","b","c"\r\n"d","e","f"'
   },
   {
     description: 'Force quotes around all fields (with header row)',
-    input: [{Col1: 'a', Col2: 'b', Col3: 'c'}, {Col1: 'd', Col2: 'e', Col3: 'f'}],
+    input: [
+      {Col1: 'a', Col2: 'b', Col3: 'c'},
+      {Col1: 'd', Col2: 'e', Col3: 'f'}
+    ],
     config: {quotes: true},
     expected: '"Col1","Col2","Col3"\r\n"a","b","c"\r\n"d","e","f"'
   },
   {
     description: 'Force quotes around certain fields only',
-    input: [['a', 'b', 'c'], ['d', 'e', 'f']],
+    input: [
+      ['a', 'b', 'c'],
+      ['d', 'e', 'f']
+    ],
     config: {quotes: [true, false, true]},
     expected: '"a",b,"c"\r\n"d",e,"f"'
   },
   {
     description: 'Force quotes around certain fields only (with header row)',
-    input: [{Col1: 'a', Col2: 'b', Col3: 'c'}, {Col1: 'd', Col2: 'e', Col3: 'f'}],
+    input: [
+      {Col1: 'a', Col2: 'b', Col3: 'c'},
+      {Col1: 'd', Col2: 'e', Col3: 'f'}
+    ],
     config: {quotes: [true, false, true]},
     expected: '"Col1",Col2,"Col3"\r\n"a",b,"c"\r\n"d",e,"f"'
   },
@@ -179,7 +239,10 @@ var UNPARSE_TESTS = [
   },
   {
     description: "Don't print header if header:false option specified",
-    input: [{Col1: 'a', Col2: 'b', Col3: 'c'}, {Col1: 'd', Col2: 'e', Col3: 'f'}],
+    input: [
+      {Col1: 'a', Col2: 'b', Col3: 'c'},
+      {Col1: 'd', Col2: 'e', Col3: 'f'}
+    ],
     config: {header: false},
     expected: 'a,b,c\r\nd,e,f'
   },

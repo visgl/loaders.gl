@@ -155,9 +155,7 @@ function validateOptionsObject(options, id, log, defaultOptions, deprecatedOptio
       // Issue deprecation warnings
       if (key in deprecatedOptions) {
         log.warn(
-          `${loaderName} loader option \'${prefix}${key}\' deprecated, use \'${
-            deprecatedOptions[key]
-          }\'`
+          `${loaderName} loader option \'${prefix}${key}\' deprecated, use \'${deprecatedOptions[key]}\'`
         );
       } else if (!isSubOptions) {
         const suggestion = findSimilarOption(key, loaders);

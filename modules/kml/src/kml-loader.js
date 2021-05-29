@@ -1,4 +1,3 @@
-/* global TextDecoder, DOMParser */
 /** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 import {geojsonToBinary} from '@loaders.gl/gis';
 import {kml} from '@tmcw/togeojson';

@@ -137,7 +137,6 @@ export default class TileHeader {
       switch (type) {
         case 'json':
           // child is a tileset json
-          /* global fetch */
           const response = await fetch(url);
           const tileset = await response.json;
           // loadTileset(url, this.styleParams);

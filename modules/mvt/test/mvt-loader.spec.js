@@ -67,7 +67,10 @@ test('Line MVT to local coordinates JSON', async t => {
       type: 'Feature',
       geometry: {
         type: 'LineString',
-        coordinates: [[-0.00390625, 0.48876953125], [0.0009765625, 0.490234375]]
+        coordinates: [
+          [-0.00390625, 0.48876953125],
+          [0.0009765625, 0.490234375]
+        ]
       },
       properties: {
         // eslint-disable-next-line camelcase

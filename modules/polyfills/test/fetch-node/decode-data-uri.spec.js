@@ -1,7 +1,6 @@
 // This code is based on binary-gltf-utils
 // Copyright (c) 2016-17 Karl Cheng, MIT license
 
-/* global TextDecoder */
 import test from 'tape-promise/tape';
 import {isBrowser} from '@loaders.gl/core';
 import {decodeDataUri} from '@loaders.gl/polyfills/fetch-node/utils/decode-data-uri.node';

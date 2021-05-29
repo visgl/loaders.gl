@@ -1,5 +1,4 @@
 /* eslint-disable no-restricted-globals */
-/* global self */
 /** @typedef {import('../worker-protocol/protocol').WorkerMessageType} WorkerMessageType  */
 /** @typedef {import('../worker-protocol/protocol').WorkerMessagePayload} WorkerMessagePayload */
 // /** @typedef {import('../worker-protocol/protocol').WorkerMessageData} WorkerMessageData */

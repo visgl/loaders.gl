@@ -23,7 +23,6 @@
 
 // @ts-nocheck
 
-/* global TextDecoder */
 import normalizePLY from './normalize-ply';
 
 export default function parsePLY(data, options = {}) {

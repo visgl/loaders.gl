@@ -23,7 +23,6 @@
 
 // @ts-nocheck
 /* eslint-disable no-restricted-globals */
-/* global process, window, global, document, self, importScripts */
 const globals = {
   self: typeof self !== 'undefined' && self,
   window: typeof window !== 'undefined' && window,

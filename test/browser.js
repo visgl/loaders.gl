@@ -20,7 +20,6 @@
 
 /* eslint-disable @typescript-eslint/no-var-requires */
 
-/* global window */
 require('@probe.gl/test-utils/polyfill');
 const test = require('tape');
 

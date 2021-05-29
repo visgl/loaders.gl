@@ -1,5 +1,3 @@
-/* global ImageBitmap */
-
 import test from 'tape-promise/tape';
 import {isBrowser} from '@loaders.gl/core';
 import {loadI3STileContent} from './test-utils/load-utils';

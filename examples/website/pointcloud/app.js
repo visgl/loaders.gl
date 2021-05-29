@@ -133,7 +133,6 @@ export default class App extends PureComponent {
     viewState = {
       ...INITIAL_VIEW_STATE,
       target: [(mins[0] + maxs[0]) / 2, (mins[1] + maxs[1]) / 2, (mins[2] + maxs[2]) / 2],
-      /* global window */
       zoom: Math.log2(window.innerWidth / (maxs[0] - mins[0])) - 1
     };
 

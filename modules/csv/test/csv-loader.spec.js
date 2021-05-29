@@ -58,7 +58,14 @@ test('CSVLoader#load', async t => {
 
   const rows2 = await load(CSV_SAMPLE_URL, CSVLoader, {csv: {rowFormat: 'array'}});
   t.is(rows2.length, 2, 'Got correct table size');
-  t.deepEqual(rows2, [['A', 'B', 1], ['X', 'Y', 2]], 'Got correct array content');
+  t.deepEqual(
+    rows2,
+    [
+      ['A', 'B', 1],
+      ['X', 'Y', 2]
+    ],
+    'Got correct array content'
+  );
 
   const rows3 = await load(CSV_SAMPLE_VERY_LONG_URL, CSVLoader);
   t.is(rows3.length, 2000, 'Got correct table size');
@@ -295,7 +302,11 @@ test('CSVLoader#loadInBatches(sample.csv, duplicate columns)', async t => {
   t.is(rows2.length, 3, 'Got correct table size');
   t.deepEqual(
     rows2,
-    [['x', 1, 'y', 'z', 'w', 2], ['y', 29, 'z', 'y', 'w', 19], ['x', 1, 'y', 'z', 'w', 2]],
+    [
+      ['x', 1, 'y', 'z', 'w', 2],
+      ['y', 29, 'z', 'y', 'w', 19],
+      ['x', 1, 'y', 'z', 'w', 2]
+    ],
     'dataset should be parsed correctly in the array rowFormat'
   );
 });
@@ -314,7 +325,10 @@ test('CSVLoader#loadInBatches(skipEmptyLines)', async t => {
   t.is(rows.length, 2, 'Got correct table size');
   t.deepEqual(
     rows,
-    [{A: 'x', B: 1, C: 'some text'}, {A: 'y', B: 2, C: 'other text'}],
+    [
+      {A: 'x', B: 1, C: 'some text'},
+      {A: 'y', B: 2, C: 'other text'}
+    ],
     'dataset should be parsed with the correct content'
   );
   t.end();

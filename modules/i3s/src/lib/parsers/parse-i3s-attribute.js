@@ -1,4 +1,3 @@
-/* global TextDecoder */
 import {STRING_ATTRIBUTE_TYPE, OBJECT_ID_ATTRIBUTE_TYPE, FLOAT_64_TYPE} from './constants';
 
 /**

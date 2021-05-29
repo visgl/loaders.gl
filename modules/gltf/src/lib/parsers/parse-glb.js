@@ -1,5 +1,4 @@
 /* eslint-disable camelcase, max-statements */
-/* global TextDecoder */
 // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#glb-file-format-specification
 // https://github.com/KhronosGroup/glTF/tree/master/extensions/1.0/Khronos/KHR_binary_glTF
 

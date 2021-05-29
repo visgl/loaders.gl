@@ -8,7 +8,6 @@
 // Description: A loader for PCD ascii and binary files.
 // Limitations: Compressed binary files are not supported.
 
-/* global TextDecoder */
 import {getMeshBoundingBox} from '@loaders.gl/loader-utils';
 import {Field, Float32, Uint8, FixedSizeList, Schema} from '@loaders.gl/tables';
 const LITTLE_ENDIAN = true;
@@ -38,7 +37,10 @@ export default function parsePCD(data, url, options) {
   attributes = getNormalizedAttributes(attributes);
   const header = getNormalizedHeader(pcdHeader, attributes);
 
-  const metadata = new Map([['mode', '0'], ['boundingBox', JSON.stringify(header.boundingBox)]]);
+  const metadata = new Map([
+    ['mode', '0'],
+    ['boundingBox', JSON.stringify(header.boundingBox)]
+  ]);
 
   const schema = getSchemaFromPCDHeader(pcdHeader, metadata);
 

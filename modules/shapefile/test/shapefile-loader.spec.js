@@ -1,4 +1,3 @@
-/* global File */
 import test from 'tape-promise/tape';
 import {
   setLoaderOptions,

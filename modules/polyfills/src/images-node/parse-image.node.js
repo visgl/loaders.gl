@@ -1,4 +1,3 @@
-/* global Buffer */
 import getPixels from 'get-pixels';
 import util from 'util';
 import {assert} from '../utils/assert';

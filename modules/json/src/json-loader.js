@@ -1,4 +1,3 @@
-/* global TextDecoder */
 import {RowTableBatch} from '@loaders.gl/tables';
 import parseJSONSync from './lib/parse-json';
 import parseJSONInBatches from './lib/parse-json-in-batches';

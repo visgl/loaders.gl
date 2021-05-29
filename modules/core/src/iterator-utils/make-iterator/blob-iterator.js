@@ -1,5 +1,3 @@
-/* global FileReader */
-
 const DEFAULT_CHUNK_SIZE = 1024 * 1024; // 1MB — biggest value that keeps UI responsive
 
 export async function* makeBlobIterator(file, options = {}) {

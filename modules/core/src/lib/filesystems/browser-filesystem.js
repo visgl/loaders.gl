@@ -1,4 +1,3 @@
-/* global Response, fetch, FileReader */
 // import {fetchFile} from "../fetch/fetch-file"
 /** @typedef {import('@loaders.gl/loader-utils').IFileSystem} IFileSystem */
 

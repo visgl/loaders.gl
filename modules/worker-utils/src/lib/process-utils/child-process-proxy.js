@@ -1,7 +1,6 @@
 // Forked from probe.gl under MIT license, Copyright (c) 2015 - 2017 Uber Technologies, Inc.
 
 /* eslint-disable no-console */
-/* global process, setTimeout, clearTimeout, console */
 import ChildProcess from 'child_process';
 import {assert} from '../env-utils/assert';
 import {getAvailablePort} from './process-utils';

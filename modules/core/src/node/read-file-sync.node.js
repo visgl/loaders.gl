@@ -1,4 +1,3 @@
-/* global Buffer */
 import fs from 'fs';
 import {toArrayBuffer} from '@loaders.gl/loader-utils';
 
