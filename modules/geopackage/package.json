@@ -28,8 +28,8 @@
     "@loaders.gl/gis": "^3.0.0-alpha.18",
     "@loaders.gl/wkt": "^3.0.0-alpha.18",
     "@math.gl/proj4": "^3.3.2",
-    "@types/sql.js": "^1.0.3",
-    "sql.js": "^1.4.0"
+    "@types/sql.js": "^1.4.2",
+    "sql.js": "^1.5.0"
   },
   "devDependencies": {
   }

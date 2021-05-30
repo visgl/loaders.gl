@@ -10,6 +10,7 @@ const VERSION = 'latest';
 export const GeoPackageLoader = {
   id: 'geopackage',
   name: 'GeoPackage',
+  module: 'geopackage',
   version: VERSION,
   extensions: ['gpkg'],
   mimeTypes: ['application/geopackage+sqlite3'],

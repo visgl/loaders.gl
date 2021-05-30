@@ -1,4 +1,5 @@
 /* global TextDecoder */
+/** @typedef {import('sql.js').Database} Database */
 
 import initSqlJs from 'sql.js';
 import {WKBLoader} from '@loaders.gl/wkt';
@@ -41,7 +42,7 @@ export default async function parseGeoPackage(arrayBuffer, options) {
  * Initialize SQL.js and create database
  *
  * @param  {ArrayBuffer} arrayBuffer input bytes
- * @return {SQL.Database} SQL.js database object
+ * @return {Promise<Database>} SQL.js database object
  */
 async function loadDatabase(arrayBuffer, {sqlJsCDN}) {
   // In Node, `locateFile` must not be passed
@@ -60,7 +61,7 @@ async function loadDatabase(arrayBuffer, {sqlJsCDN}) {
  * Find all vector tables in GeoPackage
  * This queries the `gpkg_contents` table to find a list of vector tables
  *
- * @param  {SQL.Database} db GeoPackage to query
+ * @param  {Database} db GeoPackage to query
  * @return {object[]} list of table references
  */
 function listVectorTables(db) {
@@ -80,7 +81,7 @@ function listVectorTables(db) {
 /**
  * Load geometries from vector table
  *
- * @param  {SQL.Database} db GeoPackage object
+ * @param  {Database} db GeoPackage object
  * @param  {string} tableName name of vector table to query
  * @param  {object} projections keys are srs_id values, values are WKT strings
  * @return {object[]} array of GeoJSON Feature objects
@@ -126,7 +127,7 @@ function getVectorTable(db, tableName, projections, {reproject, _targetCrs}) {
  * Find all projections defined in GeoPackage
  * This queries the gpkg_spatial_ref_sys table
  *
- * @param  {SQL.Database} db GeoPackage object
+ * @param  {Database} db GeoPackage object
  * @return {object} mapping from srid to WKT projection string
  */
 function getProjections(db) {
@@ -193,7 +194,7 @@ function constructGeoJsonFeature(columns, row, geomColumn, dataColumns, featureI
 /**
  * Get GeoPackage version from database
  *
- * @param  {SQL.Database} db database
+ * @param  {Database} db database
  * @return {string?}    version string. One of '1.0', '1.1', '1.2'
  */
 // eslint-disable-next-line no-unused-vars
@@ -207,7 +208,7 @@ function getGeopackageVersion(db) {
   // Convert 4-byte signed int32 application id to text
   const buffer = new ArrayBuffer(4);
   const view = new DataView(buffer);
-  view.setInt32(0, applicationId);
+  view.setInt32(0, Number(applicationId));
   const versionString = textDecoder.decode(buffer);
 
   if (versionString === 'GP10') {
@@ -222,7 +223,7 @@ function getGeopackageVersion(db) {
   const userVersionQuery = db.exec('PRAGMA user_version;')[0];
   const userVersionInt = userVersionQuery.values[0][0];
 
-  if (userVersionInt < 10300) {
+  if (userVersionInt && userVersionInt < 10300) {
     return '1.2';
   }
 
@@ -234,7 +235,7 @@ function getGeopackageVersion(db) {
  * The feature ID is the primary key of the table.
  * http://www.geopackage.org/spec/#feature_user_tables
  *
- * @param  {SQL.Database} db database
+ * @param  {Database} db database
  * @param  {string} tableName name of table
  * @return {string}           name of feature id column
  */
@@ -248,7 +249,7 @@ function getFeatureIdName(db, tableName) {
   // I _think_ there is supposed to be only one column forming the primary key,
   // and that is the feature id.
   const columnNameIdx = columns.indexOf('name');
-  return primaryKey[columnNameIdx];
+  return primaryKey[String(columnNameIdx)];
 }
 
 /**
@@ -304,7 +305,7 @@ function parseGeometryBitFlags(byte) {
 /**
  * Find geometry column in given vector table
  *
- * @param  {SQL.Database} db GeoPackage object
+ * @param  {Database} db GeoPackage object
  * @param  {string} tableName Name of vector table
  * @return {object} Array of geometry column definitions
  */
@@ -326,7 +327,7 @@ function getGeometryColumn(db, tableName) {
 /**
  * Find property columns in given vector table
  *
- * @param  {SQL.Database} db GeoPackage object
+ * @param  {Database} db GeoPackage object
  * @param  {string} tableName Name of vector table
  * @return {object?} Mapping from table column names to property name
  */
