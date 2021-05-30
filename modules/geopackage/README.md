@@ -1,5 +1,5 @@
-# @loaders.gl/sql
+# @loaders.gl/geopackage
 
-This module contains helper classes for SQL-based loaders.
+This module contains a loader for the [GeoPackage](https://www.geopackage.org/) format.
 
 [loaders.gl](https://loaders.gl/docs) is a collection of framework-independent visualization-focused loaders (parsers).
