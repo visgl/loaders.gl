@@ -1,3 +1,6 @@
+// Starts a worker if imported into a browser thread
+// require('./workers/worker');
+
 const moduleExports = require('./index');
 const _global = typeof window === 'undefined' ? global : window;
 // @ts-ignore

@@ -13,11 +13,10 @@ export default class WorkerThread {
    * @param {WorkerThreadProps} props
    */
   constructor(props) {
-    const {name, source, url} = props;
-    assert(source || url); // Either source or url must be defined
-    this.name = name;
-    this.source = source;
-    this.url = url;
+    assert(props.moduleUrl || props.scriptUrl || props.source); // Either url or source must be defined
+    this.props = {...props};
+
+    this.name = props.name;
     this.onMessage = NOOP;
     this.onError = error => console.log(error); // eslint-disable-line
     this.terminated = false;
@@ -70,8 +69,22 @@ export default class WorkerThread {
    * Creates a worker thread on the browser
    */
   _createBrowserWorker() {
-    this._loadableURL = buildWorkerURL({source: this.source, url: this.url});
-    const worker = new Worker(this._loadableURL, {name: this.name});
+    let worker;
+    // Try to load worker from es module if available
+    if (this.props.moduleUrl) {
+      try {
+        this._loadableURL = buildWorkerURL({url: this.props.moduleUrl});
+        worker = new Worker(this._loadableURL, {name: this.name, type: 'module'});
+      } catch (error) {
+        // eslint-disable-next-line
+        console.warn('Could not load worker from module:', error);
+      }
+    }
+    // Some browsers do not support, fall back to script
+    if (!worker) {
+      this._loadableURL = buildWorkerURL({url: this.props.scriptUrl, source: this.props.source});
+      worker = new Worker(this._loadableURL, {name: this.name});
+    }
 
     worker.onmessage = event => {
       if (!event.data) {

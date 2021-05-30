@@ -7,7 +7,17 @@ type OnDebugParameters = {
   worker: string;
   job: string;
   backlog: number;
-};
+}
+
+type WorkerPoolProps = {
+  source?: string; // | Function;
+  moduleUrl?: string
+  scriptUrl?: string;
+  name?: string;
+  maxConcurrency?: number;
+  onDebug?: (options: OnDebugParameters) => any;
+  reuseWorkers?: boolean;
+}
 
 /**
  * Process multiple data messages with small pool of identical workers
@@ -17,14 +27,7 @@ export default class WorkerPool {
    * @param processor - worker function
    * @param maxConcurrency - max count of workers
    */
-  constructor(options: {
-    source?: string; // | Function;
-    url?: string;
-    name?: string;
-    maxConcurrency?: number;
-    onDebug?: (options: OnDebugParameters) => any;
-    reuseWorkers?: boolean
-  });
+  constructor(options: WorkerPoolProps);
 
   /**
    * Terminates all workers in the pool

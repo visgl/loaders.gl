@@ -1,8 +1,13 @@
 
 export type WorkerThreadProps = {
+  /** Name of worker (for debug / inspection) */
   name: string;
+  /** Option 1: URL to ES module, see https://web.dev/module-workers/ */
+  moduleUrl?: string;
+  /** Option 2: URL to classic script */
+  scriptUrl?: string;
+  /** Option 3: Source code for worker */
   source?: string;
-  url?: string;
 }
 
 /**

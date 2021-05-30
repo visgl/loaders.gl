@@ -11,7 +11,7 @@ export function getWorkerObjectURL(worker, options) {
   const topOptions = options || {};
   const workerOptions = topOptions[worker.id] || {};
 
-  const workerFile = `${worker.id}-worker.js`;
+  const workerFile = worker.bundle ? worker.bundle : `${worker.id}-worker.js`;
 
   let url = workerOptions.workerUrl;
 

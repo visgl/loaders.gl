@@ -4,6 +4,7 @@
 // /** @typedef {import('../worker-protocol/protocol').WorkerMessageData} WorkerMessageData */
 // /** @typedef {import('../worker-protocol/protocol').WorkerMessage} WorkerMessage  */
 
+import {isWorker} from '../env-utils/globals';
 import AsyncQueue from '../async-queue/async-queue';
 import WorkerBody from '../worker-farm/worker-body';
 
@@ -12,7 +13,7 @@ let options;
 
 export function createWorker(process, processInBatches) {
   // Check that we are actually in a worker thread
-  if (typeof self === 'undefined') {
+  if (!isWorker) {
     return;
   }
 

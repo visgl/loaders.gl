@@ -39,13 +39,14 @@ export default class WorkerFarm {
     this.props = {...this.props, ...props};
   }
 
-  getWorkerPool({name, source, url}) {
+  getWorkerPool({name, moduleUrl, scriptUrl, source}) {
     let workerPool = this.workerPools.get(name);
     if (!workerPool) {
       workerPool = new WorkerPool({
         name,
+        moduleUrl,
+        scriptUrl,
         source,
-        url,
         maxConcurrency: isMobile ? this.props.maxMobileConcurrency : this.props.maxConcurrency,
         onDebug: this.props.onDebug,
         reuseWorkers: this.props.reuseWorkers

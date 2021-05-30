@@ -1,3 +1,5 @@
+import './lib/env-utils/globals.spec';
+
 import './lib/async-queue/async-queue.spec';
 
 import './lib/library-utils/require-utils.spec';

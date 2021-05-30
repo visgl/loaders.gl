@@ -5,6 +5,8 @@ export type WorkerObject = {
   name: string;
   id: string;
   module: string;
+  bundle?: string;
+  esmodule?: string;
   version: string;
   worker?: string;
   options: object;

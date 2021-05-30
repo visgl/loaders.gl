@@ -67,7 +67,12 @@ const config = {
   output: {
     libraryTarget: 'umd',
     path: DIST_PATH,
-    filename: 'dist.min.js'
+    filename: 'dist.min.js',
+    // UMD bundler calls its wrapper function on `window` which fails in workers
+    // All modern browsers and node versions offer the `globalThis` variable
+    // that works on all environments, aliasing `window`, `self`, `global` as appropriate.
+    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/globalThis
+    globalObject: 'globalThis'
   },
 
   node: NODE,

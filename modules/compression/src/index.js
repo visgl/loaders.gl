@@ -19,6 +19,8 @@ export const ZlibWorker = {
   id: 'zlib',
   name: 'zlib',
   module: 'compression',
+  bundle: 'dist.dev.js',
+  esmodule: 'module.mjs',
   version: VERSION,
   options: {
     zlib: {
@@ -32,6 +34,8 @@ export const LZ4Worker = {
   id: 'lz4',
   name: 'lz4',
   module: 'compression',
+  bundle: 'dist.dev.js',
+  esmodule: 'module.mjs',
   version: VERSION,
   options: {
     lz4: {

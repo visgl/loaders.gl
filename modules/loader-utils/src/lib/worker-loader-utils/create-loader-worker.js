@@ -1,6 +1,6 @@
 /* eslint-disable no-restricted-globals */
 
-import {WorkerBody} from '@loaders.gl/worker-utils';
+import {WorkerBody, isWorker} from '@loaders.gl/worker-utils';
 // import {validateLoaderVersion} from './validate-loader-version';
 
 let requestId = 0;
@@ -8,7 +8,7 @@ let requestId = 0;
 // TODO - rewrite, rebase on create-generic-worker
 export function createLoaderWorker(loader) {
   // Check that we are actually in a worker thread
-  if (typeof self === 'undefined') {
+  if (!isWorker) {
     return;
   }
 

@@ -13,24 +13,22 @@ import WorkerJob from './worker-job';
  * }} QueuedJob
  */
 
+const DEFAULT_PROPS = {
+  name: 'unnamed',
+  maxConcurrency: 1,
+  onDebug: () => {}
+};
+
 export default class WorkerPool {
-  constructor({
-    source,
-    url,
-    name = 'unnamed',
-    maxConcurrency = 1,
-    onMessage,
-    onDebug = () => {},
-    reuseWorkers = true
-  }) {
-    assert(source || url);
-    this.source = source;
-    this.url = url;
-    this.name = name;
-    this.maxConcurrency = maxConcurrency;
-    this.onMessage = onMessage;
-    this.onDebug = onDebug;
-    this.reuseWorkers = reuseWorkers;
+  constructor(props) {
+    props = {...DEFAULT_PROPS, ...props};
+    assert(props.moduleUrl || props.scriptUrl || props.source);
+
+    this.props = props;
+
+    this.name = props.name;
+    this.onMessage = props.onMessage;
+    this.onDebug = props.onDebug;
 
     /** @type {QueuedJob[]} */
     this.jobQueue = [];
@@ -112,7 +110,7 @@ export default class WorkerPool {
       return;
     }
 
-    if (this.reuseWorkers) {
+    if (this.props.reuseWorkers) {
       this.idleQueue.push(worker);
     } else {
       worker.destroy();
@@ -132,10 +130,15 @@ export default class WorkerPool {
     }
 
     // Create fresh worker if we haven't yet created the max amount of worker threads for this worker source
-    if (this.count < this.maxConcurrency) {
+    if (this.count < this.props.maxConcurrency) {
       this.count++;
-      const name = `${this.name.toLowerCase()} (#${this.count} of ${this.maxConcurrency})`;
-      return new WorkerThread({name, source: this.source, url: this.url});
+      const name = `${this.name.toLowerCase()}#${this.count}`;
+      return new WorkerThread({
+        name,
+        moduleUrl: this.props.moduleUrl,
+        scriptUrl: this.props.scriptUrl,
+        source: this.props.source
+      });
     }
 
     // No worker available, have to wait

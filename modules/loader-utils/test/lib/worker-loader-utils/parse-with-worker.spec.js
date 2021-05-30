@@ -44,7 +44,7 @@ test.skip('createLoaderWorker', async t => {
     t.comment(`Processing with worker ${info.name}, queued jobs ${info.backlog}`);
 
   const workerPool = new WorkerPool({
-    url: 'modules/loader-utils/test/lib/worker-loader-utils/json-worker.js',
+    scriptUrl: 'modules/loader-utils/test/lib/worker-loader-utils/json-worker.js',
     name: 'test-json-loader',
     maxConcurrency: MAX_CONCURRENCY,
     onDebug: callback
