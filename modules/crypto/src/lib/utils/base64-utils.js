@@ -14,6 +14,7 @@ export function toBase64(string) {
   }
   let out = '';
   for (let i = 0; i < string.length; i += 3) {
+    /** @type {Array[4]} */
     const groupsOfSix = [undefined, undefined, undefined, undefined];
     groupsOfSix[0] = string.charCodeAt(i) >> 2;
     groupsOfSix[1] = (string.charCodeAt(i) & 0x03) << 4;

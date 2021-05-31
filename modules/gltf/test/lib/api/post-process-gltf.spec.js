@@ -20,11 +20,17 @@ const TEST_CASES = [
     output: {
       scenes: [
         {
-          nodes: [{mesh: {id: 'mesh-0'}, id: 'node-0'}, {mesh: {id: 'mesh-1'}, id: 'node-1'}],
+          nodes: [
+            {mesh: {id: 'mesh-0'}, id: 'node-0'},
+            {mesh: {id: 'mesh-1'}, id: 'node-1'}
+          ],
           id: 'scene-0'
         }
       ],
-      nodes: [{mesh: {id: 'mesh-0'}, id: 'node-0'}, {mesh: {id: 'mesh-1'}, id: 'node-1'}],
+      nodes: [
+        {mesh: {id: 'mesh-0'}, id: 'node-0'},
+        {mesh: {id: 'mesh-1'}, id: 'node-1'}
+      ],
       meshes: [{id: 'mesh-0'}, {id: 'mesh-1'}]
     }
   }

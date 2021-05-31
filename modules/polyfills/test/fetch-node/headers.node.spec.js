@@ -1,6 +1,5 @@
 // Based on https://github.com/github/fetch under MIT license
 
-/* global Headers */
 import test from 'tape-promise/tape';
 import '@loaders.gl/polyfills';
 // import {isBrowser} from '@loaders.gl/core';
@@ -20,7 +19,10 @@ test('constructor copies headers', t => {
 });
 
 test('constructor works with arrays', t => {
-  const array = [['Content-Type', 'text/xml'], ['Breaking-Bad', '<3']];
+  const array = [
+    ['Content-Type', 'text/xml'],
+    ['Breaking-Bad', '<3']
+  ];
   const headers = new Headers(array);
 
   t.equal(headers.get('Content-Type'), 'text/xml');

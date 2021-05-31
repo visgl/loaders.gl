@@ -4,7 +4,6 @@
 
 // @ts-nocheck
 /* eslint-disable no-invalid-this */
-/* global TextDecoder */
 
 // Note: papaparse is not an ES6 module
 import Papa from '../libs/papaparse';

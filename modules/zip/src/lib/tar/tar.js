@@ -5,7 +5,6 @@
  * MIT (c) 2011 T. Jameson Little
  */
 
-/* global Blob */
 import {clean, pad, stringToUint8} from './utils';
 import {format} from './header';
 

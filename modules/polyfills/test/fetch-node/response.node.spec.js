@@ -1,6 +1,5 @@
 // Based on https://github.com/github/fetch under MIT license
 
-/* global Response */
 import test from 'tape-promise/tape';
 import '@loaders.gl/polyfills';
 

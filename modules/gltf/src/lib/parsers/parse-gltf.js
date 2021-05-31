@@ -1,5 +1,4 @@
 /* eslint-disable camelcase, max-statements, no-restricted-globals */
-/* global TextDecoder */
 import {ImageLoader} from '@loaders.gl/images';
 import {parseJSON, getZeroOffsetArrayBuffer} from '@loaders.gl/loader-utils';
 import {assert} from '../utils/assert';

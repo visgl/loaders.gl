@@ -1,4 +1,3 @@
-/* global fetch */
 import {asyncDeepMap} from './async-deep-map';
 
 export async function deepLoad(urlTree, load, options) {

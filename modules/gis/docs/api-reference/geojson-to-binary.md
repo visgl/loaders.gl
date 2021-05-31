@@ -16,14 +16,14 @@ import {geojsonToBinary} from '@loaders.gl/gis';
 const geoJSONfeatures = await load(url, MVTLoader, loaderOptions);
 
 /*
-* Default options are:
-*
-* {
-*   coordLength: derived from data
-*   numericPropKeys: derived from data
-*   PositionDataType: Float32Array
-* }
-*/
+ * Default options are:
+ *
+ * {
+ *   coordLength: derived from data
+ *   numericPropKeys: derived from data
+ *   PositionDataType: Float32Array
+ * }
+ */
 const options = {PositionDataType: Float32Array};
 const binaryArrays = geojsonToBinary(geoJSONfeatures, options);
 ```

@@ -1,4 +1,3 @@
-/* global Response, File */
 import test from 'tape-promise/tape';
 import {isBrowser} from '@loaders.gl/core';
 import {

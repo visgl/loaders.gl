@@ -1,7 +1,7 @@
+/* global Cesium */
 import {load} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 
-/* global Cesium */
 const Axis = Cesium.Axis;
 const Cartesian3 = Cesium.Cartesian3;
 const defined = Cesium.defined;

@@ -1,4 +1,3 @@
-/* global Worker */
 /** @typedef {import('./worker-thread').WorkerThreadProps} WorkerThreadProps */
 import {assert} from '../env-utils/assert';
 import {buildWorkerURL} from './build-worker-url';

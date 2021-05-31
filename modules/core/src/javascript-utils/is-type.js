@@ -1,5 +1,3 @@
-/* global File, Blob, Response, ReadableStream */
-
 const isBoolean = x => typeof x === 'boolean';
 const isFunction = x => typeof x === 'function';
 

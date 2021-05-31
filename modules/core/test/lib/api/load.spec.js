@@ -1,4 +1,3 @@
-/* global Blob, Response */
 import test from 'tape-promise/tape';
 import {isBrowser, load, fetchFile, registerLoaders, resolvePath} from '@loaders.gl/core';
 import {JSONLoader} from '@loaders.gl/json';

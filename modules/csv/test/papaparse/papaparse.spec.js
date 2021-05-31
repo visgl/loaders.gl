@@ -9,7 +9,6 @@ License: MIT
 */
 
 /* eslint-disable quotes, no-var, prefer-template, curly */
-/* global File, setTimeout */
 import test from 'tape-promise/tape';
 
 import Papa from '@loaders.gl/csv/libs/papaparse';
@@ -22,7 +21,11 @@ const XHR_ENABLED = false;
 const CUSTOM_TESTS = [
   {
     description: 'Complete is called with all results if neither step nor chunk is defined',
-    expected: [['A', 'b', 'c'], ['d', 'E', 'f'], ['G', 'h', 'i']],
+    expected: [
+      ['A', 'b', 'c'],
+      ['d', 'E', 'f'],
+      ['G', 'h', 'i']
+    ],
     disabled: !FILES_ENABLED,
     run(callback) {
       Papa.parse(new File(['A,b,c\nd,E,f\nG,h,i'], 'sample.csv'), {
@@ -48,7 +51,10 @@ const CUSTOM_TESTS = [
   },
   {
     description: 'Data is correctly parsed with steps',
-    expected: [['A', 'b', 'c'], ['d', 'E', 'f']],
+    expected: [
+      ['A', 'b', 'c'],
+      ['d', 'E', 'f']
+    ],
     run(callback) {
       var data = [];
       Papa.parse('A,b,c\nd,E,f', {
@@ -63,7 +69,10 @@ const CUSTOM_TESTS = [
   },
   {
     description: 'Data is correctly parsed with steps (headers)',
-    expected: [{One: 'A', Two: 'b', Three: 'c'}, {One: 'd', Two: 'E', Three: 'f'}],
+    expected: [
+      {One: 'A', Two: 'b', Three: 'c'},
+      {One: 'd', Two: 'E', Three: 'f'}
+    ],
     run(callback) {
       var data = [];
       Papa.parse('One,Two,Three\nA,b,c\nd,E,f', {
@@ -79,7 +88,10 @@ const CUSTOM_TESTS = [
   },
   {
     description: 'Data is correctly parsed with steps and worker (headers)',
-    expected: [{One: 'A', Two: 'b', Three: 'c'}, {One: 'd', Two: 'E', Three: 'f'}],
+    expected: [
+      {One: 'A', Two: 'b', Three: 'c'},
+      {One: 'd', Two: 'E', Three: 'f'}
+    ],
     run(callback) {
       var data = [];
       Papa.parse('One,Two,Three\nA,b,c\nd,E,f', {
@@ -96,7 +108,10 @@ const CUSTOM_TESTS = [
   },
   {
     description: 'Data is correctly parsed with steps and worker',
-    expected: [['A', 'b', 'c'], ['d', 'E', 'f']],
+    expected: [
+      ['A', 'b', 'c'],
+      ['d', 'E', 'f']
+    ],
     run(callback) {
       var data = [];
       Papa.parse('A,b,c\nd,E,f', {
@@ -246,7 +261,13 @@ const CUSTOM_TESTS = [
   },
   {
     description: 'Chunk functions can resume parsing',
-    expected: [[['A', 'b', 'c']], [['d', 'E', 'f'], ['G', 'h', 'i']]],
+    expected: [
+      [['A', 'b', 'c']],
+      [
+        ['d', 'E', 'f'],
+        ['G', 'h', 'i']
+      ]
+    ],
     run(callback) {
       var updates = [];
       var handle = null;
@@ -324,7 +345,10 @@ const CUSTOM_TESTS = [
   },
   {
     description: 'Quoted line breaks near chunk boundaries are handled',
-    expected: [['A', 'B', 'C'], ['X', 'Y\n1\n2\n3', 'Z']],
+    expected: [
+      ['A', 'B', 'C'],
+      ['X', 'Y\n1\n2\n3', 'Z']
+    ],
     disabled: !FILES_ENABLED,
     run(callback) {
       var updates = [];
@@ -388,7 +412,11 @@ const CUSTOM_TESTS = [
   },
   {
     description: 'Step functions can resume parsing',
-    expected: [['A', 'b', 'c'], ['d', 'E', 'f'], ['G', 'h', 'i']],
+    expected: [
+      ['A', 'b', 'c'],
+      ['d', 'E', 'f'],
+      ['G', 'h', 'i']
+    ],
     run(callback) {
       var updates = [];
       var handle = null;

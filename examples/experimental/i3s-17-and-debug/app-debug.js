@@ -1,4 +1,3 @@
-/* global fetch */
 import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
@@ -32,7 +31,7 @@ import {
   CONTRAST_MAP_STYLES,
   INITIAL_TILE_COLOR_MODE,
   INITIAL_BOUNDING_VOLUME_COLOR_MODE,
-  BOUNDING_VOLUME_TYPE
+  INITIAL_BOUNDING_VOLUME_TYPE
 } from './constants';
 import {COLORED_BY, makeRGBObjectFromColor, getRGBValueFromColorObject} from './color-map';
 import {getFrustumBounds} from './frustum-utils';
@@ -89,7 +88,7 @@ const INITIAL_DEBUG_OPTIONS_STATE = {
   // Bounding volume coloring mode selector
   boundingVolumeColorMode: INITIAL_BOUNDING_VOLUME_COLOR_MODE,
   // Bounding volume geometry shape selector
-  boundingVolumeType: BOUNDING_VOLUME_TYPE,
+  boundingVolumeType: INITIAL_BOUNDING_VOLUME_TYPE,
   // Select tiles with a mouse button
   pickable: false,
   // Load tiles after traversal.
@@ -172,7 +171,7 @@ export default class App extends PureComponent {
         }
       },
       selectedMapStyle: INITIAL_MAP_STYLE,
-      debugOptions: INITIAL_DEBUG_OPTIONS_STATE,
+      debugOptions: {...INITIAL_DEBUG_OPTIONS_STATE},
       normalsDebugData: [],
       trianglesPercentage: DEFAULT_TRIANGLES_PERCENTAGE,
       normalsLength: DEFAULT_NORMALS_LENGTH,
@@ -279,9 +278,11 @@ export default class App extends PureComponent {
           longitude,
           latitude
         }
-      }
+      },
+      debugOptions: {...INITIAL_DEBUG_OPTIONS_STATE}
     });
 
+    tileset.setOptions({loadTiles: true});
     this._tilesetStatsWidget.setStats(tileset.stats);
   }
 
@@ -316,7 +317,9 @@ export default class App extends PureComponent {
     this.setState({selectedMapStyle});
   }
 
-  _setDebugOptions(debugOptions) {
+  _setDebugOptions(newDebugOptions) {
+    const {debugOptions: oldDebugOptions} = this.state;
+    const debugOptions = {...oldDebugOptions, ...newDebugOptions};
     if (debugOptions.tileColorMode !== COLORED_BY.CUSTOM) {
       this.setState({coloredTilesMap: {}, selectedTileId: null});
     }
@@ -489,10 +492,11 @@ export default class App extends PureComponent {
 
     return (
       <DebugPanel
-        onOptionsChange={this._setDebugOptions}
+        onDebugOptionsChange={this._setDebugOptions}
         clearWarnings={this.handleClearWarnings}
         isClearButtonDisabled={isClearButtonDisabled}
         debugTextureImage={UV_DEBUG_TEXTURE_URL}
+        debugOptions={debugOptions}
       >
         {this._renderStats()}
       </DebugPanel>

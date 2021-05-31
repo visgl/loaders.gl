@@ -1,5 +1,4 @@
 /* eslint-disable camelcase */
-/* global document, window */
 import {load} from '@loaders.gl/core';
 import {GLTFLoader} from '@loaders.gl/gltf';
 import GL from '@luma.gl/constants';
@@ -82,9 +81,7 @@ export default class AppAnimationLoop extends AnimationLoop {
     this.environment = new GLTFEnvironment(gl, {
       brdfLutUrl: `${GLTF_ENV_BASE_URL}/brdfLUT.png`,
       getTexUrl: (type, dir, mipLevel) =>
-        `${GLTF_ENV_BASE_URL}/papermill/${type}/${type}_${
-          CUBE_FACE_TO_DIRECTION[dir]
-        }_${mipLevel}.jpg`
+        `${GLTF_ENV_BASE_URL}/papermill/${type}/${type}_${CUBE_FACE_TO_DIRECTION[dir]}_${mipLevel}.jpg`
     });
     this.gltfCreateOptions.imageBasedLightingEnvironment = this.environment;
 

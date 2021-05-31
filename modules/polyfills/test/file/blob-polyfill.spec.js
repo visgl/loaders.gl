@@ -1,5 +1,4 @@
 // Forked from @Gozala's https://github.com/Gozala/web-blob under MIT license
-/* global Blob */
 import test from 'tape-promise/tape';
 
 test('test basic', async t => {

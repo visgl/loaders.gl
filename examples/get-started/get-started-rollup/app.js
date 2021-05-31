@@ -1,4 +1,3 @@
-/* global document, fetch */
 import {parse} from '@loaders.gl/core';
 import {OBJLoader} from '@loaders.gl/obj';
 

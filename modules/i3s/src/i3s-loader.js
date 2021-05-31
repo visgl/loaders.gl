@@ -1,4 +1,3 @@
-/* global TextDecoder */
 /** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 import {load, parse} from '@loaders.gl/core';
 import {I3SContentLoader} from './i3s-content-loader';

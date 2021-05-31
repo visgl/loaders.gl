@@ -11,7 +11,7 @@ test('TCXLoader#loader conformance', t => {
   t.end();
 });
 
-test('TCXLoader#parse', async t => {
+test.skip('TCXLoader#parse', async t => {
   const data = await load(`${TCX_URL}.tcx`, TCXLoader, {gis: {format: 'geojson'}});
   const resp = await fetchFile(`${TCX_URL}.geojson`);
   const geojson = await resp.json();

@@ -1,5 +1,3 @@
-/* global BigInt, BigUint64Array, Buffer */
-
 import {Vector3, Matrix4, Vector4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 
@@ -18,10 +16,10 @@ const SHORT_INT_TYPE = 'Int32';
 const DOUBLE_TYPE = 'Float64';
 const OBJECT_ID_TYPE = 'Oid32';
 /*
-* 'CUSTOM_ATTRIBUTE_2' - Attribute name which includes batch info and used by New York map.
-* _BATCHID - Default attribute name which includes batch info.
-* BATCHID - Legacy attribute name which includes batch info.
-*/
+ * 'CUSTOM_ATTRIBUTE_2' - Attribute name which includes batch info and used by New York map.
+ * _BATCHID - Default attribute name which includes batch info.
+ * BATCHID - Legacy attribute name which includes batch info.
+ */
 const BATCHED_ID_POSSIBLE_ATTRIBUTE_NAMES = ['CUSTOM_ATTRIBUTE_2', '_BATCHID', 'BATCHID'];
 
 export default async function convertB3dmToI3sGeometry(

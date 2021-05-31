@@ -1,4 +1,3 @@
-/* global fetch */
 import test from 'tape-promise/tape';
 import '@loaders.gl/polyfills';
 import {isBrowser, fetchFile} from '@loaders.gl/core';

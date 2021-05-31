@@ -17,7 +17,8 @@ The input and output from streaming loaders and writers can both be expressed in
 Remember tyhat an async iterator can be consumed (iterated over) via the for-await construct:
 
 ```js
-for await (const x of asyncIterable) {}
+for await (const x of asyncIterable) {
+}
 ```
 
 ## Using Streams as AsyncIterators

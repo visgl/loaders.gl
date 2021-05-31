@@ -6,11 +6,11 @@ const numberRegexp = /[-+]?([0-9]*\.[0-9]+|[0-9]+)([eE][-+]?[0-9]+)?/;
 const tuples = new RegExp('^' + numberRegexp.source + '(\\s' + numberRegexp.source + '){1,}');
 
 /*
-  * Parse WKT and return GeoJSON.
-  *
-  * @param {string} _ A WKT geometry
-  * @return {?Object} A GeoJSON geometry object
-  */
+ * Parse WKT and return GeoJSON.
+ *
+ * @param {string} _ A WKT geometry
+ * @return {?Object} A GeoJSON geometry object
+ */
 export default function parseWKT(input) {
   var parts = input.split(';');
   var _ = parts.pop();

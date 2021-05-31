@@ -1,4 +1,3 @@
-/* global console, process */
 /* eslint-disable no-console */
 import {join} from 'path';
 const {I3SConverter, Tiles3DConverter, DepsInstaller} = require('@loaders.gl/tile-converter');

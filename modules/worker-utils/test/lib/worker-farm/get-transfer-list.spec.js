@@ -3,7 +3,6 @@ import {getTransferList} from '@loaders.gl/worker-utils/lib/worker-farm/get-tran
 
 const typedArray = new Uint8Array(4);
 const typedArray2 = new Float32Array(typedArray.buffer);
-/* global MessageChannel */
 const messageChannel = typeof MessageChannel !== 'undefined' && new MessageChannel();
 
 const TEST_CASES = [

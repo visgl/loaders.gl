@@ -4,7 +4,6 @@
 
 // this file is not visible to webpack (it is excluded in the package.json "browser" field).
 
-/* global process, fetch */
 import Module from 'module';
 import path from 'path';
 

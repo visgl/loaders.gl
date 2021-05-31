@@ -1,4 +1,3 @@
-/* global self, Image */
 import {getBlobOrSVGDataUrl} from './svg-utils';
 
 // Parses html image from array buffer

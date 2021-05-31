@@ -152,9 +152,7 @@ export default class TileValidator extends PureComponent {
       triangleMessages.push({
         key: 'geometrySmallTriangleCount',
         type: WARNING_TYPE,
-        text: `Geometry small triangles (less than 1 squared mm): ${
-          triangleMetrics.geometrySmallTriangleCount
-        }`
+        text: `Geometry small triangles (less than 1 squared mm): ${triangleMetrics.geometrySmallTriangleCount}`
       });
       triangleMessages.push({
         key: 'minGeometryArea',
@@ -165,9 +163,7 @@ export default class TileValidator extends PureComponent {
       triangleMessages.push({
         key: 'geometrySmallTriangleCount',
         type: OK_TYPE,
-        text: `Geometry small triangles (less than 1 squared mm): ${
-          triangleMetrics.geometrySmallTriangleCount
-        }`
+        text: `Geometry small triangles (less than 1 squared mm): ${triangleMetrics.geometrySmallTriangleCount}`
       });
     }
 
@@ -189,9 +185,7 @@ export default class TileValidator extends PureComponent {
       triangleMessages.push({
         key: 'texCoordSmallTriangleCount',
         type: WARNING_TYPE,
-        text: `UV0 small triangles (occupies less than 1 pixel): ${
-          triangleMetrics.texCoordSmallTriangleCount
-        }`
+        text: `UV0 small triangles (occupies less than 1 pixel): ${triangleMetrics.texCoordSmallTriangleCount}`
       });
       triangleMessages.push({
         key: 'minTexCoordArea',
@@ -207,9 +201,7 @@ export default class TileValidator extends PureComponent {
       triangleMessages.push({
         key: 'texCoordSmallTriangleCount',
         type: OK_TYPE,
-        text: `UV0 small triangles (less than 1 squared mm): ${
-          triangleMetrics.texCoordSmallTriangleCount
-        }`
+        text: `UV0 small triangles (less than 1 squared mm): ${triangleMetrics.texCoordSmallTriangleCount}`
       });
     }
     this.setState({triangleMessages});

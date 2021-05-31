@@ -1,4 +1,3 @@
-/* global requestAnimationFrame */
 // TODO - move to @luma.gl/addons
 import {createGLTFObjects as createGLTFObjectsSync} from '@luma.gl/experimental';
 

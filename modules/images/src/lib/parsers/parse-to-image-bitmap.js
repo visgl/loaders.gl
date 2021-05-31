@@ -1,4 +1,3 @@
-/* global createImageBitmap */
 import {isSVG, getBlob} from './svg-utils';
 import parseToImage from './parse-to-image';
 

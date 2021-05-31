@@ -1,4 +1,3 @@
-/* global Response, TextEncoder, Blob, FileReader, btoa */
 import {isResponse} from '../../javascript-utils/is-type';
 import {getResourceContentLength, getResourceUrlAndType} from './resource-utils';
 

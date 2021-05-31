@@ -1,5 +1,3 @@
-/* global TextEncoder */
-
 /**
  * Returns an iterator that breaks a big string into chunks and yields them one-by-one
  */

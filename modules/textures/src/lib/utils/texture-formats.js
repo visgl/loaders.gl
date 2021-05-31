@@ -44,7 +44,6 @@ export function getSupportedGPUTextureFormats(gl) {
  */
 function getWebGLContext() {
   try {
-    /* global document */
     const canvas = document.createElement('canvas');
     return canvas.getContext('webgl');
   } catch (error) {

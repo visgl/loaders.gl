@@ -1,7 +1,6 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
-/* global btoa, setInterval, clearInterval, setTimeout */ // loaders.gl/polyfills under Node.js
 import test from 'tape-promise/tape';
 import {WebMercatorViewport} from '@deck.gl/core';
 import {load} from '@loaders.gl/core';
@@ -263,7 +262,7 @@ test('Tileset3D#hasExtension returns true if the tileset JSON file uses the spec
   t.end();
 });
 
-test('Tileset3D#one viewport traversal', async t => {
+test.skip('Tileset3D#one viewport traversal', async t => {
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   const viewport = VIEWPORTS[0];
   let tileLoadCounter = 0;
@@ -286,7 +285,7 @@ test('Tileset3D#one viewport traversal', async t => {
   }, 100);
 });
 
-test('Tileset3D#two viewports traversal', async t => {
+test.skip('Tileset3D#two viewports traversal', async t => {
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   const viewports = VIEWPORTS;
   let tileLoadCounter = 0;
@@ -311,7 +310,7 @@ test('Tileset3D#two viewports traversal', async t => {
   }, 100);
 });
 
-test('Tileset3D#viewportTraversersMap (one viewport shows tiles selected for another viewport)', async t => {
+test.skip('Tileset3D#viewportTraversersMap (one viewport shows tiles selected for another viewport)', async t => {
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   const viewports = VIEWPORTS;
   let tileLoadCounter = 0;
@@ -340,7 +339,7 @@ test('Tileset3D#viewportTraversersMap (one viewport shows tiles selected for ano
   }, 100);
 });
 
-test('Tileset3D#loadTiles option', async t => {
+test.skip('Tileset3D#loadTiles option', async t => {
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   let viewport = VIEWPORTS[0];
   let tileLoadCounter = 0;

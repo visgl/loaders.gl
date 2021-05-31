@@ -1,5 +1,3 @@
-/* global setInterval */
-
 import {loadArcGISModules} from '@deck.gl/arcgis';
 import {Tile3DLayer} from '@deck.gl/geo-layers';
 import {I3SLoader} from '@loaders.gl/i3s';

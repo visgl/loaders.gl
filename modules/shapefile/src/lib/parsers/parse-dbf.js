@@ -1,6 +1,5 @@
 import {Schema, Field, Bool, Utf8, Float64, TimestampMillisecond} from '@loaders.gl/tables';
 
-/* global TextDecoder */
 import BinaryChunkReader from '../streaming/binary-chunk-reader';
 
 const LITTLE_ENDIAN = true;

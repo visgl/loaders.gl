@@ -9,7 +9,6 @@ import {
   makeNumberedLineIterator
 } from '@loaders.gl/loader-utils';
 
-/* global setTimeout */
 const setTimeoutPromise = timeout => new Promise(resolve => setTimeout(resolve, timeout));
 
 async function* asyncNumbers() {

@@ -1,5 +1,4 @@
 /* eslint-disable max-len */
-/* global TextEncoder, TextDecoder */
 import test from 'tape-promise/tape';
 
 test('TextEncoder', t => {

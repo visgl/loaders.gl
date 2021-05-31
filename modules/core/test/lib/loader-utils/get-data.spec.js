@@ -1,4 +1,3 @@
-/* global TextEncoder, TextDecoder, Buffer */
 import test from 'tape-promise/tape';
 import {
   getArrayBufferOrStringFromDataSync,

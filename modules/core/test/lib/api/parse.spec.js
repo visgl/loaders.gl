@@ -1,4 +1,3 @@
-/* global Blob */
 import test from 'tape-promise/tape';
 
 import {isBrowser, parse} from '@loaders.gl/core';

@@ -1,5 +1,5 @@
-// @ts-nocheck
 /* global loaders */
+// @ts-nocheck
 
 import test from 'tape-promise/tape';
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.

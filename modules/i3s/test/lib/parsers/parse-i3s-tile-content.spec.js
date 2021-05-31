@@ -1,4 +1,3 @@
-/* global ImageBitmap, Buffer */
 import test from 'tape-promise/tape';
 import {fetchFile, isBrowser} from '@loaders.gl/core';
 import {getSupportedGPUTextureFormats} from '@loaders.gl/textures';

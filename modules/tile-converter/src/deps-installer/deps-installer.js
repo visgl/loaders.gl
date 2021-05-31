@@ -1,5 +1,3 @@
-/* global process, console */
-
 import {load} from '@loaders.gl/core';
 import {ZipLoader} from '@loaders.gl/zip';
 import {writeFile} from '../lib/utils/file-utils';
