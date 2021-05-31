@@ -1,0 +1,36 @@
+{
+  "name": "@loaders.gl/geopackage",
+  "description": "GeoPackage data loaders",
+  "version": "3.0.0-alpha.18",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/visgl/loaders.gl"
+  },
+  "keywords": [
+    "sql",
+    "GeoPackage"
+  ],
+  "types": "src/index.d.ts",
+  "main": "dist/es5/index.js",
+  "module": "dist/esm/index.js",
+  "sideEffects": false,
+  "files": [
+    "src",
+    "dist",
+    "README.md"
+  ],
+  "dependencies": {
+    "@loaders.gl/core": "^3.0.0-alpha.18",
+    "@loaders.gl/gis": "^3.0.0-alpha.18",
+    "@loaders.gl/wkt": "^3.0.0-alpha.18",
+    "@math.gl/proj4": "^3.3.2",
+    "@types/sql.js": "^1.4.2",
+    "sql.js": "^1.5.0"
+  },
+  "devDependencies": {
+  }
+}
