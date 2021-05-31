@@ -13,6 +13,10 @@ function defined(x) {
  * @private
  */
 export default class TilesetCache {
+  private _list: DoublyLinkedList;
+  private _sentinel: any;
+  private _trimTiles: boolean;
+
   constructor() {
     // [head, sentinel) -> tiles that weren't selected this frame and may be removed from the cache
     // (sentinel, tail] -> tiles that were selected this frame
@@ -45,7 +49,7 @@ export default class TilesetCache {
     }
   }
 
-  unloadTile(tileset, tile, unloadCallback) {
+  unloadTile(tileset, tile, unloadCallback?) {
     const node = tile._cacheNode;
     if (!defined(node)) {
       return;
