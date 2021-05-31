@@ -486,7 +486,7 @@ export default class I3SConverter {
    * @return {void}
    */
   _convertAttributeStorageInfo(sourceTileContent) {
-    const batchTable = sourceTileContent.batchTableJson;
+    const batchTable = sourceTileContent && sourceTileContent.batchTableJson;
     if (batchTable && !this.layers0.attributeStorageInfo.length) {
       this._convertBatchTableInfoToNodeAttributes(batchTable);
     }
