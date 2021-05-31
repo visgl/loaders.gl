@@ -486,6 +486,7 @@ export default class I3SConverter {
    * @return {void}
    */
   _convertAttributeStorageInfo(sourceTileContent) {
+    // In legacy b3dm files sometimes sourceTileContent is null.
     const batchTable = sourceTileContent && sourceTileContent.batchTableJson;
     if (batchTable && !this.layers0.attributeStorageInfo.length) {
       this._convertBatchTableInfoToNodeAttributes(batchTable);
