@@ -79,7 +79,7 @@ function getQueryParamString(queryParams) {
   }
 }
 
-const DEFAULT_OPTIONS = {
+const DEFAULT_PROPS = {
   ellipsoid: Ellipsoid.WGS84,
   // A 4x4 transformation matrix this transforms the entire tileset.
   modelMatrix: new Matrix4(),
@@ -108,12 +108,17 @@ const DEFAULT_OPTIONS = {
 };
 
 export default class Tileset3D {
+  /**
+   *
+   * @param {*} json
+   * @param {*} options
+   */
   // eslint-disable-next-line max-statements
   constructor(json, options = {}) {
     assert(json);
 
     // PUBLIC MEMBERS
-    this.options = {...DEFAULT_OPTIONS, ...options};
+    this.options = {...DEFAULT_PROPS, ...options};
     // raw data
     this.tileset = json;
     this.loader = json.loader;
