@@ -21,6 +21,7 @@ export default class Tileset3D {
   readonly lodMetricType: string;
   readonly lodMetricValue: number;
   readonly refine: string;
+  readonly root: {[key: string]: any};
 
   /** @deprecated */
   readonly options: Tileset3DProps;
@@ -64,4 +65,6 @@ export default class Tileset3D {
   hasExtension(extensionName): boolean;
 
   get queryParams(): string;
+
+  _loadTile(tile): Promise<any>;
 }

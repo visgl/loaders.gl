@@ -1,16 +1,9 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
-import {Vector3, Matrix4} from '@math.gl/core';
-import {CullingVolume} from '@math.gl/culling';
+// import {Vector3, Matrix4} from '@math.gl/core';
+// import {CullingVolume} from '@math.gl/culling';
+// import {TILE_REFINEMENT, TILE_CONTENT_STATE, TILESET_TYPE} from '../constants';
 
-import {load} from '@loaders.gl/core';
-import {assert, path} from '@loaders.gl/loader-utils';
-import {TILE_REFINEMENT, TILE_CONTENT_STATE, TILESET_TYPE} from '../constants';
-
-import {createBoundingVolume} from './helpers/bounding-volume';
-import {getTiles3DScreenSpaceError} from './helpers/tiles-3d-lod';
-import {getI3ScreenSize} from './helpers/i3s-lod';
-import {get3dTilesOptions} from './helpers/3d-tiles-options';
 
 /**
  * @param tileset - Tileset3D instance
