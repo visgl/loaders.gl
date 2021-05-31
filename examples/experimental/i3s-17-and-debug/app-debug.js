@@ -32,7 +32,7 @@ import {
   CONTRAST_MAP_STYLES,
   INITIAL_TILE_COLOR_MODE,
   INITIAL_BOUNDING_VOLUME_COLOR_MODE,
-  BOUNDING_SPHERE
+  INITIAL_BOUNDING_VOLUME_TYPE
 } from './constants';
 import {COLORED_BY, makeRGBObjectFromColor, getRGBValueFromColorObject} from './color-map';
 import {getFrustumBounds} from './frustum-utils';
@@ -89,7 +89,7 @@ const INITIAL_DEBUG_OPTIONS_STATE = {
   // Bounding volume coloring mode selector
   boundingVolumeColorMode: INITIAL_BOUNDING_VOLUME_COLOR_MODE,
   // Bounding volume geometry shape selector
-  boundingVolumeType: BOUNDING_SPHERE,
+  boundingVolumeType: INITIAL_BOUNDING_VOLUME_TYPE,
   // Select tiles with a mouse button
   pickable: false,
   // Load tiles after traversal.
@@ -493,7 +493,7 @@ export default class App extends PureComponent {
 
     return (
       <DebugPanel
-        onOptionsChange={this._setDebugOptions}
+        onDebugOptionsChange={this._setDebugOptions}
         clearWarnings={this.handleClearWarnings}
         isClearButtonDisabled={isClearButtonDisabled}
         debugTextureImage={UV_DEBUG_TEXTURE_URL}

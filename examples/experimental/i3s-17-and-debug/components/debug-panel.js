@@ -88,7 +88,7 @@ const DebugTextureContainer = styled.div`
 const propTypes = {
   children: PropTypes.object,
   isClearButtonDisabled: PropTypes.bool,
-  onOptionsChange: PropTypes.func,
+  onDebugOptionsChange: PropTypes.func,
   clearWarnings: PropTypes.func,
   debugTextureImage: PropTypes.string,
   debugOptions: PropTypes.object
@@ -96,7 +96,7 @@ const propTypes = {
 
 const defaultProps = {
   clearWarnings: () => {},
-  onOptionsChange: () => {},
+  onDebugOptionsChange: () => {},
   isClearButtonDisabled: true
 };
 
@@ -152,13 +152,13 @@ export default class DebugPanel extends PureComponent {
   _renderBoundingVolumeOptions() {
     const {
       debugOptions: {boundingVolumeColorMode, boundingVolume},
-      onOptionsChange
+      onDebugOptionsChange
     } = this.props;
     return (
       <DebugOptionGroup title="Bounding volumes">
         <CheckboxOption>
           <InputCheckbox
-            onChange={() => onOptionsChange({boundingVolume: !boundingVolume})}
+            onChange={() => onDebugOptionsChange({boundingVolume: !boundingVolume})}
             type="checkbox"
             id="boundingVolume"
             value={boundingVolume}
@@ -170,7 +170,7 @@ export default class DebugPanel extends PureComponent {
         <DropDown
           value={boundingVolumeColorMode}
           onChange={evt =>
-            onOptionsChange({boundingVolumeColorMode: parseInt(evt.target.value, 10)})
+            onDebugOptionsChange({boundingVolumeColorMode: parseInt(evt.target.value, 10)})
           }
         >
           {Object.keys(BOUNDING_VOLUME_COLOR_MODES).map(key => {
@@ -188,13 +188,13 @@ export default class DebugPanel extends PureComponent {
   _renderBoundingTypes() {
     const {
       debugOptions: {boundingVolumeType},
-      onOptionsChange
+      onDebugOptionsChange
     } = this.props;
 
     return (
       <Shapes
         value={boundingVolumeType}
-        onChange={evt => onOptionsChange({boundingVolumeType: evt.target.value})}
+        onChange={evt => onDebugOptionsChange({boundingVolumeType: evt.target.value})}
       >
         {Object.keys(BOUNDING_VOLUME_TYPE).map(key => {
           const shape = BOUNDING_VOLUME_TYPE[key];
@@ -219,13 +219,13 @@ export default class DebugPanel extends PureComponent {
   _renderTileOptions() {
     const {
       debugOptions: {tileColorMode, pickable, loadTiles, showUVDebugTexture, wireframe},
-      onOptionsChange
+      onDebugOptionsChange
     } = this.props;
     return (
       <DebugOptionGroup title="Tiles">
         <CheckboxOption>
           <InputCheckbox
-            onChange={() => onOptionsChange({pickable: !pickable})}
+            onChange={() => onDebugOptionsChange({pickable: !pickable})}
             type="checkbox"
             id="pickable"
             value={pickable}
@@ -235,7 +235,7 @@ export default class DebugPanel extends PureComponent {
         </CheckboxOption>
         <CheckboxOption>
           <InputCheckbox
-            onChange={() => onOptionsChange({loadTiles: !loadTiles})}
+            onChange={() => onDebugOptionsChange({loadTiles: !loadTiles})}
             type="checkbox"
             id="loadTiles"
             value={loadTiles}
@@ -245,7 +245,7 @@ export default class DebugPanel extends PureComponent {
         </CheckboxOption>
         <CheckboxOption>
           <InputCheckbox
-            onChange={() => onOptionsChange({showUVDebugTexture: !showUVDebugTexture})}
+            onChange={() => onDebugOptionsChange({showUVDebugTexture: !showUVDebugTexture})}
             type="checkbox"
             id="uvDebugTexture"
             value={showUVDebugTexture}
@@ -256,7 +256,7 @@ export default class DebugPanel extends PureComponent {
         {showUVDebugTexture ? this._renderDebugTextureImage() : null}
         <CheckboxOption>
           <InputCheckbox
-            onChange={() => onOptionsChange({wireframe: !wireframe})}
+            onChange={() => onDebugOptionsChange({wireframe: !wireframe})}
             type="checkbox"
             id="wireframe"
             value={wireframe}
@@ -266,7 +266,7 @@ export default class DebugPanel extends PureComponent {
         </CheckboxOption>
         <DropDown
           value={tileColorMode}
-          onChange={evt => onOptionsChange({tileColorMode: parseInt(evt.target.value, 10)})}
+          onChange={evt => onDebugOptionsChange({tileColorMode: parseInt(evt.target.value, 10)})}
         >
           {Object.keys(TILE_COLOR_MODES).map(key => {
             return (
@@ -283,13 +283,13 @@ export default class DebugPanel extends PureComponent {
   _renderFrustumCullingOption() {
     const {
       debugOptions: {minimap, minimapViewport},
-      onOptionsChange
+      onDebugOptionsChange
     } = this.props;
     return (
       <DebugOptionGroup title="Frustum Culling">
         <CheckboxOption>
           <InputCheckbox
-            onChange={() => onOptionsChange({minimap: !minimap})}
+            onChange={() => onDebugOptionsChange({minimap: !minimap})}
             type="checkbox"
             id="showFrustumCullingMinimap"
             value={minimap}
@@ -299,7 +299,7 @@ export default class DebugPanel extends PureComponent {
         </CheckboxOption>
         <CheckboxOption>
           <InputCheckbox
-            onChange={() => onOptionsChange({minimapViewport: !minimapViewport})}
+            onChange={() => onDebugOptionsChange({minimapViewport: !minimapViewport})}
             type="checkbox"
             id="showFrustumCullingMinimapViewport"
             value={minimapViewport}
@@ -316,13 +316,13 @@ export default class DebugPanel extends PureComponent {
       clearWarnings,
       isClearButtonDisabled,
       debugOptions: {semanticValidator},
-      onOptionsChange
+      onDebugOptionsChange
     } = this.props;
     return (
       <DebugOptionGroup title="Semantic Validator">
         <CheckboxOption>
           <InputCheckbox
-            onChange={() => onOptionsChange({semanticValidator: !semanticValidator})}
+            onChange={() => onDebugOptionsChange({semanticValidator: !semanticValidator})}
             type="checkbox"
             id="showSemanticValidator"
             value={semanticValidator}
