@@ -1,4 +1,3 @@
-/* global TextDecoder */
 /** @typedef {import('sql.js').Database} Database */
 
 import initSqlJs from 'sql.js';
