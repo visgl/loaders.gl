@@ -54,10 +54,10 @@ export default class MeshLayer extends SimpleMeshLayer {
   }
 
   initializeState() {
-    const {pickFeatures, objectIds} = this.props;
+    const {pickFeatures, featureIds} = this.props;
     super.initializeState();
 
-    if (pickFeatures && objectIds) {
+    if (pickFeatures && featureIds) {
       this.state.attributeManager.add({
         segmentationPickingColors: {
           type: GL.UNSIGNED_BYTE,
@@ -96,7 +96,7 @@ export default class MeshLayer extends SimpleMeshLayer {
   }
 
   getModel(mesh) {
-    const {pickFeatures, objectIds} = this.props;
+    const {pickFeatures, featureIds} = this.props;
     let materialParser = null;
     if (this.props.material) {
       const material = this.props.material;
@@ -144,7 +144,7 @@ export default class MeshLayer extends SimpleMeshLayer {
 
     model.setUniforms({
       // eslint-disable-next-line camelcase
-      u_pickSegmentation: Boolean(pickFeatures && objectIds)
+      u_pickSegmentation: Boolean(pickFeatures && featureIds)
     });
 
     return model;
@@ -189,16 +189,16 @@ export default class MeshLayer extends SimpleMeshLayer {
   }
 
   calculateSegmentationPickingColors(attribute) {
-    const {objectIds} = this.props;
+    const {featureIds} = this.props;
 
-    if (!objectIds) {
+    if (!featureIds) {
       return;
     }
 
-    const value = new Uint8ClampedArray(objectIds.length * attribute.size);
+    const value = new Uint8ClampedArray(featureIds.length * attribute.size);
 
-    for (let index = 0; index < objectIds.length; index++) {
-      const color = this.encodePickingColor(objectIds[index]);
+    for (let index = 0; index < featureIds.length; index++) {
+      const color = this.encodePickingColor(featureIds[index]);
 
       value[index * 3] = color[0];
       value[index * 3 + 1] = color[1];

@@ -30,7 +30,9 @@ const I3S_ATTRIBUTE_TYPE = 'i3s-attribute-type';
 
 export async function parseI3STileContent(arrayBuffer, tile, tileset, options) {
   tile.content = tile.content || {};
-  tile.content.objectIds = tile.content.objectIds || null;
+  tile.content.featureIds = tile.content.featureIds || null;
+  // Remove segmentationData after i3s-content-worker will be published
+  tile.content.segmentationData = tile.content.segmentationData || null;
 
   // construct featureData from defaultGeometrySchema;
   tile.content.featureData = constructFeatureDataStruct(tile, tileset);
@@ -155,7 +157,9 @@ async function parseI3SNodeGeometry(arrayBuffer, tile = {}, options) {
   content.indices = attributes.indices || null;
 
   if (attributes.id && attributes.id.value) {
-    tile.content.objectIds = attributes.id.value;
+    tile.content.featureIds = attributes.id.value;
+    // Remove segmentationData i3s-content-worker will be published
+    tile.content.segmentationData = attributes.id.value;
   }
 
   // Remove undefined attributes
@@ -484,18 +488,18 @@ function flattenFeatureIdsByFaceRanges(normalizedFeatureAttributes) {
 /**
  * Flatten feature ids using featureIndices
  * @param {object} attributes
- * @param {any} objectIds
+ * @param {any} featureIds
  * @returns {void}
  */
-function flattenFeatureIdsByFeatureIndices(attributes, objectIds) {
+function flattenFeatureIdsByFeatureIndices(attributes, featureIds) {
   const featureIndices = attributes.id.value;
-  const featureIds = new Float32Array(featureIndices.length);
+  const result = new Float32Array(featureIndices.length);
 
   for (let index = 0; index < featureIndices.length; index++) {
-    featureIds[index] = objectIds[featureIndices[index]];
+    result[index] = featureIds[featureIndices[index]];
   }
 
-  attributes.id.value = featureIds;
+  attributes.id.value = result;
 }
 
 /**
