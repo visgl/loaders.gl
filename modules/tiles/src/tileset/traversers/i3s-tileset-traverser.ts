@@ -6,6 +6,8 @@ import TileHeader from '../tile-3d';
 import I3STileManager from './i3s-tile-manager';
 
 export default class I3STilesetTraverser extends TilesetTraverser {
+  private _tileManager: I3STileManager;
+
   constructor(options) {
     super(options);
     this._tileManager = new I3STileManager();

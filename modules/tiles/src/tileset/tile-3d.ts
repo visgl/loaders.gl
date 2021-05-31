@@ -7,10 +7,13 @@ import {load} from '@loaders.gl/core';
 import {assert, path} from '@loaders.gl/loader-utils';
 import {TILE_REFINEMENT, TILE_CONTENT_STATE, TILESET_TYPE} from '../constants';
 
+import {FrameState} from './helpers/frame-state';
 import {createBoundingVolume} from './helpers/bounding-volume';
 import {getTiles3DScreenSpaceError} from './helpers/tiles-3d-lod';
 import {getI3ScreenSize} from './helpers/i3s-lod';
 import {get3dTilesOptions} from './helpers/3d-tiles-options';
+
+declare class Tileset3D {};
 
 const scratchVector = new Vector3();
 
@@ -18,24 +21,101 @@ function defined(x) {
   return x !== undefined && x !== null;
 }
 
-// A Tile3DHeader represents a tile as Tileset3D. When a tile is first created, its content is not loaded;
-// the content is loaded on-demand when needed based on the view.
-// Do not construct this directly, instead access tiles through {@link Tileset3D#tileVisible}.
+/**
+ * @param tileset - Tileset3D instance
+ * @param header - tile header - JSON loaded from a dataset
+ * @param parentHeader - parent TileHeader instance
+ * @param basePath - base path / url of the tile
+ * @param extendedId - optional ID to separate copies of a tile for different viewports.
+ *                              const extendedId = `${tile.id}-${frameState.viewport.id}`;
+ */
+ export type TileHeaderProps = {
+  tileset: Tileset3D;
+  header: Object;
+  parentHeader: TileHeader;
+  basePath: string;
+  extendedId: string;
+}
+
+/**
+ * A Tile3DHeader represents a tile as Tileset3D. When a tile is first created, its content is not loaded;
+ * the content is loaded on-demand when needed based on the view.
+ * Do not construct this directly, instead access tiles through {@link Tileset3D#tileVisible}.
+ */
 export default class TileHeader {
+  tileset: Tileset3D;
+  header: any;
+  id: string;
+  url: string;
+  parent: TileHeader;
+  refine: string;
+  type: string;
+  contentUrl: string;
+  lodMetricType: string;
+  lodMetricValue: number;
+  boundingVolume: any;
+  content: any;
+  contentState: any;
+  gpuMemoryUsageInBytes: number;
+  children: TileHeader[];
+  depth: number;
+  viewportIds: any[];
+
+    // Container to store application specific data
+  userData: {[key: string]: any};
+  computedTransform: any;
+  hasEmptyContent: boolean;
+  hasTilesetContent: boolean;
+
+  private _cacheNode: any;
+  private _frameNumber: any;
+  // TODO i3s specific, needs to remove
+  private _lodJudge: any;
+  // TODO Cesium 3d tiles specific
+  private _expireDate: any;
+  private _expiredContent: any;
+
+  // private _shouldRefine: boolean;
+
+  // Members this are updated every frame for tree traversal and rendering optimizations:
+  private _distanceToCamera: number;
+  private _centerZDepth: number;
+  private _screenSpaceError: number;
+  private _visibilityPlaneMask: any;
+  private _visible: boolean;
+  private _inRequestVolume: boolean;
+
+  private _stackLength: number;
+  private _selectionDepth: number;
+
+  private _touchedFrame: number;
+  private _visitedFrame: number;
+  private _selectedFrame: number;
+  private _requestedFrame: number;
+
+  private _priority: number;
+
+  private _contentBoundingVolume: any;
+  private _viewerRequestVolume: any;
+
   /**
    * @constructs
    * Create a TileHeader instance
-   * @param {Tileset3D} tileset - Tileset3D instance
-   * @param {Object} header - tile header - JSON loaded from a dataset
-   * @param {TileHeader} parentHeader - parent TileHeader instance
-   * @param {string} basePath - base path / url of the tile
-   * @param {string} extendedId - optional ID to separate copies of a tile for different viewports.
-   *                              const extendedId = `${tile.id}-${frameState.viewport.id}`;
+   * @param tileset - Tileset3D instance
+   * @param header - tile header - JSON loaded from a dataset
+   * @param parentHeader - parent TileHeader instance
+   * @param basePath - base path / url of the tile
+   * @param extendedId - optional ID to separate copies of a tile for different viewports.
+   *    const extendedId = `${tile.id}-${frameState.viewport.id}`;
    */
   // eslint-disable-next-line max-statements
-  constructor(tileset, header, parentHeader, basePath, extendedId) {
-    assert(typeof header === 'object');
-
+  constructor(
+    tileset: Tileset3D,
+    header: {[key: string]: any},
+    parentHeader: TileHeader,
+    basePath: string,
+    extendedId: string = ''
+  ) {
     // PUBLIC MEMBERS
     // original tile data
     this.header = header;
@@ -64,6 +144,9 @@ export default class TileHeader {
     this.depth = 0;
     this.viewportIds = [];
 
+    // Container to store application specific data
+    this.userData = {};
+
     // PRIVATE MEMBERS
     this._cacheNode = null;
     this._frameNumber = null;
@@ -83,9 +166,6 @@ export default class TileHeader {
     this._expiredContent = null;
 
     this._getPriority = this._getPriority.bind(this);
-
-    // Container to store application specific data
-    this.userData = {};
 
     Object.seal(this);
   }
@@ -110,43 +190,52 @@ export default class TileHeader {
     return this._visible && this._inRequestVolume;
   }
 
-  // Returns true if tile is not an empty tile and not an external tileset
+  /** Returns true if tile is not an empty tile and not an external tileset */
   get hasRenderContent() {
     return !this.hasEmptyContent && !this.hasTilesetContent;
   }
 
+  /** Returns true if tile has children */
   get hasChildren() {
     return this.children.length > 0 || (this.header.children && this.header.children.length > 0);
   }
 
-  // Determines if the tile's content is ready. This is automatically `true` for
-  // tile's with empty content.
-  get contentReady() {
+  /**
+   * Determines if the tile's content is ready. This is automatically `true` for
+   * tiles with empty content.
+   */
+   get contentReady() {
     return this.contentState === TILE_CONTENT_STATE.READY || this.hasEmptyContent;
   }
 
-  // Determines if the tile has available content to render.  `true` if the tile's
-  // content is ready or if it has expired content this renders while new content loads; otherwise,
-  get contentAvailable() {
+  /**
+   * Determines if the tile has available content to render.  `true` if the tile's
+   * content is ready or if it has expired content this renders while new content loads; otherwise,
+   */
+   get contentAvailable() {
     return Boolean(
       (this.contentReady && this.hasRenderContent) || (this._expiredContent && !this.contentFailed)
     );
   }
 
-  // Returns true if tile has renderable content but it's unloaded
+  /** Returns true if tile has renderable content but it's unloaded */
   get hasUnloadedContent() {
     return this.hasRenderContent && this.contentUnloaded;
   }
 
-  // Determines if the tile's content has not be requested. `true` if tile's
-  // content has not be requested; otherwise, `false`.
+  /**
+   * Determines if the tile's content has not be requested. `true` if tile's
+   * content has not be requested; otherwise, `false`.
+   */
   get contentUnloaded() {
     return this.contentState === TILE_CONTENT_STATE.UNLOADED;
   }
 
-  // Determines if the tile's content is expired. `true` if tile's
-  // content is expired; otherwise, `false`.
-  get contentExpired() {
+  /**
+   * Determines if the tile's content is expired. `true` if tile's
+   * content is expired; otherwise, `false`.
+   */
+   get contentExpired() {
     return this.contentState === TILE_CONTENT_STATE.EXPIRED;
   }
 
@@ -156,7 +245,7 @@ export default class TileHeader {
     return this.contentState === TILE_CONTENT_STATE.FAILED;
   }
 
-  // Get the tile's screen space error.
+  /** Get the tile's screen space error. */
   getScreenSpaceError(frameState, useParentLodMetric) {
     switch (this.tileset.type) {
       case TILESET_TYPE.I3S:
@@ -170,22 +259,12 @@ export default class TileHeader {
     }
   }
 
-  _getPriority() {
-    // Check if any reason to abort
-    if (!this.isVisible) {
-      return -1;
-    }
-    if (this.contentState === TILE_CONTENT_STATE.UNLOADED) {
-      return -1;
-    }
-
-    return Math.max(1e7 - this._priority, 0) || 0;
-  }
-
-  // Requests the tile's content.
-  // The request may not be made if the Request Scheduler can't prioritize it.
+  /**
+   *  Requests the tile's content.
+   * The request may not be made if the Request Scheduler can't prioritize it.
+   */
   // eslint-disable-next-line max-statements, complexity
-  async loadContent() {
+  async loadContent(): Promise<boolean> {
     if (this.hasEmptyContent) {
       return false;
     }
@@ -358,18 +437,22 @@ export default class TileHeader {
     */
   }
 
-  // Computes the (potentially approximate) distance from the closest point of the tile's bounding volume to the camera.
-  // @param {FrameState} frameState The frame state.
-  // @returns {Number} The distance, in meters, or zero if the camera is inside the bounding volume.
-  distanceToTile(frameState) {
+  /**
+   * Computes the (potentially approximate) distance from the closest point of the tile's bounding volume to the camera.
+   * @param frameState The frame state.
+   * @returns {Number} The distance, in meters, or zero if the camera is inside the bounding volume.
+   */
+   distanceToTile(frameState: FrameState): number {
     const boundingVolume = this.boundingVolume;
     return Math.sqrt(Math.max(boundingVolume.distanceSquaredTo(frameState.camera.position), 0));
   }
 
-  // Computes the tile's camera-space z-depth.
-  // @param {FrameState} frameState The frame state.
-  // @returns {Number} The distance, in meters.
-  cameraSpaceZDepth({camera}) {
+  /**
+   * Computes the tile's camera-space z-depth.
+   * @param frameState The frame state.
+   * @returns The distance, in meters.
+   */
+   cameraSpaceZDepth({camera}): number {
     const boundingVolume = this.boundingVolume; // Gets the underlying OrientedBoundingBox or BoundingSphere
     scratchVector.subVectors(boundingVolume.center, camera.position);
     return camera.direction.dot(scratchVector);
@@ -380,13 +463,32 @@ export default class TileHeader {
    * @param {FrameState} frameState The frame state.
    * @returns {Boolean} Whether the camera is inside the volume.
    */
-  insideViewerRequestVolume(frameState) {
+  insideViewerRequestVolume(frameState: FrameState) {
     const viewerRequestVolume = this._viewerRequestVolume;
     return (
       !viewerRequestVolume ||
       viewerRequestVolume.distanceToCamera(frameState.camera.position) === 0.0
     );
   }
+
+  // TODO Cesium specific
+
+  // Update whether the tile has expired.
+  updateExpiration() {
+    if (defined(this._expireDate) && this.contentReady && !this.hasEmptyContent) {
+      const now = Date.now();
+      if (Date.lessThan(this._expireDate, now)) {
+        this.contentState = TILE_CONTENT_STATE.EXPIRED;
+        this._expiredContent = this.content;
+      }
+    }
+  }
+
+  get extras() {
+    return this.header.extras;
+  }
+
+  // INTERNAL METHODS
 
   _initializeLodMetric(header) {
     if ('lodMetricType' in header) {
@@ -476,6 +578,18 @@ export default class TileHeader {
     this._priority = 0.0;
   }
 
+  _getPriority() {
+    // Check if any reason to abort
+    if (!this.isVisible) {
+      return -1;
+    }
+    if (this.contentState === TILE_CONTENT_STATE.UNLOADED) {
+      return -1;
+    }
+
+    return Math.max(1e7 - this._priority, 0) || 0;
+  }
+
   _getRefine(refine) {
     // Inherit from parent tile if omitted.
     return refine || (this.parent && this.parent.refine) || TILE_REFINEMENT.REPLACE;
@@ -536,6 +650,7 @@ export default class TileHeader {
     }
   }
 
+
   // Update the tile's transform. The transform is applied to the tile's bounding volumes.
   _updateTransform(parentTransform = new Matrix4()) {
     const computedTransform = parentTransform.clone().multiplyRight(this.transform);
@@ -565,21 +680,5 @@ export default class TileHeader {
       default:
         return get3dTilesOptions(this.tileset.tileset);
     }
-  }
-
-  // TODO Cesium specific
-  // Update whether the tile has expired.
-  updateExpiration() {
-    if (defined(this._expireDate) && this.contentReady && !this.hasEmptyContent) {
-      const now = Date.now();
-      if (Date.lessThan(this._expireDate, now)) {
-        this.contentState = TILE_CONTENT_STATE.EXPIRED;
-        this._expiredContent = this.content;
-      }
-    }
-  }
-
-  get extras() {
-    return this.header.extras;
   }
 }
