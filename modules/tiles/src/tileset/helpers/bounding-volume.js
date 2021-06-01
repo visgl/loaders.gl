@@ -2,24 +2,51 @@
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
 /* eslint-disable */
-import {Quaternion, Vector3, Matrix3, Matrix4, degrees} from '@math.gl/core';
-import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
-import {Ellipsoid} from '@math.gl/geospatial';
+import {Vector3, Matrix3, Matrix4} from '@math.gl/core';
 import {assert} from '@loaders.gl/loader-utils';
+import * as mat4 from 'gl-matrix/mat4';
 
-// const scratchProjectedBoundingSphere = new BoundingSphere();
+const scratchVector = new Vector3();
+const transformScratchVectorU = new Vector3();
+const transformScratchVectorV = new Vector3();
+const transformScratchVectorW = new Vector3();
 
-function defined(x) {
-  return x !== undefined && x !== null;
+/**
+ * Applies a 4x4 affine transformation matrix to a bounding sphere.
+ *
+ * @param obj The bounding sphere to apply the transformation to.
+ * @param transform The transformation matrix to apply to the bounding sphere.
+ * @returns itself, i.e. the modified BoundingSphere.
+ */
+function transformBoundingSphere(obj, transform) {
+  obj.center.transform(transform);
+  const scale = mat4.getScaling(scratchVector, transform);
+  obj.radius = Math.max(scale[0], Math.max(scale[1], scale[2])) * obj.radius;
+
+  return obj;
 }
 
-// const scratchMatrix = new Matrix3();
-const scratchScale = new Vector3();
-const scratchNorthWest = new Vector3();
-const scratchSouthEast = new Vector3();
-// const scratchRectangle = new Rectangle();
-// const scratchOrientedBoundingBox = new OrientedBoundingBox();
-const scratchTransform = new Matrix4();
+/**
+ * Applies a 4x4 affine transformation matrix to a oriented bounding box.
+ *
+ * @param obj The bounding sphere to apply the transformation to.
+ * @param transform The transformation matrix to apply to the bounding sphere.
+ * @returns itself, i.e. the modified OrientedBoundingBox.
+ */
+function transformOrientedBoundingBox(obj, transformation) {
+  obj.center.transformAsPoint(transformation);
+  const xAxis = obj.halfAxes.getColumn(0, transformScratchVectorU);
+  xAxis.transformAsVector(transformation);
+
+  const yAxis = obj.halfAxes.getColumn(1, transformScratchVectorV);
+  yAxis.transformAsVector(transformation);
+
+  const zAxis = obj.halfAxes.getColumn(2, transformScratchVectorW);
+  zAxis.transformAsVector(transformation);
+  obj.halfAxes = new Matrix3([...xAxis, ...yAxis, ...zAxis]);
+
+  return obj;
+}
 
 /**
  * Create a bounding volume from the tile's bounding volume header.
@@ -28,101 +55,30 @@ const scratchTransform = new Matrix4();
  * @param [result] The object onto which to store the result.
  * @returns The modified result parameter or a new TileBoundingVolume instance if none was provided.
  */
-export function createBoundingVolume(boundingVolumeHeader, transform, result) {
+export function transformBoundingVolume(boundingVolumeHeader, transform, result) {
   assert(boundingVolumeHeader, '3D Tile: boundingVolume must be defined');
 
+  const {box, region, sphere} = boundingVolumeHeader;
   // boundingVolume schema:
   // https://github.com/AnalyticalGraphicsInc/3d-tiles/blob/master/specification/schema/boundingVolume.schema.json
-  if (boundingVolumeHeader.box) {
-    return createBox(boundingVolumeHeader.box, transform, result);
+
+  switch (true) {
+    case box != void 0:
+      return transformOrientedBoundingBox(box.clone(), transform);
+    //return box.clone().transform(transform);
+
+    case region != void 0:
+      return transformBoundingSphere(region.clone(), new Matrix4());
+    //return region.clone().transform(new Matrix4());
+
+    case sphere != void 0:
+      return transformBoundingSphere(sphere.clone(), transform);
+    //return sphere.clone().transform(transform);
+
+    default:
+      new Error('3D Tile: boundingVolume must contain a sphere, region, or box');
+      break;
   }
-  if (boundingVolumeHeader.region) {
-    // [west, south, east, north, minimum height, maximum height]
-    // Latitudes and longitudes are in the WGS 84 datum as defined in EPSG 4979 and are in radians.
-    // Heights are in meters above (or below) the WGS 84 ellipsoid.
-    const [west, south, east, north, minHeight, maxHeight] = boundingVolumeHeader.region;
-
-    const northWest = Ellipsoid.WGS84.cartographicToCartesian(
-      [degrees(west), degrees(north), minHeight],
-      scratchNorthWest
-    );
-    const southEast = Ellipsoid.WGS84.cartographicToCartesian(
-      [degrees(east), degrees(south), maxHeight],
-      scratchSouthEast
-    );
-    const centerInCartesian = new Vector3().addVectors(northWest, southEast).multiplyScalar(0.5);
-    const radius = new Vector3().subVectors(northWest, southEast).len() / 2.0;
-
-    // TODO improve region boundingVolume
-    // for now, create a sphere as the boundingVolume instead of box
-    return createSphere(
-      [centerInCartesian[0], centerInCartesian[1], centerInCartesian[2], radius],
-      new Matrix4()
-    );
-  }
-
-  if (boundingVolumeHeader.sphere) {
-    return createSphere(boundingVolumeHeader.sphere, transform, result);
-  }
-
-  throw new Error('3D Tile: boundingVolume must contain a sphere, region, or box');
-}
-
-function createBox(box, transform, result) {
-  // https://math.gl/modules/culling/docs/api-reference/oriented-bounding-box
-  // 1. A half-axes based representation.
-  // box: An array of 12 numbers that define an oriented bounding box.
-  // The first three elements define the x, y, and z values for the center of the box.
-  // The next three elements (with indices 3, 4, and 5) define the x axis direction and half-length.
-  // The next three elements (indices 6, 7, and 8) define the y axis direction and half-length.
-  // The last three elements (indices 9, 10, and 11) define the z axis direction and half-length.
-  // 2. A half-size-quaternion based representation.
-  // box: An array of 10 numbers that define an oriented bounding box.
-  // The first three elements define the x, y, and z values for the center of the box in a right-handed 3-axis (x, y, z) Cartesian coordinate system where the z-axis is up.
-  // The next three elements (with indices 3, 4, and 5) define the halfSize.
-  // The last four elements (indices 6, 7, 8 and 10) define the quaternion.
-  const center = new Vector3(box[0], box[1], box[2]);
-  transform.transform(center, center);
-  let origin = [];
-  if (box.length === 10) {
-    const halfSize = box.slice(3, 6);
-    const quaternion = new Quaternion();
-    quaternion.fromArray(box, 6);
-    const x = new Vector3([1, 0, 0]);
-    const y = new Vector3([0, 1, 0]);
-    const z = new Vector3([0, 0, 1]);
-    x.transformByQuaternion(quaternion);
-    x.scale(halfSize[0]);
-    y.transformByQuaternion(quaternion);
-    y.scale(halfSize[1]);
-    z.transformByQuaternion(quaternion);
-    z.scale(halfSize[2]);
-    origin = [...x.toArray(), ...y.toArray(), ...z.toArray()];
-  } else {
-    origin = [...box.slice(3, 6), ...box.slice(6, 9), ...box.slice(9, 12)];
-  }
-  const xAxis = transform.transformAsVector(origin.slice(0, 3));
-  const yAxis = transform.transformAsVector(origin.slice(3, 6));
-  const zAxis = transform.transformAsVector(origin.slice(6, 9));
-  const halfAxes = new Matrix3([
-    xAxis[0],
-    xAxis[1],
-    xAxis[2],
-    yAxis[0],
-    yAxis[1],
-    yAxis[2],
-    zAxis[0],
-    zAxis[1],
-    zAxis[2]
-  ]);
-
-  if (defined(result)) {
-    result.center = center;
-    result.halfAxes = halfAxes;
-    return result;
-  }
-
-  return new OrientedBoundingBox(center, halfAxes);
 }
 
 /*
@@ -179,21 +135,3 @@ function createRegion(region, transform, initialTransform, result) {
   });
 }
 */
-
-function createSphere(sphere, transform, result) {
-  // Find the transformed center
-  const center = new Vector3(sphere[0], sphere[1], sphere[2]);
-  transform.transform(center, center);
-  const scale = transform.getScale(scratchScale);
-
-  const uniformScale = Math.max(Math.max(scale[0], scale[1]), scale[2]);
-  const radius = sphere[3] * uniformScale;
-
-  if (defined(result)) {
-    result.center = center;
-    result.radius = radius;
-    return result;
-  }
-
-  return new BoundingSphere(center, radius);
-}

@@ -1,4 +1,4 @@
-import {OrientedBoundingBox} from '@math.gl/culling';
+import {OrientedBoundingBox, BoundingSphere} from '@math.gl/culling';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {load} from '@loaders.gl/core';
 import {TILE_TYPE, TILE_REFINEMENT, TILESET_TYPE} from '@loaders.gl/tiles';
@@ -27,30 +27,45 @@ export function normalizeTileData(tile, options, context) {
   return normalizeTileNonUrlData(tile);
 }
 
+function createBox(box) {
+  const center = box.slice(0, 3);
+  const halfSize = box.slice(3, 6);
+  const quaternion = box.slice(6, 11);
+  return new OrientedBoundingBox().fromCenterHalfSizeQuaternion(center, halfSize, quaternion);
+}
+
+function createSphere(sphere) {
+  const center = sphere.slice(0, 3);
+  const radius = sphere[3];
+  return new BoundingSphere(center, radius);
+}
+
 export function normalizeTileNonUrlData(tile) {
-  const box = tile.obb
+  const [x, y, z, radius] = tile.obb
     ? [
-        ...Ellipsoid.WGS84.cartographicToCartesian(tile.obb.center), // cartesian center of box
-        ...tile.obb.halfSize, // halfSize
-        ...tile.obb.quaternion // quaternion
+        ...tile.obb.center,
+        Math.sqrt(tile.obb.halfSize[0] ** 2 + tile.obb.halfSize[1] ** 2 + tile.obb.halfSize[2] ** 2)
       ]
-    : undefined;
-  let sphere;
-  if (tile.mbs) {
-    sphere = [
-      ...Ellipsoid.WGS84.cartographicToCartesian(tile.mbs.slice(0, 3)), // cartesian center of sphere
-      tile.mbs[3] // radius of sphere
-    ];
-  } else if (box) {
-    const obb = new OrientedBoundingBox().fromCenterHalfSizeQuaternion(
-      box.slice(0, 3),
-      tile.obb.halfSize,
-      tile.obb.quaternion
-    );
-    const boundingSphere = obb.getBoundingSphere();
-    sphere = [...boundingSphere.center, boundingSphere.radius];
-    tile.mbs = [...tile.obb.center, boundingSphere.radius];
-  }
+    : tile.mbs;
+  const cartesianCenter = Ellipsoid.WGS84.cartographicToCartesian([x, y, z]);
+  const cartesianCenterMbs =
+    tile.obb && tile.mbs
+      ? Ellipsoid.WGS84.cartographicToCartesian(tile.mbs.slice(0, 3))
+      : cartesianCenter;
+  const radiusMbs = tile.obb && tile.mbs ? tile.mbs[3] : radius;
+  tile.mbs = tile.mbs ? tile.mbs : [x, y, z, radius];
+
+  const box =
+    tile.obb &&
+    createBox([
+      ...cartesianCenter, // cartesian center of box
+      ...tile.obb.halfSize, // halfSize
+      ...tile.obb.quaternion // quaternion
+    ]);
+  const sphere = createSphere([
+    ...cartesianCenterMbs, // cartesian center of sphere
+    radiusMbs // radius of sphere
+  ]);
 
   tile.boundingVolume = {
     sphere,
@@ -62,7 +77,6 @@ export function normalizeTileNonUrlData(tile) {
   tile.type = TILE_TYPE.MESH;
   // TODO only support replacement for now
   tile.refine = TILE_REFINEMENT.REPLACE;
-
   return tile;
 }
 
