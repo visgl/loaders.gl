@@ -1,4 +1,4 @@
-3D Tiles and I3S Spec comparisons
+# RFC: 3D Tiles and I3S Spec comparisons
 
 Specs:
 

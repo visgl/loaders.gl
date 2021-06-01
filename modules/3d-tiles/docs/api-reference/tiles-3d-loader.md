@@ -4,7 +4,7 @@
   <img src="https://img.shields.io/badge/From-v2.1-blue.svg?style=flat-square" alt="From-v2.1" />
 </p>
 
-Parses a [3D tile](https://github.com/AnalyticalGraphicsInc/3d-tiles).
+Parses a [3D tiles](https://github.com/AnalyticalGraphicsInc/3d-tiles) tileset.
 
 | Loader                | Characteristic                                                                                                     |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------ |
@@ -97,24 +97,20 @@ If `options['3d-tiles'].loadGLTF` is `true`, GLTF loading can be controlled by p
 
 ### b3dm, i3dm
 
-glTF file into a hierarchical Scenegraph description that can be used to instantiate an actual Scenegraph in most WebGL libraries. Can load both binary `.glb` files and JSON `.gltf` files.
+The Batched 3D Model and Instanced 3D model tile types contain an embedded glTF file. This can be parsed into a hierarchical scene graph description that can be used to instantiate an actual sceneg raph in most WebGL libraries.
 
-## Data formats
+Can load both binary `.glb` files and JSON `.gltf` files.
 
-This section specifies the loaded data formats.
+## Data Format
+
+Loaded data conforms to the 3D Tiles loader category specification with the following exceptions.
 
 ### Tileset Object
 
-The following fields are guaranteed. Additionally, the loaded tileset object will contain all the data fetched from the provided url.
-
-| Field            | Type     | Contents                                                                                                                                                                                                                                                                                                                   |
-| ---------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `loader`         | `Object` | Tiles3DLoader                                                                                                                                                                                                                                                                                                              |
-| `root`           | `Object` | The root tile header object                                                                                                                                                                                                                                                                                                |
-| `url`            | `String` | The url of this tileset                                                                                                                                                                                                                                                                                                    |
-| `type`           | `String` | Value is `TILES3D`. Indicates the returned object is a Cesium `3D Tiles` tileset.                                                                                                                                                                                                                                          |
-| `lodMetricType`  | `String` | Root's Level of Detail (LoD) metric type, which is used to decide if a tile is sufficient for current viewport. Used for deciding if this tile is sufficient given current viewport. Cesium use [`geometricError`](https://github.com/AnalyticalGraphicsInc/3d-tiles/blob/master/specification/README.md#geometric-error). |
-| `lodMetricValue` | `Number` | Root's level of detail (LoD) metric value.                                                                                                                                                                                                                                                                                 |
+| Field | Type | Contents |
+| ---------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | `type` | `String` | Value is `TILES3D`. Indicates the returned object is a Cesium `3D Tiles` tileset. |
+| `lodMetricType` | `String` | Root's Level of Detail (LoD) metric type, which is used to decide if a tile is sufficient for current viewport. Used for deciding if this tile is sufficient given current viewport. Cesium use [`geometricError`](https://github.com/AnalyticalGraphicsInc/3d-tiles/blob/master/specification/README.md#geometric-error). |
+| `lodMetricValue` | `Number` | Root's level of detail (LoD) metric value. |
 
 ### Tile Object
 
@@ -122,16 +118,13 @@ The following fields are guaranteed. Additionally, the loaded tile object will c
 
 | Field             | Type         | Contents                                                                                                                                                                                                                                                                                                            |
 | ----------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `url`             | `String`     | The url of this tile.                                                                                                                                                                                                                                                                                               |
-| `contentUrl`      | `String`     | The contentUrl of this tile.                                                                                                                                                                                                                                                                                        |
+| `id`              | `String`     | Identifier of the tile, unique in a tileset                                                                                                                                                                                                                                                                         |
+| `refine`          | `String`     | Refinement type of the tile, `ADD` or `REPLACE`                                                                                                                                                                                                                                                                     |
+| `type`            | `String`     | Type of the tile, one of `pointcloud` (`.pnts`), `scenegraph` (`.i3dm`, `.b3dm`)                                                                                                                                                                                                                                    |
 | `boundingVolume`  | `Object`     | A bounding volume in Cartesian coordinates that encloses a tile or its content. Exactly one box, region, or sphere property is required. ([`Reference`](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#bounding-volume))                                                               |
 | `lodMetricType`   | `String`     | Level of Detail (LoD) metric type, which is used to decide if a tile is sufficient for current viewport. Used for deciding if this tile is sufficient given current viewport. Cesium use [`geometricError`](https://github.com/AnalyticalGraphicsInc/3d-tiles/blob/master/specification/README.md#geometric-error). |
 | `lodMetricValue`  | `String`     | Level of Detail (LoD) metric value.                                                                                                                                                                                                                                                                                 |
 | `children`        | `Array`      | An array of objects that define child tiles. Each child tile content is fully enclosed by its parent tile's bounding volume and, generally, has more details than parent. for leaf tiles, the length of this array is zero, and children may not be defined.                                                        |
-| `content`         | `String`     | The actual payload of the tile or the url point to the actual payload.                                                                                                                                                                                                                                              |
-| `id`              | `String`     | Identifier of the tile, unique in a tileset                                                                                                                                                                                                                                                                         |
-| `refine`          | `String`     | Refinement type of the tile, `ADD` or `REPLACE`                                                                                                                                                                                                                                                                     |
-| `type`            | `String`     | Type of the tile, one of `pointcloud` (`.pnts`), `scenegraph` (`.i3dm`, `.b3dm`)                                                                                                                                                                                                                                    |
 | `transformMatrix` | `Number[16]` | A matrix that transforms from the tile's local coordinate system to the parent tile's coordinate system—or the tileset's coordinate system in the case of the root tile                                                                                                                                             |
 
 ### Tile Content
@@ -144,7 +137,7 @@ After content is loaded, the following fields are guaranteed. But different tile
 | `cartographicOrigin` | `Number[3]`   | "Origin" in lng/lat (center of tile's bounding volume)                                                                                  |
 | `modelMatrix`        | `Number[16]`  | Transforms tile geometry positions to fixed frame coordinates                                                                           |
 | `attributes`         | `Object`      | Each attribute follows luma.gl [accessor](https://github.com/visgl/luma.gl/blob/master/docs/api-reference/webgl/accessor.md) properties |
-| `segmentationData`   | `Uint32Array` | An array of feature ids which specify which feature each vertex belongs to. Can be used for picking functionality.                      |
+| `featureIds`         | `Uint32Array` | An array of feature ids which specify which feature each vertex belongs to. Can be used for picking functionality.                      |
 
 `attributes` contains following fields
 
