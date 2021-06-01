@@ -171,7 +171,7 @@ const visibleTiles = tileset3d.tiles.filter(tile => tile.selected);
 
 ## Data formats
 
-This section specifies the loaded data formats.
+Loaded data conforms to the 3D Tiles loader category specification with the following exceptions.
 
 ### Tileset Object
 
@@ -179,9 +179,6 @@ The following fields are guaranteed. Additionally, the loaded tileset object wil
 
 | Field            | Type     | Contents                                                                                                                                                                                                                                                                         |
 | ---------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `loader`         | `Object` | I3SLoader                                                                                                                                                                                                                                                                        |
-| `root`           | `Object` | The root tile header object                                                                                                                                                                                                                                                      |
-| `url`            | `String` | The url of this tileset                                                                                                                                                                                                                                                          |
 | `type`           | `String` | Value is `i3s`. Indicates the returned object is an `i3s` tileset.                                                                                                                                                                                                               |
 | `lodMetricType`  | `String` | Root's level of detail (LoD) metric type, which is used to decide if a tile is sufficient for current viewport. Only support `maxScreenThreshold` for now. Check I3S [lodSelection](https://github.com/Esri/i3s-spec/blob/master/docs/1.7/lodSelection.cmn.md) for more details. |
 | `lodMetricValue` | `Number` | Root's level of detail (LoD) metric value.                                                                                                                                                                                                                                       |
@@ -192,6 +189,9 @@ The following fields are guaranteed. Additionally, the loaded tile object will c
 
 | Field            | Type     | Contents                                                                                                                                                                                                                                                                                 |
 | ---------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`             | `String` | Identifier of the tile, unique in a tileset                                                                                                                                                                                                                                              |
+| `refine`         | `String` | Refinement type of the tile, currently only support `REPLACE`                                                                                                                                                                                                                            |
+| `type`           | `String` | Type of the tile, value is `mesh` (currently only support [I3S MeshPyramids](https://github.com/Esri/i3s-spec)                                                                                                                                                                           |
 | `url`            | `String` | The url of this tile.                                                                                                                                                                                                                                                                    |
 | `contentUrl`     | `String` | The url of this tile.                                                                                                                                                                                                                                                                    |
 | `featureUrl`     | `String` | The url of this tile.                                                                                                                                                                                                                                                                    |
@@ -199,11 +199,7 @@ The following fields are guaranteed. Additionally, the loaded tile object will c
 | `boundingVolume` | `Object` | A bounding volume in Cartesian coordinates converted from i3s node's [`mbs`](https://github.com/Esri/i3s-spec/blob/master/format/Indexed%203d%20Scene%20Layer%20Format%20Specification.md) that encloses a tile or its content. Exactly one box, region, or sphere property is required. |
 | `lodMetricType`  | `String` | Level of Detail (LoD) metric type, which is used to decide if a tile is sufficient for current viewport. Only support `maxScreenThreshold` for now. Check I3S [lodSelection](https://github.com/Esri/i3s-spec/blob/master/docs/1.7/lodSelection.cmn.md) for more details.                |
 | `lodMetricValue` | `String` | Level of Detail (LoD) metric value.                                                                                                                                                                                                                                                      |
-| `children`       | `Array`  | An array of objects that define child tiles. Each child tile content is fully enclosed by its parent tile's bounding volume and, generally, has more details than parent. for leaf tiles, the length of this array is zero, and children may not be defined.                             |
 | `content`        | `String` | The actual payload of the tile or the url point to the actual payload. If `option.loadContent` is enabled, content will be populated with the loaded value following the Tile Content section                                                                                            |
-| `id`             | `String` | Identifier of the tile, unique in a tileset                                                                                                                                                                                                                                              |
-| `refine`         | `String` | Refinement type of the tile, currently only support `REPLACE`                                                                                                                                                                                                                            |
-| `type`           | `String` | Type of the tile, value is `mesh` (currently only support [I3S MeshPyramids](https://github.com/Esri/i3s-spec)                                                                                                                                                                           |
 
 ### Tile Content
 
