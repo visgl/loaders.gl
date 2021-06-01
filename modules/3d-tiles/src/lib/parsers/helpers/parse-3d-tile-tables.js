@@ -4,6 +4,7 @@
 import {getStringFromArrayBuffer} from './parse-utils';
 
 const SIZEOF_UINT32 = 4;
+const DEPRECATION_WARNING = `b3dm tile in legacy format.`;
 
 // eslint-disable-next-line max-statements
 export function parse3DTileTablesHeaderSync(tile, arrayBuffer, byteOffset) {
@@ -36,9 +37,7 @@ export function parse3DTileTablesHeaderSync(tile, arrayBuffer, byteOffset) {
     featureTableJsonByteLength = 0;
     featureTableBinaryByteLength = 0;
 
-    const deprecationWarning = `This b3dm header is using the legacy format [batchLength] [batchTableByteLength].
-      The new format spec: https://github.com/CesiumGS/3d-tiles/tree/master/specification/TileFormats/Batched3DModel.`;
-    console.warn(deprecationWarning); // eslint-disable-line
+    console.warn(DEPRECATION_WARNING); // eslint-disable-line
   } else if (batchTableBinaryByteLength >= 570425344) {
     byteOffset -= SIZEOF_UINT32;
     batchLength = batchTableJsonByteLength;
@@ -47,9 +46,7 @@ export function parse3DTileTablesHeaderSync(tile, arrayBuffer, byteOffset) {
     featureTableJsonByteLength = 0;
     featureTableBinaryByteLength = 0;
 
-    const deprecationWarning = `This b3dm header is using the legacy format [batchTableJsonByteLength] [batchTableBinaryByteLength] [batchLength].
-      The new format spec: https://github.com/CesiumGS/3d-tiles/tree/master/specification/TileFormats/Batched3DModel.`;
-    console.warn(deprecationWarning); // eslint-disable-line
+    console.warn(DEPRECATION_WARNING); // eslint-disable-line
   }
 
   tile.header.featureTableJsonByteLength = featureTableJsonByteLength;
