@@ -1,13 +1,15 @@
 import test from 'tape-promise/tape';
-import {load, fetchFile} from '@loaders.gl/core';
+import {load, fetchFile, isBrowser} from '@loaders.gl/core';
 import {GeoPackageLoader} from '@loaders.gl/geopackage';
 
 const GPKG_RIVERS = '@loaders.gl/geopackage/test/data/rivers_small.gpkg';
 const GPKG_RIVERS_GEOJSON = '@loaders.gl/geopackage/test/data/rivers_small.geojson';
 
+const sqlJsCDN = isBrowser ? 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.5.0/' : null;
+
 test('GeoPackageLoader#load file', async t => {
   const result = await load(GPKG_RIVERS, GeoPackageLoader, {
-    geopackage: {sqlJsCDN: null}
+    geopackage: {sqlJsCDN}
   });
 
   const response = await fetchFile(GPKG_RIVERS_GEOJSON);
@@ -21,7 +23,7 @@ test('GeoPackageLoader#load file', async t => {
 
 test('GeoPackageLoader#load file and reproject to WGS84', async t => {
   const result = await load(GPKG_RIVERS, GeoPackageLoader, {
-    geopackage: {sqlJsCDN: null},
+    geopackage: {sqlJsCDN},
     gis: {reproject: true, _targetCrs: 'WGS84'}
   });
 
