@@ -28,7 +28,8 @@ export const GPXLoader = {
     parseTextSync(new TextDecoder().decode(arrayBuffer), options),
   parseTextSync,
   options: {
-    gpx: {}
+    gpx: {},
+    gis: {format: 'geojson'}
   }
 };
 
