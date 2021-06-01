@@ -95,8 +95,8 @@ test('ParseI3sTileContent#should have featureIds', async t => {
   const data = await response.arrayBuffer();
   const result = await parseI3STileContent(data, tile, i3sTilesetData, {
     i3s: {
-      useDracoGeometry: false,
-      useFeatureIds: true
+      useDracoGeometry: true,
+      loadFeatureIds: true
     }
   });
   t.ok(result);
@@ -105,7 +105,7 @@ test('ParseI3sTileContent#should have featureIds', async t => {
   t.end();
 });
 
-test('ParseI3sTileContent#should not have featureIds if useFeatureIds set to false', async t => {
+test('ParseI3sTileContent#should not have featureIds if loadFeatureIds set to false', async t => {
   const i3sTilesetData = TILESET_STUB();
   const i3SNodePagesTiles = new I3SNodePagesTiles(i3sTilesetData, {});
   const tile = await i3SNodePagesTiles.formTileFromNodePages(1);
@@ -113,8 +113,8 @@ test('ParseI3sTileContent#should not have featureIds if useFeatureIds set to fal
   const data = await response.arrayBuffer();
   const result = await parseI3STileContent(data, tile, i3sTilesetData, {
     i3s: {
-      useDracoGeometry: false,
-      useFeatureIds: false
+      useDracoGeometry: true,
+      loadFeatureIds: false
     }
   });
   t.ok(result);

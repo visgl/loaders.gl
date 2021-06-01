@@ -31,7 +31,7 @@ export const I3SLoader = {
       tileset: null,
       useDracoGeometry: true,
       useCompressedTextures: true,
-      useFeatureIds: true
+      loadFeatureIds: true
     }
   }
 };

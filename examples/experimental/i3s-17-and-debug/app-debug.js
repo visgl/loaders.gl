@@ -431,7 +431,7 @@ export default class App extends PureComponent {
       viewportTraversersMap,
       loadTiles,
       i3s: {
-        useFeatureIds: false
+        loadFeatureIds: false
       }
     };
 

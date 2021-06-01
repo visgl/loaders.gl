@@ -147,7 +147,7 @@ async function parseI3SNodeGeometry(arrayBuffer, tile = {}, options) {
 
   const matrix = new Matrix4().multiplyRight(enuMatrix);
 
-  const {useFeatureIds} = options.i3s;
+  const {loadFeatureIds} = options.i3s;
 
   content.attributes = {
     positions: attributes.position,
@@ -158,7 +158,7 @@ async function parseI3SNodeGeometry(arrayBuffer, tile = {}, options) {
   };
   content.indices = attributes.indices || null;
 
-  if (useFeatureIds && attributes.id && attributes.id.value) {
+  if (loadFeatureIds && attributes.id && attributes.id.value) {
     tile.content.featureIds = attributes.id.value;
     // Remove segmentationData i3s-content-worker will be published
     tile.content.segmentationData = attributes.id.value;

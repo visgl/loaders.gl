@@ -49,7 +49,7 @@ The texture API `loadImage`, `loadImageArray`, `loadImageCube` has been moved to
 
 **@loaders.gl/i3s-loader**
 
-- Added `useFeatureIds` flag. If true will add `featureIds` property to the tile content if available in geometry.
+- Added `loadFeatureIds` flag. If true will load `featureIds` property to the tile content if available in geometry.
 
 ## Upgrading to v2.3
 
