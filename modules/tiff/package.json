@@ -1,0 +1,51 @@
+{
+  "name": "@loaders.gl/tiff",
+  "version": "3.0.0-alpha.18",
+  "description": "Framework-independent loaders for tiff and geotiff",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/visgl/loaders.gl"
+  },
+  "keywords": [
+    "webgl",
+    "loader",
+    "3d",
+    "texture",
+    "tiff",
+    "geotiff"
+  ],
+  "types": "src/index.d.ts",
+  "main": "dist/es5/index.js",
+  "module": "dist/esm/index.js",
+  "sideEffects": false,
+  "files": [
+    "src",
+    "dist",
+    "bin",
+    "README.md"
+  ],
+  "scripts": {
+    "pre-build": "npm run build-bundle",
+    "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js"
+  },
+  "dependencies": {
+    "@loaders.gl/core": "3.0.0-alpha.18",
+    "@loaders.gl/images": "3.0.0-alpha.18",
+    "@loaders.gl/loader-utils": "3.0.0-alpha.18",
+    "@loaders.gl/worker-utils": "3.0.0-alpha.18",
+    "fast-deep-equal": "^3.1.3",
+    "fast-xml-parser": "^3.16.0",
+    "geotiff": "ilan-gold/geotiff.js#ilan-gold/viv_094",
+    "math.gl": "^3.3.0",
+    "quickselect": "^2.0.0",
+    "zarr": "^0.4.0"
+  },
+  "devDependencies": {
+    "@babel/plugin-proposal-optional-chaining": "^7.14.2",
+    "@babel/preset-typescript": "^7.13.0"
+  }
+}

@@ -67,6 +67,8 @@
       "@loaders.gl/tiles/test": ["modules/tiles/test"],
       "@loaders.gl/tile-converter/*": ["modules/tile-converter/src/*"],
       "@loaders.gl/tile-converter/test": ["modules/tile-converter/test"],
+      "@loaders.gl/tiff/*": ["modules/tiff/src/*"],
+      "@loaders.gl/tiff/test": ["modules/tiff/test"],
       "@loaders.gl/terrain/*": ["modules/terrain/src/*"],
       "@loaders.gl/terrain/test": ["modules/terrain/test"],
       "@loaders.gl/textures/*": ["modules/textures/src/*"],
