@@ -43,6 +43,10 @@ The texture API `loadImage`, `loadImageArray`, `loadImageCube` has been moved to
 
 - `createWorker()` now creates a generic worker. For loader workers use the new `createLoaderWorker()` function.
 
+**@loaders.gl/tiles-3d-loader**
+
+- Added `featureIds` attribute to i3s tile content. It is an array of feature ids which specify which feature each vertex belongs to. Can be used for picking functionality.
+
 ## Upgrading to v2.3
 
 `@loaders.gl/core`:

@@ -144,7 +144,7 @@ After content is loaded, the following fields are guaranteed. But different tile
 | `cartographicOrigin` | `Number[3]`   | "Origin" in lng/lat (center of tile's bounding volume)                                                                                  |
 | `modelMatrix`        | `Number[16]`  | Transforms tile geometry positions to fixed frame coordinates                                                                           |
 | `attributes`         | `Object`      | Each attribute follows luma.gl [accessor](https://github.com/visgl/luma.gl/blob/master/docs/api-reference/webgl/accessor.md) properties |
-| `segmentationData`   | `Uint32Array` | An array of feature ids which specify which feature each vertex belongs to. Can be used for picking functionality.                      |
+| `featureIds`         | `Uint32Array` | An array of feature ids which specify which feature each vertex belongs to. Can be used for picking functionality.                      |
 
 `attributes` contains following fields
 
