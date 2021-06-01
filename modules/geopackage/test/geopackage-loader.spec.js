@@ -5,7 +5,7 @@ import {GeoPackageLoader} from '@loaders.gl/geopackage';
 const GPKG_RIVERS = '@loaders.gl/geopackage/test/data/rivers_small.gpkg';
 const GPKG_RIVERS_GEOJSON = '@loaders.gl/geopackage/test/data/rivers_small.geojson';
 
-const sqlJsCDN = isBrowser ? 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.5.0/' : null;
+const sqlJsCDN = isBrowser ? 'https://sql.js.org/dist/' : null;
 
 test('GeoPackageLoader#load file', async t => {
   const result = await load(GPKG_RIVERS, GeoPackageLoader, {
