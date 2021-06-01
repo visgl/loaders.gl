@@ -7,10 +7,8 @@
 const webpack = require('webpack');
 const resolve = require('path').resolve;
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
-const ALIASES = require('ocular-dev-tools/config/ocular.config')({
-  root: resolve(__dirname, '..')
-}).aliases;
-
+const {getOcularConfig} = require('ocular-dev-tools');
+const ALIASES = getOcularConfig({root: resolve(__dirname, '..')}).aliases;
 const ROOT_DIR = resolve(__dirname, '..');
 const LERNA_INFO = require(resolve(ROOT_DIR, 'lerna.json'));
 
