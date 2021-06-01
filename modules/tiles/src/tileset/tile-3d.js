@@ -7,7 +7,7 @@ import {load} from '@loaders.gl/core';
 import {assert, path} from '@loaders.gl/loader-utils';
 import {TILE_REFINEMENT, TILE_CONTENT_STATE, TILESET_TYPE} from '../constants';
 
-import {createBoundingVolume} from './helpers/bounding-volume';
+import {transformBoundingVolume} from './helpers/bounding-volume';
 import {getTiles3DScreenSpaceError} from './helpers/tiles-3d-lod';
 import {getI3ScreenSize} from './helpers/i3s-lod';
 import {get3dTilesOptions} from './helpers/3d-tiles-options';
@@ -503,7 +503,7 @@ export default class TileHeader {
 
   _updateBoundingVolume(header) {
     // Update the bounding volumes
-    this.boundingVolume = createBoundingVolume(
+    this.boundingVolume = transformBoundingVolume(
       header.boundingVolume,
       this.computedTransform,
       this.boundingVolume
@@ -521,14 +521,14 @@ export default class TileHeader {
     // since it only bounds features in the tile, not the entire tile, children may be
     // outside of this box.
     if (content.boundingVolume) {
-      this._contentBoundingVolume = createBoundingVolume(
+      this._contentBoundingVolume = transformBoundingVolume(
         content.boundingVolume,
         this.computedTransform,
         this._contentBoundingVolume
       );
     }
     if (header.viewerRequestVolume) {
-      this._viewerRequestVolume = createBoundingVolume(
+      this._viewerRequestVolume = transformBoundingVolume(
         header.viewerRequestVolume,
         this.computedTransform,
         this._viewerRequestVolume
