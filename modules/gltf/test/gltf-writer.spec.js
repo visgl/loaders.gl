@@ -56,7 +56,7 @@ test('GLTFWriter#encode', async t => {
   t.end();
 });
 
-test('GLTFWriter#Should build a GLTF object with GLTFScenegraph builder functions', async t => {
+test.only('GLTFWriter#Should build a GLTF object with GLTFScenegraph builder functions', async t => {
   const inputData = await load(GLTF_BINARY_URL, GLTFLoader, {gltf: {postProcess: true}});
   const gltfBuilder = new GLTFScenegraph();
 
