@@ -28,7 +28,8 @@ export const TCXLoader = {
     parseTextSync(new TextDecoder().decode(arrayBuffer), options),
   parseTextSync,
   options: {
-    tcx: {}
+    tcx: {},
+    gis: {format: 'geojson'}
   }
 };
 

@@ -27,7 +27,8 @@ export const KMLLoader = {
     parseTextSync(new TextDecoder().decode(arrayBuffer), options),
   parseTextSync,
   options: {
-    kml: {}
+    kml: {},
+    gis: {format: 'geojson'}
   }
 };
 
