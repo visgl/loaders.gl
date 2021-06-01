@@ -55,7 +55,7 @@ export default class TileLayer extends Tile3DLayer {
       texture,
       material,
       featureIds,
-      // Remove segmentationData after i3s-content-worker will be published
+      // Remove segmentationData and pickFeatures after i3s-content-worker will be published
       segmentationData
     } = content;
     const {pickable, autoHighlight, pickFeatures, wireframe, getMeshColor} = this.props;
@@ -88,9 +88,9 @@ export default class TileLayer extends Tile3DLayer {
         autoHighlight,
         highlightColor: [0, 0, 255, 150],
         wireframe,
-        pickFeatures,
-        // Remove segmentationData after i3s-content-worker will be published
-        featureIds: featureIds || segmentationData
+        // Remove segmentationData and pickFeatures after i3s-content-worker will be published
+        featureIds: featureIds || segmentationData,
+        pickFeatures
       }
     );
   }

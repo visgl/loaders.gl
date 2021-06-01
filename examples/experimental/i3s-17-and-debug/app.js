@@ -149,6 +149,7 @@ export default class App extends PureComponent {
         pickable: true,
         loadOptions,
         highlightedObjectIndex: selectedFeatureIndex,
+        // Remove pickFeatures when i3s-content-worker will be published
         pickFeatures: true
       })
     ];

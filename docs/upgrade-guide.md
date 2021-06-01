@@ -47,6 +47,10 @@ The texture API `loadImage`, `loadImageArray`, `loadImageCube` has been moved to
 
 - Added `featureIds` attribute to i3s tile content. It is an array of feature ids which specify which feature each vertex belongs to. Can be used for picking functionality.
 
+**@loaders.gl/i3s-loader**
+
+- Added `useFeatureIds` flag. If true will add `featureIds` property to the tile content if available in geometry.
+
 ## Upgrading to v2.3
 
 `@loaders.gl/core`:

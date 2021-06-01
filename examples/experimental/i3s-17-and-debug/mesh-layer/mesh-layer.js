@@ -56,7 +56,7 @@ export default class MeshLayer extends SimpleMeshLayer {
   initializeState() {
     const {pickFeatures, featureIds} = this.props;
     super.initializeState();
-
+    // Remove pickFeatures when i3s-content-worker will be published
     if (pickFeatures && featureIds) {
       this.state.attributeManager.add({
         segmentationPickingColors: {
@@ -82,7 +82,7 @@ export default class MeshLayer extends SimpleMeshLayer {
     }
 
     const {viewport} = this.context;
-    const {sizeScale, coordinateSystem, _instanced} = this.props;
+    const {sizeScale, coordinateSystem, featureIds, pickFeatures, _instanced} = this.props;
     this.state.model.draw({
       uniforms: Object.assign({}, uniforms, {
         sizeScale,
@@ -90,13 +90,15 @@ export default class MeshLayer extends SimpleMeshLayer {
         flatShading: !this.state.hasNormals,
         // Needed for PBR (TODO: find better way to get it)
         // eslint-disable-next-line camelcase
-        u_Camera: this.state.model.getUniforms().project_uCameraPosition
+        u_Camera: this.state.model.getUniforms().project_uCameraPosition,
+        // Remove pickFeatures when i3s-content-worker will be published
+        // eslint-disable-next-line camelcase
+        u_pickSegmentation: Boolean(featureIds && pickFeatures)
       })
     });
   }
 
   getModel(mesh) {
-    const {pickFeatures, featureIds} = this.props;
     let materialParser = null;
     if (this.props.material) {
       const material = this.props.material;
@@ -142,11 +144,6 @@ export default class MeshLayer extends SimpleMeshLayer {
       });
     }
 
-    model.setUniforms({
-      // eslint-disable-next-line camelcase
-      u_pickSegmentation: Boolean(pickFeatures && featureIds)
-    });
-
     return model;
   }
 
@@ -190,19 +187,15 @@ export default class MeshLayer extends SimpleMeshLayer {
 
   calculateSegmentationPickingColors(attribute) {
     const {featureIds} = this.props;
-
-    if (!featureIds) {
-      return;
-    }
-
     const value = new Uint8ClampedArray(featureIds.length * attribute.size);
 
+    const pickingColor = [];
     for (let index = 0; index < featureIds.length; index++) {
-      const color = this.encodePickingColor(featureIds[index]);
+      this.encodePickingColor(featureIds[index], pickingColor);
 
-      value[index * 3] = color[0];
-      value[index * 3 + 1] = color[1];
-      value[index * 3 + 2] = color[2];
+      value[index * 3] = pickingColor[0];
+      value[index * 3 + 1] = pickingColor[1];
+      value[index * 3 + 2] = pickingColor[2];
     }
 
     attribute.value = value;

@@ -429,7 +429,10 @@ export default class App extends PureComponent {
     const loadOptions = {
       throttleRequests: true,
       viewportTraversersMap,
-      loadTiles
+      loadTiles,
+      i3s: {
+        useFeatureIds: false
+      }
     };
 
     if (token) {
