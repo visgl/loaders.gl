@@ -76,6 +76,7 @@ if (TEST_GEOSPATIAL) {
   require('@loaders.gl/wkt/test');
   require('@loaders.gl/mvt/test');
   require('@loaders.gl/shapefile/test')
+  require('@loaders.gl/geopackage/test')
 }
 
 // Table Formats
