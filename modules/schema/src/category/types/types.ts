@@ -1,3 +1,4 @@
+/** Any typed array */
 export type TypedArray =
   | Int8Array
   | Uint8Array
@@ -7,8 +8,12 @@ export type TypedArray =
   | Uint32Array
   | Uint8ClampedArray
   | Float32Array
-  | Float64Array;
+  | Float64Array
+  | BigInt64Array
+  | BigUint64Array;
 
+/** Any numeric array: typed array or `number[]` */
 export type NumberArray = number[] | TypedArray;
 
+/** Any array: typed array or js array (`any[]`) */
 export type AnyArray = any[] | TypedArray;

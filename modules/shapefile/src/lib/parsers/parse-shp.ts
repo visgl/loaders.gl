@@ -1,4 +1,4 @@
-import {BinaryGeometryData} from '@loaders.gl/gis';
+import {BinaryGeometry} from '@loaders.gl/schema';
 import BinaryChunkReader from '../streaming/binary-chunk-reader';
 import {parseSHPHeader} from './parse-shp-header';
 import {parseRecord} from './parse-shp-geometry';
@@ -52,7 +52,7 @@ class SHPParser {
   }
 }
 
-export function parseSHP(arrayBuffer: ArrayBuffer, options?: object): BinaryGeometryData[] {
+export function parseSHP(arrayBuffer: ArrayBuffer, options?: object): BinaryGeometry[] {
   const shpParser = new SHPParser(options);
   shpParser.write(arrayBuffer);
   shpParser.end();
@@ -64,7 +64,7 @@ export function parseSHP(arrayBuffer: ArrayBuffer, options?: object): BinaryGeom
 export async function* parseSHPInBatches(
   asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
   options?: object
-): AsyncIterable<BinaryGeometryData | object> {
+): AsyncIterable<BinaryGeometry | object> {
   const parser = new SHPParser(options);
   let headerReturned = false;
   for await (const arrayBuffer of asyncIterator) {

@@ -1,3 +1,7 @@
+/** @typedef {import('@loaders.gl/schema').BinaryGeometry} BinaryGeometry*/
+/** @typedef {import('@loaders.gl/schema').Geometry} Geometry */
+
+/** @type {{binary: BinaryGeometry, geoJSON: Geometry}} */
 export default [
   {
     binary: {

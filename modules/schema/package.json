@@ -27,11 +27,9 @@
     "dist",
     "README.md"
   ],
-  "scripts": {
-    "pre-build-disabled": "npm run build-bundle",
-    "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js"
-  },
+  "scripts": {},
   "dependencies": {
+    "@types/geojson": "^7946.0.7",
     "apache-arrow": "^4.0.0",
     "d3-dsv": "^1.2.0"
   }

@@ -1,9 +1,6 @@
-export {default as Schema} from './lib/schema/classes/schema';
-export {default as Field} from './lib/schema/classes/field';
-export {deduceTableSchema} from './lib/schema/deduce-table-schema';
-export {getTypeInfo} from './lib/schema/get-type-info';
-
 // COMMON CATEGORY
+export type {TypedArray, NumberArray, AnyArray} from './category/types/types';
+
 export type {Batch} from './category/common';
 
 // TABLE CATEGORY TYPES
@@ -13,7 +10,9 @@ export type {
   ArrayRowTable,
   ObjectRowTable,
   ColumnarTable,
-  ArrowTable,
+  ArrowTable
+} from './category/table';
+export type {
   TableBatch,
   RowArrayTableBatch,
   RowObjectTableBatch,
@@ -33,11 +32,35 @@ export {convertToObjectRow, convertToArrayRow} from './lib/utils/row-utils';
 export type {MeshTable, MeshArrowTable, Mesh, MeshAttribute} from './category/mesh';
 
 // MESH CATEGORY UTILS
-// Note: Should move to category specific module if code size increases
 export type {Attributes as _Attributes} from './category/mesh/mesh-utils';
 export {getMeshSize, getMeshBoundingBox} from './category/mesh/mesh-utils';
 
 // TYPES
+// GIS CATEGORY - GEOJSON
+export type {GeoJSON, Feature, Geometry, Position, GeoJsonProperties} from './category/gis';
+export type {
+  Point,
+  MultiPoint,
+  LineString,
+  MultiLineString,
+  Polygon,
+  MultiPolygon
+} from './category/gis';
+
+// GIS CATEGORY - BINARY
+export type {BinaryGeometryType, BinaryGeometry, BinaryAttribute} from './category/gis';
+export type {
+  BinaryFeatures,
+  BinaryPointFeatures,
+  BinaryLineFeatures,
+  BinaryPolygonFeatures
+} from './category/gis';
+
+// SCHEMA
+export {default as Schema} from './lib/schema/classes/schema';
+export {default as Field} from './lib/schema/classes/field';
+export {deduceTableSchema} from './lib/schema/deduce-table-schema';
+export {getTypeInfo} from './lib/schema/get-type-info';
 export {
   DataType,
   Null,

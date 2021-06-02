@@ -1,3 +1,4 @@
+/** @typedef {import('@loaders.gl/schema').BinaryFeatures} BinaryFeatures */
 import test from 'tape-promise/tape';
 import {MVTLoader} from '@loaders.gl/mvt';
 import {setLoaderOptions, fetchFile, parse, parseSync} from '@loaders.gl/core';
@@ -15,6 +16,7 @@ const MVT_MULTIPLE_LAYERS_DATA_URL =
   '@loaders.gl/mvt/test/data/lines_10-501-386_multiplelayers.mvt';
 
 // Geometry Array Results
+
 import decodedPolygonsGeometry from '@loaders.gl/mvt/test/results/decoded_mvt_polygons_array.json';
 
 // GeoJSON Results
@@ -209,6 +211,7 @@ test('Polygon MVT to local coordinates binary', async (t) => {
   t.ok(geometryBinary.byteLength > 0);
   delete geometryBinary.byteLength;
   delete geometryBinary.polygons.triangles;
+  // @ts-ignore deduced type of 'Feature' is string...
   t.deepEqual(geometryBinary, geojsonToBinary(decodedPolygonsGeometry));
 
   t.end();
