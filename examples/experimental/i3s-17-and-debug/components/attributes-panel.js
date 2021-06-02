@@ -42,7 +42,7 @@ const CLOSE_BUTTON_STYLE = {
 const propTypes = {
   title: PropTypes.string,
   attributesObject: PropTypes.object,
-  children: PropTypes.any,
+  children: PropTypes.node,
   handleClosePanel: PropTypes.func
 };
 
