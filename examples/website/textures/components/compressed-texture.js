@@ -135,18 +135,20 @@ export default class CompressedTexture extends PureComponent {
   constructor(props) {
     super(props);
 
+    const supportedFormats = getSupportedGPUTextureFormats(props.gl);
+    const loadOptions = this.getLoadOptions(supportedFormats);
+
     this.state = {
-      supportedFormats: getSupportedGPUTextureFormats(props.gl),
-      loadOptions: {},
+      supportedFormats,
+      loadOptions,
       textureError: null,
       showStats: false,
-      stats: []
+      stats: [],
+      dataUrl: null
     };
   }
 
   async componentDidMount() {
-    await this.setupBasisLoadOptionsIfNeeded();
-
     const dataUrl = await this.getTextureDataUrl();
     this.setState({dataUrl});
   }
@@ -165,20 +167,18 @@ export default class CompressedTexture extends PureComponent {
     return ext;
   }
 
-  setupBasisLoadOptionsIfNeeded() {
-    if (this.state.supportedFormats.has('dxt')) {
-      const loadOptions = {
-        ...this.state.loadOptions,
+  getLoadOptions(supportedFormats) {
+    if (supportedFormats.has('dxt')) {
+      return {
         basis: {
-          ...this.state.loadOptions.basis,
           format: {
             alpha: 'BC3',
             noAlpha: 'BC1'
           }
         }
       };
-      this.setState({loadOptions});
     }
+    return {};
   }
 
   // eslint-disable-next-line max-statements
