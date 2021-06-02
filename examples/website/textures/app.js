@@ -35,21 +35,21 @@ export default class App extends PureComponent {
   constructor(props) {
     super(props);
 
+    const canvas = this.setupCanvas();
+    const gl = canvas.getContext('webgl');
+    const program = new Program(gl, {vs, fs});
+
     this.state = {
-      canvas: null,
-      gl: null,
-      program: null
+      canvas,
+      gl,
+      program: program.handle
     };
   }
 
   componentDidMount() {
-    const canvas = this.setupCanvas();
-    const gl = canvas.getContext('webgl');
+    const {gl} = this.state;
     instrumentGLContext(gl);
     this.createAndFillBufferObject(gl);
-    const program = new Program(gl, {vs, fs});
-
-    this.setState({canvas, gl, program: program.handle});
   }
 
   setupCanvas() {
