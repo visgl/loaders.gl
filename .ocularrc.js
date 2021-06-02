@@ -2,7 +2,6 @@ const {resolve} = require('path');
 
 module.exports = {
   babel: {
-    configPath: '/Users/ibgreen/code/loaders.gl/.babelrc.js',
     extensions: ['.es6', '.js', '.es', '.jsx', '.mjs', '.ts', '.tsx']
   },
   lint: {

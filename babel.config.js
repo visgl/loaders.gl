@@ -18,6 +18,6 @@ module.exports = api => {
     ]
   });
 
-  console.error('***BABEL***', config.presets);
+  // console.debug(config);
   return config;
 };
