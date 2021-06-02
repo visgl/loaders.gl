@@ -76,7 +76,7 @@ const propTypes = {
 };
 
 const defaultProps = {
-  tile: null,
+  tile: {},
   showNormals: false,
   handleShowNormals: () => {},
   handleChangeTrianglesPercentage: () => {},
@@ -88,18 +88,23 @@ export default class TileValidator extends PureComponent {
     super(props);
 
     this.state = {
+      tileId: props.tile.id,
       geometryInfo: null,
       triangleMessages: null,
       boundingVolumeInfo: null
     };
   }
 
-  componentDidUpdate(prevProps) {
-    const isNoTile = !this.props.tile || !prevProps.tile;
-
-    if (isNoTile || this.props.tile.id !== prevProps.tile.id) {
-      this.setState({geometryInfo: null, triangleMessages: null, boundingVolumeInfo: null});
+  static getDerivedStateFromProps(props, state) {
+    if (props.tile.id !== state.tileId) {
+      return {
+        tileId: props.tile.id,
+        geometryInfo: null,
+        triangleMessages: null,
+        boundingVolumeInfo: null
+      };
     }
+    return null;
   }
 
   _onValidateTile(tile) {
