@@ -140,7 +140,7 @@ export default class ControlPanel extends PureComponent {
     if (!attributions || attributions.length === 0 || !description) {
       return null;
     }
-
+    /* eslint-disable */
     return (
       <InfoContainer>
         {Boolean(attributions && attributions.length) && <b>Tileset Credentials</b>}
@@ -151,6 +151,7 @@ export default class ControlPanel extends PureComponent {
         {description && <Description dangerouslySetInnerHTML={{__html: marked(description)}} />}
       </InfoContainer>
     );
+    /* eslint-enable */
   }
 
   render() {
