@@ -146,6 +146,7 @@ export default class ControlPanel extends PureComponent {
         {Boolean(attributions && attributions.length) && <b>Tileset Credentials</b>}
         {Boolean(attributions && attributions.length) &&
           attributions.map(attribution => (
+            // eslint-disable-next-line react/no-danger
             <div key={attribution.html} dangerouslySetInnerHTML={{__html: attribution.html}} />
           ))}
         {description && <Description dangerouslySetInnerHTML={{__html: marked(description)}} />}
