@@ -150,6 +150,7 @@ export default class CompressedTexture extends PureComponent {
 
   async componentDidMount() {
     const dataUrl = await this.getTextureDataUrl();
+    // eslint-disable-next-line react/no-did-mount-set-state
     this.setState({dataUrl});
   }
 

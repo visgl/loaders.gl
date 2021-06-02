@@ -38,8 +38,7 @@ const config = deepMerge(defaultConfig, {
     {
       files: ['examples/**/*.js'],
       rules: {
-        'import/no-unresolved': 0,
-        'react/no-did-mount-set-state': 0
+        'import/no-unresolved': 0
       }
     }
   ]
