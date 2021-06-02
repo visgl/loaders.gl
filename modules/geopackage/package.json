@@ -26,6 +26,7 @@
   "dependencies": {
     "@loaders.gl/core": "^3.0.0-alpha.18",
     "@loaders.gl/gis": "^3.0.0-alpha.18",
+    "@loaders.gl/tables": "^3.0.0-alpha.18",
     "@loaders.gl/wkt": "^3.0.0-alpha.18",
     "@math.gl/proj4": "^3.3.2",
     "@types/sql.js": "^1.4.2",

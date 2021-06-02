@@ -3,6 +3,18 @@
 import initSqlJs from 'sql.js';
 import {WKBLoader} from '@loaders.gl/wkt';
 import {parseSync} from '@loaders.gl/core';
+import {
+  Schema,
+  Field,
+  Bool,
+  Utf8,
+  Float64,
+  Int32,
+  Int8,
+  Int16,
+  Float32,
+  Binary
+} from '@loaders.gl/tables';
 import {binaryToGeoJson, transformGeoJsonCoords} from '@loaders.gl/gis';
 import {Proj4Projection} from '@math.gl/proj4';
 
@@ -18,6 +30,26 @@ const ENVELOPE_BYTE_LENGTHS = {
   6: 0,
   7: 0
 };
+
+// Documentation: https://www.geopackage.org/spec130/index.html#table_column_data_types
+const SQL_TYPES = {
+  BOOLEAN: Bool,
+  TINYINT: Int8,
+  SMALLINT: Int16,
+  MEDIUMINT: Int32,
+  INT: Int32,
+  INTEGER: Int32,
+  FLOAT: Float32,
+  DOUBLE: Float64,
+  REAL: Float64,
+  TEXT: Utf8,
+  BLOB: Binary,
+  DATE: Utf8,
+  DATETIME: Utf8,
+  GEOMETRY: Binary
+};
+
+const COLUMNS_REGEXP = getColumnsRegexp();
 
 export default async function parseGeoPackage(arrayBuffer, options) {
   const {sqlJsCDN} = (options && options.geopackage) || {};
@@ -83,7 +115,7 @@ function listVectorTables(db) {
  * @param  {Database} db GeoPackage object
  * @param  {string} tableName name of vector table to query
  * @param  {object} projections keys are srs_id values, values are WKT strings
- * @return {object[]} array of GeoJSON Feature objects
+ * @return {object} array of GeoJSON Feature objects
  */
 function getVectorTable(db, tableName, projections, {reproject, _targetCrs}) {
   const dataColumns = getDataColumns(db, tableName);
@@ -115,11 +147,12 @@ function getVectorTable(db, tableName, projections, {reproject, _targetCrs}) {
     geojsonFeatures.push(geojsonFeature);
   }
 
+  const schema = getArrowSchema(db, tableName);
   if (projection) {
-    return transformGeoJsonCoords(geojsonFeatures, projection.project);
+    return {geojsonFeatures: transformGeoJsonCoords(geojsonFeatures, projection.project), schema};
   }
 
-  return geojsonFeatures;
+  return {geojsonFeatures, schema};
 }
 
 /**
@@ -380,4 +413,55 @@ function interleaveResults(columns, values) {
   }
 
   return merged;
+}
+
+/**
+ * Get arrow schema
+ *
+ * @param  {Database} db GeoPackage object
+ * @param  {string} tableName  table name
+ * @return {Schema | null} Arrow-like Schema
+ */
+function getArrowSchema(db, tableName) {
+  const metadata = db.exec(
+    `SELECT * FROM \`sqlite_master\` WHERE type='table' AND tbl_name='${tableName}';`
+  )[0];
+  const sql =
+    (metadata.values &&
+      metadata.values[0] &&
+      metadata.values[0][4] &&
+      metadata.values[0][4].toString()) ||
+    '';
+  let columnMatch = COLUMNS_REGEXP.exec(sql);
+  const fields = [];
+  while (columnMatch) {
+    fields.push(new Field(columnMatch[1], new SQL_TYPES[columnMatch[2]](), true));
+    columnMatch = COLUMNS_REGEXP.exec(sql);
+  }
+  return new Schema(fields);
+}
+
+/**
+ * Form RegExp for taking column names and column types from SQL CREATE TABLE request
+ *
+ * @return {RegExp} an array of objects, where each object represents a single row
+ * @example
+ *   For string:
+ *   "CREATE TABLE "FEATURESriversds" ( "id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "geom" GEOMETRY, "property_0" TEXT, "property_1" TEXT, "property_2" TEXT)"
+ *   The regular expression matches:
+ *      - id
+ *      - INTEGER
+ *
+ *      - geom
+ *      - GEOMETRY
+ *
+ *      ...
+ */
+function getColumnsRegexp() {
+  let re = '[(|,]\\s*"(\\S+)"\\s+(';
+  for (const typeName in SQL_TYPES) {
+    re = `${re}${typeName}|`;
+  }
+  re += ')';
+  return new RegExp(re, 'gi');
 }

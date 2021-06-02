@@ -15,8 +15,15 @@ test('GeoPackageLoader#load file', async t => {
   const response = await fetchFile(GPKG_RIVERS_GEOJSON);
   const json = await response.json();
 
-  t.equal(result.FEATURESriversds.length, 1, 'Correct number of rows received');
-  t.deepEqual(result.FEATURESriversds[0], json.features[0], 'GeoPackage matches GeoJSON from OGR');
+  t.equal(result.FEATURESriversds.geojsonFeatures.length, 1, 'Correct number of rows received');
+  t.deepEqual(
+    result.FEATURESriversds.geojsonFeatures[0],
+    json.features[0],
+    'GeoPackage matches GeoJSON from OGR'
+  );
+
+  t.ok(result.FEATURESriversds.schema);
+  t.equal(result.FEATURESriversds.schema.fields.length, 5);
 
   t.end();
 });
@@ -28,11 +35,15 @@ test('GeoPackageLoader#load file and reproject to WGS84', async t => {
   });
 
   t.ok(
-    result.FEATURESriversds[0].geometry.coordinates.every(coord =>
+    result.FEATURESriversds.geojsonFeatures[0].geometry.coordinates.every(coord =>
       insideBbox(coord, [-180, -90, 180, 90])
     ),
     'All coordinates in WGS84 lon-lat bounding box'
   );
+
+  t.ok(result.FEATURESriversds.schema);
+  t.equal(result.FEATURESriversds.schema.fields.length, 5);
+
   t.end();
 });
 

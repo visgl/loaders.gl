@@ -226,6 +226,21 @@ export class Float64 extends Float {
   }
 }
 
+export class Binary extends DataType {
+  constructor() {
+    super();
+  }
+  get typeId() {
+    return Type.Binary;
+  }
+  toString() {
+    return 'Binary';
+  }
+  get [Symbol.toStringTag]() {
+    return 'Binary';
+  }
+}
+
 // STRINGS
 
 export class Utf8 extends DataType {

@@ -96,6 +96,8 @@ export class Float16 extends Float { constructor(); }
 export class Float32 extends Float { constructor(); }
 export class Float64 extends Float { constructor(); }
 
+export class Binary extends DataType { constructor(); }
+
 // STRINGS
 
 export class Utf8 extends DataType {
