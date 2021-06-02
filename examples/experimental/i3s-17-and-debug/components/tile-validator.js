@@ -76,7 +76,7 @@ const propTypes = {
 };
 
 const defaultProps = {
-  tile: {},
+  tile: null,
   showNormals: false,
   handleShowNormals: () => {},
   handleChangeTrianglesPercentage: () => {},
@@ -96,6 +96,7 @@ export default class TileValidator extends PureComponent {
   }
 
   static getDerivedStateFromProps(props, state) {
+    // New tile is being set, re-initialize state
     if (props.tile.id !== state.tileId) {
       return {
         tileId: props.tile.id,
