@@ -1,14 +1,6 @@
-/* eslint-disable no-console */
-const {resolve} = require('path');
-const ROOT_DIR = resolve(__dirname, '..')
 require('@babel/register')({
-  root: ROOT_DIR, // This tells babel where to look for `babel.config.js` file
-  ignore: [/node_modules/],
-  only: [ROOT_DIR],
   extensions: ['.js', '.jsx', '.ts', '.tsx']
 });
-
-console.error('babel register', ROOT_DIR)
 
 // Determine Node version
 let version = 10;

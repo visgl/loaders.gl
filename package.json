@@ -41,7 +41,6 @@
     "pre-push": "ocular-test fast"
   },
   "devDependencies": {
-    "@babel/plugin-proposal-optional-chaining": "^7.14.2",
     "@babel/register": "^7.13.16",
     "@luma.gl/core": "^8.3.0",
     "@luma.gl/debug": "^8.3.0",
