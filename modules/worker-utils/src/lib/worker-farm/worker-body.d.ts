@@ -13,6 +13,10 @@ export default class WorkerBody {
    */
   static postMessage(type: WorkerMessageType, payload: WorkerMessagePayload): void;
 
-  static addEventListener(onMessage: (type: WorkerMessageType, payload: WorkerMessagePayload) => any);
-  static removeEventListener(onMessage: (type: WorkerMessageType, payload: WorkerMessagePayload) => any);
+  static addEventListener(
+    onMessage: (type: WorkerMessageType, payload: WorkerMessagePayload) => any
+  );
+  static removeEventListener(
+    onMessage: (type: WorkerMessageType, payload: WorkerMessagePayload) => any
+  );
 }

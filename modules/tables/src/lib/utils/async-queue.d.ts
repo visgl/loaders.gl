@@ -1,7 +1,7 @@
 /**
  * @returns a Promise for an Array with the elements in `asyncIterable`
  */
-export function takeAsync(asyncIterable: AsyncIterable<any>, count?: number): Promise<any[]>
+export function takeAsync(asyncIterable: AsyncIterable<any>, count?: number): Promise<any[]>;
 
 /**
  * Async Queue
@@ -22,4 +22,3 @@ export default class AsyncQueue {
    */
   next(): Promise<any>;
 }
-

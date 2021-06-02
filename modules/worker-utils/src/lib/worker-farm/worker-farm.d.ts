@@ -8,7 +8,7 @@ export type WorkerFarmProps = {
   maxMobileConcurrency?: number;
   reuseWorkers?: boolean;
   onDebug?: () => void;
-}
+};
 
 /**
  * Process multiple jobs with a "farm" of different workers in worker pools.
@@ -45,5 +45,5 @@ export default class WorkerFarm {
    * @example
    *   const job = WorkerFarm.getWorkerFarm().getWorkerPool({name, url}).startJob(...);
    */
-  getWorkerPool(options: {name: string, source?: string, url?: string}): WorkerPool;
+  getWorkerPool(options: {name: string; source?: string; url?: string}): WorkerPool;
 }

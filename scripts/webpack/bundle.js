@@ -47,11 +47,21 @@ const NODE = {
 
 const ES5_BABEL_CONFIG = {
   presets: [
+    '@babel/typescript',
     ['@babel/preset-env', {forceAllTransforms: true}]
   ],
   plugins: [
     '@babel/transform-runtime',
     ["@babel/plugin-transform-modules-commonjs", { allowTopLevelThis: true }],
+    'version-inline'
+  ]
+};
+
+const ES6_BABEL_CONFIG = {
+  presets: [
+    '@babel/typescript'
+  ],
+  plugins: [
     'version-inline'
   ]
 };
@@ -73,15 +83,17 @@ const config = {
   node: NODE,
 
   resolve: {
+    extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
     alias: ALIASES
   },
 
   module: {
     rules: [
       {
-        test: /\.js$/,
+        test: /\.(js|ts)$/,
         loader: 'babel-loader',
         include: /src/,
+        options: ES6_BABEL_CONFIG
       }
     ]
   },
@@ -107,9 +119,6 @@ const developmentConfig = {
   mode: 'development',
   output: {
     filename: 'dist.dev.js'
-  },
-  module: {
-    rules: []
   }
 };
 
@@ -122,7 +131,7 @@ const es5Config = {
   module: {
     rules: [{
       // Compile ES2015 using babel
-      test: /\.js$/,
+      test: /\.(js|ts)$/,
       loader: 'babel-loader',
       include: /src/,
       options: ES5_BABEL_CONFIG

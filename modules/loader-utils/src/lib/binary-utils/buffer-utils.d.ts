@@ -1,6 +1,7 @@
 /**
  * Check for Node.js `Buffer` (without triggering bundler to include Buffer polyfill on browser)
- */ 
+ */
+
 export function isBuffer(value: any): boolean;
 
 /**

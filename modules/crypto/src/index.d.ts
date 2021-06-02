@@ -8,7 +8,7 @@ export {default as CryptoHashTransform} from './lib/crypto/crypto-hash-transform
 
 export {hexToBase64 as _hexToBase64, toHex as _toHex} from './lib/utils/digest-utils';
 
-/** 
+/**
  * Small, fast worker for CRC32, CRC32c and MD5 Hashes
  */
 export const CryptoWorker: WorkerObject;

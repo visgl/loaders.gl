@@ -2,20 +2,20 @@ import ChildProcess from 'child_process';
 
 export type ProcessProxyOptions = {
   command: string;
-  arguments: string[],
+  arguments: string[];
   /** Whether to add a port specified arg */
-  portArg?: string,
+  portArg?: string;
   /** Base port number */
-  port?: number,
+  port?: number;
   /** Whether to search for an available port if the base port is occupied */
-  autoPort?: boolean,
+  autoPort?: boolean;
   /** Number of milliseconds to wait until concluding success */
   /** wait: 0 - infinity */
-  wait?: number,
+  wait?: number;
   /** Options passed on to Node'.js `ChildProcess.spawn` */
-  spawn?: ChildProcess.SpawnOptionsWithoutStdio,
+  spawn?: ChildProcess.SpawnOptionsWithoutStdio;
   /** Callback when the  */
-  onStart?: (proxy: ChildProcessProxy) => void
+  onStart?: (proxy: ChildProcessProxy) => void;
 };
 
 /**
@@ -29,7 +29,7 @@ export default class ChildProcessProxy {
   start(options?: ProcessProxyOptions): Promise<object>;
 
   /** Stops a running child process */
-  stop(): Promise<void>
+  stop(): Promise<void>;
 
   /** Exits this process */
   exit(statusCode?: number);

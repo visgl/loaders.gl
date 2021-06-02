@@ -9,6 +9,7 @@ const ALIASES = getOcularConfig({
 
 const BABEL_CONFIG = {
   presets: [
+    '@babel/typescript',
     // We must transpile to es6 to enable tree shaking
     ['@babel/preset-env', {modules: false}]
   ],
@@ -26,6 +27,7 @@ const CONFIG = {
   stats: 'minimal',
 
   resolve: {
+    extensions: ['.js', '.jsx', '.ts', '.tsx'],
     alias: ALIASES
   },
 
@@ -33,7 +35,7 @@ const CONFIG = {
     rules: [
       {
         // Compile
-        test: /\.js$/,
+        test: /\.(js|ts)$/,
         exclude: /node_modules|libs/,
         use: [
           {

@@ -30,7 +30,7 @@
     "fs": false
   },
   "scripts": {
-    "pre-build": "npm run build-worker && npm run build-bundle",
+    "pre-build-disabled": "npm run build-worker && npm run build-bundle",
     "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js",
     "build-worker": "webpack --entry ./src/workers/arrow-worker.js --output ./dist/arrow-worker.js --config ../../scripts/webpack/worker.js"
   },

@@ -40,11 +40,11 @@ enum draco_MeshEncoderMethod {
 */
 
 /*
-export class GeometryAttribute {
+export declare class GeometryAttribute {
   constructor();
 }
 
-export class PointAttribute {
+export declare class PointAttribute {
   constructor();
   size(): number;
 
@@ -58,13 +58,13 @@ export class PointAttribute {
   unique_id(): number;
 }
 
-export class PointCloud {
+export declare class PointCloud {
   constructor();
   num_attributes(): number;
   num_points(): number;
 }
 
-export class Mesh extends PointCloud {
+export declare class Mesh extends PointCloud {
   constructor();
   num_faces(): number;
 
@@ -74,18 +74,18 @@ export class Mesh extends PointCloud {
   set_num_points(num_points: number): void;
 }
 
-export class Metadata {
+export declare class Metadata {
   constructor();
 }
 
-export class DracoInt8Array {
+export declare class DracoInt8Array {
   constructor();
   GetValue(index: number): number;
   size(): number;
 }
 */
 
-export class MetadataBuilder {
+export declare class MetadataBuilder {
   constructor();
   AddStringEntry(metadata: Metadata, entry_name: string, entry_value: string);
   AddIntEntry(metadata: Metadata, entry_name: string, entry_value: number);
@@ -98,7 +98,7 @@ export class MetadataBuilder {
   );
 }
 
-export class PointCloudBuilder {
+export declare class PointCloudBuilder {
   constructor();
   PointCloudBuilder(): void;
   AddFloatAttribute(
@@ -155,12 +155,12 @@ export class PointCloudBuilder {
   SetMetadataForAttribute(pc: PointCloud, attribute_id: number, metadata: Metadata);
 }
 
-export class MeshBuilder extends PointCloudBuilder {
+export declare class MeshBuilder extends PointCloudBuilder {
   constructor();
   AddFacesToMesh(mesh: Mesh, num_faces: number, faces: number[]): boolean;
 }
 
-export class Encoder {
+export declare class Encoder {
   constructor();
   Encoder(): void;
   SetEncodingMethod(method: number): void;
@@ -188,7 +188,7 @@ export class Encoder {
   GetNumberOfEncodedFaces(): number;
 }
 
-export class ExpertEncoder {
+export declare class ExpertEncoder {
   constructor();
   ExpertEncoder(pc: PointCloud): void;
   SetEncodingMethod(method: number): void;

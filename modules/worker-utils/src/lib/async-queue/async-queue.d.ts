@@ -16,7 +16,7 @@ export default class AsyncQueue<T> {
   /** Return an async iterator for this queue */
   [Symbol.asyncIterator](): AsyncIterator<T>;
   /** @returns a Promise for an IteratorResult */
-  next(): Promise<{done: boolean, value?: T}>;
+  next(): Promise<{done: boolean; value?: T}>;
 
   /** Push a new value - the async iterator will yield a promise resolved to this value */
   push(value: T): void;
