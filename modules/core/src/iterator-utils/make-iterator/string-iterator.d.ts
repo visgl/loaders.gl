@@ -4,4 +4,7 @@
  * @param options
  * @param options.chunkSize
  */
-export function makeStringIterator(blob: string, options?: {chunkSize?: number}): Iterable<ArrayBuffer>;
+export function makeStringIterator(
+  blob: string,
+  options?: {chunkSize?: number}
+): Iterable<ArrayBuffer>;

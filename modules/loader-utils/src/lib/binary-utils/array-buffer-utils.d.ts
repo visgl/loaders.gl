@@ -7,23 +7,29 @@ export function toArrayBuffer(data: any): ArrayBuffer;
  * @param byteOffset
  * @param byteLength
  */
-export function sliceArrayBuffer(arrayBuffer: ArrayBuffer, byteOffset: number, byteLength?: number): ArrayBuffer;
+export function sliceArrayBuffer(
+  arrayBuffer: ArrayBuffer,
+  byteOffset: number,
+  byteLength?: number
+): ArrayBuffer;
 
 /**
  * compare two binary arrays for equality
  * @param {ArrayBuffer} a
- * @param {ArrayBuffer} b 
+ * @param {ArrayBuffer} b
  * @param {number} byteLength
  */
-export function compareArrayBuffers(arrayBuffer1: ArrayBuffer, arrayBuffer2: ArrayBuffer, byteLength?: number);
+export function compareArrayBuffers(
+  arrayBuffer1: ArrayBuffer,
+  arrayBuffer2: ArrayBuffer,
+  byteLength?: number
+);
 
 /**
  * Concatenate a sequence of ArrayBuffers
  * @return A concatenated ArrayBuffer
  */
-export function concatenateArrayBuffers(
-  ...sources: (ArrayBuffer | Uint8Array)[]
-): ArrayBuffer;
+export function concatenateArrayBuffers(...sources: (ArrayBuffer | Uint8Array)[]): ArrayBuffer;
 
 /**
  * Concatenate arbitrary count of typed arrays
@@ -31,6 +37,6 @@ export function concatenateArrayBuffers(
  *
  * @param {...*} arrays - list of arrays. All arrays should be the same type
  *
- * @return A concatenated TypedArray 
-  */
- export function concatenateTypedArrays<T>(...arrays: T[]): T;
+ * @return A concatenated TypedArray
+ */
+export function concatenateTypedArrays<T>(...arrays: T[]): T;

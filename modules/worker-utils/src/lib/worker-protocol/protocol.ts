@@ -16,13 +16,13 @@
               <= process-batches-error
  */
 export type WorkerMessageType =
-  'process' |
-  'done' |
-  'error' |
-  'process-in-batches' |
-  'input-batch' |
-  'input-done' |
-  'output-batch';
+  | 'process'
+  | 'done'
+  | 'error'
+  | 'process-in-batches'
+  | 'input-batch'
+  | 'input-done'
+  | 'output-batch';
 
 export type WorkerMessagePayload = {
   id?: number;
@@ -30,15 +30,15 @@ export type WorkerMessagePayload = {
   input?: any; // Transferable;
   result?: any; // Transferable
   error?: string;
-}
+};
 
 export type WorkerMessageData = {
   source: 'loaders.gl';
   type: WorkerMessageType;
   payload: WorkerMessagePayload;
-}
+};
 
 export type WorkerMessage = {
   type: string;
   data: WorkerMessageData;
-}
+};

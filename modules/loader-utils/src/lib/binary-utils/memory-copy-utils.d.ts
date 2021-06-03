@@ -6,7 +6,7 @@ export function padTo4Bytes(byteLength: number): number;
 
 /**
  * Calculate new size of an arrayBuffer to be aligned to an n-byte boundary
- * This function increases `byteLength` by the minimum delta, 
+ * This function increases `byteLength` by the minimum delta,
  * allowing the total length to be divided by `padding`
  * @param byteLength
  * @param padding
@@ -19,8 +19,13 @@ export function padToNBytes(byteLength: number, padding: number): number;
  * @param byteOffset
  * @param byteLength
  * @deprecated Use sliceArrayBuffer
- */ 
-export function getZeroOffsetArrayBuffer(arrayBuffer: ArrayBuffer, byteOffset: number, byteLength?: number);
+ */
+
+export function getZeroOffsetArrayBuffer(
+  arrayBuffer: ArrayBuffer,
+  byteOffset: number,
+  byteLength?: number
+);
 
 /**
  * Creates a new Uint8Array based on two different ArrayBuffers

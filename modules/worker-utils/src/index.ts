@@ -2,7 +2,11 @@ import {WorkerObject} from './types';
 
 // TYPES
 export {WorkerObject} from './types';
-export {WorkerMessage, WorkerMessageData, WorkerMessagePayload} from './lib/worker-protocol/protocol';
+export {
+  WorkerMessage,
+  WorkerMessageData,
+  WorkerMessagePayload
+} from './lib/worker-protocol/protocol';
 
 // GENERAL UTILS
 export {assert} from './lib/env-utils/assert';
@@ -30,5 +34,19 @@ export {default as AsyncQueue} from './lib/async-queue/async-queue';
 // PROCESS UTILS
 export {default as ChildProcessProxy} from './lib/process-utils/child-process-proxy';
 
+// WORKER OBJECTS
+
+// __VERSION__ is injected by babel-plugin-version-inline
+// @ts-ignore TS2304: Cannot find name '__VERSION__'.
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+
 /** A null worker to test that worker processing is functional */
-export const NullWorker: WorkerObject;
+export const NullWorker: WorkerObject = {
+  id: 'null',
+  name: 'null',
+  module: 'worker-utils',
+  version: VERSION,
+  options: {
+    null: {}
+  }
+};

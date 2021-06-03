@@ -1,4 +1,4 @@
-import { TextureLevel } from "@loaders.gl/textures/types/texture";
+import {TextureLevel} from '@loaders.gl/textures/types/texture';
 
 /**
  * Deduces format and parses compressed texture loaded in ArrayBuffer

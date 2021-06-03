@@ -9,14 +9,14 @@ export default class B3dmConverter {
 
   /**
    * The starter of content conversion
-   * @param i3sTile - Tile3D instance for I3S node 
+   * @param i3sTile - Tile3D instance for I3S node
    * @returns - encoded content
    */
   convert(i3sTile: Object, attributes?: any): ArrayBuffer;
 
   /**
    * Build and encode gltf
-   * @param i3sTile - Tile3D instance for I3S node 
+   * @param i3sTile - Tile3D instance for I3S node
    * @returns - encoded glb content
    */
   buildGltf(i3sTile): ArrayBuffer;

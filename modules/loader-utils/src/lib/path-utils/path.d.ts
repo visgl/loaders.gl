@@ -8,4 +8,4 @@ export function dirname(url: string): string;
  * Replacement for Node.js path.join
  * @param parts
  */
-export function join(...parts: string[]): string
+export function join(...parts: string[]): string;

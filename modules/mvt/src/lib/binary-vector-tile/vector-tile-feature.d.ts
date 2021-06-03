@@ -24,9 +24,15 @@ export default class VectorTileFeature {
 
   constructor(pbf: Protobuf, end, extent, keys, values, firstPassData);
 
-  loadGeometry(); any;
-  classifyRings(geom: {data: [number], lines: [number]}): {data: [number], areas: [[number]], lines: [[number]]};
-  toBinaryCoordinates(options: {x: number, y: number, z: number} | (([number], VectorTileFeature) => void)): object;
+  loadGeometry();
+  any;
+  classifyRings(geom: {
+    data: [number];
+    lines: [number];
+  }): {data: [number]; areas: [[number]]; lines: [[number]]};
+  toBinaryCoordinates(
+    options: {x: number; y: number; z: number} | (([number], VectorTileFeature) => void)
+  ): object;
 }
 
 export const TEST_EXPORTS;

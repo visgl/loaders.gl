@@ -1,9 +1,8 @@
-
 export type WorkerThreadProps = {
   name: string;
   source?: string;
   url?: string;
-}
+};
 
 /**
  * Represents one worker thread

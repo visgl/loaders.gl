@@ -6,7 +6,7 @@ import {LoaderObject, LoaderContext} from '@loaders.gl/loader-utils';
 type GlobalLoaderState = {
   loaderRegistry: LoaderObject[];
   globalOptions: {[key: string]: any};
-}
+};
 
 /**
  * Helper for safely accessing global loaders.gl variables
@@ -26,7 +26,12 @@ export function setGlobalOptions(options: object): void;
  * @param loaders
  * @param url
  */
-export function normalizeOptions(options: object, loader: LoaderObject, loaders?: LoaderObject[], url?: string): object;
+export function normalizeOptions(
+  options: object,
+  loader: LoaderObject,
+  loaders?: LoaderObject[],
+  url?: string
+): object;
 
 /**
  * Gets the current fetch function from options and context

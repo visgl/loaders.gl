@@ -33,12 +33,20 @@ const TYPED_ARRAY_TO_TYPE = {
   Float64Array: new Float64()
 };
 
-if (typeof BigInt64Array !== 'undefined') {
-  TYPED_ARRAY_TO_TYPE.BigInt64Array = new Int64();
-  TYPED_ARRAY_TO_TYPE.BigUint64Array = new Uint64();
-}
+// if (typeof BigInt64Array !== 'undefined') {
+//   TYPED_ARRAY_TO_TYPE.BigInt64Array = new Int64();
+//   TYPED_ARRAY_TO_TYPE.BigUint64Array = new Uint64();
+// }
 
 // Type deduction
+
+export function deduceTableSchema(table, schema?: Schema) {
+  const deducedSchema = Array.isArray(table)
+    ? deduceSchemaForRowTable(table)
+    : deduceSchemaForColumnarTable(table);
+  // Deduced schema will fill in missing info from partial options.schema, if provided
+  return Object.assign(deducedSchema, schema);
+}
 
 /**
  * Type deduction from columnar array
@@ -58,7 +66,7 @@ function getTypeFromColumnArray(columnArray) {
     return {type, nullable: false, metadata: null};
   }
 
-  let metadata = null;
+  let metadata: Map<string, any> | null = null;
   if (columnArray.length > 0) {
     const value = columnArray[0];
     type = deduceTypeFromValue(value);
@@ -71,16 +79,8 @@ function getTypeFromColumnArray(columnArray) {
   return {type: new Null(), nullable: true, metadata};
 }
 
-export function deduceTableSchema(table, schema = null) {
-  const deducedSchema = Array.isArray(table)
-    ? deduceSchemaForRowTable(table)
-    : deduceSchemaForColumnarTable(table);
-  // Deduced schema will fill in missing info from partial options.schema, if provided
-  return Object.assign(deducedSchema, schema);
-}
-
 function deduceSchemaForColumnarTable(columnarTable) {
-  const fields = [];
+  const fields: Field[] = [];
   for (const columnName in columnarTable) {
     const columnArray = columnarTable[columnName];
     const {type, nullable, metadata} = getTypeFromColumnArray(columnArray);
@@ -90,7 +90,7 @@ function deduceSchemaForColumnarTable(columnarTable) {
 }
 
 function deduceSchemaForRowTable(rowTable) {
-  const fields = [];
+  const fields: Field[] = [];
   if (rowTable.length) {
     const row = rowTable[0];
     // Note - handle rows in both array and object format

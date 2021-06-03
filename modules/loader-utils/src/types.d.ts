@@ -1,13 +1,14 @@
 export type TypedIntArray =
-  Int8Array | Uint8Array |
-  Int16Array | Uint16Array |
-  Int32Array | Uint32Array |
-  Int32Array | Uint32Array;
+  | Int8Array
+  | Uint8Array
+  | Int16Array
+  | Uint16Array
+  | Int32Array
+  | Uint32Array
+  | Int32Array
+  | Uint32Array;
 
-export type TypedFloatArray =
-    Uint16Array |
-    Float32Array |
-    Float64Array;
+export type TypedFloatArray = Uint16Array | Float32Array | Float64Array;
 
 export type TypedArray = TypedIntArray | TypedFloatArray;
 
@@ -38,18 +39,18 @@ export type WorkerObject = {
  */
 export type WorkerLoaderObject = {
   // WorkerObject
-  name: string,
-  id: string,
+  name: string;
+  id: string;
   module: string;
-  version: string,
+  version: string;
   worker: string | boolean;
   options: object;
   deprecatedOptions?: object;
   // end WorkerObject
 
   category?: string;
-  extensions: string[],
-  mimeTypes: string[],
+  extensions: string[];
+  mimeTypes: string[];
 
   binary?: boolean;
   text?: boolean;
@@ -67,10 +68,10 @@ export type WorkerLoaderObject = {
  */
 export type LoaderObject = {
   // WorkerObject
-  name: string,
-  id: string,
+  name: string;
+  id: string;
   module: string;
-  version: string,
+  version: string;
   worker?: string | boolean;
 
   options: object;
@@ -78,8 +79,8 @@ export type LoaderObject = {
   // end WorkerObject
 
   category?: string;
-  extensions: string[],
-  mimeTypes: string[],
+  extensions: string[];
+  mimeTypes: string[];
 
   binary?: boolean;
   text?: boolean;
@@ -95,8 +96,8 @@ export type LoaderObject = {
   parseText?: (string, options) => Promise<any>;
   parseTextSync?: (string, options) => any;
   parseInBatches?: (
-    iterator: AsyncIterator<ArrayBuffer> | Iterator<ArrayBuffer>, 
-    options: object, 
+    iterator: AsyncIterator<ArrayBuffer> | Iterator<ArrayBuffer>,
+    options: object,
     context?: object
   ) => Promise<AsyncIterator<any>> | AsyncIterator<any>;
 };
@@ -105,11 +106,11 @@ export type LoaderObject = {
  * A writer defintion that can be used with `@loaders.gl/core` functions
  */
 export type WriterObject = {
-  name: string,
+  name: string;
 
-  id: string,
+  id: string;
   module: string;
-  version: string,
+  version: string;
 
   options: object;
   deprecatedOptions?: object;
@@ -142,10 +143,10 @@ export type DataType = string | ArrayBuffer | File | Blob | Response | ReadableS
 
 /** Types that can be parsed in batches */
 export type BatchableDataType =
-  DataType |
-  Iterable<ArrayBuffer> |
-  AsyncIterable<ArrayBuffer> |
-  Promise<AsyncIterable<ArrayBuffer>>;
+  | DataType
+  | Iterable<ArrayBuffer>
+  | AsyncIterable<ArrayBuffer>
+  | Promise<AsyncIterable<ArrayBuffer>>;
 
 /**
  * A FileSystem interface can encapsulate a FileList, a ZipFile, a GoogleDrive etc.
@@ -173,10 +174,10 @@ export interface IFileSystem {
   fetch(filename: string, options?: object): Promise<Response>;
 }
 
-type ReadOptions = {buffer?: ArrayBuffer, offset?: number, length?: number, position?: number};
+type ReadOptions = {buffer?: ArrayBuffer; offset?: number; length?: number; position?: number};
 export interface IRandomAccessReadFileSystem extends IFileSystem {
   open(path: string, flags, mode?): Promise<any>;
   close(fd: any): Promise<void>;
   fstat(fd: any): Promise<object>;
-  read(fd: any, options?: ReadOptions): Promise<{bytesRead: number, buffer: Buffer}>;
+  read(fd: any, options?: ReadOptions): Promise<{bytesRead: number; buffer: Buffer}>;
 }

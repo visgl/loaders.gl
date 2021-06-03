@@ -1,4 +1,4 @@
-import {IncrementalTransform} from "@loaders.gl/loader-utils";
+import {IncrementalTransform} from '@loaders.gl/loader-utils';
 
 /**
  * A transform that decompresses / inflates LZ4 compressed input bytes

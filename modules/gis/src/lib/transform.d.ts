@@ -19,4 +19,7 @@ export function transformBinaryCoords(
  * @param  fn       Function to call on each coordinate
  * @return          Transformed GeoJSON features
  */
-export function transformGeoJsonCoords(features: object[], fn: (coord: number[]) => number[]): object[];
+export function transformGeoJsonCoords(
+  features: object[],
+  fn: (coord: number[]) => number[]
+): object[];

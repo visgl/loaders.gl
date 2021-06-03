@@ -23,7 +23,7 @@ export {save, saveSync} from './lib/api/save';
 
 // CORE UTILS SHARED WITH LOADERS (RE-EXPORTED FROM LOADER-UTILS)
 export {setPathPrefix, getPathPrefix, resolvePath} from '@loaders.gl/loader-utils';
-export {RequestScheduler as RequestScheduler} from '@loaders.gl/loader-utils';
+export {RequestScheduler} from '@loaders.gl/loader-utils';
 
 // ITERATOR UTILS
 export {makeIterator} from './iterator-utils/make-iterator/make-iterator';

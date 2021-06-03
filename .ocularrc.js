@@ -1,6 +1,9 @@
 const {resolve} = require('path');
 
 module.exports = {
+  babel: {
+    extensions: ['.es6', '.js', '.es', '.jsx', '.mjs', '.ts', '.tsx']
+  },
   lint: {
     // TODO - comment out while getting typescript to work
     paths: ['dev-docs', 'docs', 'modules', 'examples'], // test', 'website', 'examples'],

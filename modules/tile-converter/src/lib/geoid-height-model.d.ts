@@ -3,7 +3,7 @@
  * Calculates difference between mean see level height and WGS84 ellipsoid height
  * Input data have to be loaded from "Earth Gravity Model" *.pgm file with "PGMLoader"
  * A particular model file can be loaded on https://geographiclib.sourceforge.io/html/geoid.html
- * 
+ *
  * The implementation is ported from GeographicLib-1.50.1
  */
 export class GeoidHeightModel {

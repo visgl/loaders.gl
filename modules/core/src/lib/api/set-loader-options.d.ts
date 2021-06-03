@@ -1,5 +1,5 @@
 /**
  * Set global loader options
- * @param options 
+ * @param options
  */
 export function setLoaderOptions(options: object): void;

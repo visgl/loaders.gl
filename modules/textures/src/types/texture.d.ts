@@ -1,4 +1,3 @@
-
 export interface TextureLevel {
   compressed: boolean;
   format: number;
