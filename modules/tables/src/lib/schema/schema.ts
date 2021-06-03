@@ -55,13 +55,13 @@ export default class Schema {
   assign(schemaOrFields: Schema | Field[]): Schema {
     let fields: Field[];
     let metadata: SchemaMetadata = this.metadata;
-    
+
     if (schemaOrFields instanceof Schema) {
-      const otherSchema = schemaOrFields as Schema;
+      const otherSchema = schemaOrFields ;
       fields = otherSchema.fields;
       metadata = mergeMaps(mergeMaps(new Map(), this.metadata), otherSchema.metadata);
     } else {
-      fields = schemaOrFields as Field[];
+      fields = schemaOrFields ;
     }
 
     // Create a merged list of fields, overwrite fields in place, new fields at end

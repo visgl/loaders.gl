@@ -3,10 +3,12 @@ const webpack = require('webpack');
 
 const {getOcularConfig} = require('ocular-dev-tools');
 
-const ALIASES = getOcularConfig({
+const ocularConfig = getOcularConfig({
   aliasMode: 'src',
   root: resolve(__dirname, '../..')
-}).aliases;
+});
+
+const ALIASES = ocularConfig.aliases;
 
 const PACKAGE_ROOT = resolve('.');
 const DIST_PATH = resolve('dist');
@@ -47,10 +49,11 @@ const NODE = {
 
 const ES5_BABEL_CONFIG = {
   presets: [
-    '@babel/typescript',
+    '@babel/preset-typescript',
     ['@babel/preset-env', {forceAllTransforms: true}]
   ],
   plugins: [
+    '@babel/plugin-proposal-optional-chaining',
     '@babel/transform-runtime',
     ["@babel/plugin-transform-modules-commonjs", { allowTopLevelThis: true }],
     'version-inline'
@@ -62,6 +65,7 @@ const ES6_BABEL_CONFIG = {
     '@babel/typescript'
   ],
   plugins: [
+    '@babel/plugin-proposal-optional-chaining',
     'version-inline'
   ]
 };
@@ -71,7 +75,7 @@ const config = {
   mode: 'production',
 
   entry: {
-    main: resolve('./src/bundle')
+    main: resolve('./src/bundle.ts')
   },
 
   output: {
@@ -143,5 +147,7 @@ const es5Config = {
     }]
   }
 };
+
+console.error(config)
 
 module.exports = [config, developmentConfig, es5Config];
