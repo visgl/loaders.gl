@@ -83,7 +83,7 @@ const config = {
   node: NODE,
 
   resolve: {
-    extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
+    extensions: ['.js', '.mjs', '.jsx', '.ts', '.tsx', '.json'],
     alias: ALIASES
   },
 
@@ -94,6 +94,11 @@ const config = {
         loader: 'babel-loader',
         include: /src/,
         options: ES6_BABEL_CONFIG
+      },
+      {
+        test: /\.mjs$/,
+        include: /node_modules/,
+        type: "javascript/auto"
       }
     ]
   },

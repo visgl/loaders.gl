@@ -27,7 +27,7 @@ const CONFIG = {
   stats: 'minimal',
 
   resolve: {
-    extensions: ['.js', '.jsx', '.ts', '.tsx'],
+    extensions: ['.js', '.mjs', '.jsx', '.ts', '.tsx'],
     alias: ALIASES
   },
 
@@ -45,7 +45,12 @@ const CONFIG = {
         ]
       },
       {
-        // LIBS: Already compled, just process with babel - e.g. copy to dist
+        test: /\.mjs$/,
+        include: /node_modules/,
+        type: "javascript/auto"
+      },
+      {
+        // LIBS: Already compiled, just process with babel - e.g. copy to dist
         test: /libs\.*\.js$/,
         exclude: /node_modules|/,
         use: [
