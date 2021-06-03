@@ -57,7 +57,7 @@ $ I3sLayerPath="./data/CairoLayer" DEBUG=i3s-server:* npx i3s-server
 
 Converter also available as docker image in the [visgl/tile-converter](https://hub.docker.com/r/visgl/tile-converter) repo.
 
-Run it to download tile-converter docker image:
+To download tile-converter docker image, run:
 
 ```bash
 $ docker pull visgl/tile-converter
@@ -80,11 +80,11 @@ $ docker run
 
 Docker run arguments:
 
-```bash
--v    - Create docker volume, linked to internal data folder
---rm  - Remove container after conversion
+-v - Create docker volume, linked to internal data folder
+
+--rm - Remove container after conversion
+
 visgl/tile-converter - Image name
-```
 
 To build your own tile-converter docker image:
 
