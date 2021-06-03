@@ -5,6 +5,8 @@ import {Type} from './enum';
 
 import Field from '../../schema/field';
 
+export {Type} from './enum';
+
 export type TypedIntArray =
   | Int8Array
   | Uint8Array

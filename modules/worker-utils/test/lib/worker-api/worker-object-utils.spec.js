@@ -1,5 +1,5 @@
 import test from 'tape-promise/tape';
-import {isBrowser} from '@loaders.gl/core';
+// import {isBrowser} from '@loaders.gl/core';
 import {
   getWorkerObjectURL,
   validateWorkerVersion
@@ -8,7 +8,7 @@ import {NullWorker} from '@loaders.gl/worker-utils';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+// const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 test('getWorkerObjectURL', t => {
   // TODO(ib): version injection issue in babel register

@@ -1,33 +1,34 @@
 import {assert} from '../utils/assert';
 import {DataType} from '../types/arrow-like/type';
 
-// ArrowJS `Schema` API-compatible class for row-based tables (returned from `DataTable`)
-// https://loaders.gl/arrowjs/docs/api-reference/field
-// A field holds name, nullable, and metadata information about a table "column"
-// A Schema is essentially a list of fields
-
+/**
+ * ArrowJS `Field` API-compatible class for row-based tables
+ * https://loaders.gl/arrowjs/docs/api-reference/field
+ * A field holds name, nullable, and metadata information about a table "column"
+ * A Schema is essentially a list of fields
+ */
 export default class Field {
-  constructor(name, type = null, nullable = false, metadata = new Map()) {
-    assert(typeof name === 'string');
-    assert(!type || type instanceof DataType);
-    assert(typeof nullable === 'boolean');
-    assert(!metadata || typeof metadata === 'object');
+  name: string;
+  type: DataType;
+  nullable: boolean;
+  metadata: Map<string, string>;
 
+  constructor(name: string, type: DataType, nullable: boolean = false, metadata: Map<string, string> = new Map()) {
     this.name = name;
     this.type = type;
     this.nullable = nullable;
     this.metadata = metadata;
   }
 
-  get typeId() {
+  get typeId(): number {
     return this.type && this.type.typeId;
   }
 
-  clone() {
+  clone(): Field {
     return new Field(this.name, this.type, this.nullable, this.metadata);
   }
 
-  compareTo(other) {
+  compareTo(other: this): boolean {
     return (
       this.name === other.name &&
       this.type === other.type &&
@@ -36,7 +37,7 @@ export default class Field {
     );
   }
 
-  toString() {
+  toString(): string {
     return `${this.type}${this.nullable ? ', nullable' : ''}${
       this.metadata ? `, metadata: ${this.metadata}` : ''
     }`;
