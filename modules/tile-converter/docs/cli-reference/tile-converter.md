@@ -53,6 +53,51 @@ Run it with the local web server from project directory:
 $ I3sLayerPath="./data/CairoLayer" DEBUG=i3s-server:* npx i3s-server
 ```
 
+## Docker image
+
+Converter also available as docker image in the [visgl/tile-converter](https://hub.docker.com/r/visgl/tile-converter) repo.
+
+To download tile-converter docker image, run:
+
+```bash
+$ docker pull visgl/tile-converter
+```
+
+To use converter run:
+
+```bash
+$ docker run
+  -v /path/to/output_folder:/loaders-bundle/data \
+  --rm \
+  visgl/tile-converter \
+  --input-type ... \
+  --token ... \
+  --tileset ... \
+  --name ... \
+  --output ... \
+  --max-depth ...
+```
+
+Docker run arguments:
+
+-v - Create docker volume, linked to internal data folder
+
+--rm - Remove container after conversion
+
+visgl/tile-converter - Image name
+
+To build your own tile-converter docker image:
+
+- Clone [loaders.gl](https://github.com/visgl/loaders.gl) project.
+- In root folder of the project run:
+
+```bash
+  $ yarn bootstrap
+  $ docker build -t [docker_image_name] -f modules/tile-converter/Dockerfile .
+```
+
+- Push docker image to your docker hub
+
 ## Show converted layer on a map.
 
 open https://loaders.gl/examples/i3s?url=http://localhost/SceneServer/layers/0
