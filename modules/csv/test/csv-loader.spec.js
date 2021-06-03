@@ -11,7 +11,7 @@ const CSV_SAMPLE_VERY_LONG_URL = '@loaders.gl/csv/test/data/sample-very-long.csv
 const CSV_SAMPLE_URL_DUPLICATE_COLS = '@loaders.gl/csv/test/data/sample-duplicate-cols.csv';
 const CSV_SAMPLE_URL_EMPTY_LINES = '@loaders.gl/csv/test/data/sample-empty-line.csv';
 const CSV_STATES_URL = '@loaders.gl/csv/test/data/states.csv';
-
+const CSV_INCIDENTS_URL_QUOTES = '@loaders.gl/csv/test/data/sf_incidents-small.csv';
 const CSV_NO_HEADER_URL = '@loaders.gl/csv/test/data/numbers-100-no-header.csv';
 
 function validateColumn(column, length, type) {
@@ -72,6 +72,24 @@ test('CSVLoader#load', async t => {
     'Got correct first row'
   );
 
+  const rows4 = await load(CSV_INCIDENTS_URL_QUOTES, CSVLoader);
+  t.is(rows4.length, 499, 'Got correct table size (csv with quotes)');
+  t.deepEqual(
+    rows4[0],
+    {
+      IncidntNum: 160919032,
+      Category: 'VANDALISM',
+      Descript: 'MALICIOUS MISCHIEF, VANDALISM OF VEHICLES',
+      DayOfWeek: 'Friday',
+      DateTime: '11/11/16 7:00',
+      PdDistrict: 'MISSION',
+      Address: '1400 Block of UTAH ST',
+      Resolution: 'NONE',
+      Longitude: -122.4052518,
+      Latitude: 37.75152496
+    },
+    'Got correct first row (csv with quotes)'
+  );
   t.end();
 });
 
@@ -316,6 +334,35 @@ test('CSVLoader#loadInBatches(skipEmptyLines)', async t => {
     rows,
     [{A: 'x', B: 1, C: 'some text'}, {A: 'y', B: 2, C: 'other text'}],
     'dataset should be parsed with the correct content'
+  );
+  t.end();
+});
+
+test('CSVLoader#loadInBatches(csv with quotes)', async t => {
+  const iterator = await loadInBatches(CSV_INCIDENTS_URL_QUOTES, CSVLoader);
+
+  const rows = [];
+
+  for await (const batch of iterator) {
+    rows.push(...batch.data);
+  }
+
+  t.is(rows.length, 499, 'Got the correct table size');
+  t.deepEqual(
+    rows[0],
+    {
+      IncidntNum: 160919032,
+      Category: 'VANDALISM',
+      Descript: 'MALICIOUS MISCHIEF, VANDALISM OF VEHICLES',
+      DayOfWeek: 'Friday',
+      DateTime: '11/11/16 7:00',
+      PdDistrict: 'MISSION',
+      Address: '1400 Block of UTAH ST',
+      Resolution: 'NONE',
+      Longitude: -122.4052518,
+      Latitude: 37.75152496
+    },
+    'Got correct first row (csv with quotes)'
   );
   t.end();
 });
