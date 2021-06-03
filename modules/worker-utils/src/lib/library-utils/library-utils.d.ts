@@ -13,5 +13,9 @@
  * @param moduleName
  * @param options
  */
-export function loadLibrary(libraryUrl: string, moduleName?: string, options?: object): Promise<any>;
+export function loadLibrary(
+  libraryUrl: string,
+  moduleName?: string,
+  options?: object
+): Promise<any>;
 export function getLibraryUrl(library, moduleName?: string, options?): string;

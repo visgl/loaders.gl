@@ -12,7 +12,7 @@ type draco_EncodedGeometryType = number;
 type draco_DataType = number;
 type draco_StatusCode = number;
 
-  /*
+/*
 // TODO(fgalligan): Can we remove this?
 enum draco_AttributeTransformType {
   "draco::ATTRIBUTE_INVALID_TRANSFORM",
@@ -63,21 +63,21 @@ enum draco_StatusCode {
 */
 
 /** A memory buffer to decode Draco meshes from */
-export class DecoderBuffer {
+export declare class DecoderBuffer {
   constructor();
   Init(data: Int8Array, data_size: number): void;
 }
 
-export class AttributeTransformData {
+export declare class AttributeTransformData {
   constructor();
   transform_type(): number;
 }
 
-export class GeometryAttribute {
+export declare class GeometryAttribute {
   constructor();
 }
 
-export class PointAttribute {
+export declare class PointAttribute {
   constructor();
   size(): number;
   GetAttributeTransformData(): AttributeTransformData;
@@ -92,7 +92,7 @@ export class PointAttribute {
   unique_id(): number;
 }
 
-export class AttributeQuantizationTransform {
+export declare class AttributeQuantizationTransform {
   constructor();
   InitFromAttribute(att: PointAttribute): boolean;
   quantization_bits(): number;
@@ -100,20 +100,19 @@ export class AttributeQuantizationTransform {
   range(): number;
 }
 
-export class AttributeOctahedronTransform {
+export declare class AttributeOctahedronTransform {
   constructor();
   InitFromAttribute(att: PointAttribute): boolean;
   quantization_bits(): number;
 }
 
-
-export class PointCloud {
+export declare class PointCloud {
   constructor();
   num_attributes(): number;
   num_points(): number;
 }
 
-export class Mesh extends PointCloud {
+export declare class Mesh extends PointCloud {
   constructor();
 
   num_faces(): number;
@@ -123,11 +122,11 @@ export class Mesh extends PointCloud {
   // num_points(): number;
 }
 
-export class Metadata {
+export declare class Metadata {
   constructor();
 }
 
-export class Status {
+export declare class Status {
   constructor();
   code(): draco_StatusCode;
   ok(): boolean;
@@ -136,48 +135,48 @@ export class Status {
 
 // Draco version of typed arrays. The memory of these arrays is allocated on the
 // emscripten heap.
-export class DracoFloat32Array {
+export declare class DracoFloat32Array {
   constructor();
   GetValue(index: number): number;
   size(): number;
 }
 
-export class DracoInt8Array {
+export declare class DracoInt8Array {
   constructor();
   GetValue(index: number): number;
   size(): number;
 }
 
-export class DracoUInt8Array {
+export declare class DracoUInt8Array {
   GetValue(index: number): number;
   size(): number;
 }
 
-export class DracoInt16Array {
+export declare class DracoInt16Array {
   constructor();
   GetValue(index: number): number;
   size(): number;
 }
 
-export class DracoUInt16Array {
+export declare class DracoUInt16Array {
   constructor();
   GetValue(index: number): number;
   size(): number;
 }
 
-export class DracoInt32Array {
+export declare class DracoInt32Array {
   constructor();
   GetValue(index: number): number;
   size(): number;
 }
 
-export class DracoUInt32Array {
+export declare class DracoUInt32Array {
   constructor();
   GetValue(index: number): number;
   size(): number;
 }
 
-export class MetadataQuerier {
+export declare class MetadataQuerier {
   constructor();
 
   HasEntry(metadata: Metadata, entry_name: string): string;
@@ -193,7 +192,7 @@ export class MetadataQuerier {
 /**
  * Main Decoder class
  */
-export class Decoder {
+export declare class Decoder {
   constructor();
 
   GetEncodedGeometryType(in_buffer: DecoderBuffer): draco_EncodedGeometryType;
@@ -217,44 +216,58 @@ export class Decoder {
   GetTrianglesUInt16Array(m: Mesh, out_size: number, out_values: VoidPtr): boolean;
   GetTrianglesUInt32Array(m: Mesh, out_size: number, out_values: VoidPtr): boolean;
 
-  GetAttributeFloat(pa: PointAttribute,
-                    att_index: number,
-                    out_values: DracoFloat32Array): boolean;
+  GetAttributeFloat(pa: PointAttribute, att_index: number, out_values: DracoFloat32Array): boolean;
 
-  GetAttributeFloatForAllPoints(pc: PointCloud,
-                                pa: PointAttribute,
-                                out_values: DracoFloat32Array ): boolean;
+  GetAttributeFloatForAllPoints(
+    pc: PointCloud,
+    pa: PointAttribute,
+    out_values: DracoFloat32Array
+  ): boolean;
 
   // Deprecated, use GetAttributeInt32ForAllPoints instead.
-  GetAttributeIntForAllPoints(pc: PointCloud,
-                              pa: PointAttribute,
-                              out_values: DracoInt32Array): boolean;
+  GetAttributeIntForAllPoints(
+    pc: PointCloud,
+    pa: PointAttribute,
+    out_values: DracoInt32Array
+  ): boolean;
 
-  GetAttributeInt8ForAllPoints(pc: PointCloud,
-                               pa: PointAttribute,
-                               out_values: DracoInt8Array): boolean;
-  GetAttributeUInt8ForAllPoints(pc: PointCloud,
-                                pa: PointAttribute,
-                                out_values: DracoUInt8Array): boolean;
-  GetAttributeInt16ForAllPoints(pc: PointCloud,
-                                pa: PointAttribute,
-                                out_values: DracoInt16Array): boolean;
-  GetAttributeUInt16ForAllPoints(pc: PointCloud,
-                                pa: PointAttribute,
-                                out_values: DracoUInt16Array): boolean;
-  GetAttributeInt32ForAllPoints(pc: PointCloud,
-                                pa: PointAttribute,
-                                out_values: DracoInt32Array): boolean;
-  GetAttributeUInt32ForAllPoints(pc: PointCloud,
-                                pa: PointAttribute,
-                                out_values: DracoUInt32Array): boolean;
+  GetAttributeInt8ForAllPoints(
+    pc: PointCloud,
+    pa: PointAttribute,
+    out_values: DracoInt8Array
+  ): boolean;
+  GetAttributeUInt8ForAllPoints(
+    pc: PointCloud,
+    pa: PointAttribute,
+    out_values: DracoUInt8Array
+  ): boolean;
+  GetAttributeInt16ForAllPoints(
+    pc: PointCloud,
+    pa: PointAttribute,
+    out_values: DracoInt16Array
+  ): boolean;
+  GetAttributeUInt16ForAllPoints(
+    pc: PointCloud,
+    pa: PointAttribute,
+    out_values: DracoUInt16Array
+  ): boolean;
+  GetAttributeInt32ForAllPoints(
+    pc: PointCloud,
+    pa: PointAttribute,
+    out_values: DracoInt32Array
+  ): boolean;
+  GetAttributeUInt32ForAllPoints(
+    pc: PointCloud,
+    pa: PointAttribute,
+    out_values: DracoUInt32Array
+  ): boolean;
 
   GetAttributeDataArrayForAllPoints(
     pc: PointCloud,
     pa: PointAttribute,
     data_type: draco_DataType,
     out_size: number,
-    out_values: VoidPtr,
+    out_values: VoidPtr
   ): boolean;
 
   SkipAttributeTransform(att_type: draco_GeometryAttribute_Type): void;

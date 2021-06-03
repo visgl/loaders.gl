@@ -1,9 +1,18 @@
 import {assert} from '../utils/assert';
+import Field from './field';
 
-// ArrowJS `Schema` API-compatible class for row-based tables (returned from `DataTable`)
-// https://loaders.gl/arrowjs/docs/api-reference/schema
+export type SchemaMetadata = Map<string, any>;
+
+/**
+ * ArrowJS `Schema` API-compatible class for row-based tables (returned from `DataTable`)
+ * https://loaders.gl/arrowjs/docs/api-reference/schema
+ */
 export default class Schema {
-  constructor(fields, metadata = null) {
+  fields: Field[];
+  // TODO - Arrow just allows Map<string, string>
+  metadata: SchemaMetadata;
+
+  constructor(fields: Field[], metadata?: SchemaMetadata) {
     assert(Array.isArray(fields));
     checkNames(fields);
     // For kepler fields, create arrow compatible `Fields` that have kepler fields as `metadata`
@@ -11,9 +20,9 @@ export default class Schema {
     this.metadata = metadata || new Map();
   }
 
-  // TODO - arrow only seems to compare fields
-  compareTo(other) {
-    if (this.fields.metadata !== other.fields.metadata) {
+  // TODO - arrow only seems to compare fields, not metadata
+  compareTo(other: Schema): boolean {
+    if (this.metadata !== other.metadata) {
       return false;
     }
     if (this.fields.length !== other.fields.length) {
@@ -27,34 +36,36 @@ export default class Schema {
     return true;
   }
 
-  select(...columnNames) {
+  select(...columnNames: string[]): Schema {
     // Ensure column names reference valid fields
     const nameMap = Object.create(null);
     for (const name of columnNames) {
       nameMap[name] = true;
     }
-    const selectedFields = columnNames.filter(field => nameMap[field.name]);
+    const selectedFields = this.fields.filter(field => nameMap[field.name]);
     return new Schema(selectedFields, this.metadata);
   }
 
-  selectAt(...columnIndices) {
+  selectAt(...columnIndices: number[]): Schema {
     // Ensure column indices reference valid fields
     const selectedFields = columnIndices.map(index => this.fields[index]).filter(Boolean);
     return new Schema(selectedFields, this.metadata);
   }
 
-  assign(schemaOrFields) {
-    let metadata = this.metadata;
-
-    let fields = schemaOrFields;
+  assign(schemaOrFields: Schema | Field[]): Schema {
+    let fields: Field[];
+    let metadata: SchemaMetadata = this.metadata;
+    
     if (schemaOrFields instanceof Schema) {
-      const otherSchema = schemaOrFields;
+      const otherSchema = schemaOrFields as Schema;
       fields = otherSchema.fields;
       metadata = mergeMaps(mergeMaps(new Map(), this.metadata), otherSchema.metadata);
+    } else {
+      fields = schemaOrFields as Field[];
     }
 
     // Create a merged list of fields, overwrite fields in place, new fields at end
-    const fieldMap = Object.create(null);
+    const fieldMap: {[key: string]: Field} = Object.create(null);
 
     for (const field of this.fields) {
       fieldMap[field.name] = field;
@@ -82,6 +93,7 @@ function checkNames(fields) {
   }
 }
 
-function mergeMaps(m1, m2) {
+function mergeMaps<T>(m1: T, m2: T): T {
+  // @ts-ignore
   return new Map([...(m1 || new Map()), ...(m2 || new Map())]);
 }

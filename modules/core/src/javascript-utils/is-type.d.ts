@@ -16,7 +16,8 @@ export function isReadableDOMStream(value: any): boolean;
 
 /**
  * Check for Node.js `Buffer` without triggering bundler to include polyfill
- */ 
+ */
+
 export function isBuffer(value: any): boolean;
 
 export function isWritableNodeStream(value: any): boolean;

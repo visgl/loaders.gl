@@ -12,7 +12,9 @@ module.exports = api => {
       // Don't transpile files in libs, we use this folder to store external,
       // already transpiled and minified libraries and scripts.
       // e.g. draco, basis, las-perf etc.
-      /src\/libs/
+      /src\/libs/,
+      // babel can't process .d.ts
+      /\.d\.ts$/
     ]
   });
 

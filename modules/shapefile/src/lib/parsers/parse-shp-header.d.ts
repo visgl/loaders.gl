@@ -15,7 +15,7 @@ export interface SHPHeader {
     maxY: number;
     maxZ: number;
     maxM: number;
-  }
+  };
 }
 
 /**

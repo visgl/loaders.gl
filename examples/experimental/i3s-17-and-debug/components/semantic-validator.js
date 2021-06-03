@@ -45,7 +45,7 @@ const WARNING = 'Warning';
 const COLUMN_NUMBER = '№';
 
 const propTypes = {
-  warnings: PropTypes.array
+  warnings: PropTypes.arrayOf(PropTypes.object)
 };
 
 const defaultProps = {

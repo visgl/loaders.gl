@@ -1,4 +1,4 @@
-import {WorkerLoaderObject, LoaderObject} from "@loaders.gl/loader-utils";
+import {WorkerLoaderObject, LoaderObject} from '@loaders.gl/loader-utils';
 
 /**
  * Loads any data and returns null (or optionally passes through data unparsed)

@@ -11,7 +11,13 @@ export default class Tiles3DConverter {
    * @param options.egmFilePath location of *.pgm file to convert heights from ellipsoidal to gravity-related format
    * @param options.maxDepth The max tree depth of conversion
    */
-  convert(options: {inputUrl: string; outputPath: string; tilesetName: string; egmFilePath?: string; maxDepth?: number});
+  convert(options: {
+    inputUrl: string;
+    outputPath: string;
+    tilesetName: string;
+    egmFilePath?: string;
+    maxDepth?: number;
+  });
 
   /**
    * The recursive function of traversal of a nodes tree

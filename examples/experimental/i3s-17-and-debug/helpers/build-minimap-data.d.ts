@@ -7,6 +7,6 @@
 export function buildMinimapData(tiles: Tile3D[]): ScatterplotData[];
 
 interface ScatterplotData {
-  coordinates: number[],
-  radius: number
+  coordinates: number[];
+  radius: number;
 }

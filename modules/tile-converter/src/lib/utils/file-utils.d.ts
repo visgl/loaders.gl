@@ -38,6 +38,6 @@ export function removeFile(path: string): Promise<void>;
 
 /**
  * Generates absolute file path
- * @param filePath 
+ * @param filePath
  */
 export function getAbsoluteFilePath(filePath: string): string;
