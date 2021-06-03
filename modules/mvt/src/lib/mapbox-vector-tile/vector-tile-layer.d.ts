@@ -1,6 +1,6 @@
 import VectorTileFeature from './vector-tile-feature';
 
-export default class VectorTileLayer{
+export default class VectorTileLayer {
   // Public
   version: number;
   name: string;
@@ -9,6 +9,6 @@ export default class VectorTileLayer{
 
   constructor(pbf, end);
 
-	/** return feature `i` from this layer as a `VectorTileFeature` */
-	feature(i: number): VectorTileFeature;
+  /** return feature `i` from this layer as a `VectorTileFeature` */
+  feature(i: number): VectorTileFeature;
 }

@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/tables",
-  "version": "3.0.0-alpha.18",
+  "version": "3.0.0-alpha.19",
   "description": "Table format APIs for JSON, CSV, etc...",
   "license": "MIT",
   "publishConfig": {
@@ -18,7 +18,7 @@
     "point cloud",
     "PLY"
   ],
-  "types": "src/index.d.ts",
+  "types": "src/index.ts",
   "main": "dist/es5/index.js",
   "module": "dist/esm/index.js",
   "sideEffects": false,
@@ -32,7 +32,7 @@
     "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js"
   },
   "dependencies": {
-    "@loaders.gl/core": "3.0.0-alpha.18",
+    "@loaders.gl/core": "3.0.0-alpha.19",
     "d3-dsv": "^1.2.0"
   }
 }

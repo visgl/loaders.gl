@@ -49,39 +49,39 @@ export {
   ExpertEncoder
 } from './draco-web-encoder';
 
-export function destroy(resource: any): void;
-export function _malloc(byteLength: number): number;
-export function _free(ptr: number): void;
-export class HEAPF32 {
+export declare function destroy(resource: any): void;
+export declare function _malloc(byteLength: number): number;
+export declare function _free(ptr: number): void;
+export declare class HEAPF32 {
   static buffer: ArrayBuffer;
 }
 
 // ENUMS
 
 // draco_EncodedGeometryType
-export const INVALID_GEOMETRY_TYPE: number;
-export const POINT_CLOUD: number;
-export const TRIANGULAR_MESH: number;
+export declare const INVALID_GEOMETRY_TYPE: number;
+export declare const POINT_CLOUD: number;
+export declare const TRIANGULAR_MESH: number;
 
 // enum draco_GeometryAttribute_Type
-export const INVALID: number;
-export const POSITION: number;
-export const NORMAL: number;
-export const COLOR: number;
-export const TEX_COORD: number;
-export const GENERIC: number;
+export declare const INVALID: number;
+export declare const POSITION: number;
+export declare const NORMAL: number;
+export declare const COLOR: number;
+export declare const TEX_COORD: number;
+export declare const GENERIC: number;
 
 // draco_DataType
-export const DT_INVALID: number;
-export const DT_INT8: number;
-export const DT_UINT8: number;
-export const DT_INT16: number;
-export const DT_UINT16: number;
-export const DT_INT32: number;
-export const DT_UINT32: number;
-export const DT_INT64: number;
-export const DT_UINT64: number;
-export const DT_FLOAT32: number;
-export const DT_FLOAT64: number;
-export const DT_BOOL: number;
-export const DT_TYPES_COUNT: number;
+export declare const DT_INVALID: number;
+export declare const DT_INT8: number;
+export declare const DT_UINT8: number;
+export declare const DT_INT16: number;
+export declare const DT_UINT16: number;
+export declare const DT_INT32: number;
+export declare const DT_UINT32: number;
+export declare const DT_INT64: number;
+export declare const DT_UINT64: number;
+export declare const DT_FLOAT32: number;
+export declare const DT_FLOAT64: number;
+export declare const DT_BOOL: number;
+export declare const DT_TYPES_COUNT: number;

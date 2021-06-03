@@ -1,4 +1,3 @@
-
 /**
  * Returns an array of Transferrable objects that can be used with postMessage
  * https://developer.mozilla.org/en-US/docs/Web/API/Worker/postMessage
@@ -7,4 +6,8 @@
  * @param transfers - not for application use
  * @returns a transfer list that can be passed to postMessage
  */
-export function getTransferList(object: any, recursive?: boolean, transfers?: Set<any>): Transferable[];
+export function getTransferList(
+  object: any,
+  recursive?: boolean,
+  transfers?: Set<any>
+): Transferable[];

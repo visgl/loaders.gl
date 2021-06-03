@@ -3,67 +3,92 @@
 
 import {Type} from './enum';
 
+import Field from '../../schema/field';
+
+export {Type} from './enum';
+
+export type TypedIntArray =
+  | Int8Array
+  | Uint8Array
+  | Int16Array
+  | Uint16Array
+  | Int32Array
+  | Uint32Array
+  | Int32Array
+  | Uint32Array;
+
+export type TypedFloatArray = Uint16Array | Float32Array | Float64Array;
+
+export type TypedArray = TypedIntArray | TypedFloatArray;
+
+export type AnyArrayType = Array<any> | TypedIntArray | TypedFloatArray;
+
 export class DataType {
-  static isNull(x) {
+  static isNull(x: any): boolean {
     return x && x.typeId === Type.Null;
   }
-  static isInt(x) {
+  static isInt(x: any): boolean {
     return x && x.typeId === Type.Int;
   }
-  static isFloat(x) {
+  static isFloat(x: any): boolean {
     return x && x.typeId === Type.Float;
   }
-  static isBinary(x) {
+  static isBinary(x: any): boolean {
     return x && x.typeId === Type.Binary;
   }
-  static isUtf8(x) {
+  static isUtf8(x: any): boolean {
     return x && x.typeId === Type.Utf8;
   }
-  static isBool(x) {
+  static isBool(x: any): boolean {
     return x && x.typeId === Type.Bool;
   }
-  static isDecimal(x) {
+  static isDecimal(x: any): boolean {
     return x && x.typeId === Type.Decimal;
   }
-  static isDate(x) {
+  static isDate(x: any): boolean {
     return x && x.typeId === Type.Date;
   }
-  static isTime(x) {
+  static isTime(x: any): boolean {
     return x && x.typeId === Type.Time;
   }
-  static isTimestamp(x) {
+  static isTimestamp(x: any): boolean {
     return x && x.typeId === Type.Timestamp;
   }
-  static isInterval(x) {
+  static isInterval(x: any): boolean {
     return x && x.typeId === Type.Interval;
   }
-  static isList(x) {
+  static isList(x: any): boolean {
     return x && x.typeId === Type.List;
   }
-  static isStruct(x) {
+  static isStruct(x: any): boolean {
     return x && x.typeId === Type.Struct;
   }
-  static isUnion(x) {
+  static isUnion(x: any): boolean {
     return x && x.typeId === Type.Union;
   }
-  static isFixedSizeBinary(x) {
+  static isFixedSizeBinary(x: any): boolean {
     return x && x.typeId === Type.FixedSizeBinary;
   }
-  static isFixedSizeList(x) {
+  static isFixedSizeList(x: any): boolean {
     return x && x.typeId === Type.FixedSizeList;
   }
-  static isMap(x) {
+  static isMap(x: any): boolean {
     return x && x.typeId === Type.Map;
   }
-  static isDictionary(x) {
+  static isDictionary(x: any): boolean {
     return x && x.typeId === Type.Dictionary;
   }
 
-  get typeId() {
+  get typeId(): Type {
     return Type.NONE;
   }
+
+  // get ArrayType(): AnyArrayType {
+  //   return Int8Array;
+  // }
+
   // get ArrayType() { return Array; }
-  compareTo(other) {
+  compareTo(other: DataType): boolean {
     // TODO
     return this === other; // comparer.visit(this, other);
   }
@@ -72,13 +97,13 @@ export class DataType {
 // NULL
 
 export class Null extends DataType {
-  get typeId() {
+  get typeId(): Type {
     return Type.Null;
   }
-  get [Symbol.toStringTag]() {
+  get [Symbol.toStringTag](): string {
     return 'Null';
   }
-  toString() {
+  toString(): string {
     return `Null`;
   }
 }
@@ -86,16 +111,16 @@ export class Null extends DataType {
 // BOOLEANS
 
 export class Bool extends DataType {
-  get typeId() {
+  get typeId(): Type {
     return Type.Bool;
   }
-  get ArrayType() {
-    return Uint8Array;
-  }
-  get [Symbol.toStringTag]() {
+  // get ArrayType() {
+  //   return Uint8Array;
+  // }
+  get [Symbol.toStringTag](): string {
     return 'Bool';
   }
-  toString() {
+  toString(): string {
     return `Bool`;
   }
 }
@@ -103,33 +128,35 @@ export class Bool extends DataType {
 // INTS
 
 export class Int extends DataType {
+  readonly isSigned: boolean;
+  readonly bitWidth: number;
   constructor(isSigned, bitWidth) {
     super();
     this.isSigned = isSigned;
     this.bitWidth = bitWidth;
   }
-  get typeId() {
+  get typeId(): Type {
     return Type.Int;
   }
-  get ArrayType() {
-    switch (this.bitWidth) {
-      case 8:
-        return this.isSigned ? Int8Array : Uint8Array;
-      case 16:
-        return this.isSigned ? Int16Array : Uint16Array;
-      case 32:
-        return this.isSigned ? Int32Array : Uint32Array;
-      case 64:
-        return this.isSigned ? Int32Array : Uint32Array;
-      default:
-        throw new Error(`Unrecognized ${this[Symbol.toStringTag]} type`);
-    }
-  }
-  get [Symbol.toStringTag]() {
+  // get ArrayType() {
+  //   switch (this.bitWidth) {
+  //     case 8:
+  //       return this.isSigned ? Int8Array : Uint8Array;
+  //     case 16:
+  //       return this.isSigned ? Int16Array : Uint16Array;
+  //     case 32:
+  //       return this.isSigned ? Int32Array : Uint32Array;
+  //     case 64:
+  //       return this.isSigned ? Int32Array : Uint32Array;
+  //     default:
+  //       throw new Error(`Unrecognized ${this[Symbol.toStringTag]} type`);
+  //   }
+  // }
+  get [Symbol.toStringTag](): string {
     return 'Int';
   }
-  toString() {
-    return `${this.isSigned ? `I` : `Ui`}nt${this.bitWidth}`;
+  toString(): string {
+    return `${this.isSigned ? 'I' : 'Ui'}nt${this.bitWidth}`;
   }
 }
 
@@ -183,29 +210,30 @@ const Precision = {
 };
 
 export class Float extends DataType {
+  readonly precision: number;
   constructor(precision) {
     super();
     this.precision = precision;
   }
-  get typeId() {
+  get typeId(): Type {
     return Type.Float;
   }
-  get ArrayType() {
-    switch (this.precision) {
-      case Precision.HALF:
-        return Uint16Array;
-      case Precision.SINGLE:
-        return Float32Array;
-      case Precision.DOUBLE:
-        return Float64Array;
-      default:
-        throw new Error(`Unrecognized ${this[Symbol.toStringTag]} type`);
-    }
-  }
-  get [Symbol.toStringTag]() {
+  // get ArrayType() {
+  //   switch (this.precision) {
+  //     case Precision.HALF:
+  //       return Uint16Array;
+  //     case Precision.SINGLE:
+  //       return Float32Array;
+  //     case Precision.DOUBLE:
+  //       return Float64Array;
+  //     default:
+  //       throw new Error(`Unrecognized ${this[Symbol.toStringTag]} type`);
+  //   }
+  // }
+  get [Symbol.toStringTag](): string {
     return 'Float';
   }
-  toString() {
+  toString(): string {
     return `Float${this.precision}`;
   }
 }
@@ -244,16 +272,16 @@ export class Binary extends DataType {
 // STRINGS
 
 export class Utf8 extends DataType {
-  get typeId() {
+  get typeId(): Type {
     return Type.Utf8;
   }
-  get ArrayType() {
-    return Uint8Array;
-  }
-  get [Symbol.toStringTag]() {
+  // get ArrayType() {
+  //   return Uint8Array;
+  // }
+  get [Symbol.toStringTag](): string {
     return 'Utf8';
   }
-  toString() {
+  toString(): string {
     return `Utf8`;
   }
 }
@@ -266,20 +294,21 @@ const DateUnit = {
 };
 
 export class Date extends DataType {
+  readonly unit: number;
   constructor(unit) {
     super();
     this.unit = unit;
   }
-  get typeId() {
+  get typeId(): Type {
     return Type.Date;
   }
-  get ArrayType() {
-    return Int32Array;
-  }
-  get [Symbol.toStringTag]() {
+  // get ArrayType() {
+  //   return Int32Array;
+  // }
+  get [Symbol.toStringTag](): string {
     return 'Date';
   }
-  toString() {
+  toString(): string {
     return `Date${(this.unit + 1) * 32}<${DateUnit[this.unit]}>`;
   }
 }
@@ -303,23 +332,26 @@ const TimeUnit = {
 };
 
 export class Time extends DataType {
+  readonly unit: number;
+  readonly bitWidth: number;
+
   constructor(unit, bitWidth) {
     super();
     this.unit = unit;
     this.bitWidth = bitWidth;
   }
-  get typeId() {
+  get typeId(): Type {
     return Type.Time;
   }
-  toString() {
+  toString(): string {
     return `Time${this.bitWidth}<${TimeUnit[this.unit]}>`;
   }
-  get [Symbol.toStringTag]() {
+  get [Symbol.toStringTag](): string {
     return 'Time';
   }
-  get ArrayType() {
-    return Int32Array;
-  }
+  // get ArrayType() {
+  //   return Int32Array;
+  // }
 }
 
 export class TimeSecond extends Time {
@@ -336,22 +368,25 @@ export class TimeMillisecond extends Time {
 // export class TimeNanosecond extends Time { constructor() { super(TimeUnit.NANOSECOND, 64); } }
 
 export class Timestamp extends DataType {
-  constructor(unit, timezone = null) {
+  readonly unit: any;
+  readonly timezone: any;
+
+  constructor(unit: any, timezone = null) {
     super();
     this.unit = unit;
     this.timezone = timezone;
   }
-  get typeId() {
+  get typeId(): Type {
     return Type.Timestamp;
   }
-  get ArrayType() {
-    return Int32Array;
-  }
-  get [Symbol.toStringTag]() {
+  // get ArrayType() {
+  //   return Int32Array;
+  // }
+  get [Symbol.toStringTag](): string {
     return 'Timestamp';
   }
-  toString() {
-    return `Timestamp<${TimeUnit[this.unit]}${this.timezone ? `, ${this.timezone}` : ``}>`;
+  toString(): string {
+    return `Timestamp<${TimeUnit[this.unit]}${this.timezone ? `, ${this.timezone}` : ''}>`;
   }
 }
 
@@ -382,20 +417,21 @@ const IntervalUnit = {
 };
 
 export class Interval extends DataType {
-  constructor(unit) {
+  readonly unit: number;
+  constructor(unit: number) {
     super();
     this.unit = unit;
   }
-  get typeId() {
+  get typeId(): Type {
     return Type.Interval;
   }
-  get ArrayType() {
-    return Int32Array;
-  }
-  get [Symbol.toStringTag]() {
+  // get ArrayType() {
+  //   return Int32Array;
+  // }
+  get [Symbol.toStringTag](): string {
     return 'Interval';
   }
-  toString() {
+  toString(): string {
     return `Interval<${IntervalUnit[this.unit]}>`;
   }
 }
@@ -412,12 +448,15 @@ export class IntervalYearMonth extends Interval {
 }
 
 export class FixedSizeList extends DataType {
-  constructor(listSize, child) {
+  readonly listSize: number;
+  readonly children: Field[];
+
+  constructor(listSize: number, child: Field) {
     super();
     this.listSize = listSize;
     this.children = [child];
   }
-  get typeId() {
+  get typeId(): Type {
     return Type.FixedSizeList;
   }
   get valueType() {
@@ -426,13 +465,13 @@ export class FixedSizeList extends DataType {
   get valueField() {
     return this.children[0];
   }
-  get ArrayType() {
-    return this.valueType.ArrayType;
-  }
-  get [Symbol.toStringTag]() {
+  // get ArrayType() {
+  //   return this.valueType.ArrayType;
+  // }
+  get [Symbol.toStringTag](): string {
     return 'FixedSizeList';
   }
-  toString() {
+  toString(): string {
     return `FixedSizeList[${this.listSize}]<${this.valueType}>`;
   }
 }

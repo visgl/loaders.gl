@@ -7,7 +7,7 @@ import {WorkerObject} from '../../types';
  * - overridden by user
  * @returns string
  */
-export function getWorkerObjectURL(worker: WorkerObject, options: object): string
+export function getWorkerObjectURL(worker: WorkerObject, options: object): string;
 
 /**
  * Gets worker object's name
@@ -26,6 +26,6 @@ export function validateWorkerVersion(worker: WorkerObject, libVersion?: string)
 
 /**
  * Safely stringify JSON (drop non serializable values like functions and regexps)
- * @param value 
+ * @param value
  */
 export function removeNontransferableOptions(object: object): object;

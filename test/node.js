@@ -1,4 +1,6 @@
-/* eslint-disable no-console */
+require('@babel/register')({
+  extensions: ['.js', '.jsx', '.ts', '.tsx']
+});
 
 // Determine Node version
 let version = 10;
@@ -13,9 +15,5 @@ if (typeof process !== 'undefined') {
 global.__VERSION__ = require('../lerna.json').version;
 // @ts-ignore TS2339: Property does not exist on type 'Global'
 global.nodeVersion = version;
-
-// Use reify for import/export support
-console.log('Using reify. Node version:', version);
-require('reify');
 
 require('./modules');

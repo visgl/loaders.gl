@@ -6,24 +6,24 @@ type Attribute = {
   type?: number;
   value: number;
 };
-type Attributes = { [key: string]: Attribute};
+type Attributes = {[key: string]: Attribute};
 
 /**
- * Holds an axis aligned bounding box 
- * 
+ * Holds an axis aligned bounding box
+ *
  * TODO - make sure AxisAlignedBoundingBox in math.gl/culling understands this format (or change this format)
  */
 type BoundingBox = [[number, number, number], [number, number, number]];
 
 /**
  * Get number of vertices in mesh
- * @param attributes 
+ * @param attributes
  */
 export function getMeshSize(attributes: Attributes): number;
 
 /**
  * Get the (axis aligned) bounding box of a mesh
- * @param attributes 
+ * @param attributes
  * @returns array of two vectors representing the axis aligned bounding box
  */
 export function getMeshBoundingBox(attributes: Attributes): BoundingBox;

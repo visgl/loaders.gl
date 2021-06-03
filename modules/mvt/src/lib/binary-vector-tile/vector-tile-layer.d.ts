@@ -11,7 +11,7 @@ import VectorTileFeature from './vector-tile-feature';
  * except that the `feature` method passes through an additional
  * `firstPassData` parameter to the VectorTileFeature
  */
-export default class VectorTileLayer{
+export default class VectorTileLayer {
   // Public
   readonly version: number;
   name: string;

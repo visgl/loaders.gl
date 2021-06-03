@@ -1,4 +1,3 @@
-
 /**
  * data images
  */
@@ -7,7 +6,7 @@ export type ImageDataType = {
   width: number;
   height: number;
   compressed?: boolean;
-}
+};
 
 /**
  * Supported Image Types

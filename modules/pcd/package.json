@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/pcd",
-  "version": "3.0.0-alpha.18",
+  "version": "3.0.0-alpha.19",
   "description": "Framework-independent loader for the PCD format",
   "license": "MIT",
   "publishConfig": {
@@ -32,7 +32,7 @@
     "build-worker": "webpack --entry ./src/workers/pcd-worker.js --output ./dist/pcd-worker.js --config ../../scripts/webpack/worker.js"
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "3.0.0-alpha.18",
-    "@loaders.gl/tables": "3.0.0-alpha.18"
+    "@loaders.gl/loader-utils": "3.0.0-alpha.19",
+    "@loaders.gl/tables": "3.0.0-alpha.19"
   }
 }
