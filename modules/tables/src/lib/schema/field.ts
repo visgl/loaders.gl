@@ -13,7 +13,12 @@ export default class Field {
   nullable: boolean;
   metadata: Map<string, string>;
 
-  constructor(name: string, type: DataType, nullable: boolean = false, metadata: Map<string, string> = new Map()) {
+  constructor(
+    name: string,
+    type: DataType,
+    nullable = false,
+    metadata: Map<string, string> = new Map()
+  ) {
     this.name = name;
     this.type = type;
     this.nullable = nullable;
