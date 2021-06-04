@@ -42,11 +42,14 @@
     "build-crunch-worker": "webpack --entry ./src/workers/crunch-worker.js --output ./dist/crunch-worker.js --config ../../scripts/webpack/worker.js"
   },
   "dependencies": {
-    "@loaders.gl/core": "3.0.0-alpha.19",
+    "@loaders.gl/core": "3.0.0-alpha.18",
     "@loaders.gl/images": "3.0.0-alpha.19",
     "@loaders.gl/loader-utils": "3.0.0-alpha.19",
     "@loaders.gl/worker-utils": "3.0.0-alpha.19",
     "ktx-parse": "^0.0.4",
     "texture-compressor": "^1.0.2"
+  },
+  "devDependencies": {
+    "@loaders.gl/core": "3.0.0-alpha.18"
   }
 }
