@@ -7,7 +7,7 @@ const TEST_DATA_URL = '@loaders.gl/zarr/test/data/bioformats-zarr';
 const store = new FileSystemStore(`${TEST_DATA_URL}/data.zarr`);
 
 async function getMeta() {
-  const response = await fetchFile(`${TEST_DATA_URL}/METADATA.ome.xml`)
+  const response = await fetchFile(`${TEST_DATA_URL}/METADATA.ome.xml`);
   const meta = await response.text();
   return meta;
 }
