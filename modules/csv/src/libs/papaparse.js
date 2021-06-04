@@ -798,7 +798,7 @@ function ParserHandle(_config) {
         processResults();
 
         // It's possbile that this line was empty and there's no row here after all
-        if (_results.data.length === 0) return;
+        if (!_results.data || _results.data.length === 0) return;
 
         _stepCounter += results.data.length;
         if (_config.preview && _stepCounter > _config.preview) _parser.abort();
@@ -942,7 +942,7 @@ function ParserHandle(_config) {
   }
 
   function applyHeaderAndDynamicTypingAndTransformation() {
-    if (!_results || (!_config.header && !_config.dynamicTyping && !_config.transform))
+    if (!_results || !_results.data || (!_config.header && !_config.dynamicTyping && !_config.transform))
       return _results;
 
     function processRow(rowSource, i) {
