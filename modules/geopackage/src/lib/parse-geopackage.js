@@ -49,8 +49,6 @@ const SQL_TYPES = {
   GEOMETRY: Binary
 };
 
-const COLUMNS_REGEXP = getColumnsRegexp();
-
 export default async function parseGeoPackage(arrayBuffer, options) {
   const {sqlJsCDN} = (options && options.geopackage) || {};
   const {reproject = false, _targetCrs = 'WGS84'} = (options && options.gis) || {};
@@ -420,48 +418,15 @@ function interleaveResults(columns, values) {
  *
  * @param  {Database} db GeoPackage object
  * @param  {string} tableName  table name
- * @return {Schema | null} Arrow-like Schema
+ * @return {Schema} Arrow-like Schema
  */
 function getArrowSchema(db, tableName) {
-  const metadata = db.exec(
-    `SELECT * FROM \`sqlite_master\` WHERE type='table' AND tbl_name='${tableName}';`
-  )[0];
-  const sql =
-    (metadata.values &&
-      metadata.values[0] &&
-      metadata.values[0][4] &&
-      metadata.values[0][4].toString()) ||
-    '';
-  let columnMatch = COLUMNS_REGEXP.exec(sql);
+  const metadata = db.exec(`SELECT name, type FROM pragma_table_info('${tableName}')`)[0];
   const fields = [];
-  while (columnMatch) {
-    fields.push(new Field(columnMatch[1], new SQL_TYPES[columnMatch[2]](), true));
-    columnMatch = COLUMNS_REGEXP.exec(sql);
+  for (const column of metadata.values) {
+    fields.push(
+      new Field((column[0] && column[0].toString()) || '', new SQL_TYPES[column[1]](), true)
+    );
   }
   return new Schema(fields);
-}
-
-/**
- * Form RegExp for taking column names and column types from SQL CREATE TABLE request
- *
- * @return {RegExp} an array of objects, where each object represents a single row
- * @example
- *   For string:
- *   "CREATE TABLE "FEATURESriversds" ( "id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "geom" GEOMETRY, "property_0" TEXT, "property_1" TEXT, "property_2" TEXT)"
- *   The regular expression matches:
- *      - id
- *      - INTEGER
- *
- *      - geom
- *      - GEOMETRY
- *
- *      ...
- */
-function getColumnsRegexp() {
-  let re = '[(|,]\\s*"(\\S+)"\\s+(';
-  for (const typeName in SQL_TYPES) {
-    re = `${re}${typeName}|`;
-  }
-  re += ')';
-  return new RegExp(re, 'gi');
 }
