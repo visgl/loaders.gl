@@ -1,16 +1,21 @@
 import {test} from 'tape-promise/tape';
-import fs from 'fs/promises';
-import {FileSystemStore} from './test-utils/common';
-import {load} from '@loaders.gl/zarr/src/zarr/bioformats-zarr';
+import {fetchFile} from '@loaders.gl/core';
+import {FileSystemStore} from '@loaders.gl/zarr/zarr/fetch-file-store';
+import {load} from '@loaders.gl/zarr/zarr/bioformats-zarr';
 
 const TEST_DATA_URL = '@loaders.gl/zarr/test/data/bioformats-zarr';
 const store = new FileSystemStore(`${TEST_DATA_URL}/data.zarr`);
-const meta = fs.readFile(`${TEST_DATA_URL}/METADATA.ome.xml`).then(b => b.toString());
+
+async function getMeta() {
+  const response = await fetchFile(`${TEST_DATA_URL}/METADATA.ome.xml`)
+  const meta = await response.text();
+  return meta;
+}
 
 test('Creates correct ZarrPixelSource.', async t => {
-  t.plan(4);
+  t.plan(3);
   try {
-    const {data} = await load(store, await meta);
+    const {data} = await load(store, await getMeta());
     t.equal(data.length, 2, 'Image should have two levels.');
     const [base] = data;
     t.deepEqual(base.labels, ['t', 'c', 'z', 'y', 'x'], 'should have DimensionOrder "XYZCT".');
@@ -23,7 +28,7 @@ test('Creates correct ZarrPixelSource.', async t => {
 test('Get raster data.', async t => {
   t.plan(13);
   try {
-    const {data} = await load(store, await meta);
+    const {data} = await load(store, await getMeta());
     const [base] = data;
 
     for (let c = 0; c < 3; c += 1) {
@@ -48,7 +53,7 @@ test('Get raster data.', async t => {
 test('Correct OME-XML.', async t => {
   t.plan(9);
   try {
-    const {metadata} = await load(store, await meta);
+    const {metadata} = await load(store, await getMeta());
     const {Name, Pixels} = metadata;
     t.equal(Name, 'multi-channel.ome.tif', `Name should be 'multi-channel.ome.tif'.`);
     t.equal(Pixels.SizeC, 3, 'Should have three channels.');

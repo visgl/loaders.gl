@@ -1,9 +1,10 @@
 import {test} from 'tape-promise/tape';
-import {FileSystemStore} from './common';
+import {FileSystemStore} from '@loaders.gl/zarr/zarr/fetch-file-store';
 import {loadMultiscales} from '../src/zarr/lib/utils';
 import {getIndexer} from '../src/zarr/lib/indexer';
 
-const FIXTURE = 'tests/loaders/fixtures/bioformats-zarr';
+const FIXTURE = '@loaders.gl/zarr/test/data/bioformats-zarr';
+
 test('Loads zarr-multiscales', async t => {
   t.plan(1);
   try {
