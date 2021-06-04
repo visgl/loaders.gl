@@ -89,7 +89,7 @@ _Benchmarks ran using scripts on a 2012 MacBook Pro, 2.3 GHz Intel Core i7, 8 GB
 
 **@loaders.gl/terrain**
 
-- Added new `tesselator` option in `TerrainLoader` for selecting desired method of mesh reconstruction
+- Added new `tesselator` option in `TerrainLoader` for selecting desired method of mesh generation. Use `'martini'` for a faster method that works in most cases or `'delatin'`, which is slower but supports non-square images.
 
 ## v2.3
 
