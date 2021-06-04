@@ -15,7 +15,6 @@ test('Creates correct ZarrPixelSource.', async t => {
     const [base] = data;
     t.deepEqual(base.labels, ['t', 'c', 'z', 'y', 'x'], 'should have DimensionOrder "XYZCT".');
     t.deepEqual(base.shape, [1, 3, 1, 167, 439], 'shape should match dimensions.');
-    t.equal(base.meta, undefined, 'No meta.');
   } catch (e) {
     t.fail(e);
   }

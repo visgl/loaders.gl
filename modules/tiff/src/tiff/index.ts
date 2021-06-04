@@ -11,7 +11,7 @@ import Pool from './lib/Pool';
 import { load } from './ome-tiff';
 
 interface TiffOptions {
-  headers?: object;
+  headers?: Record<string, unknown>;
   offsets?: number[];
   pool?: boolean;
 }
@@ -26,10 +26,7 @@ interface TiffOptions {
  * multi-threaded pool of image decoders should be used to decode tiles (default = true).
  * @return {Promise<{ data: TiffPixelSource[], metadata: ImageMeta }>} data source and associated OME-Zarr metadata.
  */
-export async function loadOmeTiff(
-  source: string | File,
-  opts: TiffOptions = {}
-) {
+export async function loadOmeTiff(source: string | File, opts: TiffOptions = {}) {
   const { headers, offsets, pool = true } = opts;
 
   let tiff: GeoTIFF;

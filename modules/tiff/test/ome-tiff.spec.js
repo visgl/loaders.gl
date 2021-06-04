@@ -12,8 +12,8 @@ test('Creates correct TiffPixelSource for OME-TIFF.', async t => {
     const [base] = data;
     t.deepEqual(base.labels, ['t', 'c', 'z', 'y', 'x'], 'should have DimensionOrder "XYZCT".');
     t.deepEqual(base.shape, [1, 3, 1, 167, 439], 'shape should match dimensions.');
-    t.equal(base.meta.photometricInterpretation, 1, 'Photometric interpretation is 1.');
-    t.equal(base.meta.physicalSizes, undefined, 'No physical sizes.');
+    t.equal(base.meta?.photometricInterpretation, 1, 'Photometric interpretation is 1.');
+    t.equal(base.meta?.physicalSizes, undefined, 'No physical sizes.');
   } catch (e) {
     t.fail(e);
   }

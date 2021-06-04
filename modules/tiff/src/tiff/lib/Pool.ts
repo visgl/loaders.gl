@@ -32,7 +32,7 @@ export default class Pool {
 
     // eslint-disable-next-line no-plusplus
     for (let i = 0; i < size; ++i) {
-      const w = new Worker();
+      const w = new Worker('./decoder.worker');
       this.workers.push(w);
       this.idleWorkers.push(w);
     }

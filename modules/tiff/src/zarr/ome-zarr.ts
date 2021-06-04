@@ -1,7 +1,7 @@
 import type { ZarrArray } from 'zarr';
 import { loadMultiscales, guessTileSize } from './lib/utils';
 import ZarrPixelSource from './pixel-source';
-import type { Labels } from '../../types';
+import type { Labels } from '../types';
 
 interface Channel {
   active: boolean;
