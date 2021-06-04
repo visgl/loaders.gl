@@ -1,6 +1,6 @@
 // Mesh category utilities
 // TODO - move to mesh category module, or to math.gl/geometry module
-import {TypedArray} from '../types/types';
+import {TypedArray} from '../../types';
 
 type Attribute = {
   size?: number;

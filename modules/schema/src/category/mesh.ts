@@ -1,4 +1,4 @@
-import type {TypedArray} from './types/types';
+import type {TypedArray} from '../types';
 import type {ColumnarTable, ArrowTable} from './table';
 
 /** Mesh as columnar table */

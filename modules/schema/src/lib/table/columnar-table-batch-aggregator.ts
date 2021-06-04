@@ -1,5 +1,5 @@
+import type {Schema} from '../schema';
 import type {ColumnarTableBatch, ArrowTableBatch} from '../../category/table';
-import type Schema from '../schema/classes/schema';
 import {TableBatchAggregator} from './table-batch-aggregator';
 
 type ColumnarTableBatchOptions = {};

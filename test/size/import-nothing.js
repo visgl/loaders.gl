@@ -1,3 +1,3 @@
-import {parse} from '@loaders.gl/core';
+import {Schema, Field, Float32Vector, Float32} from '@loaders.gl/tables';
 
-console.log(parse); // eslint-disable-line
+console.log(Schema, Field); // eslint-disable-line

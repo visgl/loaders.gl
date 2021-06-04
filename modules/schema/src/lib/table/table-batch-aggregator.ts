@@ -1,5 +1,5 @@
+import type {Schema} from '../schema';
 import type {TableBatch} from '../../category/table';
-import type Schema from '../schema/classes/schema';
 
 export interface TableBatchOptions {
   batchSize: number | string;
