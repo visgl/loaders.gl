@@ -1,6 +1,6 @@
 import type { GeoTIFFImage, RasterOptions } from 'geotiff';
 import type { TypedArray } from 'zarr';
-import { getImageSize, isInterleaved, SIGNAL_ABORTED } from '../utils';
+import { getImageSize, isInterleaved, SIGNAL_ABORTED } from './utils/tiff-utils';
 
 import type {
   PixelSource,

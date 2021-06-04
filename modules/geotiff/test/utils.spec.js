@@ -1,6 +1,6 @@
 import test from 'tape-promise/tape';
 
-import {intToRgba, isInterleaved} from '../src/utils';
+import {intToRgba, isInterleaved} from '@loaders.gl/geotiff/lib/utils/tiff-utils';
 
 test('Convert int to RGBA color', t => {
   t.plan(2);

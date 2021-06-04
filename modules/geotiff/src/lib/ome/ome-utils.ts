@@ -1,5 +1,5 @@
-import { getDims, getLabels } from '../../utils';
-import type { OMEXML, UnitsLength } from '../../omexml';
+import { getDims, getLabels } from './utils';
+import type { OMEXML, UnitsLength } from './omexml';
 
 const DTYPE_LOOKUP = {
   uint8: 'Uint8',

@@ -1,13 +1,13 @@
 import type { GeoTIFF } from 'geotiff';
-import { fromString } from '../omexml';
+import { fromString } from './ome/omexml';
 
-import TiffPixelSource from './pixel-source';
+import TiffPixelSource from './tiff-pixel-source';
 import {
   getOmeLegacyIndexer,
   getOmeSubIFDIndexer,
   OmeTiffIndexer
-} from './lib/indexers';
-import { getOmePixelSourceMeta } from './lib/utils';
+} from './ome/ome-indexers';
+import { getOmePixelSourceMeta } from './ome/ome-utils';
 
 export interface OmeTiffSelection {
   t: number;
@@ -15,7 +15,7 @@ export interface OmeTiffSelection {
   z: number;
 }
 
-export async function load(tiff: GeoTIFF) {
+export async function loadOMETiff(tiff: GeoTIFF) {
   // Get first image from tiff and inspect OME-XML metadata
   const firstImage = await tiff.getImage(0);
   const {

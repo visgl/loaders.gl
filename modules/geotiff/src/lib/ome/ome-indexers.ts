@@ -1,6 +1,7 @@
 import type { GeoTIFFImage, GeoTIFF, ImageFileDirectory } from 'geotiff';
-import type { OmeTiffSelection } from '../ome-tiff';
-import type { OMEXML } from '../../omexml';
+import type { OMEXML } from '../ome/omexml';
+// TODO - circular dependency
+import type { OmeTiffSelection } from '../load-ome-tiff';
 
 export type OmeTiffIndexer = (
   sel: OmeTiffSelection,
