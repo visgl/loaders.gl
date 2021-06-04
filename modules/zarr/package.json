@@ -31,10 +31,10 @@
   },
   "dependencies": {
     "@loaders.gl/worker-utils": "3.0.0-alpha.18",
-    "fast-xml-parser": "^3.16.0",
+    "math.gl": "^3.3.0",
     "zarr": "^0.4.0"
   },
   "devDependencies": {
-    "@loaders.gl/core": "3.0.0-alpha.18"    
+    "@loaders.gl/core": "3.0.0-alpha.18"
   }
 }

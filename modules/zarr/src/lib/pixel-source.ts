@@ -1,10 +1,8 @@
 import { BoundsCheckError, slice } from 'zarr';
-import { getImageSize, isInterleaved } from '../utils';
-import { getIndexer } from './lib/indexer';
-
 import type { ZarrArray } from 'zarr';
 import type { RawArray } from 'zarr/types/rawArray';
 
+import { getImageSize, isInterleaved, getIndexer } from './utils';
 import type {
   PixelSource,
   Labels,
