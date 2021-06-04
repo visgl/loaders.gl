@@ -79,6 +79,8 @@
       "@loaders.gl/wkt/test": ["modules/wkt/test"],
       "@loaders.gl/worker-utils/*": ["modules/worker-utils/src/*"],
       "@loaders.gl/worker-utils/test": ["modules/worker-utils/test"],
+      "@loaders.gl/zarr/*": ["modules/zarr/src/*"],
+      "@loaders.gl/zarr/test": ["modules/zarr/test"],
       "@loaders.gl/zip/*": ["modules/zip/src/*"],
       "@loaders.gl/zip/test": ["modules/zip/test"],
 

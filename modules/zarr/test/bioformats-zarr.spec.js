@@ -1,11 +1,11 @@
 import {test} from 'tape-promise/tape';
 import fs from 'fs/promises';
-import {FileSystemStore} from './common';
-import {load} from '../src/zarr/bioformats-zarr';
+import {FileSystemStore} from './test-utils/common';
+import {load} from '@loaders.gl/zarr/src/zarr/bioformats-zarr';
 
-const FIXTURE = 'tests/loaders/fixtures/bioformats-zarr';
-const store = new FileSystemStore(`${FIXTURE}/data.zarr`);
-const meta = fs.readFile(`${FIXTURE}/METADATA.ome.xml`).then(b => b.toString());
+const TEST_DATA_URL = '@loaders.gl/zarr/test/data/bioformats-zarr';
+const store = new FileSystemStore(`${TEST_DATA_URL}/data.zarr`);
+const meta = fs.readFile(`${TEST_DATA_URL}/METADATA.ome.xml`).then(b => b.toString());
 
 test('Creates correct ZarrPixelSource.', async t => {
   t.plan(4);
