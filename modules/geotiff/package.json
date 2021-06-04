@@ -1,5 +1,5 @@
 {
-  "name": "@loaders.gl/tiff",
+  "name": "@loaders.gl/geotiff",
   "version": "3.0.0-alpha.18",
   "description": "Framework-independent loaders for tiff and geotiff",
   "license": "MIT",
@@ -32,18 +32,15 @@
     "pre-build": "npm run build-bundle",
     "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js"
   },
+  "dependencies-disabled": {
+    "geotiff": "ilan-gold/geotiff.js#ilan-gold/viv_094"
+  },
   "dependencies": {
-    "@loaders.gl/core": "3.0.0-alpha.18",
-    "@loaders.gl/images": "3.0.0-alpha.18",
-    "@loaders.gl/loader-utils": "3.0.0-alpha.18",
     "@loaders.gl/worker-utils": "3.0.0-alpha.18",
     "fast-xml-parser": "^3.16.0",
-    "geotiff": "ilan-gold/geotiff.js#ilan-gold/viv_094",
-    "math.gl": "^3.3.0",
-    "zarr": "^0.4.0"
+    "geotiff": "^1.0.4"
   },
   "devDependencies": {
-    "@babel/plugin-proposal-optional-chaining": "^7.14.2",
-    "@babel/preset-typescript": "^7.13.0"
+    "@loaders.gl/core": "3.0.0-alpha.18"    
   }
 }

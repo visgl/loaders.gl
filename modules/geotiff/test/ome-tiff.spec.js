@@ -4,7 +4,7 @@ import {resolvePath} from '@loaders.gl/core';
 
 import {load} from '../src/tiff/ome-tiff';
 
-const TIFF_URL = resolvePath('@loaders.gl/tiff/test/data/multi-channel.ome.tif');
+const TIFF_URL = resolvePath('@loaders.gl/geotiff/test/data/multi-channel.ome.tif');
 
 test('Creates correct TiffPixelSource for OME-TIFF.', async t => {
   t.plan(5);

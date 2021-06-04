@@ -41,8 +41,13 @@ export type Labels<S extends string[]> =
   | [...S, 'y', 'x']
   | [...S, 'y', 'x', '_c'];
 
+/**
+ * Interface to load tiles from a data source
+ */
 export interface PixelSource<S extends string[]> {
+  /** Loads a 2D plane */
   getRaster(sel: RasterSelection<S>): Promise<PixelData>;
+  /** Loads a tile */
   getTile(sel: TileSelection<S>): Promise<PixelData>;
   onTileError(err: Error): void;
   shape: number[];
