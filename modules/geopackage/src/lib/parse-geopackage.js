@@ -3,6 +3,18 @@
 import initSqlJs from 'sql.js';
 import {WKBLoader} from '@loaders.gl/wkt';
 import {parseSync} from '@loaders.gl/core';
+import {
+  Schema,
+  Field,
+  Bool,
+  Utf8,
+  Float64,
+  Int32,
+  Int8,
+  Int16,
+  Float32,
+  Binary
+} from '@loaders.gl/tables';
 import {binaryToGeoJson, transformGeoJsonCoords} from '@loaders.gl/gis';
 import {Proj4Projection} from '@math.gl/proj4';
 
@@ -17,6 +29,24 @@ const ENVELOPE_BYTE_LENGTHS = {
   5: 0,
   6: 0,
   7: 0
+};
+
+// Documentation: https://www.geopackage.org/spec130/index.html#table_column_data_types
+const SQL_TYPES = {
+  BOOLEAN: Bool,
+  TINYINT: Int8,
+  SMALLINT: Int16,
+  MEDIUMINT: Int32,
+  INT: Int32,
+  INTEGER: Int32,
+  FLOAT: Float32,
+  DOUBLE: Float64,
+  REAL: Float64,
+  TEXT: Utf8,
+  BLOB: Binary,
+  DATE: Utf8,
+  DATETIME: Utf8,
+  GEOMETRY: Binary
 };
 
 export default async function parseGeoPackage(arrayBuffer, options) {
@@ -83,7 +113,7 @@ function listVectorTables(db) {
  * @param  {Database} db GeoPackage object
  * @param  {string} tableName name of vector table to query
  * @param  {object} projections keys are srs_id values, values are WKT strings
- * @return {object[]} array of GeoJSON Feature objects
+ * @return {object} array of GeoJSON Feature objects
  */
 function getVectorTable(db, tableName, projections, {reproject, _targetCrs}) {
   const dataColumns = getDataColumns(db, tableName);
@@ -115,11 +145,12 @@ function getVectorTable(db, tableName, projections, {reproject, _targetCrs}) {
     geojsonFeatures.push(geojsonFeature);
   }
 
+  const schema = getArrowSchema(db, tableName);
   if (projection) {
-    return transformGeoJsonCoords(geojsonFeatures, projection.project);
+    return {geojsonFeatures: transformGeoJsonCoords(geojsonFeatures, projection.project), schema};
   }
 
-  return geojsonFeatures;
+  return {geojsonFeatures, schema};
 }
 
 /**
@@ -380,4 +411,22 @@ function interleaveResults(columns, values) {
   }
 
   return merged;
+}
+
+/**
+ * Get arrow schema
+ *
+ * @param  {Database} db GeoPackage object
+ * @param  {string} tableName  table name
+ * @return {Schema} Arrow-like Schema
+ */
+function getArrowSchema(db, tableName) {
+  const metadata = db.exec(`SELECT name, type FROM pragma_table_info('${tableName}')`)[0];
+  const fields = [];
+  for (const column of metadata.values) {
+    fields.push(
+      new Field((column[0] && column[0].toString()) || '', new SQL_TYPES[column[1]](), true)
+    );
+  }
+  return new Schema(fields);
 }

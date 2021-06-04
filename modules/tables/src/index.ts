@@ -20,6 +20,7 @@ export {getTypeInfo} from './lib/types/type-utils';
 export {
   DataType,
   Null,
+  Binary,
   Bool,
   Int,
   Int8,
