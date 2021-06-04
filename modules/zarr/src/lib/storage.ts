@@ -31,10 +31,10 @@ export class FetchFileStore implements AsyncStore<ArrayBuffer> {
     return value;
   }
 
-  containsItem(key: string): Promise<boolean> {
-    return this.getItem(key)
-      .then(() => true)
-      .catch(() => false);
+  async containsItem(key: string): Promise<boolean> {
+    const filepath = joinUrlParts(this.root, key);
+    const response = await fetchFile(filepath);
+    return response.ok;
   }
 
   keys(): Promise<string[]> {
