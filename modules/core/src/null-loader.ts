@@ -2,14 +2,12 @@
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
+import {LoaderObject} from '@loaders.gl/loader-utils';
 
 /**
  * Loads any data and returns null (or optionally passes through data unparsed)
- * @type {LoaderObject}
- * @todo Should be moved to `@loaders.gl/core`
- * */
-export const NullLoader = {
+ */
+export const NullLoader: LoaderObject = {
   name: 'Null loader',
   id: 'null',
   module: 'core',

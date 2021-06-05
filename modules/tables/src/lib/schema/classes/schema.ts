@@ -1,4 +1,4 @@
-import {assert} from '../utils/assert';
+import {assert} from '../../utils/assert';
 import Field from './field';
 
 export type SchemaMetadata = Map<string, any>;
