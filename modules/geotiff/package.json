@@ -1,5 +1,5 @@
 {
-  "name": "@loaders.gl/tiff",
+  "name": "@loaders.gl/geotiff",
   "version": "3.0.0-alpha.18",
   "description": "Framework-independent loaders for tiff and geotiff",
   "license": "MIT",
