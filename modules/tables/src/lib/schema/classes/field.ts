@@ -1,5 +1,4 @@
-import {assert} from '../utils/assert';
-import {DataType} from '../types/arrow-like/type';
+import {DataType} from './type';
 
 /**
  * ArrowJS `Field` API-compatible class for row-based tables

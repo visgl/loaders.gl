@@ -3,7 +3,7 @@
 
 import {Type} from './enum';
 
-import Field from '../../schema/field';
+import Field from './field';
 
 export {Type} from './enum';
 

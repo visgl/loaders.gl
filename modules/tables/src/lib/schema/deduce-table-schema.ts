@@ -1,4 +1,6 @@
 // SCHEMA SUPPORT - AUTODEDUCTION
+import Schema from './classes/schema';
+import Field from './classes/field';
 import {
   // Int,
   Int8,
@@ -17,9 +19,7 @@ import {
   Utf8,
   TimestampMillisecond,
   Null
-} from '../types/arrow-like/type';
-import Schema from './schema';
-import Field from './field';
+} from './classes/type';
 
 const TYPED_ARRAY_TO_TYPE = {
   Int8Array: new Int8(),

@@ -12,24 +12,11 @@ class ArrayQueue extends Array {
   }
 }
 
-/**
- * @returns a Promise for an Array with the elements
- * in `asyncIterable`
- */
-export async function takeAsync(asyncIterable, count = Infinity) {
-  const result = [];
-  const iterator = asyncIterable[Symbol.asyncIterator]();
-  while (result.length < count) {
-    const {value, done} = await iterator.next();
-    if (done) {
-      break;
-    }
-    result.push(value);
-  }
-  return result;
-}
-
 export default class AsyncQueue {
+  private _values: ArrayQueue;
+  private _settlers: ArrayQueue;
+  private _closed: boolean;
+  
   constructor() {
     // enqueues > dequeues
     this._values = new ArrayQueue();
@@ -38,18 +25,18 @@ export default class AsyncQueue {
     this._closed = false;
   }
 
-  close() {
+  close(): void {
     while (this._settlers.length > 0) {
       this._settlers.dequeue().resolve({done: true});
     }
     this._closed = true;
   }
 
-  [Symbol.asyncIterator]() {
+  [Symbol.asyncIterator](): AsyncIterator<any> {
     return this;
   }
 
-  enqueue(value) {
+  enqueue(value: any): void {
     if (this._closed) {
       throw new Error('Closed');
     }
@@ -69,10 +56,12 @@ export default class AsyncQueue {
     }
   }
 
+
+
   /**
    * @returns a Promise for an IteratorResult
    */
-  next() {
+  next(): Promise<any> {
     if (this._values.length > 0) {
       const value = this._values.dequeue();
       if (value instanceof Error) {
@@ -92,4 +81,20 @@ export default class AsyncQueue {
       this._settlers.enqueue({resolve, reject});
     });
   }
+}
+
+/**
+ * @returns a Promise for an Array with the elements in `asyncIterable`
+ */
+ export async function takeAsync(asyncIterable: AsyncIterable<any>, count: number = Infinity): Promise<any[]> {
+  const result: Array<any> = [];
+  const iterator = asyncIterable[Symbol.asyncIterator]();
+  while (result.length < count) {
+    const {value, done} = await iterator.next();
+    if (done) {
+      break;
+    }
+    result.push(value);
+  }
+  return result;
 }

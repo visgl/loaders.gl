@@ -1,4 +1,4 @@
-import {Type, AnyArrayType} from './arrow-like/type';
+import {Type, AnyArrayType} from './classes/type';
 
 /**
  * Gets type information from an Arrow type object or "mock" Arrow type object

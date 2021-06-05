@@ -1,22 +1,14 @@
-export {default as Schema} from './lib/schema/schema';
-export {default as Field} from './lib/schema/field';
-export {deduceTableSchema} from './lib/schema/schema-utils';
+export {default as Schema} from './lib/schema/classes/schema';
+export {default as Field} from './lib/schema/classes/field';
+export {deduceTableSchema} from './lib/schema/deduce-table-schema';
+export {getTypeInfo} from './lib/schema/get-type-info';
 
 // TABLE CATEGORY UTILS
 export {default as TableBatchBuilder} from './lib/table/table-batch-builder';
 export {default as RowTableBatch} from './lib/table/row-table-batch';
 export {default as ColumnarTableBatch} from './lib/table/columnar-table-batch';
 
-// EXPERIMENTAL MICRO-LOADERS
-export {JSONLoader} from './json-loader';
-export {XMLLoader} from './xml-loader';
-
-// EXPERIMENTAL APIs
-export {default as AsyncQueue} from './lib/utils/async-queue';
-
 // TYPES
-export {getTypeInfo} from './lib/types/type-utils';
-
 export {
   DataType,
   Null,
@@ -51,4 +43,8 @@ export {
   IntervalDayTime,
   IntervalYearMonth,
   FixedSizeList
-} from './lib/types/arrow-like/type';
+} from './lib/schema/classes/type';
+
+// EXPERIMENTAL APIs
+export {default as AsyncQueue} from './lib/utils/async-queue';
+

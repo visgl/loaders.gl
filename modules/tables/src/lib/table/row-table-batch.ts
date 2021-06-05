@@ -1,3 +1,11 @@
+import {TableBatch, Schema, Batch} from './table-batch';
+
+type RowTableBatchOptions = {
+  batchSize: number | string;
+  convertToObject: boolean;
+  optimizeMemoryUsage: boolean;
+}
+
 const DEFAULT_OPTIONS = {
   batchSize: 'auto',
   convertToObject: true,
@@ -5,8 +13,20 @@ const DEFAULT_OPTIONS = {
   optimizeMemoryUsage: false
 };
 
-export default class RowTableBatch {
-  constructor(schema, options = {}) {
+export default class RowTableBatch implements TableBatch {
+  schema: Schema;
+  batchSize: number | string;
+  convertToObject: boolean;
+  optimizeMemoryUsage: boolean;
+
+  length: number;
+  rows: Array<any> | null;
+  isChunkComplete: boolean;
+  cursor: number;
+
+  private _headers: Array<any> | null;
+
+  constructor(schema: Schema, options?: RowTableBatchOptions) {
     options = {...DEFAULT_OPTIONS, ...options};
 
     this.schema = schema;
@@ -19,6 +39,8 @@ export default class RowTableBatch {
     this.isChunkComplete = false;
     this.cursor = 0;
 
+    this._headers = null;
+
     // schema is an array if there're no headers
     // object if there are headers
     if (!Array.isArray(schema)) {
@@ -29,13 +51,13 @@ export default class RowTableBatch {
     }
   }
 
-  addRow(row, cursor = null) {
+  addRow(row, cursor?: number): void {
     if (!this.rows) {
       this.rows = new Array(this.batchSize);
       this.length = 0;
     }
     if (Number.isFinite(cursor)) {
-      this.cursor = cursor;
+      this.cursor = cursor as number;
     }
 
     // We can only convert if we were given a schema
@@ -51,18 +73,19 @@ export default class RowTableBatch {
     this.length++;
   }
 
-  chunkComplete() {
+
+  chunkComplete(): void {
     this.isChunkComplete = true;
   }
 
-  isFull() {
+  isFull(): boolean {
     if (this.batchSize === 'auto') {
       return this.isChunkComplete && this.length > 0;
     }
-    return this.rows && this.length >= this.batchSize;
+    return Boolean(this.rows && this.length >= this.batchSize);
   }
 
-  getBatch() {
+  getBatch(): Batch | null {
     if (this.rows) {
       const rows = this.rows.slice(0, this.length);
       this.rows = null;
