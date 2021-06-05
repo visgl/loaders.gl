@@ -3,16 +3,16 @@
   "sourceMap": false,
   "instrument": true,
   "include": [
-    "src/**/*.{js,jsx,mjs,ts,tsx}",
-    "modules/**/src/**/*.{js,jsx,mjs,ts,tsx}"
+    "src/**/*.+(js|jsx|mjs|ts|tsx)"|
+    "modules/**/src/**/*.+(js|jsx|mjs|ts|tsx)"
   ],
   "exclude": [
-    "**/bundle.{js,ts}",
-    "**/*.worker.{js,ts}",
-    "**/bundle.{js,ts}",
-    "**/*.worker.{js,ts}",
-    "**/text-encoding.{js,ts}",
-    "**/encoding.{js,ts}",
+    "**/bundle.+(js|ts}",
+    "**/*.worker.+(js|ts}",
+    "**/bundle.+(js|ts}",
+    "**/*.worker.+(js|ts}",
+    "**/text-encoding.+(js|ts}",
+    "**/encoding.+(js|ts}",
     "**/laz-perf.js",
     "**3d-tiles/src/styles/**",
     "**/*disabled",
