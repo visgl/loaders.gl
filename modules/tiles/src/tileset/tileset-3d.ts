@@ -48,7 +48,7 @@ import {getZoomFromBoundingVolume} from './helpers/zoom';
 import Tile3D from './tile-3d';
 import Tileset3DTraverser from './traversers/tileset-3d-traverser';
 import TilesetTraverser from './traversers/tileset-traverser';
-import I3SetTraverser from './traversers/i3s-tilset-traverser';
+import I3SetTraverser from './traversers/i3s-tileset-traverser';
 import {TILESET_TYPE} from '../constants';
 
 export type Tileset3DProps = {
@@ -80,21 +80,6 @@ const TILES_UNLOADED = 'Tiles Unloaded';
 const TILES_LOAD_FAILED = 'Failed Tile Loads';
 const POINTS_COUNT = 'Points';
 const TILES_GPU_MEMORY = 'Tile Memory Use';
-
-function getQueryParamString(queryParams): string {
-  const queryParamStrings = [];
-  for (const key of Object.keys(queryParams)) {
-    queryParamStrings.push(`${key}=${queryParams[key]}`);
-  }
-  switch (queryParamStrings.length) {
-    case 0:
-      return '';
-    case 1:
-      return `?${queryParamStrings[0]}`;
-    default:
-      return `?${queryParamStrings.join('&')}`;
-  }
-}
 
 const DEFAULT_PROPS: Tileset3DProps = {
   description: '',
@@ -186,6 +171,7 @@ export default class Tileset3D {
   private _emptyTiles: any;
   private frameStateData: any;
 
+  maximumMemoryUsage: number;
 
   // TODO CESIUM specific
   private _hasMixedContent: any;
@@ -216,7 +202,7 @@ export default class Tileset3D {
     // The url to a tileset JSON file.
     this.url = json.url;
     this.basePath = json.basePath || path.dirname(this.url);
-    this.modelMatrix = options.modelMatrix;
+    this.modelMatrix = options.modelMatrix || new Matrix4();
     this.ellipsoid = options.ellipsoid;
 
     // Geometric error when the tree is not rendered at all
@@ -269,7 +255,7 @@ export default class Tileset3D {
     // METRICS
     // The maximum amount of GPU memory (in MB) that may be used to cache tiles.
     // Tiles not in view are unloaded to enforce this.
-    this.maximumMemoryUsage = this.options.maximumMemoryUsage;
+    this.maximumMemoryUsage = this.options.maximumMemoryUsage || 32;
     // The total amount of GPU memory in bytes used by the tileset.
     this.gpuMemoryUsageInBytes = 0;
     this.stats = new Stats({id: this.url});
@@ -287,7 +273,7 @@ export default class Tileset3D {
     this.extras = null;
     this.asset = {};
     this.credits = {};
-    this.description = this.options.description;
+    this.description = this.options.description || '';
 
     // TODO I3S Specific
     this._defaultGeometrySchema = [];
@@ -365,10 +351,10 @@ export default class Tileset3D {
     this._cache.reset();
     this._frameNumber++;
     this.traverseCounter = viewports.length;
-    const viewportsToTraverse = [];
+    const viewportsToTraverse: string[] = [];
     // First loop to decrement traverseCounter
     for (const viewport of viewports) {
-      const id = viewport.id;
+      const id = viewport.id as string;
       if (this._needTraverse(id)) {
         viewportsToTraverse.push(id);
       } else {
@@ -378,7 +364,7 @@ export default class Tileset3D {
 
     // Second loop to traverse
     for (const viewport of viewports) {
-      const id = viewport.id;
+      const id = viewport.id as string;
       if (!this.roots[id]) {
         this.roots[id] = this._initializeTileHeaders(this.tileset, null, this.basePath);
       }
@@ -623,7 +609,7 @@ export default class Tileset3D {
     const url = tile.url;
     // TODO - Allow for probe log to be injected instead of console?
     console.error(`A 3D tile failed to load: ${tile.url} ${message}`); // eslint-disable-line
-    this.options.onTileError(tile, message, url);
+    this.options.onTileError && this.options.onTileError(tile, message, url);
   }
 
   _onTileLoad(tile, loaded) {
@@ -637,7 +623,7 @@ export default class Tileset3D {
     }
 
     this._addTileToCache(tile);
-    this.options.onTileLoad(tile);
+    this.options.onTileLoad && this.options.onTileLoad(tile);
   }
 
   _onStartTileLoading() {
@@ -670,7 +656,7 @@ export default class Tileset3D {
     this.stats.get(TILES_UNLOADED).incrementCount();
     this.stats.get(TILES_GPU_MEMORY).count = this.gpuMemoryUsageInBytes;
 
-    this.options.onTileUnload(tile);
+    this.options.onTileUnload && this.options.onTileUnload(tile);
     tile.unloadContent();
   }
 
@@ -752,5 +738,20 @@ export default class Tileset3D {
     }
     // Initialize default Geometry schema
     this._defaultGeometrySchema = tilesetJson.store.defaultGeometrySchema;
+  }
+}
+
+function getQueryParamString(queryParams): string {
+  const queryParamStrings: string[] = [];
+  for (const key of Object.keys(queryParams)) {
+    queryParamStrings.push(`${key}=${queryParams[key]}`);
+  }
+  switch (queryParamStrings.length) {
+    case 0:
+      return '';
+    case 1:
+      return `?${queryParamStrings[0]}`;
+    default:
+      return `?${queryParamStrings.join('&')}`;
   }
 }

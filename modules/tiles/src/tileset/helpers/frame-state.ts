@@ -8,7 +8,7 @@ export type FrameState = {
     direction: number[],
     up: number[]
   };
-  viewport: object;
+  viewport: {[key: string]: any};
   height: number;
   cullingVolume: CullingVolume;
   frameNumber: number; // TODO: This can be the same between updates, what number is unique for between updates?

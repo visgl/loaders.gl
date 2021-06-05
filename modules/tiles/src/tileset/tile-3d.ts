@@ -60,12 +60,15 @@ export default class TileHeader {
   children: TileHeader[];
   depth: number;
   viewportIds: any[];
+  transform: Matrix4;
 
     // Container to store application specific data
   userData: {[key: string]: any};
   computedTransform: any;
   hasEmptyContent: boolean;
   hasTilesetContent: boolean;
+
+  traverser: object;
 
   private _cacheNode: any;
   private _frameNumber: any;
@@ -74,8 +77,7 @@ export default class TileHeader {
   // TODO Cesium 3d tiles specific
   private _expireDate: any;
   private _expiredContent: any;
-
-  // private _shouldRefine: boolean;
+  private _shouldRefine: boolean;
 
   // Members this are updated every frame for tree traversal and rendering optimizations:
   private _distanceToCamera: number;
@@ -166,6 +168,8 @@ export default class TileHeader {
     this._expiredContent = null;
 
     this._getPriority = this._getPriority.bind(this);
+
+    this.transform = new Matrix4();
 
     Object.seal(this);
   }
