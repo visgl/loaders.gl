@@ -12,16 +12,6 @@ import type {
   PixelData
 } from '../types';
 
-export type TypedArray =
-  | Uint8Array
-  | Int8Array
-  | Uint16Array
-  | Int16Array
-  | Uint32Array
-  | Int32Array
-  | Float32Array
-  | Float64Array;
-
 class TiffPixelSource<S extends string[]> implements PixelSource<S> {
   private _indexer: (sel: PixelSourceSelection<S>) => Promise<GeoTIFFImage>;
 

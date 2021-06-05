@@ -1,14 +1,14 @@
-declare module 'geotiff' {
-    import type { TypedArray } from 'zarr';
+declare type TypedArray = import('../constants').TypedArray;
 
+declare module 'geotiff' {
     function fromUrl(url: string, headers?: Record<string, unknown>): Promise<GeoTIFF>;
     function fromBlob(blob: Blob): Promise<GeoTIFF>;
     function fromFile(path: string): Promise<GeoTIFF>;
 
     class GeoTIFF {
+        readRasters(options?: RasterOptions): Promise<TypedArray>;
         getImage(index: number): Promise<GeoTIFFImage>;
         parseFileDirectoryAt(offset: number): Promise<ImageFileDirectory>;
-        readRasters(options?: RasterOptions): Promise<TypedArray>;
         ifdRequests: { [key: number]: Promise<ImageFileDirectory> };
         dataView: DataView;
         littleEndian: boolean;
