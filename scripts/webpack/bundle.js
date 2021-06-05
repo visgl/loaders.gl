@@ -103,9 +103,7 @@ const config = {
     new webpack.DefinePlugin({
       __VERSION__: JSON.stringify(PACKAGE_INFO.version)
     })
-  ],
-
-  devtool: false
+  ]
 };
 
 // const developmentConfig = {
