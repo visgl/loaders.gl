@@ -22,9 +22,9 @@ const BABEL_CONFIG = {
 const CONFIG = {
   mode: 'production',
 
-  devtool: false,
+  devtool: 'source-map',
 
-  stats: 'minimal',
+  stats: 'none',
 
   resolve: {
     extensions: ['.js', '.mjs', '.jsx', '.ts', '.tsx'],
@@ -114,10 +114,6 @@ module.exports = (env = {}) => {
   if (env.dev) {
     config.mode = 'development';
     config = addESNextSettings(config);
-  } else {
-    // Generate a separate source map
-    // @ts-ignore
-    config.devtool = 'source-map';
   }
   // console.log(JSON.stringify(config, null, 2));
   return config;
