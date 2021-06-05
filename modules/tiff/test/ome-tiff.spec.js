@@ -2,8 +2,7 @@ import test from 'tape-promise/tape';
 import {fromFile} from 'geotiff';
 import {resolvePath} from '@loaders.gl/core';
 
-import {loadOMETiff} from '@loaders.gl/tiff
-';
+import {loadOMETiff} from '@loaders.gl/tiff';
 
 const TIFF_URL = resolvePath('@loaders.gl/tiff/test/data/multi-channel.ome.tif');
 
