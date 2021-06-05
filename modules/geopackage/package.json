@@ -28,7 +28,7 @@
     "@loaders.gl/gis": "3.0.0-alpha.19",
     "@loaders.gl/tables": "^3.0.0-alpha.19",
     "@loaders.gl/wkt": "3.0.0-alpha.19",
-    "@math.gl/proj4": "^3.3.2",
+    "@math.gl/proj4": "3.5.0-alpha.1",
     "@types/sql.js": "^1.4.2",
     "sql.js": "^1.5.0"
   }
