@@ -1,6 +1,6 @@
 import test from 'tape-promise/tape';
 import {fromFile} from 'geotiff';
-import {resolvePath} from '@loaders.gl/core';
+import {resolvePath, isBrowser} from '@loaders.gl/core';
 
 import {loadOMETiff} from '@loaders.gl/geotiff';
 
