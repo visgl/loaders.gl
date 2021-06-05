@@ -3,7 +3,7 @@
   "sourceMap": false,
   "instrument": true,
   "include": [
-    "src/**/*.+(js|jsx|mjs|ts|tsx)"|
+    "src/**/*.+(js|jsx|mjs|ts|tsx)",
     "modules/**/src/**/*.+(js|jsx|mjs|ts|tsx)"
   ],
   "exclude": [
