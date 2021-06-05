@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 import test from 'tape-promise/tape';
 import {validateWriter} from 'test/common/conformance';
 
@@ -11,6 +10,7 @@ test('ArrowWriter#writer conformance', t => {
 });
 
 test('ArrowWriter#encode', async t => {
+  debugger;
   const LENGTH = 2000;
 
   const rainAmounts = Float32Array.from({length: LENGTH}, () =>
@@ -23,8 +23,8 @@ test('ArrowWriter#encode', async t => {
   );
 
   const arraysData = [
-    {array: rainAmounts, name: 'precipitation', type: VECTOR_TYPES.FLOAT},
-    {array: rainDates, name: 'date', type: VECTOR_TYPES.DATE}
+    {array: rainAmounts, name: 'precipitation', type: 0},
+    {array: rainDates, name: 'date', type: 1}
   ];
 
   const arrayBuffer = encodeSync(arraysData, ArrowWriter);

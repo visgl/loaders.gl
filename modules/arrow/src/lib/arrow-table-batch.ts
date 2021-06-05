@@ -2,6 +2,8 @@ import {Schema, Field, RecordBatch, Float32Vector, Float32} from 'apache-arrow';
 import {ColumnarTableBatch} from '@loaders.gl/tables';
 
 export default class ArrowTableBatch extends ColumnarTableBatch {
+  arrowSchema: Schema | null;
+
   constructor(schema, options) {
     super(schema, options);
     this.arrowSchema = null;
@@ -25,7 +27,7 @@ export default class ArrowTableBatch extends ColumnarTableBatch {
 
 // Convert from a simple loaders.gl schema to an Arrow schema
 function getArrowSchema(schema) {
-  const arrowFields = [];
+  const arrowFields: Field[] = [];
   for (const key in schema) {
     const field = schema[key];
     if (field.type === Float32Array) {
@@ -36,7 +38,7 @@ function getArrowSchema(schema) {
     }
   }
   if (arrowFields.length === 0) {
-    throw new Error('No arrow convertable fields');
+    throw new Error('No arrow convertible fields');
   }
 
   return new Schema(arrowFields);
@@ -44,7 +46,7 @@ function getArrowSchema(schema) {
 
 // Convert from simple loaders.gl arrays to arrow vectors
 function getArrowVectors(arrowSchema, data) {
-  const arrowVectors = [];
+  const arrowVectors: any[] = [];
   for (const field of arrowSchema.fields) {
     const vector = data[field.name];
     if (vector instanceof Float32Array) {
@@ -53,7 +55,7 @@ function getArrowVectors(arrowSchema, data) {
     }
   }
   if (arrowSchema.fields.length !== arrowVectors.length) {
-    throw new Error('Some columns not arrow convertable');
+    throw new Error('Some columns not arrow convertible');
   }
   return arrowVectors;
 }
