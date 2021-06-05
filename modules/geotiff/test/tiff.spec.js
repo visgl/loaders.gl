@@ -7,7 +7,7 @@ import {loadOMETiff} from '@loaders.gl/geotiff';
 const TIFF_URL = resolvePath('@loaders.gl/geotiff/test/data/multi-channel.ome.tif');
 
 test('Creates correct TiffPixelSource for OME-TIFF.', async t => {
-  if (!isBrowser) {
+  if (isBrowser) {
     t.end();
     return;
   }
@@ -23,7 +23,7 @@ test('Creates correct TiffPixelSource for OME-TIFF.', async t => {
 });
 
 test('Get raster data.', async t => {
-  if (!isBrowser) {
+  if (isBrowser) {
     t.end();
     return;
   }
@@ -49,7 +49,7 @@ test('Get raster data.', async t => {
 });
 
 test('Correct OME-XML.', async t => {
-  if (!isBrowser) {
+  if (isBrowser) {
     t.end();
     return;
   }
