@@ -3,19 +3,22 @@
   "sourceMap": false,
   "instrument": true,
   "include": [
-    "src/**/*.js",
-    "modules/**/src/**/*.js"
+    "src/**/*.{js,jsx,mjs,ts,tsx}",
+    "modules/**/src/**/*.{js,jsx,mjs,ts,tsx}"
   ],
   "exclude": [
-    "**/deprecated",
-    "**/bundle.js",
-    "**/*.worker.js",
-    "**/src/libs/**",
-    "**/text-encoding.js",
-    "**/encoding.js",
+    "**/bundle.{js,ts}",
+    "**/*.worker.{js,ts}",
+    "**/bundle.{js,ts}",
+    "**/*.worker.{js,ts}",
+    "**/text-encoding.{js,ts}",
+    "**/encoding.{js,ts}",
     "**/laz-perf.js",
+    "**3d-tiles/src/styles/**",
+    "**/*disabled",
+    "**/deprecated",
     "**/wip/**",
-    "**/test/**",
-    "**3d-tiles/src/styles/**"
+    "**/libs/**",
+    "**/test/**"
   ]
 }
