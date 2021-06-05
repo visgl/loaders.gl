@@ -11,7 +11,14 @@ const transformScratchVectorU = new Vector3();
 const transformScratchVectorV = new Vector3();
 const transformScratchVectorW = new Vector3();
 
-function BS_transform(obj, transform) {
+/**
+ * Applies a 4x4 affine transformation matrix to a bounding sphere.
+ *
+ * @param obj The bounding sphere to apply the transformation to.
+ * @param transform The transformation matrix to apply to the bounding sphere.
+ * @returns itself, i.e. the modified BoundingSphere.
+ */
+function transformBS(obj, transform) {
   obj.center.transform(transform);
   const scale = mat4.getScaling(scratchVector, transform);
   obj.radius = Math.max(scale[0], Math.max(scale[1], scale[2])) * obj.radius;
@@ -19,7 +26,14 @@ function BS_transform(obj, transform) {
   return obj;
 }
 
-function OBB_transform(obj, transformation) {
+/**
+ * Applies a 4x4 affine transformation matrix to a oriented bounding box.
+ *
+ * @param obj The bounding sphere to apply the transformation to.
+ * @param transform The transformation matrix to apply to the bounding sphere.
+ * @returns itself, i.e. the modified OrientedBoundingBox.
+ */
+function transformOBB(obj, transformation) {
   obj.center.transformAsPoint(transformation);
   const xAxis = obj.halfAxes.getColumn(0, transformScratchVectorU);
   xAxis.transformAsVector(transformation);
@@ -35,11 +49,10 @@ function OBB_transform(obj, transformation) {
 }
 
 /**
- * Create a bounding volume from the tile's bounding volume header.
+ * Transform a bounding volume from the tile's bounding volume header.
  * @param {Object} boundingVolumeHeader The tile's bounding volume header.
  * @param {Matrix4} transform The transform to apply to the bounding volume.
- * @param [result] The object onto which to store the result.
- * @returns The modified result parameter or a new TileBoundingVolume instance if none was provided.
+ * @returns A cloned TileBoundingVolume instance if none was provided.
  */
 export function transformBoundingVolume(boundingVolumeHeader, transform, result) {
   assert(boundingVolumeHeader, '3D Tile: boundingVolume must be defined');
@@ -50,15 +63,15 @@ export function transformBoundingVolume(boundingVolumeHeader, transform, result)
 
   switch (true) {
     case box != void 0:
-      return OBB_transform(box.clone(), transform);
+      return transformOBB(box.clone(), transform);
     //return box.clone().transform(transform);
 
     case region != void 0:
-      return BS_transform(region.clone(), new Matrix4());
+      return transformBS(region.clone(), new Matrix4());
     //return region.clone().transform(new Matrix4());
 
     case sphere != void 0:
-      return BS_transform(sphere.clone(), transform);
+      return transformBS(sphere.clone(), transform);
     //return sphere.clone().transform(transform);
 
     default:

@@ -1,8 +1,6 @@
 import {LOD_METRIC_TYPE, TILE_REFINEMENT, TILE_TYPE} from '@loaders.gl/tiles';
 import {Vector3, degrees} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
-// import OrientedBoundingBox from '../../../../../../math.gl/modules/culling/src/lib/oriented-bounding-box';//'@math.gl/culling';
-// import BoundingSphere from '../../../../../../math.gl/modules/culling/src/lib/bounding-sphere';//'@math.gl/culling';
 import {OrientedBoundingBox, BoundingSphere} from '@math.gl/culling';
 
 const scratchNorthWest = new Vector3();
@@ -39,11 +37,16 @@ function getRefine(refine) {
   }
 }
 
-function createRegion(_region) {
-  // [west, south, east, north, minimum height, maximum height]
-  // Latitudes and longitudes are in the WGS 84 datum as defined in EPSG 4979 and are in radians.
-  // Heights are in meters above (or below) the WGS 84 ellipsoid.
-  const [west, south, east, north, minHeight, maxHeight] = _region;
+/**
+ * Create a bounding volume from the region
+ * @param [region]
+ * [west, south, east, north, minimum height, maximum height]
+ * Latitudes and longitudes are in the WGS 84 datum as defined in EPSG 4979 and are in radians.
+ * Heights are in meters above (or below) the WGS 84 ellipsoid.
+ * @returns A new BoundingSphere instance.
+ */
+function createRegion(region) {
+  const [west, south, east, north, minHeight, maxHeight] = region;
 
   const northWest = Ellipsoid.WGS84.cartographicToCartesian(
     [degrees(west), degrees(north), minHeight],
@@ -73,26 +76,25 @@ export function normalizeTileData(tile, options) {
   tile.type = getTileType(tile);
   tile.refine = getRefine(tile.refine);
 
-  // =====================================
-  const _box = tile.boundingVolume && tile.boundingVolume.box;
-  const _sphere = tile.boundingVolume && tile.boundingVolume.sphere;
-  const _region = tile.boundingVolume && tile.boundingVolume.region;
+  const boxArray = tile.boundingVolume && tile.boundingVolume.box;
+  const sphereArray = tile.boundingVolume && tile.boundingVolume.sphere;
+  const regionArray = tile.boundingVolume && tile.boundingVolume.region;
 
-  if (_box) {
-    const halfSize = _box.slice(3);
-    const box = new OrientedBoundingBox(_box.slice(0, 3), halfSize);
+  if (boxArray) {
+    const halfSize = boxArray.slice(3);
+    const box = new OrientedBoundingBox(boxArray.slice(0, 3), halfSize);
     tile.boundingVolume.box = box;
   }
 
-  if (_sphere) {
-    const sphere = new BoundingSphere(_sphere.slice(0, 3), _sphere[3]);
+  if (sphereArray) {
+    const sphere = new BoundingSphere(sphereArray.slice(0, 3), sphereArray[3]);
     tile.boundingVolume.sphere = sphere;
   }
 
-  if (_region) {
-    tile.boundingVolume.region = createRegion(_region);
+  if (regionArray) {
+    tile.boundingVolume.region = createRegion(regionArray);
   }
-  // =================================
+
   return tile;
 }
 

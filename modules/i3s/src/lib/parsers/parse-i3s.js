@@ -57,13 +57,13 @@ export function normalizeTileNonUrlData(tile) {
   const radiusMbs = tile.obb && tile.mbs ? tile.mbs[3] : radius;
   tile.mbs = tile.mbs ? tile.mbs : [x, y, z, radius];
 
-  const box = tile.obb
-    ? createBox([
-        ...cartesianCenter, // cartesian center of box
-        ...tile.obb.halfSize, // halfSize
-        ...tile.obb.quaternion // quaternion
-      ])
-    : undefined;
+  const box =
+    tile.obb &&
+    createBox([
+      ...cartesianCenter, // cartesian center of box
+      ...tile.obb.halfSize, // halfSize
+      ...tile.obb.quaternion // quaternion
+    ]);
   const sphere = createSphere([
     ...cartesianCenterMbs, // cartesian center of sphere
     radiusMbs // radius of sphere
