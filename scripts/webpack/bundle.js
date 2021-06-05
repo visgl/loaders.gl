@@ -2,6 +2,7 @@ const {resolve} = require('path');
 const webpack = require('webpack');
 
 const {getOcularConfig} = require('ocular-dev-tools');
+const {getExternals} = require('./helpers');
 
 const ocularConfig = getOcularConfig({
   aliasMode: 'src',
@@ -13,30 +14,6 @@ const ALIASES = ocularConfig.aliases;
 const PACKAGE_ROOT = resolve('.');
 const DIST_PATH = resolve('dist');
 const PACKAGE_INFO = require(resolve(PACKAGE_ROOT, 'package.json'));
-
-/**
- * peerDependencies are excluded using `externals`
- * https://webpack.js.org/configuration/externals/
- * e.g. @deck.gl/core is not bundled with @deck.gl/geo-layers
- */
-function getExternals(packageInfo) {
-  const externals = {
-    // Hard coded externals
-  };
-
-  const {peerDependencies = {}, browser} = packageInfo;
-
-  Object.assign(externals, browser);
-
-  for (const depName in peerDependencies) {
-    if (depName.startsWith('@loaders.gl')) {
-      // Instead of bundling the dependency, import from the global `deck` object
-      externals[depName] = 'loaders';
-    }
-  }
-
-  return externals;
-}
 
 const NODE = {
   Buffer: false,
@@ -78,6 +55,10 @@ const ES6_BABEL_CONFIG = {
 const config = {
   name: 'production',
   mode: 'production',
+
+  devtool: 'source-map',
+
+  stats: 'none',
 
   entry: {
     main: resolve('./src/bundle.ts')
@@ -122,19 +103,17 @@ const config = {
     new webpack.DefinePlugin({
       __VERSION__: JSON.stringify(PACKAGE_INFO.version)
     })
-  ],
-
-  devtool: false
+  ]
 };
 
-const developmentConfig = {
-  ...config,
-  name: 'development',
-  mode: 'development',
-  output: {
-    filename: 'dist.dev.js'
-  }
-};
+// const developmentConfig = {
+//   ...config,
+//   name: 'development',
+//   mode: 'development',
+//   output: {
+//     filename: 'dist.dev.js'
+//   }
+// };
 
 const es5Config = {
   ...config,
@@ -155,4 +134,4 @@ const es5Config = {
 
 console.error(config)
 
-module.exports = [config, developmentConfig, es5Config];
+module.exports = [config, es5Config];
