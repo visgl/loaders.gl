@@ -2,15 +2,14 @@ import test from 'tape-promise/tape';
 import {validateWriter} from 'test/common/conformance';
 
 import {parseSync, encodeSync} from '@loaders.gl/core';
-import {ArrowLoader, ArrowWriter, VECTOR_TYPES} from '@loaders.gl/arrow';
+import {ArrowLoader, ArrowWriter} from '@loaders.gl/arrow';
 
 test('ArrowWriter#writer conformance', t => {
-  validateWriter(t, ArrowWriter, 'GLTFWriter');
+  validateWriter(t, ArrowWriter, 'ArrowWriter');
   t.end();
 });
 
 test('ArrowWriter#encode', async t => {
-  debugger;
   const LENGTH = 2000;
 
   const rainAmounts = Float32Array.from({length: LENGTH}, () =>
