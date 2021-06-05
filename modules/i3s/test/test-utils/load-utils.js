@@ -1,6 +1,6 @@
 import {I3SLoader} from '@loaders.gl/i3s';
 import {Tileset3D, Tile3D} from '@loaders.gl/tiles';
-import I3SNodePagesTiles from '../../src/helpers/i3s-nodepages-tiles';
+import I3SNodePagesTiles from '../../src/lib/helpers/i3s-nodepages-tiles';
 
 /**
  * The data stub of "tileset header" which I3SLoader returns after loading

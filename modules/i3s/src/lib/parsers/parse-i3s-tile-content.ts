@@ -5,6 +5,10 @@ import {load} from '@loaders.gl/core';
 import {ImageLoader} from '@loaders.gl/images';
 import {parse} from '@loaders.gl/core';
 import {DracoLoader} from '@loaders.gl/draco';
+import {CompressedTextureLoader} from '@loaders.gl/textures';
+
+import {Tileset, Tile} from '../../types';
+import {getUrlWithToken} from '../utils/url-utils';
 
 import {
   GL_TYPE_MAP,
@@ -14,8 +18,6 @@ import {
   I3S_NAMED_VERTEX_ATTRIBUTES,
   I3S_NAMED_GEOMETRY_ATTRIBUTES
 } from './constants';
-import {getUrlWithToken} from './url-utils';
-import {CompressedTextureLoader} from '@loaders.gl/textures';
 
 const scratchVector = new Vector3([0, 0, 0]);
 
@@ -28,7 +30,12 @@ const FORMAT_LOADER_MAP = {
 
 const I3S_ATTRIBUTE_TYPE = 'i3s-attribute-type';
 
-export async function parseI3STileContent(arrayBuffer, tile, tileset, options) {
+export async function parseI3STileContent(
+  arrayBuffer: ArrayBuffer, 
+  tile: Tile, 
+  tileset: Tileset, 
+  options
+) {
   tile.content = tile.content || {};
   tile.content.featureIds = tile.content.featureIds || null;
   // Remove segmentationData after i3s-content-worker will be published
@@ -62,7 +69,11 @@ export async function parseI3STileContent(arrayBuffer, tile, tileset, options) {
 }
 
 /* eslint-disable max-statements */
-async function parseI3SNodeGeometry(arrayBuffer, tile = {}, options) {
+async function parseI3SNodeGeometry(
+  arrayBuffer: ArrayBuffer, 
+  tile: Tile = {},
+  options
+) {
   if (!tile.content) {
     return tile;
   }
@@ -291,6 +302,7 @@ function normalizeAttributes(
 
       switch (attribute) {
         case 'color':
+          // @ts-ignore
           attributes.color.normalized = true;
           break;
         case 'position':

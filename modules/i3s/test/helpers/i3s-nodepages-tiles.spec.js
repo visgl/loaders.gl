@@ -1,6 +1,6 @@
 import test from 'tape-promise/tape';
 import {getSupportedGPUTextureFormats} from '@loaders.gl/textures';
-import I3SNodePagesTiles from '../../src/helpers/i3s-nodepages-tiles';
+import I3SNodePagesTiles from '../../src/lib/helpers/i3s-nodepages-tiles';
 import {isBrowser} from '@loaders.gl/core';
 import {TILESET_STUB} from '../test-utils/load-utils';
 

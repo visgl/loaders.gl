@@ -1,11 +1,28 @@
 import {load} from '@loaders.gl/core';
-import {normalizeTileNonUrlData} from '../lib/parsers/parse-i3s';
-import {I3SNodePageLoader} from '../i3s-node-page-loader';
-import {generateTilesetAttributeUrls} from '../lib/parsers/url-utils';
 import {getSupportedGPUTextureFormats} from '@loaders.gl/textures';
-import {getUrlWithToken} from '../lib/parsers/url-utils';
-export default class I3SNodePagesTiles {
-  constructor(tileset, options = {}) {
+import {Tileset, NodePage} from '../../types'
+import {I3SNodePageLoader} from '../../i3s-node-page-loader';
+import {normalizeTileNonUrlData} from '../parsers/parse-i3s';
+import {getUrlWithToken, generateTilesetAttributeUrls} from '../utils/url-utils';
+
+/**
+ * class I3SNodePagesTiles - loads nodePages and form i3s tiles from them
+ */
+ export default class I3SNodePagesTiles {
+   tileset: Tileset;
+   nodePages: NodePage[];
+   nodesPerPage: number;
+   options: {[key: string]: any};
+   lodSelectionMetricType: any;
+   textureDefinitionsSelectedFormats: any[];
+
+  /**
+   * @constructs
+   * Create a I3SNodePagesTiles instance.
+   * @param tileset - i3s tileset header ('layers/0')
+   * @param options - i3s loader options
+   */
+  constructor(tileset: Tileset, options: object) {
     this.tileset = {...tileset}; // spread the tileset to avoid circular reference
     this.nodesPerPage = tileset.nodePages.nodesPerPage;
     this.lodSelectionMetricType = tileset.nodePages.lodSelectionMetricType;
@@ -16,7 +33,11 @@ export default class I3SNodePagesTiles {
     this._initSelectedFormatsForTextureDefinitions(tileset);
   }
 
-  async getNodeById(id) {
+  /**
+   * Loads some nodePage and return a particular node from it
+   * @param id - id of node through all node pages
+   */
+  async getNodeById(id: number) {
     const pageIndex = Math.floor(id / this.nodesPerPage);
     if (!this.nodePages[pageIndex]) {
       const nodePageUrl = getUrlWithToken(
@@ -33,10 +54,15 @@ export default class I3SNodePagesTiles {
     return this.nodePages[pageIndex].nodes[nodeIndex];
   }
 
-  // eslint-disable-next-line complexity
-  async formTileFromNodePages(id) {
+
+   /**
+    * Forms tile header using node and tileset data
+    * @param id - id of node through all node pages
+    */
+    // eslint-disable-next-line complexity
+  async formTileFromNodePages(id: number) {
     const node = await this.getNodeById(id);
-    const children = [];
+    const children: any[] = [];
     for (const child of node.children || []) {
       const childNode = await this.getNodeById(child);
       children.push({
@@ -46,10 +72,10 @@ export default class I3SNodePagesTiles {
     }
 
     let contentUrl = null;
-    let textureUrl = null;
+    let textureUrl: string | null = null;
     let materialDefinition = null;
     let textureFormat = 'jpeg';
-    let attributeUrls = [];
+    let attributeUrls: string[] = [];
     let isDracoGeometry = false;
 
     if (node && node.mesh) {
@@ -131,8 +157,8 @@ export default class I3SNodePagesTiles {
    *   {string} metricType - the label of the LOD metric
    *   {number} maxError - the value of the metric
    */
-  _getLodSelection(node) {
-    const lodSelection = [];
+  _getLodSelection(node): object[] {
+    const lodSelection: object[] = [];
     if (this.lodSelectionMetricType === 'maxScreenThresholdSQ') {
       lodSelection.push({
         metricType: 'maxScreenThreshold',
@@ -174,7 +200,7 @@ export default class I3SNodePagesTiles {
   }
 
   /**
-   * Sets preferrable and supported format for each texutureDefinition of the tileset
+   * Sets preferable and supported format for each textureDefinition of the tileset
    * @param {Object} tileset - I3S layer data
    * @returns {void}
    */
@@ -198,24 +224,24 @@ export default class I3SNodePagesTiles {
 
   /**
    * Returns the array of supported texture format
-   * @returns {string[]}
+   * @returns list of format strings
    */
-  _getSupportedTextureFormats(options = {}) {
-    const result = [];
+  _getSupportedTextureFormats(options = {}): string[] {
+    const formats: string[] = [];
     if (!this.options.i3s || this.options.i3s.useCompressedTextures) {
       const supportedCompressedFormats = getSupportedGPUTextureFormats();
       // List of possible in i3s formats:
       // https://github.com/Esri/i3s-spec/blob/master/docs/1.7/textureSetDefinitionFormat.cmn.md
       if (supportedCompressedFormats.has('etc2')) {
-        result.push('ktx-etc2');
+        formats.push('ktx-etc2');
       }
       if (supportedCompressedFormats.has('dxt')) {
-        result.push('dds');
+        formats.push('dds');
       }
     }
 
-    result.push('jpg');
-    result.push('png');
-    return result;
+    formats.push('jpg');
+    formats.push('png');
+    return formats;
   }
 }

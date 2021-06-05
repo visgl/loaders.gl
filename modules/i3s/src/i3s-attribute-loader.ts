@@ -1,7 +1,7 @@
 /** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
-import {parseI3STileAttribute} from './lib/parsers/parse-i3s-attribute';
 import {load} from '@loaders.gl/core';
-import {getUrlWithToken} from './lib/parsers/url-utils';
+import {parseI3STileAttribute} from './lib/parsers/parse-i3s-attribute';
+import {getUrlWithToken} from './lib/utils/url-utils';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -44,10 +44,11 @@ export async function loadFeatureAttributes(tile, featureId, options = {}) {
     return null;
   }
 
-  let attributes = [];
-  const attributeLoadPromises = [];
+  let attributes: object[] = [];
+  const attributeLoadPromises: Promise<object>[] = [];
 
   for (let index = 0; index < attributeStorageInfo.length; index++) {
+    // @ts-ignore
     const url = getUrlWithToken(attributeUrls[index], options.token);
     const attributeName = attributeStorageInfo[index].name;
     const attributeType = getAttributeValueType(attributeStorageInfo[index]);
