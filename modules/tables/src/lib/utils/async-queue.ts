@@ -56,8 +56,6 @@ export default class AsyncQueue {
     }
   }
 
-
-
   /**
    * @returns a Promise for an IteratorResult
    */

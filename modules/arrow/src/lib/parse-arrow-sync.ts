@@ -30,7 +30,7 @@ export default function parseArrowSync(arrayBuffer, options) {
 function convertColumnarToRowFormatTable(columnarTable) {
   const tableKeys = Object.keys(columnarTable);
   const tableRowsCount = columnarTable[tableKeys[0]].length;
-  const rowFormatTable = [];
+  const rowFormatTable: {}[] = [];
 
   for (let index = 0; index < tableRowsCount; index++) {
     const tableItem = {};

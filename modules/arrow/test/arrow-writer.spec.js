@@ -1,12 +1,11 @@
-/* eslint-disable max-len */
 import test from 'tape-promise/tape';
 import {validateWriter} from 'test/common/conformance';
 
 import {parseSync, encodeSync} from '@loaders.gl/core';
-import {ArrowLoader, ArrowWriter, VECTOR_TYPES} from '@loaders.gl/arrow';
+import {ArrowLoader, ArrowWriter} from '@loaders.gl/arrow';
 
 test('ArrowWriter#writer conformance', t => {
-  validateWriter(t, ArrowWriter, 'GLTFWriter');
+  validateWriter(t, ArrowWriter, 'ArrowWriter');
   t.end();
 });
 
@@ -23,8 +22,8 @@ test('ArrowWriter#encode', async t => {
   );
 
   const arraysData = [
-    {array: rainAmounts, name: 'precipitation', type: VECTOR_TYPES.FLOAT},
-    {array: rainDates, name: 'date', type: VECTOR_TYPES.DATE}
+    {array: rainAmounts, name: 'precipitation', type: 0},
+    {array: rainDates, name: 'date', type: 1}
   ];
 
   const arrayBuffer = encodeSync(arraysData, ArrowWriter);

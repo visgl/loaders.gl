@@ -1,9 +1,25 @@
 import {Table, FloatVector, DateVector} from 'apache-arrow';
-import {VECTOR_TYPES} from './constants';
+import {AnyArrayType, VECTOR_TYPES} from '../types';
 
-export function encodeArrowSync(data, options) {
-  const vectors = [];
-  const arrayNames = [];
+type ColumnarTable = {
+  name: string;
+  array: AnyArrayType;
+  type: number;
+}[];
+
+/**
+ * Encodes set of arrays into the Apache Arrow columnar format
+ * https://arrow.apache.org/docs/format/Columnar.html#ipc-file-format
+ * @param data - columns data
+ * @param options - the writer options
+ * @returns - encoded ArrayBuffer
+ */
+export function encodeArrowSync(
+  data: ColumnarTable,
+  options
+): ArrayBuffer {
+  const vectors: any[] = [];
+  const arrayNames: string[] = [];
   for (const arrayData of data) {
     arrayNames.push(arrayData.name);
     const arrayVector = createVector(arrayData.array, arrayData.type);
