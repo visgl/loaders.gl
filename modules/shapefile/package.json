@@ -39,6 +39,6 @@
     "@loaders.gl/gis": "3.0.0-alpha.19",
     "@loaders.gl/loader-utils": "3.0.0-alpha.19",
     "@loaders.gl/tables": "3.0.0-alpha.19",
-    "@math.gl/proj4": "^3.3.0"
+    "@math.gl/proj4": "3.5.0-alpha.1"
   }
 }
