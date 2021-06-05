@@ -43,6 +43,7 @@ if (TEST_IMAGES) {
   require('@loaders.gl/images/test');
   require('@loaders.gl/textures/test');
   require('@loaders.gl/video/test');
+  require('@loaders.gl/geotiff/test');
 }
 
 // Pointcloud/Mesh Formats
