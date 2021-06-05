@@ -1,3 +1,5 @@
+import {Tile} from '../../types';
+
 /**
  * Generates url with token if it is exists.
  * @param {String} url
@@ -10,12 +12,12 @@ export function getUrlWithToken(url, token = null) {
 
 /**
  * Generates attribute urls for tile.
- * @param {Object} tile
- * @returns {Array}
+ * @param tile
+ * @returns list of attribute urls
  */
-export function generateTileAttributeUrls(tile) {
+export function generateTileAttributeUrls(tile: Tile): string[] {
   const {url, attributeData} = tile;
-  const attributeUrls = [];
+  const attributeUrls: string[] = [];
 
   for (let index = 0; index < attributeData.length; index++) {
     const attributeUrl = attributeData[index].href.replace('./', '');
@@ -32,7 +34,7 @@ export function generateTileAttributeUrls(tile) {
  * @returns {Array}
  */
 export function generateTilesetAttributeUrls(tileset, resource) {
-  const attributeUrls = [];
+  const attributeUrls: string[] = [];
   const {attributeStorageInfo, url} = tileset;
 
   for (let index = 0; index < attributeStorageInfo.length; index++) {

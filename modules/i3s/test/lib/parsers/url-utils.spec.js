@@ -3,7 +3,7 @@ import {
   getUrlWithToken,
   generateTileAttributeUrls,
   generateTilesetAttributeUrls
-} from '@loaders.gl/i3s/lib/parsers/url-utils';
+} from '@loaders.gl/i3s/lib/utils/url-utils';
 
 test('i3s-utils#getUrlWithToken Should return URL without token if token null', async t => {
   const url = getUrlWithToken('test', null);

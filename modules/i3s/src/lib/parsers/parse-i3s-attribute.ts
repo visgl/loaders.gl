@@ -61,16 +61,16 @@ function parseFloatAttribute(arrayBuffer) {
 /**
  * Parse string attribute.
  * String spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.7/attributeStorageInfo.cmn.md
- * @param {ArrayBuffer} arrayBuffer
- * @returns {Array}
+ * @param arrayBuffer
+ * @returns list of strings
  */
-function parseStringsAttribute(arrayBuffer) {
+function parseStringsAttribute(arrayBuffer: ArrayBuffer): string[] {
   const dataOffset = 8;
   const bytesPerStringSize = 4;
   const stringsCount = new Uint32Array(arrayBuffer, 0, bytesPerStringSize)[0];
   const stringSizes = new Uint32Array(arrayBuffer, dataOffset, stringsCount);
 
-  const stringsArray = [];
+  const stringsArray: string[] = [];
   let stringOffset = dataOffset + stringsCount * bytesPerStringSize;
 
   for (const stringByteSize of stringSizes) {
