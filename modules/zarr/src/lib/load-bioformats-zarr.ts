@@ -55,7 +55,7 @@ export async function loadBioformatsZarr(
   }
 
   const store = new FileStore(fMap, getRootPrefix(source, ZARR_DIR));
-  return loadBioformatsZarr(store, xmlFile);
+  return loadBioformatsZarrHelper(store, xmlFile);
 }
 
 /**
