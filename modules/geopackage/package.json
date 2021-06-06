@@ -14,7 +14,7 @@
     "sql",
     "GeoPackage"
   ],
-  "types": "src/index.d.ts",
+  "types": "src/index.ts",
   "main": "dist/es5/index.js",
   "module": "dist/esm/index.js",
   "sideEffects": false,
@@ -24,7 +24,7 @@
     "README.md"
   ],
   "dependencies": {
-    "@loaders.gl/core": "3.0.0-alpha.19",
+    "@babel/runtime": "^7.3.1",
     "@loaders.gl/gis": "3.0.0-alpha.19",
     "@loaders.gl/tables": "^3.0.0-alpha.19",
     "@loaders.gl/wkt": "3.0.0-alpha.19",
