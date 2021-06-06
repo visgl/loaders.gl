@@ -106,6 +106,9 @@ export function getIndexer<T extends string>(labels: T[]) {
 
 export function getImageSize<T extends string[]>(source: PixelSource<T>): { height: number, width: number } {
   const interleaved = isInterleaved(source.shape);
+  // 2D image data in Zarr are represented as (..., rows, columns [, bands])
+  // If an image is interleaved (RGB/A), we need to ignore the last dimension (bands) 
+  // to get the height and weight of the image.
   const [height, width] = source.shape.slice(interleaved ? -3 : -2);
   return { height, width };
 }
