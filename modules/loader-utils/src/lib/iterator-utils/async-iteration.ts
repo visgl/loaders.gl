@@ -3,6 +3,7 @@ import {assert} from '../env-utils/assert';
 
 // GENERAL UTILITIES
 
+
 /**
  * Iterate over async iterator, without resetting iterator if end is not reached
  * - forEach intentionally does not reset iterator if exiting loop prematurely
@@ -34,27 +35,20 @@ export async function forEach(iterator, visitor) {
 
 /**
  * Concatenates all data chunks yielded by an (async) iterator
- * Supports strings and ArrayBuffers
- *
  * This function can e.g. be used to enable atomic parsers to work on (async) iterator inputs
- */
-export async function concatenateChunksAsync(asyncIterator) {
-  /** @type {ArrayBuffer[]} */
-  const arrayBuffers = [];
-  /** @type {string[]} */
-  const strings = [];
+ */ 
+export async function concatenateChunksAsync(asyncIterator: AsyncIterable<ArrayBuffer>): Promise<ArrayBuffer> {
+  const arrayBuffers: ArrayBuffer[] = [];
   for await (const chunk of asyncIterator) {
-    if (typeof chunk === 'string') {
-      strings.push(chunk);
-    } else {
-      arrayBuffers.push(chunk);
-    }
+    arrayBuffers.push(chunk);
   }
-
-  if (strings.length > 0) {
-    assert(arrayBuffers.length === 0);
-    return strings.join('');
-  }
-
   return concatenateArrayBuffers(...arrayBuffers);
+}
+
+export async function concatenateStringsAsync(asyncIterator: AsyncIterable<string>): Promise<string> {
+  const strings: string[] = [];
+  for await (const chunk of asyncIterator) {
+    strings.push(chunk);
+  }
+  return strings.join('');
 }

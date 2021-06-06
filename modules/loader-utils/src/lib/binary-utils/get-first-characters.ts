@@ -1,4 +1,4 @@
-export function getFirstCharacters(data, length = 5) {
+export function getFirstCharacters(data, length: number = 5): string {
   if (typeof data === 'string') {
     return data.slice(0, length);
   } else if (ArrayBuffer.isView(data)) {
@@ -11,7 +11,7 @@ export function getFirstCharacters(data, length = 5) {
   return '';
 }
 
-export function getMagicString(arrayBuffer, byteOffset, length) {
+export function getMagicString(arrayBuffer: ArrayBuffer, byteOffset: number, length: number): string {
   if (arrayBuffer.byteLength <= byteOffset + length) {
     return '';
   }

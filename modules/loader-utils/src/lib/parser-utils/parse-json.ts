@@ -1,7 +1,9 @@
 import {getFirstCharacters} from '../binary-utils/get-first-characters';
 
-// Minimal JSON parser with a meaningful error message
-export function parseJSON(string) {
+/**
+ * Minimal JSON parser that throws more meaningful error messages
+ */
+export function parseJSON(string: string): any {
   try {
     return JSON.parse(string);
   } catch (_) {

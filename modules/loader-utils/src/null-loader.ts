@@ -1,12 +1,15 @@
-/** @typedef {import('@loaders.gl/loader-utils').WorkerLoaderObject} WorkerLoaderObject */
-/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
+import {WorkerLoaderObject, LoaderObject} from '@loaders.gl/loader-utils';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-/** @type {WorkerLoaderObject} */
-export const NullWorkerLoader = {
+/**
+ * Loads any data and returns null (or optionally passes through data unparsed)
+ * @type {LoaderObject}
+ * @todo Should be moved to `@loaders.gl/core`
+ */
+ export const NullWorkerLoader: WorkerLoaderObject = {
   name: 'Null loader',
   id: 'null',
   module: 'loader-utils',
@@ -20,8 +23,12 @@ export const NullWorkerLoader = {
   }
 };
 
-/** @type {LoaderObject} */
-export const NullLoader = {
+/**
+  * Loads any data and returns null (or optionally passes through data unparsed)
+  * @type {LoaderObject}
+  * @todo Should be moved to `@loaders.gl/core`
+  */
+ export const NullLoader: LoaderObject = {
   ...NullWorkerLoader,
   parse: async (arrayBuffer, options) => arrayBuffer,
   parseSync: (arrayBuffer, options) => arrayBuffer,

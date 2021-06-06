@@ -1,4 +1,28 @@
-export function getMeshSize(attributes) {
+// Mesh category utilities
+// TODO - move to mesh category module, or to math.gl/geometry module
+import {TypedArray} from '../../types';
+
+type Attribute = {
+  size?: number;
+  type?: number;
+  normalized?: boolean;
+  value: TypedArray;
+};
+
+type TypedArrays = {[key: string]: TypedArray};
+export type Attributes = {[key: string]: Attribute};
+
+/**
+ * Holds an axis aligned bounding box
+ * TODO - make sure AxisAlignedBoundingBox in math.gl/culling understands this format (or change this format)
+ */
+type BoundingBox = [[number, number, number], [number, number, number]];
+
+/**
+ * Get number of vertices in mesh
+ * @param attributes
+ */
+export function getMeshSize(attributes: TypedArrays): number {
   let size = 0;
   for (const attributeName in attributes) {
     const attribute = attributes[attributeName];
@@ -10,8 +34,13 @@ export function getMeshSize(attributes) {
   return size;
 }
 
+/**
+ * Get the (axis aligned) bounding box of a mesh
+ * @param attributes
+ * @returns array of two vectors representing the axis aligned bounding box
+ */
 // eslint-disable-next-line complexity
-export function getMeshBoundingBox(attributes) {
+export function getMeshBoundingBox(attributes: Attributes): BoundingBox | null {
   if (!attributes || !attributes.POSITION) {
     return null;
   }

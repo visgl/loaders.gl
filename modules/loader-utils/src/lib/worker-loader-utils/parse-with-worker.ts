@@ -3,7 +3,14 @@
 /** @typedef {import('@loaders.gl/worker-utils/').WorkerMessagePayload} WorkerMessagePayload */
 import {WorkerFarm, getWorkerObjectURL} from '@loaders.gl/worker-utils';
 
-export function canParseWithWorker(loader, data, options, context) {
+/**
+ * Determines if a loader can parse with worker
+ * @param loader
+ * @param data
+ * @param options
+ * @param context
+ */
+ export function canParseWithWorker(loader, data, options, context?) {
   if (!WorkerFarm.isSupported()) {
     return false;
   }
@@ -15,10 +22,10 @@ export function canParseWithWorker(loader, data, options, context) {
 }
 
 /**
- * This function expects that the worker function sends certain messages,
- * That can be automated if the worker is wrapped by a call to `createLoaderWorker`
- */
-export async function parseWithWorker(loader, data, options, context, parseOnMainThread) {
+  * this function expects that the worker function sends certain messages,
+  * this can be automated if the worker is wrapper by a call to createLoaderWorker in @loaders.gl/loader-utils.
+  */
+ export async function parseWithWorker(loader, data, options, context?, parseOnMainThread?: Function) {
   const name = loader.id; // TODO
   const url = getWorkerObjectURL(loader, options);
 
