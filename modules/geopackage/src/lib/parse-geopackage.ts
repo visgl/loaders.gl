@@ -163,17 +163,16 @@ function getVectorTable(
   }
 
   const geojsonFeatures: object[] = [];
-  if (dataColumns && featureIdColumn) {
-    for (const row of values) {
-      const geojsonFeature = constructGeoJsonFeature(
-        columns,
-        row,
-        geomColumn,
-        dataColumns,
-        featureIdColumn
-      );
-      geojsonFeatures.push(geojsonFeature);
-    }
+  for (const row of values) {
+    const geojsonFeature = constructGeoJsonFeature(
+      columns,
+      row,
+      geomColumn,
+      // @ts-ignore
+      dataColumns,
+      featureIdColumn
+    );
+    geojsonFeatures.push(geojsonFeature);
   }
 
   const schema = getArrowSchema(db, tableName);
