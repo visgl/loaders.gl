@@ -4,7 +4,7 @@ import type { AsyncStore } from 'zarr/types/storage/types';
 
 /**
  * Preserves (double) slashes earlier in the path, so this works better
- * for URLs. From https://stackoverflow.com/a/46427607/4178400
+ * for URLs. From https://stackoverflow.com/a/46427607
  * @param args parts of a path or URL to join.
  */
 function joinUrlParts(...args: string[]) {
@@ -37,8 +37,8 @@ export class FetchFileStore implements AsyncStore<ArrayBuffer> {
     return response.ok;
   }
 
-  keys(): Promise<string[]> {
-    return Promise.resolve([]);
+  async keys(): Promise<string[]> {
+    return [];
   }
 
   setItem(): never {

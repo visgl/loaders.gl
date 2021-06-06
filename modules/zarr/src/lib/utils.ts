@@ -1,17 +1,23 @@
 import { openGroup } from 'zarr';
+import { FetchFileStore } from './storage';
 import type { ZarrArray } from 'zarr';
 import type { PixelSource } from '../types';
 
-interface Multiscale {
+
+export function normalizeStore(source: string | ZarrArray['store']): ZarrArray['store'] {
+  if (typeof source === 'string') {
+    return new FetchFileStore(source);
+  }
+  return source;
+}
+
+export interface Multiscale {
   datasets: { path: string }[];
   version?: string;
 }
 
-export interface RootAttrs {
-  multiscales: Multiscale[];
-}
-
-export async function loadMultiscales(store: ZarrArray['store'], path = '') {
+export async function loadMultiscales<RootAttrs extends { multiscales: Multiscale[] }>(store: string | ZarrArray['store'], path = '') {
+  store = normalizeStore(store);
   const grp = await openGroup(store, path);
   const rootAttrs = (await grp.attrs.asObject()) as RootAttrs;
 
@@ -28,8 +34,41 @@ export async function loadMultiscales(store: ZarrArray['store'], path = '') {
   };
 }
 
+/*
+ * Creates an ES6 map of 'label' -> index
+ * > const labels = ['a', 'b', 'c', 'd'];
+ * > const dims = getDims(labels);
+ * > dims('a') === 0;
+ * > dims('b') === 1;
+ * > dims('c') === 2;
+ * > dims('hi!'); // throws
+ */
+export function getDims<S extends string>(labels: S[]) {
+  const lookup = new Map(labels.map((name, i) => [name, i]));
+  if (lookup.size !== labels.length) {
+    throw Error('Labels must be unique, found duplicated label.');
+  }
+  return (name: S) => {
+    const index = lookup.get(name);
+    if (index === undefined) {
+      throw Error('Invalid dimension.');
+    }
+    return index;
+  };
+}
+
 function prevPowerOf2(x: number) {
   return 2 ** Math.floor(Math.log2(x));
+}
+
+/*
+ * Helper method to determine whether pixel data is interleaved or not.
+ * > isInterleaved([1, 24, 24]) === false;
+ * > isInterleaved([1, 24, 24, 3]) === true;
+ */
+export function isInterleaved(shape: number[]) {
+  const lastDimSize = shape[shape.length - 1];
+  return lastDimSize === 3 || lastDimSize === 4;
 }
 
 export function guessTileSize(arr: ZarrArray) {
@@ -39,7 +78,6 @@ export function guessTileSize(arr: ZarrArray) {
   // deck.gl requirement for power-of-two tile size.
   return prevPowerOf2(size);
 }
-
 
 /*
  * The 'indexer' for a Zarr-based source translates
@@ -63,39 +101,6 @@ export function getIndexer<T extends string>(labels: T[]) {
       selection[dims(key as T)] = value as number;
     }
     return selection;
-  };
-}
-
-/*
- * Helper method to determine whether pixel data is interleaved or not.
- * > isInterleaved([1, 24, 24]) === false;
- * > isInterleaved([1, 24, 24, 3]) === true;
- */
-export function isInterleaved(shape: number[]) {
-  const lastDimSize = shape[shape.length - 1];
-  return lastDimSize === 3 || lastDimSize === 4;
-}
-
-/*
- * Creates an ES6 map of 'label' -> index
- * > const labels = ['a', 'b', 'c', 'd'];
- * > const dims = getDims(labels);
- * > dims('a') === 0;
- * > dims('b') === 1;
- * > dims('c') === 2;
- * > dims('hi!'); // throws
- */
-export function getDims<S extends string>(labels: S[]) {
-  const lookup = new Map(labels.map((name, i) => [name, i]));
-  if (lookup.size !== labels.length) {
-    throw Error('Labels must be unique, found duplicated label.');
-  }
-  return (name: S) => {
-    const index = lookup.get(name);
-    if (index === undefined) {
-      throw Error('Invalid dimension.');
-    }
-    return index;
   };
 }
 
