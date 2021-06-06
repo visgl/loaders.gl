@@ -163,15 +163,17 @@ function getVectorTable(
   }
 
   const geojsonFeatures: object[] = [];
-  for (const row of values) {
-    const geojsonFeature = constructGeoJsonFeature(
-      columns,
-      row,
-      geomColumn,
-      dataColumns,
-      featureIdColumn
-    );
-    geojsonFeatures.push(geojsonFeature);
+  if (dataColumns && featureIdColumn) {
+    for (const row of values) {
+      const geojsonFeature = constructGeoJsonFeature(
+        columns,
+        row,
+        geomColumn,
+        dataColumns,
+        featureIdColumn
+      );
+      geojsonFeatures.push(geojsonFeature);
+    }
   }
 
   const schema = getArrowSchema(db, tableName);
@@ -213,8 +215,8 @@ function getProjections(db: Database): ProjectionMapping {
 function constructGeoJsonFeature(
   columns: string[],
   row: any[],
-  geomColumn: object,
-  dataColumns: object,
+  geomColumn: GeometryColumnsRow,
+  dataColumns: DataColumnsMapping,
   featureIdColumn: string
 ) {
   // Find feature id
@@ -229,6 +231,7 @@ function constructGeoJsonFeature(
   if (dataColumns) {
     for (const [key, value] of Object.entries(dataColumns)) {
       const idx = columns.indexOf(key);
+      // @ts-ignore TODO - Check what happens if null?
       properties[value] = row[idx];
     }
   } else {
