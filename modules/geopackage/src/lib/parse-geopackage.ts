@@ -1,4 +1,4 @@
-import initSqlJs, {Database, ParamsObject} from 'sql.js';
+import initSqlJs, {SqlJsStatic, Database, ParamsObject} from 'sql.js';
 import {WKBLoader} from '@loaders.gl/wkt';
 import {parseSync} from '@loaders.gl/core';
 import {
@@ -47,11 +47,25 @@ const SQL_TYPES = {
   GEOMETRY: Binary
 };
 
-export default async function parseGeoPackage(arrayBuffer: ArrayBuffer, options: {[key: string]: any}) {
-  const {sqlJsCDN} = (options && options.geopackage) || {};
+// TODO(kyle): export this so that it can be used on the loader as well
+interface GeoPackageOptions {
+  geopackage?: {
+    sqlJsCDN: string;
+  };
+  gis?: {
+    reproject?: boolean;
+    _targetCrs?: string;
+  };
+}
+
+export default async function parseGeoPackage(
+  arrayBuffer: ArrayBuffer,
+  options: GeoPackageOptions
+) {
+  const {sqlJsCDN = 'https://sql.js.org/dist/'} = (options && options.geopackage) || {};
   const {reproject = false, _targetCrs = 'WGS84'} = (options && options.gis) || {};
 
-  const db = await loadDatabase(arrayBuffer, {sqlJsCDN});
+  const db = await loadDatabase(arrayBuffer, sqlJsCDN);
   const tables = listVectorTables(db);
   const projections = getProjections(db);
 
@@ -68,12 +82,15 @@ export default async function parseGeoPackage(arrayBuffer: ArrayBuffer, options:
 /**
  * Initialize SQL.js and create database
  *
- * @param  {ArrayBuffer} arrayBuffer input bytes
- * @return {Promise<Database>} SQL.js database object
+ * @param arrayBuffer input bytes
+ * @return SQL.js database object
  */
-async function loadDatabase(arrayBuffer, {sqlJsCDN}) {
+async function loadDatabase(
+  arrayBuffer: ArrayBuffer,
+  sqlJsCDN: string
+): Promise<Database> {
   // In Node, `locateFile` must not be passed
-  let SQL;
+  let SQL: SqlJsStatic;
   if (sqlJsCDN) {
     SQL = await initSqlJs({
       locateFile: file => `${sqlJsCDN}${file}`
