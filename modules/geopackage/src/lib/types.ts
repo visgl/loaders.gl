@@ -19,6 +19,21 @@ export interface GeometryBitFlags {
 
 export type ProjectionMapping = {[srsId: number]: string};
 export type DataColumnsMapping = {[columnName: string]: string | null};
+export type SQLiteTypes =
+  | 'BOOLEAN'
+  | 'TINYINT'
+  | 'SMALLINT'
+  | 'MEDIUMINT'
+  | 'INT'
+  | 'INTEGER'
+  | 'FLOAT'
+  | 'DOUBLE'
+  | 'REAL'
+  | 'TEXT'
+  | 'BLOB'
+  | 'DATE'
+  | 'DATETIME'
+  | 'GEOMETRY';
 
 /**
  * https://www.geopackage.org/spec121/#spatial_ref_sys
@@ -238,24 +253,7 @@ export interface DataColumnsRow {
 export interface PragmaTableInfoRow {
   cid: number;
   name: string;
-
-  // TODO: can be a union of SQLite types: 'INTEGER' | 'GEOMETRY' | 'TEXT'
-  type:
-    | 'BOOLEAN'
-    | 'TINYINT'
-    | 'SMALLINT'
-    | 'MEDIUMINT'
-    | 'INT'
-    | 'INTEGER'
-    | 'FLOAT'
-    | 'DOUBLE'
-    | 'REAL'
-    | 'TEXT'
-    | 'BLOB'
-    | 'DATE'
-    | 'DATETIME'
-    | 'GEOMETRY';
-
+  type: SQLiteTypes;
   notnull: 0 | 1;
   dflt_value: any;
   pk: 0 | 1;

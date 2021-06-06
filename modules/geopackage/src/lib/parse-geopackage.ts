@@ -5,6 +5,7 @@ import {parseSync} from '@loaders.gl/core';
 import {
   Schema,
   Field,
+  DataType,
   Bool,
   Utf8,
   Float64,
@@ -25,7 +26,8 @@ import {
   GeometryBitFlags,
   DataColumnsRow,
   DataColumnsMapping,
-  PragmaTableInfoRow
+  PragmaTableInfoRow,
+  SQLiteTypes
 } from './types';
 
 // https://www.geopackage.org/spec121/#flags_layout
@@ -42,7 +44,7 @@ const ENVELOPE_BYTE_LENGTHS = {
 };
 
 // Documentation: https://www.geopackage.org/spec130/index.html#table_column_data_types
-const SQL_TYPES = {
+const SQL_TYPE_MAPPING: {[type in SQLiteTypes]: typeof DataType} = {
   BOOLEAN: Bool,
   TINYINT: Int8,
   SMALLINT: Int16,
@@ -433,7 +435,7 @@ function getArrowSchema(db: Database, tableName: string): Schema {
   while (stmt.step()) {
     const pragmaTableInfo = (stmt.getAsObject() as unknown) as PragmaTableInfoRow;
     const {name, type, notnull} = pragmaTableInfo;
-    const field = new Field(name, new SQL_TYPES[type](), !notnull)
+    const field = new Field(name, new SQL_TYPE_MAPPING[type](), !notnull)
     fields.push(field);
   }
 
