@@ -1,4 +1,5 @@
-import initSqlJs, {SqlJsStatic, Database, ParamsObject} from 'sql.js';
+/* eslint-disable camelcase */
+import initSqlJs, {SqlValue, SqlJsStatic, Database, Statement} from 'sql.js';
 import {WKBLoader} from '@loaders.gl/wkt';
 import {parseSync} from '@loaders.gl/core';
 import {
@@ -15,6 +16,17 @@ import {
 } from '@loaders.gl/tables';
 import {binaryToGeoJson, transformGeoJsonCoords} from '@loaders.gl/gis';
 import {Proj4Projection} from '@math.gl/proj4';
+import {
+  GeometryColumnsRow,
+  ContentsRow,
+  SpatialRefSysRow,
+  ProjectionMapping,
+  GeoPackageLoaderOptions,
+  GeometryBitFlags,
+  DataColumnsRow,
+  DataColumnsMapping,
+  PragmaTableInfoRow
+} from './types';
 
 // https://www.geopackage.org/spec121/#flags_layout
 const ENVELOPE_BYTE_LENGTHS = {
@@ -47,20 +59,9 @@ const SQL_TYPES = {
   GEOMETRY: Binary
 };
 
-// TODO(kyle): export this so that it can be used on the loader as well
-interface GeoPackageOptions {
-  geopackage?: {
-    sqlJsCDN: string;
-  };
-  gis?: {
-    reproject?: boolean;
-    _targetCrs?: string;
-  };
-}
-
 export default async function parseGeoPackage(
   arrayBuffer: ArrayBuffer,
-  options: GeoPackageOptions
+  options: GeoPackageLoaderOptions
 ) {
   const {sqlJsCDN = 'https://sql.js.org/dist/'} = (options && options.geopackage) || {};
   const {reproject = false, _targetCrs = 'WGS84'} = (options && options.gis) || {};
@@ -85,10 +86,7 @@ export default async function parseGeoPackage(
  * @param arrayBuffer input bytes
  * @return SQL.js database object
  */
-async function loadDatabase(
-  arrayBuffer: ArrayBuffer,
-  sqlJsCDN: string
-): Promise<Database> {
+async function loadDatabase(arrayBuffer: ArrayBuffer, sqlJsCDN: string | null): Promise<Database> {
   // In Node, `locateFile` must not be passed
   let SQL: SqlJsStatic;
   if (sqlJsCDN) {
@@ -105,10 +103,10 @@ async function loadDatabase(
  * Find all vector tables in GeoPackage
  * This queries the `gpkg_contents` table to find a list of vector tables
  *
- * @param  {Database} db GeoPackage to query
- * @return {object[]} list of table references
+ * @param db GeoPackage to query
+ * @return list of table references
  */
-function listVectorTables(db) {
+function listVectorTables(db: Database): ContentsRow[] {
   // The gpkg_contents table can have at least three categorical values for
   // data_type.
   // - 'features' refers to a vector geometry table
@@ -117,9 +115,18 @@ function listVectorTables(db) {
   // (https://www.geopackage.org/spec121/#_contents_3)
   // - 'attributes' refers to a data table with no geometry
   // (https://www.geopackage.org/spec121/#_contents_4).
-  const {columns, values} = db.exec("SELECT * FROM gpkg_contents WHERE data_type = 'features';")[0];
 
-  return interleaveResults(columns, values);
+  // We hard code 'features' because for now we don't support raster data or pure attribute data
+  // eslint-disable-next-line quotes
+  const stmt = db.prepare("SELECT * FROM gpkg_contents WHERE data_type='features';");
+
+  const vectorTablesInfo: ContentsRow[] = [];
+  while (stmt.step()) {
+    const vectorTableInfo = (stmt.getAsObject() as unknown) as ContentsRow;
+    vectorTablesInfo.push(vectorTableInfo);
+  }
+
+  return vectorTablesInfo;
 }
 
 /**
@@ -133,8 +140,8 @@ function listVectorTables(db) {
 function getVectorTable(
   db: Database,
   tableName: string,
-  projections: {[srs_id: string]: string},
-  {reproject, _targetCrs}
+  projections: ProjectionMapping,
+  {reproject, _targetCrs}: {reproject: boolean; _targetCrs: string}
 ): object {
   const dataColumns = getDataColumns(db, tableName);
   const geomColumn = getGeometryColumn(db, tableName);
@@ -179,20 +186,18 @@ function getVectorTable(
  * @param db GeoPackage object
  * @returns mapping from srid to WKT projection string
  */
-function getProjections(db: Database): {[srs_id: string]: string} {
+function getProjections(db: Database): ProjectionMapping {
   // Query gpkg_spatial_ref_sys to get srid: srtext mappings
-  const {columns, values} = db.exec('SELECT * FROM gpkg_spatial_ref_sys;')[0];
-  const srsIdIdx = columns.indexOf('srs_id');
-  const definitionIdx = columns.indexOf('definition');
+  const stmt = db.prepare('SELECT * FROM gpkg_spatial_ref_sys;');
 
-  const result = {};
-  for (const row of values) {
-    if (row[definitionIdx] !== 'undefined') {
-      result[row[srsIdIdx]] = row[definitionIdx];
-    }
+  const projectionMapping: ProjectionMapping = {};
+  while (stmt.step()) {
+    const srsInfo = (stmt.getAsObject() as unknown) as SpatialRefSysRow;
+    const {srs_id, definition} = srsInfo;
+    projectionMapping[srs_id] = definition;
   }
 
-  return result;
+  return projectionMapping;
 }
 
 /**
@@ -286,23 +291,26 @@ function getGeopackageVersion(db: Database): string | null {
 /**
  * Find name of feature id column in table
  * The feature ID is the primary key of the table.
- * http://www.geopackage.org/spec/#feature_user_tables
+ * http://www.geopackage.org/spec121/#feature_user_tables
  *
- * @param  {Database} db database
- * @param  {string} tableName name of table
- * @return {string}           name of feature id column
+ * @param db database
+ * @param tableName name of table
+ * @return name of feature id column
  */
-function getFeatureIdName(db: Database, tableName) {
+function getFeatureIdName(db: Database, tableName: string): string | null {
   // Again, not possible to parameterize table name?
-  const {columns, values} = db.exec(`PRAGMA table_info(\`${tableName}\`)`)[0];
+  const stmt = db.prepare(`PRAGMA table_info(\`${tableName}\`)`);
 
-  const primaryKeyIdx = columns.indexOf('pk');
-  const primaryKey = values.filter(row => row[primaryKeyIdx] === 1)[0];
+  while (stmt.step()) {
+    const pragmaTableInfo = (stmt.getAsObject() as unknown) as PragmaTableInfoRow;
+    const {name, pk} = pragmaTableInfo;
+    if (pk) {
+      return name;
+    }
+  }
 
-  // I _think_ there is supposed to be only one column forming the primary key,
-  // and that is the feature id.
-  const columnNameIdx = columns.indexOf('name');
-  return primaryKey[String(columnNameIdx)];
+  // Is it guaranteed for there always to be at least one primary key column in the table?
+  return null;
 }
 
 /**
@@ -310,10 +318,10 @@ function getFeatureIdName(db: Database, tableName) {
  * GeoPackage vector geometries are slightly extended past the WKB standard
  * See: https://www.geopackage.org/spec121/#gpb_format
  *
- * @param  {ArrayBuffer} arrayBuffer geometry buffer
+ * @param arrayBuffer geometry buffer
  * @return {object} GeoJSON geometry (in original CRS)
  */
-function parseGeometry(arrayBuffer) {
+function parseGeometry(arrayBuffer: ArrayBuffer) {
   const view = new DataView(arrayBuffer);
   const {envelopeLength, emptyGeometry} = parseGeometryBitFlags(view.getUint8(3));
 
@@ -340,16 +348,19 @@ function parseGeometry(arrayBuffer) {
  * Parse geometry header flags
  * https://www.geopackage.org/spec121/#flags_layout
  *
- * @param  {number} byte uint8 number representing flags
- * @return {object}      object representing information from bit flags
+ * @param byte uint8 number representing flags
+ * @return object representing information from bit flags
  */
-function parseGeometryBitFlags(byte) {
+function parseGeometryBitFlags(byte: number): GeometryBitFlags {
   // Are header values little endian?
   const envelopeValue = (byte & 0b00001110) / 2;
 
+  // TODO: Not sure the best way to handle this. Throw an error if envelopeValue outside 0-7?
+  const envelopeLength = ENVELOPE_BYTE_LENGTHS[envelopeValue] as number;
+
   return {
     littleEndian: Boolean(byte & 0b00000001),
-    envelopeLength: ENVELOPE_BYTE_LENGTHS[envelopeValue],
+    envelopeLength,
     emptyGeometry: Boolean(byte & 0b00010000),
     extendedGeometryType: Boolean(byte & 0b00100000)
   };
@@ -362,19 +373,18 @@ function parseGeometryBitFlags(byte) {
  * @param tableName Name of vector table
  * @returns Array of geometry column definitions
  */
-function getGeometryColumn(db: Database, tableName: string): object {
+function getGeometryColumn(db: Database, tableName: string): GeometryColumnsRow {
   const stmt = db.prepare('SELECT * FROM gpkg_geometry_columns WHERE table_name=:tableName;');
-
   stmt.bind({':tableName': tableName});
-  const columns: ParamsObject[] = [];
-  while (stmt.step()) {
-    columns.push(stmt.getAsObject());
-  }
 
   // > Requirement 30
   // > A feature table SHALL have only one geometry column.
   // https://www.geopackage.org/spec121/#feature_user_tables
-  return columns[0];
+  // So we should need one and only one step, given that we use the WHERE clause in the SQL query
+  // above
+  stmt.step();
+  const geometryColumn = (stmt.getAsObject() as unknown) as GeometryColumnsRow;
+  return geometryColumn;
 }
 
 /**
@@ -383,10 +393,10 @@ function getGeometryColumn(db: Database, tableName: string): object {
  * @param tableName Name of vector table
  * @returns Mapping from table column names to property name
  */
-function getDataColumns(db: Database, tableName: string): object | null {
+function getDataColumns(db: Database, tableName: string): DataColumnsMapping | null {
   // gpkg_data_columns is not required to exist
   // https://www.geopackage.org/spec121/#extension_schema
-  let stmt;
+  let stmt: Statement;
   try {
     stmt = db.prepare('SELECT * FROM gpkg_data_columns WHERE table_name=:tableName;');
   } catch (error) {
@@ -399,39 +409,15 @@ function getDataColumns(db: Database, tableName: string): object | null {
 
   stmt.bind({':tableName': tableName});
 
-  // Each column object is
-  // {
-  //  table_name:
-  //  column_name:
-  //  name:
-  //  ...
-  // }
-  // Change this to a key-value column_name: name
-  const result = {};
+  // Convert DataColumnsRow object this to a key-value {column_name: name}
+  const result: DataColumnsMapping = {};
   while (stmt.step()) {
-    const column = stmt.getAsObject();
-    const {column_name: columnName, name} = column;
-    result[columnName] = name;
+    const column = stmt.getAsObject() as unknown as DataColumnsRow;
+    const {column_name, name} = column;
+    result[column_name] = name || null;
   }
 
   return result;
-}
-
-/**
- * Merge columns and values together to an array of objects
- * @param columns array representing column names
- * @param values  an array of arrays, where each inner array represents one row
- * @returns an array of objects, where each object represents a single row
- */
-function interleaveResults(columns: string[], values: any[][]): {[column: string]: any}[] {
-  const merged: object[] = [];
-  for (const value of values) {
-    const result = {};
-    columns.forEach((column, i) => (result[column] = value[i]));
-    merged.push(result);
-  }
-
-  return merged;
 }
 
 /**
@@ -441,12 +427,15 @@ function interleaveResults(columns: string[], values: any[][]): {[column: string
  * @returns Arrow-like Schema
  */
 function getArrowSchema(db: Database, tableName: string): Schema {
-  const metadata = db.exec(`SELECT name, type FROM pragma_table_info('${tableName}')`)[0];
+  const stmt = db.prepare(`PRAGMA table_info(\`${tableName}\`)`);
+
   const fields: Field[] = [];
-  for (const column of metadata.values) {
-    fields.push(
-      new Field((column[0] && column[0].toString()) || '', new SQL_TYPES[column[1]](), true)
-    );
+  while (stmt.step()) {
+    const pragmaTableInfo = (stmt.getAsObject() as unknown) as PragmaTableInfoRow;
+    const {name, type, notnull} = pragmaTableInfo;
+    const field = new Field(name, new SQL_TYPES[type](), !notnull)
+    fields.push(field);
   }
+
   return new Schema(fields);
 }
