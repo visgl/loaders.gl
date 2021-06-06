@@ -69,6 +69,24 @@ export type Tileset3DProps = {
   fetchOptions?: {[key: string]: any};
 }
 
+type Props = {
+  description: string;
+  ellipsoid: object;
+  modelMatrix: number[];
+  throttleRequests: boolean;
+  maximumMemoryUsage: number;
+  onTileLoad: (tile: Tile3D) => any;
+  onTileUnload: (tile: Tile3D) => any;
+  onTileError: (tile: Tile3D, message: string, url: string) => any;
+  maximumScreenSpaceError: number;
+  viewportTraversersMap: any;
+  token: string;
+  attributions: string[];
+  headers: any;
+  loadTiles: boolean;
+  fetchOptions: {[key: string]: any};
+}
+
 // Tracked Stats
 const TILES_TOTAL = 'Tiles In Tileset(s)';
 const TILES_IN_MEMORY = 'Tiles In Memory';
@@ -108,9 +126,12 @@ const DEFAULT_PROPS: Tileset3DProps = {
 
 export default class Tileset3D {
   // props: Tileset3DProps;
+  options: Props;
+  fetchOptions: {[key: string]: any};
+
+  type: string;
   tileset: {[key: string]: any};
   loader: object;
-  type: string;
   url: string;
   basePath: string;
   modelMatrix: number[];
@@ -118,10 +139,9 @@ export default class Tileset3D {
   lodMetricType: string;
   lodMetricValue: number;
   refine: string;
-  root: Tile3D;
+  root: Tile3D | null;
   roots: {[key: string]: Tile3D};
   asset: {[key: string]: any};
-  fetchOptions: {[key: string]: any};
 
   description: string;
   properties: any;
@@ -131,15 +151,12 @@ export default class Tileset3D {
 
   stats: Stats;
 
-  /** @deprecated */
-  options: Tileset3DProps;
-
   traverseCounter: number;
   geometricError: number;
   selectedTiles: Tile3D[];
 
-  cartographicCenter: Vector3;
-  cartesianCenter: Vector3;
+  cartographicCenter: Vector3 | null;
+  cartesianCenter: Vector3 | null;
   zoom: number;
   boundingVolume: any;
 
@@ -150,7 +167,7 @@ export default class Tileset3D {
   gpuMemoryUsageInBytes: any;
 
   // TRAVERSAL
-  private _traverser: any;
+  _traverser: TilesetTraverser;
   private _cache: TilesetCache;
   private _requestScheduler: RequestScheduler;
 
@@ -188,7 +205,7 @@ export default class Tileset3D {
    * @param props
    */
   // eslint-disable-next-line max-statements
-  constructor(json: any, options: Tileset3DProps) {
+  constructor(json: any, options?: Tileset3DProps) {
     assert(json);
     options = {...DEFAULT_PROPS, ...options};
 
@@ -503,6 +520,7 @@ export default class Tileset3D {
   // Called during initialize Tileset to initialize the tileset's cartographic center (longitude, latitude) and zoom.
   _calculateViewProps() {
     const root = this.root;
+    assert(root);
     const {center} = root.boundingVolume;
     // TODO - handle all cases
     if (!center) {

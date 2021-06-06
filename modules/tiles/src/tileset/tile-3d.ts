@@ -12,6 +12,7 @@ import {createBoundingVolume} from './helpers/bounding-volume';
 import {getTiles3DScreenSpaceError} from './helpers/tiles-3d-lod';
 import {getI3ScreenSize} from './helpers/i3s-lod';
 import {get3dTilesOptions} from './helpers/3d-tiles-options';
+import TilesetTraverser from './traversers/tileset-traverser';
 
 declare class Tileset3D {};
 
@@ -100,6 +101,8 @@ export default class TileHeader {
   private _contentBoundingVolume: any;
   private _viewerRequestVolume: any;
 
+  _initialTransform: Matrix4;
+
   /**
    * @constructs
    * Create a TileHeader instance
@@ -121,27 +124,36 @@ export default class TileHeader {
     // PUBLIC MEMBERS
     // original tile data
     this.header = header;
+
     // The tileset containing this tile.
     this.tileset = tileset;
     this.id = extendedId || header.id;
     this.url = header.url;
+
     // This tile's parent or `undefined` if this tile is the root.
     this.parent = parentHeader;
     this.refine = this._getRefine(header.refine);
     this.type = header.type;
     this.contentUrl = header.contentUrl;
+
     // The error, in meters, introduced if this tile is rendered and its children are not.
     this.lodMetricType = null;
     this.lodMetricValue = null;
+
     // Specifies the type of refine that is used when traversing this tile for rendering.
     this.boundingVolume = null;
+
     // The tile's content.  This represents the actual tile's payload,
     // not the content's metadata in the tileset JSON file.
     this.content = null;
     this.contentState = TILE_CONTENT_STATE.UNLOADED;
     this.gpuMemoryUsageInBytes = 0;
+
     // The tile's children - an array of Tile3D objects.
     this.children = [];
+
+    this.hasEmptyContent = false;
+    this.hasTilesetContent = false;
 
     this.depth = 0;
     this.viewportIds = [];
@@ -150,9 +162,21 @@ export default class TileHeader {
     this.userData = {};
 
     // PRIVATE MEMBERS
+    this._screenSpaceError = 0;
+
     this._cacheNode = null;
     this._frameNumber = null;
     this._cacheNode = null;
+
+    this.traverser = new TilesetTraverser({});
+    this._shouldRefine = false;
+    this._distanceToCamera = 0;
+    this._centerZDepth = 0;
+    this._visible = false;
+    this._inRequestVolume = false;
+    this._stackLength = 0;
+    this._selectionDepth = 0;
+    this._initialTransform = new Matrix4();
 
     this._initializeLodMetric(header);
     this._initializeTransforms(header);
@@ -258,8 +282,7 @@ export default class TileHeader {
         return getTiles3DScreenSpaceError(this, frameState, useParentLodMetric);
       default:
         // eslint-disable-next-line
-        console.error('Unsupported tileset type');
-        return null;
+        throw new Error('Unsupported tileset type');
     }
   }
 

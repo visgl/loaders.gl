@@ -3,19 +3,28 @@ import {TILE_REFINEMENT} from '../../constants';
 import {assert} from '@loaders.gl/loader-utils';
 
 export type TilesetTraverserProps = {
+  loadSiblings?: boolean;
+  skipLevelOfDetail?: boolean;
+  maximumScreenSpaceError?: number;
+  onTraversalEnd?: (frameState) => any;
+}
+
+export type Props = {
   loadSiblings: boolean;
   skipLevelOfDetail: boolean;
   maximumScreenSpaceError: number;
+  onTraversalEnd: (frameState) => any;
 }
 
-export const DEFAULT_PROPS: TilesetTraverserProps = {
+export const DEFAULT_PROPS: Props = {
   loadSiblings: false,
   skipLevelOfDetail: false,
-  maximumScreenSpaceError: 2
+  maximumScreenSpaceError: 2,
+  onTraversalEnd: () => {}
 };
 
 export default class TilesetTraverser {
-  options: any;
+  options: Props;
 
   root: any;
   requestedTiles: object;
@@ -134,9 +143,7 @@ export default class TilesetTraverser {
       tile._shouldRefine = shouldRefine && parentRefines;
     }
 
-    if (this.options.onTraversalEnd) {
-      this.options.onTraversalEnd(frameState);
-    }
+    this.options.onTraversalEnd(frameState);
   }
 
   updateChildTiles(tile, frameState) {
