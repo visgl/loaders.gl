@@ -1,5 +1,5 @@
-/* eslint-disable camelcase */
-import initSqlJs, {SqlValue, SqlJsStatic, Database, Statement} from 'sql.js';
+/* eslint-disable camelcase, @typescript-eslint/no-use-before-define */
+import initSqlJs, {SqlJsStatic, Database, Statement} from 'sql.js';
 import {WKBLoader} from '@loaders.gl/wkt';
 import {parseSync} from '@loaders.gl/core';
 import {
