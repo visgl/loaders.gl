@@ -1,6 +1,21 @@
-// TODO - this should move to core when test cases are more complete
-
+import {Status} from '@loaders.gl/draco/types/draco-web-decoder';
 import {Stats} from '@probe.gl/stats';
+
+export type RequestSchedulerProps = {
+  id?: string;
+  throttleRequests?: boolean;
+  maxRequests?: number;
+};
+
+type Props = {
+  id: string;
+  throttleRequests: boolean;
+  maxRequests: number;
+}
+
+
+type DoneFunction = () => any;
+type GetPriorityFunction = () => number;
 
 const STAT_QUEUED_REQUESTS = 'Queued Requests';
 const STAT_ACTIVE_REQUESTS = 'Active Requests';
@@ -8,7 +23,7 @@ const STAT_CANCELLED_REQUESTS = 'Cancelled Requests';
 const STAT_QUEUED_REQUESTS_EVER = 'Queued Requests Ever';
 const STAT_ACTIVE_REQUESTS_EVER = 'Active Requests Ever';
 
-const DEFAULT_PROPS = {
+const DEFAULT_PROPS: Props = {
   id: 'request-scheduler',
   // Specifies if the request scheduler should throttle incoming requests, mainly for comparative testing
   throttleRequests: true,
@@ -16,9 +31,25 @@ const DEFAULT_PROPS = {
   maxRequests: 6
 };
 
+/** Internal type, holds one request */
+type Request = {
+  handle: any; 
+  priority: number;
+  getPriority: GetPriorityFunction; 
+  resolve?: (value: any) => any;
+}
+
 // TODO - Track requests globally, across multiple servers
 export default class RequestScheduler {
-  constructor(props = {}) {
+  readonly props: Props;
+  readonly stats: Stats;
+  activeRequestCount: number;
+
+  private requestQueue: Request[];
+  private requestMap: Map<any, Promise<any>>;
+  private _deferredUpdate: any;
+
+  constructor(props: RequestSchedulerProps = {}) {
     this.props = {...DEFAULT_PROPS, ...props};
 
     // Tracks the number of active requests and prioritizes/cancels queued requests.
@@ -37,13 +68,23 @@ export default class RequestScheduler {
     this._deferredUpdate = null;
   }
 
-  // Called by an application that wants to issue a request, without having it deeply queued
-  // Parameter `getPriority` will be called when request "slots" open up,
-  //    allowing the caller to update priority or cancel the request
-  //    Highest priority executes first, priority < 0 cancels the request
-  // Returns: a promise that resolves to a request token when the request can be issued without queueing,
-  //    or `false` if the request has been cancelled (by getPriority)
-  scheduleRequest(handle, getPriority = () => 0) {
+  /**
+   * Called by an application that wants to issue a request, without having it deeply queued by the browser
+   *
+   * When the returned promise resolved, it is OK for the application to issue a request.
+   * The promise resolves to an object that contains a `done` method.
+   * When the application's request has completed (or failed), the application must call the `done` function
+   *
+   * @param handle
+   * @param getPriority will be called when request "slots" open up,
+   *    allowing the caller to update priority or cancel the request
+   *    Highest priority executes first, priority < 0 cancels the request
+   * @returns a promise
+   *   - resolves to a object (with a `done` field) when the request can be issued without queueing,
+   *   - resolves to `null` if the request has been cancelled (by the callback return < 0).
+   *     In this case the application should not issue the request
+   */
+  scheduleRequest(handle: any, getPriority: GetPriorityFunction = () => 0): Promise<{done: DoneFunction} | null> {
     // Allows throttling to be disabled
     if (!this.props.throttleRequests) {
       return Promise.resolve({done: () => {}});
@@ -51,11 +92,12 @@ export default class RequestScheduler {
 
     // dedupe
     if (this.requestMap.has(handle)) {
-      return this.requestMap.get(handle);
+      return this.requestMap.get(handle) as Promise<any>;
     }
 
-    const request = {handle, getPriority};
-    const promise = new Promise(resolve => {
+    const request: Request = {handle, priority: 0, getPriority};
+    const promise = new Promise<{done: DoneFunction} | null>(resolve => {
+      // @ts-ignore
       request.resolve = resolve;
       return request;
     });

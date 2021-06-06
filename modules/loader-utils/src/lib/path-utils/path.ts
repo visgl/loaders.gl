@@ -1,10 +1,19 @@
 // Beginning of a minimal implementation of the Node.js path API, that doesn't pull in big polyfills.
-export function dirname(url) {
+
+/**
+ * Replacement for Node.js path.dirname
+ * @param url
+ */
+ export function dirname(url: string): string {
   const slashIndex = url && url.lastIndexOf('/');
-  return slashIndex >= 0 ? url.substr(0, slashIndex) : '';
+  return slashIndex >= 0 ? url.substr(0, slashIndex as number) : '';
 }
 
-export function join(...parts) {
+ /**
+  * Replacement for Node.js path.join
+  * @param parts
+  */
+export function join(...parts: string[]): string {
   const separator = '/';
   parts = parts.map((part, index) => {
     if (index) {

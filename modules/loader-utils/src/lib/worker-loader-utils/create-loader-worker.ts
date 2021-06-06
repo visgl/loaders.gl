@@ -5,8 +5,11 @@ import {WorkerBody} from '@loaders.gl/worker-utils';
 
 let requestId = 0;
 
-// TODO - rewrite, rebase on create-generic-worker
-export function createLoaderWorker(loader) {
+/**
+ * Set up a WebWorkerGlobalScope to talk with the main thread
+ * @param loader
+ */
+export function createLoaderWorker(loader: any) {
   // Check that we are actually in a worker thread
   if (typeof self === 'undefined') {
     return;

@@ -11,6 +11,7 @@ export default function loadOBJ(text, options) {
 
   const header = {
     vertexCount,
+    // @ts-ignore Need to export Attributes type
     boundingBox: getMeshBoundingBox(attributes)
   };
 

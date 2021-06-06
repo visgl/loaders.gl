@@ -1,8 +1,12 @@
 // TextDecoder iterators
 // TextDecoder will keep any partial undecoded bytes between calls to `decode`
 
-export async function* makeTextDecoderIterator(arrayBufferIterator, options) {
-  const textDecoder = new TextDecoder(options);
+
+export async function *makeTextDecoderIterator(
+  arrayBufferIterator: AsyncIterable<ArrayBuffer>,
+  options: object = {}
+): AsyncIterable<string> {
+  const textDecoder = new TextDecoder(undefined, options);
   for await (const arrayBuffer of arrayBufferIterator) {
     yield typeof arrayBuffer === 'string'
       ? arrayBuffer
@@ -15,7 +19,10 @@ export async function* makeTextDecoderIterator(arrayBufferIterator, options) {
 // TextEncoder will keep any partial undecoded bytes between calls to `encode`
 // If iterator does not yield strings, assume arrayBuffer and return unencoded
 
-export async function* makeTextEncoderIterator(textIterator, options) {
+export async function *makeTextEncoderIterator(
+  textIterator: AsyncIterable<string>,
+  options?: object
+): AsyncIterable<ArrayBuffer> {
   const textEncoder = new TextEncoder();
   for await (const text of textIterator) {
     yield typeof text === 'string' ? textEncoder.encode(text) : text;
@@ -28,7 +35,9 @@ export async function* makeTextEncoderIterator(textIterator, options) {
  * See http://2ality.com/2018/04/async-iter-nodejs.html
  */
 
-export async function* makeLineIterator(textIterator) {
+ export async function *makeLineIterator(
+  textIterator: AsyncIterable<string>
+): AsyncIterable<string> {
   let previous = '';
   for await (const textChunk of textIterator) {
     previous += textChunk;
@@ -52,7 +61,9 @@ export async function* makeLineIterator(textIterator) {
  *
  * See http://2ality.com/2018/04/async-iter-nodejs.html
  */
-export async function* makeNumberedLineIterator(lineIterator) {
+ export async function *makeNumberedLineIterator(
+  lineIterator: AsyncIterable<string>
+): AsyncIterable<{counter: number; line: string}> {
   let counter = 1;
   for await (const line of lineIterator) {
     yield {counter, line};

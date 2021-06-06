@@ -1,9 +1,10 @@
-/** @typedef {import('./array-buffer-utils')} types */
-import {assert} from '../env-utils/assert';
+import {TypedArray} from '../../types';
 import * as node from '../node/buffer-utils.node';
 
-/** @type {types['toArrayBuffer']} */
-export function toArrayBuffer(data) {
+/** 
+ * Convert an object to an array buffer
+ */
+export function toArrayBuffer(data: any): ArrayBuffer {
   // Note: Should be called first, Buffers can trigger other detections below
   if (node.toArrayBuffer) {
     // TODO - per docs we should just be able to call buffer.buffer, but there are issues
@@ -30,11 +31,21 @@ export function toArrayBuffer(data) {
     return data._toArrayBuffer();
   }
 
-  return assert(false);
+  throw new Error('toArrayBuffer');
 }
 
-/** @type {types['compareArrayBuffers']} */
-export function compareArrayBuffers(arrayBuffer1, arrayBuffer2, byteLength) {
+
+/**
+ * compare two binary arrays for equality
+ * @param {ArrayBuffer} a
+ * @param {ArrayBuffer} b
+ * @param {number} byteLength
+ */
+ export function compareArrayBuffers(
+  arrayBuffer1: ArrayBuffer,
+  arrayBuffer2: ArrayBuffer,
+  byteLength?: number
+): boolean {
   byteLength = byteLength || arrayBuffer1.byteLength;
   if (arrayBuffer1.byteLength < byteLength || arrayBuffer2.byteLength < byteLength) {
     return false;
@@ -49,9 +60,11 @@ export function compareArrayBuffers(arrayBuffer1, arrayBuffer2, byteLength) {
   return true;
 }
 
-// Concatenate ArrayBuffers
-/** @type {types['concatenateArrayBuffers']} */
-export function concatenateArrayBuffers(...sources) {
+/**
+ * Concatenate a sequence of ArrayBuffers
+ * @return A concatenated ArrayBuffer
+ */
+ export function concatenateArrayBuffers(...sources: (ArrayBuffer | Uint8Array)[]): ArrayBuffer {
   // Make sure all inputs are wrapped in typed arrays
   const sourceArrays = sources.map(source2 =>
     (source2 instanceof ArrayBuffer ? new Uint8Array(source2) : source2)
@@ -73,8 +86,17 @@ export function concatenateArrayBuffers(...sources) {
   // We work with ArrayBuffers, discard the typed array wrapper
   return result.buffer;
 }
-// Concatenate arbitrary count of typed arrays
-export function concatenateTypedArrays(...arrays) {
+
+/**
+ * Concatenate arbitrary count of typed arrays
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays
+ * @param {...*} arrays - list of arrays. All arrays should be the same type
+ * @return A concatenated TypedArray
+ */
+ export function concatenateTypedArrays<T>(...typedArrays: T[]): T  {
+  // @ts-ignore
+  const arrays = typedArrays as TypedArray[];
+  // @ts-ignore
   const TypedArrayConstructor = (arrays && arrays.length > 1 && arrays[0].constructor) || null;
   if (!TypedArrayConstructor) {
     throw new Error(
@@ -83,6 +105,7 @@ export function concatenateTypedArrays(...arrays) {
   }
 
   const sumLength = arrays.reduce((acc, value) => acc + value.length, 0);
+  // @ts-ignore typescript does not like dynamic constructors
   const result = new TypedArrayConstructor(sumLength);
   let offset = 0;
   for (const array of arrays) {
@@ -92,8 +115,17 @@ export function concatenateTypedArrays(...arrays) {
   return result;
 }
 
-// Copy a view of an ArrayBuffer into new ArrayBuffer with byteOffset = 0
-export function sliceArrayBuffer(arrayBuffer, byteOffset, byteLength) {
+/**
+ * Copy a view of an ArrayBuffer into new ArrayBuffer with byteOffset = 0
+ * @param arrayBuffer
+ * @param byteOffset
+ * @param byteLength
+ */
+ export function sliceArrayBuffer(
+  arrayBuffer: ArrayBuffer,
+  byteOffset: number,
+  byteLength?: number
+): ArrayBuffer {
   const subArray =
     byteLength !== undefined
       ? new Uint8Array(arrayBuffer).subarray(byteOffset, byteOffset + byteLength)
