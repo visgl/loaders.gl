@@ -1,7 +1,6 @@
 /* eslint-disable camelcase, @typescript-eslint/no-use-before-define */
 import initSqlJs, {SqlJsStatic, Database, Statement} from 'sql.js';
 import {WKBLoader} from '@loaders.gl/wkt';
-import {parseSync} from '@loaders.gl/core';
 import {
   Schema,
   Field,
@@ -63,7 +62,8 @@ const SQL_TYPE_MAPPING: {[type in SQLiteTypes]: typeof DataType} = {
 
 export default async function parseGeoPackage(
   arrayBuffer: ArrayBuffer,
-  options: GeoPackageLoaderOptions
+  options: GeoPackageLoaderOptions,
+  context: any
 ) {
   const {sqlJsCDN = 'https://sql.js.org/dist/'} = (options && options.geopackage) || {};
   const {reproject = false, _targetCrs = 'WGS84'} = (options && options.gis) || {};
@@ -76,7 +76,11 @@ export default async function parseGeoPackage(
   const result = {};
   for (const table of tables) {
     const {table_name: tableName} = table;
-    result[tableName] = getVectorTable(db, tableName, projections, {reproject, _targetCrs});
+    result[tableName] = getVectorTable(db, tableName, projections, {
+      reproject,
+      _targetCrs,
+      context
+    });
   }
 
   return result;
@@ -143,7 +147,7 @@ function getVectorTable(
   db: Database,
   tableName: string,
   projections: ProjectionMapping,
-  {reproject, _targetCrs}: {reproject: boolean; _targetCrs: string}
+  {reproject, _targetCrs, context}: {reproject: boolean; _targetCrs: string; context: any}
 ): object {
   const dataColumns = getDataColumns(db, tableName);
   const geomColumn = getGeometryColumn(db, tableName);
@@ -170,7 +174,8 @@ function getVectorTable(
       geomColumn,
       // @ts-ignore
       dataColumns,
-      featureIdColumn
+      featureIdColumn,
+      context
     );
     geojsonFeatures.push(geojsonFeature);
   }
@@ -216,7 +221,8 @@ function constructGeoJsonFeature(
   row: any[],
   geomColumn: GeometryColumnsRow,
   dataColumns: DataColumnsMapping,
-  featureIdColumn: string
+  featureIdColumn: string,
+  context
 ) {
   // Find feature id
   const idIdx = columns.indexOf(featureIdColumn);
@@ -224,7 +230,7 @@ function constructGeoJsonFeature(
 
   // Parse geometry columns to geojson
   const geomColumnIdx = columns.indexOf(geomColumn.column_name);
-  const geometry = parseGeometry(row[geomColumnIdx].buffer);
+  const geometry = parseGeometry(row[geomColumnIdx].buffer, context);
 
   const properties = {};
   if (dataColumns) {
@@ -325,7 +331,9 @@ function getFeatureIdName(db: Database, tableName: string): string | null {
  * @param arrayBuffer geometry buffer
  * @return {object} GeoJSON geometry (in original CRS)
  */
-function parseGeometry(arrayBuffer: ArrayBuffer) {
+function parseGeometry(arrayBuffer: ArrayBuffer, context) {
+  const {parseSync} = context;
+
   const view = new DataView(arrayBuffer);
   const {envelopeLength, emptyGeometry} = parseGeometryBitFlags(view.getUint8(3));
 
@@ -416,7 +424,7 @@ function getDataColumns(db: Database, tableName: string): DataColumnsMapping | n
   // Convert DataColumnsRow object this to a key-value {column_name: name}
   const result: DataColumnsMapping = {};
   while (stmt.step()) {
-    const column = stmt.getAsObject() as unknown as DataColumnsRow;
+    const column = (stmt.getAsObject() as unknown) as DataColumnsRow;
     const {column_name, name} = column;
     result[column_name] = name || null;
   }
@@ -437,7 +445,7 @@ function getArrowSchema(db: Database, tableName: string): Schema {
   while (stmt.step()) {
     const pragmaTableInfo = (stmt.getAsObject() as unknown) as PragmaTableInfoRow;
     const {name, type, notnull} = pragmaTableInfo;
-    const field = new Field(name, new SQL_TYPE_MAPPING[type](), !notnull)
+    const field = new Field(name, new SQL_TYPE_MAPPING[type](), !notnull);
     fields.push(field);
   }
 
