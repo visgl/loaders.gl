@@ -43,7 +43,7 @@ export default class App extends PureComponent {
   }
 
   componentDidMount() {
-    const canvas = this.setupCanvas();
+    const canvas = this.initializeWebGL();
     const gl = canvas.getContext('webgl');
     instrumentGLContext(gl);
     this.createAndFillBufferObject(gl);
@@ -52,7 +52,7 @@ export default class App extends PureComponent {
     this.setState({canvas, gl, program: program.handle});
   }
 
-  setupCanvas() {
+  initializeWebGL() {
     // eslint-disable-next-line no-undef
     const canvas = document.createElement('canvas');
     canvas.width = 256;
