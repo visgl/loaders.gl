@@ -99,10 +99,10 @@ export default class BoundingVolumeLayer extends CompositeLayer {
     const cubeMesh = tile.header.obb ? this._generateCubeMesh(tile) : null;
     const sphereMesh = tile.header.mbs ? this._generateSphereMesh(tile) : null;
 
-    tile.userData.cubeMesh = cubeMesh;
-    tile.userData.sphereMesh = sphereMesh;
+    tile.userData.boundingMeshes.cubeMesh = cubeMesh;
+    tile.userData.boundingMeshes.sphereMesh = sphereMesh;
 
-    return tile.userData[meshType];
+    return tile.userData.boundingMeshes[meshType];
   }
 
   _getBoundingVolumeLayer(tile) {
@@ -111,10 +111,12 @@ export default class BoundingVolumeLayer extends CompositeLayer {
     const {cartographicOrigin, modelMatrix} = content;
     const meshType = BOUNDING_VOLUME_MESH_TYPE[boundingVolumeType];
 
-    const mesh = tile.userData[meshType] || this._generateMesh(tile, meshType);
+    tile.userData.boundingMeshes = tile.userData.boundingMeshes || {};
+
+    const mesh = tile.userData.boundingMeshes[meshType] || this._generateMesh(tile, meshType);
 
     return new MeshLayer({
-      id: `obb-debug-${tile.id}`,
+      id: `bounding-volume-${tile.id}`,
       mesh,
       data: SINGLE_DATA,
       getPosition: [0, 0, 0],
