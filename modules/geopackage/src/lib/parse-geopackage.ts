@@ -62,8 +62,7 @@ const SQL_TYPE_MAPPING: {[type in SQLiteTypes]: typeof DataType} = {
 
 export default async function parseGeoPackage(
   arrayBuffer: ArrayBuffer,
-  options: GeoPackageLoaderOptions,
-  context: any
+  options: GeoPackageLoaderOptions
 ) {
   const {sqlJsCDN = 'https://sql.js.org/dist/'} = (options && options.geopackage) || {};
   const {reproject = false, _targetCrs = 'WGS84'} = (options && options.gis) || {};
@@ -78,8 +77,7 @@ export default async function parseGeoPackage(
     const {table_name: tableName} = table;
     result[tableName] = getVectorTable(db, tableName, projections, {
       reproject,
-      _targetCrs,
-      context
+      _targetCrs
     });
   }
 
@@ -147,7 +145,7 @@ function getVectorTable(
   db: Database,
   tableName: string,
   projections: ProjectionMapping,
-  {reproject, _targetCrs, context}: {reproject: boolean; _targetCrs: string; context: any}
+  {reproject, _targetCrs}: {reproject: boolean; _targetCrs: string}
 ): object {
   const dataColumns = getDataColumns(db, tableName);
   const geomColumn = getGeometryColumn(db, tableName);
@@ -174,8 +172,7 @@ function getVectorTable(
       geomColumn,
       // @ts-ignore
       dataColumns,
-      featureIdColumn,
-      context
+      featureIdColumn
     );
     geojsonFeatures.push(geojsonFeature);
   }
@@ -221,8 +218,7 @@ function constructGeoJsonFeature(
   row: any[],
   geomColumn: GeometryColumnsRow,
   dataColumns: DataColumnsMapping,
-  featureIdColumn: string,
-  context
+  featureIdColumn: string
 ) {
   // Find feature id
   const idIdx = columns.indexOf(featureIdColumn);
@@ -230,7 +226,7 @@ function constructGeoJsonFeature(
 
   // Parse geometry columns to geojson
   const geomColumnIdx = columns.indexOf(geomColumn.column_name);
-  const geometry = parseGeometry(row[geomColumnIdx].buffer, context);
+  const geometry = parseGeometry(row[geomColumnIdx].buffer);
 
   const properties = {};
   if (dataColumns) {
@@ -331,9 +327,7 @@ function getFeatureIdName(db: Database, tableName: string): string | null {
  * @param arrayBuffer geometry buffer
  * @return {object} GeoJSON geometry (in original CRS)
  */
-function parseGeometry(arrayBuffer: ArrayBuffer, context) {
-  const {parseSync} = context;
-
+function parseGeometry(arrayBuffer: ArrayBuffer) {
   const view = new DataView(arrayBuffer);
   const {envelopeLength, emptyGeometry} = parseGeometryBitFlags(view.getUint8(3));
 
@@ -351,7 +345,10 @@ function parseGeometry(arrayBuffer: ArrayBuffer, context) {
 
   // 2 byte magic, 1 byte version, 1 byte flags, 4 byte int32 srid
   const wkbOffset = 8 + envelopeLength;
-  const binaryGeometry = parseSync(arrayBuffer.slice(wkbOffset), WKBLoader);
+
+  // Loaders should not depend on `core` and the context passed to the main loader doesn't include a
+  // `parseSync` option, so instead we call parseSync directly on WKBLoader
+  const binaryGeometry = WKBLoader.parseSync(arrayBuffer.slice(wkbOffset));
 
   return binaryToGeoJson(binaryGeometry);
 }
