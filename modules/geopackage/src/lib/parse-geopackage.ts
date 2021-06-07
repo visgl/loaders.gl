@@ -1,7 +1,6 @@
 /* eslint-disable camelcase, @typescript-eslint/no-use-before-define */
 import initSqlJs, {SqlJsStatic, Database, Statement} from 'sql.js';
 import {WKBLoader} from '@loaders.gl/wkt';
-import {parseSync} from '@loaders.gl/core';
 import {
   Schema,
   Field,
@@ -76,7 +75,10 @@ export default async function parseGeoPackage(
   const result = {};
   for (const table of tables) {
     const {table_name: tableName} = table;
-    result[tableName] = getVectorTable(db, tableName, projections, {reproject, _targetCrs});
+    result[tableName] = getVectorTable(db, tableName, projections, {
+      reproject,
+      _targetCrs
+    });
   }
 
   return result;
@@ -343,7 +345,10 @@ function parseGeometry(arrayBuffer: ArrayBuffer) {
 
   // 2 byte magic, 1 byte version, 1 byte flags, 4 byte int32 srid
   const wkbOffset = 8 + envelopeLength;
-  const binaryGeometry = parseSync(arrayBuffer.slice(wkbOffset), WKBLoader);
+
+  // Loaders should not depend on `core` and the context passed to the main loader doesn't include a
+  // `parseSync` option, so instead we call parseSync directly on WKBLoader
+  const binaryGeometry = WKBLoader.parseSync(arrayBuffer.slice(wkbOffset));
 
   return binaryToGeoJson(binaryGeometry);
 }
@@ -416,7 +421,7 @@ function getDataColumns(db: Database, tableName: string): DataColumnsMapping | n
   // Convert DataColumnsRow object this to a key-value {column_name: name}
   const result: DataColumnsMapping = {};
   while (stmt.step()) {
-    const column = stmt.getAsObject() as unknown as DataColumnsRow;
+    const column = (stmt.getAsObject() as unknown) as DataColumnsRow;
     const {column_name, name} = column;
     result[column_name] = name || null;
   }
@@ -437,7 +442,7 @@ function getArrowSchema(db: Database, tableName: string): Schema {
   while (stmt.step()) {
     const pragmaTableInfo = (stmt.getAsObject() as unknown) as PragmaTableInfoRow;
     const {name, type, notnull} = pragmaTableInfo;
-    const field = new Field(name, new SQL_TYPE_MAPPING[type](), !notnull)
+    const field = new Field(name, new SQL_TYPE_MAPPING[type](), !notnull);
     fields.push(field);
   }
 
