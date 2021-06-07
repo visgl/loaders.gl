@@ -4,7 +4,7 @@
  * Note: We don't use the second "message" argument in calling code,
  * so no need to support it here
  */
-export function assert(condition: boolean, message?: string): void {
+export function assert(condition: any, message?: string): void {
   if (!condition) {
     throw new Error(message || 'loader assertion failed.');
   }

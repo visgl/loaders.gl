@@ -39,7 +39,7 @@
 import {Matrix4, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {Stats} from '@probe.gl/stats';
-import {RequestScheduler, assert, path} from '@loaders.gl/loader-utils';
+import {RequestScheduler, assert, path, LoaderObject} from '@loaders.gl/loader-utils';
 
 import TilesetCache from './tileset-cache';
 import {calculateTransformProps} from './helpers/transform-utils';
@@ -54,7 +54,7 @@ import {TILESET_TYPE} from '../constants';
 export type Tileset3DProps = {
   description?: string;
   ellipsoid?: object;
-  modelMatrix?: number[];
+  modelMatrix?: Matrix4;
   throttleRequests?: boolean;
   maximumMemoryUsage?: number;
   onTileLoad?: (tile: Tile3D) => any;
@@ -67,12 +67,13 @@ export type Tileset3DProps = {
   headers?: any;
   loadTiles?: boolean;
   fetchOptions?: {[key: string]: any};
+  basePath?: string;
 }
 
 type Props = {
   description: string;
   ellipsoid: object;
-  modelMatrix: number[];
+  modelMatrix: Matrix4;
   throttleRequests: boolean;
   maximumMemoryUsage: number;
   onTileLoad: (tile: Tile3D) => any;
@@ -85,21 +86,11 @@ type Props = {
   headers: any;
   loadTiles: boolean;
   fetchOptions: {[key: string]: any};
+  basePath: string;
+  i3s: {[key: string]: any};
 }
 
-// Tracked Stats
-const TILES_TOTAL = 'Tiles In Tileset(s)';
-const TILES_IN_MEMORY = 'Tiles In Memory';
-const TILES_IN_VIEW = 'Tiles In View';
-const TILES_RENDERABLE = 'Tiles To Render';
-const TILES_LOADED = 'Tiles Loaded';
-const TILES_LOADING = 'Tiles Loading';
-const TILES_UNLOADED = 'Tiles Unloaded';
-const TILES_LOAD_FAILED = 'Failed Tile Loads';
-const POINTS_COUNT = 'Points';
-const TILES_GPU_MEMORY = 'Tile Memory Use';
-
-const DEFAULT_PROPS: Tileset3DProps = {
+const DEFAULT_PROPS: Props = {
   description: '',
 
   ellipsoid: Ellipsoid.WGS84,
@@ -121,8 +112,30 @@ const DEFAULT_PROPS: Tileset3DProps = {
   // The maximum screen space error used to drive level of detail refinement.
   maximumScreenSpaceError: 8,
 
-  loadTiles: true
+  loadTiles: true,
+  viewportTraversersMap: {},
+
+  headers: {},
+  fetchOptions: {},
+
+  token: '',
+  attributions: [],
+  basePath: '',
+
+  i3s: {}
 };
+
+// Tracked Stats
+const TILES_TOTAL = 'Tiles In Tileset(s)';
+const TILES_IN_MEMORY = 'Tiles In Memory';
+const TILES_IN_VIEW = 'Tiles In View';
+const TILES_RENDERABLE = 'Tiles To Render';
+const TILES_LOADED = 'Tiles Loaded';
+const TILES_LOADING = 'Tiles Loading';
+const TILES_UNLOADED = 'Tiles Unloaded';
+const TILES_LOAD_FAILED = 'Failed Tile Loads';
+const POINTS_COUNT = 'Points';
+const TILES_GPU_MEMORY = 'Tile Memory Use';
 
 export default class Tileset3D {
   // props: Tileset3DProps;
@@ -131,10 +144,10 @@ export default class Tileset3D {
 
   type: string;
   tileset: {[key: string]: any};
-  loader: object;
+  loader: LoaderObject;
   url: string;
   basePath: string;
-  modelMatrix: number[];
+  modelMatrix: Matrix4;
   ellipsoid: any;
   lodMetricType: string;
   lodMetricValue: number;
@@ -169,10 +182,10 @@ export default class Tileset3D {
   // TRAVERSAL
   _traverser: TilesetTraverser;
   private _cache: TilesetCache;
-  private _requestScheduler: RequestScheduler;
+  _requestScheduler: RequestScheduler;
 
 
-  private _frameNumber: number;
+  _frameNumber: number;
   private _queryParamsString: string;
   private _queryParams: any;
   private _extensionsUsed: any;
@@ -207,10 +220,9 @@ export default class Tileset3D {
   // eslint-disable-next-line max-statements
   constructor(json: any, options?: Tileset3DProps) {
     assert(json);
-    options = {...DEFAULT_PROPS, ...options};
 
     // PUBLIC MEMBERS
-    this.options = options;
+    this.options = {...DEFAULT_PROPS, ...options};
     // raw data
     this.tileset = json;
     this.loader = json.loader;
@@ -219,8 +231,8 @@ export default class Tileset3D {
     // The url to a tileset JSON file.
     this.url = json.url;
     this.basePath = json.basePath || path.dirname(this.url);
-    this.modelMatrix = options.modelMatrix || new Matrix4();
-    this.ellipsoid = options.ellipsoid;
+    this.modelMatrix = this.options.modelMatrix;
+    this.ellipsoid = this.options.ellipsoid;
 
     // Geometric error when the tree is not rendered at all
     this.lodMetricType = json.lodMetricType;
@@ -228,12 +240,12 @@ export default class Tileset3D {
     this.refine = json.root.refine;
 
     // TODO add to loader context?
-    this.fetchOptions = options.fetchOptions || {};
-    if (options.headers) {
-      this.fetchOptions.headers = options.headers;
+    this.fetchOptions = this.options.fetchOptions || {};
+    if (this.options.headers) {
+      this.fetchOptions.headers = this.options.headers;
     }
-    if (options.token) {
-      this.fetchOptions.token = options.token;
+    if (this.options.token) {
+      this.fetchOptions.token = this.options.token;
     }
 
     this.root = null;
@@ -245,6 +257,8 @@ export default class Tileset3D {
     this.boundingVolume = null;
 
     // TRAVERSAL
+    this.traverseCounter = 0;
+    this.geometricError = 0;
     this._traverser = this._initializeTraverser();
     this._cache = new TilesetCache();
     this._requestScheduler = new RequestScheduler({
@@ -519,7 +533,7 @@ export default class Tileset3D {
 
   // Called during initialize Tileset to initialize the tileset's cartographic center (longitude, latitude) and zoom.
   _calculateViewProps() {
-    const root = this.root;
+    const root = this.root as Tile3D;
     assert(root);
     const {center} = root.boundingVolume;
     // TODO - handle all cases

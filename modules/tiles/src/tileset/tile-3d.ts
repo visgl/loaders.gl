@@ -14,7 +14,8 @@ import {getI3ScreenSize} from './helpers/i3s-lod';
 import {get3dTilesOptions} from './helpers/3d-tiles-options';
 import TilesetTraverser from './traversers/tileset-traverser';
 
-declare class Tileset3D {};
+// Note: circular dependency
+import type Tileset3D from './tileset-3d';
 
 const scratchVector = new Vector3();
 
@@ -137,8 +138,8 @@ export default class TileHeader {
     this.contentUrl = header.contentUrl;
 
     // The error, in meters, introduced if this tile is rendered and its children are not.
-    this.lodMetricType = null;
-    this.lodMetricValue = null;
+    this.lodMetricType = 'geometricError';
+    this.lodMetricValue = 0;
 
     // Specifies the type of refine that is used when traversing this tile for rendering.
     this.boundingVolume = null;
@@ -162,6 +163,11 @@ export default class TileHeader {
     this.userData = {};
 
     // PRIVATE MEMBERS
+    this._priority = 0;
+    this._touchedFrame = 0;
+    this._visitedFrame = 0;
+    this._selectedFrame = 0;
+    this._requestedFrame = 0;
     this._screenSpaceError = 0;
 
     this._cacheNode = null;
@@ -504,6 +510,7 @@ export default class TileHeader {
   updateExpiration() {
     if (defined(this._expireDate) && this.contentReady && !this.hasEmptyContent) {
       const now = Date.now();
+      // @ts-ignore Date.lessThan - replace with ms compare?
       if (Date.lessThan(this._expireDate, now)) {
         this.contentState = TILE_CONTENT_STATE.EXPIRED;
         this._expiredContent = this.content;
@@ -631,7 +638,8 @@ export default class TileHeader {
     switch (this.content && this.content.type) {
       case 'vctr':
       case 'geom':
-        this.tileset.traverser.disableSkipLevelOfDetail = true;
+        // @ts-ignore
+        this.tileset._traverser.disableSkipLevelOfDetail = true;
         break;
       default:
     }

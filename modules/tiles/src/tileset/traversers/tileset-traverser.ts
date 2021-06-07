@@ -7,6 +7,8 @@ export type TilesetTraverserProps = {
   skipLevelOfDetail?: boolean;
   maximumScreenSpaceError?: number;
   onTraversalEnd?: (frameState) => any;
+  viewportTraversersMap?: {[key: string]: any};
+  basePath?: string;
 }
 
 export type Props = {
@@ -14,13 +16,17 @@ export type Props = {
   skipLevelOfDetail: boolean;
   maximumScreenSpaceError: number;
   onTraversalEnd: (frameState) => any;
+  viewportTraversersMap: {[key: string]: any};
+  basePath: string;
 }
 
 export const DEFAULT_PROPS: Props = {
   loadSiblings: false,
   skipLevelOfDetail: false,
   maximumScreenSpaceError: 2,
-  onTraversalEnd: () => {}
+  onTraversalEnd: () => {},
+  viewportTraversersMap: {},
+  basePath: ''
 };
 
 export default class TilesetTraverser {
@@ -31,9 +37,9 @@ export default class TilesetTraverser {
   selectedTiles: object;
   emptyTiles: object;
 
-  private _traversalStack: ManagedArray;
-  private _emptyTraversalStack: ManagedArray;
-  private _frameNumber: number | null;
+  protected _traversalStack: ManagedArray;
+  protected _emptyTraversalStack: ManagedArray;
+  protected _frameNumber: number | null;
 
   // TODO nested props
   constructor(options: TilesetTraverserProps) {
