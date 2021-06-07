@@ -31,16 +31,16 @@ export default async function mvtLoaderBench(suite) {
     // Actually define perf test
     suite.addAsync(`${name} MVT -> geojson`, options, async () => {
       // Conversion to geojson only
-      await parse(mvtArrayBuffer, MVTLoader, {worker: true});
+      await parse(mvtArrayBuffer.slice(0), MVTLoader, {worker: true});
     });
     suite.addAsync(`${name} MVT -> binary (legacy)`, options, async () => {
       // Conversion to binary, via intermediate geojson
-      const geometryJSON = await parse(mvtArrayBuffer, MVTLoader, {worker: true});
+      const geometryJSON = await parse(mvtArrayBuffer.slice(0), MVTLoader, {worker: true});
       geojsonToBinary(geometryJSON);
     });
     suite.addAsync(`${name} MVT -> binary`, options, async () => {
       // Conversion to binary directly
-      await parse(mvtArrayBuffer, MVTLoader, {gis: {format: 'binary'}, worker: true});
+      await parse(mvtArrayBuffer.slice(0), MVTLoader, {gis: {format: 'binary'}, worker: true});
     });
   }
 }
