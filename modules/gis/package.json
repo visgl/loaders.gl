@@ -29,6 +29,6 @@
     "pbf": "^3.2.1"
   },
   "devDependencies": {
-    "@math.gl/proj4": "^3.3.0"
+    "@math.gl/proj4": "3.5.0-alpha.1"
   }
 }

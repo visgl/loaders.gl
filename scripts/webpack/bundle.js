@@ -2,39 +2,18 @@ const {resolve} = require('path');
 const webpack = require('webpack');
 
 const {getOcularConfig} = require('ocular-dev-tools');
+const {getExternals} = require('./helpers');
 
-const ALIASES = getOcularConfig({
+const ocularConfig = getOcularConfig({
   aliasMode: 'src',
   root: resolve(__dirname, '../..')
-}).aliases;
+});
+
+const ALIASES = ocularConfig.aliases;
 
 const PACKAGE_ROOT = resolve('.');
 const DIST_PATH = resolve('dist');
 const PACKAGE_INFO = require(resolve(PACKAGE_ROOT, 'package.json'));
-
-/**
- * peerDependencies are excluded using `externals`
- * https://webpack.js.org/configuration/externals/
- * e.g. @deck.gl/core is not bundled with @deck.gl/geo-layers
- */
-function getExternals(packageInfo) {
-  const externals = {
-    // Hard coded externals
-  };
-
-  const {peerDependencies = {}, browser} = packageInfo;
-
-  Object.assign(externals, browser);
-
-  for (const depName in peerDependencies) {
-    if (depName.startsWith('@loaders.gl')) {
-      // Instead of bundling the dependency, import from the global `deck` object
-      externals[depName] = 'loaders';
-    }
-  }
-
-  return externals;
-}
 
 const NODE = {
   Buffer: false,
@@ -47,13 +26,16 @@ const NODE = {
 
 const ES5_BABEL_CONFIG = {
   presets: [
-    '@babel/typescript',
+    '@babel/preset-typescript',
     ['@babel/preset-env', {forceAllTransforms: true}]
   ],
   plugins: [
-    '@babel/transform-runtime',
+    // webpack 4 cannot parse the most recent JS syntax
+    '@babel/plugin-proposal-optional-chaining',
+    '@babel/plugin-proposal-nullish-coalescing-operator',
+    // inject __VERSION__ from package.json
+    'version-inline',
     ["@babel/plugin-transform-modules-commonjs", { allowTopLevelThis: true }],
-    'version-inline'
   ]
 };
 
@@ -62,6 +44,10 @@ const ES6_BABEL_CONFIG = {
     '@babel/typescript'
   ],
   plugins: [
+    // webpack 4 cannot parse the most recent JS syntax
+    '@babel/plugin-proposal-optional-chaining',
+    '@babel/plugin-proposal-nullish-coalescing-operator',
+    // inject __VERSION__ from package.json
     'version-inline'
   ]
 };
@@ -70,8 +56,12 @@ const config = {
   name: 'production',
   mode: 'production',
 
+  devtool: 'source-map',
+
+  stats: 'none',
+
   entry: {
-    main: resolve('./src/bundle')
+    main: resolve('./src/bundle.ts')
   },
 
   output: {
@@ -113,19 +103,17 @@ const config = {
     new webpack.DefinePlugin({
       __VERSION__: JSON.stringify(PACKAGE_INFO.version)
     })
-  ],
-
-  devtool: false
+  ]
 };
 
-const developmentConfig = {
-  ...config,
-  name: 'development',
-  mode: 'development',
-  output: {
-    filename: 'dist.dev.js'
-  }
-};
+// const developmentConfig = {
+//   ...config,
+//   name: 'development',
+//   mode: 'development',
+//   output: {
+//     filename: 'dist.dev.js'
+//   }
+// };
 
 const es5Config = {
   ...config,
@@ -144,4 +132,6 @@ const es5Config = {
   }
 };
 
-module.exports = [config, developmentConfig, es5Config];
+console.error(config)
+
+module.exports = [config, es5Config];

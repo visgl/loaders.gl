@@ -12,7 +12,7 @@
   "dependencies": {
     "@loaders.gl/core": "2.2.0",
     "@loaders.gl/3d-tiles": "2.2.0",
-    "@math.gl/culling": "^3.3.0",
+    "@math.gl/culling": "3.5.0-alpha.1",
     "mapbox-gl": "^1.1.1",
     "three": "^0.106.2"
   },

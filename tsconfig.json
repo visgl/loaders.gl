@@ -37,6 +37,10 @@
       "@loaders.gl/excel/test": ["modules/excel/test"],
       "@loaders.gl/images/*": ["modules/images/src/*"],
       "@loaders.gl/images/test": ["modules/images/test"],
+      "@loaders.gl/geopackage/*": ["modules/geopackage/src/*"],
+      "@loaders.gl/geopackage/test": ["modules/geopackage/test"],
+      "@loaders.gl/geotiff/*": ["modules/geotiff/src/*"],
+      "@loaders.gl/geotiff/test": ["modules/geotiff/test"],
       "@loaders.gl/gis/*": ["modules/gis/src/*"],
       "@loaders.gl/gis/test": ["modules/gis/test"],
       "@loaders.gl/gltf/*": ["modules/gltf/src/*"],
@@ -77,9 +81,10 @@
       "@loaders.gl/wkt/test": ["modules/wkt/test"],
       "@loaders.gl/worker-utils/*": ["modules/worker-utils/src/*"],
       "@loaders.gl/worker-utils/test": ["modules/worker-utils/test"],
+      "@loaders.gl/zarr/*": ["modules/zarr/src/*"],
+      "@loaders.gl/zarr/test": ["modules/zarr/test"],
       "@loaders.gl/zip/*": ["modules/zip/src/*"],
       "@loaders.gl/zip/test": ["modules/zip/test"],
-
       "test": ["test"]
     }
   },
