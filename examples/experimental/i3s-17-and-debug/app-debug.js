@@ -244,6 +244,7 @@ export default class App extends PureComponent {
   }
 
   _onTileLoad(tile) {
+    this.removeFeatureIdsFromTile(tile);
     this._updateStatWidgets();
     this.validateTile(tile);
     this.setState({frameNumber: this.state.tileset.frameNumber});
@@ -343,6 +344,13 @@ export default class App extends PureComponent {
       loadTiles
     });
     this.setState({debugOptions});
+  }
+
+  // Remove featureIds to enable instance picking mode.
+  removeFeatureIdsFromTile(tile) {
+    delete tile.content.featureIds;
+    // Remove segmentationData after i3s-content-worker will be published
+    delete tile.content.segmentationData;
   }
 
   validateTile(tile) {

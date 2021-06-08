@@ -54,10 +54,10 @@ export default class MeshLayer extends SimpleMeshLayer {
   }
 
   initializeState() {
-    const {pickFeatures, featureIds} = this.props;
+    const {featureIds} = this.props;
     super.initializeState();
 
-    if (pickFeatures && featureIds) {
+    if (featureIds) {
       this.state.attributeManager.add({
         segmentationPickingColors: {
           type: GL.UNSIGNED_BYTE,
@@ -96,7 +96,7 @@ export default class MeshLayer extends SimpleMeshLayer {
   }
 
   getModel(mesh) {
-    const {pickFeatures, featureIds} = this.props;
+    const {featureIds} = this.props;
     let materialParser = null;
     if (this.props.material) {
       const material = this.props.material;
@@ -144,7 +144,7 @@ export default class MeshLayer extends SimpleMeshLayer {
 
     model.setUniforms({
       // eslint-disable-next-line camelcase
-      u_pickSegmentation: Boolean(pickFeatures && featureIds)
+      u_pickSegmentation: Boolean(featureIds)
     });
 
     return model;

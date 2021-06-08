@@ -148,8 +148,7 @@ export default class App extends PureComponent {
         onTileUnload: () => this._updateStatWidgets(),
         pickable: true,
         loadOptions,
-        highlightedObjectIndex: selectedFeatureIndex,
-        pickFeatures: true
+        highlightedObjectIndex: selectedFeatureIndex
       })
     ];
   }
