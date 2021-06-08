@@ -16,13 +16,13 @@ const config = deepMerge(defaultConfig, {
 
   rules: {
     'import/no-unresolved': 1,
-    'no-console': 1,
+    'no-console': 1
     // 'accessor-pairs': ['error', {getWithoutSet: false, setWithoutGet: false}]
   },
 
   overrides: [
     {
-      files: [ '**/*.ts', '**/*.tsx', '**/*.d.ts' ],
+      files: ['**/*.ts', '**/*.tsx', '**/*.d.ts'],
       rules: {
         // '@typescript-eslint/ban-ts-comment': ['warn'],
         // '@typescript-eslint/ban-types': ['warn'],
@@ -38,7 +38,7 @@ const config = deepMerge(defaultConfig, {
         'import/named': 0,
         'max-params': 1,
         'no-undef': 1,
-        'camelcase': 1,
+        camelcase: 1,
         // We use function hoisting
         '@typescript-eslint/no-use-before-define': 0,
         'import/no-extraneous-dependencies': 1,
@@ -53,8 +53,7 @@ const config = deepMerge(defaultConfig, {
         '@typescript-eslint/require-await': 0,
         '@typescript-eslint/no-unsafe-return': 0,
         '@typescript-eslint/no-unsafe-call': 0,
-        '@typescript-eslint/no-empty-interface': 0,
-
+        '@typescript-eslint/no-empty-interface': 0
       }
     },
     {

@@ -89,10 +89,14 @@
     }
   },
   "exclude":[
+    "modules/tiles/src/**/*",
     "modules/tiles/test/**/*",
+    "modules/tile-converter/src/**/*",
+    "modules/tile-converter/test/**/*",
     "modules/i3s/test/**/*",
     "modules/textures/test/**/*",
     "modules/gltf/test/**/*",
+    "modules/excel/test/**/*",
 
     "modules/**/src/libs/*",
     "modules/*/dist/**/*",
