@@ -47,7 +47,7 @@ const config = deepMerge(defaultConfig, {
     // Ensure eslint finds typescript files
     'import/resolver': {
       node: {
-        extensions: ['.js', '.jsx', '.ts', '.tsx']
+        extensions: ['.js', '.jsx', '.mjs', '.ts', '.tsx']
       }
     }
   }
