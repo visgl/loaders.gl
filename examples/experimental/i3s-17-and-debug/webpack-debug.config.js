@@ -14,14 +14,17 @@ const CONFIG = {
       {
         // Transpile ES6 to ES5 with babel
         // Remove if your app does not use JSX or you don't need to support old browsers
-        test: /\.js$/,
+        test: /\.js|ts$/,
         loader: 'babel-loader',
         exclude: [/node_modules/],
         options: {
-          presets: ['@babel/preset-env', '@babel/preset-react']
+          presets: ['@babel/preset-env', '@babel/preset-react', '@babel/preset-typescript']
         }
       }
     ]
+  },
+  resolve: {
+    extensions: ['.ts', '.tsx', '.js', '.json']
   }
 };
 
