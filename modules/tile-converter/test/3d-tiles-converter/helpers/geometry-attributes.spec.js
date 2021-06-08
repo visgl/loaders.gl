@@ -2,7 +2,7 @@ import test from 'tape-promise/tape';
 import {isBrowser} from '@loaders.gl/core';
 import {generateAttributes} from '../../../src/i3s-converter/helpers/geometry-attributes';
 
-test('tile-converter - geometry-attributes#should return the same attributes with faceRange from 0 to triangleCount - 1 and 0 feature id', async t => {
+test('tile-converter - geometry-attributes#should return the same attributes with faceRange from 0 to triangleCount - 1 and 0 feature id', async (t) => {
   if (!isBrowser) {
     const oldAttributes = {
       positions: new Float32Array([0]),
@@ -30,7 +30,7 @@ test('tile-converter - geometry-attributes#should return the same attributes wit
   }
 });
 
-test('tile-converter - geometry-attributes#should return the same attributes if we have only one triangle and featureIndices with the same indices', async t => {
+test('tile-converter - geometry-attributes#should return the same attributes if we have only one triangle and featureIndices with the same indices', async (t) => {
   if (!isBrowser) {
     const oldAttributes = {
       positions: new Float32Array([-1, -2, -3, -4, -5, -6, -7, -8, -9]),
@@ -58,7 +58,7 @@ test('tile-converter - geometry-attributes#should return the same attributes if 
   }
 });
 
-test('tile-converter - geometry-attributes#should return reordered attributes', async t => {
+test('tile-converter - geometry-attributes#should return reordered attributes', async (t) => {
   if (!isBrowser) {
     const oldAttributes = {
       // prettier-ignore

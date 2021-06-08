@@ -30,10 +30,10 @@ const btn = document.createElement('button');
 document.body.appendChild(btn);
 btn.innerText = 'Load Basis File';
 
-btn.addEventListener('click', e => {
+btn.addEventListener('click', (e) => {
   const el = document.createElement('input');
   el.type = 'file';
-  el.addEventListener('input', async ev => {
+  el.addEventListener('input', async (ev) => {
     const result = await load(ev.target.files[0], BasisLoader, loadOptions);
     const image = result[0][0];
     console.log(image); // eslint-disable-line

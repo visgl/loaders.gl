@@ -44,4 +44,3 @@ Currently no options are supported for this loader.
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
-

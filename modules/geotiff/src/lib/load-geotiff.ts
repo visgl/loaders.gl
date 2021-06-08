@@ -1,5 +1,5 @@
-import { fromUrl, fromBlob } from 'geotiff';
-import type { GeoTIFF } from 'geotiff';
+import {fromUrl, fromBlob} from 'geotiff';
+import type {GeoTIFF} from 'geotiff';
 
 import {
   // createPoolProxy,
@@ -8,7 +8,7 @@ import {
 } from './utils/proxies';
 // import Pool from './lib/Pool';
 
-import { loadOMETiff } from './load-ome-tiff';
+import {loadOMETiff} from './load-ome-tiff';
 
 interface TiffOptions {
   headers?: Record<string, unknown>;
@@ -27,7 +27,7 @@ interface TiffOptions {
  * @return {Promise<{ data: TiffPixelSource[], metadata: ImageMeta }>} data source and associated OME-Zarr metadata.
  */
 export async function loadGeoTiff(source: string | File, opts: TiffOptions = {}) {
-  const { headers, offsets, pool = true } = opts;
+  const {headers, offsets, pool = true} = opts;
 
   let tiff: GeoTIFF;
 
@@ -39,11 +39,11 @@ export async function loadGeoTiff(source: string | File, opts: TiffOptions = {})
   }
 
   // if (pool) {
-    /*
-     * Creates a worker pool to decode tiff tiles. Wraps tiff
-     * in a Proxy that injects 'pool' into `tiff.readRasters`.
-     */
-    // tiff = createPoolProxy(tiff, new Pool());
+  /*
+   * Creates a worker pool to decode tiff tiles. Wraps tiff
+   * in a Proxy that injects 'pool' into `tiff.readRasters`.
+   */
+  // tiff = createPoolProxy(tiff, new Pool());
   // }
 
   if (offsets) {

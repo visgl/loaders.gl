@@ -6,7 +6,7 @@ import {getIndexer} from '@loaders.gl/zarr/lib/utils/indexer';
 
 const FIXTURE = '@loaders.gl/zarr/test/data/bioformats-zarr';
 
-test('Loads zarr-multiscales', async t => {
+test('Loads zarr-multiscales', async (t) => {
   if (isBrowser) {
     t.end();
     return;
@@ -17,7 +17,7 @@ test('Loads zarr-multiscales', async t => {
   t.end();
 });
 
-test('Indexer creation and usage.', async t => {
+test('Indexer creation and usage.', async (t) => {
   const labels = ['a', 'b', 'y', 'x'];
   const indexer = getIndexer(labels);
   t.deepEqual(indexer({a: 10, b: 20}), [10, 20, 0, 0], 'should allow named indexing.');

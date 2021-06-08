@@ -53,10 +53,7 @@ export function requireFromString(code, filename = '', options = {}) {
   // @ts-ignore
   const newModule = new Module(filename, parent);
   newModule.filename = filename;
-  newModule.paths = []
-    .concat(options.prependPaths)
-    .concat(paths)
-    .concat(options.appendPaths);
+  newModule.paths = [].concat(options.prependPaths).concat(paths).concat(options.appendPaths);
   // @ts-ignore
   newModule._compile(code, filename);
 

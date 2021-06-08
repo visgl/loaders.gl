@@ -255,7 +255,7 @@ export default class TileValidator extends PureComponent {
     if (!triangleMessages) {
       return null;
     }
-    return triangleMessages.map(message => (
+    return triangleMessages.map((message) => (
       <span key={message.key} style={this.getInfoStyle(message.type)}>
         {message.text}
       </span>
@@ -318,7 +318,7 @@ export default class TileValidator extends PureComponent {
             max="100"
             value={trianglesPercentage}
             disabled={!isTileHasNormals}
-            onChange={event => handleChangeTrianglesPercentage(tile, Number(event.target.value))}
+            onChange={(event) => handleChangeTrianglesPercentage(tile, Number(event.target.value))}
           />
           <span style={this.getNormalControlsStyle(isTileHasNormals)}>
             % triangles with normals
@@ -331,7 +331,7 @@ export default class TileValidator extends PureComponent {
             min="1"
             value={normalsLength}
             disabled={!isTileHasNormals}
-            onChange={event => handleChangeNormalsLength(tile, Number(event.target.value))}
+            onChange={(event) => handleChangeNormalsLength(tile, Number(event.target.value))}
           />
           <span style={this.getNormalControlsStyle(isTileHasNormals)}>m</span>
         </NormalsControl>

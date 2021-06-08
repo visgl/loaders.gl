@@ -19,7 +19,7 @@ const map = new mapboxgl.Map({
   hash: true
 });
 
-map.on('style.load', function() {
+map.on('style.load', function () {
   const rotterdam = new Mapbox3DTilesLayer({
     id: 'rotterdam',
     url: ROTTERDAM_TILESET_URL,

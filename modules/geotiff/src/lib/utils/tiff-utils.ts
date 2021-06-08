@@ -1,4 +1,4 @@
-import type { PixelSource } from '../../types';
+import type {PixelSource} from '../../types';
 
 export function ensureArray<T>(x: T | T[]) {
   return Array.isArray(x) ? x : [x];
@@ -39,7 +39,7 @@ export function isInterleaved(shape: number[]) {
 export function getImageSize<T extends string[]>(source: PixelSource<T>) {
   const interleaved = isInterleaved(source.shape);
   const [height, width] = source.shape.slice(interleaved ? -3 : -2);
-  return { height, width };
+  return {height, width};
 }
 
 export const SIGNAL_ABORTED = '__vivSignalAborted';

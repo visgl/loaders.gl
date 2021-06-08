@@ -16,8 +16,8 @@ export default class THREETileset {
     this.root = new TileHeader(json.root, resourcePath, styleParams, this.refine, true);
 
     this.tileset = new Tileset3D(json, url, {
-      onTileLoad: tile => console.log('Load', tile), // eslint-disable-line
-      onTileUnload: tile => console.log('Unload', tile) // eslint-disable-line
+      onTileLoad: (tile) => console.log('Load', tile), // eslint-disable-line
+      onTileUnload: (tile) => console.log('Unload', tile) // eslint-disable-line
     });
   }
 
@@ -25,7 +25,7 @@ export default class THREETileset {
     this.root.checkLoad(frustum, cameraPosition);
 
     // Map to loaders.gl frameState
-    const planes = frustum.planes.map(plane => new Plane(plane.normal, plane.constant));
+    const planes = frustum.planes.map((plane) => new Plane(plane.normal, plane.constant));
 
     const frameState = {
       camera: {

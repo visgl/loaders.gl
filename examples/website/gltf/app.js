@@ -69,7 +69,7 @@ export default class AppAnimationLoop extends AnimationLoop {
 
     this.controller = new Controller(canvas, {
       initialZoom: 2,
-      onDrop: file => this._loadGLTF(file)
+      onDrop: (file) => this._loadGLTF(file)
     });
 
     this.gltfCreateOptions = {
@@ -95,7 +95,7 @@ export default class AppAnimationLoop extends AnimationLoop {
       });
     } else {
       const models = await loadModelList();
-      addModelsToDropdown(models, async modelUrl => {
+      addModelsToDropdown(models, async (modelUrl) => {
         this._deleteScenes();
         await this._loadGLTF(modelUrl);
       });
@@ -105,10 +105,10 @@ export default class AppAnimationLoop extends AnimationLoop {
       await this._loadGLTF(defaultModelUrl);
     }
 
-    onSettingsChange(settings => {
+    onSettingsChange((settings) => {
       Object.assign(this, settings);
     });
-    onLightSettingsChange(settings => {
+    onLightSettingsChange((settings) => {
       Object.assign(this.gltfCreateOptions, settings);
       if (this.gltfCreateOptions.imageBasedLightingEnvironment) {
         this.gltfCreateOptions.imageBasedLightingEnvironment = this.environment;
@@ -182,16 +182,16 @@ export default class AppAnimationLoop extends AnimationLoop {
   _rebuildModel() {
     // Clean and regenerate model so we have new "#defines"
     // TODO: Find better way to do this
-    (this.gltf.meshes || []).forEach(mesh => delete mesh._mesh);
-    (this.gltf.nodes || []).forEach(node => delete node._node);
-    (this.gltf.bufferViews || []).forEach(bufferView => delete bufferView.lumaBuffers);
+    (this.gltf.meshes || []).forEach((mesh) => delete mesh._mesh);
+    (this.gltf.nodes || []).forEach((node) => delete node._node);
+    (this.gltf.bufferViews || []).forEach((bufferView) => delete bufferView.lumaBuffers);
 
     this._deleteScenes();
     Object.assign(this, createGLTFObjects(this.gl, this.gltf, this.gltfCreateOptions));
   }
 
   _deleteScenes() {
-    this.scenes.forEach(scene => scene.delete());
+    this.scenes.forEach((scene) => scene.delete());
     this.scenes = [];
 
     lumaStats.get('Resource Counts').forEach(({name, count}) => {

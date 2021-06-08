@@ -9,7 +9,7 @@ import {
   makeNumberedLineIterator
 } from '@loaders.gl/loader-utils';
 
-const setTimeoutPromise = timeout => new Promise(resolve => setTimeout(resolve, timeout));
+const setTimeoutPromise = (timeout) => new Promise((resolve) => setTimeout(resolve, timeout));
 
 async function* asyncNumbers() {
   let number = 0;
@@ -33,17 +33,17 @@ function asyncArrayBuffers() {
   return makeTextEncoderIterator(asyncTexts());
 }
 
-test('async-iterator#forEach', async t => {
+test('async-iterator#forEach', async (t) => {
   t.plan(3);
 
   let iterations = 0;
-  forEach(asyncNumbers(), number => {
+  forEach(asyncNumbers(), (number) => {
     iterations++;
     t.is(number, iterations, `async iterating over ${number}`);
   });
 });
 
-test('async-iterator#makeTextDecoderIterator', async t => {
+test('async-iterator#makeTextDecoderIterator', async (t) => {
   t.plan(6);
 
   for await (const text of asyncTexts()) {
@@ -57,7 +57,7 @@ test('async-iterator#makeTextDecoderIterator', async t => {
   }
 });
 
-test('async-iterator#makeLineIterator', async t => {
+test('async-iterator#makeLineIterator', async (t) => {
   t.plan(4);
 
   let iterations = 0;
@@ -67,7 +67,7 @@ test('async-iterator#makeLineIterator', async t => {
   }
 });
 
-test('async-iterator#makeNumberedLineIterator', async t => {
+test('async-iterator#makeNumberedLineIterator', async (t) => {
   t.plan(8);
 
   let iterations = 0;

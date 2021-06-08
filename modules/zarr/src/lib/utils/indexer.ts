@@ -1,4 +1,4 @@
-import { getDims } from './utils';
+import {getDims} from './utils';
 
 /*
  * The 'indexer' for a Zarr-based source translates
@@ -13,7 +13,7 @@ import { getDims } from './utils';
 export function getIndexer<T extends string>(labels: T[]) {
   const size = labels.length;
   const dims = getDims(labels);
-  return (sel: { [K in T]: number } | number[]) => {
+  return (sel: {[K in T]: number} | number[]) => {
     if (Array.isArray(sel)) {
       return [...sel];
     }

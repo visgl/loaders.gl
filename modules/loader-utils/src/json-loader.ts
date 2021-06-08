@@ -18,7 +18,8 @@ export const JSONLoader: LoaderObject = {
   category: 'json',
   text: true,
   parseTextSync,
-  parse: async (arrayBuffer, options) => parseTextSync(new TextDecoder().decode(arrayBuffer), options),
+  parse: async (arrayBuffer, options) =>
+    parseTextSync(new TextDecoder().decode(arrayBuffer), options),
   options: {}
 };
 

@@ -19,21 +19,21 @@ const TILE = {
   },
   children: {
     path: 'children',
-    transform: val => val.map(tile => transform(tile, TILE))
+    transform: (val) => val.map((tile) => transform(tile, TILE))
   }
 };
 
 export const TILESET = {
   asset: {
     path: 'asset',
-    transform: val => transform(val, ASSET)
+    transform: (val) => transform(val, ASSET)
   },
   geometricError: {
     path: 'root',
-    transform: val => val.geometricError
+    transform: (val) => val.geometricError
   },
   root: {
     path: 'root',
-    transform: val => transform(val, TILE)
+    transform: (val) => transform(val, TILE)
   }
 };

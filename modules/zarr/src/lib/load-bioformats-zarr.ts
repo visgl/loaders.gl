@@ -1,9 +1,9 @@
-import {HTTPStore } from 'zarr';
-import {FileStore } from './utils/storage';
-import {getRootPrefix } from './utils/zarr-utils';
+import {HTTPStore} from 'zarr';
+import {FileStore} from './utils/storage';
+import {getRootPrefix} from './utils/zarr-utils';
 
-import {loadBioformatsZarrHelper } from './load-bioformats-zarr-helper';
-import {loadZarr } from './load-zarr';
+import {loadBioformatsZarrHelper} from './load-bioformats-zarr-helper';
+import {loadZarr} from './load-zarr';
 
 interface ZarrOptions {
   fetchOptions: RequestInit;
@@ -18,7 +18,7 @@ interface ZarrOptions {
  * @return {Promise<{ data: ZarrPixelSource[], metadata: ImageMeta }>} data source and associated OMEXML metadata.
  */
 export async function loadBioformatsZarr(
-  source: string | (File & { path: string })[],
+  source: string | (File & {path: string})[],
   options: Partial<ZarrOptions> = {}
 ) {
   const METADATA = 'METADATA.ome.xml';
@@ -26,8 +26,8 @@ export async function loadBioformatsZarr(
 
   if (typeof source === 'string') {
     const url = source.endsWith('/') ? source.slice(0, -1) : source;
-    const store = new HTTPStore(url + '/' + ZARR_DIR, options);
-    const xmlSource = await fetch(url + '/' + METADATA, options.fetchOptions);
+    const store = new HTTPStore(`${url}/${ZARR_DIR}`, options);
+    const xmlSource = await fetch(`${url}/${METADATA}`, options.fetchOptions);
     return loadBioformatsZarrHelper(store, xmlSource);
   }
 
@@ -67,7 +67,7 @@ export async function loadBioformatsZarr(
  */
 export async function loadOmeZarr(
   source: string,
-  options: Partial<ZarrOptions & { type: 'multiscales' }> = {}
+  options: Partial<ZarrOptions & {type: 'multiscales'}> = {}
 ) {
   const store = new HTTPStore(source, options);
 

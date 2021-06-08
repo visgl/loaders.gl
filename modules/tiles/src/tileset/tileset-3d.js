@@ -346,10 +346,10 @@ export default class Tileset3D {
     if (oldSelectedTiles.length !== selectedTiles.length) {
       return true;
     }
-    const set1 = new Set(oldSelectedTiles.map(t => t.id));
-    const set2 = new Set(selectedTiles.map(t => t.id));
-    let changed = oldSelectedTiles.filter(x => !set2.has(x.id)).length > 0;
-    changed = changed || selectedTiles.filter(x => !set1.has(x.id)).length > 0;
+    const set1 = new Set(oldSelectedTiles.map((t) => t.id));
+    const set2 = new Set(selectedTiles.map((t) => t.id));
+    let changed = oldSelectedTiles.filter((x) => !set2.has(x.id)).length > 0;
+    changed = changed || selectedTiles.filter((x) => !set1.has(x.id)).length > 0;
     return changed;
   }
 
@@ -538,7 +538,7 @@ export default class Tileset3D {
   }
 
   _addTileToCache(tile) {
-    this._cache.add(this, tile, tileset => tileset._updateCacheStats(tile));
+    this._cache.add(this, tile, (tileset) => tileset._updateCacheStats(tile));
   }
 
   _updateCacheStats(tile) {

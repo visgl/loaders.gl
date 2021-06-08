@@ -5,8 +5,8 @@ import Headers from './headers.node';
 import {decodeDataUri} from './utils/decode-data-uri.node';
 import {createReadStream} from './utils/stream-utils.node';
 
-const isDataURL = url => url.startsWith('data:');
-const isRequestURL = url => url.startsWith('http:') || url.startsWith('https:');
+const isDataURL = (url) => url.startsWith('data:');
+const isRequestURL = (url) => url.startsWith('http:') || url.startsWith('https:');
 
 /**
  * Emulation of Browser fetch for Node.js

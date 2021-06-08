@@ -21,7 +21,7 @@ import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 const tilesetUrl = 'https://assets.cesium.com/43978/tileset.json';
 const tilesetJson = await load(tilesetUrl, Tiles3DLoader);
 const tileset3d = new Tileset3D(tilesetJson, {
-  onTileLoad: tile => console.log(tile)
+  onTileLoad: (tile) => console.log(tile)
 });
 ```
 
@@ -37,7 +37,7 @@ const tileseturl =
   'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_Bldgs/SceneServer/layers/0';
 const tilesetJson = await load(tilesetUrl, I3SLoader);
 const tileset3d = new Tileset3D(tilesetJson, {
-  onTileLoad: tile => console.log(tile)
+  onTileLoad: (tile) => console.log(tile)
 });
 
 const viewport = new WebMercatorViewport({latitude, longitude, zoom});
@@ -52,7 +52,7 @@ import {Tileset3D} from '@loaders.gl/tiles';
 const viewport = new WebMercatorViewport({latitude, longitude, zoom});
 
 const tileset3d = new Tileset3D(tilesetJson, {
-  onTileLoad: tile => tileset3d.update(viewport)
+  onTileLoad: (tile) => tileset3d.update(viewport)
 });
 ```
 
@@ -60,7 +60,7 @@ const tileset3d = new Tileset3D(tilesetJson, {
 
 ```js
 new Tileset3D(tilesetJson, {
-  onTileLoad: tile => console.log(tile)
+  onTileLoad: (tile) => console.log(tile)
 });
 ```
 
@@ -211,7 +211,7 @@ var tileset = viewer.scene.primitives.add(
   })
 );
 
-tileset.readyPromise.then(function(tileset) {
+tileset.readyPromise.then(function (tileset) {
   // Set the camera to view the newly added tileset
   viewer.camera.viewBoundingSphere(tileset.boundingSphere, new HeadingPitchRange(0, -0.5, 0));
 });

@@ -200,28 +200,28 @@ clarinet sample code, illustrating the "sax-like" callbacks
 var clarinet = require('clarinet'),
   parser = clarinet.parser();
 
-parser.onerror = function(e) {
+parser.onerror = function (e) {
   // an error happened. e is the error.
 };
-parser.onvalue = function(v) {
+parser.onvalue = function (v) {
   // got some value.  v is the value. can be string, double, bool, or null.
 };
-parser.onopenobject = function(key) {
+parser.onopenobject = function (key) {
   // opened an object. key is the first key.
 };
-parser.onkey = function(key) {
+parser.onkey = function (key) {
   // got a subsequent key in an object.
 };
-parser.oncloseobject = function() {
+parser.oncloseobject = function () {
   // closed an object.
 };
-parser.onopenarray = function() {
+parser.onopenarray = function () {
   // opened an array.
 };
-parser.onclosearray = function() {
+parser.onclosearray = function () {
   // closed an array.
 };
-parser.onend = function() {
+parser.onend = function () {
   // parser stream is done, and ready to have more stuff written to it.
 };
 
@@ -245,19 +245,19 @@ var sax = require('./lib/sax'),
   strict = true, // set to false for html-mode
   parser = sax.parser(strict);
 
-parser.onerror = function(e) {
+parser.onerror = function (e) {
   // an error happened.
 };
-parser.ontext = function(t) {
+parser.ontext = function (t) {
   // got some text.  t is the string of text.
 };
-parser.onopentag = function(node) {
+parser.onopentag = function (node) {
   // opened a tag.  node has "name" and "attributes"
 };
-parser.onattribute = function(attr) {
+parser.onattribute = function (attr) {
   // an attribute.  attr has "name" and "value"
 };
-parser.onend = function() {
+parser.onend = function () {
   // parser stream is done, and ready to have more stuff written to it.
 };
 

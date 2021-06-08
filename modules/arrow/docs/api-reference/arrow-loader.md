@@ -27,4 +27,3 @@ const data = await load(url, ArrowLoader, options);
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
-

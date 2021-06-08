@@ -9,7 +9,7 @@ export default class StreamingJSONParser extends JSONParser {
   constructor(options = {}) {
     super();
     const jsonpaths = options.jsonpaths || [];
-    this.jsonPaths = jsonpaths.map(jsonpath => new JSONPath(jsonpath));
+    this.jsonPaths = jsonpaths.map((jsonpath) => new JSONPath(jsonpath));
     this.streamingJsonPath = null;
     this.streamingArray = null;
     this.topLevelObject = null;
@@ -95,7 +95,7 @@ export default class StreamingJSONParser extends JSONParser {
     };
 
     // Redefine onopenarray to inject value for top-level object
-    this.parser.onopenobject = name => {
+    this.parser.onopenobject = (name) => {
       if (!this.topLevelObject) {
         this.topLevelObject = {};
         this._openObject(this.topLevelObject);

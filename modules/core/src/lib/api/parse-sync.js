@@ -53,8 +53,8 @@ function parseWithLoaderSync(loader, data, options, context) {
 
   // TBD - If synchronous parser not available, return null
   throw new Error(
-    `${
-      loader.name
-    } loader: 'parseSync' not supported by this loader, use 'parse' instead. ${context.url || ''}`
+    `${loader.name} loader: 'parseSync' not supported by this loader, use 'parse' instead. ${
+      context.url || ''
+    }`
   );
 }

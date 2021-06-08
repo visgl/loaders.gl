@@ -33,7 +33,7 @@ const TEST_CASES = [
   }
 ];
 
-test('getTransferList', t => {
+test('getTransferList', (t) => {
   for (const testCase of TEST_CASES) {
     t.deepEqual(getTransferList(testCase.input), testCase.output, testCase.title);
   }

@@ -30,4 +30,3 @@ const image = await load(url, VideoLoader, options);
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
-

@@ -9,13 +9,13 @@ import {load} from '@loaders.gl/core';
 // Extracted from Cesium 3D Tiles
 const GLB_TILE_WITH_DRACO_URL = '@loaders.gl/gltf/test/data/3d-tiles/143.glb';
 
-test('GLTFScenegraph#ctor', t => {
+test('GLTFScenegraph#ctor', (t) => {
   const gltfScenegraph = new GLTFScenegraph();
   t.ok(gltfScenegraph);
   t.end();
 });
 
-test('GLTFScenegraph#BufferView indices resolve correctly', async t => {
+test('GLTFScenegraph#BufferView indices resolve correctly', async (t) => {
   const gltf = await load(GLB_TILE_WITH_DRACO_URL, [GLTFLoader, DracoLoader], {
     gltf: {decompressMeshes: false, postProcess: false}
   });

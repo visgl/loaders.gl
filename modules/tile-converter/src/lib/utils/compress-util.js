@@ -20,7 +20,7 @@ export function compressFileWithGzip(pathFile) {
       console.log(`${compressedPathFile} compressed and saved.`); // eslint-disable-line no-undef,no-console
       resolve(compressedPathFile);
     });
-    input.on('error', error => {
+    input.on('error', (error) => {
       console.log(`${compressedPathFile}: compression error!`); // eslint-disable-line no-undef,no-console
       reject(error);
     });
@@ -44,7 +44,7 @@ export async function compressFilesWithZip(fileMap, outputFile, level = 0) {
   return new Promise(async (resolve, reject) => {
     // listen for all archive data to be writte
     // 'close' event is fired only when a file descriptor is involved
-    output.on('close', function() {
+    output.on('close', function () {
       console.log(`${outputFile} saved.`); // eslint-disable-line no-undef,no-console
       console.log(`${archive.pointer()} total bytes`); // eslint-disable-line no-undef,no-console
       resolve();
@@ -53,19 +53,19 @@ export async function compressFilesWithZip(fileMap, outputFile, level = 0) {
     // This event is fired when the data source is drained no matter what was the data source.
     // It is not part of this library but rather from the NodeJS Stream API.
     // @see: https://nodejs.org/api/stream.html#stream_event_end
-    output.on('end', function() {
+    output.on('end', function () {
       console.log('Data has been drained'); // eslint-disable-line no-undef,no-console
       resolve();
     });
 
     // good practice to catch warnings (ie stat failures and other non-blocking errors)
-    archive.on('warning', function(err) {
+    archive.on('warning', function (err) {
       console.log(err); // eslint-disable-line no-undef,no-console
       reject(err);
     });
 
     // good practice to catch this error explicitly
-    archive.on('error', function(err) {
+    archive.on('error', function (err) {
       reject(err);
     });
 
@@ -159,11 +159,11 @@ export async function generateHash128FromZip(inputZipFile, outputFile) {
 
   const output = createWriteStream(outputFile);
   return new Promise((resolve, reject) => {
-    output.on('close', function() {
+    output.on('close', function () {
       console.log(`${outputFile} generated and saved`); // eslint-disable-line
       resolve();
     });
-    output.on('error', function(err) {
+    output.on('error', function (err) {
       console.log(err); // eslint-disable-line
       reject(err);
     });
@@ -191,7 +191,7 @@ export async function addFileToZip(inputFolder, fileName, zipFile, sevenZipExe) 
 }
 
 function appendFileToArchive(archive, subFileName, subFileData) {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     const fileStream = createReadStream(subFileData);
     console.log(`Compression start: ${subFileName}`); // eslint-disable-line no-undef,no-console
     fileStream.on('close', () => {

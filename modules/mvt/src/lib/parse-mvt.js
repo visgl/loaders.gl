@@ -38,7 +38,7 @@ export default function parseMVT(arrayBuffer, options) {
       ? loaderOptions.layers
       : Object.keys(tile.layers);
 
-    selectedLayers.forEach(layerName => {
+    selectedLayers.forEach((layerName) => {
       const vectorTileLayer = tile.layers[layerName];
       const featureOptions = {...loaderOptions, layerName};
 

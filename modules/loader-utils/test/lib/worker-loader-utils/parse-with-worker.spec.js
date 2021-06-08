@@ -10,7 +10,7 @@ const MAX_CONCURRENCY = 3;
 
 const hasWorker = typeof Worker !== 'undefined';
 
-test('parseWithWorker', async t => {
+test('parseWithWorker', async (t) => {
   if (!hasWorker) {
     t.comment('Worker test is browser only');
     t.end();
@@ -33,14 +33,14 @@ test('parseWithWorker', async t => {
   t.end();
 });
 
-test.skip('createLoaderWorker', async t => {
+test.skip('createLoaderWorker', async (t) => {
   if (!hasWorker) {
     t.comment('Worker test is browser only');
     t.end();
     return;
   }
 
-  const callback = info =>
+  const callback = (info) =>
     t.comment(`Processing with worker ${info.name}, queued jobs ${info.backlog}`);
 
   const workerPool = new WorkerPool({
@@ -53,7 +53,7 @@ test.skip('createLoaderWorker', async t => {
   const TEST_CASES = new Array(CHUNKS_TOTAL).fill(0).map((_, i) => ({chunk: i}));
 
   const result = await Promise.all(
-    TEST_CASES.map(async testData => {
+    TEST_CASES.map(async (testData) => {
       const job = await workerPool.startJob('test');
       job.postMessage('process', {
         input: toArrayBuffer(JSON.stringify(testData))
@@ -73,7 +73,7 @@ test.skip('createLoaderWorker', async t => {
   t.end();
 });
 
-test.skip('createLoaderWorker#nested', async t => {
+test.skip('createLoaderWorker#nested', async (t) => {
   if (!hasWorker) {
     t.comment('Worker test is browser only');
     t.end();
@@ -88,10 +88,10 @@ test.skip('createLoaderWorker#nested', async t => {
   ];
 
   const result = await Promise.all(
-    TEST_CASES.map(testData =>
+    TEST_CASES.map((testData) =>
       parseWithWorker(
         NullWorkerLoader,
-        toArrayBuffer(testData.map(data => JSON.stringify(data)).join('\n')),
+        toArrayBuffer(testData.map((data) => JSON.stringify(data)).join('\n')),
         NullWorkerLoader.options
       )
     )

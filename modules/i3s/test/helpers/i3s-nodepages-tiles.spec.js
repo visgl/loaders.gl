@@ -4,14 +4,14 @@ import I3SNodePagesTiles from '../../src/lib/helpers/i3s-nodepages-tiles';
 import {isBrowser} from '@loaders.gl/core';
 import {TILESET_STUB} from '../test-utils/load-utils';
 
-test('I3SNodePagesTiles#Forms tile header from node pages data', async t => {
+test('I3SNodePagesTiles#Forms tile header from node pages data', async (t) => {
   const i3SNodePagesTiles = new I3SNodePagesTiles(TILESET_STUB(), {});
   const rootNode = await i3SNodePagesTiles.formTileFromNodePages(0);
   t.ok(rootNode);
   t.end();
 });
 
-test('I3SNodePagesTiles#Root tile should not have content', async t => {
+test('I3SNodePagesTiles#Root tile should not have content', async (t) => {
   const i3SNodePagesTiles = new I3SNodePagesTiles(TILESET_STUB(), {});
   const rootNode = await i3SNodePagesTiles.formTileFromNodePages(0);
   t.ok(rootNode);
@@ -20,7 +20,7 @@ test('I3SNodePagesTiles#Root tile should not have content', async t => {
   t.end();
 });
 
-test('I3SNodePagesTiles#Tile with content', async t => {
+test('I3SNodePagesTiles#Tile with content', async (t) => {
   const i3SNodePagesTiles = new I3SNodePagesTiles(TILESET_STUB(), {});
   const node1 = await i3SNodePagesTiles.formTileFromNodePages(1);
   t.ok(node1);
@@ -43,7 +43,7 @@ test('I3SNodePagesTiles#Tile with content', async t => {
   t.end();
 });
 
-test('I3SNodePagesTiles#Layer without textures', async t => {
+test('I3SNodePagesTiles#Layer without textures', async (t) => {
   const i3SNodePagesTiles = new I3SNodePagesTiles(
     {...TILESET_STUB(), materialDefinitions: [{}]},
     {}
@@ -78,20 +78,18 @@ test('I3SNodePagesTiles#Layer without textures', async t => {
 });
 
 // Logic moved to parse-i3s.js to avoid calling extra conversion the center from cartographic to cartesian
-test.skip('I3SNodePagesTiles#Tile should have mbs converted from obb', async t => {
+test.skip('I3SNodePagesTiles#Tile should have mbs converted from obb', async (t) => {
   const i3SNodePagesTiles = new I3SNodePagesTiles(TILESET_STUB(), {});
   const node1 = await i3SNodePagesTiles.formTileFromNodePages(1);
   t.ok(node1);
-  t.deepEqual(node1.mbs, [
-    8.676496951388435,
-    50.108416671362576,
-    189.47502169783516,
-    3243.264050599379
-  ]);
+  t.deepEqual(
+    node1.mbs,
+    [8.676496951388435, 50.108416671362576, 189.47502169783516, 3243.264050599379]
+  );
   t.end();
 });
 
-test('I3SNodePagesTiles#Select "dds" texture if it is supported', async t => {
+test('I3SNodePagesTiles#Select "dds" texture if it is supported', async (t) => {
   const i3SNodePagesTiles = new I3SNodePagesTiles(
     {
       ...TILESET_STUB(),
@@ -146,7 +144,7 @@ test('I3SNodePagesTiles#Select "dds" texture if it is supported', async t => {
   t.end();
 });
 
-test('I3SNodePagesTiles#Switch off compressed textures', async t => {
+test('I3SNodePagesTiles#Switch off compressed textures', async (t) => {
   const i3SNodePagesTiles = new I3SNodePagesTiles(
     {
       ...TILESET_STUB(),
@@ -187,7 +185,7 @@ test('I3SNodePagesTiles#Switch off compressed textures', async t => {
   t.end();
 });
 
-test('I3SNodePagesTiles#Should load DRACO geometry', async t => {
+test('I3SNodePagesTiles#Should load DRACO geometry', async (t) => {
   const i3SNodePagesTiles = new I3SNodePagesTiles(TILESET_STUB(), {i3s: {useDracoGeometry: true}});
   const node1 = await i3SNodePagesTiles.formTileFromNodePages(1);
   t.ok(node1);
@@ -198,10 +196,8 @@ test('I3SNodePagesTiles#Should load DRACO geometry', async t => {
 
   const tilesetJson = TILESET_STUB();
   // Remove compressed geometry metadata from geometry definitions
-  tilesetJson.geometryDefinitions[0].geometryBuffers = tilesetJson.geometryDefinitions[0].geometryBuffers.slice(
-    0,
-    1
-  );
+  tilesetJson.geometryDefinitions[0].geometryBuffers =
+    tilesetJson.geometryDefinitions[0].geometryBuffers.slice(0, 1);
   const i3SNodePagesTiles2 = new I3SNodePagesTiles(tilesetJson, {i3s: {useDracoGeometry: true}});
   const node12 = await i3SNodePagesTiles2.formTileFromNodePages(1);
   t.equal(

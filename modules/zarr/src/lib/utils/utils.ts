@@ -1,5 +1,5 @@
-import type { OMEXML } from './omexml';
-import type { Labels, PixelSource } from '../../types';
+import type {OMEXML} from './omexml';
+import type {Labels, PixelSource} from '../../types';
 
 export function ensureArray<T>(x: T | T[]) {
   return Array.isArray(x) ? x : [x];
@@ -42,15 +42,11 @@ export function isInterleaved(shape: number[]) {
  * > imgMeta.Pixels.DimensionOrder === 'XYCZT'
  * > getLabels(imgMeta.Pixels) === ['t', 'z', 'c', 'y', 'x']
  */
-type Sel<
-  Dim extends string
-  > = Dim extends `${infer Z}${infer X}${infer A}${infer B}${infer C}`
+type Sel<Dim extends string> = Dim extends `${infer Z}${infer X}${infer A}${infer B}${infer C}`
   ? [C, B, A]
   : 'error';
 export function getLabels(dimOrder: OMEXML[0]['Pixels']['DimensionOrder']) {
-  return dimOrder.toLowerCase().split('').reverse() as Labels<
-    Sel<Lowercase<typeof dimOrder>>
-  >;
+  return dimOrder.toLowerCase().split('').reverse() as Labels<Sel<Lowercase<typeof dimOrder>>>;
 }
 
 /*
@@ -79,7 +75,7 @@ export function getDims<S extends string>(labels: S[]) {
 export function getImageSize<T extends string[]>(source: PixelSource<T>) {
   const interleaved = isInterleaved(source.shape);
   const [height, width] = source.shape.slice(interleaved ? -3 : -2);
-  return { height, width };
+  return {height, width};
 }
 
 export const SIGNAL_ABORTED = '__vivSignalAborted';

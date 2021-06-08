@@ -18,17 +18,11 @@ export default function encodeWKT(gj) {
   }
 
   function ringsWKT(r) {
-    return r
-      .map(ringWKT)
-      .map(wrapParens)
-      .join(', ');
+    return r.map(ringWKT).map(wrapParens).join(', ');
   }
 
   function multiRingsWKT(r) {
-    return r
-      .map(ringsWKT)
-      .map(wrapParens)
-      .join(', ');
+    return r.map(ringsWKT).map(wrapParens).join(', ');
   }
 
   function wrapParens(s) {

@@ -213,7 +213,7 @@ export default class App extends PureComponent {
           background: '#000',
           color: '#fff'
         }}
-        ref={_ => (this._statsWidgetContainer = _)}
+        ref={(_) => (this._statsWidgetContainer = _)}
       />
     );
   }

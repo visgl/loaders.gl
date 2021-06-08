@@ -14,7 +14,7 @@ export default class WorkerBody {
    * (type: WorkerMessageType, payload: WorkerMessagePayload) => any
    */
   static set onmessage(onMessage) {
-    self.onmessage = message => {
+    self.onmessage = (message) => {
       if (!isKnownMessage(message)) {
         return;
       }
@@ -29,7 +29,7 @@ export default class WorkerBody {
     let onMessageWrapper = onMessageWrapperMap.get(onMessage);
 
     if (!onMessageWrapper) {
-      onMessageWrapper = message => {
+      onMessageWrapper = (message) => {
         if (!isKnownMessage(message)) {
           return;
         }

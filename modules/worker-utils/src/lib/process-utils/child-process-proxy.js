@@ -13,7 +13,7 @@ const DEFAULT_PROCESS_OPTIONS = {
   basePort: 5000,
   wait: 2000,
   nodeSpawnOptions: {maxBuffer: 5000 * 1024},
-  onSuccess: processProxy => {
+  onSuccess: (processProxy) => {
     console.log(`Started ${processProxy.options.command}`);
   }
 };
@@ -55,21 +55,21 @@ export default class ChildProcessProxy {
         console.log(`Spawning ${options.command} ${options.arguments.join(' ')}`);
         this.childProcess = ChildProcess.spawn(options.command, args, options.spawn);
 
-        this.childProcess.stdout.on('data', data => {
+        this.childProcess.stdout.on('data', (data) => {
           console.log(data.toString());
         });
         // TODO - add option regarding whether stderr should be treated as data
-        this.childProcess.stderr.on('data', data => {
+        this.childProcess.stderr.on('data', (data) => {
           console.log(`Child process wrote to stderr: "${data}".`);
           this._clearTimeout();
           reject(new Error(data));
         });
-        this.childProcess.on('error', error => {
+        this.childProcess.on('error', (error) => {
           console.log(`Child process errored with ${error}`);
           this._clearTimeout();
           reject(error);
         });
-        this.childProcess.on('close', code => {
+        this.childProcess.on('close', (code) => {
           console.log(`Child process exited with ${code}`);
           this.childProcess = null;
           this._clearTimeout();

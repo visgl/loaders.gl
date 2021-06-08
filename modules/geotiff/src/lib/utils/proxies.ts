@@ -1,4 +1,4 @@
-import type { GeoTIFF } from 'geotiff';
+import type {GeoTIFF} from 'geotiff';
 import type Pool from './Pool';
 
 const VIV_PROXY_KEY = '__viv';
@@ -59,7 +59,7 @@ export function createOffsetsProxy(tiff: GeoTIFF, offsets: number[]) {
 
     return Reflect.get(target, key);
   };
-  return new Proxy(tiff, { get });
+  return new Proxy(tiff, {get});
 }
 
 /*
@@ -76,7 +76,8 @@ export function createPoolProxy(tiff: GeoTIFF, pool: Pool) {
     if (key === 'readRasters') {
       return (options: Parameters<typeof target.readRasters>) => {
         // Inject `pool` argument with other raster options.
-        return target.readRasters({ ...options, pool });
+        // @ts-ignore
+        return target.readRasters({...options, pool});
       };
     }
 
@@ -87,5 +88,5 @@ export function createPoolProxy(tiff: GeoTIFF, pool: Pool) {
 
     return Reflect.get(target, key);
   };
-  return new Proxy(tiff, { get });
+  return new Proxy(tiff, {get});
 }

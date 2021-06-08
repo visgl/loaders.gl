@@ -55,7 +55,7 @@ function validateOptions(options) {
     }
   }
   if (exceptions.length) {
-    exceptions.forEach(exeption => exeption());
+    exceptions.forEach((exeption) => exeption());
     process.exit(0); // eslint-disable-line
   }
 }
@@ -138,7 +138,7 @@ function parseOptions(args) {
   };
 
   const count = args.length;
-  const _getValue = index => {
+  const _getValue = (index) => {
     if (index + 1 >= count) {
       return null;
     }

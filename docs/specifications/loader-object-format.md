@@ -19,7 +19,7 @@ Note: Only one of `extension` or `extensions` is required. If both are supplied,
 ### Test Function
 
 | Field      | Type       | Default  | Description                                                                                   |
-| ---------- | ---------- | -------- | --------------------------------------------------------------------------------------------- |
+| ---------- | ---------- | -------- | --------------------------------------------------------------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `test`     | `Function` | `String` | `String[]`                                                                                    | `null` | Guesses if a binary format file is of this format by examining the first bytes in the file. If the test is specified as a string or array of strings, the initial bytes are expected to be "magic bytes" matching one of the provided strings. |
 | `testText` | `Function` | `null`   | Guesses if a text format file is of this format by examining the first characters in the file |
 

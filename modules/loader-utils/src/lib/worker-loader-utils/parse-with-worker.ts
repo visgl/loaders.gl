@@ -10,7 +10,7 @@ import {WorkerFarm, getWorkerObjectURL} from '@loaders.gl/worker-utils';
  * @param options
  * @param context
  */
- export function canParseWithWorker(loader, data, options, context?) {
+export function canParseWithWorker(loader, data, options, context?) {
   if (!WorkerFarm.isSupported()) {
     return false;
   }
@@ -22,10 +22,16 @@ import {WorkerFarm, getWorkerObjectURL} from '@loaders.gl/worker-utils';
 }
 
 /**
-  * this function expects that the worker function sends certain messages,
-  * this can be automated if the worker is wrapper by a call to createLoaderWorker in @loaders.gl/loader-utils.
-  */
- export async function parseWithWorker(loader, data, options, context?, parseOnMainThread?: Function) {
+ * this function expects that the worker function sends certain messages,
+ * this can be automated if the worker is wrapper by a call to createLoaderWorker in @loaders.gl/loader-utils.
+ */
+export async function parseWithWorker(
+  loader,
+  data,
+  options,
+  context?,
+  parseOnMainThread?: Function
+) {
   const name = loader.id; // TODO
   const url = getWorkerObjectURL(loader, options);
 

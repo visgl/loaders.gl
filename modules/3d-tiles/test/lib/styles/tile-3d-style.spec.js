@@ -24,11 +24,11 @@ function MockFeature() {
   this._properties = {};
 }
 
-MockFeature.prototype.addProperty = function(name, value) {
+MockFeature.prototype.addProperty = function (name, value) {
   this._properties[name] = value;
 };
 
-MockFeature.prototype.getProperty = function(name) {
+MockFeature.prototype.getProperty = function (name) {
   return this._properties[name];
 };
 
@@ -61,24 +61,24 @@ feature2.addProperty('id', 12);
 
 var styleUrl = './Data/Cesium3DTiles/Style/style.json';
 
-it('rejects readyPromise with undefined url', function() {
+it('rejects readyPromise with undefined url', function () {
   var tileStyle = new Cesium3DTileStyle('invalid.json');
 
   return tileStyle.readyPromise
-    .then(function(style) {
+    .then(function (style) {
       fail('should not resolve');
     })
-    .otherwise(function(error) {
+    .otherwise(function (error) {
       expect(tileStyle.ready).toEqual(false);
       expect(error.statusCode).toEqual(404);
     });
 });
 
-it('loads style from uri', function() {
+it('loads style from uri', function () {
   var tileStyle = new Cesium3DTileStyle(styleUrl);
 
   return tileStyle.readyPromise
-    .then(function(style) {
+    .then(function (style) {
       expect(style.style).toEqual({
         color: "color('red')",
         show: '${id} < 100.0',
@@ -135,12 +135,12 @@ it('loads style from uri', function() {
       expect(style.labelVerticalOrigin).toEqual(new Expression('0'));
       expect(tileStyle.ready).toEqual(true);
     })
-    .otherwise(function() {
+    .otherwise(function () {
       fail('should load style.json');
     });
 });
 
-it('loads style from Resource', function() {
+it('loads style from Resource', function () {
   var tileStyle = new Cesium3DTileStyle(
     new Resource({
       url: styleUrl
@@ -148,7 +148,7 @@ it('loads style from Resource', function() {
   );
 
   return tileStyle.readyPromise
-    .then(function(style) {
+    .then(function (style) {
       expect(style.style).toEqual({
         color: "color('red')",
         show: '${id} < 100.0',
@@ -205,12 +205,12 @@ it('loads style from Resource', function() {
       expect(style.labelVerticalOrigin).toEqual(new Expression('0'));
       expect(tileStyle.ready).toEqual(true);
     })
-    .otherwise(function() {
+    .otherwise(function () {
       fail('should load style.json');
     });
 });
 
-it('sets show value to undefined if value not present', function() {
+it('sets show value to undefined if value not present', function () {
   var style = new Cesium3DTileStyle({});
   expect(style.show).toBeUndefined();
 
@@ -218,7 +218,7 @@ it('sets show value to undefined if value not present', function() {
   expect(style.show).toBeUndefined();
 });
 
-it('sets show value to expression', function() {
+it('sets show value to expression', function () {
   var style = new Cesium3DTileStyle({
     show: 'true'
   });
@@ -245,7 +245,7 @@ it('sets show value to expression', function() {
   expect(style.show).toEqual(new Expression('false'));
 });
 
-it('sets show value to conditional', function() {
+it('sets show value to conditional', function () {
   var jsonExp = {
     conditions: [
       ['${height} > 2', 'false'],
@@ -259,7 +259,7 @@ it('sets show value to conditional', function() {
   expect(style.show).toEqual(new ConditionsExpression(jsonExp));
 });
 
-it('sets show expressions in setter', function() {
+it('sets show expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   var condExp = new ConditionsExpression({
@@ -277,7 +277,7 @@ it('sets show expressions in setter', function() {
   expect(style.show).toEqual(exp);
 });
 
-it('sets show values in setter', function() {
+it('sets show values in setter', function () {
   var defines = {
     showFactor: 10
   };
@@ -303,7 +303,7 @@ it('sets show values in setter', function() {
   expect(style.show).toBeUndefined();
 });
 
-it('sets style.show values in setter', function() {
+it('sets style.show values in setter', function () {
   var style = new Cesium3DTileStyle({});
   style.show = '${height} * ${showFactor} >= 1000';
   expect(style.style.show).toEqual('${height} * ${showFactor} >= 1000');
@@ -325,7 +325,7 @@ it('sets style.show values in setter', function() {
   expect(style.style.show).toBeUndefined();
 });
 
-it('sets color value to undefined if value not present', function() {
+it('sets color value to undefined if value not present', function () {
   var style = new Cesium3DTileStyle({});
   expect(style.color).toBeUndefined();
 
@@ -333,7 +333,7 @@ it('sets color value to undefined if value not present', function() {
   expect(style.color).toBeUndefined();
 });
 
-it('sets color value to expression', function() {
+it('sets color value to expression', function () {
   var style = new Cesium3DTileStyle({
     color: 'color("red")'
   });
@@ -352,7 +352,7 @@ it('sets color value to expression', function() {
   );
 });
 
-it('sets color value to conditional', function() {
+it('sets color value to conditional', function () {
   var jsonExp = {
     conditions: [
       ['${height} > 2', 'color("cyan")'],
@@ -366,7 +366,7 @@ it('sets color value to conditional', function() {
   expect(style.color).toEqual(new ConditionsExpression(jsonExp));
 });
 
-it('sets color expressions in setter', function() {
+it('sets color expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   var exp = new Expression('color("red")');
@@ -387,7 +387,7 @@ it('sets color expressions in setter', function() {
   expect(style.color).toBeUndefined();
 });
 
-it('sets style.color expression in setter', function() {
+it('sets style.color expression in setter', function () {
   var style = new Cesium3DTileStyle();
 
   var stringExp = 'color("red")';
@@ -408,7 +408,7 @@ it('sets style.color expression in setter', function() {
   expect(style.style.color).toBeUndefined();
 });
 
-it('sets color values in setter', function() {
+it('sets color values in setter', function () {
   var defines = {
     targetColor: 'red'
   };
@@ -428,7 +428,7 @@ it('sets color values in setter', function() {
   expect(style.color).toEqual(new ConditionsExpression(jsonExp, defines));
 });
 
-it('sets style.color values in setter', function() {
+it('sets style.color values in setter', function () {
   var style = new Cesium3DTileStyle();
 
   style.color = 'color("${targetColor}")';
@@ -445,7 +445,7 @@ it('sets style.color values in setter', function() {
   expect(style.style.color).toEqual(jsonExp);
 });
 
-it('sets pointSize value to undefined if value not present', function() {
+it('sets pointSize value to undefined if value not present', function () {
   var style = new Cesium3DTileStyle({});
   expect(style.pointSize).toBeUndefined();
 
@@ -453,7 +453,7 @@ it('sets pointSize value to undefined if value not present', function() {
   expect(style.pointSize).toBeUndefined();
 });
 
-it('sets pointSize value to expression', function() {
+it('sets pointSize value to expression', function () {
   var style = new Cesium3DTileStyle({
     pointSize: '2'
   });
@@ -470,7 +470,7 @@ it('sets pointSize value to expression', function() {
   expect(style.pointSize).toEqual(new Expression('2'));
 });
 
-it('sets pointSize value to conditional', function() {
+it('sets pointSize value to conditional', function () {
   var jsonExp = {
     conditions: [
       ['${height} > 2', '1.0'],
@@ -484,7 +484,7 @@ it('sets pointSize value to conditional', function() {
   expect(style.pointSize).toEqual(new ConditionsExpression(jsonExp));
 });
 
-it('sets pointSize expressions in setter', function() {
+it('sets pointSize expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   style.pointSize = 2;
@@ -508,7 +508,7 @@ it('sets pointSize expressions in setter', function() {
   expect(style.pointSize).toBeUndefined();
 });
 
-it('sets style.pointSize expressions in setter', function() {
+it('sets style.pointSize expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   style.pointSize = new Expression('2');
@@ -524,7 +524,7 @@ it('sets style.pointSize expressions in setter', function() {
   expect(style.style.pointSize).toEqual(jsonExp);
 
   var customExpression = {
-    evaluate: function() {
+    evaluate: function () {
       return 1;
     }
   };
@@ -535,7 +535,7 @@ it('sets style.pointSize expressions in setter', function() {
   expect(style.style.pointSize).toBeUndefined();
 });
 
-it('sets pointSize values in setter', function() {
+it('sets pointSize values in setter', function () {
   var defines = {
     targetPointSize: '2.0'
   };
@@ -558,7 +558,7 @@ it('sets pointSize values in setter', function() {
   expect(style.pointSize).toEqual(new ConditionsExpression(jsonExp, defines));
 });
 
-it('sets style.pointSize values in setter', function() {
+it('sets style.pointSize values in setter', function () {
   var defines = {
     targetPointSize: '2.0'
   };
@@ -581,7 +581,7 @@ it('sets style.pointSize values in setter', function() {
   expect(style.style.pointSize).toEqual(jsonExp);
 });
 
-it('sets pointOutlineColor value to undefined if value not present', function() {
+it('sets pointOutlineColor value to undefined if value not present', function () {
   var style = new Cesium3DTileStyle({});
   expect(style.pointOutlineColor).toBeUndefined();
 
@@ -589,7 +589,7 @@ it('sets pointOutlineColor value to undefined if value not present', function() 
   expect(style.pointOutlineColor).toBeUndefined();
 });
 
-it('sets pointOutlineColor value to expression', function() {
+it('sets pointOutlineColor value to expression', function () {
   var style = new Cesium3DTileStyle({
     pointOutlineColor: 'color("red")'
   });
@@ -608,7 +608,7 @@ it('sets pointOutlineColor value to expression', function() {
   );
 });
 
-it('sets pointOutlineColor value to conditional', function() {
+it('sets pointOutlineColor value to conditional', function () {
   var jsonExp = {
     conditions: [
       ['${height} > 2', 'color("cyan")'],
@@ -622,7 +622,7 @@ it('sets pointOutlineColor value to conditional', function() {
   expect(style.pointOutlineColor).toEqual(new ConditionsExpression(jsonExp));
 });
 
-it('sets pointOutlineColor expressions in setter', function() {
+it('sets pointOutlineColor expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   var exp = new Expression('color("red")');
@@ -643,7 +643,7 @@ it('sets pointOutlineColor expressions in setter', function() {
   expect(style.pointOutlineColor).toBeUndefined();
 });
 
-it('sets style.pointOutlineColor expressions in setter', function() {
+it('sets style.pointOutlineColor expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   style.pointOutlineColor = new Expression('color("red")');
@@ -660,10 +660,10 @@ it('sets style.pointOutlineColor expressions in setter', function() {
   expect(style.style.pointOutlineColor).toEqual(jsonExp);
 
   var customExpression = {
-    evaluate: function() {
+    evaluate: function () {
       return Color.RED;
     },
-    evaluateColor: function() {
+    evaluateColor: function () {
       return Color.RED;
     }
   };
@@ -674,7 +674,7 @@ it('sets style.pointOutlineColor expressions in setter', function() {
   expect(style.style.pointOutlineColor).toBeUndefined();
 });
 
-it('sets pointOutlineColor values in setter', function() {
+it('sets pointOutlineColor values in setter', function () {
   var defines = {
     targetColor: 'red'
   };
@@ -694,7 +694,7 @@ it('sets pointOutlineColor values in setter', function() {
   expect(style.pointOutlineColor).toEqual(new ConditionsExpression(jsonExp, defines));
 });
 
-it('sets style.pointOutlineColor values in setter', function() {
+it('sets style.pointOutlineColor values in setter', function () {
   var defines = {
     targetColor: 'red'
   };
@@ -714,7 +714,7 @@ it('sets style.pointOutlineColor values in setter', function() {
   expect(style.style.pointOutlineColor).toEqual(jsonExp);
 });
 
-it('sets pointOutlineWidth value to undefined if value not present', function() {
+it('sets pointOutlineWidth value to undefined if value not present', function () {
   var style = new Cesium3DTileStyle({});
   expect(style.pointOutlineWidth).toBeUndefined();
 
@@ -722,7 +722,7 @@ it('sets pointOutlineWidth value to undefined if value not present', function() 
   expect(style.pointOutlineWidth).toBeUndefined();
 });
 
-it('sets pointOutlineWidth value to expression', function() {
+it('sets pointOutlineWidth value to expression', function () {
   var style = new Cesium3DTileStyle({
     pointOutlineWidth: '2'
   });
@@ -739,7 +739,7 @@ it('sets pointOutlineWidth value to expression', function() {
   expect(style.pointOutlineWidth).toEqual(new Expression('2'));
 });
 
-it('sets pointOutlineWidth value to conditional', function() {
+it('sets pointOutlineWidth value to conditional', function () {
   var jsonExp = {
     conditions: [
       ['${height} > 2', '1.0'],
@@ -753,7 +753,7 @@ it('sets pointOutlineWidth value to conditional', function() {
   expect(style.pointOutlineWidth).toEqual(new ConditionsExpression(jsonExp));
 });
 
-it('sets pointOutlineWidth expressions in setter', function() {
+it('sets pointOutlineWidth expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   style.pointOutlineWidth = 2;
@@ -777,7 +777,7 @@ it('sets pointOutlineWidth expressions in setter', function() {
   expect(style.pointOutlineWidth).toBeUndefined();
 });
 
-it('sets style.pointOutlineWidth expressions in setter', function() {
+it('sets style.pointOutlineWidth expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   style.pointOutlineWidth = new Expression('2');
@@ -793,7 +793,7 @@ it('sets style.pointOutlineWidth expressions in setter', function() {
   expect(style.style.pointOutlineWidth).toEqual(jsonExp);
 
   var customExpression = {
-    evaluate: function() {
+    evaluate: function () {
       return 1;
     }
   };
@@ -804,7 +804,7 @@ it('sets style.pointOutlineWidth expressions in setter', function() {
   expect(style.style.pointOutlineWidth).toBeUndefined();
 });
 
-it('sets pointOutlineWidth values in setter', function() {
+it('sets pointOutlineWidth values in setter', function () {
   var defines = {
     targetPointSize: '2.0'
   };
@@ -827,7 +827,7 @@ it('sets pointOutlineWidth values in setter', function() {
   expect(style.pointOutlineWidth).toEqual(new ConditionsExpression(jsonExp, defines));
 });
 
-it('sets style.pointOutlineWidth values in setter', function() {
+it('sets style.pointOutlineWidth values in setter', function () {
   var defines = {
     targetPointSize: '2.0'
   };
@@ -850,7 +850,7 @@ it('sets style.pointOutlineWidth values in setter', function() {
   expect(style.style.pointOutlineWidth).toEqual(jsonExp);
 });
 
-it('sets labelColor value to undefined if value not present', function() {
+it('sets labelColor value to undefined if value not present', function () {
   var style = new Cesium3DTileStyle({});
   expect(style.labelColor).toBeUndefined();
 
@@ -858,7 +858,7 @@ it('sets labelColor value to undefined if value not present', function() {
   expect(style.labelColor).toBeUndefined();
 });
 
-it('sets labelColor value to expression', function() {
+it('sets labelColor value to expression', function () {
   var style = new Cesium3DTileStyle({
     labelColor: 'color("red")'
   });
@@ -877,7 +877,7 @@ it('sets labelColor value to expression', function() {
   );
 });
 
-it('sets labelColor value to conditional', function() {
+it('sets labelColor value to conditional', function () {
   var jsonExp = {
     conditions: [
       ['${height} > 2', 'color("cyan")'],
@@ -891,7 +891,7 @@ it('sets labelColor value to conditional', function() {
   expect(style.labelColor).toEqual(new ConditionsExpression(jsonExp));
 });
 
-it('sets labelColor expressions in setter', function() {
+it('sets labelColor expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   var exp = new Expression('color("red")');
@@ -912,7 +912,7 @@ it('sets labelColor expressions in setter', function() {
   expect(style.labelColor).toBeUndefined();
 });
 
-it('sets style.labelColor expressions in setter', function() {
+it('sets style.labelColor expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   style.labelColor = new Expression('color("red")');
@@ -928,10 +928,10 @@ it('sets style.labelColor expressions in setter', function() {
   expect(style.style.labelColor).toEqual(jsonExp);
 
   var customExpression = {
-    evaluate: function() {
+    evaluate: function () {
       return Color.RED;
     },
-    evaluateColor: function() {
+    evaluateColor: function () {
       return Color.RED;
     }
   };
@@ -942,7 +942,7 @@ it('sets style.labelColor expressions in setter', function() {
   expect(style.style.labelColor).toBeUndefined();
 });
 
-it('sets labelColor values in setter', function() {
+it('sets labelColor values in setter', function () {
   var defines = {
     targetColor: 'red'
   };
@@ -962,7 +962,7 @@ it('sets labelColor values in setter', function() {
   expect(style.labelColor).toEqual(new ConditionsExpression(jsonExp, defines));
 });
 
-it('sets style.labelColor values in setter', function() {
+it('sets style.labelColor values in setter', function () {
   var defines = {
     targetColor: 'red'
   };
@@ -982,7 +982,7 @@ it('sets style.labelColor values in setter', function() {
   expect(style.style.labelColor).toEqual(jsonExp);
 });
 
-it('sets labelOutlineColor value to undefined if value not present', function() {
+it('sets labelOutlineColor value to undefined if value not present', function () {
   var style = new Cesium3DTileStyle({});
   expect(style.labelOutlineColor).toBeUndefined();
 
@@ -990,7 +990,7 @@ it('sets labelOutlineColor value to undefined if value not present', function() 
   expect(style.labelOutlineColor).toBeUndefined();
 });
 
-it('sets labelOutlineColor value to expression', function() {
+it('sets labelOutlineColor value to expression', function () {
   var style = new Cesium3DTileStyle({
     labelOutlineColor: 'color("red")'
   });
@@ -1009,7 +1009,7 @@ it('sets labelOutlineColor value to expression', function() {
   );
 });
 
-it('sets labelOutlineColor value to conditional', function() {
+it('sets labelOutlineColor value to conditional', function () {
   var jsonExp = {
     conditions: [
       ['${height} > 2', 'color("cyan")'],
@@ -1023,7 +1023,7 @@ it('sets labelOutlineColor value to conditional', function() {
   expect(style.labelOutlineColor).toEqual(new ConditionsExpression(jsonExp));
 });
 
-it('sets labelOutlineColor expressions in setter', function() {
+it('sets labelOutlineColor expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   var exp = new Expression('color("red")');
@@ -1044,7 +1044,7 @@ it('sets labelOutlineColor expressions in setter', function() {
   expect(style.labelOutlineColor).toBeUndefined();
 });
 
-it('sets style.labelOutlineColor expressions in setter', function() {
+it('sets style.labelOutlineColor expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   style.labelOutlineColor = new Expression('color("red")');
@@ -1061,10 +1061,10 @@ it('sets style.labelOutlineColor expressions in setter', function() {
   expect(style.style.labelOutlineColor).toEqual(jsonExp);
 
   var customExpression = {
-    evaluate: function() {
+    evaluate: function () {
       return Color.RED;
     },
-    evaluateColor: function() {
+    evaluateColor: function () {
       return Color.RED;
     }
   };
@@ -1075,7 +1075,7 @@ it('sets style.labelOutlineColor expressions in setter', function() {
   expect(style.style.labelOutlineColor).toBeUndefined();
 });
 
-it('sets labelOutlineColor values in setter', function() {
+it('sets labelOutlineColor values in setter', function () {
   var defines = {
     targetColor: 'red'
   };
@@ -1095,7 +1095,7 @@ it('sets labelOutlineColor values in setter', function() {
   expect(style.labelOutlineColor).toEqual(new ConditionsExpression(jsonExp, defines));
 });
 
-it('sets style.labelOutlineColor values in setter', function() {
+it('sets style.labelOutlineColor values in setter', function () {
   var defines = {
     targetColor: 'red'
   };
@@ -1115,7 +1115,7 @@ it('sets style.labelOutlineColor values in setter', function() {
   expect(style.style.labelOutlineColor).toEqual(jsonExp);
 });
 
-it('sets labelOutlineWidth value to undefined if value not present', function() {
+it('sets labelOutlineWidth value to undefined if value not present', function () {
   var style = new Cesium3DTileStyle({});
   expect(style.labelOutlineWidth).toBeUndefined();
 
@@ -1123,7 +1123,7 @@ it('sets labelOutlineWidth value to undefined if value not present', function() 
   expect(style.labelOutlineWidth).toBeUndefined();
 });
 
-it('sets labelOutlineWidth value to expression', function() {
+it('sets labelOutlineWidth value to expression', function () {
   var style = new Cesium3DTileStyle({
     labelOutlineWidth: '2'
   });
@@ -1140,7 +1140,7 @@ it('sets labelOutlineWidth value to expression', function() {
   expect(style.labelOutlineWidth).toEqual(new Expression('2'));
 });
 
-it('sets labelOutlineWidth value to conditional', function() {
+it('sets labelOutlineWidth value to conditional', function () {
   var jsonExp = {
     conditions: [
       ['${height} > 2', '1.0'],
@@ -1154,7 +1154,7 @@ it('sets labelOutlineWidth value to conditional', function() {
   expect(style.labelOutlineWidth).toEqual(new ConditionsExpression(jsonExp));
 });
 
-it('sets labelOutlineWidth expressions in setter', function() {
+it('sets labelOutlineWidth expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   style.labelOutlineWidth = 2;
@@ -1178,7 +1178,7 @@ it('sets labelOutlineWidth expressions in setter', function() {
   expect(style.labelOutlineWidth).toBeUndefined();
 });
 
-it('sets style.labelOutlineWidth expressions in setter', function() {
+it('sets style.labelOutlineWidth expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   style.labelOutlineWidth = new Expression('2');
@@ -1193,7 +1193,7 @@ it('sets style.labelOutlineWidth expressions in setter', function() {
   expect(style.style.labelOutlineWidth).toEqual(jsonExp);
 
   var customExpression = {
-    evaluate: function() {
+    evaluate: function () {
       return 1;
     }
   };
@@ -1204,7 +1204,7 @@ it('sets style.labelOutlineWidth expressions in setter', function() {
   expect(style.style.labelOutlineWidth).toBeUndefined();
 });
 
-it('sets labelOutlineWidth values in setter', function() {
+it('sets labelOutlineWidth values in setter', function () {
   var defines = {
     targetLabelSize: '2.0'
   };
@@ -1227,7 +1227,7 @@ it('sets labelOutlineWidth values in setter', function() {
   expect(style.labelOutlineWidth).toEqual(new ConditionsExpression(jsonExp, defines));
 });
 
-it('sets style.labelOutlineWidth values in setter', function() {
+it('sets style.labelOutlineWidth values in setter', function () {
   var defines = {
     targetLabelSize: '2.0'
   };
@@ -1250,7 +1250,7 @@ it('sets style.labelOutlineWidth values in setter', function() {
   expect(style.style.labelOutlineWidth).toEqual(jsonExp);
 });
 
-it('sets font value to undefined if value not present', function() {
+it('sets font value to undefined if value not present', function () {
   var style = new Cesium3DTileStyle({});
   expect(style.font).toBeUndefined();
 
@@ -1258,7 +1258,7 @@ it('sets font value to undefined if value not present', function() {
   expect(style.font).toBeUndefined();
 });
 
-it('sets font value to expression', function() {
+it('sets font value to expression', function () {
   var style = new Cesium3DTileStyle({
     font: "'24px Helvetica'"
   });
@@ -1275,7 +1275,7 @@ it('sets font value to expression', function() {
   expect(style.font).toEqual(new Expression("'24px Helvetica'"));
 });
 
-it('sets font value to conditional', function() {
+it('sets font value to conditional', function () {
   var jsonExp = {
     conditions: [
       ['${height} > 2', "'30px Helvetica'"],
@@ -1289,7 +1289,7 @@ it('sets font value to conditional', function() {
   expect(style.font).toEqual(new ConditionsExpression(jsonExp));
 });
 
-it('sets font expressions in setter', function() {
+it('sets font expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   style.font = "'24px Helvetica'";
@@ -1313,7 +1313,7 @@ it('sets font expressions in setter', function() {
   expect(style.font).toBeUndefined();
 });
 
-it('sets style.font expressions in setter', function() {
+it('sets style.font expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   style.font = new Expression("'24px Helvetica'");
@@ -1330,7 +1330,7 @@ it('sets style.font expressions in setter', function() {
   expect(style.style.font).toEqual(jsonExp);
 
   var customExpression = {
-    evaluate: function() {
+    evaluate: function () {
       return "'24px Helvetica'";
     }
   };
@@ -1341,7 +1341,7 @@ it('sets style.font expressions in setter', function() {
   expect(style.style.font).toBeUndefined();
 });
 
-it('sets font values in setter', function() {
+it('sets font values in setter', function () {
   var defines = {
     targetFont: "'30px Helvetica'"
   };
@@ -1364,7 +1364,7 @@ it('sets font values in setter', function() {
   expect(style.font).toEqual(new ConditionsExpression(jsonExp, defines));
 });
 
-it('sets style.font values in setter', function() {
+it('sets style.font values in setter', function () {
   var defines = {
     targetFont: "'30px Helvetica'"
   };
@@ -1387,7 +1387,7 @@ it('sets style.font values in setter', function() {
   expect(style.style.font).toEqual(jsonExp);
 });
 
-it('sets labelStyle value to undefined if value not present', function() {
+it('sets labelStyle value to undefined if value not present', function () {
   var style = new Cesium3DTileStyle({});
   expect(style.labelStyle).toBeUndefined();
 
@@ -1395,14 +1395,14 @@ it('sets labelStyle value to undefined if value not present', function() {
   expect(style.labelStyle).toBeUndefined();
 });
 
-it('sets labelStyle value to expression', function() {
+it('sets labelStyle value to expression', function () {
   var style = new Cesium3DTileStyle({
     labelStyle: '2'
   });
   expect(style.labelStyle).toEqual(new Expression('2'));
 });
 
-it('sets labelStyle value to conditional', function() {
+it('sets labelStyle value to conditional', function () {
   var jsonExp = {
     conditions: [
       ['${height} > 2', '1'],
@@ -1416,7 +1416,7 @@ it('sets labelStyle value to conditional', function() {
   expect(style.labelStyle).toEqual(new ConditionsExpression(jsonExp));
 });
 
-it('sets labelStyle expressions in setter', function() {
+it('sets labelStyle expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   style.labelStyle = 2;
@@ -1440,7 +1440,7 @@ it('sets labelStyle expressions in setter', function() {
   expect(style.labelStyle).toBeUndefined();
 });
 
-it('sets style.labelStyle expressions in setter', function() {
+it('sets style.labelStyle expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   style.labelStyle = new Expression('2');
@@ -1456,7 +1456,7 @@ it('sets style.labelStyle expressions in setter', function() {
   expect(style.style.labelStyle).toEqual(jsonExp);
 
   var customExpression = {
-    evaluate: function() {
+    evaluate: function () {
       return 0;
     }
   };
@@ -1467,7 +1467,7 @@ it('sets style.labelStyle expressions in setter', function() {
   expect(style.style.labelStyle).toBeUndefined();
 });
 
-it('sets labelStyle values in setter', function() {
+it('sets labelStyle values in setter', function () {
   var defines = {
     targetLabelStyle: '2'
   };
@@ -1490,7 +1490,7 @@ it('sets labelStyle values in setter', function() {
   expect(style.labelStyle).toEqual(new ConditionsExpression(jsonExp, defines));
 });
 
-it('sets style.labelStyle values in setter', function() {
+it('sets style.labelStyle values in setter', function () {
   var defines = {
     targetLabelStyle: '2'
   };
@@ -1513,7 +1513,7 @@ it('sets style.labelStyle values in setter', function() {
   expect(style.style.labelStyle).toEqual(jsonExp);
 });
 
-it('sets labelText value to undefined if value not present', function() {
+it('sets labelText value to undefined if value not present', function () {
   var style = new Cesium3DTileStyle({});
   expect(style.labelText).toBeUndefined();
 
@@ -1521,7 +1521,7 @@ it('sets labelText value to undefined if value not present', function() {
   expect(style.labelText).toBeUndefined();
 });
 
-it('sets labelText value to expression', function() {
+it('sets labelText value to expression', function () {
   var style = new Cesium3DTileStyle({
     labelText: "'test text'"
   });
@@ -1538,7 +1538,7 @@ it('sets labelText value to expression', function() {
   expect(style.labelText).toEqual(new Expression("'test text'"));
 });
 
-it('sets labelText value to conditional', function() {
+it('sets labelText value to conditional', function () {
   var jsonExp = {
     conditions: [
       ['${height} > 2', "'test text 1'"],
@@ -1552,7 +1552,7 @@ it('sets labelText value to conditional', function() {
   expect(style.labelText).toEqual(new ConditionsExpression(jsonExp));
 });
 
-it('sets labelText expressions in setter', function() {
+it('sets labelText expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   style.labelText = "'test text'";
@@ -1576,7 +1576,7 @@ it('sets labelText expressions in setter', function() {
   expect(style.labelText).toBeUndefined();
 });
 
-it('sets style.labelText expressions in setter', function() {
+it('sets style.labelText expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   style.labelText = new Expression("'test text'");
@@ -1593,7 +1593,7 @@ it('sets style.labelText expressions in setter', function() {
   expect(style.style.labelText).toEqual(jsonExp);
 
   var customExpression = {
-    evaluate: function() {
+    evaluate: function () {
       return "'test text 1'";
     }
   };
@@ -1604,7 +1604,7 @@ it('sets style.labelText expressions in setter', function() {
   expect(style.style.labelText).toBeUndefined();
 });
 
-it('sets labelText values in setter', function() {
+it('sets labelText values in setter', function () {
   var defines = {
     targetText: "'test text 1'"
   };
@@ -1627,7 +1627,7 @@ it('sets labelText values in setter', function() {
   expect(style.labelText).toEqual(new ConditionsExpression(jsonExp, defines));
 });
 
-it('sets style.labelText values in setter', function() {
+it('sets style.labelText values in setter', function () {
   var defines = {
     targetText: "'test text 1'"
   };
@@ -1650,7 +1650,7 @@ it('sets style.labelText values in setter', function() {
   expect(style.style.labelText).toEqual(jsonExp);
 });
 
-it('sets backgroundColor value to undefined if value not present', function() {
+it('sets backgroundColor value to undefined if value not present', function () {
   var style = new Cesium3DTileStyle({});
   expect(style.backgroundColor).toBeUndefined();
 
@@ -1658,7 +1658,7 @@ it('sets backgroundColor value to undefined if value not present', function() {
   expect(style.backgroundColor).toBeUndefined();
 });
 
-it('sets backgroundColor value to expression', function() {
+it('sets backgroundColor value to expression', function () {
   var style = new Cesium3DTileStyle({
     backgroundColor: 'color("red")'
   });
@@ -1677,7 +1677,7 @@ it('sets backgroundColor value to expression', function() {
   );
 });
 
-it('sets backgroundColor value to conditional', function() {
+it('sets backgroundColor value to conditional', function () {
   var jsonExp = {
     conditions: [
       ['${height} > 2', 'color("cyan")'],
@@ -1691,7 +1691,7 @@ it('sets backgroundColor value to conditional', function() {
   expect(style.backgroundColor).toEqual(new ConditionsExpression(jsonExp));
 });
 
-it('sets backgroundColor expressions in setter', function() {
+it('sets backgroundColor expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   var exp = new Expression('color("red")');
@@ -1712,7 +1712,7 @@ it('sets backgroundColor expressions in setter', function() {
   expect(style.backgroundColor).toBeUndefined();
 });
 
-it('sets style.backgroundColor expressions in setter', function() {
+it('sets style.backgroundColor expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   style.backgroundColor = new Expression('color("red")');
@@ -1729,10 +1729,10 @@ it('sets style.backgroundColor expressions in setter', function() {
   expect(style.style.backgroundColor).toEqual(jsonExp);
 
   var customExpression = {
-    evaluate: function() {
+    evaluate: function () {
       return Color.RED;
     },
-    evaluateColor: function() {
+    evaluateColor: function () {
       return Color.RED;
     }
   };
@@ -1743,7 +1743,7 @@ it('sets style.backgroundColor expressions in setter', function() {
   expect(style.style.backgroundColor).toBeUndefined();
 });
 
-it('sets backgroundColor values in setter', function() {
+it('sets backgroundColor values in setter', function () {
   var defines = {
     targetColor: 'red'
   };
@@ -1763,7 +1763,7 @@ it('sets backgroundColor values in setter', function() {
   expect(style.backgroundColor).toEqual(new ConditionsExpression(jsonExp, defines));
 });
 
-it('sets style.backgroundColor values in setter', function() {
+it('sets style.backgroundColor values in setter', function () {
   var defines = {
     targetColor: 'red'
   };
@@ -1783,7 +1783,7 @@ it('sets style.backgroundColor values in setter', function() {
   expect(style.style.backgroundColor).toEqual(jsonExp);
 });
 
-it('sets backgroundPadding value to undefined if value not present', function() {
+it('sets backgroundPadding value to undefined if value not present', function () {
   var style = new Cesium3DTileStyle({});
   expect(style.backgroundPadding).toBeUndefined();
 
@@ -1791,7 +1791,7 @@ it('sets backgroundPadding value to undefined if value not present', function() 
   expect(style.backgroundPadding).toBeUndefined();
 });
 
-it('sets backgroundPadding value to expression', function() {
+it('sets backgroundPadding value to expression', function () {
   var style = new Cesium3DTileStyle({
     backgroundPadding: 'vec2(1.0, 2.0)'
   });
@@ -1810,7 +1810,7 @@ it('sets backgroundPadding value to expression', function() {
   );
 });
 
-it('sets backgroundPadding value to conditional', function() {
+it('sets backgroundPadding value to conditional', function () {
   var jsonExp = {
     conditions: [
       ['${height} > 2', 'vec2(1.0, 2.0)'],
@@ -1824,7 +1824,7 @@ it('sets backgroundPadding value to conditional', function() {
   expect(style.backgroundPadding).toEqual(new ConditionsExpression(jsonExp));
 });
 
-it('sets backgroundPadding expressions in setter', function() {
+it('sets backgroundPadding expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   var exp = new Expression('vec2(1.0, 2.0)');
@@ -1845,7 +1845,7 @@ it('sets backgroundPadding expressions in setter', function() {
   expect(style.backgroundPadding).toBeUndefined();
 });
 
-it('sets style.backgroundPadding expressions in setter', function() {
+it('sets style.backgroundPadding expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   style.backgroundPadding = new Expression('vec2(1.0, 2.0)');
@@ -1859,7 +1859,7 @@ it('sets style.backgroundPadding expressions in setter', function() {
   };
 
   var customExpression = {
-    evaluate: function() {
+    evaluate: function () {
       return new Cartesian2(1.0, 2.0);
     }
   };
@@ -1873,7 +1873,7 @@ it('sets style.backgroundPadding expressions in setter', function() {
   expect(style.style.backgroundPadding).toBeUndefined();
 });
 
-it('sets backgroundPadding values in setter', function() {
+it('sets backgroundPadding values in setter', function () {
   var defines = {
     targetPadding: '3.0, 4.0'
   };
@@ -1893,7 +1893,7 @@ it('sets backgroundPadding values in setter', function() {
   expect(style.backgroundPadding).toEqual(new ConditionsExpression(jsonExp, defines));
 });
 
-it('sets style.backgroundPadding values in setter', function() {
+it('sets style.backgroundPadding values in setter', function () {
   var defines = {
     targetPadding: '3.0, 4.0'
   };
@@ -1913,7 +1913,7 @@ it('sets style.backgroundPadding values in setter', function() {
   expect(style.style.backgroundPadding).toEqual(jsonExp);
 });
 
-it('sets backgroundEnabled value to undefined if value not present', function() {
+it('sets backgroundEnabled value to undefined if value not present', function () {
   var style = new Cesium3DTileStyle({});
   expect(style.backgroundEnabled).toBeUndefined();
 
@@ -1921,7 +1921,7 @@ it('sets backgroundEnabled value to undefined if value not present', function() 
   expect(style.backgroundEnabled).toBeUndefined();
 });
 
-it('sets backgroundEnabled value to expression', function() {
+it('sets backgroundEnabled value to expression', function () {
   var style = new Cesium3DTileStyle({
     backgroundEnabled: 'true'
   });
@@ -1948,7 +1948,7 @@ it('sets backgroundEnabled value to expression', function() {
   expect(style.backgroundEnabled).toEqual(new Expression('false'));
 });
 
-it('sets backgroundEnabled value to conditional', function() {
+it('sets backgroundEnabled value to conditional', function () {
   var jsonExp = {
     conditions: [
       ['${height} > 2', 'false'],
@@ -1962,7 +1962,7 @@ it('sets backgroundEnabled value to conditional', function() {
   expect(style.backgroundEnabled).toEqual(new ConditionsExpression(jsonExp));
 });
 
-it('sets backgroundEnabled expressions in setter', function() {
+it('sets backgroundEnabled expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   var condExp = new ConditionsExpression({
@@ -1980,7 +1980,7 @@ it('sets backgroundEnabled expressions in setter', function() {
   expect(style.backgroundEnabled).toEqual(exp);
 });
 
-it('sets style.backgroundEnabled expressions in setter', function() {
+it('sets style.backgroundEnabled expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   style.backgroundEnabled = new Expression('false');
@@ -1997,7 +1997,7 @@ it('sets style.backgroundEnabled expressions in setter', function() {
   expect(style.style.backgroundEnabled).toEqual(jsonExp);
 
   var customExpression = {
-    evaluate: function() {
+    evaluate: function () {
       return true;
     }
   };
@@ -2005,7 +2005,7 @@ it('sets style.backgroundEnabled expressions in setter', function() {
   expect(style.style.backgroundEnabled).toEqual(customExpression);
 });
 
-it('sets backgroundEnabled values in setter', function() {
+it('sets backgroundEnabled values in setter', function () {
   var defines = {
     backgroundFactor: 10
   };
@@ -2033,7 +2033,7 @@ it('sets backgroundEnabled values in setter', function() {
   expect(style.backgroundEnabled).toBeUndefined();
 });
 
-it('sets style.backgroundEnabled values in setter', function() {
+it('sets style.backgroundEnabled values in setter', function () {
   var defines = {
     backgroundFactor: 10
   };
@@ -2059,7 +2059,7 @@ it('sets style.backgroundEnabled values in setter', function() {
   expect(style.style.backgroundEnabled).toBeUndefined();
 });
 
-it('sets scaleByDistance value to undefined if value not present', function() {
+it('sets scaleByDistance value to undefined if value not present', function () {
   var style = new Cesium3DTileStyle({});
   expect(style.scaleByDistance).toBeUndefined();
 
@@ -2067,7 +2067,7 @@ it('sets scaleByDistance value to undefined if value not present', function() {
   expect(style.scaleByDistance).toBeUndefined();
 });
 
-it('sets scaleByDistance value to expression', function() {
+it('sets scaleByDistance value to expression', function () {
   var style = new Cesium3DTileStyle({
     scaleByDistance: 'vec4(1.0, 2.0, 3.0, 4.0)'
   });
@@ -2087,7 +2087,7 @@ it('sets scaleByDistance value to expression', function() {
   );
 });
 
-it('sets scaleByDistance value to conditional', function() {
+it('sets scaleByDistance value to conditional', function () {
   var jsonExp = {
     conditions: [
       ['${height} > 2', 'vec4(1.0, 2.0, 3.0, 4.0)'],
@@ -2101,7 +2101,7 @@ it('sets scaleByDistance value to conditional', function() {
   expect(style.scaleByDistance).toEqual(new ConditionsExpression(jsonExp));
 });
 
-it('sets scaleByDistance expressions in setter', function() {
+it('sets scaleByDistance expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   var exp = new Expression('vec4(5.0, 6.0, 7.0, 8.0)');
@@ -2122,7 +2122,7 @@ it('sets scaleByDistance expressions in setter', function() {
   expect(style.scaleByDistance).toBeUndefined();
 });
 
-it('sets style.scaleByDistance expressions in setter', function() {
+it('sets style.scaleByDistance expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   style.scaleByDistance = new Expression('vec4(5.0, 6.0, 7.0, 8.0)');
@@ -2139,7 +2139,7 @@ it('sets style.scaleByDistance expressions in setter', function() {
   expect(style.style.scaleByDistance).toEqual(jsonExp);
 
   var customExpression = {
-    evaluate: function() {
+    evaluate: function () {
       return new Cartesian4(1.0, 2.0, 3.0, 4.0);
     }
   };
@@ -2150,7 +2150,7 @@ it('sets style.scaleByDistance expressions in setter', function() {
   expect(style.style.scaleByDistance).toBeUndefined();
 });
 
-it('sets scaleByDistance values in setter', function() {
+it('sets scaleByDistance values in setter', function () {
   var defines = {
     targetScale: '1.0, 2.0, 3.0, 4.'
   };
@@ -2170,7 +2170,7 @@ it('sets scaleByDistance values in setter', function() {
   expect(style.scaleByDistance).toEqual(new ConditionsExpression(jsonExp, defines));
 });
 
-it('sets style.scaleByDistance values in setter', function() {
+it('sets style.scaleByDistance values in setter', function () {
   var defines = {
     targetScale: '1.0, 2.0, 3.0, 4.'
   };
@@ -2190,7 +2190,7 @@ it('sets style.scaleByDistance values in setter', function() {
   expect(style.style.scaleByDistance).toEqual(jsonExp);
 });
 
-it('sets distanceDisplayCondition value to undefined if value not present', function() {
+it('sets distanceDisplayCondition value to undefined if value not present', function () {
   var style = new Cesium3DTileStyle({});
   expect(style.distanceDisplayCondition).toBeUndefined();
 
@@ -2198,7 +2198,7 @@ it('sets distanceDisplayCondition value to undefined if value not present', func
   expect(style.distanceDisplayCondition).toBeUndefined();
 });
 
-it('sets distanceDisplayCondition value to expression', function() {
+it('sets distanceDisplayCondition value to expression', function () {
   var style = new Cesium3DTileStyle({
     distanceDisplayCondition: 'vec4(1.0, 2.0, 3.0, 4.0)'
   });
@@ -2218,7 +2218,7 @@ it('sets distanceDisplayCondition value to expression', function() {
   );
 });
 
-it('sets distanceDisplayCondition value to conditional', function() {
+it('sets distanceDisplayCondition value to conditional', function () {
   var jsonExp = {
     conditions: [
       ['${height} > 2', 'vec4(1.0, 2.0, 3.0, 4.0)'],
@@ -2232,7 +2232,7 @@ it('sets distanceDisplayCondition value to conditional', function() {
   expect(style.distanceDisplayCondition).toEqual(new ConditionsExpression(jsonExp));
 });
 
-it('sets distanceDisplayCondition expressions in setter', function() {
+it('sets distanceDisplayCondition expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   var exp = new Expression('vec4(5.0, 6.0, 7.0, 8.0)');
@@ -2253,7 +2253,7 @@ it('sets distanceDisplayCondition expressions in setter', function() {
   expect(style.distanceDisplayCondition).toBeUndefined();
 });
 
-it('sets style.distanceDisplayCondition expressions in setter', function() {
+it('sets style.distanceDisplayCondition expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   style.distanceDisplayCondition = new Expression('vec4(5.0, 6.0, 7.0, 8.0)');
@@ -2270,7 +2270,7 @@ it('sets style.distanceDisplayCondition expressions in setter', function() {
   expect(style.style.distanceDisplayCondition).toEqual(jsonExp);
 
   var customExpression = {
-    evaluate: function() {
+    evaluate: function () {
       return new Cartesian4(1.0, 2.0, 3.0, 4.0);
     }
   };
@@ -2281,7 +2281,7 @@ it('sets style.distanceDisplayCondition expressions in setter', function() {
   expect(style.style.distanceDisplayCondition).toBeUndefined();
 });
 
-it('sets distanceDisplayCondition values in setter', function() {
+it('sets distanceDisplayCondition values in setter', function () {
   var defines = {
     targetTranslucency: '1.0, 2.0, 3.0, 4.'
   };
@@ -2303,7 +2303,7 @@ it('sets distanceDisplayCondition values in setter', function() {
   expect(style.distanceDisplayCondition).toEqual(new ConditionsExpression(jsonExp, defines));
 });
 
-it('sets style.distanceDisplayCondition values in setter', function() {
+it('sets style.distanceDisplayCondition values in setter', function () {
   var defines = {
     targetTranslucency: '1.0, 2.0, 3.0, 4.'
   };
@@ -2323,7 +2323,7 @@ it('sets style.distanceDisplayCondition values in setter', function() {
   expect(style.style.distanceDisplayCondition).toEqual(jsonExp);
 });
 
-it('sets heightOffset value to undefined if value not present', function() {
+it('sets heightOffset value to undefined if value not present', function () {
   var style = new Cesium3DTileStyle({});
   expect(style.heightOffset).toBeUndefined();
 
@@ -2331,7 +2331,7 @@ it('sets heightOffset value to undefined if value not present', function() {
   expect(style.heightOffset).toBeUndefined();
 });
 
-it('sets heightOffset value to expression', function() {
+it('sets heightOffset value to expression', function () {
   var style = new Cesium3DTileStyle({
     heightOffset: '2'
   });
@@ -2348,7 +2348,7 @@ it('sets heightOffset value to expression', function() {
   expect(style.heightOffset).toEqual(new Expression('2'));
 });
 
-it('sets heightOffset value to conditional', function() {
+it('sets heightOffset value to conditional', function () {
   var jsonExp = {
     conditions: [
       ['${height} > 2', '1.0'],
@@ -2362,7 +2362,7 @@ it('sets heightOffset value to conditional', function() {
   expect(style.heightOffset).toEqual(new ConditionsExpression(jsonExp));
 });
 
-it('sets heightOffset expressions in setter', function() {
+it('sets heightOffset expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   style.heightOffset = 2;
@@ -2386,7 +2386,7 @@ it('sets heightOffset expressions in setter', function() {
   expect(style.heightOffset).toBeUndefined();
 });
 
-it('sets style.heightOffset expressions in setter', function() {
+it('sets style.heightOffset expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   style.heightOffset = new Expression('2');
@@ -2403,7 +2403,7 @@ it('sets style.heightOffset expressions in setter', function() {
   expect(style.style.heightOffset).toEqual(jsonExp);
 
   var customExpression = {
-    evaluate: function() {
+    evaluate: function () {
       return 2;
     }
   };
@@ -2414,7 +2414,7 @@ it('sets style.heightOffset expressions in setter', function() {
   expect(style.style.heightOffset).toBeUndefined();
 });
 
-it('sets heightOffset values in setter', function() {
+it('sets heightOffset values in setter', function () {
   var defines = {
     targetHeight: '2.0'
   };
@@ -2437,7 +2437,7 @@ it('sets heightOffset values in setter', function() {
   expect(style.heightOffset).toEqual(new ConditionsExpression(jsonExp, defines));
 });
 
-it('sets style.heightOffset values in setter', function() {
+it('sets style.heightOffset values in setter', function () {
   var defines = {
     targetHeight: '2.0'
   };
@@ -2457,7 +2457,7 @@ it('sets style.heightOffset values in setter', function() {
   expect(style.style.heightOffset).toEqual(jsonExp);
 });
 
-it('sets anchorLineEnabled value to undefined if value not present', function() {
+it('sets anchorLineEnabled value to undefined if value not present', function () {
   var style = new Cesium3DTileStyle({});
   expect(style.anchorLineEnabled).toBeUndefined();
 
@@ -2465,7 +2465,7 @@ it('sets anchorLineEnabled value to undefined if value not present', function() 
   expect(style.anchorLineEnabled).toBeUndefined();
 });
 
-it('sets anchorLineEnabled value to expression', function() {
+it('sets anchorLineEnabled value to expression', function () {
   var style = new Cesium3DTileStyle({
     anchorLineEnabled: 'true'
   });
@@ -2492,7 +2492,7 @@ it('sets anchorLineEnabled value to expression', function() {
   expect(style.anchorLineEnabled).toEqual(new Expression('false'));
 });
 
-it('sets anchorLineEnabled value to conditional', function() {
+it('sets anchorLineEnabled value to conditional', function () {
   var jsonExp = {
     conditions: [
       ['${height} > 2', 'false'],
@@ -2506,7 +2506,7 @@ it('sets anchorLineEnabled value to conditional', function() {
   expect(style.anchorLineEnabled).toEqual(new ConditionsExpression(jsonExp));
 });
 
-it('sets anchorLineEnabled expressions in setter', function() {
+it('sets anchorLineEnabled expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   var condExp = new ConditionsExpression({
@@ -2524,7 +2524,7 @@ it('sets anchorLineEnabled expressions in setter', function() {
   expect(style.anchorLineEnabled).toEqual(exp);
 });
 
-it('sets style.anchorLineEnabled expressions in setter', function() {
+it('sets style.anchorLineEnabled expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   style.anchorLineEnabled = new Expression('false');
@@ -2541,7 +2541,7 @@ it('sets style.anchorLineEnabled expressions in setter', function() {
   expect(style.style.anchorLineEnabled).toEqual(jsonExp);
 
   var customExpression = {
-    evaluate: function() {
+    evaluate: function () {
       return true;
     }
   };
@@ -2549,7 +2549,7 @@ it('sets style.anchorLineEnabled expressions in setter', function() {
   expect(style.style.anchorLineEnabled).toEqual(customExpression);
 });
 
-it('sets anchorLineEnabled values in setter', function() {
+it('sets anchorLineEnabled values in setter', function () {
   var defines = {
     anchorFactor: 10
   };
@@ -2577,7 +2577,7 @@ it('sets anchorLineEnabled values in setter', function() {
   expect(style.anchorLineEnabled).toBeUndefined();
 });
 
-it('sets style.anchorLineEnabled values in setter', function() {
+it('sets style.anchorLineEnabled values in setter', function () {
   var defines = {
     anchorFactor: 10
   };
@@ -2603,7 +2603,7 @@ it('sets style.anchorLineEnabled values in setter', function() {
   expect(style.style.anchorLineEnabled).toBeUndefined();
 });
 
-it('sets anchorLineColor value to undefined if value not present', function() {
+it('sets anchorLineColor value to undefined if value not present', function () {
   var style = new Cesium3DTileStyle({});
   expect(style.anchorLineColor).toBeUndefined();
 
@@ -2611,7 +2611,7 @@ it('sets anchorLineColor value to undefined if value not present', function() {
   expect(style.anchorLineColor).toBeUndefined();
 });
 
-it('sets anchorLineColor value to expression', function() {
+it('sets anchorLineColor value to expression', function () {
   var style = new Cesium3DTileStyle({
     anchorLineColor: 'color("red")'
   });
@@ -2630,7 +2630,7 @@ it('sets anchorLineColor value to expression', function() {
   );
 });
 
-it('sets anchorLineColor value to conditional', function() {
+it('sets anchorLineColor value to conditional', function () {
   var jsonExp = {
     conditions: [
       ['${height} > 2', 'color("cyan")'],
@@ -2644,7 +2644,7 @@ it('sets anchorLineColor value to conditional', function() {
   expect(style.anchorLineColor).toEqual(new ConditionsExpression(jsonExp));
 });
 
-it('sets anchorLineColor expressions in setter', function() {
+it('sets anchorLineColor expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   var exp = new Expression('color("red")');
@@ -2665,7 +2665,7 @@ it('sets anchorLineColor expressions in setter', function() {
   expect(style.anchorLineColor).toBeUndefined();
 });
 
-it('sets style.anchorLineColor expressions in setter', function() {
+it('sets style.anchorLineColor expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   style.anchorLineColor = new Expression('color("red")');
@@ -2682,10 +2682,10 @@ it('sets style.anchorLineColor expressions in setter', function() {
   expect(style.style.anchorLineColor).toEqual(jsonExp);
 
   var customExpression = {
-    evaluate: function() {
+    evaluate: function () {
       return Color.RED;
     },
-    evaluateColor: function() {
+    evaluateColor: function () {
       return Color.RED;
     }
   };
@@ -2696,7 +2696,7 @@ it('sets style.anchorLineColor expressions in setter', function() {
   expect(style.style.anchorLineColor).toBeUndefined();
 });
 
-it('sets anchorLineColor values in setter', function() {
+it('sets anchorLineColor values in setter', function () {
   var defines = {
     targetColor: 'red'
   };
@@ -2716,7 +2716,7 @@ it('sets anchorLineColor values in setter', function() {
   expect(style.anchorLineColor).toEqual(new ConditionsExpression(jsonExp, defines));
 });
 
-it('sets style.anchorLineColor values in setter', function() {
+it('sets style.anchorLineColor values in setter', function () {
   var defines = {
     targetColor: 'red'
   };
@@ -2736,7 +2736,7 @@ it('sets style.anchorLineColor values in setter', function() {
   expect(style.style.anchorLineColor).toEqual(jsonExp);
 });
 
-it('sets image value to undefined if value not present', function() {
+it('sets image value to undefined if value not present', function () {
   var style = new Cesium3DTileStyle({});
   expect(style.image).toBeUndefined();
 
@@ -2744,7 +2744,7 @@ it('sets image value to undefined if value not present', function() {
   expect(style.image).toBeUndefined();
 });
 
-it('sets image value to expression', function() {
+it('sets image value to expression', function () {
   var style = new Cesium3DTileStyle({
     image: "'url/to/image'"
   });
@@ -2761,7 +2761,7 @@ it('sets image value to expression', function() {
   expect(style.image).toEqual(new Expression("'url/to/image'"));
 });
 
-it('sets image value to conditional', function() {
+it('sets image value to conditional', function () {
   var jsonExp = {
     conditions: [
       ['${height} > 2', "'url/to/image1'"],
@@ -2775,7 +2775,7 @@ it('sets image value to conditional', function() {
   expect(style.image).toEqual(new ConditionsExpression(jsonExp));
 });
 
-it('sets image expressions in setter', function() {
+it('sets image expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   style.image = "'url/to/image'";
@@ -2799,7 +2799,7 @@ it('sets image expressions in setter', function() {
   expect(style.image).toBeUndefined();
 });
 
-it('sets style.image expressions in setter', function() {
+it('sets style.image expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   style.image = new Expression("'url/to/image'");
@@ -2816,7 +2816,7 @@ it('sets style.image expressions in setter', function() {
   expect(style.style.image).toEqual(jsonExp);
 
   var customExpression = {
-    evaluate: function() {
+    evaluate: function () {
       return "'url/to/image1'";
     }
   };
@@ -2827,7 +2827,7 @@ it('sets style.image expressions in setter', function() {
   expect(style.style.image).toBeUndefined();
 });
 
-it('sets image values in setter', function() {
+it('sets image values in setter', function () {
   var defines = {
     targetUrl: "'url/to/image1'"
   };
@@ -2850,7 +2850,7 @@ it('sets image values in setter', function() {
   expect(style.image).toEqual(new ConditionsExpression(jsonExp, defines));
 });
 
-it('sets style.image values in setter', function() {
+it('sets style.image values in setter', function () {
   var defines = {
     targetUrl: "'url/to/image1'"
   };
@@ -2873,7 +2873,7 @@ it('sets style.image values in setter', function() {
   expect(style.style.image).toEqual(jsonExp);
 });
 
-it('sets disableDepthTestDistance value to undefined if value not present', function() {
+it('sets disableDepthTestDistance value to undefined if value not present', function () {
   var style = new Cesium3DTileStyle({});
   expect(style.disableDepthTestDistance).toBeUndefined();
 
@@ -2881,7 +2881,7 @@ it('sets disableDepthTestDistance value to undefined if value not present', func
   expect(style.disableDepthTestDistance).toBeUndefined();
 });
 
-it('sets disableDepthTestDistance value to expression', function() {
+it('sets disableDepthTestDistance value to expression', function () {
   var style = new Cesium3DTileStyle({
     disableDepthTestDistance: '2'
   });
@@ -2898,7 +2898,7 @@ it('sets disableDepthTestDistance value to expression', function() {
   expect(style.disableDepthTestDistance).toEqual(new Expression('2'));
 });
 
-it('sets disableDepthTestDistance value to conditional', function() {
+it('sets disableDepthTestDistance value to conditional', function () {
   var jsonExp = {
     conditions: [
       ['${height} > 2', '1.0'],
@@ -2912,7 +2912,7 @@ it('sets disableDepthTestDistance value to conditional', function() {
   expect(style.disableDepthTestDistance).toEqual(new ConditionsExpression(jsonExp));
 });
 
-it('sets disableDepthTestDistance expressions in setter', function() {
+it('sets disableDepthTestDistance expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   style.disableDepthTestDistance = 2;
@@ -2936,7 +2936,7 @@ it('sets disableDepthTestDistance expressions in setter', function() {
   expect(style.disableDepthTestDistance).toBeUndefined();
 });
 
-it('sets style.disableDepthTestDistance expressions in setter', function() {
+it('sets style.disableDepthTestDistance expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   style.disableDepthTestDistance = new Expression('2');
@@ -2953,7 +2953,7 @@ it('sets style.disableDepthTestDistance expressions in setter', function() {
   expect(style.style.disableDepthTestDistance).toEqual(jsonExp);
 
   var customExpression = {
-    evaluate: function() {
+    evaluate: function () {
       return 1.0;
     }
   };
@@ -2964,7 +2964,7 @@ it('sets style.disableDepthTestDistance expressions in setter', function() {
   expect(style.style.disableDepthTestDistance).toBeUndefined();
 });
 
-it('sets disableDepthTestDistance values in setter', function() {
+it('sets disableDepthTestDistance values in setter', function () {
   var defines = {
     targetDistance: '2.0'
   };
@@ -2989,7 +2989,7 @@ it('sets disableDepthTestDistance values in setter', function() {
   expect(style.disableDepthTestDistance).toEqual(new ConditionsExpression(jsonExp, defines));
 });
 
-it('sets horizontalOrigin value to undefined if value not present', function() {
+it('sets horizontalOrigin value to undefined if value not present', function () {
   var style = new Cesium3DTileStyle({});
   expect(style.horizontalOrigin).toBeUndefined();
 
@@ -2997,14 +2997,14 @@ it('sets horizontalOrigin value to undefined if value not present', function() {
   expect(style.horizontalOrigin).toBeUndefined();
 });
 
-it('sets horizontalOrigin value to expression', function() {
+it('sets horizontalOrigin value to expression', function () {
   var style = new Cesium3DTileStyle({
     horizontalOrigin: '1'
   });
   expect(style.horizontalOrigin).toEqual(new Expression('1'));
 });
 
-it('sets horizontalOrigin value to conditional', function() {
+it('sets horizontalOrigin value to conditional', function () {
   var jsonExp = {
     conditions: [
       ['${height} > 2', '1'],
@@ -3018,7 +3018,7 @@ it('sets horizontalOrigin value to conditional', function() {
   expect(style.horizontalOrigin).toEqual(new ConditionsExpression(jsonExp));
 });
 
-it('sets horizontalOrigin expressions in setter', function() {
+it('sets horizontalOrigin expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   style.horizontalOrigin = 1;
@@ -3042,7 +3042,7 @@ it('sets horizontalOrigin expressions in setter', function() {
   expect(style.horizontalOrigin).toBeUndefined();
 });
 
-it('sets style.horizontalOrigin expressions in setter', function() {
+it('sets style.horizontalOrigin expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   style.horizontalOrigin = new Expression('1');
@@ -3059,7 +3059,7 @@ it('sets style.horizontalOrigin expressions in setter', function() {
   expect(style.style.horizontalOrigin).toEqual(jsonExp);
 
   var customExpression = {
-    evaluate: function() {
+    evaluate: function () {
       return 1;
     }
   };
@@ -3070,7 +3070,7 @@ it('sets style.horizontalOrigin expressions in setter', function() {
   expect(style.style.horizontalOrigin).toBeUndefined();
 });
 
-it('sets horizontalOrigin values in setter', function() {
+it('sets horizontalOrigin values in setter', function () {
   var defines = {
     targetOrigin: '-1'
   };
@@ -3093,7 +3093,7 @@ it('sets horizontalOrigin values in setter', function() {
   expect(style.horizontalOrigin).toEqual(new ConditionsExpression(jsonExp, defines));
 });
 
-it('sets style.horizontalOrigin values in setter', function() {
+it('sets style.horizontalOrigin values in setter', function () {
   var defines = {
     targetOrigin: '-1'
   };
@@ -3116,7 +3116,7 @@ it('sets style.horizontalOrigin values in setter', function() {
   expect(style.style.horizontalOrigin).toEqual(jsonExp);
 });
 
-it('sets verticalOrigin value to undefined if value not present', function() {
+it('sets verticalOrigin value to undefined if value not present', function () {
   var style = new Cesium3DTileStyle({});
   expect(style.verticalOrigin).toBeUndefined();
 
@@ -3124,14 +3124,14 @@ it('sets verticalOrigin value to undefined if value not present', function() {
   expect(style.verticalOrigin).toBeUndefined();
 });
 
-it('sets verticalOrigin value to expression', function() {
+it('sets verticalOrigin value to expression', function () {
   var style = new Cesium3DTileStyle({
     verticalOrigin: '1'
   });
   expect(style.verticalOrigin).toEqual(new Expression('1'));
 });
 
-it('sets verticalOrigin value to conditional', function() {
+it('sets verticalOrigin value to conditional', function () {
   var jsonExp = {
     conditions: [
       ['${height} > 2', '1'],
@@ -3145,7 +3145,7 @@ it('sets verticalOrigin value to conditional', function() {
   expect(style.verticalOrigin).toEqual(new ConditionsExpression(jsonExp));
 });
 
-it('sets verticalOrigin expressions in setter', function() {
+it('sets verticalOrigin expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   style.verticalOrigin = 1;
@@ -3169,7 +3169,7 @@ it('sets verticalOrigin expressions in setter', function() {
   expect(style.verticalOrigin).toBeUndefined();
 });
 
-it('sets style.styleverticalOrigin expressions in setter', function() {
+it('sets style.styleverticalOrigin expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   style.verticalOrigin = new Expression('1');
@@ -3186,7 +3186,7 @@ it('sets style.styleverticalOrigin expressions in setter', function() {
   expect(style.style.verticalOrigin).toEqual(jsonExp);
 
   var customExpression = {
-    evaluate: function() {
+    evaluate: function () {
       return 1;
     }
   };
@@ -3197,7 +3197,7 @@ it('sets style.styleverticalOrigin expressions in setter', function() {
   expect(style.style.verticalOrigin).toBeUndefined();
 });
 
-it('sets verticalOrigin values in setter', function() {
+it('sets verticalOrigin values in setter', function () {
   var defines = {
     targetOrigin: '-1'
   };
@@ -3220,7 +3220,7 @@ it('sets verticalOrigin values in setter', function() {
   expect(style.verticalOrigin).toEqual(new ConditionsExpression(jsonExp, defines));
 });
 
-it('sets style.verticalOrigin values in setter', function() {
+it('sets style.verticalOrigin values in setter', function () {
   var defines = {
     targetOrigin: '-1'
   };
@@ -3243,7 +3243,7 @@ it('sets style.verticalOrigin values in setter', function() {
   expect(style.style.verticalOrigin).toEqual(jsonExp);
 });
 
-it('sets labelHorizontalOrigin value to undefined if value not present', function() {
+it('sets labelHorizontalOrigin value to undefined if value not present', function () {
   var style = new Cesium3DTileStyle({});
   expect(style.labelHorizontalOrigin).toBeUndefined();
 
@@ -3251,14 +3251,14 @@ it('sets labelHorizontalOrigin value to undefined if value not present', functio
   expect(style.labelHorizontalOrigin).toBeUndefined();
 });
 
-it('sets labelHorizontalOrigin value to expression', function() {
+it('sets labelHorizontalOrigin value to expression', function () {
   var style = new Cesium3DTileStyle({
     labelHorizontalOrigin: '1'
   });
   expect(style.labelHorizontalOrigin).toEqual(new Expression('1'));
 });
 
-it('sets labelHorizontalOrigin value to conditional', function() {
+it('sets labelHorizontalOrigin value to conditional', function () {
   var jsonExp = {
     conditions: [
       ['${height} > 2', '1'],
@@ -3272,7 +3272,7 @@ it('sets labelHorizontalOrigin value to conditional', function() {
   expect(style.labelHorizontalOrigin).toEqual(new ConditionsExpression(jsonExp));
 });
 
-it('sets labelHorizontalOrigin expressions in setter', function() {
+it('sets labelHorizontalOrigin expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   style.labelHorizontalOrigin = 1;
@@ -3296,7 +3296,7 @@ it('sets labelHorizontalOrigin expressions in setter', function() {
   expect(style.labelHorizontalOrigin).toBeUndefined();
 });
 
-it('sets style.labelHorizontalOrigin expressions in setter', function() {
+it('sets style.labelHorizontalOrigin expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   style.labelHorizontalOrigin = new Expression('1');
@@ -3313,7 +3313,7 @@ it('sets style.labelHorizontalOrigin expressions in setter', function() {
   expect(style.style.labelHorizontalOrigin).toEqual(jsonExp);
 
   var customExpression = {
-    evaluate: function() {
+    evaluate: function () {
       return 1;
     }
   };
@@ -3324,7 +3324,7 @@ it('sets style.labelHorizontalOrigin expressions in setter', function() {
   expect(style.style.labelHorizontalOrigin).toBeUndefined();
 });
 
-it('sets labelHorizontalOrigin values in setter', function() {
+it('sets labelHorizontalOrigin values in setter', function () {
   var defines = {
     targetOrigin: '-1'
   };
@@ -3347,7 +3347,7 @@ it('sets labelHorizontalOrigin values in setter', function() {
   expect(style.labelHorizontalOrigin).toEqual(new ConditionsExpression(jsonExp, defines));
 });
 
-it('sets style.labelHorizontalOrigin values in setter', function() {
+it('sets style.labelHorizontalOrigin values in setter', function () {
   var defines = {
     targetOrigin: '-1'
   };
@@ -3370,7 +3370,7 @@ it('sets style.labelHorizontalOrigin values in setter', function() {
   expect(style.style.labelHorizontalOrigin).toEqual(jsonExp);
 });
 
-it('sets labelVerticalOrigin value to undefined if value not present', function() {
+it('sets labelVerticalOrigin value to undefined if value not present', function () {
   var style = new Cesium3DTileStyle({});
   expect(style.labelVerticalOrigin).toBeUndefined();
 
@@ -3378,14 +3378,14 @@ it('sets labelVerticalOrigin value to undefined if value not present', function(
   expect(style.labelVerticalOrigin).toBeUndefined();
 });
 
-it('sets labelVerticalOrigin value to expression', function() {
+it('sets labelVerticalOrigin value to expression', function () {
   var style = new Cesium3DTileStyle({
     labelVerticalOrigin: '1'
   });
   expect(style.labelVerticalOrigin).toEqual(new Expression('1'));
 });
 
-it('sets labelVerticalOrigin value to conditional', function() {
+it('sets labelVerticalOrigin value to conditional', function () {
   var jsonExp = {
     conditions: [
       ['${height} > 2', '1'],
@@ -3399,7 +3399,7 @@ it('sets labelVerticalOrigin value to conditional', function() {
   expect(style.labelVerticalOrigin).toEqual(new ConditionsExpression(jsonExp));
 });
 
-it('sets labelVerticalOrigin expressions in setter', function() {
+it('sets labelVerticalOrigin expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   style.labelVerticalOrigin = 1;
@@ -3423,7 +3423,7 @@ it('sets labelVerticalOrigin expressions in setter', function() {
   expect(style.labelVerticalOrigin).toBeUndefined();
 });
 
-it('sets style.labelVerticalOrigin expressions in setter', function() {
+it('sets style.labelVerticalOrigin expressions in setter', function () {
   var style = new Cesium3DTileStyle();
 
   style.labelVerticalOrigin = new Expression('1');
@@ -3440,7 +3440,7 @@ it('sets style.labelVerticalOrigin expressions in setter', function() {
   expect(style.style.labelVerticalOrigin).toEqual(jsonExp);
 
   var customExpression = {
-    evaluate: function() {
+    evaluate: function () {
       return 1;
     }
   };
@@ -3451,7 +3451,7 @@ it('sets style.labelVerticalOrigin expressions in setter', function() {
   expect(style.style.labelVerticalOrigin).toBeUndefined();
 });
 
-it('sets labelVerticalOrigin values in setter', function() {
+it('sets labelVerticalOrigin values in setter', function () {
   var defines = {
     targetOrigin: '-1'
   };
@@ -3474,7 +3474,7 @@ it('sets labelVerticalOrigin values in setter', function() {
   expect(style.labelVerticalOrigin).toEqual(new ConditionsExpression(jsonExp, defines));
 });
 
-it('sets style.labelVerticalOrigin values in setter', function() {
+it('sets style.labelVerticalOrigin values in setter', function () {
   var defines = {
     targetOrigin: '-1'
   };
@@ -3497,250 +3497,250 @@ it('sets style.labelVerticalOrigin values in setter', function() {
   expect(style.style.labelVerticalOrigin).toEqual(jsonExp);
 });
 
-it('throws on accessing style if not ready', function() {
+it('throws on accessing style if not ready', function () {
   var style = new Cesium3DTileStyle({});
   style._ready = false;
 
-  expect(function() {
+  expect(function () {
     return style.style;
   }).toThrowDeveloperError();
 });
 
-it('throws on accessing color if not ready', function() {
+it('throws on accessing color if not ready', function () {
   var style = new Cesium3DTileStyle({});
   style._ready = false;
 
-  expect(function() {
+  expect(function () {
     return style.color;
   }).toThrowDeveloperError();
 });
 
-it('throws on accessing show if not ready', function() {
+it('throws on accessing show if not ready', function () {
   var style = new Cesium3DTileStyle({});
   style._ready = false;
 
-  expect(function() {
+  expect(function () {
     return style.show;
   }).toThrowDeveloperError();
 });
 
-it('throws on accessing pointSize if not ready', function() {
+it('throws on accessing pointSize if not ready', function () {
   var style = new Cesium3DTileStyle({});
   style._ready = false;
 
-  expect(function() {
+  expect(function () {
     return style.pointSize;
   }).toThrowDeveloperError();
 });
 
-it('throws on accessing pointOutlineColor if not ready', function() {
+it('throws on accessing pointOutlineColor if not ready', function () {
   var style = new Cesium3DTileStyle({});
   style._ready = false;
 
-  expect(function() {
+  expect(function () {
     return style.pointOutlineColor;
   }).toThrowDeveloperError();
 });
 
-it('throws on accessing pointOutlineWidth if not ready', function() {
+it('throws on accessing pointOutlineWidth if not ready', function () {
   var style = new Cesium3DTileStyle({});
   style._ready = false;
 
-  expect(function() {
+  expect(function () {
     return style.pointOutlineWidth;
   }).toThrowDeveloperError();
 });
 
-it('throws on accessing labelColor if not ready', function() {
+it('throws on accessing labelColor if not ready', function () {
   var style = new Cesium3DTileStyle({});
   style._ready = false;
 
-  expect(function() {
+  expect(function () {
     return style.labelColor;
   }).toThrowDeveloperError();
 });
 
-it('throws on accessing labelOutlineColor if not ready', function() {
+it('throws on accessing labelOutlineColor if not ready', function () {
   var style = new Cesium3DTileStyle({});
   style._ready = false;
 
-  expect(function() {
+  expect(function () {
     return style.labelOutlineColor;
   }).toThrowDeveloperError();
 });
 
-it('throws on accessing labelOutlineWidth if not ready', function() {
+it('throws on accessing labelOutlineWidth if not ready', function () {
   var style = new Cesium3DTileStyle({});
   style._ready = false;
 
-  expect(function() {
+  expect(function () {
     return style.labelOutlineWidth;
   }).toThrowDeveloperError();
 });
 
-it('throws on accessing font if not ready', function() {
+it('throws on accessing font if not ready', function () {
   var style = new Cesium3DTileStyle({});
   style._ready = false;
 
-  expect(function() {
+  expect(function () {
     return style.font;
   }).toThrowDeveloperError();
 });
 
-it('throws on accessing labelStyle if not ready', function() {
+it('throws on accessing labelStyle if not ready', function () {
   var style = new Cesium3DTileStyle({});
   style._ready = false;
 
-  expect(function() {
+  expect(function () {
     return style.labelStyle;
   }).toThrowDeveloperError();
 });
 
-it('throws on accessing labelText if not ready', function() {
+it('throws on accessing labelText if not ready', function () {
   var style = new Cesium3DTileStyle({});
   style._ready = false;
 
-  expect(function() {
+  expect(function () {
     return style.labelText;
   }).toThrowDeveloperError();
 });
 
-it('throws on accessing backgroundColor if not ready', function() {
+it('throws on accessing backgroundColor if not ready', function () {
   var style = new Cesium3DTileStyle({});
   style._ready = false;
 
-  expect(function() {
+  expect(function () {
     return style.backgroundColor;
   }).toThrowDeveloperError();
 });
 
-it('throws on accessing backgroundPadding if not ready', function() {
+it('throws on accessing backgroundPadding if not ready', function () {
   var style = new Cesium3DTileStyle({});
   style._ready = false;
 
-  expect(function() {
+  expect(function () {
     return style.backgroundPadding;
   }).toThrowDeveloperError();
 });
 
-it('throws on accessing backgroundEnabled if not ready', function() {
+it('throws on accessing backgroundEnabled if not ready', function () {
   var style = new Cesium3DTileStyle({});
   style._ready = false;
 
-  expect(function() {
+  expect(function () {
     return style.backgroundEnabled;
   }).toThrowDeveloperError();
 });
 
-it('throws on accessing scaleByDistance if not ready', function() {
+it('throws on accessing scaleByDistance if not ready', function () {
   var style = new Cesium3DTileStyle({});
   style._ready = false;
 
-  expect(function() {
+  expect(function () {
     return style.scaleByDistance;
   }).toThrowDeveloperError();
 });
 
-it('throws on accessing translucencyByDistance if not ready', function() {
+it('throws on accessing translucencyByDistance if not ready', function () {
   var style = new Cesium3DTileStyle({});
   style._ready = false;
 
-  expect(function() {
+  expect(function () {
     return style.translucencyByDistance;
   }).toThrowDeveloperError();
 });
 
-it('throws on accessing distanceDisplayCondition if not ready', function() {
+it('throws on accessing distanceDisplayCondition if not ready', function () {
   var style = new Cesium3DTileStyle({});
   style._ready = false;
 
-  expect(function() {
+  expect(function () {
     return style.distanceDisplayCondition;
   }).toThrowDeveloperError();
 });
 
-it('throws on accessing heightOffset if not ready', function() {
+it('throws on accessing heightOffset if not ready', function () {
   var style = new Cesium3DTileStyle({});
   style._ready = false;
 
-  expect(function() {
+  expect(function () {
     return style.heightOffset;
   }).toThrowDeveloperError();
 });
 
-it('throws on accessing anchorLineEnabled if not ready', function() {
+it('throws on accessing anchorLineEnabled if not ready', function () {
   var style = new Cesium3DTileStyle({});
   style._ready = false;
 
-  expect(function() {
+  expect(function () {
     return style.anchorLineEnabled;
   }).toThrowDeveloperError();
 });
 
-it('throws on accessing anchorLineColor if not ready', function() {
+it('throws on accessing anchorLineColor if not ready', function () {
   var style = new Cesium3DTileStyle({});
   style._ready = false;
 
-  expect(function() {
+  expect(function () {
     return style.anchorLineColor;
   }).toThrowDeveloperError();
 });
 
-it('throws on accessing image if not ready', function() {
+it('throws on accessing image if not ready', function () {
   var style = new Cesium3DTileStyle({});
   style._ready = false;
 
-  expect(function() {
+  expect(function () {
     return style.image;
   }).toThrowDeveloperError();
 });
 
-it('throws on accessing disableDepthTestDistance if not ready', function() {
+it('throws on accessing disableDepthTestDistance if not ready', function () {
   var style = new Cesium3DTileStyle({});
   style._ready = false;
 
-  expect(function() {
+  expect(function () {
     return style.disableDepthTestDistance;
   }).toThrowDeveloperError();
 });
 
-it('throws on accessing horizontalOrigin if not ready', function() {
+it('throws on accessing horizontalOrigin if not ready', function () {
   var style = new Cesium3DTileStyle({});
   style._ready = false;
 
-  expect(function() {
+  expect(function () {
     return style.horizontalOrigin;
   }).toThrowDeveloperError();
 });
 
-it('throws on accessing verticalOrigin if not ready', function() {
+it('throws on accessing verticalOrigin if not ready', function () {
   var style = new Cesium3DTileStyle({});
   style._ready = false;
 
-  expect(function() {
+  expect(function () {
     return style.verticalOrigin;
   }).toThrowDeveloperError();
 });
 
-it('throws on accessing labelHorizontalOrigin if not ready', function() {
+it('throws on accessing labelHorizontalOrigin if not ready', function () {
   var style = new Cesium3DTileStyle({});
   style._ready = false;
 
-  expect(function() {
+  expect(function () {
     return style.labelHorizontalOrigin;
   }).toThrowDeveloperError();
 });
 
-it('throws on accessing labelVerticalOrigin if not ready', function() {
+it('throws on accessing labelVerticalOrigin if not ready', function () {
   var style = new Cesium3DTileStyle({});
   style._ready = false;
 
-  expect(function() {
+  expect(function () {
     return style.labelVerticalOrigin;
   }).toThrowDeveloperError();
 });
 
-it('sets meta properties', function() {
+it('sets meta properties', function () {
   var style = new Cesium3DTileStyle({
     meta: {
       description: '"Hello, ${name}"'
@@ -3758,7 +3758,7 @@ it('sets meta properties', function() {
   expect(style.meta.volume.evaluate(feature1)).toEqual(20 * 20 * 100);
 });
 
-it('default meta has no properties', function() {
+it('default meta has no properties', function () {
   var style = new Cesium3DTileStyle({});
   expect(style.meta).toEqual({});
 
@@ -3768,7 +3768,7 @@ it('default meta has no properties', function() {
   expect(style.meta).toEqual({});
 });
 
-it('default meta has no properties', function() {
+it('default meta has no properties', function () {
   var style = new Cesium3DTileStyle({});
   expect(style.meta).toEqual({});
 
@@ -3778,18 +3778,18 @@ it('default meta has no properties', function() {
   expect(style.meta).toEqual({});
 });
 
-it('throws on accessing meta if not ready', function() {
+it('throws on accessing meta if not ready', function () {
   var style = new Cesium3DTileStyle({});
   style._ready = false;
 
-  expect(function() {
+  expect(function () {
     return style.meta;
   }).toThrowDeveloperError();
 });
 
 // Tests for examples from the style spec
 
-it('applies default style', function() {
+it('applies default style', function () {
   var style = new Cesium3DTileStyle({
     show: 'true',
     color: "color('#ffffff')",
@@ -3801,7 +3801,7 @@ it('applies default style', function() {
   expect(style.pointSize.evaluate(undefined)).toEqual(1.0);
 });
 
-it('applies show style with variable', function() {
+it('applies show style with variable', function () {
   var style = new Cesium3DTileStyle({
     show: "${ZipCode} === '19341'"
   });
@@ -3810,7 +3810,7 @@ it('applies show style with variable', function() {
   expect(style.show.evaluate(feature2)).toEqual(false);
 });
 
-it('applies show style with regexp and variables', function() {
+it('applies show style with regexp and variables', function () {
   var style = new Cesium3DTileStyle({
     show: "(regExp('^Chest').test(${County})) && (${YearBuilt} >= 1970)"
   });
@@ -3819,7 +3819,7 @@ it('applies show style with regexp and variables', function() {
   expect(style.show.evaluate(feature2)).toEqual(false);
 });
 
-it('applies show style with conditional', function() {
+it('applies show style with conditional', function () {
   var style = new Cesium3DTileStyle({
     show: {
       conditions: [
@@ -3836,7 +3836,7 @@ it('applies show style with conditional', function() {
   expect(style.show.evaluate(feature2)).toEqual(true);
 });
 
-it('applies color style variables', function() {
+it('applies color style variables', function () {
   var style = new Cesium3DTileStyle({
     color: "(${Temperature} > 90) ? color('red') : color('white')"
   });
@@ -3844,7 +3844,7 @@ it('applies color style variables', function() {
   expect(style.color.evaluateColor(feature2)).toEqual(Color.RED);
 });
 
-it('applies color style with new color', function() {
+it('applies color style with new color', function () {
   var style = new Cesium3DTileStyle({
     color: 'rgba(${red}, ${green}, ${blue}, (${volume} > 100 ? 0.5 : 1.0))'
   });
@@ -3856,7 +3856,7 @@ it('applies color style with new color', function() {
   );
 });
 
-it('applies color style that maps id to color', function() {
+it('applies color style that maps id to color', function () {
   var style = new Cesium3DTileStyle({
     defines: {
       id: "regExp('^1(\\d)').exec(String(${id}))"
@@ -3873,7 +3873,7 @@ it('applies color style that maps id to color', function() {
   expect(style.color.evaluateColor(feature2)).toEqual(Color.LIME);
 });
 
-it('applies color style with conditional', function() {
+it('applies color style with conditional', function () {
   var style = new Cesium3DTileStyle({
     color: {
       conditions: [
@@ -3890,7 +3890,7 @@ it('applies color style with conditional', function() {
   expect(style.color.evaluateColor(feature2)).toEqual(Color.YELLOW);
 });
 
-it('applies pointSize style with variable', function() {
+it('applies pointSize style with variable', function () {
   var style = new Cesium3DTileStyle({
     pointSize: '${Temperature} / 10.0'
   });
@@ -3899,7 +3899,7 @@ it('applies pointSize style with variable', function() {
   expect(style.pointSize.evaluate(feature2)).toEqual(9.2);
 });
 
-it('applies pointSize style with regexp and variables', function() {
+it('applies pointSize style with regexp and variables', function () {
   var style = new Cesium3DTileStyle({
     pointSize: "(regExp('^Chest').test(${County})) ? 2.0 : 1.0"
   });
@@ -3908,7 +3908,7 @@ it('applies pointSize style with regexp and variables', function() {
   expect(style.pointSize.evaluate(feature2)).toEqual(1.0);
 });
 
-it('applies pointSize style with conditional', function() {
+it('applies pointSize style with conditional', function () {
   var style = new Cesium3DTileStyle({
     pointSize: {
       conditions: [
@@ -3925,7 +3925,7 @@ it('applies pointSize style with conditional', function() {
   expect(style.pointSize.evaluate(feature2)).toEqual(3);
 });
 
-it('applies with defines', function() {
+it('applies with defines', function () {
   var style = new Cesium3DTileStyle({
     defines: {
       halfHeight: '${Height} / 2',
@@ -3955,7 +3955,7 @@ it('applies with defines', function() {
   expect(style.meta.description.evaluate(feature2)).toEqual('Half height is 19');
 });
 
-it('return undefined shader functions when the style is empty', function() {
+it('return undefined shader functions when the style is empty', function () {
   // The default color style is white, the default show style is true, and the default pointSize is 1.0,
   // but the generated generated shader functions should just be undefined. We don't want all the points to be white.
   var style = new Cesium3DTileStyle({});

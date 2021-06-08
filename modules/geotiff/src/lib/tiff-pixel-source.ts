@@ -1,5 +1,5 @@
-import type { GeoTIFFImage, RasterOptions } from 'geotiff';
-import { getImageSize, isInterleaved, SIGNAL_ABORTED } from './utils/tiff-utils';
+import type {GeoTIFFImage, RasterOptions} from 'geotiff';
+import {getImageSize, isInterleaved, SIGNAL_ABORTED} from './utils/tiff-utils';
 
 import type {
   PixelSource,
@@ -26,24 +26,24 @@ class TiffPixelSource<S extends string[]> implements PixelSource<S> {
     this._indexer = indexer;
   }
 
-  async getRaster({ selection, signal }: RasterSelection<S>) {
+  async getRaster({selection, signal}: RasterSelection<S>) {
     const image = await this._indexer(selection);
-    return this._readRasters(image, { signal });
+    return this._readRasters(image, {signal});
   }
 
-  async getTile({ x, y, selection, signal }: TileSelection<S>) {
-    const { height, width } = this._getTileExtent(x, y);
+  async getTile({x, y, selection, signal}: TileSelection<S>) {
+    const {height, width} = this._getTileExtent(x, y);
     const x0 = x * this.tileSize;
     const y0 = y * this.tileSize;
     const window = [x0, y0, x0 + width, y0 + height];
 
     const image = await this._indexer(selection);
-    return this._readRasters(image, { window, width, height, signal });
+    return this._readRasters(image, {window, width, height, signal});
   }
 
   private async _readRasters(image: GeoTIFFImage, props?: RasterOptions) {
     const interleave = isInterleaved(this.shape);
-    const raster = await image.readRasters({ interleave, ...props });
+    const raster = await image.readRasters({interleave, ...props});
 
     if (props?.signal?.aborted) {
       throw SIGNAL_ABORTED;
@@ -65,9 +65,7 @@ class TiffPixelSource<S extends string[]> implements PixelSource<S> {
    * Computes tile size given x, y coord.
    */
   private _getTileExtent(x: number, y: number) {
-    const { height: zoomLevelHeight, width: zoomLevelWidth } = getImageSize(
-      this
-    );
+    const {height: zoomLevelHeight, width: zoomLevelWidth} = getImageSize(this);
     let height = this.tileSize;
     let width = this.tileSize;
     const maxXTileCoord = Math.floor(zoomLevelWidth / this.tileSize);
@@ -78,7 +76,7 @@ class TiffPixelSource<S extends string[]> implements PixelSource<S> {
     if (y === maxYTileCoord) {
       height = zoomLevelHeight % this.tileSize;
     }
-    return { height, width };
+    return {height, width};
   }
 
   onTileError(err: Error) {

@@ -16,12 +16,12 @@ const INVALID_KML = `\
 </kml>
 `;
 
-test('KMLLoader#loader conformance', t => {
+test('KMLLoader#loader conformance', (t) => {
   validateLoader(t, KMLLoader, 'KMLLoader');
   t.end();
 });
 
-test('KMLLoader#testText', async t => {
+test('KMLLoader#testText', async (t) => {
   const response = await fetchFile(KML_URL);
   const KML = await response.text();
 
@@ -34,7 +34,7 @@ test('KMLLoader#testText', async t => {
   t.end();
 });
 
-test('KMLLoader#parse', async t => {
+test('KMLLoader#parse', async (t) => {
   if (!KMLLoader.supported) {
     t.comment('XML parsing not available');
   } else {
@@ -55,7 +55,7 @@ test('KMLLoader#parse', async t => {
   t.end();
 });
 
-test('KMLLoader#parse(text)', async t => {
+test('KMLLoader#parse(text)', async (t) => {
   if (!KMLLoader.supported) {
     t.comment('XML parsing not available');
   } else {
@@ -72,7 +72,7 @@ test('KMLLoader#parse(text)', async t => {
   t.end();
 });
 
-test('KMLLoader#parse', async t => {
+test('KMLLoader#parse', async (t) => {
   const data = await load(`${KML_LINESTRING_URL}.kml`, KMLLoader, {gis: {format: 'geojson'}});
   const resp = await fetchFile(`${KML_LINESTRING_URL}.geojson`);
   const geojson = await resp.json();

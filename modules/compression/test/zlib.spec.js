@@ -4,7 +4,7 @@ import {processOnWorker} from '@loaders.gl/worker-utils';
 import {makeTransformIterator, concatenateArrayBuffers, isBrowser} from '@loaders.gl/loader-utils';
 import {getData, compareArrayBuffers} from './utils/test-utils';
 
-test('zlib#defaults', async t => {
+test('zlib#defaults', async (t) => {
   const {binaryData, repeatedData} = getData();
 
   let deflatedData = await ZlibDeflateTransform.run(binaryData);
@@ -22,7 +22,7 @@ test('zlib#defaults', async t => {
   t.end();
 });
 
-test('zlib@transforms', async t => {
+test('zlib@transforms', async (t) => {
   const inputChunks = [
     new Uint8Array([1, 2, 3]).buffer,
     new Uint8Array([4, 5, 6]).buffer,
@@ -47,7 +47,7 @@ test('zlib@transforms', async t => {
   t.end();
 });
 
-test('zlib#0', async t => {
+test('zlib#0', async (t) => {
   const {binaryData} = getData();
   const deflatedData = await ZlibDeflateTransform.run(binaryData, {level: 0});
   const inflatedData = await ZlibInflateTransform.run(deflatedData);
@@ -55,7 +55,7 @@ test('zlib#0', async t => {
   t.end();
 });
 
-test('zlib#1', async t => {
+test('zlib#1', async (t) => {
   const {binaryData} = getData();
   const deflatedData = await ZlibDeflateTransform.run(binaryData, {level: 1});
   const inflatedData = await ZlibInflateTransform.run(deflatedData);
@@ -63,7 +63,7 @@ test('zlib#1', async t => {
   t.end();
 });
 
-test('zlib#4', async t => {
+test('zlib#4', async (t) => {
   const {binaryData} = getData();
   const deflatedData = await ZlibDeflateTransform.run(binaryData, {level: 4});
   const inflatedData = await ZlibInflateTransform.run(deflatedData);
@@ -71,7 +71,7 @@ test('zlib#4', async t => {
   t.end();
 });
 
-test('zlib#6', async t => {
+test('zlib#6', async (t) => {
   const {binaryData} = getData();
   const deflatedData = await ZlibDeflateTransform.run(binaryData, {level: 6});
   const inflatedData = await ZlibInflateTransform.run(deflatedData);
@@ -81,7 +81,7 @@ test('zlib#6', async t => {
 
 // WORKER TESTS
 
-test('zlib#worker', async t => {
+test('zlib#worker', async (t) => {
   if (!isBrowser) {
     t.end();
     return;

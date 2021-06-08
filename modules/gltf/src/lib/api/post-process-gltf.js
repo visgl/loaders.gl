@@ -186,7 +186,7 @@ class GLTFPostProcessor {
   _resolveScene(scene, index) {
     // scene = {...scene};
     scene.id = scene.id || `scene-${index}`;
-    scene.nodes = (scene.nodes || []).map(node => this.getNode(node));
+    scene.nodes = (scene.nodes || []).map((node) => this.getNode(node));
     return scene;
   }
 
@@ -194,7 +194,7 @@ class GLTFPostProcessor {
     // node = {...node};
     node.id = node.id || `node-${index}`;
     if (node.children) {
-      node.children = node.children.map(child => this.getNode(child));
+      node.children = node.children.map((child) => this.getNode(child));
     }
     if (node.mesh !== undefined) {
       node.mesh = this.getMesh(node.mesh);
@@ -229,7 +229,7 @@ class GLTFPostProcessor {
     // mesh = {...mesh};
     mesh.id = mesh.id || `mesh-${index}`;
     if (mesh.primitives) {
-      mesh.primitives = mesh.primitives.map(primitive => {
+      mesh.primitives = mesh.primitives.map((primitive) => {
         primitive = {...primitive};
         const attributes = primitive.attributes;
         primitive.attributes = {};

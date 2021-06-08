@@ -17,7 +17,7 @@ function getData() {
   };
 }
 
-test('CryptoWorker', async t => {
+test('CryptoWorker', async (t) => {
   if (!isBrowser) {
     t.end();
     return;
@@ -51,7 +51,7 @@ test('CryptoWorker', async t => {
   t.end();
 });
 
-test.skip('CryptoJSWorker', async t => {
+test.skip('CryptoJSWorker', async (t) => {
   if (!isBrowser) {
     t.end();
     return;

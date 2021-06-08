@@ -30,10 +30,10 @@ export function normalizeTileData(tile, options, context) {
 export function normalizeTileNonUrlData(tile) {
   const box = tile.obb
     ? [
-        ...Ellipsoid.WGS84.cartographicToCartesian(tile.obb.center), // cartesian center of box
-        ...tile.obb.halfSize, // halfSize
-        ...tile.obb.quaternion // quaternion
-      ]
+      ...Ellipsoid.WGS84.cartographicToCartesian(tile.obb.center), // cartesian center of box
+      ...tile.obb.halfSize, // halfSize
+      ...tile.obb.quaternion // quaternion
+    ]
     : undefined;
   let sphere;
   if (tile.mbs) {

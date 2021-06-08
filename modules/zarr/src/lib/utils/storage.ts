@@ -1,5 +1,5 @@
-import { KeyError } from 'zarr';
-import type { AsyncStore } from 'zarr/types/storage/types';
+import {KeyError} from 'zarr';
+import type {AsyncStore} from 'zarr/types/storage/types';
 
 /**
  * Preserves (double) slashes earlier in the path, so this works better
@@ -12,7 +12,7 @@ function joinUrlParts(...args: string[]) {
       if (i === 0) return part.trim().replace(/[/]*$/g, '');
       return part.trim().replace(/(^[/]*|[/]*$)/g, '');
     })
-    .filter(x => x.length)
+    .filter((x) => x.length)
     .join('/');
 }
 
@@ -31,9 +31,7 @@ class ReadOnlyStore {
   }
 }
 
-export class FileStore
-  extends ReadOnlyStore
-  implements AsyncStore<ArrayBuffer> {
+export class FileStore extends ReadOnlyStore implements AsyncStore<ArrayBuffer> {
   private _map: Map<string, File>;
   private _rootPrefix: string;
 

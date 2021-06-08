@@ -290,13 +290,8 @@ export default function decode(data, userOptions) {
     return {header, vertexData, triangleIndices};
   }
 
-  const {
-    westIndices,
-    southIndices,
-    eastIndices,
-    northIndices,
-    edgeIndicesEndPosition
-  } = decodeEdgeIndices(view, vertexData, triangleIndicesEndPosition);
+  const {westIndices, southIndices, eastIndices, northIndices, edgeIndicesEndPosition} =
+    decodeEdgeIndices(view, vertexData, triangleIndicesEndPosition);
 
   if (options.maxDecodingStep < DECODING_STEPS.extensions) {
     return {

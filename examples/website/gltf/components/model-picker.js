@@ -10,7 +10,7 @@ export function addModelsToDropdown(models, onChange) {
   const VARIANTS = ['glTF-Draco', 'glTF-Binary', 'glTF-Embedded', 'glTF'];
 
   models.forEach(({name, variants}) => {
-    const variant = VARIANTS.find(v => variants[v]);
+    const variant = VARIANTS.find((v) => variants[v]);
 
     const option = document.createElement('option');
     option.text = `${name} (${variant})`;
@@ -18,7 +18,7 @@ export function addModelsToDropdown(models, onChange) {
     modelDropdown.appendChild(option);
   });
 
-  modelDropdown.onchange = event => {
+  modelDropdown.onchange = (event) => {
     const modelUrl = (modelDropdown && modelDropdown.value) || GLTF_DEFAULT_MODEL;
     onChange(`${GLTF_BASE_URL}/${modelUrl}`);
   };
@@ -34,8 +34,8 @@ export function getSelectedModel() {
 export function onSettingsChange(onChange) {
   const showSelector = document.getElementById('showSelector');
   if (showSelector) {
-    showSelector.onchange = event => {
-      const value = showSelector.value.split(' ').map(x => parseFloat(x));
+    showSelector.onchange = (event) => {
+      const value = showSelector.value.split(' ').map((x) => parseFloat(x));
       onChange({
         u_ScaleDiffBaseMR: value.slice(0, 4),
         u_ScaleFGDSpec: value.slice(4)
@@ -45,7 +45,7 @@ export function onSettingsChange(onChange) {
 
   const lightSelector = document.getElementById('lightSelector');
   if (lightSelector) {
-    lightSelector.onchange = event => {
+    lightSelector.onchange = (event) => {
       onChange({
         light: lightSelector.value
       });
@@ -56,7 +56,7 @@ export function onSettingsChange(onChange) {
 export function onLightSettingsChange(onChange) {
   const iblSelector = document.getElementById('iblSelector');
   if (iblSelector) {
-    iblSelector.onchange = event => {
+    iblSelector.onchange = (event) => {
       onChange(getLightSettings(iblSelector.value));
     };
   }

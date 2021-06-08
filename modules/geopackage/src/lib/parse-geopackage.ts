@@ -95,7 +95,7 @@ async function loadDatabase(arrayBuffer: ArrayBuffer, sqlJsCDN: string | null): 
   let SQL: SqlJsStatic;
   if (sqlJsCDN) {
     SQL = await initSqlJs({
-      locateFile: file => `${sqlJsCDN}${file}`
+      locateFile: (file) => `${sqlJsCDN}${file}`
     });
   } else {
     SQL = await initSqlJs();
@@ -126,7 +126,7 @@ function listVectorTables(db: Database): ContentsRow[] {
 
   const vectorTablesInfo: ContentsRow[] = [];
   while (stmt.step()) {
-    const vectorTableInfo = (stmt.getAsObject() as unknown) as ContentsRow;
+    const vectorTableInfo = stmt.getAsObject() as unknown as ContentsRow;
     vectorTablesInfo.push(vectorTableInfo);
   }
 
@@ -197,7 +197,7 @@ function getProjections(db: Database): ProjectionMapping {
 
   const projectionMapping: ProjectionMapping = {};
   while (stmt.step()) {
-    const srsInfo = (stmt.getAsObject() as unknown) as SpatialRefSysRow;
+    const srsInfo = stmt.getAsObject() as unknown as SpatialRefSysRow;
     const {srs_id, definition} = srsInfo;
     projectionMapping[srs_id] = definition;
   }
@@ -308,7 +308,7 @@ function getFeatureIdName(db: Database, tableName: string): string | null {
   const stmt = db.prepare(`PRAGMA table_info(\`${tableName}\`)`);
 
   while (stmt.step()) {
-    const pragmaTableInfo = (stmt.getAsObject() as unknown) as PragmaTableInfoRow;
+    const pragmaTableInfo = stmt.getAsObject() as unknown as PragmaTableInfoRow;
     const {name, pk} = pragmaTableInfo;
     if (pk) {
       return name;
@@ -392,7 +392,7 @@ function getGeometryColumn(db: Database, tableName: string): GeometryColumnsRow 
   // So we should need one and only one step, given that we use the WHERE clause in the SQL query
   // above
   stmt.step();
-  const geometryColumn = (stmt.getAsObject() as unknown) as GeometryColumnsRow;
+  const geometryColumn = stmt.getAsObject() as unknown as GeometryColumnsRow;
   return geometryColumn;
 }
 
@@ -421,7 +421,7 @@ function getDataColumns(db: Database, tableName: string): DataColumnsMapping | n
   // Convert DataColumnsRow object this to a key-value {column_name: name}
   const result: DataColumnsMapping = {};
   while (stmt.step()) {
-    const column = (stmt.getAsObject() as unknown) as DataColumnsRow;
+    const column = stmt.getAsObject() as unknown as DataColumnsRow;
     const {column_name, name} = column;
     result[column_name] = name || null;
   }
@@ -440,7 +440,7 @@ function getArrowSchema(db: Database, tableName: string): Schema {
 
   const fields: Field[] = [];
   while (stmt.step()) {
-    const pragmaTableInfo = (stmt.getAsObject() as unknown) as PragmaTableInfoRow;
+    const pragmaTableInfo = stmt.getAsObject() as unknown as PragmaTableInfoRow;
     const {name, type, notnull} = pragmaTableInfo;
     const field = new Field(name, new SQL_TYPE_MAPPING[type](), !notnull);
     fields.push(field);

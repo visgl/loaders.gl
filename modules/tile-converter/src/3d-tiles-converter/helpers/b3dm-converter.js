@@ -276,6 +276,6 @@ export default class B3dmConverter {
    */
   _checkNormals(normals) {
     // If all normals === 0, the resulting tileset is all in black colors on Cesium
-    return normals.find(value => value);
+    return normals.find((value) => value);
   }
 }

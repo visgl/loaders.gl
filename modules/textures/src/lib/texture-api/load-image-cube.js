@@ -29,7 +29,7 @@ export async function getImageCubeUrls(getUrl, options) {
   let index = 0;
   for (const face in CUBE_FACES) {
     const faceValues = CUBE_FACES[index];
-    const promise = getImageUrls(getUrl, options, {...faceValues, index: index++}).then(url => {
+    const promise = getImageUrls(getUrl, options, {...faceValues, index: index++}).then((url) => {
       urls[face] = url;
     });
     promises.push(promise);

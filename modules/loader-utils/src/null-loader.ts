@@ -9,7 +9,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
  * @type {LoaderObject}
  * @todo Should be moved to `@loaders.gl/core`
  */
- export const NullWorkerLoader: WorkerLoaderObject = {
+export const NullWorkerLoader: WorkerLoaderObject = {
   name: 'Null loader',
   id: 'null',
   module: 'loader-utils',
@@ -24,11 +24,11 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 };
 
 /**
-  * Loads any data and returns null (or optionally passes through data unparsed)
-  * @type {LoaderObject}
-  * @todo Should be moved to `@loaders.gl/core`
-  */
- export const NullLoader: LoaderObject = {
+ * Loads any data and returns null (or optionally passes through data unparsed)
+ * @type {LoaderObject}
+ * @todo Should be moved to `@loaders.gl/core`
+ */
+export const NullLoader: LoaderObject = {
   ...NullWorkerLoader,
   parse: async (arrayBuffer, options) => arrayBuffer,
   parseSync: (arrayBuffer, options) => arrayBuffer,

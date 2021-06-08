@@ -30,7 +30,9 @@
     "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js"
   },
   "dependencies": {
+    "@loaders.gl/core": "3.0.0-alpha.18",
     "@loaders.gl/worker-utils": "3.0.0-alpha.18",
+    "@luma.gl/constants": "^8.3.0",
     "fast-xml-parser": "^3.16.0",
     "zarr": "^0.4.0"
   },

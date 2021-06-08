@@ -82,9 +82,9 @@ async function getInitialDataUrl(resource) {
   }
   if (resource instanceof Blob) {
     const blobSlice = resource.slice(0, 5);
-    return await new Promise(resolve => {
+    return await new Promise((resolve) => {
       const reader = new FileReader();
-      reader.onload = event => resolve(event.target && event.target.result);
+      reader.onload = (event) => resolve(event.target && event.target.result);
       reader.readAsDataURL(blobSlice);
     });
   }
