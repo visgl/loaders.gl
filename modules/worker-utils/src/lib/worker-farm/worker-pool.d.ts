@@ -23,7 +23,7 @@ export default class WorkerPool {
     name?: string;
     maxConcurrency?: number;
     onDebug?: (options: OnDebugParameters) => any;
-    reuseWorkers?: boolean
+    reuseWorkers?: boolean;
   });
 
   /**

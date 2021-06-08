@@ -1,11 +1,11 @@
 import {IFileSystem, IRandomAccessReadFileSystem} from '@loaders.gl/loader-utils';
 
 type Stat = {
-  size: number,
+  size: number;
   isDirectory: () => boolean;
 };
 
-type ReadOptions = {buffer?: ArrayBuffer, offset?: number, length?: number, position?: number};
+type ReadOptions = {buffer?: ArrayBuffer; offset?: number; length?: number; position?: number};
 
 /**
  * FileSystem pass-through for Node.js
@@ -27,5 +27,5 @@ export default class NodeFileSystem implements IFileSystem, IRandomAccessReadFil
   open(path: string, flags, mode?): Promise<number>;
   close(fd: number): Promise<void>;
   fstat(fd: number): Promise<Stat>;
-  read(fd: number, options: ReadOptions): Promise<{bytesRead: number, buffer: Buffer}>;
+  read(fd: number, options: ReadOptions): Promise<{bytesRead: number; buffer: Buffer}>;
 }

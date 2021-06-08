@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/zip",
-  "version": "3.0.0-alpha.18",
+  "version": "3.0.0-alpha.19",
   "description": "Zip Archive Loader",
   "license": "MIT",
   "publishConfig": {
@@ -29,7 +29,7 @@
     "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js"
   },
   "dependencies": {
-    "@loaders.gl/core": "3.0.0-alpha.18",
+    "@loaders.gl/core": "3.0.0-alpha.19",
     "jszip": "^3.1.5"
   }
 }

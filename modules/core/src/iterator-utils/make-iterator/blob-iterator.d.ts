@@ -4,6 +4,9 @@
  * @param options
  * @param options.chunkSize
  */
-export function makeBlobIterator(blob: Blob, options?: {chunkSize?: number}): AsyncIterable<ArrayBuffer>;
+export function makeBlobIterator(
+  blob: Blob,
+  options?: {chunkSize?: number}
+): AsyncIterable<ArrayBuffer>;
 
 export function readFileSlice(file, offset, end): Promise<ArrayBuffer>;

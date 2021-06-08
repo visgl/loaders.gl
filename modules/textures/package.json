@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/textures",
-  "version": "3.0.0-alpha.18",
+  "version": "3.0.0-alpha.19",
   "description": "Framework-independent loaders for compressed and super compressed (basis) textures ",
   "license": "MIT",
   "publishConfig": {
@@ -43,10 +43,13 @@
   },
   "dependencies": {
     "@loaders.gl/core": "3.0.0-alpha.18",
-    "@loaders.gl/images": "3.0.0-alpha.18",
-    "@loaders.gl/loader-utils": "3.0.0-alpha.18",
-    "@loaders.gl/worker-utils": "3.0.0-alpha.18",
+    "@loaders.gl/images": "3.0.0-alpha.19",
+    "@loaders.gl/loader-utils": "3.0.0-alpha.19",
+    "@loaders.gl/worker-utils": "3.0.0-alpha.19",
     "ktx-parse": "^0.0.4",
     "texture-compressor": "^1.0.2"
+  },
+  "devDependencies": {
+    "@loaders.gl/core": "3.0.0-alpha.18"
   }
 }

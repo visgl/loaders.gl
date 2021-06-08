@@ -26,13 +26,15 @@ export default function convertB3dmToI3sGeometry(
   featuresHashArray: any,
   attributeStorageInfo: any,
   draco: boolean
-): Promise<{
-  geometry: ArrayBuffer;
-  compressedGeometry: ArrayBuffer;
-  texture: any;
-  sharedResources: any;
-  meshMaterial: any;
-  vertexCount: number;
-  attributes: any;
-  featureCount: number
-}[]>;
+): Promise<
+  {
+    geometry: ArrayBuffer;
+    compressedGeometry: ArrayBuffer;
+    texture: any;
+    sharedResources: any;
+    meshMaterial: any;
+    vertexCount: number;
+    attributes: any;
+    featureCount: number;
+  }[]
+>;

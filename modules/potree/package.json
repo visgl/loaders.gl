@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/potree",
-  "version": "3.0.0-alpha.18",
+  "version": "3.0.0-alpha.19",
   "description": "potree loaders for large point clouds.",
   "license": "MIT",
   "publishConfig": {
@@ -34,7 +34,7 @@
     "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js"
   },
   "dependencies": {
-    "@loaders.gl/math": "3.0.0-alpha.18",
-    "@math.gl/core": "^3.3.0"
+    "@loaders.gl/math": "3.0.0-alpha.19",
+    "@math.gl/core": "3.5.0-alpha.1"
   }
 }

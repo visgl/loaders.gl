@@ -29,6 +29,4 @@ export function convertGeometricErrorToScreenThreshold(
  * @returns lod metric in 3d-tiles format
  * @todo implement this function
  */
-export function convertScreenThresholdToGeometricError(
-  node: Object
-): void;
+export function convertScreenThresholdToGeometricError(node: Object): void;

@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/loader-utils",
-  "version": "3.0.0-alpha.18",
+  "version": "3.0.0-alpha.19",
   "description": "Framework-independent loaders for 3D graphics formats",
   "license": "MIT",
   "publishConfig": {
@@ -17,7 +17,7 @@
     "mesh",
     "point cloud"
   ],
-  "types": "src/index.d.ts",
+  "types": "src/index.ts",
   "main": "dist/es5/index.js",
   "module": "dist/esm/index.js",
   "sideEffects": false,
@@ -36,12 +36,15 @@
   "scripts": {
     "pre-build-disabled": "npm run build-bundle",
     "pre-build": "npm run build-worker",
-    "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js",
-    "build-worker": "webpack --entry ./src/workers/null-worker.js --output ./dist/null-worker.js --config ../../scripts/webpack/worker.js"
+    "build-bundle": "webpack --config ../../scripts/webpack/bundle.js",
+    "build-worker": "webpack --entry ./src/workers/null-worker.ts --output ./dist/null-worker.js --config ../../scripts/webpack/worker.js"
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
-    "@loaders.gl/worker-utils": "3.0.0-alpha.18",
+    "@loaders.gl/worker-utils": "3.0.0-alpha.19",
     "@probe.gl/stats": "^3.3.0"
+  },
+  "devDependencies": {
+    "@loaders.gl/core": "3.0.0-alpha.19"
   }
 }

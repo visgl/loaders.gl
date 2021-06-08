@@ -1,5 +1,27 @@
 ## v3.0 Prerelease
 
+#### v3.0.0-alpha.19
+
+- chore: Typescript build setup (#1421)
+- chore: Use babel-register for node tests (#1429)
+- Fix no-did-mount-set-state eslint error in compressed texture (#1426)
+- Fix "no-did-mount-set-state" eslint error in tile-validator.js (#1424)
+- Fix for dangerouslySetInnerHTML lint error (#1423)
+- chore(examples): Fix no-did-update-set-state eslint error for textures app (#1425)
+- chore(examples): Fix PropTypes lint errors (#1422)
+- geopackage: switch tests on (#1411)
+- Set XML-based loaders to default to geojson output (#1415)
+- fix(gltf): fix failing ci test in GTLFBuilder (#1419)
+- docs(tiles): Unify data format documentation (#1408)
+- Fix for ocular config (#1413)
+- Rename segmentationData -> featureIds (#1404)
+- fix(3d-tiles): Add additional check for batchTableJson (#1407)
+- i3s-debug: debug panel refactoring (#1403)
+- GeoPackage loader (#1402)
+- chore: Upgrade to ocular-dev-tools@1.0.0-alpha (#1405)
+- build(deps): bump dns-packet from 1.3.1 to 1.3.4 (#1399)
+- Add delatin support and tesselator option (#1372)
+
 #### v3.0.0-alpha.18
 
 - i3s-debug: added selector for changing bounding volumes geometry (#1387)

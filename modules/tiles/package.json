@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/tiles",
-  "version": "3.0.0-alpha.18",
+  "version": "3.0.0-alpha.19",
   "description": "Common components for different tiles loaders.",
   "license": "MIT",
   "publishConfig": {
@@ -32,13 +32,13 @@
     "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js"
   },
   "dependencies": {
-    "@loaders.gl/core": "3.0.0-alpha.18",
-    "@loaders.gl/loader-utils": "3.0.0-alpha.18",
-    "@loaders.gl/math": "3.0.0-alpha.18",
-    "@math.gl/core": "^3.3.0",
-    "@math.gl/culling": "^3.3.0",
-    "@math.gl/geospatial": "^3.3.0",
-    "@math.gl/web-mercator": "^3.3.0",
+    "@loaders.gl/core": "3.0.0-alpha.19",
+    "@loaders.gl/loader-utils": "3.0.0-alpha.19",
+    "@loaders.gl/math": "3.0.0-alpha.19",
+    "@math.gl/core": "3.5.0-alpha.1",
+    "@math.gl/culling": "3.5.0-alpha.1",
+    "@math.gl/geospatial": "3.5.0-alpha.1",
+    "@math.gl/web-mercator": "3.5.0-alpha.1",
     "@probe.gl/stats": "^3.3.0"
   },
   "devDependencies": {

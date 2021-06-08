@@ -9,11 +9,15 @@ const ALIASES = getOcularConfig({
 
 const BABEL_CONFIG = {
   presets: [
+    '@babel/typescript',
     // We must transpile to es6 to enable tree shaking
     ['@babel/preset-env', {modules: false}]
   ],
   plugins: [
-    ['@babel/plugin-transform-runtime', {useESModules: false}],
+    // webpack 4 cannot parse the most recent JS syntax
+    '@babel/plugin-proposal-optional-chaining',
+    '@babel/plugin-proposal-nullish-coalescing-operator',
+    // inject __VERSION__ from package.json
     'version-inline'
   ]
 };
@@ -21,11 +25,12 @@ const BABEL_CONFIG = {
 const CONFIG = {
   mode: 'production',
 
-  devtool: false,
+  devtool: 'source-map',
 
-  stats: 'minimal',
+  stats: 'none',
 
   resolve: {
+    extensions: ['.js', '.mjs', '.jsx', '.ts', '.tsx'],
     alias: ALIASES
   },
 
@@ -33,7 +38,7 @@ const CONFIG = {
     rules: [
       {
         // Compile
-        test: /\.js$/,
+        test: /\.(js|ts)$/,
         exclude: /node_modules|libs/,
         use: [
           {
@@ -43,7 +48,12 @@ const CONFIG = {
         ]
       },
       {
-        // LIBS: Already compled, just process with babel - e.g. copy to dist
+        test: /\.mjs$/,
+        include: /node_modules/,
+        type: "javascript/auto"
+      },
+      {
+        // LIBS: Already compiled, just process with babel - e.g. copy to dist
         test: /libs\.*\.js$/,
         exclude: /node_modules|/,
         use: [
@@ -107,10 +117,6 @@ module.exports = (env = {}) => {
   if (env.dev) {
     config.mode = 'development';
     config = addESNextSettings(config);
-  } else {
-    // Generate a separate source map
-    // @ts-ignore
-    config.devtool = 'source-map';
   }
   // console.log(JSON.stringify(config, null, 2));
   return config;

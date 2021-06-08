@@ -1,4 +1,4 @@
-import { TextureLevel } from "@loaders.gl/textures/types/texture";
+import {TextureLevel} from '@loaders.gl/textures/types/texture';
 
 /**
  * Check if data is in "PVR" format by its magic number

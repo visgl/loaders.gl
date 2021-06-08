@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/core",
-  "version": "3.0.0-alpha.18",
+  "version": "3.0.0-alpha.19",
   "description": "Framework-independent loaders for 3D graphics formats",
   "license": "MIT",
   "publishConfig": {
@@ -43,7 +43,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
-    "@loaders.gl/loader-utils": "3.0.0-alpha.18",
-    "@loaders.gl/worker-utils": "3.0.0-alpha.18"
+    "@loaders.gl/loader-utils": "3.0.0-alpha.19",
+    "@loaders.gl/worker-utils": "3.0.0-alpha.19"
   }
 }

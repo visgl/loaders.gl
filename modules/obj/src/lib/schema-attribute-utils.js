@@ -1,7 +1,7 @@
 import {Schema, Field, Float32, Float64, Uint8, FixedSizeList} from '@loaders.gl/tables';
 
 export function makeSchemaFromAttributes(attributes, metadata = {}) {
-  let metadataMap = null;
+  let metadataMap;
   for (const key in metadata) {
     metadataMap = metadataMap || new Map();
     if (key !== 'value') {

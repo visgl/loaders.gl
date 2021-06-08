@@ -35,6 +35,7 @@ function makeAliases(basename = __dirname) {
     '@loaders.gl/excel/test': path.resolve(basename, '../modules/excel/test'),
     '@loaders.gl/flatgeobuf/test': path.resolve(basename, '../modules/flatgeobuf/test'),
     '@loaders.gl/geopackage/test': path.resolve(basename, '../modules/geopackage/test'),
+    '@loaders.gl/geotiff/test': path.resolve(basename, '../modules/geotiff/test'),
     '@loaders.gl/gis/test': path.resolve(basename, '../modules/gis/test'),
     '@loaders.gl/gltf/test': path.resolve(basename, '../modules/gltf/test'),
     '@loaders.gl/i3s/test': path.resolve(basename, '../modules/i3s/test'),
@@ -51,12 +52,13 @@ function makeAliases(basename = __dirname) {
     '@loaders.gl/shapefile/test': path.resolve(basename, '../modules/shapefile/test'),
     '@loaders.gl/tables/test': path.resolve(basename, '../modules/tables/test'),
     '@loaders.gl/terrain/test': path.resolve(basename, '../modules/terrain/test'),
-    '@loaders.gl/tile-converter/test': path.resolve(basename, '../modules/tile-converter/test'),
     '@loaders.gl/textures/test': path.resolve(basename, '../modules/textures/test'),
+    '@loaders.gl/tile-converter/test': path.resolve(basename, '../modules/tile-converter/test'),
     '@loaders.gl/tiles/test': path.resolve(basename, '../modules/tiles/test'),
     '@loaders.gl/video/test': path.resolve(basename, '../modules/video/test'),
     '@loaders.gl/wkt/test': path.resolve(basename, '../modules/wkt/test'),
     '@loaders.gl/worker-utils/test': path.resolve(basename, '../modules/worker-utils/test'),
+    '@loaders.gl/zarr/test': path.resolve(basename, '../modules/zarr/test'),
     '@loaders.gl/zip/test': path.resolve(basename, '../modules/zip/test')
   };
 }

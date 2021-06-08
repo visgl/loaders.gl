@@ -1,21 +1,23 @@
 {
   "all": "true",
-  "sourceMap": false,
-  "instrument": true,
   "include": [
-    "src/**/*.js",
-    "modules/**/src/**/*.js"
+    "modules/**/src/**/*.+(js|jsx|mjs|ts|tsx)"
   ],
   "exclude": [
+    "**/*disabled",
     "**/deprecated",
-    "**/bundle.js",
-    "**/*.worker.js",
-    "**/src/libs/**",
+    "**/wip/**",
+    "**/libs/**",
+    "**/test/**",
+    "**/*.d.ts",
+
+    "**/bundle.+(js|ts)",
+    "**/*.worker.+(js|ts)",
+    "**/bundle.+(js|ts)",
+    "**/*.worker.+(js|ts)",
     "**/text-encoding.js",
     "**/encoding.js",
     "**/laz-perf.js",
-    "**/wip/**",
-    "**/test/**",
     "**3d-tiles/src/styles/**"
   ]
 }

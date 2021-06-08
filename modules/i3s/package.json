@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/i3s",
-  "version": "3.0.0-alpha.18",
+  "version": "3.0.0-alpha.19",
   "description": "i3s .",
   "license": "MIT",
   "publishConfig": {
@@ -17,6 +17,7 @@
     "tile",
     "mesh"
   ],
+  "types": "src/index.ts",
   "main": "dist/es5/index.js",
   "module": "dist/esm/index.js",
   "sideEffects": false,
@@ -28,19 +29,19 @@
   "scripts": {
     "pre-build": "npm run build-bundle && npm run build-worker",
     "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js",
-    "build-worker": "webpack --entry ./src/workers/i3s-content-worker.js --output ./dist/i3s-content-worker.js --config ../../scripts/webpack/worker.js"
+    "build-worker": "webpack --entry ./src/workers/i3s-content-worker.ts --output ./dist/i3s-content-worker.js --config ../../scripts/webpack/worker.js"
   },
   "dependencies": {
-    "@loaders.gl/core": "3.0.0-alpha.18",
-    "@loaders.gl/draco": "3.0.0-alpha.18",
-    "@loaders.gl/images": "3.0.0-alpha.18",
-    "@loaders.gl/loader-utils": "3.0.0-alpha.18",
-    "@loaders.gl/textures": "3.0.0-alpha.18",
-    "@loaders.gl/tiles": "3.0.0-alpha.18",
+    "@loaders.gl/core": "3.0.0-alpha.19",
+    "@loaders.gl/draco": "3.0.0-alpha.19",
+    "@loaders.gl/images": "3.0.0-alpha.19",
+    "@loaders.gl/loader-utils": "3.0.0-alpha.19",
+    "@loaders.gl/textures": "3.0.0-alpha.19",
+    "@loaders.gl/tiles": "3.0.0-alpha.19",
     "@luma.gl/constants": "^8.3.0",
-    "@math.gl/core": "^3.3.0",
-    "@math.gl/culling": "^3.3.0",
-    "@math.gl/geospatial": "^3.3.0",
+    "@math.gl/core": "3.5.0-alpha.1",
+    "@math.gl/culling": "3.5.0-alpha.1",
+    "@math.gl/geospatial": "3.5.0-alpha.1",
     "probe.gl": "^3.3.0"
   }
 }

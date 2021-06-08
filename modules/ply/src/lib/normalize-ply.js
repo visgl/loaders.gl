@@ -11,6 +11,7 @@ export default function normalizePLY(header, attributes, options) {
     // TODO - For Meshes, PLY quadrangles must be split?
     header: {
       vertexCount: attributes.indices.length || attributes.vertices.length / 3,
+      // @ts-ignore Need to export Attributes type
       boundingBox: getMeshBoundingBox(normalizedAttributes)
     },
     mode: attributes.indices && attributes.indices.length > 0 ? 4 : 0, // TRIANGLES vs POINTS
