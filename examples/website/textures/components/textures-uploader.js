@@ -66,7 +66,10 @@ export default class TextureUploader extends PureComponent {
       <div>
         {!uploadedImage && (
           <Container>
-            <TextureFrame onDrop={this.handleLoadFile} onDragOver={event => event.preventDefault()}>
+            <TextureFrame
+              onDrop={this.handleLoadFile}
+              onDragOver={(event) => event.preventDefault()}
+            >
               Drag&Drop texture
             </TextureFrame>
             <input style={{display: 'none'}} type="file" id="fileInput" files={files} />

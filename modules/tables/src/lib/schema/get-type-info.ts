@@ -4,9 +4,7 @@ import {Type, AnyArrayType} from './classes/type';
  * Gets type information from an Arrow type object or "mock" Arrow type object
  * @param arrowTypeLike Arrow Type or type object of similar shape
  */
-export function getTypeInfo(
-  arrowTypeLike: any
-): {
+export function getTypeInfo(arrowTypeLike: any): {
   typeId: Type;
   ArrayType: AnyArrayType;
   typeName: string;

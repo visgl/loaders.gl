@@ -278,7 +278,7 @@ function checkLOD(tile, tileWarnings) {
   const divergence = 0.05;
   const tileLodRatio = tile.lodMetricValue / tile.boundingVolume.radius;
   const parentLodRatio = tile.parent.lodMetricValue / tile.parent.boundingVolume.radius;
-  const lodRatios = tile.parent.children.map(child => {
+  const lodRatios = tile.parent.children.map((child) => {
     return child.lodMetricValue / child.boundingVolume.radius;
   });
   const meanRatio = lodRatios.reduce((accum, current) => accum + current, 0) / lodRatios.length;
@@ -286,7 +286,7 @@ function checkLOD(tile, tileWarnings) {
   if (
     meanRatio < parentLodRatio &&
     !tileWarnings.find(
-      warning => warning.tileId === tile.parent.id && warning.type === PARENT_LOD_WARNING_TYPE
+      (warning) => warning.tileId === tile.parent.id && warning.type === PARENT_LOD_WARNING_TYPE
     )
   ) {
     const title = `Tile (${tile.parent.id}) LOD/Radius ratio "${parentLodRatio}" > mean child LOD/Radius ratio "${meanRatio}"`;

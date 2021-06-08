@@ -38,7 +38,7 @@ const FrameWrap = styled.div`
 `;
 
 const FrameControl = styled.div`
-  margin: ${props => (props.showFullInfo ? '12px 0' : 0)};
+  margin: ${(props) => (props.showFullInfo ? '12px 0' : 0)};
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -90,7 +90,7 @@ export default class ControlPanel extends PureComponent {
     return (
       <TilesetDropDown
         value={name}
-        onChange={evt => {
+        onChange={(evt) => {
           const selected = evt.target.value;
           this.setState({selected});
           onExampleChange(EXAMPLES[selected]);
@@ -101,7 +101,7 @@ export default class ControlPanel extends PureComponent {
             {'Custom example'}
           </option>
         )}
-        {Object.keys(EXAMPLES).map(key => {
+        {Object.keys(EXAMPLES).map((key) => {
           const example = EXAMPLES[key];
           return (
             <option key={key} value={example.name}>
@@ -118,12 +118,12 @@ export default class ControlPanel extends PureComponent {
     return (
       <DropDown
         value={selectedMapStyle}
-        onChange={evt => {
+        onChange={(evt) => {
           const selected = evt.target.value;
           onMapStyleChange({selectedMapStyle: selected});
         }}
       >
-        {Object.keys(mapStyles).map(key => {
+        {Object.keys(mapStyles).map((key) => {
           return (
             <option key={key} value={mapStyles[key]}>
               {key}

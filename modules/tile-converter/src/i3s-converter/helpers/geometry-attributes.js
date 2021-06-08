@@ -153,7 +153,7 @@ function unifyObjectsByFeatureId(sortedData) {
 
   for (let index = 0; index < sortedData.length; index++) {
     const currentObject = sortedData[index];
-    const existedObject = uniqueObjects.find(obj => obj.featureId === currentObject.featureId);
+    const existedObject = uniqueObjects.find((obj) => obj.featureId === currentObject.featureId);
 
     if (existedObject) {
       existedObject.positions = concatenateTypedArrays(

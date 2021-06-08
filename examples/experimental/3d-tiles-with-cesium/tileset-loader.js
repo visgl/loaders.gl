@@ -24,16 +24,16 @@ export async function loadTileset({tilesetUrl, ionAssetId, ionAccessToken, viewe
   const tilesetJson = await response.json();
 
   const tileset3d = new Tileset3D(tilesetJson, tilesetUrl, {
-    onTileLoad: tileHeader => loadTile(tileHeader.uri, tileHeader),
-    onTileUnload: tileHeader => unloadTile(tileHeader.contentUri),
-    onTileError: tileHeader => console.error('LoadFailed', tileHeader.uri), // eslint-disable-line
+    onTileLoad: (tileHeader) => loadTile(tileHeader.uri, tileHeader),
+    onTileUnload: (tileHeader) => unloadTile(tileHeader.contentUri),
+    onTileError: (tileHeader) => console.error('LoadFailed', tileHeader.uri), // eslint-disable-line
     fetchOptions,
     throttleRequests: true
   });
 
   centerTileset(tileset3d);
 
-  viewer.scene.preRender.addEventListener(scene => {
+  viewer.scene.preRender.addEventListener((scene) => {
     const frameState = convertCesiumFrameState(scene.frameState, scene.canvas.height);
     tileset3d.update(frameState);
   });
@@ -87,7 +87,7 @@ function convertCesiumFrameState(frameState, height) {
   cameraUp = new Vector3([cameraUp.x, cameraUp.y, cameraUp.z]);
 
   const planes = frameState.cullingVolume.planes.map(
-    plane => new Plane([plane.x, plane.y, plane.z], plane.w)
+    (plane) => new Plane([plane.x, plane.y, plane.z], plane.w)
   );
 
   return {

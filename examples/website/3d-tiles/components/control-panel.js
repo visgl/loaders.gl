@@ -71,7 +71,7 @@ export default class ControlPanel extends PureComponent {
     return (
       <TilesetDropDown
         value={selectedValue}
-        onChange={evt => {
+        onChange={(evt) => {
           const selected = evt.target.value;
           const [newCategory, newName] = selected.split('.');
           const categoryExamples = data[newCategory].examples;
@@ -112,12 +112,12 @@ export default class ControlPanel extends PureComponent {
     return (
       <DropDown
         value={selectedMapStyle}
-        onChange={evt => {
+        onChange={(evt) => {
           const selected = evt.target.value;
           onMapStyleChange({selectedMapStyle: selected});
         }}
       >
-        {Object.keys(mapStyles).map(key => {
+        {Object.keys(mapStyles).map((key) => {
           return (
             <option key={key} value={mapStyles[key]}>
               {key}
@@ -145,7 +145,7 @@ export default class ControlPanel extends PureComponent {
       <InfoContainer>
         {Boolean(attributions && attributions.length) && <b>Tileset Credentials</b>}
         {Boolean(attributions && attributions.length) &&
-          attributions.map(attribution => (
+          attributions.map((attribution) => (
             // eslint-disable-next-line react/no-danger
             <div key={attribution.html} dangerouslySetInnerHTML={{__html: attribution.html}} />
           ))}

@@ -9,8 +9,8 @@ export default class ZstdInflateTransform {
 
     const ZstdCodec = await loadZstdLibrary(options);
 
-    return await new Promise(resolve => {
-      ZstdCodec.run(zstd => {
+    return await new Promise((resolve) => {
+      ZstdCodec.run((zstd) => {
         const simple = new zstd.Simple();
         const output = simple.decompress(inputArray);
         resolve(output.buffer);

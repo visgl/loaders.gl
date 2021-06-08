@@ -85,8 +85,8 @@ async function readFileSlice(file, start, end) {
   const slice = file.slice(start, end);
   return await new Promise((resolve, reject) => {
     const fileReader = new FileReader();
-    fileReader.onload = event => resolve(event.target && event.target.result);
-    fileReader.onerror = error => reject(error);
+    fileReader.onload = (event) => resolve(event.target && event.target.result);
+    fileReader.onerror = (error) => reject(error);
     fileReader.readAsArrayBuffer(slice);
   });
 }

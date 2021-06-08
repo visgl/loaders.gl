@@ -17,10 +17,8 @@ const scratchDirection = new Vector3();
 
 // eslint-disable-next-line max-statements, complexity
 export function calculateDynamicScreenSpaceError(root, {camera, mapProjection}, options = {}) {
-  const {
-    dynamicScreenSpaceErrorHeightFalloff = 0.25,
-    dynamicScreenSpaceErrorDensity = 0.00278
-  } = options;
+  const {dynamicScreenSpaceErrorHeightFalloff = 0.25, dynamicScreenSpaceErrorDensity = 0.00278} =
+    options;
 
   let up;
   let direction;

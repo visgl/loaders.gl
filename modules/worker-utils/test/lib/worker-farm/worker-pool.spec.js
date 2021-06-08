@@ -16,14 +16,14 @@ const testWorkerSource = `
   };
 `;
 
-test('WorkerPool', async t => {
+test('WorkerPool', async (t) => {
   if (!hasWorker) {
     t.comment('Worker test is browser only');
     t.end();
     return;
   }
 
-  const callback = info => {
+  const callback = (info) => {
     t.comment(`${info.message} ${info.jobName}, queued jobs ${info.backlog}`);
   };
 
@@ -37,7 +37,7 @@ test('WorkerPool', async t => {
   const TEST_CASES = new Array(CHUNKS_TOTAL).fill(0).map((_, i) => ({chunk: i}));
 
   const result = await Promise.all(
-    TEST_CASES.map(async data => {
+    TEST_CASES.map(async (data) => {
       const job = await workerPool.startJob('test-job');
       job.postMessage('process', {input: data.chunk});
       return job.result;
@@ -52,7 +52,7 @@ test('WorkerPool', async t => {
   t.end();
 });
 
-test('WorkerPool with reuseWorkers === false param', async t => {
+test('WorkerPool with reuseWorkers === false param', async (t) => {
   if (!hasWorker) {
     t.comment('Worker test is browser only');
     t.end();
@@ -69,7 +69,7 @@ test('WorkerPool with reuseWorkers === false param', async t => {
   const TEST_CASES = new Array(CHUNKS_TOTAL).fill(0).map((_, i) => ({chunk: i}));
 
   await Promise.all(
-    TEST_CASES.map(async data => {
+    TEST_CASES.map(async (data) => {
       const job = await workerPool.startJob('test-job');
       job.postMessage('process', {input: data});
       return job.result;
@@ -82,7 +82,7 @@ test('WorkerPool with reuseWorkers === false param', async t => {
   t.end();
 });
 
-test('WorkerPool with reuseWorkers === true param', async t => {
+test('WorkerPool with reuseWorkers === true param', async (t) => {
   if (!hasWorker) {
     t.comment('Worker test is browser only');
     t.end();
@@ -99,7 +99,7 @@ test('WorkerPool with reuseWorkers === true param', async t => {
   const TEST_CASES = new Array(CHUNKS_TOTAL).fill(0).map((_, i) => ({chunk: i}));
 
   await Promise.all(
-    TEST_CASES.map(async data => {
+    TEST_CASES.map(async (data) => {
       const job = await workerPool.startJob('test-job');
       job.postMessage('process', {input: data});
       return job.result;

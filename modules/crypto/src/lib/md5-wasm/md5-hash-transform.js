@@ -9,9 +9,7 @@ import {hexToBase64} from '../utils/digest-utils';
 export default class MD5HashTransform {
   static async run(input, options = {}) {
     const md5Promise = new Promise((resolve, reject) => {
-      md5WASM(input)
-        .then(resolve)
-        .catch(reject);
+      md5WASM(input).then(resolve).catch(reject);
     });
     const hex = await md5Promise;
     return hexToBase64(hex);

@@ -418,7 +418,7 @@ export default class I3SConverter {
 
     const lodSelection = convertGeometricErrorToScreenThreshold(sourceTile, coordinates);
     const maxScreenThresholdSQ = lodSelection.find(
-      val => val.metricType === 'maxScreenThresholdSQ'
+      (val) => val.metricType === 'maxScreenThresholdSQ'
     ) || {maxError: 0};
 
     this._convertAttributeStorageInfo(sourceTile.content);

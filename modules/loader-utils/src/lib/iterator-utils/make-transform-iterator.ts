@@ -6,7 +6,7 @@ import {IncrementalTransform} from './incremental-transform';
  * @param IncrementalTransform
  * @param options
  */
-export async function *makeTransformIterator(
+export async function* makeTransformIterator(
   asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
   Transform: IncrementalTransform,
   options?: object

@@ -41,7 +41,7 @@ function extractNumericPropKeys(features) {
     }
   }
 
-  return Object.keys(numericPropKeys).filter(k => numericPropKeys[k]);
+  return Object.keys(numericPropKeys).filter((k) => numericPropKeys[k]);
 }
 
 // Fills coordinates into pre-allocated typed arrays
@@ -275,7 +275,7 @@ function triangulatePolygon(polygons, areas, lines, {startPosition, endPosition,
 
   // Holes are referenced relative to outer polygon
   const offset = lines[0];
-  const holes = lines.slice(1).map(n => (n - offset) / coordLength);
+  const holes = lines.slice(1).map((n) => (n - offset) / coordLength);
 
   // Compute triangulation
   const indices = earcut(polygonPositions, holes, coordLength, areas);

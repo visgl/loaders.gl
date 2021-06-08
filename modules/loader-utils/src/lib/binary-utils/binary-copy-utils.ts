@@ -50,7 +50,7 @@ export function copyPaddedArrayBufferToDataView(
  *
  * @return new byteOffset of resulting dataView
  */
- export function copyPaddedStringToDataView(
+export function copyPaddedStringToDataView(
   dataView: DataView | null,
   byteOffset: number,
   string: string,

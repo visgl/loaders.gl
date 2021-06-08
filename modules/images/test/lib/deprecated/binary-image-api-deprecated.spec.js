@@ -6,7 +6,7 @@ import test from 'tape-promise/tape';
 import {isBinaryImage, getBinaryImageMIMEType, getBinaryImageSize} from '@loaders.gl/images';
 import {loadImages} from '../category-api/binary-image-api.spec';
 
-test('isBinaryImage (deprecated)', async t => {
+test('isBinaryImage (deprecated)', async (t) => {
   const images = await loadImages();
   for (const imageType in images) {
     t.equals(isBinaryImage(images[imageType]), true, `isBinaryImage(${imageType})`);
@@ -18,7 +18,7 @@ test('isBinaryImage (deprecated)', async t => {
   t.end();
 });
 
-test('getBinaryImageMIMEType (deprecated)', async t => {
+test('getBinaryImageMIMEType (deprecated)', async (t) => {
   const images = await loadImages();
   for (const imageType in images) {
     t.equals(
@@ -30,7 +30,7 @@ test('getBinaryImageMIMEType (deprecated)', async t => {
   t.end();
 });
 
-test('getBinaryImageSize (deprecated)', async t => {
+test('getBinaryImageSize (deprecated)', async (t) => {
   const images = await loadImages();
   for (const imageType in images) {
     const dimensions = getBinaryImageSize(images[imageType]);

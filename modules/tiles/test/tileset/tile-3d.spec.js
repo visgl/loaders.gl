@@ -113,7 +113,7 @@ const MOCK_TILESET = {
 //   return Matrix4.pack(transformMatrix, new Array(16));
 // }
 
-test('Tile3D#destroys', t => {
+test('Tile3D#destroys', (t) => {
   const tile = new Tile3D(MOCK_TILESET, TILE_HEADER_WITH_BOUNDING_SPHERE, undefined);
   t.equals(tile.isDestroyed(), false);
   tile.destroy();
@@ -121,21 +121,21 @@ test('Tile3D#destroys', t => {
   t.end();
 });
 
-test('Tile3D#throws if boundingVolume is undefined', t => {
+test('Tile3D#throws if boundingVolume is undefined', (t) => {
   const tileWithoutBoundingVolume = clone(TILE_HEADER_WITH_BOUNDING_SPHERE, true);
   delete tileWithoutBoundingVolume.boundingVolume;
   t.throws(() => new Tile3D(MOCK_TILESET, tileWithoutBoundingVolume, undefined));
   t.end();
 });
 
-test('Tile3D#throws if boundingVolume does not contain a sphere, region, or box', t => {
+test('Tile3D#throws if boundingVolume does not contain a sphere, region, or box', (t) => {
   const tileWithoutBoundingVolume = clone(TILE_HEADER_WITH_BOUNDING_SPHERE, true);
   delete tileWithoutBoundingVolume.boundingVolume.sphere;
   t.throws(() => new Tile3D(MOCK_TILESET, tileWithoutBoundingVolume, undefined));
   t.end();
 });
 
-test('Tile3D#geometric error is undefined', t => {
+test('Tile3D#geometric error is undefined', (t) => {
   // spyOn(Tile3D, '_deprecationWarning');
 
   const lodMetricValueMissing = clone(TILE_HEADER_WITH_BOUNDING_SPHERE, true);

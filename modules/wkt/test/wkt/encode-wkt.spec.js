@@ -3,7 +3,7 @@ import test from 'tape-promise/tape';
 import encodeWKT from '@loaders.gl/wkt/lib/encode-wkt';
 import parseWKT from '@loaders.gl/wkt/lib/parse-wkt';
 
-test('encodeWKT', t => {
+test('encodeWKT', (t) => {
   t.throws(() => encodeWKT({type: 'FeatureCollection'}), 'does not accept featurecollections');
 
   const fixtures = [
@@ -20,7 +20,7 @@ test('encodeWKT', t => {
     'GEOMETRYCOLLECTION (POINT (4 6), LINESTRING (4 6, 7 10))'
   ];
 
-  fixtures.forEach(fix => t.equal(fix, loop(fix), fix));
+  fixtures.forEach((fix) => t.equal(fix, loop(fix), fix));
 
   function loop(s) {
     return encodeWKT(parseWKT(s));

@@ -10,7 +10,7 @@ export default function parseArrowSync(arrayBuffer, options) {
   // Add options object?
   const columnarTable = {};
 
-  arrowTable.schema.fields.forEach(field => {
+  arrowTable.schema.fields.forEach((field) => {
     // This (is intended to) coalesce all record batches into a single typed array
     const arrowColumn = arrowTable.getColumn(field.name);
     const values = arrowColumn.toArray();

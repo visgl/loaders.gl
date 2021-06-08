@@ -14,11 +14,11 @@ module.exports = (env = {}) => {
   // Look for babel plugin
   config.module = config.module || {};
   config.module.rules = config.module.rules || [];
-  const babelRule = config.module.rules.find(rule => rule.loader === 'babel-loader');
+  const babelRule = config.module.rules.find((rule) => rule.loader === 'babel-loader');
 
   // If found, inject excludes in @babel/present-env to prevent transpile
   if (babelRule && babelRule.options && babelRule.options.presets) {
-    babelRule.options.presets = babelRule.options.presets.map(preset => {
+    babelRule.options.presets = babelRule.options.presets.map((preset) => {
       if (preset === '@babel/preset-env') {
         return [
           '@babel/preset-env',
@@ -57,7 +57,7 @@ function addBabelSettings(config) {
     module: {
       ...config.module,
       rules: [
-        ...config.module.rules.filter(r => r.loader !== 'babel-loader'),
+        ...config.module.rules.filter((r) => r.loader !== 'babel-loader'),
         makeBabelRule(),
         // See https://github.com/apollographql/apollo-link-state/issues/302
         {

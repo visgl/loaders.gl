@@ -2,7 +2,7 @@ import {TableBatch, Schema, Batch} from './table-batch';
 
 type ColumnarTableBatchOptions = {
   batchSize?: number | string;
-}
+};
 
 export default class ColumnarTableBatch implements TableBatch {
   schema: Schema;
@@ -99,6 +99,6 @@ export default class ColumnarTableBatch implements TableBatch {
   }
 
   _pruneColumns() {
-    this.columns = this.columns.map(column => column.slice(0, this.length));
+    this.columns = this.columns.map((column) => column.slice(0, this.length));
   }
 }

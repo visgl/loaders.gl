@@ -17,12 +17,12 @@ setLoaderOptions({
   _workerType: 'test'
 });
 
-test('ArrowLoader#loader conformance', t => {
+test('ArrowLoader#loader conformance', (t) => {
   validateLoader(t, ArrowLoader, 'ArrowLoader');
   t.end();
 });
 
-test('ArrowLoader#parseSync(simple.arrow)', async t => {
+test('ArrowLoader#parseSync(simple.arrow)', async (t) => {
   const columns = await parse(fetchFile(ARROW_SIMPLE), ArrowLoader, {worker: false});
   // Check loader specific results
   t.ok(columns.bar, 'bar column loaded');
@@ -31,7 +31,7 @@ test('ArrowLoader#parseSync(simple.arrow)', async t => {
   t.end();
 });
 
-test('ArrowLoader#parseSync(simple.arrow) rowFormat="object" type', async t => {
+test('ArrowLoader#parseSync(simple.arrow) rowFormat="object" type', async (t) => {
   const rowFormatTable = await parse(fetchFile(ARROW_SIMPLE), ArrowLoader, {
     worker: false,
     arrow: {
@@ -44,14 +44,14 @@ test('ArrowLoader#parseSync(simple.arrow) rowFormat="object" type', async t => {
   t.end();
 });
 
-test('ArrowLoader#parseSync(dictionary.arrow)', async t => {
+test('ArrowLoader#parseSync(dictionary.arrow)', async (t) => {
   const columns = await parse(fetchFile(ARROW_DICTIONARY), ArrowLoader);
   // Check loader specific results
   t.ok(columns['example-csv'], 'example-csv loaded');
   t.end();
 });
 
-test('ArrowLoader#parse(fetchFile(struct).arrow)', async t => {
+test('ArrowLoader#parse(fetchFile(struct).arrow)', async (t) => {
   const columns = await parse(fetchFile(ARROW_STRUCT), ArrowLoader);
   // Check loader specific results
   t.ok(columns.struct_nullable, 'struct_nullable loaded');
@@ -59,7 +59,7 @@ test('ArrowLoader#parse(fetchFile(struct).arrow)', async t => {
 });
 
 // TODO - Arrow worker seems to not bundle apache arrow lib?
-test('ArrowLoader#parse (WORKER)', async t => {
+test('ArrowLoader#parse (WORKER)', async (t) => {
   if (!isBrowser) {
     t.comment('Worker is not usable in non-browser environments');
     t.end();
@@ -71,7 +71,7 @@ test('ArrowLoader#parse (WORKER)', async t => {
   t.end();
 });
 
-test('ArrowLoader#parseInBatches(async input)', async t => {
+test('ArrowLoader#parseInBatches(async input)', async (t) => {
   // TODO - parseInBatches should accept fetch response directly
   const response = await fetchFile(ARROW_BIOGRID_NODES);
   const data = await response.arrayBuffer();
@@ -83,7 +83,7 @@ test('ArrowLoader#parseInBatches(async input)', async t => {
 });
 
 // TODO - Move node stream test to generic parseInBatches test?
-test('ArrowLoader#parseInBatches(Stream)', async t => {
+test('ArrowLoader#parseInBatches(Stream)', async (t) => {
   if (isBrowser) {
     t.comment('Node stream test case only supported in Node');
     t.end();

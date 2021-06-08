@@ -11,7 +11,7 @@ const D3CSVLoader = {
   extensions: ['csv'],
   testText: null,
   text: true,
-  parseTextSync: text => csvParseRows(text)
+  parseTextSync: (text) => csvParseRows(text)
 };
 
 export default async function csvBench(bench) {

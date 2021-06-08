@@ -8,5 +8,5 @@ export const GLTF_ENV_BASE_URL =
 export const GLTF_DEFAULT_MODEL = 'DamagedHelmet/glTF-Binary/DamagedHelmet.glb';
 
 export async function loadModelList() {
-  return await fetch(GLTF_MODEL_INDEX).then(res => res.json());
+  return await fetch(GLTF_MODEL_INDEX).then((res) => res.json());
 }

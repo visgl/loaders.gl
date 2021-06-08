@@ -1,7 +1,7 @@
 import {asyncDeepMap} from './async-deep-map';
 
 export async function deepLoad(urlTree, load, options) {
-  return await asyncDeepMap(urlTree, url => shallowLoad(url, load, options));
+  return await asyncDeepMap(urlTree, (url) => shallowLoad(url, load, options));
 }
 
 export async function shallowLoad(url, load, options) {

@@ -1,5 +1,6 @@
 dist
 
+**/examples/**
 **/src/libs/*
 **/dist/*
 **/wip/*

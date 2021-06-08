@@ -1,7 +1,7 @@
 import test from 'tape-promise/tape';
 import {AsyncQueue} from '@loaders.gl/tables';
 
-test('Enqueue before dequeue', async t => {
+test('Enqueue before dequeue', async (t) => {
   const queue = new AsyncQueue();
   queue.enqueue('a');
   queue.enqueue('b');
@@ -10,7 +10,7 @@ test('Enqueue before dequeue', async t => {
   t.end();
 });
 
-test('Dequeue before enqueue', async t => {
+test('Dequeue before enqueue', async (t) => {
   const queue = new AsyncQueue();
   const promise = Promise.all([queue.next(), queue.next()]);
 
@@ -19,7 +19,7 @@ test('Dequeue before enqueue', async t => {
   queue.close();
 
   const array = await promise;
-  const values = array.map(x => x.value);
+  const values = array.map((x) => x.value);
   t.deepEqual(values, ['a', 'b']);
   t.end();
 });

@@ -1,7 +1,7 @@
-import type { ZarrArray } from 'zarr';
-import { loadMultiscales, guessTileSize } from './utils/zarr-utils';
+import type {ZarrArray} from 'zarr';
+import {loadMultiscales, guessTileSize} from './utils/zarr-utils';
 import ZarrPixelSource from './zarr-pixel-source';
-import type { Labels } from '../types';
+import type {Labels} from '../types';
 
 interface Channel {
   active: boolean;
@@ -26,7 +26,7 @@ interface Omero {
 }
 
 interface Multiscale {
-  datasets: { path: string }[];
+  datasets: {path: string}[];
   version?: string;
 }
 
@@ -36,10 +36,10 @@ export interface RootAttrs {
 }
 
 export async function loadZarr(store: ZarrArray['store']) {
-  const { data, rootAttrs } = await loadMultiscales(store);
+  const {data, rootAttrs} = await loadMultiscales(store);
   const labels = ['t', 'c', 'z', 'y', 'x'] as Labels<['t', 'c', 'z']>;
   const tileSize = guessTileSize(data[0]);
-  const pyramid = data.map(arr => new ZarrPixelSource(arr, labels, tileSize));
+  const pyramid = data.map((arr) => new ZarrPixelSource(arr, labels, tileSize));
   return {
     data: pyramid,
     metadata: rootAttrs

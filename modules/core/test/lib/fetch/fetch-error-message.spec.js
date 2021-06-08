@@ -5,7 +5,7 @@ import {
   getErrorMessageFromResponse
 } from '@loaders.gl/core/lib/fetch/fetch-error-message';
 
-test('getErrorMessageFromResponseSync#imports', t => {
+test('getErrorMessageFromResponseSync#imports', (t) => {
   t.ok(
     typeof getErrorMessageFromResponseSync === 'function',
     'getErrorMessageFromResponseSync() defined'

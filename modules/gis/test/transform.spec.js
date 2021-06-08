@@ -2,7 +2,7 @@ import test from 'tape-promise/tape';
 import {transformBinaryCoords, transformGeoJsonCoords} from '@loaders.gl/gis';
 import {Proj4Projection} from '@math.gl/proj4';
 
-test('gis#reproject GeoJSON', t => {
+test('gis#reproject GeoJSON', (t) => {
   const projection = new Proj4Projection({from: 'WGS84', to: 'EPSG:3857'});
   const inputGeoJson = [
     {
@@ -25,12 +25,12 @@ test('gis#reproject GeoJSON', t => {
     }
   ];
 
-  const out = transformGeoJsonCoords(inputGeoJson, coord => projection.project(coord));
+  const out = transformGeoJsonCoords(inputGeoJson, (coord) => projection.project(coord));
   t.deepEqual(out, expectedGeoJson);
   t.end();
 });
 
-test('gis#reproject binary', t => {
+test('gis#reproject binary', (t) => {
   const projection = new Proj4Projection({from: 'WGS84', to: 'EPSG:3857'});
   const binaryData = {
     points: {
@@ -55,7 +55,7 @@ test('gis#reproject binary', t => {
     }
   };
 
-  const out = transformBinaryCoords(binaryData, coord => projection.project(coord));
+  const out = transformBinaryCoords(binaryData, (coord) => projection.project(coord));
   t.deepEqual(out, expectedBinaryData);
   t.end();
 });

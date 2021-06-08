@@ -96,7 +96,7 @@ export default class ColorMap {
    */
   _getRandomColor(id) {
     const {colorMap, randomColorMap} = this.state;
-    const randomColor = Array.from({length: 3}, _ => Math.round(Math.random() * 255));
+    const randomColor = Array.from({length: 3}, (_) => Math.round(Math.random() * 255));
 
     randomColorMap[id] = randomColorMap[id] || randomColor;
     colorMap[id] = randomColorMap[id];

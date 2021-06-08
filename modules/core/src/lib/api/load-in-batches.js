@@ -20,7 +20,7 @@ export function loadInBatches(files, loaders, options) {
   }
 
   // Multiple URLs / files
-  const promises = files.map(file => loadOneFileInBatches(file, loaders, options, fetch));
+  const promises = files.map((file) => loadOneFileInBatches(file, loaders, options, fetch));
 
   // No point in waiting here for all responses before starting to stream individual streams?
   return promises;

@@ -11,13 +11,13 @@ setLoaderOptions({
   _workerType: 'test'
 });
 
-test('QuantizedMeshLoader#loader objects', async t => {
+test('QuantizedMeshLoader#loader objects', async (t) => {
   validateLoader(t, QuantizedMeshLoader, 'QuantizedMeshLoader');
   validateLoader(t, QuantizedMeshWorkerLoader, 'QuantizedMeshWorkerLoader');
   t.end();
 });
 
-test('QuantizedMeshLoader#parse tile-with-extensions', async t => {
+test('QuantizedMeshLoader#parse tile-with-extensions', async (t) => {
   const options = {};
   const data = await load(TILE_WITH_EXTENSIONS_URL, QuantizedMeshLoader, options);
   validateMeshCategoryData(t, data); // TODO: should there be a validateMeshCategoryData?
@@ -36,7 +36,7 @@ test('QuantizedMeshLoader#parse tile-with-extensions', async t => {
   t.end();
 });
 
-test('QuantizedMeshWorkerLoader#tile-with-extensions', async t => {
+test('QuantizedMeshWorkerLoader#tile-with-extensions', async (t) => {
   if (typeof Worker === 'undefined') {
     t.comment('Worker is not usable in non-browser environments');
     t.end();

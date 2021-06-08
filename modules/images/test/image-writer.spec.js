@@ -12,7 +12,7 @@ const IMAGE = {
 };
 
 // Test that we can write and read an image, and that result is identical
-test('ImageWriter#write-and-read-image', async t => {
+test('ImageWriter#write-and-read-image', async (t) => {
   let arrayBuffer = await encode(IMAGE, ImageWriter, {
     image: {mimeType: 'image/jpeg', jpegQuality: 90}
   });

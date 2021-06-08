@@ -1,13 +1,13 @@
 import test from 'tape-promise/tape';
 import {NullLog, ConsoleLog} from '@loaders.gl/core/lib/loader-utils/loggers';
 
-test('NullLog#methods', t => {
+test('NullLog#methods', (t) => {
   const log = new NullLog();
   testLogger(t, log, 'NullLog');
   t.end();
 });
 
-test('ConsoleLog#methods', t => {
+test('ConsoleLog#methods', (t) => {
   const log = new ConsoleLog();
   testLogger(t, log, 'ConsoleLog');
   t.end();

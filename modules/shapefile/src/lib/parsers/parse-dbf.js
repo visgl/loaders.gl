@@ -127,7 +127,7 @@ function parseState(state, result = {}, binaryReader, textDecoder) {
           }
 
           result.dbfFields = parseFieldDescriptors(fieldDescriptorView, textDecoder);
-          result.schema = new Schema(result.dbfFields.map(dbfField => makeField(dbfField)));
+          result.schema = new Schema(result.dbfFields.map((dbfField) => makeField(dbfField)));
 
           state = STATE.FIELD_PROPERTIES;
 

@@ -72,7 +72,7 @@ class Tar {
 
     // calculate the checksum
     checksum = 0;
-    Object.keys(data).forEach(key => {
+    Object.keys(data).forEach((key) => {
       let i;
       const value = data[key];
       let length;
@@ -104,7 +104,7 @@ class Tar {
     const max = Math.pow(2, 20);
 
     let chunk = [];
-    this.blocks.forEach(b => {
+    this.blocks.forEach((b) => {
       if (length + b.headerLength + b.inputLength > max) {
         chunks.push({blocks: chunk, length});
         chunk = [];
@@ -115,10 +115,10 @@ class Tar {
     });
     chunks.push({blocks: chunk, length});
 
-    chunks.forEach(c => {
+    chunks.forEach((c) => {
       const buffer = new Uint8Array(c.length);
       let written = 0;
-      c.blocks.forEach(b => {
+      c.blocks.forEach((b) => {
         buffer.set(b.header, written);
         written += b.headerLength;
         buffer.set(b.input, written);

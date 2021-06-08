@@ -39,12 +39,12 @@ async function loadBunny() {
   return await parse(arrayBuffer, DracoLoader);
 }
 
-test('DracoWriter#loader conformance', t => {
+test('DracoWriter#loader conformance', (t) => {
   validateWriter(t, DracoWriter, 'DracoWriter');
   t.end();
 });
 
-test('DracoWriter#encode(bunny.drc)', async t => {
+test('DracoWriter#encode(bunny.drc)', async (t) => {
   const data = await loadBunny();
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
 
@@ -85,7 +85,7 @@ test('DracoWriter#encode(bunny.drc)', async t => {
   t.end();
 });
 
-test('DracoParser#encode(bunny.drc)', async t => {
+test('DracoParser#encode(bunny.drc)', async (t) => {
   const data = await loadBunny();
   validateMeshCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');

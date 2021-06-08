@@ -36,7 +36,7 @@ const expected = {
   sseDenominator: 1.15
 };
 
-test('getFrameState', t => {
+test('getFrameState', (t) => {
   const viewport = new Viewport({
     width: 793,
     height: 775,

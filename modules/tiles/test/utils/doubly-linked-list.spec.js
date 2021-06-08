@@ -28,7 +28,7 @@ function expectOrder(t, list, nodes) {
   }
 }
 
-test('DoublyLinkedList#constructs', t => {
+test('DoublyLinkedList#constructs', (t) => {
   const list = new DoublyLinkedList();
   t.equals(list.head, null);
   t.equals(list.head, null);
@@ -38,7 +38,7 @@ test('DoublyLinkedList#constructs', t => {
 });
 
 // eslint-disable-next-line max-statements
-test('DoublyLinkedList#adds items', t => {
+test('DoublyLinkedList#adds items', (t) => {
   const list = new DoublyLinkedList();
   const node = list.add(1);
 
@@ -91,7 +91,7 @@ test('DoublyLinkedList#adds items', t => {
   t.end();
 });
 
-test('DoublyLinkedList#removes from a list with one item', t => {
+test('DoublyLinkedList#removes from a list with one item', (t) => {
   const list = new DoublyLinkedList();
   const node = list.add(1);
 
@@ -103,7 +103,7 @@ test('DoublyLinkedList#removes from a list with one item', t => {
   t.end();
 });
 
-test('DoublyLinkedList#removes head of list', t => {
+test('DoublyLinkedList#removes head of list', (t) => {
   const list = new DoublyLinkedList();
   const node = list.add(1);
   const node2 = list.add(2);
@@ -117,7 +117,7 @@ test('DoublyLinkedList#removes head of list', t => {
   t.end();
 });
 
-test('DoublyLinkedList#removes tail of list', t => {
+test('DoublyLinkedList#removes tail of list', (t) => {
   const list = new DoublyLinkedList();
   const node = list.add(1);
   const node2 = list.add(2);
@@ -131,7 +131,7 @@ test('DoublyLinkedList#removes tail of list', t => {
   t.end();
 });
 
-test('DoublyLinkedList#removes middle of list', t => {
+test('DoublyLinkedList#removes middle of list', (t) => {
   const list = new DoublyLinkedList();
   const node = list.add(1);
   const node2 = list.add(2);
@@ -146,7 +146,7 @@ test('DoublyLinkedList#removes middle of list', t => {
   t.end();
 });
 
-test('DoublyLinkedList#removes nothing', t => {
+test('DoublyLinkedList#removes nothing', (t) => {
   const list = new DoublyLinkedList();
   const node = list.add(1);
 
@@ -160,7 +160,7 @@ test('DoublyLinkedList#removes nothing', t => {
   t.end();
 });
 
-test('DoublyLinkedList#splices nextNode before node', t => {
+test('DoublyLinkedList#splices nextNode before node', (t) => {
   const list = new DoublyLinkedList();
   const node = list.add(1);
   const node2 = list.add(2);
@@ -189,7 +189,7 @@ test('DoublyLinkedList#splices nextNode before node', t => {
   t.end();
 });
 
-test('DoublyLinkedList#splices nextNode after node', t => {
+test('DoublyLinkedList#splices nextNode after node', (t) => {
   const list = new DoublyLinkedList();
   const node = list.add(1);
   const node2 = list.add(2);
@@ -218,7 +218,7 @@ test('DoublyLinkedList#splices nextNode after node', t => {
   t.end();
 });
 
-test('DoublyLinkedList#splices nextNode immediately before node', t => {
+test('DoublyLinkedList#splices nextNode immediately before node', (t) => {
   const list = new DoublyLinkedList();
   const node = list.add(1);
   const node2 = list.add(2);
@@ -246,7 +246,7 @@ test('DoublyLinkedList#splices nextNode immediately before node', t => {
   t.end();
 });
 
-test('DoublyLinkedList#splices nextNode immediately after node', t => {
+test('DoublyLinkedList#splices nextNode immediately after node', (t) => {
   const list = new DoublyLinkedList();
   const node = list.add(1);
   const node2 = list.add(2);
@@ -268,7 +268,7 @@ test('DoublyLinkedList#splices nextNode immediately after node', t => {
   t.end();
 });
 
-test('DoublyLinkedList#splices node === nextNode', t => {
+test('DoublyLinkedList#splices node === nextNode', (t) => {
   const list = new DoublyLinkedList();
   const node = list.add(1);
   const node2 = list.add(2);
@@ -289,7 +289,7 @@ test('DoublyLinkedList#splices node === nextNode', t => {
   t.end();
 });
 
-test('DoublyLinkedList#splices when nextNode was tail', t => {
+test('DoublyLinkedList#splices when nextNode was tail', (t) => {
   const list = new DoublyLinkedList();
   const node = list.add(1);
   const node2 = list.add(2);
@@ -316,7 +316,7 @@ test('DoublyLinkedList#splices when nextNode was tail', t => {
   t.end();
 });
 
-test('DoublyLinkedList#splices when node was tail', t => {
+test('DoublyLinkedList#splices when node was tail', (t) => {
   const list = new DoublyLinkedList();
   const node = list.add(1);
   const node2 = list.add(2);
@@ -343,7 +343,7 @@ test('DoublyLinkedList#splices when node was tail', t => {
   t.end();
 });
 
-test('DoublyLinkedList#splices when nextNode was head', t => {
+test('DoublyLinkedList#splices when nextNode was head', (t) => {
   const list = new DoublyLinkedList();
   const node = list.add(1);
   const node2 = list.add(2);
@@ -370,7 +370,7 @@ test('DoublyLinkedList#splices when nextNode was head', t => {
   t.end();
 });
 
-test('DoublyLinkedList#splices when node was head', t => {
+test('DoublyLinkedList#splices when node was head', (t) => {
   const list = new DoublyLinkedList();
   const node = list.add(1);
   const node2 = list.add(2);
@@ -397,7 +397,7 @@ test('DoublyLinkedList#splices when node was head', t => {
   t.end();
 });
 
-test('DoublyLinkedList#insert', t => {
+test('DoublyLinkedList#insert', (t) => {
   const list = new DoublyLinkedList();
   const node = list.add(1);
   const node2 = list.add(2);

@@ -20,8 +20,12 @@ export default class TableBatchBuilder {
   batch: TableBatch | null;
   batchCount: number;
   bytesUsed: number;
-  
-  constructor(TableBatchType: TableBatchConstructor, schema: Schema, options: GetBatchOptions = {}) {
+
+  constructor(
+    TableBatchType: TableBatchConstructor,
+    schema: Schema,
+    options: GetBatchOptions = {}
+  ) {
     this.TableBatchType = TableBatchType;
     this.schema = schema;
     this.options = {...DEFAULT_OPTIONS, ...options};

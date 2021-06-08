@@ -22,7 +22,7 @@ class ByteLengthTransform {
   }
 }
 
-test('makeTransformIterator#ByteLengthTransform', async t => {
+test('makeTransformIterator#ByteLengthTransform', async (t) => {
   const inputChunks = [
     new Uint8Array([1, 2, 3]).buffer,
     new Uint8Array([4, 5, 6]).buffer,
@@ -34,7 +34,7 @@ test('makeTransformIterator#ByteLengthTransform', async t => {
 
   // @ts-ignore
   const transformIterator = makeTransformIterator(inputChunks, ByteLengthTransform, {
-    onEnd: result => {
+    onEnd: (result) => {
       byteLength = result.byteLength;
       callCount++;
     }
@@ -71,7 +71,7 @@ function compareArrayBuffers(a, b) {
 }
 
 // Tests that iterator input and non-streaming loader does not crash
-test('makeTransformIterator', async t => {
+test('makeTransformIterator', async (t) => {
   // Run a streaming digest on all test cases.
   let hash;
 
@@ -81,7 +81,7 @@ test('makeTransformIterator', async t => {
   // @ts-ignore
   iterator = makeTransformIterator(iterator, CRC32CHashTransform, {
     crypto: {
-      onEnd: result => {
+      onEnd: (result) => {
         hash = result.hash;
       }
     }

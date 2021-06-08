@@ -1,8 +1,7 @@
 import {fetchFile} from '@loaders.gl/core';
 import path from 'path';
-import { KeyError } from 'zarr';
-import type { AsyncStore } from 'zarr/types/storage/types';
-
+import {KeyError} from 'zarr';
+import type {AsyncStore} from 'zarr/types/storage/types';
 
 // Node system error
 interface SystemError extends Error {
@@ -17,7 +16,7 @@ function isSystemError(err: unknown): err is SystemError {
  * Minimal store implementation to read zarr from file system in Node.
  */
 export class FileSystemStore implements AsyncStore<ArrayBuffer> {
-  constructor(public root: string) { }
+  constructor(public root: string) {}
 
   async getItem(key: string): Promise<ArrayBuffer> {
     const filepath = path.join(this.root, key);

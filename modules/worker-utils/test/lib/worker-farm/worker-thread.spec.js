@@ -8,7 +8,7 @@ const testWorkerSource = `
   };
 `;
 
-test('WorkerThread', async t => {
+test('WorkerThread', async (t) => {
   if (!hasWorker) {
     t.comment('Worker test is browser only');
     t.end();

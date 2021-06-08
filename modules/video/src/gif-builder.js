@@ -11,7 +11,7 @@ const GIF_BUILDER_OPTIONS = {
   crossOrigin: 'Anonymous', // Options are 'Anonymous', 'use-credentials', or a falsy value to not set a CORS attribute.
 
   // CALLBACKS
-  progressCallback: captureProgress => {}, // Callback that provides the current progress of the current image
+  progressCallback: (captureProgress) => {}, // Callback that provides the current progress of the current image
   completeCallback: () => {}, // Callback function that is called when the current image is completed
 
   // QUALITY SETTINGS
@@ -117,7 +117,7 @@ export default class GIFBuilder {
 
   async _createGIF() {
     return new Promise((resolve, reject) => {
-      this.gifshot.createGIF(this.options, result => {
+      this.gifshot.createGIF(this.options, (result) => {
         // callback object properties
         // --------------------------
         // image - Base 64 image

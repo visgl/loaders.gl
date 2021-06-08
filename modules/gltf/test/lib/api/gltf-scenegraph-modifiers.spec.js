@@ -15,13 +15,13 @@ const PNG1x1 = new Uint8Array([
   0x00, 0x01, 0x00, 0x00, 0x05, 0x00, 0x01, 0x0a
 ]);
 
-test('GLTFScenegraph#ctor', t => {
+test('GLTFScenegraph#ctor', (t) => {
   const gltfScenegraph = new GLTFScenegraph();
   t.ok(gltfScenegraph);
   t.end();
 });
 
-test('GLTFScenegraph#addImage', t => {
+test('GLTFScenegraph#addImage', (t) => {
   // Smallest valid png
   const gltfScenegraph = new GLTFScenegraph();
 
@@ -41,7 +41,7 @@ test('GLTFScenegraph#addImage', t => {
   t.end();
 });
 
-test('GLTFScenegraph#Should be able to write custom attribute', async t => {
+test('GLTFScenegraph#Should be able to write custom attribute', async (t) => {
   const inputData = await load(GLTF_BINARY_URL, GLTFLoader, {gltf: {postProcess: true}});
   const gltfBuilder = new GLTFScenegraph();
 
@@ -57,7 +57,7 @@ test('GLTFScenegraph#Should be able to write custom attribute', async t => {
   t.end();
 });
 
-test('GLTFScenegraph#Should calculate min and max arrays for accessor', async t => {
+test('GLTFScenegraph#Should calculate min and max arrays for accessor', async (t) => {
   const inputData = await load(GLTF_BINARY_URL, GLTFLoader, {gltf: {postProcess: true}});
   const gltfBuilder = new GLTFScenegraph();
 
@@ -67,21 +67,19 @@ test('GLTFScenegraph#Should calculate min and max arrays for accessor', async t 
     }
   });
   t.ok(gltfBuilder.gltf.json.accessors[0]);
-  t.deepEqual(gltfBuilder.gltf.json.accessors[0].min, [
-    -2316.5927734375,
-    -3864.65771484375,
-    -3551.852294921875
-  ]);
-  t.deepEqual(gltfBuilder.gltf.json.accessors[0].max, [
-    2647.046875,
-    4302.39111328125,
-    3733.835205078125
-  ]);
+  t.deepEqual(
+    gltfBuilder.gltf.json.accessors[0].min,
+    [-2316.5927734375, -3864.65771484375, -3551.852294921875]
+  );
+  t.deepEqual(
+    gltfBuilder.gltf.json.accessors[0].max,
+    [2647.046875, 4302.39111328125, 3733.835205078125]
+  );
 
   t.end();
 });
 
-test('GLTFScenegraph#Nodes should store `matrix` transformation data', async t => {
+test('GLTFScenegraph#Nodes should store `matrix` transformation data', async (t) => {
   const inputData = await load(GLTF_BINARY_URL, GLTFLoader, {gltf: {postProcess: true}});
   const gltfBuilder = new GLTFScenegraph();
 

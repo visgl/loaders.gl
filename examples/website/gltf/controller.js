@@ -2,7 +2,7 @@ import {Matrix4} from '@math.gl/core';
 
 // Simple controller that keeps updating translation and rotation
 export default class Controller {
-  constructor(canvas, {initialZoom = 2, onDrop = file => {}} = {}) {
+  constructor(canvas, {initialZoom = 2, onDrop = (file) => {}} = {}) {
     this.mouse = {
       lastX: 0,
       lastY: 0
@@ -47,7 +47,7 @@ export default class Controller {
   // PRIVATE
 
   _initializeEventHandling(canvas) {
-    canvas.onwheel = e => {
+    canvas.onwheel = (e) => {
       this.translate += e.deltaY / 10;
       if (this.translate < 0.1) {
         this.translate = 0.1;
@@ -55,7 +55,7 @@ export default class Controller {
       e.preventDefault();
     };
 
-    canvas.onpointerdown = e => {
+    canvas.onpointerdown = (e) => {
       this.mouse.lastX = e.clientX;
       this.mouse.lastY = e.clientY;
 
@@ -68,7 +68,7 @@ export default class Controller {
       this.rotationAnimation = false;
     };
 
-    canvas.onpointermove = e => {
+    canvas.onpointermove = (e) => {
       if (e.buttons) {
         const dX = e.clientX - this.mouse.lastX;
         const dY = e.clientY - this.mouse.lastY;
@@ -78,12 +78,12 @@ export default class Controller {
       }
     };
 
-    canvas.ondragover = e => {
+    canvas.ondragover = (e) => {
       e.dataTransfer.dropEffect = 'link';
       e.preventDefault();
     };
 
-    canvas.ondrop = async event => {
+    canvas.ondrop = async (event) => {
       event.preventDefault();
       if (event.dataTransfer.files && event.dataTransfer.files.length === 1) {
         const file = event.dataTransfer.files[0];

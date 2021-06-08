@@ -146,7 +146,7 @@ function joinProperties(geometries, properties) {
  */
 function reprojectFeatures(features, sourceCrs, targetCrs) {
   const projection = new Proj4Projection({from: sourceCrs || 'WGS84', to: targetCrs || 'WGS84'});
-  return transformGeoJsonCoords(features, coord => projection.project(coord));
+  return transformGeoJsonCoords(features, (coord) => projection.project(coord));
 }
 
 // eslint-disable-next-line max-statements

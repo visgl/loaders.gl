@@ -13,8 +13,7 @@ export type Batch = {
   cursor?: number;
 };
 
-export interface TableBatchOptions {
-}
+export interface TableBatchOptions {}
 
 export interface TableBatchConstructor {
   new (schema: Schema, options?: TableBatchOptions): TableBatch;

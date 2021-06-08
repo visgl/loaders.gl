@@ -27,7 +27,7 @@ export default function AsyncIteratorStreamer(config) {
   //   this._input.resume();
   // };
 
-  this.stream = async function(asyncIterator) {
+  this.stream = async function (asyncIterator) {
     this._input = asyncIterator;
 
     try {
@@ -62,7 +62,7 @@ export default function AsyncIteratorStreamer(config) {
   };
 
   // HELPER METHODS
-  this.getStringChunk = function(chunk) {
+  this.getStringChunk = function (chunk) {
     return typeof chunk === 'string' ? chunk : this.textDecoder.decode(chunk, {stream: true});
   };
 }

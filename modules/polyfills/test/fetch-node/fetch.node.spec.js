@@ -13,7 +13,7 @@ const TEXT_URL_GZIPPED = `@loaders.gl/polyfills/test/data/data.txt.gz`;
 const REDIRECT_URL =
   'https://github.com/visgl/deck.gl-data/raw/master/3d-tiles/RoyalExhibitionBuilding/1/1.pnts';
 
-test('polyfills#fetch() (NODE)', async t => {
+test('polyfills#fetch() (NODE)', async (t) => {
   if (!isBrowser) {
     const response = await fetch(PLY_CUBE_ATT_URL);
     t.ok(response.headers, 'fetch polyfill successfully returned headers under Node.js');
@@ -23,7 +23,7 @@ test('polyfills#fetch() (NODE)', async t => {
   t.end();
 });
 
-test('polyfills#fetch() ignores url query params when loading file (NODE)', async t => {
+test('polyfills#fetch() ignores url query params when loading file (NODE)', async (t) => {
   if (!isBrowser) {
     const response = await fetch(`${PLY_CUBE_ATT_URL}?v=1.2.3`);
     const data = await response.text();
@@ -33,7 +33,7 @@ test('polyfills#fetch() ignores url query params when loading file (NODE)', asyn
   t.end();
 });
 
-test('polyfills#fetch() error handling (NODE)', async t => {
+test('polyfills#fetch() error handling (NODE)', async (t) => {
   if (!isBrowser) {
     let response = await fetch('non-existent-file');
     t.ok(response.statusText.includes('ENOENT'), 'fetch statusText forwards node ENOENT error');
@@ -48,7 +48,7 @@ test('polyfills#fetch() error handling (NODE)', async t => {
   t.end();
 });
 
-test('polyfills#fetch() able to handle "Accept-Encoding: gzip" (NODE)', async t => {
+test('polyfills#fetch() able to handle "Accept-Encoding: gzip" (NODE)', async (t) => {
   if (!isBrowser) {
     // Github will serve the desired compression
     const headers = {
@@ -64,7 +64,7 @@ test('polyfills#fetch() able to handle "Accept-Encoding: gzip" (NODE)', async t 
   t.end();
 });
 
-test('polyfills#fetch() able to handle "Accept-Encoding: br" (NODE)', async t => {
+test('polyfills#fetch() able to handle "Accept-Encoding: br" (NODE)', async (t) => {
   if (!isBrowser) {
     // Github will serve the desired compression
     const headers = {
@@ -79,7 +79,7 @@ test('polyfills#fetch() able to handle "Accept-Encoding: br" (NODE)', async t =>
   t.end();
 });
 
-test('polyfills#fetch() able to handle "Accept-Encoding: deflate"', async t => {
+test('polyfills#fetch() able to handle "Accept-Encoding: deflate"', async (t) => {
   if (!isBrowser) {
     // Github will serve the desired compression
     const headers = {
@@ -94,7 +94,7 @@ test('polyfills#fetch() able to handle "Accept-Encoding: deflate"', async t => {
   t.end();
 });
 
-test('polyfills#fetch() able to decompress .gz extension (NODE)', async t => {
+test('polyfills#fetch() able to decompress .gz extension (NODE)', async (t) => {
   let response = await fetchFile(TEXT_URL);
   t.ok(response.ok, response.statusText);
   let data = await response.text();
@@ -109,7 +109,7 @@ test('polyfills#fetch() able to decompress .gz extension (NODE)', async t => {
   t.end();
 });
 
-test('polyfills#fetch() should follow redirect if `followRedirect` option is true', async t => {
+test('polyfills#fetch() should follow redirect if `followRedirect` option is true', async (t) => {
   if (!isBrowser) {
     const defaultFetchResponse = await fetch(REDIRECT_URL);
     t.equal(defaultFetchResponse.status, 200);

@@ -42,7 +42,7 @@ const tilesetUrl = ''; // add the url to your tileset.json file here
 const tilesetJson = await load(tilesetUrl, Tiles3DLoader);
 
 const tileset3d = new Tileset3D(tilesetJson, {
-  onTileLoad: tile => console.log(tile)
+  onTileLoad: (tile) => console.log(tile)
 });
 
 // initial viewport
@@ -52,7 +52,7 @@ tileset3d.update(viewport);
 tileset3d.update(viewport);
 
 // Visible tiles
-const visibleTiles = tileset3d.tiles.filter(tile => tile.selected);
+const visibleTiles = tileset3d.tiles.filter((tile) => tile.selected);
 
 // Note that visibleTiles will likely not immediately include all tiles
 // tiles will keep loading and file `onTileLoad` callbacks

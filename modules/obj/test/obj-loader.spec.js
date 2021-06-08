@@ -13,13 +13,13 @@ setLoaderOptions({
   _workerType: 'test'
 });
 
-test('OBJLoader#loader objects', t => {
+test('OBJLoader#loader objects', (t) => {
   validateLoader(t, OBJLoader, 'OBJLoader');
   validateLoader(t, OBJWorkerLoader, 'OBJWorkerLoader');
   t.end();
 });
 
-test('OBJLoader#parseText', async t => {
+test('OBJLoader#parseText', async (t) => {
   const data = await load(OBJ_ASCII_URL, OBJLoader);
   validateMeshCategoryData(t, data);
 
@@ -31,7 +31,7 @@ test('OBJLoader#parseText', async t => {
   t.end();
 });
 
-test('OBJLoader#parse(SCHEMA)', async t => {
+test('OBJLoader#parse(SCHEMA)', async (t) => {
   const data = await load(OBJ_NORMALS_URL, OBJLoader);
   validateMeshCategoryData(t, data);
 
@@ -39,11 +39,11 @@ test('OBJLoader#parse(SCHEMA)', async t => {
   t.equal(data.schema.metadata.get('mode'), '4', 'schema metadata is correct');
   t.ok(data.schema.metadata.get('boundingBox'), 'schema metadata is correct');
 
-  const positionField = data.schema.fields.find(field => field.name === 'POSITION');
+  const positionField = data.schema.fields.find((field) => field.name === 'POSITION');
   t.equal(positionField.type.listSize, 3, 'schema size correct');
   t.equal(positionField.type.valueType.precision, 32, 'schema type correct');
 
-  const colorField = data.schema.fields.find(field => field.name === 'TEXCOORD_0');
+  const colorField = data.schema.fields.find((field) => field.name === 'TEXCOORD_0');
   t.equal(colorField.type.listSize, 2, 'schema size correct');
 
   t.equal(data.mode, 4, 'mode is correct');
@@ -52,7 +52,7 @@ test('OBJLoader#parse(SCHEMA)', async t => {
   t.end();
 });
 
-test('OBJLoader#parseText - object with normals', async t => {
+test('OBJLoader#parseText - object with normals', async (t) => {
   const data = await load(OBJ_NORMALS_URL, OBJLoader);
   validateMeshCategoryData(t, data);
 
@@ -65,7 +65,7 @@ test('OBJLoader#parseText - object with normals', async t => {
   t.end();
 });
 
-test('OBJLoader#parseText - multi-part object', async t => {
+test('OBJLoader#parseText - multi-part object', async (t) => {
   const data = await load(OBJ_MULTI_PART_URL, OBJLoader);
   validateMeshCategoryData(t, data);
 
@@ -73,7 +73,7 @@ test('OBJLoader#parseText - multi-part object', async t => {
   t.end();
 });
 
-test('OBJWorkerLoader#parse(text)', async t => {
+test('OBJWorkerLoader#parse(text)', async (t) => {
   if (typeof Worker === 'undefined') {
     t.comment('Worker is not usable in non-browser environments');
     t.end();

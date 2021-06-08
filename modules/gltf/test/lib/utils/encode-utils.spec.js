@@ -3,7 +3,7 @@ import test from 'tape-promise/tape';
 
 import {copyPaddedStringToDataView} from '@loaders.gl/loader-utils';
 
-test('encode-utils', t => {
+test('encode-utils', (t) => {
   const STRING = 'abcdef';
   const byteLength = copyPaddedStringToDataView(null, 0, STRING, 4);
   t.equals(byteLength, 8); // padded

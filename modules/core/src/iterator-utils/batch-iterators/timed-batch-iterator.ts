@@ -1,10 +1,7 @@
 /**
  * "Debounces" batches and returns them in groups
  */
-export async function *timedBatchIterator<Batch>(
-  batchIterator: AsyncIterable<Batch>,
-  timeout
-) {
+export async function* timedBatchIterator<Batch>(batchIterator: AsyncIterable<Batch>, timeout) {
   let start = Date.now();
   let batches: Batch[] = [];
   for await (const batch of batchIterator) {

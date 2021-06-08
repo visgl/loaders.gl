@@ -30,7 +30,7 @@ const CUSTOM_TESTS = [
     run(callback) {
       Papa.parse(new File(['A,b,c\nd,E,f\nG,h,i'], 'sample.csv'), {
         chunkSize: 3,
-        complete: response => callback(response.data)
+        complete: (response) => callback(response.data)
       });
     }
   },
@@ -520,7 +520,7 @@ const CUSTOM_TESTS = [
   }
 ];
 
-test('papaparse#Core Parser Tests', t => {
+test('papaparse#Core Parser Tests', (t) => {
   for (const testCase of CORE_PARSER_TESTS) {
     if (!testCase.disabled) {
       // @ts-ignore
@@ -536,7 +536,7 @@ test('papaparse#Core Parser Tests', t => {
   t.end();
 });
 
-test('papaparse#Parse Tests', t => {
+test('papaparse#Parse Tests', (t) => {
   for (const testCase of PARSE_TESTS) {
     if (!testCase.disabled) {
       const actual = Papa.parse(testCase.input, testCase.config);
@@ -555,12 +555,12 @@ test('papaparse#Parse Tests', t => {
   t.end();
 });
 
-test('Parse Async Tests', t => {
+test('Parse Async Tests', (t) => {
   for (const testCase of PARSE_ASYNC_TESTS) {
     if (!testCase.disabled) {
       var config = testCase.config;
 
-      config.complete = function(actual) {
+      config.complete = function (actual) {
         t.deepEqual(
           JSON.stringify(actual.errors),
           JSON.stringify(testCase.expected.errors),
@@ -570,7 +570,7 @@ test('Parse Async Tests', t => {
         t.end();
       };
 
-      config.error = function(err) {
+      config.error = function (err) {
         t.end();
         throw err;
       };
@@ -580,10 +580,10 @@ test('Parse Async Tests', t => {
   }
 });
 
-test('papaparse#Custom Tests', t => {
+test('papaparse#Custom Tests', (t) => {
   for (const testCase of CUSTOM_TESTS) {
     if (!testCase.disabled) {
-      testCase.run(function(actual) {
+      testCase.run(function (actual) {
         t.deepEqual(
           JSON.stringify(actual),
           JSON.stringify(testCase.expected),

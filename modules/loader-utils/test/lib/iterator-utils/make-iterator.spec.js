@@ -2,7 +2,7 @@ import test from 'tape-promise/tape';
 import {fetchFile, makeIterator} from '@loaders.gl/core';
 import {concatenateChunksAsync, makeTextEncoderIterator} from '@loaders.gl/loader-utils';
 
-const setTimeoutPromise = timeout => new Promise(resolve => setTimeout(resolve, timeout));
+const setTimeoutPromise = (timeout) => new Promise((resolve) => setTimeout(resolve, timeout));
 
 async function* asyncTexts() {
   await setTimeoutPromise(10);
@@ -17,7 +17,7 @@ function asyncArrayBuffers() {
   return makeTextEncoderIterator(asyncTexts());
 }
 
-test('concatenateChunksAsync', async t => {
+test('concatenateChunksAsync', async (t) => {
   const RESULT = `line 1\nline 2\nline 3\nline 4`;
 
   // const text = await concatenateChunksAsync(asyncTexts());
@@ -34,7 +34,7 @@ test('concatenateChunksAsync', async t => {
   t.end();
 });
 
-test('makeIterator#string', async t => {
+test('makeIterator#string', async (t) => {
   const bigString = '123456';
   const results = ['12', '34', '56'];
 
@@ -47,7 +47,7 @@ test('makeIterator#string', async t => {
   t.end();
 });
 
-test('makeIterator#arrayBuffer', async t => {
+test('makeIterator#arrayBuffer', async (t) => {
   const bigString = new ArrayBuffer(6);
 
   const iterator = makeIterator(bigString, {chunkSize: 2});
@@ -62,7 +62,7 @@ test('makeIterator#arrayBuffer', async t => {
 
 const DATA_URL = '@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-positions.bin';
 
-test('makeIterator(fetch)#async iterate', async t => {
+test('makeIterator(fetch)#async iterate', async (t) => {
   const response = await fetchFile(DATA_URL);
   const stream = await response.body;
   t.ok(stream);

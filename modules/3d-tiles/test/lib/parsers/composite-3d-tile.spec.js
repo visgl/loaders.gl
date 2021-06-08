@@ -12,7 +12,7 @@ const COMPOSITE_OF_COMPOSITE_URL =
 const COMPOSITE_OF_INSTANCED_URL =
   '@loaders.gl/3d-tiles/test/data/Composite/CompositeOfInstanced/tileset.json';
 
-test('composite tile#invalid version', t => {
+test('composite tile#invalid version', (t) => {
   const TILE = {
     type: TILE3D_TYPE.COMPOSITE,
     version: 2
@@ -25,7 +25,7 @@ test('composite tile#invalid version', t => {
   t.end();
 });
 
-test('composite tile#invalid inner tile content type', t => {
+test('composite tile#invalid inner tile content type', (t) => {
   const TILE = {
     type: TILE3D_TYPE.COMPOSITE,
     tiles: [
@@ -61,21 +61,21 @@ test('composite tile#composite tile with an instanced tile that has an invalid u
 });
 */
 
-test('composite tile#loads from file', async t => {
+test('composite tile#loads from file', async (t) => {
   const tileData = await loadRootTileFromTileset(t, COMPOSITE_URL);
   const tile = await parse(tileData, Tiles3DLoader);
   t.ok(tile, 'loaded tile');
   t.end();
 });
 
-test('composite tile#loads composite', async t => {
+test('composite tile#loads composite', async (t) => {
   const tileData = await loadRootTileFromTileset(t, COMPOSITE_URL);
   const tile = await parse(tileData, Tiles3DLoader);
   t.ok(tile, 'loaded');
   t.end();
 });
 
-test('composite tile#loads composite of composite', async t => {
+test('composite tile#loads composite of composite', async (t) => {
   const tileData = await loadRootTileFromTileset(t, COMPOSITE_OF_COMPOSITE_URL);
   const tile = await parse(tileData, Tiles3DLoader);
   t.ok(tile, 'loaded');
@@ -83,7 +83,7 @@ test('composite tile#loads composite of composite', async t => {
 });
 
 // TODO  should be a render test
-test.skip('renders multiple instanced tilesets', async t => {
+test.skip('renders multiple instanced tilesets', async (t) => {
   const tileData = await loadRootTileFromTileset(t, COMPOSITE_OF_INSTANCED_URL);
   const tile = await parse(tileData, Tiles3DLoader);
   t.ok(tile, 'loaded');

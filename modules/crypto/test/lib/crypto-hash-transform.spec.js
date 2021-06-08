@@ -10,7 +10,7 @@ const CSV_URL = '@loaders.gl/csv/test/data/sample-very-long.csv';
 /** Externally computed hash: `openssl md5 -binary sample-very-long.json | openssl base64` */
 const CSV_MD5 = 'zmLuuVSkigYR9r5FcsKkCw==';
 
-test('CryptoHashTransform#run(CSV, against external hash)', async t => {
+test('CryptoHashTransform#run(CSV, against external hash)', async (t) => {
   const response = await fetchFile(CSV_URL);
   const data = await response.arrayBuffer();
 
@@ -20,14 +20,14 @@ test('CryptoHashTransform#run(CSV, against external hash)', async t => {
   t.end();
 });
 
-test('CryptoHashTransform#iterator(CSV stream, against external hash)', async t => {
+test('CryptoHashTransform#iterator(CSV stream, against external hash)', async (t) => {
   let hash;
 
   const csvIterator = await loadInBatches(CSV_URL, CSVLoader, {
     modules: {CryptoJS},
     transforms: [CryptoHashTransform],
     crypto: {
-      onEnd: result => {
+      onEnd: (result) => {
         hash = result.hash;
       }
     }
@@ -44,7 +44,7 @@ test('CryptoHashTransform#iterator(CSV stream, against external hash)', async t 
   t.end();
 });
 
-test('CryptoHashTransform#run(MD5 = default)', async t => {
+test('CryptoHashTransform#run(MD5 = default)', async (t) => {
   const {binaryData, repeatedData} = getBinaryData();
 
   let hash = await CryptoHashTransform.run(binaryData, {modules: {CryptoJS}});
@@ -56,7 +56,7 @@ test('CryptoHashTransform#run(MD5 = default)', async t => {
   t.end();
 });
 
-test('CryptoHashTransform#run(SHA256)', async t => {
+test('CryptoHashTransform#run(SHA256)', async (t) => {
   const {binaryData, repeatedData} = getBinaryData();
 
   let hash = await CryptoHashTransform.run(binaryData, {
@@ -82,7 +82,7 @@ test('CryptoHashTransform#run(SHA256)', async t => {
   t.end();
 });
 
-test('makeTransformIterator#CryptoHashTransform(small chunks)', async t => {
+test('makeTransformIterator#CryptoHashTransform(small chunks)', async (t) => {
   const inputChunks = [
     new Uint8Array([1, 2, 3]).buffer,
     new Uint8Array([4, 5, 6]).buffer,
@@ -95,7 +95,7 @@ test('makeTransformIterator#CryptoHashTransform(small chunks)', async t => {
   const transformIterator = makeTransformIterator(inputChunks, CryptoHashTransform, {
     modules: {CryptoJS},
     crypto: {
-      onEnd: result => {
+      onEnd: (result) => {
         hash = result.hash;
       }
     }
@@ -116,7 +116,7 @@ test('makeTransformIterator#CryptoHashTransform(small chunks)', async t => {
   t.end();
 });
 
-test('makeTransformIterator#CryptoHashTransform(100K)', async t => {
+test('makeTransformIterator#CryptoHashTransform(100K)', async (t) => {
   const {binaryData} = getBinaryData();
 
   const inputChunks = [binaryData];
@@ -127,7 +127,7 @@ test('makeTransformIterator#CryptoHashTransform(100K)', async t => {
   const transformIterator = makeTransformIterator(inputChunks, CryptoHashTransform, {
     modules: {CryptoJS},
     crypto: {
-      onEnd: result => {
+      onEnd: (result) => {
         hash = result.hash;
       }
     }

@@ -9,9 +9,9 @@ export default class Headers {
     if (headers instanceof Headers) {
       headers.forEach((value, name) => this.append(name, value));
     } else if (Array.isArray(headers)) {
-      headers.forEach(header => this.append(header[0], header[1]));
+      headers.forEach((header) => this.append(header[0], header[1]));
     } else if (headers) {
-      Object.getOwnPropertyNames(headers).forEach(name => this.append(name, headers[name]));
+      Object.getOwnPropertyNames(headers).forEach((name) => this.append(name, headers[name]));
     }
   }
 
@@ -53,7 +53,7 @@ export default class Headers {
 
   keys() {
     const items = [];
-    this.forEach(function(value, name) {
+    this.forEach(function (value, name) {
       items.push(name);
     });
     return iteratorFor(items);
@@ -61,7 +61,7 @@ export default class Headers {
 
   values() {
     const items = [];
-    this.forEach(function(value) {
+    this.forEach(function (value) {
       items.push(value);
     });
     return iteratorFor(items);
@@ -69,7 +69,7 @@ export default class Headers {
 
   entries() {
     const items = [];
-    this.forEach(function(value, name) {
+    this.forEach(function (value, name) {
       items.push([name, value]);
     });
     return iteratorFor(items);
@@ -107,7 +107,7 @@ function iteratorFor(items) {
     }
   };
 
-  iterator[Symbol.iterator] = function() {
+  iterator[Symbol.iterator] = function () {
     return iterator;
   };
 

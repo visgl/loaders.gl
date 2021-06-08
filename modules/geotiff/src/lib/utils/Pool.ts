@@ -1,4 +1,4 @@
-import type { FileDirectory } from 'geotiff';
+import type {FileDirectory} from 'geotiff';
 /* global Worker */
 // import Worker from 'web-worker:./decoder.worker.ts';
 
@@ -46,18 +46,18 @@ export default class Pool {
   async decode(fileDirectory: FileDirectory, buffer: ArrayBuffer) {
     const currentWorker = await this.waitForWorker();
     return new Promise((resolve, reject) => {
-      currentWorker.onmessage = event => {
+      currentWorker.onmessage = (event) => {
         // this.workers.push(currentWorker);
         this.finishTask(currentWorker);
         resolve(event.data[0]);
       };
-      currentWorker.onerror = error => {
+      currentWorker.onerror = (error) => {
         // this.workers.push(currentWorker);
         this.finishTask(currentWorker);
         reject(error);
       };
       currentWorker.postMessage(['decode', fileDirectory, buffer], [buffer]);
-    }) as Promise<ArrayBuffer>;
+    });
   }
 
   async waitForWorker() {
@@ -66,7 +66,7 @@ export default class Pool {
       return idleWorker;
     }
     const waiter: any = {};
-    const promise = new Promise(resolve => {
+    const promise = new Promise((resolve) => {
       waiter.resolve = resolve;
     });
 

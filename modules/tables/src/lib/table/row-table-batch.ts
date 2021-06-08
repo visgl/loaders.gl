@@ -4,7 +4,7 @@ type RowTableBatchOptions = {
   batchSize: number | string;
   convertToObject: boolean;
   optimizeMemoryUsage: boolean;
-}
+};
 
 const DEFAULT_OPTIONS = {
   batchSize: 'auto',
@@ -72,7 +72,6 @@ export default class RowTableBatch implements TableBatch {
 
     this.length++;
   }
-
 
   chunkComplete(): void {
     this.isChunkComplete = true;

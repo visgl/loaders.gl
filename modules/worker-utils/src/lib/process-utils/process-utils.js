@@ -14,7 +14,7 @@ export function getAvailablePort(defaultPort = 3000) {
 
       const portsInUse = [];
       const regex = /:(\d+) \(LISTEN\)/;
-      stdout.split('\n').forEach(line => {
+      stdout.split('\n').forEach((line) => {
         const match = line.match(regex);
         if (match) {
           portsInUse.push(Number(match[1]));

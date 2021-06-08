@@ -22,8 +22,8 @@ export async function readFileSlice(file, offset, end) {
     const slice = file.slice(offset, end);
 
     const fileReader = new FileReader();
-    fileReader.onload = event => resolve(event.target && event.target.result);
-    fileReader.onerror = error => reject(error);
+    fileReader.onload = (event) => resolve(event.target && event.target.result);
+    fileReader.onerror = (error) => reject(error);
     fileReader.readAsArrayBuffer(slice);
   });
 }

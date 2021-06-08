@@ -4,7 +4,7 @@ import {fetchFile} from '@loaders.gl/core';
 
 const SAMPLE_PATH = '@loaders.gl/json/test/data/clarinet/sample.json';
 
-test('clarinet#track position', async t => {
+test('clarinet#track position', async (t) => {
   const response = await fetchFile(SAMPLE_PATH);
   const data = await response.text();
 

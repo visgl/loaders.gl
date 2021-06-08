@@ -8,9 +8,9 @@ import {validateMeshCategoryData} from 'test/common/conformance';
 const POSITIONS_URL = '@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-positions.bin';
 const COLORS_URL = '@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-colors.bin';
 
-test('DracoWriter#compressRawBuffers', async t => {
-  const POSITIONS = await fetchFile(POSITIONS_URL).then(response => response.arrayBuffer());
-  const COLORS = await fetchFile(COLORS_URL).then(response => response.arrayBuffer());
+test('DracoWriter#compressRawBuffers', async (t) => {
+  const POSITIONS = await fetchFile(POSITIONS_URL).then((response) => response.arrayBuffer());
+  const COLORS = await fetchFile(COLORS_URL).then((response) => response.arrayBuffer());
 
   const attributes = {
     POSITION: new Float32Array(POSITIONS),

@@ -23,9 +23,9 @@ A set of functions that can extract information from "unparsed" binary memory re
 These functions are used internally to autodetect if image loader can be used to parse a certain `ArrayBuffer`, but are also available to applications.
 
 | Function                                                                     | Description |
-| ---------------------------------------------------------------------------- | ----------- |
+| ---------------------------------------------------------------------------- | ----------- | --- |
 | `isBinaryImage(imageData : ArrayBuffer [, mimeType : String]) : Boolean`     |             |
-| `getBinaryImageMIMEType(imageData : ArrayBuffer) : String | null`            |             |
+| `getBinaryImageMIMEType(imageData : ArrayBuffer) : String                    | null`       |     |
 | `getBinaryImageSize(imageData : ArrayBuffer [, mimeType : String]) : Object` |             |
 
 ### Parsed Image API
