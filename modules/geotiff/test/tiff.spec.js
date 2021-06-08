@@ -12,7 +12,7 @@ test('Creates correct TiffPixelSource for OME-TIFF.', async (t) => {
     return;
   }
   const tiff = await fromFile(TIFF_URL);
-  const {data} = await loadGeoTiff(tiff, {t});
+  const {data} = await loadGeoTiff(tiff);
   t.equal(data.length, 1, 'image should not be pyramidal.');
   const [base] = data;
   t.deepEqual(base.labels, ['t', 'c', 'z', 'y', 'x'], 'should have DimensionOrder "XYZCT".');

@@ -6,7 +6,9 @@ import {getOmePixelSourceMeta} from './ome-utils';
 import {fromString} from './omexml';
 import type {OmeTiffSelection} from './ome-indexers';
 
-export async function loadOMETiff(tiff: GeoTIFF, firstImage: GeoTIFFImage) {
+export const isOmeTiff = (img: GeoTIFFImage) => img.fileDirectory.ImageDescription.includes('<OME');
+
+export async function loadOmeTiff(tiff: GeoTIFF, firstImage: GeoTIFFImage) {
   // Get first image from tiff and inspect OME-XML metadata
   const {
     ImageDescription,

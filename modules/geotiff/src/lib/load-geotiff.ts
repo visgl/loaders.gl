@@ -7,30 +7,42 @@ import {
 } from './utils/proxies';
 // import Pool from './lib/Pool';
 
-import {loadOMETiff} from './ome/load-ome-tiff';
+import {loadOmeTiff, isOmeTiff} from './ome/load-ome-tiff';
+import type TiffPixelSource from './tiff-pixel-source';
 
-interface TiffOptions {
+/** Options for initializing a tiff pixel source. */
+interface GeoTIFFOptions {
+  /** Headers passed to each underlying request. */
   headers?: Record<string, unknown>;
+  /** Performance enhancment to index the remote tiff source using pre-computed byte-offsets. Generated via https://github.com/ilan-gold/generate-tiff-offsets */
   offsets?: number[];
+  /** Indicates whether a multi-threaded pool of image decoders should be used to decode tiles. */
   pool?: boolean;
+}
+
+interface GeoTIFFData {
+  data: TiffPixelSource<string[]>[];
+  metadata: Record<string, unknown>;
 }
 
 /**
  * Opens an OME-TIFF via URL and returns data source and associated metadata for first image.
  *
- * @param {(string | File)} source url or File object.
- * @param {{ headers: (undefined | Headers), offsets: (undefined | number[]), pool: (undefined | boolean ) }} opts
- * Options for initializing a tiff pixel source. Headers are passed to each underlying fetch request. Offests are
- // * a performance enhancment to index the remote tiff source using pre-computed byte-offsets. Pool indicates whether a
- * multi-threaded pool of image decoders should be used to decode tiles (default = true).
- * @return {Promise<{ data: TiffPixelSource[], metadata: ImageMeta }>} data source and associated OME-Zarr metadata.
+ * @param source url string, File/Blob object, or GeoTIFF object
+ * @param opts options for initializing a tiff pixel source.
+ *  - `opts.headers` are passed to each underlying fetch request.
+ *  - `opts.offsets` are a performance enhancment to index the remote tiff source using pre-computed byte-offsets.
+ *  - `opts.pool` indicates whether a multi-threaded pool of image decoders should be used to decode tiles (default = true).
+ * @return data source and associated OME-Zarr metadata.
  */
-export async function loadGeoTiff(source: string | File | GeoTIFF, opts: TiffOptions = {}) {
-  const {headers, offsets, pool = true} = opts;
-
-  let tiff: GeoTIFF;
+export async function loadGeoTiff(
+  source: string | Blob | GeoTIFF,
+  opts: GeoTIFFOptions = {}
+): Promise<GeoTIFFData> {
+  const {headers, offsets} = opts;
 
   // Create tiff source
+  let tiff: GeoTIFF;
   if (source instanceof GeoTIFF) {
     tiff = source;
   } else if (typeof source === 'string') {
@@ -64,8 +76,8 @@ export async function loadGeoTiff(source: string | File | GeoTIFF, opts: TiffOpt
 
   const firstImage = await tiff.getImage(0);
 
-  if (firstImage.fileDirectory.ImageDescription.includes('<OME')) {
-    return loadOMETiff(tiff, firstImage);
+  if (isOmeTiff(firstImage)) {
+    return loadOmeTiff(tiff, firstImage);
   }
 
   throw new Error('GeoTIFF not recognized.');
