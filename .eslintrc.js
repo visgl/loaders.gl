@@ -41,7 +41,15 @@ const config = deepMerge(defaultConfig, {
         'import/no-unresolved': 0
       }
     }
-  ]
+  ],
+
+  settings: {
+    'import/resolver': {
+      node: {
+        extensions: ['.js', '.jsx', '.ts', '.tsx']
+      }
+    }
+  }
 });
 
 // Uncomment to log the eslint config
