@@ -40,12 +40,12 @@ export default function md5WASM(data) {
     returnObj = {},
     startTime = new Date().getTime();
 
-  returnObj['then'] = function(fun) {
+  returnObj['then'] = function (fun) {
     thenFun = fun;
     getThen();
     return returnObj;
   };
-  returnObj['catch'] = function(fun) {
+  returnObj['catch'] = function (fun) {
     catchFun = fun;
     return returnObj;
   };
@@ -123,7 +123,7 @@ function makeMD5WA() {
   var loop, loops;
   var getA, setA, getB, setB, getC, setC, getD, setD, getX, setX, memView;
 
-  var md5WA = function(message) {
+  var md5WA = function (message) {
     var m00,
       m01,
       m02,
@@ -310,7 +310,7 @@ function makeMD5WA() {
     }
   };
 
-  return function(message, exports, mView, options) {
+  return function (message, exports, mView, options) {
     var digestbytes;
     loops = exports.loops;
     loop = exports.loop;
@@ -331,7 +331,7 @@ function makeMD5WA() {
 }
 
 function makeMD5JS() {
-  var md5JS = function(message, options) {
+  var md5JS = function (message, options) {
     var m00,
       m01,
       m02,
@@ -480,7 +480,7 @@ function makeMD5JS() {
     }
   };
 
-  return function(message, options) {
+  return function (message, options) {
     var digestbytes = crypt.wordsToBytes(md5JS(message, options)),
       result = options && options.asBytes ? digestbytes : crypt.bytesToHex(digestbytes);
     return result;
@@ -510,11 +510,11 @@ function makeCrypt() {
   var base64map = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
   return {
-    rotl: function(n, b) {
+    rotl: function (n, b) {
       return (n << b) | (n >>> (32 - b));
     },
 
-    endian: function(n) {
+    endian: function (n) {
       if (n.constructor == Number) {
         return (crypt.rotl(n, 8) & 0x00ff00ff) | (crypt.rotl(n, 24) & 0xff00ff00);
       }
@@ -522,19 +522,19 @@ function makeCrypt() {
       return n;
     },
 
-    bytesToWords: function(bytes) {
+    bytesToWords: function (bytes) {
       for (var words = [], i = 0, b = 0; i < bytes.length; i++, b += 8)
         words[b >>> 5] |= bytes[i] << (24 - (b % 32));
       return words;
     },
 
-    wordsToBytes: function(words) {
+    wordsToBytes: function (words) {
       for (var bytes = [], b = 0; b < words.length * 32; b += 8)
         bytes.push((words[b >>> 5] >>> (24 - (b % 32))) & 0xff);
       return bytes;
     },
 
-    bytesToHex: function(bytes) {
+    bytesToHex: function (bytes) {
       for (var hex = [], i = 0; i < bytes.length; i++) {
         hex.push((bytes[i] >>> 4).toString(16));
         hex.push((bytes[i] & 0xf).toString(16));

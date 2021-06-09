@@ -11,10 +11,7 @@ export default class CryptoHashTransform {
 
     const transform = new CryptoHashTransform(options);
     const typedWordArray = CryptoJS.lib.WordArray.create(input);
-    return transform._hash
-      .update(typedWordArray)
-      .finalize()
-      .toString(CryptoJS.enc.Base64);
+    return transform._hash.update(typedWordArray).finalize().toString(CryptoJS.enc.Base64);
   }
 
   constructor(options = {}) {

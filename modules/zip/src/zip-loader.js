@@ -29,7 +29,7 @@ async function parseZipAsync(data, options) {
     zip.forEach((relativePath, zipEntry) => {
       const subFilename = zipEntry.name;
 
-      const promise = loadZipEntry(jsZip, subFilename, options).then(arrayBufferOrError => {
+      const promise = loadZipEntry(jsZip, subFilename, options).then((arrayBufferOrError) => {
         fileMap[relativePath] = arrayBufferOrError;
       });
 

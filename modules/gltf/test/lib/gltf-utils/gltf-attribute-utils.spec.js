@@ -6,7 +6,7 @@ import {
 
 // Check if an attribute contains indices
 
-test('getGLTFAccessors', t => {
+test('getGLTFAccessors', (t) => {
   t.ok(getGLTFAccessors);
   t.ok(getGLTFAccessor);
   t.end();

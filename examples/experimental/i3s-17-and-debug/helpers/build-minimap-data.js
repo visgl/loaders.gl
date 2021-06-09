@@ -3,7 +3,7 @@ import {Ellipsoid} from '@math.gl/geospatial';
 
 export function buildMinimapData(tiles) {
   return tiles
-    .map(tile => {
+    .map((tile) => {
       if (!tile.selected || !tile.viewportIds.includes('main')) {
         return null;
       }

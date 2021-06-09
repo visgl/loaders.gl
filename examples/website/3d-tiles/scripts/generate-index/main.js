@@ -6,7 +6,7 @@ const ROOT_DIR = path.resolve(__dirname, '../../../');
 function main({root, inputDir, outputFilePath}) {
   const indexMap = {};
   const categories = fs.readdirSync(inputDir);
-  categories.forEach(cat => {
+  categories.forEach((cat) => {
     const catDir = path.resolve(inputDir, cat);
     if (fs.lstatSync(catDir).isDirectory()) {
       const examples = fs.readdirSync(catDir);
@@ -17,7 +17,7 @@ function main({root, inputDir, outputFilePath}) {
           const exampleDir = path.join(catDir, e);
           if (fs.lstatSync(exampleDir).isDirectory()) {
             const files = fs.readdirSync(exampleDir);
-            const tilesetIndex = files.findIndex(f => f === 'tileset.json');
+            const tilesetIndex = files.findIndex((f) => f === 'tileset.json');
 
             let tileset = null;
             if (tilesetIndex !== -1) {

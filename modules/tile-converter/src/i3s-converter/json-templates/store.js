@@ -1,7 +1,7 @@
 export const STORE = {
   id: {
     path: 'id',
-    transform: val => val.toUpperCase()
+    transform: (val) => val.toUpperCase()
   },
   profile: {
     path: 'profile',

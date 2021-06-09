@@ -1,7 +1,7 @@
 import test from 'tape-promise/tape';
 import {AsyncQueue} from '@loaders.gl/worker-utils';
 
-test('AsyncQueue#push', async t => {
+test('AsyncQueue#push', async (t) => {
   t.plan(2);
 
   const asyncQueue = new AsyncQueue();
@@ -23,7 +23,7 @@ test('AsyncQueue#push', async t => {
   // t.end(); handled by t.plan()
 });
 
-test('AsyncQueue#error', async t => {
+test('AsyncQueue#error', async (t) => {
   t.plan(2);
 
   const asyncQueue = new AsyncQueue();

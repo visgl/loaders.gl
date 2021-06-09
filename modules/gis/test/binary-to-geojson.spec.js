@@ -9,7 +9,7 @@ import EMPTY_BINARY_DATA from '@loaders.gl/gis/test/data/empty_binary';
 
 const FEATURE_COLLECTION_TEST_CASES = '@loaders.gl/gis/test/data/featurecollection.json';
 
-test('binary-to-geojson feature collections', async t => {
+test('binary-to-geojson feature collections', async (t) => {
   const response = await fetchFile(FEATURE_COLLECTION_TEST_CASES);
   const json = await response.json();
   const TEST_CASES = parseTestCases(json);
@@ -23,7 +23,7 @@ test('binary-to-geojson feature collections', async t => {
   t.end();
 });
 
-test('binary-to-geojson geometries', t => {
+test('binary-to-geojson geometries', (t) => {
   for (const testCase of GEOMETRY_TEST_CASES) {
     /** @type {BinaryGeometryData} */
     // @ts-ignore
@@ -34,7 +34,7 @@ test('binary-to-geojson geometries', t => {
   t.end();
 });
 
-test('binary-to-geojson from empty binary object returns empty features array', t => {
+test('binary-to-geojson from empty binary object returns empty features array', (t) => {
   const geojson = binaryToGeoJson(EMPTY_BINARY_DATA);
   t.ok(Array.isArray(geojson));
   t.equal(geojson.length, 0);

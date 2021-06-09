@@ -1,6 +1,6 @@
 const {getBabelConfig, deepMerge} = require('ocular-dev-tools');
 
-module.exports = api => {
+module.exports = (api) => {
   const defaultConfig = getBabelConfig(api, {react: true});
 
   const config = deepMerge(defaultConfig, {

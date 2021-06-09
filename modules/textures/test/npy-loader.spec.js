@@ -10,13 +10,13 @@ setLoaderOptions({
   _workerType: 'test'
 });
 
-test('NPYLoader#loader objects', async t => {
+test('NPYLoader#loader objects', async (t) => {
   validateLoader(t, NPYLoader, 'NPYLoader');
   validateLoader(t, NPYWorkerLoader, 'NPYWorkerLoader');
   t.end();
 });
 
-test('NPYLoader#parse', async t => {
+test('NPYLoader#parse', async (t) => {
   const options = {};
   const {data, header} = await load(NPY_UINT8_URL, NPYLoader, options);
 
@@ -29,7 +29,7 @@ test('NPYLoader#parse', async t => {
   t.end();
 });
 
-test('NPYWorkerLoader#parse', async t => {
+test('NPYWorkerLoader#parse', async (t) => {
   if (typeof Worker === 'undefined') {
     t.comment('Worker is not usable in non-browser environments');
     t.end();

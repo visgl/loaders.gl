@@ -13,7 +13,7 @@ export const PotreeLoader = {
   version: VERSION,
   extensions: ['json'],
   mimeTypes: ['application/json'],
-  testText: text => text.indexOf('octreeDir') >= 0,
+  testText: (text) => text.indexOf('octreeDir') >= 0,
   parseTextSync: JSON.parse,
   options: {
     potree: {}

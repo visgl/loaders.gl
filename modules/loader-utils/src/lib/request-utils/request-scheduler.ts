@@ -11,8 +11,7 @@ type Props = {
   id: string;
   throttleRequests: boolean;
   maxRequests: number;
-}
-
+};
 
 type DoneFunction = () => any;
 type GetPriorityFunction = () => number;
@@ -33,11 +32,11 @@ const DEFAULT_PROPS: Props = {
 
 /** Internal type, holds one request */
 type Request = {
-  handle: any; 
+  handle: any;
   priority: number;
-  getPriority: GetPriorityFunction; 
+  getPriority: GetPriorityFunction;
   resolve?: (value: any) => any;
-}
+};
 
 // TODO - Track requests globally, across multiple servers
 export default class RequestScheduler {
@@ -84,7 +83,10 @@ export default class RequestScheduler {
    *   - resolves to `null` if the request has been cancelled (by the callback return < 0).
    *     In this case the application should not issue the request
    */
-  scheduleRequest(handle: any, getPriority: GetPriorityFunction = () => 0): Promise<{done: DoneFunction} | null> {
+  scheduleRequest(
+    handle: any,
+    getPriority: GetPriorityFunction = () => 0
+  ): Promise<{done: DoneFunction} | null> {
     // Allows throttling to be disabled
     if (!this.props.throttleRequests) {
       return Promise.resolve({done: () => {}});
@@ -96,7 +98,7 @@ export default class RequestScheduler {
     }
 
     const request: Request = {handle, priority: 0, getPriority};
-    const promise = new Promise<{done: DoneFunction} | null>(resolve => {
+    const promise = new Promise<{done: DoneFunction} | null>((resolve) => {
       // @ts-ignore
       request.resolve = resolve;
       return request;

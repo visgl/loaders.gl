@@ -5,7 +5,7 @@ import {getData, generateRandomArrayBuffer, compareArrayBuffers} from './utils/t
 
 const SIZE = 100 * 1000;
 
-test('lz4#defaults', async t => {
+test('lz4#defaults', async (t) => {
   const binaryData = generateRandomArrayBuffer({size: SIZE});
   const repeatedData = generateRandomArrayBuffer({size: SIZE / 10, repetitions: 10});
 
@@ -25,7 +25,7 @@ test('lz4#defaults', async t => {
 
 // WORKER TESTS
 
-test('lz4#worker', async t => {
+test('lz4#worker', async (t) => {
   if (!isBrowser) {
     t.end();
     return;

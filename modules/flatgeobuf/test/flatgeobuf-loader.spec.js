@@ -8,7 +8,7 @@ setLoaderOptions({
   _workerType: 'test'
 });
 
-test('Load FlatGeobuf file', async t => {
+test('Load FlatGeobuf file', async (t) => {
   const response = await fetchFile(FLATGEOBUF_COUNTRIES_DATA_URL);
   const fgbBuffer = await response.arrayBuffer();
   const features = await parse(fgbBuffer, FlatGeobufLoader);
@@ -16,7 +16,7 @@ test('Load FlatGeobuf file', async t => {
   t.end();
 });
 
-test('Load FlatGeobuf file streaming', async t => {
+test('Load FlatGeobuf file streaming', async (t) => {
   const response = await fetchFile(FLATGEOBUF_COUNTRIES_DATA_URL);
   const iterator = await parseInBatches(response, FlatGeobufLoader);
   t.ok(iterator);

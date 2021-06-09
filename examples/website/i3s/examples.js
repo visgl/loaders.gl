@@ -14,8 +14,7 @@ export const INITIAL_EXAMPLE_NAME = 'San Francisco v1.6';
 export const EXAMPLES = {
   'San Francisco v1.6': {
     name: 'San Francisco v1.6',
-    url:
-      'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_Bldgs/SceneServer/layers/0',
+    url: 'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_Bldgs/SceneServer/layers/0',
     viewport: {
       ...VIEW_STATE,
       longitude: -120,
@@ -24,8 +23,7 @@ export const EXAMPLES = {
   },
   'San Francisco v1.7': {
     name: 'San Francisco v1.7',
-    url:
-      'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_3DObjects_1_7/SceneServer/layers/0',
+    url: 'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_3DObjects_1_7/SceneServer/layers/0',
     viewport: {
       ...VIEW_STATE,
       longitude: -120,
@@ -45,8 +43,7 @@ export const EXAMPLES = {
   // },
   'New York': {
     name: 'New York',
-    url:
-      'https://tiles.arcgis.com/tiles/P3ePLMYs2RVChkJx/arcgis/rest/services/Buildings_NewYork_17/SceneServer/layers/0',
+    url: 'https://tiles.arcgis.com/tiles/P3ePLMYs2RVChkJx/arcgis/rest/services/Buildings_NewYork_17/SceneServer/layers/0',
     viewport: {
       ...VIEW_STATE,
       longitude: -74,

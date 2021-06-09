@@ -11,7 +11,7 @@ const OUTPUT = {
   b: 8
 };
 
-test('asyncDeepMap#map', async t => {
-  t.deepEqual(await asyncDeepMap(INPUT, async n => Promise.resolve(n * 2)), OUTPUT);
+test('asyncDeepMap#map', async (t) => {
+  t.deepEqual(await asyncDeepMap(INPUT, async (n) => Promise.resolve(n * 2)), OUTPUT);
   t.end();
 });

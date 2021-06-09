@@ -77,15 +77,8 @@ async function _makeNodeResources({
 }) {
   const vertexCount = convertedAttributes.positions.length / VALUES_PER_VERTEX;
   const triangleCount = vertexCount / 3;
-  const {
-    faceRange,
-    featureIds,
-    positions,
-    normals,
-    colors,
-    texCoords,
-    featureCount
-  } = generateAttributes({triangleCount, ...convertedAttributes});
+  const {faceRange, featureIds, positions, normals, colors, texCoords, featureCount} =
+    generateAttributes({triangleCount, ...convertedAttributes});
 
   if (tileContent.batchTableJson) {
     makeFeatureIdsUnique(
@@ -467,7 +460,7 @@ function convertMaterials(tileContent) {
 function convertMaterial(sourceMaterial) {
   const material = {
     doubleSided: sourceMaterial.doubleSided,
-    emissiveFactor: sourceMaterial.emissiveFactor.map(c => Math.round(c * 255)),
+    emissiveFactor: sourceMaterial.emissiveFactor.map((c) => Math.round(c * 255)),
     // It is in upper case in GLTF: https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#alpha-coverage
     // But it is in lower case in I3S: https://github.com/Esri/i3s-spec/blob/master/docs/1.7/materialDefinitions.cmn.md
     alphaMode: (sourceMaterial.alphaMode || 'OPAQUE').toLowerCase(),
@@ -496,7 +489,7 @@ function convertMaterial(sourceMaterial) {
     // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#reference-pbrmetallicroughness
     const baseColorFactor = sourceMaterial.pbrMetallicRoughness.baseColorFactor;
     material.pbrMetallicRoughness.baseColorFactor =
-      (baseColorFactor && baseColorFactor.map(c => Math.round(c * 255))) || undefined;
+      (baseColorFactor && baseColorFactor.map((c) => Math.round(c * 255))) || undefined;
   }
 
   return {material, texture};
@@ -772,7 +765,7 @@ function convertBatchTableToAttributeBuffers(batchTable, featureIds, attributeSt
  * @returns {String} attribute type.
  */
 function getAttributeType(key, attributeStorageInfo) {
-  const attribute = attributeStorageInfo.find(attr => attr.name === key);
+  const attribute = attributeStorageInfo.find((attr) => attr.name === key);
   return attribute.attributeValues.valueType;
 }
 

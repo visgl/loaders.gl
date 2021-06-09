@@ -62,13 +62,13 @@ export default class GLTFScenegraph {
   }
 
   getExtension(extensionName) {
-    const isExtension = this.getUsedExtensions().find(name => name === extensionName);
+    const isExtension = this.getUsedExtensions().find((name) => name === extensionName);
     const extensions = this.json.extensions || {};
     return isExtension ? extensions[extensionName] || true : null;
   }
 
   getRequiredExtension(extensionName) {
-    const isRequired = this.getRequiredExtensions().find(name => name === extensionName);
+    const isRequired = this.getRequiredExtensions().find((name) => name === extensionName);
     return isRequired ? this.getExtension(extensionName) : null;
   }
 
@@ -261,7 +261,7 @@ export default class GLTFScenegraph {
 
   registerUsedExtension(extensionName) {
     this.json.extensionsUsed = this.json.extensionsUsed || [];
-    if (!this.json.extensionsUsed.find(ext => ext === extensionName)) {
+    if (!this.json.extensionsUsed.find((ext) => ext === extensionName)) {
       this.json.extensionsUsed.push(extensionName);
     }
   }
@@ -272,7 +272,7 @@ export default class GLTFScenegraph {
   registerRequiredExtension(extensionName) {
     this.registerUsedExtension(extensionName);
     this.json.extensionsRequired = this.json.extensionsRequired || [];
-    if (!this.json.extensionsRequired.find(ext => ext === extensionName)) {
+    if (!this.json.extensionsRequired.find((ext) => ext === extensionName)) {
       this.json.extensionsRequired.push(extensionName);
     }
   }

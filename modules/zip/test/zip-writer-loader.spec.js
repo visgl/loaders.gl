@@ -11,23 +11,23 @@ const FILE_MAP = {
   package: '{"name": "module"}'
 };
 
-test('Zip#loader/writer conformance', t => {
+test('Zip#loader/writer conformance', (t) => {
   validateLoader(t, ZipLoader, 'ZipLoader');
   validateWriter(t, ZipWriter, 'ZipWriter');
   t.end();
 });
 
-test('Zip#encode/decode', t => {
+test('Zip#encode/decode', (t) => {
   encode(FILE_MAP, ZipWriter)
-    .then(arrayBuffer => parse(arrayBuffer, ZipLoader))
-    .then(fileMap => {
+    .then((arrayBuffer) => parse(arrayBuffer, ZipLoader))
+    .then((fileMap) => {
       for (const key in FILE_MAP) {
         const text = new TextDecoder().decode(fileMap[key]);
         t.equal(text, FILE_MAP[key], `Subfile ${key} encoded/decoded correctly`);
       }
       t.end();
     })
-    .catch(error => {
+    .catch((error) => {
       t.fail(error.message);
       t.end();
     });

@@ -32,7 +32,7 @@ export default class WorkerFarm {
   }
 
   destroy() {
-    this.workerPools.forEach(workerPool => workerPool.destroy());
+    this.workerPools.forEach((workerPool) => workerPool.destroy());
   }
 
   setProps(props) {

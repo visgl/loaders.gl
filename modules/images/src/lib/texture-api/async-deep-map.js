@@ -14,7 +14,7 @@ E.g. a mipmapped cubemap
 }
 */
 
-const isObject = value => value && typeof value === 'object';
+const isObject = (value) => value && typeof value === 'object';
 
 // Loads a deep structure of urls (objects and arrays of urls)
 // Returns an object with six key-value pairs containing the images (or image mip arrays)
@@ -45,7 +45,7 @@ async function mapObject(object, func, options) {
 
   for (const key in object) {
     const url = object[key];
-    const promise = mapSubtree(url, func, options).then(value => {
+    const promise = mapSubtree(url, func, options).then((value) => {
       values[key] = value;
     });
     promises.push(promise);
@@ -57,6 +57,6 @@ async function mapObject(object, func, options) {
 }
 
 async function mapArray(urlArray, func, options = {}) {
-  const promises = urlArray.map(url => mapSubtree(url, func, options));
+  const promises = urlArray.map((url) => mapSubtree(url, func, options));
   return await Promise.all(promises);
 }

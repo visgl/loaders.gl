@@ -6,8 +6,8 @@ module.exports = {
   },
   lint: {
     // TODO - comment out while getting typescript to work
-    paths: ['dev-docs', 'docs', 'modules', 'examples'], // test', 'website', 'examples'],
-    extensions: ['js', 'md'] // 'ts'
+    paths: ['dev-docs', 'docs', 'modules'], // 'examples', test', 'website', 'examples'],
+    extensions: ['js', 'jsx', 'mjs', 'ts', 'tsx', 'md']
   },
 
   aliases: {

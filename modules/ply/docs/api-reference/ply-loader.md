@@ -25,4 +25,3 @@ const data = await load(url, PLYLoader, options);
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
-

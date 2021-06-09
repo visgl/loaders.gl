@@ -38,7 +38,7 @@ export async function loadToImage(url, options) {
   return await new Promise((resolve, reject) => {
     try {
       image.onload = () => resolve(image);
-      image.onerror = err => reject(new Error(`Could not load image ${url}: ${err}`));
+      image.onerror = (err) => reject(new Error(`Could not load image ${url}: ${err}`));
     } catch (error) {
       reject(error);
     }

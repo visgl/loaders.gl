@@ -34,9 +34,9 @@ function initializeBasisModule(BasisModule, wasmBinary) {
     options.wasmBinary = wasmBinary;
   }
 
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     // if you try to return BasisModule the browser crashes!
-    BasisModule(options).then(module => {
+    BasisModule(options).then((module) => {
       const {BasisFile, initializeBasis} = module;
       initializeBasis();
       resolve({BasisFile});

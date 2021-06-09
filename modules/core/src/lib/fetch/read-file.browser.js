@@ -7,7 +7,7 @@ const DEFAULT_OPTIONS = {
   nothrow: true
 };
 
-const isDataURL = url => url.startsWith('data:');
+const isDataURL = (url) => url.startsWith('data:');
 
 // In a few cases (data URIs, files under Node) "files" can be read synchronously
 export function readFileSyncBrowser(uri, options) {

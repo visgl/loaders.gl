@@ -42,7 +42,7 @@ export default class WorkerPool {
 
   destroy() {
     // Destroy idle workers, active Workers will be destroyed on completion
-    this.idleQueue.forEach(worker => worker.destroy());
+    this.idleQueue.forEach((worker) => worker.destroy());
     this.isDestroyed = true;
   }
 
@@ -52,7 +52,7 @@ export default class WorkerPool {
     onError = (job, error) => job.error(error)
   ) {
     // Promise resolves when thread starts working on this job
-    const startPromise = new Promise(onStart => {
+    const startPromise = new Promise((onStart) => {
       // Promise resolves when thread completes or fails working on this job
       this.jobQueue.push({name, onMessage, onError, onStart});
     });
@@ -91,8 +91,8 @@ export default class WorkerPool {
       const job = new WorkerJob(queuedJob.name, workerThread);
 
       // Set the worker thread's message handlers
-      workerThread.onMessage = data => queuedJob.onMessage(job, data.type, data.payload);
-      workerThread.onError = error => queuedJob.onError(job, error);
+      workerThread.onMessage = (data) => queuedJob.onMessage(job, data.type, data.payload);
+      workerThread.onError = (error) => queuedJob.onError(job, error);
 
       // Resolve the start promise so that the app can start sending messages to worker
       queuedJob.onStart(job);

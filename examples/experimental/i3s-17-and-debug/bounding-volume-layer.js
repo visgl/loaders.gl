@@ -15,7 +15,7 @@ const defaultProps = {
   material: {pbrMetallicRoughness: {baseColorFactor: [1, 1, 1, 1]}},
   getBoundingVolumeColor: {
     type: 'function',
-    value: tile => [255, 255, 255, DEFAULT_BG_OPACITY],
+    value: (tile) => [255, 255, 255, DEFAULT_BG_OPACITY],
     compare: false
   }
 };
@@ -139,7 +139,7 @@ export default class BoundingVolumeLayer extends CompositeLayer {
     const {layerMap} = this.state;
 
     return tiles
-      .map(tile => {
+      .map((tile) => {
         const id = tile.id;
         layerMap[id] = layerMap[id] || {};
         let {layer, needsUpdate = true} = layerMap[id];

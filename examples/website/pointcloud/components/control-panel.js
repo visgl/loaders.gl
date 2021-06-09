@@ -69,7 +69,7 @@ export default class ControlPanel extends PureComponent {
     return (
       <DropDown
         value={selectedValue}
-        onChange={evt => {
+        onChange={(evt) => {
           const categoryExample = evt.target.value;
           const value = categoryExample.split('.');
           const categoryName = value[0];

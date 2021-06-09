@@ -10,7 +10,7 @@ import {NullWorker} from '@loaders.gl/worker-utils';
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 // const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-test('getWorkerObjectURL', t => {
+test('getWorkerObjectURL', (t) => {
   // TODO(ib): version injection issue in babel register
   // t.equals(
   //   getWorkerObjectURL(NullWorker, {}),
@@ -33,7 +33,7 @@ test('getWorkerObjectURL', t => {
   t.end();
 });
 
-test('validateWorkerVersion', t => {
+test('validateWorkerVersion', (t) => {
   t.doesNotThrow(
     // @ts-ignore
     () => validateWorkerVersion({version: '1.9.0'}, null),

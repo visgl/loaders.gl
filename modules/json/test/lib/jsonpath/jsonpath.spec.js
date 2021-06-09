@@ -7,7 +7,7 @@ const TEST_CASES = [
   {jsonpath: '$.features.*', expected: ['features', '*']}
 ];
 
-test('JSONPath#parsing', async t => {
+test('JSONPath#parsing', async (t) => {
   for (const tc of TEST_CASES) {
     const jsonpath = new _JSONPath(tc.jsonpath);
     const expected = new _JSONPath(tc.expected);
@@ -29,7 +29,7 @@ test('JSONPath#parsing', async t => {
   t.end();
 });
 
-test('JSONPath#deep set', async t => {
+test('JSONPath#deep set', async (t) => {
   const jsonpath = new _JSONPath('$.a.b');
   const deepValue = {a: {b: 1}};
   t.equal(jsonpath.getFieldAtPath(deepValue), 1, 'JSONPath.getFieldAtPath');

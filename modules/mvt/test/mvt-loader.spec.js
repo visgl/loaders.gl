@@ -32,7 +32,7 @@ setLoaderOptions({
   _workerType: 'test'
 });
 
-test('Point MVT to local coordinates JSON', async t => {
+test('Point MVT to local coordinates JSON', async (t) => {
   const response = await fetchFile(MVT_POINTS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
 
@@ -57,7 +57,7 @@ test('Point MVT to local coordinates JSON', async t => {
   t.end();
 });
 
-test('Line MVT to local coordinates JSON', async t => {
+test('Line MVT to local coordinates JSON', async (t) => {
   const response = await fetchFile(MVT_LINES_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
 
@@ -83,7 +83,7 @@ test('Line MVT to local coordinates JSON', async t => {
   t.end();
 });
 
-test('Polygon MVT to local coordinates JSON', async t => {
+test('Polygon MVT to local coordinates JSON', async (t) => {
   const response = await fetchFile(MVT_POLYGONS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
 
@@ -93,7 +93,7 @@ test('Polygon MVT to local coordinates JSON', async t => {
   t.end();
 });
 
-test('Point MVT to GeoJSON', async t => {
+test('Point MVT to GeoJSON', async (t) => {
   const response = await fetchFile(MVT_POINTS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
 
@@ -114,7 +114,7 @@ test('Point MVT to GeoJSON', async t => {
   t.end();
 });
 
-test('Lines MVT to GeoJSON', async t => {
+test('Lines MVT to GeoJSON', async (t) => {
   const response = await fetchFile(MVT_LINES_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
 
@@ -135,7 +135,7 @@ test('Lines MVT to GeoJSON', async t => {
   t.end();
 });
 
-test('Polygons MVT to GeoJSON', async t => {
+test('Polygons MVT to GeoJSON', async (t) => {
   const response = await fetchFile(MVT_POLYGONS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
 
@@ -156,7 +156,7 @@ test('Polygons MVT to GeoJSON', async t => {
   t.end();
 });
 
-test('Should raise an error when coordinates param is wgs84 and tileIndex is missing', async t => {
+test('Should raise an error when coordinates param is wgs84 and tileIndex is missing', async (t) => {
   const response = await fetchFile(MVT_POINTS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
 
@@ -169,7 +169,7 @@ test('Should raise an error when coordinates param is wgs84 and tileIndex is mis
   t.end();
 });
 
-test('Should add layer name to custom property', async t => {
+test('Should add layer name to custom property', async (t) => {
   const response = await fetchFile(MVT_POINTS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
 
@@ -183,7 +183,7 @@ test('Should add layer name to custom property', async t => {
   t.end();
 });
 
-test('Should return features from selected layers when layers property is provided', async t => {
+test('Should return features from selected layers when layers property is provided', async (t) => {
   const response = await fetchFile(MVT_MULTIPLE_LAYERS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
 
@@ -193,7 +193,7 @@ test('Should return features from selected layers when layers property is provid
 
   const geometryJSON = await parse(mvtArrayBuffer, MVTLoader, loaderOptions);
   const anyFeatureFromAnotherLayer = geometryJSON.some(
-    feature => feature.properties.layerName !== 'layer1'
+    (feature) => feature.properties.layerName !== 'layer1'
   );
   t.false(anyFeatureFromAnotherLayer);
   t.equals(geometryJSON[0].properties.layerName, 'layer1');
@@ -201,7 +201,7 @@ test('Should return features from selected layers when layers property is provid
   t.end();
 });
 
-test('Polygon MVT to local coordinates binary', async t => {
+test('Polygon MVT to local coordinates binary', async (t) => {
   const response = await fetchFile(MVT_POLYGONS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
 
@@ -225,7 +225,7 @@ const TEST_FILES = [
   MVT_MULTIPLE_LAYERS_DATA_URL
 ];
 for (const filename of TEST_FILES) {
-  test(`Legacy MVT binary generation is equivalent ${filename}`, async t => {
+  test(`Legacy MVT binary generation is equivalent ${filename}`, async (t) => {
     const response = await fetchFile(filename);
     const mvtArrayBuffer = await response.arrayBuffer();
     const geojson = await parse(mvtArrayBuffer, MVTLoader);
@@ -241,7 +241,7 @@ for (const filename of TEST_FILES) {
   });
 }
 
-test('Empty MVT must return empty binary format', async t => {
+test('Empty MVT must return empty binary format', async (t) => {
   const emptyMVTArrayBuffer = new Uint8Array();
   const geometryBinary = await parse(emptyMVTArrayBuffer, MVTLoader, {gis: {format: 'binary'}});
   t.ok(geometryBinary.points);
@@ -254,7 +254,7 @@ test('Empty MVT must return empty binary format', async t => {
   t.end();
 });
 
-test('Triangulation is supported', async t => {
+test('Triangulation is supported', async (t) => {
   const response = await fetchFile(MVT_POLYGONS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
   const geometry = await parse(mvtArrayBuffer, MVTLoader, {
@@ -277,7 +277,7 @@ test('Triangulation is supported', async t => {
   t.end();
 });
 
-test('Rings - single ring', async t => {
+test('Rings - single ring', async (t) => {
   const geom = {...ringsSingleRing};
   const classified = classifyRings(geom);
   t.deepEqual(classified.areas, [[-0.02624368667602539]]);
@@ -285,7 +285,7 @@ test('Rings - single ring', async t => {
   t.end();
 });
 
-test('Rings - ring and hole', async t => {
+test('Rings - ring and hole', async (t) => {
   const geom = {...ringsRingAndHole};
   const classified = classifyRings(geom);
   t.deepEqual(classified.areas, [[-0.02624368667602539, 0.001363515853881836]]);
@@ -293,7 +293,7 @@ test('Rings - ring and hole', async t => {
   t.end();
 });
 
-test('Rings - two rings', async t => {
+test('Rings - two rings', async (t) => {
   const geom = {...ringsTwoRings};
   const classified = classifyRings(geom);
   t.deepEqual(classified.areas, [[-0.02624368667602539], [-0.001363515853881836]]);
@@ -301,7 +301,7 @@ test('Rings - two rings', async t => {
   t.end();
 });
 
-test('Rings - zero sized hole', async t => {
+test('Rings - zero sized hole', async (t) => {
   // In addition to checking the result,
   // verify that the data array is shortened
   const geom = {...ringsZeroSizeHole};

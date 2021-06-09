@@ -31,9 +31,9 @@ const FORMAT_LOADER_MAP = {
 const I3S_ATTRIBUTE_TYPE = 'i3s-attribute-type';
 
 export async function parseI3STileContent(
-  arrayBuffer: ArrayBuffer, 
-  tile: Tile, 
-  tileset: Tileset, 
+  arrayBuffer: ArrayBuffer,
+  tile: Tile,
+  tileset: Tileset,
   options
 ) {
   tile.content = tile.content || {};
@@ -69,11 +69,7 @@ export async function parseI3STileContent(
 }
 
 /* eslint-disable max-statements */
-async function parseI3SNodeGeometry(
-  arrayBuffer: ArrayBuffer, 
-  tile: Tile = {},
-  options
-) {
+async function parseI3SNodeGeometry(arrayBuffer: ArrayBuffer, tile: Tile = {}, options) {
   if (!tile.content) {
     return tile;
   }
@@ -118,12 +114,8 @@ async function parseI3SNodeGeometry(
       flattenFeatureIdsByFeatureIndices(attributes, featureIds);
     }
   } else {
-    const {
-      vertexAttributes,
-      attributesOrder,
-      featureAttributes,
-      featureAttributeOrder
-    } = content.featureData;
+    const {vertexAttributes, attributesOrder, featureAttributes, featureAttributeOrder} =
+      content.featureData;
     // First 8 bytes reserved for header (vertexCount and featureCount)
     const headers = parseHeaders(content, arrayBuffer);
     byteOffset = headers.byteOffset;

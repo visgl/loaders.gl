@@ -53,7 +53,7 @@ function runTests(t, json, description, Parser) {
 }
 
 for (const cases of literalCases) {
-  test(`JSONParser#${cases.type} literal`, t => {
+  test(`JSONParser#${cases.type} literal`, (t) => {
     for (const json of cases.cases) {
       stringLiterals.push([`quoted ${cases.type}`, `"${json}"`]);
       // Clarinet does not current support (null | boolean | number | string) as root value.
@@ -65,7 +65,7 @@ for (const cases of literalCases) {
   });
 }
 
-test('JSONParser#string literal', t => {
+test('JSONParser#string literal', (t) => {
   for (const [description, json] of stringLiterals) {
     // Clarinet does not current support (null | boolean | number | string) as root value.
     // To work around this, we wrap the literal in an array before passing to 'runTests(t, )'.
@@ -75,14 +75,14 @@ test('JSONParser#string literal', t => {
   t.end();
 });
 
-test('JSONParser#array literal', t => {
+test('JSONParser#array literal', (t) => {
   for (const json of arrayLiterals) {
     runTests(t, json, 'array literal', JSONParser);
   }
   t.end();
 });
 
-test('JSONParser#object literal', t => {
+test('JSONParser#object literal', (t) => {
   for (const json of objectLiterals) {
     runTests(t, json, 'object literal', JSONParser);
   }

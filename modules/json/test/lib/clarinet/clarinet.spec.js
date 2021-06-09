@@ -740,7 +740,7 @@ const docs = {
 };
 
 function generic(t, key, prechunked, sep) {
-  return function() {
+  return function () {
     var doc = docs[key].text,
       events = docs[key].events,
       l = typeof FastList === 'function' ? new FastList() : [],
@@ -751,11 +751,11 @@ function generic(t, key, prechunked, sep) {
       env = process && process.env ? process.env : window,
       record = [];
 
-    events.forEach(function(event_pair) {
+    events.forEach(function (event_pair) {
       l.push(event_pair);
     });
-    EVENTS.forEach(function(event) {
-      parser['on' + event] = function(value) {
+    EVENTS.forEach(function (event) {
+      parser['on' + event] = function (value) {
         if (env.CRECORD) {
           // for really big json we dont want to type all
           record.push([event, value]);
@@ -780,12 +780,12 @@ function generic(t, key, prechunked, sep) {
         }
       };
     });
-    doc_chunks.forEach(chunk => parser.write(chunk));
+    doc_chunks.forEach((chunk) => parser.write(chunk));
     parser.end();
   };
 }
 
-test('clarinet#generic', t => {
+test('clarinet#generic', (t) => {
   for (const key in docs) {
     if (docs.hasOwnProperty(key)) {
       // undefined means no split
@@ -800,7 +800,7 @@ test('clarinet#generic', t => {
   t.end();
 });
 
-test('#pre-chunked', t => {
+test('#pre-chunked', (t) => {
   for (const key in docs) {
     if (docs.hasOwnProperty(key)) {
       if (!docs[key].chunks) {

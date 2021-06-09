@@ -1,16 +1,16 @@
-import { openGroup } from 'zarr';
-import type { ZarrArray } from 'zarr';
-import type { OMEXML } from './omexml';
-import { getLabels, isInterleaved } from './utils';
+import {openGroup} from 'zarr';
+import type {ZarrArray} from 'zarr';
+import type {OMEXML} from './omexml';
+import {getLabels, isInterleaved} from './utils';
 
 // TODO "Circular dependency"
-import type { RootAttrs } from '../load-zarr';
+import type {RootAttrs} from '../load-zarr';
 
 /*
  * Returns true if data shape is that expected for OME-Zarr.
  */
 function isOmeZarr(dataShape: number[], Pixels: OMEXML[0]['Pixels']) {
-  const { SizeT, SizeC, SizeZ, SizeY, SizeX } = Pixels;
+  const {SizeT, SizeC, SizeZ, SizeY, SizeX} = Pixels;
   // OME-Zarr dim order is always ['t', 'c', 'z', 'y', 'x']
   const omeZarrShape = [SizeT, SizeC, SizeZ, SizeY, SizeX];
   return dataShape.every((size, i) => omeZarrShape[i] === size);
@@ -25,10 +25,7 @@ function isOmeZarr(dataShape: number[], Pixels: OMEXML[0]['Pixels']) {
  * This is fragile code, and will only be executed if someone
  * tries to specify different dimension orders.
  */
-export function guessBioformatsLabels(
-  { shape }: ZarrArray,
-  { Pixels }: OMEXML[0]
-) {
+export function guessBioformatsLabels({shape}: ZarrArray, {Pixels}: OMEXML[0]) {
   if (isOmeZarr(shape, Pixels)) {
     // It's an OME-Zarr Image,
     return getLabels('XYZCT');
@@ -61,8 +58,8 @@ export function guessBioformatsLabels(
  * > ];
  * > getRootPrefix(files, 'data.zarr') === '/some/long/path/to/data.zarr'
  */
-export function getRootPrefix(files: { path: string }[], rootName: string) {
-  const first = files.find(f => f.path.indexOf(rootName) > 0);
+export function getRootPrefix(files: {path: string}[], rootName: string) {
+  const first = files.find((f) => f.path.indexOf(rootName) > 0);
   if (!first) {
     throw Error('Could not find root in store.');
   }
@@ -76,11 +73,11 @@ export async function loadMultiscales(store: ZarrArray['store'], path = '') {
 
   let paths = ['0'];
   if ('multiscales' in rootAttrs) {
-    const { datasets } = rootAttrs.multiscales[0];
-    paths = datasets.map(d => d.path);
+    const {datasets} = rootAttrs.multiscales[0];
+    paths = datasets.map((d) => d.path);
   }
 
-  const data = paths.map(path => grp.getItem(path));
+  const data = paths.map((path) => grp.getItem(path));
   return {
     data: (await Promise.all(data)) as ZarrArray[],
     rootAttrs

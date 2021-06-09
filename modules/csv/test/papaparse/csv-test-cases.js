@@ -818,7 +818,7 @@ export const PARSE_TESTS = [
   {
     description: 'Header rows are transformed when transformHeader function is provided',
     input: 'A,B,C\r\na,b,c',
-    config: {header: true, transformHeader: header => header.toLowerCase()},
+    config: {header: true, transformHeader: (header) => header.toLowerCase()},
     expected: {
       data: [{a: 'a', b: 'b', c: 'c'}],
       errors: []
@@ -1002,7 +1002,7 @@ export const PARSE_TESTS = [
   {
     description: 'Dynamic typing by indices can be determined by function',
     input: '001,002,003',
-    config: {dynamicTyping: field => field % 2 === 0},
+    config: {dynamicTyping: (field) => field % 2 === 0},
     expected: {
       data: [[1, '002', 3]],
       errors: []
@@ -1011,7 +1011,7 @@ export const PARSE_TESTS = [
   {
     description: 'Dynamic typing by headers can be determined by function',
     input: 'A_as_int,B,C_as_int\r\n001,002,003',
-    config: {header: true, dynamicTyping: field => /_as_int$/.test(field)},
+    config: {header: true, dynamicTyping: (field) => /_as_int$/.test(field)},
     expected: {
       data: [{A_as_int: 1, B: '002', C_as_int: 3}],
       errors: []
@@ -1034,7 +1034,7 @@ export const PARSE_TESTS = [
     description: 'Custom transform function is applied to values',
     input: 'A,B,C\r\nd,e,f',
     config: {
-      transform: value => value.toLowerCase()
+      transform: (value) => value.toLowerCase()
     },
     expected: {
       data: [

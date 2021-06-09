@@ -13,16 +13,15 @@ function renderLayers(sceneView) {
     new Tile3DLayer({
       id: 'tile-3d-layer',
       // Tileset entry point: Indexed 3D layer file url
-      data:
-        'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_Bldgs/SceneServer/layers/0',
+      data: 'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_Bldgs/SceneServer/layers/0',
       loader: I3SLoader,
-      onTilesetLoad: tileset => {
+      onTilesetLoad: (tileset) => {
         const {cartographicCenter} = tileset;
         const [longitude, latitude] = cartographicCenter;
 
         sceneView.goTo({center: [longitude, latitude]});
       },
-      onTileLoad: tile => {
+      onTileLoad: (tile) => {
         if (tile.content.attributes.texCoords) {
           flipY(tile.content.attributes.texCoords.value);
         }

@@ -13,7 +13,7 @@ function getNormalsForVertices(vertices, t) {
 }
 
 // eslint-disable-next-line complexity
-test('computeVertexNormals (non-indexed)', t => {
+test('computeVertexNormals (non-indexed)', (t) => {
   // get normals for a counter clockwise created triangle
   let normals = getNormalsForVertices([-1, 0, 0, 1, 0, 0, 0, 1, 0], t);
 
@@ -70,7 +70,7 @@ test('computeVertexNormals (non-indexed)', t => {
   }
 });
 
-test('computeVertexNormals (indexed)', t => {
+test('computeVertexNormals (indexed)', (t) => {
   const sqrt = 0.5 * Math.sqrt(2);
 
   const normal = {

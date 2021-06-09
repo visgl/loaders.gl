@@ -1,9 +1,9 @@
-import { BoundsCheckError, slice } from 'zarr';
-import { getImageSize, isInterleaved } from './utils/utils';
-import { getIndexer } from './utils/indexer';
+import {BoundsCheckError, slice} from 'zarr';
+import {getImageSize, isInterleaved} from './utils/utils';
+import {getIndexer} from './utils/indexer';
 
-import type { ZarrArray } from 'zarr';
-import type { RawArray } from 'zarr/types/rawArray';
+import type {ZarrArray} from 'zarr';
+import type {RawArray} from 'zarr/types/rawArray';
 
 import type {
   PixelSource,
@@ -25,9 +25,7 @@ const DTYPE_LOOKUP = {
   i4: 'Int32'
 } as const;
 
-type ZarrIndexer<S extends string[]> = (
-  sel: { [K in S[number]]: number } | number[]
-) => number[];
+type ZarrIndexer<S extends string[]> = (sel: {[K in S[number]]: number} | number[]) => number[];
 
 interface ZarrTileSelection {
   x: number;
@@ -41,11 +39,7 @@ class ZarrPixelSource<S extends string[]> implements PixelSource<S> {
   private _indexer: ZarrIndexer<S>;
   private _readChunks: boolean;
 
-  constructor(
-    data: ZarrArray,
-    public labels: Labels<S>,
-    public tileSize: number
-  ) {
+  constructor(data: ZarrArray, public labels: Labels<S>, public tileSize: number) {
     this._indexer = getIndexer(labels);
     this._data = data;
 
@@ -71,11 +65,7 @@ class ZarrPixelSource<S extends string[]> implements PixelSource<S> {
     return this._data.shape.length - (interleave ? 2 : 1);
   }
 
-  private _chunkIndex<T>(
-    selection: PixelSourceSelection<S> | number[],
-    x: T,
-    y: T
-  ) {
+  private _chunkIndex<T>(selection: PixelSourceSelection<S> | number[], x: T, y: T) {
     const sel: (number | T)[] = this._indexer(selection);
     sel[this._xIndex] = x;
     sel[this._xIndex - 1] = y;
@@ -86,15 +76,9 @@ class ZarrPixelSource<S extends string[]> implements PixelSource<S> {
    * Converts x, y tile indices to zarr dimension Slices within image bounds.
    */
   private _getSlices(x: number, y: number) {
-    const { height, width } = getImageSize(this);
-    const [xStart, xStop] = [
-      x * this.tileSize,
-      Math.min((x + 1) * this.tileSize, width)
-    ];
-    const [yStart, yStop] = [
-      y * this.tileSize,
-      Math.min((y + 1) * this.tileSize, height)
-    ];
+    const {height, width} = getImageSize(this);
+    const [xStart, xStop] = [x * this.tileSize, Math.min((x + 1) * this.tileSize, width)];
+    const [yStart, yStop] = [y * this.tileSize, Math.min((y + 1) * this.tileSize, height)];
     // Deck.gl can sometimes request edge tiles that don't exist. We throw
     // a BoundsCheckError which is picked up in `ZarrPixelSource.onTileError`
     // and ignored by deck.gl.
@@ -104,21 +88,21 @@ class ZarrPixelSource<S extends string[]> implements PixelSource<S> {
     return [slice(xStart, xStop), slice(yStart, yStop)];
   }
 
-  async getRaster({ selection }: RasterSelection<S> | { selection: number[] }) {
+  async getRaster({selection}: RasterSelection<S> | {selection: number[]}) {
     const sel = this._chunkIndex(selection, null, null);
-    const { data, shape } = (await this._data.getRaw(sel)) as RawArray;
+    const {data, shape} = (await this._data.getRaw(sel)) as RawArray;
     const [height, width] = shape;
-    return { data, width, height } as PixelData;
+    return {data, width, height} as PixelData;
   }
 
   async getTile(props: TileSelection<S> | ZarrTileSelection) {
-    const { x, y, selection, signal } = props;
+    const {x, y, selection, signal} = props;
 
     let res;
     if (this._readChunks) {
       // Can read chunks directly by key since tile size matches chunk shape
       const sel = this._chunkIndex(selection, x, y);
-      res = await this._data.getRawChunk(sel, { storeOptions: { signal } });
+      res = await this._data.getRawChunk(sel, {storeOptions: {signal}});
     } else {
       // Need to use zarr fancy indexing to get desired tile size.
       const [xSlice, ySlice] = this._getSlices(x, y);
@@ -130,7 +114,7 @@ class ZarrPixelSource<S extends string[]> implements PixelSource<S> {
       data,
       shape: [height, width]
     } = res as RawArray;
-    return { data, width, height } as PixelData;
+    return {data, width, height} as PixelData;
   }
 
   onTileError(err: Error) {

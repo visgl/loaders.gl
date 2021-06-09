@@ -31,7 +31,7 @@ const TEST_CASES = [
   }
 ];
 
-test('CompressedTextureLoader#pvr', async t => {
+test('CompressedTextureLoader#pvr', async (t) => {
   for (const testCase of TEST_CASES) {
     const response = await fetchFile(testCase.url);
     const data = await response.arrayBuffer();

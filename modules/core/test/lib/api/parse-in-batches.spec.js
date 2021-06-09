@@ -9,7 +9,7 @@ const NoOpLoader = {
   parseInBatches: (iterator, options) => iterator
 };
 
-test('parseInBatches', async t => {
+test('parseInBatches', async (t) => {
   // @ts-ignore
   let batches = await parseInBatches([1, 1], NoOpLoader);
 

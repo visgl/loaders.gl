@@ -3,7 +3,6 @@ import {assert} from '../env-utils/assert';
 
 // GENERAL UTILITIES
 
-
 /**
  * Iterate over async iterator, without resetting iterator if end is not reached
  * - forEach intentionally does not reset iterator if exiting loop prematurely
@@ -36,8 +35,11 @@ export async function forEach(iterator, visitor) {
 /**
  * Concatenates all data chunks yielded by an (async) iterator
  * This function can e.g. be used to enable atomic parsers to work on (async) iterator inputs
- */ 
-export async function concatenateChunksAsync(asyncIterator: AsyncIterable<ArrayBuffer>): Promise<ArrayBuffer> {
+ */
+
+export async function concatenateChunksAsync(
+  asyncIterator: AsyncIterable<ArrayBuffer>
+): Promise<ArrayBuffer> {
   const arrayBuffers: ArrayBuffer[] = [];
   for await (const chunk of asyncIterator) {
     arrayBuffers.push(chunk);
@@ -45,7 +47,9 @@ export async function concatenateChunksAsync(asyncIterator: AsyncIterable<ArrayB
   return concatenateArrayBuffers(...arrayBuffers);
 }
 
-export async function concatenateStringsAsync(asyncIterator: AsyncIterable<string>): Promise<string> {
+export async function concatenateStringsAsync(
+  asyncIterator: AsyncIterable<string>
+): Promise<string> {
   const strings: string[] = [];
   for await (const chunk of asyncIterator) {
     strings.push(chunk);

@@ -6,7 +6,7 @@ const TEXT_DATA = 'important content!';
 const JSON_DATA = [{col1: 22, col2: 'abc'}];
 const BINARY_URL = '@loaders.gl/core/test/data/files/binary-data.bin';
 
-test('fetchFile(Blob)#Response.text() BROWSER ONLY', async t => {
+test('fetchFile(Blob)#Response.text() BROWSER ONLY', async (t) => {
   if (isBrowser) {
     const blob = new Blob([TEXT_DATA]);
 
@@ -29,7 +29,7 @@ test('fetchFile(Blob)#Response.text() BROWSER ONLY', async t => {
   t.end();
 });
 
-test('fetchFile(Blob)#Response.json() BROWSER ONLY', async t => {
+test('fetchFile(Blob)#Response.json() BROWSER ONLY', async (t) => {
   if (isBrowser) {
     const text = JSON.stringify(JSON_DATA);
     const blob = new Blob([text], {type: 'application/json'});
@@ -55,7 +55,7 @@ test('fetchFile(Blob)#Response.json() BROWSER ONLY', async t => {
   t.end();
 });
 
-test('fetchFile(Blob)#Response.arrayBuffer() BROWSER ONLY', async t => {
+test('fetchFile(Blob)#Response.arrayBuffer() BROWSER ONLY', async (t) => {
   if (isBrowser) {
     const response1 = await fetchFile(BINARY_URL);
     const data = await response1.arrayBuffer();
@@ -88,7 +88,7 @@ test('fetchFile(Blob)#Response.arrayBuffer() BROWSER ONLY', async t => {
   t.end();
 });
 
-test('fetchFile(Blob)#Response.body BROWSER ONLY', async t => {
+test('fetchFile(Blob)#Response.body BROWSER ONLY', async (t) => {
   if (isBrowser) {
     const response1 = await fetchFile(BINARY_URL);
     const data = await response1.arrayBuffer();

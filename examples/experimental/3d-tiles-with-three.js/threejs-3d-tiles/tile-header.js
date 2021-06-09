@@ -221,10 +221,10 @@ export default class TileHeader {
     loader.parse(
       d.glbData,
       this.resourcePath,
-      gltf => {
+      (gltf) => {
         if (this.styleParams.color !== null || this.styleParams.opacity !== null) {
           const color = new THREE.Color(this.styleParams.color);
-          gltf.scene.traverse(child => {
+          gltf.scene.traverse((child) => {
             if (child instanceof THREE.Mesh) {
               if (this.styleParams.color !== null) child.material.color = color;
               if (this.styleParams.opacity !== null) {
@@ -243,7 +243,7 @@ export default class TileHeader {
         */
         tileContent.add(gltf.scene);
       },
-      e => {
+      (e) => {
         throw new Error(`error parsing gltf: ${e}`);
       }
     );

@@ -118,7 +118,7 @@ const NODE_PAGES = {
 export const LAYERS = {
   version: {
     path: 'version',
-    transform: val => val.toUpperCase()
+    transform: (val) => val.toUpperCase()
   },
   id: {
     path: 'id',
@@ -137,7 +137,7 @@ export const LAYERS = {
   },
   spatialReference: {
     path: 'spatialReference',
-    transform: val => transform(val, SPATIAL_REFERENCE)
+    transform: (val) => transform(val, SPATIAL_REFERENCE)
   },
   capabilities: {
     path: 'capabilities',
@@ -145,15 +145,15 @@ export const LAYERS = {
   },
   store: {
     path: 'store',
-    transform: val => transform(val, STORE)
+    transform: (val) => transform(val, STORE)
   },
   heightModelInfo: {
     path: 'heightModelInfo',
-    transform: val => transform(val, HEIGHT_MODEL_INFO)
+    transform: (val) => transform(val, HEIGHT_MODEL_INFO)
   },
   nodePages: {
     path: 'nodePages',
-    transform: val => transform(val, NODE_PAGES)
+    transform: (val) => transform(val, NODE_PAGES)
   },
   materialDefinitions: {
     path: 'materialDefinitions',
@@ -165,7 +165,7 @@ export const LAYERS = {
   },
   geometryDefinitions: {
     path: 'compressGeometry',
-    transform: val => {
+    transform: (val) => {
       const result = [{}, {}];
       result[0].geometryBuffers = [];
       result[1].geometryBuffers = [];

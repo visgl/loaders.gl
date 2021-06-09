@@ -101,7 +101,7 @@ export default class App extends PureComponent {
     const params = parseTilesetUrlParams(tileset.url, tileset);
     const {tilesetUrl, token, name, metadataUrl} = params;
     this.setState({tilesetUrl, name, token});
-    const metadata = await fetch(metadataUrl).then(resp => resp.json());
+    const metadata = await fetch(metadataUrl).then((resp) => resp.json());
     this.setState({metadata});
   }
 
@@ -162,7 +162,7 @@ export default class App extends PureComponent {
 
   _renderStats() {
     // TODO - too verbose, get more default styling from stats widget?
-    return <div style={STATS_WIDGET_STYLE} ref={_ => (this._statsWidgetContainer = _)} />;
+    return <div style={STATS_WIDGET_STYLE} ref={(_) => (this._statsWidgetContainer = _)} />;
   }
 
   _renderControlPanel() {

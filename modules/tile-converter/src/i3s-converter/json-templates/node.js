@@ -60,7 +60,7 @@ export const NODE = {
   },
   parentNode: {
     path: 'parentNode',
-    transform: val => transform(val, PARENT_NODE),
+    transform: (val) => transform(val, PARENT_NODE),
     default: null
   },
   sharedResource: {

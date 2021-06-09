@@ -14,7 +14,7 @@ setLoaderOptions({
   _workerType: 'test'
 });
 
-test('SHPLoader#load polygons', async t => {
+test('SHPLoader#load polygons', async (t) => {
   const result = await load(SHAPEFILE_POLYGON_PATH, SHPLoader);
 
   t.ok(result.header, 'A header received');
@@ -22,7 +22,7 @@ test('SHPLoader#load polygons', async t => {
   t.end();
 });
 
-test('Shapefile JS Point tests', async t => {
+test('Shapefile JS Point tests', async (t) => {
   for (const testFileName of SHAPEFILE_JS_POINT_TEST_FILES) {
     const output = await load(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`, SHPLoader);
 
@@ -40,7 +40,7 @@ test('Shapefile JS Point tests', async t => {
   t.end();
 });
 
-test('Shapefile JS Polyline tests', async t => {
+test('Shapefile JS Polyline tests', async (t) => {
   for (const testFileName of SHAPEFILE_JS_POLYLINE_TEST_FILES) {
     const output = await load(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`, SHPLoader);
 
@@ -59,7 +59,7 @@ test('Shapefile JS Polyline tests', async t => {
   t.end();
 });
 
-test('Shapefile JS Polygon tests', async t => {
+test('Shapefile JS Polygon tests', async (t) => {
   for (const testFileName of SHAPEFILE_JS_POLYGON_TEST_FILES) {
     const output = await load(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`, SHPLoader);
 
@@ -80,7 +80,7 @@ test('Shapefile JS Polygon tests', async t => {
   t.end();
 });
 
-test('SHPLoader#_maxDimensions', async t => {
+test('SHPLoader#_maxDimensions', async (t) => {
   const output2d = await load(`${SHAPEFILE_JS_DATA_FOLDER}/${POINT_Z_TEST_FILE}.shp`, SHPLoader, {
     shp: {_maxDimensions: 2}
   });

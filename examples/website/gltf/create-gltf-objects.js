@@ -17,9 +17,9 @@ export async function createGLTFObjects(gl, gltf, options) {
 async function waitForGLTFAssets(gltfObjects) {
   const remaining = [];
 
-  gltfObjects.scenes.forEach(scene => {
-    scene.traverse(model => {
-      Object.values(model.model.program.uniforms).forEach(uniform => {
+  gltfObjects.scenes.forEach((scene) => {
+    scene.traverse((model) => {
+      Object.values(model.model.program.uniforms).forEach((uniform) => {
         if (uniform.loaded === false) {
           remaining.push(uniform);
         }
@@ -27,11 +27,11 @@ async function waitForGLTFAssets(gltfObjects) {
     });
   });
 
-  return await waitWhileCondition(() => remaining.some(uniform => !uniform.loaded));
+  return await waitWhileCondition(() => remaining.some((uniform) => !uniform.loaded));
 }
 
 async function waitWhileCondition(condition) {
   while (condition()) {
-    await new Promise(resolve => requestAnimationFrame(resolve));
+    await new Promise((resolve) => requestAnimationFrame(resolve));
   }
 }

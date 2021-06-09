@@ -79,7 +79,7 @@ export function parsePgm(data, options) {
       }
     } else {
       let sArr = s.split(' ');
-      sArr = sArr.filter(testString => testString !== '');
+      sArr = sArr.filter((testString) => testString !== '');
       _width = parseInt(sArr[0], 10);
       _height = parseInt(sArr[1], 10);
       if (!(_width && _height)) {

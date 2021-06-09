@@ -34,7 +34,6 @@ TBA
 | Function | Description |
 | -------- | ----------- |
 
-
 ## Return Types
 
 The `BasisLoader` returns Array of Array of ArrayBuffer

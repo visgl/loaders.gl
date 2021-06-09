@@ -314,7 +314,7 @@ var UNPARSE_TESTS = [
   }
 ];
 
-test('Unparse Tests', t => {
+test('Unparse Tests', (t) => {
   function generateTest(test) {
     (test.disabled ? test.skip : test)(test.description, () => {
       var actual;

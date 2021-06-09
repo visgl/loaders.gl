@@ -30,20 +30,20 @@ function getMaterialAndGeometryFromNode(nodePages, id) {
   return {material, geometry};
 }
 
-test('tile-converter - Converters#NodePages', async t => {
+test('tile-converter - Converters#NodePages', async (t) => {
   if (isBrowser) {
     t.end();
     return;
   }
 
-  t.test('Should create an instance of NodePages class', async st => {
+  t.test('Should create an instance of NodePages class', async (st) => {
     const nodePages = new NodePages(() => {}, 64);
     st.ok(nodePages instanceof NodePages);
     st.equal(nodePages.nodesCounter, 0);
     st.end();
   });
 
-  t.test('Should push node into the last nodePage', async st => {
+  t.test('Should push node into the last nodePage', async (st) => {
     const nodePages = new NodePages(() => {}, 64);
 
     nodePages.push(newNodeStub);
@@ -55,7 +55,7 @@ test('tile-converter - Converters#NodePages', async t => {
     st.end();
   });
 
-  t.test('Push method should return the index of the new node', async st => {
+  t.test('Push method should return the index of the new node', async (st) => {
     const nodePages = new NodePages(() => {}, 64);
     nodePages.push(newNodeStub);
     const newNodeIndex = nodePages.push(newNodeStub);
@@ -65,7 +65,7 @@ test('tile-converter - Converters#NodePages', async t => {
 
   t.test(
     'Push method should create new nodePage when "last nodePage.length" === "nodesPerPage"',
-    async st => {
+    async (st) => {
       const nodePages = new NodePages(() => {}, 64);
       for (let i = 0; i <= 65; i++) {
         nodePages.push(newNodeStub);
@@ -76,7 +76,7 @@ test('tile-converter - Converters#NodePages', async t => {
     }
   );
 
-  t.test('Should consume "nodesPerPage" in constructor', async st => {
+  t.test('Should consume "nodesPerPage" in constructor', async (st) => {
     const nodePages = new NodePages(() => {}, 16);
     for (let i = 0; i <= 65; i++) {
       nodePages.push(newNodeStub);
@@ -86,7 +86,7 @@ test('tile-converter - Converters#NodePages', async t => {
     st.end();
   });
 
-  t.test('Push method should add children relation into the parent node', async st => {
+  t.test('Push method should add children relation into the parent node', async (st) => {
     const nodePages = new NodePages(() => {}, 64);
     for (let i = 0; i <= 65; i++) {
       nodePages.push(newNodeStub);
@@ -98,7 +98,7 @@ test('tile-converter - Converters#NodePages', async t => {
 
   t.test(
     'Push method should set "resource" property in the "mesh" equal to the new node index',
-    async st => {
+    async (st) => {
       const newNodeWithMesh = {
         ...newNodeStub,
         mesh: {
@@ -128,7 +128,7 @@ test('tile-converter - Converters#NodePages', async t => {
 
   t.test(
     'Update material method should set "material" object in the "mesh" with node index and material id',
-    async st => {
+    async (st) => {
       const newNodeWithMesh = {
         ...newNodeStub,
         mesh: {
@@ -150,7 +150,7 @@ test('tile-converter - Converters#NodePages', async t => {
     }
   );
 
-  t.test('Should save node pages', async st => {
+  t.test('Should save node pages', async (st) => {
     const savedNodePages = [];
     const writeFileFunc = (layerPath, data, slpk) => {
       savedNodePages.push(data);
@@ -165,7 +165,7 @@ test('tile-converter - Converters#NodePages', async t => {
     st.end();
   });
 
-  t.test('Should save node pages for slpk packaging', async st => {
+  t.test('Should save node pages for slpk packaging', async (st) => {
     const savedNodePages = [];
     const writeFileFuncForSlpk = (layerPath, data, slpk) => {
       savedNodePages.push(data);

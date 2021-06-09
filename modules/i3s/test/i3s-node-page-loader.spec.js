@@ -5,7 +5,7 @@ import {I3SNodePageLoader} from '@loaders.gl/i3s/i3s-node-page-loader';
 const NODEPAGE_URL =
   '@loaders.gl/i3s/test/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodepages/0';
 
-test('I3SNodePageLoader#Load node page', async t => {
+test('I3SNodePageLoader#Load node page', async (t) => {
   const response = await fetchFile(NODEPAGE_URL);
   const nodePage = await parse(response, I3SNodePageLoader);
   t.ok(nodePage);

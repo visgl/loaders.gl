@@ -17,12 +17,12 @@ const REQUIRED_EXTENSION_2 = 'UBER_extension_2';
 const USED_EXTENSION_1 = 'UBER_extension_3';
 const USED_EXTENSION_2 = 'UBER_extension_4';
 
-test('GLTFWriter#loader conformance', t => {
+test('GLTFWriter#loader conformance', (t) => {
   validateWriter(t, GLTFWriter, 'GLTFWriter');
   t.end();
 });
 
-test('GLTFWriter#encode', async t => {
+test('GLTFWriter#encode', async (t) => {
   const gltfBuilder = new GLTFScenegraph();
   gltfBuilder.addApplicationData('viz', APP_DATA);
   gltfBuilder.addExtraData('test', EXTRA_DATA);
@@ -56,7 +56,7 @@ test('GLTFWriter#encode', async t => {
   t.end();
 });
 
-test('GLTFWriter#Should build a GLTF object with GLTFScenegraph builder functions', async t => {
+test('GLTFWriter#Should build a GLTF object with GLTFScenegraph builder functions', async (t) => {
   const inputData = await load(GLTF_BINARY_URL, GLTFLoader, {gltf: {postProcess: true}});
   const gltfBuilder = new GLTFScenegraph();
 
@@ -85,7 +85,7 @@ test('GLTFWriter#Should build a GLTF object with GLTFScenegraph builder function
   t.end();
 });
 
-test('GLTFWriter#should write extra data to binary chunk', async t => {
+test('GLTFWriter#should write extra data to binary chunk', async (t) => {
   const inputData = await load(GLTF_BINARY_URL, GLTFLoader, {gltf: {postProcess: true}});
   const data = await load(GLTF_BINARY_URL, GLTFLoader, {
     gltf: {postProcess: false, decompressMeshes: false}
@@ -120,7 +120,7 @@ test('GLTFWriter#should write extra data to binary chunk', async t => {
   t.end();
 });
 
-test('GLTFWriter#should write extra data to binary chunk twice', async t => {
+test('GLTFWriter#should write extra data to binary chunk twice', async (t) => {
   const inputData = await load(GLTF_BINARY_URL, GLTFLoader, {gltf: {postProcess: true}});
   const data = await load(GLTF_BINARY_URL, GLTFLoader, {
     gltf: {postProcess: false, decompressMeshes: false}

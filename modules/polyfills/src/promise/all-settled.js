@@ -9,12 +9,12 @@ export const FULFILLED_STATUS = 'fulfilled';
  * @returns {Promise}
  */
 export function allSettled(promises) {
-  const mappedPromises = promises.map(promise => {
+  const mappedPromises = promises.map((promise) => {
     return promise
-      .then(value => {
+      .then((value) => {
         return {status: FULFILLED_STATUS, value};
       })
-      .catch(reason => {
+      .catch((reason) => {
         return {status: REJECTED_STATUS, reason};
       });
   });

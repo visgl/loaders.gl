@@ -10,7 +10,7 @@ import {
   // isWritableStream
 } from '@loaders.gl/core';
 
-test('isIterator', t => {
+test('isIterator', (t) => {
   const TESTS = [
     {
       input: new Set().entries(),

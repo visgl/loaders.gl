@@ -16,7 +16,7 @@ export default class AsyncQueue {
   private _values: ArrayQueue;
   private _settlers: ArrayQueue;
   private _closed: boolean;
-  
+
   constructor() {
     // enqueues > dequeues
     this._values = new ArrayQueue();
@@ -84,7 +84,10 @@ export default class AsyncQueue {
 /**
  * @returns a Promise for an Array with the elements in `asyncIterable`
  */
- export async function takeAsync(asyncIterable: AsyncIterable<any>, count: number = Infinity): Promise<any[]> {
+export async function takeAsync(
+  asyncIterable: AsyncIterable<any>,
+  count = Infinity
+): Promise<any[]> {
   const result: Array<any> = [];
   const iterator = asyncIterable[Symbol.asyncIterator]();
   while (result.length < count) {

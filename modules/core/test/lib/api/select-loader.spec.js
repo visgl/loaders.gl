@@ -14,7 +14,7 @@ const URL_WITH_QUERYSTRING =
   'https://wms.chartbundle.com/tms/1.0.0/sec/{z}/{x}/{y}.png?origin=nw.xy';
 const DRACO_URL_QUERYSTRING = '@loaders.gl/draco/test/data/bunny.drc?query.string';
 
-test('selectLoaderSync#urls', async t => {
+test('selectLoaderSync#urls', async (t) => {
   // @ts-ignore
   t.throws(() => selectLoaderSync(null), 'selectedLoader throws if no loader found');
 
@@ -60,7 +60,7 @@ test('selectLoaderSync#urls', async t => {
   );
 });
 
-test('selectLoader#urls', async t => {
+test('selectLoader#urls', async (t) => {
   // @ts-ignore
   await t.rejects(selectLoader(null), 'selectedLoader rejects if no loader found');
 
@@ -106,7 +106,7 @@ test('selectLoader#urls', async t => {
   );
 });
 
-test('selectLoader#data', async t => {
+test('selectLoader#data', async (t) => {
   const dracoResponse = await fetchFile(DRACO_URL);
   const dracoData = await dracoResponse.arrayBuffer();
 
@@ -159,7 +159,7 @@ test('selectLoader#data', async t => {
   t.end();
 });
 
-test('selectLoader#via (unregistered) MIME type', async t => {
+test('selectLoader#via (unregistered) MIME type', async (t) => {
   if (isBrowser) {
     const blob = new Blob([''], {type: 'application/x.draco'});
     const loader = await selectLoader(blob, [Tiles3DLoader, DracoLoader, LASLoader]);
@@ -168,7 +168,7 @@ test('selectLoader#via (unregistered) MIME type', async t => {
   t.end();
 });
 
-test('selectLoader#Blob data sniffing', async t => {
+test('selectLoader#Blob data sniffing', async (t) => {
   if (isBrowser) {
     const blob = new Blob(['DRACO']);
     let loader = await selectLoader(blob, [Tiles3DLoader, DracoLoader, LASLoader]);

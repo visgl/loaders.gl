@@ -123,7 +123,7 @@ function firstPass(features) {
     polygonRingsCount,
     polygonFeaturesCount,
     // Array of keys whose values are always numeric
-    numericPropKeys: Object.keys(numericPropKeys).filter(k => numericPropKeys[k])
+    numericPropKeys: Object.keys(numericPropKeys).filter((k) => numericPropKeys[k])
   };
 }
 

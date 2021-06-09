@@ -26,9 +26,9 @@ export function encodeImageToStreamNode(image, options) {
 export function encodeImageNode(image, options) {
   const imageStream = encodeImageToStreamNode(image, options);
 
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     const buffers = [];
-    imageStream.on('data', buffer => buffers.push(buffer));
+    imageStream.on('data', (buffer) => buffers.push(buffer));
     // TODO - convert to arraybuffer?
     imageStream.on('end', () => {
       const buffer = Buffer.concat(buffers);

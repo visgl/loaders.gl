@@ -39,7 +39,7 @@ const SHAPEFILE_JS_TEST_FILES = {
   'utf8-property': null
 };
 
-test('ShapefileLoader#load (from browser File objects)', async t => {
+test('ShapefileLoader#load (from browser File objects)', async (t) => {
   if (typeof File !== 'undefined') {
     // test `File` load (browser)
     t.comment('...FILE LOAD STARTING. FAILED FETCHES EXPECTED');
@@ -63,7 +63,7 @@ test('ShapefileLoader#load (from browser File objects)', async t => {
   t.end();
 });
 
-test('ShapefileLoader#load (from files or URLs)', async t => {
+test('ShapefileLoader#load (from files or URLs)', async (t) => {
   // test file load (node) or URL load (browser)
   for (const testFileName in SHAPEFILE_JS_TEST_FILES) {
     const filename = `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`;
@@ -76,7 +76,7 @@ test('ShapefileLoader#load (from files or URLs)', async t => {
   t.end();
 });
 
-test('ShapefileLoader#load and reproject (from files or URLs)', async t => {
+test('ShapefileLoader#load and reproject (from files or URLs)', async (t) => {
   // test file load (node) or URL load (browser)
   const testFileName = 'points';
   const filename = `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`;
@@ -103,7 +103,7 @@ test('ShapefileLoader#load and reproject (from files or URLs)', async t => {
   t.end();
 });
 
-test('ShapefileLoader#selectLoader (from arrayBuffer data)', async t => {
+test('ShapefileLoader#selectLoader (from arrayBuffer data)', async (t) => {
   // test file load (node) or URL load (browser)
   const filename = `${SHAPEFILE_JS_DATA_FOLDER}/boolean-property.shp`;
   const response = await fetchFile(filename);
@@ -113,7 +113,7 @@ test('ShapefileLoader#selectLoader (from arrayBuffer data)', async t => {
   t.end();
 });
 
-test('ShapefileLoader#loadInBatches(URL)', async t => {
+test('ShapefileLoader#loadInBatches(URL)', async (t) => {
   // test file load (node) or URL load (browser)
   for (const testFileName in SHAPEFILE_JS_TEST_FILES) {
     const filename = `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`;
@@ -129,7 +129,7 @@ test('ShapefileLoader#loadInBatches(URL)', async t => {
   t.end();
 });
 
-test('ShapefileLoader#loadInBatches(File)', async t => {
+test('ShapefileLoader#loadInBatches(File)', async (t) => {
   // test file load (node) or URL load (browser)
   for (const testFileName in SHAPEFILE_JS_TEST_FILES) {
     if (testFileName === 'utf8-property') {
@@ -161,7 +161,7 @@ test('ShapefileLoader#loadInBatches(File)', async t => {
   t.end();
 });
 
-test('ShapefileLoader#loadInBatches when options.metadata: true', async t => {
+test('ShapefileLoader#loadInBatches when options.metadata: true', async (t) => {
   const testFileName = Object.keys(SHAPEFILE_JS_TEST_FILES)[0];
   const filename = `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`;
   const batches = await loadInBatches(filename, ShapefileLoader, {metadata: true});
@@ -200,7 +200,7 @@ async function testShapefileData(t, testFileName, data) {
     'polylines',
     'polylinem'
   ];
-  if (EXCEPTIONS.some(exception => testFileName.includes(exception))) {
+  if (EXCEPTIONS.some((exception) => testFileName.includes(exception))) {
     return;
   }
 

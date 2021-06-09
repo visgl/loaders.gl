@@ -32,7 +32,7 @@ const modules = [
   zip
 ];
 
-test('isLoaderObject', t => {
+test('isLoaderObject', (t) => {
   // @ts-ignore
   t.notOk(isLoaderObject(null), 'null is not a loader');
 
@@ -49,7 +49,7 @@ test('isLoaderObject', t => {
   t.end();
 });
 
-test('normalizeLoader', t => {
+test('normalizeLoader', (t) => {
   const TESTS = [
     {
       title: 'loader',

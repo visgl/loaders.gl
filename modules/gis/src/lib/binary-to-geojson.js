@@ -122,9 +122,9 @@ function parseGeometry(data, startIndex, endIndex) {
 /** Parse binary data of type Polygon */
 function polygonToGeoJson(data, startIndex = -Infinity, endIndex = Infinity) {
   const {positions} = data;
-  const polygonIndices = data.polygonIndices.value.filter(x => x >= startIndex && x <= endIndex);
+  const polygonIndices = data.polygonIndices.value.filter((x) => x >= startIndex && x <= endIndex);
   const primitivePolygonIndices = data.primitivePolygonIndices.value.filter(
-    x => x >= startIndex && x <= endIndex
+    (x) => x >= startIndex && x <= endIndex
   );
   const multi = polygonIndices.length > 2;
 
@@ -145,8 +145,11 @@ function polygonToGeoJson(data, startIndex = -Infinity, endIndex = Infinity) {
   for (let i = 0; i < polygonIndices.length - 1; i++) {
     const startPolygonIndex = polygonIndices[i];
     const endPolygonIndex = polygonIndices[i + 1];
-    const polygonCoordinates = polygonToGeoJson(data, startPolygonIndex, endPolygonIndex)
-      .coordinates;
+    const polygonCoordinates = polygonToGeoJson(
+      data,
+      startPolygonIndex,
+      endPolygonIndex
+    ).coordinates;
     coordinates.push(polygonCoordinates);
   }
 
@@ -156,7 +159,7 @@ function polygonToGeoJson(data, startIndex = -Infinity, endIndex = Infinity) {
 /** Parse binary data of type LineString */
 function lineStringToGeoJson(data, startIndex = -Infinity, endIndex = Infinity) {
   const {positions} = data;
-  const pathIndices = data.pathIndices.value.filter(x => x >= startIndex && x <= endIndex);
+  const pathIndices = data.pathIndices.value.filter((x) => x >= startIndex && x <= endIndex);
   const multi = pathIndices.length > 2;
 
   if (!multi) {

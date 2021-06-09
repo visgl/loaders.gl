@@ -1,7 +1,7 @@
 import {TypedArray} from '../../types';
 import * as node from '../node/buffer-utils.node';
 
-/** 
+/**
  * Convert an object to an array buffer
  */
 export function toArrayBuffer(data: any): ArrayBuffer {
@@ -34,14 +34,13 @@ export function toArrayBuffer(data: any): ArrayBuffer {
   throw new Error('toArrayBuffer');
 }
 
-
 /**
  * compare two binary arrays for equality
  * @param {ArrayBuffer} a
  * @param {ArrayBuffer} b
  * @param {number} byteLength
  */
- export function compareArrayBuffers(
+export function compareArrayBuffers(
   arrayBuffer1: ArrayBuffer,
   arrayBuffer2: ArrayBuffer,
   byteLength?: number
@@ -64,10 +63,10 @@ export function toArrayBuffer(data: any): ArrayBuffer {
  * Concatenate a sequence of ArrayBuffers
  * @return A concatenated ArrayBuffer
  */
- export function concatenateArrayBuffers(...sources: (ArrayBuffer | Uint8Array)[]): ArrayBuffer {
+export function concatenateArrayBuffers(...sources: (ArrayBuffer | Uint8Array)[]): ArrayBuffer {
   // Make sure all inputs are wrapped in typed arrays
-  const sourceArrays = sources.map(source2 =>
-    (source2 instanceof ArrayBuffer ? new Uint8Array(source2) : source2)
+  const sourceArrays = sources.map((source2) =>
+    source2 instanceof ArrayBuffer ? new Uint8Array(source2) : source2
   );
 
   // Get length of all inputs
@@ -93,7 +92,7 @@ export function toArrayBuffer(data: any): ArrayBuffer {
  * @param {...*} arrays - list of arrays. All arrays should be the same type
  * @return A concatenated TypedArray
  */
- export function concatenateTypedArrays<T>(...typedArrays: T[]): T  {
+export function concatenateTypedArrays<T>(...typedArrays: T[]): T {
   // @ts-ignore
   const arrays = typedArrays as TypedArray[];
   // @ts-ignore
@@ -121,7 +120,7 @@ export function toArrayBuffer(data: any): ArrayBuffer {
  * @param byteOffset
  * @param byteLength
  */
- export function sliceArrayBuffer(
+export function sliceArrayBuffer(
   arrayBuffer: ArrayBuffer,
   byteOffset: number,
   byteLength?: number

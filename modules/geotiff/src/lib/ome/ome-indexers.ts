@@ -1,12 +1,9 @@
-import type { GeoTIFFImage, GeoTIFF, ImageFileDirectory } from 'geotiff';
-import type { OMEXML } from '../ome/omexml';
+import type {GeoTIFFImage, GeoTIFF, ImageFileDirectory} from 'geotiff';
+import type {OMEXML} from '../ome/omexml';
 // TODO - circular dependency
-import type { OmeTiffSelection } from '../load-ome-tiff';
+import type {OmeTiffSelection} from '../load-ome-tiff';
 
-export type OmeTiffIndexer = (
-  sel: OmeTiffSelection,
-  z: number
-) => Promise<GeoTIFFImage>;
+export type OmeTiffIndexer = (sel: OmeTiffSelection, z: number) => Promise<GeoTIFFImage>;
 
 /*
  * An "indexer" for a GeoTIFF-based source is a function that takes a
@@ -27,12 +24,9 @@ export type OmeTiffIndexer = (
  * Returns an indexer for legacy Bioformats images. This assumes that
  * downsampled resolutions are stored sequentially in the OME-TIFF.
  */
-export function getOmeLegacyIndexer(
-  tiff: GeoTIFF,
-  rootMeta: OMEXML
-): OmeTiffIndexer {
+export function getOmeLegacyIndexer(tiff: GeoTIFF, rootMeta: OMEXML): OmeTiffIndexer {
   const imgMeta = rootMeta[0];
-  const { SizeT, SizeC, SizeZ } = imgMeta.Pixels;
+  const {SizeT, SizeC, SizeZ} = imgMeta.Pixels;
   const ifdIndexer = getOmeIFDIndexer(imgMeta);
 
   return (sel: OmeTiffSelection, pyramidLevel: number) => {
@@ -59,10 +53,7 @@ export function getOmeLegacyIndexer(
  * an ES6 Map that maps a string key that identifies the selection uniquely
  * to the corresponding IFD.
  */
-export function getOmeSubIFDIndexer(
-  tiff: GeoTIFF,
-  rootMeta: OMEXML
-): OmeTiffIndexer {
+export function getOmeSubIFDIndexer(tiff: GeoTIFF, rootMeta: OMEXML): OmeTiffIndexer {
   const imgMeta = rootMeta[0];
   const ifdIndexer = getOmeIFDIndexer(imgMeta);
   const ifdCache: Map<string, Promise<ImageFileDirectory>> = new Map();
@@ -76,7 +67,7 @@ export function getOmeSubIFDIndexer(
       return baseImage;
     }
 
-    const { SubIFDs } = baseImage.fileDirectory;
+    const {SubIFDs} = baseImage.fileDirectory;
     if (!SubIFDs) {
       throw Error('Indexing Error: OME-TIFF is missing SubIFDs.');
     }
@@ -107,28 +98,26 @@ export function getOmeSubIFDIndexer(
  * Returns a function that computes the image index based on the dimension
  * order and dimension sizes.
  */
-function getOmeIFDIndexer(
-  imgMeta: OMEXML[0]
-): (sel: OmeTiffSelection) => number {
-  const { SizeC, SizeZ, SizeT, DimensionOrder } = imgMeta.Pixels;
+function getOmeIFDIndexer(imgMeta: OMEXML[0]): (sel: OmeTiffSelection) => number {
+  const {SizeC, SizeZ, SizeT, DimensionOrder} = imgMeta.Pixels;
   switch (DimensionOrder) {
     case 'XYZCT': {
-      return ({ t, c, z }) => t * SizeZ * SizeC + c * SizeZ + z;
+      return ({t, c, z}) => t * SizeZ * SizeC + c * SizeZ + z;
     }
     case 'XYZTC': {
-      return ({ t, c, z }) => c * SizeZ * SizeT + t * SizeZ + z;
+      return ({t, c, z}) => c * SizeZ * SizeT + t * SizeZ + z;
     }
     case 'XYCTZ': {
-      return ({ t, c, z }) => z * SizeC * SizeT + t * SizeC + c;
+      return ({t, c, z}) => z * SizeC * SizeT + t * SizeC + c;
     }
     case 'XYCZT': {
-      return ({ t, c, z }) => t * SizeC * SizeZ + z * SizeC + c;
+      return ({t, c, z}) => t * SizeC * SizeZ + z * SizeC + c;
     }
     case 'XYTCZ': {
-      return ({ t, c, z }) => z * SizeT * SizeC + c * SizeT + t;
+      return ({t, c, z}) => z * SizeT * SizeC + c * SizeT + t;
     }
     case 'XYTZC': {
-      return ({ t, c, z }) => c * SizeT * SizeZ + z * SizeT + t;
+      return ({t, c, z}) => c * SizeT * SizeZ + z * SizeT + t;
     }
     default: {
       throw new Error(`Invalid OME-XML DimensionOrder, got ${DimensionOrder}.`);

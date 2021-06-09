@@ -34,7 +34,7 @@ let hash;
 const csvIterator = await loadInBatches(CSV_URL, CSVLoader, {
   transforms: [CRC32HashTransform],
   crypto: {
-    onEnd: result => {
+    onEnd: (result) => {
       hash = result.hash;
     }
   }

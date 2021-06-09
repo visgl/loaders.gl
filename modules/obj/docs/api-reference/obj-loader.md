@@ -25,4 +25,3 @@ const data = await load(url, OBJLoader, options);
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
-

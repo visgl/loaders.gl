@@ -22,6 +22,6 @@ export const SCENE_SERVER_TEMPLATE = {
   },
   layers: {
     path: 'layers0',
-    transform: layers0 => [layers0]
+    transform: (layers0) => [layers0]
   }
 };

@@ -19,7 +19,7 @@ export function hexToBase64(hexstring) {
   }
   const string = hexstring
     .match(/\w{2}/g)
-    .map(a => String.fromCharCode(parseInt(a, 16)))
+    .map((a) => String.fromCharCode(parseInt(a, 16)))
     .join('');
   return toBase64(string);
 }

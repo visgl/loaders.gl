@@ -14,11 +14,11 @@ export default class I3STileManager {
     if (!this._statusMap[key]) {
       this._statusMap[key] = {request, callback, key, frameState, status: STATUS.REQUESTED};
       request()
-        .then(data => {
+        .then((data) => {
           this._statusMap[key].status = STATUS.COMPLETED;
           this._statusMap[key].callback(data, frameState);
         })
-        .catch(error => {
+        .catch((error) => {
           this._statusMap[key].status = STATUS.ERROR;
           callback(error);
         });

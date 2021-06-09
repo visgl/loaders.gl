@@ -94,8 +94,7 @@ export default class App extends Component {
     const layer = new Tile3DLayer({
       id: 'tile-3d-layer',
       // Tileset entry point: Indexed 3D layer file url
-      data:
-        'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_Bldgs/SceneServer/layers/0',
+      data: 'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_Bldgs/SceneServer/layers/0',
       loader: I3SLoader,
       onTilesetLoad: this._onTilesetLoad.bind(this)
     });
