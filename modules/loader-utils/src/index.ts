@@ -1,16 +1,16 @@
 // TYPES
-export {
-  WorkerLoaderObject,
-  LoaderObject,
-  WriterObject,
-  LoaderContext,
-  DataType,
-  SyncDataType,
-  BatchableDataType,
-  IFileSystem,
-  IRandomAccessReadFileSystem
-} from './types';
-export {IncrementalTransform} from './lib/iterator-utils/incremental-transform';
+export type WorkerLoaderObject = import('./types').WorkerLoaderObject;
+export type LoaderObject = import('./types').LoaderObject;
+export type WriterObject = import('./types').WriterObject;
+export type LoaderContext = import('./types').LoaderContext;
+export type DataType = import('./types').DataType;
+export type SyncDataType = import('./types').SyncDataType;
+export type BatchableDataType = import('./types').BatchableDataType;
+export type IFileSystem = import('./types').IFileSystem;
+export type IRandomAccessReadFileSystem = import('./types').IRandomAccessReadFileSystem;
+
+export type IncrementalTransform =
+  import('./lib/iterator-utils/incremental-transform').IncrementalTransform;
 
 // GENERAL UTILS
 export {assert} from './lib/env-utils/assert';
@@ -73,8 +73,8 @@ export {default as RequestScheduler} from './lib/request-utils/request-scheduler
 
 // MESH CATEGORY UTILS
 // Note: Should move to category specific module if code size increases
-export {Attributes as _Attributes} from './categories/mesh/mesh-utils';
 export {getMeshSize as _getMeshSize, getMeshBoundingBox} from './categories/mesh/mesh-utils';
+export type _Attributes = import('./categories/mesh/mesh-utils').Attributes;
 
 export {NullWorkerLoader, NullLoader} from './null-loader';
 export {JSONLoader} from './json-loader';
