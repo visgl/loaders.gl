@@ -98,7 +98,7 @@ function getMagicNumber(data) {
   if (data instanceof ArrayBuffer) {
     // slice binary data (4 bytes from the beginning) and transform it to hexadecimal numeral system
     return [...new Uint8Array(data, 0, 4)]
-      .map(value => value.toString(16).padStart(2, '0'))
+      .map((value) => value.toString(16).padStart(2, '0'))
       .join('');
   }
   return null;

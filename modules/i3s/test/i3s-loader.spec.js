@@ -45,7 +45,7 @@ test('I3SLoader#DRACO geometry', async (t) => {
   t.end();
 });
 
-test('I3SLoader#slpk is not supported', async t => {
+test('I3SLoader#slpk is not supported', async (t) => {
   const slpkUrl = '@loaders.gl/i3s/test/data/DA12_subset.slpk';
   const message = 'Files with .slpk extention currently are not supported by I3SLoader';
   try {
