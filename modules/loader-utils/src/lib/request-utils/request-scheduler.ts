@@ -1,4 +1,3 @@
-import {Status} from '@loaders.gl/draco/types/draco-web-decoder';
 import {Stats} from '@probe.gl/stats';
 
 export type RequestSchedulerProps = {
