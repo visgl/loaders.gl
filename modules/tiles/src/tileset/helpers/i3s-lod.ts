@@ -71,10 +71,7 @@ function projectVertexToSphere([x, y, z]) {
   return [x, y, z];
 }
 
-function getDistanceFromLatLon(
-  observer: number[],
-  center: number[]
-) {
+function getDistanceFromLatLon(observer: number[], center: number[]) {
   const [observerLon, observerLat, observerZ = 0.0] = observer;
   const [centerLon, centerLat, centerZ = 0.0] = center;
 
