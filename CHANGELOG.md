@@ -1,5 +1,30 @@
 ## v3.0 Prerelease
 
+### v3.0.0-alpha.20
+
+- Add docker documentation to the tile-converter (#1427)
+- chore: Additional typescript tooling (#1438)
+- Adding docs for new tesselator option in terrainloader (#1433)
+- chore: typescript build fixes (#1442)
+- FIX(CSVLoader): Fix an issue where papaparse hangs for CSV files with quotes (#1434)
+- geopackage: arrow schema (#1428)
+- chore(tables): Convert tables module to typescript (#1451)
+- chore: bundle and worker build optimizations (#1452)
+- chore: upgrade math.gl (#1453)
+- chore(arrow): Convert arrow module to typescript (#1450)
+- build(deps): bump ws from 6.2.1 to 6.2.2 (#1444)
+- chore(i3s): Convert module to typescript (#1454)
+- chore: Fix typescript coverage (#1456)
+- feat(geotiff): New experimental geotiff module (#1448)
+- chore(loader-utils): Convert loader-utils module to typescript (#1459)
+- chore(geopackage): Convert geopackage module to typescript (#1457)
+- feat(zarr): Add new zarr module (#1460)
+- Bounding Volume Layer - Refactoring (#1435)
+- Fix for website error with textures app (#1461)
+- Use parseSync from loader context, not `@loaders.gl/core` (#1464)
+- Fix for mvt benchmark (#1463)
+- chore: Enable typescript for eslint/prettier (#1470) (#1471)
+
 #### v3.0.0-alpha.19
 
 - chore: Typescript build setup (#1421)
