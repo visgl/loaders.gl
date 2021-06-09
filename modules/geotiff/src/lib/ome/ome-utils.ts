@@ -1,7 +1,7 @@
 import {getDims, getLabels} from './utils';
 import type {OMEXML, UnitsLength} from './omexml';
 
-const DTYPE_LOOKUP = {
+export const DTYPE_LOOKUP = {
   uint8: 'Uint8',
   uint16: 'Uint16',
   uint32: 'Uint32',
