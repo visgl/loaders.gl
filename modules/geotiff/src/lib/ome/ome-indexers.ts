@@ -1,8 +1,7 @@
 import type {GeoTIFFImage, GeoTIFF, ImageFileDirectory} from 'geotiff';
 import type {OMEXML} from '../ome/omexml';
-// TODO - circular dependency
-import type {OmeTiffSelection} from '../load-ome-tiff';
 
+export type OmeTiffSelection = {t: number; c: number; z: number};
 export type OmeTiffIndexer = (sel: OmeTiffSelection, z: number) => Promise<GeoTIFFImage>;
 
 /*

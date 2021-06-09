@@ -1,19 +1,13 @@
-import type {GeoTIFF} from 'geotiff';
-import {fromString} from './ome/omexml';
+import type {GeoTIFF, GeoTIFFImage} from 'geotiff';
 
-import TiffPixelSource from './tiff-pixel-source';
-import {getOmeLegacyIndexer, getOmeSubIFDIndexer, OmeTiffIndexer} from './ome/ome-indexers';
-import {getOmePixelSourceMeta} from './ome/ome-utils';
+import TiffPixelSource from '../tiff-pixel-source';
+import {getOmeLegacyIndexer, getOmeSubIFDIndexer, OmeTiffIndexer} from './ome-indexers';
+import {getOmePixelSourceMeta} from './ome-utils';
+import {fromString} from './omexml';
+import type {OmeTiffSelection} from './ome-indexers';
 
-export interface OmeTiffSelection {
-  t: number;
-  c: number;
-  z: number;
-}
-
-export async function loadOMETiff(tiff: GeoTIFF) {
+export async function loadOMETiff(tiff: GeoTIFF, firstImage: GeoTIFFImage) {
   // Get first image from tiff and inspect OME-XML metadata
-  const firstImage = await tiff.getImage(0);
   const {
     ImageDescription,
     SubIFDs,
@@ -25,7 +19,7 @@ export async function loadOMETiff(tiff: GeoTIFF) {
    * Image pyramids are stored differently between versions of Bioformats.
    * Thus we need a different indexer depending on which format we have.
    */
-  let levels;
+  let levels: number;
   let pyramidIndexer: OmeTiffIndexer;
 
   if (SubIFDs) {
@@ -51,8 +45,5 @@ export async function loadOMETiff(tiff: GeoTIFF) {
     return source;
   });
 
-  return {
-    data,
-    metadata: imgMeta
-  };
+  return {data, metadata: imgMeta};
 }

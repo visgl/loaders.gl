@@ -1,5 +1,4 @@
-import {fromUrl, fromBlob} from 'geotiff';
-import type {GeoTIFF} from 'geotiff';
+import {fromUrl, fromBlob, GeoTIFF} from 'geotiff';
 
 import {
   // createPoolProxy,
@@ -8,7 +7,7 @@ import {
 } from './utils/proxies';
 // import Pool from './lib/Pool';
 
-import {loadOMETiff} from './load-ome-tiff';
+import {loadOMETiff} from './ome/load-ome-tiff';
 
 interface TiffOptions {
   headers?: Record<string, unknown>;
@@ -26,13 +25,15 @@ interface TiffOptions {
  * multi-threaded pool of image decoders should be used to decode tiles (default = true).
  * @return {Promise<{ data: TiffPixelSource[], metadata: ImageMeta }>} data source and associated OME-Zarr metadata.
  */
-export async function loadGeoTiff(source: string | File, opts: TiffOptions = {}) {
+export async function loadGeoTiff(source: string | File | GeoTIFF, opts: TiffOptions = {}) {
   const {headers, offsets, pool = true} = opts;
 
   let tiff: GeoTIFF;
 
   // Create tiff source
-  if (typeof source === 'string') {
+  if (source instanceof GeoTIFF) {
+    tiff = source;
+  } else if (typeof source === 'string') {
     tiff = await fromUrl(source, headers);
   } else {
     tiff = await fromBlob(source);
@@ -61,5 +62,11 @@ export async function loadGeoTiff(source: string | File, opts: TiffOptions = {})
    */
   checkProxies(tiff);
 
-  return loadOMETiff(tiff);
+  const firstImage = await tiff.getImage(0);
+
+  if (firstImage.fileDirectory.ImageDescription.includes('<OME')) {
+    return loadOMETiff(tiff, firstImage);
+  }
+
+  throw new Error('GeoTIFF not recognized.');
 }
