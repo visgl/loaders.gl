@@ -50,7 +50,7 @@ test('I3SLoader#slpk is not supported', async t => {
   const message = 'Files with .slpk extention currently are not supported by I3SLoader';
   try {
     await load(slpkUrl, I3SLoader, {});
-  } catch (err) {     
+  } catch (err) {
     t.equal(err.message, message);
   }
   t.end();
