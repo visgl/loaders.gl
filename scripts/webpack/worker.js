@@ -27,7 +27,7 @@ const CONFIG = {
 
   devtool: 'source-map',
 
-  stats: 'none',
+  stats: 'errors-only',
 
   resolve: {
     extensions: ['.js', '.mjs', '.jsx', '.ts', '.tsx'],

@@ -1,4 +1,4 @@
-/** @typedef {import('../../types').WorkerObject} WorkerObject */
+import type {WorkerObject} from '../../types';
 import {assert} from '../env-utils/assert';
 
 const NPM_TAG = 'beta'; // Change to 'latest' on release-branch
@@ -7,7 +7,13 @@ const NPM_TAG = 'beta'; // Change to 'latest' on release-branch
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : NPM_TAG;
 
-export function getWorkerObjectURL(worker, options) {
+/**
+ * Generate a worker URL based on worker object and options
+ * - a published worker on unpkg CDN
+ * - a local test worker
+ * - overridden by user
+ */
+ export function getWorkerObjectURL(worker: WorkerObject, options: object): string {
   const topOptions = options || {};
   const workerOptions = topOptions[worker.id] || {};
 
@@ -16,6 +22,7 @@ export function getWorkerObjectURL(worker, options) {
   let url = workerOptions.workerUrl;
 
   // If URL is test, generate local loaders.gl url
+  // @ts-ignore _workerType
   if (topOptions._workerType === 'test') {
     url = `modules/${worker.module}/dist/${workerFile}`;
   }
@@ -38,23 +45,32 @@ export function getWorkerObjectURL(worker, options) {
   return url;
 }
 
-// Build worker name (for debugging)
-export function getWorkerObjectName(worker) {
+/**
+ * Gets worker object's name (for debugging in Chrome thread inspector window)
+ * @param worker
+ * @param options
+ */
+ export function getWorkerObjectName(worker: WorkerObject, options: object): string {
   const warning = worker.version !== VERSION ? ` (lib@${VERSION})` : '';
   return `${worker.name}-worker@${worker.version}${warning}`;
 }
 
-// Returns `true` if the two versions are compatible
-export function validateWorkerVersion(worker, coreVersion = VERSION) {
+/**
+ * Check if worker is compatible with this library version
+ * @param worker
+ * @param libVersion
+ * @returns `true` if the two versions are compatible
+ */
+ export function validateWorkerVersion(worker: WorkerObject, coreVersion: string = VERSION): boolean {
   assert(worker, 'no worker provided');
 
   let workerVersion = worker.version;
   if (!coreVersion || !workerVersion) {
-    return;
+    return false;
   }
 
-  coreVersion = parseVersion(coreVersion);
-  workerVersion = parseVersion(workerVersion);
+  const coreVersions = parseVersion(coreVersion);
+  const workerVersions = parseVersion(workerVersion);
 
   // TODO enable when fix the __version__ injection
   // assert(
@@ -63,6 +79,8 @@ export function validateWorkerVersion(worker, coreVersion = VERSION) {
   //     coreVersion.minor
   //   }+ is required.`
   // );
+
+  return true;
 }
 
 function parseVersion(version) {
@@ -71,10 +89,10 @@ function parseVersion(version) {
 }
 
 /**
- * @param {object} object
- * @returns {object}
+ * Safely stringify JSON (drop non serializable values like functions and regexps)
+ * @param value
  */
-export function removeNontransferableOptions(object) {
+ export function removeNontransferableOptions(object: object): object {
   // options.log object contains functions which cannot be transferred
   // TODO - decide how to handle logging on workers
   // TODO - warn if options stringification is long

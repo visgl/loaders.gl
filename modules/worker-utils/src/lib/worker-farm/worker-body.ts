@@ -1,7 +1,5 @@
 /* eslint-disable no-restricted-globals */
-/** @typedef {import('../worker-protocol/protocol').WorkerMessageData} WorkerMessageData */
-/** @typedef {import('../worker-protocol/protocol').WorkerMessageType} WorkerMessageType  */
-/** @typedef {import('../worker-protocol/protocol').WorkerMessagePayload} WorkerMessagePayload */
+import type {WorkerMessageData, WorkerMessageType, WorkerMessagePayload} from '../worker-protocol/protocol';
 import {getTransferList} from '../worker-farm/get-transfer-list';
 
 const onMessageWrapperMap = new Map();
@@ -13,7 +11,7 @@ export default class WorkerBody {
   /*
    * (type: WorkerMessageType, payload: WorkerMessagePayload) => any
    */
-  static set onmessage(onMessage) {
+  static set onmessage(onMessage: (type: WorkerMessageType, payload: WorkerMessagePayload) => any) {
     self.onmessage = (message) => {
       if (!isKnownMessage(message)) {
         return;
@@ -25,7 +23,9 @@ export default class WorkerBody {
     };
   }
 
-  static addEventListener(onMessage) {
+  static addEventListener(
+    onMessage: (type: WorkerMessageType, payload: WorkerMessagePayload) => any
+  ) {
     let onMessageWrapper = onMessageWrapperMap.get(onMessage);
 
     if (!onMessageWrapper) {
@@ -43,20 +43,22 @@ export default class WorkerBody {
     self.addEventListener('message', onMessageWrapper);
   }
 
-  static removeEventListener(onMessage) {
+  static removeEventListener(
+    onMessage: (type: WorkerMessageType, payload: WorkerMessagePayload) => any
+  ) {
     const onMessageWrapper = onMessageWrapperMap.get(onMessage);
     onMessageWrapperMap.delete(onMessage);
     self.removeEventListener('message', onMessageWrapper);
   }
 
   /**
-   * @param {WorkerMessageType} type;
-   * @param {WorkerMessagePayload} payload
+   * Send a message from a worker to creating thread (main thread)
+   * @param type
+   * @param payload
    */
-  static postMessage(type, payload) {
+   static postMessage(type: WorkerMessageType, payload: WorkerMessagePayload): void {
     if (self) {
-      /** @type {WorkerMessageData} */
-      const data = {source: 'loaders.gl', type, payload};
+      const data: WorkerMessageData = {source: 'loaders.gl', type, payload};
       const transferList = getTransferList(payload);
       // @ts-ignore self is WorkerGlobalScope
       self.postMessage(data, transferList);

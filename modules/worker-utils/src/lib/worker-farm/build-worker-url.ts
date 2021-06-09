@@ -5,25 +5,25 @@ const workerURLCache = new Map();
 /**
  * Creates a loadable URL from worker source or URL
  * that can be used to create `Worker` instances
- * @param {object} props
- * @param {string | undefined} [props.source] Worker source
- * @param {string | undefined} [props.url] Worker URL
- * @returns {string}
+ * @param props
+ * @param props.source Worker source
+ * @param props.url Worker URL
+ * @returns loadable url
  */
-export function buildWorkerURL({source, url}) {
-  assert((source && !url) || (!source && url)); // Either source or url must be defined
+export function buildWorkerURL(props: {source?: string, url?: string}) {
+  assert((props.source && !props.url) || (!props.source && props.url)); // Either source or url must be defined
 
-  let workerURL = workerURLCache.get(source || url);
+  let workerURL = workerURLCache.get(props.source || props.url);
   if (!workerURL) {
     // Differentiate worker urls from worker source code
-    if (url) {
-      workerURL = getWorkerURLFromURL(url);
-      workerURLCache.set(url, workerURL);
+    if (props.url) {
+      workerURL = getWorkerURLFromURL(props.url);
+      workerURLCache.set(props.url, workerURL);
     }
 
-    if (source) {
-      workerURL = getWorkerURLFromSource(source);
-      workerURLCache.set(source, workerURL);
+    if (props.source) {
+      workerURL = getWorkerURLFromSource(props.source);
+      workerURLCache.set(props.source, workerURL);
     }
   }
 
@@ -33,10 +33,10 @@ export function buildWorkerURL({source, url}) {
 
 /**
  * Build a loadable worker URL from worker URL
- * @param {string} url
- * @returns {string}
+ * @param url
+ * @returns loadable URL
  */
-function getWorkerURLFromURL(url) {
+function getWorkerURLFromURL(url: string): string {
   // A local script url, we can use it to initialize a Worker directly
   if (!url.startsWith('http')) {
     return url;
@@ -49,12 +49,10 @@ function getWorkerURLFromURL(url) {
 
 /**
  * Build a loadable worker URL from worker source
- * @param {string} workerSource
- * @returns {string}
+ * @param workerSource
+ * @returns loadable url
  */
-function getWorkerURLFromSource(workerSource) {
-  assert(typeof workerSource === 'string', 'worker source');
-
+function getWorkerURLFromSource(workerSource: string): string {
   // NOTE: webworkify was previously used
   // const blob = webworkify(workerSource, {bare: true});
   const blob = new Blob([workerSource], {type: 'application/javascript'});
@@ -66,10 +64,10 @@ function getWorkerURLFromSource(workerSource) {
  * However a local worker script can still import scripts from other origins,
  * so we simply build a wrapper script.
  *
- * @param {string} workerUrl
- * @returns {string}
+ * @param workerUrl
+ * @returns source
  */
-function buildScriptSource(workerUrl) {
+function buildScriptSource(workerUrl: string): string {
   return `\
 try {
   importScripts('${workerUrl}');
