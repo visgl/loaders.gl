@@ -43,8 +43,7 @@ async function parseI3S(data, options, context, loader) {
 
   // check if file is slpk
   if (magicNumber === SLPK_HEX) {
-    console.warn('Files with .slpk extention currently are not supported by I3SLoader'); // eslint-disable-line
-    return null;
+    throw new Error('Files with .slpk extention currently are not supported by I3SLoader');
   }
 
   // auto detect file type based on url
