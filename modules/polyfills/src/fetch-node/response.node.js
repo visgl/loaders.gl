@@ -2,10 +2,10 @@ import {assert} from '../utils/assert';
 import {decompressReadStream, concatenateReadStream} from './utils/stream-utils.node';
 import Headers from './headers.node';
 
-const isBoolean = x => typeof x === 'boolean';
-const isFunction = x => typeof x === 'function';
-const isObject = x => x !== null && typeof x === 'object';
-const isReadableNodeStream = x =>
+const isBoolean = (x) => typeof x === 'boolean';
+const isFunction = (x) => typeof x === 'function';
+const isObject = (x) => x !== null && typeof x === 'object';
+const isReadableNodeStream = (x) =>
   isObject(x) && isFunction(x.read) && isFunction(x.pipe) && isBoolean(x.readable);
 
 /**

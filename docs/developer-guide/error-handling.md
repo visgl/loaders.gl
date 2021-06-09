@@ -45,8 +45,8 @@ A rejected promise is generated when using `Promise.then`.
 
 ```js
 fetch(url)
-  .then(response => parse(response))
-  .catch(error => console.log(error));
+  .then((response) => parse(response))
+  .catch((error) => console.log(error));
 ```
 
 Also note that the Javascript runtime seamlessly converts errors between exceptions and promises in mixed code.

@@ -21,7 +21,7 @@ export function padToNBytes(byteLength: number, padding: number): number {
  * @param byteLength
  * @deprecated Use sliceArrayBuffer
  */
- export function getZeroOffsetArrayBuffer(
+export function getZeroOffsetArrayBuffer(
   arrayBuffer: ArrayBuffer,
   byteOffset: number,
   byteLength?: number
@@ -35,7 +35,7 @@ export function padToNBytes(byteLength: number, padding: number): number {
  * @param sourceBuffer The second buffer.
  * @return The new ArrayBuffer created out of the two.
  */
- export function copyArrayBuffer(
+export function copyArrayBuffer(
   targetBuffer: ArrayBuffer,
   sourceBuffer: ArrayBuffer,
   byteOffset: number,
@@ -55,7 +55,7 @@ export function padToNBytes(byteLength: number, padding: number): number {
  * @param targetOffset - The start offset into target to place the copied data
  * @returns the new offset taking into account proper padding
  */
- export function copyToArray(source: ArrayBuffer | any, target: any, targetOffset: number): number {
+export function copyToArray(source: ArrayBuffer | any, target: any, targetOffset: number): number {
   let sourceArray;
 
   if (source instanceof ArrayBuffer) {

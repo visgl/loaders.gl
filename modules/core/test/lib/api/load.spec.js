@@ -6,14 +6,14 @@ const JSON_URL = '@loaders.gl/core/test/data/files/basic.json';
 
 const JSON_DATA = [{col1: 22, col2: 'abc'}];
 
-test('load#load', async t => {
+test('load#load', async (t) => {
   t.ok(load, 'load defined');
   // @ts-ignore TS2554: Expected 2-4 arguments, but got 1.
   await t.rejects(load('.'), 'load throws on undefined loaders');
   t.end();
 });
 
-test('load#with fetch options', async t => {
+test('load#with fetch options', async (t) => {
   t.ok(
     await load(JSON_URL, JSONLoader, {headers: {'Content-Type': 'application/json'}}),
     'load with fetch options at the root should trigger warnings'
@@ -24,7 +24,7 @@ test('load#with fetch options', async t => {
     'load with fetch options work'
   );
 
-  const fetch = url => new Response('{"abc": 1}');
+  const fetch = (url) => new Response('{"abc": 1}');
   t.deepEqual(
     await load(JSON_URL, JSONLoader, {fetch}),
     {abc: 1},
@@ -33,14 +33,14 @@ test('load#with fetch options', async t => {
   t.end();
 });
 
-test('load#load', async t => {
+test('load#load', async (t) => {
   t.ok(load, 'load defined');
   // @ts-ignore TS2554: Expected 2-4 arguments, but got 1.
   await t.rejects(load('.'), 'load throws on undefined loaders');
   t.end();
 });
 
-test('load#auto detect loader', t => {
+test('load#auto detect loader', (t) => {
   const TEST_LOADER = {
     name: 'JSON',
     extensions: ['json'],
@@ -57,7 +57,7 @@ test('load#auto detect loader', t => {
   load('package.json', {JSON: {option: true}});
 });
 
-test('load#Blob(text) - BROWSER ONLY', async t => {
+test('load#Blob(text) - BROWSER ONLY', async (t) => {
   if (!isBrowser) {
     t.comment('Skipping load(Blob) tests in Node.js');
     t.end();
@@ -74,7 +74,7 @@ test('load#Blob(text) - BROWSER ONLY', async t => {
   t.end();
 });
 
-test('load#stream', async t => {
+test('load#stream', async (t) => {
   const response = await fetchFile(JSON_URL);
   const stream = response.body;
   // @ts-ignore
@@ -83,7 +83,7 @@ test('load#stream', async t => {
   t.end();
 });
 
-test('load#Node stream - NODE ONLY', async t => {
+test('load#Node stream - NODE ONLY', async (t) => {
   if (isBrowser) {
     t.comment('Skipping load(Node stream) tests in Node.js');
     t.end();

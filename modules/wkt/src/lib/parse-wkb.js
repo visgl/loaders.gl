@@ -93,7 +93,7 @@ function parseLineString(view, offset, dimension, littleEndian) {
 }
 
 // https://stackoverflow.com/a/55261098
-const cumulativeSum = sum => value => (sum += value);
+const cumulativeSum = (sum) => (value) => (sum += value);
 
 function parsePolygon(view, offset, dimension, littleEndian) {
   const nRings = view.getUint32(offset, littleEndian);
@@ -112,7 +112,7 @@ function parsePolygon(view, offset, dimension, littleEndian) {
   if (concatenatedPositions.length > 0) {
     polygonIndices.push(concatenatedPositions.length / dimension);
   }
-  const primitivePolygonIndices = rings.map(l => l.length / dimension).map(cumulativeSum(0));
+  const primitivePolygonIndices = rings.map((l) => l.length / dimension).map(cumulativeSum(0));
   primitivePolygonIndices.unshift(0);
 
   return {
@@ -180,7 +180,7 @@ function parseMultiLineString(view, offset, dimension, littleEndian) {
   }
 
   const concatenatedPositions = new Float64Array(concatTypedArrays(lines).buffer);
-  const pathIndices = lines.map(l => l.length / dimension).map(cumulativeSum(0));
+  const pathIndices = lines.map((l) => l.length / dimension).map(cumulativeSum(0));
   pathIndices.unshift(0);
 
   return {
@@ -215,7 +215,7 @@ function parseMultiPolygon(view, offset, dimension, littleEndian) {
   }
 
   const concatenatedPositions = new Float64Array(concatTypedArrays(polygons).buffer);
-  const polygonIndices = polygons.map(p => p.length / dimension).map(cumulativeSum(0));
+  const polygonIndices = polygons.map((p) => p.length / dimension).map(cumulativeSum(0));
   polygonIndices.unshift(0);
 
   // Combine primitivePolygonIndices from each individual polygon
@@ -223,8 +223,8 @@ function parseMultiPolygon(view, offset, dimension, littleEndian) {
   for (const primitivePolygon of primitivePolygons) {
     primitivePolygonIndices.push(
       ...primitivePolygon
-        .filter(x => x > 0)
-        .map(x => x + primitivePolygonIndices[primitivePolygonIndices.length - 1])
+        .filter((x) => x > 0)
+        .map((x) => x + primitivePolygonIndices[primitivePolygonIndices.length - 1])
     );
   }
 

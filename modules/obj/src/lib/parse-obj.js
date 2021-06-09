@@ -302,7 +302,7 @@ class ParserState {
 }
 
 // eslint-disable-next-line max-statements, complexity
-export default text => {
+export default (text) => {
   const state = new ParserState();
 
   if (text.indexOf('\r\n') !== -1) {
@@ -382,10 +382,7 @@ export default text => {
         state.addFace(v1[0], v2[0], v3[0], v1[1], v2[1], v3[1], v1[2], v2[2], v3[2]);
       }
     } else if (lineFirstChar === 'l') {
-      const lineParts = line
-        .substring(1)
-        .trim()
-        .split(' ');
+      const lineParts = line.substring(1).trim().split(' ');
       let lineVertices;
       const lineUVs = [];
 

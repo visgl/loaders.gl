@@ -215,7 +215,7 @@ export default class App extends PureComponent {
       tileset = EXAMPLES[INITIAL_EXAMPLE_NAME];
     }
     this._onSelectTileset(tileset);
-    load(UV_DEBUG_TEXTURE_URL, ImageLoader).then(image => (this._uvDebugTexture = image));
+    load(UV_DEBUG_TEXTURE_URL, ImageLoader).then((image) => (this._uvDebugTexture = image));
   }
 
   _getViewState() {
@@ -233,7 +233,7 @@ export default class App extends PureComponent {
     const {tilesetUrl, token, name, metadataUrl} = params;
     this.setState({tilesetUrl, name, token});
     this.handleClearWarnings();
-    const metadata = await fetch(metadataUrl).then(resp => resp.json());
+    const metadata = await fetch(metadataUrl).then((resp) => resp.json());
     this.setState({metadata});
   }
 
@@ -400,10 +400,10 @@ export default class App extends PureComponent {
       radiusMinPixels: 1,
       radiusMaxPixels: 100,
       lineWidthMinPixels: 1,
-      getPosition: d => d.coordinates,
-      getRadius: d => d.radius,
-      getFillColor: d => [255, 140, 0, 100],
-      getLineColor: d => [0, 0, 0, 120]
+      getPosition: (d) => d.coordinates,
+      getRadius: (d) => d.radius,
+      getFillColor: (d) => [255, 140, 0, 100],
+      getLineColor: (d) => [0, 0, 0, 120]
     });
   }
 
@@ -457,9 +457,9 @@ export default class App extends PureComponent {
       new LineLayer({
         id: 'frustum',
         data: frustumBounds,
-        getSourcePosition: d => d.source,
-        getTargetPosition: d => d.target,
-        getColor: d => d.color,
+        getSourcePosition: (d) => d.source,
+        getTargetPosition: (d) => d.target,
+        getColor: (d) => d.color,
         getWidth: 2
       }),
       new BoundingVolumeLayer({
@@ -505,7 +505,7 @@ export default class App extends PureComponent {
 
   _renderStats() {
     // TODO - too verbose, get more default styling from stats widget?
-    return <div style={STATS_WIDGET_STYLE} ref={_ => (this._statsWidgetContainer = _)} />;
+    return <div style={STATS_WIDGET_STYLE} ref={(_) => (this._statsWidgetContainer = _)} />;
   }
 
   _renderControlPanel() {
@@ -686,12 +686,12 @@ export default class App extends PureComponent {
             <HuePicker
               width={'auto'}
               color={tileSelectedColor}
-              onChange={color => this.handleSelectTileColor(tileId, color)}
+              onChange={(color) => this.handleSelectTileColor(tileId, color)}
             />
             <MaterialPicker
               styles={MATERIAL_PICKER_STYLE}
               color={tileSelectedColor}
-              onChange={color => this.handleSelectTileColor(tileId, color)}
+              onChange={(color) => this.handleSelectTileColor(tileId, color)}
             />
             <button
               disabled={isResetButtonDisabled}
@@ -727,8 +727,8 @@ export default class App extends PureComponent {
           layerFilter={this._layerFilter}
           onViewStateChange={this._onViewStateChange.bind(this)}
           onAfterRender={() => this._updateStatWidgets()}
-          getTooltip={info => this.getTooltip(info)}
-          onClick={info => this.handleClick(info)}
+          getTooltip={(info) => this.getTooltip(info)}
+          onClick={(info) => this.handleClick(info)}
         >
           <StaticMap reuseMaps mapStyle={selectedMapStyle} preventStyleDiffing={true} />
           <View id="minimap">

@@ -17,7 +17,7 @@ const LOCAL_WORKER_URL = 'modules/worker-utils/dist/null-worker.js';
 
 const REMOTE_WORKER_URL = 'https://unpkg.com/loaders.gl/worker-utils/dist/null-worker.js';
 
-test('buildWorkerURL', t => {
+test('buildWorkerURL', (t) => {
   if (!isBrowser) {
     t.end();
   }

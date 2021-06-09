@@ -4,7 +4,7 @@ import StreamingJSONParser from '@loaders.gl/json/lib/parser/streaming-json-pars
 
 const GEOJSON_PATH = `@loaders.gl/json/test/data/geojson-big.json`;
 
-test('StreamingJSONParser#geojson', async t => {
+test('StreamingJSONParser#geojson', async (t) => {
   const parser = new StreamingJSONParser();
 
   // Can return text stream by setting `{encoding: 'utf8'}`, but only works on Node

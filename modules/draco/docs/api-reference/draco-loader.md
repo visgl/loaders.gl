@@ -24,7 +24,6 @@ const data = await load(url, DracoLoader, options);
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
 
-
 ## Dependencies
 
 Draco libraries by default are loaded from CDN, but can be bundled and injected. See [modules/draco/docs] for details.

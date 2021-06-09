@@ -7,12 +7,12 @@ import {TEST_CASES, IMAGE_URL, IMAGE_DATA_URL, SVG_DATA_URL} from './lib/test-ca
 
 const TYPES = ['auto', 'imagebitmap', 'image', 'data'].filter(isImageTypeSupported);
 
-test('image loaders#imports', t => {
+test('image loaders#imports', (t) => {
   t.ok(ImageLoader, 'ImageLoader defined');
   t.end();
 });
 
-test('ImageLoader#load(URL)', async t => {
+test('ImageLoader#load(URL)', async (t) => {
   for (const type of TYPES) {
     const image = await load(IMAGE_URL, ImageLoader, {image: {type}});
     t.ok(image, `image of type ${type} loaded successfully from data URL`);
@@ -20,7 +20,7 @@ test('ImageLoader#load(URL)', async t => {
   t.end();
 });
 
-test('ImageLoader#load(data URL)', async t => {
+test('ImageLoader#load(data URL)', async (t) => {
   for (const type of TYPES) {
     const image = await load(IMAGE_DATA_URL, ImageLoader, {image: {type}});
     t.ok(image, `image of type ${type} loaded successfully from data URL`);
@@ -36,7 +36,7 @@ test('ImageLoader#load(data URL)', async t => {
   t.end();
 });
 
-test(`ImageLoader#load({type: 'data'})`, async t => {
+test(`ImageLoader#load({type: 'data'})`, async (t) => {
   TEST_CASES.shift();
   TEST_CASES.shift();
   for (const testCase of TEST_CASES) {
@@ -57,7 +57,7 @@ test(`ImageLoader#load({type: 'data'})`, async t => {
   t.end();
 });
 
-test('ImageLoader#DATA URL - SVG', async t => {
+test('ImageLoader#DATA URL - SVG', async (t) => {
   if (!isBrowser) {
     t.comment('Skipping browser-only test');
     t.end();
@@ -69,7 +69,7 @@ test('ImageLoader#DATA URL - SVG', async t => {
   t.end();
 });
 
-test('loadImage#formats', async t => {
+test('loadImage#formats', async (t) => {
   for (const testCase of TEST_CASES) {
     if (!testCase.skip) {
       const image = await load(testCase.url, ImageLoader);
@@ -84,7 +84,7 @@ test('loadImage#formats', async t => {
   t.end();
 });
 
-test('loadImage#imagebitmap', async t => {
+test('loadImage#imagebitmap', async (t) => {
   if (!isImageTypeSupported('imagebitmap')) {
     t.comment('Browser only');
     t.end();

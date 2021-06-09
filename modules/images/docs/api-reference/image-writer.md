@@ -36,10 +36,10 @@ The supported image types are:
 
 ## Options
 
-| Option                                                                       | Type            | Default                                | Description         |
-| ---------------------------------------------------------------------------- | --------------- | -------------------------------------- | ------------------- |
-| `image.mimeType`                                                             | `string`        | `'image/png'`                          | image output format |
-| `image.jpegQuality`                                                          | `number | null` | `image/jpeg: 0.92`, `image/webp: 0.80` |
+| Option                                                                       | Type     | Default       | Description                            |
+| ---------------------------------------------------------------------------- | -------- | ------------- | -------------------------------------- |
+| `image.mimeType`                                                             | `string` | `'image/png'` | image output format                    |
+| `image.jpegQuality`                                                          | `number  | null`         | `image/jpeg: 0.92`, `image/webp: 0.80` |
 | Image quality, between `0-1`. Only applies to `image/jpeg` and `image/webp`. |
 
 ## Remarks

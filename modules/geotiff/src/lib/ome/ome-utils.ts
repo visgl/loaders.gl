@@ -1,5 +1,5 @@
-import { getDims, getLabels } from './utils';
-import type { OMEXML, UnitsLength } from './omexml';
+import {getDims, getLabels} from './utils';
+import type {OMEXML, UnitsLength} from './omexml';
 
 const DTYPE_LOOKUP = {
   uint8: 'Uint8',
@@ -12,7 +12,7 @@ const DTYPE_LOOKUP = {
   int32: 'Int32'
 } as const;
 
-export function getOmePixelSourceMeta({ Pixels }: OMEXML[0]) {
+export function getOmePixelSourceMeta({Pixels}: OMEXML[0]) {
   // e.g. 'XYZCT' -> ['t', 'c', 'z', 'y', 'x']
   const labels = getLabels(Pixels.DimensionOrder);
 
@@ -46,7 +46,7 @@ export function getOmePixelSourceMeta({ Pixels }: OMEXML[0]) {
   const dtype = DTYPE_LOOKUP[Pixels.Type as keyof typeof DTYPE_LOOKUP];
   if (Pixels.PhysicalSizeX && Pixels.PhysicalSizeY) {
     const physicalSizes: {
-      [k: string]: { size: number; unit: UnitsLength };
+      [k: string]: {size: number; unit: UnitsLength};
     } = {
       x: {
         size: Pixels.PhysicalSizeX,
@@ -63,8 +63,8 @@ export function getOmePixelSourceMeta({ Pixels }: OMEXML[0]) {
         unit: Pixels.PhysicalSizeZUnit
       };
     }
-    return { labels, getShape, physicalSizes, dtype };
+    return {labels, getShape, physicalSizes, dtype};
   }
 
-  return { labels, getShape, dtype };
+  return {labels, getShape, dtype};
 }

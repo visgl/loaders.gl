@@ -8,7 +8,7 @@ const KML_URL = '@loaders.gl/kml/test/data/KML_Samples.kml';
 
 const LOADERS = [OBJLoader, KMLLoader];
 
-test('parseSync#autoParse', async t => {
+test('parseSync#autoParse', async (t) => {
   if (!KMLLoader.supported) {
     t.comment('XML parsing not available');
   } else {

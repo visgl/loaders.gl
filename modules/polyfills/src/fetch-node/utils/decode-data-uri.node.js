@@ -2,8 +2,8 @@
 
 import {assert} from '../../utils/assert';
 
-const isArrayBuffer = x => x && x instanceof ArrayBuffer;
-const isBuffer = x => x && x instanceof Buffer;
+const isArrayBuffer = (x) => x && x instanceof ArrayBuffer;
+const isBuffer = (x) => x && x instanceof Buffer;
 
 /**
  * Parses a data URI into a buffer, as well as retrieving its declared MIME type.

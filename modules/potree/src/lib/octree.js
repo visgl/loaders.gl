@@ -120,7 +120,7 @@ export class PointCloudOctant {
     let node = this;
 
     // load hierarchy
-    let callback = function(node, hbuffer) {
+    let callback = function (node, hbuffer) {
       let view = new DataView(hbuffer);
 
       let stack = [];

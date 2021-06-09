@@ -12,7 +12,7 @@ async function getMeta() {
   return meta;
 }
 
-test('Creates correct ZarrPixelSource.', async t => {
+test('Creates correct ZarrPixelSource.', async (t) => {
   if (isBrowser) {
     t.end();
     return;
@@ -26,7 +26,7 @@ test('Creates correct ZarrPixelSource.', async t => {
   t.end();
 });
 
-test('Get raster data.', async t => {
+test('Get raster data.', async (t) => {
   if (isBrowser) {
     t.end();
     return;
@@ -52,7 +52,7 @@ test('Get raster data.', async t => {
   t.end();
 });
 
-test('Correct OME-XML.', async t => {
+test('Correct OME-XML.', async (t) => {
   if (isBrowser) {
     t.end();
     return;

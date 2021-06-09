@@ -91,7 +91,7 @@ export function getFetchFunction(options, context) {
 
   // options.fetch can be an options object
   if (isObject(fetch)) {
-    return url => fetchFile(url, fetch);
+    return (url) => fetchFile(url, fetch);
   }
 
   // else refer to context (from parent loader) if available
@@ -102,7 +102,7 @@ export function getFetchFunction(options, context) {
   // else return the default fetch function
 
   // TODO DEPRECATED, support for root level fetch options will be removed in 3.0
-  return url => fetchFile(url, options);
+  return (url) => fetchFile(url, options);
 
   // return fetchFile;
 }

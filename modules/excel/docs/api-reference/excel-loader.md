@@ -21,9 +21,9 @@ const data = await load(url, ExcelLoader, {excel: options});
 
 ## Options
 
-| Option        | From                                                                                  | Type            | Default | Description                                           |
-| ------------- | ------------------------------------------------------------------------------------- | --------------- | ------- | ----------------------------------------------------- |
-| `excel.sheet` | [![Website shields.io](https://img.shields.io/badge/v2.0-blue.svg?style=flat-square)] | `string | null` | `null`  | Which worksheet to load. By default loads first sheet |
+| Option        | From                                                                                  | Type    | Default | Description |
+| ------------- | ------------------------------------------------------------------------------------- | ------- | ------- | ----------- | ----------------------------------------------------- |
+| `excel.sheet` | [![Website shields.io](https://img.shields.io/badge/v2.0-blue.svg?style=flat-square)] | `string | null`   | `null`      | Which worksheet to load. By default loads first sheet |
 
 ## Attribution
 

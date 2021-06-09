@@ -6,7 +6,7 @@ import {
 
 import {isBrowser, isIterator} from '@loaders.gl/core';
 
-test('parseWithLoader#getArrayBufferOrStringFromDataSync', t => {
+test('parseWithLoader#getArrayBufferOrStringFromDataSync', (t) => {
   const string = 'line 1\nline 2';
   const buffer = new TextEncoder().encode(string);
 
@@ -24,7 +24,7 @@ test('parseWithLoader#getArrayBufferOrStringFromDataSync', t => {
   t.end();
 });
 
-test('parseWithLoader#getArrayBufferOrStringFromDataSync(embedded arrays/buffers)', t => {
+test('parseWithLoader#getArrayBufferOrStringFromDataSync(embedded arrays/buffers)', (t) => {
   const string = 'line 1\nline 2';
   const embeddedString = `}}}${string}{{{`;
 
@@ -68,7 +68,7 @@ test('parseWithLoader#getArrayBufferOrStringFromDataSync(embedded arrays/buffers
   t.end();
 });
 
-test('parseWithLoader#getAsyncIteratorFromData', async t => {
+test('parseWithLoader#getAsyncIteratorFromData', async (t) => {
   const TESTS = [
     new Float32Array([1, 2, 3]).buffer,
     (async function* generator() {

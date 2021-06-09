@@ -12,13 +12,13 @@ setLoaderOptions({
   _workerType: 'test'
 });
 
-test('TerrainLoader#loader objects', async t => {
+test('TerrainLoader#loader objects', async (t) => {
   validateLoader(t, TerrainLoader, 'TerrainLoader');
   validateLoader(t, TerrainWorkerLoader, 'TerrainWorkerLoader');
   t.end();
 });
 
-test('TerrainLoader#parse mapbox martini', async t => {
+test('TerrainLoader#parse mapbox martini', async (t) => {
   const options = {
     terrain: {
       elevationDecoder: {
@@ -49,7 +49,7 @@ test('TerrainLoader#parse mapbox martini', async t => {
   t.end();
 });
 
-test('TerrainLoader#parse terrarium martini', async t => {
+test('TerrainLoader#parse terrarium martini', async (t) => {
   const options = {
     terrain: {
       elevationDecoder: {
@@ -81,7 +81,7 @@ test('TerrainLoader#parse terrarium martini', async t => {
   t.end();
 });
 
-test('TerrainLoader#parse mapbox delatin', async t => {
+test('TerrainLoader#parse mapbox delatin', async (t) => {
   const options = {
     terrain: {
       elevationDecoder: {
@@ -112,7 +112,7 @@ test('TerrainLoader#parse mapbox delatin', async t => {
   t.end();
 });
 
-test('TerrainLoader#parse terrarium delatin', async t => {
+test('TerrainLoader#parse terrarium delatin', async (t) => {
   const options = {
     terrain: {
       elevationDecoder: {
@@ -144,7 +144,7 @@ test('TerrainLoader#parse terrarium delatin', async t => {
   t.end();
 });
 
-test('TerrainWorkerLoader#parse terrarium martini', async t => {
+test('TerrainWorkerLoader#parse terrarium martini', async (t) => {
   if (typeof Worker === 'undefined') {
     t.comment('Worker is not usable in non-browser environments');
     t.end();
@@ -182,7 +182,7 @@ test('TerrainWorkerLoader#parse terrarium martini', async t => {
   t.end();
 });
 
-test('TerrainWorkerLoader#parse terrarium delatin', async t => {
+test('TerrainWorkerLoader#parse terrarium delatin', async (t) => {
   if (typeof Worker === 'undefined') {
     t.comment('Worker is not usable in non-browser environments');
     t.end();

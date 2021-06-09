@@ -90,11 +90,12 @@
   },
   "exclude":[
     "modules/tiles/test/**/*",
+    "modules/tile-converter/src/**/*",
+    "modules/tile-converter/test/**/*",
     "modules/i3s/test/**/*",
-    "modules/tile-converter/**/*",
     "modules/textures/test/**/*",
     "modules/gltf/test/**/*",
-    "modules/excel",
+    "modules/excel/test/**/*",
 
     "modules/**/src/libs/*",
     "modules/*/dist/**/*",

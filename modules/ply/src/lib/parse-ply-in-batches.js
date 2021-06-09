@@ -60,7 +60,7 @@ async function parseHeader(lineIterator, options) {
 
   // Note: forEach does not reset iterator if exiting loop prematurely
   // so that iteration can continue in a second loop
-  await forEach(lineIterator, line => {
+  await forEach(lineIterator, (line) => {
     line = line.trim();
 
     // End of header

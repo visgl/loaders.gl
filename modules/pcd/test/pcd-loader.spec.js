@@ -12,13 +12,13 @@ setLoaderOptions({
   _workerType: 'test'
 });
 
-test('PCDLoader#loader conformance', t => {
+test('PCDLoader#loader conformance', (t) => {
   validateLoader(t, PCDLoader, 'PCDLoader');
   validateLoader(t, PCDWorkerLoader, 'PCDWorkerLoader');
   t.end();
 });
 
-test('PCDLoader#parse(text)', async t => {
+test('PCDLoader#parse(text)', async (t) => {
   const data = await parse(fetchFile(PCD_ASCII_URL), PCDLoader, {worker: false});
   validateMeshCategoryData(t, data);
 
@@ -26,11 +26,11 @@ test('PCDLoader#parse(text)', async t => {
   t.equal(data.schema.metadata.get('mode'), '0', 'schema metadata is correct');
   t.ok(data.schema.metadata.get('boundingBox'), 'schema metadata is correct');
 
-  const positionField = data.schema.fields.find(field => field.name === 'POSITION');
+  const positionField = data.schema.fields.find((field) => field.name === 'POSITION');
   t.equal(positionField.type.listSize, 3, 'schema size correct');
   t.equal(positionField.type.valueType.precision, 32, 'schema type correct');
 
-  const colorField = data.schema.fields.find(field => field.name === 'COLOR_0');
+  const colorField = data.schema.fields.find((field) => field.name === 'COLOR_0');
   t.equal(colorField.type.listSize, 3, 'schema size correct');
   t.equal(colorField.type.valueType.bitWidth, 8, 'schema type correct');
   t.equal(colorField.type.valueType.isSigned, false, 'schema type correct');
@@ -44,7 +44,7 @@ test('PCDLoader#parse(text)', async t => {
   t.end();
 });
 
-test('PCDLoader#parse(binary)', async t => {
+test('PCDLoader#parse(binary)', async (t) => {
   const data = await parse(fetchFile(PCD_BINARY_URL), PCDLoader, {worker: false});
   validateMeshCategoryData(t, data);
 
@@ -57,7 +57,7 @@ test('PCDLoader#parse(binary)', async t => {
   t.end();
 });
 
-test('PCDWorkerLoader#parse(binary)', async t => {
+test('PCDWorkerLoader#parse(binary)', async (t) => {
   if (typeof Worker === 'undefined') {
     t.comment('Worker is not usable in non-browser environments');
     t.end();

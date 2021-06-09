@@ -5,10 +5,10 @@ import test from 'tape-promise/tape';
 import {isBrowser} from '@loaders.gl/core';
 import {decodeDataUri} from '@loaders.gl/polyfills/fetch-node/utils/decode-data-uri.node';
 
-const toString = arrayBuffer => new TextDecoder().decode(arrayBuffer);
+const toString = (arrayBuffer) => new TextDecoder().decode(arrayBuffer);
 
 // eslint-disable-next-line max-statements
-test('decodeDataUri', t => {
+test('decodeDataUri', (t) => {
   if (isBrowser) {
     t.comment('decodeDataUri() currently only works in Node.js');
     t.end();

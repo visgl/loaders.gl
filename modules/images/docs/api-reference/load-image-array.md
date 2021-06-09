@@ -62,9 +62,9 @@ Returns
 
 Accepts the same options as [`ImageLoader`](modules/images/docs/api-reference/image-loader), and
 
-| Option            | Type              | Default | Description                                            |
-| ----------------- | ----------------- | ------- | ------------------------------------------------------ |
-| `image.mipLevels` | `Number | String` | `0`     | If `'auto'` or non-zero, loads an array of mip images. |
+| Option            | Type    | Default | Description |
+| ----------------- | ------- | ------- | ----------- | ------------------------------------------------------ |
+| `image.mipLevels` | `Number | String` | `0`         | If `'auto'` or non-zero, loads an array of mip images. |
 
 Number of mip level images to load: Use `0` to indicate a single image with no mips. Supplying the string `'auto'` will infer the mipLevel from the size of the `lod`=`0` image.
 

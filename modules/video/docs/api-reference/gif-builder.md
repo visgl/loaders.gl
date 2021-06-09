@@ -98,18 +98,18 @@ Note: After calling `build()` this builder instance is not intended to be used f
 ## Options
 
 | Option           | Type     | Default                                                        | Description                                                                          |
-| ---------------- | -------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| ---------------- | -------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `source`         | `string` | `'images'`                                                     | Either `'images'`, `'video'` or `'webcam'`                                           |
 | `width`          | `number` | `200`                                                          | Desired width of the generated GIF image                                             |
 | `height`         | `number` | `200`                                                          | Desired height of the generated GIF image                                            |
 | `crossOrigin`    | `string` | CORS attribute for requesting image or video URLs. 'Anonymous' | 'Anonymous', 'use-credentials', or '' (to not set).                                  |
 | QUALITY SETTINGS |          |                                                                |
 | `sampleInterval` |          | `10`                                                           | pixels to skip when creating the palette. Default is 10. Less is better, but slower. |
-| `numWorkers`     |          | `2`                                                            |                                                                                      | how many web workers to use to process the animated GIF frames. Default is 2. |
+| `numWorkers`     |          | `2`                                                            |                                                                                      | how many web workers to use to process the animated GIF frames. Default is 2.                                                                     |
 | `interval`       |          | `0.1`                                                          | The amount of time (in seconds) to wait between each frame capture                   |
-| `offset`         |          | `null`                                                         |                                                                                      | The amount of time (in seconds) to start capturing the GIF (only for HTML5 videos) |
+| `offset`         |          | `null`                                                         |                                                                                      | The amount of time (in seconds) to start capturing the GIF (only for HTML5 videos)                                                                |
 | `numFrames`      |          | `10`                                                           |                                                                                      | The number of frames to use to create the animated GIF. Each frame is captured every 100 milliseconds of a video and every ms for existing images |
-| `frameDuration`  |          | `1`                                                            |                                                                                      | The amount of time (10 = 1s) to stay on each frame |
+| `frameDuration`  |          | `1`                                                            |                                                                                      | The amount of time (10 = 1s) to stay on each frame                                                                                                |
 
 Notes:
 

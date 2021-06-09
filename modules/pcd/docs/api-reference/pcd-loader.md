@@ -27,4 +27,3 @@ const data = await load(url, PCSLoader, options);
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
-

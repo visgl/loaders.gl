@@ -1,7 +1,7 @@
 /* eslint-disable */
 const {getBabelConfig} = require('ocular-dev-tools');
 
-module.exports = api => {
+module.exports = (api) => {
   const config = getBabelConfig(api);
 
   config.plugins = config.plugins || [];

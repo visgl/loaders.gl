@@ -33,15 +33,15 @@ export function loadPointTile(uri, tileHeader) {
   const boundingSphere = getBoundingSphere(tileHeader);
   const computedTransform = getTransform(tileHeader);
 
-  return Resource.fetchArrayBuffer(uri).then(function(arrayBuffer) {
+  return Resource.fetchArrayBuffer(uri).then(function (arrayBuffer) {
     const pointCloud = new PointCloud({
       arrayBuffer,
       byteOffset: 0,
       cull: false,
       opaquePass: Pass.CESIUM_3D_TILE,
-      vertexShaderLoaded: vs => vs,
-      fragmentShaderLoaded: fs => `uniform vec4 czm_pickColor;\n${fs}`,
-      uniformMapLoaded: uniformMap => uniformMap,
+      vertexShaderLoaded: (vs) => vs,
+      fragmentShaderLoaded: (fs) => `uniform vec4 czm_pickColor;\n${fs}`,
+      uniformMapLoaded: (uniformMap) => uniformMap,
       batchTableLoaded: (batchLength, batchTableJson, batchTableBinary) => {},
       pickIdLoaded: () => 'czm_pickColor'
     });

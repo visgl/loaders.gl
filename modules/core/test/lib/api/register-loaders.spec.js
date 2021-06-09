@@ -2,11 +2,11 @@ import test from 'tape-promise/tape';
 import {registerLoaders} from '@loaders.gl/core';
 import {getRegisteredLoaders} from '@loaders.gl/core/lib/api/register-loaders';
 
-test('registerLoaders', t => {
+test('registerLoaders', (t) => {
   const registeredLoadersCount = getRegisteredLoaders().length;
 
   registerLoaders({
-    parseTextSync: d => d,
+    parseTextSync: (d) => d,
     extensions: ['ext1']
   });
 
@@ -14,12 +14,12 @@ test('registerLoaders', t => {
 
   registerLoaders([
     {
-      parseTextSync: d => d,
+      parseTextSync: (d) => d,
       extensions: ['ext2']
     },
     [
       {
-        parseTextSync: d => d,
+        parseTextSync: (d) => d,
         extensions: ['ex3']
       },
       {
@@ -31,7 +31,7 @@ test('registerLoaders', t => {
   t.is(getRegisteredLoaders().length - registeredLoadersCount, 3, 'loader is registered');
 
   const TestLoader = {
-    parseTextSync: d => d,
+    parseTextSync: (d) => d,
     extensions: ['ext2']
   };
 

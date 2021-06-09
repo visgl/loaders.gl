@@ -16,7 +16,7 @@ export function registerLoaders(loaders) {
 
   for (const loader of loaders) {
     const normalizedLoader = normalizeLoader(loader);
-    if (!loaderRegistry.find(registeredLoader => normalizedLoader === registeredLoader)) {
+    if (!loaderRegistry.find((registeredLoader) => normalizedLoader === registeredLoader)) {
       // add to the beginning of the loaderRegistry, so the last registeredLoader get picked
       loaderRegistry.unshift(normalizedLoader);
     }

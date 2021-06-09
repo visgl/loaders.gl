@@ -98,7 +98,7 @@ function getAttributeValueType(attribute) {
  * @returns {Object}
  */
 function generateAttributesByFeatureId(attributes, attributeStorageInfo, featureId) {
-  const objectIds = attributes.find(attribute => attribute.value.OBJECTID);
+  const objectIds = attributes.find((attribute) => attribute.value.OBJECTID);
 
   if (!objectIds) {
     return null;
@@ -157,9 +157,9 @@ function getAttributeByIndexAndAttributeName(attributes, index, attributesName) 
 function formatAttributeValue(attribute, featureIdIndex) {
   return attribute && attribute[featureIdIndex]
     ? attribute[featureIdIndex]
-        .toString()
-        // eslint-disable-next-line no-control-regex
-        .replace(/\u0000/g, '')
-        .trim()
+      .toString()
+    // eslint-disable-next-line no-control-regex
+      .replace(/\u0000/g, '')
+      .trim()
     : EMPTY_VALUE;
 }

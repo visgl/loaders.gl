@@ -3,7 +3,7 @@ import {assert} from '../env-utils/assert';
 import {buildWorkerURL} from './build-worker-url';
 import {getTransferList} from './get-transfer-list';
 
-const NOOP = _ => {};
+const NOOP = (_) => {};
 export default class WorkerThread {
   static isSupported() {
     return typeof Worker !== 'undefined';
@@ -19,7 +19,7 @@ export default class WorkerThread {
     this.source = source;
     this.url = url;
     this.onMessage = NOOP;
-    this.onError = error => console.log(error); // eslint-disable-line
+    this.onError = (error) => console.log(error); // eslint-disable-line
     this.terminated = false;
 
     this.worker = this._createBrowserWorker();
@@ -73,7 +73,7 @@ export default class WorkerThread {
     this._loadableURL = buildWorkerURL({source: this.source, url: this.url});
     const worker = new Worker(this._loadableURL, {name: this.name});
 
-    worker.onmessage = event => {
+    worker.onmessage = (event) => {
       if (!event.data) {
         this.onError('No data received');
       } else {
@@ -81,12 +81,12 @@ export default class WorkerThread {
       }
     };
     // This callback represents an uncaught exception in the worker thread
-    worker.onerror = error => {
+    worker.onerror = (error) => {
       this.onError(this._getErrorFromErrorEvent(error));
       this.terminated = true;
     };
     // TODO - not clear when this would be called, for now just log in case it happens
-    worker.onmessageerror = event => console.error(event); // eslint-disable-line
+    worker.onmessageerror = (event) => console.error(event); // eslint-disable-line
 
     return worker;
   }

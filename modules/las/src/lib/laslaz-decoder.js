@@ -10,21 +10,21 @@ import getModule from '../libs/laz-perf';
 let Module = null;
 
 const POINT_FORMAT_READERS = {
-  0: dv => {
+  0: (dv) => {
     return {
       position: [dv.getInt32(0, true), dv.getInt32(4, true), dv.getInt32(8, true)],
       intensity: dv.getUint16(12, true),
       classification: dv.getUint8(15, true)
     };
   },
-  1: dv => {
+  1: (dv) => {
     return {
       position: [dv.getInt32(0, true), dv.getInt32(4, true), dv.getInt32(8, true)],
       intensity: dv.getUint16(12, true),
       classification: dv.getUint8(15, true)
     };
   },
-  2: dv => {
+  2: (dv) => {
     return {
       position: [dv.getInt32(0, true), dv.getInt32(4, true), dv.getInt32(8, true)],
       intensity: dv.getUint16(12, true),
@@ -32,7 +32,7 @@ const POINT_FORMAT_READERS = {
       color: [dv.getUint16(20, true), dv.getUint16(22, true), dv.getUint16(24, true)]
     };
   },
-  3: dv => {
+  3: (dv) => {
     return {
       position: [dv.getInt32(0, true), dv.getInt32(4, true), dv.getInt32(8, true)],
       intensity: dv.getUint16(12, true),

@@ -40,7 +40,6 @@ TBA
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
 
-
 ## Remarks
 
 - For more information, see [`texture-compressor`](https://github.com/TimvanScherpenzeel/texture-compressor).

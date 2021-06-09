@@ -153,12 +153,12 @@ const VIEWPORTS = [
   })
 ];
 
-test('Tileset3D#throws with undefined url', t => {
+test('Tileset3D#throws with undefined url', (t) => {
   t.throws(() => new Tileset3D());
   t.end();
 });
 
-test.skip('Tileset3D#loads json from base64 URL', async t => {
+test.skip('Tileset3D#loads json from base64 URL', async (t) => {
   const tilesetJson = {
     asset: {
       version: 2.0
@@ -172,7 +172,7 @@ test.skip('Tileset3D#loads json from base64 URL', async t => {
   t.end();
 });
 
-test.skip('Tileset3D#rejects invalid tileset version', async t => {
+test.skip('Tileset3D#rejects invalid tileset version', async (t) => {
   const tilesetJson = {
     asset: {
       version: 2.0
@@ -184,7 +184,7 @@ test.skip('Tileset3D#rejects invalid tileset version', async t => {
   t.end();
 });
 
-test('Tileset3D#url set up correctly given tileset JSON filepath', async t => {
+test('Tileset3D#url set up correctly given tileset JSON filepath', async (t) => {
   const path = '@loaders.gl/3d-tiles/test/data/Tilesets/TilesetOfTilesets/tileset.json';
 
   const tilesetJson = await load(path, Tiles3DLoader);
@@ -195,7 +195,7 @@ test('Tileset3D#url set up correctly given tileset JSON filepath', async t => {
 });
 
 // TODO
-test.skip('Tileset3D#url set up correctly given path with query string', async t => {
+test.skip('Tileset3D#url set up correctly given path with query string', async (t) => {
   const path = '@loaders.gl/3d-tiles/test/data/Tilesets/TilesetOfTilesets/tileset.json';
   const param = '?param1=1&param2=2';
   // TODO - params do not work with fetchFile...
@@ -205,7 +205,7 @@ test.skip('Tileset3D#url set up correctly given path with query string', async t
   t.end();
 });
 
-test('Tileset3D#loads and initializes with tileset JSON file', async t => {
+test('Tileset3D#loads and initializes with tileset JSON file', async (t) => {
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   const tileset = new Tileset3D(tilesetJson);
 
@@ -226,7 +226,7 @@ test('Tileset3D#loads and initializes with tileset JSON file', async t => {
   t.end();
 });
 
-test('Tileset3D#loads tileset with extras', async t => {
+test('Tileset3D#loads tileset with extras', async (t) => {
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   const tileset = new Tileset3D(tilesetJson);
 
@@ -245,7 +245,7 @@ test('Tileset3D#loads tileset with extras', async t => {
   t.end();
 });
 
-test('Tileset3D#gets root tile', async t => {
+test('Tileset3D#gets root tile', async (t) => {
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   const tileset = new Tileset3D(tilesetJson);
 
@@ -253,7 +253,7 @@ test('Tileset3D#gets root tile', async t => {
   t.end();
 });
 
-test('Tileset3D#hasExtension returns true if the tileset JSON file uses the specified extension', async t => {
+test('Tileset3D#hasExtension returns true if the tileset JSON file uses the specified extension', async (t) => {
   const tilesetJson = await load(TILESET_WITH_BATCH_TABLE_HIERARCHY_URL, Tiles3DLoader);
   const tileset = new Tileset3D(tilesetJson);
 
@@ -262,7 +262,7 @@ test('Tileset3D#hasExtension returns true if the tileset JSON file uses the spec
   t.end();
 });
 
-test.skip('Tileset3D#one viewport traversal', async t => {
+test.skip('Tileset3D#one viewport traversal', async (t) => {
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   const viewport = VIEWPORTS[0];
   let tileLoadCounter = 0;
@@ -285,7 +285,7 @@ test.skip('Tileset3D#one viewport traversal', async t => {
   }, 100);
 });
 
-test.skip('Tileset3D#two viewports traversal', async t => {
+test.skip('Tileset3D#two viewports traversal', async (t) => {
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   const viewports = VIEWPORTS;
   let tileLoadCounter = 0;
@@ -303,14 +303,20 @@ test.skip('Tileset3D#two viewports traversal', async t => {
       clearInterval(setIntervalId);
       tileset.update(viewports);
       t.equals(tileset.selectedTiles.length, 6);
-      t.equals(tileset.selectedTiles.filter(tile => tile.viewportIds.includes('view0')).length, 1);
-      t.equals(tileset.selectedTiles.filter(tile => tile.viewportIds.includes('view1')).length, 5);
+      t.equals(
+        tileset.selectedTiles.filter((tile) => tile.viewportIds.includes('view0')).length,
+        1
+      );
+      t.equals(
+        tileset.selectedTiles.filter((tile) => tile.viewportIds.includes('view1')).length,
+        5
+      );
       t.end();
     }
   }, 100);
 });
 
-test.skip('Tileset3D#viewportTraversersMap (one viewport shows tiles selected for another viewport)', async t => {
+test.skip('Tileset3D#viewportTraversersMap (one viewport shows tiles selected for another viewport)', async (t) => {
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   const viewports = VIEWPORTS;
   let tileLoadCounter = 0;
@@ -332,14 +338,20 @@ test.skip('Tileset3D#viewportTraversersMap (one viewport shows tiles selected fo
       clearInterval(setIntervalId);
       tileset.update(viewports);
       t.equals(tileset.selectedTiles.length, 5);
-      t.equals(tileset.selectedTiles.filter(tile => tile.viewportIds.includes('view0')).length, 5);
-      t.equals(tileset.selectedTiles.filter(tile => tile.viewportIds.includes('view1')).length, 5);
+      t.equals(
+        tileset.selectedTiles.filter((tile) => tile.viewportIds.includes('view0')).length,
+        5
+      );
+      t.equals(
+        tileset.selectedTiles.filter((tile) => tile.viewportIds.includes('view1')).length,
+        5
+      );
       t.end();
     }
   }, 100);
 });
 
-test.skip('Tileset3D#loadTiles option', async t => {
+test.skip('Tileset3D#loadTiles option', async (t) => {
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   let viewport = VIEWPORTS[0];
   let tileLoadCounter = 0;
@@ -528,7 +540,7 @@ test('Tileset3D#handles failed tile processing', t => {
 });
 */
 
-test('Tileset3D#loads tiles in tileset', async t => {
+test('Tileset3D#loads tiles in tileset', async (t) => {
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   const tileset = new Tileset3D(tilesetJson);
   tileset.root._visible = true;

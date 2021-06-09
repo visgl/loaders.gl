@@ -55,15 +55,15 @@ As mentioned the actual compressed subimages are not parsed or modified by loade
 
 The following is the typical list of compressed texture formats, which loaders.gl can properly tag:
 
-| Format                                               | Description                 |
-| ---------------------------------------------------- | --------------------------- |
-| [`S3TC]() | S3 texture compression formats           |
+| Format         | Description                         |
+| -------------- | ----------------------------------- |
+| [`S3TC]()      | S3 texture compression formats      |
 | [`S3TC_SRGB]() | S3 SRGB texture compression formats |
-| [`PVRTC]() | PowerVR texture compression formats     |
-| [`ETC1]() | texture compression formats              |
-| [`ETC]() | texture compression formats               |
-| [`ASTC`]()                                           | texture compression formats |
-| [`ATC]() | AMD texture compression formats           |
+| [`PVRTC]()     | PowerVR texture compression formats |
+| [`ETC1]()      | texture compression formats         |
+| [`ETC]()       | texture compression formats         |
+| [`ASTC`]()     | texture compression formats         |
+| [`ATC]()       | AMD texture compression formats     |
 
 ### Recommnended Formats
 

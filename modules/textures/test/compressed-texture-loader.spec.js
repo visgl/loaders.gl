@@ -12,24 +12,24 @@ setLoaderOptions({
   _workerType: 'test'
 });
 
-test('CompressedTextureLoader#imports', t => {
+test('CompressedTextureLoader#imports', (t) => {
   t.ok(CompressedTextureLoader, 'CompressedTextureLoader defined');
   t.end();
 });
 
-test('KTX', async t => {
+test('KTX', async (t) => {
   const texture = await load(KTX_URL, CompressedTextureLoader);
   t.ok(texture, 'KTX container loaded OK');
   t.end();
 });
 
-test('DDS', async t => {
+test('DDS', async (t) => {
   const texture = await load(DDS_URL, CompressedTextureLoader);
   t.ok(texture, 'DDS container loaded OK');
   t.end();
 });
 
-test('PVR', async t => {
+test('PVR', async (t) => {
   const texture = await load(PVR_URL, CompressedTextureLoader);
   t.ok(texture, 'PVR container loaded OK');
   t.end();

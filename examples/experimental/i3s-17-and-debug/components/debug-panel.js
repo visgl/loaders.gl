@@ -169,11 +169,11 @@ export default class DebugPanel extends PureComponent {
         </CheckboxOption>
         <DropDown
           value={boundingVolumeColorMode}
-          onChange={evt =>
+          onChange={(evt) =>
             onDebugOptionsChange({boundingVolumeColorMode: parseInt(evt.target.value, 10)})
           }
         >
-          {Object.keys(BOUNDING_VOLUME_COLOR_MODES).map(key => {
+          {Object.keys(BOUNDING_VOLUME_COLOR_MODES).map((key) => {
             return (
               <option key={key} value={BOUNDING_VOLUME_COLOR_MODES[key]}>
                 {key}
@@ -194,9 +194,9 @@ export default class DebugPanel extends PureComponent {
     return (
       <Shapes
         value={boundingVolumeType}
-        onChange={evt => onDebugOptionsChange({boundingVolumeType: evt.target.value})}
+        onChange={(evt) => onDebugOptionsChange({boundingVolumeType: evt.target.value})}
       >
-        {Object.keys(BOUNDING_VOLUME_TYPE).map(key => {
+        {Object.keys(BOUNDING_VOLUME_TYPE).map((key) => {
           const shape = BOUNDING_VOLUME_TYPE[key];
           return (
             <option key={key} value={shape}>
@@ -266,9 +266,9 @@ export default class DebugPanel extends PureComponent {
         </CheckboxOption>
         <DropDown
           value={tileColorMode}
-          onChange={evt => onDebugOptionsChange({tileColorMode: parseInt(evt.target.value, 10)})}
+          onChange={(evt) => onDebugOptionsChange({tileColorMode: parseInt(evt.target.value, 10)})}
         >
-          {Object.keys(TILE_COLOR_MODES).map(key => {
+          {Object.keys(TILE_COLOR_MODES).map((key) => {
             return (
               <option key={key} value={TILE_COLOR_MODES[key]}>
                 {key}

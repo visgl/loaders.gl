@@ -30,7 +30,7 @@ const TEXTURED_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedTextured/til
 // const DEPRECATED2_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedDeprecated2/tileset.json';
 // const WITH_RTC_CENTER_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedWithRtcCenter/tileset.json';
 
-test('batched model tile#throws with invalid version', async t => {
+test('batched model tile#throws with invalid version', async (t) => {
   const TILE = {
     type: TILE3D_TYPE.BATCHED_3D_MODEL,
     version: 2
@@ -72,28 +72,28 @@ test('batched model tile#empty gltf', async t => {
 });
 */
 
-test('batched model tile#without batch table', async t => {
+test('batched model tile#without batch table', async (t) => {
   const tileData = await loadRootTileFromTileset(t, WITHOUT_BATCH_TABLE_URL);
   const tile = await parse(tileData, Tiles3DLoader);
   t.ok(tile, 'loaded tile without batch table');
   t.end();
 });
 
-test('batched model tile#with batch table', async t => {
+test('batched model tile#with batch table', async (t) => {
   const tileData = await loadRootTileFromTileset(t, WITH_BATCH_TABLE_URL);
   const tile = await parse(tileData, Tiles3DLoader);
   t.ok(tile, 'loaded tile with batch table');
   t.end();
 });
 
-test('batched model tile#default gltfUpAxis is supported', async t => {
+test('batched model tile#default gltfUpAxis is supported', async (t) => {
   const tileData = await loadRootTileFromTileset(t, WITH_BATCH_TABLE_URL);
   const tile = await parse(tileData, Tiles3DLoader);
   t.equal(tile.gltfUpAxis, 'Y', 'tile has default gltf up axis');
   t.end();
 });
 
-test('batched model tile#validate rotate matrix for Y axis', async t => {
+test('batched model tile#validate rotate matrix for Y axis', async (t) => {
   const tile = await loadRootTile(t, WITH_BATCH_TABLE_URL);
   t.equal(tile.content.gltfUpAxis, 'Y', 'tile has default Y gltf up axis');
   // rotation matrix
@@ -110,7 +110,7 @@ test('batched model tile#validate rotate matrix for Y axis', async t => {
   t.end();
 });
 
-test('batched model tile#validate rotate matrix for Z axis', async t => {
+test('batched model tile#validate rotate matrix for Z axis', async (t) => {
   const tile = await loadRootTile(t, WITH_Z_UP_URL);
   t.equal(tile.content.gltfUpAxis, 'Z', 'tile has Z gltf up axis');
   // matrix without rotation
@@ -125,14 +125,14 @@ test('batched model tile#validate rotate matrix for Z axis', async t => {
   t.end();
 });
 
-test('batched model tile#with batch table binary', async t => {
+test('batched model tile#with batch table binary', async (t) => {
   const tileData = await loadRootTileFromTileset(t, WITH_BATCH_TABLE_BINARY_URL);
   const tile = await parse(tileData, Tiles3DLoader);
   t.ok(tile, 'loaded tile with batch table binary');
   t.end();
 });
 
-test('batched model tile#without batch table', async t => {
+test('batched model tile#without batch table', async (t) => {
   const tileData = await loadRootTileFromTileset(t, WITHOUT_BATCH_TABLE_URL);
   const tile = await parse(tileData, Tiles3DLoader);
   t.ok(tile, 'loaded tile with batch table binary');
@@ -140,7 +140,7 @@ test('batched model tile#without batch table', async t => {
 });
 
 // TODO this should be a render test
-test('batched model tile#with all features translucent', async t => {
+test('batched model tile#with all features translucent', async (t) => {
   const tileData = await loadRootTileFromTileset(t, TRANSLUCENT_URL);
   const tile = await parse(tileData, Tiles3DLoader);
   t.ok(tile, 'loaded tile with all features translucent');
@@ -148,7 +148,7 @@ test('batched model tile#with all features translucent', async t => {
 });
 
 // TODO this should be a render test
-test('batched model tile#with a mix of opaque and translucent features', async t => {
+test('batched model tile#with a mix of opaque and translucent features', async (t) => {
   const tileData = await loadRootTileFromTileset(t, TRANSLUCENT_OPAQUE_MIX_URL);
   const tile = await parse(tileData, Tiles3DLoader);
   t.ok(tile, 'loaded tile with a mix of opaque and translucent features');
@@ -156,7 +156,7 @@ test('batched model tile#with a mix of opaque and translucent features', async t
 });
 
 // TODO this should be a render test
-test('batched model tile#with textures', async t => {
+test('batched model tile#with textures', async (t) => {
   const tileData = await loadRootTileFromTileset(t, TEXTURED_URL);
   const tile = await parse(tileData, [Tiles3DLoader, ImageLoader]);
   t.ok(tile, 'loaded tile with a mix of opaque and translucent features');
@@ -164,7 +164,7 @@ test('batched model tile#with textures', async t => {
 });
 
 // TODO this should be a render test
-test('batched model tile#with a tile transform and box bounding volume', async t => {
+test('batched model tile#with a tile transform and box bounding volume', async (t) => {
   const tileData = await loadRootTileFromTileset(t, WITH_TRANSFORM_BOX_URL);
   const tile = await parse(tileData, Tiles3DLoader);
   t.ok(tile, 'loaded tile with a tile transform and box bounding volume');
@@ -172,7 +172,7 @@ test('batched model tile#with a tile transform and box bounding volume', async t
 });
 
 // TODO this should be a render test
-test('batched model tile#with a tile transform and sphere bounding volume', async t => {
+test('batched model tile#with a tile transform and sphere bounding volume', async (t) => {
   const tileData = await loadRootTileFromTileset(t, WITH_TRANSFORM_SPHERE_URL);
   const tile = await parse(tileData, Tiles3DLoader);
   t.ok(tile, 'loaded tile with a tile transform and sphere bounding volume');
@@ -180,7 +180,7 @@ test('batched model tile#with a tile transform and sphere bounding volume', asyn
 });
 
 // TODO this should be a render test
-test('batched model tile#with a tile transform and region bounding volume', async t => {
+test('batched model tile#with a tile transform and region bounding volume', async (t) => {
   const tileData = await loadRootTileFromTileset(t, WITH_TRANSFORM_REGION_URL);
   const tile = await parse(tileData, Tiles3DLoader);
   t.ok(tile, 'loaded tile with a tile transform and region bounding volume');

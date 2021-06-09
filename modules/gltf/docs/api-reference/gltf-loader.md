@@ -5,13 +5,13 @@ Parses a glTF file. Can load both the `.glb` (binary) and `.gltf` (application/j
 A glTF file contains a hierarchical scenegraph description that can be used to instantiate corresponding hierarcy of actual `Scenegraph` related classes in most WebGL libraries.
 
 | Loader          | Characteristic                                                                                                                                                  |
-| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
 | File Extensions | `.glb`, `.gltf`                                                                                                                                                 |
 | File Type       | Binary, JSON, Linked Assets                                                                                                                                     |
 | File Format     | [glTF v2](https://github.com/KhronosGroup/glTF/tree/master/specification/2.0), [GLTF v1](https://github.com/KhronosGroup/glTF/tree/master/specification/1.0) \* |
 | Data Format     | [Scenegraph](/docs/specifications/category-scenegraph)                                                                                                          |
 | Supported APIs  | `load`, `parse`                                                                                                                                                 |
-| Subloaders      | `DracoLoader`, `ImageLoader`                                                                                                                                    |  |
+| Subloaders      | `DracoLoader`, `ImageLoader`                                                                                                                                    |     |
 
 \* From [![Website shields.io](https://img.shields.io/badge/v2.3-blue.svg?style=flat-square)](http://shields.io), the `GLTFLoader` offers optional, best-effort support for converting older glTF v1 files to glTF v2 format (`options.gltf.normalize: true`). This conversion has a number of limitations and the parsed data structure may be only partially converted to glTF v2, causing issues to show up later e.g. when attempting to render the scenegraphs.
 
@@ -112,12 +112,12 @@ By setting `gltf.postProcess` to `false`, an unprocessed glTF/GLB data structure
 }
 ```
 
-| Field                     | Type          | Default                                                   | Description                                                      |
-| ------------------------- | ------------- | --------------------------------------------------------- | ---------------------------------------------------------------- |
-| `baseUri`                 | `String`      | `` | length of GLB (e.g. embedded in larger binary block) |
-| `json`                    | `Object`      | `{}`                                                      | Parsed JSON from the JSON chunk                                  |
-| `buffers`                 | `Object[]`    | `[]`                                                      | The version number                                               |
-| `buffers[\*].arrayBuffer` | `ArrayBuffer` | `null`                                                    | The binary chunk                                                 |
-| `buffers[\*].byteOffset`  | `Number`      | `null`                                                    | offset of buffer (embedded in larger binary block)               |
-| `buffers[\*].byteLength`  | `ArrayBuffer` | `null`                                                    | length of buffer (embedded in larger binary block)               |
-| `_glb`?                   | `Object`      | N/A                                                       | The output of the GLBLoader if the parsed file was GLB formatted |
+| Field                     | Type          | Default | Description                                                      |
+| ------------------------- | ------------- | ------- | ---------------------------------------------------------------- |
+| `baseUri`                 | `String`      | ``      | length of GLB (e.g. embedded in larger binary block)             |
+| `json`                    | `Object`      | `{}`    | Parsed JSON from the JSON chunk                                  |
+| `buffers`                 | `Object[]`    | `[]`    | The version number                                               |
+| `buffers[\*].arrayBuffer` | `ArrayBuffer` | `null`  | The binary chunk                                                 |
+| `buffers[\*].byteOffset`  | `Number`      | `null`  | offset of buffer (embedded in larger binary block)               |
+| `buffers[\*].byteLength`  | `ArrayBuffer` | `null`  | length of buffer (embedded in larger binary block)               |
+| `_glb`?                   | `Object`      | N/A     | The output of the GLBLoader if the parsed file was GLB formatted |

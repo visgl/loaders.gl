@@ -8,7 +8,7 @@ const GEOMETRYCOLLECTION_WKT_URL = '@loaders.gl/wkt/test/data/geometrycollection
 const GEOMETRYCOLLECTION_GEOJSON_URL = '@loaders.gl/wkt/test/data/geometrycollection.geojson';
 
 // eslint-disable-next-line max-statements
-test('parseWKT', async t => {
+test('parseWKT', async (t) => {
   let response = await fetchFile(GEOMETRYCOLLECTION_WKT_URL);
   const GEOMETRYCOLLECTION_WKT = await response.text();
 

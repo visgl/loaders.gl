@@ -36,7 +36,7 @@ const TEST_CASES = [
   }
 ];
 
-test('gltf#postProcessGLTF', t => {
+test('gltf#postProcessGLTF', (t) => {
   for (const testCase of TEST_CASES) {
     const json = postProcessGLTF(testCase.input);
     t.deepEqual(json, testCase.output, testCase.name);

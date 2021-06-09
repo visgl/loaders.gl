@@ -5,7 +5,7 @@ import zlib from 'zlib';
 
 import {toArrayBuffer} from './decode-data-uri.node';
 
-const isRequestURL = url => url.startsWith('http:') || url.startsWith('https:');
+const isRequestURL = (url) => url.startsWith('http:') || url.startsWith('https:');
 
 // Returns a promise that resolves to a readable stream
 export async function createReadStream(url, options) {
@@ -17,7 +17,7 @@ export async function createReadStream(url, options) {
       // @ts-ignore
       const stream = fs.createReadStream(noqueryUrl, {encoding: null});
       stream.once('readable', () => resolve(stream));
-      stream.on('error', error => reject(error));
+      stream.on('error', (error) => reject(error));
     });
   }
 
@@ -26,8 +26,8 @@ export async function createReadStream(url, options) {
   return await new Promise((resolve, reject) => {
     const requestFunction = url.startsWith('https:') ? https.request : http.request;
     const requestOptions = getRequestOptions(url, options);
-    const req = requestFunction(requestOptions, res => resolve(res));
-    req.on('error', error => reject(error));
+    const req = requestFunction(requestOptions, (res) => resolve(res));
+    req.on('error', (error) => reject(error));
     req.end();
   });
 }
@@ -50,13 +50,13 @@ export async function concatenateReadStream(readStream) {
   let arrayBuffer = new ArrayBuffer(0);
 
   return await new Promise((resolve, reject) => {
-    readStream.on('error', error => reject(error));
+    readStream.on('error', (error) => reject(error));
 
     // Once the readable callback has been added, stream switches to "flowing mode"
     // In Node 10 (but not 12 and 14) this causes `data` and `end` to never be called unless we read data here
     readStream.on('readable', () => readStream.read());
 
-    readStream.on('data', chunk => {
+    readStream.on('data', (chunk) => {
       if (typeof chunk === 'string') {
         reject(new Error('Read stream not binary'));
       }

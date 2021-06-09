@@ -1,7 +1,6 @@
 /* eslint-disable camelcase, @typescript-eslint/no-use-before-define */
 import initSqlJs, {SqlJsStatic, Database, Statement} from 'sql.js';
 import {WKBLoader} from '@loaders.gl/wkt';
-import {parseSync} from '@loaders.gl/core';
 import {
   Schema,
   Field,
@@ -76,7 +75,10 @@ export default async function parseGeoPackage(
   const result = {};
   for (const table of tables) {
     const {table_name: tableName} = table;
-    result[tableName] = getVectorTable(db, tableName, projections, {reproject, _targetCrs});
+    result[tableName] = getVectorTable(db, tableName, projections, {
+      reproject,
+      _targetCrs
+    });
   }
 
   return result;
@@ -93,7 +95,7 @@ async function loadDatabase(arrayBuffer: ArrayBuffer, sqlJsCDN: string | null): 
   let SQL: SqlJsStatic;
   if (sqlJsCDN) {
     SQL = await initSqlJs({
-      locateFile: file => `${sqlJsCDN}${file}`
+      locateFile: (file) => `${sqlJsCDN}${file}`
     });
   } else {
     SQL = await initSqlJs();
@@ -124,7 +126,7 @@ function listVectorTables(db: Database): ContentsRow[] {
 
   const vectorTablesInfo: ContentsRow[] = [];
   while (stmt.step()) {
-    const vectorTableInfo = (stmt.getAsObject() as unknown) as ContentsRow;
+    const vectorTableInfo = stmt.getAsObject() as unknown as ContentsRow;
     vectorTablesInfo.push(vectorTableInfo);
   }
 
@@ -195,7 +197,7 @@ function getProjections(db: Database): ProjectionMapping {
 
   const projectionMapping: ProjectionMapping = {};
   while (stmt.step()) {
-    const srsInfo = (stmt.getAsObject() as unknown) as SpatialRefSysRow;
+    const srsInfo = stmt.getAsObject() as unknown as SpatialRefSysRow;
     const {srs_id, definition} = srsInfo;
     projectionMapping[srs_id] = definition;
   }
@@ -306,7 +308,7 @@ function getFeatureIdName(db: Database, tableName: string): string | null {
   const stmt = db.prepare(`PRAGMA table_info(\`${tableName}\`)`);
 
   while (stmt.step()) {
-    const pragmaTableInfo = (stmt.getAsObject() as unknown) as PragmaTableInfoRow;
+    const pragmaTableInfo = stmt.getAsObject() as unknown as PragmaTableInfoRow;
     const {name, pk} = pragmaTableInfo;
     if (pk) {
       return name;
@@ -343,7 +345,10 @@ function parseGeometry(arrayBuffer: ArrayBuffer) {
 
   // 2 byte magic, 1 byte version, 1 byte flags, 4 byte int32 srid
   const wkbOffset = 8 + envelopeLength;
-  const binaryGeometry = parseSync(arrayBuffer.slice(wkbOffset), WKBLoader);
+
+  // Loaders should not depend on `core` and the context passed to the main loader doesn't include a
+  // `parseSync` option, so instead we call parseSync directly on WKBLoader
+  const binaryGeometry = WKBLoader.parseSync(arrayBuffer.slice(wkbOffset));
 
   return binaryToGeoJson(binaryGeometry);
 }
@@ -387,7 +392,7 @@ function getGeometryColumn(db: Database, tableName: string): GeometryColumnsRow 
   // So we should need one and only one step, given that we use the WHERE clause in the SQL query
   // above
   stmt.step();
-  const geometryColumn = (stmt.getAsObject() as unknown) as GeometryColumnsRow;
+  const geometryColumn = stmt.getAsObject() as unknown as GeometryColumnsRow;
   return geometryColumn;
 }
 
@@ -435,9 +440,9 @@ function getArrowSchema(db: Database, tableName: string): Schema {
 
   const fields: Field[] = [];
   while (stmt.step()) {
-    const pragmaTableInfo = (stmt.getAsObject() as unknown) as PragmaTableInfoRow;
+    const pragmaTableInfo = stmt.getAsObject() as unknown as PragmaTableInfoRow;
     const {name, type, notnull} = pragmaTableInfo;
-    const field = new Field(name, new SQL_TYPE_MAPPING[type](), !notnull)
+    const field = new Field(name, new SQL_TYPE_MAPPING[type](), !notnull);
     fields.push(field);
   }
 

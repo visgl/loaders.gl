@@ -7,7 +7,7 @@ const ZIPCODES_XLSX_PATH = `@loaders.gl/excel/test/data/zipcodes.xlsx`;
 const ZIPCODES_XLSB_PATH = `@loaders.gl/excel/test/data/zipcodes.xlsb`;
 const ZIPCODES_CSV_PATH = `@loaders.gl/excel/test/data/zipcodes.csv`;
 
-test('ExcelLoader#load(ZIPCODES)', async t => {
+test('ExcelLoader#load(ZIPCODES)', async (t) => {
   const csvData = await load(ZIPCODES_CSV_PATH, CSVLoader);
   t.equal(csvData.length, 42049, 'CSV: Correct number of row received');
 

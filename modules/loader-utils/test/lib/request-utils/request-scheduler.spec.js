@@ -1,13 +1,13 @@
 import {RequestScheduler} from '@loaders.gl/loader-utils';
 import test from 'tape-promise/tape';
 
-test('RequestScheduler#constructor', t => {
+test('RequestScheduler#constructor', (t) => {
   const requestScheduler = new RequestScheduler();
   t.ok(requestScheduler);
   t.end();
 });
 
-test('RequestScheduler#scheduleRequest', async t => {
+test('RequestScheduler#scheduleRequest', async (t) => {
   const requestScheduler = new RequestScheduler({maxRequests: 1});
   t.ok(requestScheduler);
 
@@ -34,7 +34,7 @@ test('RequestScheduler#scheduleRequest', async t => {
   };
 
   const result = await Promise.all([
-    requestScheduler.scheduleRequest({id: 3}).then(async reqToken => {
+    requestScheduler.scheduleRequest({id: 3}).then(async (reqToken) => {
       t.is(requestScheduler.activeRequestCount, 1, 'active request count');
       await request3();
       if (reqToken) {

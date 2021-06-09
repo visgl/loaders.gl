@@ -7,7 +7,7 @@ const GPKG_RIVERS_GEOJSON = '@loaders.gl/geopackage/test/data/rivers_small.geojs
 
 const sqlJsCDN = isBrowser ? 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.5.0/' : null;
 
-test('GeoPackageLoader#load file', async t => {
+test('GeoPackageLoader#load file', async (t) => {
   const result = await load(GPKG_RIVERS, GeoPackageLoader, {
     geopackage: {sqlJsCDN}
   });
@@ -28,14 +28,14 @@ test('GeoPackageLoader#load file', async t => {
   t.end();
 });
 
-test('GeoPackageLoader#load file and reproject to WGS84', async t => {
+test('GeoPackageLoader#load file and reproject to WGS84', async (t) => {
   const result = await load(GPKG_RIVERS, GeoPackageLoader, {
     geopackage: {sqlJsCDN},
     gis: {reproject: true, _targetCrs: 'WGS84'}
   });
 
   t.ok(
-    result.FEATURESriversds.geojsonFeatures[0].geometry.coordinates.every(coord =>
+    result.FEATURESriversds.geojsonFeatures[0].geometry.coordinates.every((coord) =>
       insideBbox(coord, [-180, -90, 180, 90])
     ),
     'All coordinates in WGS84 lon-lat bounding box'

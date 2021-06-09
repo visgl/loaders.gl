@@ -369,7 +369,7 @@ export default class TilesetTraverser {
       }
 
       if (traverse) {
-        const children = tile.children.filter(c => c);
+        const children = tile.children.filter((c) => c);
         for (const child of children) {
           // eslint-disable-next-line max-depth
           if (stack.find(child)) {

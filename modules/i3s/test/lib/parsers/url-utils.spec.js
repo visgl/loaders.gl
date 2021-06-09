@@ -5,7 +5,7 @@ import {
   generateTilesetAttributeUrls
 } from '@loaders.gl/i3s/lib/utils/url-utils';
 
-test('i3s-utils#getUrlWithToken Should return URL without token if token null', async t => {
+test('i3s-utils#getUrlWithToken Should return URL without token if token null', async (t) => {
   const url = getUrlWithToken('test', null);
 
   t.ok(url);
@@ -13,7 +13,7 @@ test('i3s-utils#getUrlWithToken Should return URL without token if token null', 
   t.end();
 });
 
-test('i3s-utils#getUrlWithToken Should return URL with token token if token exists', async t => {
+test('i3s-utils#getUrlWithToken Should return URL with token token if token exists', async (t) => {
   const url = getUrlWithToken('test', '12345');
 
   t.ok(url);
@@ -21,7 +21,7 @@ test('i3s-utils#getUrlWithToken Should return URL with token token if token exis
   t.end();
 });
 
-test('i3s-utils#generateTileAttributeUrls Should return attribute URLs for tile', async t => {
+test('i3s-utils#generateTileAttributeUrls Should return attribute URLs for tile', async (t) => {
   const tile = {
     attributeData: [{href: './attributes/f_0/0'}, {href: './attributes/f_1/0'}],
     url: 'test'
@@ -34,7 +34,7 @@ test('i3s-utils#generateTileAttributeUrls Should return attribute URLs for tile'
   t.end();
 });
 
-test('i3s-utils#generateTilesetAttributeUrls Should return attribute URLs for tileset', async t => {
+test('i3s-utils#generateTilesetAttributeUrls Should return attribute URLs for tileset', async (t) => {
   const tileset = {
     attributeStorageInfo: [{key: 'f_0'}, {key: 'f_1'}],
     url: 'test'

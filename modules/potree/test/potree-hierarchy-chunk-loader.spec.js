@@ -4,7 +4,7 @@ import {PotreeHierarchyChunkLoader} from '@loaders.gl/potree';
 
 const POTREE_HIERARCHY_CHUNK_URL = '@loaders.gl/potree/test/data/lion_takanawa/data/r/r.hrc';
 
-test('PotreeHierarchyChunkLoader#parse', async t => {
+test('PotreeHierarchyChunkLoader#parse', async (t) => {
   const response = await fetchFile(POTREE_HIERARCHY_CHUNK_URL);
   const rootNode = await parse(response, PotreeHierarchyChunkLoader);
   // TODO - results not quite correct

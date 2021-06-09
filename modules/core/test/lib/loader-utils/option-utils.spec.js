@@ -23,7 +23,7 @@ const TEST_CASES = [
   }
 ];
 
-test('normalizeOptions#normalizeOptions', t => {
+test('normalizeOptions#normalizeOptions', (t) => {
   for (const tc of TEST_CASES) {
     const options = normalizeOptions(tc.options, tc.loader);
     tc.assert(t, options);

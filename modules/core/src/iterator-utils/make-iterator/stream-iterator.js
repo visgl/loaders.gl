@@ -74,7 +74,7 @@ async function* makeNodeStreamIterator(stream) {
 }
 
 async function onceReadable(stream) {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     stream.once('readable', resolve);
   });
 }

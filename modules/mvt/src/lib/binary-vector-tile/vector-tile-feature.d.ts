@@ -26,10 +26,11 @@ export default class VectorTileFeature {
 
   loadGeometry();
   any;
-  classifyRings(geom: {
+  classifyRings(geom: {data: [number]; lines: [number]}): {
     data: [number];
-    lines: [number];
-  }): {data: [number]; areas: [[number]]; lines: [[number]]};
+    areas: [[number]];
+    lines: [[number]];
+  };
   toBinaryCoordinates(
     options: {x: number; y: number; z: number} | (([number], VectorTileFeature) => void)
   ): object;

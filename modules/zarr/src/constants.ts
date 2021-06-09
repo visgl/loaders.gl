@@ -1,5 +1,5 @@
 import GL from '@luma.gl/constants';
-import type { TypedArray } from 'zarr';
+import type {TypedArray} from 'zarr';
 
 /**
  * @deprecated We plan to remove `DTYPE_VALUES` as a part of Viv's public API as it

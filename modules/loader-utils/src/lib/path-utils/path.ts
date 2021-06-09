@@ -4,15 +4,15 @@
  * Replacement for Node.js path.dirname
  * @param url
  */
- export function dirname(url: string): string {
+export function dirname(url: string): string {
   const slashIndex = url && url.lastIndexOf('/');
   return slashIndex >= 0 ? url.substr(0, slashIndex as number) : '';
 }
 
- /**
-  * Replacement for Node.js path.join
-  * @param parts
-  */
+/**
+ * Replacement for Node.js path.join
+ * @param parts
+ */
 export function join(...parts: string[]): string {
   const separator = '/';
   parts = parts.map((part, index) => {

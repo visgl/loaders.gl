@@ -42,13 +42,13 @@ export default class Schema {
     for (const name of columnNames) {
       nameMap[name] = true;
     }
-    const selectedFields = this.fields.filter(field => nameMap[field.name]);
+    const selectedFields = this.fields.filter((field) => nameMap[field.name]);
     return new Schema(selectedFields, this.metadata);
   }
 
   selectAt(...columnIndices: number[]): Schema {
     // Ensure column indices reference valid fields
-    const selectedFields = columnIndices.map(index => this.fields[index]).filter(Boolean);
+    const selectedFields = columnIndices.map((index) => this.fields[index]).filter(Boolean);
     return new Schema(selectedFields, this.metadata);
   }
 
@@ -57,11 +57,11 @@ export default class Schema {
     let metadata: SchemaMetadata = this.metadata;
 
     if (schemaOrFields instanceof Schema) {
-      const otherSchema = schemaOrFields ;
+      const otherSchema = schemaOrFields;
       fields = otherSchema.fields;
       metadata = mergeMaps(mergeMaps(new Map(), this.metadata), otherSchema.metadata);
     } else {
-      fields = schemaOrFields ;
+      fields = schemaOrFields;
     }
 
     // Create a merged list of fields, overwrite fields in place, new fields at end

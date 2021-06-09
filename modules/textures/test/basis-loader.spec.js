@@ -10,12 +10,12 @@ setLoaderOptions({
   CDN: null
 });
 
-test('BasisLoader#imports', t => {
+test('BasisLoader#imports', (t) => {
   t.ok(BasisLoader, 'BasisLoader defined');
   t.end();
 });
 
-test('BasisLoader#load(URL, worker: false)', async t => {
+test('BasisLoader#load(URL, worker: false)', async (t) => {
   const images = await load(TEST_URL, BasisLoader, {worker: false});
 
   const image = images[0][0];
@@ -32,7 +32,7 @@ test('BasisLoader#load(URL, worker: false)', async t => {
   t.end();
 });
 
-test('BasisLoader#load(URL, worker: true)', async t => {
+test('BasisLoader#load(URL, worker: true)', async (t) => {
   const images = await load(TEST_URL, BasisLoader, {worker: true});
 
   const image = images[0][0];

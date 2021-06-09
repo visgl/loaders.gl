@@ -6,7 +6,7 @@ import TEST_CASES from './crc32c-test-cases.json';
 const CSV_URL = '@loaders.gl/csv/test/data/sample-very-long.csv';
 const CSV_CRC32 = 'YPBZXg==';
 
-test('CRC32CHashTransform#run(CRC32, CSV, against external hash)', async t => {
+test('CRC32CHashTransform#run(CRC32, CSV, against external hash)', async (t) => {
   const response = await fetchFile(CSV_URL);
   const data = await response.arrayBuffer();
 
@@ -16,13 +16,13 @@ test('CRC32CHashTransform#run(CRC32, CSV, against external hash)', async t => {
   t.end();
 });
 
-test('CRC32CHashTransform#iterator(CSV stream, against external hash)', async t => {
+test('CRC32CHashTransform#iterator(CSV stream, against external hash)', async (t) => {
   let hash;
 
   const nullIterator = await loadInBatches(CSV_URL, NullLoader, {
     transforms: [CRC32CHashTransform],
     crypto: {
-      onEnd: result => {
+      onEnd: (result) => {
         hash = result.hash;
       }
     }
@@ -37,7 +37,7 @@ test('CRC32CHashTransform#iterator(CSV stream, against external hash)', async t 
   t.end();
 });
 
-test('crc32c', async t => {
+test('crc32c', async (t) => {
   for (const type in TEST_CASES) {
     const set = TEST_CASES[type];
 

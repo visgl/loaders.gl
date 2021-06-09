@@ -34,7 +34,7 @@ const viewport = new WebMercatorViewport({latitude, longitude, zoom});
 tileset3d.update(viewport);
 
 // visible tiles
-const visibleTiles = tileset3d.tiles.filter(tile => tile.selected);
+const visibleTiles = tileset3d.tiles.filter((tile) => tile.selected);
 // Note that visibleTiles will likely not immediately include all tiles
 // tiles will keep loading and file `onTileLoad` callbacks
 ```

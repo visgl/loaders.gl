@@ -1,9 +1,7 @@
-import type { DTYPE_VALUES } from './constants';
+import type {DTYPE_VALUES} from './constants';
 
 export type SupportedDtype = keyof typeof DTYPE_VALUES;
-export type SupportedTypedArray = InstanceType<
-  typeof globalThis[`${SupportedDtype}Array`]
->;
+export type SupportedTypedArray = InstanceType<typeof globalThis[`${SupportedDtype}Array`]>;
 
 export interface PixelData {
   data: SupportedTypedArray;
@@ -37,9 +35,7 @@ export interface PixelSourceMeta {
   photometricInterpretation?: number;
 }
 
-export type Labels<S extends string[]> =
-  | [...S, 'y', 'x']
-  | [...S, 'y', 'x', '_c'];
+export type Labels<S extends string[]> = [...S, 'y', 'x'] | [...S, 'y', 'x', '_c'];
 
 /**
  * Interface to load tiles from a data source

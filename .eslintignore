@@ -12,5 +12,8 @@ bundle.js
 public/
 .cache/
 
+examples/**
+modules/tiles/src/bundle.ts
+modules/tile-converter/
 modules/potree/test/data/**/cloud.js
 examples/experimental/gltf-with-raw-webgl/

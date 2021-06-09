@@ -37,7 +37,7 @@ function coordMap(array, fn) {
     return fn(array);
   }
 
-  return array.map(item => {
+  return array.map((item) => {
     return coordMap(item, fn);
   });
 }

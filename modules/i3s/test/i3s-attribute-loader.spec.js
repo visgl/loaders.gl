@@ -50,7 +50,7 @@ const TILE_WITH_WRONG_NAME_ATTRIBUTE_URL = {
   }
 };
 
-test('I3SAttributeLoader# should return empty object if no attributeName provided', async t => {
+test('I3SAttributeLoader# should return empty object if no attributeName provided', async (t) => {
   const options = {
     attributeType: 'Oid32'
   };
@@ -60,7 +60,7 @@ test('I3SAttributeLoader# should return empty object if no attributeName provide
   t.end();
 });
 
-test('I3SAttributeLoader# should return empty object if no attributeType provided', async t => {
+test('I3SAttributeLoader# should return empty object if no attributeType provided', async (t) => {
   const options = {
     attributeName: 'OBJECTID'
   };
@@ -70,7 +70,7 @@ test('I3SAttributeLoader# should return empty object if no attributeType provide
   t.end();
 });
 
-test('I3SAttributeLoader# should return empty object if no attributeName and attributeType provided', async t => {
+test('I3SAttributeLoader# should return empty object if no attributeName and attributeType provided', async (t) => {
   const options = {};
   const attributes = await load(objectIdsUrl, I3SAttributeLoader, options);
   t.ok(attributes);
@@ -78,7 +78,7 @@ test('I3SAttributeLoader# should return empty object if no attributeName and att
   t.end();
 });
 
-test('I3SAttributeLoader# should load OBJECTID attribute', async t => {
+test('I3SAttributeLoader# should load OBJECTID attribute', async (t) => {
   const options = {
     attributeName: 'OBJECTID',
     attributeType: 'Oid32'
@@ -90,7 +90,7 @@ test('I3SAttributeLoader# should load OBJECTID attribute', async t => {
   t.end();
 });
 
-test('I3SAttributeLoader# should load string attribute', async t => {
+test('I3SAttributeLoader# should load string attribute', async (t) => {
   const options = {
     attributeName: 'NAME',
     attributeType: 'String'
@@ -102,7 +102,7 @@ test('I3SAttributeLoader# should load string attribute', async t => {
   t.end();
 });
 
-test('I3SAttributeLoader# should load float attribute', async t => {
+test('I3SAttributeLoader# should load float attribute', async (t) => {
   const options = {
     attributeName: 'HEIGHTROOF',
     attributeType: 'Float64'
@@ -114,7 +114,7 @@ test('I3SAttributeLoader# should load float attribute', async t => {
   t.end();
 });
 
-test('I3SAttributeLoader#loadFeatureAttributes should return null if no tile', async t => {
+test('I3SAttributeLoader#loadFeatureAttributes should return null if no tile', async (t) => {
   const tile = null;
   const featureId = 1;
   const options = {};
@@ -124,7 +124,7 @@ test('I3SAttributeLoader#loadFeatureAttributes should return null if no tile', a
   t.end();
 });
 
-test('I3SAttributeLoader#loadFeatureAttributes should return null if no attributeUrls', async t => {
+test('I3SAttributeLoader#loadFeatureAttributes should return null if no attributeUrls', async (t) => {
   const tile = TILE_WITHOUT_URLS;
   const featureId = 1;
   const options = {};
@@ -134,7 +134,7 @@ test('I3SAttributeLoader#loadFeatureAttributes should return null if no attribut
   t.end();
 });
 
-test('I3SAttributeLoader#loadFeatureAttributes should return null if no featureId', async t => {
+test('I3SAttributeLoader#loadFeatureAttributes should return null if no featureId', async (t) => {
   const tile = TILE;
   const featureId = null;
   const options = {};
@@ -144,7 +144,7 @@ test('I3SAttributeLoader#loadFeatureAttributes should return null if no featureI
   t.end();
 });
 
-test('I3SAttributeLoader#loadFeatureAttributes should return null if no objectIds in attributes', async t => {
+test('I3SAttributeLoader#loadFeatureAttributes should return null if no objectIds in attributes', async (t) => {
   const tile = {
     ...TILE,
     tileset: {
@@ -164,7 +164,7 @@ test('I3SAttributeLoader#loadFeatureAttributes should return null if no objectId
   t.end();
 });
 
-test('I3SAttributeLoader#loadFeatureAttributes should return null if no such objectId in objectIds array', async t => {
+test('I3SAttributeLoader#loadFeatureAttributes should return null if no such objectId in objectIds array', async (t) => {
   const tile = TILE;
   const featureId = 12345;
   const options = {};
@@ -174,7 +174,7 @@ test('I3SAttributeLoader#loadFeatureAttributes should return null if no such obj
   t.end();
 });
 
-test('I3SAttributeLoader#loadFeatureAttributes should return attributes object', async t => {
+test('I3SAttributeLoader#loadFeatureAttributes should return attributes object', async (t) => {
   const tile = TILE;
   const featureId = objecId0;
   const options = {};
@@ -184,7 +184,7 @@ test('I3SAttributeLoader#loadFeatureAttributes should return attributes object',
   t.end();
 });
 
-test('I3SAttributeLoader#loadFeatureAttributes if one of them are failed to fetch', async t => {
+test('I3SAttributeLoader#loadFeatureAttributes if one of them are failed to fetch', async (t) => {
   const tile = TILE_WITH_WRONG_NAME_ATTRIBUTE_URL;
   const featureId = objecId0;
   const options = {};

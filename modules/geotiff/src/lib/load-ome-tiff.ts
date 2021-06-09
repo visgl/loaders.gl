@@ -1,13 +1,9 @@
-import type { GeoTIFF } from 'geotiff';
-import { fromString } from './ome/omexml';
+import type {GeoTIFF} from 'geotiff';
+import {fromString} from './ome/omexml';
 
 import TiffPixelSource from './tiff-pixel-source';
-import {
-  getOmeLegacyIndexer,
-  getOmeSubIFDIndexer,
-  OmeTiffIndexer
-} from './ome/ome-indexers';
-import { getOmePixelSourceMeta } from './ome/ome-utils';
+import {getOmeLegacyIndexer, getOmeSubIFDIndexer, OmeTiffIndexer} from './ome/ome-indexers';
+import {getOmePixelSourceMeta} from './ome/ome-utils';
 
 export interface OmeTiffSelection {
   t: number;
@@ -44,23 +40,14 @@ export async function loadOMETiff(tiff: GeoTIFF) {
 
   // TODO: The OmeTIFF loader only works for the _first_ image in the metadata.
   const imgMeta = omexml[0];
-  const { labels, getShape, physicalSizes, dtype } = getOmePixelSourceMeta(
-    imgMeta
-  );
+  const {labels, getShape, physicalSizes, dtype} = getOmePixelSourceMeta(imgMeta);
   const tileSize = firstImage.getTileWidth();
-  const meta = { photometricInterpretation, physicalSizes };
+  const meta = {photometricInterpretation, physicalSizes};
 
-  const data = Array.from({ length: levels }).map((_, resolution) => {
+  const data = Array.from({length: levels}).map((_, resolution) => {
     const shape = getShape(resolution);
     const indexer = (sel: OmeTiffSelection) => pyramidIndexer(sel, resolution);
-    const source = new TiffPixelSource(
-      indexer,
-      dtype,
-      tileSize,
-      shape,
-      labels,
-      meta
-    );
+    const source = new TiffPixelSource(indexer, dtype, tileSize, shape, labels, meta);
     return source;
   });
 

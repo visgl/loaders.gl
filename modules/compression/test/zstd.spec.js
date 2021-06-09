@@ -29,7 +29,7 @@ test('lz4#defaults', async t => {
 
 // WORKER TESTS
 
-test('zstd#worker', async t => {
+test('zstd#worker', async (t) => {
   if (!isBrowser) {
     t.end();
     return;

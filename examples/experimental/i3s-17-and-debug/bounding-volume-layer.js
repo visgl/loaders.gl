@@ -3,7 +3,7 @@ import {Ellipsoid} from '@math.gl/geospatial';
 import {CubeGeometry, SphereGeometry} from '@luma.gl/engine';
 import {CompositeLayer, COORDINATE_SYSTEM, log} from '@deck.gl/core';
 import MeshLayer from './mesh-layer/mesh-layer';
-import {ORIENTED_BOUNDING_BOX, BOUNDING_SPHERE} from './constants';
+import {BOUNDING_VOLUME_MESH_TYPE} from './constants';
 
 const DEFAULT_BG_OPACITY = 100;
 const GEOMETRY_STEP = 50;
@@ -15,12 +15,11 @@ const defaultProps = {
   material: {pbrMetallicRoughness: {baseColorFactor: [1, 1, 1, 1]}},
   getBoundingVolumeColor: {
     type: 'function',
-    value: tile => [255, 255, 255, DEFAULT_BG_OPACITY],
+    value: (tile) => [255, 255, 255, DEFAULT_BG_OPACITY],
     compare: false
   }
 };
 
-// TODO: replace CompositeLayer to SimpleMeshLayer
 export default class BoundingVolumeLayer extends CompositeLayer {
   initializeState() {
     if ('onTileLoadFail' in this.props) {
@@ -30,6 +29,16 @@ export default class BoundingVolumeLayer extends CompositeLayer {
     this.state = {
       layerMap: {}
     };
+  }
+
+  updateState({changeFlags}) {
+    if (changeFlags.propsChanged) {
+      const {layerMap} = this.state;
+
+      for (const key in layerMap) {
+        layerMap[key].needsUpdate = true;
+      }
+    }
   }
 
   _generateCubeMesh(tile) {
@@ -46,6 +55,7 @@ export default class BoundingVolumeLayer extends CompositeLayer {
       value: new Float32Array(attributes.POSITION.value)
     };
     const cartesianCenter = Ellipsoid.WGS84.cartographicToCartesian(center);
+
     for (let i = 0; i < POSITION.value.length; i += 3) {
       const vec = new Vector3(POSITION.value.subarray(i, i + 3));
       vec.x *= halfSize[0];
@@ -57,10 +67,7 @@ export default class BoundingVolumeLayer extends CompositeLayer {
 
       POSITION.value.set(vec, i);
     }
-    geometry.attributes = {
-      ...attributes,
-      POSITION
-    };
+    geometry.attributes = {POSITION};
     return geometry;
   }
 
@@ -78,49 +85,39 @@ export default class BoundingVolumeLayer extends CompositeLayer {
       ...attributes.POSITION,
       value: new Float32Array(attributes.POSITION.value)
     };
+
     for (let i = 0; i < POSITION.value.length; i += 3) {
       const vec = new Vector3(POSITION.value.subarray(i, i + 3));
       vec.add(center);
       POSITION.value.set(vec, i);
     }
-    geometry.attributes = {
-      ...attributes,
-      POSITION
-    };
+    geometry.attributes = {POSITION};
     return geometry;
   }
 
-  _generateMesh(tile, boundingVolumeType) {
-    switch (boundingVolumeType) {
-      case ORIENTED_BOUNDING_BOX:
-        return tile.header.obb ? this._generateCubeMesh(tile) : null;
-      case BOUNDING_SPHERE:
-        return tile.header.mbs ? this._generateSphereMesh(tile) : null;
-      default:
-        return null;
-    }
+  _generateMesh(tile, meshType) {
+    const cubeMesh = tile.header.obb ? this._generateCubeMesh(tile) : null;
+    const sphereMesh = tile.header.mbs ? this._generateSphereMesh(tile) : null;
+
+    tile.userData.boundingMeshes.cubeMesh = cubeMesh;
+    tile.userData.boundingMeshes.sphereMesh = sphereMesh;
+
+    return tile.userData.boundingMeshes[meshType];
   }
 
-  _getBoundingVolumeGeometry(tile, oldLayer, boundingVolumeType) {
-    const mesh = oldLayer && oldLayer.props.mesh;
-
-    if (!mesh || mesh.constructor.name !== boundingVolumeType) {
-      return this._generateMesh(tile, boundingVolumeType);
-    }
-
-    return mesh;
-  }
-
-  _getBoundingVolumeLayer(tile, oldLayer) {
+  _getBoundingVolumeLayer(tile) {
     const {content, viewportIds} = tile;
     const {material, getBoundingVolumeColor, boundingVolumeType} = this.props;
     const {cartographicOrigin, modelMatrix} = content;
+    const meshType = BOUNDING_VOLUME_MESH_TYPE[boundingVolumeType];
 
-    const geometry = this._getBoundingVolumeGeometry(tile, oldLayer, boundingVolumeType);
+    tile.userData.boundingMeshes = tile.userData.boundingMeshes || {};
+
+    const mesh = tile.userData.boundingMeshes[meshType] || this._generateMesh(tile, meshType);
 
     return new MeshLayer({
-      id: `obb-debug-${tile.id}`,
-      mesh: geometry,
+      id: `bounding-volume-${tile.id}`,
+      mesh,
       data: SINGLE_DATA,
       getPosition: [0, 0, 0],
       getColor: getBoundingVolumeColor(tile),
@@ -132,35 +129,17 @@ export default class BoundingVolumeLayer extends CompositeLayer {
     });
   }
 
-  updateState({props, oldProps, changeFlags}) {
-    if (changeFlags.propsChanged) {
-      const {layerMap} = this.state;
-
-      for (const key in layerMap) {
-        layerMap[key].needsUpdate = true;
-      }
-    }
-  }
-
-  resetTiles() {
-    this.setState({layerMap: {}});
-  }
-
-  addTile(tile) {
-    const {layerMap} = this.state;
-
-    layerMap[tile.id] = layerMap[tile.id] || {tile};
-    this.setNeedsUpdate();
-  }
-
   renderLayers() {
     const {visible, tiles} = this.props;
-    if (!visible) return null;
+
+    if (!visible) {
+      return null;
+    }
 
     const {layerMap} = this.state;
 
     return tiles
-      .map(tile => {
+      .map((tile) => {
         const id = tile.id;
         layerMap[id] = layerMap[id] || {};
         let {layer, needsUpdate = true} = layerMap[id];
@@ -169,17 +148,13 @@ export default class BoundingVolumeLayer extends CompositeLayer {
           if (!layer) {
             layer = this._getBoundingVolumeLayer(tile);
           } else if (needsUpdate) {
-            layer = this._getBoundingVolumeLayer(tile, layer);
+            layer = this._getBoundingVolumeLayer(tile);
             needsUpdate = false;
           } else if (!layer.props.visible) {
-            layer = layer.clone({
-              visible: true
-            });
+            layer = layer.clone({visible: true});
           }
         } else if (layer && layer.props.visible) {
-          layer = layer.clone({
-            visible: false
-          });
+          layer = layer.clone({visible: false});
         }
 
         layerMap[id] = {layer, needsUpdate};

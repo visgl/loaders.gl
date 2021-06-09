@@ -1,6 +1,6 @@
 import {load} from '@loaders.gl/core';
 import {getSupportedGPUTextureFormats} from '@loaders.gl/textures';
-import {Tileset, NodePage} from '../../types'
+import {Tileset, NodePage} from '../../types';
 import {I3SNodePageLoader} from '../../i3s-node-page-loader';
 import {normalizeTileNonUrlData} from '../parsers/parse-i3s';
 import {getUrlWithToken, generateTilesetAttributeUrls} from '../utils/url-utils';
@@ -8,13 +8,13 @@ import {getUrlWithToken, generateTilesetAttributeUrls} from '../utils/url-utils'
 /**
  * class I3SNodePagesTiles - loads nodePages and form i3s tiles from them
  */
- export default class I3SNodePagesTiles {
-   tileset: Tileset;
-   nodePages: NodePage[];
-   nodesPerPage: number;
-   options: {[key: string]: any};
-   lodSelectionMetricType: any;
-   textureDefinitionsSelectedFormats: any[];
+export default class I3SNodePagesTiles {
+  tileset: Tileset;
+  nodePages: NodePage[];
+  nodesPerPage: number;
+  options: {[key: string]: any};
+  lodSelectionMetricType: any;
+  textureDefinitionsSelectedFormats: any[];
 
   /**
    * @constructs
@@ -54,12 +54,11 @@ import {getUrlWithToken, generateTilesetAttributeUrls} from '../utils/url-utils'
     return this.nodePages[pageIndex].nodes[nodeIndex];
   }
 
-
-   /**
-    * Forms tile header using node and tileset data
-    * @param id - id of node through all node pages
-    */
-    // eslint-disable-next-line complexity
+  /**
+   * Forms tile header using node and tileset data
+   * @param id - id of node through all node pages
+   */
+  // eslint-disable-next-line complexity
   async formTileFromNodePages(id: number) {
     const node = await this.getNodeById(id);
     const children: any[] = [];
@@ -129,13 +128,13 @@ import {getUrlWithToken, generateTilesetAttributeUrls} from '../utils/url-utils'
     // Try to find DRACO geometryDefinition of `useDracoGeometry` option is set
     if (this.options.i3s && this.options.i3s.useDracoGeometry) {
       geometryIndex = geometryDefinition.geometryBuffers.findIndex(
-        buffer => buffer.compressedAttributes && buffer.compressedAttributes.encoding === 'draco'
+        (buffer) => buffer.compressedAttributes && buffer.compressedAttributes.encoding === 'draco'
       );
     }
     // If DRACO geometry is not applicable try to select non-compressed geometry
     if (geometryIndex === -1) {
       geometryIndex = geometryDefinition.geometryBuffers.findIndex(
-        buffer => !buffer.compressedAttributes
+        (buffer) => !buffer.compressedAttributes
       );
     }
     if (geometryIndex !== -1) {
@@ -212,7 +211,7 @@ import {getUrlWithToken, generateTilesetAttributeUrls} from '../utils/url-utils'
       const formats = (textureSetDefinition && textureSetDefinition.formats) || [];
       let selectedFormat = null;
       for (const i3sFormat of possibleI3sFormats) {
-        const format = formats.find(value => value.format === i3sFormat);
+        const format = formats.find((value) => value.format === i3sFormat);
         if (format) {
           selectedFormat = format;
           break;

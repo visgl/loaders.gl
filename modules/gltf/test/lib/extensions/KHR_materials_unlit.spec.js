@@ -43,7 +43,7 @@ const TEST_CASES = [
   }
 ];
 
-test('gltf#KHR_materials_unlit', async t => {
+test('gltf#KHR_materials_unlit', async (t) => {
   for (const testCase of TEST_CASES) {
     await decodeExtensions(testCase.input);
     // Modifies input

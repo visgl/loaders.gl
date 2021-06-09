@@ -147,12 +147,12 @@ function testDataAgainstText(data, loader) {
   }
 
   const tests = Array.isArray(loader.tests) ? loader.tests : [loader.tests];
-  return tests.some(test => data.startsWith(test));
+  return tests.some((test) => data.startsWith(test));
 }
 
 function testDataAgainstBinary(data, byteOffset, loader) {
   const tests = Array.isArray(loader.tests) ? loader.tests : [loader.tests];
-  return tests.some(test => testBinary(data, byteOffset, loader, test));
+  return tests.some((test) => testBinary(data, byteOffset, loader, test));
 }
 
 function testBinary(data, byteOffset, loader, test) {

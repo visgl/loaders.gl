@@ -64,6 +64,7 @@
     "Note: tape 4.12 and higher no longer compares 0 and -0 equally..."
   ],
   "resolutions": {
-    "tape": "4.11.0"
+    "tape": "4.11.0",
+    "prettier": "2.3.1"
   }
 }

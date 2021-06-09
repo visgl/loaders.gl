@@ -153,11 +153,11 @@ function parsePCDHeader(data) {
   }
 
   if (PCDheader.size !== null) {
-    PCDheader.size = PCDheader.size[1].split(' ').map(x => parseInt(x, 10));
+    PCDheader.size = PCDheader.size[1].split(' ').map((x) => parseInt(x, 10));
   }
 
   if (PCDheader.count !== null) {
-    PCDheader.count = PCDheader.count[1].split(' ').map(x => parseInt(x, 10));
+    PCDheader.count = PCDheader.count[1].split(' ').map((x) => parseInt(x, 10));
   } else {
     PCDheader.count = [];
     for (let i = 0; i < PCDheader.fields.length; i++) {

@@ -6,14 +6,14 @@ import {
   checkResponseSync
 } from '@loaders.gl/core/lib/utils/response-utils';
 
-test('Response', async t => {
+test('Response', async (t) => {
   const response = new Response('abc');
   const text = await response.text();
   t.equal(text, 'abc');
   t.end();
 });
 
-test('makeResponse', async t => {
+test('makeResponse', async (t) => {
   const response = await makeResponse('abc');
   t.equal(response.headers.get('content-length'), '3', 'content-length was set by makeResponse');
   const text = await response.text();
@@ -22,7 +22,7 @@ test('makeResponse', async t => {
   t.end();
 });
 
-test('makeResponse(File)', async t => {
+test('makeResponse(File)', async (t) => {
   const file = new File(['abc'], 'foo.txt', {
     type: 'text/plain'
   });
@@ -54,7 +54,7 @@ test('makeResponse(File)', async t => {
   t.end();
 });
 
-test('checkResponseSync', t => {
+test('checkResponseSync', (t) => {
   const response = new Response('{message: "server died"}', {status: 500});
   t.equal(response.ok, false, 'Check reponse.ok');
   t.throws(() => checkResponseSync(response), /500/, 'Check reponse throws');
@@ -62,7 +62,7 @@ test('checkResponseSync', t => {
   t.end();
 });
 
-test('checkResponse', async t => {
+test('checkResponse', async (t) => {
   const response = new Response('{message: "server died"}', {status: 500});
   t.equal(response.ok, false, 'Check reponse.ok');
   t.rejects(() => checkResponse(response), /500/, 'Check reponse throws');

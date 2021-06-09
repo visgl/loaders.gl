@@ -75,7 +75,7 @@ Design notes:
 ```js
 import {load} from '@loaders.gl/core';
 load(INTERNAL_DATA_URL, {
-  fetch: url => fetch(url, {headers: {'Company-Access-Token': 'Secret-Value'}})
+  fetch: (url) => fetch(url, {headers: {'Company-Access-Token': 'Secret-Value'}})
 });
 ```
 

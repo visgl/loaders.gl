@@ -13,34 +13,34 @@ import {
 const MODULE_URL = `${__dirname}/fixture/module.js`;
 const SUBMODULE_URL = `${__dirname}/fixture/submodule.js`;
 
-test('require-utils', tt => {
+test('require-utils', (tt) => {
   if (isBrowser) {
     tt.end();
     return;
   }
 
-  test('requireFromFile#', t => {
+  test('requireFromFile#', (t) => {
     t.ok(requireFromFile(MODULE_URL), 'Require from file worked');
     t.ok(requireFromFile(SUBMODULE_URL), 'Require from file worked');
     t.end();
   });
 
-  test('requireFromString#should accept only string as code', t => {
+  test('requireFromString#should accept only string as code', (t) => {
     t.throws(() => requireFromString(), /code must be a string, not undefined/);
     t.end();
   });
 
-  test('requireFromString#should require from string', t => {
+  test('requireFromString#should require from string', (t) => {
     t.equal(requireFromString('module.exports = 1;'), 1);
     t.end();
   });
 
-  test('requireFromString#should accept filename', t => {
+  test('requireFromString#should accept filename', (t) => {
     t.throws(() => requireFromString('module.exports = ', 'bug.js', /bug\.js|Unexpected token }/));
     t.end();
   });
 
-  test('requireFromString#should work with relative require in file', t => {
+  test('requireFromString#should work with relative require in file', (t) => {
     const code = fs.readFileSync(MODULE_URL, 'utf8');
     const result = requireFromString(code, MODULE_URL);
 
@@ -50,7 +50,7 @@ test('require-utils', tt => {
     t.end();
   });
 
-  test('requireFromString#should have appended and preppended paths', t => {
+  test('requireFromString#should have appended and preppended paths', (t) => {
     const code = fs.readFileSync(SUBMODULE_URL, 'utf8');
     const result = requireFromString(code, SUBMODULE_URL, {
       appendPaths: ['append'],
@@ -64,7 +64,7 @@ test('require-utils', tt => {
   });
 
   // TODO
-  test.skip('requireFromString#should have meaningful error message', t => {
+  test.skip('requireFromString#should have meaningful error message', (t) => {
     try {
       requireFromString('throw new Error("Boom!");');
     } catch (error) {
@@ -79,7 +79,7 @@ test('require-utils', tt => {
     t.end();
   });
 
-  test('requireFromString#should cleanup parent.children', t => {
+  test('requireFromString#should cleanup parent.children', (t) => {
     const code = fs.readFileSync(SUBMODULE_URL, 'utf8');
     const result = requireFromString(code, SUBMODULE_URL);
 

@@ -1,8 +1,7 @@
 // TextDecoder iterators
 // TextDecoder will keep any partial undecoded bytes between calls to `decode`
 
-
-export async function *makeTextDecoderIterator(
+export async function* makeTextDecoderIterator(
   arrayBufferIterator: AsyncIterable<ArrayBuffer>,
   options: object = {}
 ): AsyncIterable<string> {
@@ -19,7 +18,7 @@ export async function *makeTextDecoderIterator(
 // TextEncoder will keep any partial undecoded bytes between calls to `encode`
 // If iterator does not yield strings, assume arrayBuffer and return unencoded
 
-export async function *makeTextEncoderIterator(
+export async function* makeTextEncoderIterator(
   textIterator: AsyncIterable<string>,
   options?: object
 ): AsyncIterable<ArrayBuffer> {
@@ -35,7 +34,7 @@ export async function *makeTextEncoderIterator(
  * See http://2ality.com/2018/04/async-iter-nodejs.html
  */
 
- export async function *makeLineIterator(
+export async function* makeLineIterator(
   textIterator: AsyncIterable<string>
 ): AsyncIterable<string> {
   let previous = '';
@@ -61,7 +60,7 @@ export async function *makeTextEncoderIterator(
  *
  * See http://2ality.com/2018/04/async-iter-nodejs.html
  */
- export async function *makeNumberedLineIterator(
+export async function* makeNumberedLineIterator(
   lineIterator: AsyncIterable<string>
 ): AsyncIterable<{counter: number; line: string}> {
   let counter = 1;
