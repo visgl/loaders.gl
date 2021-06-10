@@ -41,12 +41,20 @@ export default class WorkerFarm {
 
   getWorkerPool({name, source, url}) {
     let workerPool = this.workerPools.get(name);
+
+    const maxConcurrency = isMobile ? this.props.maxMobileConcurrency : this.props.maxConcurrency;
+
+    if (workerPool && workerPool.maxConcurrency !== maxConcurrency) {
+      workerPool.destroy();
+      workerPool = undefined;
+    }
+
     if (!workerPool) {
       workerPool = new WorkerPool({
         name,
         source,
         url,
-        maxConcurrency: isMobile ? this.props.maxMobileConcurrency : this.props.maxConcurrency,
+        maxConcurrency,
         onDebug: this.props.onDebug,
         reuseWorkers: this.props.reuseWorkers
       });

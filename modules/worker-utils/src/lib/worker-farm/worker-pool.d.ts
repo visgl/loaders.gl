@@ -13,6 +13,8 @@ type OnDebugParameters = {
  * Process multiple data messages with small pool of identical workers
  */
 export default class WorkerPool {
+  readonly maxConcurrency: number;
+
   /**
    * @param processor - worker function
    * @param maxConcurrency - max count of workers
