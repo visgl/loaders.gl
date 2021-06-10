@@ -1,5 +1,5 @@
 // TYPES
-export {ImageDataType, ImageType, ImageTypeEnum} from './types';
+export type {ImageDataType, ImageType, ImageTypeEnum} from './types';
 
 // LOADERS AND WRITERS
 export {ImageLoader} from './image-loader';
