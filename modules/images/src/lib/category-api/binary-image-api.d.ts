@@ -6,9 +6,10 @@ export type BinaryImageMetadata = {
 };
 
 /**
- * Determines if the "raw" memory
- * Currently supports `image/png`, `image/jpeg`, 'image/gif`, `image/bmp`.
- * @param binaryData "raw" memory to inspect
+ * Extracts `{mimeType, width and height}` from a memory buffer containing a known image format
+ * Currently supports `image/png`, `image/jpeg`, `image/bmp` and `image/gif`.
+ * @param binaryData image file memory to parse
+ * @returns metadata or null if memory is not a valid image file format layout.
  */
 export function getBinaryImageMetadata(
   binaryData: DataView | ArrayBuffer

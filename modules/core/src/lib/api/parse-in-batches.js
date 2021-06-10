@@ -11,7 +11,7 @@ import {selectLoader} from './select-loader';
 import {parse} from './parse';
 
 export async function parseInBatches(data, loaders, options, context) {
-  assert(!context || typeof context !== 'string', 'parseInBatches no longer accepts final url');
+  assert(!context || typeof context === 'object'); // parseInBatches no longer accepts final url
 
   // Signature: parseInBatches(data, options, url) - Uses registered loaders
   if (!Array.isArray(loaders) && !isLoaderObject(loaders)) {

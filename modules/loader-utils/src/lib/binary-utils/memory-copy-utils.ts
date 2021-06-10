@@ -15,21 +15,6 @@ export function padToNBytes(byteLength: number, padding: number): number {
 }
 
 /**
- * Copy a view of an ArrayBuffer into new ArrayBuffer with byteOffset = 0
- * @param arrayBuffer
- * @param byteOffset
- * @param byteLength
- * @deprecated Use sliceArrayBuffer
- */
-export function getZeroOffsetArrayBuffer(
-  arrayBuffer: ArrayBuffer,
-  byteOffset: number,
-  byteLength?: number
-): ArrayBuffer {
-  return sliceArrayBuffer(arrayBuffer, byteOffset, byteLength);
-}
-
-/**
  * Creates a new Uint8Array based on two different ArrayBuffers
  * @param targetBuffer The first buffer.
  * @param sourceBuffer The second buffer.

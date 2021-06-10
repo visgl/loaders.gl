@@ -22,12 +22,6 @@ export function isImageTypeSupported(type) {
     case 'data':
       return DATA_SUPPORTED;
 
-    // DEPRECATED types
-    case 'html':
-      return IMAGE_SUPPORTED;
-    case 'ndarray':
-      return DATA_SUPPORTED;
-
     default:
       throw new Error(`@loaders.gl/images: image ${type} not supported in this environment`);
   }

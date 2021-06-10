@@ -47,7 +47,7 @@ export async function compressFilesWithZip(fileMap, outputFile, level = 0) {
     output.on('close', function () {
       console.log(`${outputFile} saved.`); // eslint-disable-line no-undef,no-console
       console.log(`${archive.pointer()} total bytes`); // eslint-disable-line no-undef,no-console
-      resolve();
+      resolve(null);
     });
 
     // This event is fired when the data source is drained no matter what was the data source.
@@ -55,7 +55,7 @@ export async function compressFilesWithZip(fileMap, outputFile, level = 0) {
     // @see: https://nodejs.org/api/stream.html#stream_event_end
     output.on('end', function () {
       console.log('Data has been drained'); // eslint-disable-line no-undef,no-console
-      resolve();
+      resolve(null);
     });
 
     // good practice to catch warnings (ie stat failures and other non-blocking errors)
@@ -161,7 +161,7 @@ export async function generateHash128FromZip(inputZipFile, outputFile) {
   return new Promise((resolve, reject) => {
     output.on('close', function () {
       console.log(`${outputFile} generated and saved`); // eslint-disable-line
-      resolve();
+      resolve(null);
     });
     output.on('error', function (err) {
       console.log(err); // eslint-disable-line
@@ -196,7 +196,7 @@ function appendFileToArchive(archive, subFileName, subFileData) {
     console.log(`Compression start: ${subFileName}`); // eslint-disable-line no-undef,no-console
     fileStream.on('close', () => {
       console.log(`Compression finish: ${subFileName}`); // eslint-disable-line no-undef,no-console
-      resolve();
+      resolve(null);
     });
     archive.append(fileStream, {name: subFileName});
   });

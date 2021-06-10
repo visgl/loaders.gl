@@ -8,7 +8,7 @@
 // - Also, should we have hard dependency on gltf module or use injection or auto-discovery for gltf parser?
 
 import {GLTFLoader} from '@loaders.gl/gltf';
-import {getZeroOffsetArrayBuffer} from '@loaders.gl/loader-utils';
+import {sliceArrayBuffer} from '@loaders.gl/loader-utils';
 
 export const GLTF_FORMAT = {
   URI: 0,
@@ -35,7 +35,7 @@ export function parse3DTileGLTFViewSync(tile, arrayBuffer, byteOffset, options) 
 
   // TODO - We can avoid copy if already 4-byte aligned...
   // However the rest of the code may not be able to accept byteOffsets, so copy anyway
-  tile.gltfArrayBuffer = getZeroOffsetArrayBuffer(arrayBuffer, byteOffset, gltfByteLength);
+  tile.gltfArrayBuffer = sliceArrayBuffer(arrayBuffer, byteOffset, gltfByteLength);
   tile.gltfByteOffset = 0;
   tile.gltfByteLength = gltfByteLength;
 
