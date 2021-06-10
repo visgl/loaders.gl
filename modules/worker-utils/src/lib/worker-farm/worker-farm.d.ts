@@ -19,6 +19,7 @@ export default class WorkerFarm {
   /** Get the singleton instance of the global worker farm */
   static getWorkerFarm(props: WorkerFarmProps): WorkerFarm;
 
+  readonly maxConcurrency: number;
   readonly onDebug: () => void;
 
   constructor(props: WorkerFarmProps);
