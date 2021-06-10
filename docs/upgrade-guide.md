@@ -26,13 +26,13 @@ Default number of worker threads for each loader has been reduced from `5` to `3
 - The binary image API has been consolidated in a single function `getBinaryImageMetadata()`:
 - A number of previously deprecated exports have been removed:
 
-| Export | Replacement |
-| --- | --- |
-| `isBinaryImage(arrayBuffer)` | `Boolean(getBinaryImageMetadata(arrayBuffer))` |
-| `getBinaryImageMIMEType(arrayBuffer)` | `getBinaryImageMetadata(arrayBuffer)?.mimeType` |
-| `getBinaryImageSize(arrayBuffer)` | `getBinaryImageMetadata(arrayBuffer)?.{width, height}` |
-| `HTMLImageLoader`     | Use `ImageLoader` with options `{image: type: 'image'}` |
-| `getDefaultImageType()` | N/A |
+| Export                                 | Replacement                                             |
+| -------------------------------------- | ------------------------------------------------------- |
+| `isBinaryImage(arrayBuffer)`           | `Boolean(getBinaryImageMetadata(arrayBuffer))`          |
+| `getBinaryImageMIMEType(arrayBuffer)`  | `getBinaryImageMetadata(arrayBuffer)?.mimeType`         |
+| `getBinaryImageSize(arrayBuffer)`      | `getBinaryImageMetadata(arrayBuffer)?.{width, height}`  |
+| `HTMLImageLoader`                      | Use `ImageLoader` with options `{image: type: 'image'}` |
+| `getDefaultImageType()`                | N/A                                                     |
 | `getSupportedImageType(imageType?)` NA |
 
 **@loaders.gl/kml**
