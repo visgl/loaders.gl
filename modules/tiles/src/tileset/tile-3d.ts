@@ -198,8 +198,6 @@ export default class TileHeader {
     this._expireDate = null;
     this._expiredContent = null;
 
-    this._getPriority = this._getPriority.bind(this);
-
     Object.seal(this);
   }
 
@@ -315,7 +313,7 @@ export default class TileHeader {
 
     const requestToken = await this.tileset._requestScheduler.scheduleRequest(
       this.id,
-      this._getPriority // eslint-disable-line @typescript-eslint/unbound-method
+      this._getPriority.bind(this)
     );
 
     if (!requestToken) {

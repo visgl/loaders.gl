@@ -167,8 +167,7 @@ export default class TilesetTraverser {
     const children = tile.children;
 
     // sort children tiles
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    children.sort(this.compareDistanceToCamera);
+    children.sort(this.compareDistanceToCamera.bind(this));
 
     // For traditional replacement refinement only refine if all children are loaded.
     // Empty tiles are exempt since it looks better if children stream in as they are loaded to fill the empty space.
