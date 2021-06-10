@@ -2,6 +2,19 @@ import WorkerJob from './worker-job';
 // TODO circular subdir dependency
 import {WorkerMessageType, WorkerMessagePayload} from '../worker-protocol/protocol';
 
+/**
+ * @param maxConcurrency - max count of workers
+ */
+export type WorkerPoolProps = {
+  name?: string;
+  url?: string;
+  source?: string; // | Function;
+  maxConcurrency?: number;
+  maxMobileConcurrency?: number;
+  onDebug?: (options: OnDebugParameters) => any;
+  reuseWorkers?: boolean;
+};
+
 type OnDebugParameters = {
   message: string;
   worker: string;
@@ -13,24 +26,17 @@ type OnDebugParameters = {
  * Process multiple data messages with small pool of identical workers
  */
 export default class WorkerPool {
-  /**
-   * @param processor - worker function
-   * @param maxConcurrency - max count of workers
-   */
-  constructor(options: {
-    source?: string; // | Function;
-    url?: string;
-    name?: string;
-    maxConcurrency?: number;
-    onDebug?: (options: OnDebugParameters) => any;
-    reuseWorkers?: boolean;
-  });
+  readonly maxConcurrency: number;
+
+  constructor(props: WorkerPoolProps);
 
   /**
    * Terminates all workers in the pool
    * @note Can free up significant memory
    */
   destroy(): void;
+
+  setProps(props: WorkerPoolProps): void;
 
   /**
    * Start up a worker thread from the pool
