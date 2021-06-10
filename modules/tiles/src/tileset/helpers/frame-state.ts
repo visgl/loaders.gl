@@ -2,6 +2,19 @@ import {Vector3} from '@math.gl/core';
 import {CullingVolume, Plane} from '@math.gl/culling';
 import {Ellipsoid} from '@math.gl/geospatial';
 
+export type FrameState = {
+  camera: {
+    position: number[];
+    direction: number[];
+    up: number[];
+  };
+  viewport: {[key: string]: any};
+  height: number;
+  cullingVolume: CullingVolume;
+  frameNumber: number; // TODO: This can be the same between updates, what number is unique for between updates?
+  sseDenominator: number; // Assumes fovy = 60 degrees
+};
+
 const scratchVector = new Vector3();
 const scratchPosition = new Vector3();
 const cullingVolume = new CullingVolume([
@@ -15,7 +28,7 @@ const cullingVolume = new CullingVolume([
 
 // Extracts a frame state appropriate for tile culling from a deck.gl viewport
 // TODO - this could likely be generalized and merged back into deck.gl for other culling scenarios
-export function getFrameState(viewport, frameNumber) {
+export function getFrameState(viewport, frameNumber: number): FrameState {
   // Traverse and and request. Update _selectedTiles so that we know what to render.
   const {cameraDirection, cameraUp, height} = viewport;
   const {metersPerUnit} = viewport.distanceScales;
