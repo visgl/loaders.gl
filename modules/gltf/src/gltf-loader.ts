@@ -42,7 +42,7 @@ export const GLTFLoader = {
   }
 };
 
-export async function parse(arrayBuffer, options = {}, context) {
+export async function parse(arrayBuffer, options: {[key: string]: any} = {}, context) {
   // Apps can call the parse method directly, we so apply default options here
   options = {...GLTFLoader.options, ...options};
   // @ts-ignore

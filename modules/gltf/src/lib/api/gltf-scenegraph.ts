@@ -7,133 +7,149 @@ import {
   getComponentTypeFromArray
 } from '../gltf-utils/gltf-utils';
 
+export type GLTFJSON = {[key: string]: any};
+export type GLTFScene = {[key: string]: any};
+export type GLTFNode = {[key: string]: any};
+export type GLTFMesh = {[key: string]: any};
+export type GLTFSkin = {[key: string]: any};
+export type GLTFMaterial = {[key: string]: any};
+export type GLTFAccessor = {[key: string]: any};
+export type GLTFSampler = {[key: string]: any};
+export type GLTFTexture = {[key: string]: any};
+export type GLTFImage = {[key: string]: any};
+export type GLTFBuffer = {[key: string]: any};
+export type GLTFBufferView = {[key: string]: any};
+
+export type GLTFWithBuffers = {
+  json: GLTFJSON;
+  buffers: any[];
+  binary?: ArrayBuffer;
+};
+
+const DEFAULT_GLTF_JSON: GLTFJSON = {
+  asset: {
+    version: '2.0',
+    generator: 'loaders.gl'
+  },
+  buffers: []
+};
+
 /**
  * Class for structured access to GLTF data
  */
 export default class GLTFScenegraph {
-  // eslint-disable-next-line consistent-return
-  constructor(gltf) {
-    // Signature: new GLTFScenegraph(data : GLTFScenegraph)
-    // Allow creation of a `GLTFScenegraph` object from gltf data without checking if already a `GLTFScenegraph`
-    if (gltf instanceof GLTFScenegraph) {
-      return gltf;
-    }
+  // internal
+  gltf: GLTFWithBuffers;
+  sourceBuffers: any[] = [];
+  byteLength: number = 0;
 
-    if (!gltf) {
-      gltf = {
-        json: {
-          asset: {
-            version: '2.0',
-            generator: 'loaders.gl'
-          },
-          buffers: []
-        },
-        buffers: []
-      };
-    }
+  constructor(gltf?: GLTFWithBuffers) {
+    this.gltf = gltf || {
+      json: {...DEFAULT_GLTF_JSON},
+      buffers: []
+    };
 
-    this.sourceBuffers = [];
-    this.byteLength = 0;
-    if (gltf.buffers && gltf.buffers[0]) {
-      this.byteLength = gltf.buffers[0].byteLength;
-      this.sourceBuffers = [gltf.buffers[0]];
+    // Initialize buffers
+    if (this.gltf.buffers && this.gltf.buffers[0]) {
+      this.byteLength = this.gltf.buffers[0].byteLength;
+      this.sourceBuffers = [this.gltf.buffers[0]];
     }
-    // TODO - this is too sloppy, define inputs more clearly
-    this.gltf = gltf;
-    assert(this.gltf.json);
   }
 
   // Accessors
 
-  get json() {
+  get json(): GLTFJSON {
     return this.gltf.json;
   }
 
-  getApplicationData(key) {
+  getApplicationData(key: string): {[key: string]: any} {
     // TODO - Data is already unpacked by GLBParser
     const data = this.json[key];
     return data;
   }
 
-  getExtraData(key) {
+  getExtraData(key: string): {[key: string]: any} {
     // TODO - Data is already unpacked by GLBParser
     const extras = this.json.extras || {};
     return extras[key];
   }
 
-  getExtension(extensionName) {
+  getExtension(extensionName: string): {[key: string]: any} | null {
     const isExtension = this.getUsedExtensions().find((name) => name === extensionName);
     const extensions = this.json.extensions || {};
     return isExtension ? extensions[extensionName] || true : null;
   }
 
-  getRequiredExtension(extensionName) {
+  getRequiredExtension(extensionName: string): {[key: string]: any} | null {
     const isRequired = this.getRequiredExtensions().find((name) => name === extensionName);
     return isRequired ? this.getExtension(extensionName) : null;
   }
 
-  getRequiredExtensions() {
+  getRequiredExtensions(): string[] {
     return this.json.extensionsRequired || [];
   }
 
-  getUsedExtensions() {
+  getUsedExtensions(): string[] {
     return this.json.extensionsUsed || [];
   }
 
-  getObjectExtension(object, extensionName) {
+  getObjectExtension(
+    object: {[key: string]: any},
+    extensionName: string
+  ): {[key: string]: any} | null {
     const extensions = object.extensions || {};
     return extensions[extensionName];
   }
 
-  getScene(index) {
+  getScene(index: number): GLTFScene {
     return this.getObject('scenes', index);
   }
 
-  getNode(index) {
+  getNode(index: number): GLTFNode {
     return this.getObject('nodes', index);
   }
 
-  getSkin(index) {
+  getSkin(index: number): GLTFSkin {
     return this.getObject('skins', index);
   }
 
-  getMesh(index) {
+  getMesh(index: number): GLTFMesh {
     return this.getObject('meshes', index);
   }
 
-  getMaterial(index) {
+  getMaterial(index: number): GLTFMaterial {
     return this.getObject('materials', index);
   }
 
-  getAccessor(index) {
+  getAccessor(index: number): GLTFAccessor {
     return this.getObject('accessors', index);
   }
 
-  getCamera(index) {
-    return null; // TODO: fix this
-  }
+  // getCamera(index: number): object | null {
+  //   return null; // TODO: fix this
+  // }
 
-  getTexture(index) {
+  getTexture(index: number): GLTFTexture {
     return this.getObject('textures', index);
   }
 
-  getSampler(index) {
+  getSampler(index: number): GLTFSampler {
     return this.getObject('samplers', index);
   }
 
-  getImage(index) {
+  getImage(index: number): GLTFImage {
     return this.getObject('images', index);
   }
 
-  getBufferView(index) {
+  getBufferView(index: number | object): GLTFBufferView {
     return this.getObject('bufferViews', index);
   }
 
-  getBuffer(index) {
+  getBuffer(index: number): GLTFBuffer {
     return this.getObject('buffers', index);
   }
 
-  getObject(array, index) {
+  getObject(array: string, index: number | object): object {
     // check if already resolved
     if (typeof index === 'object') {
       return index;
@@ -149,8 +165,9 @@ export default class GLTFScenegraph {
    * Accepts buffer view index or buffer view object
    * @returns a `Uint8Array`
    */
-  getTypedArrayForBufferView(bufferView) {
+  getTypedArrayForBufferView(bufferView: number | object): Uint8Array {
     bufferView = this.getBufferView(bufferView);
+    // @ts-ignore
     const bufferIndex = bufferView.buffer;
 
     // Get hold of the arrayBuffer
@@ -158,21 +175,26 @@ export default class GLTFScenegraph {
     const binChunk = this.gltf.buffers[bufferIndex];
     assert(binChunk);
 
+    // @ts-ignore
     const byteOffset = (bufferView.byteOffset || 0) + binChunk.byteOffset;
+    // @ts-ignore
     return new Uint8Array(binChunk.arrayBuffer, byteOffset, bufferView.byteLength);
   }
 
   /** Accepts accessor index or accessor object
    * @returns a typed array with type that matches the types
    */
-  getTypedArrayForAccessor(accessor) {
+  getTypedArrayForAccessor(accessor: number | object): any {
+    // @ts-ignore
     accessor = this.getAccessor(accessor);
+    // @ts-ignore
     const bufferView = this.getBufferView(accessor.bufferView);
     const buffer = this.getBuffer(bufferView.buffer);
     const arrayBuffer = buffer.data;
 
     // Create a new typed array as a view into the combined buffer
     const {ArrayType, length} = getAccessorArrayTypeAndLength(accessor, bufferView);
+    // @ts-ignore
     const byteOffset = bufferView.byteOffset + accessor.byteOffset;
     return new ArrayType(arrayBuffer, byteOffset, length);
   }
@@ -180,8 +202,10 @@ export default class GLTFScenegraph {
   /** accepts accessor index or accessor object
    * returns a `Uint8Array`
    */
-  getTypedArrayForImageData(image) {
+  getTypedArrayForImageData(image: number | object): Uint8Array {
+    // @ts-ignore
     image = this.getAccessor(image);
+    // @ts-ignore
     const bufferView = this.getBufferView(image.bufferView);
     const buffer = this.getBuffer(bufferView.buffer);
     const arrayBuffer = buffer.data;
@@ -195,7 +219,7 @@ export default class GLTFScenegraph {
   /**
    * Add an extra application-defined key to the top-level data structure
    */
-  addApplicationData(key, data) {
+  addApplicationData(key: string, data: object): GLTFScenegraph {
     this.json[key] = data;
     return this;
   }
@@ -203,29 +227,31 @@ export default class GLTFScenegraph {
   /**
    * `extras` - Standard GLTF field for storing application specific data
    */
-
-  addExtraData(key, data) {
+  addExtraData(key: string, data: object): GLTFScenegraph {
     this.json.extras = this.json.extras || {};
     this.json.extras[key] = data;
     return this;
   }
 
-  addObjectExtension(object, extensionName, data) {
-    assert(data);
+  addObjectExtension(object: object, extensionName: string, data: object): GLTFScenegraph {
+    // @ts-ignore
     object.extensions = object.extensions || {};
     // TODO - clobber or merge?
+    // @ts-ignore
     object.extensions[extensionName] = data;
     this.registerUsedExtension(extensionName);
     return this;
   }
 
-  setObjectExtension(object, extensionName, data) {
+  setObjectExtension(object: object, extensionName: string, data: object): void {
+    // @ts-ignore
     const extensions = object.extensions || {};
     extensions[extensionName] = data;
     // TODO - add to usedExtensions...
   }
 
-  removeObjectExtension(object, extensionName) {
+  removeObjectExtension(object: object, extensionName: string): object {
+    // @ts-ignore
     const extensions = object.extensions || {};
     const extension = extensions[extensionName];
     delete extensions[extensionName];
@@ -235,8 +261,7 @@ export default class GLTFScenegraph {
   /**
    * Add to standard GLTF top level extension object, mark as used
    */
-
-  addExtension(extensionName, extensionData = {}) {
+  addExtension(extensionName: string, extensionData: object = {}): object {
     assert(extensionData);
     this.json.extensions = this.json.extensions || {};
     this.json.extensions[extensionName] = extensionData;
@@ -247,8 +272,7 @@ export default class GLTFScenegraph {
   /**
    * Standard GLTF top level extension object, mark as used and required
    */
-
-  addRequiredExtension(extensionName, extensionData = {}) {
+  addRequiredExtension(extensionName, extensionData: object = {}): object {
     assert(extensionData);
     this.addExtension(extensionName, extensionData);
     this.registerRequiredExtension(extensionName);
@@ -258,8 +282,7 @@ export default class GLTFScenegraph {
   /**
    * Add extensionName to list of used extensions
    */
-
-  registerUsedExtension(extensionName) {
+  registerUsedExtension(extensionName: string): void {
     this.json.extensionsUsed = this.json.extensionsUsed || [];
     if (!this.json.extensionsUsed.find((ext) => ext === extensionName)) {
       this.json.extensionsUsed.push(extensionName);
@@ -269,7 +292,7 @@ export default class GLTFScenegraph {
   /**
    * Add extensionName to list of required extensions
    */
-  registerRequiredExtension(extensionName) {
+  registerRequiredExtension(extensionName: string): void {
     this.registerUsedExtension(extensionName);
     this.json.extensionsRequired = this.json.extensionsRequired || [];
     if (!this.json.extensionsRequired.find((ext) => ext === extensionName)) {
@@ -280,7 +303,7 @@ export default class GLTFScenegraph {
   /**
    * Removes an extension from the top-level list
    */
-  removeExtension(extensionName) {
+  removeExtension(extensionName: string): void {
     if (this.json.extensionsRequired) {
       this._removeStringFromArray(this.json.extensionsRequired, extensionName);
     }
@@ -295,7 +318,7 @@ export default class GLTFScenegraph {
   /**
    *  Set default scene which is to be displayed at load time
    */
-  setDefaultScene(sceneIndex) {
+  setDefaultScene(sceneIndex: number): void {
     this.json.scene = sceneIndex;
   }
 
@@ -304,8 +327,8 @@ export default class GLTFScenegraph {
    *   name`, `extensions`, `extras`
    *   https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#reference-scene
    */
-
-  addScene({nodeIndices}) {
+  addScene(scene: {nodeIndices: number[]}): number {
+    const {nodeIndices} = scene;
     this.json.scenes = this.json.scenes || [];
     this.json.scenes.push({nodes: nodeIndices});
     return this.json.scenes.length - 1;
@@ -316,17 +339,21 @@ export default class GLTFScenegraph {
    *   `name`, `extensions`, `extras`, `camera`, `children`, `skin`, `rotation`, `scale`, `translation`, `weights`
    *   https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#node
    */
-  addNode({meshIndex, matrix = null}) {
+  addNode(node: {meshIndex: number; matrix: number[]}): number {
+    const {meshIndex, matrix} = node;
     this.json.nodes = this.json.nodes || [];
     const nodeData = {mesh: meshIndex};
     if (matrix) {
+      // @ts-ignore
       nodeData.matrix = matrix;
     }
     this.json.nodes.push(nodeData);
     return this.json.nodes.length - 1;
   }
 
-  addMesh({attributes, indices, material, mode = 4}) {
+  /** Adds a mesh to the json part */
+  addMesh(mesh: {attributes: object; indices: object; material: number; mode: number}): number {
+    const {attributes, indices, material, mode = 4} = mesh;
     const accessors = this._addAttributes(attributes);
 
     const glTFMesh = {
@@ -340,10 +367,12 @@ export default class GLTFScenegraph {
 
     if (indices) {
       const indicesAccessor = this._addIndices(indices);
+      // @ts-ignore
       glTFMesh.primitives[0].indices = indicesAccessor;
     }
 
     if (Number.isFinite(material)) {
+      // @ts-ignore
       glTFMesh.primitives[0].material = material;
     }
 
@@ -352,7 +381,7 @@ export default class GLTFScenegraph {
     return this.json.meshes.length - 1;
   }
 
-  addPointCloud(attributes) {
+  addPointCloud(attributes: object): number {
     // @ts-ignore
     const accessorIndices = this._addAttributes(attributes);
 
@@ -374,14 +403,15 @@ export default class GLTFScenegraph {
    * Adds a binary image. Builds glTF "JSON metadata" and saves buffer reference
    * Buffer will be copied into BIN chunk during "pack"
    * Currently encodes as glTF image
+   * @param imageData
+   * @param mimeType
    */
-
-  addImage(imageData, mimeType) {
+  addImage(imageData: any, mimeTypeOpt?: string): number {
     // If image is referencing a bufferView instead of URI, mimeType must be defined:
     //   https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#images
     //   "a reference to a bufferView; in that case mimeType must be defined."
     const metadata = getBinaryImageMetadata(imageData);
-    mimeType = mimeType || metadata?.mimeType;
+    const mimeType = mimeTypeOpt || metadata?.mimeType;
 
     const bufferViewIndex = this.addBufferView(imageData);
 
@@ -397,8 +427,9 @@ export default class GLTFScenegraph {
 
   /**
    * Add one untyped source buffer, create a matching glTF `bufferView`, and return its index
+   * @param buffer
    */
-  addBufferView(buffer) {
+  addBufferView(buffer: any): number {
     const byteLength = buffer.byteLength;
     assert(Number.isFinite(byteLength));
 
@@ -425,14 +456,21 @@ export default class GLTFScenegraph {
 
   /**
    * Adds an accessor to a bufferView
+   * @param bufferViewIndex
+   * @param accessor
    */
-  addAccessor(bufferViewIndex, accessor) {
+  addAccessor(bufferViewIndex: number, accessor: object): number {
     const glTFAccessor = {
       bufferView: bufferViewIndex,
+      // @ts-ignore
       type: getAccessorTypeFromSize(accessor.size),
+      // @ts-ignore
       componentType: accessor.componentType,
+      // @ts-ignore
       count: accessor.count,
+      // @ts-ignore
       max: accessor.max,
+      // @ts-ignore
       min: accessor.min
     };
 
@@ -445,17 +483,23 @@ export default class GLTFScenegraph {
    * Add a binary buffer. Builds glTF "JSON metadata" and saves buffer reference
    * Buffer will be copied into BIN chunk during "pack"
    * Currently encodes buffers as glTF accessors, but this could be optimized
+   * @param sourceBuffer
+   * @param accessor
    */
-  addBinaryBuffer(sourceBuffer, accessor = {size: 3}) {
+  addBinaryBuffer(sourceBuffer: any, accessor: object = {size: 3}): number {
     const bufferViewIndex = this.addBufferView(sourceBuffer);
+    // @ts-ignore
     let minMax = {min: accessor.min, max: accessor.max};
     if (!minMax.min || !minMax.max) {
+      // @ts-ignore
       minMax = this._getAccessorMinMax(sourceBuffer, accessor.size);
     }
 
     const accessorDefaults = {
+      // @ts-ignore
       size: accessor.size,
       componentType: getComponentTypeFromArray(sourceBuffer),
+      // @ts-ignore
       count: Math.round(sourceBuffer.length / accessor.size),
       min: minMax.min,
       max: minMax.max
@@ -465,11 +509,13 @@ export default class GLTFScenegraph {
   }
 
   /**
+   * Adds a texture to the json part
    * @todo: add more properties for texture initialization
    * `sampler`, `name`, `extensions`, `extras`
    * https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#texture
    */
-  addTexture({imageIndex}) {
+  addTexture(texture: {imageIndex: number}): number {
+    const {imageIndex} = texture;
     const glTFTexture = {
       source: imageIndex
     };
@@ -479,13 +525,15 @@ export default class GLTFScenegraph {
     return this.json.textures.length - 1;
   }
 
-  addMaterial(pbrMaterialInfo) {
+  /** Adds a material to the json part */
+  addMaterial(pbrMaterialInfo: Object): number {
     this.json.materials = this.json.materials || [];
     this.json.materials.push(pbrMaterialInfo);
     return this.json.materials.length - 1;
   }
 
-  createBinaryChunk() {
+  /** Pack the binary chunk */
+  createBinaryChunk(): void {
     // Encoder expects this array undefined or empty
     this.gltf.buffers = [];
 
@@ -574,27 +622,33 @@ export default class GLTFScenegraph {
    * https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#reference-accessor
    */
   _getAccessorMinMax(buffer, size) {
-    const result = {};
-    result.min = null;
-    result.max = null;
+    const result = {min: null, max: null};
     if (buffer.length < size) {
       return result;
     }
+    // @ts-ignore
     result.min = [];
+    // @ts-ignore
     result.max = [];
     const initValues = buffer.subarray(0, size);
     for (const value of initValues) {
+      // @ts-ignore
       result.min.push(value);
+      // @ts-ignore
       result.max.push(value);
     }
 
     for (let index = size; index < buffer.length; index += size) {
       for (let componentIndex = 0; componentIndex < size; componentIndex++) {
+        // @ts-ignore
         result.min[0 + componentIndex] = Math.min(
+          // @ts-ignore
           result.min[0 + componentIndex],
           buffer[index + componentIndex]
         );
+        // @ts-ignore
         result.max[0 + componentIndex] = Math.max(
+          // @ts-ignore
           result.max[0 + componentIndex],
           buffer[index + componentIndex]
         );
