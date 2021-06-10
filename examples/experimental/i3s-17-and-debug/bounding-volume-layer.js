@@ -2,7 +2,7 @@ import {Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {CubeGeometry, SphereGeometry} from '@luma.gl/engine';
 import {CompositeLayer, COORDINATE_SYSTEM, log} from '@deck.gl/core';
-import MeshLayer from './mesh-layer/mesh-layer';
+import {SimpleMeshLayer} from '@deck.gl/mesh-layers';
 import {BOUNDING_VOLUME_MESH_TYPE} from './constants';
 
 const DEFAULT_BG_OPACITY = 100;
@@ -115,7 +115,7 @@ export default class BoundingVolumeLayer extends CompositeLayer {
 
     const mesh = tile.userData.boundingMeshes[meshType] || this._generateMesh(tile, meshType);
 
-    return new MeshLayer({
+    return new SimpleMeshLayer({
       id: `bounding-volume-${tile.id}`,
       mesh,
       data: SINGLE_DATA,
