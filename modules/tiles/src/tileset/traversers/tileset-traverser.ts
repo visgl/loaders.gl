@@ -9,7 +9,7 @@ export type TilesetTraverserProps = {
   onTraversalEnd?: (frameState) => any;
   viewportTraversersMap?: {[key: string]: any};
   basePath?: string;
-}
+};
 
 export type Props = {
   loadSiblings: boolean;
@@ -18,7 +18,7 @@ export type Props = {
   onTraversalEnd: (frameState) => any;
   viewportTraversersMap: {[key: string]: any};
   basePath: string;
-}
+};
 
 export const DEFAULT_PROPS: Props = {
   loadSiblings: false,
@@ -167,6 +167,7 @@ export default class TilesetTraverser {
     const children = tile.children;
 
     // sort children tiles
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     children.sort(this.compareDistanceToCamera);
 
     // For traditional replacement refinement only refine if all children are loaded.

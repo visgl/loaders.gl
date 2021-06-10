@@ -68,7 +68,7 @@ export type Tileset3DProps = {
   loadTiles?: boolean;
   fetchOptions?: {[key: string]: any};
   basePath?: string;
-}
+};
 
 type Props = {
   description: string;
@@ -88,7 +88,7 @@ type Props = {
   fetchOptions: {[key: string]: any};
   basePath: string;
   i3s: {[key: string]: any};
-}
+};
 
 const DEFAULT_PROPS: Props = {
   description: '',
@@ -113,7 +113,7 @@ const DEFAULT_PROPS: Props = {
   maximumScreenSpaceError: 8,
 
   loadTiles: true,
-  viewportTraversersMap: {},
+  viewportTraversersMap: null,
 
   headers: {},
   fetchOptions: {},
@@ -184,7 +184,6 @@ export default class Tileset3D {
   private _cache: TilesetCache;
   _requestScheduler: RequestScheduler;
 
-
   _frameNumber: number;
   private _queryParamsString: string;
   private _queryParams: any;
@@ -210,7 +209,6 @@ export default class Tileset3D {
   private _properties: any;
   private _gltfUpAxis: any;
   private _dynamicScreenSpaceErrorComputedDensity: any;
-
 
   /**
    * Create a new Tileset3D
@@ -641,7 +639,7 @@ export default class Tileset3D {
     const url = tile.url;
     // TODO - Allow for probe log to be injected instead of console?
     console.error(`A 3D tile failed to load: ${tile.url} ${message}`); // eslint-disable-line
-    this.options.onTileError && this.options.onTileError(tile, message, url);
+    this.options.onTileError(tile, message, url);
   }
 
   _onTileLoad(tile, loaded) {
@@ -655,7 +653,7 @@ export default class Tileset3D {
     }
 
     this._addTileToCache(tile);
-    this.options.onTileLoad && this.options.onTileLoad(tile);
+    this.options.onTileLoad(tile);
   }
 
   _onStartTileLoading() {
@@ -688,7 +686,7 @@ export default class Tileset3D {
     this.stats.get(TILES_UNLOADED).incrementCount();
     this.stats.get(TILES_GPU_MEMORY).count = this.gpuMemoryUsageInBytes;
 
-    this.options.onTileUnload && this.options.onTileUnload(tile);
+    this.options.onTileUnload(tile);
     tile.unloadContent();
   }
 
