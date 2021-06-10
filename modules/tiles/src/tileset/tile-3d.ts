@@ -31,13 +31,13 @@ function defined(x) {
  * @param extendedId - optional ID to separate copies of a tile for different viewports.
  *                              const extendedId = `${tile.id}-${frameState.viewport.id}`;
  */
- export type TileHeaderProps = {
+export type TileHeaderProps = {
   tileset: Tileset3D;
   header: Object;
   parentHeader: TileHeader;
   basePath: string;
   extendedId: string;
-}
+};
 
 /**
  * A Tile3DHeader represents a tile as Tileset3D. When a tile is first created, its content is not loaded;
@@ -64,7 +64,7 @@ export default class TileHeader {
   viewportIds: any[];
   transform: Matrix4;
 
-    // Container to store application specific data
+  // Container to store application specific data
   userData: {[key: string]: any};
   computedTransform: any;
   hasEmptyContent: boolean;
@@ -120,7 +120,7 @@ export default class TileHeader {
     header: {[key: string]: any},
     parentHeader: TileHeader,
     basePath: string,
-    extendedId: string = ''
+    extendedId = ''
   ) {
     // PUBLIC MEMBERS
     // original tile data
@@ -183,6 +183,7 @@ export default class TileHeader {
     this._stackLength = 0;
     this._selectionDepth = 0;
     this._initialTransform = new Matrix4();
+    this.transform = new Matrix4();
 
     this._initializeLodMetric(header);
     this._initializeTransforms(header);
@@ -198,8 +199,6 @@ export default class TileHeader {
     this._expiredContent = null;
 
     this._getPriority = this._getPriority.bind(this);
-
-    this.transform = new Matrix4();
 
     Object.seal(this);
   }
@@ -238,7 +237,7 @@ export default class TileHeader {
    * Determines if the tile's content is ready. This is automatically `true` for
    * tiles with empty content.
    */
-   get contentReady() {
+  get contentReady() {
     return this.contentState === TILE_CONTENT_STATE.READY || this.hasEmptyContent;
   }
 
@@ -246,7 +245,7 @@ export default class TileHeader {
    * Determines if the tile has available content to render.  `true` if the tile's
    * content is ready or if it has expired content this renders while new content loads; otherwise,
    */
-   get contentAvailable() {
+  get contentAvailable() {
     return Boolean(
       (this.contentReady && this.hasRenderContent) || (this._expiredContent && !this.contentFailed)
     );
@@ -269,7 +268,7 @@ export default class TileHeader {
    * Determines if the tile's content is expired. `true` if tile's
    * content is expired; otherwise, `false`.
    */
-   get contentExpired() {
+  get contentExpired() {
     return this.contentState === TILE_CONTENT_STATE.EXPIRED;
   }
 
@@ -316,7 +315,7 @@ export default class TileHeader {
 
     const requestToken = await this.tileset._requestScheduler.scheduleRequest(
       this.id,
-      this._getPriority
+      this._getPriority // eslint-disable-line @typescript-eslint/unbound-method
     );
 
     if (!requestToken) {
@@ -475,7 +474,7 @@ export default class TileHeader {
    * @param frameState The frame state.
    * @returns {Number} The distance, in meters, or zero if the camera is inside the bounding volume.
    */
-   distanceToTile(frameState: FrameState): number {
+  distanceToTile(frameState: FrameState): number {
     const boundingVolume = this.boundingVolume;
     return Math.sqrt(Math.max(boundingVolume.distanceSquaredTo(frameState.camera.position), 0));
   }
@@ -485,7 +484,7 @@ export default class TileHeader {
    * @param frameState The frame state.
    * @returns The distance, in meters.
    */
-   cameraSpaceZDepth({camera}): number {
+  cameraSpaceZDepth({camera}): number {
     const boundingVolume = this.boundingVolume; // Gets the underlying OrientedBoundingBox or BoundingSphere
     scratchVector.subVectors(boundingVolume.center, camera.position);
     return camera.direction.dot(scratchVector);
@@ -541,7 +540,7 @@ export default class TileHeader {
         (this.parent && this.parent.lodMetricValue) || this.tileset.lodMetricValue;
       // eslint-disable-next-line
       console.warn(
-        `3D Tile: Required prop lodMetricValue is undefined. Using parent lodMetricValue`
+        '3D Tile: Required prop lodMetricValue is undefined. Using parent lodMetricValue'
       );
     }
   }
@@ -684,7 +683,6 @@ export default class TileHeader {
       );
     }
   }
-
 
   // Update the tile's transform. The transform is applied to the tile's bounding volumes.
   _updateTransform(parentTransform = new Matrix4()) {

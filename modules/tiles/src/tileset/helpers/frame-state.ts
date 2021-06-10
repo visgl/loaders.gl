@@ -4,16 +4,16 @@ import {Ellipsoid} from '@math.gl/geospatial';
 
 export type FrameState = {
   camera: {
-    position: number[],
-    direction: number[],
-    up: number[]
+    position: number[];
+    direction: number[];
+    up: number[];
   };
   viewport: {[key: string]: any};
   height: number;
   cullingVolume: CullingVolume;
   frameNumber: number; // TODO: This can be the same between updates, what number is unique for between updates?
   sseDenominator: number; // Assumes fovy = 60 degrees
-}
+};
 
 const scratchVector = new Vector3();
 const scratchPosition = new Vector3();
