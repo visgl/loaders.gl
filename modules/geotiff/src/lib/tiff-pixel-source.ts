@@ -5,7 +5,7 @@ import type {
   PixelSource,
   PixelSourceSelection,
   PixelSourceMeta,
-  SupportedDtype,
+  Dtype,
   Labels,
   RasterSelection,
   TileSelection,
@@ -17,7 +17,7 @@ class TiffPixelSource<S extends string[]> implements PixelSource<S> {
 
   constructor(
     indexer: (sel: PixelSourceSelection<S>) => Promise<GeoTIFFImage>,
-    public dtype: SupportedDtype,
+    public dtype: Dtype,
     public tileSize: number,
     public shape: number[],
     public labels: Labels<S>,

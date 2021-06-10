@@ -1,10 +1,10 @@
-import type {DTYPE_VALUES} from './constants';
+import {DTYPE_LOOKUP} from './lib/ome/ome-utils';
 
-export type SupportedDtype = keyof typeof DTYPE_VALUES;
-export type SupportedTypedArray = InstanceType<typeof globalThis[`${SupportedDtype}Array`]>;
+export type Dtype = typeof DTYPE_LOOKUP[keyof typeof DTYPE_LOOKUP];
+export type TypedArray = InstanceType<typeof globalThis[`${Dtype}Array`]>;
 
 export interface PixelData {
-  data: SupportedTypedArray;
+  data: TypedArray;
   width: number;
   height: number;
 }
@@ -47,7 +47,7 @@ export interface PixelSource<S extends string[]> {
   getTile(sel: TileSelection<S>): Promise<PixelData>;
   onTileError(err: Error): void;
   shape: number[];
-  dtype: SupportedDtype;
+  dtype: Dtype;
   labels: Labels<S>;
   tileSize: number;
   meta?: PixelSourceMeta;
