@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/obj",
-  "version": "3.0.0-alpha.20",
+  "version": "3.0.0-alpha.21",
   "description": "Framework-independent loader for the OBJ format",
   "license": "MIT",
   "publishConfig": {
@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
-    "@loaders.gl/loader-utils": "3.0.0-alpha.20",
-    "@loaders.gl/tables": "3.0.0-alpha.20"
+    "@loaders.gl/loader-utils": "3.0.0-alpha.21",
+    "@loaders.gl/tables": "3.0.0-alpha.21"
   }
 }
