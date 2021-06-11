@@ -460,7 +460,7 @@ export default class App extends PureComponent {
         pickable,
         autoHighlight: true,
         wireframe,
-        getMeshColor: this.getMeshColor.bind(this)
+        _getMeshColor: this.getMeshColor.bind(this)
       }),
       new LineLayer({
         id: 'frustum',
