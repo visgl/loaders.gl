@@ -7,20 +7,20 @@ import {
   getComponentTypeFromArray
 } from '../gltf-utils/gltf-utils';
 
-export type GLTFJSON = {[key: string]: any};
-export type GLTFScene = {[key: string]: any};
-export type GLTFNode = {[key: string]: any};
-export type GLTFMesh = {[key: string]: any};
-export type GLTFSkin = {[key: string]: any};
-export type GLTFMaterial = {[key: string]: any};
-export type GLTFAccessor = {[key: string]: any};
-export type GLTFSampler = {[key: string]: any};
-export type GLTFTexture = {[key: string]: any};
-export type GLTFImage = {[key: string]: any};
-export type GLTFBuffer = {[key: string]: any};
-export type GLTFBufferView = {[key: string]: any};
+type GLTFJSON = {[key: string]: any};
+type GLTFScene = {[key: string]: any};
+type GLTFNode = {[key: string]: any};
+type GLTFMesh = {[key: string]: any};
+type GLTFSkin = {[key: string]: any};
+type GLTFMaterial = {[key: string]: any};
+type GLTFAccessor = {[key: string]: any};
+type GLTFSampler = {[key: string]: any};
+type GLTFTexture = {[key: string]: any};
+type GLTFImage = {[key: string]: any};
+type GLTFBuffer = {[key: string]: any};
+type GLTFBufferView = {[key: string]: any};
 
-export type GLTFWithBuffers = {
+type GLTFWithBuffers = {
   json: GLTFJSON;
   buffers: any[];
   binary?: ArrayBuffer;
@@ -40,14 +40,16 @@ const DEFAULT_GLTF_JSON: GLTFJSON = {
 export default class GLTFScenegraph {
   // internal
   gltf: GLTFWithBuffers;
-  sourceBuffers: any[] = [];
-  byteLength: number = 0;
+  sourceBuffers: any[];
+  byteLength: number;
 
   constructor(gltf?: GLTFWithBuffers) {
     this.gltf = gltf || {
       json: {...DEFAULT_GLTF_JSON},
       buffers: []
     };
+    this.sourceBuffers = [];
+    this.byteLength = 0;
 
     // Initialize buffers
     if (this.gltf.buffers && this.gltf.buffers[0]) {

@@ -34,8 +34,7 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-worker && npm run build-bundle -- --config-name production && npm run build-bundle -- --config-name es5",
-    "pre-build-disabled": "npm run copy-libs && npm run build-worker && npm run build-worker-dev && npm run build-bundle",
+    "pre-build": "npm run build-bundle && npm run build-worker",
     "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js",
     "build-worker": "webpack --entry ./src/workers/las-worker.js --output ./dist/las-worker.js --config ../../scripts/webpack/worker.js"
   },

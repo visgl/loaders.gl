@@ -2,7 +2,7 @@ const {resolve} = require('path');
 const webpack = require('webpack');
 
 const {getOcularConfig} = require('ocular-dev-tools');
-const {getExternals} = require('./helpers');
+const {getExternals} = require('../../scripts/webpack/helpers');
 
 const ocularConfig = getOcularConfig({
   aliasMode: 'src',
@@ -33,8 +33,6 @@ const ES5_BABEL_CONFIG = {
     // webpack 4 cannot parse the most recent JS syntax
     '@babel/plugin-proposal-optional-chaining',
     '@babel/plugin-proposal-nullish-coalescing-operator',
-    // typescript supports class properties
-    '@babel/plugin-proposal-class-properties',
     // inject __VERSION__ from package.json
     'version-inline',
     ["@babel/plugin-transform-modules-commonjs", { allowTopLevelThis: true }],
@@ -43,14 +41,12 @@ const ES5_BABEL_CONFIG = {
 
 const ES6_BABEL_CONFIG = {
   presets: [
-    '@babel/preset-typescript'
+    '@babel/typescript'
   ],
   plugins: [
     // webpack 4 cannot parse the most recent JS syntax
     '@babel/plugin-proposal-optional-chaining',
     '@babel/plugin-proposal-nullish-coalescing-operator',
-    // typescript supports class properties
-    '@babel/plugin-proposal-class-properties',
     // inject __VERSION__ from package.json
     'version-inline'
   ]
@@ -62,7 +58,7 @@ const config = {
 
   devtool: 'source-map',
 
-  stats: 'errors-only',
+  //  stats: 'none',
 
   entry: {
     main: resolve('./src/bundle.ts')
@@ -138,4 +134,4 @@ const es5Config = {
 
 // console.error(JSON.stringify(config, null, 2))
 
-module.exports = [config, es5Config];
+module.exports = [config];

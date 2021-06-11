@@ -20,8 +20,7 @@ export async function parseGLTF(gltf, arrayBufferOrString, byteOffset = 0, optio
 
   normalizeGLTFV1(gltf, {normalize: options.gltf.normalize});
 
-  /** @type {Promise[]} */
-  const promises = [];
+  const promises: Promise<any>[] = [];
 
   // Load linked buffers asynchronously and decodes base64 buffers in parallel
   if (options.gltf.loadBuffers && gltf.json.buffers) {
@@ -122,7 +121,7 @@ async function loadBuffers(gltf, options, context) {
 async function loadImages(gltf, options, context) {
   const images = gltf.json.images || [];
 
-  const promises = [];
+  const promises: Promise<any>[] = [];
   for (let i = 0; i < images.length; ++i) {
     promises.push(loadImage(gltf, images[i], i, options, context));
   }
