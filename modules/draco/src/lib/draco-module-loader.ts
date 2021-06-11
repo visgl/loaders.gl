@@ -72,7 +72,7 @@ async function loadDracoDecoder(options) {
 }
 
 function initializeDracoDecoder(DracoDecoderModule, wasmBinary) {
-  const options = {};
+  const options: {wasmBinary?: any} = {};
   if (wasmBinary) {
     options.wasmBinary = wasmBinary;
   }

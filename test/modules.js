@@ -50,11 +50,6 @@ if (TEST_IMAGES) {
 // Pointcloud/Mesh Formats
 if (TEST_MESHES) {
   require('@loaders.gl/draco/test');
-  require('@loaders.gl/las/test');
-  require('@loaders.gl/obj/test');
-  require('@loaders.gl/pcd/test');
-  require('@loaders.gl/ply/test');
-  require('@loaders.gl/terrain/test');
 }
 
 // Scenegraph Formats
