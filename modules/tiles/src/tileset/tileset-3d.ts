@@ -195,7 +195,7 @@ export default class Tileset3D {
   private _pendingCount: any;
 
   // HOLD TRAVERSAL RESULTS
-  private lastUpdatedVieports: any[] | null = null;
+  private lastUpdatedVieports: any[] | null;
   private _requestedTiles: any;
   private _emptyTiles: any;
   private frameStateData: any;
@@ -275,6 +275,7 @@ export default class Tileset3D {
     this._emptyTiles = [];
     this._requestedTiles = [];
     this.frameStateData = {};
+    this.lastUpdatedVieports = null;
 
     this._queryParams = {};
     this._queryParamsString = '';
