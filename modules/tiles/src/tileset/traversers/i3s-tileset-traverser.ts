@@ -6,6 +6,8 @@ import TileHeader from '../tile-3d';
 import I3STileManager from './i3s-tile-manager';
 
 export default class I3STilesetTraverser extends TilesetTraverser {
+  private _tileManager: I3STileManager;
+
   constructor(options) {
     super(options);
     this._tileManager = new I3STileManager();
@@ -17,7 +19,7 @@ export default class I3STilesetTraverser extends TilesetTraverser {
     return tile._lodJudge === 'DIG';
   }
 
-  updateChildTiles(tile, frameState) {
+  updateChildTiles(tile, frameState): boolean {
     const children = tile.header.children || [];
     // children which are already fetched and constructed as Tile3D instances
     const childTiles = tile.children;
@@ -50,6 +52,7 @@ export default class I3STilesetTraverser extends TilesetTraverser {
         this.updateTile(childTile, frameState);
       }
     }
+    return false;
   }
 
   async _loadTile(nodeId, tileset) {

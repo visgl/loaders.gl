@@ -17,7 +17,7 @@ export async function getImageUrls(getUrl, options, urlOptions = {}) {
 }
 
 async function getMipmappedImageUrls(getUrl, mipLevels, options, urlOptions) {
-  const urls = [];
+  const urls: string[] = [];
 
   // If no mip levels supplied, we need to load the level 0 image and calculate based on size
   if (mipLevels === 'auto') {

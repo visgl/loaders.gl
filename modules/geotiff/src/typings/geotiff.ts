@@ -1,4 +1,4 @@
-declare type TypedArray = import('../constants').TypedArray;
+declare type TypedArray = import('../types').TypedArray;
 
 declare module 'geotiff' {
   function fromUrl(url: string, headers?: Record<string, unknown>): Promise<GeoTIFF>;

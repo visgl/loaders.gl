@@ -40,7 +40,7 @@ export async function mapSubtree(object, func, options) {
 // HELPERS
 
 async function mapObject(object, func, options) {
-  const promises = [];
+  const promises: Promise<any>[] = [];
   const values = {};
 
   for (const key in object) {

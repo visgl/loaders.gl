@@ -2,6 +2,7 @@
 // https://raw.githubusercontent.com/google/draco/master/src/draco/javascript/emscripten/draco_web_decoder.idl
 // Interface exposed to emscripten's WebIDL Binder.
 // http://kripken.github.io/emscripten-site/docs/porting/connecting_cpp_and_javascript/WebIDL-Binder.html
+/* eslint-disable camelcase */
 
 // TODO
 type VoidPtr = any;

@@ -14,12 +14,15 @@ const MIME_TYPES = [
   'image/svg+xml'
 ];
 
-// Loads a platform-specific image type that can be used as input data to WebGL textures
-/** @type {LoaderObject} */
+/**
+ * Loads a platform-specific image type
+ * Note: This type can be used as input data to WebGL texture creation
+ * @type {LoaderObject}
+ */
 export const ImageLoader = {
-  name: 'Images',
   id: 'image',
   module: 'images',
+  name: 'Images',
   version: VERSION,
   mimeTypes: MIME_TYPES,
   extensions: EXTENSIONS,

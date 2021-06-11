@@ -27,7 +27,7 @@ export default class Tile3DBatchTableParser {
     this.binary = binary;
     this.featureCount = featureCount;
 
-    this._extensions = (this.json && this.json.extensions) || {};
+    this._extensions = this.json?.extensions || {};
 
     // Copy all top-level property fields from the json object, ignoring special fields
     this._properties = {};

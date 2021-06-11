@@ -12,11 +12,3 @@ export function parse(
   options?: object,
   context?: LoaderContext
 ): Promise<any>;
-
-/** @deprecated parse with URL as last parameter is deprecated */
-export function parse(
-  data: DataType | Promise<DataType>,
-  loaders: LoaderObject | LoaderObject[],
-  options: object,
-  url: string
-): Promise<any>;

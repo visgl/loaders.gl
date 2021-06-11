@@ -44,5 +44,5 @@ export const isWorker = typeof importScripts === 'function';
 
 // Extract node major version
 const matches =
-  typeof process !== 'undefined' && process.version && process.version.match(/v([0-9]*)/);
+  typeof process !== 'undefined' && process.version && /v([0-9]*)/.exec(process.version);
 export const nodeVersion = (matches && parseFloat(matches[1])) || 0;

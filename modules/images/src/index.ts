@@ -1,5 +1,5 @@
 // TYPES
-export {ImageDataType, ImageType, ImageTypeEnum} from './types';
+export type {ImageDataType, ImageType, ImageTypeEnum} from './types';
 
 // LOADERS AND WRITERS
 export {ImageLoader} from './image-loader';
@@ -20,14 +20,5 @@ export {
   getImageData
 } from './lib/category-api/parsed-image-api';
 
-// DEPRECATED
-// TODO - Remove in V3
+// DEPRECATED - Remove in V3 (fix dependency in luma.gl)
 export {loadImage} from './lib/texture-api/load-image';
-
-export function getSupportedImageType(imageType?);
-
-export {
-  isBinaryImage,
-  getBinaryImageMIMEType,
-  getBinaryImageSize
-} from './lib/deprecated/binary-image-api-deprecated';

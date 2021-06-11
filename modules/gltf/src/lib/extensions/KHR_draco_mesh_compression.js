@@ -4,7 +4,7 @@
 /* eslint-disable camelcase */
 
 import {DracoLoader} from '@loaders.gl/draco';
-import {getZeroOffsetArrayBuffer} from '@loaders.gl/loader-utils';
+import {sliceArrayBuffer} from '@loaders.gl/loader-utils';
 import GLTFScenegraph from '../api/gltf-scenegraph';
 import {KHR_DRACO_MESH_COMPRESSION} from '../gltf-utils/gltf-constants';
 import {getGLTFAccessors, getGLTFAccessor} from '../gltf-utils/gltf-attribute-utils';
@@ -55,7 +55,7 @@ async function decompressPrimitive(primitive, scenegraph, options, context) {
   const buffer = scenegraph.getTypedArrayForBufferView(compressedPrimitive.bufferView);
   // TODO - parse does not yet deal well with byte offsets embedded in typed arrays. Copy buffer
   // TODO - remove when `parse` is fixed to handle `byteOffset`s
-  const bufferCopy = getZeroOffsetArrayBuffer(buffer.buffer, buffer.byteOffset); // , buffer.byteLength);
+  const bufferCopy = sliceArrayBuffer(buffer.buffer, buffer.byteOffset); // , buffer.byteLength);
 
   const {parse} = context;
   const dracoOptions = {...options};

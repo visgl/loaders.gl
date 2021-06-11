@@ -47,32 +47,8 @@ export async function parse(arrayBuffer, options = {}, context) {
   options = {...GLTFLoader.options, ...options};
   // @ts-ignore
   options.gltf = {...GLTFLoader.options.gltf, ...options.gltf};
-  addDeprecatedGLTFOptions(options);
 
   const {byteOffset = 0} = options;
   const gltf = {};
   return await parseGLTF(gltf, arrayBuffer, byteOffset, options, context);
-}
-
-// DEPRECATED
-
-function addDeprecatedGLTFOptions(options) {
-  if ('fetchImages' in options) {
-    options.gltf.loadImages = options.fetchImages;
-  }
-  if ('createImages' in options) {
-    options.gltf.loadImages = options.createImages;
-  }
-  if ('fetchLinkedResources' in options) {
-    options.gltf.fetchBuffers = options.fetchLinkedResources;
-  }
-  if ('decompress' in options) {
-    options.gltf.decompressMeshes = options.decompress;
-  }
-  if ('decompress' in options.gltf) {
-    options.gltf.decompressMeshes = options.gltf.decompress;
-  }
-  if ('postProcess' in options) {
-    options.gltf.postProcess = options.postProcess;
-  }
 }

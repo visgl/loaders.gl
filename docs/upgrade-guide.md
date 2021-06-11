@@ -2,13 +2,14 @@
 
 ## Upgrading to v3.0
 
-**Transpilation**
+**Supported Platform**
 
-The module entry point is now only lightly transpiled for the most commonly used evergreen browsers. This change offers significant savings on bundle size. If your application needs to support older browsers such as IE 11, make sure to include `node_modules` in your babel config.
+- Node.js 10 is no longer supported (LTS maintenance of Node.js 10 ended in May 2021).
+- The `module` entry point in the published module is no longer transpiled to ES5 as modern JavaScript is supported now support recent evergreen browsers resulting bundle size reduction and better performance. The `main` entry point is still fully transpiled to `es5`, you can select this entry point using e.g. the `mainField` option in webpack.
 
 **Worker Concurrency**
 
-Default number of worker threads for each loader has been reduced from `5` to `3` on non mobile devices and to `1` on mobile devices to reduce memory use. Generally, increasing the number of workers has diminishing returns.
+Default number of worker threads for each loader has been reduced from `5` to `3` on non-mobile devices and to `1` on mobile devices to reduce memory use. Generally, increasing the number of workers has diminishing returns.
 
 **@loaders.gl/gltf**
 
@@ -21,7 +22,18 @@ Default number of worker threads for each loader has been reduced from `5` to `3
 
 **@loaders.gl/images**
 
-The texture API `loadImage`, `loadImageArray`, `loadImageCube` has been moved to the new `@loaders.gl/textures` module, and have been renamed to `loadImageTexture*`.
+- The texture API `loadImage`, `loadImageArray`, `loadImageCube` has been moved to the new `@loaders.gl/textures` module, and have been renamed to `loadImageTexture*`.
+- The binary image API has been consolidated in a single function `getBinaryImageMetadata()`:
+- A number of previously deprecated exports have been removed:
+
+| Export                                 | Replacement                                             |
+| -------------------------------------- | ------------------------------------------------------- |
+| `isBinaryImage(arrayBuffer)`           | `Boolean(getBinaryImageMetadata(arrayBuffer))`          |
+| `getBinaryImageMIMEType(arrayBuffer)`  | `getBinaryImageMetadata(arrayBuffer)?.mimeType`         |
+| `getBinaryImageSize(arrayBuffer)`      | `getBinaryImageMetadata(arrayBuffer)?.{width, height}`  |
+| `HTMLImageLoader`                      | Use `ImageLoader` with options `{image: type: 'image'}` |
+| `getDefaultImageType()`                | N/A                                                     |
+| `getSupportedImageType(imageType?)` NA |
 
 **@loaders.gl/kml**
 

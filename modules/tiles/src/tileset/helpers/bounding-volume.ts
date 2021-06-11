@@ -83,7 +83,7 @@ function createBox(box, transform, result) {
   // The last four elements (indices 6, 7, 8 and 10) define the quaternion.
   const center = new Vector3(box[0], box[1], box[2]);
   transform.transform(center, center);
-  let origin = [];
+  let origin: number[] = [];
   if (box.length === 10) {
     const halfSize = box.slice(3, 6);
     const quaternion = new Quaternion();
@@ -180,7 +180,7 @@ function createRegion(region, transform, initialTransform, result) {
 }
 */
 
-function createSphere(sphere, transform, result) {
+function createSphere(sphere, transform, result?) {
   // Find the transformed center
   const center = new Vector3(sphere[0], sphere[1], sphere[2]);
   transform.transform(center, center);

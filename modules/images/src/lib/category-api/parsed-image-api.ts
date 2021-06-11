@@ -1,20 +1,20 @@
-import {assert} from '../utils/assert';
+import type {ImageType, ImageTypeEnum, ImageDataType} from '../../types';
 
-export function isImage(image) {
+export function isImage(image: ImageType): boolean {
   return Boolean(getImageTypeOrNull(image));
 }
 
-export function deleteImage(image) {
+export function deleteImage(image: ImageType): void {
   switch (getImageType(image)) {
     case 'imagebitmap':
-      image.close();
+      (image as ImageBitmap).close();
       break;
     default:
     // Nothing to do for images and image data objects
   }
 }
 
-export function getImageType(image) {
+export function getImageType(image: ImageType, throwOnError?: boolean): ImageTypeEnum {
   const format = getImageTypeOrNull(image);
   if (!format) {
     throw new Error('Not an image');
@@ -22,10 +22,14 @@ export function getImageType(image) {
   return format;
 }
 
-export function getImageData(image) {
+export function getImageSize(image: ImageType): {width: number; height: number} {
+  return getImageData(image);
+}
+
+export function getImageData(image: ImageType): ImageDataType | ImageData {
   switch (getImageType(image)) {
     case 'data':
-      return image;
+      return image as unknown as ImageData;
 
     case 'image':
     case 'imagebitmap':
@@ -33,20 +37,22 @@ export function getImageData(image) {
       const canvas = document.createElement('canvas');
       // TODO - reuse the canvas?
       const context = canvas.getContext('2d');
-      if (context) {
-        canvas.width = image.width;
-        canvas.height = image.height;
-        context.drawImage(image, 0, 0);
-        return context.getImageData(0, 0, image.width, image.height);
+      if (!context) {
+        throw new Error('getImageData');
       }
-    // eslint-disable no-fallthrough
+      // @ts-ignore
+      canvas.width = image.width;
+      // @ts-ignore
+      canvas.height = image.height;
+      // @ts-ignore
+      context.drawImage(image, 0, 0);
+      // @ts-ignore
+      return context.getImageData(0, 0, image.width, image.height);
+
     default:
-      return assert(false);
+      throw new Error('getImageData');
   }
 }
-
-// TODO DEPRECATED not needed (use getImageData)
-export {getImageData as getImageSize};
 
 // PRIVATE
 

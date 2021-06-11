@@ -73,6 +73,7 @@ const LOCAL_DEVELOPMENT_CONFIG = {
   },
 
   resolve: {
+    extensions: ['.ts', '.tsx', '.js', '.json'],
     // mainFields: ['esnext', 'browser', 'module', 'main'],
     // Imports the library from its src directory in this repo
     alias: Object.assign({}, ALIASES)
@@ -80,6 +81,15 @@ const LOCAL_DEVELOPMENT_CONFIG = {
 
   module: {
     rules: [
+      {
+        // Transpile ES6 to ES5 with babel
+        test: /\.js|ts$/,
+        loader: 'babel-loader',
+        exclude: [/node_modules/],
+        options: {
+          presets: ['@babel/preset-typescript']
+        }
+      },
       {
         // Unfortunately, webpack doesn't import library sourcemaps on its own...
         test: /\.js$/,
@@ -139,19 +149,67 @@ function addLocalDependency(config, dependency) {
   return config;
 }
 
+function getConfigBabelPresets(configRules) {
+  const babelRule = configRules.find((rule) => rule.loader === 'babel-loader');
+  const configPresets = babelRule && babelRule.options && babelRule.options.presets;
+
+  if (configPresets) {
+    return babelRule.options.presets;
+  }
+
+  return [];
+}
+
+function mergeConfigRules(config) {
+  // Use local module rules as base module rules
+  let rules = LOCAL_DEVELOPMENT_CONFIG.module.rules;
+  // Get config module rules
+  const configRules = config.module && config.module.rules || [];
+  // Find config babel presets in babel-module.
+  let configBabelPresets = getConfigBabelPresets(configRules);
+  // Get babel-rule in local config
+  const localConfigBabelRule = rules.find((rule) => rule.loader === 'babel-loader');
+  // Add local config babel-loader presets to module config babel loader presets if not exists.
+  for (let index = 0; index < localConfigBabelRule.options.presets.length; index++) {
+    const localPreset = localConfigBabelRule.options.presets[index];
+
+    if (!configBabelPresets.includes(localPreset)) {
+      configBabelPresets.push(localPreset);
+    }
+  }
+  // Rewrite babel loader presets
+  localConfigBabelRule.options.presets = configBabelPresets;
+  // Filter config module rules to exclude babel-loader.
+  const configRulesWithoutBabelRule = configRules.filter(rule => rule.loader !== 'babel-loader');
+  // Concatenate module config rules to existing local rules.
+  rules = rules.concat(configRulesWithoutBabelRule);
+
+  return rules;
+}
+
 function addLocalDevSettings(config, opts) {
+  // Save module config to the separate variable.
+  let moduleConfig = config;
+  // Merge local config with module config
   config = Object.assign({}, LOCAL_DEVELOPMENT_CONFIG, config);
+  // Generate initial resolve object.
   config.resolve = config.resolve || {};
-  // config.resolve.mainFields = LOCAL_DEVELOPMENT_CONFIG.resolve.mainFields;
+  // Generate initial alias object
   config.resolve.alias = config.resolve.alias || {};
+  // Merge aliases from config with loacal config aliases
   Object.assign(config.resolve.alias, LOCAL_DEVELOPMENT_CONFIG.resolve.alias);
-
+  // Use extensions from local config
+  config.resolve.extensions = LOCAL_DEVELOPMENT_CONFIG.resolve.extensions;
+  // Generate initial config mudule
   config.module = config.module || {};
-  config.module.rules = config.module.rules || [];
-  config.module.rules = config.module.rules.concat(LOCAL_DEVELOPMENT_CONFIG.module.rules);
-
-  config.plugins = config.plugins || [];
+  // Generate config mudule rules as local rules.
+  config.module.rules = mergeConfigRules(moduleConfig);
+  // Use initial config plugins
+  config.plugins = moduleConfig.plugins || [];
+  // Do concatenation of local and module config plugins
   config.plugins = config.plugins.concat(LOCAL_DEVELOPMENT_CONFIG.plugins);
+  // Uncomment to validate generated config
+  // console.log(config);
 
   return config;
 }

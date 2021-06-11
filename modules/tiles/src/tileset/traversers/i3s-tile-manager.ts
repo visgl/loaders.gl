@@ -6,6 +6,8 @@ const STATUS = {
 
 // A helper class to manage tile metadata fetching
 export default class I3STileManager {
+  private _statusMap: object;
+
   constructor() {
     this._statusMap = {};
   }

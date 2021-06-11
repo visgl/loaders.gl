@@ -12,11 +12,3 @@ export function parseInBatches(
   options?: object,
   context?: LoaderContext
 ): Promise<AsyncIterable<any>>;
-
-/** @deprecated parse with URL as last parameter is deprecated */
-export function parseInBatches(
-  data: BatchableDataType,
-  loaders: LoaderObject | LoaderObject[],
-  options: object,
-  url: string
-): Promise<AsyncIterable<any>>;

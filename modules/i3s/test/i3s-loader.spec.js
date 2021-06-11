@@ -1,6 +1,7 @@
 import test from 'tape-promise/tape';
-import {isBrowser} from '@loaders.gl/core';
+import {isBrowser, load} from '@loaders.gl/core';
 import {loadI3STileContent} from './test-utils/load-utils';
+import {I3SLoader} from '@loaders.gl/i3s';
 
 test('I3SLoader#Load tile content', async (t) => {
   const content = await loadI3STileContent({fetchOptions: {worker: false}});
@@ -41,5 +42,16 @@ test('I3SLoader#DRACO geometry', async (t) => {
   t.ok(content.attributes.texCoords);
   t.equal(content.attributes.texCoords.value.length, 592);
 
+  t.end();
+});
+
+test('I3SLoader#slpk is not supported', async (t) => {
+  const slpkUrl = '@loaders.gl/i3s/test/data/DA12_subset.slpk';
+  const message = 'Files with .slpk extention currently are not supported by I3SLoader';
+  try {
+    await load(slpkUrl, I3SLoader, {});
+  } catch (err) {
+    t.equal(err.message, message);
+  }
   t.end();
 });

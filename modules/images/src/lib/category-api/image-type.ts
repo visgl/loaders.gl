@@ -1,3 +1,4 @@
+import type {ImageTypeEnum} from '../../types';
 import {global, isBrowser} from '../utils/globals';
 
 // @ts-ignore TS2339: Property does not exist on type
@@ -8,8 +9,11 @@ const IMAGE_BITMAP_SUPPORTED = typeof ImageBitmap !== 'undefined';
 const NODE_IMAGE_SUPPORTED = Boolean(_parseImageNode);
 const DATA_SUPPORTED = isBrowser ? true : NODE_IMAGE_SUPPORTED;
 
-// Checks if a loaders.gl image type is supported
-export function isImageTypeSupported(type) {
+/**
+ * Checks if a loaders.gl image type is supported
+ * @param type image type string
+ */
+export function isImageTypeSupported(type: string): boolean {
   switch (type) {
     case 'auto':
       // Should only ever be false in Node.js, if polyfills have not been installed...
@@ -22,19 +26,16 @@ export function isImageTypeSupported(type) {
     case 'data':
       return DATA_SUPPORTED;
 
-    // DEPRECATED types
-    case 'html':
-      return IMAGE_SUPPORTED;
-    case 'ndarray':
-      return DATA_SUPPORTED;
-
     default:
       throw new Error(`@loaders.gl/images: image ${type} not supported in this environment`);
   }
 }
 
-// Returns the best loaders.gl image type supported on current run-time environment
-export function getDefaultImageType() {
+/**
+ * Returns the "most performant" supported image type on this platform
+ * @returns image type string
+ */
+export function getDefaultImageType(): ImageTypeEnum {
   if (IMAGE_BITMAP_SUPPORTED) {
     return 'imagebitmap';
   }
@@ -46,5 +47,5 @@ export function getDefaultImageType() {
   }
 
   // This should only happen in Node.js
-  throw new Error(`Install '@loaders.gl/polyfills' to parse images under Node.js`);
+  throw new Error('Install \'@loaders.gl/polyfills\' to parse images under Node.js');
 }

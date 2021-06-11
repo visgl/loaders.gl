@@ -12,11 +12,3 @@ export function parseSync(
   options?: object,
   context?: object
 ): any;
-
-/** @deprecated parse with URL as last parameter is deprecated */
-export function parseSync(
-  data: SyncDataType,
-  loaders: LoaderObject | LoaderObject[],
-  options: object,
-  url: string
-): any;

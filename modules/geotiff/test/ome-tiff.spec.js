@@ -2,7 +2,7 @@ import test from 'tape-promise/tape';
 import {fromFile} from 'geotiff';
 import {resolvePath, isBrowser} from '@loaders.gl/core';
 
-import {loadOMETiff} from '@loaders.gl/geotiff';
+import {loadGeoTiff} from '@loaders.gl/geotiff';
 
 const TIFF_URL = resolvePath('@loaders.gl/geotiff/test/data/multi-channel.ome.tif');
 
@@ -12,7 +12,7 @@ test('Creates correct TiffPixelSource for OME-TIFF.', async (t) => {
     return;
   }
   const tiff = await fromFile(TIFF_URL);
-  const {data} = await loadOMETiff(tiff);
+  const {data} = await loadGeoTiff(tiff);
   t.equal(data.length, 1, 'image should not be pyramidal.');
   const [base] = data;
   t.deepEqual(base.labels, ['t', 'c', 'z', 'y', 'x'], 'should have DimensionOrder "XYZCT".');
@@ -28,7 +28,7 @@ test('Get raster data.', async (t) => {
     return;
   }
   const tiff = await fromFile(TIFF_URL);
-  const {data} = await loadOMETiff(tiff);
+  const {data} = await loadGeoTiff(tiff);
   const [base] = data;
 
   for (let c = 0; c < 3; c += 1) {
@@ -54,7 +54,7 @@ test('Correct OME-XML.', async (t) => {
     return;
   }
   const tiff = await fromFile(TIFF_URL);
-  const {metadata} = await loadOMETiff(tiff);
+  const {metadata} = await loadGeoTiff(tiff);
   const {Name, Pixels} = metadata;
   t.equal(Name, 'multi-channel.ome.tif', `Name should be 'multi-channel.ome.tif'.`);
   t.equal(Pixels.SizeC, 3, 'Should have three channels.');

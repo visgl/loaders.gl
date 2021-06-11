@@ -6,10 +6,25 @@
 // import {bufferToArrayBuffer} from '../node/buffer-to-array-buffer';
 // TODO - this should be handled in @loaders.gl/polyfills
 
+/** MIME type, width and height extracted from binary compressed image data */
+export type BinaryImageMetadata = {
+  mimeType: string;
+  width: number;
+  height: number;
+};
+
 const BIG_ENDIAN = false;
 const LITTLE_ENDIAN = true;
 
-export function getBinaryImageMetadata(binaryData) {
+/**
+ * Extracts `{mimeType, width and height}` from a memory buffer containing a known image format
+ * Currently supports `image/png`, `image/jpeg`, `image/bmp` and `image/gif`.
+ * @param binaryData image file memory to parse
+ * @returns metadata or null if memory is not a valid image file format layout.
+ */
+export function getBinaryImageMetadata(
+  binaryData: DataView | ArrayBuffer
+): BinaryImageMetadata | null {
   const dataView = toDataView(binaryData);
   return (
     getPngMetadata(dataView) ||

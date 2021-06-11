@@ -1,6 +1,6 @@
 /* eslint-disable camelcase, max-statements, no-restricted-globals */
 import {ImageLoader} from '@loaders.gl/images';
-import {parseJSON, getZeroOffsetArrayBuffer} from '@loaders.gl/loader-utils';
+import {parseJSON, sliceArrayBuffer} from '@loaders.gl/loader-utils';
 import {assert} from '../utils/assert';
 import {resolveUrl} from '../gltf-utils/resolve-url';
 import {getTypedArrayForBufferView} from '../gltf-utils/get-typed-array';
@@ -144,7 +144,7 @@ async function loadImage(gltf, image, i, options, context) {
 
   if (Number.isFinite(image.bufferView)) {
     const array = getTypedArrayForBufferView(gltf.json, gltf.buffers, image.bufferView);
-    arrayBuffer = getZeroOffsetArrayBuffer(array.buffer, array.byteOffset, array.byteLength);
+    arrayBuffer = sliceArrayBuffer(array.buffer, array.byteOffset, array.byteLength);
   }
 
   assert(arrayBuffer, 'glTF image has no data');
