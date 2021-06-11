@@ -5,8 +5,7 @@ import type {
   LoaderContext,
   LoaderOptions
 } from '@loaders.gl/loader-utils';
-import {assert} from '@loaders.gl/loader-utils';
-import {concatenateArrayBuffersAsync, makeTransformIterator} from '@loaders.gl/loader-utils';
+import {assert, concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';
 import {getLoaderContext} from '../loader-utils/context-utils';
@@ -156,8 +155,8 @@ async function parseToOutputIterator(loader, data, options, context) {
  */
 async function applyInputTransforms(inputIterator, options) {
   let iteratorChain = inputIterator;
-  for await (const Transform of options.transforms || []) {
-    iteratorChain = makeTransformIterator(iteratorChain, Transform, options);
+  for await (const transformBatches of options.transforms || []) {
+    iteratorChain = transformBatches(iteratorChain);
   }
   return iteratorChain;
 }

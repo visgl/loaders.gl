@@ -41,7 +41,7 @@ export type LoaderOptions = {
   /** Generate metadata batches */
   metadata?: boolean;
   /** Transforms to run on incoming batches */
-  transforms?: any[];
+  transforms?: TransformBatches[];
 
   // workers
 
@@ -211,6 +211,10 @@ type EncodeURLtoURL = (
   options?: WriterOptions
 ) => Promise<string>;
 type Preload = (url: string, options?: PreloadOptions) => any;
+
+export type TransformBatches = (
+  asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
+) => AsyncIterable<ArrayBuffer>;
 
 /** Types that can be synchronously parsed */
 export type SyncDataType = string | ArrayBuffer; // TODO File | Blob can be read synchronously...

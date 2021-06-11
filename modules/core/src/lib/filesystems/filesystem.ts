@@ -29,7 +29,7 @@ export interface FileSystem {
    * @param filename
    * @param options
    */
-  fetch(filename: string, options?: object): Promise<Response>;
+  fetch(filename: RequestInfo, options?: RequestInit): Promise<Response>;
 }
 
 /**

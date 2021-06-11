@@ -33,6 +33,7 @@ test('readFileSync#file (BINARY)', (t) => {
 
   const data = readFileSync(BINARY_URL);
   t.ok(data instanceof ArrayBuffer, 'readFileSync loaded local file into ArrayBuffer');
+  // @ts-expect-error
   t.equals(data.byteLength, 4, 'readFileSync loaded local file length correctly');
   t.end();
 });
