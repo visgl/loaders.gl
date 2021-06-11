@@ -11,3 +11,4 @@ modules/potree/test/data/**/cloud.js
 examples/experimental/gltf-with-raw-webgl/
 modules/i3s/src/i3s-attribute-loader.ts
 modules/i3s/src/lib/parsers/parse-i3s.ts
+modules/images/src/lib/category-api/image-type.ts
