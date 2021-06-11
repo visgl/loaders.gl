@@ -31,7 +31,7 @@ export default class WorkerJob {
    * Send a message to the job's worker thread
    * @param data any data structure, ideally consisting mostly of transferrable objects
    */
-   postMessage(type: WorkerMessageType, payload: WorkerMessagePayload): void {
+  postMessage(type: WorkerMessageType, payload: WorkerMessagePayload): void {
     this.workerThread.postMessage({
       source: 'loaders.gl', // Lets worker ignore unrelated messages
       type,
@@ -39,19 +39,19 @@ export default class WorkerJob {
     });
   }
 
-   /**
-    * Call to resolve the `result` Promise with the supplied value
-    */
-    done(value): void {
+  /**
+   * Call to resolve the `result` Promise with the supplied value
+   */
+  done(value): void {
     assert(this.isRunning);
     this.isRunning = false;
     this._resolve(value);
   }
 
-    /**
-     * Call to reject the `result` Promise with the supplied error
-     */
-    error(error): void {
+  /**
+   * Call to reject the `result` Promise with the supplied error
+   */
+  error(error): void {
     assert(this.isRunning);
     this.isRunning = false;
     this._reject(error);

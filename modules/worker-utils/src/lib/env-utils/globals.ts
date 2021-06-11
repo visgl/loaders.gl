@@ -10,7 +10,7 @@ const globals = {
 };
 
 const self_: {[key: string]: any} = globals.self || globals.window || globals.global || {};
-const window_: {[key: string]: any}= globals.window || globals.self || globals.global || {};
+const window_: {[key: string]: any} = globals.window || globals.self || globals.global || {};
 const global_: {[key: string]: any} = globals.global || globals.self || globals.window || {};
 const document_: {[key: string]: any} = globals.document || {};
 
@@ -25,11 +25,12 @@ export const isBrowser: boolean =
 export const isWorker: boolean = typeof importScripts === 'function';
 
 /** true if running on a mobile device */
-export const isMobile: boolean = typeof window !== 'undefined' && typeof window.orientation !== 'undefined';
+export const isMobile: boolean =
+  typeof window !== 'undefined' && typeof window.orientation !== 'undefined';
 
 // Extract node major version
 const matches =
-  typeof process !== 'undefined' && process.version && process.version.match(/v([0-9]*)/);
+  typeof process !== 'undefined' && process.version && /v([0-9]*)/.exec(process.version);
 
-  /** Version of Node.js if running under Node, otherwise 0 */
-  export const nodeVersion: number = (matches && parseFloat(matches[1])) || 0;
+/** Version of Node.js if running under Node, otherwise 0 */
+export const nodeVersion: number = (matches && parseFloat(matches[1])) || 0;

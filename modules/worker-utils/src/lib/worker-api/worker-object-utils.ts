@@ -13,7 +13,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : NPM_TAG;
  * - a local test worker
  * - overridden by user
  */
- export function getWorkerObjectURL(worker: WorkerObject, options: object): string {
+export function getWorkerObjectURL(worker: WorkerObject, options: object): string {
   const topOptions = options || {};
   const workerOptions = topOptions[worker.id] || {};
 
@@ -50,7 +50,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : NPM_TAG;
  * @param worker
  * @param options
  */
- export function getWorkerObjectName(worker: WorkerObject, options: object): string {
+export function getWorkerObjectName(worker: WorkerObject, options: object): string {
   const warning = worker.version !== VERSION ? ` (lib@${VERSION})` : '';
   return `${worker.name}-worker@${worker.version}${warning}`;
 }
@@ -61,10 +61,13 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : NPM_TAG;
  * @param libVersion
  * @returns `true` if the two versions are compatible
  */
- export function validateWorkerVersion(worker: WorkerObject, coreVersion: string = VERSION): boolean {
+export function validateWorkerVersion(
+  worker: WorkerObject,
+  coreVersion: string = VERSION
+): boolean {
   assert(worker, 'no worker provided');
 
-  let workerVersion = worker.version;
+  const workerVersion = worker.version;
   if (!coreVersion || !workerVersion) {
     return false;
   }
@@ -92,7 +95,7 @@ function parseVersion(version) {
  * Safely stringify JSON (drop non serializable values like functions and regexps)
  * @param value
  */
- export function removeNontransferableOptions(object: object): object {
+export function removeNontransferableOptions(object: object): object {
   // options.log object contains functions which cannot be transferred
   // TODO - decide how to handle logging on workers
   // TODO - warn if options stringification is long

@@ -10,7 +10,11 @@ import {
  * Creating such a worker can be automated if the worker is wrapper by a call to
  * createWorker in @loaders.gl/worker-utils.
  */
-export async function processOnWorker(worker: WorkerObject, data: any, options: object = {}): Promise<any> {
+export async function processOnWorker(
+  worker: WorkerObject,
+  data: any,
+  options: object = {}
+): Promise<any> {
   const name = getWorkerObjectName(worker, options);
   const url = getWorkerObjectURL(worker, options);
 

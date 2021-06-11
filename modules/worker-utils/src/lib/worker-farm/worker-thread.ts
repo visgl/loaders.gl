@@ -44,7 +44,7 @@ export default class WorkerThread {
    * Terminate this worker thread
    * @note Can free up significant memory
    */
-   destroy(): void {
+  destroy(): void {
     this.onMessage = NOOP;
     this.onError = NOOP;
     // @ts-ignore
@@ -61,7 +61,7 @@ export default class WorkerThread {
    * @param data any data structure, ideally consisting mostly of transferrable objects
    * @param transferList If not supplied, calculated automatically by traversing data
    */
-   postMessage(data: any, transferList?: any[]): void {
+  postMessage(data: any, transferList?: any[]): void {
     transferList = transferList || getTransferList(data);
     // @ts-ignore
     this.worker.postMessage(data, transferList);
@@ -77,7 +77,7 @@ export default class WorkerThread {
     // Note Error object does not have the expected fields if loading failed completely
     // https://developer.mozilla.org/en-US/docs/Web/API/Worker#Event_handlers
     // https://developer.mozilla.org/en-US/docs/Web/API/ErrorEvent
-    let message = `Failed to load `;
+    let message = 'Failed to load ';
     message += `worker ${this.name}. `;
     if (event.message) {
       message += `${event.message} in `;

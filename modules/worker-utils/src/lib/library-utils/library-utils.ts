@@ -26,7 +26,7 @@ const loadLibraryPromises = {}; // promises
  * @param moduleName
  * @param options
  */
- export async function loadLibrary(
+export async function loadLibrary(
   libraryUrl: string,
   moduleName: string | null = null,
   options: object = {}

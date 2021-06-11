@@ -9,7 +9,7 @@
  * @param transfers - not for application use
  * @returns a transfer list that can be passed to postMessage
  */
- export function getTransferList(
+export function getTransferList(
   object: any,
   recursive: boolean = true,
   transfers: Set<any> = new Set<any>()

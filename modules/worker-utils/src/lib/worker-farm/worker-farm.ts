@@ -26,7 +26,6 @@ export default class WorkerFarm {
   private workerPools: Map<string, WorkerPool>;
   private static _workerFarm?: WorkerFarm;
 
-
   /** Check if Workers are supported */
   static isSupported(): boolean {
     return WorkerThread.isSupported();
@@ -38,7 +37,6 @@ export default class WorkerFarm {
     WorkerFarm._workerFarm.setProps(props);
     return WorkerFarm._workerFarm;
   }
-
 
   constructor(props: WorkerFarmProps) {
     this.props = {...DEFAULT_PROPS};
@@ -68,7 +66,7 @@ export default class WorkerFarm {
       workerPool.setProps(this._getWorkerPoolProps());
     }
   }
-  
+
   /**
    * Returns a worker pool for the specified worker
    * @param options - only used first time for a specific worker name

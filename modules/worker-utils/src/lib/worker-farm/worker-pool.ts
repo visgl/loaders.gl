@@ -11,7 +11,7 @@ type OnDebugParameters = {
   job: string;
   backlog: number;
   workerThread: WorkerThread;
-}
+};
 
 /** WorkerPool Properties */
 export type WorkerPoolProps = {
@@ -22,7 +22,7 @@ export type WorkerPoolProps = {
   maxMobileConcurrency?: number;
   onDebug?: (options: OnDebugParameters) => any;
   reuseWorkers?: boolean;
-}
+};
 
 /** Private helper types */
 type OnMessage = (job: WorkerJob, type: WorkerMessageType, payload: WorkerMessagePayload) => void;
@@ -30,10 +30,10 @@ type OnError = (job: WorkerJob, error: Error) => void;
 
 type QueuedJob = {
   name: string;
-  onMessage: OnMessage,
+  onMessage: OnMessage;
   onError: OnError;
   onStart: (value: any) => void; // Resolve job start promise
-}
+};
 
 /**
  * Process multiple data messages with small pool of identical workers
@@ -157,11 +157,11 @@ export default class WorkerPool {
 
   /**
    * Returns a worker to the idle queue
-   * Destroys the worker if 
+   * Destroys the worker if
    *  - pool is destroyed
    *  - if this pool doesn't reuse workers
    *  - if maxConcurrency has been lowered
-   * @param worker 
+   * @param worker
    */
   returnWorkerToQueue(worker: WorkerThread) {
     const shouldDestroyWorker =

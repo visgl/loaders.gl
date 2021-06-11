@@ -10,7 +10,7 @@ const workerURLCache = new Map();
  * @param props.url Worker URL
  * @returns loadable url
  */
-export function buildWorkerURL(props: {source?: string, url?: string}) {
+export function buildWorkerURL(props: {source?: string; url?: string}) {
   assert((props.source && !props.url) || (!props.source && props.url)); // Either source or url must be defined
 
   let workerURL = workerURLCache.get(props.source || props.url);

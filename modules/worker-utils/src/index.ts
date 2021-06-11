@@ -1,6 +1,12 @@
+import type {WorkerObject} from './types';
+
 // TYPES
 export type {WorkerObject} from './types';
-export type {WorkerMessage, WorkerMessageData, WorkerMessagePayload} from './lib/worker-protocol/protocol';
+export type {
+  WorkerMessage,
+  WorkerMessageData,
+  WorkerMessagePayload
+} from './lib/worker-protocol/protocol';
 
 // GENERAL UTILS
 export {assert} from './lib/env-utils/assert';

@@ -1,5 +1,9 @@
 /* eslint-disable no-restricted-globals */
-import type {WorkerMessageData, WorkerMessageType, WorkerMessagePayload} from '../worker-protocol/protocol';
+import type {
+  WorkerMessageData,
+  WorkerMessageType,
+  WorkerMessagePayload
+} from '../worker-protocol/protocol';
 import {getTransferList} from '../worker-farm/get-transfer-list';
 
 const onMessageWrapperMap = new Map();
@@ -56,7 +60,7 @@ export default class WorkerBody {
    * @param type
    * @param payload
    */
-   static postMessage(type: WorkerMessageType, payload: WorkerMessagePayload): void {
+  static postMessage(type: WorkerMessageType, payload: WorkerMessagePayload): void {
     if (self) {
       const data: WorkerMessageData = {source: 'loaders.gl', type, payload};
       const transferList = getTransferList(payload);

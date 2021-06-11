@@ -38,15 +38,14 @@ const DEFAULT_PROPS: ChildProcessProxyProps = {
  */
 export default class ChildProcessProxy {
   id: string;
-  childProcess: ChildProcess | null;
-  props: ChildProcessProxyProps = DEFAULT_PROPS;
+  props: ChildProcessProxyProps = {...DEFAULT_PROPS};
+  private childProcess: ChildProcess | null = null;
   private port: number = 0;
   private successTimer?;
 
   // constructor(props?: {id?: string});
   constructor({id = 'browser-driver'} = {}) {
     this.id = id;
-    this.childProcess = null;
   }
 
   /** Starts a child process with the provided props */
@@ -125,7 +124,7 @@ export default class ChildProcessProxy {
     }
   }
 
-  _setTimeout(callback) {
+  _setTimeout(callback: (...args: any[]) => void) {
     if (Number(this.props.wait) > 0) {
       this.successTimer = setTimeout(callback, this.props.wait);
     }
