@@ -1,7 +1,15 @@
 // Forked from https://github.com/kbajalc/parquets under MIT license (Copyright (c) 2017 ironSource Ltd.)
 
 export type ParquetCodec = 'PLAIN' | 'RLE';
-export type ParquetCompression = 'UNCOMPRESSED' | 'GZIP' | 'SNAPPY' | 'LZO' | 'BROTLI' | 'LZ4';
+export type ParquetCompression =
+  | 'UNCOMPRESSED'
+  | 'GZIP'
+  | 'SNAPPY'
+  | 'LZO'
+  | 'BROTLI'
+  | 'LZ4'
+  | 'LZ4_RAW'
+  | 'ZSTD';
 export type RepetitionType = 'REQUIRED' | 'OPTIONAL' | 'REPEATED';
 export type ParquetType = PrimitiveType | OriginalType;
 

@@ -1,55 +1,100 @@
 // Forked from https://github.com/kbajalc/parquets under MIT license (Copyright (c) 2017 ironSource Ltd.)
 /* eslint-disable camelcase */
+// Forked from https://github.com/ironSource/parquetjs under MIT license
+
+import {
+  Compression,
+  NoCompression,
+  GZipCompression,
+  SnappyCompression,
+  BrotliCompression,
+  LZOCompression,
+  LZ4Compression,
+  ZstdCompression
+} from '@loaders.gl/compression';
+
 import {ParquetCompression} from './schema/declare';
-import * as Util from './util';
-import zlib from 'zlib';
-import snappyjs from 'snappyjs';
+import {toArrayBuffer, toBuffer} from './utils/buffer-utils';
 
-let brotli: any;
-let lzo: any;
-let lz4js: any;
+// TODO switch to worker compression to avoid bundling...
 
-export interface ParquetCompressionKit {
-  deflate: (value: Buffer) => Buffer;
-  inflate: (value: Buffer, size: number) => Buffer;
-}
+// import brotli from 'brotli'; - brotli has problems with decompress in browsers
+import brotliDecompress from 'brotli/decompress';
+import lz4js from 'lz4js';
+import lzo from 'lzo';
+import {ZstdCodec} from 'zstd-codec';
 
-export const PARQUET_COMPRESSION_METHODS: Record<ParquetCompression, ParquetCompressionKit> = {
-  UNCOMPRESSED: {
-    deflate: deflate_identity,
-    inflate: inflate_identity
+// Inject large dependencies through Compression constructor options
+const modules = {
+  // brotli has problems with decompress in browsers
+  brotli: {
+    decompress: brotliDecompress,
+    compress: () => {
+      throw new Error('brotli compress');
+    }
   },
-  GZIP: {
-    deflate: deflate_gzip,
-    inflate: inflate_gzip
-  },
-  SNAPPY: {
-    deflate: deflate_snappy,
-    inflate: inflate_snappy
-  },
-  LZO: {
-    deflate: deflate_lzo,
-    inflate: inflate_lzo
-  },
-  BROTLI: {
-    deflate: deflate_brotli,
-    inflate: inflate_brotli
-  },
-  LZ4: {
-    deflate: deflate_lz4,
-    inflate: inflate_lz4
-  }
+  lz4js,
+  lzo,
+  'zstd-codec': ZstdCodec
 };
+
+// See https://github.com/apache/parquet-format/blob/master/Compression.md
+export const PARQUET_COMPRESSION_METHODS: Record<ParquetCompression, Compression> = {
+  UNCOMPRESSED: new NoCompression(),
+  GZIP: new GZipCompression(),
+  SNAPPY: new SnappyCompression(),
+  BROTLI: new BrotliCompression({modules}),
+  // TODO: Understand difference between LZ4 and LZ4_RAW
+  LZ4: new LZ4Compression({modules}),
+  LZ4_RAW: new LZ4Compression({modules}),
+  LZO: new LZOCompression({modules}),
+  ZSTD: new ZstdCompression({modules})
+};
+
+/**
+ * Register compressions that have big external libraries
+ * @param options.modules External library dependencies
+ */
+export async function preloadCompressions(options?: {modules: {[key: string]: any}}) {
+  const compressions = Object.values(PARQUET_COMPRESSION_METHODS);
+  return await Promise.all(compressions.map((compression) => compression.preload()));
+}
 
 /**
  * Deflate a value using compression method `method`
  */
 export function deflate(method: ParquetCompression, value: Buffer): Buffer {
+  const compression = PARQUET_COMPRESSION_METHODS[method];
+  if (!compression) {
+    throw new Error(`parquet: invalid compression method: ${method}`);
+  }
+  const inputArrayBuffer = toArrayBuffer(value);
+  const compressedArrayBuffer = compression.compressSync(inputArrayBuffer);
+  return toBuffer(compressedArrayBuffer);
+}
+
+/**
+ * Inflate a value using compression method `method`
+ */
+export function decompress(method: ParquetCompression, value: Buffer, size: number) {
+  const compression = PARQUET_COMPRESSION_METHODS[method];
+  if (!compression) {
+    throw new Error(`parquet: invalid compression method: ${method}`);
+  }
+  const inputArrayBuffer = toArrayBuffer(value);
+  const compressedArrayBuffer = compression.decompressSync(inputArrayBuffer);
+  return toBuffer(compressedArrayBuffer);
+}
+
+/**
+ * Inflate a value using compression method `method`
+ *
+export function inflate(method: ParquetCompression, value: Buffer, size: number): Buffer {
   if (!(method in PARQUET_COMPRESSION_METHODS)) {
     throw new Error(`invalid compression method: ${method}`);
   }
 
-  return PARQUET_COMPRESSION_METHODS[method].deflate(value);
+  return PARQUET_COMPRESSION_METHODS[method].inflate(value, size);
 }
 
 function deflate_identity(value: Buffer): Buffer {
@@ -92,18 +137,6 @@ function deflate_lz4(value: Buffer): Buffer {
     throw err;
   }
 }
-
-/**
- * Inflate a value using compression method `method`
- */
-export function inflate(method: ParquetCompression, value: Buffer, size: number): Buffer {
-  if (!(method in PARQUET_COMPRESSION_METHODS)) {
-    throw new Error(`invalid compression method: ${method}`);
-  }
-
-  return PARQUET_COMPRESSION_METHODS[method].inflate(value, size);
-}
-
 function inflate_identity(value: Buffer): Buffer {
   return value;
 }
@@ -141,4 +174,4 @@ function inflate_brotli(value: Buffer): Buffer {
     return Buffer.alloc(0);
   }
   return Buffer.from(brotli.decompress(value));
-}
+*/

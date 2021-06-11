@@ -4,7 +4,7 @@ import {validateLoader} from 'test/common/conformance';
 import {ParquetLoader, ParquetWorkerLoader} from '@loaders.gl/parquet';
 import {load, setLoaderOptions} from '@loaders.gl/core';
 
-import {SUPPORTED_FILES, UNSUPPORTED_FILES, BAD_FILES} from './data/files';
+import {SUPPORTED_FILES, UNSUPPORTED_FILES, ENCRYPTED_FILES, BAD_FILES} from './data/files';
 
 const PARQUET_DIR = '@loaders.gl/parquet/test/data/apache';
 
@@ -18,12 +18,13 @@ test('ParquetLoader#loader objects', (t) => {
   t.end();
 });
 
+// eslint-disable-next-line max-statements
 test('ParquetLoader#load', async (t) => {
   t.comment(`SUPPORTED FILES`);
   for (const {title, path} of SUPPORTED_FILES) {
     const url = `${PARQUET_DIR}/${path}`;
     const data = await load(url, ParquetLoader, {parquet: {url}, worker: false});
-    t.ok(data, `GOOD - ${title}`);
+    t.ok(data, `GOOD(${title})`);
   }
 
   t.comment(`UNSUPPORTED FILES`);
@@ -31,10 +32,22 @@ test('ParquetLoader#load', async (t) => {
     const url = `${PARQUET_DIR}/${path}`;
     try {
       const data = await load(url, ParquetLoader, {parquet: {url}, worker: false});
-      t.ok(data, `GOOD - ${title}`);
+      t.ok(data, `GOOD(${title})`);
     } catch (error) {
       // @ts-ignore TS2571
-      t.comment(`UNSUPPORTED ${error.message} - ${title}`);
+      t.pass(`UNSUPPORTED(${title}): ${error.message}`);
+    }
+  }
+
+  t.comment(`ENCRYPTED FILES`);
+  for (const {title, path} of ENCRYPTED_FILES) {
+    const url = `${PARQUET_DIR}/${path}`;
+    try {
+      const data = await load(url, ParquetLoader, {parquet: {url}, worker: false});
+      t.ok(data, `GOOD(${title})`);
+    } catch (error) {
+      // @ts-ignore TS2571
+      t.pass(`ENCRYPTED(${title}): ${error.message}`);
     }
   }
 
@@ -43,11 +56,12 @@ test('ParquetLoader#load', async (t) => {
     const url = `${PARQUET_DIR}/${path}`;
     try {
       const data = await load(url, ParquetLoader, {parquet: {url}, worker: false});
-      t.ok(data, `GOOD - ${title}`);
+      t.ok(data, `GOOD(${title})`);
     } catch (error) {
       // @ts-ignore TS2571
-      t.comment(`BAD FILE ${error.message} - ${title} `);
+      t.pass(`BAD FILE(${title}): ${error.message}`);
     }
   }
+
   t.end();
 });

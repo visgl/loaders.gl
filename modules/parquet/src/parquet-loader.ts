@@ -29,7 +29,7 @@ export const ParquetLoader = {
   extensions: ['parquet'],
   mimeTypes: ['application/octet-stream'],
   binary: true,
-  // tests: ['PARQUET'],
+  tests: ['PAR1', 'PARE'],
   options: DEFAULT_PARQUET_LOADER_OPTIONS
 };
 

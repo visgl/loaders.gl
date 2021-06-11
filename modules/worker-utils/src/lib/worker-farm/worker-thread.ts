@@ -78,7 +78,7 @@ export default class WorkerThread {
     // https://developer.mozilla.org/en-US/docs/Web/API/Worker#Event_handlers
     // https://developer.mozilla.org/en-US/docs/Web/API/ErrorEvent
     let message = 'Failed to load ';
-    message += `worker ${this.name}. `;
+    message += `worker ${this.name} from ${this.url}. `;
     if (event.message) {
       message += `${event.message} in `;
     }

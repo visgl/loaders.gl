@@ -29,7 +29,8 @@ import {
   SchemaElement,
   Type
 } from './parquet-thrift';
-import * as Util from './util';
+import {osopen, oswrite, osclose} from './utils/file-utils';
+import {getBitWidth, serializeThrift} from './utils/read-utils';
 import Int64 from 'node-int64';
 
 /**
@@ -85,7 +86,7 @@ export class ParquetWriter<T> {
     path: string,
     opts?: ParquetWriterOptions
   ): Promise<ParquetWriter<T>> {
-    const outputStream = await Util.osopen(path, opts);
+    const outputStream = await osopen(path, opts);
     return ParquetWriter.openStream(schema, outputStream, opts);
   }
 
@@ -226,8 +227,8 @@ export class ParquetEnvelopeWriter {
     outputStream: Writable,
     opts: ParquetWriterOptions
   ): Promise<ParquetEnvelopeWriter> {
-    const writeFn = Util.oswrite.bind(undefined, outputStream);
-    const closeFn = Util.osclose.bind(undefined, outputStream);
+    const writeFn = oswrite.bind(undefined, outputStream);
+    const closeFn = osclose.bind(undefined, outputStream);
     return new ParquetEnvelopeWriter(schema, writeFn, closeFn, 0, opts);
   }
 
@@ -375,7 +376,7 @@ function encodeDataPage(
   let rLevelsBuf = Buffer.alloc(0);
   if (column.rLevelMax > 0) {
     rLevelsBuf = encodeValues(PARQUET_RDLVL_TYPE, PARQUET_RDLVL_ENCODING, data.rlevels, {
-      bitWidth: Util.getBitWidth(column.rLevelMax)
+      bitWidth: getBitWidth(column.rLevelMax)
       // disableEnvelope: false
     });
   }
@@ -383,7 +384,7 @@ function encodeDataPage(
   let dLevelsBuf = Buffer.alloc(0);
   if (column.dLevelMax > 0) {
     dLevelsBuf = encodeValues(PARQUET_RDLVL_TYPE, PARQUET_RDLVL_ENCODING, data.dlevels, {
-      bitWidth: Util.getBitWidth(column.dLevelMax)
+      bitWidth: getBitWidth(column.dLevelMax)
       // disableEnvelope: false
     });
   }
@@ -413,7 +414,7 @@ function encodeDataPage(
   });
 
   /* concat page header, repetition and definition levels and values */
-  const headerBuf = Util.serializeThrift(header);
+  const headerBuf = serializeThrift(header);
   const page = Buffer.concat([headerBuf, compressedBuf]);
 
   return {header, headerSize: headerBuf.length, page};
@@ -444,7 +445,7 @@ function encodeDataPageV2(
   let rLevelsBuf = Buffer.alloc(0);
   if (column.rLevelMax > 0) {
     rLevelsBuf = encodeValues(PARQUET_RDLVL_TYPE, PARQUET_RDLVL_ENCODING, data.rlevels, {
-      bitWidth: Util.getBitWidth(column.rLevelMax),
+      bitWidth: getBitWidth(column.rLevelMax),
       disableEnvelope: true
     });
   }
@@ -452,7 +453,7 @@ function encodeDataPageV2(
   let dLevelsBuf = Buffer.alloc(0);
   if (column.dLevelMax > 0) {
     dLevelsBuf = encodeValues(PARQUET_RDLVL_TYPE, PARQUET_RDLVL_ENCODING, data.dlevels, {
-      bitWidth: Util.getBitWidth(column.dLevelMax),
+      bitWidth: getBitWidth(column.dLevelMax),
       disableEnvelope: true
     });
   }
@@ -474,7 +475,7 @@ function encodeDataPageV2(
   });
 
   /* concat page header, repetition and definition levels and values */
-  const headerBuf = Util.serializeThrift(header);
+  const headerBuf = serializeThrift(header);
   const page = Buffer.concat([headerBuf, rLevelsBuf, dLevelsBuf, compressedBuf]);
   return {header, headerSize: headerBuf.length, page};
 }
@@ -535,7 +536,7 @@ function encodeColumnChunk(
 
   /* concat metadata header and data pages */
   const metadataOffset = baseOffset + pageBuf.length;
-  const body = Buffer.concat([pageBuf, Util.serializeThrift(metadata)]);
+  const body = Buffer.concat([pageBuf, serializeThrift(metadata)]);
   return {body, metadata, metadataOffset};
 }
 
@@ -634,7 +635,7 @@ function encodeFooter(
     metadata.schema.push(schemaElem);
   }
 
-  const metadataEncoded = Util.serializeThrift(metadata);
+  const metadataEncoded = serializeThrift(metadata);
   const footerEncoded = Buffer.alloc(metadataEncoded.length + 8);
   metadataEncoded.copy(footerEncoded);
   footerEncoded.writeUInt32LE(metadataEncoded.length, metadataEncoded.length);

@@ -30,8 +30,22 @@ export class LZ4Compression extends Compression {
     return lz4js.compress(inputArray).buffer;
   }
 
-  decompressSync(input: ArrayBuffer): ArrayBuffer {
+  /**
+   * Decompresses an ArrayBuffer containing an Lz4 frame. maxSize is optional; if not
+   * provided, a maximum size will be determined by examining the data. The
+   * returned ArrayBuffer will always be perfectly sized.
+   */
+  decompressSync(input: ArrayBuffer, maxSize?: number): ArrayBuffer {
+    // let result = Buffer.alloc(maxSize);
+    // const uncompressedSize = lz4js.decodeBlock(value, result);
+    // // remove unnecessary bytes
+    // result = result.slice(0, uncompressedSize);
+    // return result;
     const inputArray = new Uint8Array(input);
-    return lz4js.decompress(inputArray).buffer;
+    try {
+      return lz4js.decompress(inputArray, maxSize).buffer;
+    } catch (error) {
+      throw this.improveError(error);
+    }
   }
 }

@@ -1,3 +1,5 @@
+import './init';
+
 // parquetjs test suite
 import './parquetjs/codec-plain.spec';
 import './parquetjs/codec-rle.spec';

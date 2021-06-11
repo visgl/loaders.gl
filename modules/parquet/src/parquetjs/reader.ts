@@ -1,6 +1,6 @@
 // Forked from https://github.com/kbajalc/parquets under MIT license (Copyright (c) 2017 ironSource Ltd.)
 import {CursorBuffer, ParquetCodecOptions, PARQUET_CODECS} from './codecs';
-import * as Compression from './compression';
+import {decompress} from './compression';
 import {
   ParquetBuffer,
   ParquetCodec,
@@ -28,13 +28,20 @@ import {
   SchemaElement,
   Type
 } from './parquet-thrift';
-import * as Util from './util';
-// import Fs = require('fs');
+import {
+  decodeFileMetadata,
+  decodePageHeader,
+  getThriftEnum,
+  getBitWidth,
+  fieldIndexOf
+} from './utils/read-utils';
+import {fstat, fopen, fread, fclose} from './utils/file-utils';
 
 /**
  * Parquet File Magic String
  */
 const PARQUET_MAGIC = 'PAR1';
+const PARQUET_MAGIC_ENCRYPTED = 'PARE';
 
 /**
  * Parquet File Format Version
@@ -324,11 +331,11 @@ export class ParquetEnvelopeReader {
   public fileSize: number;
 
   static async openFile(filePath: string): Promise<ParquetEnvelopeReader> {
-    const fileStat = await Util.fstat(filePath);
-    const fileDescriptor = await Util.fopen(filePath);
+    const fileStat = await fstat(filePath);
+    const fileDescriptor = await fopen(filePath);
 
-    const readFn = Util.fread.bind(undefined, fileDescriptor);
-    const closeFn = Util.fclose.bind(undefined, fileDescriptor);
+    const readFn = fread.bind(undefined, fileDescriptor);
+    const closeFn = fclose.bind(undefined, fileDescriptor);
 
     return new ParquetEnvelopeReader(readFn, closeFn, fileStat.size);
   }
@@ -351,10 +358,16 @@ export class ParquetEnvelopeReader {
   }
 
   async readHeader(): Promise<void> {
-    const buf = await this.read(0, PARQUET_MAGIC.length);
+    const buffer = await this.read(0, PARQUET_MAGIC.length);
 
-    if (buf.toString() !== PARQUET_MAGIC) {
-      throw new Error('not valid parquet file');
+    const magic = buffer.toString();
+    switch (magic) {
+      case PARQUET_MAGIC:
+        break;
+      case PARQUET_MAGIC_ENCRYPTED:
+        throw new Error('Encrypted parquet file not supported');
+      default:
+        throw new Error(`Invalid parquet file (magic=${magic})`);
     }
   }
 
@@ -370,7 +383,7 @@ export class ParquetEnvelopeReader {
     for (const colChunk of rowGroup.columns) {
       const colMetadata = colChunk.meta_data;
       const colKey = colMetadata?.path_in_schema;
-      if (columnList.length > 0 && Util.fieldIndexOf(columnList, colKey!) < 0) {
+      if (columnList.length > 0 && fieldIndexOf(columnList, colKey!) < 0) {
         continue; // eslint-disable-line no-continue
       }
       buffer.columnData[colKey!.join()] = await this.readColumnChunk(schema, colChunk);
@@ -384,10 +397,10 @@ export class ParquetEnvelopeReader {
     }
 
     const field = schema.findField(colChunk.meta_data?.path_in_schema!);
-    const type: PrimitiveType = Util.getThriftEnum(Type, colChunk.meta_data?.type!) as any;
+    const type: PrimitiveType = getThriftEnum(Type, colChunk.meta_data?.type!) as any;
     if (type !== field.primitiveType) throw new Error(`chunk type not matching schema: ${type}`);
 
-    const compression: ParquetCompression = Util.getThriftEnum(
+    const compression: ParquetCompression = getThriftEnum(
       CompressionCodec,
       colChunk.meta_data?.codec!
     ) as any;
@@ -396,27 +409,28 @@ export class ParquetEnvelopeReader {
     const pagesSize = Number(colChunk.meta_data?.total_compressed_size!);
     const pagesBuf = await this.read(pagesOffset, pagesSize);
 
-    return decodeDataPages(pagesBuf, field, compression);
+    return await decodeDataPages(pagesBuf, field, compression);
   }
 
   async readFooter(): Promise<FileMetaData> {
     const trailerLen = PARQUET_MAGIC.length + 4;
     const trailerBuf = await this.read(this.fileSize - trailerLen, trailerLen);
 
-    if (trailerBuf.slice(4).toString() !== PARQUET_MAGIC) {
-      throw new Error('not a valid parquet file');
+    const magic = trailerBuf.slice(4).toString();
+    if (magic !== PARQUET_MAGIC) {
+      throw new Error(`Not a valid parquet file (magic="${magic})`);
     }
 
     const metadataSize = trailerBuf.readUInt32LE(0);
     const metadataOffset = this.fileSize - metadataSize - trailerLen;
     if (metadataOffset < PARQUET_MAGIC.length) {
-      throw new Error('invalid metadata size');
+      throw new Error(`Invalid metadata size ${metadataOffset}`);
     }
 
     const metadataBuf = await this.read(metadataOffset, metadataSize);
     // let metadata = new parquet_thrift.FileMetaData();
     // parquet_util.decodeThrift(metadata, metadataBuf);
-    const {metadata} = Util.decodeFileMetadata(metadataBuf);
+    const {metadata} = decodeFileMetadata(metadataBuf);
     return metadata;
   }
 }
@@ -437,11 +451,11 @@ function decodeValues(
   return PARQUET_CODECS[encoding].decodeValues(type, cursor, count, opts);
 }
 
-function decodeDataPages(
+async function decodeDataPages(
   buffer: Buffer,
   column: ParquetField,
   compression: ParquetCompression
-): ParquetData {
+): Promise<ParquetData> {
   const cursor: CursorBuffer = {
     buffer,
     offset: 0,
@@ -460,10 +474,10 @@ function decodeDataPages(
     // const pageHeader = new parquet_thrift.PageHeader();
     // cursor.offset += parquet_util.decodeThrift(pageHeader, cursor.buffer);
 
-    const {pageHeader, length} = Util.decodePageHeader(cursor.buffer);
+    const {pageHeader, length} = decodePageHeader(cursor.buffer);
     cursor.offset += length;
 
-    const pageType = Util.getThriftEnum(PageType, pageHeader.type);
+    const pageType = getThriftEnum(PageType, pageHeader.type);
 
     let pageData: ParquetData | null = null;
     switch (pageType) {
@@ -514,7 +528,7 @@ function decodeDataPage(
   /* uncompress page */
   let dataCursor = cursor;
   if (compression !== 'UNCOMPRESSED') {
-    const valuesBuf = Compression.inflate(
+    const valuesBuf = decompress(
       compression,
       cursor.buffer.slice(cursor.offset, cursorEnd),
       header.uncompressed_page_size
@@ -528,7 +542,7 @@ function decodeDataPage(
   }
 
   /* read repetition levels */
-  const rLevelEncoding = Util.getThriftEnum(
+  const rLevelEncoding = getThriftEnum(
     Encoding,
     header.data_page_header?.repetition_level_encoding!
   ) as ParquetCodec;
@@ -536,7 +550,7 @@ function decodeDataPage(
   let rLevels = new Array(valueCount);
   if (column.rLevelMax > 0) {
     rLevels = decodeValues(PARQUET_RDLVL_TYPE, rLevelEncoding, dataCursor, valueCount!, {
-      bitWidth: Util.getBitWidth(column.rLevelMax),
+      bitWidth: getBitWidth(column.rLevelMax),
       disableEnvelope: false
       // column: opts.column
     });
@@ -545,7 +559,7 @@ function decodeDataPage(
   }
 
   /* read definition levels */
-  const dLevelEncoding = Util.getThriftEnum(
+  const dLevelEncoding = getThriftEnum(
     Encoding,
     header.data_page_header?.definition_level_encoding!
   ) as ParquetCodec;
@@ -553,7 +567,7 @@ function decodeDataPage(
   let dLevels = new Array(valueCount);
   if (column.dLevelMax > 0) {
     dLevels = decodeValues(PARQUET_RDLVL_TYPE, dLevelEncoding, dataCursor, valueCount!, {
-      bitWidth: Util.getBitWidth(column.dLevelMax),
+      bitWidth: getBitWidth(column.dLevelMax),
       disableEnvelope: false
       // column: opts.column
     });
@@ -568,10 +582,7 @@ function decodeDataPage(
   }
 
   /* read values */
-  const valueEncoding = Util.getThriftEnum(
-    Encoding,
-    header.data_page_header?.encoding!
-  ) as ParquetCodec;
+  const valueEncoding = getThriftEnum(Encoding, header.data_page_header?.encoding!) as ParquetCodec;
   const values = decodeValues(column.primitiveType!, valueEncoding, dataCursor, valueCountNonNull, {
     typeLength: column.typeLength,
     bitWidth: column.typeLength
@@ -600,7 +611,7 @@ function decodeDataPageV2(
   const valueCount = header.data_page_header_v2?.num_values;
   // @ts-ignore
   const valueCountNonNull = valueCount - header.data_page_header_v2?.num_nulls;
-  const valueEncoding = Util.getThriftEnum(
+  const valueEncoding = getThriftEnum(
     Encoding,
     header.data_page_header_v2?.encoding!
   ) as ParquetCodec;
@@ -610,7 +621,7 @@ function decodeDataPageV2(
   let rLevels = new Array(valueCount);
   if (column.rLevelMax > 0) {
     rLevels = decodeValues(PARQUET_RDLVL_TYPE, PARQUET_RDLVL_ENCODING, cursor, valueCount!, {
-      bitWidth: Util.getBitWidth(column.rLevelMax),
+      bitWidth: getBitWidth(column.rLevelMax),
       disableEnvelope: true
     });
   } else {
@@ -622,7 +633,7 @@ function decodeDataPageV2(
   let dLevels = new Array(valueCount);
   if (column.dLevelMax > 0) {
     dLevels = decodeValues(PARQUET_RDLVL_TYPE, PARQUET_RDLVL_ENCODING, cursor, valueCount!, {
-      bitWidth: Util.getBitWidth(column.dLevelMax),
+      bitWidth: getBitWidth(column.dLevelMax),
       disableEnvelope: true
     });
   } else {
@@ -633,7 +644,7 @@ function decodeDataPageV2(
   let valuesBufCursor = cursor;
 
   if (header.data_page_header_v2?.is_compressed) {
-    const valuesBuf = Compression.inflate(
+    const valuesBuf = decompress(
       compression,
       cursor.buffer.slice(cursor.offset, cursorEnd),
       header.uncompressed_page_size
@@ -682,7 +693,7 @@ function decodeSchema(
     const schemaElement = schemaElements[next];
 
     const repetitionType =
-      next > 0 ? Util.getThriftEnum(FieldRepetitionType, schemaElement.repetition_type!) : 'ROOT';
+      next > 0 ? getThriftEnum(FieldRepetitionType, schemaElement.repetition_type!) : 'ROOT';
 
     let optional = false;
     let repeated = false;
@@ -709,10 +720,10 @@ function decodeSchema(
         fields: res.schema
       };
     } else {
-      let logicalType = Util.getThriftEnum(Type, schemaElement.type!);
+      let logicalType = getThriftEnum(Type, schemaElement.type!);
 
       if (schemaElement.converted_type) {
-        logicalType = Util.getThriftEnum(ConvertedType, schemaElement.converted_type);
+        logicalType = getThriftEnum(ConvertedType, schemaElement.converted_type);
       }
 
       schema[schemaElement.name] = {
