@@ -29,7 +29,7 @@
   "scripts": {
     "pre-build": "npm run build-worker && npm run build-bundle",
     "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js",
-    "build-worker": "webpack --entry ./src/workers/ply-worker.js --output ./dist/ply-worker.js --config ../../scripts/webpack/worker.js"
+    "build-worker": "webpack --entry ./src/workers/ply-worker.ts --output ./dist/ply-worker.js --config ../../scripts/webpack/worker.js"
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
