@@ -15,7 +15,8 @@ export default function normalizePLY(header, attributes, options) {
       boundingBox: getMeshBoundingBox(normalizedAttributes)
     },
     mode: attributes.indices && attributes.indices.length > 0 ? 4 : 0, // TRIANGLES vs POINTS
-    attributes: normalizedAttributes
+    attributes: normalizedAttributes,
+    indices: {value: new Uint32Array(0), size: 0}
   };
 
   if (attributes.indices && attributes.indices.length > 0) {
@@ -26,7 +27,7 @@ export default function normalizePLY(header, attributes, options) {
 }
 
 function normalizeAttributes(attributes) {
-  const accessors = {};
+  const accessors: any = {};
 
   accessors.POSITION = {value: new Float32Array(attributes.vertices), size: 3};
 
