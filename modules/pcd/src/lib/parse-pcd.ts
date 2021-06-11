@@ -260,7 +260,7 @@ function parsePCDBinary(PCDheader, data) {
 function getSchemaFromPCDHeader(PCDheader, metadata) {
   const offset = PCDheader.offset;
 
-  const fields: any = [];
+  const fields: Field[] = [];
 
   if (offset.x !== undefined) {
     fields.push(
