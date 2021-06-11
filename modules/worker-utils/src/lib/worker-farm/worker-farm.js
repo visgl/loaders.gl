@@ -28,8 +28,6 @@ export default class WorkerFarm {
     this.workerPools = new Map();
     this.props = {...DEFAULT_PROPS};
     this.setProps(props);
-    /** @type Map<string, WorkerPool>} */
-    this.workerPools = new Map();
   }
 
   destroy() {
@@ -38,19 +36,14 @@ export default class WorkerFarm {
 
   setProps(props) {
     this.props = {...this.props, ...props};
+    // Update worker pool props
+    for (const workerPool of this.workerPools.values()) {
+      workerPool.setProps(this._getWorkerPoolProps());
+    }
   }
 
   getWorkerPool({name, source, url}) {
     let workerPool = this.workerPools.get(name);
-
-    if (
-      workerPool &&
-      (this.props.maxConcurrency !== workerPool.maxConcurrency ||
-        this.props.maxMobileConcurrency !== workerPool.maxMobileConcurrency)
-    ) {
-      workerPool.destroy();
-      workerPool = undefined;
-    }
 
     if (!workerPool) {
       workerPool = new WorkerPool({

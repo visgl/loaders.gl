@@ -125,19 +125,21 @@ export default class WorkerPool {
   }
 
   returnWorkerToQueue(worker) {
-    if (this.isDestroyed) {
-      worker.destroy();
-      return;
-    }
+    // Destroy the worker if pool is destroyed, or if we don't reuse workers, or
+    // if maxConcurrency has changed.
+    const shouldDestroyWorker =
+      this.isDestroyed || !this.reuseWorkers || this.count > this._getMaxConcurrency();
 
-    if (this.reuseWorkers) {
-      this.idleQueue.push(worker);
-    } else {
+    if (shouldDestroyWorker) {
       worker.destroy();
       this.count--;
+    } else {
+      this.idleQueue.push(worker);
     }
 
-    this._startQueuedJob();
+    if (this.isDestroyed) {
+      this._startQueuedJob();
+    }
   }
 
   /**
