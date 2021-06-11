@@ -1,5 +1,6 @@
 /** @typedef {import('../worker-protocol/protocol').WorkerMessageType} WorkerMessageType  */
 /** @typedef {import('../worker-protocol/protocol').WorkerMessagePayload} WorkerMessagePayload */
+import {isMobile} from '../env-utils/globals';
 import {assert} from '../env-utils/assert';
 import WorkerThread from './worker-thread';
 import WorkerJob from './worker-job';
@@ -14,23 +15,17 @@ import WorkerJob from './worker-job';
  */
 
 export default class WorkerPool {
-  constructor({
-    source,
-    url,
-    name = 'unnamed',
-    maxConcurrency = 1,
-    onMessage,
-    onDebug = () => {},
-    reuseWorkers = true
-  }) {
-    assert(source || url);
-    this.source = source;
-    this.url = url;
-    this.name = name;
-    this.maxConcurrency = maxConcurrency;
-    this.onMessage = onMessage;
-    this.onDebug = onDebug;
-    this.reuseWorkers = reuseWorkers;
+  constructor(props) {
+    assert(props.source || props.url);
+
+    this.source = props.source;
+    this.url = props.url;
+
+    this.name = 'undefined';
+    this.maxConcurrency = 1;
+    this.maxMobileConcurrency = 1;
+    this.reuseWorkers = true;
+    this.onDebug = () => {};
 
     /** @type {QueuedJob[]} */
     this.jobQueue = [];
@@ -38,12 +33,35 @@ export default class WorkerPool {
     this.idleQueue = [];
     this.count = 0;
     this.isDestroyed = false;
+
+    this.props = {};
+    this.setProps(props);
   }
 
   destroy() {
     // Destroy idle workers, active Workers will be destroyed on completion
     this.idleQueue.forEach((worker) => worker.destroy());
     this.isDestroyed = true;
+  }
+
+  setProps(props) {
+    this.props = {...this.props, props};
+
+    if ('name' in props) {
+      this.name = props.name;
+    }
+    if ('maxConcurrency' in props) {
+      this.maxConcurrency = props.maxConcurrency;
+    }
+    if ('maxMobileConcurrency' in props) {
+      this.maxMobileConcurrency = props.maxMobileConcurrency;
+    }
+    if ('reuseWorkers' in props) {
+      this.reuseWorkers = props.reuseWorkers;
+    }
+    if ('onDebug' in props) {
+      this.onDebug = props.onDebug;
+    }
   }
 
   async startJob(
@@ -107,19 +125,21 @@ export default class WorkerPool {
   }
 
   returnWorkerToQueue(worker) {
-    if (this.isDestroyed) {
-      worker.destroy();
-      return;
-    }
+    // Destroy the worker if pool is destroyed, or if we don't reuse workers, or
+    // if maxConcurrency has changed.
+    const shouldDestroyWorker =
+      this.isDestroyed || !this.reuseWorkers || this.count > this._getMaxConcurrency();
 
-    if (this.reuseWorkers) {
-      this.idleQueue.push(worker);
-    } else {
+    if (shouldDestroyWorker) {
       worker.destroy();
       this.count--;
+    } else {
+      this.idleQueue.push(worker);
     }
 
-    this._startQueuedJob();
+    if (!this.isDestroyed) {
+      this._startQueuedJob();
+    }
   }
 
   /**
@@ -132,7 +152,7 @@ export default class WorkerPool {
     }
 
     // Create fresh worker if we haven't yet created the max amount of worker threads for this worker source
-    if (this.count < this.maxConcurrency) {
+    if (this.count < this._getMaxConcurrency()) {
       this.count++;
       const name = `${this.name.toLowerCase()} (#${this.count} of ${this.maxConcurrency})`;
       return new WorkerThread({name, source: this.source, url: this.url});
@@ -140,5 +160,9 @@ export default class WorkerPool {
 
     // No worker available, have to wait
     return null;
+  }
+
+  _getMaxConcurrency() {
+    return isMobile ? this.maxMobileConcurrency : this.maxConcurrency;
   }
 }
