@@ -54,7 +54,7 @@ export default class WorkerPool {
       this.maxConcurrency = props.maxConcurrency;
     }
     if ('maxMobileConcurrency' in props) {
-      this.maxConcurrency = props.maxMobileConcurrency;
+      this.maxMobileConcurrency = props.maxMobileConcurrency;
     }
     if ('reuseWorkers' in props) {
       this.reuseWorkers = props.reuseWorkers;

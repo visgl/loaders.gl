@@ -27,6 +27,7 @@ type OnDebugParameters = {
  */
 export default class WorkerPool {
   readonly maxConcurrency: number;
+  readonly maxMobileConcurrency: number;
 
   constructor(props: WorkerPoolProps);
 
