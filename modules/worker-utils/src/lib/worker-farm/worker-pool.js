@@ -137,7 +137,7 @@ export default class WorkerPool {
       this.idleQueue.push(worker);
     }
 
-    if (this.isDestroyed) {
+    if (!this.isDestroyed) {
       this._startQueuedJob();
     }
   }
