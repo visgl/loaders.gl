@@ -10,9 +10,10 @@
 
 import {getMeshBoundingBox} from '@loaders.gl/loader-utils';
 import {Field, Float32, Uint8, FixedSizeList, Schema} from '@loaders.gl/tables';
+
 const LITTLE_ENDIAN = true;
 
-export default function parsePCD(data, url, options) {
+export default function parsePCD(data) {
   // parse header (always ascii format)
   const textData = new TextDecoder().decode(data);
   const pcdHeader = parsePCDHeader(textData);
@@ -66,7 +67,7 @@ function getNormalizedHeader(PCDheader, attributes) {
 }
 
 function getNormalizedAttributes(attributes) {
-  const normalizedAttributes = {
+  const normalizedAttributes: any = {
     POSITION: {
       // Binary PCD is only 32 bit
       value: new Float32Array(attributes.position),
@@ -97,7 +98,7 @@ function parsePCDHeader(data) {
   const result1 = data.search(/[\r\n]DATA\s(\S*)\s/i);
   const result2 = /[\r\n]DATA\s(\S*)\s/i.exec(data.substr(result1 - 1));
 
-  const PCDheader = {};
+  const PCDheader: any = {};
   PCDheader.data = result2 && result2[1];
   PCDheader.headerLen = (result2 && result2[0].length) + result1;
   PCDheader.str = data.substr(0, PCDheader.headerLen);
@@ -186,9 +187,9 @@ function parsePCDHeader(data) {
 /* eslint-enable complexity, max-statements */
 
 function parsePCDASCII(PCDheader, textData) {
-  const position = [];
-  const normal = [];
-  const color = [];
+  const position: number[] = [];
+  const normal: number[] = [];
+  const color: number[] = [];
 
   const offset = PCDheader.offset;
   const pcdData = textData.substr(PCDheader.headerLen);
@@ -226,9 +227,9 @@ function parsePCDASCII(PCDheader, textData) {
 }
 
 function parsePCDBinary(PCDheader, data) {
-  const position = [];
-  const normal = [];
-  const color = [];
+  const position: number[] = [];
+  const normal: number[] = [];
+  const color: number[] = [];
 
   const dataview = new DataView(data, PCDheader.headerLen);
   const offset = PCDheader.offset;
@@ -259,7 +260,7 @@ function parsePCDBinary(PCDheader, data) {
 function getSchemaFromPCDHeader(PCDheader, metadata) {
   const offset = PCDheader.offset;
 
-  const fields = [];
+  const fields: any = [];
 
   if (offset.x !== undefined) {
     fields.push(
