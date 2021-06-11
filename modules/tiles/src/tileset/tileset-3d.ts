@@ -66,8 +66,12 @@ export type Tileset3DProps = {
   attributions?: string[];
   headers?: any;
   loadTiles?: boolean;
-  fetchOptions?: {[key: string]: any};
+  loadOptions?: {[key: string]: any};
+  updateTransforms?: boolean;
+  maxRequests?: number;
+  viewDistanceScale?: number;
   basePath?: string;
+  contentLoader?: (tile: Tile3D) => Promise<void>;
 };
 
 type Props = {
@@ -85,8 +89,11 @@ type Props = {
   attributions: string[];
   headers: any;
   loadTiles: boolean;
-  fetchOptions: {[key: string]: any};
+  loadOptions: {[key: string]: any};
+  updateTransforms: boolean;
+  viewDistanceScale: number;
   basePath: string;
+  contentLoader?: (tile: Tile3D) => Promise<void>;
   i3s: {[key: string]: any};
 };
 
@@ -108,15 +115,22 @@ const DEFAULT_PROPS: Props = {
   onTileUnload: (tile) => {},
   onTileError: (tile, message, url) => {},
 
+  // Optional async tile content loader
+  contentLoader: undefined,
+
+  // View distance scale modifier
+  viewDistanceScale: 1.0,
+
   // TODO CESIUM
   // The maximum screen space error used to drive level of detail refinement.
   maximumScreenSpaceError: 8,
 
   loadTiles: true,
+  updateTransforms: true,
   viewportTraversersMap: null,
 
   headers: {},
-  fetchOptions: {},
+  loadOptions: {},
 
   token: '',
   attributions: [],
@@ -140,7 +154,7 @@ const TILES_GPU_MEMORY = 'Tile Memory Use';
 export default class Tileset3D {
   // props: Tileset3DProps;
   options: Props;
-  fetchOptions: {[key: string]: any};
+  loadOptions: {[key: string]: any};
 
   type: string;
   tileset: {[key: string]: any};
@@ -238,12 +252,18 @@ export default class Tileset3D {
     this.refine = json.root.refine;
 
     // TODO add to loader context?
-    this.fetchOptions = this.options.fetchOptions || {};
+    this.loadOptions = this.options.loadOptions || {};
     if (this.options.headers) {
-      this.fetchOptions.headers = this.options.headers;
+      this.loadOptions.fetch = {
+        ...this.loadOptions.fetch,
+        headers: this.options.headers
+      };
     }
     if (this.options.token) {
-      this.fetchOptions.token = this.options.token;
+      this.loadOptions.fetch = {
+        ...this.loadOptions.fetch,
+        token: this.options.token
+      };
     }
 
     this.root = null;

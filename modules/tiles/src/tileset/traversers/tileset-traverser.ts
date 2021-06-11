@@ -14,6 +14,7 @@ export type TilesetTraverserProps = {
 export type Props = {
   loadSiblings: boolean;
   skipLevelOfDetail: boolean;
+  updateTransforms: boolean;
   maximumScreenSpaceError: number;
   onTraversalEnd: (frameState) => any;
   viewportTraversersMap: {[key: string]: any};
@@ -24,6 +25,7 @@ export const DEFAULT_PROPS: Props = {
   loadSiblings: false,
   skipLevelOfDetail: false,
   maximumScreenSpaceError: 2,
+  updateTransforms: true,
   onTraversalEnd: () => {},
   viewportTraversersMap: {},
   basePath: ''
