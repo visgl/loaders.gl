@@ -65,6 +65,7 @@ export type Tileset3DProps = {
   token?: string;
   attributions?: string[];
   headers?: any;
+  maxRequests?: number;
   loadTiles?: boolean;
   fetchOptions?: {[key: string]: any};
   basePath?: string;
@@ -84,6 +85,7 @@ type Props = {
   token: string;
   attributions: string[];
   headers: any;
+  maxRequests: number;
   loadTiles: boolean;
   fetchOptions: {[key: string]: any};
   basePath: string;
@@ -97,8 +99,11 @@ const DEFAULT_PROPS: Props = {
   // A 4x4 transformation matrix this transforms the entire tileset.
   modelMatrix: new Matrix4(),
 
-  // Set to true to enable experimental request throttling, for improved performance
-  throttleRequests: false,
+  // Set to false to disable network request throttling
+  throttleRequests: true,
+
+  // Number of simultaneous requsts, if throttleRequests is true
+  maxRequests: 64,
 
   maximumMemoryUsage: 32,
 
@@ -260,7 +265,8 @@ export default class Tileset3D {
     this._traverser = this._initializeTraverser();
     this._cache = new TilesetCache();
     this._requestScheduler = new RequestScheduler({
-      throttleRequests: this.options.throttleRequests
+      throttleRequests: this.options.throttleRequests,
+      maxRequests: this.options.maxRequests
     });
     // update tracker
     // increase in each update cycle
@@ -501,7 +507,7 @@ export default class Tileset3D {
     let tilesRenderable = 0;
     let pointsRenderable = 0;
     for (const tile of this.selectedTiles) {
-      if (tile.contentAvailable) {
+      if (tile.contentAvailable && tile.content) {
         tilesRenderable++;
         if (tile.content.pointCount) {
           pointsRenderable += tile.content.pointCount;
@@ -680,7 +686,7 @@ export default class Tileset3D {
   }
 
   _unloadTile(tile) {
-    this.gpuMemoryUsageInBytes -= tile.content.byteLength || 0;
+    this.gpuMemoryUsageInBytes -= (tile.content && tile.content.byteLength) || 0;
 
     this.stats.get(TILES_IN_MEMORY).decrementCount();
     this.stats.get(TILES_UNLOADED).incrementCount();

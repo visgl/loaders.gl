@@ -99,6 +99,7 @@ export default class TilesetTraverser {
     // stack to store traversed tiles, only visible tiles should be added to stack
     // visible: visible in the current view frustum
     const stack = this._traversalStack;
+    root._selectionDepth = 1;
 
     stack.push(root);
     while (stack.length > 0) {
@@ -109,7 +110,12 @@ export default class TilesetTraverser {
       let shouldRefine = false;
       if (this.canTraverse(tile, frameState)) {
         this.updateChildTiles(tile, frameState);
-        shouldRefine = this.updateAndPushChildren(tile, frameState, stack);
+        shouldRefine = this.updateAndPushChildren(
+          tile,
+          frameState,
+          stack,
+          tile.hasRenderContent ? tile._selectionDepth + 1 : tile._selectionDepth
+        );
       }
 
       // 3. decide if should render (select) this tile
@@ -161,7 +167,7 @@ export default class TilesetTraverser {
   }
 
   /* eslint-disable complexity, max-statements */
-  updateAndPushChildren(tile, frameState, stack) {
+  updateAndPushChildren(tile, frameState, stack, depth) {
     const {loadSiblings, skipLevelOfDetail} = this.options;
 
     const children = tile.children;
@@ -172,10 +178,13 @@ export default class TilesetTraverser {
     // For traditional replacement refinement only refine if all children are loaded.
     // Empty tiles are exempt since it looks better if children stream in as they are loaded to fill the empty space.
     const checkRefines =
-      !skipLevelOfDetail && tile.refine === TILE_REFINEMENT.REPLACE && tile.hasRenderContent;
+      tile.refine === TILE_REFINEMENT.REPLACE && tile.hasRenderContent && !skipLevelOfDetail;
 
     let hasVisibleChild = false;
+    let refines = true;
+
     for (const child of children) {
+      child._selectionDepth = depth;
       if (child.isVisibleAndInRequestVolume) {
         if (stack.find(child)) {
           stack.delete(child);
@@ -198,14 +207,18 @@ export default class TilesetTraverser {
         } else {
           childRefines = child.contentAvailable;
         }
+        refines = refines && childRefines;
 
-        if (!childRefines) {
-          return childRefines;
+        if (!refines) {
+          return false;
         }
       }
     }
 
-    return hasVisibleChild;
+    if (!hasVisibleChild) {
+      refines = false;
+    }
+    return refines;
   }
   /* eslint-enable complexity, max-statements */
 
@@ -226,7 +239,7 @@ export default class TilesetTraverser {
   loadTile(tile, frameState) {
     if (this.shouldLoadTile(tile, frameState)) {
       tile._requestedFrame = frameState.frameNumber;
-      tile._priority = this.getPriority(tile);
+      tile._priority = tile._getPriority();
       this.requestedTiles[tile.id] = tile;
     }
   }
@@ -241,10 +254,6 @@ export default class TilesetTraverser {
   // tile should have children
   // tile LoD (level of detail) is not sufficient under current viewport
   canTraverse(tile, frameState, useParentMetric = false, ignoreVisibility = false) {
-    if (!ignoreVisibility && !tile.isVisibleAndInRequestVolume) {
-      return false;
-    }
-
     if (!tile.hasChildren) {
       return false;
     }
@@ -254,6 +263,10 @@ export default class TilesetTraverser {
       // Traverse external this to visit its root tile
       // Don't traverse if the subtree is expired because it will be destroyed
       return !tile.contentExpired;
+    }
+
+    if (!ignoreVisibility && !tile.isVisibleAndInRequestVolume) {
+      return false;
     }
 
     return this.shouldRefine(tile, frameState, useParentMetric);
@@ -302,36 +315,6 @@ export default class TilesetTraverser {
     return b._distanceToCamera - a._distanceToCamera;
   }
 
-  // If skipLevelOfDetail is off try to load child tiles as soon as possible so that their parent can refine sooner.
-  // Additive tiles are prioritized by distance because it subjectively looks better.
-  // Replacement tiles are prioritized by screen space error.
-  // A tileset that has both additive and replacement tiles may not prioritize tiles as effectively since SSE and distance
-  // are different types of values. Maybe all priorities need to be normalized to 0-1 range.
-  // TODO move to tile-3d-header
-  getPriority(tile) {
-    const {options} = this;
-    switch (tile.refine) {
-      case TILE_REFINEMENT.ADD:
-        return tile._distanceToCamera;
-
-      case TILE_REFINEMENT.REPLACE:
-        const {parent} = tile;
-        const useParentScreenSpaceError =
-          parent &&
-          (!options.skipLevelOfDetail ||
-            tile._screenSpaceError === 0.0 ||
-            parent.hasTilesetContent);
-        const screenSpaceError = useParentScreenSpaceError
-          ? parent._screenSpaceError
-          : tile._screenSpaceError;
-        const rootScreenSpaceError = this.root._screenSpaceError;
-        return rootScreenSpaceError - screenSpaceError; // Map higher SSE to lower values (e.g. root tile is highest priority)
-
-      default:
-        return assert(false);
-    }
-  }
-
   anyChildrenVisible(tile, frameState) {
     let anyVisible = false;
     for (const child of tile.children) {
@@ -341,14 +324,15 @@ export default class TilesetTraverser {
     return anyVisible;
   }
 
-  // TODO revisit this empty traversal logic
   // Depth-first traversal that checks if all nearest descendants with content are loaded.
   // Ignores visibility.
   executeEmptyTraversal(root, frameState) {
     let allDescendantsLoaded = true;
     const stack = this._emptyTraversalStack;
 
-    while (stack.length > 0) {
+    stack.push(root);
+
+    while (stack.length > 0 && allDescendantsLoaded) {
       const tile = stack.pop();
 
       this.updateTile(tile, frameState);
@@ -356,20 +340,15 @@ export default class TilesetTraverser {
       if (!tile.isVisibleAndInRequestVolume) {
         // Load tiles that aren't visible since they are still needed for the parent to refine
         this.loadTile(tile, frameState);
-        this.touchTile(tile, frameState);
       }
+
+      this.touchTile(tile, frameState);
 
       // Only traverse if the tile is empty - traversal stop at descendants with content
       const traverse = !tile.hasRenderContent && this.canTraverse(tile, frameState, false, true);
 
-      // Traversal stops but the tile does not have content yet.
-      // There will be holes if the parent tries to refine to its children, so don't refine.
-      if (!traverse && !tile.contentAvailable) {
-        allDescendantsLoaded = false;
-      }
-
       if (traverse) {
-        const children = tile.children.filter((c) => c);
+        const children = tile.children;
         for (const child of children) {
           // eslint-disable-next-line max-depth
           if (stack.find(child)) {
@@ -377,6 +356,8 @@ export default class TilesetTraverser {
           }
           stack.push(child);
         }
+      } else if (!tile.contentAvailable) {
+        allDescendantsLoaded = false;
       }
     }
 

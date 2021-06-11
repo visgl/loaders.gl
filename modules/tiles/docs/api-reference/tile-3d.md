@@ -42,9 +42,9 @@ One of
 - `render`: has content to render
 - `tileset`: tileset tile
 
-###### `depth` (Number)
+##### `_selectionDepth` (Number)
 
-The depth of the tile in the tileset tree.
+The depth of the tile in the traversal tree.
 
 ###### `content` (Object)
 
