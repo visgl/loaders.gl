@@ -138,4 +138,4 @@ const es5Config = {
 
 // console.error(JSON.stringify(config, null, 2))
 
-module.exports = [config, es5Config];
+module.exports = [config]; //, es5Config];
